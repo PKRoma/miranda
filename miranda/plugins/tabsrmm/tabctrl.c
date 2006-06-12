@@ -1033,6 +1033,9 @@ void ReloadTabConfig()
     
     myGlobals.tabConfig.m_bottomAdjust = (int)DBGetContactSettingDword(NULL, SRMSGMOD_T, "bottomadjust", 0);
     myGlobals.tabConfig.m_fixedwidth = DBGetContactSettingDword(NULL, SRMSGMOD_T, "fixedwidth", FIXED_TAB_SIZE);
+
+    myGlobals.tabConfig.m_fixedwidth = (myGlobals.tabConfig.m_fixedwidth < 60 ? 60 : myGlobals.tabConfig.m_fixedwidth);
+
 }
 
 void FreeTabConfig()
@@ -1140,7 +1143,8 @@ BOOL CALLBACK DlgProcTabConfig(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPa
                     int i = 0;
                     COLORREF clr;
                     BOOL translated;
-                    
+                    int  fixedWidth;
+
                     struct ContainerWindowData *pContainer = pFirstContainer;
                     
                     DWORD dwFlags = (IsDlgButtonChecked(hwndDlg, IDC_FLATTABS2) ? TCF_FLAT : 0) |
@@ -1166,7 +1170,10 @@ BOOL CALLBACK DlgProcTabConfig(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPa
                     DBWriteContactSettingByte(NULL, SRMSGMOD_T, g_skinnedContainers ? "S_tborder_outer_top" : "tborder_outer_top", (BYTE) GetDlgItemInt(hwndDlg, IDC_TABBORDEROUTERTOP, &translated, FALSE));
                     DBWriteContactSettingByte(NULL, SRMSGMOD_T, g_skinnedContainers ? "S_tborder_outer_bottom" : "tborder_outer_bottom", (BYTE) GetDlgItemInt(hwndDlg, IDC_TABBORDEROUTERBOTTOM, &translated, FALSE));
                     DBWriteContactSettingDword(NULL, SRMSGMOD_T, "bottomadjust", GetDlgItemInt(hwndDlg, IDC_BOTTOMTABADJUST, &translated, TRUE));
-                    DBWriteContactSettingDword(NULL, SRMSGMOD_T, "fixedwidth", GetDlgItemInt(hwndDlg, IDC_TABWIDTH, &translated, FALSE));
+
+                    fixedWidth = GetDlgItemInt(hwndDlg, IDC_TABWIDTH, &translated, FALSE);
+                    fixedWidth = (fixedWidth < 60 ? 60 : fixedWidth);
+                    DBWriteContactSettingDword(NULL, SRMSGMOD_T, "fixedwidth", fixedWidth);
                     
                     FreeTabConfig();
                     ReloadTabConfig();
