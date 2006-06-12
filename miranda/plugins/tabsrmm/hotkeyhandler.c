@@ -59,6 +59,9 @@ void HandleMenuEntryFromhContact(int iSelection)
     HWND hWnd = WindowList_Find(hMessageWindowList, (HANDLE)iSelection);
     SESSION_INFO *si = NULL;
 
+    if(iSelection == 0)
+        return;
+
     if(hWnd && IsWindow(hWnd)) {
         struct ContainerWindowData *pContainer = 0;
         SendMessage(hWnd, DM_QUERYCONTAINER, 0, (LPARAM)&pContainer);
