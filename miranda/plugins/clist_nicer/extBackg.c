@@ -2049,7 +2049,9 @@ BOOL CALLBACK DlgProcSkinOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPar
         case WM_INITDIALOG:
         {
             DBVARIANT dbv;
-
+            
+            TranslateDialogDefault(hwndDlg);
+            
             if(!DBGetContactSetting(NULL, "CLC", "ContactSkins", &dbv)) {
                 SetDlgItemTextA(hwndDlg, IDC_SKINFILE, dbv.pszVal);
                 DBFreeVariant(&dbv);
