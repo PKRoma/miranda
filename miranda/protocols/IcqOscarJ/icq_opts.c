@@ -127,21 +127,21 @@ HWND hOptBasic = 0, hOptContacts = 0, hOptFeatures = 0, hOptPrivacy = 0;
 static void TabOptions_AddItemUtf(HWND hTabCtrl, const char* szTitle, HWND hPage)
 {
   TCITEM tci = {0};
-	RECT rcClient;
+  RECT rcClient;
   char* szTitleUtf;
   int iTotal;
 
-	GetClientRect(GetParent(hTabCtrl), &rcClient);
+  GetClientRect(GetParent(hTabCtrl), &rcClient);
 
   szTitleUtf = ICQTranslateUtf(szTitle);
 
   iTotal = TabCtrl_GetItemCount(hTabCtrl);
 
-	tci.mask = TCIF_PARAM|TCIF_TEXT;
-	tci.lParam = (LPARAM)hPage;
+  tci.mask = TCIF_PARAM|TCIF_TEXT;
+  tci.lParam = (LPARAM)hPage;
   if (gbUnicodeAPI)
   {
-	  tci.pszText = (char*)make_unicode_string(szTitleUtf);
+    tci.pszText = (char*)make_unicode_string(szTitleUtf);
     SendMessageW(hTabCtrl, TCM_INSERTITEMW, iTotal, (WPARAM)&tci);
   }
   else
@@ -152,76 +152,76 @@ static void TabOptions_AddItemUtf(HWND hTabCtrl, const char* szTitle, HWND hPage
   SAFE_FREE(&tci.pszText);
   SAFE_FREE(&szTitleUtf);
 
-	MoveWindow(hPage, 3, 24, rcClient.right - 6, rcClient.bottom - 28, 1);
+  MoveWindow(hPage, 3, 24, rcClient.right - 6, rcClient.bottom - 28, 1);
 }
 
 static void SetOptionsDlgToType(HWND hwnd, int iExpert)
 {
-	HWND hwndTab = GetDlgItem(hwnd, IDC_OPTIONSTAB), hwndEnum;
+  HWND hwndTab = GetDlgItem(hwnd, IDC_OPTIONSTAB), hwndEnum;
 
-	if (!hOptBasic)
+  if (!hOptBasic)
   {
-		hOptBasic = CreateDialog(hInst, MAKEINTRESOURCE(IDD_OPT_ICQ), hwnd, DlgProcIcqOpts);
+    hOptBasic = CreateDialogUtf(hInst, MAKEINTRESOURCE(IDD_OPT_ICQ), hwnd, DlgProcIcqOpts);
     if (pfnEnableThemeDialogTexture) 
       pfnEnableThemeDialogTexture(hOptBasic, ETDT_ENABLETAB);
   }
 
-	hwndEnum = GetWindow(hOptBasic, GW_CHILD);
+  hwndEnum = GetWindow(hOptBasic, GW_CHILD);
 	
-	while (hwndEnum)
+  while (hwndEnum)
   { // too bad
-		ShowWindow(hwndEnum, iExpert ? SW_SHOW : SW_HIDE);
-		hwndEnum = GetWindow(hwndEnum, GW_HWNDNEXT);
-	}
+    ShowWindow(hwndEnum, iExpert ? SW_SHOW : SW_HIDE);
+    hwndEnum = GetWindow(hwndEnum, GW_HWNDNEXT);
+  }
 
-	if (!iExpert)
+  if (!iExpert)
   {
-		hwndEnum = GetDlgItem(hOptBasic, IDC_STICQGROUP);
-		ShowWindow(hwndEnum, SW_SHOW);
-		hwndEnum = GetWindow(hwndEnum, GW_HWNDNEXT);
-		do {
-			ShowWindow(hwndEnum, SW_SHOW);
-			hwndEnum = GetWindow(hwndEnum, GW_HWNDNEXT);
-		} while(hwndEnum && hwndEnum != GetDlgItem(hOptBasic, IDC_NEWUINLINK));
-	}
-	ShowWindow(hwndEnum, SW_SHOW);
-	TabCtrl_DeleteAllItems(hwndTab);
+    hwndEnum = GetDlgItem(hOptBasic, IDC_STICQGROUP);
+    ShowWindow(hwndEnum, SW_SHOW);
+    hwndEnum = GetWindow(hwndEnum, GW_HWNDNEXT);
+    do {
+      ShowWindow(hwndEnum, SW_SHOW);
+      hwndEnum = GetWindow(hwndEnum, GW_HWNDNEXT);
+    } while(hwndEnum && hwndEnum != GetDlgItem(hOptBasic, IDC_NEWUINLINK));
+  }
+  ShowWindow(hwndEnum, SW_SHOW);
+  TabCtrl_DeleteAllItems(hwndTab);
 
   TabOptions_AddItemUtf(hwndTab, "Account", hOptBasic);
 
-	if (!hOptContacts)
+  if (!hOptContacts)
   {
-		hOptContacts = CreateDialog(hInst, MAKEINTRESOURCE(IDD_OPT_ICQCONTACTS), hwnd, DlgProcIcqContactsOpts);
+    hOptContacts = CreateDialogUtf(hInst, MAKEINTRESOURCE(IDD_OPT_ICQCONTACTS), hwnd, DlgProcIcqContactsOpts);
     if (pfnEnableThemeDialogTexture) 
       pfnEnableThemeDialogTexture(hOptContacts, ETDT_ENABLETAB);
   }
 
-	if (!hOptFeatures)
+  if (!hOptFeatures)
   {
-		hOptFeatures = CreateDialog(hInst, MAKEINTRESOURCE(IDD_OPT_ICQFEATURES), hwnd, DlgProcIcqFeaturesOpts);
+    hOptFeatures = CreateDialogUtf(hInst, MAKEINTRESOURCE(IDD_OPT_ICQFEATURES), hwnd, DlgProcIcqFeaturesOpts);
     if (pfnEnableThemeDialogTexture) 
       pfnEnableThemeDialogTexture(hOptFeatures, ETDT_ENABLETAB);
   }
 
-	if (!hOptPrivacy)
+  if (!hOptPrivacy)
   {
-		hOptPrivacy = CreateDialog(hInst, MAKEINTRESOURCE(IDD_OPT_ICQPRIVACY), hwnd, DlgProcIcqPrivacyOpts);
+    hOptPrivacy = CreateDialogUtf(hInst, MAKEINTRESOURCE(IDD_OPT_ICQPRIVACY), hwnd, DlgProcIcqPrivacyOpts);
     if (pfnEnableThemeDialogTexture) 
       pfnEnableThemeDialogTexture(hOptPrivacy, ETDT_ENABLETAB);
   }
 
-	ShowWindow(hOptContacts, SW_HIDE);
-	ShowWindow(hOptPrivacy, SW_HIDE);
+  ShowWindow(hOptContacts, SW_HIDE);
+  ShowWindow(hOptPrivacy, SW_HIDE);
   if (hOptFeatures)
-	  ShowWindow(hOptFeatures, SW_HIDE);
-	ShowWindow(hOptBasic, SW_SHOW);
+    ShowWindow(hOptFeatures, SW_HIDE);
+  ShowWindow(hOptBasic, SW_SHOW);
 
   TabOptions_AddItemUtf(hwndTab, "Contacts", hOptContacts);
   if (iExpert) 
     TabOptions_AddItemUtf(hwndTab, "Features", hOptFeatures);
   TabOptions_AddItemUtf(hwndTab, "Privacy", hOptPrivacy);
 
-	TabCtrl_SetCurSel(hwndTab, 0);
+  TabCtrl_SetCurSel(hwndTab, 0);
 }
 
 

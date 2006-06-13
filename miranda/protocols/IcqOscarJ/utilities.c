@@ -1769,6 +1769,16 @@ HWND DialogBoxUtf(BOOL bModal, HINSTANCE hInstance, const char* szTemplate, HWND
 
 
 
+HWND CreateDialogUtf(HINSTANCE hInstance, const char* lpTemplate, HWND hWndParent, DLGPROC lpDialogFunc)
+{
+  if (gbUnicodeAPI)
+    return CreateDialogW(hInstance, (LPCWSTR)lpTemplate, hWndParent, lpDialogFunc);
+  else
+    return CreateDialogA(hInstance, lpTemplate, hWndParent, lpDialogFunc);
+}
+
+
+
 int MessageBoxUtf(HWND hWnd, const char* szText, const char* szCaption, UINT uType)
 {
   int res;
