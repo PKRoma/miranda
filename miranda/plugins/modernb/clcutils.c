@@ -341,7 +341,7 @@ int GetDropTargetInformation(HWND hwnd,struct ClcData *dat,POINT pt)
 {
 	RECT clRect;
 	int hit;
-	struct ClcContact *contact,*movecontact;
+	struct ClcContact *contact=NULL,*movecontact=NULL;
 	struct ClcGroup *group,*movegroup;
 	DWORD hitFlags;
 
@@ -353,7 +353,7 @@ int GetDropTargetInformation(HWND hwnd,struct ClcData *dat,POINT pt)
 	hit=cliHitTest(hwnd,dat,pt.x,pt.y,&contact,&group,&hitFlags);
 	cliGetRowByIndex(dat,dat->iDragItem,&movecontact,&movegroup);
 	if(hit==dat->iDragItem) return DROPTARGET_ONSELF;
-	if(hit==-1 || hitFlags&CLCHT_ONITEMEXTRA) return DROPTARGET_ONNOTHING;
+	if(hit==-1 || hitFlags&CLCHT_ONITEMEXTRA || !movecontact) return DROPTARGET_ONNOTHING;
 
 	if(movecontact->type==CLCIT_GROUP) {
 		struct ClcContact *bottomcontact=NULL,*topcontact=NULL;
