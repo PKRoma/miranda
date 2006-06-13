@@ -964,6 +964,9 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
 				DBWriteContactSettingString(dat->hContact, SRMMMOD, SRMSGSET_AVATAR, pai.filename);
 			else DBWriteContactSettingString(dat->hContact, SRMMMOD, SRMSGSET_AVATAR, "");
 			ShowAvatar(hwndDlg, dat);
+		} else if (result == GAIR_NOAVATAR) {
+			DBWriteContactSettingString(dat->hContact, SRMMMOD, SRMSGSET_AVATAR, "");
+			ShowAvatar(hwndDlg, dat);
 		}
 		SetWindowLong(hwndDlg, DWL_MSGRESULT, 1);
 		break;
