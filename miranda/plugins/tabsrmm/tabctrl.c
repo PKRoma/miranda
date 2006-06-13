@@ -726,7 +726,7 @@ static LRESULT CALLBACK TabControlSubclassProc(HWND hwnd, UINT msg, WPARAM wPara
                 GetClientRect(hwnd, &rcClient);
                 TabCtrl_GetItemRect(hwnd, 0, &rcItem);
                 nrTabsPerLine = (rcClient.right) / myGlobals.tabConfig.m_fixedwidth;
-                if(iTabs >= nrTabsPerLine)
+                if(iTabs >= nrTabsPerLine && nrTabsPerLine > 0)
                     TabCtrl_SetItemSize(hwnd, ((rcClient.right - 6) / nrTabsPerLine) - (tabdat->dwStyle & TCS_BUTTONS ? 8 : 0), rcItem.bottom - rcItem.top);
                 else
                     TabCtrl_SetItemSize(hwnd, myGlobals.tabConfig.m_fixedwidth, rcItem.bottom - rcItem.top);

@@ -221,7 +221,17 @@ void CalcDynamicAvatarSize(HWND hwndDlg, struct MessageWindowData *dat, BITMAP *
     RECT rc;
     double aspect = 0, newWidth = 0, picAspect = 0;
     double picProjectedWidth = 0;
-    
+   
+    if(myGlobals.g_FlashAvatarAvail) {
+		FLASHAVATAR fa ={0};
+		fa.cProto = dat->szProto;
+		fa.id = 25367;
+		CallService(MS_FAVATAR_GETINFO, (WPARAM)&fa, 0);
+		if(fa.hWindow) {
+			bminfo->bmHeight = 64;
+			bminfo->bmWidth = 52;
+		}
+	}    
     GetClientRect(hwndDlg, &rc);
     
     if(dat->iAvatarDisplayMode != AVATARMODE_DYNAMIC) {
@@ -754,9 +764,18 @@ int GetAvatarVisibility(HWND hwndDlg, struct MessageWindowData *dat)
 	if(dat->dwEventIsShown & MWF_SHOW_INFOPANEL) {
 		if(bOwnAvatarMode)
 			dat->showPic = FALSE;
-		else
-			dat->showPic = (dat->hOwnPic && dat->hOwnPic != myGlobals.g_hbmUnknown) ? 1 : 0;
+		else {
+            if(myGlobals.g_FlashAvatarAvail) {
+                FLASHAVATAR fa ={0};
+                fa.cProto = dat->szProto;
+                fa.id = 25367;
+                fa.hParentWindow = GetDlgItem(hwndDlg, IDC_CONTACTPIC);
 
+                CallService(MS_FAVATAR_MAKE, (WPARAM)&fa, 0);
+                dat->showPic = ((dat->hOwnPic && dat->hOwnPic != myGlobals.g_hbmUnknown) || (fa.hWindow != NULL)) ? 1 : 0;
+            } else
+                dat->showPic = (dat->hOwnPic && dat->hOwnPic != myGlobals.g_hbmUnknown) ? 1 : 0;
+        }
 		switch(bAvatarMode) {
 			case 0:
 			case 1:
@@ -922,16 +941,32 @@ TCHAR *QuoteText(TCHAR *text,int charsPerLine,int removeExistingQuotes)
 void AdjustBottomAvatarDisplay(HWND hwndDlg, struct MessageWindowData *dat)
 {
     HBITMAP hbm = dat->dwEventIsShown & MWF_SHOW_INFOPANEL ? dat->hOwnPic : (dat->ace ? dat->ace->hbmPic : myGlobals.g_hbmUnknown);
-	FLASHAVATAR fa; 
 
     if(myGlobals.g_FlashAvatarAvail) {
+        FLASHAVATAR fa = {0}; 
+
         fa.hContact = dat->hContact;
 		fa.hWindow = 0;
         fa.id = 25367;
+        fa.cProto = dat->szProto;
         CallService(MS_FAVATAR_GETINFO, (WPARAM)&fa, 0);
 		if(fa.hWindow) {
 			dat->hwndFlash = fa.hWindow;
             SetParent(dat->hwndFlash, GetDlgItem(hwndDlg, (dat->dwEventIsShown & MWF_SHOW_INFOPANEL) ? IDC_PANELPIC : IDC_CONTACTPIC));
+		}
+		fa.hContact = 0;
+		fa.hWindow = 0;
+		if(dat->dwEventIsShown & MWF_SHOW_INFOPANEL) {
+			fa.hParentWindow = GetDlgItem(hwndDlg, IDC_CONTACTPIC);
+			CallService(MS_FAVATAR_MAKE, (WPARAM)&fa, 0);
+			if(fa.hWindow) {
+				SetParent(fa.hWindow, GetDlgItem(hwndDlg, IDC_CONTACTPIC));
+				ShowWindow(fa.hWindow, SW_SHOW);
+			}
+		} else {
+			CallService(MS_FAVATAR_GETINFO, (WPARAM)&fa, 0);
+			if(fa.hWindow)
+				ShowWindow(fa.hWindow, SW_HIDE);
 		}
     }
     	
@@ -2181,15 +2216,21 @@ int MsgWindowDrawHandler(WPARAM wParam, LPARAM lParam, HWND hwndDlg, struct Mess
         DeleteObject(bgBrush);
         DeleteObject(hPenBorder);
         if(myGlobals.g_FlashAvatarAvail) {
-            FLASHAVATAR fa; 
+            FLASHAVATAR fa = {0}; 
 
-            fa.hWindow = 0; 
-            fa.hContact = dat->hContact; 
             fa.id = 25367;
-            fa.hParentWindow = GetDlgItem(hwndDlg, (dat->dwEventIsShown & MWF_SHOW_INFOPANEL) ? IDC_PANELPIC : IDC_CONTACTPIC);
-			CallService(MS_FAVATAR_MAKE, (WPARAM)&fa, 0);
-            dat->hwndFlash = fa.hWindow;
-            if((fa.hWindow == 0) || (!bPanelPic && (dat->dwEventIsShown & MWF_SHOW_INFOPANEL)))
+            fa.cProto = dat->szProto;
+			if(!bPanelPic && (dat->dwEventIsShown & MWF_SHOW_INFOPANEL)) {
+				//CallService(MS_FAVATAR_GETINFO, (WPARAM)&fa, 0);
+				fa.hParentWindow = GetDlgItem(hwndDlg, IDC_CONTACTPIC);
+				CallService(MS_FAVATAR_MAKE, (WPARAM)&fa, 0);
+			} else {
+				fa.hContact = dat->hContact;
+                fa.hParentWindow = GetDlgItem(hwndDlg, (dat->dwEventIsShown & MWF_SHOW_INFOPANEL) ? IDC_PANELPIC : IDC_CONTACTPIC);
+                CallService(MS_FAVATAR_MAKE, (WPARAM)&fa, 0);
+                dat->hwndFlash = fa.hWindow;
+            }
+            if(fa.hWindow == 0)
                 BitBlt(dis->hDC, 0, 0, cx, cy, hdcDraw, 0, 0, SRCCOPY);
         }
         else

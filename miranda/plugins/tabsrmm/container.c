@@ -2408,6 +2408,11 @@ panel_found:
                 TCITEM item;
                 SESSION_INFO *node = m_WndList;
 
+  	  			if (myGlobals.g_FlashAvatarAvail) { // destroy own flash avatar
+	  				FLASHAVATAR fa = {0};
+					fa.id = 25367;
+					CallService(MS_FAVATAR_DESTROY, (WPARAM)&fa, 0);
+  	  			}
                 //DestroyWindow(hwndTab);
                 ZeroMemory((void *)&item, sizeof(item));
                 for(i = 0; i < TabCtrl_GetItemCount(hwndTab); i++) {
@@ -2808,9 +2813,12 @@ void AdjustTabClientRect(struct ContainerWindowData *pContainer, RECT *rc)
             if(pContainer->dwFlags & CNT_TABSBOTTOM) {
                 int nCount = TabCtrl_GetItemCount(hwndTab);
                 RECT rcItem;
-                TabCtrl_GetItemRect(hwndTab, nCount - 1, &rcItem);
-                //rc->top = pContainer->tBorder_outer_top;
-                rc->bottom = rcItem.top;
+
+                if(nCount > 0) {
+                    TabCtrl_GetItemRect(hwndTab, nCount - 1, &rcItem);
+                    //rc->top = pContainer->tBorder_outer_top;
+                    rc->bottom = rcItem.top;
+                }
             }
             else {
                 rc->top += (dwTopPad - 2);;

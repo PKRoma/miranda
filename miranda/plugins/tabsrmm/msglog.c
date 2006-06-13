@@ -533,7 +533,29 @@ static char *CreateRTFHeader(struct MessageWindowData *dat)
         AppendToBuffer(&buffer, &bufferEnd, &bufferAlloced, "\\red%u\\green%u\\blue%u;", GetRValue(rtf_ctable[i].clr), GetGValue(rtf_ctable[i].clr), GetBValue(rtf_ctable[i].clr));
         i++;
     }
-    AppendToBuffer(&buffer, &bufferEnd, &bufferAlloced, "}");
+
+    /*                                                              
+     * paragraph header                                                                
+    */
+    AppendToBuffer(&buffer, &bufferEnd, &bufferAlloced, "}\\pard");
+
+    // indent
+    if(dat->dwFlags & MWF_LOG_INDENT) {
+        int iIndent = dat->theme.left_indent;
+        int rIndent = dat->theme.right_indent;
+
+        if(iIndent) {
+            if(dat->dwFlags & MWF_LOG_RTL)
+                AppendToBuffer(&buffer,&bufferEnd,&bufferAlloced,"\\ri%u\\fi-%u\\li%u\\tx%u", iIndent + 30, iIndent, rIndent, iIndent + 30);
+            else
+                AppendToBuffer(&buffer,&bufferEnd,&bufferAlloced,"\\li%u\\fi-%u\\ri%u\\tx%u", iIndent + 30, iIndent, rIndent, iIndent + 30);
+        }
+    }
+    else {
+        AppendToBuffer(&buffer,&bufferEnd,&bufferAlloced,"\\li%u\\ri%u\\fi%u", 2*15, 2*15, 0);
+    }
+
+    //AppendToBuffer(&buffer, &bufferEnd, &bufferAlloced, "}");
     return buffer;
 }
 
@@ -646,27 +668,6 @@ static char *Template_CreateRTFFromDbEvent(struct MessageWindowData *dat, HANDLE
     buffer = (char *) malloc(bufferAlloced);
     buffer[0] = '\0';
     g_groupBreak = TRUE;
-
-    /*                                                              
-     * paragraph header                                                                
-    */
-    AppendToBuffer(&buffer, &bufferEnd, &bufferAlloced, "{\\pard");
-
-    // indent
-    if(dat->dwFlags & MWF_LOG_INDENT) {
-        int iIndent = dat->theme.left_indent;
-        int rIndent = dat->theme.right_indent;
-
-        if(iIndent) {
-            if(dat->dwFlags & MWF_LOG_RTL)
-                AppendToBuffer(&buffer,&bufferEnd,&bufferAlloced,"\\ri%u\\fi-%u\\li%u\\tx%u", iIndent + 30, iIndent, rIndent, iIndent + 30);
-            else
-                AppendToBuffer(&buffer,&bufferEnd,&bufferAlloced,"\\li%u\\fi-%u\\ri%u\\tx%u", iIndent + 30, iIndent, rIndent, iIndent + 30);
-        }
-    }
-    else {
-        AppendToBuffer(&buffer,&bufferEnd,&bufferAlloced,"\\li%u\\ri%u\\fi%u", 2*15, 2*15, 0);
-    }
 
     if(dat->isAutoRTL & 1) {
         if(dat->isAutoRTL & 2) {                     // first append flag
@@ -1276,7 +1277,7 @@ skip:
     else
         AppendToBuffer(&buffer, &bufferEnd, &bufferAlloced, dbei.flags & DBEF_RTL ? dat->szMicroLf_RTL : dat->szMicroLf);
 
-    AppendToBuffer(&buffer, &bufferEnd, &bufferAlloced, "}");
+    //AppendToBuffer(&buffer, &bufferEnd, &bufferAlloced, "}");
 
     if(streamData->dbei == 0)
         free(dbei.pBlob);

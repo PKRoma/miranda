@@ -59,14 +59,14 @@ TemplateSet LTR_Default = { TRUE,
 };
 
 TemplateSet RTL_Default = { TRUE, 
-    _T("%I%S %N, %E, %h:%m:%s:%! %M"),
-    _T("%I%S %N, %E, %h:%m:%s:%! %M"),
-    _T("%I%S %N, %E, %h:%m:%s:%! %M"),
-    _T("%I%S %N, %E, %h:%m:%s:%! %M"),
-    _T("%S %h:%m:%s:%! %M"),
-    _T("%S %h:%m:%s:%! %M"),
-    _T("%I%S %D, %h:%m:%s, %N %M"),
-    _T("%I%S %D, %h:%m:%s, %e %M"),
+    _T("%I%S %N %fm%c4%&D%n%S %fd%c0[%T%fd%c0]%|%M"),
+    _T("%I%S %N %fm%c4%&D%n%S %fd%c0[%T%fd%c0]%|%M"),
+    _T("%I %S %fm%c4%&E %N%n%S %fd%c0[%T%fd%c0]%|%M"),
+    _T("%I %S %fm%c4%&E %N%n%S %fd%c0[%T%fd%c0]%|%M"),
+    _T("%S %fd%c0[%T%fd%c0]%|%M"),
+    _T("%S %fd%c0[%T%fd%c0]%|%M"),
+    _T("%I%S %D, %h:%m,%>%N%>%M%! %<"),
+    _T("%I%S %D, %h:%m:%s, %e%l%M"),
     "Default RTL"
 };
 
@@ -102,9 +102,16 @@ static void LoadTemplatesFrom(TemplateSet *tSet, HANDLE hContact, int rtl)
 
 void LoadDefaultTemplates() 
 {
+    int i;
+
     LTR_Active = LTR_Default;
     RTL_Active = RTL_Default;
 
+    if(!DBGetContactSettingByte(NULL, RTLTEMPLATES_MODULE, "setup", 0)) {
+        for(i = 0; i <= TMPL_ERRMSG; i++)
+            DBWriteContactSettingTString(NULL, RTLTEMPLATES_MODULE, TemplateNames[i], RTL_Default.szTemplates[i]);
+        DBWriteContactSettingByte(NULL, RTLTEMPLATES_MODULE, "setup", 1);
+    }
     LoadTemplatesFrom(&LTR_Active, (HANDLE)0, 0);
     LoadTemplatesFrom(&RTL_Active, (HANDLE)0, 1);
 }
@@ -362,6 +369,8 @@ BOOL CALLBACK DlgProcTemplateEditor(HWND hwndDlg, UINT msg, WPARAM wParam, LPARA
             break;
         }
         case WM_DESTROY:
+            EnableWindow(GetDlgItem(teInfo->hwndParent, IDC_MODIFY), TRUE);
+            EnableWindow(GetDlgItem(teInfo->hwndParent, IDC_RTLMODIFY), TRUE);
             if(dat->pContainer)
                 free(dat->pContainer);
             if(dat)
@@ -374,8 +383,6 @@ BOOL CALLBACK DlgProcTemplateEditor(HWND hwndDlg, UINT msg, WPARAM wParam, LPARA
             DBWriteContactSettingDword(NULL, SRMSGMOD_T, "cc5", SendDlgItemMessage(hwndDlg, IDC_COLOR5, CPM_GETCOLOUR, 0, 0));
 
             SetWindowLong(hwndDlg, GWL_USERDATA, 0);
-            EnableWindow(GetDlgItem(teInfo->hwndParent, IDC_MODIFY), TRUE);
-            EnableWindow(GetDlgItem(teInfo->hwndParent, IDC_RTLMODIFY), TRUE);
             break;
     }
     return FALSE;

@@ -1097,68 +1097,6 @@ LRESULT CALLBACK SplitterSubclassProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM
 }
 
 /*
-static int MessageDialogResizeIP(HWND hwndDlg, LPARAM lParam, UTILRESIZECONTROL * urc)
-{
-    struct MessageWindowData *dat = (struct MessageWindowData *) lParam;
-    int panelHeight = dat->panelHeight + 1;
-    int panelWidth = (dat->panelWidth != -1 ? dat->panelWidth + 2: 0);
-    RECT rc;
-    POINT pt;
-    LONG width, height;
-    
-    if(dat->panelStatusCX == 0)
-        dat->panelStatusCX = 80;
-
-    switch (urc->wId) {
-        case IDC_PANELSPLITTER:
-            urc->rcItem.bottom = panelHeight;
-            urc->rcItem.top = panelHeight - 2;
-            return RD_ANCHORX_WIDTH | RD_ANCHORY_TOP;
-        case IDC_PANELPIC:
-            urc->rcItem.left = urc->rcItem.right - (panelWidth > 0 ? panelWidth - 2: panelHeight + 2);
-            urc->rcItem.bottom = urc->rcItem.top + (panelHeight - 3);
-            if (myGlobals.g_FlashAvatarAvail) {
-                RECT rc = { urc->rcItem.left,  urc->rcItem.top, urc->rcItem.right, urc->rcItem.bottom };
-                if(dat->dwEventIsShown & MWF_SHOW_INFOPANEL) {
-                    FLASHAVATAR fa; 
-
-                    fa.hContact = dat->hContact;
-                    fa.id = 25367;
-                    CallService(MS_FAVATAR_RESIZE, (WPARAM)&fa, (LPARAM)&rc);
-                }
-            }
-            return RD_ANCHORX_RIGHT | RD_ANCHORY_TOP;
-        case IDC_PANEL:
-            return RD_ANCHORX_WIDTH | RD_ANCHORY_TOP;
-        case IDC_PANELSTATUS:
-            urc->rcItem.right = urc->dlgNewSize.cx - panelWidth;
-            urc->rcItem.left = urc->dlgNewSize.cx - panelWidth - dat->panelStatusCX;
-            return RD_ANCHORX_CUSTOM | RD_ANCHORY_TOP;
-        case IDC_PANELNICK:
-            urc->rcItem.right = urc->dlgNewSize.cx - panelWidth - 27;
-            return RD_ANCHORX_CUSTOM | RD_ANCHORY_TOP;
-        case IDC_APPARENTMODE:
-            urc->rcItem.right -= (panelWidth + 3);
-            urc->rcItem.left -= (panelWidth + 3);
-            return RD_ANCHORX_CUSTOM | RD_ANCHORX_RIGHT;
-        case IDC_PANELUIN:
-            urc->rcItem.right = urc->dlgNewSize.cx - (panelWidth + 2) - dat->panelStatusCX;
-            return RD_ANCHORX_CUSTOM | RD_ANCHORY_TOP;
-    }
-    GetWindowRect(GetDlgItem(hwndDlg, urc->wId), &rc);
-    pt.x = rc.left;
-    pt.y = rc.top;
-    width = rc.right - rc.left; height = rc.bottom - rc.top;
-    ScreenToClient(hwndDlg, &pt);
-    rc.left = pt.x; rc.top = pt.y;
-    rc.right = rc.left + width;
-    rc.bottom = rc.top + height;
-    CopyRect(&urc->rcItem, &rc);
-    return 0;
-}
-*/
-
-/*
  *  resizer proc for the "new" layout.
  */
 
@@ -1284,10 +1222,11 @@ static int MessageDialogResize(HWND hwndDlg, LPARAM lParam, UTILRESIZECONTROL * 
             if (myGlobals.g_FlashAvatarAvail) {
 		    	RECT rc = { urc->rcItem.left,  urc->rcItem.top, urc->rcItem.right, urc->rcItem.bottom };
     			if(dat->dwEventIsShown & MWF_SHOW_INFOPANEL) {
-    				FLASHAVATAR fa; 
+    				FLASHAVATAR fa = {0}; 
 
                     fa.hContact = dat->hContact;
                     fa.id = 25367;
+                    fa.cProto = dat->szProto;
 					CallService(MS_FAVATAR_RESIZE, (WPARAM)&fa, (LPARAM)&rc);
 				}
 			}
@@ -2395,12 +2334,13 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                     }
                     
   					if (myGlobals.g_FlashAvatarAvail) {
-  						FLASHAVATAR fa; 
+  						FLASHAVATAR fa = {0}; 
 
                         fa.hContact = dat->hContact;
 						fa.hWindow = 0;
                         fa.id = 25367;
-                        
+                        fa.cProto = dat->szProto;
+
 						CallService(MS_FAVATAR_GETINFO, (WPARAM)&fa, 0);
    						dat->hwndFlash = fa.hWindow;
    						if(dat->hwndFlash) {
@@ -2427,6 +2367,21 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
             }
             return 0;
         case WM_SETFOCUS:
+		   if(myGlobals.g_FlashAvatarAvail) { // own avatar draw
+			    FLASHAVATAR fa = { 0 };
+				fa.cProto = dat->szProto;
+				fa.id = 25367;
+				
+				CallService(MS_FAVATAR_GETINFO, (WPARAM)&fa, 0);
+				if(fa.hWindow) {
+					if(dat->dwEventIsShown & MWF_SHOW_INFOPANEL) {
+						SetParent(fa.hWindow, GetDlgItem(hwndDlg, IDC_CONTACTPIC));
+						ShowWindow(fa.hWindow, SW_SHOW);
+					} else {
+						ShowWindow(fa.hWindow, SW_HIDE);
+					}
+				}
+			}
             if(GetTickCount() - dat->dwLastUpdate < (DWORD)200) {
                 SendMessage(dat->pContainer->hwnd, DM_UPDATETITLE, (WPARAM)dat->hContact, 0);
                 SetFocus(GetDlgItem(hwndDlg, IDC_MESSAGE));
@@ -3469,13 +3424,13 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
             if (myGlobals.g_FlashAvatarAvail) {
     			RECT rc = { 0, 0, dat->pic.cx, dat->pic.cy };
     			if(!(dat->dwEventIsShown & MWF_SHOW_INFOPANEL)) {
-    				FLASHAVATAR fa; 
+    				FLASHAVATAR fa = {0}; 
 
-                    fa.hContact = dat->hContact;
-					fa.hWindow = 0;
-					fa.id = 25367;
-                    CallService(MS_FAVATAR_RESIZE, (WPARAM)&fa, (LPARAM)&rc);
-				}
+                    fa.hContact = !(dat->dwEventIsShown & MWF_SHOW_INFOPANEL) ? dat->hContact : NULL;
+                    fa.cProto = dat->szProto;
+                    fa.hWindow = 0;
+                    fa.id = 25367;
+                    CallService(MS_FAVATAR_RESIZE, (WPARAM)&fa, (LPARAM)&rc);				}
 			}
             SendMessage(hwndDlg, WM_SIZE, 0, 0);
             return 0;
@@ -5687,10 +5642,11 @@ verify:
 			break;
         case WM_DESTROY:
 			if (myGlobals.g_FlashAvatarAvail) {
-				FLASHAVATAR fa; 
+				FLASHAVATAR fa = {0}; 
 
                 fa.hContact = dat->hContact;
                 fa.id = 25367;
+                fa.cProto = dat->szProto;
 				CallService(MS_FAVATAR_DESTROY, (WPARAM)&fa, 0);
 			}
             EnterCriticalSection(&cs_sessions);
