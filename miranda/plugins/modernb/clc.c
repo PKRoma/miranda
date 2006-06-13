@@ -811,8 +811,8 @@ case INTM_STATUSCHANGED:
 				int *isv=NULL;
 				pdnce->status = GetStatusForContact(pdnce->hContact,pdnce->szProto);
 				if (!dat->force_in_dialog && (
-					(dat->second_line_show && dat->second_line_type==TEXT_STATUS)
-					|| (dat->third_line_show && dat->third_line_type==TEXT_STATUS)
+					(dat->second_line_show)// && dat->second_line_type==TEXT_STATUS)
+					|| (dat->third_line_show)// && dat->third_line_type==TEXT_STATUS)
 					))
 					Cache_RenewText(pdnce->hContact);							
 			}

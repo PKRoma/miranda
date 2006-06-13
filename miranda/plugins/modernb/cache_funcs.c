@@ -832,9 +832,10 @@ void Cache_GetSecondLineText(struct ClcData *dat, PDNCE pdnce)
 {
   HANDLE hContact=pdnce->hContact;
   TCHAR Text[120-MAXEXTRACOLUMNS]={0};
+  if (dat->second_line_show)	
 	Cache_GetLineText(pdnce, dat->second_line_type, (TCHAR*)Text, SIZEOF(Text), dat->second_line_text,
-    dat->second_line_xstatus_has_priority,dat->second_line_show_status_if_no_away,
-	dat->second_line_use_name_and_message_for_xstatus, dat->contact_time_show_only_if_different);
+		dat->second_line_xstatus_has_priority,dat->second_line_show_status_if_no_away,
+		dat->second_line_use_name_and_message_for_xstatus, dat->contact_time_show_only_if_different);
  
   LockCacheItem(hContact, __FILE__,__LINE__);
   if (pdnce->szSecondLineText) mir_free(pdnce->szSecondLineText);
@@ -856,6 +857,7 @@ void Cache_GetThirdLineText(struct ClcData *dat, PDNCE pdnce)
 {
   TCHAR Text[120-MAXEXTRACOLUMNS]={0};
   HANDLE hContact=pdnce->hContact;
+  if (dat->third_line_show)
 	Cache_GetLineText(pdnce, dat->third_line_type,(TCHAR*)Text, SIZEOF(Text), dat->third_line_text,
 		dat->third_line_xstatus_has_priority,dat->third_line_show_status_if_no_away,
 		dat->third_line_use_name_and_message_for_xstatus, dat->contact_time_show_only_if_different);
