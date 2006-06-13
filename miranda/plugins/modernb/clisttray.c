@@ -603,7 +603,7 @@ static int TrayIconInit(HWND hwnd)
 					if(protos[j]->type==PROTOTYPE_PROTOCOL && (GetProtocolVisibility(protos[j]->szName)!=0)) TrayIconAdd(hwnd,protos[j]->szName,NULL,CallProtoService(protos[j]->szName,PS_GETSTATUS,0,0));
 			}
 		}
-	else if((averageMode>=0&&DBGetContactSettingByte(NULL,"CList","AlwaysPrimary",0)) && DBGetContactSettingByte(NULL,"CList","TrayIcon",SETTING_TRAYICON_DEFAULT)==SETTING_TRAYICON_SINGLE) {
+	else if((averageMode==-1 || (averageMode>=0&&DBGetContactSettingByte(NULL,"CList","AlwaysPrimary",0))) && DBGetContactSettingByte(NULL,"CList","TrayIcon",SETTING_TRAYICON_DEFAULT)==SETTING_TRAYICON_SINGLE) {
 		DBVARIANT dbv={DBVT_DELETED};
 		char *szProto;
 		if(DBGetContactSetting(NULL,"CList","PrimaryStatus",&dbv)) szProto=NULL;
@@ -612,7 +612,7 @@ static int TrayIconInit(HWND hwnd)
 		DBFreeVariant(&dbv);
 	}
 	else 
-		TrayIconAdd(hwnd,NULL,NULL,averageMode);
+		TrayIconAdd(hwnd,NULL,NULL,GetGlobalStatus(0,0) /*averageMode*/);
 	if(averageMode<=0 && DBGetContactSettingByte(NULL,"CList","TrayIcon",SETTING_TRAYICON_DEFAULT)==SETTING_TRAYICON_CYCLE)
 		cycleTimerId=SetTimer(NULL,0,DBGetContactSettingWord(NULL,"CList","CycleTime",SETTING_CYCLETIME_DEFAULT)*1000,TrayCycleTimerProc);
 	return 0;
