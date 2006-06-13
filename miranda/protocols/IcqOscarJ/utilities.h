@@ -148,5 +148,6 @@ int ListBoxAddStringUtf(HWND hList, const char* szString);
 
 int MessageBoxUtf(HWND hWnd, const char* szText, const char* szCaption, UINT uType);
 HWND DialogBoxUtf(BOOL bModal, HINSTANCE hInstance, const char* szTemplate, HWND hWndParent, DLGPROC lpDialogFunc, LPARAM dwInitParam);
+HWND CreateDialogUtf(HINSTANCE hInstance, const char* lpTemplate, HWND hWndParent, DLGPROC lpDialogFunc);
 
 #endif /* __UTILITIES_H */

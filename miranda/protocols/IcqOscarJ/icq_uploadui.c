@@ -1064,7 +1064,7 @@ void ShowUploadContactsDialog(void)
   if (hwndUploadContacts == NULL)
   {
     hItemAll = NULL;
-    hwndUploadContacts = CreateDialog(hInst, MAKEINTRESOURCE(IDD_ICQUPLOADLIST), NULL, DlgProcUploadList);
+    hwndUploadContacts = CreateDialogUtf(hInst, MAKEINTRESOURCE(IDD_ICQUPLOADLIST), NULL, DlgProcUploadList);
   }
 
   SetForegroundWindow(hwndUploadContacts);
