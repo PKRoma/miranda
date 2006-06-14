@@ -1436,7 +1436,7 @@ void ext_yahoo_got_im(int id, char *me, char *who, char *msg, long tm, int stat,
 
 	}
 		
-	umsg = (char *) alloca(lstrlen(msg) + 1);
+	umsg = (char *) alloca(lstrlen(msg) * 2 + 1); /* double size to be on the safe side */
 	while ( *c != '\0') {
 		        // Strip the font and font size tag
         if (!strnicmp(c,"<font face=",11) || !strnicmp(c,"<font size=",11) || 
@@ -1454,6 +1454,11 @@ void ext_yahoo_got_im(int id, char *me, char *who, char *msg, long tm, int stat,
 		
 		if (*c != '\0'){
 			umsg[oidx++] = *c;
+			
+			/* Adding \r to \r\n conversion */
+			if (*c == '\r' && *(c + 1) != '\n') 
+				umsg[oidx++] = '\n';
+			
 			c++;
 		}
 	}
