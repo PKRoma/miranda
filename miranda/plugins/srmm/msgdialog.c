@@ -879,10 +879,12 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
 	{
 		dat->minEditBoxSize.cx = dat->minEditInit.right - dat->minEditInit.left;
 		dat->minEditBoxSize.cy = dat->minEditInit.bottom - dat->minEditInit.top;
-		if ((g_dat->flags&SMF_AVATAR)&&dat->avatarPic) {
+		if (g_dat->flags&SMF_AVATAR) {
 			SendMessage(hwndDlg, DM_AVATARCALCSIZE, 0, 0);
-			if (dat->minEditBoxSize.cy<=dat->avatarHeight)
-				dat->minEditBoxSize.cy = dat->avatarHeight;
+			if(dat->avatarPic) {
+				if (dat->minEditBoxSize.cy<=dat->avatarHeight)
+					dat->minEditBoxSize.cy = dat->avatarHeight;
+			}
 		}
 		break;
 	}
@@ -924,6 +926,9 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
 			if (VALID_AVATAR(pai.format))
 				DBWriteContactSettingString(dat->hContact, SRMMMOD, SRMSGSET_AVATAR, pai.filename);
 			else DBWriteContactSettingString(dat->hContact, SRMMMOD, SRMSGSET_AVATAR, "");
+			ShowAvatar(hwndDlg, dat);
+		} else if (result == GAIR_NOAVATAR) {
+			DBWriteContactSettingString(dat->hContact, SRMMMOD, SRMSGSET_AVATAR, "");
 			ShowAvatar(hwndDlg, dat);
 		}
 		SetWindowLong(hwndDlg, DWL_MSGRESULT, 1);
