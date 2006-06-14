@@ -575,7 +575,8 @@ typedef struct {
 	LPARAM lParam;     //extra space for the network level protocol module
 } PROTORECVEVENT;
 #define PREF_CREATEREAD   1     //create the database event with the 'read' flag set
-#define PREF_UNICODE	  2
+#define PREF_UNICODE	     2
+#define PREF_RTL          4     // 0.5+ addition: support for right-to-left messages
 #define PSR_MESSAGE   "/RecvMessage"
 
 //An URL has been received
