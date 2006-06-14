@@ -471,6 +471,7 @@ struct MsgQueueEntry
 	filetransfer*	ft;
 	int				seq;
 	int				allocatedToThread;
+	int				timeout;
 	int            flags;
 };
 
@@ -478,7 +479,7 @@ int		__stdcall MsgQueue_Add( HANDLE hContact, int msgType, const char* msg, int 
 HANDLE	__stdcall MsgQueue_CheckContact( HANDLE hContact );
 HANDLE	__stdcall MsgQueue_GetNextRecipient( void );
 int		__stdcall MsgQueue_GetNext( HANDLE hContact, MsgQueueEntry& retVal );
-void     __stdcall MsgQueue_Clear( void );
+void     __stdcall MsgQueue_Clear( HANDLE hContact = NULL );
 
 /////////////////////////////////////////////////////////////////////////////////////////
 //	User lists

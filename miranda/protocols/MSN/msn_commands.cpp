@@ -1077,7 +1077,10 @@ LBL_InvalidCommand:
 		{	HANDLE hContact;
 			UrlDecode( params );
 			if (( hContact = MSN_HContactFromEmail( params, NULL, 0, 0 )) != NULL )
+			{
 				MSN_SetWord( hContact, "Status", ID_STATUS_OFFLINE );
+				MsgQueue_Clear( hContact );
+			}
 			break;
 		}
 		case ' CTG':    //********* GTC: section 7.6 List Retrieval And Property Management
@@ -1219,8 +1222,7 @@ LBL_InvalidCommand:
 
 			if ( MSN_ContactJoined( info, hContact ) == 1 ) {
 				MsgQueueEntry E;
-				int tFound = MsgQueue_GetNext( hContact, E );
-				if ( tFound != 0 ) {
+				if ( MsgQueue_GetNext( hContact, E ) != 0 ) {
 					do {
 						if ( E.msgSize == 0 ) {
 							info->sendMessage( E.msgType, E.message, E.flags );
@@ -1235,7 +1237,7 @@ LBL_InvalidCommand:
 							info->mMsnFtp->mOwnsThread = true;
 						}
 					}
-						while (( tFound = MsgQueue_GetNext( hContact, E )) != 0 );
+					while (MsgQueue_GetNext( hContact, E ) != 0 );
 
 					if ( MSN_GetByte( "EnableDeliveryPopup", 1 ))
 						MSN_ShowPopup( MSN_GetContactName( hContact ), MSN_Translate( "First message delivered" ), 0 );

@@ -66,6 +66,7 @@ int __stdcall MsgQueue_Add( HANDLE hContact, int msgType, const char* msg, int m
 	E.seq = seq;
 	E.flags = flags;
 	E.allocatedToThread = 0;
+	E.timeout = DBGetContactSettingDword(NULL, "SRMM", "MessageTimeout", 10000)/1000;
 
 	LeaveCriticalSection( &csMsgQueue );
 	return seq;
@@ -137,13 +138,22 @@ int __stdcall MsgQueue_GetNext( HANDLE hContact, MsgQueueEntry& retVal )
 	return i+1;
 }
 
-void __stdcall MsgQueue_Clear( void )
+void __stdcall MsgQueue_Clear( HANDLE hContact )
 {
-	EnterCriticalSection( &csMsgQueue );
-	if ( msgQueueCount )
-		free( msgQueue );
-	msgQueueCount = 0;
-	msgQueue = NULL;
-	msgQueueSeq = 1;
-	LeaveCriticalSection( &csMsgQueue );
+
+	if (hContact == NULL)
+	{
+		EnterCriticalSection( &csMsgQueue );
+		if ( msgQueueCount ) 
+			free( msgQueue );
+		msgQueueCount = 0;
+		msgQueue = NULL;
+		msgQueueSeq = 1;
+		LeaveCriticalSection( &csMsgQueue );
+	}
+	else
+	{
+		MsgQueueEntry E;
+		while (MsgQueue_GetNext(hContact, E) != 0);
+	}
 }
