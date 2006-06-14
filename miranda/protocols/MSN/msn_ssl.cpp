@@ -581,10 +581,38 @@ LBL_Exit:
 		return retVal;
 	}
 
-	char* tResult = pAgent->getSslResult( szPassportHost, szAuthInfo );
-	if ( tResult == NULL ) {
-		retVal = 4;
-		goto LBL_Exit;
+	char* tResult;
+
+	for (;;)
+	{
+		tResult = pAgent->getSslResult( szPassportHost, szAuthInfo );
+		if ( tResult == NULL ) {
+			retVal = 4;
+			goto LBL_Exit;
+		}
+
+		int status = 0;
+		sscanf( tResult, "HTTP/1.1 %d", &status );
+		if ( status == 302 ) // Handle redirect
+		{
+			if (( p = strstr( tResult, "Location:" )) == NULL )	{
+				free( tResult );
+				retVal = 7;
+				goto LBL_Exit;
+			}
+			strdel( tResult, int( p-tResult )+10 );
+			if (( p = strchr( tResult, '\r' )) != NULL )
+				*p = 0;
+			strcpy(szPassportHost, tResult);
+			free( tResult );
+		}
+		else if (status != 200) 
+		{
+			retVal = 6;
+			free( tResult );
+			goto LBL_Exit;
+		}
+		else break;
 	}
 
 	if (( p = strstr( tResult, "from-PP=" )) == NULL )	{

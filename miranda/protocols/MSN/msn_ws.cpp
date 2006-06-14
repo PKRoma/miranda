@@ -108,7 +108,7 @@ LBL_RecvAgain:
 		tSelect.dwTimeout = 1000;
 		tSelect.hReadConns[ 0 ] = ( HANDLE )s;
 
-		for ( int i=0; i < mGatewayTimeout; i++ ) {
+		for ( int i=0; i < mGatewayTimeout || !bCanPeekMsg; i++ ) {
 			if ( bCanPeekMsg ) {
 				TQueueItem* QI = mFirstQueueItem;
 				if ( QI != NULL )
@@ -180,6 +180,8 @@ LBL_RecvAgain:
 		return ret;
 	}
 
+	bCanPeekMsg = true;
+
 	char* p = strstr( data, "\r\n" );
 	if ( p == NULL ) {
 		MSN_DebugLog( "ACHTUNG! it's not a valid header: '%s'", data );
@@ -216,8 +218,6 @@ LBL_RecvAgain:
 
 		hdrLen = int( rest - data );
 	}
-
-	bCanPeekMsg = true;
 
 	if ( tContentLength == 0 )
 		goto LBL_RecvAgain;

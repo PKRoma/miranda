@@ -463,6 +463,13 @@ void MSN_ReceiveMessage( ThreadData* info, char* cmdString, char* params )
 		CCSDATA ccs;
 		HANDLE tContact = MSN_HContactFromEmail( data.fromEmail, data.fromNick, 1, 1 );
 
+		int isRtl = FALSE;
+		{	const char* p = tHeader[ "X-MMS-IM-Format" ];
+			if ( p != NULL )
+				if ( strstr( p, "RL=1" ) != NULL )
+					isRtl = TRUE;
+		}
+
 		wchar_t* tRealBody = NULL;
 		int      tRealBodyLen = 0;
 		if ( strstr( tContentType, "charset=UTF-8" ))
@@ -534,7 +541,7 @@ void MSN_ReceiveMessage( ThreadData* info, char* cmdString, char* params )
 		else {
 			PROTORECVEVENT pre;
 			pre.szMessage = ( char* )tMsgBuf;
-			pre.flags = PREF_UNICODE;
+			pre.flags = PREF_UNICODE + (( isRtl ) ? PREF_RTL : 0);
 			pre.timestamp = ( DWORD )time(NULL);
 			pre.lParam = 0;
 
@@ -1070,7 +1077,10 @@ LBL_InvalidCommand:
 		{	HANDLE hContact;
 			UrlDecode( params );
 			if (( hContact = MSN_HContactFromEmail( params, NULL, 0, 0 )) != NULL )
+			{
 				MSN_SetWord( hContact, "Status", ID_STATUS_OFFLINE );
+				MsgQueue_Clear( hContact );
+			}
 			break;
 		}
 		case ' CTG':    //********* GTC: section 7.6 List Retrieval And Property Management
@@ -1212,11 +1222,10 @@ LBL_InvalidCommand:
 
 			if ( MSN_ContactJoined( info, hContact ) == 1 ) {
 				MsgQueueEntry E;
-				int tFound = MsgQueue_GetNext( hContact, E );
-				if ( tFound != 0 ) {
+				if ( MsgQueue_GetNext( hContact, E ) != 0 ) {
 					do {
 						if ( E.msgSize == 0 ) {
-							info->sendMessage( E.msgType, E.message, 0 );
+							info->sendMessage( E.msgType, E.message, E.flags );
 							MSN_SendBroadcast( hContact, ACKTYPE_MESSAGE, ACKRESULT_SUCCESS, ( HANDLE )E.seq, 0 );
 						}
 						else info->sendRawMessage( E.msgType, E.message, E.msgSize );
@@ -1228,7 +1237,7 @@ LBL_InvalidCommand:
 							info->mMsnFtp->mOwnsThread = true;
 						}
 					}
-						while (( tFound = MsgQueue_GetNext( hContact, E )) != 0 );
+					while (MsgQueue_GetNext( hContact, E ) != 0 );
 
 					if ( MSN_GetByte( "EnableDeliveryPopup", 1 ))
 						MSN_ShowPopup( MSN_GetContactName( hContact ), MSN_Translate( "First message delivered" ), 0 );

@@ -46,7 +46,7 @@ void __cdecl msn_keepAliveThread( void* )
 
 	while( TRUE )
 	{
-		while ( msnPingTimeout-- > 0 ) {
+		while ( --msnPingTimeout > 0 ) {
 			if ( ::WaitForSingleObject( hKeepAliveThreadEvt, 1000 ) != WAIT_TIMEOUT ) {
 				::CloseHandle( hKeepAliveThreadEvt ); hKeepAliveThreadEvt = NULL;
 				MSN_DebugLog( "Closing keep-alive thread" );
@@ -80,8 +80,6 @@ void __cdecl msn_RedirectorThread( ThreadData* info )
 
 void __cdecl MSNServerThread( ThreadData* info )
 {
-	MSN_DebugLog( "Thread started: server='%s', type=%d", info->mServer, info->mType );
-
 	if ( !sttRedirectorWasChecked ) {
 		sttRedirectorWasChecked = true;
 		MSN_StartThread(( pThreadFunc )msn_RedirectorThread, NULL );
@@ -108,6 +106,8 @@ void __cdecl MSNServerThread( ThreadData* info )
 			if ( sscanf( tPortDelim+1, "%d", &tPortNumber ) == 1 )
 				tConn.wPort = ( WORD )tPortNumber;
 	}	}
+
+	MSN_DebugLog( "Thread started: server='%s', type=%d", tConn.szHost, info->mType );
 
 	info->s = ( HANDLE )MSN_CallService( MS_NETLIB_OPENCONNECTION, ( WPARAM )hNetlibUser, ( LPARAM )&tConn );
 	if ( info->s == NULL ) {
@@ -464,7 +464,7 @@ void ThreadData::applyGatewayData( HANDLE hConn, bool isPoll )
 	MSN_CallService( MS_NETLIB_SETHTTPPROXYINFO, (WPARAM)hConn, (LPARAM)&nlhpi);
 }
 
-static char sttFormatString[] = "/gateway/gateway.dll?Action=open&Server=%s&IP=%s";
+static char sttFormatString[] = "http://gateway.messenger.hotmail.com/gateway/gateway.dll?Action=open&Server=%s&IP=%s";
 
 void ThreadData::getGatewayUrl( char* dest, int destlen, bool isPoll )
 {
@@ -475,8 +475,8 @@ void ThreadData::getGatewayUrl( char* dest, int destlen, bool isPoll )
 			mir_snprintf( dest, destlen, sttFormatString, "SB", mServer );
 		strcpy( mGatewayIP, MSN_DEFAULT_GATEWAY );
 	}
-	else mir_snprintf( dest, destlen, "/gateway/gateway.dll?%sSessionID=%s",
-		( isPoll ) ? "Action=poll&" : "", mSessionID );
+	else mir_snprintf( dest, destlen, "http://%s/gateway/gateway.dll?%sSessionID=%s",
+		mGatewayIP, ( isPoll ) ? "Action=poll&" : "", mSessionID );
 }
 
 void ThreadData::processSessionData( const char* str )

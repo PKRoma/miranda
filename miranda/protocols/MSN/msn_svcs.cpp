@@ -729,6 +729,8 @@ static int MsnRecvMessage(WPARAM wParam,LPARAM lParam)
 	dbei.szModule = msnProtocolName;
 	dbei.timestamp = pre->timestamp;
 	dbei.flags = ( pre->flags & PREF_CREATEREAD ) ? DBEF_READ : 0;
+	if ( pre->flags & PREF_RTL )
+		dbei.flags |= DBEF_RTL;
 	dbei.eventType = EVENTTYPE_MESSAGE;
 	dbei.cbBlob = strlen( pre->szMessage )+1;
 	if ( pre->flags & PREF_UNICODE )
@@ -868,6 +870,7 @@ LBL_Error:
 	}
 
 	int seq, msgType = ( MyOptions.SlowSend ) ? 'A' : 'N';
+	int rtlFlag = ( ccs->wParam & PREF_RTL ) ? MSG_RTL : 0;
 	ThreadData* thread = MSN_GetThreadByContact( ccs->hContact );
 	if ( thread == NULL )
 	{
@@ -880,16 +883,16 @@ LBL_Error:
 		if ( MsgQueue_CheckContact( ccs->hContact ) == NULL )
 			msnNsThread->sendPacket( "XFR", "SB" );
 
-		seq = MsgQueue_Add( ccs->hContact, msgType, msg, 0, 0 );
+		seq = MsgQueue_Add( ccs->hContact, msgType, msg, 0, 0, rtlFlag );
 	}
 	else
 	{	if ( thread->mJoinedCount == 0 )
-			seq = MsgQueue_Add( ccs->hContact, msgType, msg, 0, 0 );
+			seq = MsgQueue_Add( ccs->hContact, msgType, msg, 0, 0, rtlFlag );
 		else {
-			seq = thread->sendMessage( msgType, msg, 0 );
+			seq = thread->sendMessage( msgType, msg, rtlFlag );
 
 			if ( seq == -1 ) {
-				seq = MsgQueue_Add( ccs->hContact, msgType, msg, 0, 0 );
+				seq = MsgQueue_Add( ccs->hContact, msgType, msg, 0, 0, rtlFlag );
 				msnNsThread->sendPacket( "XFR", "SB" );
 			}
 			else if ( !MyOptions.SlowSend ) {
