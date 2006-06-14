@@ -187,7 +187,8 @@ void get_fd(int id, int fd, int error, void *data)
     y_filetransfer *sf = (y_filetransfer*) data;
     char buf[1024];
     long size = 0;
-	DWORD dw;
+	DWORD dw = 0;
+	int   rw = 0;
 	struct _stat statbuf;
 	
 	if (fd < 0) {
@@ -235,29 +236,27 @@ void get_fd(int id, int fd, int error, void *data)
 			pfts.currentFileTime = 0;
 			
 			do {
-				ReadFile(myhFile, buf, 1024, &dw, NULL);
+				ReadFile(myhFile, buf, sizeof(buf), &dw, NULL);
 			
 				if (dw) {
-					//dw = send(fd, buf, dw, 0);
-					dw = Netlib_Send((HANDLE)fd, buf, dw, MSG_NODUMP);
+					rw = Netlib_Send((HANDLE)fd, buf, dw, MSG_NODUMP);
 					
-					if (dw < 1) {
-						LOG(("Upload Failed. Send error?"));
+					if (rw < 1) {
+						LOG(("Upload Failed. Send error? Got: %d", rw));
 						error = 1;
 						break;
-					}
+					} else 
+						size += rw;
 					
-					size += dw;
-					
-					if(GetTickCount() >= lNotify + 500 || dw < 1024 || size == statbuf.st_size) {
+					if(GetTickCount() >= lNotify + 500 || rw < 1024 || size == statbuf.st_size) {
+						LOG(("DOING UI Notify. Got %lu/%lu", size, statbuf.st_size));
+						pfts.totalProgress = size;
+						pfts.currentFileProgress = size;
 						
-					LOG(("DOING UI Notify. Got %lu/%lu", size, statbuf.st_size));
-					pfts.totalProgress = size;
-					pfts.currentFileProgress = size;
-					
-					ProtoBroadcastAck(yahooProtocolName, sf->hContact, ACKTYPE_FILE, ACKRESULT_DATA, sf, (LPARAM) & pfts);
-					lNotify = GetTickCount();
+						ProtoBroadcastAck(yahooProtocolName, sf->hContact, ACKTYPE_FILE, ACKRESULT_DATA, sf, (LPARAM) & pfts);
+						lNotify = GetTickCount();
 					}
+					
 				}
 				
 				if (sf->cancel) {
@@ -265,11 +264,24 @@ void get_fd(int id, int fd, int error, void *data)
 					error = 1;
 					break;
 				}
-			} while ( dw == 1024);
-	    CloseHandle(myhFile);
+			} while ( rw > 0 && dw > 0 && !error);
+			
+			CloseHandle(myhFile);
+
+			pfts.totalProgress = size;
+			pfts.currentFileProgress = size;
+			
+			ProtoBroadcastAck(yahooProtocolName, sf->hContact, ACKTYPE_FILE, ACKRESULT_DATA, sf, (LPARAM) & pfts);
+
 		}
     }	
 
+	do {
+		rw = Netlib_Recv((HANDLE)fd, buf, sizeof(buf), 0);
+		LOG(("Got: %d bytes", rw));
+	} while (rw > 0);
+
+	Netlib_CloseHandle((HANDLE)fd);
 	//sf->state = FR_STATE_DONE;
     LOG(("File send complete!"));
 
@@ -401,9 +413,10 @@ void get_url(int id, int fd, int error,	const char *filename, unsigned long size
 									NULL, OPEN_ALWAYS,  FILE_ATTRIBUTE_NORMAL,  0);
 	
 			if(myhFile !=INVALID_HANDLE_VALUE) {
-				
-						
 				DWORD lNotify = GetTickCount();
+				
+				SetEndOfFile(myhFile);
+				
 				LOG(("proto: %s, hContact: %p", yahooProtocolName, sf->hContact));
 				
 				ProtoBroadcastAck(yahooProtocolName, sf->hContact, ACKTYPE_FILE, ACKRESULT_CONNECTED, sf, 0);
@@ -445,6 +458,7 @@ void get_url(int id, int fd, int error,	const char *filename, unsigned long size
 				
 			} else {
 				LOG(("Can not open file for writing: %s", buf));
+				error = 1;
 			}
 			
 			free(pfts.currentFile);
@@ -774,7 +788,7 @@ void ext_yahoo_status_logon(int id, const char *who, int stat, const char *msg, 
 	HANDLE 	hContact = 0;
 	char 	*s = NULL;
 	
-	YAHOO_DebugLog("[ext_yahoo_status_logon] %s with msg %s (stat: %d, away: %d, idle: %d seconds, checksum: %d buddy_icon: %d client_version: %ld)", who, msg, stat, away, idle, cksum, buddy_icon, client_version);
+	LOG(("[ext_yahoo_status_logon] %s with msg %s (stat: %d, away: %d, idle: %d seconds, checksum: %d buddy_icon: %d client_version: %ld)", who, msg, stat, away, idle, cksum, buddy_icon, client_version));
 	
 	ext_yahoo_status_changed(id, who, stat, msg, away, idle, mobile);
 	hContact = getbuddyH(who);
@@ -852,6 +866,7 @@ void get_picture(int id, int fd, int error,	const char *filename, unsigned long 
 	hContact = getbuddyH(avt->who);
 		
 	if (!hContact){
+		LOG(("ERROR: Can't find buddy: %s", avt->who));
 		error = 1;
 	} else if (!error) {
 		DBWriteContactSettingDword(hContact, yahooProtocolName, "PictCK", avt->cksum);
@@ -859,7 +874,6 @@ void get_picture(int id, int fd, int error,	const char *filename, unsigned long 
 	}
 	
     if(!error) {
-				
 				do {
 					dw = Netlib_Recv((HANDLE)fd, buf, 4096, MSG_NODUMP);
 				
