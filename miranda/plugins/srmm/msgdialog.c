@@ -918,10 +918,12 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
 	{
 		dat->minEditBoxSize.cx = dat->minEditInit.right - dat->minEditInit.left;
 		dat->minEditBoxSize.cy = dat->minEditInit.bottom - dat->minEditInit.top;
-		if ((g_dat->flags&SMF_AVATAR)&&dat->avatarPic) {
+		if (g_dat->flags&SMF_AVATAR) {
 			SendMessage(hwndDlg, DM_AVATARCALCSIZE, 0, 0);
-			if (dat->minEditBoxSize.cy<=dat->avatarHeight)
-				dat->minEditBoxSize.cy = dat->avatarHeight;
+			if(dat->avatarPic) {
+				if (dat->minEditBoxSize.cy<=dat->avatarHeight)
+					dat->minEditBoxSize.cy = dat->avatarHeight;
+			}
 		}
 		break;
 	}
