@@ -214,6 +214,7 @@ void YAHOO_bcast_picture_checksum(int cksum);
 BOOL YAHOO_LoadPngModule();
 int YAHOO_SaveBitmapAsAvatar( HBITMAP hBitmap, const char* szFileName );
 HBITMAP YAHOO_StretchBitmap( HBITMAP hBitmap );
+void yahoo_reset_avatar(HANDLE 	hContact);
 HBITMAP YAHOO_SetAvatar(const char *szFile);
 void SetButtonCheck(HWND hwndDlg, int CtrlID, BOOL bCheck);
 void YahooOpenURL(const char *url, int autoLogin);

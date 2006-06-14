@@ -39,8 +39,7 @@ extern yahoo_local_account *ylad;
  */
 BOOL YAHOO_LoadPngModule()
 {
-	if ( !ServiceExists(MS_DIB2PNG) || !ServiceExists(MS_PNG2DIB)) {
-		//DialogBox( hInst, MAKEINTRESOURCE( IDD_GET_PNG2DIB ), NULL, LoadPng2dibProc );
+	if ( !ServiceExists(MS_DIB2PNG)) {
 		MessageBox( NULL, Translate( "Your png2dib.dll is either obsolete or damaged. " ),
 				Translate( "Error" ), MB_OK | MB_ICONSTOP );
 		return FALSE;
@@ -290,9 +289,9 @@ static BOOL CALLBACK AvatarDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM
   return FALSE;
 }
 
-// 
-// YAHOO_StretchBitmap (copied from MSN, Thanks George)
-//
+/* 
+ * YAHOO_StretchBitmap (copied from MSN, Thanks George)
+ */
 HBITMAP YAHOO_StretchBitmap( HBITMAP hBitmap )
 {
 	BITMAPINFO bmStretch; 
@@ -345,9 +344,9 @@ HBITMAP YAHOO_StretchBitmap( HBITMAP hBitmap )
 	return hStretchedBitmap;
 }
 
-//
-// YAHOO_SaveBitmapAsAvatar - updates the avatar database settins and file from a bitmap
-//
+/*
+ * YAHOO_SaveBitmapAsAvatar - updates the avatar database settings and file from a bitmap
+ */
 int YAHOO_SaveBitmapAsAvatar( HBITMAP hBitmap, const char* szFileName ) 
 {
 	BITMAPINFO* bmi;
@@ -389,7 +388,6 @@ int YAHOO_SaveBitmapAsAvatar( HBITMAP hBitmap, const char* szFileName )
 	convertor.pResult = NULL;
 	convertor.pResultLen = &dwPngSize;
 	if ( !CallService( MS_DIB2PNG, 0, (LPARAM)&convertor )) {
-
 		GlobalFree( pDib );
 		return 2;
 	}
@@ -502,26 +500,14 @@ void YAHOO_SendAvatar(const char *szFile)
 	pthread_create(yahoo_send_avt_thread, sf);
 }
 
-void yahoo_reset_avatar(HANDLE 	hContact, int bFail)
+void yahoo_reset_avatar(HANDLE 	hContact)
 {
-    PROTO_AVATAR_INFORMATION AI;
-        
 	LOG(("[YAHOO_RESET_AVATAR]"));
-	//DBDeleteContactSetting(hContact, yahooProtocolName, "PictCK" );
-	DBWriteContactSettingDword(hContact, yahooProtocolName, "PictCK", 0);
 
-	AI.cbSize = sizeof AI;
-	AI.format = PA_FORMAT_BMP;
-	AI.hContact = hContact;
-
-	GetAvatarFileName(AI.hContact, AI.filename, sizeof AI.filename, DBGetContactSettingByte(hContact, yahooProtocolName,"AvatarType", 0));
-	DeleteFile(AI.filename);
-	
 	// STUPID SCRIVER Doesn't listen to ACKTYPE_AVATAR. so remove the file reference!
-	DBDeleteContactSetting(AI.hContact, "ContactPhoto", "File");	
-	//AI.filename[0]='\0';
-	if (bFail)
-		ProtoBroadcastAck(yahooProtocolName, hContact, ACKTYPE_AVATAR, ACKRESULT_FAILED,(HANDLE) &AI, 0);
+	//DBDeleteContactSetting(hContact, "ContactPhoto", "File");	
+	
+	ProtoBroadcastAck(yahooProtocolName, hContact, ACKTYPE_AVATAR, ACKRESULT_STATUS, NULL, 0);
 }
 
 void YAHOO_request_avatar(const char* who)

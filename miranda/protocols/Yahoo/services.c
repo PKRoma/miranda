@@ -1361,28 +1361,22 @@ int YahooSetApparentMode(WPARAM wParam, LPARAM lParam)
 void GetAvatarFileName(HANDLE hContact, char* pszDest, int cbLen, int type)
 {
   int tPathLen;
-
   DBVARIANT dbv;
   
   CallService(MS_DB_GETPROFILEPATH, cbLen, (LPARAM)pszDest);
 
   tPathLen = lstrlen(pszDest);
-  tPathLen += _snprintf(pszDest + tPathLen, MAX_PATH-tPathLen, "\\%s\\", yahooProtocolName);
+  _snprintf(pszDest + tPathLen, MAX_PATH-tPathLen, "\\%s\\", yahooProtocolName);
   CreateDirectory(pszDest, NULL);
 
-  if (!DBGetContactSetting(hContact, yahooProtocolName, YAHOO_LOGINID, &dbv)) {
-		lstrcpy(pszDest + tPathLen, dbv.pszVal);
-		tPathLen +=lstrlen(dbv.pszVal);
+  if (hContact != NULL && !DBGetContactSetting(hContact, yahooProtocolName, YAHOO_LOGINID, &dbv)) {
+		lstrcat(pszDest, dbv.pszVal);
 		DBFreeVariant(&dbv);
   }else {
-		lstrcpy(pszDest + tPathLen, "avatar");
-		tPathLen +=lstrlen("avatar");
+		lstrcat(pszDest, "avatar");
   }
   
-  if (!hContact)
-	lstrcpy(pszDest + tPathLen, ".png" );
-  else
-   lstrcpy(pszDest + tPathLen, ".bmp" );
+  lstrcat(pszDest, ".png" );
 }
 
 int YahooGetAvatarInfo(WPARAM wParam,LPARAM lParam)
@@ -1413,14 +1407,16 @@ int YahooGetAvatarInfo(WPARAM wParam,LPARAM lParam)
 		return GAIR_NOAVATAR;
 	}
 	
-	if ( DBGetContactSettingByte(AI->hContact, yahooProtocolName,"AvatarType", 0) <= 0)
+	if ( DBGetContactSettingByte(AI->hContact, yahooProtocolName,"AvatarType", 0) <= 0) {
+		YAHOO_DebugLog("[YAHOO_GETAVATARINFO] Avatar Type 0 or missing!");
 		return GAIR_NOAVATAR;
+	}
 	
 	if (DBGetContactSettingDword(AI->hContact, yahooProtocolName,"PictCK", 0) != 0) {
 		
 		GetAvatarFileName(AI->hContact, AI->filename, sizeof AI->filename,DBGetContactSettingByte(AI->hContact, yahooProtocolName,"AvatarType", 0));
 		//if ( access( AI->filename, 0 ) == 0 ) {
-		AI->format = PA_FORMAT_BMP;
+		AI->format = PA_FORMAT_PNG;
 		YAHOO_DebugLog("[YAHOO_GETAVATARINFO] filename: %s", AI->filename);
 		
 		if (_access( AI->filename, 0 ) == 0 ) {
@@ -1428,7 +1424,7 @@ int YahooGetAvatarInfo(WPARAM wParam,LPARAM lParam)
 		} else {
 			/* need to request it again? */
 			if (YAHOO_GetWord(AI->hContact, "PictLoading", 0) != 0 &&
-				(time(NULL) - YAHOO_GetWord(AI->hContact, "PictLastCK", 0) < 50)) {
+				(time(NULL) - YAHOO_GetWord(AI->hContact, "PictLastCK", 0) < 500)) {
 				YAHOO_DebugLog("[YAHOO_GETAVATARINFO] Waiting for avatar to load!");
 				return GAIR_WAITFOR;
 			} else if ( yahooLoggedIn ) {

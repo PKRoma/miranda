@@ -65,7 +65,6 @@ extern int gStartStatus;
 extern char *szStartMsg;
 
 void ext_yahoo_got_im(int id, char *me, char *who, char *msg, long tm, int stat, int utf8, int buddy_icon);
-void yahoo_reset_avatar(HANDLE 	hContact, int bFail);
 
 char * yahoo_status_code(enum yahoo_status s)
 {
@@ -810,20 +809,19 @@ void ext_yahoo_status_logon(int id, const char *who, int stat, const char *msg, 
 	if (buddy_icon == -1) {
 		LOG(("[ext_yahoo_status_logon] No avatar information in this packet? Not touching stuff!"));
 	} else {
-		if (!cksum || cksum == -1) {
-			yahoo_reset_avatar(hContact, 0); 
-		} else  if (DBGetContactSettingDword(hContact, yahooProtocolName,"PictCK", 0) != cksum) {
-			// Reset Avatar first
-			yahoo_reset_avatar(hContact, 0);
-			// Save New Checksum
-			DBWriteContactSettingDword(hContact, yahooProtocolName, "PictCK", cksum);
-			//yahoo_reset_avatar(hContact);YAHOO_request_avatar(who);
-			ProtoBroadcastAck(yahooProtocolName, hContact, ACKTYPE_AVATAR, ACKRESULT_STATUS,NULL, 0);
-		}
-	
 		// we got some avatartype info
 		DBWriteContactSettingByte(hContact, yahooProtocolName, "AvatarType", buddy_icon);
-		ProtoBroadcastAck(yahooProtocolName, hContact, ACKTYPE_AVATAR, ACKRESULT_STATUS,NULL, 0);
+		
+		if (cksum == 0 || cksum == -1){
+			// no avatar
+			DBWriteContactSettingDword(hContact, yahooProtocolName, "PictCK", 0);
+		} else if (DBGetContactSettingDword(hContact, yahooProtocolName,"PictCK", 0) != cksum) {
+			// Save new Checksum
+			DBWriteContactSettingDword(hContact, yahooProtocolName, "PictCK", cksum);
+		}
+	
+		// Cleanup the type? and reset things...
+		yahoo_reset_avatar(hContact);
 	}
 	LOG(("[ext_yahoo_status_logon] exiting"));
 }
@@ -844,7 +842,6 @@ void get_picture(int id, int fd, int error,	const char *filename, unsigned long 
 	HANDLE 	hContact = 0;
 	char *pBuff = NULL;
 	struct avatar_info *avt = (struct avatar_info *) data;
-	PNG2DIB convert;
 		
 	LOG(("Getting file: %s size: %lu fd: %d error: %d", filename, size, fd, error));
 	
@@ -907,19 +904,6 @@ void get_picture(int id, int fd, int error,	const char *filename, unsigned long 
 //    ProtoBroadcastAck(yahooProtocolName, sf->hContact, ACKTYPE_FILE, !error ? ACKRESULT_SUCCESS:ACKRESULT_FAILED, sf, 0);
 	if (!error) {
 			HANDLE myhFile;
-            BITMAPINFOHEADER* pDib;
-			
-			//---- Converting memory buffer to bitmap and saving it to disk
-			if ( !YAHOO_LoadPngModule() ) 
-				return;
-
-		    convert.pSource = (BYTE*)pBuff;
-		    convert.cbSourceSize = rsize;
-		    convert.pResult = &pDib;
-		    if ( !CallService( MS_PNG2DIB, 0, (LPARAM)&convert) ) {
-				FREE(pBuff);
-				return;
-			}
 
 			GetAvatarFileName(hContact, buf, 1024, DBGetContactSettingByte(hContact, yahooProtocolName,"AvatarType", 0));
 			LOG(("Saving file: %s size: %lu", buf, size));
@@ -929,13 +913,7 @@ void get_picture(int id, int fd, int error,	const char *filename, unsigned long 
 									NULL, OPEN_ALWAYS,  FILE_ATTRIBUTE_NORMAL,  0);
 	
 			if(myhFile !=INVALID_HANDLE_VALUE) {
-				BITMAPFILEHEADER tHeader = { 0 };
-				tHeader.bfType = 0x4d42;
-				tHeader.bfOffBits = sizeof( tHeader ) + sizeof( BITMAPINFOHEADER );
-				tHeader.bfSize = tHeader.bfOffBits + pDib->biSizeImage;
-				WriteFile(myhFile, &tHeader, sizeof( tHeader ), &c, NULL);
-				WriteFile(myhFile, pDib, sizeof( BITMAPINFOHEADER ), &c, NULL );
-				WriteFile(myhFile, pDib+1, pDib->biSizeImage, &c, NULL );
+				WriteFile(myhFile, pBuff, rsize, &c, NULL );
 				CloseHandle(myhFile);
 				
 				DBWriteContactSettingString(hContact, "ContactPhoto", "File", buf);
@@ -945,7 +923,6 @@ void get_picture(int id, int fd, int error,	const char *filename, unsigned long 
 				error = 1;
 			}
 			
-			GlobalFree( pDib );
 	} else {
 			//GetAvatarFileName(hContact, buf, 1024);
 			buf[0]='\0';
@@ -954,7 +931,7 @@ void get_picture(int id, int fd, int error,	const char *filename, unsigned long 
 	FREE(pBuff);
 
 	AI.cbSize = sizeof AI;
-	AI.format = PA_FORMAT_BMP;
+	AI.format = PA_FORMAT_PNG;
 	AI.hContact = hContact;
 	lstrcpy(AI.filename,buf);
 
@@ -1056,8 +1033,9 @@ void ext_yahoo_got_picture(int id, const char *me, const char *who, const char *
 			
 			if (!cksum || cksum == -1) {
 				LOG(("[ext_yahoo_got_picture] Resetting avatar."));
-				yahoo_reset_avatar(hContact, 0);
-				ProtoBroadcastAck(yahooProtocolName, hContact, ACKTYPE_AVATAR, ACKRESULT_STATUS,NULL, 0);
+				DBWriteContactSettingDword(hContact, yahooProtocolName, "PictCK", 0);
+				
+				yahoo_reset_avatar(hContact);
 			} else {
 				char z[1024];
 				
@@ -1137,18 +1115,16 @@ void ext_yahoo_got_picture_checksum(int id, const char *me, const char *who, int
 	
 	/* Last thing check the checksum and request new one if we need to */
 	if (!cksum || cksum == -1) {
-        yahoo_reset_avatar(hContact,0);
-		ProtoBroadcastAck(yahooProtocolName, hContact, ACKTYPE_AVATAR, ACKRESULT_STATUS,NULL, 0);
+		DBWriteContactSettingDword(hContact, yahooProtocolName, "PictCK", 0);
+		
+        yahoo_reset_avatar(hContact);
 	} else {
 		if (DBGetContactSettingDword(hContact, yahooProtocolName,"PictCK", 0) != cksum) {
-			// Reset the avatar and cleanup.
-			yahoo_reset_avatar(hContact,1);
-			
 			// Now save the new checksum. No rush requesting new avatar yet.
 			DBWriteContactSettingDword(hContact, yahooProtocolName, "PictCK", cksum);
-			//DBWriteContactSettingDword(hContact, yahooProtocolName, "PictLoading", 0);
-			YAHOO_request_avatar(who);	
-			//ProtoBroadcastAck(yahooProtocolName, hContact, ACKTYPE_AVATAR, ACKRESULT_STATUS,NULL, 0);
+			
+			// Reset the avatar and cleanup.
+			yahoo_reset_avatar(hContact);
 		}
 	}
 	
@@ -1169,14 +1145,7 @@ void ext_yahoo_got_picture_update(int id, const char *me, const char *who, int b
 	DBWriteContactSettingByte(hContact, yahooProtocolName, "AvatarType", buddy_icon);
 	
 	/* Last thing check the checksum and request new one if we need to */
-	if (buddy_icon == 0 || buddy_icon == 1) {
-		//yahoo_reset_avatar(hContact, 0);
-		DBDeleteContactSetting(hContact, "ContactPhoto", "File");	
-	} //else if (buddy_icon == 2) {
-	//	YAHOO_request_avatar(who);	
-		ProtoBroadcastAck(yahooProtocolName, hContact, ACKTYPE_AVATAR, ACKRESULT_STATUS, NULL, 0);
-	//}
-	
+	yahoo_reset_avatar(hContact);
 }
 
 void ext_yahoo_got_avatar_update(int id, const char *me, const char *who, int buddy_icon)
@@ -1194,14 +1163,7 @@ void ext_yahoo_got_avatar_update(int id, const char *me, const char *who, int bu
 	DBWriteContactSettingByte(hContact, yahooProtocolName, "AvatarType", buddy_icon);
 	
 	/* Last thing check the checksum and request new one if we need to */
-	if (buddy_icon == 0 || buddy_icon == 1) {
-		yahoo_reset_avatar(hContact, 0);
-	} //else if (buddy_icon == 2) {
-		/* weird cause we getting 2 notifications?? */
-		//YAHOO_request_avatar(who);	
-		ProtoBroadcastAck(yahooProtocolName, hContact, ACKTYPE_AVATAR, ACKRESULT_STATUS,NULL, 0);
-	//}
-
+	yahoo_reset_avatar(hContact);
 }
 
 void ext_yahoo_got_audible(int id, const char *me, const char *who, const char *aud, const char *msg, const char *aud_hash)
@@ -1531,15 +1493,11 @@ void ext_yahoo_got_im(int id, char *me, char *who, char *msg, long tm, int stat,
 	//?? Don't generate floods!!
 	DBWriteContactSettingByte(hContact, yahooProtocolName, "AvatarType", buddy_icon);
 	if (buddy_icon != 2) {
-		yahoo_reset_avatar(hContact, 0);
+		yahoo_reset_avatar(hContact);
 	} else if (DBGetContactSettingDword(hContact, yahooProtocolName,"PictCK", 0) == 0) {
 		/* request the buddy image */
-		//DBWriteContactSettingDword(hContact, yahooProtocolName, "PictCK", 0);
 		YAHOO_request_avatar(who); 
 	} 
-	
-	ProtoBroadcastAck(yahooProtocolName, hContact, ACKTYPE_AVATAR, ACKRESULT_STATUS,NULL, 0);
-	
 }
 
 void ext_yahoo_rejected(int id, char *who, char *msg)
