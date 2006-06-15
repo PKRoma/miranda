@@ -73,7 +73,7 @@ extern BOOL CALLBACK DlgProcTemplateHelp(HWND hwndDlg, UINT msg, WPARAM wParam, 
 
 extern TCHAR *NewTitle(HANDLE hContact, const TCHAR *szFormat, const TCHAR *szNickname, const char *szStatus, const TCHAR *szContainer, const char *szUin, const char *szProto, DWORD idle, UINT codePage, BYTE xStatus, WORD wStatus);
 
-char *szWarnClose = "Do you really want to close this session?";
+TCHAR *szWarnClose = _T("Do you really want to close this session?");
 BOOL cntHelpActive = FALSE;
 DWORD m_LangPackCP = CP_ACP;
 
@@ -282,7 +282,7 @@ LRESULT CALLBACK StatusBarSubclassProc(HWND hWnd, UINT msg, WPARAM wParam, LPARA
 				break;
 			else {
 				PAINTSTRUCT ps;
-				char szText[512];
+				TCHAR szText[512];
 				int i;
 				RECT itemRect;
 				HICON hIcon;
@@ -320,12 +320,12 @@ LRESULT CALLBACK StatusBarSubclassProc(HWND hWnd, UINT msg, WPARAM wParam, LPARA
 					width = itemRect.right - itemRect.left;
 					hIcon = (HICON)SendMessage(hWnd, SB_GETICON, i, 0);
 					szText[0] = 0;
-					result = SendMessageA(hWnd, SB_GETTEXTA, i, (LPARAM)szText);
+					result = SendMessage(hWnd, SB_GETTEXT, i, (LPARAM)szText);
 					if(hIcon) {
 						if(LOWORD(result) > 1) {				// we have a text
 							DrawIconEx(hdcMem, itemRect.left + 3, (height / 2 - 8) + itemRect.top, hIcon, 16, 16, 0, 0, DI_NORMAL);
 							itemRect.left += 20;
-							DrawTextA(hdcMem, szText, -1, &itemRect, DT_VCENTER | DT_END_ELLIPSIS | DT_SINGLELINE);
+							DrawText(hdcMem, szText, -1, &itemRect, DT_VCENTER | DT_END_ELLIPSIS | DT_SINGLELINE);
 						}
 						else
 							DrawIconEx(hdcMem, itemRect.left + ((width - 16) / 2), (height / 2 - 8) + itemRect.top, hIcon, 16, 16, 0, 0, DI_NORMAL);
@@ -333,10 +333,9 @@ LRESULT CALLBACK StatusBarSubclassProc(HWND hWnd, UINT msg, WPARAM wParam, LPARA
 					else {
                         itemRect.left +=2;
                         itemRect.right -= 2;
-                        DrawTextA(hdcMem, szText, -1, &itemRect, DT_VCENTER | DT_SINGLELINE | DT_END_ELLIPSIS);
+                        DrawText(hdcMem, szText, -1, &itemRect, DT_VCENTER | DT_SINGLELINE | DT_END_ELLIPSIS);
                     }
 				}
-
                 BitBlt(hdc, 0, 0, rcClient.right, rcClient.bottom, hdcMem, 0, 0, SRCCOPY);
                 SelectObject(hdcMem, hbmOld);
                 DeleteObject(hbm);
@@ -922,12 +921,12 @@ BOOL CALLBACK DlgProcContainer(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPa
 				hSysmenu = GetSystemMenu(hwndDlg, FALSE);
                 iMenuItems = GetMenuItemCount(hSysmenu);
 
-                InsertMenuA(hSysmenu, iMenuItems++ - 2, MF_BYPOSITION | MF_SEPARATOR, 0, "");
-                InsertMenuA(hSysmenu, iMenuItems++ - 2, MF_BYPOSITION | MF_STRING, IDM_STAYONTOP, Translate("Stay on Top"));
-                InsertMenuA(hSysmenu, iMenuItems++ - 2, MF_BYPOSITION | MF_STRING, IDM_NOTITLE, Translate("Hide titlebar"));
-                InsertMenuA(hSysmenu, iMenuItems++ - 2, MF_BYPOSITION | MF_SEPARATOR, 0, "");
-                InsertMenuA(hSysmenu, iMenuItems++ - 2, MF_BYPOSITION | MF_STRING, IDM_MOREOPTIONS, Translate("Container options..."));
-                SetWindowTextA(hwndDlg, "Message Session...");
+                InsertMenu(hSysmenu, iMenuItems++ - 2, MF_BYPOSITION | MF_SEPARATOR, 0, _T(""));
+                InsertMenu(hSysmenu, iMenuItems++ - 2, MF_BYPOSITION | MF_STRING, IDM_STAYONTOP, TranslateT("Stay on Top"));
+                InsertMenu(hSysmenu, iMenuItems++ - 2, MF_BYPOSITION | MF_STRING, IDM_NOTITLE, TranslateT("Hide titlebar"));
+                InsertMenu(hSysmenu, iMenuItems++ - 2, MF_BYPOSITION | MF_SEPARATOR, 0, _T(""));
+                InsertMenu(hSysmenu, iMenuItems++ - 2, MF_BYPOSITION | MF_STRING, IDM_MOREOPTIONS, TranslateT("Container options..."));
+                SetWindowText(hwndDlg, TranslateT("Message Session..."));
                 SendMessage(hwndDlg, WM_SETICON, ICON_BIG, (LPARAM)myGlobals.g_iconContainer);
 
                 /*
@@ -1941,8 +1940,15 @@ panel_found:
 
                 SendMessage(pContainer->hwndActive, DM_QUERYHCONTACT, 0, (LPARAM)&hContact);
                 if(hContact) {
+                    MENUITEMINFO mii = {0};
+
                     hMenu = (HMENU) CallService(MS_CLIST_MENUBUILDCONTACT, (WPARAM) hContact, 0);
-                    ModifyMenuA(pContainer->hMenu, 2, MF_BYPOSITION | MF_POPUP | MF_OWNERDRAW, (UINT_PTR) hMenu, Translate("&User"));
+                    mii.cbSize = sizeof(mii);
+                    mii.fMask = MIIM_FTYPE | MIIM_SUBMENU;
+                    mii.fType = MFT_OWNERDRAW;
+                    mii.hSubMenu = hMenu;
+                    SetMenuItemInfo(pContainer->hMenu, 2, TRUE, &mii);
+                    //ModifyMenuA(pContainer->hMenu, 2, MF_BYPOSITION | MF_POPUP | MF_OWNERDRAW, (UINT_PTR) hMenu, Translate("&User"));
                     DrawMenuBar(hwndDlg);
                     GetCursorPos(&pt);
                     TrackPopupMenu(hMenu, 0, pt.x, pt.y, 0, hwndDlg, NULL);
@@ -1987,7 +1993,7 @@ panel_found:
                 TCITEM item = {0};
 
                 if (DBGetContactSettingByte(NULL, SRMSGMOD_T, "warnonexit", 0)) {
-                    if (MessageBoxA(pContainer->hwnd, Translate(szWarnClose), "Miranda", MB_YESNO | MB_ICONQUESTION) == IDNO)
+                    if (MessageBox(pContainer->hwnd, TranslateTS(szWarnClose), _T("Miranda"), MB_YESNO | MB_ICONQUESTION) == IDNO)
                         break;
                 }
                 hwndCurrent = pContainer->hwndActive;
@@ -2421,7 +2427,7 @@ panel_found:
                 /*if(dis->itemState & ODS_SELECTED || dis->itemState & ODS_HOTLIGHT)
                     FillRect(dis->hDC, &dis->rcItem, GetSysColorBrush(COLOR_MENUHILIGHT));
                 else*/
-                    FillRect(dis->hDC, &dis->rcItem, skinned ? g_MenuBGBrush : GetSysColorBrush(COLOR_MENUBAR));
+                    FillRect(dis->hDC, &dis->rcItem, skinned ? g_MenuBGBrush : GetSysColorBrush(COLOR_MENU));
 
                 if(dis->itemState & ODS_SELECTED) {
                     if(skinned) {
@@ -2578,7 +2584,7 @@ panel_found:
 #endif
                 if (lParam == 0 && TabCtrl_GetItemCount(GetDlgItem(hwndDlg, IDC_MSGTABS)) > 0) {    // dont ask if container is empty (no tabs)
                     if (DBGetContactSettingByte(NULL, SRMSGMOD_T, "warnonexit", 0)) {
-                        if (MessageBoxA(hwndDlg, Translate(szWarnClose), "Miranda", MB_YESNO | MB_ICONQUESTION) == IDNO)
+                        if (MessageBox(hwndDlg, TranslateTS(szWarnClose), _T("Miranda"), MB_YESNO | MB_ICONQUESTION) == IDNO)
                             return TRUE;
                     }
                 }
@@ -3210,7 +3216,8 @@ HMENU BuildMCProtocolMenu(HWND hwndDlg)
     HMENU hMCContextMenu = 0, hMCSubForce = 0, hMCSubDefault = 0, hMenu = 0;
     DBVARIANT dbv;
     int iNumProtos = 0, i = 0, iDefaultProtoByNum = 0;
-    char szTemp[50], *szProtoMostOnline = NULL, szMenuLine[128], *nick = NULL, *szStatusText = NULL;
+    char  szTemp[50], *szProtoMostOnline = NULL;
+    TCHAR szMenuLine[128], *nick = NULL, *szStatusText = NULL, *tzProtoName = NULL;
     HANDLE hContactMostOnline, handle;
     DWORD iChecked, isForced;
     WORD wStatus;
@@ -3227,8 +3234,8 @@ HMENU BuildMCProtocolMenu(HWND hwndDlg)
     hMCSubForce = CreatePopupMenu();
     hMCSubDefault = CreatePopupMenu();
 
-    AppendMenuA(hMenu, MF_STRING | MF_DISABLED | MF_GRAYED | MF_CHECKED, 1, Translate("Meta Contact"));
-    AppendMenuA(hMenu, MF_SEPARATOR, 1, "");
+    AppendMenu(hMenu, MF_STRING | MF_DISABLED | MF_GRAYED | MF_CHECKED, 1, TranslateT("Meta Contact"));
+    AppendMenu(hMenu, MF_SEPARATOR, 1, _T(""));
 
     iNumProtos = (int)CallService(MS_MC_GETNUMCONTACTS, (WPARAM)dat->hContact, 0);
     iDefaultProtoByNum = (int)CallService(MS_MC_GETDEFAULTCONTACTNUM, (WPARAM)dat->hContact, 0);
@@ -3240,25 +3247,29 @@ HMENU BuildMCProtocolMenu(HWND hwndDlg)
         mir_snprintf(szTemp, sizeof(szTemp), "Protocol%d", i);
         if(DBGetContactSetting(dat->hContact, "MetaContacts", szTemp, &dbv))
             continue;
+        tzProtoName = (TCHAR *)CallService(MS_LANGPACK_PCHARTOTCHAR, 0, (LPARAM)dbv.pszVal);
+        DBFreeVariant(&dbv);
         mir_snprintf(szTemp, sizeof(szTemp), "Handle%d", i);
         if((handle = (HANDLE)DBGetContactSettingDword(dat->hContact, "MetaContacts", szTemp, 0)) != 0) {
-            nick = (char *)CallService(MS_CLIST_GETCONTACTDISPLAYNAME, (WPARAM)handle, 0);
+            nick = (TCHAR *)CallService(MS_CLIST_GETCONTACTDISPLAYNAME, (WPARAM)handle, GCDNF_TCHAR);
             mir_snprintf(szTemp, sizeof(szTemp), "Status%d", i);
             wStatus = (WORD)DBGetContactSettingWord(dat->hContact, "MetaContacts", szTemp, 0);
-            szStatusText = (char *) CallService(MS_CLIST_GETSTATUSMODEDESCRIPTION, wStatus, 0);
+            szStatusText = (TCHAR *) CallService(MS_CLIST_GETSTATUSMODEDESCRIPTION, wStatus, GCMDF_TCHAR);
         }
-        mir_snprintf(szMenuLine, sizeof(szMenuLine), "%s: %s [%s] %s", dbv.pszVal, nick, szStatusText, i == isForced ? Translate("(Forced)") : "");
+        mir_sntprintf(szMenuLine, safe_sizeof(szMenuLine), _T("%s: %s [%s] %s"), tzProtoName, nick, szStatusText, i == isForced ? TranslateT("(Forced)") : _T(""));
+        if(tzProtoName)
+            mir_free(tzProtoName);
         iChecked = MF_UNCHECKED;
         if(hContactMostOnline != 0 && hContactMostOnline == handle)
             iChecked = MF_CHECKED;
-        AppendMenuA(hMCSubForce, MF_STRING | iChecked, 100 + i, szMenuLine);
-        AppendMenuA(hMCSubDefault, MF_STRING | (i == iDefaultProtoByNum ? MF_CHECKED : MF_UNCHECKED), 1000 + i, szMenuLine);
+        AppendMenu(hMCSubForce, MF_STRING | iChecked, 100 + i, szMenuLine);
+        AppendMenu(hMCSubDefault, MF_STRING | (i == iDefaultProtoByNum ? MF_CHECKED : MF_UNCHECKED), 1000 + i, szMenuLine);
         DBFreeVariant(&dbv);
     }
-    AppendMenuA(hMCSubForce, MF_SEPARATOR, 900, "");
-    AppendMenuA(hMCSubForce, MF_STRING | ((isForced == -1) ? MF_CHECKED : MF_UNCHECKED), 999, Translate("Autoselect"));
-    InsertMenuA(hMenu, 2, MF_BYPOSITION | MF_POPUP, (UINT_PTR) hMCSubForce, Translate("Use Protocol"));
-    InsertMenuA(hMenu, 2, MF_BYPOSITION | MF_POPUP, (UINT_PTR) hMCSubDefault, Translate("Set Default Protocol"));
+    AppendMenu(hMCSubForce, MF_SEPARATOR, 900, _T(""));
+    AppendMenu(hMCSubForce, MF_STRING | ((isForced == -1) ? MF_CHECKED : MF_UNCHECKED), 999, TranslateT("Autoselect"));
+    InsertMenu(hMenu, 2, MF_BYPOSITION | MF_POPUP, (UINT_PTR) hMCSubForce, TranslateT("Use Protocol"));
+    InsertMenu(hMenu, 2, MF_BYPOSITION | MF_POPUP, (UINT_PTR) hMCSubDefault, TranslateT("Set Default Protocol"));
 
     return hMenu;
 }

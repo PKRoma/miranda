@@ -41,21 +41,21 @@ extern      struct RTFColorTable rtf_ctable[];
 extern      void ImageDataInsertBitmap(IRichEditOle *ole, HBITMAP hBm);
 
 struct CPTABLE cpTable[] = {
-    {	874,	"Thai" },
-    {	932,	"Japanese" },
-    {	936,	"Simplified Chinese" },
-    {	949,	"Korean" },
-    {	950,	"Traditional Chinese" },
-    {	1250,	"Central European" },
-    {	1251,	"Cyrillic" },
-    {	1252,	"Latin I" },
-    {	1253,	"Greek" },
-    {	1254,	"Turkish" },
-    {	1255,	"Hebrew" },
-    {	1256,	"Arabic" },
-    {	1257,	"Baltic" },
-    {	1258,	"Vietnamese" },
-    {	1361,	"Korean (Johab)" },
+    {	874,	_T("Thai") },
+    {	932,	_T("Japanese") },
+    {	936,	_T("Simplified Chinese") },
+    {	949,	_T("Korean") },
+    {	950,	_T("Traditional Chinese") },
+    {	1250,	_T("Central European") },
+    {	1251,	_T("Cyrillic") },
+    {	1252,	_T("Latin I") },
+    {	1253,	_T("Greek") },
+    {	1254,	_T("Turkish") },
+    {	1255,	_T("Hebrew") },
+    {	1256,	_T("Arabic") },
+    {	1257,	_T("Baltic") },
+    {	1258,	_T("Vietnamese") },
+    {	1361,	_T("Korean (Johab)") },
     {   -1,     NULL}
 };
 
@@ -1701,16 +1701,16 @@ void ReplaceIcons(HWND hwndDlg, struct MessageWindowData *dat, LONG startAt, int
  * NLS functions (for unicode version only) encoding stuff..
  */
 
-static BOOL CALLBACK LangAddCallback(LPCSTR str)
+static BOOL CALLBACK LangAddCallback(LPCTSTR str)
 {
 	int i, count;
 	UINT cp;
 
-    cp = atoi(str);
+    cp = _tstoi(str);
 	count = sizeof(cpTable)/sizeof(cpTable[0]);
 	for (i=0; i<count && cpTable[i].cpId!=cp; i++);
 	if (i < count) {
-        AppendMenuA(myGlobals.g_hMenuEncoding, MF_STRING, cp, Translate(cpTable[i].cpName));
+        AppendMenu(myGlobals.g_hMenuEncoding, MF_STRING, cp, TranslateTS(cpTable[i].cpName));
 	}
 	return TRUE;
 }
@@ -1718,9 +1718,9 @@ static BOOL CALLBACK LangAddCallback(LPCSTR str)
 void BuildCodePageList()
 {
     myGlobals.g_hMenuEncoding = CreateMenu();
-    AppendMenuA(myGlobals.g_hMenuEncoding, MF_STRING, 500, Translate("Use default codepage"));
+    AppendMenu(myGlobals.g_hMenuEncoding, MF_STRING, 500, TranslateT("Use default codepage"));
     AppendMenuA(myGlobals.g_hMenuEncoding, MF_SEPARATOR, 0, 0);
-    EnumSystemCodePagesA(LangAddCallback, CP_INSTALLED);
+    EnumSystemCodePages(LangAddCallback, CP_INSTALLED);
 }
 
 #if defined(_UNICODE)

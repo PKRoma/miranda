@@ -280,7 +280,7 @@ void SetDialogToType(HWND hwndDlg)
         UpdateReadChars(hwndDlg, dat);
 
     SetDlgItemTextA(hwndDlg, IDOK, "Send");
-    SetDlgItemTextA(hwndDlg, IDC_STATICTEXT, Translate("A message failed to send successfully."));
+    SetDlgItemText(hwndDlg, IDC_STATICTEXT, TranslateT("A message failed to send successfully."));
 
     SendMessage(hwndDlg, DM_RECALCPICTURESIZE, 0, 0);
     GetAvatarVisibility(hwndDlg, dat);
@@ -2314,7 +2314,7 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                             }
                             iLen = strlen(buffer) + 1;
 #if defined(_UNICODE)
-                            MultiByteToWideChar(CP_ACP, 0, buffer, iLen, (LPWSTR)&buffer[iLen], (450 - iLen) / sizeof(wchar_t));
+                            MultiByteToWideChar(myGlobals.m_LangPackCP, 0, buffer, iLen, (LPWSTR)&buffer[iLen], (450 - iLen) / sizeof(wchar_t));
                             dbei.cbBlob = iLen * (sizeof(TCHAR) + 1);
 #else
 							dbei.cbBlob = iLen;
@@ -4834,7 +4834,7 @@ quote_from_last:
                                         if(idFrom == IDC_LOG)  {
                                             int i;
                                             InsertMenuA(hSubMenu, 5, MF_BYPOSITION | MF_SEPARATOR, 0, 0);
-                                            InsertMenuA(hSubMenu, 6, MF_BYPOSITION | MF_POPUP, (UINT_PTR) myGlobals.g_hMenuEncoding, Translate("ANSI Encoding"));
+                                            InsertMenu(hSubMenu, 6, MF_BYPOSITION | MF_POPUP, (UINT_PTR) myGlobals.g_hMenuEncoding, TranslateT("ANSI Encoding"));
                                             for(i = 0; i < GetMenuItemCount(myGlobals.g_hMenuEncoding); i++)
                                                 CheckMenuItem(myGlobals.g_hMenuEncoding, i, MF_BYPOSITION | MF_UNCHECKED);
                                             if(dat->codePage == CP_ACP)
@@ -5618,7 +5618,7 @@ verify:
                 
                 if(!lParam) {
                     if (myGlobals.m_WarnOnClose) {
-                        if (MessageBoxA(dat->pContainer->hwnd, Translate(szWarnClose), "Miranda", MB_YESNO | MB_ICONQUESTION) == IDNO) {
+                        if (MessageBoxA(dat->pContainer->hwnd, TranslateTS(szWarnClose), _T("Miranda"), MB_YESNO | MB_ICONQUESTION) == IDNO) {
                             return TRUE;
                         }
                     }

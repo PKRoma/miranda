@@ -44,7 +44,7 @@ typedef struct {
 	HANDLE  hThemeToolbar;
     BOOL    bThemed;
 	BOOL	bTitleButton;
-	char	cHot;
+	TCHAR	cHot;
 	int     flatBtn;
     int     dimmed;
 	struct ContainerWindowData *pContainer;
@@ -79,17 +79,17 @@ int UnloadTSButtonModule(WPARAM wParam, LPARAM lParam) {
 
 int LoadTSButtonModule(void) 
 {
-	WNDCLASSEXA wc;
+	WNDCLASSEX wc;
 	
 	ZeroMemory(&wc, sizeof(wc));
 	wc.cbSize         = sizeof(wc);
-	wc.lpszClassName  = "TSButtonClass";
+	wc.lpszClassName  = _T("TSButtonClass");
 	wc.lpfnWndProc    = TSButtonWndProc;
 	wc.hCursor        = LoadCursor(NULL, IDC_ARROW);
 	wc.cbWndExtra     = sizeof(MButtonCtrl*);
 	wc.hbrBackground  = 0;
 	wc.style          = CS_GLOBALCLASS | CS_PARENTDC;
-	RegisterClassExA(&wc);
+	RegisterClassEx(&wc);
 	InitializeCriticalSection(&csTips);
 	return 0;
 }
@@ -392,15 +392,15 @@ nonflat_themed:
                 }
             }
 		}
-		else if (GetWindowTextLengthA(ctl->hwnd)) {
+		else if (GetWindowTextLength(ctl->hwnd)) {
 			// Draw the text and optinally the arrow
-			char szText[MAX_PATH * sizeof(TCHAR)];
+			TCHAR szText[MAX_PATH];
 			SIZE sz;
 			RECT rcText;
 			HFONT hOldFont;
 
 			CopyRect(&rcText, &rcClient);
-			GetWindowTextA(ctl->hwnd, szText, MAX_PATH - 1);
+			GetWindowText(ctl->hwnd, szText, MAX_PATH - 1);
 			SetBkMode(hdcMem, TRANSPARENT);
 			hOldFont = SelectObject(hdcMem, ctl->hFont);
 			// XP w/themes doesn't used the glossy disabled text.  Is it always using COLOR_GRAYTEXT?  Seems so.
@@ -408,18 +408,17 @@ nonflat_themed:
                 SetTextColor(hdcMem, IsWindowEnabled(ctl->hwnd) ? myGlobals.skinDefaultFontColor : GetSysColor(COLOR_GRAYTEXT));
             else
                 SetTextColor(hdcMem, IsWindowEnabled(ctl->hwnd)||!ctl->hThemeButton?GetSysColor(COLOR_BTNTEXT):GetSysColor(COLOR_GRAYTEXT));
-			GetTextExtentPoint32A(hdcMem, szText, lstrlenA(szText), &sz);
+			GetTextExtentPoint32(hdcMem, szText, lstrlen(szText), &sz);
 			if (ctl->cHot) {
 				SIZE szHot;
 				
 				GetTextExtentPoint32A(hdcMem, "&", 1, &szHot);
 				sz.cx -= szHot.cx;
 			}
-			if (ctl->arrow) {
+			if (ctl->arrow)
 				DrawState(hdcMem,NULL,NULL,(LPARAM)ctl->arrow,0,rcClient.right-rcClient.left-5-myGlobals.m_smcxicon+(!ctl->hThemeButton&&ctl->stateId==PBS_PRESSED?1:0),(rcClient.bottom-rcClient.top)/2-myGlobals.m_smcyicon/2+(!ctl->hThemeButton&&ctl->stateId==PBS_PRESSED?1:0),myGlobals.m_smcxicon,myGlobals.m_smcyicon,IsWindowEnabled(ctl->hwnd)?DST_ICON:DST_ICON|DSS_DISABLED);
-			}
 			SelectObject(hdcMem, ctl->hFont);
-			DrawStateA(hdcMem,NULL,NULL,(LPARAM)szText,0,(rcText.right-rcText.left-sz.cx)/2+(!ctl->hThemeButton&&ctl->stateId==PBS_PRESSED?1:0),ctl->hThemeButton?(rcText.bottom-rcText.top-sz.cy)/2:(rcText.bottom-rcText.top-sz.cy)/2-(ctl->stateId==PBS_PRESSED?0:1),sz.cx,sz.cy,IsWindowEnabled(ctl->hwnd)||ctl->hThemeButton?DST_PREFIXTEXT|DSS_NORMAL:DST_PREFIXTEXT|DSS_DISABLED);
+			DrawState(hdcMem,NULL,NULL,(LPARAM)szText,lstrlen(szText),(rcText.right-rcText.left-sz.cx)/2+(!ctl->hThemeButton&&ctl->stateId==PBS_PRESSED?1:0),ctl->hThemeButton?(rcText.bottom-rcText.top-sz.cy)/2:(rcText.bottom-rcText.top-sz.cy)/2-(ctl->stateId==PBS_PRESSED?0:1),sz.cx,sz.cy,IsWindowEnabled(ctl->hwnd)||ctl->hThemeButton?DST_PREFIXTEXT|DSS_NORMAL:DST_PREFIXTEXT|DSS_DISABLED);
 			SelectObject(hdcMem, hOldFont);
 		}
 		BitBlt(hdcPaint, 0, 0, rcClient.right-rcClient.left, rcClient.bottom-rcClient.top, hdcMem, 0, 0, SRCCOPY);
@@ -492,11 +491,11 @@ static LRESULT CALLBACK TSButtonWndProc(HWND hwndDlg, UINT msg,  WPARAM wParam, 
 		case WM_SETTEXT:
 		{
 			bct->cHot = 0;
-			if ((char*)lParam) {
-				char *tmp = (char*)lParam;
+			if ((TCHAR *)lParam) {
+				TCHAR *tmp = (TCHAR *)lParam;
 				while (*tmp) {
-					if (*tmp=='&' && *(tmp+1)) {
-						bct->cHot = tolower(*(tmp+1));
+					if (*tmp == (TCHAR)'&' && *(tmp+1)) {
+						bct->cHot = _totlower(*(tmp+1));
 						break;
 					}
 					tmp++;

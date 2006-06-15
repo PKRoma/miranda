@@ -442,7 +442,7 @@ char *Utf8_Encode(const WCHAR *str);
 
 struct CPTABLE {
     UINT cpId;
-    char *cpName;
+    TCHAR *cpName;
 };
 
 #define LOI_TYPE_FLAG 1
