@@ -265,6 +265,8 @@ void ClearExtraIcons()
 void SetAllExtraIcons(HWND hwndList,HANDLE hContact)
 {
 	HANDLE hItem;
+	int locApparentMode=0;
+	char * locApparentModeProto=NULL;
 	boolean hcontgiven=FALSE;
 	char *szProto;
 	char *(ImgIndex[64]);
@@ -319,8 +321,7 @@ void SetAllExtraIcons(HWND hwndList,HANDLE hContact)
 		szProto=pdnce->szProto;
 		{
 			boolean showweb;	
-			showweb=FALSE;
-      
+			showweb=FALSE;     
 			if (ExtraToColumnNum(EXTRA_ICON_WEB)!=-1)
 			{
 
@@ -387,12 +388,23 @@ void SetAllExtraIcons(HWND hwndList,HANDLE hContact)
 		};
 		if(ExtraToColumnNum(EXTRA_ICON_VISMODE)!=-1) 
 		{
-			if (pdnce->ApparentMode==ID_STATUS_OFFLINE)
-				SendMessage(hwndList,CLM_SETEXTRAIMAGE,(WPARAM)hItem,MAKELPARAM(ExtraToColumnNum(EXTRA_ICON_VISMODE),ExtraImageIconsIndex[4]));	
-			else if (pdnce->ApparentMode==ID_STATUS_ONLINE)
-				SendMessage(hwndList,CLM_SETEXTRAIMAGE,(WPARAM)hItem,MAKELPARAM(ExtraToColumnNum(EXTRA_ICON_VISMODE),ExtraImageIconsIndex[3]));	
-			else 
-				SendMessage(hwndList,CLM_SETEXTRAIMAGE,(WPARAM)hItem,MAKELPARAM(ExtraToColumnNum(EXTRA_ICON_VISMODE),0xFF));	
+			BYTE iconIndex=0xFF;
+			if (szProto != NULL && !DBGetContactSettingByte(hContact, szProto, "ChatRoom", 0))
+			{
+				if (pdnce->ApparentMode==ID_STATUS_OFFLINE)
+					iconIndex=ExtraImageIconsIndex[4];	
+				else if (pdnce->ApparentMode==ID_STATUS_ONLINE)
+				{
+					if (szProto!=locApparentModeProto)
+					{
+						locApparentModeProto=szProto;
+						locApparentMode=CallProtoService(locApparentModeProto,PS_GETSTATUS,0,0);
+					}
+					if (locApparentMode==ID_STATUS_INVISIBLE) 
+						iconIndex=ExtraImageIconsIndex[3];				
+				}
+			}
+			SendMessage(hwndList,CLM_SETEXTRAIMAGE,(WPARAM)hItem,MAKELPARAM(ExtraToColumnNum(EXTRA_ICON_VISMODE),iconIndex));	
 		}
 		NotifyEventHooks(hExtraImageApplying,(WPARAM)hContact,0);
 		if (hcontgiven) break;

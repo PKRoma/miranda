@@ -51,7 +51,7 @@ static int StartScrollPos=0;
 ClcProtoStatus *clcProto = NULL;
 HIMAGELIST himlCListClc=NULL;
 struct ClcContact * hitcontact=NULL;
-
+extern void SetAllExtraIcons(HWND hwndList,HANDLE hContact);
 extern void UpdateAllAvatars(struct ClcData *dat);
 extern int GetContactIndex(struct ClcGroup *group,struct ClcContact *contact);
 
@@ -322,6 +322,8 @@ HICON GetMainStatusOverlay(int STATUS)
 *	Proto ack hook
 */
 void Cache_RenewText(HANDLE hContact);
+
+int ExtraToColumnNum(int extra);
 int ClcProtoAck(WPARAM wParam,LPARAM lParam)
 {
 	ACKDATA *ack=(ACKDATA*)lParam;
@@ -331,10 +333,13 @@ int ClcProtoAck(WPARAM wParam,LPARAM lParam)
 	if (ack->result == ACKRESULT_SUCCESS) {
 		for (i = 0; i < pcli->hClcProtoCount; i++) {
 			if (!lstrcmpA(pcli->clcProto[i].szProto, ack->szModule)) {
+				DWORD newStatus=(DWORD)((WORD) ack->lParam); 
 				pcli->clcProto[i].dwStatus = (WORD) ack->lParam;
 				if (pcli->clcProto[i].dwStatus>=ID_STATUS_OFFLINE)
 					pcli->pfnTrayIconUpdateBase(pcli->clcProto[i].szProto);
 				//TODO call update icons here
+				if(ExtraToColumnNum(EXTRA_ICON_VISMODE)!=-1)
+						SetAllExtraIcons(pcli->hwndContactTree,(HANDLE)NULL);				
 				return 0;
 			}
 		}
@@ -762,7 +767,7 @@ case INTM_NAMECHANGED:
 case INTM_APPARENTMODECHANGED:
 	{
 		int res=saveContactListControlWndProc(hwnd, msg, wParam, lParam);
-
+		SetAllExtraIcons(pcli->hwndContactTree,(HANDLE)wParam);
 		return res;
 	}
 case INTM_STATUSMSGCHANGED:
