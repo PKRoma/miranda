@@ -1099,10 +1099,8 @@ nogroup:
                                     wlen = safe_wcslen(msg, (dbei.cbBlob - msglen) / 2);
                                     if(wlen <= (msglen - 1) && wlen > 0){
                                         TrimMessage(msg);
-                                        //AppendToBuffer(&buffer, &bufferEnd, &bufferAlloced, "\\rtlch\\rtlmark ");
                                         formatted = FormatRaw(dat->dwFlags, msg, MAKELONG(myGlobals.m_FormatWholeWordsOnly, dat->dwEventIsShown & MWF_SHOW_BBCODE));
                                         AppendUnicodeToBuffer(&buffer, &bufferEnd, &bufferAlloced, formatted, MAKELONG(isSent, dat->isHistory));
-                                        //AppendToBuffer(&buffer, &bufferEnd, &bufferAlloced, "\\ltrch\\ltrmark ");
                                     }
                                     else
                                         goto nounicode;

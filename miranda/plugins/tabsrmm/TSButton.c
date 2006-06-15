@@ -23,6 +23,7 @@ extern HINSTANCE g_hInst;
 extern MYGLOBALS myGlobals;
 extern BOOL g_skinnedContainers;
 extern StatusItems_t StatusItems[];
+extern PAB MyAlphaBlend;
 
 #define PBS_PUSHDOWNPRESSED 6
 
@@ -62,9 +63,17 @@ BOOL     (WINAPI *MyEnableThemeDialogTexture)(HANDLE, DWORD) = 0;
 
 static CRITICAL_SECTION csTips;
 static HWND hwndToolTips = NULL;
+static BLENDFUNCTION bf_buttonglyph;
+static HDC hdc_buttonglyph = 0;
+static HBITMAP hbm_buttonglyph, hbm_buttonglyph_old;
 
 int UnloadTSButtonModule(WPARAM wParam, LPARAM lParam) {
 	DeleteCriticalSection(&csTips);
+    if(hdc_buttonglyph) {
+        SelectObject(hdc_buttonglyph, hbm_buttonglyph_old);
+        DeleteObject(hbm_buttonglyph);
+        DeleteDC(hdc_buttonglyph);
+    }
 	return 0;
 }
 
@@ -151,6 +160,15 @@ static TBStateConvert2Flat(int state) {
 }
 
 static void PaintWorker(MButtonCtrl *ctl, HDC hdcPaint) {
+    if(hdc_buttonglyph == 0) {
+        hdc_buttonglyph = CreateCompatibleDC(hdcPaint);
+        hbm_buttonglyph = CreateCompatibleBitmap(hdcPaint, 16, 16);
+        hbm_buttonglyph_old = SelectObject(hdc_buttonglyph, hbm_buttonglyph);
+        bf_buttonglyph.BlendFlags = 0;
+        bf_buttonglyph.SourceConstantAlpha = 120;
+        bf_buttonglyph.BlendOp = AC_SRC_OVER;
+        bf_buttonglyph.AlphaFormat = 0;
+    }
 	if (hdcPaint) {
 		HDC hdcMem;
 		HBITMAP hbmMem;
@@ -364,8 +382,15 @@ nonflat_themed:
 				ImageList_ReplaceIcon(myGlobals.g_hImageList, 0, hIconNew);
 				ImageList_DrawEx(myGlobals.g_hImageList, 0, hdcMem, ix, iy, 0, 0, CLR_NONE, CLR_NONE, ILD_SELECTED);
             }
-            else
-                DrawState(hdcMem,NULL,NULL,(LPARAM)hIconNew,0,ix,iy,myGlobals.m_smcxicon,myGlobals.m_smcyicon,ctl->stateId != PBS_DISABLED ? DST_ICON | DSS_NORMAL : DST_ICON | DSS_DISABLED);
+            else {
+                if(ctl->stateId != PBS_DISABLED || MyAlphaBlend == 0)
+                    DrawIconEx(hdcMem, ix, iy, hIconNew, 16, 16, 0, 0, DI_NORMAL);
+                else {
+                    BitBlt(hdc_buttonglyph, 0, 0, 16, 16, hdcMem, ix, iy, SRCCOPY);
+                    DrawIconEx(hdc_buttonglyph, 0, 0, hIconNew, 16, 16, 0, 0, DI_NORMAL);
+                    MyAlphaBlend(hdcMem, ix, iy, 16, 16, hdc_buttonglyph, 0, 0, 16, 16, bf_buttonglyph);
+                }
+            }
 		}
 		else if (GetWindowTextLengthA(ctl->hwnd)) {
 			// Draw the text and optinally the arrow

@@ -126,7 +126,7 @@ static struct _buttonicons { int id; HICON *pIcon; } buttonicons[] = {
 
 struct SendJob sendJobs[NR_SENDJOBS];
 
-static int splitterEdges = FALSE;
+static int splitterEdges = -1;
 
 static void ResizeIeView(HWND hwndDlg, struct MessageWindowData *dat, DWORD px, DWORD py, DWORD cx, DWORD cy)
 {
@@ -308,17 +308,25 @@ void SetDialogToType(HWND hwndDlg)
 
 UINT NcCalcRichEditFrame(HWND hwnd, struct MessageWindowData *mwdat, UINT skinID, UINT msg, WPARAM wParam, LPARAM lParam, WNDPROC OldWndProc)
 {
-    LRESULT orig = CallWindowProc(OldWndProc, hwnd, msg, wParam, lParam);
+    LRESULT orig;
     NCCALCSIZE_PARAMS *nccp = (NCCALCSIZE_PARAMS *)lParam;
     BOOL bReturn = FALSE;
+
+    if(myGlobals.g_DisableScrollbars) {
+        SetWindowLong(hwnd, GWL_STYLE, GetWindowLong(hwnd, GWL_STYLE) & ~WS_VSCROLL);
+        EnableScrollBar(hwnd, SB_VERT, ESB_DISABLE_BOTH);
+        ShowScrollBar(hwnd, SB_VERT, FALSE);
+    }
+    orig = CallWindowProc(OldWndProc, hwnd, msg, wParam, lParam);
 
     if(mwdat && mwdat->pContainer->bSkinned && !mwdat->bFlatMsgLog) {
         StatusItems_t *item = &StatusItems[skinID];
         if(!item->IGNORED) {
+            /*
             nccp->rgrc[0].left += item->MARGIN_LEFT;
             nccp->rgrc[0].right -= item->MARGIN_RIGHT;
             nccp->rgrc[0].bottom -= item->MARGIN_BOTTOM;
-            nccp->rgrc[0].top += item->MARGIN_TOP;
+            nccp->rgrc[0].top += item->MARGIN_TOP;*/
             return WVR_REDRAW;
         }
     }
@@ -356,6 +364,9 @@ UINT DrawRichEditFrame(HWND hwnd, struct MessageWindowData *mwdat, UINT skinID, 
 	LRESULT result = 0;
     BOOL isMultipleReason = ((skinID == ID_EXTBKINPUTAREA) && (mwdat->sendMode & SMODE_MULTIPLE || mwdat->sendMode & SMODE_CONTAINER));
 
+    //SetWindowLong(hwnd, GWL_STYLE, GetWindowLong(hwnd, GWL_STYLE) & ~WS_VSCROLL);
+    //ShowScrollBar(hwnd, SB_VERT, FALSE);
+    //EnableScrollBar(hwnd, SB_VERT, ESB_DISABLE_BOTH);
     result = CallWindowProc(OldWndProc, hwnd, msg, wParam, lParam);			// do default processing (otherwise, NO scrollbar as it is painted in NC_PAINT)
 	if(isMultipleReason || ((mwdat && mwdat->hTheme) || (mwdat && mwdat->pContainer->bSkinned && !item->IGNORED && !mwdat->bFlatMsgLog))) {
 		HDC hdc = GetWindowDC(hwnd);
@@ -392,7 +403,10 @@ UINT DrawRichEditFrame(HWND hwnd, struct MessageWindowData *mwdat, UINT skinID, 
 
         ExcludeClipRect(hdc, left_off, top_off, rcWindow.right - right_off, rcWindow.bottom - bottom_off);
         if(mwdat->pContainer->bSkinned && !item->IGNORED) {
-			dcMem = CreateCompatibleDC(hdc);
+            ReleaseDC(hwnd, hdc);
+            return result;
+            /*
+            dcMem = CreateCompatibleDC(hdc);
 			hbm = CreateCompatibleBitmap(hdc, rcWindow.right, rcWindow.bottom);
 			hbmOld = SelectObject(dcMem, hbm);
 			ExcludeClipRect(dcMem, left_off, top_off, rcWindow.right - right_off, rcWindow.bottom - bottom_off);
@@ -408,6 +422,7 @@ UINT DrawRichEditFrame(HWND hwnd, struct MessageWindowData *mwdat, UINT skinID, 
 			SelectObject(dcMem, hbmOld);
 			DeleteObject(hbm);
 			DeleteDC(dcMem);
+            */
 		}
 		else if(MyDrawThemeBackground) {
             if(isMultipleReason) {
@@ -977,6 +992,8 @@ LRESULT CALLBACK SplitterSubclassProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM
                 RECT rc;
                 GetClientRect(hwnd, &rc);
                 SendMessage(hwndParent, DM_SPLITTERMOVED, rc.right > rc.bottom ? (short) HIWORD(GetMessagePos()) + rc.bottom / 2 : (short) LOWORD(GetMessagePos()) + rc.right / 2, (LPARAM) hwnd);
+                if(dat->pContainer->bSkinned)
+                    InvalidateRect(hwndParent, NULL, FALSE);
             }
             return 0;
         case WM_PAINT:
@@ -997,7 +1014,10 @@ LRESULT CALLBACK SplitterSubclassProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM
             }
         case WM_NCPAINT:
             {
-                if(dat && dat->pContainer->bSkinned) {
+                if(splitterEdges == -1)
+                    splitterEdges = DBGetContactSettingByte(NULL, SRMSGMOD_T, "splitteredges", 1);
+
+                if(dat && dat->pContainer->bSkinned && splitterEdges > 0) {
                     HDC dc = GetWindowDC(hwnd);
                     POINT pt;
                     RECT rc;
@@ -1126,7 +1146,7 @@ static int MessageDialogResize(HWND hwndDlg, LPARAM lParam, UTILRESIZECONTROL * 
                 OffsetRect(&urc->rcItem, 0, -(dat->splitterY +10));
     }
 
-    s_offset = splitterEdges ? 1 : -2;
+    s_offset = (splitterEdges > 0) ? 1 : -2;
     
     switch (urc->wId) {
         case IDC_NAME:
@@ -1214,7 +1234,16 @@ static int MessageDialogResize(HWND hwndDlg, LPARAM lParam, UTILRESIZECONTROL * 
                 urc->rcItem.top += 24;
             if(dat->dwEventIsShown & MWF_SHOW_INFOPANEL)
                 urc->rcItem.top += panelHeight;
-			urc->rcItem.bottom += (splitterEdges || !showToolbar ? 3 : 6);
+			urc->rcItem.bottom += ((splitterEdges > 0 || !showToolbar) ? 3 : 6);
+            if(dat->pContainer->bSkinned) {
+                StatusItems_t *item = &StatusItems[ID_EXTBKHISTORY];
+                if(!item->IGNORED) {
+                    urc->rcItem.left += item->MARGIN_LEFT;
+                    urc->rcItem.right -= item->MARGIN_RIGHT;
+                    urc->rcItem.top += item->MARGIN_TOP;
+                    urc->rcItem.bottom -= item->MARGIN_BOTTOM;
+                }
+            }
             return RD_ANCHORX_WIDTH | RD_ANCHORY_HEIGHT;
         case IDC_PANELPIC:
 			urc->rcItem.left = urc->rcItem.right - (panelWidth > 0 ? panelWidth - 2 : panelHeight + 2);
@@ -1276,6 +1305,15 @@ static int MessageDialogResize(HWND hwndDlg, LPARAM lParam, UTILRESIZECONTROL * 
                 urc->rcItem.left += 9;
             msgTop = urc->rcItem.top;
             msgBottom = urc->rcItem.bottom;
+            if(dat->pContainer->bSkinned) {
+                StatusItems_t *item = &StatusItems[ID_EXTBKINPUTAREA];
+                if(!item->IGNORED) {
+                    urc->rcItem.left += item->MARGIN_LEFT;
+                    urc->rcItem.right -= item->MARGIN_RIGHT;
+                    urc->rcItem.top += item->MARGIN_TOP;
+                    urc->rcItem.bottom -= item->MARGIN_BOTTOM;
+                }
+            }
             return RD_ANCHORX_CUSTOM | RD_ANCHORY_BOTTOM;
         case IDOK:
             OffsetRect(&urc->rcItem, 12, 0);
@@ -1511,7 +1549,7 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
 
                 splitterEdges = DBGetContactSettingByte(NULL, SRMSGMOD_T, "splitteredges", 1);
                 
-                if(!splitterEdges) {
+                if(splitterEdges == 0) {
                     SetWindowLong(GetDlgItem(hwndDlg, IDC_SPLITTER), GWL_EXSTYLE, GetWindowLong(GetDlgItem(hwndDlg, IDC_SPLITTER), GWL_EXSTYLE) & ~WS_EX_STATICEDGE);
                     SetWindowLong(GetDlgItem(hwndDlg, IDC_PANELSPLITTER), GWL_EXSTYLE, GetWindowLong(GetDlgItem(hwndDlg, IDC_SPLITTER), GWL_EXSTYLE) & ~WS_EX_STATICEDGE);
 				}
@@ -1608,6 +1646,10 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                 SendDlgItemMessage(hwndDlg, IDC_FONTUNDERLINE, BUTTONSETASPUSHBTN, 0, 0);
                 SendDlgItemMessage(hwndDlg, IDC_APPARENTMODE, BUTTONSETASPUSHBTN, 0, 0);
                 
+                if(dat->pContainer->bSkinned) {
+                    isFlat = TRUE;
+                    isThemed = FALSE;
+                }
                 for (i = 0; i < sizeof(buttonLineControlsNew) / sizeof(buttonLineControlsNew[0]); i++) {
                     hwndItem = GetDlgItem(hwndDlg, buttonLineControlsNew[i]);
 					SendMessage(hwndItem, BUTTONSETASFLATBTN, 0, isFlat ? 0 : 1);
@@ -2664,6 +2706,8 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                     InvalidateRect(GetDlgItem(hwndDlg, IDC_PANELUIN), NULL, FALSE);
                     InvalidateRect(GetDlgItem(hwndDlg, IDC_PANELNICK), NULL, FALSE);
                 }
+                if(wParam == 0 && lParam == 0 && dat->pContainer->bSkinned)
+                    RedrawWindow(hwndDlg, NULL, NULL, RDW_UPDATENOW | RDW_NOCHILDREN | RDW_INVALIDATE);
                 break;
             }
 		case DM_SPLITTERMOVEDGLOBAL:
@@ -5631,11 +5675,32 @@ verify:
 		case WM_PAINT:
 			if(dat->pContainer->bSkinned) {
 				PAINTSTRUCT ps;
-				RECT rcClient;
+				RECT rcClient, rcWindow, rc;
+                StatusItems_t *item;
+                POINT pt;
+                UINT item_ids[2] = {ID_EXTBKHISTORY, ID_EXTBKINPUTAREA};
+                UINT ctl_ids[2] = {IDC_LOG, IDC_MESSAGE};
+                int  i;
 
 				HDC hdc = BeginPaint(hwndDlg, &ps);
 				GetClientRect(hwndDlg, &rcClient);
 				SkinDrawBG(hwndDlg, dat->pContainer->hwnd, dat->pContainer, &rcClient, hdc);
+
+                for(i = 0; i < 2; i++) {
+                    item = &StatusItems[item_ids[i]];
+                    if(!item->IGNORED) {
+
+                        GetWindowRect(GetDlgItem(hwndDlg, ctl_ids[i]), &rcWindow);
+                        pt.x = rcWindow.left; pt.y = rcWindow.top;
+                        ScreenToClient(hwndDlg, &pt);
+                        rc.left = pt.x - item->MARGIN_LEFT;
+                        rc.top = pt.y - item->MARGIN_TOP;
+                        rc.right = rc.left + item->MARGIN_RIGHT + (rcWindow.right - rcWindow.left) + item->MARGIN_LEFT;
+                        rc.bottom = rc.top + item->MARGIN_BOTTOM + (rcWindow.bottom - rcWindow.top) + item->MARGIN_TOP;
+                        DrawAlpha(hdc, &rc, item->COLOR, item->ALPHA, item->COLOR2, item->COLOR2_TRANSPARENT, item->GRADIENT,
+                                  item->CORNER, item->RADIUS, item->imageItem);
+                    }
+                }
 				EndPaint(hwndDlg, &ps);
 				return 0;
 			}

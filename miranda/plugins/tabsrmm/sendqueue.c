@@ -14,22 +14,25 @@ extern      TCHAR *pszIDCSAVE_save, *pszIDCSAVE_close;
 extern      const UINT errorControls[5], infoPanelControls[8];
 extern      struct SendJob sendJobs[NR_SENDJOBS];
 
+static char *pss_msg = "/SendMsg";
+static char *pss_msgw = "/SendMsgW";
+
 char *MsgServiceName(HANDLE hContact, struct MessageWindowData *dat, int dwFlags)
 {
 #ifdef _UNICODE
     char szServiceName[100];
     char *szProto = (char *) CallService(MS_PROTO_GETCONTACTBASEPROTO, (WPARAM) hContact, 0);
     if (szProto == NULL)
-        return PSS_MESSAGE;
+        return pss_msg;
 
     if(dat->sendMode & SMODE_FORCEANSI || !(dwFlags & PREF_UNICODE))
-        return PSS_MESSAGE;
+        return pss_msg;
     
     _snprintf(szServiceName, sizeof(szServiceName), "%s%sW", szProto, PSS_MESSAGE);
     if (ServiceExists(szServiceName))
-        return PSS_MESSAGE "W";
+        return pss_msgw;
 #endif
-    return PSS_MESSAGE;
+    return pss_msg;
 }
 
 #define MS_INITIAL_DELAY 500

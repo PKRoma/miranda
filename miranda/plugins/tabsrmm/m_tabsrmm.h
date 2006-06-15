@@ -233,6 +233,7 @@ struct ContainerWindowData {
 	struct TitleBtn oldbuttons[3];
 	int ncActive;
     HICON hTitleIcon;
+    BOOL  repaintMenu;
 };
 
 #define STICK_ICON_MSG 10
@@ -520,6 +521,7 @@ typedef struct _globals {
     HPEN g_SkinLightShadowPen, g_SkinDarkShadowPen;
     NONCLIENTMETRICS ncm;
     HICON m_AnimTrayIcons[4];
+    BOOL  g_DisableScrollbars;
 } MYGLOBALS;
 
 typedef struct _tag_ICONDESC {

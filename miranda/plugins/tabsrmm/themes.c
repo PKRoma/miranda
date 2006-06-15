@@ -47,6 +47,7 @@ extern TemplateSet LTR_Active, RTL_Active;
 extern MYGLOBALS myGlobals;
 extern struct ContainerWindowData *pFirstContainer;
 extern ImageItem *g_glyphItem;
+extern int          g_chat_integration_enabled;
 
 /*
 typedef  DWORD  (__stdcall *pfnImgNewDecoder)(void ** ppDecoder); 
@@ -77,7 +78,7 @@ static void __inline gradientHorizontal( UCHAR *ubRedFinal, UCHAR *ubGreenFinal,
 static ImageItem *g_ImageItems = NULL;
 ImageItem *g_glyphItem = NULL;
 
-HBRUSH g_ContainerColorKeyBrush = 0;
+HBRUSH g_ContainerColorKeyBrush = 0, g_MenuBGBrush = 0;
 COLORREF g_ContainerColorKey = 0;
 SIZE g_titleBarButtonSize = {0};
 int g_titleButtonTopOff = 0, g_captionOffset = 0, g_captionPadding = 0;
@@ -167,6 +168,14 @@ StatusItems_t StatusItems[] = {
         CLCDEFAULT_COLOR, CLCDEFAULT_COLOR2, CLCDEFAULT_COLOR2_TRANSPARENT, CLCDEFAULT_TEXTCOLOR, CLCDEFAULT_ALPHA, CLCDEFAULT_MRGN_LEFT, 
         CLCDEFAULT_MRGN_TOP, CLCDEFAULT_MRGN_RIGHT, CLCDEFAULT_MRGN_BOTTOM, CLCDEFAULT_IGNORE
     }, {"Statusbarpanel", "TSKIN_STATUSBARPANEL", ID_EXTBKSTATUSBARPANEL,
+        CLCDEFAULT_GRADIENT,CLCDEFAULT_CORNER,
+        CLCDEFAULT_COLOR, CLCDEFAULT_COLOR2, CLCDEFAULT_COLOR2_TRANSPARENT, CLCDEFAULT_TEXTCOLOR, CLCDEFAULT_ALPHA, CLCDEFAULT_MRGN_LEFT, 
+        CLCDEFAULT_MRGN_TOP, CLCDEFAULT_MRGN_RIGHT, CLCDEFAULT_MRGN_BOTTOM, CLCDEFAULT_IGNORE
+    }, {"Statusbar", "TSKIN_STATUSBAR", ID_EXTBKSTATUSBAR,
+        CLCDEFAULT_GRADIENT,CLCDEFAULT_CORNER,
+        CLCDEFAULT_COLOR, CLCDEFAULT_COLOR2, CLCDEFAULT_COLOR2_TRANSPARENT, CLCDEFAULT_TEXTCOLOR, CLCDEFAULT_ALPHA, CLCDEFAULT_MRGN_LEFT, 
+        CLCDEFAULT_MRGN_TOP, CLCDEFAULT_MRGN_RIGHT, CLCDEFAULT_MRGN_BOTTOM, CLCDEFAULT_IGNORE
+    }, {"Userlist", "TSKIN_USERLIST", ID_EXTBKUSERLIST,
         CLCDEFAULT_GRADIENT,CLCDEFAULT_CORNER,
         CLCDEFAULT_COLOR, CLCDEFAULT_COLOR2, CLCDEFAULT_COLOR2_TRANSPARENT, CLCDEFAULT_TEXTCOLOR, CLCDEFAULT_ALPHA, CLCDEFAULT_MRGN_LEFT, 
         CLCDEFAULT_MRGN_TOP, CLCDEFAULT_MRGN_RIGHT, CLCDEFAULT_MRGN_BOTTOM, CLCDEFAULT_IGNORE
@@ -463,6 +472,8 @@ void ReadThemeFromINI(const char *szIniFilename, struct MessageWindowData *dat, 
                 dat->theme.custom_colors[i] = GetPrivateProfileIntA("Custom Colors", szTemp, RGB(224, 224, 224), szIniFilename);
         }
     }
+    if(g_chat_integration_enabled)
+        LoadGlobalSettings();
 }
 
 /*
@@ -1304,6 +1315,7 @@ void IMG_DeleteItems()
     
 	myGlobals.g_minGlyph = myGlobals.g_maxGlyph = myGlobals.g_closeGlyph = myGlobals.g_pulldownGlyph = 0;
 	g_ContainerColorKeyBrush = 0;
+    myGlobals.g_DisableScrollbars = FALSE;
 }
 
 static void IMG_LoadItems(char *szFileName)
@@ -1411,11 +1423,8 @@ static void LoadSkinItems(char *file)
     if(!(GetPrivateProfileIntA("Global", "Version", 0, file) >= 1 && GetPrivateProfileIntA("Global", "Signature", 0, file) == 101))
 		return;
 
-    /*
-    if(!g_imgDecoderAvail)
-		return;
-    */
 	g_skinnedContainers = TRUE;
+    myGlobals.g_DisableScrollbars = FALSE;
 
 	ZeroMemory(szSections, 3000);
     p = szSections;
@@ -1471,6 +1480,7 @@ static void LoadSkinItems(char *file)
     
 	g_framelessSkinmode = GetPrivateProfileIntA("Global", "framelessmode", 0, file);
 	g_compositedWindow = GetPrivateProfileIntA("Global", "compositedwindow", 0, file);
+    myGlobals.g_DisableScrollbars = GetPrivateProfileIntA("Global", "NoScrollbars", 0, file);
 
     data = GetPrivateProfileIntA("Global", "SkinnedTabs", 1, file);
     myGlobals.m_TabAppearance = data ? myGlobals.m_TabAppearance | TCF_NOSKINNING : myGlobals.m_TabAppearance & ~TCF_NOSKINNING;
@@ -1510,6 +1520,11 @@ static void LoadSkinItems(char *file)
             CacheLogFonts();
         }
 	}
+    GetPrivateProfileStringA("Global", "MenuBarBG", "eeeeee", buffer, 20, file);
+    data = HexStringToLong(buffer);
+    if(g_MenuBGBrush)
+        DeleteObject(g_MenuBGBrush);
+    g_MenuBGBrush = CreateSolidBrush(data);
 
     GetPrivateProfileStringA("Global", "LightShadow", "000000", buffer, 20, file);
     data = HexStringToLong(buffer);
