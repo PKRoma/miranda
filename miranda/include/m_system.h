@@ -359,7 +359,7 @@ typedef struct
 	WPARAM      wParam;
 	LPARAM      lParam;
 }
-	TMissingServiceParams;
+	MISSING_SERVICE_PARAMS;
 
 #define ME_SYSTEM_MISSINGSERVICE "System/MissingService"
 
