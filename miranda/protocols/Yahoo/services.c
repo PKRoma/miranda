@@ -149,9 +149,8 @@ int SetStatus(WPARAM wParam,LPARAM lParam)
     }
     else if (!yahooLoggedIn) {
 		DBVARIANT dbv;
+		int err = 0;
 		char errmsg[80];
-		
-		errmsg[0]='\0';
 		
         if (yahooStatus == ID_STATUS_CONNECTING)
 			return 0;
@@ -160,25 +159,38 @@ int SetStatus(WPARAM wParam,LPARAM lParam)
 		
 		ylad = y_new0(yahoo_local_account, 1);
 
-		// Load Yahoo ID form the database.
+		/*
+		 * Load Yahoo ID form the database.
+		 */
 		if (!DBGetContactSetting(NULL, yahooProtocolName, YAHOO_LOGINID, &dbv)) {
-			lstrcpyn(ylad->yahoo_id, dbv.pszVal, 255);
+			if (lstrlen(dbv.pszVal) > 0) {
+				lstrcpyn(ylad->yahoo_id, dbv.pszVal, 255);
+			} else
+				err++;
 			DBFreeVariant(&dbv);
 		} else 
-			lstrcpyn(errmsg, Translate("Please enter your yahoo id in Options/Network/Yahoo"), 80);
+			err++;
 		
-
-		if (errmsg[0] == '\0') {
+		if (err) {
+			lstrcpyn(errmsg, Translate("Please enter your yahoo id in Options/Network/Yahoo"), 80);
+		} else {
 			if (!DBGetContactSetting(NULL, yahooProtocolName, YAHOO_PASSWORD, &dbv)) {
 				CallService(MS_DB_CRYPT_DECODESTRING, lstrlen(dbv.pszVal) + 1, (LPARAM) dbv.pszVal);
-				lstrcpyn(ylad->password, dbv.pszVal, 255);
+				if (lstrlen(dbv.pszVal) > 0) {
+					lstrcpyn(ylad->password, dbv.pszVal, 255);
+				} else
+					err++;
+				
 				DBFreeVariant(&dbv);
-			}  else {
+			}  else 
+				err++;
+			
+			if (err) {
 				lstrcpyn(errmsg, Translate("Please enter your yahoo password in Options/Network/Yahoo"), 80);
 			}
 		}
 
-		if (errmsg[0] != '\0'){
+		if (err != 0){
 			FREE(ylad);
 			ylad = NULL;
 			yahoo_util_broadcaststatus(ID_STATUS_OFFLINE);
@@ -226,8 +238,8 @@ void yahoo_util_broadcaststatus(int s)
     yahooStatus = s;
 
 	YAHOO_DebugLog("[yahoo_util_broadcaststatus] Old Status: %s (%d), New Status: %s (%d)",
-			(char *) CallService(MS_CLIST_GETSTATUSMODEDESCRIPTION, oldStatus, 0), oldStatus,
-			(char *) CallService(MS_CLIST_GETSTATUSMODEDESCRIPTION, yahooStatus, 0), yahooStatus);	
+			NEWSTR_ALLOCA((char *) CallService(MS_CLIST_GETSTATUSMODEDESCRIPTION, oldStatus, 0)), oldStatus,
+			NEWSTR_ALLOCA((char *) CallService(MS_CLIST_GETSTATUSMODEDESCRIPTION, yahooStatus, 0)), yahooStatus);	
     ProtoBroadcastAck(yahooProtocolName, NULL, ACKTYPE_STATUS, ACKRESULT_SUCCESS, (HANDLE) oldStatus, (LPARAM)yahooStatus);
 }
 

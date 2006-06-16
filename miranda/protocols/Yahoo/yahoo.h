@@ -80,6 +80,7 @@ extern int do_yahoo_debug;
 extern	HANDLE         YahooMenuItems[ MENU_ITEMS_COUNT ];
 
 #define LocalEventUnhook(hook)	if(hook) UnhookEvent(hook)
+#define NEWSTR_ALLOCA(A) (A==NULL)?NULL:strcpy((char*)alloca(strlen(A)+1),A)
 
 struct _conn {
 	int tag;
