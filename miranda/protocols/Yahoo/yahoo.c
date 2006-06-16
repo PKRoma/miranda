@@ -275,14 +275,16 @@ void get_fd(int id, int fd, int error, void *data)
 		}
     }	
 
-	do {
-		rw = Netlib_Recv((HANDLE)fd, buf, sizeof(buf), 0);
-		LOG(("Got: %d bytes", rw));
-	} while (rw > 0);
-
-	Netlib_CloseHandle((HANDLE)fd);
-	//sf->state = FR_STATE_DONE;
-    LOG(("File send complete!"));
+	if (fd > 0) {
+		do {
+			rw = Netlib_Recv((HANDLE)fd, buf, sizeof(buf), 0);
+			LOG(("Got: %d bytes", rw));
+		} while (rw > 0);
+	
+		Netlib_CloseHandle((HANDLE)fd);
+	}
+	
+	LOG(("File send complete!"));
 
 	ProtoBroadcastAck(yahooProtocolName, sf->hContact, ACKTYPE_FILE, !error ? ACKRESULT_SUCCESS:ACKRESULT_FAILED, sf, 0);
 }
