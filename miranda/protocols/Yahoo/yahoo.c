@@ -465,7 +465,11 @@ void get_url(int id, int fd, int error,	const char *filename, unsigned long size
 		
     }
 	
-	Netlib_CloseHandle((HANDLE)fd);
+	if (fd > 0) {
+		LOG(("Closing connection: %d", fd));
+		Netlib_CloseHandle((HANDLE)fd);
+	}
+	
     LOG(("File download complete!"));
 
     ProtoBroadcastAck(yahooProtocolName, sf->hContact, ACKTYPE_FILE, !error ? ACKRESULT_SUCCESS:ACKRESULT_FAILED, sf, 0);
@@ -1510,11 +1514,11 @@ void ext_yahoo_rejected(int id, char *who, char *msg)
 	hContact = getbuddyH(who);
 	
 	if (hContact != NULL) {
-		//
-		// Make sure the contact is temporary so we could delete it w/o extra traffic
-		// 
+		/*
+		 * Make sure the contact is temporary so we could delete it w/o extra traffic
+		 */ 
 		DBWriteContactSettingByte( hContact, "CList", "NotOnList", 1 );
-    YAHOO_CallService( MS_DB_CONTACT_DELETE, (WPARAM) hContact, 0);	
+		YAHOO_CallService( MS_DB_CONTACT_DELETE, (WPARAM) hContact, 0);	
 	} else {
 		LOG(("[ext_yahoo_rejected] Buddy not on our buddy list"));
 	}
@@ -2312,11 +2316,8 @@ void ext_yahoo_login(int login_mode)
     }
     else {
         //_snprintf(host, sizeof(host), "%s", pager_host);
-       	if (YAHOO_hasnotification())
-       		 YAHOO_shownotification(Translate("Yahoo Login Error"), Translate("Please enter Yahoo server to Connect to in Options."), NIIF_ERROR);
-	    else
-	         MessageBox(NULL, Translate("Please enter Yahoo server to Connect to in Options."), Translate("Yahoo Login Error"), MB_OK | MB_ICONINFORMATION);
-
+       	YAHOO_ShowError(Translate("Yahoo Login Error"), Translate("Please enter Yahoo server to Connect to in Options."));
+	    
         return;
     }
 
@@ -2336,6 +2337,7 @@ void ext_yahoo_login(int login_mode)
 
 	if (ylad == NULL || ylad->id <= 0) {
 		LOG(("Could not connect to Yahoo server.  Please verify that you are connected to the net and the pager host and port are correctly entered."));
+		YAHOO_ShowError(Translate("Yahoo Login Error"), Translate("Could not connect to Yahoo server.  Please verify that you are connected to the net and the pager host and port are correctly entered."));
 		return;
 	}
 
