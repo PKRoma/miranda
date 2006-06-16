@@ -977,7 +977,7 @@ static int SetCustomStatCommand( WPARAM wParam, LPARAM lParam )
 	HWND hwndSetCustomStatus;
 	
 	if ( !yahooLoggedIn ) {
-		YAHOO_shownotification("ERROR", Translate("You need to be connected to set the custom message"), NIIF_ERROR);
+		YAHOO_shownotification(Translate("Yahoo Error"), Translate("You need to be connected to set the custom message"), NIIF_ERROR);
 		return 0;
 	}
 	
@@ -1085,7 +1085,7 @@ static int YahooCalendarCommand( WPARAM wParam, LPARAM lParam )
 static int YahooRefreshCommand( WPARAM wParam, LPARAM lParam )
 {
 	if ( !yahooLoggedIn ){
-		YAHOO_shownotification("ERROR", Translate("You need to be connected to refresh your buddy list"), NIIF_ERROR);
+		YAHOO_shownotification(Translate("Yahoo Error"), Translate("You need to be connected to refresh your buddy list"), NIIF_ERROR);
 		return 0;
 	}
 
