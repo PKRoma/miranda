@@ -151,14 +151,6 @@ int SetStatus(WPARAM wParam,LPARAM lParam)
 		DBVARIANT dbv;
 		char errmsg[80];
 		
-		//if (hNetlibUser  == 0) {
-			//MessageBox(NULL, "ARRRGH NO NETLIB HANDLE!!!", yahooProtocolName, MB_OK);
-			//return ;
-			//DebugBreak();
-			//MessageBox(NULL, "ARRRGH NO NETLIB HANDLE!!!", yahooProtocolName, MB_OK);
-			//return 0;
-		//}
-		
 		errmsg[0]='\0';
 		
         if (yahooStatus == ID_STATUS_CONNECTING)
@@ -1376,7 +1368,11 @@ void GetAvatarFileName(HANDLE hContact, char* pszDest, int cbLen, int type)
 		lstrcat(pszDest, "avatar");
   }
   
-  lstrcat(pszDest, ".png" );
+  if (type == 1) {
+	lstrcat(pszDest, ".swf" );
+  } else
+	lstrcat(pszDest, ".png" );
+  
 }
 
 int YahooGetAvatarInfo(WPARAM wParam,LPARAM lParam)
@@ -1384,6 +1380,8 @@ int YahooGetAvatarInfo(WPARAM wParam,LPARAM lParam)
 	PROTO_AVATAR_INFORMATION* AI = ( PROTO_AVATAR_INFORMATION* )lParam;
 
 	DBVARIANT dbv;
+	int avtType;
+	
 	if (!DBGetContactSetting(AI->hContact, yahooProtocolName, YAHOO_LOGINID, &dbv)) {
 		YAHOO_DebugLog("[YAHOO_GETAVATARINFO] For: %s", dbv.pszVal);
 		DBFreeVariant(&dbv);
@@ -1407,8 +1405,13 @@ int YahooGetAvatarInfo(WPARAM wParam,LPARAM lParam)
 		return GAIR_NOAVATAR;
 	}
 	
-	if ( DBGetContactSettingByte(AI->hContact, yahooProtocolName,"AvatarType", 0) <= 0) {
-		YAHOO_DebugLog("[YAHOO_GETAVATARINFO] Avatar Type 0 or missing!");
+	avtType  = DBGetContactSettingByte(AI->hContact, yahooProtocolName,"AvatarType", 0);
+	YAHOO_DebugLog("[YAHOO_GETAVATARINFO] Avatar Type: %d", avtType);
+	
+	if ( avtType != 2) {
+		if (avtType != 0)
+			YAHOO_DebugLog("[YAHOO_GETAVATARINFO] Not handling this type yet!");
+		
 		return GAIR_NOAVATAR;
 	}
 	
