@@ -63,6 +63,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 //   OutputDebugString(str)
 
 #define _WIN32_WINNT 0x0501
+#define _WIN32_IE 0x0501
 #include <windows.h>
 
 #include <commctrl.h>

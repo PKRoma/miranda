@@ -64,46 +64,7 @@ POINT tray_hover_pos = {0};
 // don't move to win2k.h, need new and old versions to work on 9x/2000/XP
 #define NIF_STATE       0x00000008
 #define NIF_INFO        0x00000010
-typedef struct
-{
-	DWORD cbSize;
-	HWND hWnd;
-	UINT uID;
-	UINT uFlags;
-	UINT uCallbackMessage;
-	HICON hIcon;
-	TCHAR   szTip[128];
-	DWORD dwState;
-	DWORD dwStateMask;
-	CHAR   szInfo[256];
-	union
-	{
-		UINT  uTimeout;
-		UINT  uVersion;
-	};
-	CHAR   szInfoTitle[64];
-	DWORD dwInfoFlags;
-} NOTIFYICONDATA_NEW;
-#if defined(_UNICODE)
-typedef struct {
-	DWORD cbSize;
-	HWND hWnd;
-	UINT uID;
-	UINT uFlags;
-	UINT uCallbackMessage;
-	HICON hIcon;
-	WCHAR szTip[128];
-	DWORD dwState;
-	DWORD dwStateMask;
-	WCHAR szInfo[256];
-	union {
-		UINT uTimeout;
-		UINT uVersion;
-	};
-	WCHAR szInfoTitle[64];
-	DWORD dwInfoFlags;
-} NOTIFYICONDATAW_NEW;
-#endif
+
 typedef struct _DllVersionInfo {
 	DWORD cbSize;
 	DWORD dwMajorVersion;                   // Major version
@@ -479,7 +440,6 @@ static TCHAR *TrayIconMakeTooltip(const TCHAR *szPrefix,const char *szProto) //T
 static int TrayIconAdd(HWND hwnd,const char *szProto,const char *szIconProto,int status)
 {
 	NOTIFYICONDATA nid={0};
-	NOTIFYICONDATA_NEW nidn={0};
 	int i, iIcon = 0;
 	HICON hIcon = 0;
 
@@ -490,7 +450,7 @@ static int TrayIconAdd(HWND hwnd,const char *szProto,const char *szIconProto,int
 	trayIcon[i].id=TRAYICON_ID_BASE+i;
 	trayIcon[i].szProto=(char*)szProto;
 	
-	nid.cbSize = sizeof(nid);
+	nid.cbSize = ( dviShell.dwMajorVersion >= 5 ) ? sizeof(nid) : NOTIFYICONDATA_V1_SIZE;
 	nid.hWnd = hwnd;
 	nid.uID = trayIcon[i].id;
 	nid.uFlags = NIF_ICON | NIF_MESSAGE | NIF_TIP;
@@ -499,25 +459,15 @@ static int TrayIconAdd(HWND hwnd,const char *szProto,const char *szIconProto,int
 //	trayIcon[i].hBaseIcon=mod_ImageList_GetIcon(himlCListClc,pcli->pfnIconFromStatusMode(szIconProto?szIconProto:trayIcon[i].szProto,status,NULL),ILD_NORMAL);
 	nid.hIcon = trayIcon[i].hBaseIcon;	
 
-	if (dviShell.dwMajorVersion>=5) {
-		nidn.cbSize=sizeof(nidn);
-		nidn.hWnd=nid.hWnd;
-		nidn.uID=nid.uID;
-		nidn.uFlags=nid.uFlags|NIF_INFO;
-		nidn.uCallbackMessage=nid.uCallbackMessage;
-		nidn.hIcon=nid.hIcon;
-		TrayIconMakeTooltip(NULL, trayIcon[i].szProto);
-		if(!mToolTipTrayTips)
-			lstrcpyn(nidn.szTip, szTip, SIZEOF(nidn.szTip));
-		mir_strset(&(trayIcon[i].iconTip),szTip);
-		Shell_NotifyIcon(NIM_ADD, (void*)&nidn);
-	} else {
-		TrayIconMakeTooltip(NULL, trayIcon[i].szProto);
-		if(!mToolTipTrayTips)
-			lstrcpyn(nid.szTip, szTip, SIZEOF(nid.szTip));
-		mir_strset(&(trayIcon[i].iconTip),szTip);
-		Shell_NotifyIcon(NIM_ADD, &nid);
-	}
+	if (dviShell.dwMajorVersion>=5)
+		nid.uFlags |= NIF_INFO;
+
+	TrayIconMakeTooltip(NULL, trayIcon[i].szProto);
+	if(!mToolTipTrayTips)
+		lstrcpyn(nid.szTip, szTip, SIZEOF(nid.szTip));
+	mir_strset(&(trayIcon[i].iconTip),szTip);
+	Shell_NotifyIcon(NIM_ADD, &nid);
+
 	trayIcon[i].isBase=1;
 	return i;
 }
@@ -526,24 +476,18 @@ static void TrayIconRemove(HWND hwnd,const char *szProto)
 {
 	int i;
 	NOTIFYICONDATA nid={0};
-	NOTIFYICONDATA_NEW nidn={0};
 
-	nid.cbSize = sizeof(nid);
+	nid.cbSize = ( dviShell.dwMajorVersion >= 5 ) ? sizeof(nid) : NOTIFYICONDATA_V1_SIZE;
 	nid.hWnd = hwnd;
 	for(i=0;i<trayIconCount;i++) {
 		if (trayIcon[i].id == 0)
 			continue;
 		if (lstrcmpA(szProto, trayIcon[i].szProto))
 			continue;
-		if (dviShell.dwMajorVersion>=5) {
-			nidn.cbSize=sizeof(nidn);
-			nidn.hWnd=nid.hWnd;
-			nidn.uID=trayIcon[i].id;
-			Shell_NotifyIcon(NIM_DELETE, (void*)&nidn);
-		} else {
-			nid.uID = trayIcon[i].id;
-			Shell_NotifyIcon(NIM_DELETE, &nid);
-		}		
+
+		nid.uID = trayIcon[i].id;
+		Shell_NotifyIcon(NIM_DELETE, &nid);
+
 		DestroyIcon(trayIcon[i].hBaseIcon);
 		if (trayIcon[i].iconTip) mir_free(trayIcon[i].iconTip);
 		trayIcon[i].id=0;
@@ -623,7 +567,7 @@ void TrayIconDestroy(HWND hwnd)
 	NOTIFYICONDATA nid={0};
 	int i;
 
-	nid.cbSize = sizeof(nid);
+	nid.cbSize = ( dviShell.dwMajorVersion >= 5 ) ? sizeof(nid) : NOTIFYICONDATA_V1_SIZE;
 	nid.hWnd = hwnd;
 	for(i=0;i<trayIconCount;i++) {
 		if(trayIcon[i].id==0) continue;
@@ -647,41 +591,26 @@ static void TrayIconTaskbarCreated(HWND hwnd)
 static int TrayIconUpdate(HICON hNewIcon,const TCHAR *szNewTip,const char *szPreferredProto, int isBase)
 {
 	NOTIFYICONDATA nid={0};
-	NOTIFYICONDATA_NEW nidn={0};
 	int i;
 
-	nid.cbSize = sizeof(nid);
+	nid.cbSize = ( dviShell.dwMajorVersion >= 5 ) ? sizeof(nid) : NOTIFYICONDATA_V1_SIZE;
 	nid.hWnd = (HWND)CallService(MS_CLUI_GETHWND,0,0);
 	nid.uFlags = NIF_ICON | NIF_TIP;
 	nid.hIcon = hNewIcon;			
 	if (!hNewIcon) 
-	{
-		//       MessageBoxA(NULL,"ICON SET TO NULL","ERROR",MB_OK);
 		return 0;
-	}
-	nidn.cbSize=sizeof(nidn);
-	nidn.hWnd=nid.hWnd;
-	nidn.uFlags=NIF_ICON|NIF_TIP;
-	nidn.hIcon=nid.hIcon;
 
 	for(i=0;i<trayIconCount;i++) {
 		if(trayIcon[i].id==0) continue;
 		if(trayIcon[i].szProto && szPreferredProto && lstrcmpA(trayIcon[i].szProto,szPreferredProto)) continue;
 		nid.uID = trayIcon[i].id;
-		if (dviShell.dwMajorVersion>=5) {
-			nidn.uID=nid.uID;
-			TrayIconMakeTooltip(szNewTip, trayIcon[i].szProto);
-			mir_strset(&(trayIcon[i].iconTip),szTip);
-			if(!mToolTipTrayTips)
-				lstrcpyn(nidn.szTip, szTip, SIZEOF(nidn.szTip));
-			Shell_NotifyIcon(NIM_MODIFY, (void*)&nidn);
-		} else {
-			TrayIconMakeTooltip(szNewTip, trayIcon[i].szProto);
-			mir_strset(&(trayIcon[i].iconTip),szTip);
-			if(!mToolTipTrayTips)
-				lstrcpyn(nid.szTip, szTip, SIZEOF(nid.szTip));
-			Shell_NotifyIcon(NIM_MODIFY, &nid);
-		}
+
+		TrayIconMakeTooltip(szNewTip, trayIcon[i].szProto);
+		mir_strset(&(trayIcon[i].iconTip),szTip);
+		if(!mToolTipTrayTips)
+			lstrcpyn(nid.szTip, szTip, SIZEOF(nid.szTip));
+		Shell_NotifyIcon(NIM_MODIFY, &nid);
+
 		trayIcon[i].isBase=isBase;
 		return i;
 	}
@@ -695,20 +624,11 @@ static int TrayIconUpdate(HICON hNewIcon,const TCHAR *szNewTip,const char *szPre
 		if(trayIcon[i].id==0) continue;
 		nid.uID = trayIcon[i].id;
 
-		if (dviShell.dwMajorVersion>=5) {
-			nidn.uID=nid.uID;
-			TrayIconMakeTooltip(szNewTip, trayIcon[i].szProto);
-			mir_strset(&(trayIcon[i].iconTip),szTip);
-			if(!mToolTipTrayTips)
-				lstrcpyn(nidn.szTip, szTip, SIZEOF(nidn.szTip));
-			Shell_NotifyIcon(NIM_MODIFY, (void*)&nidn);
-		} else {
-			TrayIconMakeTooltip(szNewTip, trayIcon[i].szProto);
-			mir_strset(&(trayIcon[i].iconTip),szTip);
-			if(!mToolTipTrayTips)
-				lstrcpyn(nid.szTip, szTip, SIZEOF(nid.szTip));
-			Shell_NotifyIcon(NIM_MODIFY, &nid);
-		}
+		TrayIconMakeTooltip(szNewTip, trayIcon[i].szProto);
+		mir_strset(&(trayIcon[i].iconTip),szTip);
+		if(!mToolTipTrayTips)
+			lstrcpyn(nid.szTip, szTip, SIZEOF(nid.szTip));
+		Shell_NotifyIcon(NIM_MODIFY, &nid);
 		trayIcon[i].isBase=isBase;
 
 		if(DBGetContactSettingByte(NULL,"CList","TrayIcon",SETTING_TRAYICON_DEFAULT) == SETTING_TRAYICON_MULTI ) 
@@ -1255,8 +1175,8 @@ int cliCListTrayNotify(MIRANDASYSTRAYNOTIFY *msn)
 	if(msn->dwInfoFlags & NIIF_INTERN_UNICODE) {
 		if (msn && msn->cbSize == sizeof(MIRANDASYSTRAYNOTIFY) && msn->szInfo && msn->szInfoTitle) {
 			if (trayIcon) {
-				NOTIFYICONDATAW_NEW nid = {0};
-				nid.cbSize = sizeof(nid);
+				NOTIFYICONDATAW nid = {0};
+				nid.cbSize = ( dviShell.dwMajorVersion >= 5 ) ? sizeof(nid) : NOTIFYICONDATAW_V1_SIZE;
 				nid.hWnd = (HWND) CallService(MS_CLUI_GETHWND, 0, 0);
 				if (msn->szProto) {
 					int j;
@@ -1294,8 +1214,8 @@ int cliCListTrayNotify(MIRANDASYSTRAYNOTIFY *msn)
 #endif        
 		if (msn && msn->cbSize == sizeof(MIRANDASYSTRAYNOTIFY) && msn->szInfo && msn->szInfoTitle) {
 			if (trayIcon) {
-				NOTIFYICONDATA_NEW nid = {0};
-				nid.cbSize = sizeof(nid);
+				NOTIFYICONDATAA nid = {0};
+				nid.cbSize = ( dviShell.dwMajorVersion >= 5 ) ? sizeof(nid) : NOTIFYICONDATAA_V1_SIZE;
 				nid.hWnd = (HWND) CallService(MS_CLUI_GETHWND, 0, 0);
 				if (msn->szProto) {
 					int j;
