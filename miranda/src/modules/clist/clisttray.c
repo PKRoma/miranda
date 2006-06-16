@@ -51,27 +51,6 @@ static int trayIconCount;
 // don't move to win2k.h, need new and old versions to work on 9x/2000/XP
 #define NIF_STATE       0x00000008
 #define NIF_INFO        0x00000010
-typedef struct
-{
-	DWORD cbSize;
-	HWND hWnd;
-	UINT uID;
-	UINT uFlags;
-	UINT uCallbackMessage;
-	HICON hIcon;
-	TCHAR szTip[128];
-	DWORD dwState;
-	DWORD dwStateMask;
-	CHAR szInfo[256];
-	union
-	{
-		UINT uTimeout;
-		UINT uVersion;
-	};
-	CHAR szInfoTitle[64];
-	DWORD dwInfoFlags;
-}
-NOTIFYICONDATA_NEW;
 
 typedef struct _DllVersionInfo
 {
@@ -81,7 +60,8 @@ typedef struct _DllVersionInfo
 	DWORD dwBuildNumber;        // Build number
 	DWORD dwPlatformID;         // DLLVER_PLATFORM_*
 }
-DLLVERSIONINFO;
+	DLLVERSIONINFO;
+
 #define DLLVER_PLATFORM_WINDOWS         0x00000001      // Windows 95
 #define DLLVER_PLATFORM_NT              0x00000002      // Windows NT
 typedef HRESULT(CALLBACK * DLLGETVERSIONPROC) (DLLVERSIONINFO *);
@@ -161,16 +141,16 @@ static TCHAR *TrayIconMakeTooltip(const TCHAR *szPrefix, const char *szProto)
 static int TrayIconAdd(HWND hwnd, const char *szProto, const char *szIconProto, int status)
 {
 	NOTIFYICONDATA nid = { 0 };
-	NOTIFYICONDATA_NEW nidn = { 0 };
 	int i;
 
 	for (i = 0; i < trayIconCount; i++)
 		if (trayIcon[i].id == 0)
 			break;
+
 	trayIcon[i].id = TRAYICON_ID_BASE + i;
 	trayIcon[i].szProto = (char *) szProto;
 
-	nid.cbSize = sizeof(nid);
+	nid.cbSize = ( dviShell.dwMajorVersion >= 5 ) ? sizeof(nid) : NOTIFYICONDATAA_V1_SIZE;
 	nid.hWnd = hwnd;
 	nid.uID = trayIcon[i].id;
 	nid.uFlags = NIF_ICON | NIF_MESSAGE | NIF_TIP;
@@ -178,20 +158,11 @@ static int TrayIconAdd(HWND hwnd, const char *szProto, const char *szIconProto, 
 	trayIcon[i].hBaseIcon = ImageList_GetIcon(hCListImages, cli.pfnIconFromStatusMode(szIconProto ? szIconProto : trayIcon[i].szProto, status, NULL), ILD_NORMAL);
 	nid.hIcon = trayIcon[i].hBaseIcon;
 
-	if (dviShell.dwMajorVersion >= 5) {
-		nidn.cbSize = sizeof(nidn);
-		nidn.hWnd = nid.hWnd;
-		nidn.uID = nid.uID;
-		nidn.uFlags = nid.uFlags | NIF_INFO;
-		nidn.uCallbackMessage = nid.uCallbackMessage;
-		nidn.hIcon = nid.hIcon;
-		lstrcpyn(nidn.szTip, TrayIconMakeTooltip(NULL, trayIcon[i].szProto), SIZEOF(nidn.szTip));
-		Shell_NotifyIcon(NIM_ADD, (void *) &nidn);
-	}
-	else {
-		lstrcpyn(nid.szTip, TrayIconMakeTooltip(NULL, trayIcon[i].szProto), SIZEOF(nid.szTip));
-		Shell_NotifyIcon(NIM_ADD, &nid);
-	}
+	if (dviShell.dwMajorVersion >= 5)
+		nid.uFlags |= NIF_INFO;
+
+	lstrcpyn(nid.szTip, TrayIconMakeTooltip(NULL, trayIcon[i].szProto), SIZEOF(nid.szTip));
+	Shell_NotifyIcon(NIM_ADD, &nid);
 	trayIcon[i].isBase = 1;
 	return i;
 }
@@ -200,25 +171,17 @@ static void TrayIconRemove(HWND hwnd, const char *szProto)
 {
 	int i;
 	NOTIFYICONDATA nid = { 0 };
-	NOTIFYICONDATA_NEW nidn = { 0 };
 
-	nid.cbSize = sizeof(nid);
+	nid.cbSize = ( dviShell.dwMajorVersion >= 5 ) ? sizeof(nid) : NOTIFYICONDATAA_V1_SIZE;
 	nid.hWnd = hwnd;
 	for (i = 0; i < trayIconCount; i++) {
 		if (trayIcon[i].id == 0)
 			continue;
 		if (lstrcmpA(szProto, trayIcon[i].szProto))
 			continue;
-		if (dviShell.dwMajorVersion >= 5) {
-			nidn.cbSize = sizeof(nidn);
-			nidn.hWnd = nid.hWnd;
-			nidn.uID = trayIcon[i].id;
-			Shell_NotifyIcon(NIM_DELETE, (void *) &nidn);
-		}
-		else {
-			nid.uID = trayIcon[i].id;
-			Shell_NotifyIcon(NIM_DELETE, &nid);
-		}
+		nid.uID = trayIcon[i].id;
+		Shell_NotifyIcon(NIM_DELETE, &nid);
+
 		DestroyIcon(trayIcon[i].hBaseIcon);
 		trayIcon[i].id = 0;
 		break;
@@ -280,7 +243,7 @@ static void TrayIconDestroy(HWND hwnd)
 	NOTIFYICONDATA nid = { 0 };
 	int i;
 
-	nid.cbSize = sizeof(nid);
+	nid.cbSize = ( dviShell.dwMajorVersion >= 5 ) ? sizeof(nid) : NOTIFYICONDATAA_V1_SIZE;
 	nid.hWnd = hwnd;
 	for (i = 0; i < trayIconCount; i++) {
 		if (trayIcon[i].id == 0)
@@ -305,18 +268,12 @@ static void TrayIconTaskbarCreated(HWND hwnd)
 static int TrayIconUpdate(HICON hNewIcon, const TCHAR *szNewTip, const char *szPreferredProto, int isBase)
 {
 	NOTIFYICONDATA nid = { 0 };
-	NOTIFYICONDATA_NEW nidn = { 0 };
 	int i;
 
-	nid.cbSize = sizeof(nid);
+	nid.cbSize = ( dviShell.dwMajorVersion >= 5 ) ? sizeof(nid) : NOTIFYICONDATAA_V1_SIZE;
 	nid.hWnd = (HWND) CallService(MS_CLUI_GETHWND, 0, 0);
 	nid.uFlags = NIF_ICON | NIF_TIP;
 	nid.hIcon = hNewIcon;
-
-	nidn.cbSize = sizeof(nidn);
-	nidn.hWnd = nid.hWnd;
-	nidn.uFlags = NIF_ICON | NIF_TIP;
-	nidn.hIcon = nid.hIcon;
 
 	for (i = 0; i < trayIconCount; i++) {
 		if (trayIcon[i].id == 0)
@@ -324,32 +281,21 @@ static int TrayIconUpdate(HICON hNewIcon, const TCHAR *szNewTip, const char *szP
 		if (lstrcmpA(trayIcon[i].szProto, szPreferredProto))
 			continue;
 		nid.uID = trayIcon[i].id;
-		if (dviShell.dwMajorVersion >= 5) {
-			nidn.uID = nid.uID;
-			lstrcpyn(nidn.szTip, TrayIconMakeTooltip(szNewTip, trayIcon[i].szProto), SIZEOF(nidn.szTip));
-			Shell_NotifyIcon(NIM_MODIFY, (void *) &nidn);
-		}
-		else {
-			lstrcpyn(nid.szTip, TrayIconMakeTooltip(szNewTip, trayIcon[i].szProto), SIZEOF(nid.szTip));
-			Shell_NotifyIcon(NIM_MODIFY, &nid);
-		}
+		lstrcpyn(nid.szTip, TrayIconMakeTooltip(szNewTip, trayIcon[i].szProto), SIZEOF(nid.szTip));
+		Shell_NotifyIcon(NIM_MODIFY, &nid);
+
 		trayIcon[i].isBase = isBase;
 		return i;
 	}
+
 	//if there wasn't a suitable icon, change all the icons
 	for (i = 0; i < trayIconCount; i++) {
 		if (trayIcon[i].id == 0)
 			continue;
 		nid.uID = trayIcon[i].id;
-		if (dviShell.dwMajorVersion >= 5) {
-			nidn.uID = nid.uID;
-			lstrcpyn(nidn.szTip, TrayIconMakeTooltip(szNewTip, trayIcon[i].szProto), SIZEOF(nidn.szTip));
-			Shell_NotifyIcon(NIM_MODIFY, (void *) &nidn);
-		}
-		else {
-			lstrcpyn(nid.szTip, TrayIconMakeTooltip(szNewTip, trayIcon[i].szProto), SIZEOF(nid.szTip));
-			Shell_NotifyIcon(NIM_MODIFY, &nid);
-		}
+		lstrcpyn(nid.szTip, TrayIconMakeTooltip(szNewTip, trayIcon[i].szProto), SIZEOF(nid.szTip));
+		Shell_NotifyIcon(NIM_MODIFY, &nid);
+
 		trayIcon[i].isBase = isBase;
 	}
 	return -1;
@@ -619,8 +565,8 @@ int fnCListTrayNotify(MIRANDASYSTRAYNOTIFY *msn)
 {
 	if (msn && msn->cbSize == sizeof(MIRANDASYSTRAYNOTIFY) && msn->szInfo && msn->szInfoTitle) {
 		if (trayIcon) {
-			NOTIFYICONDATA_NEW nid = { 0 };
-			nid.cbSize = sizeof(nid);
+			NOTIFYICONDATAA nid = { 0 };
+			nid.cbSize = ( dviShell.dwMajorVersion >= 5 ) ? sizeof(nid) : NOTIFYICONDATAA_V1_SIZE;
 			nid.hWnd = (HWND) CallService(MS_CLUI_GETHWND, 0, 0);
 			if (msn->szProto) {
 				int j;
