@@ -1957,15 +1957,11 @@ void ext_yahoo_login_response(int id, int succ, char *url)
 		snprintf(buff, sizeof(buff),Translate("Could not log in, unknown reason: %d."), succ);
 	}
 
-	YAHOO_DebugLog(buff);
+	YAHOO_DebugLog("ERROR: %s", buff);
 	
-	//poll_loop = 0; -- do we need this??
 	/*
-       yahoo_logout(); -- The following Line MAKES us LOOP and CPU 100%
-     */
-	//
-	// Show Error Message
-	//
+	 * Show Error Message
+	 */
 	YAHOO_ShowError(Translate("Yahoo Login Error"), buff);
 }
 
@@ -1977,10 +1973,10 @@ void ext_yahoo_error(int id, char *err, int fatal, int num)
         
 	switch(num) {
 		case E_UNKNOWN:
-			snprintf(buff, sizeof(buff), Translate("unknown error %s"), err);
+			snprintf(buff, sizeof(buff), Translate("Unknown error %s"), err);
 			break;
 		case E_CUSTOM:
-			snprintf(buff, sizeof(buff), Translate("custom error %s"), err);
+			snprintf(buff, sizeof(buff), Translate("Custom error %s"), err);
 			break;
 		case E_CONFNOTAVAIL:
 			snprintf(buff, sizeof(buff), Translate("%s is not available for the conference"), err);
@@ -1995,26 +1991,24 @@ void ext_yahoo_error(int id, char *err, int fatal, int num)
 			snprintf(buff, sizeof(buff), Translate("%s is in buddy list - cannot ignore "), err);
 			break;
 		case E_SYSTEM:
-			snprintf(buff, sizeof(buff), Translate("system error %s"), err);
+			snprintf(buff, sizeof(buff), Translate("System Error: %s"), err);
 			break;
 		case E_CONNECTION:
-			snprintf(buff, sizeof(buff), Translate("server connection error %s"), err);
+			snprintf(buff, sizeof(buff), Translate("Server Connection Error: %s"), err);
 			break;
 	}
 	
 	
-	if(fatal)
+	if (fatal) {
+		YAHOO_DebugLog("Fatal error detected. Doing logout!");
 		yahoo_logout();
+	}
 	
-	YAHOO_DebugLog(buff);
+	YAHOO_DebugLog("Error: %s", buff);
 	
-	//poll_loop = 0; -- do we need this??
 	/*
-       yahoo_logout(); -- The following Line MAKES us LOOP and CPU 100%
-     */
-	//
-	// Show Error Message
-	//
+	 * Show Error Message
+	 */
 	if (yahooStatus != ID_STATUS_OFFLINE) {
 		// Show error only if we are not offline. [manual status changed]
 		YAHOO_ShowError(Translate("Yahoo Error"), buff);
