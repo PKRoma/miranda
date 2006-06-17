@@ -25,7 +25,7 @@ unsigned short FLAP::len()
 }
 unsigned short FLAP::snaclen()
 {
-	return length_-FLAP_SIZE-10;
+	return length_-10;
 }
 int FLAP::cmp(unsigned short type)
 {
