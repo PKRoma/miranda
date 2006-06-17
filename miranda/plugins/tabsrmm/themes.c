@@ -49,23 +49,6 @@ extern struct ContainerWindowData *pFirstContainer;
 extern ImageItem *g_glyphItem;
 extern int          g_chat_integration_enabled;
 
-/*
-typedef  DWORD  (__stdcall *pfnImgNewDecoder)(void ** ppDecoder); 
-typedef DWORD (__stdcall *pfnImgDeleteDecoder)(void * pDecoder);
-typedef  DWORD  (__stdcall *pfnImgNewDIBFromFile)(LPVOID pDecoder, LPCSTR pFileName, LPVOID *pImg);
-typedef DWORD (__stdcall *pfnImgDeleteDIBSection)(LPVOID pImg);
-typedef DWORD (__stdcall *pfnImgGetHandle)(LPVOID pImg, HBITMAP *pBitmap, LPVOID *ppDIBBits);
-
-static pfnImgNewDecoder ImgNewDecoder = 0;
-static pfnImgDeleteDecoder ImgDeleteDecoder = 0;
-static pfnImgNewDIBFromFile ImgNewDIBFromFile = 0;
-static pfnImgDeleteDIBSection ImgDeleteDIBSection = 0;
-static pfnImgGetHandle ImgGetHandle = 0;
-
-static BOOL g_imgDecoderAvail = FALSE;
-HMODULE g_hModuleImgDecoder = 0;
-*/
-
 static void __inline gradientVertical(UCHAR *ubRedFinal, UCHAR *ubGreenFinal, UCHAR *ubBlueFinal, 
 					  ULONG ulBitmapHeight, UCHAR ubRed, UCHAR ubGreen, UCHAR ubBlue, UCHAR ubRed2, 
 					  UCHAR ubGreen2, UCHAR ubBlue2, DWORD FLG_GRADIENT, BOOL transparent, UINT32 y, UCHAR *ubAlpha);
@@ -1576,7 +1559,10 @@ void ReloadContainerSkin()
 	g_skinnedContainers = g_framelessSkinmode = g_compositedWindow = FALSE;
     myGlobals.bClipBorder = 0;
     myGlobals.bRoundedCorner = 0;
-    
+    if(g_MenuBGBrush) {
+        DeleteObject(g_MenuBGBrush);
+        g_MenuBGBrush = 0;
+    }
 	if(pFirstContainer) {
 		if(MessageBox(0, TranslateT("All message containers need to close before the skin can be changed\nProceed?"), TranslateT("Change skin"), MB_YESNO | MB_ICONQUESTION) == IDYES) {
 			struct ContainerWindowData *pContainer = pFirstContainer;

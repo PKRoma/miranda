@@ -676,7 +676,7 @@ void UpdateStatusBarTooltips(HWND hwndDlg, struct MessageWindowData *dat, int iS
             mir_sntprintf(szTipText, safe_sizeof(szTipText), TranslateT("Secure IM is %s"), iSecIMStatus ? TranslateT("enabled") : TranslateT("disabled"));
             SendMessage(dat->pContainer->hwndStatus, SB_SETTIPTEXT, 2, (LPARAM)szTipText);
         }
-        mir_sntprintf(szTipText, safe_sizeof(szTipText), TranslateT("Sounds are %s (click to toggle, SHIFT-click to apply for all containers)"), dat->pContainer->dwFlags & CNT_NOSOUND ? _T("off") : _T("on"));
+        mir_sntprintf(szTipText, safe_sizeof(szTipText), TranslateT("Sounds are %s (click to toggle, SHIFT-click to apply for all containers)"), dat->pContainer->dwFlags & CNT_NOSOUND ? TranslateT("off") : TranslateT("on"));
         SendMessage(dat->pContainer->hwndStatus, SB_SETTIPTEXT, myGlobals.g_SecureIMAvail ? 3 : 2, (LPARAM)szTipText);
     }
 }
@@ -851,7 +851,7 @@ void SetSelftypingIcon(HWND dlg, struct MessageWindowData *dat, int iMode)
         else
             SendMessage(dat->pContainer->hwndStatus, SB_SETICON, (nParts - 1), 0);
         
-        mir_sntprintf(szTipText, safe_sizeof(szTipText), TranslateT("Sending typing notifications is: %s"), iMode ? _T("Enabled") : _T("Disabled"));
+        mir_sntprintf(szTipText, safe_sizeof(szTipText), TranslateT("Sending typing notifications is: %s"), iMode ? TranslateT("Enabled") : TranslateT("Disabled"));
         SendMessage(dat->pContainer->hwndStatus, SB_SETTIPTEXT, myGlobals.g_SecureIMAvail ? 4 : 3, (LPARAM)szTipText);
         InvalidateRect(dat->pContainer->hwndStatus, NULL, TRUE);
     }

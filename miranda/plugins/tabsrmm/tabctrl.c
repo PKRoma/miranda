@@ -1065,7 +1065,7 @@ BOOL CALLBACK DlgProcTabConfig(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPa
 
             TranslateDialogDefault(hwndDlg);
             
-            SetWindowTextA(hwndDlg, Translate("Configure tab appearance"));
+            SetWindowText(hwndDlg, TranslateT("Configure tab appearance"));
             CheckDlgButton(hwndDlg, IDC_FLATTABS2, dwFlags & TCF_FLAT);
             CheckDlgButton(hwndDlg, IDC_FLASHICON, dwFlags & TCF_FLASHICON);
             CheckDlgButton(hwndDlg, IDC_FLASHLABEL, dwFlags & TCF_FLASHLABEL);

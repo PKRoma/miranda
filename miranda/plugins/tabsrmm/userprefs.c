@@ -44,15 +44,15 @@ extern struct CPTABLE cpTable[];
 
 static HWND hCpCombo;
 
-static BOOL CALLBACK FillCpCombo(LPCSTR str)
+static BOOL CALLBACK FillCpCombo(LPCTSTR str)
 {
 	int i;
 	UINT cp;
 
-    cp = atoi(str);
+    cp = _ttoi(str);
 	for (i=0; cpTable[i].cpName != NULL && cpTable[i].cpId!=cp; i++);
 	if (cpTable[i].cpName != NULL) {
-        LRESULT iIndex = SendMessageA(hCpCombo, CB_ADDSTRING, -1, (LPARAM) Translate(cpTable[i].cpName));
+        LRESULT iIndex = SendMessage(hCpCombo, CB_ADDSTRING, -1, (LPARAM) Translate(cpTable[i].cpName));
         SendMessage(hCpCombo, CB_SETITEMDATA, (WPARAM)iIndex, cpTable[i].cpId);
     }
 	return TRUE;
@@ -128,7 +128,7 @@ BOOL CALLBACK DlgProcUserPrefs(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPa
 #if defined(_UNICODE)
             hCpCombo = GetDlgItem(hwndDlg, IDC_CODEPAGES);
             sCodePage = DBGetContactSettingDword(hContact, SRMSGMOD_T, "ANSIcodepage", 0);
-            EnumSystemCodePagesA(FillCpCombo, CP_INSTALLED);
+            EnumSystemCodePages(FillCpCombo, CP_INSTALLED);
             SendDlgItemMessage(hwndDlg, IDC_CODEPAGES, CB_INSERTSTRING, 0, (LPARAM)TranslateT("Use default codepage"));
             if(sCodePage == 0)
                 SendDlgItemMessage(hwndDlg, IDC_CODEPAGES, CB_SETCURSEL, (WPARAM)0, 0);

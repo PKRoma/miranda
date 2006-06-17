@@ -407,7 +407,7 @@ LRESULT CALLBACK StatusBarSubclassProc(HWND hWnd, UINT msg, WPARAM wParam, LPARA
 
                             ti.cbSize = sizeof(ti);
                             szTip[0] = 0;
-                            SendMessageA(hWnd, SB_GETTIPTEXTA, MAKEWPARAM(i, 500), (LPARAM)szTip);
+                            SendMessage(hWnd, SB_GETTIPTEXTA, MAKEWPARAM(i, 500), (LPARAM)szTip);
                             szTip[500] = 0;
                             if(szTip[0]) {
                                 CallService("mToolTip/ShowTip", (WPARAM)szTip, (LPARAM)&ti);
@@ -1698,7 +1698,7 @@ panel_found:
                                                 int i_secs = diff % 60;
 #if defined ( _UNICODE )
 												mir_snprintf(szTtitle, sizeof(szTtitle), "%s (%s) - Idle: %d:%02d:%02d", "%nick%", cdat->szStatus[0] ? cdat->szStatus : "(undef)", i_hrs, i_mins, i_secs);
-                                                newTitle = EncodeWithNickname(szTtitle, contactName, cdat->codePage);
+                                                newTitle = EncodeWithNickname(szTtitle, contactName, myGlobals.m_LangPackCP);
 #else
 												mir_snprintf(szTtitle, sizeof(szTtitle), "%s (%s) - Idle: %d:%02d:%02d", contactName, cdat->szStatus[0] ? cdat->szStatus : "(undef)", i_hrs, i_mins, i_secs);
 #endif
@@ -1706,7 +1706,7 @@ panel_found:
                                             else {
 #if defined ( _UNICODE )
 												mir_snprintf(szTtitle, sizeof(szTtitle), "%s (%s)", "%nick%", cdat->szStatus[0] ? cdat->szStatus : "(undef)");
-                                                newTitle = EncodeWithNickname(szTtitle, contactName, cdat->codePage);
+                                                newTitle = EncodeWithNickname(szTtitle, contactName, myGlobals.m_LangPackCP);
 #else
 												mir_snprintf(szTtitle, sizeof(szTtitle), "%s (%s)", contactName, cdat->szStatus[0] ? cdat->szStatus : "(undef");
 #endif
@@ -2271,7 +2271,9 @@ panel_found:
                 else {
                     if(pContainer->hMenu == 0) {
                         int i;
+                        MENUINFO mi = {0};
                         MENUITEMINFO mii = {0};
+
                         mii.cbSize = sizeof(mii);
                         mii.fMask = MIIM_FTYPE | MIIM_ID;
                         mii.fType = MFT_OWNERDRAW;
@@ -2281,7 +2283,12 @@ panel_found:
                             mii.wID = 100 + i;
                             SetMenuItemInfo(pContainer->hMenu, i, TRUE, &mii);
                         }
-                        //CallService(MS_LANGPACK_TRANSLATEMENU, (WPARAM) pContainer->hMenu, 0);
+                        if(pContainer->bSkinned && g_MenuBGBrush) {
+                            mi.cbSize = sizeof(mi);
+                            mi.hbrBack = g_MenuBGBrush;
+                            mi.fMask = MIM_BACKGROUND;
+                            SetMenuInfo(pContainer->hMenu, &mi);
+                        }
                     }
                     SetMenu(hwndDlg, pContainer->hMenu);
                     DrawMenuBar(hwndDlg);
@@ -2416,10 +2423,9 @@ panel_found:
             if(dis->CtlType == ODT_MENU && dis->itemID >= 100 && dis->itemID <= 105) {
                 SIZE sz;
                 HFONT hOldFont;
-                BOOL  skinned = (pContainer->bSkinned && g_framelessSkinmode);
 
                 hOldFont = SelectObject(dis->hDC, GetStockObject(DEFAULT_GUI_FONT));
-                if(skinned)
+                if(pContainer->bSkinned && g_framelessSkinmode)
                     OffsetRect(&dis->rcItem, myGlobals.g_realSkinnedFrame_left, myGlobals.g_realSkinnedFrame_caption);
                 GetTextExtentPoint32(dis->hDC, menuBarNames[dis->itemID - 100], lstrlen(menuBarNames[dis->itemID - 100]), &sz);
                 SetBkMode(dis->hDC, TRANSPARENT);
@@ -2427,10 +2433,10 @@ panel_found:
                 /*if(dis->itemState & ODS_SELECTED || dis->itemState & ODS_HOTLIGHT)
                     FillRect(dis->hDC, &dis->rcItem, GetSysColorBrush(COLOR_MENUHILIGHT));
                 else*/
-                    FillRect(dis->hDC, &dis->rcItem, skinned ? g_MenuBGBrush : GetSysColorBrush(COLOR_MENU));
+                    FillRect(dis->hDC, &dis->rcItem, pContainer->bSkinned && g_MenuBGBrush ? g_MenuBGBrush : GetSysColorBrush(COLOR_MENU));
 
                 if(dis->itemState & ODS_SELECTED) {
-                    if(skinned) {
+                    if(pContainer->bSkinned) {
                         POINT pt;
                         HPEN  hPenOld;
 
@@ -2446,7 +2452,7 @@ panel_found:
                     } else
                         DrawEdge(dis->hDC, &dis->rcItem, BDR_SUNKENINNER, BF_RECT);
                 }
-                SetTextColor(dis->hDC, skinned ? myGlobals.skinDefaultFontColor : GetSysColor(COLOR_MENUTEXT));
+                SetTextColor(dis->hDC, pContainer->bSkinned ? myGlobals.skinDefaultFontColor : GetSysColor(COLOR_MENUTEXT));
                 DrawText(dis->hDC, menuBarNames[dis->itemID - 100], lstrlen(menuBarNames[dis->itemID - 100]), &dis->rcItem,
                          DT_VCENTER | DT_SINGLELINE | DT_CENTER);
                 //DrawState(dis->hDC, 0, NULL, menuBarNames[dis->itemID - 100], lstrlen(menuBarNames[dis->itemID - 100]),
@@ -3247,8 +3253,11 @@ HMENU BuildMCProtocolMenu(HWND hwndDlg)
         mir_snprintf(szTemp, sizeof(szTemp), "Protocol%d", i);
         if(DBGetContactSetting(dat->hContact, "MetaContacts", szTemp, &dbv))
             continue;
+#if defined(_UNICODE)
         tzProtoName = (TCHAR *)CallService(MS_LANGPACK_PCHARTOTCHAR, 0, (LPARAM)dbv.pszVal);
-        DBFreeVariant(&dbv);
+#else
+        tzProtoName = dbv.pszVal;
+#endif
         mir_snprintf(szTemp, sizeof(szTemp), "Handle%d", i);
         if((handle = (HANDLE)DBGetContactSettingDword(dat->hContact, "MetaContacts", szTemp, 0)) != 0) {
             nick = (TCHAR *)CallService(MS_CLIST_GETCONTACTDISPLAYNAME, (WPARAM)handle, GCDNF_TCHAR);
@@ -3257,8 +3266,10 @@ HMENU BuildMCProtocolMenu(HWND hwndDlg)
             szStatusText = (TCHAR *) CallService(MS_CLIST_GETSTATUSMODEDESCRIPTION, wStatus, GCMDF_TCHAR);
         }
         mir_sntprintf(szMenuLine, safe_sizeof(szMenuLine), _T("%s: %s [%s] %s"), tzProtoName, nick, szStatusText, i == isForced ? TranslateT("(Forced)") : _T(""));
+#if defined(_UNICODE)
         if(tzProtoName)
             mir_free(tzProtoName);
+#endif
         iChecked = MF_UNCHECKED;
         if(hContactMostOnline != 0 && hContactMostOnline == handle)
             iChecked = MF_CHECKED;

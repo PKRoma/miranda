@@ -2335,7 +2335,7 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
 
                     if(item.mask & TCIF_TEXT) {
 #ifdef _UNICODE
-                        const wchar_t *newTitle = EncodeWithNickname(newtitle, newcontactname, dat->codePage);
+                        const wchar_t *newTitle = EncodeWithNickname(newtitle, newcontactname, myGlobals.m_LangPackCP);
                         int len = lstrlenW(newTitle);
                         if (len != 0) {
                             wcsncpy(dat->newtitle, newTitle, 127);
@@ -5618,7 +5618,7 @@ verify:
                 
                 if(!lParam) {
                     if (myGlobals.m_WarnOnClose) {
-                        if (MessageBoxA(dat->pContainer->hwnd, TranslateTS(szWarnClose), _T("Miranda"), MB_YESNO | MB_ICONQUESTION) == IDNO) {
+                        if (MessageBox(dat->pContainer->hwnd, TranslateTS(szWarnClose), _T("Miranda"), MB_YESNO | MB_ICONQUESTION) == IDNO) {
                             return TRUE;
                         }
                     }
