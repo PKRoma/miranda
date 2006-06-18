@@ -1572,6 +1572,7 @@ static BOOL CALLBACK DlgProcSkinOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPAR
         case WM_INITDIALOG:
         {
             DBVARIANT dbv;
+            TranslateDialogDefault(hwndDlg);
 
             CheckDlgButton(hwndDlg, IDC_EQUALSELECTION, (DBGetContactSettingByte(NULL, "CLCExt", "EXBK_EqualSelection", 1) == 1) ? BST_CHECKED : BST_UNCHECKED);    
             CheckDlgButton(hwndDlg, IDC_SELBLEND, DBGetContactSettingByte(NULL, "CLCExt", "EXBK_SelBlend", 1));

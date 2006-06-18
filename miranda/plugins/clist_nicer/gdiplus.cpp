@@ -163,14 +163,13 @@ extern "C" int g_hottrack;
 
 Graphics *g = NULL;
 
-extern "C" void DrawWithGDIp(HDC hDC, DWORD x, DWORD y, DWORD width, DWORD height, UCHAR alpha, struct ClcContact *contact)
+extern "C" void DrawWithGDIp(HRGN rgn, DWORD x, DWORD y, DWORD width, DWORD height, UCHAR alpha, struct ClcContact *contact)
 {
     Image *im = NULL;
     
     //WCHAR szwFilename[MAX_PATH];
 
     Rect rect(x, y, width, height);
-    //Graphics g(hDC);
     ImageAttributes attr;
     
     g->SetInterpolationMode(InterpolationModeHighQualityBicubic);
@@ -220,6 +219,8 @@ extern "C" void DrawWithGDIp(HDC hDC, DWORD x, DWORD y, DWORD width, DWORD heigh
     else {*/
 	 if ( contact->ace != NULL ) {
         Bitmap bm(contact->ace->hbmPic, 0);
+        if(rgn)
+            g->SetClip(rgn);
         g->DrawImage(&bm, rect, 0, 0, contact->ace->bmWidth, contact->ace->bmHeight, UnitPixel, &attr, NULL, NULL);
 	 }
 }

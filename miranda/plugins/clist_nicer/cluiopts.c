@@ -554,7 +554,6 @@ static BOOL CALLBACK DlgProcPlusOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPAR
 				CheckDlgButton(hwndDlg, IDC_CLISTAVATARS, FALSE);
 				EnableWindow(GetDlgItem(hwndDlg, IDC_CLISTAVATARS), FALSE);
 			}
-			CheckDlgButton(hwndDlg, IDC_AVATARSTRANSPARENT, dwFlags & CLUI_FRAME_TRANSPARENTAVATAR);
 			CheckDlgButton(hwndDlg, IDC_AVATARSBORDER, dwFlags & CLUI_FRAME_AVATARBORDER);
 			CheckDlgButton(hwndDlg, IDC_AVATARSROUNDED, dwFlags & CLUI_FRAME_ROUNDAVATAR);
 			CheckDlgButton(hwndDlg, IDC_ALWAYSALIGNNICK, dwFlags & CLUI_FRAME_ALWAYSALIGNNICK);
@@ -662,7 +661,6 @@ static BOOL CALLBACK DlgProcPlusOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPAR
 				__setFlag(CLUI_USEMETAICONS, IsDlgButtonChecked(hwndDlg, IDC_SHOWMETA));
 
 				__setFlag(CLUI_FRAME_AVATARS, IsDlgButtonChecked(hwndDlg, IDC_CLISTAVATARS));
-				__setFlag(CLUI_FRAME_TRANSPARENTAVATAR, IsDlgButtonChecked(hwndDlg, IDC_AVATARSTRANSPARENT));
 				__setFlag(CLUI_FRAME_AVATARBORDER, IsDlgButtonChecked(hwndDlg, IDC_AVATARSBORDER));
 				__setFlag(CLUI_FRAME_ROUNDAVATAR, IsDlgButtonChecked(hwndDlg, IDC_AVATARSROUNDED));
 

@@ -682,7 +682,6 @@
 #define IDC_IGNORESELFORGROUPS          1722
 #define IDC_CLISTAVATARS                1729
 #define IDC_ALIGNMENT                   1730
-#define IDC_AVATARSTRANSPARENT          1731
 #define IDC_AVATARSBORDER               1732
 #define IDC_AVATARBORDERCLR             1733
 #define IDC_AVATARSROUNDED              1734
