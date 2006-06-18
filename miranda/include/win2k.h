@@ -2,8 +2,8 @@
 
 Miranda IM: the free IM client for Microsoft* Windows*
 
-Copyright 2000-2003 Miranda ICQ/IM project, 
-all portions of this codebase are copyrighted to the people 
+Copyright 2000-2003 Miranda ICQ/IM project,
+all portions of this codebase are copyrighted to the people
 listed in contributors.txt.
 
 This program is free software; you can redistribute it and/or
@@ -30,7 +30,7 @@ sdk you can get from http://www.microsoft.com/msdownload/platformsdk/sdkupdate/
 To not need to install the whole sdk you can simply comment out the following lines.
 To make myself clear, you are supposed to use the sdk, this is just a work around.
 
-All constants are normally declared in winuser.h 
+All constants are normally declared in winuser.h
 
 File created by Christian Kästner, and tweaked a bit by Richard Hughes*/
 
@@ -73,7 +73,7 @@ File created by Christian Kästner, and tweaked a bit by Richard Hughes*/
 #if _MSC_VER
 	// uxtheme.h defines
 	#ifndef THEMEAPI
-		#define WM_THEMECHANGED		0x031A // when windows changes themes 
+		#define WM_THEMECHANGED		0x031A // when windows changes themes
 		#define BP_PUSHBUTTON		1  // Push Button Type
 		#define PBS_NORMAL			1
 		#define PBS_HOT				2
@@ -96,12 +96,18 @@ File created by Christian Kästner, and tweaked a bit by Richard Hughes*/
 #endif
 
 #if defined (__GNUC__)
-    #define SECURITY_ENTRYPOINTA "InitSecurityInterfaceA"
-    #define SECURITY_ENTRYPOINT SECURITY_ENTRYPOINTA
-    #define FreeCredentialsHandle FreeCredentialsHandle
-    #ifndef OPENFILENAME_SIZE_VERSION_400
-        #define OPENFILENAME_SIZE_VERSION_400 sizeof(OPENFILENAME)
-    #endif
+	#define SECURITY_ENTRYPOINTA "InitSecurityInterfaceA"
+	#define SECURITY_ENTRYPOINT SECURITY_ENTRYPOINTA
+	#define FreeCredentialsHandle FreeCredentialsHandle
+	#ifndef CDSIZEOF_STRUCT
+		#define CDSIZEOF_STRUCT(structname, member)  (((int)((LPBYTE)(&((structname*)0)->member) - ((LPBYTE)((structname*)0)))) + sizeof(((structname*)0)->member))
+	#endif
+	#ifndef OPENFILENAME_SIZE_VERSION_400
+		#define OPENFILENAME_SIZE_VERSION_400 CDSIZEOF_STRUCT(OPENFILENAME,lpTemplateName)
+	#endif
+	#ifndef NOTIFYICONDATAA_V1_SIZE
+		#define NOTIFYICONDATAA_V1_SIZE     CDSIZEOF_STRUCT(NOTIFYICONDATAA, szTip[64])
+	#endif
 	typedef struct tagNMKEY {
 		NMHDR hdr;
 		UINT nVKey;
@@ -110,7 +116,7 @@ File created by Christian Kästner, and tweaked a bit by Richard Hughes*/
 	#define ODS_HOTLIGHT        0x0040
 	#define ODS_INACTIVE        0x0080
 	#define SPI_GETFLATMENU		0x1022
-	#define COLOR_HOTLIGHT		26  
+	#define COLOR_HOTLIGHT		26
 	#define COLOR_MENUBAR		30
 	#define COLOR_MENUHILIGHT   29
 	#define COLOR_HIGHLIGHT		13
@@ -142,7 +148,7 @@ File created by Christian Kästner, and tweaked a bit by Richard Hughes*/
 	#define PSDK_WORKAROUND
 
 	#define MONITOR_DEFAULTTONEAREST 2
-	
+
 	#ifndef EM_SETTEXTEX
 		#define EM_SETTEXTEX	(WM_USER + 97)
 		#define ST_DEFAULT		0
@@ -154,7 +160,7 @@ File created by Christian Kästner, and tweaked a bit by Richard Hughes*/
 			DWORD	flags;
 			UINT	codepage;
 		} SETTEXTEX;
-	#endif	
+	#endif
 
 	#if(_WIN32_WINNT >= 0x0500)
 		#define WS_EX_LAYERED		0x00080000
@@ -165,7 +171,7 @@ File created by Christian Kästner, and tweaked a bit by Richard Hughes*/
 		#define ODS_HOTLIGHT        0x0040
 		#define ODS_INACTIVE        0x0080
 		#define IDC_HAND            MAKEINTRESOURCE(32649)
-		#define COLOR_HOTLIGHT		26  
+		#define COLOR_HOTLIGHT		26
 		#define COLOR_MENUBAR		30
 		#define COLOR_MENUHILIGHT   29
 		#define COLOR_HIGHLIGHT		13
@@ -253,25 +259,25 @@ File created by Christian Kästner, and tweaked a bit by Richard Hughes*/
 			STDMETHOD_(ULONG, Release) ( THIS ) PURE;
 
 		    // IDropTargetHelper
-			STDMETHOD (DragEnter)(THIS_ HWND hwndTarget, IDataObject* pDataObject, 
+			STDMETHOD (DragEnter)(THIS_ HWND hwndTarget, IDataObject* pDataObject,
                           POINT* ppt, DWORD dwEffect) PURE;
 			STDMETHOD (DragLeave)(THIS) PURE;
 			STDMETHOD (DragOver)(THIS_ POINT* ppt, DWORD dwEffect) PURE;
-			STDMETHOD (Drop)(THIS_ IDataObject* pDataObject, POINT* ppt, 
+			STDMETHOD (Drop)(THIS_ IDataObject* pDataObject, POINT* ppt,
                      DWORD dwEffect) PURE;
 			STDMETHOD (Show)(THIS_ BOOL fShow) PURE;
-    
+
 		};
 	#endif /* IDropTargetHelper */
 
 	#define WM_MENURBUTTONUP                0x0122
-	
+
 // tabsrmm uses these
-	
+
 #define SES_EXTENDBACKCOLOR	4
 #define EM_SETEDITSTYLE (WM_USER + 204)
 #define EM_SETSCROLLPOS (WM_USER + 222)
-#define SF_USECODEPAGE 0x00000020	
+#define SF_USECODEPAGE 0x00000020
 
 #define TreeView_SetItemState(hwndTV, hti, data, _mask) \
 { TVITEM _TVi; \
@@ -281,7 +287,6 @@ File created by Christian Kästner, and tweaked a bit by Richard Hughes*/
   _TVi.state = data; \
   SendMessage((hwndTV), TVM_SETITEM, 0, (LPARAM)(TV_ITEM *)&_TVi); \
 }
-	
+
 #endif /* SDK check */
 #endif // WIN2K_H__
-
