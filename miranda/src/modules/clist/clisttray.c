@@ -150,7 +150,7 @@ static int TrayIconAdd(HWND hwnd, const char *szProto, const char *szIconProto, 
 	trayIcon[i].id = TRAYICON_ID_BASE + i;
 	trayIcon[i].szProto = (char *) szProto;
 
-	nid.cbSize = ( dviShell.dwMajorVersion >= 5 ) ? sizeof(nid) : NOTIFYICONDATAA_V1_SIZE;
+	nid.cbSize = ( dviShell.dwMajorVersion >= 5 ) ? sizeof(nid) : NOTIFYICONDATA_V1_SIZE;
 	nid.hWnd = hwnd;
 	nid.uID = trayIcon[i].id;
 	nid.uFlags = NIF_ICON | NIF_MESSAGE | NIF_TIP;
@@ -172,7 +172,7 @@ static void TrayIconRemove(HWND hwnd, const char *szProto)
 	int i;
 	NOTIFYICONDATA nid = { 0 };
 
-	nid.cbSize = ( dviShell.dwMajorVersion >= 5 ) ? sizeof(nid) : NOTIFYICONDATAA_V1_SIZE;
+	nid.cbSize = ( dviShell.dwMajorVersion >= 5 ) ? sizeof(nid) : NOTIFYICONDATA_V1_SIZE;
 	nid.hWnd = hwnd;
 	for (i = 0; i < trayIconCount; i++) {
 		if (trayIcon[i].id == 0)
@@ -243,7 +243,7 @@ static void TrayIconDestroy(HWND hwnd)
 	NOTIFYICONDATA nid = { 0 };
 	int i;
 
-	nid.cbSize = ( dviShell.dwMajorVersion >= 5 ) ? sizeof(nid) : NOTIFYICONDATAA_V1_SIZE;
+	nid.cbSize = ( dviShell.dwMajorVersion >= 5 ) ? sizeof(nid) : NOTIFYICONDATA_V1_SIZE;
 	nid.hWnd = hwnd;
 	for (i = 0; i < trayIconCount; i++) {
 		if (trayIcon[i].id == 0)
@@ -270,7 +270,7 @@ static int TrayIconUpdate(HICON hNewIcon, const TCHAR *szNewTip, const char *szP
 	NOTIFYICONDATA nid = { 0 };
 	int i;
 
-	nid.cbSize = ( dviShell.dwMajorVersion >= 5 ) ? sizeof(nid) : NOTIFYICONDATAA_V1_SIZE;
+	nid.cbSize = ( dviShell.dwMajorVersion >= 5 ) ? sizeof(nid) : NOTIFYICONDATA_V1_SIZE;
 	nid.hWnd = (HWND) CallService(MS_CLUI_GETHWND, 0, 0);
 	nid.uFlags = NIF_ICON | NIF_TIP;
 	nid.hIcon = hNewIcon;
