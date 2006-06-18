@@ -108,6 +108,9 @@ File created by Christian Kästner, and tweaked a bit by Richard Hughes*/
 	#ifndef NOTIFYICONDATAA_V1_SIZE
 		#define NOTIFYICONDATAA_V1_SIZE     CDSIZEOF_STRUCT(NOTIFYICONDATAA, szTip[64])
 	#endif
+	#ifndef NOTIFYICONDATA_V1_SIZE
+		#define NOTIFYICONDATA_V1_SIZE      CDSIZEOF_STRUCT(NOTIFYICONDATA, szTip[64])
+	#endif
 	typedef struct tagNMKEY {
 		NMHDR hdr;
 		UINT nVKey;
