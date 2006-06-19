@@ -1496,7 +1496,6 @@ LRESULT CALLBACK ContactListWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM l
 	case WM_WINDOWPOSCHANGING:
 		{
 			WINDOWPOS *wp = (WINDOWPOS *)lParam;
-			RECT rcStatus;
 
 			if(wp && wp->flags & SWP_NOSIZE)
 				return FALSE;
@@ -1547,7 +1546,6 @@ LRESULT CALLBACK ContactListWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM l
 
 
         if((wParam == 0 && lParam == 0) || Docking_IsDocked(0, 0)) {
-			RECT rcStatus;
 
 			if (IsZoomed(hwnd))
 				ShowWindow(hwnd, SW_SHOWNORMAL);

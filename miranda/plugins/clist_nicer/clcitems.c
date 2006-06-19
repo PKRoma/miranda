@@ -401,7 +401,6 @@ void GetExtendedInfo(struct ClcContact *contact, struct ClcData *dat)
     DBVARIANT dbv = {0};
     BOOL iCacheNew = FALSE;
     int index;
-    DWORD firstTime, count, new_freq;
 
     if(dat->bisEmbedded || contact == NULL)
         return;

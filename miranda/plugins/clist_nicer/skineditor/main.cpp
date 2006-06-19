@@ -43,8 +43,6 @@ HINSTANCE g_hInst = 0;
 PLUGINLINK *pluginLink;
 struct MM_INTERFACE memoryManagerInterface;
 
-SKINDESCRIPTION sd = {0};
-
 StatusItems_t *StatusItems;
 ChangedSItems_t ChangedSItems = {0};
 
@@ -642,25 +640,41 @@ static void FillItemList(HWND hwndDlg)
 	}
 }
 
-static HMENU hMenuItems = 0;
-
 static BOOL CALLBACK SkinEdit_ExtBkDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam)
 {
+    SKINDESCRIPTION *psd = (SKINDESCRIPTION *)GetWindowLong(hwndDlg, GWL_USERDATA);
+
+    if(psd) {
+        ID_EXTBK_FIRST = psd->firstItem;
+        ID_EXTBK_LAST = psd->lastItem;
+        StatusItems = psd->StatusItems;
+    }
     switch (msg) {
         case WM_INITDIALOG:
+            psd = (SKINDESCRIPTION *)malloc(sizeof(SKINDESCRIPTION));
+            ZeroMemory(psd, sizeof(SKINDESCRIPTION));
+            CopyMemory(psd, (void *)lParam, sizeof(SKINDESCRIPTION));
+            SetWindowLong(hwndDlg, GWL_USERDATA, (LONG)psd);
+
+            if(psd) {
+                ID_EXTBK_FIRST = psd->firstItem;
+                ID_EXTBK_LAST = psd->lastItem;
+                StatusItems = psd->StatusItems;
+            }
+
             TranslateDialogDefault(hwndDlg);
             FillItemList(hwndDlg);
             SendMessage(hwndDlg, WM_USER + 101, 0, 0);
 
-            hMenuItems = CreatePopupMenu();
-            AppendMenu(hMenuItems, MF_STRING | MF_DISABLED, (UINT_PTR)0, _T("Copy from"));
-            AppendMenuA(hMenuItems, MF_SEPARATOR, (UINT_PTR)0, NULL);
+            psd->hMenuItems = CreatePopupMenu();
+            AppendMenu(psd->hMenuItems, MF_STRING | MF_DISABLED, (UINT_PTR)0, _T("Copy from"));
+            AppendMenuA(psd->hMenuItems, MF_SEPARATOR, (UINT_PTR)0, NULL);
 
             for(int i = ID_EXTBK_FIRST; i <= ID_EXTBK_LAST; i++) {
                 int iOff = StatusItems[i - ID_EXTBK_FIRST].szName[0] == '{' ? 3 : 0;
                 if(iOff)
-                    AppendMenuA(hMenuItems, MF_SEPARATOR, (UINT_PTR)0, NULL);
-                AppendMenuA(hMenuItems, MF_STRING, (UINT_PTR)i, &StatusItems[i - ID_EXTBK_FIRST].szName[iOff]);
+                    AppendMenuA(psd->hMenuItems, MF_SEPARATOR, (UINT_PTR)0, NULL);
+                AppendMenuA(psd->hMenuItems, MF_STRING, (UINT_PTR)i, &StatusItems[i - ID_EXTBK_FIRST].szName[iOff]);
             }
             return TRUE;
         case WM_USER + 101:
@@ -736,7 +750,7 @@ static BOOL CALLBACK SkinEdit_ExtBkDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam
                 GetCursorPos(&pt);
                 GetWindowRect(hwndList, &rc);
                 if(PtInRect(&rc, pt)) {
-                    int iSelection = (int)TrackPopupMenu(hMenuItems, TPM_RETURNCMD, pt.x, pt.y, 0, hwndDlg, NULL);
+                    int iSelection = (int)TrackPopupMenu(psd->hMenuItems, TPM_RETURNCMD, pt.x, pt.y, 0, hwndDlg, NULL);
 
                     if(iSelection >= ID_EXTBK_FIRST && iSelection <= ID_EXTBK_LAST) {
                         iSelection -= ID_EXTBK_FIRST;
@@ -783,8 +797,8 @@ static BOOL CALLBACK SkinEdit_ExtBkDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam
                             return FALSE;
                     }
                     OnListItemsChange(hwndDlg);
-					if(sd.pfnClcOptionsChanged)
-						sd.pfnClcOptionsChanged();
+					if(psd->pfnClcOptionsChanged)
+						psd->pfnClcOptionsChanged();
                     break;          
                 case IDC_GRADIENT:
                     ReActiveCombo(hwndDlg);
@@ -814,23 +828,27 @@ static BOOL CALLBACK SkinEdit_ExtBkDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam
                 // save user made changes
                             SaveLatestChanges(hwndDlg);
                 // save struct to DB
-							if(sd.pfnSaveCompleteStruct)
-								sd.pfnSaveCompleteStruct();
+							if(psd->pfnSaveCompleteStruct)
+								psd->pfnSaveCompleteStruct();
                             DBWriteContactSettingDword(NULL, "CLCExt", "3dbright", SendDlgItemMessage(hwndDlg, IDC_3DLIGHTCOLOR, CPM_GETCOLOUR, 0, 0));
                             DBWriteContactSettingDword(NULL, "CLCExt", "3ddark", SendDlgItemMessage(hwndDlg, IDC_3DDARKCOLOR, CPM_GETCOLOUR, 0, 0));
 
-                            if(sd.pfnClcOptionsChanged)
-								sd.pfnClcOptionsChanged();
-							if(sd.hwndCLUI) {
-								SendMessage(sd.hwndCLUI, WM_SIZE, 0, 0);
-								PostMessage(sd.hwndCLUI, WM_USER+100, 0, 0);          // CLUIINTM_REDRAW
+                            if(psd->pfnClcOptionsChanged)
+								psd->pfnClcOptionsChanged();
+							if(psd->hwndCLUI) {
+								SendMessage(psd->hwndCLUI, WM_SIZE, 0, 0);
+								PostMessage(psd->hwndCLUI, WM_USER+100, 0, 0);          // CLUIINTM_REDRAW
 							}
                             break;
                     }
             }
             break;
         case WM_DESTROY:
-            DestroyMenu(hMenuItems);
+            DestroyMenu(psd->hMenuItems);
+            break;
+        case WM_NCDESTROY:
+            free(psd);
+            SetWindowLong(hwndDlg, GWL_USERDATA, 0);
             break;
     }
     return FALSE;
@@ -864,27 +882,22 @@ static int SkinEdit_Invoke(WPARAM wParam, LPARAM lParam)
     TCITEM  tci = {0};
     RECT    rcClient;
 
-    if(psd->cbSize != sizeof(sd))
+    if(psd->cbSize != sizeof(SKINDESCRIPTION))
         return 0;
 
-    CopyMemory(&sd, psd, sizeof(sd));
-    GetClientRect(sd.hWndParent, &rcClient);
-
-    StatusItems = sd.StatusItems;
-    ID_EXTBK_LAST = sd.lastItem;
-    ID_EXTBK_FIRST = sd.firstItem;
+    GetClientRect(psd->hWndParent, &rcClient);
 
     tci.mask = TCIF_PARAM|TCIF_TEXT;
-    tci.lParam = (LPARAM)CreateDialog(g_hInst, MAKEINTRESOURCE(IDD_SKINITEMEDIT), sd.hWndParent, SkinEdit_ExtBkDlgProc);
+    tci.lParam = (LPARAM)CreateDialogParam(g_hInst, MAKEINTRESOURCE(IDD_SKINITEMEDIT), psd->hWndParent, SkinEdit_ExtBkDlgProc, (LPARAM)psd);
 
     tci.pszText = TranslateT("Skin items");
-    TabCtrl_InsertItem(sd.hWndTab, 1, &tci);
+    TabCtrl_InsertItem(psd->hWndTab, 1, &tci);
     MoveWindow((HWND)tci.lParam, 5, 25, rcClient.right - 9, rcClient.bottom - 60, 1);
     psd->hwndSkinEdit = (HWND)tci.lParam;
 
-    tci.lParam = (LPARAM)CreateDialog(g_hInst, MAKEINTRESOURCE(IDD_IMAGEITEMEDIT), sd.hWndParent, SkinEdit_ImageItemEditProc);
+    tci.lParam = (LPARAM)CreateDialogParam(g_hInst, MAKEINTRESOURCE(IDD_IMAGEITEMEDIT), psd->hWndParent, SkinEdit_ImageItemEditProc, (LPARAM)psd);
     tci.pszText = TranslateT("Image items");
-    TabCtrl_InsertItem(sd.hWndTab, 2, &tci);
+    TabCtrl_InsertItem(psd->hWndTab, 2, &tci);
     MoveWindow((HWND)tci.lParam, 5, 25, rcClient.right - 9, rcClient.bottom - 60, 1);
     psd->hwndImageEdit = (HWND)tci.lParam;
     

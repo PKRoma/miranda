@@ -99,7 +99,7 @@ typedef struct _tagSkinDescription {
     void            (*pfnClcOptionsChanged )(void);
     HWND            hwndSkinEdit;                       /* out param */
     HWND            hwndImageEdit;                      /* out param */
-
+    HMENU           hMenuItems;
 } SKINDESCRIPTION;
 
 // defines
