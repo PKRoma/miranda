@@ -43,6 +43,7 @@ int aim_sendflap(HANDLE hServerConn, int type,int length,char *buf, int &seqno)
 	delete[] obuf;
 	if (rlen == SOCKET_ERROR)
 	{
+		seqno--;
         return -1;
     }
     return 0;
