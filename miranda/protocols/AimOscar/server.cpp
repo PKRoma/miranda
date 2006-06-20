@@ -489,7 +489,7 @@ void snac_contact_list(SNAC &snac)//family 0x0013
 	if(snac.subcmp(0x0006))
 	{
 		conn.buddy_list_received=1;
-		for(int offset=3;offset<snac.len();)
+		for(int offset=3;offset<snac.len()-4;)//last four bytes are time change
 		{	
 			unsigned short name_length=snac.ushort(offset);
 			char* name=snac.part(offset+2,name_length);
