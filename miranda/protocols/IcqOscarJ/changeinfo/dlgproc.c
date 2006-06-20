@@ -259,6 +259,7 @@ BOOL CALLBACK ChangeInfoDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lP
         case IDC_LIST:
           switch (((LPNMHDR)lParam)->code) 
           {
+            case LVN_GETDISPINFOW:
             case LVN_GETDISPINFO:
               if (iEditItem != -1) 
               {
