@@ -1560,7 +1560,7 @@ BOOL UM_SetStatusEx(USERINFO* pUserList, char* pszText, int flags )
 				pTemp->iStatusEx = 0;
 				if ( s == pszText || s[-1] == ' ' )
 					if ( s[lstrlenA(pTemp->pszUID)] == ' ' || s[lstrlenA(pTemp->pszUID)] == '\0' )
-						pTemp->iStatusEx = ( bSetStatus ) ? 1 : 0;
+						pTemp->iStatusEx = ( !bOnlyMe || bSetStatus ) ? 1 : 0;
 		}	}
 
 		pLast = pTemp;
