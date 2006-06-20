@@ -1319,7 +1319,8 @@ tzdone:
 
     myGlobals.g_hMenuContext = LoadMenu(g_hInst, MAKEINTRESOURCE(IDR_TABCONTEXT));
     CallService(MS_LANGPACK_TRANSLATEMENU, (WPARAM) myGlobals.g_hMenuContext, 0);   
-    
+
+    DBWriteContactSettingByte(NULL, TEMPLATES_MODULE, "setup", 1);
     LoadDefaultTemplates();
 
     BuildCodePageList();

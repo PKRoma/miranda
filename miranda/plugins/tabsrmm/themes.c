@@ -276,6 +276,8 @@ void WriteThemeToINI(const char *szIniFilename, struct MessageWindowData *dat)
     WritePrivateProfileStringA("Message Log", "LeftIndent", _itoa(DBGetContactSettingDword(NULL, SRMSGMOD_T, "IndentAmount", 0), szBuf, 10), szIniFilename);
     WritePrivateProfileStringA("Message Log", "RightIndent", _itoa(DBGetContactSettingDword(NULL, SRMSGMOD_T, "RightIndent", 0), szBuf, 10), szIniFilename);
 
+    WritePrivateProfileStringA("Custom Colors", "InfopanelBG", _itoa(DBGetContactSettingDword(NULL, FONTMODULE, "ipfieldsbg", GetSysColor(COLOR_3DFACE)), szBuf, 10), szIniFilename);
+
     for(i = 0; i <= TMPL_ERRMSG; i++) {
 #if defined(_UNICODE)
         char *encoded;
@@ -334,6 +336,10 @@ void ReadThemeFromINI(const char *szIniFilename, struct MessageWindowData *dat, 
             char *szModule = fontBlocks[n].szModule;
             int firstIndex = fontBlocks[n].iFirst;
 
+            if(n != 1 && !(dwFlags & THEME_READ_FONTS)) {
+                n++;
+                continue;
+            }
             if(GetPrivateProfileIntA(fontBlocks[n].szBLockname, "Valid", 0, szIniFilename) == 0 && n != 0) {
                 n++;
                 continue;
@@ -369,6 +375,8 @@ void ReadThemeFromINI(const char *szIniFilename, struct MessageWindowData *dat, 
         }
         def = GetSysColor(COLOR_WINDOW);
         ReleaseDC(NULL, hdc);
+        DBWriteContactSettingDword(NULL, FONTMODULE, "ipfieldsbg", 
+                                   GetPrivateProfileIntA("Custom Colors", "InfopanelBG", GetSysColor(COLOR_3DFACE), szIniFilename));
         if(dwFlags & THEME_READ_FONTS) {
             DBWriteContactSettingDword(NULL, FONTMODULE, SRMSGSET_BKGCOLOUR, GetPrivateProfileIntA("Message Log", "BackgroundColor", def, szIniFilename));
             DBWriteContactSettingDword(NULL, "Chat", "ColorLogBG", GetPrivateProfileIntA("Message Log", "BackgroundColor", def, szIniFilename));
@@ -384,6 +392,14 @@ void ReadThemeFromINI(const char *szIniFilename, struct MessageWindowData *dat, 
             DBWriteContactSettingDword(NULL, SRMSGMOD_T, "RightIndent", GetPrivateProfileIntA("Message Log", "RightIndent", 0, szIniFilename));
 
             DBWriteContactSettingDword(NULL, "Chat", "ColorNicklistBG", GetPrivateProfileIntA("Chat", "UserListBG", def, szIniFilename));
+
+            for(i = 0; i < CUSTOM_COLORS; i++) {
+                sprintf(szTemp, "cc%d", i + 1);
+                if(dat == 0)
+                    DBWriteContactSettingDword(NULL, SRMSGMOD_T, szTemp, GetPrivateProfileIntA("Custom Colors", szTemp, RGB(224, 224, 224), szIniFilename));
+                else
+                    dat->theme.custom_colors[i] = GetPrivateProfileIntA("Custom Colors", szTemp, RGB(224, 224, 224), szIniFilename);
+            }
         }
     }
     else {
@@ -409,6 +425,14 @@ void ReadThemeFromINI(const char *szIniFilename, struct MessageWindowData *dat, 
 
         dat->theme.left_indent = GetPrivateProfileIntA("Message Log", "LeftIndent", 0, szIniFilename);
         dat->theme.right_indent = GetPrivateProfileIntA("Message Log", "RightIndent", 0, szIniFilename);
+
+        for(i = 0; i < CUSTOM_COLORS; i++) {
+            sprintf(szTemp, "cc%d", i + 1);
+            if(dat == 0)
+                DBWriteContactSettingDword(NULL, SRMSGMOD_T, szTemp, GetPrivateProfileIntA("Custom Colors", szTemp, RGB(224, 224, 224), szIniFilename));
+            else
+                dat->theme.custom_colors[i] = GetPrivateProfileIntA("Custom Colors", szTemp, RGB(224, 224, 224), szIniFilename);
+        }
     }
 
     if(version >= 3) {
@@ -447,13 +471,6 @@ void ReadThemeFromINI(const char *szIniFilename, struct MessageWindowData *dat, 
                 }
     #endif        
             }
-        }
-        for(i = 0; i < CUSTOM_COLORS; i++) {
-            sprintf(szTemp, "cc%d", i + 1);
-            if(dat == 0)
-                DBWriteContactSettingDword(NULL, SRMSGMOD_T, szTemp, GetPrivateProfileIntA("Custom Colors", szTemp, RGB(224, 224, 224), szIniFilename));
-            else
-                dat->theme.custom_colors[i] = GetPrivateProfileIntA("Custom Colors", szTemp, RGB(224, 224, 224), szIniFilename);
         }
     }
     if(g_chat_integration_enabled)

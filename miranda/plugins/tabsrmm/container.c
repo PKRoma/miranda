@@ -1777,10 +1777,6 @@ panel_found:
                                 case ID_TABMENU_CLOSETAB:
                                     SendMessage(hwndDlg, DM_CLOSETABATMOUSE, 0, (LPARAM)&pt1);
                                     break;
-                                case ID_TABMENU_SHIFTTABTORIGHT:
-                                case ID_TABMENU_SHIFTTABTOLEFT:
-                                    RearrangeTab((HWND)item.lParam, dat, iSelection);
-                                    break;
                                 case ID_TABMENU_SAVETABPOSITION:
                                     DBWriteContactSettingDword(dat->hContact, SRMSGMOD_T, "tabindex", dat->iTabID * 100);
                                     break;

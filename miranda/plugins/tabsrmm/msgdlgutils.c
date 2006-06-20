@@ -64,21 +64,26 @@ void RearrangeTab(HWND hwndDlg, struct MessageWindowData *dat, int iMode)
     TCITEM item = {0};
     HWND hwndTab = GetParent(hwndDlg);
     int newIndex;
+    TCHAR oldText[512];
     item.mask = TCIF_IMAGE | TCIF_TEXT | TCIF_PARAM;
+    item.pszText = oldText;
+    item.cchTextMax = 500;
 
+    _DebugTraceW(L"rearrange: %d, %d (%s) to %d", hwndDlg, dat, dat ? dat->szNickname : L"undef", LOWORD(iMode));
     if(dat == NULL || !IsWindow(hwndDlg))
         return;
 
     TabCtrl_GetItem(hwndTab, dat->iTabID, &item);
-    newIndex = (iMode == ID_TABMENU_SHIFTTABTOLEFT) ? dat->iTabID - 1 :
-        dat->iTabID + 1;
+    newIndex = LOWORD(iMode);
 
-    TabCtrl_DeleteItem(hwndTab, dat->iTabID);
-    item.lParam = (LPARAM)hwndDlg;
-    TabCtrl_InsertItem(hwndTab, newIndex, &item);
-    BroadCastContainer(dat->pContainer, DM_REFRESHTABINDEX, 0, 0);
-    ActivateTabFromHWND(hwndTab, hwndDlg);
-    DBWriteContactSettingDword(dat->hContact, SRMSGMOD_T, "tabindex", newIndex * 100);
+    if(newIndex >= 0 && newIndex <= TabCtrl_GetItemCount(hwndTab)) {
+        TabCtrl_DeleteItem(hwndTab, dat->iTabID);
+        item.lParam = (LPARAM)hwndDlg;
+        TabCtrl_InsertItem(hwndTab, newIndex, &item);
+        BroadCastContainer(dat->pContainer, DM_REFRESHTABINDEX, 0, 0);
+        ActivateTabFromHWND(hwndTab, hwndDlg);
+        DBWriteContactSettingDword(dat->hContact, SRMSGMOD_T, "tabindex", newIndex * 100);
+    }
 }
 /*                                                              
  * subclassing for the save as file dialog (needed to set it to thumbnail view on Windows 2000
@@ -389,8 +394,6 @@ int MsgWindowUpdateMenu(HWND hwndDlg, struct MessageWindowData *dat, HMENU subme
 
         EnableMenuItem(submenu, ID_TABMENU_ATTACHTOCONTAINER, DBGetContactSettingByte(NULL, SRMSGMOD_T, "useclistgroups", 0) || DBGetContactSettingByte(NULL, SRMSGMOD_T, "singlewinmode", 0) ? MF_GRAYED : MF_ENABLED);
         EnableMenuItem(submenu, ID_TABMENU_LEAVECHATROOM, iLeave);
-        EnableMenuItem(submenu, ID_TABMENU_SHIFTTABTOLEFT, dat->iTabID > 0 ? MF_ENABLED : MF_GRAYED);
-        EnableMenuItem(submenu, ID_TABMENU_SHIFTTABTORIGHT, dat->iTabID < iTabs - 1 ? MF_ENABLED : MF_GRAYED);
         EnableMenuItem(submenu, ID_TABMENU_CLEARSAVEDTABPOSITION, (DBGetContactSettingDword(dat->hContact, SRMSGMOD_T, "tabindex", -1) != -1) ? MF_ENABLED : MF_GRAYED);
     }
     else if(menuID == MENU_LOGMENU) {
@@ -466,10 +469,6 @@ int MsgWindowMenuHandler(HWND hwndDlg, struct MessageWindowData *dat, int select
             case ID_TABMENU_CLOSETAB:
                 SendMessage(hwndDlg, WM_CLOSE, 1, 0);
                 return 1;
-            case ID_TABMENU_SHIFTTABTORIGHT:
-            case ID_TABMENU_SHIFTTABTOLEFT:
-                RearrangeTab(hwndDlg, dat, selection);
-                break;
             case ID_TABMENU_SAVETABPOSITION:
                 DBWriteContactSettingDword(dat->hContact, SRMSGMOD_T, "tabindex", dat->iTabID * 100);
                 break;

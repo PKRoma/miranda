@@ -740,6 +740,95 @@ static LRESULT CALLBACK TabControlSubclassProc(HWND hwnd, UINT msg, WPARAM wPara
             SendMessage(GetParent(hwnd), DM_CLOSETABATMOUSE, 0, (LPARAM)&pt);
             break;
         }
+
+        case WM_LBUTTONDOWN:
+		{
+			TCHITTESTINFO tci = {0};
+			tci.pt.x=(short)LOWORD(GetMessagePos());
+			tci.pt.y=(short)HIWORD(GetMessagePos());
+			if(DragDetect(hwnd, tci.pt) && TabCtrl_GetItemCount(hwnd) >1 ) {
+				int i; 
+				tci.flags = TCHT_ONITEM;
+
+				ScreenToClient(hwnd, &tci.pt);
+				i= TabCtrl_HitTest(hwnd, &tci);
+				if(i != -1) {
+					TCITEM tc;
+					struct MessageWindowData *dat = NULL;
+
+					tc.mask = TCIF_PARAM;
+					TabCtrl_GetItem(hwnd, i, &tc);
+					dat = (struct MessageWindowData *)GetWindowLong((HWND)tc.lParam, GWL_USERDATA);
+					if(dat)	{
+						tabdat->bDragging = TRUE;
+						tabdat->iBeginIndex = i;
+                        tabdat->hwndDrag = (HWND)tc.lParam;
+                        tabdat->dragDat = dat;
+                        tabdat->himlDrag = ImageList_Create(16, 16, ILC_MASK | (IsWinVerXPPlus() ? ILC_COLOR32 : ILC_COLOR16), 1, 0);
+                        ImageList_AddIcon(tabdat->himlDrag, dat->hTabIcon);
+						ImageList_BeginDrag(tabdat->himlDrag, 0, 8, 8);
+						ImageList_DragEnter(hwnd, tci.pt.x, tci.pt.y);
+                        _DebugTraceW(L"start drag: %d, %d (%s)", tabdat->hwndDrag, dat, dat ? dat->szNickname : L"undef");
+						SetCapture(hwnd);
+					}
+					return TRUE;
+				}
+			}
+		}
+        break;
+
+    	case WM_CAPTURECHANGED:
+        {
+            tabdat->bDragging = FALSE;
+            ImageList_DragLeave(hwnd);
+            ImageList_EndDrag();
+            if(tabdat->himlDrag) {
+                ImageList_RemoveAll(tabdat->himlDrag);
+                ImageList_Destroy(tabdat->himlDrag);
+                tabdat->himlDrag = 0;
+            }
+        }
+        break;
+
+    	case WM_MOUSEMOVE:
+        {
+            if(tabdat->bDragging) {
+                TCHITTESTINFO tci = {0};
+                tci.pt.x=(short)LOWORD(GetMessagePos());
+                tci.pt.y=(short)HIWORD(GetMessagePos());
+                ScreenToClient(hwnd, &tci.pt);
+                ImageList_DragMove(tci.pt.x, tci.pt.y);
+            }
+        }
+        break;
+
+    	case WM_LBUTTONUP:
+        {
+            if(tabdat->bDragging && ReleaseCapture()) {
+                TCHITTESTINFO tci = {0};
+                int i; 
+                tci.pt.x=(short)LOWORD(GetMessagePos());
+                tci.pt.y=(short)HIWORD(GetMessagePos());
+                tci.flags = TCHT_ONITEM;
+                tabdat->bDragging = FALSE;
+                ImageList_DragLeave(hwnd);
+                ImageList_EndDrag();
+
+                ScreenToClient(hwnd, &tci.pt);
+                i= TabCtrl_HitTest(hwnd, &tci);
+                if(i != -1 && i != tabdat->iBeginIndex)
+                    RearrangeTab(tabdat->hwndDrag, tabdat->dragDat, MAKELONG(i, 0xffff));
+                tabdat->hwndDrag = -1;
+                tabdat->dragDat = NULL;
+                if(tabdat->himlDrag) {
+                    ImageList_RemoveAll(tabdat->himlDrag);
+                    ImageList_Destroy(tabdat->himlDrag);
+                    tabdat->himlDrag = 0;
+                }
+            }
+        }
+        break;
+
         case WM_ERASEBKGND:
 			if(tabdat->pContainer->bSkinned)
 				return TRUE;
@@ -1196,6 +1285,7 @@ BOOL CALLBACK DlgProcTabConfig(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPa
                 }
                 break;
             }
+            SendMessage(GetParent(hwndDlg), PSM_CHANGED, 0, 0);
     }
     return FALSE;
 }

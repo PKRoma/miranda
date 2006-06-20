@@ -395,6 +395,11 @@ struct TabControlData {
     HANDLE hTheme, hThemeButton;
     BYTE m_xpad;
     struct ContainerWindowData *pContainer;
+    BOOL   bDragging;
+    int    iBeginIndex;
+    HWND   hwndDrag;
+    struct MessageWindowData *dragDat;
+    HIMAGELIST himlDrag;
 };
 
 /*

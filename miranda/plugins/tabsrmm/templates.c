@@ -47,20 +47,20 @@ char *TemplateNames[] = {
 };
     
 TemplateSet LTR_Default = { TRUE, 
-    _T("%I%S %N, %E, %h:%m:%s:%! %M"),
-    _T("%I%S %N, %E, %h:%m:%s:%! %M"),
-    _T("%I%S %N, %E, %h:%m:%s:%! %M"),
-    _T("%I%S %N, %E, %h:%m:%s:%! %M"),
-    _T("%S %h:%m:%s:%! %M"),
-    _T("%S %h:%m:%s:%! %M"),
-    _T("%I%S %D, %h:%m:%s, %N %M"),
-    _T("%I%S %D, %h:%m:%s, %e %M"),
+    _T("%I %S %N %fm%c4%&D%n%S %fd%c0[%T%fd%c0]%|%M"),
+    _T("%I %S %N %fm%c4%&D%n%S %fd%c0[%T%fd%c0]%|%M"),
+    _T("%I %S %fm%c4%&E %N%n%S %fd%c0[%T%fd%c0]%|%M"),
+    _T("%I %S %fm%c4%&E %N%n%S %fd%c0[%T%fd%c0]%|%M"),
+    _T("%S %fd%c0[%T%fd%c0]%|%M"),
+    _T("%S %fd%c0[%T%fd%c0]%|%M"),
+    _T("%I%S %D, %h:%m,%>%N%>%M%! %<"),
+    _T("%I%S %D, %h:%m:%s, %e%l%M"),
     "Default LTR"
 };
 
 TemplateSet RTL_Default = { TRUE, 
-    _T("%I%S %N %fm%c4%&D%n%S %fd%c0[%T%fd%c0]%|%M"),
-    _T("%I%S %N %fm%c4%&D%n%S %fd%c0[%T%fd%c0]%|%M"),
+    _T("%I %S %N %fm%c4%&D%n%S %fd%c0[%T%fd%c0]%|%M"),
+    _T("%I %S %N %fm%c4%&D%n%S %fd%c0[%T%fd%c0]%|%M"),
     _T("%I %S %fm%c4%&E %N%n%S %fd%c0[%T%fd%c0]%|%M"),
     _T("%I %S %fm%c4%&E %N%n%S %fd%c0[%T%fd%c0]%|%M"),
     _T("%S %fd%c0[%T%fd%c0]%|%M"),
@@ -111,6 +111,11 @@ void LoadDefaultTemplates()
         for(i = 0; i <= TMPL_ERRMSG; i++)
             DBWriteContactSettingTString(NULL, RTLTEMPLATES_MODULE, TemplateNames[i], RTL_Default.szTemplates[i]);
         DBWriteContactSettingByte(NULL, RTLTEMPLATES_MODULE, "setup", 1);
+    }
+    if(!DBGetContactSettingByte(NULL, TEMPLATES_MODULE, "setup", 0)) {
+        for(i = 0; i <= TMPL_ERRMSG; i++)
+            DBWriteContactSettingTString(NULL, TEMPLATES_MODULE, TemplateNames[i], LTR_Default.szTemplates[i]);
+        DBWriteContactSettingByte(NULL, TEMPLATES_MODULE, "setup", 1);
     }
     LoadTemplatesFrom(&LTR_Active, (HANDLE)0, 0);
     LoadTemplatesFrom(&RTL_Active, (HANDLE)0, 1);
@@ -200,6 +205,16 @@ BOOL CALLBACK DlgProcTemplateEditor(HWND hwndDlg, UINT msg, WPARAM wParam, LPARA
             switch (LOWORD(wParam)) {
                 case IDCANCEL:
                     DestroyWindow(hwndDlg);
+                    break;
+                case IDC_RESETALLTEMPLATES:
+                    if(MessageBox(0, TranslateT("This will reset the template set to the default built-in templates. Are you sure you want to do this?"),
+                                  TranslateT("Template editor"), MB_YESNO | MB_ICONQUESTION) == IDYES) {
+                        DBWriteContactSettingByte(NULL, teInfo->rtl ? RTLTEMPLATES_MODULE : TEMPLATES_MODULE, "setup", 0);
+                        LoadDefaultTemplates();
+                        MessageBox(0, TranslateT("Template set was successfully reset, please close and reopen all message windows. This template editor window will now close."),
+                                   TranslateT("Template editor"), MB_OK);
+                        DestroyWindow(hwndDlg);
+                    }
                     break;
                 case IDC_VARHELP:
                     if(!helpActive)

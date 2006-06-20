@@ -398,6 +398,7 @@ BEGIN
     PUSHBUTTON      "Save Template",IDC_SAVETEMPLATE,268,173,90,15
     PUSHBUTTON      "Forget",IDC_FORGET,268,192,90,15
     PUSHBUTTON      "Revert to Default",IDC_REVERT,268,211,90,15
+    PUSHBUTTON      "Reset all templates...",IDC_RESETALLTEMPLATES,171,154,90,15
 END
 
 IDD_TABCONFIG DIALOGEX 0, 0, 303, 230
@@ -658,8 +659,6 @@ BEGIN
         MENUITEM "Close Tab",                   ID_TABMENU_CLOSETAB
         MENUITEM "Leave Chat Room",             ID_TABMENU_LEAVECHATROOM
         MENUITEM SEPARATOR
-        MENUITEM "Shift Tab Left",              ID_TABMENU_SHIFTTABTOLEFT
-        MENUITEM "Shift Tab Right",             ID_TABMENU_SHIFTTABTORIGHT
         MENUITEM "Save Tab Position",           ID_TABMENU_SAVETABPOSITION
         MENUITEM "Clear saved Tab Position",    ID_TABMENU_CLEARSAVEDTABPOSITION
         MENUITEM SEPARATOR
