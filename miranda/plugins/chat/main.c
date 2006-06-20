@@ -121,7 +121,6 @@ int __declspec(dllexport) Load(PLUGINLINK *link)
 	}
 
 //	RichUtil_Load();
-
 	UpgradeCheck();
 
 	CallService(MS_SYSTEM_GET_MMI, 0, (LPARAM) &mmi);
@@ -213,9 +212,7 @@ void UpgradeCheck(void)
 			DBDeleteContactSetting(NULL, "Chat",		"SplitterY");
 			DBDeleteContactSetting(NULL, "Chat",		"IconFlags");
 			DBDeleteContactSetting(NULL, "Chat",		"LogIndentEnabled");
-
 		}
-
 	}
 	DBWriteContactSettingDword(NULL, "Chat", "OldVersion", pluginInfo.version);
 	return;
@@ -254,7 +251,6 @@ void LoadIcons(void)
 		hIcons[i] = NULL;
 
 	LoadLogIcons();
-
 	LoadMsgLogBitmaps();
 
 	hImageList = ImageList_Create(GetSystemMetrics(SM_CXSMICON),GetSystemMetrics(SM_CYSMICON),IsWinVerXPPlus()? ILC_COLOR32 | ILC_MASK : ILC_COLOR16 | ILC_MASK,0,3);
