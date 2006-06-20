@@ -39,12 +39,15 @@ extern		HINSTANCE g_hInst;
 extern		struct ContainerWindowData *pFirstContainer;
 extern		int g_chat_integration_enabled;
 extern      BOOL CALLBACK DlgProcPopupOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam);
+extern      BOOL CALLBACK DlgProcTabConfig(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam);
 extern      BOOL CALLBACK DlgProcTemplateEditor(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam);
 extern      BOOL CALLBACK DlgProcOptions1(HWND hwndDlg,UINT uMsg,WPARAM wParam,LPARAM lParam);
 extern      BOOL (WINAPI *MyEnableThemeDialogTexture)(HANDLE, DWORD);
+extern      StatusItems_t StatusItems[];
 
 BOOL CALLBACK DlgProcSetupStatusModes(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam);
 static BOOL CALLBACK OptionsDlgProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam);
+static BOOL CALLBACK SkinOptionsDlgProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam);
 
 struct FontOptionsList
 {
@@ -1139,59 +1142,11 @@ static BOOL CALLBACK DlgProcContainerSettings(HWND hwndDlg, UINT msg, WPARAM wPa
             else
                 CheckDlgButton(hwndDlg, IDC_USESNAPPING, DBGetContactSettingByte(NULL, SRMSGMOD_T, "usesnapping", 0));
 
-			if(!DBGetContactSetting(NULL, SRMSGMOD_T, "ContainerSkin", &dbv))
-				SetDlgItemTextA(hwndDlg, IDC_CONTAINERSKIN, dbv.pszVal);
 		 return TRUE;
 		}
         case WM_COMMAND:
             switch(LOWORD(wParam)) {
-				case IDC_GETCONTAINERSKINNAME:
-					{
-						char szFilename[MAX_PATH];
-						OPENFILENAMEA ofn={0};
-
-						szFilename[0] = 0;
-						ofn.lpstrFilter = "tabSRMM skins\0*.tsk\0\0";
-						ofn.lStructSize= OPENFILENAME_SIZE_VERSION_400;
-						ofn.hwndOwner=0;
-						ofn.lpstrFile = szFilename;
-						ofn.lpstrInitialDir = ".";
-						ofn.nMaxFile = MAX_PATH;
-						ofn.nMaxFileTitle = MAX_PATH;
-						ofn.Flags = OFN_HIDEREADONLY;
-						ofn.lpstrDefExt = "tsk";
-						if(GetOpenFileNameA(&ofn)) {
-							char szFinalName[MAX_PATH];
-
-							CallService(MS_UTILS_PATHTORELATIVE, (WPARAM)szFilename, (LPARAM)szFinalName);
-							DBWriteContactSettingString(NULL, SRMSGMOD_T, "ContainerSkin", szFinalName);
-							SetDlgItemTextA(hwndDlg, IDC_CONTAINERSKIN, szFinalName);
-							ReloadContainerSkin();
-						}
-						break;
-					}
-				case IDC_RELOAD:
-					ReloadContainerSkin();
-					break;
-				case IDC_USESKIN:
-					{
-						BYTE useskin = (IsDlgButtonChecked(hwndDlg, IDC_USESKIN) && IsWinVer2000Plus()) ? 1 : 0;
-
-						EnableWindow(GetDlgItem(hwndDlg, IDC_CONTAINERSKIN), useskin ? TRUE : FALSE);
-						EnableWindow(GetDlgItem(hwndDlg, IDC_GETCONTAINERSKINNAME), useskin ? TRUE : FALSE);
-						EnableWindow(GetDlgItem(hwndDlg, IDC_RELOAD), useskin ? TRUE : FALSE);
-                        if(!useskin) {
-                            FreeTabConfig();
-                            ReloadTabConfig();
-                        }
-						if(lParam) {
-							DBWriteContactSettingByte(NULL, SRMSGMOD_T, "useskin", useskin);
-							ReloadContainerSkin();
-						}
-						break;
-					}
                 case IDC_TABLIMIT:
-				case IDC_CONTAINERSKIN:
                     if (HIWORD(wParam) != EN_CHANGE || (HWND) lParam != GetFocus())
                         return TRUE;
                     break;
@@ -1211,7 +1166,6 @@ static BOOL CALLBACK DlgProcContainerSettings(HWND hwndDlg, UINT msg, WPARAM wPa
 						case PSN_APPLY: {
                             BOOL translated;
                             TCHAR szDefaultName[TITLE_FORMATLEN + 2];
-							char szFilename[MAX_PATH], szFinalName[MAX_PATH];
 
                             DBWriteContactSettingByte(NULL, SRMSGMOD_T, "useclistgroups", IsDlgButtonChecked(hwndDlg, IDC_CONTAINERGROUPMODE));
                             DBWriteContactSettingByte(NULL, SRMSGMOD_T, "limittabs", IsDlgButtonChecked(hwndDlg, IDC_LIMITTABS));
@@ -1232,10 +1186,6 @@ static BOOL CALLBACK DlgProcContainerSettings(HWND hwndDlg, UINT msg, WPARAM wPa
 							GetDefaultContainerTitleFormat();
                             myGlobals.g_wantSnapping = ServiceExists("Utils/SnapWindowProc") && IsDlgButtonChecked(hwndDlg, IDC_USESNAPPING);
                             BuildContainerMenu();
-							GetDlgItemTextA(hwndDlg, IDC_CONTAINERSKIN, szFilename, MAX_PATH);
-							szFilename[MAX_PATH - 1] = 0;
-							CallService(MS_UTILS_PATHTORELATIVE, (WPARAM)szFilename, (LPARAM)szFinalName);
-							DBWriteContactSettingString(NULL, SRMSGMOD_T, "ContainerSkin", szFinalName);
                             return TRUE;
                         }
                     }
@@ -1297,7 +1247,14 @@ static int OptInitialise(WPARAM wParam, LPARAM lParam)
     odp.pfnDlgProc = DlgProcPopupOpts;
     odp.nIDBottomSimpleControl = 0;
     CallService(MS_OPT_ADDPAGE, wParam, (LPARAM) &odp);
-    
+
+    odp.pszTemplate = MAKEINTRESOURCEA(IDD_SKINTABDIALOG);
+    odp.pszTitle = Translate("Message window skin");
+    odp.pfnDlgProc = SkinOptionsDlgProc;
+    odp.nIDBottomSimpleControl = 0;
+    odp.pszGroup = Translate("Customize");
+    CallService(MS_OPT_ADDPAGE, wParam, (LPARAM) &odp);
+
     return 0;
 }
 
@@ -1493,6 +1450,293 @@ static BOOL CALLBACK OptionsDlgProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM l
 
          }
       break;
+   }
+   return FALSE;
+}
+
+static HWND hwndTabConfig = 0;
+
+static BOOL CALLBACK DlgProcSkinOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam)
+{
+    switch (msg) {
+        case WM_INITDIALOG:
+        {
+            DBVARIANT dbv;
+            BYTE loadMode = DBGetContactSettingByte(NULL, SRMSGMOD_T, "skin_loadmode", 0);
+            TranslateDialogDefault(hwndDlg);
+
+            //SendDlgItemMessage(hwndDlg, IDC_CORNERSPIN, UDM_SETRANGE, 0, MAKELONG(10, 0));
+            //SendDlgItemMessage(hwndDlg, IDC_CORNERSPIN, UDM_SETPOS, 0, g_CluiData.cornerRadius);
+
+            CheckDlgButton(hwndDlg, IDC_USESKIN, DBGetContactSettingByte(NULL, SRMSGMOD_T, "useskin", 0) ? BST_CHECKED : BST_UNCHECKED);
+            CheckDlgButton(hwndDlg, IDC_SKIN_LOADFONTS, loadMode & THEME_READ_FONTS);
+            CheckDlgButton(hwndDlg, IDC_SKIN_LOADTEMPLATES, loadMode & THEME_READ_TEMPLATES);
+
+            if(!DBGetContactSetting(NULL, SRMSGMOD_T, "ContainerSkin", &dbv)) {
+                SetDlgItemTextA(hwndDlg, IDC_SKINFILENAME, dbv.pszVal);
+                DBFreeVariant(&dbv);
+            }
+            else
+                SetDlgItemText(hwndDlg, IDC_SKINFILENAME, _T(""));
+            return TRUE;
+        }
+        case WM_COMMAND:
+            switch (LOWORD(wParam)) {
+                case IDC_USESKIN:
+                    DBWriteContactSettingByte(NULL, SRMSGMOD_T, "useskin", IsDlgButtonChecked(hwndDlg, IDC_USESKIN) ? 1 : 0);
+                    break;
+                case IDC_SKIN_LOADFONTS:
+                {
+                    BYTE loadMode = DBGetContactSettingByte(NULL, SRMSGMOD_T, "skin_loadmode", 0);
+                    loadMode = IsDlgButtonChecked(hwndDlg, IDC_SKIN_LOADFONTS) ? loadMode | THEME_READ_FONTS : loadMode & ~THEME_READ_FONTS;
+                    DBWriteContactSettingByte(NULL, SRMSGMOD_T, "skin_loadmode", loadMode);
+                    break;
+                }
+                case IDC_SKIN_LOADTEMPLATES:
+                {
+                    BYTE loadMode = DBGetContactSettingByte(NULL, SRMSGMOD_T, "skin_loadmode", 0);
+                    loadMode = IsDlgButtonChecked(hwndDlg, IDC_SKIN_LOADTEMPLATES) ? loadMode | THEME_READ_TEMPLATES : loadMode & ~THEME_READ_TEMPLATES;
+                    DBWriteContactSettingByte(NULL, SRMSGMOD_T, "skin_loadmode", loadMode);
+                    break;
+                }
+                case IDC_UNLOAD:
+                    ReloadContainerSkin(0, 0);
+                    SendMessage(hwndTabConfig, WM_USER + 100, 0, 0);
+                    break;
+                case IDC_SELECTSKINFILE:
+                    {
+                        OPENFILENAMEA ofn = {0};
+                        char str[MAX_PATH] = "*.tsk", final_path[MAX_PATH], initDir[MAX_PATH];
+
+                        mir_snprintf(initDir, MAX_PATH, "%s%s", myGlobals.szDataPath, "skins\\");
+                        ofn.lStructSize = OPENFILENAME_SIZE_VERSION_400;
+                        ofn.hwndOwner = hwndDlg;
+                        ofn.hInstance = NULL;
+                        ofn.lpstrFilter = "*.tsk";
+                        ofn.lpstrFile = str;
+                        ofn.lpstrInitialDir = initDir;
+                        ofn.Flags = OFN_FILEMUSTEXIST;
+                        ofn.nMaxFile = sizeof(str);
+                        ofn.nMaxFileTitle = MAX_PATH;
+                        ofn.lpstrDefExt = "";
+                        if (!GetOpenFileNameA(&ofn))
+                            break;
+                        CallService(MS_UTILS_PATHTORELATIVE, (WPARAM)str, (LPARAM)final_path);
+                        if(PathFileExistsA(str)) {
+                            int skinChanged = 0;
+                            DBVARIANT dbv = {0};
+
+                            if(!DBGetContactSetting(NULL, SRMSGMOD_T, "ContainerSkin", &dbv)) {
+                                if(strcmp(dbv.pszVal, final_path))
+                                    skinChanged = TRUE;
+                                DBFreeVariant(&dbv);
+                            }
+                            else
+                                skinChanged = TRUE;
+
+                            DBWriteContactSettingString(NULL, SRMSGMOD_T, "ContainerSkin", final_path);
+                            DBWriteContactSettingByte(NULL, SRMSGMOD_T, "skin_changed", skinChanged);
+                            SetDlgItemTextA(hwndDlg, IDC_SKINFILENAME, final_path);
+                        }
+                        break;
+                    }
+                case IDC_RELOADSKIN:
+                    ReloadContainerSkin(1, 0);
+                    SendMessage(hwndTabConfig, WM_USER + 100, 0, 0);
+                    break;
+            }
+            if ((LOWORD(wParam) == IDC_SKINFILE || LOWORD(wParam) == IDC_SKINFILENAME) 
+                && (HIWORD(wParam) != EN_CHANGE || (HWND) lParam != GetFocus()))
+                return 0;
+            SendMessage(GetParent(hwndDlg), PSM_CHANGED, 0, 0);
+            break;
+        case WM_NOTIFY:
+            switch (((LPNMHDR) lParam)->idFrom) {
+                case 0:
+                    switch (((LPNMHDR) lParam)->code) {
+                        case PSN_APPLY:
+                            return TRUE;
+                    }
+                    break;
+            }
+            break;
+    }
+    return FALSE;
+}
+
+static BOOL CALLBACK SkinOptionsDlgProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
+{
+   static int iInit = TRUE;
+   static HWND hwndSkinEdit = 0;
+
+   switch(msg)
+   {
+      case WM_INITDIALOG:
+      {
+         TCITEM tci;
+         RECT rcClient;
+         int oPage = DBGetContactSettingByte(NULL, SRMSGMOD_T, "skin_opage", 0);
+         SKINDESCRIPTION sd;
+
+         GetClientRect(hwnd, &rcClient);
+         iInit = TRUE;
+         tci.mask = TCIF_PARAM|TCIF_TEXT;
+         tci.lParam = (LPARAM)CreateDialog(g_hInst,MAKEINTRESOURCE(IDD_OPT_SKIN), hwnd, DlgProcSkinOpts);
+         tci.pszText = TranslateT("Load and apply");
+			TabCtrl_InsertItem(GetDlgItem(hwnd, IDC_OPTIONSTAB), 0, &tci);
+         MoveWindow((HWND)tci.lParam,5,25,rcClient.right-9,rcClient.bottom-60,1);
+         ShowWindow((HWND)tci.lParam, SW_HIDE);
+         if(MyEnableThemeDialogTexture)
+             MyEnableThemeDialogTexture((HWND)tci.lParam, ETDT_ENABLETAB);
+
+         tci.lParam = (LPARAM)CreateDialog(g_hInst,MAKEINTRESOURCE(IDD_TABCONFIG), hwnd, DlgProcTabConfig);
+         hwndTabConfig = (HWND)tci.lParam;
+
+         tci.pszText = TranslateT("Tab appearance");
+            TabCtrl_InsertItem(GetDlgItem(hwnd, IDC_OPTIONSTAB), 1, &tci);
+         MoveWindow((HWND)tci.lParam,5,25,rcClient.right-9,rcClient.bottom-60,1);
+         ShowWindow((HWND)tci.lParam, SW_HIDE);
+         if(MyEnableThemeDialogTexture)
+             MyEnableThemeDialogTexture((HWND)tci.lParam, ETDT_ENABLETAB);
+
+         if(ServiceExists(MS_CLNSE_INVOKE)) {
+
+             ZeroMemory(&sd, sizeof(sd));
+             sd.cbSize = sizeof(sd);
+             sd.StatusItems = &StatusItems[0];
+             sd.hWndParent = hwnd;
+             sd.hWndTab = GetDlgItem(hwnd, IDC_OPTIONSTAB);
+             sd.pfnSaveCompleteStruct = 0;
+             sd.lastItem = ID_EXTBK_LAST;
+             sd.firstItem = 0;
+             sd.pfnClcOptionsChanged = 0;
+             sd.hwndCLUI = 0;
+             hwndSkinEdit = (HWND)CallService(MS_CLNSE_INVOKE, 0, (LPARAM)&sd);
+         }
+
+         if(hwndSkinEdit) {
+             ShowWindow(hwndSkinEdit, SW_HIDE);
+             ShowWindow(sd.hwndImageEdit, SW_HIDE);
+             TabCtrl_SetCurSel(GetDlgItem(hwnd, IDC_OPTIONSTAB), oPage);
+             if(MyEnableThemeDialogTexture) {
+                 MyEnableThemeDialogTexture(hwndSkinEdit, ETDT_ENABLETAB);
+                 MyEnableThemeDialogTexture(sd.hwndImageEdit, ETDT_ENABLETAB);
+             }
+         }
+         {
+             TCITEM item = {0};
+             int iTabs = TabCtrl_GetItemCount(GetDlgItem(hwnd, IDC_OPTIONSTAB));
+
+             if(oPage >= iTabs)
+                 oPage = iTabs - 1;
+
+             item.mask = TCIF_PARAM;
+             TabCtrl_GetItem(GetDlgItem(hwnd, IDC_OPTIONSTAB), oPage, &item);
+             ShowWindow((HWND)item.lParam, SW_SHOW);
+             TabCtrl_SetCurSel(GetDlgItem(hwnd, IDC_OPTIONSTAB), oPage);
+         }
+         //EnableWindow(GetDlgItem(hwnd, IDC_EXPORT), TabCtrl_GetCurSel(GetDlgItem(hwnd, IDC_OPTIONSTAB)) != 0);
+         //EnableWindow(GetDlgItem(hwnd, IDC_IMPORT), TabCtrl_GetCurSel(GetDlgItem(hwnd, IDC_OPTIONSTAB)) != 0);
+         iInit = FALSE;
+         return FALSE;
+      }
+      
+      case PSM_CHANGED: // used so tabs dont have to call SendMessage(GetParent(GetParent(hwnd)), PSM_CHANGED, 0, 0);
+         if(!iInit)
+             SendMessage(GetParent(hwnd), PSM_CHANGED, 0, 0);
+         break;
+      case WM_COMMAND:
+          switch(LOWORD(wParam)) {
+              case IDC_EXPORT:
+                  {
+                      char str[MAX_PATH] = "*.clist";
+                      OPENFILENAMEA ofn = {0};
+                      ofn.lStructSize = OPENFILENAME_SIZE_VERSION_400;
+                      ofn.hwndOwner = hwnd;
+                      ofn.hInstance = NULL;
+                      ofn.lpstrFilter = "*.clist";
+                      ofn.lpstrFile = str;
+                      ofn.Flags = OFN_HIDEREADONLY;
+                      ofn.nMaxFile = sizeof(str);
+                      ofn.nMaxFileTitle = MAX_PATH;
+                      ofn.lpstrDefExt = "clist";
+                      if (!GetSaveFileNameA(&ofn))
+                          break;
+                      //extbk_export(str);
+                      break;
+                  }
+              case IDC_IMPORT:
+                  {
+                      char str[MAX_PATH] = "*.clist";
+                      OPENFILENAMEA ofn = {0};
+
+                      ofn.lStructSize = OPENFILENAME_SIZE_VERSION_400;
+                      ofn.hwndOwner = hwnd;
+                      ofn.hInstance = NULL;
+                      ofn.lpstrFilter = "*.clist";
+                      ofn.lpstrFile = str;
+                      ofn.Flags = OFN_FILEMUSTEXIST;
+                      ofn.nMaxFile = sizeof(str);
+                      ofn.nMaxFileTitle = MAX_PATH;
+                      ofn.lpstrDefExt = "";
+                      if (!GetOpenFileNameA(&ofn))
+                          break;
+                      //extbk_import(str, hwndSkinEdit);
+                      SendMessage(hwndSkinEdit, WM_USER + 101, 0, 0);
+                      break;
+                  }
+          }
+          break;
+      case WM_NOTIFY:
+         switch(((LPNMHDR)lParam)->idFrom) {
+            case 0:
+               switch (((LPNMHDR)lParam)->code)
+               {
+                  case PSN_APPLY:
+                     {
+                        TCITEM tci;
+                        int i,count;
+                        tci.mask = TCIF_PARAM;
+                        count = TabCtrl_GetItemCount(GetDlgItem(hwnd,IDC_OPTIONSTAB));
+                        for (i=0;i<count;i++)
+                        {
+                           TabCtrl_GetItem(GetDlgItem(hwnd,IDC_OPTIONSTAB),i,&tci);
+                           SendMessage((HWND)tci.lParam,WM_NOTIFY,0,lParam);
+                        }
+                     }
+                  break;
+               }
+            break;
+            case IDC_OPTIONSTAB:
+               switch (((LPNMHDR)lParam)->code)
+               {
+                  case TCN_SELCHANGING:
+                     {
+                        TCITEM tci;
+                        tci.mask = TCIF_PARAM;
+                        TabCtrl_GetItem(GetDlgItem(hwnd,IDC_OPTIONSTAB),TabCtrl_GetCurSel(GetDlgItem(hwnd,IDC_OPTIONSTAB)),&tci);
+                        ShowWindow((HWND)tci.lParam,SW_HIDE);                     
+                     }
+                  break;
+                  case TCN_SELCHANGE:
+                     {
+                        TCITEM tci;
+                        tci.mask = TCIF_PARAM;
+                        TabCtrl_GetItem(GetDlgItem(hwnd,IDC_OPTIONSTAB),TabCtrl_GetCurSel(GetDlgItem(hwnd,IDC_OPTIONSTAB)),&tci);
+                        ShowWindow((HWND)tci.lParam,SW_SHOW);
+                        DBWriteContactSettingByte(NULL, SRMSGMOD_T, "skin_opage", TabCtrl_GetCurSel(GetDlgItem(hwnd, IDC_OPTIONSTAB)));
+                        EnableWindow(GetDlgItem(hwnd, IDC_EXPORT), TabCtrl_GetCurSel(GetDlgItem(hwnd, IDC_OPTIONSTAB)) != 0);
+                        EnableWindow(GetDlgItem(hwnd, IDC_IMPORT), TabCtrl_GetCurSel(GetDlgItem(hwnd, IDC_OPTIONSTAB)) != 0);
+                     }
+                  break;
+               }
+            break;
+
+         }
+      break;
+      case WM_DESTROY:
+          hwndSkinEdit = 0;
+          break;
    }
    return FALSE;
 }

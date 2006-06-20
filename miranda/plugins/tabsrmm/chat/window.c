@@ -31,7 +31,6 @@ extern HMODULE  themeAPIHandle;
 extern HANDLE   (WINAPI *MyOpenThemeData)(HWND,LPCWSTR);
 
 extern MYGLOBALS	myGlobals;
-extern HBRUSH		hEditBkgBrush;
 extern HBRUSH		hListBkgBrush;
 extern HANDLE		hSendEvent;
 extern HICON		hIcons[30];
@@ -2715,7 +2714,7 @@ LABEL_SHOWWINDOW:
                         rc.right = rc.left + item->MARGIN_RIGHT + (rcWindow.right - rcWindow.left) + item->MARGIN_LEFT;
                         rc.bottom = rc.top + item->MARGIN_BOTTOM + (rcWindow.bottom - rcWindow.top) + item->MARGIN_TOP;
                         DrawAlpha(hdc, &rc, item->COLOR, item->ALPHA, item->COLOR2, item->COLOR2_TRANSPARENT, item->GRADIENT,
-                                  item->CORNER, item->RADIUS, item->imageItem);
+                                  item->CORNER, item->BORDERSTYLE, item->imageItem);
                     }
                 }
                 EndPaint(hwndDlg, &ps);

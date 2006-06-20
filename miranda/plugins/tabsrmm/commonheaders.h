@@ -81,6 +81,8 @@ typedef unsigned short wchar_t;
 #include "../../include/m_history.h"
 #include "../../include/m_addcontact.h"
 #include "../../include/m_file.h"
+#include "m_cln_skinedit.h"
+
 #include "m_flash.h"
 
 #define safe_sizeof(a) (sizeof((a)) / sizeof((a)[0]))

@@ -28,7 +28,6 @@ HMENU			g_hMenu = NULL;
 FONTINFO		aFonts[OPTIONS_FONTCOUNT];
 HICON			hIcons[30];
 BOOL			IEviewInstalled = FALSE;
-HBRUSH			hEditBkgBrush = NULL;
 HBRUSH			hListBkgBrush = NULL;
 
 struct GlobalLogSettings_t g_Settings;

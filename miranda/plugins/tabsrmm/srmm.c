@@ -283,7 +283,7 @@ static BOOL CALLBACK DlgProcFirsttime(HWND hwndDlg, UINT msg, WPARAM wParam, LPA
                     
                     if((hFile = CreateFileA(szFilename, GENERIC_READ, FILE_SHARE_READ, NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL)) != INVALID_HANDLE_VALUE ) {
                         CloseHandle(hFile);
-                        ReadThemeFromINI(szFilename, 0, 0);
+                        ReadThemeFromINI(szFilename, 0, 0, THEME_READ_ALL);
                         DBWriteContactSettingByte(NULL, SRMSGMOD_T, "firstrun", 1);
                     }
                     else

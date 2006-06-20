@@ -505,54 +505,6 @@ static __inline int mir_snprintfW(wchar_t *buffer, size_t count, const wchar_t* 
 
 #define RTFCACHELINESIZE 128
 
-/*
- * skinning stuff - most is taken from clist_nicer as I'am using basically the same skinning engine
- */
-
-typedef struct _tagImageItem {
-    char szName[40];
-    HBITMAP hbm;
-    BYTE bLeft, bRight, bTop, bBottom;      // sizing margins
-    BYTE alpha;
-    DWORD dwFlags;
-    HDC hdc;
-    HBITMAP hbmOld;
-    LONG inner_height, inner_width;
-    LONG width, height;
-    BLENDFUNCTION bf;
-    BYTE bStretch;
-	LONG glyphMetrics[4];
-    struct _tagImageItem *nextItem;
-	HBRUSH fillBrush;
-} ImageItem;
-
-typedef struct {
-    char szName[40];
-    char szDBname[40];
-    int statusID;
-
-    BYTE GRADIENT;
-    BYTE CORNER;
-
-    DWORD COLOR;
-    DWORD COLOR2;
-
-    BYTE COLOR2_TRANSPARENT;
-
-    DWORD TEXTCOLOR;
-
-    int ALPHA;
-
-    int MARGIN_LEFT;
-    int MARGIN_TOP;
-    int MARGIN_RIGHT;
-    int MARGIN_BOTTOM;
-
-    BYTE IGNORED;
-    BYTE RADIUS;
-    ImageItem *imageItem;
-} StatusItems_t;
-
 #define ID_EXTBKCONTAINER 0
 #define ID_EXTBKBUTTONBAR 1
 #define ID_EXTBKBUTTONSPRESSED 2
@@ -578,51 +530,14 @@ typedef struct {
 #define ID_EXTBKUSERLIST       22
 #define ID_EXTBK_LAST 22
 
-#define CLCDEFAULT_GRADIENT 0
-#define CLCDEFAULT_CORNER 0
-
-#define CLCDEFAULT_COLOR 0xE0E0E0
-#define CLCDEFAULT_COLOR2 0xE0E0E0
-
-#define CLCDEFAULT_TEXTCOLOR 0x000000
-
-#define CLCDEFAULT_COLOR2_TRANSPARENT 1
-
-#define CLCDEFAULT_ALPHA 85
-#define CLCDEFAULT_MRGN_LEFT 0
-#define CLCDEFAULT_MRGN_TOP 0
-#define CLCDEFAULT_MRGN_RIGHT 0
-#define CLCDEFAULT_MRGN_BOTTOM 0
-#define CLCDEFAULT_IGNORE 1
-
-// FLAGS
-#define CORNER_NONE 0
-#define CORNER_ACTIVE 1
-#define CORNER_TL 2
-#define CORNER_TR 4
-#define CORNER_BR 8
-#define CORNER_BL 16
-
-#define GRADIENT_NONE 0
-#define GRADIENT_ACTIVE 1
-#define GRADIENT_LR 2
-#define GRADIENT_RL 4
-#define GRADIENT_TB 8
-#define GRADIENT_BT 16
-
-#define IMAGE_PERPIXEL_ALPHA 1
-#define IMAGE_FLAG_DIVIDED 2
-#define IMAGE_FILLSOLID 4
-#define IMAGE_GLYPH 8
-
-#define IMAGE_STRETCH_V 1
-#define IMAGE_STRETCH_H 2
-#define IMAGE_STRETCH_B 4
-
 #define SESSIONTYPE_IM 1
 #define SESSIONTYPE_CHAT 2
 
 #define SIDEBARWIDTH         30
+
+#define THEME_READ_FONTS 1
+#define THEME_READ_TEMPLATES 2
+#define THEME_READ_ALL (THEME_READ_FONTS | THEME_READ_TEMPLATES)
 
 static void __fastcall IMG_RenderImageItem(HDC hdc, ImageItem *item, RECT *rc);
 void IMG_InitDecoder();
@@ -630,9 +545,9 @@ static void LoadSkinItems(char *file);
 static void IMG_CreateItem(ImageItem *item, const char *fileName, HDC hdc);
 static void IMG_LoadItems(char *szFileName);
 void IMG_DeleteItems();
-void DrawAlpha(HDC hdcwnd, PRECT rc, DWORD basecolor, BYTE alpha, DWORD basecolor2, BOOL transparent, DWORD FLG_GRADIENT, DWORD FLG_CORNER, BYTE RADIUS, ImageItem *imageItem);
+void DrawAlpha(HDC hdcwnd, PRECT rc, DWORD basecolor, BYTE alpha, DWORD basecolor2, BOOL transparent, DWORD FLG_GRADIENT, DWORD FLG_CORNER, DWORD BORDERSTYLE, ImageItem *imageItem);
 void SkinDrawBG(HWND hwndClient, HWND hwnd, struct ContainerWindowData *pContainer, RECT *rcClient, HDC hdcTarget);
 
-void ReloadContainerSkin();
+void ReloadContainerSkin(int doLoad, int onStartup);
 
 #endif

@@ -212,11 +212,11 @@ static void PaintWorker(MButtonCtrl *ctl, HDC hdcPaint) {
 					rc1.left += item->MARGIN_LEFT; rc1.right -= item->MARGIN_RIGHT;
 					rc1.top += item->MARGIN_TOP; rc1.bottom -= item->MARGIN_BOTTOM;
 					DrawAlpha(hdcMem, &rc1, item->COLOR, item->ALPHA, item->COLOR2, item->COLOR2_TRANSPARENT,
-							  item->GRADIENT, item->CORNER, item->RADIUS, item->imageItem);
+							  item->GRADIENT, item->CORNER, item->BORDERSTYLE, item->imageItem);
 					if(clip && realItem) {
 						SelectClipRgn(hdcMem, clip);
 						DrawAlpha(hdcMem, &rc1, realItem->COLOR, realItem->ALPHA, realItem->COLOR2, realItem->COLOR2_TRANSPARENT,
-								  realItem->GRADIENT, realItem->CORNER, realItem->RADIUS, realItem->imageItem);
+								  realItem->GRADIENT, realItem->CORNER, realItem->BORDERSTYLE, realItem->imageItem);
 					}
 				}
 				else 
@@ -292,11 +292,11 @@ flat_themed:
 					rc1.left += item->MARGIN_LEFT; rc1.right -= item->MARGIN_RIGHT;
 					rc1.top += item->MARGIN_TOP; rc1.bottom -= item->MARGIN_BOTTOM;
 					DrawAlpha(hdcMem, &rc1, item->COLOR, item->ALPHA, item->COLOR2, item->COLOR2_TRANSPARENT,
-							  item->GRADIENT, item->CORNER, item->RADIUS, item->imageItem);
+							  item->GRADIENT, item->CORNER, item->BORDERSTYLE, item->imageItem);
 					if(clip && realItem) {
 						SelectClipRgn(hdcMem, clip);
 						DrawAlpha(hdcMem, &rc1, realItem->COLOR, realItem->ALPHA, realItem->COLOR2, realItem->COLOR2_TRANSPARENT,
-								  realItem->GRADIENT, realItem->CORNER, realItem->RADIUS, realItem->imageItem);
+								  realItem->GRADIENT, realItem->CORNER, realItem->BORDERSTYLE, realItem->imageItem);
 					}
 				}
 				else 

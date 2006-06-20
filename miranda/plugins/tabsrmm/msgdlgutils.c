@@ -38,7 +38,6 @@ extern      TemplateSet LTR_Active, RTL_Active;
 extern      PAB MyAlphaBlend;
 extern      HMODULE g_hInst;
 extern      HANDLE hMessageWindowList;
-extern      BOOL CALLBACK DlgProcTabConfig(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam);
 extern      StatusItems_t StatusItems[];
 
 void ShowMultipleControls(HWND hwndDlg, const UINT * controls, int cControls, int state);
@@ -60,6 +59,27 @@ struct RTFColorTable rtf_ctable[] = {
     #define SHVIEW_THUMBNAIL 0x702D
 #endif
 
+void RearrangeTab(HWND hwndDlg, struct MessageWindowData *dat, int iMode)
+{
+    TCITEM item = {0};
+    HWND hwndTab = GetParent(hwndDlg);
+    int newIndex;
+    item.mask = TCIF_IMAGE | TCIF_TEXT | TCIF_PARAM;
+
+    if(dat == NULL || !IsWindow(hwndDlg))
+        return;
+
+    TabCtrl_GetItem(hwndTab, dat->iTabID, &item);
+    newIndex = (iMode == ID_TABMENU_SHIFTTABTOLEFT) ? dat->iTabID - 1 :
+        dat->iTabID + 1;
+
+    TabCtrl_DeleteItem(hwndTab, dat->iTabID);
+    item.lParam = (LPARAM)hwndDlg;
+    TabCtrl_InsertItem(hwndTab, newIndex, &item);
+    BroadCastContainer(dat->pContainer, DM_REFRESHTABINDEX, 0, 0);
+    ActivateTabFromHWND(hwndTab, hwndDlg);
+    DBWriteContactSettingDword(dat->hContact, SRMSGMOD_T, "tabindex", newIndex * 100);
+}
 /*                                                              
  * subclassing for the save as file dialog (needed to set it to thumbnail view on Windows 2000
  * or later                                                                
@@ -365,11 +385,13 @@ int MsgWindowUpdateMenu(HWND hwndDlg, struct MessageWindowData *dat, HMENU subme
     if(menuID == MENU_TABCONTEXT) {
         SESSION_INFO *si = dat->si;
         int iLeave = dat->isIRC ? MF_ENABLED : MF_GRAYED;
-        
-        EnableMenuItem(submenu, ID_TABMENU_SWITCHTONEXTTAB, dat->pContainer->iChilds > 1 ? MF_ENABLED : MF_GRAYED);
-        EnableMenuItem(submenu, ID_TABMENU_SWITCHTOPREVIOUSTAB, dat->pContainer->iChilds > 1 ? MF_ENABLED : MF_GRAYED);
+        int iTabs = TabCtrl_GetItemCount(GetParent(hwndDlg));
+
         EnableMenuItem(submenu, ID_TABMENU_ATTACHTOCONTAINER, DBGetContactSettingByte(NULL, SRMSGMOD_T, "useclistgroups", 0) || DBGetContactSettingByte(NULL, SRMSGMOD_T, "singlewinmode", 0) ? MF_GRAYED : MF_ENABLED);
         EnableMenuItem(submenu, ID_TABMENU_LEAVECHATROOM, iLeave);
+        EnableMenuItem(submenu, ID_TABMENU_SHIFTTABTOLEFT, dat->iTabID > 0 ? MF_ENABLED : MF_GRAYED);
+        EnableMenuItem(submenu, ID_TABMENU_SHIFTTABTORIGHT, dat->iTabID < iTabs - 1 ? MF_ENABLED : MF_GRAYED);
+        EnableMenuItem(submenu, ID_TABMENU_CLEARSAVEDTABPOSITION, (DBGetContactSettingDword(dat->hContact, SRMSGMOD_T, "tabindex", -1) != -1) ? MF_ENABLED : MF_GRAYED);
     }
     else if(menuID == MENU_LOGMENU) {
         int iLocalTime = dat->dwEventIsShown & MWF_SHOW_USELOCALTIME ? 1 : 0; // DBGetContactSettingByte(dat->hContact, SRMSGMOD_T, "uselocaltime", 0);
@@ -431,12 +453,6 @@ int MsgWindowMenuHandler(HWND hwndDlg, struct MessageWindowData *dat, int select
 {
     if(menuId == MENU_PICMENU || menuId == MENU_PANELPICMENU || menuId == MENU_TABCONTEXT) {
         switch(selection) {
-            case ID_TABMENU_SWITCHTONEXTTAB:
-                SendMessage(dat->pContainer->hwnd, DM_SELECTTAB, (WPARAM) DM_SELECT_NEXT, 0);
-                return 1;
-            case ID_TABMENU_SWITCHTOPREVIOUSTAB:
-                SendMessage(dat->pContainer->hwnd, DM_SELECTTAB, (WPARAM) DM_SELECT_PREV, 0);
-                return 1;
             case ID_TABMENU_ATTACHTOCONTAINER:
                 CreateDialogParam(g_hInst, MAKEINTRESOURCE(IDD_SELECTCONTAINER), hwndDlg, SelectContainerDlgProc, (LPARAM) hwndDlg);
                 return 1;
@@ -450,6 +466,16 @@ int MsgWindowMenuHandler(HWND hwndDlg, struct MessageWindowData *dat, int select
             case ID_TABMENU_CLOSETAB:
                 SendMessage(hwndDlg, WM_CLOSE, 1, 0);
                 return 1;
+            case ID_TABMENU_SHIFTTABTORIGHT:
+            case ID_TABMENU_SHIFTTABTOLEFT:
+                RearrangeTab(hwndDlg, dat, selection);
+                break;
+            case ID_TABMENU_SAVETABPOSITION:
+                DBWriteContactSettingDword(dat->hContact, SRMSGMOD_T, "tabindex", dat->iTabID * 100);
+                break;
+            case ID_TABMENU_CLEARSAVEDTABPOSITION:
+                DBDeleteContactSetting(dat->hContact, SRMSGMOD_T, "tabindex");
+                break;
             case ID_TABMENU_LEAVECHATROOM:
             {
                 if(dat && dat->bType == SESSIONTYPE_CHAT) {
@@ -466,9 +492,6 @@ int MsgWindowMenuHandler(HWND hwndDlg, struct MessageWindowData *dat, int select
                 }
                 return 1;
             }
-            case ID_TABMENU_CONFIGURETABAPPEARANCE:
-                CreateDialogParam(g_hInst, MAKEINTRESOURCE(IDD_TABCONFIG), hwndDlg, DlgProcTabConfig, 0);
-                return 1;
             case ID_PICMENU_TOGGLEAVATARDISPLAY:
                 DBWriteContactSettingByte(dat->hContact, SRMSGMOD_T, "MOD_ShowPic", dat->showPic ? 0 : 1);
                 ShowPicture(hwndDlg, dat, FALSE);
@@ -644,7 +667,7 @@ int MsgWindowMenuHandler(HWND hwndDlg, struct MessageWindowData *dat, int select
                 {
                     char *szFilename = GetThemeFileName(0);
                     if(szFilename != NULL) {
-                        ReadThemeFromINI(szFilename, 0, 0);
+                        ReadThemeFromINI(szFilename, 0, 0, THEME_READ_ALL);
                         CacheMsgLogIcons();
                         CacheLogFonts();
                         WindowList_Broadcast(hMessageWindowList, DM_OPTIONSAPPLIED, 1, 0);
@@ -2273,7 +2296,7 @@ int MsgWindowDrawHandler(WPARAM wParam, LPARAM lParam, HWND hwndDlg, struct Mess
 			rc.left += item->MARGIN_LEFT; rc.right -= item->MARGIN_RIGHT;
 			rc.top += item->MARGIN_TOP; rc.bottom -= item->MARGIN_BOTTOM;
 			DrawAlpha(dis->hDC, &rc, item->COLOR, item->ALPHA, item->COLOR2, item->COLOR2_TRANSPARENT,
-					  item->GRADIENT, item->CORNER, item->RADIUS, item->imageItem);
+					  item->GRADIENT, item->CORNER, item->BORDERSTYLE, item->imageItem);
 		}
 		else
 			FillRect(dis->hDC, &rc, myGlobals.ipConfig.bkgBrush);
@@ -2348,7 +2371,7 @@ int MsgWindowDrawHandler(WPARAM wParam, LPARAM lParam, HWND hwndDlg, struct Mess
 			rc.left += item->MARGIN_LEFT; rc.right -= item->MARGIN_RIGHT;
 			rc.top += item->MARGIN_TOP; rc.bottom -= item->MARGIN_BOTTOM;
 			DrawAlpha(dis->hDC, &rc, item->COLOR, item->ALPHA, item->COLOR2, item->COLOR2_TRANSPARENT,
-					  item->GRADIENT, item->CORNER, item->RADIUS, item->imageItem);
+					  item->GRADIENT, item->CORNER, item->BORDERSTYLE, item->imageItem);
 		}
 		else
 			FillRect(dis->hDC, &dis->rcItem, myGlobals.ipConfig.bkgBrush);
@@ -2421,7 +2444,7 @@ int MsgWindowDrawHandler(WPARAM wParam, LPARAM lParam, HWND hwndDlg, struct Mess
 			rc.left += item->MARGIN_LEFT; rc.right -= item->MARGIN_RIGHT;
 			rc.top += item->MARGIN_TOP; rc.bottom -= item->MARGIN_BOTTOM;
 			DrawAlpha(dis->hDC, &rc, item->COLOR, item->ALPHA, item->COLOR2, item->COLOR2_TRANSPARENT,
-					  item->GRADIENT, item->CORNER, item->RADIUS, item->imageItem);
+					  item->GRADIENT, item->CORNER, item->BORDERSTYLE, item->imageItem);
 		}
 		else
 			FillRect(dis->hDC, &dis->rcItem, myGlobals.ipConfig.bkgBrush);
@@ -2571,7 +2594,7 @@ void LoadOverrideTheme(HWND hwndDlg, struct MessageWindowData *dat)
             dat->theme.logFonts = dat->pContainer->logFonts;
             dat->theme.fontColors = dat->pContainer->fontColors;
             dat->theme.rtfFonts = dat->pContainer->rtfFonts;
-			ReadThemeFromINI(dat->pContainer->szThemeFile, dat, bReadTemplates ? 0 : 1);
+			ReadThemeFromINI(dat->pContainer->szThemeFile, dat, bReadTemplates ? 0 : 1, THEME_READ_ALL);
             dat->dwFlags = dat->theme.dwFlags;
             dat->theme.left_indent *= 15;
             dat->theme.right_indent *= 15;

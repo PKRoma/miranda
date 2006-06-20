@@ -40,25 +40,39 @@
 #define IDR_MENUBAR                     308
 #define IDD_CHOOSESTATUSMODES           310
 #define IDD_OPTIONSDIALOG               311
+#define IDD_SKINTABDIALOG               312
+#define IDD_OPT_SKIN                    313
 #define IDI_TREEVIEWEXPAND              320
 #define IDI_TREEVIEWCHECKED             321
 #define IDI_TREEVIEWUNCHECKED           322
 #define IDI_VISIBLE                     324
 #define IDI_BLOCKED                     325
 #define IDI_STATUSDEPEND                326
+#define IDC_UNLOAD                      1000
 #define IDC_READNEXT                    1000
 #define IDC_MINIMIZE                    1000
+#define IDC_RELOADSKIN                  1001
 #define IDC_APPLY                       1001
 #define IDC_MAXIMIZE                    1001
+#define IDC_SKINFILE                    1002
 #define IDC_DROP                        1002
 #define IDC_MESSAGE                     1002
+#define IDC_SELECTSKINFILE              1003
 #define IDC_HYPERLINKHAND               1003
+#define IDC_SKINFILENAME                1004
 #define IDC_DROPUSER                    1004
+#define IDC_EXPORT                      1005
+#define IDC_IMPORT                      1006
 #define IDC_PREVIEW                     1006
 #define IDC_LOG                         1006
+#define IDC_SKINFILESELECT              1007
 #define IDC_CHKNOTIFY_MESSAGE           1007
+#define IDC_FASTGRADIENT                1008
+#define IDC_CORNERRAD                   1009
 #define IDC_CHKNOTIFY_URL               1009
+#define IDC_CORNERSPIN                  1010
 #define IDC_AUTOPOPUP                   1010
+#define IDC_USESKIN                     1011
 #define IDC_CHKNOTIFY_FILE              1011
 #define IDC_AUTOCLOSE                   1012
 #define IDC_CHKNOTIFY_OTHER             1013
@@ -222,7 +236,6 @@
 #define IDC_ALWAYSFIXED                 1182
 #define IDC_CNTPRIVATE                  1182
 #define IDC_IEVEIW                      1182
-#define IDC_USESKIN                     1182
 #define IDC_NEWSPLITLAYOUT              1183
 #define IDC_O_NOTABS                    1184
 #define IDC_DONTREPORTUNFOCUSED         1185
@@ -272,7 +285,6 @@
 #define IDC_UPDATEPREVIEW               1223
 #define IDC_MODIFY                      1223
 #define IDC_SAVESIZEASGLOBAL            1223
-#define IDC_GETCONTAINERSKINNAME        1223
 #define IDC_CREATENEW                   1224
 #define IDC_RTLMODIFY                   1224
 #define IDC_SENDLATER                   1226
@@ -359,10 +371,12 @@
 #define IDC_USEPRIVATETITLE             1289
 #define IDC_SHOWAVATARS                 1289
 #define IDC_ALWAYSTRIM                  1289
+#define IDC_SKIN_LOADFONTS              1289
 #define IDC_SYNCSOUNDS                  1290
 #define IDC_FLASHLABEL                  1290
 #define IDC_SHOWINFOPANEL               1290
 #define IDC_ALWAYSTRIM2                 1290
+#define IDC_SKIN_LOADTEMPLATES          1290
 #define IDC_NOSKINNING                  1291
 #define IDC_AVADYNAMIC                  1292
 #define IDC_FLATTABS2                   1292
@@ -468,7 +482,6 @@
 #define IDC_INFOPANEL                   1395
 #define IDC_SUPPORT                     1396
 #define IDC_FANCYTHEME                  1397
-#define IDC_CONTAINERSKIN               1398
 #define IDC_CUSTOM1                     1399
 #define IDC_QHTM                        1399
 #define IDC_WHITERECT                   2000
@@ -484,8 +497,6 @@
 #define ID_TABCONTEXT_PREVTAB           40029
 #define ID_CLOSETAB                     40030
 #define ID_TABMENU_CLOSETAB             40031
-#define ID_TABMENU_SWITCHTONEXTTAB      40032
-#define ID_TABMENU_SWITCHTOPREVIOUSTAB  40033
 #define ID_TABMENU_SAVELOCALESETTINGFORTHISCONTACT 40034
 #define ID_TABMENU_OPENWINDOWSERVICE    40035
 #define ID_TABMENU_ATTACHTOCONTAINER    40036
@@ -639,7 +650,6 @@
 #define ID_DUMMY_NOMESSAGESESSIONSOPENED 40202
 #define ID_TRAYCONTEXT_SHOWTHEFLOATER   40203
 #define ID_TRAYCONTEXT_SHOWTHETRAYICON  40204
-#define ID_TABMENU_CONFIGURETABAPPEARANCE 40205
 #define ID_INFOPANEL_QUICKTOGGLE        40206
 #define ID_INFOPANEL_GLOBAL             40207
 #define ID_GLOBAL_ENABLED               40208
@@ -668,6 +678,10 @@
 #define ID_TABMENU_LEAVECHATROOM        40234
 #define ID_PANELPICMENU_SAVETHISPICTUREAS 40235
 #define ID_PICMENU_SAVETHISPICTUREAS    40236
+#define ID_TABMENU_SHIFTTABTOLEFT       40237
+#define ID_TABMENU_SHIFTTABTORIGHT      40238
+#define ID_TABMENU_SAVETABPOSITION      40239
+#define ID_TABMENU_CLEARSAVEDTABPOSITION 40240
 #define IDC_STATIC                      -1
 
 // Next default values for new objects
@@ -675,7 +689,7 @@
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NEXT_RESOURCE_VALUE        10
-#define _APS_NEXT_COMMAND_VALUE         40237
+#define _APS_NEXT_COMMAND_VALUE         40241
 #define _APS_NEXT_CONTROL_VALUE         1400
 #define _APS_NEXT_SYMED_VALUE           40282
 #endif

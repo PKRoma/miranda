@@ -373,8 +373,8 @@ UINT DrawRichEditFrame(HWND hwnd, struct MessageWindowData *mwdat, UINT skinID, 
 		RECT rcWindow;
 		POINT pt;
 		LONG left_off, top_off, right_off, bottom_off;
-		HDC dcMem;
-		HBITMAP hbm, hbmOld;
+		//HDC dcMem;
+		//HBITMAP hbm, hbmOld;
         LONG dwStyle = GetWindowLong(hwnd, GWL_STYLE);
         LONG dwExStyle = GetWindowLong(hwnd, GWL_EXSTYLE);
         
@@ -5698,7 +5698,7 @@ verify:
                         rc.right = rc.left + item->MARGIN_RIGHT + (rcWindow.right - rcWindow.left) + item->MARGIN_LEFT;
                         rc.bottom = rc.top + item->MARGIN_BOTTOM + (rcWindow.bottom - rcWindow.top) + item->MARGIN_TOP;
                         DrawAlpha(hdc, &rc, item->COLOR, item->ALPHA, item->COLOR2, item->COLOR2_TRANSPARENT, item->GRADIENT,
-                                  item->CORNER, item->RADIUS, item->imageItem);
+                                  item->CORNER, item->BORDERSTYLE, item->imageItem);
                     }
                 }
 				EndPaint(hwndDlg, &ps);

@@ -1028,7 +1028,7 @@ static int SplitmsgModulesLoaded(WPARAM wParam, LPARAM lParam)
         CallService(MS_UPDATE_REGISTER, 0, (LPARAM)&upd);
 
     if(DBGetContactSettingByte(NULL, SRMSGMOD_T, "useskin", 0))
-        ReloadContainerSkin();
+        ReloadContainerSkin(1, 1);
     
 	//FirstTimeConfig();
     CacheLogFonts();
@@ -1501,6 +1501,7 @@ HWND CreateNewTabForContact(struct ContainerWindowData *pContainer, HANDLE hCont
 	WORD wStatus;
     int	newItem;
     HWND hwndNew = 0;
+    HWND hwndTab;
     struct NewMessageWindowLParam newData = {0};
 #if defined(_UNICODE)
     WCHAR contactNameW[100];
@@ -1572,11 +1573,36 @@ HWND CreateNewTabForContact(struct ContainerWindowData *pContainer, HANDLE hCont
 	newData.item.mask = TCIF_TEXT | TCIF_IMAGE | TCIF_PARAM;
     newData.item.iImage = 0;
 
+    hwndTab = GetDlgItem(pContainer->hwnd, IDC_MSGTABS);
 	// hide the active tab
-	if(pContainer->hwndActive && bActivateTab) {
+	if(pContainer->hwndActive && bActivateTab)
 		ShowWindow(pContainer->hwndActive, SW_HIDE);
-	}
-	newItem = TabCtrl_InsertItem(GetDlgItem(pContainer->hwnd, IDC_MSGTABS), pContainer->iTabIndex++, &newData.item);
+
+    {
+        int iTabIndex_wanted = DBGetContactSettingDword(hContact, SRMSGMOD_T, "tabindex", pContainer->iChilds * 100);
+        int iCount = TabCtrl_GetItemCount(hwndTab);
+        TCITEM item = {0};
+        HWND hwnd;
+        struct MessageWindowData *dat;
+        int relPos;
+        int i;
+
+        pContainer->iTabIndex = iCount;
+        if(iCount > 0) {
+            for(i = iCount - 1; i >= 0; i--) {
+                item.mask = TCIF_PARAM;
+                TabCtrl_GetItem(hwndTab, i, &item);
+                hwnd = (HWND)item.lParam;
+                dat = (struct MessageWindowData *)GetWindowLong(hwnd, GWL_USERDATA);
+                if(dat) {
+                    relPos = DBGetContactSettingDword(dat->hContact, SRMSGMOD_T, "tabindex", i * 100);
+                    if(iTabIndex_wanted <= relPos)
+                        pContainer->iTabIndex = i;
+                }
+            }
+        }
+    }
+	newItem = TabCtrl_InsertItem(hwndTab, pContainer->iTabIndex, &newData.item);
 	if (bActivateTab)
         TabCtrl_SetCurSel(GetDlgItem(pContainer->hwnd, IDC_MSGTABS), newItem);
 	newData.iTabID = newItem;

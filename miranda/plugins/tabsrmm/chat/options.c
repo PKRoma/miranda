@@ -22,7 +22,6 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include <shlobj.h>
 #include <shlwapi.h>
 
-extern HBRUSH 			hEditBkgBrush;
 extern HBRUSH 			hListBkgBrush;
 extern HICON			hIcons[30];	
 extern FONTINFO			aFonts[OPTIONS_FONTCOUNT];
@@ -1147,11 +1146,8 @@ static BOOL CALLBACK DlgProcOptions2(HWND hwndDlg,UINT uMsg,WPARAM wParam,LPARAM
             
 			if(pszText != NULL)
 				free(pszText);
-			if(hEditBkgBrush)
-				DeleteObject(hEditBkgBrush);
 			if(hListBkgBrush)
-				DeleteObject(hEditBkgBrush);
-			hEditBkgBrush = CreateSolidBrush(DBGetContactSettingDword(NULL, FONTMODULE, "inputbg", GetSysColor(COLOR_WINDOW)));
+				DeleteObject(hListBkgBrush);
 			hListBkgBrush = CreateSolidBrush(DBGetContactSettingDword(NULL, "Chat", "ColorNicklistBG", GetSysColor(COLOR_WINDOW)));
 
 			{	int i, j;
@@ -1402,7 +1398,11 @@ void LoadGlobalSettings(void)
     g_Settings.ScaleIcons = DBGetContactSettingByte(NULL, "Chat", "ScaleIcons", 1);
     g_Settings.UseDividers = DBGetContactSettingByte(NULL, "Chat", "UseDividers", 1);
     g_Settings.DividersUsePopupConfig = DBGetContactSettingByte(NULL, "Chat", "DividersUsePopupConfig", 1);
-    
+
+    if(hListBkgBrush)
+        DeleteObject(hListBkgBrush);
+    hListBkgBrush = CreateSolidBrush(DBGetContactSettingDword(NULL, "Chat", "ColorNicklistBG", GetSysColor(COLOR_WINDOW)));
+
 	InitSetting(&g_Settings.pszTimeStamp, "HeaderTime", "[%H:%M]"); 
 	InitSetting(&g_Settings.pszTimeStampLog, "LogTimestamp", "[%d %b %y %H:%M]"); 
 	InitSetting(&g_Settings.pszIncomingNick, "HeaderIncoming", "%n:"); 
@@ -1484,10 +1484,6 @@ int OptionsInit(void)
 	g_Settings.iWidth = DBGetContactSettingDword(NULL, "Chat", "roomwidth", -1);
 	g_Settings.iHeight = DBGetContactSettingDword(NULL, "Chat", "roomheight", -1);
 	LoadGlobalSettings();
-
-	hEditBkgBrush = CreateSolidBrush(DBGetContactSettingDword(NULL, FONTMODULE, "inputbg", GetSysColor(COLOR_WINDOW)));
-	hListBkgBrush = CreateSolidBrush(DBGetContactSettingDword(NULL, "Chat", "ColorNicklistBG", GetSysColor(COLOR_WINDOW)));
-
 	SkinAddNewSoundEx("ChatMessage", "Chat", Translate("Incoming message"));
 	SkinAddNewSoundEx("ChatHighlight", "Chat", Translate("Message is highlighted"));
 	SkinAddNewSoundEx("ChatAction", "Chat", Translate("User has performed an action"));
@@ -1526,7 +1522,6 @@ int OptionsUnInit(void)
 {
 	FreeGlobalSettings();
 	UnhookEvent(g_hOptions);
-	DeleteObject(hEditBkgBrush);
 	DeleteObject(hListBkgBrush);
 	DeleteObject(g_Settings.NameFont);
 	return 0;

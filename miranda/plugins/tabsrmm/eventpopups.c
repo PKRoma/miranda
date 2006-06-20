@@ -1337,11 +1337,8 @@ nounicode:
     if(nen_options.iAnnounceMethod == 3) {                          // announce via OSD service
         int iLen = _tcslen(nim.szInfo) + _tcslen(nim.szInfoTitle) + 30;
         TCHAR *finalOSDString = malloc(iLen * sizeof(TCHAR));
-#if defined(_UNICODE)
-        mir_snprintfW(finalOSDString, iLen, L"Message from %s: %s", nim.szInfoTitle, nim.szInfo);
-#else
-        mir_snprintf(finalOSDString, iLen, Translate("Message from %s: %s"), nim.szInfoTitle, nim.szInfo);
-#endif        
+
+        mir_sntprintf(finalOSDString, iLen, TranslateT("Message from %s: %s"), nim.szInfoTitle, nim.szInfo);
         CallService("OSD/Announce", (WPARAM)finalOSDString, 0);
         free(finalOSDString);
     }
