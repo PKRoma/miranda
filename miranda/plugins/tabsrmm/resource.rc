@@ -659,8 +659,6 @@ BEGIN
         MENUITEM "Close Tab",                   ID_TABMENU_CLOSETAB
         MENUITEM "Leave Chat Room",             ID_TABMENU_LEAVECHATROOM
         MENUITEM SEPARATOR
-        MENUITEM "Shift Tab Left",              ID_TABMENU_SHIFTTABTOLEFT
-        MENUITEM "Shift Tab Right",             ID_TABMENU_SHIFTTABTORIGHT
         MENUITEM "Save Tab Position",           ID_TABMENU_SAVETABPOSITION
         MENUITEM "Clear saved Tab Position",    ID_TABMENU_CLEARSAVEDTABPOSITION
         MENUITEM SEPARATOR
