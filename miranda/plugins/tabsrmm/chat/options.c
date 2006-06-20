@@ -216,25 +216,26 @@ void LoadMsgDlgFont(int i, LOGFONT *lf, COLORREF* colour, char *szMod)
     char str[32];
     int style;
     DBVARIANT dbv;
+    int j = (i >= 100 ? i - 100 : i);
 
     if (colour) {
         wsprintfA(str, "Font%dCol", i);
-        *colour = DBGetContactSettingDword(NULL, szMod, str, fontOptionsList[i].defColour);
+        *colour = DBGetContactSettingDword(NULL, szMod, str, fontOptionsList[j].defColour);
     }
     if (lf) {
         wsprintfA(str, "Font%dSize", i);
-        lf->lfHeight = (char) DBGetContactSettingByte(NULL, szMod, str, fontOptionsList[i].defSize);
+        lf->lfHeight = (char) DBGetContactSettingByte(NULL, szMod, str, fontOptionsList[j].defSize);
         lf->lfWidth = 0;
         lf->lfEscapement = 0;
         lf->lfOrientation = 0;
         wsprintfA(str, "Font%dSty", i);
-        style = DBGetContactSettingByte(NULL, szMod, str, fontOptionsList[i].defStyle);
+        style = DBGetContactSettingByte(NULL, szMod, str, fontOptionsList[j].defStyle);
         lf->lfWeight = style & FONTF_BOLD ? FW_BOLD : FW_NORMAL;
         lf->lfItalic = style & FONTF_ITALIC ? 1 : 0;
         lf->lfUnderline = 0;
         lf->lfStrikeOut = 0;
         wsprintfA(str, "Font%dSet", i);
-        lf->lfCharSet = DBGetContactSettingByte(NULL, szMod, str, fontOptionsList[i].defCharset);
+        lf->lfCharSet = DBGetContactSettingByte(NULL, szMod, str, fontOptionsList[j].defCharset);
         lf->lfOutPrecision = OUT_DEFAULT_PRECIS;
         lf->lfClipPrecision = CLIP_DEFAULT_PRECIS;
         lf->lfQuality = DEFAULT_QUALITY;
@@ -246,7 +247,7 @@ void LoadMsgDlgFont(int i, LOGFONT *lf, COLORREF* colour, char *szMod)
         }
         else {
             if (DBGetContactSettingTString(NULL, szMod, str, &dbv)) {
-                lstrcpy(lf->lfFaceName, fontOptionsList[i].szDefFace);
+                lstrcpy(lf->lfFaceName, fontOptionsList[j].szDefFace);
             }
             else {
                 lstrcpyn(lf->lfFaceName, dbv.ptszVal, SIZEOF(lf->lfFaceName));
