@@ -1145,6 +1145,18 @@ LBL_InvalidCommand:
 				MSN_SetDword( hContact, "FlagBits", dwValue );
 				if ( dwValue & 0x200 )
 					MSN_SetString( hContact, "MirVer", "Webmessenger" );
+				else if ( dwValue == 1342177280 )
+					MSN_SetString( hContact, "MirVer", "Miranda 0.5.x" );
+				else if ( dwValue == 805306404 )
+					MSN_SetString( hContact, "MirVer", "Miranda 0.4.x" );
+				else if ( dwValue & 0x60000000 )
+					MSN_SetString( hContact, "MirVer", "MSN 8.x" );
+				else if ( dwValue & 0x20000000 )
+					MSN_SetString( hContact, "MirVer", "MSN 7.x" );
+				else if ( dwValue & 0x10000000 )
+					MSN_SetString( hContact, "MirVer", "MSN 6.x" );
+				else
+					MSN_SetString( hContact, "MirVer", "MSN 4.x-5.x" );
 
 				if ( data.cmdstring[0] ) {
 					int temp_status = MSN_GetWord(hContact, "Status", ID_STATUS_OFFLINE);
