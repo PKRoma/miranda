@@ -541,7 +541,7 @@ static __inline int mir_snprintfW(wchar_t *buffer, size_t count, const wchar_t* 
 
 static void __fastcall IMG_RenderImageItem(HDC hdc, ImageItem *item, RECT *rc);
 void IMG_InitDecoder();
-static void LoadSkinItems(char *file);
+static void LoadSkinItems(char *file, int onStartup);
 static void IMG_CreateItem(ImageItem *item, const char *fileName, HDC hdc);
 static void IMG_LoadItems(char *szFileName);
 void IMG_DeleteItems();

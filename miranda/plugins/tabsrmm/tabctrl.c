@@ -768,7 +768,6 @@ static LRESULT CALLBACK TabControlSubclassProc(HWND hwnd, UINT msg, WPARAM wPara
                         ImageList_AddIcon(tabdat->himlDrag, dat->hTabIcon);
 						ImageList_BeginDrag(tabdat->himlDrag, 0, 8, 8);
 						ImageList_DragEnter(hwnd, tci.pt.x, tci.pt.y);
-                        _DebugTraceW(L"start drag: %d, %d (%s)", tabdat->hwndDrag, dat, dat ? dat->szNickname : L"undef");
 						SetCapture(hwnd);
 					}
 					return TRUE;
@@ -818,7 +817,7 @@ static LRESULT CALLBACK TabControlSubclassProc(HWND hwnd, UINT msg, WPARAM wPara
                 i= TabCtrl_HitTest(hwnd, &tci);
                 if(i != -1 && i != tabdat->iBeginIndex)
                     RearrangeTab(tabdat->hwndDrag, tabdat->dragDat, MAKELONG(i, 0xffff));
-                tabdat->hwndDrag = -1;
+                tabdat->hwndDrag = (HWND)-1;
                 tabdat->dragDat = NULL;
                 if(tabdat->himlDrag) {
                     ImageList_RemoveAll(tabdat->himlDrag);

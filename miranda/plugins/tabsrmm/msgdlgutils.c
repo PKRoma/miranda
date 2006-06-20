@@ -69,7 +69,6 @@ void RearrangeTab(HWND hwndDlg, struct MessageWindowData *dat, int iMode)
     item.pszText = oldText;
     item.cchTextMax = 500;
 
-    _DebugTraceW(L"rearrange: %d, %d (%s) to %d", hwndDlg, dat, dat ? dat->szNickname : L"undef", LOWORD(iMode));
     if(dat == NULL || !IsWindow(hwndDlg))
         return;
 
