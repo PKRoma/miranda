@@ -47,24 +47,24 @@ char *TemplateNames[] = {
 };
     
 TemplateSet LTR_Default = { TRUE, 
-    _T("%I %S %N %fm%c4%&D%n%S %fd%c0[%T%fd%c0]%|%M"),
-    _T("%I %S %N %fm%c4%&D%n%S %fd%c0[%T%fd%c0]%|%M"),
-    _T("%I %S %fm%c4%&E %N%n%S %fd%c0[%T%fd%c0]%|%M"),
-    _T("%I %S %fm%c4%&E %N%n%S %fd%c0[%T%fd%c0]%|%M"),
-    _T("%S %fd%c0[%T%fd%c0]%|%M"),
-    _T("%S %fd%c0[%T%fd%c0]%|%M"),
+    _T("%I %S %N %D%n%S [%T]%|%M"),
+    _T("%I %S %N %D%n%S [%T]%|%M"),
+    _T("%I %S %N %D%n%S [%T]%|%M"),
+    _T("%I %S %N %D%n%S [%T]%|%M"),
+    _T("%S [%T]%|%M"),
+    _T("%S [%T]%|%M"),
     _T("%I%S %D, %h:%m,%>%N%>%M%! %<"),
     _T("%I%S %D, %h:%m:%s, %e%l%M"),
-    "Default LTR"
+    "Default RTL"
 };
 
 TemplateSet RTL_Default = { TRUE, 
-    _T("%I %S %N %fm%c4%&D%n%S %fd%c0[%T%fd%c0]%|%M"),
-    _T("%I %S %N %fm%c4%&D%n%S %fd%c0[%T%fd%c0]%|%M"),
-    _T("%I %S %fm%c4%&E %N%n%S %fd%c0[%T%fd%c0]%|%M"),
-    _T("%I %S %fm%c4%&E %N%n%S %fd%c0[%T%fd%c0]%|%M"),
-    _T("%S %fd%c0[%T%fd%c0]%|%M"),
-    _T("%S %fd%c0[%T%fd%c0]%|%M"),
+    _T("%I %S %N %D%n%S [%T]%|%M"),
+    _T("%I %S %N %D%n%S [%T]%|%M"),
+    _T("%I %S %N %D%n%S [%T]%|%M"),
+    _T("%I %S %N %D%n%S [%T]%|%M"),
+    _T("%S [%T]%|%M"),
+    _T("%S [%T]%|%M"),
     _T("%I%S %D, %h:%m,%>%N%>%M%! %<"),
     _T("%I%S %D, %h:%m:%s, %e%l%M"),
     "Default RTL"
