@@ -80,6 +80,7 @@ extern int do_yahoo_debug;
 extern	HANDLE         YahooMenuItems[ MENU_ITEMS_COUNT ];
 
 #define LocalEventUnhook(hook)	if(hook) UnhookEvent(hook)
+#define NEWSTR_ALLOCA(A) (A==NULL)?NULL:strcpy((char*)alloca(strlen(A)+1),A)
 
 struct _conn {
 	int tag;
@@ -165,6 +166,7 @@ char* YAHOO_GetContactName(HANDLE hContact);
 void YAHOO_basicsearch(const char *nick);
 void YAHOO_remove_buddy(const char *who);
 void YAHOO_reject(const char *who, const char *msg);
+void YAHOO_accept(const char *who);
 void YAHOO_add_buddy(const char *who, const char *group, const char *msg);
 HANDLE add_buddy( const char *yahoo_id, const char *yahoo_name, DWORD flags );
 void YAHOO_sendtyping(const char *who, int stat);
@@ -214,6 +216,7 @@ void YAHOO_bcast_picture_checksum(int cksum);
 BOOL YAHOO_LoadPngModule();
 int YAHOO_SaveBitmapAsAvatar( HBITMAP hBitmap, const char* szFileName );
 HBITMAP YAHOO_StretchBitmap( HBITMAP hBitmap );
+void yahoo_reset_avatar(HANDLE 	hContact);
 HBITMAP YAHOO_SetAvatar(const char *szFile);
 void SetButtonCheck(HWND hwndDlg, int CtrlID, BOOL bCheck);
 void YahooOpenURL(const char *url, int autoLogin);

@@ -145,9 +145,8 @@ int __stdcall	YAHOO_ShowPopup( const char* nickname, const char* msg, const char
 {
 	POPUPDATAEX ppd;
 
-	if ( !ServiceExists( MS_POPUP_ADDPOPUPEX ))
+	if ( !ServiceExists( MS_POPUP_ADDPOPUPEX )) 
 		return 0;
-	
 
 	ZeroMemory(&ppd, sizeof(ppd) );
 	lstrcpy( ppd.lpzContactName, nickname );
@@ -176,15 +175,22 @@ int YAHOO_shownotification(const char *title, const char *info, DWORD flags)
 {
     if (ServiceExists(MS_CLIST_SYSTRAY_NOTIFY)) {
         MIRANDASYSTRAYNOTIFY err;
+		int ret;
+		
         err.szProto = yahooProtocolName;
         err.cbSize = sizeof(err);
         err.szInfoTitle = (char *)title;
         err.szInfo = (char *)info;
         err.dwInfoFlags = flags;
         err.uTimeout = 1000 * 3;
-        CallService(MS_CLIST_SYSTRAY_NOTIFY, 0, (LPARAM) & err);
-        return 1;
-    }
+        ret = CallService(MS_CLIST_SYSTRAY_NOTIFY, 0, (LPARAM) & err);
+		
+        if (ret == 0)
+			return 1;
+    } 
+	
+	MessageBox(NULL, info, title, MB_OK | MB_ICONINFORMATION);
+	
     return 0;
 }
 

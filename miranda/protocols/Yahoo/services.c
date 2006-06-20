@@ -149,17 +149,8 @@ int SetStatus(WPARAM wParam,LPARAM lParam)
     }
     else if (!yahooLoggedIn) {
 		DBVARIANT dbv;
+		int err = 0;
 		char errmsg[80];
-		
-		//if (hNetlibUser  == 0) {
-			//MessageBox(NULL, "ARRRGH NO NETLIB HANDLE!!!", yahooProtocolName, MB_OK);
-			//return ;
-			//DebugBreak();
-			//MessageBox(NULL, "ARRRGH NO NETLIB HANDLE!!!", yahooProtocolName, MB_OK);
-			//return 0;
-		//}
-		
-		errmsg[0]='\0';
 		
         if (yahooStatus == ID_STATUS_CONNECTING)
 			return 0;
@@ -168,25 +159,38 @@ int SetStatus(WPARAM wParam,LPARAM lParam)
 		
 		ylad = y_new0(yahoo_local_account, 1);
 
-		// Load Yahoo ID form the database.
+		/*
+		 * Load Yahoo ID form the database.
+		 */
 		if (!DBGetContactSetting(NULL, yahooProtocolName, YAHOO_LOGINID, &dbv)) {
-			lstrcpyn(ylad->yahoo_id, dbv.pszVal, 255);
+			if (lstrlen(dbv.pszVal) > 0) {
+				lstrcpyn(ylad->yahoo_id, dbv.pszVal, 255);
+			} else
+				err++;
 			DBFreeVariant(&dbv);
 		} else 
-			lstrcpyn(errmsg, Translate("Please enter your yahoo id in Options/Network/Yahoo"), 80);
+			err++;
 		
-
-		if (errmsg[0] == '\0') {
+		if (err) {
+			lstrcpyn(errmsg, Translate("Please enter your yahoo id in Options/Network/Yahoo"), 80);
+		} else {
 			if (!DBGetContactSetting(NULL, yahooProtocolName, YAHOO_PASSWORD, &dbv)) {
 				CallService(MS_DB_CRYPT_DECODESTRING, lstrlen(dbv.pszVal) + 1, (LPARAM) dbv.pszVal);
-				lstrcpyn(ylad->password, dbv.pszVal, 255);
+				if (lstrlen(dbv.pszVal) > 0) {
+					lstrcpyn(ylad->password, dbv.pszVal, 255);
+				} else
+					err++;
+				
 				DBFreeVariant(&dbv);
-			}  else {
+			}  else 
+				err++;
+			
+			if (err) {
 				lstrcpyn(errmsg, Translate("Please enter your yahoo password in Options/Network/Yahoo"), 80);
 			}
 		}
 
-		if (errmsg[0] != '\0'){
+		if (err != 0){
 			FREE(ylad);
 			ylad = NULL;
 			yahoo_util_broadcaststatus(ID_STATUS_OFFLINE);
@@ -234,8 +238,8 @@ void yahoo_util_broadcaststatus(int s)
     yahooStatus = s;
 
 	YAHOO_DebugLog("[yahoo_util_broadcaststatus] Old Status: %s (%d), New Status: %s (%d)",
-			(char *) CallService(MS_CLIST_GETSTATUSMODEDESCRIPTION, oldStatus, 0), oldStatus,
-			(char *) CallService(MS_CLIST_GETSTATUSMODEDESCRIPTION, yahooStatus, 0), yahooStatus);	
+			NEWSTR_ALLOCA((char *) CallService(MS_CLIST_GETSTATUSMODEDESCRIPTION, oldStatus, 0)), oldStatus,
+			NEWSTR_ALLOCA((char *) CallService(MS_CLIST_GETSTATUSMODEDESCRIPTION, yahooStatus, 0)), yahooStatus);	
     ProtoBroadcastAck(yahooProtocolName, NULL, ACKTYPE_STATUS, ACKRESULT_SUCCESS, (HANDLE) oldStatus, (LPARAM)yahooStatus);
 }
 
@@ -594,8 +598,8 @@ int YahooAddToListByEvent(WPARAM wParam,LPARAM lParam)
 
 int YahooAuthAllow(WPARAM wParam,LPARAM lParam)
 {
-    //DBEVENTINFO dbei;
-    //char* nick;
+    DBEVENTINFO dbei;
+    char* nick;
     
     YAHOO_DebugLog("[YahooAuthAllow]");
 	if ( !yahooLoggedIn ) {
@@ -604,7 +608,7 @@ int YahooAuthAllow(WPARAM wParam,LPARAM lParam)
 	}
 
 	
-	/*memset( &dbei, 0, sizeof( dbei ));
+	memset( &dbei, 0, sizeof( dbei ));
 	dbei.cbSize = sizeof( dbei );
 
 	if (( dbei.cbBlob = YAHOO_CallService( MS_DB_EVENT_GETBLOBSIZE, wParam, 0 )) == -1 )
@@ -620,11 +624,12 @@ int YahooAuthAllow(WPARAM wParam,LPARAM lParam)
 	if ( strcmp( dbei.szModule, yahooProtocolName ))
 		return 1;
 
-	//nick = ( char* )( dbei.pBlob + sizeof( DWORD )*2 );
+	nick = ( char* )( dbei.pBlob + sizeof( DWORD )*2 );
 
-    //YAHOO_DebugLog("Adding buddy:%s ", nick);
+    YAHOO_DebugLog("Accepting buddy:%s ", nick);
 	//YAHOO_add_buddy(nick, "miranda", NULL);
-	*/
+	YAHOO_accept(nick);
+	
 	return 0;
 }
 
@@ -973,7 +978,7 @@ static int SetCustomStatCommand( WPARAM wParam, LPARAM lParam )
 	HWND hwndSetCustomStatus;
 	
 	if ( !yahooLoggedIn ) {
-		YAHOO_shownotification("ERROR", Translate("You need to be connected to set the custom message"), NIIF_ERROR);
+		YAHOO_shownotification(Translate("Yahoo Error"), Translate("You need to be connected to set the custom message"), NIIF_ERROR);
 		return 0;
 	}
 	
@@ -1081,7 +1086,7 @@ static int YahooCalendarCommand( WPARAM wParam, LPARAM lParam )
 static int YahooRefreshCommand( WPARAM wParam, LPARAM lParam )
 {
 	if ( !yahooLoggedIn ){
-		YAHOO_shownotification("ERROR", Translate("You need to be connected to refresh your buddy list"), NIIF_ERROR);
+		YAHOO_shownotification(Translate("Yahoo Error"), Translate("You need to be connected to refresh your buddy list"), NIIF_ERROR);
 		return 0;
 	}
 
@@ -1361,28 +1366,26 @@ int YahooSetApparentMode(WPARAM wParam, LPARAM lParam)
 void GetAvatarFileName(HANDLE hContact, char* pszDest, int cbLen, int type)
 {
   int tPathLen;
-
   DBVARIANT dbv;
   
   CallService(MS_DB_GETPROFILEPATH, cbLen, (LPARAM)pszDest);
 
   tPathLen = lstrlen(pszDest);
-  tPathLen += _snprintf(pszDest + tPathLen, MAX_PATH-tPathLen, "\\%s\\", yahooProtocolName);
+  _snprintf(pszDest + tPathLen, MAX_PATH-tPathLen, "\\%s\\", yahooProtocolName);
   CreateDirectory(pszDest, NULL);
 
-  if (!DBGetContactSetting(hContact, yahooProtocolName, YAHOO_LOGINID, &dbv)) {
-		lstrcpy(pszDest + tPathLen, dbv.pszVal);
-		tPathLen +=lstrlen(dbv.pszVal);
+  if (hContact != NULL && !DBGetContactSetting(hContact, yahooProtocolName, YAHOO_LOGINID, &dbv)) {
+		lstrcat(pszDest, dbv.pszVal);
 		DBFreeVariant(&dbv);
   }else {
-		lstrcpy(pszDest + tPathLen, "avatar");
-		tPathLen +=lstrlen("avatar");
+		lstrcat(pszDest, "avatar");
   }
   
-  if (!hContact)
-	lstrcpy(pszDest + tPathLen, ".png" );
-  else
-   lstrcpy(pszDest + tPathLen, ".bmp" );
+  if (type == 1) {
+	lstrcat(pszDest, ".swf" );
+  } else
+	lstrcat(pszDest, ".png" );
+  
 }
 
 int YahooGetAvatarInfo(WPARAM wParam,LPARAM lParam)
@@ -1390,6 +1393,8 @@ int YahooGetAvatarInfo(WPARAM wParam,LPARAM lParam)
 	PROTO_AVATAR_INFORMATION* AI = ( PROTO_AVATAR_INFORMATION* )lParam;
 
 	DBVARIANT dbv;
+	int avtType;
+	
 	if (!DBGetContactSetting(AI->hContact, yahooProtocolName, YAHOO_LOGINID, &dbv)) {
 		YAHOO_DebugLog("[YAHOO_GETAVATARINFO] For: %s", dbv.pszVal);
 		DBFreeVariant(&dbv);
@@ -1413,14 +1418,21 @@ int YahooGetAvatarInfo(WPARAM wParam,LPARAM lParam)
 		return GAIR_NOAVATAR;
 	}
 	
-	if ( DBGetContactSettingByte(AI->hContact, yahooProtocolName,"AvatarType", 0) <= 0)
+	avtType  = DBGetContactSettingByte(AI->hContact, yahooProtocolName,"AvatarType", 0);
+	YAHOO_DebugLog("[YAHOO_GETAVATARINFO] Avatar Type: %d", avtType);
+	
+	if ( avtType != 2) {
+		if (avtType != 0)
+			YAHOO_DebugLog("[YAHOO_GETAVATARINFO] Not handling this type yet!");
+		
 		return GAIR_NOAVATAR;
+	}
 	
 	if (DBGetContactSettingDword(AI->hContact, yahooProtocolName,"PictCK", 0) != 0) {
 		
 		GetAvatarFileName(AI->hContact, AI->filename, sizeof AI->filename,DBGetContactSettingByte(AI->hContact, yahooProtocolName,"AvatarType", 0));
 		//if ( access( AI->filename, 0 ) == 0 ) {
-		AI->format = PA_FORMAT_BMP;
+		AI->format = PA_FORMAT_PNG;
 		YAHOO_DebugLog("[YAHOO_GETAVATARINFO] filename: %s", AI->filename);
 		
 		if (_access( AI->filename, 0 ) == 0 ) {
@@ -1428,7 +1440,7 @@ int YahooGetAvatarInfo(WPARAM wParam,LPARAM lParam)
 		} else {
 			/* need to request it again? */
 			if (YAHOO_GetWord(AI->hContact, "PictLoading", 0) != 0 &&
-				(time(NULL) - YAHOO_GetWord(AI->hContact, "PictLastCK", 0) < 50)) {
+				(time(NULL) - YAHOO_GetWord(AI->hContact, "PictLastCK", 0) < 500)) {
 				YAHOO_DebugLog("[YAHOO_GETAVATARINFO] Waiting for avatar to load!");
 				return GAIR_WAITFOR;
 			} else if ( yahooLoggedIn ) {

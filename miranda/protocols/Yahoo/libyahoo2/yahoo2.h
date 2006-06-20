@@ -108,6 +108,7 @@ void yahoo_set_stealth(int id, const char *buddy, int add);
 
 void yahoo_add_buddy(int id, const char *who, const char *group, const char *msg);
 void yahoo_remove_buddy(int id, const char *who, const char *group);
+void yahoo_accept_buddy(int id, const char *who);
 void yahoo_reject_buddy(int id, const char *who, const char *msg);
 /* if unignore is true, unignore, else ignore */
 void yahoo_ignore_buddy(int id, const char *who, int unignore);

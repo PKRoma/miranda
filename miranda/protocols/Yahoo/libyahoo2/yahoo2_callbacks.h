@@ -519,7 +519,7 @@ void YAHOO_CALLBACK_TYPE(ext_yahoo_got_file)(int id, char *me, char *who, char *
  * 	who  - who was added
  * 	msg  - any message sent
  */
-void YAHOO_CALLBACK_TYPE(ext_yahoo_contact_added)(int id, char *myid, char *who, char *msg);
+void YAHOO_CALLBACK_TYPE(ext_yahoo_contact_added)(int id, char *myid, char *who, char *fname, char *lname, char *msg);
 
 /*
  * Name: ext_yahoo_buddy_added
@@ -531,7 +531,7 @@ void YAHOO_CALLBACK_TYPE(ext_yahoo_contact_added)(int id, char *myid, char *who,
  * 	group  - group buddy was added to
  *  status - status of the operation
  */
-void YAHOO_CALLBACK_TYPE(ext_yahoo_buddy_added)(int id, char *myid, char *who, char *group, int status);
+void YAHOO_CALLBACK_TYPE(ext_yahoo_buddy_added)(int id, char *myid, char *who, char *group, int status, int auth);
 
 
 /*
