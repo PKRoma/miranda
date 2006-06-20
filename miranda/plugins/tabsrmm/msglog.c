@@ -1706,7 +1706,7 @@ static BOOL CALLBACK LangAddCallback(LPCTSTR str)
 	int i, count;
 	UINT cp;
 
-    cp = _tstoi(str);
+    cp = _ttoi(str);
 	count = sizeof(cpTable)/sizeof(cpTable[0]);
 	for (i=0; i<count && cpTable[i].cpId!=cp; i++);
 	if (i < count) {
