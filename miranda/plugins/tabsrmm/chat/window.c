@@ -31,7 +31,6 @@ extern HMODULE  themeAPIHandle;
 extern HANDLE   (WINAPI *MyOpenThemeData)(HWND,LPCWSTR);
 
 extern MYGLOBALS	myGlobals;
-extern HBRUSH		hEditBkgBrush;
 extern HBRUSH		hListBkgBrush;
 extern HANDLE		hSendEvent;
 extern HICON		hIcons[30];
@@ -188,6 +187,15 @@ static int RoomWndResize(HWND hwndDlg,LPARAM lParam,UTILRESIZECONTROL *urc)
 			urc->rcItem.bottom = bToolbar?(urc->dlgNewSize.cy - si->iSplitterY - 23):(urc->dlgNewSize.cy - si->iSplitterY - 2);
             if(!splitterEdges)
                 urc->rcItem.bottom += 2;
+            if(dat->pContainer->bSkinned) {
+                StatusItems_t *item = &StatusItems[ID_EXTBKHISTORY];
+                if(!item->IGNORED) {
+                    urc->rcItem.left += item->MARGIN_LEFT;
+                    urc->rcItem.right -= item->MARGIN_RIGHT;
+                    urc->rcItem.top += item->MARGIN_TOP;
+                    urc->rcItem.bottom -= item->MARGIN_BOTTOM;
+                }
+            }
 			return RD_ANCHORX_CUSTOM|RD_ANCHORY_CUSTOM;
 		case IDC_LIST:
 			urc->rcItem.top = bTabs?(bTabBottom?0:rcTabs.top-1):0;
@@ -196,6 +204,15 @@ static int RoomWndResize(HWND hwndDlg,LPARAM lParam,UTILRESIZECONTROL *urc)
             urc->rcItem.bottom = bToolbar?(urc->dlgNewSize.cy - si->iSplitterY - 23):(urc->dlgNewSize.cy - si->iSplitterY - 2);
             if(!splitterEdges)
                 urc->rcItem.bottom += 2;
+            if(dat->pContainer->bSkinned) {
+                StatusItems_t *item = &StatusItems[ID_EXTBKUSERLIST];
+                if(!item->IGNORED) {
+                    urc->rcItem.left += item->MARGIN_LEFT;
+                    urc->rcItem.right -= item->MARGIN_RIGHT;
+                    urc->rcItem.top += item->MARGIN_TOP;
+                    urc->rcItem.bottom -= item->MARGIN_BOTTOM;
+                }
+            }
 			return RD_ANCHORX_CUSTOM|RD_ANCHORY_CUSTOM;
 		case IDC_SPLITTERX:
 			urc->rcItem.right = urc->dlgNewSize.cx - si->iSplitterX+2;
@@ -221,6 +238,15 @@ static int RoomWndResize(HWND hwndDlg,LPARAM lParam,UTILRESIZECONTROL *urc)
             msgTop = urc->rcItem.top;
             if(myGlobals.m_SideBarEnabled)
                 urc->rcItem.left += 9;
+            if(dat->pContainer->bSkinned) {
+                StatusItems_t *item = &StatusItems[ID_EXTBKINPUTAREA];
+                if(!item->IGNORED) {
+                    urc->rcItem.left += item->MARGIN_LEFT;
+                    urc->rcItem.right -= item->MARGIN_RIGHT;
+                    urc->rcItem.top += item->MARGIN_TOP;
+                    urc->rcItem.bottom -= item->MARGIN_BOTTOM;
+                }
+            }
 			return RD_ANCHORX_CUSTOM|RD_ANCHORY_CUSTOM;
         case IDC_CHAT_TOGGLESIDEBAR:
             urc->rcItem.right = 8;
@@ -1058,9 +1084,9 @@ static LRESULT CALLBACK NicklistSubclassProc(HWND hwnd, UINT msg, WPARAM wParam,
 	switch (msg) 
 	{
     case WM_NCCALCSIZE:
-        return(NcCalcRichEditFrame(hwnd, mwdat, ID_EXTBKHISTORY, msg, wParam, lParam, OldNicklistProc));
+        return(NcCalcRichEditFrame(hwnd, mwdat, ID_EXTBKUSERLIST, msg, wParam, lParam, OldNicklistProc));
     case WM_NCPAINT:
-        return(DrawRichEditFrame(hwnd, mwdat, ID_EXTBKHISTORY, msg, wParam, lParam, OldNicklistProc));
+        return(DrawRichEditFrame(hwnd, mwdat, ID_EXTBKUSERLIST, msg, wParam, lParam, OldNicklistProc));
 	case WM_ERASEBKGND:
 		{
 		HDC dc = (HDC)wParam;
@@ -2665,11 +2691,32 @@ LABEL_SHOWWINDOW:
         case WM_PAINT:
             if(dat->pContainer->bSkinned) {
                 PAINTSTRUCT ps;
-                RECT rcClient;
+                RECT rcClient, rcWindow, rc;
+                StatusItems_t *item;
+                POINT pt;
+                UINT item_ids[3] = {ID_EXTBKHISTORY, ID_EXTBKINPUTAREA, ID_EXTBKUSERLIST};
+                UINT ctl_ids[3] = {IDC_CHAT_LOG, IDC_CHAT_MESSAGE, IDC_LIST};
+                int  i;
 
                 HDC hdc = BeginPaint(hwndDlg, &ps);
                 GetClientRect(hwndDlg, &rcClient);
                 SkinDrawBG(hwndDlg, dat->pContainer->hwnd, dat->pContainer, &rcClient, hdc);
+
+                for(i = 0; i < 3; i++) {
+                    item = &StatusItems[item_ids[i]];
+                    if(!item->IGNORED) {
+
+                        GetWindowRect(GetDlgItem(hwndDlg, ctl_ids[i]), &rcWindow);
+                        pt.x = rcWindow.left; pt.y = rcWindow.top;
+                        ScreenToClient(hwndDlg, &pt);
+                        rc.left = pt.x - item->MARGIN_LEFT;
+                        rc.top = pt.y - item->MARGIN_TOP;
+                        rc.right = rc.left + item->MARGIN_RIGHT + (rcWindow.right - rcWindow.left) + item->MARGIN_LEFT;
+                        rc.bottom = rc.top + item->MARGIN_BOTTOM + (rcWindow.bottom - rcWindow.top) + item->MARGIN_TOP;
+                        DrawAlpha(hdc, &rc, item->COLOR, item->ALPHA, item->COLOR2, item->COLOR2_TRANSPARENT, item->GRADIENT,
+                                  item->CORNER, item->BORDERSTYLE, item->imageItem);
+                    }
+                }
                 EndPaint(hwndDlg, &ps);
                 return 0;
             }
@@ -2804,16 +2851,10 @@ LABEL_SHOWWINDOW:
             iTabs = TabCtrl_GetItemCount(hwndTab);
             if(iTabs == 1) {
                 if(!bForced && g_sessionshutdown == 0) {
-#ifdef _DEBUG
-                    _DebugTraceA("UNforced close of last tab posting close to container %d", g_sessionshutdown);
-#endif
                     PostMessage(GetParent(GetParent(hwndDlg)), WM_CLOSE, 0, 1);
                     return 1;
                 }
                 else {
-#ifdef _DEBUG
-                    _DebugTraceA("forced close of last tab (gc_closewindow param = 2)");
-#endif
                 }
             }
             dat->pContainer->iChilds--;

@@ -47,23 +47,7 @@ extern TemplateSet LTR_Active, RTL_Active;
 extern MYGLOBALS myGlobals;
 extern struct ContainerWindowData *pFirstContainer;
 extern ImageItem *g_glyphItem;
-
-/*
-typedef  DWORD  (__stdcall *pfnImgNewDecoder)(void ** ppDecoder); 
-typedef DWORD (__stdcall *pfnImgDeleteDecoder)(void * pDecoder);
-typedef  DWORD  (__stdcall *pfnImgNewDIBFromFile)(LPVOID pDecoder, LPCSTR pFileName, LPVOID *pImg);
-typedef DWORD (__stdcall *pfnImgDeleteDIBSection)(LPVOID pImg);
-typedef DWORD (__stdcall *pfnImgGetHandle)(LPVOID pImg, HBITMAP *pBitmap, LPVOID *ppDIBBits);
-
-static pfnImgNewDecoder ImgNewDecoder = 0;
-static pfnImgDeleteDecoder ImgDeleteDecoder = 0;
-static pfnImgNewDIBFromFile ImgNewDIBFromFile = 0;
-static pfnImgDeleteDIBSection ImgDeleteDIBSection = 0;
-static pfnImgGetHandle ImgGetHandle = 0;
-
-static BOOL g_imgDecoderAvail = FALSE;
-HMODULE g_hModuleImgDecoder = 0;
-*/
+extern int          g_chat_integration_enabled;
 
 static void __inline gradientVertical(UCHAR *ubRedFinal, UCHAR *ubGreenFinal, UCHAR *ubBlueFinal, 
 					  ULONG ulBitmapHeight, UCHAR ubRed, UCHAR ubGreen, UCHAR ubBlue, UCHAR ubRed2, 
@@ -77,7 +61,7 @@ static void __inline gradientHorizontal( UCHAR *ubRedFinal, UCHAR *ubGreenFinal,
 static ImageItem *g_ImageItems = NULL;
 ImageItem *g_glyphItem = NULL;
 
-HBRUSH g_ContainerColorKeyBrush = 0;
+HBRUSH g_ContainerColorKeyBrush = 0, g_MenuBGBrush = 0;
 COLORREF g_ContainerColorKey = 0;
 SIZE g_titleBarButtonSize = {0};
 int g_titleButtonTopOff = 0, g_captionOffset = 0, g_captionPadding = 0;
@@ -167,6 +151,14 @@ StatusItems_t StatusItems[] = {
         CLCDEFAULT_COLOR, CLCDEFAULT_COLOR2, CLCDEFAULT_COLOR2_TRANSPARENT, CLCDEFAULT_TEXTCOLOR, CLCDEFAULT_ALPHA, CLCDEFAULT_MRGN_LEFT, 
         CLCDEFAULT_MRGN_TOP, CLCDEFAULT_MRGN_RIGHT, CLCDEFAULT_MRGN_BOTTOM, CLCDEFAULT_IGNORE
     }, {"Statusbarpanel", "TSKIN_STATUSBARPANEL", ID_EXTBKSTATUSBARPANEL,
+        CLCDEFAULT_GRADIENT,CLCDEFAULT_CORNER,
+        CLCDEFAULT_COLOR, CLCDEFAULT_COLOR2, CLCDEFAULT_COLOR2_TRANSPARENT, CLCDEFAULT_TEXTCOLOR, CLCDEFAULT_ALPHA, CLCDEFAULT_MRGN_LEFT, 
+        CLCDEFAULT_MRGN_TOP, CLCDEFAULT_MRGN_RIGHT, CLCDEFAULT_MRGN_BOTTOM, CLCDEFAULT_IGNORE
+    }, {"Statusbar", "TSKIN_STATUSBAR", ID_EXTBKSTATUSBAR,
+        CLCDEFAULT_GRADIENT,CLCDEFAULT_CORNER,
+        CLCDEFAULT_COLOR, CLCDEFAULT_COLOR2, CLCDEFAULT_COLOR2_TRANSPARENT, CLCDEFAULT_TEXTCOLOR, CLCDEFAULT_ALPHA, CLCDEFAULT_MRGN_LEFT, 
+        CLCDEFAULT_MRGN_TOP, CLCDEFAULT_MRGN_RIGHT, CLCDEFAULT_MRGN_BOTTOM, CLCDEFAULT_IGNORE
+    }, {"Userlist", "TSKIN_USERLIST", ID_EXTBKUSERLIST,
         CLCDEFAULT_GRADIENT,CLCDEFAULT_CORNER,
         CLCDEFAULT_COLOR, CLCDEFAULT_COLOR2, CLCDEFAULT_COLOR2_TRANSPARENT, CLCDEFAULT_TEXTCOLOR, CLCDEFAULT_ALPHA, CLCDEFAULT_MRGN_LEFT, 
         CLCDEFAULT_MRGN_TOP, CLCDEFAULT_MRGN_RIGHT, CLCDEFAULT_MRGN_BOTTOM, CLCDEFAULT_IGNORE
@@ -284,6 +276,8 @@ void WriteThemeToINI(const char *szIniFilename, struct MessageWindowData *dat)
     WritePrivateProfileStringA("Message Log", "LeftIndent", _itoa(DBGetContactSettingDword(NULL, SRMSGMOD_T, "IndentAmount", 0), szBuf, 10), szIniFilename);
     WritePrivateProfileStringA("Message Log", "RightIndent", _itoa(DBGetContactSettingDword(NULL, SRMSGMOD_T, "RightIndent", 0), szBuf, 10), szIniFilename);
 
+    WritePrivateProfileStringA("Custom Colors", "InfopanelBG", _itoa(DBGetContactSettingDword(NULL, FONTMODULE, "ipfieldsbg", GetSysColor(COLOR_3DFACE)), szBuf, 10), szIniFilename);
+
     for(i = 0; i <= TMPL_ERRMSG; i++) {
 #if defined(_UNICODE)
         char *encoded;
@@ -319,7 +313,7 @@ void WriteThemeToINI(const char *szIniFilename, struct MessageWindowData *dat)
     }
 }
 
-void ReadThemeFromINI(const char *szIniFilename, struct MessageWindowData *dat, int noAdvanced)
+void ReadThemeFromINI(const char *szIniFilename, struct MessageWindowData *dat, int noAdvanced, DWORD dwFlags)
 {
     char szBuf[512], szTemp[100], szAppname[100];
     int i, n = 0;
@@ -338,10 +332,14 @@ void ReadThemeFromINI(const char *szIniFilename, struct MessageWindowData *dat, 
     if(dat == 0) {
         hdc = GetDC(NULL);
 
-        while(fontBlocks[n].szModule) {
+        while(fontBlocks[n].szModule && (dwFlags & THEME_READ_FONTS)) {
             char *szModule = fontBlocks[n].szModule;
             int firstIndex = fontBlocks[n].iFirst;
 
+            if(n != 1 && !(dwFlags & THEME_READ_FONTS)) {
+                n++;
+                continue;
+            }
             if(GetPrivateProfileIntA(fontBlocks[n].szBLockname, "Valid", 0, szIniFilename) == 0 && n != 0) {
                 n++;
                 continue;
@@ -377,21 +375,32 @@ void ReadThemeFromINI(const char *szIniFilename, struct MessageWindowData *dat, 
         }
         def = GetSysColor(COLOR_WINDOW);
         ReleaseDC(NULL, hdc);
-        DBWriteContactSettingDword(NULL, FONTMODULE, SRMSGSET_BKGCOLOUR, GetPrivateProfileIntA("Message Log", "BackgroundColor", def, szIniFilename));
-        DBWriteContactSettingDword(NULL, "Chat", "ColorLogBG", GetPrivateProfileIntA("Message Log", "BackgroundColor", def, szIniFilename));
-        DBWriteContactSettingDword(NULL, FONTMODULE, "inbg", GetPrivateProfileIntA("Message Log", "IncomingBG", def, szIniFilename));
-        DBWriteContactSettingDword(NULL, FONTMODULE, "outbg", GetPrivateProfileIntA("Message Log", "OutgoingBG", def, szIniFilename));
-        DBWriteContactSettingDword(NULL, FONTMODULE, "inputbg", GetPrivateProfileIntA("Message Log", "InputBG", def, szIniFilename));
-        DBWriteContactSettingDword(NULL, FONTMODULE, "hgrid", GetPrivateProfileIntA("Message Log", "HgridColor", def, szIniFilename));
-        DBWriteContactSettingDword(NULL, SRMSGMOD_T, "mwflags", GetPrivateProfileIntA("Message Log", "DWFlags", MWF_LOG_DEFAULT, szIniFilename));
-        DBWriteContactSettingByte(NULL, SRMSGMOD_T, "wantvgrid", GetPrivateProfileIntA("Message Log", "VGrid", 0, szIniFilename));
-        DBWriteContactSettingByte(NULL, SRMSGMOD_T, "extramicrolf", GetPrivateProfileIntA("Message Log", "ExtraMicroLF", 0, szIniFilename));
+        DBWriteContactSettingDword(NULL, FONTMODULE, "ipfieldsbg", 
+                                   GetPrivateProfileIntA("Custom Colors", "InfopanelBG", GetSysColor(COLOR_3DFACE), szIniFilename));
+        if(dwFlags & THEME_READ_FONTS) {
+            DBWriteContactSettingDword(NULL, FONTMODULE, SRMSGSET_BKGCOLOUR, GetPrivateProfileIntA("Message Log", "BackgroundColor", def, szIniFilename));
+            DBWriteContactSettingDword(NULL, "Chat", "ColorLogBG", GetPrivateProfileIntA("Message Log", "BackgroundColor", def, szIniFilename));
+            DBWriteContactSettingDword(NULL, FONTMODULE, "inbg", GetPrivateProfileIntA("Message Log", "IncomingBG", def, szIniFilename));
+            DBWriteContactSettingDword(NULL, FONTMODULE, "outbg", GetPrivateProfileIntA("Message Log", "OutgoingBG", def, szIniFilename));
+            DBWriteContactSettingDword(NULL, FONTMODULE, "inputbg", GetPrivateProfileIntA("Message Log", "InputBG", def, szIniFilename));
+            DBWriteContactSettingDword(NULL, FONTMODULE, "hgrid", GetPrivateProfileIntA("Message Log", "HgridColor", def, szIniFilename));
+            DBWriteContactSettingDword(NULL, SRMSGMOD_T, "mwflags", GetPrivateProfileIntA("Message Log", "DWFlags", MWF_LOG_DEFAULT, szIniFilename));
+            DBWriteContactSettingByte(NULL, SRMSGMOD_T, "wantvgrid", GetPrivateProfileIntA("Message Log", "VGrid", 0, szIniFilename));
+            DBWriteContactSettingByte(NULL, SRMSGMOD_T, "extramicrolf", GetPrivateProfileIntA("Message Log", "ExtraMicroLF", 0, szIniFilename));
 
-        DBWriteContactSettingDword(NULL, SRMSGMOD_T, "IndentAmount", GetPrivateProfileIntA("Message Log", "LeftIndent", 0, szIniFilename));
-        DBWriteContactSettingDword(NULL, SRMSGMOD_T, "RightIndent", GetPrivateProfileIntA("Message Log", "RightIndent", 0, szIniFilename));
+            DBWriteContactSettingDword(NULL, SRMSGMOD_T, "IndentAmount", GetPrivateProfileIntA("Message Log", "LeftIndent", 0, szIniFilename));
+            DBWriteContactSettingDword(NULL, SRMSGMOD_T, "RightIndent", GetPrivateProfileIntA("Message Log", "RightIndent", 0, szIniFilename));
 
-        DBWriteContactSettingDword(NULL, "Chat", "ColorNicklistBG", GetPrivateProfileIntA("Chat", "UserListBG", def, szIniFilename));
+            DBWriteContactSettingDword(NULL, "Chat", "ColorNicklistBG", GetPrivateProfileIntA("Chat", "UserListBG", def, szIniFilename));
 
+            for(i = 0; i < CUSTOM_COLORS; i++) {
+                sprintf(szTemp, "cc%d", i + 1);
+                if(dat == 0)
+                    DBWriteContactSettingDword(NULL, SRMSGMOD_T, szTemp, GetPrivateProfileIntA("Custom Colors", szTemp, RGB(224, 224, 224), szIniFilename));
+                else
+                    dat->theme.custom_colors[i] = GetPrivateProfileIntA("Custom Colors", szTemp, RGB(224, 224, 224), szIniFilename);
+            }
+        }
     }
     else {
         HDC hdc = GetDC(NULL);
@@ -416,10 +425,18 @@ void ReadThemeFromINI(const char *szIniFilename, struct MessageWindowData *dat, 
 
         dat->theme.left_indent = GetPrivateProfileIntA("Message Log", "LeftIndent", 0, szIniFilename);
         dat->theme.right_indent = GetPrivateProfileIntA("Message Log", "RightIndent", 0, szIniFilename);
+
+        for(i = 0; i < CUSTOM_COLORS; i++) {
+            sprintf(szTemp, "cc%d", i + 1);
+            if(dat == 0)
+                DBWriteContactSettingDword(NULL, SRMSGMOD_T, szTemp, GetPrivateProfileIntA("Custom Colors", szTemp, RGB(224, 224, 224), szIniFilename));
+            else
+                dat->theme.custom_colors[i] = GetPrivateProfileIntA("Custom Colors", szTemp, RGB(224, 224, 224), szIniFilename);
+        }
     }
 
     if(version >= 3) {
-        if(!noAdvanced) {
+        if(!noAdvanced && dwFlags & THEME_READ_TEMPLATES) {
             for(i = 0; i <= TMPL_ERRMSG; i++) {
     #if defined(_UNICODE)
                 wchar_t *decoded;
@@ -455,14 +472,9 @@ void ReadThemeFromINI(const char *szIniFilename, struct MessageWindowData *dat, 
     #endif        
             }
         }
-        for(i = 0; i < CUSTOM_COLORS; i++) {
-            sprintf(szTemp, "cc%d", i + 1);
-            if(dat == 0)
-                DBWriteContactSettingDword(NULL, SRMSGMOD_T, szTemp, GetPrivateProfileIntA("Custom Colors", szTemp, RGB(224, 224, 224), szIniFilename));
-            else
-                dat->theme.custom_colors[i] = GetPrivateProfileIntA("Custom Colors", szTemp, RGB(224, 224, 224), szIniFilename);
-        }
     }
+    if(g_chat_integration_enabled)
+        LoadGlobalSettings();
 }
 
 /*
@@ -518,7 +530,7 @@ DWORD __forceinline argb_from_cola(COLORREF col, UINT32 alpha)
 }
 
 
-void DrawAlpha(HDC hdcwnd, PRECT rc, DWORD basecolor, BYTE alpha, DWORD basecolor2, BOOL transparent, DWORD FLG_GRADIENT, DWORD FLG_CORNER, BYTE RADIUS, ImageItem *imageItem)
+void DrawAlpha(HDC hdcwnd, PRECT rc, DWORD basecolor, BYTE alpha, DWORD basecolor2, BOOL transparent, DWORD FLG_GRADIENT, DWORD FLG_CORNER, DWORD BORDERSTYLE, ImageItem *imageItem)
 {
     HBRUSH BrMask;
     HBRUSH holdbrush;
@@ -696,7 +708,7 @@ void DrawAlpha(HDC hdcwnd, PRECT rc, DWORD basecolor, BYTE alpha, DWORD basecolo
  
         holdbrush = SelectObject(hdc, BrMask);
         holdbitmap = SelectObject(hdc, hbitmap);
-        RoundRect(hdc, -1, -1, ulBitmapWidth * 2 + 1, (realHeight + 1), RADIUS, RADIUS);
+        RoundRect(hdc, -1, -1, ulBitmapWidth * 2 + 1, (realHeight + 1), BORDERSTYLE, BORDERSTYLE);
 
         for (y = 0; y < ulBitmapHeight; y++) {
             for (x = 0; x < ulBitmapWidth; x++) {
@@ -730,7 +742,7 @@ void DrawAlpha(HDC hdcwnd, PRECT rc, DWORD basecolor, BYTE alpha, DWORD basecolo
 
         //SelectObject(hdc, BrMask); // already BrMask?
         holdbitmap = SelectObject(hdc, hbitmap);
-        RoundRect(hdc, -1 - ulBitmapWidth, -1, ulBitmapWidth + 1, (realHeight + 1), RADIUS, RADIUS);
+        RoundRect(hdc, -1 - ulBitmapWidth, -1, ulBitmapWidth + 1, (realHeight + 1), BORDERSTYLE, BORDERSTYLE);
 
         for (y = 0; y < ulBitmapHeight; y++) {
             for (x = 0; x < ulBitmapWidth; x++) {
@@ -995,7 +1007,7 @@ static void ReadItem(StatusItems_t *this_item, char *szItem, char *file)
     this_item->MARGIN_RIGHT = GetPrivateProfileIntA(szItem, "Right", defaults->MARGIN_RIGHT, file);
     this_item->MARGIN_TOP = GetPrivateProfileIntA(szItem, "Top", defaults->MARGIN_TOP, file);
     this_item->MARGIN_BOTTOM = GetPrivateProfileIntA(szItem, "Bottom", defaults->MARGIN_BOTTOM, file);
-    this_item->RADIUS = GetPrivateProfileIntA(szItem, "Radius", defaults->RADIUS, file);
+    this_item->BORDERSTYLE = GetPrivateProfileIntA(szItem, "Radius", defaults->BORDERSTYLE, file);
 
     GetPrivateProfileStringA(szItem, "Textcolor", "ffffffff", buffer, 400, file);
     this_item->TEXTCOLOR = HexStringToLong(buffer);
@@ -1304,6 +1316,7 @@ void IMG_DeleteItems()
     
 	myGlobals.g_minGlyph = myGlobals.g_maxGlyph = myGlobals.g_closeGlyph = myGlobals.g_pulldownGlyph = 0;
 	g_ContainerColorKeyBrush = 0;
+    myGlobals.g_DisableScrollbars = FALSE;
 }
 
 static void IMG_LoadItems(char *szFileName)
@@ -1400,7 +1413,7 @@ static struct {char *szIniKey, *szIniName; char *szSetting; unsigned int size; i
     NULL, NULL, NULL, 0, 0
 };
 
-static void LoadSkinItems(char *file)
+static void LoadSkinItems(char *file, int onStartup)
 {
     char *p;
     char *szSections = malloc(3002);
@@ -1411,11 +1424,8 @@ static void LoadSkinItems(char *file)
     if(!(GetPrivateProfileIntA("Global", "Version", 0, file) >= 1 && GetPrivateProfileIntA("Global", "Signature", 0, file) == 101))
 		return;
 
-    /*
-    if(!g_imgDecoderAvail)
-		return;
-    */
 	g_skinnedContainers = TRUE;
+    myGlobals.g_DisableScrollbars = FALSE;
 
 	ZeroMemory(szSections, 3000);
     p = szSections;
@@ -1471,6 +1481,7 @@ static void LoadSkinItems(char *file)
     
 	g_framelessSkinmode = GetPrivateProfileIntA("Global", "framelessmode", 0, file);
 	g_compositedWindow = GetPrivateProfileIntA("Global", "compositedwindow", 0, file);
+    myGlobals.g_DisableScrollbars = GetPrivateProfileIntA("Global", "NoScrollbars", 0, file);
 
     data = GetPrivateProfileIntA("Global", "SkinnedTabs", 1, file);
     myGlobals.m_TabAppearance = data ? myGlobals.m_TabAppearance | TCF_NOSKINNING : myGlobals.m_TabAppearance & ~TCF_NOSKINNING;
@@ -1505,11 +1516,16 @@ static void LoadSkinItems(char *file)
         _splitpath(file, szDrive, szPath, NULL, NULL);
         mir_snprintf(szFinalName, MAX_PATH, "%s\\%s\\%s", szDrive, szPath, buffer);
         if(PathFileExistsA(szFinalName)) {
-            ReadThemeFromINI(szFinalName, 0, FALSE);
+            ReadThemeFromINI(szFinalName, 0, FALSE, onStartup ? 0 : DBGetContactSettingByte(NULL, SRMSGMOD_T, "skin_loadmode", 0));
             CacheMsgLogIcons();
             CacheLogFonts();
         }
 	}
+    GetPrivateProfileStringA("Global", "MenuBarBG", "eeeeee", buffer, 20, file);
+    data = HexStringToLong(buffer);
+    if(g_MenuBGBrush)
+        DeleteObject(g_MenuBGBrush);
+    g_MenuBGBrush = CreateSolidBrush(data);
 
     GetPrivateProfileStringA("Global", "LightShadow", "000000", buffer, 20, file);
     data = HexStringToLong(buffer);
@@ -1552,7 +1568,7 @@ void SkinDrawBG(HWND hwndClient, HWND hwnd, struct ContainerWindowData *pContain
 		ReleaseDC(hwnd, dc);
 }
 
-void ReloadContainerSkin()
+void ReloadContainerSkin(int doLoad, int onStartup)
 {
 	DBVARIANT dbv = {0};
 	char szFinalPath[MAX_PATH];
@@ -1561,7 +1577,10 @@ void ReloadContainerSkin()
 	g_skinnedContainers = g_framelessSkinmode = g_compositedWindow = FALSE;
     myGlobals.bClipBorder = 0;
     myGlobals.bRoundedCorner = 0;
-    
+    if(g_MenuBGBrush) {
+        DeleteObject(g_MenuBGBrush);
+        g_MenuBGBrush = 0;
+    }
 	if(pFirstContainer) {
 		if(MessageBox(0, TranslateT("All message containers need to close before the skin can be changed\nProceed?"), TranslateT("Change skin"), MB_YESNO | MB_ICONQUESTION) == IDYES) {
 			struct ContainerWindowData *pContainer = pFirstContainer;
@@ -1582,16 +1601,16 @@ void ReloadContainerSkin()
     
     IMG_DeleteItems();
 
-	if(!DBGetContactSettingByte(NULL, SRMSGMOD_T, "useskin", 0))
-		return;
+    if(doLoad) {
+        if(pSetLayeredWindowAttributes == 0 || MyAlphaBlend == 0)
+            return;
 
-	if(pSetLayeredWindowAttributes == 0 || /*!g_imgDecoderAvail || */  MyAlphaBlend == 0)
-		return;
-
-	if(!DBGetContactSetting(NULL, SRMSGMOD_T, "ContainerSkin", &dbv)) {
-		CallService(MS_UTILS_PATHTOABSOLUTE, (WPARAM)dbv.pszVal, (LPARAM)szFinalPath);
-		LoadSkinItems(szFinalPath);
-		IMG_LoadItems(szFinalPath);
-		DBFreeVariant(&dbv);
-	}
+        if(!DBGetContactSetting(NULL, SRMSGMOD_T, "ContainerSkin", &dbv)) {
+            CallService(MS_UTILS_PATHTOABSOLUTE, (WPARAM)dbv.pszVal, (LPARAM)szFinalPath);
+            LoadSkinItems(szFinalPath, onStartup);
+            IMG_LoadItems(szFinalPath);
+            DBFreeVariant(&dbv);
+        }
+    }
 }
+

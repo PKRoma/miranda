@@ -51,7 +51,7 @@ PLUGININFO pluginInfo = {
         "tabSRMsg",
     #endif    
 #endif
-    PLUGIN_MAKE_VERSION(0, 9, 9, 208),
+    PLUGIN_MAKE_VERSION(0, 9, 9, 210),
     "Chat module for instant messaging and group chat, offering a tabbed interface and many advanced features.",
     "The Miranda developers team",
     "silvercircle@gmail.com",
@@ -189,7 +189,10 @@ BOOL CALLBACK DlgProcAbout(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam)
 				UINT build_nr = 0;
 
 				CallService(MS_SYSTEM_GETVERSIONTEXT, 500, (LPARAM)szVersion);
-				mir_snprintf(buildstr, 50, "[Miranda 0.5.0.0]", build_nr);
+				if((found = strchr(szVersion, '#')) != NULL) {
+					build_nr = atoi(found + 1);
+					mir_snprintf(buildstr, 50, "[Build #%d]", build_nr);
+				}
 #if defined(_UNICODE)
 				mir_snprintf(str,sizeof(str),"%s %d.%d.%d.%d (Unicode) %s", Translate("Version"), HIBYTE(HIWORD(v)), LOBYTE(HIWORD(v)), HIBYTE(LOWORD(v)), LOBYTE(LOWORD(v)), buildstr);
 #else
@@ -280,7 +283,7 @@ static BOOL CALLBACK DlgProcFirsttime(HWND hwndDlg, UINT msg, WPARAM wParam, LPA
                     
                     if((hFile = CreateFileA(szFilename, GENERIC_READ, FILE_SHARE_READ, NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL)) != INVALID_HANDLE_VALUE ) {
                         CloseHandle(hFile);
-                        ReadThemeFromINI(szFilename, 0, 0);
+                        ReadThemeFromINI(szFilename, 0, 0, THEME_READ_ALL);
                         DBWriteContactSettingByte(NULL, SRMSGMOD_T, "firstrun", 1);
                     }
                     else

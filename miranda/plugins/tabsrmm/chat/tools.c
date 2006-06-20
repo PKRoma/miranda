@@ -958,49 +958,88 @@ UINT CreateGCMenu(HWND hwndDlg, HMENU *hMenu, int iIndex, POINT pt, SESSION_INFO
 			ModifyMenuA(*hMenu, 4, MF_STRING|MF_BYPOSITION, 4, szMenuText); 
 		}
 		else
-			ModifyMenuA(*hMenu, 4, MF_STRING|MF_GRAYED|MF_BYPOSITION, 4, "No word to look up"); 
+			ModifyMenu(*hMenu, 4, MF_STRING|MF_GRAYED|MF_BYPOSITION, 4, TranslateT("No word to look up"));
 		gcmi.Type = MENU_ON_LOG;
 	}
 	else if(iIndex == 0)
 	{
-		char szTemp[30];
-		char szTemp2[30];
-		lstrcpynA(szTemp, Translate("&Message"), 24);
-		if(pszUID)
-			mir_snprintf(szTemp2, 29, "%s %s", szTemp, pszUID);
+		TCHAR szTemp[30];
+		TCHAR szTemp2[30], *szTemp4 = NULL;
+		lstrcpyn(szTemp, TranslateT("&Message"), 24);
+		if(pszUID) {
+#if defined(_UNICODE)
+            szTemp4 = (TCHAR *)CallService(MS_LANGPACK_PCHARTOTCHAR, 0, (LPARAM)pszUID);
+			mir_sntprintf(szTemp2, 29, _T("%s %s"), szTemp, szTemp4);
+            if(szTemp4)
+                mir_free(szTemp4);
+#else
+            mir_sntprintf(szTemp2, 29, _T("%s %s"), szTemp, pszUID);
+#endif
+        }
 		else
-			lstrcpynA(szTemp2, szTemp, 24);
-		if(lstrlenA(szTemp2) > 22)
-			lstrcpynA(szTemp2+22, "...", 4);
-		ModifyMenuA(*hMenu, ID_MESS, MF_STRING|MF_BYCOMMAND, ID_MESS, szTemp2); 
+			lstrcpyn(szTemp2, szTemp, 24);
+		if(lstrlen(szTemp2) > 22)
+			lstrcpyn(szTemp2+22, _T("..."), 4);
+		ModifyMenu(*hMenu, ID_MESS, MF_STRING|MF_BYCOMMAND, ID_MESS, szTemp2); 
 		gcmi.Type = MENU_ON_NICKLIST;
 	}
 	NotifyEventHooks(hBuildMenuEvent, 0, (WPARAM)&gcmi);
 	if (gcmi.nItems > 0)
 		AppendMenu(*hMenu, MF_SEPARATOR, 0, 0);
-	for(i = 0; i < gcmi.nItems; i++)
-	{
+	for(i = 0; i < gcmi.nItems; i++) {
+        TCHAR *tzTemp;
+
 		if(gcmi.Item[i].uType == MENU_NEWPOPUP)
 		{
 			hSubMenu = CreateMenu();
-			AppendMenuA(*hMenu, gcmi.Item[i].bDisabled?MF_POPUP|MF_GRAYED:MF_POPUP, (UINT)hSubMenu, gcmi.Item[i].pszDesc);
+#if defined(_UNICODE)
+            tzTemp = (TCHAR *)CallService(MS_LANGPACK_PCHARTOTCHAR, 0, (LPARAM)gcmi.Item[i].pszDesc);
+            AppendMenu(*hMenu, gcmi.Item[i].bDisabled?MF_POPUP|MF_GRAYED:MF_POPUP, (UINT)hSubMenu, tzTemp);
+            mir_free(tzTemp);
+#else
+            AppendMenu(*hMenu, gcmi.Item[i].bDisabled?MF_POPUP|MF_GRAYED:MF_POPUP, (UINT)hSubMenu, gcmi.Item[i].pszDesc);
+#endif
 		}
-		else if(gcmi.Item[i].uType == MENU_POPUPITEM)
-			AppendMenuA(hSubMenu==0?*hMenu:hSubMenu, gcmi.Item[i].bDisabled?MF_STRING|MF_GRAYED:MF_STRING, gcmi.Item[i].dwID, gcmi.Item[i].pszDesc);
-		else if(gcmi.Item[i].uType == MENU_POPUPSEPARATOR)
-			AppendMenuA(hSubMenu==0?*hMenu:hSubMenu, MF_SEPARATOR, 0, gcmi.Item[i].pszDesc);
-		else if(gcmi.Item[i].uType == MENU_SEPARATOR)
-			AppendMenuA(*hMenu, MF_SEPARATOR, 0, gcmi.Item[i].pszDesc);
-		else if(gcmi.Item[i].uType == MENU_ITEM)
-			AppendMenuA(*hMenu, gcmi.Item[i].bDisabled?MF_STRING|MF_GRAYED:MF_STRING, gcmi.Item[i].dwID, gcmi.Item[i].pszDesc);
+		else if(gcmi.Item[i].uType == MENU_POPUPITEM) {
+#if defined(_UNICODE)
+            tzTemp = (TCHAR *)CallService(MS_LANGPACK_PCHARTOTCHAR, 0, (LPARAM)gcmi.Item[i].pszDesc);
+            AppendMenu(hSubMenu==0?*hMenu:hSubMenu, gcmi.Item[i].bDisabled?MF_STRING|MF_GRAYED:MF_STRING, gcmi.Item[i].dwID, tzTemp);
+            mir_free(tzTemp);
+#else
+            AppendMenu(hSubMenu==0?*hMenu:hSubMenu, gcmi.Item[i].bDisabled?MF_STRING|MF_GRAYED:MF_STRING, gcmi.Item[i].dwID, gcmi.Item[i].pszDesc);
+#endif
+        }
+		else if(gcmi.Item[i].uType == MENU_POPUPSEPARATOR) {
+#if defined(_UNICODE)
+            tzTemp = (TCHAR *)CallService(MS_LANGPACK_PCHARTOTCHAR, 0, (LPARAM)gcmi.Item[i].pszDesc);
+            AppendMenu(hSubMenu==0?*hMenu:hSubMenu, MF_SEPARATOR, 0, tzTemp);
+            mir_free(tzTemp);
+#else
+            AppendMenu(hSubMenu==0?*hMenu:hSubMenu, MF_SEPARATOR, 0, gcmi.Item[i].pszDesc);
+#endif
+        }
+		else if(gcmi.Item[i].uType == MENU_SEPARATOR) {
+#if defined(_UNICODE)
+            tzTemp = (TCHAR *)CallService(MS_LANGPACK_PCHARTOTCHAR, 0, (LPARAM)gcmi.Item[i].pszDesc);
+            AppendMenu(*hMenu, MF_SEPARATOR, 0, tzTemp);
+            mir_free(tzTemp);
+#else
+            AppendMenu(*hMenu, MF_SEPARATOR, 0, gcmi.Item[i].pszDesc);
+#endif
+        }
+		else if(gcmi.Item[i].uType == MENU_ITEM) {
+#if defined(_UNICODE)
+            tzTemp = (TCHAR *)CallService(MS_LANGPACK_PCHARTOTCHAR, 0,  (LPARAM)gcmi.Item[i].pszDesc);
+            AppendMenu(*hMenu, gcmi.Item[i].bDisabled?MF_STRING|MF_GRAYED:MF_STRING, gcmi.Item[i].dwID, tzTemp);
+            mir_free(tzTemp);
+#else
+            AppendMenu(*hMenu, gcmi.Item[i].bDisabled?MF_STRING|MF_GRAYED:MF_STRING, gcmi.Item[i].dwID, gcmi.Item[i].pszDesc);
+#endif
+        }
 	}
 	return TrackPopupMenu(*hMenu, TPM_RETURNCMD, pt.x, pt.y, 0, hwndDlg, NULL);
 
 }
-
-
-
-
 
 void DestroyGCMenu(HMENU *hMenu, int iIndex)
 {
@@ -1014,11 +1053,6 @@ void DestroyGCMenu(HMENU *hMenu, int iIndex)
 		RemoveMenu(*hMenu, iIndex, MF_BYPOSITION);
 	}
 }
-
-
-
-
-
 
 BOOL DoEventHookAsync(HWND hwnd, char * pszID, char * pszModule, int iType, char * pszUID, char * pszText, DWORD dwItem)
 {

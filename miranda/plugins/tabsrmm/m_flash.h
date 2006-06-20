@@ -67,4 +67,5 @@ typedef struct {
 	HWND hParentWindow;	// handle of flash avatar's parent object
 	char* cUrl;			// url of .swf file
 	int id;				// unique number of plugin which wants to use avatar service
+    char* cProto;	    // contacts protocol
 } FLASHAVATAR;

@@ -23,6 +23,7 @@ extern HINSTANCE g_hInst;
 extern MYGLOBALS myGlobals;
 extern BOOL g_skinnedContainers;
 extern StatusItems_t StatusItems[];
+extern PAB MyAlphaBlend;
 
 #define PBS_PUSHDOWNPRESSED 6
 
@@ -43,7 +44,7 @@ typedef struct {
 	HANDLE  hThemeToolbar;
     BOOL    bThemed;
 	BOOL	bTitleButton;
-	char	cHot;
+	TCHAR	cHot;
 	int     flatBtn;
     int     dimmed;
 	struct ContainerWindowData *pContainer;
@@ -62,25 +63,33 @@ BOOL     (WINAPI *MyEnableThemeDialogTexture)(HANDLE, DWORD) = 0;
 
 static CRITICAL_SECTION csTips;
 static HWND hwndToolTips = NULL;
+static BLENDFUNCTION bf_buttonglyph;
+static HDC hdc_buttonglyph = 0;
+static HBITMAP hbm_buttonglyph, hbm_buttonglyph_old;
 
 int UnloadTSButtonModule(WPARAM wParam, LPARAM lParam) {
 	DeleteCriticalSection(&csTips);
+    if(hdc_buttonglyph) {
+        SelectObject(hdc_buttonglyph, hbm_buttonglyph_old);
+        DeleteObject(hbm_buttonglyph);
+        DeleteDC(hdc_buttonglyph);
+    }
 	return 0;
 }
 
 int LoadTSButtonModule(void) 
 {
-	WNDCLASSEXA wc;
+	WNDCLASSEX wc;
 	
 	ZeroMemory(&wc, sizeof(wc));
 	wc.cbSize         = sizeof(wc);
-	wc.lpszClassName  = "TSButtonClass";
+	wc.lpszClassName  = _T("TSButtonClass");
 	wc.lpfnWndProc    = TSButtonWndProc;
 	wc.hCursor        = LoadCursor(NULL, IDC_ARROW);
 	wc.cbWndExtra     = sizeof(MButtonCtrl*);
 	wc.hbrBackground  = 0;
 	wc.style          = CS_GLOBALCLASS | CS_PARENTDC;
-	RegisterClassExA(&wc);
+	RegisterClassEx(&wc);
 	InitializeCriticalSection(&csTips);
 	return 0;
 }
@@ -151,6 +160,15 @@ static TBStateConvert2Flat(int state) {
 }
 
 static void PaintWorker(MButtonCtrl *ctl, HDC hdcPaint) {
+    if(hdc_buttonglyph == 0) {
+        hdc_buttonglyph = CreateCompatibleDC(hdcPaint);
+        hbm_buttonglyph = CreateCompatibleBitmap(hdcPaint, 16, 16);
+        hbm_buttonglyph_old = SelectObject(hdc_buttonglyph, hbm_buttonglyph);
+        bf_buttonglyph.BlendFlags = 0;
+        bf_buttonglyph.SourceConstantAlpha = 120;
+        bf_buttonglyph.BlendOp = AC_SRC_OVER;
+        bf_buttonglyph.AlphaFormat = 0;
+    }
 	if (hdcPaint) {
 		HDC hdcMem;
 		HBITMAP hbmMem;
@@ -194,11 +212,11 @@ static void PaintWorker(MButtonCtrl *ctl, HDC hdcPaint) {
 					rc1.left += item->MARGIN_LEFT; rc1.right -= item->MARGIN_RIGHT;
 					rc1.top += item->MARGIN_TOP; rc1.bottom -= item->MARGIN_BOTTOM;
 					DrawAlpha(hdcMem, &rc1, item->COLOR, item->ALPHA, item->COLOR2, item->COLOR2_TRANSPARENT,
-							  item->GRADIENT, item->CORNER, item->RADIUS, item->imageItem);
+							  item->GRADIENT, item->CORNER, item->BORDERSTYLE, item->imageItem);
 					if(clip && realItem) {
 						SelectClipRgn(hdcMem, clip);
 						DrawAlpha(hdcMem, &rc1, realItem->COLOR, realItem->ALPHA, realItem->COLOR2, realItem->COLOR2_TRANSPARENT,
-								  realItem->GRADIENT, realItem->CORNER, realItem->RADIUS, realItem->imageItem);
+								  realItem->GRADIENT, realItem->CORNER, realItem->BORDERSTYLE, realItem->imageItem);
 					}
 				}
 				else 
@@ -274,11 +292,11 @@ flat_themed:
 					rc1.left += item->MARGIN_LEFT; rc1.right -= item->MARGIN_RIGHT;
 					rc1.top += item->MARGIN_TOP; rc1.bottom -= item->MARGIN_BOTTOM;
 					DrawAlpha(hdcMem, &rc1, item->COLOR, item->ALPHA, item->COLOR2, item->COLOR2_TRANSPARENT,
-							  item->GRADIENT, item->CORNER, item->RADIUS, item->imageItem);
+							  item->GRADIENT, item->CORNER, item->BORDERSTYLE, item->imageItem);
 					if(clip && realItem) {
 						SelectClipRgn(hdcMem, clip);
 						DrawAlpha(hdcMem, &rc1, realItem->COLOR, realItem->ALPHA, realItem->COLOR2, realItem->COLOR2_TRANSPARENT,
-								  realItem->GRADIENT, realItem->CORNER, realItem->RADIUS, realItem->imageItem);
+								  realItem->GRADIENT, realItem->CORNER, realItem->BORDERSTYLE, realItem->imageItem);
 					}
 				}
 				else 
@@ -364,18 +382,25 @@ nonflat_themed:
 				ImageList_ReplaceIcon(myGlobals.g_hImageList, 0, hIconNew);
 				ImageList_DrawEx(myGlobals.g_hImageList, 0, hdcMem, ix, iy, 0, 0, CLR_NONE, CLR_NONE, ILD_SELECTED);
             }
-            else
-                DrawState(hdcMem,NULL,NULL,(LPARAM)hIconNew,0,ix,iy,myGlobals.m_smcxicon,myGlobals.m_smcyicon,ctl->stateId != PBS_DISABLED ? DST_ICON | DSS_NORMAL : DST_ICON | DSS_DISABLED);
+            else {
+                if(ctl->stateId != PBS_DISABLED || MyAlphaBlend == 0)
+                    DrawIconEx(hdcMem, ix, iy, hIconNew, 16, 16, 0, 0, DI_NORMAL);
+                else {
+                    BitBlt(hdc_buttonglyph, 0, 0, 16, 16, hdcMem, ix, iy, SRCCOPY);
+                    DrawIconEx(hdc_buttonglyph, 0, 0, hIconNew, 16, 16, 0, 0, DI_NORMAL);
+                    MyAlphaBlend(hdcMem, ix, iy, 16, 16, hdc_buttonglyph, 0, 0, 16, 16, bf_buttonglyph);
+                }
+            }
 		}
-		else if (GetWindowTextLengthA(ctl->hwnd)) {
+		else if (GetWindowTextLength(ctl->hwnd)) {
 			// Draw the text and optinally the arrow
-			char szText[MAX_PATH * sizeof(TCHAR)];
+			TCHAR szText[MAX_PATH];
 			SIZE sz;
 			RECT rcText;
 			HFONT hOldFont;
 
 			CopyRect(&rcText, &rcClient);
-			GetWindowTextA(ctl->hwnd, szText, MAX_PATH - 1);
+			GetWindowText(ctl->hwnd, szText, MAX_PATH - 1);
 			SetBkMode(hdcMem, TRANSPARENT);
 			hOldFont = SelectObject(hdcMem, ctl->hFont);
 			// XP w/themes doesn't used the glossy disabled text.  Is it always using COLOR_GRAYTEXT?  Seems so.
@@ -383,18 +408,17 @@ nonflat_themed:
                 SetTextColor(hdcMem, IsWindowEnabled(ctl->hwnd) ? myGlobals.skinDefaultFontColor : GetSysColor(COLOR_GRAYTEXT));
             else
                 SetTextColor(hdcMem, IsWindowEnabled(ctl->hwnd)||!ctl->hThemeButton?GetSysColor(COLOR_BTNTEXT):GetSysColor(COLOR_GRAYTEXT));
-			GetTextExtentPoint32A(hdcMem, szText, lstrlenA(szText), &sz);
+			GetTextExtentPoint32(hdcMem, szText, lstrlen(szText), &sz);
 			if (ctl->cHot) {
 				SIZE szHot;
 				
 				GetTextExtentPoint32A(hdcMem, "&", 1, &szHot);
 				sz.cx -= szHot.cx;
 			}
-			if (ctl->arrow) {
+			if (ctl->arrow)
 				DrawState(hdcMem,NULL,NULL,(LPARAM)ctl->arrow,0,rcClient.right-rcClient.left-5-myGlobals.m_smcxicon+(!ctl->hThemeButton&&ctl->stateId==PBS_PRESSED?1:0),(rcClient.bottom-rcClient.top)/2-myGlobals.m_smcyicon/2+(!ctl->hThemeButton&&ctl->stateId==PBS_PRESSED?1:0),myGlobals.m_smcxicon,myGlobals.m_smcyicon,IsWindowEnabled(ctl->hwnd)?DST_ICON:DST_ICON|DSS_DISABLED);
-			}
 			SelectObject(hdcMem, ctl->hFont);
-			DrawStateA(hdcMem,NULL,NULL,(LPARAM)szText,0,(rcText.right-rcText.left-sz.cx)/2+(!ctl->hThemeButton&&ctl->stateId==PBS_PRESSED?1:0),ctl->hThemeButton?(rcText.bottom-rcText.top-sz.cy)/2:(rcText.bottom-rcText.top-sz.cy)/2-(ctl->stateId==PBS_PRESSED?0:1),sz.cx,sz.cy,IsWindowEnabled(ctl->hwnd)||ctl->hThemeButton?DST_PREFIXTEXT|DSS_NORMAL:DST_PREFIXTEXT|DSS_DISABLED);
+			DrawState(hdcMem,NULL,NULL,(LPARAM)szText,lstrlen(szText),(rcText.right-rcText.left-sz.cx)/2+(!ctl->hThemeButton&&ctl->stateId==PBS_PRESSED?1:0),ctl->hThemeButton?(rcText.bottom-rcText.top-sz.cy)/2:(rcText.bottom-rcText.top-sz.cy)/2-(ctl->stateId==PBS_PRESSED?0:1),sz.cx,sz.cy,IsWindowEnabled(ctl->hwnd)||ctl->hThemeButton?DST_PREFIXTEXT|DSS_NORMAL:DST_PREFIXTEXT|DSS_DISABLED);
 			SelectObject(hdcMem, hOldFont);
 		}
 		BitBlt(hdcPaint, 0, 0, rcClient.right-rcClient.left, rcClient.bottom-rcClient.top, hdcMem, 0, 0, SRCCOPY);
@@ -467,11 +491,11 @@ static LRESULT CALLBACK TSButtonWndProc(HWND hwndDlg, UINT msg,  WPARAM wParam, 
 		case WM_SETTEXT:
 		{
 			bct->cHot = 0;
-			if ((char*)lParam) {
-				char *tmp = (char*)lParam;
+			if ((TCHAR *)lParam) {
+				TCHAR *tmp = (TCHAR *)lParam;
 				while (*tmp) {
-					if (*tmp=='&' && *(tmp+1)) {
-						bct->cHot = tolower(*(tmp+1));
+					if (*tmp == (TCHAR)'&' && *(tmp+1)) {
+						bct->cHot = _totlower(*(tmp+1));
 						break;
 					}
 					tmp++;

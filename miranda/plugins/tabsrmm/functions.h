@@ -67,6 +67,7 @@ void IMG_FreeDecoder();
 int  RegisterContainer();
 HMENU BuildContainerMenu();
 void BuildCodePageList();
+void RearrangeTab(HWND hwndDlg, struct MessageWindowData *dat, int iMode);
 
 // the cached message log icons
 void CacheMsgLogIcons();
@@ -136,7 +137,7 @@ char *GetThemeFileName(int iMode);
 static void LoadLogfontFromINI(int i, char *szKey, LOGFONTA *lf, COLORREF *colour, const char *szIniFilename);
 int CheckThemeVersion(const char *szIniFilename);
 void WriteThemeToINI(const char *szIniFilename, struct MessageWindowData *dat);
-void ReadThemeFromINI(const char *szIniFilename, struct MessageWindowData *dat, int noAdvanced);
+void ReadThemeFromINI(const char *szIniFilename, struct MessageWindowData *dat, int noAdvanced, DWORD dwFlags);
 
 
 

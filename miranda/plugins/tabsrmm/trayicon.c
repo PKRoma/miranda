@@ -40,6 +40,8 @@ HANDLE  hTrayAnimThread = 0;
 HANDLE  g_hEvent = 0;
 static  HICON hIconTrayCurrent = 0;
 
+static TCHAR g_eventName[100];
+
 static DWORD WINAPI TrayAnimThread(LPVOID vParam)
 {
     int     iAnimMode = (myGlobals.m_AnimTrayIcons[0] && myGlobals.m_AnimTrayIcons[1] && myGlobals.m_AnimTrayIcons[2] &&
@@ -47,7 +49,7 @@ static DWORD WINAPI TrayAnimThread(LPVOID vParam)
     DWORD   dwElapsed = 0, dwAnimStep = 0;
     HICON   hIconDefault = iAnimMode ? myGlobals.m_AnimTrayIcons[0] : myGlobals.g_iconContainer;
     DWORD   idleTimer = 0;
-    HANDLE  hEvent = OpenEvent(EVENT_ALL_ACCESS, FALSE, _T("tsr_evt"));
+    HANDLE  hEvent = OpenEvent(EVENT_ALL_ACCESS, FALSE, g_eventName);
 
     do {
         if(isAnimThreadRunning && myGlobals.m_UnreadInTray == 0) {
@@ -94,13 +96,15 @@ static DWORD WINAPI TrayAnimThread(LPVOID vParam)
             }
         }
     } while (isAnimThreadRunning);
+    CloseHandle(hEvent);
     return 0;
 }
 
 void CreateTrayMenus(int mode)
 {
     if(mode) {
-        g_hEvent = CreateEvent(NULL, TRUE, FALSE, _T("tsr_evt"));
+        mir_sntprintf(g_eventName, 100, _T("tsr_evt_%d"), GetCurrentThreadId());
+        g_hEvent = CreateEvent(NULL, TRUE, FALSE, g_eventName);
         isAnimThreadRunning = TRUE;
         hTrayAnimThread = CreateThread(NULL, 16000, TrayAnimThread, NULL, 0, &dwTrayAnimThreadID);
         myGlobals.g_hMenuTrayUnread = CreatePopupMenu();
@@ -108,8 +112,8 @@ void CreateTrayMenus(int mode)
         myGlobals.g_hMenuRecent = CreatePopupMenu();
         myGlobals.g_hMenuTrayContext = GetSubMenu(myGlobals.g_hMenuContext, 6);
         if(myGlobals.m_WinVerMajor >= 5) {
-            ModifyMenuA(myGlobals.g_hMenuTrayContext, 0, MF_BYPOSITION | MF_POPUP, (UINT_PTR)myGlobals.g_hMenuFavorites, Translate("Favorites"));
-            ModifyMenuA(myGlobals.g_hMenuTrayContext, 2, MF_BYPOSITION | MF_POPUP, (UINT_PTR)myGlobals.g_hMenuRecent, Translate("Recent Sessions"));
+            ModifyMenu(myGlobals.g_hMenuTrayContext, 0, MF_BYPOSITION | MF_POPUP, (UINT_PTR)myGlobals.g_hMenuFavorites, TranslateT("Favorites"));
+            ModifyMenu(myGlobals.g_hMenuTrayContext, 2, MF_BYPOSITION | MF_POPUP, (UINT_PTR)myGlobals.g_hMenuRecent, TranslateT("Recent Sessions"));
             LoadFavoritesAndRecent();
         }
         else {
@@ -357,7 +361,7 @@ void AddContactToFavorites(HANDLE hContact, TCHAR *szNickname, char *szProto, ch
     mii.cbSize = sizeof(mii);
 #if defined(_UNICODE)
     mir_snprintf(szMenuEntry, sizeof(szMenuEntry), "%s: %s (%s)", szProto, "%nick%", szStatus);
-    szMenuEntryW = EncodeWithNickname(szMenuEntry, szFinalNick, codePage);
+    szMenuEntryW = EncodeWithNickname(szMenuEntry, szFinalNick, myGlobals.m_LangPackCP);
 #else
     mir_snprintf(szMenuEntry, sizeof(szMenuEntry), "%s: %s (%s)", szProto, szFinalNick, szStatus);
 #endif

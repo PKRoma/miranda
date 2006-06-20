@@ -233,6 +233,7 @@ struct ContainerWindowData {
 	struct TitleBtn oldbuttons[3];
 	int ncActive;
     HICON hTitleIcon;
+    BOOL  repaintMenu;
 };
 
 #define STICK_ICON_MSG 10
@@ -371,6 +372,9 @@ struct MessageWindowData {
 	BYTE bFlatMsgLog;
     BYTE isIRC;
     PVOID si;
+    char  szSep1[152], szMicroLf[128], szExtraLf[50];
+    char  szSep1_RTL[152], szMicroLf_RTL[128];
+    DWORD isAutoRTL;
 };
 
 typedef struct _recentinfo {
@@ -517,6 +521,7 @@ typedef struct _globals {
     HPEN g_SkinLightShadowPen, g_SkinDarkShadowPen;
     NONCLIENTMETRICS ncm;
     HICON m_AnimTrayIcons[4];
+    BOOL  g_DisableScrollbars;
 } MYGLOBALS;
 
 typedef struct _tag_ICONDESC {

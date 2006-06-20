@@ -62,18 +62,17 @@ extern HANDLE hMessageWindowList;
 extern HINSTANCE g_hInst;
 extern SESSION_INFO *m_WndList;
 extern BOOL (WINAPI *pfnIsThemeActive)();
-
+extern HBRUSH g_MenuBGBrush;
 
 extern BOOL CALLBACK SelectContainerDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam);
 extern BOOL CALLBACK DlgProcContainerOptions(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam);
 extern BOOL CALLBACK TabControlSubclassProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam);
-extern BOOL CALLBACK DlgProcTabConfig(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam);
 extern BOOL CALLBACK DlgProcAbout(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam);
 extern BOOL CALLBACK DlgProcTemplateHelp(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam);
 
 extern TCHAR *NewTitle(HANDLE hContact, const TCHAR *szFormat, const TCHAR *szNickname, const char *szStatus, const TCHAR *szContainer, const char *szUin, const char *szProto, DWORD idle, UINT codePage, BYTE xStatus, WORD wStatus);
 
-char *szWarnClose = "Do you really want to close this session?";
+TCHAR *szWarnClose = _T("Do you really want to close this session?");
 BOOL cntHelpActive = FALSE;
 DWORD m_LangPackCP = CP_ACP;
 
@@ -109,6 +108,10 @@ extern int g_titleButtonTopOff, g_captionOffset, g_captionPadding;
 
 static BOOL CALLBACK ContainerWndProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam);
 
+static TCHAR *menuBarNames[] = {_T("File"), _T("View"), _T("User"), _T("Message Log"), _T("Container"), _T("Help") };
+static TCHAR *menuBarNames_translated[6];
+static BOOL  menuBarNames_done = FALSE;
+
 /*
  * CreateContainer MUST malloc() a struct ContainerWindowData and pass its address
  * to CreateDialogParam() via the LPARAM. It also adds the struct to the linked list
@@ -132,7 +135,7 @@ struct ContainerWindowData *CreateContainer(const TCHAR *name, int iTemp, HANDLE
     char *szKey = "TAB_Containers";
 #endif
     int i, iFirstFree = -1, iFound = FALSE;
-
+                             
     struct ContainerWindowData *pContainer = (struct ContainerWindowData *)malloc(sizeof(struct ContainerWindowData));
     if (pContainer) {
         ZeroMemory((void *)pContainer, sizeof(struct ContainerWindowData));
@@ -280,7 +283,7 @@ LRESULT CALLBACK StatusBarSubclassProc(HWND hWnd, UINT msg, WPARAM wParam, LPARA
 				break;
 			else {
 				PAINTSTRUCT ps;
-				char szText[512];
+				TCHAR szText[512];
 				int i;
 				RECT itemRect;
 				HICON hIcon;
@@ -309,7 +312,7 @@ LRESULT CALLBACK StatusBarSubclassProc(HWND hWnd, UINT msg, WPARAM wParam, LPARA
 					SendMessage(hWnd, SB_GETRECT, (WPARAM)i, (LPARAM)&itemRect);
                     if(!item->IGNORED)
                         DrawAlpha(hdcMem, &itemRect, item->COLOR, item->ALPHA, item->COLOR2, item->COLOR2_TRANSPARENT, item->GRADIENT,
-                                  item->CORNER, item->RADIUS, item->imageItem);
+                                  item->CORNER, item->BORDERSTYLE, item->imageItem);
 
                     if(i == 0)
                         itemRect.left += 2;
@@ -318,12 +321,12 @@ LRESULT CALLBACK StatusBarSubclassProc(HWND hWnd, UINT msg, WPARAM wParam, LPARA
 					width = itemRect.right - itemRect.left;
 					hIcon = (HICON)SendMessage(hWnd, SB_GETICON, i, 0);
 					szText[0] = 0;
-					result = SendMessageA(hWnd, SB_GETTEXTA, i, (LPARAM)szText);
+					result = SendMessage(hWnd, SB_GETTEXT, i, (LPARAM)szText);
 					if(hIcon) {
 						if(LOWORD(result) > 1) {				// we have a text
 							DrawIconEx(hdcMem, itemRect.left + 3, (height / 2 - 8) + itemRect.top, hIcon, 16, 16, 0, 0, DI_NORMAL);
 							itemRect.left += 20;
-							DrawTextA(hdcMem, szText, -1, &itemRect, DT_VCENTER | DT_END_ELLIPSIS | DT_SINGLELINE);
+							DrawText(hdcMem, szText, -1, &itemRect, DT_VCENTER | DT_END_ELLIPSIS | DT_SINGLELINE);
 						}
 						else
 							DrawIconEx(hdcMem, itemRect.left + ((width - 16) / 2), (height / 2 - 8) + itemRect.top, hIcon, 16, 16, 0, 0, DI_NORMAL);
@@ -331,10 +334,9 @@ LRESULT CALLBACK StatusBarSubclassProc(HWND hWnd, UINT msg, WPARAM wParam, LPARA
 					else {
                         itemRect.left +=2;
                         itemRect.right -= 2;
-                        DrawTextA(hdcMem, szText, -1, &itemRect, DT_VCENTER | DT_SINGLELINE | DT_END_ELLIPSIS);
+                        DrawText(hdcMem, szText, -1, &itemRect, DT_VCENTER | DT_SINGLELINE | DT_END_ELLIPSIS);
                     }
 				}
-
                 BitBlt(hdc, 0, 0, rcClient.right, rcClient.bottom, hdcMem, 0, 0, SRCCOPY);
                 SelectObject(hdcMem, hbmOld);
                 DeleteObject(hbm);
@@ -406,7 +408,7 @@ LRESULT CALLBACK StatusBarSubclassProc(HWND hWnd, UINT msg, WPARAM wParam, LPARA
 
                             ti.cbSize = sizeof(ti);
                             szTip[0] = 0;
-                            SendMessageA(hWnd, SB_GETTIPTEXTA, MAKEWPARAM(i, 500), (LPARAM)szTip);
+                            SendMessage(hWnd, SB_GETTIPTEXTA, MAKEWPARAM(i, 500), (LPARAM)szTip);
                             szTip[500] = 0;
                             if(szTip[0]) {
                                 CallService("mToolTip/ShowTip", (WPARAM)szTip, (LPARAM)&ti);
@@ -557,7 +559,7 @@ static BOOL CALLBACK ContainerWndProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPA
 							if(rc) {
 								StatusItems_t *item = &StatusItems[pContainer->buttons[i].isPressed ? ID_EXTBKTITLEBUTTONPRESSED : (pContainer->buttons[i].isHot ? ID_EXTBKTITLEBUTTONMOUSEOVER : ID_EXTBKTITLEBUTTON)];
 								DrawAlpha(hdc, rc, item->COLOR, item->ALPHA, item->COLOR2, item->COLOR2_TRANSPARENT,
-										  item->GRADIENT, item->CORNER, item->RADIUS, item->imageItem);
+										  item->GRADIENT, item->CORNER, item->BORDERSTYLE, item->imageItem);
 								DrawIconEx(hdc, rc->left + ((rc->right - rc->left) / 2 - 8), rc->top + ((rc->bottom - rc->top) / 2 - 8), hIcon, 16, 16, 0, 0, DI_NORMAL);
 							}
 						}
@@ -637,13 +639,14 @@ static BOOL CALLBACK ContainerWndProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPA
 					StatusItems_t *item;
 					TCHAR szWindowText[512];
 					RECT rcText;
-					HDC dcMem = CreateCompatibleDC(dcFrame);
+					HDC dcMem = CreateCompatibleDC(pContainer->cachedDC ? pContainer->cachedDC : dcFrame);
 					HBITMAP hbmMem, hbmOld;
 					int i;
+                    DRAWITEMSTRUCT dis = {0};
 
 					GetWindowRect(hwndDlg, &rcWindow);
 					GetClientRect(hwndDlg, &rcClient);
-					pt.x = 0; pt.y = 0;
+					pt.y = 0; pt.x = 0;
 					ClientToScreen(hwndDlg, &pt);
 					pt1.x = rcClient.right; pt1.y = rcClient.bottom;
 					ClientToScreen(hwndDlg, &pt1);
@@ -657,13 +660,12 @@ static BOOL CALLBACK ContainerWndProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPA
 					hbmMem = CreateCompatibleBitmap(dcFrame, rcWindow.right, rcWindow.bottom);
 					hbmOld = SelectObject(dcMem, hbmMem);
 
-					ExcludeClipRect(dcFrame, clip_left, clip_top, clip_left + (pt1.x - pt.x), clip_top + (pt1.y - pt.y));
+                    ExcludeClipRect(dcFrame, clip_left, clip_top, clip_left + (pt1.x - pt.x), clip_top + (pt1.y - pt.y));
 					ExcludeClipRect(dcMem, clip_left, clip_top, clip_left + (pt1.x - pt.x), clip_top + (pt1.y - pt.y));
-					item = pContainer->ncActive ? &StatusItems[ID_EXTBKFRAME] : &StatusItems[ID_EXTBKFRAMEINACTIVE];
-
-					if(!item->IGNORED)
-						DrawAlpha(dcMem, &rcWindow, item->COLOR, item->ALPHA, item->COLOR2, item->COLOR2_TRANSPARENT,
-								  item->GRADIENT, item->CORNER, item->RADIUS, item->imageItem);
+                    item = pContainer->ncActive ? &StatusItems[ID_EXTBKFRAME] : &StatusItems[ID_EXTBKFRAMEINACTIVE];
+                    if(!item->IGNORED)
+                        DrawAlpha(dcMem, &rcWindow, item->COLOR, item->ALPHA, item->COLOR2, item->COLOR2_TRANSPARENT,
+                                  item->GRADIENT, item->CORNER, item->BORDERSTYLE, item->imageItem);
 
 					GetWindowText(hwndDlg, szWindowText, 512);
 					szWindowText[511] = 0;
@@ -685,7 +687,7 @@ static BOOL CALLBACK ContainerWndProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPA
 
 					// title buttons;
 
-					pContainer->rcClose.top = pContainer->rcMin.top = pContainer->rcMax.top = g_titleButtonTopOff;
+                    pContainer->rcClose.top = pContainer->rcMin.top = pContainer->rcMax.top = g_titleButtonTopOff;
 					pContainer->rcClose.bottom = pContainer->rcMin.bottom = pContainer->rcMax.bottom = g_titleButtonTopOff + g_titleBarButtonSize.cy;
 					
 					pContainer->rcClose.right = rcWindow.right - 10;
@@ -722,11 +724,30 @@ static BOOL CALLBACK ContainerWndProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPA
 						if(rc) {
 							item = pContainer->buttons[i].isPressed ? item_pressed : (pContainer->buttons[i].isHot ? item_hot : item_normal);
 							DrawAlpha(dcMem, rc, item->COLOR, item->ALPHA, item->COLOR2, item->COLOR2_TRANSPARENT,
-									  item->GRADIENT, item->CORNER, item->RADIUS, item->imageItem);
+									  item->GRADIENT, item->CORNER, item->BORDERSTYLE, item->imageItem);
 							DrawIconEx(dcMem, rc->left + ((rc->right - rc->left) / 2 - 8), rc->top + ((rc->bottom - rc->top) / 2 - 8), hIcon, 16, 16, 0, 0, DI_NORMAL);
 						}
 					}
-					BitBlt(dcFrame, 0, 0, rcWindow.right, rcWindow.bottom, dcMem, 0, 0, SRCCOPY);
+                    GetWindowRect(hwndDlg, &rcWindow);
+                    SetBkMode(dcMem, TRANSPARENT);
+                    if(!(pContainer->dwFlags & CNT_NOMENUBAR) && pContainer->hMenu) {
+                        RECT rcItem;
+
+                        dis.hDC = dcMem;
+                        dis.CtlType = ODT_MENU;
+                        for(i = 0; i <= 5; i++) {
+                            dis.itemID = 100 + i;
+                            GetMenuItemRect(hwndDlg, pContainer->hMenu, i, &rcItem);
+
+                            dis.rcItem.left = rcItem.left - rcWindow.left;
+                            dis.rcItem.top = rcItem.top - rcWindow.top;
+
+                            dis.rcItem.right = dis.rcItem.left + (rcItem.right - rcItem.left);
+                            dis.rcItem.bottom = dis.rcItem.top + (rcItem.bottom - rcItem.top);
+                            SendMessage(hwndDlg, WM_DRAWITEM, 0, (LPARAM)&dis);
+                        }
+                    }
+                    BitBlt(dcFrame, 0, 0, rcWindow.right, rcWindow.bottom, dcMem, 0, 0, SRCCOPY);
 					SelectObject(dcMem, hbmOld);
 					DeleteObject(hbmMem);
 					DeleteDC(dcMem);
@@ -741,6 +762,10 @@ static BOOL CALLBACK ContainerWndProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPA
 				width = rcClient.right - rcClient.left;
 				height = rcClient.bottom - rcClient.top;
 				if(width != pContainer->oldDCSize.cx || height != pContainer->oldSize.cy) {
+                    StatusItems_t *sbaritem = &StatusItems[ID_EXTBKSTATUSBAR];
+                    BOOL statusBarSkinnd = !(pContainer->dwFlags & CNT_NOSTATUSBAR) && !sbaritem->IGNORED;
+                    LONG sbarDelta = statusBarSkinnd ? pContainer->statusBarHeight : 0;
+
 					pContainer->oldDCSize.cx = width;
 					pContainer->oldDCSize.cy = height;
 					if(!pContainer->cachedDC) {
@@ -755,7 +780,12 @@ static BOOL CALLBACK ContainerWndProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPA
 					hdc = pContainer->cachedDC;
 					//FillRect(hdc, &rcClient, g_ContainerColorKeyBrush);
 					DrawAlpha(hdc, &rcClient, item->COLOR, item->ALPHA, item->COLOR2, item->COLOR2_TRANSPARENT,
-							  item->GRADIENT, item->CORNER, item->RADIUS, item->imageItem);
+							  item->GRADIENT, item->CORNER, item->BORDERSTYLE, item->imageItem);
+                    if(sbarDelta) {
+                        rcClient.top = rcClient.bottom - sbarDelta;
+                        DrawAlpha(hdc, &rcClient, sbaritem->COLOR, sbaritem->ALPHA, sbaritem->COLOR2, sbaritem->COLOR2_TRANSPARENT,
+                                  sbaritem->GRADIENT, sbaritem->CORNER, sbaritem->BORDERSTYLE, sbaritem->imageItem);
+                    }
 				}
 
 				BitBlt(hdcReal, 0, 0, width, height, pContainer->cachedDC, 0, 0, SRCCOPY);
@@ -850,6 +880,14 @@ BOOL CALLBACK DlgProcContainer(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPa
                 int iMenuItems;
                 int i = 0;
 
+                if(!menuBarNames_done) {
+                    int j;
+
+                    for(j = 0; j < 6; j++)
+                        menuBarNames_translated[j] = TranslateTS(menuBarNames[j]);
+                    menuBarNames_done = TRUE;
+                }
+
                 OldContainerWndProc = (WNDPROC)SetWindowLong(hwndDlg, GWL_WNDPROC, (LONG)ContainerWndProc);
 
                 if(myGlobals.m_TabAppearance & TCF_FLAT)
@@ -892,12 +930,12 @@ BOOL CALLBACK DlgProcContainer(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPa
 				hSysmenu = GetSystemMenu(hwndDlg, FALSE);
                 iMenuItems = GetMenuItemCount(hSysmenu);
 
-                InsertMenuA(hSysmenu, iMenuItems++ - 2, MF_BYPOSITION | MF_SEPARATOR, 0, "");
-                InsertMenuA(hSysmenu, iMenuItems++ - 2, MF_BYPOSITION | MF_STRING, IDM_STAYONTOP, Translate("Stay on Top"));
-                InsertMenuA(hSysmenu, iMenuItems++ - 2, MF_BYPOSITION | MF_STRING, IDM_NOTITLE, Translate("Hide titlebar"));
-                InsertMenuA(hSysmenu, iMenuItems++ - 2, MF_BYPOSITION | MF_SEPARATOR, 0, "");
-                InsertMenuA(hSysmenu, iMenuItems++ - 2, MF_BYPOSITION | MF_STRING, IDM_MOREOPTIONS, Translate("Container options..."));
-                SetWindowTextA(hwndDlg, "Message Session...");
+                InsertMenu(hSysmenu, iMenuItems++ - 2, MF_BYPOSITION | MF_SEPARATOR, 0, _T(""));
+                InsertMenu(hSysmenu, iMenuItems++ - 2, MF_BYPOSITION | MF_STRING, IDM_STAYONTOP, TranslateT("Stay on Top"));
+                InsertMenu(hSysmenu, iMenuItems++ - 2, MF_BYPOSITION | MF_STRING, IDM_NOTITLE, TranslateT("Hide titlebar"));
+                InsertMenu(hSysmenu, iMenuItems++ - 2, MF_BYPOSITION | MF_SEPARATOR, 0, _T(""));
+                InsertMenu(hSysmenu, iMenuItems++ - 2, MF_BYPOSITION | MF_STRING, IDM_MOREOPTIONS, TranslateT("Container options..."));
+                SetWindowText(hwndDlg, TranslateT("Message Session..."));
                 SendMessage(hwndDlg, WM_SETICON, ICON_BIG, (LPARAM)myGlobals.g_iconContainer);
 
                 /*
@@ -1340,16 +1378,14 @@ BOOL CALLBACK DlgProcContainer(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPa
                     TabCtrl_GetItem(hwndTab, i, &item);
                     if((HWND)item.lParam == pContainer->hwndActive) {
                         MoveWindow((HWND)item.lParam, rcClient.left, rcClient.top, (rcClient.right - rcClient.left), (rcClient.bottom - rcClient.top), TRUE);
-                        //XXX RedrawWindow(GetDlgItem((HWND)item.lParam, IDC_LOG), NULL, NULL, RDW_INVALIDATE);
-                        if(!pContainer->bSizingLoop) {
+                        if(!pContainer->bSizingLoop)
                             SendMessage(pContainer->hwndActive, DM_SCROLLLOGTOBOTTOM, 0, 1);
-                        }
                     }
                     else
                         SendMessage((HWND)item.lParam, DM_CHECKSIZE, 0, 0);
                 }
-                if(wParam == SIZE_MAXIMIZED || wParam == SIZE_RESTORED)
-                    SendMessage(pContainer->hwndActive, DM_SCROLLLOGTOBOTTOM, 0, 1);
+                //if(wParam == SIZE_MAXIMIZED || wParam == SIZE_RESTORED)
+                //    SendMessage(pContainer->hwndActive, DM_SCROLLLOGTOBOTTOM, 0, 1);
 
                 RedrawWindow(hwndTab, NULL, NULL, RDW_INVALIDATE | (pContainer->bSizingLoop ? RDW_ERASE : 0));
 				RedrawWindow(hwndDlg, NULL, NULL, (pContainer->bSkinned ? RDW_FRAME : 0) | RDW_INVALIDATE | (pContainer->bSizingLoop || wParam == SIZE_RESTORED ? RDW_ERASE : 0));
@@ -1669,7 +1705,7 @@ panel_found:
                                                 int i_secs = diff % 60;
 #if defined ( _UNICODE )
 												mir_snprintf(szTtitle, sizeof(szTtitle), "%s (%s) - Idle: %d:%02d:%02d", "%nick%", cdat->szStatus[0] ? cdat->szStatus : "(undef)", i_hrs, i_mins, i_secs);
-                                                newTitle = EncodeWithNickname(szTtitle, contactName, cdat->codePage);
+                                                newTitle = EncodeWithNickname(szTtitle, contactName, myGlobals.m_LangPackCP);
 #else
 												mir_snprintf(szTtitle, sizeof(szTtitle), "%s (%s) - Idle: %d:%02d:%02d", contactName, cdat->szStatus[0] ? cdat->szStatus : "(undef)", i_hrs, i_mins, i_secs);
 #endif
@@ -1677,7 +1713,7 @@ panel_found:
                                             else {
 #if defined ( _UNICODE )
 												mir_snprintf(szTtitle, sizeof(szTtitle), "%s (%s)", "%nick%", cdat->szStatus[0] ? cdat->szStatus : "(undef)");
-                                                newTitle = EncodeWithNickname(szTtitle, contactName, cdat->codePage);
+                                                newTitle = EncodeWithNickname(szTtitle, contactName, myGlobals.m_LangPackCP);
 #else
 												mir_snprintf(szTtitle, sizeof(szTtitle), "%s (%s)", contactName, cdat->szStatus[0] ? cdat->szStatus : "(undef");
 #endif
@@ -1741,6 +1777,16 @@ panel_found:
                                 case ID_TABMENU_CLOSETAB:
                                     SendMessage(hwndDlg, DM_CLOSETABATMOUSE, 0, (LPARAM)&pt1);
                                     break;
+                                case ID_TABMENU_SHIFTTABTORIGHT:
+                                case ID_TABMENU_SHIFTTABTOLEFT:
+                                    RearrangeTab((HWND)item.lParam, dat, iSelection);
+                                    break;
+                                case ID_TABMENU_SAVETABPOSITION:
+                                    DBWriteContactSettingDword(dat->hContact, SRMSGMOD_T, "tabindex", dat->iTabID * 100);
+                                    break;
+                                case ID_TABMENU_CLEARSAVEDTABPOSITION:
+                                    DBDeleteContactSetting(dat->hContact, SRMSGMOD_T, "tabindex");
+                                    break;
                                 case ID_TABMENU_LEAVECHATROOM:
                                 {
                                     if(dat && dat->bType == SESSIONTYPE_CHAT) {
@@ -1757,12 +1803,6 @@ panel_found:
                                     }
                                     break;
                                 }
-                                case ID_TABMENU_SWITCHTONEXTTAB:
-                                    SendMessage(hwndDlg, DM_SELECTTAB, (WPARAM) DM_SELECT_NEXT, 0);
-                                    break;
-                                case ID_TABMENU_SWITCHTOPREVIOUSTAB:
-                                    SendMessage(hwndDlg, DM_SELECTTAB, (WPARAM) DM_SELECT_PREV, 0);
-                                    break;
                                 case ID_TABMENU_ATTACHTOCONTAINER:
                                     if ((iItem = GetTabItemFromMouse(hwndTab, &pt)) == -1)
                                         break;
@@ -1777,9 +1817,6 @@ panel_found:
                                     break;
                                 case ID_TABMENU_CLOSECONTAINER:
                                     SendMessage(hwndDlg, WM_CLOSE, 0, 0);
-                                    break;
-                                case ID_TABMENU_CONFIGURETABAPPEARANCE:
-                                    CreateDialogParam(g_hInst, MAKEINTRESOURCE(IDD_TABCONFIG), hwndDlg, DlgProcTabConfig, 0);
                                     break;
                                 }
                             }
@@ -1911,8 +1948,15 @@ panel_found:
 
                 SendMessage(pContainer->hwndActive, DM_QUERYHCONTACT, 0, (LPARAM)&hContact);
                 if(hContact) {
+                    MENUITEMINFO mii = {0};
+
                     hMenu = (HMENU) CallService(MS_CLIST_MENUBUILDCONTACT, (WPARAM) hContact, 0);
-                    ModifyMenuA(pContainer->hMenu, 2, MF_BYPOSITION | MF_POPUP, (UINT_PTR) hMenu, Translate("&User"));
+                    mii.cbSize = sizeof(mii);
+                    mii.fMask = MIIM_FTYPE | MIIM_SUBMENU;
+                    mii.fType = MFT_OWNERDRAW;
+                    mii.hSubMenu = hMenu;
+                    SetMenuItemInfo(pContainer->hMenu, 2, TRUE, &mii);
+                    //ModifyMenuA(pContainer->hMenu, 2, MF_BYPOSITION | MF_POPUP | MF_OWNERDRAW, (UINT_PTR) hMenu, Translate("&User"));
                     DrawMenuBar(hwndDlg);
                     GetCursorPos(&pt);
                     TrackPopupMenu(hMenu, 0, pt.x, pt.y, 0, hwndDlg, NULL);
@@ -1957,7 +2001,7 @@ panel_found:
                 TCITEM item = {0};
 
                 if (DBGetContactSettingByte(NULL, SRMSGMOD_T, "warnonexit", 0)) {
-                    if (MessageBoxA(pContainer->hwnd, Translate(szWarnClose), "Miranda", MB_YESNO | MB_ICONQUESTION) == IDNO)
+                    if (MessageBox(pContainer->hwnd, TranslateTS(szWarnClose), _T("Miranda"), MB_YESNO | MB_ICONQUESTION) == IDNO)
                         break;
                 }
                 hwndCurrent = pContainer->hwndActive;
@@ -2228,14 +2272,31 @@ panel_found:
                     SetMenu(hwndDlg, NULL);
             }
             else {
-                if(pContainer->bSkinned && g_framelessSkinmode) {
+                if(0) { //pContainer->bSkinned && g_framelessSkinmode) {
                     if(pContainer->hMenu)
                         SetMenu(hwndDlg, NULL);
                 }
                 else {
                     if(pContainer->hMenu == 0) {
+                        int i;
+                        MENUINFO mi = {0};
+                        MENUITEMINFO mii = {0};
+
+                        mii.cbSize = sizeof(mii);
+                        mii.fMask = MIIM_FTYPE | MIIM_ID;
+                        mii.fType = MFT_OWNERDRAW;
+
                         pContainer->hMenu = LoadMenu(g_hInst, MAKEINTRESOURCE(IDR_MENUBAR));
-                        CallService(MS_LANGPACK_TRANSLATEMENU, (WPARAM) pContainer->hMenu, 0);
+                        for(i = 0; i <= 5; i++) {
+                            mii.wID = 100 + i;
+                            SetMenuItemInfo(pContainer->hMenu, i, TRUE, &mii);
+                        }
+                        if(pContainer->bSkinned && g_MenuBGBrush) {
+                            mi.cbSize = sizeof(mi);
+                            mi.hbrBack = g_MenuBGBrush;
+                            mi.fMask = MIM_BACKGROUND;
+                            SetMenuInfo(pContainer->hMenu, &mi);
+                        }
                     }
                     SetMenu(hwndDlg, pContainer->hMenu);
                     DrawMenuBar(hwndDlg);
@@ -2365,6 +2426,51 @@ panel_found:
         {
             int cx = myGlobals.m_smcxicon;
             int cy = myGlobals.m_smcyicon;
+            DRAWITEMSTRUCT *dis = (DRAWITEMSTRUCT *)lParam;
+
+            if(dis->CtlType == ODT_MENU && dis->itemID >= 100 && dis->itemID <= 105) {
+                SIZE sz;
+                HFONT hOldFont;
+                TCHAR *menuName = TranslateTS(menuBarNames_translated[dis->itemID - 100]);
+
+                hOldFont = SelectObject(dis->hDC, GetStockObject(DEFAULT_GUI_FONT));
+                if(pContainer->bSkinned && g_framelessSkinmode)
+                    OffsetRect(&dis->rcItem, myGlobals.g_realSkinnedFrame_left, myGlobals.g_realSkinnedFrame_caption);
+                GetTextExtentPoint32(dis->hDC, menuName, lstrlen(menuName), &sz);
+                SetBkMode(dis->hDC, TRANSPARENT);
+
+                /*if(dis->itemState & ODS_SELECTED || dis->itemState & ODS_HOTLIGHT)
+                    FillRect(dis->hDC, &dis->rcItem, GetSysColorBrush(COLOR_MENUHILIGHT));
+                else*/
+                    FillRect(dis->hDC, &dis->rcItem, pContainer->bSkinned && g_MenuBGBrush ? g_MenuBGBrush : GetSysColorBrush(COLOR_MENU));
+
+                if(dis->itemState & ODS_SELECTED) {
+                    if(pContainer->bSkinned) {
+                        POINT pt;
+                        HPEN  hPenOld;
+
+                        MoveToEx(dis->hDC, dis->rcItem.left, dis->rcItem.bottom, &pt);
+                        hPenOld = SelectObject(dis->hDC, myGlobals.g_SkinDarkShadowPen);
+                        LineTo(dis->hDC, dis->rcItem.left, dis->rcItem.top);
+                        LineTo(dis->hDC, dis->rcItem.right, dis->rcItem.top);
+                        SelectObject(dis->hDC, myGlobals.g_SkinLightShadowPen);
+                        MoveToEx(dis->hDC, dis->rcItem.right, dis->rcItem.top + 1, &pt);
+                        LineTo(dis->hDC, dis->rcItem.right, dis->rcItem.bottom);
+                        LineTo(dis->hDC, dis->rcItem.left + 1, dis->rcItem.bottom);
+                        SelectObject(dis->hDC, hPenOld);
+                    } else
+                        DrawEdge(dis->hDC, &dis->rcItem, BDR_SUNKENINNER, BF_RECT);
+                }
+                SetTextColor(dis->hDC, pContainer->bSkinned ? myGlobals.skinDefaultFontColor : GetSysColor(COLOR_MENUTEXT));
+                DrawText(dis->hDC, menuName, lstrlen(menuName), &dis->rcItem,
+                         DT_VCENTER | DT_SINGLELINE | DT_CENTER);
+                //DrawState(dis->hDC, 0, NULL, menuBarNames[dis->itemID - 100], lstrlen(menuBarNames[dis->itemID - 100]),
+                //          3 + ((dis->rcItem.left + dis->rcItem.right) / 2 - sz.cx / 2),
+                //          (dis->rcItem.top + dis->rcItem.bottom) / 2 - sz.cy / 2,
+                //          sz.cx, sz.cy, DST_TEXT | ((dis->itemState & ODS_GRAYED || dis->itemState & ODS_DISABLED) ? DSS_DISABLED : DSS_NORMAL));
+                SelectObject(dis->hDC, hOldFont);
+                return TRUE;
+            }
 			/*
             LPDRAWITEMSTRUCT dis = (LPDRAWITEMSTRUCT) lParam;
             if(dis->CtlType == ODT_BUTTON && (dis->CtlID == IDC_SIDEBARUP || dis->CtlID == IDC_SIDEBARDOWN)) {
@@ -2387,6 +2493,21 @@ panel_found:
         }
         case WM_MEASUREITEM:
             {
+                LPMEASUREITEMSTRUCT lpmi = (LPMEASUREITEMSTRUCT)lParam;
+
+                if(lpmi->CtlType == ODT_MENU && lpmi->itemID >= 100 && lpmi->itemID <= 105) {
+                    SIZE sz;
+                    HFONT hOldFont;
+                    HDC hdc = GetWindowDC(hwndDlg);
+                    TCHAR *menuName = TranslateTS(menuBarNames_translated[lpmi->itemID - 100]);
+
+                    hOldFont = SelectObject(hdc, GetStockObject(DEFAULT_GUI_FONT));
+                    GetTextExtentPoint32(hdc, menuName, lstrlen(menuName), &sz);
+                    lpmi->itemWidth = sz.cx;
+                    SelectObject(hdc, hOldFont);
+                    ReleaseDC(hwndDlg, hdc);
+                    return TRUE;
+                }
                 return CallService(MS_CLIST_MENUMEASUREITEM, wParam, lParam);
             }
         case DM_QUERYCLIENTAREA:
@@ -2408,6 +2529,11 @@ panel_found:
                 TCITEM item;
                 SESSION_INFO *node = m_WndList;
 
+  	  			if (myGlobals.g_FlashAvatarAvail) { // destroy own flash avatar
+	  				FLASHAVATAR fa = {0};
+					fa.id = 25367;
+					CallService(MS_FAVATAR_DESTROY, (WPARAM)&fa, 0);
+  	  			}
                 //DestroyWindow(hwndTab);
                 ZeroMemory((void *)&item, sizeof(item));
                 for(i = 0; i < TabCtrl_GetItemCount(hwndTab); i++) {
@@ -2416,7 +2542,6 @@ panel_found:
                     if(IsWindow((HWND)item.lParam))
                         DestroyWindow((HWND) item.lParam);
                 }
-
                 KillTimer(hwndDlg, TIMERID_HEARTBEAT);
     			pContainer->hwnd = 0;
     			pContainer->hwndActive = 0;
@@ -2451,9 +2576,6 @@ panel_found:
                 while(node) {
                     if(node->pContainer == pContainer) {
                         node->pContainer = 0;
-#ifdef _DEBUG
-                        _DebugTraceA("removing container from %x", node);
-#endif                        
                     }
                     node = node->next;
                 }
@@ -2478,7 +2600,7 @@ panel_found:
 #endif
                 if (lParam == 0 && TabCtrl_GetItemCount(GetDlgItem(hwndDlg, IDC_MSGTABS)) > 0) {    // dont ask if container is empty (no tabs)
                     if (DBGetContactSettingByte(NULL, SRMSGMOD_T, "warnonexit", 0)) {
-                        if (MessageBoxA(hwndDlg, Translate(szWarnClose), "Miranda", MB_YESNO | MB_ICONQUESTION) == IDNO)
+                        if (MessageBox(hwndDlg, TranslateTS(szWarnClose), _T("Miranda"), MB_YESNO | MB_ICONQUESTION) == IDNO)
                             return TRUE;
                     }
                 }
@@ -2811,9 +2933,12 @@ void AdjustTabClientRect(struct ContainerWindowData *pContainer, RECT *rc)
             if(pContainer->dwFlags & CNT_TABSBOTTOM) {
                 int nCount = TabCtrl_GetItemCount(hwndTab);
                 RECT rcItem;
-                TabCtrl_GetItemRect(hwndTab, nCount - 1, &rcItem);
-                //rc->top = pContainer->tBorder_outer_top;
-                rc->bottom = rcItem.top;
+
+                if(nCount > 0) {
+                    TabCtrl_GetItemRect(hwndTab, nCount - 1, &rcItem);
+                    //rc->top = pContainer->tBorder_outer_top;
+                    rc->bottom = rcItem.top;
+                }
             }
             else {
                 rc->top += (dwTopPad - 2);;
@@ -3107,7 +3232,8 @@ HMENU BuildMCProtocolMenu(HWND hwndDlg)
     HMENU hMCContextMenu = 0, hMCSubForce = 0, hMCSubDefault = 0, hMenu = 0;
     DBVARIANT dbv;
     int iNumProtos = 0, i = 0, iDefaultProtoByNum = 0;
-    char szTemp[50], *szProtoMostOnline = NULL, szMenuLine[128], *nick = NULL, *szStatusText = NULL;
+    char  szTemp[50], *szProtoMostOnline = NULL;
+    TCHAR szMenuLine[128], *nick = NULL, *szStatusText = NULL, *tzProtoName = NULL;
     HANDLE hContactMostOnline, handle;
     DWORD iChecked, isForced;
     WORD wStatus;
@@ -3124,8 +3250,8 @@ HMENU BuildMCProtocolMenu(HWND hwndDlg)
     hMCSubForce = CreatePopupMenu();
     hMCSubDefault = CreatePopupMenu();
 
-    AppendMenuA(hMenu, MF_STRING | MF_DISABLED | MF_GRAYED | MF_CHECKED, 1, Translate("Meta Contact"));
-    AppendMenuA(hMenu, MF_SEPARATOR, 1, "");
+    AppendMenu(hMenu, MF_STRING | MF_DISABLED | MF_GRAYED | MF_CHECKED, 1, TranslateT("Meta Contact"));
+    AppendMenu(hMenu, MF_SEPARATOR, 1, _T(""));
 
     iNumProtos = (int)CallService(MS_MC_GETNUMCONTACTS, (WPARAM)dat->hContact, 0);
     iDefaultProtoByNum = (int)CallService(MS_MC_GETDEFAULTCONTACTNUM, (WPARAM)dat->hContact, 0);
@@ -3137,25 +3263,34 @@ HMENU BuildMCProtocolMenu(HWND hwndDlg)
         mir_snprintf(szTemp, sizeof(szTemp), "Protocol%d", i);
         if(DBGetContactSetting(dat->hContact, "MetaContacts", szTemp, &dbv))
             continue;
+#if defined(_UNICODE)
+        tzProtoName = (TCHAR *)CallService(MS_LANGPACK_PCHARTOTCHAR, 0, (LPARAM)dbv.pszVal);
+#else
+        tzProtoName = dbv.pszVal;
+#endif
         mir_snprintf(szTemp, sizeof(szTemp), "Handle%d", i);
         if((handle = (HANDLE)DBGetContactSettingDword(dat->hContact, "MetaContacts", szTemp, 0)) != 0) {
-            nick = (char *)CallService(MS_CLIST_GETCONTACTDISPLAYNAME, (WPARAM)handle, 0);
+            nick = (TCHAR *)CallService(MS_CLIST_GETCONTACTDISPLAYNAME, (WPARAM)handle, GCDNF_TCHAR);
             mir_snprintf(szTemp, sizeof(szTemp), "Status%d", i);
             wStatus = (WORD)DBGetContactSettingWord(dat->hContact, "MetaContacts", szTemp, 0);
-            szStatusText = (char *) CallService(MS_CLIST_GETSTATUSMODEDESCRIPTION, wStatus, 0);
+            szStatusText = (TCHAR *) CallService(MS_CLIST_GETSTATUSMODEDESCRIPTION, wStatus, GCMDF_TCHAR);
         }
-        mir_snprintf(szMenuLine, sizeof(szMenuLine), "%s: %s [%s] %s", dbv.pszVal, nick, szStatusText, i == isForced ? Translate("(Forced)") : "");
+        mir_sntprintf(szMenuLine, safe_sizeof(szMenuLine), _T("%s: %s [%s] %s"), tzProtoName, nick, szStatusText, i == isForced ? TranslateT("(Forced)") : _T(""));
+#if defined(_UNICODE)
+        if(tzProtoName)
+            mir_free(tzProtoName);
+#endif
         iChecked = MF_UNCHECKED;
         if(hContactMostOnline != 0 && hContactMostOnline == handle)
             iChecked = MF_CHECKED;
-        AppendMenuA(hMCSubForce, MF_STRING | iChecked, 100 + i, szMenuLine);
-        AppendMenuA(hMCSubDefault, MF_STRING | (i == iDefaultProtoByNum ? MF_CHECKED : MF_UNCHECKED), 1000 + i, szMenuLine);
+        AppendMenu(hMCSubForce, MF_STRING | iChecked, 100 + i, szMenuLine);
+        AppendMenu(hMCSubDefault, MF_STRING | (i == iDefaultProtoByNum ? MF_CHECKED : MF_UNCHECKED), 1000 + i, szMenuLine);
         DBFreeVariant(&dbv);
     }
-    AppendMenuA(hMCSubForce, MF_SEPARATOR, 900, "");
-    AppendMenuA(hMCSubForce, MF_STRING | ((isForced == -1) ? MF_CHECKED : MF_UNCHECKED), 999, Translate("Autoselect"));
-    InsertMenuA(hMenu, 2, MF_BYPOSITION | MF_POPUP, (UINT_PTR) hMCSubForce, Translate("Use Protocol"));
-    InsertMenuA(hMenu, 2, MF_BYPOSITION | MF_POPUP, (UINT_PTR) hMCSubDefault, Translate("Set Default Protocol"));
+    AppendMenu(hMCSubForce, MF_SEPARATOR, 900, _T(""));
+    AppendMenu(hMCSubForce, MF_STRING | ((isForced == -1) ? MF_CHECKED : MF_UNCHECKED), 999, TranslateT("Autoselect"));
+    InsertMenu(hMenu, 2, MF_BYPOSITION | MF_POPUP, (UINT_PTR) hMCSubForce, TranslateT("Use Protocol"));
+    InsertMenu(hMenu, 2, MF_BYPOSITION | MF_POPUP, (UINT_PTR) hMCSubDefault, TranslateT("Set Default Protocol"));
 
     return hMenu;
 }
