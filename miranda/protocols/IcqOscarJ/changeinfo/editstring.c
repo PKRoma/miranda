@@ -326,7 +326,7 @@ void EndStringEdit(int save)
         EscapesToBinary(text);
       }
       if ((setting[iEditItem].displayType&LIF_PASSWORD && strcmpnull(text,"                ")) ||
-        (!(setting[iEditItem].displayType&LIF_PASSWORD) && strcmpnull(text,(char*)setting[iEditItem].value)))
+        (!(setting[iEditItem].displayType&LIF_PASSWORD) && strcmpnull(text,(char*)setting[iEditItem].value) && (strlennull(text) + strlennull((char*)setting[iEditItem].value))))
       {
         SAFE_FREE((char**)&setting[iEditItem].value);
         if (text[0])

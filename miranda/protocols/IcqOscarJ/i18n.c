@@ -335,7 +335,7 @@ char *ansi_to_utf8_codepage(const char *szAnsi, WORD wCp)
   int wchars = strlennull(szAnsi);
 
   unicode = (wchar_t*)_alloca((wchars + 1) * sizeof(wchar_t));
-  unicode[wchars] = 0;
+  ZeroMemory(unicode, (wchars + 1)*sizeof(wchar_t));
 
   MultiByteToWideChar(wCp, MB_PRECOMPOSED, szAnsi, wchars, unicode, wchars);
 
