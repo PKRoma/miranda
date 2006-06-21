@@ -358,22 +358,6 @@ SOURCE=.\icos\delete.ico
 # End Source File
 # Begin Source File
 
-SOURCE=.\icos\gcadmin.ico
-# End Source File
-# Begin Source File
-
-SOURCE=.\icos\gcmodera.ico
-# End Source File
-# Begin Source File
-
-SOURCE=.\icos\gcowner.ico
-# End Source File
-# Begin Source File
-
-SOURCE=.\icos\gcvoice.ico
-# End Source File
-# Begin Source File
-
 SOURCE=.\icos\grant.ico
 # End Source File
 # Begin Source File
