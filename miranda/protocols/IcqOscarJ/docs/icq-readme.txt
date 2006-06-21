@@ -30,6 +30,8 @@ ______________
   Manage server list contacts added contacts should never receive auth requests, but
   if you have an old account they can receive added notification.
 
+- Some wicked firewall software can cause HTML tags (e.g. <font> </font>) to be added to
+  incoming messages.
 
 TO-DO List
 __________
