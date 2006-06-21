@@ -64,8 +64,10 @@ int MSN_HandleErrors( ThreadData* info, char* cmdString )
 		return 0;
 
 	case ERR_AUTHENTICATION_FAILED:
-		MSN_ShowError( "Your username or password is incorrect" );
-		MSN_SendBroadcast( NULL, ACKTYPE_LOGIN, ACKRESULT_FAILED, NULL, LOGINERR_WRONGPASSWORD );
+		if ( info->mType != SERVER_SWITCHBOARD ) {
+			MSN_ShowError( "Your username or password is incorrect" );
+			MSN_SendBroadcast( NULL, ACKTYPE_LOGIN, ACKRESULT_FAILED, NULL, LOGINERR_WRONGPASSWORD );
+		}
 		return 1;
 
 	default:
