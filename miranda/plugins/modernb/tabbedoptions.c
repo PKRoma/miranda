@@ -239,7 +239,7 @@ BOOL CALLBACK DlgProcTabbedOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lP
 			{
 				DestroyWindow(data->items[i].hwnd); 
 			}
-
+			mir_free(data->items); 
 			mir_free(data); 
 			break;
 		}

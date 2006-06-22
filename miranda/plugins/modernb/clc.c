@@ -51,7 +51,7 @@ static int StartScrollPos=0;
 ClcProtoStatus *clcProto = NULL;
 HIMAGELIST himlCListClc=NULL;
 struct ClcContact * hitcontact=NULL;
-
+extern void SetAllExtraIcons(HWND hwndList,HANDLE hContact);
 extern void UpdateAllAvatars(struct ClcData *dat);
 extern int GetContactIndex(struct ClcGroup *group,struct ClcContact *contact);
 
@@ -318,6 +318,8 @@ HICON GetMainStatusOverlay(int STATUS)
 *	Proto ack hook
 */
 void Cache_RenewText(HANDLE hContact);
+
+int ExtraToColumnNum(int extra);
 int ClcProtoAck(WPARAM wParam,LPARAM lParam)
 {
 	ACKDATA *ack=(ACKDATA*)lParam;
@@ -327,10 +329,13 @@ int ClcProtoAck(WPARAM wParam,LPARAM lParam)
 	if (ack->result == ACKRESULT_SUCCESS) {
 		for (i = 0; i < pcli->hClcProtoCount; i++) {
 			if (!lstrcmpA(pcli->clcProto[i].szProto, ack->szModule)) {
+				DWORD newStatus=(DWORD)((WORD) ack->lParam); 
 				pcli->clcProto[i].dwStatus = (WORD) ack->lParam;
 				if (pcli->clcProto[i].dwStatus>=ID_STATUS_OFFLINE)
 					pcli->pfnTrayIconUpdateBase(pcli->clcProto[i].szProto);
 				//TODO call update icons here
+				if(ExtraToColumnNum(EXTRA_ICON_VISMODE)!=-1)
+						SetAllExtraIcons(pcli->hwndContactTree,(HANDLE)NULL);				
 				return 0;
 			}
 		}
@@ -758,7 +763,7 @@ case INTM_NAMECHANGED:
 case INTM_APPARENTMODECHANGED:
 	{
 		int res=saveContactListControlWndProc(hwnd, msg, wParam, lParam);
-
+		SetAllExtraIcons(pcli->hwndContactTree,(HANDLE)wParam);
 		return res;
 	}
 case INTM_STATUSMSGCHANGED:
@@ -1626,113 +1631,16 @@ case WM_LBUTTONUP:
 			case DROPTARGET_ONGROUP:
 				saveContactListControlWndProc(hwnd, msg, wParam, lParam);
 				break;
-				/*	{	struct ClcContact *contact;
-				TCHAR *szGroup;
-				GetRowByIndex(dat,dat->selection,&contact,NULL);
-				szGroup=(TCHAR*)pcli->pfnGetGroupName(contact->groupId,NULL);
-				GetRowByIndex(dat,dat->iDragItem,&contact,NULL);
-				if(contact->type==CLCIT_CONTACT)	 //drop is a contact
-				if (!contact->isSubcontact || !ServiceExists(MS_MC_ADDTOMETA))
-				DBWriteContactSettingTString(contact->hContact,"CList","Group",szGroup);
-				else
-				{
-				HANDLE hcontact,hfrom;
-				hcontact=contact->hContact;
-				hfrom=contact->subcontacts->hContact;
-				_sntprintf(Wording,sizeof(Wording),TranslateT("Do You want contact '%s' to be removed from MetaContact '%s' to group '%s'?"), contact->szText,contact->subcontacts->szText,szGroup);
-				res=MessageBox(hwnd,Wording,TranslateT("Changing MetaContact (Removing)"),MB_OKCANCEL|MB_ICONQUESTION);
-				if (res==1)
-				{
-
-				DBDeleteContactSetting(hcontact,"MetaContacts","OldCListGroup");
-				CallService(MS_MC_REMOVEFROMMETA,(WPARAM)0,(LPARAM)hcontact);    
-				DBWriteContactSettingTString(hcontact,"CList","Group",szGroup);
-				}
-				}
-				else if(contact->type==CLCIT_GROUP) { //dropee is a group
-				TCHAR szNewName[120];
-				mir_sntprintf(szNewName,SIZEOF(szNewName),_T("%s\\%s"),szGroup,contact->szText);
-				pcli->pfnRenameGroup(contact->groupId,szNewName);
-				}
-				break;
-
-				} */
 			case DROPTARGET_INSERTION:
 				saveContactListControlWndProc(hwnd, msg, wParam, lParam);
 				break;
-				/* {
-				struct ClcContact *contact,*destcontact;
-				struct ClcGroup *destgroup;
-				GetRowByIndex(dat,dat->iDragItem,&contact,NULL);
-				if(GetRowByIndex(dat,dat->iInsertionMark,&destcontact,&destgroup)==-1 || destgroup!=contact->group->parent)
-				CallService(MS_CLIST_GROUPMOVEBEFORE,contact->groupId,0);
-				else {
-				if(destcontact->type==CLCIT_GROUP) destgroup=destcontact->group;
-				else destgroup=destgroup;
-				CallService(MS_CLIST_GROUPMOVEBEFORE,contact->groupId,destgroup->groupId);
-				}
-				break;
-				} */
 			case DROPTARGET_OUTSIDE:
 				saveContactListControlWndProc(hwnd, msg, wParam, lParam);
 				break;
-				/*
-				{
-				NMCLISTCONTROL nm;
-				struct ClcContact *contact;
-				GetRowByIndex(dat,dat->iDragItem,&contact,NULL);
-				nm.hdr.code=CLN_DROPPED;
-				nm.hdr.hwndFrom=hwnd;
-				nm.hdr.idFrom=GetDlgCtrlID(hwnd);
-				nm.flags=0;
-				nm.hItem=ContactToItemHandle(contact,&nm.flags);
-				nm.pt=pt;
-				SendMessage(GetParent(hwnd),WM_NOTIFY,0,(LPARAM)&nm);
-				return 0;
-				}
-				*/
 			default:
 				saveContactListControlWndProc(hwnd, msg, wParam, lParam);
 				break;
-				/*
-				{	
-				struct ClcGroup *group;
-				struct ClcContact *contact;
-				GetRowByIndex(dat,dat->iDragItem,&contact,&group);
-				if(group->parent) 
-				{	 //move to root
-				if(contact->type==CLCIT_CONTACT)	
-				{
-				if (!contact->isSubcontact|| !ServiceExists(MS_MC_ADDTOMETA))
-				{
 				//dropee is a contact
-				DBDeleteContactSetting(contact->hContact,"CList","Group");
-				SendMessage(hwnd,CLM_AUTOREBUILD,0,0);
-				}
-				else 
-				{ 
-				HANDLE hcontact,hfrom;
-				hcontact=contact->hContact;
-				hfrom=contact->subcontacts->hContact;
-				_sntprintf(Wording,sizeof(Wording),TranslateT("Do You want contact '%s' to be removed from MetaContact '%s'?"), contact->szText,contact->subcontacts->szText);
-				res=MessageBox(hwnd,Wording,TranslateT("Changing MetaContact (Removing)"),MB_OKCANCEL|MB_ICONQUESTION);
-				if (res==1)
-				{
-
-				DBDeleteContactSetting(hcontact,"MetaContacts","OldCListGroup"); 
-				CallService(MS_MC_REMOVEFROMMETA,(WPARAM)0,(LPARAM)hcontact);                                                                     
-				}
-				}
-				}
-				else if(contact->type==CLCIT_GROUP) { //dropee is a group
-				TCHAR szNewName[120];
-				lstrcpyn(szNewName,contact->szText,sizeof(szNewName));
-				pcli->pfnRenameGroup(contact->groupId,szNewName);
-				}
-				}
-				return 0;
-				}
-				*/
 			}
 		}
 
