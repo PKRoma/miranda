@@ -1149,12 +1149,18 @@ LBL_InvalidCommand:
 					MSN_SetString( hContact, "MirVer", "Miranda 0.5.x" );
 				else if ( dwValue == 805306404 )
 					MSN_SetString( hContact, "MirVer", "Miranda 0.4.x" );
-				else if ( dwValue & 0x60000000 )
+				else if (( dwValue & 0x60000000 ) == 0x60000000 )
 					MSN_SetString( hContact, "MirVer", "MSN 8.x" );
+				else if (( dwValue & 0x50000000 ) == 0x50000000 )
+					MSN_SetString( hContact, "MirVer", "MSN 7.5" );
+				else if ( dwValue & 0x40000000 )
+					MSN_SetString( hContact, "MirVer", "MSN 7.0" );
+				else if (( dwValue & 0x30000000 ) == 0x30000000 )
+					MSN_SetString( hContact, "MirVer", "MSN 6.2" );
 				else if ( dwValue & 0x20000000 )
-					MSN_SetString( hContact, "MirVer", "MSN 7.x" );
+					MSN_SetString( hContact, "MirVer", "MSN 6.1" );
 				else if ( dwValue & 0x10000000 )
-					MSN_SetString( hContact, "MirVer", "MSN 6.x" );
+					MSN_SetString( hContact, "MirVer", "MSN 6.0" );
 				else
 					MSN_SetString( hContact, "MirVer", "MSN 4.x-5.x" );
 
