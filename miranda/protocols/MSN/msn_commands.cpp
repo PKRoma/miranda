@@ -1135,6 +1135,7 @@ LBL_InvalidCommand:
 
 				MSN_SetStringUtf( hContact, "Nick", data.userNick );
 				MSN_SetWord( hContact, "Status", ( WORD )MSNStatusToMiranda( data.userStatus ));
+				DBDeleteContactSetting( hContact, "CList", "StatusMsg" );
 			}
 
 			MSN_SetString( hContact, "MirVer", "" );
