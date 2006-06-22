@@ -38,11 +38,11 @@ bool DoingNudge = false;
 /////////////////////////////////////////////////////////////////////////////////////////
 //	Keep-alive thread for the main connection
 
-int msnPingTimeout, msnPingTimeoutCurrent;
+int msnPingTimeout = 45, msnPingTimeoutCurrent = 45;
 
 void __cdecl msn_keepAliveThread( void* )
 {
-	msnPingTimeoutCurrent = msnPingTimeout = 45;
+	msnPingTimeout = msnPingTimeoutCurrent;
 
 	while( TRUE )
 	{
@@ -53,7 +53,7 @@ void __cdecl msn_keepAliveThread( void* )
 				return;
 		}	}
 
-		msnPingTimeoutCurrent = msnPingTimeout = 45;
+		msnPingTimeout = msnPingTimeoutCurrent;
 
 		/*
 		 * if proxy is not used, every connection uses select() to send PNG
