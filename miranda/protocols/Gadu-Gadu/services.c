@@ -548,37 +548,33 @@ int gg_setawaymsg(WPARAM wParam, LPARAM lParam)
             return 1;
     }
 
-    // Quit
-    if (*szMsg && (char *) lParam && !strcmp(*szMsg, (char *) lParam))
+    // Check if we change status here somehow
+    if(*szMsg && (char *) lParam && !strcmp(*szMsg, (char *) lParam) 
+		|| !*szMsg && (!(char *)lParam || !*((char *) lParam)))
     {
-        if(status == ggDesiredStatus && (ggDesiredStatus == ggStatus && flagSetOnlyStatus))
+        if(status == ggDesiredStatus && ggDesiredStatus == ggStatus && flagSetOnlyStatus)
         {
 #ifdef DEBUGMODE
             gg_netlog("gg_setawaymsg(): Message hasn't been changed, return.");
 #endif
+			flagSetOnlyStatus = FALSE;
             pthread_mutex_unlock(&modeMsgsMutex);
             return 0;
         }
     }
     else
     {
-        if (*szMsg) free(*szMsg);
-        *szMsg = (char *) lParam ? _strdup((char *) lParam) : NULL;
+        if(*szMsg) 
+			free(*szMsg);
+        *szMsg = (char *) lParam && *((char *) lParam) ? _strdup((char *) lParam) : NULL;
 #ifdef DEBUGMODE
         gg_netlog("gg_setawaymsg(): Message changed.");
 #endif
     }
 
-    // Check if status change was called before
-    if(status == ggDesiredStatus && (
-         ggDesiredStatus != ggStatus ||
-        (ggDesiredStatus == ggStatus && flagSetOnlyStatus)
-       ))
-    {
-        // Change status
-        flagSetOnlyStatus = FALSE;
-        gg_refreshstatus(status);
-    }
+    // Change the status now whatever happened before
+    flagSetOnlyStatus = FALSE;
+    gg_refreshstatus(status);
     pthread_mutex_unlock(&modeMsgsMutex);
 
     return 0;

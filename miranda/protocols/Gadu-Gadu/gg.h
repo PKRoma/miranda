@@ -354,6 +354,9 @@ void gg_parsecontacts(char *contacts);
 int gg_getinfo(WPARAM wParam, LPARAM lParam);
 void gg_remindpassword(uin_t uin, const char *email);
 void gg_dccwait(GGTHREAD *thread);
+void *gg_img_loadpicture(struct gg_event* e, HANDLE hContact, char *szFileName);
+int gg_img_releasepicture(void *img);
+int gg_img_display(HANDLE hContact, void *img);
 
 /* Misc module initializers & destroyers */
 void gg_import_init();

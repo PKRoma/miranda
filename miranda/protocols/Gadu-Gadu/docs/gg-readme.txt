@@ -59,6 +59,14 @@ Note: For secure connections this plugin requires OpenSSL DLL
 
 5. History
 ----------
+0.0.3.8: 2006-06-22
+ - Fix: It seems that GG servers now properly handle initial status for GG.
+   This should fix issue of being detected by Inwigilator when connecting with
+   invisible status. (Spotted and fixed thanks to piopawlu)
+ - Fix: New libgadu version 2006.06.21 with fixed some memory leaks
+ - Fix: GG now handles PS_SETAWAYMSG without previously called PS_SETSTATUS.
+   This should fix issue with Watrack that couldn't set the status message
+   for GG protocol. (Spotted and fixed thanks to mruweq)
 0.0.3.7: 2005-12-19
  - Image sending and receiving now uses ImgDecoder if present for PNG images
  - Fix: String fix for error dialogs' titles

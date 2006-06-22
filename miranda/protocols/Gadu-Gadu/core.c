@@ -65,7 +65,8 @@ void gg_disconnect()
                     if(!(szMsg = ggModeMsg.szOnline) &&
                         !DBGetContactSetting(NULL, "SRAway", gg_status2db(ID_STATUS_ONLINE, "Default"), &dbv))
                     {
-                        szMsg = dbMsg = strdup(dbv.pszVal);
+						if(*(dbv.pszVal))
+							szMsg = dbMsg = strdup(dbv.pszVal);
                         DBFreeVariant(&dbv);
                     }
                     break;
@@ -73,7 +74,8 @@ void gg_disconnect()
                     if(!(szMsg = ggModeMsg.szAway) &&
                         !DBGetContactSetting(NULL, "SRAway", gg_status2db(ID_STATUS_AWAY, "Default"), &dbv))
                     {
-                        szMsg = dbMsg = strdup(dbv.pszVal);
+						if(*(dbv.pszVal))
+							szMsg = dbMsg = strdup(dbv.pszVal);
                         DBFreeVariant(&dbv);
                     }
                     break;
@@ -81,7 +83,8 @@ void gg_disconnect()
                     if(!(szMsg = ggModeMsg.szInvisible) &&
                         !DBGetContactSetting(NULL, "SRAway", gg_status2db(ID_STATUS_INVISIBLE, "Default"), &dbv))
                     {
-                        szMsg = dbMsg = strdup(dbv.pszVal);
+						if(*(dbv.pszVal))
+							szMsg = dbMsg = strdup(dbv.pszVal);
                         DBFreeVariant(&dbv);
                     }
                     break;
@@ -517,11 +520,8 @@ start:
     {
 		// Subscribe users status notifications
         gg_notifyall();
-        if(ggDesiredStatus == ID_STATUS_INVISIBLE &&
-            DBGetContactSettingByte(NULL, GG_PROTO, GG_KEY_STARTINVISIBLE, GG_KEYDEF_STARTINVISIBLE))
-            gg_broadcastnewstatus(ggDesiredStatus);    // Set just status (startup status)
-        else
-            gg_refreshstatus(ggDesiredStatus);         // Inform about my status
+		// Set startup status
+        gg_broadcastnewstatus(ggDesiredStatus);
         // Mark was connected
         connected = TRUE;
     }

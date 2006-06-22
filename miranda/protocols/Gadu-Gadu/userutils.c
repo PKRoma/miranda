@@ -384,27 +384,3 @@ static int gg_chpass(WPARAM wParam, LPARAM lParam)
     DBFreeVariant(&dbv_email);
 }
 
-////////////////////////////////////////////////////////////////////////////////
-// Change Password : Init
-/* DEPRECATED: We change password now in options
-void gg_chpass_init()
-{
-
-	// Rest depreciated
-    CLISTMENUITEM mi;
-    ZeroMemory(&mi,sizeof(mi));
-    mi.cbSize = sizeof(mi);
-	char service[64];
-
-    // Import from server item
-	snprintf(service, sizeof(service), GGS_CHPASS, GG_PROTO);
-    CreateServiceFunction(service, gg_chpass);
-    mi.pszPopupName = GG_PROTONAME;
-    mi.popupPosition = 500090000;
-    mi.position = 500090000;
-    mi.hIcon = LoadIcon(hInstance, MAKEINTRESOURCE(IDI_CHPASS));
-    mi.pszName = Translate("Change Password...");
-    mi.pszService = service;
-    CallService(MS_CLIST_ADDMAINMENUITEM, 0, (LPARAM) &mi);
-}
-*/
