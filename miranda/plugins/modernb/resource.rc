@@ -305,6 +305,7 @@ IDI_MIRANDA             ICON                    "res\\Miranda.ico"
 IDI_ALWAYSVIS           ICON                    "res\\AlwaysVis.ico"
 IDI_NEVERVIS            ICON                    "res\\NeverVis.ico"
 IDI_DELETE              ICON                    "res\\delete.ico"
+IDI_CHAT                ICON                    "res\\Chatchannel.ico"
 
 /////////////////////////////////////////////////////////////////////////////
 //

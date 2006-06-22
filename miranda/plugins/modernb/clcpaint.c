@@ -511,7 +511,11 @@ _inline char * GetCLCContactRowBackObject(struct ClcGroup * group, struct ClcCon
       }
       else AppendChar(buf,BUFSIZE,",Type=Contact");
       AppendChar(buf,BUFSIZE,",Protocol=");	
-      AppendChar(buf,BUFSIZE,Drawing->proto);	
+      AppendChar(buf,BUFSIZE,Drawing->proto);
+	  if (group && group->parent==NULL)
+		  AppendChar(buf,BUFSIZE,",RootGroup=True");
+	  else
+		  AppendChar(buf,BUFSIZE,",RootGroup=False");
       AppendChar(buf,BUFSIZE,",Status=");	
       switch(GetContactCachedStatus(Drawing->hContact))
       {

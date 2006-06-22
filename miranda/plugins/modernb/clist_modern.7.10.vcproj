@@ -1454,6 +1454,9 @@
 				RelativePath=".\res\chat.ico">
 			</File>
 			<File
+				RelativePath=".\res\Chatchannel.ico">
+			</File>
+			<File
 				RelativePath=".\res\delete.ico">
 			</File>
 			<File
