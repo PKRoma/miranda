@@ -140,10 +140,6 @@ static int ClcSettingChanged(WPARAM wParam,LPARAM lParam)
 	}
 	else // (HANDLE)wParam != NULL
 	{
-#ifdef _DEBUG
-		if (!strcmp(cws->szSetting,"Group"))
-			DebugBreak();
-#endif
 		if (!strcmp(cws->szSetting,"TickTS"))
 		{
 			pcli->pfnClcBroadcast( INTM_STATUSCHANGED,wParam,0);

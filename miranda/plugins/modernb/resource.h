@@ -180,7 +180,6 @@
 #define IDI_ALWAYSVIS                   453
 #define IDI_ICON6                       454
 #define IDI_NEVERVIS                    454
-#define IDI_ICON5                       455
 #define IDC_RESETPROTOCOLDATA           1000
 #define IDC_SAVE                        1001
 #define IDC_DEFBKCOLOR                  1001
@@ -965,7 +964,7 @@
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
-#define _APS_NEXT_RESOURCE_VALUE        456
+#define _APS_NEXT_RESOURCE_VALUE        455
 #define _APS_NEXT_COMMAND_VALUE         40020
 #define _APS_NEXT_CONTROL_VALUE         2000
 #define _APS_NEXT_SYMED_VALUE           101

@@ -478,6 +478,7 @@ void UnregisterFileDropping(HWND hwnd);
 
 //groups.c
 TCHAR* GetGroupNameTS( int idx, DWORD* pdwFlags );
+int RenameGroupT(WPARAM groupID, LPARAM newName);
 
 int GetContactCachedStatus(HANDLE hContact);
 char *GetContactCachedProtocol(HANDLE hContact);
