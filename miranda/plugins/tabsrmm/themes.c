@@ -1614,3 +1614,24 @@ void ReloadContainerSkin(int doLoad, int onStartup)
     }
 }
 
+static BLENDFUNCTION bf_t = {0};
+
+void DrawDimmedIcon(HDC hdc, LONG left, LONG top, LONG dx, LONG dy, HICON hIcon, BYTE alpha)
+{
+    HDC dcMem = CreateCompatibleDC(hdc);
+    HBITMAP hbm = CreateCompatibleBitmap(hdc, dx, dy), hbmOld = 0;
+
+    hbmOld = SelectObject(dcMem, hbm);
+    BitBlt(dcMem, 0, 0, dx, dx, hdc, left, top, SRCCOPY);
+    DrawIconEx(dcMem, 0, 0, hIcon, dx, dy, 0, 0, DI_NORMAL);
+    bf_t.SourceConstantAlpha = alpha;
+    if(MyAlphaBlend)
+        MyAlphaBlend(hdc, left, top, dx, dy, dcMem, 0, 0, dx, dy, bf_t);
+    else {
+        SetStretchBltMode(hdc, HALFTONE);
+        StretchBlt(hdc, left, top, dx, dy, dcMem, 0, 0, dx, dy, SRCCOPY);
+    }
+    SelectObject(dcMem, hbmOld);
+    DeleteObject(hbm);
+    DeleteDC(dcMem);
+}

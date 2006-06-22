@@ -1598,8 +1598,9 @@ void ReplaceIcons(HWND hwndDlg, struct MessageWindowData *dat, LONG startAt, int
     COLORREF crDefault;
     struct MsgLogIcon theIcon;
     char trbuffer[20];
+    DWORD dwScale = DBGetContactSettingDword(NULL, SRMSGMOD_T, "iconscale", 0);
     tr.lpstrText = trbuffer;
-    
+
     hwndrtf = GetDlgItem(hwndDlg, IDC_LOG);
     fi.chrg.cpMin = startAt;
 
@@ -1630,7 +1631,7 @@ void ReplaceIcons(HWND hwndDlg, struct MessageWindowData *dat, LONG startAt, int
             bDirection = trbuffer[1];
             SendMessage(hwndrtf, EM_GETCHARFORMAT, SCF_SELECTION, (LPARAM)&cf2);
             crDefault = cf2.crBackColor == 0 ? (dat->dwFlags & MWF_LOG_INDIVIDUALBKG ? (bDirection == '>' ? dat->theme.outbg : dat->theme.inbg) : dat->theme.bg) : cf2.crBackColor;
-            CacheIconToBMP(&theIcon, Logicons[bIconIndex], crDefault, 0, 0);
+            CacheIconToBMP(&theIcon, Logicons[bIconIndex], crDefault, dwScale, dwScale);
             ImageDataInsertBitmap(ole, theIcon.hBmp);
             DeleteCachedIcon(&theIcon);
             fi.chrg.cpMin = cr.cpMax + 6;
@@ -1706,7 +1707,7 @@ static BOOL CALLBACK LangAddCallback(LPCTSTR str)
 	int i, count;
 	UINT cp;
 
-    cp = _tstoi(str);
+    cp = _ttoi(str);
 	count = sizeof(cpTable)/sizeof(cpTable[0]);
 	for (i=0; i<count && cpTable[i].cpId!=cp; i++);
 	if (i < count) {

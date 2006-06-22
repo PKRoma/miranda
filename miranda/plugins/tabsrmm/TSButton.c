@@ -378,10 +378,8 @@ nonflat_themed:
 			if(ctl->arrow)
 				ix -= 4;
 
-            if(ctl->dimmed && myGlobals.m_IdleDetect) {
-				ImageList_ReplaceIcon(myGlobals.g_hImageList, 0, hIconNew);
-				ImageList_DrawEx(myGlobals.g_hImageList, 0, hdcMem, ix, iy, 0, 0, CLR_NONE, CLR_NONE, ILD_SELECTED);
-            }
+            if(ctl->dimmed && myGlobals.m_IdleDetect)
+                DrawDimmedIcon(hdcMem, ix, iy, 16, 16, hIconNew, 180);
             else {
                 if(ctl->stateId != PBS_DISABLED || MyAlphaBlend == 0)
                     DrawIconEx(hdcMem, ix, iy, hIconNew, 16, 16, 0, 0, DI_NORMAL);

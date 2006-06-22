@@ -2268,6 +2268,7 @@ int MsgWindowDrawHandler(WPARAM wParam, LPARAM lParam, HWND hwndDlg, struct Mess
         RECT rc;
         HFONT hOldFont = 0;
         BOOL config = myGlobals.ipConfig.isValid;
+        StatusItems_t *item = &StatusItems[ID_EXTBKINFOPANEL];
         
         if(config)
             hOldFont = SelectObject(dis->hDC, myGlobals.ipConfig.hFonts[IPFONTID_STATUS]);
@@ -2289,17 +2290,17 @@ int MsgWindowDrawHandler(WPARAM wParam, LPARAM lParam, HWND hwndDlg, struct Mess
     
         GetClientRect(dis->hwndItem, &rc);
 		if(dat->pContainer->bSkinned) {
-			StatusItems_t *item = &StatusItems[ID_EXTBKINFOPANEL];
 			SkinDrawBG(dis->hwndItem, dat->pContainer->hwnd, dat->pContainer, &rc, dis->hDC);
 			rc.left += item->MARGIN_LEFT; rc.right -= item->MARGIN_RIGHT;
 			rc.top += item->MARGIN_TOP; rc.bottom -= item->MARGIN_BOTTOM;
-			DrawAlpha(dis->hDC, &rc, item->COLOR, item->ALPHA, item->COLOR2, item->COLOR2_TRANSPARENT,
-					  item->GRADIENT, item->CORNER, item->BORDERSTYLE, item->imageItem);
+            if(!item->IGNORED)
+                DrawAlpha(dis->hDC, &rc, item->COLOR, item->ALPHA, item->COLOR2, item->COLOR2_TRANSPARENT,
+                          item->GRADIENT, item->CORNER, item->BORDERSTYLE, item->imageItem);
 		}
 		else
 			FillRect(dis->hDC, &rc, myGlobals.ipConfig.bkgBrush);
 		SetBkMode(dis->hDC, TRANSPARENT);
-        if(myGlobals.ipConfig.borderStyle < IPFIELD_FLAT && !dat->pContainer->bSkinned)
+        if(myGlobals.ipConfig.borderStyle < IPFIELD_FLAT && (!dat->pContainer->bSkinned || item->IGNORED))
             DrawEdge(dis->hDC, &rc, myGlobals.ipConfig.edgeType, myGlobals.ipConfig.edgeFlags);
         
 		rc.left += 3;
@@ -2336,6 +2337,7 @@ int MsgWindowDrawHandler(WPARAM wParam, LPARAM lParam, HWND hwndDlg, struct Mess
         TCHAR *szLabelUIN = TranslateT("User Id:");
         int   iNameLenUIN = lstrlen(szLabelUIN);
         SIZE  szUIN;
+        StatusItems_t *item = &StatusItems[ID_EXTBKINFOPANEL];
         
 		if(ServiceExists("CList/GetContactStatusMsg")) {
 			szStatusMsg = (TCHAR *)CallService("CList/GetContactStatusMsg", (WPARAM)dat->hContact, 0);
@@ -2364,16 +2366,16 @@ int MsgWindowDrawHandler(WPARAM wParam, LPARAM lParam, HWND hwndDlg, struct Mess
         DrawText(dis->hDC, szLabel, iNameLen, &dis->rcItem, DT_SINGLELINE | DT_VCENTER);
         dis->rcItem.left += (dat->szLabel.cx + 3);
 		if(dat->pContainer->bSkinned) {
-			StatusItems_t *item = &StatusItems[ID_EXTBKINFOPANEL];
 			RECT rc = dis->rcItem;
 			rc.left += item->MARGIN_LEFT; rc.right -= item->MARGIN_RIGHT;
 			rc.top += item->MARGIN_TOP; rc.bottom -= item->MARGIN_BOTTOM;
-			DrawAlpha(dis->hDC, &rc, item->COLOR, item->ALPHA, item->COLOR2, item->COLOR2_TRANSPARENT,
-					  item->GRADIENT, item->CORNER, item->BORDERSTYLE, item->imageItem);
+            if(!item->IGNORED)
+                DrawAlpha(dis->hDC, &rc, item->COLOR, item->ALPHA, item->COLOR2, item->COLOR2_TRANSPARENT,
+                          item->GRADIENT, item->CORNER, item->BORDERSTYLE, item->imageItem);
 		}
 		else
 			FillRect(dis->hDC, &dis->rcItem, myGlobals.ipConfig.bkgBrush);
-        if(myGlobals.ipConfig.borderStyle < IPFIELD_FLAT && !dat->pContainer->bSkinned)
+        if(myGlobals.ipConfig.borderStyle < IPFIELD_FLAT && (!dat->pContainer->bSkinned || item->IGNORED))
             DrawEdge(dis->hDC, &dis->rcItem, myGlobals.ipConfig.edgeType, myGlobals.ipConfig.edgeFlags);
         dis->rcItem.left +=2;
         if(dat->szNickname[0]) {
@@ -2421,6 +2423,7 @@ int MsgWindowDrawHandler(WPARAM wParam, LPARAM lParam, HWND hwndDlg, struct Mess
         RECT rc = dis->rcItem;
         TCHAR *szLabel = TranslateT("User Id:");
         int   iNameLen = lstrlen(szLabel);
+        StatusItems_t *item = &StatusItems[ID_EXTBKINFOPANEL];
 
 		if(dat->pContainer->bSkinned) {
 			SkinDrawBG(dis->hwndItem, dat->pContainer->hwnd, dat->pContainer, &dis->rcItem, dis->hDC);
@@ -2437,16 +2440,16 @@ int MsgWindowDrawHandler(WPARAM wParam, LPARAM lParam, HWND hwndDlg, struct Mess
 		rc.right = rc.left + dat->szLabel.cx + 3;
         dis->rcItem.left += (dat->szLabel.cx + 3);
 		if(dat->pContainer->bSkinned) {
-			StatusItems_t *item = &StatusItems[ID_EXTBKINFOPANEL];
 			RECT rc = dis->rcItem;
 			rc.left += item->MARGIN_LEFT; rc.right -= item->MARGIN_RIGHT;
 			rc.top += item->MARGIN_TOP; rc.bottom -= item->MARGIN_BOTTOM;
-			DrawAlpha(dis->hDC, &rc, item->COLOR, item->ALPHA, item->COLOR2, item->COLOR2_TRANSPARENT,
-					  item->GRADIENT, item->CORNER, item->BORDERSTYLE, item->imageItem);
+            if(!item->IGNORED)
+                DrawAlpha(dis->hDC, &rc, item->COLOR, item->ALPHA, item->COLOR2, item->COLOR2_TRANSPARENT,
+                          item->GRADIENT, item->CORNER, item->BORDERSTYLE, item->imageItem);
 		}
 		else
 			FillRect(dis->hDC, &dis->rcItem, myGlobals.ipConfig.bkgBrush);
-        if(myGlobals.ipConfig.borderStyle < IPFIELD_FLAT && !dat->pContainer->bSkinned)
+        if(myGlobals.ipConfig.borderStyle < IPFIELD_FLAT && (!dat->pContainer->bSkinned || item->IGNORED))
             DrawEdge(dis->hDC, &dis->rcItem, myGlobals.ipConfig.edgeType, myGlobals.ipConfig.edgeFlags);
         dis->rcItem.left +=2;
         if(config) {

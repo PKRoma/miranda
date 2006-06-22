@@ -108,8 +108,7 @@ static void DrawMenuItem(DRAWITEMSTRUCT *dis, HICON hIcon, DWORD dwIdle)
         else if (dis->itemState & ODS_SELECTED)
             DrawEdge(dis->hDC, &dis->rcItem, BDR_SUNKENOUTER, BF_RECT);
         if(dwIdle) {
-            ImageList_ReplaceIcon(myGlobals.g_hImageList, 0, hIcon);
-            ImageList_DrawEx(myGlobals.g_hImageList, 0, dis->hDC, 2, (dis->rcItem.bottom + dis->rcItem.top - cy) / 2, 0, 0, CLR_NONE, CLR_NONE, ILD_SELECTED);
+            DrawDimmedIcon(dis->hDC, 2, (dis->rcItem.bottom + dis->rcItem.top - cy) / 2, 16, 16, hIcon, 180);
         }
         else
             DrawIconEx(dis->hDC, 2, (dis->rcItem.bottom + dis->rcItem.top - cy) / 2, hIcon, cx, cy, 0, 0, DI_NORMAL | DI_COMPAT);
@@ -131,8 +130,7 @@ static void DrawMenuItem(DRAWITEMSTRUCT *dis, HICON hIcon, DWORD dwIdle)
             }   //if
             /* draw the icon */
             if(dwIdle) {
-                ImageList_ReplaceIcon(myGlobals.g_hImageList, 0, hIcon);
-                ImageList_DrawEx(myGlobals.g_hImageList, 0, dis->hDC, 2, (dis->rcItem.bottom + dis->rcItem.top - cy) / 2, 0, 0, CLR_NONE, CLR_NONE, ILD_SELECTED);
+                DrawDimmedIcon(dis->hDC, 2, (dis->rcItem.bottom + dis->rcItem.top - cy) / 2, 16, 16, hIcon, 180);
             }
             else
                 DrawIconEx(dis->hDC, 2, (dis->rcItem.bottom + dis->rcItem.top - cy) / 2, hIcon, cx, cy, 0, 0, DI_NORMAL | DI_COMPAT);
@@ -147,8 +145,7 @@ static void DrawMenuItem(DRAWITEMSTRUCT *dis, HICON hIcon, DWORD dwIdle)
                 DrawEdge(dis->hDC, &dis->rcItem, BDR_SUNKENOUTER, BF_RECT);
             }
             if(dwIdle) {
-                ImageList_ReplaceIcon(myGlobals.g_hImageList, 0, hIcon);
-                ImageList_DrawEx(myGlobals.g_hImageList, 0, dis->hDC, 2, (dis->rcItem.bottom + dis->rcItem.top - cy) / 2, 0, 0, CLR_NONE, CLR_NONE, ILD_SELECTED);
+                DrawDimmedIcon(dis->hDC, 2, (dis->rcItem.bottom + dis->rcItem.top - cy) / 2, 16, 16, hIcon, 180);
             }
             else
                 DrawIconEx(dis->hDC, 2, (dis->rcItem.bottom + dis->rcItem.top - cy) / 2, hIcon, cx, cy, 0, 0, DI_NORMAL | DI_COMPAT);

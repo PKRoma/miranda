@@ -78,8 +78,8 @@ void ReloadGlobals();
 static void LoadIconTheme();
 static int LoadFromIconLib();
 static int SetupIconLibConfig();
-void CreateSystrayIcon();
 void PreTranslateDates();
+void DrawDimmedIcon(HDC hdc, LONG left, LONG top, LONG dx, LONG dy, HICON hIcon, BYTE alpha);
 
 BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam);
 int InitOptions(void);

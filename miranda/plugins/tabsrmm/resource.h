@@ -236,6 +236,7 @@
 #define IDC_ALWAYSFIXED                 1182
 #define IDC_CNTPRIVATE                  1182
 #define IDC_IEVEIW                      1182
+#define IDC_STYLEDTABS                  1182
 #define IDC_NEWSPLITLAYOUT              1183
 #define IDC_O_NOTABS                    1184
 #define IDC_DONTREPORTUNFOCUSED         1185

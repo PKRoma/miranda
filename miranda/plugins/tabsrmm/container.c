@@ -2445,14 +2445,14 @@ panel_found:
                         POINT pt;
                         HPEN  hPenOld;
 
-                        MoveToEx(dis->hDC, dis->rcItem.left, dis->rcItem.bottom, &pt);
+                        MoveToEx(dis->hDC, dis->rcItem.left, dis->rcItem.bottom - 1, &pt);
                         hPenOld = SelectObject(dis->hDC, myGlobals.g_SkinDarkShadowPen);
                         LineTo(dis->hDC, dis->rcItem.left, dis->rcItem.top);
                         LineTo(dis->hDC, dis->rcItem.right, dis->rcItem.top);
                         SelectObject(dis->hDC, myGlobals.g_SkinLightShadowPen);
-                        MoveToEx(dis->hDC, dis->rcItem.right, dis->rcItem.top + 1, &pt);
-                        LineTo(dis->hDC, dis->rcItem.right, dis->rcItem.bottom);
-                        LineTo(dis->hDC, dis->rcItem.left + 1, dis->rcItem.bottom);
+                        MoveToEx(dis->hDC, dis->rcItem.right - 1, dis->rcItem.top + 1, &pt);
+                        LineTo(dis->hDC, dis->rcItem.right - 1, dis->rcItem.bottom - 1);
+                        LineTo(dis->hDC, dis->rcItem.left, dis->rcItem.bottom - 1);
                         SelectObject(dis->hDC, hPenOld);
                     } else
                         DrawEdge(dis->hDC, &dis->rcItem, BDR_SUNKENINNER, BF_RECT);
