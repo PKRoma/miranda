@@ -50,7 +50,7 @@ int PASCAL recv(SOCKET s, char FAR *buf, int len, int flags)
 	
 	//LOG(("Got bytes: %d, len: %d", RecvResult, len));
     if (RecvResult == SOCKET_ERROR) {
-        LOG(("Receive Error."));
+        LOG(("Receive error on socket: %d", s));
         return -1;
     }
 

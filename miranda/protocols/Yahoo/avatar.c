@@ -420,7 +420,7 @@ void upload_avt(int id, int fd, int error, void *data)
 	DWORD dw;		/* needed for ReadFile */
 	HANDLE myhFile;
 	
-	if (fd < 0 || error) {
+	if (fd < 1 || error) {
 		LOG(("[get_fd] Connect Failed!"));
 		return;
 	}
