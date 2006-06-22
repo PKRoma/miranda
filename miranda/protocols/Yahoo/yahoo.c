@@ -441,7 +441,7 @@ void get_url(int id, int fd, int error,	const char *filename, unsigned long size
 						ProtoBroadcastAck(yahooProtocolName, sf->hContact, ACKTYPE_FILE, ACKRESULT_DATA, sf, (LPARAM) & pfts);
 						lNotify = GetTickCount();
 						}
-					} else if (dw < 0) {
+					} else {
 						LOG(("Recv Failed! Socket Error?"));
 						error = 1;
 						break;
@@ -776,8 +776,8 @@ void ext_yahoo_status_changed(int id, const char *who, int stat, const char *msg
 		DBDeleteContactSetting(hContact, "CList", "StatusMsg" );
 	}
 
-	if (stat == YAHOO_STATUS_OFFLINE)
-		DBDeleteContactSetting(hContact, yahooProtocolName, "MirVer" );
+	/*if (stat == YAHOO_STATUS_OFFLINE)
+		DBDeleteContactSetting(hContact, yahooProtocolName, "MirVer" );*/
 	
 	if ( (away == 2) || (stat == YAHOO_STATUS_IDLE) || (idle > 0)) {
 		if (stat > 0) {
@@ -828,8 +828,14 @@ void ext_yahoo_status_logon(int id, const char *who, int stat, const char *msg, 
 			// no avatar
 			DBWriteContactSettingDword(hContact, yahooProtocolName, "PictCK", 0);
 		} else if (DBGetContactSettingDword(hContact, yahooProtocolName,"PictCK", 0) != cksum) {
+			char szFile[MAX_PATH];
+			
 			// Save new Checksum
 			DBWriteContactSettingDword(hContact, yahooProtocolName, "PictCK", cksum);
+			
+			// Need to delete the Avatar File!!
+			GetAvatarFileName(hContact, szFile, sizeof szFile, 0);
+			DeleteFile(szFile);
 		}
 	
 		// Cleanup the type? and reset things...
@@ -918,6 +924,8 @@ void get_picture(int id, int fd, int error,	const char *filename, unsigned long 
 			HANDLE myhFile;
 
 			GetAvatarFileName(hContact, buf, 1024, DBGetContactSettingByte(hContact, yahooProtocolName,"AvatarType", 0));
+			DeleteFile(buf);
+			
 			LOG(("Saving file: %s size: %lu", buf, size));
 			myhFile    = CreateFile(buf,
 									GENERIC_WRITE,
@@ -1010,13 +1018,13 @@ void ext_yahoo_got_picture(int id, const char *me, const char *who, const char *
 			/* need to read CheckSum */
 			cksum = YAHOO_GetDword("AvatarHash", 0);
 			if (cksum) {
-				LOG(("[ext_yahoo_got_picture] URL Expiration Check. Now: %ld Expires: %ld", time(NULL), YAHOO_GetDword("AvatarTS",0)));
+				/*LOG(("[ext_yahoo_got_picture] URL Expiration Check. Now: %ld Expires: %ld", time(NULL), YAHOO_GetDword("AvatarTS",0)));
 				if (time(NULL) >= YAHOO_GetDword("AvatarTS",0) && !DBGetContactSetting(NULL, yahooProtocolName, "AvatarFile", &dbv)) {
 					LOG(("[ext_yahoo_got_picture] Expired. Re-uploading"));
 					YAHOO_SendAvatar(dbv.pszVal);
 					DBFreeVariant(&dbv);
 					break;
-				}
+				}*/
 				
 				if (!DBGetContactSetting(NULL, yahooProtocolName, "AvatarURL", &dbv)) {
 					LOG(("[ext_yahoo_got_picture] Sending url: %s checksum: %d to '%s'!", dbv.pszVal, cksum, who));
@@ -1088,21 +1096,38 @@ void ext_yahoo_got_picture(int id, const char *me, const char *who, const char *
 				return;
 			}
 		
-			//LOG(("[ext_yahoo_got_picture] Getting ready to send info!"));
+			LOG(("[ext_yahoo_got_picture] Getting ready to send info!"));
 			/* need to read CheckSum */
 			mcksum = YAHOO_GetDword("AvatarHash", 0);
-			if (mcksum == cksum && !DBGetContactSetting(NULL, yahooProtocolName, "AvatarURL", &dbv)
-				&& lstrcmpi(pic_url, dbv.pszVal)) {
+			if (mcksum == 0) {
+				/* this should NEVER Happen??? */
+				LOG(("[ext_yahoo_got_picture] No personal checksum? and Invalidate?!"));
+				yahoo_send_picture_update(id, who, 0); // no avatar (disabled)
+				return;
+			}
+			
+			LOG(("[ext_yahoo_got_picture] My Checksum: %d", mcksum));
+			
+			if (!DBGetContactSetting(NULL, yahooProtocolName, "AvatarURL", &dbv)){
+					if (mcksum == cksum && lstrcmpi(pic_url, dbv.pszVal) == 0) {
 					LOG(("[ext_yahoo_got_picture] Buddy: %s told us this is bad??Expired??. Re-uploading", who));
 					DBDeleteContactSetting(NULL, yahooProtocolName, "AvatarURL");
-					DBFreeVariant(&dbv);
+						
 					
 					if (!DBGetContactSetting(NULL, yahooProtocolName, "AvatarFile", &dbv)) {
+							DBWriteContactSettingString(NULL, yahooProtocolName, "AvatarInv", who);
 						YAHOO_SendAvatar(dbv.pszVal);
 					} else {
 						LOG(("[ext_yahoo_got_picture] No Local Avatar File??? "));
 					}
-					
+					} else {
+						LOG(("[ext_yahoo_got_picture] URLs or checksums don't match? Tell them the right thing!!!"));
+						yahoo_send_picture_info(id, who, 2, dbv.pszVal, mcksum);
+					}
+					// don't leak stuff
+					DBFreeVariant(&dbv);
+			} else {
+				LOG(("[ext_yahoo_got_picture] no AvatarURL?"));
 			}
 		}
 		break;
@@ -1132,8 +1157,14 @@ void ext_yahoo_got_picture_checksum(int id, const char *me, const char *who, int
         yahoo_reset_avatar(hContact);
 	} else {
 		if (DBGetContactSettingDword(hContact, yahooProtocolName,"PictCK", 0) != cksum) {
+			char szFile[MAX_PATH];
+
 			// Now save the new checksum. No rush requesting new avatar yet.
 			DBWriteContactSettingDword(hContact, yahooProtocolName, "PictCK", cksum);
+			
+			// Need to delete the Avatar File!!
+			GetAvatarFileName(hContact, szFile, sizeof szFile, 0);
+			DeleteFile(szFile);
 			
 			// Reset the avatar and cleanup.
 			yahoo_reset_avatar(hContact);
@@ -1227,6 +1258,8 @@ void ext_yahoo_got_picture_upload(int id, const char *me, const char *url,unsign
 	
 	cksum = YAHOO_GetDword("AvatarHash", 0);
 	if (cksum != 0) {
+		DBVARIANT dbv;
+		
 		LOG(("[ext_yahoo_got_picture_upload] My Checksum: %d", cksum));
 		
 		YAHOO_SetString(NULL, "AvatarURL", url);
@@ -1234,7 +1267,18 @@ void ext_yahoo_got_picture_upload(int id, const char *me, const char *url,unsign
 		YAHOO_SetDword("AvatarTS", time(NULL) + 60*60*24);
 		
 		YAHOO_bcast_picture_checksum(cksum);
+		if  (!DBGetContactSetting(NULL, yahooProtocolName, "AvatarInv", &dbv) ){
+			LOG(("[ext_yahoo_got_picture_upload] Buddy: %s told us this is bad??", dbv.pszVal));
+
+			LOG(("[ext_yahoo_got_picture] Sending url: %s checksum: %d to '%s'!", url, cksum, dbv.pszVal));
+			//void yahoo_send_picture_info(int id, const char *me, const char *who, const char *pic_url, int cksum)
+			yahoo_send_picture_info(id, dbv.pszVal, 2, url, cksum);
+
+			DBDeleteContactSetting(NULL, yahooProtocolName, "AvatarInv");
+			DBFreeVariant(&dbv);
 	}
+		
+}
 }
 
 void ext_yahoo_got_avatar_share(int id, int buddy_icon)

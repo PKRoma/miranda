@@ -315,21 +315,16 @@ void yahoo_http_post(int id, const char *url, const char *cookies, long content_
 	char host[255];
 	int port = 80;
 	char path[255];
-	char buff[1024];
+	char ck[2048];
+	char buff[4096];
 	
 	if(!url_to_host_port_path(url, host, &port, path))
 		return;
 
-	/*snprintf(buff, sizeof(buff), 
-			"POST %s HTTP/1.0\r\n"
-			"Content-length: %ld\r\n"
-			"User-Agent: Mozilla/4.5 [en] (" PACKAGE "/" VERSION ")\r\n"
-			"Host: %s:%d\r\n"
-			"Cookie: %s\r\n"
-			"\r\n",
-			path, content_length, 
-			host, port,
-			cookies);*/
+	if (cookies == NULL) 
+		ck[0] = '\0';
+	else
+		snprintf(ck, sizeof(ck), "Cookie: %s\r\n", cookies);
 
 	snprintf(buff, sizeof(buff), 
 			"POST %s HTTP/1.0\r\n"
@@ -337,11 +332,12 @@ void yahoo_http_post(int id, const char *url, const char *cookies, long content_
 			"Pragma: no-cache\r\n"
 			"Host: %s:%d\r\n"
 			"Content-Length: %ld\r\n"
-			"Cookie: %s\r\n"
+			"%s"
 			"\r\n",
 			path, 
 			host, port,content_length, 
-			cookies);
+			ck);
+			
 	yahoo_send_http_request(id, host, port, buff, callback, data);
 }
 
@@ -351,27 +347,25 @@ void yahoo_http_get(int id, const char *url, const char *cookies,
 	char host[255];
 	int port = 80;
 	char path[255];
-	char buff[1024];
+	char ck[2048];
+	char buff[4096];
 	
 	if(!url_to_host_port_path(url, host, &port, path))
 		return;
 
-	/*snprintf(buff, sizeof(buff), 
-			"GET %s HTTP/1.0\r\n"
-			"Host: %s:%d\r\n"
-			"User-Agent: Mozilla/4.5 [en] (\" PACKAGE \"/\" VERSION \")\r\n"
-			"Cookie: %s\r\n"
-			"\r\n",
-			path, host, port, cookies);*/
+	if (cookies == NULL) 
+		ck[0] = '\0';
+	else
+		snprintf(ck, sizeof(ck), "Cookie: %s\r\n", cookies);
 
 	snprintf(buff, sizeof(buff), 
 			"GET %s HTTP/1.0\r\n"
 			"User-Agent: Mozilla/4.0 (compatible; MSIE 5.5)\r\n"
 			"Pragma: no-cache\r\n"
 			"Host: %s\r\n"
-			"Cookie: %s\r\n"
+			"%s"
 			"\r\n",
-			path, host, cookies);
+			path, host, ck);
 	
 	yahoo_send_http_request(id, host, port, buff, callback, data);
 }
