@@ -324,7 +324,7 @@ void yahoo_http_post(int id, const char *url, const char *cookies, long content_
 	if (cookies == NULL) 
 		ck[0] = '\0';
 	else
-		snprintf(buff, sizeof(buff), "Cookie: %s\r\n", cookies);
+		snprintf(ck, sizeof(ck), "Cookie: %s\r\n", cookies);
 
 	snprintf(buff, sizeof(buff), 
 			"POST %s HTTP/1.0\r\n"
@@ -356,7 +356,7 @@ void yahoo_http_get(int id, const char *url, const char *cookies,
 	if (cookies == NULL) 
 		ck[0] = '\0';
 	else
-		snprintf(buff, sizeof(buff), "Cookie: %s\r\n", cookies);
+		snprintf(ck, sizeof(ck), "Cookie: %s\r\n", cookies);
 	
 	snprintf(buff, sizeof(buff), 
 			"GET %s HTTP/1.0\r\n"
