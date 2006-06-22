@@ -1154,6 +1154,60 @@ static void JabberProcessIqAvatar( TCHAR* idStr, XmlNode* node )
 	mir_free( buffer );
 }
 
+static void JabberProcessIqResultVersion( TCHAR* type, XmlNode* node, XmlNode* queryNode  )
+{
+	TCHAR* from = JabberXmlGetAttrValue( node, "from" );
+	if ( from == NULL ) return;
+
+	JABBER_LIST_ITEM *item = JabberListGetItemPtr( LIST_ROSTER, from );
+	if ( item == NULL ) return;
+
+	JABBER_RESOURCE_STATUS *r = item->resource;
+	if ( r == NULL ) return;
+
+	TCHAR* p = _tcschr( from, '/' );
+	if ( p == NULL )    return;
+	if ( *++p == '\0' ) return;
+
+	int i;
+	for ( i=0; i<item->resourceCount && _tcscmp( r->resourceName, p ); i++, r++ );
+	if ( i >= item->resourceCount )
+		return;
+
+	HANDLE hContact = JabberHContactFromJID( from );
+	if ( hContact == NULL )
+		return;
+
+	if ( !lstrcmp( type, _T("error"))) {
+		if ( r->resourceName != NULL )
+			JSetStringT( hContact, "MirVer", r->resourceName );
+		return;
+	}
+
+	XmlNode* n;
+	if ( r->software ) mir_free( r->software );
+	if (( n=JabberXmlGetChild( queryNode, "name" ))!=NULL && n->text ) {
+		if (( hContact=JabberHContactFromJID( item->jid )) != NULL ) {
+			if (( p = _tcsstr( n->text, _T("Miranda IM"))) != NULL )
+				JSetStringT( hContact, "MirVer", p );
+			else
+				JSetStringT( hContact, "MirVer", n->text );
+		}
+		r->software = mir_tstrdup( n->text );
+	}
+	else r->software = NULL;
+	if ( r->version ) mir_free( r->version );
+	if (( n=JabberXmlGetChild( queryNode, "version" ))!=NULL && n->text )
+		r->version = mir_tstrdup( n->text );
+	else
+		r->version = NULL;
+	if ( r->system ) mir_free( r->system );
+	if (( n=JabberXmlGetChild( queryNode, "os" ))!=NULL && n->text )
+		r->system = mir_tstrdup( n->text );
+	else
+		r->system = NULL;
+}
+
 static void JabberProcessIq( XmlNode *node, void *userdata )
 {
 	struct ThreadData *info;
@@ -1198,7 +1252,7 @@ static void JabberProcessIq( XmlNode *node, void *userdata )
 	}
 
 	// RECVED: <iq type='set'><query ...
-	else if ( !_tcscmp( type, _T("set")) && queryNode!=NULL && ( xmlns=JabberXmlGetAttrValue( queryNode, "xmlns" ))!=NULL ) {
+	else if ( !_tcscmp( type, _T("set")) && queryNode!=NULL && xmlns != NULL ) {
 
 		// RECVED: roster push
 		// ACTION: similar to iqIdGetRoster above
@@ -1367,7 +1421,7 @@ static void JabberProcessIq( XmlNode *node, void *userdata )
 			JabberFtHandleBytestreamRequest( node );
 	}
 	// RECVED: <iq type='get'><query ...
-	else if ( !_tcscmp( type, _T("get")) && queryNode!=NULL && ( xmlns=JabberXmlGetAttrValue( queryNode, "xmlns" ))!=NULL ) {
+	else if ( !_tcscmp( type, _T("get")) && queryNode!=NULL && xmlns != NULL ) {
 
 		// RECVED: software version query
 		// ACTION: return my software version
@@ -1379,43 +1433,12 @@ static void JabberProcessIq( XmlNode *node, void *userdata )
 			JabberProcessIqTime( idStr, node );
 	}
 	// RECVED: <iq type='result'><query ...
-	else if ( !_tcscmp( type, _T("result")) && queryNode!=NULL && ( xmlns=JabberXmlGetAttrValue( queryNode, "xmlns" ))!=NULL ) {
+	else if ( !_tcscmp( type, _T("result")) && queryNode != NULL && xmlns != NULL ) {
 
 		// RECVED: software version result
 		// ACTION: update version information for the specified jid/resource
-		if ( !_tcscmp( xmlns, _T("jabber:iq:version"))) {
-			TCHAR* from;
-			JABBER_LIST_ITEM *item;
-			JABBER_RESOURCE_STATUS *r;
-
-			if (( from=JabberXmlGetAttrValue( node, "from" )) != NULL ) {
-				if (( item=JabberListGetItemPtr( LIST_ROSTER, from ))!=NULL && ( r=item->resource )!=NULL ) {
-					if (( p = _tcschr( from, '/' ))!=NULL && p[1]!='\0' ) {
-						p++;
-						for ( i=0; i<item->resourceCount && _tcscmp( r->resourceName, p ); i++, r++ );
-						if ( i < item->resourceCount ) {
-							if ( r->software ) mir_free( r->software );
-							if (( n=JabberXmlGetChild( queryNode, "name" ))!=NULL && n->text ) {
-								if (( hContact=JabberHContactFromJID( item->jid )) != NULL ) {
-									if (( p = _tcsstr( n->text, _T("Miranda IM"))) != NULL )
-										JSetStringT( hContact, "MirVer", p );
-									else
-										JSetStringT( hContact, "MirVer", n->text );
-								}
-								r->software = mir_tstrdup( n->text );
-							}
-							else r->software = NULL;
-							if ( r->version ) mir_free( r->version );
-							if (( n=JabberXmlGetChild( queryNode, "version" ))!=NULL && n->text )
-								r->version = mir_tstrdup( n->text );
-							else
-								r->version = NULL;
-							if ( r->system ) mir_free( r->system );
-							if (( n=JabberXmlGetChild( queryNode, "os" ))!=NULL && n->text )
-								r->system = mir_tstrdup( n->text );
-							else
-								r->system = NULL;
-		}	}	}	}	}
+		if ( !_tcscmp( xmlns, _T("jabber:iq:version")))
+			JabberProcessIqResultVersion( type, node, queryNode );
 	}
 	// RECVED: <iq type='set'><si xmlns='http://jabber.org/protocol/si' ...
 	else if ( !_tcscmp( type, _T("set")) && ( siNode=JabberXmlGetChildWithGivenAttrValue( node, "si", "xmlns", _T("http://jabber.org/protocol/si")))!=NULL && ( profile=JabberXmlGetAttrValue( siNode, "profile" ))!=NULL ) {
@@ -1440,6 +1463,10 @@ static void JabberProcessIq( XmlNode *node, void *userdata )
 	}
 	// RECVED: <iq type='error'> ...
 	else if ( !_tcscmp( type, _T("error"))) {
+		if ( !lstrcmp( xmlns, _T("jabber:iq:version"))) {
+			JabberProcessIqResultVersion( type, node, queryNode );
+			return;
+		}
 		JabberLog( "XXX on entry" );
 		// Check for file transfer deny by comparing idStr with ft->iqId
 		i = 0;
