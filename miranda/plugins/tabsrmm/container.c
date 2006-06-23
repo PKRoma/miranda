@@ -1800,7 +1800,7 @@ panel_found:
                                     break;
                                 }
                                 case ID_TABMENU_ATTACHTOCONTAINER:
-                                    if ((iItem = GetTabItemFromMouse(hwndTab, &pt)) == -1)
+                                    if ((iItem = GetTabItemFromMouse(hwndTab, &pt1)) == -1)
                                         break;
                                     ZeroMemory((void *)&item, sizeof(item));
                                     item.mask = TCIF_PARAM;
@@ -1917,8 +1917,6 @@ panel_found:
                         //if(myGlobals.m_ExtraRedraws)
                             RedrawWindow(pContainer->hwndActive, NULL, NULL, RDW_INVALIDATE | RDW_ALLCHILDREN);
                     }
-                    else
-                        _DebugPopup(0, "invalid window handle in deferred configuration handler");
                 }
                 else if(curItem >= 0) {
                     SendMessage((HWND) item.lParam, WM_ACTIVATE, WA_ACTIVE, 0);

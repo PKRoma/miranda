@@ -1108,7 +1108,7 @@ static LRESULT CALLBACK TabControlSubclassProc(HWND hwnd, UINT msg, WPARAM wPara
         }
         case WM_SIZE:
         {
-            int iTabs = TabCtrl_GetItemCount(hwnd), i;
+            int iTabs = TabCtrl_GetItemCount(hwnd);
             
             if(!tabdat->pContainer)
                 break;

@@ -670,7 +670,12 @@ BEGIN
     END
     POPUP "Picmenu"
     BEGIN
-        MENUITEM "Toggle Avatar Display",       ID_PICMENU_TOGGLEAVATARDISPLAY
+        POPUP "Show Contact Picture"
+        BEGIN
+            MENUITEM "Default",                     ID_VISIBILITY_DEFAULT
+            MENUITEM "Hidden for this Contact",     ID_VISIBILITY_HIDDENFORTHISCONTACT
+            MENUITEM "Visible for this Contact",    ID_VISIBILITY_VISIBLEFORTHISCONTACT
+        END
         MENUITEM SEPARATOR
         MENUITEM "Contact Picture Settings...", ID_PICMENU_SETTINGS
         MENUITEM "Choose Background Color...",  ID_PICMENU_CHOOSEBACKGROUNDCOLOR
@@ -769,9 +774,9 @@ BEGIN
     END
     POPUP "Traycontext"
     BEGIN
-        MENUITEM "Recent Sessions",             65535
+        MENUITEM "Recent Sessions",             0
         MENUITEM SEPARATOR
-        MENUITEM "Favorites",                   65535
+        MENUITEM "Favorites",                   0
         MENUITEM SEPARATOR
         MENUITEM "Show the Floater",            ID_TRAYCONTEXT_SHOWTHEFLOATER
         MENUITEM "Show the Tray Icon",          ID_TRAYCONTEXT_SHOWTHETRAYICON
@@ -825,6 +830,7 @@ BEGIN
     END
     POPUP "Panelpicmenu"
     BEGIN
+        MENUITEM SEPARATOR
         MENUITEM "Contact Picture Settings...", ID_PICMENU_SETTINGS
         MENUITEM "Choose Background Color...",  ID_PANELPICMENU_CHOOSEBACKGROUNDCOLOR
         MENUITEM "Save this Picture As...",     ID_PANELPICMENU_SAVETHISPICTUREAS
@@ -868,17 +874,6 @@ BEGIN
             MENUITEM "Use default Value",           40106
             MENUITEM "Flash until focused",         40107
             MENUITEM "Disable Flashing",            40108
-        END
-        MENUITEM SEPARATOR
-        POPUP "Avatar"
-        BEGIN
-            MENUITEM "Toggle Avatar Display",       40041
-            MENUITEM SEPARATOR
-            MENUITEM "Reset the Avatar",            40071
-            MENUITEM "Load a local Picture as Avatar", 40072
-            MENUITEM "Disable automatic Avatar updates", 40122
-            MENUITEM SEPARATOR
-            MENUITEM "Always keep the button bar at full width", 40134
         END
         MENUITEM SEPARATOR
         MENUITEM "Show Multisend Contact List", 40087

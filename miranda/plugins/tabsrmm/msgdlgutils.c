@@ -420,33 +420,45 @@ int MsgWindowUpdateMenu(HWND hwndDlg, struct MessageWindowData *dat, HMENU subme
         EnableMenuItem(submenu, ID_LOGMENU_SHOWSECONDS, dat->dwFlags & MWF_LOG_SHOWTIME ? MF_ENABLED : MF_GRAYED);
     }
     else if(menuID == MENU_PICMENU) {
-        MENUITEMINFOA mii = {0};
-        char *szText;
-        
+        MENUITEMINFO mii = {0};
+        TCHAR *szText = NULL;
+        char  avOverride = (char)DBGetContactSettingByte(dat->hContact, SRMSGMOD_T, "hideavatar", -1);
+        HMENU visMenu = GetSubMenu(submenu, 0);
+        BOOL picValid = dat->dwEventIsShown & MWF_SHOW_INFOPANEL ? (dat->hOwnPic != 0) : (dat->ace && dat->ace->hbmPic);
         mii.cbSize = sizeof(mii);
         mii.fMask = MIIM_STRING;
-        
-        EnableMenuItem(submenu, ID_PICMENU_SAVETHISPICTUREAS, MF_BYCOMMAND | (ServiceExists(MS_AV_SAVEBITMAP) ? MF_ENABLED : MF_GRAYED));
-        EnableMenuItem(submenu, ID_PICMENU_TOGGLEAVATARDISPLAY, MF_BYCOMMAND | (myGlobals.m_AvatarMode == 2 ? MF_ENABLED : MF_GRAYED));
+
+        EnableMenuItem(submenu, ID_PICMENU_SAVETHISPICTUREAS, MF_BYCOMMAND | (picValid ? MF_ENABLED : MF_GRAYED));
+
+        CheckMenuItem(visMenu, ID_VISIBILITY_DEFAULT, MF_BYCOMMAND | (avOverride == -1 ? MF_CHECKED : MF_UNCHECKED));
+        CheckMenuItem(visMenu, ID_VISIBILITY_HIDDENFORTHISCONTACT, MF_BYCOMMAND | (avOverride == 0 ? MF_CHECKED : MF_UNCHECKED));
+        CheckMenuItem(visMenu, ID_VISIBILITY_VISIBLEFORTHISCONTACT, MF_BYCOMMAND | (avOverride == 1 ? MF_CHECKED : MF_UNCHECKED));
+
         CheckMenuItem(submenu, ID_PICMENU_ALWAYSKEEPTHEBUTTONBARATFULLWIDTH, MF_BYCOMMAND | (myGlobals.m_AlwaysFullToolbarWidth ? MF_CHECKED : MF_UNCHECKED));
         if(!(dat->dwEventIsShown & MWF_SHOW_INFOPANEL)) {
             EnableMenuItem(submenu, ID_PICMENU_SETTINGS, MF_BYCOMMAND | (ServiceExists(MS_AV_GETAVATARBITMAP) ? MF_ENABLED : MF_GRAYED));
-            szText = Translate("Contact picture settings...");
+            szText = TranslateT("Contact picture settings...");
+            EnableMenuItem(submenu, 0, MF_BYPOSITION | MF_ENABLED);
         }
 		else {
-			char szServiceName[100];
-
-			mir_snprintf(szServiceName, 100, "%s/SetAvatar", dat->bIsMeta ? dat->szMetaProto : dat->szProto);
-			EnableMenuItem(submenu, ID_PICMENU_SETTINGS, MF_BYCOMMAND | (ServiceExists(szServiceName) ? MF_ENABLED : MF_GRAYED));
-            szText = Translate("Set your avatar...");
+            EnableMenuItem(submenu, 0, MF_BYPOSITION | MF_GRAYED);
+			EnableMenuItem(submenu, ID_PICMENU_SETTINGS, MF_BYCOMMAND | ((ServiceExists(MS_AV_SETMYAVATAR) && CallService(MS_AV_CANSETMYAVATAR, (WPARAM)(dat->bIsMeta ? dat->szMetaProto : dat->szProto), 0)) ? MF_ENABLED : MF_GRAYED));
+            szText = TranslateT("Set your avatar...");
 		}
         mii.dwTypeData = szText;
-        mii.cch = lstrlenA(szText) + 1;
-        SetMenuItemInfoA(submenu, ID_PICMENU_SETTINGS, FALSE, &mii);
+        mii.cch = lstrlen(szText) + 1;
+        SetMenuItemInfo(submenu, ID_PICMENU_SETTINGS, FALSE, &mii);
     }
     else if(menuID == MENU_PANELPICMENU) {
+        HMENU visMenu = GetSubMenu(submenu, 0);
+        char  avOverride = (char)DBGetContactSettingByte(dat->hContact, SRMSGMOD_T, "hideavatar", -1);
+
+        CheckMenuItem(visMenu, ID_VISIBILITY_DEFAULT, MF_BYCOMMAND | (avOverride == -1 ? MF_CHECKED : MF_UNCHECKED));
+        CheckMenuItem(visMenu, ID_VISIBILITY_HIDDENFORTHISCONTACT, MF_BYCOMMAND | (avOverride == 0 ? MF_CHECKED : MF_UNCHECKED));
+        CheckMenuItem(visMenu, ID_VISIBILITY_VISIBLEFORTHISCONTACT, MF_BYCOMMAND | (avOverride == 1 ? MF_CHECKED : MF_UNCHECKED));
+
         EnableMenuItem(submenu, ID_PICMENU_SETTINGS, MF_BYCOMMAND | (ServiceExists(MS_AV_GETAVATARBITMAP) ? MF_ENABLED : MF_GRAYED));
-        EnableMenuItem(submenu, ID_PANELPICMENU_SAVETHISPICTUREAS, MF_BYCOMMAND | (ServiceExists(MS_AV_SAVEBITMAP) ? MF_ENABLED : MF_GRAYED));
+        EnableMenuItem(submenu, ID_PICMENU_SAVETHISPICTUREAS, MF_BYCOMMAND | ((ServiceExists(MS_AV_SAVEBITMAP) && dat->ace && dat->ace->hbmPic) ? MF_ENABLED : MF_GRAYED));
     }
     return 0;
 }
@@ -490,13 +502,26 @@ int MsgWindowMenuHandler(HWND hwndDlg, struct MessageWindowData *dat, int select
                 }
                 return 1;
             }
-            case ID_PICMENU_TOGGLEAVATARDISPLAY:
-                DBWriteContactSettingByte(dat->hContact, SRMSGMOD_T, "MOD_ShowPic", dat->showPic ? 0 : 1);
+            case ID_VISIBILITY_DEFAULT:
+            case ID_VISIBILITY_HIDDENFORTHISCONTACT:
+            case ID_VISIBILITY_VISIBLEFORTHISCONTACT:
+            {
+                BYTE avOverrideMode;
+
+                if(selection == ID_VISIBILITY_DEFAULT)
+                    avOverrideMode = -1;
+                else if(selection == ID_VISIBILITY_HIDDENFORTHISCONTACT)
+                    avOverrideMode = 0;
+                else if(selection == ID_VISIBILITY_VISIBLEFORTHISCONTACT)
+                    avOverrideMode = 1;
+                DBWriteContactSettingByte(dat->hContact, SRMSGMOD_T, "hideavatar", avOverrideMode);
+                dat->panelWidth = -1;
                 ShowPicture(hwndDlg, dat, FALSE);
                 SendMessage(hwndDlg, DM_UPDATEPICLAYOUT, 0, 0);
                 SendMessage(hwndDlg, WM_SIZE, 0, 0);
                 SendMessage(hwndDlg, DM_SCROLLLOGTOBOTTOM, 0, 1);
                 return 1;
+            }
             case ID_PICMENU_ALWAYSKEEPTHEBUTTONBARATFULLWIDTH:
                 myGlobals.m_AlwaysFullToolbarWidth = !myGlobals.m_AlwaysFullToolbarWidth;
                 DBWriteContactSettingByte(NULL, SRMSGMOD_T, "alwaysfulltoolbar", myGlobals.m_AlwaysFullToolbarWidth);
@@ -537,42 +562,12 @@ int MsgWindowMenuHandler(HWND hwndDlg, struct MessageWindowData *dat, int select
                 }
             case ID_PICMENU_SETTINGS:
                 {
-                    char FileName[MAX_PATH];
-                    char Filters[512];
-                    OPENFILENAMEA ofn={0};
-
-                    CallService(MS_UTILS_GETBITMAPFILTERSTRINGS,sizeof(Filters),(LPARAM)(char*)Filters);
-                    ofn.lStructSize = OPENFILENAME_SIZE_VERSION_400;
-                    ofn.hwndOwner=0;
-                    ofn.lpstrFile = FileName;
-                    ofn.lpstrFilter = Filters;
-                    ofn.nMaxFile = MAX_PATH;
-                    ofn.nMaxFileTitle = MAX_PATH;
-                    ofn.Flags=OFN_HIDEREADONLY;
-                    ofn.lpstrInitialDir = ".";
-                    *FileName = '\0';
-                    ofn.lpstrDefExt="";
                     if(menuId == MENU_PANELPICMENU)
                         CallService(MS_AV_CONTACTOPTIONS, (WPARAM)dat->hContact, 0);
                     else if(menuId == MENU_PICMENU) {
                         if(dat->dwEventIsShown & MWF_SHOW_INFOPANEL) {
-                            if (GetOpenFileNameA(&ofn)) {
-                                if(dat->dwEventIsShown & MWF_SHOW_INFOPANEL && menuId == MENU_PICMENU) {
-                                    char szServiceName[100], *szProto;
-
-                                    szProto = dat->bIsMeta ? dat->szMetaProto : dat->szProto;
-                                    mir_snprintf(szServiceName, sizeof(szServiceName), "%s/SetAvatar", szProto);
-                                    if(ServiceExists(szServiceName)) {
-                                        if(CallProtoService(szProto, "/SetAvatar", 0, (LPARAM)FileName) != 0)
-                                            _DebugMessage(hwndDlg, dat, Translate("Failed to set avatar for %s"), szProto);
-                                    }
-                                }
-                                else {
-                                    char szFinalPath[MAX_PATH];
-                                    CallService(MS_UTILS_PATHTORELATIVE, (WPARAM)FileName, (LPARAM)szFinalPath);
-                                    DBWriteContactSettingString(dat->hContact, "ContactPhoto", "File", szFinalPath);
-                                }
-                            }
+                            if(ServiceExists(MS_AV_SETMYAVATAR) && CallService(MS_AV_CANSETMYAVATAR, (WPARAM)(dat->bIsMeta ? dat->szMetaProto : dat->szProto), 0))
+                                CallService(MS_AV_SETMYAVATAR, (WPARAM)(dat->bIsMeta ? dat->szMetaProto : dat->szProto), 0);
                         }
                         else
                             CallService(MS_AV_CONTACTOPTIONS, (WPARAM)dat->hContact, 0);
@@ -777,7 +772,7 @@ int GetAvatarVisibility(HWND hwndDlg, struct MessageWindowData *dat)
 {
     BYTE bAvatarMode = myGlobals.m_AvatarMode;
 	BYTE bOwnAvatarMode = myGlobals.m_OwnAvatarMode;
-
+    char hideOverride = (char)DBGetContactSettingByte(dat->hContact, SRMSGMOD_T, "hideavatar", -1);
 	// infopanel visible, consider own avatar display
 
 	dat->showPic = 0;
@@ -814,10 +809,11 @@ int GetAvatarVisibility(HWND hwndDlg, struct MessageWindowData *dat)
 					dat->showInfoPic = 0;
 				break;
 			}
-			case 2:
-	            dat->showInfoPic = DBGetContactSettingByte(dat->hContact, SRMSGMOD_T, "MOD_ShowPic", 0);
-		        break;
 		}
+        if(dat->showInfoPic)
+            dat->showInfoPic = hideOverride == 0 ? 0 : dat->showInfoPic;
+        else
+            dat->showInfoPic = hideOverride == 1 ? 1 : dat->showInfoPic;
 	}
 	else {
 		dat->showInfoPic = 0;
@@ -829,7 +825,9 @@ int GetAvatarVisibility(HWND hwndDlg, struct MessageWindowData *dat)
 			case 4:             // globally OFF
 				dat->showPic = 0;
 				break;
-			case 3:             // on, if present
+            case 3:             // on, if present
+            case 2:
+            case 1:
 			{
 				HBITMAP hbm = (dat->ace && !(dat->ace->dwFlags & AVS_HIDEONCLIST)) ? dat->ace->hbmPic : 0;
 				if(hbm && hbm != myGlobals.g_hbmUnknown)
@@ -838,22 +836,11 @@ int GetAvatarVisibility(HWND hwndDlg, struct MessageWindowData *dat)
 					dat->showPic = 0;
 				break;
 			}
-			case 1:             // on for protocols with avatar support
-				{
-					int pCaps;
-
-					if(dat->szProto) {
-						pCaps = CallProtoService(dat->szProto, PS_GETCAPS, PFLAGNUM_4, 0);
-						if((pCaps & PF4_AVATARS) && (dat->ace ? dat->ace->hbmPic : myGlobals.g_hbmUnknown)) {
-							dat->showPic = 1;
-						}
-					}
-					break;
-				}
-			case 2:             // default (per contact, as it always was
-				dat->showPic = DBGetContactSettingByte(dat->hContact, SRMSGMOD_T, "MOD_ShowPic", 0);
-				break;
 		}
+        if(dat->showPic)
+            dat->showPic = hideOverride == 0 ? 0 : dat->showPic;
+        else
+            dat->showPic = hideOverride == 1 ? 1 : dat->showPic;
 	}
     return dat->showPic;
 }

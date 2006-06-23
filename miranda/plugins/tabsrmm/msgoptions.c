@@ -309,6 +309,7 @@ static BOOL CALLBACK DlgProcOptions(HWND hwndDlg, UINT msg, WPARAM wParam, LPARA
 			BOOL translated;
 			TVINSERTSTRUCT tvi = {0};
 			int i = 0;
+            BYTE avMode;
 
 			DWORD dwFlags = DBGetContactSettingDword(NULL, SRMSGMOD_T, "mwflags", MWF_LOG_DEFAULT);
 
@@ -357,8 +358,6 @@ static BOOL CALLBACK DlgProcOptions(HWND hwndDlg, UINT msg, WPARAM wParam, LPARA
 			SendDlgItemMessage(hwndDlg, IDC_AVATARBORDER, CB_SETCURSEL, (WPARAM)DBGetContactSettingByte(NULL, SRMSGMOD_T, "avbordertype", 1), 0);
 
 			SendDlgItemMessage(hwndDlg, IDC_AVATARMODE, CB_INSERTSTRING, -1, (LPARAM)TranslateT("Globally on"));
-			SendDlgItemMessage(hwndDlg, IDC_AVATARMODE, CB_INSERTSTRING, -1, (LPARAM)TranslateT("On for protocols with avatar support"));
-			SendDlgItemMessage(hwndDlg, IDC_AVATARMODE, CB_INSERTSTRING, -1, (LPARAM)TranslateT("Per contact setting"));
 			SendDlgItemMessage(hwndDlg, IDC_AVATARMODE, CB_INSERTSTRING, -1, (LPARAM)TranslateT("On, if present"));
 			SendDlgItemMessage(hwndDlg, IDC_AVATARMODE, CB_INSERTSTRING, -1, (LPARAM)TranslateT("Globally OFF"));
 
@@ -368,7 +367,19 @@ static BOOL CALLBACK DlgProcOptions(HWND hwndDlg, UINT msg, WPARAM wParam, LPARA
 			SendDlgItemMessage(hwndDlg, IDC_AVATARDISPLAY, CB_INSERTSTRING, -1, (LPARAM)TranslateT("Dynamically resize"));
 			SendDlgItemMessage(hwndDlg, IDC_AVATARDISPLAY, CB_INSERTSTRING, -1, (LPARAM)TranslateT("Static"));
 
-			SendDlgItemMessage(hwndDlg, IDC_AVATARMODE, CB_SETCURSEL, (WPARAM)DBGetContactSettingByte(NULL, SRMSGMOD_T, "avatarmode", 0), 0);
+            switch(DBGetContactSettingByte(NULL, SRMSGMOD_T, "avatarmode", 0)) {
+                case 4:
+                    avMode = 2;
+                    break;
+                case 3:
+                case 2:
+                case 1:
+                    avMode = 1;
+                    break;
+                case 0:
+                    avMode = 0;
+            }
+            SendDlgItemMessage(hwndDlg, IDC_AVATARMODE, CB_SETCURSEL, (WPARAM)avMode, 0);
 			SendDlgItemMessage(hwndDlg, IDC_OWNAVATARMODE, CB_SETCURSEL, (WPARAM)DBGetContactSettingByte(NULL, SRMSGMOD_T, "ownavatarmode", 0), 0);
 
 			SendDlgItemMessage(hwndDlg, IDC_AVATARDISPLAY, CB_SETCURSEL, (WPARAM)DBGetContactSettingByte(NULL, SRMSGMOD_T, "avatardisplaymode", 0), 0);
@@ -456,10 +467,21 @@ static BOOL CALLBACK DlgProcOptions(HWND hwndDlg, UINT msg, WPARAM wParam, LPARA
 					BOOL translated;
 					TVITEM item = {0};
 					int i = 0;
+                    BYTE avMode;
 
+                    switch(SendDlgItemMessage(hwndDlg, IDC_AVATARMODE, CB_GETCURSEL, 0, 0)) {
+                        case 0:
+                            avMode = 0;
+                            break;
+                        case 1:
+                            avMode = 3;
+                            break;
+                        case 2:
+                            avMode = 4;
+                    }
 					DBWriteContactSettingByte(NULL, SRMSGMOD_T, "avbordertype", (BYTE) SendDlgItemMessage(hwndDlg, IDC_AVATARBORDER, CB_GETCURSEL, 0, 0));
 					DBWriteContactSettingDword(NULL, SRMSGMOD_T, "avborderclr", SendDlgItemMessage(hwndDlg, IDC_BKGCOLOUR, CPM_GETCOLOUR, 0, 0));
-					DBWriteContactSettingByte(NULL, SRMSGMOD_T, "avatarmode", (BYTE) SendDlgItemMessage(hwndDlg, IDC_AVATARMODE, CB_GETCURSEL, 0, 0));
+					DBWriteContactSettingByte(NULL, SRMSGMOD_T, "avatarmode", avMode);
 					DBWriteContactSettingByte(NULL, SRMSGMOD_T, "ownavatarmode", (BYTE) SendDlgItemMessage(hwndDlg, IDC_OWNAVATARMODE, CB_GETCURSEL, 0, 0));
 					DBWriteContactSettingByte(NULL, SRMSGMOD_T, "avatardisplaymode", (BYTE) SendDlgItemMessage(hwndDlg, IDC_AVATARDISPLAY, CB_GETCURSEL, 0, 0));
 
@@ -1765,6 +1787,10 @@ void ReloadGlobals()
      myGlobals.m_WarnOnClose = (int)DBGetContactSettingByte(NULL, SRMSGMOD_T, "warnonexit", 0);
      myGlobals.m_ExtraMicroLF = (int)DBGetContactSettingByte(NULL, SRMSGMOD_T, "extramicrolf", 0);
      myGlobals.m_AvatarMode = (int)DBGetContactSettingByte(NULL, SRMSGMOD_T, "avatarmode", 0);
+
+     if(myGlobals.m_AvatarMode == 1 || myGlobals.m_AvatarMode == 2)
+         myGlobals.m_AvatarMode = 3;
+
 	 myGlobals.m_OwnAvatarMode = (int)DBGetContactSettingByte(NULL, SRMSGMOD_T, "ownavatarmode", 0);
      myGlobals.m_FlashOnClist = (int)DBGetContactSettingByte(NULL, SRMSGMOD_T, "flashcl", 0);
      myGlobals.m_TabAutoClose = (int)DBGetContactSettingDword(NULL, SRMSGMOD_T, "tabautoclose", 0);

@@ -969,6 +969,7 @@ static BOOL CALLBACK FilterWndProc(HWND hwndDlg,UINT uMsg,WPARAM wParam,LPARAM l
 					iFlags |= GC_EVENT_REMOVESTATUS;
 
                 if(si) {
+                    DBWriteContactSettingDword(NULL, "Chat", "FilterFlags", iFlags);
                     SendMessage(si->hWnd, GC_CHANGEFILTERFLAG, 0, (LPARAM)iFlags);
                     if(si->bFilterEnabled)
                         SendMessage(si->hWnd, GC_REDRAWLOG, 0, 0);
