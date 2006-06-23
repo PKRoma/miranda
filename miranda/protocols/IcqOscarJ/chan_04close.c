@@ -268,6 +268,7 @@ static void handleSignonError(WORD wError)
   case 0x10: // Service temporarily offline
   case 0x14: // Reservation map error
   case 0x15: // Reservation link error
+  case 0x1A: // Reservation timeout
     icq_LogFatalParam("Connection failed.\nThe server is temporarily unavailable (%d).", wError);
     break;
 
@@ -307,7 +308,6 @@ static void handleSignonError(WORD wError)
   case 0x0E: // Bad resolver status
   case 0x11: // Suspended account
   case 0x19: // User too heavily warned
-  case 0x1A: // Reservation timeout
   case 0x22: // Account suspended due to your age
   case 0x2A: // Blocked account
 
