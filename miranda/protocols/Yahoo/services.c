@@ -1405,7 +1405,7 @@ int YahooGetAvatarInfo(WPARAM wParam,LPARAM lParam)
 	if (!YAHOO_GetByte( "ShowAvatars", 0 ) || !yahooLoggedIn) {
 		YAHOO_DebugLog("[YAHOO_GETAVATARINFO] %s", yahooLoggedIn ? "We are not using/showing avatars!" : "We are not logged in. Can't load avatars now!");
 		
-		if (DBGetContactSettingDword(AI->hContact, yahooProtocolName,"PictCK", 0) != 0) {
+		/*if (DBGetContactSettingDword(AI->hContact, yahooProtocolName,"PictCK", 0) != 0) {
 			YAHOO_DebugLog("[YAHOO_GETAVATARINFO] Removing avatar information!");
 			
 			DBWriteContactSettingDword(AI->hContact, yahooProtocolName, "PictCK", 0);
@@ -1413,7 +1413,7 @@ int YahooGetAvatarInfo(WPARAM wParam,LPARAM lParam)
 			DBWriteContactSettingDword(AI->hContact, yahooProtocolName, "PictLoading", 0);
 			//GetAvatarFileName(AI->hContact, AI->filename, sizeof AI->filename);
 			//DeleteFile(AI->filename);
-		}
+		}*/
 
 		return GAIR_NOAVATAR;
 	}
@@ -1452,6 +1452,8 @@ int YahooGetAvatarInfo(WPARAM wParam,LPARAM lParam)
 					YAHOO_request_avatar(dbv.pszVal/*who */);
 					DBFreeVariant(&dbv);
 					return GAIR_WAITFOR;
+				} else {
+					YAHOO_DebugLog("[YAHOO_GETAVATARINFO] Can't retrieve user id?!");
 				}
 			}
 		}
@@ -1479,7 +1481,7 @@ return = 1 (supported) or 0 (not supported)
 int YahooAvatarFormatSupported(WPARAM wParam, LPARAM lParam)
 {
   YAHOO_DebugLog("[YahooAvatarFormatSupported]");
-  
+
   if (lParam == PA_FORMAT_PNG)
     return 1;
   else

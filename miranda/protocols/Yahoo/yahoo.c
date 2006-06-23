@@ -1110,16 +1110,16 @@ void ext_yahoo_got_picture(int id, const char *me, const char *who, const char *
 			
 			if (!DBGetContactSetting(NULL, yahooProtocolName, "AvatarURL", &dbv)){
 					if (mcksum == cksum && lstrcmpi(pic_url, dbv.pszVal) == 0) {
-					LOG(("[ext_yahoo_got_picture] Buddy: %s told us this is bad??Expired??. Re-uploading", who));
-					DBDeleteContactSetting(NULL, yahooProtocolName, "AvatarURL");
+						LOG(("[ext_yahoo_got_picture] Buddy: %s told us this is bad??Expired??. Re-uploading", who));
+						DBDeleteContactSetting(NULL, yahooProtocolName, "AvatarURL");
 						
-					
-					if (!DBGetContactSetting(NULL, yahooProtocolName, "AvatarFile", &dbv)) {
+						
+						if (!DBGetContactSetting(NULL, yahooProtocolName, "AvatarFile", &dbv)) {
 							DBWriteContactSettingString(NULL, yahooProtocolName, "AvatarInv", who);
-						YAHOO_SendAvatar(dbv.pszVal);
-					} else {
-						LOG(("[ext_yahoo_got_picture] No Local Avatar File??? "));
-					}
+							YAHOO_SendAvatar(dbv.pszVal);
+						} else {
+							LOG(("[ext_yahoo_got_picture] No Local Avatar File??? "));
+						}
 					} else {
 						LOG(("[ext_yahoo_got_picture] URLs or checksums don't match? Tell them the right thing!!!"));
 						yahoo_send_picture_info(id, who, 2, dbv.pszVal, mcksum);
@@ -1276,9 +1276,9 @@ void ext_yahoo_got_picture_upload(int id, const char *me, const char *url,unsign
 
 			DBDeleteContactSetting(NULL, yahooProtocolName, "AvatarInv");
 			DBFreeVariant(&dbv);
-	}
+		}
 		
-}
+	}
 }
 
 void ext_yahoo_got_avatar_share(int id, int buddy_icon)

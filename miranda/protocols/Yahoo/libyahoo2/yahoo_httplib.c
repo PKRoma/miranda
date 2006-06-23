@@ -357,7 +357,7 @@ void yahoo_http_get(int id, const char *url, const char *cookies,
 		ck[0] = '\0';
 	else
 		snprintf(ck, sizeof(ck), "Cookie: %s\r\n", cookies);
-
+	
 	snprintf(buff, sizeof(buff), 
 			"GET %s HTTP/1.0\r\n"
 			"User-Agent: Mozilla/4.0 (compatible; MSIE 5.5)\r\n"
