@@ -198,6 +198,10 @@ static StatusItems_t _StatusItems[] = {
         CLCDEFAULT_GRADIENT,CLCDEFAULT_CORNER,
         CLCDEFAULT_COLOR, CLCDEFAULT_COLOR2, CLCDEFAULT_COLOR2_TRANSPARENT, CLCDEFAULT_TEXTCOLOR, CLCDEFAULT_ALPHA, CLCDEFAULT_MRGN_LEFT, 
         CLCDEFAULT_MRGN_TOP, CLCDEFAULT_MRGN_RIGHT, CLCDEFAULT_MRGN_BOTTOM, 1
+    }, {"Avatarframe offline", "EXBK_AVATARFRAMEOFFLINE", ID_EXTBKAVATARFRAMEOFFLINE,
+        CLCDEFAULT_GRADIENT,CLCDEFAULT_CORNER,
+        CLCDEFAULT_COLOR, CLCDEFAULT_COLOR2, CLCDEFAULT_COLOR2_TRANSPARENT, CLCDEFAULT_TEXTCOLOR, CLCDEFAULT_ALPHA, CLCDEFAULT_MRGN_LEFT, 
+        CLCDEFAULT_MRGN_TOP, CLCDEFAULT_MRGN_RIGHT, CLCDEFAULT_MRGN_BOTTOM, 1
 	}, {"{-}Scrollbar backgroundupper", "EXBK_SCROLLBACK", ID_EXTBKSCROLLBACK,
         CLCDEFAULT_GRADIENT,CLCDEFAULT_CORNER,
         CLCDEFAULT_COLOR, CLCDEFAULT_COLOR2, CLCDEFAULT_COLOR2_TRANSPARENT, CLCDEFAULT_TEXTCOLOR, CLCDEFAULT_ALPHA, CLCDEFAULT_MRGN_LEFT, 
@@ -468,6 +472,7 @@ void SaveNonStatusItemsSettings(HWND hwndDlg)
     DBWriteContactSettingByte(NULL, "CLCExt", "override_status", g_CluiData.bOverridePerStatusColors);
     DBWriteContactSettingByte(NULL, "CLCExt", "bskinned", IsDlgButtonChecked(hwndDlg, IDC_SETALLBUTTONSKINNED) ? 1 : 0);
 	DBWriteContactSettingByte(NULL, "CLCExt", "FastGradients", g_CluiData.bWantFastGradients);
+    DBWriteContactSettingByte(NULL, "CLC", "IgnoreSelforGroups", (BYTE) IsDlgButtonChecked(hwndDlg, IDC_IGNORESELFORGROUPS));
 
     DBWriteContactSettingDword(NULL, "CLCExt", "grp_padding", g_CluiData.group_padding);
     DBWriteContactSettingByte(NULL, "CLCExt", "frame_height", g_CluiData.titleBarHeight);
@@ -1592,6 +1597,7 @@ static BOOL CALLBACK DlgProcSkinOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPAR
             CheckDlgButton(hwndDlg, IDC_USEPERPROTO, g_CluiData.bUsePerProto);
             CheckDlgButton(hwndDlg, IDC_OVERRIDEPERSTATUSCOLOR, g_CluiData.bOverridePerStatusColors);
             CheckDlgButton(hwndDlg, IDC_FASTGRADIENT, g_CluiData.bWantFastGradients);
+            CheckDlgButton(hwndDlg, IDC_IGNORESELFORGROUPS, DBGetContactSettingByte(NULL, "CLC", "IgnoreSelforGroups", 0) ? BST_CHECKED : BST_UNCHECKED);
 
 
             if(!DBGetContactSetting(NULL, "CLC", "ContactSkins", &dbv)) {

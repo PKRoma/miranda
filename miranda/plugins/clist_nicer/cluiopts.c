@@ -393,11 +393,6 @@ static BOOL CALLBACK DlgProcCluiOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPAR
 						SetWindowLong(pcli->hwndContactList, GWL_EXSTYLE, GetWindowLong(pcli->hwndContactList, GWL_EXSTYLE) & ~WS_EX_LAYERED);
 				}
 
-				ShowWindow(pcli->hwndContactList, SW_SHOW);
-				SendMessage(pcli->hwndContactList, WM_SIZE, 0, 0);
-				SetWindowPos(pcli->hwndContactList, 0, 0, 0, 0, 0, SWP_NOZORDER | SWP_NOMOVE | SWP_NOSIZE | SWP_FRAMECHANGED);
-				RedrawWindow(pcli->hwndContactList, NULL, NULL, RDW_FRAME | RDW_INVALIDATE | RDW_UPDATENOW);
-
                 ConfigureCLUIGeometry(1);
 				if(oldexIconScale != g_CluiData.exIconScale) {
 					ImageList_RemoveAll(himlExtraImages);
@@ -412,6 +407,10 @@ static BOOL CALLBACK DlgProcCluiOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPAR
 					}
 					pcli->pfnClcBroadcast(CLM_AUTOREBUILD, 0, 0);
 				}
+                ShowWindow(pcli->hwndContactList, SW_SHOW);
+                SendMessage(pcli->hwndContactList, WM_SIZE, 0, 0);
+                SetWindowPos(pcli->hwndContactList, 0, 0, 0, 0, 0, SWP_NOZORDER | SWP_NOMOVE | SWP_NOSIZE | SWP_FRAMECHANGED);
+                RedrawWindow(pcli->hwndContactList, NULL, NULL, RDW_FRAME | RDW_INVALIDATE | RDW_UPDATENOW);
 				g_CluiData.fadeinout = oldFading;
 				SFL_SetState(g_CluiData.bUseFloater & CLUI_FLOATER_AUTOHIDE ? (DBGetContactSettingByte(NULL, "CList", "State", SETTING_STATE_NORMAL) == SETTING_STATE_NORMAL ? 0 : 1) : 1);
 				return TRUE;

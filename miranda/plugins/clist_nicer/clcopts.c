@@ -572,7 +572,6 @@ static BOOL CALLBACK DlgProcClcTextOpts(HWND hwndDlg, UINT msg, WPARAM wParam, L
             SendDlgItemMessage(hwndDlg, IDC_HOTCOLOUR, CPM_SETDEFAULTCOLOUR, 0, CLCDEFAULT_HOTTEXTCOLOUR);
             SendDlgItemMessage(hwndDlg, IDC_HOTCOLOUR, CPM_SETCOLOUR, 0, DBGetContactSettingDword(NULL, "CLC", "HotTextColour", CLCDEFAULT_HOTTEXTCOLOUR));
             CheckDlgButton(hwndDlg, IDC_GAMMACORRECT, DBGetContactSettingByte(NULL, "CLC", "GammaCorrect", CLCDEFAULT_GAMMACORRECT) ? BST_CHECKED : BST_UNCHECKED);
-            CheckDlgButton(hwndDlg, IDC_IGNORESELFORGROUPS, DBGetContactSettingByte(NULL, "CLC", "IgnoreSelforGroups", 0) ? BST_CHECKED : BST_UNCHECKED);
 
             SendDlgItemMessage(hwndDlg, IDC_SELCOLOUR, CPM_SETDEFAULTCOLOUR, 0, CLCDEFAULT_SELTEXTCOLOUR);
             SendDlgItemMessage(hwndDlg, IDC_SELCOLOUR, CPM_SETCOLOUR, 0, DBGetContactSettingDword(NULL, "CLC", "SelTextColour", CLCDEFAULT_SELTEXTCOLOUR));
@@ -886,7 +885,6 @@ static BOOL CALLBACK DlgProcClcTextOpts(HWND hwndDlg, UINT msg, WPARAM wParam, L
                                     DBWriteContactSettingDword(NULL, "CLC", "QuickSearchColour", col);
                             }
                             DBWriteContactSettingByte(NULL, "CLC", "GammaCorrect", (BYTE) IsDlgButtonChecked(hwndDlg, IDC_GAMMACORRECT));
-                            DBWriteContactSettingByte(NULL, "CLC", "IgnoreSelforGroups", (BYTE) IsDlgButtonChecked(hwndDlg, IDC_IGNORESELFORGROUPS));
                             pcli->pfnClcOptionsChanged();
                             PostMessage(pcli->hwndContactList, CLUIINTM_REDRAW, 0, 0);
                             return TRUE;

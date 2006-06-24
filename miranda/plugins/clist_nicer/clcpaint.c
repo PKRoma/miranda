@@ -318,7 +318,7 @@ static int __fastcall DrawAvatar(HDC hdcMem, RECT *rc, struct ClcContact *contac
 	int avatar_size = g_CluiData.avatarSize;
 	DWORD av_saved_left;
 	BOOL gdiPlus;
-    StatusItems_t *item = &StatusItems[ID_EXTBKAVATARFRAME - ID_STATUS_OFFLINE];
+    StatusItems_t *item = contact->wStatus == ID_STATUS_OFFLINE ? &StatusItems[ID_EXTBKAVATARFRAMEOFFLINE - ID_STATUS_OFFLINE] : &StatusItems[ID_EXTBKAVATARFRAME - ID_STATUS_OFFLINE];
     int skinMarginX, skinMarginY;
     contact->avatarLeft = -1;
 
@@ -912,8 +912,13 @@ set_bg_l:
 					DrawAlpha(hdcMem, &rc, sselected->COLOR, sselected->ALPHA, sselected->COLOR2, sselected->COLOR2_TRANSPARENT, sselected->GRADIENT, sselected->CORNER, sselected->BORDERSTYLE, sselected->imageItem);
 				}
 			}
-			else
-				FillRect(hdcMem, &rc, GetSysColorBrush(COLOR_HIGHLIGHT));
+			else {
+                rc.left = bg_indent_l;
+                rc.top = y;
+                rc.right = clRect->right - bg_indent_r;
+                rc.bottom = y + rowHeight;
+                FillRect(hdcMem, &rc, GetSysColorBrush(COLOR_HIGHLIGHT));
+            }
 			SetTextColor(hdcMem, dat->selTextColour);
 		}
 	} 

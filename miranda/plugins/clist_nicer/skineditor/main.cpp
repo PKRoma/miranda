@@ -881,23 +881,25 @@ static int SkinEdit_Invoke(WPARAM wParam, LPARAM lParam)
     SKINDESCRIPTION *psd = (SKINDESCRIPTION *)lParam;
     TCITEM  tci = {0};
     RECT    rcClient;
+    int     iTabs;
 
     if(psd->cbSize != sizeof(SKINDESCRIPTION))
         return 0;
 
+    iTabs = TabCtrl_GetItemCount(psd->hWndTab);
     GetClientRect(psd->hWndParent, &rcClient);
 
     tci.mask = TCIF_PARAM|TCIF_TEXT;
     tci.lParam = (LPARAM)CreateDialogParam(g_hInst, MAKEINTRESOURCE(IDD_SKINITEMEDIT), psd->hWndParent, SkinEdit_ExtBkDlgProc, (LPARAM)psd);
 
     tci.pszText = TranslateT("Skin items");
-    TabCtrl_InsertItem(psd->hWndTab, 1, &tci);
+    TabCtrl_InsertItem(psd->hWndTab, iTabs++, &tci);
     MoveWindow((HWND)tci.lParam, 5, 25, rcClient.right - 9, rcClient.bottom - 60, 1);
     psd->hwndSkinEdit = (HWND)tci.lParam;
 
     tci.lParam = (LPARAM)CreateDialogParam(g_hInst, MAKEINTRESOURCE(IDD_IMAGEITEMEDIT), psd->hWndParent, SkinEdit_ImageItemEditProc, (LPARAM)psd);
     tci.pszText = TranslateT("Image items");
-    TabCtrl_InsertItem(psd->hWndTab, 2, &tci);
+    TabCtrl_InsertItem(psd->hWndTab, iTabs++, &tci);
     MoveWindow((HWND)tci.lParam, 5, 25, rcClient.right - 9, rcClient.bottom - 60, 1);
     psd->hwndImageEdit = (HWND)tci.lParam;
     

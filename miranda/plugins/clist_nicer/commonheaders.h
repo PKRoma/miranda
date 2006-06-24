@@ -2,8 +2,8 @@
 
 Miranda IM: the free IM client for Microsoft* Windows*
 
-Copyright 2000-2004 Miranda ICQ/IM project, 
-all portions of this codebase are copyrighted to the people 
+Copyright 2000-2004 Miranda ICQ/IM project,
+all portions of this codebase are copyrighted to the people
 listed in contributors.txt.
 
 This program is free software; you can redistribute it and/or
@@ -22,7 +22,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 */
 
 #if defined( UNICODE ) && !defined( _UNICODE )
-#define _UNICODE 
+#define _UNICODE
 #endif
 
 #define _USE_32BIT_TIME_T
@@ -71,8 +71,8 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include <m_file.h>
 #include <m_addcontact.h>
 #include <m_message.h>
-#include "m_avatars.h"
 #include "m_cln_skinedit.h"
+#include "m_avatars.h"
 #include "extbackg.h"
 #include "clc.h"
 #include "clist.h"
@@ -87,10 +87,9 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include "m_popup.h"
 #include "m_metacontacts.h"
 #include "m_fontservice.h"
-
 // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 // NEEDS TO GO AWAY when we get REAL unicode
-// 
+//
 
 #if !defined(_UNICODE)
 
