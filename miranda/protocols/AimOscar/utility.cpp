@@ -251,7 +251,6 @@ void offline_contact(HANDLE hContact, bool remove_settings)
 		DBDeleteContactSetting(hContact,AIM_PROTOCOL_NAME,AIM_KEY_IP);
 		DBDeleteContactSetting(hContact,AIM_PROTOCOL_NAME,AIM_KEY_AC);
 		DBDeleteContactSetting(hContact,AIM_PROTOCOL_NAME,AIM_KEY_ET);
-		DBDeleteContactSetting(hContact,AIM_PROTOCOL_NAME,AIM_KEY_MV);
 		DBDeleteContactSetting(hContact, MOD_KEY_CL, OTH_KEY_SM);
 		DBDeleteContactSetting(hContact, AIM_PROTOCOL_NAME, AIM_KEY_IT);
 		DBDeleteContactSetting(hContact, AIM_PROTOCOL_NAME, AIM_KEY_OT);
