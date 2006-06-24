@@ -413,21 +413,15 @@ void SetGroupExpand(HWND hwnd,struct ClcData *dat,struct ClcGroup *group,int new
 	RECT clRect;
 	NMCLISTCONTROL nm;
 
-	if(newState==-1) 
-        //group->expanded^=1;
-        group->expanded = MAKELONG(LOWORD(group->expanded) ^ 1, HIWORD(group->expanded));
-	else {
-		if((group->expanded & 0x0000ffff) == (newState!=0)) 
-			return;
-		//group->expanded=newState!=0;
-		group->expanded = MAKELONG(newState != 0, HIWORD(group->expanded));
-	}
+    if (newState == -1)
+        group->expanded ^= 1;
+    else {
+        if (group->expanded == (newState != 0))
+            return;
+        group->expanded = newState != 0;
+    }
 	InvalidateRect(hwnd,NULL,FALSE);
-
-	if (group->expanded & 0x0000ffff)
-		contentCount = pcli->pfnGetGroupContentsCount(group,1);
-	else
-		contentCount = 0;
+    contentCount = pcli->pfnGetGroupContentsCount(group,1);
 
 	groupy=pcli->pfnGetRowsPriorTo(&dat->list,group,-1);
 	if(dat->selection>groupy && dat->selection<groupy+contentCount) dat->selection=groupy;
@@ -446,7 +440,7 @@ void SetGroupExpand(HWND hwnd,struct ClcData *dat,struct ClcGroup *group,int new
 	nm.hdr.hwndFrom=hwnd;
 	nm.hdr.idFrom=GetDlgCtrlID(hwnd);
 	nm.hItem=(HANDLE)group->groupId;
-	nm.action = (group->expanded & 0x0000ffff);
+	nm.action = (group->expanded);
 	SendMessage(GetParent(hwnd),WM_NOTIFY,0,(LPARAM)&nm);
 }
 

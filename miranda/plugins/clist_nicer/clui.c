@@ -243,7 +243,7 @@ static int FS_FontsChanged(WPARAM wParam, LPARAM lParam)
 
 static int PreCreateCLC(HWND parent)
 {
-	pcli->hwndContactTree=CreateWindow(CLISTCONTROL_CLASS,_T(""),
+    pcli->hwndContactTree=CreateWindow(CLISTCONTROL_CLASS,_T(""),
 		WS_CHILD|CLS_CONTACTLIST
 		|(DBGetContactSettingByte(NULL,"CList","UseGroups",SETTING_USEGROUPS_DEFAULT)?CLS_USEGROUPS:0)
 		|CLS_HIDEOFFLINE
@@ -263,7 +263,6 @@ static int PreCreateCLC(HWND parent)
 static int CreateCLC(HWND parent)
 {
 	CallService(MS_CLIST_SETHIDEOFFLINE,(WPARAM)oldhideoffline,0);
-	//lastreqh=0;
 	disableautoupd=0;
 
 	ReloadExtraIcons();
@@ -286,12 +285,9 @@ static int CreateCLC(HWND parent)
 	}
 	SetButtonToSkinned();
 
-	//Sleep(0);
 	{
-		// create contact list frame
-		DWORD flags;
-
-		CLISTFrame Frame;
+        DWORD flags;
+        CLISTFrame Frame;
 		memset(&Frame,0,sizeof(Frame));
 		Frame.cbSize=sizeof(CLISTFrame);
 		Frame.hWnd=pcli->hwndContactTree;
@@ -306,7 +302,7 @@ static int CreateCLC(HWND parent)
 
 		/*
 		* ugly, but working hack. Prevent that annoying little scroll bar from appearing in the "My Contacts" title bar
-		*/
+        */
 
 		flags = (DWORD)CallService(MS_CLIST_FRAMES_GETFRAMEOPTIONS, MAKEWPARAM(FO_FLAGS, hFrameContactTree), 0);
 		flags |= F_VISIBLE;
@@ -370,15 +366,6 @@ static HICON hIconSaved = 0;
 void ClearIcons(int mode)
 {
 	int i;
-
-	/*
-	for(i = IDI_CLIENTFIRST; i <= IDI_CLIENTLAST; i++) {
-		if(im_clienthIcons[i - IDI_CLIENTFIRST] != 0) {
-			if(mode)
-				DestroyIcon(im_clienthIcons[i - IDI_CLIENTFIRST]);
-			im_clienthIcons[i - IDI_CLIENTFIRST] = 0;
-		}
-	}*/
 
 	for(i = IDI_OVL_OFFLINE; i <= IDI_OVL_OUTTOLUNCH; i++) {
 		if(overlayicons[i - IDI_OVL_OFFLINE] != 0) {
@@ -450,18 +437,6 @@ static void InitIcoLib()
 	sid.pszDescription = "Chat room/IRC channel activity";
 	sid.iDefaultIndex = -IDI_OVL_FREEFORCHAT;
 	CallService(MS_SKIN2_ADDICON, 0, (LPARAM) &sid);
-
-	/*
-	sid.pszSection = "CList - Nicer/Client Icons";
-	i = 0;
-	while (im_clients[i] != NULL) {
-		mir_snprintf(szBuffer, sizeof(szBuffer), "cln_%s", im_clients[i]);
-		sid.pszName = szBuffer;
-		sid.pszDescription = im_clients_descr[i];
-		sid.iDefaultIndex = -(clientIcons[i]);
-		CallService(MS_SKIN2_ADDICON, 0, (LPARAM) &sid);
-		i++;
-	}*/
 
 	sid.pszSection = "CList - Nicer/Overlay Icons";
 	for (i = IDI_OVL_OFFLINE; i <= IDI_OVL_OUTTOLUNCH; i++) {
@@ -703,7 +678,7 @@ void SetTBSKinned(int mode)
 		SetButtonStyle();           // restore old style
 }
 
-void ConfigureCLUIGeometry()
+void ConfigureCLUIGeometry(int mode)
 {
 	RECT rcStatus;
 	DWORD clmargins = DBGetContactSettingDword(NULL, "CLUI", "clmargins", 0);
@@ -715,11 +690,14 @@ void ConfigureCLUIGeometry()
 
 	g_CluiData.dwButtonWidth = g_CluiData.dwButtonHeight = DBGetContactSettingByte(NULL, "CLUI", "TBSize", 19);
 
-	if (g_CluiData.dwFlags & CLUI_FRAME_SBARSHOW) {
-		GetWindowRect(pcli->hwndStatus, &rcStatus);
-		g_CluiData.statusBarHeight = (rcStatus.bottom - rcStatus.top);
-	} else
-		g_CluiData.statusBarHeight = 0;
+    if(mode) {
+        if (g_CluiData.dwFlags & CLUI_FRAME_SBARSHOW) {
+            SendMessage(pcli->hwndStatus, WM_SIZE, 0, 0);
+            GetWindowRect(pcli->hwndStatus, &rcStatus);
+            g_CluiData.statusBarHeight = (rcStatus.bottom - rcStatus.top);
+        } else
+            g_CluiData.statusBarHeight = 0;
+    }
 
 	g_CluiData.topOffset = (g_CluiData.dwFlags & CLUI_FRAME_SHOWTOPBUTTONS ? 2 + g_CluiData.dwButtonHeight : 0) + g_CluiData.bCTop;
 	g_CluiData.bottomOffset = (g_CluiData.dwFlags & CLUI_FRAME_SHOWBOTTOMBUTTONS ? 2 + BUTTON_HEIGHT_D : 0) + g_CluiData.bCBottom;
@@ -745,6 +723,84 @@ void RefreshButtons()
 	}
 }
 
+/*                                                              
+ * set the states of defined database action buttons (only if button is a toggle)
+*/
+
+void SetDBButtonStates(HANDLE hPassedContact)
+{
+    ButtonItem *buttonItem = g_ButtonItems;
+    HANDLE hContact = 0, hFinalContact = 0;
+    char *szModule, *szSetting;
+    int sel = g_clcData ? g_clcData->selection : -1;
+    struct ClcContact *contact = 0;
+
+    if(sel != -1 && hPassedContact == 0) {
+        sel = pcli->pfnGetRowByIndex(g_clcData, g_clcData->selection, &contact, NULL);
+        if(contact && contact->type == CLCIT_CONTACT) {
+            hContact = contact->hContact;
+        }
+    }
+
+    while(buttonItem) {
+        BOOL result = FALSE;
+
+        if(!(buttonItem->dwFlags & BUTTON_ISTOGGLE && buttonItem->dwFlags & BUTTON_ISDBACTION)) {
+            buttonItem = buttonItem->nextItem;
+            continue;
+        }
+        szModule = buttonItem->szModule;
+        szSetting = buttonItem->szSetting;
+        if(buttonItem->dwFlags & BUTTON_DBACTIONONCONTACT || buttonItem->dwFlags & BUTTON_ISCONTACTDBACTION) {
+            if(hContact == 0) {
+                SendMessage(buttonItem->hWnd, BM_SETCHECK, BST_UNCHECKED, 0);
+                buttonItem = buttonItem->nextItem;
+                continue;
+            }
+            if(buttonItem->dwFlags & BUTTON_ISCONTACTDBACTION)
+                szModule = (char *)CallService(MS_PROTO_GETCONTACTBASEPROTO, (WPARAM)hContact, 0);
+            hFinalContact = hContact;
+        }
+        else
+            hFinalContact = 0;
+
+        if(buttonItem->type == DBVT_ASCIIZ) {
+            DBVARIANT dbv = {0};
+
+            if(!DBGetContactSetting(hFinalContact, szModule, szSetting, &dbv)) {
+                result = !strcmp((char *)buttonItem->bValuePush, dbv.pszVal);
+                DBFreeVariant(&dbv);
+            }
+        } else {
+            switch(buttonItem->type) {
+                case DBVT_BYTE:
+                {
+                    BYTE val = DBGetContactSettingByte(hFinalContact, szModule, szSetting, 0);
+                    result = (val == buttonItem->bValuePush[0]);
+                    break;
+                }
+                case DBVT_WORD:
+                {
+                    WORD val = DBGetContactSettingWord(hFinalContact, szModule, szSetting, 0);
+                    result = (val == *((WORD *)&buttonItem->bValuePush));
+                    break;
+                }
+                case DBVT_DWORD:
+                {
+                    DWORD val = DBGetContactSettingDword(hFinalContact, szModule, szSetting, 0);
+                    result = (val == *((DWORD *)&buttonItem->bValuePush));
+                    break;
+                }
+            }
+        }
+        SendMessage(buttonItem->hWnd, BM_SETCHECK, (WPARAM)result, 0);
+        buttonItem = buttonItem->nextItem;
+    }
+}
+
+/* 
+ * set states of standard buttons (pressed/unpressed
+ */
 void SetButtonStates(HWND hwnd)
 {
 	BYTE iMode;
@@ -925,6 +981,8 @@ void ReloadThemedOptions()
 	g_CluiData.hBrushColorKey = CreateSolidBrush(RGB(255, 0, 255));
 	g_CluiData.bUseFloater = (BYTE)DBGetContactSettingByte(NULL, "CLUI", "FloaterMode", 0);
 	g_CluiData.bWantFastGradients = (BYTE)DBGetContactSettingByte(NULL, "CLCExt", "FastGradients", 0);
+    g_CluiData.titleBarHeight = DBGetContactSettingByte(NULL, "CLCExt", "frame_height", DEFAULT_TITLEBAR_HEIGHT);
+    g_CluiData.group_padding = DBGetContactSettingDword(NULL, "CLCExt", "grp_padding", 0);
 }
 
 static RECT rcWindow = {0};
@@ -1098,7 +1156,7 @@ extern LRESULT ( CALLBACK *saveContactListWndProc )(HWND hwnd, UINT message, WPA
 
 static int ServiceParamsOK(ButtonItem *item, WPARAM *wParam, LPARAM *lParam, HANDLE hContact)
 {
-    if(item->dwFlags & BUTTON_PASSHCONTACTW || item->dwFlags & BUTTON_PASSHCONTACTL) {
+    if(item->dwFlags & BUTTON_PASSHCONTACTW || item->dwFlags & BUTTON_PASSHCONTACTL || item->dwFlags & BUTTON_ISCONTACTDBACTION) {
         if(hContact == 0)
             return 0;
         if(item->dwFlags & BUTTON_PASSHCONTACTW)
@@ -1168,7 +1226,7 @@ LRESULT CALLBACK ContactListWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM l
 			if(!g_CluiData.bFirstRun)
 				ConfigureEventArea(hwnd);
 			CluiProtocolStatusChanged(0, 0);
-			ConfigureCLUIGeometry();
+			ConfigureCLUIGeometry(0);
 			for(i = ID_STATUS_OFFLINE; i <= ID_STATUS_OUTTOLUNCH; i++) {
 #if defined(_UNICODE)
 				char *szTemp = Translate((char *)CallService(MS_CLIST_GETSTATUSMODEDESCRIPTION, (WPARAM)i, 0));
@@ -1248,9 +1306,6 @@ LRESULT CALLBACK ContactListWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM l
 
 			DBWriteContactSettingByte(NULL, "CList", "State", old_cliststate);
 			
-			//CLUIFramesReSort();
-	        //CLUIFramesOnClistResize((WPARAM)pcli->hwndContactList, 0);
-
 			if(!g_CluiData.autosize)
 				ShowCLUI(hwnd);
 			else {
@@ -1303,8 +1358,17 @@ LRESULT CALLBACK ContactListWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM l
 			hdc = g_CluiData.hdcBg;
 
 			CopyRect(&rcFrame, &rcClient);
-			if(g_CLUISkinnedBkColor)
-				FillRect(hdc, &rcClient, g_CLUISkinnedBkColor);
+			if(g_CLUISkinnedBkColor) {
+                if(g_CluiData.fOnDesktop) {
+                    HDC dc = GetDC(0);
+                    RECT rcWin;
+
+                    GetWindowRect(hwnd, &rcWin);
+                    BitBlt(hdc, 0, 0, rcClient.right, rcClient.bottom, dc, rcWin.left, rcWin.top, SRCCOPY);
+                }
+                else
+                    FillRect(hdc, &rcClient, g_CLUISkinnedBkColor);
+            }
 
 			if(g_CluiData.bClipBorder != 0 || g_CluiData.dwFlags & CLUI_FRAME_ROUNDEDFRAME) {
 				int docked = CallService(MS_CLIST_DOCKINGISDOCKED,0,0);
@@ -1419,7 +1483,8 @@ LRESULT CALLBACK ContactListWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM l
 		{
 			RECT *szrect = (RECT *)lParam;
 
-			if(Docking_IsDocked(0, 0))
+            break;
+            if(Docking_IsDocked(0, 0))
 				break;
 			g_SizingRect = *((RECT *)lParam);
 			if(wParam != WMSZ_BOTTOM && wParam != WMSZ_BOTTOMRIGHT && wParam != WMSZ_BOTTOMLEFT)
@@ -1431,23 +1496,12 @@ LRESULT CALLBACK ContactListWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM l
 	case WM_WINDOWPOSCHANGING:
 		{
 			WINDOWPOS *wp = (WINDOWPOS *)lParam;
-			RECT rcStatus;
 
 			if(wp && wp->flags & SWP_NOSIZE)
 				return FALSE;
 
 			if(Docking_IsDocked(0, 0))
 				break;
-
-			//_DebugPopup(0, "sizing: %d, %d, %d, %d : wp: %d, %d, %d, %d", g_SizingRect.left,
-			//            g_SizingRect.top, g_SizingRect.right, g_SizingRect.bottom,
-			//            wp->x, wp->y, wp->x + wp->cx, wp->y + wp->cy);
-
-			if (g_CluiData.dwFlags & CLUI_FRAME_SBARSHOW) {
-				GetWindowRect(pcli->hwndStatus, &rcStatus);
-				g_CluiData.statusBarHeight = (rcStatus.bottom - rcStatus.top);
-			} else
-				g_CluiData.statusBarHeight = 0;
 
 			if(pcli->hwndContactList != NULL) {
 				RECT rcOld;
@@ -1458,13 +1512,11 @@ LRESULT CALLBACK ContactListWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM l
                     new_window_rect.right = wp->cx - (g_CLUI_x_off + g_CLUI_x1_off);
                     new_window_rect.top = 0;
                     new_window_rect.bottom = wp->cy - g_CLUI_y_off - g_CLUI_y1_off;
-					//PosBatch = BeginDeferWindowPos(40);
 					SizeFramesByWindowRect(&new_window_rect);
 					dock_prevent_moving=0;
 					LayoutButtons(hwnd, &new_window_rect);
-					SetWindowPos(pcli->hwndStatus, 0, 0, new_window_rect.bottom - g_CluiData.statusBarHeight, new_window_rect.right,
-						g_CluiData.statusBarHeight, SWP_NOACTIVATE | SWP_NOZORDER | SWP_NOREDRAW | SWP_NOCOPYBITS);
-					//res=EndDeferWindowPos(PosBatch);
+					//SetWindowPos(pcli->hwndStatus, 0, 0, new_window_rect.bottom - g_CluiData.statusBarHeight, new_window_rect.right,
+					//	g_CluiData.statusBarHeight, SWP_NOACTIVATE | SWP_NOZORDER | SWP_NOREDRAW | SWP_NOCOPYBITS);
 					if(wp->cx != g_oldSize.cx)
 						SendMessage(hwnd, CLUIINTM_STATUSBARUPDATE, 0, 0);
 					dock_prevent_moving=1;
@@ -1483,18 +1535,20 @@ LRESULT CALLBACK ContactListWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM l
 			return DefWindowProc(hwnd, msg, wParam, lParam);
 		}
 	case WM_SIZE:
-		if((wParam == 0 && lParam == 0) || Docking_IsDocked(0, 0)) {
-			RECT rcStatus;
+
+        if (g_CluiData.dwFlags & CLUI_FRAME_SBARSHOW) {
+            RECT rcStatus;
+            SendMessage(pcli->hwndStatus, WM_SIZE, 0, 0);
+            GetWindowRect(pcli->hwndStatus, &rcStatus);
+            g_CluiData.statusBarHeight = (rcStatus.bottom - rcStatus.top);
+        } else
+            g_CluiData.statusBarHeight = 0;
+
+
+        if((wParam == 0 && lParam == 0) || Docking_IsDocked(0, 0)) {
 
 			if (IsZoomed(hwnd))
 				ShowWindow(hwnd, SW_SHOWNORMAL);
-
-			if (g_CluiData.dwFlags & CLUI_FRAME_SBARSHOW) {
-				GetWindowRect(pcli->hwndStatus, &rcStatus);
-				g_CluiData.statusBarHeight = (rcStatus.bottom - rcStatus.top);
-				    SendMessage(pcli->hwndStatus, WM_SIZE, 0, 0);
-			} else
-				g_CluiData.statusBarHeight = 0;
 
 			if(pcli->hwndContactList != NULL) {
 				RECT rcClient;
@@ -1736,7 +1790,7 @@ LRESULT CALLBACK ContactListWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM l
 			if(HIWORD(wParam) == BN_CLICKED && lParam != 0) {
                 if(LOWORD(wParam) == IDC_TBFIRSTUID - 1)
                     break;
-                else if(LOWORD(wParam) >= IDC_TBFIRSTUID) {
+                else if(LOWORD(wParam) >= IDC_TBFIRSTUID) {                     // skinnable buttons handling
                     ButtonItem *item = g_ButtonItems;
                     WPARAM wwParam = 0;
                     LPARAM llParam = 0;
@@ -1771,6 +1825,61 @@ LRESULT CALLBACK ContactListWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM l
                                     else
                                         serviceFailure = TRUE;
                                 }
+                            }
+                            else if(item->dwFlags & BUTTON_ISDBACTION) {
+                                BYTE *pValue;
+                                char *szModule = item->szModule;
+                                char *szSetting = item->szSetting;
+                                HANDLE finalhContact = 0;
+
+                                if(item->dwFlags & BUTTON_ISCONTACTDBACTION || item->dwFlags & BUTTON_DBACTIONONCONTACT) {
+                                    contactOK = ServiceParamsOK(item, &wwParam, &llParam, hContact);
+                                    if(contactOK && item->dwFlags & BUTTON_ISCONTACTDBACTION)
+                                        szModule = (char *)CallService(MS_PROTO_GETCONTACTBASEPROTO, (WPARAM)hContact, 0);
+                                    finalhContact = hContact;
+                                }
+                                else
+                                    contactOK = 1;
+
+                                if(contactOK) {
+                                    BOOL fDelete = FALSE;
+
+                                    if(item->dwFlags & BUTTON_ISTOGGLE) {
+                                        BOOL fChecked = (SendMessage(item->hWnd, BM_GETCHECK, 0, 0) == BST_UNCHECKED);
+
+                                        pValue = fChecked ? item->bValueRelease : item->bValuePush;
+                                        if(fChecked && pValue[0] == 0)
+                                            fDelete = TRUE;
+                                    }
+                                    else
+                                        pValue = item->bValuePush;
+
+                                    if(fDelete) {
+                                        //_DebugTraceA("delete value: %s, %s ON %d", szModule, szSetting, finalhContact);
+                                        DBDeleteContactSetting(finalhContact, szModule, szSetting);
+                                    }
+                                    else {
+                                        switch(item->type) {
+                                            case DBVT_BYTE:
+                                                DBWriteContactSettingByte(finalhContact, szModule, szSetting, pValue[0]);
+                                                //_DebugTraceA("set byte value: %s, %s, %d ON %d", szModule, item->szSetting, pValue[0], finalhContact);
+                                                break;
+                                            case DBVT_WORD:
+                                                DBWriteContactSettingWord(finalhContact, szModule, szSetting, *((WORD *)&pValue[0]));
+                                                //_DebugTraceA("set WORD value: %s, %s, %d ON %d", szModule, item->szSetting, *((WORD *)&pValue[0]), finalhContact);
+                                                break;
+                                            case DBVT_DWORD:
+                                                DBWriteContactSettingDword(finalhContact, szModule, szSetting, *((DWORD *)&pValue[0]));
+                                                //_DebugTraceA("set DWORD value: %s, %s, %d ON %d", szModule, item->szSetting, *((DWORD *)&pValue[0]), finalhContact);
+                                                break;
+                                            case DBVT_ASCIIZ:
+                                                DBWriteContactSettingString(finalhContact, szModule, szSetting, (char *)pValue);
+                                                //_DebugTraceA("set string value: %s, %s, %s ON %d", szModule, item->szSetting, (char *)pValue, finalhContact);
+                                                break;
+                                        }
+                                    }
+                                } else if(item->dwFlags & BUTTON_ISTOGGLE)
+                                    SendMessage(item->hWnd, BM_SETCHECK, 0, 0);
                             }
                             if(!contactOK)
                                 MessageBox(0, _T("The requested action requires a valid contact selection. Please select a contact from the contact list and repeat"), _T("Parameter mismatch"), MB_OK);
@@ -1920,11 +2029,6 @@ buttons_done:
 					g_CluiData.dwFlags ^= CLUI_FRAME_SHOWBOTTOMBUTTONS;
 					break;
 				}
-			case POPUP_ADJUSTSIZE:
-				{
-					//AdjustSize(hwnd);
-					break;
-				}
 			case ID_EVENTAREA_AUTOHIDE:
 				{
 					g_CluiData.dwFlags ^= CLUI_FRAME_AUTOHIDENOTIFY;
@@ -1978,7 +2082,7 @@ buttons_done:
 				DBWriteContactSettingDword(NULL, "CLUI", "Frameflags", g_CluiData.dwFlags);
 				if ((dwOldFlags & (CLUI_FRAME_SHOWTOPBUTTONS | CLUI_FRAME_SHOWBOTTOMBUTTONS | CLUI_FRAME_CLISTSUNKEN)) != (g_CluiData.dwFlags & (CLUI_FRAME_SHOWTOPBUTTONS | CLUI_FRAME_SHOWBOTTOMBUTTONS | CLUI_FRAME_CLISTSUNKEN))) {
 					ConfigureFrame();
-					ConfigureCLUIGeometry();
+					ConfigureCLUIGeometry(1);
 				}
 				ConfigureEventArea(pcli->hwndContactList);
 				SetButtonStyle();
@@ -2174,7 +2278,7 @@ buttons_done:
 					g_CluiData.dwButtonHeight += (iSelection == ID_BUTTONBAR_DECREASEBUTTONSIZE ? -1 : 1);
 					g_CluiData.dwButtonWidth = g_CluiData.dwButtonHeight;
 					DBWriteContactSettingByte(NULL, "CLUI", "TBSize", (BYTE) g_CluiData.dwButtonHeight);
-					ConfigureCLUIGeometry();
+					ConfigureCLUIGeometry(1);
 					SendMessage(hwnd, WM_SIZE, 0, 0);
 					InvalidateRect(hwnd, NULL, TRUE);
 					break;
@@ -2368,7 +2472,6 @@ buttons_done:
             DeleteDC(hdcLockedPoint);
         }
 		CallService(MS_CLIST_FRAMES_REMOVEFRAME,(WPARAM)hFrameContactTree,(LPARAM)0);
-		UnLoadCLUIFramesModule();
 		break;
 	}
 	return saveContactListWndProc(hwnd, msg, wParam, lParam);

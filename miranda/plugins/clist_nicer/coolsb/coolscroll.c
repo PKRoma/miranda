@@ -91,6 +91,8 @@ static UINT uScrollTimerPortion = HTSCROLL_NONE;
 static UINT uScrollTimerId = 0;
 static HWND hwndCurCoolSB = 0;
 
+extern int  CustomDrawScrollBars(NMCSBCUSTOMDRAW *nmcsbcd);
+
 //
 //	Provide this so there are NO dependencies on CRT
 //
@@ -694,7 +696,7 @@ static LRESULT PostCustomPrePostPaint(HWND hwnd, HDC hdc, SCROLLBAR *sb, UINT dw
 	nmcd.hdc		  = hdc;
 
 	hwnd = GetParent(hwnd);
-	return CustomDrawScrollBars((LPARAM)&nmcd);
+	return CustomDrawScrollBars(&nmcd);
 #else
 	return 0;
 #endif
@@ -726,7 +728,7 @@ static LRESULT PostCustomDrawNotify(HWND hwnd, HDC hdc, UINT nBar, RECT *prect, 
 		nmcd.uState		  = CDIS_DEFAULT;
 
 	hwnd = GetParent(hwnd);
-	return CustomDrawScrollBars((LPARAM)&nmcd);
+	return CustomDrawScrollBars(&nmcd);
 #else
 	return 0;
 #endif

@@ -71,6 +71,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include <m_file.h>
 #include <m_addcontact.h>
 #include <m_message.h>
+#include "m_cln_skinedit.h"
 #include "m_avatars.h"
 #include "extbackg.h"
 #include "clc.h"
@@ -86,7 +87,6 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include "m_popup.h"
 #include "m_metacontacts.h"
 #include "m_fontservice.h"
-
 // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 // NEEDS TO GO AWAY when we get REAL unicode
 //

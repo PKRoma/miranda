@@ -37,6 +37,7 @@ extern struct ClcData *g_clcData;
 extern HPEN g_hPenCLUIFrames;
 extern HANDLE hExtraImageApplying;
 extern wndFrame *wndFrameCLC;
+extern ButtonItem *g_ButtonItems;
 
 extern pfnDrawAlpha pDrawAlpha;
 extern BOOL (WINAPI *MySetLayeredWindowAttributes)(HWND, COLORREF, BYTE, DWORD);
@@ -49,7 +50,7 @@ extern struct ExtraCache *g_ExtraCache;
 HIMAGELIST hCListImages;
 extern HIMAGELIST himlExtraImages;
 
-HANDLE hSoundHook = 0, hIcoLibChanged = 0;
+HANDLE hSoundHook = 0, hIcoLibChanged = 0, hSvc_GetContactStatusMsg = 0;
 
 static HANDLE hClcSettingsChanged, hClcDBEvent = 0;
 
@@ -58,6 +59,7 @@ static HRESULT  (WINAPI *MyCloseThemeData)(HANDLE);
 LONG g_cxsmIcon, g_cysmIcon;
 
 void  ShutdownGdiPlus();
+void  SetDBButtonStates(HANDLE hContact);
 
 int GetProtocolVisibility(char *ProtoName)
 {
@@ -115,7 +117,9 @@ static int ClcEventAdded(WPARAM wParam, LPARAM lParam)
 	int iEntry;
     DWORD new_freq = 0;
 
-	if(wParam && lParam) {
+    g_CluiData.t_now = time(NULL);
+
+    if(wParam && lParam) {
         dbei.cbSize = sizeof(dbei);
         dbei.pBlob = 0;
         dbei.cbBlob = 0;
@@ -242,7 +246,8 @@ static int ClcPreshutdown(WPARAM wParam, LPARAM lParam)
 {
 	SFL_Destroy();
 	g_shutDown = TRUE;
-	DestroyServiceFunction("CList/GetContactStatusMsg");
+    if(hSvc_GetContactStatusMsg)
+        DestroyServiceFunction(hSvc_GetContactStatusMsg);
 	UnhookEvent(hClcSettingsChanged);
 	UnhookEvent(hClcDBEvent);
 	if (hIcoLibChanged)
@@ -695,27 +700,6 @@ LBL_Def:
 			PostMessage(hwnd, INTM_INVALIDATE, 0, (LPARAM)(contact ? contact->hContact : 0));
 			goto LBL_Def;
 		}
-		/*
-	case INTM_CLIENTCHANGED:
-		{
-			DBCONTACTWRITESETTING *cws = (DBCONTACTWRITESETTING *) lParam;
-			char *szProto;
-			struct ClcContact *contact = NULL;
-			DBVARIANT dbv = {0};
-
-			if (!FindItem(hwnd, dat, (HANDLE) wParam, &contact, NULL, NULL))
-				break;
-			szProto = (char*)cws->szModule;
-			if (szProto == NULL)
-				break;
-			if (!DBGetContactSetting((HANDLE) wParam, szProto, "MirVer", &dbv)) {
-				if (dbv.type == DBVT_ASCIIZ && dbv.pszVal != NULL && lstrlenA(dbv.pszVal) > 1)
-					GetClientID(contact, dbv.pszVal);
-				DBFreeVariant(&dbv);
-			}
-			PostMessage(hwnd, INTM_INVALIDATE, 0, (LPARAM)contact->hContact);
-			goto LBL_Def;
-		}*/
 	case WM_PAINT:
 		{
 			HDC hdc;
@@ -727,6 +711,10 @@ LBL_Def:
                 dat->lastRepaint = GetTickCount();
 			}
 			EndPaint(hwnd, &ps);
+            if(dat->selection != dat->oldSelection && !dat->bisEmbedded && g_ButtonItems != NULL) {
+                SetDBButtonStates(0);
+                dat->oldSelection = dat->selection;
+            }
 			goto LBL_Def;
 		}
 

@@ -9,6 +9,7 @@
 #define IDD_DIALOG2                     4
 #define IDD_OPT_SKIN                    4
 #define IDD_QUICKIGNORE                 5
+#define IDD_OPT                         6
 #define IDI_MIRANDA                     102
 #define IDD_CLNABOUT                    102
 #define IDD_ABOUT                       103
@@ -121,6 +122,7 @@
 #define IDI_NEWGROUP2                   283
 #define IDC_ACTIVEPERC                  1000
 #define IDC_RESETPROTOCOLDATA           1000
+#define IDC_OPTIONSTAB                  1000
 #define IDC_SAVE                        1001
 #define IDC_ADD                         1002
 #define IDI_OUTTOLUNCH                  1003
@@ -680,7 +682,6 @@
 #define IDC_IGNORESELFORGROUPS          1722
 #define IDC_CLISTAVATARS                1729
 #define IDC_ALIGNMENT                   1730
-#define IDC_AVATARSTRANSPARENT          1731
 #define IDC_AVATARSBORDER               1732
 #define IDC_AVATARBORDERCLR             1733
 #define IDC_AVATARSROUNDED              1734
@@ -702,7 +703,11 @@
 #define IDC_CORNERRAD                   1751
 #define IDC_CORNERSPIN                  1752
 #define IDC_AVATARPADDING               1753
+#define IDC_GRPTOPPADDING               1753
 #define IDC_AVATARPADDINGSPIN           1754
+#define IDC_GRPPADDINGSPIN              1754
+#define IDC_LASTITEMPADDING             1755
+#define IDC_LASTITEMPADDINGSPIN         1756
 #define IDC_TBHIDEOFFLINE               1800
 #define IDC_TBHIDEGROUPS                1801
 #define IDC_TBSOUND                     1802
@@ -863,7 +868,7 @@
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
-#define _APS_NEXT_RESOURCE_VALUE        6
+#define _APS_NEXT_RESOURCE_VALUE        7
 #define _APS_NEXT_COMMAND_VALUE         40061
 #define _APS_NEXT_CONTROL_VALUE         40049
 #define _APS_NEXT_SYMED_VALUE           40154

@@ -24,8 +24,8 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include "commonheaders.h"
 #include "rowheight_funcs.h"
 
-extern struct CluiData g_CluiData;
-extern struct ExtraCache *g_ExtraCache;
+extern struct   CluiData g_CluiData;
+extern struct   ExtraCache *g_ExtraCache;
 
 BOOL RowHeights_Initialize(struct ClcData *dat)
 {
@@ -138,6 +138,7 @@ void RowHeights_CalcRowHeights(struct ClcData *dat, HWND hwnd)
 	int indent, subindex, line_num;
 	struct ClcContact *Drawing;
 	struct ClcGroup *group;
+    DWORD dwStyle = GetWindowLong(hwnd, GWL_STYLE);
 
 	// Draw lines
 	group=&dat->list;
@@ -164,7 +165,7 @@ void RowHeights_CalcRowHeights(struct ClcData *dat, HWND hwnd)
 		line_num++;
 
 		// Calc row height
-		RowHeights_GetRowHeight(dat, hwnd, Drawing, line_num, GetWindowLong(hwnd, GWL_STYLE));
+		RowHeights_GetRowHeight(dat, hwnd, Drawing, line_num, dwStyle);
 
 		if(group->cl.items[group->scanIndex]->type==CLCIT_GROUP && /*!IsBadCodePtr((FARPROC)group->cl.items[group->scanIndex]->group) && */ (group->cl.items[group->scanIndex]->group->expanded & 0x0000ffff)) {
 			group=group->cl.items[group->scanIndex]->group;

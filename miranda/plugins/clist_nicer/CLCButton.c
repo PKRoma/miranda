@@ -52,6 +52,7 @@ typedef struct {
     int iIcon;
 	BOOL bSendOnDown;
     ButtonItem *buttonItem;
+    LONG lastGlyphMetrics[4];
 } MButtonCtrl;
 
 // External theme methods and properties
@@ -201,6 +202,9 @@ static void PaintWorker(MButtonCtrl *ctl, HDC hdcPaint)
                     ImageItem *imgItem = ctl->stateId == PBS_HOT ? ctl->buttonItem->imgHover : (ctl->stateId == PBS_PRESSED ? ctl->buttonItem->imgPressed : ctl->buttonItem->imgNormal);
                     LONG *glyphMetrics = ctl->stateId == PBS_HOT ? ctl->buttonItem->hoverGlyphMetrics : (ctl->stateId == PBS_PRESSED ? ctl->buttonItem->pressedGlyphMetrics : ctl->buttonItem->normalGlyphMetrics);
 
+                    //if(ctl->stateId == PBS_HOT && glyphMetrics[2] <= 1 && glyphMetrics[3] <= 1)
+                    //    glyphMetrics = ctl->lastGlyphMetrics;
+
                     GetWindowRect(ctl->hwnd, &rcParent);
                     pt.x = rcParent.left;
                     pt.y = rcParent.top;
@@ -215,6 +219,7 @@ static void PaintWorker(MButtonCtrl *ctl, HDC hdcPaint)
                                    glyphMetrics[2], glyphMetrics[3], g_glyphItem->hdc,
                                    glyphMetrics[0], glyphMetrics[1], glyphMetrics[2],
                                    glyphMetrics[3], g_glyphItem->bf);
+                        //CopyMemory(ctl->lastGlyphMetrics, glyphMetrics, 4 * sizeof(LONG));
                     }
                 }
                 else if(ctl->bSkinned) {      // skinned

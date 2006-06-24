@@ -55,7 +55,6 @@ extern struct CluiData g_CluiData;
 #define MAX_FRAMES		16
 
 #define UNCOLLAPSED_FRAME_SIZE		0
-#define DEFAULT_TITLEBAR_HEIGHT		18
 
 //legacy menu support
 #define frame_menu_lock				1
@@ -71,6 +70,7 @@ int CLUIFrameResizeFloatingFrame(int framepos);
 extern int ProcessCommandProxy(WPARAM wParam,LPARAM lParam);
 extern int InitFramesMenus(void);
 extern int UnitFramesMenu();
+static int CLUIFramesReSort();
 
 boolean FramesSysNotStarted=TRUE;
 HPEN g_hPenCLUIFrames = 0;
@@ -129,7 +129,7 @@ static int nFramescount = 0;
 static int alclientFrame=-1;//for fast access to frame with alclient properties
 static int NextFrameId = 100;
 
-static TitleBarH=DEFAULT_TITLEBAR_HEIGHT;
+static int TitleBarH=DEFAULT_TITLEBAR_HEIGHT;
 static boolean resizing=FALSE;
 
 // menus
@@ -1516,6 +1516,7 @@ int CLUIFramesCollapseUnCollapseFrame(WPARAM wParam,LPARAM lParam)
     if (FramesSysNotStarted) 
 		return -1;
 
+    TitleBarH = g_CluiData.titleBarHeight;
     lockfrm();
     FrameId=id2pos(wParam);
     if (FrameId>=0&&FrameId<nFramescount) {
@@ -1862,7 +1863,7 @@ static LRESULT CALLBACK FramesSubClassProc(HWND hwnd, UINT msg, WPARAM wParam, L
  * re-sort all frames and correct frame ordering
  */
 
-int CLUIFramesReSort()
+static int CLUIFramesReSort()
 {
     int v = 0, i;
 	int order = 1;
@@ -2098,6 +2099,7 @@ int CLUIFramesForceUpdateFrame(const wndFrame *Frame)
 
 int CLUIFrameMoveResize(const wndFrame *Frame)
 {
+    TitleBarH = g_CluiData.titleBarHeight;
     // we need to show or hide the frame?
     if (Frame->visible&&(!Frame->needhide)) {
         ShowWindow(Frame->hWnd,SW_SHOW);
@@ -2127,6 +2129,8 @@ BOOLEAN CLUIFramesFitInSize(void)
     int tbh=0; // title bar height
     int clientfrm;
 
+    TitleBarH = g_CluiData.titleBarHeight;
+
     clientfrm=CLUIFramesGetalClientFrame();
     if (clientfrm!=-1)
         tbh=TitleBarH*btoint(Frames[clientfrm].TitleBar.ShowTitleBar);
@@ -2152,6 +2156,7 @@ int CLUIFramesGetMinHeight()
     
 	lockfrm();
 
+    TitleBarH = g_CluiData.titleBarHeight;
     // search for alClient frame and get the titlebar's height
     tbh=0;
     clientfrm=CLUIFramesGetalClientFrame();
@@ -2211,12 +2216,11 @@ int CLUIFramesResize(const RECT newsize)
     GapBetweenFrames=g_CluiData.gapBetweenFrames;
     sepw=GapBetweenFrames;
 
-    if (nFramescount<1) return 0;
-
+    if (nFramescount<1) 
+        return 0;
 
     newheight=newsize.bottom-newsize.top;
-
-
+    TitleBarH = g_CluiData.titleBarHeight;
 
     // search for alClient frame and get the titlebar's height
     tbh=0;
@@ -2380,7 +2384,8 @@ int SizeFramesByWindowRect(RECT *r)
     if (FramesSysNotStarted)
         return -1;
     
-	lockfrm();
+    TitleBarH = g_CluiData.titleBarHeight;
+    lockfrm();
     GapBetweenFrames = g_CluiData.gapBetweenFrames;
 
     nRect = *r;
@@ -2599,6 +2604,8 @@ static int DrawTitleBar(HDC dc,RECT rect,int Frameid)
     int pos;
     StatusItems_t *item = &StatusItems[ID_EXTBKFRAMETITLE - ID_STATUS_OFFLINE];
 
+    TitleBarH = g_CluiData.titleBarHeight;
+
     hdcMem=CreateCompatibleDC(dc);
     hBmpOsb = CreateCompatibleBitmap(dc, rect.right, rect.bottom);
     hoBmp=SelectObject(hdcMem,hBmpOsb);
@@ -2648,18 +2655,18 @@ static int DrawTitleBar(HDC dc,RECT rect,int Frameid)
 
         if (!AlignCOLLIconToLeft) {
             if (Frames[pos].TitleBar.hicon != NULL) {
-                DrawIconEx(hdcMem, 4 + g_CluiData.bClipBorder, ((TitleBarH>>1) - 8), Frames[pos].TitleBar.hicon, 16, 16, 0, NULL, DI_NORMAL);
-                TextOutA(hdcMem, 22 + g_CluiData.bClipBorder, fontTop, Frames[pos].TitleBar.tbname, strlen(Frames[pos].TitleBar.tbname));
+                DrawIconEx(hdcMem, 6 + g_CluiData.bClipBorder, ((TitleBarH>>1) - 8), Frames[pos].TitleBar.hicon, 16, 16, 0, NULL, DI_NORMAL);
+                TextOutA(hdcMem, 24 + g_CluiData.bClipBorder, fontTop, Frames[pos].TitleBar.tbname, strlen(Frames[pos].TitleBar.tbname));
             }
             else
-                TextOutA(hdcMem, 4 + g_CluiData.bClipBorder, fontTop, Frames[pos].TitleBar.tbname,strlen(Frames[pos].TitleBar.tbname));
+                TextOutA(hdcMem, 6 + g_CluiData.bClipBorder, fontTop, Frames[pos].TitleBar.tbname,strlen(Frames[pos].TitleBar.tbname));
         }
         else
             TextOutA(hdcMem, 18 + g_CluiData.bClipBorder, fontTop, Frames[pos].TitleBar.tbname,strlen(Frames[pos].TitleBar.tbname));
 
 
         if (!AlignCOLLIconToLeft)
-            DrawIconEx(hdcMem, Frames[pos].TitleBar.wndSize.right - 18, ((TitleBarH>>1) - 8), Frames[pos].collapsed?LoadSkinnedIcon(SKINICON_OTHER_GROUPOPEN):LoadSkinnedIcon(SKINICON_OTHER_GROUPSHUT), 16, 16, 0, NULL,DI_NORMAL);
+            DrawIconEx(hdcMem, Frames[pos].TitleBar.wndSize.right - 22, ((TitleBarH>>1) - 8), Frames[pos].collapsed?LoadSkinnedIcon(SKINICON_OTHER_GROUPOPEN):LoadSkinnedIcon(SKINICON_OTHER_GROUPSHUT), 16, 16, 0, NULL,DI_NORMAL);
         else
             DrawIconEx(hdcMem, 0, ((TitleBarH>>1)-8), Frames[pos].collapsed ? LoadSkinnedIcon(SKINICON_OTHER_GROUPOPEN):LoadSkinnedIcon(SKINICON_OTHER_GROUPSHUT),16,16,0,NULL,DI_NORMAL);
         SelectObject(hdcMem, oFont);
@@ -3230,6 +3237,7 @@ if ((msg == WM_MOVE) || (msg == WM_MOVING) || (msg == WM_NCLBUTTONDOWN) || (msg 
                 int framepos;
                 MINMAXINFO minmax;
 
+                TitleBarH = g_CluiData.titleBarHeight;
                 lockfrm();
 
                 framepos=id2pos(Frameid);
@@ -3490,7 +3498,7 @@ static int SetIconForExtraColumn(WPARAM wParam,LPARAM lParam)
     if(piec->ColumnType == 7)
 		piec->ColumnType = 6;
 
-	if(g_CluiData.bMetaAvail && g_CluiData.bMetaEnabled && DBGetContactSettingByte((HANDLE)wParam, g_CluiData.szMetaName, "IsSubcontact", 0))
+    if(g_CluiData.bMetaAvail && g_CluiData.bMetaEnabled && DBGetContactSettingByte((HANDLE)wParam, g_CluiData.szMetaName, "IsSubcontact", 0))
         PostMessage(pcli->hwndContactTree, CLM_SETEXTRAIMAGEINTMETA, wParam, MAKELONG((WORD)piec->ColumnType,  (WORD)piec->hImage));
     else
         PostMessage(pcli->hwndContactTree, CLM_SETEXTRAIMAGEINT, wParam, MAKELONG((WORD)piec->ColumnType,  (WORD)piec->hImage));
@@ -3645,7 +3653,7 @@ int UnLoadCLUIFramesModule(void)
     CLUIFramesStoreAllFrames();
 	DeleteObject(g_hPenCLUIFrames);
 	//RemoveDialogBoxHook();
-    lockfrm();
+	EnterCriticalSection(&csFrameHook);
     FramesSysNotStarted=TRUE;
     for (i=0;i<nFramescount;i++) {
         DestroyWindow(Frames[i].hWnd);
@@ -3664,7 +3672,7 @@ int UnLoadCLUIFramesModule(void)
     Frames=NULL;
     nFramescount=0;
     UnregisterClassA(CLUIFrameTitleBarClassName,g_hInst);
-    ulockfrm();
+	LeaveCriticalSection(&csFrameHook);
     DeleteCriticalSection(&csFrameHook);
     UnitFramesMenu();
     return 0;
