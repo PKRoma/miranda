@@ -401,6 +401,7 @@ struct TabControlData {
     HWND   hwndDrag;
     struct MessageWindowData *dragDat;
     HIMAGELIST himlDrag;
+    BOOL   bRefreshWithoutClip;
 };
 
 /*
@@ -408,7 +409,7 @@ struct TabControlData {
  */
 
 struct myTabCtrl {
-    HPEN m_hPenShadow, m_hPenItemShadow, m_hPenLight;
+    HPEN m_hPenShadow, m_hPenItemShadow, m_hPenLight, m_hPenStyledLight, m_hPenStyledDark;
     HFONT m_hMenuFont;
     COLORREF colors[10];
     HBRUSH m_hBrushDefault, m_hBrushActive, m_hBrushUnread, m_hBrushHottrack;

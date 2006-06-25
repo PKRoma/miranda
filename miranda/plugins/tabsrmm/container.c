@@ -736,7 +736,7 @@ static BOOL CALLBACK ContainerWndProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPA
                         dis.hDC = dcMem;
                         dis.CtlType = ODT_MENU;
                         for(i = 0; i <= 5; i++) {
-                            dis.itemID = 100 + i;
+                            dis.itemID = 5000 + i;
                             GetMenuItemRect(hwndDlg, pContainer->hMenu, i, &rcItem);
 
                             dis.rcItem.left = rcItem.left - rcWindow.left;
@@ -2282,7 +2282,7 @@ panel_found:
 
                         pContainer->hMenu = LoadMenu(g_hInst, MAKEINTRESOURCE(IDR_MENUBAR));
                         for(i = 0; i <= 5; i++) {
-                            mii.wID = 100 + i;
+                            mii.wID = 5000 + i;
                             SetMenuItemInfo(pContainer->hMenu, i, TRUE, &mii);
                         }
                         if(pContainer->bSkinned && g_MenuBGBrush) {
@@ -2422,10 +2422,10 @@ panel_found:
             int cy = myGlobals.m_smcyicon;
             DRAWITEMSTRUCT *dis = (DRAWITEMSTRUCT *)lParam;
 
-            if(dis->CtlType == ODT_MENU && dis->itemID >= 100 && dis->itemID <= 105) {
+            if(dis->CtlType == ODT_MENU && dis->itemID >= 5000 && dis->itemID <= 5005) {
                 SIZE sz;
                 HFONT hOldFont;
-                TCHAR *menuName = TranslateTS(menuBarNames_translated[dis->itemID - 100]);
+                TCHAR *menuName = TranslateTS(menuBarNames_translated[dis->itemID - 5000]);
 
                 hOldFont = SelectObject(dis->hDC, GetStockObject(DEFAULT_GUI_FONT));
                 if(pContainer->bSkinned && g_framelessSkinmode)
@@ -2489,11 +2489,11 @@ panel_found:
             {
                 LPMEASUREITEMSTRUCT lpmi = (LPMEASUREITEMSTRUCT)lParam;
 
-                if(lpmi->CtlType == ODT_MENU && lpmi->itemID >= 100 && lpmi->itemID <= 105) {
+                if(lpmi->CtlType == ODT_MENU && lpmi->itemID >= 5000 && lpmi->itemID <= 5005) {
                     SIZE sz;
                     HFONT hOldFont;
                     HDC hdc = GetWindowDC(hwndDlg);
-                    TCHAR *menuName = TranslateTS(menuBarNames_translated[lpmi->itemID - 100]);
+                    TCHAR *menuName = TranslateTS(menuBarNames_translated[lpmi->itemID - 5000]);
 
                     hOldFont = SelectObject(hdc, GetStockObject(DEFAULT_GUI_FONT));
                     GetTextExtentPoint32(hdc, menuName, lstrlen(menuName), &sz);

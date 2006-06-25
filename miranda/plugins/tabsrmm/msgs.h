@@ -200,6 +200,7 @@ struct ProtocolData {
 #define EM_VALIDATEBOTTOM         (WM_USER+0x104)
 #define EM_THEMECHANGED           (WM_USER+0x105)
 #define EM_UNSUBCLASSED			  (WM_USER+0x106)
+#define EM_REFRESHWITHOUTCLIP     (WM_USER+0x107)
 
 #define HM_EVENTSENT         (WM_USER+10)
 #define DM_REMAKELOG         (WM_USER+11)

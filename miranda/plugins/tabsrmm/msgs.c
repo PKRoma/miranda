@@ -1483,6 +1483,8 @@ int ActivateExistingTab(struct ContainerWindowData *pContainer, HWND hwndChild)
         }
         else if(GetForegroundWindow() != pContainer->hwnd)
             SetForegroundWindow(pContainer->hwnd);
+        if(dat->bType == SESSIONTYPE_IM)
+            SetFocus(GetDlgItem(hwndChild, IDC_MESSAGE));
         if(myGlobals.m_ExtraRedraws)
             RedrawWindow(pContainer->hwndActive, NULL, NULL, RDW_INVALIDATE | RDW_ALLCHILDREN);
 		return TRUE;
@@ -1606,6 +1608,7 @@ HWND CreateNewTabForContact(struct ContainerWindowData *pContainer, HANDLE hCont
         }
     }
 	newItem = TabCtrl_InsertItem(hwndTab, pContainer->iTabIndex, &newData.item);
+    SendMessage(hwndTab, EM_REFRESHWITHOUTCLIP, 0, 0);
 	if (bActivateTab)
         TabCtrl_SetCurSel(GetDlgItem(pContainer->hwnd, IDC_MSGTABS), newItem);
 	newData.iTabID = newItem;

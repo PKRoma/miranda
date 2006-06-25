@@ -302,7 +302,6 @@ int Service_NewChat(WPARAM wParam, LPARAM lParam)
 			}
 			si->iSplitterX = g_Settings.iSplitterX;
 			si->iSplitterY = g_Settings.iSplitterY;
-			si->iLogFilterFlags = (int)DBGetContactSettingDword(NULL, "Chat", "FilterFlags", 0x03E0);
 			si->bFilterEnabled = DBGetContactSettingByte(NULL, "Chat", "FilterEnabled", 0);
 			si->bNicklistEnabled = DBGetContactSettingByte(NULL, "Chat", "ShowNicklist", 1);
 			if((MODULEINFO *)MM_FindModule((char *)gcw->pszModule)->bColor)
@@ -320,6 +319,9 @@ int Service_NewChat(WPARAM wParam, LPARAM lParam)
 			else
 				mir_snprintf(szTemp, sizeof(szTemp), "%s", gcw->pszName);
 			si->hContact = CList_AddRoom((char *)gcw->pszModule, (char *)gcw->pszID, szTemp, si->iType); 
+
+            si->iLogFilterFlags = (int)DBGetContactSettingDword(si->hContact, "Chat", "FilterFlags", DBGetContactSettingDword(NULL, "Chat", "FilterFlags", 0x03E0));
+
 			DBWriteContactSettingString(si->hContact, si->pszModule , "Topic", "");
 			DBDeleteContactSetting(si->hContact, "CList", "StatusMsg");
 			if(si->pszStatusbarText)
@@ -679,6 +681,7 @@ HWND CreateNewRoom(struct ContainerWindowData *pContainer, SESSION_INFO *si, BOO
     }
 
 	newItem = TabCtrl_InsertItem(hwndTab, pContainer->iTabIndex, &newData.item);
+    SendMessage(hwndTab, EM_REFRESHWITHOUTCLIP, 0, 0);
 	if (bActivateTab)
         TabCtrl_SetCurSel(hwndTab, newItem);
 	newData.iTabID = newItem;

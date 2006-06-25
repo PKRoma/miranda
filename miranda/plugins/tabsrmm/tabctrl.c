@@ -180,6 +180,8 @@ static struct colOptions {UINT id; UINT defclr; char *szKey; char *szSkinnedKey;
     IDC_BKGCLRACTIVE, COLOR_3DFACE, "tab_bg_active", "tab_bg_active",
     IDC_BKGCLRUNREAD, COLOR_3DFACE, "tab_bg_unread", "tab_bg_unread",
     IDC_BKGCOLORHOTTRACK, COLOR_3DFACE, "tab_bg_hottrack", "tab_bg_hottrack",
+    IDC_LIGHTSHADOW, COLOR_3DHIGHLIGHT, "tab_lightshadow", "tab_lightshadow",
+    IDC_DARKSHADOW, COLOR_3DDKSHADOW, "tab_darkshadow", "tab_darkshadow",
     0, 0, NULL, NULL
 };
 
@@ -195,104 +197,78 @@ static struct colOptions {UINT id; UINT defclr; char *szKey; char *szSkinnedKey;
 #define HINT_TRANSPARENT 16
 #define HINT_HOTTRACK 32
 
-void DrawWuLine( HDC pDC, int X0, int Y0, int X1, int Y1, COLORREF clrLine )
+/*
+ * draw an antialiased (smoothed) line from X0/Y0 to X1/Y1 using clrLine as basecolor
+*/
+
+static void DrawWuLine( HDC pDC, int X0, int Y0, int X1, int Y1, COLORREF clrLine )
 {
     int XDir, DeltaX, DeltaY;
     unsigned short ErrorAdj;
     unsigned short ErrorAccTemp, Weighting;
-    unsigned short ErrorAcc = 0;  /* initialize the line error accumulator to 0 */
+    unsigned short ErrorAcc = 0;
     double grayl;
     BYTE rl, gl, bl;
     BYTE rb, gb, bb, rr, gr, br;
     double grayb;
     COLORREF clrBackGround;
 
-    /* Make sure the line runs top to bottom */
-    if (Y0 > Y1)
-    {
+    if (Y0 > Y1) {
         int Temp = Y0; Y0 = Y1; Y1 = Temp;
         Temp = X0; X0 = X1; X1 = Temp;
     }
     
-    /* Draw the initial pixel, which is always exactly intersected by
-    the line and so needs no weighting */
-    SetPixel( pDC, X0, Y0, clrLine );
+    SetPixel(pDC, X0, Y0, clrLine);
     
     DeltaX = X1 - X0;
-    if( DeltaX >= 0 )
-    {
+    if(DeltaX >= 0)
         XDir = 1;
-    }
-    else
-    {
+    else {
         XDir   = -1;
-        DeltaX = 0 - DeltaX; /* make DeltaX positive */
+        DeltaX = 0 - DeltaX;
     }
     
-    /* Special-case horizontal, vertical, and diagonal lines, which
-    require no weighting because they go right through the center of
-    every pixel */
     DeltaY = Y1 - Y0;
-    if (DeltaY == 0)
-    {
-        /* Horizontal line */
-        while (DeltaX-- != 0)
-        {
+
+    if(DeltaY == 0) {
+        while (DeltaX-- != 0) {
             X0 += XDir;
-            SetPixel( pDC, X0, Y0, clrLine );
+            SetPixel(pDC, X0, Y0, clrLine);
         }
         return;
     }
-    if (DeltaX == 0)
-    {
-        /* Vertical line */
-        do
-        {
+    if(DeltaX == 0) {
+        do {
             Y0++;
-            SetPixel( pDC, X0, Y0, clrLine );
+            SetPixel(pDC, X0, Y0, clrLine);
         } while (--DeltaY != 0);
         return;
     }
     
-    if (DeltaX == DeltaY)
-    {
-        /* Diagonal line */
-        do
-        {
+    if(DeltaX == DeltaY) {
+        do {
             X0 += XDir;
             Y0++;
-            SetPixel( pDC, X0, Y0, clrLine );
+            SetPixel(pDC, X0, Y0, clrLine);
         } while (--DeltaY != 0);
         return;
     }
     
-    rl = GetRValue( clrLine );
-    gl = GetGValue( clrLine );
-    bl = GetBValue( clrLine );
+    rl = GetRValue(clrLine);
+    gl = GetGValue(clrLine);
+    bl = GetBValue(clrLine);
     grayl = rl * 0.299 + gl * 0.587 + bl * 0.114;
     
-    /* Is this an X-major or Y-major line? */
-    if (DeltaY > DeltaX)
-    {
-    /* Y-major line; calculate 16-bit fixed-point fractional part of a
-    pixel that X advances each time Y advances 1 pixel, truncating the
-        result so that we won't overrun the endpoint along the X axis */
-        ErrorAdj = ((unsigned long) DeltaX << 16) / (unsigned long) DeltaY;
-        /* Draw all pixels other than the first and last */
-        while (--DeltaY) {
-            ErrorAccTemp = ErrorAcc;   /* remember currrent accumulated error */
-            ErrorAcc += ErrorAdj;      /* calculate error for next pixel */
-            if (ErrorAcc <= ErrorAccTemp) {
-                /* The error accumulator turned over, so advance the X coord */
+    if(DeltaY > DeltaX) {
+        ErrorAdj = (unsigned short)(((unsigned long) DeltaX << 16) / (unsigned long) DeltaY);
+
+        while(--DeltaY) {
+            ErrorAccTemp = ErrorAcc;
+            ErrorAcc += ErrorAdj;
+            if (ErrorAcc <= ErrorAccTemp)
                 X0 += XDir;
-            }
-            Y0++; /* Y-major, so always advance Y */
-                  /* The IntensityBits most significant bits of ErrorAcc give us the
-                  intensity weighting for this pixel, and the complement of the
-            weighting for the paired pixel */
+            Y0++;
             Weighting = ErrorAcc >> 8;
-            //ASSERT( Weighting < 256 );
-            //ASSERT( ( Weighting ^ 255 ) < 256 );
             
             clrBackGround = GetPixel( pDC, X0, Y0 );
             rb = GetRValue( clrBackGround );
@@ -312,12 +288,12 @@ void DrawWuLine( HDC pDC, int X0, int Y0, int X1, int Y1, COLORREF clrLine )
 		      (Weighting ^ 255)) ) / 255.0 * ( bb - bl ) + bl ) ) :
 		      ( ( BYTE )( ( ( double )( grayl<grayb?Weighting:(Weighting ^ 255)) )
 		      / 255.0 * ( bl - bb ) + bb ) ) );
-            SetPixel( pDC, X0, Y0, RGB( rr, gr, br ) );
+            SetPixel(pDC, X0, Y0, RGB( rr, gr, br ));
             
-            clrBackGround = GetPixel( pDC, X0 + XDir, Y0 );
-            rb = GetRValue( clrBackGround );
-            gb = GetGValue( clrBackGround );
-            bb = GetBValue( clrBackGround );
+            clrBackGround = GetPixel(pDC, X0 + XDir, Y0);
+            rb = GetRValue(clrBackGround);
+            gb = GetGValue(clrBackGround);
+            bb = GetBValue(clrBackGround);
             grayb = rb * 0.299 + gb * 0.587 + bb * 0.114;
             
             rr = ( rb > rl ? ( ( BYTE )( ( ( double )( grayl<grayb?(Weighting ^ 255):
@@ -332,37 +308,25 @@ void DrawWuLine( HDC pDC, int X0, int Y0, int X1, int Y1, COLORREF clrLine )
 		Weighting) ) / 255.0 * ( bb - bl ) + bl ) ) :
 		( ( BYTE )( ( ( double )( grayl<grayb?(Weighting ^ 255):Weighting) )
 		/ 255.0 * ( bl - bb ) + bb ) ) );
-            SetPixel( pDC, X0 + XDir, Y0, RGB( rr, gr, br ) );
+            SetPixel(pDC, X0 + XDir, Y0, RGB( rr, gr, br ));
         }
-        /* Draw the final pixel, which is always exactly intersected by the line
-        and so needs no weighting */
-        SetPixel( pDC, X1, Y1, clrLine );
+        SetPixel(pDC, X1, Y1, clrLine);
         return;
     }
-    /* It's an X-major line; calculate 16-bit fixed-point fractional part of a
-    pixel that Y advances each time X advances 1 pixel, truncating the
-    result to avoid overrunning the endpoint along the X axis */
-    ErrorAdj = ((unsigned long) DeltaY << 16) / (unsigned long) DeltaX;
-    /* Draw all pixels other than the first and last */
-    while (--DeltaX) {
-        ErrorAccTemp = ErrorAcc;   /* remember currrent accumulated error */
-        ErrorAcc += ErrorAdj;      /* calculate error for next pixel */
-        if (ErrorAcc <= ErrorAccTemp) {
-            /* The error accumulator turned over, so advance the Y coord */
+    ErrorAdj = (unsigned short)(((unsigned long) DeltaY << 16) / (unsigned long) DeltaX);
+
+    while(--DeltaX) {
+        ErrorAccTemp = ErrorAcc;
+        ErrorAcc += ErrorAdj;
+        if (ErrorAcc <= ErrorAccTemp)
             Y0++;
-        }
-        X0 += XDir; /* X-major, so always advance X */
-                    /* The IntensityBits most significant bits of ErrorAcc give us the
-                    intensity weighting for this pixel, and the complement of the
-        weighting for the paired pixel */
+        X0 += XDir;
         Weighting = ErrorAcc >> 8;
-        //ASSERT( Weighting < 256 );
-        //ASSERT( ( Weighting ^ 255 ) < 256 );
         
-        clrBackGround = GetPixel( pDC, X0, Y0 );
-        rb = GetRValue( clrBackGround );
-        gb = GetGValue( clrBackGround );
-        bb = GetBValue( clrBackGround );
+        clrBackGround = GetPixel(pDC, X0, Y0);
+        rb = GetRValue(clrBackGround);
+        gb = GetGValue(clrBackGround);
+        bb = GetBValue(clrBackGround);
         grayb = rb * 0.299 + gb * 0.587 + bb * 0.114;
         
         rr = ( rb > rl ? ( ( BYTE )( ( ( double )( grayl<grayb?Weighting:
@@ -378,12 +342,12 @@ void DrawWuLine( HDC pDC, int X0, int Y0, int X1, int Y1, COLORREF clrLine )
 		( ( BYTE )( ( ( double )( grayl<grayb?Weighting:(Weighting ^ 255)) ) 
 		/ 255.0 * ( bl - bb ) + bb ) ) );
         
-        SetPixel( pDC, X0, Y0, RGB( rr, gr, br ) );
+        SetPixel(pDC, X0, Y0, RGB(rr, gr, br));
         
-        clrBackGround = GetPixel( pDC, X0, Y0 + 1 );
-        rb = GetRValue( clrBackGround );
-        gb = GetGValue( clrBackGround );
-        bb = GetBValue( clrBackGround );
+        clrBackGround = GetPixel(pDC, X0, Y0 + 1);
+        rb = GetRValue(clrBackGround);
+        gb = GetGValue(clrBackGround);
+        bb = GetBValue(clrBackGround);
         grayb = rb * 0.299 + gb * 0.587 + bb * 0.114;
         
         rr = ( rb > rl ? ( ( BYTE )( ( ( double )( grayl<grayb?(Weighting ^ 255):
@@ -399,12 +363,9 @@ void DrawWuLine( HDC pDC, int X0, int Y0, int X1, int Y1, COLORREF clrLine )
 		( ( BYTE )( ( ( double )( grayl<grayb?(Weighting ^ 255):Weighting) ) 
 		/ 255.0 * ( bl - bb ) + bb ) ) );
         
-        SetPixel( pDC, X0, Y0 + 1, RGB( rr, gr, br ) );
+        SetPixel(pDC, X0, Y0 + 1, RGB( rr, gr, br ));
     }
-    
-    /* Draw the final pixel, which is always exactly intersected by the line
-    and so needs no weighting */
-    SetPixel( pDC, X1, Y1, clrLine );
+    SetPixel(pDC, X1, Y1, clrLine);
 }
 /*
  * draws the item contents (icon and label)
@@ -610,7 +571,7 @@ b_nonskinned:
                 rcItem->bottom--;
                 rcItem->top -=2;
             }
-			if(tabdat->pContainer->bSkinned) {
+			if(tabdat->pContainer->bSkinned && !tabdat->m_moderntabs) {
 				StatusItems_t *item = &StatusItems[dwStyle & TCS_BOTTOM ? ID_EXTBKTABITEMACTIVEBOTTOM : ID_EXTBKTABITEMACTIVE];
 				if(!item->IGNORED) {
                     rcItem->left += item->MARGIN_LEFT; rcItem->right -= item->MARGIN_RIGHT;
@@ -621,7 +582,7 @@ b_nonskinned:
 				}
 			}
         }
-		if(tabdat->pContainer->bSkinned) {
+		if(tabdat->pContainer->bSkinned && !tabdat->m_moderntabs) {
 			StatusItems_t *item = &StatusItems[dwStyle & TCS_BOTTOM ? (nHint & HINT_HOTTRACK ? ID_EXTBKTABITEMHOTTRACKBOTTOM : ID_EXTBKTABITEMBOTTOM) : 
                                                (nHint & HINT_HOTTRACK ? ID_EXTBKTABITEMHOTTRACK : ID_EXTBKTABITEM)];
 			if(!item->IGNORED) {
@@ -646,6 +607,8 @@ b_nonskinned:
                 TCITEM item = {0};
                 struct MessageWindowData *dat = 0;
                 HBRUSH bg;
+                StatusItems_t *s_item;
+                int item_id;
 
                 item.mask = TCIF_PARAM;
                 TabCtrl_GetItem(tabdat->hwnd, iItem, &item);
@@ -666,6 +629,9 @@ b_nonskinned:
                 }
                 rc.right--;
 
+                item_id = active ? ID_EXTBKTABITEMACTIVEBOTTOM : (nHint & HINT_HOTTRACK ? ID_EXTBKTABITEMHOTTRACKBOTTOM : ID_EXTBKTABITEMBOTTOM);
+                s_item = &StatusItems[item_id];
+
                 pt[0].x = rc.left; pt[0].y = rc.top - (active ? 1 : 0);
                 if(active || rc.left < 10) {
                     pt[1].x = rc.left + 10; pt[1].y = rc.bottom - 4;
@@ -677,7 +643,14 @@ b_nonskinned:
                 pt[3].x = rc.right; pt[3].y = rc.bottom;
                 pt[4].x = rc.right; pt[4].y = rc.top - (active ? 1 : 0);
                 rgn = CreatePolygonRgn(pt, 5, WINDING);
-                if(dat) {
+                if(!s_item->IGNORED) {
+                    if(active)
+                        rc.top--;
+                    SelectClipRgn(dc, rgn);
+                    DrawAlpha(dc, &rc, s_item->COLOR, s_item->ALPHA, s_item->COLOR2, s_item->COLOR2_TRANSPARENT, s_item->GRADIENT,
+                              s_item->CORNER, s_item->BORDERSTYLE, s_item->imageItem);
+                    SelectClipRgn(dc, 0);
+                } else if(dat) {
                     if(dat->mayFlashTab == TRUE)
                         bg = myGlobals.tabConfig.m_hBrushUnread;
                     else if(nHint & HINT_ACTIVE_ITEM)
@@ -688,10 +661,10 @@ b_nonskinned:
                         bg = myGlobals.tabConfig.m_hBrushDefault;
                     FillRgn(dc, rgn, bg);
                 }
-                SelectObject(dc, myGlobals.tabConfig.m_hPenShadow);
+                SelectObject(dc, myGlobals.tabConfig.m_hPenStyledDark);
                 if(active || rc.left < 10) {
-                    DrawWuLine(dc, pt[0].x, pt[0].y, pt[1].x, pt[1].y, GetSysColor(COLOR_3DDKSHADOW));
-                    DrawWuLine(dc, pt[1].x, pt[1].y, pt[2].x, pt[2].y, GetSysColor(COLOR_3DDKSHADOW));
+                    DrawWuLine(dc, pt[0].x, pt[0].y, pt[1].x, pt[1].y, myGlobals.tabConfig.colors[9]);
+                    DrawWuLine(dc, pt[1].x, pt[1].y, pt[2].x, pt[2].y, myGlobals.tabConfig.colors[9]);
                     /*
                     short basecolor;
                     COLORREF clr = GetSysColor(COLOR_3DDKSHADOW);
@@ -711,7 +684,7 @@ b_nonskinned:
                 LineTo(dc, pt[3].x, pt[3].y);
                 LineTo(dc, pt[4].x, pt[4].y - 1);
 
-                SelectObject(dc, myGlobals.tabConfig.m_hPenLight);
+                SelectObject(dc, myGlobals.tabConfig.m_hPenStyledLight);
                 MoveToEx(dc, pt[4].x - 1, pt[4].y, &pts);
                 LineTo(dc, pt[3].x - 1, pt[3].y - 1);
                 LineTo(dc, pt[2].x, pt[2].y - 1);
@@ -723,8 +696,8 @@ b_nonskinned:
                     DrawWuLineBW(dc, pt[2].x, pt[2].y - 1, pt[1].x, pt[1].y - 1, basecolor, 256, 8);
                     DrawWuLineBW(dc, pt[1].x, pt[1].y - 1, pt[0].x + 1, pt[0].y, basecolor, 256, 8);
                     */
-                    DrawWuLine(dc, pt[2].x, pt[2].y - 1, pt[1].x, pt[1].y - 1, GetSysColor(COLOR_3DHILIGHT));
-                    DrawWuLine(dc, pt[1].x, pt[1].y - 1, pt[0].x + 1, pt[0].y, GetSysColor(COLOR_3DHILIGHT));
+                    DrawWuLine(dc, pt[2].x, pt[2].y - 1, pt[1].x + 1, pt[1].y - 1, myGlobals.tabConfig.colors[8]);
+                    DrawWuLine(dc, pt[1].x + 1, pt[1].y - 1, pt[0].x + 1, pt[0].y, myGlobals.tabConfig.colors[8]);
                     //LineTo(dc, pt[1].x, pt[1].y - 1);
                     //LineTo(dc, pt[0].x + 1, pt[0].y);
                 }
@@ -757,6 +730,8 @@ b_nonskinned:
                 struct MessageWindowData *dat = 0;
                 HBRUSH bg;
                 LONG bendPoint;
+                StatusItems_t *s_item;
+                int item_id;
 
                 item.mask = TCIF_PARAM;
                 TabCtrl_GetItem(tabdat->hwnd, iItem, &item);
@@ -769,6 +744,9 @@ b_nonskinned:
 
                 if(active)
                     rc.top++;
+
+                item_id = active ? ID_EXTBKTABITEMACTIVE : (nHint & HINT_HOTTRACK ? ID_EXTBKTABITEMHOTTRACK : ID_EXTBKTABITEM);
+                s_item = &StatusItems[item_id];
 
                 rc.right--;
 
@@ -785,7 +763,14 @@ b_nonskinned:
                 pt[3].x = rc.right; pt[3].y = rc.top;
                 pt[4].x = rc.right; pt[4].y = rc.bottom + 1;
                 rgn = CreatePolygonRgn(pt, 5, WINDING);
-                if(dat) {
+                if(!s_item->IGNORED) {
+                    if(active)
+                        rc.bottom++;
+                    SelectClipRgn(dc, rgn);
+                    DrawAlpha(dc, &rc, s_item->COLOR, s_item->ALPHA, s_item->COLOR2, s_item->COLOR2_TRANSPARENT, s_item->GRADIENT,
+                              s_item->CORNER, s_item->BORDERSTYLE, s_item->imageItem);
+                    SelectClipRgn(dc, 0);
+                } else if(dat) {
                     if(dat->mayFlashTab == TRUE)
                         bg = myGlobals.tabConfig.m_hBrushUnread;
                     else if(nHint & HINT_ACTIVE_ITEM)
@@ -796,13 +781,13 @@ b_nonskinned:
                         bg = myGlobals.tabConfig.m_hBrushDefault;
                     FillRgn(dc, rgn, bg);
                 }
-                SelectObject(dc, myGlobals.tabConfig.m_hPenItemShadow);
+                SelectObject(dc, myGlobals.tabConfig.m_hPenStyledDark);
                 if(active || rc.left < 10) {
                     //MoveToEx(dc, pt[0].x, pt[0].y - (active ? 1 : 0), &pts);
                     //LineTo(dc, pt[1].x, pt[1].y);
                     //LineTo(dc, pt[2].x, pt[2].y);
-                    DrawWuLine(dc, pt[0].x, pt[0].y - (active ? 1 : 0), pt[1].x, pt[1].y, GetSysColor(COLOR_3DSHADOW));
-                    DrawWuLine(dc, pt[1].x, pt[1].y, pt[2].x, pt[2].y, GetSysColor(COLOR_3DSHADOW));
+                    DrawWuLine(dc, pt[0].x, pt[0].y - (active ? 1 : 0), pt[1].x, pt[1].y, myGlobals.tabConfig.colors[9]);
+                    DrawWuLine(dc, pt[1].x, pt[1].y, pt[2].x, pt[2].y, myGlobals.tabConfig.colors[9]);
                     MoveToEx(dc, pt[2].x, pt[2].y, &pts);
                 }
                 else {
@@ -812,15 +797,15 @@ b_nonskinned:
                 LineTo(dc, pt[3].x, pt[3].y);
                 LineTo(dc, pt[4].x, pt[4].y);
 
-                SelectObject(dc, myGlobals.tabConfig.m_hPenLight);
+                SelectObject(dc, myGlobals.tabConfig.m_hPenStyledLight);
                 MoveToEx(dc, pt[4].x - 1, pt[4].y - 1, &pts);
                 LineTo(dc, pt[3].x - 1, pt[3].y + 1);
                 LineTo(dc, pt[2].x, pt[2].y + 1);
                 if(active || rc.left < 10) {
                     //LineTo(dc, pt[1].x, pt[1].y + 1);
                     //LineTo(dc, pt[0].x, pt[0].y);
-                    DrawWuLine(dc, pt[2].x, pt[2].y + 1, pt[1].x, pt[1].y + 1, GetSysColor(COLOR_3DHILIGHT));
-                    DrawWuLine(dc, pt[1].x, pt[1].y + 1, pt[0].x, pt[0].y, GetSysColor(COLOR_3DHILIGHT));
+                    DrawWuLine(dc, pt[2].x, pt[2].y + 1, pt[1].x + 1, pt[1].y + 1, myGlobals.tabConfig.colors[8]);
+                    DrawWuLine(dc, pt[1].x + 1, pt[1].y + 1, pt[0].x + 1, pt[0].y, myGlobals.tabConfig.colors[8]);
                 }
                 else
                     LineTo(dc, pt[1].x, pt[1].y + 1);
@@ -1055,6 +1040,15 @@ static LRESULT CALLBACK TabControlSubclassProc(HWND hwnd, UINT msg, WPARAM wPara
                 else if(tabdat->m_moderntabs)
                     InvalidateRect(hwnd, NULL, FALSE);
                 break;
+            }
+        case EM_REFRESHWITHOUTCLIP:
+            if(TabCtrl_GetItemCount(hwnd) > 1)
+                return 0;
+            else {
+                tabdat->bRefreshWithoutClip = TRUE;
+                RedrawWindow(hwnd, NULL, NULL, RDW_UPDATENOW | RDW_NOCHILDREN | RDW_INVALIDATE);
+                tabdat->bRefreshWithoutClip = FALSE;
+                return 0;
             }
         case TCM_GETITEMRECT:
             {
@@ -1325,6 +1319,8 @@ static LRESULT CALLBACK TabControlSubclassProc(HWND hwnd, UINT msg, WPARAM wPara
              * visual style support
              */
             
+            if(!tabdat->bRefreshWithoutClip)
+                ExcludeClipRect(hdc, rctClip.left, rctClip.top, rctClip.right, rctClip.bottom);
             if(!bClassicDraw && IntersectRect(&rectTemp, &rctPage, &ps.rcPaint)) {
                 RECT rcClient = rctPage;
                 if(dwStyle & TCS_BOTTOM) {
@@ -1333,7 +1329,6 @@ static LRESULT CALLBACK TabControlSubclassProc(HWND hwnd, UINT msg, WPARAM wPara
                 }
                 else
                     rcClient.top = rctPage.top;
-                //ExcludeClipRect(hdc, rctClip.left, rctClip.top, rctClip.right, rctClip.bottom);
                 DrawThemesXpTabItem(hdc, -1, &rcClient, uiFlags, tabdat);	// TABP_PANE=9,0,'TAB'
             }
             else {
@@ -1484,7 +1479,8 @@ page_done:
              * finally, bitblt the contents of the memory dc to the real dc
              */
 			//if(!tabdat->pContainer->bSkinned)
-			ExcludeClipRect(hdcreal, rctClip.left, rctClip.top, rctClip.right, rctClip.bottom);
+            if(!tabdat->bRefreshWithoutClip)
+                ExcludeClipRect(hdcreal, rctClip.left, rctClip.top, rctClip.right, rctClip.bottom);
             BitBlt(hdcreal, 0, 0, cx, cy, hdc, 0, 0, SRCCOPY);
             SelectObject(hdc, bmpOld);
             DeleteObject(bmpMem);
@@ -1544,7 +1540,8 @@ void ReloadTabConfig()
     myGlobals.tabConfig.m_fixedwidth = DBGetContactSettingDword(NULL, SRMSGMOD_T, "fixedwidth", FIXED_TAB_SIZE);
 
     myGlobals.tabConfig.m_fixedwidth = (myGlobals.tabConfig.m_fixedwidth < 60 ? 60 : myGlobals.tabConfig.m_fixedwidth);
-
+    myGlobals.tabConfig.m_hPenStyledLight = CreatePen(PS_SOLID, 1, myGlobals.tabConfig.colors[8]);
+    myGlobals.tabConfig.m_hPenStyledDark = CreatePen(PS_SOLID, 1, myGlobals.tabConfig.colors[9]);
 }
 
 void FreeTabConfig()
@@ -1557,6 +1554,8 @@ void FreeTabConfig()
     DeleteObject(myGlobals.tabConfig.m_hBrushDefault);
     DeleteObject(myGlobals.tabConfig.m_hBrushUnread);
     DeleteObject(myGlobals.tabConfig.m_hBrushHottrack);
+    DeleteObject(myGlobals.tabConfig.m_hPenStyledDark);
+    DeleteObject(myGlobals.tabConfig.m_hPenStyledLight);
 }
 
 /*
@@ -1678,6 +1677,11 @@ BOOL CALLBACK DlgProcTabConfig(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPa
                             DBWriteContactSettingDword(NULL, SRMSGMOD_T, "fixedwidth", fixedWidth);
                             DBWriteContactSettingByte(NULL, SRMSGMOD_T, "moderntabs", IsDlgButtonChecked(hwndDlg, IDC_STYLEDTABS) ? 1 : 0);
                             FreeTabConfig();
+                            if((COLORREF)SendDlgItemMessage(hwndDlg, IDC_LIGHTSHADOW, CPM_GETCOLOUR, 0, 0) == RGB(255, 0, 255))
+                                DBDeleteContactSetting(NULL, SRMSGMOD_T, "tab_lightshadow");
+                            if((COLORREF)SendDlgItemMessage(hwndDlg, IDC_DARKSHADOW, CPM_GETCOLOUR, 0, 0) == RGB(255, 0, 255))
+                                DBDeleteContactSetting(NULL, SRMSGMOD_T, "tab_darkshadow");
+
                             ReloadTabConfig();
                             while(pContainer) {
                                 TabCtrl_SetPadding(GetDlgItem(pContainer->hwnd, IDC_MSGTABS), GetDlgItemInt(hwndDlg, IDC_HTABPADDING, NULL, FALSE), GetDlgItemInt(hwndDlg, IDC_TABPADDING, NULL, FALSE));

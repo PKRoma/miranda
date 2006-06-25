@@ -37,6 +37,7 @@ extern HICON		hIcons[30];
 extern struct		CREOleCallback reOleCallback;
 extern HMENU		g_hMenu;
 extern int          g_sessionshutdown;
+extern char *szWarnClose;
 
 extern WNDPROC OldSplitterProc;
 static WNDPROC OldMessageProc;
@@ -969,7 +970,10 @@ static BOOL CALLBACK FilterWndProc(HWND hwndDlg,UINT uMsg,WPARAM wParam,LPARAM l
 					iFlags |= GC_EVENT_REMOVESTATUS;
 
                 if(si) {
-                    DBWriteContactSettingDword(NULL, "Chat", "FilterFlags", iFlags);
+                    if(iFlags == 0)
+                        DBDeleteContactSetting(si->hContact, "Chat", "FilterFlags");
+                    else
+                        DBWriteContactSettingDword(si->hContact, "Chat", "FilterFlags", iFlags);
                     SendMessage(si->hWnd, GC_CHANGEFILTERFLAG, 0, (LPARAM)iFlags);
                     if(si->bFilterEnabled)
                         SendMessage(si->hWnd, GC_REDRAWLOG, 0, 0);
@@ -2490,6 +2494,8 @@ LABEL_SHOWWINDOW:
 	
 					SendDlgItemMessage(hwndDlg,IDC_SHOWNICKLIST,BM_SETIMAGE,IMAGE_ICON,(LPARAM)LoadIconEx(si->bNicklistEnabled ? IDI_HIDENICKLIST : IDI_SHOWNICKLIST, si->bNicklistEnabled ? "hidenicklist" : "shownicklist", 0, 0));
 					SendMessage(hwndDlg, WM_SIZE, 0, 0);
+                    if(dat->pContainer->bSkinned)
+                        InvalidateRect(hwndDlg, NULL, TRUE);
                     PostMessage(hwndDlg, DM_SCROLLLOGTOBOTTOM, 0, 0);
 				}break;
                 
@@ -2695,8 +2701,8 @@ LABEL_SHOWWINDOW:
                 RECT rcClient, rcWindow, rc;
                 StatusItems_t *item;
                 POINT pt;
-                UINT item_ids[3] = {ID_EXTBKHISTORY, ID_EXTBKINPUTAREA, ID_EXTBKUSERLIST};
-                UINT ctl_ids[3] = {IDC_CHAT_LOG, IDC_CHAT_MESSAGE, IDC_LIST};
+                UINT item_ids[3] = {ID_EXTBKUSERLIST, ID_EXTBKHISTORY, ID_EXTBKINPUTAREA};
+                UINT ctl_ids[3] = {IDC_LIST, IDC_CHAT_LOG, IDC_CHAT_MESSAGE};
                 int  i;
 
                 HDC hdc = BeginPaint(hwndDlg, &ps);
@@ -2794,7 +2800,7 @@ LABEL_SHOWWINDOW:
             }
             if(lParam) {
                 if (myGlobals.m_WarnOnClose) {
-                    if (MessageBoxA(dat->pContainer->hwnd, Translate("Warning"), "Miranda", MB_YESNO | MB_ICONQUESTION) == IDNO) {
+                    if (MessageBox(dat->pContainer->hwnd, TranslateTS(szWarnClose), _T("Miranda"), MB_YESNO | MB_ICONQUESTION) == IDNO) {
                         return TRUE;
                     }
                 }

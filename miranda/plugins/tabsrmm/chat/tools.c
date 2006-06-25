@@ -526,9 +526,11 @@ flash_and_switch:
     if(si->hWnd) {
         if(dat) {
             HWND hwndTab = GetParent(si->hWnd);
+            BOOL bForcedIcon = (hNotifyIcon == hIcons[ICON_HIGHLIGHT] || hNotifyIcon == hIcons[ICON_MESSAGE]);
 
-            if(IsIconic(dat->pContainer->hwnd) || 1) { //dat->pContainer->hwndActive != si->hWnd) {
-                
+            //if(IsIconic(dat->pContainer->hwnd) || 1) { //dat->pContainer->hwndActive != si->hWnd) {
+            if(iEvent & g_Settings.dwTrayIconFlags || bForcedIcon) { //dat->pContainer->hwndActive != si->hWnd) {
+               
                 if(hNotifyIcon == hIcons[ICON_HIGHLIGHT])
                     dat->iFlashIcon = hNotifyIcon;
                 else {
@@ -561,7 +563,7 @@ flash_and_switch:
                 if (!(dat->pContainer->dwFlags & CNT_NOFLASH))
                     FlashContainer(dat->pContainer, 1, 0);
             }
-            if(hNotifyIcon && bInactive) {
+            if(hNotifyIcon && bInactive && (iEvent && g_Settings.dwTrayIconFlags || bForcedIcon)) {
                 HICON hIcon;
                 
                 if(/* !bActiveTab && */bMustFlash)
@@ -915,11 +917,6 @@ BOOL LogToFile(SESSION_INFO * si, GCEVENT * gce)
 
 	return FALSE;
 }
-
-
-
-
-
 
 UINT CreateGCMenu(HWND hwndDlg, HMENU *hMenu, int iIndex, POINT pt, SESSION_INFO * si, char * pszUID, char * pszWordText)
 {

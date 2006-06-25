@@ -478,9 +478,12 @@
 #define IDC_BKGUSEWINCOLORS2            1392
 #define IDC_HELPTEXT                    1392
 #define IDC_TITLEFORMAT                 1393
+#define IDC_LIGHTSHADOW                 1393
 #define IDC_EDIT1                       1394
 #define IDC_DEFAULTTITLEFORMAT          1394
 #define IDC_THEME                       1394
+#define IDC_BKGCOLORHOTTRACK3           1394
+#define IDC_DARKSHADOW                  1394
 #define IDC_CHECK3                      1395
 #define IDC_INFOPANEL                   1395
 #define IDC_SUPPORT                     1396
