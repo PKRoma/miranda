@@ -1269,16 +1269,29 @@ void JabberIqResultGetAvatar( XmlNode *iqNode, void *userdata )
 	HANDLE hContact = JabberHContactFromJID( from );
 	if ( hContact == NULL )
 		return;
+	XmlNode* n = NULL;
+	TCHAR* mimeType = NULL;
+	if (JGetByte(hContact,"AvatarXVcard",0)){
+		XmlNode *vCard = JabberXmlGetChild( iqNode, "vCard" );
+		if (vCard == NULL) return;
+		vCard = JabberXmlGetChild( vCard, "PHOTO" );
+		if (vCard == NULL) return;
+		XmlNode *typeNode = JabberXmlGetChild( vCard, "TYPE" );
+		if (typeNode != NULL) mimeType = typeNode->text;
+		n = JabberXmlGetChild( vCard, "BINVAL" );
+	}else {
+		XmlNode *queryNode = JabberXmlGetChild( iqNode, "query" );
+		if ( queryNode == NULL )
+			return;
 
-	XmlNode *queryNode = JabberXmlGetChild( iqNode, "query" );
-	if ( queryNode == NULL )
-		return;
+		TCHAR* xmlns = JabberXmlGetAttrValue( queryNode, "xmlns" );
+		if ( lstrcmp( xmlns, _T("jabber:iq:avatar")))
+			return;
 
-	TCHAR* xmlns = JabberXmlGetAttrValue( queryNode, "xmlns" );
-	if ( lstrcmp( xmlns, _T("jabber:iq:avatar")))
-		return;
+		mimeType = JabberXmlGetAttrValue( n, "mimetype" );
 
-	XmlNode* n = JabberXmlGetChild( queryNode, "data" );
+		n = JabberXmlGetChild( queryNode, "data" );
+	}
 	if ( n == NULL )
 		return;
 
@@ -1286,7 +1299,6 @@ void JabberIqResultGetAvatar( XmlNode *iqNode, void *userdata )
 	char* body = JabberBase64Decode( n->text, &resultLen );
 
 	int pictureType;
-	TCHAR* mimeType = JabberXmlGetAttrValue( n, "mimetype" );
 	if ( mimeType != NULL ) {
 		if ( !lstrcmp( mimeType, _T("image/jpeg")))     pictureType = PA_FORMAT_JPEG;
 		else if ( !lstrcmp( mimeType, _T("image/png"))) pictureType = PA_FORMAT_PNG;
@@ -1332,6 +1344,7 @@ LBL_ErrFormat:
 		fwrite( body, resultLen, 1, out );
 		fclose( out );
 		JSendBroadcast( hContact, ACKTYPE_AVATAR, ACKRESULT_SUCCESS, HANDLE( &AI ), NULL );
+		JabberLog("Broadcast new avatar: %s",AI.filename);
 	}
 	else JSendBroadcast( hContact, ACKTYPE_AVATAR, ACKRESULT_FAILED, HANDLE( &AI ), NULL );
 
