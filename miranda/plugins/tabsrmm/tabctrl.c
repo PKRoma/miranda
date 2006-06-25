@@ -43,6 +43,7 @@ extern BOOL (WINAPI *MyEnableThemeDialogTexture)(HANDLE, DWORD);
 static LRESULT CALLBACK TabControlSubclassProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam);
 extern LRESULT CALLBACK StatusBarSubclassProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam);
 extern void GetIconSize(HICON hIcon, int* sizeX, int* sizeY);
+extern void __fastcall IMG_RenderImageItem(HDC hdc, ImageItem *item, RECT *rc);
 
 HMODULE hUxTheme = 0;
 
@@ -943,8 +944,55 @@ static void DrawThemesXpTabItem(HDC pDC, int ixItem, RECT *rcItem, UINT uiFlag, 
         }
     }
     
-    if(bBody) 
-        DrawThemesPart(tabdat, dcMem, 9, 0, &rcMem);	// TABP_PANE id = 9 
+    /*
+     * body may be *large* so rotating the final image can be very slow.
+     * workaround: draw the skin item (tab pane) into a small dc, rotate this (small) image and render
+     * it to the final DC with the IMG_RenderItem() routine.
+     */
+
+    if(bBody) {
+        HDC hdcTemp = CreateCompatibleDC(pDC);
+        HBITMAP hbmTemp = CreateCompatibleBitmap(pDC, 100, 50);
+        HBITMAP hbmTempOld = SelectObject(hdcTemp, hbmTemp);
+        RECT rcTemp = {0};
+        ImageItem tempItem = {0};
+
+        rcTemp.right = 100;
+        rcTemp.bottom = 50;
+
+        bihOut->biWidth = 100;
+        bihOut->biHeight = 50;
+
+        nBmpWdtPS = DWordAlign(100 * 3);
+        nSzBuffPS = ((nBmpWdtPS * 50) / 8 + 2) * 8;
+
+        FillRect(hdcTemp, &rcTemp, GetSysColorBrush(COLOR_3DFACE));
+        DrawThemesPart(tabdat, hdcTemp, 9, 0, &rcTemp);	// TABP_PANE id = 9 
+        pcImg = (BYTE *)malloc(nSzBuffPS);
+        if(pcImg)	{									// get bits: 
+            GetDIBits(hdcTemp, hbmTemp, nStart, 50 - nLenSub, pcImg, &biOut, DIB_RGB_COLORS);
+            bihOut->biHeight = -50;
+            SetDIBits(hdcTemp, hbmTemp, nStart, 50 - nLenSub, pcImg, &biOut, DIB_RGB_COLORS);
+            free(pcImg);
+        }
+        tempItem.bBottom = tempItem.bLeft = tempItem.bTop = tempItem.bRight = 10;
+        tempItem.hdc = hdcTemp;
+        tempItem.hbm = hbmTemp;
+        tempItem.dwFlags = IMAGE_FLAG_DIVIDED | IMAGE_FILLSOLID;
+        tempItem.fillBrush = GetSysColorBrush(COLOR_3DFACE);
+        tempItem.bf.SourceConstantAlpha = 255;
+        tempItem.inner_height = 30; tempItem.inner_width = 80;
+        tempItem.height = 50; tempItem.width = 100;
+        IMG_RenderImageItem(pDC, &tempItem, rcItem);
+        SelectObject(hdcTemp, hbmTempOld);
+        DeleteObject(hbmTemp);
+        DeleteDC(hdcTemp);
+
+        SelectObject(dcMem, pBmpOld);
+        DeleteObject(bmpMem);
+        DeleteDC(dcMem);
+        return;
+    }
     else { 
         int iStateId = bSel ? 3 : (bHot ? 2 : 1);
         DrawThemesPart(tabdat, dcMem, rcItem->left < 20 ? 2 : 1, iStateId, &rcMem);

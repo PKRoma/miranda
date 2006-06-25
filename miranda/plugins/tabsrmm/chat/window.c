@@ -1779,10 +1779,37 @@ BOOL CALLBACK RoomWndProc(HWND hwndDlg,UINT uMsg,WPARAM wParam,LPARAM lParam)
 					hoFont = (HFONT) SelectObject(dis->hDC, hFont);
 					SetBkMode(dis->hDC, TRANSPARENT);
 
-					if (dis->itemAction == ODA_FOCUS && dis->itemState & ODS_SELECTED)
-						FillRect(dis->hDC, &dis->rcItem, g_Settings.SelectionBGBrush);
-					else //if(dis->itemState & ODS_INACTIVE)
-						FillRect(dis->hDC, &dis->rcItem, hListBkgBrush);
+					if (dis->itemAction == ODA_FOCUS && dis->itemState & ODS_SELECTED) {
+                        FillRect(dis->hDC, &dis->rcItem, g_Settings.SelectionBGBrush);
+                        SetTextColor(dis->hDC, g_Settings.nickColors[6]);
+                    }
+					else {
+                        FillRect(dis->hDC, &dis->rcItem, hListBkgBrush);
+                        if(g_Settings.ColorizeNicks && szIndicator != 0) {
+                            COLORREF clr;
+
+                            switch(szIndicator) {
+                                case '@':
+                                    clr = g_Settings.nickColors[0];
+                                    break;
+                                case '%':
+                                    clr = g_Settings.nickColors[1];
+                                    break;
+                                case '+':
+                                    clr = g_Settings.nickColors[2];
+                                    break;
+                                case '!':
+                                    clr = g_Settings.nickColors[3];
+                                    break;
+                                case '*':
+                                    clr = g_Settings.nickColors[4];
+                                    break;
+                            }
+                            SetTextColor(dis->hDC, clr);
+                        }
+                        else 
+                            SetTextColor(dis->hDC, ui->iStatusEx == 0?g_Settings.crUserListColor:g_Settings.crUserListHeadingsColor);
+                    }
 
                     /*
 					FillRect(dis->hDC, &dis->rcItem, hListBkgBrush);
@@ -1793,30 +1820,6 @@ BOOL CALLBACK RoomWndProc(HWND hwndDlg,UINT uMsg,WPARAM wParam,LPARAM lParam)
 						FrameRect(dis->hDC, &dis->rcItem, hListBkgBrush);
 					*/
 
-                    if(g_Settings.ColorizeNicks && szIndicator != 0) {
-                        COLORREF clr;
-                        
-                        switch(szIndicator) {
-                            case '@':
-                                clr = g_Settings.nickColors[0];
-                                break;
-                            case '%':
-                                clr = g_Settings.nickColors[1];
-                                break;
-                            case '+':
-                                clr = g_Settings.nickColors[2];
-                                break;
-                            case '!':
-                                clr = g_Settings.nickColors[3];
-                                break;
-                            case '*':
-                                clr = g_Settings.nickColors[4];
-                                break;
-                        }
-                        SetTextColor(dis->hDC, clr);
-                    }
-                    else 
-                        SetTextColor(dis->hDC, ui->iStatusEx == 0?g_Settings.crUserListColor:g_Settings.crUserListHeadingsColor);
                     
                     if(g_Settings.ClassicIndicators) {
                         char szTemp[3];

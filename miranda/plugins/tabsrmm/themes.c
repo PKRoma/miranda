@@ -311,6 +311,8 @@ void WriteThemeToINI(const char *szIniFilename, struct MessageWindowData *dat)
         else
             WritePrivateProfileStringA("Custom Colors", szTemp, _itoa(dat->theme.custom_colors[i], szBuf, 10), szIniFilename);
     }
+    for(i = 0; i <= 6; i++)
+        WritePrivateProfileStringA("Nick Colors", _itoa(i, szBuf, 10), _itoa(g_Settings.nickColors[i], szTemp, 10), szIniFilename);
 }
 
 void ReadThemeFromINI(const char *szIniFilename, struct MessageWindowData *dat, int noAdvanced, DWORD dwFlags)
@@ -378,6 +380,8 @@ void ReadThemeFromINI(const char *szIniFilename, struct MessageWindowData *dat, 
         DBWriteContactSettingDword(NULL, FONTMODULE, "ipfieldsbg", 
                                    GetPrivateProfileIntA("Custom Colors", "InfopanelBG", GetSysColor(COLOR_3DFACE), szIniFilename));
         if(dwFlags & THEME_READ_FONTS) {
+            COLORREF defclr;
+
             DBWriteContactSettingDword(NULL, FONTMODULE, SRMSGSET_BKGCOLOUR, GetPrivateProfileIntA("Message Log", "BackgroundColor", def, szIniFilename));
             DBWriteContactSettingDword(NULL, "Chat", "ColorLogBG", GetPrivateProfileIntA("Message Log", "BackgroundColor", def, szIniFilename));
             DBWriteContactSettingDword(NULL, FONTMODULE, "inbg", GetPrivateProfileIntA("Message Log", "IncomingBG", def, szIniFilename));
@@ -399,6 +403,17 @@ void ReadThemeFromINI(const char *szIniFilename, struct MessageWindowData *dat, 
                     DBWriteContactSettingDword(NULL, SRMSGMOD_T, szTemp, GetPrivateProfileIntA("Custom Colors", szTemp, RGB(224, 224, 224), szIniFilename));
                 else
                     dat->theme.custom_colors[i] = GetPrivateProfileIntA("Custom Colors", szTemp, RGB(224, 224, 224), szIniFilename);
+            }
+            for(i = 0; i <= 6; i++) {
+                if(i == 5)
+                    defclr = GetSysColor(COLOR_HIGHLIGHT);
+                else if(i == 6)
+                    defclr = GetSysColor(COLOR_HIGHLIGHTTEXT);
+                else
+                    defclr = g_Settings.crUserListColor;
+                g_Settings.nickColors[i] = GetPrivateProfileIntA("Nick Colors", _itoa(i, szTemp, 10), defclr, szIniFilename);
+                sprintf(szTemp, "NickColor%d", i);
+                DBWriteContactSettingDword(NULL, "Chat", szTemp, g_Settings.nickColors[i]);
             }
         }
     }
