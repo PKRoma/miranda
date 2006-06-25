@@ -624,18 +624,22 @@ static int JabberGetAvatarInfo(WPARAM wParam,LPARAM lParam)
 			JABBER_LIST_ITEM* item = JabberListGetItemPtr( LIST_ROSTER, dbv.ptszVal );
 			if ( item != NULL ) {
 				TCHAR szJid[ 512 ];
-				if ( item->resourceCount != NULL )
-					mir_sntprintf( szJid, SIZEOF( szJid ), _T("%s/%s"), dbv.ptszVal, item->resource[0].resourceName );
-				else
+				BOOL isXVcard = JGetByte(AI->hContact,"AvatarXVcard",0);
+				if ( (item->resourceCount != NULL) & (!isXVcard)){
+					TCHAR *bestResName = JabberListGetBestClientResourceNamePtr(dbv.ptszVal);
+					mir_sntprintf( szJid, SIZEOF( szJid ), bestResName?_T("%s/%s"):_T("%s"), dbv.ptszVal, bestResName );
+				}else
 					lstrcpyn( szJid, dbv.ptszVal, SIZEOF( szJid ));
 
-				JabberLog( "Rereading avatar for " TCHAR_STR_PARAM, dbv.ptszVal );
+				JabberLog( "Rereading %s for " TCHAR_STR_PARAM, isXVcard?"vcard-temp":"jabber:iq:avatar", szJid );
 
 				int iqId = JabberSerialNext();
 				JabberIqAdd( iqId, IQ_PROC_NONE, JabberIqResultGetAvatar );
 
 				XmlNodeIq iq( "get", iqId, szJid );
-				XmlNode* query = iq.addQuery( "jabber:iq:avatar" );
+				if (isXVcard) {
+					XmlNode* vs = iq.addChild( "vCard" ); vs->addAttr( "xmlns", "vcard-temp" );
+				} else XmlNode* query = iq.addQuery( isXVcard?"":"jabber:iq:avatar" );
 				JabberSend( jabberThreadInfo->s, iq );
 
 				JFreeVariant( &dbv );
