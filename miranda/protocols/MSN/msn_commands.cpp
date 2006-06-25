@@ -1712,6 +1712,8 @@ LBL_InvalidCommand:
 				strcpy( newThread->mServer, data.newServer );
 				newThread->mType = SERVER_NOTIFICATION;
 				newThread->mTrid = info->mTrid;
+				newThread->mIsMainThread = true;
+				info->mIsMainThread = false;
 
 				MSN_DebugLog( "Switching to notification server '%s'...", data.newServer );
 				newThread->startThread(( pThreadFunc )MSNServerThread );

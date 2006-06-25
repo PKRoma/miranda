@@ -147,9 +147,9 @@ char* SSL_WinInet::getSslResult( char* parUrl, char* parAuthInfo )
 		INTERNET_FLAG_IGNORE_REDIRECT_TO_HTTP |
 		INTERNET_FLAG_IGNORE_CERT_CN_INVALID |
 		INTERNET_FLAG_IGNORE_CERT_DATE_INVALID |
-      INTERNET_FLAG_KEEP_CONNECTION |
+		INTERNET_FLAG_KEEP_CONNECTION |
 		INTERNET_FLAG_NO_AUTO_REDIRECT |
-      INTERNET_FLAG_NO_CACHE_WRITE |
+		INTERNET_FLAG_NO_CACHE_WRITE |
 		INTERNET_FLAG_NO_COOKIES |
 		INTERNET_FLAG_RELOAD |
 		INTERNET_FLAG_SECURE;
@@ -179,7 +179,7 @@ char* SSL_WinInet::getSslResult( char* parUrl, char* parAuthInfo )
 				return NULL;
 			}
 
-			mir_snprintf( tBuffer, SSL_BUF_SIZE, "%s:%d", szProxy, tPortNumber );
+			mir_snprintf( tBuffer, SSL_BUF_SIZE, "https=http://%s:%d", szProxy, tPortNumber );
 
 			tNetHandle = f_InternetOpen( "MSMSGS", INTERNET_OPEN_TYPE_PROXY, tBuffer, NULL, tInternetFlags );
 		}
@@ -218,15 +218,20 @@ char* SSL_WinInet::getSslResult( char* parUrl, char* parAuthInfo )
 
 	char* tSslAnswer = NULL;
 
-	HINTERNET tUrlHandle = f_InternetConnect( tNetHandle, parUrl, INTERNET_DEFAULT_HTTPS_PORT, "", "", INTERNET_SERVICE_HTTP, INTERNET_FLAG_NO_AUTO_REDIRECT + INTERNET_FLAG_NO_COOKIES, 0 );
+	HINTERNET tUrlHandle = f_InternetConnect( tNetHandle, parUrl, INTERNET_DEFAULT_HTTPS_PORT, "", "", INTERNET_SERVICE_HTTP, INTERNET_FLAG_NO_AUTO_REDIRECT | INTERNET_FLAG_NO_COOKIES, 0 );
 	if ( tUrlHandle != NULL ) {
 		HINTERNET tRequest = f_HttpOpenRequest( tUrlHandle, "GET", tObjectName, NULL, "", NULL, tFlags, NULL );
 		if ( tRequest != NULL ) {
 			DWORD tBufSize;
 			bool  bProxyParamsSubstituted = false;
 
+			unsigned tm = 3000;
+			f_InternetSetOption( tUrlHandle, INTERNET_OPTION_CONNECT_TIMEOUT, &tm, sizeof(tm));
+			f_InternetSetOption( tUrlHandle, INTERNET_OPTION_SEND_TIMEOUT, &tm, sizeof(tm));
+			f_InternetSetOption( tUrlHandle, INTERNET_OPTION_RECEIVE_TIMEOUT, &tm, sizeof(tm));
+ 
 			if ( tUsesProxy )
-				applyProxy( tRequest );
+				applyProxy( tUrlHandle );
 
 LBL_Restart:
 			MSN_DebugLog( "Sending request..." );
@@ -425,11 +430,39 @@ char* SSL_OpenSsl::getSslResult( char* parUrl, char* parAuthInfo )
 	}
 	*path++ = 0;
 
+	NETLIBUSERSETTINGS nls = { 0 };
+	nls.cbSize = sizeof( nls );
+	MSN_CallService(MS_NETLIB_GETUSERSETTINGS,WPARAM(hNetlibUser),LPARAM(&nls));
+	int cpType = nls.proxyType;
+
+	if (cpType == PROXYTYPE_HTTP)
+	{
+		nls.proxyType = PROXYTYPE_HTTPS;
+		nls.szProxyServer = NEWSTR_ALLOCA(nls.szProxyServer);
+		nls.szIncomingPorts = NEWSTR_ALLOCA(nls.szIncomingPorts);
+		nls.szOutgoingPorts = NEWSTR_ALLOCA(nls.szOutgoingPorts);
+		nls.szProxyAuthPassword = NEWSTR_ALLOCA(nls.szProxyAuthPassword);
+		nls.szProxyAuthUser = NEWSTR_ALLOCA(nls.szProxyAuthUser);
+		MSN_CallService(MS_NETLIB_SETUSERSETTINGS,WPARAM(hNetlibUser),LPARAM(&nls));
+	}
+
 	NETLIBOPENCONNECTION tConn = { 0 };
 	tConn.cbSize = sizeof( tConn );
 	tConn.szHost = url+8;
 	tConn.wPort = 443;
 	HANDLE h = ( HANDLE )MSN_CallService( MS_NETLIB_OPENCONNECTION, ( WPARAM )hNetlibUser, ( LPARAM )&tConn );
+	
+	if (cpType == PROXYTYPE_HTTP)
+	{
+		nls.proxyType = PROXYTYPE_HTTP;
+		nls.szProxyServer = NEWSTR_ALLOCA(nls.szProxyServer);
+		nls.szIncomingPorts = NEWSTR_ALLOCA(nls.szIncomingPorts);
+		nls.szOutgoingPorts = NEWSTR_ALLOCA(nls.szOutgoingPorts);
+		nls.szProxyAuthPassword = NEWSTR_ALLOCA(nls.szProxyAuthPassword);
+		nls.szProxyAuthUser = NEWSTR_ALLOCA(nls.szProxyAuthUser);
+		MSN_CallService(MS_NETLIB_SETUSERSETTINGS,WPARAM(hNetlibUser),LPARAM(&nls));
+	}
+	
 	if ( h == NULL )
 		return NULL;
 
@@ -604,6 +637,7 @@ LBL_Exit:
 			if (( p = strchr( tResult, '\r' )) != NULL )
 				*p = 0;
 			strcpy(szPassportHost, tResult);
+			MSN_DebugLog( "Redirected to '%s'", tResult );
 			free( tResult );
 		}
 		else if (status != 200) 
