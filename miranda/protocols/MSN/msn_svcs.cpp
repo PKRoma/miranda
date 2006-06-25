@@ -1121,6 +1121,7 @@ static int MsnSetStatus( WPARAM wParam, LPARAM lParam )
 		newThread->mServer[ sizeof(newThread->mServer)-1 ] = 0;
 
 		newThread->mType = SERVER_DISPATCH;
+		newThread->mIsMainThread = true;
 		{	int oldMode = msnStatusMode;
 			msnStatusMode = ID_STATUS_CONNECTING;
 			MSN_SendBroadcast( NULL, ACKTYPE_STATUS, ACKRESULT_SUCCESS, ( HANDLE )oldMode, msnStatusMode );

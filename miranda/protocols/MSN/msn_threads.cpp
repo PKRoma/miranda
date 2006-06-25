@@ -144,11 +144,6 @@ void __cdecl MSNServerThread( ThreadData* info )
 		info->send( "VER MSNFTP\r\n", 12 );
 	}
 
-	if ( info->mType == SERVER_NOTIFICATION )
-		info->mIsMainThread = true;
-	else if ( info->mType == SERVER_DISPATCH && MyOptions.UseGateway )
-		info->mIsMainThread = true;
-
 	if ( info->mIsMainThread ) {
 		MSN_EnableMenuItems( TRUE );
 
@@ -426,6 +421,7 @@ ThreadData::ThreadData()
 	mUniqueID = MyInterlockedIncrement( &sttThreadID );
 	mGatewayTimeout = 2;
 	mWaitPeriod = 60;
+	mIsMainThread = false;
 }
 
 ThreadData::~ThreadData()
