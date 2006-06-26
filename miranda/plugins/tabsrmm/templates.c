@@ -47,26 +47,26 @@ char *TemplateNames[] = {
 };
     
 TemplateSet LTR_Default = { TRUE, 
-    _T("%I %S %N %D%n%S [%T]%|%M"),
-    _T("%I %S %N %D%n%S [%T]%|%M"),
-    _T("%I %S %N %D%n%S [%T]%|%M"),
-    _T("%I %S %N %D%n%S [%T]%|%M"),
-    _T("%S [%T]%|%M"),
-    _T("%S [%T]%|%M"),
-    _T("%I%S %D, %h:%m,%>%N%>%M%! %<"),
-    _T("%I%S %D, %h:%m:%s, %e%l%M"),
+    _T("%I %S %N  %D%n%S %fd[%T%fd]%|%M"),
+    _T("%I %S %N  %D%n%S %fd[%T%fd]%|%M"),
+    _T("%I %S %N  %D%n%S %fd[%T%fd]%|%M"),
+    _T("%I %S %N, %D%n%S %fd[%T%fd]%|%M"),
+    _T("%S %fd[%T%fd]%|%M"),
+    _T("%S %fd[%T%fd]%|%M"),
+    _T("%I%S %D, %T, %N %M%! "),
+    _T("%I%S %D, %T, %e%l%M"),
     "Default RTL"
 };
 
 TemplateSet RTL_Default = { TRUE, 
-    _T("%I %S %N %D%n%S [%T]%|%M"),
-    _T("%I %S %N %D%n%S [%T]%|%M"),
-    _T("%I %S %N %D%n%S [%T]%|%M"),
-    _T("%I %S %N %D%n%S [%T]%|%M"),
-    _T("%S [%T]%|%M"),
-    _T("%S [%T]%|%M"),
-    _T("%I%S %D, %h:%m,%>%N%>%M%! %<"),
-    _T("%I%S %D, %h:%m:%s, %e%l%M"),
+    _T("%I %S %N  %D%n%S %fd[%T%fd]%|%M"),
+    _T("%I %S %N  %D%n%S %fd[%T%fd]%|%M"),
+    _T("%I %S %N  %D%n%S %fd[%T%fd]%|%M"),
+    _T("%I %S %N  %D%n%S %fd[%T%fd]%|%M"),
+    _T("%S %fd[%T%fd]%|%M"),
+    _T("%S %fd[%T%fd]%|%M"),
+    _T("%I%S %D, %T, %N %M%! "),
+    _T("%I%S %D, %T, %e%l%M"),
     "Default RTL"
 };
 
@@ -107,15 +107,15 @@ void LoadDefaultTemplates()
     LTR_Active = LTR_Default;
     RTL_Active = RTL_Default;
 
-    if(!DBGetContactSettingByte(NULL, RTLTEMPLATES_MODULE, "setup", 0)) {
+    if(DBGetContactSettingByte(NULL, RTLTEMPLATES_MODULE, "setup", 0) < 2) {
         for(i = 0; i <= TMPL_ERRMSG; i++)
             DBWriteContactSettingTString(NULL, RTLTEMPLATES_MODULE, TemplateNames[i], RTL_Default.szTemplates[i]);
-        DBWriteContactSettingByte(NULL, RTLTEMPLATES_MODULE, "setup", 1);
+        DBWriteContactSettingByte(NULL, RTLTEMPLATES_MODULE, "setup", 2);
     }
-    if(!DBGetContactSettingByte(NULL, TEMPLATES_MODULE, "setup", 0)) {
+    if(DBGetContactSettingByte(NULL, TEMPLATES_MODULE, "setup", 0) < 2) {
         for(i = 0; i <= TMPL_ERRMSG; i++)
             DBWriteContactSettingTString(NULL, TEMPLATES_MODULE, TemplateNames[i], LTR_Default.szTemplates[i]);
-        DBWriteContactSettingByte(NULL, TEMPLATES_MODULE, "setup", 1);
+        DBWriteContactSettingByte(NULL, TEMPLATES_MODULE, "setup", 2);
     }
     LoadTemplatesFrom(&LTR_Active, (HANDLE)0, 0);
     LoadTemplatesFrom(&RTL_Active, (HANDLE)0, 1);

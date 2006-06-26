@@ -625,7 +625,6 @@ static char *Template_CreateRTFFromDbEvent(struct MessageWindowData *dat, HANDLE
     TemplateSet *this_templateset;
     BOOL isBold = FALSE, isItalic = FALSE, isUnderline = FALSE;
 	char *this_par;
-    BOOL isRTL;
     DWORD dwEffectiveFlags;
 
     if(streamData->dbei != 0)
@@ -646,12 +645,14 @@ static char *Template_CreateRTFFromDbEvent(struct MessageWindowData *dat, HANDLE
 
     // RTL setup
 
+    if(dat->dwFlags & MWF_LOG_RTL)
+        dbei.flags |= DBEF_RTL;
+
     if(dbei.flags & DBEF_RTL)
         dat->isAutoRTL |= 1;
 
     dwEffectiveFlags = (dat->isAutoRTL & 1) ? (dat->dwFlags & ~(MWF_LOG_GRID | MWF_LOG_INDIVIDUALBKG)) : dat->dwFlags;
 
-    isRTL = 0; //(dbei.flags & DBEF_RTL);
     this_par = g_par;
 
     dat->isHistory = (dbei.timestamp < (DWORD)dat->stats.started && (dbei.flags & DBEF_READ || dbei.flags & DBEF_SENT));
@@ -681,7 +682,8 @@ static char *Template_CreateRTFFromDbEvent(struct MessageWindowData *dat, HANDLE
         if(szStyle_div[0] == 0)
             mir_snprintf(szStyle_div, 128, "\\f%u\\cf%u\\ul0\\b%d\\i%d\\fs%u", H_MSGFONTID_DIVIDERS, H_MSGFONTID_DIVIDERS, 0, 0, 5);
 
-        AppendToBuffer(&buffer, &bufferEnd, &bufferAlloced, "\\par\\sl-1\\highlight%d %s ", H_MSGFONTID_DIVIDERS, szStyle_div);
+        if(!(dat->isAutoRTL & 1))
+            AppendToBuffer(&buffer, &bufferEnd, &bufferAlloced, "\\par\\sl-1\\highlight%d %s ", H_MSGFONTID_DIVIDERS, szStyle_div);
         dat->dwFlags &= ~MWF_DIVIDERWANTED;
         
         /*
@@ -1031,24 +1033,20 @@ nogroup:
                     break;
                 case 'N':           // nickname
                 {
-                    if(dat->dwFlags & MWF_LOG_SHOWNICK || dbei.eventType == EVENTTYPE_STATUSCHANGE) {
 #if !defined(_UNICODE)
-                        szName = isSent ? szMyName : szYourName;
+                    szName = isSent ? szMyName : szYourName;
 #endif                        
-                        if(!skipFont)
-                            AppendToBuffer(&buffer, &bufferEnd, &bufferAlloced, "%s ", GetRTFFont(isSent ? MSGFONTID_MYNAME + iFontIDOffset : MSGFONTID_YOURNAME + iFontIDOffset));
+                    if(!skipFont)
+                        AppendToBuffer(&buffer, &bufferEnd, &bufferAlloced, "%s ", GetRTFFont(isSent ? MSGFONTID_MYNAME + iFontIDOffset : MSGFONTID_YOURNAME + iFontIDOffset));
 #if defined(_UNICODE)
-                        if(isSent)
-                            AppendUnicodeToBuffer(&buffer, &bufferEnd, &bufferAlloced, szMyName, MAKELONG(isSent, dat->isHistory));
-                            //AppendToBufferWithRTF(0, &buffer, &bufferEnd, &bufferAlloced, "%s", szMyName);
-                        else
-                            AppendUnicodeToBuffer(&buffer, &bufferEnd, &bufferAlloced, szYourName, MAKELONG(isSent, dat->isHistory));
-#else
-                        AppendToBufferWithRTF(0, &buffer, &bufferEnd, &bufferAlloced, "%s", szName);
-#endif                        
-                    }
+                    if(isSent)
+                        AppendUnicodeToBuffer(&buffer, &bufferEnd, &bufferAlloced, szMyName, MAKELONG(isSent, dat->isHistory));
+                        //AppendToBufferWithRTF(0, &buffer, &bufferEnd, &bufferAlloced, "%s", szMyName);
                     else
-                        skipToNext = TRUE;
+                        AppendUnicodeToBuffer(&buffer, &bufferEnd, &bufferAlloced, szYourName, MAKELONG(isSent, dat->isHistory));
+#else
+                    AppendToBufferWithRTF(0, &buffer, &bufferEnd, &bufferAlloced, "%s", szName);
+#endif                        
                     break;
                 }
                 case 'U':            // UIN

@@ -63,7 +63,7 @@ UINT DrawRichEditFrame(HWND hwnd, struct MessageWindowData *mwdat, UINT skinID, 
 UINT NcCalcRichEditFrame(HWND hwnd, struct MessageWindowData *mwdat, UINT skinID, UINT msg, WPARAM wParam, LPARAM lParam, WNDPROC OldWndProc);
 
 void FirstTimeConfig();
-void IMG_FreeDecoder();
+void IMG_RefreshItems();
 int  RegisterContainer();
 HMENU BuildContainerMenu();
 void BuildCodePageList();

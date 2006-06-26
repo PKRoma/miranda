@@ -599,6 +599,26 @@ BOOL CALLBACK HotkeyHandlerDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM
             }
             break;
         }
+        case WM_POWERBROADCAST:
+        case WM_DISPLAYCHANGE:
+        {
+            struct ContainerWindowData *pContainer = pFirstContainer;
+
+            //DebugTraceA("powerbroadcast or displaychanged, refreshing skin...");
+            IMG_RefreshItems();
+            while(pContainer) {
+                if(pContainer->bSkinned) {
+                    pContainer->oldSize.cx = pContainer->oldSize.cy = 0;
+                    SelectObject(pContainer->cachedDC, pContainer->oldHBM);
+                    DeleteObject(pContainer->cachedHBM);
+                    DeleteDC(pContainer->cachedDC);
+                    pContainer->cachedDC = 0;
+                }
+                RedrawWindow(pContainer->hwnd, NULL, NULL, RDW_INVALIDATE | RDW_UPDATENOW | RDW_ALLCHILDREN | RDW_FRAME);
+                pContainer = pContainer->pNextContainer;
+            }
+            break;
+        }
         case WM_ACTIVATE:
             if (LOWORD(wParam) != WA_ACTIVE)
                 SetWindowPos(hwndDlg, HWND_TOPMOST, 0, 0, 0, 0, SWP_NOACTIVATE | SWP_NOSIZE | SWP_NOMOVE);
