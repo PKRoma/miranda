@@ -1109,14 +1109,15 @@ int SplitmsgShutdown(void)
     if(g_hIconDLL)
         FreeLibrary(g_hIconDLL);
     
+    ImageList_RemoveAll(myGlobals.g_hImageList);
+    ImageList_Destroy(myGlobals.g_hImageList);
+
     OleUninitialize();
     if (hMsgMenuItem) {
         free(hMsgMenuItem);
         hMsgMenuItem = NULL;
         hMsgMenuItemCount = 0;
     }
-    ImageList_RemoveAll(myGlobals.g_hImageList);
-    ImageList_Destroy(myGlobals.g_hImageList);
     DestroyMenu(myGlobals.g_hMenuContext);
     if(myGlobals.g_hMenuContainer)
         DestroyMenu(myGlobals.g_hMenuContainer);
@@ -1320,7 +1321,7 @@ tzdone:
     myGlobals.g_hMenuContext = LoadMenu(g_hInst, MAKEINTRESOURCE(IDR_TABCONTEXT));
     CallService(MS_LANGPACK_TRANSLATEMENU, (WPARAM) myGlobals.g_hMenuContext, 0);   
 
-    DBWriteContactSettingByte(NULL, TEMPLATES_MODULE, "setup", 1);
+    DBWriteContactSettingByte(NULL, TEMPLATES_MODULE, "setup", 2);
     LoadDefaultTemplates();
 
     BuildCodePageList();
@@ -1482,6 +1483,8 @@ int ActivateExistingTab(struct ContainerWindowData *pContainer, HWND hwndChild)
         }
         else if(GetForegroundWindow() != pContainer->hwnd)
             SetForegroundWindow(pContainer->hwnd);
+        if(dat->bType == SESSIONTYPE_IM)
+            SetFocus(GetDlgItem(hwndChild, IDC_MESSAGE));
         if(myGlobals.m_ExtraRedraws)
             RedrawWindow(pContainer->hwndActive, NULL, NULL, RDW_INVALIDATE | RDW_ALLCHILDREN);
 		return TRUE;
@@ -1556,9 +1559,9 @@ HWND CreateNewTabForContact(struct ContainerWindowData *pContainer, HANDLE hCont
 	szStatus = (char *) CallService(MS_CLIST_GETSTATUSMODEDESCRIPTION, szProto == NULL ? ID_STATUS_OFFLINE : DBGetContactSettingWord((HANDLE)newData.hContact, szProto, "Status", ID_STATUS_OFFLINE), 0);
     
 	if(DBGetContactSettingByte(NULL, SRMSGMOD_T, "tabstatus", 0))
-		_snprintf(tabtitle, sizeof(tabtitle), "%s (%s)", newcontactname, szStatus);
+		_snprintf(tabtitle, sizeof(tabtitle), "%s (%s)   ", newcontactname, szStatus);
 	else
-		_snprintf(tabtitle, sizeof(tabtitle), "%s", newcontactname);
+		_snprintf(tabtitle, sizeof(tabtitle), "%s   ", newcontactname);
 
 #ifdef _UNICODE
 	{
@@ -1573,6 +1576,7 @@ HWND CreateNewTabForContact(struct ContainerWindowData *pContainer, HANDLE hCont
 
 	newData.item.mask = TCIF_TEXT | TCIF_IMAGE | TCIF_PARAM;
     newData.item.iImage = 0;
+    newData.item.cchTextMax = 255;
 
     hwndTab = GetDlgItem(pContainer->hwnd, IDC_MSGTABS);
 	// hide the active tab
@@ -1604,6 +1608,7 @@ HWND CreateNewTabForContact(struct ContainerWindowData *pContainer, HANDLE hCont
         }
     }
 	newItem = TabCtrl_InsertItem(hwndTab, pContainer->iTabIndex, &newData.item);
+    SendMessage(hwndTab, EM_REFRESHWITHOUTCLIP, 0, 0);
 	if (bActivateTab)
         TabCtrl_SetCurSel(GetDlgItem(pContainer->hwnd, IDC_MSGTABS), newItem);
 	newData.iTabID = newItem;
@@ -1688,7 +1693,7 @@ static void CreateImageList(BOOL bInitial)
     
     hIcon = CreateIcon(g_hInst, 16, 16, 1, 4, NULL, NULL);
     ImageList_AddIcon(myGlobals.g_hImageList, hIcon);
-    myGlobals.g_IconEmpty = ImageList_GetIcon(myGlobals.g_hImageList, 0, 0);
+    ImageList_GetIcon(myGlobals.g_hImageList, 0, 0);
     DestroyIcon(hIcon);
 
     myGlobals.g_IconFileEvent = LoadSkinnedIcon(SKINICON_EVENT_FILE);

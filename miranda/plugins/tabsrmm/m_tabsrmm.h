@@ -389,6 +389,7 @@ typedef struct _recentinfo {
 
 struct TabControlData {
     BOOL m_skinning;
+    BOOL m_moderntabs;
     HWND hwnd;
     DWORD dwStyle;
     DWORD cx, cy;
@@ -400,6 +401,7 @@ struct TabControlData {
     HWND   hwndDrag;
     struct MessageWindowData *dragDat;
     HIMAGELIST himlDrag;
+    BOOL   bRefreshWithoutClip;
 };
 
 /*
@@ -407,7 +409,7 @@ struct TabControlData {
  */
 
 struct myTabCtrl {
-    HPEN m_hPenShadow, m_hPenItemShadow, m_hPenLight;
+    HPEN m_hPenShadow, m_hPenItemShadow, m_hPenLight, m_hPenStyledLight, m_hPenStyledDark;
     HFONT m_hMenuFont;
     COLORREF colors[10];
     HBRUSH m_hBrushDefault, m_hBrushActive, m_hBrushUnread, m_hBrushHottrack;
@@ -437,10 +439,10 @@ typedef struct _globals {
     HBITMAP g_hbmUnknown;
     int g_MetaContactsAvail, g_SmileyAddAvail, g_SecureIMAvail, g_WantIEView, g_PopupAvail, g_PopupWAvail, g_FontServiceAvail;
     int g_FlashAvatarAvail;
-    HICON g_IconMsgEvent, g_IconTypingEvent, g_IconEmpty, g_IconFileEvent, g_IconUrlEvent, g_IconSend;
+    HIMAGELIST g_hImageList;
+    HICON g_IconMsgEvent, g_IconTypingEvent, g_IconFileEvent, g_IconUrlEvent, g_IconSend;
     HICON g_IconFolder, g_IconChecked, g_IconUnchecked;
 	HICON g_closeGlyph, g_maxGlyph, g_minGlyph, g_pulldownGlyph;
-    HIMAGELIST g_hImageList;
     int g_nrProtos;
     HMENU g_hMenuContext, g_hMenuContainer, g_hMenuEncoding, g_hMenuTrayUnread;
     HMENU g_hMenuFavorites, g_hMenuRecent, g_hMenuTrayContext;

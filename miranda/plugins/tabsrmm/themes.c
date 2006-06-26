@@ -46,7 +46,6 @@ extern char *TemplateNames[];
 extern TemplateSet LTR_Active, RTL_Active;
 extern MYGLOBALS myGlobals;
 extern struct ContainerWindowData *pFirstContainer;
-extern ImageItem *g_glyphItem;
 extern int          g_chat_integration_enabled;
 
 static void __inline gradientVertical(UCHAR *ubRedFinal, UCHAR *ubGreenFinal, UCHAR *ubBlueFinal, 
@@ -59,7 +58,7 @@ static void __inline gradientHorizontal( UCHAR *ubRedFinal, UCHAR *ubGreenFinal,
 
 
 static ImageItem *g_ImageItems = NULL;
-ImageItem *g_glyphItem = NULL;
+static ImageItem *g_glyphItem = NULL;
 
 HBRUSH g_ContainerColorKeyBrush = 0, g_MenuBGBrush = 0;
 COLORREF g_ContainerColorKey = 0;
@@ -311,6 +310,8 @@ void WriteThemeToINI(const char *szIniFilename, struct MessageWindowData *dat)
         else
             WritePrivateProfileStringA("Custom Colors", szTemp, _itoa(dat->theme.custom_colors[i], szBuf, 10), szIniFilename);
     }
+    for(i = 0; i <= 6; i++)
+        WritePrivateProfileStringA("Nick Colors", _itoa(i, szBuf, 10), _itoa(g_Settings.nickColors[i], szTemp, 10), szIniFilename);
 }
 
 void ReadThemeFromINI(const char *szIniFilename, struct MessageWindowData *dat, int noAdvanced, DWORD dwFlags)
@@ -378,6 +379,8 @@ void ReadThemeFromINI(const char *szIniFilename, struct MessageWindowData *dat, 
         DBWriteContactSettingDword(NULL, FONTMODULE, "ipfieldsbg", 
                                    GetPrivateProfileIntA("Custom Colors", "InfopanelBG", GetSysColor(COLOR_3DFACE), szIniFilename));
         if(dwFlags & THEME_READ_FONTS) {
+            COLORREF defclr;
+
             DBWriteContactSettingDword(NULL, FONTMODULE, SRMSGSET_BKGCOLOUR, GetPrivateProfileIntA("Message Log", "BackgroundColor", def, szIniFilename));
             DBWriteContactSettingDword(NULL, "Chat", "ColorLogBG", GetPrivateProfileIntA("Message Log", "BackgroundColor", def, szIniFilename));
             DBWriteContactSettingDword(NULL, FONTMODULE, "inbg", GetPrivateProfileIntA("Message Log", "IncomingBG", def, szIniFilename));
@@ -399,6 +402,17 @@ void ReadThemeFromINI(const char *szIniFilename, struct MessageWindowData *dat, 
                     DBWriteContactSettingDword(NULL, SRMSGMOD_T, szTemp, GetPrivateProfileIntA("Custom Colors", szTemp, RGB(224, 224, 224), szIniFilename));
                 else
                     dat->theme.custom_colors[i] = GetPrivateProfileIntA("Custom Colors", szTemp, RGB(224, 224, 224), szIniFilename);
+            }
+            for(i = 0; i <= 6; i++) {
+                if(i == 5)
+                    defclr = GetSysColor(COLOR_HIGHLIGHT);
+                else if(i == 6)
+                    defclr = GetSysColor(COLOR_HIGHLIGHTTEXT);
+                else
+                    defclr = g_Settings.crUserListColor;
+                g_Settings.nickColors[i] = GetPrivateProfileIntA("Nick Colors", _itoa(i, szTemp, 10), defclr, szIniFilename);
+                sprintf(szTemp, "NickColor%d", i);
+                DBWriteContactSettingDword(NULL, "Chat", szTemp, g_Settings.nickColors[i]);
             }
         }
     }
@@ -1274,6 +1288,17 @@ static void IMG_CreateItem(ImageItem *item, const char *fileName, HDC hdc)
     }
 }
 
+static void IMG_RefreshItem(ImageItem *item, HDC hdc)
+{
+    if(item) {
+        SelectObject(item->hdc, item->hbmOld);
+        DeleteDC(item->hdc);
+
+        item->hdc = CreateCompatibleDC(hdc);
+        item->hbmOld = SelectObject(item->hdc, item->hbm);
+    }
+}
+
 static void IMG_DeleteItem(ImageItem *item)
 {
 	if(!(item->dwFlags & IMAGE_GLYPH)) {
@@ -1283,6 +1308,19 @@ static void IMG_DeleteItem(ImageItem *item)
 	}
 	if(item->fillBrush)
 		DeleteObject(item->fillBrush);
+}
+
+void IMG_RefreshItems()
+{
+    HDC hdc = GetDC(0);
+    ImageItem *pItem = g_ImageItems;
+
+    while(pItem) {
+        IMG_RefreshItem(pItem, hdc);
+        pItem = pItem->nextItem;
+    }
+    IMG_RefreshItem(g_glyphItem, hdc);
+    ReleaseDC(0, hdc);
 }
 
 void IMG_DeleteItems()
@@ -1614,3 +1652,24 @@ void ReloadContainerSkin(int doLoad, int onStartup)
     }
 }
 
+static BLENDFUNCTION bf_t = {0};
+
+void DrawDimmedIcon(HDC hdc, LONG left, LONG top, LONG dx, LONG dy, HICON hIcon, BYTE alpha)
+{
+    HDC dcMem = CreateCompatibleDC(hdc);
+    HBITMAP hbm = CreateCompatibleBitmap(hdc, dx, dy), hbmOld = 0;
+
+    hbmOld = SelectObject(dcMem, hbm);
+    BitBlt(dcMem, 0, 0, dx, dx, hdc, left, top, SRCCOPY);
+    DrawIconEx(dcMem, 0, 0, hIcon, dx, dy, 0, 0, DI_NORMAL);
+    bf_t.SourceConstantAlpha = alpha;
+    if(MyAlphaBlend)
+        MyAlphaBlend(hdc, left, top, dx, dy, dcMem, 0, 0, dx, dy, bf_t);
+    else {
+        SetStretchBltMode(hdc, HALFTONE);
+        StretchBlt(hdc, left, top, dx, dy, dcMem, 0, 0, dx, dy, SRCCOPY);
+    }
+    SelectObject(dcMem, hbmOld);
+    DeleteObject(hbm);
+    DeleteDC(dcMem);
+}

@@ -182,6 +182,7 @@ static void ShowHideInfoPanel(HWND hwndDlg, struct MessageWindowData *dat)
     ShowMultipleControls(hwndDlg, infoPanelControls, 8, dat->dwEventIsShown & MWF_SHOW_INFOPANEL ? SW_SHOW : SW_HIDE);
 	
     if(dat->dwEventIsShown & MWF_SHOW_INFOPANEL) {
+        GetAvatarVisibility(hwndDlg, dat);
         ConfigurePanel(hwndDlg, dat);
         UpdateApparentModeDisplay(hwndDlg, dat);
         InvalidateRect(GetDlgItem(hwndDlg, IDC_PANELNICK), NULL, FALSE);
@@ -3524,16 +3525,18 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
             int iSelection;
             HMENU subMenu;
             int isHandled;
-            RECT rcPicture, rcPanelPicture;
+            RECT rcPicture, rcPanelPicture, rcPanelNick;
             int menuID = 0;
             
             GetWindowRect(GetDlgItem(hwndDlg, IDC_CONTACTPIC), &rcPicture);
             GetWindowRect(GetDlgItem(hwndDlg, IDC_PANELPIC), &rcPanelPicture);
+            GetWindowRect(GetDlgItem(hwndDlg, IDC_PANELNICK), &rcPanelNick);
+            rcPanelNick.left = rcPanelNick.right - 30;
             GetCursorPos(&pt);
             
             if(PtInRect(&rcPicture, pt))
                 menuID = MENU_PICMENU;
-            else if(PtInRect(&rcPanelPicture, pt))
+            else if(PtInRect(&rcPanelPicture, pt) || PtInRect(&rcPanelNick, pt))
                 menuID = MENU_PANELPICMENU;
             
             if((menuID == MENU_PICMENU && ((dat->ace ? dat->ace->hbmPic : myGlobals.g_hbmUnknown) || dat->hOwnPic) && dat->showPic !=0) || (menuID == MENU_PANELPICMENU && dat->dwEventIsShown & MWF_SHOW_INFOPANEL)) {
@@ -3541,6 +3544,14 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                 HMENU submenu = 0;
 
                 submenu = GetSubMenu(dat->pContainer->hMenuContext, menuID == MENU_PICMENU ? 1 : 11);
+                if(menuID == MENU_PANELPICMENU) {
+                    int iCount = GetMenuItemCount(submenu);
+
+                    if(iCount < 5) {
+                        HMENU visMenu = GetSubMenu(GetSubMenu(dat->pContainer->hMenuContext, 1), 0);
+                        InsertMenu(submenu, 0, MF_POPUP, (UINT_PTR)visMenu, TranslateT("Show Contact Picture"));
+                    }
+                }
                 GetCursorPos(&pt);
                 MsgWindowUpdateMenu(hwndDlg, dat, submenu, menuID);
                 iSelection = TrackPopupMenu(submenu, TPM_RETURNCMD, pt.x, pt.y, 0, hwndDlg, NULL);

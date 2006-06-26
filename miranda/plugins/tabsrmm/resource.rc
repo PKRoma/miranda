@@ -93,15 +93,15 @@ BEGIN
     PUSHBUTTON      "Cancel",IDCANCEL,169,133,50,14
     CONTROL         "All modes",IDC_ALWAYS,"Button",BS_AUTOCHECKBOX,19,17,70,14
     GROUPBOX        "Choose modes",IDC_STATUSGROUP,7,7,212,119
-    CONTROL         "",IDS_STATUS_ONLINE,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,20,39,82,11
-    CONTROL         "",IDS_STATUS_AWAY,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,20,54,82,11
-    CONTROL         "",IDS_STATUS_NA,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,20,69,82,11
-    CONTROL         "",IDS_STATUS_DND,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,20,84,82,11
-    CONTROL         "",IDS_STATUS_OCCUPIED,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,114,39,82,11
-    CONTROL         "",IDS_STATUS_INVISIBLE,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,114,54,82,11
-    CONTROL         "",IDS_STATUS_ONTHEPHONE,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,114,69,82,11
-    CONTROL         "",IDS_STATUS_OUTTOLUNCH,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,114,84,82,11
-    CONTROL         "",IDS_STATUS_FREECHAT,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,20,99,82,11
+    CONTROL         "",ID_STATUS_ONLINE,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,20,39,82,11
+    CONTROL         "",ID_STATUS_AWAY,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,20,54,82,11
+    CONTROL         "",ID_STATUS_NA,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,20,69,82,11
+    CONTROL         "",ID_STATUS_DND,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,20,84,82,11
+    CONTROL         "",ID_STATUS_OCCUPIED,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,114,39,82,11
+    CONTROL         "",ID_STATUS_INVISIBLE,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,114,54,82,11
+    CONTROL         "",ID_STATUS_ONTHEPHONE,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,114,69,82,11
+    CONTROL         "",ID_STATUS_OUTTOLUNCH,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,114,84,82,11
+    CONTROL         "",ID_STATUS_FREECHAT,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,20,99,82,11
 END
 
 IDD_MSGCONTAINER DIALOGEX 0, 0, 436, 233
@@ -405,8 +405,8 @@ IDD_TABCONFIG DIALOGEX 0, 0, 303, 230
 STYLE DS_SETFONT | DS_FIXEDSYS | DS_CONTROL | WS_CHILD
 FONT 8, "MS Shell Dlg", 400, 0, 0x1
 BEGIN
-    GROUPBOX        "Tab label colors",IDC_STATIC,6,10,144,78
-    CONTROL         "Use windows colors",IDC_LABELUSEWINCOLORS,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,13,21,136,10
+    GROUPBOX        "Tab label colors",IDC_STATIC,6,10,144,79
+    CONTROL         "Use windows colors",IDC_LABELUSEWINCOLORS,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,13,19,136,10
     LTEXT           "Normal",IDC_STATIC,14,31,77,13
     LTEXT           "Selected",IDC_STATIC,14,47,77,13
     LTEXT           "Unread",IDC_STATIC,14,60,77,13
@@ -415,31 +415,31 @@ BEGIN
     CONTROL         "",IDC_TXTCLRACTIVE,"ColourPicker",WS_TABSTOP,121,44,24,13
     CONTROL         "",IDC_TXTCLRUNREAD,"ColourPicker",WS_TABSTOP,121,58,24,13
     CONTROL         "",IDC_TXTCLRHOTTRACK,"ColourPicker",WS_TABSTOP,121,72,24,13
-    GROUPBOX        "Tab background colors",IDC_STATIC,153,10,147,78
-    CONTROL         "Use windows colors",IDC_BKGUSEWINCOLORS2,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,162,21,136,10
-    LTEXT           "Normal",IDC_STATIC,163,33,84,13
-    LTEXT           "Selected",IDC_STATIC,163,46,84,13
-    LTEXT           "Unread",IDC_STATIC,163,60,84,13
-    LTEXT           "Hot Track (mouse over)",IDC_STATIC,163,74,77,13
-    CONTROL         "",IDC_BKGCLRNORMAL,"ColourPicker",WS_TABSTOP,269,30,24,13
-    CONTROL         "",IDC_BKGCLRACTIVE,"ColourPicker",WS_TABSTOP,269,44,24,13
-    CONTROL         "",IDC_BKGCLRUNREAD,"ColourPicker",WS_TABSTOP,269,58,24,13
-    CONTROL         "",IDC_BKGCOLORHOTTRACK,"ColourPicker",WS_TABSTOP,269,72,24,13
+    GROUPBOX        "Tab background colors",IDC_STATIC,153,10,147,79
+    CONTROL         "Use windows colors",IDC_BKGUSEWINCOLORS2,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,162,19,136,10
+    LTEXT           "Normal",IDC_STATIC,163,30,84,10
+    LTEXT           "Selected",IDC_STATIC,163,40,84,10
+    LTEXT           "Unread",IDC_STATIC,163,49,84,10
+    LTEXT           "Hot Track (mouse over)",IDC_STATIC,163,59,84,10
+    CONTROL         "",IDC_BKGCLRNORMAL,"ColourPicker",WS_TABSTOP,269,30,24,8
+    CONTROL         "",IDC_BKGCLRACTIVE,"ColourPicker",WS_TABSTOP,269,40,24,8
+    CONTROL         "",IDC_BKGCLRUNREAD,"ColourPicker",WS_TABSTOP,269,50,24,8
+    CONTROL         "",IDC_BKGCOLORHOTTRACK,"ColourPicker",WS_TABSTOP,269,59,24,8
     LTEXT           "NOTE: Background colors will only work with button-style tabs.",IDC_STATIC,13,90,285,14
     GROUPBOX        "Other options",IDC_STATIC,3,99,297,108
-    CONTROL         "Flash icon",IDC_FLASHICON,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,13,110,127,9
-    CONTROL         "Flash tab label",IDC_FLASHLABEL,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,13,121,129,9
+    CONTROL         "Flash icon",IDC_FLASHICON,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,13,110,110,9
+    CONTROL         "Flash text label",IDC_FLASHLABEL,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,13,121,111,9
     CONTROL         "Single row tab control",IDC_SINGLEROWTAB,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,13,133,123,10
     LTEXT           "Default tab width:",IDC_STATIC,146,133,113,11
-    CONTROL         "Disable visual styles",IDC_NOSKINNING,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,145,109,151,9
-    CONTROL         "Use button tabs",IDC_FLATTABS2,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,145,119,149,12
-    EDITTEXT        IDC_TABWIDTH,266,131,28,13,ES_AUTOHSCROLL
+    CONTROL         "Disable visual styles",IDC_NOSKINNING,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,127,109,89,9
+    CONTROL         "Use button tabs",IDC_FLATTABS2,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,127,119,149,12
+    EDITTEXT        IDC_TABWIDTH,260,131,36,13,ES_AUTOHSCROLL
     CONTROL         "",IDC_TABWIDTHSPIN,"msctls_updown32",UDS_SETBUDDYINT | UDS_ALIGNRIGHT | UDS_AUTOBUDDY | UDS_ARROWKEYS,292,130,11,13
     LTEXT           "Tab text label padding vertical",IDC_STATIC,14,149,126,10
     EDITTEXT        IDC_TABPADDING,163,147,28,13,ES_AUTOHSCROLL
     CONTROL         "",IDC_SPIN1,"msctls_updown32",UDS_SETBUDDYINT | UDS_ALIGNRIGHT | UDS_AUTOBUDDY | UDS_ARROWKEYS,187,152,11,13
     LTEXT           "horizontal",IDC_STATIC,212,149,44,10
-    EDITTEXT        IDC_HTABPADDING,266,147,28,13,ES_AUTOHSCROLL
+    EDITTEXT        IDC_HTABPADDING,260,147,28,13,ES_AUTOHSCROLL
     CONTROL         "",IDC_SPIN3,"msctls_updown32",UDS_SETBUDDYINT | UDS_ALIGNRIGHT | UDS_AUTOBUDDY | UDS_ARROWKEYS,292,147,11,13
     LTEXT           "Tab page padding:",IDC_STATIC,14,173,84,11
     RTEXT           "inner",IDC_STATIC,93,173,21,11
@@ -458,6 +458,11 @@ BEGIN
     CONTROL         "",IDC_TABBORDERSPINOUTERTOP,"msctls_updown32",UDS_SETBUDDYINT | UDS_ALIGNRIGHT | UDS_AUTOBUDDY | UDS_ARROWKEYS,259,164,11,13
     EDITTEXT        IDC_TABBORDEROUTERBOTTOM,232,177,28,13,ES_AUTOHSCROLL
     CONTROL         "",IDC_TABBORDERSPINOUTERBOTTOM,"msctls_updown32",UDS_SETBUDDYINT | UDS_ALIGNRIGHT | UDS_AUTOBUDDY | UDS_ARROWKEYS,259,177,11,13
+    CONTROL         "Styled tabs",IDC_STYLEDTABS,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,227,108,65,12
+    LTEXT           "Light shadow",IDC_STATIC,164,69,84,10
+    LTEXT           "Dark shadow",IDC_STATIC,164,78,84,10
+    CONTROL         "",IDC_LIGHTSHADOW,"ColourPicker",WS_TABSTOP,269,68,24,8
+    CONTROL         "",IDC_DARKSHADOW,"ColourPicker",WS_TABSTOP,269,78,24,8
 END
 
 IDD_VARIABLEHELP DIALOGEX 0, 0, 336, 238
@@ -669,7 +674,12 @@ BEGIN
     END
     POPUP "Picmenu"
     BEGIN
-        MENUITEM "Toggle Avatar Display",       ID_PICMENU_TOGGLEAVATARDISPLAY
+        POPUP "Show Contact Picture"
+        BEGIN
+            MENUITEM "Default",                     ID_VISIBILITY_DEFAULT
+            MENUITEM "Hidden for this Contact",     ID_VISIBILITY_HIDDENFORTHISCONTACT
+            MENUITEM "Visible for this Contact",    ID_VISIBILITY_VISIBLEFORTHISCONTACT
+        END
         MENUITEM SEPARATOR
         MENUITEM "Contact Picture Settings...", ID_PICMENU_SETTINGS
         MENUITEM "Choose Background Color...",  ID_PICMENU_CHOOSEBACKGROUNDCOLOR
@@ -684,7 +694,6 @@ BEGIN
             MENUITEM "Show Symbols",                ID_MESSAGEICONS_SYMBOLSINSTEADOFICONS
             MENUITEM "Use Incoming/Outgoing Icons", ID_MESSAGEICONS_USEINCOMING
         END
-        MENUITEM "Show Nickname",               ID_LOGMENU_SHOWNICKNAME
         POPUP "Timestamp Settings"
         BEGIN
             MENUITEM "Show Timestamp",              ID_LOGMENU_SHOWTIMESTAMP
@@ -768,9 +777,9 @@ BEGIN
     END
     POPUP "Traycontext"
     BEGIN
-        MENUITEM "Recent Sessions",             65535
+        MENUITEM "Recent Sessions",             0
         MENUITEM SEPARATOR
-        MENUITEM "Favorites",                   65535
+        MENUITEM "Favorites",                   0
         MENUITEM SEPARATOR
         MENUITEM "Show the Floater",            ID_TRAYCONTEXT_SHOWTHEFLOATER
         MENUITEM "Show the Tray Icon",          ID_TRAYCONTEXT_SHOWTHETRAYICON
@@ -824,6 +833,7 @@ BEGIN
     END
     POPUP "Panelpicmenu"
     BEGIN
+        MENUITEM SEPARATOR
         MENUITEM "Contact Picture Settings...", ID_PICMENU_SETTINGS
         MENUITEM "Choose Background Color...",  ID_PANELPICMENU_CHOOSEBACKGROUNDCOLOR
         MENUITEM "Save this Picture As...",     ID_PANELPICMENU_SAVETHISPICTUREAS
@@ -867,17 +877,6 @@ BEGIN
             MENUITEM "Use default Value",           40106
             MENUITEM "Flash until focused",         40107
             MENUITEM "Disable Flashing",            40108
-        END
-        MENUITEM SEPARATOR
-        POPUP "Avatar"
-        BEGIN
-            MENUITEM "Toggle Avatar Display",       40041
-            MENUITEM SEPARATOR
-            MENUITEM "Reset the Avatar",            40071
-            MENUITEM "Load a local Picture as Avatar", 40072
-            MENUITEM "Disable automatic Avatar updates", 40122
-            MENUITEM SEPARATOR
-            MENUITEM "Always keep the button bar at full width", 40134
         END
         MENUITEM SEPARATOR
         MENUITEM "Show Multisend Contact List", 40087
@@ -966,8 +965,8 @@ IDI_TREEVIEWUNCHECKED   ICON                    "res/unchecked.ico"
 //
 
 VS_VERSION_INFO VERSIONINFO
- FILEVERSION 0,9,9,210
- PRODUCTVERSION 0,9,9,210
+ FILEVERSION 0,9,9,211
+ PRODUCTVERSION 0,9,9,211
  FILEFLAGSMASK 0x17L
 #ifdef _DEBUG
  FILEFLAGS 0x1L
@@ -984,13 +983,13 @@ BEGIN
         BEGIN
             VALUE "CompanyName", "Miranda IM project"
             VALUE "FileDescription", "tabSRMM.dll"
-            VALUE "FileVersion", "0, 9, 9, 210"
+            VALUE "FileVersion", "0, 9, 9, 211"
             VALUE "InternalName", "tabSRMsg"
             VALUE "LegalCopyright", "Copyright (C) 2006"
             VALUE "LegalTrademarks", "Licensed under the Gnu general public license V2 or any later version."
             VALUE "OriginalFilename", "tabsrmm.dll"
             VALUE "ProductName", "tabSRMM Message window plugin"
-            VALUE "ProductVersion", "0, 9, 9, 210"
+            VALUE "ProductVersion", "0, 9, 9, 211"
         END
     END
     BLOCK "VarFileInfo"

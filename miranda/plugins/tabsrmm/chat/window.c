@@ -37,6 +37,7 @@ extern HICON		hIcons[30];
 extern struct		CREOleCallback reOleCallback;
 extern HMENU		g_hMenu;
 extern int          g_sessionshutdown;
+extern char *szWarnClose;
 
 extern WNDPROC OldSplitterProc;
 static WNDPROC OldMessageProc;
@@ -969,6 +970,12 @@ static BOOL CALLBACK FilterWndProc(HWND hwndDlg,UINT uMsg,WPARAM wParam,LPARAM l
 					iFlags |= GC_EVENT_REMOVESTATUS;
 
                 if(si) {
+                    if(iFlags == 0) {
+                        DBDeleteContactSetting(si->hContact, "Chat", "FilterFlags");
+                        iFlags = DBGetContactSettingDword(0, "Chat", "FilterFlags", 0x03E0);
+                    }
+                    else
+                        DBWriteContactSettingDword(si->hContact, "Chat", "FilterFlags", iFlags);
                     SendMessage(si->hWnd, GC_CHANGEFILTERFLAG, 0, (LPARAM)iFlags);
                     if(si->bFilterEnabled)
                         SendMessage(si->hWnd, GC_REDRAWLOG, 0, 0);
@@ -1774,10 +1781,37 @@ BOOL CALLBACK RoomWndProc(HWND hwndDlg,UINT uMsg,WPARAM wParam,LPARAM lParam)
 					hoFont = (HFONT) SelectObject(dis->hDC, hFont);
 					SetBkMode(dis->hDC, TRANSPARENT);
 
-					if (dis->itemAction == ODA_FOCUS && dis->itemState & ODS_SELECTED)
-						FillRect(dis->hDC, &dis->rcItem, g_Settings.SelectionBGBrush);
-					else //if(dis->itemState & ODS_INACTIVE)
-						FillRect(dis->hDC, &dis->rcItem, hListBkgBrush);
+					if (dis->itemAction == ODA_FOCUS && dis->itemState & ODS_SELECTED) {
+                        FillRect(dis->hDC, &dis->rcItem, g_Settings.SelectionBGBrush);
+                        SetTextColor(dis->hDC, g_Settings.nickColors[6]);
+                    }
+					else {
+                        FillRect(dis->hDC, &dis->rcItem, hListBkgBrush);
+                        if(g_Settings.ColorizeNicks && szIndicator != 0) {
+                            COLORREF clr;
+
+                            switch(szIndicator) {
+                                case '@':
+                                    clr = g_Settings.nickColors[0];
+                                    break;
+                                case '%':
+                                    clr = g_Settings.nickColors[1];
+                                    break;
+                                case '+':
+                                    clr = g_Settings.nickColors[2];
+                                    break;
+                                case '!':
+                                    clr = g_Settings.nickColors[3];
+                                    break;
+                                case '*':
+                                    clr = g_Settings.nickColors[4];
+                                    break;
+                            }
+                            SetTextColor(dis->hDC, clr);
+                        }
+                        else 
+                            SetTextColor(dis->hDC, ui->iStatusEx == 0?g_Settings.crUserListColor:g_Settings.crUserListHeadingsColor);
+                    }
 
                     /*
 					FillRect(dis->hDC, &dis->rcItem, hListBkgBrush);
@@ -1788,30 +1822,6 @@ BOOL CALLBACK RoomWndProc(HWND hwndDlg,UINT uMsg,WPARAM wParam,LPARAM lParam)
 						FrameRect(dis->hDC, &dis->rcItem, hListBkgBrush);
 					*/
 
-                    if(g_Settings.ColorizeNicks && szIndicator != 0) {
-                        COLORREF clr;
-                        
-                        switch(szIndicator) {
-                            case '@':
-                                clr = g_Settings.nickColors[0];
-                                break;
-                            case '%':
-                                clr = g_Settings.nickColors[1];
-                                break;
-                            case '+':
-                                clr = g_Settings.nickColors[2];
-                                break;
-                            case '!':
-                                clr = g_Settings.nickColors[3];
-                                break;
-                            case '*':
-                                clr = g_Settings.nickColors[4];
-                                break;
-                        }
-                        SetTextColor(dis->hDC, clr);
-                    }
-                    else 
-                        SetTextColor(dis->hDC, ui->iStatusEx == 0?g_Settings.crUserListColor:g_Settings.crUserListHeadingsColor);
                     
                     if(g_Settings.ClassicIndicators) {
                         char szTemp[3];
@@ -2489,6 +2499,8 @@ LABEL_SHOWWINDOW:
 	
 					SendDlgItemMessage(hwndDlg,IDC_SHOWNICKLIST,BM_SETIMAGE,IMAGE_ICON,(LPARAM)LoadIconEx(si->bNicklistEnabled ? IDI_HIDENICKLIST : IDI_SHOWNICKLIST, si->bNicklistEnabled ? "hidenicklist" : "shownicklist", 0, 0));
 					SendMessage(hwndDlg, WM_SIZE, 0, 0);
+                    if(dat->pContainer->bSkinned)
+                        InvalidateRect(hwndDlg, NULL, TRUE);
                     PostMessage(hwndDlg, DM_SCROLLLOGTOBOTTOM, 0, 0);
 				}break;
                 
@@ -2694,8 +2706,8 @@ LABEL_SHOWWINDOW:
                 RECT rcClient, rcWindow, rc;
                 StatusItems_t *item;
                 POINT pt;
-                UINT item_ids[3] = {ID_EXTBKHISTORY, ID_EXTBKINPUTAREA, ID_EXTBKUSERLIST};
-                UINT ctl_ids[3] = {IDC_CHAT_LOG, IDC_CHAT_MESSAGE, IDC_LIST};
+                UINT item_ids[3] = {ID_EXTBKUSERLIST, ID_EXTBKHISTORY, ID_EXTBKINPUTAREA};
+                UINT ctl_ids[3] = {IDC_LIST, IDC_CHAT_LOG, IDC_CHAT_MESSAGE};
                 int  i;
 
                 HDC hdc = BeginPaint(hwndDlg, &ps);
@@ -2793,7 +2805,7 @@ LABEL_SHOWWINDOW:
             }
             if(lParam) {
                 if (myGlobals.m_WarnOnClose) {
-                    if (MessageBoxA(dat->pContainer->hwnd, Translate("Warning"), "Miranda", MB_YESNO | MB_ICONQUESTION) == IDNO) {
+                    if (MessageBox(dat->pContainer->hwnd, TranslateTS(szWarnClose), _T("Miranda"), MB_YESNO | MB_ICONQUESTION) == IDNO) {
                         return TRUE;
                     }
                 }

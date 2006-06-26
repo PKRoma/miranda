@@ -408,7 +408,6 @@ int MsgWindowUpdateMenu(HWND hwndDlg, struct MessageWindowData *dat, HMENU subme
         CheckMenuItem(submenu, ID_MESSAGEICONS_SHOWICONS, MF_BYCOMMAND | dat->dwFlags & MWF_LOG_SHOWICONS ? MF_CHECKED : MF_UNCHECKED);
         CheckMenuItem(submenu, ID_MESSAGEICONS_SYMBOLSINSTEADOFICONS, MF_BYCOMMAND | dat->dwFlags & MWF_LOG_SYMBOLS ? MF_CHECKED : MF_UNCHECKED);
         CheckMenuItem(submenu, ID_MESSAGEICONS_USEINCOMING, MF_BYCOMMAND | dat->dwFlags & MWF_LOG_INOUTICONS ? MF_CHECKED : MF_UNCHECKED);
-        CheckMenuItem(submenu, ID_LOGMENU_SHOWNICKNAME, MF_BYCOMMAND | dat->dwFlags & MWF_LOG_SHOWNICK ? MF_CHECKED : MF_UNCHECKED);
         CheckMenuItem(submenu, ID_LOGMENU_ACTIVATERTL, MF_BYCOMMAND | iRtl ? MF_CHECKED : MF_UNCHECKED);
         CheckMenuItem(submenu, ID_LOGITEMSTOSHOW_LOGSTATUSCHANGES, MF_BYCOMMAND | iLogStatus ? MF_CHECKED : MF_UNCHECKED);
         CheckMenuItem(submenu, ID_MESSAGELOGFORMATTING_SHOWGRID, MF_BYCOMMAND | dat->dwFlags & MWF_LOG_GRID ? MF_CHECKED : MF_UNCHECKED);
@@ -420,33 +419,45 @@ int MsgWindowUpdateMenu(HWND hwndDlg, struct MessageWindowData *dat, HMENU subme
         EnableMenuItem(submenu, ID_LOGMENU_SHOWSECONDS, dat->dwFlags & MWF_LOG_SHOWTIME ? MF_ENABLED : MF_GRAYED);
     }
     else if(menuID == MENU_PICMENU) {
-        MENUITEMINFOA mii = {0};
-        char *szText;
-        
+        MENUITEMINFO mii = {0};
+        TCHAR *szText = NULL;
+        char  avOverride = (char)DBGetContactSettingByte(dat->hContact, SRMSGMOD_T, "hideavatar", -1);
+        HMENU visMenu = GetSubMenu(submenu, 0);
+        BOOL picValid = dat->dwEventIsShown & MWF_SHOW_INFOPANEL ? (dat->hOwnPic != 0) : (dat->ace && dat->ace->hbmPic && dat->ace->hbmPic != myGlobals.g_hbmUnknown);
         mii.cbSize = sizeof(mii);
         mii.fMask = MIIM_STRING;
-        
-        EnableMenuItem(submenu, ID_PICMENU_SAVETHISPICTUREAS, MF_BYCOMMAND | (ServiceExists(MS_AV_SAVEBITMAP) ? MF_ENABLED : MF_GRAYED));
-        EnableMenuItem(submenu, ID_PICMENU_TOGGLEAVATARDISPLAY, MF_BYCOMMAND | (myGlobals.m_AvatarMode == 2 ? MF_ENABLED : MF_GRAYED));
+
+        EnableMenuItem(submenu, ID_PICMENU_SAVETHISPICTUREAS, MF_BYCOMMAND | (picValid ? MF_ENABLED : MF_GRAYED));
+
+        CheckMenuItem(visMenu, ID_VISIBILITY_DEFAULT, MF_BYCOMMAND | (avOverride == -1 ? MF_CHECKED : MF_UNCHECKED));
+        CheckMenuItem(visMenu, ID_VISIBILITY_HIDDENFORTHISCONTACT, MF_BYCOMMAND | (avOverride == 0 ? MF_CHECKED : MF_UNCHECKED));
+        CheckMenuItem(visMenu, ID_VISIBILITY_VISIBLEFORTHISCONTACT, MF_BYCOMMAND | (avOverride == 1 ? MF_CHECKED : MF_UNCHECKED));
+
         CheckMenuItem(submenu, ID_PICMENU_ALWAYSKEEPTHEBUTTONBARATFULLWIDTH, MF_BYCOMMAND | (myGlobals.m_AlwaysFullToolbarWidth ? MF_CHECKED : MF_UNCHECKED));
         if(!(dat->dwEventIsShown & MWF_SHOW_INFOPANEL)) {
             EnableMenuItem(submenu, ID_PICMENU_SETTINGS, MF_BYCOMMAND | (ServiceExists(MS_AV_GETAVATARBITMAP) ? MF_ENABLED : MF_GRAYED));
-            szText = Translate("Contact picture settings...");
+            szText = TranslateT("Contact picture settings...");
+            EnableMenuItem(submenu, 0, MF_BYPOSITION | MF_ENABLED);
         }
 		else {
-			char szServiceName[100];
-
-			mir_snprintf(szServiceName, 100, "%s/SetAvatar", dat->bIsMeta ? dat->szMetaProto : dat->szProto);
-			EnableMenuItem(submenu, ID_PICMENU_SETTINGS, MF_BYCOMMAND | (ServiceExists(szServiceName) ? MF_ENABLED : MF_GRAYED));
-            szText = Translate("Set your avatar...");
+            EnableMenuItem(submenu, 0, MF_BYPOSITION | MF_GRAYED);
+			EnableMenuItem(submenu, ID_PICMENU_SETTINGS, MF_BYCOMMAND | ((ServiceExists(MS_AV_SETMYAVATAR) && CallService(MS_AV_CANSETMYAVATAR, (WPARAM)(dat->bIsMeta ? dat->szMetaProto : dat->szProto), 0)) ? MF_ENABLED : MF_GRAYED));
+            szText = TranslateT("Set your avatar...");
 		}
         mii.dwTypeData = szText;
-        mii.cch = lstrlenA(szText) + 1;
-        SetMenuItemInfoA(submenu, ID_PICMENU_SETTINGS, FALSE, &mii);
+        mii.cch = lstrlen(szText) + 1;
+        SetMenuItemInfo(submenu, ID_PICMENU_SETTINGS, FALSE, &mii);
     }
     else if(menuID == MENU_PANELPICMENU) {
+        HMENU visMenu = GetSubMenu(submenu, 0);
+        char  avOverride = (char)DBGetContactSettingByte(dat->hContact, SRMSGMOD_T, "hideavatar", -1);
+
+        CheckMenuItem(visMenu, ID_VISIBILITY_DEFAULT, MF_BYCOMMAND | (avOverride == -1 ? MF_CHECKED : MF_UNCHECKED));
+        CheckMenuItem(visMenu, ID_VISIBILITY_HIDDENFORTHISCONTACT, MF_BYCOMMAND | (avOverride == 0 ? MF_CHECKED : MF_UNCHECKED));
+        CheckMenuItem(visMenu, ID_VISIBILITY_VISIBLEFORTHISCONTACT, MF_BYCOMMAND | (avOverride == 1 ? MF_CHECKED : MF_UNCHECKED));
+
         EnableMenuItem(submenu, ID_PICMENU_SETTINGS, MF_BYCOMMAND | (ServiceExists(MS_AV_GETAVATARBITMAP) ? MF_ENABLED : MF_GRAYED));
-        EnableMenuItem(submenu, ID_PANELPICMENU_SAVETHISPICTUREAS, MF_BYCOMMAND | (ServiceExists(MS_AV_SAVEBITMAP) ? MF_ENABLED : MF_GRAYED));
+        EnableMenuItem(submenu, ID_PANELPICMENU_SAVETHISPICTUREAS, MF_BYCOMMAND | ((ServiceExists(MS_AV_SAVEBITMAP) && dat->ace && dat->ace->hbmPic && dat->ace->hbmPic != myGlobals.g_hbmUnknown) ? MF_ENABLED : MF_GRAYED));
     }
     return 0;
 }
@@ -490,13 +501,26 @@ int MsgWindowMenuHandler(HWND hwndDlg, struct MessageWindowData *dat, int select
                 }
                 return 1;
             }
-            case ID_PICMENU_TOGGLEAVATARDISPLAY:
-                DBWriteContactSettingByte(dat->hContact, SRMSGMOD_T, "MOD_ShowPic", dat->showPic ? 0 : 1);
+            case ID_VISIBILITY_DEFAULT:
+            case ID_VISIBILITY_HIDDENFORTHISCONTACT:
+            case ID_VISIBILITY_VISIBLEFORTHISCONTACT:
+            {
+                BYTE avOverrideMode;
+
+                if(selection == ID_VISIBILITY_DEFAULT)
+                    avOverrideMode = -1;
+                else if(selection == ID_VISIBILITY_HIDDENFORTHISCONTACT)
+                    avOverrideMode = 0;
+                else if(selection == ID_VISIBILITY_VISIBLEFORTHISCONTACT)
+                    avOverrideMode = 1;
+                DBWriteContactSettingByte(dat->hContact, SRMSGMOD_T, "hideavatar", avOverrideMode);
+                dat->panelWidth = -1;
                 ShowPicture(hwndDlg, dat, FALSE);
                 SendMessage(hwndDlg, DM_UPDATEPICLAYOUT, 0, 0);
                 SendMessage(hwndDlg, WM_SIZE, 0, 0);
                 SendMessage(hwndDlg, DM_SCROLLLOGTOBOTTOM, 0, 1);
                 return 1;
+            }
             case ID_PICMENU_ALWAYSKEEPTHEBUTTONBARATFULLWIDTH:
                 myGlobals.m_AlwaysFullToolbarWidth = !myGlobals.m_AlwaysFullToolbarWidth;
                 DBWriteContactSettingByte(NULL, SRMSGMOD_T, "alwaysfulltoolbar", myGlobals.m_AlwaysFullToolbarWidth);
@@ -537,42 +561,12 @@ int MsgWindowMenuHandler(HWND hwndDlg, struct MessageWindowData *dat, int select
                 }
             case ID_PICMENU_SETTINGS:
                 {
-                    char FileName[MAX_PATH];
-                    char Filters[512];
-                    OPENFILENAMEA ofn={0};
-
-                    CallService(MS_UTILS_GETBITMAPFILTERSTRINGS,sizeof(Filters),(LPARAM)(char*)Filters);
-                    ofn.lStructSize = OPENFILENAME_SIZE_VERSION_400;
-                    ofn.hwndOwner=0;
-                    ofn.lpstrFile = FileName;
-                    ofn.lpstrFilter = Filters;
-                    ofn.nMaxFile = MAX_PATH;
-                    ofn.nMaxFileTitle = MAX_PATH;
-                    ofn.Flags=OFN_HIDEREADONLY;
-                    ofn.lpstrInitialDir = ".";
-                    *FileName = '\0';
-                    ofn.lpstrDefExt="";
                     if(menuId == MENU_PANELPICMENU)
                         CallService(MS_AV_CONTACTOPTIONS, (WPARAM)dat->hContact, 0);
                     else if(menuId == MENU_PICMENU) {
                         if(dat->dwEventIsShown & MWF_SHOW_INFOPANEL) {
-                            if (GetOpenFileNameA(&ofn)) {
-                                if(dat->dwEventIsShown & MWF_SHOW_INFOPANEL && menuId == MENU_PICMENU) {
-                                    char szServiceName[100], *szProto;
-
-                                    szProto = dat->bIsMeta ? dat->szMetaProto : dat->szProto;
-                                    mir_snprintf(szServiceName, sizeof(szServiceName), "%s/SetAvatar", szProto);
-                                    if(ServiceExists(szServiceName)) {
-                                        if(CallProtoService(szProto, "/SetAvatar", 0, (LPARAM)FileName) != 0)
-                                            _DebugMessage(hwndDlg, dat, Translate("Failed to set avatar for %s"), szProto);
-                                    }
-                                }
-                                else {
-                                    char szFinalPath[MAX_PATH];
-                                    CallService(MS_UTILS_PATHTORELATIVE, (WPARAM)FileName, (LPARAM)szFinalPath);
-                                    DBWriteContactSettingString(dat->hContact, "ContactPhoto", "File", szFinalPath);
-                                }
-                            }
+                            if(ServiceExists(MS_AV_SETMYAVATAR) && CallService(MS_AV_CANSETMYAVATAR, (WPARAM)(dat->bIsMeta ? dat->szMetaProto : dat->szProto), 0))
+                                CallService(MS_AV_SETMYAVATAR, (WPARAM)(dat->bIsMeta ? dat->szMetaProto : dat->szProto), 0);
                         }
                         else
                             CallService(MS_AV_CONTACTOPTIONS, (WPARAM)dat->hContact, 0);
@@ -632,9 +626,6 @@ int MsgWindowMenuHandler(HWND hwndDlg, struct MessageWindowData *dat, int select
             case ID_MESSAGEICONS_USEINCOMING:
                 dat->dwFlags ^= MWF_LOG_INOUTICONS;
                 return 1;
-            case ID_LOGMENU_SHOWNICKNAME:
-                dat->dwFlags ^= MWF_LOG_SHOWNICK;
-                return 1;
             case ID_LOGITEMSTOSHOW_LOGSTATUSCHANGES:
                 DBWriteContactSettingByte(dat->hContact, SRMSGMOD_T, "logstatus", iLogStatus ? 0 : -1);
                 return 1;
@@ -664,8 +655,17 @@ int MsgWindowMenuHandler(HWND hwndDlg, struct MessageWindowData *dat, int select
             case ID_MESSAGELOG_IMPORTMESSAGELOGSETTINGS:
                 {
                     char *szFilename = GetThemeFileName(0);
+                    DWORD dwFlags = THEME_READ_FONTS;
+                    int   result;
+
                     if(szFilename != NULL) {
-                        ReadThemeFromINI(szFilename, 0, 0, THEME_READ_ALL);
+                        result = MessageBox(0, TranslateT("Do you want to also read message templates from the theme?\nCaution: This will overwrite the stored template set which may affect the look of your message window significantly.\nSelect cancel to not load anything at all."),
+                                            TranslateT("Load theme"), MB_YESNOCANCEL);
+                        if(result == IDCANCEL)
+                            return 1;
+                        else if(result == IDYES)
+                            dwFlags |= THEME_READ_TEMPLATES;
+                        ReadThemeFromINI(szFilename, 0, 0, dwFlags);
                         CacheMsgLogIcons();
                         CacheLogFonts();
                         WindowList_Broadcast(hMessageWindowList, DM_OPTIONSAPPLIED, 1, 0);
@@ -777,7 +777,7 @@ int GetAvatarVisibility(HWND hwndDlg, struct MessageWindowData *dat)
 {
     BYTE bAvatarMode = myGlobals.m_AvatarMode;
 	BYTE bOwnAvatarMode = myGlobals.m_OwnAvatarMode;
-
+    char hideOverride = (char)DBGetContactSettingByte(dat->hContact, SRMSGMOD_T, "hideavatar", -1);
 	// infopanel visible, consider own avatar display
 
 	dat->showPic = 0;
@@ -814,10 +814,11 @@ int GetAvatarVisibility(HWND hwndDlg, struct MessageWindowData *dat)
 					dat->showInfoPic = 0;
 				break;
 			}
-			case 2:
-	            dat->showInfoPic = DBGetContactSettingByte(dat->hContact, SRMSGMOD_T, "MOD_ShowPic", 0);
-		        break;
 		}
+        if(dat->showInfoPic)
+            dat->showInfoPic = hideOverride == 0 ? 0 : dat->showInfoPic;
+        else
+            dat->showInfoPic = hideOverride == 1 ? 1 : dat->showInfoPic;
 	}
 	else {
 		dat->showInfoPic = 0;
@@ -829,7 +830,9 @@ int GetAvatarVisibility(HWND hwndDlg, struct MessageWindowData *dat)
 			case 4:             // globally OFF
 				dat->showPic = 0;
 				break;
-			case 3:             // on, if present
+            case 3:             // on, if present
+            case 2:
+            case 1:
 			{
 				HBITMAP hbm = (dat->ace && !(dat->ace->dwFlags & AVS_HIDEONCLIST)) ? dat->ace->hbmPic : 0;
 				if(hbm && hbm != myGlobals.g_hbmUnknown)
@@ -838,22 +841,11 @@ int GetAvatarVisibility(HWND hwndDlg, struct MessageWindowData *dat)
 					dat->showPic = 0;
 				break;
 			}
-			case 1:             // on for protocols with avatar support
-				{
-					int pCaps;
-
-					if(dat->szProto) {
-						pCaps = CallProtoService(dat->szProto, PS_GETCAPS, PFLAGNUM_4, 0);
-						if((pCaps & PF4_AVATARS) && (dat->ace ? dat->ace->hbmPic : myGlobals.g_hbmUnknown)) {
-							dat->showPic = 1;
-						}
-					}
-					break;
-				}
-			case 2:             // default (per contact, as it always was
-				dat->showPic = DBGetContactSettingByte(dat->hContact, SRMSGMOD_T, "MOD_ShowPic", 0);
-				break;
 		}
+        if(dat->showPic)
+            dat->showPic = hideOverride == 0 ? 0 : dat->showPic;
+        else
+            dat->showPic = hideOverride == 1 ? 1 : dat->showPic;
 	}
     return dat->showPic;
 }
@@ -2268,6 +2260,7 @@ int MsgWindowDrawHandler(WPARAM wParam, LPARAM lParam, HWND hwndDlg, struct Mess
         RECT rc;
         HFONT hOldFont = 0;
         BOOL config = myGlobals.ipConfig.isValid;
+        StatusItems_t *item = &StatusItems[ID_EXTBKINFOPANEL];
         
         if(config)
             hOldFont = SelectObject(dis->hDC, myGlobals.ipConfig.hFonts[IPFONTID_STATUS]);
@@ -2289,17 +2282,17 @@ int MsgWindowDrawHandler(WPARAM wParam, LPARAM lParam, HWND hwndDlg, struct Mess
     
         GetClientRect(dis->hwndItem, &rc);
 		if(dat->pContainer->bSkinned) {
-			StatusItems_t *item = &StatusItems[ID_EXTBKINFOPANEL];
 			SkinDrawBG(dis->hwndItem, dat->pContainer->hwnd, dat->pContainer, &rc, dis->hDC);
 			rc.left += item->MARGIN_LEFT; rc.right -= item->MARGIN_RIGHT;
 			rc.top += item->MARGIN_TOP; rc.bottom -= item->MARGIN_BOTTOM;
-			DrawAlpha(dis->hDC, &rc, item->COLOR, item->ALPHA, item->COLOR2, item->COLOR2_TRANSPARENT,
-					  item->GRADIENT, item->CORNER, item->BORDERSTYLE, item->imageItem);
+            if(!item->IGNORED)
+                DrawAlpha(dis->hDC, &rc, item->COLOR, item->ALPHA, item->COLOR2, item->COLOR2_TRANSPARENT,
+                          item->GRADIENT, item->CORNER, item->BORDERSTYLE, item->imageItem);
 		}
 		else
 			FillRect(dis->hDC, &rc, myGlobals.ipConfig.bkgBrush);
 		SetBkMode(dis->hDC, TRANSPARENT);
-        if(myGlobals.ipConfig.borderStyle < IPFIELD_FLAT && !dat->pContainer->bSkinned)
+        if(myGlobals.ipConfig.borderStyle < IPFIELD_FLAT && (!dat->pContainer->bSkinned || item->IGNORED))
             DrawEdge(dis->hDC, &rc, myGlobals.ipConfig.edgeType, myGlobals.ipConfig.edgeFlags);
         
 		rc.left += 3;
@@ -2336,6 +2329,7 @@ int MsgWindowDrawHandler(WPARAM wParam, LPARAM lParam, HWND hwndDlg, struct Mess
         TCHAR *szLabelUIN = TranslateT("User Id:");
         int   iNameLenUIN = lstrlen(szLabelUIN);
         SIZE  szUIN;
+        StatusItems_t *item = &StatusItems[ID_EXTBKINFOPANEL];
         
 		if(ServiceExists("CList/GetContactStatusMsg")) {
 			szStatusMsg = (TCHAR *)CallService("CList/GetContactStatusMsg", (WPARAM)dat->hContact, 0);
@@ -2364,16 +2358,16 @@ int MsgWindowDrawHandler(WPARAM wParam, LPARAM lParam, HWND hwndDlg, struct Mess
         DrawText(dis->hDC, szLabel, iNameLen, &dis->rcItem, DT_SINGLELINE | DT_VCENTER);
         dis->rcItem.left += (dat->szLabel.cx + 3);
 		if(dat->pContainer->bSkinned) {
-			StatusItems_t *item = &StatusItems[ID_EXTBKINFOPANEL];
 			RECT rc = dis->rcItem;
 			rc.left += item->MARGIN_LEFT; rc.right -= item->MARGIN_RIGHT;
 			rc.top += item->MARGIN_TOP; rc.bottom -= item->MARGIN_BOTTOM;
-			DrawAlpha(dis->hDC, &rc, item->COLOR, item->ALPHA, item->COLOR2, item->COLOR2_TRANSPARENT,
-					  item->GRADIENT, item->CORNER, item->BORDERSTYLE, item->imageItem);
+            if(!item->IGNORED)
+                DrawAlpha(dis->hDC, &rc, item->COLOR, item->ALPHA, item->COLOR2, item->COLOR2_TRANSPARENT,
+                          item->GRADIENT, item->CORNER, item->BORDERSTYLE, item->imageItem);
 		}
 		else
 			FillRect(dis->hDC, &dis->rcItem, myGlobals.ipConfig.bkgBrush);
-        if(myGlobals.ipConfig.borderStyle < IPFIELD_FLAT && !dat->pContainer->bSkinned)
+        if(myGlobals.ipConfig.borderStyle < IPFIELD_FLAT && (!dat->pContainer->bSkinned || item->IGNORED))
             DrawEdge(dis->hDC, &dis->rcItem, myGlobals.ipConfig.edgeType, myGlobals.ipConfig.edgeFlags);
         dis->rcItem.left +=2;
         if(dat->szNickname[0]) {
@@ -2421,6 +2415,7 @@ int MsgWindowDrawHandler(WPARAM wParam, LPARAM lParam, HWND hwndDlg, struct Mess
         RECT rc = dis->rcItem;
         TCHAR *szLabel = TranslateT("User Id:");
         int   iNameLen = lstrlen(szLabel);
+        StatusItems_t *item = &StatusItems[ID_EXTBKINFOPANEL];
 
 		if(dat->pContainer->bSkinned) {
 			SkinDrawBG(dis->hwndItem, dat->pContainer->hwnd, dat->pContainer, &dis->rcItem, dis->hDC);
@@ -2437,16 +2432,16 @@ int MsgWindowDrawHandler(WPARAM wParam, LPARAM lParam, HWND hwndDlg, struct Mess
 		rc.right = rc.left + dat->szLabel.cx + 3;
         dis->rcItem.left += (dat->szLabel.cx + 3);
 		if(dat->pContainer->bSkinned) {
-			StatusItems_t *item = &StatusItems[ID_EXTBKINFOPANEL];
 			RECT rc = dis->rcItem;
 			rc.left += item->MARGIN_LEFT; rc.right -= item->MARGIN_RIGHT;
 			rc.top += item->MARGIN_TOP; rc.bottom -= item->MARGIN_BOTTOM;
-			DrawAlpha(dis->hDC, &rc, item->COLOR, item->ALPHA, item->COLOR2, item->COLOR2_TRANSPARENT,
-					  item->GRADIENT, item->CORNER, item->BORDERSTYLE, item->imageItem);
+            if(!item->IGNORED)
+                DrawAlpha(dis->hDC, &rc, item->COLOR, item->ALPHA, item->COLOR2, item->COLOR2_TRANSPARENT,
+                          item->GRADIENT, item->CORNER, item->BORDERSTYLE, item->imageItem);
 		}
 		else
 			FillRect(dis->hDC, &dis->rcItem, myGlobals.ipConfig.bkgBrush);
-        if(myGlobals.ipConfig.borderStyle < IPFIELD_FLAT && !dat->pContainer->bSkinned)
+        if(myGlobals.ipConfig.borderStyle < IPFIELD_FLAT && (!dat->pContainer->bSkinned || item->IGNORED))
             DrawEdge(dis->hDC, &dis->rcItem, myGlobals.ipConfig.edgeType, myGlobals.ipConfig.edgeFlags);
         dis->rcItem.left +=2;
         if(config) {

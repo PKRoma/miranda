@@ -108,8 +108,7 @@ static void DrawMenuItem(DRAWITEMSTRUCT *dis, HICON hIcon, DWORD dwIdle)
         else if (dis->itemState & ODS_SELECTED)
             DrawEdge(dis->hDC, &dis->rcItem, BDR_SUNKENOUTER, BF_RECT);
         if(dwIdle) {
-            ImageList_ReplaceIcon(myGlobals.g_hImageList, 0, hIcon);
-            ImageList_DrawEx(myGlobals.g_hImageList, 0, dis->hDC, 2, (dis->rcItem.bottom + dis->rcItem.top - cy) / 2, 0, 0, CLR_NONE, CLR_NONE, ILD_SELECTED);
+            DrawDimmedIcon(dis->hDC, 2, (dis->rcItem.bottom + dis->rcItem.top - cy) / 2, 16, 16, hIcon, 180);
         }
         else
             DrawIconEx(dis->hDC, 2, (dis->rcItem.bottom + dis->rcItem.top - cy) / 2, hIcon, cx, cy, 0, 0, DI_NORMAL | DI_COMPAT);
@@ -131,8 +130,7 @@ static void DrawMenuItem(DRAWITEMSTRUCT *dis, HICON hIcon, DWORD dwIdle)
             }   //if
             /* draw the icon */
             if(dwIdle) {
-                ImageList_ReplaceIcon(myGlobals.g_hImageList, 0, hIcon);
-                ImageList_DrawEx(myGlobals.g_hImageList, 0, dis->hDC, 2, (dis->rcItem.bottom + dis->rcItem.top - cy) / 2, 0, 0, CLR_NONE, CLR_NONE, ILD_SELECTED);
+                DrawDimmedIcon(dis->hDC, 2, (dis->rcItem.bottom + dis->rcItem.top - cy) / 2, 16, 16, hIcon, 180);
             }
             else
                 DrawIconEx(dis->hDC, 2, (dis->rcItem.bottom + dis->rcItem.top - cy) / 2, hIcon, cx, cy, 0, 0, DI_NORMAL | DI_COMPAT);
@@ -147,8 +145,7 @@ static void DrawMenuItem(DRAWITEMSTRUCT *dis, HICON hIcon, DWORD dwIdle)
                 DrawEdge(dis->hDC, &dis->rcItem, BDR_SUNKENOUTER, BF_RECT);
             }
             if(dwIdle) {
-                ImageList_ReplaceIcon(myGlobals.g_hImageList, 0, hIcon);
-                ImageList_DrawEx(myGlobals.g_hImageList, 0, dis->hDC, 2, (dis->rcItem.bottom + dis->rcItem.top - cy) / 2, 0, 0, CLR_NONE, CLR_NONE, ILD_SELECTED);
+                DrawDimmedIcon(dis->hDC, 2, (dis->rcItem.bottom + dis->rcItem.top - cy) / 2, 16, 16, hIcon, 180);
             }
             else
                 DrawIconEx(dis->hDC, 2, (dis->rcItem.bottom + dis->rcItem.top - cy) / 2, hIcon, cx, cy, 0, 0, DI_NORMAL | DI_COMPAT);
@@ -598,6 +595,26 @@ BOOL CALLBACK HotkeyHandlerDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM
             ReloadTabConfig();
             while(pContainer) {
                 SendMessage(GetDlgItem(pContainer->hwnd, IDC_MSGTABS), EM_THEMECHANGED, 0, 0);
+                pContainer = pContainer->pNextContainer;
+            }
+            break;
+        }
+        case WM_POWERBROADCAST:
+        case WM_DISPLAYCHANGE:
+        {
+            struct ContainerWindowData *pContainer = pFirstContainer;
+
+            //DebugTraceA("powerbroadcast or displaychanged, refreshing skin...");
+            IMG_RefreshItems();
+            while(pContainer) {
+                if(pContainer->bSkinned) {
+                    pContainer->oldSize.cx = pContainer->oldSize.cy = 0;
+                    SelectObject(pContainer->cachedDC, pContainer->oldHBM);
+                    DeleteObject(pContainer->cachedHBM);
+                    DeleteDC(pContainer->cachedDC);
+                    pContainer->cachedDC = 0;
+                }
+                RedrawWindow(pContainer->hwnd, NULL, NULL, RDW_INVALIDATE | RDW_UPDATENOW | RDW_ALLCHILDREN | RDW_FRAME);
                 pContainer = pContainer->pNextContainer;
             }
             break;

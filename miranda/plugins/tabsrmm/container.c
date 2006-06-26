@@ -736,7 +736,7 @@ static BOOL CALLBACK ContainerWndProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPA
                         dis.hDC = dcMem;
                         dis.CtlType = ODT_MENU;
                         for(i = 0; i <= 5; i++) {
-                            dis.itemID = 100 + i;
+                            dis.itemID = 0xffff5000 + i;
                             GetMenuItemRect(hwndDlg, pContainer->hMenu, i, &rcItem);
 
                             dis.rcItem.left = rcItem.left - rcWindow.left;
@@ -787,7 +787,6 @@ static BOOL CALLBACK ContainerWndProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPA
                                   sbaritem->GRADIENT, sbaritem->CORNER, sbaritem->BORDERSTYLE, sbaritem->imageItem);
                     }
 				}
-
 				BitBlt(hdcReal, 0, 0, width, height, pContainer->cachedDC, 0, 0, SRCCOPY);
 				EndPaint(hwndDlg, &ps);
 				return 0;
@@ -1800,7 +1799,7 @@ panel_found:
                                     break;
                                 }
                                 case ID_TABMENU_ATTACHTOCONTAINER:
-                                    if ((iItem = GetTabItemFromMouse(hwndTab, &pt)) == -1)
+                                    if ((iItem = GetTabItemFromMouse(hwndTab, &pt1)) == -1)
                                         break;
                                     ZeroMemory((void *)&item, sizeof(item));
                                     item.mask = TCIF_PARAM;
@@ -1917,8 +1916,6 @@ panel_found:
                         //if(myGlobals.m_ExtraRedraws)
                             RedrawWindow(pContainer->hwndActive, NULL, NULL, RDW_INVALIDATE | RDW_ALLCHILDREN);
                     }
-                    else
-                        _DebugPopup(0, "invalid window handle in deferred configuration handler");
                 }
                 else if(curItem >= 0) {
                     SendMessage((HWND) item.lParam, WM_ACTIVATE, WA_ACTIVE, 0);
@@ -2284,7 +2281,7 @@ panel_found:
 
                         pContainer->hMenu = LoadMenu(g_hInst, MAKEINTRESOURCE(IDR_MENUBAR));
                         for(i = 0; i <= 5; i++) {
-                            mii.wID = 100 + i;
+                            mii.wID = 0xffff5000 + i;
                             SetMenuItemInfo(pContainer->hMenu, i, TRUE, &mii);
                         }
                         if(pContainer->bSkinned && g_MenuBGBrush) {
@@ -2423,11 +2420,12 @@ panel_found:
             int cx = myGlobals.m_smcxicon;
             int cy = myGlobals.m_smcyicon;
             DRAWITEMSTRUCT *dis = (DRAWITEMSTRUCT *)lParam;
+            int id = LOWORD(dis->itemID);
 
-            if(dis->CtlType == ODT_MENU && dis->itemID >= 100 && dis->itemID <= 105) {
+            if(dis->CtlType == ODT_MENU && HIWORD(dis->itemID) == 0xffff &&  id >= 0x5000 && id <= 0x5005) {
                 SIZE sz;
                 HFONT hOldFont;
-                TCHAR *menuName = TranslateTS(menuBarNames_translated[dis->itemID - 100]);
+                TCHAR *menuName = TranslateTS(menuBarNames_translated[id - 0x5000]);
 
                 hOldFont = SelectObject(dis->hDC, GetStockObject(DEFAULT_GUI_FONT));
                 if(pContainer->bSkinned && g_framelessSkinmode)
@@ -2438,21 +2436,21 @@ panel_found:
                 /*if(dis->itemState & ODS_SELECTED || dis->itemState & ODS_HOTLIGHT)
                     FillRect(dis->hDC, &dis->rcItem, GetSysColorBrush(COLOR_MENUHILIGHT));
                 else*/
-                    FillRect(dis->hDC, &dis->rcItem, pContainer->bSkinned && g_MenuBGBrush ? g_MenuBGBrush : GetSysColorBrush(COLOR_MENU));
+                    FillRect(dis->hDC, &dis->rcItem, pContainer->bSkinned && g_MenuBGBrush ? g_MenuBGBrush : GetSysColorBrush(COLOR_3DFACE));
 
                 if(dis->itemState & ODS_SELECTED) {
                     if(pContainer->bSkinned) {
                         POINT pt;
                         HPEN  hPenOld;
 
-                        MoveToEx(dis->hDC, dis->rcItem.left, dis->rcItem.bottom, &pt);
+                        MoveToEx(dis->hDC, dis->rcItem.left, dis->rcItem.bottom - 1, &pt);
                         hPenOld = SelectObject(dis->hDC, myGlobals.g_SkinDarkShadowPen);
                         LineTo(dis->hDC, dis->rcItem.left, dis->rcItem.top);
                         LineTo(dis->hDC, dis->rcItem.right, dis->rcItem.top);
                         SelectObject(dis->hDC, myGlobals.g_SkinLightShadowPen);
-                        MoveToEx(dis->hDC, dis->rcItem.right, dis->rcItem.top + 1, &pt);
-                        LineTo(dis->hDC, dis->rcItem.right, dis->rcItem.bottom);
-                        LineTo(dis->hDC, dis->rcItem.left + 1, dis->rcItem.bottom);
+                        MoveToEx(dis->hDC, dis->rcItem.right - 1, dis->rcItem.top + 1, &pt);
+                        LineTo(dis->hDC, dis->rcItem.right - 1, dis->rcItem.bottom - 1);
+                        LineTo(dis->hDC, dis->rcItem.left, dis->rcItem.bottom - 1);
                         SelectObject(dis->hDC, hPenOld);
                     } else
                         DrawEdge(dis->hDC, &dis->rcItem, BDR_SUNKENINNER, BF_RECT);
@@ -2490,12 +2488,13 @@ panel_found:
         case WM_MEASUREITEM:
             {
                 LPMEASUREITEMSTRUCT lpmi = (LPMEASUREITEMSTRUCT)lParam;
+                int id = LOWORD(lpmi->itemID);
 
-                if(lpmi->CtlType == ODT_MENU && lpmi->itemID >= 100 && lpmi->itemID <= 105) {
+                if(lpmi->CtlType == ODT_MENU && HIWORD(lpmi->itemID) == 0xffff &&  id >= 0x5000 && id <= 0x5005) {
                     SIZE sz;
                     HFONT hOldFont;
                     HDC hdc = GetWindowDC(hwndDlg);
-                    TCHAR *menuName = TranslateTS(menuBarNames_translated[lpmi->itemID - 100]);
+                    TCHAR *menuName = TranslateTS(menuBarNames_translated[id - 0x5000]);
 
                     hOldFont = SelectObject(hdc, GetStockObject(DEFAULT_GUI_FONT));
                     GetTextExtentPoint32(hdc, menuName, lstrlen(menuName), &sz);

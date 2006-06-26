@@ -528,7 +528,7 @@ BOOL CALLBACK DlgProcOptions1(HWND hwndDlg,UINT uMsg,WPARAM wParam,LPARAM lParam
             hListHeading2 = InsertBranch(GetDlgItem(hwndDlg, IDC_CHECKBOXES), TranslateT("Appearance of the message log"), DBGetContactSettingByte(NULL, "Chat", "Branch2Exp", 0)?TRUE:FALSE);
             hListHeading3 = InsertBranch(GetDlgItem(hwndDlg, IDC_CHECKBOXES), TranslateT("Default events to show in new chat rooms if the \'event filter\' is enabled"), DBGetContactSettingByte(NULL, "Chat", "Branch3Exp", 0)?TRUE:FALSE);
             hListHeading4 = InsertBranch(GetDlgItem(hwndDlg, IDC_CHECKBOXES), TranslateT("Icons to display in the message log"), DBGetContactSettingByte(NULL, "Chat", "Branch4Exp", 0)?TRUE:FALSE);
-            hListHeading5 = InsertBranch(GetDlgItem(hwndDlg, IDC_CHECKBOXES), TranslateT("Icons to display in the tray"), DBGetContactSettingByte(NULL, "Chat", "Branch5Exp", 0)?TRUE:FALSE);
+            hListHeading5 = InsertBranch(GetDlgItem(hwndDlg, IDC_CHECKBOXES), TranslateT("Icons to display in the tray and the message window tabs / title"), DBGetContactSettingByte(NULL, "Chat", "Branch5Exp", 0)?TRUE:FALSE);
             if(myGlobals.g_PopupAvail)
                 hListHeading6 = InsertBranch(GetDlgItem(hwndDlg, IDC_CHECKBOXES), TranslateT("Pop-ups to display"), DBGetContactSettingByte(NULL, "Chat", "Branch6Exp", 0)?TRUE:FALSE);
             FillBranch(GetDlgItem(hwndDlg, IDC_CHECKBOXES), hListHeading1, branch1, SIZEOF(branch1), 0);
@@ -788,6 +788,7 @@ static BOOL CALLBACK DlgProcOptions2(HWND hwndDlg,UINT uMsg,WPARAM wParam,LPARAM
         SendDlgItemMessage(hwndDlg, IDC_NICKCOLORS, CB_INSERTSTRING, -1, (LPARAM)TranslateT("Extended mode 1"));
         SendDlgItemMessage(hwndDlg, IDC_NICKCOLORS, CB_INSERTSTRING, -1, (LPARAM)TranslateT("Extended mode 2"));
         SendDlgItemMessage(hwndDlg, IDC_NICKCOLORS, CB_INSERTSTRING, -1, (LPARAM)TranslateT("Selection background"));
+        SendDlgItemMessage(hwndDlg, IDC_NICKCOLORS, CB_INSERTSTRING, -1, (LPARAM)TranslateT("Selected text"));
 
         SendDlgItemMessage(hwndDlg, IDC_NICKCOLOR, CPM_SETCOLOUR, 0, g_Settings.nickColors[0]);
         
@@ -897,7 +898,7 @@ static BOOL CALLBACK DlgProcOptions2(HWND hwndDlg,UINT uMsg,WPARAM wParam,LPARAM
         else if(LOWORD(wParam) == IDC_NICKCOLORS && HIWORD(wParam) == CBN_SELCHANGE) {
             int iSel = SendDlgItemMessage(hwndDlg, IDC_NICKCOLORS, CB_GETCURSEL, 0, 0);
 
-            if(iSel >= 0 && iSel <= 5)
+            if(iSel >= 0 && iSel <= 6)
                 SendDlgItemMessage(hwndDlg, IDC_NICKCOLOR, CPM_SETCOLOUR, 0, g_Settings.nickColors[iSel]);
             break;
         }
@@ -915,7 +916,7 @@ static BOOL CALLBACK DlgProcOptions2(HWND hwndDlg,UINT uMsg,WPARAM wParam,LPARAM
         case IDC_NICKCOLOR:
         {
             int iSel = (int)SendDlgItemMessage(hwndDlg, IDC_NICKCOLORS, CB_GETCURSEL, 0, 0);
-            if(iSel >= 0 && iSel <= 5)
+            if(iSel >= 0 && iSel <= 6)
                 g_Settings.nickColors[iSel] = SendDlgItemMessage(hwndDlg, IDC_NICKCOLOR, CPM_GETCOLOUR, 0, 0);
             break;
         }
@@ -1190,7 +1191,7 @@ static BOOL CALLBACK DlgProcOptions2(HWND hwndDlg,UINT uMsg,WPARAM wParam,LPARAM
                 FreeMsgLogBitmaps();
                 LoadMsgLogBitmaps();
 
-                for(i = 0; i <= 5; i++) {
+                for(i = 0; i <= 6; i++) {
                     mir_snprintf(szBuf, 20, "NickColor%d", i);
                     DBWriteContactSettingDword(NULL, "Chat", szBuf, g_Settings.nickColors[i]);
                 }
@@ -1438,11 +1439,12 @@ void LoadGlobalSettings(void)
 	LoadMsgDlgFont(19, &lf, NULL, "ChatFonts");
 	g_Settings.UserListHeadingsFont = CreateFontIndirect(&lf);
 
-    for(i = 0; i < 5; i++) {
+    for(i = 0; i < 6; i++) {
         mir_snprintf(szBuf, 20, "NickColor%d", i);
         g_Settings.nickColors[i] = DBGetContactSettingDword(NULL, "Chat", szBuf, g_Settings.crUserListColor);
     }
     g_Settings.nickColors[5] = DBGetContactSettingDword(NULL, "Chat", "NickColor5", GetSysColor(COLOR_HIGHLIGHT));
+    g_Settings.nickColors[6] = DBGetContactSettingDword(NULL, "Chat", "NickColor6", GetSysColor(COLOR_HIGHLIGHTTEXT));
     if(g_Settings.SelectionBGBrush)
         DeleteObject(g_Settings.SelectionBGBrush);
     g_Settings.SelectionBGBrush = CreateSolidBrush(g_Settings.nickColors[5]);

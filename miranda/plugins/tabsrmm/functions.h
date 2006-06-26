@@ -63,7 +63,7 @@ UINT DrawRichEditFrame(HWND hwnd, struct MessageWindowData *mwdat, UINT skinID, 
 UINT NcCalcRichEditFrame(HWND hwnd, struct MessageWindowData *mwdat, UINT skinID, UINT msg, WPARAM wParam, LPARAM lParam, WNDPROC OldWndProc);
 
 void FirstTimeConfig();
-void IMG_FreeDecoder();
+void IMG_RefreshItems();
 int  RegisterContainer();
 HMENU BuildContainerMenu();
 void BuildCodePageList();
@@ -78,8 +78,8 @@ void ReloadGlobals();
 static void LoadIconTheme();
 static int LoadFromIconLib();
 static int SetupIconLibConfig();
-void CreateSystrayIcon();
 void PreTranslateDates();
+void DrawDimmedIcon(HDC hdc, LONG left, LONG top, LONG dx, LONG dy, HICON hIcon, BYTE alpha);
 
 BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam);
 int InitOptions(void);

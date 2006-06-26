@@ -200,6 +200,7 @@ struct ProtocolData {
 #define EM_VALIDATEBOTTOM         (WM_USER+0x104)
 #define EM_THEMECHANGED           (WM_USER+0x105)
 #define EM_UNSUBCLASSED			  (WM_USER+0x106)
+#define EM_REFRESHWITHOUTCLIP     (WM_USER+0x107)
 
 #define HM_EVENTSENT         (WM_USER+10)
 #define DM_REMAKELOG         (WM_USER+11)
@@ -539,7 +540,7 @@ static __inline int mir_snprintfW(wchar_t *buffer, size_t count, const wchar_t* 
 #define THEME_READ_TEMPLATES 2
 #define THEME_READ_ALL (THEME_READ_FONTS | THEME_READ_TEMPLATES)
 
-static void __fastcall IMG_RenderImageItem(HDC hdc, ImageItem *item, RECT *rc);
+void __fastcall IMG_RenderImageItem(HDC hdc, ImageItem *item, RECT *rc);
 void IMG_InitDecoder();
 static void LoadSkinItems(char *file, int onStartup);
 static void IMG_CreateItem(ImageItem *item, const char *fileName, HDC hdc);
