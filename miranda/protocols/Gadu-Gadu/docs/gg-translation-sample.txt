@@ -103,6 +103,10 @@ Miranda nie mog³a ustaliæ IP serwera Gadu-Gadu na podstawie nazwy hosta.
 Otrzymano niepoprawn¹ odpowiedŸ od serwera.
 [Cannot establish secure connection.]
 Nie mo¿na nawi¹zaæ bezpiecznego po³¹czenia.
+[Server disconnected asking you for changing your e-mail.]
+Serwer roz³¹czy³ siê prosz¹c o zmianê Twojego adresu e-mail.
+[Too many login attempts with invalid password.]
+Za du¿o prób po³¹czeñ z podaniem b³êdnego has³a.
 [Your Gadu-Gadu number and password combination was rejected by the Gadu-Gadu server. Please check login details at M->Options->Network->Gadu-Gadu and try again.]
 Twój numer i has³o zosta³y odrzucone przez serwer Gadu-Gadu. SprawdŸ dane logowania M->Opcje->Sieæ->Gadu-Gadu i spróbuj ponownie.
 [Connecting to Gadu-Gadu hub failed.]

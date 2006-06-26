@@ -263,6 +263,8 @@ void *__stdcall gg_mainthread(void *empty)
 		{ GG_FAILURE_PASSWORD, 		"Your Gadu-Gadu number and password combination was rejected by the Gadu-Gadu server. Please check login details at M->Options->Network->Gadu-Gadu and try again." },
 		{ GG_FAILURE_404, 			"Connecting to Gadu-Gadu hub failed." },
 		{ GG_FAILURE_TLS, 			"Cannot establish secure connection." },
+		{ GG_FAILURE_NEED_EMAIL,	"Server disconnected asking you for changing your e-mail." },
+		{ GG_FAILURE_INTRUDER,		"Too many login attempts with invalid password." },
 		{ 0, 						"Unknown" }
 	};
     GGTHREAD *thread = empty;

@@ -390,15 +390,16 @@ int __declspec(dllexport) Unload()
     if(ggModeMsg.szInvisible)   free(ggModeMsg.szInvisible);
     if(ggModeMsg.szOffline)     free(ggModeMsg.szOffline);
 
-	// Cleanup protonames
-	if(ggProtoName) free(ggProtoName);
-	if(ggProtoError) free(ggProtoError);
-
 	// Uninit SSL library
 	gg_ssl_uninit();
 
     // Cleanup WinSock
     WSACleanup();
+
+	// Cleanup protonames
+	if(ggProtoName) free(ggProtoName);
+	if(ggProtoError) free(ggProtoError);
+
     return 0;
 }
 

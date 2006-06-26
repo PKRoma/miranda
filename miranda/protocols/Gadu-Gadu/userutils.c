@@ -55,11 +55,11 @@ void *gg_doregister(char *newPass, char *newEmail)
     }
     else
     {
+        DBWriteContactSettingDword(NULL, GG_PROTO, GG_KEY_UIN, s->uin);
         gg_pubdir_free(h);
         CallService(MS_DB_CRYPT_ENCODESTRING, strlen(newPass) + 1, (LPARAM) newPass);
         DBWriteContactSettingString(NULL, GG_PROTO, GG_KEY_PASSWORD, newPass);
         DBWriteContactSettingString(NULL, GG_PROTO, GG_KEY_EMAIL, newEmail);
-        DBWriteContactSettingDword(NULL, GG_PROTO, GG_KEY_UIN, s->uin);
 #ifdef DEBUGMODE
         gg_netlog("gg_doregister(): Account registration succesful.");
 #endif
