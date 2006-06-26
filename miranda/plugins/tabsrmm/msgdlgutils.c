@@ -659,8 +659,17 @@ int MsgWindowMenuHandler(HWND hwndDlg, struct MessageWindowData *dat, int select
             case ID_MESSAGELOG_IMPORTMESSAGELOGSETTINGS:
                 {
                     char *szFilename = GetThemeFileName(0);
+                    DWORD dwFlags = THEME_READ_FONTS;
+                    int   result;
+
                     if(szFilename != NULL) {
-                        ReadThemeFromINI(szFilename, 0, 0, THEME_READ_ALL);
+                        result = MessageBox(0, TranslateT("Do you want to also read message templates from the theme?\nCaution: This will overwrite the stored template set which may affect the look of your message window significantly.\nSelect cancel to not load anything at all."),
+                                            TranslateT("Load theme"), MB_YESNOCANCEL);
+                        if(result == IDCANCEL)
+                            return 1;
+                        else if(result == IDYES)
+                            dwFlags |= THEME_READ_TEMPLATES;
+                        ReadThemeFromINI(szFilename, 0, 0, dwFlags);
                         CacheMsgLogIcons();
                         CacheLogFonts();
                         WindowList_Broadcast(hMessageWindowList, DM_OPTIONSAPPLIED, 1, 0);

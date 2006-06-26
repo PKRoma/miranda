@@ -1411,6 +1411,9 @@ static LRESULT CALLBACK TabControlSubclassProc(HWND hwnd, UINT msg, WPARAM wPara
                     else {
                         rectTemp = rctPage;
 
+                        if(tabdat->m_moderntabs)
+                            SelectObject(hdc, myGlobals.tabConfig.m_hPenItemShadow);
+
                         MoveToEx(hdc, rectTemp.left, rectTemp.bottom - 1, &pt);
                         LineTo(hdc, rectTemp.left, rectTemp.top);
 

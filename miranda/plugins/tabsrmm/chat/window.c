@@ -970,8 +970,10 @@ static BOOL CALLBACK FilterWndProc(HWND hwndDlg,UINT uMsg,WPARAM wParam,LPARAM l
 					iFlags |= GC_EVENT_REMOVESTATUS;
 
                 if(si) {
-                    if(iFlags == 0)
+                    if(iFlags == 0) {
                         DBDeleteContactSetting(si->hContact, "Chat", "FilterFlags");
+                        iFlags = DBGetContactSettingDword(0, "Chat", "FilterFlags", 0x03E0);
+                    }
                     else
                         DBWriteContactSettingDword(si->hContact, "Chat", "FilterFlags", iFlags);
                     SendMessage(si->hWnd, GC_CHANGEFILTERFLAG, 0, (LPARAM)iFlags);

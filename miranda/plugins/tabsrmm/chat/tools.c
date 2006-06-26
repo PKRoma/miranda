@@ -530,16 +530,17 @@ flash_and_switch:
 
             //if(IsIconic(dat->pContainer->hwnd) || 1) { //dat->pContainer->hwndActive != si->hWnd) {
             if(iEvent & g_Settings.dwTrayIconFlags || bForcedIcon) { //dat->pContainer->hwndActive != si->hWnd) {
-               
-                if(hNotifyIcon == hIcons[ICON_HIGHLIGHT])
-                    dat->iFlashIcon = hNotifyIcon;
-                else {
-                    if(dat->iFlashIcon != hIcons[ICON_HIGHLIGHT] && dat->iFlashIcon != hIcons[ICON_MESSAGE])
+                if(!bActiveTab) {
+                    if(hNotifyIcon == hIcons[ICON_HIGHLIGHT])
                         dat->iFlashIcon = hNotifyIcon;
-                }
-                if(bMustFlash) {
-                    SetTimer(si->hWnd, TIMERID_FLASHWND, TIMEOUT_FLASHWND, NULL);
-                    dat->mayFlashTab = TRUE;
+                    else {
+                        if(dat->iFlashIcon != hIcons[ICON_HIGHLIGHT] && dat->iFlashIcon != hIcons[ICON_MESSAGE])
+                            dat->iFlashIcon = hNotifyIcon;
+                    }
+                    if(bMustFlash) {
+                        SetTimer(si->hWnd, TIMERID_FLASHWND, TIMEOUT_FLASHWND, NULL);
+                        dat->mayFlashTab = TRUE;
+                    }
                 }
             }
 
@@ -566,7 +567,7 @@ flash_and_switch:
             if(hNotifyIcon && bInactive && (iEvent && g_Settings.dwTrayIconFlags || bForcedIcon)) {
                 HICON hIcon;
                 
-                if(/* !bActiveTab && */bMustFlash)
+                if(bMustFlash)
                     dat->hTabIcon = hNotifyIcon;
                 else if(dat->iFlashIcon) { //if(!bActiveTab) {
                     TCITEM item = {0};
