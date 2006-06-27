@@ -166,7 +166,6 @@ int ModulesLoaded(WPARAM wParam,LPARAM lParam)
 		exit(1);
 	}
 	aim_links_init();
-	offline_contacts();
 	return 0;
 }
 int PreBuildContactMenu(WPARAM wParam,LPARAM lParam)

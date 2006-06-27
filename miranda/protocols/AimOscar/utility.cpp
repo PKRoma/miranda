@@ -11,6 +11,7 @@ void start_connection(int initial_status)
 {
 	if(conn.status==ID_STATUS_OFFLINE)
 	{
+		offline_contacts();
 		DBVARIANT dbv;
 		if (!DBGetContactSetting(NULL, AIM_PROTOCOL_NAME, AIM_KEY_SN, &dbv))
 			DBFreeVariant(&dbv);
@@ -171,26 +172,37 @@ void add_contacts_to_groups()
 {
 	BOOL bUtfReadyDB = ServiceExists(MS_DB_CONTACT_GETSETTING_STR);
 	HANDLE hContact = (HANDLE) CallService(MS_DB_CONTACT_FINDFIRST, 0, 0);
+	//MessageBox( NULL, "Entered the function...protocol name next", AIM_PROTOCOL_NAME, MB_OK );
+	//MessageBox( NULL, AIM_PROTOCOL_NAME, AIM_PROTOCOL_NAME, MB_OK );
 	while (hContact)
 	{
 		char *protocol = (char *) CallService(MS_PROTO_GETCONTACTBASEPROTO, (WPARAM) hContact, 0);
+		//MessageBox( NULL, protocol, AIM_PROTOCOL_NAME, MB_OK );
 		if (protocol != NULL && !strcmp(protocol, AIM_PROTOCOL_NAME))
 		{
+			//MessageBox( NULL, "Matching contact...making a groupid key...", AIM_PROTOCOL_NAME, MB_OK );
 			char* group= new char[strlen(AIM_KEY_GI)+10];
 			mir_snprintf(group,strlen(AIM_KEY_GI)+10,AIM_KEY_GI"%d",1);
+			//MessageBox( NULL, group, AIM_PROTOCOL_NAME, MB_OK );
 			unsigned short group_id=DBGetContactSettingWord(hContact, AIM_PROTOCOL_NAME, group,0);	
 			delete[] group;
 			if(group_id)
 			{
+				//MessageBox( NULL, "Group Id was valid...", AIM_PROTOCOL_NAME, MB_OK );
 				char group_id_string[32];
 				_itoa(group_id,group_id_string,10);
+				//MessageBox( NULL, "Made string out of it...", AIM_PROTOCOL_NAME, MB_OK );
+				//MessageBox( NULL, group_id_string, AIM_PROTOCOL_NAME, MB_OK );
 				DBVARIANT dbv;
 				if(bUtfReadyDB==1)
 				{
+					//MessageBox( NULL, "Utf path... should start writing", AIM_PROTOCOL_NAME, MB_OK );
 					if(DBGetContactSettingByte(hContact, AIM_PROTOCOL_NAME,AIM_KEY_NC,0))
 					{
 						if(!DBGetContactSettingStringUtf(NULL,ID_GROUP_KEY,group_id_string,&dbv))//utf
 						{
+							//MessageBox( NULL, "Got group name... should add", AIM_PROTOCOL_NAME, MB_OK );
+							//MessageBox( NULL, dbv.pszVal, AIM_PROTOCOL_NAME, MB_OK );
 							create_group(dbv.pszVal,group_id);
 							DBWriteContactSettingStringUtf(hContact,MOD_KEY_CL,OTH_KEY_GP,dbv.pszVal);
 							DBFreeVariant(&dbv);
@@ -200,10 +212,13 @@ void add_contacts_to_groups()
 				}
 				else
 				{	
+					//MessageBox( NULL, "ansi path... should start writing", AIM_PROTOCOL_NAME, MB_OK );
 					if(DBGetContactSettingByte(hContact, AIM_PROTOCOL_NAME,AIM_KEY_NC,0))
 					{
 						if(!DBGetContactSetting(NULL,ID_GROUP_KEY,group_id_string,&dbv))//utf
 						{
+							//MessageBox( NULL, "Got group name... should add", AIM_PROTOCOL_NAME, MB_OK );
+							//MessageBox( NULL, dbv.pszVal, AIM_PROTOCOL_NAME, MB_OK );
 							create_group(dbv.pszVal,group_id);
 							DBWriteContactSettingString(hContact,MOD_KEY_CL,OTH_KEY_GP,dbv.pszVal);
 							DBFreeVariant(&dbv);
@@ -256,7 +271,7 @@ void offline_contact(HANDLE hContact, bool remove_settings)
 		DBDeleteContactSetting(hContact, AIM_PROTOCOL_NAME, AIM_KEY_OT);
 	}
 	DBWriteContactSettingWord(hContact, AIM_PROTOCOL_NAME, AIM_KEY_ST, ID_STATUS_OFFLINE);
-	if(ServiceExists(MS_CLIST_EXTRA_ADD_ICON))
+	/*if(ServiceExists(MS_CLIST_EXTRA_ADD_ICON))
 	{
 		char* data=new char[sizeof(HANDLE)*2+sizeof(unsigned short)];
 		HANDLE handle=(HANDLE)-1;
@@ -271,7 +286,7 @@ void offline_contact(HANDLE hContact, bool remove_settings)
 		unsigned short column_type2=EXTRA_ICON_ADV2;
 		memcpy(&data2[sizeof(HANDLE)*2],(char*)&column_type2,sizeof(unsigned short));
 		ForkThread((pThreadFunc)set_extra_icon,data2);
-	}
+	}*/
 }
 void offline_contacts()
 {
@@ -677,7 +692,7 @@ static char* module_ptr=NULL;
 static int EnumSettings(const char *szSetting,LPARAM lParam)
 {
 	char* szModule=(char*)lParam;
-	module_ptr=new char[module_size+strlen(szSetting)+2];
+	module_ptr=renew(module_ptr,module_size,strlen(szSetting)+2);
 	memcpy(&module_ptr[module_size],szSetting,strlen(szSetting));
 	memcpy(&module_ptr[module_size+strlen(szSetting)],";\0",2);
 	module_size+=strlen(szSetting)+1;
