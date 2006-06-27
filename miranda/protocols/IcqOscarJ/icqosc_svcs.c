@@ -333,6 +333,10 @@ int IcqSetStatus(WPARAM wParam, LPARAM lParam)
 {
   int nNewStatus = MirandaStatusToSupported(wParam);
 
+  // check if netlib handles are ready
+  if (!ghServerNetlibUser)
+    return 0;
+
   if (gbTempVisListEnabled) // remove temporary visible users
     clearTemporaryVisibleList();
 

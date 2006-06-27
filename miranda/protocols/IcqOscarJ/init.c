@@ -119,6 +119,8 @@ int __declspec(dllexport) Load(PLUGINLINK *link)
 
   pluginLink = link;
 
+  ghServerNetlibUser = NULL;
+
   // Are we running under Unicode Windows version ?
   gbUnicodeAPI = (GetVersion() & 0x80000000) == 0;
   // Do we have new LangPack module ready ?
