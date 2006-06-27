@@ -2968,6 +2968,9 @@ LABEL_SHOWWINDOW:
         case DM_SAVESIZE: {
                 RECT rcClient;
 
+                if(dat->dwFlags & MWF_NEEDCHECKSIZE)
+                    lParam = 0;
+
                 dat->dwFlags &= ~MWF_NEEDCHECKSIZE;
                 if(dat->dwFlags & MWF_WASBACKGROUNDCREATE) {
                     dat->dwFlags &= ~MWF_INITMODE;
@@ -2986,7 +2989,8 @@ LABEL_SHOWWINDOW:
                 }
                 else {
                     SendMessage(hwndDlg, WM_SIZE, 0, 0);
-                    PostMessage(hwndDlg, DM_SCROLLLOGTOBOTTOM, 1, 1);
+                    if(lParam == 0)
+                        PostMessage(hwndDlg, DM_SCROLLLOGTOBOTTOM, 1, 1);
                 }
                 return 0;
             }

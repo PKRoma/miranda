@@ -702,6 +702,7 @@ BEGIN
             MENUITEM SEPARATOR
             MENUITEM "Use Contacts local Time",     ID_LOGMENU_USECONTACTSLOCALTIME
         END
+        MENUITEM "Use simple Template",         ID_LOGMENU_USESIMPLETEMPLATE
         MENUITEM SEPARATOR
         POPUP "Message Log Formatting"
         BEGIN
@@ -754,14 +755,12 @@ BEGIN
             POPUP "Global"
             BEGIN
                 MENUITEM "BBCode",                      ID_GLOBAL_BBCODE
-                MENUITEM "Simple Tags (*/_)",           ID_GLOBAL_SIMPLETAGS
                 MENUITEM "Off",                         ID_GLOBAL_OFF
             END
             POPUP "This Contact"
             BEGIN
                 MENUITEM "Global Setting",              ID_THISCONTACT_GLOBALSETTING
                 MENUITEM "BBCode",                      ID_THISCONTACT_BBCODE
-                MENUITEM "Simple Tags (*/_)",           ID_THISCONTACT_SIMPLETAGS
                 MENUITEM "Force Off",                   ID_THISCONTACT_OFF
             END
         END
@@ -894,13 +893,13 @@ BEGIN
                 MENUITEM "Show Symbols",                40132
                 MENUITEM "Use Incoming/Outgoing Icons", 40133
             END
-            MENUITEM "Nickname",                    40055
             MENUITEM SEPARATOR
             MENUITEM "Grid Lines",                  40068
             MENUITEM SEPARATOR
             MENUITEM "Log Status Changes",          40120
         END
         MENUITEM SEPARATOR
+        MENUITEM "Use simple Templates",        ID_LOGMENU_USESIMPLETEMPLATE
         POPUP "Timestamp Settings"
         BEGIN
             MENUITEM "Show Timestamp",              40047

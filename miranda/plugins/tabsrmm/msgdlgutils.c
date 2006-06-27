@@ -405,6 +405,7 @@ int MsgWindowUpdateMenu(HWND hwndDlg, struct MessageWindowData *dat, HMENU subme
         CheckMenuItem(submenu, ID_LOGMENU_SHOWDATE, MF_BYCOMMAND | dat->dwFlags & MWF_LOG_SHOWDATES ? MF_CHECKED : MF_UNCHECKED);
         CheckMenuItem(submenu, ID_LOGMENU_SHOWSECONDS, MF_BYCOMMAND | dat->dwFlags & MWF_LOG_SHOWSECONDS ? MF_CHECKED : MF_UNCHECKED);
         CheckMenuItem(submenu, ID_LOGMENU_INDENTMESSAGEBODY, MF_BYCOMMAND | dat->dwFlags & MWF_LOG_INDENT ? MF_CHECKED : MF_UNCHECKED);
+        CheckMenuItem(submenu, ID_LOGMENU_USESIMPLETEMPLATE, MF_BYCOMMAND | (!(dat->dwFlags & MWF_LOG_NORMALTEMPLATES) ? MF_CHECKED : MF_UNCHECKED));
         CheckMenuItem(submenu, ID_MESSAGEICONS_SHOWICONS, MF_BYCOMMAND | dat->dwFlags & MWF_LOG_SHOWICONS ? MF_CHECKED : MF_UNCHECKED);
         CheckMenuItem(submenu, ID_MESSAGEICONS_SYMBOLSINSTEADOFICONS, MF_BYCOMMAND | dat->dwFlags & MWF_LOG_SYMBOLS ? MF_CHECKED : MF_UNCHECKED);
         CheckMenuItem(submenu, ID_MESSAGEICONS_USEINCOMING, MF_BYCOMMAND | dat->dwFlags & MWF_LOG_INOUTICONS ? MF_CHECKED : MF_UNCHECKED);
@@ -608,6 +609,9 @@ int MsgWindowMenuHandler(HWND hwndDlg, struct MessageWindowData *dat, int select
                         DBDeleteContactSetting(dat->hContact, SRMSGMOD_T, "RTL");
                     SendMessage(hwndDlg, DM_OPTIONSAPPLIED, 0, 0);
                 }
+                return 1;
+            case ID_LOGMENU_USESIMPLETEMPLATE:
+                dat->dwFlags ^= MWF_LOG_NORMALTEMPLATES;
                 return 1;
             case ID_LOGMENU_SHOWDATE:
                 dat->dwFlags ^= MWF_LOG_SHOWDATES;
@@ -1292,10 +1296,8 @@ BOOL DoRtfToTags(TCHAR * pszText, struct MessageWindowData *dat)
 					bJustRemovedRTF = TRUE;
 					iRemoveChars = (p1[2] != (TCHAR)'0')?2:3;
                     if(!(lf.lfWeight == FW_BOLD)) {          // only allow bold if the font itself isn't a bold one, otherwise just strip it..
-                        if(dat->SendFormat == SENDFORMAT_BBCODE)
+                        if(dat->SendFormat)
                             _sntprintf(InsertThis, safe_sizeof(InsertThis), (p1[2] != (TCHAR)'0') ? _T("[b]") : _T("[/b]"));
-                        else
-                            _sntprintf(InsertThis, safe_sizeof(InsertThis), (p1[2] != (TCHAR)'0') ? _T("*") : _T("*"));
                     }
 
 				}
@@ -1305,10 +1307,8 @@ BOOL DoRtfToTags(TCHAR * pszText, struct MessageWindowData *dat)
 					bJustRemovedRTF = TRUE;
 					iRemoveChars = (p1[2] != (TCHAR)'0')?2:3;
                     if(!lf.lfItalic) {                       // same as for bold
-                        if(dat->SendFormat == SENDFORMAT_BBCODE)
+                        if(dat->SendFormat)
                             _sntprintf(InsertThis, safe_sizeof(InsertThis), (p1[2] != (TCHAR)'0') ? _T("[i]") : _T("[/i]"));
-                        else
-                            _sntprintf(InsertThis, safe_sizeof(InsertThis), (p1[2] != (TCHAR)'0') ? _T("/") : _T("/"));
                     }
 
 				}
@@ -1323,10 +1323,8 @@ BOOL DoRtfToTags(TCHAR * pszText, struct MessageWindowData *dat)
 					else
 						iRemoveChars = 3;
                     if(!lf.lfUnderline)  {                   // same as for bold
-                        if(dat->SendFormat == SENDFORMAT_BBCODE)
+                        if(dat->SendFormat)
                             _sntprintf(InsertThis, safe_sizeof(InsertThis), (p1[3] != (TCHAR)'0' && p1[3] != (TCHAR)'n') ? _T("[u]") : _T("[/u]"));
-                        else
-                            _sntprintf(InsertThis, safe_sizeof(InsertThis), (p1[3] != (TCHAR)'0' && p1[3] != (TCHAR)'n') ? _T("_") : _T("_"));
                     }
 
 				}
@@ -1802,6 +1800,8 @@ void GetSendFormat(HWND hwndDlg, struct MessageWindowData *dat, int mode)
         dat->SendFormat = DBGetContactSettingDword(dat->hContact, SRMSGMOD_T, "sendformat", myGlobals.m_SendFormat);
         if(dat->SendFormat == -1)           // per contact override to disable it..
             dat->SendFormat = 0;
+        else if(dat->SendFormat == 0)
+            dat->SendFormat = myGlobals.m_SendFormat ? 1 : 0;
     }
     for(i = 0; i < 4; i++) {
         EnableWindow(GetDlgItem(hwndDlg, controls[i]), dat->SendFormat != 0 ? TRUE : FALSE);
@@ -2730,3 +2730,12 @@ int MY_GetContactDisplayNameW(HANDLE hContact, wchar_t *szwBuf, unsigned int siz
 }
 #endif
 
+int MY_CallService(const char *svc, WPARAM wParam, LPARAM lParam)
+{
+    return(CallService(svc, wParam, lParam));
+}
+
+int MY_ServiceExists(const char *svc)
+{
+    return(ServiceExists(svc));
+}

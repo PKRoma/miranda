@@ -34,6 +34,7 @@ License: GPL
 
 #include <string>
 #include "msgdlgutils.h"
+#include "m_smileyadd.h"
 
 #define MWF_LOG_TEXTFORMAT 0x2000000
 #define MSGDLGFONTCOUNT 22
@@ -43,6 +44,10 @@ extern "C" int _DebugPopup(HANDLE hContact, const char *fmt, ...);
 extern "C" char *xStatusDescr[];
 extern "C" TCHAR *MY_DBGetContactSettingString(HANDLE hContact, char *szModule, char *szSetting);
 extern "C" DWORD m_LangPackCP;
+extern "C" int MY_CallService(const char *svc, WPARAM wParam, LPARAM lParam);
+extern "C" int MY_ServiceExists(const char *svc);
+
+static int iHaveSmileyadd = -1;
 
 #if defined(UNICODE)
 
@@ -64,14 +69,13 @@ static WCHAR *formatting_strings_end[] = { L"b0 ", L"i0 ", L"u0 ", L"s0 ", L
  *        hiword = bbcode support (strip bbcodes if 0)
  */
 
-extern "C" const WCHAR *FormatRaw(DWORD dwFlags, const WCHAR *msg, int flags)
+extern "C" const WCHAR *FormatRaw(DWORD dwFlags, const WCHAR *msg, int flags, const char *szProto, HANDLE hContact)
 {
     static std::wstring message(msg);
     unsigned beginmark = 0, endmark = 0, tempmark = 0, index;
     int i, endindex;
     WCHAR endmarker;
     message.assign(msg);
-
  #ifdef __MATHMOD_SUPPORT
     if(myGlobals.m_MathModAvail && message.find(myGlobals.m_MathModStartDelimiter) != message.npos)
         return(message.c_str());
@@ -79,6 +83,9 @@ extern "C" const WCHAR *FormatRaw(DWORD dwFlags, const WCHAR *msg, int flags)
 
     if(HIWORD(flags) == 0)
         goto nobbcode;
+
+    if(iHaveSmileyadd == -1)
+        iHaveSmileyadd = MY_ServiceExists(MS_SMILEYADD_BATCHPARSE);
 
     beginmark = 0;
     while(TRUE) {
@@ -174,6 +181,30 @@ ok:
                 index = 2;
                 break;
         }
+
+        /*
+         * check if the code enclosed by simple formatting tags is a valid smiley code and skip formatting if 
+         * it really is one.
+         */
+
+        if(iHaveSmileyadd && endmark > beginmark + 1) {
+            std::wstring smcode;
+            smcode.assign(message, beginmark, (endmark - beginmark) + 1);
+            SMADD_BATCHPARSE2 smbp = {0};
+            SMADD_BATCHPARSERES *smbpr;
+
+            smbp.cbSize = sizeof(smbp);
+            smbp.Protocolname = szProto;
+            smbp.flag = SAFL_TCHAR | SAFL_PATH;
+            smbp.str = (TCHAR *)smcode.c_str();
+            smbp.hContact = hContact;
+            smbpr = (SMADD_BATCHPARSERES *)MY_CallService(MS_SMILEYADD_BATCHPARSE, 0, (LPARAM)&smbp);
+            if(smbpr) {
+                MY_CallService(MS_SMILEYADD_BATCHFREE, 0, (LPARAM)smbpr);
+                beginmark = endmark + 1;
+                continue;
+            }
+        }
         message.insert(endmark, L"%%%");
         message.replace(endmark, 4, formatting_strings_end[index]);
         message.insert(beginmark, L"%%%");
@@ -198,7 +229,7 @@ static char *formatting_strings_end[] = { "b0 ", "i0 ", "u0 ", "s0 ", "c0 "
  * this translates formatting tags into rtf sequences...
  */
 
-extern "C" const char *FormatRaw(DWORD dwFlags, const char *msg, int flags)
+extern "C" const char *FormatRaw(DWORD dwFlags, const char *msg, int flags, const char *szProto, HANDLE hContact)
 {
     static std::string message(msg);
     unsigned beginmark = 0, endmark = 0, tempmark = 0, index;
@@ -213,6 +244,9 @@ extern "C" const char *FormatRaw(DWORD dwFlags, const char *msg, int flags)
 
     if(HIWORD(flags) == 0)
         goto nobbcode;
+
+    if(iHaveSmileyadd == -1)
+        iHaveSmileyadd = MY_ServiceExists(MS_SMILEYADD_BATCHPARSE);
 
     while(TRUE) {
         for(i = 0; i < NR_CODES; i++) {
@@ -308,6 +342,24 @@ ok:
             case '_':
                 index = 2;
                 break;
+        }
+        if(iHaveSmileyadd && endmark > beginmark + 1) {
+            std::string smcode;
+            smcode.assign(message, beginmark, (endmark - beginmark) + 1);
+            SMADD_BATCHPARSE2 smbp = {0};
+            SMADD_BATCHPARSERES *smbpr;
+
+            smbp.cbSize = sizeof(smbp);
+            smbp.Protocolname = szProto;
+            smbp.flag = SAFL_TCHAR | SAFL_PATH;
+            smbp.str = (TCHAR *)smcode.c_str();
+            smbp.hContact = hContact;
+            smbpr = (SMADD_BATCHPARSERES *)MY_CallService(MS_SMILEYADD_BATCHPARSE, 0, (LPARAM)&smbp);
+            if(smbpr) {
+                MY_CallService(MS_SMILEYADD_BATCHFREE, 0, (LPARAM)smbpr);
+                beginmark = endmark + 1;
+                continue;
+            }
         }
         message.insert(endmark, "%%%");
         message.replace(endmark, 4, formatting_strings_end[index]);

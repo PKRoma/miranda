@@ -501,6 +501,7 @@ static BOOL CALLBACK ContainerWndProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPA
 				isMin = isMax = isClose = FALSE;
 
 				if(pt.x >= (rcWindow.left + pContainer->rcMin.left) && pt.x <= (rcWindow.left + pContainer->rcClose.right) && pt.y < rcWindow.top + 24 && wParam != HTTOPRIGHT) {
+                    LRESULT result = 0; //DefWindowProc(hwndDlg, msg, wParam, lParam);
 					HDC hdc = GetWindowDC(hwndDlg);
 					LONG left = rcWindow.left;
 
@@ -565,12 +566,12 @@ static BOOL CALLBACK ContainerWndProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPA
 						}
 					}
 					ReleaseDC(hwndDlg, hdc);
-					return 0;
+					return result;
 				}
 				else {
-					DefWindowProc(hwndDlg, msg, wParam, lParam);
-					RedrawWindow(hwndDlg, NULL, NULL, RDW_INVALIDATE | RDW_FRAME | RDW_UPDATENOW | RDW_NOCHILDREN);
-					return 0;
+                    LRESULT result = DefWindowProc(hwndDlg, msg, wParam, lParam);
+					//RedrawWindow(hwndDlg, NULL, NULL, RDW_INVALIDATE | RDW_FRAME | RDW_UPDATENOW | RDW_NOCHILDREN);
+					return result;
 				}
 			}
 			break;
@@ -761,7 +762,7 @@ static BOOL CALLBACK ContainerWndProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPA
 				GetClientRect(hwndDlg, &rcClient);
 				width = rcClient.right - rcClient.left;
 				height = rcClient.bottom - rcClient.top;
-				if(width != pContainer->oldDCSize.cx || height != pContainer->oldSize.cy) {
+				if(width != pContainer->oldDCSize.cx || height != pContainer->oldDCSize.cy) {
                     StatusItems_t *sbaritem = &StatusItems[ID_EXTBKSTATUSBAR];
                     BOOL statusBarSkinnd = !(pContainer->dwFlags & CNT_NOSTATUSBAR) && !sbaritem->IGNORED;
                     LONG sbarDelta = statusBarSkinnd ? pContainer->statusBarHeight : 0;
@@ -1329,6 +1330,7 @@ BOOL CALLBACK DlgProcContainer(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPa
                 TCITEM item = {0};
                 POINT pt = {0};
                 DWORD sbarWidth;
+                BOOL  sizeChanged = FALSE;
 
                 if(IsIconic(hwndDlg)) {
                     pContainer->dwFlags |= CNT_DEFERREDSIZEREQUEST;
@@ -1357,6 +1359,12 @@ BOOL CALLBACK DlgProcContainer(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPa
                     pContainer->statusBarHeight = 0;
 
                 GetClientRect(hwndDlg, &rcClient);
+                sizeChanged = ((rcClient.right != pContainer->preSIZE.cx) || (rcClient.bottom != pContainer->preSIZE.cy));
+                if(sizeChanged) {
+                    pContainer->preSIZE.cx = rcClient.right;
+                    pContainer->preSIZE.cy = rcClient.bottom;
+                }
+
                 rcUnadjusted = rcClient;
                 sbarWidth = pContainer->dwFlags & CNT_SIDEBAR ? SIDEBARWIDTH : 0;
                 if (lParam) {
@@ -1377,14 +1385,12 @@ BOOL CALLBACK DlgProcContainer(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPa
                     TabCtrl_GetItem(hwndTab, i, &item);
                     if((HWND)item.lParam == pContainer->hwndActive) {
                         MoveWindow((HWND)item.lParam, rcClient.left, rcClient.top, (rcClient.right - rcClient.left), (rcClient.bottom - rcClient.top), TRUE);
-                        if(!pContainer->bSizingLoop)
+                        if(!pContainer->bSizingLoop && sizeChanged)
                             SendMessage(pContainer->hwndActive, DM_SCROLLLOGTOBOTTOM, 0, 1);
                     }
-                    else
+                    else if(sizeChanged)
                         SendMessage((HWND)item.lParam, DM_CHECKSIZE, 0, 0);
                 }
-                //if(wParam == SIZE_MAXIMIZED || wParam == SIZE_RESTORED)
-                //    SendMessage(pContainer->hwndActive, DM_SCROLLLOGTOBOTTOM, 0, 1);
 
                 RedrawWindow(hwndTab, NULL, NULL, RDW_INVALIDATE | (pContainer->bSizingLoop ? RDW_ERASE : 0));
 				RedrawWindow(hwndDlg, NULL, NULL, (pContainer->bSkinned ? RDW_FRAME : 0) | RDW_INVALIDATE | (pContainer->bSizingLoop || wParam == SIZE_RESTORED ? RDW_ERASE : 0));
@@ -1661,7 +1667,7 @@ panel_found:
                             if((HWND)item.lParam != pContainer->hwndActive)
                                 ShowWindow(pContainer->hwndActive, SW_HIDE);
                             pContainer->hwndActive = (HWND) item.lParam;
-                            SendMessage((HWND)item.lParam, DM_SAVESIZE, 0, 0);
+                            SendMessage((HWND)item.lParam, DM_SAVESIZE, 0, 1);
                             ShowWindow((HWND)item.lParam, SW_SHOW);
                             if(!IsIconic(hwndDlg))
                                 SetFocus(pContainer->hwndActive);

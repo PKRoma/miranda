@@ -3415,6 +3415,9 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
         case DM_SAVESIZE: {
                 RECT rcClient;
 
+                if(dat->dwFlags & MWF_NEEDCHECKSIZE)
+                    lParam = 0;
+
                 dat->dwFlags &= ~MWF_NEEDCHECKSIZE;
                 if(dat->dwFlags & MWF_WASBACKGROUNDCREATE) {
                     dat->dwFlags &= ~MWF_INITMODE;
@@ -3442,7 +3445,8 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                 }
                 else {
                     SendMessage(hwndDlg, WM_SIZE, 0, 0);
-                    PostMessage(hwndDlg, DM_SCROLLLOGTOBOTTOM, 1, 1);
+                    if(lParam == 0)
+                        PostMessage(hwndDlg, DM_SCROLLLOGTOBOTTOM, 1, 1);
                 }
                 return 0;
             }
@@ -4145,13 +4149,11 @@ quote_from_last:
                          * formatting menu..
                          */
 
-                        CheckMenuItem(submenu, ID_GLOBAL_BBCODE, MF_BYCOMMAND | ((myGlobals.m_SendFormat == SENDFORMAT_BBCODE) ? MF_CHECKED : MF_UNCHECKED));
-                        CheckMenuItem(submenu, ID_GLOBAL_SIMPLETAGS, MF_BYCOMMAND | ((myGlobals.m_SendFormat == SENDFORMAT_SIMPLE) ? MF_CHECKED : MF_UNCHECKED));
+                        CheckMenuItem(submenu, ID_GLOBAL_BBCODE, MF_BYCOMMAND | ((myGlobals.m_SendFormat) ? MF_CHECKED : MF_UNCHECKED));
                         CheckMenuItem(submenu, ID_GLOBAL_OFF, MF_BYCOMMAND | ((myGlobals.m_SendFormat == SENDFORMAT_NONE) ? MF_CHECKED : MF_UNCHECKED));
 
                         CheckMenuItem(submenu, ID_THISCONTACT_GLOBALSETTING, MF_BYCOMMAND | ((iLocalFormat == SENDFORMAT_NONE) ? MF_CHECKED : MF_UNCHECKED));
-                        CheckMenuItem(submenu, ID_THISCONTACT_BBCODE, MF_BYCOMMAND | ((iLocalFormat == SENDFORMAT_BBCODE) ? MF_CHECKED : MF_UNCHECKED));
-                        CheckMenuItem(submenu, ID_THISCONTACT_SIMPLETAGS, MF_BYCOMMAND | ((iLocalFormat == SENDFORMAT_SIMPLE) ? MF_CHECKED : MF_UNCHECKED));
+                        CheckMenuItem(submenu, ID_THISCONTACT_BBCODE, MF_BYCOMMAND | ((iLocalFormat > 0) ? MF_CHECKED : MF_UNCHECKED));
                         CheckMenuItem(submenu, ID_THISCONTACT_OFF, MF_BYCOMMAND | ((iLocalFormat == -1) ? MF_CHECKED : MF_UNCHECKED));
 
                         EnableMenuItem(submenu, ID_FAVORITES_ADDCONTACTTOFAVORITES, LOWORD(dat->dwIsFavoritOrRecent) == 0 ? MF_ENABLED : MF_GRAYED);
@@ -4196,9 +4198,6 @@ quote_from_last:
                             case ID_GLOBAL_BBCODE:
                                 myGlobals.m_SendFormat = SENDFORMAT_BBCODE;
                                 break;
-                            case ID_GLOBAL_SIMPLETAGS:
-                                myGlobals.m_SendFormat = SENDFORMAT_SIMPLE;
-                                break;
                             case ID_GLOBAL_OFF:
                                 myGlobals.m_SendFormat = SENDFORMAT_NONE;
                                 break;
@@ -4207,9 +4206,6 @@ quote_from_last:
                                 break;
                             case ID_THISCONTACT_BBCODE:
                                 iNewLocalFormat = SENDFORMAT_BBCODE;
-                                break;
-                            case ID_THISCONTACT_SIMPLETAGS:
-                                iNewLocalFormat = SENDFORMAT_SIMPLE;
                                 break;
                             case ID_THISCONTACT_OFF:
                                 iNewLocalFormat = -1;

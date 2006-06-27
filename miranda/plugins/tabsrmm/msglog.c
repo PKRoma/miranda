@@ -81,7 +81,7 @@ static TCHAR *szYourName = NULL;
 static char *szDivider = "\\strike-----------------------------------------------------------------------------------------------------------------------------------\\strike0";
 static char *szGroupedSeparator = "> ";
 
-extern TCHAR *FormatRaw(DWORD dwFlags, const TCHAR *msg, int flags);
+extern TCHAR *FormatRaw(DWORD dwFlags, const TCHAR *msg, int flags, const char *szProto, HANDLE hContact);
 
 static char *g_par = "\\par", *g_rtlpar = "\\rtlpar";
 static int logPixelSY;
@@ -161,9 +161,11 @@ void CacheLogFonts()
     ZeroMemory((void *)logfonts, sizeof(LOGFONTA) * MSGDLGFONTCOUNT + 2);
     for(i = 0; i < MSGDLGFONTCOUNT; i++) {
         LoadLogfont(i, &logfonts[i], &fontcolors[i], FONTMODULE);
-        wsprintfA(rtfFontsGlobal[i], "\\f%u\\cf%u\\b%d\\i%d\\ul%d\\fs%u", i, i, logfonts[i].lfWeight >= FW_BOLD ? 1 : 0, logfonts[i].lfItalic, logfonts[i].lfUnderline, 2 * abs(logfonts[i].lfHeight) * 74 / logPixelSY);
+        //wsprintfA(rtfFontsGlobal[i], "\\f%u\\cf%u\\b%d\\i%d\\ul%d\\fs%u", i, i, logfonts[i].lfWeight >= FW_BOLD ? 1 : 0, logfonts[i].lfItalic, logfonts[i].lfUnderline, 2 * abs(logfonts[i].lfHeight) * 74 / logPixelSY);
+        wsprintfA(rtfFontsGlobal[i], "\\f%u\\cf%u\\b%d\\i%d\\fs%u", i, i, logfonts[i].lfWeight >= FW_BOLD ? 1 : 0, logfonts[i].lfItalic, 2 * abs(logfonts[i].lfHeight) * 74 / logPixelSY);
     }
-    wsprintfA(rtfFontsGlobal[MSGDLGFONTCOUNT], "\\f%u\\cf%u\\b%d\\i%d\\ul%d\\fs%u", MSGDLGFONTCOUNT, MSGDLGFONTCOUNT, 0, 0, 0, 0);
+    //wsprintfA(rtfFontsGlobal[MSGDLGFONTCOUNT], "\\f%u\\cf%u\\b%d\\i%d\\ul%d\\fs%u", MSGDLGFONTCOUNT, MSGDLGFONTCOUNT, 0, 0, 0, 0);
+    wsprintfA(rtfFontsGlobal[MSGDLGFONTCOUNT], "\\f%u\\cf%u\\b%d\\i%d\\fs%u", MSGDLGFONTCOUNT, MSGDLGFONTCOUNT, 0, 0, 0);
     
     _tcsncpy(szToday, TranslateT("Today"), 20);
     _tcsncpy(szYesterday, TranslateT("Yesterday"), 20);
@@ -626,6 +628,8 @@ static char *Template_CreateRTFFromDbEvent(struct MessageWindowData *dat, HANDLE
     BOOL isBold = FALSE, isItalic = FALSE, isUnderline = FALSE;
 	char *this_par;
     DWORD dwEffectiveFlags;
+    DWORD dwFormattingParams = MAKELONG(myGlobals.m_FormatWholeWordsOnly, dat->dwEventIsShown & MWF_SHOW_BBCODE);
+    char  *szProto = dat->bIsMeta ? dat->szMetaProto : dat->szProto;
 
     if(streamData->dbei != 0)
         dbei = *(streamData->dbei);
@@ -778,6 +782,8 @@ nogroup:
 		dat->hHistoryEvents[dat->curHistory++] = hDbEvent;
 	}
 
+    AppendToBuffer(&buffer, &bufferEnd, &bufferAlloced, "\\ul0\\b0\\i0 ");
+
     while(i < iTemplateLen) {
         ci = szTemplate[i];
         if(ci == '%') {
@@ -787,7 +793,7 @@ nogroup:
             /*
              * handle modifiers
              */
-            while(cc == '#' || cc == '$' || cc == '&') {
+            while(cc == '#' || cc == '$' || cc == '&' || cc == '?' || cc == '\\') {
                 switch (cc) {
                     case '#':
                         if(!dat->isHistory) {
@@ -813,6 +819,29 @@ nogroup:
                         i++;
                         cc = szTemplate[i + 1];
                         skipFont = TRUE;
+                        break;
+                    case '?':
+                        if(dat->dwFlags & MWF_LOG_NORMALTEMPLATES) {
+                            i++;
+                            cc = szTemplate[i + 1];
+                            continue;
+                        }
+                        else {
+                            i++;
+                            skipToNext = TRUE;
+                            goto skip;
+                        }
+                    case '\\':
+                        if(!(dat->dwFlags & MWF_LOG_NORMALTEMPLATES)) {
+                            i++;
+                            cc = szTemplate[i + 1];
+                            continue;
+                        }
+                        else {
+                            i++;
+                            skipToNext = TRUE;
+                            goto skip;
+                        }
                 }
             }
             switch(cc) {
@@ -1097,7 +1126,7 @@ nogroup:
                                     wlen = safe_wcslen(msg, (dbei.cbBlob - msglen) / 2);
                                     if(wlen <= (msglen - 1) && wlen > 0){
                                         TrimMessage(msg);
-                                        formatted = FormatRaw(dat->dwFlags, msg, MAKELONG(myGlobals.m_FormatWholeWordsOnly, dat->dwEventIsShown & MWF_SHOW_BBCODE));
+                                        formatted = FormatRaw(dat->dwFlags, msg, dwFormattingParams, szProto, dat->hContact);
                                         AppendUnicodeToBuffer(&buffer, &bufferEnd, &bufferAlloced, formatted, MAKELONG(isSent, dat->isHistory));
                                     }
                                     else
@@ -1108,7 +1137,7 @@ nogroup:
                                     msg = (TCHAR *) alloca(sizeof(TCHAR) * msglen);
                                     MultiByteToWideChar(dat->codePage, 0, (char *) dbei.pBlob, -1, msg, msglen);
                                     TrimMessage(msg);
-                                    formatted = FormatRaw(dat->dwFlags, msg, MAKELONG(myGlobals.m_FormatWholeWordsOnly, dat->dwEventIsShown & MWF_SHOW_BBCODE));
+                                    formatted = FormatRaw(dat->dwFlags, msg, dwFormattingParams, szProto, dat->hContact);
                                     AppendUnicodeToBuffer(&buffer, &bufferEnd, &bufferAlloced, formatted, MAKELONG(isSent, dat->isHistory));
                                 }
                             }
@@ -1117,7 +1146,7 @@ nogroup:
                             if(dbei.eventType == EVENTTYPE_MESSAGE && !isSent)
                                 dat->stats.lastReceivedChars = lstrlenA(msg);
                             TrimMessage(msg);
-                            formatted = FormatRaw(dat->dwFlags, msg, MAKELONG(myGlobals.m_FormatWholeWordsOnly, dat->dwEventIsShown & MWF_SHOW_BBCODE));
+                            formatted = FormatRaw(dat->dwFlags, msg, dwFormattingParams, szProto, dat->hContact);
                             AppendToBufferWithRTF(MAKELONG(isSent, dat->isHistory), &buffer, &bufferEnd, &bufferAlloced, "%s", formatted);
                 #endif      // unicode
                             AppendToBuffer(&buffer, &bufferEnd, &bufferAlloced, "%s", "\\b0\\ul0\\i0 ");

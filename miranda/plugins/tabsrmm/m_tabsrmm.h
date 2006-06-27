@@ -81,7 +81,7 @@ typedef struct {
 #define MWF_ERRORSTATE 128
 #define MWF_DEFERREDREMAKELOG 256
 
-#define MWF_LOG_SHOWNICK 512
+#define MWF_LOG_NORMALTEMPLATES 512
 #define MWF_LOG_SHOWTIME 1024
 #define MWF_LOG_SHOWSECONDS 2048
 #define MWF_LOG_SHOWDATES 4096
@@ -130,8 +130,7 @@ typedef struct {
 #define SMODE_SENDLATER 8
 #define SMODE_NOACK 16
 
-#define SENDFORMAT_BBCODE 2
-#define SENDFORMAT_SIMPLE 1
+#define SENDFORMAT_BBCODE 1
 #define SENDFORMAT_NONE 0
 
 #define AVATARMODE_DYNAMIC 0
@@ -199,7 +198,7 @@ struct ContainerWindowData {
     POINT pLastPos;
     DWORD dwFlags, dwPrivateFlags;
     UINT  uChildMinHeight;
-    SIZE  oldSize;
+    SIZE  oldSize, preSIZE;
     POINT ptLast;
 	DWORD dwTransparency;
     int   iContainerIndex;
