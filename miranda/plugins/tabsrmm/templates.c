@@ -250,7 +250,7 @@ BOOL CALLBACK DlgProcTemplateEditor(HWND hwndDlg, UINT msg, WPARAM wParam, LPARA
                     }
                     break;
 				case IDC_VARIABLESHELP:
-					CallService(MS_UTILS_OPENURL, 0, (LPARAM)"http://www.miranda.or.at/forums/index.php/topic,610.0.html");
+					CallService(MS_UTILS_OPENURL, 0, (LPARAM)"http://miranda.or.at/tabsrmm-articles/tabsrmm-message-log-templates/");
 					break;
                 case IDC_EDITTEMPLATE:
                     if(HIWORD(wParam) == EN_CHANGE) {

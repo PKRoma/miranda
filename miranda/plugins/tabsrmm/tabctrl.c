@@ -1197,7 +1197,7 @@ static LRESULT CALLBACK TabControlSubclassProc(HWND hwnd, UINT msg, WPARAM wPara
 		{
 			TCHITTESTINFO tci = {0};
 
-            if((tabdat->dwStyle & TCS_BUTTONS && (GetKeyState(VK_CONTROL) & 0x8000)) || !(tabdat->dwStyle & TCS_BUTTONS)) {
+            if(GetKeyState(VK_CONTROL) & 0x8000) {
                 tci.pt.x=(short)LOWORD(GetMessagePos());
                 tci.pt.y=(short)HIWORD(GetMessagePos());
                 if(DragDetect(hwnd, tci.pt) && TabCtrl_GetItemCount(hwnd) >1 ) {

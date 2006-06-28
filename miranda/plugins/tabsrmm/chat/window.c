@@ -328,8 +328,14 @@ static LRESULT CALLBACK MessageSubclassProc(HWND hwnd, UINT msg, WPARAM wParam, 
             
             GetWindowRect(GetDlgItem(hwndParent, IDC_CHAT_LOG), &rc);
             if(PtInRect(&rc, pt)) {
-                if(mwdat->hwndLog != 0)			// doesn't work with IEView
-                    return 0;
+                short wDirection = (short)HIWORD(wParam);
+
+                if(LOWORD(wParam) & MK_SHIFT || DBGetContactSettingByte(NULL, SRMSGMOD_T, "fastscroll", 0)) {
+                    if(wDirection < 0)
+                        SendMessage(GetDlgItem(hwndParent, IDC_CHAT_LOG), WM_VSCROLL, MAKEWPARAM(SB_PAGEDOWN, 0), 0);
+                    else if(wDirection > 0)
+                        SendMessage(GetDlgItem(hwndParent, IDC_CHAT_LOG), WM_VSCROLL, MAKEWPARAM(SB_PAGEUP, 0), 0);
+                }
                 else
                     SendMessage(GetDlgItem(hwndParent, IDC_CHAT_LOG), WM_MOUSEWHEEL, wParam, lParam);
                 return 0;
@@ -463,9 +469,38 @@ default_process:
             BOOL isShift = GetKeyState(VK_SHIFT) & 0x8000;
             BOOL isCtrl = GetKeyState(VK_CONTROL) & 0x8000;
             BOOL isAlt = GetKeyState(VK_MENU) & 0x8000;
-            
- 			if (wParam == VK_RETURN) 
-			{
+
+            if(isCtrl && isAlt && !isShift) {
+                switch (wParam) {
+                    case VK_UP:
+                    case VK_DOWN:
+                    case VK_PRIOR:
+                    case VK_NEXT:
+                    case VK_HOME:
+                    case VK_END:
+                    {
+                        WPARAM wp = 0;
+
+                        if (wParam == VK_UP)
+                            wp = MAKEWPARAM(SB_LINEUP, 0);
+                        else if (wParam == VK_PRIOR)
+                            wp = MAKEWPARAM(SB_PAGEUP, 0);
+                        else if (wParam == VK_NEXT)
+                            wp = MAKEWPARAM(SB_PAGEDOWN, 0);
+                        else if (wParam == VK_HOME)
+                            wp = MAKEWPARAM(SB_TOP, 0);
+                        else if (wParam == VK_END) {
+                            SendMessage(hwndParent, DM_SCROLLLOGTOBOTTOM, 0, 0);
+                            return 0;
+                        } else if (wParam == VK_DOWN)
+                            wp = MAKEWPARAM(SB_LINEDOWN, 0);
+
+                        SendMessage(GetDlgItem(hwndParent, IDC_CHAT_LOG), WM_VSCROLL, wp, 0);
+                        return 0;
+                    }
+                }
+            }
+ 			if (wParam == VK_RETURN) {
 				dat->szTabSave[0] = '\0';
 				if (((isCtrl) != 0) ^ (0 != myGlobals.m_SendOnEnter)) 
 				{
@@ -1910,9 +1945,11 @@ LABEL_SHOWWINDOW:
 					SetForegroundWindow(hwndDlg);
 				}
 				return TRUE;
-			default:break;
+			default:
+            break;
 			}
-		}break;
+		}
+        break;
 
 		case DM_SPLITTERMOVED:
 		{	POINT pt;
@@ -1957,7 +1994,8 @@ LABEL_SHOWWINDOW:
 			}
 			else
 				x++;
-		}break;
+		}
+        break;
 
 		case GC_FIREHOOK:
 		{
@@ -1984,15 +2022,17 @@ LABEL_SHOWWINDOW:
 		case GC_CHANGEFILTERFLAG:
 		{
 			si->iLogFilterFlags = lParam;
-		}	break;
+		}	
+        break;
 
 		case GC_SHOWFILTERMENU:
-			{
-			RECT rc;
-    		HWND hwnd = CreateDialogParam(g_hInst, MAKEINTRESOURCE(IDD_FILTER), hwndDlg, FilterWndProc, (LPARAM)si);
-			GetWindowRect(GetDlgItem(hwndDlg, IDC_FILTER), &rc);
-			SetWindowPos(hwnd, HWND_TOP, rc.left-85, (IsWindowVisible(GetDlgItem(hwndDlg, IDC_FILTER))||IsWindowVisible(GetDlgItem(hwndDlg, IDC_CHAT_BOLD)))?rc.top-206:rc.top-186, 0, 0, SWP_NOSIZE|SWP_SHOWWINDOW);
-			}break;
+        {
+            RECT rc;
+            HWND hwnd = CreateDialogParam(g_hInst, MAKEINTRESOURCE(IDD_FILTER), hwndDlg, FilterWndProc, (LPARAM)si);
+            GetWindowRect(GetDlgItem(hwndDlg, IDC_FILTER), &rc);
+            SetWindowPos(hwnd, HWND_TOP, rc.left-85, (IsWindowVisible(GetDlgItem(hwndDlg, IDC_FILTER))||IsWindowVisible(GetDlgItem(hwndDlg, IDC_CHAT_BOLD)))?rc.top-206:rc.top-186, 0, 0, SWP_NOSIZE|SWP_SHOWWINDOW);
+        }
+        break;
 
 		case GC_SHOWCOLORCHOOSER:
 		{
@@ -2011,7 +2051,8 @@ LABEL_SHOWWINDOW:
 			
 			ColorWindow= CreateDialogParam(g_hInst, MAKEINTRESOURCE(IDD_COLORCHOOSER), hwndDlg, DlgProcColorToolWindow, (LPARAM) pCC);
 
-		}break;
+		}
+        break;
 
        // DM_ is used by the normal message windows - just make it compatible here.
         

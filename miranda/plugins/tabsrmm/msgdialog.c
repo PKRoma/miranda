@@ -585,8 +585,18 @@ static LRESULT CALLBACK MessageEditSubclassProc(HWND hwnd, UINT msg, WPARAM wPar
             if(PtInRect(&rc, pt)) {
                 if(mwdat->hwndLog != 0)			// doesn't work with IEView
                     return 0;
-                else
-                    SendMessage(GetDlgItem(hwndParent, IDC_LOG), WM_MOUSEWHEEL, wParam, lParam);
+                else {
+                    short wDirection = (short)HIWORD(wParam);
+
+                    if(LOWORD(wParam) & MK_SHIFT || DBGetContactSettingByte(NULL, SRMSGMOD_T, "fastscroll", 0)) {
+                        if(wDirection < 0)
+                            SendMessage(GetDlgItem(hwndParent, IDC_LOG), WM_VSCROLL, MAKEWPARAM(SB_PAGEDOWN, 0), 0);
+                        else if(wDirection > 0)
+                            SendMessage(GetDlgItem(hwndParent, IDC_LOG), WM_VSCROLL, MAKEWPARAM(SB_PAGEUP, 0), 0);
+                    }
+                    else
+                        SendMessage(GetDlgItem(hwndParent, IDC_LOG), WM_MOUSEWHEEL, wParam, lParam);
+                }
                 return 0;
             }
             hwndTab = GetDlgItem(mwdat->pContainer->hwnd, IDC_MSGTABS);
@@ -1147,7 +1157,7 @@ static int MessageDialogResize(HWND hwndDlg, LPARAM lParam, UTILRESIZECONTROL * 
                 OffsetRect(&urc->rcItem, 0, -(dat->splitterY +10));
     }
 
-    s_offset = (splitterEdges > 0) ? 1 : -2;
+    s_offset = 1; //(splitterEdges > 0) ? 1 : -2;
     
     switch (urc->wId) {
         case IDC_NAME:
@@ -1235,7 +1245,8 @@ static int MessageDialogResize(HWND hwndDlg, LPARAM lParam, UTILRESIZECONTROL * 
                 urc->rcItem.top += 24;
             if(dat->dwEventIsShown & MWF_SHOW_INFOPANEL)
                 urc->rcItem.top += panelHeight;
-			urc->rcItem.bottom += ((splitterEdges > 0 || !showToolbar) ? 3 : 6);
+			//urc->rcItem.bottom += ((splitterEdges > 0 || !showToolbar) ? 3 : 6);
+            urc->rcItem.bottom += (!showToolbar ? 4 : 3);
             if(dat->pContainer->bSkinned) {
                 StatusItems_t *item = &StatusItems[ID_EXTBKHISTORY];
                 if(!item->IGNORED) {
@@ -1860,6 +1871,7 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                         //if(dat->pContainer->dwFlags & CNT_CREATE_MINIMIZED)
                         SendMessage(dat->pContainer->hwnd, DM_SETICON, ICON_BIG, (LPARAM)LoadSkinnedIcon(SKINICON_EVENT_MESSAGE));
                         dat->pContainer->dwFlags |= CNT_NEED_UPDATETITLE;
+                        dat->dwFlags |= MWF_NEEDCHECKSIZE;
                     }
                     dat->pContainer->hwndActive = hwndDlg;
                     if(!(dat->pContainer->dwFlags & CNT_CREATE_MINIMIZED)) {

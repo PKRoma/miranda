@@ -1252,11 +1252,23 @@ nogroup:
                         skipToNext = TRUE;
                     break;
                 }
-                case 'c':       // font color (using one of the predefined 5 colors)
+                case 'c':       // font color (using one of the predefined 5 colors) or one of the standard font colors (m = message, d = date/time, n = nick)
                 {
                     TCHAR color = szTemplate[i + 2];
                     if(color >= '0' && color <= '4') {
                         AppendToBuffer(&buffer, &bufferEnd, &bufferAlloced, "\\cf%d ", MSGDLGFONTCOUNT + 5 + (color - '0'));
+                        i++;
+                    }
+                    else if(color == (TCHAR)'d') {
+                        AppendToBuffer(&buffer, &bufferEnd, &bufferAlloced, "\\cf%d ", isSent ? MSGFONTID_MYTIME + iFontIDOffset : MSGFONTID_YOURTIME + iFontIDOffset);
+                        i++;
+                    }
+                    else if(color == (TCHAR)'m') {
+                        AppendToBuffer(&buffer, &bufferEnd, &bufferAlloced, "\\cf%d ", isSent ? MSGFONTID_MYMSG + iFontIDOffset : MSGFONTID_YOURMSG + iFontIDOffset);
+                        i++;
+                    }
+                    else if(color == (TCHAR)'n') {
+                        AppendToBuffer(&buffer, &bufferEnd, &bufferAlloced, "\\cf%d ", isSent ? MSGFONTID_MYNAME + iFontIDOffset : MSGFONTID_YOURNAME + iFontIDOffset);
                         i++;
                     }
                     else

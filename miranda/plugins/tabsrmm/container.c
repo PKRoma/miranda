@@ -1359,12 +1359,6 @@ BOOL CALLBACK DlgProcContainer(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPa
                     pContainer->statusBarHeight = 0;
 
                 GetClientRect(hwndDlg, &rcClient);
-                sizeChanged = ((rcClient.right != pContainer->preSIZE.cx) || (rcClient.bottom != pContainer->preSIZE.cy));
-                if(sizeChanged) {
-                    pContainer->preSIZE.cx = rcClient.right;
-                    pContainer->preSIZE.cy = rcClient.bottom;
-                }
-
                 rcUnadjusted = rcClient;
                 sbarWidth = pContainer->dwFlags & CNT_SIDEBAR ? SIDEBARWIDTH : 0;
                 if (lParam) {
@@ -1375,6 +1369,11 @@ BOOL CALLBACK DlgProcContainer(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPa
                 }
                 AdjustTabClientRect(pContainer, &rcClient);
 
+                sizeChanged = ((rcClient.right != pContainer->preSIZE.cx) || (rcClient.bottom != pContainer->preSIZE.cy));
+                if(sizeChanged) {
+                    pContainer->preSIZE.cx = rcClient.right;
+                    pContainer->preSIZE.cy = rcClient.bottom;
+                }
                 /*
                  * we care about all client sessions, but we really resize only the active tab (hwndActive)
                  * we tell inactive tabs to resize theirselves later when they get activated (DM_CHECKSIZE
