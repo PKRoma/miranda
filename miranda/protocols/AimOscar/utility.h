@@ -65,7 +65,6 @@ T* renew(T* src, int size, int size_chg)
 {
 	T* dest=new T[size+size_chg];
 	memcpy(dest,src,size*sizeof(T));
-	int i=sizeof(T);
 	delete[] src;
 	return dest;
 }
