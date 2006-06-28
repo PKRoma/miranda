@@ -139,6 +139,9 @@ const capstr capIs2002    = {0x10, 0xcf, 0x40, 0xd1, 0x4c, 0x7f, 0x11, 0xd1, 0x8
 const capstr capComm20012 = {0xa0, 0xe9, 0x3f, 0x37, 0x4c, 0x7f, 0x11, 0xd1, 0x82, 0x22, 0x44, 0x45, 0x53, 0x54, 0x00, 0x00};
 const capstr capStrIcq    = {0xa0, 0xe9, 0x3f, 0x37, 0x4f, 0xe9, 0xd3, 0x11, 0xbc, 0xd2, 0x00, 0x04, 0xac, 0x96, 0xdd, 0x96};
 const capstr capAimIcon   = {0x09, 0x46, 0x13, 0x46, 0x4c, 0x7f, 0x11, 0xd1, 0x82, 0x22, 0x44, 0x45, 0x53, 0x54, 0x00, 0x00}; // CAP_AIM_BUDDYICON
+const capstr capAimDirect = {0x09, 0x46, 0x13, 0x45, 0x4c, 0x7f, 0x11, 0xd1, 0x82, 0x22, 0x44, 0x45, 0x53, 0x54, 0x00, 0x00}; // CAP_AIM_DIRECTIM
+const capstr capIsIcq     = {0x09, 0x46, 0x13, 0x44, 0x4c, 0x7f, 0x11, 0xd1, 0x82, 0x22, 0x44, 0x45, 0x53, 0x54, 0x00, 0x00};
+const capstr capIcqLite   = {0x17, 0x8C, 0x2D, 0x9B, 0xDA, 0xA5, 0x45, 0xBB, 0x8D, 0xDB, 0xF3, 0xBD, 0xBD, 0x53, 0xA1, 0x0A};
 const capstr capAimChat   = {0x74, 0x8F, 0x24, 0x20, 0x62, 0x87, 0x11, 0xD1, 0x82, 0x22, 0x44, 0x45, 0x53, 0x54, 0x00, 0x00};
 const capstr capUim       = {0xA7, 0xE4, 0x0A, 0x96, 0xB3, 0xA0, 0x47, 0x9A, 0xB8, 0x45, 0xC9, 0xE4, 0x67, 0xC5, 0x6B, 0x1F};
 const capstr capRambler   = {0x7E, 0x11, 0xB7, 0x78, 0xA3, 0x53, 0x49, 0x26, 0xA8, 0x02, 0x44, 0x73, 0x52, 0x08, 0xC4, 0x2A};
@@ -427,10 +430,6 @@ char* detectUserClient(HANDLE hContact, DWORD dwUin, WORD wVersion, DWORD dwFT1,
       {
         szClient = "uIM";
       }
-      else if (MatchCap(caps, wLen, &capAimIcon, 0x10) && !dwFT1 && !dwFT2 && !dwFT3 && !wVersion)
-      { // this is what I really hate, but as it seems to me, there is no other way to detect libgaim
-        szClient = "libgaim"; // TODO: fix detection of libgaim & its derivatives
-      }
       else if (szClient == cliLibicq2k)
       { // try to determine which client is behind libicq2000
         if (hasCapRichText(caps, wLen))
@@ -461,7 +460,7 @@ char* detectUserClient(HANDLE hContact, DWORD dwUin, WORD wVersion, DWORD dwFT1,
             *bClientId = 0;
             szClient = "ICQ 2002";
           }
-          else if (CheckContactCapabilities(hContact, CAPF_SRV_RELAY || CAPF_UTF) && hasCapRichText(caps, wLen))
+          else if (CheckContactCapabilities(hContact, CAPF_SRV_RELAY | CAPF_UTF) && hasCapRichText(caps, wLen))
           {
             if (!dwFT1 && !dwFT2 && !dwFT3)
             {
@@ -543,20 +542,29 @@ char* detectUserClient(HANDLE hContact, DWORD dwUin, WORD wVersion, DWORD dwFT1,
           }
         }
         else if (wVersion == 0)
-        {
-          if (CheckContactCapabilities(hContact, CAPF_TYPING) && MatchCap(caps, wLen, &capIs2001, 0x10) &&
-            MatchCap(caps, wLen, &capIs2002, 0x10) && MatchCap(caps, wLen, &capComm20012, 0x10) && !dwDirectCookie && 
-            !dwWebPort && !dwFT1 && !dwFT2 && !dwFT3)
-            szClient = cliSpamBot;
-          else if (MatchCap(caps, wLen, &capAimChat, 0x10) && !dwFT1 && !dwFT2 && !dwFT3 && !hasCapRichText(caps, wLen) && 
-            !CheckContactCapabilities(hContact, CAPF_UTF) && CheckContactCapabilities(hContact, CAPF_AIM_FILE))
-            szClient = "Easy Message";
-        }
-
-        if (szClient == NULL)
-        { // still unknown client, try Agile
-          if (CheckContactCapabilities(hContact, CAPF_UTF) && !hasCapRichText(caps, wLen) && !dwFT1 && !dwFT2 && !dwFT3)
-            szClient = "Agile Messenger";
+        { // capability footprint based detection - not really reliable
+          if (!dwFT1 && !dwFT2 && !dwFT3 && !dwWebPort && !dwDirectCookie)
+          { // DC info is empty
+            if (CheckContactCapabilities(hContact, CAPF_TYPING) && MatchCap(caps, wLen, &capIs2001, 0x10) &&
+              MatchCap(caps, wLen, &capIs2002, 0x10) && MatchCap(caps, wLen, &capComm20012, 0x10))
+              szClient = cliSpamBot;
+            else if (MatchCap(caps, wLen, &capAimIcon, 0x10) && MatchCap(caps, wLen, &capAimDirect, 0x10) && 
+              CheckContactCapabilities(hContact, CAPF_AIM_FILE | CAPF_UTF))
+            { // detect libgaim
+              if (CheckContactCapabilities(hContact, CAPF_SRV_RELAY))
+                szClient = "Adium X"; // yeah, AFAIK only Adium has this fixed
+              else
+                szClient = "libgaim";
+            }
+            else if (MatchCap(caps, wLen, &capAimChat, 0x10) && CheckContactCapabilities(hContact, CAPF_AIM_FILE) && wLen == 0x20)
+              szClient = "Easy Message";
+            else if (MatchCap(caps, wLen, &capAimIcon, 0x10) && CheckContactCapabilities(hContact, CAPF_UTF) && wLen == 0x20)
+              szClient = "Meebo";
+            else if (MatchCap(caps, wLen, &capAimIcon, 0x10) && MatchCap(caps, wLen, &capIcqLite, 0x10) && CheckContactCapabilities(hContact, CAPF_UTF | CAPF_XTRAZ))
+              szClient = "PyICQ-t Jabber Transport";
+            else if (MatchCap(caps, wLen, &capIsIcq, 0x10) && CheckContactCapabilities(hContact, CAPF_UTF | CAPF_SRV_RELAY | CAPF_TYPING) && wLen == 0x40)
+              szClient = "Agile Messenger"; // Smartphone 2002
+          }
         }
       }
     }
