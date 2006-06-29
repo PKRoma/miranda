@@ -51,7 +51,7 @@ PLUGININFO pluginInfo = {
         "tabSRMsg",
     #endif    
 #endif
-    PLUGIN_MAKE_VERSION(1, 1, 0, 2),
+    PLUGIN_MAKE_VERSION(1, 1, 0, 3),
     "Chat module for instant messaging and group chat, offering a tabbed interface and many advanced features.",
     "The Miranda developers team",
     "silvercircle@gmail.com",
@@ -251,64 +251,6 @@ BOOL CALLBACK DlgProcAbout(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam)
 			break;
 	}
 	return FALSE;
-}
-
-static BOOL CALLBACK DlgProcFirsttime(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam)
-{
-    switch (msg)
-	{
-		case WM_INITDIALOG:
-			TranslateDialogDefault(hwndDlg);
-			SendMessage(hwndDlg, WM_SETICON, ICON_BIG, (LPARAM)myGlobals.g_iconContainer);
-            ShowWindow(hwndDlg, SW_SHOWNORMAL);
-            EnableWindow(GetDlgItem(hwndDlg, IDC_IEVEIW), ServiceExists(MS_IEVIEW_EVENT) ? TRUE : FALSE);
-            CheckDlgButton(hwndDlg, IDC_COMPACTTHEME, TRUE);
-            CheckDlgButton(hwndDlg, IDC_SHOWAVATARS, TRUE);
-            CheckDlgButton(hwndDlg, IDC_SHOWINFOPANEL, TRUE);
-			return TRUE;
-		case WM_COMMAND:
-			switch(LOWORD(wParam))
-			{
-                case IDOK:
-                {
-                    char szFilename[MAX_PATH];
-                    HANDLE hFile;
-                    
-                    DBWriteContactSettingByte(NULL, SRMSGMOD_T, "avatarmode", IsDlgButtonChecked(hwndDlg, IDC_SHOWAVATARS) ? 3 : 4);
-                    DBWriteContactSettingByte(NULL, SRMSGMOD_T, "want_ieview", IsDlgButtonChecked(hwndDlg, IDC_IEVIEWMODE) ? 1 : 0);
-                    if(IsDlgButtonChecked(hwndDlg, IDC_COMPACTTHEME))
-                        CallService(MS_UTILS_PATHTOABSOLUTE, (WPARAM)"plugins\\tabsrmm\\themes\\compact.tabsrmm", (LPARAM)szFilename);
-                    if(IsDlgButtonChecked(hwndDlg, IDC_FANCYTHEME))
-                        CallService(MS_UTILS_PATHTOABSOLUTE, (WPARAM)"plugins\\tabsrmm\\themes\\fancy.tabsrmm", (LPARAM)szFilename);
-                    
-                    if((hFile = CreateFileA(szFilename, GENERIC_READ, FILE_SHARE_READ, NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL)) != INVALID_HANDLE_VALUE ) {
-                        CloseHandle(hFile);
-                        ReadThemeFromINI(szFilename, 0, 0, THEME_READ_ALL);
-                        DBWriteContactSettingByte(NULL, SRMSGMOD_T, "firstrun", 1);
-                    }
-                    else
-                        MessageBoxA(0, "The selected theme was not installed, because the file couldn't be found.\nYou may want to reinstall tabSRMM", "tabSRMM", MB_OK | MB_ICONEXCLAMATION);
-                    
-                    DestroyWindow(hwndDlg);
-                    return TRUE;
-                }
-				case IDCANCEL:
-					DestroyWindow(hwndDlg);
-					return TRUE;
-			}
-			break;
-		case WM_DESTROY:
-            DBWriteContactSettingByte(NULL, SRMSGMOD_T, "firstrun", 1);
-			break;
-	}
-	return FALSE;
-}
-
-void FirstTimeConfig()
-{
-    if(DBGetContactSettingByte(NULL, SRMSGMOD_T, "firstrun", 0))
-        return;
-    CreateDialogParam(g_hInst, MAKEINTRESOURCE(IDD_FIRSTTIME), 0, DlgProcFirsttime, 0);
 }
 
 int _DebugMessage(HWND hwndDlg, struct MessageWindowData *dat, const char *fmt, ...)

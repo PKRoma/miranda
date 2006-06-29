@@ -8,7 +8,6 @@
 #define IDD_TABCONFIG                   4
 #define IDD_VARIABLEHELP                5
 #define IDD_ABOUT                       7
-#define IDD_FIRSTTIME                   8
 #define IDR_CONTEXT                     180
 #define IDM_PASTEFORMATTED              181
 #define IDM_CUT                         182
@@ -235,7 +234,6 @@
 #define IDC_PRIVATESPLITTER             1182
 #define IDC_ALWAYSFIXED                 1182
 #define IDC_CNTPRIVATE                  1182
-#define IDC_IEVEIW                      1182
 #define IDC_STYLEDTABS                  1182
 #define IDC_NEWSPLITLAYOUT              1183
 #define IDC_O_NOTABS                    1184
@@ -262,7 +260,6 @@
 #define IDC_DONTFLASH                   1206
 #define IDC_RADIO1                      1207
 #define IDC_LOGISGLOBAL                 1207
-#define IDC_COMPACTTHEME                1207
 #define IDC_O_FLASHDEFAULT              1208
 #define IDC_FLASHDEFAULT                1209
 #define IDC_DEFAULTCONTAINERMODE        1210
@@ -372,12 +369,10 @@
 #define IDC_FLATTABS                    1289
 #define IDC_FLASHICON                   1289
 #define IDC_USEPRIVATETITLE             1289
-#define IDC_SHOWAVATARS                 1289
 #define IDC_ALWAYSTRIM                  1289
 #define IDC_SKIN_LOADFONTS              1289
 #define IDC_SYNCSOUNDS                  1290
 #define IDC_FLASHLABEL                  1290
-#define IDC_SHOWINFOPANEL               1290
 #define IDC_ALWAYSTRIM2                 1290
 #define IDC_SKIN_LOADTEMPLATES          1290
 #define IDC_NOSKINNING                  1291
@@ -487,7 +482,6 @@
 #define IDC_CHECK3                      1395
 #define IDC_INFOPANEL                   1395
 #define IDC_SUPPORT                     1396
-#define IDC_FANCYTHEME                  1397
 #define IDC_CUSTOM1                     1399
 #define IDC_QHTM                        1399
 #define IDC_WHITERECT                   2000

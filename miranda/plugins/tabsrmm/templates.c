@@ -75,6 +75,7 @@ TemplateSet LTR_Active, RTL_Active;
 extern struct CREOleCallback    reOleCallback;
 extern BOOL                     cntHelpActive;
 extern MYGLOBALS                myGlobals;
+extern BOOL                     show_relnotes;
 
 extern HINSTANCE                g_hInst;
 static int                      helpActive = 0;
@@ -464,23 +465,38 @@ BOOL CALLBACK DlgProcTemplateHelp(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM 
              * send the help text
              */
 
+            SendDlgItemMessage(hwndDlg, IDC_HELPTEXT, EM_AUTOURLDETECT, (WPARAM) TRUE, 0);
+            SendDlgItemMessage(hwndDlg, IDC_HELPTEXT, EM_SETEVENTMASK, 0, ENM_LINK);
+
             if(lParam == 0) {
                 mir_snprintf(szHeader, 256, var_helptxt[0], 40*15, 40*15, 40*15);
                 while(var_helptxt[i] != NULL) {
                     mir_snprintf(szHeader, 2040, "{\\rtf1\\ansi\\deff0\\pard\\li%u\\fi-%u\\ri%u\\tx%u %s\\par}", 60*15, 60*15, 5*15, 60*15, Translate(var_helptxt[i++]));
                     SendDlgItemMessage(hwndDlg, IDC_HELPTEXT, EM_SETTEXTEX, (WPARAM)&stx, (LPARAM)szHeader);
                 }
+                SetWindowText(hwndDlg, TranslateT("Template editor help"));
             }
             else {
                 HANDLE hFile;
                 DWORD size, actual_read;
                 BYTE *buffer = 0;
                 char final_path[MAX_PATH];
-                
+
+                if(show_relnotes) {
+                    char **txt = (char **)lParam;
+                    char buf[2048];
+
+                    i = 1;
+                    while(txt[i] != NULL) {
+                        mir_snprintf(buf, 2048, "{\\rtf1\\ansi\\deff0\\pard\\li%u\\fi-%u\\ri%u\\tx%u %s\\par}", 30*15, 30*15, 5*15, 30*15, txt[i++]);
+                        SendDlgItemMessage(hwndDlg, IDC_HELPTEXT, EM_SETTEXTEX, (WPARAM)&stx, (LPARAM)buf);
+                    }
+                    SetWindowText(hwndDlg, _T("tabSRMM release notes"));
+                    goto dl_done;
+                }
                 CallService(MS_UTILS_PATHTOABSOLUTE, (WPARAM)lParam, (LPARAM)final_path);
                 _splitpath(final_path, NULL, NULL, szBasename, szExt);
                 if((hFile = CreateFileA(final_path, GENERIC_READ, FILE_SHARE_READ, NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL)) == INVALID_HANDLE_VALUE ) {
-                    MessageBox(0, TranslateT("Failed to open help file"), _T("tabSRMM"), MB_OK);
                     DestroyWindow(hwndDlg);
                     return FALSE;
                 }
@@ -491,16 +507,44 @@ BOOL CALLBACK DlgProcTemplateHelp(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM 
                 CloseHandle(hFile);
                 free(buffer);
             }
+dl_done:
             GetWindowRect(hwndDlg, &rc);
-            MoveWindow(hwndDlg, 0, rc.top, rc.right - rc.left, rc.bottom - rc.top, FALSE);
             if(lParam == 0)
-                SetWindowText(hwndDlg, TranslateT("Template editor help"));
-            else
-                SetWindowTextA(hwndDlg, szBasename);
+                MoveWindow(hwndDlg, 0, rc.top, rc.right - rc.left, rc.bottom - rc.top, FALSE);
             ShowWindow(hwndDlg, SW_SHOWNOACTIVATE);
             helpActive = 1;
             return TRUE;
         }
+        case WM_NOTIFY:
+            switch (((NMHDR *) lParam)->idFrom) {
+                case IDC_HELPTEXT:
+                    switch (((NMHDR *) lParam)->code) {
+                        case EN_LINK:
+                            switch (((ENLINK *) lParam)->msg) {
+                                case WM_SETCURSOR:
+                                    SetCursor(myGlobals.hCurHyperlinkHand);
+                                    SetWindowLong(hwndDlg, DWL_MSGRESULT, TRUE);
+                                    return TRUE;
+                                case WM_LBUTTONUP:
+                                    {
+                                        TEXTRANGEA tr;
+                                        CHARRANGE sel;
+                                        SendDlgItemMessage(hwndDlg, IDC_HELPTEXT, EM_EXGETSEL, 0, (LPARAM) & sel);
+                                        if (sel.cpMin != sel.cpMax)
+                                            break;
+                                        tr.chrg = ((ENLINK *) lParam)->chrg;
+                                        tr.lpstrText = malloc(tr.chrg.cpMax - tr.chrg.cpMin + 8);
+                                        SendDlgItemMessageA(hwndDlg, IDC_HELPTEXT, EM_GETTEXTRANGE, 0, (LPARAM) & tr);
+                                        CallService(MS_UTILS_OPENURL, 1, (LPARAM) tr.lpstrText);
+                                        SetFocus(GetDlgItem(hwndDlg, IDC_HELPTEXT));
+                                        free(tr.lpstrText);
+                                        break;
+                                    }
+                            }
+                            break;
+                    }
+            }
+            break;
         case WM_COMMAND:
             if(LOWORD(wParam) == IDOK || LOWORD(wParam) == IDCANCEL)
                 DestroyWindow(hwndDlg);

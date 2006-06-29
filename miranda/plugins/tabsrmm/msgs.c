@@ -34,6 +34,20 @@ $Id$
     #include "m_MathModule.h"
 #endif
 
+static char *relnotes[] = {
+    "{\\rtf1\\ansi\\deff0\\pard\\li%u\\fi-%u\\ri%u\\tx%u}",
+    "\\par\t\\b\\ul1 Release notes for version 1.1.0.3\\b0\\ul0\\par ",
+    "*\tYou must hold the ctrl key when dragging tabs to re-arrange tab position\\par ",
+    "*\tWhen using the mouse wheel to scroll the message history, you can now hold the left SHIFT key for faster (per page) scrolling\\par ",
+    "*\tThe template system has been updated with a few changes. You can review an updated version of the template documentation at http://miranda.or.at/tabsrmm-articles/tabsrmm-message-log-templates/\\par ",
+    "*\tLeft SHIFT+ALT + direction keys (page up, page dn, home, end, up/down) are now working in group chats and allow scrolling the message history while the input area is focused.\\par ",
+    "*\tIntroduced this dialog to show the last release notes after upgrading to a new version.\\par ",
+    "*\tLess aggressive scrolling behaviour in the message window. Switching tabs or restoring a previously minimized container will no longer scroll the message history to the bottom",
+    NULL
+};
+
+BOOL show_relnotes = FALSE;
+
 MYGLOBALS myGlobals;
 NEN_OPTIONS nen_options;
 extern PLUGININFO pluginInfo;
@@ -67,6 +81,7 @@ extern      struct MsgLogIcon msgLogIcons[NR_LOGICONS * 3];
 extern      HINSTANCE g_hInst;
 extern      BOOL CALLBACK HotkeyHandlerDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam);
 extern      int g_sessionshutdown;
+extern      BOOL CALLBACK DlgProcTemplateHelp(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam);
 
 HANDLE g_hEvent_MsgWin;
 
@@ -1030,10 +1045,14 @@ static int SplitmsgModulesLoaded(WPARAM wParam, LPARAM lParam)
     if(DBGetContactSettingByte(NULL, SRMSGMOD_T, "useskin", 0))
         ReloadContainerSkin(1, 1);
     
-	//FirstTimeConfig();
     CacheLogFonts();
-	//tQHTM_Init();
     Chat_ModulesLoaded(wParam, lParam);
+    if(DBGetContactSettingDword(NULL, SRMSGMOD_T, "last_relnotes", 0) < pluginInfo.version) {
+        show_relnotes = TRUE;
+        CreateDialogParam(g_hInst, MAKEINTRESOURCE(IDD_VARIABLEHELP), 0, DlgProcTemplateHelp, (LPARAM)relnotes);
+        show_relnotes = FALSE;
+        DBWriteContactSettingDword(NULL, SRMSGMOD_T, "last_relnotes", pluginInfo.version);
+    }
 	return 0;
 }
 

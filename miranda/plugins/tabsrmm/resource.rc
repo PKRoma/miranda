@@ -405,7 +405,7 @@ IDD_TABCONFIG DIALOGEX 0, 0, 303, 230
 STYLE DS_SETFONT | DS_FIXEDSYS | DS_CONTROL | WS_CHILD
 FONT 8, "MS Shell Dlg", 400, 0, 0x1
 BEGIN
-    GROUPBOX        "Tab label colors",IDC_STATIC,6,10,144,79
+    GROUPBOX        "Tab label colors",IDC_STATIC,6,10,144,80
     CONTROL         "Use windows colors",IDC_LABELUSEWINCOLORS,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,13,19,136,10
     LTEXT           "Normal",IDC_STATIC,14,31,77,13
     LTEXT           "Selected",IDC_STATIC,14,47,77,13
@@ -415,7 +415,7 @@ BEGIN
     CONTROL         "",IDC_TXTCLRACTIVE,"ColourPicker",WS_TABSTOP,121,44,24,13
     CONTROL         "",IDC_TXTCLRUNREAD,"ColourPicker",WS_TABSTOP,121,58,24,13
     CONTROL         "",IDC_TXTCLRHOTTRACK,"ColourPicker",WS_TABSTOP,121,72,24,13
-    GROUPBOX        "Tab background colors",IDC_STATIC,153,10,147,79
+    GROUPBOX        "Tab background colors",IDC_STATIC,153,10,147,80
     CONTROL         "Use windows colors",IDC_BKGUSEWINCOLORS2,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,162,19,136,10
     LTEXT           "Normal",IDC_STATIC,163,30,84,10
     LTEXT           "Selected",IDC_STATIC,163,40,84,10
@@ -466,7 +466,7 @@ BEGIN
 END
 
 IDD_VARIABLEHELP DIALOGEX 0, 0, 336, 238
-STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP | WS_CAPTION | WS_SYSMENU
+STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | DS_CENTER | WS_POPUP | WS_CAPTION | WS_SYSMENU
 CAPTION "Dialog"
 FONT 8, "MS Shell Dlg", 400, 0, 0x1
 BEGIN
@@ -490,28 +490,6 @@ BEGIN
     CONTROL         "",IDC_STATIC,"Static",SS_ETCHEDHORZ,0,117,228,1
     CONTROL         "Support and latest version information",IDC_SUPPORT,
                     "Hyperlink",WS_TABSTOP | 0x1,18,91,192,12
-END
-
-IDD_FIRSTTIME DIALOGEX 0, 0, 265, 201
-STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | DS_CENTER | WS_POPUP | WS_CAPTION | WS_SYSMENU
-CAPTION "tabSRMM first time configuration"
-FONT 8, "MS Shell Dlg", 400, 0, 0x1
-BEGIN
-    DEFPUSHBUTTON   "Apply",IDOK,154,180,50,14
-    PUSHBUTTON      "Skip",IDCANCEL,209,180,50,14
-    GROUPBOX        "Choose your message history appearance",IDC_STATIC,7,7,251,43
-    CONTROL         "Compact theme (classic message window look)",IDC_COMPACTTHEME,
-                    "Button",BS_AUTORADIOBUTTON,13,18,232,11
-    CONTROL         "Fancy theme, based on the ""Stone"" theme",IDC_FANCYTHEME,
-                    "Button",BS_AUTORADIOBUTTON,14,31,232,12
-    GROUPBOX        "Other message window options",IDC_STATIC,7,56,251,70
-    CONTROL         "Show avatars when present",IDC_SHOWAVATARS,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,14,70,236,9
-    CONTROL         "Show the info panel in the message window.",IDC_SHOWINFOPANEL,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,14,82,236,9
-    LTEXT           "This step is primarily for users upgrading from earlier versions or installing tabSRMM on a fresh Miranda profile.\nIf you are already running a version equal or later than 0.9.9.95, you can skip this. ""Apply"" will overwrite some of your settings.",IDC_STATIC,7,130,251,46
-    CONTROL         "By default, use IEView as message log viewer.",IDC_IEVEIW,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,14,94,233,9
-    LTEXT           " This option is disabled, if IEView is not installed.",IDC_STATIC,24,103,218,10
 END
 
 IDD_SKINTABDIALOG DIALOGEX 0, 0, 312, 247
@@ -597,14 +575,6 @@ BEGIN
         RIGHTMARGIN, 195
         TOPMARGIN, 7
         BOTTOMMARGIN, 96
-    END
-
-    IDD_FIRSTTIME, DIALOG
-    BEGIN
-        LEFTMARGIN, 7
-        RIGHTMARGIN, 258
-        TOPMARGIN, 7
-        BOTTOMMARGIN, 194
     END
 END
 #endif    // APSTUDIO_INVOKED
