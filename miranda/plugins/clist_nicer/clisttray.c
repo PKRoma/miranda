@@ -66,7 +66,7 @@ typedef struct _DllVersionInfo {
 #define DLLVER_PLATFORM_NT              0x00000002      // Windows NT
 typedef HRESULT (CALLBACK* DLLGETVERSIONPROC)(DLLVERSIONINFO *);
 
-static DLLVERSIONINFO dviShell;
+static DLLVERSIONINFO dviShell = {0};
 static BOOL mToolTipTrayTips = FALSE;
 
 static TCHAR szTip[2048];
@@ -624,87 +624,45 @@ int TrayIconProcessMessage(WPARAM wParam, LPARAM lParam)
 	return saveTrayIconProcessMessage(wParam, lParam);
 }
 
-int CListTrayNotify( MIRANDASYSTRAYNOTIFY *msn )
+int CListTrayNotify(MIRANDASYSTRAYNOTIFY *msn)
 {
-#if defined(_UNICODE)
-	if(msn->dwInfoFlags & NIIF_INTERN_UNICODE) {
-		if (msn && msn->cbSize == sizeof(MIRANDASYSTRAYNOTIFY) && msn->szInfo && msn->szInfoTitle) {
-			if (trayIcon) {
-				NOTIFYICONDATAW nid = {0};
-				nid.cbSize = ( dviShell.dwMajorVersion >= 5 ) ? sizeof(nid) : NOTIFYICONDATAW_V1_SIZE;
-				nid.hWnd = (HWND) CallService(MS_CLUI_GETHWND, 0, 0);
-				if (msn->szProto) {
-					int j;
-					for (j = 0; j < trayIconCount; j++) {
-						if (trayIcon[j].szProto != NULL) {
-							if (strcmp(msn->szProto, trayIcon[j].szProto) == 0) {
-								nid.uID = trayIcon[j].id;
-								j = trayIconCount;
-								continue;
-							}
-						} else {
-							if (trayIcon[j].isBase) {
-								nid.uID = trayIcon[j].id;
-								j = trayIconCount;
-								continue;
-							}
+    if (msn && msn->cbSize == sizeof(MIRANDASYSTRAYNOTIFY) && msn->szInfo && msn->szInfoTitle) {
+		if (trayIcon) {
+			NOTIFYICONDATAA nid = { 0 };
+			nid.cbSize = sizeof(nid); // : NOTIFYICONDATAA_V1_SIZE;
+			nid.hWnd = (HWND) CallService(MS_CLUI_GETHWND, 0, 0);
+			if (msn->szProto) {
+				int j;
+				for (j = 0; j < trayIconCount; j++) {
+					if (trayIcon[j].szProto != NULL) {
+						if (strcmp(msn->szProto, trayIcon[j].szProto) == 0) {
+							nid.uID = trayIcon[j].id;
+							j = trayIconCount;
+							continue;
 						}
-					} //for
-				} else {
-					nid.uID = trayIcon[0].id;
-				}
-				nid.uFlags = NIF_INFO;
-				lstrcpynW(nid.szInfo, (WCHAR *)msn->szInfo, safe_sizeof(nid.szInfo));
-				lstrcpynW(nid.szInfoTitle, (WCHAR *)msn->szInfoTitle, safe_sizeof(nid.szInfoTitle));
-				nid.szInfo[safe_sizeof(nid.szInfo) - 1] = 0;
-				nid.szInfoTitle[safe_sizeof(nid.szInfoTitle) - 1] = 0;
-				nid.uTimeout = msn->uTimeout;
-				nid.dwInfoFlags = (msn->dwInfoFlags & ~NIIF_INTERN_UNICODE);
-				return Shell_NotifyIconW(NIM_MODIFY, (void*) &nid) == 0;
-			}
-			return 2;
-		}
-	}
-	else {
-#endif        
-		if (msn && msn->cbSize == sizeof(MIRANDASYSTRAYNOTIFY) && msn->szInfo && msn->szInfoTitle) {
-			if (trayIcon) {
-				NOTIFYICONDATAA nid = {0};
-				nid.cbSize = ( dviShell.dwMajorVersion >= 5 ) ? sizeof(nid) : NOTIFYICONDATAA_V1_SIZE;
-				nid.hWnd = (HWND) CallService(MS_CLUI_GETHWND, 0, 0);
-				if (msn->szProto) {
-					int j;
-					for (j = 0; j < trayIconCount; j++) {
-						if (trayIcon[j].szProto != NULL) {
-							if (strcmp(msn->szProto, trayIcon[j].szProto) == 0) {
-								nid.uID = trayIcon[j].id;
-								j = trayIconCount;
-								continue;
-							}
-						} else {
-							if (trayIcon[j].isBase) {
-								nid.uID = trayIcon[j].id;
-								j = trayIconCount;
-								continue;
-							}
+					}
+					else {
+						if (trayIcon[j].isBase) {
+							nid.uID = trayIcon[j].id;
+							j = trayIconCount;
+							continue;
 						}
-					} //for
-				} else {
-					nid.uID = trayIcon[0].id;
-				}
-				nid.uFlags = NIF_INFO;
-				lstrcpynA(nid.szInfo, msn->szInfo, sizeof(nid.szInfo));
-				lstrcpynA(nid.szInfoTitle, msn->szInfoTitle, sizeof(nid.szInfoTitle));
-				nid.szInfo[sizeof(nid.szInfo) - 1] = 0;
-				nid.szInfoTitle[sizeof(nid.szInfoTitle) - 1] = 0;
-				nid.uTimeout = msn->uTimeout;
-				nid.dwInfoFlags = msn->dwInfoFlags;
-				return Shell_NotifyIconA(NIM_MODIFY, (void*) &nid) == 0;
+					}
+				}               //for
 			}
-			return 2;
+			else {
+				nid.uID = trayIcon[0].id;
+                nid.hIcon = trayIcon[0].hBaseIcon;
+			}
+			nid.uFlags = NIF_INFO | NIF_ICON;
+			lstrcpynA(nid.szInfo, msn->szInfo, sizeof(nid.szInfo));
+			lstrcpynA(nid.szInfoTitle, msn->szInfoTitle, sizeof(nid.szInfoTitle));
+			nid.uTimeout = msn->uTimeout;
+			nid.dwInfoFlags = msn->dwInfoFlags;
+			return Shell_NotifyIconA(NIM_MODIFY, (void *) &nid) == 0;
 		}
-#if defined(_UNICODE)
+		return 2;
 	}
-#endif    
 	return 1;
 }
+
