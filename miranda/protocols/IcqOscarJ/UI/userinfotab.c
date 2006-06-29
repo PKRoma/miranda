@@ -191,6 +191,7 @@ typedef struct AvtDlgProcData_t
   HANDLE hContact;
   HANDLE hEventHook;
   HWND hFlashAvatar;
+  HBITMAP hImageAvatar;
 } AvtDlgProcData;
 
 #define HM_REBIND_AVATAR  (WM_USER + 1024)
@@ -259,6 +260,36 @@ static void ReleaseFlashAvatar(AvtDlgProcData* pData)
     pData->hFlashAvatar = NULL;
   }
 }
+
+
+
+static void PrepareImageAvatar(HWND hwndDlg, AvtDlgProcData* pData, char* szFile)
+{
+  pData->hImageAvatar = (HBITMAP)CallService(MS_UTILS_LOADBITMAP, 0, (WPARAM)szFile);
+
+  SendDlgItemMessage(hwndDlg, IDC_AVATAR, STM_SETIMAGE, IMAGE_BITMAP, (WPARAM)pData->hImageAvatar);
+}
+
+
+
+static void ReleaseImageAvatar(HWND hwndDlg, AvtDlgProcData* pData)
+{
+  if (pData->hImageAvatar)
+  {
+    HBITMAP avt = (HBITMAP)SendDlgItemMessage(hwndDlg, IDC_AVATAR, STM_SETIMAGE, IMAGE_BITMAP, (LPARAM)NULL);
+
+    // force re-draw avatar window
+    InvalidateRect(GetDlgItem(hwndDlg, IDC_AVATAR), NULL, FALSE);
+
+    // in XP you can get different image, and it is leaked if not Destroy()ed
+    if (avt != pData->hImageAvatar)
+      DeleteObject(avt);
+
+    DeleteObject(pData->hImageAvatar);
+    pData->hImageAvatar = NULL;
+  }
+}
+
 
 
 static BOOL CALLBACK AvatarDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam)
@@ -334,10 +365,7 @@ static BOOL CALLBACK AvatarDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM
           }
           else
           { // static avatar processing
-            HBITMAP avt = (HBITMAP)CallService(MS_UTILS_LOADBITMAP, 0, (WPARAM)szAvatar);
-        
-            if (avt)
-              SendDlgItemMessage(hwndDlg, IDC_AVATAR, STM_SETIMAGE, IMAGE_BITMAP, (WPARAM)avt);
+            PrepareImageAvatar(hwndDlg, pData, szAvatar);
           }
         }
         else if (pData->hContact) // only retrieve users avatars
@@ -363,19 +391,18 @@ static BOOL CALLBACK AvatarDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM
         if (ack->result == ACKRESULT_SUCCESS)
         { // load avatar
           PROTO_AVATAR_INFORMATION* AI = (PROTO_AVATAR_INFORMATION*)ack->hProcess;
-          HBITMAP avt = NULL;
 
           ReleaseFlashAvatar(pData);
+          ReleaseImageAvatar(hwndDlg, pData);
+
           if ((AI->format == PA_FORMAT_XML || AI->format == PA_FORMAT_SWF) && ServiceExists(MS_FAVATAR_GETINFO))
           { // flash avatar and we have FlashAvatars installed, init flash avatar
             PrepareFlashAvatar(hwndDlg, pData);
           }
           else
-          {
-            avt = (HBITMAP)CallService(MS_UTILS_LOADBITMAP, 0, (WPARAM)AI->filename);
+          { // process image avatar
+            PrepareImageAvatar(hwndDlg, pData, AI->filename);
           }
-          if (avt) avt = (HBITMAP)SendDlgItemMessage(hwndDlg, IDC_AVATAR, STM_SETIMAGE, IMAGE_BITMAP, (LPARAM)avt);
-          if (avt) DeleteObject(avt); // we release old avatar if any
         }
         else if (ack->result == ACKRESULT_STATUS)
         { // contact has changed avatar
@@ -413,25 +440,20 @@ static BOOL CALLBACK AvatarDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM
 
           if (dwPaFormat == PA_FORMAT_XML || dwPaFormat == PA_FORMAT_JPEG || dwPaFormat == PA_FORMAT_GIF || dwPaFormat == PA_FORMAT_BMP)
           { // a valid file
-            HBITMAP avt = NULL;
-
-            if (dwPaFormat != PA_FORMAT_XML || !ServiceExists(MS_FAVATAR_GETINFO))
-              avt = (HBITMAP)CallService(MS_UTILS_LOADBITMAP, 0, (WPARAM)szFile);
-
             if (!IcqSetMyAvatar(0, (LPARAM)szFile)) // set avatar
             {
               ReleaseFlashAvatar(pData);
+              ReleaseImageAvatar(hwndDlg, pData);
+
               if (dwPaFormat != PA_FORMAT_XML || !ServiceExists(MS_FAVATAR_GETINFO))
-              { // it is not flash, release possible previous
-                avt = (HBITMAP)SendDlgItemMessage(hwndDlg, IDC_AVATAR, STM_SETIMAGE, IMAGE_BITMAP, (LPARAM)avt);
+              { // it is not flash
+                PrepareImageAvatar(hwndDlg, pData, szFile);
               }
               else
               { // is is flash load it
                 PrepareFlashAvatar(hwndDlg, pData);
               }
-
             }
-            if (avt) DeleteObject(avt); // we release old avatar if any
           }
           SAFE_FREE(&szFile);
         }
@@ -439,13 +461,11 @@ static BOOL CALLBACK AvatarDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM
       break;
     case IDC_DELETEAVATAR:
       {
-        HBITMAP avt;
         AvtDlgProcData* pData = (AvtDlgProcData*)GetWindowLong(hwndDlg, GWL_USERDATA);
 
-        avt = (HBITMAP)SendDlgItemMessage(hwndDlg, IDC_AVATAR, STM_SETIMAGE, IMAGE_BITMAP, (LPARAM)NULL);
-        RedrawWindow(GetDlgItem(hwndDlg, IDC_AVATAR), NULL, NULL, RDW_INVALIDATE);
-        if (avt) DeleteObject(avt); // we release old avatar if any
         ReleaseFlashAvatar(pData);
+        ReleaseImageAvatar(hwndDlg, pData);
+
         IcqSetMyAvatar(0, 0); // clear hash on server
       }
       break;
@@ -459,6 +479,7 @@ static BOOL CALLBACK AvatarDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM
         UnhookEvent(pData->hEventHook);
         
       ReleaseFlashAvatar(pData);
+      ReleaseImageAvatar(hwndDlg, pData);
       SetWindowLong(hwndDlg, GWL_USERDATA, (LONG)0);
       SAFE_FREE(&pData);
     }
