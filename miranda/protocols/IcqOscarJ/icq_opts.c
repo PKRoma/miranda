@@ -683,7 +683,7 @@ static BOOL CALLBACK FillCpCombo(LPCSTR str)
 
 static const UINT icqUnicodeControls[] = {IDC_UTFALL,IDC_UTFSTATIC,IDC_UTFCODEPAGE};
 static const UINT icqDCMsgControls[] = {IDC_DCPASSIVE};
-static const UINT icqXStatusControls[] = {IDC_XSTATUSAUTO};
+static const UINT icqXStatusControls[] = {IDC_XSTATUSAUTO,IDC_XSTATUSRESET};
 static const UINT icqAimControls[] = {IDC_AIMENABLE};
 static BOOL CALLBACK DlgProcIcqFeaturesOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam)
 {

@@ -78,7 +78,7 @@ static void UpdateAllContactsCheckmark(HWND hwndList, HANDLE phItemAll)
 
 // Loop over all contacts and update the checkmark
 // that indicates wether or not they are already uploaded
-static int UpdateCheckmarks(HWND hwndDlg, HANDLE phItemAll)
+static int UpdateCheckmarks(HWND hwndList, HANDLE phItemAll)
 {
   int bAll = 1;
   HANDLE hContact;
@@ -89,11 +89,11 @@ static int UpdateCheckmarks(HWND hwndDlg, HANDLE phItemAll)
   hContact = ICQFindFirstContact();
   while (hContact)
   {
-    hItem = (HANDLE)SendDlgItemMessage(hwndDlg, IDC_CLIST, CLM_FINDCONTACT, (WPARAM)hContact, 0);
+    hItem = (HANDLE)SendMessage(hwndList, CLM_FINDCONTACT, (WPARAM)hContact, 0);
     if (hItem)
     {
       if (ICQGetContactSettingWord(hContact, "ServerId", 0))
-        SendDlgItemMessage(hwndDlg, IDC_CLIST, CLM_SETCHECKMARK, (WPARAM)hItem, 1);
+        SendMessage(hwndList, CLM_SETCHECKMARK, (WPARAM)hItem, 1);
       else
         bAll = 0;
     }
@@ -102,7 +102,7 @@ static int UpdateCheckmarks(HWND hwndDlg, HANDLE phItemAll)
 
   // Update the "All contacts" checkmark
   if (phItemAll)
-    SendMessage(hwndDlg, CLM_SETCHECKMARK, (WPARAM)phItemAll, bAll);
+    SendMessage(hwndList, CLM_SETCHECKMARK, (WPARAM)phItemAll, bAll);
 
   bListInit = 0;
 
@@ -579,6 +579,7 @@ static BOOL CALLBACK DlgProcUploadList(HWND hwndDlg,UINT message,WPARAM wParam,L
       int isOnServer;
       BOOL bUidOk;
       char str[MAX_PATH];
+      HWND hwndList = GetDlgItem(hwndDlg, IDC_CLIST);
 
       switch (currentState)
       {
@@ -608,10 +609,10 @@ static BOOL CALLBACK DlgProcUploadList(HWND hwndDlg,UINT message,WPARAM wParam,L
         {
           hCurrentContact = hContact;
 
-          hItem = (HANDLE)SendDlgItemMessage(hwndDlg, IDC_CLIST, CLM_FINDCONTACT, (WPARAM)hContact, 0);
+          hItem = (HANDLE)SendMessage(hwndList, CLM_FINDCONTACT, (WPARAM)hContact, 0);
           if (hItem)
           {
-            isChecked = SendDlgItemMessage(hwndDlg, IDC_CLIST, CLM_GETCHECKMARK, (WPARAM)hItem, 0) != 0;
+            isChecked = SendMessage(hwndList, CLM_GETCHECKMARK, (WPARAM)hItem, 0) != 0;
             isOnServer = ICQGetContactSettingWord(hContact, "ServerId", 0) != 0;
 
             bUidOk = !ICQGetContactSettingUID(hContact, &dwUin, &szUid);
@@ -903,9 +904,9 @@ static BOOL CALLBACK DlgProcUploadList(HWND hwndDlg,UINT message,WPARAM wParam,L
         SetDlgItemTextUtf(hwndDlg, IDCANCEL, ICQTranslateUtfStatic("Close", str));
         sendAddEnd();
         working = 0;
-        SendDlgItemMessage(hwndDlg,IDC_CLIST,CLM_SETGREYOUTFLAGS,0,0);
-        UpdateCheckmarks(hwndDlg, hItemAll);
-        EnableDlgItem(hwndDlg, IDC_CLIST, FALSE);
+//        SendMessage(hwndList, CLM_SETGREYOUTFLAGS,0,0);
+        UpdateCheckmarks(hwndList, hItemAll);
+//        EnableWindow(hwndList, FALSE);
         if (hProtoAckHook)
           UnhookEvent(hProtoAckHook);
       }
@@ -931,8 +932,9 @@ static BOOL CALLBACK DlgProcUploadList(HWND hwndDlg,UINT message,WPARAM wParam,L
         currentState = STATE_REGROUP;
         currentAction = ACTION_NONE;
         icq_ShowMultipleControls(hwndDlg, settingsControls, sizeof(settingsControls)/sizeof(settingsControls[0]), SW_HIDE);
-        SendDlgItemMessage(hwndDlg, IDC_CLIST, CLM_SETGREYOUTFLAGS, 0xFFFFFFFF, 0);
-        InvalidateRect(GetDlgItem(hwndDlg, IDC_CLIST), NULL, FALSE);
+//        SendDlgItemMessage(hwndDlg, IDC_CLIST, CLM_SETGREYOUTFLAGS, 0xFFFFFFFF, 0);
+//        InvalidateRect(GetDlgItem(hwndDlg, IDC_CLIST), NULL, FALSE);
+        EnableDlgItem(hwndDlg, IDC_CLIST, FALSE);
         hProtoAckHook = HookEventMessage(ME_PROTO_ACK, hwndDlg, M_PROTOACK);
         sendAddStart(1);
         PostMessage(hwndDlg, M_UPLOADMORE, 0, 0);
@@ -952,6 +954,8 @@ static BOOL CALLBACK DlgProcUploadList(HWND hwndDlg,UINT message,WPARAM wParam,L
         
       case IDC_CLIST:
         {
+          HWND hClist = GetDlgItem(hwndDlg, IDC_CLIST);
+
           switch(((NMHDR*)lParam)->code)
           {
             
@@ -959,14 +963,14 @@ static BOOL CALLBACK DlgProcUploadList(HWND hwndDlg,UINT message,WPARAM wParam,L
             {
               int i;
               
-              SendDlgItemMessage(hwndDlg, IDC_CLIST, CLM_SETLEFTMARGIN, 2, 0);
-              SendDlgItemMessage(hwndDlg, IDC_CLIST, CLM_SETBKBITMAP, 0, (LPARAM)(HBITMAP)NULL);
-              SendDlgItemMessage(hwndDlg, IDC_CLIST, CLM_SETBKCOLOR, GetSysColor(COLOR_WINDOW), 0);
-              SendDlgItemMessage(hwndDlg, IDC_CLIST, CLM_SETGREYOUTFLAGS, working?0xFFFFFFFF:0, 0);
+              SendMessage(hClist, CLM_SETLEFTMARGIN, 2, 0);
+              SendMessage(hClist, CLM_SETBKBITMAP, 0, (LPARAM)(HBITMAP)NULL);
+              SendMessage(hClist, CLM_SETBKCOLOR, GetSysColor(COLOR_WINDOW), 0);
+              SendMessage(hClist, CLM_SETGREYOUTFLAGS, working?0xFFFFFFFF:0, 0);
               for (i=0; i<=FONTID_MAX; i++)
-                SendDlgItemMessage(hwndDlg, IDC_CLIST, CLM_SETTEXTCOLOR, i, GetSysColor(COLOR_WINDOWTEXT));
-               if (CallService(MS_CLUI_GETCAPS, 0, 0) & CLUIF_HIDEEMPTYGROUPS) // hide empty groups
-                SendDlgItemMessage(hwndDlg, IDC_CLIST, CLM_SETHIDEEMPTYGROUPS, (WPARAM) TRUE, 0);
+                SendMessage(hClist, CLM_SETTEXTCOLOR, i, GetSysColor(COLOR_WINDOWTEXT));
+              if (CallService(MS_CLUI_GETCAPS, 0, 0) & CLUIF_HIDEEMPTYGROUPS) // hide empty groups
+                SendMessage(hClist, CLM_SETHIDEEMPTYGROUPS, (WPARAM) TRUE, 0);
             }
             break;
             
@@ -974,9 +978,9 @@ static BOOL CALLBACK DlgProcUploadList(HWND hwndDlg,UINT message,WPARAM wParam,L
           case CLN_CONTACTMOVED:
             {
               // Delete non-icq contacts
-              DeleteOtherContactsFromControl(GetDlgItem(hwndDlg, IDC_CLIST));
+              DeleteOtherContactsFromControl(hClist);
               if (hItemAll)
-                UpdateAllContactsCheckmark(GetDlgItem(hwndDlg, IDC_CLIST), hItemAll);
+                UpdateAllContactsCheckmark(hClist, hItemAll);
             }
             break;
 
@@ -985,10 +989,10 @@ static BOOL CALLBACK DlgProcUploadList(HWND hwndDlg,UINT message,WPARAM wParam,L
               int bCheck;
 
               // Delete non-icq contacts
-              DeleteOtherContactsFromControl(GetDlgItem(hwndDlg, IDC_CLIST));
+              DeleteOtherContactsFromControl(hClist);
 
               if (!bListInit) // do not enter twice
-                bCheck = UpdateCheckmarks(hwndDlg, NULL);
+                bCheck = UpdateCheckmarks(hClist, NULL);
 
               if (!hItemAll) // Add the "All contacts" item
               {
@@ -997,10 +1001,10 @@ static BOOL CALLBACK DlgProcUploadList(HWND hwndDlg,UINT message,WPARAM wParam,L
                 cii.cbSize = sizeof(cii);
                 cii.flags = CLCIIF_GROUPFONT | CLCIIF_CHECKBOX;
                 cii.pszText = ICQTranslate("** All contacts **");
-                hItemAll = (HANDLE)SendDlgItemMessage(hwndDlg, IDC_CLIST, CLM_ADDINFOITEM, 0, (LPARAM)&cii);
+                hItemAll = (HANDLE)SendMessage(hClist, CLM_ADDINFOITEM, 0, (LPARAM)&cii);
               }
 
-              SendDlgItemMessage(hwndDlg, IDC_CLIST, CLM_SETCHECKMARK, (WPARAM)hItemAll, bCheck);
+              SendMessage(hClist, CLM_SETCHECKMARK, (WPARAM)hItemAll, bCheck);
             }
             break;
             
@@ -1016,20 +1020,20 @@ static BOOL CALLBACK DlgProcUploadList(HWND hwndDlg,UINT message,WPARAM wParam,L
               {
                 int check;
 
-                check = SendDlgItemMessage(hwndDlg, IDC_CLIST, CLM_GETCHECKMARK, (WPARAM)hItemAll, 0);
+                check = SendMessage(hClist, CLM_GETCHECKMARK, (WPARAM)hItemAll, 0);
                 
                 hContact = ICQFindFirstContact();
                 while (hContact)
                 {
-                  hItem = (HANDLE)SendDlgItemMessage(hwndDlg, IDC_CLIST, CLM_FINDCONTACT, (WPARAM)hContact, 0);
+                  hItem = (HANDLE)SendMessage(hClist, CLM_FINDCONTACT, (WPARAM)hContact, 0);
                   if (hItem)
-                    SendDlgItemMessage(hwndDlg, IDC_CLIST, CLM_SETCHECKMARK, (WPARAM)hItem, check);
+                    SendMessage(hClist, CLM_SETCHECKMARK, (WPARAM)hItem, check);
                   hContact = ICQFindNextContact(hContact);
                 }
               }
               else
               {
-                UpdateAllContactsCheckmark(GetDlgItem(hwndDlg, IDC_CLIST), hItemAll);
+                UpdateAllContactsCheckmark(hClist, hItemAll);
               }
             }
             break;
