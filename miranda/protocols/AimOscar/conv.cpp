@@ -464,7 +464,7 @@ char* html_to_bbcodes(char *src)
 			else
 			{
 				strip_tag_within(begin,&dest[strlen(dest)]);
-				int addr=ptr-rptr;
+				//int addr=ptr-rptr;
 				dest=renew(dest,strlen(dest)+1,7);
 				rptr=dest;
 				ptr=dest;
@@ -510,7 +510,7 @@ char* html_to_bbcodes(char *src)
 			else
 			{
 				strip_tag_within(begin,&dest[strlen(dest)]);
-				int addr=ptr-rptr;
+				//int addr=ptr-rptr;
 				dest=renew(dest,strlen(dest)+1,7);
 				rptr=dest;
 				ptr=dest;
@@ -717,7 +717,7 @@ wchar_t* html_to_bbcodes(wchar_t *src)
 			else
 			{
 				strip_tag_within(begin,&dest[wcslen(dest)]);
-				int addr=ptr-rptr;
+				//int addr=ptr-rptr;
 				dest=renew(dest,wcslen(dest)*2+2,7*2);
 				rptr=dest;
 				ptr=dest;
@@ -763,7 +763,7 @@ wchar_t* html_to_bbcodes(wchar_t *src)
 			else
 			{
 				strip_tag_within(begin,&dest[wcslen(dest)]);
-				int addr=ptr-rptr;
+				//int addr=ptr-rptr;
 				dest=renew(dest,wcslen(dest)*2+2,7*2);
 				rptr=dest;
 				ptr=dest;

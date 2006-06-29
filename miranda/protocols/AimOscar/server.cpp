@@ -16,7 +16,7 @@ int snac_authorization_reply(SNAC &snac)//family 0x0017
 {
 	if(snac.subcmp(0x0003))
 	{
-		char* server;
+		char* server=0;
 		int address=0;
 		while(address<snac.len())
 		{
@@ -180,8 +180,8 @@ void snac_user_online(SNAC &snac)//family 0x0003
 					int unconfirmed = status&0x0001;
 					int admin_aol = status&0x0002;
 					int aol = status&0x0004;
-					int nonfree = status&0x0008;
-					int free = status&0x0010;
+					//int nonfree = status&0x0008;
+					//int free = status&0x0010;
 					int away = status&0x0020;
 					int icq = status&0x0040;
 					int wireless = status&0x0080;
@@ -584,7 +584,7 @@ void snac_received_message(SNAC &snac,HANDLE hServerConn,int &seqno)//family 0x0
 		bool descr_included=0;
 		bool unicode_message=0;
 		short recv_file_type=-1;
-		unsigned short request_num;
+		unsigned short request_num=0;
 		char local_ip[20],verified_ip[20],proxy_ip[20];
 		ZeroMemory(local_ip,sizeof(local_ip));
 		ZeroMemory(verified_ip,sizeof(verified_ip));
@@ -982,23 +982,23 @@ void snac_list_modification_ack(SNAC &snac)//family 0x0013
 			{
 				ShowPopup("Aim Protocol","Successfully added buddy to list.", 0);
 			}
-			else if(0x0003)
+			else if(code==0x0003)
 			{
 				ShowPopup("Aim Protocol","Failed to add buddy to list: Item already exist.", 0);
 			}
-			else if(0x000a)
+			else if(code==0x000a)
 			{
 				ShowPopup("Aim Protocol","Error adding buddy(invalid id?, already in list?)", 0);
 			}
-			else if(0x000c)
+			else if(code==0x000c)
 			{
 				ShowPopup("Aim Protocol","Cannot add buddy. Limit for this type of item exceeded.", 0);
 			}
-			else if(0x000d)
+			else if(code==0x000d)
 			{
 				ShowPopup("Aim Protocol","Error? Attempting to add ICQ contact to an AIM list.", 0);
 			}
-			else if(0x000e)
+			else if(code==0x000e)
 			{
 				ShowPopup("Aim Protocol","Cannot add this buddy because it requires authorization.", 0);
 			}
@@ -1039,7 +1039,7 @@ void snac_service_redirect(SNAC &snac)//family 0x0001
 	if(snac.subcmp(0x0005))
 	{
 		int position=2;
-		char* server;
+		char* server=0;
 		for(int i=0;i<4;i++)
 		{
 			TLV tlv(snac.val(position));
@@ -1074,7 +1074,7 @@ void snac_mail_response(SNAC &snac)//family 0x0018
 		unsigned short num_tlvs=snac.ushort(24);
 		char* sn=0;
 		time_t time;
-		unsigned short num_msgs;
+		unsigned short num_msgs=0;
 		char new_mail=0;
 		int position=26;
 		char* url=0;

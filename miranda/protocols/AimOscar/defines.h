@@ -1,6 +1,7 @@
 #ifndef DEFINES_H
 #define DEFINES_H
 #define  _CRT_SECURE_NO_DEPRECATE
+#pragma warning (disable : 4996)
 //System includes
 #include <windows.h>
 #include <ctype.h>

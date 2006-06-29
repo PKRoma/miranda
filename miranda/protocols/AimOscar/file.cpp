@@ -122,8 +122,8 @@ void receiving_file(HANDLE hContact, HANDLE hNewConnection)
 {
 	bool accepted_file=0;
 	DBVARIANT dbv;
-	char* file;
-	FILE *fd;
+	char* file=0;
+	FILE *fd=0;
 	oft2 ft;
 	PROTOFILETRANSFERSTATUS pfts;
 	memset(&pfts, 0, sizeof(PROTOFILETRANSFERSTATUS));

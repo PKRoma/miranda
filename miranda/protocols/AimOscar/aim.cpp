@@ -73,7 +73,6 @@ extern "C" int __declspec(dllexport) Load(PLUGINLINK *link)
 	FILE_TRANSFER_KEY=new char[strlen(filetransfer_key)+1];
 	memcpy(FILE_TRANSFER_KEY,filetransfer_key,strlen(filetransfer_key));
 	memcpy(&FILE_TRANSFER_KEY[strlen(filetransfer_key)],"\0",1);
-	int i=strlen(FILE_TRANSFER_KEY);
 	//end location of memory
 	pluginLink = link;
 	conn.status=ID_STATUS_OFFLINE;

@@ -377,7 +377,7 @@ static int AuthRequest(WPARAM wParam,LPARAM lParam)
 		add_contact_to_group(ccs->hContact,DBGetContactSettingWord(NULL, GROUP_ID_KEY,AIM_DEFAULT_GROUP,0),AIM_DEFAULT_GROUP);
 	return 0;
 }
-static int ContactDeleted(WPARAM wParam,LPARAM lParam)
+int ContactDeleted(WPARAM wParam,LPARAM lParam)
 {
 	if (conn.state!=1)
 		return 0;

@@ -1,5 +1,5 @@
 #include "thread.h"
-static void __cdecl forkthread_r(struct FORK_ARG *fa)
+void __cdecl forkthread_r(struct FORK_ARG *fa)
 {	
 	void (*callercode)(void*) = fa->threadcode;
 	void *arg = fa->arg;

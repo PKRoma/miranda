@@ -256,7 +256,7 @@ int aim_set_profile(HANDLE hServerConn,int &seqno,char *msg)//user info
 int aim_set_away(HANDLE hServerConn,int &seqno,char *msg)//user info
 {
 	int offset=0;
-	char* html_msg;
+	char* html_msg=0;
 	int msg_size=0;
 	if(msg!=NULL)
 	{

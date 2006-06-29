@@ -499,7 +499,7 @@ void execute_cmd(char* type,char* arg)
 			}
 			else
 			{
-				char* ch=strtok(szCommandName," ");
+				strtok(szCommandName," ");
 
 			}
 			mir_snprintf(quote_arg,strlen(arg)+3,"%s%s%s","\"",arg,"\"");
@@ -691,7 +691,7 @@ static int module_size=0;
 static char* module_ptr=NULL;
 static int EnumSettings(const char *szSetting,LPARAM lParam)
 {
-	char* szModule=(char*)lParam;
+	//char* szModule=(char*)lParam;
 	module_ptr=renew(module_ptr,module_size,strlen(szSetting)+2);
 	memcpy(&module_ptr[module_size],szSetting,strlen(szSetting));
 	memcpy(&module_ptr[module_size+strlen(szSetting)],";\0",2);
