@@ -672,6 +672,7 @@
 #define ID_LOGMENU_USEADVANCEDTEMPLATE  40244
 #define ID_LOGMENU_USESIMPLETEMPLATE    40245
 #define ID_MESSAGELOG_USESIMPLETEMPLATES 40246
+#define ID_HELP_VIEWRELEASENOTES        40247
 #define IDC_STATIC                      -1
 
 // Next default values for new objects
@@ -679,7 +680,7 @@
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NEXT_RESOURCE_VALUE        10
-#define _APS_NEXT_COMMAND_VALUE         40247
+#define _APS_NEXT_COMMAND_VALUE         40248
 #define _APS_NEXT_CONTROL_VALUE         1400
 #define _APS_NEXT_SYMED_VALUE           40282
 #endif

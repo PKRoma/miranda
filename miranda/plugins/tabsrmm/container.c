@@ -1242,6 +1242,9 @@ BOOL CALLBACK DlgProcContainer(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPa
                 case ID_HELP_ABOUTTABSRMM:
                     CreateDialogParam(g_hInst, MAKEINTRESOURCE(IDD_ABOUT), 0, DlgProcAbout, 0);
                     break;
+                case ID_HELP_VIEWRELEASENOTES:
+                    ViewReleaseNotes();
+                    break;
                 case ID_HELP_MESSAGEWINDOWHELP:
                     if(!cntHelpActive) {
                         cntHelpActive = TRUE;

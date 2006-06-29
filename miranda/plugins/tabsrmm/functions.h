@@ -62,7 +62,8 @@ int GetContainerNameForContact(HANDLE hContact, TCHAR *szName, int iNameLen);
 UINT DrawRichEditFrame(HWND hwnd, struct MessageWindowData *mwdat, UINT skinID, UINT msg, WPARAM wParam, LPARAM lParam, WNDPROC OldWndProc);
 UINT NcCalcRichEditFrame(HWND hwnd, struct MessageWindowData *mwdat, UINT skinID, UINT msg, WPARAM wParam, LPARAM lParam, WNDPROC OldWndProc);
 
-void FirstTimeConfig();
+void ViewReleaseNotes();
+
 void IMG_RefreshItems();
 int  RegisterContainer();
 HMENU BuildContainerMenu();

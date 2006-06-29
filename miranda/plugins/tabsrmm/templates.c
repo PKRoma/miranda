@@ -47,13 +47,13 @@ char *TemplateNames[] = {
 };
     
 TemplateSet LTR_Default = { TRUE, 
-    _T("%I %S %N  %D%n%S %fd[%T%fd]%|%M"),
-    _T("%I %S %N  %D%n%S %fd[%T%fd]%|%M"),
-    _T("%I %S %N  %D%n%S %fd[%T%fd]%|%M"),
-    _T("%I %S %N, %D%n%S %fd[%T%fd]%|%M"),
+    _T("%I %S %N  %fm%*%&D%*%\!: %?n%?S %?fd[%?T%?fd]%?|%M"),
+    _T("%I %S %N  %fm%*%&D%*%\!: %?n%?S %?fd[%?T%?fd]%?|%M"),
+    _T("%I %S %N  %fm%*%&D%*%\!: %?n%?S %?fd[%?T%?fd]%?|%M"),
+    _T("%I %S %N  %fm%*%&D%*%\!: %?n%?S %?fd[%?T%?fd]%?|%M"),
     _T("%S %fd[%T%fd]%|%M"),
     _T("%S %fd[%T%fd]%|%M"),
-    _T("%I%S %D, %T, %N %M%! "),
+    _T("%I %S %fm%*%cd%&D, %&T%*, %N %M%! "),
     _T("%I%S %D, %T, %e%l%M"),
     "Default RTL"
 };
@@ -373,10 +373,12 @@ BOOL CALLBACK DlgProcTemplateEditor(HWND hwndDlg, UINT msg, WPARAM wParam, LPARA
             dbei.pBlob = (iIndex == 6) ? (BYTE *)"is now offline (was online)" : (BYTE *)"The quick brown fox jumps over the lazy dog. The quick brown fox jumps over the lazy dog. The quick brown fox jumps over the lazy dog. The quick brown fox jumps over the lazy dog.";
             dbei.cbBlob = lstrlenA((char *)dbei.pBlob) + 1;
             dbei.flags = (iIndex == 1 || iIndex == 3 || iIndex == 5) ? DBEF_SENT : 0;
+            dbei.flags |= (teInfo->rtl ? DBEF_RTL : 0);
             dat->lastEventTime = (iIndex == 4 || iIndex == 5) ? time(NULL) - 1 : 0;
             dat->iLastEventType = MAKELONG(dbei.flags, dbei.eventType);
             SetWindowText(GetDlgItem(hwndDlg, IDC_PREVIEW), _T(""));
             dat->dwFlags = MWF_LOG_ALL;
+            dat->dwFlags |= (teInfo->rtl ? MWF_LOG_RTL : 0);
             dat->dwFlags = (iIndex == 0 || iIndex == 1) ? dat->dwFlags & ~MWF_LOG_GROUPMODE : dat->dwFlags | MWF_LOG_GROUPMODE;
             StreamInEvents(hwndDlg, 0, 1, 1, &dbei);
             SendDlgItemMessage(hwndDlg, IDC_PREVIEW, EM_SETSEL, -1, -1);
@@ -552,6 +554,7 @@ dl_done:
         case WM_DESTROY:
             helpActive = 0;
             cntHelpActive = FALSE;
+            show_relnotes = FALSE;
             break;
     }
     return FALSE;

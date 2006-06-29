@@ -1048,9 +1048,7 @@ static int SplitmsgModulesLoaded(WPARAM wParam, LPARAM lParam)
     CacheLogFonts();
     Chat_ModulesLoaded(wParam, lParam);
     if(DBGetContactSettingDword(NULL, SRMSGMOD_T, "last_relnotes", 0) < pluginInfo.version) {
-        show_relnotes = TRUE;
-        CreateDialogParam(g_hInst, MAKEINTRESOURCE(IDD_VARIABLEHELP), 0, DlgProcTemplateHelp, (LPARAM)relnotes);
-        show_relnotes = FALSE;
+        ViewReleaseNotes();
         DBWriteContactSettingDword(NULL, SRMSGMOD_T, "last_relnotes", pluginInfo.version);
     }
 	return 0;
@@ -2061,3 +2059,11 @@ static void UnloadIcons()
     }
 }
 
+void ViewReleaseNotes()
+{
+    if(show_relnotes)
+        return;
+
+    show_relnotes = TRUE;
+    CreateDialogParam(g_hInst, MAKEINTRESOURCE(IDD_VARIABLEHELP), 0, DlgProcTemplateHelp, (LPARAM)relnotes);
+}
