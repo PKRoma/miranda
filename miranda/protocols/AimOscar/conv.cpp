@@ -1,4 +1,7 @@
 #include "conv.h"
+#if _MSC_VER
+#pragma warning( disable: 4706 )
+#endif
 char* strip_html(char *src)
 {
     char *ptr;
@@ -1074,3 +1077,6 @@ wchar_t* strip_tag_within(wchar_t* begin, wchar_t* end)
 	}
 	return end;
 }
+#if _MSC_VER
+#pragma warning( default: 4706 )
+#endif

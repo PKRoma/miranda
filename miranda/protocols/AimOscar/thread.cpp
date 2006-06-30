@@ -27,11 +27,17 @@ unsigned long ForkThread(pThreadFunc threadcode,void *arg)
 	CloseHandle(fa.hEvent);
 	return rc;
 }
-void __cdecl aim_keepalive_thread(void* fa)
+void __cdecl aim_keepalive_thread(void* /*fa*/)
 {
 	HANDLE hKeepAliveEvent = CreateEvent(NULL, FALSE, FALSE, NULL);
+	#if _MSC_VER
+	#pragma warning( disable: 4127)
+	#endif
 	while(1)
 	{
+		#if _MSC_VER
+		#pragma warning( default: 4127)
+		#endif
 		DWORD dwWait = WaitForSingleObjectEx(hKeepAliveEvent, 1000*DBGetContactSettingWord(NULL, AIM_PROTOCOL_NAME, AIM_KEY_KA, DEFAULT_KEEPALIVE_TIMER), TRUE);
 		if (dwWait == WAIT_OBJECT_0) break; // we should end
 		else if (dwWait == WAIT_TIMEOUT)
@@ -135,7 +141,7 @@ void accept_file_thread(char* data)//buddy sending file
 		return;
 	int peer_force_proxy=DBGetContactSettingByte(*hContact, AIM_PROTOCOL_NAME, AIM_KEY_FP, 0);
 	int force_proxy=DBGetContactSettingByte(NULL, AIM_PROTOCOL_NAME, AIM_KEY_FP, 0);
-	unsigned short port=DBGetContactSettingWord(*hContact,AIM_PROTOCOL_NAME,AIM_KEY_PC,0);
+	unsigned short port=(unsigned short)DBGetContactSettingWord(*hContact,AIM_PROTOCOL_NAME,AIM_KEY_PC,0);
 	if(peer_force_proxy)//peer is forcing proxy
 	{
 		HANDLE hProxy=aim_peer_connect(proxy_ip,5190);

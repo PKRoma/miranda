@@ -1,6 +1,6 @@
 #define _CRT_SECURE_CPP_OVERLOAD_STANDARD_NAMES 1
 #include "server.h"
-void snac_md5_authkey(SNAC &snac,HANDLE hServerConn,int &seqno)//family 0x0017
+void snac_md5_authkey(SNAC &snac,HANDLE hServerConn,unsigned short &seqno)//family 0x0017
 {
 	if(snac.subcmp(0x0007))//md5 authkey string
 	{
@@ -49,14 +49,14 @@ int snac_authorization_reply(SNAC &snac)//family 0x0017
 	}
 	return 0;
 }
-void snac_supported_families(SNAC &snac,HANDLE hServerConn,int &seqno)//family 0x0001
+void snac_supported_families(SNAC &snac,HANDLE hServerConn,unsigned short &seqno)//family 0x0001
 {
 	if(snac.subcmp(0x0003))//server supported service list
 	{
 		aim_send_service_request(hServerConn,seqno);
 	}
 }
-void snac_supported_family_versions(SNAC &snac,HANDLE hServerConn,int &seqno)//family 0x0001
+void snac_supported_family_versions(SNAC &snac,HANDLE hServerConn,unsigned short &seqno)//family 0x0001
 {
 	if(snac.subcmp(0x0018))//service list okayed
 	{
@@ -64,14 +64,14 @@ void snac_supported_family_versions(SNAC &snac,HANDLE hServerConn,int &seqno)//f
 		aim_request_list(hServerConn,seqno);
 	}
 }
-void snac_mail_supported_family_versions(SNAC &snac,HANDLE hServerConn,int &seqno)//family 0x0001
+void snac_mail_supported_family_versions(SNAC &snac,HANDLE hServerConn,unsigned short &seqno)//family 0x0001
 {
 	if(snac.subcmp(0x0018))//service list okayed
 	{
 		aim_request_rates(hServerConn,seqno);//request some rate crap
 	}
 }
-void snac_rate_limitations(SNAC &snac,HANDLE hServerConn,int &seqno)// family 0x0001
+void snac_rate_limitations(SNAC &snac,HANDLE hServerConn,unsigned short &seqno)// family 0x0001
 {
 	if(snac.subcmp(0x0007))
 	{
@@ -79,7 +79,7 @@ void snac_rate_limitations(SNAC &snac,HANDLE hServerConn,int &seqno)// family 0x
 		aim_request_icbm(hServerConn,seqno);
 	}
 }
-void snac_mail_rate_limitations(SNAC &snac,HANDLE hServerConn,int &seqno)// family 0x0001
+void snac_mail_rate_limitations(SNAC &snac,HANDLE hServerConn,unsigned short &seqno)// family 0x0001
 {
 	if(snac.subcmp(0x0007))
 	{
@@ -88,7 +88,7 @@ void snac_mail_rate_limitations(SNAC &snac,HANDLE hServerConn,int &seqno)// fami
 		aim_request_mail(hServerConn,seqno);
 	}
 }
-void snac_icbm_limitations(SNAC &snac,HANDLE hServerConn,int &seqno)//family 0x0004
+void snac_icbm_limitations(SNAC &snac,HANDLE hServerConn,unsigned short &seqno)//family 0x0004
 {
 	if(snac.subcmp(0x0005))
 	{
@@ -507,8 +507,14 @@ void snac_contact_list(SNAC &snac)//family 0x0013
 				if(hContact)
 				{
 					int i=1;
+					#if _MSC_VER
+					#pragma warning( disable: 4127)
+					#endif
 					while(1)
 					{
+						#if _MSC_VER
+						#pragma warning( default: 4127 )
+						#endif
 						char* item= new char[strlen(AIM_KEY_BI)+10];
 						char* group= new char[strlen(AIM_KEY_GI)+10];
 						mir_snprintf(item,strlen(AIM_KEY_BI)+10,AIM_KEY_BI"%d",i);
@@ -562,16 +568,16 @@ void snac_message_accepted(SNAC &snac)//family 0x004
 		delete[] sn;
 	}
 }
-void snac_received_message(SNAC &snac,HANDLE hServerConn,int &seqno)//family 0x0004
+void snac_received_message(SNAC &snac,HANDLE hServerConn,unsigned short &seqno)//family 0x0004
 {
 	if(snac.subcmp(0x0007))
 	{   
 		
-		HANDLE hContact;
+		HANDLE hContact=0;
 		unsigned char sn_length=snac.ubyte(10);
 		char* sn=snac.part(11,sn_length);
 		int offset=15+sn_length;
-		CCSDATA ccs;
+		CCSDATA ccs={0};
 		PROTORECVEVENT pre;
 		char* msg_buf=NULL;
 		//file transfer stuff
@@ -589,7 +595,7 @@ void snac_received_message(SNAC &snac,HANDLE hServerConn,int &seqno)//family 0x0
 		ZeroMemory(local_ip,sizeof(local_ip));
 		ZeroMemory(verified_ip,sizeof(verified_ip));
 		ZeroMemory(proxy_ip,sizeof(proxy_ip));
-		unsigned short port;
+		unsigned short port=0;
 		//end file transfer stuff
 		while(offset<snac.len())
 		{
@@ -851,7 +857,7 @@ void snac_received_info(SNAC &snac)//family 0x0002
 {
 	if(snac.subcmp(0x0006))
 	{   
-		int offset=0;
+		unsigned short offset=0;
 		int i=0;
 		bool away_message_received=0;
 		bool profile_received=0;
@@ -878,7 +884,7 @@ void snac_received_info(SNAC &snac)//family 0x0002
 				hContact=find_contact(sn);
 				if(hContact)
 				{
-					write_profile(hContact,sn,msg);
+					write_profile(sn,msg);
 
 				}
 				delete[] msg;
@@ -895,7 +901,7 @@ void snac_received_info(SNAC &snac)//family 0x0002
 				delete[] msg;
 			}
 			i++;
-			offset+=(tlv.len());
+			offset=offset+tlv.len();
 		}
 		if(hContact)
 		{
@@ -905,15 +911,15 @@ void snac_received_info(SNAC &snac)//family 0x0002
 					write_away_message(hContact,sn,Translate("No information has been provided by the server."));
 				}
 			if(!profile_received&&conn.request_HTML_profile)
-				write_profile(hContact,sn,"No Profile");
+				write_profile(sn,"No Profile");
 			if(conn.requesting_HTML_ModeMsg)
 			{
 				char URL[256];
 				ZeroMemory(URL,sizeof(URL));
-				unsigned short CWD_length=strlen(CWD);
-				unsigned short protocol_length=strlen(AIM_PROTOCOL_NAME);
+				unsigned short CWD_length=(unsigned short)strlen(CWD);
+				unsigned short protocol_length=(unsigned short)strlen(AIM_PROTOCOL_NAME);
 				char* norm_sn=normalize_name(sn);
-				unsigned short sn_length=strlen(norm_sn);
+				unsigned short sn_length=(unsigned short)strlen(norm_sn);
 				memcpy(URL,CWD,CWD_length);
 				memcpy(&URL[CWD_length],"\\",1);
 				memcpy(&URL[1+CWD_length],AIM_PROTOCOL_NAME,protocol_length);

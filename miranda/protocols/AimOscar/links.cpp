@@ -287,7 +287,7 @@ void aim_links_destroy()
 }
 
 extern "C" void __declspec(dllexport)
-     CALLBACK aim_links_exec(HWND hwnd, HINSTANCE hInst, char *lpszCmdLine, int nCmdShow)
+     CALLBACK aim_links_exec(HWND /*hwnd*/, HINSTANCE /*hInst*/, char *lpszCmdLine, int /*nCmdShow*/)
 {
     EnumWindows(aim_links_enumwindowsproc, (LPARAM) lpszCmdLine);
 }

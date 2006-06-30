@@ -9,7 +9,7 @@ HANDLE aim_connect(char* server)
 	char* port=strtok(NULL,":");
     ncon.cbSize = sizeof(ncon);
     ncon.szHost = host;
-    ncon.wPort =atoi(port);
+    ncon.wPort =(short)atoi(port);
     HANDLE con = (HANDLE) CallService(MS_NETLIB_OPENCONNECTION, (WPARAM) conn.hNetlib, (LPARAM) & ncon);
 	delete[] server_dup;
 	return con;
@@ -55,8 +55,14 @@ void __cdecl aim_connection_authorization()
 	conn.hServerPacketRecver = (HANDLE) CallService(MS_NETLIB_CREATEPACKETRECVER, (WPARAM)conn.hServerConn, 2048 * 4);
 	packetRecv.cbSize = sizeof(packetRecv);
 	packetRecv.dwTimeout = INFINITE;
+	#if _MSC_VER
+	#pragma warning( disable: 4127)
+	#endif
 	while(1)
 	{
+		#if _MSC_VER
+		#pragma warning( default: 4127)
+		#endif
 		recvResult = CallService(MS_NETLIB_GETMOREPACKETS, (WPARAM) conn.hServerPacketRecver, (LPARAM) & packetRecv);
 		if (recvResult == 0) {
                 break;
@@ -71,7 +77,7 @@ void __cdecl aim_connection_authorization()
 			{
 				if(!packetRecv.buffer)
 					break;
-				FLAP flap((char*)&packetRecv.buffer[packetRecv.bytesUsed],packetRecv.bytesAvailable-packetRecv.bytesUsed);
+				FLAP flap((char*)&packetRecv.buffer[packetRecv.bytesUsed],(unsigned short)(packetRecv.bytesAvailable-packetRecv.bytesUsed));
 				if(!flap.len())
 					break;
 				flap_length+=FLAP_SIZE+flap.len();
@@ -128,8 +134,14 @@ void __cdecl aim_protocol_negotiation()
 	conn.hServerPacketRecver = (HANDLE) CallService(MS_NETLIB_CREATEPACKETRECVER, (WPARAM)conn.hServerConn, 2048 * 8);
 	packetRecv.cbSize = sizeof(packetRecv);
 	packetRecv.dwTimeout = INFINITE;
+	#if _MSC_VER
+	#pragma warning( disable: 4127)
+	#endif
 	while(1)
 	{
+		#if _MSC_VER
+		#pragma warning( default: 4127)
+		#endif
 		recvResult = CallService(MS_NETLIB_GETMOREPACKETS, (WPARAM) conn.hServerPacketRecver, (LPARAM) & packetRecv);
 		if (recvResult == 0)
 		{
@@ -146,7 +158,7 @@ void __cdecl aim_protocol_negotiation()
 			{
 				if(!packetRecv.buffer)
 					break;
-				FLAP flap((char*)&packetRecv.buffer[packetRecv.bytesUsed],packetRecv.bytesAvailable-packetRecv.bytesUsed);
+				FLAP flap((char*)&packetRecv.buffer[packetRecv.bytesUsed],(unsigned short)(packetRecv.bytesAvailable-packetRecv.bytesUsed));
 				if(!flap.len())
 					break;
 				flap_length+=FLAP_SIZE+flap.len();
@@ -225,8 +237,14 @@ void __cdecl aim_mail_negotiation()
 	hServerPacketRecver = (HANDLE) CallService(MS_NETLIB_CREATEPACKETRECVER, (WPARAM)conn.hMailConn, 2048 * 8);
 	packetRecv.cbSize = sizeof(packetRecv);
 	packetRecv.dwTimeout = INFINITE;
+	#if _MSC_VER
+	#pragma warning( disable: 4127)
+	#endif
 	while(1)
 	{
+		#if _MSC_VER
+		#pragma warning( default: 4127)
+		#endif
 		recvResult = CallService(MS_NETLIB_GETMOREPACKETS, (WPARAM) hServerPacketRecver, (LPARAM) & packetRecv);
 		if (recvResult == 0)
 		{
@@ -243,7 +261,7 @@ void __cdecl aim_mail_negotiation()
 			{
 				if(!packetRecv.buffer)
 					break;
-				FLAP flap((char*)&packetRecv.buffer[packetRecv.bytesUsed],packetRecv.bytesAvailable-packetRecv.bytesUsed);
+				FLAP flap((char*)&packetRecv.buffer[packetRecv.bytesUsed],(unsigned short)(packetRecv.bytesAvailable-packetRecv.bytesUsed));
 				if(!flap.len())
 					break;
 				flap_length+=FLAP_SIZE+flap.len();

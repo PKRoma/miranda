@@ -1,5 +1,8 @@
 #ifndef DEFINES_H
 #define DEFINES_H
+#if defined __GNUC__
+#pragma GCC system_header
+#endif 
 #define  _CRT_SECURE_NO_DEPRECATE
 #pragma warning (disable : 4996)
 //System includes
@@ -14,6 +17,9 @@
 #include <sys/stat.h>
 #include <time.h>
 //Miranda IM includes
+#pragma warning( disable: 4100 )
+#pragma warning( disable: 4244 )
+#pragma warning( disable: 4201 )
 #include <newpluginapi.h>
 #include <statusmodes.h>
 #include <m_clist.h>
@@ -34,6 +40,9 @@
 #include <m_system.h>
 #include <m_userinfo.h>
 #include <m_addcontact.h>
+#pragma warning( default: 4100 )
+#pragma warning( default: 4244 )
+#pragma warning( default: 4201 )
 //independent includes
 #include "strl.h"
 #include "flap.h"
@@ -212,7 +221,7 @@ class oscar_data
 public:
     char *username;
     char *password;
-    int seqno;//main connection sequence number
+    unsigned short seqno;//main connection sequence number
 	int state;//status of the connection; e.g. whether connected or not
 	int packet_offset;//current offset of main connection client to server packet
 	unsigned int status;//current status
@@ -253,7 +262,7 @@ public:
 	
 	//Some mail connection stuff
 	HANDLE hMailConn;
-	int mail_seqno;
+	unsigned short mail_seqno;
 	int mail_packet_offset;
 	
 	//Some Icon handles

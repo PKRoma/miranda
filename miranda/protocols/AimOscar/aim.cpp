@@ -17,7 +17,7 @@ PLUGININFO pluginInfo={
 };
 oscar_data conn;
 file_transfer* fu;
-extern "C" __declspec(dllexport) bool WINAPI DllMain(HINSTANCE hinstDLL,DWORD fdwReason,LPVOID lpvReserved)
+extern "C" __declspec(dllexport) bool WINAPI DllMain(HINSTANCE hinstDLL,DWORD /*fdwReason*/,LPVOID /*lpvReserved*/)
 {
 	conn.hInstance = hinstDLL;
 	return TRUE;
@@ -25,7 +25,7 @@ extern "C" __declspec(dllexport) bool WINAPI DllMain(HINSTANCE hinstDLL,DWORD fd
 
 extern "C" __declspec(dllexport) PLUGININFO* MirandaPluginInfo(DWORD mirandaVersion)
 {
-	unsigned long mv=htonl(mirandaVersion);
+	unsigned long mv=_htonl(mirandaVersion);
 	memcpy((char*)&AIM_CAP_MIRANDA[8],&mv,sizeof(DWORD));
 	memcpy((char*)&AIM_CAP_MIRANDA[12],(char*)&AIM_OSCAR_VERSION,sizeof(DWORD));
 	return &pluginInfo;
@@ -91,7 +91,7 @@ extern "C" int __declspec(dllexport) Load(PLUGINLINK *link)
 }
 int ExtraIconsRebuild(WPARAM wParam, LPARAM lParam);
 int ExtraIconsApply(WPARAM wParam, LPARAM lParam);
-int ModulesLoaded(WPARAM wParam,LPARAM lParam)
+int ModulesLoaded(WPARAM /*wParam*/,LPARAM /*lParam*/)
 {
 	char store[MAX_PATH];
 	CallService(MS_DB_GETPROFILEPATH, MAX_PATH-1,(LPARAM)&store);
@@ -167,7 +167,7 @@ int ModulesLoaded(WPARAM wParam,LPARAM lParam)
 	aim_links_init();
 	return 0;
 }
-int PreBuildContactMenu(WPARAM wParam,LPARAM lParam)
+int PreBuildContactMenu(WPARAM wParam,LPARAM /*lParam*/)
 {
 	CLISTMENUITEM mi;
 	ZeroMemory(&mi,sizeof(mi));
@@ -196,7 +196,7 @@ int PreBuildContactMenu(WPARAM wParam,LPARAM lParam)
 	CallService(MS_CLIST_MODIFYMENUITEM,(WPARAM)conn.hAddToServerListContextMenuItem,(LPARAM)&mi);
 	return 0;
 }
-int PreShutdown(WPARAM wParam,LPARAM lParam)
+int PreShutdown(WPARAM /*wParam*/,LPARAM /*lParam*/)
 {
 	conn.shutting_down=1;
 	if(conn.hServerConn)

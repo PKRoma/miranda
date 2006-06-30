@@ -105,7 +105,7 @@ void add_contact_to_group(HANDLE hContact,unsigned short new_group_id,char* grou
 	bool group_exist=1;
 	char* groupNum= new char[strlen(AIM_KEY_GI)+10];
 	mir_snprintf(groupNum,strlen(AIM_KEY_GI)+10,AIM_KEY_GI"%d",1);
-	unsigned short old_group_id=DBGetContactSettingWord(hContact, AIM_PROTOCOL_NAME, groupNum,0);		
+	unsigned short old_group_id=(unsigned short)DBGetContactSettingWord(hContact, AIM_PROTOCOL_NAME, groupNum,0);		
 	delete[] groupNum;
 	if(old_group_id)
 	{
@@ -133,9 +133,9 @@ void add_contact_to_group(HANDLE hContact,unsigned short new_group_id,char* grou
 	}
 	char* buddyNum= new char[strlen(AIM_KEY_BI)+10];
 	mir_snprintf(buddyNum,strlen(AIM_KEY_BI)+10,AIM_KEY_BI"%d",1);
-	unsigned short item_id=DBGetContactSettingWord(hContact, AIM_PROTOCOL_NAME, buddyNum,0);
+	unsigned short item_id=(unsigned short)DBGetContactSettingWord(hContact, AIM_PROTOCOL_NAME, buddyNum,0);
 	delete[] buddyNum;
-	new_group_id=DBGetContactSettingWord(NULL, GROUP_ID_KEY,group,0);
+	new_group_id=(unsigned short)DBGetContactSettingWord(NULL, GROUP_ID_KEY,group,0);
 	if(!new_group_id)
 	{
 		new_group_id=search_for_free_group_id(group);
@@ -184,7 +184,7 @@ void add_contacts_to_groups()
 			char* group= new char[strlen(AIM_KEY_GI)+10];
 			mir_snprintf(group,strlen(AIM_KEY_GI)+10,AIM_KEY_GI"%d",1);
 			//MessageBox( NULL, group, AIM_PROTOCOL_NAME, MB_OK );
-			unsigned short group_id=DBGetContactSettingWord(hContact, AIM_PROTOCOL_NAME, group,0);	
+			unsigned short group_id=(unsigned short)DBGetContactSettingWord(hContact, AIM_PROTOCOL_NAME, group,0);	
 			delete[] group;
 			if(group_id)
 			{
@@ -203,7 +203,7 @@ void add_contacts_to_groups()
 						{
 							//MessageBox( NULL, "Got group name... should add", AIM_PROTOCOL_NAME, MB_OK );
 							//MessageBox( NULL, dbv.pszVal, AIM_PROTOCOL_NAME, MB_OK );
-							create_group(dbv.pszVal,group_id);
+							create_group(dbv.pszVal);
 							DBWriteContactSettingStringUtf(hContact,MOD_KEY_CL,OTH_KEY_GP,dbv.pszVal);
 							DBFreeVariant(&dbv);
 						}
@@ -219,7 +219,7 @@ void add_contacts_to_groups()
 						{
 							//MessageBox( NULL, "Got group name... should add", AIM_PROTOCOL_NAME, MB_OK );
 							//MessageBox( NULL, dbv.pszVal, AIM_PROTOCOL_NAME, MB_OK );
-							create_group(dbv.pszVal,group_id);
+							create_group(dbv.pszVal);
 							DBWriteContactSettingString(hContact,MOD_KEY_CL,OTH_KEY_GP,dbv.pszVal);
 							DBFreeVariant(&dbv);
 						}
@@ -237,8 +237,14 @@ void offline_contact(HANDLE hContact, bool remove_settings)
 	{
 		//We need some of this stuff if we are still online.
 		int i=1;
+		#if _MSC_VER
+		#pragma warning( disable: 4127)
+		#endif
 		while(1)
 		{
+			#if _MSC_VER
+			#pragma warning( default: 4127)
+			#endif
 			char* item= new char[strlen(AIM_KEY_BI)+10];
 			char* group= new char[strlen(AIM_KEY_GI)+10];
 			mir_snprintf(item,strlen(AIM_KEY_BI)+10,AIM_KEY_BI"%d",i);
@@ -466,7 +472,7 @@ char *normalize_name(const char *s)
 	{
         while (buf[j] == ' ')
             j++;
-        buf[i] = tolower(buf[j]);
+        buf[i] = (char)tolower(buf[j]);
     }
     buf[i] = '\0';
     return buf;
@@ -507,7 +513,7 @@ void execute_cmd(char* type,char* arg)
 		}
 	}
 }
-void create_group(char *group, unsigned short group_id)
+void create_group(char *group)
 {
 	if (!group)
         return;
@@ -563,7 +569,7 @@ unsigned short search_for_free_group_id(char *name)//searches for a free group i
 		{
 			if(DBGetContactSettingStringUtf(NULL,ID_GROUP_KEY,group_id_string,&dbv))
 			{
-				create_group(name,i);	
+				create_group(name);	
 				return i;
 			}
 		}
@@ -571,7 +577,7 @@ unsigned short search_for_free_group_id(char *name)//searches for a free group i
 		{
 			if(DBGetContactSetting(NULL,ID_GROUP_KEY,group_id_string,&dbv))
 			{
-				create_group(name,i);	
+				create_group(name);	
 				return i;
 			}
 		}
@@ -591,11 +597,17 @@ unsigned short search_for_free_item_id(HANDLE hbuddy)//returns a free item id an
 			if (protocol != NULL && !strcmp(protocol, AIM_PROTOCOL_NAME))
 			{		
 				int i=1;
+				#if _MSC_VER
+				#pragma warning( disable: 4127)
+				#endif
 				while(1)
 				{
+					#if _MSC_VER
+					#pragma warning( default: 4127)
+					#endif
 					char* item= new char[strlen(AIM_KEY_BI)+10];
 					mir_snprintf(item,strlen(AIM_KEY_BI)+10,AIM_KEY_BI"%d",i);
-					if(unsigned short item_id=DBGetContactSettingWord(hContact, AIM_PROTOCOL_NAME, item,0))
+					if(unsigned short item_id=(unsigned short)DBGetContactSettingWord(hContact, AIM_PROTOCOL_NAME, item,0))
 					{
 						if(item_id==id)
 						{
@@ -639,17 +651,23 @@ char* get_members_of_group(unsigned short group_id,unsigned short &size)//return
 		if (protocol != NULL && !strcmp(protocol, AIM_PROTOCOL_NAME))
 		{
 				int i=1;
+				#if _MSC_VER
+				#pragma warning( disable: 4127)
+				#endif
 				while(1)
 				{
+					#if _MSC_VER
+					#pragma warning( default: 4127)
+					#endif
 					char* item= new char[strlen(AIM_KEY_BI)+10];
 					char* group= new char[strlen(AIM_KEY_GI)+10];
 					mir_snprintf(item,strlen(AIM_KEY_BI)+10,AIM_KEY_BI"%d",i);
 					mir_snprintf(group,strlen(AIM_KEY_GI)+10,AIM_KEY_GI"%d",i);
-					if(unsigned short user_group_id=DBGetContactSettingWord(hContact, AIM_PROTOCOL_NAME,group,0))
+					if(unsigned short user_group_id=(unsigned short)DBGetContactSettingWord(hContact, AIM_PROTOCOL_NAME,group,0))
 					{
 						if(group_id==user_group_id)
 						{
-							if(unsigned short buddy_id=htons(DBGetContactSettingWord(hContact,AIM_PROTOCOL_NAME,item,0)))
+							if(unsigned short buddy_id=_htons((unsigned short)DBGetContactSettingWord(hContact,AIM_PROTOCOL_NAME,item,0)))
 							{
 								list=renew(list,size,2);
 								memcpy(&list[size],&buddy_id,2);
@@ -689,7 +707,7 @@ void __cdecl basic_search_ack_success(char *snsearch)
 }
 static int module_size=0;
 static char* module_ptr=NULL;
-static int EnumSettings(const char *szSetting,LPARAM lParam)
+static int EnumSettings(const char *szSetting,LPARAM /*lParam*/)
 {
 	//char* szModule=(char*)lParam;
 	module_ptr=renew(module_ptr,module_size,strlen(szSetting)+2);
@@ -848,8 +866,8 @@ void write_away_message(HANDLE hContact,char* sn,char* msg)
 		{
 			memcpy(&path[CWD_length+protocol_length+2+strlen(norm_sn)],"\\away.html",11);
 			//int descr=_open(path,_O_BINARY | _O_CREAT | _O_TRUNC | _O_WRONLY, _S_IREAD | _S_IWRITE);
-			FILE* descr;
-			if(descr=fopen(path, "wb"))
+			FILE* descr=fopen(path, "wb");
+			if(descr)
 			{
 				char* s_msg=strip_special_chars(msg,NULL);
 				CCSDATA ccs;
@@ -882,7 +900,7 @@ void write_away_message(HANDLE hContact,char* sn,char* msg)
 	}
 	delete[] path;
 }
-void write_profile(HANDLE hContact,char* sn,char* msg)
+void write_profile(char* sn,char* msg)
 {
 	int protocol_length=strlen(AIM_PROTOCOL_NAME);
 	char* norm_sn=normalize_name(sn);
@@ -911,8 +929,8 @@ void write_profile(HANDLE hContact,char* sn,char* msg)
 		{
 			memcpy(&path[CWD_length+protocol_length+2+strlen(norm_sn)],"\\profile.html",14);
 			//int descr=open(path,_O_BINARY | _O_CREAT | _O_TRUNC | _O_WRONLY, _S_IREAD | _S_IWRITE);
-			FILE* descr;
-			if(descr=fopen(path, "wb"))
+			FILE* descr=fopen(path, "wb");
+			if(descr)
 			{
 				char* norm_sn=normalize_name(sn);
 				char* s_msg=strip_special_chars(msg,NULL);
@@ -955,12 +973,13 @@ unsigned int aim_oft_checksum_chunk(const unsigned char *buffer, int bufferlen, 
 	check = ((check & 0x0000ffff) + (check >> 16));
 	return check << 16;
 }
-
+#if _MSC_VER
+#pragma warning( disable: 4706 )
+#endif
 unsigned int aim_oft_checksum_file(char *filename) {
-	FILE *fd;
 	unsigned long checksum = 0xffff0000;
-
-	if ((fd = fopen(filename, "rb"))) {
+	FILE* fd=fopen(filename, "rb");
+	if (fd) {
 		int bytes;
 		unsigned char buffer[1024];
 
@@ -971,9 +990,12 @@ unsigned int aim_oft_checksum_file(char *filename) {
 
 	return checksum;
 }
+#if _MSC_VER
+#pragma warning( default: 4706 )
+#endif
 void long_ip_to_char_ip(unsigned long host, char* ip)
 {
-	host=htonl(host);
+	host=_htonl(host);
 	unsigned char* bytes=(unsigned char*)&host;
 	unsigned short buf_loc=0;
 	for(int i=0;i<4;i++)
@@ -982,7 +1004,7 @@ void long_ip_to_char_ip(unsigned long host, char* ip)
 		_itoa(bytes[i],store,10);
 		memcpy(&ip[buf_loc],store,strlen(store));
 		ip[strlen(store)+buf_loc]='.';
-		buf_loc+=(strlen(store)+1);
+		buf_loc+=((unsigned short)strlen(store)+1);
 	}
 	ip[buf_loc-1]='\0';
 }
@@ -993,13 +1015,13 @@ unsigned long char_ip_to_long_ip(char* ip)
 	char chost[5];
 	for(int i=0;i<4;i++)
 	{
-		chost[i]=atoi(c);
+		chost[i]=(char)atoi(c);
 		c=strtok(NULL,".");
 	}
 	chost[4]='\0';
 	unsigned long* host=(unsigned long*)&chost;
 	delete[] ip2;
-	return htonl(*host);
+	return _htonl(*host);
 }
 void create_cookie(HANDLE hContact)
 {
@@ -1151,7 +1173,7 @@ char* get_outer_group()
 void wcs_htons(wchar_t * ch)
 {
 	for(size_t i=0;i<wcslen(ch);i++)
-		ch[i]=htons(ch[i]);
+		ch[i]=_htons(ch[i]);
 }
 void assign_modmsg(char* msg)
 {
@@ -1159,17 +1181,3 @@ void assign_modmsg(char* msg)
 	conn.szModeMsg=new char[strlen(msg)+1];
 	memcpy(conn.szModeMsg,msg,strlen(msg)+1);
 }
-/*char* renew(char* src,int size, int size_chg)
-{
-	char* dest=new char[size+size_chg];
-	memcpy(dest,src,size);
-	delete[] src;
-	return dest;
-}
-wchar_t* renew(wchar_t* src,int size, int size_chg)
-{
-	wchar_t* dest=new wchar_t[size+size_chg];
-	memcpy(dest,src,size*2);
-	delete[] src;
-	return dest;
-}*/

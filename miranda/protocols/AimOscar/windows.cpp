@@ -1,5 +1,5 @@
 #include "windows.h"
-int OptionsInit(WPARAM wParam,LPARAM lParam)
+int OptionsInit(WPARAM wParam,LPARAM /*lParam*/)
 {
 	OPTIONSDIALOGPAGE odp;
 	odp.cbSize = sizeof(odp);
@@ -88,7 +88,7 @@ BOOL CALLBACK userinfo_dialog(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPar
     }
     return FALSE;
 }
-BOOL CALLBACK options_dialog(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam)
+BOOL CALLBACK options_dialog(HWND hwndDlg, UINT msg, WPARAM /*wParam*/, LPARAM lParam)
 {
     switch (msg)
 	{
@@ -122,9 +122,9 @@ BOOL CALLBACK options_dialog(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                 SetDlgItemText(hwndDlg, IDC_HN, dbv.pszVal);
                 DBFreeVariant(&dbv);
             }
-			unsigned short timeout=DBGetContactSettingWord(NULL, AIM_PROTOCOL_NAME, AIM_KEY_GP, DEFAULT_GRACE_PERIOD);
+			unsigned short timeout=(unsigned short)DBGetContactSettingWord(NULL, AIM_PROTOCOL_NAME, AIM_KEY_GP, DEFAULT_GRACE_PERIOD);
 			SetDlgItemInt(hwndDlg, IDC_GP, timeout,0);
-			unsigned short timer=DBGetContactSettingWord(NULL, AIM_PROTOCOL_NAME, AIM_KEY_KA, DEFAULT_KEEPALIVE_TIMER);
+			unsigned short timer=(unsigned short)DBGetContactSettingWord(NULL, AIM_PROTOCOL_NAME, AIM_KEY_KA, DEFAULT_KEEPALIVE_TIMER);
 			SetDlgItemInt(hwndDlg, IDC_KA, timer,0);
 			CheckDlgButton(hwndDlg, IDC_DC, DBGetContactSettingByte(NULL, AIM_PROTOCOL_NAME, AIM_KEY_DC, 0));//Message Delivery Confirmation
             CheckDlgButton(hwndDlg, IDC_FP, DBGetContactSettingByte(NULL, AIM_PROTOCOL_NAME, AIM_KEY_FP, 0));//force proxy
@@ -323,7 +323,7 @@ BOOL CALLBACK options_dialog(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
     }
     return FALSE;
 }
-BOOL CALLBACK first_run_dialog(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam)
+BOOL CALLBACK first_run_dialog(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM /*lParam*/)
 {
 	//The code to implement and run the the first run dialog was contributed by RiPOFF
     switch (msg)
@@ -390,7 +390,7 @@ BOOL CALLBACK first_run_dialog(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPa
     return FALSE;
 
 }
-BOOL CALLBACK instant_idle_dialog(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam)
+BOOL CALLBACK instant_idle_dialog(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM /*lParam*/)
 {
     switch (msg)
 	{
@@ -411,7 +411,7 @@ BOOL CALLBACK instant_idle_dialog(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM 
 	case WM_COMMAND:
 		{
 			unsigned long hours=GetDlgItemInt(hwndDlg, IDC_IIH,0,0);
-			unsigned short minutes=GetDlgItemInt(hwndDlg, IDC_IIM,0,0);
+			unsigned short minutes=(unsigned short)GetDlgItemInt(hwndDlg, IDC_IIM,0,0);
 			if(minutes>59)
 				minutes=59;
 			DBWriteContactSettingDword(NULL, AIM_PROTOCOL_NAME, AIM_KEY_IIT, hours*60+minutes);

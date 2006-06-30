@@ -1,9 +1,10 @@
 #include "snac.h"
+#include "packets.h"
 SNAC::SNAC(char* buf,unsigned short length)
 {
-	service_=htons((*(unsigned short*)&buf[0]));
-	subgroup_=htons((*(unsigned short*)&buf[2]));
-	id_=htons((*(unsigned short*)&buf[8]));
+	service_=_htons((*(unsigned short*)&buf[0]));
+	subgroup_=_htons((*(unsigned short*)&buf[2]));
+	id_=_htons((*(unsigned short*)&buf[8]));
 	value_=&buf[SNAC_SIZE];
 	length_=length;
 }
@@ -23,11 +24,11 @@ int SNAC::subcmp(unsigned short subgroup)
 }
 unsigned short SNAC::ushort(int pos)
 {
-	return htons(*(unsigned short*)&value_[pos]);
+	return _htons(*(unsigned short*)&value_[pos]);
 }
 unsigned long SNAC::ulong(int pos)
 {
-	return htonl(*(unsigned long*)&value_[pos]);
+	return _htonl(*(unsigned long*)&value_[pos]);
 }
 unsigned char SNAC::ubyte(int pos)
 {

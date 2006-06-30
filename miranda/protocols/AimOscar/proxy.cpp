@@ -13,7 +13,7 @@ void __cdecl aim_proxy_helper(HANDLE hContact)
 		{
 			if(stage==1&&!sender||stage==2&&sender||stage==3&&!sender)
 			{
-				unsigned short port_check=DBGetContactSettingWord(hContact,AIM_PROTOCOL_NAME,AIM_KEY_PC,0);
+				unsigned short port_check=(unsigned short)DBGetContactSettingWord(hContact,AIM_PROTOCOL_NAME,AIM_KEY_PC,0);
 				if(proxy_initialize_recv(Connection,dbv.pszVal,cookie,port_check))
 					return;//error
 			}
@@ -30,8 +30,14 @@ void __cdecl aim_proxy_helper(HANDLE hContact)
 			hServerPacketRecver = (HANDLE) CallService(MS_NETLIB_CREATEPACKETRECVER, (WPARAM)Connection, 2048 * 4);
 			packetRecv.cbSize = sizeof(packetRecv);
 			packetRecv.dwTimeout = INFINITE;
+			#if _MSC_VER
+			#pragma warning( disable: 4127)
+			#endif
 			while(1)
 			{
+				#if _MSC_VER
+				#pragma warning( default: 4127)
+				#endif
 				recvResult = CallService(MS_NETLIB_GETMOREPACKETS, (WPARAM) hServerPacketRecver, (LPARAM) & packetRecv);
 				if (recvResult == 0)
 				{
@@ -46,14 +52,14 @@ void __cdecl aim_proxy_helper(HANDLE hContact)
 				if(recvResult>0)
 				{
 					unsigned short* length=(unsigned short*)&packetRecv.buffer[0];
-					*length=htons(*length);
+					*length=_htons(*length);
 					packetRecv.bytesUsed=*length+2;
 					unsigned short* type=(unsigned short*)&packetRecv.buffer[4];
-					*type=htons(*type);
+					*type=_htons(*type);
 					if(*type==0x0001)
 					{
 						unsigned short* error=(unsigned short*)&packetRecv.buffer[12];
-						*error=htons(*error);
+						*error=_htons(*error);
 						if(*error==0x000D)
 						{
 							ShowPopup("Aim Protocol: Proxy Server File Transfer Error","Bad Request.", 0);
@@ -79,8 +85,8 @@ void __cdecl aim_proxy_helper(HANDLE hContact)
 					{
 						unsigned short* port=(unsigned short*)&packetRecv.buffer[12];
 						unsigned long* ip=(unsigned long*)&packetRecv.buffer[14];
-						*port=htons(*port);
-						*ip=htonl(*ip);
+						*port=_htons(*port);
+						*ip=_htonl(*ip);
 						DBVARIANT dbv;
 						if (!DBGetContactSetting(hContact, AIM_PROTOCOL_NAME, AIM_KEY_SN, &dbv))
 						{
@@ -155,8 +161,8 @@ void __cdecl aim_proxy_helper(HANDLE hContact)
 }
 int proxy_initialize_send(HANDLE connection,char* sn, char* cookie)
 {
-	char sn_length=strlen(sn);
-	unsigned short length = htons(39+sn_length);
+	char sn_length=(char)strlen(sn);
+	unsigned short length = _htons(39+sn_length);
 	char* clength =(char*)&length;
 	char* msg_frag= new char[25+sn_length+sizeof(AIM_CAP_SEND_FILES)];
 	memcpy(msg_frag,clength,2);
@@ -179,15 +185,15 @@ int proxy_initialize_send(HANDLE connection,char* sn, char* cookie)
 }
 int proxy_initialize_recv(HANDLE connection,char* sn, char* cookie,unsigned short port_check)
 {
-	char sn_length=strlen(sn);
-	unsigned short length = htons(41+sn_length);
+	char sn_length=(char)strlen(sn);
+	unsigned short length = _htons(41+sn_length);
 	char* clength =(char*)&length;
 	char* msg_frag= new char[27+sn_length+sizeof(AIM_CAP_SEND_FILES)];
 	memcpy(msg_frag,clength,2);
 	memcpy(&msg_frag[2],"\x04\x4a\0\x04\0\0\0\0\0\0",10);
 	memcpy(&msg_frag[12],(char*)&sn_length,1);
 	memcpy(&msg_frag[13],sn,sn_length);
-	port_check=htons(port_check);
+	port_check=_htons(port_check);
 	memcpy(&msg_frag[13+sn_length],(char*)&port_check,2);
 	memcpy(&msg_frag[15+sn_length],cookie,8);
 	memcpy(&msg_frag[23+sn_length],"\0\x01\0\x10",4);
