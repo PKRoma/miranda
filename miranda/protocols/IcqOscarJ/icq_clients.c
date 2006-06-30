@@ -475,6 +475,13 @@ char* detectUserClient(HANDLE hContact, DWORD dwUin, WORD wVersion, DWORD dwFT1,
               szClient = "ICQ 2002/2003a";
             }
           }
+          else if (CheckContactCapabilities(hContact, CAPF_SRV_RELAY | CAPF_UTF | CAPF_TYPING))
+          {
+            if (!dwFT1 && !dwFT2 && !dwFT3)
+            {
+              szClient = "PreludeICQ";
+            }
+          }
         }
         else if (wVersion == 9)
         { // try to determine lite versions
