@@ -85,10 +85,16 @@ int SaveTree(HWND hwndDlg)
 			wsprintfA(DBString, "%s_pos", menuItemName);                                 
 			DBWriteContactSettingDword(NULL, MenuNameItems, DBString, runtimepos);
 
-			if ( _tcscmp( ((MenuItemOptData *)tvi.lParam)->name,((MenuItemOptData *)tvi.lParam)->defname )!=0 ) {
-				wsprintfA(DBString, "%s_name", menuItemName); 
-				DBWriteContactSettingTString(NULL, MenuNameItems, DBString, ((MenuItemOptData *)tvi.lParam)->name);
-			}
+            if(((MenuItemOptData *)tvi.lParam)->name && ((MenuItemOptData *)tvi.lParam)->defname) {
+                if ( _tcscmp( ((MenuItemOptData *)tvi.lParam)->name,((MenuItemOptData *)tvi.lParam)->defname )!=0 ) {
+                    wsprintfA(DBString, "%s_name", menuItemName); 
+                    DBWriteContactSettingTString(NULL, MenuNameItems, DBString, ((MenuItemOptData *)tvi.lParam)->name);
+                }
+            }
+            else {
+                wsprintfA(DBString, "%s_name", "[no name]"); 
+                DBWriteContactSettingTString(NULL, MenuNameItems, DBString, _T("[no name]"));
+            }
 			runtimepos+=100;
 		}
 
