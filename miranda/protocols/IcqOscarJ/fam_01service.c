@@ -506,7 +506,7 @@ void handleServiceFam(unsigned char* pBuffer, WORD wBufferLength, snac_header* p
           if (!file)
           { // we have no file to upload, remove hash from server
             NetLog_Server("We do not have avatar, removing hash.");
-            updateServAvatarHash(NULL, 0);
+            IcqSetMyAvatar(0, 0);
             LinkContactPhotoToFile(NULL, NULL);
             break;
           }
@@ -515,7 +515,7 @@ void handleServiceFam(unsigned char* pBuffer, WORD wBufferLength, snac_header* p
           if (!hash)
           { // the hash could not be calculated, remove from server
             NetLog_Server("We could not obtain hash, removing hash.");
-            updateServAvatarHash(NULL, 0);
+            IcqSetMyAvatar(0, 0);
             LinkContactPhotoToFile(NULL, NULL);
           }
           else if (!memcmp(hash, pBuffer+4, 0x10))
