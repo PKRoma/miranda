@@ -484,7 +484,7 @@ struct SIDEBARITEM {
     UINT uId;
     DWORD dwFlags;
     HICON *hIcon;
-    TCHAR  szTip[128];
+    char  szName[100];
 };
 
 #if defined(_UNICODE)
@@ -534,7 +534,7 @@ static __inline int mir_snprintfW(wchar_t *buffer, size_t count, const wchar_t* 
 #define SESSIONTYPE_IM 1
 #define SESSIONTYPE_CHAT 2
 
-#define SIDEBARWIDTH         30
+#define DEFAULT_SIDEBARWIDTH         30
 
 #define THEME_READ_FONTS 1
 #define THEME_READ_TEMPLATES 2

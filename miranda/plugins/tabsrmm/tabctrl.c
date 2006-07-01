@@ -701,6 +701,10 @@ b_nonskinned:
                     DrawWuLine(dc, pt[1].x + 1, pt[1].y - 1, pt[0].x + 1, pt[0].y, myGlobals.tabConfig.colors[8]);
                     //LineTo(dc, pt[1].x, pt[1].y - 1);
                     //LineTo(dc, pt[0].x + 1, pt[0].y);
+                    if(rc.top > rcTabPage.bottom + 10 && !active) {
+                        DrawWuLine(dc, pt[0].x, pt[0].y - 1, pt[4].x, pt[4].y - 1, myGlobals.tabConfig.colors[9]);
+                        DrawWuLine(dc, pt[0].x + 1, pt[0].y, pt[4].x - 1, pt[4].y, myGlobals.tabConfig.colors[8]);
+                    }
                 }
                 else
                     LineTo(dc, pt[1].x, pt[1].y - 1);
@@ -807,6 +811,11 @@ b_nonskinned:
                     //LineTo(dc, pt[0].x, pt[0].y);
                     DrawWuLine(dc, pt[2].x, pt[2].y + 1, pt[1].x + 1, pt[1].y + 1, myGlobals.tabConfig.colors[8]);
                     DrawWuLine(dc, pt[1].x + 1, pt[1].y + 1, pt[0].x + 1, pt[0].y, myGlobals.tabConfig.colors[8]);
+
+                    if(rc.bottom < rcTabPage.top - 10 && !active) {
+                        DrawWuLine(dc, pt[0].x, pt[0].y + 1, pt[4].x, pt[4].y + 1, myGlobals.tabConfig.colors[9]);
+                        DrawWuLine(dc, pt[0].x + 1, pt[0].y, pt[4].x - 1, pt[4].y, myGlobals.tabConfig.colors[8]);
+                    }
                 }
                 else
                     LineTo(dc, pt[1].x, pt[1].y + 1);
@@ -1366,7 +1375,8 @@ static LRESULT CALLBACK TabControlSubclassProc(HWND hwnd, UINT msg, WPARAM wPara
             /*
              * visual style support
              */
-            
+
+            CopyRect(&rcTabPage, &rctPage);
             if(!tabdat->bRefreshWithoutClip)
                 ExcludeClipRect(hdc, rctClip.left, rctClip.top, rctClip.right, rctClip.bottom);
             if(!bClassicDraw && IntersectRect(&rectTemp, &rctPage, &ps.rcPaint)) {
@@ -1378,19 +1388,24 @@ static LRESULT CALLBACK TabControlSubclassProc(HWND hwnd, UINT msg, WPARAM wPara
                 else
                     rcClient.top = rctPage.top;
                 DrawThemesXpTabItem(hdc, -1, &rcClient, uiFlags, tabdat);	// TABP_PANE=9,0,'TAB'
+                if(tabdat->bRefreshWithoutClip)
+                    goto skip_tabs;
             }
             else {
                 if(IntersectRect(&rectTemp, &rctPage, &ps.rcPaint)) {
 					if(tabdat->pContainer->bSkinned) {
 						StatusItems_t *item = &StatusItems[ID_EXTBKTABPAGE];
 
-                        CopyRect(&rcTabPage, &rctPage);
 						if(!item->IGNORED) {
 							DrawAlpha(hdc, &rctPage, item->COLOR, item->ALPHA, item->COLOR2, item->COLOR2_TRANSPARENT,
 									  item->GRADIENT, item->CORNER, item->BORDERSTYLE, item->imageItem);
 							goto page_done;
 						}
 					}
+
+                    if(tabdat->bRefreshWithoutClip)
+                        goto skip_tabs;
+
                     if(dwStyle & TCS_BUTTONS) {
                         rectTemp = rctPage;
                         if(dwStyle & TCS_BOTTOM) {
@@ -1471,6 +1486,10 @@ page_done:
             /*
              * figure out hottracked item (if any)
              */
+
+            if(tabdat->bRefreshWithoutClip)
+                goto skip_tabs;
+
             GetCursorPos(&hti.pt);
             ScreenToClient(hwnd, &hti.pt);
             hti.flags = 0;
@@ -1523,6 +1542,7 @@ page_done:
                     DrawItem(tabdat, hdc, &rcItem, HINT_ACTIVE_ITEM | nHint, iActive);
                 }
             }
+skip_tabs:
             if(hPenOld)
                 SelectObject(hdc, hPenOld);
 

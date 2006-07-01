@@ -47,10 +47,10 @@ char *TemplateNames[] = {
 };
     
 TemplateSet LTR_Default = { TRUE, 
-    _T("%I %S %N  %fm%*%&D%*%\!: %?n%?S %?fd[%?T%?fd]%?|%M"),
-    _T("%I %S %N  %fm%*%&D%*%\!: %?n%?S %?fd[%?T%?fd]%?|%M"),
-    _T("%I %S %N  %fm%*%&D%*%\!: %?n%?S %?fd[%?T%?fd]%?|%M"),
-    _T("%I %S %N  %fm%*%&D%*%\!: %?n%?S %?fd[%?T%?fd]%?|%M"),
+    _T("%I %S %N  %fm%*%&D%*%\\!: %?n%?S %?fd[%?T%?fd]%?|%M"),
+    _T("%I %S %N  %fm%*%&D%*%\\!: %?n%?S %?fd[%?T%?fd]%?|%M"),
+    _T("%I %S %N  %fm%*%&D%*%\\!: %?n%?S %?fd[%?T%?fd]%?|%M"),
+    _T("%I %S %N  %fm%*%&D%*%\\!: %?n%?S %?fd[%?T%?fd]%?|%M"),
     _T("%S %fd[%T%fd]%|%M"),
     _T("%S %fd[%T%fd]%|%M"),
     _T("%I %S %fm%*%cd%&D, %&T%*, %N %M%! "),

@@ -38,11 +38,13 @@ static char *relnotes[] = {
     "{\\rtf1\\ansi\\deff0\\pard\\li%u\\fi-%u\\ri%u\\tx%u}",
     "\\par\t\\b\\ul1 Release notes for version 1.1.0.3\\b0\\ul0\\par ",
     "*\tYou must hold the ctrl key when dragging tabs to re-arrange tab position\\par ",
-    "*\tWhen using the mouse wheel to scroll the message history, you can now hold the left SHIFT key for faster (per page) scrolling\\par ",
-    "*\tThe template system has been updated with a few changes. You can review an updated version of the template documentation at http://miranda.or.at/tabsrmm-articles/tabsrmm-message-log-templates/\\par ",
+    "*\tThe template system has been updated with a few changes. You can review an updated version of the template documentation at http://miranda.or.at/tabsrmm-articles/tabsrmm-message-log-templates/\\line \
+Also, you may want to reset your templates (you can do this in the template editor) when you have formatting problems.\\par ",
     "*\tLeft SHIFT+ALT + direction keys (page up, page dn, home, end, up/down) are now working in group chats and allow scrolling the message history while the input area is focused.\\par ",
     "*\tIntroduced this dialog to show the last release notes after upgrading to a new version.\\par ",
-    "*\tLess aggressive scrolling behaviour in the message window. Switching tabs or restoring a previously minimized container will no longer scroll the message history to the bottom",
+    "*\tLess aggressive scrolling behaviour in the message window. Switching tabs or restoring a previously minimized container will no longer scroll the message history to the bottom\\par ",
+    "*\tAdded \\b fast mousewheel scrolling\\b0 - holding the left SHIFT key while scrolling the history with the mouse wheel will make ist scroll fast (page by page).\\par ",
+    "*\ttabSRMM will now warn you when you a paste a message which exceeds the message size limit for the active protocol.\\par ",
     NULL
 };
 
@@ -82,6 +84,8 @@ extern      HINSTANCE g_hInst;
 extern      BOOL CALLBACK HotkeyHandlerDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam);
 extern      int g_sessionshutdown;
 extern      BOOL CALLBACK DlgProcTemplateHelp(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam);
+extern      ICONDESC *g_skinIcons;
+extern      int g_nrSkinIcons;
 
 HANDLE g_hEvent_MsgWin;
 
@@ -1160,6 +1164,9 @@ int SplitmsgShutdown(void)
 		FreeLibrary(g_hIconDLL);
 		g_hIconDLL = 0;
 	}
+    if(g_skinIcons)
+        free(g_skinIcons);
+
     DeleteCriticalSection(&cs_sessions);
     return 0;
 }
@@ -2067,3 +2074,28 @@ void ViewReleaseNotes()
     show_relnotes = TRUE;
     CreateDialogParam(g_hInst, MAKEINTRESOURCE(IDD_VARIABLEHELP), 0, DlgProcTemplateHelp, (LPARAM)relnotes);
 }
+
+HICON *BTN_GetIcon(char *szIconName)
+{
+    int n = 0, i;
+    while(ICONBLOCKS[n].szSection) {
+        i = 0;
+        while(ICONBLOCKS[n].idesc[i].szDesc) {
+            if(!stricmp(ICONBLOCKS[n].idesc[i].szName, szIconName)) {
+                //_DebugTraceA("found icon: %s", szIconName);
+                return(ICONBLOCKS[n].idesc[i].phIcon);
+            }
+            i++;
+        }
+        n++;
+    }
+    for(i = 0; i < g_nrSkinIcons; i++) {
+        if(!stricmp(g_skinIcons[i].szName, szIconName)) {
+            //_DebugTraceA("found custom icon: %s", szIconName);
+            return(g_skinIcons[i].phIcon);
+        }
+    }
+    return NULL;
+}
+
+

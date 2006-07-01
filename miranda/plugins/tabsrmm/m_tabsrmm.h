@@ -217,6 +217,7 @@ struct ContainerWindowData {
     HWND hWndOptions;
     BOOL bSizingLoop;
     int sb_NrTopButtons, sb_NrBottomButtons, sb_FirstButton;
+    int sb_TopHeight, sb_BottomHeight;
     TCHAR szTitleFormat[TITLE_FORMATLEN + 2];
     char szThemeFile[MAX_PATH];
     TemplateSet *ltr_templates, *rtl_templates;
@@ -233,6 +234,7 @@ struct ContainerWindowData {
 	int ncActive;
     HICON hTitleIcon;
     BOOL  repaintMenu;
+    HWND  hwndSaved;
 };
 
 #define STICK_ICON_MSG 10
@@ -374,6 +376,7 @@ struct MessageWindowData {
     char  szSep1[152], szMicroLf[128], szExtraLf[50];
     char  szSep1_RTL[152], szMicroLf_RTL[128];
     DWORD isAutoRTL;
+    int   nMax;            // max message size
 };
 
 typedef struct _recentinfo {
@@ -490,6 +493,7 @@ typedef struct _globals {
     int m_WheelDefault;
     BYTE m_WinVerMajor;
     BYTE m_WinVerMinor;
+    BYTE m_bIsXP;
     BYTE m_SideBarEnabled;
     HWND m_hwndClist;
     int  m_TabAppearance;

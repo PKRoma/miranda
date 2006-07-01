@@ -37,6 +37,7 @@ Themes and skinning for tabSRMM
  
 #define CURRENT_THEME_VERSION 4
 #define THEME_COOKIE 25099837
+#define IDC_TBFIRSTUID 1000
 
 extern PSLWA pSetLayeredWindowAttributes;
 extern PGF MyGradientFill;
@@ -58,15 +59,34 @@ static void __inline gradientHorizontal( UCHAR *ubRedFinal, UCHAR *ubGreenFinal,
 
 
 static ImageItem *g_ImageItems = NULL;
-static ImageItem *g_glyphItem = NULL;
+ImageItem *g_glyphItem = NULL;
 
 HBRUSH g_ContainerColorKeyBrush = 0, g_MenuBGBrush = 0;
 COLORREF g_ContainerColorKey = 0;
 SIZE g_titleBarButtonSize = {0};
-int g_titleButtonTopOff = 0, g_captionOffset = 0, g_captionPadding = 0;
+int g_titleButtonTopOff = 0, g_captionOffset = 0, g_captionPadding = 0, g_sidebarTopOffset = 0, g_sidebarBottomOffset;
 
 extern BOOL g_skinnedContainers;
 extern BOOL g_framelessSkinmode, g_compositedWindow;
+
+static struct SIDEBARITEM sbarItems[] = {
+    IDC_SBAR_SLIST, SBI_TOP, &myGlobals.g_sideBarIcons[0], "t_slist",
+    IDC_SBAR_FAVORITES, SBI_TOP, &myGlobals.g_sideBarIcons[1], "t_fav",
+    IDC_SBAR_RECENT, SBI_TOP, &myGlobals.g_sideBarIcons[2], "t_recent",
+    IDC_SBAR_USERPREFS, SBI_TOP, &myGlobals.g_sideBarIcons[4], "t_prefs",
+    IDC_SBAR_TOGGLEFORMAT, SBI_TOP | SBI_TOGGLE, &myGlobals.g_buttonBarIcons[20], "t_tformat",
+    IDC_SBAR_SETUP, SBI_BOTTOM, &myGlobals.g_sideBarIcons[3], "t_setup",
+    0, 0, 0, ""
+};
+int  SIDEBARWIDTH = DEFAULT_SIDEBARWIDTH;
+
+UINT nextButtonID;
+ButtonItem *g_ButtonItems = NULL;
+
+#define   NR_MAXSKINICONS 100
+
+ICONDESC *g_skinIcons = NULL;
+int       g_nrSkinIcons = 0;
 
 StatusItems_t StatusItems[] = {
     {"Container", "TSKIN_Container", ID_EXTBKCONTAINER,
@@ -968,6 +988,242 @@ static StatusItems_t StatusItem_Default = {
     CLCDEFAULT_MRGN_TOP, CLCDEFAULT_MRGN_RIGHT, CLCDEFAULT_MRGN_BOTTOM, CLCDEFAULT_IGNORE
 };
 
+static void BTN_ReadItem(char *itemName, char *file)
+{
+    ButtonItem tmpItem, *newItem;
+    char szBuffer[1024];
+    ImageItem *imgItem = g_ImageItems;
+    HICON *phIcon;
+
+    ZeroMemory(&tmpItem, sizeof(tmpItem));
+    mir_snprintf(tmpItem.szName, sizeof(tmpItem.szName), "%s", &itemName[1]);
+    tmpItem.width = GetPrivateProfileIntA(itemName, "Width", 16, file);
+    tmpItem.height = GetPrivateProfileIntA(itemName, "Height", 16, file);
+    tmpItem.xOff = GetPrivateProfileIntA(itemName, "xoff", 0, file);
+    tmpItem.yOff = GetPrivateProfileIntA(itemName, "yoff", 0, file);
+
+    SIDEBARWIDTH = max(tmpItem.width + 4, SIDEBARWIDTH);
+
+    tmpItem.dwFlags |= GetPrivateProfileIntA(itemName, "toggle", 0, file) ? BUTTON_ISTOGGLE : 0;
+
+    GetPrivateProfileStringA(itemName, "Pressed", "None", szBuffer, 1000, file);
+    if(!stricmp(szBuffer, "default"))
+        tmpItem.imgPressed = StatusItems[ID_EXTBKBUTTONSPRESSED].imageItem;
+    else {
+        while(imgItem) {
+            if(!stricmp(imgItem->szName, szBuffer)) {
+                tmpItem.imgPressed = imgItem;
+                break;
+            }
+            imgItem = imgItem->nextItem;
+        }
+    }
+
+    imgItem = g_ImageItems;
+    GetPrivateProfileStringA(itemName, "Normal", "None", szBuffer, 1000, file);
+    if(!stricmp(szBuffer, "default"))
+        tmpItem.imgNormal = StatusItems[ID_EXTBKBUTTONSNPRESSED].imageItem;
+    else {
+        while(imgItem) {
+            if(!stricmp(imgItem->szName, szBuffer)) {
+                tmpItem.imgNormal = imgItem;
+                break;
+            }
+            imgItem = imgItem->nextItem;
+        }
+    }
+
+    imgItem = g_ImageItems;
+    GetPrivateProfileStringA(itemName, "Hover", "None", szBuffer, 1000, file);
+    if(!stricmp(szBuffer, "default"))
+        tmpItem.imgHover = StatusItems[ID_EXTBKBUTTONSMOUSEOVER].imageItem;
+    else {
+        while(imgItem) {
+            if(!stricmp(imgItem->szName, szBuffer)) {
+                tmpItem.imgHover = imgItem;
+                break;
+            }
+            imgItem = imgItem->nextItem;
+        }
+    }
+
+    GetPrivateProfileStringA(itemName, "NormalGlyph", "0, 0, 0, 0", szBuffer, 1000, file);
+    if((phIcon = BTN_GetIcon(szBuffer)) != 0) {
+        tmpItem.dwFlags |= BUTTON_NORMALGLYPHISICON;
+        tmpItem.normalGlyphMetrics[0] = (LONG)phIcon;
+    }
+    else {
+        sscanf(szBuffer, "%d,%d,%d,%d", &tmpItem.normalGlyphMetrics[0], &tmpItem.normalGlyphMetrics[1],
+               &tmpItem.normalGlyphMetrics[2], &tmpItem.normalGlyphMetrics[3]);
+        tmpItem.normalGlyphMetrics[2] = (tmpItem.normalGlyphMetrics[2] - tmpItem.normalGlyphMetrics[0]) + 1;
+        tmpItem.normalGlyphMetrics[3] = (tmpItem.normalGlyphMetrics[3] - tmpItem.normalGlyphMetrics[1]) + 1;
+    }
+
+    GetPrivateProfileStringA(itemName, "PressedGlyph", "0, 0, 0, 0", szBuffer, 1000, file);
+    if((phIcon = BTN_GetIcon(szBuffer)) != 0) {
+        tmpItem.pressedGlyphMetrics[0] = (LONG)phIcon;
+        tmpItem.dwFlags |= BUTTON_PRESSEDGLYPHISICON;
+    }
+    else {
+        sscanf(szBuffer, "%d,%d,%d,%d", &tmpItem.pressedGlyphMetrics[0], &tmpItem.pressedGlyphMetrics[1],
+               &tmpItem.pressedGlyphMetrics[2], &tmpItem.pressedGlyphMetrics[3]);
+        tmpItem.pressedGlyphMetrics[2] = (tmpItem.pressedGlyphMetrics[2] - tmpItem.pressedGlyphMetrics[0]) + 1;
+        tmpItem.pressedGlyphMetrics[3] = (tmpItem.pressedGlyphMetrics[3] - tmpItem.pressedGlyphMetrics[1]) + 1;
+    }
+
+    GetPrivateProfileStringA(itemName, "HoverGlyph", "0, 0, 0, 0", szBuffer, 1000, file);
+    if((phIcon = BTN_GetIcon(szBuffer)) != 0) {
+        tmpItem.hoverGlyphMetrics[0] = (LONG)phIcon;
+        tmpItem.dwFlags |= BUTTON_HOVERGLYPHISICON;
+    }
+    else {
+        sscanf(szBuffer, "%d,%d,%d,%d", &tmpItem.hoverGlyphMetrics[0], &tmpItem.hoverGlyphMetrics[1],
+               &tmpItem.hoverGlyphMetrics[2], &tmpItem.hoverGlyphMetrics[3]);
+        tmpItem.hoverGlyphMetrics[2] = (tmpItem.hoverGlyphMetrics[2] - tmpItem.hoverGlyphMetrics[0]) + 1;
+        tmpItem.hoverGlyphMetrics[3] = (tmpItem.hoverGlyphMetrics[3] - tmpItem.hoverGlyphMetrics[1]) + 1;
+    }
+
+    tmpItem.uId = IDC_TBFIRSTUID - 1;
+
+    GetPrivateProfileStringA(itemName, "Action", "Custom", szBuffer, 1000, file);
+    if(!stricmp(szBuffer, "service")) {
+        tmpItem.szService[0] = 0;
+        GetPrivateProfileStringA(itemName, "Service", "None", szBuffer, 1000, file);
+        if(stricmp(szBuffer, "None")) {
+            mir_snprintf(tmpItem.szService, 256, "%s", szBuffer);
+            tmpItem.dwFlags |= BUTTON_ISSERVICE;
+            tmpItem.uId = nextButtonID++;
+        }
+    }
+    else if(!stricmp(szBuffer, "protoservice")) {
+        tmpItem.szService[0] = 0;
+        GetPrivateProfileStringA(itemName, "Service", "None", szBuffer, 1000, file);
+        if(stricmp(szBuffer, "None")) {
+            mir_snprintf(tmpItem.szService, 256, "%s", szBuffer);
+            tmpItem.dwFlags |= BUTTON_ISPROTOSERVICE;
+            tmpItem.uId = nextButtonID++;
+        }
+    }
+    else if(!stricmp(szBuffer, "database")) {
+        int n;
+
+        GetPrivateProfileStringA(itemName, "Module", "None", szBuffer, 1000, file);
+        if(stricmp(szBuffer, "None"))
+            mir_snprintf(tmpItem.szModule, 256, "%s", szBuffer);
+        GetPrivateProfileStringA(itemName, "Setting", "None", szBuffer, 1000, file);
+        if(stricmp(szBuffer, "None"))
+            mir_snprintf(tmpItem.szSetting, 256, "%s", szBuffer);
+        if(GetPrivateProfileIntA(itemName, "contact", 0, file) != 0)
+           tmpItem.dwFlags |= BUTTON_DBACTIONONCONTACT;
+
+        for(n = 0; n <= 1; n++) {
+            char szKey[20];
+            BYTE *pValue;
+
+            strcpy(szKey, n == 0 ? "dbonpush" : "dbonrelease");
+            pValue = (n == 0 ? tmpItem.bValuePush : tmpItem.bValueRelease);
+
+            GetPrivateProfileStringA(itemName, szKey, "None", szBuffer, 1000, file);
+            switch(szBuffer[0]) {
+                case 'b':
+                {
+                    BYTE value = (BYTE)atol(&szBuffer[1]);
+                    pValue[0] = value;
+                    tmpItem.type = DBVT_BYTE;
+                    break;
+                }
+                case 'w':
+                {
+                    WORD value = (WORD)atol(&szBuffer[1]);
+                    *((WORD *)&pValue[0]) = value;
+                    tmpItem.type = DBVT_WORD;
+                    break;
+                }
+                case 'd':
+                {
+                    DWORD value = (DWORD)atol(&szBuffer[1]);
+                    *((DWORD *)&pValue[0]) = value;
+                    tmpItem.type = DBVT_DWORD;
+                    break;
+                }
+                case 's':
+                {
+                    mir_snprintf((char *)pValue, 256, &szBuffer[1]);
+                    tmpItem.type = DBVT_ASCIIZ;
+                    break;
+                }
+            }
+        }
+        if(tmpItem.szModule[0] && tmpItem.szSetting[0]) {
+            tmpItem.dwFlags |= BUTTON_ISDBACTION;
+            if(tmpItem.szModule[0] == '$' && (tmpItem.szModule[1] == 'c' || tmpItem.szModule[1] == 'C'))
+                tmpItem.dwFlags |= BUTTON_ISCONTACTDBACTION;
+            tmpItem.uId = nextButtonID++;
+        }
+    }
+    else if(stricmp(szBuffer, "Custom")) {
+        int i = 0;
+
+        while(sbarItems[i].uId) {
+            if(!stricmp(sbarItems[i].szName, szBuffer)) {
+                tmpItem.uId = sbarItems[i].uId;
+                tmpItem.dwFlags |= BUTTON_ISSIDEBAR;
+                myGlobals.m_SideBarEnabled = TRUE;
+                if(sbarItems[i].dwFlags & SBI_TOP)
+                    tmpItem.yOff = 0;
+                else if(sbarItems[i].dwFlags & SBI_BOTTOM)
+                    tmpItem.yOff = -1;
+                tmpItem.dwFlags = sbarItems[i].dwFlags & SBI_TOGGLE ? tmpItem.dwFlags | BUTTON_ISTOGGLE : tmpItem.dwFlags & ~BUTTON_ISTOGGLE;
+                break;
+            }
+            i++;
+        }
+    }
+    GetPrivateProfileStringA(itemName, "PassContact", "None", szBuffer, 1000, file);
+    if(stricmp(szBuffer, "None")) {
+        if(szBuffer[0] == 'w' || szBuffer[0] == 'W')
+            tmpItem.dwFlags |= BUTTON_PASSHCONTACTW;
+        else if(szBuffer[0] == 'l' || szBuffer[0] == 'L')
+            tmpItem.dwFlags |= BUTTON_PASSHCONTACTL;
+    }
+
+    GetPrivateProfileStringA(itemName, "Tip", "None", szBuffer, 1000, file);
+    if(strcmp(szBuffer, "None")) {
+#if defined(_UNICODE)
+        MultiByteToWideChar(myGlobals.m_LangPackCP, 0, szBuffer, -1, tmpItem.szTip, 256);
+        tmpItem.szTip[255] = 0;
+#else
+        mir_snprintf(tmpItem.szTip, 256, "%s", szBuffer);
+#endif
+    }
+    else
+        tmpItem.szTip[0] = 0;
+
+    // create it
+
+    if(GetPrivateProfileIntA(itemName, "Sidebar", 0, file)) {
+        tmpItem.dwFlags |= BUTTON_ISSIDEBAR;
+        myGlobals.m_SideBarEnabled = TRUE;
+    }
+
+    newItem = (ButtonItem *)malloc(sizeof(ButtonItem));
+    ZeroMemory(newItem, sizeof(ButtonItem));
+    if(g_ButtonItems == NULL) {
+        g_ButtonItems = newItem;
+        *newItem = tmpItem;
+        newItem->nextItem = 0;
+    }
+    else {
+        ButtonItem *curItem = g_ButtonItems;
+        while(curItem->nextItem)
+            curItem = curItem->nextItem;
+        *newItem = tmpItem;
+        newItem->nextItem = 0;
+        curItem->nextItem = newItem;
+    }
+    return;
+}
+
 static void ReadItem(StatusItems_t *this_item, char *szItem, char *file)
 {
     char buffer[512], def_color[20];
@@ -1326,6 +1582,17 @@ void IMG_RefreshItems()
 void IMG_DeleteItems()
 {
     ImageItem *pItem = g_ImageItems, *pNextItem;
+    ButtonItem *pbItem = g_ButtonItems, *pbNextItem;
+    int i;
+
+    if(g_skinIcons) {
+        for(i = 0; i < g_nrSkinIcons; i++) {
+            if(g_skinIcons[i].szName)
+                free(g_skinIcons[i].szName);
+            DestroyIcon((HICON)g_skinIcons[i].uId);
+        }
+        g_nrSkinIcons = 0;
+    }
 
     while(pItem) {
         IMG_DeleteItem(pItem);
@@ -1340,6 +1607,15 @@ void IMG_DeleteItems()
         free(g_glyphItem);
     }
     g_glyphItem = NULL;
+
+    while(pbItem) {
+        //DestroyWindow(pbItem->hWnd);
+        pbNextItem = pbItem->nextItem;
+        free(pbItem);
+        pbItem = pbNextItem;
+    }
+    g_ButtonItems = NULL;
+    myGlobals.m_SideBarEnabled = FALSE;
 
 	if(myGlobals.g_closeGlyph)
 		DestroyIcon(myGlobals.g_closeGlyph);
@@ -1357,13 +1633,32 @@ void IMG_DeleteItems()
     myGlobals.g_DisableScrollbars = FALSE;
 }
 
+static void SkinLoadIcon(char *file, char *szSection, char *name, HICON *hIcon)
+{
+	char buffer[512];
+	if(*hIcon != 0)
+		DestroyIcon(*hIcon);
+	GetPrivateProfileStringA(szSection, name, "none", buffer, 500, file);
+	buffer[500] = 0;
+
+	if(strcmp(buffer, "none")) {
+		char szDrive[MAX_PATH], szDir[MAX_PATH], szImagePath[MAX_PATH];
+		
+		_splitpath(file, szDrive, szDir, NULL, NULL);
+		mir_snprintf(szImagePath, MAX_PATH, "%s\\%s\\%s", szDrive, szDir, buffer);
+		if(hIcon)
+			*hIcon = LoadImageA(0, szImagePath, IMAGE_ICON, 16, 16, LR_LOADFROMFILE);
+	}
+}
+
 static void IMG_LoadItems(char *szFileName)
 {
     char *szSections = NULL;
-    char *p;
+    char *p, *p1;
     ImageItem *pItem = g_ImageItems, *pNextItem;
     int i;
-    
+    ICONDESC tmpIconDesc = {0};
+
     if(!PathFileExistsA(szFileName))
         return;
 
@@ -1378,37 +1673,58 @@ static void IMG_LoadItems(char *szFileName)
     for(i = 0; i <= ID_EXTBK_LAST; i++)
         StatusItems[i].imageItem = NULL;
     
-    szSections = malloc(3002);
-    ZeroMemory(szSections, 3002);
+    if(g_skinIcons == NULL)
+        g_skinIcons = malloc(sizeof(ICONDESC) * NR_MAXSKINICONS);
+
+    ZeroMemory(g_skinIcons, sizeof(ICONDESC) * NR_MAXSKINICONS);
+
+    szSections = malloc(5002);
+    ZeroMemory(szSections, 5002);
+
+    GetPrivateProfileSectionA("Icons", szSections, 5000, szFileName);
     p = szSections;
-    GetPrivateProfileSectionNamesA(szSections, 3000, szFileName);
+    while(lstrlenA(p) > 1) {
+        p1 = strchr(p, (int)'=');
+        if(p1)
+            *p1 = 0;
+        if(g_nrSkinIcons < NR_MAXSKINICONS && p1) {
+            SkinLoadIcon(szFileName, "Icons", p, (HICON *)&tmpIconDesc.uId);
+            //_DebugTraceA("trying to load: %s -> %d", p, tmpIconDesc.uId);
+            if(tmpIconDesc.uId) {
+                ZeroMemory(&g_skinIcons[g_nrSkinIcons], sizeof(ICONDESC));
+                g_skinIcons[g_nrSkinIcons].uId = tmpIconDesc.uId;
+                g_skinIcons[g_nrSkinIcons].phIcon = (HICON *)(&g_skinIcons[g_nrSkinIcons].uId);
+                g_skinIcons[g_nrSkinIcons].szName = malloc(lstrlenA(p) + 1);
+                lstrcpyA(g_skinIcons[g_nrSkinIcons].szName, p);
+                g_nrSkinIcons++;
+            }
+        }
+        if(p1)
+            *p1 = '=';
+        p += (lstrlenA(p) + 1);
+    }
+
+    ZeroMemory(szSections, 5002);
+    p = szSections;
+    GetPrivateProfileSectionNamesA(szSections, 5000, szFileName);
     
-    szSections[3001] = szSections[3000] = 0;
+    szSections[5001] = szSections[5000] = 0;
     p = szSections;
     while(lstrlenA(p) > 1) {
         if(p[0] == '$')
             IMG_ReadItem(p, szFileName);
         p += (lstrlenA(p) + 1);
     }
+    nextButtonID = IDC_TBFIRSTUID;
+    SIDEBARWIDTH = DEFAULT_SIDEBARWIDTH;
+
+    p = szSections;
+    while(lstrlenA(p) > 1) {
+        if(p[0] == '!')
+            BTN_ReadItem(p, szFileName);
+        p += (lstrlenA(p) + 1);
+    }
     free(szSections);
-}
-
-static void SkinLoadIcon(char *file, char *name, HICON *hIcon)
-{
-	char buffer[512];
-	if(*hIcon != 0)
-		DestroyIcon(*hIcon);
-	GetPrivateProfileStringA("Global", name, "none", buffer, 500, file);
-	buffer[500] = 0;
-
-	if(strcmp(buffer, "none")) {
-		char szDrive[MAX_PATH], szDir[MAX_PATH], szImagePath[MAX_PATH];
-		
-		_splitpath(file, szDrive, szDir, NULL, NULL);
-		mir_snprintf(szImagePath, MAX_PATH, "%s\\%s\\%s", szDrive, szDir, buffer);
-		if(hIcon)
-			*hIcon = LoadImageA(0, szImagePath, IMAGE_ICON, 16, 16, LR_LOADFROMFILE);
-	}
 }
 
 static void SkinCalcFrameWidth()
@@ -1462,7 +1778,6 @@ static void LoadSkinItems(char *file, int onStartup)
     if(!(GetPrivateProfileIntA("Global", "Version", 0, file) >= 1 && GetPrivateProfileIntA("Global", "Signature", 0, file) == 101))
 		return;
 
-	g_skinnedContainers = TRUE;
     myGlobals.g_DisableScrollbars = FALSE;
 
 	ZeroMemory(szSections, 3000);
@@ -1484,6 +1799,9 @@ static void LoadSkinItems(char *file, int onStartup)
         p += (lstrlenA(p) + 1);
         i++;
     }
+
+    if(i > 0)
+        g_skinnedContainers = TRUE;
 
     i = 0;
     while(_tagSettings[i].szIniKey != NULL) {
@@ -1511,9 +1829,9 @@ static void LoadSkinItems(char *file, int onStartup)
     GetPrivateProfileStringA("Avatars", "BorderColor", "000000", buffer, 20, file);
     DBWriteContactSettingDword(NULL, SRMSGMOD_T, "avborderclr", HexStringToLong(buffer));
     
-    SkinLoadIcon(file, "CloseGlyph", &myGlobals.g_closeGlyph);
-	SkinLoadIcon(file, "MaximizeGlyph", &myGlobals.g_maxGlyph);
-	SkinLoadIcon(file, "MinimizeGlyph", &myGlobals.g_minGlyph);
+    SkinLoadIcon(file, "Global", "CloseGlyph", &myGlobals.g_closeGlyph);
+	SkinLoadIcon(file, "Global", "MaximizeGlyph", &myGlobals.g_maxGlyph);
+	SkinLoadIcon(file, "Global", "MinimizeGlyph", &myGlobals.g_minGlyph);
     
 	//GetPrivateProfileStringA("Global", "FontColor", "None", buffer, 500, file);
     
@@ -1535,6 +1853,9 @@ static void LoadSkinItems(char *file, int onStartup)
     g_titleButtonTopOff = GetPrivateProfileIntA("WindowFrame", "TitleButtonTopOffset", 0, file);
     g_captionOffset = GetPrivateProfileIntA("WindowFrame", "CaptionOffset", 3, file);
     g_captionPadding = GetPrivateProfileIntA("WindowFrame", "CaptionPadding", 0, file);
+
+    g_sidebarTopOffset = GetPrivateProfileIntA("ClientArea", "SidebarTop", -1, file);
+    g_sidebarBottomOffset = GetPrivateProfileIntA("ClientArea", "SidebarBottom", -1, file);
 
     myGlobals.bClipBorder = GetPrivateProfileIntA("WindowFrame", "ClipFrame", 0, file);
 	{
@@ -1559,11 +1880,14 @@ static void LoadSkinItems(char *file, int onStartup)
             CacheLogFonts();
         }
 	}
-    GetPrivateProfileStringA("Global", "MenuBarBG", "eeeeee", buffer, 20, file);
+    GetPrivateProfileStringA("Global", "MenuBarBG", "None", buffer, 20, file);
     data = HexStringToLong(buffer);
-    if(g_MenuBGBrush)
+    if(g_MenuBGBrush) {
         DeleteObject(g_MenuBGBrush);
-    g_MenuBGBrush = CreateSolidBrush(data);
+        g_MenuBGBrush = 0;
+    }
+    if(strcmp(buffer, "None"))
+        g_MenuBGBrush = CreateSolidBrush(data);
 
     GetPrivateProfileStringA("Global", "LightShadow", "000000", buffer, 20, file);
     data = HexStringToLong(buffer);
@@ -1673,3 +1997,4 @@ void DrawDimmedIcon(HDC hdc, LONG left, LONG top, LONG dx, LONG dy, HICON hIcon,
     DeleteObject(hbm);
     DeleteDC(dcMem);
 }
+

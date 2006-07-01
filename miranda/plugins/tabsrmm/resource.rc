@@ -309,7 +309,7 @@ BEGIN
     GROUPBOX        "Miscellaneous options",IDC_STATIC,3,121,300,104
     LTEXT           "Info Panel field borders:",IDC_STATIC,10,131,166,12
     COMBOBOX        IDC_IPFIELDBORDERS,192,128,106,50,CBS_DROPDOWNLIST | CBS_SORT | WS_VSCROLL | WS_TABSTOP
-    PUSHBUTTON      "Setup status modes for automatic tab creation...",IDC_SETUPAUTOCREATEMODES,56,143,190,14
+    PUSHBUTTON      "Setup status modes for automatic tab creation...",IDC_SETUPAUTOCREATEMODES,56,144,190,14
     LTEXT           "When auto-hiding toolbar buttons:",IDC_STATIC,14,164,133,8
     COMBOBOX        IDC_TOOLBARHIDEMODE,148,161,152,46,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
     CONTROL         "Limit nicknames on tabs to",IDC_CUT_TABTITLE,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,12,181,135,10

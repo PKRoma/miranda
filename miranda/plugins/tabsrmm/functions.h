@@ -64,6 +64,7 @@ UINT NcCalcRichEditFrame(HWND hwnd, struct MessageWindowData *mwdat, UINT skinID
 
 void ViewReleaseNotes();
 
+HICON *BTN_GetIcon(char *szIconName);
 void IMG_RefreshItems();
 int  RegisterContainer();
 HMENU BuildContainerMenu();
