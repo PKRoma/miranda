@@ -1052,7 +1052,7 @@ bgskipped:
 				rightIcons++;
 			}*/
 			contact->extraIconRightBegin = 0;
-			if(contact->extraCacheEntry >= 0 && contact->extraCacheEntry < g_nextExtraCacheEntry && cEntry->iExtraValid) {
+			if(cEntry && cEntry != g_ExtraCache && cEntry->iExtraValid) {
 				int i;
 				for(i = 9; i >= 0; i--) {
 					if(cEntry->iExtraImage[i] != 0xff && ((1 << i) & g_CluiData.dwExtraImageMask)) {
@@ -1066,7 +1066,7 @@ bgskipped:
 				}
 			}
 			if (!bApparentModeDontCare && (dwFlags & CLUI_SHOWVISI) && contact->proto) {
-				if(strstr(contact->proto, "IRC"))
+				if(cEntry && cEntry->isChatRoom)
 					DrawIconEx(hdcMem, rcContent.right - g_CluiData.exIconScale, twoRows ? rcContent.bottom - g_exIconSpacing : y + ((rowHeight - g_CluiData.exIconScale) >> 1), 
 					g_CluiData.hIconChatactive, g_CluiData.exIconScale, g_CluiData.exIconScale, 0, 0, DI_NORMAL | DI_COMPAT);
 				else
