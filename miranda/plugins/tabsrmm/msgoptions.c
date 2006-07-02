@@ -539,7 +539,6 @@ static struct LISTOPTIONSITEM lvItems[] = {
     0, _T("Place dividers in inactive sessions"), 0, LOI_TYPE_SETTING, (UINT_PTR)"usedividers", 0,
     0, _T("Use popup configuration for placing dividers"), 0, LOI_TYPE_SETTING, (UINT_PTR)"div_popupconfig", 0,
     0, _T("RTL is default text direction"), 0, LOI_TYPE_SETTING, (UINT_PTR)"rtldefault", 0,
-    0, _T("Use IEView as default message log"), 0, LOI_TYPE_SETTING, (UINT_PTR)"want_ieview", 1,
     0, _T("Support Math Module plugin"), 0, LOI_TYPE_SETTING, (UINT_PTR)"wantmathmod", 1,
     0, _T("Log status changes"), 0, LOI_TYPE_SETTING, (UINT_PTR)"logstatus", 2,
     0, _T("Automatically copy selected text"), 0, LOI_TYPE_SETTING, (UINT_PTR)"autocopy", 2,
@@ -605,10 +604,6 @@ static BOOL CALLBACK DlgProcLogOptions(HWND hwndDlg, UINT msg, WPARAM wParam, LP
 				tvi.item.mask = TVIF_TEXT | TVIF_STATE | TVIF_PARAM;
 				tvi.item.lParam = i;
 				if(lvItems[i].uType == LOI_TYPE_SETTING) {
-					if(!strcmp((char *)lvItems[i].lParam, "want_ieview") && !ServiceExists(MS_IEVIEW_EVENT)) {
-						i++;
-						continue;
-					}
 					if(!strcmp((char *)lvItems[i].lParam, "wantmathmod") && !ServiceExists(MATH_RTF_REPLACE_FORMULAE)) {
 						i++;
 						continue;
@@ -1491,6 +1486,7 @@ static BOOL CALLBACK DlgProcSkinOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPAR
             CheckDlgButton(hwndDlg, IDC_USESKIN, DBGetContactSettingByte(NULL, SRMSGMOD_T, "useskin", 0) ? BST_CHECKED : BST_UNCHECKED);
             CheckDlgButton(hwndDlg, IDC_SKIN_LOADFONTS, loadMode & THEME_READ_FONTS);
             CheckDlgButton(hwndDlg, IDC_SKIN_LOADTEMPLATES, loadMode & THEME_READ_TEMPLATES);
+            CheckDlgButton(hwndDlg, IDC_SKIN_REFRESH, DBGetContactSettingByte(NULL, SRMSGMOD_T, "forceDCrefresh", 0));
 
             if(!DBGetContactSetting(NULL, SRMSGMOD_T, "ContainerSkin", &dbv)) {
                 SetDlgItemTextA(hwndDlg, IDC_SKINFILENAME, dbv.pszVal);
@@ -1519,6 +1515,9 @@ static BOOL CALLBACK DlgProcSkinOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPAR
                     DBWriteContactSettingByte(NULL, SRMSGMOD_T, "skin_loadmode", loadMode);
                     break;
                 }
+                case IDC_SKIN_REFRESH:
+                    DBWriteContactSettingByte(NULL, SRMSGMOD_T, "forceDCrefresh", IsDlgButtonChecked(hwndDlg, IDC_SKIN_REFRESH) ? 1 : 0);
+                    break;
                 case IDC_UNLOAD:
                     ReloadContainerSkin(0, 0);
                     SendMessage(hwndTabConfig, WM_USER + 100, 0, 0);
@@ -1816,7 +1815,7 @@ void ReloadGlobals()
      myGlobals.m_DoStatusMsg = (int)DBGetContactSettingByte(NULL, SRMSGMOD_T, "dostatusmsg", 1);
      myGlobals.m_smcxicon = GetSystemMetrics(SM_CXSMICON);
      myGlobals.m_smcyicon = GetSystemMetrics(SM_CYSMICON);
-     myGlobals.g_WantIEView = ServiceExists(MS_IEVIEW_WINDOW) && DBGetContactSettingByte(NULL, SRMSGMOD_T, "want_ieview", 1);
+     myGlobals.g_WantIEView = ServiceExists(MS_IEVIEW_WINDOW);
      myGlobals.m_PasteAndSend = (int)DBGetContactSettingByte(NULL, SRMSGMOD_T, "pasteandsend", 0);
      myGlobals.m_szNoStatus = TranslateT("No status message available");
      myGlobals.ipConfig.borderStyle = (BYTE)DBGetContactSettingByte(NULL, SRMSGMOD_T, "ipfieldborder", IPFIELD_SUNKEN);

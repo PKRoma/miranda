@@ -532,6 +532,7 @@ typedef struct _globals {
     NONCLIENTMETRICS ncm;
     HICON m_AnimTrayIcons[4];
     BOOL  g_DisableScrollbars;
+    BOOL  m_forcedSkinRefresh;
 } MYGLOBALS;
 
 typedef struct _tag_ICONDESC {

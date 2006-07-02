@@ -9,7 +9,7 @@
 //
 #include <windows.h>
 #include "../../include/statusmodes.h"
-
+#include "version.rc"
 
 /////////////////////////////////////////////////////////////////////////////
 #undef APSTUDIO_READONLY_SYMBOLS
@@ -515,6 +515,9 @@ BEGIN
                     "Button",BS_AUTOCHECKBOX | WS_TABSTOP,11,89,281,11
     CONTROL         "Load templates provided by skin (use with care, will overwrite your templates)",IDC_SKIN_LOADTEMPLATES,
                     "Button",BS_AUTOCHECKBOX | WS_TABSTOP,11,100,281,11
+    CONTROL         "Force skin refresh on draw (takes effect when reloading skin)",IDC_SKIN_REFRESH,
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,11,117,281,11
+    LTEXT           "Only enable this when you get redrawing problems in skinned mode",IDC_STATIC,22,127,260,9
 END
 
 
@@ -706,7 +709,7 @@ BEGIN
     BEGIN
         POPUP "IEView Setting"
         BEGIN
-            MENUITEM "Use global Setting",          ID_IEVIEWSETTING_USEGLOBAL
+            MENUITEM "Use it when available",       ID_IEVIEWSETTING_USEGLOBAL
             MENUITEM "Force IEView",                ID_IEVIEWSETTING_FORCEIEVIEW
             MENUITEM "Force Default Message Log",   ID_IEVIEWSETTING_FORCEDEFAULTMESSAGELOG
         END
@@ -928,46 +931,6 @@ END
 IDI_TREEVIEWEXPAND      ICON                    "res/expand.ico"
 IDI_TREEVIEWCHECKED     ICON                    "res/checked.ico"
 IDI_TREEVIEWUNCHECKED   ICON                    "res/unchecked.ico"
-
-/////////////////////////////////////////////////////////////////////////////
-//
-// Version
-//
-
-VS_VERSION_INFO VERSIONINFO
- FILEVERSION 1,1,0,2
- PRODUCTVERSION 1,1,0,2
- FILEFLAGSMASK 0x17L
-#ifdef _DEBUG
- FILEFLAGS 0x1L
-#else
- FILEFLAGS 0x0L
-#endif
- FILEOS 0x4L
- FILETYPE 0x2L
- FILESUBTYPE 0x0L
-BEGIN
-    BLOCK "StringFileInfo"
-    BEGIN
-        BLOCK "000004b0"
-        BEGIN
-            VALUE "CompanyName", "Miranda IM project"
-            VALUE "FileDescription", "tabSRMM.dll"
-            VALUE "FileVersion", "1, 1, 0, 2"
-            VALUE "InternalName", "tabSRMsg"
-            VALUE "LegalCopyright", "Copyright (C) 2006"
-            VALUE "LegalTrademarks", "Licensed under the Gnu general public license V2 or any later version."
-            VALUE "OriginalFilename", "tabsrmm.dll"
-            VALUE "ProductName", "tabSRMM Message window plugin"
-            VALUE "ProductVersion", "1, 1, 0, 2"
-        END
-    END
-    BLOCK "VarFileInfo"
-    BEGIN
-        VALUE "Translation", 0x0, 1200
-    END
-END
-
 #endif    // Neutral resources
 /////////////////////////////////////////////////////////////////////////////
 
@@ -996,14 +959,12 @@ END
 BEGIN
     "#include <windows.h>\r\n"
     "#include ""../../include/statusmodes.h""\r\n"
-    "\r\n"
-    "\0"
+    "#include ""version.rc""\r\n"
 END
 
 3 TEXTINCLUDE 
 BEGIN
     "\r\n"
-    "\0"
 END
 
 #endif    // APSTUDIO_INVOKED

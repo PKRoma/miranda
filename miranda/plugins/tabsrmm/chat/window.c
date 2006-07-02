@@ -99,8 +99,6 @@ static void Chat_UpdateWindowState(HWND hwndDlg, struct MessageWindowData *dat, 
 
     dat->pContainer->hwndSaved = hwndDlg;
 
-    //_DebugTraceW(L"updating CHAT state for: %s", dat->szNickname);
-
     SetActiveSession(si->pszID, si->pszModule);
     dat->hTabIcon = dat->hTabStatusIcon;
 
@@ -2339,14 +2337,25 @@ LABEL_SHOWWINDOW:
                         }
                         else {                      // clicked a nick name
                             USERINFO *ui = si->pUsers;
+                            BOOL found = FALSE;
 
                             while(ui) {
-                                if(!strcmp(ui->pszNick, tr.lpstrText)) {
-                                    break;
+                                int iLen = lstrlenA(ui->pszNick), i;
+                                found = TRUE;
+                                for(i = 0; i < iLen && ui->pszNick[i] && tr.lpstrText[i]; i++) {
+                                    if(ui->pszNick[i] != tr.lpstrText[i]) {
+                                        found = FALSE;
+                                        break;
+                                    }
                                 }
+                                if(found)
+                                    break;
                                 ui = ui->next;
                             }
+                            if(found)
+                                SendDlgItemMessageA(hwndDlg, IDC_CHAT_MESSAGE, EM_REPLACESEL,  FALSE, (LPARAM)tr.lpstrText);
                         }
+                        SetFocus(GetDlgItem(hwndDlg, IDC_CHAT_MESSAGE));
 						free(tr.lpstrText);
 						break;
 					}

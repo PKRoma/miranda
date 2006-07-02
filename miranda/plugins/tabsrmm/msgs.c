@@ -42,9 +42,12 @@ static char *relnotes[] = {
 Also, you may want to reset your templates (you can do this in the template editor) when you have formatting problems.\\par ",
     "*\tLeft SHIFT+ALT + direction keys (page up, page dn, home, end, up/down) are now working in group chats and allow scrolling the message history while the input area is focused.\\par ",
     "*\tIntroduced this dialog to show the last release notes after upgrading to a new version.\\par ",
-    "*\tLess aggressive scrolling behaviour in the message window. Switching tabs or restoring a previously minimized container will no longer scroll the message history to the bottom\\par ",
+    "*\tLess aggressive scrolling behaviour in the message window. Switching tabs or restoring a previously minimized container will no longer scroll the message history to the bottom.\\line \
+Also, scrolling logic has been changed in some places, and there are currently a few minor bugs. This is being worked out.\\par ",
     "*\tAdded \\b fast mousewheel scrolling\\b0 - holding the left SHIFT key while scrolling the history with the mouse wheel will make ist scroll fast (page by page).\\par ",
     "*\ttabSRMM will now warn you when you a paste a message which exceeds the message size limit for the active protocol.\\par ",
+    "*\tIEView is now set as default message log when it is installed and detected. The global option to enable it has been removed. It is still possible to enable \
+or disable it on a per contact base.\\par ",
     NULL
 };
 
@@ -958,7 +961,7 @@ static int SplitmsgModulesLoaded(WPARAM wParam, LPARAM lParam)
     if(ServiceExists(MS_FAVATAR_GETINFO))
         myGlobals.g_FlashAvatarAvail = 1;
     
-    myGlobals.g_WantIEView = ServiceExists(MS_IEVIEW_WINDOW) && DBGetContactSettingByte(NULL, SRMSGMOD_T, "want_ieview", 1);
+    myGlobals.g_WantIEView = ServiceExists(MS_IEVIEW_WINDOW);
 	
 	if(ServiceExists(MS_IEVIEW_WINDOW))
 		HookEvent(ME_IEVIEW_OPTIONSCHANGED, IEViewOptionsChanged);

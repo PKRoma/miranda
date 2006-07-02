@@ -474,27 +474,35 @@ void ReadThemeFromINI(const char *szIniFilename, struct MessageWindowData *dat, 
             for(i = 0; i <= TMPL_ERRMSG; i++) {
     #if defined(_UNICODE)
                 wchar_t *decoded;
-                GetPrivateProfileStringA("Templates", TemplateNames[i], "", szTemplateBuffer, TEMPLATE_LENGTH * 3, szIniFilename);
-                if(dat == 0)
-                    DBWriteContactSettingStringUtf(NULL, TEMPLATES_MODULE, TemplateNames[i], szTemplateBuffer);
-                decoded = Utf8_Decode(szTemplateBuffer);
-                if(dat == 0)
-                    mir_snprintfW(LTR_Active.szTemplates[i], TEMPLATE_LENGTH, L"%s", decoded);
-                else
-                    mir_snprintfW(dat->ltr_templates->szTemplates[i], TEMPLATE_LENGTH, L"%s", decoded);
-                free(decoded);
-                GetPrivateProfileStringA("RTLTemplates", TemplateNames[i], "", szTemplateBuffer, TEMPLATE_LENGTH * 3, szIniFilename);
-                if(dat == 0)
-                    DBWriteContactSettingStringUtf(NULL, RTLTEMPLATES_MODULE, TemplateNames[i], szTemplateBuffer);
-                decoded = Utf8_Decode(szTemplateBuffer);
-                if(dat == 0)
-                    mir_snprintfW(RTL_Active.szTemplates[i], TEMPLATE_LENGTH, L"%s", decoded);
-                else
-                    mir_snprintfW(dat->rtl_templates->szTemplates[i], TEMPLATE_LENGTH, L"%s", decoded);
-                free(decoded);
+
+                GetPrivateProfileStringA("Templates", TemplateNames[i], "[undef]", szTemplateBuffer, TEMPLATE_LENGTH * 3, szIniFilename);
+
+                if(strcmp(szTemplateBuffer, "[undef]")) {
+                    if(dat == 0)
+                        DBWriteContactSettingStringUtf(NULL, TEMPLATES_MODULE, TemplateNames[i], szTemplateBuffer);
+                    decoded = Utf8_Decode(szTemplateBuffer);
+                    if(dat == 0)
+                        mir_snprintfW(LTR_Active.szTemplates[i], TEMPLATE_LENGTH, L"%s", decoded);
+                    else
+                        mir_snprintfW(dat->ltr_templates->szTemplates[i], TEMPLATE_LENGTH, L"%s", decoded);
+                    free(decoded);
+                }
+
+                GetPrivateProfileStringA("RTLTemplates", TemplateNames[i], "[undef]", szTemplateBuffer, TEMPLATE_LENGTH * 3, szIniFilename);
+
+                if(strcmp(szTemplateBuffer, "[undef]")) {
+                    if(dat == 0)
+                        DBWriteContactSettingStringUtf(NULL, RTLTEMPLATES_MODULE, TemplateNames[i], szTemplateBuffer);
+                    decoded = Utf8_Decode(szTemplateBuffer);
+                    if(dat == 0)
+                        mir_snprintfW(RTL_Active.szTemplates[i], TEMPLATE_LENGTH, L"%s", decoded);
+                    else
+                        mir_snprintfW(dat->rtl_templates->szTemplates[i], TEMPLATE_LENGTH, L"%s", decoded);
+                    free(decoded);
+                }
     #else
                 if(dat == 0) {
-                    GetPrivateProfileStringA("Templates", TemplateNames[i], "", LTR_Active.szTemplates[i], TEMPLATE_LENGTH - 1, szIniFilename);
+                    GetPrivateProfileStringA("Templates", TemplateNames[i], "[undef]", LTR_Active.szTemplates[i], TEMPLATE_LENGTH - 1, szIniFilename);
                     DBWriteContactSettingString(NULL, TEMPLATES_MODULE, TemplateNames[i], LTR_Active.szTemplates[i]);
                     GetPrivateProfileStringA("RTLTemplates", TemplateNames[i], "", RTL_Active.szTemplates[i], TEMPLATE_LENGTH - 1, szIniFilename);
                     DBWriteContactSettingString(NULL, RTLTEMPLATES_MODULE, TemplateNames[i], RTL_Active.szTemplates[i]);
@@ -1571,6 +1579,9 @@ void IMG_RefreshItems()
     HDC hdc = GetDC(0);
     ImageItem *pItem = g_ImageItems;
 
+#ifdef _DEBUG
+    _DebugTraceA("Refreshing cached DCs");
+#endif
     while(pItem) {
         IMG_RefreshItem(pItem, hdc);
         pItem = pItem->nextItem;
@@ -1895,7 +1906,8 @@ static void LoadSkinItems(char *file, int onStartup)
     GetPrivateProfileStringA("Global", "DarkShadow", "000000", buffer, 20, file);
     data = HexStringToLong(buffer);
     myGlobals.g_SkinDarkShadowPen = CreatePen(PS_SOLID, 1, RGB(GetRValue(data), GetGValue(data), GetBValue(data)));
-    
+    myGlobals.m_forcedSkinRefresh = DBGetContactSettingByte(NULL, SRMSGMOD_T, "forceDCrefresh", 0);
+
 	SkinCalcFrameWidth();
 
     GetPrivateProfileStringA("Global", "FontColor", "None", buffer, 20, file);
