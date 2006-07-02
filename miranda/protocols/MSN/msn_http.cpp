@@ -81,14 +81,14 @@ PBYTE msn_httpGatewayUnwrapRecv( NETLIBHTTPREQUEST* nlhr, PBYTE buf, int len, in
 		T->applyGatewayData( nlhr->nlc, false );
 	}
 
-	if ( tIsSessionClosed )
+	if ( tIsSessionClosed || nlhr->resultCode != 200)
 	{	*outBufLen = 0;
-		buf = ( PBYTE )malloc( 1 );
+		buf = ( PBYTE )mir_alloc( 1 );
 		*buf = 0;
 	}
 	else if ( buf == NULL && len == 0 )
 	{	*outBufLen = 1;
-		buf = ( PBYTE )malloc( 1 );
+		buf = ( PBYTE )mir_alloc( 1 );
 		*buf = 0;
 	}
 

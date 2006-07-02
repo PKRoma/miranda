@@ -876,6 +876,30 @@ LBL_InvalidCommand:
 			break;
 
 		case ' SNA':    //********* ANS: section 8.4 Getting Invited to a Switchboard Session
+			if ( info->mJoinedCount == 1 ) {
+				MsgQueueEntry E;
+				HANDLE hContact = info->mJoinedContacts[0];
+				if ( MsgQueue_GetNext( hContact, E ) != 0 ) {
+					do {
+						if ( E.msgSize == 0 ) {
+							info->sendMessage( E.msgType, E.message, E.flags );
+							MSN_SendBroadcast( hContact, ACKTYPE_MESSAGE, ACKRESULT_SUCCESS, ( HANDLE )E.seq, 0 );
+						}
+						else info->sendRawMessage( E.msgType, E.message, E.msgSize );
+
+						free( E.message );
+
+						if ( E.ft != NULL ) {
+							info->mMsnFtp = E.ft;
+							info->mMsnFtp->mOwnsThread = true;
+						}
+					}
+					while (MsgQueue_GetNext( hContact, E ) != 0 );
+
+					if ( MSN_GetByte( "EnableDeliveryPopup", 1 ))
+						MSN_ShowPopup( MSN_GetContactName( hContact ), MSN_Translate( "First message delivered" ), 0 );
+			}	}
+
 			break;
 
 		case ' PLB':    //********* BLP: section 7.6 List Retrieval And Property Management

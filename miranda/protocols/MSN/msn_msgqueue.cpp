@@ -41,9 +41,7 @@ void MsgQueue_Init( void )
 
 void MsgQueue_Uninit( void )
 {
-	if ( msgQueueCount )
-		free( msgQueue );
-
+	MsgQueue_Clear( NULL );
 	DeleteCriticalSection( &csMsgQueue );
 }
 
@@ -140,12 +138,16 @@ int __stdcall MsgQueue_GetNext( HANDLE hContact, MsgQueueEntry& retVal )
 
 void __stdcall MsgQueue_Clear( HANDLE hContact )
 {
+	int i;
 
 	if (hContact == NULL)
 	{
 		EnterCriticalSection( &csMsgQueue );
-		if ( msgQueueCount ) 
-			free( msgQueue );
+
+		for( i=0; i < msgQueueCount; i++ )
+			free ( msgQueue[ i ].message );
+		free( msgQueue );
+
 		msgQueueCount = 0;
 		msgQueue = NULL;
 		msgQueueSeq = 1;
@@ -154,6 +156,7 @@ void __stdcall MsgQueue_Clear( HANDLE hContact )
 	else
 	{
 		MsgQueueEntry E;
-		while (MsgQueue_GetNext(hContact, E) != 0);
+		while (MsgQueue_GetNext(hContact, E) != 0)
+			free( E.message );
 	}
 }

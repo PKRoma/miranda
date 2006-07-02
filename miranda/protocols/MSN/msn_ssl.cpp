@@ -116,13 +116,13 @@ void SSL_WinInet::applyProxy( HINTERNET parHandle )
 	MSN_DebugLog( "Applying proxy parameters..." );
 
 	if ( !MSN_GetStaticString( "NLProxyAuthUser", NULL, tBuffer, SSL_BUF_SIZE ))
-		f_InternetSetOption( parHandle, INTERNET_OPTION_PROXY_USERNAME, tBuffer, strlen( tBuffer ));
+		f_InternetSetOption( parHandle, INTERNET_OPTION_PROXY_USERNAME, tBuffer, strlen( tBuffer )+1);
 	else
 		MSN_DebugLog( "Warning: proxy user name is required but missing" );
 
 	if ( !MSN_GetStaticString( "NLProxyAuthPassword", NULL, tBuffer, SSL_BUF_SIZE )) {
 		MSN_CallService( MS_DB_CRYPT_DECODESTRING, strlen( tBuffer ), ( LPARAM )tBuffer );
-		f_InternetSetOption( parHandle, INTERNET_OPTION_PROXY_PASSWORD, tBuffer, strlen( tBuffer ));
+		f_InternetSetOption( parHandle, INTERNET_OPTION_PROXY_PASSWORD, tBuffer, strlen( tBuffer )+1);
 	}
 	else MSN_DebugLog( "Warning: proxy user password is required but missing" );
 }
@@ -154,12 +154,6 @@ char* SSL_WinInet::getSslResult( char* parUrl, char* parAuthInfo )
 		INTERNET_FLAG_RELOAD |
 		INTERNET_FLAG_SECURE;
 
-	const DWORD tInternetFlags =
-		INTERNET_FLAG_NO_COOKIES |
-		INTERNET_FLAG_NO_UI |
-		INTERNET_FLAG_PRAGMA_NOCACHE |
-		INTERNET_FLAG_SECURE;
-
 	HINTERNET tNetHandle;
 	char* tBuffer = ( char* )alloca( SSL_BUF_SIZE );
 
@@ -179,13 +173,14 @@ char* SSL_WinInet::getSslResult( char* parUrl, char* parAuthInfo )
 				return NULL;
 			}
 
-			mir_snprintf( tBuffer, SSL_BUF_SIZE, "https=http://%s:%d", szProxy, tPortNumber );
+			mir_snprintf( tBuffer, SSL_BUF_SIZE, "https=http://%s:%d http=http://%s:%d", 
+				szProxy, tPortNumber, szProxy, tPortNumber );
 
-			tNetHandle = f_InternetOpen( "MSMSGS", INTERNET_OPEN_TYPE_PROXY, tBuffer, NULL, tInternetFlags );
+			tNetHandle = f_InternetOpen( "MSMSGS", INTERNET_OPEN_TYPE_PROXY, tBuffer, NULL, 0 );
 		}
-		else tNetHandle = f_InternetOpen( "MSMSGS", INTERNET_OPEN_TYPE_PRECONFIG, NULL, NULL, tInternetFlags );
+		else tNetHandle = f_InternetOpen( "MSMSGS", INTERNET_OPEN_TYPE_PRECONFIG, NULL, NULL, 0 );
 	}
-	else tNetHandle = f_InternetOpen( "MSMSGS", INTERNET_OPEN_TYPE_DIRECT, NULL, NULL, tInternetFlags );
+	else tNetHandle = f_InternetOpen( "MSMSGS", INTERNET_OPEN_TYPE_DIRECT, NULL, NULL, 0 );
 
 	if ( tNetHandle == NULL ) {
 		MSN_DebugLog( "InternetOpen() failed" );
@@ -218,24 +213,25 @@ char* SSL_WinInet::getSslResult( char* parUrl, char* parAuthInfo )
 
 	char* tSslAnswer = NULL;
 
-	HINTERNET tUrlHandle = f_InternetConnect( tNetHandle, parUrl, INTERNET_DEFAULT_HTTPS_PORT, "", "", INTERNET_SERVICE_HTTP, INTERNET_FLAG_NO_AUTO_REDIRECT | INTERNET_FLAG_NO_COOKIES, 0 );
-	if ( tUrlHandle != NULL ) {
-		HINTERNET tRequest = f_HttpOpenRequest( tUrlHandle, "GET", tObjectName, NULL, "", NULL, tFlags, NULL );
+	HINTERNET tUrlHandle = f_InternetConnect( tNetHandle, parUrl, INTERNET_DEFAULT_HTTPS_PORT, "", "", INTERNET_SERVICE_HTTP, 0, 0 );
+	if ( tUrlHandle != NULL ) 
+	{
+		HINTERNET tRequest = f_HttpOpenRequest( tUrlHandle, "GET", tObjectName, 
+			parAuthInfo ? NULL: HTTP_VERSIONA, NULL, NULL, tFlags, NULL );
 		if ( tRequest != NULL ) {
 			DWORD tBufSize;
-			bool  bProxyParamsSubstituted = false;
 
 			unsigned tm = 3000;
-			f_InternetSetOption( tUrlHandle, INTERNET_OPTION_CONNECT_TIMEOUT, &tm, sizeof(tm));
-			f_InternetSetOption( tUrlHandle, INTERNET_OPTION_SEND_TIMEOUT, &tm, sizeof(tm));
-			f_InternetSetOption( tUrlHandle, INTERNET_OPTION_RECEIVE_TIMEOUT, &tm, sizeof(tm));
- 
-			if ( tUsesProxy )
-				applyProxy( tUrlHandle );
+			f_InternetSetOption( tRequest, INTERNET_OPTION_CONNECT_TIMEOUT, &tm, sizeof(tm));
+			f_InternetSetOption( tRequest, INTERNET_OPTION_SEND_TIMEOUT, &tm, sizeof(tm));
+			f_InternetSetOption( tRequest, INTERNET_OPTION_RECEIVE_TIMEOUT, &tm, sizeof(tm));
+
+		if ( tUsesProxy && MSN_GetByte( "NLUseProxyAuth", 0  ))
+			applyProxy( tRequest );
 
 LBL_Restart:
 			MSN_DebugLog( "Sending request..." );
-			DWORD tErrorCode = f_HttpSendRequest( tRequest, ( parAuthInfo != NULL ) ? parAuthInfo : "", DWORD(-1), NULL, 0 );
+			DWORD tErrorCode = f_HttpSendRequest( tRequest, parAuthInfo, DWORD(-1), NULL, 0 );
 			if ( tErrorCode == 0 ) {
 				TWinErrorCode errCode;
 				MSN_DebugLog( "HttpSendRequest() failed with error %ld", errCode.mErrorCode );
@@ -259,16 +255,13 @@ LBL_Restart:
 					tSslAnswer = getSslResult( tBuffer, parAuthInfo );
 					break;
 
-				case HTTP_STATUS_DENIED:
-				case HTTP_STATUS_PROXY_AUTH_REQ:
-					if ( tUsesProxy && !bProxyParamsSubstituted ) {
-						bProxyParamsSubstituted = true;
-						applyProxy( tUrlHandle );
-						readInput( tRequest );
-						goto LBL_Restart;
-					}
-
-					// else fall down to display the error dialog
+				case HTTP_STATUS_OK:
+				LBL_PrintHeaders:
+					tBufSize = SSL_BUF_SIZE;
+					f_HttpQueryInfo( tRequest, HTTP_QUERY_RAW_HEADERS_CRLF, tBuffer, &tBufSize, NULL );
+					MSN_DebugLog( "SSL response: '%s'", tBuffer );
+					tSslAnswer = dwCode == HTTP_STATUS_OK ? strdup( tBuffer ) : NULL;
+					break;
 
 				case ERROR_INTERNET_HTTP_TO_HTTPS_ON_REDIR:
 				case ERROR_INTERNET_INCORRECT_PASSWORD:
@@ -286,14 +279,6 @@ LBL_Restart:
 					}
 
 					// else fall into the general error handling routine
-
-				case HTTP_STATUS_OK:
-				LBL_PrintHeaders:
-					tBufSize = SSL_BUF_SIZE;
-					f_HttpQueryInfo( tRequest, HTTP_QUERY_RAW_HEADERS_CRLF, tBuffer, &tBufSize, NULL );
-					MSN_DebugLog( "SSL answer: '%s'", tBuffer );
-					tSslAnswer = strdup( tBuffer );
-					break;
 
 				default:
 					tBufSize = SSL_BUF_SIZE;
@@ -462,7 +447,7 @@ char* SSL_OpenSsl::getSslResult( char* parUrl, char* parAuthInfo )
 		nls.szProxyAuthUser = NEWSTR_ALLOCA(nls.szProxyAuthUser);
 		MSN_CallService(MS_NETLIB_SETUSERSETTINGS,WPARAM(hNetlibUser),LPARAM(&nls));
 	}
-	
+		
 	if ( h == NULL )
 		return NULL;
 
