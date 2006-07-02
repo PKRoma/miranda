@@ -457,7 +457,7 @@ int RTL_Detect(WCHAR *pszwText)
                 n++;
         }
         free(infoTypeC2);
-        return(n >= 3 ? 1 : 0);
+        return(n >= 2 ? 1 : 0);
         //_DebugTraceA("NO RTL text detected");
     }
     return 0;

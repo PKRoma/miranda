@@ -2838,7 +2838,7 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
 
                 if(dat->dwEventIsShown & MWF_SHOW_SCROLLINGDISABLED)
                     break;
-                if(!IsIconic(dat->pContainer->hwnd)) {
+                if(!IsIconic(dat->pContainer->hwnd) || 1) {
                     dat->dwFlags &= ~MWF_DEFERREDSCROLL;
                     if(dat->hwndLog) {
 						dat->needIEViewScroll = TRUE;
@@ -2850,6 +2850,14 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                         if(lParam)
                             SendMessage(hwnd, WM_SIZE, 0, 0);
 
+                        if(wParam == 1 && lParam == 1) {
+                            RECT rc;
+                            int len;
+
+                            GetClientRect(hwnd, &rc);
+                            len = GetWindowTextLengthA(hwnd);
+                            SendDlgItemMessage(hwndDlg, IDC_LOG, EM_SETSEL, len - 1, len - 1);
+                        }
                         si.cbSize = sizeof(si);
                         si.fMask = SIF_PAGE | SIF_RANGE | SIF_POS;;
                         GetScrollInfo(GetDlgItem(hwndDlg, IDC_LOG), SB_VERT, &si);
@@ -2866,7 +2874,6 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                 }
                 else
                     dat->dwFlags |= MWF_DEFERREDSCROLL;
-                
                 return 0;
             }
         case DM_FORCESCROLL:
@@ -3397,7 +3404,7 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                 SendMessage(dat->pContainer->hwnd, DM_QUERYCLIENTAREA, 0, (LPARAM)&rcClient);
                 MoveWindow(hwndDlg, rcClient.left, rcClient.top, (rcClient.right - rcClient.left), (rcClient.bottom - rcClient.top), TRUE);
                 if(dat->dwFlags & MWF_WASBACKGROUNDCREATE) {
-                    POINT pt = {0};;
+                    POINT pt = {0};
                     
                     dat->dwFlags &= ~MWF_WASBACKGROUNDCREATE;
                     SendMessage(hwndDlg, WM_SIZE, 0, 0);

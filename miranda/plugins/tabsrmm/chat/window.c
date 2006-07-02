@@ -2080,7 +2080,7 @@ LABEL_SHOWWINDOW:
 
                 if(dat->dwEventIsShown & MWF_SHOW_SCROLLINGDISABLED)
                     break;
-                if(!IsIconic(dat->pContainer->hwnd)) {
+                if(!IsIconic(dat->pContainer->hwnd) || 1) {
                     HWND hwnd = GetDlgItem(hwndDlg, IDC_CHAT_LOG);
 
                     dat->dwFlags &= ~MWF_DEFERREDSCROLL;

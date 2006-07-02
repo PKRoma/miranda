@@ -1684,10 +1684,10 @@ BOOL CALLBACK DlgProcTabConfig(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPa
             SendDlgItemMessage(hwndDlg, IDC_TABWIDTHSPIN, UDM_SETPOS, 0, myGlobals.tabConfig.m_fixedwidth);
             SetDlgItemInt(hwndDlg, IDC_TABWIDTH, myGlobals.tabConfig.m_fixedwidth, TRUE);
 
-            SendDlgItemMessage(hwndDlg, IDC_TABBORDERSPINOUTER, UDM_SETRANGE, 0, MAKELONG(30, 0));
-            SendDlgItemMessage(hwndDlg, IDC_TABBORDERSPINOUTERRIGHT, UDM_SETRANGE, 0, MAKELONG(30, 0));
+            SendDlgItemMessage(hwndDlg, IDC_TABBORDERSPINOUTER, UDM_SETRANGE, 0, MAKELONG(50, 0));
+            SendDlgItemMessage(hwndDlg, IDC_TABBORDERSPINOUTERRIGHT, UDM_SETRANGE, 0, MAKELONG(50, 0));
             SendDlgItemMessage(hwndDlg, IDC_TABBORDERSPINOUTERTOP, UDM_SETRANGE, 0, MAKELONG(40, 0));
-            SendDlgItemMessage(hwndDlg, IDC_TABBORDERSPINOUTERBOTTOM, UDM_SETRANGE, 0, MAKELONG(10, 0));
+            SendDlgItemMessage(hwndDlg, IDC_TABBORDERSPINOUTERBOTTOM, UDM_SETRANGE, 0, MAKELONG(40, 0));
 
             SendDlgItemMessage(hwndDlg, IDC_TABBORDERSPINOUTER, UDM_SETPOS, 0, (int)DBGetContactSettingByte(NULL, SRMSGMOD_T, g_skinnedContainers ? "S_tborder_outer_left" : "tborder_outer_left", 2));
             SendDlgItemMessage(hwndDlg, IDC_TABBORDERSPINOUTERRIGHT, UDM_SETPOS, 0, (int)DBGetContactSettingByte(NULL, SRMSGMOD_T, g_skinnedContainers ? "S_tborder_outer_right" : "tborder_outer_right", 2));

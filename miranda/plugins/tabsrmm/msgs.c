@@ -958,7 +958,7 @@ static int SplitmsgModulesLoaded(WPARAM wParam, LPARAM lParam)
     if(ServiceExists(MS_FAVATAR_GETINFO))
         myGlobals.g_FlashAvatarAvail = 1;
     
-    myGlobals.g_WantIEView = ServiceExists(MS_IEVIEW_WINDOW) && DBGetContactSettingByte(NULL, SRMSGMOD_T, "want_ieview", 0);
+    myGlobals.g_WantIEView = ServiceExists(MS_IEVIEW_WINDOW) && DBGetContactSettingByte(NULL, SRMSGMOD_T, "want_ieview", 1);
 	
 	if(ServiceExists(MS_IEVIEW_WINDOW))
 		HookEvent(ME_IEVIEW_OPTIONSCHANGED, IEViewOptionsChanged);

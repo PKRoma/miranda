@@ -46,6 +46,7 @@ char *TemplateNames[] = {
     "Error message"
 };
     
+/*
 TemplateSet LTR_Default = { TRUE, 
     _T("%I %S %N  %fm%*%&D%*%\\!: %?n%?S %?fd[%?T%?fd]%?|%M"),
     _T("%I %S %N  %fm%*%&D%*%\\!: %?n%?S %?fd[%?T%?fd]%?|%M"),
@@ -57,7 +58,21 @@ TemplateSet LTR_Default = { TRUE,
     _T("%I%S %D, %T, %e%l%M"),
     "Default RTL"
 };
+*/
 
+TemplateSet LTR_Default = { TRUE, 
+    _T("%I %S %N  %fm%*%&D%*%\\!: %?n%?S %?T%?|%M"),
+    _T("%I %S %N  %fm%*%&D%*%\\!: %?n%?S %?T%?|%M"),
+    _T("%I %S %N  %fm%*%&D%*%\\!: %?n%?S %?T%?|%M"),
+    _T("%I %S %N  %fm%*%&D%*%\\!: %?n%?S %?T%?|%M"),
+    _T("%S %T%|%M"),
+    _T("%S %T%|%M"),
+    _T("%I %S %fm%*%cd%&D, %&T%*, %N %M%! "),
+    _T("%I%S %D, %T, %e%l%M"),
+    "Default RTL"
+};
+
+/*
 TemplateSet RTL_Default = { TRUE, 
     _T("%I %S %N  %D%n%S %fd[%T%fd]%|%M"),
     _T("%I %S %N  %D%n%S %fd[%T%fd]%|%M"),
@@ -65,6 +80,19 @@ TemplateSet RTL_Default = { TRUE,
     _T("%I %S %N  %D%n%S %fd[%T%fd]%|%M"),
     _T("%S %fd[%T%fd]%|%M"),
     _T("%S %fd[%T%fd]%|%M"),
+    _T("%I%S %D, %T, %N %M%! "),
+    _T("%I%S %D, %T, %e%l%M"),
+    "Default RTL"
+};
+*/
+
+TemplateSet RTL_Default = { TRUE, 
+    _T("%I %S %N  %D%n%S %T%|%M"),
+    _T("%I %S %N  %D%n%S %T%|%M"),
+    _T("%I %S %N  %D%n%S %T%|%M"),
+    _T("%I %S %N  %D%n%S %T%|%M"),
+    _T("%S %T%|%M"),
+    _T("%S %T%|%M"),
     _T("%I%S %D, %T, %N %M%! "),
     _T("%I%S %D, %T, %e%l%M"),
     "Default RTL"

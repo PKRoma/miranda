@@ -1400,8 +1400,10 @@ BOOL CALLBACK DlgProcContainer(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPa
                     pContainer->dwFlags |= CNT_DEFERREDSIZEREQUEST;
                     break;
                 }
-                if(wParam == SIZE_MINIMIZED)
+                if(wParam == SIZE_MINIMIZED) {
+                    pContainer->hwndSaved = 0;
                     break;
+                }
 
                 if (pContainer->hwndStatus) {
                     RECT rcs;
@@ -1923,8 +1925,10 @@ panel_found:
 			if (LOWORD(wParam == WA_INACTIVE) && (HWND)lParam != myGlobals.g_hwndHotkeyHandler && GetParent((HWND)lParam) != hwndDlg) {
 				if (pContainer->dwFlags & CNT_TRANSPARENCY && pSetLayeredWindowAttributes != NULL)
 					pSetLayeredWindowAttributes(hwndDlg, g_ContainerColorKey, (BYTE)HIWORD(pContainer->dwTransparency), (/* pContainer->bSkinned ? LWA_COLORKEY :  */ 0) | (pContainer->dwFlags & CNT_TRANSPARENCY ? LWA_ALPHA : 0));
-                pContainer->hwndSaved = 0;
 			}
+            if(LOWORD(wParam) == WA_INACTIVE)
+                pContainer->hwndSaved = 0;
+
             if (LOWORD(wParam) != WA_ACTIVE)
                 break;
         case WM_MOUSEACTIVATE: {

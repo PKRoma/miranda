@@ -554,7 +554,7 @@ static char *CreateRTFHeader(struct MessageWindowData *dat)
         }
     }
     else {
-        AppendToBuffer(&buffer,&bufferEnd,&bufferAlloced,"\\li%u\\ri%u\\fi%u", 2*15, 2*15, 0);
+        AppendToBuffer(&buffer,&bufferEnd,&bufferAlloced,"\\li%u\\ri%u\\fi%u\\tx%u", 2*15, 2*15, 0, 70 * 15);
     }
 
     //AppendToBuffer(&buffer, &bufferEnd, &bufferAlloced, "}");
