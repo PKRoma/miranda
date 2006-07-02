@@ -647,7 +647,10 @@ static BOOL CALLBACK ContainerWndProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPA
 				if(!pContainer->bSkinned)
 					break;
 
-				if(g_framelessSkinmode) {
+                if(myGlobals.m_forcedSkinRefresh)
+                    IMG_RefreshItems();
+
+                if(g_framelessSkinmode) {
 					RECT rcWindow, rcClient;
 					HDC dcFrame = GetWindowDC(hwndDlg);
 					POINT pt, pt1;

@@ -9,7 +9,7 @@
 //
 #include <windows.h>
 #include "../../include/statusmodes.h"
-
+#include "version.rc"
 
 /////////////////////////////////////////////////////////////////////////////
 #undef APSTUDIO_READONLY_SYMBOLS
@@ -928,46 +928,6 @@ END
 IDI_TREEVIEWEXPAND      ICON                    "res/expand.ico"
 IDI_TREEVIEWCHECKED     ICON                    "res/checked.ico"
 IDI_TREEVIEWUNCHECKED   ICON                    "res/unchecked.ico"
-
-/////////////////////////////////////////////////////////////////////////////
-//
-// Version
-//
-
-VS_VERSION_INFO VERSIONINFO
- FILEVERSION 0,9,9,210
- PRODUCTVERSION 0,9,9,210
- FILEFLAGSMASK 0x17L
-#ifdef _DEBUG
- FILEFLAGS 0x1L
-#else
- FILEFLAGS 0x0L
-#endif
- FILEOS 0x4L
- FILETYPE 0x2L
- FILESUBTYPE 0x0L
-BEGIN
-    BLOCK "StringFileInfo"
-    BEGIN
-        BLOCK "000004b0"
-        BEGIN
-            VALUE "CompanyName", "Miranda IM project"
-            VALUE "FileDescription", "tabSRMM.dll"
-            VALUE "FileVersion", "0, 9, 9, 210"
-            VALUE "InternalName", "tabSRMsg"
-            VALUE "LegalCopyright", "Copyright (C) 2006"
-            VALUE "LegalTrademarks", "Licensed under the Gnu general public license V2 or any later version."
-            VALUE "OriginalFilename", "tabsrmm.dll"
-            VALUE "ProductName", "tabSRMM Message window plugin"
-            VALUE "ProductVersion", "0, 9, 9, 210"
-        END
-    END
-    BLOCK "VarFileInfo"
-    BEGIN
-        VALUE "Translation", 0x0, 1200
-    END
-END
-
 #endif    // Neutral resources
 /////////////////////////////////////////////////////////////////////////////
 
@@ -996,14 +956,12 @@ END
 BEGIN
     "#include <windows.h>\r\n"
     "#include ""../../include/statusmodes.h""\r\n"
-    "\r\n"
-    "\0"
+    "#include ""version.rc""\r\n"
 END
 
 3 TEXTINCLUDE 
 BEGIN
     "\r\n"
-    "\0"
 END
 
 #endif    // APSTUDIO_INVOKED

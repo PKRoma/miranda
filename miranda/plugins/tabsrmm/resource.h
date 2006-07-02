@@ -376,6 +376,8 @@
 #define IDC_ALWAYSTRIM2                 1290
 #define IDC_SKIN_LOADTEMPLATES          1290
 #define IDC_NOSKINNING                  1291
+#define IDC_SKIN_LOADTEMPLATES2         1291
+#define IDC_SKIN_REFRESH                1291
 #define IDC_AVADYNAMIC                  1292
 #define IDC_FLATTABS2                   1292
 #define IDC_USESNAPPING                 1293
