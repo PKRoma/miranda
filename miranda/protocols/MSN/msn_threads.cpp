@@ -53,7 +53,7 @@ void __cdecl msn_keepAliveThread( void* )
 				return;
 		}	}
 
-		msnPingTimeout = msnPingTimeoutCurrent;
+		msnPingTimeout = msnPingTimeoutCurrent * 2;
 
 		/*
 		 * if proxy is not used, every connection uses select() to send PNG
@@ -257,7 +257,7 @@ void __stdcall MSN_CloseConnections()
 		if ( T == NULL )
 			continue;
 
-		if ( T->mType == SERVER_SWITCHBOARD && T->s != NULL )
+		if ( T->mIsMainThread && T->s != NULL )
 			T->sendPacket( "OUT", NULL );
 	}
 
@@ -552,6 +552,7 @@ static void __cdecl forkthread_r(struct FORK_ARG *fa)
 		sttUnregisterThread( arg );
 		delete arg;
 
+		SetThreadPriority(GetCurrentThread(), THREAD_PRIORITY_TIME_CRITICAL);
 		MSN_CallService(MS_SYSTEM_THREAD_POP, 0, 0);
 	}
 	return;
@@ -586,6 +587,7 @@ static void __cdecl forkthread_r2(struct FORK_ARG2 *fa)
 		callercode(arg);
 	} __finally {
 		MSN_DebugLog( "Leaving thread %08X (%08X)", GetCurrentThreadId(), callercode );
+		SetThreadPriority(GetCurrentThread(), THREAD_PRIORITY_TIME_CRITICAL);
 		MSN_CallService(MS_SYSTEM_THREAD_POP, 0, 0);
 	}
 	return;

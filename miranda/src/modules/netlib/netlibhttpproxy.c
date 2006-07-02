@@ -455,7 +455,7 @@ int NetlibHttpGatewayRecv(struct NetlibConnection *nlc,char *buf,int len,int fla
 
 		if(nlc->nlu->user.pfnHttpGatewayUnwrapRecv && !(flags&MSG_NOHTTPGATEWAYWRAP)) {
 			PBYTE newBuffer;
-			newBuffer=nlc->nlu->user.pfnHttpGatewayUnwrapRecv(nlhrReply,dataBuffer,contentLength,&contentLength,realloc);
+			newBuffer=nlc->nlu->user.pfnHttpGatewayUnwrapRecv(nlhrReply,dataBuffer,contentLength,&contentLength,mir_realloc);
 			if(newBuffer==NULL) {
 				mir_free(dataBuffer);
 				NetlibHttpFreeRequestStruct(0,(LPARAM)nlhrReply);
