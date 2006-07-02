@@ -24,6 +24,7 @@ extern MYGLOBALS myGlobals;
 extern BOOL g_skinnedContainers;
 extern StatusItems_t StatusItems[];
 extern PAB MyAlphaBlend;
+extern ImageItem *g_glyphItem;
 
 #define PBS_PUSHDOWNPRESSED 6
 
@@ -48,6 +49,7 @@ typedef struct {
 	int     flatBtn;
     int     dimmed;
 	struct ContainerWindowData *pContainer;
+    ButtonItem *item;
 } MButtonCtrl;
 
 // External theme methods and properties
@@ -195,7 +197,32 @@ static void PaintWorker(MButtonCtrl *ctl, HDC hdcPaint) {
 			if(pt.x >= rcClient.right - 12)
 				clip = CreateRectRgn(rcClient.right - 12, 0, rcClient.right, rcClient.bottom);
 		}
-		if (ctl->flatBtn) {
+        if(ctl->item) {
+            RECT rcParent;
+            POINT pt;
+            HWND hwndParent = ctl->pContainer->hwnd;
+            ImageItem *imgItem = ctl->stateId == PBS_HOT ? ctl->item->imgHover : (ctl->stateId == PBS_PRESSED ? ctl->item->imgPressed : ctl->item->imgNormal);
+
+            if(imgItem == NULL)
+                goto default_draw_bg;
+
+            GetWindowRect(ctl->hwnd, &rcParent);
+            pt.x = rcParent.left;
+            pt.y = rcParent.top;
+
+            if(ctl->pContainer->bSkinned) {
+                ScreenToClient(hwndParent, &pt);
+
+                BitBlt(hdcMem, 0, 0, rcClient.right, rcClient.bottom, ctl->pContainer->cachedDC, pt.x, pt.y, SRCCOPY);
+                if(imgItem)
+                    DrawAlpha(hdcMem, &rcClient, 0, 0, 0, 0, 0, 0, 0, imgItem);
+            }
+            goto bg_done;
+        }
+
+default_draw_bg:
+
+		if(ctl->flatBtn) {
 			if(ctl->pContainer && ctl->pContainer->bSkinned) {
 				StatusItems_t *item, *realItem = 0;
 				if(ctl->bTitleButton)
@@ -338,6 +365,7 @@ nonflat_themed:
 				}
 			}
 		}
+bg_done:
 		if(clip) {
 			SelectClipRgn(hdcMem, 0);
 			DeleteObject(clip);
@@ -365,8 +393,29 @@ nonflat_themed:
             }
 		}
 
-		// If we have an icon or a bitmap, ignore text and only draw the image on the button
-		if (ctl->hIcon || ctl->hIconPrivate) {
+        if(ctl->item) {
+            HICON hIcon = 0;
+            LONG *glyphMetrics = ctl->stateId == PBS_HOT ? ctl->item->hoverGlyphMetrics : (ctl->stateId == PBS_PRESSED ? ctl->item->pressedGlyphMetrics : ctl->item->normalGlyphMetrics);
+
+            if((ctl->stateId == PBS_NORMAL || ctl->stateId == PBS_DISABLED) && ctl->item->dwFlags & BUTTON_NORMALGLYPHISICON)
+                hIcon = *((HICON *)ctl->item->normalGlyphMetrics[0]);
+            else if(ctl->item->dwFlags & BUTTON_PRESSEDGLYPHISICON && ctl->stateId == PBS_PRESSED)
+                hIcon = *((HICON *)ctl->item->pressedGlyphMetrics[0]);
+            else if(ctl->item->dwFlags & BUTTON_HOVERGLYPHISICON && ctl->stateId == PBS_HOT)
+                hIcon = *((HICON *)ctl->item->hoverGlyphMetrics[0]);
+
+            if(hIcon)
+                DrawIconEx(hdcMem, rcClient.right / 2 - 8, rcClient.bottom / 2 - 8, hIcon, 16, 16, 0, 0, DI_NORMAL);
+            else {
+                if(g_glyphItem) {
+                    MyAlphaBlend(hdcMem, (rcClient.right - glyphMetrics[2]) / 2, (rcClient.bottom - glyphMetrics[3]) / 2,
+                               glyphMetrics[2], glyphMetrics[3], g_glyphItem->hdc,
+                               glyphMetrics[0], glyphMetrics[1], glyphMetrics[2],
+                               glyphMetrics[3], g_glyphItem->bf);
+                }
+            }
+        }
+		else if (ctl->hIcon || ctl->hIconPrivate) {
 			int ix = (rcClient.right-rcClient.left)/2 - (myGlobals.m_smcxicon / 2);
 			int iy = (rcClient.bottom-rcClient.top)/2 - (myGlobals.m_smcyicon / 2);
             HICON hIconNew = ctl->hIconPrivate != 0 ? ctl->hIconPrivate : ctl->hIcon;
@@ -452,6 +501,7 @@ static LRESULT CALLBACK TSButtonWndProc(HWND hwndDlg, UINT msg,  WPARAM wParam, 
             bct->bThemed = bct->bTitleButton = FALSE;
             bct->dimmed = 0;
 			bct->pContainer = NULL;
+            bct->item = NULL;
             LoadTheme(bct);
 			SetWindowLong(hwndDlg, 0, (LONG)bct);
 			if (((CREATESTRUCTA *)lParam)->lpszName) SetWindowTextA(hwndDlg, ((CREATESTRUCTA *)lParam)->lpszName);
@@ -637,6 +687,10 @@ static LRESULT CALLBACK TSButtonWndProc(HWND hwndDlg, UINT msg,  WPARAM wParam, 
 			break;
 		case BUTTONSETASFLATBTN + 15:
 			return bct->stateId;
+
+        case BUTTONSETASFLATBTN + 20:
+            bct->item = (ButtonItem *)lParam;
+            break;
 
 		case BUTTONADDTOOLTIP:
 		{

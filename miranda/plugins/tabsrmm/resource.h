@@ -8,7 +8,6 @@
 #define IDD_TABCONFIG                   4
 #define IDD_VARIABLEHELP                5
 #define IDD_ABOUT                       7
-#define IDD_FIRSTTIME                   8
 #define IDR_CONTEXT                     180
 #define IDM_PASTEFORMATTED              181
 #define IDM_CUT                         182
@@ -235,7 +234,6 @@
 #define IDC_PRIVATESPLITTER             1182
 #define IDC_ALWAYSFIXED                 1182
 #define IDC_CNTPRIVATE                  1182
-#define IDC_IEVEIW                      1182
 #define IDC_STYLEDTABS                  1182
 #define IDC_NEWSPLITLAYOUT              1183
 #define IDC_O_NOTABS                    1184
@@ -262,7 +260,6 @@
 #define IDC_DONTFLASH                   1206
 #define IDC_RADIO1                      1207
 #define IDC_LOGISGLOBAL                 1207
-#define IDC_COMPACTTHEME                1207
 #define IDC_O_FLASHDEFAULT              1208
 #define IDC_FLASHDEFAULT                1209
 #define IDC_DEFAULTCONTAINERMODE        1210
@@ -372,12 +369,10 @@
 #define IDC_FLATTABS                    1289
 #define IDC_FLASHICON                   1289
 #define IDC_USEPRIVATETITLE             1289
-#define IDC_SHOWAVATARS                 1289
 #define IDC_ALWAYSTRIM                  1289
 #define IDC_SKIN_LOADFONTS              1289
 #define IDC_SYNCSOUNDS                  1290
 #define IDC_FLASHLABEL                  1290
-#define IDC_SHOWINFOPANEL               1290
 #define IDC_ALWAYSTRIM2                 1290
 #define IDC_SKIN_LOADTEMPLATES          1290
 #define IDC_NOSKINNING                  1291
@@ -487,7 +482,6 @@
 #define IDC_CHECK3                      1395
 #define IDC_INFOPANEL                   1395
 #define IDC_SUPPORT                     1396
-#define IDC_FANCYTHEME                  1397
 #define IDC_CUSTOM1                     1399
 #define IDC_QHTM                        1399
 #define IDC_WHITERECT                   2000
@@ -609,12 +603,10 @@
 #define ID_PROTOMENU_SENDTEXTFORMATTING 40167
 #define ID_SENDTEXTFORMATTING_GLOBAL    40169
 #define ID_Menu40228                    40170
-#define ID_GLOBAL_SIMPLETAGS            40171
 #define ID_GLOBAL_OFF                   40172
 #define ID_SENDTEXTFORMATTING_THISCONTACT 40173
 #define ID_THISCONTACT_GLOBALSETTING    40174
 #define ID_THISCONTACT_BBCODE           40175
-#define ID_THISCONTACT_SIMPLETAGS       40176
 #define ID_THISCONTACT_OFF              40177
 #define ID_GLOBAL_BBCODE                40178
 #define ID_PROTOMENU_FAVORITES          40179
@@ -677,6 +669,10 @@
 #define ID_VISIBILITY_DEFAULT           40241
 #define ID_VISIBILITY_HIDDENFORTHISCONTACT 40242
 #define ID_VISIBILITY_VISIBLEFORTHISCONTACT 40243
+#define ID_LOGMENU_USEADVANCEDTEMPLATE  40244
+#define ID_LOGMENU_USESIMPLETEMPLATE    40245
+#define ID_MESSAGELOG_USESIMPLETEMPLATES 40246
+#define ID_HELP_VIEWRELEASENOTES        40247
 #define IDC_STATIC                      -1
 
 // Next default values for new objects
@@ -684,7 +680,7 @@
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NEXT_RESOURCE_VALUE        10
-#define _APS_NEXT_COMMAND_VALUE         40244
+#define _APS_NEXT_COMMAND_VALUE         40248
 #define _APS_NEXT_CONTROL_VALUE         1400
 #define _APS_NEXT_SYMED_VALUE           40282
 #endif

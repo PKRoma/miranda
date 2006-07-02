@@ -67,8 +67,10 @@ void HandleMenuEntryFromhContact(int iSelection)
         SendMessage(hWnd, DM_QUERYCONTAINER, 0, (LPARAM)&pContainer);
         if(pContainer) {
             ActivateExistingTab(pContainer, hWnd);
-            if(GetForegroundWindow() != pContainer->hwnd)
-                SetForegroundWindow(pContainer->hwnd);
+            pContainer->hwndSaved = 0;
+            SetForegroundWindow(pContainer->hwnd);
+            SetActiveWindow(pContainer->hwnd);
+            SetFocus(pContainer->hwndActive);
         }
         else
             CallService(MS_MSG_SENDMESSAGE, (WPARAM)iSelection, 0);

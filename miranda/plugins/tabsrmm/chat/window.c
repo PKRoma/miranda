@@ -82,6 +82,67 @@ static BOOL IsStringValidLink(char *pszText)
     return(strstr(pszText, "://") == NULL ? FALSE : TRUE);
 }
 
+static void Chat_UpdateWindowState(HWND hwndDlg, struct MessageWindowData *dat, UINT msg)
+{
+    HWND hwndTab = GetParent(hwndDlg);
+    SESSION_INFO *si = dat->si;
+
+    if(msg == WM_ACTIVATE) {
+        if (dat->pContainer->dwFlags & CNT_TRANSPARENCY && pSetLayeredWindowAttributes != NULL) {
+            DWORD trans = LOWORD(dat->pContainer->dwTransparency);
+            pSetLayeredWindowAttributes(dat->pContainer->hwnd, g_ContainerColorKey, (BYTE)trans, (dat->pContainer->bSkinned ? LWA_COLORKEY : 0) | (dat->pContainer->dwFlags & CNT_TRANSPARENCY ? LWA_ALPHA : 0));
+        }
+    }
+
+    if(dat->pContainer->hwndSaved == hwndDlg)
+        return;
+
+    dat->pContainer->hwndSaved = hwndDlg;
+
+    //_DebugTraceW(L"updating CHAT state for: %s", dat->szNickname);
+
+    SetActiveSession(si->pszID, si->pszModule);
+    dat->hTabIcon = dat->hTabStatusIcon;
+
+    if (dat->iTabID >= 0) {
+        //ConfigureSideBar(hwndDlg, dat);
+
+        if(DBGetContactSettingWord(si->hContact, si->pszModule ,"ApparentMode", 0) != 0)
+            DBWriteContactSettingWord(si->hContact, si->pszModule ,"ApparentMode",(LPARAM) 0);
+        if(CallService(MS_CLIST_GETEVENT, (WPARAM)si->hContact, (LPARAM)0))
+            CallService(MS_CLIST_REMOVEEVENT, (WPARAM)si->hContact, (LPARAM)szChatIconString);
+
+        SendMessage(hwndDlg, GC_UPDATETITLE, 0, 1);
+        dat->dwTickLastEvent = 0;
+        dat->dwFlags &= ~MWF_DIVIDERSET;
+        if(KillTimer(hwndDlg, TIMERID_FLASHWND) || dat->iFlashIcon) {
+            FlashTab(dat, hwndTab, dat->iTabID, &dat->bTabFlash, FALSE, dat->hTabIcon);
+            dat->mayFlashTab = FALSE;
+            dat->iFlashIcon = 0;
+        }
+        if(dat->pContainer->dwFlashingStarted != 0) {
+            FlashContainer(dat->pContainer, 0, 0);
+            dat->pContainer->dwFlashingStarted = 0;
+        }
+        dat->pContainer->dwFlags &= ~CNT_NEED_UPDATETITLE;
+
+        if(dat->dwFlags & MWF_NEEDCHECKSIZE)
+            PostMessage(hwndDlg, DM_SAVESIZE, 0, 0);		
+
+        if (myGlobals.m_AutoLocaleSupport && dat->hContact != 0) {
+            if(dat->hkl == 0)
+                SendMessage(hwndDlg, DM_LOADLOCALE, 0, 0);
+            PostMessage(hwndDlg, DM_SETLOCALE, 0, 0);
+        }
+        SetFocus(GetDlgItem(hwndDlg, IDC_CHAT_MESSAGE));
+        //UpdateStatusBar(hwndDlg, dat);
+        dat->dwLastActivity = dat->dwLastUpdate = GetTickCount();
+        dat->pContainer->dwLastActivity = dat->dwLastActivity;
+        UpdateContainerMenu(hwndDlg, dat);
+        UpdateTrayMenuState(dat, FALSE);
+    }
+}
+
 static void	InitButtons(HWND hwndDlg, SESSION_INFO* si)
 {
     BOOL isFlat = DBGetContactSettingByte(NULL, SRMSGMOD_T, "tbflat", 1);
@@ -328,8 +389,14 @@ static LRESULT CALLBACK MessageSubclassProc(HWND hwnd, UINT msg, WPARAM wParam, 
             
             GetWindowRect(GetDlgItem(hwndParent, IDC_CHAT_LOG), &rc);
             if(PtInRect(&rc, pt)) {
-                if(mwdat->hwndLog != 0)			// doesn't work with IEView
-                    return 0;
+                short wDirection = (short)HIWORD(wParam);
+
+                if(LOWORD(wParam) & MK_SHIFT || DBGetContactSettingByte(NULL, SRMSGMOD_T, "fastscroll", 0)) {
+                    if(wDirection < 0)
+                        SendMessage(GetDlgItem(hwndParent, IDC_CHAT_LOG), WM_VSCROLL, MAKEWPARAM(SB_PAGEDOWN, 0), 0);
+                    else if(wDirection > 0)
+                        SendMessage(GetDlgItem(hwndParent, IDC_CHAT_LOG), WM_VSCROLL, MAKEWPARAM(SB_PAGEUP, 0), 0);
+                }
                 else
                     SendMessage(GetDlgItem(hwndParent, IDC_CHAT_LOG), WM_MOUSEWHEEL, wParam, lParam);
                 return 0;
@@ -463,9 +530,38 @@ default_process:
             BOOL isShift = GetKeyState(VK_SHIFT) & 0x8000;
             BOOL isCtrl = GetKeyState(VK_CONTROL) & 0x8000;
             BOOL isAlt = GetKeyState(VK_MENU) & 0x8000;
-            
- 			if (wParam == VK_RETURN) 
-			{
+
+            if(isCtrl && isAlt && !isShift) {
+                switch (wParam) {
+                    case VK_UP:
+                    case VK_DOWN:
+                    case VK_PRIOR:
+                    case VK_NEXT:
+                    case VK_HOME:
+                    case VK_END:
+                    {
+                        WPARAM wp = 0;
+
+                        if (wParam == VK_UP)
+                            wp = MAKEWPARAM(SB_LINEUP, 0);
+                        else if (wParam == VK_PRIOR)
+                            wp = MAKEWPARAM(SB_PAGEUP, 0);
+                        else if (wParam == VK_NEXT)
+                            wp = MAKEWPARAM(SB_PAGEDOWN, 0);
+                        else if (wParam == VK_HOME)
+                            wp = MAKEWPARAM(SB_TOP, 0);
+                        else if (wParam == VK_END) {
+                            SendMessage(hwndParent, DM_SCROLLLOGTOBOTTOM, 0, 0);
+                            return 0;
+                        } else if (wParam == VK_DOWN)
+                            wp = MAKEWPARAM(SB_LINEDOWN, 0);
+
+                        SendMessage(GetDlgItem(hwndParent, IDC_CHAT_LOG), WM_VSCROLL, wp, 0);
+                        return 0;
+                    }
+                }
+            }
+ 			if (wParam == VK_RETURN) {
 				dat->szTabSave[0] = '\0';
 				if (((isCtrl) != 0) ^ (0 != myGlobals.m_SendOnEnter)) 
 				{
@@ -1446,53 +1542,10 @@ BOOL CALLBACK RoomWndProc(HWND hwndDlg,UINT uMsg,WPARAM wParam,LPARAM lParam)
         case WM_SETFOCUS:
             if(g_sessionshutdown)
                 break;
-            SetActiveSession(si->pszID, si->pszModule);
-            dat->hTabIcon = dat->hTabStatusIcon;
-            if(GetTickCount() - dat->dwLastUpdate < (DWORD)200) {
-                SendMessage(hwndDlg, GC_UPDATETITLE, 0, 1);
-                SetFocus(GetDlgItem(hwndDlg, IDC_CHAT_MESSAGE));
-                //if(dat->dwFlags & MWF_DEFERREDSCROLL)
-                //    SendMessage(hwndDlg, DM_SCROLLLOGTOBOTTOM, 0, 0);
-                //UpdateStatusBar(hwndDlg, dat);
-                return 1;
-            }
-            if (dat->iTabID >= 0) {
-                //ConfigureSideBar(hwndDlg, dat);
 
-                if(DBGetContactSettingWord(si->hContact, si->pszModule ,"ApparentMode", 0) != 0)
-                    DBWriteContactSettingWord(si->hContact, si->pszModule ,"ApparentMode",(LPARAM) 0);
-                if(CallService(MS_CLIST_GETEVENT, (WPARAM)si->hContact, (LPARAM)0))
-                    CallService(MS_CLIST_REMOVEEVENT, (WPARAM)si->hContact, (LPARAM)szChatIconString);
-                
-                SendMessage(hwndDlg, GC_UPDATETITLE, 0, 1);
-                dat->dwTickLastEvent = 0;
-                dat->dwFlags &= ~MWF_DIVIDERSET;
-                if(KillTimer(hwndDlg, TIMERID_FLASHWND) || dat->iFlashIcon) {
-                    FlashTab(dat, hwndTab, dat->iTabID, &dat->bTabFlash, FALSE, dat->hTabIcon);
-                    dat->mayFlashTab = FALSE;
-                    dat->iFlashIcon = 0;
-                }
-                if(dat->pContainer->dwFlashingStarted != 0) {
-                    FlashContainer(dat->pContainer, 0, 0);
-                    dat->pContainer->dwFlashingStarted = 0;
-                }
-                dat->pContainer->dwFlags &= ~CNT_NEED_UPDATETITLE;
+            Chat_UpdateWindowState(hwndDlg, dat, WM_SETFOCUS);
+            SetFocus(GetDlgItem(hwndDlg, IDC_CHAT_MESSAGE));
 
-                if(dat->dwFlags & MWF_NEEDCHECKSIZE)
-                    PostMessage(hwndDlg, DM_SAVESIZE, 0, 0);		
-
-                if (myGlobals.m_AutoLocaleSupport && dat->hContact != 0) {
-                    if(dat->hkl == 0)
-                        SendMessage(hwndDlg, DM_LOADLOCALE, 0, 0);
-                    PostMessage(hwndDlg, DM_SETLOCALE, 0, 0);
-                }
-                SetFocus(GetDlgItem(hwndDlg, IDC_CHAT_MESSAGE));
-                //UpdateStatusBar(hwndDlg, dat);
-                dat->dwLastActivity = dat->dwLastUpdate = GetTickCount();
-                dat->pContainer->dwLastActivity = dat->dwLastActivity;
-                UpdateContainerMenu(hwndDlg, dat);
-                UpdateTrayMenuState(dat, FALSE);
-            }
             return 1;
 
 		case GC_SETWNDPROPS:
@@ -1910,9 +1963,11 @@ LABEL_SHOWWINDOW:
 					SetForegroundWindow(hwndDlg);
 				}
 				return TRUE;
-			default:break;
+			default:
+            break;
 			}
-		}break;
+		}
+        break;
 
 		case DM_SPLITTERMOVED:
 		{	POINT pt;
@@ -1957,7 +2012,8 @@ LABEL_SHOWWINDOW:
 			}
 			else
 				x++;
-		}break;
+		}
+        break;
 
 		case GC_FIREHOOK:
 		{
@@ -1984,15 +2040,17 @@ LABEL_SHOWWINDOW:
 		case GC_CHANGEFILTERFLAG:
 		{
 			si->iLogFilterFlags = lParam;
-		}	break;
+		}	
+        break;
 
 		case GC_SHOWFILTERMENU:
-			{
-			RECT rc;
-    		HWND hwnd = CreateDialogParam(g_hInst, MAKEINTRESOURCE(IDD_FILTER), hwndDlg, FilterWndProc, (LPARAM)si);
-			GetWindowRect(GetDlgItem(hwndDlg, IDC_FILTER), &rc);
-			SetWindowPos(hwnd, HWND_TOP, rc.left-85, (IsWindowVisible(GetDlgItem(hwndDlg, IDC_FILTER))||IsWindowVisible(GetDlgItem(hwndDlg, IDC_CHAT_BOLD)))?rc.top-206:rc.top-186, 0, 0, SWP_NOSIZE|SWP_SHOWWINDOW);
-			}break;
+        {
+            RECT rc;
+            HWND hwnd = CreateDialogParam(g_hInst, MAKEINTRESOURCE(IDD_FILTER), hwndDlg, FilterWndProc, (LPARAM)si);
+            GetWindowRect(GetDlgItem(hwndDlg, IDC_FILTER), &rc);
+            SetWindowPos(hwnd, HWND_TOP, rc.left-85, (IsWindowVisible(GetDlgItem(hwndDlg, IDC_FILTER))||IsWindowVisible(GetDlgItem(hwndDlg, IDC_CHAT_BOLD)))?rc.top-206:rc.top-186, 0, 0, SWP_NOSIZE|SWP_SHOWWINDOW);
+        }
+        break;
 
 		case GC_SHOWCOLORCHOOSER:
 		{
@@ -2011,7 +2069,8 @@ LABEL_SHOWWINDOW:
 			
 			ColorWindow= CreateDialogParam(g_hInst, MAKEINTRESOURCE(IDD_COLORCHOOSER), hwndDlg, DlgProcColorToolWindow, (LPARAM) pCC);
 
-		}break;
+		}
+        break;
 
        // DM_ is used by the normal message windows - just make it compatible here.
         
@@ -2021,7 +2080,7 @@ LABEL_SHOWWINDOW:
 
                 if(dat->dwEventIsShown & MWF_SHOW_SCROLLINGDISABLED)
                     break;
-                if(!IsIconic(dat->pContainer->hwnd)) {
+                if(!IsIconic(dat->pContainer->hwnd) || 1) {
                     HWND hwnd = GetDlgItem(hwndDlg, IDC_CHAT_LOG);
 
                     dat->dwFlags &= ~MWF_DEFERREDSCROLL;
@@ -2080,71 +2139,12 @@ LABEL_SHOWWINDOW:
         break;
 
         case WM_ACTIVATE:
-            if (LOWORD(wParam) != WA_ACTIVE)
+            if (LOWORD(wParam) != WA_ACTIVE) {
+                dat->pContainer->hwndSaved = 0;
                 break;
+            }
         case WM_MOUSEACTIVATE:
-            if(g_sessionshutdown)
-                break;
-            dat->hTabIcon = dat->hTabStatusIcon;
-            SetActiveSession(si->pszID, si->pszModule);
-            if((GetTickCount() - dat->dwLastUpdate) < (DWORD)200) {
-                SendMessage(hwndDlg, GC_UPDATETITLE, 0, 1);
-                if (dat->pContainer->dwFlags & CNT_TRANSPARENCY && pSetLayeredWindowAttributes != NULL) {
-                    DWORD trans = LOWORD(dat->pContainer->dwTransparency);
-                    pSetLayeredWindowAttributes(dat->pContainer->hwnd, g_ContainerColorKey, (BYTE)trans, (dat->pContainer->bSkinned ? LWA_COLORKEY : 0) | (dat->pContainer->dwFlags & CNT_TRANSPARENCY ? LWA_ALPHA : 0));
-                }
-                if(dat->dwFlags & MWF_DEFERREDSCROLL)
-                    SendMessage(hwndDlg, DM_SCROLLLOGTOBOTTOM, 0, 0);
-                break;
-            }
-            
-            if(DBGetContactSettingWord(si->hContact, si->pszModule ,"ApparentMode", 0) != 0)
-                DBWriteContactSettingWord(si->hContact, si->pszModule ,"ApparentMode",(LPARAM) 0);
-            if(CallService(MS_CLIST_GETEVENT, (WPARAM)si->hContact, (LPARAM)0))
-                CallService(MS_CLIST_REMOVEEVENT, (WPARAM)si->hContact, (LPARAM)szChatIconString);
-
-            if (dat->iTabID == -1) {
-                _DebugPopup(dat->hContact, "ACTIVATE Critical: iTabID == -1");
-                break;
-            } else {
-                if (dat->pContainer->dwFlags & CNT_TRANSPARENCY && pSetLayeredWindowAttributes != NULL) {
-                    DWORD trans = LOWORD(dat->pContainer->dwTransparency);
-                    pSetLayeredWindowAttributes(dat->pContainer->hwnd, g_ContainerColorKey, (BYTE)trans, (dat->pContainer->bSkinned ? LWA_COLORKEY : 0) | (dat->pContainer->dwFlags & CNT_TRANSPARENCY ? LWA_ALPHA : 0));
-                }
-                //ConfigureSideBar(hwndDlg, dat);
-                SendMessage(hwndDlg, GC_UPDATETITLE, 0, 1);
-                dat->dwFlags &= ~MWF_DIVIDERSET;
-                dat->dwTickLastEvent = 0;
-                if(KillTimer(hwndDlg, TIMERID_FLASHWND) || dat->iFlashIcon) {
-                    FlashTab(dat, hwndTab, dat->iTabID, &dat->bTabFlash, FALSE, dat->hTabIcon);
-                    dat->mayFlashTab = FALSE;
-                    dat->iFlashIcon = 0;
-                }
-                if(dat->pContainer->dwFlashingStarted != 0) {
-                    FlashContainer(dat->pContainer, 0, 0);
-                    dat->pContainer->dwFlashingStarted = 0;
-                }
-                dat->pContainer->dwFlags &= ~CNT_NEED_UPDATETITLE;
-                if(dat->dwFlags & MWF_NEEDCHECKSIZE)
-                    PostMessage(hwndDlg, DM_SAVESIZE, 0, 0);			
-
-                if(dat->dwFlags & MWF_DEFERREDSCROLL)
-                    SendMessage(hwndDlg, DM_SCROLLLOGTOBOTTOM, 0, 0);
-
-                if (myGlobals.m_AutoLocaleSupport && dat->hContact != 0) {
-                    if(dat->hkl == 0)
-                        SendMessage(hwndDlg, DM_LOADLOCALE, 0, 0);
-                    PostMessage(hwndDlg, DM_SETLOCALE, 0, 0);
-                }
-                //UpdateStatusBar(hwndDlg, dat);
-                dat->dwLastActivity = dat->dwLastUpdate = GetTickCount();
-                dat->pContainer->dwLastActivity = dat->dwLastActivity;
-                UpdateContainerMenu(hwndDlg, dat);
-                /*
-                 * delete ourself from the tray menu..
-                 */
-                UpdateTrayMenuState(dat, FALSE);
-            }
+            Chat_UpdateWindowState(hwndDlg, dat, WM_ACTIVATE);
             return 1;
 
 		case WM_NOTIFY:
@@ -2968,6 +2968,9 @@ LABEL_SHOWWINDOW:
         case DM_SAVESIZE: {
                 RECT rcClient;
 
+                if(dat->dwFlags & MWF_NEEDCHECKSIZE)
+                    lParam = 0;
+
                 dat->dwFlags &= ~MWF_NEEDCHECKSIZE;
                 if(dat->dwFlags & MWF_WASBACKGROUNDCREATE) {
                     dat->dwFlags &= ~MWF_INITMODE;
@@ -2986,7 +2989,8 @@ LABEL_SHOWWINDOW:
                 }
                 else {
                     SendMessage(hwndDlg, WM_SIZE, 0, 0);
-                    PostMessage(hwndDlg, DM_SCROLLLOGTOBOTTOM, 1, 1);
+                    if(lParam == 0)
+                        PostMessage(hwndDlg, DM_SCROLLLOGTOBOTTOM, 1, 1);
                 }
                 return 0;
             }

@@ -81,7 +81,7 @@ typedef struct {
 #define MWF_ERRORSTATE 128
 #define MWF_DEFERREDREMAKELOG 256
 
-#define MWF_LOG_SHOWNICK 512
+#define MWF_LOG_NORMALTEMPLATES 512
 #define MWF_LOG_SHOWTIME 1024
 #define MWF_LOG_SHOWSECONDS 2048
 #define MWF_LOG_SHOWDATES 4096
@@ -130,8 +130,7 @@ typedef struct {
 #define SMODE_SENDLATER 8
 #define SMODE_NOACK 16
 
-#define SENDFORMAT_BBCODE 2
-#define SENDFORMAT_SIMPLE 1
+#define SENDFORMAT_BBCODE 1
 #define SENDFORMAT_NONE 0
 
 #define AVATARMODE_DYNAMIC 0
@@ -199,7 +198,7 @@ struct ContainerWindowData {
     POINT pLastPos;
     DWORD dwFlags, dwPrivateFlags;
     UINT  uChildMinHeight;
-    SIZE  oldSize;
+    SIZE  oldSize, preSIZE;
     POINT ptLast;
 	DWORD dwTransparency;
     int   iContainerIndex;
@@ -218,6 +217,7 @@ struct ContainerWindowData {
     HWND hWndOptions;
     BOOL bSizingLoop;
     int sb_NrTopButtons, sb_NrBottomButtons, sb_FirstButton;
+    int sb_TopHeight, sb_BottomHeight;
     TCHAR szTitleFormat[TITLE_FORMATLEN + 2];
     char szThemeFile[MAX_PATH];
     TemplateSet *ltr_templates, *rtl_templates;
@@ -234,6 +234,7 @@ struct ContainerWindowData {
 	int ncActive;
     HICON hTitleIcon;
     BOOL  repaintMenu;
+    HWND  hwndSaved;
 };
 
 #define STICK_ICON_MSG 10
@@ -375,6 +376,7 @@ struct MessageWindowData {
     char  szSep1[152], szMicroLf[128], szExtraLf[50];
     char  szSep1_RTL[152], szMicroLf_RTL[128];
     DWORD isAutoRTL;
+    int   nMax;            // max message size
 };
 
 typedef struct _recentinfo {
@@ -491,6 +493,7 @@ typedef struct _globals {
     int m_WheelDefault;
     BYTE m_WinVerMajor;
     BYTE m_WinVerMinor;
+    BYTE m_bIsXP;
     BYTE m_SideBarEnabled;
     HWND m_hwndClist;
     int  m_TabAppearance;

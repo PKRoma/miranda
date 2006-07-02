@@ -46,18 +46,33 @@ char *TemplateNames[] = {
     "Error message"
 };
     
+/*
 TemplateSet LTR_Default = { TRUE, 
-    _T("%I %S %N  %D%n%S %fd[%T%fd]%|%M"),
-    _T("%I %S %N  %D%n%S %fd[%T%fd]%|%M"),
-    _T("%I %S %N  %D%n%S %fd[%T%fd]%|%M"),
-    _T("%I %S %N, %D%n%S %fd[%T%fd]%|%M"),
+    _T("%I %S %N  %fm%*%&D%*%\\!: %?n%?S %?fd[%?T%?fd]%?|%M"),
+    _T("%I %S %N  %fm%*%&D%*%\\!: %?n%?S %?fd[%?T%?fd]%?|%M"),
+    _T("%I %S %N  %fm%*%&D%*%\\!: %?n%?S %?fd[%?T%?fd]%?|%M"),
+    _T("%I %S %N  %fm%*%&D%*%\\!: %?n%?S %?fd[%?T%?fd]%?|%M"),
     _T("%S %fd[%T%fd]%|%M"),
     _T("%S %fd[%T%fd]%|%M"),
-    _T("%I%S %D, %T, %N %M%! "),
+    _T("%I %S %fm%*%cd%&D, %&T%*, %N %M%! "),
+    _T("%I%S %D, %T, %e%l%M"),
+    "Default RTL"
+};
+*/
+
+TemplateSet LTR_Default = { TRUE, 
+    _T("%I %S %N  %fm%*%&D%*%\\!: %?n%?S %?T%?|%M"),
+    _T("%I %S %N  %fm%*%&D%*%\\!: %?n%?S %?T%?|%M"),
+    _T("%I %S %N  %fm%*%&D%*%\\!: %?n%?S %?T%?|%M"),
+    _T("%I %S %N  %fm%*%&D%*%\\!: %?n%?S %?T%?|%M"),
+    _T("%S %T%|%M"),
+    _T("%S %T%|%M"),
+    _T("%I %S %fm%*%cd%&D, %&T%*, %N %M%! "),
     _T("%I%S %D, %T, %e%l%M"),
     "Default RTL"
 };
 
+/*
 TemplateSet RTL_Default = { TRUE, 
     _T("%I %S %N  %D%n%S %fd[%T%fd]%|%M"),
     _T("%I %S %N  %D%n%S %fd[%T%fd]%|%M"),
@@ -69,12 +84,26 @@ TemplateSet RTL_Default = { TRUE,
     _T("%I%S %D, %T, %e%l%M"),
     "Default RTL"
 };
+*/
+
+TemplateSet RTL_Default = { TRUE, 
+    _T("%I %S %N  %D%n%S %T%|%M"),
+    _T("%I %S %N  %D%n%S %T%|%M"),
+    _T("%I %S %N  %D%n%S %T%|%M"),
+    _T("%I %S %N  %D%n%S %T%|%M"),
+    _T("%S %T%|%M"),
+    _T("%S %T%|%M"),
+    _T("%I%S %D, %T, %N %M%! "),
+    _T("%I%S %D, %T, %e%l%M"),
+    "Default RTL"
+};
 
 TemplateSet LTR_Active, RTL_Active;
 
 extern struct CREOleCallback    reOleCallback;
 extern BOOL                     cntHelpActive;
 extern MYGLOBALS                myGlobals;
+extern BOOL                     show_relnotes;
 
 extern HINSTANCE                g_hInst;
 static int                      helpActive = 0;
@@ -250,7 +279,7 @@ BOOL CALLBACK DlgProcTemplateEditor(HWND hwndDlg, UINT msg, WPARAM wParam, LPARA
                     }
                     break;
 				case IDC_VARIABLESHELP:
-					CallService(MS_UTILS_OPENURL, 0, (LPARAM)"http://www.miranda.or.at/forums/index.php/topic,610.0.html");
+					CallService(MS_UTILS_OPENURL, 0, (LPARAM)"http://miranda.or.at/tabsrmm-articles/tabsrmm-message-log-templates/");
 					break;
                 case IDC_EDITTEMPLATE:
                     if(HIWORD(wParam) == EN_CHANGE) {
@@ -372,10 +401,12 @@ BOOL CALLBACK DlgProcTemplateEditor(HWND hwndDlg, UINT msg, WPARAM wParam, LPARA
             dbei.pBlob = (iIndex == 6) ? (BYTE *)"is now offline (was online)" : (BYTE *)"The quick brown fox jumps over the lazy dog. The quick brown fox jumps over the lazy dog. The quick brown fox jumps over the lazy dog. The quick brown fox jumps over the lazy dog.";
             dbei.cbBlob = lstrlenA((char *)dbei.pBlob) + 1;
             dbei.flags = (iIndex == 1 || iIndex == 3 || iIndex == 5) ? DBEF_SENT : 0;
+            dbei.flags |= (teInfo->rtl ? DBEF_RTL : 0);
             dat->lastEventTime = (iIndex == 4 || iIndex == 5) ? time(NULL) - 1 : 0;
             dat->iLastEventType = MAKELONG(dbei.flags, dbei.eventType);
             SetWindowText(GetDlgItem(hwndDlg, IDC_PREVIEW), _T(""));
             dat->dwFlags = MWF_LOG_ALL;
+            dat->dwFlags |= (teInfo->rtl ? MWF_LOG_RTL : 0);
             dat->dwFlags = (iIndex == 0 || iIndex == 1) ? dat->dwFlags & ~MWF_LOG_GROUPMODE : dat->dwFlags | MWF_LOG_GROUPMODE;
             StreamInEvents(hwndDlg, 0, 1, 1, &dbei);
             SendDlgItemMessage(hwndDlg, IDC_PREVIEW, EM_SETSEL, -1, -1);
@@ -439,6 +470,8 @@ static char *var_helptxt[] = {
     "%fX:\tswitch to one of the predefined fonts, where X is a one character code and can have the following values (case sensitive as always):\\line d: -> font for date/timestamp\\line n: -> font for nickname\\line m: -> font for message text\\line M: -> font for \\b misc \\b0 events (file, URL, etc.)",
     "%cX:\tuse one of the predefined colors for the following text output (X is a number from 0 to 4, referring to the color index). Only useful together with the & modifier (see below) and maybe the %fX variable.",
     "\\line\\ul\\b About modifiers:\\ul0\\b0\\line\\line Currently, there are 3 different modifiers which can be used to alter the \\b behaviour\\b0  of most variables. Modifiers have to follow the % character immediately, however, their order is not important. Multiple modifiers are possible, but please note that some combinations don't make much sense.\
+\\line\\line The ? character means that the variable will be skipped when the message log is switched to \\b Simple Templates.\\b0 \
+\\line\\line The \\ character means that the variable will be skipped when the message log is using the normal template variable set. \
 \\line\\line The # character means that the variable does only apply to \\b old\\b0  events and will be ignored for new (unread events).\\line Contrary, the $ character does the opposite - the variable will only show up in new events. You can use these modifiers to get different message formatting for old and new events.\
 \\line\\line The & modifier means \\b skip font\\b0  . If being used, the variable will be printed without setting the font for the variables context. Effectively, the font which is currently selected remains valid.",
     "\\line \\ul\\b Some examples:\\ul0\\b0\\line\\par \\b %&N\\b0 -\tprints the nickname, but does not use the font which is configured for nicknames.\\par\
@@ -462,23 +495,38 @@ BOOL CALLBACK DlgProcTemplateHelp(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM 
              * send the help text
              */
 
+            SendDlgItemMessage(hwndDlg, IDC_HELPTEXT, EM_AUTOURLDETECT, (WPARAM) TRUE, 0);
+            SendDlgItemMessage(hwndDlg, IDC_HELPTEXT, EM_SETEVENTMASK, 0, ENM_LINK);
+
             if(lParam == 0) {
                 mir_snprintf(szHeader, 256, var_helptxt[0], 40*15, 40*15, 40*15);
                 while(var_helptxt[i] != NULL) {
                     mir_snprintf(szHeader, 2040, "{\\rtf1\\ansi\\deff0\\pard\\li%u\\fi-%u\\ri%u\\tx%u %s\\par}", 60*15, 60*15, 5*15, 60*15, Translate(var_helptxt[i++]));
                     SendDlgItemMessage(hwndDlg, IDC_HELPTEXT, EM_SETTEXTEX, (WPARAM)&stx, (LPARAM)szHeader);
                 }
+                SetWindowText(hwndDlg, TranslateT("Template editor help"));
             }
             else {
                 HANDLE hFile;
                 DWORD size, actual_read;
                 BYTE *buffer = 0;
                 char final_path[MAX_PATH];
-                
+
+                if(show_relnotes) {
+                    char **txt = (char **)lParam;
+                    char buf[2048];
+
+                    i = 1;
+                    while(txt[i] != NULL) {
+                        mir_snprintf(buf, 2048, "{\\rtf1\\ansi\\deff0\\pard\\li%u\\fi-%u\\ri%u\\tx%u %s\\par}", 30*15, 30*15, 5*15, 30*15, txt[i++]);
+                        SendDlgItemMessage(hwndDlg, IDC_HELPTEXT, EM_SETTEXTEX, (WPARAM)&stx, (LPARAM)buf);
+                    }
+                    SetWindowText(hwndDlg, _T("tabSRMM release notes"));
+                    goto dl_done;
+                }
                 CallService(MS_UTILS_PATHTOABSOLUTE, (WPARAM)lParam, (LPARAM)final_path);
                 _splitpath(final_path, NULL, NULL, szBasename, szExt);
                 if((hFile = CreateFileA(final_path, GENERIC_READ, FILE_SHARE_READ, NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL)) == INVALID_HANDLE_VALUE ) {
-                    MessageBox(0, TranslateT("Failed to open help file"), _T("tabSRMM"), MB_OK);
                     DestroyWindow(hwndDlg);
                     return FALSE;
                 }
@@ -489,16 +537,44 @@ BOOL CALLBACK DlgProcTemplateHelp(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM 
                 CloseHandle(hFile);
                 free(buffer);
             }
+dl_done:
             GetWindowRect(hwndDlg, &rc);
-            MoveWindow(hwndDlg, 0, rc.top, rc.right - rc.left, rc.bottom - rc.top, FALSE);
             if(lParam == 0)
-                SetWindowText(hwndDlg, TranslateT("Template editor help"));
-            else
-                SetWindowTextA(hwndDlg, szBasename);
+                MoveWindow(hwndDlg, 0, rc.top, rc.right - rc.left, rc.bottom - rc.top, FALSE);
             ShowWindow(hwndDlg, SW_SHOWNOACTIVATE);
             helpActive = 1;
             return TRUE;
         }
+        case WM_NOTIFY:
+            switch (((NMHDR *) lParam)->idFrom) {
+                case IDC_HELPTEXT:
+                    switch (((NMHDR *) lParam)->code) {
+                        case EN_LINK:
+                            switch (((ENLINK *) lParam)->msg) {
+                                case WM_SETCURSOR:
+                                    SetCursor(myGlobals.hCurHyperlinkHand);
+                                    SetWindowLong(hwndDlg, DWL_MSGRESULT, TRUE);
+                                    return TRUE;
+                                case WM_LBUTTONUP:
+                                    {
+                                        TEXTRANGEA tr;
+                                        CHARRANGE sel;
+                                        SendDlgItemMessage(hwndDlg, IDC_HELPTEXT, EM_EXGETSEL, 0, (LPARAM) & sel);
+                                        if (sel.cpMin != sel.cpMax)
+                                            break;
+                                        tr.chrg = ((ENLINK *) lParam)->chrg;
+                                        tr.lpstrText = malloc(tr.chrg.cpMax - tr.chrg.cpMin + 8);
+                                        SendDlgItemMessageA(hwndDlg, IDC_HELPTEXT, EM_GETTEXTRANGE, 0, (LPARAM) & tr);
+                                        CallService(MS_UTILS_OPENURL, 1, (LPARAM) tr.lpstrText);
+                                        SetFocus(GetDlgItem(hwndDlg, IDC_HELPTEXT));
+                                        free(tr.lpstrText);
+                                        break;
+                                    }
+                            }
+                            break;
+                    }
+            }
+            break;
         case WM_COMMAND:
             if(LOWORD(wParam) == IDOK || LOWORD(wParam) == IDCANCEL)
                 DestroyWindow(hwndDlg);
@@ -506,6 +582,7 @@ BOOL CALLBACK DlgProcTemplateHelp(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM 
         case WM_DESTROY:
             helpActive = 0;
             cntHelpActive = FALSE;
+            show_relnotes = FALSE;
             break;
     }
     return FALSE;

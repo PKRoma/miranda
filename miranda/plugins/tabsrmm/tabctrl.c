@@ -701,6 +701,10 @@ b_nonskinned:
                     DrawWuLine(dc, pt[1].x + 1, pt[1].y - 1, pt[0].x + 1, pt[0].y, myGlobals.tabConfig.colors[8]);
                     //LineTo(dc, pt[1].x, pt[1].y - 1);
                     //LineTo(dc, pt[0].x + 1, pt[0].y);
+                    if(rc.top > rcTabPage.bottom + 10 && !active) {
+                        DrawWuLine(dc, pt[0].x, pt[0].y - 1, pt[4].x, pt[4].y - 1, myGlobals.tabConfig.colors[9]);
+                        DrawWuLine(dc, pt[0].x + 1, pt[0].y, pt[4].x - 1, pt[4].y, myGlobals.tabConfig.colors[8]);
+                    }
                 }
                 else
                     LineTo(dc, pt[1].x, pt[1].y - 1);
@@ -807,6 +811,11 @@ b_nonskinned:
                     //LineTo(dc, pt[0].x, pt[0].y);
                     DrawWuLine(dc, pt[2].x, pt[2].y + 1, pt[1].x + 1, pt[1].y + 1, myGlobals.tabConfig.colors[8]);
                     DrawWuLine(dc, pt[1].x + 1, pt[1].y + 1, pt[0].x + 1, pt[0].y, myGlobals.tabConfig.colors[8]);
+
+                    if(rc.bottom < rcTabPage.top - 10 && !active) {
+                        DrawWuLine(dc, pt[0].x, pt[0].y + 1, pt[4].x, pt[4].y + 1, myGlobals.tabConfig.colors[9]);
+                        DrawWuLine(dc, pt[0].x + 1, pt[0].y, pt[4].x - 1, pt[4].y, myGlobals.tabConfig.colors[8]);
+                    }
                 }
                 else
                     LineTo(dc, pt[1].x, pt[1].y + 1);
@@ -1197,7 +1206,7 @@ static LRESULT CALLBACK TabControlSubclassProc(HWND hwnd, UINT msg, WPARAM wPara
 		{
 			TCHITTESTINFO tci = {0};
 
-            if((tabdat->dwStyle & TCS_BUTTONS && (GetKeyState(VK_CONTROL) & 0x8000)) || !(tabdat->dwStyle & TCS_BUTTONS)) {
+            if(GetKeyState(VK_CONTROL) & 0x8000) {
                 tci.pt.x=(short)LOWORD(GetMessagePos());
                 tci.pt.y=(short)HIWORD(GetMessagePos());
                 if(DragDetect(hwnd, tci.pt) && TabCtrl_GetItemCount(hwnd) >1 ) {
@@ -1366,7 +1375,8 @@ static LRESULT CALLBACK TabControlSubclassProc(HWND hwnd, UINT msg, WPARAM wPara
             /*
              * visual style support
              */
-            
+
+            CopyRect(&rcTabPage, &rctPage);
             if(!tabdat->bRefreshWithoutClip)
                 ExcludeClipRect(hdc, rctClip.left, rctClip.top, rctClip.right, rctClip.bottom);
             if(!bClassicDraw && IntersectRect(&rectTemp, &rctPage, &ps.rcPaint)) {
@@ -1378,19 +1388,24 @@ static LRESULT CALLBACK TabControlSubclassProc(HWND hwnd, UINT msg, WPARAM wPara
                 else
                     rcClient.top = rctPage.top;
                 DrawThemesXpTabItem(hdc, -1, &rcClient, uiFlags, tabdat);	// TABP_PANE=9,0,'TAB'
+                if(tabdat->bRefreshWithoutClip)
+                    goto skip_tabs;
             }
             else {
                 if(IntersectRect(&rectTemp, &rctPage, &ps.rcPaint)) {
 					if(tabdat->pContainer->bSkinned) {
 						StatusItems_t *item = &StatusItems[ID_EXTBKTABPAGE];
 
-                        CopyRect(&rcTabPage, &rctPage);
 						if(!item->IGNORED) {
 							DrawAlpha(hdc, &rctPage, item->COLOR, item->ALPHA, item->COLOR2, item->COLOR2_TRANSPARENT,
 									  item->GRADIENT, item->CORNER, item->BORDERSTYLE, item->imageItem);
 							goto page_done;
 						}
 					}
+
+                    if(tabdat->bRefreshWithoutClip)
+                        goto skip_tabs;
+
                     if(dwStyle & TCS_BUTTONS) {
                         rectTemp = rctPage;
                         if(dwStyle & TCS_BOTTOM) {
@@ -1471,6 +1486,10 @@ page_done:
             /*
              * figure out hottracked item (if any)
              */
+
+            if(tabdat->bRefreshWithoutClip)
+                goto skip_tabs;
+
             GetCursorPos(&hti.pt);
             ScreenToClient(hwnd, &hti.pt);
             hti.flags = 0;
@@ -1523,6 +1542,7 @@ page_done:
                     DrawItem(tabdat, hdc, &rcItem, HINT_ACTIVE_ITEM | nHint, iActive);
                 }
             }
+skip_tabs:
             if(hPenOld)
                 SelectObject(hdc, hPenOld);
 
@@ -1649,9 +1669,9 @@ BOOL CALLBACK DlgProcTabConfig(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPa
             while(tabcolors[i].szKey != NULL) {
                 clr = (COLORREF)DBGetContactSettingDword(NULL, SRMSGMOD_T, g_skinnedContainers ? tabcolors[i].szSkinnedKey : tabcolors[i].szKey, GetSysColor(tabcolors[i].defclr));
                 SendDlgItemMessage(hwndDlg, tabcolors[i].id, CPM_SETCOLOUR, 0, (LPARAM)clr);
+                SendDlgItemMessage(hwndDlg, tabcolors[i].id, CPM_SETDEFAULTCOLOUR, 0, GetSysColor(tabcolors[i].defclr));
                 i++;
             }
-
             SendDlgItemMessage(hwndDlg, IDC_TABBORDERSPIN, UDM_SETRANGE, 0, MAKELONG(10, 0));
             SendDlgItemMessage(hwndDlg, IDC_TABBORDERSPIN, UDM_SETPOS, 0, (int)DBGetContactSettingByte(NULL, SRMSGMOD_T, g_skinnedContainers ? "S_tborder" : "tborder", 2));
             SetDlgItemInt(hwndDlg, IDC_TABBORDER, (int)DBGetContactSettingByte(NULL, SRMSGMOD_T, g_skinnedContainers ? "S_tborder" : "tborder", 2), FALSE);;
@@ -1664,10 +1684,10 @@ BOOL CALLBACK DlgProcTabConfig(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPa
             SendDlgItemMessage(hwndDlg, IDC_TABWIDTHSPIN, UDM_SETPOS, 0, myGlobals.tabConfig.m_fixedwidth);
             SetDlgItemInt(hwndDlg, IDC_TABWIDTH, myGlobals.tabConfig.m_fixedwidth, TRUE);
 
-            SendDlgItemMessage(hwndDlg, IDC_TABBORDERSPINOUTER, UDM_SETRANGE, 0, MAKELONG(30, 0));
-            SendDlgItemMessage(hwndDlg, IDC_TABBORDERSPINOUTERRIGHT, UDM_SETRANGE, 0, MAKELONG(30, 0));
+            SendDlgItemMessage(hwndDlg, IDC_TABBORDERSPINOUTER, UDM_SETRANGE, 0, MAKELONG(50, 0));
+            SendDlgItemMessage(hwndDlg, IDC_TABBORDERSPINOUTERRIGHT, UDM_SETRANGE, 0, MAKELONG(50, 0));
             SendDlgItemMessage(hwndDlg, IDC_TABBORDERSPINOUTERTOP, UDM_SETRANGE, 0, MAKELONG(40, 0));
-            SendDlgItemMessage(hwndDlg, IDC_TABBORDERSPINOUTERBOTTOM, UDM_SETRANGE, 0, MAKELONG(10, 0));
+            SendDlgItemMessage(hwndDlg, IDC_TABBORDERSPINOUTERBOTTOM, UDM_SETRANGE, 0, MAKELONG(40, 0));
 
             SendDlgItemMessage(hwndDlg, IDC_TABBORDERSPINOUTER, UDM_SETPOS, 0, (int)DBGetContactSettingByte(NULL, SRMSGMOD_T, g_skinnedContainers ? "S_tborder_outer_left" : "tborder_outer_left", 2));
             SendDlgItemMessage(hwndDlg, IDC_TABBORDERSPINOUTERRIGHT, UDM_SETPOS, 0, (int)DBGetContactSettingByte(NULL, SRMSGMOD_T, g_skinnedContainers ? "S_tborder_outer_right" : "tborder_outer_right", 2));

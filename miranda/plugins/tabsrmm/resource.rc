@@ -218,7 +218,7 @@ STYLE DS_SETFONT | DS_FIXEDSYS | DS_CONTROL | WS_CHILD | WS_VISIBLE
 FONT 8, "MS Shell Dlg", 0, 0, 0x1
 BEGIN
     GROUPBOX        "Message window options",IDC_STATIC,3,0,300,86
-    GROUPBOX        "Avatar options",IDC_STATIC,3,88,300,72
+    GROUPBOX        "Avatar options",IDC_STATIC,3,87,300,73
     LTEXT           "Display",IDC_STATIC,9,98,56,9
     COMBOBOX        IDC_AVATARDISPLAY,64,96,90,46,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
     LTEXT           "Limit to",IDC_STATIC,159,97,29,10
@@ -242,7 +242,7 @@ BEGIN
     GROUPBOX        "Miscellaneous options",IDC_STATIC,3,198,300,27
     LTEXT           "Send text formatting:",IDC_STATIC,9,213,132,11
     COMBOBOX        IDC_SENDFORMATTING,143,211,74,46,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
-    CTEXT           "Message send timeout",IDC_STATIC,213,200,89,11
+    CTEXT           "Message send timeout",IDC_STATIC,208,199,89,11
     EDITTEXT        IDC_SECONDS,228,211,25,12,ES_AUTOHSCROLL
     LTEXT           "seconds.",IDC_STATIC,258,213,36,8
     CONTROL         "",IDC_WINDOWOPTIONS,"SysTreeView32",TVS_HASBUTTONS | TVS_HASLINES | TVS_LINESATROOT | TVS_DISABLEDRAGDROP | TVS_SHOWSELALWAYS | WS_BORDER | WS_TABSTOP,6,8,294,76,WS_EX_STATICEDGE
@@ -309,7 +309,7 @@ BEGIN
     GROUPBOX        "Miscellaneous options",IDC_STATIC,3,121,300,104
     LTEXT           "Info Panel field borders:",IDC_STATIC,10,131,166,12
     COMBOBOX        IDC_IPFIELDBORDERS,192,128,106,50,CBS_DROPDOWNLIST | CBS_SORT | WS_VSCROLL | WS_TABSTOP
-    PUSHBUTTON      "Setup status modes for automatic tab creation...",IDC_SETUPAUTOCREATEMODES,56,143,190,14
+    PUSHBUTTON      "Setup status modes for automatic tab creation...",IDC_SETUPAUTOCREATEMODES,56,144,190,14
     LTEXT           "When auto-hiding toolbar buttons:",IDC_STATIC,14,164,133,8
     COMBOBOX        IDC_TOOLBARHIDEMODE,148,161,152,46,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
     CONTROL         "Limit nicknames on tabs to",IDC_CUT_TABTITLE,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,12,181,135,10
@@ -405,7 +405,7 @@ IDD_TABCONFIG DIALOGEX 0, 0, 303, 230
 STYLE DS_SETFONT | DS_FIXEDSYS | DS_CONTROL | WS_CHILD
 FONT 8, "MS Shell Dlg", 400, 0, 0x1
 BEGIN
-    GROUPBOX        "Tab label colors",IDC_STATIC,6,10,144,79
+    GROUPBOX        "Tab label colors",IDC_STATIC,6,10,144,80
     CONTROL         "Use windows colors",IDC_LABELUSEWINCOLORS,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,13,19,136,10
     LTEXT           "Normal",IDC_STATIC,14,31,77,13
     LTEXT           "Selected",IDC_STATIC,14,47,77,13
@@ -415,7 +415,7 @@ BEGIN
     CONTROL         "",IDC_TXTCLRACTIVE,"ColourPicker",WS_TABSTOP,121,44,24,13
     CONTROL         "",IDC_TXTCLRUNREAD,"ColourPicker",WS_TABSTOP,121,58,24,13
     CONTROL         "",IDC_TXTCLRHOTTRACK,"ColourPicker",WS_TABSTOP,121,72,24,13
-    GROUPBOX        "Tab background colors",IDC_STATIC,153,10,147,79
+    GROUPBOX        "Tab background colors",IDC_STATIC,153,10,147,80
     CONTROL         "Use windows colors",IDC_BKGUSEWINCOLORS2,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,162,19,136,10
     LTEXT           "Normal",IDC_STATIC,163,30,84,10
     LTEXT           "Selected",IDC_STATIC,163,40,84,10
@@ -466,7 +466,7 @@ BEGIN
 END
 
 IDD_VARIABLEHELP DIALOGEX 0, 0, 336, 238
-STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP | WS_CAPTION | WS_SYSMENU
+STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | DS_CENTER | WS_POPUP | WS_CAPTION | WS_SYSMENU
 CAPTION "Dialog"
 FONT 8, "MS Shell Dlg", 400, 0, 0x1
 BEGIN
@@ -490,28 +490,6 @@ BEGIN
     CONTROL         "",IDC_STATIC,"Static",SS_ETCHEDHORZ,0,117,228,1
     CONTROL         "Support and latest version information",IDC_SUPPORT,
                     "Hyperlink",WS_TABSTOP | 0x1,18,91,192,12
-END
-
-IDD_FIRSTTIME DIALOGEX 0, 0, 265, 201
-STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | DS_CENTER | WS_POPUP | WS_CAPTION | WS_SYSMENU
-CAPTION "tabSRMM first time configuration"
-FONT 8, "MS Shell Dlg", 400, 0, 0x1
-BEGIN
-    DEFPUSHBUTTON   "Apply",IDOK,154,180,50,14
-    PUSHBUTTON      "Skip",IDCANCEL,209,180,50,14
-    GROUPBOX        "Choose your message history appearance",IDC_STATIC,7,7,251,43
-    CONTROL         "Compact theme (classic message window look)",IDC_COMPACTTHEME,
-                    "Button",BS_AUTORADIOBUTTON,13,18,232,11
-    CONTROL         "Fancy theme, based on the ""Stone"" theme",IDC_FANCYTHEME,
-                    "Button",BS_AUTORADIOBUTTON,14,31,232,12
-    GROUPBOX        "Other message window options",IDC_STATIC,7,56,251,70
-    CONTROL         "Show avatars when present",IDC_SHOWAVATARS,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,14,70,236,9
-    CONTROL         "Show the info panel in the message window.",IDC_SHOWINFOPANEL,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,14,82,236,9
-    LTEXT           "This step is primarily for users upgrading from earlier versions or installing tabSRMM on a fresh Miranda profile.\nIf you are already running a version equal or later than 0.9.9.95, you can skip this. ""Apply"" will overwrite some of your settings.",IDC_STATIC,7,130,251,46
-    CONTROL         "By default, use IEView as message log viewer.",IDC_IEVEIW,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,14,94,233,9
-    LTEXT           " This option is disabled, if IEView is not installed.",IDC_STATIC,24,103,218,10
 END
 
 IDD_SKINTABDIALOG DIALOGEX 0, 0, 312, 247
@@ -597,14 +575,6 @@ BEGIN
         RIGHTMARGIN, 195
         TOPMARGIN, 7
         BOTTOMMARGIN, 96
-    END
-
-    IDD_FIRSTTIME, DIALOG
-    BEGIN
-        LEFTMARGIN, 7
-        RIGHTMARGIN, 258
-        TOPMARGIN, 7
-        BOTTOMMARGIN, 194
     END
 END
 #endif    // APSTUDIO_INVOKED
@@ -702,6 +672,7 @@ BEGIN
             MENUITEM SEPARATOR
             MENUITEM "Use Contacts local Time",     ID_LOGMENU_USECONTACTSLOCALTIME
         END
+        MENUITEM "Use simple Template",         ID_LOGMENU_USESIMPLETEMPLATE
         MENUITEM SEPARATOR
         POPUP "Message Log Formatting"
         BEGIN
@@ -754,14 +725,12 @@ BEGIN
             POPUP "Global"
             BEGIN
                 MENUITEM "BBCode",                      ID_GLOBAL_BBCODE
-                MENUITEM "Simple Tags (*/_)",           ID_GLOBAL_SIMPLETAGS
                 MENUITEM "Off",                         ID_GLOBAL_OFF
             END
             POPUP "This Contact"
             BEGIN
                 MENUITEM "Global Setting",              ID_THISCONTACT_GLOBALSETTING
                 MENUITEM "BBCode",                      ID_THISCONTACT_BBCODE
-                MENUITEM "Simple Tags (*/_)",           ID_THISCONTACT_SIMPLETAGS
                 MENUITEM "Force Off",                   ID_THISCONTACT_OFF
             END
         END
@@ -894,13 +863,13 @@ BEGIN
                 MENUITEM "Show Symbols",                40132
                 MENUITEM "Use Incoming/Outgoing Icons", 40133
             END
-            MENUITEM "Nickname",                    40055
             MENUITEM SEPARATOR
             MENUITEM "Grid Lines",                  40068
             MENUITEM SEPARATOR
             MENUITEM "Log Status Changes",          40120
         END
         MENUITEM SEPARATOR
+        MENUITEM "Use simple Templates",        ID_LOGMENU_USESIMPLETEMPLATE
         POPUP "Timestamp Settings"
         BEGIN
             MENUITEM "Show Timestamp",              40047
@@ -942,6 +911,7 @@ BEGIN
     BEGIN
         MENUITEM "Help Contents",               ID_HELP_HELPCONTENTS, GRAYED
         MENUITEM "Message Window Help...",      ID_HELP_MESSAGEWINDOWHELP
+        MENUITEM "View Release Notes...",       ID_HELP_VIEWRELEASENOTES
         MENUITEM SEPARATOR
         MENUITEM "About tabSRMM...",            ID_HELP_ABOUTTABSRMM
     END
@@ -965,8 +935,8 @@ IDI_TREEVIEWUNCHECKED   ICON                    "res/unchecked.ico"
 //
 
 VS_VERSION_INFO VERSIONINFO
- FILEVERSION 0,9,9,211
- PRODUCTVERSION 0,9,9,211
+ FILEVERSION 0,9,9,210
+ PRODUCTVERSION 0,9,9,210
  FILEFLAGSMASK 0x17L
 #ifdef _DEBUG
  FILEFLAGS 0x1L
@@ -983,13 +953,13 @@ BEGIN
         BEGIN
             VALUE "CompanyName", "Miranda IM project"
             VALUE "FileDescription", "tabSRMM.dll"
-            VALUE "FileVersion", "0, 9, 9, 211"
+            VALUE "FileVersion", "0, 9, 9, 210"
             VALUE "InternalName", "tabSRMsg"
             VALUE "LegalCopyright", "Copyright (C) 2006"
             VALUE "LegalTrademarks", "Licensed under the Gnu general public license V2 or any later version."
             VALUE "OriginalFilename", "tabsrmm.dll"
             VALUE "ProductName", "tabSRMM Message window plugin"
-            VALUE "ProductVersion", "0, 9, 9, 211"
+            VALUE "ProductVersion", "0, 9, 9, 210"
         END
     END
     BLOCK "VarFileInfo"
