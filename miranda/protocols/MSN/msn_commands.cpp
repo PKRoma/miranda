@@ -1592,8 +1592,8 @@ LBL_InvalidCommand:
 				if ( p1 ) {
 					*p1 = 0;
 					if ( *p != 0 ) {
-						HtmlDecode( p ); Utf8Decode( p );
-						DBWriteContactSettingString( hContact, "CList", "StatusMsg", p );
+						HtmlDecode( p );
+						DBWriteContactSettingStringUtf( hContact, "CList", "StatusMsg", p );
 					}
 					else DBDeleteContactSetting( hContact, "CList", "StatusMsg" );
 			}	}
