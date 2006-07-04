@@ -2739,3 +2739,25 @@ int MY_ServiceExists(const char *svc)
 {
     return(ServiceExists(svc));
 }
+
+void GetMaxMessageLength(HWND hwndDlg, struct MessageWindowData *dat)
+{
+    if(dat->bIsMeta)
+        GetCurrentMetaContactProto(hwndDlg, dat);
+
+    if(dat->szProto) {
+        int nMax;
+        nMax = CallProtoService(dat->bIsMeta ? dat->szMetaProto : dat->szProto, PS_GETCAPS, PFLAG_MAXLENOFMESSAGE, (LPARAM)(dat->bIsMeta ? dat->hSubContact : dat->hContact));
+        if (nMax) {
+            if(DBGetContactSettingByte(NULL, SRMSGMOD_T, "autosplit", 0))
+                SendDlgItemMessage(hwndDlg, IDC_MESSAGE, EM_EXLIMITTEXT, 0, 20000);
+            else
+                SendDlgItemMessage(hwndDlg, IDC_MESSAGE, EM_EXLIMITTEXT, 0, (LPARAM)nMax);
+            dat->nMax = nMax;
+        }
+        else {
+            SendDlgItemMessage(hwndDlg, IDC_MESSAGE, EM_EXLIMITTEXT, 0, (LPARAM)7500);
+            dat->nMax = 7500;
+        }
+    }
+}

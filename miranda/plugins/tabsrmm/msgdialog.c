@@ -1842,25 +1842,9 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                     
                 SendDlgItemMessage(hwndDlg, IDC_LOG, EM_AUTOURLDETECT, (WPARAM) TRUE, 0);
                 if (dat->hContact) {
-                    int  pCaps;
                     
                     SendDlgItemMessage(hwndDlg, IDC_LOG, EM_EXLIMITTEXT, 0, 0x80000000);
-                    if (dat->szProto) {
-                        int nMax;
-                        nMax = CallProtoService(dat->szProto, PS_GETCAPS, PFLAG_MAXLENOFMESSAGE, (LPARAM) dat->hContact);
-                        if (nMax) {
-                            if(DBGetContactSettingByte(NULL, SRMSGMOD_T, "autosplit", 0))
-                                SendDlgItemMessage(hwndDlg, IDC_MESSAGE, EM_EXLIMITTEXT, 0, 20000);
-                            else
-                                SendDlgItemMessage(hwndDlg, IDC_MESSAGE, EM_EXLIMITTEXT, 0, (LPARAM)nMax);
-                            dat->nMax = nMax;
-                        }
-                        else {
-                            SendDlgItemMessage(hwndDlg, IDC_MESSAGE, EM_EXLIMITTEXT, 0, (LPARAM)7500);
-                            dat->nMax = 7500;
-                        }
-                        pCaps = CallProtoService(dat->szProto, PS_GETCAPS, PFLAGNUM_4, 0);
-                    }
+                    GetMaxMessageLength(hwndDlg, dat);
                 }
                 OldMessageEditProc = (WNDPROC) SetWindowLong(GetDlgItem(hwndDlg, IDC_MESSAGE), GWL_WNDPROC, (LONG) MessageEditSubclassProc);
                 SendMessage(GetDlgItem(hwndDlg, IDC_MESSAGE), EM_SUBCLASSED, 0, 0);

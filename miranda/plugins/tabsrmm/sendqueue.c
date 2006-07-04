@@ -157,10 +157,7 @@ static int SendChunkW(WCHAR *chunk, HANDLE hContact, char *szSvc, DWORD dwFlags)
     pBuf = (BYTE *)malloc(memRequired);
     WideCharToMultiByte(codePage, 0, chunk, -1, pBuf, mbcsSize, 0, 0);
     CopyMemory(&pBuf[mbcsSize], chunk, (wLen + 1) * sizeof(WCHAR));
-    //MessageBoxW(0, &pBuf[mbcsSize], L"UCS", MB_OK);
-    //MessageBoxA(0, pBuf, "ansi", MB_OK);
     id = CallContactService(hContact, szSvc, dwFlags, (LPARAM)pBuf);
-    //_DebugTraceA("sending Wchunk: %s, %d, %s", szSvc, hContact, pBuf);
     free(pBuf);
     return id;
 }
@@ -169,11 +166,7 @@ static int SendChunkW(WCHAR *chunk, HANDLE hContact, char *szSvc, DWORD dwFlags)
 
 static int SendChunkA(char *chunk, HANDLE hContact, char *szSvc, DWORD dwFlags)
 {
-    int id;
-    //_DebugTraceA("sending Achunk: %s, %d, %s", szSvc, hContact, chunk);
-    id = CallContactService(hContact, szSvc, dwFlags, (LPARAM)chunk);
-    //_DebugTraceA("sending Achunk sent with %d", id);
-    return id;
+    return(CallContactService(hContact, szSvc, dwFlags, (LPARAM)chunk));
 }
 
 #if defined(_UNICODE)
@@ -183,14 +176,14 @@ static DWORD WINAPI DoSplitSendW(LPVOID param)
     struct  SendJob *job = &sendJobs[(int)param];
     int     id;
     BOOL    fFirstSend = FALSE;
-    WCHAR *wszBegin, *wszTemp, *wszSaved, savedChar;
-    int   iLen, iCur = 0, iSavedCur = 0, i;
-    BOOL  fSplitting = TRUE;
-    char szServiceName[100], *svcName;
-    HANDLE hContact = job->hContact[0];
-    DWORD  dwFlags = job->dwFlags;
-    int    chunkSize = job->chunkSize / 2;
-    char *szProto = (char *) CallService(MS_PROTO_GETCONTACTBASEPROTO, (WPARAM) hContact, 0);
+    WCHAR   *wszBegin, *wszTemp, *wszSaved, savedChar;
+    int     iLen, iCur = 0, iSavedCur = 0, i;
+    BOOL    fSplitting = TRUE;
+    char    szServiceName[100], *svcName;
+    HANDLE  hContact = job->hContact[0];
+    DWORD   dwFlags = job->dwFlags;
+    int     chunkSize = job->chunkSize / 2;
+    char    *szProto = (char *) CallService(MS_PROTO_GETCONTACTBASEPROTO, (WPARAM) hContact, 0);
 
     if (szProto == NULL)
         svcName = pss_msg;
@@ -373,31 +366,31 @@ static int SendQueuedMessage(HWND hwndDlg, struct MessageWindowData *dat, int iE
 			DBWriteContactSettingByte(dat->bIsMeta ? dat->hSubContact : dat->hContact, dat->bIsMeta ? dat->szMetaProto : dat->szProto, "UnicodeSend", 1);
 
         if(DBGetContactSettingByte(NULL, SRMSGMOD_T, "autosplit", 0)) {
-            int             iLen;
+            int     iLen;
             WCHAR   *wszBuf;
-            char          *utf8;
-            BOOL        fSplit = FALSE;
-            ACKDATA ack = {0};
-            DWORD       dwOldFlags;
+            char    *utf8;
+            BOOL    fSplit = FALSE;
+            DWORD   dwOldFlags;
 
+            GetMaxMessageLength(hwndDlg, dat);                      // refresh length info
             /*
              + determine send buffer length
             */
 #if defined(_UNICODE)
-            if(sendJobs[iEntry].dwFlags & PREF_UNICODE) {
+            if(sendJobs[iEntry].dwFlags & PREF_UNICODE && !(dat->sendMode & SMODE_FORCEANSI)) {
                 iLen = lstrlenA(sendJobs[iEntry].sendBuffer);
                 wszBuf = (WCHAR *)&sendJobs[iEntry].sendBuffer[iLen + 1];
                 utf8 = Utf8_Encode(wszBuf);
-                if(lstrlenA(utf8) > dat->nMax)
+                if(lstrlenA(utf8) >= dat->nMax)
                     fSplit = TRUE;
                 free(utf8);
             }
             else {
-                if(lstrlenA(sendJobs[iEntry].sendBuffer) > dat->nMax)
+                if(lstrlenA(sendJobs[iEntry].sendBuffer) >= dat->nMax)
                     fSplit = TRUE;
             }
 #else
-            if(lstrlenA(sendJobs[iEntry].sendBuffer) > dat->nMax)
+            if(lstrlenA(sendJobs[iEntry].sendBuffer) >= dat->nMax)
                 fSplit = TRUE;
 #endif
 
@@ -490,11 +483,6 @@ void ClearSendJob(int iIndex)
 void CheckSendQueue(HWND hwndDlg, struct MessageWindowData *dat)
 {
     if(dat->iOpenJobs == 0) {
-        /*
-        if(dat->hAckEvent) {
-            UnhookEvent(dat->hAckEvent);
-            dat->hAckEvent = NULL;
-        } */
         HandleIconFeedback(hwndDlg, dat, (HICON)-1);
     }
     else if(!(dat->sendMode & SMODE_NOACK))
