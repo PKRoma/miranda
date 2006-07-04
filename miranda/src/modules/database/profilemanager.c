@@ -435,7 +435,7 @@ static BOOL CALLBACK DlgProfileManager(HWND hwndDlg, UINT msg, WPARAM wParam, LP
 			}
 			{	OPTIONSDIALOGPAGE *odp;
 				int i;
-				TCITEMA tci;
+				TCITEM tci;
 
 				dat->currentPage=0;
 				dat->pageCount=psh->nPages;
@@ -449,11 +449,10 @@ static BOOL CALLBACK DlgProfileManager(HWND hwndDlg, UINT msg, WPARAM wParam, LP
 					dat->opd[i].hInst=odp[i].hInstance;
 					dat->opd[i].hwnd=NULL;
 					dat->opd[i].changed=0;
-					tci.pszText=(char*)odp[i].pszTitle;
+					tci.pszText=(TCHAR*)odp[i].ptszTitle;
 					if ( dat->prof->pd->noProfiles || checkAutoCreateProfile(NULL) ) dat->currentPage=1;
-					SendMessageA( GetDlgItem(hwndDlg,IDC_TABS), TCM_INSERTITEMA, i, (LPARAM)&tci );
-				}
-			}
+					TabCtrl_InsertItem( GetDlgItem(hwndDlg,IDC_TABS), i, &tci );
+			}	}
 
 			GetWindowRect(GetDlgItem(hwndDlg,IDC_TABS),&dat->rcDisplay);
 			TabCtrl_AdjustRect(GetDlgItem(hwndDlg,IDC_TABS),FALSE,&dat->rcDisplay);
@@ -613,7 +612,7 @@ static int AddProfileManagerPage(struct DetailsPageInit * opi, OPTIONSDIALOGPAGE
 	opi->odp[opi->pageCount].hInstance=odp->hInstance;
 	opi->odp[opi->pageCount].pfnDlgProc=odp->pfnDlgProc;
 	opi->odp[opi->pageCount].position=odp->position;
-	opi->odp[opi->pageCount].pszTitle=mir_strdup(odp->pszTitle);
+	opi->odp[opi->pageCount].ptszTitle=LangPackPcharToTchar(odp->pszTitle);
 	if((DWORD)odp->pszTemplate&0xFFFF0000) opi->odp[opi->pageCount].pszTemplate=mir_strdup(odp->pszTemplate);
 	else opi->odp[opi->pageCount].pszTemplate=odp->pszTemplate;
 	opi->odp[opi->pageCount].pszGroup=NULL;
