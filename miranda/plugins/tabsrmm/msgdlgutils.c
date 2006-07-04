@@ -283,7 +283,7 @@ void CalcDynamicAvatarSize(HWND hwndDlg, struct MessageWindowData *dat, BITMAP *
 
             picProjectedWidth = (double)dat->iRealAvatarHeight * picAspect;
             dat->pic.cx = (int)picProjectedWidth + 2*1;
-            SendMessage(hwndDlg, DM_UPDATEPICLAYOUT, 0, 0);
+            DM_UpdatePictureLayout(hwndDlg, dat);
         }
         if(cx - dat->pic.cx > dat->iButtonBarNeeds && !myGlobals.m_AlwaysFullToolbarWidth) {
             if(dat->splitterY <= dat->bottomOffset + (showToolbar ? 0 : 26))
@@ -517,9 +517,9 @@ int MsgWindowMenuHandler(HWND hwndDlg, struct MessageWindowData *dat, int select
                 DBWriteContactSettingByte(dat->hContact, SRMSGMOD_T, "hideavatar", avOverrideMode);
                 dat->panelWidth = -1;
                 ShowPicture(hwndDlg, dat, FALSE);
-                SendMessage(hwndDlg, DM_UPDATEPICLAYOUT, 0, 0);
+                DM_UpdatePictureLayout(hwndDlg, dat);
                 SendMessage(hwndDlg, WM_SIZE, 0, 0);
-                SendMessage(hwndDlg, DM_SCROLLLOGTOBOTTOM, 0, 1);
+                DM_ScrollToBottom(hwndDlg, dat, 0, 1);
                 return 1;
             }
             case ID_PICMENU_ALWAYSKEEPTHEBUTTONBARATFULLWIDTH:
@@ -728,7 +728,7 @@ void UpdateStatusBar(HWND hwndDlg, struct MessageWindowData *dat)
         
         if(dat->bType == SESSIONTYPE_IM) {
             SetSelftypingIcon(hwndDlg, dat, DBGetContactSettingByte(dat->hContact, SRMSGMOD, SRMSGSET_TYPING, DBGetContactSettingByte(NULL, SRMSGMOD, SRMSGSET_TYPINGNEW, SRMSGDEFSET_TYPINGNEW)));
-            SendMessage(hwndDlg, DM_UPDATELASTMESSAGE, 0, 0);
+            DM_UpdateLastMessage(hwndDlg, dat);
             if(myGlobals.g_SecureIMAvail) {
                 SendMessage(dat->pContainer->hwndStatus, SB_SETTEXTA, 2, (LPARAM)"");
                 if((iSecIMStatus = CallService("SecureIM/IsContactSecured", (WPARAM)dat->hContact, 0)) != 0)
@@ -999,8 +999,8 @@ void AdjustBottomAvatarDisplay(HWND hwndDlg, struct MessageWindowData *dat)
             GetObject(hbm, sizeof(bm), &bm);
             CalcDynamicAvatarSize(hwndDlg, dat, &bm);
         }
-        SendMessage(hwndDlg, DM_UPDATEPICLAYOUT, 0, 0);
-        SendMessage(hwndDlg, DM_RECALCPICTURESIZE, 0, 0);
+        DM_UpdatePictureLayout(hwndDlg, dat);
+        DM_RecalcPictureSize(hwndDlg, dat);
         ShowWindow(GetDlgItem(hwndDlg, IDC_CONTACTPIC), dat->showPic ? SW_SHOW : SW_HIDE);
         InvalidateRect(GetDlgItem(hwndDlg, IDC_CONTACTPIC), NULL, TRUE);
     }
@@ -1009,7 +1009,7 @@ void AdjustBottomAvatarDisplay(HWND hwndDlg, struct MessageWindowData *dat)
         ShowWindow(GetDlgItem(hwndDlg, IDC_CONTACTPIC), dat->showPic ? SW_SHOW : SW_HIDE);
         dat->pic.cy = dat->pic.cx = 60;
         InvalidateRect(GetDlgItem(hwndDlg, IDC_CONTACTPIC), NULL, TRUE);
-        SendMessage(hwndDlg, DM_UPDATEPICLAYOUT, 0, 0);
+        DM_UpdatePictureLayout(hwndDlg, dat);
     }
 }
 
@@ -1030,7 +1030,7 @@ void ShowPicture(HWND hwndDlg, struct MessageWindowData *dat, BOOL showNewPic)
     } else {
         dat->showPic = dat->showPic ? 0 : 1;
         DBWriteContactSettingByte(dat->hContact,SRMSGMOD_T,"MOD_ShowPic",(BYTE)dat->showPic);
-        SendMessage(hwndDlg, DM_UPDATEPICLAYOUT, 0, 0);
+        DM_UpdatePictureLayout(hwndDlg, dat);
     }
 
     GetWindowRect(GetDlgItem(hwndDlg,IDC_CONTACTPIC),&rc);

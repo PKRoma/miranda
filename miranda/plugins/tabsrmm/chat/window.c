@@ -129,7 +129,7 @@ static void Chat_UpdateWindowState(HWND hwndDlg, struct MessageWindowData *dat, 
 
         if (myGlobals.m_AutoLocaleSupport && dat->hContact != 0) {
             if(dat->hkl == 0)
-                SendMessage(hwndDlg, DM_LOADLOCALE, 0, 0);
+                DM_LoadLocale(hwndDlg, dat);
             PostMessage(hwndDlg, DM_SETLOCALE, 0, 0);
         }
         SetFocus(GetDlgItem(hwndDlg, IDC_CHAT_MESSAGE));
@@ -549,7 +549,7 @@ default_process:
                         else if (wParam == VK_HOME)
                             wp = MAKEWPARAM(SB_TOP, 0);
                         else if (wParam == VK_END) {
-                            SendMessage(hwndParent, DM_SCROLLLOGTOBOTTOM, 0, 0);
+                            DM_ScrollToBottom(hwndParent, mwdat, 0, 0);
                             return 0;
                         } else if (wParam == VK_DOWN)
                             wp = MAKEWPARAM(SB_LINEDOWN, 0);
@@ -984,7 +984,7 @@ default_process:
         }
         case WM_INPUTLANGCHANGE:
             if (myGlobals.m_AutoLocaleSupport && GetFocus() == hwnd && mwdat->pContainer->hwndActive == hwndParent && GetForegroundWindow() == mwdat->pContainer->hwnd && GetActiveWindow() == mwdat->pContainer->hwnd) {
-                SendMessage(hwndParent, DM_SAVELOCALE, wParam, lParam);
+                DM_SaveLocale(hwndParent, mwdat, wParam, lParam);
             }
             return 1;
 
@@ -2070,62 +2070,11 @@ LABEL_SHOWWINDOW:
 		}
         break;
 
-       // DM_ is used by the normal message windows - just make it compatible here.
-        
-        case DM_SCROLLLOGTOBOTTOM:
-            {
-                SCROLLINFO si = { 0 };
-
-                if(dat->dwEventIsShown & MWF_SHOW_SCROLLINGDISABLED)
-                    break;
-                if(!IsIconic(dat->pContainer->hwnd) || 1) {
-                    HWND hwnd = GetDlgItem(hwndDlg, IDC_CHAT_LOG);
-
-                    dat->dwFlags &= ~MWF_DEFERREDSCROLL;
-                    if ((GetWindowLong(hwnd, GWL_STYLE) & WS_VSCROLL) == 0)
-                        break;
-                    if(lParam)
-                        SendMessage(hwnd, WM_SIZE, 0, 0);
-                    si.cbSize = sizeof(si);
-                    si.fMask = SIF_PAGE | SIF_RANGE;
-                    GetScrollInfo(hwnd, SB_VERT, &si);
-                    si.fMask = SIF_POS;
-                    si.nPos = si.nMax - si.nPage + 1;
-                    SetScrollInfo(hwnd, SB_VERT, &si, TRUE);
-                    if(wParam)
-                        SendMessage(hwnd, WM_VSCROLL, MAKEWPARAM(SB_BOTTOM, 0), 0);
-                    else
-                        PostMessage(hwnd, WM_VSCROLL, MAKEWPARAM(SB_BOTTOM, 0), 0);
-                    if(lParam)
-                        InvalidateRect(hwnd, NULL, FALSE);
-                }
-                else
-                    dat->dwFlags |= MWF_DEFERREDSCROLL;
-
-                return 0;
-            }
-
         case GC_SCROLLTOBOTTOM:
         {
             SCROLLINFO si = { 0 };
-            return(SendMessage(hwndDlg, DM_SCROLLLOGTOBOTTOM, wParam, lParam));
-            
-            if ((GetWindowLong(GetDlgItem(hwndDlg, IDC_CHAT_LOG), GWL_STYLE) & WS_VSCROLL) != 0)
-            {
-                CHARRANGE sel;
-                si.cbSize = sizeof(si);
-                si.fMask = SIF_PAGE | SIF_RANGE;
-                GetScrollInfo(GetDlgItem(hwndDlg, IDC_CHAT_LOG), SB_VERT, &si);
-                si.fMask = SIF_POS;
-                si.nPos = si.nMax - si.nPage + 1;
-                SetScrollInfo(GetDlgItem(hwndDlg, IDC_CHAT_LOG), SB_VERT, &si, TRUE);
-                sel.cpMin = sel.cpMax = GetRichTextLength(GetDlgItem(hwndDlg, IDC_CHAT_LOG));
-                SendMessage(GetDlgItem(hwndDlg, IDC_CHAT_LOG), EM_EXSETSEL, 0, (LPARAM) & sel);
-                PostMessage(GetDlgItem(hwndDlg, IDC_CHAT_LOG), WM_VSCROLL, MAKEWPARAM(SB_BOTTOM, 0), 0);
-            }
-
+            return(DM_ScrollToBottom(hwndDlg, dat, wParam, lParam));
         }
-        break;
     
  		case WM_TIMER:
 		{
@@ -2510,7 +2459,7 @@ LABEL_SHOWWINDOW:
 					SendMessage(hwndDlg, WM_SIZE, 0, 0);
                     if(dat->pContainer->bSkinned)
                         InvalidateRect(hwndDlg, NULL, TRUE);
-                    PostMessage(hwndDlg, DM_SCROLLLOGTOBOTTOM, 0, 0);
+                    PostMessage(hwndDlg, GC_SCROLLTOBOTTOM, 0, 0);
 				}break;
                 
 			case IDC_CHAT_MESSAGE:
@@ -2914,51 +2863,6 @@ LABEL_SHOWWINDOW:
             return 0;
 		}
 
-        case DM_SAVELOCALE: 
-        {
-            if (myGlobals.m_AutoLocaleSupport && dat->hContact && dat->pContainer->hwndActive == hwndDlg) {
-                char szKLName[KL_NAMELENGTH + 1];
-
-                if((HKL)lParam != dat->hkl) {
-                    dat->hkl = (HKL)lParam;
-                    ActivateKeyboardLayout(dat->hkl, 0);
-                    GetKeyboardLayoutNameA(szKLName);
-                    DBWriteContactSettingString(dat->hContact, SRMSGMOD_T, "locale", szKLName);
-                    GetLocaleID(dat, szKLName);
-                    UpdateReadChars(hwndDlg, dat);
-                }
-            }
-            return 0;
-        }
-        case DM_LOADLOCALE:
-            /*
-             * set locale if saved to contact
-             */
-            if(dat->dwFlags & MWF_WASBACKGROUNDCREATE)
-                break;
-            if (myGlobals.m_AutoLocaleSupport && dat->hContact != 0) {
-                DBVARIANT dbv;
-                int res;
-                char szKLName[KL_NAMELENGTH+1];
-                UINT flags = KLF_ACTIVATE;
-
-                res = DBGetContactSetting(dat->hContact, SRMSGMOD_T, "locale", &dbv);
-                if (res == 0 && dbv.type == DBVT_ASCIIZ) {
-
-                    dat->hkl = LoadKeyboardLayoutA(dbv.pszVal, KLF_ACTIVATE);
-                    PostMessage(hwndDlg, DM_SETLOCALE, 0, 0);
-                    GetLocaleID(dat, dbv.pszVal);
-                    DBFreeVariant(&dbv);
-                } else {
-                    GetKeyboardLayoutNameA(szKLName);
-                    dat->hkl = LoadKeyboardLayoutA(szKLName, 0);
-                    DBWriteContactSettingString(dat->hContact, SRMSGMOD_T, "locale", szKLName);
-                    GetLocaleID(dat, szKLName);
-                }
-                UpdateReadChars(hwndDlg, dat);
-            }
-            return 0;
-
         case DM_SETLOCALE:
             if(dat->dwFlags & MWF_WASBACKGROUNDCREATE)
                 break;
@@ -2993,13 +2897,13 @@ LABEL_SHOWWINDOW:
                     SendMessage(hwndDlg, WM_SIZE, 0, 0);
                     //LoadSplitter(hwndDlg, dat);
                     SendDlgItemMessage(hwndDlg, IDC_CHAT_LOG, EM_SETSCROLLPOS, 0, (LPARAM)&pt);
-                    SendMessage(hwndDlg, DM_LOADLOCALE, 0, 0);
+                    DM_LoadLocale(hwndDlg, dat);
                     SendMessage(hwndDlg, DM_SETLOCALE, 0, 0);
                 }
                 else {
                     SendMessage(hwndDlg, WM_SIZE, 0, 0);
                     if(lParam == 0)
-                        PostMessage(hwndDlg, DM_SCROLLLOGTOBOTTOM, 1, 1);
+                        PostMessage(hwndDlg, GC_SCROLLTOBOTTOM, 1, 1);
                 }
                 return 0;
             }

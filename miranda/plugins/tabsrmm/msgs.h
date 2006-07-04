@@ -211,19 +211,19 @@ struct ProtocolData {
 #define DM_UPDATETITLE       (WM_USER+16)
 #define DM_APPENDTOLOG       (WM_USER+17)
 #define DM_ERRORDECIDED      (WM_USER+18)
-#define DM_SCROLLLOGTOBOTTOM (WM_USER+19)
+#define DM_SPLITSENDACK      (WM_USER+19)
 #define DM_TYPING            (WM_USER+20)
 #define DM_UPDATEWINICON     (WM_USER+21)
-#define DM_UPDATELASTMESSAGE (WM_USER+22)
+#define DM_UPDATELASTMESSAGE (WM_USER+22) 
 
 #define DM_SELECTTAB		 (WM_USER+23)
 #define DM_CLOSETABATMOUSE   (WM_USER+24)
-#define DM_SAVELOCALE        (WM_USER+25)
+//#define DM_SAVELOCALE        (WM_USER+25) *free*
 #define DM_SETLOCALE         (WM_USER+26)
 #define DM_SESSIONLIST       (WM_USER+27)
 #define DM_QUERYLASTUNREAD   (WM_USER+28)
 #define DM_QUERYPENDING      (WM_USER+29)
-#define DM_UPDATEPICLAYOUT   (WM_USER+30)
+//#define DM_UPDATEPICLAYOUT   (WM_USER+30) ** FREE **
 #define DM_QUERYCONTAINER    (WM_USER+31)
 #define DM_QUERYCONTAINERHWND    (WM_USER+32)
 #define DM_CALCMINHEIGHT     (WM_USER+33)       // msgdialog asked to recalculate its minimum height
@@ -254,7 +254,7 @@ struct ProtocolData {
 #define DM_ACTIVATETOOLTIP   (WM_USER+58)
 #define DM_UINTOCLIPBOARD   (WM_USER+59)
 #define DM_SPLITTEREMERGENCY (WM_USER+60)
-#define DM_RECALCPICTURESIZE (WM_USER+61)
+#define DM_RECALCPICTURESIZE (WM_USER+61) **FREE**
 #define DM_FORCEDREMAKELOG   (WM_USER+62)
 #define DM_QUERYFLAGS        (WM_USER+63)
 #define DM_STATUSBARCHANGED  (WM_USER+64)
@@ -271,7 +271,7 @@ struct ProtocolData {
 #define DM_REMOVECLISTEVENT  (WM_USER+75)
 #define DM_GETWINDOWSTATE    (WM_USER+76)
 #define DM_DOCREATETAB       (WM_USER+77)
-#define DM_LOADLOCALE        (WM_USER+78)
+//#define DM_LOADLOCALE        (WM_USER+78) ** FREEE**
 #define DM_REPLAYQUEUE       (WM_USER+79)
 #define DM_HKDETACH          (WM_USER+80)
 #define DM_HKSAVESIZE        (WM_USER+81)
@@ -395,6 +395,7 @@ extern const int msgDlgFontCount;
 #define TIMERID_HEARTBEAT    2
 #define TIMEOUT_HEARTBEAT    20000
 #define TIMERID_HOVER 10
+#define TIMERID_SCROLL 20
 
 #define SRMSGMOD "SRMsg"
 #define SRMSGMOD_T "Tab_SRMsg"

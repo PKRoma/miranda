@@ -287,14 +287,13 @@ static struct LISTOPTIONSITEM defaultItems[] = {
     0, _T("Send message on 'Enter'"), SRMSGDEFSET_SENDONENTER, LOI_TYPE_SETTING, (UINT_PTR)SRMSGSET_SENDONENTER, 1,
     0, _T("Send message on double 'Enter'"), 0, LOI_TYPE_SETTING, (UINT_PTR)"SendOnDblEnter", 1,
     0, _T("Minimize the message window on send"), SRMSGDEFSET_AUTOMIN, LOI_TYPE_SETTING, (UINT_PTR)SRMSGSET_AUTOMIN, 1,
-    0, _T("Allow the toolbar to hide the send button"), 1, LOI_TYPE_SETTING, (UINT_PTR)"hidesend", 1,
     0, _T("Flash contact list and tray icons for new events in unfocused windows"), 0, LOI_TYPE_SETTING, (UINT_PTR)"flashcl", 0,
     0, _T("Delete temporary contacts on close"), 0, LOI_TYPE_SETTING, (UINT_PTR)"deletetemp", 0,
     0, _T("Retrieve status message when hovering info panel"), 0, LOI_TYPE_SETTING, (UINT_PTR)"dostatusmsg", 0,
-    0, _T("Enable event API (support for third party plugins)"), 0, LOI_TYPE_SETTING, (UINT_PTR)"eventapi", 2,
+    0, _T("Enable event API (support for third party plugins)"), 1, LOI_TYPE_SETTING, (UINT_PTR)"eventapi", 2,
     0, _T("Don't send UNICODE parts for 7bit ANSI messages (saves db space)"), 1, LOI_TYPE_SETTING, (UINT_PTR)"7bitasANSI", 2,
-    0, _T("Always keep the button bar at full width"), 0, LOI_TYPE_SETTING, (UINT_PTR)"alwaysfulltoolbar", 1,
-    0, _T("Allow PASTE AND SEND feature"), 0, LOI_TYPE_SETTING, (UINT_PTR)"pasteandsend", 1,
+    0, _T("Allow PASTE AND SEND feature (Ctrl-D)"), 0, LOI_TYPE_SETTING, (UINT_PTR)"pasteandsend", 1,
+    0, _T("Automatically split long messages (experimental, use with care"), 0, LOI_TYPE_SETTING, (UINT_PTR)"autosplit", 2,
     0, NULL, 0, 0, 0, 0
 };
 
@@ -947,6 +946,7 @@ static struct LISTOPTIONSITEM tabItems[] = {
     0, _T("New events will automatically switch tabs in minimized windows"), 0, LOI_TYPE_SETTING, (UINT_PTR)"autoswitchtabs", 1,
     0, _T("Don't draw visual styles on toolbar buttons"), 1, LOI_TYPE_SETTING, (UINT_PTR)"nlflat", 2,
     0, _T("Flat toolbar buttons"), 1, LOI_TYPE_SETTING, (UINT_PTR)"tbflat", 2,
+    0, _T("Allow the toolbar to hide the send button"), 1, LOI_TYPE_SETTING, (UINT_PTR)"hidesend", 2,
     0, _T("Splitters have static edges (uncheck this to make them invisible)"), 1, LOI_TYPE_SETTING, (UINT_PTR)"splitteredges", 2,
     0, _T("No visible borders on text boxes"), 1, LOI_TYPE_SETTING, (UINT_PTR)"flatlog", 2,
     0, _T("Always use icon pack image on the smiley button"), 0, LOI_TYPE_SETTING, (UINT_PTR)"smbutton_override", 2,

@@ -586,7 +586,7 @@ static BOOL CALLBACK ContainerWndProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPA
 				}
 				else {
                     LRESULT result = DefWindowProc(hwndDlg, msg, wParam, lParam);
-					//RedrawWindow(hwndDlg, NULL, NULL, RDW_INVALIDATE | RDW_FRAME | RDW_UPDATENOW | RDW_NOCHILDREN);
+					RedrawWindow(hwndDlg, NULL, NULL, RDW_INVALIDATE | RDW_FRAME | RDW_UPDATENOW | RDW_NOCHILDREN);
 					return result;
 				}
 			}
@@ -779,26 +779,26 @@ static BOOL CALLBACK ContainerWndProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPA
 				hdcReal = BeginPaint(hwndDlg, &ps);
 
 				GetClientRect(hwndDlg, &rcClient);
-				width = rcClient.right - rcClient.left;
-				height = rcClient.bottom - rcClient.top;
-				if(width != pContainer->oldDCSize.cx || height != pContainer->oldDCSize.cy) {
+                width = rcClient.right - rcClient.left;
+                height = rcClient.bottom - rcClient.top;
+                if(width != pContainer->oldDCSize.cx || height != pContainer->oldDCSize.cy) {
                     StatusItems_t *sbaritem = &StatusItems[ID_EXTBKSTATUSBAR];
                     BOOL statusBarSkinnd = !(pContainer->dwFlags & CNT_NOSTATUSBAR) && !sbaritem->IGNORED;
                     LONG sbarDelta = statusBarSkinnd ? pContainer->statusBarHeight : 0;
 
-					pContainer->oldDCSize.cx = width;
-					pContainer->oldDCSize.cy = height;
-					if(!pContainer->cachedDC) {
-						HDC dc = GetDC(NULL);
-						int wscreen = GetDeviceCaps(dc, HORZRES);
-						int hscreen = GetDeviceCaps(dc, VERTRES);
-						ReleaseDC(NULL, dc);
-						pContainer->cachedDC = CreateCompatibleDC(hdcReal);
-						pContainer->cachedHBM = CreateCompatibleBitmap(hdcReal, wscreen, hscreen);
-						pContainer->oldHBM = SelectObject(pContainer->cachedDC, pContainer->cachedHBM);
-					}
-					hdc = pContainer->cachedDC;
-					//FillRect(hdc, &rcClient, g_ContainerColorKeyBrush);
+                    pContainer->oldDCSize.cx = width;
+                    pContainer->oldDCSize.cy = height;
+                    if(!pContainer->cachedDC) {
+                        HDC dc = GetDC(NULL);
+                        int wscreen = GetDeviceCaps(dc, HORZRES);
+                        int hscreen = GetDeviceCaps(dc, VERTRES);
+                        ReleaseDC(NULL, dc);
+                        pContainer->cachedDC = CreateCompatibleDC(hdcReal);
+                        pContainer->cachedHBM = CreateCompatibleBitmap(hdcReal, wscreen, hscreen);
+                        pContainer->oldHBM = SelectObject(pContainer->cachedDC, pContainer->cachedHBM);
+                    }
+                    hdc = pContainer->cachedDC;
+                    //FillRect(hdc, &rcClient, g_ContainerColorKeyBrush);
                     if(!item->IGNORED)
                         DrawAlpha(hdc, &rcClient, item->COLOR, item->ALPHA, item->COLOR2, item->COLOR2_TRANSPARENT,
                                   item->GRADIENT, item->CORNER, item->BORDERSTYLE, item->imageItem);
@@ -810,8 +810,8 @@ static BOOL CALLBACK ContainerWndProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPA
                         DrawAlpha(hdc, &rcClient, sbaritem->COLOR, sbaritem->ALPHA, sbaritem->COLOR2, sbaritem->COLOR2_TRANSPARENT,
                                   sbaritem->GRADIENT, sbaritem->CORNER, sbaritem->BORDERSTYLE, sbaritem->imageItem);
                     }
-				}
-				BitBlt(hdcReal, 0, 0, width, height, pContainer->cachedDC, 0, 0, SRCCOPY);
+                }
+                BitBlt(hdcReal, 0, 0, width, height, pContainer->cachedDC, 0, 0, SRCCOPY);
 				EndPaint(hwndDlg, &ps);
 				return 0;
 			}
@@ -1337,7 +1337,7 @@ BOOL CALLBACK DlgProcContainer(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPa
 
                 GetClientRect(GetDlgItem(hwndDlg, IDC_MSGTABS), &rc);
                 if (!((rc.right - rc.left) == pContainer->oldSize.cx && (rc.bottom - rc.top) == pContainer->oldSize.cy))
-                    SendMessage(pContainer->hwndActive, DM_SCROLLLOGTOBOTTOM, 0, 0);
+                    DM_ScrollToBottom(pContainer->hwndActive, 0, 0, 0);
                 pContainer->bSizingLoop = FALSE;
                 break;
             }
@@ -1347,6 +1347,8 @@ BOOL CALLBACK DlgProcContainer(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPa
                 MINMAXINFO *mmi = (MINMAXINFO *) lParam;
 
                 mmi->ptMinTrackSize.x = 275;
+                //mmi->ptMinTrackSize.y = pContainer->uChildMinHeight;
+
                 GetClientRect(GetDlgItem(hwndDlg, IDC_MSGTABS), &rc);
                 pt.y = rc.top;
                 TabCtrl_AdjustRect(GetDlgItem(hwndDlg, IDC_MSGTABS), FALSE, &rc);
@@ -1454,7 +1456,7 @@ BOOL CALLBACK DlgProcContainer(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPa
                     if((HWND)item.lParam == pContainer->hwndActive) {
                         MoveWindow((HWND)item.lParam, rcClient.left, rcClient.top, (rcClient.right - rcClient.left), (rcClient.bottom - rcClient.top), TRUE);
                         if(!pContainer->bSizingLoop && sizeChanged)
-                            SendMessage(pContainer->hwndActive, DM_SCROLLLOGTOBOTTOM, 0, 1);
+                            DM_ScrollToBottom(pContainer->hwndActive, 0, 0, 1);
                     }
                     else if(sizeChanged)
                         SendMessage((HWND)item.lParam, DM_CHECKSIZE, 0, 0);
@@ -1988,6 +1990,8 @@ panel_found:
                         if(hContact)
                             SendMessage(hwndDlg, DM_UPDATETITLE, (WPARAM)hContact, 0);
                         SendMessage(hwndDlg, WM_SIZE, 0, 0);
+                        pContainer->hwndSaved = 0;
+                        SendMessage(pContainer->hwndActive, DM_CHECKSIZE, 0, 0);
                         SendMessage(pContainer->hwndActive, WM_SIZE, 0, 0);
                         SendMessage(pContainer->hwndActive, WM_ACTIVATE, WA_ACTIVE, 0);
                         //if(myGlobals.m_ExtraRedraws)
@@ -2002,8 +2006,6 @@ panel_found:
                 if(GetMenu(hwndDlg) != 0)
                     DrawMenuBar(hwndDlg);
                 break;
-				if(pContainer->bSkinned)
-					return TRUE;
             }
         case WM_ENTERMENULOOP: {
             POINT pt;
@@ -2058,8 +2060,8 @@ panel_found:
             submenu = GetSubMenu(hMenu, 3);
             if(dat && submenu) {
                 MsgWindowUpdateMenu(pContainer->hwndActive, dat, submenu, MENU_LOGMENU);
-                submenu = GetSubMenu(hMenu, 1);
-                MsgWindowUpdateMenu(pContainer->hwndActive, dat, submenu, MENU_PICMENU);
+                //submenu = GetSubMenu(hMenu, 1);
+               // MsgWindowUpdateMenu(pContainer->hwndActive, dat, submenu, MENU_PICMENU);
             }
             break;
         }
@@ -2287,7 +2289,7 @@ panel_found:
                     SetWindowPos(hwndDlg,  0, rc.left, rc.top, rc.right - rc.left, rc.bottom - rc.top, 0);
                     RedrawWindow(hwndDlg, NULL, NULL, RDW_INVALIDATE | RDW_FRAME | RDW_UPDATENOW);
                     if(pContainer->hwndActive != 0)
-                        SendMessage(pContainer->hwndActive, DM_SCROLLLOGTOBOTTOM, 0, 0);
+                        DM_ScrollToBottom(pContainer->hwndActive, 0, 0, 0);
                 }
             }
             ws = wsold = GetWindowLong(GetDlgItem(hwndDlg, IDC_MSGTABS), GWL_STYLE);
@@ -2356,6 +2358,7 @@ panel_found:
                         mii.fType = MFT_OWNERDRAW;
 
                         pContainer->hMenu = LoadMenu(g_hInst, MAKEINTRESOURCE(IDR_MENUBAR));
+                        CallService(MS_LANGPACK_TRANSLATEMENU, (WPARAM)pContainer->hMenu, 0);
                         for(i = 0; i <= 5; i++) {
                             mii.wID = 0xffff5000 + i;
                             SetMenuItemInfo(pContainer->hMenu, i, TRUE, &mii);

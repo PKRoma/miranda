@@ -1010,7 +1010,7 @@ static void BTN_ReadItem(char *itemName, char *file)
     tmpItem.xOff = GetPrivateProfileIntA(itemName, "xoff", 0, file);
     tmpItem.yOff = GetPrivateProfileIntA(itemName, "yoff", 0, file);
 
-    SIDEBARWIDTH = max(tmpItem.width + 4, SIDEBARWIDTH);
+    SIDEBARWIDTH = max(tmpItem.width + 2, SIDEBARWIDTH);
 
     tmpItem.dwFlags |= GetPrivateProfileIntA(itemName, "toggle", 0, file) ? BUTTON_ISTOGGLE : 0;
 

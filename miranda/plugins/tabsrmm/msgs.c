@@ -36,7 +36,7 @@ $Id$
 
 static char *relnotes[] = {
     "{\\rtf1\\ansi\\deff0\\pard\\li%u\\fi-%u\\ri%u\\tx%u}",
-    "\\par\t\\b\\ul1 Release notes for version 1.1.0.3\\b0\\ul0\\par ",
+    "\\par\t\\b\\ul1 Release notes for version 0.9.9.211\\b0\\ul0\\par ",
     "*\tYou must hold the ctrl key when dragging tabs to re-arrange tab position\\par ",
     "*\tThe template system has been updated with a few changes. You can review an updated version of the template documentation at http://miranda.or.at/tabsrmm-articles/tabsrmm-message-log-templates/\\line \
 Also, you may want to reset your templates (you can do this in the template editor) when you have formatting problems.\\par ",

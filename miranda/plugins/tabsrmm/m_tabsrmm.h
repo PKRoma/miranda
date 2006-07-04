@@ -253,6 +253,8 @@ struct SendJob {
     char szErrorMsg[128];
     DWORD dwFlags;
     int iAcksNeeded;
+    HANDLE hEventSplit;
+    int chunkSize;
 };
 
 struct MessageSessionStats {
