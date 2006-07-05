@@ -824,7 +824,10 @@ static BOOL CALLBACK JabberGroupchatInviteAcceptDlgProc( HWND hwndDlg, UINT msg,
 			if ( inviteInfo->reason != NULL )
 				SetDlgItemText( hwndDlg, IDC_REASON, inviteInfo->reason );
 
-			SetDlgItemText( hwndDlg, IDC_NICK, jabberJID );
+			TCHAR* myNick = JabberNickFromJID( jabberJID );
+			SetDlgItemText( hwndDlg, IDC_NICK, myNick );
+			mir_free( myNick );
+
 			SendMessage( hwndDlg, WM_SETICON, ICON_BIG, ( LPARAM )LoadIcon( hInst, MAKEINTRESOURCE( IDI_GROUP )) );
 		}
 		return TRUE;
