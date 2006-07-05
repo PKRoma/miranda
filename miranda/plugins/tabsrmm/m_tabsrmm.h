@@ -134,7 +134,7 @@ typedef struct {
 #define SENDFORMAT_NONE 0
 
 #define AVATARMODE_DYNAMIC 0
-#define AVATARMODE_STATIC 1
+//#define AVATARMODE_STATIC 1
 
 #define MSGDLGFONTCOUNT 22
 #define IPFONTCOUNT 6
@@ -307,7 +307,7 @@ struct MessageWindowData {
 	HBITMAP hOwnPic;
 	SIZE pic;
 	int showPic, showInfoPic;
-    int bottomOffset;
+    BOOL fMustOffset;
     UINT uMinHeight;
 	BOOL isHistory;
     DWORD dwFlags;
@@ -339,7 +339,6 @@ struct MessageWindowData {
     HANDLE hFlashingEvent;
     char uin[80], myUin[80];
     BOOL bNotOnList;
-    int  iAvatarDisplayMode;
     int  SendFormat;
     DWORD dwIsFavoritOrRecent;
     DWORD dwLastUpdate;
@@ -379,6 +378,7 @@ struct MessageWindowData {
     char  szSep1_RTL[152], szMicroLf_RTL[128];
     DWORD isAutoRTL;
     int   nMax;            // max message size
+    int   textLen;
 };
 
 typedef struct _recentinfo {
@@ -480,7 +480,6 @@ typedef struct _globals {
     int m_AllowSendButtonHidden;
     int m_ToolbarHideMode;
     int m_FixFutureTimestamps;
-    int m_AvatarDisplayMode;
     int m_RTLDefault;
     int m_SplitterSaveOnClose;
     int m_MathModAvail;
@@ -535,6 +534,8 @@ typedef struct _globals {
     HICON m_AnimTrayIcons[4];
     BOOL  g_DisableScrollbars;
     BOOL  m_forcedSkinRefresh;
+    BOOL  m_visualMessageSizeIndicator;
+    BOOL  m_autoSplit;
 } MYGLOBALS;
 
 typedef struct _tag_ICONDESC {

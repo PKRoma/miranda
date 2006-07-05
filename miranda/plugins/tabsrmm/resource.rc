@@ -218,13 +218,11 @@ STYLE DS_SETFONT | DS_FIXEDSYS | DS_CONTROL | WS_CHILD | WS_VISIBLE
 FONT 8, "MS Shell Dlg", 0, 0, 0x1
 BEGIN
     GROUPBOX        "Message window options",IDC_STATIC,3,0,300,86
-    GROUPBOX        "Avatar options",IDC_STATIC,3,87,300,73
-    LTEXT           "Display",IDC_STATIC,9,98,56,9
-    COMBOBOX        IDC_AVATARDISPLAY,64,96,90,46,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
-    LTEXT           "Limit to",IDC_STATIC,159,97,29,10
-    EDITTEXT        IDC_MAXAVATARHEIGHT,197,96,35,12,ES_AUTOHSCROLL | ES_NUMBER
-    CONTROL         "",IDC_AVATARSPIN,"msctls_updown32",UDS_SETBUDDYINT | UDS_ALIGNRIGHT | UDS_AUTOBUDDY | UDS_ARROWKEYS,227,97,9,11
-    LTEXT           "pixels in height",IDC_STATIC,242,98,56,11
+    GROUPBOX        "Avatar options (size and scaling only for bottom avatar display)",IDC_STATIC,3,87,300,73
+    LTEXT           "Max. height",IDC_STATIC,10,98,50,10
+    EDITTEXT        IDC_MAXAVATARHEIGHT,66,96,35,12,ES_AUTOHSCROLL | ES_NUMBER
+    CONTROL         "",IDC_AVATARSPIN,"msctls_updown32",UDS_SETBUDDYINT | UDS_ALIGNRIGHT | UDS_AUTOBUDDY | UDS_ARROWKEYS,101,95,9,11
+    LTEXT           "(0 = no limit)",IDC_STATIC,114,97,63,11
     LTEXT           "Show contact avatars",IDC_STATIC,10,114,94,10
     COMBOBOX        IDC_AVATARMODE,130,111,159,46,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
     LTEXT           "Show my own avatars",IDC_STATIC,10,128,94,10
@@ -246,6 +244,8 @@ BEGIN
     EDITTEXT        IDC_SECONDS,228,211,25,12,ES_AUTOHSCROLL
     LTEXT           "seconds.",IDC_STATIC,258,213,36,8
     CONTROL         "",IDC_WINDOWOPTIONS,"SysTreeView32",TVS_HASBUTTONS | TVS_HASLINES | TVS_LINESATROOT | TVS_DISABLEDRAGDROP | TVS_SHOWSELALWAYS | WS_BORDER | WS_TABSTOP,6,8,294,76,WS_EX_STATICEDGE
+    CONTROL         "Try to keep original size",IDC_PRESERVEAVATARSIZE,
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,187,96,105,9
 END
 
 IDD_OPT_MSGLOG DIALOGEX 0, 0, 303, 226
@@ -970,6 +970,58 @@ END
 #endif    // APSTUDIO_INVOKED
 
 #endif    // English (U.S.) resources
+/////////////////////////////////////////////////////////////////////////////
+
+
+/////////////////////////////////////////////////////////////////////////////
+// German (Austria) resources
+
+#if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_DEA)
+#ifdef _WIN32
+LANGUAGE LANG_GERMAN, SUBLANG_GERMAN_AUSTRIAN
+#pragma code_page(1252)
+#endif //_WIN32
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Version
+//
+
+VS_VERSION_INFO VERSIONINFO
+ FILEVERSION 0,9,9,211
+ PRODUCTVERSION 0,9,9,211
+ FILEFLAGSMASK 0x17L
+#ifdef _DEBUG
+ FILEFLAGS 0x1L
+#else
+ FILEFLAGS 0x0L
+#endif
+ FILEOS 0x4L
+ FILETYPE 0x2L
+ FILESUBTYPE 0x0L
+BEGIN
+    BLOCK "StringFileInfo"
+    BEGIN
+        BLOCK "000004b0"
+        BEGIN
+            VALUE "CompanyName", "Miranda IM project"
+            VALUE "FileDescription", "tabSRMM.dll"
+            VALUE "FileVersion", "0, 9, 9, 211"
+            VALUE "InternalName", "tabSRMsg"
+            VALUE "LegalCopyright", "Copyright (C) 2006"
+            VALUE "LegalTrademarks", "Licensed under the Gnu general public license V2 or any later version."
+            VALUE "OriginalFilename", "tabsrmm.dll"
+            VALUE "ProductName", "tabSRMM Message window plugin"
+            VALUE "ProductVersion", "0, 9, 9, 211"
+        END
+    END
+    BLOCK "VarFileInfo"
+    BEGIN
+        VALUE "Translation", 0x0, 1200
+    END
+END
+
+#endif    // German (Austria) resources
 /////////////////////////////////////////////////////////////////////////////
 
 

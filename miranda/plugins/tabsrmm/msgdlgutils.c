@@ -258,81 +258,38 @@ void CalcDynamicAvatarSize(HWND hwndDlg, struct MessageWindowData *dat, BITMAP *
 	}    
     GetClientRect(hwndDlg, &rc);
     
-    if(dat->iAvatarDisplayMode != AVATARMODE_DYNAMIC) {
-        int showToolbar = dat->pContainer->dwFlags & CNT_HIDETOOLBAR ? 0 : 1;
-        RECT rcContainer;
-        int cx;
-        if(!dat->showPic)           // don't care if no avatar is visible == leave splitter alone...
-            return;
-        if(dat->dwFlags & MWF_WASBACKGROUNDCREATE || dat->pContainer->dwFlags & CNT_DEFERREDCONFIGURE || dat->pContainer->dwFlags & CNT_CREATE_MINIMIZED || IsIconic(dat->pContainer->hwnd))
-            return;                 // at this stage, the layout is not yet ready...
-
-        GetClientRect(dat->pContainer->hwnd, &rcContainer);
-        AdjustTabClientRect(dat->pContainer, &rcContainer);
-        cx = rc.right;
-
-        if(dat->iRealAvatarHeight == 0) {               // calc first layout paramaters
-            if(bminfo->bmWidth == 0 || bminfo->bmHeight == 0)
-                picAspect = 1.0;
-            else
-                picAspect = (double)(bminfo->bmWidth / (double)bminfo->bmHeight);
-            if(myGlobals.m_LimitStaticAvatarHeight > 0 && bminfo->bmHeight > myGlobals.m_LimitStaticAvatarHeight)
-                dat->iRealAvatarHeight = myGlobals.m_LimitStaticAvatarHeight;
-            else
-                dat->iRealAvatarHeight = bminfo->bmHeight;
-
-            picProjectedWidth = (double)dat->iRealAvatarHeight * picAspect;
-            dat->pic.cx = (int)picProjectedWidth + 2*1;
-            DM_UpdatePictureLayout(hwndDlg, dat);
-        }
-        if(cx - dat->pic.cx > dat->iButtonBarNeeds && !myGlobals.m_AlwaysFullToolbarWidth) {
-            if(dat->splitterY <= dat->bottomOffset + (showToolbar ? 0 : 26))
-                dat->splitterY = dat->bottomOffset + (showToolbar ? 1 : 26);;
-            if(dat->splitterY - 26 > dat->bottomOffset)
-                dat->pic.cy = dat->splitterY - 27;
-            else
-                dat->pic.cy = dat->bottomOffset;
-        }
-        else {
-            if(dat->splitterY <= dat->bottomOffset + 26 + (showToolbar ? 0 : 26))
-                dat->splitterY = dat->bottomOffset + 26 + (showToolbar ? 0 : 26);;
-                if(dat->splitterY - 27 > dat->bottomOffset)
-                    dat->pic.cy = dat->splitterY - 28;
-                else
-                    dat->pic.cy = dat->bottomOffset;
-        }
-		dat->pic.cy--;
-    }
-    else if(dat->iAvatarDisplayMode == AVATARMODE_DYNAMIC) {
-        if(dat->dwFlags & MWF_WASBACKGROUNDCREATE || dat->pContainer->dwFlags & CNT_DEFERREDCONFIGURE || dat->pContainer->dwFlags & CNT_CREATE_MINIMIZED || IsIconic(dat->pContainer->hwnd))
-            return;                 // at this stage, the layout is not yet ready...
-            
-        if(bminfo->bmWidth == 0 || bminfo->bmHeight == 0)
-            picAspect = 1.0;
-        else
-            picAspect = (double)(bminfo->bmWidth / (double)bminfo->bmHeight);
-        picProjectedWidth = (double)((dat->dynaSplitter + ((dat->showUIElements != 0) ? 28 : 2))) * picAspect;
-
-        if(((rc.right) - (int)picProjectedWidth) > (dat->iButtonBarNeeds) && !myGlobals.m_AlwaysFullToolbarWidth) {
-            dat->iRealAvatarHeight = dat->dynaSplitter + ((dat->showUIElements != 0) ? 31 : 6);
-            dat->bottomOffset = dat->dynaSplitter + 100;
-        }
-        else {
-            dat->iRealAvatarHeight = dat->dynaSplitter + 6;
-            dat->bottomOffset = -33;
-        }
-        if(bminfo->bmHeight != 0)
-            aspect = (double)dat->iRealAvatarHeight / (double)bminfo->bmHeight;
-        else
-            aspect = 1;
-        newWidth = (double)bminfo->bmWidth * aspect;
-        if(newWidth > (double)(rc.right) * 0.8)
-            newWidth = (double)(rc.right) * 0.8;
-        dat->pic.cy = dat->iRealAvatarHeight + 2*1;
-        dat->pic.cx = (int)newWidth + 2*1;
-    }
+    if(dat->dwFlags & MWF_WASBACKGROUNDCREATE || dat->pContainer->dwFlags & CNT_DEFERREDCONFIGURE || dat->pContainer->dwFlags & CNT_CREATE_MINIMIZED || IsIconic(dat->pContainer->hwnd))
+        return;                 // at this stage, the layout is not yet ready...
+        
+    if(bminfo->bmWidth == 0 || bminfo->bmHeight == 0)
+        picAspect = 1.0;
     else
-        return;
+        picAspect = (double)(bminfo->bmWidth / (double)bminfo->bmHeight);
+    picProjectedWidth = (double)((dat->dynaSplitter + ((dat->showUIElements != 0) ? 28 : 2))) * picAspect;
+
+    if(((rc.right) - (int)picProjectedWidth) > (dat->iButtonBarNeeds) && !myGlobals.m_AlwaysFullToolbarWidth) {
+        dat->iRealAvatarHeight = dat->dynaSplitter + ((dat->showUIElements != 0) ? 31 : 6);
+    }
+    else {
+        dat->iRealAvatarHeight = dat->dynaSplitter + 6;
+    }
+
+    if(myGlobals.m_LimitStaticAvatarHeight > 0)
+        dat->iRealAvatarHeight = min(dat->iRealAvatarHeight, myGlobals.m_LimitStaticAvatarHeight);
+
+    if(DBGetContactSettingByte(dat->hContact, SRMSGMOD_T, "dontscaleavatars", DBGetContactSettingByte(NULL, SRMSGMOD_T, "dontscaleavatars", 0)))
+        dat->iRealAvatarHeight = min(bminfo->bmHeight, dat->iRealAvatarHeight);
+
+    if(bminfo->bmHeight != 0)
+        aspect = (double)dat->iRealAvatarHeight / (double)bminfo->bmHeight;
+    else
+        aspect = 1;
+
+    newWidth = (double)bminfo->bmWidth * aspect;
+    if(newWidth > (double)(rc.right) * 0.8)
+        newWidth = (double)(rc.right) * 0.8;
+    dat->pic.cy = dat->iRealAvatarHeight + 2;
+    dat->pic.cx = (int)newWidth + 2;
 }
 
 int IsMetaContact(HWND hwndDlg, struct MessageWindowData *dat) 
@@ -517,7 +474,6 @@ int MsgWindowMenuHandler(HWND hwndDlg, struct MessageWindowData *dat, int select
                 DBWriteContactSettingByte(dat->hContact, SRMSGMOD_T, "hideavatar", avOverrideMode);
                 dat->panelWidth = -1;
                 ShowPicture(hwndDlg, dat, FALSE);
-                DM_UpdatePictureLayout(hwndDlg, dat);
                 SendMessage(hwndDlg, WM_SIZE, 0, 0);
                 DM_ScrollToBottom(hwndDlg, dat, 0, 1);
                 return 1;
@@ -987,19 +943,22 @@ void AdjustBottomAvatarDisplay(HWND hwndDlg, struct MessageWindowData *dat)
 		}
     }
     	
+    /*
     if(dat->iAvatarDisplayMode != AVATARMODE_DYNAMIC)
         dat->iRealAvatarHeight = 0;
+    */
     if(hbm) {
         dat->showPic = GetAvatarVisibility(hwndDlg, dat);
         if(dat->dynaSplitter == 0 || dat->splitterY == 0)
             LoadSplitter(hwndDlg, dat);
         dat->dynaSplitter = dat->splitterY - 34;
+        /*
         if(dat->iAvatarDisplayMode != AVATARMODE_DYNAMIC) {
             BITMAP bm;
             GetObject(hbm, sizeof(bm), &bm);
             CalcDynamicAvatarSize(hwndDlg, dat, &bm);
         }
-        DM_UpdatePictureLayout(hwndDlg, dat);
+        */
         DM_RecalcPictureSize(hwndDlg, dat);
         ShowWindow(GetDlgItem(hwndDlg, IDC_CONTACTPIC), dat->showPic ? SW_SHOW : SW_HIDE);
         InvalidateRect(GetDlgItem(hwndDlg, IDC_CONTACTPIC), NULL, TRUE);
@@ -1009,7 +968,6 @@ void AdjustBottomAvatarDisplay(HWND hwndDlg, struct MessageWindowData *dat)
         ShowWindow(GetDlgItem(hwndDlg, IDC_CONTACTPIC), dat->showPic ? SW_SHOW : SW_HIDE);
         dat->pic.cy = dat->pic.cx = 60;
         InvalidateRect(GetDlgItem(hwndDlg, IDC_CONTACTPIC), NULL, TRUE);
-        DM_UpdatePictureLayout(hwndDlg, dat);
     }
 }
 
@@ -1030,7 +988,6 @@ void ShowPicture(HWND hwndDlg, struct MessageWindowData *dat, BOOL showNewPic)
     } else {
         dat->showPic = dat->showPic ? 0 : 1;
         DBWriteContactSettingByte(dat->hContact,SRMSGMOD_T,"MOD_ShowPic",(BYTE)dat->showPic);
-        DM_UpdatePictureLayout(hwndDlg, dat);
     }
 
     GetWindowRect(GetDlgItem(hwndDlg,IDC_CONTACTPIC),&rc);
@@ -1781,7 +1738,9 @@ void PlayIncomingSound(struct ContainerWindowData *pContainer, HWND hwnd)
 
 void ConfigureSideBar(HWND hwndDlg, struct MessageWindowData *dat)
 {
-	if(!dat->pContainer->dwFlags & CNT_SIDEBAR)
+    return;
+
+    if(!dat->pContainer->dwFlags & CNT_SIDEBAR)
         return;
     CheckDlgButton(dat->pContainer->hwnd, IDC_SBAR_TOGGLEFORMAT, dat->SendFormat != 0 ? BST_CHECKED : BST_UNCHECKED);
 }
@@ -2139,31 +2098,16 @@ int MsgWindowDrawHandler(WPARAM wParam, LPARAM lParam, HWND hwndDlg, struct Mess
 			borderType = aceFlags & AVS_PREMULTIPLIED ? 2 : 3;
 
 		if(!bPanelPic) {
-            if(dat->iAvatarDisplayMode == AVATARMODE_DYNAMIC) {
-				if(borderType) {
-					RECT rcEdge = {0, 0, dat->pic.cx, dat->pic.cy};
-					if(borderType == 2)
-						DrawEdge(hdcDraw, &rcEdge, BDR_SUNKENINNER, BF_RECT);
-					else if(borderType == 3)
-	                    Rectangle(hdcDraw, 0, 0, dat->pic.cx, dat->pic.cy);
-					else if(borderType == 4) {
-						clipRgn = CreateRoundRectRgn(0, 0, dat->pic.cx + 1, dat->pic.cy + 1, 4, 4);
-						SelectClipRgn(hdcDraw, clipRgn);
-					}
-				}
-            }
-            else {
-                top = (dat->pic.cy - dat->iRealAvatarHeight) / 2;
-                if(borderType) {
-                    RECT rcEdge = {0, top - 1, dat->pic.cx, top + dat->iRealAvatarHeight + 1};
-					if(borderType == 2)
-						DrawEdge(hdcDraw, &rcEdge, BDR_SUNKENINNER, BF_RECT);
-					else if(borderType == 3)
-						Rectangle(hdcDraw, rcEdge.left, rcEdge.top, rcEdge.right, rcEdge.bottom);
-					else if(borderType == 4) {
-						clipRgn = CreateRoundRectRgn(rcEdge.left, rcEdge.top, rcEdge.right + 1, rcEdge.bottom + 1, 4, 4);
-						SelectClipRgn(hdcDraw, clipRgn);
-					}
+            top = (cy - dat->pic.cy) / 2;
+            if(borderType) {
+                RECT rcEdge = {0, top, dat->pic.cx, top + dat->pic.cy};
+                if(borderType == 2)
+                    DrawEdge(hdcDraw, &rcEdge, BDR_SUNKENINNER, BF_RECT);
+                else if(borderType == 3)
+                    Rectangle(hdcDraw, rcEdge.left, rcEdge.top, rcEdge.right, rcEdge.bottom);
+                else if(borderType == 4) {
+                    clipRgn = CreateRoundRectRgn(rcEdge.left, rcEdge.top, rcEdge.right + 1, rcEdge.bottom + 1, 4, 4);
+                    SelectClipRgn(hdcDraw, clipRgn);
                 }
             }
         }
@@ -2202,18 +2146,10 @@ int MsgWindowDrawHandler(WPARAM wParam, LPARAM lParam, HWND hwndDlg, struct Mess
 				LONG xy_off = borderType ? 1 : 0;
 
                 SetStretchBltMode(hdcDraw, HALFTONE);
-                if(aceFlags & AVS_PREMULTIPLIED) {
-                    if(dat->iAvatarDisplayMode == AVATARMODE_DYNAMIC)
-                        MY_AlphaBlend(hdcDraw, xy_off, xy_off, (int)dNewWidth + width_off, iMaxHeight + width_off, bminfo.bmWidth, bminfo.bmHeight, hdcMem);
-                    else
-						MY_AlphaBlend(hdcDraw, xy_off, top - (borderType ? 0 : 1), (int)dNewWidth + width_off, iMaxHeight + width_off, bminfo.bmWidth, bminfo.bmHeight, hdcMem);
-                }
-                else {
-                    if(dat->iAvatarDisplayMode == AVATARMODE_DYNAMIC)
-                        StretchBlt(hdcDraw, xy_off, xy_off, (int)dNewWidth + width_off, iMaxHeight + width_off, hdcMem, 0, 0, bminfo.bmWidth, bminfo.bmHeight, SRCCOPY);
-                    else
-						StretchBlt(hdcDraw, xy_off, top - (borderType ? 0 : 1), (int)dNewWidth + width_off, iMaxHeight + width_off, hdcMem, 0, 0, bminfo.bmWidth, bminfo.bmHeight, SRCCOPY);
-                }
+                if(aceFlags & AVS_PREMULTIPLIED)
+                    MY_AlphaBlend(hdcDraw, xy_off, top - (borderType ? 0 : 1), (int)dNewWidth + width_off, iMaxHeight + width_off, bminfo.bmWidth, bminfo.bmHeight, hdcMem);
+                else
+                    StretchBlt(hdcDraw, xy_off, top - (borderType ? 0 : 1), (int)dNewWidth + width_off, iMaxHeight + width_off, hdcMem, 0, 0, bminfo.bmWidth, bminfo.bmHeight, SRCCOPY);
             }
 			if(clipRgn) {
 				HBRUSH hbr = CreateSolidBrush((COLORREF)DBGetContactSettingDword(NULL, SRMSGMOD_T, "avborderclr", RGB(0, 0, 0)));

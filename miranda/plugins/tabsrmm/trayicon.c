@@ -159,11 +159,7 @@ void CreateSystrayIcon(int create)
     nim.uFlags = NIF_ICON | NIF_MESSAGE | NIF_TIP;
     nim.hIcon = myGlobals.g_iconContainer;
     nim.uCallbackMessage = DM_TRAYICONNOTIFY;
-#if defined(_UNICODE)
-    mir_snprintfW(nim.szTip, 64, L"%s", L"tabSRMM");
-#else
-    mir_snprintf(nim.szTip, 64, "%s", "tabSRMM");
-#endif    
+    mir_sntprintf(nim.szTip, 64, _T("%s"), _T("tabSRMM"));
     if(create && !nen_options.bTrayExist) {
         Shell_NotifyIcon(NIM_ADD, &nim);
         nen_options.bTrayExist = TRUE;

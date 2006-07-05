@@ -47,6 +47,7 @@ BEGIN
                     WS_VSCROLL | WS_TABSTOP,0,48,144,31,WS_EX_ACCEPTFILES | 
                     WS_EX_STATICEDGE
 #endif                    
+    CONTROL         "",IDC_CONTACTPIC,"Button",BS_OWNERDRAW,155,48,34,31
     CONTROL         "",IDOK,"TSButtonClass",WS_TABSTOP,146,33,34,13,
                     0x18000000L
     CONTROL         "",IDC_PIC,"TSButtonClass",WS_TABSTOP,92,33,14,13,
@@ -76,7 +77,6 @@ BEGIN
                     13,0x18000000L
     CONTROL         "",IDC_FONTFACE,"TSButtonClass",WS_TABSTOP,111,33,14,13,
                     0x18000000L
-    CONTROL         "",IDC_CONTACTPIC,"Button",BS_OWNERDRAW,155,55,34,25
     CONTROL         "",IDC_RETRY,"TSButtonClass",WS_TABSTOP,26,10,55,12
     CONTROL         "",IDC_CANCELSEND,"TSButtonClass",WS_TABSTOP,86,10,55,12
     CONTROL         "",IDC_MSGSENDLATER,"TSButtonClass",WS_TABSTOP,146,10,55,

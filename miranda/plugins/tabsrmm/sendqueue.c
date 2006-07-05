@@ -623,6 +623,9 @@ void UpdateSaveAndSendButton(HWND hwndDlg, struct MessageWindowData *dat)
         SendDlgItemMessage(hwndDlg, IDC_SAVE, BUTTONADDTOOLTIP, (WPARAM) pszIDCSAVE_close, 0);
         dat->dwFlags &= ~MWF_SAVEBTN_SAV;
     }
+    dat->textLen = len;
+    if(myGlobals.m_visualMessageSizeIndicator)
+        InvalidateRect(GetDlgItem(hwndDlg, IDC_SPLITTER), NULL, FALSE);
 }
 
 void NotifyDeliveryFailure(HWND hwndDlg, struct MessageWindowData *dat)
