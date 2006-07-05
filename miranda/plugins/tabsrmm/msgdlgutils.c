@@ -269,6 +269,7 @@ void CalcDynamicAvatarSize(HWND hwndDlg, struct MessageWindowData *dat, BITMAP *
 
     if(((rc.right) - (int)picProjectedWidth) > (dat->iButtonBarNeeds) && !myGlobals.m_AlwaysFullToolbarWidth) {
         dat->iRealAvatarHeight = dat->dynaSplitter + ((dat->showUIElements != 0) ? 31 : 6);
+        dat->iRealAvatarHeight += (myGlobals.m_visualMessageSizeIndicator ? 2 : 0);
     }
     else {
         dat->iRealAvatarHeight = dat->dynaSplitter + 6;
@@ -669,9 +670,17 @@ void UpdateReadChars(HWND hwndDlg, struct MessageWindowData *dat)
         int len;
         if(dat->bType == SESSIONTYPE_CHAT)
             len = GetWindowTextLength(GetDlgItem(hwndDlg, IDC_CHAT_MESSAGE));
-        else
-            len = GetWindowTextLength(GetDlgItem(hwndDlg, IDC_MESSAGE));
+        else {
+#if defined(_UNICODE)
+            GETTEXTLENGTHEX gtxl = {0};
+            gtxl.codepage = CP_UTF8;
+            gtxl.flags = GTL_DEFAULT | GTL_PRECISE | GTL_NUMBYTES;
 
+            len = SendDlgItemMessage(hwndDlg, IDC_MESSAGE, EM_GETTEXTLENGTHEX, (WPARAM)&gtxl, 0);
+#else
+            len = GetWindowTextLength(GetDlgItem(hwndDlg, IDC_MESSAGE));
+#endif
+        }
         _snprintf(buf, sizeof(buf), "%s %d/%d", dat->lcID, dat->iOpenJobs, len);
         SendMessageA(dat->pContainer->hwndStatus, SB_SETTEXTA, 1, (LPARAM) buf);
     }

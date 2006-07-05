@@ -1956,9 +1956,9 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                             SendDlgItemMessage(hwndDlg, IDC_MESSAGE, EM_SETTEXTEX, (WPARAM)&stx, (LPARAM)dbv.pszVal);
                         DBFreeVariant(&dbv);
                         len = GetWindowTextLength(GetDlgItem(hwndDlg,IDC_MESSAGE));
+                        UpdateSaveAndSendButton(hwndDlg, dat);
                         if(dat->pContainer->hwndActive == hwndDlg)
                             UpdateReadChars(hwndDlg, dat);
-                        UpdateSaveAndSendButton(hwndDlg, dat);
     				}
                     if(!DBGetContactSetting(dat->hContact, "UserInfo", "MyNotes", &dbv)) {
                         SetDlgItemTextA(hwndDlg, IDC_NOTES, dbv.pszVal);
@@ -2120,6 +2120,15 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
             
         case DM_CONFIGURETOOLBAR:
             dat->showUIElements = dat->pContainer->dwFlags & CNT_HIDETOOLBAR ? 0 : 1;
+
+            splitterEdges = DBGetContactSettingByte(NULL, SRMSGMOD_T, "splitteredges", 1);
+
+            if(splitterEdges == 0) {
+                SetWindowLong(GetDlgItem(hwndDlg, IDC_SPLITTER), GWL_EXSTYLE, GetWindowLong(GetDlgItem(hwndDlg, IDC_SPLITTER), GWL_EXSTYLE) & ~WS_EX_STATICEDGE);
+                SetWindowLong(GetDlgItem(hwndDlg, IDC_PANELSPLITTER), GWL_EXSTYLE, GetWindowLong(GetDlgItem(hwndDlg, IDC_SPLITTER), GWL_EXSTYLE) & ~WS_EX_STATICEDGE);
+            } else if(myGlobals.m_visualMessageSizeIndicator)
+                SetWindowLong(GetDlgItem(hwndDlg, IDC_SPLITTER), GWL_EXSTYLE, GetWindowLong(GetDlgItem(hwndDlg, IDC_SPLITTER), GWL_EXSTYLE) & ~WS_EX_STATICEDGE);
+
             if(lParam == 1) {
                 GetSendFormat(hwndDlg, dat, 1);
                 SetDialogToType(hwndDlg);
@@ -2192,14 +2201,6 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                 }
 				dat->panelWidth = -1;
             }
-
-            splitterEdges = DBGetContactSettingByte(NULL, SRMSGMOD_T, "splitteredges", 1);
-
-            if(splitterEdges == 0) {
-                SetWindowLong(GetDlgItem(hwndDlg, IDC_SPLITTER), GWL_EXSTYLE, GetWindowLong(GetDlgItem(hwndDlg, IDC_SPLITTER), GWL_EXSTYLE) & ~WS_EX_STATICEDGE);
-                SetWindowLong(GetDlgItem(hwndDlg, IDC_PANELSPLITTER), GWL_EXSTYLE, GetWindowLong(GetDlgItem(hwndDlg, IDC_SPLITTER), GWL_EXSTYLE) & ~WS_EX_STATICEDGE);
-            } else if(myGlobals.m_visualMessageSizeIndicator)
-                SetWindowLong(GetDlgItem(hwndDlg, IDC_SPLITTER), GWL_EXSTYLE, GetWindowLong(GetDlgItem(hwndDlg, IDC_SPLITTER), GWL_EXSTYLE) & ~WS_EX_STATICEDGE);
 
             if(!(dat->dwFlags & MWF_SHOW_PRIVATETHEME))
                 LoadThemeDefaults(hwndDlg, dat);
@@ -4689,6 +4690,7 @@ quote_from_last:
                                             EnableMenuItem(hSubMenu, ID_EDITOR_REMOVEBACKGROUNDIMAGE, MF_BYCOMMAND | (iPrivateBG ? MF_GRAYED : MF_ENABLED));
                                             EnableMenuItem(hSubMenu, IDM_PASTEFORMATTED, MF_BYCOMMAND | (dat->SendFormat != 0 ? MF_ENABLED : MF_GRAYED));
                                             EnableMenuItem(hSubMenu, ID_EDITOR_PASTEANDSENDIMMEDIATELY, MF_BYCOMMAND | (myGlobals.m_PasteAndSend ? MF_ENABLED : MF_GRAYED));
+                                            CheckMenuItem(hSubMenu, ID_EDITOR_SHOWMESSAGELENGTHINDICATOR, MF_BYCOMMAND | (myGlobals.m_visualMessageSizeIndicator ? MF_CHECKED : MF_UNCHECKED));
                                         }
                                         CallService(MS_LANGPACK_TRANSLATEMENU, (WPARAM) hSubMenu, 0);
                                         SendMessage(((NMHDR *) lParam)->hwndFrom, EM_EXGETSEL, 0, (LPARAM) & sel);
@@ -4777,6 +4779,12 @@ quote_from_last:
                                                     }
                                                     break;
                                                 }
+                                                case ID_EDITOR_SHOWMESSAGELENGTHINDICATOR:
+                                                    myGlobals.m_visualMessageSizeIndicator = !myGlobals.m_visualMessageSizeIndicator;
+                                                    DBWriteContactSettingByte(NULL, SRMSGMOD_T, "msgsizebar", myGlobals.m_visualMessageSizeIndicator);
+                                                    WindowList_Broadcast(hMessageWindowList, DM_CONFIGURETOOLBAR, 0, 0);
+                                                    SendMessage(hwndDlg, WM_SIZE, 0, 0);
+                                                    break;
                                                 case ID_EDITOR_REMOVEBACKGROUNDIMAGE:
                                                     if(myGlobals.m_hbmMsgArea != 0) {
                                                         DeleteObject(myGlobals.m_hbmMsgArea);

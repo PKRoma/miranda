@@ -605,8 +605,16 @@ void RecallFailedMessage(HWND hwndDlg, struct MessageWindowData *dat, int iEntry
 
 void UpdateSaveAndSendButton(HWND hwndDlg, struct MessageWindowData *dat)
 {
-    int len = GetWindowTextLength(GetDlgItem(hwndDlg, IDC_MESSAGE));
-    
+    int len;
+#if defined(_UNICODE)
+    GETTEXTLENGTHEX gtxl = {0};
+    gtxl.codepage = CP_UTF8;
+    gtxl.flags = GTL_DEFAULT | GTL_PRECISE | GTL_NUMBYTES;
+
+    len = SendDlgItemMessage(hwndDlg, IDC_MESSAGE, EM_GETTEXTLENGTHEX, (WPARAM)&gtxl, 0);
+#else
+    len = GetWindowTextLength(GetDlgItem(hwndDlg, IDC_MESSAGE));
+#endif
     if(len && GetSendButtonState(hwndDlg) == PBS_DISABLED)
         EnableSendButton(hwndDlg, TRUE);
     else if(len == 0 && GetSendButtonState(hwndDlg) != PBS_DISABLED)

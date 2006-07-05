@@ -1814,7 +1814,7 @@ void ReloadGlobals()
      myGlobals.m_dropShadow = (BYTE)DBGetContactSettingByte(NULL, SRMSGMOD_T, "dropshadow", 0);
 	 myGlobals.m_LangPackCP = ServiceExists(MS_LANGPACK_GETCODEPAGE) ? CallService(MS_LANGPACK_GETCODEPAGE, 0, 0) : CP_ACP;
      myGlobals.m_SmileyButtonOverride = (BYTE)DBGetContactSettingByte(NULL, SRMSGMOD_T, "smbutton_override", 0);
-     myGlobals.m_visualMessageSizeIndicator = 1;
+     myGlobals.m_visualMessageSizeIndicator = DBGetContactSettingByte(NULL, SRMSGMOD_T, "msgsizebar", 0);
      myGlobals.m_autoSplit = DBGetContactSettingByte(NULL, SRMSGMOD_T, "autosplit", 0);
 
      switch(myGlobals.ipConfig.borderStyle) {
