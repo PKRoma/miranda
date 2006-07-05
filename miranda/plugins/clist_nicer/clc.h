@@ -100,6 +100,7 @@ struct ExtraCache {
 	CONTACTFLOATER *floater;
 	DWORD dwLastMsgTime;
     DWORD msgFrequency;
+    BOOL  isChatRoom;
 };
 
 struct ClcContact {

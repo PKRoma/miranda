@@ -1235,8 +1235,8 @@ static BOOL CALLBACK IgnoreDialogProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM
                     else if(IsDlgButtonChecked(hWnd, IDC_IGN_ALWAYSOFFLINE))
                         wApparentMode = ID_STATUS_OFFLINE;
 
-                    DBWriteContactSettingWord(hContact, contact->proto, "ApparentMode", wApparentMode);
-                    if(oldApparentMode != wApparentMode)
+                    //DBWriteContactSettingWord(hContact, contact->proto, "ApparentMode", wApparentMode);
+                    //if(oldApparentMode != wApparentMode)
                         CallContactService(hContact, PSS_SETAPPARENTMODE, (WPARAM)wApparentMode, 0);
                     SendMessage(hWnd, WM_USER + 120, 0, 0);
                 }
