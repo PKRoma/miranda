@@ -41,7 +41,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 #define CFM_ALL (CFM_EFFECTS | CFM_SIZE | CFM_FACE | CFM_OFFSET | CFM_CHARSET)
 #define SES_EXTENDBACKCOLOR 4           // missing from the mingw32 headers
-
+#define MIM_BACKGROUND              0x00000002
 #define GT_SELECTION 2
 #define ST_SELECTION 2
 #define ST_DEFAULT 0

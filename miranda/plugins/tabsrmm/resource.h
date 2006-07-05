@@ -382,7 +382,6 @@
 #define IDC_FLATTABS2                   1292
 #define IDC_USESNAPPING                 1293
 #define IDC_EXTRAMICROLF                1294
-#define IDC_DROPSHADOW                  1294
 #define IDC_SENDFORMAT                  1295
 #define IDC_FLATMSGLOG                  1296
 #define IDC_TOGGLESIDEBAR               1299

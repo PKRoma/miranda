@@ -1154,7 +1154,7 @@ LRESULT CALLBACK SplitterSubclassProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM
                 }
                 else if(myGlobals.m_visualMessageSizeIndicator) {
                     GetClientRect(hwnd, &rc);
-                    FillRect(dc, &rc, GetSysColorBrush(COLOR_3DDKSHADOW));
+                    FillRect(dc, &rc, GetSysColorBrush(COLOR_3DFACE));
                 }
                 if(myGlobals.m_visualMessageSizeIndicator && GetDlgCtrlID(hwnd) == IDC_SPLITTER) {
                     HBRUSH br = CreateSolidBrush(RGB(0, 255, 0));
@@ -1223,7 +1223,7 @@ LRESULT CALLBACK SplitterSubclassProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM
                         rc.right = rc.right - rc.left;
                         rc.bottom = rc.bottom - rc.top;
                         rc.left = rc.top = 0;
-                        FrameRect(dc, &rc, GetSysColorBrush(COLOR_3DDKSHADOW));
+                        FrameRect(dc, &rc, GetSysColorBrush(COLOR_3DSHADOW));
                     }
                     else {
                         if(rc.right - rc.left > rc.bottom - rc.top) {
@@ -1256,7 +1256,8 @@ LRESULT CALLBACK SplitterSubclassProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM
                     rc.right = rc.right - rc.left;
                     rc.bottom = rc.bottom - rc.top;
                     rc.left = rc.top = 0;
-                    DrawEdge(dc, &rc, EDGE_SUNKEN, BF_RECT | BF_SOFT | BF_MONO);
+                    FrameRect(dc, &rc, GetSysColorBrush(COLOR_3DSHADOW));
+                    //DrawEdge(dc, &rc, EDGE_SUNKEN, BF_RECT | BF_SOFT | BF_MONO);
                     ReleaseDC(hwnd, dc);
                     return 0;
                 }
@@ -1517,7 +1518,7 @@ static int MessageDialogResize(HWND hwndDlg, LPARAM lParam, UTILRESIZECONTROL * 
             urc->rcItem.top -= dat->splitterY - dat->originalSplitterY;
             //urc->rcItem.top=urc->rcItem.bottom-(dat->pic.cy +2);
             urc->rcItem.left=urc->rcItem.right-(dat->pic.cx +2);
-            if((urc->rcItem.bottom - urc->rcItem.top) < (dat->pic.cy)) {
+            if((urc->rcItem.bottom - urc->rcItem.top) < (dat->pic.cy) && dat->showPic) {
                 urc->rcItem.top=urc->rcItem.bottom-(dat->pic.cy);
                 dat->fMustOffset = TRUE;
             } else
@@ -2126,7 +2127,12 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
             if(splitterEdges == 0) {
                 SetWindowLong(GetDlgItem(hwndDlg, IDC_SPLITTER), GWL_EXSTYLE, GetWindowLong(GetDlgItem(hwndDlg, IDC_SPLITTER), GWL_EXSTYLE) & ~WS_EX_STATICEDGE);
                 SetWindowLong(GetDlgItem(hwndDlg, IDC_PANELSPLITTER), GWL_EXSTYLE, GetWindowLong(GetDlgItem(hwndDlg, IDC_SPLITTER), GWL_EXSTYLE) & ~WS_EX_STATICEDGE);
-            } else if(myGlobals.m_visualMessageSizeIndicator)
+            } else {
+                SetWindowLong(GetDlgItem(hwndDlg, IDC_SPLITTER), GWL_EXSTYLE, GetWindowLong(GetDlgItem(hwndDlg, IDC_SPLITTER), GWL_EXSTYLE) | WS_EX_STATICEDGE);
+                SetWindowLong(GetDlgItem(hwndDlg, IDC_PANELSPLITTER), GWL_EXSTYLE, GetWindowLong(GetDlgItem(hwndDlg, IDC_SPLITTER), GWL_EXSTYLE) | WS_EX_STATICEDGE);
+            }
+
+            if(myGlobals.m_visualMessageSizeIndicator)
                 SetWindowLong(GetDlgItem(hwndDlg, IDC_SPLITTER), GWL_EXSTYLE, GetWindowLong(GetDlgItem(hwndDlg, IDC_SPLITTER), GWL_EXSTYLE) & ~WS_EX_STATICEDGE);
 
             if(lParam == 1) {
@@ -4784,6 +4790,8 @@ quote_from_last:
                                                     DBWriteContactSettingByte(NULL, SRMSGMOD_T, "msgsizebar", myGlobals.m_visualMessageSizeIndicator);
                                                     WindowList_Broadcast(hMessageWindowList, DM_CONFIGURETOOLBAR, 0, 0);
                                                     SendMessage(hwndDlg, WM_SIZE, 0, 0);
+                                                    //SetWindowPos(GetDlgItem(hwndDlg, IDC_SPLITTER), 0, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE | SWP_FRAMECHANGED);
+                                                    //RedrawWindow(GetDlgItem(hwndDlg, IDC_SPLITTER), NULL, NULL, RDW_ERASE | RDW_UPDATENOW | RDW_INVALIDATE | RDW_FRAME);
                                                     break;
                                                 case ID_EDITOR_REMOVEBACKGROUNDIMAGE:
                                                     if(myGlobals.m_hbmMsgArea != 0) {

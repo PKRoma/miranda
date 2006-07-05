@@ -2151,14 +2151,14 @@ int MsgWindowDrawHandler(WPARAM wParam, LPARAM lParam, HWND hwndDlg, struct Mess
                     StretchBlt(hdcDraw, rcFrame.left + (borderType ? 1 : 0), height_off + (borderType ? 1 : 0), (int)dNewWidth + width_off, (int)dNewHeight + width_off, hdcMem, 0, 0, bminfo.bmWidth, bminfo.bmHeight, SRCCOPY);
             }
             else {
-				LONG width_off = borderType ? 0 : 2;
 				LONG xy_off = borderType ? 1 : 0;
+                LONG width_off = borderType ? 0 : 2;
 
                 SetStretchBltMode(hdcDraw, HALFTONE);
                 if(aceFlags & AVS_PREMULTIPLIED)
-                    MY_AlphaBlend(hdcDraw, xy_off, top - (borderType ? 0 : 1), (int)dNewWidth + width_off, iMaxHeight + width_off, bminfo.bmWidth, bminfo.bmHeight, hdcMem);
+                    MY_AlphaBlend(hdcDraw, xy_off, top + xy_off, (int)dNewWidth + width_off, iMaxHeight + width_off, bminfo.bmWidth, bminfo.bmHeight, hdcMem);
                 else
-                    StretchBlt(hdcDraw, xy_off, top - (borderType ? 0 : 1), (int)dNewWidth + width_off, iMaxHeight + width_off, hdcMem, 0, 0, bminfo.bmWidth, bminfo.bmHeight, SRCCOPY);
+                    StretchBlt(hdcDraw, xy_off, top + xy_off, (int)dNewWidth + width_off, iMaxHeight + width_off, hdcMem, 0, 0, bminfo.bmWidth, bminfo.bmHeight, SRCCOPY);
             }
 			if(clipRgn) {
 				HBRUSH hbr = CreateSolidBrush((COLORREF)DBGetContactSettingDword(NULL, SRMSGMOD_T, "avborderclr", RGB(0, 0, 0)));

@@ -873,7 +873,7 @@ nogroup:
                                     break;
                             }
                         }
-                        AppendToBuffer(&buffer, &bufferEnd, &bufferAlloced, "%s #~#%01d%c%s ", GetRTFFont(MSGFONTID_SYMBOLS_IN), icon, isSent ? '>' : '<', GetRTFFont(isSent ? MSGFONTID_MYMSG + iFontIDOffset : MSGFONTID_YOURMSG + iFontIDOffset));
+                        AppendToBuffer(&buffer, &bufferEnd, &bufferAlloced, "%s #~#%01d%c%s ", GetRTFFont(MSGDLGFONTCOUNT), icon, isSent ? '>' : '<', GetRTFFont(isSent ? MSGFONTID_MYMSG + iFontIDOffset : MSGFONTID_YOURMSG + iFontIDOffset));
                     }
                     else
                         skipToNext = TRUE;

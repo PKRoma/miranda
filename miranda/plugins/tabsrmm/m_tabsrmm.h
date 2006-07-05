@@ -524,7 +524,6 @@ typedef struct _globals {
 	BYTE bAvatarBoderType;
 	HFONT hFontCaption;
 	COLORREF skinDefaultFontColor;
-	BYTE m_dropShadow;
     DWORD m_LangPackCP;
     BYTE  m_SmileyButtonOverride;
 	char g_SkinnedFrame_left, g_SkinnedFrame_right, g_SkinnedFrame_bottom, g_SkinnedFrame_caption;

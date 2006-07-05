@@ -368,7 +368,6 @@ BEGIN
     LTEXT           "milliseconds",IDC_STATIC,166,113,81,12
     GROUPBOX        "Global container options",IDC_STATIC,3,132,300,63
     CONTROL         "Use the snapping windows plugin",IDC_USESNAPPING,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,142,157,11
-    CONTROL         "Container has drop shadow",IDC_DROPSHADOW,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,167,142,131,11
     GROUPBOX        "Default window title format",IDC_STATIC,3,196,300,28
     EDITTEXT        IDC_DEFAULTTITLEFORMAT,10,207,274,14,ES_AUTOHSCROLL
 END
@@ -972,6 +971,7 @@ END
 
 #endif    // English (U.S.) resources
 /////////////////////////////////////////////////////////////////////////////
+
 
 #ifndef APSTUDIO_INVOKED
 /////////////////////////////////////////////////////////////////////////////

@@ -1142,7 +1142,6 @@ static BOOL CALLBACK DlgProcContainerSettings(HWND hwndDlg, UINT msg, WPARAM wPa
 			CheckDlgButton(hwndDlg, IDC_USESKIN, DBGetContactSettingByte(NULL, SRMSGMOD_T, "useskin", 0) ? 1 : 0);
 			SendMessage(hwndDlg, WM_COMMAND, MAKELONG(IDC_USESKIN, BN_CLICKED), 0);
 			EnableWindow(GetDlgItem(hwndDlg, IDC_USESKIN), IsWinVer2000Plus() ? TRUE : FALSE);
-			CheckDlgButton(hwndDlg, IDC_DROPSHADOW, myGlobals.m_dropShadow);
 
             if(!ServiceExists("Utils/SnapWindowProc"))
                 EnableWindow(GetDlgItem(hwndDlg, IDC_USESNAPPING), FALSE);
@@ -1181,8 +1180,6 @@ static BOOL CALLBACK DlgProcContainerSettings(HWND hwndDlg, UINT msg, WPARAM wPa
                             DBWriteContactSettingDword(NULL, SRMSGMOD_T, "flashinterval", GetDlgItemInt(hwndDlg, IDC_FLASHINTERVAL, &translated, FALSE));
                             DBWriteContactSettingByte(NULL, SRMSGMOD_T, "nrflash", GetDlgItemInt(hwndDlg, IDC_NRFLASH, &translated, FALSE));
                             DBWriteContactSettingByte(NULL, SRMSGMOD_T, "usesnapping", IsDlgButtonChecked(hwndDlg, IDC_USESNAPPING));
-							DBWriteContactSettingByte(NULL, SRMSGMOD_T, "dropshadow", IsDlgButtonChecked(hwndDlg, IDC_DROPSHADOW) ? 1 : 0);
-							myGlobals.m_dropShadow = IsDlgButtonChecked(hwndDlg, IDC_DROPSHADOW) ? 1 : 0;
 
                             GetDlgItemText(hwndDlg, IDC_DEFAULTTITLEFORMAT, szDefaultName, TITLE_FORMATLEN);
 #if defined(_UNICODE)
@@ -1811,7 +1808,6 @@ void ReloadGlobals()
      myGlobals.m_szNoStatus = TranslateT("No status message available");
      myGlobals.ipConfig.borderStyle = (BYTE)DBGetContactSettingByte(NULL, SRMSGMOD_T, "ipfieldborder", IPFIELD_SUNKEN);
 	 myGlobals.bAvatarBoderType = (BYTE)DBGetContactSettingByte(NULL, SRMSGMOD_T, "avbordertype", 1);
-     myGlobals.m_dropShadow = (BYTE)DBGetContactSettingByte(NULL, SRMSGMOD_T, "dropshadow", 0);
 	 myGlobals.m_LangPackCP = ServiceExists(MS_LANGPACK_GETCODEPAGE) ? CallService(MS_LANGPACK_GETCODEPAGE, 0, 0) : CP_ACP;
      myGlobals.m_SmileyButtonOverride = (BYTE)DBGetContactSettingByte(NULL, SRMSGMOD_T, "smbutton_override", 0);
      myGlobals.m_visualMessageSizeIndicator = DBGetContactSettingByte(NULL, SRMSGMOD_T, "msgsizebar", 0);

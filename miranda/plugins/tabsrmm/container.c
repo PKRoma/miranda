@@ -967,10 +967,7 @@ BOOL CALLBACK DlgProcContainer(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPa
 				SetClassLong(hwndDlg, GCL_STYLE, GetClassLong(hwndDlg, GCL_STYLE) & ~(CS_VREDRAW | CS_HREDRAW));
 				SetClassLong(hwndTab, GCL_STYLE, GetClassLong(hwndTab, GCL_STYLE) & ~(CS_VREDRAW | CS_HREDRAW));
 
-				if(IsWinVerXPPlus() && !g_framelessSkinmode && myGlobals.m_dropShadow)
-					SetClassLong(hwndDlg, GCL_STYLE, GetClassLong(hwndDlg, GCL_STYLE) | CS_DROPSHADOW);
-				else
-					SetClassLong(hwndDlg, GCL_STYLE, GetClassLong(hwndDlg, GCL_STYLE) & ~CS_DROPSHADOW);
+				SetClassLong(hwndDlg, GCL_STYLE, GetClassLong(hwndDlg, GCL_STYLE) & ~CS_DROPSHADOW);
 
 				/*
 				 * additional system menu items...
@@ -1940,6 +1937,9 @@ panel_found:
                 TCITEM item;
                 int curItem = 0;
 
+                if(pContainer == NULL)
+                    break;
+
                 FlashContainer(pContainer, 0, 0);
                 pContainer->dwFlashingStarted = 0;
                 pLastActiveContainer = pContainer;
@@ -2506,6 +2506,7 @@ panel_found:
                 SIZE sz;
                 HFONT hOldFont;
                 TCHAR *menuName = TranslateTS(menuBarNames_translated[id - 0x5000]);
+                COLORREF clrBack;
 
                 hOldFont = SelectObject(dis->hDC, GetStockObject(DEFAULT_GUI_FONT));
                 if(pContainer->bSkinned && g_framelessSkinmode)
@@ -2513,10 +2514,19 @@ panel_found:
                 GetTextExtentPoint32(dis->hDC, menuName, lstrlen(menuName), &sz);
                 SetBkMode(dis->hDC, TRANSPARENT);
 
+                if(myGlobals.m_bIsXP) {
+                    if(pfnIsThemeActive && pfnIsThemeActive())
+                        clrBack = COLOR_MENUBAR;
+                    else
+                        clrBack = COLOR_3DFACE;
+                }
+                else
+                    clrBack = COLOR_3DFACE;
+
                 /*if(dis->itemState & ODS_SELECTED || dis->itemState & ODS_HOTLIGHT)
                     FillRect(dis->hDC, &dis->rcItem, GetSysColorBrush(COLOR_MENUHILIGHT));
                 else*/
-                    FillRect(dis->hDC, &dis->rcItem, pContainer->bSkinned && g_MenuBGBrush ? g_MenuBGBrush : GetSysColorBrush(myGlobals.m_bIsXP ? COLOR_MENUBAR : COLOR_3DFACE));
+                FillRect(dis->hDC, &dis->rcItem, pContainer->bSkinned && g_MenuBGBrush ? g_MenuBGBrush : GetSysColorBrush(clrBack));
 
                 if(dis->itemState & ODS_SELECTED) {
                     if(pContainer->bSkinned) {
@@ -2659,12 +2669,17 @@ panel_found:
 					DeleteObject(pContainer->cachedHBM);
 					DeleteDC(pContainer->cachedDC);
 				}
-				if (pContainer)
-                    free(pContainer);
-    			SetWindowLong(hwndDlg, GWL_USERDATA, 0);
                 SetWindowLong(hwndDlg, GWL_WNDPROC, (LONG)OldContainerWndProc);
                 return 0;
             }
+        case WM_NCDESTROY:
+            if (pContainer)
+                free(pContainer);
+            SetWindowLong(hwndDlg, GWL_USERDATA, 0);
+#if defined (_DEBUG)
+            _DebugTraceA("free pcontainer");
+#endif
+            break;
         case WM_CLOSE: {
                 WINDOWPLACEMENT wp;
                 char szCName[40];
