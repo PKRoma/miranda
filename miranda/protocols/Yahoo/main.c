@@ -105,11 +105,17 @@ BOOL WINAPI DllMain(HINSTANCE hinst,DWORD fdwReason,LPVOID lpvReserved)
 __declspec(dllexport) PLUGININFO* MirandaPluginInfo(DWORD mirandaVersion)
 {
 	//
-    // We require Miranda 0.4
-	// We using the latest/greatest API, including Typing Notifications and other stuff.
+    // We require Miranda 0.5
+	// This requires the latest trunk... experimental API used here
 	//
-    if (mirandaVersion < PLUGIN_MAKE_VERSION(0, 4, 0, 0))
+    if (mirandaVersion < PLUGIN_MAKE_VERSION(0, 5, 0, 0)) {
+		MessageBox( NULL, 
+				Translate("Yahoo plugin cannot be loaded. It requires Miranda IM 0.5 or later."), 
+				Translate("Yahoo"), 
+				MB_OK|MB_ICONWARNING|MB_SETFOREGROUND|MB_TOPMOST );
+
         return NULL;
+	}
 
     return &pluginInfo;
 }
@@ -141,8 +147,6 @@ int __declspec(dllexport) Unload(void)
 	if (szStartMsg)
 		free(szStartMsg);
 	
-	//YAHOO_DebugLog("Waiting for server thread to finish...");
-	//SleepEx(100, TRUE);
 	YAHOO_DebugLog("Before Netlib_CloseHandle");
     Netlib_CloseHandle( hNetlibUser );
 
@@ -159,6 +163,14 @@ int OnDetailsInit(WPARAM wParam, LPARAM lParam);
  
 static int OnModulesLoaded( WPARAM wParam, LPARAM lParam )
 {
+	if ( !ServiceExists( MS_DB_CONTACT_GETSETTING_STR )) {
+		MessageBox( NULL, 
+				Translate("Yahoo plugin requires db3x plugin version 0.5.1.0 or later" ), 
+				Translate("Yahoo"), 
+				MB_OK );
+		return 1;
+	}
+
 	char tModule[ 100 ], tModuleDescr[ 100 ];
 	NETLIBUSER nlu = {0};
 

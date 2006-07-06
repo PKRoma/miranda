@@ -665,9 +665,9 @@ HANDLE add_buddy( const char *yahoo_id, const char *yahoo_name, DWORD flags )
 	YAHOO_CallService( MS_PROTO_ADDTOCONTACT, ( WPARAM )hContact,( LPARAM )yahooProtocolName );
 	YAHOO_SetString( hContact, YAHOO_LOGINID, yahoo_id );
 	if (lstrlen(yahoo_name) > 0)
-		YAHOO_SetString( hContact, "Nick", yahoo_name );
+		YAHOO_SetStringUtf( hContact, "Nick", yahoo_name );
 	else
-	    YAHOO_SetString( hContact, "Nick", yahoo_id );
+	    YAHOO_SetStringUtf( hContact, "Nick", yahoo_id );
 	    
 	//DBWriteContactSettingWord(hContact, yahooProtocolName, "Status", ID_STATUS_OFFLINE);
 
@@ -1383,15 +1383,15 @@ void ext_yahoo_got_buddies(int id, YList * buds)
 		  //LOG(("YAB_ENTRY"));
 		  
 		  if (bud->yab_entry->fname) 
-		    YAHOO_SetString( hContact, "FirstName", bud->yab_entry->fname);
+		    YAHOO_SetStringUtf( hContact, "FirstName", bud->yab_entry->fname);
 		  
 		  
 		  if (bud->yab_entry->lname) 
-		      YAHOO_SetString( hContact, "LastName", bud->yab_entry->lname);
+		      YAHOO_SetStringUtf( hContact, "LastName", bud->yab_entry->lname);
 		  
 		  
 		  if (bud->yab_entry->nname) 
-		      YAHOO_SetString( hContact, "Nick", bud->yab_entry->nname);
+		      YAHOO_SetStringUtf( hContact, "Nick", bud->yab_entry->nname);
 		  
 		  
 		  if (bud->yab_entry->email) 

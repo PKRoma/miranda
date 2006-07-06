@@ -113,6 +113,11 @@ DWORD __stdcall YAHOO_SetString( HANDLE hContact, const char* valueName, const c
 	return DBWriteContactSettingString( hContact, yahooProtocolName, valueName, parValue );
 }
 
+DWORD __stdcall YAHOO_SetStringUtf( HANDLE hContact, const char* valueName, const char* parValue )
+{
+	return DBWriteContactSettingStringUtf( hContact, yahooProtocolName, valueName, parValue );
+}
+
 LRESULT CALLBACK PopupWindowProc( HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam )
 {
 	switch( message ) {

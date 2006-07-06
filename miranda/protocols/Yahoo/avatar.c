@@ -54,14 +54,10 @@ int OnDetailsInit(WPARAM wParam, LPARAM lParam)
   OPTIONSDIALOGPAGE odp;
   char szAvtCaption[MAX_PATH+8];
 
-  //MessageBox(NULL, "HALLO!!", "AA", MB_OK);
-  
   szProto = (char*)CallService(MS_PROTO_GETCONTACTBASEPROTO, lParam, 0);
   if ((lstrcmp(szProto, yahooProtocolName)) && lParam)
     return 0;
 
-  //MessageBox(NULL, "HALLO 123!!", "AA", MB_OK);
-  
   if ((lParam == 0) && YAHOO_GetByte( "ShowAvatars", 0 ))
   {
 	 // Avatar page only for valid contacts

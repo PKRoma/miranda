@@ -130,6 +130,7 @@ DWORD __stdcall YAHOO_SetWord( HANDLE hContact, const char* valueName, int parVa
 int __stdcall YAHOO_SendBroadcast( HANDLE hContact, int type, int result, HANDLE hProcess, LPARAM lParam );
 
 DWORD __stdcall YAHOO_SetString( HANDLE hContact, const char* valueName, const char* parValue );
+DWORD __stdcall YAHOO_SetStringUtf( HANDLE hContact, const char* valueName, const char* parValue );
 
 int __stdcall	YAHOO_ShowPopup( const char* nickname, const char* msg, const char *szURL );
 
