@@ -1162,8 +1162,8 @@ static BOOL CALLBACK DlgProcOptions2(HWND hwndDlg,UINT uMsg,WPARAM wParam,LPARAM
                     if(fontOptionsList == CHAT_fontOptionsList)
                         DBWriteContactSettingTString(NULL, szMod, str, fontOptionsList[j].szFace);
                     else {
-                        char szFacename[LF_FACESIZE + 2];
 #if defined(_UNICODE)
+                        char szFacename[LF_FACESIZE + 2];
                         WideCharToMultiByte(CP_ACP, 0, fontOptionsList[j].szFace, -1, szFacename, LF_FACESIZE, 0, 0);
                         DBWriteContactSettingString(NULL, szMod, str, szFacename);
 #else

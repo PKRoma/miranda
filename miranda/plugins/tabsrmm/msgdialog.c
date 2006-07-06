@@ -1135,8 +1135,8 @@ static LRESULT CALLBACK MsgIndicatorSubclassProc(HWND hwnd, UINT msg, WPARAM wPa
                 HBRUSH brOld = SelectObject(dc, br);
                 if(!myGlobals.m_autoSplit) {
                     float fMax = (float)dat->nMax;
-                    float uPercent = (float)dat->textLen / ((fMax / 100.0) ? (fMax / 100.0) : (7500.0 / 100.0));
-                    float fx = ((float)rc.right / 100.0) * uPercent;
+                    float uPercent = (float)dat->textLen / ((fMax / (float)100.0) ? (fMax / (float)100.0) : (float)75.0);
+                    float fx = ((float)rc.right / (float)100.0) * uPercent;
 
                     rc.right = (LONG)fx;
                     FillRect(dc, &rc, br);
@@ -1144,12 +1144,12 @@ static LRESULT CALLBACK MsgIndicatorSubclassProc(HWND hwnd, UINT msg, WPARAM wPa
                 else {
                     float baselen = (dat->textLen <= dat->nMax) ? (float)dat->textLen : (float)dat->nMax;
                     float fMax = (float)dat->nMax;
-                    float uPercent = baselen / ((fMax / 100.0) ? (fMax / 100.0) : (7500.0 / 100.0));
+                    float uPercent = baselen / ((fMax / (float)100.0) ? (fMax / (float)100.0) : (float)75.0);
                     float fx;
                     LONG  width = rc.right;
                     if(dat->textLen >= dat->nMax)
                         rc.right = rc.right / 3;
-                    fx = ((float)rc.right / 100.0) * uPercent;
+                    fx = ((float)rc.right / (float)100.0) * uPercent;
                     rc.right = (LONG)fx;
                     FillRect(dc, &rc, br);
                     if(dat->textLen >= dat->nMax) {
@@ -1159,8 +1159,8 @@ static LRESULT CALLBACK MsgIndicatorSubclassProc(HWND hwnd, UINT msg, WPARAM wPa
                         brOld = SelectObject(dc, br);
                         rc.left = width / 3;
                         rc.right = width;
-                        uPercent = (float)dat->textLen / (20000.0 / 100.0);
-                        fx = ((float)(rc.right - rc.left) / 100.0) * uPercent;
+                        uPercent = (float)dat->textLen / (float)200.0;
+                        fx = ((float)(rc.right - rc.left) / (float)100.0) * uPercent;
                         rc.right = rc.left + (LONG)fx;
                         FillRect(dc, &rc, br);
                     }
@@ -4030,7 +4030,6 @@ quote_from_last:
                         EnableMenuItem(submenu, 0, MF_BYPOSITION | (ServiceExists(MS_IEVIEW_WINDOW) ? MF_ENABLED : MF_GRAYED));
                         
                         CheckMenuItem(submenu, ID_IEVIEWSETTING_USEGLOBAL, MF_BYCOMMAND | (DBGetContactSettingByte(dat->hContact, SRMSGMOD_T, "ieview", 0) == 0 ? MF_CHECKED : MF_UNCHECKED));
-                        CheckMenuItem(submenu, ID_IEVIEWSETTING_FORCEIEVIEW, MF_BYCOMMAND | (DBGetContactSettingByte(dat->hContact, SRMSGMOD_T, "ieview", 0) == 1 ? MF_CHECKED : MF_UNCHECKED));
                         CheckMenuItem(submenu, ID_IEVIEWSETTING_FORCEDEFAULTMESSAGELOG, MF_BYCOMMAND | (DBGetContactSettingByte(dat->hContact, SRMSGMOD_T, "ieview", 0) == (BYTE)-1 ? MF_CHECKED : MF_UNCHECKED));
                         CheckMenuItem(submenu, ID_SPLITTER_AUTOSAVEONCLOSE, MF_BYCOMMAND | (myGlobals.m_SplitterSaveOnClose ? MF_CHECKED : MF_UNCHECKED));
 
@@ -4055,9 +4054,6 @@ quote_from_last:
                         switch(iSelection) {
                             case ID_IEVIEWSETTING_USEGLOBAL:
                                 DBWriteContactSettingByte(dat->hContact, SRMSGMOD_T, "ieview", 0);
-                                break;
-                            case ID_IEVIEWSETTING_FORCEIEVIEW:
-                                DBWriteContactSettingByte(dat->hContact, SRMSGMOD_T, "ieview", 1);
                                 break;
                             case ID_IEVIEWSETTING_FORCEDEFAULTMESSAGELOG:
                                 DBWriteContactSettingByte(dat->hContact, SRMSGMOD_T, "ieview", -1);
@@ -5769,10 +5765,14 @@ verify:
                 CallService(MS_IEVIEW_WINDOW, 0, (LPARAM)&ieWindow);
             }
             // IEVIew MOD End
-
+            break;
+        case WM_NCDESTROY:
             if (dat)
                 free(dat);
             SetWindowLong(hwndDlg, GWL_USERDATA, 0);
+#ifdef _DEBUG
+            _DebugTraceA("msgdialog.c WM_NCDESTROY, free(dat)");
+#endif
             break;
     }
     return FALSE;

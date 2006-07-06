@@ -2262,8 +2262,8 @@ panel_found:
 
             ws = wsold = GetWindowLong(hwndDlg, GWL_STYLE);
 			ws = (pContainer->dwFlags & CNT_NOTITLE) ? 
-                ((IsWindowVisible(hwndDlg) ? WS_VISIBLE : 0) | WS_MINIMIZEBOX | WS_MAXIMIZEBOX | WS_CLIPCHILDREN | (g_framelessSkinmode ? 0 : WS_SYSMENU | WS_SIZEBOX)) : 
-                ws | WS_CAPTION | (g_framelessSkinmode ? WS_OVERLAPPEDWINDOW : WS_OVERLAPPEDWINDOW);
+                ((IsWindowVisible(hwndDlg) ? WS_VISIBLE : 0) | WS_MINIMIZEBOX | WS_MAXIMIZEBOX | WS_CLIPCHILDREN | WS_THICKFRAME | (g_framelessSkinmode ? WS_SYSMENU : WS_SYSMENU | WS_SIZEBOX)) : 
+                ws | WS_CAPTION | WS_OVERLAPPEDWINDOW | WS_CLIPCHILDREN;
             
 			SetWindowLong(hwndDlg, GWL_STYLE, ws);
 
@@ -2688,7 +2688,7 @@ panel_found:
                 free(pContainer);
             SetWindowLong(hwndDlg, GWL_USERDATA, 0);
 #if defined (_DEBUG)
-            _DebugTraceA("free pcontainer");
+            _DebugTraceA("container.c WM_NCDESTROY free(pcontainer)");
 #endif
             break;
         case WM_CLOSE: {

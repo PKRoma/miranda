@@ -366,9 +366,6 @@ static int SendQueuedMessage(HWND hwndDlg, struct MessageWindowData *dat, int iE
 			DBWriteContactSettingByte(dat->bIsMeta ? dat->hSubContact : dat->hContact, dat->bIsMeta ? dat->szMetaProto : dat->szProto, "UnicodeSend", 1);
 
         if(DBGetContactSettingByte(NULL, SRMSGMOD_T, "autosplit", 0)) {
-            int     iLen;
-            WCHAR   *wszBuf;
-            char    *utf8;
             BOOL    fSplit = FALSE;
             DWORD   dwOldFlags;
 
@@ -378,6 +375,9 @@ static int SendQueuedMessage(HWND hwndDlg, struct MessageWindowData *dat, int iE
             */
 #if defined(_UNICODE)
             if(sendJobs[iEntry].dwFlags & PREF_UNICODE && !(dat->sendMode & SMODE_FORCEANSI)) {
+	            int     iLen;
+		        WCHAR   *wszBuf;
+			    char    *utf8;
                 iLen = lstrlenA(sendJobs[iEntry].sendBuffer);
                 wszBuf = (WCHAR *)&sendJobs[iEntry].sendBuffer[iLen + 1];
                 utf8 = Utf8_Encode(wszBuf);

@@ -1554,7 +1554,7 @@ unsigned int GetIEViewMode(HWND hwndDlg, struct MessageWindowData *dat)
 {
     int iWantIEView = 0;
 
-    iWantIEView = (myGlobals.g_WantIEView) || (DBGetContactSettingByte(dat->hContact, SRMSGMOD_T, "ieview", 0) == 1 && ServiceExists(MS_IEVIEW_WINDOW));
+    iWantIEView = myGlobals.g_WantIEView;
     iWantIEView = (DBGetContactSettingByte(dat->hContact, SRMSGMOD_T, "ieview", 0) == (BYTE)-1) ? 0 : iWantIEView;
 
     return iWantIEView;
@@ -2351,7 +2351,7 @@ int MsgWindowDrawHandler(WPARAM wParam, LPARAM lParam, HWND hwndDlg, struct Mess
                     dtFlags = DT_SINGLELINE | DT_END_ELLIPSIS | DT_NOPREFIX;
 
 				if(dis->rcItem.left + 30 < dis->rcItem.right) {
-					RECT rc = dis->rcItem;
+					//RECT rc = dis->rcItem;
 					//dis->rcItem.left += (rc.right - rc.left);
 					DrawText(dis->hDC, szStatusMsg, -1, &dis->rcItem, dtFlags);
 				}
