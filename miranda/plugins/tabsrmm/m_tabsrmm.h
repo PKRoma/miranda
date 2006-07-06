@@ -379,6 +379,7 @@ struct MessageWindowData {
     DWORD isAutoRTL;
     int   nMax;            // max message size
     int   textLen;
+    LONG  ipFieldHeight;
 };
 
 typedef struct _recentinfo {

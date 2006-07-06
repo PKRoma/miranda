@@ -104,6 +104,7 @@
 #define IDC_SPLITTER                    1037
 #define IDC_CHKDEFAULTCOL_MESSAGE       1038
 #define IDC_SPLITTER2                   1039
+#define IDC_MSGINDICATOR                1050
 #define IDC_COLBACK_MESSAGE             1041
 #define IDC_COLTEXT_MESSAGE             1042
 #define IDC_CHKDEFAULTCOL_URL           1043

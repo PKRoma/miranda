@@ -633,7 +633,7 @@ void UpdateSaveAndSendButton(HWND hwndDlg, struct MessageWindowData *dat)
     }
     dat->textLen = len;
     if(myGlobals.m_visualMessageSizeIndicator)
-        InvalidateRect(GetDlgItem(hwndDlg, IDC_SPLITTER), NULL, FALSE);
+        InvalidateRect(GetDlgItem(hwndDlg, IDC_MSGINDICATOR), NULL, FALSE);
 }
 
 void NotifyDeliveryFailure(HWND hwndDlg, struct MessageWindowData *dat)

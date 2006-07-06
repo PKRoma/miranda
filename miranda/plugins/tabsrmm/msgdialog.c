@@ -276,6 +276,10 @@ static void MsgWindowUpdateState(HWND hwndDlg, struct MessageWindowData *dat, UI
             InvalidateRect(GetDlgItem(hwndDlg, IDC_PANELUIN), NULL, FALSE);
             InvalidateRect(GetDlgItem(hwndDlg, IDC_PANELSTATUS), NULL, FALSE);
         }
+        if(dat->dwFlags & MWF_DEFERREDSCROLL) {
+            dat->dwFlags &= ~MWF_DEFERREDSCROLL;
+            PostMessage(hwndDlg, DM_DELAYEDSCROLL, 1, 0);
+        }
     }
 }
 
@@ -309,6 +313,7 @@ static void ShowHideInfoPanel(HWND hwndDlg, struct MessageWindowData *dat)
         InvalidateRect(GetDlgItem(hwndDlg, IDC_PANELSTATUS), NULL, FALSE);
     }
     SendMessage(hwndDlg, WM_SIZE, 0, 0);
+    InvalidateRect(GetDlgItem(hwndDlg, IDC_CONTACTPIC), NULL, TRUE);
     DM_ScrollToBottom(hwndDlg, dat, 0, 1);
 }
 // drop files onto message input area...
@@ -1103,6 +1108,73 @@ static LRESULT CALLBACK AvatarSubclassProc(HWND hwnd, UINT msg, WPARAM wParam, L
     return CallWindowProc(OldAvatarWndProc, hwnd, msg, wParam, lParam);
 }
 
+static LRESULT CALLBACK MsgIndicatorSubclassProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
+{
+    struct MessageWindowData *dat = (struct MessageWindowData *)GetWindowLong(GetParent(hwnd), GWL_USERDATA);
+
+    switch(msg) {
+        case WM_PAINT:
+        {
+            RECT rc;
+            PAINTSTRUCT ps;
+            HDC dc = BeginPaint(hwnd, &ps);
+
+            GetClientRect(hwnd, &rc);
+
+            if(dat && dat->pContainer->bSkinned) {
+                HPEN hPenOld = SelectObject(dc, myGlobals.g_SkinLightShadowPen);
+                Rectangle(dc, 0, 0, rc.right, 2);
+                //SkinDrawBG(hwnd, dat->pContainer->hwnd, dat->pContainer, &rc, dc);
+                SelectObject(dc, hPenOld);
+            }
+            else if(myGlobals.m_visualMessageSizeIndicator)
+                FillRect(dc, &rc, GetSysColorBrush(COLOR_3DHIGHLIGHT));
+
+            if(myGlobals.m_visualMessageSizeIndicator) {
+                HBRUSH br = CreateSolidBrush(RGB(0, 255, 0));
+                HBRUSH brOld = SelectObject(dc, br);
+                if(!myGlobals.m_autoSplit) {
+                    float fMax = (float)dat->nMax;
+                    float uPercent = (float)dat->textLen / ((fMax / 100.0) ? (fMax / 100.0) : (7500.0 / 100.0));
+                    float fx = ((float)rc.right / 100.0) * uPercent;
+
+                    rc.right = (LONG)fx;
+                    FillRect(dc, &rc, br);
+                }
+                else {
+                    float baselen = (dat->textLen <= dat->nMax) ? (float)dat->textLen : (float)dat->nMax;
+                    float fMax = (float)dat->nMax;
+                    float uPercent = baselen / ((fMax / 100.0) ? (fMax / 100.0) : (7500.0 / 100.0));
+                    float fx;
+                    LONG  width = rc.right;
+                    if(dat->textLen >= dat->nMax)
+                        rc.right = rc.right / 3;
+                    fx = ((float)rc.right / 100.0) * uPercent;
+                    rc.right = (LONG)fx;
+                    FillRect(dc, &rc, br);
+                    if(dat->textLen >= dat->nMax) {
+                        SelectObject(dc, brOld);
+                        DeleteObject(br);
+                        br = CreateSolidBrush(RGB(255, 0, 0));
+                        brOld = SelectObject(dc, br);
+                        rc.left = width / 3;
+                        rc.right = width;
+                        uPercent = (float)dat->textLen / (20000.0 / 100.0);
+                        fx = ((float)(rc.right - rc.left) / 100.0) * uPercent;
+                        rc.right = rc.left + (LONG)fx;
+                        FillRect(dc, &rc, br);
+                    }
+                }
+                SelectObject(dc, brOld);
+                DeleteObject(br);
+            }
+            EndPaint(hwnd, &ps);
+            return 0;
+        }
+    }
+    return CallWindowProc(OldSplitterProc, hwnd, msg, wParam, lParam);
+}
+
 LRESULT CALLBACK SplitterSubclassProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 {
     HWND hwndParent = GetParent(hwnd);
@@ -1156,109 +1228,41 @@ LRESULT CALLBACK SplitterSubclassProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM
                     GetClientRect(hwnd, &rc);
                     FillRect(dc, &rc, GetSysColorBrush(COLOR_3DFACE));
                 }
-                if(myGlobals.m_visualMessageSizeIndicator && GetDlgCtrlID(hwnd) == IDC_SPLITTER) {
-                    HBRUSH br = CreateSolidBrush(RGB(0, 255, 0));
-                    HBRUSH brOld = SelectObject(dc, br);
-                    if(!myGlobals.m_autoSplit) {
-                        float fMax = (float)dat->nMax;
-                        float uPercent = (float)dat->textLen / ((fMax / 100.0) ? (fMax / 100.0) : (7500.0 / 100.0));
-                        float fx = ((float)rc.right / 100.0) * uPercent;
-
-                        rc.right = (LONG)fx;
-                        FillRect(dc, &rc, br);
-                    }
-                    else {
-                        float baselen = (dat->textLen <= dat->nMax) ? (float)dat->textLen : (float)dat->nMax;
-                        float fMax = (float)dat->nMax;
-                        float uPercent = baselen / ((fMax / 100.0) ? (fMax / 100.0) : (7500.0 / 100.0));
-                        float fx;
-                        LONG  width = rc.right;
-                        if(dat->textLen >= dat->nMax)
-                            rc.right = rc.right / 3;
-                        fx = ((float)rc.right / 100.0) * uPercent;
-                        rc.right = (LONG)fx;
-                        FillRect(dc, &rc, br);
-                        if(dat->textLen >= dat->nMax) {
-                            SelectObject(dc, brOld);
-                            DeleteObject(br);
-                            br = CreateSolidBrush(RGB(255, 0, 0));
-                            brOld = SelectObject(dc, br);
-                            rc.left = width / 3;
-                            rc.right = width;
-                            uPercent = (float)dat->textLen / (20000.0 / 100.0);
-                            fx = ((float)(rc.right - rc.left) / 100.0) * uPercent;
-                            rc.right = rc.left + (LONG)fx;
-                            FillRect(dc, &rc, br);
-                        }
-                    }
-                    SelectObject(dc, brOld);
-                    DeleteObject(br);
-                }
                 EndPaint(hwnd, &ps);
                 return 0;
-            }
-        case WM_NCCALCSIZE:
-            {
-                NCCALCSIZE_PARAMS *nccp = (NCCALCSIZE_PARAMS *)lParam;
-
-                if(myGlobals.m_visualMessageSizeIndicator && GetDlgCtrlID(hwnd) == IDC_SPLITTER) {
-                    InflateRect(&nccp->rgrc[0], -1, -1);
-                    return WVR_REDRAW;
-                }
-                break;
             }
         case WM_NCPAINT:
             {
                 if(splitterEdges == -1)
                     splitterEdges = DBGetContactSettingByte(NULL, SRMSGMOD_T, "splitteredges", 1);
 
-                if(dat && dat->pContainer->bSkinned && (splitterEdges > 0 || myGlobals.m_visualMessageSizeIndicator)) {
+                if(dat && dat->pContainer->bSkinned && splitterEdges > 0) {
                     HDC dc = GetWindowDC(hwnd);
                     POINT pt;
                     RECT rc;
                     HPEN hPenOld;
                     
                     GetWindowRect(hwnd, &rc);
-                    if(myGlobals.m_visualMessageSizeIndicator && GetDlgCtrlID(hwnd) == IDC_SPLITTER) {
-                        rc.right = rc.right - rc.left;
-                        rc.bottom = rc.bottom - rc.top;
-                        rc.left = rc.top = 0;
-                        FrameRect(dc, &rc, GetSysColorBrush(COLOR_3DSHADOW));
+                    if(rc.right - rc.left > rc.bottom - rc.top) {
+                        MoveToEx(dc, 0, 0, &pt);
+                        hPenOld = SelectObject(dc, myGlobals.g_SkinDarkShadowPen);
+                        LineTo(dc, rc.right - rc.left, 0);
+                        MoveToEx(dc, rc.right - rc.left, 1, &pt);
+                        SelectObject(dc, myGlobals.g_SkinLightShadowPen);
+                        LineTo(dc, -1, 1);
+                        SelectObject(dc, hPenOld);
+                        ReleaseDC(hwnd, dc);
                     }
                     else {
-                        if(rc.right - rc.left > rc.bottom - rc.top) {
-                            MoveToEx(dc, 0, 0, &pt);
-                            hPenOld = SelectObject(dc, myGlobals.g_SkinDarkShadowPen);
-                            LineTo(dc, rc.right - rc.left, 0);
-                            MoveToEx(dc, rc.right - rc.left, 1, &pt);
-                            SelectObject(dc, myGlobals.g_SkinLightShadowPen);
-                            LineTo(dc, -1, 1);
-                            SelectObject(dc, hPenOld);
-                            ReleaseDC(hwnd, dc);
-                        }
-                        else {
-                            MoveToEx(dc, 0, 0, &pt);
-                            hPenOld = SelectObject(dc, myGlobals.g_SkinDarkShadowPen);
-                            LineTo(dc, 0, rc.bottom - rc.top);
-                            MoveToEx(dc, 1, rc.bottom - rc.top, &pt);
-                            SelectObject(dc, myGlobals.g_SkinLightShadowPen);
-                            LineTo(dc, 1, -1);
-                            SelectObject(dc, hPenOld);
-                            ReleaseDC(hwnd, dc);
-                        }
+                        MoveToEx(dc, 0, 0, &pt);
+                        hPenOld = SelectObject(dc, myGlobals.g_SkinDarkShadowPen);
+                        LineTo(dc, 0, rc.bottom - rc.top);
+                        MoveToEx(dc, 1, rc.bottom - rc.top, &pt);
+                        SelectObject(dc, myGlobals.g_SkinLightShadowPen);
+                        LineTo(dc, 1, -1);
+                        SelectObject(dc, hPenOld);
+                        ReleaseDC(hwnd, dc);
                     }
-                    return 0;
-                } else if(myGlobals.m_visualMessageSizeIndicator && GetDlgCtrlID(hwnd) == IDC_SPLITTER) {
-                    HDC dc = GetWindowDC(hwnd);
-                    RECT rc;
-
-                    GetWindowRect(hwnd, &rc);
-                    rc.right = rc.right - rc.left;
-                    rc.bottom = rc.bottom - rc.top;
-                    rc.left = rc.top = 0;
-                    FrameRect(dc, &rc, GetSysColorBrush(COLOR_3DSHADOW));
-                    //DrawEdge(dc, &rc, EDGE_SUNKEN, BF_RECT | BF_SOFT | BF_MONO);
-                    ReleaseDC(hwnd, dc);
                     return 0;
                 }
                 break;
@@ -1341,12 +1345,12 @@ static int MessageDialogResize(HWND hwndDlg, LPARAM lParam, UTILRESIZECONTROL * 
     struct MessageWindowData *dat = (struct MessageWindowData *) lParam;
     int iClistOffset = 0;
     RECT rc, rcButton;
-    static int uinWidth, msgTop = 0, msgBottom = 0;
-
+    static int uinWidth, msgTop = 0, msgBottom = 0, not_on_list = 0;
+    
     int showToolbar = dat->pContainer->dwFlags & CNT_HIDETOOLBAR ? 0 : 1;
     int panelHeight = dat->panelHeight + 1;
 	int panelWidth = (dat->panelWidth != -1 ? dat->panelWidth + 2: 0);
-    int s_offset = 0, v_offset = myGlobals.m_visualMessageSizeIndicator ? -2 : 0;
+    int s_offset = 0;
     
     GetClientRect(GetDlgItem(hwndDlg, IDC_LOG), &rc);
     GetClientRect(GetDlgItem(hwndDlg, IDC_PROTOCOL), &rcButton);
@@ -1371,8 +1375,6 @@ static int MessageDialogResize(HWND hwndDlg, LPARAM lParam, UTILRESIZECONTROL * 
             urc->rcItem.bottom++; urc->rcItem.right++;
             if(dat->controlsHidden & TOOLBAR_PROTO_HIDDEN)
                 OffsetRect(&urc->rcItem, -(rcButton.right + 2), 0);
-            if(v_offset)
-                OffsetRect(&urc->rcItem, 0, v_offset);
             return RD_ANCHORX_LEFT | RD_ANCHORY_BOTTOM;
         case IDC_SMILEYBTN:
         case IDC_FONTBOLD:
@@ -1387,8 +1389,6 @@ static int MessageDialogResize(HWND hwndDlg, LPARAM lParam, UTILRESIZECONTROL * 
                 OffsetRect(&urc->rcItem, -22, 0);
             if(dat->controlsHidden & TOOLBAR_PROTO_HIDDEN)
                 OffsetRect(&urc->rcItem, -(rcButton.right + 2), 0);
-            if(v_offset)
-                OffsetRect(&urc->rcItem, 0, v_offset);
             return RD_ANCHORX_LEFT | RD_ANCHORY_BOTTOM;
         case IDC_TOGGLENOTES:
             return RD_ANCHORX_LEFT | RD_ANCHORY_TOP;
@@ -1418,8 +1418,6 @@ static int MessageDialogResize(HWND hwndDlg, LPARAM lParam, UTILRESIZECONTROL * 
             urc->rcItem.top -= (dat->splitterY - dat->originalSplitterY + s_offset);
             urc->rcItem.bottom -= (dat->splitterY - dat->originalSplitterY + s_offset);
             urc->rcItem.bottom++; urc->rcItem.right++;
-            if(v_offset)
-                OffsetRect(&urc->rcItem, 0, v_offset);
             if (urc->wId == IDC_PROTOCOL) // || urc->wId == IDC_PROTOMENU || urc->wId == IDC_INFOPANELMENU)
                 return RD_ANCHORX_LEFT | RD_ANCHORY_BOTTOM;
             if (showToolbar && !(dat->controlsHidden & TOOLBAR_SEND_HIDDEN)) {
@@ -1466,8 +1464,6 @@ static int MessageDialogResize(HWND hwndDlg, LPARAM lParam, UTILRESIZECONTROL * 
                     urc->rcItem.bottom -= item->MARGIN_BOTTOM;
                 }
             }
-            if(v_offset)
-                urc->rcItem.bottom += v_offset;
             return RD_ANCHORX_WIDTH | RD_ANCHORY_HEIGHT;
         case IDC_PANELPIC:
 			urc->rcItem.left = urc->rcItem.right - (panelWidth > 0 ? panelWidth - 2 : panelHeight + 2);
@@ -1485,19 +1481,32 @@ static int MessageDialogResize(HWND hwndDlg, LPARAM lParam, UTILRESIZECONTROL * 
 			}
             return RD_ANCHORX_RIGHT | RD_ANCHORY_TOP;
         case IDC_PANELSTATUS:
-			urc->rcItem.right = urc->dlgNewSize.cx - panelWidth;
+        {
+            urc->rcItem.right = urc->dlgNewSize.cx - panelWidth;
             urc->rcItem.left = urc->dlgNewSize.cx - panelWidth - dat->panelStatusCX;
+            urc->rcItem.bottom = panelHeight - 3;
+            urc->rcItem.top = urc->rcItem.bottom - dat->ipFieldHeight;
             return RD_ANCHORX_CUSTOM | RD_ANCHORY_TOP;
+        }
         case IDC_PANELNICK:
+        {
             urc->rcItem.right = urc->dlgNewSize.cx - panelWidth - 27;
+            urc->rcItem.bottom = panelHeight - 3 - dat->ipFieldHeight - 2;;
             return RD_ANCHORX_CUSTOM | RD_ANCHORY_TOP;
+        }
         case IDC_APPARENTMODE:
+        {
             urc->rcItem.right -= (panelWidth + 3);
             urc->rcItem.left -= (panelWidth + 3);
             return RD_ANCHORX_CUSTOM | RD_ANCHORX_RIGHT;
+        }
         case IDC_PANELUIN:
+        {
             urc->rcItem.right = urc->dlgNewSize.cx - (panelWidth + 2) - dat->panelStatusCX;
+            urc->rcItem.bottom = panelHeight - 3;
+            urc->rcItem.top = urc->rcItem.bottom - dat->ipFieldHeight;
             return RD_ANCHORX_CUSTOM | RD_ANCHORY_TOP;
+        }
         case IDC_SPLITTER:
             urc->rcItem.right = urc->dlgNewSize.cx;
             urc->rcItem.top -= dat->splitterY - dat->originalSplitterY;
@@ -1510,9 +1519,6 @@ static int MessageDialogResize(HWND hwndDlg, LPARAM lParam, UTILRESIZECONTROL * 
 
             if(dat->fMustOffset)
                 urc->rcItem.right -= (dat->pic.cx + 2);
-            if(v_offset)
-                urc->rcItem.top += v_offset;
-
             return RD_ANCHORX_CUSTOM | RD_ANCHORY_BOTTOM;
         case IDC_CONTACTPIC:
             urc->rcItem.top -= dat->splitterY - dat->originalSplitterY;
@@ -1531,13 +1537,21 @@ static int MessageDialogResize(HWND hwndDlg, LPARAM lParam, UTILRESIZECONTROL * 
                 urc->rcItem.right -= dat->pic.cx+2;
             urc->rcItem.top -= dat->splitterY - dat->originalSplitterY;
             if(dat->bNotOnList) {
-                if(urc->rcItem.bottom - urc->rcItem.top > 48)
+                if(urc->rcItem.bottom - urc->rcItem.top > 48) {
                     urc->rcItem.right -= 26;
-                else
+                    not_on_list = 26;
+                }
+                else {
                     urc->rcItem.right -= 52;
+                    not_on_list = 52;
+                }
             }
+            else
+                not_on_list = 0;
             if(myGlobals.m_SideBarEnabled)
                 urc->rcItem.left += 9;
+            if(myGlobals.m_visualMessageSizeIndicator)
+                urc->rcItem.bottom -= 2;
             msgTop = urc->rcItem.top;
             msgBottom = urc->rcItem.bottom;
             if(dat->pContainer->bSkinned) {
@@ -1558,8 +1572,6 @@ static int MessageDialogResize(HWND hwndDlg, LPARAM lParam, UTILRESIZECONTROL * 
 
             if(dat->fMustOffset)
                 OffsetRect(&urc->rcItem, -(dat->pic.cx + 2), 0);
-            if(v_offset)
-                OffsetRect(&urc->rcItem, 0, v_offset);
             return RD_ANCHORX_RIGHT | RD_ANCHORY_BOTTOM;
         case IDC_MULTISPLITTER:
             if(dat->dwEventIsShown & MWF_SHOW_INFOPANEL)
@@ -1583,6 +1595,16 @@ static int MessageDialogResize(HWND hwndDlg, LPARAM lParam, UTILRESIZECONTROL * 
             if(dat->dwEventIsShown & MWF_SHOW_INFOPANEL)
                 OffsetRect(&urc->rcItem, 0, panelHeight);
             return RD_ANCHORX_LEFT | RD_ANCHORY_TOP;
+        case IDC_MSGINDICATOR:
+            urc->rcItem.right = urc->dlgNewSize.cx;
+            if (dat->showPic)
+                urc->rcItem.right -= dat->pic.cx+2;
+            if(myGlobals.m_SideBarEnabled)
+                urc->rcItem.left += 9;
+            urc->rcItem.right -= not_on_list;
+            OffsetRect(&urc->rcItem, 0, -1);
+            ShowWindow(GetDlgItem(hwndDlg, IDC_MSGINDICATOR), myGlobals.m_visualMessageSizeIndicator ? SW_SHOW : SW_HIDE);
+            return RD_ANCHORX_CUSTOM | RD_ANCHORY_BOTTOM;
     }
     return RD_ANCHORX_LEFT | RD_ANCHORY_BOTTOM;
 }
@@ -1939,6 +1961,7 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                 OldSplitterProc = (WNDPROC) SetWindowLong(GetDlgItem(hwndDlg, IDC_SPLITTER), GWL_WNDPROC, (LONG) SplitterSubclassProc);
                 SetWindowLong(GetDlgItem(hwndDlg, IDC_MULTISPLITTER), GWL_WNDPROC, (LONG) SplitterSubclassProc);
                 SetWindowLong(GetDlgItem(hwndDlg, IDC_PANELSPLITTER), GWL_WNDPROC, (LONG) SplitterSubclassProc);
+                SetWindowLong(GetDlgItem(hwndDlg, IDC_MSGINDICATOR), GWL_WNDPROC, (LONG) MsgIndicatorSubclassProc);
                 
                 if (dat->hContact)
                     FindFirstEvent(hwndDlg, dat);
@@ -2131,10 +2154,6 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                 SetWindowLong(GetDlgItem(hwndDlg, IDC_SPLITTER), GWL_EXSTYLE, GetWindowLong(GetDlgItem(hwndDlg, IDC_SPLITTER), GWL_EXSTYLE) | WS_EX_STATICEDGE);
                 SetWindowLong(GetDlgItem(hwndDlg, IDC_PANELSPLITTER), GWL_EXSTYLE, GetWindowLong(GetDlgItem(hwndDlg, IDC_SPLITTER), GWL_EXSTYLE) | WS_EX_STATICEDGE);
             }
-
-            if(myGlobals.m_visualMessageSizeIndicator)
-                SetWindowLong(GetDlgItem(hwndDlg, IDC_SPLITTER), GWL_EXSTYLE, GetWindowLong(GetDlgItem(hwndDlg, IDC_SPLITTER), GWL_EXSTYLE) & ~WS_EX_STATICEDGE);
-
             if(lParam == 1) {
                 GetSendFormat(hwndDlg, dat, 1);
                 SetDialogToType(hwndDlg);
@@ -2601,7 +2620,8 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                 int saved = 0, i;
                 int delta;
                 HBITMAP hbm = dat->dwEventIsShown & MWF_SHOW_INFOPANEL ? dat->hOwnPic : (dat->ace ? dat->ace->hbmPic : myGlobals.g_hbmUnknown);
-                    
+                RECT rcPanelBottom;
+
                 if (IsIconic(hwndDlg))
                     break;
                 ZeroMemory(&urd, sizeof(urd));
@@ -2611,6 +2631,11 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                 urd.lParam = (LPARAM) dat;
                 urd.lpTemplate = MAKEINTRESOURCEA(IDD_MSGSPLITNEW);
                 urd.pfnResizer = /* dat->dwEventIsShown & MWF_SHOW_RESIZEIPONLY ? MessageDialogResizeIP : */ MessageDialogResize;
+
+                if(dat->ipFieldHeight == 0) {
+                    GetWindowRect(GetDlgItem(hwndDlg, IDC_PANELUIN), &rcPanelBottom);
+                    dat->ipFieldHeight = rcPanelBottom.bottom - rcPanelBottom.top;
+                }
 
                 if (dat->uMinHeight > 0 && HIWORD(lParam) >= dat->uMinHeight) {
                     if (dat->splitterY > HIWORD(lParam) - MINLOGHEIGHT) {
@@ -2841,6 +2866,8 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
 				}
 				return 0;
 			}
+        case DM_DELAYEDSCROLL:
+            return DM_ScrollToBottom(hwndDlg, dat, wParam, lParam);
         case DM_FORCESCROLL:
             {
                 SCROLLINFO *psi = (SCROLLINFO *)lParam;
@@ -5694,6 +5721,8 @@ verify:
             
             SetWindowLong(GetDlgItem(hwndDlg, IDC_MULTISPLITTER), GWL_WNDPROC, (LONG) OldSplitterProc);
             SetWindowLong(GetDlgItem(hwndDlg, IDC_PANELSPLITTER), GWL_WNDPROC, (LONG) OldSplitterProc);
+            SetWindowLong(GetDlgItem(hwndDlg, IDC_MSGINDICATOR), GWL_WNDPROC, (LONG) OldSplitterProc);
+
             SetWindowLong(GetDlgItem(hwndDlg, IDC_SPLITTER), GWL_WNDPROC, (LONG) OldSplitterProc);
             SetWindowLong(GetDlgItem(hwndDlg, IDC_MESSAGE), GWL_WNDPROC, (LONG) OldMessageEditProc);
             SetWindowLong(GetDlgItem(hwndDlg, IDC_CONTACTPIC), GWL_WNDPROC, (LONG) OldAvatarWndProc);

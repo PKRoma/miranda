@@ -496,7 +496,10 @@ static void DrawSideBar(HWND hwndDlg, struct ContainerWindowData *pContainer, RE
 
 static BOOL CALLBACK ContainerWndProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam)
 {
-	struct ContainerWindowData *pContainer = (struct ContainerWindowData *)GetWindowLong(hwndDlg, GWL_USERDATA);
+    BOOL bSkinned;
+
+    struct ContainerWindowData *pContainer = (struct ContainerWindowData *)GetWindowLong(hwndDlg, GWL_USERDATA);
+    bSkinned = pContainer ? pContainer->bSkinned : FALSE;
 
 	switch(msg) {
 		case WM_NCLBUTTONDOWN:
@@ -623,11 +626,13 @@ static BOOL CALLBACK ContainerWndProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPA
 				}
 			}
 		case WM_NCACTIVATE:
-			pContainer->ncActive = wParam;
-			if(pContainer->bSkinned && g_framelessSkinmode) {
-				SendMessage(hwndDlg, WM_NCPAINT, 0, 0);
-				return 1;
-			}
+            if(pContainer) {
+                pContainer->ncActive = wParam;
+                if(bSkinned && g_framelessSkinmode) {
+                    SendMessage(hwndDlg, WM_NCPAINT, 0, 0);
+                    return 1;
+                }
+            }
 			break;
 		case WM_NCPAINT:
 			{
@@ -644,7 +649,7 @@ static BOOL CALLBACK ContainerWndProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPA
 				if(!pContainer)
 					break;
 
-				if(!pContainer->bSkinned)
+				if(!bSkinned)
 					break;
 
                 if(myGlobals.m_forcedSkinRefresh)
@@ -888,12 +893,15 @@ BOOL CALLBACK DlgProcContainer(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPa
     int iItem = 0;
     TCITEM item;
     HWND  hwndTab;
+    BOOL  bSkinned;
 
     if(myGlobals.g_wantSnapping)
         CallSnappingWindowProc(hwndDlg, msg, wParam, lParam);
 
     pContainer = (struct ContainerWindowData *) GetWindowLong(hwndDlg, GWL_USERDATA);
+    bSkinned = pContainer ? pContainer->bSkinned : FALSE;
     hwndTab = GetDlgItem(hwndDlg, IDC_MSGTABS);
+
     switch (msg) {
         case WM_INITDIALOG:
             {
@@ -1162,7 +1170,7 @@ BOOL CALLBACK DlgProcContainer(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPa
                     RECT rc;
                     LONG dwNewLeft;
                     DWORD exStyle = GetWindowLong(hwndDlg, GWL_EXSTYLE);
-                    BOOL skinnedMode = pContainer->bSkinned;
+                    BOOL skinnedMode = bSkinned;
                     ButtonItem *pItem = g_ButtonItems;
 
                     if(pfnIsThemeActive)
@@ -1421,7 +1429,7 @@ BOOL CALLBACK DlgProcContainer(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPa
                     SendMessage(pContainer->hwndStatus, SB_SETPARTS, myGlobals.g_SecureIMAvail ? 5 : 4, (LPARAM) statwidths);
                     pContainer->statusBarHeight = (rcs.bottom - rcs.top) + 1;
                     if(pContainer->hwndSlist)
-                        MoveWindow(pContainer->hwndSlist, pContainer->bSkinned ? 4 : 2, (rcs.bottom - rcs.top) / 2 - 7, 16, 16, FALSE);
+                        MoveWindow(pContainer->hwndSlist, bSkinned ? 4 : 2, (rcs.bottom - rcs.top) / 2 - 7, 16, 16, FALSE);
                 }
                 else
                     pContainer->statusBarHeight = 0;
@@ -1460,7 +1468,7 @@ BOOL CALLBACK DlgProcContainer(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPa
                 }
 
                 RedrawWindow(hwndTab, NULL, NULL, RDW_INVALIDATE | (pContainer->bSizingLoop ? RDW_ERASE : 0));
-				RedrawWindow(hwndDlg, NULL, NULL, (pContainer->bSkinned ? RDW_FRAME : 0) | RDW_INVALIDATE | (pContainer->bSizingLoop || wParam == SIZE_RESTORED ? RDW_ERASE : 0));
+				RedrawWindow(hwndDlg, NULL, NULL, (bSkinned ? RDW_FRAME : 0) | RDW_INVALIDATE | (pContainer->bSizingLoop || wParam == SIZE_RESTORED ? RDW_ERASE : 0));
 
                 if(pContainer->hwndStatus)
                     InvalidateRect(pContainer->hwndStatus, NULL, FALSE);
@@ -1621,7 +1629,7 @@ BOOL CALLBACK DlgProcContainer(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPa
                         pContainer->bInTray = 0;
                         return 0;
                     }
-					if(pContainer->bSkinned) {
+					if(bSkinned) {
 						ShowWindow(hwndDlg, SW_SHOW);
 						return 0;
 					}
@@ -1924,7 +1932,10 @@ panel_found:
         * pass the WM_ACTIVATE msg to the active message dialog child
         */
         case WM_ACTIVATE:
-			if (LOWORD(wParam == WA_INACTIVE) && (HWND)lParam != myGlobals.g_hwndHotkeyHandler && GetParent((HWND)lParam) != hwndDlg) {
+            if(pContainer == NULL)
+                break;
+
+            if (LOWORD(wParam == WA_INACTIVE) && (HWND)lParam != myGlobals.g_hwndHotkeyHandler && GetParent((HWND)lParam) != hwndDlg) {
 				if (pContainer->dwFlags & CNT_TRANSPARENCY && pSetLayeredWindowAttributes != NULL)
 					pSetLayeredWindowAttributes(hwndDlg, g_ContainerColorKey, (BYTE)HIWORD(pContainer->dwTransparency), (/* pContainer->bSkinned ? LWA_COLORKEY :  */ 0) | (pContainer->dwFlags & CNT_TRANSPARENCY ? LWA_ALPHA : 0));
 			}
@@ -2095,7 +2106,7 @@ panel_found:
             }
 		case WM_PAINT:
 			{
-				if(pContainer->bSkinned) {
+				if(bSkinned) {
 					PAINTSTRUCT ps;
 					HDC hdc = BeginPaint(hwndDlg, &ps);
 					EndPaint(hwndDlg, &ps);
@@ -2105,7 +2116,7 @@ panel_found:
 			}
 		case WM_ERASEBKGND:
 			{
-				if(pContainer->bSkinned)
+				if(bSkinned)
 					return TRUE;
 				break;
 			}
@@ -2256,20 +2267,20 @@ panel_found:
             
 			SetWindowLong(hwndDlg, GWL_STYLE, ws);
 
-            pContainer->tBorder = DBGetContactSettingByte(NULL, SRMSGMOD_T, (pContainer->bSkinned ? "S_tborder" : "tborder"), 2);
-            pContainer->tBorder_outer_left = DBGetContactSettingByte(NULL, SRMSGMOD_T, (pContainer->bSkinned ? "S_tborder_outer_left" : "tborder_outer_left"), 2);
-            pContainer->tBorder_outer_right = DBGetContactSettingByte(NULL, SRMSGMOD_T, (pContainer->bSkinned ? "S_tborder_outer_right" : "tborder_outer_right"), 2);
-            pContainer->tBorder_outer_top = DBGetContactSettingByte(NULL, SRMSGMOD_T, (pContainer->bSkinned ? "S_tborder_outer_top" : "tborder_outer_top"), 2);
-            pContainer->tBorder_outer_bottom = DBGetContactSettingByte(NULL, SRMSGMOD_T, (pContainer->bSkinned ? "S_tborder_outer_bottom" : "tborder_outer_bottom"), 2);
-			sBarHeight = (UINT)DBGetContactSettingByte(NULL, SRMSGMOD_T, (pContainer->bSkinned ? "S_sbarheight" : "sbarheight"), 0);
+            pContainer->tBorder = DBGetContactSettingByte(NULL, SRMSGMOD_T, (bSkinned ? "S_tborder" : "tborder"), 2);
+            pContainer->tBorder_outer_left = DBGetContactSettingByte(NULL, SRMSGMOD_T, (bSkinned ? "S_tborder_outer_left" : "tborder_outer_left"), 2);
+            pContainer->tBorder_outer_right = DBGetContactSettingByte(NULL, SRMSGMOD_T, (bSkinned ? "S_tborder_outer_right" : "tborder_outer_right"), 2);
+            pContainer->tBorder_outer_top = DBGetContactSettingByte(NULL, SRMSGMOD_T, (bSkinned ? "S_tborder_outer_top" : "tborder_outer_top"), 2);
+            pContainer->tBorder_outer_bottom = DBGetContactSettingByte(NULL, SRMSGMOD_T, (bSkinned ? "S_tborder_outer_bottom" : "tborder_outer_bottom"), 2);
+			sBarHeight = (UINT)DBGetContactSettingByte(NULL, SRMSGMOD_T, (bSkinned ? "S_sbarheight" : "sbarheight"), 0);
 
 			if (LOBYTE(LOWORD(GetVersion())) >= 5  && pSetLayeredWindowAttributes != NULL) {
                 DWORD exold;
 				ex = exold = GetWindowLong(hwndDlg, GWL_EXSTYLE);
 				ex = (pContainer->dwFlags & CNT_TRANSPARENCY) ? ex | WS_EX_LAYERED : ex & ~WS_EX_LAYERED;
-				ex = (pContainer->bSkinned && g_compositedWindow) ? ex | WS_EX_COMPOSITED : ex & ~WS_EX_COMPOSITED;
+				ex = (bSkinned && g_compositedWindow) ? ex | WS_EX_COMPOSITED : ex & ~WS_EX_COMPOSITED;
 				SetWindowLong(hwndDlg, GWL_EXSTYLE, ex);
-				if (pContainer->dwFlags & CNT_TRANSPARENCY || pContainer->bSkinned) {
+				if (pContainer->dwFlags & CNT_TRANSPARENCY || bSkinned) {
 					DWORD trans = LOWORD(pContainer->dwTransparency);
 					pSetLayeredWindowAttributes(hwndDlg, g_ContainerColorKey, (BYTE)trans, (/* pContainer->bSkinned ? LWA_COLORKEY : */ 0) | (pContainer->dwFlags & CNT_TRANSPARENCY ? LWA_ALPHA : 0));
 				}
@@ -2322,7 +2333,7 @@ panel_found:
                 else
                     pContainer->hwndSlist = 0;
 
-				if(sBarHeight && pContainer->bSkinned)
+				if(sBarHeight && bSkinned)
 					SendMessage(pContainer->hwndStatus, SB_SETMINHEIGHT, sBarHeight, 0);
 
                 //OldStatusBarproc = (WNDPROC) SetWindowLong(pContainer->hwndStatus, GWL_WNDPROC, (LONG)StatusBarSubclassProc);
@@ -2363,7 +2374,7 @@ panel_found:
                             mii.wID = 0xffff5000 + i;
                             SetMenuItemInfo(pContainer->hMenu, i, TRUE, &mii);
                         }
-                        if(pContainer->bSkinned && g_MenuBGBrush) {
+                        if(bSkinned && g_MenuBGBrush) {
                             mi.cbSize = sizeof(mi);
                             mi.hbrBack = g_MenuBGBrush;
                             mi.fMask = MIM_BACKGROUND;
@@ -2509,7 +2520,7 @@ panel_found:
                 COLORREF clrBack;
 
                 hOldFont = SelectObject(dis->hDC, GetStockObject(DEFAULT_GUI_FONT));
-                if(pContainer->bSkinned && g_framelessSkinmode)
+                if(bSkinned && g_framelessSkinmode)
                     OffsetRect(&dis->rcItem, myGlobals.g_realSkinnedFrame_left, myGlobals.g_realSkinnedFrame_caption);
                 GetTextExtentPoint32(dis->hDC, menuName, lstrlen(menuName), &sz);
                 SetBkMode(dis->hDC, TRANSPARENT);
@@ -2526,10 +2537,10 @@ panel_found:
                 /*if(dis->itemState & ODS_SELECTED || dis->itemState & ODS_HOTLIGHT)
                     FillRect(dis->hDC, &dis->rcItem, GetSysColorBrush(COLOR_MENUHILIGHT));
                 else*/
-                FillRect(dis->hDC, &dis->rcItem, pContainer->bSkinned && g_MenuBGBrush ? g_MenuBGBrush : GetSysColorBrush(clrBack));
+                FillRect(dis->hDC, &dis->rcItem, bSkinned && g_MenuBGBrush ? g_MenuBGBrush : GetSysColorBrush(clrBack));
 
                 if(dis->itemState & ODS_SELECTED) {
-                    if(pContainer->bSkinned) {
+                    if(bSkinned) {
                         POINT pt;
                         HPEN  hPenOld;
 
@@ -2545,7 +2556,7 @@ panel_found:
                     } else
                         DrawEdge(dis->hDC, &dis->rcItem, BDR_SUNKENINNER, BF_RECT);
                 }
-                SetTextColor(dis->hDC, pContainer->bSkinned ? myGlobals.skinDefaultFontColor : GetSysColor(COLOR_MENUTEXT));
+                SetTextColor(dis->hDC, bSkinned ? myGlobals.skinDefaultFontColor : GetSysColor(COLOR_MENUTEXT));
                 DrawText(dis->hDC, menuName, lstrlen(menuName), &dis->rcItem,
                          DT_VCENTER | DT_SINGLELINE | DT_CENTER);
                 //DrawState(dis->hDC, 0, NULL, menuBarNames[dis->itemID - 100], lstrlen(menuBarNames[dis->itemID - 100]),

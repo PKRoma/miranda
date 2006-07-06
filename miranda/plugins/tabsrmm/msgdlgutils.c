@@ -2331,23 +2331,34 @@ int MsgWindowDrawHandler(WPARAM wParam, LPARAM lParam, HWND hwndDlg, struct Mess
                 hOldFont = SelectObject(dis->hDC, myGlobals.ipConfig.hFonts[IPFONTID_NICK]);
                 SetTextColor(dis->hDC, myGlobals.ipConfig.clrs[IPFONTID_NICK]);
             }
-            DrawText(dis->hDC, dat->szNickname, -1, &dis->rcItem, DT_SINGLELINE | DT_VCENTER | DT_WORD_ELLIPSIS | DT_NOPREFIX);
 			if(szStatusMsg && szStatusMsg[0]) {
 				SIZE szNick;
+                DWORD dtFlags;
+
+                DrawText(dis->hDC, dat->szNickname, -1, &dis->rcItem, DT_SINGLELINE | DT_WORD_ELLIPSIS | DT_NOPREFIX);
 				GetTextExtentPoint32(dis->hDC, dat->szNickname, lstrlen(dat->szNickname), &szNick);
 				if(myGlobals.ipConfig.isValid) {
 					SelectObject(dis->hDC, myGlobals.ipConfig.hFonts[IPFONTID_STATUS]);
 					SetTextColor(dis->hDC, myGlobals.ipConfig.clrs[IPFONTID_STATUS]);
 				}
-				dis->rcItem.left += szNick.cx;
+                dis->rcItem.left += (szNick.cx + 10);
+                GetTextExtentPoint32(dis->hDC, _T("A"), 1, &szNick);
+                if(dis->rcItem.bottom - dis->rcItem.top >= 2 * szNick.cy) {
+                    dtFlags = DT_WORDBREAK | DT_END_ELLIPSIS | DT_NOPREFIX;
+                    dis->rcItem.right -= 3;
+                }
+                else
+                    dtFlags = DT_SINGLELINE | DT_END_ELLIPSIS | DT_NOPREFIX;
+
 				if(dis->rcItem.left + 30 < dis->rcItem.right) {
 					RECT rc = dis->rcItem;
-					DrawText(dis->hDC, _T(" - "), -1, &rc, DT_SINGLELINE | DT_VCENTER | DT_CALCRECT);
-					DrawText(dis->hDC, _T(" - "), -1, &rc, DT_SINGLELINE | DT_VCENTER);
-					dis->rcItem.left += (rc.right - rc.left);
-					DrawText(dis->hDC, szStatusMsg, -1, &dis->rcItem, DT_SINGLELINE | DT_VCENTER | DT_END_ELLIPSIS | DT_NOPREFIX);
+					//dis->rcItem.left += (rc.right - rc.left);
+					DrawText(dis->hDC, szStatusMsg, -1, &dis->rcItem, dtFlags);
 				}
 			}
+            else
+                DrawText(dis->hDC, dat->szNickname, -1, &dis->rcItem, DT_SINGLELINE | DT_VCENTER | DT_WORD_ELLIPSIS | DT_NOPREFIX);
+
             if(hOldFont)
                 SelectObject(dis->hDC, hOldFont);
         }

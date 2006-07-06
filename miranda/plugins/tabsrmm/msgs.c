@@ -48,6 +48,11 @@ Also, scrolling logic has been changed in some places, and there are currently a
     "*\ttabSRMM will now warn you when you a paste a message which exceeds the message size limit for the active protocol.\\par ",
     "*\tIEView is now set as default message log when it is installed and detected. The global option to enable it has been removed. It is still possible to enable \
 or disable it on a per contact base.\\par ",
+    "*\tAdded visual message length indicator (a progress bar like control just below the toolbar buttons). You can disable it by right clicking \
+in the edit box and choosing \\b Show message length indicator\\b0 from the context menu.\\par ",
+    "*\tRemoved static avatar display option. Instead you can specify the maximum height of the bottom avatars and make them appear \
+unscaled, if possible.\\par ",
+    "*\tAdded message splitting. Read more about at http://miranda.or.at/tabsrmm/message-splitting/ \\par ",
     NULL
 };
 
@@ -1955,7 +1960,7 @@ static int SetupIconLibConfig()
 
     while(ICONBLOCKS[n].szSection) {
         i = 0;
-        sid.pszSection = ICONBLOCKS[n].szSection;
+        sid.pszSection = Translate(ICONBLOCKS[n].szSection);
         while(ICONBLOCKS[n].idesc[i].szDesc) {
             sid.pszName = ICONBLOCKS[n].idesc[i].szName;
             sid.pszDescription = Translate(ICONBLOCKS[n].idesc[i].szDesc);

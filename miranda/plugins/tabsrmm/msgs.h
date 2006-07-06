@@ -271,7 +271,7 @@ struct ProtocolData {
 #define DM_REMOVECLISTEVENT  (WM_USER+75)
 #define DM_GETWINDOWSTATE    (WM_USER+76)
 #define DM_DOCREATETAB       (WM_USER+77)
-//#define DM_LOADLOCALE        (WM_USER+78) ** FREEE**
+#define DM_DELAYEDSCROLL     (WM_USER+78)
 #define DM_REPLAYQUEUE       (WM_USER+79)
 #define DM_HKDETACH          (WM_USER+80)
 #define DM_HKSAVESIZE        (WM_USER+81)

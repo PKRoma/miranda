@@ -38,8 +38,12 @@ LRESULT DM_ScrollToBottom(HWND hwndDlg, struct MessageWindowData *dat, WPARAM wP
         dat = (struct MessageWindowData *)GetWindowLong(hwndDlg, GWL_USERDATA);
 
     if(dat) {
+
         if(dat->dwEventIsShown & MWF_SHOW_SCROLLINGDISABLED)
             return 0;
+
+        if(IsIconic(dat->pContainer->hwnd))
+            dat->dwFlags |= MWF_DEFERREDSCROLL;
 
         if(dat->hwndLog) {
             dat->needIEViewScroll = TRUE;
