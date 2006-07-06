@@ -177,23 +177,13 @@ void __cdecl yahoo_server_main(void *empty)
 		FREE(c);
 	}
 
-	// LOGOUT FIRST!!!! Then Cleanup the connections!!!
-	yahooLoggedIn = FALSE; /* we are NOT logged in anymore, don't try to send anything */
+	/* need to logout first */
     yahoo_logout();
 	
+	/* now set ourselves to offline */
 	yahoo_util_broadcaststatus(ID_STATUS_OFFLINE);
 	yahoo_logoff_buddies();	
 	
-	LOG(("[SERVER] Doing Cleanup!"));
-
-	if (ylad)
-		yahoo_close(ylad->id);
-
-	FREE(ylad);
-	ylad = NULL;
-
-//#ifdef DEBUGMODE
     YAHOO_DebugLog("Server thread ending");
-//#endif
 }
 
