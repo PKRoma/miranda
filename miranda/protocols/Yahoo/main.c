@@ -106,10 +106,15 @@ __declspec(dllexport) PLUGININFO* MirandaPluginInfo(DWORD mirandaVersion)
 {
 	//
     // We require Miranda 0.4
-	// We using the latest/greatest API, including Typing Notifications and other stuff.
 	//
-    if (mirandaVersion < PLUGIN_MAKE_VERSION(0, 4, 0, 0))
+    if (mirandaVersion < PLUGIN_MAKE_VERSION(0, 4, 0, 0)) {
+		MessageBox( NULL, 
+				Translate("Yahoo plugin cannot be loaded. It requires Miranda IM 0.4 or later."), 
+				Translate("Yahoo"), 
+				MB_OK|MB_ICONWARNING|MB_SETFOREGROUND|MB_TOPMOST );
+
         return NULL;
+	}
 
     return &pluginInfo;
 }
@@ -141,8 +146,6 @@ int __declspec(dllexport) Unload(void)
 	if (szStartMsg)
 		free(szStartMsg);
 	
-	//YAHOO_DebugLog("Waiting for server thread to finish...");
-	//SleepEx(100, TRUE);
 	YAHOO_DebugLog("Before Netlib_CloseHandle");
     Netlib_CloseHandle( hNetlibUser );
 
