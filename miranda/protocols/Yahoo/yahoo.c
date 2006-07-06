@@ -534,12 +534,19 @@ void yahoo_logout()
 	}
 
 	if (yahooLoggedIn) {
-		//yahooLoggedIn = FALSE; 
 		yahoo_logoff(ylad->id);
 	} else {
 		poll_loop = 0; /* we need to trigger server stop */
 	}
 	
+	if (ylad)
+		yahoo_close(ylad->id);
+
+	yahooLoggedIn = FALSE; 
+	
+	FREE(ylad);
+	ylad = NULL;
+
 	//pthread_mutex_lock(&connectionHandleMutex);
     
     
@@ -803,6 +810,7 @@ void ext_yahoo_status_logon(int id, const char *who, int stat, const char *msg, 
 	} 
 	
 	switch (client_version) {
+		case 262651: s = "libyahoo2"; break;
 		case 262655: s = "< Yahoo 6.x (Yahoo 5.x?)"; break;
 		case 278527: s = "Yahoo 6.x"; break;
 		case 524223: s = "Yahoo 7.x"; break;
@@ -1311,7 +1319,7 @@ void ext_yahoo_got_stealth(int id, char *stealthlist)
 			for(s = stealth; s && *s; s++) {
 				
 				if (lstrcmpi(*s, dbv.pszVal) == 0) {
-					LOG(("GOT id = %s", dbv.pszVal));
+					YAHOO_DebugLog("GOT id = %s", dbv.pszVal);
 					found = 1;
 					break;
 				}
@@ -1319,7 +1327,7 @@ void ext_yahoo_got_stealth(int id, char *stealthlist)
 			
 			/* Check the stealth list */
 			if (found) { /* we have him on our Stealth List */
-				LOG(("Setting STEALTH for id = %s", dbv.pszVal));
+				YAHOO_DebugLog("Setting STEALTH for id = %s", dbv.pszVal);
 				/* need to set the ApparentMode thingy */
 				if (ID_STATUS_OFFLINE != DBGetContactSettingWord(hContact, yahooProtocolName, "ApparentMode", 0))
 					DBWriteContactSettingWord(hContact, yahooProtocolName, "ApparentMode", (WORD) ID_STATUS_OFFLINE);
@@ -1357,7 +1365,7 @@ void ext_yahoo_got_buddies(int id, YList * buds)
 		}
 		
 		if (bud->real_name)
-			LOG(("id = %s name = %s", bud->id, bud->real_name));
+			YAHOO_DebugLog("id = %s name = %s", bud->id, bud->real_name);
 		
 		hContact = getbuddyH(bud->id);
 		if (hContact == NULL)
@@ -1916,6 +1924,14 @@ void ext_yahoo_got_identities(int id, YList * ids)
 }
 
 extern char *Bcookie;
+
+void __cdecl yahoo_get_yab_thread(void *psf) 
+{
+	int id = (int)psf;
+	
+	yahoo_get_yab(id);
+}
+
 void ext_yahoo_got_cookies(int id)
 {
 //    char z[1024];
@@ -1935,7 +1951,8 @@ void ext_yahoo_got_cookies(int id)
 	if (YAHOO_GetByte( "UseYAB", 1 )) {
 		LOG(("GET YAB [Before final check] "));
 		if (yahooStatus != ID_STATUS_OFFLINE)
-			yahoo_get_yab(id);
+			//yahoo_get_yab(id);
+			pthread_create(yahoo_get_yab_thread, (void *)id);
 	}
 }
 
@@ -2042,12 +2059,6 @@ void ext_yahoo_error(int id, char *err, int fatal, int num)
 		case E_CONNECTION:
 			snprintf(buff, sizeof(buff), Translate("Server Connection Error: %s"), err);
 			break;
-	}
-	
-	
-	if (fatal) {
-		YAHOO_DebugLog("Fatal error detected. Doing logout!");
-		yahoo_logout();
 	}
 	
 	YAHOO_DebugLog("Error: %s", buff);
@@ -2161,7 +2172,7 @@ void yahoo_callback(struct _conn *c, yahoo_input_condition cond)
 {
 	int ret=1;
 
-	LOG(("[yahoo_callback] id: %d, fd: %d", c->id, c->fd));
+	LOG(("[yahoo_callback] id: %d, fd: %d tag: %d", c->id, c->fd, c->tag));
 	if(c->id < 0) {
 		connect_complete(c->data, c->fd, cond);
 	} else if (c->fd > 0) {
