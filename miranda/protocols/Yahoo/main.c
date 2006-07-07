@@ -172,9 +172,9 @@ static int OnModulesLoaded( WPARAM wParam, LPARAM lParam )
 	nlu.cbSize = sizeof(nlu);
 
 #ifdef HTTP_GATEWAY
-	nlu.flags =  NUF_OUTGOING | NUF_HTTPGATEWAY;
+	nlu.flags = NUF_OUTGOING | NUF_HTTPGATEWAY;
 #else
-   	nlu.flags = /*NUF_INCOMING |*/ NUF_OUTGOING | NUF_HTTPCONNS;
+   	nlu.flags = NUF_OUTGOING;
 #endif
 
 	nlu.szSettingsModule = tModule;
