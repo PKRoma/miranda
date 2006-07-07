@@ -1399,7 +1399,15 @@ void ext_yahoo_got_buddies(int id, YList * buds)
 		  
 		  if (bud->yab_entry->mphone) 
 			YAHOO_SetString( hContact, "Cellular", bud->yab_entry->mphone);
+
+		  if (bud->yab_entry->hphone) 
+			YAHOO_SetString( hContact, "Phone", bud->yab_entry->hphone);
 		  
+  		  if (bud->yab_entry->wphone) 
+			YAHOO_SetString( hContact, "CompanyPhone", bud->yab_entry->wphone);
+		  
+		  YAHOO_SetWord( hContact, "YabID", bud->yab_entry->dbid);
+
 		}
 		
 		
