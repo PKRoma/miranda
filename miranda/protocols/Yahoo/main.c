@@ -163,6 +163,9 @@ int OnDetailsInit(WPARAM wParam, LPARAM lParam);
  
 static int OnModulesLoaded( WPARAM wParam, LPARAM lParam )
 {
+	char tModule[ 100 ], tModuleDescr[ 100 ];
+	NETLIBUSER nlu = {0};
+
 	if ( !ServiceExists( MS_DB_CONTACT_GETSETTING_STR )) {
 		MessageBox( NULL, 
 				Translate("Yahoo plugin requires db3x plugin version 0.5.1.0 or later" ), 
@@ -170,9 +173,6 @@ static int OnModulesLoaded( WPARAM wParam, LPARAM lParam )
 				MB_OK );
 		return 1;
 	}
-
-	char tModule[ 100 ], tModuleDescr[ 100 ];
-	NETLIBUSER nlu = {0};
 
 	CharUpper( lstrcpy( tModule, yahooProtocolName ));
 	lstrcpyn(tModuleDescr, yahooProtocolName , sizeof( tModuleDescr ) - 25);
