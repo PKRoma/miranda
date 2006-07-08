@@ -32,10 +32,10 @@ $Id$
 
 LRESULT DM_ScrollToBottom(HWND hwndDlg, struct MessageWindowData *dat, WPARAM wParam, LPARAM lParam);
 LRESULT DM_LoadLocale(HWND hwndDlg, struct MessageWindowData *dat);
-LRESULT DM_UpdatePictureLayout(HWND hwndDlg, struct MessageWindowData *dat);
 LRESULT DM_SaveLocale(HWND hwndDlg, struct MessageWindowData *dat, WPARAM wParam, LPARAM lParam);
 LRESULT DM_UpdateLastMessage(HWND hwndDlg, struct MessageWindowData *dat);
 LRESULT DM_RecalcPictureSize(HWND hwndDlg, struct MessageWindowData *dat);
-LRESULT DM_UpdatePictureLayout(HWND hwndDlg, struct MessageWindowData *dat);
+LRESULT DM_WMCopyHandler(HWND hwnd, WNDPROC oldWndProc, WPARAM wParam, LPARAM lParam);
+
 
 

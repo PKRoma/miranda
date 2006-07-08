@@ -59,8 +59,8 @@ struct CPTABLE cpTable[] = {
     {   -1,     NULL}
 };
 
-static TCHAR *Template_MakeRelativeDate(struct MessageWindowData *dat, time_t check, int groupBreak, TCHAR code);
-static void ReplaceIcons(HWND hwndDlg, struct MessageWindowData *dat, LONG startAt, int fAppend);
+static TCHAR    *Template_MakeRelativeDate(struct MessageWindowData *dat, time_t check, int groupBreak, TCHAR code);
+static void     ReplaceIcons(HWND hwndDlg, struct MessageWindowData *dat, LONG startAt, int fAppend);
 
 static TCHAR *weekDays[] = {_T("Sunday"), _T("Monday"), _T("Tuesday"), _T("Wednesday"), _T("Thursday"), _T("Friday"), _T("Saturday")};
 static TCHAR *months[] = {_T("January"), _T("February"), _T("March"), _T("April"), _T("May"), _T("June"), _T("July"), _T("August"), _T("September"), _T("October"), _T("November"), _T("December")};
@@ -139,7 +139,7 @@ int safe_wcslen(wchar_t *msg, int chars) {
  * Doesn't touch the message for sure, but empty lines at the end are ugly anyway.
  */
 
-void TrimMessage(TCHAR *msg)
+static void TrimMessage(TCHAR *msg)
 {
     int iLen = _tcslen(msg) - 1;
     int i = iLen;
@@ -600,9 +600,9 @@ int DbEventIsShown(struct MessageWindowData *dat, DBEVENTINFO * dbei)
         case EVENTTYPE_STATUSCHANGE:
             return 1;
         case EVENTTYPE_URL:
-            return (dat->dwEventIsShown & MWF_SHOW_URLEVENTS);
+            return (dat->dwFlagsEx & MWF_SHOW_URLEVENTS);
         case EVENTTYPE_FILE:
-            return(dat->dwEventIsShown & MWF_SHOW_FILEEVENTS);
+            return(dat->dwFlagsEx & MWF_SHOW_FILEEVENTS);
     }
     return 0;
 }
@@ -628,7 +628,7 @@ static char *Template_CreateRTFFromDbEvent(struct MessageWindowData *dat, HANDLE
     BOOL isBold = FALSE, isItalic = FALSE, isUnderline = FALSE;
 	char *this_par;
     DWORD dwEffectiveFlags;
-    DWORD dwFormattingParams = MAKELONG(myGlobals.m_FormatWholeWordsOnly, dat->dwEventIsShown & MWF_SHOW_BBCODE);
+    DWORD dwFormattingParams = MAKELONG(myGlobals.m_FormatWholeWordsOnly, dat->dwFlagsEx & MWF_SHOW_BBCODE);
     char  *szProto = dat->bIsMeta ? dat->szMetaProto : dat->szProto;
 
     if(streamData->dbei != 0)
@@ -749,7 +749,7 @@ nogroup:
      */
 	if (dat->dwFlags & MWF_LOG_SHOWTIME) {
         final_time = dbei.timestamp;
-        if(dat->dwEventIsShown & MWF_SHOW_USELOCALTIME) {
+        if(dat->dwFlagsEx & MWF_SHOW_USELOCALTIME) {
             if(!isSent && dat->timediff != 0)
                 final_time = dbei.timestamp - dat->timediff;
         }
@@ -1271,22 +1271,19 @@ nogroup:
                         AppendToBuffer(&buffer, &bufferEnd, &bufferAlloced, "\\cf%d ", isSent ? MSGFONTID_MYNAME + iFontIDOffset : MSGFONTID_YOURNAME + iFontIDOffset);
                         i++;
                     }
+                    else if(color == (TCHAR)'s') {
+                        AppendToBuffer(&buffer, &bufferEnd, &bufferAlloced, "\\cf%d ", isSent ? MSGFONTID_SYMBOLS_OUT : MSGFONTID_SYMBOLS_IN);
+                        i++;
+                    }
                     else
                         skipToNext = TRUE;
                     break;
                 }
 				case '<':		// bidi tag
-					if(dat->dwFlags & MWF_LOG_RTL || dat->isAutoRTL & 1)
-                        //AppendToBuffer(&buffer, &bufferEnd, &bufferAlloced, "\\rtlmark\\rtlch ");
-                        AppendToBuffer(&buffer, &bufferEnd, &bufferAlloced, "\\emspace ");
-                    else
-                        skipToNext = TRUE;
+                    AppendToBuffer(&buffer, &bufferEnd, &bufferAlloced, "\\rtlmark\\rtlch ");
 					break;
                 case '>':		// bidi tag
-                    if(dat->dwFlags & MWF_LOG_RTL || dat->isAutoRTL & 1)
-                        AppendToBuffer(&buffer, &bufferEnd, &bufferAlloced, "\\ltrmark\\ltrchr ");
-                    else
-                        skipToNext = TRUE;
+                    AppendToBuffer(&buffer, &bufferEnd, &bufferAlloced, "\\ltrmark\\ltrchr ");
                     break;
             }
 skip:            
@@ -1373,7 +1370,7 @@ static DWORD CALLBACK LogStreamInEvents(DWORD_PTR dwCookie, LPBYTE pbBuff, LONG 
     return 0;
 }
 
-void SetupLogFormatting(struct MessageWindowData *dat)
+static void SetupLogFormatting(struct MessageWindowData *dat)
 {
     DWORD   dwExtraLf = myGlobals.m_ExtraMicroLF;
 
@@ -1429,11 +1426,11 @@ void StreamInEvents(HWND hwndDlg, HANDLE hDbEventFirst, int count, int fAppend, 
     tm_today.tm_hour = tm_today.tm_min = tm_today.tm_sec = 0;
     today = mktime(&tm_today);
 
-    if (dat->hwndLog != 0) {
+    if (dat->hwndIEView != 0) {
         IEVIEWEVENT event;
         
         event.cbSize = sizeof(IEVIEWEVENT);
-        event.hwnd = dat->hwndLog;
+        event.hwnd = dat->hwndIEView;
         event.hContact = dat->hContact;
 #if defined(_UNICODE)
         event.dwFlags = (dat->dwFlags & MWF_LOG_RTL) ? IEEF_RTL : 0;
@@ -1627,7 +1624,7 @@ void StreamInEvents(HWND hwndDlg, HANDLE hDbEventFirst, int count, int fAppend, 
 
 }
 
-void ReplaceIcons(HWND hwndDlg, struct MessageWindowData *dat, LONG startAt, int fAppend)
+static void ReplaceIcons(HWND hwndDlg, struct MessageWindowData *dat, LONG startAt, int fAppend)
 {
     FINDTEXTEXA fi;
     CHARFORMAT2 cf2;

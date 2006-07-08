@@ -95,11 +95,15 @@ typedef struct _tagSkinDescription {
     char            szModule[100];
     HWND            hWndParent, hWndTab;
     HWND            hwndCLUI;
-    void            (*pfnSaveCompleteStruct)(void);
-    void            (*pfnClcOptionsChanged )(void);
     HWND            hwndSkinEdit;                       /* out param */
     HWND            hwndImageEdit;                      /* out param */
     HMENU           hMenuItems;
+    void            (*pfnSaveCompleteStruct)(void);
+    void            (*pfnClcOptionsChanged )(void);
+    void*           (*pfnMalloc)(unsigned int);
+    void            (*pfnFree)(void);
+    void*           (*pfnRealloc)(void *, unsigned int);
+    void*           reserved[20];
 } SKINDESCRIPTION;
 
 // defines

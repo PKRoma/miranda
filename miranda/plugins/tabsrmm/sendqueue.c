@@ -561,7 +561,7 @@ void ShowErrorControls(HWND hwndDlg, struct MessageWindowData *dat, int showCmd)
         dat->dwFlags &= ~MWF_ERRORSTATE;
         dat->hTabIcon = dat->hTabStatusIcon;
     }
-    if(dat->dwEventIsShown & MWF_SHOW_INFOPANEL) {
+    if(dat->dwFlagsEx & MWF_SHOW_INFOPANEL) {
         if(showCmd)
             ShowMultipleControls(hwndDlg, infoPanelControls, 8, SW_HIDE);
         else

@@ -36,7 +36,7 @@ $Id$
 
 static char *relnotes[] = {
     "{\\rtf1\\ansi\\deff0\\pard\\li%u\\fi-%u\\ri%u\\tx%u}",
-    "\\par\t\\b\\ul1 Release notes for version 1.1.0.3\\b0\\ul0\\par ",
+    "\\par\t\\b\\ul1 Release notes for version 0.9.9.211\\b0\\ul0\\par ",
     "*\tYou must hold the ctrl key when dragging tabs to re-arrange tab position\\par ",
     "*\tThe template system has been updated with a few changes. You can review an updated version of the template documentation at http://miranda.or.at/tabsrmm-articles/tabsrmm-message-log-templates/\\line \
 Also, you may want to reset your templates (you can do this in the template editor) when you have formatting problems.\\par ",
@@ -101,9 +101,9 @@ static struct MsgLogIcon ttb_Slist = {0}, ttb_Traymenu = {0};
 
 HMODULE g_hIconDLL = 0;
 
-int Chat_IconsChanged(WPARAM wp, LPARAM lp), Chat_ModulesLoaded(WPARAM wp, LPARAM lp);
-void Chat_AddIcons(void);
-int  Chat_PreShutdown(WPARAM wParam, LPARAM lParam);
+int     Chat_IconsChanged(WPARAM wp, LPARAM lp), Chat_ModulesLoaded(WPARAM wp, LPARAM lp);
+void    Chat_AddIcons(void);
+int     Chat_PreShutdown(WPARAM wParam, LPARAM lParam);
 
 static int IEViewOptionsChanged(WPARAM wParam, LPARAM lParam)
 {
@@ -1066,20 +1066,20 @@ static int SplitmsgModulesLoaded(WPARAM wParam, LPARAM lParam)
 	return 0;
 }
 
-int OkToExit(WPARAM wParam, LPARAM lParam)
+static int OkToExit(WPARAM wParam, LPARAM lParam)
 {
     CreateSystrayIcon(0);
     CreateTrayMenus(0);
     g_sessionshutdown = 1;
-    return 0;
-}
-
-int PreshutdownSendRecv(WPARAM wParam, LPARAM lParam)
-{
     UnhookEvent(hEventDbEventAdded);
     UnhookEvent(hEventDispatch);
     UnhookEvent(hEventDbSettingChange);
     UnhookEvent(hEventContactDeleted);
+    return 0;
+}
+
+static int PreshutdownSendRecv(WPARAM wParam, LPARAM lParam)
+{
 
     if(g_chat_integration_enabled)
         Chat_PreShutdown(0, 0);
@@ -1209,7 +1209,7 @@ static int AvatarChanged(WPARAM wParam, LPARAM lParam)
             if(dat->hwndFlash == 0)
                 dat->panelWidth = -1;				// force new size calculations (not for flash avatars)
             ShowPicture(hwnd, dat, TRUE);
-			if(dat->dwEventIsShown & MWF_SHOW_INFOPANEL) {
+			if(dat->dwFlagsEx & MWF_SHOW_INFOPANEL) {
 				InvalidateRect(GetDlgItem(hwnd, IDC_PANELPIC), NULL, TRUE);
 				SendMessage(hwnd, WM_SIZE, 0, 0);
 			}

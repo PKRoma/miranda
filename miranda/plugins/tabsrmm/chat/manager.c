@@ -375,11 +375,12 @@ BOOL SM_AddEvent(char *pszID, char * pszModule, GCEVENT * gce, BOOL bIsHighlight
 			li->time = gce->time;
 			li->bIsHighlighted = bIsHighlighted;
 			
-			if (g_Settings.iEventLimit > 0 && pTemp->iEventCount > g_Settings.iEventLimit + 20)
+			if(g_Settings.iEventLimit > 0 && pTemp->iEventCount > g_Settings.iEventLimit + 20)
 			{
 				LM_TrimLog(&pTemp->pLog, &pTemp->pLogEnd, pTemp->iEventCount - g_Settings.iEventLimit);
+                pTemp->wasTrimmed = TRUE;
 				pTemp->iEventCount = g_Settings.iEventLimit;
-				return FALSE;
+				return TRUE; // FALSE
 			}
 			return TRUE;
 		}

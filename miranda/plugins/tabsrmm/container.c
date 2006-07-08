@@ -184,23 +184,6 @@ struct ContainerWindowData *CreateContainer(const TCHAR *name, int iTemp, HANDLE
     return NULL;
 }
 
-int RegisterContainer(void) 
-{
-	WNDCLASSEX wc;
-	
-	ZeroMemory(&wc, sizeof(wc));
-	wc.cbSize         = sizeof(wc);
-	wc.lpszClassName  = _T("TabSRMSG_Win");
-	wc.lpfnWndProc    = (WNDPROC)ContainerWndProc;
-	wc.hCursor        = LoadCursor(NULL, IDC_ARROW);
-	wc.hbrBackground  = 0;
-	wc.style          = CS_GLOBALCLASS;
-    wc.cbWndExtra     = DLGWINDOWEXTRA;
-    wc.hInstance      = g_hInst;
-	RegisterClassEx(&wc);
-	return 0;
-}
-
 static int tooltip_active = FALSE;
 static POINT ptMouse = {0};
 
@@ -887,7 +870,7 @@ static BOOL CALLBACK ContainerWndProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPA
  * container window procedure...
  */
 
-BOOL CALLBACK DlgProcContainer(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam)
+static BOOL CALLBACK DlgProcContainer(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam)
 {
     struct ContainerWindowData *pContainer = 0;        // pointer to our struct ContainerWindowData
     int iItem = 0;
@@ -930,7 +913,6 @@ BOOL CALLBACK DlgProcContainer(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPa
                 pContainer = (struct ContainerWindowData *) lParam;
                 SetWindowLong(hwndDlg, GWL_USERDATA, (LONG) pContainer);
                 
-                pContainer->iLastClick = 0xffffffff;
 				pContainer->hwnd = hwndDlg;
                 dwCreateFlags = pContainer->dwFlags;
 
@@ -1090,12 +1072,12 @@ BOOL CALLBACK DlgProcContainer(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPa
 
             if(dat) {
                 DWORD dwOldMsgWindowFlags = dat->dwFlags;
-                DWORD dwOldEventIsShown = dat->dwEventIsShown;
+                DWORD dwOldEventIsShown = dat->dwFlagsEx;
 
                 if(MsgWindowMenuHandler(pContainer->hwndActive, dat, LOWORD(wParam), MENU_PICMENU) == 1)
                     break;
                 if(MsgWindowMenuHandler(pContainer->hwndActive, dat, LOWORD(wParam), MENU_LOGMENU) == 1) {
-                    if(dat->dwFlags != dwOldFlags || dat->dwEventIsShown != dwOldEventIsShown) {
+                    if(dat->dwFlags != dwOldFlags || dat->dwFlagsEx != dwOldEventIsShown) {
                         if(!DBGetContactSettingByte(dat->hContact, SRMSGMOD_T, "mwoverride", 0)) {
                             WindowList_Broadcast(hMessageWindowList, DM_DEFERREDREMAKELOG, (WPARAM)hwndDlg, (LPARAM)(dat->dwFlags & MWF_LOG_ALL));
                             DBWriteContactSettingDword(NULL, SRMSGMOD_T, "mwflags", dat->dwFlags & MWF_LOG_ALL);
@@ -1554,7 +1536,7 @@ BOOL CALLBACK DlgProcContainer(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPa
                         free(szNewTitle);
                     }
                 }
-                break;
+                return 0;
             }
         case WM_TIMER:
             if(wParam == TIMERID_HEARTBEAT) {
@@ -2980,30 +2962,6 @@ static struct ContainerWindowData *RemoveContainerFromList(struct ContainerWindo
 }
 
 /*
- * get the image list index for the specified protocol icon...
- * *szProto: protocol name.
- * iStatus: protocol status
- * returns the image list index for the icon, or 0 if not found
- * 0 is actually the global "offline" icon.
- */
-
-/*
-int GetProtoIconFromList(const char *szProto, int iStatus)
-{
-    int i;
-
-    if (szProto == NULL || strlen(szProto) == 0) {
-        return 0;
-    }
-    for (i = 0; i < myGlobals.g_nrProtos; i++) {
-        if (!strncmp(protoIconData[i].szName, szProto, sizeof(protoIconData[i].szName))) {
-            return protoIconData[i].iFirstIconID + ( iStatus - ID_STATUS_OFFLINE );
-        }
-    }
-    return 0;
-}
-*/
-/*
  * calls the TabCtrl_AdjustRect to calculate the "real" client area of the tab.
  * also checks for the option "hide tabs when only one tab open" and adjusts
  * geometry if necessary
@@ -3119,6 +3077,7 @@ int GetContainerNameForContact(HANDLE hContact, TCHAR *szName, int iNameLen)
  * It also allows for setting the Flags value for all containers
  */
 
+/*
 int EnumContainers(HANDLE hContact, DWORD dwAction, const TCHAR *szTarget, const TCHAR *szNew, DWORD dwExtinfo, DWORD dwExtinfoEx)
 {
     DBVARIANT dbv;
@@ -3194,6 +3153,8 @@ int EnumContainers(HANDLE hContact, DWORD dwAction, const TCHAR *szTarget, const
 
     return 0;
 }
+
+*/
 
 void DeleteContainer(int iIndex)
 {
@@ -3498,7 +3459,7 @@ void UpdateContainerMenu(HWND hwndDlg, struct MessageWindowData *dat)
     if(dat->pContainer->hMenu == 0)
         return;
 
-    if(dat->hwndLog != 0 && (DBGetContactSettingDword(NULL, "IEVIEW", "TemplatesFlags", 0) & 0x01))
+    if(dat->hwndIEView != 0 && (DBGetContactSettingDword(NULL, "IEVIEW", "TemplatesFlags", 0) & 0x01))
         EnableMenuItem(dat->pContainer->hMenu, 3, MF_BYPOSITION | MF_GRAYED);
     else
         EnableMenuItem(dat->pContainer->hMenu, 3, MF_BYPOSITION | MF_ENABLED);

@@ -25,7 +25,6 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #define _MSGS_H
 
 #define __MATHMOD_SUPPORT 1
-// #define _RELEASE_BUILD 1
 
 #ifdef __GNUWIN32__
 #define COLOR_HOTLIGHT 26
@@ -88,11 +87,11 @@ typedef struct __gettextex
 
 #ifndef _WIN32_IE
 typedef struct tagNMMOUSE {
-    NMHDR   hdr;
-    DWORD_PTR dwItemSpec;
-    DWORD_PTR dwItemData;
-    POINT   pt;
-    LPARAM  dwHitInfo; // any specifics about where on the item or control the mouse is
+    NMHDR       hdr;
+    DWORD_PTR   dwItemSpec;
+    DWORD_PTR   dwItemData;
+    POINT       pt;
+    LPARAM      dwHitInfo; // any specifics about where on the item or control the mouse is
 } NMMOUSE, *LPNMMOUSE;
 #endif
 
@@ -132,16 +131,16 @@ typedef struct _settextex {
 #define HISTORY_INITIAL_ALLOCSIZE 300
 
 struct NewMessageWindowLParam {
-	HANDLE hContact;
-	int isWchar;
-	const char *szInitialText;
-	int iTabID;				// XXX mod: tab support
-	int iTabImage;			// XXX mod tabs...
-    int iActivate;
-    TCITEM item;
-	struct ContainerWindowData *pContainer;		// parent container description
-    BOOL bWantPopup;
-    HANDLE hdbEvent;
+	HANDLE  hContact;
+	int     isWchar;
+	const   char *szInitialText;
+	int     iTabID;				// XXX mod: tab support
+	int     iTabImage;			// XXX mod tabs...
+    int     iActivate;
+    TCITEM  item;
+	struct  ContainerWindowData *pContainer;		// parent container description
+    BOOL    bWantPopup;
+    HANDLE  hdbEvent;
 };
 
 // flags for the container dwFlags 
@@ -190,10 +189,11 @@ struct NewMessageWindowLParam {
         
 #define MWF_LOG_DEFAULT (MWF_LOG_SHOWTIME | MWF_LOG_NORMALTEMPLATES | MWF_LOG_SHOWDATES | MWF_LOG_SYMBOLS | MWF_LOG_INDIVIDUALBKG | MWF_LOG_GRID | MWF_LOG_GROUPMODE)
 
+/*
 struct ProtocolData {
     char szName[30];
     int  iFirstIconID;
-};
+};*/
 
 #define EM_SUBCLASSED             (WM_USER+0x101)
 #define EM_SEARCHSCROLLER         (WM_USER+0x103)
@@ -405,11 +405,11 @@ extern const int msgDlgFontCount;
 #define IDM_NOTITLE (WM_USER + 2)
 #define IDM_MOREOPTIONS (WM_USER +4)
 
-typedef DWORD (WINAPI *PSLWA)(HWND, DWORD, BYTE, DWORD);
-typedef BOOL (WINAPI *PULW)(HWND, HDC, POINT *, SIZE *, HDC, POINT *, COLORREF, BLENDFUNCTION *, DWORD);
-typedef BOOL (WINAPI *PFWEX)(FLASHWINFO *);
-typedef BOOL (WINAPI *PAB)(HDC, int, int, int, int, HDC, int, int, int, int, BLENDFUNCTION);
-typedef BOOL (WINAPI *PGF)(HDC, PTRIVERTEX, ULONG, PVOID, ULONG, ULONG);
+typedef DWORD   (WINAPI *PSLWA)(HWND, DWORD, BYTE, DWORD);
+typedef BOOL    (WINAPI *PULW)(HWND, HDC, POINT *, SIZE *, HDC, POINT *, COLORREF, BLENDFUNCTION *, DWORD);
+typedef BOOL    (WINAPI *PFWEX)(FLASHWINFO *);
+typedef BOOL    (WINAPI *PAB)(HDC, int, int, int, int, HDC, int, int, int, int, BLENDFUNCTION);
+typedef BOOL    (WINAPI *PGF)(HDC, PTRIVERTEX, ULONG, PVOID, ULONG, ULONG);
 
 // constants for the container management functions
 
@@ -428,8 +428,6 @@ typedef BOOL (WINAPI *PGF)(HDC, PTRIVERTEX, ULONG, PVOID, ULONG, ULONG);
 #define HOTKEY_MODIFIERS_CTRLSHIFT 0
 #define HOTKEY_MODIFIERS_CTRLALT 1
 #define HOTKEY_MODIFIERS_ALTSHIFT 2
-
-#define BUDDYPOUNCE_SERVICENAME "BuddyPounce/AddToPounce"
 
 struct MsgLogIcon {
     HBITMAP hBmp, hoBmp;
@@ -541,15 +539,6 @@ static __inline int mir_snprintfW(wchar_t *buffer, size_t count, const wchar_t* 
 #define THEME_READ_TEMPLATES 2
 #define THEME_READ_ALL (THEME_READ_FONTS | THEME_READ_TEMPLATES)
 
-void __fastcall IMG_RenderImageItem(HDC hdc, ImageItem *item, RECT *rc);
-void IMG_InitDecoder();
-static void LoadSkinItems(char *file, int onStartup);
-static void IMG_CreateItem(ImageItem *item, const char *fileName, HDC hdc);
-static void IMG_LoadItems(char *szFileName);
-void IMG_DeleteItems();
-void DrawAlpha(HDC hdcwnd, PRECT rc, DWORD basecolor, BYTE alpha, DWORD basecolor2, BOOL transparent, DWORD FLG_GRADIENT, DWORD FLG_CORNER, DWORD BORDERSTYLE, ImageItem *imageItem);
-void SkinDrawBG(HWND hwndClient, HWND hwnd, struct ContainerWindowData *pContainer, RECT *rcClient, HDC hdcTarget);
-
-void ReloadContainerSkin(int doLoad, int onStartup);
+#define BUDDYPOUNCE_SERVICENAME "BuddyPounce/AddToPounce"
 
 #endif

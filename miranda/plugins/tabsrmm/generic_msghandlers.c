@@ -19,16 +19,21 @@ You should have received a copy of the GNU General Public License
 along with this program; if not, write to the Free Software
 Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
-The Hotkey-Handler is a hidden dialog window which needs to be in place for
-handling the global hotkeys registered by tabSRMM.
-
 $Id$
 */
+
+/*
+ * these are generic message handlers which are used by the message dialog window procedure.
+ * calling them directly instead of using SendMessage() is faster.
+ */
 
 #include "commonheaders.h"
 
 extern MYGLOBALS myGlobals;
 extern NEN_OPTIONS nen_options;
+
+extern WCHAR *FilterEventMarkers(WCHAR *wszText);
+extern char  *FilterEventMarkersA(char *szText);
 
 LRESULT DM_ScrollToBottom(HWND hwndDlg, struct MessageWindowData *dat, WPARAM wParam, LPARAM lParam)
 {
@@ -39,13 +44,13 @@ LRESULT DM_ScrollToBottom(HWND hwndDlg, struct MessageWindowData *dat, WPARAM wP
 
     if(dat) {
 
-        if(dat->dwEventIsShown & MWF_SHOW_SCROLLINGDISABLED)
+        if(dat->dwFlagsEx & MWF_SHOW_SCROLLINGDISABLED)
             return 0;
 
         if(IsIconic(dat->pContainer->hwnd))
             dat->dwFlags |= MWF_DEFERREDSCROLL;
 
-        if(dat->hwndLog) {
+        if(dat->hwndIEView) {
             dat->needIEViewScroll = TRUE;
             PostMessage(hwndDlg, DM_SCROLLIEVIEW, 0, 0);
         }
@@ -63,14 +68,6 @@ LRESULT DM_ScrollToBottom(HWND hwndDlg, struct MessageWindowData *dat, WPARAM wP
                 len = GetWindowTextLengthA(hwnd);
                 SendMessage(hwnd, EM_SETSEL, len - 1, len - 1);
             }
-            /*
-            si.cbSize = sizeof(si);
-            si.fMask = SIF_PAGE | SIF_RANGE | SIF_POS;;
-            GetScrollInfo(hwnd, SB_VERT, &si);
-            si.fMask = SIF_POS;
-            si.nPos = si.nMax - si.nPage + 1;
-            SetScrollInfo(hwnd, SB_VERT, &si, TRUE);
-            */
             if(wParam)
                 SendMessage(hwnd, WM_VSCROLL, MAKEWPARAM(SB_BOTTOM, 0), 0);
             else
@@ -123,7 +120,7 @@ LRESULT DM_RecalcPictureSize(HWND hwndDlg, struct MessageWindowData *dat)
     HBITMAP hbm;
 
     if(dat) {
-        hbm = dat->dwEventIsShown & MWF_SHOW_INFOPANEL ? dat->hOwnPic : (dat->ace ? dat->ace->hbmPic : myGlobals.g_hbmUnknown);
+        hbm = dat->dwFlagsEx & MWF_SHOW_INFOPANEL ? dat->hOwnPic : (dat->ace ? dat->ace->hbmPic : myGlobals.g_hbmUnknown);
 
         if(hbm == 0) {
             dat->pic.cy = dat->pic.cx = 60;
@@ -133,10 +130,10 @@ LRESULT DM_RecalcPictureSize(HWND hwndDlg, struct MessageWindowData *dat)
         CalcDynamicAvatarSize(hwndDlg, dat, &bminfo);
         if (myGlobals.g_FlashAvatarAvail) {
             RECT rc = { 0, 0, dat->pic.cx, dat->pic.cy };
-            if(!(dat->dwEventIsShown & MWF_SHOW_INFOPANEL)) {
+            if(!(dat->dwFlagsEx & MWF_SHOW_INFOPANEL)) {
                 FLASHAVATAR fa = {0}; 
 
-                fa.hContact = !(dat->dwEventIsShown & MWF_SHOW_INFOPANEL) ? dat->hContact : NULL;
+                fa.hContact = !(dat->dwFlagsEx & MWF_SHOW_INFOPANEL) ? dat->hContact : NULL;
                 fa.cProto = dat->szProto;
                 fa.hWindow = 0;
                 fa.id = 25367;
@@ -220,5 +217,50 @@ LRESULT DM_SaveLocale(HWND hwndDlg, struct MessageWindowData *dat, WPARAM wParam
         }
     }
     return 0;
+}
+
+/*
+ * generic handler for the WM_COPY message in message log/chat history richedit control(s).
+ * it filters out the invisible event boundary markers from the text copied to the clipboard.
+ */
+
+LRESULT DM_WMCopyHandler(HWND hwnd, WNDPROC oldWndProc, WPARAM wParam, LPARAM lParam)
+{
+    LRESULT result = CallWindowProc(oldWndProc, hwnd, WM_COPY, wParam, lParam);
+
+    if(OpenClipboard(hwnd)) {
+#if defined(_UNICODE)
+        HANDLE hClip = GetClipboardData(CF_UNICODETEXT);
+#else
+        HANDLE hClip = GetClipboardData(CF_TEXT);
+#endif
+        if(hClip) {
+            HGLOBAL hgbl;
+            TCHAR *tszLocked;
+            TCHAR *tszText = (TCHAR *)malloc((lstrlen((TCHAR *)hClip) + 2) * sizeof(TCHAR));
+    
+            lstrcpy(tszText, (TCHAR *)hClip);
+#if defined(_UNICODE)
+            FilterEventMarkers(tszText);
+#else
+            FilterEventMarkersA(tszText);
+#endif
+            EmptyClipboard();
+    
+            hgbl = GlobalAlloc(GMEM_MOVEABLE, (lstrlen(tszText) + 1) * sizeof(TCHAR));
+            tszLocked = GlobalLock(hgbl);
+            lstrcpy(tszLocked, tszText);
+            GlobalUnlock(hgbl);
+#if defined(_UNICODE)
+            SetClipboardData(CF_UNICODETEXT, hgbl);
+#else
+            SetClipboardData(CF_TEXT, hgbl);
+#endif
+            if(tszText)
+                free(tszText);
+        }
+        CloseClipboard();
+    }
+    return result;
 }
 

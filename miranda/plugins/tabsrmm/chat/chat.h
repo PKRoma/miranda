@@ -249,6 +249,7 @@ typedef struct SESSION_INFO_TYPE
 	USERINFO*		pMe;
 	STATUSINFO *	pStatuses;
     struct ContainerWindowData *pContainer;
+    int             wasTrimmed;
 	struct SESSION_INFO_TYPE *next;
 } SESSION_INFO;
 

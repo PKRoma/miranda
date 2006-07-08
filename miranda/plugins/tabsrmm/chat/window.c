@@ -1128,14 +1128,18 @@ static LRESULT CALLBACK LogSubclassProc(HWND hwnd, UINT msg, WPARAM wParam, LPAR
     case WM_NCPAINT:
         return(DrawRichEditFrame(hwnd, mwdat, ID_EXTBKHISTORY, msg, wParam, lParam, OldLogProc));
 
-	case WM_LBUTTONUP:
+    case WM_COPY:
+        {
+            return(DM_WMCopyHandler(hwnd, OldLogProc, wParam, lParam));
+        }
+    case WM_LBUTTONUP:
 		{
 			CHARRANGE sel;
 
 			SendMessage(hwnd, EM_EXGETSEL, 0, (LPARAM) &sel);
 			if(sel.cpMin != sel.cpMax)
 			{
-				SendMessage(hwnd, WM_COPY, 0, 0);
+                SendMessage(hwnd, WM_COPY, 0, 0);
 				sel.cpMin = sel.cpMax ;
 				SendMessage(hwnd, EM_EXSETSEL, 0, (LPARAM) & sel);
 			}

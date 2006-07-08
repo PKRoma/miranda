@@ -468,6 +468,8 @@ static char* Log_CreateRTF(LOGSTREAMDATA *streamData)
             // create new line, and set font and color
 			Log_Append(&buffer, &bufferEnd, &bufferAlloced, "\\par\\ql\\sl0%s ", Log_SetStyle(0, 0));
 
+            Log_Append(&buffer, &bufferEnd, &bufferAlloced, "\\v~-+%d+-~\\v0 ", lin);
+            //_DebugTraceA("log stats: begin %d, end %d, cur %d", streamData->si->pLog, streamData->si->pLogEnd, lin);
 			// Insert icon
             if (g_Settings.LogSymbols)                // use symbols
                 Log_Append(&buffer, &bufferEnd, &bufferAlloced, "%s %c", Log_SetStyle(17, 17), EventToSymbol(lin));
@@ -766,6 +768,24 @@ void Log_StreamInEvent(HWND hwndDlg,  LOGINFO* lin, SESSION_INFO* si, BOOL bRedr
 			CallService(MS_SMILEYADD_REPLACESMILEYS, 0, (LPARAM)&sm);
 
 		}
+
+        if(si->wasTrimmed) {
+            char szPattern[50];
+            FINDTEXTEXA fi;
+
+            _snprintf(szPattern, 40, "~-+%d+-~", si->pLogEnd);
+            fi.lpstrText = szPattern;
+            fi.chrg.cpMin = 0;
+            fi.chrg.cpMax = -1;
+            if(SendMessageA(hwndRich, EM_FINDTEXTEX, FR_DOWN, (LPARAM)&fi) != 0) {
+                CHARRANGE sel;
+                sel.cpMin = 0;
+                sel.cpMax = 20;
+                SendMessage(hwndRich, EM_SETSEL, 0, fi.chrgText.cpMax + 1);
+                SendMessageA(hwndRich, EM_REPLACESEL, TRUE, (LPARAM)"");
+            }
+            si->wasTrimmed = FALSE;
+        }
 
 		// scroll log to bottom if the log was previously scrolled to bottom, else restore old position
 		if (bRedraw ||  (UINT)scroll.nPos >= (UINT)scroll.nMax-scroll.nPage-5 || scroll.nMax-scroll.nMin-scroll.nPage < 50)

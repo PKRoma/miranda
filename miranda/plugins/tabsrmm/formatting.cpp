@@ -69,6 +69,27 @@ static WCHAR *formatting_strings_end[] = { L"b0 ", L"i0 ", L"u0 ", L"s0 ", L
  *        hiword = bbcode support (strip bbcodes if 0)
  */
 
+extern "C" const WCHAR *FilterEventMarkers(WCHAR *wszText)
+{
+    std::wstring text(wszText);
+    unsigned int beginmark = 0, endmark = 0;
+
+    while(TRUE) {
+        if((beginmark = text.find(_T("~-+"))) != text.npos) {
+            endmark = text.find(_T("+-~"), beginmark);
+            if(endmark != text.npos && (endmark - beginmark) > 5) {
+                text.erase(beginmark, (endmark - beginmark) + 3);
+                continue;
+            }
+            else
+                break;
+        }
+        else
+            break;
+    }
+    lstrcpyW(wszText, text.c_str());
+    return wszText;
+}
 extern "C" const WCHAR *FormatRaw(DWORD dwFlags, const WCHAR *msg, int flags, const char *szProto, HANDLE hContact)
 {
     static std::wstring message(msg);
@@ -606,4 +627,29 @@ extern "C" char *NewTitle(HANDLE hContact, const TCHAR *szFormat, const TCHAR *s
     }
     return szResult;
 }
+
 #endif
+
+extern "C" const char *FilterEventMarkersA(char *szText)
+{
+    std::string text(szText);
+    unsigned int beginmark = 0, endmark = 0;
+
+    while(TRUE) {
+        if((beginmark = text.find("~-+")) != text.npos) {
+            endmark = text.find("+-~", beginmark);
+            if(endmark != text.npos && (endmark - beginmark) > 5) {
+                text.erase(beginmark, (endmark - beginmark) + 3);
+                continue;
+            }
+            else
+                break;
+        }
+        else
+            break;
+    }
+    lstrcpyA(szText, text.c_str());
+    return szText;
+}
+
+
