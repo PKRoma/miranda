@@ -39,6 +39,7 @@ The hotkeyhandler is a small, invisible window which cares about a few things:
 
 #include "commonheaders.h"
 #pragma hdrstop
+#include "sendqueue.h"
 
 extern struct       ContainerWindowData *pFirstContainer;
 extern HANDLE       hMessageWindowList;
@@ -69,8 +70,6 @@ void HandleMenuEntryFromhContact(int iSelection)
             ActivateExistingTab(pContainer, hWnd);
             pContainer->hwndSaved = 0;
             SetForegroundWindow(pContainer->hwnd);
-            SetActiveWindow(pContainer->hwnd);
-            SetFocus(pContainer->hwndActive);
         }
         else
             CallService(MS_MSG_SENDMESSAGE, (WPARAM)iSelection, 0);
@@ -600,6 +599,24 @@ BOOL CALLBACK HotkeyHandlerDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM
                 pContainer = pContainer->pNextContainer;
             }
             break;
+        }
+        case DM_SPLITSENDACK:
+        {
+            ACKDATA ack = {0};
+            struct SendJob *job = &sendJobs[wParam];
+
+            ack.hContact = sendJobs[wParam].hContact[0];
+            ack.hProcess = sendJobs[wParam].hSendId[0];
+            ack.type = ACKTYPE_MESSAGE;
+            ack.result = ACKRESULT_SUCCESS;
+            
+            if(job->hOwner && job->iAcksNeeded && job->hContact[0] && job->iStatus == SQ_INPROGRESS) {
+                if(IsWindow(job->hwndOwner))
+                    SendMessage(job->hwndOwner, HM_EVENTSENT, (WPARAM)MAKELONG(wParam, 0), (LPARAM)&ack);
+                else
+                    ClearSendJob((int)wParam);                                  // window already gone, clear and forget the job
+            }
+            return 0;
         }
         case WM_POWERBROADCAST:
         case WM_DISPLAYCHANGE:

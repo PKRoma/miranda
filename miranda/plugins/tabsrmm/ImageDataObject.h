@@ -36,8 +36,8 @@ public:
   // returns true on success, false on failure
 	static bool InsertBitmap(IRichEditOle* pRichEditOle, HBITMAP hBitmap);
   // returns true on success, false on failure
-  static bool InsertIcon(IRichEditOle* pRichEditOle, HICON hIcon, 
-    COLORREF backgroundColor, int sizeX = 0, int sizeY = 0);
+    //static bool InsertIcon(IRichEditOle* pRichEditOle, HICON hIcon, 
+    //COLORREF backgroundColor, int sizeX = 0, int sizeY = 0);
 
 private:
 	ULONG	m_ulRefCnt;

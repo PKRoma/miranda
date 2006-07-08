@@ -3,7 +3,6 @@
 // Used by resource.rc
 //
 #define IDD_TEMPLATEEDIT                1
-#define VS_VERSION_INFO                 1
 #define IDD_USERPREFS                   2
 #define IDD_TABCONFIG                   4
 #define IDD_VARIABLEHELP                5
@@ -114,6 +113,7 @@
 #define IDC_SHOWNAMES                   1047
 #define IDC_COLBACK_FILE                1048
 #define IDC_COLTEXT_FILE                1049
+#define IDC_MSGINDICATOR                1050
 #define IDC_CHKDEFAULTCOL_OTHERS        1050
 #define IDC_COLBACK_OTHERS              1051
 #define IDC_CLOSEONREPLY                1052
@@ -350,7 +350,6 @@
 #define IDC_TOOLBARHIDEMODE             1271
 #define IDC_EMPTYLINEFIX                1272
 #define IDC_SPLITTERSTATICEDGES         1273
-#define IDC_AVATARDISPLAY               1274
 #define IDC_MAXAVATARHEIGHT             1275
 #define IDC_TABLIMIT                    1276
 #define IDC_RIGHTINDENT                 1277
@@ -371,6 +370,7 @@
 #define IDC_USEPRIVATETITLE             1289
 #define IDC_ALWAYSTRIM                  1289
 #define IDC_SKIN_LOADFONTS              1289
+#define IDC_PRESERVEAVATARSIZE          1289
 #define IDC_SYNCSOUNDS                  1290
 #define IDC_FLASHLABEL                  1290
 #define IDC_ALWAYSTRIM2                 1290
@@ -382,7 +382,6 @@
 #define IDC_FLATTABS2                   1292
 #define IDC_USESNAPPING                 1293
 #define IDC_EXTRAMICROLF                1294
-#define IDC_DROPSHADOW                  1294
 #define IDC_SENDFORMAT                  1295
 #define IDC_FLATMSGLOG                  1296
 #define IDC_TOGGLESIDEBAR               1299
@@ -579,7 +578,6 @@
 #define ID_SENDMENU_FORCEANSISEND       40138
 #define ID_PROTOMENU_IEVIEWSETTING      40139
 #define ID_IEVIEWSETTING_USEGLOBAL      40140
-#define ID_IEVIEWSETTING_FORCEIEVIEW    40141
 #define ID_IEVIEWSETTING_FORCEDEFAULTMESSAGELOG 40142
 #define ID_VIEW_VERTICALMAXIMIZE        40143
 #define ID_SENDMENU_SENDLATER           40144
@@ -675,6 +673,7 @@
 #define ID_LOGMENU_USESIMPLETEMPLATE    40245
 #define ID_MESSAGELOG_USESIMPLETEMPLATES 40246
 #define ID_HELP_VIEWRELEASENOTES        40247
+#define ID_EDITOR_SHOWMESSAGELENGTHINDICATOR 40248
 #define IDC_STATIC                      -1
 
 // Next default values for new objects
@@ -682,7 +681,7 @@
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NEXT_RESOURCE_VALUE        10
-#define _APS_NEXT_COMMAND_VALUE         40248
+#define _APS_NEXT_COMMAND_VALUE         40249
 #define _APS_NEXT_CONTROL_VALUE         1400
 #define _APS_NEXT_SYMED_VALUE           40282
 #endif

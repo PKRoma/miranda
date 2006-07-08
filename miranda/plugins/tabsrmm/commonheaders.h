@@ -117,7 +117,7 @@ extern struct MM_INTERFACE memoryManagerInterface;
 #include "msgdlgutils.h"
 #include "nen.h"
 #include "functions.h"
-
+#include "generic_msghandlers.h"
 #include "chat/chat.h"
 
 #endif

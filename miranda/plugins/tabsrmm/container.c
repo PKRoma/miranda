@@ -184,23 +184,6 @@ struct ContainerWindowData *CreateContainer(const TCHAR *name, int iTemp, HANDLE
     return NULL;
 }
 
-int RegisterContainer(void) 
-{
-	WNDCLASSEX wc;
-	
-	ZeroMemory(&wc, sizeof(wc));
-	wc.cbSize         = sizeof(wc);
-	wc.lpszClassName  = _T("TabSRMSG_Win");
-	wc.lpfnWndProc    = (WNDPROC)ContainerWndProc;
-	wc.hCursor        = LoadCursor(NULL, IDC_ARROW);
-	wc.hbrBackground  = 0;
-	wc.style          = CS_GLOBALCLASS;
-    wc.cbWndExtra     = DLGWINDOWEXTRA;
-    wc.hInstance      = g_hInst;
-	RegisterClassEx(&wc);
-	return 0;
-}
-
 static int tooltip_active = FALSE;
 static POINT ptMouse = {0};
 
@@ -496,7 +479,10 @@ static void DrawSideBar(HWND hwndDlg, struct ContainerWindowData *pContainer, RE
 
 static BOOL CALLBACK ContainerWndProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam)
 {
-	struct ContainerWindowData *pContainer = (struct ContainerWindowData *)GetWindowLong(hwndDlg, GWL_USERDATA);
+    BOOL bSkinned;
+
+    struct ContainerWindowData *pContainer = (struct ContainerWindowData *)GetWindowLong(hwndDlg, GWL_USERDATA);
+    bSkinned = pContainer ? pContainer->bSkinned : FALSE;
 
 	switch(msg) {
 		case WM_NCLBUTTONDOWN:
@@ -586,7 +572,7 @@ static BOOL CALLBACK ContainerWndProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPA
 				}
 				else {
                     LRESULT result = DefWindowProc(hwndDlg, msg, wParam, lParam);
-					//RedrawWindow(hwndDlg, NULL, NULL, RDW_INVALIDATE | RDW_FRAME | RDW_UPDATENOW | RDW_NOCHILDREN);
+					RedrawWindow(hwndDlg, NULL, NULL, RDW_INVALIDATE | RDW_FRAME | RDW_UPDATENOW | RDW_NOCHILDREN);
 					return result;
 				}
 			}
@@ -623,11 +609,13 @@ static BOOL CALLBACK ContainerWndProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPA
 				}
 			}
 		case WM_NCACTIVATE:
-			pContainer->ncActive = wParam;
-			if(pContainer->bSkinned && g_framelessSkinmode) {
-				SendMessage(hwndDlg, WM_NCPAINT, 0, 0);
-				return 1;
-			}
+            if(pContainer) {
+                pContainer->ncActive = wParam;
+                if(bSkinned && g_framelessSkinmode) {
+                    SendMessage(hwndDlg, WM_NCPAINT, 0, 0);
+                    return 1;
+                }
+            }
 			break;
 		case WM_NCPAINT:
 			{
@@ -644,7 +632,7 @@ static BOOL CALLBACK ContainerWndProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPA
 				if(!pContainer)
 					break;
 
-				if(!pContainer->bSkinned)
+				if(!bSkinned)
 					break;
 
                 if(myGlobals.m_forcedSkinRefresh)
@@ -779,26 +767,26 @@ static BOOL CALLBACK ContainerWndProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPA
 				hdcReal = BeginPaint(hwndDlg, &ps);
 
 				GetClientRect(hwndDlg, &rcClient);
-				width = rcClient.right - rcClient.left;
-				height = rcClient.bottom - rcClient.top;
-				if(width != pContainer->oldDCSize.cx || height != pContainer->oldDCSize.cy) {
+                width = rcClient.right - rcClient.left;
+                height = rcClient.bottom - rcClient.top;
+                if(width != pContainer->oldDCSize.cx || height != pContainer->oldDCSize.cy) {
                     StatusItems_t *sbaritem = &StatusItems[ID_EXTBKSTATUSBAR];
                     BOOL statusBarSkinnd = !(pContainer->dwFlags & CNT_NOSTATUSBAR) && !sbaritem->IGNORED;
                     LONG sbarDelta = statusBarSkinnd ? pContainer->statusBarHeight : 0;
 
-					pContainer->oldDCSize.cx = width;
-					pContainer->oldDCSize.cy = height;
-					if(!pContainer->cachedDC) {
-						HDC dc = GetDC(NULL);
-						int wscreen = GetDeviceCaps(dc, HORZRES);
-						int hscreen = GetDeviceCaps(dc, VERTRES);
-						ReleaseDC(NULL, dc);
-						pContainer->cachedDC = CreateCompatibleDC(hdcReal);
-						pContainer->cachedHBM = CreateCompatibleBitmap(hdcReal, wscreen, hscreen);
-						pContainer->oldHBM = SelectObject(pContainer->cachedDC, pContainer->cachedHBM);
-					}
-					hdc = pContainer->cachedDC;
-					//FillRect(hdc, &rcClient, g_ContainerColorKeyBrush);
+                    pContainer->oldDCSize.cx = width;
+                    pContainer->oldDCSize.cy = height;
+                    if(!pContainer->cachedDC) {
+                        HDC dc = GetDC(NULL);
+                        int wscreen = GetDeviceCaps(dc, HORZRES);
+                        int hscreen = GetDeviceCaps(dc, VERTRES);
+                        ReleaseDC(NULL, dc);
+                        pContainer->cachedDC = CreateCompatibleDC(hdcReal);
+                        pContainer->cachedHBM = CreateCompatibleBitmap(hdcReal, wscreen, hscreen);
+                        pContainer->oldHBM = SelectObject(pContainer->cachedDC, pContainer->cachedHBM);
+                    }
+                    hdc = pContainer->cachedDC;
+                    //FillRect(hdc, &rcClient, g_ContainerColorKeyBrush);
                     if(!item->IGNORED)
                         DrawAlpha(hdc, &rcClient, item->COLOR, item->ALPHA, item->COLOR2, item->COLOR2_TRANSPARENT,
                                   item->GRADIENT, item->CORNER, item->BORDERSTYLE, item->imageItem);
@@ -810,8 +798,8 @@ static BOOL CALLBACK ContainerWndProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPA
                         DrawAlpha(hdc, &rcClient, sbaritem->COLOR, sbaritem->ALPHA, sbaritem->COLOR2, sbaritem->COLOR2_TRANSPARENT,
                                   sbaritem->GRADIENT, sbaritem->CORNER, sbaritem->BORDERSTYLE, sbaritem->imageItem);
                     }
-				}
-				BitBlt(hdcReal, 0, 0, width, height, pContainer->cachedDC, 0, 0, SRCCOPY);
+                }
+                BitBlt(hdcReal, 0, 0, width, height, pContainer->cachedDC, 0, 0, SRCCOPY);
 				EndPaint(hwndDlg, &ps);
 				return 0;
 			}
@@ -882,18 +870,21 @@ static BOOL CALLBACK ContainerWndProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPA
  * container window procedure...
  */
 
-BOOL CALLBACK DlgProcContainer(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam)
+static BOOL CALLBACK DlgProcContainer(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam)
 {
     struct ContainerWindowData *pContainer = 0;        // pointer to our struct ContainerWindowData
     int iItem = 0;
     TCITEM item;
     HWND  hwndTab;
+    BOOL  bSkinned;
 
     if(myGlobals.g_wantSnapping)
         CallSnappingWindowProc(hwndDlg, msg, wParam, lParam);
 
     pContainer = (struct ContainerWindowData *) GetWindowLong(hwndDlg, GWL_USERDATA);
+    bSkinned = pContainer ? pContainer->bSkinned : FALSE;
     hwndTab = GetDlgItem(hwndDlg, IDC_MSGTABS);
+
     switch (msg) {
         case WM_INITDIALOG:
             {
@@ -922,7 +913,6 @@ BOOL CALLBACK DlgProcContainer(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPa
                 pContainer = (struct ContainerWindowData *) lParam;
                 SetWindowLong(hwndDlg, GWL_USERDATA, (LONG) pContainer);
                 
-                pContainer->iLastClick = 0xffffffff;
 				pContainer->hwnd = hwndDlg;
                 dwCreateFlags = pContainer->dwFlags;
 
@@ -967,10 +957,7 @@ BOOL CALLBACK DlgProcContainer(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPa
 				SetClassLong(hwndDlg, GCL_STYLE, GetClassLong(hwndDlg, GCL_STYLE) & ~(CS_VREDRAW | CS_HREDRAW));
 				SetClassLong(hwndTab, GCL_STYLE, GetClassLong(hwndTab, GCL_STYLE) & ~(CS_VREDRAW | CS_HREDRAW));
 
-				if(IsWinVerXPPlus() && !g_framelessSkinmode && myGlobals.m_dropShadow)
-					SetClassLong(hwndDlg, GCL_STYLE, GetClassLong(hwndDlg, GCL_STYLE) | CS_DROPSHADOW);
-				else
-					SetClassLong(hwndDlg, GCL_STYLE, GetClassLong(hwndDlg, GCL_STYLE) & ~CS_DROPSHADOW);
+				SetClassLong(hwndDlg, GCL_STYLE, GetClassLong(hwndDlg, GCL_STYLE) & ~CS_DROPSHADOW);
 
 				/*
 				 * additional system menu items...
@@ -1085,12 +1072,12 @@ BOOL CALLBACK DlgProcContainer(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPa
 
             if(dat) {
                 DWORD dwOldMsgWindowFlags = dat->dwFlags;
-                DWORD dwOldEventIsShown = dat->dwEventIsShown;
+                DWORD dwOldEventIsShown = dat->dwFlagsEx;
 
                 if(MsgWindowMenuHandler(pContainer->hwndActive, dat, LOWORD(wParam), MENU_PICMENU) == 1)
                     break;
                 if(MsgWindowMenuHandler(pContainer->hwndActive, dat, LOWORD(wParam), MENU_LOGMENU) == 1) {
-                    if(dat->dwFlags != dwOldFlags || dat->dwEventIsShown != dwOldEventIsShown) {
+                    if(dat->dwFlags != dwOldFlags || dat->dwFlagsEx != dwOldEventIsShown) {
                         if(!DBGetContactSettingByte(dat->hContact, SRMSGMOD_T, "mwoverride", 0)) {
                             WindowList_Broadcast(hMessageWindowList, DM_DEFERREDREMAKELOG, (WPARAM)hwndDlg, (LPARAM)(dat->dwFlags & MWF_LOG_ALL));
                             DBWriteContactSettingDword(NULL, SRMSGMOD_T, "mwflags", dat->dwFlags & MWF_LOG_ALL);
@@ -1165,7 +1152,7 @@ BOOL CALLBACK DlgProcContainer(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPa
                     RECT rc;
                     LONG dwNewLeft;
                     DWORD exStyle = GetWindowLong(hwndDlg, GWL_EXSTYLE);
-                    BOOL skinnedMode = pContainer->bSkinned;
+                    BOOL skinnedMode = bSkinned;
                     ButtonItem *pItem = g_ButtonItems;
 
                     if(pfnIsThemeActive)
@@ -1185,7 +1172,7 @@ BOOL CALLBACK DlgProcContainer(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPa
                     pContainer->oldDCSize.cx = pContainer->oldDCSize.cy = 0;
 
                     SetWindowPos(hwndDlg, 0, rc.left + dwNewLeft, rc.top, (rc.right - rc.left) - dwNewLeft, rc.bottom - rc.top,
-                                 SWP_FRAMECHANGED | SWP_NOCOPYBITS | SWP_NOZORDER | SWP_DEFERERASE | SWP_ASYNCWINDOWPOS | (dwNewLeft < 0 && skinnedMode ? SWP_NOREDRAW : 0));
+                                 SWP_NOACTIVATE | SWP_FRAMECHANGED | SWP_NOCOPYBITS | SWP_NOZORDER | SWP_DEFERERASE | SWP_ASYNCWINDOWPOS | (dwNewLeft < 0 && skinnedMode ? SWP_NOREDRAW : 0));
                     pItem = g_ButtonItems;
                     while(pItem) {
                         if(pItem->dwFlags & BUTTON_ISSIDEBAR)
@@ -1337,7 +1324,7 @@ BOOL CALLBACK DlgProcContainer(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPa
 
                 GetClientRect(GetDlgItem(hwndDlg, IDC_MSGTABS), &rc);
                 if (!((rc.right - rc.left) == pContainer->oldSize.cx && (rc.bottom - rc.top) == pContainer->oldSize.cy))
-                    SendMessage(pContainer->hwndActive, DM_SCROLLLOGTOBOTTOM, 0, 0);
+                    DM_ScrollToBottom(pContainer->hwndActive, 0, 0, 0);
                 pContainer->bSizingLoop = FALSE;
                 break;
             }
@@ -1347,6 +1334,8 @@ BOOL CALLBACK DlgProcContainer(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPa
                 MINMAXINFO *mmi = (MINMAXINFO *) lParam;
 
                 mmi->ptMinTrackSize.x = 275;
+                //mmi->ptMinTrackSize.y = pContainer->uChildMinHeight;
+
                 GetClientRect(GetDlgItem(hwndDlg, IDC_MSGTABS), &rc);
                 pt.y = rc.top;
                 TabCtrl_AdjustRect(GetDlgItem(hwndDlg, IDC_MSGTABS), FALSE, &rc);
@@ -1422,7 +1411,7 @@ BOOL CALLBACK DlgProcContainer(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPa
                     SendMessage(pContainer->hwndStatus, SB_SETPARTS, myGlobals.g_SecureIMAvail ? 5 : 4, (LPARAM) statwidths);
                     pContainer->statusBarHeight = (rcs.bottom - rcs.top) + 1;
                     if(pContainer->hwndSlist)
-                        MoveWindow(pContainer->hwndSlist, pContainer->bSkinned ? 4 : 2, (rcs.bottom - rcs.top) / 2 - 7, 16, 16, FALSE);
+                        MoveWindow(pContainer->hwndSlist, bSkinned ? 4 : 2, (rcs.bottom - rcs.top) / 2 - 7, 16, 16, FALSE);
                 }
                 else
                     pContainer->statusBarHeight = 0;
@@ -1454,14 +1443,14 @@ BOOL CALLBACK DlgProcContainer(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPa
                     if((HWND)item.lParam == pContainer->hwndActive) {
                         MoveWindow((HWND)item.lParam, rcClient.left, rcClient.top, (rcClient.right - rcClient.left), (rcClient.bottom - rcClient.top), TRUE);
                         if(!pContainer->bSizingLoop && sizeChanged)
-                            SendMessage(pContainer->hwndActive, DM_SCROLLLOGTOBOTTOM, 0, 1);
+                            DM_ScrollToBottom(pContainer->hwndActive, 0, 0, 1);
                     }
                     else if(sizeChanged)
                         SendMessage((HWND)item.lParam, DM_CHECKSIZE, 0, 0);
                 }
 
                 RedrawWindow(hwndTab, NULL, NULL, RDW_INVALIDATE | (pContainer->bSizingLoop ? RDW_ERASE : 0));
-				RedrawWindow(hwndDlg, NULL, NULL, (pContainer->bSkinned ? RDW_FRAME : 0) | RDW_INVALIDATE | (pContainer->bSizingLoop || wParam == SIZE_RESTORED ? RDW_ERASE : 0));
+				RedrawWindow(hwndDlg, NULL, NULL, (bSkinned ? RDW_FRAME : 0) | RDW_INVALIDATE | (pContainer->bSizingLoop || wParam == SIZE_RESTORED ? RDW_ERASE : 0));
 
                 if(pContainer->hwndStatus)
                     InvalidateRect(pContainer->hwndStatus, NULL, FALSE);
@@ -1547,7 +1536,7 @@ BOOL CALLBACK DlgProcContainer(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPa
                         free(szNewTitle);
                     }
                 }
-                break;
+                return 0;
             }
         case WM_TIMER:
             if(wParam == TIMERID_HEARTBEAT) {
@@ -1622,7 +1611,7 @@ BOOL CALLBACK DlgProcContainer(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPa
                         pContainer->bInTray = 0;
                         return 0;
                     }
-					if(pContainer->bSkinned) {
+					if(bSkinned) {
 						ShowWindow(hwndDlg, SW_SHOW);
 						return 0;
 					}
@@ -1925,7 +1914,10 @@ panel_found:
         * pass the WM_ACTIVATE msg to the active message dialog child
         */
         case WM_ACTIVATE:
-			if (LOWORD(wParam == WA_INACTIVE) && (HWND)lParam != myGlobals.g_hwndHotkeyHandler && GetParent((HWND)lParam) != hwndDlg) {
+            if(pContainer == NULL)
+                break;
+
+            if (LOWORD(wParam == WA_INACTIVE) && (HWND)lParam != myGlobals.g_hwndHotkeyHandler && GetParent((HWND)lParam) != hwndDlg) {
 				if (pContainer->dwFlags & CNT_TRANSPARENCY && pSetLayeredWindowAttributes != NULL)
 					pSetLayeredWindowAttributes(hwndDlg, g_ContainerColorKey, (BYTE)HIWORD(pContainer->dwTransparency), (/* pContainer->bSkinned ? LWA_COLORKEY :  */ 0) | (pContainer->dwFlags & CNT_TRANSPARENCY ? LWA_ALPHA : 0));
 			}
@@ -1937,6 +1929,9 @@ panel_found:
         case WM_MOUSEACTIVATE: {
                 TCITEM item;
                 int curItem = 0;
+
+                if(pContainer == NULL)
+                    break;
 
                 FlashContainer(pContainer, 0, 0);
                 pContainer->dwFlashingStarted = 0;
@@ -1988,6 +1983,8 @@ panel_found:
                         if(hContact)
                             SendMessage(hwndDlg, DM_UPDATETITLE, (WPARAM)hContact, 0);
                         SendMessage(hwndDlg, WM_SIZE, 0, 0);
+                        pContainer->hwndSaved = 0;
+                        SendMessage(pContainer->hwndActive, DM_CHECKSIZE, 0, 0);
                         SendMessage(pContainer->hwndActive, WM_SIZE, 0, 0);
                         SendMessage(pContainer->hwndActive, WM_ACTIVATE, WA_ACTIVE, 0);
                         //if(myGlobals.m_ExtraRedraws)
@@ -2002,8 +1999,6 @@ panel_found:
                 if(GetMenu(hwndDlg) != 0)
                     DrawMenuBar(hwndDlg);
                 break;
-				if(pContainer->bSkinned)
-					return TRUE;
             }
         case WM_ENTERMENULOOP: {
             POINT pt;
@@ -2058,8 +2053,8 @@ panel_found:
             submenu = GetSubMenu(hMenu, 3);
             if(dat && submenu) {
                 MsgWindowUpdateMenu(pContainer->hwndActive, dat, submenu, MENU_LOGMENU);
-                submenu = GetSubMenu(hMenu, 1);
-                MsgWindowUpdateMenu(pContainer->hwndActive, dat, submenu, MENU_PICMENU);
+                //submenu = GetSubMenu(hMenu, 1);
+               // MsgWindowUpdateMenu(pContainer->hwndActive, dat, submenu, MENU_PICMENU);
             }
             break;
         }
@@ -2093,7 +2088,7 @@ panel_found:
             }
 		case WM_PAINT:
 			{
-				if(pContainer->bSkinned) {
+				if(bSkinned) {
 					PAINTSTRUCT ps;
 					HDC hdc = BeginPaint(hwndDlg, &ps);
 					EndPaint(hwndDlg, &ps);
@@ -2103,7 +2098,7 @@ panel_found:
 			}
 		case WM_ERASEBKGND:
 			{
-				if(pContainer->bSkinned)
+				if(bSkinned)
 					return TRUE;
 				break;
 			}
@@ -2249,25 +2244,25 @@ panel_found:
 
             ws = wsold = GetWindowLong(hwndDlg, GWL_STYLE);
 			ws = (pContainer->dwFlags & CNT_NOTITLE) ? 
-                ((IsWindowVisible(hwndDlg) ? WS_VISIBLE : 0) | WS_MINIMIZEBOX | WS_MAXIMIZEBOX | WS_CLIPCHILDREN | (g_framelessSkinmode ? 0 : WS_SYSMENU | WS_SIZEBOX)) : 
-                ws | WS_CAPTION | (g_framelessSkinmode ? WS_OVERLAPPEDWINDOW : WS_OVERLAPPEDWINDOW);
+                ((IsWindowVisible(hwndDlg) ? WS_VISIBLE : 0) | WS_MINIMIZEBOX | WS_MAXIMIZEBOX | WS_CLIPCHILDREN | WS_THICKFRAME | (g_framelessSkinmode ? WS_SYSMENU : WS_SYSMENU | WS_SIZEBOX)) : 
+                ws | WS_CAPTION | WS_OVERLAPPEDWINDOW | WS_CLIPCHILDREN;
             
 			SetWindowLong(hwndDlg, GWL_STYLE, ws);
 
-            pContainer->tBorder = DBGetContactSettingByte(NULL, SRMSGMOD_T, (pContainer->bSkinned ? "S_tborder" : "tborder"), 2);
-            pContainer->tBorder_outer_left = DBGetContactSettingByte(NULL, SRMSGMOD_T, (pContainer->bSkinned ? "S_tborder_outer_left" : "tborder_outer_left"), 2);
-            pContainer->tBorder_outer_right = DBGetContactSettingByte(NULL, SRMSGMOD_T, (pContainer->bSkinned ? "S_tborder_outer_right" : "tborder_outer_right"), 2);
-            pContainer->tBorder_outer_top = DBGetContactSettingByte(NULL, SRMSGMOD_T, (pContainer->bSkinned ? "S_tborder_outer_top" : "tborder_outer_top"), 2);
-            pContainer->tBorder_outer_bottom = DBGetContactSettingByte(NULL, SRMSGMOD_T, (pContainer->bSkinned ? "S_tborder_outer_bottom" : "tborder_outer_bottom"), 2);
-			sBarHeight = (UINT)DBGetContactSettingByte(NULL, SRMSGMOD_T, (pContainer->bSkinned ? "S_sbarheight" : "sbarheight"), 0);
+            pContainer->tBorder = DBGetContactSettingByte(NULL, SRMSGMOD_T, (bSkinned ? "S_tborder" : "tborder"), 2);
+            pContainer->tBorder_outer_left = DBGetContactSettingByte(NULL, SRMSGMOD_T, (bSkinned ? "S_tborder_outer_left" : "tborder_outer_left"), 2);
+            pContainer->tBorder_outer_right = DBGetContactSettingByte(NULL, SRMSGMOD_T, (bSkinned ? "S_tborder_outer_right" : "tborder_outer_right"), 2);
+            pContainer->tBorder_outer_top = DBGetContactSettingByte(NULL, SRMSGMOD_T, (bSkinned ? "S_tborder_outer_top" : "tborder_outer_top"), 2);
+            pContainer->tBorder_outer_bottom = DBGetContactSettingByte(NULL, SRMSGMOD_T, (bSkinned ? "S_tborder_outer_bottom" : "tborder_outer_bottom"), 2);
+			sBarHeight = (UINT)DBGetContactSettingByte(NULL, SRMSGMOD_T, (bSkinned ? "S_sbarheight" : "sbarheight"), 0);
 
 			if (LOBYTE(LOWORD(GetVersion())) >= 5  && pSetLayeredWindowAttributes != NULL) {
                 DWORD exold;
 				ex = exold = GetWindowLong(hwndDlg, GWL_EXSTYLE);
 				ex = (pContainer->dwFlags & CNT_TRANSPARENCY) ? ex | WS_EX_LAYERED : ex & ~WS_EX_LAYERED;
-				ex = (pContainer->bSkinned && g_compositedWindow) ? ex | WS_EX_COMPOSITED : ex & ~WS_EX_COMPOSITED;
+				ex = (bSkinned && g_compositedWindow) ? ex | WS_EX_COMPOSITED : ex & ~WS_EX_COMPOSITED;
 				SetWindowLong(hwndDlg, GWL_EXSTYLE, ex);
-				if (pContainer->dwFlags & CNT_TRANSPARENCY || pContainer->bSkinned) {
+				if (pContainer->dwFlags & CNT_TRANSPARENCY || bSkinned) {
 					DWORD trans = LOWORD(pContainer->dwTransparency);
 					pSetLayeredWindowAttributes(hwndDlg, g_ContainerColorKey, (BYTE)trans, (/* pContainer->bSkinned ? LWA_COLORKEY : */ 0) | (pContainer->dwFlags & CNT_TRANSPARENCY ? LWA_ALPHA : 0));
 				}
@@ -2287,7 +2282,7 @@ panel_found:
                     SetWindowPos(hwndDlg,  0, rc.left, rc.top, rc.right - rc.left, rc.bottom - rc.top, 0);
                     RedrawWindow(hwndDlg, NULL, NULL, RDW_INVALIDATE | RDW_FRAME | RDW_UPDATENOW);
                     if(pContainer->hwndActive != 0)
-                        SendMessage(pContainer->hwndActive, DM_SCROLLLOGTOBOTTOM, 0, 0);
+                        DM_ScrollToBottom(pContainer->hwndActive, 0, 0, 0);
                 }
             }
             ws = wsold = GetWindowLong(GetDlgItem(hwndDlg, IDC_MSGTABS), GWL_STYLE);
@@ -2320,7 +2315,7 @@ panel_found:
                 else
                     pContainer->hwndSlist = 0;
 
-				if(sBarHeight && pContainer->bSkinned)
+				if(sBarHeight && bSkinned)
 					SendMessage(pContainer->hwndStatus, SB_SETMINHEIGHT, sBarHeight, 0);
 
                 //OldStatusBarproc = (WNDPROC) SetWindowLong(pContainer->hwndStatus, GWL_WNDPROC, (LONG)StatusBarSubclassProc);
@@ -2356,11 +2351,12 @@ panel_found:
                         mii.fType = MFT_OWNERDRAW;
 
                         pContainer->hMenu = LoadMenu(g_hInst, MAKEINTRESOURCE(IDR_MENUBAR));
+                        CallService(MS_LANGPACK_TRANSLATEMENU, (WPARAM)pContainer->hMenu, 0);
                         for(i = 0; i <= 5; i++) {
                             mii.wID = 0xffff5000 + i;
                             SetMenuItemInfo(pContainer->hMenu, i, TRUE, &mii);
                         }
-                        if(pContainer->bSkinned && g_MenuBGBrush) {
+                        if(bSkinned && g_MenuBGBrush) {
                             mi.cbSize = sizeof(mi);
                             mi.hbrBack = g_MenuBGBrush;
                             mi.fMask = MIM_BACKGROUND;
@@ -2503,20 +2499,30 @@ panel_found:
                 SIZE sz;
                 HFONT hOldFont;
                 TCHAR *menuName = TranslateTS(menuBarNames_translated[id - 0x5000]);
+                COLORREF clrBack;
 
                 hOldFont = SelectObject(dis->hDC, GetStockObject(DEFAULT_GUI_FONT));
-                if(pContainer->bSkinned && g_framelessSkinmode)
+                if(bSkinned && g_framelessSkinmode)
                     OffsetRect(&dis->rcItem, myGlobals.g_realSkinnedFrame_left, myGlobals.g_realSkinnedFrame_caption);
                 GetTextExtentPoint32(dis->hDC, menuName, lstrlen(menuName), &sz);
                 SetBkMode(dis->hDC, TRANSPARENT);
 
+                if(myGlobals.m_bIsXP) {
+                    if(pfnIsThemeActive && pfnIsThemeActive())
+                        clrBack = COLOR_MENUBAR;
+                    else
+                        clrBack = COLOR_3DFACE;
+                }
+                else
+                    clrBack = COLOR_3DFACE;
+
                 /*if(dis->itemState & ODS_SELECTED || dis->itemState & ODS_HOTLIGHT)
                     FillRect(dis->hDC, &dis->rcItem, GetSysColorBrush(COLOR_MENUHILIGHT));
                 else*/
-                    FillRect(dis->hDC, &dis->rcItem, pContainer->bSkinned && g_MenuBGBrush ? g_MenuBGBrush : GetSysColorBrush(myGlobals.m_bIsXP ? COLOR_MENUBAR : COLOR_3DFACE));
+                FillRect(dis->hDC, &dis->rcItem, bSkinned && g_MenuBGBrush ? g_MenuBGBrush : GetSysColorBrush(clrBack));
 
                 if(dis->itemState & ODS_SELECTED) {
-                    if(pContainer->bSkinned) {
+                    if(bSkinned) {
                         POINT pt;
                         HPEN  hPenOld;
 
@@ -2532,7 +2538,7 @@ panel_found:
                     } else
                         DrawEdge(dis->hDC, &dis->rcItem, BDR_SUNKENINNER, BF_RECT);
                 }
-                SetTextColor(dis->hDC, pContainer->bSkinned ? myGlobals.skinDefaultFontColor : GetSysColor(COLOR_MENUTEXT));
+                SetTextColor(dis->hDC, bSkinned ? myGlobals.skinDefaultFontColor : GetSysColor(COLOR_MENUTEXT));
                 DrawText(dis->hDC, menuName, lstrlen(menuName), &dis->rcItem,
                          DT_VCENTER | DT_SINGLELINE | DT_CENTER);
                 //DrawState(dis->hDC, 0, NULL, menuBarNames[dis->itemID - 100], lstrlen(menuBarNames[dis->itemID - 100]),
@@ -2656,12 +2662,17 @@ panel_found:
 					DeleteObject(pContainer->cachedHBM);
 					DeleteDC(pContainer->cachedDC);
 				}
-				if (pContainer)
-                    free(pContainer);
-    			SetWindowLong(hwndDlg, GWL_USERDATA, 0);
                 SetWindowLong(hwndDlg, GWL_WNDPROC, (LONG)OldContainerWndProc);
                 return 0;
             }
+        case WM_NCDESTROY:
+            if (pContainer)
+                free(pContainer);
+            SetWindowLong(hwndDlg, GWL_USERDATA, 0);
+#if defined (_DEBUG)
+            _DebugTraceA("container.c WM_NCDESTROY free(pcontainer)");
+#endif
+            break;
         case WM_CLOSE: {
                 WINDOWPLACEMENT wp;
                 char szCName[40];
@@ -2951,30 +2962,6 @@ static struct ContainerWindowData *RemoveContainerFromList(struct ContainerWindo
 }
 
 /*
- * get the image list index for the specified protocol icon...
- * *szProto: protocol name.
- * iStatus: protocol status
- * returns the image list index for the icon, or 0 if not found
- * 0 is actually the global "offline" icon.
- */
-
-/*
-int GetProtoIconFromList(const char *szProto, int iStatus)
-{
-    int i;
-
-    if (szProto == NULL || strlen(szProto) == 0) {
-        return 0;
-    }
-    for (i = 0; i < myGlobals.g_nrProtos; i++) {
-        if (!strncmp(protoIconData[i].szName, szProto, sizeof(protoIconData[i].szName))) {
-            return protoIconData[i].iFirstIconID + ( iStatus - ID_STATUS_OFFLINE );
-        }
-    }
-    return 0;
-}
-*/
-/*
  * calls the TabCtrl_AdjustRect to calculate the "real" client area of the tab.
  * also checks for the option "hide tabs when only one tab open" and adjusts
  * geometry if necessary
@@ -3090,6 +3077,7 @@ int GetContainerNameForContact(HANDLE hContact, TCHAR *szName, int iNameLen)
  * It also allows for setting the Flags value for all containers
  */
 
+/*
 int EnumContainers(HANDLE hContact, DWORD dwAction, const TCHAR *szTarget, const TCHAR *szNew, DWORD dwExtinfo, DWORD dwExtinfoEx)
 {
     DBVARIANT dbv;
@@ -3165,6 +3153,8 @@ int EnumContainers(HANDLE hContact, DWORD dwAction, const TCHAR *szTarget, const
 
     return 0;
 }
+
+*/
 
 void DeleteContainer(int iIndex)
 {
@@ -3469,7 +3459,7 @@ void UpdateContainerMenu(HWND hwndDlg, struct MessageWindowData *dat)
     if(dat->pContainer->hMenu == 0)
         return;
 
-    if(dat->hwndLog != 0 && (DBGetContactSettingDword(NULL, "IEVIEW", "TemplatesFlags", 0) & 0x01))
+    if(dat->hwndIEView != 0 && (DBGetContactSettingDword(NULL, "IEVIEW", "TemplatesFlags", 0) & 0x01))
         EnableMenuItem(dat->pContainer->hMenu, 3, MF_BYPOSITION | MF_GRAYED);
     else
         EnableMenuItem(dat->pContainer->hMenu, 3, MF_BYPOSITION | MF_ENABLED);

@@ -128,22 +128,6 @@ int RegisterTabCtrlClass(void)
 	return 0;
 }
 
-static void RectScreenToClient(HWND hwnd, RECT *rc)
-{
-    POINT p1, p2;
-
-    p1.x = rc->left;
-    p1.y = rc->top;
-    p2.x = rc->right;
-    p2.y = rc->bottom;
-    ScreenToClient(hwnd, &p1);
-    ScreenToClient(hwnd, &p2);
-    rc->left = p1.x;
-    rc->top = p1.y;
-    rc->right = p2.x;
-    rc->bottom = p2.y;
-}
-
 	/*
      * tabctrl helper function
 	 * Finds leftmost down item.
@@ -458,7 +442,7 @@ static void DrawItem(struct TabControlData *tabdat, HDC dc, RECT *rcItem, int nH
         if(dat->mayFlashTab == FALSE || (dat->mayFlashTab == TRUE && dat->bTabFlash != 0) || !(myGlobals.m_TabAppearance & TCF_FLASHICON)) {
             DWORD ix = rcItem->left + tabdat->m_xpad - 1;
             DWORD iy = (rcItem->bottom + rcItem->top - iSize) / 2;
-            if(dat->dwEventIsShown & MWF_SHOW_ISIDLE && myGlobals.m_IdleDetect)
+            if(dat->dwFlagsEx & MWF_SHOW_ISIDLE && myGlobals.m_IdleDetect)
                 DrawDimmedIcon(dc, ix, iy, iSize, iSize, hIcon, 180);
             else
                 DrawIconEx (dc, ix, iy, hIcon, iSize, iSize, 0, NULL, DI_NORMAL | DI_COMPAT); 

@@ -48,7 +48,8 @@ extern      HANDLE hTrayAnimThread, g_hEvent;
 PLUGIN_DATA *PopUpList[20];
 static int PopupCount = 0;
 
-BOOL bWmNotify = TRUE;
+BOOL        bWmNotify = TRUE;
+extern int  safe_wcslen(wchar_t *msg, int chars);
 
 static void CheckForRemoveMask()
 {
@@ -1226,7 +1227,7 @@ static int PopupShowW(NEN_OPTIONS *pluginOptions, HANDLE hContact, HANDLE hEvent
 
 #endif
 
-int PopupPreview(NEN_OPTIONS *pluginOptions)
+static int PopupPreview(NEN_OPTIONS *pluginOptions)
 {
     PopupShow(pluginOptions, NULL, NULL, EVENTTYPE_MESSAGE);
     PopupShow(pluginOptions, NULL, NULL, EVENTTYPE_URL);
@@ -1243,7 +1244,7 @@ int PopupPreview(NEN_OPTIONS *pluginOptions)
  * truncates the announce string at 255 characters (balloon tooltip limitation)
  */
 
-int tabSRMM_ShowBalloon(WPARAM wParam, LPARAM lParam, UINT eventType)
+static int tabSRMM_ShowBalloon(WPARAM wParam, LPARAM lParam, UINT eventType)
 {
     DBEVENTINFO dbei = {0};
     char *szPreview;

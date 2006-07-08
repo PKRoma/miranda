@@ -48,6 +48,11 @@ Also, scrolling logic has been changed in some places, and there are currently a
     "*\ttabSRMM will now warn you when you a paste a message which exceeds the message size limit for the active protocol.\\par ",
     "*\tIEView is now set as default message log when it is installed and detected. The global option to enable it has been removed. It is still possible to enable \
 or disable it on a per contact base.\\par ",
+    "*\tAdded visual message length indicator (a progress bar like control just below the toolbar buttons). You can disable it by right clicking \
+in the edit box and choosing \\b Show message length indicator\\b0 from the context menu.\\par ",
+    "*\tRemoved static avatar display option. Instead you can specify the maximum height of the bottom avatars and make them appear \
+unscaled, if possible.\\par ",
+    "*\tAdded message splitting. Read more about at http://miranda.or.at/tabsrmm/message-splitting/ \\par ",
     NULL
 };
 
@@ -96,9 +101,9 @@ static struct MsgLogIcon ttb_Slist = {0}, ttb_Traymenu = {0};
 
 HMODULE g_hIconDLL = 0;
 
-int Chat_IconsChanged(WPARAM wp, LPARAM lp), Chat_ModulesLoaded(WPARAM wp, LPARAM lp);
-void Chat_AddIcons(void);
-int  Chat_PreShutdown(WPARAM wParam, LPARAM lParam);
+int     Chat_IconsChanged(WPARAM wp, LPARAM lp), Chat_ModulesLoaded(WPARAM wp, LPARAM lp);
+void    Chat_AddIcons(void);
+int     Chat_PreShutdown(WPARAM wParam, LPARAM lParam);
 
 static int IEViewOptionsChanged(WPARAM wParam, LPARAM lParam)
 {
@@ -1061,20 +1066,20 @@ static int SplitmsgModulesLoaded(WPARAM wParam, LPARAM lParam)
 	return 0;
 }
 
-int OkToExit(WPARAM wParam, LPARAM lParam)
+static int OkToExit(WPARAM wParam, LPARAM lParam)
 {
     CreateSystrayIcon(0);
     CreateTrayMenus(0);
     g_sessionshutdown = 1;
-    return 0;
-}
-
-int PreshutdownSendRecv(WPARAM wParam, LPARAM lParam)
-{
     UnhookEvent(hEventDbEventAdded);
     UnhookEvent(hEventDispatch);
     UnhookEvent(hEventDbSettingChange);
     UnhookEvent(hEventContactDeleted);
+    return 0;
+}
+
+static int PreshutdownSendRecv(WPARAM wParam, LPARAM lParam)
+{
 
     if(g_chat_integration_enabled)
         Chat_PreShutdown(0, 0);
@@ -1204,7 +1209,7 @@ static int AvatarChanged(WPARAM wParam, LPARAM lParam)
             if(dat->hwndFlash == 0)
                 dat->panelWidth = -1;				// force new size calculations (not for flash avatars)
             ShowPicture(hwnd, dat, TRUE);
-			if(dat->dwEventIsShown & MWF_SHOW_INFOPANEL) {
+			if(dat->dwFlagsEx & MWF_SHOW_INFOPANEL) {
 				InvalidateRect(GetDlgItem(hwnd, IDC_PANELPIC), NULL, TRUE);
 				SendMessage(hwnd, WM_SIZE, 0, 0);
 			}
@@ -1955,7 +1960,7 @@ static int SetupIconLibConfig()
 
     while(ICONBLOCKS[n].szSection) {
         i = 0;
-        sid.pszSection = ICONBLOCKS[n].szSection;
+        sid.pszSection = Translate(ICONBLOCKS[n].szSection);
         while(ICONBLOCKS[n].idesc[i].szDesc) {
             sid.pszName = ICONBLOCKS[n].idesc[i].szName;
             sid.pszDescription = Translate(ICONBLOCKS[n].idesc[i].szDesc);

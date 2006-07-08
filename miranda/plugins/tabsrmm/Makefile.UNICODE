@@ -16,6 +16,7 @@ OBJ  = Release_MINGW32_UNICODE/manager.o Release_MINGW32_UNICODE/message.o Relea
        Release_MINGW32_UNICODE/msgdlgutils.o Release_MINGW32_UNICODE/container.o Release_MINGW32_UNICODE/containeroptions.o \
        Release_MINGW32_UNICODE/hotkeyhandler.o Release_MINGW32_UNICODE/msgdialog.o Release_MINGW32_UNICODE/msglog.o \
        Release_MINGW32_UNICODE/msgoptions.o Release_MINGW32_UNICODE/msgs.o Release_MINGW32_UNICODE/selectcontainer.o \
+       Release_MINGW32_UNICODE/generic_msghandlers.o \
        Release_MINGW32_UNICODE/srmm.o $(RES)
 
 LINKOBJ  = $(OBJ)
@@ -128,6 +129,9 @@ Release_MINGW32_UNICODE/msgs.o: msgs.c
 
 Release_MINGW32_UNICODE/selectcontainer.o: selectcontainer.c
 	$(CC) -c selectcontainer.c -o Release_MINGW32_UNICODE/selectcontainer.o $(CFLAGS)
+
+Release_MINGW32_UNICODE/generic_msghandlers.o: generic_msghandlers.c
+	$(CC) -c generic_msghandlers.c -o Release_MINGW32_UNICODE/generic_msghandlers.o $(CFLAGS)
 
 Release_MINGW32_UNICODE/srmm.o: srmm.c
 	$(CC) -c srmm.c -o Release_MINGW32_UNICODE/srmm.o $(CFLAGS)
