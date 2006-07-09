@@ -279,8 +279,7 @@ static int CreateCLC(HWND parent)
         g_hwndEventArea = frame.hWnd;
 		hNotifyFrame = (HWND)CallService(MS_CLIST_FRAMES_ADDFRAME,(WPARAM)&frame,(LPARAM)0);
 		CallService(MS_CLIST_FRAMES_UPDATEFRAME, (WPARAM)hNotifyFrame, FU_FMPOS);
-		if(!g_CluiData.bFirstRun)
-			HideShowNotifyFrame();
+		HideShowNotifyFrame();
 		CreateViewModeFrame();
 	}
 	SetButtonToSkinned();
@@ -512,8 +511,9 @@ void ConfigureEventArea(HWND hwnd)
 	int iCount = GetMenuItemCount(g_CluiData.hMenuNotify);
 	DWORD dwFlags = g_CluiData.dwFlags;
 	int oldstate = g_CluiData.notifyActive;
+    int dwVisible = CallService(MS_CLIST_FRAMES_GETFRAMEOPTIONS, MAKEWPARAM(FO_FLAGS, hNotifyFrame), 0) & F_VISIBLE;
 
-	if (dwFlags & CLUI_FRAME_USEEVENTAREA) {
+	if (dwVisible) {
 		if (dwFlags & CLUI_FRAME_AUTOHIDENOTIFY)
 			g_CluiData.notifyActive = iCount > 0 ? 1 : 0;
 		else
@@ -2027,21 +2027,6 @@ buttons_done:
 			case POPUP_BUTTONS:
 				{
 					g_CluiData.dwFlags ^= CLUI_FRAME_SHOWBOTTOMBUTTONS;
-					break;
-				}
-			case ID_EVENTAREA_AUTOHIDE:
-				{
-					g_CluiData.dwFlags ^= CLUI_FRAME_AUTOHIDENOTIFY;
-					break;
-				}
-			case ID_EVENTAREA_ENABLED:
-				{
-					g_CluiData.dwFlags ^= CLUI_FRAME_USEEVENTAREA;
-					break;
-				}
-			case ID_EVENTAREA_SUNKENFRAME:
-				{
-					g_CluiData.dwFlags ^= CLUI_FRAME_EVENTAREASUNKEN;
 					break;
 				}
 			case POPUP_SHOWSTATUSICONS:

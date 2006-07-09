@@ -690,7 +690,6 @@
 #define IDC_ALIGNMENT2                  1737
 #define IDC_CLISTALIGN                  1737
 #define IDC_CLISTSUNKEN                 1738
-#define IDC_EVENTAREAENABLED            1739
 #define IDC_EVENTAREAAUTOHIDE           1740
 #define IDC_RADIUS                      1742
 #define IDC_RADIUSSPIN                  1743
@@ -838,9 +837,7 @@
 #define ID_NOWHERE_EVENTAREA            40043
 #define IDC_FLT_PADRIGHT                40043
 #define IDC_LASTMSGVALUE                40043
-#define ID_EVENTAREA_ENABLED            40044
 #define IDC_FLT_PADRIGHTSPIN            40044
-#define ID_EVENTAREA_AUTOHIDE           40045
 #define IDC_FLT_PADTOP                  40045
 #define IDC_SKINFILENAME                40045
 #define IDC_FLT_PADTOPSPIN              40046
@@ -848,7 +845,6 @@
 #define POPUP_ADJUSTSIZE                40047
 #define IDC_FLT_PADBOTTOM               40047
 #define IDC_RELOADSKIN                  40047
-#define ID_EVENTAREA_SUNKENFRAME        40048
 #define IDC_FLT_PADBOTTOMSPIN           40048
 #define IDC_UNLOAD                      40048
 #define ID_BUTTONBAR_DRAWSUNKENFRAME    40049

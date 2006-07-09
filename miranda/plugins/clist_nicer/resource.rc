@@ -271,14 +271,14 @@ BEGIN
                     "Button",BS_AUTOCHECKBOX | WS_TABSTOP,14,213,164,10
     CONTROL         "Draw sunken edge",IDC_CLISTSUNKEN,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,14,225,164,10
     GROUPBOX        "Event area",IDC_STATIC,195,192,112,52
-    CONTROL         "Enabled",IDC_EVENTAREAENABLED,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,202,202,100,10
-    CONTROL         "Auto - hide",IDC_EVENTAREAAUTOHIDE,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,202,214,100,10
-    CONTROL         "Draw sunken edge",IDC_EVENTAREASUNKEN,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,202,226,100,10
+    CONTROL         "Auto mode",IDC_EVENTAREAAUTOHIDE,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,202,223,100,10
+    CONTROL         "Draw sunken edge",IDC_EVENTAREASUNKEN,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,202,233,100,10
     CONTROL         "Show contacts local time",IDC_SHOWLOCALTIME,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,166,66,127,10
     CONTROL         "Only when timezone differs",IDC_SHOWLOCALTIMEONLYWHENDIFFERENT,
                     "Button",BS_AUTOCHECKBOX | WS_TABSTOP,178,77,120,10
     COMBOBOX        IDC_CLISTALIGN,90,8,71,56,CBS_DROPDOWNLIST | CBS_SORT | WS_VSCROLL | WS_TABSTOP
     LTEXT           "Right align contacts",IDC_STATIC,14,10,72,10
+    LTEXT           "Set base visiblity on the frames menu",IDC_STATIC,201,203,102,19
 END
 
 IDD_OPT_CLUI DIALOGEX 0, 0, 313, 251
@@ -865,12 +865,6 @@ BEGIN
         MENUITEM "Use Status Floater",          POPUP_FLOATER
         MENUITEM "Auto-Hide Status Floater",    POPUP_FLOATER_AUTOHIDE
         MENUITEM "Show Event Area in Floater",  POPUP_FLOATER_EVENTS
-    END
-    POPUP "Event Area"
-    BEGIN
-        MENUITEM "Enabled",                     ID_EVENTAREA_ENABLED
-        MENUITEM "Autohide",                    ID_EVENTAREA_AUTOHIDE
-        MENUITEM "Sunken frame",                ID_EVENTAREA_SUNKENFRAME
     END
 END
 

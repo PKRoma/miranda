@@ -541,7 +541,6 @@ static BOOL CALLBACK DlgProcPlusOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPAR
 			CheckDlgButton(hwndDlg, IDC_SHOWBOTTOMBUTTONS, dwFlags & CLUI_FRAME_SHOWBOTTOMBUTTONS);
 			CheckDlgButton(hwndDlg, IDC_CLISTSUNKEN, dwFlags & CLUI_FRAME_CLISTSUNKEN);
 
-			CheckDlgButton(hwndDlg, IDC_EVENTAREAENABLED, dwFlags & CLUI_FRAME_USEEVENTAREA);
 			CheckDlgButton(hwndDlg, IDC_EVENTAREAAUTOHIDE, dwFlags & CLUI_FRAME_AUTOHIDENOTIFY);
 			CheckDlgButton(hwndDlg, IDC_EVENTAREASUNKEN, dwFlags & CLUI_FRAME_EVENTAREASUNKEN);
 
@@ -579,9 +578,6 @@ static BOOL CALLBACK DlgProcPlusOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPAR
 			EnableWindow(GetDlgItem(hwndDlg, IDC_RADIUSSPIN), IsDlgButtonChecked(hwndDlg, IDC_AVATARSROUNDED) ? TRUE : FALSE);
 
 			EnableWindow(GetDlgItem(hwndDlg, IDC_AVATARBORDERCLR), IsDlgButtonChecked(hwndDlg, IDC_AVATARSBORDER) ? TRUE : FALSE);
-
-			EnableWindow(GetDlgItem(hwndDlg, IDC_EVENTAREAAUTOHIDE), IsDlgButtonChecked(hwndDlg, IDC_EVENTAREAENABLED) ? TRUE : FALSE);
-			EnableWindow(GetDlgItem(hwndDlg, IDC_EVENTAREASUNKEN), IsDlgButtonChecked(hwndDlg, IDC_EVENTAREAENABLED) ? TRUE : FALSE);
 
 			EnableWindow(GetDlgItem(hwndDlg, IDC_RENDERGDIP), g_gdiplusToken != 0 ? TRUE : FALSE);
 
@@ -634,10 +630,6 @@ static BOOL CALLBACK DlgProcPlusOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPAR
 		case IDC_AVATARSBORDER:
 			EnableWindow(GetDlgItem(hwndDlg, IDC_AVATARBORDERCLR), IsDlgButtonChecked(hwndDlg, IDC_AVATARSBORDER) ? TRUE : FALSE);
 			break;
-		case IDC_EVENTAREAENABLED:
-			EnableWindow(GetDlgItem(hwndDlg, IDC_EVENTAREAAUTOHIDE), IsDlgButtonChecked(hwndDlg, IDC_EVENTAREAENABLED) ? TRUE : FALSE);
-			EnableWindow(GetDlgItem(hwndDlg, IDC_EVENTAREASUNKEN), IsDlgButtonChecked(hwndDlg, IDC_EVENTAREAENABLED) ? TRUE : FALSE);
-			break;
 		case IDC_SHOWMETA:
 			__setFlag(CLUI_USEMETAICONS, IsDlgButtonChecked(hwndDlg, IDC_SHOWMETA));
 			pcli->pfnClcBroadcast(CLM_AUTOREBUILD, 0, 0);
@@ -665,7 +657,6 @@ static BOOL CALLBACK DlgProcPlusOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPAR
 
 				__setFlag(CLUI_FRAME_EVENTAREASUNKEN, IsDlgButtonChecked(hwndDlg, IDC_EVENTAREASUNKEN));
 				__setFlag(CLUI_FRAME_AUTOHIDENOTIFY, IsDlgButtonChecked(hwndDlg, IDC_EVENTAREAAUTOHIDE));
-				__setFlag(CLUI_FRAME_USEEVENTAREA, IsDlgButtonChecked(hwndDlg, IDC_EVENTAREAENABLED));
 
 				__setFlag(CLUI_FRAME_SHOWTOPBUTTONS, IsDlgButtonChecked(hwndDlg, IDC_SHOWBUTTONBAR));
 				__setFlag(CLUI_FRAME_SHOWBOTTOMBUTTONS, IsDlgButtonChecked(hwndDlg, IDC_SHOWBOTTOMBUTTONS));
@@ -723,6 +714,7 @@ static BOOL CALLBACK DlgProcPlusOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPAR
 				ConfigureFrame();
 				ConfigureCLUIGeometry(1);
 				ConfigureEventArea(pcli->hwndContactList);
+                HideShowNotifyFrame();
 				SendMessage(pcli->hwndContactTree, WM_SIZE, 0, 0);
 				SendMessage(pcli->hwndContactList, WM_SIZE, 0, 0);
 				if(bOldMirrorMode != g_CluiData.bUseDCMirroring)
