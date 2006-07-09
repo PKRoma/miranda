@@ -52,6 +52,7 @@ typedef BOOL  ( WINAPI *ft_InternetCloseHandle )( HINTERNET );
 typedef DWORD ( WINAPI *ft_InternetErrorDlg )( HWND, HINTERNET, DWORD, DWORD, LPVOID* );
 typedef BOOL  ( WINAPI *ft_InternetSetOption )( HINTERNET, DWORD, LPVOID, DWORD );
 typedef BOOL  ( WINAPI *ft_InternetReadFile )( HINTERNET, LPVOID, DWORD, LPDWORD );
+typedef BOOL  ( WINAPI *ft_HttpAddRequestHeaders )( HINTERNET, LPCSTR, DWORD, DWORD );
 
 typedef HINTERNET ( WINAPI *ft_HttpOpenRequest )( HINTERNET, LPCSTR, LPCSTR, LPCSTR, LPCSTR, LPCSTR*, DWORD, DWORD );
 typedef HINTERNET ( WINAPI *ft_InternetConnect )( HINTERNET, LPCSTR, INTERNET_PORT, LPCSTR, LPCSTR, DWORD, DWORD, DWORD );
@@ -79,6 +80,7 @@ struct SSL_WinInet : public SSL_Base
 	ft_HttpOpenRequest     f_HttpOpenRequest;
 	ft_HttpQueryInfo       f_HttpQueryInfo;
 	ft_HttpSendRequest     f_HttpSendRequest;
+	ft_HttpAddRequestHeaders f_HttpAddRequestHeaders;
 };
 
 /////////////////////////////////////////////////////////////////////////////////////////
@@ -97,6 +99,7 @@ int SSL_WinInet::init()
 	f_HttpOpenRequest = (ft_HttpOpenRequest)GetProcAddress( m_dll, "HttpOpenRequestA" );
 	f_HttpQueryInfo = (ft_HttpQueryInfo)GetProcAddress( m_dll, "HttpQueryInfoA" );
 	f_HttpSendRequest = (ft_HttpSendRequest)GetProcAddress( m_dll, "HttpSendRequestA" );
+	f_HttpAddRequestHeaders = (ft_HttpAddRequestHeaders)GetProcAddress( m_dll, "HttpAddRequestHeadersA" );
 	return 0;
 }
 
@@ -229,6 +232,8 @@ char* SSL_WinInet::getSslResult( char* parUrl, char* parAuthInfo )
 		if ( tUsesProxy && MSN_GetByte( "NLUseProxyAuth", 0  ))
 			applyProxy( tRequest );
 
+			char cclose[] =  "Connection: close";
+			f_HttpAddRequestHeaders(tRequest, cclose, strlen(cclose), HTTP_ADDREQ_FLAG_ADD );
 LBL_Restart:
 			MSN_DebugLog( "Sending request..." );
 			DWORD tErrorCode = f_HttpSendRequest( tRequest, parAuthInfo, DWORD(-1), NULL, 0 );
