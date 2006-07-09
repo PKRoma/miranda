@@ -198,8 +198,10 @@ DEP_CPP_CLIST=\
 	".\chat\m_chat.h"\
 	".\commonheaders.h"\
 	".\functions.h"\
+	".\generic_msghandlers.h"\
 	".\IcoLib.h"\
 	".\m_avatars.h"\
+	".\m_cln_skinedit.h"\
 	".\m_fingerprint.h"\
 	".\m_flash.h"\
 	".\m_ieview.h"\
@@ -253,8 +255,10 @@ DEP_CPP_COLOR=\
 	".\chat\m_chat.h"\
 	".\commonheaders.h"\
 	".\functions.h"\
+	".\generic_msghandlers.h"\
 	".\IcoLib.h"\
 	".\m_avatars.h"\
+	".\m_cln_skinedit.h"\
 	".\m_fingerprint.h"\
 	".\m_flash.h"\
 	".\m_ieview.h"\
@@ -308,8 +312,10 @@ DEP_CPP_LOG_C=\
 	".\chat\m_chat.h"\
 	".\commonheaders.h"\
 	".\functions.h"\
+	".\generic_msghandlers.h"\
 	".\IcoLib.h"\
 	".\m_avatars.h"\
+	".\m_cln_skinedit.h"\
 	".\m_fingerprint.h"\
 	".\m_flash.h"\
 	".\m_ieview.h"\
@@ -367,8 +373,10 @@ DEP_CPP_MAIN_=\
 	".\chat\m_chat.h"\
 	".\commonheaders.h"\
 	".\functions.h"\
+	".\generic_msghandlers.h"\
 	".\IcoLib.h"\
 	".\m_avatars.h"\
+	".\m_cln_skinedit.h"\
 	".\m_fingerprint.h"\
 	".\m_flash.h"\
 	".\m_ieview.h"\
@@ -422,8 +430,10 @@ DEP_CPP_MANAG=\
 	".\chat\m_chat.h"\
 	".\commonheaders.h"\
 	".\functions.h"\
+	".\generic_msghandlers.h"\
 	".\IcoLib.h"\
 	".\m_avatars.h"\
+	".\m_cln_skinedit.h"\
 	".\m_fingerprint.h"\
 	".\m_flash.h"\
 	".\m_ieview.h"\
@@ -477,8 +487,10 @@ DEP_CPP_MESSA=\
 	".\chat\m_chat.h"\
 	".\commonheaders.h"\
 	".\functions.h"\
+	".\generic_msghandlers.h"\
 	".\IcoLib.h"\
 	".\m_avatars.h"\
+	".\m_cln_skinedit.h"\
 	".\m_fingerprint.h"\
 	".\m_flash.h"\
 	".\m_ieview.h"\
@@ -532,8 +544,10 @@ DEP_CPP_OPTIO=\
 	".\chat\m_chat.h"\
 	".\commonheaders.h"\
 	".\functions.h"\
+	".\generic_msghandlers.h"\
 	".\IcoLib.h"\
 	".\m_avatars.h"\
+	".\m_cln_skinedit.h"\
 	".\m_fingerprint.h"\
 	".\m_flash.h"\
 	".\m_ieview.h"\
@@ -587,8 +601,10 @@ DEP_CPP_SERVI=\
 	".\chat\m_chat.h"\
 	".\commonheaders.h"\
 	".\functions.h"\
+	".\generic_msghandlers.h"\
 	".\IcoLib.h"\
 	".\m_avatars.h"\
+	".\m_cln_skinedit.h"\
 	".\m_fingerprint.h"\
 	".\m_flash.h"\
 	".\m_ieview.h"\
@@ -642,8 +658,10 @@ DEP_CPP_TOOLS=\
 	".\chat\m_chat.h"\
 	".\commonheaders.h"\
 	".\functions.h"\
+	".\generic_msghandlers.h"\
 	".\IcoLib.h"\
 	".\m_avatars.h"\
+	".\m_cln_skinedit.h"\
 	".\m_fingerprint.h"\
 	".\m_flash.h"\
 	".\m_ieview.h"\
@@ -697,8 +715,10 @@ DEP_CPP_WINDO=\
 	".\chat\m_chat.h"\
 	".\commonheaders.h"\
 	".\functions.h"\
+	".\generic_msghandlers.h"\
 	".\IcoLib.h"\
 	".\m_avatars.h"\
+	".\m_cln_skinedit.h"\
 	".\m_fingerprint.h"\
 	".\m_flash.h"\
 	".\m_ieview.h"\
@@ -753,8 +773,10 @@ DEP_CPP_CONTA=\
 	".\chat\m_chat.h"\
 	".\commonheaders.h"\
 	".\functions.h"\
+	".\generic_msghandlers.h"\
 	".\IcoLib.h"\
 	".\m_avatars.h"\
+	".\m_cln_skinedit.h"\
 	".\m_fingerprint.h"\
 	".\m_flash.h"\
 	".\m_ieview.h"\
@@ -808,8 +830,10 @@ DEP_CPP_CONTAI=\
 	".\chat\m_chat.h"\
 	".\commonheaders.h"\
 	".\functions.h"\
+	".\generic_msghandlers.h"\
 	".\IcoLib.h"\
 	".\m_avatars.h"\
+	".\m_cln_skinedit.h"\
 	".\m_fingerprint.h"\
 	".\m_flash.h"\
 	".\m_ieview.h"\
@@ -863,8 +887,10 @@ DEP_CPP_EVENT=\
 	".\chat\m_chat.h"\
 	".\commonheaders.h"\
 	".\functions.h"\
+	".\generic_msghandlers.h"\
 	".\IcoLib.h"\
 	".\m_avatars.h"\
+	".\m_cln_skinedit.h"\
 	".\m_fingerprint.h"\
 	".\m_flash.h"\
 	".\m_ieview.h"\
@@ -917,8 +943,10 @@ DEP_CPP_FORMA=\
 	".\chat\m_chat.h"\
 	".\commonheaders.h"\
 	".\functions.h"\
+	".\generic_msghandlers.h"\
 	".\IcoLib.h"\
 	".\m_avatars.h"\
+	".\m_cln_skinedit.h"\
 	".\m_fingerprint.h"\
 	".\m_flash.h"\
 	".\m_ieview.h"\
@@ -962,6 +990,62 @@ NODEP_CPP_FORMA=\
 # End Source File
 # Begin Source File
 
+SOURCE=.\generic_msghandlers.c
+DEP_CPP_GENER=\
+	"..\..\include\m_addcontact.h"\
+	"..\..\include\m_button.h"\
+	"..\..\include\m_clc.h"\
+	"..\..\include\m_clist.h"\
+	"..\..\include\m_clui.h"\
+	"..\..\include\m_contacts.h"\
+	"..\..\include\m_database.h"\
+	"..\..\include\m_file.h"\
+	"..\..\include\m_history.h"\
+	"..\..\include\m_langpack.h"\
+	"..\..\include\m_options.h"\
+	"..\..\include\m_plugins.h"\
+	"..\..\include\m_popup.h"\
+	"..\..\include\m_protocols.h"\
+	"..\..\include\m_protomod.h"\
+	"..\..\include\m_protosvc.h"\
+	"..\..\include\m_skin.h"\
+	"..\..\include\m_system.h"\
+	"..\..\include\m_userinfo.h"\
+	"..\..\include\m_utils.h"\
+	"..\..\include\newpluginapi.h"\
+	"..\..\include\statusmodes.h"\
+	"..\..\include\win2k.h"\
+	".\chat\chat.h"\
+	".\chat\chatprototypes.h"\
+	".\chat\m_chat.h"\
+	".\commonheaders.h"\
+	".\functions.h"\
+	".\generic_msghandlers.h"\
+	".\IcoLib.h"\
+	".\m_avatars.h"\
+	".\m_cln_skinedit.h"\
+	".\m_fingerprint.h"\
+	".\m_flash.h"\
+	".\m_ieview.h"\
+	".\m_metacontacts.h"\
+	".\m_nudge.h"\
+	".\m_popup.h"\
+	".\m_popupw.h"\
+	".\m_smileyadd.h"\
+	".\m_Snapping_windows.h"\
+	".\m_tabsrmm.h"\
+	".\msgdlgutils.h"\
+	".\msgs.h"\
+	".\nen.h"\
+	".\templates.h"\
+	
+NODEP_CPP_GENER=\
+	"..\..\..\plugins\PopUp\m_popup.h"\
+	"..\PopUp\m_popup.h"\
+	
+# End Source File
+# Begin Source File
+
 SOURCE=.\hotkeyhandler.c
 DEP_CPP_HOTKE=\
 	"..\..\include\m_addcontact.h"\
@@ -992,8 +1076,10 @@ DEP_CPP_HOTKE=\
 	".\chat\m_chat.h"\
 	".\commonheaders.h"\
 	".\functions.h"\
+	".\generic_msghandlers.h"\
 	".\IcoLib.h"\
 	".\m_avatars.h"\
+	".\m_cln_skinedit.h"\
 	".\m_fingerprint.h"\
 	".\m_flash.h"\
 	".\m_ieview.h"\
@@ -1007,6 +1093,7 @@ DEP_CPP_HOTKE=\
 	".\msgdlgutils.h"\
 	".\msgs.h"\
 	".\nen.h"\
+	".\sendqueue.h"\
 	".\templates.h"\
 	
 NODEP_CPP_HOTKE=\
@@ -1046,9 +1133,11 @@ DEP_CPP_IMAGE=\
 	".\chat\m_chat.h"\
 	".\commonheaders.h"\
 	".\functions.h"\
+	".\generic_msghandlers.h"\
 	".\IcoLib.h"\
 	".\ImageDataObject.h"\
 	".\m_avatars.h"\
+	".\m_cln_skinedit.h"\
 	".\m_fingerprint.h"\
 	".\m_flash.h"\
 	".\m_ieview.h"\
@@ -1102,8 +1191,10 @@ DEP_CPP_MSGDI=\
 	".\chat\m_chat.h"\
 	".\commonheaders.h"\
 	".\functions.h"\
+	".\generic_msghandlers.h"\
 	".\IcoLib.h"\
 	".\m_avatars.h"\
+	".\m_cln_skinedit.h"\
 	".\m_fingerprint.h"\
 	".\m_flash.h"\
 	".\m_ieview.h"\
@@ -1177,8 +1268,10 @@ DEP_CPP_MSGDL=\
 	".\chat\m_chat.h"\
 	".\commonheaders.h"\
 	".\functions.h"\
+	".\generic_msghandlers.h"\
 	".\IcoLib.h"\
 	".\m_avatars.h"\
+	".\m_cln_skinedit.h"\
 	".\m_fingerprint.h"\
 	".\m_flash.h"\
 	".\m_ieview.h"\
@@ -1231,8 +1324,10 @@ DEP_CPP_MSGLO=\
 	".\chat\m_chat.h"\
 	".\commonheaders.h"\
 	".\functions.h"\
+	".\generic_msghandlers.h"\
 	".\IcoLib.h"\
 	".\m_avatars.h"\
+	".\m_cln_skinedit.h"\
 	".\m_fingerprint.h"\
 	".\m_flash.h"\
 	".\m_ieview.h"\
@@ -1305,8 +1400,10 @@ DEP_CPP_MSGOP=\
 	".\chat\m_chat.h"\
 	".\commonheaders.h"\
 	".\functions.h"\
+	".\generic_msghandlers.h"\
 	".\IcoLib.h"\
 	".\m_avatars.h"\
+	".\m_cln_skinedit.h"\
 	".\m_fingerprint.h"\
 	".\m_flash.h"\
 	".\m_ieview.h"\
@@ -1379,8 +1476,10 @@ DEP_CPP_MSGS_=\
 	".\chat\m_chat.h"\
 	".\commonheaders.h"\
 	".\functions.h"\
+	".\generic_msghandlers.h"\
 	".\IcoLib.h"\
 	".\m_avatars.h"\
+	".\m_cln_skinedit.h"\
 	".\m_fingerprint.h"\
 	".\m_flash.h"\
 	".\m_ieview.h"\
@@ -1455,8 +1554,10 @@ DEP_CPP_SELEC=\
 	".\chat\m_chat.h"\
 	".\commonheaders.h"\
 	".\functions.h"\
+	".\generic_msghandlers.h"\
 	".\IcoLib.h"\
 	".\m_avatars.h"\
+	".\m_cln_skinedit.h"\
 	".\m_fingerprint.h"\
 	".\m_flash.h"\
 	".\m_ieview.h"\
@@ -1509,8 +1610,10 @@ DEP_CPP_SENDQ=\
 	".\chat\m_chat.h"\
 	".\commonheaders.h"\
 	".\functions.h"\
+	".\generic_msghandlers.h"\
 	".\IcoLib.h"\
 	".\m_avatars.h"\
+	".\m_cln_skinedit.h"\
 	".\m_fingerprint.h"\
 	".\m_flash.h"\
 	".\m_ieview.h"\
@@ -1564,8 +1667,10 @@ DEP_CPP_SRMM_=\
 	".\chat\m_chat.h"\
 	".\commonheaders.h"\
 	".\functions.h"\
+	".\generic_msghandlers.h"\
 	".\IcoLib.h"\
 	".\m_avatars.h"\
+	".\m_cln_skinedit.h"\
 	".\m_fingerprint.h"\
 	".\m_flash.h"\
 	".\m_ieview.h"\
@@ -1637,8 +1742,10 @@ DEP_CPP_TABCT=\
 	".\chat\m_chat.h"\
 	".\commonheaders.h"\
 	".\functions.h"\
+	".\generic_msghandlers.h"\
 	".\IcoLib.h"\
 	".\m_avatars.h"\
+	".\m_cln_skinedit.h"\
 	".\m_fingerprint.h"\
 	".\m_flash.h"\
 	".\m_ieview.h"\
@@ -1691,8 +1798,10 @@ DEP_CPP_TEMPL=\
 	".\chat\m_chat.h"\
 	".\commonheaders.h"\
 	".\functions.h"\
+	".\generic_msghandlers.h"\
 	".\IcoLib.h"\
 	".\m_avatars.h"\
+	".\m_cln_skinedit.h"\
 	".\m_fingerprint.h"\
 	".\m_flash.h"\
 	".\m_ieview.h"\
@@ -1745,8 +1854,10 @@ DEP_CPP_THEME=\
 	".\chat\m_chat.h"\
 	".\commonheaders.h"\
 	".\functions.h"\
+	".\generic_msghandlers.h"\
 	".\IcoLib.h"\
 	".\m_avatars.h"\
+	".\m_cln_skinedit.h"\
 	".\m_fingerprint.h"\
 	".\m_flash.h"\
 	".\m_ieview.h"\
@@ -1799,8 +1910,10 @@ DEP_CPP_TRAYI=\
 	".\chat\m_chat.h"\
 	".\commonheaders.h"\
 	".\functions.h"\
+	".\generic_msghandlers.h"\
 	".\IcoLib.h"\
 	".\m_avatars.h"\
+	".\m_cln_skinedit.h"\
 	".\m_fingerprint.h"\
 	".\m_flash.h"\
 	".\m_ieview.h"\
@@ -1854,8 +1967,10 @@ DEP_CPP_TSBUT=\
 	".\chat\m_chat.h"\
 	".\commonheaders.h"\
 	".\functions.h"\
+	".\generic_msghandlers.h"\
 	".\IcoLib.h"\
 	".\m_avatars.h"\
+	".\m_cln_skinedit.h"\
 	".\m_fingerprint.h"\
 	".\m_flash.h"\
 	".\m_ieview.h"\
@@ -1908,8 +2023,10 @@ DEP_CPP_USERP=\
 	".\chat\m_chat.h"\
 	".\commonheaders.h"\
 	".\functions.h"\
+	".\generic_msghandlers.h"\
 	".\IcoLib.h"\
 	".\m_avatars.h"\
+	".\m_cln_skinedit.h"\
 	".\m_fingerprint.h"\
 	".\m_flash.h"\
 	".\m_ieview.h"\
@@ -1941,6 +2058,10 @@ SOURCE=commonheaders.h
 # Begin Source File
 
 SOURCE=functions.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\generic_msghandlers.h
 # End Source File
 # Begin Source File
 

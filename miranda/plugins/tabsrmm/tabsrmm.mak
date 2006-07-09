@@ -46,6 +46,7 @@ CLEAN :
 	-@erase "$(INTDIR)\containeroptions.obj"
 	-@erase "$(INTDIR)\eventpopups.obj"
 	-@erase "$(INTDIR)\formatting.obj"
+	-@erase "$(INTDIR)\generic_msghandlers.obj"
 	-@erase "$(INTDIR)\hotkeyhandler.obj"
 	-@erase "$(INTDIR)\ImageDataObject.obj"
 	-@erase "$(INTDIR)\log.obj"
@@ -121,7 +122,8 @@ LINK32_OBJS= \
 	"$(INTDIR)\trayicon.obj" \
 	"$(INTDIR)\TSButton.obj" \
 	"$(INTDIR)\userprefs.obj" \
-	"$(INTDIR)\tabsrmm_private.res"
+	"$(INTDIR)\tabsrmm_private.res" \
+	"$(INTDIR)\generic_msghandlers.obj"
 
 "..\..\Bin\Debug\Plugins\tabsrmm.dll" : "$(OUTDIR)" $(DEF_FILE) $(LINK32_OBJS)
     $(LINK32) @<<
@@ -143,6 +145,7 @@ CLEAN :
 	-@erase "$(INTDIR)\containeroptions.obj"
 	-@erase "$(INTDIR)\eventpopups.obj"
 	-@erase "$(INTDIR)\formatting.obj"
+	-@erase "$(INTDIR)\generic_msghandlers.obj"
 	-@erase "$(INTDIR)\hotkeyhandler.obj"
 	-@erase "$(INTDIR)\ImageDataObject.obj"
 	-@erase "$(INTDIR)\log.obj"
@@ -218,7 +221,8 @@ LINK32_OBJS= \
 	"$(INTDIR)\trayicon.obj" \
 	"$(INTDIR)\TSButton.obj" \
 	"$(INTDIR)\userprefs.obj" \
-	".\tabsrmm_private.res"
+	".\tabsrmm_private.res" \
+	"$(INTDIR)\generic_msghandlers.obj"
 
 "..\..\Bin\Release Unicode\Plugins\tabsrmm.dll" : "$(OUTDIR)" $(DEF_FILE) $(LINK32_OBJS)
     $(LINK32) @<<
@@ -240,6 +244,7 @@ CLEAN :
 	-@erase "$(INTDIR)\containeroptions.obj"
 	-@erase "$(INTDIR)\eventpopups.obj"
 	-@erase "$(INTDIR)\formatting.obj"
+	-@erase "$(INTDIR)\generic_msghandlers.obj"
 	-@erase "$(INTDIR)\hotkeyhandler.obj"
 	-@erase "$(INTDIR)\ImageDataObject.obj"
 	-@erase "$(INTDIR)\log.obj"
@@ -315,7 +320,8 @@ LINK32_OBJS= \
 	"$(INTDIR)\trayicon.obj" \
 	"$(INTDIR)\TSButton.obj" \
 	"$(INTDIR)\userprefs.obj" \
-	"$(INTDIR)\tabsrmm_private.res"
+	"$(INTDIR)\tabsrmm_private.res" \
+	"$(INTDIR)\generic_msghandlers.obj"
 
 "..\..\Bin\Release\Plugins\tabsrmm.dll" : "$(OUTDIR)" $(DEF_FILE) $(LINK32_OBJS)
     $(LINK32) @<<
@@ -346,6 +352,8 @@ CLEAN :
 	-@erase "$(INTDIR)\eventpopups.sbr"
 	-@erase "$(INTDIR)\formatting.obj"
 	-@erase "$(INTDIR)\formatting.sbr"
+	-@erase "$(INTDIR)\generic_msghandlers.obj"
+	-@erase "$(INTDIR)\generic_msghandlers.sbr"
 	-@erase "$(INTDIR)\hotkeyhandler.obj"
 	-@erase "$(INTDIR)\hotkeyhandler.sbr"
 	-@erase "$(INTDIR)\ImageDataObject.obj"
@@ -441,7 +449,8 @@ BSC32_SBRS= \
 	"$(INTDIR)\themes.sbr" \
 	"$(INTDIR)\trayicon.sbr" \
 	"$(INTDIR)\TSButton.sbr" \
-	"$(INTDIR)\userprefs.sbr"
+	"$(INTDIR)\userprefs.sbr" \
+	"$(INTDIR)\generic_msghandlers.sbr"
 
 "$(OUTDIR)\tabsrmm.bsc" : "$(OUTDIR)" $(BSC32_SBRS)
     $(BSC32) @<<
@@ -481,7 +490,8 @@ LINK32_OBJS= \
 	"$(INTDIR)\trayicon.obj" \
 	"$(INTDIR)\TSButton.obj" \
 	"$(INTDIR)\userprefs.obj" \
-	"$(INTDIR)\tabsrmm_private.res"
+	"$(INTDIR)\tabsrmm_private.res" \
+	"$(INTDIR)\generic_msghandlers.obj"
 
 "..\..\Bin\Debug Unicode\Plugins\tabsrmm.dll" : "$(OUTDIR)" $(DEF_FILE) $(LINK32_OBJS)
     $(LINK32) @<<
@@ -1095,6 +1105,34 @@ CPP_SWITCHES=/nologo /MDd /W3 /GX /ZI /Od /I "../../include" /D "WIN32" /D "_DEB
 	$(CPP) @<<
   $(CPP_SWITCHES) $(SOURCE)
 <<
+
+
+!ENDIF
+
+SOURCE=.\generic_msghandlers.c
+
+!IF  "$(CFG)" == "tabSRMM - Win32 Debug"
+
+
+"$(INTDIR)\generic_msghandlers.obj" : $(SOURCE) "$(INTDIR)" "$(INTDIR)\srmm.pch"
+
+
+!ELSEIF  "$(CFG)" == "tabSRMM - Win32 Release Unicode"
+
+
+"$(INTDIR)\generic_msghandlers.obj" : $(SOURCE) "$(INTDIR)" "$(INTDIR)\srmm.pch"
+
+
+!ELSEIF  "$(CFG)" == "tabSRMM - Win32 Release"
+
+
+"$(INTDIR)\generic_msghandlers.obj" : $(SOURCE) "$(INTDIR)" "$(INTDIR)\srmm.pch"
+
+
+!ELSEIF  "$(CFG)" == "tabSRMM - Win32 Debug Unicode"
+
+
+"$(INTDIR)\generic_msghandlers.obj"	"$(INTDIR)\generic_msghandlers.sbr" : $(SOURCE) "$(INTDIR)" "$(INTDIR)\srmm.pch"
 
 
 !ENDIF
