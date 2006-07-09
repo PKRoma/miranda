@@ -219,7 +219,7 @@ static void MsgWindowUpdateState(HWND hwndDlg, struct MessageWindowData *dat, UI
 
     if(dat && dat->iTabID >= 0) {
         if(msg == WM_ACTIVATE) {
-            if (dat->pContainer->dwFlags & CNT_TRANSPARENCY && pSetLayeredWindowAttributes != NULL) {
+            if (dat->pContainer->dwFlags & CNT_TRANSPARENCY && pSetLayeredWindowAttributes != NULL && !dat->pContainer->bSkinned) {
                 DWORD trans = LOWORD(dat->pContainer->dwTransparency);
                 pSetLayeredWindowAttributes(dat->pContainer->hwnd, 0, (BYTE)trans, (dat->pContainer->dwFlags & CNT_TRANSPARENCY ? LWA_ALPHA : 0));
             }
@@ -229,7 +229,6 @@ static void MsgWindowUpdateState(HWND hwndDlg, struct MessageWindowData *dat, UI
 
         dat->pContainer->hwndSaved = hwndDlg;
 
-        ConfigureSideBar(hwndDlg, dat);
         dat->dwTickLastEvent = 0;
         dat->dwFlags &= ~MWF_DIVIDERSET;
         if (KillTimer(hwndDlg, TIMERID_FLASHWND)) {
@@ -289,6 +288,7 @@ static void MsgWindowUpdateState(HWND hwndDlg, struct MessageWindowData *dat, UI
             dat->dwFlags &= ~MWF_DEFERREDSCROLL;
             PostMessage(hwndDlg, DM_DELAYEDSCROLL, 1, 0);
         }
+        DM_SetDBButtonStates(dat->hContact, dat->pContainer->hwnd);
     }
 }
 
@@ -919,23 +919,7 @@ static LRESULT CALLBACK MessageEditSubclassProc(HWND hwnd, UINT msg, WPARAM wPar
                         mwdat->sendMode ^= SMODE_MULTIPLE;
                         if(mwdat->sendMode & SMODE_MULTIPLE) {
                             HANDLE hItem;
-							HWND hwndClist;
-
-                            hwndClist = CreateWindowExA(0, "CListControl", "", WS_TABSTOP | WS_VISIBLE | WS_CHILD | 0x248, 184, 0, 30, 30, hwndParent, (HMENU)IDC_CLIST, g_hInst, NULL);
-                            hItem = (HANDLE) SendMessage(hwndClist, CLM_FINDCONTACT, (WPARAM) mwdat->hContact, 0);
-                            if (hItem)
-                                SendMessage(hwndClist, CLM_SETCHECKMARK, (WPARAM) hItem, 1);
-                            
-                            if (CallService(MS_CLUI_GETCAPS, 0, 0) & CLUIF_DISABLEGROUPS && !DBGetContactSettingByte(NULL, "CList", "UseGroups", SETTING_USEGROUPS_DEFAULT))
-                                SendMessage(hwndClist, CLM_SETUSEGROUPS, (WPARAM) FALSE, 0);
-                            else
-                                SendMessage(hwndClist, CLM_SETUSEGROUPS, (WPARAM) TRUE, 0);
-                            if (CallService(MS_CLUI_GETCAPS, 0, 0) & CLUIF_HIDEEMPTYGROUPS && DBGetContactSettingByte(NULL, "CList", "HideEmptyGroups", SETTING_USEGROUPS_DEFAULT))
-                                SendMessage(hwndClist, CLM_SETHIDEEMPTYGROUPS, (WPARAM) TRUE, 0);
-                            else
-                                SendMessage(hwndClist, CLM_SETHIDEEMPTYGROUPS, (WPARAM) FALSE, 0);
-							SendMessage(hwndClist, CLM_FIRST + 106, 0, 1);
-							SendMessage(hwndClist, CLM_AUTOREBUILD, 0, 0);
+							HWND hwndClist = DM_CreateClist(hwndParent, mwdat);
                         }
 						else {
 							if(IsWindow(GetDlgItem(hwndParent, IDC_CLIST)))
@@ -2842,11 +2826,11 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
              */
         case HM_DBEVENTADDED:
             if (!dat)
-                break;
+                return 0;
             if ((HANDLE)wParam != dat->hContact)
-                break;
+                return 0;
             if (dat->hContact == NULL)
-                break;
+                return 0;
             {
                 DBEVENTINFO dbei = {0};
                 DWORD dwTimestamp = 0;
@@ -3974,6 +3958,7 @@ quote_from_last:
                         EnableMenuItem(submenu, 0, MF_BYPOSITION | (ServiceExists(MS_IEVIEW_WINDOW) ? MF_ENABLED : MF_GRAYED));
                         
                         CheckMenuItem(submenu, ID_IEVIEWSETTING_USEGLOBAL, MF_BYCOMMAND | (DBGetContactSettingByte(dat->hContact, SRMSGMOD_T, "ieview", 0) == 0 ? MF_CHECKED : MF_UNCHECKED));
+                        CheckMenuItem(submenu, ID_IEVIEWSETTING_FORCEIEVIEW, MF_BYCOMMAND | (DBGetContactSettingByte(dat->hContact, SRMSGMOD_T, "ieview", 0) == 1 ? MF_CHECKED : MF_UNCHECKED));
                         CheckMenuItem(submenu, ID_IEVIEWSETTING_FORCEDEFAULTMESSAGELOG, MF_BYCOMMAND | (DBGetContactSettingByte(dat->hContact, SRMSGMOD_T, "ieview", 0) == (BYTE)-1 ? MF_CHECKED : MF_UNCHECKED));
                         CheckMenuItem(submenu, ID_SPLITTER_AUTOSAVEONCLOSE, MF_BYCOMMAND | (myGlobals.m_SplitterSaveOnClose ? MF_CHECKED : MF_UNCHECKED));
 
@@ -4001,6 +3986,9 @@ quote_from_last:
                                 break;
                             case ID_IEVIEWSETTING_FORCEDEFAULTMESSAGELOG:
                                 DBWriteContactSettingByte(dat->hContact, SRMSGMOD_T, "ieview", -1);
+                                break;
+                            case ID_IEVIEWSETTING_FORCEIEVIEW:
+                                DBWriteContactSettingByte(dat->hContact, SRMSGMOD_T, "ieview", 1);
                                 break;
                             case ID_SPLITTER_AUTOSAVEONCLOSE:
                                 myGlobals.m_SplitterSaveOnClose ^= 1;
@@ -4067,7 +4055,6 @@ quote_from_last:
                         iNewIEView = GetIEViewMode(hwndDlg, dat);
                         if(iNewIEView != iOldIEView)
                             SwitchMessageLog(hwndDlg, dat, iNewIEView);
-                        ConfigureSideBar(hwndDlg, dat);
                     }
                     break;
                 }
@@ -4202,26 +4189,7 @@ quote_from_last:
                         case ID_SENDMENU_SENDTOMULTIPLEUSERS:
                             dat->sendMode ^= SMODE_MULTIPLE;
                             if(dat->sendMode & SMODE_MULTIPLE) {
-                                HANDLE hItem;
-                                HWND hwndClist;
-
-                                hwndClist = CreateWindowExA(0, "CListControl", "", WS_TABSTOP | WS_VISIBLE | WS_CHILD | 0x248, 184, 0, 30, 30, hwndDlg, (HMENU)IDC_CLIST, g_hInst, NULL);
-                                hItem = (HANDLE) SendDlgItemMessage(hwndDlg, IDC_CLIST, CLM_FINDCONTACT, (WPARAM) dat->hContact, 0);
-                                SetWindowLong(hwndClist, GWL_EXSTYLE, GetWindowLong(hwndClist, GWL_EXSTYLE) & ~CLS_EX_TRACKSELECT);
-                                SetWindowLong(hwndClist, GWL_EXSTYLE, GetWindowLong(hwndClist, GWL_EXSTYLE) | (CLS_EX_NOSMOOTHSCROLLING | CLS_EX_NOTRANSLUCENTSEL));
-								if (hItem)
-                                    SendDlgItemMessage(hwndDlg, IDC_CLIST, CLM_SETCHECKMARK, (WPARAM) hItem, 1);
-                                
-                                if (CallService(MS_CLUI_GETCAPS, 0, 0) & CLUIF_DISABLEGROUPS && !DBGetContactSettingByte(NULL, "CList", "UseGroups", SETTING_USEGROUPS_DEFAULT))
-                                    SendDlgItemMessage(hwndDlg, IDC_CLIST, CLM_SETUSEGROUPS, (WPARAM) FALSE, 0);
-                                else
-                                    SendDlgItemMessage(hwndDlg, IDC_CLIST, CLM_SETUSEGROUPS, (WPARAM) TRUE, 0);
-                                if (CallService(MS_CLUI_GETCAPS, 0, 0) & CLUIF_HIDEEMPTYGROUPS && DBGetContactSettingByte(NULL, "CList", "HideEmptyGroups", SETTING_USEGROUPS_DEFAULT))
-                                    SendDlgItemMessage(hwndDlg, IDC_CLIST, CLM_SETHIDEEMPTYGROUPS, (WPARAM) TRUE, 0);
-                                else
-                                    SendDlgItemMessage(hwndDlg, IDC_CLIST, CLM_SETHIDEEMPTYGROUPS, (WPARAM) FALSE, 0);
-								SendMessage(hwndClist, CLM_FIRST + 106, 0, 1);
-								SendMessage(hwndClist, CLM_AUTOREBUILD, 0, 0);
+                                HWND hwndClist = DM_CreateClist(hwndDlg, dat);;
                             }
                             break;
 						case ID_SENDMENU_SENDNUDGE:
@@ -5008,7 +4976,7 @@ verify:
                 CheckSendQueue(hwndDlg, dat);
                 if((iNextFailed = FindNextFailedMsg(hwndDlg, dat)) >= 0 && !(dat->dwFlags & MWF_ERRORSTATE))
                     HandleQueueError(hwndDlg, dat, iNextFailed);
-                break;
+                return 0;
             }
             /*
              * save the current content of the input box to the history stack...
@@ -5032,7 +5000,7 @@ verify:
             break;
         case DM_ACTIVATEME:
             ActivateExistingTab(dat->pContainer, hwndDlg);
-            break;
+            return 0;
             /*
              * sent by the select container dialog box when a container was selected...
              * lParam = (TCHAR *)selected name...
@@ -5061,33 +5029,32 @@ verify:
             }
         case DM_STATUSBARCHANGED:
             UpdateStatusBar(hwndDlg, dat);
-            break;
+            return 0;
         case DM_MULTISENDTHREADCOMPLETE:
             if(dat->hMultiSendThread) {
                 CloseHandle(dat->hMultiSendThread);
                 dat->hMultiSendThread = 0;
-                _DebugPopup(dat->hContact, "multisend thread has ended");
             }
-            break;
+            return 0;
         case DM_UINTOCLIPBOARD:
-            {
-                HGLOBAL hData;
+        {
+            HGLOBAL hData;
 
-                if(dat->hContact) {
-                    if (!OpenClipboard(hwndDlg))
-                        break;
-                    if(lstrlenA(dat->uin) == 0)
-                        break;
-                    EmptyClipboard();
-                    hData = GlobalAlloc(GMEM_MOVEABLE, lstrlenA(dat->uin) + 1);
-                    lstrcpyA(GlobalLock(hData), dat->uin);
-                    GlobalUnlock(hData);
-                    SetClipboardData(CF_TEXT, hData);
-                    CloseClipboard();
-                    GlobalFree(hData);
-                }
-                break;
+            if(dat->hContact) {
+                if (!OpenClipboard(hwndDlg))
+                    break;
+                if(lstrlenA(dat->uin) == 0)
+                    break;
+                EmptyClipboard();
+                hData = GlobalAlloc(GMEM_MOVEABLE, lstrlenA(dat->uin) + 1);
+                lstrcpyA(GlobalLock(hData), dat->uin);
+                GlobalUnlock(hData);
+                SetClipboardData(CF_TEXT, hData);
+                CloseClipboard();
+                GlobalFree(hData);
             }
+            return 0;
+        }
         /*
          * broadcasted when GLOBAL info panel setting changes
          */
@@ -5392,136 +5359,137 @@ verify:
             if(dat->iTabID == -1)
                 _DebugPopup(dat->hContact, "WARNING: new tabindex: %d", dat->iTabID);
             return 0;
-          case WM_DROPFILES:
-          {   
-                BOOL not_sending=GetKeyState(VK_CONTROL)&0x8000;
-             if (!not_sending) {
-                if(dat->szProto==NULL) break;
-                if(!(CallProtoService(dat->szProto,PS_GETCAPS,PFLAGNUM_1,0)&PF1_FILESEND)) break;
-                if(dat->wStatus == ID_STATUS_OFFLINE) break;
-             }
-             if(dat->hContact!=NULL) {
-                HDROP hDrop;
-                char **ppFiles=NULL;
-                char szFilename[MAX_PATH];
-                int fileCount,totalCount=0,i;
-    
-                hDrop=(HDROP)wParam;
-                fileCount=DragQueryFile(hDrop,-1,NULL,0);
-                ppFiles=NULL;
-                for(i=0;i<fileCount;i++) {
-                   DragQueryFileA(hDrop,i,szFilename,sizeof(szFilename));
-                   AddToFileList(&ppFiles,&totalCount,szFilename);
-                }
-    
-                if (!not_sending) {
-                   CallService(MS_FILE_SENDSPECIFICFILES,(WPARAM)dat->hContact,(LPARAM)ppFiles);
-                }
+        case WM_DROPFILES:
+        {   
+            BOOL not_sending=GetKeyState(VK_CONTROL)&0x8000;
+         if (!not_sending) {
+            if(dat->szProto==NULL) break;
+            if(!(CallProtoService(dat->szProto,PS_GETCAPS,PFLAGNUM_1,0)&PF1_FILESEND)) break;
+            if(dat->wStatus == ID_STATUS_OFFLINE) break;
+         }
+         if(dat->hContact!=NULL) {
+            HDROP hDrop;
+            char **ppFiles=NULL;
+            char szFilename[MAX_PATH];
+            int fileCount,totalCount=0,i;
+        
+            hDrop=(HDROP)wParam;
+            fileCount=DragQueryFile(hDrop,-1,NULL,0);
+            ppFiles=NULL;
+            for(i=0;i<fileCount;i++) {
+               DragQueryFileA(hDrop,i,szFilename,sizeof(szFilename));
+               AddToFileList(&ppFiles,&totalCount,szFilename);
+            }
+        
+            if (!not_sending) {
+               CallService(MS_FILE_SENDSPECIFICFILES,(WPARAM)dat->hContact,(LPARAM)ppFiles);
+            }
+            else {
+               #define MS_HTTPSERVER_ADDFILENAME "HTTPServer/AddFileName"
+        
+               if(ServiceExists(MS_HTTPSERVER_ADDFILENAME)) {
+                  char *szHTTPText;
+                  int i;
+        
+                  for(i=0;i<totalCount;i++) {
+                     char *szTemp;
+                     szTemp=(char*)CallService(MS_HTTPSERVER_ADDFILENAME,(WPARAM)ppFiles[i],0);
+                     //lstrcat(szHTTPText,szTemp);
+                  }
+                  szHTTPText="DEBUG";
+                  SendDlgItemMessageA(hwndDlg,IDC_MESSAGE,EM_REPLACESEL,TRUE,(LPARAM)szHTTPText);
+                  SetFocus(GetDlgItem(hwndDlg,IDC_MESSAGE));
+               }
+            }
+            for(i=0;ppFiles[i];i++) free(ppFiles[i]);
+            free(ppFiles);
+         }
+        }
+        return 0;
+
+        case WM_CLOSE: 
+        {
+            int iTabs, i;
+            TCITEM item = {0};
+            RECT rc;
+            struct ContainerWindowData *pContainer = dat->pContainer;
+            
+            // esc handles error controls if we are in error state (error controls visible)
+            
+            if(wParam == 0 && lParam == 0 && dat->dwFlags & MWF_ERRORSTATE) {
+                SendMessage(hwndDlg, DM_ERRORDECIDED, MSGERROR_CANCEL, 0);
+                return TRUE;
+            }
+           
+            if(wParam == 0 && lParam == 0 && !myGlobals.m_EscapeCloses) {
+                SendMessage(dat->pContainer->hwnd, WM_SYSCOMMAND, SC_MINIMIZE, 0);
+                return TRUE;
+            }
+            
+            if(dat->iOpenJobs > 0 && lParam != 2) {
+                if(dat->dwFlags & MWF_ERRORSTATE)
+                    SendMessage(hwndDlg, DM_ERRORDECIDED, MSGERROR_CANCEL, 1);
                 else {
-                   #define MS_HTTPSERVER_ADDFILENAME "HTTPServer/AddFileName"
-    
-                   if(ServiceExists(MS_HTTPSERVER_ADDFILENAME)) {
-                      char *szHTTPText;
-                      int i;
-    
-                      for(i=0;i<totalCount;i++) {
-                         char *szTemp;
-                         szTemp=(char*)CallService(MS_HTTPSERVER_ADDFILENAME,(WPARAM)ppFiles[i],0);
-                         //lstrcat(szHTTPText,szTemp);
-                      }
-                      szHTTPText="DEBUG";
-                      SendDlgItemMessageA(hwndDlg,IDC_MESSAGE,EM_REPLACESEL,TRUE,(LPARAM)szHTTPText);
-                      SetFocus(GetDlgItem(hwndDlg,IDC_MESSAGE));
-                   }
-                }
-                for(i=0;ppFiles[i];i++) free(ppFiles[i]);
-                free(ppFiles);
-             }
-          }
-          return 0;
-            case WM_CLOSE: 
-            {
-                int iTabs, i;
-                TCITEM item = {0};
-                RECT rc;
-                struct ContainerWindowData *pContainer = dat->pContainer;
-                
-                // esc handles error controls if we are in error state (error controls visible)
-                
-                if(wParam == 0 && lParam == 0 && dat->dwFlags & MWF_ERRORSTATE) {
-                    SendMessage(hwndDlg, DM_ERRORDECIDED, MSGERROR_CANCEL, 0);
+                    TCHAR szBuffer[256];
+                    _sntprintf(szBuffer, safe_sizeof(szBuffer), TranslateT("Message delivery in progress (%d unsent). You cannot close the session right now"), dat->iOpenJobs);
+                    szBuffer[safe_sizeof(szBuffer) - 1] = 0;
+                    SendMessage(hwndDlg, DM_ACTIVATETOOLTIP, IDC_MESSAGE, (LPARAM)szBuffer);
                     return TRUE;
                 }
-               
-                if(wParam == 0 && lParam == 0 && !myGlobals.m_EscapeCloses) {
-                    SendMessage(dat->pContainer->hwnd, WM_SYSCOMMAND, SC_MINIMIZE, 0);
-                    return TRUE;
-                }
-                
-                if(dat->iOpenJobs > 0 && lParam != 2) {
-                    if(dat->dwFlags & MWF_ERRORSTATE)
-                        SendMessage(hwndDlg, DM_ERRORDECIDED, MSGERROR_CANCEL, 1);
-                    else {
-                        TCHAR szBuffer[256];
-                        _sntprintf(szBuffer, safe_sizeof(szBuffer), TranslateT("Message delivery in progress (%d unsent). You cannot close the session right now"), dat->iOpenJobs);
-                        szBuffer[safe_sizeof(szBuffer) - 1] = 0;
-                        SendMessage(hwndDlg, DM_ACTIVATETOOLTIP, IDC_MESSAGE, (LPARAM)szBuffer);
+            }
+            
+            if(!lParam) {
+                if (myGlobals.m_WarnOnClose) {
+                    if (MessageBox(dat->pContainer->hwnd, TranslateTS(szWarnClose), _T("Miranda"), MB_YESNO | MB_ICONQUESTION) == IDNO) {
                         return TRUE;
                     }
                 }
-                
-                if(!lParam) {
-                    if (myGlobals.m_WarnOnClose) {
-                        if (MessageBox(dat->pContainer->hwnd, TranslateTS(szWarnClose), _T("Miranda"), MB_YESNO | MB_ICONQUESTION) == IDNO) {
-                            return TRUE;
-                        }
-                    }
-                }
-                iTabs = TabCtrl_GetItemCount(hwndTab);
-                if(iTabs == 1) {
-                    PostMessage(GetParent(GetParent(hwndDlg)), WM_CLOSE, 0, 1);
-                    return 1;
-                }
-                    
-                dat->pContainer->iChilds--;
-                i = GetTabIndexFromHWND(hwndTab, hwndDlg);
-                
-                /*
-                 * after closing a tab, we need to activate the tab to the left side of
-                 * the previously open tab.
-                 * normally, this tab has the same index after the deletion of the formerly active tab
-                 * unless, of course, we closed the last (rightmost) tab.
-                 */
-                if (!dat->pContainer->bDontSmartClose && iTabs > 1) {
-                    if (i == iTabs - 1)
-                        i--;
-                    else
-                        i++;
-                    TabCtrl_SetCurSel(hwndTab, i);
-                    item.mask = TCIF_PARAM;
-                    TabCtrl_GetItem(hwndTab, i, &item);         // retrieve dialog hwnd for the now active tab...
-    
-                    dat->pContainer->hwndActive = (HWND) item.lParam;
-                    SendMessage(dat->pContainer->hwnd, DM_QUERYCLIENTAREA, 0, (LPARAM)&rc);
-                    SetWindowPos(dat->pContainer->hwndActive, HWND_TOP, rc.left, rc.top, (rc.right - rc.left), (rc.bottom - rc.top), SWP_SHOWWINDOW);
-                    ShowWindow((HWND)item.lParam, SW_SHOW);
-                    SetForegroundWindow(dat->pContainer->hwndActive);
-                    SetFocus(dat->pContainer->hwndActive);
-                    SendMessage(dat->pContainer->hwnd, WM_SIZE, 0, 0);
-                }
-                DestroyWindow(hwndDlg);
-                if(iTabs == 1)
-                    PostMessage(GetParent(GetParent(hwndDlg)), WM_CLOSE, 0, 1);
-                else
-                    SendMessage(pContainer->hwnd, WM_SIZE, 0, 0);
-                break;
             }
+            iTabs = TabCtrl_GetItemCount(hwndTab);
+            if(iTabs == 1) {
+                PostMessage(GetParent(GetParent(hwndDlg)), WM_CLOSE, 0, 1);
+                return 1;
+            }
+                
+            dat->pContainer->iChilds--;
+            i = GetTabIndexFromHWND(hwndTab, hwndDlg);
+            
+            /*
+             * after closing a tab, we need to activate the tab to the left side of
+             * the previously open tab.
+             * normally, this tab has the same index after the deletion of the formerly active tab
+             * unless, of course, we closed the last (rightmost) tab.
+             */
+            if (!dat->pContainer->bDontSmartClose && iTabs > 1) {
+                if (i == iTabs - 1)
+                    i--;
+                else
+                    i++;
+                TabCtrl_SetCurSel(hwndTab, i);
+                item.mask = TCIF_PARAM;
+                TabCtrl_GetItem(hwndTab, i, &item);         // retrieve dialog hwnd for the now active tab...
+
+                dat->pContainer->hwndActive = (HWND) item.lParam;
+                SendMessage(dat->pContainer->hwnd, DM_QUERYCLIENTAREA, 0, (LPARAM)&rc);
+                SetWindowPos(dat->pContainer->hwndActive, HWND_TOP, rc.left, rc.top, (rc.right - rc.left), (rc.bottom - rc.top), SWP_SHOWWINDOW);
+                ShowWindow((HWND)item.lParam, SW_SHOW);
+                SetForegroundWindow(dat->pContainer->hwndActive);
+                SetFocus(dat->pContainer->hwndActive);
+                SendMessage(dat->pContainer->hwnd, WM_SIZE, 0, 0);
+            }
+            DestroyWindow(hwndDlg);
+            if(iTabs == 1)
+                PostMessage(GetParent(GetParent(hwndDlg)), WM_CLOSE, 0, 1);
+            else
+                SendMessage(pContainer->hwnd, WM_SIZE, 0, 0);
+            break;
+        }
 		case WM_ERASEBKGND:
-			{
-				if(dat->pContainer->bSkinned)
-					return TRUE;
-				break;
-			}
+        {
+            if(dat->pContainer->bSkinned)
+                return TRUE;
+            break;
+        }
 		case WM_NCPAINT:
 			if(dat->pContainer->bSkinned)
 				return 0;

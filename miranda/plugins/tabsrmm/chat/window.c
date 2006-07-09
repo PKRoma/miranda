@@ -88,7 +88,7 @@ static void Chat_UpdateWindowState(HWND hwndDlg, struct MessageWindowData *dat, 
     SESSION_INFO *si = dat->si;
 
     if(msg == WM_ACTIVATE) {
-        if (dat->pContainer->dwFlags & CNT_TRANSPARENCY && pSetLayeredWindowAttributes != NULL) {
+        if (dat->pContainer->dwFlags & CNT_TRANSPARENCY && pSetLayeredWindowAttributes != NULL && !dat->pContainer->bSkinned) {
             DWORD trans = LOWORD(dat->pContainer->dwTransparency);
             pSetLayeredWindowAttributes(dat->pContainer->hwnd, g_ContainerColorKey, (BYTE)trans, (dat->pContainer->bSkinned ? LWA_COLORKEY : 0) | (dat->pContainer->dwFlags & CNT_TRANSPARENCY ? LWA_ALPHA : 0));
         }
@@ -103,8 +103,6 @@ static void Chat_UpdateWindowState(HWND hwndDlg, struct MessageWindowData *dat, 
     dat->hTabIcon = dat->hTabStatusIcon;
 
     if (dat->iTabID >= 0) {
-        //ConfigureSideBar(hwndDlg, dat);
-
         if(DBGetContactSettingWord(si->hContact, si->pszModule ,"ApparentMode", 0) != 0)
             DBWriteContactSettingWord(si->hContact, si->pszModule ,"ApparentMode",(LPARAM) 0);
         if(CallService(MS_CLIST_GETEVENT, (WPARAM)si->hContact, (LPARAM)0))
@@ -138,6 +136,7 @@ static void Chat_UpdateWindowState(HWND hwndDlg, struct MessageWindowData *dat, 
         dat->pContainer->dwLastActivity = dat->dwLastActivity;
         UpdateContainerMenu(hwndDlg, dat);
         UpdateTrayMenuState(dat, FALSE);
+        DM_SetDBButtonStates(dat->hContact, dat->pContainer->hwnd);
     }
 }
 

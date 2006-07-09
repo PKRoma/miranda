@@ -31,6 +31,7 @@ $Id$
 extern      struct ContainerWindowData *pFirstContainer;
 extern      MYGLOBALS myGlobals;
 extern      NEN_OPTIONS nen_options;
+extern      BOOL g_skinnedContainers;
 
 static void ReloadGlobalContainerSettings()
 {
@@ -270,7 +271,7 @@ BOOL CALLBACK DlgProcContainerOptions(HWND hwndDlg, UINT msg, WPARAM wParam, LPA
             CheckDlgButton(hwndDlg, IDC_INFOPANEL, dwFlags & CNT_INFOPANEL);
             CheckDlgButton(hwndDlg, IDC_USEGLOBALSIZE, dwFlags & CNT_GLOBALSIZE);
             
-            if (LOBYTE(LOWORD(GetVersion())) >= 5 ) {
+            if (LOBYTE(LOWORD(GetVersion())) >= 5 && !g_skinnedContainers) {
                 CheckDlgButton(hwndDlg, IDC_TRANSPARENCY, dwFlags & CNT_TRANSPARENCY);
             } else {
                 EnableWindow(GetDlgItem(hwndDlg, IDC_TRANSPARENCY), 0);

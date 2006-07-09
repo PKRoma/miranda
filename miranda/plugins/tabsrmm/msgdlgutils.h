@@ -56,7 +56,6 @@ void        SaveSplitter(HWND hwndDlg, struct MessageWindowData *dat);
 void        LoadSplitter(HWND hwndDlg, struct MessageWindowData *dat);
 void        PlayIncomingSound(struct ContainerWindowData *pContainer, HWND hwnd);
 void        SwitchMessageLog(HWND hwndDlg, struct MessageWindowData *dat, int iMode);
-void        ConfigureSideBar(HWND hwndDlg, struct MessageWindowData *dat);
 void        GetSendFormat(HWND hwndDlg, struct MessageWindowData *dat, int mode);
 void        GetLocaleID(struct MessageWindowData *dat, char *szKLName);
 BOOL        IsUnicodeAscii(const wchar_t* pBuffer, int nSize);

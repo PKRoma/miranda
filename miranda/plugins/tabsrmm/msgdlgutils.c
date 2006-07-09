@@ -1550,15 +1550,22 @@ void GetContactUIN(HWND hwndDlg, struct MessageWindowData *dat)
         SetDlgItemTextA(hwndDlg, IDC_PANELUIN, dat->uin);
 }
 
+static int g_IEViewAvail = -1;
+
 unsigned int GetIEViewMode(HWND hwndDlg, struct MessageWindowData *dat)
 {
     int iWantIEView = 0;
 
-    iWantIEView = myGlobals.g_WantIEView;
+    if(g_IEViewAvail == -1)
+        g_IEViewAvail = ServiceExists(MS_IEVIEW_WINDOW);
+
+    myGlobals.g_WantIEView = g_IEViewAvail && DBGetContactSettingByte(NULL, SRMSGMOD_T, "default_ieview", 1);
+    iWantIEView = (myGlobals.g_WantIEView) || (DBGetContactSettingByte(dat->hContact, SRMSGMOD_T, "ieview", 0) == 1 && g_IEViewAvail);
     iWantIEView = (DBGetContactSettingByte(dat->hContact, SRMSGMOD_T, "ieview", 0) == (BYTE)-1) ? 0 : iWantIEView;
 
     return iWantIEView;
 }
+
 void SetMessageLog(HWND hwndDlg, struct MessageWindowData *dat)
 {
     unsigned int iWantIEView = GetIEViewMode(hwndDlg, dat);
@@ -1732,26 +1739,14 @@ void PlayIncomingSound(struct ContainerWindowData *pContainer, HWND hwnd)
 			iPlay = TRUE;
 	}
 	else 
-		iPlay = TRUE;
+		iPlay = dwFlags & CNT_NOSOUND ? FALSE : TRUE;
+
     if (iPlay) {
         if(GetForegroundWindow() == pContainer->hwnd && pContainer->hwndActive == hwnd)
             SkinPlaySound("RecvMsgActive");
         else 
             SkinPlaySound("RecvMsgInactive");
     }
-}
-
-/*
- * configures the sidebar (if enabled) when tab changes
- */
-
-void ConfigureSideBar(HWND hwndDlg, struct MessageWindowData *dat)
-{
-    return;
-
-    if(!dat->pContainer->dwFlags & CNT_SIDEBAR)
-        return;
-    CheckDlgButton(dat->pContainer->hwnd, IDC_SBAR_TOGGLEFORMAT, dat->SendFormat != 0 ? BST_CHECKED : BST_UNCHECKED);
 }
 
 /*

@@ -88,7 +88,6 @@ static WNDPROC OldStatusBarproc = 0, OldContainerWndProc = 0;
 extern StatusItems_t StatusItems[];
 BOOL g_skinnedContainers = FALSE;
 BOOL g_framelessSkinmode = FALSE;
-BOOL g_compositedWindow = FALSE;
 
 extern HBRUSH g_ContainerColorKeyBrush;
 extern COLORREF g_ContainerColorKey;
@@ -114,6 +113,20 @@ extern HMODULE hDLL;
 extern PSLWA pSetLayeredWindowAttributes;
 extern PULW pUpdateLayeredWindow;
 extern PFWEX MyFlashWindowEx;
+
+static int ServiceParamsOK(ButtonItem *item, WPARAM *wParam, LPARAM *lParam, HANDLE hContact)
+{
+    if(item->dwFlags & BUTTON_PASSHCONTACTW || item->dwFlags & BUTTON_PASSHCONTACTL || item->dwFlags & BUTTON_ISCONTACTDBACTION) {
+        if(hContact == 0)
+            return 0;
+        if(item->dwFlags & BUTTON_PASSHCONTACTW)
+            *wParam = (WPARAM)hContact;
+        else if(item->dwFlags & BUTTON_PASSHCONTACTL)
+            *lParam = (LPARAM)hContact;
+        return 1;
+    }
+    return 1;                                       // doesn't need a paramter
+}
 
 struct ContainerWindowData *CreateContainer(const TCHAR *name, int iTemp, HANDLE hContactFrom) {
     DBVARIANT dbv;
@@ -1089,63 +1102,111 @@ static BOOL CALLBACK DlgProcContainer(HWND hwndDlg, UINT msg, WPARAM wParam, LPA
                 }
             }
             SendMessage(pContainer->hwndActive, DM_QUERYHCONTACT, 0, (LPARAM)&hContact);
-            if(hContact) {
+            if(hContact && lParam == 0) {
                 if(CallService(MS_CLIST_MENUPROCESSCOMMAND, MAKEWPARAM(LOWORD(wParam), MPCF_CONTACTMENU), (LPARAM) hContact))
                     break;
             }
+
+            if(LOWORD(wParam) == IDC_TBFIRSTUID - 1)
+                break;
+            else if(LOWORD(wParam) >= IDC_TBFIRSTUID) {                     // skinnable buttons handling
+                ButtonItem *item = g_ButtonItems;
+                WPARAM wwParam = 0;
+                LPARAM llParam = 0;
+                HANDLE hContact = dat ? dat->hContact : 0;
+                int serviceFailure = FALSE;
+
+                while(item) {
+                    if(item->uId == (DWORD)LOWORD(wParam)) {
+                        int contactOK = ServiceParamsOK(item, &wwParam, &llParam, hContact);
+
+                        if(item->dwFlags & BUTTON_ISSERVICE) {
+                            if(ServiceExists(item->szService) && contactOK)
+                                CallService(item->szService, wwParam, llParam);
+                            else if(contactOK)
+                                serviceFailure = TRUE;
+                        }
+                        else if(item->dwFlags & BUTTON_ISPROTOSERVICE) {
+                            if(contactOK) {
+                                char szFinalService[512];
+
+                                mir_snprintf(szFinalService, 512, "%s/%s", (char *)CallService(MS_PROTO_GETCONTACTBASEPROTO, (WPARAM)hContact, 0), item->szService);
+                                if(ServiceExists(szFinalService))
+                                    CallService(szFinalService, wwParam, llParam);
+                                else
+                                    serviceFailure = TRUE;
+                            }
+                        }
+                        else if(item->dwFlags & BUTTON_ISDBACTION) {
+                            BYTE *pValue;
+                            char *szModule = item->szModule;
+                            char *szSetting = item->szSetting;
+                            HANDLE finalhContact = 0;
+
+                            if(item->dwFlags & BUTTON_ISCONTACTDBACTION || item->dwFlags & BUTTON_DBACTIONONCONTACT) {
+                                contactOK = ServiceParamsOK(item, &wwParam, &llParam, hContact);
+                                if(contactOK && item->dwFlags & BUTTON_ISCONTACTDBACTION)
+                                    szModule = (char *)CallService(MS_PROTO_GETCONTACTBASEPROTO, (WPARAM)hContact, 0);
+                                finalhContact = hContact;
+                            }
+                            else
+                                contactOK = 1;
+
+                            if(contactOK) {
+                                BOOL fDelete = FALSE;
+
+                                if(item->dwFlags & BUTTON_ISTOGGLE) {
+                                    BOOL fChecked = (SendMessage(item->hWnd, BM_GETCHECK, 0, 0) == BST_UNCHECKED);
+
+                                    pValue = fChecked ? item->bValueRelease : item->bValuePush;
+                                    if(fChecked && pValue[0] == 0)
+                                        fDelete = TRUE;
+                                }
+                                else
+                                    pValue = item->bValuePush;
+
+                                if(fDelete)
+                                    DBDeleteContactSetting(finalhContact, szModule, szSetting);
+                                else {
+                                    switch(item->type) {
+                                        case DBVT_BYTE:
+                                            DBWriteContactSettingByte(finalhContact, szModule, szSetting, pValue[0]);
+                                            break;
+                                        case DBVT_WORD:
+                                            DBWriteContactSettingWord(finalhContact, szModule, szSetting, *((WORD *)&pValue[0]));
+                                            break;
+                                        case DBVT_DWORD:
+                                            DBWriteContactSettingDword(finalhContact, szModule, szSetting, *((DWORD *)&pValue[0]));
+                                            break;
+                                        case DBVT_ASCIIZ:
+                                            DBWriteContactSettingString(finalhContact, szModule, szSetting, (char *)pValue);
+                                            break;
+                                    }
+                                }
+                            } else if(item->dwFlags & BUTTON_ISTOGGLE)
+                                SendMessage(item->hWnd, BM_SETCHECK, 0, 0);
+                        }
+                        if(!contactOK)
+                            MessageBox(0, _T("The requested action requires a valid contact selection. Please select a contact from the contact list and repeat"), _T("Parameter mismatch"), MB_OK);
+                        if(serviceFailure) {
+                            char szError[512];
+
+                            mir_snprintf(szError, 512, "The service %s specified by the %s button definition was not found. You may need to install additional plugins", item->szService, item->szName);
+                            MessageBoxA(0, szError, "Service failure", MB_OK);
+                        }
+                        goto buttons_done;
+                    }
+                    item = item->nextItem;
+                }
+            }
             while(pItem) {
                 if(LOWORD(wParam) == pItem->uId) {
-                    switch(LOWORD(wParam)) {
-                        case IDC_SBAR_SLIST:
-                            SendMessage(myGlobals.g_hwndHotkeyHandler, DM_TRAYICONNOTIFY, 101, WM_LBUTTONUP);
-                            break;
-                        case IDC_SBAR_FAVORITES:
-                        {
-                            POINT pt;
-                            int iSelection;
-                            GetCursorPos(&pt);
-                            iSelection = TrackPopupMenu(myGlobals.g_hMenuFavorites, TPM_RETURNCMD, pt.x, pt.y, 0, myGlobals.g_hwndHotkeyHandler, NULL);
-                            HandleMenuEntryFromhContact(iSelection);
-                            break;
-                        }
-                        case IDC_SBAR_RECENT:
-                        {
-                            POINT pt;
-                            int iSelection;
-                            GetCursorPos(&pt);
-                            iSelection = TrackPopupMenu(myGlobals.g_hMenuRecent, TPM_RETURNCMD, pt.x, pt.y, 0, myGlobals.g_hwndHotkeyHandler, NULL);
-                            HandleMenuEntryFromhContact(iSelection);
-                            break;
-                        }
-                        case IDC_SBAR_USERPREFS:
-                        {
-                            HANDLE hContact = 0;
-                            SendMessage(pContainer->hwndActive, DM_QUERYHCONTACT, 0, (LPARAM)&hContact);
-                            if(hContact != 0)
-                                CallService(MS_TABMSG_SETUSERPREFS, (WPARAM)hContact, 0);
-                            break;
-                        }
-                        case IDC_SBAR_TOGGLEFORMAT:
-                        {
-                            struct MessageWindowData *dat = (struct MessageWindowData *)GetWindowLong(pContainer->hwndActive, GWL_USERDATA);
-                            if(dat) {
-                                if(IsDlgButtonChecked(hwndDlg, IDC_SBAR_TOGGLEFORMAT) == BST_UNCHECKED) {
-                                    dat->SendFormat = 0;
-                                    GetSendFormat(pContainer->hwndActive, dat, 0);
-                                }
-                                else {
-                                    dat->SendFormat = SENDFORMAT_BBCODE;
-                                    GetSendFormat(pContainer->hwndActive, dat, 0);
-                                }
-                                ConfigureSideBar(pContainer->hwndActive, dat);
-                            }
-                            break;
-                        }
-                    }
-                    break;
+                    if(pItem->pfnAction != NULL)
+                        pItem->pfnAction(pItem, pContainer->hwndActive, dat, GetDlgItem(hwndDlg, pItem->uId));
                 }
                 pItem = pItem->nextItem;
             }
+buttons_done:
             switch(LOWORD(wParam)) {
                 case IDC_TOGGLESIDEBAR:
                 {
@@ -1918,7 +1979,7 @@ panel_found:
                 break;
 
             if (LOWORD(wParam == WA_INACTIVE) && (HWND)lParam != myGlobals.g_hwndHotkeyHandler && GetParent((HWND)lParam) != hwndDlg) {
-				if (pContainer->dwFlags & CNT_TRANSPARENCY && pSetLayeredWindowAttributes != NULL)
+				if (pContainer->dwFlags & CNT_TRANSPARENCY && pSetLayeredWindowAttributes != NULL && !bSkinned)
 					pSetLayeredWindowAttributes(hwndDlg, g_ContainerColorKey, (BYTE)HIWORD(pContainer->dwTransparency), (/* pContainer->bSkinned ? LWA_COLORKEY :  */ 0) | (pContainer->dwFlags & CNT_TRANSPARENCY ? LWA_ALPHA : 0));
 			}
             if(LOWORD(wParam) == WA_INACTIVE)
@@ -1950,7 +2011,7 @@ panel_found:
                     SendMessage(hwndDlg, WM_SIZE, 0, 0);
                 }
 
-				if (pContainer->dwFlags & CNT_TRANSPARENCY && pSetLayeredWindowAttributes != NULL) {
+				if (pContainer->dwFlags & CNT_TRANSPARENCY && pSetLayeredWindowAttributes != NULL && !bSkinned) {
 					DWORD trans = LOWORD(pContainer->dwTransparency);
 					pSetLayeredWindowAttributes(hwndDlg, g_ContainerColorKey, (BYTE)trans, (/* pContainer->bSkinned ? LWA_COLORKEY : */ 0) | (pContainer->dwFlags & CNT_TRANSPARENCY ? LWA_ALPHA : 0));
 				}
@@ -2259,10 +2320,9 @@ panel_found:
 			if (LOBYTE(LOWORD(GetVersion())) >= 5  && pSetLayeredWindowAttributes != NULL) {
                 DWORD exold;
 				ex = exold = GetWindowLong(hwndDlg, GWL_EXSTYLE);
-				ex = (pContainer->dwFlags & CNT_TRANSPARENCY) ? ex | WS_EX_LAYERED : ex & ~WS_EX_LAYERED;
-				ex = (bSkinned && g_compositedWindow) ? ex | WS_EX_COMPOSITED : ex & ~WS_EX_COMPOSITED;
+				ex = (pContainer->dwFlags & CNT_TRANSPARENCY && !g_skinnedContainers) ? ex | WS_EX_LAYERED : ex & ~WS_EX_LAYERED;
 				SetWindowLong(hwndDlg, GWL_EXSTYLE, ex);
-				if (pContainer->dwFlags & CNT_TRANSPARENCY || bSkinned) {
+				if (pContainer->dwFlags & CNT_TRANSPARENCY && !bSkinned) {
 					DWORD trans = LOWORD(pContainer->dwTransparency);
 					pSetLayeredWindowAttributes(hwndDlg, g_ContainerColorKey, (BYTE)trans, (/* pContainer->bSkinned ? LWA_COLORKEY : */ 0) | (pContainer->dwFlags & CNT_TRANSPARENCY ? LWA_ALPHA : 0));
 				}
