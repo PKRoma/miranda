@@ -368,17 +368,15 @@ static BOOL CALLBACK DlgProcHistory(HWND hwndDlg, UINT msg, WPARAM wParam, LPARA
 				break;
 
 			hDbEventStart=(HANDLE)SendDlgItemMessage(hwndDlg,IDC_LIST,LB_GETITEMDATA,index,0);
-			hDbEvent=hDbEventStart;
 			ZeroMemory(&dbei,sizeof(dbei));
 			dbei.cbSize=sizeof(dbei);
 			dbei.pBlob=NULL;
 			oldBlobSize=0;
 			for(;;) {
-				hDbEvent=(HANDLE)CallService(MS_DB_EVENT_FINDPREV,(WPARAM)hDbEvent,0);
-				index++;
-				if(hDbEvent==NULL) {
-					hDbEvent=(HANDLE)CallService(MS_DB_EVENT_FINDLAST,(WPARAM)hContact,0);
-					index=0;
+				hDbEvent = (HANDLE)SendDlgItemMessage(hwndDlg,IDC_LIST,LB_GETITEMDATA,++index,0);
+				if(hDbEvent == ( HANDLE )LB_ERR) {
+					index = -1;
+					continue;
 				}
 				if(hDbEvent==hDbEventStart) break;
 				newBlobSize=CallService(MS_DB_EVENT_GETBLOBSIZE,(WPARAM)hDbEvent,0);
@@ -395,9 +393,8 @@ static BOOL CALLBACK DlgProcHistory(HWND hwndDlg, UINT msg, WPARAM wParam, LPARA
 						SendDlgItemMessage(hwndDlg,IDC_LIST,LB_SETCURSEL,index,0);
 						SendMessage(hwndDlg,WM_COMMAND,MAKEWPARAM(IDC_LIST,LBN_SELCHANGE),0);
 						break;
-					}
-				}
-			}
+			}	}	}
+			
 			mir_free(dbei.pBlob);
 			break;
 		}
