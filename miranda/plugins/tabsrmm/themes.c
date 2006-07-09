@@ -37,7 +37,6 @@ Themes and skinning for tabSRMM
  
 #define CURRENT_THEME_VERSION 4
 #define THEME_COOKIE 25099837
-#define IDC_TBFIRSTUID 1000
 
 extern PSLWA pSetLayeredWindowAttributes;
 extern PGF MyGradientFill;
@@ -67,17 +66,8 @@ SIZE g_titleBarButtonSize = {0};
 int g_titleButtonTopOff = 0, g_captionOffset = 0, g_captionPadding = 0, g_sidebarTopOffset = 0, g_sidebarBottomOffset;
 
 extern BOOL g_skinnedContainers;
-extern BOOL g_framelessSkinmode, g_compositedWindow;
+extern BOOL g_framelessSkinmode;
 
-static struct SIDEBARITEM sbarItems[] = {
-    IDC_SBAR_SLIST, SBI_TOP, &myGlobals.g_sideBarIcons[0], "t_slist",
-    IDC_SBAR_FAVORITES, SBI_TOP, &myGlobals.g_sideBarIcons[1], "t_fav",
-    IDC_SBAR_RECENT, SBI_TOP, &myGlobals.g_sideBarIcons[2], "t_recent",
-    IDC_SBAR_USERPREFS, SBI_TOP, &myGlobals.g_sideBarIcons[4], "t_prefs",
-    IDC_SBAR_TOGGLEFORMAT, SBI_TOP | SBI_TOGGLE, &myGlobals.g_buttonBarIcons[20], "t_tformat",
-    IDC_SBAR_SETUP, SBI_BOTTOM, &myGlobals.g_sideBarIcons[3], "t_setup",
-    0, 0, 0, ""
-};
 int  SIDEBARWIDTH = DEFAULT_SIDEBARWIDTH;
 
 UINT nextButtonID;
@@ -1093,6 +1083,8 @@ static void BTN_ReadItem(char *itemName, char *file)
 
     tmpItem.uId = IDC_TBFIRSTUID - 1;
 
+    tmpItem.pfnAction = tmpItem.pfnCallback = NULL;
+
     GetPrivateProfileStringA(itemName, "Action", "Custom", szBuffer, 1000, file);
     if(!stricmp(szBuffer, "service")) {
         tmpItem.szService[0] = 0;
@@ -1170,22 +1162,8 @@ static void BTN_ReadItem(char *itemName, char *file)
         }
     }
     else if(stricmp(szBuffer, "Custom")) {
-        int i = 0;
-
-        while(sbarItems[i].uId) {
-            if(!stricmp(sbarItems[i].szName, szBuffer)) {
-                tmpItem.uId = sbarItems[i].uId;
-                tmpItem.dwFlags |= BUTTON_ISSIDEBAR;
-                myGlobals.m_SideBarEnabled = TRUE;
-                if(sbarItems[i].dwFlags & SBI_TOP)
-                    tmpItem.yOff = 0;
-                else if(sbarItems[i].dwFlags & SBI_BOTTOM)
-                    tmpItem.yOff = -1;
-                tmpItem.dwFlags = sbarItems[i].dwFlags & SBI_TOGGLE ? tmpItem.dwFlags | BUTTON_ISTOGGLE : tmpItem.dwFlags & ~BUTTON_ISTOGGLE;
-                break;
-            }
-            i++;
-        }
+        if(BTN_GetStockItem(&tmpItem, szBuffer))
+            goto create_it;
     }
     GetPrivateProfileStringA(itemName, "PassContact", "None", szBuffer, 1000, file);
     if(stricmp(szBuffer, "None")) {
@@ -1207,7 +1185,7 @@ static void BTN_ReadItem(char *itemName, char *file)
     else
         tmpItem.szTip[0] = 0;
 
-    // create it
+create_it:
 
     if(GetPrivateProfileIntA(itemName, "Sidebar", 0, file)) {
         tmpItem.dwFlags |= BUTTON_ISSIDEBAR;
@@ -1847,7 +1825,6 @@ static void LoadSkinItems(char *file, int onStartup)
 	//GetPrivateProfileStringA("Global", "FontColor", "None", buffer, 500, file);
     
 	g_framelessSkinmode = GetPrivateProfileIntA("Global", "framelessmode", 0, file);
-	g_compositedWindow = GetPrivateProfileIntA("Global", "compositedwindow", 0, file);
     myGlobals.g_DisableScrollbars = GetPrivateProfileIntA("Global", "NoScrollbars", 0, file);
 
     data = GetPrivateProfileIntA("Global", "SkinnedTabs", 1, file);
@@ -1948,7 +1925,7 @@ void ReloadContainerSkin(int doLoad, int onStartup)
 	char szFinalPath[MAX_PATH];
 	int i;
 
-	g_skinnedContainers = g_framelessSkinmode = g_compositedWindow = FALSE;
+	g_skinnedContainers = g_framelessSkinmode = FALSE;
     myGlobals.bClipBorder = 0;
     myGlobals.bRoundedCorner = 0;
     if(g_MenuBGBrush) {

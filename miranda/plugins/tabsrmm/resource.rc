@@ -9,7 +9,6 @@
 //
 #include <windows.h>
 #include "../../include/statusmodes.h"
-#include "version.rc"
 
 /////////////////////////////////////////////////////////////////////////////
 #undef APSTUDIO_READONLY_SYMBOLS
@@ -126,7 +125,7 @@ BEGIN
     LTEXT           "When set to ""Local"", current global settings are inherited for this user. Future changes of message log related options will then be private.",IDC_STATIC,73,13,196,24
     GROUPBOX        "Message log view mode",IDC_STATIC,2,44,274,33
     COMBOBOX        IDC_IEVIEWMODE,6,58,119,46,CBS_DROPDOWNLIST | WS_VSCROLL | WS_GROUP | WS_TABSTOP
-    LTEXT           "Global mode can be set on the message log options page. This option is only available when IEView is installed.",IDC_STATIC,130,50,141,24
+    LTEXT           "Select whether you want IEView for this contact. Default is enabled when IEView is installed",IDC_STATIC,130,50,141,24
     GROUPBOX        "Send text formatting method",IDC_STATIC,2,78,274,33
     COMBOBOX        IDC_TEXTFORMATTING,6,90,119,46,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
     LTEXT           "You can override the global setting for text formatting here. Use ""Force Off"" to never send formatting info for this contact.",IDC_STATIC,130,85,141,24
@@ -200,7 +199,7 @@ BEGIN
     EDITTEXT        IDC_THEME,14,235,123,13,ES_AUTOHSCROLL
     PUSHBUTTON      "...",IDC_SELECTTHEME,147,235,27,13
     LTEXT           "Leave this field empty to use the global theme.",IDC_STATIC,181,231,90,21
-    GROUPBOX        "Container transparency",IDC_STATIC,7,259,267,36
+    GROUPBOX        "Container transparency (not available in skinned mode)",IDC_STATIC,7,259,267,36
     CONTROL         "Enable transparency",IDC_TRANSPARENCY,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,14,270,101,11
     LTEXT           "active",IDC_STATIC,125,271,26,11
     CONTROL         "",IDC_TRANSPARENCY_ACTIVE,"msctls_trackbar32",TBS_BOTH | WS_TABSTOP,153,267,95,11
@@ -710,6 +709,7 @@ BEGIN
         POPUP "IEView Setting"
         BEGIN
             MENUITEM "Use it when available",       ID_IEVIEWSETTING_USEGLOBAL
+            MENUITEM "Force IEView",                ID_IEVIEWSETTING_FORCEIEVIEW
             MENUITEM "Force Default Message Log",   ID_IEVIEWSETTING_FORCEDEFAULTMESSAGELOG
         END
         MENUITEM SEPARATOR
@@ -958,7 +958,6 @@ END
 BEGIN
     "#include <windows.h>\r\n"
     "#include ""../../include/statusmodes.h""\r\n"
-    "#include ""version.rc""\r\n"
 END
 
 3 TEXTINCLUDE 
@@ -969,58 +968,6 @@ END
 #endif    // APSTUDIO_INVOKED
 
 #endif    // English (U.S.) resources
-/////////////////////////////////////////////////////////////////////////////
-
-
-/////////////////////////////////////////////////////////////////////////////
-// German (Austria) resources
-
-#if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_DEA)
-#ifdef _WIN32
-LANGUAGE LANG_GERMAN, SUBLANG_GERMAN_AUSTRIAN
-#pragma code_page(1252)
-#endif //_WIN32
-
-/////////////////////////////////////////////////////////////////////////////
-//
-// Version
-//
-
-VS_VERSION_INFO VERSIONINFO
- FILEVERSION 0,9,9,211
- PRODUCTVERSION 0,9,9,211
- FILEFLAGSMASK 0x17L
-#ifdef _DEBUG
- FILEFLAGS 0x1L
-#else
- FILEFLAGS 0x0L
-#endif
- FILEOS 0x4L
- FILETYPE 0x2L
- FILESUBTYPE 0x0L
-BEGIN
-    BLOCK "StringFileInfo"
-    BEGIN
-        BLOCK "000004b0"
-        BEGIN
-            VALUE "CompanyName", "Miranda IM project"
-            VALUE "FileDescription", "tabSRMM.dll"
-            VALUE "FileVersion", "0, 9, 9, 211"
-            VALUE "InternalName", "tabSRMsg"
-            VALUE "LegalCopyright", "Copyright (C) 2006"
-            VALUE "LegalTrademarks", "Licensed under the Gnu general public license V2 or any later version."
-            VALUE "OriginalFilename", "tabsrmm.dll"
-            VALUE "ProductName", "tabSRMM Message window plugin"
-            VALUE "ProductVersion", "0, 9, 9, 211"
-        END
-    END
-    BLOCK "VarFileInfo"
-    BEGIN
-        VALUE "Translation", 0x0, 1200
-    END
-END
-
-#endif    // German (Austria) resources
 /////////////////////////////////////////////////////////////////////////////
 
 

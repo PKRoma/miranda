@@ -3,7 +3,6 @@
 // Used by resource.rc
 //
 #define IDD_TEMPLATEEDIT                1
-#define VS_VERSION_INFO                 1
 #define IDD_USERPREFS                   2
 #define IDD_TABCONFIG                   4
 #define IDD_VARIABLEHELP                5
@@ -104,7 +103,6 @@
 #define IDC_SPLITTER                    1037
 #define IDC_CHKDEFAULTCOL_MESSAGE       1038
 #define IDC_SPLITTER2                   1039
-#define IDC_MSGINDICATOR                1050
 #define IDC_COLBACK_MESSAGE             1041
 #define IDC_COLTEXT_MESSAGE             1042
 #define IDC_CHKDEFAULTCOL_URL           1043
@@ -115,6 +113,7 @@
 #define IDC_SHOWNAMES                   1047
 #define IDC_COLBACK_FILE                1048
 #define IDC_COLTEXT_FILE                1049
+#define IDC_MSGINDICATOR                1050
 #define IDC_CHKDEFAULTCOL_OTHERS        1050
 #define IDC_COLBACK_OTHERS              1051
 #define IDC_CLOSEONREPLY                1052
@@ -579,6 +578,7 @@
 #define ID_SENDMENU_FORCEANSISEND       40138
 #define ID_PROTOMENU_IEVIEWSETTING      40139
 #define ID_IEVIEWSETTING_USEGLOBAL      40140
+#define ID_IEVIEWSETTING_FORCEIEVIEW    40141
 #define ID_IEVIEWSETTING_FORCEDEFAULTMESSAGELOG 40142
 #define ID_VIEW_VERTICALMAXIMIZE        40143
 #define ID_SENDMENU_SENDLATER           40144

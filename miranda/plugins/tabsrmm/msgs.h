@@ -480,10 +480,13 @@ struct LISTOPTIONSITEM {
 #define IDC_SBAR_TOGGLEFORMAT           1117
 
 struct SIDEBARITEM {
-    UINT uId;
-    DWORD dwFlags;
-    HICON *hIcon;
-    char  szName[100];
+    UINT    uId;
+    DWORD   dwFlags;
+    HICON   *hIcon;
+    char    *szName;
+    void    (*pfnAction)(ButtonItem *item, HWND hwndDlg, struct MessageWindowData *dat, HWND hwndItem);
+    void    (*pfnCallback)(ButtonItem *item, HWND hwndDlg, struct MessageWindowData *dat, HWND hwndItem);
+    TCHAR   *tszTip;
 };
 
 #if defined(_UNICODE)
@@ -540,5 +543,6 @@ static __inline int mir_snprintfW(wchar_t *buffer, size_t count, const wchar_t* 
 #define THEME_READ_ALL (THEME_READ_FONTS | THEME_READ_TEMPLATES)
 
 #define BUDDYPOUNCE_SERVICENAME "BuddyPounce/AddToPounce"
+#define IDC_TBFIRSTUID 10000            // first uId for custom buttons
 
 #endif

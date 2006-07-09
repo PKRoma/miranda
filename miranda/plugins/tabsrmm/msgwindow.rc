@@ -114,6 +114,45 @@ BEGIN
     CONTROL         "",IDC_MSGINDICATOR,"Static",SS_ENHMETAFILE,0,78,144,2                    
 END
 
+/////////////////////////////////////////////////////////////////////////////
+//
+// Version
+//
+
+VS_VERSION_INFO VERSIONINFO
+ FILEVERSION 1,1,0,104
+ PRODUCTVERSION 1,1,0,104
+ FILEFLAGSMASK 0x17L
+#ifdef _DEBUG
+ FILEFLAGS 0x1L
+#else
+ FILEFLAGS 0x0L
+#endif
+ FILEOS 0x4L
+ FILETYPE 0x2L
+ FILESUBTYPE 0x0L
+BEGIN
+    BLOCK "StringFileInfo"
+    BEGIN
+        BLOCK "000004b0"
+        BEGIN
+            VALUE "CompanyName", "Miranda IM project"
+            VALUE "FileDescription", "tabSRMM.dll"
+            VALUE "FileVersion", "1, 1, 0, 104"
+            VALUE "InternalName", "tabSRMsg"
+            VALUE "LegalCopyright", "Copyright (C) 2006"
+            VALUE "LegalTrademarks", "Licensed under the Gnu general public license V2 or any later version."
+            VALUE "OriginalFilename", "tabsrmm.dll"
+            VALUE "ProductName", "tabSRMM Message window plugin"
+            VALUE "ProductVersion", "1, 1, 0, 104"
+        END
+    END
+    BLOCK "VarFileInfo"
+    BEGIN
+        VALUE "Translation", 0x0, 1200
+    END
+END
+
 #endif    // Neutral resources
 /////////////////////////////////////////////////////////////////////////////
 

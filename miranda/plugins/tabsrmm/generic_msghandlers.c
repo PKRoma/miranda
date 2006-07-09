@@ -25,6 +25,7 @@ $Id$
 /*
  * these are generic message handlers which are used by the message dialog window procedure.
  * calling them directly instead of using SendMessage() is faster.
+ * also contains various callback functions for custom buttons
  */
 
 #include "commonheaders.h"
@@ -34,6 +35,171 @@ extern NEN_OPTIONS nen_options;
 
 extern WCHAR *FilterEventMarkers(WCHAR *wszText);
 extern char  *FilterEventMarkersA(char *szText);
+extern ButtonItem *g_ButtonItems;
+
+/* 
+ * action and callback procedures for the stock button objects
+ */
+
+static void BTN_StockAction(ButtonItem *item, HWND hwndDlg, struct MessageWindowData *dat, HWND hwndBtn)
+{
+    switch(item->uId) {
+        case IDC_SBAR_SLIST:
+            SendMessage(myGlobals.g_hwndHotkeyHandler, DM_TRAYICONNOTIFY, 101, WM_LBUTTONUP);
+            break;
+        case IDC_SBAR_FAVORITES:
+        {
+            POINT pt;
+            int iSelection;
+            GetCursorPos(&pt);
+            iSelection = TrackPopupMenu(myGlobals.g_hMenuFavorites, TPM_RETURNCMD, pt.x, pt.y, 0, myGlobals.g_hwndHotkeyHandler, NULL);
+            HandleMenuEntryFromhContact(iSelection);
+            break;
+        }
+        case IDC_SBAR_RECENT:
+        {
+            POINT pt;
+            int iSelection;
+            GetCursorPos(&pt);
+            iSelection = TrackPopupMenu(myGlobals.g_hMenuRecent, TPM_RETURNCMD, pt.x, pt.y, 0, myGlobals.g_hwndHotkeyHandler, NULL);
+            HandleMenuEntryFromhContact(iSelection);
+            break;
+        }
+        case IDC_SBAR_USERPREFS:
+        {
+            HANDLE hContact = 0;
+            SendMessage(hwndDlg, DM_QUERYHCONTACT, 0, (LPARAM)&hContact);
+            if(hContact != 0)
+                CallService(MS_TABMSG_SETUSERPREFS, (WPARAM)hContact, 0);
+            break;
+        }
+        case IDC_SBAR_TOGGLEFORMAT:
+        {
+            if(dat) {
+                if(IsDlgButtonChecked(hwndDlg, IDC_SBAR_TOGGLEFORMAT) == BST_UNCHECKED) {
+                    dat->SendFormat = 0;
+                    GetSendFormat(hwndDlg, dat, 0);
+                }
+                else {
+                    dat->SendFormat = SENDFORMAT_BBCODE;
+                    GetSendFormat(hwndDlg, dat, 0);
+                }
+            }
+            break;
+        }
+    }
+}
+
+static void BTN_StockCallback(ButtonItem *item, HWND hwndDlg, struct MessageWindowData *dat, HWND hwndBtn)
+{
+
+}
+
+/*
+ * predefined button objects for customizeable buttons
+ */
+
+static struct SIDEBARITEM sbarItems[] = {
+    IDC_SBAR_SLIST, SBI_TOP, &myGlobals.g_sideBarIcons[0], "t_slist", BTN_StockAction, BTN_StockCallback, _T("Open session list"),
+    IDC_SBAR_FAVORITES, SBI_TOP, &myGlobals.g_sideBarIcons[1], "t_fav", BTN_StockAction, BTN_StockCallback, _T("Open favorites"),
+    IDC_SBAR_RECENT, SBI_TOP, &myGlobals.g_sideBarIcons[2], "t_recent", BTN_StockAction, BTN_StockCallback, _T("Open recent contacts"),
+    IDC_SBAR_USERPREFS, SBI_TOP, &myGlobals.g_sideBarIcons[4], "t_prefs", BTN_StockAction, BTN_StockCallback, _T("Contact preferences"),
+    IDC_SBAR_TOGGLEFORMAT, SBI_TOP | SBI_TOGGLE, &myGlobals.g_buttonBarIcons[20], "t_tformat", BTN_StockAction, BTN_StockCallback, _T("Formatting"),
+    IDC_SBAR_SETUP, SBI_BOTTOM, &myGlobals.g_sideBarIcons[3], "t_setup", BTN_StockAction, BTN_StockCallback, _T("Miranda options"),
+    0, 0, 0, "", NULL, NULL, _T("")
+};
+
+int BTN_GetStockItem(ButtonItem *item, const char *szName)
+{
+    int i = 0;
+
+    while(sbarItems[i].uId) {
+        if(!stricmp(sbarItems[i].szName, szName)) {
+            item->uId = sbarItems[i].uId;
+            item->dwFlags |= BUTTON_ISSIDEBAR;
+            myGlobals.m_SideBarEnabled = TRUE;
+            if(sbarItems[i].dwFlags & SBI_TOP)
+                item->yOff = 0;
+            else if(sbarItems[i].dwFlags & SBI_BOTTOM)
+                item->yOff = -1;
+            item->dwFlags = sbarItems[i].dwFlags & SBI_TOGGLE ? item->dwFlags | BUTTON_ISTOGGLE : item->dwFlags & ~BUTTON_ISTOGGLE;
+            item->pfnAction = sbarItems[i].pfnAction;
+            item->pfnCallback = sbarItems[i].pfnCallback;
+            lstrcpyn(item->szTip, sbarItems[i].tszTip, 256);
+            item->szTip[255] = 0;
+            return 1;
+        }
+        i++;
+    }
+    return 0;
+}
+
+/*                                                              
+ * set the states of defined database action buttons (only if button is a toggle)
+*/
+
+void DM_SetDBButtonStates(HANDLE hPassedContact, HWND hwndContainer)
+{
+    ButtonItem *buttonItem = g_ButtonItems;
+    HANDLE hContact = 0, hFinalContact = 0;
+    char *szModule, *szSetting;
+
+    while(buttonItem) {
+        BOOL result = FALSE;
+        HWND hWnd = GetDlgItem(hwndContainer, buttonItem->uId);
+
+        if(!(buttonItem->dwFlags & BUTTON_ISTOGGLE && buttonItem->dwFlags & BUTTON_ISDBACTION)) {
+            buttonItem = buttonItem->nextItem;
+            continue;
+        }
+        szModule = buttonItem->szModule;
+        szSetting = buttonItem->szSetting;
+        if(buttonItem->dwFlags & BUTTON_DBACTIONONCONTACT || buttonItem->dwFlags & BUTTON_ISCONTACTDBACTION) {
+            if(hContact == 0) {
+                SendMessage(hWnd, BM_SETCHECK, BST_UNCHECKED, 0);
+                buttonItem = buttonItem->nextItem;
+                continue;
+            }
+            if(buttonItem->dwFlags & BUTTON_ISCONTACTDBACTION)
+                szModule = (char *)CallService(MS_PROTO_GETCONTACTBASEPROTO, (WPARAM)hContact, 0);
+            hFinalContact = hContact;
+        }
+        else
+            hFinalContact = 0;
+
+        if(buttonItem->type == DBVT_ASCIIZ) {
+            DBVARIANT dbv = {0};
+
+            if(!DBGetContactSetting(hFinalContact, szModule, szSetting, &dbv)) {
+                result = !strcmp((char *)buttonItem->bValuePush, dbv.pszVal);
+                DBFreeVariant(&dbv);
+            }
+        } else {
+            switch(buttonItem->type) {
+                case DBVT_BYTE:
+                {
+                    BYTE val = DBGetContactSettingByte(hFinalContact, szModule, szSetting, 0);
+                    result = (val == buttonItem->bValuePush[0]);
+                    break;
+                }
+                case DBVT_WORD:
+                {
+                    WORD val = DBGetContactSettingWord(hFinalContact, szModule, szSetting, 0);
+                    result = (val == *((WORD *)&buttonItem->bValuePush));
+                    break;
+                }
+                case DBVT_DWORD:
+                {
+                    DWORD val = DBGetContactSettingDword(hFinalContact, szModule, szSetting, 0);
+                    result = (val == *((DWORD *)&buttonItem->bValuePush));
+                    break;
+                }
+            }
+        }
+        SendMessage(hWnd, BM_SETCHECK, (WPARAM)result, 0);
+        buttonItem = buttonItem->nextItem;
+    }
+}
 
 LRESULT DM_ScrollToBottom(HWND hwndDlg, struct MessageWindowData *dat, WPARAM wParam, LPARAM lParam)
 {
@@ -264,3 +430,32 @@ LRESULT DM_WMCopyHandler(HWND hwnd, WNDPROC oldWndProc, WPARAM wParam, LPARAM lP
     return result;
 }
 
+/*
+ * create embedded contact list control
+ */
+
+HWND DM_CreateClist(HWND hwndParent, struct MessageWindowData *dat)
+{
+    HWND hwndClist = CreateWindowExA(0, "CListControl", "", WS_TABSTOP | WS_VISIBLE | WS_CHILD | 0x248, 184, 0, 30, 30, hwndParent, (HMENU)IDC_CLIST, g_hInst, NULL);
+    HANDLE hItem = (HANDLE) SendDlgItemMessage(hwndParent, IDC_CLIST, CLM_FINDCONTACT, (WPARAM) dat->hContact, 0);
+
+    SetWindowLong(hwndClist, GWL_EXSTYLE, GetWindowLong(hwndClist, GWL_EXSTYLE) & ~CLS_EX_TRACKSELECT);
+    SetWindowLong(hwndClist, GWL_EXSTYLE, GetWindowLong(hwndClist, GWL_EXSTYLE) | (CLS_EX_NOSMOOTHSCROLLING | CLS_EX_NOTRANSLUCENTSEL));
+    SetWindowLong(hwndClist, GWL_STYLE, GetWindowLong(hwndClist, GWL_STYLE) | CLS_HIDEOFFLINE);
+    if (hItem)
+        SendMessage(hwndClist, CLM_SETCHECKMARK, (WPARAM) hItem, 1);
+
+    if (CallService(MS_CLUI_GETCAPS, 0, 0) & CLUIF_DISABLEGROUPS && !DBGetContactSettingByte(NULL, "CList", "UseGroups", SETTING_USEGROUPS_DEFAULT))
+        SendMessage(hwndClist, CLM_SETUSEGROUPS, (WPARAM) FALSE, 0);
+    else
+        SendMessage(hwndClist, CLM_SETUSEGROUPS, (WPARAM) TRUE, 0);
+    if (CallService(MS_CLUI_GETCAPS, 0, 0) & CLUIF_HIDEEMPTYGROUPS && DBGetContactSettingByte(NULL, "CList", "HideEmptyGroups", SETTING_USEGROUPS_DEFAULT))
+        SendMessage(hwndClist, CLM_SETHIDEEMPTYGROUPS, (WPARAM) TRUE, 0);
+    else
+        SendMessage(hwndClist, CLM_SETHIDEEMPTYGROUPS, (WPARAM) FALSE, 0);
+    SendMessage(hwndClist, CLM_FIRST + 106, 0, 1);
+    //SendMessage(hwndClist, CLM_SETHIDEOFFLINEROOT, TRUE, 0);
+    SendMessage(hwndClist, CLM_AUTOREBUILD, 0, 0);
+
+    return hwndClist;
+}

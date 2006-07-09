@@ -30,6 +30,10 @@ $Id$
  * prototypes from generic_msghandlers.c
 */
 
+void DM_SetDBButtonStates(HANDLE hPassedContact, HWND hwndContainer);
+int BTN_GetStockItem(ButtonItem *item, const char *szName);
+HWND DM_CreateClist(HWND hwndParent, struct MessageWindowData *dat);
+
 LRESULT DM_ScrollToBottom(HWND hwndDlg, struct MessageWindowData *dat, WPARAM wParam, LPARAM lParam);
 LRESULT DM_LoadLocale(HWND hwndDlg, struct MessageWindowData *dat);
 LRESULT DM_SaveLocale(HWND hwndDlg, struct MessageWindowData *dat, WPARAM wParam, LPARAM lParam);

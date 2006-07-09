@@ -1667,7 +1667,6 @@ void ReloadGlobals()
      myGlobals.m_DoStatusMsg = (int)DBGetContactSettingByte(NULL, SRMSGMOD_T, "dostatusmsg", 1);
      myGlobals.m_smcxicon = GetSystemMetrics(SM_CXSMICON);
      myGlobals.m_smcyicon = GetSystemMetrics(SM_CYSMICON);
-     myGlobals.g_WantIEView = ServiceExists(MS_IEVIEW_WINDOW);
      myGlobals.m_PasteAndSend = (int)DBGetContactSettingByte(NULL, SRMSGMOD_T, "pasteandsend", 0);
      myGlobals.m_szNoStatus = TranslateT("No status message available");
      myGlobals.ipConfig.borderStyle = (BYTE)DBGetContactSettingByte(NULL, SRMSGMOD_T, "ipfieldborder", IPFIELD_SUNKEN);
