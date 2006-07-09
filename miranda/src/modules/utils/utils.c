@@ -2,8 +2,8 @@
 
 Miranda IM: the free IM client for Microsoft* Windows*
 
-Copyright 2000-2003 Miranda ICQ/IM project, 
-all portions of this codebase are copyrighted to the people 
+Copyright 2000-2003 Miranda ICQ/IM project,
+all portions of this codebase are copyrighted to the people
 listed in contributors.txt.
 
 This program is free software; you can redistribute it and/or
@@ -93,7 +93,7 @@ static struct CountryListEntry countries[]={
 	{385 ,"Croatia"},
 	{53  ,"Cuba"},
 	{357 ,"Cyprus"},
-	{42  ,"Czech Republic"},
+	{420 ,"Czech Republic"},
 	{45  ,"Denmark"},
 	{246 ,"Diego Garcia"},
 	{253 ,"Djibouti"},
@@ -228,7 +228,7 @@ static struct CountryListEntry countries[]={
 	{248 ,"Seychelles"},
 	{232 ,"Sierra Leone"},
 	{65  ,"Singapore"},
-	{4201,"Slovakia"},
+	{421 ,"Slovakia"},
 	{386 ,"Slovenia"},
 	{677 ,"Solomon Islands"},
 	{252 ,"Somalia"},
