@@ -399,6 +399,7 @@ static struct LISTOPTIONSITEM lvItems[] = {
     0, _T("Automatically copy selected text"), 0, LOI_TYPE_SETTING, (UINT_PTR)"autocopy", 2,
     0, _T("Use multiple background colors"), IDC_AUTOSELECTCOPY, LOI_TYPE_FLAG, (UINT_PTR)MWF_LOG_INDIVIDUALBKG, 0,
     0, _T("Also draw vertical grid lines"), 0, LOI_TYPE_SETTING, (UINT_PTR)"wantvgrid", 0,
+    0, _T("Enable IEView as default message log"), 1, LOI_TYPE_SETTING, (UINT_PTR)"default_ieview", 1,
     0, NULL, 0, 0, 0, 0
 };
 

@@ -789,6 +789,7 @@ static BOOL CALLBACK ContainerWndProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPA
 
                     pContainer->oldDCSize.cx = width;
                     pContainer->oldDCSize.cy = height;
+                    /*
                     if(!pContainer->cachedDC) {
                         HDC dc = GetDC(NULL);
                         int wscreen = GetDeviceCaps(dc, HORZRES);
@@ -797,7 +798,16 @@ static BOOL CALLBACK ContainerWndProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPA
                         pContainer->cachedDC = CreateCompatibleDC(hdcReal);
                         pContainer->cachedHBM = CreateCompatibleBitmap(hdcReal, wscreen, hscreen);
                         pContainer->oldHBM = SelectObject(pContainer->cachedDC, pContainer->cachedHBM);
+                    }*/
+                    if(pContainer->cachedDC) {
+                        SelectObject(pContainer->cachedDC, pContainer->oldHBM);
+                        DeleteObject(pContainer->cachedHBM);
+                        DeleteDC(pContainer->cachedDC);
                     }
+                    pContainer->cachedDC = CreateCompatibleDC(hdcReal);
+                    pContainer->cachedHBM = CreateCompatibleBitmap(hdcReal, width, height);
+                    pContainer->oldHBM = SelectObject(pContainer->cachedDC, pContainer->cachedHBM);
+
                     hdc = pContainer->cachedDC;
                     //FillRect(hdc, &rcClient, g_ContainerColorKeyBrush);
                     if(!item->IGNORED)

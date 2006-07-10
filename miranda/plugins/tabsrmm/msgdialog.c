@@ -30,6 +30,7 @@ $Id$
 // IEVIew MOD End
 #include "sendqueue.h"
 #include "chat/chat.h"
+#include <uxtheme.h>
 
 #define TOOLBAR_PROTO_HIDDEN 1
 #define TOOLBAR_SEND_HIDDEN 2
@@ -918,7 +919,6 @@ static LRESULT CALLBACK MessageEditSubclassProc(HWND hwnd, UINT msg, WPARAM wPar
                     case 'M':
                         mwdat->sendMode ^= SMODE_MULTIPLE;
                         if(mwdat->sendMode & SMODE_MULTIPLE) {
-                            HANDLE hItem;
 							HWND hwndClist = DM_CreateClist(hwndParent, mwdat);
                         }
 						else {

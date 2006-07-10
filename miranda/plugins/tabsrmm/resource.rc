@@ -708,7 +708,7 @@ BEGIN
     BEGIN
         POPUP "IEView Setting"
         BEGIN
-            MENUITEM "Use it when available",       ID_IEVIEWSETTING_USEGLOBAL
+            MENUITEM "Use global setting",       ID_IEVIEWSETTING_USEGLOBAL
             MENUITEM "Force IEView",                ID_IEVIEWSETTING_FORCEIEVIEW
             MENUITEM "Force Default Message Log",   ID_IEVIEWSETTING_FORCEDEFAULTMESSAGELOG
         END
