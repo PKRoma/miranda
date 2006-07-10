@@ -28,6 +28,22 @@ extern SESSION_INFO g_TabSession;
 extern MYGLOBALS	myGlobals;
 extern NEN_OPTIONS  nen_options;
 
+static void Chat_PlaySound(const char *szSound, HWND hWnd, struct MessageWindowData *dat)
+{
+    BOOL fPlay = TRUE;
+
+    if(nen_options.iNoSounds)
+        return;
+
+    if(dat) {
+        DWORD dwFlags = dat->pContainer->dwFlags;
+        fPlay = dwFlags & CNT_NOSOUND ? FALSE : TRUE;
+    }
+
+    if(fPlay)
+        SkinPlaySound(szSound);
+}
+
 int GetRichTextLength(HWND hwnd)
 {
 	GETTEXTLENGTHEX gtl;
@@ -424,33 +440,33 @@ BOOL DoSoundsFlashPopupTrayStuff(SESSION_INFO * si, GCEVENT * gce, BOOL bHighlig
 		switch (iEvent) {
 		case GC_EVENT_JOIN:
 			if(bInactive || !g_Settings.SoundsFocus)
-				SkinPlaySound("ChatJoin");
+				Chat_PlaySound("ChatJoin", si->hWnd, dat);
             hNotifyIcon = hIcons[ICON_JOIN];
 			break;
 		case GC_EVENT_PART:
 			if(bInactive || !g_Settings.SoundsFocus)
-				SkinPlaySound("ChatPart");
+				Chat_PlaySound("ChatPart", si->hWnd, dat);
             hNotifyIcon = hIcons[ICON_PART];
 			break;
 		case GC_EVENT_QUIT:
 			if(bInactive || !g_Settings.SoundsFocus)
-				SkinPlaySound("ChatQuit");
+				Chat_PlaySound("ChatQuit", si->hWnd, dat);
             hNotifyIcon = hIcons[ICON_QUIT];
 			break;
 		case GC_EVENT_ADDSTATUS:
 		case GC_EVENT_REMOVESTATUS:
 			if(bInactive || !g_Settings.SoundsFocus)
-				SkinPlaySound("ChatMode");
+				Chat_PlaySound("ChatMode", si->hWnd, dat);
             hNotifyIcon = hIcons[iEvent == GC_EVENT_ADDSTATUS ? ICON_ADDSTATUS : ICON_REMSTATUS];
 			break;
 		case GC_EVENT_KICK:
 			if(bInactive || !g_Settings.SoundsFocus)
-				SkinPlaySound("ChatKick");
+				Chat_PlaySound("ChatKick", si->hWnd, dat);
             hNotifyIcon = hIcons[ICON_KICK];
 			break;
 		case GC_EVENT_MESSAGE:
 			if(bInactive || !g_Settings.SoundsFocus)
-				SkinPlaySound("ChatMessage");
+				Chat_PlaySound("ChatMessage", si->hWnd, dat);
 			if(bInactive && !(si->wState&STATE_TALK)) {
 				si->wState |= STATE_TALK;
 				DBWriteContactSettingWord(si->hContact, si->pszModule,"ApparentMode",(LPARAM)(WORD) 40071);
@@ -458,22 +474,22 @@ BOOL DoSoundsFlashPopupTrayStuff(SESSION_INFO * si, GCEVENT * gce, BOOL bHighlig
 			break;
 		case GC_EVENT_ACTION:
 			if(bInactive || !g_Settings.SoundsFocus)
-				SkinPlaySound("ChatAction");
+				Chat_PlaySound("ChatAction", si->hWnd, dat);
             hNotifyIcon = hIcons[ICON_ACTION];
 			break;
 		case GC_EVENT_NICK:
 			if(bInactive || !g_Settings.SoundsFocus)
-				SkinPlaySound("ChatNick");
+				Chat_PlaySound("ChatNick", si->hWnd, dat);
             hNotifyIcon = hIcons[ICON_NICK];
 			break;
 		case GC_EVENT_NOTICE:
 			if(bInactive || !g_Settings.SoundsFocus)
-				SkinPlaySound("ChatNotice");
+				Chat_PlaySound("ChatNotice", si->hWnd, dat);
             hNotifyIcon = hIcons[ICON_NOTICE];
 			break;
 		case GC_EVENT_TOPIC:
 			if(bInactive || !g_Settings.SoundsFocus)
-				SkinPlaySound("ChatTopic");
+				Chat_PlaySound("ChatTopic", si->hWnd, dat);
             hNotifyIcon = hIcons[ICON_TOPIC];
             break;
 		default:break;

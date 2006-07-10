@@ -875,12 +875,25 @@ void __fastcall IMG_RenderImageItem(HDC hdc, ImageItem *item, RECT *rc)
     LONG width = rc->right - rc->left;
     LONG height = rc->bottom - rc->top;
     BOOL isGlyph = (item->dwFlags & IMAGE_GLYPH) && g_glyphItem;
-    HDC hdcSrc = isGlyph ? g_glyphItem->hdc : item->hdc;
+    BOOL fCleanUp = TRUE;
+    //HDC hdcSrc = isGlyph ? g_glyphItem->hdc : item->hdc;
+    HDC hdcSrc = 0;
+    HBITMAP hbmOld;
     LONG srcOrigX = isGlyph ? item->glyphMetrics[0] : 0;
     LONG srcOrigY = isGlyph ? item->glyphMetrics[1] : 0;
 
+
+    if(item->hdc == 0) {
+        hdcSrc = CreateCompatibleDC(hdc);
+        hbmOld = SelectObject(hdcSrc, isGlyph ? g_glyphItem->hbm : item->hbm);
+    }
+    else {
+        hdcSrc = isGlyph ? g_glyphItem->hdc : item->hdc;
+        fCleanUp = FALSE;
+    }
+
 	if(MyAlphaBlend == 0)
-		return;
+		goto img_render_done;
 
 	if(item->dwFlags & IMAGE_FLAG_DIVIDED) {
         // top 3 items
@@ -967,6 +980,11 @@ void __fastcall IMG_RenderImageItem(HDC hdc, ImageItem *item, RECT *rc)
             default:
                 break;
         }
+    }
+img_render_done:
+    if(fCleanUp) {
+        SelectObject(hdcSrc, hbmOld);
+        DeleteDC(hdcSrc);
     }
 }
 
@@ -1525,14 +1543,16 @@ static void IMG_CreateItem(ImageItem *item, const char *fileName, HDC hdc)
                 return;
             }
         }
-        item->hdc = CreateCompatibleDC(hdc);
-        item->hbmOld = SelectObject(item->hdc, item->hbm);
+        //item->hdc = CreateCompatibleDC(hdc);
+        //item->hbmOld = SelectObject(item->hdc, item->hbm);
+        item->hdc = 0;
+        item->hbmOld = 0;
     }
 }
 
 static void IMG_RefreshItem(ImageItem *item, HDC hdc)
 {
-    if(item) {
+    if(item && !(item->dwFlags & IMAGE_GLYPH)) {
         SelectObject(item->hdc, item->hbmOld);
         DeleteDC(item->hdc);
 
@@ -1544,9 +1564,9 @@ static void IMG_RefreshItem(ImageItem *item, HDC hdc)
 static void IMG_DeleteItem(ImageItem *item)
 {
 	if(!(item->dwFlags & IMAGE_GLYPH)) {
-		SelectObject(item->hdc, item->hbmOld);
+		//SelectObject(item->hdc, item->hbmOld);
 		DeleteObject(item->hbm);
-		DeleteDC(item->hdc);
+		//DeleteDC(item->hdc);
 	}
 	if(item->fillBrush)
 		DeleteObject(item->fillBrush);
@@ -1557,6 +1577,7 @@ void IMG_RefreshItems()
     HDC hdc = GetDC(0);
     ImageItem *pItem = g_ImageItems;
 
+    return;
 #ifdef _DEBUG
     _DebugTraceA("Refreshing cached DCs");
 #endif
@@ -1907,8 +1928,8 @@ void SkinDrawBG(HWND hwndClient, HWND hwnd, struct ContainerWindowData *pContain
 	HDC dc;
 
 	GetWindowRect(hwndClient, &rcWindow);
-	pt.x = rcWindow.left;
-	pt.y = rcWindow.top;
+	pt.x = rcWindow.left + rcClient->left;
+	pt.y = rcWindow.top + rcClient->top;
 	ScreenToClient(hwnd, &pt);
 	if(pContainer)
 		dc = pContainer->cachedDC;

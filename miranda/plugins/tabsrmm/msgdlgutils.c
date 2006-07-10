@@ -1739,7 +1739,8 @@ void PlayIncomingSound(struct ContainerWindowData *pContainer, HWND hwnd)
 			iPlay = TRUE;
 	}
 	else 
-		iPlay = TRUE;
+		iPlay = dwFlags & CNT_NOSOUND ? FALSE : TRUE;
+
     if (iPlay) {
         if(GetForegroundWindow() == pContainer->hwnd && pContainer->hwndActive == hwnd)
             SkinPlaySound("RecvMsgActive");
@@ -2692,12 +2693,19 @@ int MY_ServiceExists(const char *svc)
 
 void GetMaxMessageLength(HWND hwndDlg, struct MessageWindowData *dat)
 {
+    HANDLE hContact;
+    char   *szProto;
+
     if(dat->bIsMeta)
         GetCurrentMetaContactProto(hwndDlg, dat);
 
+    hContact = dat->bIsMeta ? dat->hSubContact : dat->hContact;
+    szProto = dat->bIsMeta ? dat->szMetaProto : dat->szProto;
+
     if(dat->szProto) {
         int nMax;
-        nMax = CallProtoService(dat->bIsMeta ? dat->szMetaProto : dat->szProto, PS_GETCAPS, PFLAG_MAXLENOFMESSAGE, (LPARAM)(dat->bIsMeta ? dat->hSubContact : dat->hContact));
+
+        nMax = CallProtoService(szProto, PS_GETCAPS, PFLAG_MAXLENOFMESSAGE, (LPARAM)hContact);
         if (nMax) {
             if(DBGetContactSettingByte(NULL, SRMSGMOD_T, "autosplit", 0))
                 SendDlgItemMessage(hwndDlg, IDC_MESSAGE, EM_EXLIMITTEXT, 0, 20000);

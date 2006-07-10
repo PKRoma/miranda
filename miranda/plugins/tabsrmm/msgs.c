@@ -36,23 +36,8 @@ $Id$
 
 static char *relnotes[] = {
     "{\\rtf1\\ansi\\deff0\\pard\\li%u\\fi-%u\\ri%u\\tx%u}",
-    "\\par\t\\b\\ul1 Release notes for version 1.1.0.4\\b0\\ul0\\par ",
-    "*\tYou must hold the ctrl key when dragging tabs to re-arrange tab position\\par ",
-    "*\tThe template system has been updated with a few changes. You can review an updated version of the template documentation at http://miranda.or.at/tabsrmm-articles/tabsrmm-message-log-templates/\\line \
-Also, you may want to reset your templates (you can do this in the template editor) when you have formatting problems.\\par ",
-    "*\tLeft SHIFT+ALT + direction keys (page up, page dn, home, end, up/down) are now working in group chats and allow scrolling the message history while the input area is focused.\\par ",
-    "*\tIntroduced this dialog to show the last release notes after upgrading to a new version.\\par ",
-    "*\tLess aggressive scrolling behaviour in the message window. Switching tabs or restoring a previously minimized container will no longer scroll the message history to the bottom.\\line \
-Also, scrolling logic has been changed in some places, and there are currently a few minor bugs. This is being worked out.\\par ",
-    "*\tAdded \\b fast mousewheel scrolling\\b0 - holding the left SHIFT key while scrolling the history with the mouse wheel will make ist scroll fast (page by page).\\par ",
-    "*\ttabSRMM will now warn you when you a paste a message which exceeds the message size limit for the active protocol (unless message splitting is enabled).\\par ",
-    "*\tIEView is now set as default message log when it is installed and detected. The global option to enable it has been removed. It is still possible to enable \
-or disable it on a per contact base.\\par ",
-    "*\tAdded visual message length indicator (a progress bar like control just below the message input field). You can disable it by right clicking \
-in the edit box and choosing \\b Show message length indicator\\b0 from the context menu.\\par ",
-    "*\tRemoved static avatar display option. Instead you can specify the maximum height of the bottom avatars and make them appear \
-unscaled, if possible.\\par ",
-    "*\tAdded message splitting. Read more about at http://miranda.or.at/tabsrmm/message-splitting/ \\par ",
+    "\\par\t\\b\\ul1 Release notes for version 0.9.9.212\\b0\\ul0\\par ",
+    "*\tRe-enabled the option to enable/disable IEView globally. This option is now \"smart\" which means that it will detect when IEView has been installed (or uninstalled) and automatically enable itself when IEView is detected the first time.\\par ",
     NULL
 };
 
@@ -885,6 +870,8 @@ static int SplitmsgModulesLoaded(WPARAM wParam, LPARAM lParam)
     DBVARIANT dbv;
     MENUITEMINFOA mii = {0};
     HMENU submenu;
+    BOOL bIEView;
+
     static Update upd = {0};
 #if defined(_UNICODE)
     static char szCurrentVersion[30];
@@ -966,8 +953,16 @@ static int SplitmsgModulesLoaded(WPARAM wParam, LPARAM lParam)
     if(ServiceExists(MS_FAVATAR_GETINFO))
         myGlobals.g_FlashAvatarAvail = 1;
     
-	if(ServiceExists(MS_IEVIEW_WINDOW))
-		HookEvent(ME_IEVIEW_OPTIONSCHANGED, IEViewOptionsChanged);
+    bIEView = ServiceExists(MS_IEVIEW_WINDOW);
+    if(bIEView) {
+        BOOL bOldIEView = DBGetContactSettingByte(NULL, SRMSGMOD_T, "ieview_installed", 0);
+        if(bOldIEView != bIEView)
+            DBWriteContactSettingByte(NULL, SRMSGMOD_T, "default_ieview", 1);
+        DBWriteContactSettingByte(NULL, SRMSGMOD_T, "ieview_installed", 1);
+        HookEvent(ME_IEVIEW_OPTIONSCHANGED, IEViewOptionsChanged);
+    }
+    else
+        DBWriteContactSettingByte(NULL, SRMSGMOD_T, "ieview_installed", 0);
 
     myGlobals.m_hwndClist = (HWND)CallService(MS_CLUI_GETHWND, 0, 0);
 #ifdef __MATHMOD_SUPPORT    		
