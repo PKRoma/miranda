@@ -1152,7 +1152,7 @@ LRESULT CALLBACK SplitterSubclassProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM
                     GetClientRect(hwnd, &rc);
                     SkinDrawBG(hwnd, dat->pContainer->hwnd, dat->pContainer, &rc, dc);
                 }
-                else if(myGlobals.m_visualMessageSizeIndicator) {
+                else {
                     GetClientRect(hwnd, &rc);
                     FillRect(dc, &rc, GetSysColorBrush(COLOR_3DFACE));
                 }
@@ -1875,11 +1875,8 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                     UpdateTrayMenu(0, dat->wStatus, dat->szProto, dat->szStatus, dat->hContact, FALSE);
                     
                 SendDlgItemMessage(hwndDlg, IDC_LOG, EM_AUTOURLDETECT, (WPARAM) TRUE, 0);
-                if (dat->hContact) {
-                    
-                    SendDlgItemMessage(hwndDlg, IDC_LOG, EM_EXLIMITTEXT, 0, 0x80000000);
-                    GetMaxMessageLength(hwndDlg, dat);
-                }
+                SendDlgItemMessage(hwndDlg, IDC_LOG, EM_EXLIMITTEXT, 0, 0x80000000);
+
                 OldMessageEditProc = (WNDPROC) SetWindowLong(GetDlgItem(hwndDlg, IDC_MESSAGE), GWL_WNDPROC, (LONG) MessageEditSubclassProc);
                 SendMessage(GetDlgItem(hwndDlg, IDC_MESSAGE), EM_SUBCLASSED, 0, 0);
                 
@@ -1891,8 +1888,11 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                 SetWindowLong(GetDlgItem(hwndDlg, IDC_PANELSPLITTER), GWL_WNDPROC, (LONG) SplitterSubclassProc);
                 SetWindowLong(GetDlgItem(hwndDlg, IDC_MSGINDICATOR), GWL_WNDPROC, (LONG) MsgIndicatorSubclassProc);
                 
-                if (dat->hContact)
+                if(dat->hContact) {
                     FindFirstEvent(hwndDlg, dat);
+                    GetMaxMessageLength(hwndDlg, dat);
+                    GetCachedStatusMsg(hwndDlg, dat);
+                }
                 dat->stats.started = time(NULL);
                 SendMessage(hwndDlg, DM_OPTIONSAPPLIED, 0, 0);
                 LoadOwnAvatar(hwndDlg, dat);
@@ -2482,6 +2482,10 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                 }
                 return 0;
             }
+        case DM_UPDATESTATUSMSG:
+            GetCachedStatusMsg(hwndDlg, dat);
+            InvalidateRect(GetDlgItem(hwndDlg, IDC_PANELNICK), NULL, FALSE);
+            return 0;
         case DM_ADDDIVIDER:
             if(!(dat->dwFlags & MWF_DIVIDERSET) && myGlobals.m_UseDividers) {
                 if(GetWindowTextLengthA(GetDlgItem(hwndDlg, IDC_LOG)) > 0) {
@@ -2544,7 +2548,7 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                 UTILRESIZEDIALOG urd;
                 BITMAP bminfo;
                 int buttonBarSpace;
-                RECT rc;
+                RECT rc, rcPic;
                 int saved = 0, i;
                 int delta;
                 HBITMAP hbm = dat->dwFlagsEx & MWF_SHOW_INFOPANEL ? dat->hOwnPic : (dat->ace ? dat->ace->hbmPic : myGlobals.g_hbmUnknown);
@@ -2584,7 +2588,19 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                 
                 GetClientRect(hwndDlg, &rc);
                 buttonBarSpace = rc.right;
-                CallService(MS_UTILS_RESIZEDIALOG, 0, (LPARAM) & urd);
+
+                {
+                    POINT pt;
+                    GetClientRect(GetDlgItem(hwndDlg, IDC_SPLITTER), &rcPic);
+                    pt.x = 0; pt.y = rcPic.bottom;
+                    MapWindowPoints(GetDlgItem(hwndDlg, IDC_SPLITTER), hwndDlg, &pt, 1);
+
+                    if((rc.bottom - pt.y <= dat->pic.cy) && dat->showPic)
+                        dat->fMustOffset = TRUE;
+                    else
+                        dat->fMustOffset = FALSE;
+                }
+
                 if(dat->showPic) {
                     if(dat->fMustOffset)
                         buttonBarSpace = rc.right - (dat->pic.cx + 2);
@@ -2623,6 +2639,7 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                         }
                     }
                 }
+                CallService(MS_UTILS_RESIZEDIALOG, 0, (LPARAM) & urd);
                 dat->dwFlagsEx &= ~MWF_SHOW_RESIZEIPONLY;
                 
                 if(GetDlgItem(hwndDlg, IDC_CLIST) != 0) {

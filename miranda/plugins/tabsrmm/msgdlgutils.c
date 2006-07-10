@@ -39,6 +39,7 @@ extern      PAB MyAlphaBlend;
 extern      HMODULE g_hInst;
 extern      HANDLE hMessageWindowList;
 extern      StatusItems_t StatusItems[];
+extern      char *xStatusDescr[];
 
 void ShowMultipleControls(HWND hwndDlg, const UINT * controls, int cControls, int state);
 
@@ -2271,13 +2272,7 @@ int MsgWindowDrawHandler(WPARAM wParam, LPARAM lParam, HWND hwndDlg, struct Mess
         SIZE  szUIN;
         StatusItems_t *item = &StatusItems[ID_EXTBKINFOPANEL];
         
-		if(ServiceExists("CList/GetContactStatusMsg")) {
-			szStatusMsg = (TCHAR *)CallService("CList/GetContactStatusMsg", (WPARAM)dat->hContact, 0);
-			if(szStatusMsg == NULL)
-				szStatusMsg = dat->statusMsg;
-		}
-		else
-			szStatusMsg = dat->statusMsg;
+		szStatusMsg = dat->statusMsg;
 
 		GetTextExtentPoint32(dis->hDC, szLabel, iNameLen, &dat->szLabel);
         GetTextExtentPoint32(dis->hDC, szLabelUIN, iNameLenUIN, &szUIN);
@@ -2714,8 +2709,74 @@ void GetMaxMessageLength(HWND hwndDlg, struct MessageWindowData *dat)
             dat->nMax = nMax;
         }
         else {
-            SendDlgItemMessage(hwndDlg, IDC_MESSAGE, EM_EXLIMITTEXT, 0, (LPARAM)7500);
-            dat->nMax = 7500;
+            SendDlgItemMessage(hwndDlg, IDC_MESSAGE, EM_EXLIMITTEXT, 0, (LPARAM)20000);
+            dat->nMax = 20000;
         }
     }
 }
+
+#define STATUSMSG_XSTATUSNAME 1
+#define STATUSMSG_CLIST 2
+#define STATUSMSG_YIM 3
+#define STATUSMSG_GG 4
+#define STATUSMSG_XSTATUS 5
+
+void GetCachedStatusMsg(HWND hwndDlg, struct MessageWindowData *dat)
+{
+	DBVARIANT dbv = {0};
+	HANDLE hContact;
+    BYTE bStatusMsgValid = 0;
+    char *szProto = dat ? dat->szProto : NULL;
+
+	if(dat == NULL)
+		return;
+
+    dat->statusMsg[0] = 0;
+
+    hContact = dat->hContact;
+
+    if(!DBGetContactSettingTString(hContact, "CList", "StatusMsg", &dbv) && lstrlen(dbv.ptszVal) > 1)
+        bStatusMsgValid = STATUSMSG_CLIST;
+    else {
+        if(szProto) {
+            if(!DBGetContactSettingTString(hContact, szProto, "YMsg", &dbv) && lstrlen(dbv.ptszVal) > 1)
+                bStatusMsgValid = STATUSMSG_YIM;
+            else if(!DBGetContactSettingTString(hContact, szProto, "StatusDescr", &dbv) && lstrlen(dbv.ptszVal) > 1)
+                bStatusMsgValid = STATUSMSG_GG;
+            else if(!DBGetContactSettingTString(hContact, szProto, "XStatusMsg", &dbv) && lstrlen(dbv.ptszVal) > 1)
+                bStatusMsgValid = STATUSMSG_XSTATUS;
+        }
+    }
+	if(bStatusMsgValid == 0) {      // no status msg, consider xstatus name (if available)
+		if(!DBGetContactSettingTString(hContact, szProto, "XStatusName", &dbv) && lstrlen(dbv.ptszVal) > 1) {
+			bStatusMsgValid = STATUSMSG_XSTATUSNAME;
+            mir_sntprintf(dat->statusMsg, safe_sizeof(dat->statusMsg), _T("%s"), dbv.ptszVal);
+			mir_free(dbv.ptszVal);
+		}
+		else {
+			BYTE bXStatus = DBGetContactSettingByte(hContact, szProto, "XStatusId", 0);
+			if(bXStatus > 0 && bXStatus <= 31) {
+#if defined(_UNICODE)
+                MultiByteToWideChar(dat->codePage, 0, xStatusDescr[bXStatus], -1, dat->statusMsg, 1024);
+                dat->statusMsg[1024] = 0;
+#else
+                mir_snprintf(dat->statusMsg, sizeof(dat->statusMsg), "%s", xStatusDescr[bXStatus]);
+#endif
+				bStatusMsgValid = STATUSMSG_XSTATUSNAME;
+			}
+		}
+	}
+	if(bStatusMsgValid > STATUSMSG_XSTATUSNAME) {
+		int j = 0, i, iLen;
+		iLen = lstrlen(dbv.ptszVal);
+		for(i = 0; i < iLen && j < 1024; i++) {
+			if(dbv.ptszVal[i] == (TCHAR)0x0d)
+				continue;
+			dat->statusMsg[j] = dbv.ptszVal[i] == (TCHAR)0x0a ? (TCHAR)' ' : dbv.ptszVal[i];
+			j++;
+		}
+		dat->statusMsg[j] = (TCHAR)0;
+		mir_free(dbv.ptszVal);
+	}
+}
+

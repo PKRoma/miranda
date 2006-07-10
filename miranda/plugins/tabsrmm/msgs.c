@@ -356,12 +356,12 @@ static int ProtoAck(WPARAM wParam, LPARAM lParam)
                 dat->hProcessAwayMsg = 0;
                 if(pAck->lParam)
 #if defined(_UNICODE)
-                    MultiByteToWideChar(dat->codePage, 0, (char *)pAck->lParam, -1, dat->statusMsg, safe_sizeof(dat->statusMsg));
+                    MultiByteToWideChar(dat->codePage, 0, (char *)pAck->lParam, -1, dat->statusMsg, safe_sizeof(dat->statusMsg) - 1);
 #else
-                    strncpy(dat->statusMsg, (char *)pAck->lParam, sizeof(dat->statusMsg));
+                    strncpy(dat->statusMsg, (char *)pAck->lParam, sizeof(dat->statusMsg) - 1);
 #endif                
                 else
-                    lstrcpyn(dat->statusMsg, myGlobals.m_szNoStatus, safe_sizeof(dat->statusMsg));
+                    lstrcpyn(dat->statusMsg, myGlobals.m_szNoStatus, safe_sizeof(dat->statusMsg) - 1);
                 dat->statusMsg[safe_sizeof(dat->statusMsg) - 1] = 0;
                 SendMessage(hwnd, DM_ACTIVATETOOLTIP, 0, 0);
             }
@@ -796,6 +796,8 @@ static int MessageSettingChanged(WPARAM wParam, LPARAM lParam)
             SendMessage(hwnd, DM_UPDATETITLE, 0, 0);
         else if(!strcmp(cws->szSetting, "MirVer"))
             SendMessage(hwnd, DM_CLIENTCHANGED, 0, 0);
+        else if(strstr("StatusMsg,StatusDescr,XStatusMsg,YMsg", cws->szSetting))
+            PostMessage(hwnd, DM_UPDATESTATUSMSG, 0, 0);
     }
     
     return 0;
