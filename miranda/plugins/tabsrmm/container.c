@@ -1498,10 +1498,10 @@ buttons_done:
                 }
                 AdjustTabClientRect(pContainer, &rcClient);
 
-                sizeChanged = ((rcClient.right != pContainer->preSIZE.cx) || (rcClient.bottom != pContainer->preSIZE.cy));
+                sizeChanged = (((rcClient.right - rcClient.left) != pContainer->preSIZE.cx) || ((rcClient.bottom - rcClient.top) != pContainer->preSIZE.cy));
                 if(sizeChanged) {
-                    pContainer->preSIZE.cx = rcClient.right;
-                    pContainer->preSIZE.cy = rcClient.bottom;
+                    pContainer->preSIZE.cx = rcClient.right - rcClient.left;
+                    pContainer->preSIZE.cy = rcClient.bottom - rcClient.top;
                 }
                 /*
                  * we care about all client sessions, but we really resize only the active tab (hwndActive)

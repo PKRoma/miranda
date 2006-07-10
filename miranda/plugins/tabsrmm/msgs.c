@@ -36,7 +36,7 @@ $Id$
 
 static char *relnotes[] = {
     "{\\rtf1\\ansi\\deff0\\pard\\li%u\\fi-%u\\ri%u\\tx%u}",
-    "\\par\t\\b\\ul1 Release notes for version 0.9.9.212\\b0\\ul0\\par ",
+    "\\par\t\\b\\ul1 Release notes for version 1.1.0.4\\b0\\ul0\\par ",
     "*\tRe-enabled the option to enable/disable IEView globally. This option is now \"smart\" which means that it will detect when IEView has been installed (or uninstalled) and automatically enable itself when IEView is detected the first time.\\par ",
     NULL
 };
@@ -356,12 +356,12 @@ static int ProtoAck(WPARAM wParam, LPARAM lParam)
                 dat->hProcessAwayMsg = 0;
                 if(pAck->lParam)
 #if defined(_UNICODE)
-                    MultiByteToWideChar(dat->codePage, 0, (char *)pAck->lParam, -1, dat->statusMsg, safe_sizeof(dat->statusMsg));
+                    MultiByteToWideChar(dat->codePage, 0, (char *)pAck->lParam, -1, dat->statusMsg, safe_sizeof(dat->statusMsg) - 1);
 #else
-                    strncpy(dat->statusMsg, (char *)pAck->lParam, sizeof(dat->statusMsg));
+                    strncpy(dat->statusMsg, (char *)pAck->lParam, sizeof(dat->statusMsg) - 1);
 #endif                
                 else
-                    lstrcpyn(dat->statusMsg, myGlobals.m_szNoStatus, safe_sizeof(dat->statusMsg));
+                    lstrcpyn(dat->statusMsg, myGlobals.m_szNoStatus, safe_sizeof(dat->statusMsg) - 1);
                 dat->statusMsg[safe_sizeof(dat->statusMsg) - 1] = 0;
                 SendMessage(hwnd, DM_ACTIVATETOOLTIP, 0, 0);
             }
