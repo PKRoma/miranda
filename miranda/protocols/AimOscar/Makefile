@@ -72,7 +72,6 @@ HDR =	tlv.h \
 	error.h \
 	conv.h
 
-LIB = -lwsock32
 CC = g++
 RC = windres
 RM = rm
@@ -97,13 +96,13 @@ ifdef DEBUG
 CFLAGS  = -g -g3 $(DEFINES) -I../../include
 LFLAGS  = -shared
 else
-CFLAGS  = -O1 $(DEFINES) -I../../include
+CFLAGS  = -Os $(DEFINES) -I../../include
 LFLAGS  = -shared -s -pedantic -W
 endif
 
 # Targets
 all : $(OBJ) $(RES)
-	$(CC) $(LFLAGS) $(CFLAGS) -o $(BIN) $(OBJ) $(RES) $(LIB) -Wl
+	$(CC) $(LFLAGS) $(CFLAGS) -o $(BIN) $(OBJ) $(RES) -Wl
 
 $(OBJ) :
 	$(CC) -c $(SRC) $(CFLAGS)

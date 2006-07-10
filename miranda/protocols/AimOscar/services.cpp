@@ -92,7 +92,7 @@ static int SendMsg(WPARAM /*wParam*/, LPARAM lParam)
 		{
 			ForkThread(msg_ack_success,ccs->hContact);
 		}
-		char* msg=strldup((char *)ccs->lParam,strlen((char*)ccs->lParam));
+		char* msg=strldup((char *)ccs->lParam,lstrlen((char*)ccs->lParam));
 		char* smsg=strip_carrots(msg);
 		delete[] msg;
 		if(DBGetContactSettingByte(NULL, AIM_PROTOCOL_NAME, AIM_KEY_FO, 0))
@@ -133,7 +133,7 @@ static int SendMsgW(WPARAM wParam, LPARAM lParam)
 		}
 		if(DBGetContactSettingByte(ccs->hContact, AIM_PROTOCOL_NAME, AIM_KEY_US, 0))
 		{
-			wchar_t* msg=wcsldup((wchar_t*)((char*)ccs->lParam+strlen((char*)ccs->lParam)+1),wcslen((wchar_t*)((char*)ccs->lParam+strlen((char*)ccs->lParam)+1)));
+			wchar_t* msg=wcsldup((wchar_t*)((char*)ccs->lParam+lstrlen((char*)ccs->lParam)+1),wcslen((wchar_t*)((char*)ccs->lParam+lstrlen((char*)ccs->lParam)+1)));
 			wchar_t* smsg=strip_carrots(msg);
 			delete[] msg;
 			if(DBGetContactSettingByte(NULL, AIM_PROTOCOL_NAME, AIM_KEY_FO, 0))
@@ -179,7 +179,7 @@ static int RecvMsg(WPARAM /*wParam*/, LPARAM lParam)
 	dbei.timestamp = pre->timestamp;
 	dbei.flags = pre->flags&PREF_CREATEREAD?DBEF_READ:0;
 	dbei.eventType = EVENTTYPE_MESSAGE;
-	dbei.cbBlob = strlen( pre->szMessage ) + 1;
+	dbei.cbBlob = lstrlen( pre->szMessage ) + 1;
 	if ( pre->flags & PREF_UNICODE )
 		dbei.cbBlob *= ( sizeof( wchar_t )+1 );
 
@@ -282,9 +282,9 @@ static int ContactSettingChanged(WPARAM wParam,LPARAM lParam)
 	if (conn.state!=1)
 		return 0;
 	char* protocol = (char *) CallService(MS_PROTO_GETCONTACTBASEPROTO,wParam, 0);
-	if (protocol != NULL && !strcmp(protocol, AIM_PROTOCOL_NAME))
+	if (protocol != NULL && !lstrcmp(protocol, AIM_PROTOCOL_NAME))
 	{
-		if(!strcmp(cws->szSetting,AIM_KEY_NL)&&!strcmp(cws->szModule,MOD_KEY_CL))
+		if(!lstrcmp(cws->szSetting,AIM_KEY_NL)&&!lstrcmp(cws->szModule,MOD_KEY_CL))
 		{
 			if(cws->value.type == DBVT_DELETED)
 			{
@@ -299,38 +299,38 @@ static int ContactSettingChanged(WPARAM wParam,LPARAM lParam)
 			}
 		}
 			/*DBCONTACTWRITESETTING *cws=(DBCONTACTWRITESETTING*)lParam;
-			if(!strcmp(cws->szSetting,OTH_KEY_GP)&&!strcmp(cws->szModule,MOD_KEY_CL))
+			if(!lstrcmp(cws->szSetting,OTH_KEY_GP)&&!lstrcmp(cws->szModule,MOD_KEY_CL))
 			{
 				if(wParam!=0)
 				{
 					HANDLE hContact=(HANDLE)wParam;
 					if(cws->value.type != DBVT_DELETED)//user group changed or user just added so we are going to change their group
 					{
-						char* blob=(char*)malloc(sizeof(HANDLE)+strlen(cws->value.pszVal)+1);
+						char* blob=(char*)malloc(sizeof(HANDLE)+lstrlen(cws->value.pszVal)+1);
 						memcpy(blob,&hContact,sizeof(HANDLE));
-						memcpy(&blob[sizeof(HANDLE)],cws->value.pszVal,strlen(cws->value.pszVal)+1);
+						memcpy(&blob[sizeof(HANDLE)],cws->value.pszVal,lstrlen(cws->value.pszVal)+1);
 						ForkThread((pThreadFunc)contact_setting_changed_thread,blob);
 					}
 					else//user's group deleted so we are adding the user to the out here server-side group
 					{
 						char* outer_group=get_outer_group();
-						char* blob=(char*)malloc(sizeof(HANDLE)+strlen(outer_group)+1);
+						char* blob=(char*)malloc(sizeof(HANDLE)+lstrlen(outer_group)+1);
 						memcpy(blob,&hContact,sizeof(HANDLE));
-						memcpy(&blob[sizeof(HANDLE)],outer_group,strlen(outer_group)+1);
+						memcpy(&blob[sizeof(HANDLE)],outer_group,lstrlen(outer_group)+1);
 						ForkThread((pThreadFunc)contact_setting_changed_thread,blob);
 						free(outer_group);
 					}
 				}
 			}
-			else if(!strcmp(cws->szSetting,AIM_KEY_SN)&&!strcmp(cws->szModule,AIM_PROTOCOL_NAME))//user added so we are going to add them to a group
+			else if(!lstrcmp(cws->szSetting,AIM_KEY_SN)&&!lstrcmp(cws->szModule,AIM_PROTOCOL_NAME))//user added so we are going to add them to a group
 			{
 				if(cws->value.type != DBVT_DELETED)
 				{
 					if(wParam!=0)
 					{
 						char* default_group=get_default_group();
-						char* blob=(char*)malloc(sizeof(HANDLE)+strlen(default_group)+1);
-						memcpy(&blob[sizeof(HANDLE)],default_group,strlen(default_group)+1);
+						char* blob=(char*)malloc(sizeof(HANDLE)+lstrlen(default_group)+1);
+						memcpy(&blob[sizeof(HANDLE)],default_group,lstrlen(default_group)+1);
 						HANDLE hContact=(HANDLE)wParam;
 						memcpy(blob,&hContact,sizeof(HANDLE));
 						ForkThread((pThreadFunc)contact_setting_changed_thread,blob);
@@ -345,7 +345,7 @@ static int BasicSearch(WPARAM /*wParam*/,LPARAM lParam)
 {
 	if (conn.state!=1)
 		return 0;
-	char *sn=strldup((char*)lParam,strlen((char*)lParam));//duplicating the parameter so that it isn't deleted before it's needed- e.g. this function ends before it's used
+	char *sn=strldup((char*)lParam,lstrlen((char*)lParam));//duplicating the parameter so that it isn't deleted before it's needed- e.g. this function ends before it's used
 	ForkThread((pThreadFunc)basic_search_ack_success,sn);
 	return 1;
 }
@@ -393,10 +393,10 @@ int ContactDeleted(WPARAM wParam,LPARAM /*lParam*/)
 			#if _MSC_VER
 			#pragma warning( default: 4127)
 			#endif
-			char* item= new char[strlen(AIM_KEY_BI)+10];
-			char* group= new char[strlen(AIM_KEY_GI)+10];
-			mir_snprintf(item,strlen(AIM_KEY_BI)+10,AIM_KEY_BI"%d",i);
-			mir_snprintf(group,strlen(AIM_KEY_GI)+10,AIM_KEY_GI"%d",i);
+			char* item= new char[lstrlen(AIM_KEY_BI)+10];
+			char* group= new char[lstrlen(AIM_KEY_GI)+10];
+			mir_snprintf(item,lstrlen(AIM_KEY_BI)+10,AIM_KEY_BI"%d",i);
+			mir_snprintf(group,lstrlen(AIM_KEY_GI)+10,AIM_KEY_GI"%d",i);
 			if(unsigned short item_id=(unsigned short)DBGetContactSettingWord((HANDLE)wParam, AIM_PROTOCOL_NAME, item,0))
 			{
 				unsigned short group_id=(unsigned short)DBGetContactSettingWord((HANDLE)wParam, AIM_PROTOCOL_NAME, group,0);
@@ -485,17 +485,17 @@ static int RecvFile(WPARAM /*wParam*/,LPARAM lParam)
 
     DBDeleteContactSetting(ccs->hContact, MOD_KEY_CL, "Hidden");
     szFile = pre->szMessage + sizeof(DWORD);
-    szDesc = szFile + strlen(szFile) + 1;
-	szIP = szDesc + strlen(szDesc) + 1;
-	szIP2 = szIP + strlen(szIP) + 1;
-	szIP3 = szIP2 + strlen(szIP2) + 1;
+    szDesc = szFile + lstrlen(szFile) + 1;
+	szIP = szDesc + lstrlen(szDesc) + 1;
+	szIP2 = szIP + lstrlen(szIP) + 1;
+	szIP3 = szIP2 + lstrlen(szIP2) + 1;
     ZeroMemory(&dbei, sizeof(dbei));
     dbei.cbSize = sizeof(dbei);
     dbei.szModule = AIM_PROTOCOL_NAME;
     dbei.timestamp = pre->timestamp;
     dbei.flags = pre->flags & (PREF_CREATEREAD ? DBEF_READ : 0);
     dbei.eventType = EVENTTYPE_FILE;
-    dbei.cbBlob = sizeof(DWORD) + strlen(szFile) + strlen(szDesc)+2;
+    dbei.cbBlob = sizeof(DWORD) + lstrlen(szFile) + lstrlen(szDesc)+2;
     dbei.pBlob = (PBYTE) pre->szMessage;
     CallService(MS_DB_EVENT_ADD, (WPARAM) ccs->hContact, (LPARAM) & dbei);
 	return 0;
@@ -508,11 +508,11 @@ static int AllowFile(WPARAM /*wParam*/, LPARAM lParam)
 	{
 		char *szDesc, *szFile, *local_ip, *verified_ip, *proxy_ip;
 		szFile = (char*)ccs->wParam + sizeof(DWORD);
-		szDesc = szFile + strlen(szFile) + 1;
-		local_ip = szDesc + strlen(szDesc) + 1;
-		verified_ip = local_ip + strlen(local_ip) + 1;
-		proxy_ip = verified_ip + strlen(verified_ip) + 1;
-		int size=strlen(szFile)+strlen(szDesc)+strlen(local_ip)+strlen(verified_ip)+strlen(proxy_ip)+5+sizeof(HANDLE);
+		szDesc = szFile + lstrlen(szFile) + 1;
+		local_ip = szDesc + lstrlen(szDesc) + 1;
+		verified_ip = local_ip + lstrlen(local_ip) + 1;
+		proxy_ip = verified_ip + lstrlen(verified_ip) + 1;
+		int size=lstrlen(szFile)+lstrlen(szDesc)+lstrlen(local_ip)+lstrlen(verified_ip)+lstrlen(proxy_ip)+5+sizeof(HANDLE);
 		char *data=new char[size];
 		memcpy(data,(char*)&ccs->hContact,sizeof(HANDLE));
 		memcpy(&data[sizeof(HANDLE)],szFile,size-sizeof(HANDLE));

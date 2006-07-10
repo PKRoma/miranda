@@ -501,7 +501,7 @@ void snac_contact_list(SNAC &snac)//family 0x0013
 				HANDLE hContact=find_contact(name);
 				if(!hContact)
 				{
-					if(strcmp(name,SYSTEM_BUDDY))//nobody likes that stupid aol buddy anyway
+					if(lstrcmp(name,SYSTEM_BUDDY))//nobody likes that stupid aol buddy anyway
 						hContact=add_contact(name);
 				}
 				if(hContact)
@@ -515,10 +515,10 @@ void snac_contact_list(SNAC &snac)//family 0x0013
 						#if _MSC_VER
 						#pragma warning( default: 4127 )
 						#endif
-						char* item= new char[strlen(AIM_KEY_BI)+10];
-						char* group= new char[strlen(AIM_KEY_GI)+10];
-						mir_snprintf(item,strlen(AIM_KEY_BI)+10,AIM_KEY_BI"%d",i);
-						mir_snprintf(group,strlen(AIM_KEY_GI)+10,AIM_KEY_GI"%d",i);
+						char* item= new char[lstrlen(AIM_KEY_BI)+10];
+						char* group= new char[lstrlen(AIM_KEY_GI)+10];
+						mir_snprintf(item,lstrlen(AIM_KEY_BI)+10,AIM_KEY_BI"%d",i);
+						mir_snprintf(group,lstrlen(AIM_KEY_GI)+10,AIM_KEY_GI"%d",i);
 						if(!DBGetContactSettingWord(hContact, AIM_PROTOCOL_NAME, item,0))
 						{
 							DBWriteContactSettingWord(hContact, AIM_PROTOCOL_NAME, item, item_id);	
@@ -637,8 +637,8 @@ void snac_received_message(SNAC &snac,HANDLE hServerConn,unsigned short &seqno)/
 						WideCharToMultiByte( CP_ACP, 0, stripped_wch, -1,mbch, msg_length/2+1, NULL, NULL );
 						msg_buf=new char[msg_length/2+(msg_length)+2+1];
 						char* p=msg_buf;
-						memcpy( p, mbch, strlen(mbch)+1);
-						p+=(strlen(msg_buf)+1);
+						memcpy( p, mbch, lstrlen(mbch)+1);
+						p+=(lstrlen(msg_buf)+1);
 						memcpy( p,stripped_wch,wcslen(stripped_wch)*2+2);
 						delete[] stripped_wch;
 						delete[] mbch;
@@ -727,9 +727,9 @@ void snac_received_message(SNAC &snac,HANDLE hServerConn,unsigned short &seqno)/
 			if(auto_response)//this message must be an autoresponse
 			{
 				char* away=Translate("[Auto-Response]: ");
-				msg_buf=renew(msg_buf,strlen(msg_buf)+1,20);
-				memmove(msg_buf+17,msg_buf,strlen(msg_buf)+1);
-				memcpy(msg_buf,away,strlen(away));
+				msg_buf=renew(msg_buf,lstrlen(msg_buf)+1,20);
+				memmove(msg_buf+17,msg_buf,lstrlen(msg_buf)+1);
+				memcpy(msg_buf,away,lstrlen(away));
 			}
 			//Okay we are setting up the structure to give the message back to miranda's core
 			if(unicode_message)
@@ -750,11 +750,11 @@ void snac_received_message(SNAC &snac,HANDLE hServerConn,unsigned short &seqno)/
 				unsigned long away_time=DBGetContactSettingDword(NULL,AIM_PROTOCOL_NAME,AIM_KEY_LA,0);
 				if(away_time>msg_time&&conn.szModeMsg&&!DBGetContactSettingByte(NULL,MOD_KEY_SA,OTH_KEY_AI,0))
 				{
-					char* temp=new char[strlen(conn.szModeMsg)+20];
-					memcpy(temp,conn.szModeMsg,strlen(conn.szModeMsg)+1);
+					char* temp=new char[lstrlen(conn.szModeMsg)+20];
+					memcpy(temp,conn.szModeMsg,lstrlen(conn.szModeMsg)+1);
 					char* s_msg=strip_special_chars(temp,hContact);
-					char* temp2=new char[strlen(s_msg)+20];
-					mir_snprintf(temp2,strlen(s_msg)+20,"%s %s",Translate("[Auto-Response]:"),s_msg);
+					char* temp2=new char[lstrlen(s_msg)+20];
+					mir_snprintf(temp2,lstrlen(s_msg)+20,"%s %s",Translate("[Auto-Response]:"),s_msg);
 					DBEVENTINFO dbei;
 					ZeroMemory(&dbei, sizeof(dbei));
 					dbei.cbSize = sizeof(dbei);
@@ -762,7 +762,7 @@ void snac_received_message(SNAC &snac,HANDLE hServerConn,unsigned short &seqno)/
 					dbei.timestamp = (DWORD)time(NULL);
 					dbei.flags = DBEF_SENT;
 					dbei.eventType = EVENTTYPE_MESSAGE;
-					dbei.cbBlob = strlen(temp2) + 1;
+					dbei.cbBlob = lstrlen(temp2) + 1;
 					dbei.pBlob = (PBYTE) temp2;
 					CallService(MS_DB_EVENT_ADD, (WPARAM) hContact, (LPARAM) & dbei);
 					aim_send_plaintext_message(hServerConn,seqno,sn,s_msg,1);
@@ -796,14 +796,14 @@ void snac_received_message(SNAC &snac,HANDLE hServerConn,unsigned short &seqno)/
 				msg_buf=new char[1];
 				*msg_buf='\0';
 			}
-			long size=sizeof(DWORD) + strlen(filename) + strlen(msg_buf)+strlen(local_ip)+strlen(verified_ip)+strlen(proxy_ip)+7;
+			long size=sizeof(DWORD) + lstrlen(filename) + lstrlen(msg_buf)+lstrlen(local_ip)+lstrlen(verified_ip)+lstrlen(proxy_ip)+7;
 			char* szBlob = new char[size];
 			*((PDWORD) szBlob) = (DWORD)szBlob;
 			strlcpy(szBlob + sizeof(DWORD), filename,size);
-	        strlcpy(szBlob + sizeof(DWORD) + strlen(filename) + 1, msg_buf,size);
-			strlcpy(szBlob + sizeof(DWORD) + strlen(filename) + strlen(msg_buf) +2,local_ip,size);
-			strlcpy(szBlob + sizeof(DWORD) + strlen(filename) + strlen(msg_buf) + strlen(local_ip)+3,verified_ip,size);
-			strlcpy(szBlob + sizeof(DWORD) + strlen(filename) + strlen(msg_buf) + strlen(local_ip) +strlen(verified_ip)+4,proxy_ip,size);
+	        strlcpy(szBlob + sizeof(DWORD) + lstrlen(filename) + 1, msg_buf,size);
+			strlcpy(szBlob + sizeof(DWORD) + lstrlen(filename) + lstrlen(msg_buf) +2,local_ip,size);
+			strlcpy(szBlob + sizeof(DWORD) + lstrlen(filename) + lstrlen(msg_buf) + lstrlen(local_ip)+3,verified_ip,size);
+			strlcpy(szBlob + sizeof(DWORD) + lstrlen(filename) + lstrlen(msg_buf) + lstrlen(local_ip) +lstrlen(verified_ip)+4,proxy_ip,size);
             pre.flags = 0;
             pre.timestamp =(DWORD)time(NULL);
 	        pre.szMessage = szBlob;
@@ -816,25 +816,25 @@ void snac_received_message(SNAC &snac,HANDLE hServerConn,unsigned short &seqno)/
 		}
 		else if(recv_file_type==0&&request_num==2)//we are sending file, but buddy wants us to connect to them cause they cannot connect to us.
 		{
-			long size=sizeof(hContact)+sizeof(icbm_cookie)+strlen(sn)+strlen(local_ip)+strlen(verified_ip)+strlen(proxy_ip)+sizeof(port)+sizeof(force_proxy)+9;
+			long size=sizeof(hContact)+sizeof(icbm_cookie)+lstrlen(sn)+lstrlen(local_ip)+lstrlen(verified_ip)+lstrlen(proxy_ip)+sizeof(port)+sizeof(force_proxy)+9;
 			char* blob = new char[size];
 			memcpy(blob,(char*)&hContact,sizeof(HANDLE));
 			memcpy(blob+sizeof(HANDLE),icbm_cookie,8);
 			strlcpy(blob+sizeof(HANDLE)+8,sn,size);
-			strlcpy(blob+sizeof(HANDLE)+8+strlen(sn)+1,local_ip,size);
-			strlcpy(blob+sizeof(HANDLE)+8+strlen(sn)+strlen(local_ip)+2,verified_ip,size);
-			strlcpy(blob+sizeof(HANDLE)+8+strlen(sn)+strlen(local_ip)+strlen(verified_ip)+3,proxy_ip,size);
-			memcpy(blob+sizeof(HANDLE)+8+strlen(sn)+strlen(local_ip)+strlen(verified_ip)+strlen(proxy_ip)+4,(char*)&port,sizeof(unsigned short));
-			memcpy(blob+sizeof(HANDLE)+8+strlen(sn)+strlen(local_ip)+strlen(verified_ip)+strlen(proxy_ip)+4+sizeof(unsigned short),(char*)&force_proxy,sizeof(bool));
+			strlcpy(blob+sizeof(HANDLE)+8+lstrlen(sn)+1,local_ip,size);
+			strlcpy(blob+sizeof(HANDLE)+8+lstrlen(sn)+lstrlen(local_ip)+2,verified_ip,size);
+			strlcpy(blob+sizeof(HANDLE)+8+lstrlen(sn)+lstrlen(local_ip)+lstrlen(verified_ip)+3,proxy_ip,size);
+			memcpy(blob+sizeof(HANDLE)+8+lstrlen(sn)+lstrlen(local_ip)+lstrlen(verified_ip)+lstrlen(proxy_ip)+4,(char*)&port,sizeof(unsigned short));
+			memcpy(blob+sizeof(HANDLE)+8+lstrlen(sn)+lstrlen(local_ip)+lstrlen(verified_ip)+lstrlen(proxy_ip)+4+sizeof(unsigned short),(char*)&force_proxy,sizeof(bool));
 			ForkThread((pThreadFunc)redirected_file_thread,blob);
 		}
 		else if(recv_file_type==0&&request_num==3)//buddy sending file, redirected connection failed, so they asking us to connect to proxy
 		{
-			long size = sizeof(hContact)+strlen(proxy_ip)+sizeof(port)+2;
+			long size = sizeof(hContact)+lstrlen(proxy_ip)+sizeof(port)+2;
    			char* blob = new char[size];
 			memcpy(blob,(char*)&hContact,sizeof(HANDLE));
 			strlcpy(blob+sizeof(HANDLE),proxy_ip,size);
-			memcpy(blob+sizeof(HANDLE)+strlen(proxy_ip)+1,(char*)&port,sizeof(unsigned short));
+			memcpy(blob+sizeof(HANDLE)+lstrlen(proxy_ip)+1,(char*)&port,sizeof(unsigned short));
 			ForkThread((pThreadFunc)proxy_file_thread,blob);
 		}
 		else if(recv_file_type==1)//buddy cancelled or denied file transfer
@@ -916,10 +916,10 @@ void snac_received_info(SNAC &snac)//family 0x0002
 			{
 				char URL[256];
 				ZeroMemory(URL,sizeof(URL));
-				unsigned short CWD_length=(unsigned short)strlen(CWD);
-				unsigned short protocol_length=(unsigned short)strlen(AIM_PROTOCOL_NAME);
+				unsigned short CWD_length=(unsigned short)lstrlen(CWD);
+				unsigned short protocol_length=(unsigned short)lstrlen(AIM_PROTOCOL_NAME);
 				char* norm_sn=normalize_name(sn);
-				unsigned short sn_length=(unsigned short)strlen(norm_sn);
+				unsigned short sn_length=(unsigned short)lstrlen(norm_sn);
 				memcpy(URL,CWD,CWD_length);
 				memcpy(&URL[CWD_length],"\\",1);
 				memcpy(&URL[1+CWD_length],AIM_PROTOCOL_NAME,protocol_length);
@@ -977,8 +977,8 @@ void snac_list_modification_ack(SNAC &snac)//family 0x0013
 				char* msg="Error removing buddy from list. Error code 0xxx";
 				char ccode[3];
 				_itoa(code,ccode,16);
-				msg[strlen(msg)-2]=ccode[0];
-				msg[strlen(msg)-1]=ccode[1];
+				msg[lstrlen(msg)-2]=ccode[0];
+				msg[lstrlen(msg)-1]=ccode[1];
 				ShowPopup("Aim Protocol",msg, 0);
 			}
 		}
@@ -1013,8 +1013,8 @@ void snac_list_modification_ack(SNAC &snac)//family 0x0013
 				char* msg="Unknown error when adding buddy to list: Error code 0x";
 				char ccode[3];
 				_itoa(code,ccode,16);
-				msg[strlen(msg)-2]=ccode[0];
-				msg[strlen(msg)-1]=ccode[1];
+				msg[lstrlen(msg)-2]=ccode[0];
+				msg[lstrlen(msg)-1]=ccode[1];
 				ShowPopup("Aim Protocol",msg, 0);
 			}
 		}
@@ -1033,8 +1033,8 @@ void snac_list_modification_ack(SNAC &snac)//family 0x0013
 				char* msg="Unknown error when attempting to modify a group: Error code 0x";
 				char ccode[3];
 				_itoa(code,ccode,16);
-				msg[strlen(msg)-2]=ccode[0];
-				msg[strlen(msg)-1]=ccode[1];
+				msg[lstrlen(msg)-2]=ccode[0];
+				msg[lstrlen(msg)-1]=ccode[1];
 				ShowPopup("Aim Protocol",msg, 0);
 			}
 		}
@@ -1118,14 +1118,14 @@ void snac_mail_response(SNAC &snac)//family 0x0018
 		{
 			char cNum_msgs[10];
 			_itoa(num_msgs,cNum_msgs,10);
-			int size=strlen(sn)+strlen(address)+strlen(cNum_msgs)+4;
+			int size=lstrlen(sn)+lstrlen(address)+lstrlen(cNum_msgs)+4;
 			char* email= new char[size];
 			strlcpy(email,sn,size);
-			strlcpy(&email[strlen(sn)],"@",size);
-			strlcpy(&email[strlen(sn)+1],address,size);
-			strlcpy(&email[strlen(sn)+strlen(address)+1],"(",size);
-			strlcpy(&email[strlen(sn)+strlen(address)+2],cNum_msgs,size);
-			strlcpy(&email[strlen(sn)+strlen(address)+strlen(cNum_msgs)+2],")",size);
+			strlcpy(&email[lstrlen(sn)],"@",size);
+			strlcpy(&email[lstrlen(sn)+1],address,size);
+			strlcpy(&email[lstrlen(sn)+lstrlen(address)+1],"(",size);
+			strlcpy(&email[lstrlen(sn)+lstrlen(address)+2],cNum_msgs,size);
+			strlcpy(&email[lstrlen(sn)+lstrlen(address)+lstrlen(cNum_msgs)+2],")",size);
 			char minute[3];
 			char hour[3];
 			tm* local_time=localtime(&time);
@@ -1143,13 +1143,13 @@ void snac_mail_response(SNAC &snac)//family 0x0018
 				hour[0]='0';
 				hour[2]='\0';
 			}
-			int size2=28+strlen(minute)+3+strlen(hour);
+			int size2=28+lstrlen(minute)+3+lstrlen(hour);
 			char* msg=new char[size2];
 			strlcpy(msg,"You've got mail! Checked at ",size2);
 			strlcpy(&msg[28],hour,size2);
-			strlcpy(&msg[28+strlen(hour)],":",size2);
-			strlcpy(&msg[28+strlen(hour)+1],minute,size2);
-			strlcpy(&msg[28+strlen(hour)+strlen(minute)+1],".",size2);
+			strlcpy(&msg[28+lstrlen(hour)],":",size2);
+			strlcpy(&msg[28+lstrlen(hour)+1],minute,size2);
+			strlcpy(&msg[28+lstrlen(hour)+lstrlen(minute)+1],".",size2);
 			ShowPopup(email,msg,MAIL_POPUP,url);
 			delete[] email;
 			delete[] msg;

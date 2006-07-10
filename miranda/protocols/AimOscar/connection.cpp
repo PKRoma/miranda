@@ -3,7 +3,7 @@ CRITICAL_SECTION statusMutex;
 CRITICAL_SECTION connectionMutex;
 HANDLE aim_connect(char* server)
 {
-	char* server_dup=strldup(server,strlen(server));
+	char* server_dup=strldup(server,lstrlen(server));
     NETLIBOPENCONNECTION ncon = { 0 };
 	char* host=strtok(server_dup,":");
 	char* port=strtok(NULL,":");
@@ -31,8 +31,8 @@ void __cdecl aim_connection_authorization()
 	int recvResult=0;
 	if (!DBGetContactSetting(NULL, AIM_PROTOCOL_NAME, AIM_KEY_PW, &dbv))
 	{
-        CallService(MS_DB_CRYPT_DECODESTRING, strlen(dbv.pszVal) + 1, (LPARAM) dbv.pszVal);
-        conn.password = strldup(dbv.pszVal,strlen(dbv.pszVal));
+        CallService(MS_DB_CRYPT_DECODESTRING, lstrlen(dbv.pszVal) + 1, (LPARAM) dbv.pszVal);
+        conn.password = strldup(dbv.pszVal,lstrlen(dbv.pszVal));
         DBFreeVariant(&dbv);
 	}
 	else
@@ -42,7 +42,7 @@ void __cdecl aim_connection_authorization()
 	}
 	if (!DBGetContactSetting(NULL, AIM_PROTOCOL_NAME, AIM_KEY_SN, &dbv))
 	{
-        conn.username = strldup(dbv.pszVal,strlen(dbv.pszVal));
+        conn.username = strldup(dbv.pszVal,lstrlen(dbv.pszVal));
         DBFreeVariant(&dbv);
     }
 	else

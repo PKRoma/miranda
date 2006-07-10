@@ -92,7 +92,7 @@ void __cdecl aim_proxy_helper(HANDLE hContact)
 						{
 							if(stage==1&&sender)
 							{
-								char* sn=strldup(dbv.pszVal,strlen(dbv.pszVal));
+								char* sn=strldup(dbv.pszVal,lstrlen(dbv.pszVal));
 								char vip[20];
 								char *file, *descr;
 								unsigned long size;
@@ -101,12 +101,12 @@ void __cdecl aim_proxy_helper(HANDLE hContact)
 								DBVARIANT dbv;
 								if (!DBGetContactSetting(hContact, AIM_PROTOCOL_NAME, AIM_KEY_FN, &dbv))
 								{
-									file=strldup(dbv.pszVal,strlen(dbv.pszVal));
+									file=strldup(dbv.pszVal,lstrlen(dbv.pszVal));
 									DBFreeVariant(&dbv);
 									DBVARIANT dbv;
 									if (!DBGetContactSetting(hContact, AIM_PROTOCOL_NAME, AIM_KEY_FD, &dbv))
 									{
-										descr=strldup(dbv.pszVal,strlen(dbv.pszVal));
+										descr=strldup(dbv.pszVal,lstrlen(dbv.pszVal));
 										DBFreeVariant(&dbv);
 										size=DBGetContactSettingDword(hContact, AIM_PROTOCOL_NAME, AIM_KEY_FS, 0);
 										if(!size)
@@ -161,7 +161,7 @@ void __cdecl aim_proxy_helper(HANDLE hContact)
 }
 int proxy_initialize_send(HANDLE connection,char* sn, char* cookie)
 {
-	char sn_length=(char)strlen(sn);
+	char sn_length=(char)lstrlen(sn);
 	unsigned short length = _htons(39+sn_length);
 	char* clength =(char*)&length;
 	char* msg_frag= new char[25+sn_length+sizeof(AIM_CAP_SEND_FILES)];
@@ -185,7 +185,7 @@ int proxy_initialize_send(HANDLE connection,char* sn, char* cookie)
 }
 int proxy_initialize_recv(HANDLE connection,char* sn, char* cookie,unsigned short port_check)
 {
-	char sn_length=(char)strlen(sn);
+	char sn_length=(char)lstrlen(sn);
 	unsigned short length = _htons(41+sn_length);
 	char* clength =(char*)&length;
 	char* msg_frag= new char[27+sn_length+sizeof(AIM_CAP_SEND_FILES)];

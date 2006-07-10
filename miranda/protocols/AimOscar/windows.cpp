@@ -60,7 +60,7 @@ BOOL CALLBACK userinfo_dialog(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPar
                     DBWriteContactSettingString(NULL, AIM_PROTOCOL_NAME, AIM_KEY_PR, buf);
                     if (conn.state==1)
 					{
-						char* msg=strldup(buf,strlen(buf));
+						char* msg=strldup(buf,lstrlen(buf));
 						msg=strip_linebreaks(msg);
                         aim_set_profile(conn.hServerConn,conn.seqno,msg);//also see set caps for profile setting
 						delete[] msg;
@@ -113,7 +113,7 @@ BOOL CALLBACK options_dialog(HWND hwndDlg, UINT msg, WPARAM /*wParam*/, LPARAM l
 			}
             if (!DBGetContactSetting(NULL, AIM_PROTOCOL_NAME, AIM_KEY_PW, &dbv))
 			{
-                CallService(MS_DB_CRYPT_DECODESTRING, strlen(dbv.pszVal) + 1, (LPARAM) dbv.pszVal);
+                CallService(MS_DB_CRYPT_DECODESTRING, lstrlen(dbv.pszVal) + 1, (LPARAM) dbv.pszVal);
                 SetDlgItemText(hwndDlg, IDC_PW, dbv.pszVal);
                 DBFreeVariant(&dbv);
             }
@@ -155,7 +155,7 @@ BOOL CALLBACK options_dialog(HWND hwndDlg, UINT msg, WPARAM /*wParam*/, LPARAM l
                     char str[128];
 					//SN
                     GetDlgItemText(hwndDlg, IDC_SN, str, sizeof(str));
-					if(strlen(str)>0)
+					if(lstrlen(str)>0)
 						DBWriteContactSettingString(NULL, AIM_PROTOCOL_NAME, AIM_KEY_SN, str);
 					else
 						DBDeleteContactSetting(NULL, AIM_PROTOCOL_NAME, AIM_KEY_SN);
@@ -173,7 +173,7 @@ BOOL CALLBACK options_dialog(HWND hwndDlg, UINT msg, WPARAM /*wParam*/, LPARAM l
 
 					//PW
                     GetDlgItemText(hwndDlg, IDC_PW, str, sizeof(str));
-					if(strlen(str)>0)
+					if(lstrlen(str)>0)
 					{
 						CallService(MS_DB_CRYPT_ENCODESTRING, sizeof(str), (LPARAM) str);
 						DBWriteContactSettingString(NULL, AIM_PROTOCOL_NAME, AIM_KEY_PW, str);
@@ -184,7 +184,7 @@ BOOL CALLBACK options_dialog(HWND hwndDlg, UINT msg, WPARAM /*wParam*/, LPARAM l
 
 					//HN
 					GetDlgItemText(hwndDlg, IDC_HN, str, sizeof(str));
-					if(strlen(str)>0)
+					if(lstrlen(str)>0)
 						DBWriteContactSettingString(NULL, AIM_PROTOCOL_NAME, AIM_KEY_HN, str);
 					else
 						DBWriteContactSettingString(NULL, AIM_PROTOCOL_NAME, AIM_KEY_HN, AIM_DEFAULT_SERVER);
@@ -343,7 +343,7 @@ BOOL CALLBACK first_run_dialog(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM /*l
 
             if (!DBGetContactSetting(NULL, AIM_PROTOCOL_NAME, AIM_KEY_PW, &dbv))
 			{
-                CallService(MS_DB_CRYPT_DECODESTRING, strlen(dbv.pszVal) + 1, (LPARAM) dbv.pszVal);
+                CallService(MS_DB_CRYPT_DECODESTRING, lstrlen(dbv.pszVal) + 1, (LPARAM) dbv.pszVal);
                 SetDlgItemText(hwndDlg, IDC_PW, dbv.pszVal);
                 DBFreeVariant(&dbv);
             }

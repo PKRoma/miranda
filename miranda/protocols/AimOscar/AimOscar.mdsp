@@ -27,8 +27,8 @@ optimizeLevel=0
 
 // linker
 libraryPath=
-outputFilename=Debug\AimOscar.dll
-libraries=ws2_32
+outputFilename=..\..\bin\Debug\plugins\AimOscar.dll
+libraries=
 extraLinkerOptions=
 ignoreStartupFile=0
 ignoreDefaultLibs=0
@@ -65,8 +65,8 @@ optimizeLevel=4
 
 // linker
 libraryPath=
-outputFilename=Release\AimOscar.dll
-libraries=ws2_32
+outputFilename=..\..\bin\Release\plugins\AimOscar.dll
+libraries=
 extraLinkerOptions=
 ignoreStartupFile=0
 ignoreDefaultLibs=0
@@ -131,20 +131,21 @@ extraResourceOptions=
 1=aim.rc
 [Other]
 [History]
-server.cpp,16433
-file.cpp,5045
-client.cpp,8202
-utility.cpp,32235
-services.cpp,11742
+conv.cpp,364
+server.cpp,16421
+file.cpp,4971
+client.cpp,8141
+utility.cpp,32226
+services.cpp,11717
 services.h,333
 windows.cpp,14891
 windows.h,234
-thread.cpp,946
+thread.cpp,939
 thread.h,188
-aim.cpp,2975
+aim.cpp,2925
 defines.h,38
-connection.cpp,7264
-connection.h,64
-file.h,50
-proxy.cpp,1487
-conv.cpp,388
+connection.cpp,7260
+connection.h,44
+file.h,30
+proxy.cpp,1476
+aim.rc,50

@@ -9,7 +9,7 @@ void sending_file(HANDLE hContact, HANDLE hNewConnection)
 	unsigned long size;
 	if (!DBGetContactSetting(hContact, AIM_PROTOCOL_NAME, AIM_KEY_FN, &dbv))
 	{
-		file=strldup(dbv.pszVal,strlen(dbv.pszVal));
+		file=strldup(dbv.pszVal,lstrlen(dbv.pszVal));
 		DBFreeVariant(&dbv);
 		size=DBGetContactSettingDword(hContact, AIM_PROTOCOL_NAME, AIM_KEY_FS, 0);
 		if(!size)
@@ -42,7 +42,7 @@ void sending_file(HANDLE hContact, HANDLE hNewConnection)
 	ft.list_size_offset=0x11;
 	char* pszFile = strrchr(file, '\\');
 	pszFile++;
-	memcpy(ft.filename,pszFile,strlen(pszFile));
+	memcpy(ft.filename,pszFile,lstrlen(pszFile));
 	char* buf = (char*)&ft;
 	if(Netlib_Send(hNewConnection,buf,sizeof(oft2),0)==SOCKET_ERROR)
 	{
@@ -150,7 +150,7 @@ void receiving_file(HANDLE hContact, HANDLE hNewConnection)
 	unsigned long size;
 	if (!DBGetContactSetting(hContact, AIM_PROTOCOL_NAME, AIM_KEY_FN, &dbv))
 	{
-		file=strldup(dbv.pszVal,strlen(dbv.pszVal));
+		file=strldup(dbv.pszVal,lstrlen(dbv.pszVal));
 		DBFreeVariant(&dbv);
 	}
 	//start listen for packets stuff
@@ -201,8 +201,8 @@ void receiving_file(HANDLE hContact, HANDLE hNewConnection)
 						pfts.totalBytes=size;
 						char* buf = (char*)&ft;
 						Netlib_Send(hNewConnection,buf,sizeof(oft2),0);
-						file=renew(file,strlen(file)+1,strlen((char*)&ft.filename)+1);
-						strcat(file,(char*)&ft.filename);
+						file=renew(file,lstrlen(file)+1,lstrlen((char*)&ft.filename)+1);
+						lstrcat(file,(char*)&ft.filename);
 						pfts.currentFile=file;
 						fd = fopen(file, "wb");
 						if(!fd)

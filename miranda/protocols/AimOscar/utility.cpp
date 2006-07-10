@@ -18,7 +18,7 @@ void start_connection(int initial_status)
 		else
 		{
 		/*	char* msg="Please, enter a username in the options dialog.";
-			char* tmsg=strldup(msg,strlen(msg));
+			char* tmsg=strldup(msg,lstrlen(msg));
 			ForkThread((pThreadFunc)message_box_thread,tmsg);*/
 			ShowPopup("Aim Protocol","Please, enter a username in the options dialog.", 0);
 			broadcast_status(ID_STATUS_OFFLINE);
@@ -59,13 +59,13 @@ HANDLE find_contact(char * sn)
 	while (hContact)
 	{
 		char *protocol = (char *) CallService(MS_PROTO_GETCONTACTBASEPROTO, (WPARAM) hContact, 0);
-		if (protocol != NULL && !strcmp(protocol, AIM_PROTOCOL_NAME))
+		if (protocol != NULL && !lstrcmp(protocol, AIM_PROTOCOL_NAME))
 		{
 			DBVARIANT dbv;
 			if (!DBGetContactSetting(hContact, AIM_PROTOCOL_NAME, AIM_KEY_SN, &dbv))
 			{
 
-				if (!strcmp(dbv.pszVal, normalize_name(sn)))
+				if (!lstrcmp(dbv.pszVal, normalize_name(sn)))
 				{
 					DBFreeVariant(&dbv);
 					return hContact;
@@ -103,8 +103,8 @@ void add_contact_to_group(HANDLE hContact,unsigned short new_group_id,char* grou
 	//make sure group exist serverside then add buddy to it
 	BOOL bUtfReadyDB = ServiceExists(MS_DB_CONTACT_GETSETTING_STR);
 	bool group_exist=1;
-	char* groupNum= new char[strlen(AIM_KEY_GI)+10];
-	mir_snprintf(groupNum,strlen(AIM_KEY_GI)+10,AIM_KEY_GI"%d",1);
+	char* groupNum= new char[lstrlen(AIM_KEY_GI)+10];
+	mir_snprintf(groupNum,lstrlen(AIM_KEY_GI)+10,AIM_KEY_GI"%d",1);
 	unsigned short old_group_id=(unsigned short)DBGetContactSettingWord(hContact, AIM_PROTOCOL_NAME, groupNum,0);		
 	delete[] groupNum;
 	if(old_group_id)
@@ -115,7 +115,7 @@ void add_contact_to_group(HANDLE hContact,unsigned short new_group_id,char* grou
 		if(bUtfReadyDB==1)
 		{
 			if(!DBGetContactSettingStringUtf(NULL,ID_GROUP_KEY,group_id_string,&dbv))//utf
-				if(!_strcmpi(group,dbv.pszVal))
+				if(!lstrcmpi(group,dbv.pszVal))
 				{
 					DBFreeVariant(&dbv);
 					return;
@@ -124,15 +124,15 @@ void add_contact_to_group(HANDLE hContact,unsigned short new_group_id,char* grou
 		else
 		{
 			if(!DBGetContactSettingStringUtf(NULL,ID_GROUP_KEY,group_id_string,&dbv))//utf
-				if(!_strcmpi(group,dbv.pszVal))
+				if(!lstrcmpi(group,dbv.pszVal))
 				{
 					DBFreeVariant(&dbv);
 					return;
 				}		
 		}
 	}
-	char* buddyNum= new char[strlen(AIM_KEY_BI)+10];
-	mir_snprintf(buddyNum,strlen(AIM_KEY_BI)+10,AIM_KEY_BI"%d",1);
+	char* buddyNum= new char[lstrlen(AIM_KEY_BI)+10];
+	mir_snprintf(buddyNum,lstrlen(AIM_KEY_BI)+10,AIM_KEY_BI"%d",1);
 	unsigned short item_id=(unsigned short)DBGetContactSettingWord(hContact, AIM_PROTOCOL_NAME, buddyNum,0);
 	delete[] buddyNum;
 	new_group_id=(unsigned short)DBGetContactSettingWord(NULL, GROUP_ID_KEY,group,0);
@@ -150,8 +150,8 @@ void add_contact_to_group(HANDLE hContact,unsigned short new_group_id,char* grou
 		DBVARIANT dbv;
 		if(!DBGetContactSetting(hContact, AIM_PROTOCOL_NAME, AIM_KEY_SN,&dbv))
 		{
-			char* groupNum= new char[strlen(AIM_KEY_GI)+10];
-			mir_snprintf(groupNum,strlen(AIM_KEY_GI)+10,AIM_KEY_GI"%d",1);
+			char* groupNum= new char[lstrlen(AIM_KEY_GI)+10];
+			mir_snprintf(groupNum,lstrlen(AIM_KEY_GI)+10,AIM_KEY_GI"%d",1);
 			DBWriteContactSettingWord(hContact, AIM_PROTOCOL_NAME, groupNum, new_group_id);
 			unsigned short user_id_array_size;
 			char* user_id_array=get_members_of_group(new_group_id,user_id_array_size);
@@ -178,11 +178,11 @@ void add_contacts_to_groups()
 	{
 		char *protocol = (char *) CallService(MS_PROTO_GETCONTACTBASEPROTO, (WPARAM) hContact, 0);
 		//MessageBox( NULL, protocol, AIM_PROTOCOL_NAME, MB_OK );
-		if (protocol != NULL && !strcmp(protocol, AIM_PROTOCOL_NAME))
+		if (protocol != NULL && !lstrcmp(protocol, AIM_PROTOCOL_NAME))
 		{
 			//MessageBox( NULL, "Matching contact...making a groupid key...", AIM_PROTOCOL_NAME, MB_OK );
-			char* group= new char[strlen(AIM_KEY_GI)+10];
-			mir_snprintf(group,strlen(AIM_KEY_GI)+10,AIM_KEY_GI"%d",1);
+			char* group= new char[lstrlen(AIM_KEY_GI)+10];
+			mir_snprintf(group,lstrlen(AIM_KEY_GI)+10,AIM_KEY_GI"%d",1);
 			//MessageBox( NULL, group, AIM_PROTOCOL_NAME, MB_OK );
 			unsigned short group_id=(unsigned short)DBGetContactSettingWord(hContact, AIM_PROTOCOL_NAME, group,0);	
 			delete[] group;
@@ -245,10 +245,10 @@ void offline_contact(HANDLE hContact, bool remove_settings)
 			#if _MSC_VER
 			#pragma warning( default: 4127)
 			#endif
-			char* item= new char[strlen(AIM_KEY_BI)+10];
-			char* group= new char[strlen(AIM_KEY_GI)+10];
-			mir_snprintf(item,strlen(AIM_KEY_BI)+10,AIM_KEY_BI"%d",i);
-			mir_snprintf(group,strlen(AIM_KEY_GI)+10,AIM_KEY_GI"%d",i);
+			char* item= new char[lstrlen(AIM_KEY_BI)+10];
+			char* group= new char[lstrlen(AIM_KEY_GI)+10];
+			mir_snprintf(item,lstrlen(AIM_KEY_BI)+10,AIM_KEY_BI"%d",i);
+			mir_snprintf(group,lstrlen(AIM_KEY_GI)+10,AIM_KEY_GI"%d",i);
 			if(DBGetContactSettingWord(hContact, AIM_PROTOCOL_NAME, item,0))
 			{
 				DBDeleteContactSetting(hContact, AIM_PROTOCOL_NAME, item);
@@ -300,7 +300,7 @@ void offline_contacts()
 	while (hContact)
 	{
 		char *protocol = (char *) CallService(MS_PROTO_GETCONTACTBASEPROTO, (WPARAM) hContact, 0);
-		if (protocol != NULL && !strcmp(protocol, AIM_PROTOCOL_NAME))
+		if (protocol != NULL && !lstrcmp(protocol, AIM_PROTOCOL_NAME))
 			offline_contact(hContact,1);
 		hContact = (HANDLE) CallService(MS_DB_CONTACT_FINDNEXT, (WPARAM) hContact, 0);
 	}
@@ -316,7 +316,7 @@ void remove_AT_icons()
 		while (hContact)
 		{
 			char *protocol = (char *) CallService(MS_PROTO_GETCONTACTBASEPROTO, (WPARAM) hContact, 0);
-			if (protocol != NULL && !strcmp(protocol, AIM_PROTOCOL_NAME))
+			if (protocol != NULL && !lstrcmp(protocol, AIM_PROTOCOL_NAME))
 			{
 				DBVARIANT dbv;
 				if (!DBGetContactSetting(hContact, AIM_PROTOCOL_NAME, AIM_KEY_SN, &dbv))
@@ -343,7 +343,7 @@ void remove_ES_icons()
 		while (hContact)
 		{
 			char *protocol = (char *) CallService(MS_PROTO_GETCONTACTBASEPROTO, (WPARAM) hContact, 0);
-			if (protocol != NULL && !strcmp(protocol, AIM_PROTOCOL_NAME))
+			if (protocol != NULL && !lstrcmp(protocol, AIM_PROTOCOL_NAME))
 			{
 				DBVARIANT dbv;
 				if (!DBGetContactSetting(hContact, AIM_PROTOCOL_NAME, AIM_KEY_SN, &dbv))
@@ -368,7 +368,7 @@ void add_AT_icons()
 	while (hContact)
 	{
 		char *protocol = (char *) CallService(MS_PROTO_GETCONTACTBASEPROTO, (WPARAM) hContact, 0);
-		if (protocol != NULL && !strcmp(protocol, AIM_PROTOCOL_NAME))
+		if (protocol != NULL && !lstrcmp(protocol, AIM_PROTOCOL_NAME))
 		{
 			DBVARIANT dbv;
 			if (!DBGetContactSetting(hContact, AIM_PROTOCOL_NAME, AIM_KEY_SN, &dbv))
@@ -431,7 +431,7 @@ void add_ES_icons()
 	while (hContact)
 	{
 		char *protocol = (char *) CallService(MS_PROTO_GETCONTACTBASEPROTO, (WPARAM) hContact, 0);
-		if (protocol != NULL && !strcmp(protocol, AIM_PROTOCOL_NAME))
+		if (protocol != NULL && !lstrcmp(protocol, AIM_PROTOCOL_NAME))
 		{
 			DBVARIANT dbv;
 			if (!DBGetContactSetting(hContact, AIM_PROTOCOL_NAME, AIM_KEY_SN, &dbv))
@@ -500,15 +500,15 @@ void execute_cmd(char* type,char* arg)
 				szCommandName[0]=' ';
 				ch=strtok(szCommandName,"\"");
 				szCommandName[0]='"';
-				szCommandName[strlen(szCommandName)+1]='\0';
-				szCommandName[strlen(szCommandName)]='"';
+				szCommandName[lstrlen(szCommandName)+1]='\0';
+				szCommandName[lstrlen(szCommandName)]='"';
 			}
 			else
 			{
 				strtok(szCommandName," ");
 
 			}
-			mir_snprintf(quote_arg,strlen(arg)+3,"%s%s%s","\"",arg,"\"");
+			mir_snprintf(quote_arg,lstrlen(arg)+3,"%s%s%s","\"",arg,"\"");
 			ShellExecute(NULL,"open",szCommandName,quote_arg, NULL, SW_SHOW);
 		}
 	}
@@ -519,7 +519,7 @@ void create_group(char *group)
         return;
 	BOOL bUtfReadyDB = ServiceExists(MS_DB_CONTACT_GETSETTING_STR);
 	/*char* outer_group=get_outer_group();
-	if(!strcmp(outer_group,group))
+	if(!lstrcmp(outer_group,group))
 	{
 		free(outer_group);
 		return;
@@ -541,7 +541,7 @@ void create_group(char *group)
 			if (DBGetContactSetting(NULL, "CListGroups", str, &dbv))
 				break;   
 		}
-		if (dbv.pszVal[0] != '\0' && !strcmp(dbv.pszVal + 1, group))
+		if (dbv.pszVal[0] != '\0' && !lstrcmp(dbv.pszVal + 1, group))
 		{
 				DBFreeVariant(&dbv);
 				return;  
@@ -550,7 +550,7 @@ void create_group(char *group)
 	}
 	name[0] = 1 | GROUPF_EXPANDED;
     strlcpy(name + 1, group, sizeof(name));
-    name[strlen(group) + 1] = '\0';
+    name[lstrlen(group) + 1] = '\0';
    	if(bUtfReadyDB==1)
 		DBWriteContactSettingStringUtf(NULL, "CListGroups", str, name);
 	else
@@ -594,7 +594,7 @@ unsigned short search_for_free_item_id(HANDLE hbuddy)//returns a free item id an
 		while (hContact)
 		{
 			char *protocol = (char *) CallService(MS_PROTO_GETCONTACTBASEPROTO, (WPARAM) hContact, 0);
-			if (protocol != NULL && !strcmp(protocol, AIM_PROTOCOL_NAME))
+			if (protocol != NULL && !lstrcmp(protocol, AIM_PROTOCOL_NAME))
 			{		
 				int i=1;
 				#if _MSC_VER
@@ -605,8 +605,8 @@ unsigned short search_for_free_item_id(HANDLE hbuddy)//returns a free item id an
 					#if _MSC_VER
 					#pragma warning( default: 4127)
 					#endif
-					char* item= new char[strlen(AIM_KEY_BI)+10];
-					mir_snprintf(item,strlen(AIM_KEY_BI)+10,AIM_KEY_BI"%d",i);
+					char* item= new char[lstrlen(AIM_KEY_BI)+10];
+					mir_snprintf(item,lstrlen(AIM_KEY_BI)+10,AIM_KEY_BI"%d",i);
 					if(unsigned short item_id=(unsigned short)DBGetContactSettingWord(hContact, AIM_PROTOCOL_NAME, item,0))
 					{
 						if(item_id==id)
@@ -631,8 +631,8 @@ unsigned short search_for_free_item_id(HANDLE hbuddy)//returns a free item id an
 		}
 		if(!used_id)
 		{
-			char* item= new char[strlen(AIM_KEY_BI)+10];
-			mir_snprintf(item,strlen(AIM_KEY_BI)+10,AIM_KEY_BI"%d",1);
+			char* item= new char[lstrlen(AIM_KEY_BI)+10];
+			mir_snprintf(item,lstrlen(AIM_KEY_BI)+10,AIM_KEY_BI"%d",1);
 			DBWriteContactSettingWord(hbuddy, AIM_PROTOCOL_NAME, item, id);
 			delete[] item;
 			return id;
@@ -648,7 +648,7 @@ char* get_members_of_group(unsigned short group_id,unsigned short &size)//return
 	while (hContact)
 	{
 		char *protocol = (char *) CallService(MS_PROTO_GETCONTACTBASEPROTO, (WPARAM) hContact, 0);
-		if (protocol != NULL && !strcmp(protocol, AIM_PROTOCOL_NAME))
+		if (protocol != NULL && !lstrcmp(protocol, AIM_PROTOCOL_NAME))
 		{
 				int i=1;
 				#if _MSC_VER
@@ -659,10 +659,10 @@ char* get_members_of_group(unsigned short group_id,unsigned short &size)//return
 					#if _MSC_VER
 					#pragma warning( default: 4127)
 					#endif
-					char* item= new char[strlen(AIM_KEY_BI)+10];
-					char* group= new char[strlen(AIM_KEY_GI)+10];
-					mir_snprintf(item,strlen(AIM_KEY_BI)+10,AIM_KEY_BI"%d",i);
-					mir_snprintf(group,strlen(AIM_KEY_GI)+10,AIM_KEY_GI"%d",i);
+					char* item= new char[lstrlen(AIM_KEY_BI)+10];
+					char* group= new char[lstrlen(AIM_KEY_GI)+10];
+					mir_snprintf(item,lstrlen(AIM_KEY_BI)+10,AIM_KEY_BI"%d",i);
+					mir_snprintf(group,lstrlen(AIM_KEY_GI)+10,AIM_KEY_GI"%d",i);
 					if(unsigned short user_group_id=(unsigned short)DBGetContactSettingWord(hContact, AIM_PROTOCOL_NAME,group,0))
 					{
 						if(group_id==user_group_id)
@@ -694,7 +694,7 @@ void __cdecl basic_search_ack_success(char *snsearch)
 {
 	char *sn = normalize_name((char *) snsearch);   // normalize it
     PROTOSEARCHRESULT psr;
-    if (strlen(sn) > 32) {
+    if (lstrlen(sn) > 32) {
         ProtoBroadcastAck(AIM_PROTOCOL_NAME, NULL, ACKTYPE_SEARCH, ACKRESULT_SUCCESS, (HANDLE) 1, 0);
         return;
     }
@@ -710,10 +710,10 @@ static char* module_ptr=NULL;
 static int EnumSettings(const char *szSetting,LPARAM /*lParam*/)
 {
 	//char* szModule=(char*)lParam;
-	module_ptr=renew(module_ptr,module_size,strlen(szSetting)+2);
-	memcpy(&module_ptr[module_size],szSetting,strlen(szSetting));
-	memcpy(&module_ptr[module_size+strlen(szSetting)],";\0",2);
-	module_size+=strlen(szSetting)+1;
+	module_ptr=renew(module_ptr,module_size,lstrlen(szSetting)+2);
+	memcpy(&module_ptr[module_size],szSetting,lstrlen(szSetting));
+	memcpy(&module_ptr[module_size+lstrlen(szSetting)],";\0",2);
+	module_size+=lstrlen(szSetting)+1;
 	return 0;
 }
 void delete_module(char* module, HANDLE hContact)
@@ -754,8 +754,8 @@ void delete_module(char* module, HANDLE hContact)
 			return;
 		else
 		{
-			memcpy(group,dbv.pszVal,strlen(dbv.pszVal));
-			memcpy(&group[strlen(dbv.pszVal)],"\0",1);
+			memcpy(group,dbv.pszVal,lstrlen(dbv.pszVal));
+			memcpy(&group[lstrlen(dbv.pszVal)],"\0",1);
 			DBFreeVariant(&dbv);
 		}
 	}
@@ -765,8 +765,8 @@ void delete_module(char* module, HANDLE hContact)
 			return;
 		else
 		{
-			memcpy(group,dbv.pszVal,strlen(dbv.pszVal));
-			memcpy(&group[strlen(dbv.pszVal)],"\0",1);
+			memcpy(group,dbv.pszVal,lstrlen(dbv.pszVal));
+			memcpy(&group[lstrlen(dbv.pszVal)],"\0",1);
 			DBFreeVariant(&dbv);
 		}
 	}
@@ -775,14 +775,14 @@ void delete_module(char* module, HANDLE hContact)
 	while (hContact)
 	{
 		char *protocol = (char *) CallService(MS_PROTO_GETCONTACTBASEPROTO, (WPARAM) hContact, 0);
-		if (protocol != NULL && !strcmp(protocol, AIM_PROTOCOL_NAME))
+		if (protocol != NULL && !lstrcmp(protocol, AIM_PROTOCOL_NAME))
 		{
 			DBVARIANT dbv;
 			if(bUtfReadyDB==1)
 			{
 				if (!DBGetContactSettingStringUtf(hContact, MOD_KEY_CL, OTH_KEY_GP, &dbv))
 				{
-					if(!strcmp(dbv.pszVal,group))
+					if(!lstrcmp(dbv.pszVal,group))
 					{
 						contacts_in_group=1;
 					}
@@ -793,7 +793,7 @@ void delete_module(char* module, HANDLE hContact)
 			{
 				if (!DBGetContactSetting(hContact, MOD_KEY_CL, OTH_KEY_GP, &dbv))
 				{
-					if(!strcmp(dbv.pszVal,group))
+					if(!lstrcmp(dbv.pszVal,group))
 					{
 						contacts_in_group=1;
 					}
@@ -806,7 +806,7 @@ void delete_module(char* module, HANDLE hContact)
 	if(!contacts_in_group)
 	{
 		char* outer_group=get_outer_group();
-		if(strcmp(outer_group,group))
+		if(lstrcmp(outer_group,group))
 		{
 			DBDeleteContactSetting(NULL, GROUP_ID_KEY, group);
 			DBDeleteContactSetting(NULL, ID_GROUP_KEY, group_id_string);
@@ -839,10 +839,10 @@ void delete_all_empty_groups()
 }*/
 void write_away_message(HANDLE hContact,char* sn,char* msg)
 {
-	int protocol_length=strlen(AIM_PROTOCOL_NAME);
+	int protocol_length=lstrlen(AIM_PROTOCOL_NAME);
 	char* norm_sn=normalize_name(sn);
-	int CWD_length=strlen(CWD);
-	char* path= new char[CWD_length+protocol_length+13+strlen(norm_sn)];
+	int CWD_length=lstrlen(CWD);
+	char* path= new char[CWD_length+protocol_length+13+lstrlen(norm_sn)];
 	memcpy(path,CWD,CWD_length);
 	memcpy(&path[CWD_length],"\\",1);
 	memcpy(&path[CWD_length+1],AIM_PROTOCOL_NAME,protocol_length);
@@ -855,8 +855,8 @@ void write_away_message(HANDLE hContact,char* sn,char* msg)
 	if(dir)
 	{
 		memcpy(&path[CWD_length+protocol_length+1],"\\",1);
-		memcpy(&path[CWD_length+protocol_length+2],norm_sn,strlen(norm_sn));
-		path[CWD_length+protocol_length+2+strlen(norm_sn)]='\0';
+		memcpy(&path[CWD_length+protocol_length+2],norm_sn,lstrlen(norm_sn));
+		path[CWD_length+protocol_length+2+lstrlen(norm_sn)]='\0';
 		dir=0;
 		if(GetFileAttributes(path)==INVALID_FILE_ATTRIBUTES)
 			dir=CreateDirectory(path,NULL);
@@ -864,7 +864,7 @@ void write_away_message(HANDLE hContact,char* sn,char* msg)
 			dir=1;
 		if(dir)
 		{
-			memcpy(&path[CWD_length+protocol_length+2+strlen(norm_sn)],"\\away.html",11);
+			memcpy(&path[CWD_length+protocol_length+2+lstrlen(norm_sn)],"\\away.html",11);
 			//int descr=_open(path,_O_BINARY | _O_CREAT | _O_TRUNC | _O_WRONLY, _S_IREAD | _S_IWRITE);
 			FILE* descr=fopen(path, "wb");
 			if(descr)
@@ -873,9 +873,9 @@ void write_away_message(HANDLE hContact,char* sn,char* msg)
 				CCSDATA ccs;
 				PROTORECVEVENT pre;
 				fwrite("<h3>",1,4,descr);
-				fwrite(norm_sn,1,strlen(norm_sn),descr);
+				fwrite(norm_sn,1,lstrlen(norm_sn),descr);
 				fwrite("'s Away Message:</h3>",1,21,descr);
-				fwrite(s_msg,1,strlen(s_msg),descr);
+				fwrite(s_msg,1,lstrlen(s_msg),descr);
 				fclose(descr);
 				ccs.szProtoService = PSR_AWAYMSG;
 				ccs.hContact = hContact;
@@ -902,10 +902,10 @@ void write_away_message(HANDLE hContact,char* sn,char* msg)
 }
 void write_profile(char* sn,char* msg)
 {
-	int protocol_length=strlen(AIM_PROTOCOL_NAME);
+	int protocol_length=lstrlen(AIM_PROTOCOL_NAME);
 	char* norm_sn=normalize_name(sn);
-	int CWD_length=strlen(CWD);
-	char* path= new char[CWD_length+protocol_length+16+strlen(norm_sn)];
+	int CWD_length=lstrlen(CWD);
+	char* path= new char[CWD_length+protocol_length+16+lstrlen(norm_sn)];
 	memcpy(path,CWD,CWD_length);
 	memcpy(&path[CWD_length],"\\",1);
 	memcpy(&path[CWD_length+1],AIM_PROTOCOL_NAME,protocol_length);
@@ -918,8 +918,8 @@ void write_profile(char* sn,char* msg)
 	if(dir)
 	{
 		memcpy(&path[CWD_length+protocol_length+1],"\\",1);
-		memcpy(&path[CWD_length+protocol_length+2],norm_sn,strlen(norm_sn));
-		path[CWD_length+protocol_length+2+strlen(norm_sn)]='\0';
+		memcpy(&path[CWD_length+protocol_length+2],norm_sn,lstrlen(norm_sn));
+		path[CWD_length+protocol_length+2+lstrlen(norm_sn)]='\0';
 		dir=0;
 		if(GetFileAttributes(path)==INVALID_FILE_ATTRIBUTES)
 			dir=CreateDirectory(path,NULL);
@@ -927,7 +927,7 @@ void write_profile(char* sn,char* msg)
 			dir=1;
 		if(dir)
 		{
-			memcpy(&path[CWD_length+protocol_length+2+strlen(norm_sn)],"\\profile.html",14);
+			memcpy(&path[CWD_length+protocol_length+2+lstrlen(norm_sn)],"\\profile.html",14);
 			//int descr=open(path,_O_BINARY | _O_CREAT | _O_TRUNC | _O_WRONLY, _S_IREAD | _S_IWRITE);
 			FILE* descr=fopen(path, "wb");
 			if(descr)
@@ -935,9 +935,9 @@ void write_profile(char* sn,char* msg)
 				char* norm_sn=normalize_name(sn);
 				char* s_msg=strip_special_chars(msg,NULL);
 				fwrite("<h3>",1,4,descr);
-				fwrite(norm_sn,1,strlen(norm_sn),descr);
+				fwrite(norm_sn,1,lstrlen(norm_sn),descr);
 				fwrite("'s Profile:</h3>",1,16,descr);
-				fwrite(s_msg,1,strlen(s_msg),descr);
+				fwrite(s_msg,1,lstrlen(s_msg),descr);
 				fclose(descr);
 				execute_cmd("http",path);
 				delete[] s_msg;
@@ -1002,15 +1002,15 @@ void long_ip_to_char_ip(unsigned long host, char* ip)
 	{
 		char store[16];
 		_itoa(bytes[i],store,10);
-		memcpy(&ip[buf_loc],store,strlen(store));
-		ip[strlen(store)+buf_loc]='.';
-		buf_loc+=((unsigned short)strlen(store)+1);
+		memcpy(&ip[buf_loc],store,lstrlen(store));
+		ip[lstrlen(store)+buf_loc]='.';
+		buf_loc+=((unsigned short)lstrlen(store)+1);
 	}
 	ip[buf_loc-1]='\0';
 }
 unsigned long char_ip_to_long_ip(char* ip)
 {
-	char* ip2=strldup(ip,strlen(ip));
+	char* ip2=strldup(ip,lstrlen(ip));
 	char* c=strtok(ip2,".");
 	char chost[5];
 	for(int i=0;i<4;i++)
@@ -1178,6 +1178,6 @@ void wcs_htons(wchar_t * ch)
 void assign_modmsg(char* msg)
 {
 	delete[] conn.szModeMsg;
-	conn.szModeMsg=new char[strlen(msg)+1];
-	memcpy(conn.szModeMsg,msg,strlen(msg)+1);
+	conn.szModeMsg=new char[lstrlen(msg)+1];
+	memcpy(conn.szModeMsg,msg,lstrlen(msg)+1);
 }

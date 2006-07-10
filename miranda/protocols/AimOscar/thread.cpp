@@ -127,14 +127,14 @@ void accept_file_thread(char* data)//buddy sending file
 	char *szDesc, *szFile, *local_ip, *verified_ip, *proxy_ip,* sn;
 	HANDLE* hContact=(HANDLE*)data;
 	szFile = data + sizeof(HANDLE);
-    szDesc = szFile + strlen(szFile) + 1;
-	local_ip = szDesc + strlen(szDesc) + 1;
-	verified_ip = local_ip + strlen(local_ip) + 1;
-	proxy_ip = verified_ip + strlen(verified_ip) + 1;
+    szDesc = szFile + lstrlen(szFile) + 1;
+	local_ip = szDesc + lstrlen(szDesc) + 1;
+	verified_ip = local_ip + lstrlen(local_ip) + 1;
+	proxy_ip = verified_ip + lstrlen(verified_ip) + 1;
 	DBVARIANT dbv;
 	if (!DBGetContactSetting(*hContact, AIM_PROTOCOL_NAME, AIM_KEY_SN, &dbv))
 	{
-		sn= strldup(dbv.pszVal,strlen(dbv.pszVal));
+		sn= strldup(dbv.pszVal,lstrlen(dbv.pszVal));
 		DBFreeVariant(&dbv);
 	}
 	else
@@ -199,11 +199,11 @@ void redirected_file_thread(char* blob)//we are sending file
 	HANDLE* hContact=(HANDLE*)blob;
 	char* icbm_cookie=(char*)blob+sizeof(HANDLE);
 	char* sn=(char*)blob+sizeof(HANDLE)+8;
-	char* local_ip=(char*)blob+sizeof(HANDLE)+8+strlen(sn)+1;
-	char* verified_ip=(char*)blob+sizeof(HANDLE)+8+strlen(sn)+strlen(local_ip)+2;
-	char* proxy_ip=(char*)blob+sizeof(HANDLE)+8+strlen(sn)+strlen(local_ip)+strlen(verified_ip)+3;
-	unsigned short* port=(unsigned short*)&proxy_ip[strlen(proxy_ip)+1];
-	bool* force_proxy=(bool*)&proxy_ip[strlen(proxy_ip)+1+sizeof(unsigned short)];
+	char* local_ip=(char*)blob+sizeof(HANDLE)+8+lstrlen(sn)+1;
+	char* verified_ip=(char*)blob+sizeof(HANDLE)+8+lstrlen(sn)+lstrlen(local_ip)+2;
+	char* proxy_ip=(char*)blob+sizeof(HANDLE)+8+lstrlen(sn)+lstrlen(local_ip)+lstrlen(verified_ip)+3;
+	unsigned short* port=(unsigned short*)&proxy_ip[lstrlen(proxy_ip)+1];
+	bool* force_proxy=(bool*)&proxy_ip[lstrlen(proxy_ip)+1+sizeof(unsigned short)];
 	ProtoBroadcastAck(AIM_PROTOCOL_NAME, hContact, ACKTYPE_FILE, ACKRESULT_CONNECTING,hContact, 0);
 	if(!*force_proxy)
 	{
@@ -257,7 +257,7 @@ void proxy_file_thread(char* blob)//buddy sending file here
 	//stage 3 proxy
 	HANDLE* hContact=(HANDLE*)blob;
 	char* proxy_ip=(char*)blob+sizeof(HANDLE);
-	unsigned short* port=(unsigned short*)&proxy_ip[strlen(proxy_ip)+1];
+	unsigned short* port=(unsigned short*)&proxy_ip[lstrlen(proxy_ip)+1];
 	HANDLE hProxy=aim_peer_connect(proxy_ip,5190);
 	if(hProxy)
 	{
