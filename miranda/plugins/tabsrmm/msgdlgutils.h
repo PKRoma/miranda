@@ -80,6 +80,7 @@ void        FlashTab(struct MessageWindowData *dat, HWND hwndTab, int iTabindex,
 void        GetClientIcon(struct MessageWindowData *dat, HWND hwndDlg);
 void        GetMaxMessageLength(HWND hwndDlg, struct MessageWindowData *dat);
 void        RearrangeTab(HWND hwndDlg, struct MessageWindowData *dat, int iMode);
+void        GetCachedStatusMsg(HWND hwndDlg, struct MessageWindowData *dat);
 
 extern BOOL CALLBACK SelectContainerDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam);
 extern BOOL CALLBACK DlgProcContainerOptions(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam);

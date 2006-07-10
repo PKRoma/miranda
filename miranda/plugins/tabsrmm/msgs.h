@@ -246,7 +246,7 @@ struct ProtocolData {
 #define DM_ADDDIVIDER        (WM_USER+50)
 #define DM_STATUSMASKSET     (WM_USER+51)       
 #define DM_CONTACTSETTINGCHANGED (WM_USER+52)
-//#define DM_PICTURECHANGED    (WM_USER+53) **free**
+#define DM_UPDATESTATUSMSG   (WM_USER+53)
 #define DM_PROTOACK          (WM_USER+54)
 //#define DM_RETRIEVEAVATAR    (WM_USER+55) **free**
 #define DM_CONFIGURETOOLBAR  (WM_USER+56)

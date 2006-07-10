@@ -796,6 +796,8 @@ static int MessageSettingChanged(WPARAM wParam, LPARAM lParam)
             SendMessage(hwnd, DM_UPDATETITLE, 0, 0);
         else if(!strcmp(cws->szSetting, "MirVer"))
             SendMessage(hwnd, DM_CLIENTCHANGED, 0, 0);
+        else if(strstr("StatusMsg,StatusDescr,XStatusMsg,YMsg", cws->szSetting))
+            PostMessage(hwnd, DM_UPDATESTATUSMSG, 0, 0);
     }
     
     return 0;
