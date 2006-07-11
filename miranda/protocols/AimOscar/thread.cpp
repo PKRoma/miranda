@@ -68,16 +68,6 @@ void set_status_thread(int status)
 		{
 			case ID_STATUS_OFFLINE:
 				{
-					if(conn.hDirectBoundPort&&!conn.freeing_DirectBoundPort)
-					{
-						conn.freeing_DirectBoundPort=1;
-						Netlib_CloseHandle(conn.hDirectBoundPort);
-					}
-					if(conn.hServerConn)
-						Netlib_CloseHandle(conn.hServerConn);
-					conn.hDirectBoundPort=0;
-					conn.freeing_DirectBoundPort=0;
-					conn.hServerConn=0;
 					broadcast_status(ID_STATUS_OFFLINE);
 					break;
 				}

@@ -4,8 +4,19 @@ void broadcast_status(int status)
 {
 	int old_status=conn.status;
 	conn.status=status;
-	ProtoBroadcastAck(AIM_PROTOCOL_NAME, NULL, ACKTYPE_STATUS, ACKRESULT_SUCCESS, (HANDLE)old_status, status);
-	
+	if(conn.status==ID_STATUS_OFFLINE)
+	{
+		if(conn.hDirectBoundPort&&!conn.freeing_DirectBoundPort)
+		{
+			conn.freeing_DirectBoundPort=1;
+			Netlib_CloseHandle(conn.hDirectBoundPort);
+		}
+		if(conn.hServerConn)
+			Netlib_CloseHandle(conn.hServerConn);
+		conn.hDirectBoundPort=0;
+		conn.freeing_DirectBoundPort=0;
+	}
+	ProtoBroadcastAck(AIM_PROTOCOL_NAME, NULL, ACKTYPE_STATUS, ACKRESULT_SUCCESS, (HANDLE)old_status, status);	
 }
 void start_connection(int initial_status)
 {
