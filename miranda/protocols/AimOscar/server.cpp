@@ -100,37 +100,128 @@ void snac_icbm_limitations(SNAC &snac,HANDLE hServerConn,unsigned short &seqno)/
 		}
 		aim_set_icbm(hServerConn,seqno);
 		aim_set_caps(hServerConn,seqno);
-		broadcast_status(conn.initial_status);
-		if(conn.initial_status==ID_STATUS_ONLINE)
+		switch(conn.initial_status)
 		{
-			aim_set_invis(hServerConn,seqno,AIM_STATUS_ONLINE,AIM_STATUS_NULL);
-			aim_set_away(hServerConn,seqno,NULL);
-		}
-		else if(conn.initial_status==ID_STATUS_INVISIBLE)
-		{
-			aim_set_invis(hServerConn,seqno,AIM_STATUS_INVISIBLE,AIM_STATUS_NULL);
-		}
-		else if(conn.initial_status==ID_STATUS_AWAY)
-		{
-			if(!conn.szModeMsg)
+		case ID_STATUS_ONLINE:
+		case ID_STATUS_FREECHAT:
 			{
-				DBVARIANT dbv;
-				if(!DBGetContactSetting(NULL,MOD_KEY_SA,OTH_KEY_AD,&dbv)&&!DBGetContactSettingByte(NULL,MOD_KEY_SA,OTH_KEY_AI,0))
-				{
-					assign_modmsg(dbv.pszVal);
-					DBFreeVariant(&dbv);
-				}
-				else if(!DBGetContactSetting(NULL,MOD_KEY_SA,OTH_KEY_AM,&dbv)&&!DBGetContactSettingByte(NULL,MOD_KEY_SA,OTH_KEY_AI,0))
-				{
-					assign_modmsg(dbv.pszVal);
-					DBFreeVariant(&dbv);
-				}
-				else
-					assign_modmsg(DEFAULT_AWAY_MSG);
+				broadcast_status(ID_STATUS_ONLINE);
+				aim_set_invis(hServerConn,seqno,AIM_STATUS_ONLINE,AIM_STATUS_NULL);
+				aim_set_away(hServerConn,seqno,NULL);
+				break;
 			}
-				aim_set_invis(hServerConn,seqno,AIM_STATUS_AWAY,AIM_STATUS_NULL);
-				aim_set_away(hServerConn,seqno,conn.szModeMsg);
+		case ID_STATUS_INVISIBLE:
+			{
+				broadcast_status(ID_STATUS_INVISIBLE);
+				aim_set_invis(hServerConn,seqno,AIM_STATUS_INVISIBLE,AIM_STATUS_NULL);
+				break;
+			}
+		case ID_STATUS_AWAY:
+		case ID_STATUS_OUTTOLUNCH:
+		case ID_STATUS_NA:
+		case ID_STATUS_DND:
+		case ID_STATUS_OCCUPIED:
+		case ID_STATUS_ONTHEPHONE:
+			{
+				broadcast_status(ID_STATUS_AWAY);
+				if(!conn.szModeMsg)
+				{
+					DBVARIANT dbv;
+					if(conn.initial_status==ID_STATUS_AWAY)
+					{
+						if(!DBGetContactSetting(NULL,MOD_KEY_SA,OTH_KEY_AD,&dbv)&&!DBGetContactSettingByte(NULL,MOD_KEY_SA,OTH_KEY_AI,0))
+						{
+							assign_modmsg(dbv.pszVal);
+							DBFreeVariant(&dbv);
+						}
+						else if(!DBGetContactSetting(NULL,MOD_KEY_SA,OTH_KEY_AM,&dbv)&&!DBGetContactSettingByte(NULL,MOD_KEY_SA,OTH_KEY_AI,0))
+						{
+							assign_modmsg(dbv.pszVal);
+							DBFreeVariant(&dbv);
+						}
+						else
+							assign_modmsg(DEFAULT_AWAY_MSG);
+					}
+					else if(conn.initial_status==ID_STATUS_DND)
+					{
+						if(!DBGetContactSetting(NULL,MOD_KEY_SA,OTH_KEY_DD,&dbv)&&!DBGetContactSettingByte(NULL,MOD_KEY_SA,OTH_KEY_DI,0))
+						{
+							assign_modmsg(dbv.pszVal);
+							DBFreeVariant(&dbv);
+						}
+						else if(!DBGetContactSetting(NULL,MOD_KEY_SA,OTH_KEY_DM,&dbv)&&!DBGetContactSettingByte(NULL,MOD_KEY_SA,OTH_KEY_DI,0))
+						{
+							assign_modmsg(dbv.pszVal);
+							DBFreeVariant(&dbv);
+						}
+						else
+							assign_modmsg(DEFAULT_AWAY_MSG);
+					}
+					else if(conn.initial_status==ID_STATUS_OCCUPIED)
+					{
+						if(!DBGetContactSetting(NULL,MOD_KEY_SA,OTH_KEY_OD,&dbv)&&!DBGetContactSettingByte(NULL,MOD_KEY_SA,OTH_KEY_OI,0))
+						{
+							assign_modmsg(dbv.pszVal);
+							DBFreeVariant(&dbv);
+						}
+						else if(!DBGetContactSetting(NULL,MOD_KEY_SA,OTH_KEY_OM,&dbv)&&!DBGetContactSettingByte(NULL,MOD_KEY_SA,OTH_KEY_OI,0))
+						{
+							assign_modmsg(dbv.pszVal);
+							DBFreeVariant(&dbv);
+						}
+						else
+							assign_modmsg(DEFAULT_AWAY_MSG);
+					}
+					else if(conn.initial_status==ID_STATUS_ONTHEPHONE)
+					{
+						if(!DBGetContactSetting(NULL,MOD_KEY_SA,OTH_KEY_PD,&dbv)&&!DBGetContactSettingByte(NULL,MOD_KEY_SA,OTH_KEY_PI,0))
+						{
+							assign_modmsg(dbv.pszVal);
+							DBFreeVariant(&dbv);
+						}
+						else if(!DBGetContactSetting(NULL,MOD_KEY_SA,OTH_KEY_PM,&dbv)&&!DBGetContactSettingByte(NULL,MOD_KEY_SA,OTH_KEY_PI,0))
+						{
+							assign_modmsg(dbv.pszVal);
+							DBFreeVariant(&dbv);
+						}
+						else
+							assign_modmsg(DEFAULT_AWAY_MSG);
+					}
+					else if(conn.initial_status==ID_STATUS_NA)
+					{
+						if(!DBGetContactSetting(NULL,MOD_KEY_SA,OTH_KEY_ND,&dbv)&&!DBGetContactSettingByte(NULL,MOD_KEY_SA,OTH_KEY_NI,0))
+						{
+							assign_modmsg(dbv.pszVal);
+							DBFreeVariant(&dbv);
+						}
+						else if(!DBGetContactSetting(NULL,MOD_KEY_SA,OTH_KEY_NM,&dbv)&&!DBGetContactSettingByte(NULL,MOD_KEY_SA,OTH_KEY_NI,0))
+						{
+							assign_modmsg(dbv.pszVal);
+							DBFreeVariant(&dbv);
+						}
+						else
+							assign_modmsg(DEFAULT_AWAY_MSG);
+					}
+					else if(conn.initial_status==ID_STATUS_OUTTOLUNCH)
+					{
+						if(!DBGetContactSetting(NULL,MOD_KEY_SA,OTH_KEY_LD,&dbv)&&!DBGetContactSettingByte(NULL,MOD_KEY_SA,OTH_KEY_LI,0))
+						{
+							assign_modmsg(dbv.pszVal);
+							DBFreeVariant(&dbv);
+						}
+						else if(!DBGetContactSetting(NULL,MOD_KEY_SA,OTH_KEY_LM,&dbv)&&!DBGetContactSettingByte(NULL,MOD_KEY_SA,OTH_KEY_LI,0))
+						{
+							assign_modmsg(dbv.pszVal);
+							DBFreeVariant(&dbv);
+						}
+						else
+							assign_modmsg(DEFAULT_AWAY_MSG);
+					}
+				}
+					aim_set_invis(hServerConn,seqno,AIM_STATUS_AWAY,AIM_STATUS_NULL);
+					aim_set_away(hServerConn,seqno,conn.szModeMsg);
 
+			}
 		}
 		if(DBGetContactSettingByte(NULL, AIM_PROTOCOL_NAME, AIM_KEY_II,0))
 		{
