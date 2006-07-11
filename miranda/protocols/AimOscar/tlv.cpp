@@ -14,7 +14,7 @@ TLV::TLV(unsigned short type, unsigned short length, char* value)
 	if(length_>0)
 	{
 		value_=new char[length_+1];
-		memcpy(value_,value,length_+1);
+		memcpy(value_,value,length_);
 	}
 }
 TLV::~TLV()
