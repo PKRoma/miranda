@@ -47,6 +47,7 @@ void sending_file(HANDLE hContact, HANDLE hNewConnection)
 	if(Netlib_Send(hNewConnection,buf,sizeof(oft2),0)==SOCKET_ERROR)
 	{
 		ProtoBroadcastAck(AIM_PROTOCOL_NAME,hContact, ACKTYPE_FILE, ACKRESULT_FAILED,hContact,0);
+		Netlib_CloseHandle(hNewConnection);
 		return;
 	}
 	//start listen for packets stuff
@@ -69,11 +70,13 @@ void sending_file(HANDLE hContact, HANDLE hNewConnection)
 		if (recvResult == 0)
 			{
 				ProtoBroadcastAck(AIM_PROTOCOL_NAME, hContact, ACKTYPE_FILE, ACKRESULT_FAILED,hContact,0);
-                break;
+                Netlib_CloseHandle(hNewConnection);
+				break;
             }
         if (recvResult == SOCKET_ERROR)
 			{
 				ProtoBroadcastAck(AIM_PROTOCOL_NAME, hContact, ACKTYPE_FILE, ACKRESULT_FAILED,hContact,0);
+				Netlib_CloseHandle(hNewConnection);
                 break;
             }
 		if(recvResult>0)
@@ -173,11 +176,13 @@ void receiving_file(HANDLE hContact, HANDLE hNewConnection)
 		if (recvResult == 0)
 			{
 				ProtoBroadcastAck(AIM_PROTOCOL_NAME, hContact, ACKTYPE_FILE, ACKRESULT_FAILED,hContact,0);
+				Netlib_CloseHandle(hNewConnection);
                 break;
             }
         if (recvResult == SOCKET_ERROR)
 			{
 				ProtoBroadcastAck(AIM_PROTOCOL_NAME, hContact, ACKTYPE_FILE, ACKRESULT_FAILED,hContact,0);
+				Netlib_CloseHandle(hNewConnection);
                 break;
             }
 		if(recvResult>0)
