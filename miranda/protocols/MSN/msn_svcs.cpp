@@ -397,6 +397,9 @@ int MsnFileCancel(WPARAM wParam, LPARAM lParam)
 		if ( thread != NULL )
 			p2p_sendStatus( ft, thread, -1 );
 	}
+
+	ft->std.files = NULL;
+	ft->std.totalFiles = 0;
 	return 0;
 }
 
