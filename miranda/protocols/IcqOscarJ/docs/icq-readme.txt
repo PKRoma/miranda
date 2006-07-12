@@ -30,6 +30,8 @@ ______________
   Manage server list contacts added contacts should never receive auth requests, but
   if you have an old account they can receive added notification.
 
+- Some wicked firewall software can cause HTML tags (e.g. <font> </font>) to be added to
+  incoming messages.
 
 TO-DO List
 __________
@@ -66,6 +68,7 @@ Bugfixes:
   Fixed bug in Manage-Server list dialog, caused hang
   Fixed occasional losing of messages (message parsing was incomplete)
   Server-list management now stores all info - solves problems
+  Fixed unknown errors during login were not reported sometimes
 
 New Features:
   Messaging support enhanced (P2P messaging supported)

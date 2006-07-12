@@ -961,6 +961,9 @@ void handleServUINSettings(int nPort, serverthread_info *info)
 
   NetLog_Server(" *** Yeehah, login sequence complete");
 
+  // login sequence is complete enter logged-in mode
+  info->bLoggedIn = 1;
+
   if (!info->isMigrating)
   { /* Get Offline Messages Reqeust */
     serverPacketInit(&packet, 24);

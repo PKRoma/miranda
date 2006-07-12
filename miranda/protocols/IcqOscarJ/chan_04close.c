@@ -45,6 +45,7 @@ static int connectNewServer(serverthread_info *info);
 static void handleRuntimeError(WORD wError);
 static void handleSignonError(WORD wError);
 
+static void NetLib_SafeCloseHandle(HANDLE *hConnection);
 
 
 void handleCloseChannel(unsigned char *buf, WORD datalen, serverthread_info *info)
@@ -54,13 +55,13 @@ void handleCloseChannel(unsigned char *buf, WORD datalen, serverthread_info *inf
 
 
   // Parse server reply, prepare reconnection
-  if (datalen && !info->newServerReady)
+  if (!info->bLoggedIn && datalen && !info->newServerReady)
     handleLoginReply(buf, datalen, info);
 
   if (info->isMigrating)
     handleMigration(info);
 
-  if (info->newServerReady)
+  if (!info->bLoggedIn && info->newServerReady)
   {
     if (!connectNewServer(info))
     { // Connecting failed
@@ -90,7 +91,7 @@ void handleCloseChannel(unsigned char *buf, WORD datalen, serverthread_info *inf
     disposeChain(&chain);
   }
   // Server closed connection on error, or sign off
-  if (hServerConn) Netlib_MyCloseHandle(hServerConn);
+  NetLib_SafeCloseHandle(&hServerConn);
 }
 
 

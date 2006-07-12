@@ -44,6 +44,7 @@ typedef struct serverthread_start_info_s {
 } serverthread_start_info;
 
 typedef struct serverthread_info_s {
+  int bLoggedIn;
   int isLoginServer;
   BYTE szAuthKey[20];
   WORD wAuthKeyLen;
