@@ -744,7 +744,7 @@ static struct yahoo_input_data * find_input_by_id_and_webcam_user(int id, const 
 static struct yahoo_input_data * find_input_by_id_and_type(int id, enum yahoo_connection_type type)
 {
 	YList *l;
-	LOG(("find_input_by_id_and_type"));
+	LOG(("[find_input_by_id_and_type] id: %d type: %d", id, type));
 	for(l = inputs; l; l = y_list_next(l)) {
 		struct yahoo_input_data *yid = l->data;
 		if(yid->type == type && yid->yd->client_id == id)
@@ -3648,15 +3648,15 @@ static struct yahoo_packet * yahoo_getdata(struct yahoo_input_data * yid)
 	yahoo_packet_read(pkt, yid->rxqueue + pos, pktlen);
 
 	yid->rxlen -= YAHOO_PACKET_HDRLEN + pktlen;
-	DEBUG_MSG(("rxlen == %d, rxqueue == %p", yid->rxlen, yid->rxqueue));
+	//DEBUG_MSG(("rxlen == %d, rxqueue == %p", yid->rxlen, yid->rxqueue));
 	if (yid->rxlen>0) {
 		unsigned char *tmp = y_memdup(yid->rxqueue + YAHOO_PACKET_HDRLEN 
 				+ pktlen, yid->rxlen);
 		FREE(yid->rxqueue);
 		yid->rxqueue = tmp;
-		DEBUG_MSG(("new rxlen == %d, rxqueue == %p", yid->rxlen, yid->rxqueue));
+		//DEBUG_MSG(("new rxlen == %d, rxqueue == %p", yid->rxlen, yid->rxqueue));
 	} else {
-		DEBUG_MSG(("freed rxqueue == %p", yid->rxqueue));
+		//DEBUG_MSG(("freed rxqueue == %p", yid->rxqueue));
 		FREE(yid->rxqueue);
 	}
 
@@ -3769,14 +3769,14 @@ static struct yab * yahoo_getyab(struct yahoo_input_data *yid)
 	
 
 	yid->rxlen -= end+1;
-	DEBUG_MSG(("rxlen == %d, rxqueue == %p", yid->rxlen, yid->rxqueue));
+	//DEBUG_MSG(("rxlen == %d, rxqueue == %p", yid->rxlen, yid->rxqueue));
 	if (yid->rxlen>0) {
 		unsigned char *tmp = y_memdup(yid->rxqueue + end + 1, yid->rxlen);
 		FREE(yid->rxqueue);
 		yid->rxqueue = tmp;
-		DEBUG_MSG(("new rxlen == %d, rxqueue == %p", yid->rxlen, yid->rxqueue));
+		//DEBUG_MSG(("new rxlen == %d, rxqueue == %p", yid->rxlen, yid->rxqueue));
 	} else {
-		DEBUG_MSG(("freed rxqueue == %p", yid->rxqueue));
+		//DEBUG_MSG(("freed rxqueue == %p", yid->rxqueue));
 		FREE(yid->rxqueue);
 	}
 
@@ -5644,8 +5644,8 @@ void yahoo_send_file(int id, const char *who, const char *msg,
 
 	snprintf(url, sizeof(url), "http://%s:%d/notifyft", 
 			yss->filetransfer_host, yss->filetransfer_port);
-	snprintf((char *)buff, sizeof(buff), "Y=%s; T=%s",
-			yd->cookie_y, yd->cookie_t);
+	snprintf((char *)buff, sizeof(buff), "Y=%s; T=%s; C=%s;",
+			yd->cookie_y, yd->cookie_t, yd->cookie_c);
 	inputs = y_list_prepend(inputs, yid);
 
 	sfd = y_new0(struct send_file_data, 1);
@@ -5700,8 +5700,8 @@ void yahoo_send_avatar(int id, const char *name, unsigned long size,
 
 	snprintf(url, sizeof(url), "http://%s:%d/notifyft", 
 			yss->filetransfer_host, yss->filetransfer_port);
-	snprintf((char *)buff, sizeof(buff), "Y=%s; T=%s",
-			yd->cookie_y, yd->cookie_t);
+	snprintf((char *)buff, sizeof(buff), "Y=%s; T=%s; C=%s;",
+			yd->cookie_y, yd->cookie_t, yd->cookie_c);
 	inputs = y_list_prepend(inputs, yid);
 
 	sfd = y_new0(struct send_file_data, 1);
