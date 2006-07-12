@@ -48,7 +48,7 @@
 #endif
 
 #ifndef _MSC_VER
-#ifndef __MINGW32__
+#ifndef __GNUC__
 # include <unistd.h>
 #endif
 #endif
@@ -1109,7 +1109,7 @@ static void yahoo_send_packet(struct yahoo_input_data *yid, struct yahoo_packet 
 	pos += yahoo_put16(data + pos, pktlen + extra_pad); /* LOWORD pkt length? */
 	pos += yahoo_put16(data + pos, pkt->service); /* service */
 	pos += yahoo_put32(data + pos, pkt->status); /* status [4bytes] */
-	pos += yahoo_put32(data + pos, pkt->id); /* session [3bytes] */
+	pos += yahoo_put32(data + pos, pkt->id); /* session [4bytes] */
 
 	yahoo_packet_write(pkt, data + pos);
 
@@ -1842,7 +1842,7 @@ static void yahoo_process_status(struct yahoo_input_data *yid, struct yahoo_pack
 	int mobile = 0;
 	char *msg = NULL;
 	
-	if(pkt->service == YAHOO_SERVICE_LOGOFF && pkt->status == YAHOO_STATUS_DISCONNECTED) {
+	if (pkt->service == YAHOO_SERVICE_LOGOFF && pkt->status == YAHOO_STATUS_DISCONNECTED) {
 		YAHOO_CALLBACK(ext_yahoo_login_response)(yd->client_id, YAHOO_LOGIN_DUPL, NULL);
 		return;
 	}
@@ -1976,6 +1976,7 @@ static void yahoo_process_list(struct yahoo_input_data *yid, struct yahoo_packet
 			} 
 
 			break;
+		case 3: /* my id */
 		case 90: /* 1 */
 		case 100: /* 0 */
 		case 101: /* NULL */

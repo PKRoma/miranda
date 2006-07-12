@@ -45,7 +45,7 @@ char *strchr (), *strrchr ();
 
 /* special check for MSVC compiler */
 #ifndef _MSC_VER
-#ifndef __MINGW32__
+#ifndef __GNUC__
  #include <unistd.h>
 #endif
 #endif
