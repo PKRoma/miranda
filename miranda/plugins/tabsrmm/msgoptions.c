@@ -801,11 +801,11 @@ static struct LISTOPTIONSITEM tabItems[] = {
     0, _T("Create windows minimized and inactive on the taskbar"), 0, LOI_TYPE_SETTING, (UINT_PTR)"autocontainer", 1,
     0, _T("Pop up a minimized window when a new tab is created"), 0, LOI_TYPE_SETTING, (UINT_PTR)"cpopup", 1,
     0, _T("New events will automatically switch tabs in minimized windows"), 0, LOI_TYPE_SETTING, (UINT_PTR)"autoswitchtabs", 1,
-    0, _T("Don't draw visual styles on toolbar buttons"), 1, LOI_TYPE_SETTING, (UINT_PTR)"nlflat", 2,
-    0, _T("Flat toolbar buttons"), 1, LOI_TYPE_SETTING, (UINT_PTR)"tbflat", 2,
+    0, _T("Don't draw visual styles on toolbar buttons"), 0, LOI_TYPE_SETTING, (UINT_PTR)"nlflat", 2,
+    0, _T("Flat toolbar buttons"), 0, LOI_TYPE_SETTING, (UINT_PTR)"tbflat", 2,
     0, _T("Allow the toolbar to hide the send button"), 1, LOI_TYPE_SETTING, (UINT_PTR)"hidesend", 2,
     0, _T("Splitters have static edges (uncheck this to make them invisible)"), 1, LOI_TYPE_SETTING, (UINT_PTR)"splitteredges", 2,
-    0, _T("No visible borders on text boxes"), 1, LOI_TYPE_SETTING, (UINT_PTR)"flatlog", 2,
+    0, _T("No visible borders on text boxes"), 0, LOI_TYPE_SETTING, (UINT_PTR)"flatlog", 2,
     0, _T("Always use icon pack image on the smiley button"), 0, LOI_TYPE_SETTING, (UINT_PTR)"smbutton_override", 2,
     0, _T("Activate autolocale support"), 0, LOI_TYPE_SETTING, (UINT_PTR)"al", 3,
     0, _T("ESC closes sessions (minimizes window, if disabled)"), 0, LOI_TYPE_SETTING, (UINT_PTR)"escmode", 3,
@@ -1340,7 +1340,6 @@ static BOOL CALLBACK DlgProcSkinOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPAR
             CheckDlgButton(hwndDlg, IDC_USESKIN, DBGetContactSettingByte(NULL, SRMSGMOD_T, "useskin", 0) ? BST_CHECKED : BST_UNCHECKED);
             CheckDlgButton(hwndDlg, IDC_SKIN_LOADFONTS, loadMode & THEME_READ_FONTS);
             CheckDlgButton(hwndDlg, IDC_SKIN_LOADTEMPLATES, loadMode & THEME_READ_TEMPLATES);
-            CheckDlgButton(hwndDlg, IDC_SKIN_REFRESH, DBGetContactSettingByte(NULL, SRMSGMOD_T, "forceDCrefresh", 0));
 
             if(!DBGetContactSetting(NULL, SRMSGMOD_T, "ContainerSkin", &dbv)) {
                 SetDlgItemTextA(hwndDlg, IDC_SKINFILENAME, dbv.pszVal);
@@ -1369,9 +1368,6 @@ static BOOL CALLBACK DlgProcSkinOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPAR
                     DBWriteContactSettingByte(NULL, SRMSGMOD_T, "skin_loadmode", loadMode);
                     break;
                 }
-                case IDC_SKIN_REFRESH:
-                    DBWriteContactSettingByte(NULL, SRMSGMOD_T, "forceDCrefresh", IsDlgButtonChecked(hwndDlg, IDC_SKIN_REFRESH) ? 1 : 0);
-                    break;
                 case IDC_UNLOAD:
                     ReloadContainerSkin(0, 0);
                     SendMessage(hwndTabConfig, WM_USER + 100, 0, 0);

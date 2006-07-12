@@ -43,12 +43,6 @@ int Chat_Load(PLUGINLINK *link)
 {
 	BOOL bFlag = FALSE;
 
-	#ifndef NDEBUG //mem leak detector :-) Thanks Tornado!
-	int flag = _CrtSetDbgFlag(_CRTDBG_REPORT_FLAG); // Get current flag
-	flag |= _CRTDBG_LEAK_CHECK_DF; // Turn on leak-checking bit
-	_CrtSetDbgFlag(flag); // Set flag to the new value
-	#endif
-
     if(!DBGetContactSettingByte(NULL, SRMSGMOD_T, "enable_chat", 0))
         return 0;
     

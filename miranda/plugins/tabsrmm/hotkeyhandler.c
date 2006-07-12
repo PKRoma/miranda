@@ -624,7 +624,7 @@ BOOL CALLBACK HotkeyHandlerDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM
             struct ContainerWindowData *pContainer = pFirstContainer;
 
             //DebugTraceA("powerbroadcast or displaychanged, refreshing skin...");
-            IMG_RefreshItems();
+            //IMG_RefreshItems();
             while(pContainer) {
                 if(pContainer->bSkinned) {
                     pContainer->oldSize.cx = pContainer->oldSize.cy = 0;

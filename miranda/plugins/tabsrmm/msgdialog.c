@@ -1596,8 +1596,8 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                 RECT rc;
                 POINT pt;
                 int i;
-                BOOL isFlat = DBGetContactSettingByte(NULL, SRMSGMOD_T, "tbflat", 1);
-                BOOL isThemed = !DBGetContactSettingByte(NULL, SRMSGMOD_T, "nlflat", 1);
+                BOOL isFlat = DBGetContactSettingByte(NULL, SRMSGMOD_T, "tbflat", 0);
+                BOOL isThemed = !DBGetContactSettingByte(NULL, SRMSGMOD_T, "nlflat", 0);
                 HWND hwndItem;
 
                 struct NewMessageWindowLParam *newData = (struct NewMessageWindowLParam *) lParam;
@@ -2829,6 +2829,9 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                     SendDlgItemMessage(hwndDlg, IDC_LOG, EM_SETSEL, len - 1, len - 1);
                     //SendDlgItemMessage(hwndDlg, IDC_LOG, EM_SETSEL, -1, -1);
                 }
+
+                if(psi == NULL)
+                    return(DM_ScrollToBottom(hwndDlg, dat, 0, 0));
 
                 if ((UINT)psi->nPos >= (UINT)psi->nMax-psi->nPage-5 || psi->nMax-psi->nMin-psi->nPage < 50)
                     DM_ScrollToBottom(hwndDlg, dat, 0, 0);

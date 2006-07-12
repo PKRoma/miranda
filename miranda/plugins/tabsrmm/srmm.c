@@ -51,7 +51,7 @@ PLUGININFO pluginInfo = {
         "tabSRMsg",
     #endif    
 #endif
-    PLUGIN_MAKE_VERSION(1, 1, 0, 4),
+    PLUGIN_MAKE_VERSION(0, 9, 9, 212),
     "Chat module for instant messaging and group chat, offering a tabbed interface and many advanced features.",
     "The Miranda developers team",
     "silvercircle@gmail.com",
@@ -79,6 +79,14 @@ __declspec(dllexport)
 int __declspec(dllexport) Load(PLUGINLINK * link)
 {
     pluginLink = link;
+
+#ifdef _DEBUG //mem leak detector :-) Thanks Tornado!
+    {
+        int flag = _CrtSetDbgFlag(_CRTDBG_REPORT_FLAG); // Get current flag
+        flag |= (_CRTDBG_LEAK_CHECK_DF | _CRTDBG_ALLOC_MEM_DF | _CRTDBG_CHECK_CRT_DF); // Turn on leak-checking bit
+        _CrtSetDbgFlag(flag); // Set flag to the new value
+    }
+#endif
 
     memset(&memoryManagerInterface, 0, sizeof(memoryManagerInterface));
     memoryManagerInterface.cbSize = sizeof(memoryManagerInterface);

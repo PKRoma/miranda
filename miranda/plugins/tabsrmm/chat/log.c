@@ -878,7 +878,7 @@ char * Log_CreateRtfHeader(MODULEINFO * mi)
             
             szString[1] = 0;
             szString[0] = 0x28;
-            LoadMsgDlgFont(17, &lf, NULL, "ChatFonts");
+            LoadMsgDlgFont(17, &lf, NULL, CHAT_FONTMODULE);
             hFont = CreateFontIndirect(&lf);
             iText = GetTextPixelSize(szString, hFont, TRUE) + 3;
             DeleteObject(hFont);

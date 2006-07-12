@@ -648,8 +648,8 @@ static BOOL CALLBACK ContainerWndProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPA
 				if(!bSkinned)
 					break;
 
-                if(myGlobals.m_forcedSkinRefresh)
-                    IMG_RefreshItems();
+                //if(myGlobals.m_forcedSkinRefresh)
+                //    IMG_RefreshItems();
 
                 if(g_framelessSkinmode) {
 					RECT rcWindow, rcClient;
@@ -918,8 +918,8 @@ static BOOL CALLBACK DlgProcContainer(HWND hwndDlg, UINT msg, WPARAM wParam, LPA
                 int i = 0;
                 ButtonItem *pbItem = g_ButtonItems;
                 HWND  hwndButton = 0;
-                BOOL isFlat = DBGetContactSettingByte(NULL, SRMSGMOD_T, "tbflat", 1);
-                BOOL isThemed = !DBGetContactSettingByte(NULL, SRMSGMOD_T, "nlflat", 1);
+                BOOL isFlat = DBGetContactSettingByte(NULL, SRMSGMOD_T, "tbflat", 0);
+                BOOL isThemed = !DBGetContactSettingByte(NULL, SRMSGMOD_T, "nlflat", 0);
 
                 if(!menuBarNames_done) {
                     int j;

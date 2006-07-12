@@ -224,7 +224,7 @@ static void LoadLogfontFromINI(int i, char *szKey, LOGFONTA *lf, COLORREF *colou
 static struct _tagFontBlocks { char *szModule; int iFirst; int iCount; char *szIniTemp; char *szBLockname; } fontBlocks[] = {
     FONTMODULE, 0, MSGDLGFONTCOUNT, "Font%d", "StdFonts",
     FONTMODULE, 100, IPFONTCOUNT, "IPFont%d", "MiscFonts",
-    "ChatFonts", 0, CHATFONTCOUNT, "ChatFont%d", "ChatFonts",
+    CHAT_FONTMODULE, 0, CHATFONTCOUNT, "ChatFont%d", "ChatFonts",
     NULL, 0, 0, NULL
 };
 
@@ -1550,6 +1550,7 @@ static void IMG_CreateItem(ImageItem *item, const char *fileName, HDC hdc)
     }
 }
 
+/*
 static void IMG_RefreshItem(ImageItem *item, HDC hdc)
 {
     if(item && !(item->dwFlags & IMAGE_GLYPH)) {
@@ -1560,6 +1561,7 @@ static void IMG_RefreshItem(ImageItem *item, HDC hdc)
         item->hbmOld = SelectObject(item->hdc, item->hbm);
     }
 }
+*/
 
 static void IMG_DeleteItem(ImageItem *item)
 {
@@ -1572,6 +1574,7 @@ static void IMG_DeleteItem(ImageItem *item)
 		DeleteObject(item->fillBrush);
 }
 
+/*
 void IMG_RefreshItems()
 {
     HDC hdc = GetDC(0);
@@ -1588,6 +1591,7 @@ void IMG_RefreshItems()
     IMG_RefreshItem(g_glyphItem, hdc);
     ReleaseDC(0, hdc);
 }
+*/
 
 void IMG_DeleteItems()
 {
@@ -1904,7 +1908,6 @@ static void LoadSkinItems(char *file, int onStartup)
     GetPrivateProfileStringA("Global", "DarkShadow", "000000", buffer, 20, file);
     data = HexStringToLong(buffer);
     myGlobals.g_SkinDarkShadowPen = CreatePen(PS_SOLID, 1, RGB(GetRValue(data), GetGValue(data), GetBValue(data)));
-    myGlobals.m_forcedSkinRefresh = DBGetContactSettingByte(NULL, SRMSGMOD_T, "forceDCrefresh", 0);
 
 	SkinCalcFrameWidth();
 

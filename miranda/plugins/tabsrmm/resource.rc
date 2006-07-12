@@ -513,9 +513,6 @@ BEGIN
                     "Button",BS_AUTOCHECKBOX | WS_TABSTOP,11,89,281,11
     CONTROL         "Load templates provided by skin (use with care, will overwrite your templates)",IDC_SKIN_LOADTEMPLATES,
                     "Button",BS_AUTOCHECKBOX | WS_TABSTOP,11,100,281,11
-    CONTROL         "Force skin refresh on draw (takes effect when reloading skin)",IDC_SKIN_REFRESH,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,11,117,281,11
-    LTEXT           "Only enable this when you get redrawing problems in skinned mode",IDC_STATIC,22,127,260,9
 END
 
 

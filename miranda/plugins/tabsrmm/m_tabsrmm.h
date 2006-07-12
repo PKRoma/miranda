@@ -528,7 +528,6 @@ typedef struct _globals {
     NONCLIENTMETRICS ncm;
     HICON       m_AnimTrayIcons[4];
     BOOL        g_DisableScrollbars;
-    BOOL        m_forcedSkinRefresh;
     BOOL        m_visualMessageSizeIndicator;
     BOOL        m_autoSplit;
 } MYGLOBALS;

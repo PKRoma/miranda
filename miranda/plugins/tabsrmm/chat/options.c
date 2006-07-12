@@ -241,7 +241,7 @@ void LoadMsgDlgFont(int i, LOGFONT *lf, COLORREF* colour, char *szMod)
         lf->lfQuality = DEFAULT_QUALITY;
         lf->lfPitchAndFamily = DEFAULT_PITCH | FF_DONTCARE;
         wsprintfA(str, "Font%d", i);
-        if(i == 17 && !strcmp(szMod, "ChatFonts")) {
+        if(i == 17 && !strcmp(szMod, CHAT_FONTMODULE)) {
             lf->lfCharSet = SYMBOL_CHARSET;
             lstrcpyn(lf->lfFaceName, _T("Webdings"), SIZEOF(lf->lfFaceName));
         }
@@ -388,7 +388,7 @@ static void LoadLogFonts(void)
 	int i;
 
 	for( i = 0; i<OPTIONS_FONTCOUNT; i++) {
-		LoadMsgDlgFont(i, &aFonts[i].lf, &aFonts[i].color, "ChatFonts");
+		LoadMsgDlgFont(i, &aFonts[i].lf, &aFonts[i].color, CHAT_FONTMODULE);
 	}
 }
 
@@ -692,7 +692,7 @@ static void LoadFontsToList(HWND hwndDlg)
 {
 	int i;
     LOGFONT lf;
-    char *szModule = fontOptionsList == CHAT_fontOptionsList ? "ChatFonts" : FONTMODULE;
+    char *szModule = fontOptionsList == CHAT_fontOptionsList ? CHAT_FONTMODULE : FONTMODULE;
     
     for (i = 0; i < fontCount; i++) {
         LoadMsgDlgFont(i + (fontOptionsList == IP_fontOptionsList ? 100 : 0) , &lf, &fontOptionsList[i].colour, szModule);
@@ -1154,7 +1154,7 @@ static BOOL CALLBACK DlgProcOptions2(HWND hwndDlg,UINT uMsg,WPARAM wParam,LPARAM
 
 			{	int i, j;
 				char str[32];
-                char *szMod = fontOptionsList == CHAT_fontOptionsList ? "ChatFonts" : FONTMODULE;
+                char *szMod = fontOptionsList == CHAT_fontOptionsList ? CHAT_FONTMODULE : FONTMODULE;
                 
 				for (j = 0; j < fontCount; j++) {
                     i = (fontOptionsList == IP_fontOptionsList ? 100 + j : j);
@@ -1196,7 +1196,7 @@ static BOOL CALLBACK DlgProcOptions2(HWND hwndDlg,UINT uMsg,WPARAM wParam,LPARAM
                     DBWriteContactSettingDword(NULL, "Chat", szBuf, g_Settings.nickColors[i]);
                 }
                 
-                LoadMsgDlgFont(0, &lf, NULL, "ChatFonts");
+                LoadMsgDlgFont(0, &lf, NULL, CHAT_FONTMODULE);
                 hFont = CreateFontIndirect(&lf);
                 iText = GetTextPixelSize(MakeTimeStamp(g_Settings.pszTimeStamp, time(NULL)),hFont, TRUE);
                 DeleteObject(hFont);
@@ -1381,9 +1381,9 @@ void LoadGlobalSettings(void)
 	g_Settings.FlashWindow = (BOOL)DBGetContactSettingByte(NULL, "Chat", "FlashWindow", 0);
     g_Settings.FlashWindowHightlight = (BOOL)DBGetContactSettingByte(NULL, "Chat", "FlashWindowHighlight", 0);
 	g_Settings.HighlightEnabled = (BOOL)DBGetContactSettingByte(NULL, "Chat", "HighlightEnabled", 1);
-	g_Settings.crUserListColor = (BOOL)DBGetContactSettingDword(NULL, "ChatFonts", "Font18Col", RGB(0,0,0));
+	g_Settings.crUserListColor = (BOOL)DBGetContactSettingDword(NULL, CHAT_FONTMODULE, "Font18Col", RGB(0,0,0));
 	g_Settings.crUserListBGColor = (BOOL)DBGetContactSettingDword(NULL, "Chat", "ColorNicklistBG", GetSysColor(COLOR_WINDOW));
-	g_Settings.crUserListHeadingsColor = (BOOL)DBGetContactSettingDword(NULL, "ChatFonts", "Font19Col", RGB(170,170,170));
+	g_Settings.crUserListHeadingsColor = (BOOL)DBGetContactSettingDword(NULL, CHAT_FONTMODULE, "Font19Col", RGB(170,170,170));
 	g_Settings.crLogBackground = (BOOL)DBGetContactSettingDword(NULL, "Chat", "ColorLogBG", GetSysColor(COLOR_WINDOW));
 	g_Settings.StripFormat = (BOOL)DBGetContactSettingByte(NULL, "Chat", "StripFormatting", 0);
 	g_Settings.TrayIconInactiveOnly = (BOOL)DBGetContactSettingByte(NULL, "Chat", "TrayIconInactiveOnly", 1);
@@ -1431,12 +1431,12 @@ void LoadGlobalSettings(void)
 
 	if(g_Settings.UserListFont)
 		DeleteObject(g_Settings.UserListFont);
-	LoadMsgDlgFont(18, &lf, NULL, "ChatFonts");
+	LoadMsgDlgFont(18, &lf, NULL, CHAT_FONTMODULE);
 	g_Settings.UserListFont = CreateFontIndirect(&lf);
 	
 	if(g_Settings.UserListHeadingsFont)
 		DeleteObject(g_Settings.UserListHeadingsFont);
-	LoadMsgDlgFont(19, &lf, NULL, "ChatFonts");
+	LoadMsgDlgFont(19, &lf, NULL, CHAT_FONTMODULE);
 	g_Settings.UserListHeadingsFont = CreateFontIndirect(&lf);
 
     for(i = 0; i < 6; i++) {
@@ -1471,7 +1471,7 @@ int OptionsInit(void)
 	//g_hOptions = HookEvent(ME_OPT_INITIALISE, OptionsInitialize);
 
 	LoadLogFonts();
-	LoadMsgDlgFont(17, &lf, NULL, "ChatFonts");
+	LoadMsgDlgFont(17, &lf, NULL, CHAT_FONTMODULE);
 	lstrcpy(lf.lfFaceName, _T("MS Shell Dlg"));
 	lf.lfUnderline = lf.lfItalic = lf.lfStrikeOut = 0;
 	lf.lfHeight = -17;
@@ -1509,7 +1509,7 @@ int OptionsInit(void)
 		HFONT hFont;
 		int iText;
 
-		LoadMsgDlgFont(0, &lf, NULL, "ChatFonts");
+		LoadMsgDlgFont(0, &lf, NULL, CHAT_FONTMODULE);
 		hFont = CreateFontIndirect(&lf);
 		iText = GetTextPixelSize(MakeTimeStamp(g_Settings.pszTimeStamp, time(NULL)),hFont, TRUE);
 		DeleteObject(hFont);
