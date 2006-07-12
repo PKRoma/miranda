@@ -135,7 +135,7 @@ void sendClientAuth(const char* szKey, WORD wKeyLen, BOOL bSecure)
   packTLVWord(&packet, 0x0017, 0x0014);               // Client major version
   packTLVWord(&packet, 0x0018, 0x0034);               // Client minor version
   packTLVWord(&packet, 0x0019, 0x0000);               // Client lesser version
-  packTLVWord(&packet, 0x001a, 0x0a0f);               // Client build number
+  packTLVWord(&packet, 0x001a, 0x0bb8);               // Client build number
   packTLVDWord(&packet, 0x0014, 0x0000043d);          // Client distribution number
   packTLV(&packet, 0x000f, 0x0002, "en");             // Client language
   packTLV(&packet, 0x000e, 0x0002, "us");             // Client country

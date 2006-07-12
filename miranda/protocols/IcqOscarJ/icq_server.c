@@ -126,7 +126,7 @@ static DWORD __stdcall icq_serverThread(serverthread_start_info* infoParam)
     hServerPacketRecver = (HANDLE)CallService(MS_NETLIB_CREATEPACKETRECVER, (WPARAM)hServerConn, 8192);
     packetRecv.cbSize = sizeof(packetRecv);
     packetRecv.dwTimeout = INFINITE;
-    for(;;)
+    while(hServerConn)
     {
       if (info.bReinitRecver)
       { // we reconnected, reinit struct
@@ -167,6 +167,11 @@ static DWORD __stdcall icq_serverThread(serverthread_start_info* infoParam)
   icq_serverDisconnect(FALSE);
   if (gnCurrentStatus != ID_STATUS_OFFLINE)
   {
+    if (!info.bLoggedIn)
+    {
+      icq_LogMessage(LOG_FATAL, "Connection failed.\nLogin sequence failed for unknown reason.\nTry again later.");
+    }
+
     SetCurrentStatus(ID_STATUS_OFFLINE);
   }
   

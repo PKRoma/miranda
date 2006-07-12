@@ -97,6 +97,7 @@ void icq_LogUsingErrorCode(int level, DWORD dwError, const char *szMsg)
   char str2[64];
   char szErrorMsg[256];
   char* pszErrorMsg;
+  char* pszErrorMsgUtf = NULL;
 
 
   switch(dwError)
@@ -137,9 +138,12 @@ void icq_LogUsingErrorCode(int level, DWORD dwError, const char *szMsg)
         pszErrorMsg = "";
       break;
   }
+  utf8_encode(pszErrorMsg, &pszErrorMsgUtf);
 
-  null_snprintf(szBuf, sizeof(szBuf), "%s%s%s (%s %d)", szMsg?ICQTranslateUtfStatic(szMsg, str):"", szMsg?"\r\n\r\n":"", pszErrorMsg, ICQTranslateUtfStatic("error", str2), dwError);
+  null_snprintf(szBuf, sizeof(szBuf), "%s%s%s (%s %d)", szMsg?ICQTranslateUtfStatic(szMsg, str):"", szMsg?"\r\n\r\n":"", pszErrorMsgUtf, ICQTranslateUtfStatic("error", str2), dwError);
   icq_LogMessage(level, szBuf);
+
+  SAFE_FREE(&pszErrorMsgUtf);
 }
 
 

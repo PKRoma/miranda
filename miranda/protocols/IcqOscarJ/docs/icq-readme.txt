@@ -68,6 +68,7 @@ Bugfixes:
   Fixed bug in Manage-Server list dialog, caused hang
   Fixed occasional losing of messages (message parsing was incomplete)
   Server-list management now stores all info - solves problems
+  Fixed unknown errors during login were not reported sometimes
 
 New Features:
   Messaging support enhanced (P2P messaging supported)
