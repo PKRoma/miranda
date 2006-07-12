@@ -10,11 +10,23 @@ void broadcast_status(int status)
 		{
 			conn.freeing_DirectBoundPort=1;
 			Netlib_CloseHandle(conn.hDirectBoundPort);
+			conn.hDirectBoundPort=0;
+			conn.freeing_DirectBoundPort=0;
+		}
+		if(conn.hServerPacketRecver)
+		{
+			Netlib_CloseHandle(conn.hServerPacketRecver);
+			conn.hServerPacketRecver=0;
 		}
 		if(conn.hServerConn)
+		{
 			Netlib_CloseHandle(conn.hServerConn);
-		conn.hDirectBoundPort=0;
-		conn.freeing_DirectBoundPort=0;
+			conn.hServerConn=0;
+		}
+		conn.idle=0;
+		conn.instantidle=0;
+		conn.buddy_list_received=0;
+		conn.state=0;
 	}
 	ProtoBroadcastAck(AIM_PROTOCOL_NAME, NULL, ACKTYPE_STATUS, ACKRESULT_SUCCESS, (HANDLE)old_status, status);	
 }

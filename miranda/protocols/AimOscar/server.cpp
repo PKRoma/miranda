@@ -1301,6 +1301,7 @@ void snac_mail_response(SNAC &snac)//family 0x0018
 		delete[] sn;
 		delete[] address;
 		Netlib_CloseHandle(conn.hMailConn);
+		conn.hMailConn=0;
 	}
 }
 /*void snac_delete_contact(SNAC &snac, char* buf)//family 0x0013

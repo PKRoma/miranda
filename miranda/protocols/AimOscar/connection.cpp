@@ -108,8 +108,6 @@ void __cdecl aim_connection_authorization()
 				{
 					delete[] conn.username;
 					delete[] conn.password;
-					conn.state=0;
-					Netlib_CloseHandle(conn.hServerPacketRecver);
 					broadcast_status(ID_STATUS_OFFLINE);
 					LeaveCriticalSection(&connectionMutex);
 					return;
@@ -119,10 +117,8 @@ void __cdecl aim_connection_authorization()
 	}
 	delete[] conn.username;
 	delete[] conn.password;
-	conn.state=0;
-	Netlib_CloseHandle(conn.hServerPacketRecver);
-	LeaveCriticalSection(&connectionMutex);
 	broadcast_status(ID_STATUS_OFFLINE);
+	LeaveCriticalSection(&connectionMutex);
 }
 void __cdecl aim_protocol_negotiation()
 {
@@ -208,10 +204,7 @@ void __cdecl aim_protocol_negotiation()
 				}
 				else if(flap.cmp(0x04))
 				{
-					offline_contacts();
-					conn.state=0;
-					Netlib_CloseHandle(conn.hServerPacketRecver);
-					conn.buddy_list_received=0;
+					offline_contacts();;
 					broadcast_status(ID_STATUS_OFFLINE);
 					LeaveCriticalSection(&connectionMutex);
 					return;
@@ -220,11 +213,6 @@ void __cdecl aim_protocol_negotiation()
 		}
 	}
 	offline_contacts();
-	conn.state=0;
-	conn.idle=0;
-	conn.instantidle=0;
-	Netlib_CloseHandle(conn.hServerPacketRecver);
-	conn.buddy_list_received=0;
 	broadcast_status(ID_STATUS_OFFLINE);
 	LeaveCriticalSection(&connectionMutex);
 }
