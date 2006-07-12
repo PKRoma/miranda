@@ -108,7 +108,7 @@ void __cdecl yahoo_server_main(void *empty)
 					Netlib_CloseHandle((HANDLE)c->fd);
 					connections = y_list_remove_link(connections, l);
 					y_list_free_1(l);
-					free(c);
+					FREE(c);
 					l=n;
 				} else {
 					if(c->cond & YAHOO_INPUT_READ)
@@ -170,13 +170,16 @@ void __cdecl yahoo_server_main(void *empty)
 		YAHOO_DebugLog("Exited loop");
     }
 	
-	for(; connections; connections = y_list_remove_link(connections, connections)) {
+	/* cleanup the data stuff and close our connection handles */
+	while(connections) {
+		YList *tmp = connections;
 		struct _conn * c = connections->data;
-		
 		Netlib_CloseHandle((HANDLE)c->fd);
 		FREE(c);
+		connections = y_list_remove_link(connections, connections);
+		y_list_free_1(tmp);
 	}
-
+	
 	/* need to logout first */
     yahoo_logout();
 	
