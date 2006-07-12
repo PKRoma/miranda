@@ -48,7 +48,7 @@
 #endif
 
 #ifndef _MSC_VER
-#ifndef __MINGW32__
+#ifndef __GNUC__
 # include <unistd.h>
 #endif
 #endif
@@ -489,6 +489,7 @@ static const value_string packet_keys[]={
 	{185, "stealth/hide?"},
 	{192, "Pictures/Buddy Icons"},
 	{197, "Avatars"},
+	{203, "YAB data?"},
 	{206, "display image type"},
 	{213, "share avatar type"},
 	{219, "cookie separator?"},
@@ -1109,7 +1110,7 @@ static void yahoo_send_packet(struct yahoo_input_data *yid, struct yahoo_packet 
 	pos += yahoo_put16(data + pos, pktlen + extra_pad); /* LOWORD pkt length? */
 	pos += yahoo_put16(data + pos, pkt->service); /* service */
 	pos += yahoo_put32(data + pos, pkt->status); /* status [4bytes] */
-	pos += yahoo_put32(data + pos, pkt->id); /* session [3bytes] */
+	pos += yahoo_put32(data + pos, pkt->id); /* session [4bytes] */
 
 	yahoo_packet_write(pkt, data + pos);
 
@@ -1842,7 +1843,7 @@ static void yahoo_process_status(struct yahoo_input_data *yid, struct yahoo_pack
 	int mobile = 0;
 	char *msg = NULL;
 	
-	if(pkt->service == YAHOO_SERVICE_LOGOFF && pkt->status == YAHOO_STATUS_DISCONNECTED) {
+	if (pkt->service == YAHOO_SERVICE_LOGOFF && pkt->status == YAHOO_STATUS_DISCONNECTED) {
 		YAHOO_CALLBACK(ext_yahoo_login_response)(yd->client_id, YAHOO_LOGIN_DUPL, NULL);
 		return;
 	}
@@ -1976,6 +1977,7 @@ static void yahoo_process_list(struct yahoo_input_data *yid, struct yahoo_packet
 			} 
 
 			break;
+		case 3: /* my id */
 		case 90: /* 1 */
 		case 100: /* 0 */
 		case 101: /* NULL */
@@ -3722,15 +3724,15 @@ static struct yahoo_packet * yahoo_getdata(struct yahoo_input_data * yid)
 	yahoo_packet_read(pkt, yid->rxqueue + pos, pktlen);
 
 	yid->rxlen -= YAHOO_PACKET_HDRLEN + pktlen;
-	DEBUG_MSG(("rxlen == %d, rxqueue == %p", yid->rxlen, yid->rxqueue));
+	//DEBUG_MSG(("rxlen == %d, rxqueue == %p", yid->rxlen, yid->rxqueue));
 	if (yid->rxlen>0) {
 		unsigned char *tmp = y_memdup(yid->rxqueue + YAHOO_PACKET_HDRLEN 
 				+ pktlen, yid->rxlen);
 		FREE(yid->rxqueue);
 		yid->rxqueue = tmp;
-		DEBUG_MSG(("new rxlen == %d, rxqueue == %p", yid->rxlen, yid->rxqueue));
+		//DEBUG_MSG(("new rxlen == %d, rxqueue == %p", yid->rxlen, yid->rxqueue));
 	} else {
-		DEBUG_MSG(("freed rxqueue == %p", yid->rxqueue));
+		//DEBUG_MSG(("freed rxqueue == %p", yid->rxqueue));
 		FREE(yid->rxqueue);
 	}
 
@@ -3843,14 +3845,14 @@ static struct yab * yahoo_getyab(struct yahoo_input_data *yid)
 	
 
 	yid->rxlen -= end+1;
-	DEBUG_MSG(("rxlen == %d, rxqueue == %p", yid->rxlen, yid->rxqueue));
+	//DEBUG_MSG(("rxlen == %d, rxqueue == %p", yid->rxlen, yid->rxqueue));
 	if (yid->rxlen>0) {
 		unsigned char *tmp = y_memdup(yid->rxqueue + end + 1, yid->rxlen);
 		FREE(yid->rxqueue);
 		yid->rxqueue = tmp;
-		DEBUG_MSG(("new rxlen == %d, rxqueue == %p", yid->rxlen, yid->rxqueue));
+		//DEBUG_MSG(("new rxlen == %d, rxqueue == %p", yid->rxlen, yid->rxqueue));
 	} else {
-		DEBUG_MSG(("freed rxqueue == %p", yid->rxqueue));
+		//DEBUG_MSG(("freed rxqueue == %p", yid->rxqueue));
 		FREE(yid->rxqueue);
 	}
 
@@ -5746,8 +5748,8 @@ void yahoo_send_file(int id, const char *who, const char *msg,
 
 	snprintf(url, sizeof(url), "http://%s:%d/notifyft", 
 			yss->filetransfer_host, yss->filetransfer_port);
-	snprintf((char *)buff, sizeof(buff), "Y=%s; T=%s",
-			yd->cookie_y, yd->cookie_t);
+	snprintf((char *)buff, sizeof(buff), "Y=%s; T=%s; C=%s;",
+			yd->cookie_y, yd->cookie_t, yd->cookie_c);
 	inputs = y_list_prepend(inputs, yid);
 
 	sfd = y_new0(struct send_file_data, 1);
@@ -5802,8 +5804,8 @@ void yahoo_send_avatar(int id, const char *name, unsigned long size,
 
 	snprintf(url, sizeof(url), "http://%s:%d/notifyft", 
 			yss->filetransfer_host, yss->filetransfer_port);
-	snprintf((char *)buff, sizeof(buff), "Y=%s; T=%s",
-			yd->cookie_y, yd->cookie_t);
+	snprintf((char *)buff, sizeof(buff), "Y=%s; T=%s; C=%s;",
+			yd->cookie_y, yd->cookie_t, yd->cookie_c);
 	inputs = y_list_prepend(inputs, yid);
 
 	sfd = y_new0(struct send_file_data, 1);
@@ -5859,6 +5861,8 @@ const char * yahoo_get_cookie(int id, const char *which)
 		return yd->cookie_c;
 	if(!strncasecmp(which, "login", 5))
 		return yd->login_cookie;
+	if(!strncasecmp(which, "b", 1))
+		return yd->cookie_b;
 	return NULL;
 }
 

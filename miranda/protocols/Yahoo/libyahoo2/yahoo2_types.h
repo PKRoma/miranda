@@ -165,6 +165,7 @@ struct yahoo_data {
 	char  *cookie_y;
 	char  *cookie_t;
 	char  *cookie_c;
+	char  *cookie_b;
 	char  *login_cookie;
 
 	YList *buddies;
