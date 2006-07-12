@@ -592,7 +592,10 @@ static int InstantIdle(WPARAM /*wParam*/, LPARAM /*lParam*/)
 static int CheckMail(WPARAM /*wParam*/, LPARAM /*lParam*/)
 { 
 	if(conn.state==1)
+	{
+		conn.checking_mail=1;
 		aim_new_service_request(conn.hServerConn,conn.seqno,0x0018);
+	}
 	return 0;
 }
 static int ManageAccount(WPARAM /*wParam*/, LPARAM /*lParam*/)

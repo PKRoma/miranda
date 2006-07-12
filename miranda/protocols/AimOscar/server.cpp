@@ -1258,7 +1258,7 @@ void snac_mail_response(SNAC &snac)//family 0x0018
 			}
 			position+=(TLV_HEADER_SIZE+tlv.len());
 		}
-		if(new_mail)
+		if(new_mail||conn.checking_mail)
 		{
 			char cNum_msgs[10];
 			_itoa(num_msgs,cNum_msgs,10);
@@ -1289,7 +1289,10 @@ void snac_mail_response(SNAC &snac)//family 0x0018
 			}
 			int size2=28+lstrlen(minute)+3+lstrlen(hour);
 			char* msg=new char[size2];
-			strlcpy(msg,"You've got mail! Checked at ",size2);
+			if(!new_mail)
+				strlcpy(msg,"No new mail!!!!! Checked at ",size2);
+			else
+				strlcpy(msg,"You've got mail! Checked at ",size2);
 			strlcpy(&msg[28],hour,size2);
 			strlcpy(&msg[28+lstrlen(hour)],":",size2);
 			strlcpy(&msg[28+lstrlen(hour)+1],minute,size2);

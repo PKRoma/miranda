@@ -25,6 +25,7 @@ void broadcast_status(int status)
 		}
 		conn.idle=0;
 		conn.instantidle=0;
+		conn.checking_mail=0;
 		conn.buddy_list_received=0;
 		conn.state=0;
 	}

@@ -253,6 +253,7 @@ public:
 	bool shutting_down;
 	bool idle;
 	bool instantidle;
+	bool checking_mail;
 
 	HINSTANCE hInstance;//plugin handle instance
 	
