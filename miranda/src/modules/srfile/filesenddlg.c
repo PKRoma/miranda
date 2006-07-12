@@ -59,104 +59,127 @@ static void SetFileListAndSizeControls(HWND hwndDlg,struct FileDlgData *dat)
 	else SetDlgItemTextA(hwndDlg,IDC_FILE,dat->files[0]);
 }
 
-static void FilenameToFileList(HWND hwndDlg, struct FileDlgData *dat, const char *buf)
+static void FilenameToFileList(HWND hwndDlg, struct FileDlgData* dat, const TCHAR* buf)
 {
-
 	DWORD dwFileAttributes;
 
 	// Make sure that the file matrix is empty (the user may select files several times)
 	FreeFilesMatrix(&dat->files);
 
 	// Get the file attributes of selection
-	dwFileAttributes = GetFileAttributesA(buf);
-	if (dwFileAttributes != INVALID_FILE_ATTRIBUTES)
-	{
-		// Check if the selection is a directory or a file
-		if (GetFileAttributesA(buf) & FILE_ATTRIBUTE_DIRECTORY)
+	dwFileAttributes = GetFileAttributes( buf );
+	if (dwFileAttributes == INVALID_FILE_ATTRIBUTES)
+		return;
+
+	// Check if the selection is a directory or a file
+	if ( GetFileAttributes( buf ) & FILE_ATTRIBUTE_DIRECTORY ) {
+		const TCHAR* pBuf;
+		int nNumberOfFiles = 0;
+		int nTemp;
+		int fileOffset;
+
+		// :NOTE: The first string in the buffer is the directory, followed by a
+		// NULL separated list of all files
+
+		// fileOffset is the offset to the first file.
+		fileOffset = lstrlen(buf) + 1;
+
+		// Count number of files
+		pBuf = buf + fileOffset;
+		while ( *pBuf ) {
+			pBuf += lstrlen(pBuf) + 1;
+			nNumberOfFiles++;
+		}
+
+		// Allocate memory for a pointer array
+		if (( dat->files = (char**)mir_alloc((nNumberOfFiles + 1) * sizeof(char*))) == NULL )
+			return;
+
+		// Fill the array
+		pBuf = buf + fileOffset;
+		nTemp = 0;
+		while(*pBuf)
 		{
-			char *pBuf;
-			int nNumberOfFiles = 0;
-			int nTemp;
-			int fileOffset;
+			// Allocate space for path+filename
+			int cbFileNameLen = lstrlen( pBuf );
+			dat->files[nTemp] = mir_alloc(fileOffset + cbFileNameLen + 1);
 
-			// :NOTE: The first string in the buffer is the directory, followed by a
-			// NULL separated list of all files
-
-			// fileOffset is the offset to the first file.
-			fileOffset = lstrlenA(buf) + 1;
-
-			// Count number of files
-			pBuf = (char*)buf + fileOffset;
-			while (*pBuf)
-			{
-				pBuf += lstrlenA(pBuf) + 1;
-				nNumberOfFiles++;
-			}
-
-			// Allocate memory for a pointer array
-			dat->files = (char**)mir_alloc((nNumberOfFiles + 1) * sizeof(char*));
-
-			// Fill the array
-			pBuf = (char*)buf + fileOffset;
-			nTemp = 0;
-			while(*pBuf)
-			{
-				// Allocate space for path+filename
-				dat->files[nTemp] = mir_alloc(fileOffset + lstrlenA(pBuf) + 1);
-
-				// Add path to filename and copy into array
-				CopyMemory(dat->files[nTemp], buf, fileOffset - 1);
+			// Add path to filename and copy into array
+			#if defined( _UNICODE )
+				WideCharToMultiByte( CP_ACP, 0, buf, fileOffset-1, dat->files[nTemp], fileOffset - 1, 0, 0 );
+				dat->files[nTemp][fileOffset-1] = '\\';
+				WideCharToMultiByte( CP_ACP, 0, pBuf, -1, dat->files[nTemp] + fileOffset - (buf[fileOffset-2]=='\\'?1:0), cbFileNameLen+1, 0, 0 );
+			#else
+				CopyMemory(dat->files[nTemp], buf, fileOffset-1 );
 				dat->files[nTemp][fileOffset-1] = '\\';
 				strcpy(dat->files[nTemp] + fileOffset - (buf[fileOffset-2]=='\\'?1:0), pBuf);
-				// Move pointers to next file...
-				pBuf += lstrlenA(pBuf) + 1;
-				nTemp++;
-			}
-			// Teminate array
-			dat->files[nNumberOfFiles] = NULL;
+			#endif
+			// Move pointers to next file...
+			pBuf += cbFileNameLen + 1;
+			nTemp++;
 		}
-		// ...the selection is a single file
-		else
+		// Terminate array
+		dat->files[nNumberOfFiles] = NULL;
+	}
+	// ...the selection is a single file
+	else
+	{
+		if (( dat->files = (char**)mir_alloc(2 * sizeof(char*))) == NULL ) // Leaks when aborted
+			return;
+
+		#if defined( _UNICODE )
 		{
-			dat->files = (char**)mir_alloc(2 * sizeof(char*)); // Leaks when aborted
-			dat->files[0] = mir_strdup(buf);
-			dat->files[1] = NULL;
+			char szFileName[ MAX_PATH ];
+			BOOL bUsed;
+			WideCharToMultiByte( CP_ACP, 0, buf, -1, szFileName, MAX_PATH, NULL, &bUsed );
+			if ( bUsed ) {
+				WIN32_FIND_DATA dat;
+				HANDLE hSearch = FindFirstFile( buf, &dat );
+				if ( hSearch != INVALID_HANDLE_VALUE ) {
+					WideCharToMultiByte( CP_ACP, 0, dat.cAlternateFileName, -1, szFileName, MAX_PATH, 0, 0 );
+					FindClose( hSearch );
+			}	}
+
+			dat->files[0] = mir_strdup(szFileName);
 		}
+		#else
+			dat->files[0] = mir_strdup(buf);
+		#endif
+
+		dat->files[1] = NULL;
 	}
 
 	// Update dialog text with new file selection
 	SetFileListAndSizeControls(hwndDlg, dat);
-
 }
 
 #define M_FILECHOOSEDONE  (WM_USER+100)
 void __cdecl ChooseFilesThread(HWND hwndDlg)
 {
-	char *buf;
-	OPENFILENAMEA ofn={0};
-	char filter[128],*pfilter;
-
-	buf=(char*)mir_alloc(32767);
-	buf[0]=0;
-	ofn.lStructSize=OPENFILENAME_SIZE_VERSION_400;
-	ofn.hwndOwner=hwndDlg;
-	lstrcpyA(filter,Translate("All Files"));
-	lstrcatA(filter," (*)");
-	pfilter=filter+strlen(filter)+1;
-	lstrcpyA(pfilter,"*");
-	pfilter=filter+strlen(filter)+1;
-	pfilter[0]='\0';
-	ofn.lpstrFilter=filter;
-	ofn.lpstrFile=buf;
-	ofn.nMaxFile=32767;
-	ofn.Flags=OFN_FILEMUSTEXIST | OFN_ALLOWMULTISELECT | OFN_EXPLORER | OFN_HIDEREADONLY;
-	if(GetOpenFileNameA(&ofn))
-		PostMessage(hwndDlg,M_FILECHOOSEDONE,0,(LPARAM)buf);
+	TCHAR filter[128], *pfilter;
+	TCHAR* buf = ( TCHAR* )mir_alloc( sizeof(TCHAR)*32767 );
+	if ( buf == NULL )
+		PostMessage( hwndDlg, M_FILECHOOSEDONE, 0, ( LPARAM )( TCHAR* )NULL );
 	else {
-		mir_free(buf);
-		PostMessage(hwndDlg,M_FILECHOOSEDONE,0,(LPARAM)(char*)NULL);
-	}
-}
+		OPENFILENAME ofn = {0};
+		ofn.lStructSize = OPENFILENAME_SIZE_VERSION_400;
+		ofn.hwndOwner   = hwndDlg;
+		lstrcpy( filter, TranslateT( "All Files" ));
+		lstrcat( filter, _T(" (*)" ));
+		pfilter = filter + lstrlen( filter )+1;
+		lstrcpy( pfilter, _T( "*" ));
+		pfilter = filter + lstrlen( filter )+1;
+		pfilter[ 0 ] = '\0';
+		ofn.lpstrFilter = filter;
+		ofn.lpstrFile = buf; *buf = 0;
+		ofn.nMaxFile = 32767;
+		ofn.Flags = OFN_FILEMUSTEXIST | OFN_ALLOWMULTISELECT | OFN_EXPLORER | OFN_HIDEREADONLY;
+		if ( GetOpenFileName( &ofn ))
+			PostMessage( hwndDlg, M_FILECHOOSEDONE, 0, ( LPARAM )buf );
+		else {
+			mir_free( buf );
+			PostMessage( hwndDlg, M_FILECHOOSEDONE, 0, ( LPARAM )( TCHAR* )NULL );
+}	}	}
 
 static BOOL CALLBACK ClipSiblingsChildEnumProc(HWND hwnd,LPARAM lParam)
 {
@@ -292,10 +315,10 @@ BOOL CALLBACK DlgProcSendFile(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPar
 			return CallService(MS_CLIST_MENUDRAWITEM,wParam,lParam);
 		}
 		case M_FILECHOOSEDONE:
-			if((char*)lParam) {
-				FilenameToFileList(hwndDlg,dat,(char*)lParam);
-				mir_free((char*)lParam);
-				dat->closeIfFileChooseCancelled=0;
+			if( lParam != 0 ) {
+				FilenameToFileList( hwndDlg, dat, ( TCHAR* )lParam );
+				mir_free(( TCHAR* )lParam );
+				dat->closeIfFileChooseCancelled = 0;
 			}
 			else if(dat->closeIfFileChooseCancelled) DestroyWindow(hwndDlg);
 			EnableWindow(hwndDlg,TRUE);
