@@ -1,12 +1,12 @@
 #include "aim.h"
 PLUGINLINK *pluginLink;
-#define AIM_OSCAR_VERSION "\0\0\0\x05"
-char* AIM_CLIENT_ID_STRING="Miranda Oscar Plugin, version 0.0.0.5";
+#define AIM_OSCAR_VERSION "\0\0\0\x06"
+char* AIM_CLIENT_ID_STRING="Miranda Oscar Plugin, version 0.0.0.6";
 char AIM_CAP_MIRANDA[]="MirandaA\0\0\0\0\0\0\0";
 PLUGININFO pluginInfo={
 	sizeof(PLUGININFO),
-	"AIM OSCAR Plugin - Beta 5",
-	PLUGIN_MAKE_VERSION(0,0,0,5),
+	"AIM OSCAR Plugin - Version 6",
+	PLUGIN_MAKE_VERSION(0,0,0,6),
 	"Provides basic support for AOL® OSCAR Instant Messenger protocol. [Built: "__DATE__" "__TIME__"]",
 	"Aaron Myles Landwehr",
 	"aaron@miranda-im.org",
