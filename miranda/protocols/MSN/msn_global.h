@@ -279,7 +279,7 @@ struct P2P_Header
 
 struct HReadBuffer
 {
-	HReadBuffer( ThreadData*, int );
+	HReadBuffer( ThreadData* info, int iStart = 0 );
 	~HReadBuffer();
 
 	BYTE* surelyRead( int parBytes );
