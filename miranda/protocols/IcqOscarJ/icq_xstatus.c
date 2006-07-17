@@ -48,6 +48,7 @@ static int bXStatusMenuBuilt = 0;
 static HANDLE hHookExtraIconsRebuild = NULL;
 static HANDLE hHookStatusBuild = NULL;
 static HANDLE hHookExtraIconsApply = NULL;
+static HMODULE hXStatusIconsDLL = NULL;
 static HANDLE hXStatusIcons[32];
 static HANDLE hXStatusItems[33];
 
@@ -95,9 +96,43 @@ static DWORD requestXStatusDetails(HANDLE hContact, BOOL bAllowDelay)
 
 
 
+static void InitXStatusIconLibrary()
+{
+	char path[2*MAX_PATH];
+  char* p;
+
+  // get miranda's exe path
+  GetModuleFileNameA(NULL, path, MAX_PATH);
+  // find the last \ and null it out, this leaves no trailing slash
+  p = strrchr(path, '\\');
+  strcpy(p, "\\Plugins");
+  strcat(p, "\\ICQ_icons.dll");
+  hXStatusIconsDLL = LoadLibrary(path);
+
+  if (!hXStatusIconsDLL)
+  {
+    strcpy(p, "\\Icons");
+    strcat(p, "\\ICQ_icons.dll");
+    hXStatusIconsDLL = LoadLibrary(path);
+  }
+  if (hXStatusIconsDLL)
+  {
+    if (LoadStringA(hXStatusIconsDLL, IDS_IDENTIFY, path, sizeof(path)) == 0 || strcmp(path, "# ICQJ Custom Status Icons #"))
+    {
+      FreeLibrary(hXStatusIconsDLL);
+      hXStatusIconsDLL = NULL;
+    }
+  }
+}
+
+
+
 HICON LoadDefaultXStatusIcon(int bStatus)
 {
-  return LoadImage(hInst, MAKEINTRESOURCE(IDI_XSTATUS1 + bStatus - 1), IMAGE_ICON, 0, 0, 0);
+  if (hXStatusIconsDLL)
+    return LoadImage(hXStatusIconsDLL, MAKEINTRESOURCE(IDI_XSTATUS1 + bStatus - 1), IMAGE_ICON, 0, 0, 0);
+  else
+    return NULL;
 }
 
 
@@ -888,6 +923,8 @@ void InitXStatusIcons()
   int i;
   
   if (!gbXStatusEnabled) return;
+
+  InitXStatusIconLibrary();
 
   null_snprintf(szSection, sizeof(szSection), ICQTranslateUtfStatic("%s/Custom Status", str), ICQTranslateUtfStatic(gpszICQProtoName, prt));
 
