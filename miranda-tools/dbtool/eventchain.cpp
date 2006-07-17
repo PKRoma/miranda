@@ -94,9 +94,9 @@ int WorkEventChain(DWORD ofsContact,DBContact *dbc,int firstTime)
 		AddToStatus(STATUS_WARNING,"Event marked as first which is not: correcting");
 		dbeOld.flags&=~DBEF_FIRST;
 	}
-	if(dbeOld.flags&~(DBEF_FIRST|DBEF_READ|DBEF_SENT)) {
+	if(dbeOld.flags&~(DBEF_FIRST|DBEF_READ|DBEF_SENT|DBEF_RTL)) {
 		AddToStatus(STATUS_WARNING,"Extra flags found in event: removing");
-		dbeOld.flags&=DBEF_FIRST|DBEF_READ|DBEF_SENT;
+		dbeOld.flags&=(DBEF_FIRST|DBEF_READ|DBEF_SENT|DBEF_RTL);
 	}
 	if(!(dbeOld.flags&(DBEF_READ|DBEF_SENT))) {
 		if(opts.bMarkRead) dbeOld.flags|=DBEF_READ;
