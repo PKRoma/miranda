@@ -1159,7 +1159,7 @@ LBL_InvalidCommand:
 
 				MSN_SetStringUtf( hContact, "Nick", data.userNick );
 				MSN_SetWord( hContact, "Status", ( WORD )MSNStatusToMiranda( data.userStatus ));
-				DBDeleteContactSetting( hContact, "CList", "StatusMsg" );
+//				DBDeleteContactSetting( hContact, "CList", "StatusMsg" );
 			}
 
 			MSN_SetString( hContact, "MirVer", "" );
@@ -1428,6 +1428,19 @@ LBL_InvalidCommand:
 			MSN_DebugLog( "Message send failed (trid=%d)", trid );
 			break;
 
+		case ' TON':   //********* NOT: notification message
+		{
+			char* buffer = ( char* )alloca( trid+1 );
+			BYTE* p = HReadBuffer( info ).surelyRead( trid );
+			if ( p != NULL ) {
+				memcpy( buffer, p, trid );
+				buffer[ trid ] = 0;
+			}
+			else buffer[0] = 0;
+			
+			MSN_DebugLog( "Notification message: %s", buffer );
+			break;
+		}
 		case ' TUO':   //********* OUT: sections 7.10 Connection Close, 8.6 Leaving a Switchboard Session
 			if ( !stricmp( params, "OTH" )) {
 				MSN_SendBroadcast( NULL, ACKTYPE_LOGIN, ACKRESULT_FAILED, NULL, LOGINERR_OTHERLOCATION );
@@ -1727,7 +1740,8 @@ LBL_InvalidCommand:
 				struct { char *type, *newServer, *security, *authChallengeInfo; } data;
 			};
 
-			if ( sttDivideWords( params, 4, tWords ) < 2 )
+			int numWords = sttDivideWords( params, 4, tWords );
+			if ( numWords < 2 )
 				goto LBL_InvalidCommand;
 
 			if ( !strcmp( data.type, "NS" )) { //notification server
@@ -1747,6 +1761,9 @@ LBL_InvalidCommand:
 
 			if ( !strcmp( data.type, "SB" )) { //switchboard server
 				UrlDecode( data.newServer );
+
+				if ( numWords < 4 )
+					goto LBL_InvalidCommand;
 
 				if ( strcmp( data.security, "CKI" )) {
 					MSN_DebugLog( "Unknown XFR SB security package '%s'", data.security );
