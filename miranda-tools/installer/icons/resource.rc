@@ -15,6 +15,7 @@
 IDI_OFFLINE     ICON DISCARDABLE "res\\AIM\\32_aim_Offline.ico"
 IDI_ONLINE      ICON DISCARDABLE "res\\AIM\\32_aim_Online.ico"
 IDI_AWAY        ICON DISCARDABLE "res\\AIM\\32_aim_Away.ico"
+IDI_INVISIBLE   ICON DISCARDABLE "res\\AIM\\32_aim_Invisible.ico"
 IDI_ONTHEPHONE  ICON DISCARDABLE "res\\AIM\\32_aim_Phone.ico"
 #endif
 
@@ -22,6 +23,7 @@ IDI_ONTHEPHONE  ICON DISCARDABLE "res\\AIM\\32_aim_Phone.ico"
 IDI_OFFLINE     ICON DISCARDABLE "res\\AIM\\8_aim_Offline.ico"
 IDI_ONLINE      ICON DISCARDABLE "res\\AIM\\8_aim_Online.ico"
 IDI_AWAY        ICON DISCARDABLE "res\\AIM\\8_aim_Away.ico"
+IDI_INVISIBLE   ICON DISCARDABLE "res\\AIM\\8_aim_Invisible.ico"
 IDI_ONTHEPHONE  ICON DISCARDABLE "res\\AIM\\8_aim_Phone.ico"
 #endif
 
