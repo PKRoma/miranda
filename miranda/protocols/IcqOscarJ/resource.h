@@ -3,6 +3,7 @@
 // Used by resources.rc
 //
 #define IDI_ICQ                         101
+#define IDS_IDENTIFY                    102
 #define IDD_ICQACCOUNT                  103
 #define IDD_ASKAUTH                     104
 #define IDD_LOGINPW                     105

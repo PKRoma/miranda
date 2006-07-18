@@ -37,8 +37,7 @@
 #include "icqoscar.h"
 
 // links to functions that are under Rate Control
-extern DWORD sendXStatusDetailsRequest(HANDLE hContact);
-
+extern DWORD sendXStatusDetailsRequest(HANDLE hContact, int bForced);
 
 static int rGroupXtrazRequest = 4500; // represents higher limits for ICQ Rate Group #3
 static int tGroupXtrazRequest;
@@ -131,7 +130,7 @@ static void RatesTimer1()
   {
     NetLog_Server("Rates: Resuming Xtraz request.");
     if (item->bType = RIT_XSTATUS_REQUEST)
-      sendXStatusDetailsRequest(item->hContact);
+      sendXStatusDetailsRequest(item->hContact, FALSE);
   }
   else
     NetLog_Server("Rates: Discarding request.");

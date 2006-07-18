@@ -4,7 +4,7 @@
 //
 // Copyright © 2000,2001 Richard Hughes, Roland Rabien, Tristan Van de Vreede
 // Copyright © 2001,2002 Jon Keating, Richard Hughes
-// Copyright © 2002,2003,2004 Martin  berg, Sam Kothari, Robert Rainwater
+// Copyright © 2002,2003,2004 Martin Öberg, Sam Kothari, Robert Rainwater
 // Copyright © 2004,2005,2006 Joe Kucera
 //
 // This program is free software; you can redistribute it and/or
@@ -60,16 +60,18 @@ extern int bHideXStatusUI;
 
 PLUGININFO pluginInfo = {
   sizeof(PLUGININFO),
-  "IcqOscarJ Protocol",
+  NULL,
   PLUGIN_MAKE_VERSION(0,3,7,0),
   "Support for ICQ network, enhanced.",
-  "Joe Kucera, Bio, Martin  berg, Richard Hughes, Jon Keating, etc",
+  "Joe Kucera, Bio, Martin Öberg, Richard Hughes, Jon Keating, etc",
   "jokusoftware@miranda-im.org",
   "(C) 2000-2006 M. berg, R.Hughes, J.Keating, Bio, Angeli-Ka, J.Kucera",
   "http://addons.miranda-im.org/details.php?action=viewfile&id=1683",
   0,  //not transient
   0   //doesn't replace anything built-in
 };
+
+static char pluginName[64];
 
 static int OnSystemModulesLoaded(WPARAM wParam,LPARAM lParam);
 static int icq_PrebuildContactMenu(WPARAM wParam, LPARAM lParam);
@@ -87,6 +89,12 @@ PLUGININFO __declspec(dllexport) *MirandaPluginInfo(DWORD mirandaVersion)
   }
   else
   {
+    // Are we running under Unicode Windows version ?
+    gbUnicodeAPI = (GetVersion() & 0x80000000) == 0;
+    strcpy(pluginName, "IcqOscarJ Protocol");
+    if (gbUnicodeAPI)
+      strcat(pluginName, " (Unicode)");
+    pluginInfo.shortName = pluginName;
     MIRANDA_VERSION = mirandaVersion;
     return &pluginInfo;
   }
@@ -392,9 +400,9 @@ static int OnSystemModulesLoaded(WPARAM wParam,LPARAM lParam)
     
     ICQTranslateUtfStatic(gpszICQProtoName, proto);
 
-    IconLibDefine(ICQTranslateUtfStatic("Request authorization", str), proto, "req_auth", LoadImage(hInst,MAKEINTRESOURCE(IDI_AUTH_ASK),IMAGE_ICON,0,0,LR_SHARED));
-    IconLibDefine(ICQTranslateUtfStatic("Grant authorization", str), proto, "grant_auth", LoadImage(hInst,MAKEINTRESOURCE(IDI_AUTH_GRANT),IMAGE_ICON,0,0,LR_SHARED));
-    IconLibDefine(ICQTranslateUtfStatic("Revoke authorization", str), proto, "revoke_auth", LoadImage(hInst,MAKEINTRESOURCE(IDI_AUTH_REVOKE),IMAGE_ICON,0,0,LR_SHARED));
+    IconLibDefine(ICQTranslateUtfStatic("Request authorization", str), proto, "req_auth", LoadImage(hInst,MAKEINTRESOURCE(IDI_AUTH_ASK),IMAGE_ICON,0,0,LR_SHARED), NULL, 0);
+    IconLibDefine(ICQTranslateUtfStatic("Grant authorization", str), proto, "grant_auth", LoadImage(hInst,MAKEINTRESOURCE(IDI_AUTH_GRANT),IMAGE_ICON,0,0,LR_SHARED), NULL, 0);
+    IconLibDefine(ICQTranslateUtfStatic("Revoke authorization", str), proto, "revoke_auth", LoadImage(hInst,MAKEINTRESOURCE(IDI_AUTH_REVOKE),IMAGE_ICON,0,0,LR_SHARED), NULL, 0);
   }
 
   // Initialize IconLib icons
@@ -446,20 +454,9 @@ static int OnSystemModulesLoaded(WPARAM wParam,LPARAM lParam)
   }
 
   {
-    Update update = {0};
-    char szVersion[16];
-
-    update.cbSize = sizeof(Update);
-
-    update.szComponentName = pluginInfo.shortName;
-    null_snprintf(szVersion, 16, "%u.%u.%u.%u", pluginInfo.version & 0x7F000000 >> 24, pluginInfo.version & 0xFF0000 >> 16, pluginInfo.version & 0xFF00 >> 8, pluginInfo.version & 0xFF);
-    update.pbVersion = szVersion;
-    update.cpbVersion = strlennull(update.pbVersion);
-    update.szUpdateURL = pluginInfo.homepage; // use standard File Listing
-
     // TODO: add beta builds support to devel builds :)
 
-    CallService(MS_UPDATE_REGISTER, 0, (WPARAM)&update);
+    CallService(MS_UPDATE_REGISTERFL, 1683, (WPARAM)&pluginInfo);
   }
 
   return 0;

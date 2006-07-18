@@ -218,7 +218,7 @@ static void handleRecvServMsg(unsigned char *buf, WORD wLen, WORD wFlags, DWORD 
     handleRecvServMsgType1(buf, wLen, dwUin, szUID, dwID1, dwID2);
     break;
 
-  case 2:  // Encapsulated messages
+  case 2: // Encapsulated messages
     handleRecvServMsgType2(buf, wLen, dwUin, szUID, dwID1, dwID2);
     break;
 
@@ -1669,29 +1669,29 @@ void handleMessageTypes(DWORD dwUin, DWORD dwTimestamp, DWORD dwMsgID, DWORD dwM
 
   case MTYPE_REQUESTCONTACTS:
     /* it's a contacts-request */
-    NetLog_Uni(bThruDC, "Received Request for Contacts msg from %u", dwUin);
+    NetLog_Uni(bThruDC, "Received %s from %u", "Request for Contacts", dwUin);
     break;
 
   case MTYPE_GREETINGCARD:
     /* it's a greeting card */
-    NetLog_Uni(bThruDC, "Received Greeting Card msg from %u", dwUin);
+    NetLog_Uni(bThruDC, "Received %s from %u", "Greeting Card", dwUin);
     break;
 
   case MTYPE_SCRIPT_NOTIFY:
     /* it's a xtraz notify request */
-    NetLog_Uni(bThruDC, "Received Xtraz Notify Request from %u", dwUin);
+    NetLog_Uni(bThruDC, "Received %s from %u", "Xtraz Notify Request", dwUin);
     handleXtrazNotify(dwUin, dwMsgID, dwMsgID2, wCookie, szMsg, wMsgLen, bThruDC);
     break;
 
   case MTYPE_SCRIPT_INVITATION:
     /* it's a xtraz invitation to session */
-    NetLog_Uni(bThruDC, "Received Xtraz Invitation from %u", dwUin);
+    NetLog_Uni(bThruDC, "Received %s from %u", "Xtraz Invitation", dwUin);
     handleXtrazInvitation(dwUin, dwMsgID, dwMsgID2, wCookie, szMsg, wMsgLen, bThruDC);
     break;
 
   case MTYPE_SCRIPT_DATA:
     /* it's a xtraz data packet */
-    NetLog_Uni(bThruDC, "Received Xtraz data packet from %u", dwUin);
+    NetLog_Uni(bThruDC, "Received %s from %u", "Xtraz data packet", dwUin);
     handleXtrazData(dwUin, dwMsgID, dwMsgID2, wCookie, szMsg, wMsgLen, bThruDC);
     break;
 
@@ -1817,8 +1817,7 @@ static void handleRecvMsgResponse(unsigned char *buf, WORD wLen, WORD wFlags, DW
 
     if (!FindCookie(dwCookie, &dwCookieUin, &pCookieData))
     { // use old reliable method
-      NetLog_Server("SNAC(4.B) Received an ack that I did not ask for from (%u)", dwUin);
-      return;
+      NetLog_Server("Warning: Invalid cookie in %s from (%u)", "message response", dwUin);
     }
   }
   else
@@ -1890,13 +1889,13 @@ static void handleRecvMsgResponse(unsigned char *buf, WORD wLen, WORD wFlags, DW
 
         if (wLength != 0x1B)
         {
-          NetLog_Server("Invalid Greeting message response");
+          NetLog_Server("Invalid Greeting %s", "message response");
 
           ReleaseCookie(dwCookie);
           return;
         }
 
-        NetLog_Server("Parsing Greeting message response");
+        NetLog_Server("Parsing Greeting %s", "message response");
 
         // Message
         unpackLEWord(&buf, &wInfoLen);
@@ -1939,7 +1938,7 @@ static void handleRecvMsgResponse(unsigned char *buf, WORD wLen, WORD wFlags, DW
 
         if (wLen < 4)
         {
-          NetLog_Server("Error: Invalid greeting message response");
+          NetLog_Server("Error: Invalid greeting %s", "message response");
 
           ReleaseCookie(dwCookie);
           return;
@@ -2000,7 +1999,7 @@ static void handleRecvMsgResponse(unsigned char *buf, WORD wLen, WORD wFlags, DW
           return;
 
         default:
-          NetLog_Server("Error: Unknown greeting message response, type \"%s\".", szPluginName);
+          NetLog_Server("Error: Unknown greeting %s, type \"%s\".", "message response", szPluginName);
           return;
         }
       }

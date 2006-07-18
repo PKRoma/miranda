@@ -254,6 +254,18 @@ SOURCE=.\utilities.h
 # PROP Default_Filter "ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe"
 # Begin Source File
 
+SOURCE=.\icos\auth_ask.ico
+# End Source File
+# Begin Source File
+
+SOURCE=.\icos\auth_grant.ico
+# End Source File
+# Begin Source File
+
+SOURCE=.\icos\auth_revoke.ico
+# End Source File
+# Begin Source File
+
 SOURCE=.\changeinfo\expandst.ico
 # End Source File
 # Begin Source File
