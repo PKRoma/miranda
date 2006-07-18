@@ -30,15 +30,15 @@ RSC=rc.exe
 OUTDIR=.\Release
 INTDIR=.\Release
 
-ALL : "..\..\..\bin\release\plugins\ICQ_icons.dll"
+ALL : "..\..\..\bin\release\plugins\xstatus_icons.dll"
 
 
 CLEAN :
 	-@erase "$(INTDIR)\ICONS.res"
-	-@erase "$(OUTDIR)\ICQ_icons.exp"
-	-@erase "$(OUTDIR)\ICQ_icons.lib"
-	-@erase "$(OUTDIR)\ICQ_icons.pdb"
-	-@erase "..\..\..\bin\release\plugins\ICQ_icons.dll"
+	-@erase "$(OUTDIR)\xstatus_icons.exp"
+	-@erase "$(OUTDIR)\xstatus_icons.lib"
+	-@erase "$(OUTDIR)\xstatus_icons.pdb"
+	-@erase "..\..\..\bin\release\plugins\xstatus_icons.dll"
 
 "$(OUTDIR)" :
     if not exist "$(OUTDIR)/$(NULL)" mkdir "$(OUTDIR)"
@@ -48,11 +48,11 @@ BSC32_FLAGS=/nologo /o"$(OUTDIR)\ICONS.bsc"
 BSC32_SBRS= \
 	
 LINK32=link.exe
-LINK32_FLAGS=/nologo /dll /incremental:no /pdb:"$(OUTDIR)\ICQ_icons.pdb" /debug /machine:I386 /out:"..\..\..\bin\release\plugins\ICQ_icons.dll" /implib:"$(OUTDIR)\ICQ_icons.lib" /noentry /ALIGN:4096 /ignore:4108 
+LINK32_FLAGS=/nologo /dll /incremental:no /pdb:"$(OUTDIR)\xstatus_icons.pdb" /debug /machine:I386 /out:"..\..\..\bin\release\plugins\xstatus_icons.dll" /implib:"$(OUTDIR)\xstatus_icons.lib" /noentry /ALIGN:4096 /ignore:4108 
 LINK32_OBJS= \
 	"$(INTDIR)\ICONS.res"
 
-"..\..\..\bin\release\plugins\ICQ_icons.dll" : "$(OUTDIR)" $(DEF_FILE) $(LINK32_OBJS)
+"..\..\..\bin\release\plugins\xstatus_icons.dll" : "$(OUTDIR)" $(DEF_FILE) $(LINK32_OBJS)
     $(LINK32) @<<
   $(LINK32_FLAGS) $(LINK32_OBJS)
 <<

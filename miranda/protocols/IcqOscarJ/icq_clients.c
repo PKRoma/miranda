@@ -512,6 +512,8 @@ char* detectUserClient(HANDLE hContact, DWORD dwUin, WORD wVersion, DWORD dwFT1,
               }
               szClient = szClientBuf;
             }
+            else if (!MatchCap(caps, wLen, &capIsIcq, 0x10))
+              szClient = "pyICQ";
             else
               szClient = "ICQ Lite v4";
           }

@@ -49,7 +49,7 @@ BSC32=bscmake.exe
 # ADD BSC32 /nologo
 LINK32=link.exe
 # ADD BASE LINK32 /nologo /dll /debug /machine:I386
-# ADD LINK32 /nologo /dll /debug /machine:I386 /out:"..\..\..\bin\release\plugins\ICQ_icons.dll" /noentry /ALIGN:4096 /ignore:4108
+# ADD LINK32 /nologo /dll /debug /machine:I386 /out:"..\..\..\bin\release\plugins\xstatus_icons.dll" /noentry /ALIGN:4096 /ignore:4108
 # SUBTRACT LINK32 /pdb:none
 # Begin Target
 

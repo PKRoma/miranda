@@ -68,7 +68,7 @@ IDI_XSTATUS32           ICON    DISCARDABLE     "..\\icos\\xstatus32.ico"
 
 STRINGTABLE 
 BEGIN
-   IDS_IDENTIFY            "# ICQJ Custom Status Icons #"
+   IDS_IDENTIFY            "# Custom Status Icons #"
 END
 
 

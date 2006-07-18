@@ -4,7 +4,7 @@
 // 
 // Copyright © 2000,2001 Richard Hughes, Roland Rabien, Tristan Van de Vreede
 // Copyright © 2001,2002 Jon Keating, Richard Hughes
-// Copyright © 2002,2003,2004 Martin Öberg, Sam Kothari, Robert Rainwater
+// Copyright © 2002,2003,2004 Martin  berg, Sam Kothari, Robert Rainwater
 // Copyright © 2004,2005,2006 Angeli-Ka, Joe Kucera
 // 
 // This program is free software; you can redistribute it and/or
@@ -56,7 +56,7 @@ void CListShowMenuItem(HANDLE hMenuItem, BYTE bShow);
 void CListSetMenuItemIcon(HANDLE hMenuItem, HICON hIcon);
 
 
-DWORD sendXStatusDetailsRequest(HANDLE hContact)
+DWORD sendXStatusDetailsRequest(HANDLE hContact, int bForced)
 {
   char *szNotify;
   int nNotifyLen;
@@ -66,7 +66,7 @@ DWORD sendXStatusDetailsRequest(HANDLE hContact)
   szNotify = (char*)_alloca(nNotifyLen);
   nNotifyLen = null_snprintf(szNotify, nNotifyLen, "<srv><id>cAwaySrv</id><req><id>AwayStat</id><trans>1</trans><senderId>%d</senderId></req></srv>", dwLocalUIN);
 
-  dwCookie = SendXtrazNotifyRequest(hContact, "<Q><PluginID>srvMng</PluginID></Q>", szNotify);
+  dwCookie = SendXtrazNotifyRequest(hContact, "<Q><PluginID>srvMng</PluginID></Q>", szNotify, bForced);
 
   return dwCookie;
 }
@@ -80,7 +80,8 @@ static DWORD requestXStatusDetails(HANDLE hContact, BOOL bAllowDelay)
   if (!validateStatusMessageRequest(hContact, MTYPE_SCRIPT_NOTIFY))
     return 0; // apply privacy rules
 
-  if (!CheckContactCapabilities(hContact, CAPF_XTRAZ))
+  // delay is disabled only if fired from dialog
+  if (!CheckContactCapabilities(hContact, CAPF_XTRAZ) && bAllowDelay)
     return 0; // Contact does not support xtraz, do not request details
 
   rr.hContact = hContact;
@@ -89,14 +90,14 @@ static DWORD requestXStatusDetails(HANDLE hContact, BOOL bAllowDelay)
   rr.nMinDelay = 1000;    // delay at least 1s
 
   if (!handleRateItem(&rr, bAllowDelay))
-    return sendXStatusDetailsRequest(hContact);
+    return sendXStatusDetailsRequest(hContact, !bAllowDelay);
 
   return -1; // delayed
 }
 
 
 
-static void InitXStatusIconLibrary()
+static char* InitXStatusIconLibrary(char* buf)
 {
 	char path[2*MAX_PATH];
   char* p;
@@ -106,23 +107,30 @@ static void InitXStatusIconLibrary()
   // find the last \ and null it out, this leaves no trailing slash
   p = strrchr(path, '\\');
   strcpy(p, "\\Plugins");
-  strcat(p, "\\ICQ_icons.dll");
+  strcat(p, "\\xstatus_icons.dll");
   hXStatusIconsDLL = LoadLibrary(path);
 
   if (!hXStatusIconsDLL)
   {
     strcpy(p, "\\Icons");
-    strcat(p, "\\ICQ_icons.dll");
+    strcat(p, "\\xstatus_icons.dll");
     hXStatusIconsDLL = LoadLibrary(path);
   }
   if (hXStatusIconsDLL)
   {
-    if (LoadStringA(hXStatusIconsDLL, IDS_IDENTIFY, path, sizeof(path)) == 0 || strcmp(path, "# ICQJ Custom Status Icons #"))
+    strcpy(buf, path);
+
+    if (LoadStringA(hXStatusIconsDLL, IDS_IDENTIFY, path, sizeof(path)) == 0 || strcmp(path, "# Custom Status Icons #"))
     {
       FreeLibrary(hXStatusIconsDLL);
       hXStatusIconsDLL = NULL;
     }
+    else
+      return buf;
   }
+  *buf = '\0';
+
+  return buf;
 }
 
 
@@ -920,22 +928,22 @@ void InitXStatusIcons()
 {
   char szSection[MAX_PATH + 64];
   char str[MAX_PATH], prt[MAX_PATH];
+  char lib[2*MAX_PATH] = {0};
+  char* icon_lib;
   int i;
   
   if (!gbXStatusEnabled) return;
 
-  InitXStatusIconLibrary();
+  icon_lib = InitXStatusIconLibrary(lib);
 
   null_snprintf(szSection, sizeof(szSection), ICQTranslateUtfStatic("%s/Custom Status", str), ICQTranslateUtfStatic(gpszICQProtoName, prt));
 
   for (i = 0; i < 32; i++) 
   {
-    HICON hXIcon = LoadDefaultXStatusIcon(i + 1);
     char szTemp[64];
 
     null_snprintf(szTemp, sizeof(szTemp), "xstatus%d", i);
-    IconLibDefine(ICQTranslateUtfStatic(nameXStatus[i], str), szSection, szTemp, hXIcon);
-    DestroyIcon(hXIcon);
+    IconLibDefine(ICQTranslateUtfStatic(nameXStatus[i], str), szSection, szTemp, NULL, icon_lib, -(IDI_XSTATUS1+i));
   }
 
   if (bXStatusMenuBuilt)
