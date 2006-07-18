@@ -323,6 +323,7 @@ void snac_user_online(SNAC &snac)//family 0x0003
 					if(wireless)
 					{
 						wireless_user=1;
+						client_detected=1;
 						DBWriteContactSettingWord(hContact, AIM_PROTOCOL_NAME, AIM_KEY_ST, ID_STATUS_ONTHEPHONE);	
 					}
 					else if(away==0)
