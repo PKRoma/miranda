@@ -1,22 +1,54 @@
 !include "MUI.nsh"
 !include "Sections.nsh"
 
-Name "Miranda IM 0.3.3.1"
-OutFile "miranda-im-v0.3.3.1.exe"
+!define MIM_NAME                "Miranda IM"
+!define MIM_VERSION             "0.5"
+!define MIM_PREVIEW             "3" ; comment out for final build
 
-InstallDir "$PROGRAMFILES\Miranda IM"
-InstallDirRegKey HKLM "Software\Miranda" "Install_Dir"
-SetCompressor lzma
-SetOverWrite on
+!define MIM_BUILD_UNICODE
+
+!ifdef MIM_BUILD_UNICODE
+!define MIM_BUILD_TYPE          "unicode"
+!define MIM_BUILD_DIR           "..\..\miranda\bin\Release Unicode"
+!define MIM_BUILD_ICONS         "icons\bin\hicolor"
+!else
+!define MIM_BUILD_TYPE          "ansi"
+!define MIM_BUILD_DIR           "..\..\miranda\bin\Release"
+!define MIM_BUILD_ICONS         "icons\bin\locolor"
+!endif
+!define MIM_BUILD_DIRANSI       "..\..\miranda\bin\Release"
+!define MIM_BUILD_SRC           "..\..\miranda"
+
+!ifdef MIM_PREVIEW
+Name                            "${MIM_NAME} ${MIM_VERSION} Preview Release ${MIM_PREVIEW}"
+OutFile                         "miranda-v${MIM_VERSION}-pr${MIM_PREVIEW}-${MIM_BUILD_TYPE}.exe"
+!else
+Name                            "${MIM_NAME} ${MIM_VERSION}"
+OutFile                         "miranda-v${MIM_VERSION}-${MIM_BUILD_TYPE}.exe"
+!endif
+
+InstallDir                      "$PROGRAMFILES\Miranda IM"
+InstallDirRegKey                HKLM "Software\Miranda" "Install_Dir"
+SetCompressor                   lzma
+SetOverWrite                    on
+BrandingText                    "www.miranda-im.org"
+
+VAR INST_UPGRADE
 
 !packhdr "temp_installer.dat" "upx -9 temp_installer.dat"
 
-!define MUI_ICON "${NSISDIR}\Contrib\Graphics\Icons\modern-install-blue.ico"
-!define MUI_COMPONENTSPAGE_NODESC
 !define MUI_HEADERIMAGE
+!define MUI_HEADERIMAGE_BITMAP "${NSISDIR}\Contrib\Graphics\Header\orange.bmp"
+!define MUI_HEADERIMAGE_UNBITMAP "${NSISDIR}\Contrib\Graphics\Header\orange-uninstall.bmp"
+!define MUI_WELCOMEFINISHPAGE_BITMAP "${NSISDIR}\Contrib\Graphics\Wizard\orange.bmp"
+!define MUI_UNWELCOMEFINISHPAGE_BITMAP "${NSISDIR}\Contrib\Graphics\Wizard\orange-uninstall.bmp"
 !define MUI_ABORTWARNING
+!define MUI_COMPONENTSPAGE_NODESC
+!define MUI_LICENSEPAGE_BGCOLOR /grey
 
 !insertmacro MUI_PAGE_WELCOME
+!insertmacro MUI_PAGE_LICENSE "${MIM_BUILD_SRC}\docs\license.txt"
+!define MUI_PAGE_CUSTOMFUNCTION_LEAVE VerifyInstallDir
 !insertmacro MUI_PAGE_DIRECTORY
 !insertmacro MUI_PAGE_COMPONENTS
 !insertmacro MUI_PAGE_INSTFILES
@@ -25,160 +57,96 @@ SetOverWrite on
 !insertmacro MUI_UNPAGE_INSTFILES
 
 !insertmacro MUI_LANGUAGE "English"
-BrandingText "www.miranda-im.org"
 
-VAR INST_MODE
-VAR INST_UPGRADE
-VAR INST_ININEW
-
-Section "Miranda IM (core)"
+Section "!Miranda IM"
   SectionIn RO
-  ; Remove Old Install Files
-  Delete "$INSTDIR\Docs\Contributors.txt"
-  Delete "$INSTDIR\Docs\Readme.txt"
-  Delete "$INSTDIR\Docs\License.txt"
-  Delete "$INSTDIR\Docs\Contrib\AIM_*.*"
-  Delete "$INSTDIR\Docs\Contrib\IRC_*.*"
-  Delete "$INSTDIR\Docs\Contrib\ICQ_*.*"
-  Delete "$INSTDIR\Docs\Contrib\Jabber_*.*"
-  Delete "$INSTDIR\Docs\Contrib\MSN_*.*"
-  RMDir "$INSTDIR\Docs\Contrib"
-  Delete "$INSTDIR\Docs\mirandaboot.ini"
-  Delete "$INSTDIR\gpl.txt"
+
   Delete "$INSTDIR\Uninstall\unins000.dat"
   Delete "$INSTDIR\Uninstall\unins000.exe"
+  Delete "$INSTDIR\Uninstall\unins001.dat"
+  Delete "$INSTDIR\Uninstall\unins001.exe"
   RMDir  "$INSTDIR\Uninstall"
-  
-  SetOutPath "$INSTDIR"
-  File "..\..\Bin\Release\miranda32.exe"
-  File "..\..\Bin\Release\dbtool.exe"
-  SetOutPath "$INSTDIR\Plugins"
-  File "..\..\Bin\Release\Plugins\srmm.dll"
-  SetOutPath "$INSTDIR\Docs"
-  File /oname="SRMM-License.txt"  "..\..\bin\release\docs\SRMM-license.txt"
-  File /oname="SRMM-Readme.txt"  "..\..\bin\release\docs\SRMM-readme.txt"
 
   SetOutPath "$INSTDIR"
-  StrCmp $INST_ININEW "0" noiniu
-  File "..\..\Miranda-IM\Docs\mirandaboot.ini"
-  noiniu:
-  File /oname=Contributors.txt "..\..\Miranda-IM\docs\credits.txt"
-  File /oname=Readme.txt "..\..\Miranda-IM\docs\releasenotes.txt"
-  File /oname=License.txt "..\..\Miranda-IM\docs\license.txt"
+  File "${MIM_BUILD_DIR}\miranda32.exe"
+  File "${MIM_BUILD_DIR}\dbtool.exe"
+  File /oname=contributors.txt "${MIM_BUILD_SRC}\docs\credits.txt"
+  File /oname=readme.txt "${MIM_BUILD_SRC}\docs\releasenotes.txt"
+  File /oname=license.txt "${MIM_BUILD_SRC}\docs\license.txt"
+
+  SetOverWrite off
+  File "${MIM_BUILD_SRC}\docs\mirandaboot.ini"
+  SetOverWrite on
+
+  SetOutPath "$INSTDIR\Plugins"
+  File "${MIM_BUILD_DIR}\plugins\clist_classic.dll"
+  File "${MIM_BUILD_DIR}\plugins\srmm.dll"
+  File "${MIM_BUILD_DIRANSI}\plugins\png2dib.dll"
+  File "${MIM_BUILD_DIRANSI}\plugins\dbx_3x.dll"
+  File "${MIM_BUILD_DIR}\plugins\chat.dll"
+
+  SetOutPath "$INSTDIR\Icons"
+  File "${MIM_BUILD_ICONS}\proto_AIM.dll"
+  File "${MIM_BUILD_ICONS}\proto_ICQ.dll"
+  File "${MIM_BUILD_ICONS}\proto_IRC.dll"
+  File "${MIM_BUILD_ICONS}\proto_JABBER.dll"
+  File "${MIM_BUILD_ICONS}\proto_MSN.dll"
+  File "${MIM_BUILD_ICONS}\proto_YAHOO.dll"
+  
+  DeleteRegKey HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\Miranda IM_is1" ; remove old uninstaller key
+  WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\Miranda IM" "DisplayName" "Miranda IM" 
+  WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\Miranda IM" "UninstallString" "$INSTDIR\uninstall.exe"
+  WriteUninstaller "$INSTDIR\Uninstall.exe"
 SectionEnd
 
-SubSection /e "Protocols" p0
-  
-  Section "AIM" p1
+SubSection /e "Protocols"
+  Section "AIM"
     SetOutPath "$INSTDIR\Plugins"
-    File "..\..\Bin\Release\Plugins\AIM.dll"
-    SetOutPath "$INSTDIR\Docs"
-    File /oname="AIM-License.txt"  "..\..\bin\release\docs\aim-license.txt"
-    File /oname="AIM-Readme.txt"  "..\..\bin\release\docs\aim-readme.txt"
+    File /oname=aim.dll "${MIM_BUILD_DIRANSI}\plugins\AimOscar.dll"
   SectionEnd
 
-  Section "ICQ" p2
+  Section "ICQ"
     SetOutPath "$INSTDIR\Plugins"
-    File "..\..\Bin\Release\Plugins\ICQ.dll"
-    SetOutPath "$INSTDIR\Docs"
-    File /oname="ICQ-License.txt"  "..\..\bin\release\docs\icq-license.txt"
-    File /oname="ICQ-Readme.txt"  "..\..\bin\release\docs\icq-readme.txt"
+    File "${MIM_BUILD_DIRANSI}\plugins\icq.dll"
   SectionEnd
 
-  Section "IRC" p3
+  Section "IRC"
     SetOutPath "$INSTDIR\Plugins"
-    File "..\..\Bin\Release\Plugins\IRC.dll"
+    File "${MIM_BUILD_DIRANSI}\plugins\irc.dll"
     SetOverWrite off
-    File "..\..\Bin\Release\Plugins\IRC_Servers.ini"
+    File "${MIM_BUILD_SRC}\protocols\IRC\Docs\IRC_Servers.ini"
     SetOverWrite on
-    SetOutPath "$INSTDIR\Docs"
-    File /oname="IRC-License.txt"  "..\..\Bin\Release\Docs\IRC_license.txt"
-    File /oname="IRC-Readme.txt"  "..\..\Bin\Release\Docs\IRC_Readme.txt"
   SectionEnd
 
-  Section "Jabber" p4
+  Section "Jabber"
     SetOutPath "$INSTDIR\Plugins"
-    File "..\..\Bin\Release\Plugins\Jabber.dll"
-    SetOutPath "$INSTDIR\Docs"
-    File /oname="Jabber-License.txt"  "..\..\Protocols\Jabber\docs\gpl.txt"
-    File /oname="Jabber-Readme.txt"  "..\..\Bin\Release\Docs\readme_jabber.txt"
+    File "${MIM_BUILD_DIR}\plugins\jabber.dll"
   SectionEnd
 
-  Section "MSN" p5
+  Section "MSN"
     SetOutPath "$INSTDIR\Plugins"
-    File "..\..\Bin\Release\Plugins\MSN.dll"
-    SetOutPath "$INSTDIR\Docs"
-    File /oname="MSN-License.txt"  "..\..\bin\release\docs\gpl.txt"
-    File /oname="MSN-Readme.txt"  "..\..\bin\release\docs\readme-msn.txt"
-  SectionEnd  
+    File "${MIM_BUILD_DIR}\plugins\msn.dll"
+  SectionEnd
 
-  ;Section "Yahoo" p6
-  ;  SetOutPath "$INSTDIR\Plugins"
-  ;  File "..\..\Bin\Release\Plugins\Yahoo.dll"
-  ;  SetOutPath "$INSTDIR\Docs"
-  ;  File /oname="Yahoo-License.txt"  "..\..\Protocols\Yahoo\Docs\License.txt"
-  ;  File /oname="Yahoo-Readme.txt"  "..\..\Protocols\Yahoo\Docs\ReadMe.txt"
-  ;SectionEnd
-
+  Section "Yahoo"
+    SetOutPath "$INSTDIR\Plugins"
+    File "${MIM_BUILD_DIRANSI}\plugins\yahoo.dll"
+  SectionEnd
 SubSectionEnd
 
 Section "Import Plugin"
-    SetOutPath "$INSTDIR\Plugins"
-    File "..\..\Bin\Release\Plugins\import.dll"
-    SetOutPath "$INSTDIR\Docs"
-    File /oname="Import-License.txt"  "..\..\Bin\Release\Docs\import-license.txt"
-    File /oname="Import-Readme.txt"  "..\..\Bin\Release\Docs\import-readme.txt"
+  SetOutPath "$INSTDIR\Plugins"
+  File "${MIM_BUILD_DIRANSI}\plugins\import.dll"
 SectionEnd
 
-SubSection /e "Options"
-
-  Section "Install Icons"
-    SetOutPath "$INSTDIR\Icons"
-    ReadRegStr $R0 HKLM "SOFTWARE\Microsoft\Windows NT\CurrentVersion" CurrentVersion
-    StrCmp $R0 '5.1' xpicons
-    StrCmp $R0 '5.2' xpicons
-    
-    File "icons\bin\locolor\proto_AIM.dll"
-    File "icons\bin\locolor\proto_ICQ.dll"
-    File "icons\bin\locolor\proto_IRC.dll"
-    File "icons\bin\locolor\proto_JABBER.dll"
-    File "icons\bin\locolor\proto_MSN.dll"
-    ;File "icons\bin\locolor\proto_YAHOO.dll"
-    Goto endicons
-    xpicons:
-    File "icons\bin\hicolor\proto_AIM.dll"
-    File "icons\bin\hicolor\proto_ICQ.dll"
-    File "icons\bin\hicolor\proto_IRC.dll"
-    File "icons\bin\hicolor\proto_JABBER.dll"
-    File "icons\bin\hicolor\proto_MSN.dll"
-    ;File "icons\bin\hicolor\proto_YAHOO.dll"
-    endicons:
-  SectionEnd
-
-  Section "Install for All Users"
-    StrCpy $INST_MODE "1"
-    SetShellVarContext "all"
-    StrCmp $INST_ININEW "0" nowriteappdata
-    StrCmp $INST_UPGRADE "1" nowriteappdata
-    ReadRegStr $R0 HKLM "SOFTWARE\Microsoft\Windows NT\CurrentVersion" CurrentVersion
-    StrCmp $R0 '5.0' writeappdata
-    StrCmp $R0 '5.1' writeappdata
-    StrCmp $R0 '5.2' writeappdata
-    Goto nowriteappdata
-    writeappdata:
-    WriteINIStr "$INSTDIR\mirandaboot.ini" "Database" "ProfileDir" "%APPDATA%\Miranda"
-    nowriteappdata:
-  SectionEnd
-
+SubSection /e "Options" pOptions
   Section "Install Start Menu Shortcuts"
       SetOutPath "$INSTDIR"
       RMDir /r "$SMPROGRAMS\Miranda IM"
       CreateDirectory "$SMPROGRAMS\Miranda IM"
       CreateShortCut  "$SMPROGRAMS\Miranda IM\Miranda IM.lnk" "$INSTDIR\miranda32.exe"
-      CreateShortCut  "$SMPROGRAMS\Miranda IM\License.lnk" "$INSTDIR\License.txt"
       CreateShortCut  "$SMPROGRAMS\Miranda IM\Database Repair Tool.lnk" "$INSTDIR\dbtool.exe"
       WriteINIStr     "$SMPROGRAMS\Miranda IM\Homepage.url" "InternetShortcut" "URL" "http://www.miranda-im.org/"
-      CreateShortCut  "$SMPROGRAMS\Miranda IM\Plugins.lnk" "$INSTDIR\Plugins\"
   SectionEnd
 
   Section "Install Desktop Shortcuts"
@@ -187,13 +155,14 @@ SubSection /e "Options"
     CreateShortCut  "$QUICKLAUNCH\Miranda IM.lnk" "$INSTDIR\miranda32.exe"
   SectionEnd
 
+  !ifdef MIM_BUILD_UNICODE
+  Section /o "Store profile data in user home directory" pStoreData
+    StrCmp $INST_UPGRADE "1" nowriteappdata
+    WriteINIStr "$INSTDIR\mirandaboot.ini" "Database" "ProfileDir" "%APPDATA%\Miranda"
+    nowriteappdata:
+  SectionEnd
+  !endif
 SubSectionEnd
-
-Section -
-  WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\Miranda IM" "DisplayName" "Miranda IM" 
-  WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\Miranda IM" "UninstallString" "$INSTDIR\uninstall.exe"
-  WriteUninstaller "$INSTDIR\Uninstall.exe"
-SectionEnd
 
 Section Uninstall
   SetShellVarContext "all"
@@ -205,26 +174,22 @@ Section Uninstall
   Delete "$DESKTOP\Miranda IM.lnk"
   Delete "$QUICKLAUNCH\Miranda IM.lnk"
 
-  RMDir /r "$INSTDIR\Docs"
   RMDir /r "$INSTDIR\Icons"
   RMDir /r "$INSTDIR\Plugins"
   Delete "$INSTDIR\dbtool.exe"
   Delete "$INSTDIR\miranda32.exe"
   Delete "$INSTDIR\mirandaboot.ini"
-  Delete "$INSTDIR\License.txt"
-  Delete "$INSTDIR\Contributors.txt"
-  Delete "$INSTDIR\Readme.txt"
-  Delete "$INSTDIR\Uninstall.exe"
-  Delete "$INSTDIR\config.exe"
+  Delete "$INSTDIR\license.txt"
+  Delete "$INSTDIR\contributors.txt"
+  Delete "$INSTDIR\readme.txt"
+  Delete "$INSTDIR\uninstall.exe"
   RMDir "$INSTDIR"
+
   DeleteRegKey HKLM "SOFTWARE\Miranda"
   DeleteRegKey HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\Miranda IM"
 SectionEnd
 
 Function .onInit
-  StrCpy $INST_MODE "0"
-  StrCpy $INST_UPGRADE "0"
-  StrCpy $INST_ININEW "1"
   SetShellVarContext "current"
   StrCpy $0 "0"
   FindWindow $R0 "Miranda"
@@ -237,70 +202,25 @@ Function .onInit
   norun:
 FunctionEnd
 
-Function .onVerifyInstDir
+Function VerifyInstallDir
   IfFileExists "$INSTDIR\miranda32.exe" "" endupgrade
   StrCpy $INST_UPGRADE "1"
   Goto endupgradex
   endupgrade:
   StrCpy $INST_UPGRADE "0"
   endupgradex:
-  IfFileExists "$INSTDIR\mirandaboot.ini" "" endini
-  StrCpy $INST_ININEW "0"
-  Goto endinix
-  endini:
-  StrCpy $INST_ININEW "1"
-  endinix:
-  StrCmp $INST_UPGRADE "1" vupgrade
-  !insertmacro SetSectionFlag ${p1} ${SF_RO}
-  !insertmacro SetSectionFlag ${p2} ${SF_RO}
-  !insertmacro SetSectionFlag ${p3} ${SF_RO}
-  !insertmacro SetSectionFlag ${p4} ${SF_RO}
-  !insertmacro SetSectionFlag ${p5} ${SF_RO}
-  ;!insertmacro SetSectionFlag ${p6} ${SF_RO}
-  !insertmacro SetSectionFlag ${p1} ${SF_SELECTED}
-  !insertmacro SetSectionFlag ${p2} ${SF_SELECTED}
-  !insertmacro SetSectionFlag ${p3} ${SF_SELECTED}
-  !insertmacro SetSectionFlag ${p4} ${SF_SELECTED}
-  !insertmacro SetSectionFlag ${p5} ${SF_SELECTED}
-  ;!insertmacro SetSectionFlag ${p6} ${SF_SELECTED}
-  !insertmacro SetSectionFlag ${p0} ${SF_RO}
-  !insertmacro ClearSectionFlag ${p0} ${SF_EXPAND}
-  SectionSetText ${p1} ""
-  SectionSetText ${p2} ""
-  SectionSetText ${p3} ""
-  SectionSetText ${p4} ""
-  SectionSetText ${p5} ""
-  ;SectionSetText ${p6} ""
-  SectionSetText ${p0} ""
-  goto vupgradeend
-  vupgrade:
-  !insertmacro ClearSectionFlag ${p1} ${SF_RO}
-  !insertmacro ClearSectionFlag ${p2} ${SF_RO}
-  !insertmacro ClearSectionFlag ${p3} ${SF_RO}
-  !insertmacro ClearSectionFlag ${p4} ${SF_RO}
-  !insertmacro ClearSectionFlag ${p5} ${SF_RO}
-  ;!insertmacro ClearSectionFlag ${p6} ${SF_RO}
-  !insertmacro ClearSectionFlag ${p0} ${SF_RO}
-  !insertmacro SetSectionFlag ${p0} ${SF_EXPAND}
-  SectionSetText ${p1} "AIM"
-  SectionSetText ${p2} "ICQ"
-  SectionSetText ${p3} "IRC"
-  SectionSetText ${p4} "Jabber"
-  SectionSetText ${p5} "MSN"
-  ;SectionSetText ${p6} "Yahoo"
-  SectionSetText ${p0} "Protocols"
-  vupgradeend:
+  StrCmp $INST_UPGRADE "1" "" noupgrade
+  !insertmacro ClearSectionFlag ${pStoreData} ${SF_SELECTED}
+  SectionSetText ${pStoreData} ""
+  !insertmacro SetSectionFlag ${pOptions} ${SF_EXPAND}
+  Goto noupgradeend
+  noupgrade:
+  SectionSetText ${pStoreData} "Store profile data in user home directory"
+  !insertmacro ClearSectionFlag ${pStoreData} ${SF_SELECTED}
+  noupgradeend:
 FunctionEnd
 
 Function .onInstSuccess
-  StrCmp $INST_UPGRADE "1" noconfig
-  SetOutPath "$INSTDIR"
-  File config.exe
-  Exec "$INSTDIR\config.exe"
-  Delete /REBOOTOK "$INSTDIR\config.exe"
-  Goto endinstall
-  noconfig:
   SetOutPath "$INSTDIR"
   Exec "$INSTDIR\miranda32.exe"
-  endinstall:
 FunctionEnd
