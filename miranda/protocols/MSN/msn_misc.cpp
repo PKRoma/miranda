@@ -44,6 +44,7 @@ pIncrementFunc *MyInterlockedIncrement = MyInterlockedIncrementInit;
 static CRITICAL_SECTION csInterlocked95;
 extern HANDLE msnMainThread;
 extern bool msnUseExtendedPopups;
+extern char* msnPreviousUUX;
 
 /////////////////////////////////////////////////////////////////////////////////////////
 // MirandaStatusToMSN - status helper functions
@@ -263,6 +264,9 @@ void __stdcall	MSN_GoOffline()
 
 	msnLoggedIn = false;
 
+	free(msnPreviousUUX);
+	msnPreviousUUX = NULL;
+
 	if ( !Miranda_Terminated() )
 		MSN_EnableMenuItems( FALSE );
 	MSN_CloseConnections();
@@ -393,8 +397,6 @@ int __stdcall MSN_SendNicknameW( WCHAR* nickname)
 
 /////////////////////////////////////////////////////////////////////////////////////////
 // MSN_SendStatusMessage - notify a server about the status message change
-
-extern char* msnPreviousUUX;
 
 void __stdcall MSN_SendStatusMessage( const char* msg )
 {

@@ -1265,13 +1265,8 @@ void __stdcall p2p_processMsg( ThreadData* info, const char* msgbody )
 			break;
 
 		case 3:
-			if ( !strcmp( szContentType, "application/x-msnmsgr-sessionclosebody" )) {
-				filetransfer* ft = p2p_getSessionByCallID( tFileInfo[ "Call-ID" ] );
-				if ( ft != NULL ) {
-					p2p_sendAck( ft, info, hdrdata );
-					ft->p2p_ackID = 4000;
-			}	}
-			break;
+			if ( strcmp( szContentType, "application/x-msnmsgr-sessionclosebody" )) 
+				break;
 
 		case 4:
 			sttCloseTransfer( hdrdata, info, tFileInfo );
