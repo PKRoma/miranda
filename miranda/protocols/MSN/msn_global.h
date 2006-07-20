@@ -441,6 +441,7 @@ void __stdcall p2p_invite( HANDLE hContact, int iAppID, filetransfer* ft = NULL 
 void __stdcall p2p_processMsg( ThreadData* info, const char* msgbody );
 void __stdcall p2p_sendAck( filetransfer* ft, ThreadData* info, P2P_Header* hdrdata );
 void __stdcall p2p_sendStatus( filetransfer* ft, ThreadData* info, long lStatus );
+void __stdcall p2p_sendBye( ThreadData* info, filetransfer* ft );
 
 void __stdcall p2p_sendViaServer( filetransfer* ft, ThreadData* T );
 long __stdcall p2p_sendPortionViaServer( filetransfer* ft, ThreadData* T );
@@ -454,6 +455,8 @@ filetransfer* __stdcall p2p_getFirstSession( HANDLE hContact );
 filetransfer* __stdcall p2p_getSessionByID( long ID );
 filetransfer* __stdcall p2p_getSessionByMsgID( long ID );
 filetransfer* __stdcall p2p_getSessionByCallID( const char* CallID );
+
+BOOL __stdcall p2p_sessionRegistered( filetransfer* ft );
 
 void ft_startFileSend( ThreadData* info, const char* Invcommand, const char* Invcookie );
 

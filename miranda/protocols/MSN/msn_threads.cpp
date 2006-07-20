@@ -148,9 +148,10 @@ void __cdecl MSNServerThread( ThreadData* info )
 		MSN_EnableMenuItems( TRUE );
 
 		msnNsThread = info;
-		hKeepAliveThreadEvt = ::CreateEvent( NULL, TRUE, FALSE, NULL );
-		MSN_StartThread(( pThreadFunc )msn_keepAliveThread, NULL );
-	}
+		if (hKeepAliveThreadEvt == NULL) {
+			hKeepAliveThreadEvt = ::CreateEvent( NULL, TRUE, FALSE, NULL );
+			MSN_StartThread(( pThreadFunc )msn_keepAliveThread, NULL );
+	}	}
 
 	MSN_DebugLog( "Entering main recv loop" );
 	info->mBytesInData = 0;
@@ -256,10 +257,31 @@ void __stdcall MSN_CloseConnections()
 		ThreadData* T = sttThreads[ i ];
 		if ( T == NULL )
 			continue;
+			
+		switch (T->mType) {
+		case SERVER_DISPATCH :
+		case SERVER_NOTIFICATION :
+		case SERVER_SWITCHBOARD :
+			if (T->s != NULL)
+				T->sendPacket( "OUT", NULL );
+			break;
 
-		if ( T->mIsMainThread && T->s != NULL )
-			T->sendPacket( "OUT", NULL );
-	}
+		case SERVER_FILETRANS :
+		case SERVER_P2P_DIRECT :
+			if (p2p_sessionRegistered(T->mP2pSession)) {
+				filetransfer *ft = T->mP2pSession;
+				ft->bCanceled = true;
+				if ( ft->hWaitEvent != INVALID_HANDLE_VALUE )
+					SetEvent( ft->hWaitEvent );
+
+				if ( ft->p2p_appID != 0 ) 
+					p2p_sendStatus( ft, T, -1 );
+
+				ft->std.files = NULL;
+				ft->std.totalFiles = 0;
+			}
+			break;
+	}	}
 
 	LeaveCriticalSection( &sttLock );
 }

@@ -152,6 +152,22 @@ filetransfer* __stdcall p2p_getAnotherContactSession( filetransfer* ft )
 	return result;
 }
 
+BOOL __stdcall p2p_sessionRegistered( filetransfer* ft )
+{
+    BOOL result = FALSE;
+	EnterCriticalSection( &sessionLock );
+
+	for ( int i=0; i < sessionCount; i++ ) {
+		filetransfer* FT = sessionList[i];
+		if ( sessionList[i] == ft ) {
+			result = TRUE;
+			break;
+	}	}
+
+	LeaveCriticalSection( &sessionLock );
+	return result;
+}
+
 filetransfer* __stdcall p2p_getFirstSession( HANDLE hContact )
 {
    filetransfer* result = NULL;

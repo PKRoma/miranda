@@ -395,7 +395,7 @@ int MsnFileCancel(WPARAM wParam, LPARAM lParam)
 	if ( ft->p2p_appID != 0 ) {
 		ThreadData* thread = MSN_GetThreadByContact( ccs->hContact );
 		if ( thread != NULL )
-			p2p_sendStatus( ft, thread, -1 );
+			p2p_sendBye( thread, ft );
 	}
 
 	ft->std.files = NULL;
@@ -1022,7 +1022,7 @@ static int MsnSetAwayMsg(WPARAM wParam,LPARAM lParam)
 	int i;
 
 	for ( i=0; i < MSN_NUM_MODES; i++ )
-		if ( msnModeMsgs[i].m_mode == wParam )
+		if ( msnModeMsgs[i].m_mode == (int)wParam )
 			break;
 
 	if ( i == MSN_NUM_MODES )
@@ -1030,7 +1030,7 @@ static int MsnSetAwayMsg(WPARAM wParam,LPARAM lParam)
 
 	replaceStr( msnModeMsgs[i].m_msg, ( char* )lParam );
 
-	if ( wParam == msnDesiredStatus )
+	if ( (int)wParam == msnDesiredStatus )
 		MSN_SendStatusMessage(( char* )lParam );
 
 	return 0;
