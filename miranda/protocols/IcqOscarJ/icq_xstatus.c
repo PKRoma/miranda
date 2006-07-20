@@ -106,13 +106,13 @@ static char* InitXStatusIconLibrary(char* buf)
   GetModuleFileNameA(NULL, path, MAX_PATH);
   // find the last \ and null it out, this leaves no trailing slash
   p = strrchr(path, '\\');
-  strcpy(p, "\\Plugins");
-  strcat(p, "\\xstatus_icons.dll");
+  strcpy(p, "\\Icons");
+  strcat(p, "\\xstatus_ICQ.dll");
   hXStatusIconsDLL = LoadLibrary(path);
 
   if (!hXStatusIconsDLL)
   {
-    strcpy(p, "\\Icons");
+    strcpy(p, "\\Plugins");
     strcat(p, "\\xstatus_icons.dll");
     hXStatusIconsDLL = LoadLibrary(path);
   }
