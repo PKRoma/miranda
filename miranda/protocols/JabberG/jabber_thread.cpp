@@ -420,7 +420,9 @@ LBL_Exit:
 				JabberXmlSetCallback( &xmlState, 2, ELEM_CLOSE, JabberProcessProtocol, info );
 
 				XmlNode stream( "stream:stream" ); stream.addAttr( "to", info->server ); stream.addAttr( "xmlns", "jabber:client" );
+				stream.props = "<?xml version='1.0' encoding='UTF-8'?>";
 				stream.addAttr( "xmlns:stream", "http://etherx.jabber.org/streams" );
+				stream.dirtyHack = true;
 				JabberSend( info->s, stream );
 			}
 
