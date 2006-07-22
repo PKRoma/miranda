@@ -25,6 +25,7 @@ void add_contact_to_group(HANDLE hContact,unsigned short new_group_id,char* grou
 void offline_contacts();
 void offline_contact(HANDLE hContact, bool remove_settings);
 char *normalize_name(const char *s);
+void lowercase_name(char* s);
 void msg_ack_success(HANDLE hContact);
 void execute_cmd(char* type,char* arg);
 void create_group(char *group);

@@ -161,7 +161,7 @@
 //Some Defaults for various things
 #define DEFAULT_KEEPALIVE_TIMER			60// 1000 milliseconds * 60 = 60 secs
 #define DEFAULT_GRACE_PERIOD			60
-#define AIM_DEFAULT_GROUP				"Miranda Merged"
+#define AIM_DEFAULT_GROUP				"miranda merged"
 #define AIM_DEFAULT_SERVER				"login.oscar.aol.com:5190"
 #define SYSTEM_BUDDY					"aolsystemmsg"
 #define DEFAULT_AWAY_MSG				"I am away from my computer right now."

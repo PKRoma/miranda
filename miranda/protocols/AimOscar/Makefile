@@ -1,5 +1,5 @@
 ####################################################################
-# AIM TOC2 Protocol Plugin
+# AIM OSCAR Protocol Plugin
 # Makefile for Mingw
 ####################################################################
 #
@@ -118,6 +118,6 @@ format :
 	$(RM) *.*~
 
 clean :
-	$(RM) -fr $(OBJ) $(RES) *.ncb *.suo *.aps Release Debug *.vcproj.*
+	$(RM) -fr $(OBJ) $(RES) *.ncb *.suo *.aps Release Debug *.vcproj.* *.opt *.dat *.plg
 
 -include Makefile.dep

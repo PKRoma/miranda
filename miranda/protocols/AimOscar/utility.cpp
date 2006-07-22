@@ -147,7 +147,7 @@ void add_contact_to_group(HANDLE hContact,unsigned short new_group_id,char* grou
 		}
 		else
 		{
-			if(!DBGetContactSettingStringUtf(NULL,ID_GROUP_KEY,group_id_string,&dbv))//utf
+			if(!DBGetContactSetting(NULL,ID_GROUP_KEY,group_id_string,&dbv))//utf
 				if(!lstrcmpi(group,dbv.pszVal))
 				{
 					DBFreeVariant(&dbv);
@@ -184,6 +184,14 @@ void add_contact_to_group(HANDLE hContact,unsigned short new_group_id,char* grou
 			aim_add_contact(conn.hServerConn,conn.seqno,dbv.pszVal,item_id,new_group_id);
 			if(!group_exist)
 			{
+				char group_id_string[32];
+				_itoa(new_group_id,group_id_string,10);
+				lowercase_name(group);
+				if(bUtfReadyDB==1)
+					DBWriteContactSettingStringUtf(NULL, ID_GROUP_KEY,group_id_string, group);
+				else
+					DBWriteContactSettingString(NULL, ID_GROUP_KEY,group_id_string, group);
+				DBWriteContactSettingWord(NULL, GROUP_ID_KEY,group, new_group_id);
 				aim_add_group(conn.hServerConn,conn.seqno,group,new_group_id);//add the group server-side even if it exist
 			}
 			aim_mod_group(conn.hServerConn,conn.seqno,group,new_group_id,user_id_array,user_id_array_size);//mod the group so that aim knows we want updates on the user's status during this session			
@@ -500,6 +508,15 @@ char *normalize_name(const char *s)
     }
     buf[i] = '\0';
     return buf;
+}
+void lowercase_name(char* s)
+{   
+	if (s == NULL)
+		return;
+	for (int i = 0; s[i]; i++)
+	{
+		s[i] = (char)tolower(s[i]);
+	}
 }
 void msg_ack_success(HANDLE hContact)
 {
