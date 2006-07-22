@@ -163,7 +163,7 @@ LBL_InvalidCommand:
 			{
 				if ( ft->bCanceled )
 				{	info->send( "CCL\r\n", 5 );
-					close( ft->fileId );
+					ft->close();
 					return 0;
 				}
 

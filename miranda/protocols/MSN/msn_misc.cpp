@@ -256,9 +256,6 @@ void __stdcall MSN_GetAvatarFileName( HANDLE hContact, char* pszDest, int cbLen 
 
 void __stdcall	MSN_GoOffline()
 {
-	if ( msnLoggedIn )
-		msnNsThread->sendPacket( "OUT", NULL );
-
 	int msnOldStatus = msnStatusMode; msnStatusMode = ID_STATUS_OFFLINE;
 	MSN_SendBroadcast( NULL, ACKTYPE_STATUS, ACKRESULT_SUCCESS, (HANDLE)msnOldStatus, ID_STATUS_OFFLINE );
 
@@ -477,8 +474,7 @@ void __stdcall MSN_SetServerStatus( int newStatus )
 		if ( MyOptions.UseMSNP11 ) {
 			for ( int i=0; i < MSN_NUM_MODES; i++ ) { 
 				if ( msnModeMsgs[ i ].m_mode == newStatus ) {
-					if ( msnModeMsgs[ i ].m_msg != NULL )
-                  MSN_SendStatusMessage( msnModeMsgs[ i ].m_msg );
+					MSN_SendStatusMessage( msnModeMsgs[ i ].m_msg );
 					break;
 		}	}	}
 	}
@@ -857,8 +853,15 @@ filetransfer::~filetransfer()
 	else if ( fileId != -1 )
 		_close( fileId );
 
-	if ( mIncomingBoundPort != NULL )
+	if ( mIncomingBoundPort != NULL ) {
+		ThreadData* T = MSN_GetThreadByPort(mIncomingPort);
+		if ( T != NULL && T->s != NULL )
+		{
+			Netlib_CloseHandle( T->s );
+			T->s = NULL;
+		}
 		Netlib_CloseHandle( mIncomingBoundPort );
+	}
 
 	if ( hWaitEvent != INVALID_HANDLE_VALUE )
 		CloseHandle( hWaitEvent );

@@ -275,7 +275,7 @@ void __stdcall MSN_CloseConnections()
 					SetEvent( ft->hWaitEvent );
 
 				if ( ft->p2p_appID != 0 ) 
-					p2p_sendStatus( ft, T, -1 );
+					p2p_sendBye( T, ft );
 
 				ft->std.files = NULL;
 				ft->std.totalFiles = 0;
