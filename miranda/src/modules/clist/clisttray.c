@@ -524,11 +524,10 @@ int fnTrayIconProcessMessage(WPARAM wParam, LPARAM lParam)
 				}
 			}
 		else if (msg->lParam == WM_RBUTTONUP) {
-			HMENU hMenu;
 			MENUITEMINFO mi;
 			POINT pt;
-			hMenu = LoadMenu(cli.hInst, MAKEINTRESOURCE(IDR_CONTEXT));
-			hMenu = GetSubMenu(hMenu, 0);
+			HMENU hMainMenu = LoadMenu(cli.hInst, MAKEINTRESOURCE(IDR_CONTEXT));
+			HMENU hMenu = GetSubMenu(hMainMenu, 0);
 			CallService(MS_LANGPACK_TRANSLATEMENU, (WPARAM) hMenu, 0);
 
 			ZeroMemory(&mi, sizeof(mi));
@@ -547,6 +546,7 @@ int fnTrayIconProcessMessage(WPARAM wParam, LPARAM lParam)
 			SetFocus(msg->hwnd);
 			GetCursorPos(&pt);
 			TrackPopupMenu(hMenu, TPM_TOPALIGN | TPM_LEFTALIGN, pt.x, pt.y, 0, msg->hwnd, NULL);
+			DestroyMenu(hMainMenu);
 		}
 		*((LRESULT *) lParam) = 0;
 		return TRUE;
