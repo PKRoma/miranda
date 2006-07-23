@@ -809,32 +809,10 @@ DWORD WINAPI MsnShowMailThread( LPVOID )
 	MSN_FreeVariant( &dbv );
 
 	// for hotmail access
-
-	char* Path = getenv( "TEMP" );
-	if ( Path == NULL )
-		Path = getenv( "TMP" );
-
-	char tPathName[ MAX_PATH ];
-	if ( Path == NULL ) {
-		MSN_DebugLog( "Temporary file is created in the current directory: %s",
-			getcwd( tPathName, sizeof( tPathName )));
-	}
-	else {
-		MSN_DebugLog( "Temporary path found: %s", Path );
-		strcpy( tPathName, Path );
-	}
-
-	strcat( tPathName, "\\stdtemp.html" );
-	MSN_DebugLog( "Opening temporary file '%s'", tPathName );
-
-	FILE* fp = fopen( tPathName, "w" );
-	if ( fp == NULL ) {
-		MSN_DebugLog( "Opening failed" );
-		return 0;
-	}
+	int tm = time(NULL) - sl;
 
 	char hippy[ 2048 ];
-	long challen = mir_snprintf( hippy, sizeof( hippy ), "%s%lu%s", MSPAuth, time(NULL) - sl, passwd );
+	long challen = mir_snprintf( hippy, sizeof( hippy ), "%s%lu%s", MSPAuth, tm, passwd );
 
 	//Digest it
 	unsigned char digest[16];
@@ -843,41 +821,23 @@ DWORD WINAPI MsnShowMailThread( LPVOID )
 	MD5Update( &context, ( BYTE* )hippy, challen );
 	MD5Final( digest, &context );
 
-	fprintf( fp, "<html>\n" );
-	fprintf( fp, "<head>\n" );
-	fprintf( fp, "<noscript>\n" );
-	fprintf( fp, "<meta http-equiv=Refresh content=\"0; url=http://www.hotmail.com\">\n" );
-	fprintf( fp, "</noscript>\n" );
-	fprintf( fp, "</head>\n\n" );
-
-	fprintf( fp, "<body onload=\"document.pform.submit(); \">\n" );
-	fprintf( fp, "<form name=\"pform\" action=\"%s\" method=\"POST\">\n\n", passport);
-	fprintf( fp, "<input type=\"hidden\" name=\"mode\" value=\"ttl\">\n" );
-	fprintf( fp, "<input type=\"hidden\" name=\"login\" value=\"%s\">\n", email);
-	fprintf( fp, "<input type=\"hidden\" name=\"username\" value=\"%s\">\n", email);
-	fprintf( fp, "<input type=\"hidden\" name=\"sid\" value=\"%s\">\n", sid);
-	fprintf( fp, "<input type=\"hidden\" name=\"kv\" value=\"%s\">\n", kv);
-	fprintf( fp, "<input type=\"hidden\" name=\"id\" value=\"2\">\n" );
-	fprintf( fp, "<input type=\"hidden\" name=\"sl\" value=\"%ld\">\n", time(NULL) - sl);
-	fprintf( fp, "<input type=\"hidden\" name=\"rru\" value=\"%s\">\n", rru);
-	fprintf( fp, "<input type=\"hidden\" name=\"auth\" value=\"%s\">\n", MSPAuth);
-	fprintf( fp, "<input type=\"hidden\" name=\"creds\" value=\"%08x%08x%08x%08x\">\n", htonl(*(PDWORD)(digest+0)),htonl(*(PDWORD)(digest+4)),htonl(*(PDWORD)(digest+8)),htonl(*(PDWORD)(digest+12)));
-	fprintf( fp, "<input type=\"hidden\" name=\"svc\" value=\"mail\">\n" );
-	fprintf( fp, "<input type=\"hidden\" name=\"js\" value=\"yes\">\n" );
-	fprintf( fp, "</form></body>\n" );
-	fprintf( fp, "</html>\n" );
-	fclose( fp );
-
-	char url[ 256 ];
 	if ( rru && passport )
-		mir_snprintf( url, sizeof( url ), "file://%s", tPathName );
-	else
-		strcpy( url, "http://go.msn.com/0/1" );
+	{
+		char rruenc[256];
+		UrlEncode(rru, rruenc, sizeof(rruenc));
 
-	MSN_DebugLog( "Starting URL: '%s'", url );
-	MSN_CallService( MS_UTILS_OPENURL, 1, ( LPARAM )url );
-	Sleep( 15000 );
-	DeleteFileA( tPathName );
+		mir_snprintf(hippy, sizeof(hippy), 
+			"%s&auth=%s&creds=%08x%08x%08x%08x&sl=%d&username=%s&mode=ttl"
+			"&sid=%s&id=2&rru=%s&svc=mail&js=yes",
+			passport, MSPAuth, htonl(*(PDWORD)(digest+0)),htonl(*(PDWORD)(digest+4)),
+			htonl(*(PDWORD)(digest+8)),htonl(*(PDWORD)(digest+12)),
+			tm, email, sid, rruenc); 
+	}
+	else
+		strcpy( hippy, "http://go.msn.com/0/1" );
+
+	MSN_DebugLog( "Starting URL: '%s'", hippy );
+	MSN_CallService( MS_UTILS_OPENURL, 1, ( LPARAM )hippy );
 	return 0;
 }
 
