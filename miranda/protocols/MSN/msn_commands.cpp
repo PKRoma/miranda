@@ -42,6 +42,8 @@ void mmdecode(char *trg, char *str);
 
 void MSN_ChatStart(ThreadData* info);
 
+static int tridUrlInbox = -1;
+
 char* sid = NULL;
 char* kv = NULL;
 char* MSPAuth = NULL;
@@ -162,9 +164,6 @@ static void sttNotificationMessage( const char* msgBody, bool isInitial )
 	bool tIsPopup = ServiceExists( MS_POPUP_ADDPOPUP ) != 0;
 	int  UnreadMessages = -1, UnreadJunkEmails = -1;
 
-	replaceStr( passport, "https://loginnet.passport.com/ppsecure/md5auth.srf?lc=1033" );
-	replaceStr( rru, "/cgi-bin/HoTMaiL" );
-
 	MimeHeaders tFileInfo;
 	tFileInfo.readFromBuffer( msgBody );
 
@@ -178,8 +177,6 @@ static void sttNotificationMessage( const char* msgBody, bool isInitial )
 		if (( p = tFileInfo[ "Folders-Unread" ] ) != NULL )
 			UnreadJunkEmails = atoi( p );
 	}
-	replaceStr( rru,      tFileInfo[ "Inbox-URL" ] );
-//	replaceStr( passport, tFileInfo[ "Post-URL" ]  );
 
 	if ( From != NULL && Subject != NULL && Fromaddr != NULL ) {
 		char mimeFrom[ 1024 ], mimeSubject[ 1024 ];
@@ -1569,6 +1566,8 @@ LBL_InvalidCommand:
 			sttIsSync = true;
 			if (( sttListNumber = atol( tWords[ 2 ] )) == 0 )
 				MSN_SetServerStatus( msnDesiredStatus );
+
+			tridUrlInbox = info->sendPacket( "URL", "INBOX" );
 			sttListedContact = NULL;
 			break;
 		}
@@ -1610,6 +1609,23 @@ LBL_InvalidCommand:
 					}
 					else DBDeleteContactSetting( hContact, "CList", "StatusMsg" );
 			}	}
+			break;
+		}
+		case ' LRU':
+		{
+			union {
+				char* tWords[ 3 ];
+				struct { char *rru, *passport, *urlID; } data;
+			};
+
+			if ( sttDivideWords( params, 3, tWords ) != 3 )
+				goto LBL_InvalidCommand;
+
+			if ( trid == tridUrlInbox ) {
+				replaceStr( passport, data.passport );
+				replaceStr( rru, data.rru );
+				tridUrlInbox = -1;
+			}
 			break;
 		}
 		case ' RSU':	//********* USR: sections 7.3 Authentication, 8.2 Switchboard Connections and Authentication
