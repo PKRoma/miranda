@@ -338,6 +338,7 @@ extern "C" int __declspec(dllexport) Load( PLUGINLINK* link )
 // Unload a plugin
 
 extern char* rru;
+extern char* profileURL;
 
 extern "C" int __declspec( dllexport ) Unload( void )
 {
@@ -382,6 +383,7 @@ extern "C" int __declspec( dllexport ) Unload( void )
 	if ( passport ) free( passport );
 	if ( MSPAuth ) free( MSPAuth );
 	if ( rru ) free( rru );
+	if ( profileURL ) free( profileURL );
 
 	if ( msnPreviousUUX ) free( msnPreviousUUX );
 	if ( msnExternalIP ) free( msnExternalIP );

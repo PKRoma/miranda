@@ -42,12 +42,13 @@ void mmdecode(char *trg, char *str);
 
 void MSN_ChatStart(ThreadData* info);
 
-static int tridUrlInbox = -1;
+static int tridUrlInbox = -1, tridUrlEdit = -1;
 
 char* sid = NULL;
 char* kv = NULL;
 char* MSPAuth = NULL;
 char* passport = NULL;
+char* profileURL = NULL;
 char* rru = NULL;
 extern HANDLE	 hMSNNudge;
 
@@ -162,7 +163,7 @@ static void sttNotificationMessage( const char* msgBody, bool isInitial )
 	char tBuffer[512];
 	char tBuffer2[512];
 	bool tIsPopup = ServiceExists( MS_POPUP_ADDPOPUP ) != 0;
-	int  UnreadMessages = -1, UnreadJunkEmails = -1;
+	int  UnreadMessages = 0, UnreadJunkEmails = 0;
 
 	MimeHeaders tFileInfo;
 	tFileInfo.readFromBuffer( msgBody );
@@ -1567,8 +1568,9 @@ LBL_InvalidCommand:
 			if (( sttListNumber = atol( tWords[ 2 ] )) == 0 )
 				MSN_SetServerStatus( msnDesiredStatus );
 
-			tridUrlInbox = info->sendPacket( "URL", "INBOX" );
 			sttListedContact = NULL;
+			tridUrlInbox = msnNsThread->sendPacket( "URL", "INBOX" );
+			tridUrlEdit  = msnNsThread->sendPacket( "URL", "PROFILE 0x%04x", GetUserDefaultLCID() );
 			break;
 		}
 		case ' XBU':   // UBX : MSNP11+ User Status Message
@@ -1626,6 +1628,10 @@ LBL_InvalidCommand:
 				replaceStr( rru, data.rru );
 				tridUrlInbox = -1;
 			}
+			else if ( trid == tridUrlEdit ) {
+				replaceStr( profileURL, data.rru );
+				tridUrlEdit = -1;
+			}				
 			break;
 		}
 		case ' RSU':	//********* USR: sections 7.3 Authentication, 8.2 Switchboard Connections and Authentication
