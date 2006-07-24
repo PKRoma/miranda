@@ -32,6 +32,7 @@ void __cdecl MSNServerThread( ThreadData* info );
 void MSN_ChatStart(ThreadData* info);
 
 HANDLE msnBlockMenuItem = NULL;
+extern char* profileURL;
 
 /////////////////////////////////////////////////////////////////////////////////////////
 // MsnAddToList - adds contact to the server list
@@ -333,7 +334,7 @@ static int MsnDbSettingChanged(WPARAM wParam,LPARAM lParam)
 static int MsnEditProfile( WPARAM, LPARAM )
 {
 	char tUrl[ 4096 ];
-	mir_snprintf( tUrl, sizeof( tUrl ), "http://members.msn.com/Edit.asp?did=1&t=%s&js=yes", MSPAuth );
+	mir_snprintf( tUrl, sizeof( tUrl ), "%s&did=1&t=%s&js=yes", profileURL, MSPAuth );
 	MSN_CallService( MS_UTILS_OPENURL, TRUE, ( LPARAM )tUrl );
 	return 0;
 }
