@@ -1813,11 +1813,18 @@ static void handleRecvMsgResponse(unsigned char *buf, WORD wLen, WORD wFlags, DW
     buf += 2;
     wLen -= 2;
 
-    dwCookie = wCookie;
-
-    if (!FindCookie(dwCookie, &dwCookieUin, &pCookieData))
+    if (!FindCookie(wCookie, &dwCookieUin, &pCookieData))
     { // use old reliable method
       NetLog_Server("Warning: Invalid cookie in %s from (%u)", "message response", dwUin);
+    }
+    else if (bMsgType != MTYPE_PLUGIN && bMsgType != MTYPE_AUTOAWAY)
+    { // just because some clients break it...
+      dwCookie = wCookie;
+
+      if (bMsgType != pCookieData->bMessageType)
+        NetLog_Server("Warning: Invalid message type in %s from (%u)", "message response", dwUin);
+
+      bMsgType = pCookieData->bMessageType;
     }
   }
   else
