@@ -546,6 +546,9 @@ int fnTrayIconProcessMessage(WPARAM wParam, LPARAM lParam)
 			SetFocus(msg->hwnd);
 			GetCursorPos(&pt);
 			TrackPopupMenu(hMenu, TPM_TOPALIGN | TPM_LEFTALIGN, pt.x, pt.y, 0, msg->hwnd, NULL);
+
+			RemoveMenu(hMenu, 1, MF_BYPOSITION);
+			RemoveMenu(hMenu, 1, MF_BYPOSITION);
 			DestroyMenu(hMainMenu);
 		}
 		*((LRESULT *) lParam) = 0;
