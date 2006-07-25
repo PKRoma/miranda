@@ -509,14 +509,15 @@ char *normalize_name(const char *s)
     buf[i] = '\0';
     return buf;
 }
-void lowercase_name(char* s)
+void lowercase_name(char* &s)
 {   
 	if (s == NULL)
 		return;
-	for (int i = 0; s[i]; i++)
-	{
+	int i=0;
+	while(s[0]==0x20)
+		s++;
+	for (; s[i]; i++)
 		s[i] = (char)tolower(s[i]);
-	}
 }
 void msg_ack_success(HANDLE hContact)
 {
