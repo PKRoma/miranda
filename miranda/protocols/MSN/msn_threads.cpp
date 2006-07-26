@@ -30,6 +30,7 @@ int MSN_HandleErrors(ThreadData *info,char *cmdString);
 int MSN_HandleMSNFTP( ThreadData *info, char *cmdString );
 
 extern LONG (WINAPI *MyInterlockedIncrement)(PLONG pVal);
+extern unsigned long sl;
 
 HANDLE hKeepAliveThreadEvt = NULL;
 
@@ -147,6 +148,7 @@ void __cdecl MSNServerThread( ThreadData* info )
 	if ( info->mIsMainThread ) {
 		MSN_EnableMenuItems( TRUE );
 
+		sl = time(NULL); //for hotmail
 		msnNsThread = info;
 		if (hKeepAliveThreadEvt == NULL) {
 			hKeepAliveThreadEvt = ::CreateEvent( NULL, TRUE, FALSE, NULL );

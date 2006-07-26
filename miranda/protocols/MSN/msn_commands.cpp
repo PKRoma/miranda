@@ -1777,7 +1777,6 @@ LBL_InvalidCommand:
 
 				MSN_DebugLog( "Switching to notification server '%s'...", data.newServer );
 				newThread->startThread(( pThreadFunc )MSNServerThread );
-				sl = time(NULL); //for hotmail
 				return 1;  //kill the old thread
 			}
 
