@@ -136,6 +136,7 @@ void handleLoginReply(unsigned char *buf, WORD datalen, serverthread_info *info)
     if (!getLenFromChain(chain, 0x06, 1)) 
     {
       disposeChain(&chain);
+      SetCurrentStatus(ID_STATUS_OFFLINE);
       NetLib_SafeCloseHandle(&hServerConn);
       return; // Failure
     }
@@ -158,6 +159,7 @@ void handleLoginReply(unsigned char *buf, WORD datalen, serverthread_info *info)
     SAFE_FREE(&info->cookieData);
     info->cookieDataLen = 0;
 
+    SetCurrentStatus(ID_STATUS_OFFLINE);
     NetLib_SafeCloseHandle(&hServerConn);
     return; // Failure
   }
@@ -261,6 +263,7 @@ static void handleSignonError(WORD wError)
   case 0x06: // Internal Client error (bad input to authorizer)
   case 0x07: // Invalid account
     ICQBroadcastAck(NULL, ACKTYPE_LOGIN, ACKRESULT_FAILED, NULL, LOGINERR_WRONGPASSWORD);
+    ZeroMemory(gpszPassword, sizeof(gpszPassword));
     icq_LogFatalParam("Connection failed.\nYour ICQ number or password was rejected (%d).", wError);
     break;
 
