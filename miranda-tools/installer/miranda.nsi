@@ -3,7 +3,7 @@
 
 !define MIM_NAME                "Miranda IM"
 !define MIM_VERSION             "0.5"
-!define MIM_PREVIEW             "3" ; comment out for final build
+;!define MIM_PREVIEW             "5" ; comment out for final build
 
 !define MIM_BUILD_UNICODE
 
@@ -21,10 +21,10 @@
 
 !ifdef MIM_PREVIEW
 Name                            "${MIM_NAME} ${MIM_VERSION} Preview Release ${MIM_PREVIEW}"
-OutFile                         "miranda-v${MIM_VERSION}-pr${MIM_PREVIEW}-${MIM_BUILD_TYPE}.exe"
+OutFile                         "miranda-im-v${MIM_VERSION}-pr${MIM_PREVIEW}-${MIM_BUILD_TYPE}.exe"
 !else
 Name                            "${MIM_NAME} ${MIM_VERSION}"
-OutFile                         "miranda-v${MIM_VERSION}-${MIM_BUILD_TYPE}.exe"
+OutFile                         "miranda-im-v${MIM_VERSION}-${MIM_BUILD_TYPE}.exe"
 !endif
 
 InstallDir                      "$PROGRAMFILES\Miranda IM"
@@ -42,6 +42,8 @@ VAR INST_UPGRADE
 !define MUI_HEADERIMAGE_UNBITMAP "${NSISDIR}\Contrib\Graphics\Header\orange-uninstall.bmp"
 !define MUI_WELCOMEFINISHPAGE_BITMAP "${NSISDIR}\Contrib\Graphics\Wizard\orange.bmp"
 !define MUI_UNWELCOMEFINISHPAGE_BITMAP "${NSISDIR}\Contrib\Graphics\Wizard\orange-uninstall.bmp"
+!define MUI_ICON "${NSISDIR}\Contrib\Graphics\Icons\orange-install.ico"
+!define MUI_UNICON "${NSISDIR}\Contrib\Graphics\Icons\orange-uninstall.ico"
 !define MUI_ABORTWARNING
 !define MUI_COMPONENTSPAGE_NODESC
 !define MUI_LICENSEPAGE_BGCOLOR /grey
@@ -52,14 +54,18 @@ VAR INST_UPGRADE
 !insertmacro MUI_PAGE_DIRECTORY
 !insertmacro MUI_PAGE_COMPONENTS
 !insertmacro MUI_PAGE_INSTFILES
+!insertmacro MUI_PAGE_FINISH
 
 !insertmacro MUI_UNPAGE_CONFIRM
 !insertmacro MUI_UNPAGE_INSTFILES
 
 !insertmacro MUI_LANGUAGE "English"
 
-Section "!Miranda IM"
+Section "Miranda IM"
   SectionIn RO
+  SetDetailsPrint textonly
+  DetailPrint "Installing Miranda IM Core Files..."
+  SetDetailsPrint listonly
 
   Delete "$INSTDIR\Uninstall\unins000.dat"
   Delete "$INSTDIR\Uninstall\unins000.exe"
@@ -85,14 +91,6 @@ Section "!Miranda IM"
   File "${MIM_BUILD_DIRANSI}\plugins\dbx_3x.dll"
   File "${MIM_BUILD_DIR}\plugins\chat.dll"
 
-  SetOutPath "$INSTDIR\Icons"
-  File "${MIM_BUILD_ICONS}\proto_AIM.dll"
-  File "${MIM_BUILD_ICONS}\proto_ICQ.dll"
-  File "${MIM_BUILD_ICONS}\proto_IRC.dll"
-  File "${MIM_BUILD_ICONS}\proto_JABBER.dll"
-  File "${MIM_BUILD_ICONS}\proto_MSN.dll"
-  File "${MIM_BUILD_ICONS}\proto_YAHOO.dll"
-  
   DeleteRegKey HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\Miranda IM_is1" ; remove old uninstaller key
   WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\Miranda IM" "DisplayName" "Miranda IM" 
   WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\Miranda IM" "UninstallString" "$INSTDIR\uninstall.exe"
@@ -101,57 +99,104 @@ SectionEnd
 
 SubSection /e "Protocols"
   Section "AIM"
+    SetDetailsPrint textonly
+    DetailPrint "Installing AIM Protocol..."
+    SetDetailsPrint listonly
     SetOutPath "$INSTDIR\Plugins"
-    File /oname=aim.dll "${MIM_BUILD_DIRANSI}\plugins\AimOscar.dll"
+    File "${MIM_BUILD_DIRANSI}\plugins\Aim.dll"
+    SetOutPath "$INSTDIR\Icons"
+    File "${MIM_BUILD_ICONS}\proto_AIM.dll"
   SectionEnd
 
   Section "ICQ"
+    SetDetailsPrint textonly
+    DetailPrint "Installing ICQ Protocol..."
+    SetDetailsPrint listonly
     SetOutPath "$INSTDIR\Plugins"
     File "${MIM_BUILD_DIRANSI}\plugins\icq.dll"
+    SetOutPath "$INSTDIR\Icons"
+    File "${MIM_BUILD_DIRANSI}\Icons\xstatus_ICQ.dll"
+    File "${MIM_BUILD_ICONS}\proto_ICQ.dll"
   SectionEnd
 
   Section "IRC"
+    SetDetailsPrint textonly
+    DetailPrint "Installing IRC Protocol..."
+    SetDetailsPrint listonly
     SetOutPath "$INSTDIR\Plugins"
     File "${MIM_BUILD_DIRANSI}\plugins\irc.dll"
     SetOverWrite off
     File "${MIM_BUILD_SRC}\protocols\IRC\Docs\IRC_Servers.ini"
     SetOverWrite on
+    SetOutPath "$INSTDIR\Icons"
+    File "${MIM_BUILD_ICONS}\proto_IRC.dll"
   SectionEnd
 
   Section "Jabber"
+    SetDetailsPrint textonly
+    DetailPrint "Installing Jabber Protocol..."
+    SetDetailsPrint listonly
     SetOutPath "$INSTDIR\Plugins"
     File "${MIM_BUILD_DIR}\plugins\jabber.dll"
+    SetOutPath "$INSTDIR\Icons"
+    File "${MIM_BUILD_ICONS}\proto_Jabber.dll"
   SectionEnd
 
   Section "MSN"
+    SetDetailsPrint textonly
+    DetailPrint "Installing MSN Protocol..."
+    SetDetailsPrint listonly
     SetOutPath "$INSTDIR\Plugins"
     File "${MIM_BUILD_DIR}\plugins\msn.dll"
+    SetOutPath "$INSTDIR\Icons"
+    File "${MIM_BUILD_ICONS}\proto_MSN.dll"
   SectionEnd
 
   Section "Yahoo"
+    SetDetailsPrint textonly
+    DetailPrint "Installing Yahoo Protocol..."
+    SetDetailsPrint listonly
     SetOutPath "$INSTDIR\Plugins"
     File "${MIM_BUILD_DIRANSI}\plugins\yahoo.dll"
+    SetOutPath "$INSTDIR\Icons"
+    File "${MIM_BUILD_ICONS}\proto_Yahoo.dll"
   SectionEnd
 SubSectionEnd
 
 Section "Import Plugin"
+  SetDetailsPrint textonly
+  DetailPrint "Installing Import Plugin..."
+  SetDetailsPrint listonly
   SetOutPath "$INSTDIR\Plugins"
   File "${MIM_BUILD_DIRANSI}\plugins\import.dll"
 SectionEnd
 
 SubSection /e "Options" pOptions
   Section "Install Start Menu Shortcuts"
-      SetOutPath "$INSTDIR"
-      RMDir /r "$SMPROGRAMS\Miranda IM"
-      CreateDirectory "$SMPROGRAMS\Miranda IM"
-      CreateShortCut  "$SMPROGRAMS\Miranda IM\Miranda IM.lnk" "$INSTDIR\miranda32.exe"
-      CreateShortCut  "$SMPROGRAMS\Miranda IM\Database Repair Tool.lnk" "$INSTDIR\dbtool.exe"
-      WriteINIStr     "$SMPROGRAMS\Miranda IM\Homepage.url" "InternetShortcut" "URL" "http://www.miranda-im.org/"
+    SetDetailsPrint textonly
+    DetailPrint "Installing Start Menu Shortcuts..."
+    SetDetailsPrint listonly
+    SetOutPath "$INSTDIR"
+    RMDir /r "$SMPROGRAMS\Miranda IM"
+    CreateDirectory "$SMPROGRAMS\Miranda IM"
+    CreateShortCut  "$SMPROGRAMS\Miranda IM\Miranda IM.lnk" "$INSTDIR\miranda32.exe"
+    CreateShortCut  "$SMPROGRAMS\Miranda IM\Database Repair Tool.lnk" "$INSTDIR\dbtool.exe"
+    WriteINIStr     "$SMPROGRAMS\Miranda IM\Homepage.url" "InternetShortcut" "URL" "http://www.miranda-im.org/"
   SectionEnd
 
-  Section "Install Desktop Shortcuts"
+  Section "Install Desktop Shortcut"
+    SetDetailsPrint textonly
+    DetailPrint "Installing Desktop Shortcut..."
+    SetDetailsPrint listonly
     SetOutPath "$INSTDIR"
     CreateShortCut  "$DESKTOP\Miranda IM.lnk" "$INSTDIR\miranda32.exe"
+  SectionEnd
+
+  Section "Install Quicklaunch Shortcut"
+    SetDetailsPrint textonly
+    DetailPrint "Installing Quicklaunch Shortcut..."
+    SetDetailsPrint listonly
+    SetOutPath "$INSTDIR"
     CreateShortCut  "$QUICKLAUNCH\Miranda IM.lnk" "$INSTDIR\miranda32.exe"
   SectionEnd
 
@@ -209,6 +254,7 @@ Function VerifyInstallDir
   endupgrade:
   StrCpy $INST_UPGRADE "0"
   endupgradex:
+  !ifdef MIM_BUILD_UNICODE
   StrCmp $INST_UPGRADE "1" "" noupgrade
   !insertmacro ClearSectionFlag ${pStoreData} ${SF_SELECTED}
   SectionSetText ${pStoreData} ""
@@ -218,6 +264,7 @@ Function VerifyInstallDir
   SectionSetText ${pStoreData} "Store profile data in user home directory"
   !insertmacro ClearSectionFlag ${pStoreData} ${SF_SELECTED}
   noupgradeend:
+  !endif
 FunctionEnd
 
 Function .onInstSuccess
