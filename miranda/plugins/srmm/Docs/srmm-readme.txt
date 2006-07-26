@@ -16,6 +16,10 @@ Simply copy "srmm.dll" into your Miranda IM plugin directory (usually
 
 Changes
 -------
+2.5.0.0.
+ - RTL support added
+ - Updated icons
+
 2.4.0.0
  - Message API fix (MS_MSG_GETWINDOWDATA)
 
