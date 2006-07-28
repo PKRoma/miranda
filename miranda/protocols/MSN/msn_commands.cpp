@@ -42,7 +42,7 @@ void mmdecode(char *trg, char *str);
 
 void MSN_ChatStart(ThreadData* info);
 
-static int tridUrlInbox = -1, tridUrlEdit = -1;
+ int tridUrlInbox = -1, tridUrlEdit = -1;
 
 char* sid = NULL;
 char* kv = NULL;

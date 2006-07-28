@@ -843,8 +843,11 @@ filetransfer::~filetransfer()
 {
 	MSN_DebugLog( "Destroying file transfer session %ld", p2p_sessionid );
 
-	if ( !bCompleted )
+	if ( !bCompleted ) {
+		std.files = NULL;
+		std.totalFiles = 0;
 		MSN_SendBroadcast( std.hContact, ACKTYPE_FILE, ACKRESULT_FAILED, this, 0);
+	}
 
 	if ( inmemTransfer ) {
 		if ( fileBuffer != NULL )
