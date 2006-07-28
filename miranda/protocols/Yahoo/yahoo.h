@@ -38,7 +38,7 @@
 // Build is a cvs build
 //
 // If defined, the build will add cvs info to the plugin info
-#define YAHOO_CVSBUILD
+//#define YAHOO_CVSBUILD
 
 //#define modname			"myYahoo"
 #define YAHOO_LOGINSERVER                 "LoginServer"
