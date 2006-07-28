@@ -378,7 +378,8 @@ static void sttSendPacket( ThreadData* T, P2P_Header& hdr )
 
 bool p2p_connectTo( ThreadData* info )
 {
-	P2P_Header reply;
+	filetransfer* ft = info->mP2pSession;
+	ft->mThreadId = info->mUniqueID;
 
 	NETLIBOPENCONNECTION tConn = { 0 };
 	tConn.cbSize = sizeof( tConn );
@@ -391,8 +392,6 @@ bool p2p_connectTo( ThreadData* info )
 			*tPortDelim = '\0';
 			tConn.wPort = ( WORD )atol( tPortDelim+1 );
 	}	}
-
-	filetransfer* ft = info->mP2pSession;
 
 	while( true ) {
 		char* pSpace = strchr( info->mServer, ' ' );
@@ -421,6 +420,7 @@ bool p2p_connectTo( ThreadData* info )
 
 	info->send( p2p_greeting, sizeof p2p_greeting );
 
+	P2P_Header reply;
 	memset( &reply, 0, sizeof P2P_Header );
 	reply.mID = ft->p2p_msgid++;
 	reply.mFlags = 0x100;
@@ -450,7 +450,7 @@ bool p2p_connectTo( ThreadData* info )
 
 bool p2p_listen( ThreadData* info )
 {
-	filetransfer* ft = info->mP2pSession;
+	filetransfer* ft = info->mP2pSession; ft->mThreadId = info->mUniqueID;
 	DWORD ftID = ft->p2p_sessionid;
 
 	switch( WaitForSingleObject( ft->hWaitEvent, 5000 )) {
@@ -636,10 +636,7 @@ LBL_Error:
 		ft->std.totalProgress += H->mPacketLen;
 		ft->std.currentFileProgress += H->mPacketLen;
 		MSN_SendBroadcast( ft->std.hContact, ACKTYPE_FILE, ACKRESULT_DATA, ft, ( LPARAM )&ft->std );
-	}
-
-	ft->complete();
-}
+}	}
 
 void p2p_sendFileDirectly( ThreadData* info )
 {
@@ -656,7 +653,7 @@ void p2p_sendFileDirectly( ThreadData* info )
 	while( true ) {
 		if (( p = buf.surelyRead( 4 )) == NULL ) {
 LBL_Error:
-			MSN_DebugLog( "File transfer failed" );
+ 			MSN_DebugLog( "File transfer failed" );
 			return;
 		}
 
@@ -677,6 +674,7 @@ LBL_Error:
 		}
 
 		if ( H->mFlags == 2 && H->mTotalSize == ft->std.currentFileSize ) {
+			ft->complete();
 			p2p_sendBye( info, ft );
 			break;
 	}	}

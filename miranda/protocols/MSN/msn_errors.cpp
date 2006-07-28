@@ -23,6 +23,8 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 #include "msn_global.h"
 
+extern int tridUrlInbox, tridUrlEdit;
+
 int MSN_HandleErrors( ThreadData* info, char* cmdString )
 {
 	int errorCode, packetID = -1;
@@ -69,6 +71,18 @@ int MSN_HandleErrors( ThreadData* info, char* cmdString )
 			MSN_SendBroadcast( NULL, ACKTYPE_LOGIN, ACKRESULT_FAILED, NULL, LOGINERR_WRONGPASSWORD );
 		}
 		return 1;
+
+	case 710:
+		if ( packetID == tridUrlInbox ) {
+			tridUrlInbox = -1;
+			return 0;
+		}
+
+		if ( packetID == tridUrlEdit ) {
+			tridUrlEdit = -1;
+			return 0;
+		}
+		// fall through
 
 	default:
 		MSN_DebugLog( "Unprocessed error: %s", cmdString );
