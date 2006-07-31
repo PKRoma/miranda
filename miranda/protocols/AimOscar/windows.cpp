@@ -33,7 +33,7 @@ static int CALLBACK EnumFontsProc(ENUMLOGFONTEX *lpelfe, NEWTEXTMETRICEX *lpntme
 {
     if (!IsWindow((HWND) lParam))
         return FALSE;
-    if (SendMessage((HWND) lParam, CB_FINDSTRINGEXACT, -1, (LPARAM) lpelfe->elfLogFont.lfFaceName) == CB_ERR)
+    if (SendMessage((HWND) lParam, CB_FINDSTRINGEXACT, 1, (LPARAM) lpelfe->elfLogFont.lfFaceName) == CB_ERR)
         SendMessage((HWND) lParam, CB_ADDSTRING, 0, (LPARAM) lpelfe->elfLogFont.lfFaceName);
     return TRUE;
 }
@@ -141,7 +141,7 @@ BOOL CALLBACK userinfo_dialog(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPar
 			SendMessage( GetDlgItem(hwndDlg, IDC_FONTSIZE), CB_ADDSTRING, 0, (LPARAM)"18");
 			SendMessage( GetDlgItem(hwndDlg, IDC_FONTSIZE), CB_ADDSTRING, 0, (LPARAM)"24");
 			SendMessage( GetDlgItem(hwndDlg, IDC_FONTSIZE), CB_ADDSTRING, 0, (LPARAM)"36");
-			if(SendDlgItemMessage(hwndDlg, IDC_TYPEFACE, CB_SELECTSTRING, -1, (LPARAM)"Arial")!=CB_ERR)
+			if(SendDlgItemMessage(hwndDlg, IDC_TYPEFACE, CB_SELECTSTRING, 1, (LPARAM)"Arial")!=CB_ERR)
 			{
 				CHARFORMAT2 cf;
 				cf.cbSize = sizeof(CHARFORMAT2);
@@ -212,15 +212,15 @@ BOOL CALLBACK userinfo_dialog(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPar
 						cfOld.cbSize = sizeof(CHARFORMAT2);
 						cfOld.dwMask = CFM_FACE | CFM_SIZE;
 						SendDlgItemMessage(hwndDlg, IDC_PROFILE, EM_GETCHARFORMAT, SCF_SELECTION, (LPARAM)&cfOld);
-						if(SendDlgItemMessage(hwndDlg, IDC_TYPEFACE, CB_SELECTSTRING, -1, (LPARAM)cfOld.szFaceName)==-1)
+						if(SendDlgItemMessage(hwndDlg, IDC_TYPEFACE, CB_SELECTSTRING, 1, (LPARAM)cfOld.szFaceName)==-1)
 						{
 							SendDlgItemMessage(hwndDlg, IDC_TYPEFACE, CB_ADDSTRING, 0, (LPARAM)cfOld.szFaceName);
-							SendDlgItemMessage(hwndDlg, IDC_TYPEFACE, CB_SELECTSTRING, -1, (LPARAM)cfOld.szFaceName);
+							SendDlgItemMessage(hwndDlg, IDC_TYPEFACE, CB_SELECTSTRING, 1, (LPARAM)cfOld.szFaceName);
 						}
 						char size[10];
 						_itoa(cfOld.yHeight/20,size,sizeof(size));
 						//SetDlgItemText(hwndDlg, IDC_FONTSIZE, size);
-						SendDlgItemMessage(hwndDlg, IDC_FONTSIZE, CB_SELECTSTRING, -1, (LPARAM)size);
+						SendDlgItemMessage(hwndDlg, IDC_FONTSIZE, CB_SELECTSTRING, 1, (LPARAM)size);
 						InvalidateRect(GetDlgItem(hwndDlg, IDC_SUPERSCRIPT), NULL, FALSE);
 						InvalidateRect(GetDlgItem(hwndDlg, IDC_NORMALSCRIPT), NULL, FALSE);
 						InvalidateRect(GetDlgItem(hwndDlg, IDC_SUBSCRIPT), NULL, FALSE);

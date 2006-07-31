@@ -291,6 +291,10 @@
 				>
 			</File>
 			<File
+				RelativePath=".\theme.cpp"
+				>
+			</File>
+			<File
 				RelativePath=".\thread.cpp"
 				>
 			</File>
@@ -454,6 +458,10 @@
 			</File>
 			<File
 				RelativePath=".\strl.h"
+				>
+			</File>
+			<File
+				RelativePath=".\theme.h"
 				>
 			</File>
 			<File

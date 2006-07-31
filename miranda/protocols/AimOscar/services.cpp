@@ -600,6 +600,11 @@ static int ManageAccount(WPARAM /*wParam*/, LPARAM /*lParam*/)
 	execute_cmd("http","https://my.screenname.aol.com");
 	return 0;
 }
+static int EditProfile(WPARAM /*wParam*/, LPARAM /*lParam*/)
+{ 
+	DialogBox(conn.hInstance, MAKEINTRESOURCE(IDD_AIM), NULL, userinfo_dialog);
+	return 0;
+}
 int ExtraIconsRebuild(WPARAM /*wParam*/, LPARAM /*lParam*/) 
 {
 	if (ServiceExists(MS_CLIST_EXTRA_ADD_ICON))

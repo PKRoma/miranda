@@ -1077,6 +1077,198 @@ wchar_t* strip_tag_within(wchar_t* begin, wchar_t* end)
 	}
 	return end;
 }
+char* rtf_to_html(HWND hwndDlg,int DlgItem)
+{
+	char* buf=new char[4024];
+	int pos=0;
+	int start=0;
+	int end=1;
+	BOOL Bold=false;
+	BOOL Italic=false;
+	BOOL Underline=false;
+	char Face[32]="\0";
+	COLORREF Color;
+	COLORREF BackColor;
+	int Size=0;
+	GETTEXTLENGTHEX tl;
+	tl.flags=GTL_DEFAULT;
+	tl.codepage=CP_ACP;
+	int length=SendDlgItemMessage(hwndDlg, DlgItem, EM_GETTEXTLENGTHEX,(WPARAM)&tl,0);
+	while(start<length)
+	{
+		SendDlgItemMessage(hwndDlg, DlgItem, EM_SETSEL, start, end);
+		CHARFORMAT2 cfOld;
+		cfOld.cbSize = sizeof(CHARFORMAT2);
+		cfOld.dwMask = CFM_BOLD|CFM_ITALIC|CFM_UNDERLINE|CFM_SIZE|CFM_COLOR|CFM_BACKCOLOR|CFM_FACE;
+		SendDlgItemMessage(hwndDlg, DlgItem, EM_GETCHARFORMAT, SCF_SELECTION, (LPARAM)&cfOld);
+		BOOL isBold = (cfOld.dwEffects & CFE_BOLD) && (cfOld.dwMask & CFM_BOLD);
+		BOOL isItalic = (cfOld.dwEffects & CFE_ITALIC) && (cfOld.dwMask & CFM_ITALIC);
+		BOOL isUnderline = (cfOld.dwEffects & CFE_UNDERLINE) && (cfOld.dwMask & CFM_UNDERLINE);
+		COLORREF isColor=cfOld.crTextColor;
+		COLORREF isBackColor=cfOld.crBackColor;
+		int isSize;
+		if(cfOld.yHeight==38*20)
+			isSize=7;
+		else if(cfOld.yHeight==24*20)
+			isSize=6;
+		else if(cfOld.yHeight==18*20)
+			isSize=5;
+		else if(cfOld.yHeight==14*20)
+			isSize=4;
+		else if(cfOld.yHeight==12*20)
+			isSize=3;
+		else if(cfOld.yHeight==10*20)
+			isSize=2;
+		else if(cfOld.yHeight==8*20)
+			isSize=1;
+		else
+			isSize=3;
+		char text[2];
+		SendDlgItemMessage(hwndDlg, DlgItem, EM_GETSELTEXT, 0, (LPARAM)&text);
+		if(Bold!=isBold)
+		{
+			Bold=isBold;
+			if(isBold)
+			{
+				strlcpy(&buf[pos],"<b>",4);
+				pos+=3;
+			}
+			else
+			{
+				if(start!=0)
+				{
+					strlcpy(&buf[pos],"</b>",5);
+					pos+=4;	
+				}
+			}
+		}
+		if(Italic!=isItalic)
+		{
+			Italic=isItalic;
+			if(isItalic)
+			{
+				strlcpy(&buf[pos],"<i>",4);
+				pos+=3;
+			}
+			else
+			{
+				if(start!=0)
+				{
+					strlcpy(&buf[pos],"</i>",5);
+					pos+=4;	
+				}
+			}
+		}
+		if(Underline!=isUnderline)
+		{
+			Underline=isUnderline;
+			if(isUnderline)
+			{
+				strlcpy(&buf[pos],"<u>",4);
+				pos+=3;
+			}
+			else
+			{
+				if(start!=0)
+				{
+					strlcpy(&buf[pos],"</u>",5);
+					pos+=4;	
+				}
+			}
+		}
+		if(Size!=isSize||Color!=isColor||BackColor!=isBackColor||strcmp(Face,cfOld.szFaceName))
+		{
+			Size=isSize;
+			Color=isColor;
+			BackColor=isBackColor;
+			strlcpy(Face,cfOld.szFaceName,strlen(cfOld.szFaceName)+1);
+			if(start!=0)
+			{
+				strlcpy(&buf[pos],"</font>",8);
+				pos+=7;
+			}
+			strlcpy(&buf[pos],"<font",6);
+			pos+=5;
+			strlcpy(&buf[pos],"	face=\"",8);
+			pos+=7;
+			strlcpy(&buf[pos],Face,strlen(Face)+1);
+			pos+=strlen(Face);
+			strlcpy(&buf[pos],"\"",2);
+			pos++;
+			if(!(cfOld.dwEffects & CFE_AUTOBACKCOLOR))
+			{
+				strlcpy(&buf[pos]," back=#",7);
+				pos+=6;
+				char chBackColor[7];
+				_itoa((_htonl(BackColor)>>8),chBackColor,16);
+				int len=strlen(chBackColor);
+				if(len<6)
+				{
+					memmove(chBackColor+(6-len),chBackColor,len+1);
+					for(int i=0;i<6;i++)
+						chBackColor[i]='0';
+				}
+				strlcpy(&buf[pos],chBackColor,7);
+				pos+=6;
+			}
+			if(!(cfOld.dwEffects & CFE_AUTOCOLOR))
+			{
+				strlcpy(&buf[pos]," color=#",9);
+				pos+=8;
+				char chColor[7];
+				_itoa((_htonl(Color)>>8),chColor,16);
+				int len=strlen(chColor);
+				if(len<6)
+				{
+					memmove(chColor+(6-len),chColor,len+1);
+					for(int i=0;i<6;i++)
+						chColor[i]='0';
+				}
+				strlcpy(&buf[pos],chColor,7);
+				pos+=6;
+			}
+			strlcpy(&buf[pos]," size=",7);
+			pos+=6;
+			char chSize[2];
+			_itoa(Size,chSize,10);
+			strlcpy(&buf[pos],chSize,2);
+			pos++;
+
+			strlcpy(&buf[pos],">",2);
+			pos++;
+		}
+		if(text[0]=='\r')
+		{
+			strlcpy(&buf[pos],"<br>",5);
+			pos+=4;
+		}
+		else
+		{
+			strlcpy(&buf[pos],text,2);
+			pos++;
+		}
+		start++;
+		end++;
+	}
+	if(Bold)
+	{
+		strlcpy(&buf[pos],"</b>",5);
+		pos+=4;	
+	}
+	if(Italic)
+	{
+		strlcpy(&buf[pos],"</i>",5);
+		pos+=4;	
+	}
+	if(Underline)
+	{
+		strlcpy(&buf[pos],"</u>",5);
+		pos+=4;	
+	}
+	strlcpy(&buf[pos],"</font>",8);
+	pos+=7;
+	return buf;
+}
 #if _MSC_VER
 #pragma warning( default: 4706 )
 #endif

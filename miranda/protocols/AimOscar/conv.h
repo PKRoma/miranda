@@ -16,4 +16,5 @@ void strip_tag(char* begin, char* end);
 char* strip_tag_within(char* begin, char* end);
 void strip_tag(wchar_t* begin, wchar_t* end);
 wchar_t* strip_tag_within(wchar_t* begin, wchar_t* end);
+char* rtf_to_html(HWND hwndDlg,int DlgItem);
 #endif
