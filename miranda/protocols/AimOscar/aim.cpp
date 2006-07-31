@@ -164,6 +164,7 @@ int ModulesLoaded(WPARAM /*wParam*/,LPARAM /*lParam*/)
 		MessageBox( NULL, "AimOSCAR has detected that a buffer overrun has occured in it's 'conn.hookEvent' array. Please recompile with a larger HOOKEVENT_SIZE declared. AimOSCAR will now shut Miranda-IM down.", AIM_PROTOCOL_NAME, MB_OK );
 		exit(1);
 	}
+	offline_contacts();
 	aim_links_init();
 	return 0;
 }

@@ -391,7 +391,7 @@ void handleXtrazData(DWORD dwUin, DWORD dwMID, DWORD dwMID2, WORD wCookie, char*
 
 
 // Functions really sending Xtraz stuff
-DWORD SendXtrazNotifyRequest(HANDLE hContact, char* szQuery, char* szNotify)
+DWORD SendXtrazNotifyRequest(HANDLE hContact, char* szQuery, char* szNotify, int bForced)
 {
   char *szQueryBody;
   char *szNotifyBody;
@@ -401,11 +401,11 @@ DWORD SendXtrazNotifyRequest(HANDLE hContact, char* szQuery, char* szNotify)
   DWORD dwCookie;
   message_cookie_data* pCookieData;
 
-  if (!CheckContactCapabilities(hContact, CAPF_XTRAZ))
-    return 0; // Contact does not support xtraz, do not send anything
-
   if (ICQGetContactSettingUID(hContact, &dwUin, NULL))
     return 0; // Invalid contact
+
+  if (!CheckContactCapabilities(hContact, CAPF_XTRAZ) && !bForced)
+    return 0; // Contact does not support xtraz, do not send anything
 
   szQueryBody = MangleXml(szQuery, strlennull(szQuery));
   szNotifyBody = MangleXml(szNotify, strlennull(szNotify));

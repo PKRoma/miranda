@@ -4,6 +4,11 @@ Legend:
 [-] deleted
 [!] bug fixed
 
+Version 0.5.0.1
+===============
+[!] bug 0002083 fixed: Filetransfer suddenly stops
+[!] bug 0001584 fixed: Crash when sender cancels file send
+
 Version 0.4.3.1
 ===============
 [!] bug 0001887 fixed: Sometimes getting Error 540 from server then disconnect.

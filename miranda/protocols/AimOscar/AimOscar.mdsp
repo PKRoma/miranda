@@ -27,7 +27,7 @@ optimizeLevel=0
 
 // linker
 libraryPath=
-outputFilename=..\..\bin\Debug\plugins\AimOscar.dll
+outputFilename=..\..\bin\Debug\plugins\Aim.dll
 libraries=
 extraLinkerOptions=
 ignoreStartupFile=0
@@ -65,7 +65,7 @@ optimizeLevel=4
 
 // linker
 libraryPath=
-outputFilename=..\..\bin\Release\plugins\AimOscar.dll
+outputFilename=..\..\bin\Release\plugins\Aim.dll
 libraries=
 extraLinkerOptions=
 ignoreStartupFile=0

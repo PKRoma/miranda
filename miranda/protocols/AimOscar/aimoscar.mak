@@ -34,7 +34,7 @@ RSC=rc.exe
 OUTDIR=.\Release
 INTDIR=.\Release
 
-ALL : "..\..\bin\release\plugins\AimOSCAR.dll"
+ALL : "..\..\bin\release\plugins\Aim.dll"
 
 
 CLEAN :
@@ -65,8 +65,8 @@ CLEAN :
 	-@erase "$(OUTDIR)\AimOSCAR.exp"
 	-@erase "$(OUTDIR)\AimOSCAR.lib"
 	-@erase "$(OUTDIR)\AimOSCAR.map"
-	-@erase "$(OUTDIR)\AimOSCAR.pdb"
-	-@erase "..\..\bin\release\plugins\AimOSCAR.dll"
+	-@erase "$(OUTDIR)\Aim.pdb"
+	-@erase "..\..\bin\release\plugins\Aim.dll"
 
 "$(OUTDIR)" :
     if not exist "$(OUTDIR)/$(NULL)" mkdir "$(OUTDIR)"
@@ -79,7 +79,7 @@ BSC32_FLAGS=/nologo /o"$(OUTDIR)\aimoscar.bsc"
 BSC32_SBRS= \
 	
 LINK32=link.exe
-LINK32_FLAGS=wsock32.lib kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /nologo /dll /incremental:no /pdb:"$(OUTDIR)\AimOSCAR.pdb" /map:"$(INTDIR)\AimOSCAR.map" /debug /machine:I386 /out:"../../bin/release/plugins/AimOSCAR.dll" /implib:"$(OUTDIR)\AimOSCAR.lib" /ALIGN:4096 /ignore:4108 
+LINK32_FLAGS=wsock32.lib kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /nologo /dll /incremental:no /pdb:"$(OUTDIR)\Aim.pdb" /map:"$(INTDIR)\AimOSCAR.map" /debug /machine:I386 /out:"../../bin/release/plugins/Aim.dll" /implib:"$(OUTDIR)\AimOSCAR.lib" /ALIGN:4096 /ignore:4108 
 LINK32_OBJS= \
 	"$(INTDIR)\aim.obj" \
 	"$(INTDIR)\client.obj" \
@@ -104,7 +104,7 @@ LINK32_OBJS= \
 	"$(INTDIR)\aim.res" \
 	"$(INTDIR)\popup.obj"
 
-"..\..\bin\release\plugins\AimOSCAR.dll" : "$(OUTDIR)" $(DEF_FILE) $(LINK32_OBJS)
+"..\..\bin\release\plugins\Aim.dll" : "$(OUTDIR)" $(DEF_FILE) $(LINK32_OBJS)
     $(LINK32) @<<
   $(LINK32_FLAGS) $(LINK32_OBJS)
 <<
@@ -117,7 +117,7 @@ INTDIR=.\Debug
 OutDir=.\Debug
 # End Custom Macros
 
-ALL : "..\..\bin\debug\plugins\AimOSCAR.dll" "$(OUTDIR)\aimoscar.bsc"
+ALL : "..\..\bin\debug\plugins\Aim.dll" "$(OUTDIR)\aimoscar.bsc"
 
 
 CLEAN :
@@ -169,8 +169,8 @@ CLEAN :
 	-@erase "$(OUTDIR)\aimoscar.bsc"
 	-@erase "$(OUTDIR)\AimOSCAR.exp"
 	-@erase "$(OUTDIR)\AimOSCAR.lib"
-	-@erase "$(OUTDIR)\AimOSCAR.pdb"
-	-@erase "..\..\bin\debug\plugins\AimOSCAR.dll"
+	-@erase "$(OUTDIR)\Aim.pdb"
+	-@erase "..\..\bin\debug\plugins\Aim.dll"
 	-@erase "..\..\bin\debug\plugins\AimOSCAR.ilk"
 
 "$(OUTDIR)" :
@@ -210,7 +210,7 @@ BSC32_SBRS= \
 <<
 
 LINK32=link.exe
-LINK32_FLAGS=wsock32.lib kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /nologo /dll /incremental:yes /pdb:"$(OUTDIR)\AimOSCAR.pdb" /debug /machine:I386 /out:"../../bin/debug/plugins/AimOSCAR.dll" /implib:"$(OUTDIR)\AimOSCAR.lib" /pdbtype:sept 
+LINK32_FLAGS=wsock32.lib kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /nologo /dll /incremental:yes /pdb:"$(OUTDIR)\Aim.pdb" /debug /machine:I386 /out:"../../bin/debug/plugins/Aim.dll" /implib:"$(OUTDIR)\AimOSCAR.lib" /pdbtype:sept 
 LINK32_OBJS= \
 	"$(INTDIR)\aim.obj" \
 	"$(INTDIR)\client.obj" \
@@ -235,7 +235,7 @@ LINK32_OBJS= \
 	"$(INTDIR)\aim.res" \
 	"$(INTDIR)\popup.obj"
 
-"..\..\bin\debug\plugins\AimOSCAR.dll" : "$(OUTDIR)" $(DEF_FILE) $(LINK32_OBJS)
+"..\..\bin\debug\plugins\Aim.dll" : "$(OUTDIR)" $(DEF_FILE) $(LINK32_OBJS)
     $(LINK32) @<<
   $(LINK32_FLAGS) $(LINK32_OBJS)
 <<

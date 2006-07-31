@@ -63,7 +63,7 @@ int IconLibInstalled()
 
 
 
-void IconLibDefine(const char* desc, const char* section, const char* ident, HICON icon)
+void IconLibDefine(const char* desc, const char* section, const char* ident, HICON icon, const char* def_file, int def_idx)
 {
   if (bIcoReady)
   {
@@ -83,10 +83,10 @@ void IconLibDefine(const char* desc, const char* section, const char* ident, HIC
       utf8_decode(section, &sid.pszSection);
       utf8_decode(desc, &sid.pszDescription);
     }
-    sid.pszDefaultFile = NULL;
     null_snprintf(szTemp, sizeof(szTemp), "%s_%s", gpszICQProtoName, ident);
     sid.pszName = szTemp;
-    sid.iDefaultIndex = 0;
+    sid.pszDefaultFile = (char*)def_file;
+    sid.iDefaultIndex = def_idx;
     sid.hDefaultIcon = icon;
     sid.cx = sid.cy = 16;
 

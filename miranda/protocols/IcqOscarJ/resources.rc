@@ -32,38 +32,6 @@ IDI_AUTH_ASK            ICON    DISCARDABLE     "icos\\auth_ask.ico"
 IDI_AUTH_GRANT          ICON    DISCARDABLE     "icos\\auth_grant.ico"
 IDI_AUTH_REVOKE         ICON    DISCARDABLE     "icos\\auth_revoke.ico"
 IDI_EXPANDSTRINGEDIT    ICON    DISCARDABLE     "changeinfo\\expandst.ico"
-IDI_XSTATUS1            ICON    DISCARDABLE     "icos\\xstatus01.ico"
-IDI_XSTATUS2            ICON    DISCARDABLE     "icos\\xstatus02.ico"
-IDI_XSTATUS3            ICON    DISCARDABLE     "icos\\xstatus03.ico"
-IDI_XSTATUS4            ICON    DISCARDABLE     "icos\\xstatus04.ico"
-IDI_XSTATUS5            ICON    DISCARDABLE     "icos\\xstatus05.ico"
-IDI_XSTATUS6            ICON    DISCARDABLE     "icos\\xstatus06.ico"
-IDI_XSTATUS7            ICON    DISCARDABLE     "icos\\xstatus07.ico"
-IDI_XSTATUS8            ICON    DISCARDABLE     "icos\\xstatus08.ico"
-IDI_XSTATUS9            ICON    DISCARDABLE     "icos\\xstatus09.ico"
-IDI_XSTATUS10           ICON    DISCARDABLE     "icos\\xstatus10.ico"
-IDI_XSTATUS11           ICON    DISCARDABLE     "icos\\xstatus11.ico"
-IDI_XSTATUS12           ICON    DISCARDABLE     "icos\\xstatus12.ico"
-IDI_XSTATUS13           ICON    DISCARDABLE     "icos\\xstatus13.ico"
-IDI_XSTATUS14           ICON    DISCARDABLE     "icos\\xstatus14.ico"
-IDI_XSTATUS15           ICON    DISCARDABLE     "icos\\xstatus15.ico"
-IDI_XSTATUS16           ICON    DISCARDABLE     "icos\\xstatus16.ico"
-IDI_XSTATUS17           ICON    DISCARDABLE     "icos\\xstatus17.ico"
-IDI_XSTATUS18           ICON    DISCARDABLE     "icos\\xstatus18.ico"
-IDI_XSTATUS19           ICON    DISCARDABLE     "icos\\xstatus19.ico"
-IDI_XSTATUS20           ICON    DISCARDABLE     "icos\\xstatus20.ico"
-IDI_XSTATUS21           ICON    DISCARDABLE     "icos\\xstatus21.ico"
-IDI_XSTATUS22           ICON    DISCARDABLE     "icos\\xstatus22.ico"
-IDI_XSTATUS23           ICON    DISCARDABLE     "icos\\xstatus23.ico"
-IDI_XSTATUS24           ICON    DISCARDABLE     "icos\\xstatus24.ico"
-IDI_XSTATUS25           ICON    DISCARDABLE     "icos\\xstatus25.ico"
-IDI_XSTATUS26           ICON    DISCARDABLE     "icos\\xstatus26.ico"
-IDI_XSTATUS27           ICON    DISCARDABLE     "icos\\xstatus27.ico"
-IDI_XSTATUS28           ICON    DISCARDABLE     "icos\\xstatus28.ico"
-IDI_XSTATUS29           ICON    DISCARDABLE     "icos\\xstatus29.ico"
-IDI_XSTATUS30           ICON    DISCARDABLE     "icos\\xstatus30.ico"
-IDI_XSTATUS31           ICON    DISCARDABLE     "icos\\xstatus31.ico"
-IDI_XSTATUS32           ICON    DISCARDABLE     "icos\\xstatus32.ico"
 
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -155,7 +123,7 @@ BEGIN
                     8
     CONTROL         "Slider1",IDC_LOGLEVEL,"msctls_trackbar32",TBS_BOTH | 
                     TBS_NOTICKS | WS_TABSTOP,18,216,52,10
-    CONTROL         "",IDC_LEVELDESCR,"Static",SS_NOPREFIX | WS_GROUP,72,216,230,8
+    LTEXT           "",IDC_LEVELDESCR,72,216,230,8,SS_NOPREFIX
 END
 
 IDD_OPT_ICQCONTACTS DIALOGEX 0, 0, 314, 228
@@ -194,7 +162,7 @@ BEGIN
                     IDC_STATIC,12,203,290,16
 END
 
-IDD_OPT_ICQFEATURES DIALOGEX DISCARDABLE  0, 0, 314, 236
+IDD_OPT_ICQFEATURES DIALOGEX 0, 0, 314, 236
 STYLE DS_FIXEDSYS | WS_CHILD | WS_VISIBLE
 EXSTYLE WS_EX_CONTROLPARENT
 FONT 8, "MS Shell Dlg", 0, 0, 0x1

@@ -344,14 +344,22 @@ void ReleaseCookie(DWORD dwCookie)
 message_cookie_data *CreateMessageCookie(WORD bMsgType, BYTE bAckType)
 {
   message_cookie_data *pCookie;
+  DWORD dwMsgID1;
+  DWORD dwMsgID2;
+
+  do
+  { // ensure that message ids are unique
+    dwMsgID1 = time(NULL);
+    dwMsgID2 = RandRange(0, 0x0FFFF);
+  } while (FindMessageCookie(dwMsgID1, dwMsgID2, NULL, NULL, NULL));
 
   pCookie = (message_cookie_data*)SAFE_MALLOC(sizeof(message_cookie_data));
   if (pCookie)
   {
     pCookie->bMessageType = bMsgType;
     pCookie->nAckType = bAckType;
-    pCookie->dwMsgID1 = time(NULL);
-    pCookie->dwMsgID2 = RandRange(0, 0x0FFFF);
+    pCookie->dwMsgID1 = dwMsgID1;
+    pCookie->dwMsgID2 = dwMsgID2;
   }
   return pCookie;
 }

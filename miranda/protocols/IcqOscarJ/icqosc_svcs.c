@@ -835,7 +835,7 @@ int IcqAddToListByEvent(WPARAM wParam, LPARAM lParam)
     {
       pbOffset += strlennull((char*)pbOffset) + 1;  // Nick
       if (pbOffset >= pbEnd) break;
-      if (i = ci)
+      if (i == ci)
       { // we found the contact, get uid
         if (IsStringUIN((char*)pbOffset))
           uin = atoi((char*)pbOffset);

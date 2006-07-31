@@ -241,9 +241,8 @@ void snac_user_online(SNAC &snac)//family 0x0003
 {
 	if(snac.subcmp(0x000b))
 	{
-		bool client_detected=0;
+		char client[100]="\0";
 		bool hiptop_user=0;
-		bool wireless_user=0;
 		bool bot_user=0;
 		bool adv2_icon=0;
 		bool adv1_icon=0;
@@ -322,7 +321,7 @@ void snac_user_online(SNAC &snac)//family 0x0003
 						bot_user=1;
 					if(wireless)
 					{
-						wireless_user=1;
+						strlcpy(client,"SMS",100);
 						DBWriteContactSettingWord(hContact, AIM_PROTOCOL_NAME, AIM_KEY_ST, ID_STATUS_ONTHEPHONE);	
 					}
 					else if(away==0)
@@ -343,6 +342,7 @@ void snac_user_online(SNAC &snac)//family 0x0003
 			
 			else if(tlv.cmp(0x000d))
 			{
+				caps_included=1;
 				for(int i=0;i<tlv.len();i=i+16)
 				{
 					char* cap=tlv.part(i,16);
@@ -359,8 +359,7 @@ void snac_user_online(SNAC &snac)//family 0x0003
 						char g =cap[14];
 						char h =cap[15];
 						mir_snprintf(msg,sizeof(msg),"Miranda IM %d.%d.%d.%d(ICQ v0.%d.%d.%d)",a,b,c,d,f,g,h);
-						DBWriteContactSettingString(hContact,AIM_PROTOCOL_NAME,AIM_KEY_MV,msg);
-						client_detected=1;
+						strlcpy(client,msg,100);
 					}
 					else if(is_aimoscar_ver_cap(cap))
 					{
@@ -375,38 +374,31 @@ void snac_user_online(SNAC &snac)//family 0x0003
 						char g =cap[14];
 						char h =cap[15];
 						mir_snprintf(msg,sizeof(msg),"Miranda IM %d.%d.%d.%d(AimOSCAR v%d.%d.%d.%d)",a,b,c,d,e,f,g,h);
-						DBWriteContactSettingString(hContact,AIM_PROTOCOL_NAME,AIM_KEY_MV,msg);
-						client_detected=1;
+						strlcpy(client,msg,100);
 					}
 					else if(is_kopete_ver_cap(cap))
 					{
-						DBWriteContactSettingString(hContact,AIM_PROTOCOL_NAME,AIM_KEY_MV,"Kopete");
-						client_detected=1;
+						strlcpy(client,"Kopete",100);
 					}
 					else if(is_qip_ver_cap(cap))
 					{
-						DBWriteContactSettingString(hContact,AIM_PROTOCOL_NAME,AIM_KEY_MV,"qip");
-						client_detected=1;
+						strlcpy(client,"qip",100);
 					}
 					else if(is_micq_ver_cap(cap))
 					{
-						DBWriteContactSettingString(hContact,AIM_PROTOCOL_NAME,AIM_KEY_MV,"mICQ");
-						client_detected=1;
+						strlcpy(client,"mICQ",100);
 					}
 					else if(is_im2_ver_cap(cap))
 					{
-						DBWriteContactSettingString(hContact,AIM_PROTOCOL_NAME,AIM_KEY_MV,"IM2");
-						client_detected=1;
+						strlcpy(client,"IM2",100);
 					}
 					else if(is_sim_ver_cap(cap))
 					{
-						DBWriteContactSettingString(hContact,AIM_PROTOCOL_NAME,AIM_KEY_MV,"SIM");
-						client_detected=1;
+						strlcpy(client,"SIM",100);
 					}
 					else if(is_naim_ver_cap(cap))
 					{
-						DBWriteContactSettingString(hContact,AIM_PROTOCOL_NAME,AIM_KEY_MV,"naim");
-						client_detected=1;
+						strlcpy(client,"naim",100);
 					}
 					delete[] cap;
 				}
@@ -451,9 +443,8 @@ void snac_user_online(SNAC &snac)//family 0x0003
 						O1ff=1;
 					if(cap==0x1323)
 					{
-						DBWriteContactSettingString(hContact,AIM_PROTOCOL_NAME,AIM_KEY_MV,"GPRS");
+						strlcpy(client,"GPRS",100);
 						hiptop_user=1;
-						client_detected=1;
 					}
 					if(cap==0x1341)
 						l341=1;
@@ -471,50 +462,23 @@ void snac_user_online(SNAC &snac)//family 0x0003
 						l34b=1;
 				}
 				if(f002&f003&f004&f005)
-				{
-					DBWriteContactSettingString(hContact,AIM_PROTOCOL_NAME,AIM_KEY_MV,"Trillian Pro");
-					client_detected=1;
-				}
+					strlcpy(client,"Trillian Pro",100);
 				else if(f004&f005&f007&f008||f004&f005&O104&O105)
-				{
-					DBWriteContactSettingString(hContact,AIM_PROTOCOL_NAME,AIM_KEY_MV,"iChat");
-					client_detected=1;
-				}
+					strlcpy(client,"iChat",100);
 				else if(f003&f004&f005)
-				{
-					DBWriteContactSettingString(hContact,AIM_PROTOCOL_NAME,AIM_KEY_MV,"Trillian");
-					client_detected=1;
-				}
+					strlcpy(client,"Trillian",100);
 				else if(l343&&tlv.len()==2)
-				{
-					DBWriteContactSettingString(hContact,AIM_PROTOCOL_NAME,AIM_KEY_MV,"AIM TOC");
-					client_detected=1;
-				}
+					strlcpy(client,"AIM TOC",100);
 				else if(l343&&l345&&l346&&tlv.len()==6)
-				{
-					DBWriteContactSettingString(hContact,AIM_PROTOCOL_NAME,AIM_KEY_MV,"Gaim/Adium");
-					client_detected=1;
-				}
+					strlcpy(client,"Gaim/Adium",100);
 				else if(tlv.len()==0&&DBGetContactSettingWord(hContact, AIM_PROTOCOL_NAME, AIM_KEY_ST,0)!=ID_STATUS_ONTHEPHONE)
-				{
-					DBWriteContactSettingString(hContact,AIM_PROTOCOL_NAME,AIM_KEY_MV,"AIM Express");
-					client_detected=1;
-				}		
+					strlcpy(client,"AIM Express",100);	
 				else if(l34b&&l341&&l343&&O1ff&&l345&&l346&&l347)
-				{
-					DBWriteContactSettingString(hContact,AIM_PROTOCOL_NAME,AIM_KEY_MV,"AIM 5.x");
-					client_detected=1;
-				}
+					strlcpy(client,"AIM 5.x",100);
 				else if(l34b&&l341&&l343&&l345&l346&&l347&&l348)
-				{
-					DBWriteContactSettingString(hContact,AIM_PROTOCOL_NAME,AIM_KEY_MV,"AIM 4.x");
-					client_detected=1;	
-				}
+					strlcpy(client,"AIM 4.x",100);
 				else if(O1ff&&l343&&O107&&l341&&O104&&O105&&O101&&l346)
-				{
-					DBWriteContactSettingString(hContact,AIM_PROTOCOL_NAME,AIM_KEY_MV,"AIM Triton");
-					client_detected=1;
-				}
+					strlcpy(client,"AIM Triton",100);
 				if(utf8)
 					DBWriteContactSettingByte(hContact, AIM_PROTOCOL_NAME, AIM_KEY_US, 1);
 				else
@@ -566,10 +530,6 @@ void snac_user_online(SNAC &snac)//family 0x0003
 					ForkThread((pThreadFunc)set_extra_icon,data);
 				}
 			}
-			else if(wireless_user)
-			{
-				DBWriteContactSettingString(hContact,AIM_PROTOCOL_NAME,AIM_KEY_MV,"SMS");
-			}
 			if(caps_included)
 			{
 				if(!adv1_icon)
@@ -594,9 +554,12 @@ void snac_user_online(SNAC &snac)//family 0x0003
 				}
 			}
 		}
-		if(!client_detected)
+		if(caps_included)
 		{
-			DBWriteContactSettingString(hContact,AIM_PROTOCOL_NAME,AIM_KEY_MV,"?");
+			if(client[0])
+				DBWriteContactSettingString(hContact,AIM_PROTOCOL_NAME,AIM_KEY_MV,client);
+			else
+				DBWriteContactSettingString(hContact,AIM_PROTOCOL_NAME,AIM_KEY_MV,"?");
 		}
 		delete[] buddy;
 	}
@@ -685,6 +648,7 @@ void snac_contact_list(SNAC &snac)//family 0x0013
 					BOOL bUtfReadyDB = ServiceExists(MS_DB_CONTACT_GETSETTING_STR);
 					char group_id_string[32];
 					_itoa(group_id,group_id_string,10);
+					lowercase_name(name);
 					if(bUtfReadyDB==1)
  						DBWriteContactSettingStringUtf(NULL, ID_GROUP_KEY,group_id_string, name);
 					else
@@ -1121,6 +1085,12 @@ void snac_list_modification_ack(SNAC &snac)//family 0x0013
 				char* msg="Error removing buddy from list. Error code 0xxx";
 				char ccode[3];
 				_itoa(code,ccode,16);
+				if(lstrlen(ccode)==1)
+				{
+					ccode[2]='\0';
+					ccode[1]=ccode[0];
+					ccode[0]='0';
+				}
 				msg[lstrlen(msg)-2]=ccode[0];
 				msg[lstrlen(msg)-1]=ccode[1];
 				ShowPopup("Aim Protocol",msg, 0);
@@ -1154,9 +1124,15 @@ void snac_list_modification_ack(SNAC &snac)//family 0x0013
 			}
 			else
 			{
-				char* msg="Unknown error when adding buddy to list: Error code 0x";
+				char* msg="Unknown error when adding buddy to list: Error code 0xxx";
 				char ccode[3];
 				_itoa(code,ccode,16);
+				if(lstrlen(ccode)==1)
+				{
+					ccode[2]='\0';
+					ccode[1]=ccode[0];
+					ccode[0]='0';
+				}
 				msg[lstrlen(msg)-2]=ccode[0];
 				msg[lstrlen(msg)-1]=ccode[1];
 				ShowPopup("Aim Protocol",msg, 0);
@@ -1174,9 +1150,15 @@ void snac_list_modification_ack(SNAC &snac)//family 0x0013
 			}
 			else
 			{
-				char* msg="Unknown error when attempting to modify a group: Error code 0x";
+				char msg[]="Unknown error when attempting to modify a group: Error code 0xxx";
 				char ccode[3];
 				_itoa(code,ccode,16);
+				if(lstrlen(ccode)==1)
+				{
+					ccode[2]='\0';
+					ccode[1]=ccode[0];
+					ccode[0]='0';
+				}
 				msg[lstrlen(msg)-2]=ccode[0];
 				msg[lstrlen(msg)-1]=ccode[1];
 				ShowPopup("Aim Protocol",msg, 0);

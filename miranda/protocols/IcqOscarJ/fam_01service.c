@@ -2,10 +2,10 @@
 //                ICQ plugin for Miranda Instant Messenger
 //                ________________________________________
 //
-// Copyright © 2000,2001 Richard Hughes, Roland Rabien, Tristan Van de Vreede
-// Copyright © 2001,2002 Jon Keating, Richard Hughes
-// Copyright © 2002,2003,2004 Martin  berg, Sam Kothari, Robert Rainwater
-// Copyright © 2004,2005,2006 Joe Kucera
+// Copyright  2000,2001 Richard Hughes, Roland Rabien, Tristan Van de Vreede
+// Copyright  2001,2002 Jon Keating, Richard Hughes
+// Copyright  2002,2003,2004 Martin  berg, Sam Kothari, Robert Rainwater
+// Copyright  2004,2005,2006 Joe Kucera
 //
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License
@@ -787,9 +787,8 @@ void setUserInfo()
 #ifdef DBG_CAPXTRAZ
   wAdditionalData += 16;
 #endif
-#ifdef DBG_XTRAZ_MUC
-  wAdditionalData += 16;
-#endif
+  if (gbAvatarsEnabled)
+    wAdditionalData += 16;
   if (bXStatus)
     wAdditionalData += 16;
 
@@ -839,11 +838,10 @@ void setUserInfo()
     packDWord(&packet, 0x4e34f5a0);
   }
 #endif
-#ifdef DBG_CAPXTRAZ_MUC
+  if (gbAvatarsEnabled)
   {
-    packNewCap(&packet, 0x134C);    // CAP_XTRAZ_MUC
-  } // Broadcasts the capability handle Xtraz multi-user chat
-#endif
+    packNewCap(&packet, 0x134C);    // CAP_DEVILS
+  } 
   if (gbAimEnabled)
   {
     packNewCap(&packet, 0x134D);    // Tells the server we can speak to AIM

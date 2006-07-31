@@ -45,7 +45,7 @@ static int TranslateMenu(WPARAM wParam,LPARAM lParam)
 		mii.fMask = MIIM_TYPE|MIIM_SUBMENU;
 		mii.dwTypeData = ( TCHAR* )str;
 		mii.cch = SIZEOF(str);
-		GetMenuItemInfo(hMenu, i, TRUE, ( MENUITEMINFOW* )&mii);
+		GetMenuItemInfo(hMenu, i, TRUE, &mii);
 
 		if ( mii.cch && mii.dwTypeData ) {
 			TCHAR* result = ( TCHAR* )LangPackTranslateString(( const char* )mii.dwTypeData, FLAGS );

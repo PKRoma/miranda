@@ -420,7 +420,9 @@ LBL_Exit:
 				JabberXmlSetCallback( &xmlState, 2, ELEM_CLOSE, JabberProcessProtocol, info );
 
 				XmlNode stream( "stream:stream" ); stream.addAttr( "to", info->server ); stream.addAttr( "xmlns", "jabber:client" );
+				stream.props = "<?xml version='1.0' encoding='UTF-8'?>";
 				stream.addAttr( "xmlns:stream", "http://etherx.jabber.org/streams" );
+				stream.dirtyHack = true;
 				JabberSend( info->s, stream );
 			}
 
@@ -685,7 +687,7 @@ static void JabberProcessMessage( XmlNode *node, void *userdata )
 	XmlNode* bodyNode = JabberXmlGetChild( node, "body" );
 	if ( bodyNode != NULL ) {
 		if (( subjectNode=JabberXmlGetChild( node, "subject" ))!=NULL && subjectNode->text!=NULL && subjectNode->text[0]!='\0' && !isRss ) {
-			p = ( TCHAR* )alloca( _tcslen( subjectNode->text ) + _tcslen( bodyNode->text ) + 12 );
+			p = ( TCHAR* )alloca( sizeof( TCHAR )*( _tcslen( subjectNode->text ) + _tcslen( bodyNode->text ) + 12 ));
 			wsprintf( p, _T("Subject: %s\r\n%s"), subjectNode->text, bodyNode->text );
 			szMessage = p;
 		}
