@@ -1,7 +1,7 @@
                    Miranda Instant Messenger Release Notes
                    ---------------------------------------
 
-                             July 2006 (v0.5 PR 4)
+                             July 2006 (v0.6)
 
                           http://www.miranda-im.org
 
@@ -28,6 +28,20 @@ to list all the important ones without getting too technical.
 
 If you want to see the full changelogs, go here:
 http://files.miranda-im.org/builds/ChangeLog
+
+* New in 0.6
+Enhancements:
+ -
+
+Bugfixes:
+ -
+
+* New in 0.5.1
+Enhancements
+ - 
+
+Bugfixes:
+ - db3x driver text was cut off in profile selector dialog
 
 * New in 0.5
 Enhancements:
