@@ -44,6 +44,7 @@ pIncrementFunc *MyInterlockedIncrement = MyInterlockedIncrementInit;
 static CRITICAL_SECTION csInterlocked95;
 extern HANDLE msnMainThread;
 extern bool msnUseExtendedPopups;
+extern char* msnPreviousUUX;
 
 /////////////////////////////////////////////////////////////////////////////////////////
 // MirandaStatusToMSN - status helper functions
@@ -255,13 +256,13 @@ void __stdcall MSN_GetAvatarFileName( HANDLE hContact, char* pszDest, int cbLen 
 
 void __stdcall	MSN_GoOffline()
 {
-	if ( msnLoggedIn )
-		msnNsThread->sendPacket( "OUT", NULL );
-
 	int msnOldStatus = msnStatusMode; msnStatusMode = ID_STATUS_OFFLINE;
 	MSN_SendBroadcast( NULL, ACKTYPE_STATUS, ACKRESULT_SUCCESS, (HANDLE)msnOldStatus, ID_STATUS_OFFLINE );
 
 	msnLoggedIn = false;
+
+	free(msnPreviousUUX);
+	msnPreviousUUX = NULL;
 
 	if ( !Miranda_Terminated() )
 		MSN_EnableMenuItems( FALSE );
@@ -394,8 +395,6 @@ int __stdcall MSN_SendNicknameW( WCHAR* nickname)
 /////////////////////////////////////////////////////////////////////////////////////////
 // MSN_SendStatusMessage - notify a server about the status message change
 
-extern char* msnPreviousUUX;
-
 void __stdcall MSN_SendStatusMessage( const char* msg )
 {
 	if ( !msnLoggedIn || !MyOptions.UseMSNP11 )
@@ -475,8 +474,7 @@ void __stdcall MSN_SetServerStatus( int newStatus )
 		if ( MyOptions.UseMSNP11 ) {
 			for ( int i=0; i < MSN_NUM_MODES; i++ ) { 
 				if ( msnModeMsgs[ i ].m_mode == newStatus ) {
-					if ( msnModeMsgs[ i ].m_msg != NULL )
-                  MSN_SendStatusMessage( msnModeMsgs[ i ].m_msg );
+					MSN_SendStatusMessage( msnModeMsgs[ i ].m_msg );
 					break;
 		}	}	}
 	}
@@ -845,8 +843,11 @@ filetransfer::~filetransfer()
 {
 	MSN_DebugLog( "Destroying file transfer session %ld", p2p_sessionid );
 
-	if ( !bCompleted )
+	if ( !bCompleted ) {
+		std.files = NULL;
+		std.totalFiles = 0;
 		MSN_SendBroadcast( std.hContact, ACKTYPE_FILE, ACKRESULT_FAILED, this, 0);
+	}
 
 	if ( inmemTransfer ) {
 		if ( fileBuffer != NULL )
@@ -855,8 +856,15 @@ filetransfer::~filetransfer()
 	else if ( fileId != -1 )
 		_close( fileId );
 
-	if ( mIncomingBoundPort != NULL )
+	if ( mIncomingBoundPort != NULL ) {
+		ThreadData* T = MSN_GetThreadByPort(mIncomingPort);
+		if ( T != NULL && T->s != NULL )
+		{
+			Netlib_CloseHandle( T->s );
+			T->s = NULL;
+		}
 		Netlib_CloseHandle( mIncomingBoundPort );
+	}
 
 	if ( hWaitEvent != INVALID_HANDLE_VALUE )
 		CloseHandle( hWaitEvent );

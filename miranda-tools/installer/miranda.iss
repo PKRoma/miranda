@@ -3,83 +3,72 @@ UseAbsolutePaths=false
 
 [Setup]
 AppName=Miranda IM
-AppVerName=Miranda IM 0.4.0.1 RC 1
-AppVersion=0.4.0.1
+AppVerName=Miranda IM 0.5 Preview Release 2
+AppVersion=0.5
 AppId=Miranda IM
-LicenseFile=C:\projects\miranda\docs\license.txt
+LicenseFile=..\..\miranda\docs\license.txt
 DefaultDirName={code:GetPath}
 DefaultGroupName=Miranda IM
 ShowLanguageDialog=auto
 Compression=lzma
 SolidCompression=true
 AppPublisherURL=http://miranda-im.org/
-AppSupportURL=http://miranda-im.org/help/
+AppSupportURL=http://miranda-im.org/support/
 UninstallDisplayName=Miranda IM
 UninstallFilesDir={app}\Uninstall
-OutputBaseFilename=miranda-im-v0.4.0.1rc1
+OutputBaseFilename=miranda-im-v0.5.0.0pr2-ansi
 AppPublisher=Miranda IM Development Team
-AppUpdatesURL=http://miranda-im.org/release/
+AppUpdatesURL=http://miranda-im.org/download/
 OutputDir=.
 DisableProgramGroupPage=true
 FlatComponentsList=true
 DisableReadyPage=false
 ShowTasksTreeLines=true
-VersionInfoVersion=0.4.0.1
+VersionInfoVersion=0.5
 VersionInfoCompany=Miranda IM
-VersionInfoTextVersion=0.4.0.1 RC 1
-MinVersion=4.1.1998,4.0.1381
+VersionInfoTextVersion=0.5 PR 2
+MinVersion=4.0.950,4.0.1381
 DirExistsWarning=no
 LanguageDetectionMethod=uilanguage
 UninstallDisplayIcon=
+WizardImageFile=compiler:WizModernImage-IS.bmp
+WizardSmallImageFile=compiler:WizModernSmallImage-IS.bmp
 
 [Dirs]
 Name: {app}\Plugins
-Name: {app}\Docs
 Name: {app}\Uninstall
 Name: {app}\Icons
 
 [Files]
 Source: ..\..\miranda\bin\release\miranda32.exe; DestDir: {app}; Flags: ignoreversion
+Source: ..\..\miranda\bin\release\dbtool.exe; DestDir: {app}; Components: Yahoo_Protocol; OnlyBelowVersion: 0,5.01.2600; Flags: ignoreversion
 Source: ..\..\miranda\docs\mirandaboot.ini; DestDir: {app}; Flags: onlyifdoesntexist
-Source: ..\..\miranda\bin\release\dbtool.exe; DestDir: {app}; Flags: ignoreversion
 Source: ..\..\miranda\docs\credits.txt; DestDir: {app}; DestName: Contributors.txt
 Source: ..\..\miranda\docs\releasenotes.txt; DestDir: {app}; DestName: Readme.txt
 Source: ..\..\miranda\docs\license.txt; DestDir: {app}; DestName: License.txt
 Source: ..\..\miranda\bin\release\Plugins\clist_classic.dll; DestDir: {app}\Plugins; DestName: clist_classic.dll; Flags: ignoreversion
 Source: ..\..\miranda\bin\release\Plugins\srmm.dll; DestDir: {app}\Plugins; DestName: SRMM.dll; Flags: ignoreversion
+Source: ..\..\miranda\bin\release\plugins\png2dib.dll; DestDir: {app}\Plugins; DestName: png2dib.dll; Flags: ignoreversion
 Source: ..\..\miranda\bin\release\Plugins\dbx_3x.dll; DestDir: {app}\Plugins; DestName: dbx_3x.dll; Flags: ignoreversion
 Source: ..\..\miranda\bin\release\Plugins\chat.dll; DestDir: {app}\Plugins; Flags: ignoreversion; Components: IRC_Protocol MSN_Protocol Jabber_Protocol AIM_Protocol; DestName: Chat.dll
+Source: ..\..\miranda\bin\release\plugins\import.dll; DestDir: {app}\Plugins; DestName: import.dll; Flags: ignoreversion
 Source: ..\..\miranda\bin\release\Plugins\AIM.dll; DestDir: {app}\Plugins; Components: AIM_Protocol; Flags: ignoreversion
-Source: ..\..\miranda\protocols\AimTOC\docs\aim-license.txt; DestDir: {app}\Docs; DestName: AIM-License.txt; Components: AIM_Protocol
-Source: ..\..\miranda\protocols\AimTOC\docs\aim-readme.txt; DestDir: {app}\Docs; DestName: AIM-Readme.txt; Components: AIM_Protocol
 Source: icons\bin\hicolor\proto_AIM.dll; DestDir: {app}\Icons; Flags: ignoreversion; MinVersion: 0,5.01.2600; Components: AIM_Protocol
 Source: icons\bin\locolor\proto_AIM.dll; DestDir: {app}\Icons; Flags: ignoreversion; OnlyBelowVersion: 0,5.01.2600; Components: AIM_Protocol
 Source: ..\..\miranda\bin\release\Plugins\ICQ.dll; DestDir: {app}\Plugins; Components: ICQ_Protocol; Flags: ignoreversion
-Source: ..\..\miranda\protocols\IcqOscarJ\docs\icq-license.txt; DestDir: {app}\Docs; DestName: ICQ-License.txt; Components: ICQ_Protocol
-Source: ..\..\miranda\protocols\IcqOscarJ\docs\icq-readme.txt; DestDir: {app}\Docs; DestName: ICQ-Readme.txt; Components: ICQ_Protocol
 Source: icons\bin\locolor\proto_ICQ.dll; DestDir: {app}\Icons; Flags: ignoreversion; OnlyBelowVersion: 0,5.01.2600; Components: ICQ_Protocol
 Source: icons\bin\hicolor\proto_ICQ.dll; DestDir: {app}\Icons; Flags: ignoreversion; MinVersion: 0,5.01.2600; Components: ICQ_Protocol
 Source: ..\..\miranda\bin\release\Plugins\IRC.dll; DestDir: {app}\Plugins; Components: IRC_Protocol; Flags: ignoreversion
 Source: IRC_servers.ini; DestDir: {app}\Plugins; Flags: onlyifdoesntexist
-Source: ..\..\miranda\protocols\IRC\Docs\IRC_license.txt; DestDir: {app}\Docs; DestName: IRC-License.txt; Components: IRC_Protocol
-Source: ..\..\miranda\protocols\IRC\Docs\IRC_Readme.txt; DestDir: {app}\Docs; Components: IRC_Protocol; DestName: IRC-Readme.txt
 Source: icons\bin\hicolor\proto_IRC.dll; DestDir: {app}\Icons; Flags: ignoreversion; MinVersion: 0,5.01.2600; Components: IRC_Protocol
 Source: icons\bin\locolor\proto_IRC.dll; DestDir: {app}\Icons; Flags: ignoreversion; Components: IRC_Protocol; OnlyBelowVersion: 0,5.01.2600
 Source: ..\..\miranda\bin\release\Plugins\jabber.dll; DestDir: {app}\Plugins; Components: Jabber_Protocol; DestName: Jabber.dll; Flags: ignoreversion
-Source: ..\..\miranda\protocols\JabberG\docs\gpl.txt; DestDir: {app}\Docs; DestName: Jabber-License.txt; Components: Jabber_Protocol
-Source: ..\..\miranda\protocols\JabberG\docs\changelog_jabber.txt; DestDir: {app}\Docs; DestName: Jabber-History.txt
-Source: ..\..\miranda\protocols\JabberG\docs\readme_jabber.txt; DestDir: {app}\Docs; DestName: Jabber-Readme.txt; Components: Jabber_Protocol
 Source: icons\bin\locolor\proto_JABBER.dll; DestDir: {app}\Icons; Flags: ignoreversion; OnlyBelowVersion: 0,5.01.2600; Components: Jabber_Protocol
 Source: icons\bin\hicolor\proto_JABBER.dll; DestDir: {app}\Icons; Flags: ignoreversion; Components: Jabber_Protocol; MinVersion: 0,5.01.2600
 Source: ..\..\miranda\bin\release\Plugins\msn.dll; DestDir: {app}\Plugins; Components: MSN_Protocol; DestName: MSN.dll; Flags: ignoreversion
-Source: ..\..\miranda\protocols\MSN\Docs\gpl.txt; DestDir: {app}\Docs; DestName: MSN-License.txt; Components: MSN_Protocol
-Source: ..\..\miranda\protocols\MSN\Docs\readme-msn.txt; DestDir: {app}\Docs; DestName: MSN-Readme.txt; Components: MSN_Protocol
-Source: ..\..\miranda\protocols\MSN\Docs\history-msn.txt; DestDir: {app}\Docs; DestName: MSN-History.txt
 Source: icons\bin\hicolor\proto_MSN.dll; DestDir: {app}\Icons; Flags: ignoreversion; MinVersion: 0,5.01.2600; Components: MSN_Protocol
 Source: icons\bin\locolor\proto_MSN.dll; DestDir: {app}\Icons; Flags: ignoreversion; Components: MSN_Protocol; OnlyBelowVersion: 0,5.01.2600
 Source: ..\..\miranda\bin\release\Plugins\Yahoo.dll; DestDir: {app}\Plugins; DestName: Yahoo.dll; Flags: ignoreversion; Components: Yahoo_Protocol
-Source: ..\..\miranda\protocols\Yahoo\Docs\License.txt; DestDir: {app}\Docs; DestName: Yahoo-License.txt; Components: Yahoo_Protocol
-Source: ..\..\miranda\protocols\Yahoo\Docs\ReadMe.txt; DestDir: {app}\Docs; DestName: Yahoo-Readme.txt; Components: Yahoo_Protocol
 Source: icons\bin\hicolor\proto_YAHOO.dll; DestDir: {app}\Icons; Flags: ignoreversion; MinVersion: 0,5.01.2600; Components: Yahoo_Protocol
 Source: icons\bin\locolor\proto_YAHOO.dll; DestDir: {app}\Icons; Flags: ignoreversion; Components: Yahoo_Protocol; OnlyBelowVersion: 0,5.01.2600
 

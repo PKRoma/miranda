@@ -22,6 +22,8 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 */
 #include "commonheaders.h"
 
+char* u2a( wchar_t* src );
+
 #define OPTIONPAGE_OLD_SIZE 40
 
 static HANDLE hOptionsInitEvent;
@@ -204,17 +206,25 @@ static BOOL CALLBACK OptionsDlgProc(HWND hdlg,UINT message,WPARAM wParam,LPARAM 
 			dat->opd[i].flags=odp[i].flags;
 			if ( odp[i].pszTitle == NULL )
 				dat->opd[i].pszTitle = NULL;
-			else if ( odp[i].flags & ODPF_UNICODE )
-				dat->opd[i].pszTitle = ( TCHAR* )mir_wstrdup( odp[i].ptszTitle );
-			else
-				dat->opd[i].pszTitle = ( TCHAR* )mir_strdup( odp[i].pszTitle );
+			else if ( odp[i].flags & ODPF_UNICODE ) {
+				#if defined ( _UNICODE )
+					dat->opd[i].pszTitle = ( TCHAR* )mir_wstrdup( odp[i].ptszTitle );
+				#else
+					dat->opd[i].pszTitle = u2a(( WCHAR* )odp[i].ptszTitle );
+				#endif
+			}
+			else dat->opd[i].pszTitle = ( TCHAR* )mir_strdup( odp[i].pszTitle );
 
 			if ( odp[i].pszGroup == NULL )
             dat->opd[i].pszGroup = NULL;
-			else if ( odp[i].flags & ODPF_UNICODE )
-				dat->opd[i].pszGroup = ( TCHAR* )mir_wstrdup( odp[i].ptszGroup );
-			else
-				dat->opd[i].pszGroup = ( TCHAR* )mir_strdup( odp[i].pszGroup );
+			else if ( odp[i].flags & ODPF_UNICODE ) {
+				#if defined ( _UNICODE )
+					dat->opd[i].pszGroup = ( TCHAR* )mir_wstrdup( odp[i].ptszGroup );
+				#else
+					dat->opd[i].pszGroup = u2a(( WCHAR* )odp[i].ptszGroup );
+				#endif
+			}
+			else dat->opd[i].pszGroup = ( TCHAR* )mir_strdup( odp[i].pszGroup );
 
 			if ( !lstrcmp( lastPage, odp[i].ptszTitle ) &&
 				(( lastGroup == NULL && odp[i].ptszGroup == NULL ) || !lstrcmp( lastGroup, odp[i].ptszGroup )))

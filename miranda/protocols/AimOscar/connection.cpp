@@ -18,8 +18,10 @@ HANDLE aim_peer_connect(char* ip,unsigned short port)
 {
     NETLIBOPENCONNECTION ncon = { 0 };
     ncon.cbSize = sizeof(ncon);
+	ncon.flags = NLOCF_V2;
     ncon.szHost = ip;
     ncon.wPort =port;
+	ncon.timeout=1;
     HANDLE con = (HANDLE) CallService(MS_NETLIB_OPENCONNECTION, (WPARAM) conn.hNetlibPeer, (LPARAM) & ncon);
 	return con;
 }
@@ -204,7 +206,7 @@ void __cdecl aim_protocol_negotiation()
 				}
 				else if(flap.cmp(0x04))
 				{
-					offline_contacts();;
+					offline_contacts();
 					broadcast_status(ID_STATUS_OFFLINE);
 					LeaveCriticalSection(&connectionMutex);
 					return;

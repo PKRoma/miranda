@@ -370,6 +370,7 @@ static int AuthRequest(WPARAM /*wParam*/,LPARAM lParam)
 	DBVARIANT dbv;
 	if(!DBGetContactSetting(ccs->hContact,MOD_KEY_CL,OTH_KEY_GP,&dbv))
 	{
+		lowercase_name(dbv.pszVal);
 		add_contact_to_group(ccs->hContact,(unsigned short)DBGetContactSettingWord(NULL, GROUP_ID_KEY,dbv.pszVal,0),dbv.pszVal);
 		DBFreeVariant(&dbv);
 	}

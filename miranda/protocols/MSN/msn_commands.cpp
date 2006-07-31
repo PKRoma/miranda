@@ -42,10 +42,13 @@ void mmdecode(char *trg, char *str);
 
 void MSN_ChatStart(ThreadData* info);
 
+ int tridUrlInbox = -1, tridUrlEdit = -1;
+
 char* sid = NULL;
 char* kv = NULL;
 char* MSPAuth = NULL;
 char* passport = NULL;
+char* profileURL = NULL;
 char* rru = NULL;
 extern HANDLE	 hMSNNudge;
 
@@ -160,10 +163,7 @@ static void sttNotificationMessage( const char* msgBody, bool isInitial )
 	char tBuffer[512];
 	char tBuffer2[512];
 	bool tIsPopup = ServiceExists( MS_POPUP_ADDPOPUP ) != 0;
-	int  UnreadMessages = -1, UnreadJunkEmails = -1;
-
-	replaceStr( passport, "https://loginnet.passport.com/ppsecure/md5auth.srf?lc=1033" );
-	replaceStr( rru, "/cgi-bin/HoTMaiL" );
+	int  UnreadMessages = 0, UnreadJunkEmails = 0;
 
 	MimeHeaders tFileInfo;
 	tFileInfo.readFromBuffer( msgBody );
@@ -178,8 +178,6 @@ static void sttNotificationMessage( const char* msgBody, bool isInitial )
 		if (( p = tFileInfo[ "Folders-Unread" ] ) != NULL )
 			UnreadJunkEmails = atoi( p );
 	}
-	replaceStr( rru,      tFileInfo[ "Inbox-URL" ] );
-//	replaceStr( passport, tFileInfo[ "Post-URL" ]  );
 
 	if ( From != NULL && Subject != NULL && Fromaddr != NULL ) {
 		char mimeFrom[ 1024 ], mimeSubject[ 1024 ];
@@ -1159,7 +1157,7 @@ LBL_InvalidCommand:
 
 				MSN_SetStringUtf( hContact, "Nick", data.userNick );
 				MSN_SetWord( hContact, "Status", ( WORD )MSNStatusToMiranda( data.userStatus ));
-				DBDeleteContactSetting( hContact, "CList", "StatusMsg" );
+//				DBDeleteContactSetting( hContact, "CList", "StatusMsg" );
 			}
 
 			MSN_SetString( hContact, "MirVer", "" );
@@ -1171,9 +1169,9 @@ LBL_InvalidCommand:
 				if ( dwValue & 0x200 )
 					MSN_SetString( hContact, "MirVer", "Webmessenger" );
 				else if ( dwValue == 1342177280 )
-					MSN_SetString( hContact, "MirVer", "Miranda 0.5.x" );
+					MSN_SetString( hContact, "MirVer", "Miranda IM 0.5.x" );
 				else if ( dwValue == 805306404 )
-					MSN_SetString( hContact, "MirVer", "Miranda 0.4.x" );
+					MSN_SetString( hContact, "MirVer", "Miranda IM 0.4.x" );
 				else if (( dwValue & 0x60000000 ) == 0x60000000 )
 					MSN_SetString( hContact, "MirVer", "MSN 8.x" );
 				else if (( dwValue & 0x50000000 ) == 0x50000000 )
@@ -1428,6 +1426,19 @@ LBL_InvalidCommand:
 			MSN_DebugLog( "Message send failed (trid=%d)", trid );
 			break;
 
+		case ' TON':   //********* NOT: notification message
+		{
+			char* buffer = ( char* )alloca( trid+1 );
+			BYTE* p = HReadBuffer( info ).surelyRead( trid );
+			if ( p != NULL ) {
+				memcpy( buffer, p, trid );
+				buffer[ trid ] = 0;
+			}
+			else buffer[0] = 0;
+			
+			MSN_DebugLog( "Notification message: %s", buffer );
+			break;
+		}
 		case ' TUO':   //********* OUT: sections 7.10 Connection Close, 8.6 Leaving a Switchboard Session
 			if ( !stricmp( params, "OTH" )) {
 				MSN_SendBroadcast( NULL, ACKTYPE_LOGIN, ACKRESULT_FAILED, NULL, LOGINERR_OTHERLOCATION );
@@ -1556,7 +1567,10 @@ LBL_InvalidCommand:
 			sttIsSync = true;
 			if (( sttListNumber = atol( tWords[ 2 ] )) == 0 )
 				MSN_SetServerStatus( msnDesiredStatus );
+
 			sttListedContact = NULL;
+			tridUrlInbox = msnNsThread->sendPacket( "URL", "INBOX" );
+			tridUrlEdit  = msnNsThread->sendPacket( "URL", "PROFILE 0x%04x", GetUserDefaultLCID() );
 			break;
 		}
 		case ' XBU':   // UBX : MSNP11+ User Status Message
@@ -1597,6 +1611,27 @@ LBL_InvalidCommand:
 					}
 					else DBDeleteContactSetting( hContact, "CList", "StatusMsg" );
 			}	}
+			break;
+		}
+		case ' LRU':
+		{
+			union {
+				char* tWords[ 3 ];
+				struct { char *rru, *passport, *urlID; } data;
+			};
+
+			if ( sttDivideWords( params, 3, tWords ) != 3 )
+				goto LBL_InvalidCommand;
+
+			if ( trid == tridUrlInbox ) {
+				replaceStr( passport, data.passport );
+				replaceStr( rru, data.rru );
+				tridUrlInbox = -1;
+			}
+			else if ( trid == tridUrlEdit ) {
+				replaceStr( profileURL, data.rru );
+				tridUrlEdit = -1;
+			}				
 			break;
 		}
 		case ' RSU':	//********* USR: sections 7.3 Authentication, 8.2 Switchboard Connections and Authentication
@@ -1727,7 +1762,8 @@ LBL_InvalidCommand:
 				struct { char *type, *newServer, *security, *authChallengeInfo; } data;
 			};
 
-			if ( sttDivideWords( params, 4, tWords ) < 2 )
+			int numWords = sttDivideWords( params, 4, tWords );
+			if ( numWords < 2 )
 				goto LBL_InvalidCommand;
 
 			if ( !strcmp( data.type, "NS" )) { //notification server
@@ -1741,12 +1777,14 @@ LBL_InvalidCommand:
 
 				MSN_DebugLog( "Switching to notification server '%s'...", data.newServer );
 				newThread->startThread(( pThreadFunc )MSNServerThread );
-				sl = time(NULL); //for hotmail
 				return 1;  //kill the old thread
 			}
 
 			if ( !strcmp( data.type, "SB" )) { //switchboard server
 				UrlDecode( data.newServer );
+
+				if ( numWords < 4 )
+					goto LBL_InvalidCommand;
 
 				if ( strcmp( data.security, "CKI" )) {
 					MSN_DebugLog( "Unknown XFR SB security package '%s'", data.security );

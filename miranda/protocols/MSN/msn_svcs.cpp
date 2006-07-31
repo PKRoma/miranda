@@ -32,6 +32,7 @@ void __cdecl MSNServerThread( ThreadData* info );
 void MSN_ChatStart(ThreadData* info);
 
 HANDLE msnBlockMenuItem = NULL;
+extern char* profileURL;
 
 /////////////////////////////////////////////////////////////////////////////////////////
 // MsnAddToList - adds contact to the server list
@@ -314,7 +315,10 @@ static int MsnDbSettingChanged(WPARAM wParam,LPARAM lParam)
 			char szContactID[ 100 ], szNewNick[ 387 ];
 			if ( !MSN_GetStaticString( "ID", hContact, szContactID, sizeof szContactID )) {
 				if ( cws->value.type != DBVT_DELETED ) {
-					UrlEncode( UTF8(cws->value.pszVal), szNewNick, sizeof szNewNick );
+					if ( cws->value.type == DBVT_UTF8 )
+						UrlEncode( cws->value.pszVal, szNewNick, sizeof szNewNick );
+					else
+						UrlEncode( UTF8(cws->value.pszVal), szNewNick, sizeof szNewNick );
 					msnNsThread->sendPacket( "SBP", "%s MFN %s", szContactID, szNewNick );
 				}
 				else {
@@ -333,7 +337,7 @@ static int MsnDbSettingChanged(WPARAM wParam,LPARAM lParam)
 static int MsnEditProfile( WPARAM, LPARAM )
 {
 	char tUrl[ 4096 ];
-	mir_snprintf( tUrl, sizeof( tUrl ), "http://members.msn.com/Edit.asp?did=1&t=%s&js=yes", MSPAuth );
+	mir_snprintf( tUrl, sizeof( tUrl ), "%s&did=1&t=%s&js=yes", profileURL, MSPAuth );
 	MSN_CallService( MS_UTILS_OPENURL, TRUE, ( LPARAM )tUrl );
 	return 0;
 }
@@ -395,7 +399,7 @@ int MsnFileCancel(WPARAM wParam, LPARAM lParam)
 	if ( ft->p2p_appID != 0 ) {
 		ThreadData* thread = MSN_GetThreadByContact( ccs->hContact );
 		if ( thread != NULL )
-			p2p_sendStatus( ft, thread, -1 );
+			p2p_sendBye( thread, ft );
 	}
 
 	ft->std.files = NULL;
@@ -1022,7 +1026,7 @@ static int MsnSetAwayMsg(WPARAM wParam,LPARAM lParam)
 	int i;
 
 	for ( i=0; i < MSN_NUM_MODES; i++ )
-		if ( msnModeMsgs[i].m_mode == wParam )
+		if ( msnModeMsgs[i].m_mode == (int)wParam )
 			break;
 
 	if ( i == MSN_NUM_MODES )
@@ -1030,7 +1034,7 @@ static int MsnSetAwayMsg(WPARAM wParam,LPARAM lParam)
 
 	replaceStr( msnModeMsgs[i].m_msg, ( char* )lParam );
 
-	if ( wParam == msnDesiredStatus )
+	if ( (int)wParam == msnDesiredStatus )
 		MSN_SendStatusMessage(( char* )lParam );
 
 	return 0;

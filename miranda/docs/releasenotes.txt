@@ -1,7 +1,7 @@
                    Miranda Instant Messenger Release Notes
                    ---------------------------------------
 
-                             May 2005 (v0.4.0.1)
+                             July 2006 (v0.5 PR 4)
 
                           http://www.miranda-im.org
 
@@ -28,6 +28,84 @@ to list all the important ones without getting too technical.
 
 If you want to see the full changelogs, go here:
 http://files.miranda-im.org/builds/ChangeLog
+
+* New in 0.5
+Enhancements:
+ - Unicode support was introduced
+ - Database can store the Unicode strings (in utf8 format), and save and return these strings as ANSI, UCS2 and UTF8 strings
+ - Most core protocols can send, receive & process the information in Unicode
+ - The contact lists can display nicks, names and statuses in Unicode (under NT)
+ - Message editors can display any user information in Unicode, display and enter the Unicode messages;
+ - User details can process names, addresses, etc in Unicode
+ - Language packs can provide the valid translation for the Miranda's interface, even when the default codepage doesn't match the langpack codepage
+ - Two Miranda distributions are available since 0.5: the ANSI (for Win95/98/ME) and the Unicode one (for NT4/Win2k/XP/Win2003)
+ - The standard was designed for all contact list plugins, to simplify the support for sorting, storing, grouping contacts
+ - png2dib plugin was inserted into the distribution to provide the core-level support for PNG files
+ - Support for sending files with the Unicode names (not mappable into the current codepage)
+ - AIM: AIM protocol now using Oscar
+ - ICQ: Messaging support enhanced (P2P messaging supported)
+ - ICQ: Direct Connection support rewritten (with P2P messaging and reverse file-transfers)
+ - ICQ: Temporary Visible List support
+ - ICQ: New Features page in options to configure extra features
+ - ICQ: Custom statuses just like icq5 - needs clist_mw derivative (thx Big Muscle)
+ - ICQ: New custom status icons (thx Angeli-ka)
+ - ICQ: Enhanced Unicode & Ansi charsets support (each contact can have its own codepage)
+ - ICQ: AIM cross-compatability (add/remove, search by mail, status, messaging, away messages)
+ - ICQ: Secure MD5 login authentification
+ - ICQ: Revoke authorization (Advanced Feature - see further) - removes you from contact's server-list
+ - SRMM: RTL support for messages in Hebrew and some other languages.
+ - Jabber: Avatars support (JEP-0008)
+ - Jabber: Massive groupchat improvements, including private messages & invitations
+ - MSN: Client version detection
+ - MSN: Support for nudges
+ - MSN: Support for some MSN Messenger 7.5 and Live Messenger 8.0 specifics
+ - Yahoo: Ability to set your own avatar
+ - Yahoo: Added new icons
+ - Yahoo: Added address book and calendar links in the main menu
+ - Yahoo: Added alerts support and link to the main menu
+ - Yahoo: Added nick to Yahoo login information
+ - Yahoo: Yahoo now uses new png2dib.dll services for avatar manipulation
+ - Yahoo: Added Yahoo Japan support
+ - Yahoo: Added buzz/nudge support
+ - Yahoo: Offline IMs from blocked people get dropped
+ - Yahoo: Added basic audible support
+ - Yahoo: Yahoo File Transfer improvements
+
+Bugfixes:
+ - Clist classic: Right click on a tray icon results to the resource leak
+ - ICQ: Our own contact in list now correctly handles events
+ - ICQ: Proxy Gateway mode is working again
+ - ICQ: File receiving from Trillian clients work again
+ - ICQ: Message errors are now really displayed
+ - ICQ: Fixed memory leak in avatar code
+ - ICQ: File transfers with GnomeICU works now
+ - ICQ: Fixed changing password in ICQ Details will not save it to DB if not there
+ - ICQ: Fixed PING channel handling (caused connection drop)
+ - ICQ: Fixed bug in changeinfo with translated listbox values
+ - ICQ: Fixed error handling in avatar code for uploading avatar
+ - ICQ: Fixed bug in Manage-Server list dialog, caused hang
+ - ICQ: Fixed occasional losing of messages (message parsing was incomplete)
+ - ICQ: Server-list management now stores all info - solves problems
+ - ICQ: Fixed unknown errors during login were not reported sometimes
+ - Jabber: resource names not UTF8 decoded
+ - Jabber: people are trying to connect to jabber.org with empty usernames
+ - MSN: Fix for the error 540 upon login, because of the invalid password hash calculation
+ - MSN: Fixed the problem of locking the message sending queue by timeouts
+ - MSN: Fixed disconnection issues for the HTTP gateway mode
+ - MSN: Fixed some issues with the wrong Hotmail Inbox and Profile Editing URLs
+ - MSN: Fix for error 911 inside switchboard threads
+ - Yahoo: Fixed deletion of a buddy from your contact list
+ - Yahoo: Made fixes to make more strings translatable
+ - Yahoo: Fixed a bug that could crash srmm
+ - Yahoo: Properly close the connections
+
+* New in 0.4.0.3
+Bugfixes:
+ - ICQ: Fixed problem with sending and receiving messages.
+
+* New in 0.4.0.2
+Bugfixes:
+ - AIM protocol uses TOC2 (TOC1 blocked by AOL)
 
 * New in 0.4.0.1
 Bugfixes:
