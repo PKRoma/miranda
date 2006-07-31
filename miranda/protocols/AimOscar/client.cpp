@@ -1023,3 +1023,26 @@ int aim_request_mail(HANDLE hServerConn,unsigned short &seqno)
 	else
 		return 0;
 }
+/* See icq server relaying for retrieving client away message: http://forums.miranda-im.org/showpost.php?p=73099&postcount=939
+int aim_request_crap(HANDLE hServerConn,int &seqno)
+{
+	int offset=0;
+	char buf[SNAC_SIZE*50];
+	aim_writesnac(0x04,0x06,0x06,offset,buf);
+	char sn[]="snaphatvirgil";
+	aim_writegeneric(10,"\x69\xe8\x89\x44\xcf\0\0\0\0\x02",offset,buf);
+	char sn_len=strlen(sn);
+	aim_writegeneric(1,&sn_len,offset,buf);
+	aim_writegeneric(sn_len,sn,offset,buf);
+	aim_writegeneric(6,"\0\x05\0\x5e\0\0",offset,buf);
+	aim_writegeneric(16,"\x69\xe8\x89\x44\xcf\0\0\0\x09\x46\x13\x49\x4c\x7f\x11\xd1",offset,buf);
+	aim_writegeneric(16,"\x82\x22\x44\x45\x53\x54\0\0\0\x0a\0\x02\0\x01\0\x0f",offset,buf);
+	aim_writegeneric(16,"\0\0\x27\x11\0\x36\x1b\0\x08\0\0\0\0\0\0\0",offset,buf);
+	aim_writegeneric(16,"\0\0\0\0\0\0\0\0\0\0\0\0\x03\0\0\0",offset,buf);
+	aim_writegeneric(16,"\x04\x0d\0\x0e\0\x0d\0\0\0\0\0\0\0\0\0\0",offset,buf);
+	aim_writegeneric(12,"\0\0\0\xe8\x03\x01\0\0\x01\x01\0\0",offset,buf);
+	if(aim_sendflap(hServerConn,0x02,offset,buf,seqno)==0)
+		return 1;
+	else
+		return 0;
+}*/

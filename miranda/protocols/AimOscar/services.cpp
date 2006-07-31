@@ -745,6 +745,19 @@ void CreateServices()
     mi.pszService = service_name;
 	CallService(MS_CLIST_ADDMAINMENUITEM, 0, (LPARAM)&mi );
 
+	mir_snprintf(service_name, sizeof(service_name), "%s%s", AIM_PROTOCOL_NAME, "/EditProfile");
+	CreateServiceFunction(service_name,EditProfile);
+	memset( &mi, 0, sizeof( mi ));
+	mi.pszPopupName = AIM_PROTOCOL_NAME;
+    mi.cbSize = sizeof( mi );
+    mi.popupPosition = 500090000;
+	mi.position = 500090000;
+    mi.hIcon = LoadIcon(conn.hInstance,MAKEINTRESOURCE( IDI_AIM ));
+	mi.pszContactOwner = AIM_PROTOCOL_NAME;
+    mi.pszName = Translate( "Edit Profile" );
+    mi.pszService = service_name;
+	CallService(MS_CLIST_ADDMAINMENUITEM, 0, (LPARAM)&mi );
+
 	mir_snprintf(service_name, sizeof(service_name), "%s%s", AIM_PROTOCOL_NAME, "/CheckMail");
 	CreateServiceFunction(service_name,CheckMail);
 	memset( &mi, 0, sizeof( mi ));
