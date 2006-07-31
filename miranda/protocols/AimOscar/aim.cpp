@@ -1,12 +1,12 @@
 #include "aim.h"
 PLUGINLINK *pluginLink;
-#define AIM_OSCAR_VERSION "\0\0\0\x05"
-char* AIM_CLIENT_ID_STRING="Miranda Oscar Plugin, version 0.0.0.5";
+#define AIM_OSCAR_VERSION "\0\0\0\x06"
+char* AIM_CLIENT_ID_STRING="Miranda Oscar Plugin, version 0.0.0.6";
 char AIM_CAP_MIRANDA[]="MirandaA\0\0\0\0\0\0\0";
 PLUGININFO pluginInfo={
 	sizeof(PLUGININFO),
-	"AIM OSCAR Plugin - Beta 5",
-	PLUGIN_MAKE_VERSION(0,0,0,5),
+	"AIM OSCAR Plugin - Version 6",
+	PLUGIN_MAKE_VERSION(0,0,0,6),
 	"Provides basic support for AOL® OSCAR Instant Messenger protocol. [Built: "__DATE__" "__TIME__"]",
 	"Aaron Myles Landwehr",
 	"aaron@miranda-im.org",
@@ -17,15 +17,14 @@ PLUGININFO pluginInfo={
 };
 oscar_data conn;
 file_transfer* fu;
-extern "C" __declspec(dllexport) bool WINAPI DllMain(HINSTANCE hinstDLL,DWORD fdwReason,LPVOID lpvReserved)
+extern "C" __declspec(dllexport) bool WINAPI DllMain(HINSTANCE hinstDLL,DWORD /*fdwReason*/,LPVOID /*lpvReserved*/)
 {
 	conn.hInstance = hinstDLL;
 	return TRUE;
 }
-
 extern "C" __declspec(dllexport) PLUGININFO* MirandaPluginInfo(DWORD mirandaVersion)
 {
-	unsigned long mv=htonl(mirandaVersion);
+	unsigned long mv=_htonl(mirandaVersion);
 	memcpy((char*)&AIM_CAP_MIRANDA[8],&mv,sizeof(DWORD));
 	memcpy((char*)&AIM_CAP_MIRANDA[12],(char*)&AIM_OSCAR_VERSION,sizeof(DWORD));
 	return &pluginInfo;
@@ -44,36 +43,35 @@ extern "C" int __declspec(dllexport) Load(PLUGINLINK *link)
 	char str2[MAX_PATH];
 	GetModuleFileName(conn.hInstance, str2, MAX_PATH);
     str1 = strrchr(str2, '\\');
-	if (str1 != NULL && (strlen(str1 + 1) > 4))
+	if (str1 != NULL && (lstrlen(str1 + 1) > 4))
 	{
 		char store[MAX_PATH];
-		strlcpy(store, str1 + 1, strlen(str1 + 1) - 3);
-		AIM_PROTOCOL_NAME=new char[strlen(store)+1];
-		memcpy(AIM_PROTOCOL_NAME,store,strlen(store)+1);
+		strlcpy(store, str1 + 1, lstrlen(str1 + 1) - 3);
+		AIM_PROTOCOL_NAME=new char[lstrlen(store)+1];
+		memcpy(AIM_PROTOCOL_NAME,store,lstrlen(store)+1);
 	}
 	CharUpper(AIM_PROTOCOL_NAME);
 	char groupid_key[MAX_PATH];//group to id
 	ZeroMemory(groupid_key,sizeof(groupid_key));
-	memcpy(groupid_key,AIM_PROTOCOL_NAME,strlen(AIM_PROTOCOL_NAME));
-	memcpy(&groupid_key[strlen(AIM_PROTOCOL_NAME)],AIM_MOD_GI,strlen(AIM_MOD_GI));
-	GROUP_ID_KEY=new char[strlen(groupid_key)+1];
-	memcpy(GROUP_ID_KEY,groupid_key,strlen(groupid_key));
-	memcpy(&GROUP_ID_KEY[strlen(groupid_key)],"\0",1);
+	memcpy(groupid_key,AIM_PROTOCOL_NAME,lstrlen(AIM_PROTOCOL_NAME));
+	memcpy(&groupid_key[lstrlen(AIM_PROTOCOL_NAME)],AIM_MOD_GI,lstrlen(AIM_MOD_GI));
+	GROUP_ID_KEY=new char[lstrlen(groupid_key)+1];
+	memcpy(GROUP_ID_KEY,groupid_key,lstrlen(groupid_key));
+	memcpy(&GROUP_ID_KEY[lstrlen(groupid_key)],"\0",1);
 	char idgroup_key[MAX_PATH];//id to group
 	ZeroMemory(idgroup_key,sizeof(idgroup_key));
-	memcpy(idgroup_key,AIM_PROTOCOL_NAME,strlen(AIM_PROTOCOL_NAME));
-	memcpy(&idgroup_key[strlen(AIM_PROTOCOL_NAME)],AIM_MOD_IG,strlen(AIM_MOD_IG));
-	ID_GROUP_KEY=new char[strlen(idgroup_key)+1];
-	memcpy(ID_GROUP_KEY,idgroup_key,strlen(idgroup_key));
-	memcpy(&ID_GROUP_KEY[strlen(idgroup_key)],"\0",1);
+	memcpy(idgroup_key,AIM_PROTOCOL_NAME,lstrlen(AIM_PROTOCOL_NAME));
+	memcpy(&idgroup_key[lstrlen(AIM_PROTOCOL_NAME)],AIM_MOD_IG,lstrlen(AIM_MOD_IG));
+	ID_GROUP_KEY=new char[lstrlen(idgroup_key)+1];
+	memcpy(ID_GROUP_KEY,idgroup_key,lstrlen(idgroup_key));
+	memcpy(&ID_GROUP_KEY[lstrlen(idgroup_key)],"\0",1);
 	char filetransfer_key[MAX_PATH];//
 	ZeroMemory(filetransfer_key,sizeof(filetransfer_key));
-	memcpy(filetransfer_key,AIM_PROTOCOL_NAME,strlen(AIM_PROTOCOL_NAME));
-	memcpy(&filetransfer_key[strlen(AIM_PROTOCOL_NAME)],AIM_KEY_FT,strlen(AIM_KEY_FT));
-	FILE_TRANSFER_KEY=new char[strlen(filetransfer_key)+1];
-	memcpy(FILE_TRANSFER_KEY,filetransfer_key,strlen(filetransfer_key));
-	memcpy(&FILE_TRANSFER_KEY[strlen(filetransfer_key)],"\0",1);
-	int i=strlen(FILE_TRANSFER_KEY);
+	memcpy(filetransfer_key,AIM_PROTOCOL_NAME,lstrlen(AIM_PROTOCOL_NAME));
+	memcpy(&filetransfer_key[lstrlen(AIM_PROTOCOL_NAME)],AIM_KEY_FT,lstrlen(AIM_KEY_FT));
+	FILE_TRANSFER_KEY=new char[lstrlen(filetransfer_key)+1];
+	memcpy(FILE_TRANSFER_KEY,filetransfer_key,lstrlen(filetransfer_key));
+	memcpy(&FILE_TRANSFER_KEY[lstrlen(filetransfer_key)],"\0",1);
 	//end location of memory
 	pluginLink = link;
 	conn.status=ID_STATUS_OFFLINE;
@@ -84,6 +82,7 @@ extern "C" int __declspec(dllexport) Load(PLUGINLINK *link)
 	InitializeCriticalSection(&modeMsgsMutex);
 	InitializeCriticalSection(&statusMutex);
 	InitializeCriticalSection(&connectionMutex);
+	InitializeCriticalSection(&SendingMutex);
 	if(DBGetContactSettingByte(NULL, AIM_PROTOCOL_NAME, AIM_KEY_FR, 0)==0)
 		DialogBox(conn.hInstance, MAKEINTRESOURCE(IDD_AIMACCOUNT), NULL, first_run_dialog);
 	ForkThread(aim_keepalive_thread,NULL);
@@ -92,15 +91,15 @@ extern "C" int __declspec(dllexport) Load(PLUGINLINK *link)
 }
 int ExtraIconsRebuild(WPARAM wParam, LPARAM lParam);
 int ExtraIconsApply(WPARAM wParam, LPARAM lParam);
-int ModulesLoaded(WPARAM wParam,LPARAM lParam)
+int ModulesLoaded(WPARAM /*wParam*/,LPARAM /*lParam*/)
 {
 	char store[MAX_PATH];
 	CallService(MS_DB_GETPROFILEPATH, MAX_PATH-1,(LPARAM)&store);
-	if(store[strlen(store)-1]=='\\')
-		store[strlen(store)-1]='\0';
-	CWD=(char*)new char[strlen(store)+1];
-	memcpy(CWD,store,strlen(store));
-	memcpy(&CWD[strlen(store)],"\0",1);
+	if(store[lstrlen(store)-1]=='\\')
+		store[lstrlen(store)-1]='\0';
+	CWD=(char*)new char[lstrlen(store)+1];
+	memcpy(CWD,store,lstrlen(store));
+	memcpy(&CWD[lstrlen(store)],"\0",1);
 	DBVARIANT dbv;
 	NETLIBUSER nlu;
 	ZeroMemory(&nlu, sizeof(nlu));
@@ -165,11 +164,11 @@ int ModulesLoaded(WPARAM wParam,LPARAM lParam)
 		MessageBox( NULL, "AimOSCAR has detected that a buffer overrun has occured in it's 'conn.hookEvent' array. Please recompile with a larger HOOKEVENT_SIZE declared. AimOSCAR will now shut Miranda-IM down.", AIM_PROTOCOL_NAME, MB_OK );
 		exit(1);
 	}
-	aim_links_init();
 	offline_contacts();
+	aim_links_init();
 	return 0;
 }
-int PreBuildContactMenu(WPARAM wParam,LPARAM lParam)
+int PreBuildContactMenu(WPARAM wParam,LPARAM /*lParam*/)
 {
 	CLISTMENUITEM mi;
 	ZeroMemory(&mi,sizeof(mi));
@@ -184,8 +183,8 @@ int PreBuildContactMenu(WPARAM wParam,LPARAM lParam)
 		mi.flags=CMIM_FLAGS|CMIF_NOTOFFLINE|CMIF_HIDDEN;
 	}
 	CallService(MS_CLIST_MODIFYMENUITEM,(WPARAM)conn.hHTMLAwayContextMenuItem,(LPARAM)&mi);
-	char* item= new char[strlen(AIM_KEY_BI)+10];
-	mir_snprintf(item,strlen(AIM_KEY_BI)+10,AIM_KEY_BI"%d",1);
+	char* item= new char[lstrlen(AIM_KEY_BI)+10];
+	mir_snprintf(item,lstrlen(AIM_KEY_BI)+10,AIM_KEY_BI"%d",1);
 	if(!DBGetContactSettingWord((HANDLE)wParam, AIM_PROTOCOL_NAME, item,0)&&conn.state==1)
 	{
 		mi.flags=CMIM_FLAGS|CMIF_NOTONLINE;
@@ -198,7 +197,7 @@ int PreBuildContactMenu(WPARAM wParam,LPARAM lParam)
 	CallService(MS_CLIST_MODIFYMENUITEM,(WPARAM)conn.hAddToServerListContextMenuItem,(LPARAM)&mi);
 	return 0;
 }
-int PreShutdown(WPARAM wParam,LPARAM lParam)
+int PreShutdown(WPARAM /*wParam*/,LPARAM /*lParam*/)
 {
 	conn.shutting_down=1;
 	if(conn.hServerConn)
@@ -220,6 +219,7 @@ int PreShutdown(WPARAM wParam,LPARAM lParam)
 	DeleteCriticalSection(&modeMsgsMutex);
 	DeleteCriticalSection(&statusMutex);
 	DeleteCriticalSection(&connectionMutex);
+	DeleteCriticalSection(&SendingMutex);
 	return 0;
 }
 extern "C" int __declspec(dllexport) Unload(void)

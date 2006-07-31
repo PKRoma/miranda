@@ -1,5 +1,5 @@
 ####################################################################
-# AIM TOC2 Protocol Plugin
+# AIM OSCAR Protocol Plugin
 # Makefile for Mingw
 ####################################################################
 #
@@ -72,7 +72,6 @@ HDR =	tlv.h \
 	error.h \
 	conv.h
 
-LIB = -lwsock32
 CC = g++
 RC = windres
 RM = rm
@@ -80,9 +79,9 @@ ID = indent
 
 # Install location
 ifdef DEBUG
-BIN = ..\..\bin\debug\plugins\AimOSCAR.dll
+BIN = ../../bin/debug/plugins/Aim.dll
 else
-BIN = ..\..\bin\release\plugins\AimOSCAR.dll
+BIN = ../../bin/release/plugins/Aim.dll
 endif
 
 # Defines
@@ -97,13 +96,13 @@ ifdef DEBUG
 CFLAGS  = -g -g3 $(DEFINES) -I../../include
 LFLAGS  = -shared
 else
-CFLAGS  = -O1 $(DEFINES) -I../../include
+CFLAGS  = -Os $(DEFINES) -I../../include
 LFLAGS  = -shared -s -pedantic -W
 endif
 
 # Targets
 all : $(OBJ) $(RES)
-	$(CC) $(LFLAGS) $(CFLAGS) -o $(BIN) $(OBJ) $(RES) $(LIB) -Wl
+	$(CC) $(LFLAGS) $(CFLAGS) -o $(BIN) $(OBJ) $(RES) -Wl
 
 $(OBJ) :
 	$(CC) -c $(SRC) $(CFLAGS)
@@ -119,6 +118,6 @@ format :
 	$(RM) *.*~
 
 clean :
-	$(RM) -fr $(OBJ) $(RES) *.ncb *.suo *.aps Release Debug *.vcproj.*
+	$(RM) -fr $(OBJ) $(RES) *.ncb *.suo *.aps Release Debug *.vcproj.* *.opt *.dat *.plg Ankh.Load
 
 -include Makefile.dep

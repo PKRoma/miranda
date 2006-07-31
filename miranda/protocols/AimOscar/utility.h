@@ -21,20 +21,22 @@ void start_connection(int initial_status);
 HANDLE find_contact(char * sn);
 HANDLE add_contact(char* buddy);
 void add_contacts_to_groups();
-void add_contact_to_group(HANDLE hContact,unsigned short new_group_id,char* group);
+void add_contact_to_group(HANDLE hContact,char* group);
 void offline_contacts();
 void offline_contact(HANDLE hContact, bool remove_settings);
 char *normalize_name(const char *s);
+char* lowercase_name(char* s);
+char* trim_name(char* s);
 void msg_ack_success(HANDLE hContact);
 void execute_cmd(char* type,char* arg);
-void create_group(char *group, unsigned short group_id);
+void create_group(char *group);
 unsigned short search_for_free_group_id(char *name);
 unsigned short search_for_free_item_id(HANDLE hbuddy);
 char* get_members_of_group(unsigned short group_id,unsigned short &size);
 void __cdecl basic_search_ack_success(char *snsearch);
 void delete_module(char* module, HANDLE hContact);
 void write_away_message(HANDLE hContact,char* sn,char* msg);
-void write_profile(HANDLE hContact,char* sn,char* msg);
+void write_profile(char* sn,char* msg);
 unsigned int aim_oft_checksum_file(char *filename);
 void long_ip_to_char_ip(unsigned long host, char* ip);
 unsigned long char_ip_to_long_ip(char* ip);
@@ -65,7 +67,6 @@ T* renew(T* src, int size, int size_chg)
 {
 	T* dest=new T[size+size_chg];
 	memcpy(dest,src,size*sizeof(T));
-	int i=sizeof(T);
 	delete[] src;
 	return dest;
 }

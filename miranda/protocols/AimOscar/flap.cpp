@@ -7,7 +7,7 @@ FLAP::FLAP(char* buf,unsigned short num_bytes)
 	}
 	else
 	{
-		length_=htons((*(unsigned short*)&buf[4]));
+		length_=_htons((*(unsigned short*)&buf[4]));
 		if(FLAP_SIZE+length_>num_bytes)
 		{
 			length_=0;
@@ -25,7 +25,7 @@ unsigned short FLAP::len()
 }
 unsigned short FLAP::snaclen()
 {
-	return length_-FLAP_SIZE-10;
+	return length_-10;
 }
 int FLAP::cmp(unsigned short type)
 {

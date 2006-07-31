@@ -1,8 +1,8 @@
 #include "tlv.h"
 TLV::TLV(char* buf)
 {
-	type_=htons((*(unsigned short*)&buf[0]));
-	length_=htons((*(unsigned short*)&buf[2]));
+	type_=_htons((*(unsigned short*)&buf[0]));
+	length_=_htons((*(unsigned short*)&buf[2]));
 	value_=new char[length_+1];
 	memcpy(value_,&buf[4],length_);
 	value_[length_]='\0';
@@ -14,7 +14,7 @@ TLV::TLV(unsigned short type, unsigned short length, char* value)
 	if(length_>0)
 	{
 		value_=new char[length_+1];
-		memcpy(value_,value,length_+1);
+		memcpy(value_,value,length_);
 	}
 }
 TLV::~TLV()
@@ -42,11 +42,11 @@ unsigned short TLV::len()
 }
 unsigned short TLV::ushort(int pos)
 {
-	return htons(*(unsigned short*)&value_[pos]);
+	return _htons(*(unsigned short*)&value_[pos]);
 }
 unsigned long TLV::ulong(int pos)
 {
-	return htonl(*(unsigned long*)&value_[pos]);
+	return _htonl(*(unsigned long*)&value_[pos]);
 }
 unsigned char TLV::ubyte(int pos)
 {
@@ -64,8 +64,8 @@ char* TLV::part(int pos, int length)//returns part of the tlv value
 char* TLV::whole()//returns the whole tlv
 {
 	char* value=new char[length_+1+TLV_HEADER_SIZE];
-	unsigned short type=htons(type_);
-	unsigned short length=htons(length_);
+	unsigned short type=_htons(type_);
+	unsigned short length=_htons(length_);
 	memcpy(value,&type,2);
 	memcpy(&value[2],&length,2);
 	memcpy(&value[4],value_,length_);

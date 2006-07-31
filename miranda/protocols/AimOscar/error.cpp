@@ -9,9 +9,8 @@ void login_error(unsigned short* error)
 		ShowPopup("Aim Protocol","You are connecting too frequently. Try waiting 10 minutes to reconnect.", 0);
 	else
 		ShowPopup("Aim Protocol","Unknown error occured when attempting to connect.", 0);
-	Netlib_CloseHandle(conn.hServerConn);
+	Netlib_CloseHandle(conn.hServerConn);//we need this aim doesn't end our connection if fucked up.
 	conn.hServerConn=0;
-	conn.state=0;
 	delete error;
 }
 void get_error(unsigned short* error)

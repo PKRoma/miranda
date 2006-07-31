@@ -1,5 +1,5 @@
 #include "services.h"
-static int GetCaps(WPARAM wParam, LPARAM lParam)
+static int GetCaps(WPARAM wParam, LPARAM /*lParam*/)
 {
     int ret = 0;
     switch (wParam)
@@ -33,11 +33,11 @@ static int GetName(WPARAM wParam, LPARAM lParam)
 	lstrcpyn((char *) lParam, AIM_PROTOCOL_NAME, wParam);
 	return 0;
 }
-static int GetStatus(WPARAM wParam, LPARAM lParam)
+static int GetStatus(WPARAM /*wParam*/, LPARAM /*lParam*/)
 {
 	return conn.status;
 }
-static int SetStatus(WPARAM wParam, LPARAM lParam)
+static int SetStatus(WPARAM wParam, LPARAM /*lParam*/)
 { 
 	if (wParam==conn.status)
 		return 0;
@@ -45,7 +45,7 @@ static int SetStatus(WPARAM wParam, LPARAM lParam)
 	return 0;
 }
 
-int IdleChanged(WPARAM wParam, LPARAM lParam)
+int IdleChanged(WPARAM /*wParam*/, LPARAM lParam)
 { 
 	if (conn.state!=1)
 	{
@@ -82,7 +82,7 @@ int IdleChanged(WPARAM wParam, LPARAM lParam)
     }
     return 0;
 }
-static int SendMsg(WPARAM wParam, LPARAM lParam)
+static int SendMsg(WPARAM /*wParam*/, LPARAM lParam)
 {
 	CCSDATA *ccs = (CCSDATA *)lParam;
 	DBVARIANT dbv;
@@ -92,7 +92,7 @@ static int SendMsg(WPARAM wParam, LPARAM lParam)
 		{
 			ForkThread(msg_ack_success,ccs->hContact);
 		}
-		char* msg=strldup((char *)ccs->lParam,strlen((char*)ccs->lParam));
+		char* msg=strldup((char *)ccs->lParam,lstrlen((char*)ccs->lParam));
 		char* smsg=strip_carrots(msg);
 		delete[] msg;
 		if(DBGetContactSettingByte(NULL, AIM_PROTOCOL_NAME, AIM_KEY_FO, 0))
@@ -133,7 +133,7 @@ static int SendMsgW(WPARAM wParam, LPARAM lParam)
 		}
 		if(DBGetContactSettingByte(ccs->hContact, AIM_PROTOCOL_NAME, AIM_KEY_US, 0))
 		{
-			wchar_t* msg=wcsldup((wchar_t*)((char*)ccs->lParam+strlen((char*)ccs->lParam)+1),wcslen((wchar_t*)((char*)ccs->lParam+strlen((char*)ccs->lParam)+1)));
+			wchar_t* msg=wcsldup((wchar_t*)((char*)ccs->lParam+lstrlen((char*)ccs->lParam)+1),wcslen((wchar_t*)((char*)ccs->lParam+lstrlen((char*)ccs->lParam)+1)));
 			wchar_t* smsg=strip_carrots(msg);
 			delete[] msg;
 			if(DBGetContactSettingByte(NULL, AIM_PROTOCOL_NAME, AIM_KEY_FO, 0))
@@ -168,7 +168,7 @@ static int SendMsgW(WPARAM wParam, LPARAM lParam)
 	}
 	return 0;
 }
-static int RecvMsg(WPARAM wParam, LPARAM lParam)
+static int RecvMsg(WPARAM /*wParam*/, LPARAM lParam)
 {
 	CCSDATA *ccs = ( CCSDATA* )lParam;
 	PROTORECVEVENT *pre = ( PROTORECVEVENT* )ccs->lParam;
@@ -179,7 +179,7 @@ static int RecvMsg(WPARAM wParam, LPARAM lParam)
 	dbei.timestamp = pre->timestamp;
 	dbei.flags = pre->flags&PREF_CREATEREAD?DBEF_READ:0;
 	dbei.eventType = EVENTTYPE_MESSAGE;
-	dbei.cbBlob = strlen( pre->szMessage ) + 1;
+	dbei.cbBlob = lstrlen( pre->szMessage ) + 1;
 	if ( pre->flags & PREF_UNICODE )
 		dbei.cbBlob *= ( sizeof( wchar_t )+1 );
 
@@ -187,13 +187,12 @@ static int RecvMsg(WPARAM wParam, LPARAM lParam)
     CallService(MS_DB_EVENT_ADD, (WPARAM) ccs->hContact, (LPARAM) & dbei);
     return 0;
 }
-static int GetProfile(WPARAM wParam, LPARAM lParam)
+static int GetProfile(WPARAM wParam, LPARAM /*lParam*/)
 {
 	if (conn.state!=1)
 		return 0;
 	DBVARIANT dbv;
-	DBGetContactSetting((HANDLE)wParam, AIM_PROTOCOL_NAME, AIM_KEY_SN, &dbv);
-	if(dbv.pszVal)
+	if(!DBGetContactSetting((HANDLE)wParam, AIM_PROTOCOL_NAME, AIM_KEY_SN, &dbv))
 	{
 		conn.request_HTML_profile=1;
 		aim_query_profile(conn.hServerConn,conn.seqno,dbv.pszVal);
@@ -229,7 +228,7 @@ static int SetAwayMsg(WPARAM wParam, LPARAM lParam)
 	LeaveCriticalSection(&modeMsgsMutex);
 	return 0;
 }
-static int GetAwayMsg(WPARAM wParam, LPARAM lParam)
+static int GetAwayMsg(WPARAM /*wParam*/, LPARAM lParam)
 {
 	if (conn.state!=1)
 		return 0;
@@ -237,8 +236,7 @@ static int GetAwayMsg(WPARAM wParam, LPARAM lParam)
 	CCSDATA* ccs = (CCSDATA*)lParam;
 	if(ID_STATUS_OFFLINE==DBGetContactSettingWord(ccs->hContact, AIM_PROTOCOL_NAME, AIM_KEY_ST, ID_STATUS_OFFLINE))
 		return 0;
-	DBGetContactSetting((HANDLE)ccs->hContact, AIM_PROTOCOL_NAME, AIM_KEY_SN, &dbv);
-	if(dbv.pszVal)
+	if(!DBGetContactSetting((HANDLE)ccs->hContact, AIM_PROTOCOL_NAME, AIM_KEY_SN, &dbv))
 	{
 		if(aim_query_away_message(conn.hServerConn,conn.seqno,dbv.pszVal))
 		{
@@ -249,13 +247,12 @@ static int GetAwayMsg(WPARAM wParam, LPARAM lParam)
 	}
 	return 0;
 }
-static int GetHTMLAwayMsg(WPARAM wParam, LPARAM lParam)
+static int GetHTMLAwayMsg(WPARAM wParam, LPARAM /*lParam*/)
 {
 	if (conn.state!=1)
 		return 0;
 	DBVARIANT dbv;
-	DBGetContactSetting((HANDLE)wParam, AIM_PROTOCOL_NAME, AIM_KEY_SN, &dbv);
-	if(dbv.pszVal)
+	if(!DBGetContactSetting((HANDLE)wParam, AIM_PROTOCOL_NAME, AIM_KEY_SN, &dbv))
 	{
 		if(aim_query_away_message(conn.hServerConn,conn.seqno,dbv.pszVal))
 		{
@@ -265,14 +262,14 @@ static int GetHTMLAwayMsg(WPARAM wParam, LPARAM lParam)
 	}
 	return 0;
 }
-static int RecvAwayMsg(WPARAM wParam,LPARAM lParam)
+static int RecvAwayMsg(WPARAM /*wParam*/,LPARAM lParam)
 {
 	CCSDATA* ccs = (CCSDATA*)lParam;
 	PROTORECVEVENT* pre = (PROTORECVEVENT*)ccs->lParam;
 	ProtoBroadcastAck(AIM_PROTOCOL_NAME, ccs->hContact, ACKTYPE_AWAYMSG, ACKRESULT_SUCCESS, (HANDLE)pre->lParam, (LPARAM)pre->szMessage);
 	return 0;
 }
-static int LoadIcons(WPARAM wParam, LPARAM lParam)
+static int LoadIcons(WPARAM wParam, LPARAM /*lParam*/)
 {
 	return (int) LoadImage(conn.hInstance, MAKEINTRESOURCE(IDI_AIM), IMAGE_ICON, GetSystemMetrics(wParam & PLIF_SMALL ? SM_CXSMICON : SM_CXICON),GetSystemMetrics(wParam & PLIF_SMALL ? SM_CYSMICON : SM_CYICON), 0);
 }
@@ -282,55 +279,55 @@ static int ContactSettingChanged(WPARAM wParam,LPARAM lParam)
 	if (conn.state!=1)
 		return 0;
 	char* protocol = (char *) CallService(MS_PROTO_GETCONTACTBASEPROTO,wParam, 0);
-	if (protocol != NULL && !strcmp(protocol, AIM_PROTOCOL_NAME))
+	if (protocol != NULL && !lstrcmp(protocol, AIM_PROTOCOL_NAME))
 	{
-		if(!strcmp(cws->szSetting,AIM_KEY_NL)&&!strcmp(cws->szModule,MOD_KEY_CL))
+		if(!lstrcmp(cws->szSetting,AIM_KEY_NL)&&!lstrcmp(cws->szModule,MOD_KEY_CL))
 		{
 			if(cws->value.type == DBVT_DELETED)
 			{
 				DBVARIANT dbv;
 				if(!DBGetContactSetting((HANDLE)wParam,MOD_KEY_CL,OTH_KEY_GP,&dbv))
 				{
-					add_contact_to_group((HANDLE)wParam,DBGetContactSettingWord(NULL, GROUP_ID_KEY,dbv.pszVal,0),dbv.pszVal);
+					add_contact_to_group((HANDLE)wParam,dbv.pszVal);
 					DBFreeVariant(&dbv);
 				}
 				else
-					add_contact_to_group((HANDLE)wParam,DBGetContactSettingWord(NULL, GROUP_ID_KEY,AIM_DEFAULT_GROUP,0),AIM_DEFAULT_GROUP);
+					add_contact_to_group((HANDLE)wParam,AIM_DEFAULT_GROUP);
 			}
 		}
 			/*DBCONTACTWRITESETTING *cws=(DBCONTACTWRITESETTING*)lParam;
-			if(!strcmp(cws->szSetting,OTH_KEY_GP)&&!strcmp(cws->szModule,MOD_KEY_CL))
+			if(!lstrcmp(cws->szSetting,OTH_KEY_GP)&&!lstrcmp(cws->szModule,MOD_KEY_CL))
 			{
 				if(wParam!=0)
 				{
 					HANDLE hContact=(HANDLE)wParam;
 					if(cws->value.type != DBVT_DELETED)//user group changed or user just added so we are going to change their group
 					{
-						char* blob=(char*)malloc(sizeof(HANDLE)+strlen(cws->value.pszVal)+1);
+						char* blob=(char*)malloc(sizeof(HANDLE)+lstrlen(cws->value.pszVal)+1);
 						memcpy(blob,&hContact,sizeof(HANDLE));
-						memcpy(&blob[sizeof(HANDLE)],cws->value.pszVal,strlen(cws->value.pszVal)+1);
+						memcpy(&blob[sizeof(HANDLE)],cws->value.pszVal,lstrlen(cws->value.pszVal)+1);
 						ForkThread((pThreadFunc)contact_setting_changed_thread,blob);
 					}
 					else//user's group deleted so we are adding the user to the out here server-side group
 					{
 						char* outer_group=get_outer_group();
-						char* blob=(char*)malloc(sizeof(HANDLE)+strlen(outer_group)+1);
+						char* blob=(char*)malloc(sizeof(HANDLE)+lstrlen(outer_group)+1);
 						memcpy(blob,&hContact,sizeof(HANDLE));
-						memcpy(&blob[sizeof(HANDLE)],outer_group,strlen(outer_group)+1);
+						memcpy(&blob[sizeof(HANDLE)],outer_group,lstrlen(outer_group)+1);
 						ForkThread((pThreadFunc)contact_setting_changed_thread,blob);
 						free(outer_group);
 					}
 				}
 			}
-			else if(!strcmp(cws->szSetting,AIM_KEY_SN)&&!strcmp(cws->szModule,AIM_PROTOCOL_NAME))//user added so we are going to add them to a group
+			else if(!lstrcmp(cws->szSetting,AIM_KEY_SN)&&!lstrcmp(cws->szModule,AIM_PROTOCOL_NAME))//user added so we are going to add them to a group
 			{
 				if(cws->value.type != DBVT_DELETED)
 				{
 					if(wParam!=0)
 					{
 						char* default_group=get_default_group();
-						char* blob=(char*)malloc(sizeof(HANDLE)+strlen(default_group)+1);
-						memcpy(&blob[sizeof(HANDLE)],default_group,strlen(default_group)+1);
+						char* blob=(char*)malloc(sizeof(HANDLE)+lstrlen(default_group)+1);
+						memcpy(&blob[sizeof(HANDLE)],default_group,lstrlen(default_group)+1);
 						HANDLE hContact=(HANDLE)wParam;
 						memcpy(blob,&hContact,sizeof(HANDLE));
 						ForkThread((pThreadFunc)contact_setting_changed_thread,blob);
@@ -341,15 +338,15 @@ static int ContactSettingChanged(WPARAM wParam,LPARAM lParam)
 	}
 	return 0;
 }
-static int BasicSearch(WPARAM wParam,LPARAM lParam)
+static int BasicSearch(WPARAM /*wParam*/,LPARAM lParam)
 {
 	if (conn.state!=1)
 		return 0;
-	char *sn=strldup((char*)lParam,strlen((char*)lParam));//duplicating the parameter so that it isn't deleted before it's needed- e.g. this function ends before it's used
+	char *sn=strldup((char*)lParam,lstrlen((char*)lParam));//duplicating the parameter so that it isn't deleted before it's needed- e.g. this function ends before it's used
 	ForkThread((pThreadFunc)basic_search_ack_success,sn);
 	return 1;
 }
-static int AddToList(WPARAM wParam,LPARAM lParam)
+static int AddToList(WPARAM /*wParam*/,LPARAM lParam)
 {
 	if (conn.state!=1)
 		return 0;
@@ -361,7 +358,7 @@ static int AddToList(WPARAM wParam,LPARAM lParam)
 	}
 	return (int)hContact;//See authrequest for serverside addition
 }
-static int AuthRequest(WPARAM wParam,LPARAM lParam)
+static int AuthRequest(WPARAM /*wParam*/,LPARAM lParam)
 {
 	//Not a real authrequest- only used b/c we don't know the group until now.
 	if (conn.state!=1||!lParam)
@@ -370,14 +367,14 @@ static int AuthRequest(WPARAM wParam,LPARAM lParam)
 	DBVARIANT dbv;
 	if(!DBGetContactSetting(ccs->hContact,MOD_KEY_CL,OTH_KEY_GP,&dbv))
 	{
-		add_contact_to_group(ccs->hContact,DBGetContactSettingWord(NULL, GROUP_ID_KEY,dbv.pszVal,0),dbv.pszVal);
+		add_contact_to_group(ccs->hContact,dbv.pszVal);
 		DBFreeVariant(&dbv);
 	}
 	else
-		add_contact_to_group(ccs->hContact,DBGetContactSettingWord(NULL, GROUP_ID_KEY,AIM_DEFAULT_GROUP,0),AIM_DEFAULT_GROUP);
+		add_contact_to_group(ccs->hContact,AIM_DEFAULT_GROUP);
 	return 0;
 }
-static int ContactDeleted(WPARAM wParam,LPARAM lParam)
+int ContactDeleted(WPARAM wParam,LPARAM /*lParam*/)
 {
 	if (conn.state!=1)
 		return 0;
@@ -385,15 +382,21 @@ static int ContactDeleted(WPARAM wParam,LPARAM lParam)
 	if(!DBGetContactSetting((HANDLE)wParam, AIM_PROTOCOL_NAME, AIM_KEY_SN,&dbv))
 	{
 		int i=1;
+		#if _MSC_VER
+		#pragma warning( disable: 4127)
+		#endif
 		while(1)
 		{
-			char* item= new char[strlen(AIM_KEY_BI)+10];
-			char* group= new char[strlen(AIM_KEY_GI)+10];
-			mir_snprintf(item,strlen(AIM_KEY_BI)+10,AIM_KEY_BI"%d",i);
-			mir_snprintf(group,strlen(AIM_KEY_GI)+10,AIM_KEY_GI"%d",i);
-			if(unsigned short item_id=DBGetContactSettingWord((HANDLE)wParam, AIM_PROTOCOL_NAME, item,0))
+			#if _MSC_VER
+			#pragma warning( default: 4127)
+			#endif
+			char* item= new char[lstrlen(AIM_KEY_BI)+10];
+			char* group= new char[lstrlen(AIM_KEY_GI)+10];
+			mir_snprintf(item,lstrlen(AIM_KEY_BI)+10,AIM_KEY_BI"%d",i);
+			mir_snprintf(group,lstrlen(AIM_KEY_GI)+10,AIM_KEY_GI"%d",i);
+			if(unsigned short item_id=(unsigned short)DBGetContactSettingWord((HANDLE)wParam, AIM_PROTOCOL_NAME, item,0))
 			{
-				unsigned short group_id=DBGetContactSettingWord((HANDLE)wParam, AIM_PROTOCOL_NAME, group,0);
+				unsigned short group_id=(unsigned short)DBGetContactSettingWord((HANDLE)wParam, AIM_PROTOCOL_NAME, group,0);
 				if(group_id)
 					aim_delete_contact(conn.hServerConn,conn.seqno,dbv.pszVal,item_id,group_id);
 			}
@@ -411,7 +414,7 @@ static int ContactDeleted(WPARAM wParam,LPARAM lParam)
 	}
 	return 0;
 }
-static int SendFile(WPARAM wParam,LPARAM lParam)
+static int SendFile(WPARAM /*wParam*/,LPARAM lParam)
 {
 	if (conn.state!=1)
 		return 0;
@@ -440,6 +443,7 @@ static int SendFile(WPARAM wParam,LPARAM lParam)
 					if(file_amt==1)
 					{
 						ShowPopup("Aim Protocol","AimOSCAR allows only one file to be sent at a time.", 0);
+						DBFreeVariant(&dbv);
 						return 0;
 					}
 				char cookie[8];
@@ -470,7 +474,7 @@ static int SendFile(WPARAM wParam,LPARAM lParam)
 	}
 	return 0;
 }
-static int RecvFile(WPARAM wParam,LPARAM lParam)
+static int RecvFile(WPARAM /*wParam*/,LPARAM lParam)
 {
     DBEVENTINFO dbei;
     CCSDATA *ccs = (CCSDATA *) lParam;
@@ -479,22 +483,22 @@ static int RecvFile(WPARAM wParam,LPARAM lParam)
 
     DBDeleteContactSetting(ccs->hContact, MOD_KEY_CL, "Hidden");
     szFile = pre->szMessage + sizeof(DWORD);
-    szDesc = szFile + strlen(szFile) + 1;
-	szIP = szDesc + strlen(szDesc) + 1;
-	szIP2 = szIP + strlen(szIP) + 1;
-	szIP3 = szIP2 + strlen(szIP2) + 1;
+    szDesc = szFile + lstrlen(szFile) + 1;
+	szIP = szDesc + lstrlen(szDesc) + 1;
+	szIP2 = szIP + lstrlen(szIP) + 1;
+	szIP3 = szIP2 + lstrlen(szIP2) + 1;
     ZeroMemory(&dbei, sizeof(dbei));
     dbei.cbSize = sizeof(dbei);
     dbei.szModule = AIM_PROTOCOL_NAME;
     dbei.timestamp = pre->timestamp;
     dbei.flags = pre->flags & (PREF_CREATEREAD ? DBEF_READ : 0);
     dbei.eventType = EVENTTYPE_FILE;
-    dbei.cbBlob = sizeof(DWORD) + strlen(szFile) + strlen(szDesc)+2;
+    dbei.cbBlob = sizeof(DWORD) + lstrlen(szFile) + lstrlen(szDesc)+2;
     dbei.pBlob = (PBYTE) pre->szMessage;
     CallService(MS_DB_EVENT_ADD, (WPARAM) ccs->hContact, (LPARAM) & dbei);
 	return 0;
 }
-static int AllowFile(WPARAM wParam, LPARAM lParam)
+static int AllowFile(WPARAM /*wParam*/, LPARAM lParam)
 {
     CCSDATA *ccs = (CCSDATA *) lParam;
 	int ft=DBGetContactSettingByte(ccs->hContact, AIM_PROTOCOL_NAME, AIM_KEY_FT,-1);
@@ -502,11 +506,11 @@ static int AllowFile(WPARAM wParam, LPARAM lParam)
 	{
 		char *szDesc, *szFile, *local_ip, *verified_ip, *proxy_ip;
 		szFile = (char*)ccs->wParam + sizeof(DWORD);
-		szDesc = szFile + strlen(szFile) + 1;
-		local_ip = szDesc + strlen(szDesc) + 1;
-		verified_ip = local_ip + strlen(local_ip) + 1;
-		proxy_ip = verified_ip + strlen(verified_ip) + 1;
-		int size=strlen(szFile)+strlen(szDesc)+strlen(local_ip)+strlen(verified_ip)+strlen(proxy_ip)+5+sizeof(HANDLE);
+		szDesc = szFile + lstrlen(szFile) + 1;
+		local_ip = szDesc + lstrlen(szDesc) + 1;
+		verified_ip = local_ip + lstrlen(local_ip) + 1;
+		proxy_ip = verified_ip + lstrlen(verified_ip) + 1;
+		int size=lstrlen(szFile)+lstrlen(szDesc)+lstrlen(local_ip)+lstrlen(verified_ip)+lstrlen(proxy_ip)+5+sizeof(HANDLE);
 		char *data=new char[size];
 		memcpy(data,(char*)&ccs->hContact,sizeof(HANDLE));
 		memcpy(&data[sizeof(HANDLE)],szFile,size-sizeof(HANDLE));
@@ -516,7 +520,7 @@ static int AllowFile(WPARAM wParam, LPARAM lParam)
 	}
 	return 0;
 }
-static int DenyFile(WPARAM wParam, LPARAM lParam)
+static int DenyFile(WPARAM /*wParam*/, LPARAM lParam)
 {
 	CCSDATA *ccs = (CCSDATA *) lParam;
 	DBVARIANT dbv;
@@ -530,7 +534,7 @@ static int DenyFile(WPARAM wParam, LPARAM lParam)
 	DBDeleteContactSetting(ccs->hContact,AIM_PROTOCOL_NAME,AIM_KEY_FT);
 	return 0;
 }
-static int CancelFile(WPARAM wParam, LPARAM lParam)
+static int CancelFile(WPARAM /*wParam*/, LPARAM lParam)
 {
 	CCSDATA *ccs = (CCSDATA *) lParam;
 	DBVARIANT dbv;
@@ -553,8 +557,7 @@ static int CancelFile(WPARAM wParam, LPARAM lParam)
 static int UserIsTyping(WPARAM wParam, LPARAM lParam)
 {
 	DBVARIANT dbv;
-	DBGetContactSetting((HANDLE)wParam, AIM_PROTOCOL_NAME, AIM_KEY_SN, &dbv);
-	if(dbv.pszVal)
+	if(!DBGetContactSetting((HANDLE)wParam, AIM_PROTOCOL_NAME, AIM_KEY_SN, &dbv))
 	{
 		if(lParam==PROTOTYPE_SELFTYPING_ON)
 			aim_typing_notification(conn.hServerConn,conn.seqno,dbv.pszVal,0x0002);
@@ -564,37 +567,40 @@ static int UserIsTyping(WPARAM wParam, LPARAM lParam)
 	}
 	return 0;
 }
-static int AddToServerList(WPARAM wParam, LPARAM lParam)
+static int AddToServerList(WPARAM wParam, LPARAM /*lParam*/)
 {
 	if (conn.state!=1)
 		return 0;
 	DBVARIANT dbv;
 	if(!DBGetContactSetting((HANDLE)wParam,MOD_KEY_CL,OTH_KEY_GP,&dbv))
 	{
-		add_contact_to_group((HANDLE)wParam,DBGetContactSettingWord(NULL, GROUP_ID_KEY,dbv.pszVal,0),dbv.pszVal);
+		add_contact_to_group((HANDLE)wParam,dbv.pszVal);
 		DBFreeVariant(&dbv);
 	}
 	else
-		add_contact_to_group((HANDLE)wParam,DBGetContactSettingWord(NULL, GROUP_ID_KEY,AIM_DEFAULT_GROUP,0),AIM_DEFAULT_GROUP);
+		add_contact_to_group((HANDLE)wParam,AIM_DEFAULT_GROUP);
 	return 0;
 }
-static int InstantIdle(WPARAM wParam, LPARAM lParam)
+static int InstantIdle(WPARAM /*wParam*/, LPARAM /*lParam*/)
 {
 	DialogBox(conn.hInstance, MAKEINTRESOURCE(IDD_IDLE), NULL, instant_idle_dialog);
 	return 0;
 }
-static int CheckMail(WPARAM wParam, LPARAM lParam)
+static int CheckMail(WPARAM /*wParam*/, LPARAM /*lParam*/)
 { 
 	if(conn.state==1)
+	{
+		conn.checking_mail=1;
 		aim_new_service_request(conn.hServerConn,conn.seqno,0x0018);
+	}
 	return 0;
 }
-static int ManageAccount(WPARAM wParam, LPARAM lParam)
+static int ManageAccount(WPARAM /*wParam*/, LPARAM /*lParam*/)
 { 
 	execute_cmd("http","https://my.screenname.aol.com");
 	return 0;
 }
-int ExtraIconsRebuild(WPARAM wParam, LPARAM lParam) 
+int ExtraIconsRebuild(WPARAM /*wParam*/, LPARAM /*lParam*/) 
 {
 	if (ServiceExists(MS_CLIST_EXTRA_ADD_ICON))
 	{
@@ -602,7 +608,7 @@ int ExtraIconsRebuild(WPARAM wParam, LPARAM lParam)
 	}
 	return 0;
 }
-int ExtraIconsApply(WPARAM wParam, LPARAM lParam) 
+int ExtraIconsApply(WPARAM wParam, LPARAM /*lParam*/) 
 {
 	if (ServiceExists(MS_CLIST_EXTRA_SET_ICON)) 
 	{

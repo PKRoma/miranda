@@ -50,7 +50,7 @@ static LRESULT CALLBACK aim_links_watcherwndproc(HWND hwnd, UINT msg, WPARAM wPa
                 break;
             if (!(char *) cds->lpData)
                 break;
-            s = szData = strldup((char *) cds->lpData,strlen((char*)cds->lpData));
+            s = szData = strldup((char *) cds->lpData,lstrlen((char*)cds->lpData));
             aim_links_normalize(szData);
             s += 4;
 			if (!_strnicmp(s, "addbuddy?", 9)) { // group is current ignored
@@ -73,7 +73,7 @@ static LRESULT CALLBACK aim_links_watcherwndproc(HWND hwnd, UINT msg, WPARAM wPa
                     }
                     tok = strtok(NULL, "&");
                 }
-				if (sn&&strlen(sn)&&!find_contact(sn))
+				if (sn&&lstrlen(sn)&&!find_contact(sn))
 				{
 					acs.handleType=HANDLE_SEARCHRESULT;
 					acs.szProto=AIM_PROTOCOL_NAME;
@@ -184,12 +184,12 @@ static BOOL CALLBACK aim_linsk_enumthreadwindowsproc(HWND hwnd, LPARAM lParam)
     char szBuf[64];
 
     if (GetClassName(hwnd, szBuf, sizeof(szBuf))) {
-        if (!strcmp(szBuf, AIMWATCHERCLASS)) {
+        if (lstrcmp(szBuf, AIMWATCHERCLASS)) {
             COPYDATASTRUCT cds;
 
             //LOG(LOG_DEBUG, "Links: enumthreadwindowsproc - found AIMWATCHERCLASS");
             cds.dwData = 1;
-            cds.cbData = strlen((char *) lParam) + 1;
+            cds.cbData = lstrlen((char *) lParam) + 1;
             cds.lpData = (char *) lParam;
             SendMessageTimeout(hwnd, WM_COPYDATA, (WPARAM) hwnd, (LPARAM) & cds, SMTO_ABORTIFHUNG | SMTO_BLOCK, 150, NULL);
         }
@@ -204,7 +204,7 @@ static BOOL CALLBACK aim_links_enumwindowsproc(HWND hwnd, LPARAM lParam)
     //LOG(LOG_DEBUG, "Links: enumwindowsproc");
     if (GetClassName(hwnd, szBuf, sizeof(szBuf)))
 	{
-        if (!strcmp(szBuf, MIRANDACLASS)) {
+        if (!lstrcmp(szBuf, MIRANDACLASS)) {
             //LOG(LOG_DEBUG, "Links: enumwindowsproc - found Miranda window");
             EnumThreadWindows(GetWindowThreadProcessId(hwnd, NULL), aim_linsk_enumthreadwindowsproc, lParam);
         }
@@ -222,7 +222,7 @@ static void aim_links_register()
     GetShortPathName(szBuf, szShort, sizeof(szShort));
     //LOG(LOG_DEBUG, "Links: register");
     if (RegCreateKey(HKEY_CLASSES_ROOT, "aim", &hkey) == ERROR_SUCCESS) {
-        RegSetValue(hkey, NULL, REG_SZ, "URL:AIM Protocol", strlen("URL:AIM Protocol"));
+        RegSetValue(hkey, NULL, REG_SZ, "URL:AIM Protocol", lstrlen("URL:AIM Protocol"));
         RegSetValueEx(hkey, "URL Protocol", 0, REG_SZ, (PBYTE) "", 1);
         RegCloseKey(hkey);
     }
@@ -234,7 +234,7 @@ static void aim_links_register()
         char szIcon[MAX_PATH];
 
         mir_snprintf(szIcon, sizeof(szIcon), "%s,0", szShort);
-        RegSetValue(hkey, NULL, REG_SZ, szIcon, strlen(szIcon));
+        RegSetValue(hkey, NULL, REG_SZ, szIcon, lstrlen(szIcon));
         RegCloseKey(hkey);
     }
     else {
@@ -250,7 +250,7 @@ static void aim_links_register()
         mir_snprintf(szExe, sizeof(szExe), "RUNDLL32.EXE %s,aim_links_exec@16 %%1", szShort);
         //LOG(LOG_INFO, "Links: registering (%s)", szExe);
 #endif
-        RegSetValue(hkey, NULL, REG_SZ, szExe, strlen(szExe));
+        RegSetValue(hkey, NULL, REG_SZ, szExe, lstrlen(szExe));
         RegCloseKey(hkey);
     }
     else {
@@ -287,7 +287,7 @@ void aim_links_destroy()
 }
 
 extern "C" void __declspec(dllexport)
-     CALLBACK aim_links_exec(HWND hwnd, HINSTANCE hInst, char *lpszCmdLine, int nCmdShow)
+     CALLBACK aim_links_exec(HWND /*hwnd*/, HINSTANCE /*hInst*/, char *lpszCmdLine, int /*nCmdShow*/)
 {
     EnumWindows(aim_links_enumwindowsproc, (LPARAM) lpszCmdLine);
 }

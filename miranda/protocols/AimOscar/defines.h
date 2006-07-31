@@ -1,6 +1,10 @@
 #ifndef DEFINES_H
 #define DEFINES_H
+#if defined __GNUC__
+#pragma GCC system_header
+#endif 
 #define  _CRT_SECURE_NO_DEPRECATE
+#pragma warning (disable : 4996)
 //System includes
 #include <windows.h>
 #include <ctype.h>
@@ -13,6 +17,9 @@
 #include <sys/stat.h>
 #include <time.h>
 //Miranda IM includes
+#pragma warning( disable: 4100 )
+#pragma warning( disable: 4244 )
+#pragma warning( disable: 4201 )
 #include <newpluginapi.h>
 #include <statusmodes.h>
 #include <m_clist.h>
@@ -33,6 +40,9 @@
 #include <m_system.h>
 #include <m_userinfo.h>
 #include <m_addcontact.h>
+#pragma warning( default: 4100 )
+#pragma warning( default: 4244 )
+#pragma warning( default: 4201 )
 //independent includes
 #include "strl.h"
 #include "flap.h"
@@ -93,6 +103,22 @@
 #define OTH_KEY_AI						"AwayIgnore"
 #define OTH_KEY_AD						"AwayDefault"
 #define OTH_KEY_AM						"AwayMsg"
+#define OTH_KEY_OI						"OccupiedIgnore"
+#define OTH_KEY_OD						"OccupiedDefault"
+#define OTH_KEY_OM						"OccupiedMsg"
+#define OTH_KEY_NI						"NaIgnore"
+#define OTH_KEY_ND						"NaDefault"
+#define OTH_KEY_NM						"NaMsg"
+#define OTH_KEY_DI						"DndIgnore"
+#define OTH_KEY_DD						"DndDefault"
+#define OTH_KEY_DM						"DndMsg"
+#define OTH_KEY_PI						"OtpIgnore"
+#define OTH_KEY_PD						"OtpDefault"
+#define OTH_KEY_PM						"OtpMsg"
+#define OTH_KEY_LI						"OtlIgnore"
+#define OTH_KEY_LD						"OtlDefault"
+#define OTH_KEY_LM						"OtlMsg"
+
 #define OTH_KEY_SM						"StatusMsg"
 #define OTH_KEY_GP						"Group"
 //Module Name Key
@@ -135,7 +161,7 @@
 //Some Defaults for various things
 #define DEFAULT_KEEPALIVE_TIMER			60// 1000 milliseconds * 60 = 60 secs
 #define DEFAULT_GRACE_PERIOD			60
-#define AIM_DEFAULT_GROUP				"Miranda Merged"
+#define AIM_DEFAULT_GROUP				"miranda merged"
 #define AIM_DEFAULT_SERVER				"login.oscar.aol.com:5190"
 #define SYSTEM_BUDDY					"aolsystemmsg"
 #define DEFAULT_AWAY_MSG				"I am away from my computer right now."
@@ -154,6 +180,30 @@
 #define AIM_MSG_TYPE					"text/x-aolrtf; charset=\"us-ascii\""
 #define AIM_TOOL_VERSION				"\x01\x10\x08\xf1"
 extern char* AIM_CLIENT_ID_STRING;		//Client id EXTERN
+//Supported Clients
+#define CLIENT_UNKNOWN					"?"
+#define CLIENT_AIM5						"AIM 5.x"
+#define CLIENT_AIM4						"AIM 4.x"
+#define CLIENT_AIMEXPRESS				"AIM Express"
+#define CLIENT_AIM_TRITON				"AIM Triton"
+#define CLIENT_AIMTOC					"AIM TOC"
+#define CLIENT_GAIM						"Gaim"
+#define CLIENT_ADIUM					"Adium X"
+#define CLIENT_GPRS						"GPRS"
+#define CLIENT_ICHAT					"iChat"
+#define CLIENT_IM2						"IM2"
+#define CLIENT_KOPETE					"Kopete"
+#define CLIENT_MEEBO					"Meebo"
+#define CLIENT_MICQ						"mICQ"
+#define CLIENT_AIMOSCAR					"Miranda IM %d.%d.%d.%d(AimOSCAR v%d.%d.%d.%d)"
+#define CLIENT_OSCARJ					"Miranda IM %d.%d.%d.%d(ICQ v0.%d.%d.%d)"
+#define CLIENT_NAIM						"naim"
+#define CLIENT_QIP						"qip"
+#define CLIENT_SIM						"SIM"
+#define CLIENT_SMS						"SMS"
+#define CLIENT_TERRAIM					"TerraIM"
+#define CLIENT_TRILLIAN_PRO				"Trillian Pro"
+#define CLIENT_TRILLIAN					"Trillian"
 //Aim Caps
 #define AIM_CAPS_LENGTH					16
 #define AIM_CAP_VOICE_CHAT				"\x09\x46\x13\x41\x4C\x7F\x11\xD1\x82\x22\x44\x45\x53\x54\0\0"
@@ -211,7 +261,7 @@ class oscar_data
 public:
     char *username;
     char *password;
-    int seqno;//main connection sequence number
+    unsigned short seqno;//main connection sequence number
 	int state;//status of the connection; e.g. whether connected or not
 	int packet_offset;//current offset of main connection client to server packet
 	unsigned int status;//current status
@@ -221,12 +271,12 @@ public:
 	//Some bools to keep track of different things
 	bool requesting_HTML_ModeMsg;
 	bool request_HTML_profile;
-	bool buddy_list_received;
 	bool extra_icons_loaded;
 	bool freeing_DirectBoundPort;
 	bool shutting_down;
 	bool idle;
 	bool instantidle;
+	bool checking_mail;
 
 	HINSTANCE hInstance;//plugin handle instance
 	
@@ -252,7 +302,7 @@ public:
 	
 	//Some mail connection stuff
 	HANDLE hMailConn;
-	int mail_seqno;
+	unsigned short mail_seqno;
 	int mail_packet_offset;
 	
 	//Some Icon handles
