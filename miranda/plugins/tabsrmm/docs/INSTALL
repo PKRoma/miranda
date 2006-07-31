@@ -2,50 +2,41 @@
                 INSTALLING tabSRMM
                 ==================
 
-NOTE: Beginning with version 0.9.9.98, tabsrmm is no longer distrubuted in
-      a "unified" archive. There are now 2 versions, one unicode and one
-      non-unicode archive. Both have different entries in the Plugin file 
-      listing and are also separated in the updater service plugin.
-
 1.Requirements
------------------
+---------------
 
-a) Miranda IM, Version 0.4.0.1 or later.
+a) Miranda IM, Version 0.5.0.0 or later (released in July 2006)
 b) The unicode version of tabSRMM requires Windows 2000 or XP and will not 
    run under Windows 9x or ME. The ANSI version may run under Windows 98 
-   or ME (not under Windows 95), but there are some minor problems. In general,
-   I suggest that, if you're still using a 9x based Windows, you should not
-   expect tabSRMM to work without problems. I do no longer have access to any
-   Win 9x system, and do not use it as a development platform, so it is a bit
-   hard to fix issues related to Win 9x.
-   
-   The unicode version also requires a recent database plugin (dbx_3x.dll version
-   0.5.1.x or later) and will not run with older db versions.
+   or ME (not under Windows 95), but there are some minor problems and some
+   features are disabled.
 
+c) To see avatars in the message window, you need the AVATAR SERVICE plugin 
+   (also known as loadavatars). It is available from the addons page at
+   http://www.miranda-im.org 
+
+   
 HOW TO INSTALL
 --------------
 
-1) Copy the plugin DLL into your miranda plugins folder. Depending on the version,
-   you downloaded, it is either tabsrmm.dll or tabsrmm_unicode.dll.
+1) Copy the plugin DLL into your miranda plugins folder. Make sure that you HAVE
+   THE RIGHT VERSION (either ANSI or UNICODE). If unsure what you have downloaded,
+   do the following:
+   *) locate the plugin DLL in windows explorer
+   *) right click it, choose Properties... and navigate to the version tab. There
+      you will see the version number and also ANSI or UNICODE.      
 
-2) Copy the included loadavatars.dll to your plugins folder if you don't already
-   have the avatar service plugin installed. The plugin is now required for 
-   showing avatars in the message window and loadavatars.dll is also used by 
-   clist_modern and clist_nicer+. tabSRMM does not need a special version of
-   loadavatars.dll, so if you have it already installed, you can skip this step.
-      
+DO NOT INSTALL A UNICODE build on a non-UNICODE Miranda installation. The opposite
+should work, but is not supported. In both cases, tabsrmm will throw a warning message
+when you start Miranda telling you that you had mixed UNICODE and ANSI versions.
+
 2) Install the icon pack (see below).   
 
 INSTALLING THE ICON PACK - IMPORTANT !!
 ---------------------------------------
 
-You need to copy ONE of the included tabsrmm_icons.dll into the plugins folder
+You need to copy the included tabsrmm_icons.dll into the \plugins OR \icons folder
 aswell. If you don't, you'll receive an error message about a missing resource
 dll, and you won't see any icons on the toolbar and elsewhere. More 
 information about setting up icons can be found in README.ICONS.
-
-In general, there is no need to use the non-unicode version - the unicode release
-is far more tested and works with all known protocols. It also has an option to
-force sending and receiving ANSI messages only - this may help with some older
-or buggy clients and their sometimes broken unicode support.
 

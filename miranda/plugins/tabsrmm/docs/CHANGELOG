@@ -1,0 +1,32 @@
+                                  Project Information:
+                                  ====================
+
+Name: tabsrmm
+Homepage: http://miranda.or.at
+Support: http://www.miranda.or.at/forums/
+
+                               --------------------
+						
+				    Version History:
+				    ================
++ : new feature
+* : changed
+! : bufgix						
+- : feature removed or disabled because of pending bugs
+
+Version 1.0.0.1 - 2006/07/31
+
+	! fixed updater support (301, invalid response).
+	! fixed bug when re-attaching a temporary contact to a new
+	  container while the option to delete temporary contacts on close
+	  is enabled.
+	! fixed minor issue with [color] bbcode
+	
+	
+Version 1.0.0.0
+
+	Released and declared as "stable" branch, 2006/07/30
+	
+	For detailed changelog see: changelog.OLD and:
+	http://miranda.or.at/tabsrmm/tabsrmm-changelog/
+		

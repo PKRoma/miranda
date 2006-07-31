@@ -26,6 +26,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #endif
 
 #define _USE_32BIT_TIME_T
+#define WINVER 0x0501
 
 #ifdef __GNUWIN32__
 
@@ -85,7 +86,7 @@ typedef unsigned short wchar_t;
 
 #include "m_flash.h"
 
-#define safe_sizeof(a) (sizeof((a)) / sizeof((a)[0]))
+#define safe_sizeof(a) (unsigned int)((sizeof((a)) / sizeof((a)[0])))
 
 #if !defined(_UNICODE)
 

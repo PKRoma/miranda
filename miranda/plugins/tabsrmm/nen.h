@@ -21,7 +21,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 
-$Id$
+$Id:$
 
 Event popups for tabSRMM - most of the code taken from NewEventNotify (see copyright above)
 
@@ -176,6 +176,7 @@ typedef struct {
     int  nrMerged;
     EVENT_DATA *eventData;
     int  nrEventsAlloced;
+    int  iActionTaken;
 } PLUGIN_DATA;
 
 typedef struct EVENT_DATAW {
@@ -195,6 +196,7 @@ typedef struct {
     int  nrMerged;
     EVENT_DATAW *eventData;
     int  nrEventsAlloced;
+    int  iActionTaken;
 } PLUGIN_DATAW;
 
 #define NR_MERGED 5

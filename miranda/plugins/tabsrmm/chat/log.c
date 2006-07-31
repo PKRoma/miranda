@@ -39,7 +39,7 @@ static int logPixelSX = 0;
 static char *szDivider = "\\strike----------------------------------------------------------------------------\\strike0";
 static char CHAT_rtfFontsGlobal[OPTIONS_FONTCOUNT + 2][RTFCACHELINESIZE];
 static char *CHAT_rtffonts = 0;
-static char szMicroLFeed[50];
+static char szMicroLFeed[150];
 
 void GetIconSize(HICON hIcon, int* sizeX, int* sizeY);
 
@@ -878,7 +878,7 @@ char * Log_CreateRtfHeader(MODULEINFO * mi)
             
             szString[1] = 0;
             szString[0] = 0x28;
-            LoadMsgDlgFont(17, &lf, NULL, "ChatFonts");
+            LoadMsgDlgFont(17, &lf, NULL, CHAT_FONTMODULE);
             hFont = CreateFontIndirect(&lf);
             iText = GetTextPixelSize(szString, hFont, TRUE) + 3;
             DeleteObject(hFont);

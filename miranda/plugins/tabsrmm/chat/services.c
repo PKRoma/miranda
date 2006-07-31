@@ -113,7 +113,7 @@ int Chat_ModulesLoaded(WPARAM wParam,LPARAM lParam)
         return 0;
     
     { 
-		char * mods[3] = {"Chat","ChatFonts"};
+		char * mods[3] = {"Chat",CHAT_FONTMODULE};
 		CallService("DBEditorpp/RegisterModule",(WPARAM)mods,(LPARAM)2);
 	}
 
@@ -755,7 +755,10 @@ int Service_AddEvent(WPARAM wParam, LPARAM lParam)
 	BOOL bRemoveFlag = FALSE;
 	int iRetVal;
 
-	if(gce== NULL)
+    if(g_sessionshutdown)
+        return 0;
+
+    if(gce== NULL)
 		return GC_EVENT_ERROR;
 	gcd = gce->pDest;
 	if(gcd== NULL)

@@ -524,7 +524,7 @@ BOOL CALLBACK DlgProcTemplateHelp(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM 
                     SetWindowText(hwndDlg, _T("tabSRMM release notes"));
                     goto dl_done;
                 }
-                CallService(MS_UTILS_PATHTOABSOLUTE, (WPARAM)lParam, (LPARAM)final_path);
+                MY_pathToAbsolute((char *)lParam, final_path);
                 _splitpath(final_path, NULL, NULL, szBasename, szExt);
                 if((hFile = CreateFileA(final_path, GENERIC_READ, FILE_SHARE_READ, NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL)) == INVALID_HANDLE_VALUE ) {
                     DestroyWindow(hwndDlg);

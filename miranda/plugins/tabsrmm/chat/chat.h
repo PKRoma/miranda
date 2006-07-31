@@ -370,7 +370,7 @@ extern char *szChatIconString;
 
 #pragma comment(lib,"comctl32.lib")
 
-#define safe_sizeof(a) (sizeof((a)) / sizeof((a)[0]))
+#define safe_sizeof(a) (unsigned int)((sizeof((a)) / sizeof((a)[0])))
 
 #include "chatprototypes.h"
 #include "../msgs.h"

@@ -3,10 +3,7 @@ Beginning with release 0.0.8.95, there are no more icons in the tabsrmm*.DLL.
 The icons have been moved to a separate resource DLL to make the creation of
 icon packs easier.
 
-The archive provides two versions of this dll, one default (256 color icons)
-and one with highcolor icons to be used with Windows XP only.
-
-You NEED TO COPY ONE OF THOSE tabsrmm_icons.dll to your Miranda Plugins folder
+You NEED TO COPY THE tabsrmm_icons.dll to your Miranda Plugins folder
 (just the same location where tabsrmm*.DLL resides OR to the \icons 
 subfolder just below your main miranda installation directory.
 

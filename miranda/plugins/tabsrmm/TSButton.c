@@ -53,21 +53,21 @@ typedef struct {
 } MButtonCtrl;
 
 // External theme methods and properties
-HMODULE  themeAPIHandle = NULL; // handle to uxtheme.dll
-HANDLE   (WINAPI *MyOpenThemeData)(HWND,LPCWSTR) = 0;
-HRESULT  (WINAPI *MyCloseThemeData)(HANDLE) = 0;
-BOOL     (WINAPI *MyIsThemeBackgroundPartiallyTransparent)(HANDLE,int,int) = 0;
-HRESULT  (WINAPI *MyDrawThemeParentBackground)(HWND,HDC,RECT *) = 0;
-HRESULT  (WINAPI *MyDrawThemeBackground)(HANDLE,HDC,int,int,const RECT *,const RECT *) = 0;
-HRESULT  (WINAPI *MyDrawThemeText)(HANDLE,HDC,int,int,LPCWSTR,int,DWORD,DWORD,const RECT *) = 0;
-HRESULT  (WINAPI *MyGetThemeBackgroundContentRect)(HANDLE, HDC, int, int, const RECT *, const RECT *) = 0;
-BOOL     (WINAPI *MyEnableThemeDialogTexture)(HANDLE, DWORD) = 0;
 
 static CRITICAL_SECTION csTips;
 static HWND hwndToolTips = NULL;
 static BLENDFUNCTION bf_buttonglyph;
 static HDC hdc_buttonglyph = 0;
 static HBITMAP hbm_buttonglyph, hbm_buttonglyph_old;
+
+extern PITA pfnIsThemeActive;
+extern POTD pfnOpenThemeData;
+extern PDTB pfnDrawThemeBackground;
+extern PCTD pfnCloseThemeData;
+extern PDTT pfnDrawThemeText;
+extern PITBPT pfnIsThemeBackgroundPartiallyTransparent;
+extern PDTPB  pfnDrawThemeParentBackground;
+extern PGTBCR pfnGetThemeBackgroundContentRect;
 
 int UnloadTSButtonModule(WPARAM wParam, LPARAM lParam) {
 	DeleteCriticalSection(&csTips);
@@ -101,51 +101,25 @@ int LoadTSButtonModule(void)
 #define BUTTON_POLLDELAY    50
 
 #define MGPROC(x) GetProcAddress(themeAPIHandle,x)
-static int ThemeSupport() {
-	if (IsWinVerXPPlus()) {
-		if (!themeAPIHandle) {
-			themeAPIHandle = GetModuleHandleA("uxtheme");
-			if (themeAPIHandle) {
-				MyOpenThemeData = (HANDLE (WINAPI *)(HWND,LPCWSTR))MGPROC("OpenThemeData");
-				MyCloseThemeData = (HRESULT (WINAPI *)(HANDLE))MGPROC("CloseThemeData");
-				MyIsThemeBackgroundPartiallyTransparent = (BOOL (WINAPI *)(HANDLE,int,int))MGPROC("IsThemeBackgroundPartiallyTransparent");
-				MyDrawThemeParentBackground = (HRESULT (WINAPI *)(HWND,HDC,RECT *))MGPROC("DrawThemeParentBackground");
-				MyDrawThemeBackground = (HRESULT (WINAPI *)(HANDLE,HDC,int,int,const RECT *,const RECT *))MGPROC("DrawThemeBackground");
-				MyDrawThemeText = (HRESULT (WINAPI *)(HANDLE,HDC,int,int,LPCWSTR,int,DWORD,DWORD,const RECT *))MGPROC("DrawThemeText");
-				MyGetThemeBackgroundContentRect = (HRESULT (WINAPI *)(HANDLE, HDC, int, int, const RECT *, const RECT *))MGPROC("GetThemeBackgroundContentRect");
-			}
-		}
-		// Make sure all of these methods are valid (i would hope either all or none work)
-		if (MyOpenThemeData
-				&&MyCloseThemeData
-				&&MyIsThemeBackgroundPartiallyTransparent
-				&&MyDrawThemeParentBackground
-				&&MyDrawThemeBackground
-				&&MyDrawThemeText) {
-			return 1;
-		}
-	}
-	return 0;
-}
 
 static void DestroyTheme(MButtonCtrl *ctl) {
-	if (ThemeSupport()) {
+	if (myGlobals.m_VSApiEnabled) {
 		if (ctl->hThemeButton) {
-			MyCloseThemeData(ctl->hThemeButton);
+			pfnCloseThemeData(ctl->hThemeButton);
 			ctl->hThemeButton = NULL;
 		}
 		if (ctl->hThemeToolbar) {
-			MyCloseThemeData(ctl->hThemeToolbar);
+			pfnCloseThemeData(ctl->hThemeToolbar);
 			ctl->hThemeToolbar = NULL;
 		}
 	}
 }
 
 static void LoadTheme(MButtonCtrl *ctl) {
-	if (ThemeSupport()) {
+	if (myGlobals.m_VSApiEnabled) {
 		DestroyTheme(ctl);
-		ctl->hThemeButton = MyOpenThemeData(ctl->hwnd,L"BUTTON");
-		ctl->hThemeToolbar = MyOpenThemeData(ctl->hwnd,L"TOOLBAR");
+		ctl->hThemeButton = pfnOpenThemeData(ctl->hwnd,L"BUTTON");
+		ctl->hThemeToolbar = pfnOpenThemeData(ctl->hwnd,L"TOOLBAR");
         ctl->bThemed = TRUE;
 	}
 }
@@ -261,13 +235,13 @@ flat_themed:
 
 					if(rc.right < 20 || rc.bottom < 20)
 						InflateRect(&rc, 2, 2);
-					if (MyIsThemeBackgroundPartiallyTransparent(ctl->hThemeToolbar, TP_BUTTON, TBStateConvert2Flat(state))) {
-						MyDrawThemeParentBackground(ctl->hwnd, hdcMem, &rc);
+					if (pfnIsThemeBackgroundPartiallyTransparent(ctl->hThemeToolbar, TP_BUTTON, TBStateConvert2Flat(state))) {
+						pfnDrawThemeParentBackground(ctl->hwnd, hdcMem, &rc);
 					}
-					MyDrawThemeBackground(ctl->hThemeToolbar, hdcMem, TP_BUTTON, TBStateConvert2Flat(state), &rc, &rc);
+					pfnDrawThemeBackground(ctl->hThemeToolbar, hdcMem, TP_BUTTON, TBStateConvert2Flat(state), &rc, &rc);
 					if(clip) {
 						SelectClipRgn(hdcMem, clip);
-						MyDrawThemeBackground(ctl->hThemeToolbar, hdcMem, TP_BUTTON, TBStateConvert2Flat(realState), &rc, &rc);
+						pfnDrawThemeBackground(ctl->hThemeToolbar, hdcMem, TP_BUTTON, TBStateConvert2Flat(realState), &rc, &rc);
 					}
 				}
 				else {
@@ -338,16 +312,16 @@ nonflat_themed:
 					if(clip)
 						state = PBS_NORMAL;
 
-					if (MyIsThemeBackgroundPartiallyTransparent(ctl->hThemeButton, BP_PUSHBUTTON, state)) {
-						MyDrawThemeParentBackground(ctl->hwnd, hdcMem, &rcClient);
+					if (pfnIsThemeBackgroundPartiallyTransparent(ctl->hThemeButton, BP_PUSHBUTTON, state)) {
+						pfnDrawThemeParentBackground(ctl->hwnd, hdcMem, &rcClient);
 					}
-					MyDrawThemeBackground(ctl->hThemeButton, hdcMem, BP_PUSHBUTTON, state, &rcClient, &rcClient);
+					pfnDrawThemeBackground(ctl->hThemeButton, hdcMem, BP_PUSHBUTTON, state, &rcClient, &rcClient);
 
 					if(clip) {
 						SelectClipRgn(hdcMem, clip);
-						MyDrawThemeBackground(ctl->hThemeButton, hdcMem, BP_PUSHBUTTON, realState, &rcClient, &rcClient);
+						pfnDrawThemeBackground(ctl->hThemeButton, hdcMem, BP_PUSHBUTTON, realState, &rcClient, &rcClient);
 					}
-					MyGetThemeBackgroundContentRect(ctl->hThemeToolbar, hdcMem, BP_PUSHBUTTON, PBS_NORMAL, &rcClient, &rcContent);
+					pfnGetThemeBackgroundContentRect(ctl->hThemeToolbar, hdcMem, BP_PUSHBUTTON, PBS_NORMAL, &rcClient, &rcContent);
 				}
 				else {
 					RECT rcFill = rcClient;
@@ -396,7 +370,15 @@ bg_done:
         if(ctl->item) {
             HICON hIcon = 0;
             LONG *glyphMetrics = ctl->stateId == PBS_HOT ? ctl->item->hoverGlyphMetrics : (ctl->stateId == PBS_PRESSED ? ctl->item->pressedGlyphMetrics : ctl->item->normalGlyphMetrics);
+            LONG xOff;
+            HFONT hOldFont;
+            SIZE  szText = {0};
 
+            if(ctl->item->dwFlags & BUTTON_HASLABEL) {
+                hOldFont = SelectObject(hdcMem, ctl->hFont);
+                GetTextExtentPoint32(hdcMem, ctl->item->tszLabel, lstrlen(ctl->item->tszLabel), &szText);
+                szText.cx += 2;
+            }
             if((ctl->stateId == PBS_NORMAL || ctl->stateId == PBS_DISABLED) && ctl->item->dwFlags & BUTTON_NORMALGLYPHISICON)
                 hIcon = *((HICON *)ctl->item->normalGlyphMetrics[0]);
             else if(ctl->item->dwFlags & BUTTON_PRESSEDGLYPHISICON && ctl->stateId == PBS_PRESSED)
@@ -404,15 +386,38 @@ bg_done:
             else if(ctl->item->dwFlags & BUTTON_HOVERGLYPHISICON && ctl->stateId == PBS_HOT)
                 hIcon = *((HICON *)ctl->item->hoverGlyphMetrics[0]);
 
-            if(hIcon)
-                DrawIconEx(hdcMem, rcClient.right / 2 - 8, rcClient.bottom / 2 - 8, hIcon, 16, 16, 0, 0, DI_NORMAL);
+            if(hIcon) {
+                szText.cx += 16;
+                if(ctl->stateId != PBS_DISABLED || MyAlphaBlend == 0)
+                    DrawIconEx(hdcMem, rcClient.right / 2 - szText.cx / 2, rcClient.bottom / 2 - 8, hIcon, 16, 16, 0, 0, DI_NORMAL);
+                else {
+                    BitBlt(hdc_buttonglyph, 0, 0, 16, 16, hdcMem, rcClient.right / 2 - szText.cx / 2, rcClient.bottom / 2 - 8, SRCCOPY);
+                    DrawIconEx(hdc_buttonglyph, 0, 0, hIcon, 16, 16, 0, 0, DI_NORMAL);
+                    MyAlphaBlend(hdcMem, rcClient.right / 2 - szText.cx / 2, rcClient.bottom / 2 - 8, 16, 16, hdc_buttonglyph, 0, 0, 16, 16, bf_buttonglyph);
+                }
+                xOff = 18;
+            }
             else {
+                szText.cx += glyphMetrics[2];
                 if(g_glyphItem) {
-                    MyAlphaBlend(hdcMem, (rcClient.right - glyphMetrics[2]) / 2, (rcClient.bottom - glyphMetrics[3]) / 2,
+                    MyAlphaBlend(hdcMem, (rcClient.right - szText.cx / 2), (rcClient.bottom - glyphMetrics[3]) / 2,
                                glyphMetrics[2], glyphMetrics[3], g_glyphItem->hdc,
                                glyphMetrics[0], glyphMetrics[1], glyphMetrics[2],
                                glyphMetrics[3], g_glyphItem->bf);
                 }
+                xOff = glyphMetrics[2] + 2;
+            }
+            if(ctl->item->dwFlags & BUTTON_HASLABEL) {
+                RECT rc = rcClient;
+
+                if(ctl->pContainer && ctl->pContainer->bSkinned)
+                    SetTextColor(hdcMem, ctl->stateId != PBS_DISABLED ? myGlobals.skinDefaultFontColor : GetSysColor(COLOR_GRAYTEXT));
+                else
+                    SetTextColor(hdcMem, ctl->stateId != PBS_DISABLED ? GetSysColor(COLOR_BTNTEXT):GetSysColor(COLOR_GRAYTEXT));
+                SetBkMode(hdcMem, TRANSPARENT);
+                rc.left = (rcClient.right - szText.cx) / 2 + xOff;
+                DrawText(hdcMem, ctl->item->tszLabel, -1, &rc, DT_VCENTER | DT_SINGLELINE | DT_NOPREFIX);
+                SelectObject(hdcMem, hOldFont);
             }
         }
 		else if (ctl->hIcon || ctl->hIconPrivate) {

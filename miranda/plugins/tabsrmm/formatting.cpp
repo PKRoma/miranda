@@ -39,15 +39,17 @@ License: GPL
 #define MWF_LOG_TEXTFORMAT 0x2000000
 #define MSGDLGFONTCOUNT 22
 
-extern "C" RTFColorTable rtf_ctable[];
+extern "C" RTFColorTable *rtf_ctable;
 extern "C" int _DebugPopup(HANDLE hContact, const char *fmt, ...);
 extern "C" char *xStatusDescr[];
 extern "C" TCHAR *MY_DBGetContactSettingString(HANDLE hContact, char *szModule, char *szSetting);
 extern "C" DWORD m_LangPackCP;
 extern "C" int MY_CallService(const char *svc, WPARAM wParam, LPARAM lParam);
 extern "C" int MY_ServiceExists(const char *svc);
+extern "C" void RTF_ColorAdd(const TCHAR *tszColname, size_t length);
 
 static int iHaveSmileyadd = -1;
+extern "C" unsigned int g_ctable_size;
 
 #if defined(UNICODE)
 
@@ -90,8 +92,9 @@ extern "C" const WCHAR *FilterEventMarkers(WCHAR *wszText)
     lstrcpyW(wszText, text.c_str());
     return wszText;
 }
-extern "C" const WCHAR *FormatRaw(DWORD dwFlags, const WCHAR *msg, int flags, const char *szProto, HANDLE hContact)
+extern "C" const WCHAR *FormatRaw(DWORD dwFlags, const WCHAR *msg, int flags, const char *szProto, HANDLE hContact, BOOL *clr_added)
 {
+    bool clr_was_added = false, was_added;
     static std::wstring message(msg);
     unsigned beginmark = 0, endmark = 0, tempmark = 0, index;
     int i, endindex;
@@ -120,17 +123,21 @@ extern "C" const WCHAR *FormatRaw(DWORD dwFlags, const WCHAR *msg, int flags, co
         endindex = i;
         endmark = message.find(w_bbcodes_end[i], beginmark);
         if(endindex == 4) {                                  // color
-            int closing = message.find_first_of(L"]", beginmark);
+            size_t closing = message.find_first_of(L"]", beginmark);
+            was_added = false;
+
             if(closing == message.npos) {                       // must be an invalid [color=] tag w/o closing bracket
                 message[beginmark] = ' ';
                 continue;
             }
             else {
-                std::wstring colorname = message.substr(beginmark + 7, 10);
-                int ii = 0;
+                std::wstring colorname = message.substr(beginmark + 7, 8);
+search_again:
+                bool  clr_found = false;
+                unsigned int ii = 0;
                 wchar_t szTemp[5];
-                while(rtf_ctable[ii].szName != NULL) {
-                    if(colorname.find(rtf_ctable[ii].szName, 0) != colorname.npos) {
+                for(ii = 0; ii < g_ctable_size; ii++) {
+                    if(!_wcsnicmp((wchar_t *)colorname.c_str(), rtf_ctable[ii].szName, lstrlen(rtf_ctable[ii].szName))) {
                         closing = beginmark + 7 + wcslen(rtf_ctable[ii].szName);
                         if(endmark != message.npos) {
                             message.erase(endmark, 4);
@@ -141,14 +148,39 @@ extern "C" const WCHAR *FormatRaw(DWORD dwFlags, const WCHAR *msg, int flags, co
                         _snwprintf(szTemp, 4, L"%02d", MSGDLGFONTCOUNT + 10 + ii);
                         message[beginmark + 3] = szTemp[0];
                         message[beginmark + 4] = szTemp[1];
+                        clr_found = true;
+                        if(was_added) {
+                            wchar_t wszTemp[100];
+                            _snwprintf(wszTemp, 100, L"##col##%06u:%04u", endmark - closing, ii);
+                            wszTemp[99] = 0;
+                            message.insert(beginmark, wszTemp);
+                        }
                         break;
                     }
-                    ii++;
                 }
-				if(rtf_ctable[ii].szName == NULL) {
-                    if(endmark != message.npos)
-						message.erase(endmark, 8);
-                    message.erase(beginmark, (closing - beginmark) + 1);
+                if(!clr_found) {
+                    size_t  c_closing = colorname.find_first_of(L"]", 0);
+                    if(c_closing == colorname.npos)
+                        c_closing = colorname.length();
+                    const wchar_t *wszColname = colorname.c_str();
+                    if(endmark != message.npos && c_closing > 2 && c_closing <= 6 && iswalnum(colorname[0]) && iswalnum(colorname[c_closing -1])) {
+                        RTF_ColorAdd(wszColname, c_closing);
+                        if(!was_added) {
+                            clr_was_added = was_added = true;
+                            goto search_again;
+                        }
+                        else
+                            goto invalid_code;
+                    }
+                    else {
+invalid_code:
+                        if(endmark != message.npos)
+                            message.erase(endmark, 8);
+                        if(closing != message.npos && closing < endmark)
+                            message.erase(beginmark, (closing - beginmark) + 1);
+                        else
+                            message[beginmark] = ' ';
+                    }
                 }
                 continue;
             }
@@ -232,6 +264,8 @@ ok:
         message.replace(beginmark, 4, formatting_strings_begin[index]);
     }
 nosimpletags:
+    if(clr_added && clr_was_added)
+        *clr_added = TRUE;
     return(message.c_str());
 }
 
@@ -250,8 +284,9 @@ static char *formatting_strings_end[] = { "b0 ", "i0 ", "u0 ", "s0 ", "c0 "
  * this translates formatting tags into rtf sequences...
  */
 
-extern "C" const char *FormatRaw(DWORD dwFlags, const char *msg, int flags, const char *szProto, HANDLE hContact)
+extern "C" const char *FormatRaw(DWORD dwFlags, const char *msg, int flags, const char *szProto, HANDLE hContact, BOOL *clr_added)
 {
+    bool clr_was_added = false, was_added;
     static std::string message(msg);
     unsigned beginmark = 0, endmark = 0, tempmark = 0, index;
     char endmarker;
@@ -281,18 +316,22 @@ extern "C" const char *FormatRaw(DWORD dwFlags, const char *msg, int flags, cons
         endindex = i;
         endmark = message.find(bbcodes_end[i], beginmark);
         if(endindex == 4) {                                  // color
-            int closing = message.find_first_of("]", beginmark);
-            if(closing == message.npos) {
+            size_t closing = message.find_first_of("]", beginmark);
+            was_added = false;
+
+            if(closing == message.npos) {                       // must be an invalid [color=] tag w/o closing bracket
                 message[beginmark] = ' ';
                 continue;
             }
             else {
-                std::string colorname = message.substr(beginmark + 7, 10);
-                int ii = 0;
+                std::string colorname = message.substr(beginmark + 7, 8);
+search_again:
+                bool  clr_found = false;
+                unsigned int ii = 0;
                 char szTemp[5];
-                while(rtf_ctable[ii].szName != NULL) {
-                    if(colorname.find(rtf_ctable[ii].szName, 0) != colorname.npos) {
-                        closing = beginmark + 7 + strlen(rtf_ctable[ii].szName);
+                for(ii = 0; ii < g_ctable_size; ii++) {
+                    if(!_strnicmp((char *)colorname.c_str(), rtf_ctable[ii].szName, lstrlenA(rtf_ctable[ii].szName))) {
+                        closing = beginmark + 7 + lstrlenA(rtf_ctable[ii].szName);
                         if(endmark != message.npos) {
                             message.erase(endmark, 8);
                             message.insert(endmark, "c0xx ");
@@ -302,14 +341,39 @@ extern "C" const char *FormatRaw(DWORD dwFlags, const char *msg, int flags, cons
                         _snprintf(szTemp, 4, "%02d", MSGDLGFONTCOUNT + 10 + ii);
                         message[beginmark + 3] = szTemp[0];
                         message[beginmark + 4] = szTemp[1];
+                        clr_found = true;
+                        if(was_added) {
+                            char wszTemp[100];
+                            _snprintf(wszTemp, 100, "##col##%06u:%04u", endmark - closing, ii);
+                            wszTemp[99] = 0;
+                            message.insert(beginmark, wszTemp);
+                        }
                         break;
                     }
-                    ii++;
                 }
-				if(rtf_ctable[ii].szName == NULL) {
-					if(endmark != message.npos)
-						message.erase(endmark, 8);
-                    message.erase(beginmark, (closing - beginmark) + 1);
+                if(!clr_found) {
+                    size_t  c_closing = colorname.find_first_of("]", 0);
+                    if(c_closing == colorname.npos)
+                        c_closing = colorname.length();
+                    const char *wszColname = colorname.c_str();
+                    if(endmark != message.npos && c_closing > 2 && c_closing <= 6 && isalnum(colorname[0]) && isalnum(colorname[c_closing -1])) {
+                        RTF_ColorAdd(wszColname, c_closing);
+                        if(!was_added) {
+                            clr_was_added = was_added = true;
+                            goto search_again;
+                        }
+                        else
+                            goto invalid_code;
+                    }
+                    else {
+invalid_code:
+                        if(endmark != message.npos)
+                            message.erase(endmark, 8);
+                        if(closing != message.npos && closing < endmark)
+                            message.erase(beginmark, (closing - beginmark) + 1);
+                        else
+                            message[beginmark] = ' ';
+                    }
                 }
                 continue;
             }
@@ -388,6 +452,8 @@ ok:
         message.replace(beginmark, 4, formatting_strings_begin[index]);
     }
 nosimpletags:
+    if(clr_added && clr_was_added)
+        *clr_added = TRUE;
     return(message.c_str());
 }
 
