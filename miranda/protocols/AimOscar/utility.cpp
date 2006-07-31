@@ -26,7 +26,6 @@ void broadcast_status(int status)
 		conn.idle=0;
 		conn.instantidle=0;
 		conn.checking_mail=0;
-		conn.buddy_list_received=0;
 		conn.state=0;
 	}
 	ProtoBroadcastAck(AIM_PROTOCOL_NAME, NULL, ACKTYPE_STATUS, ACKRESULT_SUCCESS, (HANDLE)old_status, status);	
@@ -122,9 +121,9 @@ HANDLE add_contact(char* buddy)
 	else
 		return 0;
 }
-void add_contact_to_group(HANDLE hContact,unsigned short new_group_id,char* group)
+void add_contact_to_group(HANDLE hContact,char* group)
 {
-	//make sure group exist serverside then add buddy to it
+	char* tgroup=trim_name(group);	
 	BOOL bUtfReadyDB = ServiceExists(MS_DB_CONTACT_GETSETTING_STR);
 	bool group_exist=1;
 	char* groupNum= new char[lstrlen(AIM_KEY_GI)+10];
@@ -139,30 +138,33 @@ void add_contact_to_group(HANDLE hContact,unsigned short new_group_id,char* grou
 		if(bUtfReadyDB==1)
 		{
 			if(!DBGetContactSettingStringUtf(NULL,ID_GROUP_KEY,group_id_string,&dbv))//utf
-				if(!lstrcmpi(group,dbv.pszVal))
+				if(!lstrcmpi(tgroup,dbv.pszVal))
 				{
 					DBFreeVariant(&dbv);
 					return;
-				}		
+				}
+				DBFreeVariant(&dbv);
 		}
 		else
 		{
 			if(!DBGetContactSetting(NULL,ID_GROUP_KEY,group_id_string,&dbv))//utf
-				if(!lstrcmpi(group,dbv.pszVal))
+				if(!lstrcmpi(tgroup,dbv.pszVal))
 				{
 					DBFreeVariant(&dbv);
 					return;
-				}		
+				}
+				DBFreeVariant(&dbv);
 		}
 	}
 	char* buddyNum= new char[lstrlen(AIM_KEY_BI)+10];
 	mir_snprintf(buddyNum,lstrlen(AIM_KEY_BI)+10,AIM_KEY_BI"%d",1);
 	unsigned short item_id=(unsigned short)DBGetContactSettingWord(hContact, AIM_PROTOCOL_NAME, buddyNum,0);
 	delete[] buddyNum;
-	new_group_id=(unsigned short)DBGetContactSettingWord(NULL, GROUP_ID_KEY,group,0);
+	char* lowercased_group=lowercase_name(tgroup);
+	unsigned short new_group_id=(unsigned short)DBGetContactSettingWord(NULL, GROUP_ID_KEY,lowercased_group,0);
 	if(!new_group_id)
 	{
-		new_group_id=search_for_free_group_id(group);
+		new_group_id=search_for_free_group_id(tgroup);
 		group_exist=0;
 	}
 	if(!item_id)
@@ -186,17 +188,17 @@ void add_contact_to_group(HANDLE hContact,unsigned short new_group_id,char* grou
 			{
 				char group_id_string[32];
 				_itoa(new_group_id,group_id_string,10);
-				lowercase_name(group);
 				if(bUtfReadyDB==1)
-					DBWriteContactSettingStringUtf(NULL, ID_GROUP_KEY,group_id_string, group);
+					DBWriteContactSettingStringUtf(NULL, ID_GROUP_KEY,group_id_string, tgroup);
 				else
-					DBWriteContactSettingString(NULL, ID_GROUP_KEY,group_id_string, group);
+					DBWriteContactSettingString(NULL, ID_GROUP_KEY,group_id_string, tgroup);
 				DBWriteContactSettingWord(NULL, GROUP_ID_KEY,group, new_group_id);
 				aim_add_group(conn.hServerConn,conn.seqno,group,new_group_id);//add the group server-side even if it exist
 			}
-			aim_mod_group(conn.hServerConn,conn.seqno,group,new_group_id,user_id_array,user_id_array_size);//mod the group so that aim knows we want updates on the user's status during this session			
+			aim_mod_group(conn.hServerConn,conn.seqno,tgroup,new_group_id,user_id_array,user_id_array_size);//mod the group so that aim knows we want updates on the user's status during this session			
 			DBFreeVariant(&dbv);
 			delete[] user_id_array;
+			DBDeleteContactSetting(hContact,AIM_PROTOCOL_NAME,AIM_KEY_NC);
 		}
 	}
 }
@@ -487,8 +489,8 @@ void add_ES_icons()
 					memcpy(&data[sizeof(HANDLE)*2],(char*)&column_type,sizeof(unsigned short));
 					ForkThread((pThreadFunc)set_extra_icon,data);
 				}
+				DBFreeVariant(&dbv);
 			}
-			DBFreeVariant(&dbv);
 		}
 		hContact = (HANDLE) CallService(MS_DB_CONTACT_FINDNEXT, (WPARAM) hContact, 0);
 	}
@@ -509,15 +511,26 @@ char *normalize_name(const char *s)
     buf[i] = '\0';
     return buf;
 }
-void lowercase_name(char* &s)
+char* lowercase_name(char* s)
 {   
 	if (s == NULL)
-		return;
+		return NULL;
+	static char buf[64];
 	int i=0;
+	for (; s[i]; i++)
+		buf[i] = (char)tolower(s[i]);
+	buf[i] = '\0';
+	return buf;
+}
+char* trim_name(char* s)
+{   
+	if (s == NULL)
+		return NULL;
+	static char buf[64];
 	while(s[0]==0x20)
 		s++;
-	for (; s[i]; i++)
-		s[i] = (char)tolower(s[i]);
+	strlcpy(buf,s,strlen(s)+1);
+	return buf;
 }
 void msg_ack_success(HANDLE hContact)
 {
@@ -576,13 +589,14 @@ void create_group(char *group)
 		if(bUtfReadyDB==1)
 		{
 			if(DBGetContactSettingStringUtf(NULL, "CListGroups", str, &dbv))
-				break;
+				break;//invalid
 		}
 		else
 		{
 			if (DBGetContactSetting(NULL, "CListGroups", str, &dbv))
-				break;   
+				break;//invalid
 		}
+		//only happens if dbv entry exist
 		if (dbv.pszVal[0] != '\0' && !lstrcmp(dbv.pszVal + 1, group))
 		{
 				DBFreeVariant(&dbv);
@@ -610,7 +624,7 @@ unsigned short search_for_free_group_id(char *name)//searches for a free group i
 		if(bUtfReadyDB==1)
 		{
 			if(DBGetContactSettingStringUtf(NULL,ID_GROUP_KEY,group_id_string,&dbv))
-			{
+			{//invalid
 				create_group(name);	
 				return i;
 			}
@@ -618,12 +632,12 @@ unsigned short search_for_free_group_id(char *name)//searches for a free group i
 		else
 		{
 			if(DBGetContactSetting(NULL,ID_GROUP_KEY,group_id_string,&dbv))
-			{
+			{//invalid
 				create_group(name);	
 				return i;
 			}
 		}
-		DBFreeVariant(&dbv);
+		DBFreeVariant(&dbv);//valid so free
 	}
 	return 0;
 }

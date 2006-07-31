@@ -16,7 +16,7 @@ void snac_icbm_limitations(SNAC &snac,HANDLE hServerConn,unsigned short &seqno);
 void snac_user_online(SNAC &snac);
 void snac_user_offline(SNAC &snac);
 void snac_error(SNAC &snac);//family 0x0003 or x0004
-void snac_contact_list(SNAC &snac);
+void snac_contact_list(SNAC &snac,HANDLE hServerConn,unsigned short &seqno);
 void snac_message_accepted(SNAC &snac);//family 0x004
 void snac_received_message(SNAC &snac,HANDLE hServerConn,unsigned short &seqno);//family 0x0004
 void snac_received_info(SNAC &snac);//family 0x0002

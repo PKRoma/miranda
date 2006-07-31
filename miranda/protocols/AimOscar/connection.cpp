@@ -199,7 +199,7 @@ void __cdecl aim_protocol_negotiation()
 					}
 					else if(snac.cmp(0x0013))
 					{
-						snac_contact_list(snac);
+						snac_contact_list(snac,conn.hServerConn,conn.seqno);
 						snac_list_modification_ack(snac);
 						snac_error(snac);
 					}

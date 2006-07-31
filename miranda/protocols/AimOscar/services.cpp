@@ -192,8 +192,7 @@ static int GetProfile(WPARAM wParam, LPARAM /*lParam*/)
 	if (conn.state!=1)
 		return 0;
 	DBVARIANT dbv;
-	DBGetContactSetting((HANDLE)wParam, AIM_PROTOCOL_NAME, AIM_KEY_SN, &dbv);
-	if(dbv.pszVal)
+	if(!DBGetContactSetting((HANDLE)wParam, AIM_PROTOCOL_NAME, AIM_KEY_SN, &dbv))
 	{
 		conn.request_HTML_profile=1;
 		aim_query_profile(conn.hServerConn,conn.seqno,dbv.pszVal);
@@ -237,8 +236,7 @@ static int GetAwayMsg(WPARAM /*wParam*/, LPARAM lParam)
 	CCSDATA* ccs = (CCSDATA*)lParam;
 	if(ID_STATUS_OFFLINE==DBGetContactSettingWord(ccs->hContact, AIM_PROTOCOL_NAME, AIM_KEY_ST, ID_STATUS_OFFLINE))
 		return 0;
-	DBGetContactSetting((HANDLE)ccs->hContact, AIM_PROTOCOL_NAME, AIM_KEY_SN, &dbv);
-	if(dbv.pszVal)
+	if(!DBGetContactSetting((HANDLE)ccs->hContact, AIM_PROTOCOL_NAME, AIM_KEY_SN, &dbv))
 	{
 		if(aim_query_away_message(conn.hServerConn,conn.seqno,dbv.pszVal))
 		{
@@ -254,8 +252,7 @@ static int GetHTMLAwayMsg(WPARAM wParam, LPARAM /*lParam*/)
 	if (conn.state!=1)
 		return 0;
 	DBVARIANT dbv;
-	DBGetContactSetting((HANDLE)wParam, AIM_PROTOCOL_NAME, AIM_KEY_SN, &dbv);
-	if(dbv.pszVal)
+	if(!DBGetContactSetting((HANDLE)wParam, AIM_PROTOCOL_NAME, AIM_KEY_SN, &dbv))
 	{
 		if(aim_query_away_message(conn.hServerConn,conn.seqno,dbv.pszVal))
 		{
@@ -291,11 +288,11 @@ static int ContactSettingChanged(WPARAM wParam,LPARAM lParam)
 				DBVARIANT dbv;
 				if(!DBGetContactSetting((HANDLE)wParam,MOD_KEY_CL,OTH_KEY_GP,&dbv))
 				{
-					add_contact_to_group((HANDLE)wParam,(unsigned short)DBGetContactSettingWord(NULL, GROUP_ID_KEY,dbv.pszVal,0),dbv.pszVal);
+					add_contact_to_group((HANDLE)wParam,dbv.pszVal);
 					DBFreeVariant(&dbv);
 				}
 				else
-					add_contact_to_group((HANDLE)wParam,(unsigned short)DBGetContactSettingWord(NULL, GROUP_ID_KEY,AIM_DEFAULT_GROUP,0),AIM_DEFAULT_GROUP);
+					add_contact_to_group((HANDLE)wParam,AIM_DEFAULT_GROUP);
 			}
 		}
 			/*DBCONTACTWRITESETTING *cws=(DBCONTACTWRITESETTING*)lParam;
@@ -370,12 +367,11 @@ static int AuthRequest(WPARAM /*wParam*/,LPARAM lParam)
 	DBVARIANT dbv;
 	if(!DBGetContactSetting(ccs->hContact,MOD_KEY_CL,OTH_KEY_GP,&dbv))
 	{
-		lowercase_name(dbv.pszVal);
-		add_contact_to_group(ccs->hContact,(unsigned short)DBGetContactSettingWord(NULL, GROUP_ID_KEY,dbv.pszVal,0),dbv.pszVal);
+		add_contact_to_group(ccs->hContact,dbv.pszVal);
 		DBFreeVariant(&dbv);
 	}
 	else
-		add_contact_to_group(ccs->hContact,(unsigned short)DBGetContactSettingWord(NULL, GROUP_ID_KEY,AIM_DEFAULT_GROUP,0),AIM_DEFAULT_GROUP);
+		add_contact_to_group(ccs->hContact,AIM_DEFAULT_GROUP);
 	return 0;
 }
 int ContactDeleted(WPARAM wParam,LPARAM /*lParam*/)
@@ -447,6 +443,7 @@ static int SendFile(WPARAM /*wParam*/,LPARAM lParam)
 					if(file_amt==1)
 					{
 						ShowPopup("Aim Protocol","AimOSCAR allows only one file to be sent at a time.", 0);
+						DBFreeVariant(&dbv);
 						return 0;
 					}
 				char cookie[8];
@@ -560,8 +557,7 @@ static int CancelFile(WPARAM /*wParam*/, LPARAM lParam)
 static int UserIsTyping(WPARAM wParam, LPARAM lParam)
 {
 	DBVARIANT dbv;
-	DBGetContactSetting((HANDLE)wParam, AIM_PROTOCOL_NAME, AIM_KEY_SN, &dbv);
-	if(dbv.pszVal)
+	if(!DBGetContactSetting((HANDLE)wParam, AIM_PROTOCOL_NAME, AIM_KEY_SN, &dbv))
 	{
 		if(lParam==PROTOTYPE_SELFTYPING_ON)
 			aim_typing_notification(conn.hServerConn,conn.seqno,dbv.pszVal,0x0002);
@@ -578,11 +574,11 @@ static int AddToServerList(WPARAM wParam, LPARAM /*lParam*/)
 	DBVARIANT dbv;
 	if(!DBGetContactSetting((HANDLE)wParam,MOD_KEY_CL,OTH_KEY_GP,&dbv))
 	{
-		add_contact_to_group((HANDLE)wParam,(unsigned short)DBGetContactSettingWord(NULL, GROUP_ID_KEY,dbv.pszVal,0),dbv.pszVal);
+		add_contact_to_group((HANDLE)wParam,dbv.pszVal);
 		DBFreeVariant(&dbv);
 	}
 	else
-		add_contact_to_group((HANDLE)wParam,(unsigned short)DBGetContactSettingWord(NULL, GROUP_ID_KEY,AIM_DEFAULT_GROUP,0),AIM_DEFAULT_GROUP);
+		add_contact_to_group((HANDLE)wParam,AIM_DEFAULT_GROUP);
 	return 0;
 }
 static int InstantIdle(WPARAM /*wParam*/, LPARAM /*lParam*/)

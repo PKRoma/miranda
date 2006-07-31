@@ -9,8 +9,8 @@ void __cdecl aim_dc_helper(HANDLE hContact)//only called when we are initiating 
 		{
 			unsigned long ip=char_ip_to_long_ip(dbv.pszVal);
 			DBWriteContactSettingDword(NULL,FILE_TRANSFER_KEY,dbv.pszVal,(DWORD)hContact);
-			DBFreeVariant(&dbv);
 			aim_direct_connection_initiated(Connection, ip,NULL);
+			DBFreeVariant(&dbv);
 		}
 	}
 	DBDeleteContactSetting(hContact,AIM_PROTOCOL_NAME,AIM_KEY_DH);

@@ -215,7 +215,6 @@ int aim_set_caps(HANDLE hServerConn,unsigned short &seqno)
 	{
 		aim_writetlv(0x01,(unsigned short)lstrlen(AIM_MSG_TYPE),AIM_MSG_TYPE,offset,buf);
 		aim_writetlv(0x02,(unsigned short)lstrlen(profile_buf),profile_buf,offset,buf);
-		DBFreeVariant(&dbv);
 		delete[] profile_buf;
 	}
 	if(aim_sendflap(hServerConn,0x02,offset,buf,seqno)==0)

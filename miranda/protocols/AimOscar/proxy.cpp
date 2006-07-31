@@ -11,17 +11,25 @@ void __cdecl aim_proxy_helper(HANDLE hContact)
 		DBVARIANT dbv;//CHECK FOR FREE VARIANT!
 		if (!DBGetContactSetting(NULL, AIM_PROTOCOL_NAME, AIM_KEY_SN, &dbv))
 		{
+			
 			if(stage==1&&!sender||stage==2&&sender||stage==3&&!sender)
 			{
 				unsigned short port_check=(unsigned short)DBGetContactSettingWord(hContact,AIM_PROTOCOL_NAME,AIM_KEY_PC,0);
 				if(proxy_initialize_recv(Connection,dbv.pszVal,cookie,port_check))
+				{
+					DBFreeVariant(&dbv);
 					return;//error
+				}
 			}
 			else if(stage==1&&sender||stage==2&&!sender||stage==3&&sender)
 			{
 				if(proxy_initialize_send(Connection,dbv.pszVal,cookie))
+				{
+					DBFreeVariant(&dbv);
 					return;//error
+				}
 			}
+			DBFreeVariant(&dbv);
 			//start listen for packets stuff
 			int recvResult=0;
 			NETLIBPACKETRECVER packetRecv;
@@ -87,23 +95,21 @@ void __cdecl aim_proxy_helper(HANDLE hContact)
 						unsigned long* ip=(unsigned long*)&packetRecv.buffer[14];
 						*port=_htons(*port);
 						*ip=_htonl(*ip);
-						DBVARIANT dbv;
 						if (!DBGetContactSetting(hContact, AIM_PROTOCOL_NAME, AIM_KEY_SN, &dbv))
 						{
 							if(stage==1&&sender)
 							{
 								char* sn=strldup(dbv.pszVal,lstrlen(dbv.pszVal));
+								DBFreeVariant(&dbv);
 								char vip[20];
 								char *file, *descr;
 								unsigned long size;
 								long_ip_to_char_ip(*ip,vip);
 								DBWriteContactSettingString(hContact,AIM_PROTOCOL_NAME,AIM_KEY_IP,vip);
-								DBVARIANT dbv;
 								if (!DBGetContactSetting(hContact, AIM_PROTOCOL_NAME, AIM_KEY_FN, &dbv))
 								{
 									file=strldup(dbv.pszVal,lstrlen(dbv.pszVal));
 									DBFreeVariant(&dbv);
-									DBVARIANT dbv;
 									if (!DBGetContactSetting(hContact, AIM_PROTOCOL_NAME, AIM_KEY_FD, &dbv))
 									{
 										descr=strldup(dbv.pszVal,lstrlen(dbv.pszVal));
@@ -125,15 +131,23 @@ void __cdecl aim_proxy_helper(HANDLE hContact)
 								delete[] descr;
 							}
 							else if(stage==2&&!sender)
+							{
 								aim_file_proxy_request(conn.hServerConn,conn.seqno,dbv.pszVal,cookie,0x02,*ip,*port);
+								DBFreeVariant(&dbv);
+							}
 							else if(stage==3&&sender)
+							{
 								aim_file_proxy_request(conn.hServerConn,conn.seqno,dbv.pszVal,cookie,0x03,*ip,*port);
-							DBFreeVariant(&dbv);
+								DBFreeVariant(&dbv);
+							}
+							else
+							{
+								DBFreeVariant(&dbv);
+							}
 						}
 					}
 					else if(*type==0x0005)
 					{
-						DBVARIANT dbv;
 						if (!DBGetContactSetting(hContact, AIM_PROTOCOL_NAME, AIM_KEY_IP, &dbv))
 						{
 							unsigned long ip=char_ip_to_long_ip(dbv.pszVal);
@@ -152,7 +166,6 @@ void __cdecl aim_proxy_helper(HANDLE hContact)
 					}
 				}
 			}
-			DBFreeVariant(&dbv);
 		}
 	}
 	DBDeleteContactSetting(hContact,AIM_PROTOCOL_NAME,AIM_KEY_FT);

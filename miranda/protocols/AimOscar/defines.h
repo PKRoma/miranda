@@ -180,6 +180,30 @@
 #define AIM_MSG_TYPE					"text/x-aolrtf; charset=\"us-ascii\""
 #define AIM_TOOL_VERSION				"\x01\x10\x08\xf1"
 extern char* AIM_CLIENT_ID_STRING;		//Client id EXTERN
+//Supported Clients
+#define CLIENT_UNKNOWN					"?"
+#define CLIENT_AIM5						"AIM 5.x"
+#define CLIENT_AIM4						"AIM 4.x"
+#define CLIENT_AIMEXPRESS				"AIM Express"
+#define CLIENT_AIM_TRITON				"AIM Triton"
+#define CLIENT_AIMTOC					"AIM TOC"
+#define CLIENT_GAIM						"Gaim"
+#define CLIENT_ADIUM					"Adium X"
+#define CLIENT_GPRS						"GPRS"
+#define CLIENT_ICHAT					"iChat"
+#define CLIENT_IM2						"IM2"
+#define CLIENT_KOPETE					"Kopete"
+#define CLIENT_MEEBO					"Meebo"
+#define CLIENT_MICQ						"mICQ"
+#define CLIENT_AIMOSCAR					"Miranda IM %d.%d.%d.%d(AimOSCAR v%d.%d.%d.%d)"
+#define CLIENT_OSCARJ					"Miranda IM %d.%d.%d.%d(ICQ v0.%d.%d.%d)"
+#define CLIENT_NAIM						"naim"
+#define CLIENT_QIP						"qip"
+#define CLIENT_SIM						"SIM"
+#define CLIENT_SMS						"SMS"
+#define CLIENT_TERRAIM					"TerraIM"
+#define CLIENT_TRILLIAN_PRO				"Trillian Pro"
+#define CLIENT_TRILLIAN					"Trillian"
 //Aim Caps
 #define AIM_CAPS_LENGTH					16
 #define AIM_CAP_VOICE_CHAT				"\x09\x46\x13\x41\x4C\x7F\x11\xD1\x82\x22\x44\x45\x53\x54\0\0"
@@ -247,7 +271,6 @@ public:
 	//Some bools to keep track of different things
 	bool requesting_HTML_ModeMsg;
 	bool request_HTML_profile;
-	bool buddy_list_received;
 	bool extra_icons_loaded;
 	bool freeing_DirectBoundPort;
 	bool shutting_down;

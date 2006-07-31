@@ -61,7 +61,6 @@ void snac_supported_family_versions(SNAC &snac,HANDLE hServerConn,unsigned short
 	if(snac.subcmp(0x0018))//service list okayed
 	{
 		aim_request_rates(hServerConn,seqno);//request some rate crap
-		aim_request_list(hServerConn,seqno);
 	}
 }
 void snac_mail_supported_family_versions(SNAC &snac,HANDLE hServerConn,unsigned short &seqno)//family 0x0001
@@ -92,12 +91,6 @@ void snac_icbm_limitations(SNAC &snac,HANDLE hServerConn,unsigned short &seqno)/
 {
 	if(snac.subcmp(0x0005))
 	{
-		for(int t=0;!conn.buddy_list_received;t++)
-		{
-			Sleep(1000);
-			if(t==5)
-				break;
-		}
 		aim_set_icbm(hServerConn,seqno);
 		aim_set_caps(hServerConn,seqno);
 		switch(conn.initial_status)
@@ -129,93 +122,111 @@ void snac_icbm_limitations(SNAC &snac,HANDLE hServerConn,unsigned short &seqno)/
 					DBVARIANT dbv;
 					if(conn.initial_status==ID_STATUS_AWAY)
 					{
-						if(!DBGetContactSetting(NULL,MOD_KEY_SA,OTH_KEY_AD,&dbv)&&!DBGetContactSettingByte(NULL,MOD_KEY_SA,OTH_KEY_AI,0))
+						if(!DBGetContactSettingByte(NULL,MOD_KEY_SA,OTH_KEY_AI,0))
 						{
-							assign_modmsg(dbv.pszVal);
-							DBFreeVariant(&dbv);
+							if(!DBGetContactSetting(NULL,MOD_KEY_SA,OTH_KEY_AD,&dbv))
+							{
+								assign_modmsg(dbv.pszVal);
+								DBFreeVariant(&dbv);
+							}
+							if(!DBGetContactSetting(NULL,MOD_KEY_SA,OTH_KEY_AM,&dbv))
+							{
+								assign_modmsg(dbv.pszVal);
+								DBFreeVariant(&dbv);
+							}
+							else
+								assign_modmsg(DEFAULT_AWAY_MSG);
 						}
-						else if(!DBGetContactSetting(NULL,MOD_KEY_SA,OTH_KEY_AM,&dbv)&&!DBGetContactSettingByte(NULL,MOD_KEY_SA,OTH_KEY_AI,0))
-						{
-							assign_modmsg(dbv.pszVal);
-							DBFreeVariant(&dbv);
-						}
-						else
-							assign_modmsg(DEFAULT_AWAY_MSG);
 					}
 					else if(conn.initial_status==ID_STATUS_DND)
 					{
-						if(!DBGetContactSetting(NULL,MOD_KEY_SA,OTH_KEY_DD,&dbv)&&!DBGetContactSettingByte(NULL,MOD_KEY_SA,OTH_KEY_DI,0))
+						if(!DBGetContactSettingByte(NULL,MOD_KEY_SA,OTH_KEY_DI,0))
 						{
-							assign_modmsg(dbv.pszVal);
-							DBFreeVariant(&dbv);
+							if(!DBGetContactSetting(NULL,MOD_KEY_SA,OTH_KEY_DD,&dbv))
+							{
+								assign_modmsg(dbv.pszVal);
+								DBFreeVariant(&dbv);
+							}
+							else if(!DBGetContactSetting(NULL,MOD_KEY_SA,OTH_KEY_DM,&dbv))
+							{
+								assign_modmsg(dbv.pszVal);
+								DBFreeVariant(&dbv);
+							}
+							else
+								assign_modmsg(DEFAULT_AWAY_MSG);
 						}
-						else if(!DBGetContactSetting(NULL,MOD_KEY_SA,OTH_KEY_DM,&dbv)&&!DBGetContactSettingByte(NULL,MOD_KEY_SA,OTH_KEY_DI,0))
-						{
-							assign_modmsg(dbv.pszVal);
-							DBFreeVariant(&dbv);
-						}
-						else
-							assign_modmsg(DEFAULT_AWAY_MSG);
 					}
 					else if(conn.initial_status==ID_STATUS_OCCUPIED)
 					{
-						if(!DBGetContactSetting(NULL,MOD_KEY_SA,OTH_KEY_OD,&dbv)&&!DBGetContactSettingByte(NULL,MOD_KEY_SA,OTH_KEY_OI,0))
+						if(!DBGetContactSettingByte(NULL,MOD_KEY_SA,OTH_KEY_OI,0))
 						{
-							assign_modmsg(dbv.pszVal);
-							DBFreeVariant(&dbv);
+							if(!DBGetContactSetting(NULL,MOD_KEY_SA,OTH_KEY_OD,&dbv))
+							{
+								assign_modmsg(dbv.pszVal);
+								DBFreeVariant(&dbv);
+							}
+							else if(!DBGetContactSetting(NULL,MOD_KEY_SA,OTH_KEY_OM,&dbv))
+							{
+								assign_modmsg(dbv.pszVal);
+								DBFreeVariant(&dbv);
+							}
+							else
+								assign_modmsg(DEFAULT_AWAY_MSG);
 						}
-						else if(!DBGetContactSetting(NULL,MOD_KEY_SA,OTH_KEY_OM,&dbv)&&!DBGetContactSettingByte(NULL,MOD_KEY_SA,OTH_KEY_OI,0))
-						{
-							assign_modmsg(dbv.pszVal);
-							DBFreeVariant(&dbv);
-						}
-						else
-							assign_modmsg(DEFAULT_AWAY_MSG);
 					}
 					else if(conn.initial_status==ID_STATUS_ONTHEPHONE)
 					{
-						if(!DBGetContactSetting(NULL,MOD_KEY_SA,OTH_KEY_PD,&dbv)&&!DBGetContactSettingByte(NULL,MOD_KEY_SA,OTH_KEY_PI,0))
+						if(!DBGetContactSettingByte(NULL,MOD_KEY_SA,OTH_KEY_PI,0))
 						{
-							assign_modmsg(dbv.pszVal);
-							DBFreeVariant(&dbv);
+							if(!DBGetContactSetting(NULL,MOD_KEY_SA,OTH_KEY_PD,&dbv))
+							{
+								assign_modmsg(dbv.pszVal);
+								DBFreeVariant(&dbv);
+							}
+							else if(!DBGetContactSetting(NULL,MOD_KEY_SA,OTH_KEY_PM,&dbv))
+							{
+								assign_modmsg(dbv.pszVal);
+								DBFreeVariant(&dbv);
+							}
+							else
+								assign_modmsg(DEFAULT_AWAY_MSG);
 						}
-						else if(!DBGetContactSetting(NULL,MOD_KEY_SA,OTH_KEY_PM,&dbv)&&!DBGetContactSettingByte(NULL,MOD_KEY_SA,OTH_KEY_PI,0))
-						{
-							assign_modmsg(dbv.pszVal);
-							DBFreeVariant(&dbv);
-						}
-						else
-							assign_modmsg(DEFAULT_AWAY_MSG);
 					}
 					else if(conn.initial_status==ID_STATUS_NA)
 					{
-						if(!DBGetContactSetting(NULL,MOD_KEY_SA,OTH_KEY_ND,&dbv)&&!DBGetContactSettingByte(NULL,MOD_KEY_SA,OTH_KEY_NI,0))
+						if(!DBGetContactSettingByte(NULL,MOD_KEY_SA,OTH_KEY_NI,0))
 						{
-							assign_modmsg(dbv.pszVal);
-							DBFreeVariant(&dbv);
+							if(!DBGetContactSetting(NULL,MOD_KEY_SA,OTH_KEY_ND,&dbv))
+							{
+								assign_modmsg(dbv.pszVal);
+								DBFreeVariant(&dbv);
+							}
+							else if(!DBGetContactSetting(NULL,MOD_KEY_SA,OTH_KEY_NM,&dbv))
+							{
+								assign_modmsg(dbv.pszVal);
+								DBFreeVariant(&dbv);
+							}
+							else
+								assign_modmsg(DEFAULT_AWAY_MSG);
 						}
-						else if(!DBGetContactSetting(NULL,MOD_KEY_SA,OTH_KEY_NM,&dbv)&&!DBGetContactSettingByte(NULL,MOD_KEY_SA,OTH_KEY_NI,0))
-						{
-							assign_modmsg(dbv.pszVal);
-							DBFreeVariant(&dbv);
-						}
-						else
-							assign_modmsg(DEFAULT_AWAY_MSG);
 					}
 					else if(conn.initial_status==ID_STATUS_OUTTOLUNCH)
 					{
-						if(!DBGetContactSetting(NULL,MOD_KEY_SA,OTH_KEY_LD,&dbv)&&!DBGetContactSettingByte(NULL,MOD_KEY_SA,OTH_KEY_LI,0))
+						if(!DBGetContactSettingByte(NULL,MOD_KEY_SA,OTH_KEY_LI,0))
 						{
-							assign_modmsg(dbv.pszVal);
-							DBFreeVariant(&dbv);
+							if(!DBGetContactSetting(NULL,MOD_KEY_SA,OTH_KEY_LD,&dbv))
+							{
+								assign_modmsg(dbv.pszVal);
+								DBFreeVariant(&dbv);
+							}
+							else if(!DBGetContactSetting(NULL,MOD_KEY_SA,OTH_KEY_LM,&dbv))
+							{
+								assign_modmsg(dbv.pszVal);
+								DBFreeVariant(&dbv);
+							}
+							else
+								assign_modmsg(DEFAULT_AWAY_MSG);
 						}
-						else if(!DBGetContactSetting(NULL,MOD_KEY_SA,OTH_KEY_LM,&dbv)&&!DBGetContactSettingByte(NULL,MOD_KEY_SA,OTH_KEY_LI,0))
-						{
-							assign_modmsg(dbv.pszVal);
-							DBFreeVariant(&dbv);
-						}
-						else
-							assign_modmsg(DEFAULT_AWAY_MSG);
 					}
 				}
 					aim_set_invis(hServerConn,seqno,AIM_STATUS_AWAY,AIM_STATUS_NULL);
@@ -229,12 +240,7 @@ void snac_icbm_limitations(SNAC &snac,HANDLE hServerConn,unsigned short &seqno)/
 			aim_set_idle(hServerConn,seqno,time*60);
 			conn.instantidle=1;
 		}
-		aim_client_ready(hServerConn,seqno);
-		if(DBGetContactSettingByte(NULL, AIM_PROTOCOL_NAME, AIM_KEY_CM, 0))
-			aim_new_service_request(hServerConn,seqno,0x0018);
-		add_contacts_to_groups();//woo
-		aim_activate_list(hServerConn,seqno);
-		conn.state=1;
+		aim_request_list(hServerConn,seqno);
 	}
 }
 void snac_user_online(SNAC &snac)//family 0x0003
@@ -321,7 +327,7 @@ void snac_user_online(SNAC &snac)//family 0x0003
 						bot_user=1;
 					if(wireless)
 					{
-						strlcpy(client,"SMS",100);
+						strlcpy(client,CLIENT_SMS,100);
 						DBWriteContactSettingWord(hContact, AIM_PROTOCOL_NAME, AIM_KEY_ST, ID_STATUS_ONTHEPHONE);	
 					}
 					else if(away==0)
@@ -339,7 +345,6 @@ void snac_user_online(SNAC &snac)//family 0x0003
 					DBWriteContactSettingDword(hContact, AIM_PROTOCOL_NAME, AIM_KEY_OT, 0);//erase online time
 				}
 			}
-			
 			else if(tlv.cmp(0x000d))
 			{
 				caps_included=1;
@@ -349,7 +354,6 @@ void snac_user_online(SNAC &snac)//family 0x0003
 					if(is_oscarj_ver_cap(cap))
 					{
 						char msg[100];
-						strlcpy(msg,"Miranda IM ",sizeof(msg));
 						char a =cap[8];
 						char b =cap[9];
 						char c =cap[10];
@@ -358,13 +362,12 @@ void snac_user_online(SNAC &snac)//family 0x0003
 						char f =cap[13];
 						char g =cap[14];
 						char h =cap[15];
-						mir_snprintf(msg,sizeof(msg),"Miranda IM %d.%d.%d.%d(ICQ v0.%d.%d.%d)",a,b,c,d,f,g,h);
+						mir_snprintf(msg,sizeof(msg),CLIENT_OSCARJ,a,b,c,d,f,g,h);
 						strlcpy(client,msg,100);
 					}
 					else if(is_aimoscar_ver_cap(cap))
 					{
 						char msg[100];
-						strlcpy(msg,"Miranda IM ",sizeof(msg));
 						char a =cap[8];
 						char b =cap[9];
 						char c =cap[10];
@@ -373,32 +376,32 @@ void snac_user_online(SNAC &snac)//family 0x0003
 						char f =cap[13];
 						char g =cap[14];
 						char h =cap[15];
-						mir_snprintf(msg,sizeof(msg),"Miranda IM %d.%d.%d.%d(AimOSCAR v%d.%d.%d.%d)",a,b,c,d,e,f,g,h);
+						mir_snprintf(msg,sizeof(msg),CLIENT_AIMOSCAR,a,b,c,d,e,f,g,h);
 						strlcpy(client,msg,100);
 					}
 					else if(is_kopete_ver_cap(cap))
 					{
-						strlcpy(client,"Kopete",100);
+						strlcpy(client,CLIENT_KOPETE,100);
 					}
 					else if(is_qip_ver_cap(cap))
 					{
-						strlcpy(client,"qip",100);
+						strlcpy(client,CLIENT_QIP,100);
 					}
 					else if(is_micq_ver_cap(cap))
 					{
-						strlcpy(client,"mICQ",100);
+						strlcpy(client,CLIENT_MICQ,100);
 					}
 					else if(is_im2_ver_cap(cap))
 					{
-						strlcpy(client,"IM2",100);
+						strlcpy(client,CLIENT_IM2,100);
 					}
 					else if(is_sim_ver_cap(cap))
 					{
-						strlcpy(client,"SIM",100);
+						strlcpy(client,CLIENT_SIM,100);
 					}
 					else if(is_naim_ver_cap(cap))
 					{
-						strlcpy(client,"naim",100);
+						strlcpy(client,CLIENT_NAIM,100);
 					}
 					delete[] cap;
 				}
@@ -408,7 +411,7 @@ void snac_user_online(SNAC &snac)//family 0x0003
 				caps_included=1;
 				bool f002=0, f003=0, f004=0, f005=0, f007=0, f008=0, 
 					O101=0, O102=0, O103=0, O104=0, O105=0, O107=0, O1ff=0, 
-					l341=0, l343=0, l345=0, l346=0, l347=0, l348=0, l34b=0, 
+					l341=0, l343=0, l345=0, l346=0, l347=0, l348=0, l34b=0, l34e=0,
 					utf8=0;//O actually means 0 in this case
 				for(int i=0;i<tlv.len();i=i+2)
 				{
@@ -443,7 +446,7 @@ void snac_user_online(SNAC &snac)//family 0x0003
 						O1ff=1;
 					if(cap==0x1323)
 					{
-						strlcpy(client,"GPRS",100);
+						strlcpy(client,CLIENT_GPRS,100);
 						hiptop_user=1;
 					}
 					if(cap==0x1341)
@@ -460,25 +463,33 @@ void snac_user_online(SNAC &snac)//family 0x0003
 						l348=1;
 					if(cap==0x134b)
 						l34b=1;
+					if(cap==0x134e)
+						l34e=1;
 				}
 				if(f002&f003&f004&f005)
-					strlcpy(client,"Trillian Pro",100);
+					strlcpy(client,CLIENT_TRILLIAN_PRO,100);
 				else if(f004&f005&f007&f008||f004&f005&O104&O105)
-					strlcpy(client,"iChat",100);
+					strlcpy(client,CLIENT_ICHAT,100);
 				else if(f003&f004&f005)
-					strlcpy(client,"Trillian",100);
+					strlcpy(client,CLIENT_TRILLIAN,100);
 				else if(l343&&tlv.len()==2)
-					strlcpy(client,"AIM TOC",100);
+					strlcpy(client,CLIENT_AIMTOC,100);
 				else if(l343&&l345&&l346&&tlv.len()==6)
-					strlcpy(client,"Gaim/Adium",100);
+					strlcpy(client,CLIENT_GAIM,100);
+				else if(l343&&l345&&l34e&&tlv.len()==6)
+					strlcpy(client,CLIENT_ADIUM,100);
+				else if(l343&&l346&&l34e&&tlv.len()==6)
+					strlcpy(client,CLIENT_TERRAIM,100);
 				else if(tlv.len()==0&&DBGetContactSettingWord(hContact, AIM_PROTOCOL_NAME, AIM_KEY_ST,0)!=ID_STATUS_ONTHEPHONE)
-					strlcpy(client,"AIM Express",100);	
+					strlcpy(client,CLIENT_AIMEXPRESS,100);	
 				else if(l34b&&l341&&l343&&O1ff&&l345&&l346&&l347)
-					strlcpy(client,"AIM 5.x",100);
+					strlcpy(client,CLIENT_AIM5,100);
 				else if(l34b&&l341&&l343&&l345&l346&&l347&&l348)
-					strlcpy(client,"AIM 4.x",100);
+					strlcpy(client,CLIENT_AIM4,100);
 				else if(O1ff&&l343&&O107&&l341&&O104&&O105&&O101&&l346)
-					strlcpy(client,"AIM Triton",100);
+					strlcpy(client,CLIENT_AIM_TRITON,100);
+				else if(l346&&tlv.len()==2)
+					strlcpy(client,CLIENT_MEEBO,100);
 				if(utf8)
 					DBWriteContactSettingByte(hContact, AIM_PROTOCOL_NAME, AIM_KEY_US, 1);
 				else
@@ -591,13 +602,13 @@ void snac_error(SNAC &snac)//family 0x0003 or 0x0004
 		ForkThread((pThreadFunc)get_error,perror);
 	}
 }
-void snac_contact_list(SNAC &snac)//family 0x0013
+void snac_contact_list(SNAC &snac,HANDLE hServerConn,unsigned short &seqno)//family 0x0013
 {
 	if(snac.subcmp(0x0006))
 	{
-		conn.buddy_list_received=1;
 		for(int offset=3;offset<snac.len()-4;)//last four bytes are time change
-		{	
+		{//note: +8 if we want to account for the contact list version info that aol sends after you send client ready
+			//however we don't because we aren't sending that until after we get our contact list;-) hack baby
 			unsigned short name_length=snac.ushort(offset);
 			char* name=snac.part(offset+2,name_length);
 			unsigned short group_id=snac.ushort(offset+2+name_length);
@@ -648,18 +659,25 @@ void snac_contact_list(SNAC &snac)//family 0x0013
 					BOOL bUtfReadyDB = ServiceExists(MS_DB_CONTACT_GETSETTING_STR);
 					char group_id_string[32];
 					_itoa(group_id,group_id_string,10);
-					lowercase_name(name);
+					char* trimmed_name=trim_name(name);
 					if(bUtfReadyDB==1)
- 						DBWriteContactSettingStringUtf(NULL, ID_GROUP_KEY,group_id_string, name);
+ 						DBWriteContactSettingStringUtf(NULL, ID_GROUP_KEY,group_id_string, trimmed_name);
 					else
-						DBWriteContactSettingString(NULL, ID_GROUP_KEY,group_id_string, name);
-					DBWriteContactSettingWord(NULL, GROUP_ID_KEY,name, group_id);
+						DBWriteContactSettingString(NULL, ID_GROUP_KEY,group_id_string, trimmed_name);
+					char* lowercased_name=lowercase_name(trimmed_name);
+					DBWriteContactSettingWord(NULL, GROUP_ID_KEY,lowercased_name, group_id);
 				}
 			}
 			unsigned short tlv_size=snac.ushort(offset+8+name_length);
 			offset+=(name_length+10+tlv_size);
 			delete[] name;
 		}
+		add_contacts_to_groups();//woo
+		aim_client_ready(hServerConn,seqno);
+		if(DBGetContactSettingByte(NULL, AIM_PROTOCOL_NAME, AIM_KEY_CM, 0))
+			aim_new_service_request(hServerConn,seqno,0x0018);
+		aim_activate_list(hServerConn,seqno);
+		conn.state=1;
 	}
 }
 void snac_message_accepted(SNAC &snac)//family 0x004
