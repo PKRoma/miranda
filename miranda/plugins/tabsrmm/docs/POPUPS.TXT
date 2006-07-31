@@ -32,7 +32,7 @@ Also, tabSRMMs event notify system is not limited to popups only. It can use
 the following ways to announce incoming messages:
 
 1) popups (need popup.dll installed - I suggest using a recent version of
-   popup PLUS).
+   popup PLUS or YAPP - the latter being more stable and actively maintained.
    
 2) On Screen Display (OSD). You can either use wbOSD or the old OSD plugin 
    - both available on the miranda file listing.

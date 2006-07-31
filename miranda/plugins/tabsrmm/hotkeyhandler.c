@@ -43,7 +43,7 @@ The hotkeyhandler is a small, invisible window which cares about a few things:
 
 extern struct       ContainerWindowData *pFirstContainer;
 extern HANDLE       hMessageWindowList;
-extern struct SendJob sendJobs[NR_SENDJOBS];
+extern struct SendJob *sendJobs;
 extern MYGLOBALS    myGlobals;
 extern NEN_OPTIONS  nen_options;
 extern PSLWA        pSetLayeredWindowAttributes;
@@ -596,6 +596,7 @@ BOOL CALLBACK HotkeyHandlerDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM
             ReloadTabConfig();
             while(pContainer) {
                 SendMessage(GetDlgItem(pContainer->hwnd, IDC_MSGTABS), EM_THEMECHANGED, 0, 0);
+                BroadCastContainer(pContainer, EM_THEMECHANGED, 0, 0);
                 pContainer = pContainer->pNextContainer;
             }
             break;
@@ -623,17 +624,15 @@ BOOL CALLBACK HotkeyHandlerDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM
         {
             struct ContainerWindowData *pContainer = pFirstContainer;
 
-            //DebugTraceA("powerbroadcast or displaychanged, refreshing skin...");
-            //IMG_RefreshItems();
             while(pContainer) {
-                if(pContainer->bSkinned) {
-                    pContainer->oldSize.cx = pContainer->oldSize.cy = 0;
+                if(pContainer->bSkinned) {              // invalidate cached background DCs for skinned containers
+                    pContainer->oldDCSize.cx = pContainer->oldDCSize.cy = 0;
                     SelectObject(pContainer->cachedDC, pContainer->oldHBM);
                     DeleteObject(pContainer->cachedHBM);
                     DeleteDC(pContainer->cachedDC);
                     pContainer->cachedDC = 0;
+                    RedrawWindow(pContainer->hwnd, NULL, NULL, RDW_INVALIDATE | RDW_UPDATENOW | RDW_FRAME);
                 }
-                RedrawWindow(pContainer->hwnd, NULL, NULL, RDW_INVALIDATE | RDW_UPDATENOW | RDW_ALLCHILDREN | RDW_FRAME);
                 pContainer = pContainer->pNextContainer;
             }
             break;

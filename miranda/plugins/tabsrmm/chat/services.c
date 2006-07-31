@@ -755,7 +755,10 @@ int Service_AddEvent(WPARAM wParam, LPARAM lParam)
 	BOOL bRemoveFlag = FALSE;
 	int iRetVal;
 
-	if(gce== NULL)
+    if(g_sessionshutdown)
+        return 0;
+
+    if(gce== NULL)
 		return GC_EVENT_ERROR;
 	gcd = gce->pDest;
 	if(gcd== NULL)

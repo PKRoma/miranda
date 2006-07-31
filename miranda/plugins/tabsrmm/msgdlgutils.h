@@ -81,12 +81,17 @@ void        GetClientIcon(struct MessageWindowData *dat, HWND hwndDlg);
 void        GetMaxMessageLength(HWND hwndDlg, struct MessageWindowData *dat);
 void        RearrangeTab(HWND hwndDlg, struct MessageWindowData *dat, int iMode);
 void        GetCachedStatusMsg(HWND hwndDlg, struct MessageWindowData *dat);
+int         MY_pathToRelative(const char *pSrc, char *pOut);
+int         MY_pathToAbsolute(const char *pSrc, char *pOut);
+void        GetRealIEViewWindow(HWND hwndDlg, struct MessageWindowData *dat);
+BOOL        IsStatusEvent(int eventType);
+void        GetMyNick(HWND hwndDlg, struct MessageWindowData *dat);
 
 extern BOOL CALLBACK SelectContainerDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam);
 extern BOOL CALLBACK DlgProcContainerOptions(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam);
 
 struct RTFColorTable {
-    TCHAR *szName;
+    TCHAR szName[10];
     COLORREF clr;
     int index;
     int menuid;

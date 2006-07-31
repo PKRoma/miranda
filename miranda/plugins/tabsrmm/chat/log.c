@@ -39,7 +39,7 @@ static int logPixelSX = 0;
 static char *szDivider = "\\strike----------------------------------------------------------------------------\\strike0";
 static char CHAT_rtfFontsGlobal[OPTIONS_FONTCOUNT + 2][RTFCACHELINESIZE];
 static char *CHAT_rtffonts = 0;
-static char szMicroLFeed[50];
+static char szMicroLFeed[150];
 
 void GetIconSize(HICON hIcon, int* sizeX, int* sizeY);
 

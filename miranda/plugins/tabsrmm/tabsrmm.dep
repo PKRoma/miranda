@@ -29,10 +29,8 @@
 	".\chat\m_chat.h"\
 	".\commonheaders.h"\
 	".\functions.h"\
-	".\generic_msghandlers.h"\
 	".\IcoLib.h"\
 	".\m_avatars.h"\
-	".\m_cln_skinedit.h"\
 	".\m_fingerprint.h"\
 	".\m_flash.h"\
 	".\m_ieview.h"\
@@ -78,10 +76,8 @@
 	".\chat\m_chat.h"\
 	".\commonheaders.h"\
 	".\functions.h"\
-	".\generic_msghandlers.h"\
 	".\IcoLib.h"\
 	".\m_avatars.h"\
-	".\m_cln_skinedit.h"\
 	".\m_fingerprint.h"\
 	".\m_flash.h"\
 	".\m_ieview.h"\
@@ -127,10 +123,8 @@
 	".\chat\m_chat.h"\
 	".\commonheaders.h"\
 	".\functions.h"\
-	".\generic_msghandlers.h"\
 	".\IcoLib.h"\
 	".\m_avatars.h"\
-	".\m_cln_skinedit.h"\
 	".\m_fingerprint.h"\
 	".\m_flash.h"\
 	".\m_ieview.h"\
@@ -176,10 +170,8 @@
 	".\chat\m_chat.h"\
 	".\commonheaders.h"\
 	".\functions.h"\
-	".\generic_msghandlers.h"\
 	".\IcoLib.h"\
 	".\m_avatars.h"\
-	".\m_cln_skinedit.h"\
 	".\m_fingerprint.h"\
 	".\m_flash.h"\
 	".\m_ieview.h"\
@@ -225,10 +217,8 @@
 	".\chat\m_chat.h"\
 	".\commonheaders.h"\
 	".\functions.h"\
-	".\generic_msghandlers.h"\
 	".\IcoLib.h"\
 	".\m_avatars.h"\
-	".\m_cln_skinedit.h"\
 	".\m_fingerprint.h"\
 	".\m_flash.h"\
 	".\m_ieview.h"\
@@ -274,10 +264,8 @@
 	".\chat\m_chat.h"\
 	".\commonheaders.h"\
 	".\functions.h"\
-	".\generic_msghandlers.h"\
 	".\IcoLib.h"\
 	".\m_avatars.h"\
-	".\m_cln_skinedit.h"\
 	".\m_fingerprint.h"\
 	".\m_flash.h"\
 	".\m_ieview.h"\
@@ -323,10 +311,8 @@
 	".\chat\m_chat.h"\
 	".\commonheaders.h"\
 	".\functions.h"\
-	".\generic_msghandlers.h"\
 	".\IcoLib.h"\
 	".\m_avatars.h"\
-	".\m_cln_skinedit.h"\
 	".\m_fingerprint.h"\
 	".\m_flash.h"\
 	".\m_ieview.h"\
@@ -372,10 +358,8 @@
 	".\chat\m_chat.h"\
 	".\commonheaders.h"\
 	".\functions.h"\
-	".\generic_msghandlers.h"\
 	".\IcoLib.h"\
 	".\m_avatars.h"\
-	".\m_cln_skinedit.h"\
 	".\m_fingerprint.h"\
 	".\m_flash.h"\
 	".\m_ieview.h"\
@@ -421,10 +405,8 @@
 	".\chat\m_chat.h"\
 	".\commonheaders.h"\
 	".\functions.h"\
-	".\generic_msghandlers.h"\
 	".\IcoLib.h"\
 	".\m_avatars.h"\
-	".\m_cln_skinedit.h"\
 	".\m_fingerprint.h"\
 	".\m_flash.h"\
 	".\m_ieview.h"\
@@ -470,10 +452,8 @@
 	".\chat\m_chat.h"\
 	".\commonheaders.h"\
 	".\functions.h"\
-	".\generic_msghandlers.h"\
 	".\IcoLib.h"\
 	".\m_avatars.h"\
-	".\m_cln_skinedit.h"\
 	".\m_fingerprint.h"\
 	".\m_flash.h"\
 	".\m_ieview.h"\
@@ -519,10 +499,8 @@
 	".\chat\m_chat.h"\
 	".\commonheaders.h"\
 	".\functions.h"\
-	".\generic_msghandlers.h"\
 	".\IcoLib.h"\
 	".\m_avatars.h"\
-	".\m_cln_skinedit.h"\
 	".\m_fingerprint.h"\
 	".\m_flash.h"\
 	".\m_ieview.h"\
@@ -569,10 +547,8 @@
 	".\chat\m_chat.h"\
 	".\commonheaders.h"\
 	".\functions.h"\
-	".\generic_msghandlers.h"\
 	".\IcoLib.h"\
 	".\m_avatars.h"\
-	".\m_cln_skinedit.h"\
 	".\m_fingerprint.h"\
 	".\m_flash.h"\
 	".\m_ieview.h"\
@@ -619,10 +595,8 @@ eventpopups.c : \
 	".\chat\m_chat.h"\
 	".\commonheaders.h"\
 	".\functions.h"\
-	".\generic_msghandlers.h"\
 	".\IcoLib.h"\
 	".\m_avatars.h"\
-	".\m_cln_skinedit.h"\
 	".\m_fingerprint.h"\
 	".\m_flash.h"\
 	".\m_ieview.h"\
@@ -668,59 +642,8 @@ eventpopups.c : \
 	".\chat\m_chat.h"\
 	".\commonheaders.h"\
 	".\functions.h"\
-	".\generic_msghandlers.h"\
 	".\IcoLib.h"\
 	".\m_avatars.h"\
-	".\m_cln_skinedit.h"\
-	".\m_fingerprint.h"\
-	".\m_flash.h"\
-	".\m_ieview.h"\
-	".\m_metacontacts.h"\
-	".\m_nudge.h"\
-	".\m_popup.h"\
-	".\m_popupw.h"\
-	".\m_smileyadd.h"\
-	".\m_Snapping_windows.h"\
-	".\m_tabsrmm.h"\
-	".\msgdlgutils.h"\
-	".\msgs.h"\
-	".\nen.h"\
-	".\templates.h"\
-	
-
-.\generic_msghandlers.c : \
-	"..\..\include\m_addcontact.h"\
-	"..\..\include\m_button.h"\
-	"..\..\include\m_clc.h"\
-	"..\..\include\m_clist.h"\
-	"..\..\include\m_clui.h"\
-	"..\..\include\m_contacts.h"\
-	"..\..\include\m_database.h"\
-	"..\..\include\m_file.h"\
-	"..\..\include\m_history.h"\
-	"..\..\include\m_langpack.h"\
-	"..\..\include\m_options.h"\
-	"..\..\include\m_plugins.h"\
-	"..\..\include\m_popup.h"\
-	"..\..\include\m_protocols.h"\
-	"..\..\include\m_protomod.h"\
-	"..\..\include\m_protosvc.h"\
-	"..\..\include\m_skin.h"\
-	"..\..\include\m_system.h"\
-	"..\..\include\m_userinfo.h"\
-	"..\..\include\m_utils.h"\
-	"..\..\include\newpluginapi.h"\
-	"..\..\include\statusmodes.h"\
-	"..\..\include\win2k.h"\
-	".\chat\chat.h"\
-	".\chat\chatprototypes.h"\
-	".\chat\m_chat.h"\
-	".\commonheaders.h"\
-	".\functions.h"\
-	".\generic_msghandlers.h"\
-	".\IcoLib.h"\
-	".\m_avatars.h"\
-	".\m_cln_skinedit.h"\
 	".\m_fingerprint.h"\
 	".\m_flash.h"\
 	".\m_ieview.h"\
@@ -766,10 +689,8 @@ eventpopups.c : \
 	".\chat\m_chat.h"\
 	".\commonheaders.h"\
 	".\functions.h"\
-	".\generic_msghandlers.h"\
 	".\IcoLib.h"\
 	".\m_avatars.h"\
-	".\m_cln_skinedit.h"\
 	".\m_fingerprint.h"\
 	".\m_flash.h"\
 	".\m_ieview.h"\
@@ -783,7 +704,6 @@ eventpopups.c : \
 	".\msgdlgutils.h"\
 	".\msgs.h"\
 	".\nen.h"\
-	".\sendqueue.h"\
 	".\templates.h"\
 	
 
@@ -816,11 +736,9 @@ ImageDataObject.cpp : \
 	".\chat\m_chat.h"\
 	".\commonheaders.h"\
 	".\functions.h"\
-	".\generic_msghandlers.h"\
 	".\IcoLib.h"\
 	".\ImageDataObject.h"\
 	".\m_avatars.h"\
-	".\m_cln_skinedit.h"\
 	".\m_fingerprint.h"\
 	".\m_flash.h"\
 	".\m_ieview.h"\
@@ -866,10 +784,8 @@ msgdialog.c : \
 	".\chat\m_chat.h"\
 	".\commonheaders.h"\
 	".\functions.h"\
-	".\generic_msghandlers.h"\
 	".\IcoLib.h"\
 	".\m_avatars.h"\
-	".\m_cln_skinedit.h"\
 	".\m_fingerprint.h"\
 	".\m_flash.h"\
 	".\m_ieview.h"\
@@ -917,10 +833,8 @@ msgdlgutils.c : \
 	".\chat\m_chat.h"\
 	".\commonheaders.h"\
 	".\functions.h"\
-	".\generic_msghandlers.h"\
 	".\IcoLib.h"\
 	".\m_avatars.h"\
-	".\m_cln_skinedit.h"\
 	".\m_fingerprint.h"\
 	".\m_flash.h"\
 	".\m_ieview.h"\
@@ -966,10 +880,8 @@ msglog.c : \
 	".\chat\m_chat.h"\
 	".\commonheaders.h"\
 	".\functions.h"\
-	".\generic_msghandlers.h"\
 	".\IcoLib.h"\
 	".\m_avatars.h"\
-	".\m_cln_skinedit.h"\
 	".\m_fingerprint.h"\
 	".\m_flash.h"\
 	".\m_ieview.h"\
@@ -1016,10 +928,8 @@ msgoptions.c : \
 	".\chat\m_chat.h"\
 	".\commonheaders.h"\
 	".\functions.h"\
-	".\generic_msghandlers.h"\
 	".\IcoLib.h"\
 	".\m_avatars.h"\
-	".\m_cln_skinedit.h"\
 	".\m_fingerprint.h"\
 	".\m_flash.h"\
 	".\m_ieview.h"\
@@ -1066,10 +976,8 @@ msgs.c : \
 	".\chat\m_chat.h"\
 	".\commonheaders.h"\
 	".\functions.h"\
-	".\generic_msghandlers.h"\
 	".\IcoLib.h"\
 	".\m_avatars.h"\
-	".\m_cln_skinedit.h"\
 	".\m_fingerprint.h"\
 	".\m_flash.h"\
 	".\m_ieview.h"\
@@ -1118,10 +1026,8 @@ msgs.c : \
 	".\chat\m_chat.h"\
 	".\commonheaders.h"\
 	".\functions.h"\
-	".\generic_msghandlers.h"\
 	".\IcoLib.h"\
 	".\m_avatars.h"\
-	".\m_cln_skinedit.h"\
 	".\m_fingerprint.h"\
 	".\m_flash.h"\
 	".\m_ieview.h"\
@@ -1167,10 +1073,8 @@ sendqueue.c : \
 	".\chat\m_chat.h"\
 	".\commonheaders.h"\
 	".\functions.h"\
-	".\generic_msghandlers.h"\
 	".\IcoLib.h"\
 	".\m_avatars.h"\
-	".\m_cln_skinedit.h"\
 	".\m_fingerprint.h"\
 	".\m_flash.h"\
 	".\m_ieview.h"\
@@ -1217,10 +1121,8 @@ srmm.c : \
 	".\chat\m_chat.h"\
 	".\commonheaders.h"\
 	".\functions.h"\
-	".\generic_msghandlers.h"\
 	".\IcoLib.h"\
 	".\m_avatars.h"\
-	".\m_cln_skinedit.h"\
 	".\m_fingerprint.h"\
 	".\m_flash.h"\
 	".\m_ieview.h"\
@@ -1266,10 +1168,8 @@ srmm.c : \
 	".\chat\m_chat.h"\
 	".\commonheaders.h"\
 	".\functions.h"\
-	".\generic_msghandlers.h"\
 	".\IcoLib.h"\
 	".\m_avatars.h"\
-	".\m_cln_skinedit.h"\
 	".\m_fingerprint.h"\
 	".\m_flash.h"\
 	".\m_ieview.h"\
@@ -1315,10 +1215,8 @@ templates.c : \
 	".\chat\m_chat.h"\
 	".\commonheaders.h"\
 	".\functions.h"\
-	".\generic_msghandlers.h"\
 	".\IcoLib.h"\
 	".\m_avatars.h"\
-	".\m_cln_skinedit.h"\
 	".\m_fingerprint.h"\
 	".\m_flash.h"\
 	".\m_ieview.h"\
@@ -1364,10 +1262,8 @@ templates.c : \
 	".\chat\m_chat.h"\
 	".\commonheaders.h"\
 	".\functions.h"\
-	".\generic_msghandlers.h"\
 	".\IcoLib.h"\
 	".\m_avatars.h"\
-	".\m_cln_skinedit.h"\
 	".\m_fingerprint.h"\
 	".\m_flash.h"\
 	".\m_ieview.h"\
@@ -1413,10 +1309,8 @@ trayicon.c : \
 	".\chat\m_chat.h"\
 	".\commonheaders.h"\
 	".\functions.h"\
-	".\generic_msghandlers.h"\
 	".\IcoLib.h"\
 	".\m_avatars.h"\
-	".\m_cln_skinedit.h"\
 	".\m_fingerprint.h"\
 	".\m_flash.h"\
 	".\m_ieview.h"\
@@ -1463,10 +1357,8 @@ TSButton.c : \
 	".\chat\m_chat.h"\
 	".\commonheaders.h"\
 	".\functions.h"\
-	".\generic_msghandlers.h"\
 	".\IcoLib.h"\
 	".\m_avatars.h"\
-	".\m_cln_skinedit.h"\
 	".\m_fingerprint.h"\
 	".\m_flash.h"\
 	".\m_ieview.h"\
@@ -1512,10 +1404,8 @@ userprefs.c : \
 	".\chat\m_chat.h"\
 	".\commonheaders.h"\
 	".\functions.h"\
-	".\generic_msghandlers.h"\
 	".\IcoLib.h"\
 	".\m_avatars.h"\
-	".\m_cln_skinedit.h"\
 	".\m_fingerprint.h"\
 	".\m_flash.h"\
 	".\m_ieview.h"\
@@ -1543,5 +1433,4 @@ userprefs.c : \
 	".\res\expand.ico"\
 	".\res\unchecked.ico"\
 	".\resource.rc"\
-	".\version.rc"\
 	

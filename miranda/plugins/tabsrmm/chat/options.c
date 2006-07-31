@@ -658,7 +658,7 @@ BOOL CALLBACK DlgProcOptions1(HWND hwndDlg,UINT uMsg,WPARAM wParam,LPARAM lParam
                             LoadMsgLogBitmaps();
                             SM_BroadcastMessage(NULL, GC_SETWNDPROPS, 0, 0, TRUE);
                         }
-                        DBWriteContactSettingByte(NULL, SRMSGMOD_T, "enable_chat", IsDlgButtonChecked(hwndDlg, IDC_CHAT_ENABLE) ? 1 : 0);
+                        DBWriteContactSettingByte(NULL, SRMSGMOD_T, "enable_chat", (BYTE)(IsDlgButtonChecked(hwndDlg, IDC_CHAT_ENABLE) ? 1 : 0));
 					}
 					return TRUE;
 				}

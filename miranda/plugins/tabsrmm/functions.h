@@ -19,7 +19,7 @@ You should have received a copy of the GNU General Public License
 along with this program; if not, write to the Free Software
 Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
-$Id:$
+$Id$
 */
 
 /*
@@ -99,7 +99,7 @@ void        GetDefaultContainerTitleFormat();
 extern const WCHAR *EncodeWithNickname(const char *string, const WCHAR *szNick, UINT codePage);
 void        UpdateContainerMenu(HWND hwndDlg, struct MessageWindowData *dat);
 int         MessageWindowOpened(WPARAM wParam, LPARAM lParam);
-void        TABSRMM_FireEvent(HANDLE hContact, HWND hwnd, unsigned int type, unsigned int subType);
+int         TABSRMM_FireEvent(HANDLE hContact, HWND hwnd, unsigned int type, unsigned int subType);
 
 /*
  * skinning engine
@@ -111,7 +111,7 @@ static      void LoadSkinItems(char *file, int onStartup);
 static      void IMG_CreateItem(ImageItem *item, const char *fileName, HDC hdc);
 static      void IMG_LoadItems(char *szFileName);
 void        IMG_DeleteItems();
-void        DrawAlpha(HDC hdcwnd, PRECT rc, DWORD basecolor, BYTE alpha, DWORD basecolor2, BOOL transparent, DWORD FLG_GRADIENT, DWORD FLG_CORNER, DWORD BORDERSTYLE, ImageItem *imageItem);
+void        DrawAlpha(HDC hdcwnd, PRECT rc, DWORD basecolor, int alpha, DWORD basecolor2, BYTE transparent, BYTE FLG_GRADIENT, BYTE FLG_CORNER, DWORD BORDERSTYLE, ImageItem *imageItem);
 void        SkinDrawBG(HWND hwndClient, HWND hwnd, struct ContainerWindowData *pContainer, RECT *rcClient, HDC hdcTarget);
 void        ReloadContainerSkin(int doLoad, int onStartup);
 
@@ -125,10 +125,11 @@ void        ReloadGlobals();
 static void LoadIconTheme();
 static int  LoadFromIconLib();
 static  int SetupIconLibConfig();
+void        RTF_CTableInit();
 
 BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam);
 int         InitOptions(void);
-BOOL CALLBACK DlgProcContainer(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam);
+static      BOOL CALLBACK DlgProcContainer(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam);
 BOOL CALLBACK ErrorDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam);
 int         DbEventIsShown(struct MessageWindowData *dat, DBEVENTINFO *dbei);
 void        StreamInEvents(HWND hwndDlg,HANDLE hDbEventFirst,int count,int fAppend, DBEVENTINFO *dbei_s);

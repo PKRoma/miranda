@@ -49,10 +49,11 @@
 				Name="VCCLCompilerTool"
 				Optimization="0"
 				AdditionalIncludeDirectories="..\..\include"
+				PreprocessorDefinitions="_CRT_SECURE_NO_DEPRECATE"
 				BasicRuntimeChecks="3"
 				RuntimeLibrary="3"
 				EnableFunctionLevelLinking="true"
-				UsePrecompiledHeader="2"
+				UsePrecompiledHeader="0"
 				PrecompiledHeaderThrough="commonheaders.h"
 				AssemblerListingLocation=".\Debug/"
 				ObjectFile=".\Debug/"
@@ -74,7 +75,7 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalDependencies="comctl32.lib msimg32.lib"
+				AdditionalDependencies="comctl32.lib shlwapi.lib"
 				LinkIncremental="0"
 				SuppressStartupBanner="true"
 				DelayLoadDLLs=""
@@ -150,7 +151,7 @@
 				AdditionalIncludeDirectories="..\..\include"
 				PreprocessorDefinitions="_CRT_SECURE_NO_DEPRECATE"
 				StringPooling="true"
-				ExceptionHandling="1"
+				ExceptionHandling="0"
 				RuntimeLibrary="2"
 				BufferSecurityCheck="false"
 				EnableFunctionLevelLinking="false"
@@ -180,9 +181,11 @@
 				OutputFile="$(OutDir)\tabsrmm_unicode.dll"
 				LinkIncremental="1"
 				SuppressStartupBanner="true"
+				IgnoreAllDefaultLibraries="false"
 				DelayLoadDLLs=""
 				GenerateDebugInformation="false"
-				GenerateMapFile="false"
+				GenerateMapFile="true"
+				MapFileName="$(OutDir)\tabsrmm_unicode.map"
 				OptimizeReferences="2"
 				EnableCOMDATFolding="2"
 				OptimizeForWindows98="1"
@@ -268,6 +271,7 @@
 				ProgramDataBaseFileName=".\Release/"
 				WarningLevel="3"
 				SuppressStartupBanner="true"
+				DebugInformationFormat="3"
 			/>
 			<Tool
 				Name="VCManagedResourceCompilerTool"
@@ -288,6 +292,10 @@
 				LinkIncremental="1"
 				SuppressStartupBanner="true"
 				DelayLoadDLLs=""
+				GenerateDebugInformation="true"
+				ProgramDatabaseFile="$(OutDir)\tabsrmm.pdb"
+				GenerateMapFile="true"
+				MapFileName="$(OutDir)\tabsrmm.map"
 				OptimizeReferences="2"
 				EnableCOMDATFolding="2"
 				OptimizeForWindows98="1"
@@ -389,6 +397,7 @@
 				GenerateDebugInformation="true"
 				GenerateMapFile="true"
 				MapFileName="$(TargetDir)$(TargetName).map"
+				OptimizeForWindows98="1"
 				ImportLibrary="$(IntDir)/$(TargetName).lib"
 				TargetMachine="1"
 			/>
@@ -1137,10 +1146,6 @@
 				>
 			</File>
 			<File
-				RelativePath="m_fontservice.h"
-				>
-			</File>
-			<File
 				RelativePath="m_ieview.h"
 				>
 			</File>
@@ -1198,14 +1203,6 @@
 			</File>
 			<File
 				RelativePath="resource.h"
-				>
-			</File>
-			<File
-				RelativePath=".\chat\resource.h"
-				>
-			</File>
-			<File
-				RelativePath=".\resrc1.h"
 				>
 			</File>
 			<File
@@ -1426,6 +1423,10 @@
 				>
 			</File>
 			<File
+				RelativePath=".\res\LOGO.bmp"
+				>
+			</File>
+			<File
 				RelativePath=".\chat\Icons\message.ico"
 				>
 			</File>
@@ -1562,11 +1563,11 @@
 				>
 			</File>
 			<File
-				RelativePath=".\res\save.ico"
+				RelativePath=".\res\angeli-icons\Save.ico"
 				>
 			</File>
 			<File
-				RelativePath=".\res\angeli-icons\Save.ico"
+				RelativePath=".\res\save.ico"
 				>
 			</File>
 			<File
@@ -1635,10 +1636,6 @@
 			>
 			<File
 				RelativePath=".\docs\changelog.txt"
-				>
-			</File>
-			<File
-				RelativePath=".\hotkeyhandler.c"
 				>
 			</File>
 			<File

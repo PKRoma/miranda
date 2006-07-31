@@ -7,6 +7,9 @@
 #define IDD_TABCONFIG                   4
 #define IDD_VARIABLEHELP                5
 #define IDD_ABOUT                       7
+#define IDC_TESTVALUE                   10
+#define IDB_BITMAP1                     10
+#define IDB_LOGO                        10
 #define IDR_CONTEXT                     180
 #define IDM_PASTEFORMATTED              181
 #define IDM_CUT                         182
@@ -285,7 +288,6 @@
 #define IDC_SAVESIZEASGLOBAL            1223
 #define IDC_CREATENEW                   1224
 #define IDC_RTLMODIFY                   1224
-#define IDC_UPDATEPREVIEW2              1224
 #define IDC_RESETALLTEMPLATES           1224
 #define IDC_SENDLATER                   1226
 #define IDC_RETRY                       1227
@@ -386,6 +388,8 @@
 #define IDC_TOGGLESIDEBAR               1299
 #define IDC_CNTNOSTATUSBAR              1299
 #define IDC_AUTOCLOSELAST               1300
+#define IDC_SECTIONTREE                 1300
+#define IDC_CURRENTNAME                 1301
 #define IDC_CHECKICONDLL                1302
 #define IDC_ENABLETRAYSUPPORT           1303
 #define IDC_HEADERSHADING               1304
@@ -484,6 +488,12 @@
 #define IDC_SUPPORT                     1396
 #define IDC_CUSTOM1                     1399
 #define IDC_QHTM                        1399
+#define IDC_TSLABEL_ACTIVE              1400
+#define IDC_TSLABEL_INACTIVE            1401
+#define IDC_TITLEBOX                    1402
+#define IDC_DESC                        1404
+#define IDC_LABEL_PRIVATETHEME          1405
+#define IDC_SKIN_WIN9XWARN              1406
 #define IDC_WHITERECT                   2000
 #define IDC_TABSRMM                     2001
 #define IDC_COPYRIGHT                   2002
@@ -680,9 +690,9 @@
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
-#define _APS_NEXT_RESOURCE_VALUE        10
+#define _APS_NEXT_RESOURCE_VALUE        11
 #define _APS_NEXT_COMMAND_VALUE         40249
-#define _APS_NEXT_CONTROL_VALUE         1400
+#define _APS_NEXT_CONTROL_VALUE         1407
 #define _APS_NEXT_SYMED_VALUE           40282
 #endif
 #endif

@@ -157,59 +157,57 @@ BEGIN
     CONTROL         "Ignore sending timeouts",IDC_IGNORETIMEOUTS,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,143,244,126,12
 END
 
-IDD_CONTAINEROPTIONS DIALOGEX 0, 0, 281, 324
-STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP | WS_CAPTION | WS_SYSMENU
+IDD_CONTAINEROPTIONS DIALOGEX 0, 0, 354, 211
+STYLE DS_SETFONT | DS_3DLOOK | DS_FIXEDSYS | WS_POPUP | WS_VISIBLE | WS_CAPTION | WS_SYSMENU | WS_THICKFRAME
 CAPTION "   "
 FONT 8, "MS Shell Dlg", 400, 0, 0x1
 BEGIN
-    CONTROL         "Container settings are private",IDC_CNTPRIVATE,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,14,4,251,10
-    LTEXT           "Check if you don't want this container to use the global container options. Titlebar format and window position can always be private.",IDC_STATIC,26,14,238,18
-    GROUPBOX        "General settings",IDC_STATIC,7,32,138,48
-    GROUPBOX        "Flashing options",IDC_STATIC,152,32,122,46
-    CONTROL         "Only show tab bar when it's needed",IDC_O_NOTABS,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,14,41,129,10
-    CONTROL         "Container stays on top",IDC_O_STICKY,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,14,53,129,10
-    CONTROL         "Vertical maximize",IDC_VERTICALMAX,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,14,65,129,10
-    CONTROL         "Use default setting",IDC_O_FLASHDEFAULT,"Button",BS_AUTORADIOBUTTON | WS_GROUP,166,41,101,11
-    CONTROL         "Flash until focused",IDC_O_FLASHALWAYS,"Button",BS_AUTORADIOBUTTON,166,52,98,12
-    CONTROL         "Disable flashing",IDC_O_FLASHNEVER,"Button",BS_AUTORADIOBUTTON,166,65,100,11
-    GROUPBOX        "Popup configuration",IDC_STATIC,7,83,138,65
-    GROUPBOX        "Layout options",IDC_STATIC,151,80,123,90
-    CONTROL         "Enable popups if minimized",IDC_O_DONTREPORT,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,14,92,124,10
+    CONTROL         "",IDC_SECTIONTREE,"SysTreeView32",TVS_DISABLEDRAGDROP | TVS_SHOWSELALWAYS | TVS_NOTOOLTIPS | TVS_TRACKSELECT | TVS_FULLROWSELECT | WS_BORDER | WS_TABSTOP | 0x4000,3,28,87,163
+    LTEXT           "Test",IDC_WHITERECT,66,0,288,25,0,WS_EX_TRANSPARENT
+    CONTROL         10,IDC_LOGO,"Static",SS_BITMAP,0,0,67,25
+    CONTROL         "",IDC_STATIC,"Static",SS_ETCHEDHORZ,0,25,355,1
+    LTEXT           "",IDC_CURRENTNAME,68,13,285,9,0,WS_EX_TRANSPARENT
+    CONTROL         "Only show tab bar when it's needed",IDC_O_NOTABS,"Button",BS_AUTOCHECKBOX | NOT WS_VISIBLE | WS_TABSTOP,135,65,156,10
+    CONTROL         "Container stays on top",IDC_O_STICKY,"Button",BS_AUTOCHECKBOX | NOT WS_VISIBLE | WS_TABSTOP,135,77,156,10
+    CONTROL         "Vertical maximize",IDC_VERTICALMAX,"Button",BS_AUTOCHECKBOX | NOT WS_VISIBLE | WS_TABSTOP,135,88,156,10
+    CONTROL         "Use default setting",IDC_O_FLASHDEFAULT,"Button",BS_AUTORADIOBUTTON | WS_GROUP,135,64,101,11
+    CONTROL         "Flash until focused",IDC_O_FLASHALWAYS,"Button",BS_AUTORADIOBUTTON,135,75,98,12
+    CONTROL         "Disable flashing",IDC_O_FLASHNEVER,"Button",BS_AUTORADIOBUTTON,135,88,100,11
+    CONTROL         "Enable popups if minimized",IDC_O_DONTREPORT,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,135,65,156,10
     CONTROL         "Enable popups if unfocused",IDC_DONTREPORTUNFOCUSED2,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,14,103,124,10
-    CONTROL         "Always enable popups for",IDC_ALWAYSPOPUPSINACTIVE,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,14,114,124,10
-    LTEXT           "inactive tabs",IDC_STATIC,26,125,74,8
-    CONTROL         "Sync sounds with popup mode",IDC_SYNCSOUNDS,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,14,134,124,10
-    CONTROL         "Hide the status bar",IDC_CNTNOSTATUSBAR,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,156,92,111,10
-    CONTROL         "Hide the menu bar",IDC_HIDEMENUBAR,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,156,104,111,10
-    CONTROL         "Tabs at the bottom",IDC_TABSATBOTTOM,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,156,116,111,10
-    CONTROL         "UIN in Status Bar",IDC_UINSTATUSBAR,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,156,128,113,10
-    CONTROL         "Hide the tool bar",IDC_HIDETOOLBAR,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,156,140,111,10
-    CONTROL         "Show the info panel",IDC_INFOPANEL,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,156,152,105,11
-    GROUPBOX        "Titlebar options",IDC_STATIC,7,149,138,71
-    CONTROL         "Hide title bar",IDC_O_HIDETITLE,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,14,161,111,10
-    CONTROL         "Use static container Icon",IDC_STATICICON,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,14,173,121,10
-    CONTROL         "Use private title format",IDC_USEPRIVATETITLE,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,14,185,115,9
-    EDITTEXT        IDC_TITLEFORMAT,14,198,123,13,ES_AUTOHSCROLL
-    GROUPBOX        "Container size and position",IDC_STATIC,151,171,123,48
-    CONTROL         "Use global",IDC_USEGLOBALSIZE,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,158,184,109,9
-    PUSHBUTTON      "Save current as global",IDC_SAVESIZEASGLOBAL,158,199,109,14
-    GROUPBOX        "Message window theme",IDC_STATIC,7,224,267,34
-    EDITTEXT        IDC_THEME,14,235,123,13,ES_AUTOHSCROLL
-    PUSHBUTTON      "...",IDC_SELECTTHEME,147,235,27,13
-    LTEXT           "Leave this field empty to use the global theme.",IDC_STATIC,181,231,90,21
-    GROUPBOX        "Container transparency (not available in skinned mode)",IDC_STATIC,7,259,267,36
-    CONTROL         "Enable transparency",IDC_TRANSPARENCY,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,14,270,101,11
-    LTEXT           "active",IDC_STATIC,125,271,26,11
-    CONTROL         "",IDC_TRANSPARENCY_ACTIVE,"msctls_trackbar32",TBS_BOTH | WS_TABSTOP,153,267,95,11
-    LTEXT           "Statisch",IDC_TLABEL_ACTIVE,248,271,19,9
-    LTEXT           "inactive",IDC_STATIC,125,284,28,9
-    CONTROL         "",IDC_TRANSPARENCY_INACTIVE,"msctls_trackbar32",TBS_BOTH | WS_TABSTOP,153,280,95,11
-    LTEXT           "Statisch",IDC_TLABEL_INACTIVE,248,284,19,9
-    DEFPUSHBUTTON   "OK",IDOK,114,303,50,14
-    PUSHBUTTON      "Cancel",IDCANCEL,169,303,50,14
-    PUSHBUTTON      "Apply",IDC_APPLY,225,303,50,14,WS_DISABLED
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,135,77,156,10
+    CONTROL         "Show popups for inactive tabs in active containers",IDC_ALWAYSPOPUPSINACTIVE,
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,135,89,184,10
+    CONTROL         "Sync sounds with popup mode",IDC_SYNCSOUNDS,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,135,101,156,10
+    CONTROL         "Hide the status bar",IDC_CNTNOSTATUSBAR,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,135,65,156,10
+    CONTROL         "Hide the menu bar",IDC_HIDEMENUBAR,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,135,77,156,10
+    CONTROL         "Tabs at the bottom",IDC_TABSATBOTTOM,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,135,89,156,10
+    CONTROL         "UIN in Status Bar",IDC_UINSTATUSBAR,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,135,101,156,10
+    CONTROL         "Hide the tool bar",IDC_HIDETOOLBAR,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,135,113,156,10
+    CONTROL         "Show the info panel",IDC_INFOPANEL,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,135,125,156,10
+    CONTROL         "Hide title bar",IDC_O_HIDETITLE,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,135,66,111,10
+    CONTROL         "Use static container Icon",IDC_STATICICON,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,135,78,121,10
+    CONTROL         "Use private title format",IDC_USEPRIVATETITLE,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,135,90,115,9
+    EDITTEXT        IDC_TITLEFORMAT,135,103,123,13,ES_AUTOHSCROLL
+    EDITTEXT        IDC_THEME,135,64,123,13,ES_AUTOHSCROLL
+    PUSHBUTTON      "...",IDC_SELECTTHEME,263,64,27,13
+    CONTROL         "Use global container size and position",IDC_USEGLOBALSIZE,
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,135,129,139,9
+    PUSHBUTTON      "Save current as global",IDC_SAVESIZEASGLOBAL,134,140,109,14
+    CONTROL         "Enable transparency",IDC_TRANSPARENCY,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,145,75,143,11
+    LTEXT           "active",IDC_TSLABEL_ACTIVE,146,94,26,11
+    CONTROL         "",IDC_TRANSPARENCY_ACTIVE,"msctls_trackbar32",TBS_BOTH | WS_TABSTOP,174,87,95,20
+    LTEXT           "Statisch",IDC_TLABEL_ACTIVE,269,94,19,9
+    LTEXT           "inactive",IDC_TSLABEL_INACTIVE,146,112,28,9
+    CONTROL         "",IDC_TRANSPARENCY_INACTIVE,"msctls_trackbar32",TBS_BOTH | WS_TABSTOP,174,105,95,19
+    LTEXT           "Statisch",IDC_TLABEL_INACTIVE,269,112,19,9
+    CONTROL         "Container settings are private",IDC_CNTPRIVATE,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,96,165,158,10
+    LTEXT           "Check if you don't want this container to use the global container options. Titlebar format and window position can always be private.",IDC_STATIC,105,174,238,18
+    DEFPUSHBUTTON   "OK",IDOK,194,195,50,14
+    PUSHBUTTON      "Cancel",IDCANCEL,249,195,50,14
+    PUSHBUTTON      "Apply",IDC_APPLY,301,195,50,14,WS_DISABLED
+    GROUPBOX        "Static",IDC_TITLEBOX,95,27,254,136
+    EDITTEXT        IDC_DESC,99,37,246,26,ES_MULTILINE | ES_READONLY | ES_WANTRETURN | NOT WS_BORDER | NOT WS_TABSTOP
 END
 
 IDD_OPT_MSGDLG DIALOGEX 0, 0, 303, 226
@@ -365,8 +363,6 @@ BEGIN
     EDITTEXT        IDC_FLASHINTERVAL,111,112,34,12,ES_AUTOHSCROLL
     CONTROL         "",IDC_FLASHINTERVALSPIN,"msctls_updown32",UDS_SETBUDDYINT | UDS_ALIGNRIGHT | UDS_AUTOBUDDY | UDS_ARROWKEYS,149,115,10,10
     LTEXT           "milliseconds",IDC_STATIC,166,113,81,12
-    GROUPBOX        "Global container options",IDC_STATIC,3,132,300,63
-    CONTROL         "Use the snapping windows plugin",IDC_USESNAPPING,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,142,157,11
     GROUPBOX        "Default window title format",IDC_STATIC,3,196,300,28
     EDITTEXT        IDC_DEFAULTTITLEFORMAT,10,207,274,14,ES_AUTOHSCROLL
 END
@@ -404,7 +400,7 @@ STYLE DS_SETFONT | DS_FIXEDSYS | DS_CONTROL | WS_CHILD
 FONT 8, "MS Shell Dlg", 400, 0, 0x1
 BEGIN
     GROUPBOX        "Tab label colors",IDC_STATIC,6,10,144,80
-    CONTROL         "Use windows colors",IDC_LABELUSEWINCOLORS,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,13,19,136,10
+    CONTROL         "Use windows colors",IDC_LABELUSEWINCOLORS,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,13,19,133,10
     LTEXT           "Normal",IDC_STATIC,14,31,77,13
     LTEXT           "Selected",IDC_STATIC,14,47,77,13
     LTEXT           "Unread",IDC_STATIC,14,60,77,13
@@ -482,7 +478,7 @@ BEGIN
     DEFPUSHBUTTON   "OK",IDOK,168,123,55,14
     LTEXT           "tabSRMM",IDC_TABSRMM,5,7,150,15
     CTEXT           "Copyright © 2004-2005 by the Miranda IM project. More  \ndetailed copyright information can be found in the included README file.\n\nThis software is distributed and licensed under the terms of the GNU General Public License V2 or any later version.",IDC_COPYRIGHT,5,39,217,47
-    ICON            0,IDC_LOGO,201,2,20,20
+    CONTROL         10,IDC_LOGO,"Static",SS_BITMAP,160,2,67,25
     LTEXT           "Version",IDC_VERSION,5,19,150,15
     CTEXT           "build time",IDC_BUILDTIME,37,105,150,11
     CONTROL         "",IDC_STATIC,"Static",SS_ETCHEDHORZ,0,117,228,1
@@ -513,6 +509,7 @@ BEGIN
                     "Button",BS_AUTOCHECKBOX | WS_TABSTOP,11,89,281,11
     CONTROL         "Load templates provided by skin (use with care, will overwrite your templates)",IDC_SKIN_LOADTEMPLATES,
                     "Button",BS_AUTOCHECKBOX | WS_TABSTOP,11,100,281,11
+    CTEXT           "Skinning is only available when running under Windows 2000 or later",IDC_SKIN_WIN9XWARN,17,39,270,20,NOT WS_VISIBLE
 END
 
 
@@ -545,9 +542,8 @@ BEGIN
 
     IDD_CONTAINEROPTIONS, DIALOG
     BEGIN
-        LEFTMARGIN, 7
-        RIGHTMARGIN, 274
-        BOTTOMMARGIN, 317
+        LEFTMARGIN, 1
+        BOTTOMMARGIN, 204
     END
 
     IDD_TEMPLATEEDIT, DIALOG
@@ -705,7 +701,7 @@ BEGIN
     BEGIN
         POPUP "IEView Setting"
         BEGIN
-            MENUITEM "Use global setting",       ID_IEVIEWSETTING_USEGLOBAL
+            MENUITEM "Use global setting",          ID_IEVIEWSETTING_USEGLOBAL
             MENUITEM "Force IEView",                ID_IEVIEWSETTING_FORCEIEVIEW
             MENUITEM "Force Default Message Log",   ID_IEVIEWSETTING_FORCEDEFAULTMESSAGELOG
         END
@@ -965,6 +961,25 @@ END
 #endif    // APSTUDIO_INVOKED
 
 #endif    // English (U.S.) resources
+/////////////////////////////////////////////////////////////////////////////
+
+
+/////////////////////////////////////////////////////////////////////////////
+// German (Austria) resources
+
+#if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_DEA)
+#ifdef _WIN32
+LANGUAGE LANG_GERMAN, SUBLANG_GERMAN_AUSTRIAN
+#pragma code_page(1252)
+#endif //_WIN32
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Bitmap
+//
+
+IDB_LOGO                BITMAP                  "res\\LOGO.bmp"
+#endif    // German (Austria) resources
 /////////////////////////////////////////////////////////////////////////////
 
 

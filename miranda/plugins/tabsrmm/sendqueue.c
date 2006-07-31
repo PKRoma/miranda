@@ -12,7 +12,7 @@
 extern      MYGLOBALS myGlobals;
 extern      TCHAR *pszIDCSAVE_save, *pszIDCSAVE_close;
 extern      const UINT errorControls[5], infoPanelControls[8];
-extern      struct SendJob sendJobs[NR_SENDJOBS];
+extern      struct SendJob *sendJobs;
 
 static char *pss_msg = "/SendMsg";
 static char *pss_msgw = "/SendMsgW";

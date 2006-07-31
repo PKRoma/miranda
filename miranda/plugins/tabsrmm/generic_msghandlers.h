@@ -30,7 +30,7 @@ $Id$
  * prototypes from generic_msghandlers.c
 */
 
-void DM_SetDBButtonStates(HANDLE hPassedContact, HWND hwndContainer);
+void DM_SetDBButtonStates(HWND hwndChild, struct MessageWindowData *dat);
 int BTN_GetStockItem(ButtonItem *item, const char *szName);
 HWND DM_CreateClist(HWND hwndParent, struct MessageWindowData *dat);
 
@@ -40,6 +40,5 @@ LRESULT DM_SaveLocale(HWND hwndDlg, struct MessageWindowData *dat, WPARAM wParam
 LRESULT DM_UpdateLastMessage(HWND hwndDlg, struct MessageWindowData *dat);
 LRESULT DM_RecalcPictureSize(HWND hwndDlg, struct MessageWindowData *dat);
 LRESULT DM_WMCopyHandler(HWND hwnd, WNDPROC oldWndProc, WPARAM wParam, LPARAM lParam);
-
-
-
+LRESULT DM_MouseWheelHandler(HWND hwnd, HWND hwndParent, struct MessageWindowData *mwdat, WPARAM wParam, LPARAM lParam);
+LRESULT DM_ThemeChanged(HWND hwnd, struct MessageWindowData *dat);

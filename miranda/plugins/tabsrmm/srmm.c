@@ -51,7 +51,7 @@ PLUGININFO pluginInfo = {
         "tabSRMsg",
     #endif    
 #endif
-    PLUGIN_MAKE_VERSION(0, 9, 9, 212),
+    PLUGIN_MAKE_VERSION(0, 1, 0, 6),
     "Chat module for instant messaging and group chat, offering a tabbed interface and many advanced features.",
     "The Miranda developers team",
     "silvercircle@gmail.com",
@@ -168,7 +168,6 @@ int _DebugPopup(HANDLE hContact, const char *fmt, ...)
 
 BOOL CALLBACK DlgProcAbout(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam)
 {
-    HICON hIcon;
     COLORREF url_visited = RGB(128, 0, 128);
     COLORREF url_unvisited = RGB(0, 0, 255);
     
@@ -210,10 +209,10 @@ BOOL CALLBACK DlgProcAbout(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam)
 				mir_snprintf(str,sizeof(str),Translate("Built %s %s"),__DATE__,__TIME__);
 				SetDlgItemTextA(hwndDlg,IDC_BUILDTIME,str);
 			}
-            hIcon = LoadIcon(GetModuleHandleA("miranda32.exe"), MAKEINTRESOURCE(102));
-            SendDlgItemMessage(hwndDlg, IDC_LOGO, STM_SETICON, (WPARAM)hIcon, 0);
+            //hIcon = LoadIcon(GetModuleHandleA("miranda32.exe"), MAKEINTRESOURCE(102));
+            //SendDlgItemMessage(hwndDlg, IDC_LOGO, STM_SETICON, (WPARAM)hIcon, 0);
 			SendMessage(hwndDlg, WM_SETICON, ICON_BIG, (LPARAM)myGlobals.g_iconContainer);
-            DestroyIcon(hIcon);
+            //DestroyIcon(hIcon);
 			return TRUE;
 		case WM_COMMAND:
 			switch(LOWORD(wParam))

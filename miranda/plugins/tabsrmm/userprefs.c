@@ -137,7 +137,7 @@ BOOL CALLBACK DlgProcUserPrefs(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPa
                 SendDlgItemMessage(hwndDlg, IDC_CODEPAGES, CB_SETCURSEL, (WPARAM)0, 0);
             else {
                 for(i = 0; i < SendDlgItemMessage(hwndDlg, IDC_CODEPAGES, CB_GETCOUNT, 0, 0); i++) {
-                    if(SendDlgItemMessage(hwndDlg, IDC_CODEPAGES, CB_GETITEMDATA, (WPARAM)i, 0) == sCodePage)
+                    if(SendDlgItemMessage(hwndDlg, IDC_CODEPAGES, CB_GETITEMDATA, (WPARAM)i, 0) == (LRESULT)sCodePage)
                         SendDlgItemMessage(hwndDlg, IDC_CODEPAGES, CB_SETCURSEL, (WPARAM)i, 0);
                 }
             }
@@ -217,7 +217,7 @@ BOOL CALLBACK DlgProcUserPrefs(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPa
                 {
                     struct MessageWindowData *dat = 0;
                     int iIndex = CB_ERR;
-                    LRESULT newCodePage;
+                    DWORD newCodePage;
                     int offset;
                     HWND hWnd = WindowList_Find(hMessageWindowList, hContact);
                     DWORD sCodePage = DBGetContactSettingDword(hContact, SRMSGMOD_T, "ANSIcodepage", 0);
@@ -228,7 +228,7 @@ BOOL CALLBACK DlgProcUserPrefs(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPa
                         dat = (struct MessageWindowData *)GetWindowLong(hWnd, GWL_USERDATA);
 
                     if(ServiceExists(MS_IEVIEW_EVENT) && (iIndex = SendDlgItemMessage(hwndDlg, IDC_IEVIEWMODE, CB_GETCURSEL, 0, 0)) != CB_ERR) {
-                        DBWriteContactSettingByte(hContact, SRMSGMOD_T, "ieview", iIndex == 2 ? -1 : iIndex);
+                        DBWriteContactSettingByte(hContact, SRMSGMOD_T, "ieview", (BYTE)(iIndex == 2 ? -1 : iIndex));
                         if(hWnd && dat) {
                             SwitchMessageLog(hWnd, dat, GetIEViewMode(hWnd, dat));
                         }
@@ -237,7 +237,7 @@ BOOL CALLBACK DlgProcUserPrefs(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPa
                         if(iIndex == 0)
                             DBDeleteContactSetting(hContact, SRMSGMOD_T, "RTL");
                         else
-                            DBWriteContactSettingByte(hContact, SRMSGMOD_T, "RTL", iIndex == 1 ? 0 : 1);
+                            DBWriteContactSettingByte(hContact, SRMSGMOD_T, "RTL", (BYTE)(iIndex == 1 ? 0 : 1));
                     }
                     if(IsDlgButtonChecked(hwndDlg, IDC_LOGISGLOBAL)) {
                         DBWriteContactSettingByte(hContact, SRMSGMOD_T, "mwoverride", 0);
@@ -260,7 +260,7 @@ BOOL CALLBACK DlgProcUserPrefs(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPa
                     }
 #if defined(_UNICODE)
                     iIndex = SendDlgItemMessage(hwndDlg, IDC_CODEPAGES, CB_GETCURSEL, 0, 0);
-                    if((newCodePage = SendDlgItemMessage(hwndDlg, IDC_CODEPAGES, CB_GETITEMDATA, (WPARAM)iIndex, 0)) != sCodePage) {
+                    if((newCodePage = (DWORD)SendDlgItemMessage(hwndDlg, IDC_CODEPAGES, CB_GETITEMDATA, (WPARAM)iIndex, 0)) != sCodePage) {
                         DBWriteContactSettingDword(hContact, SRMSGMOD_T, "ANSIcodepage", (DWORD)newCodePage);
                         if(hWnd && dat) {
                             dat->codePage = newCodePage;
@@ -269,7 +269,7 @@ BOOL CALLBACK DlgProcUserPrefs(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPa
                         }
                     }
                     if((IsDlgButtonChecked(hwndDlg, IDC_FORCEANSI) ? 1 : 0) != DBGetContactSettingByte(hContact, SRMSGMOD_T, "forceansi", 0)) {
-                        DBWriteContactSettingByte(hContact, SRMSGMOD_T, "forceansi", IsDlgButtonChecked(hwndDlg, IDC_FORCEANSI) ? 1 : 0);
+                        DBWriteContactSettingByte(hContact, SRMSGMOD_T, "forceansi", (BYTE)(IsDlgButtonChecked(hwndDlg, IDC_FORCEANSI) ? 1 : 0));
                         if(hWnd && dat)
                             dat->sendMode = IsDlgButtonChecked(hwndDlg, IDC_FORCEANSI) ? dat->sendMode | SMODE_FORCEANSI : dat->sendMode & ~SMODE_FORCEANSI;
                     }
@@ -283,13 +283,13 @@ BOOL CALLBACK DlgProcUserPrefs(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPa
                     else
                         DeleteMenu(myGlobals.g_hMenuFavorites, (UINT_PTR)hContact, MF_BYCOMMAND);
 
-                    DBWriteContactSettingWord(hContact, SRMSGMOD_T, "isFavorite", IsDlgButtonChecked(hwndDlg, IDC_ISFAVORITE) ? 1 : 0);
-                    DBWriteContactSettingByte(hContact, SRMSGMOD_T, "splitoverride", IsDlgButtonChecked(hwndDlg, IDC_PRIVATESPLITTER) ? 1 : 0);
+                    DBWriteContactSettingWord(hContact, SRMSGMOD_T, "isFavorite", (WORD)(IsDlgButtonChecked(hwndDlg, IDC_ISFAVORITE) ? 1 : 0));
+                    DBWriteContactSettingByte(hContact, SRMSGMOD_T, "splitoverride", (BYTE)(IsDlgButtonChecked(hwndDlg, IDC_PRIVATESPLITTER) ? 1 : 0));
 
-                    DBWriteContactSettingByte(hContact, TEMPLATES_MODULE, "enabled", IsDlgButtonChecked(hwndDlg, IDC_TEMPLOVERRIDE));
-                    DBWriteContactSettingByte(hContact, RTLTEMPLATES_MODULE, "enabled", IsDlgButtonChecked(hwndDlg, IDC_RTLTEMPLOVERRIDE));
+                    DBWriteContactSettingByte(hContact, TEMPLATES_MODULE, "enabled", (BYTE)(IsDlgButtonChecked(hwndDlg, IDC_TEMPLOVERRIDE)));
+                    DBWriteContactSettingByte(hContact, RTLTEMPLATES_MODULE, "enabled", (BYTE)(IsDlgButtonChecked(hwndDlg, IDC_RTLTEMPLOVERRIDE)));
 
-                    DBWriteContactSettingByte(hContact, SRMSGMOD_T, "private_bg", IsDlgButtonChecked(hwndDlg, IDC_USEPRIVATEIMAGE));
+                    DBWriteContactSettingByte(hContact, SRMSGMOD_T, "private_bg", (BYTE)(IsDlgButtonChecked(hwndDlg, IDC_USEPRIVATEIMAGE)));
                     if(IsDlgButtonChecked(hwndDlg, IDC_USEPRIVATEIMAGE)) {
                         char szFilename[MAX_PATH];
                         GetDlgItemTextA(hwndDlg, IDC_BACKGROUNDIMAGE, szFilename, MAX_PATH - 1);
@@ -311,7 +311,7 @@ BOOL CALLBACK DlgProcUserPrefs(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPa
 
 					bInfoPanel = (BYTE)SendDlgItemMessage(hwndDlg, IDC_INFOPANEL, CB_GETCURSEL, 0, 0);
 					if(bInfoPanel != bOldInfoPanel) {
-						DBWriteContactSettingByte(hContact, SRMSGMOD_T, "infopanel", bInfoPanel == 0 ? 0 : (bInfoPanel == 1 ? 1 : -1));
+						DBWriteContactSettingByte(hContact, SRMSGMOD_T, "infopanel", (BYTE)(bInfoPanel == 0 ? 0 : (bInfoPanel == 1 ? 1 : -1)));
 						if(hWnd && dat)
 							SendMessage(hWnd, DM_SETINFOPANEL, 0, 0);
 					}
@@ -345,3 +345,4 @@ BOOL CALLBACK DlgProcUserPrefs(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPa
     }
     return FALSE;
 }
+

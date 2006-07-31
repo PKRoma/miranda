@@ -38,8 +38,8 @@ extern PSLWA pSetLayeredWindowAttributes;
 extern StatusItems_t StatusItems[];
 extern BOOL g_framelessSkinmode;
 extern BOOL g_skinnedContainers;
+extern ButtonSet g_ButtonSet;
 
-extern BOOL (WINAPI *MyEnableThemeDialogTexture)(HANDLE, DWORD);
 static LRESULT CALLBACK TabControlSubclassProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam);
 extern LRESULT CALLBACK StatusBarSubclassProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam);
 extern void GetIconSize(HICON hIcon, int* sizeX, int* sizeY);
@@ -49,17 +49,15 @@ HMODULE hUxTheme = 0;
 
 // function pointers, use typedefs for casting to shut up the compiler when using GetProcAddress()
 
-typedef BOOL (WINAPI *PITA)();
-typedef HANDLE (WINAPI *POTD)(HWND, LPCWSTR);
-typedef UINT (WINAPI *PDTB)(HANDLE, HDC, int, int, RECT *, RECT *);
-typedef UINT (WINAPI *PCTD)(HANDLE);
-typedef UINT (WINAPI *PDTT)(HANDLE, HDC, int, int, LPCWSTR, int, DWORD, DWORD, RECT *);
-
 PITA pfnIsThemeActive = 0;
 POTD pfnOpenThemeData = 0;
 PDTB pfnDrawThemeBackground = 0;
 PCTD pfnCloseThemeData = 0;
 PDTT pfnDrawThemeText = 0;
+PITBPT pfnIsThemeBackgroundPartiallyTransparent = 0;
+PDTPB  pfnDrawThemeParentBackground = 0;
+PGTBCR pfnGetThemeBackgroundContentRect = 0;
+BOOL (WINAPI *MyEnableThemeDialogTexture)(HANDLE, DWORD) = 0;
 
 #define FIXED_TAB_SIZE 100                  // default value for fixed width tabs
 
@@ -70,6 +68,9 @@ PDTT pfnDrawThemeText = 0;
 
 int InitVSApi()
 {
+    if(!IsWinVerXPPlus())
+        return 0;
+
     if((hUxTheme = LoadLibraryA("uxtheme.dll")) == 0)
         return 0;
 
@@ -78,9 +79,14 @@ int InitVSApi()
     pfnDrawThemeBackground = (PDTB)GetProcAddress(hUxTheme, "DrawThemeBackground");
     pfnCloseThemeData = (PCTD)GetProcAddress(hUxTheme, "CloseThemeData");
     pfnDrawThemeText = (PDTT)GetProcAddress(hUxTheme, "DrawThemeText");
-    
+    pfnIsThemeBackgroundPartiallyTransparent = (PITBPT)GetProcAddress(hUxTheme, "IsThemeBackgroundPartiallyTransparent");
+    pfnDrawThemeParentBackground = (PDTPB)GetProcAddress(hUxTheme, "DrawThemeParentBackground");
+    pfnGetThemeBackgroundContentRect = (PGTBCR)GetProcAddress(hUxTheme, "GetThemeBackgroundContentRect");
+
     MyEnableThemeDialogTexture = (BOOL (WINAPI *)(HANDLE, DWORD))GetProcAddress(hUxTheme, "EnableThemeDialogTexture");
-    if(pfnIsThemeActive != 0 && pfnOpenThemeData != 0 && pfnDrawThemeBackground != 0 && pfnCloseThemeData != 0 && pfnDrawThemeText != 0) {
+    if(pfnIsThemeActive != 0 && pfnOpenThemeData != 0 && pfnDrawThemeBackground != 0 && pfnCloseThemeData != 0 
+       && pfnDrawThemeText != 0 && pfnIsThemeBackgroundPartiallyTransparent != 0 && pfnDrawThemeParentBackground != 0
+       && pfnGetThemeBackgroundContentRect != 0) {
         return 1;
     }
     return 0;
@@ -123,7 +129,7 @@ int RegisterTabCtrlClass(void)
     wce.hCursor        = LoadCursor(NULL, IDC_ARROW);
     wce.cbWndExtra     = 4;
     wce.hbrBackground  = 0;
-    wce.style          = CS_GLOBALCLASS | CS_DBLCLKS;
+    wce.style          = CS_GLOBALCLASS | CS_DBLCLKS | CS_PARENTDC;
     RegisterClassEx(&wce);
 	return 0;
 }
@@ -541,8 +547,8 @@ b_nonskinned:
                 */
                 if(!tabdat->pContainer->bSkinned && !tabdat->m_moderntabs)
                     FillRect(dc, rcItem, GetSysColorBrush(COLOR_3DFACE));
-                else if(tabdat->pContainer->bSkinned)
-                    SkinDrawBG(tabdat->hwnd, tabdat->pContainer->hwnd, tabdat->pContainer, rcItem, dc);
+                //else if(tabdat->pContainer->bSkinned)
+                //    SkinDrawBG(tabdat->hwnd, tabdat->pContainer->hwnd, tabdat->pContainer, rcItem, dc);
                 rcItem->bottom +=2;
             }
             else {
@@ -555,8 +561,8 @@ b_nonskinned:
                 */
                 if(!tabdat->pContainer->bSkinned && !tabdat->m_moderntabs)
                     FillRect(dc, rcItem, GetSysColorBrush(COLOR_3DFACE));
-                else if(tabdat->pContainer->bSkinned)
-                    SkinDrawBG(tabdat->hwnd, tabdat->pContainer->hwnd, tabdat->pContainer, rcItem, dc);
+                //else if(tabdat->pContainer->bSkinned)
+                //    SkinDrawBG(tabdat->hwnd, tabdat->pContainer->hwnd, tabdat->pContainer, rcItem, dc);
                 rcItem->bottom--;
                 rcItem->top -=2;
             }
@@ -1722,9 +1728,9 @@ BOOL CALLBACK DlgProcTabConfig(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPa
                                 DBWriteContactSettingDword(NULL, SRMSGMOD_T, g_skinnedContainers ? tabcolors[i].szSkinnedKey : tabcolors[i].szKey, clr);
                                 i++;
                             }
-                            DBWriteContactSettingByte(NULL, SRMSGMOD_T, "y-pad", GetDlgItemInt(hwndDlg, IDC_TABPADDING, NULL, FALSE));
-                            DBWriteContactSettingByte(NULL, SRMSGMOD_T, "x-pad", GetDlgItemInt(hwndDlg, IDC_HTABPADDING, NULL, FALSE));
-                            DBWriteContactSettingByte(NULL, SRMSGMOD_T, g_skinnedContainers ? "S_tborder" : "tborder", (BYTE) GetDlgItemInt(hwndDlg, IDC_TABBORDER, &translated, FALSE));
+                            DBWriteContactSettingByte(NULL, SRMSGMOD_T, "y-pad", (BYTE)(GetDlgItemInt(hwndDlg, IDC_TABPADDING, NULL, FALSE)));
+                            DBWriteContactSettingByte(NULL, SRMSGMOD_T, "x-pad", (BYTE)(GetDlgItemInt(hwndDlg, IDC_HTABPADDING, NULL, FALSE)));
+                            DBWriteContactSettingByte(NULL, SRMSGMOD_T, "tborder", (BYTE) GetDlgItemInt(hwndDlg, IDC_TABBORDER, &translated, FALSE));
                             DBWriteContactSettingByte(NULL, SRMSGMOD_T, g_skinnedContainers ? "S_tborder_outer_left" : "tborder_outer_left", (BYTE) GetDlgItemInt(hwndDlg, IDC_TABBORDEROUTER, &translated, FALSE));
                             DBWriteContactSettingByte(NULL, SRMSGMOD_T, g_skinnedContainers ? "S_tborder_outer_right" : "tborder_outer_right", (BYTE) GetDlgItemInt(hwndDlg, IDC_TABBORDEROUTERRIGHT, &translated, FALSE));
                             DBWriteContactSettingByte(NULL, SRMSGMOD_T, g_skinnedContainers ? "S_tborder_outer_top" : "tborder_outer_top", (BYTE) GetDlgItemInt(hwndDlg, IDC_TABBORDEROUTERTOP, &translated, FALSE));
@@ -1734,7 +1740,7 @@ BOOL CALLBACK DlgProcTabConfig(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPa
                             fixedWidth = GetDlgItemInt(hwndDlg, IDC_TABWIDTH, &translated, FALSE);
                             fixedWidth = (fixedWidth < 60 ? 60 : fixedWidth);
                             DBWriteContactSettingDword(NULL, SRMSGMOD_T, "fixedwidth", fixedWidth);
-                            DBWriteContactSettingByte(NULL, SRMSGMOD_T, "moderntabs", IsDlgButtonChecked(hwndDlg, IDC_STYLEDTABS) ? 1 : 0);
+                            DBWriteContactSettingByte(NULL, SRMSGMOD_T, "moderntabs", (BYTE)(IsDlgButtonChecked(hwndDlg, IDC_STYLEDTABS) ? 1 : 0));
                             FreeTabConfig();
                             if((COLORREF)SendDlgItemMessage(hwndDlg, IDC_LIGHTSHADOW, CPM_GETCOLOUR, 0, 0) == RGB(255, 0, 255))
                                 DBDeleteContactSetting(NULL, SRMSGMOD_T, "tab_lightshadow");

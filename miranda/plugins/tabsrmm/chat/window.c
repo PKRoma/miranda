@@ -26,9 +26,7 @@ extern COLORREF g_ContainerColorKey;
 extern StatusItems_t StatusItems[];
 extern LRESULT CALLBACK SplitterSubclassProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam);
 extern NEN_OPTIONS nen_options;
-
-extern HMODULE  themeAPIHandle;
-extern HANDLE   (WINAPI *MyOpenThemeData)(HWND,LPCWSTR);
+extern HRESULT  (WINAPI *MyCloseThemeData)(HANDLE);
 
 extern MYGLOBALS	myGlobals;
 extern HBRUSH		hListBkgBrush;
@@ -45,6 +43,15 @@ static WNDPROC OldNicklistProc;
 static WNDPROC OldFilterButtonProc;
 static WNDPROC OldLogProc;
 static HKL hkl = NULL;
+
+extern PITA pfnIsThemeActive;
+extern POTD pfnOpenThemeData;
+extern PDTB pfnDrawThemeBackground;
+extern PCTD pfnCloseThemeData;
+extern PDTT pfnDrawThemeText;
+extern PITBPT pfnIsThemeBackgroundPartiallyTransparent;
+extern PDTPB  pfnDrawThemeParentBackground;
+extern PGTBCR pfnGetThemeBackgroundContentRect;
 
 typedef struct
 {
@@ -136,7 +143,7 @@ static void Chat_UpdateWindowState(HWND hwndDlg, struct MessageWindowData *dat, 
         dat->pContainer->dwLastActivity = dat->dwLastActivity;
         UpdateContainerMenu(hwndDlg, dat);
         UpdateTrayMenuState(dat, FALSE);
-        DM_SetDBButtonStates(dat->hContact, dat->pContainer->hwnd);
+        DM_SetDBButtonStates(hwndDlg, dat);
     }
 }
 
@@ -144,7 +151,10 @@ static void	InitButtons(HWND hwndDlg, SESSION_INFO* si)
 {
     BOOL isFlat = DBGetContactSettingByte(NULL, SRMSGMOD_T, "tbflat", 0);
     BOOL isThemed = !DBGetContactSettingByte(NULL, SRMSGMOD_T, "nlflat", 0);
-    MODULEINFO * pInfo = MM_FindModule(si->pszModule);
+    MODULEINFO *pInfo = si ? MM_FindModule(si->pszModule) : NULL;
+    BOOL bNicklistEnabled = si ? si->bNicklistEnabled : FALSE;
+    BOOL bFilterEnabled = si ? si->bFilterEnabled : FALSE;
+
     int i = 0;
     
 	SendDlgItemMessage(hwndDlg,IDC_SMILEY,BM_SETIMAGE,IMAGE_ICON,(LPARAM)myGlobals.g_buttonBarIcons[11]);
@@ -156,8 +166,8 @@ static void	InitButtons(HWND hwndDlg, SESSION_INFO* si)
 	SendDlgItemMessage(hwndDlg,IDC_CHAT_HISTORY,BM_SETIMAGE,IMAGE_ICON,(LPARAM)myGlobals.g_buttonBarIcons[1]);
 	SendDlgItemMessage(hwndDlg,IDC_CHANMGR,BM_SETIMAGE,IMAGE_ICON,(LPARAM)LoadIconEx(IDI_TOPICBUT, "settings", 0, 0 ));
 	SendDlgItemMessage(hwndDlg,IDC_CHAT_CLOSE,BM_SETIMAGE,IMAGE_ICON,(LPARAM)myGlobals.g_buttonBarIcons[6]);
-	SendDlgItemMessage(hwndDlg,IDC_SHOWNICKLIST,BM_SETIMAGE,IMAGE_ICON,(LPARAM)LoadIconEx(si->bNicklistEnabled ? IDI_HIDENICKLIST : IDI_SHOWNICKLIST, si->bNicklistEnabled ? "hidenicklist" : "shownicklist", 0, 0));
-	SendDlgItemMessage(hwndDlg,IDC_FILTER,BM_SETIMAGE,IMAGE_ICON,(LPARAM)LoadIconEx(si->bFilterEnabled?IDI_FILTER:IDI_FILTER2, si->bFilterEnabled?"filter":"filter2", 0, 0 ));
+	SendDlgItemMessage(hwndDlg,IDC_SHOWNICKLIST,BM_SETIMAGE,IMAGE_ICON,(LPARAM)LoadIconEx(bNicklistEnabled ? IDI_HIDENICKLIST : IDI_SHOWNICKLIST, bNicklistEnabled ? "hidenicklist" : "shownicklist", 0, 0));
+	SendDlgItemMessage(hwndDlg,IDC_FILTER,BM_SETIMAGE,IMAGE_ICON,(LPARAM)LoadIconEx(bFilterEnabled?IDI_FILTER:IDI_FILTER2, bFilterEnabled?"filter":"filter2", 0, 0 ));
     SendDlgItemMessage(hwndDlg,IDOK,BM_SETIMAGE,IMAGE_ICON,(LPARAM)myGlobals.g_buttonBarIcons[9]);
     SendDlgItemMessage(hwndDlg,IDC_CHAT_TOGGLESIDEBAR,BM_SETIMAGE,IMAGE_ICON,(LPARAM)myGlobals.g_buttonBarIcons[25]);
 
@@ -371,44 +381,12 @@ static LRESULT CALLBACK MessageSubclassProc(HWND hwnd, UINT msg, WPARAM wParam, 
 
         case WM_MOUSEWHEEL:
         {
-            RECT rc;
-            POINT pt;
-            TCHITTESTINFO hti;
-            HWND hwndTab;
+            LRESULT result = DM_MouseWheelHandler(hwnd, hwndParent, mwdat, wParam, lParam);
 
-            if(myGlobals.m_WheelDefault)
-                goto default_process;
-
-            GetCursorPos(&pt);
-            GetWindowRect(hwnd, &rc);
-            if(PtInRect(&rc, pt))
-                break;
-            
-            GetWindowRect(GetDlgItem(hwndParent, IDC_CHAT_LOG), &rc);
-            if(PtInRect(&rc, pt)) {
-                short wDirection = (short)HIWORD(wParam);
-
-                if(LOWORD(wParam) & MK_SHIFT || DBGetContactSettingByte(NULL, SRMSGMOD_T, "fastscroll", 0)) {
-                    if(wDirection < 0)
-                        SendMessage(GetDlgItem(hwndParent, IDC_CHAT_LOG), WM_VSCROLL, MAKEWPARAM(SB_PAGEDOWN, 0), 0);
-                    else if(wDirection > 0)
-                        SendMessage(GetDlgItem(hwndParent, IDC_CHAT_LOG), WM_VSCROLL, MAKEWPARAM(SB_PAGEUP, 0), 0);
-                }
-                else
-                    SendMessage(GetDlgItem(hwndParent, IDC_CHAT_LOG), WM_MOUSEWHEEL, wParam, lParam);
+            if(result == 0)
                 return 0;
-            }
-            hwndTab = GetDlgItem(mwdat->pContainer->hwnd, 1159);
-            GetCursorPos(&hti.pt);
-            ScreenToClient(hwndTab, &hti.pt);
-            hti.flags = 0;
-            if(TabCtrl_HitTest(hwndTab, &hti) != -1) {
-                SendMessage(hwndTab, WM_MOUSEWHEEL, wParam, -1);
-                return 0;
-            }
-default_process:
+
             dat->lastEnterTime = 0;
-            return TRUE;
             break;
         }
             
@@ -1483,6 +1461,8 @@ BOOL CALLBACK RoomWndProc(HWND hwndDlg,UINT uMsg,WPARAM wParam,LPARAM lParam)
 			SendDlgItemMessage(hwndDlg, IDC_CHAT_MESSAGE, EM_SUBCLASSED, 0, 0);
 			SendDlgItemMessage(hwndDlg, IDC_CHAT_LOG, EM_AUTOURLDETECT, 1, 0);
 
+            TABSRMM_FireEvent(dat->hContact, hwndDlg, MSG_WINDOW_EVT_OPENING, 0);
+
             mask = (int)SendDlgItemMessage(hwndDlg, IDC_CHAT_LOG, EM_GETEVENTMASK, 0, 0);
 			SendDlgItemMessage(hwndDlg, IDC_CHAT_LOG, EM_SETEVENTMASK, 0, mask | ENM_LINK | ENM_MOUSEEVENTS);
             
@@ -1500,23 +1480,7 @@ BOOL CALLBACK RoomWndProc(HWND hwndDlg,UINT uMsg,WPARAM wParam,LPARAM lParam)
             if(myGlobals.g_hMenuTrayUnread != 0 && dat->hContact != 0 && dat->szProto != NULL)
                 UpdateTrayMenu(0, dat->wStatus, dat->szProto, dat->szStatus, dat->hContact, FALSE);
            
-            dat->bFlatMsgLog = DBGetContactSettingByte(NULL, SRMSGMOD_T, "flatlog", 0);
-            if(!dat->bFlatMsgLog)
-                dat->hTheme = (themeAPIHandle && MyOpenThemeData) ? MyOpenThemeData(hwndDlg, L"EDIT") : 0;
-            else
-                dat->hTheme = 0;
-
-            {
-                StatusItems_t *item_log = &StatusItems[ID_EXTBKHISTORY];
-                StatusItems_t *item_msg = &StatusItems[ID_EXTBKINPUTAREA];
-
-                if(dat->bFlatMsgLog || dat->hTheme != 0 || (dat->pContainer->bSkinned && !item_log->IGNORED)) {
-                    SetWindowLong(GetDlgItem(hwndDlg, IDC_CHAT_LOG), GWL_EXSTYLE, GetWindowLong(GetDlgItem(hwndDlg, IDC_CHAT_LOG), GWL_EXSTYLE) & ~WS_EX_STATICEDGE);
-                    SetWindowLong(GetDlgItem(hwndDlg, IDC_LIST), GWL_EXSTYLE, GetWindowLong(GetDlgItem(hwndDlg, IDC_LIST), GWL_EXSTYLE) & ~(WS_EX_CLIENTEDGE | WS_EX_STATICEDGE));
-                }
-                if(dat->bFlatMsgLog || dat->hTheme != 0 || (dat->pContainer->bSkinned && !item_msg->IGNORED))
-                    SetWindowLong(GetDlgItem(hwndDlg, IDC_CHAT_MESSAGE), GWL_EXSTYLE, GetWindowLong(GetDlgItem(hwndDlg, IDC_CHAT_MESSAGE), GWL_EXSTYLE) & ~WS_EX_STATICEDGE);
-            }
+            DM_ThemeChanged(hwndDlg, dat);
 			SendMessage(GetDlgItem(hwndDlg, IDC_CHAT_LOG), EM_HIDESELECTION, TRUE, 0);
 
             splitterEdges = DBGetContactSettingByte(NULL, SRMSGMOD_T, "splitteredges", 1);
@@ -1538,6 +1502,7 @@ BOOL CALLBACK RoomWndProc(HWND hwndDlg,UINT uMsg,WPARAM wParam,LPARAM lParam)
             ShowWindow(hwndDlg, SW_SHOW);
             PostMessage(hwndDlg, GC_UPDATENICKLIST, 0, 0);
             dat->pContainer->hwndActive = hwndDlg;
+            TABSRMM_FireEvent(dat->hContact, hwndDlg, MSG_WINDOW_EVT_OPEN, 0);
 		} break;
 
         case WM_SETFOCUS:
@@ -2318,28 +2283,28 @@ LABEL_SHOWWINDOW:
 		}break;
 
         case WM_LBUTTONDOWN:
-            dat->dwFlags |= MWF_MOUSEDOWN;
-            GetCursorPos(&dat->ptLast);
-            SetCapture(hwndDlg);
+		{
+			POINT tmp; //+ Protogenes
+			POINTS cur; //+ Protogenes
+			GetCursorPos(&tmp); //+ Protogenes
+			cur.x = (SHORT)tmp.x; //+ Protogenes
+			cur.y = (SHORT)tmp.y; //+ Protogenes
+
+			SendMessage(dat->pContainer->hwnd, WM_NCLBUTTONDOWN, HTCAPTION, *((LPARAM*)(&cur))); //+ Protogenes
             break;
-            
+		}
         case WM_LBUTTONUP:
-            dat->dwFlags &= ~MWF_MOUSEDOWN;
-            ReleaseCapture();
+		{
+            POINT tmp; //+ Protogenes
+			POINTS cur; //+ Protogenes
+			GetCursorPos(&tmp); //+ Protogenes
+			cur.x = (SHORT)tmp.x; //+ Protogenes
+			cur.y = (SHORT)tmp.y; //+ Protogenes
+
+			SendMessage(dat->pContainer->hwnd, WM_NCLBUTTONUP, HTCAPTION, *((LPARAM*)(&cur))); //+ Protogenes
             break;
-            
-        case WM_MOUSEMOVE:
-            if (dat->pContainer->dwFlags & CNT_NOTITLE && dat->dwFlags & MWF_MOUSEDOWN) {
-                RECT rc;
-                POINT pt;
-                
-                GetCursorPos(&pt);
-                GetWindowRect(dat->pContainer->hwnd, &rc);
-                MoveWindow(dat->pContainer->hwnd, rc.left - (dat->ptLast.x - pt.x), rc.top - (dat->ptLast.y - pt.y), rc.right - rc.left, rc.bottom - rc.top, TRUE);
-                dat->ptLast = pt;
-            }
-            break;
-            
+		} 
+
         case WM_APPCOMMAND:
         {
             DWORD cmd = GET_APPCOMMAND_LPARAM(lParam);
@@ -2479,19 +2444,22 @@ LABEL_SHOWWINDOW:
                     break;
 				}
                 
-			case IDC_SMILEY:
+            case IDC_SMILEY:
+            case IDC_SMILEYBTN:
 				{
 					SMADD_SHOWSEL3 smaddInfo = {0};
 					RECT rc;
 
-					GetWindowRect(GetDlgItem(hwndDlg, IDC_SMILEY), &rc);
-					
+					if(lParam == 0)
+                        GetWindowRect(GetDlgItem(hwndDlg, IDC_SMILEY), &rc);
+                    else
+                        GetWindowRect((HWND)lParam, &rc);
 					smaddInfo.cbSize = sizeof(SMADD_SHOWSEL3);
 					smaddInfo.hwndTarget = GetDlgItem(hwndDlg, IDC_CHAT_MESSAGE);
 					smaddInfo.targetMessage = EM_REPLACESEL;
 					smaddInfo.targetWParam = TRUE;
 					smaddInfo.Protocolname = si->pszModule;
-					smaddInfo.Direction = 3;
+					smaddInfo.Direction = 0;
 					smaddInfo.xPosition = rc.left+3;
 					smaddInfo.yPosition = rc.top-1;
                     smaddInfo.hContact = si->hContact;
@@ -2957,6 +2925,13 @@ LABEL_SHOWWINDOW:
             SendMessage(hwndDlg, GC_REDRAWLOG, 0, 1);
             break;
 
+        case EM_THEMECHANGED:
+            if(dat->hTheme && pfnCloseThemeData) {
+                pfnCloseThemeData(dat->hTheme);
+                dat->hTheme = 0;
+            }
+            return DM_ThemeChanged(hwndDlg, dat);
+
         case WM_NCDESTROY:
             if(dat) {
                 free(dat);
@@ -2983,6 +2958,8 @@ LABEL_SHOWWINDOW:
 			SetWindowLong(GetDlgItem(hwndDlg,IDC_COLOR),GWL_WNDPROC,(LONG)OldFilterButtonProc);
 			SetWindowLong(GetDlgItem(hwndDlg,IDC_BKGCOLOR),GWL_WNDPROC,(LONG)OldFilterButtonProc);
 
+            TABSRMM_FireEvent(dat->hContact, hwndDlg, MSG_WINDOW_EVT_CLOSING, 0);
+
             DBWriteContactSettingWord(NULL, "Chat", "SplitterX", (WORD)g_Settings.iSplitterX);
             DBWriteContactSettingWord(NULL, "Chat", "splitY", (WORD)g_Settings.iSplitterY);
             
@@ -2999,6 +2976,7 @@ LABEL_SHOWWINDOW:
                 BroadCastContainer(dat->pContainer, DM_REFRESHTABINDEX, 0, 0);
                 dat->iTabID = -1;
             }
+            TABSRMM_FireEvent(dat->hContact, hwndDlg, MSG_WINDOW_EVT_CLOSE, 0);
             break;
 		}
 		default:break;

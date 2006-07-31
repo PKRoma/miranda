@@ -1,26 +1,26 @@
 # Microsoft Developer Studio Project File - Name="tabSRMM" - Package Owner=<4>
 # Microsoft Developer Studio Generated Build File, Format Version 6.00
-# ** DO NOT EDIT **
+# ** NICHT BEARBEITEN **
 
 # TARGTYPE "Win32 (x86) Dynamic-Link Library" 0x0102
 
 CFG=tabSRMM - Win32 Debug
-!MESSAGE This is not a valid makefile. To build this project using NMAKE,
-!MESSAGE use the Export Makefile command and run
+!MESSAGE Dies ist kein gültiges Makefile. Zum Erstellen dieses Projekts mit NMAKE
+!MESSAGE verwenden Sie den Befehl "Makefile exportieren" und führen Sie den Befehl
 !MESSAGE 
 !MESSAGE NMAKE /f "tabsrmm.mak".
 !MESSAGE 
-!MESSAGE You can specify a configuration when running NMAKE
-!MESSAGE by defining the macro CFG on the command line. For example:
+!MESSAGE Sie können beim Ausführen von NMAKE eine Konfiguration angeben
+!MESSAGE durch Definieren des Makros CFG in der Befehlszeile. Zum Beispiel:
 !MESSAGE 
 !MESSAGE NMAKE /f "tabsrmm.mak" CFG="tabSRMM - Win32 Debug"
 !MESSAGE 
-!MESSAGE Possible choices for configuration are:
+!MESSAGE Für die Konfiguration stehen zur Auswahl:
 !MESSAGE 
-!MESSAGE "tabSRMM - Win32 Debug" (based on "Win32 (x86) Dynamic-Link Library")
-!MESSAGE "tabSRMM - Win32 Release Unicode" (based on "Win32 (x86) Dynamic-Link Library")
-!MESSAGE "tabSRMM - Win32 Release" (based on "Win32 (x86) Dynamic-Link Library")
-!MESSAGE "tabSRMM - Win32 Debug Unicode" (based on "Win32 (x86) Dynamic-Link Library")
+!MESSAGE "tabSRMM - Win32 Debug" (basierend auf  "Win32 (x86) Dynamic-Link Library")
+!MESSAGE "tabSRMM - Win32 Release Unicode" (basierend auf  "Win32 (x86) Dynamic-Link Library")
+!MESSAGE "tabSRMM - Win32 Release" (basierend auf  "Win32 (x86) Dynamic-Link Library")
+!MESSAGE "tabSRMM - Win32 Debug Unicode" (basierend auf  "Win32 (x86) Dynamic-Link Library")
 !MESSAGE 
 
 # Begin Project
@@ -84,7 +84,7 @@ BSC32=bscmake.exe
 # ADD BSC32 /nologo
 LINK32=link.exe
 # ADD BASE LINK32 kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib comctl32.lib /nologo /base:"0x6a540000" /subsystem:windows /dll /machine:IX86 /out:"..\..\Bin\Release\Plugins\tabsrmm_unicode.dll" /implib:".\Release_Unicode/srmm.lib" /pdbtype:sept
-# ADD LINK32 kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib comctl32.lib msimg32.lib shlwapi.lib /nologo /base:"0x6a540000" /subsystem:windows /dll /map /debug /machine:IX86 /out:"..\..\Bin\Release Unicode\Plugins\tabsrmm.dll" /implib:".\Release_Unicode/srmm.lib" /pdbtype:sept
+# ADD LINK32 kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib comctl32.lib msimg32.lib shlwapi.lib /nologo /base:"0x6a540000" /subsystem:windows /dll /pdb:none /map /machine:IX86 /out:"..\..\Bin\Release Unicode\Plugins\tabsrmm.dll" /implib:".\Release_Unicode/srmm.lib" /opt:NOWIN98
 
 !ELSEIF  "$(CFG)" == "tabSRMM - Win32 Release"
 
@@ -110,7 +110,8 @@ BSC32=bscmake.exe
 # ADD BSC32 /nologo
 LINK32=link.exe
 # ADD BASE LINK32 kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib comctl32.lib /nologo /base:"0x6a540000" /subsystem:windows /dll /machine:IX86 /out:"..\..\Bin\Release\Plugins\tabsrmm.dll" /implib:".\Release/srmm.lib" /pdbtype:sept
-# ADD LINK32 kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib comctl32.lib msimg32.lib shlwapi.lib /nologo /base:"0x6a540000" /subsystem:windows /dll /map /debug /machine:IX86 /out:"..\..\Bin\Release\Plugins\tabsrmm.dll" /implib:".\Release/srmm.lib" /pdbtype:sept
+# ADD LINK32 kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib comctl32.lib msimg32.lib shlwapi.lib /nologo /base:"0x6a540000" /subsystem:windows /dll /map /debug /machine:IX86 /out:"..\..\Bin\Release\Plugins\tabsrmm.dll" /implib:".\Release/srmm.lib" /pdbtype:sept /opt:NOWIN98
+# SUBTRACT LINK32 /pdb:none
 
 !ELSEIF  "$(CFG)" == "tabSRMM - Win32 Debug Unicode"
 
@@ -218,7 +219,6 @@ DEP_CPP_CLIST=\
 	".\templates.h"\
 	
 NODEP_CPP_CLIST=\
-	"..\..\..\plugins\PopUp\m_popup.h"\
 	"..\PopUp\m_popup.h"\
 	
 # ADD CPP /Yu"../commonheaders.h"
@@ -275,7 +275,6 @@ DEP_CPP_COLOR=\
 	".\templates.h"\
 	
 NODEP_CPP_COLOR=\
-	"..\..\..\plugins\PopUp\m_popup.h"\
 	"..\PopUp\m_popup.h"\
 	
 # ADD CPP /Yu"../commonheaders.h"
@@ -332,7 +331,6 @@ DEP_CPP_LOG_C=\
 	".\templates.h"\
 	
 NODEP_CPP_LOG_C=\
-	"..\..\..\plugins\PopUp\m_popup.h"\
 	"..\PopUp\m_popup.h"\
 	
 # ADD CPP /Yu"../commonheaders.h"
@@ -393,7 +391,6 @@ DEP_CPP_MAIN_=\
 	".\templates.h"\
 	
 NODEP_CPP_MAIN_=\
-	"..\..\..\plugins\PopUp\m_popup.h"\
 	"..\PopUp\m_popup.h"\
 	
 # ADD CPP /Yu"../commonheaders.h"
@@ -450,7 +447,6 @@ DEP_CPP_MANAG=\
 	".\templates.h"\
 	
 NODEP_CPP_MANAG=\
-	"..\..\..\plugins\PopUp\m_popup.h"\
 	"..\PopUp\m_popup.h"\
 	
 # ADD CPP /Yu"../commonheaders.h"
@@ -507,7 +503,6 @@ DEP_CPP_MESSA=\
 	".\templates.h"\
 	
 NODEP_CPP_MESSA=\
-	"..\..\..\plugins\PopUp\m_popup.h"\
 	"..\PopUp\m_popup.h"\
 	
 # ADD CPP /Yu"../commonheaders.h"
@@ -564,7 +559,6 @@ DEP_CPP_OPTIO=\
 	".\templates.h"\
 	
 NODEP_CPP_OPTIO=\
-	"..\..\..\plugins\PopUp\m_popup.h"\
 	"..\PopUp\m_popup.h"\
 	
 # ADD CPP /Yu"../commonheaders.h"
@@ -621,7 +615,6 @@ DEP_CPP_SERVI=\
 	".\templates.h"\
 	
 NODEP_CPP_SERVI=\
-	"..\..\..\plugins\PopUp\m_popup.h"\
 	"..\PopUp\m_popup.h"\
 	
 # ADD CPP /Yu"../commonheaders.h"
@@ -678,7 +671,6 @@ DEP_CPP_TOOLS=\
 	".\templates.h"\
 	
 NODEP_CPP_TOOLS=\
-	"..\..\..\plugins\PopUp\m_popup.h"\
 	"..\PopUp\m_popup.h"\
 	
 # ADD CPP /Yu"../commonheaders.h"
@@ -735,7 +727,6 @@ DEP_CPP_WINDO=\
 	".\templates.h"\
 	
 NODEP_CPP_WINDO=\
-	"..\..\..\plugins\PopUp\m_popup.h"\
 	"..\PopUp\m_popup.h"\
 	
 # ADD CPP /Yu"../commonheaders.h"
@@ -794,9 +785,21 @@ DEP_CPP_CONTA=\
 	".\templates.h"\
 	
 NODEP_CPP_CONTA=\
-	"..\..\..\plugins\PopUp\m_popup.h"\
 	"..\PopUp\m_popup.h"\
 	
+
+!IF  "$(CFG)" == "tabSRMM - Win32 Debug"
+
+!ELSEIF  "$(CFG)" == "tabSRMM - Win32 Release Unicode"
+
+# ADD CPP /Zi
+
+!ELSEIF  "$(CFG)" == "tabSRMM - Win32 Release"
+
+!ELSEIF  "$(CFG)" == "tabSRMM - Win32 Debug Unicode"
+
+!ENDIF 
+
 # End Source File
 # Begin Source File
 
@@ -850,9 +853,21 @@ DEP_CPP_CONTAI=\
 	".\templates.h"\
 	
 NODEP_CPP_CONTAI=\
-	"..\..\..\plugins\PopUp\m_popup.h"\
 	"..\PopUp\m_popup.h"\
 	
+
+!IF  "$(CFG)" == "tabSRMM - Win32 Debug"
+
+!ELSEIF  "$(CFG)" == "tabSRMM - Win32 Release Unicode"
+
+# ADD CPP /Zi
+
+!ELSEIF  "$(CFG)" == "tabSRMM - Win32 Release"
+
+!ELSEIF  "$(CFG)" == "tabSRMM - Win32 Debug Unicode"
+
+!ENDIF 
+
 # End Source File
 # Begin Source File
 
@@ -907,9 +922,21 @@ DEP_CPP_EVENT=\
 	".\templates.h"\
 	
 NODEP_CPP_EVENT=\
-	"..\..\..\plugins\PopUp\m_popup.h"\
 	"..\PopUp\m_popup.h"\
 	
+
+!IF  "$(CFG)" == "tabSRMM - Win32 Debug"
+
+!ELSEIF  "$(CFG)" == "tabSRMM - Win32 Release Unicode"
+
+# ADD CPP /Zi
+
+!ELSEIF  "$(CFG)" == "tabSRMM - Win32 Release"
+
+!ELSEIF  "$(CFG)" == "tabSRMM - Win32 Debug Unicode"
+
+!ENDIF 
+
 # End Source File
 # Begin Source File
 
@@ -963,7 +990,6 @@ DEP_CPP_FORMA=\
 	".\templates.h"\
 	
 NODEP_CPP_FORMA=\
-	"..\..\..\plugins\PopUp\m_popup.h"\
 	"..\PopUp\m_popup.h"\
 	
 
@@ -973,7 +999,7 @@ NODEP_CPP_FORMA=\
 
 !ELSEIF  "$(CFG)" == "tabSRMM - Win32 Release Unicode"
 
-# ADD CPP /nologo /GX /EHsc
+# ADD CPP /nologo /GX /Zi /EHsc
 # SUBTRACT CPP /YX /Yc /Yu
 
 !ELSEIF  "$(CFG)" == "tabSRMM - Win32 Release"
@@ -1040,9 +1066,21 @@ DEP_CPP_GENER=\
 	".\templates.h"\
 	
 NODEP_CPP_GENER=\
-	"..\..\..\plugins\PopUp\m_popup.h"\
 	"..\PopUp\m_popup.h"\
 	
+
+!IF  "$(CFG)" == "tabSRMM - Win32 Debug"
+
+!ELSEIF  "$(CFG)" == "tabSRMM - Win32 Release Unicode"
+
+# ADD CPP /Zi
+
+!ELSEIF  "$(CFG)" == "tabSRMM - Win32 Release"
+
+!ELSEIF  "$(CFG)" == "tabSRMM - Win32 Debug Unicode"
+
+!ENDIF 
+
 # End Source File
 # Begin Source File
 
@@ -1097,9 +1135,21 @@ DEP_CPP_HOTKE=\
 	".\templates.h"\
 	
 NODEP_CPP_HOTKE=\
-	"..\..\..\plugins\PopUp\m_popup.h"\
 	"..\PopUp\m_popup.h"\
 	
+
+!IF  "$(CFG)" == "tabSRMM - Win32 Debug"
+
+!ELSEIF  "$(CFG)" == "tabSRMM - Win32 Release Unicode"
+
+# ADD CPP /Zi
+
+!ELSEIF  "$(CFG)" == "tabSRMM - Win32 Release"
+
+!ELSEIF  "$(CFG)" == "tabSRMM - Win32 Debug Unicode"
+
+!ENDIF 
+
 # End Source File
 # Begin Source File
 
@@ -1154,10 +1204,28 @@ DEP_CPP_IMAGE=\
 	".\templates.h"\
 	
 NODEP_CPP_IMAGE=\
-	"..\..\..\plugins\PopUp\m_popup.h"\
 	"..\PopUp\m_popup.h"\
 	
+
+!IF  "$(CFG)" == "tabSRMM - Win32 Debug"
+
 # SUBTRACT CPP /YX /Yc /Yu
+
+!ELSEIF  "$(CFG)" == "tabSRMM - Win32 Release Unicode"
+
+# ADD CPP /Zi
+# SUBTRACT CPP /YX /Yc /Yu
+
+!ELSEIF  "$(CFG)" == "tabSRMM - Win32 Release"
+
+# SUBTRACT CPP /YX /Yc /Yu
+
+!ELSEIF  "$(CFG)" == "tabSRMM - Win32 Debug Unicode"
+
+# SUBTRACT CPP /YX /Yc /Yu
+
+!ENDIF 
+
 # End Source File
 # Begin Source File
 
@@ -1211,9 +1279,9 @@ DEP_CPP_MSGDI=\
 	".\nen.h"\
 	".\sendqueue.h"\
 	".\templates.h"\
+	{$(INCLUDE)}"uxtheme.h"\
 	
 NODEP_CPP_MSGDI=\
-	"..\..\..\plugins\PopUp\m_popup.h"\
 	"..\PopUp\m_popup.h"\
 	
 
@@ -1223,7 +1291,7 @@ NODEP_CPP_MSGDI=\
 
 !ELSEIF  "$(CFG)" == "tabSRMM - Win32 Release Unicode"
 
-# ADD CPP /nologo /GX /O1
+# ADD CPP /nologo /GX /Zi /O1
 
 !ELSEIF  "$(CFG)" == "tabSRMM - Win32 Release"
 
@@ -1288,9 +1356,21 @@ DEP_CPP_MSGDL=\
 	".\templates.h"\
 	
 NODEP_CPP_MSGDL=\
-	"..\..\..\plugins\PopUp\m_popup.h"\
 	"..\PopUp\m_popup.h"\
 	
+
+!IF  "$(CFG)" == "tabSRMM - Win32 Debug"
+
+!ELSEIF  "$(CFG)" == "tabSRMM - Win32 Release Unicode"
+
+# ADD CPP /Zi
+
+!ELSEIF  "$(CFG)" == "tabSRMM - Win32 Release"
+
+!ELSEIF  "$(CFG)" == "tabSRMM - Win32 Debug Unicode"
+
+!ENDIF 
+
 # End Source File
 # Begin Source File
 
@@ -1345,7 +1425,6 @@ DEP_CPP_MSGLO=\
 	".\templates.h"\
 	
 NODEP_CPP_MSGLO=\
-	"..\..\..\plugins\PopUp\m_popup.h"\
 	"..\PopUp\m_popup.h"\
 	
 
@@ -1355,7 +1434,7 @@ NODEP_CPP_MSGLO=\
 
 !ELSEIF  "$(CFG)" == "tabSRMM - Win32 Release Unicode"
 
-# ADD CPP /nologo /GX /O1
+# ADD CPP /nologo /GX /Zi /O1
 
 !ELSEIF  "$(CFG)" == "tabSRMM - Win32 Release"
 
@@ -1419,9 +1498,9 @@ DEP_CPP_MSGOP=\
 	".\msgs.h"\
 	".\nen.h"\
 	".\templates.h"\
+	{$(INCLUDE)}"uxtheme.h"\
 	
 NODEP_CPP_MSGOP=\
-	"..\..\..\plugins\PopUp\m_popup.h"\
 	"..\PopUp\m_popup.h"\
 	
 
@@ -1431,7 +1510,7 @@ NODEP_CPP_MSGOP=\
 
 !ELSEIF  "$(CFG)" == "tabSRMM - Win32 Release Unicode"
 
-# ADD CPP /nologo /GX /O1
+# ADD CPP /nologo /GX /Zi /O1
 
 !ELSEIF  "$(CFG)" == "tabSRMM - Win32 Release"
 
@@ -1499,7 +1578,6 @@ DEP_CPP_MSGS_=\
 	".\templates.h"\
 	
 NODEP_CPP_MSGS_=\
-	"..\..\..\plugins\PopUp\m_popup.h"\
 	"..\PopUp\m_popup.h"\
 	
 
@@ -1509,7 +1587,7 @@ NODEP_CPP_MSGS_=\
 
 !ELSEIF  "$(CFG)" == "tabSRMM - Win32 Release Unicode"
 
-# ADD CPP /nologo /GX /O1
+# ADD CPP /nologo /GX /Zi /O1
 
 !ELSEIF  "$(CFG)" == "tabSRMM - Win32 Release"
 
@@ -1574,9 +1652,21 @@ DEP_CPP_SELEC=\
 	".\templates.h"\
 	
 NODEP_CPP_SELEC=\
-	"..\..\..\plugins\PopUp\m_popup.h"\
 	"..\PopUp\m_popup.h"\
 	
+
+!IF  "$(CFG)" == "tabSRMM - Win32 Debug"
+
+!ELSEIF  "$(CFG)" == "tabSRMM - Win32 Release Unicode"
+
+# ADD CPP /Zi
+
+!ELSEIF  "$(CFG)" == "tabSRMM - Win32 Release"
+
+!ELSEIF  "$(CFG)" == "tabSRMM - Win32 Debug Unicode"
+
+!ENDIF 
+
 # End Source File
 # Begin Source File
 
@@ -1631,9 +1721,21 @@ DEP_CPP_SENDQ=\
 	".\templates.h"\
 	
 NODEP_CPP_SENDQ=\
-	"..\..\..\plugins\PopUp\m_popup.h"\
 	"..\PopUp\m_popup.h"\
 	
+
+!IF  "$(CFG)" == "tabSRMM - Win32 Debug"
+
+!ELSEIF  "$(CFG)" == "tabSRMM - Win32 Release Unicode"
+
+# ADD CPP /Zi
+
+!ELSEIF  "$(CFG)" == "tabSRMM - Win32 Release"
+
+!ELSEIF  "$(CFG)" == "tabSRMM - Win32 Debug Unicode"
+
+!ENDIF 
+
 # End Source File
 # Begin Source File
 
@@ -1687,7 +1789,6 @@ DEP_CPP_SRMM_=\
 	".\templates.h"\
 	
 NODEP_CPP_SRMM_=\
-	"..\..\..\plugins\PopUp\m_popup.h"\
 	"..\PopUp\m_popup.h"\
 	
 
@@ -1697,7 +1798,7 @@ NODEP_CPP_SRMM_=\
 
 !ELSEIF  "$(CFG)" == "tabSRMM - Win32 Release Unicode"
 
-# ADD CPP /nologo /GX /O1 /Yc"commonheaders.h"
+# ADD CPP /nologo /GX /Zi /O1 /Yc"commonheaders.h"
 
 !ELSEIF  "$(CFG)" == "tabSRMM - Win32 Release"
 
@@ -1760,11 +1861,24 @@ DEP_CPP_TABCT=\
 	".\msgs.h"\
 	".\nen.h"\
 	".\templates.h"\
+	{$(INCLUDE)}"uxtheme.h"\
 	
 NODEP_CPP_TABCT=\
-	"..\..\..\plugins\PopUp\m_popup.h"\
 	"..\PopUp\m_popup.h"\
 	
+
+!IF  "$(CFG)" == "tabSRMM - Win32 Debug"
+
+!ELSEIF  "$(CFG)" == "tabSRMM - Win32 Release Unicode"
+
+# ADD CPP /Zi
+
+!ELSEIF  "$(CFG)" == "tabSRMM - Win32 Release"
+
+!ELSEIF  "$(CFG)" == "tabSRMM - Win32 Debug Unicode"
+
+!ENDIF 
+
 # End Source File
 # Begin Source File
 
@@ -1818,9 +1932,21 @@ DEP_CPP_TEMPL=\
 	".\templates.h"\
 	
 NODEP_CPP_TEMPL=\
-	"..\..\..\plugins\PopUp\m_popup.h"\
 	"..\PopUp\m_popup.h"\
 	
+
+!IF  "$(CFG)" == "tabSRMM - Win32 Debug"
+
+!ELSEIF  "$(CFG)" == "tabSRMM - Win32 Release Unicode"
+
+# ADD CPP /Zi
+
+!ELSEIF  "$(CFG)" == "tabSRMM - Win32 Release"
+
+!ELSEIF  "$(CFG)" == "tabSRMM - Win32 Debug Unicode"
+
+!ENDIF 
+
 # End Source File
 # Begin Source File
 
@@ -1874,9 +2000,21 @@ DEP_CPP_THEME=\
 	".\templates.h"\
 	
 NODEP_CPP_THEME=\
-	"..\..\..\plugins\PopUp\m_popup.h"\
 	"..\PopUp\m_popup.h"\
 	
+
+!IF  "$(CFG)" == "tabSRMM - Win32 Debug"
+
+!ELSEIF  "$(CFG)" == "tabSRMM - Win32 Release Unicode"
+
+# ADD CPP /Zi
+
+!ELSEIF  "$(CFG)" == "tabSRMM - Win32 Release"
+
+!ELSEIF  "$(CFG)" == "tabSRMM - Win32 Debug Unicode"
+
+!ENDIF 
+
 # End Source File
 # Begin Source File
 
@@ -1931,9 +2069,21 @@ DEP_CPP_TRAYI=\
 	".\templates.h"\
 	
 NODEP_CPP_TRAYI=\
-	"..\..\..\plugins\PopUp\m_popup.h"\
 	"..\PopUp\m_popup.h"\
 	
+
+!IF  "$(CFG)" == "tabSRMM - Win32 Debug"
+
+!ELSEIF  "$(CFG)" == "tabSRMM - Win32 Release Unicode"
+
+# ADD CPP /Zi
+
+!ELSEIF  "$(CFG)" == "tabSRMM - Win32 Release"
+
+!ELSEIF  "$(CFG)" == "tabSRMM - Win32 Debug Unicode"
+
+!ENDIF 
+
 # End Source File
 # Begin Source File
 
@@ -1987,9 +2137,21 @@ DEP_CPP_TSBUT=\
 	".\templates.h"\
 	
 NODEP_CPP_TSBUT=\
-	"..\..\..\plugins\PopUp\m_popup.h"\
 	"..\PopUp\m_popup.h"\
 	
+
+!IF  "$(CFG)" == "tabSRMM - Win32 Debug"
+
+!ELSEIF  "$(CFG)" == "tabSRMM - Win32 Release Unicode"
+
+# ADD CPP /Zi
+
+!ELSEIF  "$(CFG)" == "tabSRMM - Win32 Release"
+
+!ELSEIF  "$(CFG)" == "tabSRMM - Win32 Debug Unicode"
+
+!ENDIF 
+
 # End Source File
 # Begin Source File
 
@@ -2043,9 +2205,21 @@ DEP_CPP_USERP=\
 	".\templates.h"\
 	
 NODEP_CPP_USERP=\
-	"..\..\..\plugins\PopUp\m_popup.h"\
 	"..\PopUp\m_popup.h"\
 	
+
+!IF  "$(CFG)" == "tabSRMM - Win32 Debug"
+
+!ELSEIF  "$(CFG)" == "tabSRMM - Win32 Release Unicode"
+
+# ADD CPP /Zi
+
+!ELSEIF  "$(CFG)" == "tabSRMM - Win32 Release"
+
+!ELSEIF  "$(CFG)" == "tabSRMM - Win32 Debug Unicode"
+
+!ENDIF 
+
 # End Source File
 # End Group
 # Begin Group "Header Files"

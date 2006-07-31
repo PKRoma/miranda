@@ -1,18 +1,17 @@
-				tabbed  SRMM plugin for Miranda IM 0.4.0.0
+				tabbed  SRMM plugin for Miranda IM 0.5.0.0
 				------------------------------------------
 
-Project page: http://www.sourceforge.net/projects/tabsrmm/
-Support Forum: http://www.miranda.or.at/forums/
+Online resources at: http://miranda.or.at
 
 ----------------------------------------------------------
 				
 Version: 1.0.0.0
-Created: April 2004
+Created: July 2006
 
 1. Overview
 -----------
 
-tabSRMM is an advanced messaging module for Miranda IM (version 0.4.x or later
+tabSRMM is an advanced messaging module for Miranda IM (version 0.5.x or later
 required). It adds many new options and features to make instant messaging more
 enjoyable and allows you to tweak almost every aspect of the message window to
 fit your needs.
@@ -74,7 +73,7 @@ fit your needs.
 3. FAQ and general help
 -----------------------
 
-   For a lot of knowledge, please visit my forum at http://www.miranda.or.at/forums/
+   For a lot of knowledge, please visit my forum at http://miranda.or.at/
    There you can find a lot of useful information, articles, a small FAQ, and some
    links telling you more about tabSRMM in general.
 
@@ -111,6 +110,9 @@ the development phase. I cannot name you all here, because it's just too many.
 * Angeli-Ka for many bug reports and general feedback,  especially in the 
   early phase of development when using tabSRMM could be really frustrating :)
 
+  Also, for making the final icon set which is now distributed as default icon
+  pack.
+  
 * Progame - for finding even the most carefully hidden bugs :)
 
 * All other mambers of the Miranda community,  who helped with hunting down 
@@ -119,6 +121,5 @@ the development phase. I cannot name you all here, because it's just too many.
 License: GPL
 
 Contact me at:         mailto: silvercircle@gmail.com
-			       ICQ:    7769309
+			                 ICQ:    7769309
                        MSN:    silvercircle@gmail.com
-		 

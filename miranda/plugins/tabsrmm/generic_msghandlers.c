@@ -32,10 +32,19 @@ $Id$
 
 extern MYGLOBALS myGlobals;
 extern NEN_OPTIONS nen_options;
+extern StatusItems_t StatusItems[];
 
-extern WCHAR *FilterEventMarkers(WCHAR *wszText);
-extern char  *FilterEventMarkersA(char *szText);
-extern ButtonItem *g_ButtonItems;
+extern WCHAR    *FilterEventMarkers(WCHAR *wszText);
+extern char     *FilterEventMarkersA(char *szText);
+
+extern PITA pfnIsThemeActive;
+extern POTD pfnOpenThemeData;
+extern PDTB pfnDrawThemeBackground;
+extern PCTD pfnCloseThemeData;
+extern PDTT pfnDrawThemeText;
+extern PITBPT pfnIsThemeBackgroundPartiallyTransparent;
+extern PDTPB  pfnDrawThemeParentBackground;
+extern PGTBCR pfnGetThemeBackgroundContentRect;
 
 /* 
  * action and callback procedures for the stock button objects
@@ -43,56 +52,62 @@ extern ButtonItem *g_ButtonItems;
 
 static void BTN_StockAction(ButtonItem *item, HWND hwndDlg, struct MessageWindowData *dat, HWND hwndBtn)
 {
-    switch(item->uId) {
-        case IDC_SBAR_SLIST:
-            SendMessage(myGlobals.g_hwndHotkeyHandler, DM_TRAYICONNOTIFY, 101, WM_LBUTTONUP);
-            break;
-        case IDC_SBAR_FAVORITES:
-        {
-            POINT pt;
-            int iSelection;
-            GetCursorPos(&pt);
-            iSelection = TrackPopupMenu(myGlobals.g_hMenuFavorites, TPM_RETURNCMD, pt.x, pt.y, 0, myGlobals.g_hwndHotkeyHandler, NULL);
-            HandleMenuEntryFromhContact(iSelection);
-            break;
-        }
-        case IDC_SBAR_RECENT:
-        {
-            POINT pt;
-            int iSelection;
-            GetCursorPos(&pt);
-            iSelection = TrackPopupMenu(myGlobals.g_hMenuRecent, TPM_RETURNCMD, pt.x, pt.y, 0, myGlobals.g_hwndHotkeyHandler, NULL);
-            HandleMenuEntryFromhContact(iSelection);
-            break;
-        }
-        case IDC_SBAR_USERPREFS:
-        {
-            HANDLE hContact = 0;
-            SendMessage(hwndDlg, DM_QUERYHCONTACT, 0, (LPARAM)&hContact);
-            if(hContact != 0)
-                CallService(MS_TABMSG_SETUSERPREFS, (WPARAM)hContact, 0);
-            break;
-        }
-        case IDC_SBAR_TOGGLEFORMAT:
-        {
-            if(dat) {
-                if(IsDlgButtonChecked(hwndDlg, IDC_SBAR_TOGGLEFORMAT) == BST_UNCHECKED) {
-                    dat->SendFormat = 0;
-                    GetSendFormat(hwndDlg, dat, 0);
-                }
-                else {
-                    dat->SendFormat = SENDFORMAT_BBCODE;
-                    GetSendFormat(hwndDlg, dat, 0);
-                }
+    if(item->dwStockFlags & SBI_HANDLEBYCLIENT && IsWindow(hwndDlg) && dat)
+        SendMessage(hwndDlg, WM_COMMAND, MAKELONG(item->uId, BN_CLICKED), (LPARAM)hwndBtn);
+    else {
+        switch(item->uId) {
+            case IDC_SBAR_CANCEL:
+                PostMessage(hwndDlg, WM_COMMAND, MAKELONG(IDC_SAVE, BN_CLICKED), (LPARAM)hwndBtn);
+                break;
+            case IDC_SBAR_SLIST:
+                SendMessage(myGlobals.g_hwndHotkeyHandler, DM_TRAYICONNOTIFY, 101, WM_LBUTTONUP);
+                break;
+            case IDC_SBAR_FAVORITES:
+            {
+                POINT pt;
+                int iSelection;
+                GetCursorPos(&pt);
+                iSelection = TrackPopupMenu(myGlobals.g_hMenuFavorites, TPM_RETURNCMD, pt.x, pt.y, 0, myGlobals.g_hwndHotkeyHandler, NULL);
+                HandleMenuEntryFromhContact(iSelection);
+                break;
             }
-            break;
+            case IDC_SBAR_RECENT:
+            {
+                POINT pt;
+                int iSelection;
+                GetCursorPos(&pt);
+                iSelection = TrackPopupMenu(myGlobals.g_hMenuRecent, TPM_RETURNCMD, pt.x, pt.y, 0, myGlobals.g_hwndHotkeyHandler, NULL);
+                HandleMenuEntryFromhContact(iSelection);
+                break;
+            }
+            case IDC_SBAR_USERPREFS:
+            {
+                HANDLE hContact = 0;
+                SendMessage(hwndDlg, DM_QUERYHCONTACT, 0, (LPARAM)&hContact);
+                if(hContact != 0)
+                    CallService(MS_TABMSG_SETUSERPREFS, (WPARAM)hContact, 0);
+                break;
+            }
+            case IDC_SBAR_TOGGLEFORMAT:
+            {
+                if(dat) {
+                    if(IsDlgButtonChecked(hwndDlg, IDC_SBAR_TOGGLEFORMAT) == BST_UNCHECKED) {
+                        dat->SendFormat = 0;
+                        GetSendFormat(hwndDlg, dat, 0);
+                    }
+                    else {
+                        dat->SendFormat = SENDFORMAT_BBCODE;
+                        GetSendFormat(hwndDlg, dat, 0);
+                    }
+                }
+                break;
+            }
         }
     }
 }
 
 static void BTN_StockCallback(ButtonItem *item, HWND hwndDlg, struct MessageWindowData *dat, HWND hwndBtn)
 {
-
 }
 
 /*
@@ -100,13 +115,18 @@ static void BTN_StockCallback(ButtonItem *item, HWND hwndDlg, struct MessageWind
  */
 
 static struct SIDEBARITEM sbarItems[] = {
-    IDC_SBAR_SLIST, SBI_TOP, &myGlobals.g_sideBarIcons[0], "t_slist", BTN_StockAction, BTN_StockCallback, _T("Open session list"),
-    IDC_SBAR_FAVORITES, SBI_TOP, &myGlobals.g_sideBarIcons[1], "t_fav", BTN_StockAction, BTN_StockCallback, _T("Open favorites"),
-    IDC_SBAR_RECENT, SBI_TOP, &myGlobals.g_sideBarIcons[2], "t_recent", BTN_StockAction, BTN_StockCallback, _T("Open recent contacts"),
-    IDC_SBAR_USERPREFS, SBI_TOP, &myGlobals.g_sideBarIcons[4], "t_prefs", BTN_StockAction, BTN_StockCallback, _T("Contact preferences"),
-    IDC_SBAR_TOGGLEFORMAT, SBI_TOP | SBI_TOGGLE, &myGlobals.g_buttonBarIcons[20], "t_tformat", BTN_StockAction, BTN_StockCallback, _T("Formatting"),
-    IDC_SBAR_SETUP, SBI_BOTTOM, &myGlobals.g_sideBarIcons[3], "t_setup", BTN_StockAction, BTN_StockCallback, _T("Miranda options"),
-    0, 0, 0, "", NULL, NULL, _T("")
+    IDC_SBAR_SLIST, SBI_TOP, &myGlobals.g_sideBarIcons[0], &myGlobals.g_sideBarIcons[0], &myGlobals.g_sideBarIcons[0], "t_slist", BTN_StockAction, BTN_StockCallback, _T("Open session list"),
+    IDC_SBAR_FAVORITES, SBI_TOP, &myGlobals.g_sideBarIcons[1], &myGlobals.g_sideBarIcons[1], &myGlobals.g_sideBarIcons[1], "t_fav", BTN_StockAction, BTN_StockCallback, _T("Open favorites"),
+    IDC_SBAR_RECENT, SBI_TOP, &myGlobals.g_sideBarIcons[2],  &myGlobals.g_sideBarIcons[2], &myGlobals.g_sideBarIcons[2], "t_recent", BTN_StockAction, BTN_StockCallback, _T("Open recent contacts"),
+    IDC_SBAR_USERPREFS, SBI_TOP, &myGlobals.g_sideBarIcons[4], &myGlobals.g_sideBarIcons[4], &myGlobals.g_sideBarIcons[4], "t_prefs", BTN_StockAction, BTN_StockCallback, _T("Contact preferences"),
+    IDC_SBAR_TOGGLEFORMAT, SBI_TOP | SBI_TOGGLE, &myGlobals.g_buttonBarIcons[20], &myGlobals.g_buttonBarIcons[20], &myGlobals.g_buttonBarIcons[20], "t_tformat", BTN_StockAction, BTN_StockCallback, _T("Formatting"),
+    IDC_SBAR_SETUP, SBI_BOTTOM, &myGlobals.g_sideBarIcons[3], &myGlobals.g_sideBarIcons[3], &myGlobals.g_sideBarIcons[3], "t_setup", BTN_StockAction, BTN_StockCallback, _T("Miranda options"),
+    IDOK, SBI_TOP | SBI_HANDLEBYCLIENT, &myGlobals.g_buttonBarIcons[9], &myGlobals.g_buttonBarIcons[9], &myGlobals.g_buttonBarIcons[9], "t_send", BTN_StockAction, BTN_StockCallback, _T("Send message"),
+    IDC_SBAR_CANCEL, SBI_TOP, &myGlobals.g_buttonBarIcons[6], &myGlobals.g_buttonBarIcons[6], &myGlobals.g_buttonBarIcons[6], "t_close", BTN_StockAction, BTN_StockCallback, _T("Close session"),
+    IDC_SMILEYBTN, SBI_TOP | SBI_HANDLEBYCLIENT, &myGlobals.g_buttonBarIcons[11], &myGlobals.g_buttonBarIcons[11], &myGlobals.g_buttonBarIcons[11], "t_emoticon", BTN_StockAction, BTN_StockCallback, _T("Emoticon"),
+    IDC_NAME, SBI_TOP | SBI_HANDLEBYCLIENT, &myGlobals.g_buttonBarIcons[16], &myGlobals.g_buttonBarIcons[16], &myGlobals.g_buttonBarIcons[16], "t_menu", BTN_StockAction, BTN_StockCallback, _T("User menu"),
+    IDC_PROTOCOL, SBI_TOP | SBI_HANDLEBYCLIENT, &myGlobals.g_buttonBarIcons[4], &myGlobals.g_buttonBarIcons[4], &myGlobals.g_buttonBarIcons[4], "t_details", BTN_StockAction, BTN_StockCallback, _T("User details"),
+    0, 0, 0, 0, 0, "", NULL, NULL, _T("")
 };
 
 int BTN_GetStockItem(ButtonItem *item, const char *szName)
@@ -116,17 +136,32 @@ int BTN_GetStockItem(ButtonItem *item, const char *szName)
     while(sbarItems[i].uId) {
         if(!stricmp(sbarItems[i].szName, szName)) {
             item->uId = sbarItems[i].uId;
-            item->dwFlags |= BUTTON_ISSIDEBAR;
-            myGlobals.m_SideBarEnabled = TRUE;
-            if(sbarItems[i].dwFlags & SBI_TOP)
-                item->yOff = 0;
-            else if(sbarItems[i].dwFlags & SBI_BOTTOM)
-                item->yOff = -1;
+            //item->dwFlags |= BUTTON_ISSIDEBAR;
+            //myGlobals.m_SideBarEnabled = TRUE;
+            if(item->dwFlags & BUTTON_ISSIDEBAR) {
+                if(sbarItems[i].dwFlags & SBI_TOP)
+                    item->yOff = 0;
+                else if(sbarItems[i].dwFlags & SBI_BOTTOM)
+                    item->yOff = -1;
+            }
+            item->dwStockFlags = sbarItems[i].dwFlags;
             item->dwFlags = sbarItems[i].dwFlags & SBI_TOGGLE ? item->dwFlags | BUTTON_ISTOGGLE : item->dwFlags & ~BUTTON_ISTOGGLE;
             item->pfnAction = sbarItems[i].pfnAction;
             item->pfnCallback = sbarItems[i].pfnCallback;
             lstrcpyn(item->szTip, sbarItems[i].tszTip, 256);
             item->szTip[255] = 0;
+            if(sbarItems[i].hIcon) {
+                item->normalGlyphMetrics[0] = (LONG)sbarItems[i].hIcon;
+                item->dwFlags |= BUTTON_NORMALGLYPHISICON;
+            }
+            if(sbarItems[i].hIconPressed) {
+                item->pressedGlyphMetrics[0] = (LONG)sbarItems[i].hIconPressed;
+                item->dwFlags |= BUTTON_PRESSEDGLYPHISICON;
+            }
+            if(sbarItems[i].hIconHover) {
+                item->hoverGlyphMetrics[0] = (LONG)sbarItems[i].hIconHover;
+                item->dwFlags |= BUTTON_HOVERGLYPHISICON;
+            }
             return 1;
         }
         i++;
@@ -138,15 +173,19 @@ int BTN_GetStockItem(ButtonItem *item, const char *szName)
  * set the states of defined database action buttons (only if button is a toggle)
 */
 
-void DM_SetDBButtonStates(HANDLE hPassedContact, HWND hwndContainer)
+void DM_SetDBButtonStates(HWND hwndChild, struct MessageWindowData *dat)
 {
-    ButtonItem *buttonItem = g_ButtonItems;
-    HANDLE hContact = 0, hFinalContact = 0;
+    ButtonItem *buttonItem = dat->pContainer->buttonItems;
+    HANDLE hContact = dat->hContact, hFinalContact = 0;
     char *szModule, *szSetting;
+    HWND hwndContainer = dat->pContainer->hwnd;;
 
     while(buttonItem) {
         BOOL result = FALSE;
         HWND hWnd = GetDlgItem(hwndContainer, buttonItem->uId);
+
+        if(buttonItem->pfnCallback)
+            buttonItem->pfnCallback(buttonItem, hwndChild, dat, hWnd);
 
         if(!(buttonItem->dwFlags & BUTTON_ISTOGGLE && buttonItem->dwFlags & BUTTON_ISDBACTION)) {
             buttonItem = buttonItem->nextItem;
@@ -217,8 +256,9 @@ LRESULT DM_ScrollToBottom(HWND hwndDlg, struct MessageWindowData *dat, WPARAM wP
             dat->dwFlags |= MWF_DEFERREDSCROLL;
 
         if(dat->hwndIEView) {
-            dat->needIEViewScroll = TRUE;
-            PostMessage(hwndDlg, DM_SCROLLIEVIEW, 0, 0);
+            SendMessage(hwndDlg, DM_SCROLLIEVIEW, 0, 0);
+            SendMessage(hwndDlg, DM_SCROLLIEVIEW, 0, 0);
+            return 0;
         }
         else {
             HWND hwnd = GetDlgItem(hwndDlg, dat->bType == SESSIONTYPE_IM ? IDC_LOG : IDC_CHAT_LOG);
@@ -458,4 +498,87 @@ HWND DM_CreateClist(HWND hwndParent, struct MessageWindowData *dat)
     SendMessage(hwndClist, CLM_AUTOREBUILD, 0, 0);
 
     return hwndClist;
+}
+
+LRESULT DM_MouseWheelHandler(HWND hwnd, HWND hwndParent, struct MessageWindowData *mwdat, WPARAM wParam, LPARAM lParam)
+{
+    RECT rc, rc1;
+    POINT pt;
+    TCHITTESTINFO hti;
+    HWND hwndTab;
+    UINT uID = mwdat->bType == SESSIONTYPE_IM ? IDC_LOG : IDC_CHAT_LOG;
+
+    GetCursorPos(&pt);
+    GetWindowRect(hwnd, &rc);
+    if(PtInRect(&rc, pt))
+        return 1;
+    if(mwdat->pContainer->dwFlags & CNT_SIDEBAR) {
+        GetWindowRect(GetDlgItem(mwdat->pContainer->hwnd, IDC_SIDEBARUP), &rc);
+        GetWindowRect(GetDlgItem(mwdat->pContainer->hwnd, IDC_SIDEBARDOWN), &rc1);
+        rc.bottom = rc1.bottom;
+        if(PtInRect(&rc, pt)) {
+            short amount = (short)(HIWORD(wParam));
+            SendMessage(mwdat->pContainer->hwnd, WM_COMMAND, MAKELONG(amount > 0 ? IDC_SIDEBARUP : IDC_SIDEBARDOWN, 0), 0);
+            return 0;
+        }
+    }
+    if(mwdat->hwndIEView)
+        GetWindowRect(mwdat->hwndIEView, &rc);
+    else
+        GetWindowRect(GetDlgItem(hwndParent, uID), &rc);
+    if(PtInRect(&rc, pt)) {
+        HWND hwnd = mwdat->hwndIEView ? mwdat->hwndIWebBrowserControl : GetDlgItem(hwndParent, uID);
+        short wDirection = (short)HIWORD(wParam);
+
+        if(hwnd == 0)
+            hwnd = WindowFromPoint(pt);
+
+        if(LOWORD(wParam) & MK_SHIFT || DBGetContactSettingByte(NULL, SRMSGMOD_T, "fastscroll", 0)) {
+            if(wDirection < 0)
+                SendMessage(hwnd, WM_VSCROLL, MAKEWPARAM(SB_PAGEDOWN, 0), 0);
+            else if(wDirection > 0)
+                SendMessage(hwnd, WM_VSCROLL, MAKEWPARAM(SB_PAGEUP, 0), 0);
+        }
+        else
+            SendMessage(hwnd, WM_MOUSEWHEEL, wParam, lParam);
+        return 0;
+    }
+    hwndTab = GetDlgItem(mwdat->pContainer->hwnd, IDC_MSGTABS);
+    GetCursorPos(&hti.pt);
+    ScreenToClient(hwndTab, &hti.pt);
+    hti.flags = 0;
+    if(TabCtrl_HitTest(hwndTab, &hti) != -1) {
+        SendMessage(hwndTab, WM_MOUSEWHEEL, wParam, -1);
+        return 0;
+    }
+    return 1;
+}
+
+LRESULT DM_ThemeChanged(HWND hwnd, struct MessageWindowData *dat)
+{
+    StatusItems_t *item_log = &StatusItems[ID_EXTBKHISTORY];
+    StatusItems_t *item_msg = &StatusItems[ID_EXTBKINPUTAREA];
+
+    dat->bFlatMsgLog = DBGetContactSettingByte(NULL, SRMSGMOD_T, "flatlog", 0);
+
+    if(!dat->bFlatMsgLog)
+        dat->hTheme = (myGlobals.m_VSApiEnabled && pfnOpenThemeData) ? pfnOpenThemeData(hwnd, L"EDIT") : 0;
+    else
+        dat->hTheme = 0;
+
+    if(dat->bType == SESSIONTYPE_IM) {
+        if(dat->bFlatMsgLog || dat->hTheme != 0 || (dat->pContainer->bSkinned && !item_log->IGNORED))
+            SetWindowLong(GetDlgItem(hwnd, IDC_LOG), GWL_EXSTYLE, GetWindowLong(GetDlgItem(hwnd, IDC_LOG), GWL_EXSTYLE) & ~WS_EX_STATICEDGE);
+        if(dat->bFlatMsgLog || dat->hTheme != 0 || (dat->pContainer->bSkinned && !item_msg->IGNORED))
+            SetWindowLong(GetDlgItem(hwnd, IDC_MESSAGE), GWL_EXSTYLE, GetWindowLong(GetDlgItem(hwnd, IDC_MESSAGE), GWL_EXSTYLE) & ~WS_EX_STATICEDGE);
+    }
+    else {
+        if(dat->bFlatMsgLog || dat->hTheme != 0 || (dat->pContainer->bSkinned && !item_log->IGNORED)) {
+            SetWindowLong(GetDlgItem(hwnd, IDC_CHAT_LOG), GWL_EXSTYLE, GetWindowLong(GetDlgItem(hwnd, IDC_CHAT_LOG), GWL_EXSTYLE) & ~WS_EX_STATICEDGE);
+            SetWindowLong(GetDlgItem(hwnd, IDC_LIST), GWL_EXSTYLE, GetWindowLong(GetDlgItem(hwnd, IDC_LIST), GWL_EXSTYLE) & ~(WS_EX_CLIENTEDGE | WS_EX_STATICEDGE));
+        }
+        if(dat->bFlatMsgLog || dat->hTheme != 0 || (dat->pContainer->bSkinned && !item_msg->IGNORED))
+            SetWindowLong(GetDlgItem(hwnd, IDC_CHAT_MESSAGE), GWL_EXSTYLE, GetWindowLong(GetDlgItem(hwnd, IDC_CHAT_MESSAGE), GWL_EXSTYLE) & ~WS_EX_STATICEDGE);
+    }
+    return 0;
 }
