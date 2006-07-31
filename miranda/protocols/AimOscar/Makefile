@@ -79,9 +79,9 @@ ID = indent
 
 # Install location
 ifdef DEBUG
-BIN = ..\..\bin\debug\plugins\AimOSCAR.dll
+BIN = ../../bin/debug/plugins/Aim.dll
 else
-BIN = ..\..\bin\release\plugins\AimOSCAR.dll
+BIN = ../../bin/release/plugins/Aim.dll
 endif
 
 # Defines
@@ -118,6 +118,6 @@ format :
 	$(RM) *.*~
 
 clean :
-	$(RM) -fr $(OBJ) $(RES) *.ncb *.suo *.aps Release Debug *.vcproj.* *.opt *.dat *.plg
+	$(RM) -fr $(OBJ) $(RES) *.ncb *.suo *.aps Release Debug *.vcproj.* *.opt *.dat *.plg Ankh.Load
 
 -include Makefile.dep
