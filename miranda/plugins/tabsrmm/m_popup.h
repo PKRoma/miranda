@@ -93,7 +93,6 @@ Appendix B: "What do I need to do?!?".
 Here is an example in C.
 
 //Your plugin is in /plugins/myPlugin/ or in miranda32/something/
-#include "../../plugins/PopUp/m_popup.h"
 
 Define your own plugin data if you need it. In this example, we need it and we'll use NewStatusNotify as example: thsi plugin shows a popup when someone in your contact list changes his/hers status. We'll need to know his status, both current and old one.
 typedef struct {
