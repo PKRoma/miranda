@@ -320,11 +320,6 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 		return 1;
 	}
 	InsertRegistryKey();
-	hAPCWindow=CreateWindowEx(0,_T("STATIC"),NULL,0, 0,0,0,0, NULL,NULL,NULL,NULL); // lame
-	SetWindowLong(hAPCWindow,GWL_WNDPROC,(LONG)APCWndProc);
-	hStackMutex=CreateMutex(NULL,FALSE,NULL);
-	hMirandaShutdown=CreateEvent(NULL,TRUE,FALSE,NULL);
-	hThreadQueueEmpty=CreateEvent(NULL,TRUE,TRUE,NULL);
 	NotifyEventHooks(hModulesLoadedEvent,0,0);
 	MyMsgWaitForMultipleObjectsEx=(DWORD (WINAPI *)(DWORD,CONST HANDLE*,DWORD,DWORD,DWORD))GetProcAddress(GetModuleHandleA("user32"),"MsgWaitForMultipleObjectsEx");
 	forkthread(compactHeapsThread,0,NULL);	
@@ -489,11 +484,20 @@ int GetListInterface(WPARAM wParam, LPARAM lParam)
 int LoadSystemModule(void)
 {
 	InitCommonControls();
+
+	hAPCWindow=CreateWindowEx(0,_T("STATIC"),NULL,0, 0,0,0,0, NULL,NULL,NULL,NULL); // lame
+	SetWindowLong(hAPCWindow,GWL_WNDPROC,(LONG)APCWndProc);
+	hStackMutex=CreateMutex(NULL,FALSE,NULL);
+	hMirandaShutdown=CreateEvent(NULL,TRUE,FALSE,NULL);
+	hThreadQueueEmpty=CreateEvent(NULL,TRUE,TRUE,NULL);
+
 	hShutdownEvent=CreateHookableEvent(ME_SYSTEM_SHUTDOWN);
 	hPreShutdownEvent=CreateHookableEvent(ME_SYSTEM_PRESHUTDOWN);
 	hModulesLoadedEvent=CreateHookableEvent(ME_SYSTEM_MODULESLOADED);
 	hOkToExitEvent=CreateHookableEvent(ME_SYSTEM_OKTOEXIT);	
+
 	HookEvent(ME_SYSTEM_SHUTDOWN,SystemShutdownProc);
+
 	CreateServiceFunction(MS_SYSTEM_THREAD_PUSH,UnwindThreadPush);
 	CreateServiceFunction(MS_SYSTEM_THREAD_POP,UnwindThreadPop);
 	CreateServiceFunction(MS_SYSTEM_TERMINATED,MirandaIsTerminated);
