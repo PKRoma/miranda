@@ -661,7 +661,8 @@ int CLUIFramesStoreAllFrames()
 int CLUIFramesGetalClientFrame(void)
 {
     int i;
-    if (FramesSysNotStarted) return -1;
+    if (FramesSysNotStarted) 
+        return -1;
 
     if (alclientFrame!=-1)
         return alclientFrame;

@@ -313,6 +313,7 @@ static int CreateCLC(HWND parent)
 static int CluiModulesLoaded(WPARAM wParam, LPARAM lParam)
 {
 	static Update upd = {0};
+    static char *szPrefix = "clist_nicer_plus ";
 #if defined(_UNICODE)
 	static char *component = "CList Nicer+ (Unicode)";
 	static char szCurrentVersion[30];
@@ -330,7 +331,6 @@ static int CluiModulesLoaded(WPARAM wParam, LPARAM lParam)
 	static char *szFLUpdateurl = "http://addons.miranda-im.org/feed.php?dlfile=2602";
     upd.pbVersionPrefix = (BYTE *)"<span class=\"fileNameHeader\">CList Nicer+ (NEW) ";
 #endif
-	static char *szPrefix = "clist_nicer_plus ";
 
 	// updater plugin support
 
