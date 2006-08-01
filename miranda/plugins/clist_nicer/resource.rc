@@ -874,9 +874,10 @@ END
 // Version
 //
 
+#ifndef APSTUDIO_INVOKED
 VS_VERSION_INFO VERSIONINFO
- FILEVERSION 0,7,0,1
- PRODUCTVERSION 0,7,0,1
+ FILEVERSION 0,7,0,2
+ PRODUCTVERSION 0,7,0,2
  FILEFLAGSMASK 0x3fL
 #ifdef _DEBUG
  FILEFLAGS 0x21L
@@ -888,26 +889,45 @@ VS_VERSION_INFO VERSIONINFO
  FILESUBTYPE 0x0L
 BEGIN
     BLOCK "StringFileInfo"
+#if defined(UNICODE)    
     BEGIN
         BLOCK "000004b0"
         BEGIN
             VALUE "Comments", "Licensed under the terms of the GNU General Public License"
             VALUE "CompanyName", "Copyright © 2000-2004 Richard Hughes, Roland Rabien, Tristan Van de Vreede, Martin Öberg, Robert Rainwater, Sam Kothari and Lyon Lim and others."
-            VALUE "FileDescription", "Miranda IM Contact List"
-            VALUE "FileVersion", "0.7.0.1"
-            VALUE "InternalName", "clist_nicer+"
+            VALUE "FileDescription", "Clist Nicer+ (UNICODE)"
+            VALUE "FileVersion", "0.7.0.2"
+            VALUE "InternalName", "clist_nicer+ (UNICODE)"
             VALUE "LegalCopyright", "Copyright © 2000-2006 The Miranda IM project members."
             VALUE "OriginalFilename", "clist_nicer.dll"
             VALUE "ProductName", "Miranda IM Contact List"
-            VALUE "ProductVersion", "0.7.0.1"
-            VALUE "SpecialBuild", "58"
+            VALUE "ProductVersion", "0.7.0.2"
+            VALUE "SpecialBuild", "11"
         END
     END
+#else
+    BEGIN
+        BLOCK "000004b0"
+        BEGIN
+            VALUE "Comments", "Licensed under the terms of the GNU General Public License"
+            VALUE "CompanyName", "Copyright © 2000-2004 Richard Hughes, Roland Rabien, Tristan Van de Vreede, Martin Öberg, Robert Rainwater, Sam Kothari and Lyon Lim and others."
+            VALUE "FileDescription", "Clist Nicer+ (ANSI)"
+            VALUE "FileVersion", "0.7.0.2"
+            VALUE "InternalName", "clist_nicer+ (ANSI)"
+            VALUE "LegalCopyright", "Copyright © 2000-2006 The Miranda IM project members."
+            VALUE "OriginalFilename", "clist_nicer.dll"
+            VALUE "ProductName", "Miranda IM Contact List"
+            VALUE "ProductVersion", "0.7.0.2"
+            VALUE "SpecialBuild", "11"
+        END
+    END
+#endif    
     BLOCK "VarFileInfo"
     BEGIN
         VALUE "Translation", 0x0, 1200
     END
 END
+#endif
 
 #endif    // English (U.S.) resources
 /////////////////////////////////////////////////////////////////////////////

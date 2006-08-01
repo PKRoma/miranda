@@ -99,8 +99,6 @@ static BOOL CALLBACK DlgProcCluiOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPAR
 		{
 			TranslateDialogDefault(hwndDlg);
 
-			//CheckDlgButton(hwndDlg, IDC_SHOWCLIENTICONS, g_CluiData.dwFlags & CLUI_SHOWCLIENTICONS);
-
 			CheckDlgButton(hwndDlg, IDC_SHOWCLIENTICONS, g_CluiData.dwExtraImageMask & EIMG_SHOW_CLIENT);
 			CheckDlgButton(hwndDlg, IDC_SHOWEXTENDEDSTATUS, g_CluiData.dwExtraImageMask & EIMG_SHOW_EXTRA);
 			CheckDlgButton(hwndDlg, IDC_EXTRAMAIL, g_CluiData.dwExtraImageMask & EIMG_SHOW_MAIL);
@@ -526,7 +524,7 @@ static BOOL CALLBACK DlgProcPlusOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPAR
 
 			TranslateDialogDefault(hwndDlg);
 
-			CheckDlgButton(hwndDlg, IDC_SHOWSTATUSICONS, dwFlags & CLUI_FRAME_STATUSICONS);
+			CheckDlgButton(hwndDlg, IDC_SHOWSTATUSICONS, (dwFlags & CLUI_FRAME_STATUSICONS) ? BST_CHECKED : BST_UNCHECKED);
 			CheckDlgButton(hwndDlg, IDC_SHOWVISIBILITY, dwFlags & CLUI_SHOWVISI);
 			CheckDlgButton(hwndDlg, IDC_SHOWMETA, dwFlags & CLUI_USEMETAICONS);
 			CheckDlgButton(hwndDlg, IDC_NOAVATARSOFFLINE, g_CluiData.bNoOfflineAvatars);
@@ -542,23 +540,23 @@ static BOOL CALLBACK DlgProcPlusOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPAR
 			CheckDlgButton(hwndDlg, IDC_CLISTSUNKEN, dwFlags & CLUI_FRAME_CLISTSUNKEN);
 
 			CheckDlgButton(hwndDlg, IDC_EVENTAREAAUTOHIDE, dwFlags & CLUI_FRAME_AUTOHIDENOTIFY);
-			CheckDlgButton(hwndDlg, IDC_EVENTAREASUNKEN, dwFlags & CLUI_FRAME_EVENTAREASUNKEN);
+			CheckDlgButton(hwndDlg, IDC_EVENTAREASUNKEN, (dwFlags & CLUI_FRAME_EVENTAREASUNKEN) ? BST_CHECKED : BST_UNCHECKED);
 
 			if(g_CluiData.bAvatarServiceAvail) {
-				CheckDlgButton(hwndDlg, IDC_CLISTAVATARS, dwFlags & CLUI_FRAME_AVATARS);
+				CheckDlgButton(hwndDlg, IDC_CLISTAVATARS, (dwFlags & CLUI_FRAME_AVATARS) ? BST_CHECKED : BST_UNCHECKED);
 				EnableWindow(GetDlgItem(hwndDlg, IDC_CLISTAVATARS), TRUE);
 			}
 			else {
 				CheckDlgButton(hwndDlg, IDC_CLISTAVATARS, FALSE);
 				EnableWindow(GetDlgItem(hwndDlg, IDC_CLISTAVATARS), FALSE);
 			}
-			CheckDlgButton(hwndDlg, IDC_AVATARSBORDER, dwFlags & CLUI_FRAME_AVATARBORDER);
-			CheckDlgButton(hwndDlg, IDC_AVATARSROUNDED, dwFlags & CLUI_FRAME_ROUNDAVATAR);
-			CheckDlgButton(hwndDlg, IDC_ALWAYSALIGNNICK, dwFlags & CLUI_FRAME_ALWAYSALIGNNICK);
-			CheckDlgButton(hwndDlg, IDC_SHOWSTATUSMSG, dwFlags & CLUI_FRAME_SHOWSTATUSMSG);
-			CheckDlgButton(hwndDlg, IDC_OVERLAYICONS, dwFlags & CLUI_FRAME_OVERLAYICONS);
-			CheckDlgButton(hwndDlg, IDC_SELECTIVEICONS, dwFlags & CLUI_FRAME_SELECTIVEICONS);
-			CheckDlgButton(hwndDlg, IDC_RENDERGDIP, dwFlags & CLUI_FRAME_GDIPLUS);
+			CheckDlgButton(hwndDlg, IDC_AVATARSBORDER, (dwFlags & CLUI_FRAME_AVATARBORDER) ? BST_CHECKED : BST_UNCHECKED);
+			CheckDlgButton(hwndDlg, IDC_AVATARSROUNDED, (dwFlags & CLUI_FRAME_ROUNDAVATAR) ? BST_CHECKED : BST_UNCHECKED);
+			CheckDlgButton(hwndDlg, IDC_ALWAYSALIGNNICK, (dwFlags & CLUI_FRAME_ALWAYSALIGNNICK) ? BST_CHECKED : BST_UNCHECKED);
+			CheckDlgButton(hwndDlg, IDC_SHOWSTATUSMSG, (dwFlags & CLUI_FRAME_SHOWSTATUSMSG) ? BST_CHECKED : BST_UNCHECKED);
+			CheckDlgButton(hwndDlg, IDC_OVERLAYICONS, (dwFlags & CLUI_FRAME_OVERLAYICONS) ? BST_CHECKED : BST_UNCHECKED);
+			CheckDlgButton(hwndDlg, IDC_SELECTIVEICONS, (dwFlags & CLUI_FRAME_SELECTIVEICONS) ? BST_CHECKED : BST_UNCHECKED);
+			CheckDlgButton(hwndDlg, IDC_RENDERGDIP, (dwFlags & CLUI_FRAME_GDIPLUS) ? BST_CHECKED : BST_UNCHECKED);
 
 			SendMessage(hwndDlg, WM_COMMAND, IDC_CLISTAVATARS, 0);
 			SendDlgItemMessage(hwndDlg, IDC_AVATARBORDERCLR, CPM_SETCOLOUR, 0, g_CluiData.avatarBorder);

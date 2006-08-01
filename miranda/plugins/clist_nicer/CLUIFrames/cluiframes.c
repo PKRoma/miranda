@@ -3166,22 +3166,22 @@ int CLUIFrameResizeFloatingFrame(int framepos)
     width=rect.right-rect.left;
     height=rect.bottom-rect.top;
 
-    Frames[framepos].visible?ShowWindow(Frames[framepos].ContainerWnd,SW_SHOW):ShowWindow(Frames[framepos].ContainerWnd,SW_HIDE);
+    Frames[framepos].visible?ShowWindow(Frames[framepos].ContainerWnd,SW_SHOWNOACTIVATE):ShowWindow(Frames[framepos].ContainerWnd,SW_HIDE);
 
 
 
     if (Frames[framepos].TitleBar.ShowTitleBar) {
-        ShowWindow(Frames[framepos].TitleBar.hwnd,SW_SHOW);
+        ShowWindow(Frames[framepos].TitleBar.hwnd,SW_SHOWNOACTIVATE);
         Frames[framepos].height=height-DEFAULT_TITLEBAR_HEIGHT;
-        SetWindowPos(Frames[framepos].TitleBar.hwnd,HWND_TOP,0,0,width,DEFAULT_TITLEBAR_HEIGHT,SWP_SHOWWINDOW|SWP_DRAWFRAME);
+        SetWindowPos(Frames[framepos].TitleBar.hwnd,HWND_TOP,0,0,width,DEFAULT_TITLEBAR_HEIGHT,SWP_SHOWWINDOW|SWP_DRAWFRAME|SWP_NOACTIVATE);
         InvalidateRect(Frames[framepos].TitleBar.hwnd, NULL, FALSE);
-        SetWindowPos(Frames[framepos].hWnd,HWND_TOP,0,DEFAULT_TITLEBAR_HEIGHT,width,height-DEFAULT_TITLEBAR_HEIGHT,SWP_SHOWWINDOW);
+        SetWindowPos(Frames[framepos].hWnd,HWND_TOP,0,DEFAULT_TITLEBAR_HEIGHT,width,height-DEFAULT_TITLEBAR_HEIGHT,SWP_SHOWWINDOW|SWP_NOACTIVATE);
 
     }
     else {
         Frames[framepos].height=height;
         ShowWindow(Frames[framepos].TitleBar.hwnd,SW_HIDE);
-        SetWindowPos(Frames[framepos].hWnd,HWND_TOP,0,0,width,height,SWP_SHOWWINDOW);
+        SetWindowPos(Frames[framepos].hWnd,HWND_TOP,0,0,width,height,SWP_SHOWWINDOW|SWP_NOACTIVATE);
 
     }
 //			CLUIFramesForceUpdateFrame(&Frames[framepos]);
@@ -3450,8 +3450,8 @@ static int CLUIFrameOnModulesLoad(WPARAM wParam,LPARAM lParam)
     DWORD dwThreadID;
 
     g_hEventThread = CreateEvent(NULL, TRUE, FALSE, _T("mf_update_evt"));
-    SetThreadPriority(g_hEventThread, THREAD_PRIORITY_IDLE);
     hThreadMFUpdate = CreateThread(NULL, 16000, MF_UpdateThread, 0, 0, &dwThreadID);
+    SetThreadPriority(hThreadMFUpdate, THREAD_PRIORITY_IDLE);
     CLUIFramesLoadMainMenu(0,0);
     CLUIFramesCreateMenuForFrame(-1,-1,000010000,MS_CLIST_ADDCONTEXTFRAMEMENUITEM);
     return 0;

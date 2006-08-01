@@ -186,7 +186,7 @@ static void LayoutButtons(HWND hwnd, RECT *rc)
     if(g_ButtonItems) {
         while(btnItems) {
             LONG x = (btnItems->xOff >= 0) ? rect.left + btnItems->xOff : rect.right - abs(btnItems->xOff);
-            LONG y = (btnItems->yOff >= 0) ? rect.top + btnItems->yOff : rect.bottom - abs(btnItems->yOff);
+            LONG y = (btnItems->yOff >= 0) ? rect.top + btnItems->yOff : rect.bottom - g_CluiData.statusBarHeight;
 
             SetWindowPos(btnItems->hWnd, 0, x, y, btnItems->width, btnItems->height,
                                   SWP_NOACTIVATE | SWP_NOZORDER | SWP_NOCOPYBITS | SWP_NOREDRAW);

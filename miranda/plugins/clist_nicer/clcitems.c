@@ -478,8 +478,7 @@ void GetExtendedInfo(struct ClcContact *contact, struct ClcData *dat)
 
     // notify other plugins to re-supply their extra images (icq for xstatus, mBirthday etc...)
     
-    //if(!contact->bIsMeta)
-        NotifyEventHooks(hExtraImageApplying, (WPARAM)contact->hContact, 0);
+    NotifyEventHooks(hExtraImageApplying, (WPARAM)contact->hContact, 0);
 }
 
 static void LoadSkinItemToCache(struct ExtraCache *cEntry, char *szProto)

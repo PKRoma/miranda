@@ -36,7 +36,7 @@ extern struct CluiData g_CluiData;
 
 extern struct ExtraCache *g_ExtraCache;
 extern int g_nextExtraCacheEntry, g_maxExtraCacheEntry;
-extern int g_isConnecting, during_sizing;
+extern int /*g_isConnecting,*/ during_sizing;
 
 extern void ( *saveRecalcScrollBar )(HWND hwnd, struct ClcData *dat);
 

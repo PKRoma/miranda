@@ -41,7 +41,7 @@ extern ButtonItem *g_ButtonItems;
 
 extern pfnDrawAlpha pDrawAlpha;
 extern BOOL (WINAPI *MySetLayeredWindowAttributes)(HWND, COLORREF, BYTE, DWORD);
-extern int during_sizing, g_isConnecting;
+extern int during_sizing;
 extern StatusItems_t *StatusItems;
 extern int g_shutDown;
 extern int g_nextExtraCacheEntry, g_maxExtraCacheEntry;
