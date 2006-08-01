@@ -812,10 +812,26 @@ static void JabberProcessMessage( XmlNode *node, void *userdata )
 	if ( !node->name || strcmp( node->name, "message" )) return;
 	if (( info=( struct ThreadData * ) userdata ) == NULL ) return;
 
-	if (( type = JabberXmlGetAttrValue( node, "type" )) != NULL && !lstrcmp( type, _T("error")))
+	if (( type = JabberXmlGetAttrValue( node, "type" )) != NULL )
 		return;
 	if (( from = JabberXmlGetAttrValue( node, "from" )) == NULL )
 		return;
+
+	if ( !lstrcmp( type, _T("error"))) {
+		//we  check if is message delivery failure
+		XmlNode* errorNode = JabberXmlGetChild( node, "error" );
+		if ( errorNode != NULL && (idStr = JabberXmlGetAttrValue( node, "id" )) != NULL ) {
+			if ( !_tcsncmp( idStr, _T(JABBER_IQID), strlen( JABBER_IQID )) ){
+				JABBER_LIST_ITEM* item = JabberListGetItemPtr( LIST_ROSTER, from );
+				if ( item != NULL ){
+					id = _ttoi(( idStr )+strlen( JABBER_IQID ));
+					if ( id == item->idMsgAckPending ){ // yes, it is
+						char *errText = t2a(JabberErrorMsg(errorNode));
+						JSendBroadcast( JabberHContactFromJID( from ), ACKTYPE_MESSAGE, ACKRESULT_FAILED, ( HANDLE ) 1, (LPARAM)errText );
+						mir_free(errText);
+		}	}	}	}
+		return;
+	}
 
 	JABBER_LIST_ITEM* chatItem = JabberListGetItemPtr( LIST_CHATROOM, from );
 	BOOL isChatRoomJid = ( chatItem != NULL );
@@ -887,14 +903,14 @@ static void JabberProcessMessage( XmlNode *node, void *userdata )
 						if (( hContact = JabberHContactFromJID( from )) != NULL )
  							JCallService( MS_PROTO_CONTACTISTYPING, ( WPARAM ) hContact, 60 );
 
-					if ( xNode->numChild==0 || ( xNode->numChild==1 && idNode!=NULL ))
+					if ( xNode->numChild==0 || ( xNode->numChild==1 && idNode != NULL ))
 						// Maybe a cancel to the previous composing
 						if (( hContact = JabberHContactFromJID( from )) != NULL )
 							JCallService( MS_PROTO_CONTACTISTYPING, ( WPARAM ) hContact, PROTOTYPE_CONTACTTYPING_OFF );
 				}
 				else {
 					// Check whether any event is requested
-					if ( !delivered && ( n=JabberXmlGetChild( xNode, "delivered" ))!=NULL ) {
+					if ( !delivered && ( n=JabberXmlGetChild( xNode, "delivered" )) != NULL ) {
 						delivered = TRUE;
 						idStr = JabberXmlGetAttrValue( node, "id" );
 
@@ -903,7 +919,7 @@ static void JabberProcessMessage( XmlNode *node, void *userdata )
 						x->addChild( "id", ( idStr != NULL ) ? idStr : NULL );
 						JabberSend( info->s, m );
 					}
-					if ( item!=NULL && JabberXmlGetChild( xNode, "composing" )!=NULL ) {
+					if ( item!=NULL && JabberXmlGetChild( xNode, "composing" ) != NULL ) {
 						composing = TRUE;
 						if ( item->messageEventIdStr )
 							mir_free( item->messageEventIdStr );
@@ -913,7 +929,7 @@ static void JabberProcessMessage( XmlNode *node, void *userdata )
 			}
 			else if ( !_tcscmp( p, _T("jabber:x:oob")) && isRss) {
 				XmlNode* rssUrlNode;
-				if ( (rssUrlNode = JabberXmlGetNthChild( xNode, "url", 1 ))!=NULL) {
+				if ( (rssUrlNode = JabberXmlGetNthChild( xNode, "url", 1 )) != NULL) {
 					p = ( TCHAR* )alloca( sizeof(TCHAR)*( _tcslen( subjectNode->text ) + _tcslen( bodyNode->text ) + _tcslen( rssUrlNode->text ) + 14 ));
 					wsprintf( p, _T("Subject: %s\r\n%s\r\n%s"), subjectNode->text, rssUrlNode->text, bodyNode->text );
 					szMessage = p;
