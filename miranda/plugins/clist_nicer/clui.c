@@ -320,6 +320,7 @@ static int CluiModulesLoaded(WPARAM wParam, LPARAM lParam)
 	static char *szUpdateUrl = "http://miranda.or.at/files/clist_nicer/clist_nicer_plusW.zip";
 	static char *szFLVersionUrl = "http://addons.miranda-im.org/details.php?action=viewfile&id=2601";
 	static char *szFLUpdateurl = "http://addons.miranda-im.org/feed.php?dlfile=2601";
+    upd.pbVersionPrefix = (BYTE *)"<span class=\"fileNameHeader\">CList Nicer+ (NEW) - Unicode ";
 #else
 	static char *component = "CList Nicer+";
 	static char szCurrentVersion[30];
@@ -327,6 +328,7 @@ static int CluiModulesLoaded(WPARAM wParam, LPARAM lParam)
 	static char *szUpdateUrl = "http://miranda.or.at/files/clist_nicer/clist_nicer_plus.zip";
 	static char *szFLVersionUrl = "http://addons.miranda-im.org/details.php?action=viewfile&id=2602";
 	static char *szFLUpdateurl = "http://addons.miranda-im.org/feed.php?dlfile=2602";
+    upd.pbVersionPrefix = (BYTE *)"<span class=\"fileNameHeader\">CList Nicer+ (NEW) ";
 #endif
 	static char *szPrefix = "clist_nicer_plus ";
 
@@ -338,7 +340,6 @@ static int CluiModulesLoaded(WPARAM wParam, LPARAM lParam)
 	upd.cpbVersion = strlen((char *)upd.pbVersion);
 	upd.szVersionURL = szFLVersionUrl;
 	upd.szUpdateURL = szFLUpdateurl;
-	upd.pbVersionPrefix = (BYTE *)"<span class=\"fileNameHeader\">Updater ";
 
 	upd.szBetaUpdateURL = szUpdateUrl;
 	upd.szBetaVersionURL = szVersionUrl;
