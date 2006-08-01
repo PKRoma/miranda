@@ -427,7 +427,7 @@ static int __fastcall DrawAvatar(HDC hdcMem, RECT *rc, struct ClcContact *contac
 	}
 
 	if(g_CluiData.dwFlags & CLUI_FRAME_OVERLAYICONS && cstatus && (int)newHeight >= g_cysmIcon)
-		DrawIconEx(hdcMem, rc->left + (int)newWidth - 12, y + topoffset + (int)newHeight - 12, overlayicons[cstatus - ID_STATUS_OFFLINE], g_cxsmIcon, g_cysmIcon, 0, 0, DI_NORMAL | DI_COMPAT);
+		DrawIconEx(hdcMem, rc->left + (int)newWidth - 15, y + topoffset + (int)newHeight - 15, overlayicons[cstatus - ID_STATUS_OFFLINE], g_cxsmIcon, g_cysmIcon, 0, 0, DI_NORMAL | DI_COMPAT);
 
 	SelectClipRgn(hdcMem, NULL);
 	DeleteObject(rgn);
