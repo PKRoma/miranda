@@ -39,6 +39,7 @@ static char *relnotes[] = {
     "\\par\t\\b\\ul1 Release notes for version 1.0.0.1\\b0\\ul0\\par ",
 	"*\tFixed a bug with re-attaching temporary (\"not-on-list\") contacts to a different container.\\par",
 	"*\tFixed problems with updater (\"Invalid response 301\") message.\\par",
+	"*\tFixed minor issues when using IEView (scolling, flickering).\\par",
     NULL
 };
 
