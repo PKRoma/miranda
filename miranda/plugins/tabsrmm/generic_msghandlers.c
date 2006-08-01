@@ -256,8 +256,7 @@ LRESULT DM_ScrollToBottom(HWND hwndDlg, struct MessageWindowData *dat, WPARAM wP
             dat->dwFlags |= MWF_DEFERREDSCROLL;
 
         if(dat->hwndIEView) {
-            SendMessage(hwndDlg, DM_SCROLLIEVIEW, 0, 0);
-            SendMessage(hwndDlg, DM_SCROLLIEVIEW, 0, 0);
+            PostMessage(hwndDlg, DM_SCROLLIEVIEW, 0, 0);
             return 0;
         }
         else {

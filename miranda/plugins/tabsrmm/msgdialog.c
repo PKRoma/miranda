@@ -311,7 +311,6 @@ static void MsgWindowUpdateState(HWND hwndDlg, struct MessageWindowData *dat, UI
         }
         DM_SetDBButtonStates(hwndDlg, dat);
         if(dat->hwndIEView) {
-            //GetRealIEViewWindow(hwndDlg, dat);
             RECT rcRTF;
             POINT pt;
 
@@ -2397,11 +2396,11 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                             
                             if(dat->szProto != NULL) {
                                 if(dat->wStatus == ID_STATUS_OFFLINE)
-                                    mir_snprintf(buffer, sizeof(buffer), Translate("signed off (was %s)"), szOldStatus);
+                                    mir_snprintf(buffer, sizeof(buffer), Translate("signed off."));
                                 else if(dat->wOldStatus == ID_STATUS_OFFLINE)
-                                    mir_snprintf(buffer, sizeof(buffer), Translate("signed on (%s)"), szNewStatus);
+                                    mir_snprintf(buffer, sizeof(buffer), Translate("signed on and is now %s."), szNewStatus);
                                 else
-                                    mir_snprintf(buffer, sizeof(buffer), Translate("is now %s (was %s)"), szNewStatus, szOldStatus);
+                                    mir_snprintf(buffer, sizeof(buffer), Translate("changed status from %s to %s."), szOldStatus, szNewStatus);
                             }
                             iLen = strlen(buffer) + 1;
 #if defined(_UNICODE)
