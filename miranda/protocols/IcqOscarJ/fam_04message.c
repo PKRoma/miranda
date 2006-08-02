@@ -93,49 +93,38 @@ void handleMsgFam(unsigned char *pBuffer, WORD wBufferLength, snac_header* pSnac
 
 
 
-static void handleReplyICBM(unsigned char *buf, WORD wLen, WORD wFlags, DWORD dwRef)
-{ // we don't care about the stuff, just change the params
+static void setMsgChannelParams(WORD wChan, DWORD dwFlags)
+{
   icq_packet packet;
 
+  // Set message parameters for channel wChan (CLI_SET_ICBM_PARAMS)
+  serverPacketInit(&packet, 26);
+  packFNACHeader(&packet, ICQ_MSG_FAMILY, ICQ_MSG_CLI_SETPARAMS);
+  packWord(&packet, wChan);               // Channel
+  packDWord(&packet, dwFlags);            // Flags
+  packWord(&packet, MAX_MESSAGESNACSIZE); // Max message snac size
+  packWord(&packet, 0x03E7);              // Max sender warning level
+  packWord(&packet, 0x03E7);              // Max receiver warning level
+  packWord(&packet, CLIENTRATELIMIT);     // Minimum message interval in seconds
+  packWord(&packet, 0x0000);              // Unknown
+  sendServPacket(&packet);
+}
+
+
+
+static void handleReplyICBM(unsigned char *buf, WORD wLen, WORD wFlags, DWORD dwRef)
+{ // we don't care about the stuff, just change the params
+
   // Set message parameters for channel 1 (CLI_SET_ICBM_PARAMS)
-  serverPacketInit(&packet, 26);
-  packFNACHeader(&packet, ICQ_MSG_FAMILY, ICQ_MSG_CLI_SETPARAMS);
-  packWord(&packet, 0x0001);              // Channel
 #ifdef DBG_CAPMTN
-  packDWord(&packet, 0x0000000B);         // Flags
+  setMsgChannelParams(0x0001, 0x0000000B);
 #else
-  packDWord(&packet, 0x00000003);         // Flags
+  setMsgChannelParams(0x0001, 0x00000003);
 #endif
-  packWord(&packet, MAX_MESSAGESNACSIZE); // Max message snac size
-  packWord(&packet, 0x03E7);              // Max sender warning level
-  packWord(&packet, 0x03E7);              // Max receiver warning level
-  packWord(&packet, CLIENTRATELIMIT);     // Minimum message interval in seconds
-  packWord(&packet, 0x0000);              // Unknown
-  sendServPacket(&packet);
-
   // Set message parameters for channel 2 (CLI_SET_ICBM_PARAMS)
-  serverPacketInit(&packet, 26);
-  packFNACHeader(&packet, ICQ_MSG_FAMILY, ICQ_MSG_CLI_SETPARAMS);
-  packWord(&packet, 0x0002);              // Channel
-  packDWord(&packet, 0x00000003);         // Flags
-  packWord(&packet, MAX_MESSAGESNACSIZE); // Max message snac size
-  packWord(&packet, 0x03E7);              // Max sender warning level
-  packWord(&packet, 0x03E7);              // Max receiver warning level
-  packWord(&packet, CLIENTRATELIMIT);     // Minimum message interval in seconds
-  packWord(&packet, 0x0000);              // Unknown
-  sendServPacket(&packet);
-
+  setMsgChannelParams(0x0002, 0x00000003);
   // Set message parameters for channel 4 (CLI_SET_ICBM_PARAMS)
-  serverPacketInit(&packet, 26);
-  packFNACHeader(&packet, ICQ_MSG_FAMILY, ICQ_MSG_CLI_SETPARAMS);
-  packWord(&packet, 0x0004);              // Channel
-  packDWord(&packet, 0x00000003);         // Flags
-  packWord(&packet, MAX_MESSAGESNACSIZE); // Max message snac size
-  packWord(&packet, 0x03E7);              // Max sender warning level
-  packWord(&packet, 0x03E7);              // Max receiver warning level
-  packWord(&packet, CLIENTRATELIMIT);     // Minimum message interval in seconds
-  packWord(&packet, 0x0000);              // Unknown
-  sendServPacket(&packet);
+  setMsgChannelParams(0x0004, 0x00000003);
 }
 
 
@@ -149,6 +138,11 @@ static void handleRecvServMsg(unsigned char *buf, WORD wLen, WORD wFlags, DWORD 
   WORD wMessageFormat;
   uid_str szUID;
 
+  if (wLen < 11)
+  { // just do some basic packet checking
+    NetLog_Server("Error: Malformed message thru server");
+    return;
+  }
 
   // These two values are some kind of reference, we need to save
   // them to send file request responses for example
@@ -175,6 +169,12 @@ static void handleRecvServMsg(unsigned char *buf, WORD wLen, WORD wFlags, DWORD 
   if (dwUin && IsOnSpammerList(dwUin))
   {
     NetLog_Server("Ignored Message from known Spammer");
+    return;
+  }
+
+  if (wLen < 4)
+  { // just do some basic packet checking
+    NetLog_Server("Error: Malformed message thru server");
     return;
   }
 
@@ -227,7 +227,7 @@ static void handleRecvServMsg(unsigned char *buf, WORD wLen, WORD wFlags, DWORD 
     break;
 
   default:
-    NetLog_Server("Unknown format message thru server - Flags %u, Ref %u, Type: %u, UID: %s", wFlags, dwRef, wMessageFormat, strUID(dwUin, szUID));
+    NetLog_Server("Unknown format message thru server - Ref %u, Type: %u, UID: %s", dwRef, wMessageFormat, strUID(dwUin, szUID));
     break;
 
   }
@@ -260,6 +260,12 @@ static void handleRecvServMsgType1(unsigned char *buf, WORD wLen, DWORD dwUin, c
   WORD wTLVLen;
   BYTE* pDataBuf;
   BYTE* pBuf;
+
+  if (wLen < 4)
+  { // just perform basic structure check
+    NetLog_Server("Message (format %u) - Ignoring empty message", 1);
+    return;
+  }
 
   // Unpack the first TLV(2)
   unpackTypedTLV(&buf, wLen, 2, &wTLVType, &wTLVLen, &pDataBuf);
@@ -315,7 +321,7 @@ static void handleRecvServMsgType1(unsigned char *buf, WORD wLen, DWORD dwUin, c
           char* szMsg = NULL;
           HANDLE hContact;
           CCSDATA ccs;
-          PROTORECVEVENT pre;
+          PROTORECVEVENT pre = {0};
           int bAdded;
 
           // The message begins with a encoding specification
@@ -330,14 +336,12 @@ static void handleRecvServMsgType1(unsigned char *buf, WORD wLen, DWORD dwUin, c
           wMsgLen = pMessageTLV->wLen - 4;
           NetLog_Server("Message (format 1) - Encoding is 0x%X, page is 0x%X", wEncoding, wCodePage);
 
-          pre.flags = 0;
-
           hContact = HContactFromUID(dwUin, szUID, &bAdded);
 
           switch (wEncoding)
           {
 
-          case 2:
+          case 2: // UCS-2
             {
               WCHAR* usMsg;
               int nStrSize;
@@ -372,8 +376,8 @@ static void handleRecvServMsgType1(unsigned char *buf, WORD wLen, DWORD dwUin, c
               break;
             }
 
-          case 0:
-          case 3:
+          case 0: // us-ascii
+          case 3: // ANSI
           default:
             {
               // Copy the message text into a new proper string.
@@ -407,7 +411,6 @@ static void handleRecvServMsgType1(unsigned char *buf, WORD wLen, DWORD dwUin, c
           ccs.lParam = (LPARAM)&pre;
           pre.timestamp = time(NULL);
           pre.szMessage = (char *)szMsg;
-          pre.lParam = 0;
           CallService(MS_PROTO_CHAINRECV, 0, (LPARAM)&ccs);
 
           SAFE_FREE(&szMsg);
@@ -419,7 +422,7 @@ static void handleRecvServMsgType1(unsigned char *buf, WORD wLen, DWORD dwUin, c
         }
         else
         {
-          NetLog_Server("Ignoring empty message (format 1)");
+          NetLog_Server("Message (format %u) - Ignoring empty message", 1);
         }
       }
       else
@@ -451,9 +454,15 @@ static void handleRecvServMsgType2(unsigned char *buf, WORD wLen, DWORD dwUin, c
   char* pDataBuf = NULL;
   char* pBuf;
 
+  if (wLen < 4)
+  {
+    NetLog_Server("Message (format %u) - Ignoring empty message", 2);
+    return;
+  }
+
   // Unpack the first TLV(5)
   unpackTypedTLV(&buf, wLen, 5, &wTLVType, &wTLVLen, &pDataBuf);
-  NetLog_Server("Message (format %u) through server - UID: %s", 2, strUID(dwUin, szUID));
+  NetLog_Server("Message (format %u) - UID: %s", 2, strUID(dwUin, szUID));
   pBuf = pDataBuf;
 
   // It must be TLV(5)
@@ -467,6 +476,12 @@ static void handleRecvServMsgType2(unsigned char *buf, WORD wLen, DWORD dwUin, c
     WORD wPort;
     WORD wAckType;
     DWORD q1,q2,q3,q4;
+
+    if (wTLVLen < 30)
+    { // just check if all basic data is there
+      NetLog_Server("Message (format %u) - Ignoring empty message", 2);
+      return;
+    }
 
     unpackWord(&pDataBuf, &wCommand);
     wTLVLen -= 2;                             // Command 0x0000 - Normal message/file send request
@@ -491,126 +506,111 @@ static void handleRecvServMsgType2(unsigned char *buf, WORD wLen, DWORD dwUin, c
     wTLVLen -= 16;
 
     if (CompareGUIDs(q1,q2,q3,q4, MCAP_TLV2711_FMT))
-    {
-      // We need at least 4 bytes to read a chain
-      if (wTLVLen > 4)
+    { // we surely have at least 4 bytes for TLV chain
+      HANDLE hContact = HContactFromUIN(dwUin, NULL);
+
+      // This TLV chain may contain the following TLVs:
+      // TLV(A): Acktype 0x0000 - normal message
+      //                 0x0001 - file request / abort request
+      //                 0x0002 - file ack
+      // TLV(F): Unknown
+      // TLV(3): External IP
+      // TLV(5): DC port (not to use for filetransfers)
+      // TLV(0x2711): The next message level
+
+      chain = readIntoTLVChain(&pDataBuf, wTLVLen, 0);
+
+      wAckType = getWordFromChain(chain, 0x0A, 1);
+
+      // Update the saved DC info (if contact already exists)
+      if (hContact != INVALID_HANDLE_VALUE)
       {
-        HANDLE hContact = HContactFromUIN(dwUin, NULL);
+        if (dwExternalIP = getDWordFromChain(chain, 0x03, 1))
+          ICQWriteContactSettingDword(hContact, "RealIP", dwExternalIP);
+        if (dwIP = getDWordFromChain(chain, 0x04, 1))
+          ICQWriteContactSettingDword(hContact, "IP", dwIP);
+        if (wPort = getWordFromChain(chain, 0x05, 1))
+          ICQWriteContactSettingWord(hContact, "UserPort", wPort);
 
-        // This TLV chain may contain the following TLVs:
-        // TLV(A): Acktype 0x0000 - normal message
-        //                 0x0001 - file request / abort request
-        //                 0x0002 - file ack
-        // TLV(F): Unknown
-        // TLV(3): External IP
-        // TLV(5): DC port (not to use for filetransfers)
-        // TLV(0x2711): The next message level
+        // Save tick value
+        ICQWriteContactSettingDword(hContact, "TickTS", time(NULL) - (dwID1/1000));
+      }
 
-        chain = readIntoTLVChain(&pDataBuf, wTLVLen, 0);
-
-        wAckType = getWordFromChain(chain, 0x0A, 1);
-
-        // Update the saved DC info (if contact already exists)
-        if (hContact != INVALID_HANDLE_VALUE)
-        {
-          if (dwExternalIP = getDWordFromChain(chain, 0x03, 1))
-            ICQWriteContactSettingDword(hContact, "RealIP", dwExternalIP);
-          if (dwIP = getDWordFromChain(chain, 0x04, 1))
-            ICQWriteContactSettingDword(hContact, "IP", dwIP);
-          if (wPort = getWordFromChain(chain, 0x05, 1))
-            ICQWriteContactSettingWord(hContact, "UserPort", wPort);
-
-          // Save tick value
-          ICQWriteContactSettingDword(hContact, "TickTS", time(NULL) - (dwID1/1000));
-        }
-
-        // Parse the next message level
-        if (tlv = getTLV(chain, 0x2711, 1))
-        {
-          parseTLV2711(dwUin, hContact, dwID1, dwID2, wAckType, tlv);
-        }
-        else
-        {
-          NetLog_Server("Warning, no 0x2711 TLV in message (format 2)");
-        }
-        // Clean up
-        disposeChain(&chain);
+      // Parse the next message level
+      if (tlv = getTLV(chain, 0x2711, 1))
+      {
+        parseTLV2711(dwUin, hContact, dwID1, dwID2, wAckType, tlv);
       }
       else
       {
-        NetLog_Server("Warning, empty message (format 2)");
+        NetLog_Server("Warning, no 0x2711 TLV in message (format 2)");
       }
+      // Clean up
+      disposeChain(&chain);
     }
     else if (CompareGUIDs(q1,q2,q3,q4,MCAP_REVERSE_REQ))
     { // Handle reverse DC request
-      // We need at least 4 bytes to read a chain
-      if (wTLVLen > 4)
+      // we surely have at least 4 bytes for TLV chain
+      chain = readIntoTLVChain(&pDataBuf, wTLVLen, 0);
+
+      wAckType = getWordFromChain(chain, 0x0A, 1);
+      // Parse the next message level
+      if (tlv = getTLV(chain, 0x2711, 1))
       {
-        chain = readIntoTLVChain(&pDataBuf, wTLVLen, 0);
-
-        wAckType = getWordFromChain(chain, 0x0A, 1);
-        // Parse the next message level
-        if (tlv = getTLV(chain, 0x2711, 1))
+        if (tlv->wLen == 0x1B)
         {
-          if (tlv->wLen == 0x1B)
+          char* buf=tlv->pData;
+          DWORD dwUin, dwIp, dwPort, dwId;
+          WORD wVersion;
+          BYTE bMode;
+          HANDLE hContact;
+
+          unpackLEDWord(&buf, &dwUin);
+
+          hContact = HContactFromUIN(dwUin, NULL);
+          if (hContact == INVALID_HANDLE_VALUE)
           {
-            char* buf=tlv->pData;
-            DWORD dwUin, dwIp, dwPort, dwId;
-            WORD wVersion;
-            BYTE bMode;
-            HANDLE hContact;
-
-            unpackLEDWord(&buf, &dwUin);
-
-            hContact = HContactFromUIN(dwUin, NULL);
-            if (hContact == INVALID_HANDLE_VALUE)
-            {
-              NetLog_Server("Error: %s from unknown contact %u", "Reverse Connect Request", dwUin);
-            }
-            else
-            {
-              unpackDWord(&buf, &dwIp);
-              unpackLEDWord(&buf, &dwPort);
-              unpackByte(&buf, &bMode);
-              buf += 4; // unknown
-              if (dwPort)
-                buf += 4;  // port, again?
-              else
-                unpackLEDWord(&buf, &dwPort);
-              unpackLEWord(&buf, &wVersion);
-
-              ICQWriteContactSettingDword(hContact, "IP", dwIp);
-              ICQWriteContactSettingWord(hContact,  "UserPort", (WORD)dwPort);
-              ICQWriteContactSettingByte(hContact,  "DCType", bMode);
-              ICQWriteContactSettingWord(hContact,  "Version", wVersion);
-              if (wVersion>6)
-              {
-                unpackLEDWord(&buf, &dwId);
-
-                OpenDirectConnection(hContact, DIRECTCONN_REVERSE, (void*)dwId);
-              }
-              else
-                NetLog_Server("Warning: Unsupported direct protocol version in %s", "Reverse Connect Request");
-            }
+            NetLog_Server("Error: %s from unknown contact %u", "Reverse Connect Request", dwUin);
           }
           else
           {
-            NetLog_Server("Malformed %s", "Reverse Connect Request");
+            unpackDWord(&buf, &dwIp);
+            unpackLEDWord(&buf, &dwPort);
+            unpackByte(&buf, &bMode);
+            buf += 4; // unknown
+            if (dwPort)
+              buf += 4;  // port, again?
+            else
+              unpackLEDWord(&buf, &dwPort);
+            unpackLEWord(&buf, &wVersion);
+
+            ICQWriteContactSettingDword(hContact, "IP", dwIp);
+            ICQWriteContactSettingWord(hContact,  "UserPort", (WORD)dwPort);
+            ICQWriteContactSettingByte(hContact,  "DCType", bMode);
+            ICQWriteContactSettingWord(hContact,  "Version", wVersion);
+            if (wVersion>6)
+            {
+              unpackLEDWord(&buf, &dwId);
+
+              OpenDirectConnection(hContact, DIRECTCONN_REVERSE, (void*)dwId);
+            }
+            else
+              NetLog_Server("Warning: Unsupported direct protocol version in %s", "Reverse Connect Request");
           }
         }
         else
         {
-          NetLog_Server("Warning, no 0x2711 TLV in message (format 2)");
+          NetLog_Server("Malformed %s", "Reverse Connect Request");
         }
-        // Clean up
-        disposeChain(&chain);
       }
       else
       {
-        NetLog_Server("Warning, empty message (format 2)");
+        NetLog_Server("Warning, no 0x2711 TLV in message (format 2)");
       }
+      // Clean up
+      disposeChain(&chain);
     }
-    else
+    else // here should be detection of extra data streams (Xtraz)
     {
       NetLog_Server("Unknown Message Format Capability");
     }
@@ -634,6 +634,12 @@ static void parseTLV2711(DWORD dwUin, HANDLE hContact, DWORD dwID1, DWORD dwID2,
   pDataBuf = tlv->pData;
   wLen = tlv->wLen;
 
+  if (wLen < 2)
+  {
+    NetLog_Server("Message (format %u) - Ignoring empty message", 2);
+    return;
+  }
+
   unpackLEWord(&pDataBuf, &wId); // Incorrect identification, but working
   wLen -= 2;
 
@@ -646,6 +652,12 @@ static void parseTLV2711(DWORD dwUin, HANDLE hContact, DWORD dwID1, DWORD dwID2,
     BYTE bMsgType;
     BYTE bFlags;
     DWORD dwGuid1,dwGuid2,dwGuid3,dwGuid4;
+
+    if (wLen < 31)
+    { // just check if we have data to work with
+      NetLog_Server("Message (format %u) - Ignoring empty message", 2);
+      return;
+    }
 
     unpackLEWord(&pDataBuf, &wVersion);
     wLen -= 2;
@@ -673,6 +685,12 @@ static void parseTLV2711(DWORD dwUin, HANDLE hContact, DWORD dwID1, DWORD dwID2,
     { // is this a normal message ?
       WORD wPritority;
       WORD wStatus;
+
+      if (wLen < 20)
+      { // check if there is everything that should be there
+        NetLog_Server("Message (format %u) - Ignoring empty message", 2);
+        return;
+      }
 
       pDataBuf += 12;  /* all zeroes */
       wLen -= 12;
@@ -728,7 +746,7 @@ static void parseTLV2711(DWORD dwUin, HANDLE hContact, DWORD dwID1, DWORD dwID2,
 
         // Chat messages, handled by the chat module
       case MTYPE_CHAT:
-        {
+        { // TODO: this type is deprecated
           break;
         }
 
@@ -742,9 +760,8 @@ static void parseTLV2711(DWORD dwUin, HANDLE hContact, DWORD dwID1, DWORD dwID2,
         // Everything else
       default:
         {
-          // Only ack non-status message requests
-          // The other will be acked later
-          if (bMsgType < 0x80)
+          // Only ack message packets
+          if (bMsgType == MTYPE_PLAIN || bMsgType == MTYPE_URL || bMsgType == MTYPE_CONTACTS)
             icq_sendAdvancedMsgAck(dwUin, dwID1, dwID2, wCookie, bMsgType, bFlags);
           handleMessageTypes(dwUin, time(NULL), dwID1, dwID2, wCookie, wVersion, bMsgType, bFlags, wAckType, tlv->wLen - 53, wMsgLen, pDataBuf, FALSE);
           break;
@@ -883,7 +900,6 @@ void parseServerGreeting(BYTE* pDataBuf, WORD wLen, WORD wMsgLen, DWORD dwUin, B
     {
       char* szMsg;
 
-
       NetLog_Server("This is file ack");
       szMsg = (char *)_alloca(dwDataLen + 1);
       memcpy(szMsg, pDataBuf, dwDataLen);
@@ -897,7 +913,6 @@ void parseServerGreeting(BYTE* pDataBuf, WORD wLen, WORD wMsgLen, DWORD dwUin, B
     {
       char* szMsg;
 
-
       NetLog_Server("This is a file request");
       szMsg = (char *)_alloca(dwDataLen + 1);
       memcpy(szMsg, pDataBuf, dwDataLen);
@@ -908,7 +923,7 @@ void parseServerGreeting(BYTE* pDataBuf, WORD wLen, WORD wMsgLen, DWORD dwUin, B
       handleFileRequest(pDataBuf, wLen, dwUin, wCookie, dwID1, dwID2, szMsg, 8, FALSE);
     }
     else if (typeId == MTYPE_CHAT && wAckType == 1)
-    {
+    { // TODO: this is deprecated
       char* szMsg;
 
       NetLog_Server("This is a chat request");
@@ -943,9 +958,15 @@ static void handleRecvServMsgType4(unsigned char *buf, WORD wLen, DWORD dwUin, c
   BYTE* pDataBuf;
   DWORD dwUin2;
 
+  if (wLen < 2)
+  {
+    NetLog_Server("Message (format %u) - Ignoring empty message", 4);
+    return;
+  }
+
   // Unpack the first TLV(5)
   unpackTypedTLV(&buf, wLen, 5, &wTLVType, &wTLVLen, &pDataBuf);
-  NetLog_Server("Message (format %u) through server - UID: %u", 4, strUID(dwUin, szUID));
+  NetLog_Server("Message (format %u) - UID: %s", 4, strUID(dwUin, szUID));
 
   // It must be TLV(5)
   if (wTLVType == 5)
@@ -969,7 +990,7 @@ static void handleRecvServMsgType4(unsigned char *buf, WORD wLen, DWORD dwUin, c
         NetLog_Server("User %u probably checks his ignore state.", dwUin);
       }
       else
-      {
+      { // FIX ME: here MTYPE_PLUGIN need to be processed as well - tZers added this
         handleMessageTypes(dwUin, time(NULL), dwTS1, dwTS2, 0, 0, bMsgType, bFlags, 0, wTLVLen - 8, wMsgLen, pmsg, FALSE);
 
         NetLog_Server("TYPE4 message thru server from %d, message type %d", dwUin, bMsgType);
@@ -982,7 +1003,7 @@ static void handleRecvServMsgType4(unsigned char *buf, WORD wLen, DWORD dwUin, c
   }
   else
   {
-    NetLog_Server("Unsupported TLV in Type 4 message (%u)", wTLVType);
+    NetLog_Server("Unsupported TLV (%u) in message (format %u)", wTLVType, 4);
   }
 
   SAFE_FREE(&pDataBuf);
@@ -1175,7 +1196,7 @@ static void handleSmsReceipt(unsigned char *buf, DWORD dwDataLen)
 static void handleStatusMsgReply(const char* szPrefix, HANDLE hContact, DWORD dwUin, WORD wVersion, int bMsgType, WORD wCookie, const char* szMsg)
 {
   CCSDATA ccs;
-  PROTORECVEVENT pre;
+  PROTORECVEVENT pre = {0};
   int status;
   char* pszMsg;
 
@@ -1204,7 +1225,6 @@ static void handleStatusMsgReply(const char* szPrefix, HANDLE hContact, DWORD dw
   ccs.hContact = hContact;
   ccs.wParam = status;
   ccs.lParam = (LPARAM)&pre;
-  pre.flags = 0;
   pre.szMessage = pszMsg;
   pre.timestamp = time(NULL);
   pre.lParam = wCookie;
@@ -1228,7 +1248,7 @@ static HANDLE handleMessageAck(DWORD dwUin, WORD wCookie, WORD wVersion, int typ
 
     if (!FindCookie(wCookie, &dwCookieUin, &pCookieData))
     {
-      NetLog_Server("Ignoring unrequested status message from %u", "handleMessageAck: ", dwUin);
+      NetLog_Server("%sIgnoring unrequested status message from %u", "handleMessageAck: ", dwUin);
 
       ReleaseCookie(wCookie);
       return INVALID_HANDLE_VALUE;
@@ -1313,9 +1333,7 @@ void handleMessageTypes(DWORD dwUin, DWORD dwTimestamp, DWORD dwMsgID, DWORD dwM
   case MTYPE_PLAIN:    /* plain message */
     {
       CCSDATA ccs;
-      PROTORECVEVENT pre;
-
-      pre.flags = 0;
+      PROTORECVEVENT pre = {0};
 
       // Check if this message is marked as UTF8 encoded
       if (dwDataLen > 12)
@@ -1422,7 +1440,6 @@ void handleMessageTypes(DWORD dwUin, DWORD dwTimestamp, DWORD dwMsgID, DWORD dwM
       ccs.lParam = (LPARAM)&pre;
       pre.timestamp = dwTimestamp;
       pre.szMessage = (char *)szMsg;
-      pre.lParam = 0;
 
       CallService(MS_PROTO_CHAINRECV, 0, (LPARAM)&ccs);
     }
@@ -1431,7 +1448,7 @@ void handleMessageTypes(DWORD dwUin, DWORD dwTimestamp, DWORD dwMsgID, DWORD dwM
   case MTYPE_URL:
     {
       CCSDATA ccs;
-      PROTORECVEVENT pre;
+      PROTORECVEVENT pre = {0};
       char* szBlob;
 
 
@@ -1449,10 +1466,8 @@ void handleMessageTypes(DWORD dwUin, DWORD dwTimestamp, DWORD dwMsgID, DWORD dwM
       ccs.hContact = hContact = HContactFromUIN(dwUin, &bAdded);
       ccs.wParam = 0;
       ccs.lParam = (LPARAM)&pre;
-      pre.flags = 0;
       pre.timestamp = dwTimestamp;
       pre.szMessage = (char *)szBlob;
-      pre.lParam = 0;
 
       CallService(MS_PROTO_CHAINRECV, 0, (LPARAM)&ccs);
     }
@@ -1462,7 +1477,7 @@ void handleMessageTypes(DWORD dwUin, DWORD dwTimestamp, DWORD dwMsgID, DWORD dwM
     /* format: nick FE first FE last FE email FE unk-char FE msg 00 */
     {
       CCSDATA ccs;
-      PROTORECVEVENT pre;
+      PROTORECVEVENT pre = {0};
       char* szBlob;
       char* pCurBlob;
 
@@ -1477,7 +1492,6 @@ void handleMessageTypes(DWORD dwUin, DWORD dwTimestamp, DWORD dwMsgID, DWORD dwM
       ccs.hContact=hContact=HContactFromUIN(dwUin, &bAdded);
       ccs.wParam=0;
       ccs.lParam=(LPARAM)&pre;
-      pre.flags=0;
       pre.timestamp=dwTimestamp;
       pre.lParam=sizeof(DWORD)+sizeof(HANDLE)+strlennull(pszMsgField[0])+strlennull(pszMsgField[1])+strlennull(pszMsgField[2])+strlennull(pszMsgField[3])+strlennull(pszMsgField[5])+5;
 
@@ -1499,8 +1513,8 @@ void handleMessageTypes(DWORD dwUin, DWORD dwTimestamp, DWORD dwMsgID, DWORD dwM
   case MTYPE_ADDED:       /* 'you were added' */
     /* format: nick FE first FE last FE email 00 */
     {
-      DBEVENTINFO dbei;
-      PBYTE pCurBlob;
+      DWORD cbBlob;
+      PBYTE pBlob, pCurBlob;
 
       if (nMsgFields < 4)
       {
@@ -1511,14 +1525,8 @@ void handleMessageTypes(DWORD dwUin, DWORD dwTimestamp, DWORD dwMsgID, DWORD dwM
       hContact = HContactFromUIN(dwUin, &bAdded);
 
       /*blob is: uin(DWORD), hcontact(HANDLE), nick(ASCIIZ), first(ASCIIZ), last(ASCIIZ), email(ASCIIZ) */
-      ZeroMemory(&dbei,sizeof(dbei));
-      dbei.cbSize=sizeof(dbei);
-      dbei.szModule=gpszICQProtoName;
-      dbei.timestamp=dwTimestamp;
-      dbei.flags=0;
-      dbei.eventType=EVENTTYPE_ADDED;
-      dbei.cbBlob=sizeof(DWORD)+sizeof(HANDLE)+strlennull(pszMsgField[0])+strlennull(pszMsgField[1])+strlennull(pszMsgField[2])+strlennull(pszMsgField[3])+4;
-      pCurBlob=dbei.pBlob=(PBYTE)_alloca(dbei.cbBlob);
+      cbBlob=sizeof(DWORD)+sizeof(HANDLE)+strlennull(pszMsgField[0])+strlennull(pszMsgField[1])+strlennull(pszMsgField[2])+strlennull(pszMsgField[3])+4;
+      pCurBlob=pBlob=(PBYTE)_alloca(cbBlob);
       memcpy(pCurBlob,&dwUin,sizeof(DWORD)); pCurBlob+=sizeof(DWORD);
       memcpy(pCurBlob,&hContact,sizeof(HANDLE)); pCurBlob+=sizeof(HANDLE);
       strcpy((char *)pCurBlob,pszMsgField[0]); pCurBlob+=strlennull((char *)pCurBlob)+1;
@@ -1526,14 +1534,14 @@ void handleMessageTypes(DWORD dwUin, DWORD dwTimestamp, DWORD dwMsgID, DWORD dwM
       strcpy((char *)pCurBlob,pszMsgField[2]); pCurBlob+=strlennull((char *)pCurBlob)+1;
       strcpy((char *)pCurBlob,pszMsgField[3]);
 
-      CallService(MS_DB_EVENT_ADD,(WPARAM)(HANDLE)NULL,(LPARAM)&dbei);
+      ICQAddEvent(NULL, EVENTTYPE_ADDED, dwTimestamp, 0, cbBlob, pBlob); 
     }
     break;
 
   case MTYPE_CONTACTS:
     {
       CCSDATA ccs;
-      PROTORECVEVENT pre;
+      PROTORECVEVENT pre = {0};
       ICQSEARCHRESULT** isrList;
       char* pszNContactsEnd;
       int nContacts;
@@ -1581,7 +1589,6 @@ void handleMessageTypes(DWORD dwUin, DWORD dwTimestamp, DWORD dwMsgID, DWORD dwM
         ccs.hContact = hContact = HContactFromUIN(dwUin, &bAdded);
         ccs.wParam = 0;
         ccs.lParam = (LPARAM)&pre;
-        pre.flags = 0;
         pre.timestamp = dwTimestamp;
         pre.szMessage = (char *)isrList;
         pre.lParam = nContacts;
@@ -1610,9 +1617,8 @@ void handleMessageTypes(DWORD dwUin, DWORD dwTimestamp, DWORD dwMsgID, DWORD dwM
   case MTYPE_WWP:
     /* format: fromname FE FE FE fromemail FE unknownbyte FE 'Sender IP: xxx.xxx.xxx.xxx' 0D 0A body */
     {
-      DBEVENTINFO dbei;
-      PBYTE pCurBlob;
-
+      DWORD cbBlob;
+      PBYTE pBlob, pCurBlob;
 
       if (nMsgFields < 6)
       {
@@ -1621,28 +1627,21 @@ void handleMessageTypes(DWORD dwUin, DWORD dwTimestamp, DWORD dwMsgID, DWORD dwM
       }
 
       /*blob is: body(ASCIIZ), name(ASCIIZ), email(ASCIIZ) */
-      ZeroMemory(&dbei,sizeof(dbei));
-      dbei.cbSize=sizeof(dbei);
-      dbei.szModule=gpszICQProtoName;
-      dbei.timestamp=dwTimestamp;
-      dbei.flags=0;
-      dbei.eventType=ICQEVENTTYPE_WEBPAGER;
-      dbei.cbBlob=strlennull(pszMsgField[0])+strlennull(pszMsgField[3])+strlennull(pszMsgField[5])+3;
-      pCurBlob=dbei.pBlob=(PBYTE)_alloca(dbei.cbBlob);
+      cbBlob=strlennull(pszMsgField[0])+strlennull(pszMsgField[3])+strlennull(pszMsgField[5])+3;
+      pCurBlob=pBlob=(PBYTE)_alloca(cbBlob);
       strcpy((char *)pCurBlob,pszMsgField[5]); pCurBlob+=strlennull((char *)pCurBlob)+1;
       strcpy((char *)pCurBlob,pszMsgField[0]); pCurBlob+=strlennull((char *)pCurBlob)+1;
       strcpy((char *)pCurBlob,pszMsgField[3]);
 
-      CallService(MS_DB_EVENT_ADD,(WPARAM)(HANDLE)NULL,(LPARAM)&dbei);
+      ICQAddEvent(NULL, ICQEVENTTYPE_WEBPAGER, dwTimestamp, 0, cbBlob, pBlob);
     }
     break;
 
   case MTYPE_EEXPRESS:
     /* format: fromname FE FE FE fromemail FE unknownbyte FE body */
     {
-      DBEVENTINFO dbei;
-      PBYTE pCurBlob;
-
+      DWORD cbBlob;
+      PBYTE pBlob, pCurBlob;
 
       if (nMsgFields < 6)
       {
@@ -1651,19 +1650,13 @@ void handleMessageTypes(DWORD dwUin, DWORD dwTimestamp, DWORD dwMsgID, DWORD dwM
       }
 
       /*blob is: body(ASCIIZ), name(ASCIIZ), email(ASCIIZ) */
-      ZeroMemory(&dbei,sizeof(dbei));
-      dbei.cbSize=sizeof(dbei);
-      dbei.szModule=gpszICQProtoName;
-      dbei.timestamp=dwTimestamp;
-      dbei.flags=0;
-      dbei.eventType=ICQEVENTTYPE_EMAILEXPRESS;
-      dbei.cbBlob=strlennull(pszMsgField[0])+strlennull(pszMsgField[3])+strlennull(pszMsgField[5])+3;
-      pCurBlob=dbei.pBlob=(PBYTE)_alloca(dbei.cbBlob);
+      cbBlob=strlennull(pszMsgField[0])+strlennull(pszMsgField[3])+strlennull(pszMsgField[5])+3;
+      pCurBlob=pBlob=(PBYTE)_alloca(cbBlob);
       strcpy((char *)pCurBlob,pszMsgField[5]); pCurBlob+=strlennull((char *)pCurBlob)+1;
       strcpy((char *)pCurBlob,pszMsgField[0]); pCurBlob+=strlennull((char *)pCurBlob)+1;
       strcpy((char *)pCurBlob,pszMsgField[3]);
 
-      CallService(MS_DB_EVENT_ADD,(WPARAM)(HANDLE)NULL,(LPARAM)&dbei);
+      ICQAddEvent(NULL, ICQEVENTTYPE_EMAILEXPRESS, dwTimestamp, 0, cbBlob, pBlob);
     }
     break;
 

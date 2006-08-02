@@ -47,16 +47,19 @@ void InitDB()
 }
 
 
+
 BYTE ICQGetContactSettingByte(HANDLE hContact, const char* szSetting, BYTE bDef)
 {
   return DBGetContactSettingByte(hContact, gpszICQProtoName, szSetting, bDef);
 }
 
 
+
 WORD ICQGetContactSettingWord(HANDLE hContact, const char* szSetting, WORD wDef)
 {
   return DBGetContactSettingWord(hContact, gpszICQProtoName, szSetting, wDef);
 }
+
 
 
 DWORD ICQGetContactSettingDword(HANDLE hContact, const char* szSetting, DWORD dwDef)
@@ -197,10 +200,12 @@ int ICQGetContactStaticString(HANDLE hContact, const char* valueName, char* dest
 }
 
 
+
 int ICQDeleteContactSetting(HANDLE hContact, const char* szSetting)
 {
   return DBDeleteContactSetting(hContact, gpszICQProtoName, szSetting);
 }
+
 
 
 int ICQWriteContactSettingByte(HANDLE hContact, const char* szSetting, BYTE bValue)
@@ -209,10 +214,12 @@ int ICQWriteContactSettingByte(HANDLE hContact, const char* szSetting, BYTE bVal
 }
 
 
+
 int ICQWriteContactSettingWord(HANDLE hContact, const char* szSetting, WORD wValue)
 {
   return DBWriteContactSettingWord(hContact, gpszICQProtoName, szSetting, wValue);
 }
+
 
 
 int ICQWriteContactSettingDword(HANDLE hContact, const char* szSetting, DWORD dwValue)
@@ -221,10 +228,12 @@ int ICQWriteContactSettingDword(HANDLE hContact, const char* szSetting, DWORD dw
 }
 
 
+
 int ICQWriteContactSettingString(HANDLE hContact, const char* szSetting, char* szValue)
 {
   return DBWriteContactSettingString(hContact, gpszICQProtoName, szSetting, szValue);
 }
+
 
 
 int UniWriteContactSettingUtf(HANDLE hContact, const char *szModule, const char* szSetting, char* szValue)
@@ -245,47 +254,17 @@ int UniWriteContactSettingUtf(HANDLE hContact, const char *szModule, const char*
 }
 
 
+
 int ICQWriteContactSettingUtf(HANDLE hContact, const char* szSetting, char* szValue)
 {
   return UniWriteContactSettingUtf(hContact, gpszICQProtoName, szSetting, szValue);
 }
 
 
-/*static int bdCacheTested = 0;
-static int bdWorkaroundRequired = 0;
-
-void TestDBBlobIssue()
-{
-  DBVARIANT dbv = {0};
-
-  bdCacheTested = 1;
-  DBDeleteContactSetting(NULL, gpszICQProtoName, "BlobTestItem"); // delete setting
-  DBGetContactSetting(NULL, gpszICQProtoName, "BlobTestItem", &dbv); // create crap cache item
-  DBWriteContactSettingBlob(NULL, gpszICQProtoName, "BlobTestItem", "Test", 4); // write blob
-  if (!DBGetContactSetting(NULL, gpszICQProtoName, "BlobTestItem", &dbv)) // try to read it back
-  { // we were able to read it, the DB finally work correctly, hurrah
-    ICQFreeVariant(&dbv); 
-  }
-  else // the crap is still in the cache, we need to use workaround for avatars to work properly
-  {
-    NetLog_Server("DB Module contains bug #0001177, using workaround");
-    bdWorkaroundRequired = 1;
-  }
-  DBDeleteContactSetting(NULL, gpszICQProtoName, "BlobTestItem");
-}*/
-
 
 int ICQWriteContactSettingBlob(HANDLE hContact,const char *szSetting,const char *val, const int cbVal)
 {
   DBCONTACTWRITESETTING cws;
-
-/*  if (!bdCacheTested) TestDBBlobIssue();
-
-  if (bdWorkaroundRequired)
-  { // this is workaround for DB blob caching problems - nasty isn't it
-    DBWriteContactSettingByte(hContact, gpszICQProtoName, szSetting, 1);
-    DBDeleteContactSetting(hContact, gpszICQProtoName, szSetting); 
-  }*/
 
   cws.szModule=gpszICQProtoName;
   cws.szSetting=szSetting;
@@ -309,6 +288,23 @@ int IsICQContact(HANDLE hContact)
   char* szProto = (char*)CallService(MS_PROTO_GETCONTACTBASEPROTO, (WPARAM)hContact, 0);
 
   return !strcmpnull(szProto, gpszICQProtoName);
+}
+
+
+
+HANDLE ICQAddEvent(HANDLE hContact, WORD wType, DWORD dwTime, DWORD flags, DWORD cbBlob, PBYTE pBlob)
+{
+  DBEVENTINFO dbei = {0};
+
+  dbei.cbSize = sizeof(dbei);
+  dbei.szModule = gpszICQProtoName;
+  dbei.timestamp = dwTime;
+  dbei.flags = flags;
+  dbei.eventType = wType;
+  dbei.cbBlob = cbBlob;
+  dbei.pBlob = pBlob;
+
+  return (HANDLE)CallService(MS_DB_EVENT_ADD, (WPARAM)hContact, (LPARAM)&dbei);
 }
 
 

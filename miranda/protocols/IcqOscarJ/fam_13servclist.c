@@ -1494,13 +1494,13 @@ static void handleRecvAdded(unsigned char *buf, WORD wLen)
 {
   DWORD dwUin;
   uid_str szUid;
-  DBEVENTINFO dbei;
-  PBYTE pCurBlob;
+  DWORD cbBlob;
+  PBYTE pBlob,pCurBlob;
   HANDLE hContact;
   int bAdded;
   char* szNick;
   int nNickLen;
-  DBVARIANT dbv;
+  DBVARIANT dbv = {0};
 
   if (!unpackUID(&buf, &wLen, &dwUin, &szUid)) return;
 
@@ -1514,13 +1514,7 @@ static void handleRecvAdded(unsigned char *buf, WORD wLen)
 
   ICQDeleteContactSetting(hContact, "Grant");
 
-  ZeroMemory(&dbei,sizeof(dbei));
-  dbei.cbSize=sizeof(dbei);
-  dbei.szModule=gpszICQProtoName;
-  dbei.timestamp=time(NULL);
-  dbei.flags=0;
-  dbei.eventType=EVENTTYPE_ADDED;
-  dbei.cbBlob=sizeof(DWORD)+sizeof(HANDLE)+4;
+  cbBlob=sizeof(DWORD)+sizeof(HANDLE)+4;
 
   if (dwUin)
   {
@@ -1535,9 +1529,9 @@ static void handleRecvAdded(unsigned char *buf, WORD wLen)
   else
     nNickLen = strlennull(szUid);
   
-  dbei.cbBlob += nNickLen;
+  cbBlob += nNickLen;
   
-  pCurBlob=dbei.pBlob=(PBYTE)_alloca(dbei.cbBlob);
+  pCurBlob=pBlob=(PBYTE)_alloca(cbBlob);
   /*blob is: uin(DWORD), hContact(HANDLE), nick(ASCIIZ), first(ASCIIZ), last(ASCIIZ), email(ASCIIZ) */
   memcpy(pCurBlob,&dwUin,sizeof(DWORD)); pCurBlob+=sizeof(DWORD);
   memcpy(pCurBlob,&hContact,sizeof(HANDLE)); pCurBlob+=sizeof(HANDLE);
@@ -1557,7 +1551,7 @@ static void handleRecvAdded(unsigned char *buf, WORD wLen)
   *(char *)pCurBlob = 0;
 // TODO: Change for new auth system
 
-  CallService(MS_DB_EVENT_ADD,(WPARAM)(HANDLE)NULL,(LPARAM)&dbei);
+  ICQAddEvent(NULL, EVENTTYPE_ADDED, time(NULL), 0, cbBlob, pBlob);
 }
 
 
