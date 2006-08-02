@@ -812,7 +812,7 @@ static void JabberProcessMessage( XmlNode *node, void *userdata )
 	if ( !node->name || strcmp( node->name, "message" )) return;
 	if (( info=( struct ThreadData * ) userdata ) == NULL ) return;
 
-	if (( type = JabberXmlGetAttrValue( node, "type" )) != NULL )
+	if (( type = JabberXmlGetAttrValue( node, "type" )) == NULL )
 		return;
 	if (( from = JabberXmlGetAttrValue( node, "from" )) == NULL )
 		return;
