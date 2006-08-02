@@ -38,9 +38,9 @@ void __cdecl aim_keepalive_thread(void* /*fa*/)
 		#if _MSC_VER
 		#pragma warning( default: 4127)
 		#endif
-		int timer==DBGetContactSettingWord(NULL, AIM_PROTOCOL_NAME, AIM_KEY_KA, DEFAULT_KEEPALIVE_TIMER);
-		if(Timer<30)
-			Timer=DEFAULT_KEEPALIVE_TIMER;
+		int timer=DBGetContactSettingWord(NULL, AIM_PROTOCOL_NAME, AIM_KEY_KA, DEFAULT_KEEPALIVE_TIMER);
+		if(timer<30)
+			timer=DEFAULT_KEEPALIVE_TIMER;
 		DWORD dwWait = WaitForSingleObjectEx(hKeepAliveEvent, 1000*timer, TRUE);
 		if (dwWait == WAIT_OBJECT_0) break; // we should end
 		else if (dwWait == WAIT_TIMEOUT)

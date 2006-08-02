@@ -265,7 +265,7 @@ BOOL CALLBACK options_dialog(HWND hwndDlg, UINT msg, WPARAM /*wParam*/, LPARAM l
 
 					//Keep alive timer
 					unsigned long timer=GetDlgItemInt(hwndDlg, IDC_KA,0,0);
-					if(timer>0xffff||timer<15)
+					if(timer>0xffff||timer<30)
 						 DBWriteContactSettingWord(NULL, AIM_PROTOCOL_NAME, AIM_KEY_KA,DEFAULT_KEEPALIVE_TIMER);
 					else
 						DBWriteContactSettingWord(NULL, AIM_PROTOCOL_NAME, AIM_KEY_KA,(WORD)timer);
