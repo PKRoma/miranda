@@ -40,7 +40,6 @@
 				Name="VCCustomBuildTool"/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalDependencies="wsock32.lib"
 				OutputFile="../../bin/release/plugins/AimOSCAR.dll"
 				LinkIncremental="1"
 				SuppressStartupBanner="TRUE"
@@ -217,6 +216,9 @@
 				RelativePath=".\strl.h">
 			</File>
 			<File
+				RelativePath=".\theme.cpp">
+			</File>
+			<File
 				RelativePath=".\thread.cpp">
 			</File>
 			<File
@@ -316,6 +318,9 @@
 			</File>
 			<File
 				RelativePath=".\snac.h">
+			</File>
+			<File
+				RelativePath=".\theme.h">
 			</File>
 			<File
 				RelativePath=".\thread.h">
