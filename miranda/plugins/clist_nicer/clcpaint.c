@@ -896,13 +896,13 @@ set_bg_l:
 
 		if (!g_ignoreselforgroups || type != CLCIT_GROUP) {
 			if (!sselected->IGNORED) {
+                rc.left = sselected->MARGIN_LEFT + bg_indent_l;
+                rc.top = y + sselected->MARGIN_TOP;
+                rc.right = clRect->right - sselected->MARGIN_RIGHT - bg_indent_r;
+                rc.bottom = y + rowHeight - sselected->MARGIN_BOTTOM;                     
 				if (DBGetContactSettingByte(NULL, "CLCExt", "EXBK_EqualSelection", 0) == 1 && savedCORNER != -1) {
 					DrawAlpha(hdcMem, &rc, sselected->COLOR, sselected->ALPHA, sselected->COLOR2, sselected->COLOR2_TRANSPARENT, sselected->GRADIENT, savedCORNER, sselected->BORDERSTYLE, sselected->imageItem);
 				} else {
-					rc.left = sselected->MARGIN_LEFT + bg_indent_l;
-					rc.top = y + sselected->MARGIN_TOP;
-					rc.right = clRect->right - sselected->MARGIN_RIGHT - bg_indent_r;
-					rc.bottom = y + rowHeight - sselected->MARGIN_BOTTOM;                     
 					DrawAlpha(hdcMem, &rc, sselected->COLOR, sselected->ALPHA, sselected->COLOR2, sselected->COLOR2_TRANSPARENT, sselected->GRADIENT, sselected->CORNER, sselected->BORDERSTYLE, sselected->imageItem);
 				}
 			}
