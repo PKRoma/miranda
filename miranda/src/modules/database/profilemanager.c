@@ -232,8 +232,8 @@ static int DetectDbProvider(char * pluginname, DATABASELINK * dblink, LPARAM lPa
 	int error;
 
 	if ( dblink->grokHeader( fullPath, &error ) == 0 ) {
-		//dblink->getFriendlyName( fullPath, MAX_PATH, 1 );
-		strncpy( fullPath, pluginname, MAX_PATH );
+		dblink->getFriendlyName( fullPath, MAX_PATH, 1 );
+		//strncpy( fullPath, pluginname, MAX_PATH );
 		return DBPE_HALT;
 	}
 
@@ -277,7 +277,6 @@ BOOL EnumProfilesForList(char * fullpath, char * profile, LPARAM lParam)
 
 	if ( bFileExists ) {
 		PLUGIN_DB_ENUM dbe;
-		DATABASELINK* dblink;
 		char szPath[ MAX_PATH ];
 
 		LVITEM item2;
@@ -288,8 +287,18 @@ BOOL EnumProfilesForList(char * fullpath, char * profile, LPARAM lParam)
 		dbe.pfnEnumCallback=(int(*)(char*,void*,LPARAM))DetectDbProvider;
 		dbe.lParam=(LPARAM)szPath;
 		strncpy( szPath, fullpath, sizeof(szPath));
-		if (( dblink = (DATABASELINK*)CallService(MS_PLUGINS_ENUMDBPLUGINS,0,(LPARAM)&dbe)) != NULL ) {
-			item.pszText = szPath;
+		if (CallService(MS_PLUGINS_ENUMDBPLUGINS,0,(LPARAM)&dbe)==1) {
+			HANDLE hFile;
+
+			hFile=CreateFileA(fullpath,GENERIC_READ|GENERIC_WRITE,0,NULL,OPEN_EXISTING,0,NULL);
+			if (hFile == INVALID_HANDLE_VALUE) {
+				// file locked
+				item.pszText = Translate("<In Use>");
+			}
+			else {
+				CloseHandle(hFile);
+				item.pszText = szPath;
+			}
 			item.iSubItem = 1;
 			SendMessageA( hwndList, LVM_SETITEMTEXTA, iItem, (LPARAM)&item );
 		}
