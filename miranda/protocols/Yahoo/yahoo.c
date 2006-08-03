@@ -2372,16 +2372,6 @@ void register_callbacks()
 	
 }
 
-void YAHOO_ping(void) 
-{
-	LOG(("[TIMER] yahoo_ping_timeout"));
-	
-	if (yahooLoggedIn && (ylad != NULL) && (ylad->id > 0) ) {
-		LOG(("[TIMER] Sending a keep alive message"));
-		yahoo_keepalive(ylad->id);
-	} 
-}
-
 void ext_yahoo_login(int login_mode)
 {
 	char host[128], fthost[128];

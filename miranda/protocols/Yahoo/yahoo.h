@@ -230,5 +230,4 @@ void yahoo_callback(struct _conn *c, yahoo_input_condition cond);
 void ext_yahoo_login(int login_mode);
 void __stdcall Utf8Decode( char* str, int maxSize, wchar_t** ucs2 );
 char* __stdcall Utf8EncodeUcs2( const wchar_t* src );
-void YAHOO_ping(void);
 int YahooGotoMailboxCommand( WPARAM wParam, LPARAM lParam );

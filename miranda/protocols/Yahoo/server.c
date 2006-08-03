@@ -25,8 +25,8 @@ int PASCAL send(SOCKET s, const char FAR *buf, int len, int flags)
     //LOG(("send socket: %d, %d bytes", s, len));
 
     if (yahooStatus == ID_STATUS_OFFLINE) {
-		LOG(("WE OFFLINE ALREADY!!"));
-        return 0;
+		LOG(("WARNING: WE OFFLINE ALREADY!!"));
+        //return 0;
 	}
 
     rlen = Netlib_Send((HANDLE)s, buf, len, 0);
@@ -64,7 +64,8 @@ void __cdecl yahoo_server_main(void *empty)
 	int status = (int) empty;
 	long lLastPing;
     YList *l;
-    NETLIBSELECTEX nls;
+    NETLIBSELECTEX nls = {0};
+	
 	
 	if (hNetlibUser  == 0) {
 		/* wait for the stupid netlib to load!!!! */
@@ -139,8 +140,10 @@ void __cdecl yahoo_server_main(void *empty)
 			}
 			
 			/* do the timer check */
-			if (time(NULL) - lLastPing > 60) {
-				YAHOO_ping();
+			if (yahooLoggedIn && ylad != NULL && time(NULL) - lLastPing > 60) {
+				LOG(("[TIMER] Sending a keep alive message"));
+				yahoo_keepalive(ylad->id);
+				
 				lLastPing = time(NULL);
 			}
 			/* do the timer check ends */
