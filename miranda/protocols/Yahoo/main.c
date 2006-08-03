@@ -108,9 +108,9 @@ __declspec(dllexport) PLUGININFO* MirandaPluginInfo(DWORD mirandaVersion)
     // We require Miranda 0.5
 	// This requires the latest trunk... experimental API used here
 	//
-    if (mirandaVersion < PLUGIN_MAKE_VERSION(0, 5, 0, 0)) {
+    if (mirandaVersion < PLUGIN_MAKE_VERSION(0, 6, 0, 0)) {
 		MessageBox( NULL, 
-				Translate("Yahoo plugin cannot be loaded. It requires Miranda IM 0.5 or later."), 
+				Translate("Yahoo plugin cannot be loaded. It requires Miranda IM 0.6 or later."), 
 				Translate("Yahoo"), 
 				MB_OK|MB_ICONWARNING|MB_SETFOREGROUND|MB_TOPMOST );
 
