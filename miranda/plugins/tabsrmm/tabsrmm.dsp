@@ -218,9 +218,6 @@ DEP_CPP_CLIST=\
 	".\nen.h"\
 	".\templates.h"\
 	
-NODEP_CPP_CLIST=\
-	"..\PopUp\m_popup.h"\
-	
 # ADD CPP /Yu"../commonheaders.h"
 # End Source File
 # Begin Source File
@@ -274,9 +271,6 @@ DEP_CPP_COLOR=\
 	".\nen.h"\
 	".\templates.h"\
 	
-NODEP_CPP_COLOR=\
-	"..\PopUp\m_popup.h"\
-	
 # ADD CPP /Yu"../commonheaders.h"
 # End Source File
 # Begin Source File
@@ -329,9 +323,6 @@ DEP_CPP_LOG_C=\
 	".\msgs.h"\
 	".\nen.h"\
 	".\templates.h"\
-	
-NODEP_CPP_LOG_C=\
-	"..\PopUp\m_popup.h"\
 	
 # ADD CPP /Yu"../commonheaders.h"
 # End Source File
@@ -390,9 +381,6 @@ DEP_CPP_MAIN_=\
 	".\nen.h"\
 	".\templates.h"\
 	
-NODEP_CPP_MAIN_=\
-	"..\PopUp\m_popup.h"\
-	
 # ADD CPP /Yu"../commonheaders.h"
 # End Source File
 # Begin Source File
@@ -445,9 +433,6 @@ DEP_CPP_MANAG=\
 	".\msgs.h"\
 	".\nen.h"\
 	".\templates.h"\
-	
-NODEP_CPP_MANAG=\
-	"..\PopUp\m_popup.h"\
 	
 # ADD CPP /Yu"../commonheaders.h"
 # End Source File
@@ -502,9 +487,6 @@ DEP_CPP_MESSA=\
 	".\nen.h"\
 	".\templates.h"\
 	
-NODEP_CPP_MESSA=\
-	"..\PopUp\m_popup.h"\
-	
 # ADD CPP /Yu"../commonheaders.h"
 # End Source File
 # Begin Source File
@@ -557,9 +539,6 @@ DEP_CPP_OPTIO=\
 	".\msgs.h"\
 	".\nen.h"\
 	".\templates.h"\
-	
-NODEP_CPP_OPTIO=\
-	"..\PopUp\m_popup.h"\
 	
 # ADD CPP /Yu"../commonheaders.h"
 # End Source File
@@ -614,9 +593,6 @@ DEP_CPP_SERVI=\
 	".\nen.h"\
 	".\templates.h"\
 	
-NODEP_CPP_SERVI=\
-	"..\PopUp\m_popup.h"\
-	
 # ADD CPP /Yu"../commonheaders.h"
 # End Source File
 # Begin Source File
@@ -670,9 +646,6 @@ DEP_CPP_TOOLS=\
 	".\nen.h"\
 	".\templates.h"\
 	
-NODEP_CPP_TOOLS=\
-	"..\PopUp\m_popup.h"\
-	
 # ADD CPP /Yu"../commonheaders.h"
 # End Source File
 # Begin Source File
@@ -725,9 +698,6 @@ DEP_CPP_WINDO=\
 	".\msgs.h"\
 	".\nen.h"\
 	".\templates.h"\
-	
-NODEP_CPP_WINDO=\
-	"..\PopUp\m_popup.h"\
 	
 # ADD CPP /Yu"../commonheaders.h"
 # End Source File
@@ -783,9 +753,6 @@ DEP_CPP_CONTA=\
 	".\msgs.h"\
 	".\nen.h"\
 	".\templates.h"\
-	
-NODEP_CPP_CONTA=\
-	"..\PopUp\m_popup.h"\
 	
 
 !IF  "$(CFG)" == "tabSRMM - Win32 Debug"
@@ -851,9 +818,6 @@ DEP_CPP_CONTAI=\
 	".\msgs.h"\
 	".\nen.h"\
 	".\templates.h"\
-	
-NODEP_CPP_CONTAI=\
-	"..\PopUp\m_popup.h"\
 	
 
 !IF  "$(CFG)" == "tabSRMM - Win32 Debug"
@@ -921,9 +885,6 @@ DEP_CPP_EVENT=\
 	".\nen.h"\
 	".\templates.h"\
 	
-NODEP_CPP_EVENT=\
-	"..\PopUp\m_popup.h"\
-	
 
 !IF  "$(CFG)" == "tabSRMM - Win32 Debug"
 
@@ -988,9 +949,6 @@ DEP_CPP_FORMA=\
 	".\msgs.h"\
 	".\nen.h"\
 	".\templates.h"\
-	
-NODEP_CPP_FORMA=\
-	"..\PopUp\m_popup.h"\
 	
 
 !IF  "$(CFG)" == "tabSRMM - Win32 Debug"
@@ -1065,9 +1023,6 @@ DEP_CPP_GENER=\
 	".\nen.h"\
 	".\templates.h"\
 	
-NODEP_CPP_GENER=\
-	"..\PopUp\m_popup.h"\
-	
 
 !IF  "$(CFG)" == "tabSRMM - Win32 Debug"
 
@@ -1134,9 +1089,6 @@ DEP_CPP_HOTKE=\
 	".\sendqueue.h"\
 	".\templates.h"\
 	
-NODEP_CPP_HOTKE=\
-	"..\PopUp\m_popup.h"\
-	
 
 !IF  "$(CFG)" == "tabSRMM - Win32 Debug"
 
@@ -1202,9 +1154,6 @@ DEP_CPP_IMAGE=\
 	".\msgs.h"\
 	".\nen.h"\
 	".\templates.h"\
-	
-NODEP_CPP_IMAGE=\
-	"..\PopUp\m_popup.h"\
 	
 
 !IF  "$(CFG)" == "tabSRMM - Win32 Debug"
@@ -1281,9 +1230,6 @@ DEP_CPP_MSGDI=\
 	".\templates.h"\
 	{$(INCLUDE)}"uxtheme.h"\
 	
-NODEP_CPP_MSGDI=\
-	"..\PopUp\m_popup.h"\
-	
 
 !IF  "$(CFG)" == "tabSRMM - Win32 Debug"
 
@@ -1355,9 +1301,6 @@ DEP_CPP_MSGDL=\
 	".\nen.h"\
 	".\templates.h"\
 	
-NODEP_CPP_MSGDL=\
-	"..\PopUp\m_popup.h"\
-	
 
 !IF  "$(CFG)" == "tabSRMM - Win32 Debug"
 
@@ -1423,9 +1366,6 @@ DEP_CPP_MSGLO=\
 	".\msgs.h"\
 	".\nen.h"\
 	".\templates.h"\
-	
-NODEP_CPP_MSGLO=\
-	"..\PopUp\m_popup.h"\
 	
 
 !IF  "$(CFG)" == "tabSRMM - Win32 Debug"
@@ -1499,9 +1439,6 @@ DEP_CPP_MSGOP=\
 	".\nen.h"\
 	".\templates.h"\
 	{$(INCLUDE)}"uxtheme.h"\
-	
-NODEP_CPP_MSGOP=\
-	"..\PopUp\m_popup.h"\
 	
 
 !IF  "$(CFG)" == "tabSRMM - Win32 Debug"
@@ -1577,9 +1514,6 @@ DEP_CPP_MSGS_=\
 	".\nen.h"\
 	".\templates.h"\
 	
-NODEP_CPP_MSGS_=\
-	"..\PopUp\m_popup.h"\
-	
 
 !IF  "$(CFG)" == "tabSRMM - Win32 Debug"
 
@@ -1651,9 +1585,6 @@ DEP_CPP_SELEC=\
 	".\nen.h"\
 	".\templates.h"\
 	
-NODEP_CPP_SELEC=\
-	"..\PopUp\m_popup.h"\
-	
 
 !IF  "$(CFG)" == "tabSRMM - Win32 Debug"
 
@@ -1720,9 +1651,6 @@ DEP_CPP_SENDQ=\
 	".\sendqueue.h"\
 	".\templates.h"\
 	
-NODEP_CPP_SENDQ=\
-	"..\PopUp\m_popup.h"\
-	
 
 !IF  "$(CFG)" == "tabSRMM - Win32 Debug"
 
@@ -1787,9 +1715,6 @@ DEP_CPP_SRMM_=\
 	".\msgs.h"\
 	".\nen.h"\
 	".\templates.h"\
-	
-NODEP_CPP_SRMM_=\
-	"..\PopUp\m_popup.h"\
 	
 
 !IF  "$(CFG)" == "tabSRMM - Win32 Debug"
@@ -1863,9 +1788,6 @@ DEP_CPP_TABCT=\
 	".\templates.h"\
 	{$(INCLUDE)}"uxtheme.h"\
 	
-NODEP_CPP_TABCT=\
-	"..\PopUp\m_popup.h"\
-	
 
 !IF  "$(CFG)" == "tabSRMM - Win32 Debug"
 
@@ -1931,9 +1853,6 @@ DEP_CPP_TEMPL=\
 	".\nen.h"\
 	".\templates.h"\
 	
-NODEP_CPP_TEMPL=\
-	"..\PopUp\m_popup.h"\
-	
 
 !IF  "$(CFG)" == "tabSRMM - Win32 Debug"
 
@@ -1998,9 +1917,6 @@ DEP_CPP_THEME=\
 	".\msgs.h"\
 	".\nen.h"\
 	".\templates.h"\
-	
-NODEP_CPP_THEME=\
-	"..\PopUp\m_popup.h"\
 	
 
 !IF  "$(CFG)" == "tabSRMM - Win32 Debug"
@@ -2068,9 +1984,6 @@ DEP_CPP_TRAYI=\
 	".\nen.h"\
 	".\templates.h"\
 	
-NODEP_CPP_TRAYI=\
-	"..\PopUp\m_popup.h"\
-	
 
 !IF  "$(CFG)" == "tabSRMM - Win32 Debug"
 
@@ -2136,9 +2049,6 @@ DEP_CPP_TSBUT=\
 	".\nen.h"\
 	".\templates.h"\
 	
-NODEP_CPP_TSBUT=\
-	"..\PopUp\m_popup.h"\
-	
 
 !IF  "$(CFG)" == "tabSRMM - Win32 Debug"
 
@@ -2203,9 +2113,6 @@ DEP_CPP_USERP=\
 	".\msgs.h"\
 	".\nen.h"\
 	".\templates.h"\
-	
-NODEP_CPP_USERP=\
-	"..\PopUp\m_popup.h"\
 	
 
 !IF  "$(CFG)" == "tabSRMM - Win32 Debug"
@@ -2545,6 +2452,10 @@ SOURCE="..\..\Miranda-IM\res\viewdetails.ico"
 # Begin Group "Misc Files"
 
 # PROP Default_Filter ""
+# Begin Source File
+
+SOURCE=.\docs\Changelog
+# End Source File
 # Begin Source File
 
 SOURCE=langpacks\langpack_tabsrmm_german.txt

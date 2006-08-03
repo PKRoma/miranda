@@ -2115,7 +2115,6 @@ int MsgWindowDrawHandler(WPARAM wParam, LPARAM lParam, HWND hwndDlg, struct Mess
 			else {
 				if(dat->panelWidth) {
 					dat->panelWidth = 0;
-                    dat->dwFlagsEx |= MWF_SHOW_RESIZEIPONLY;
 					SendMessage(hwndDlg, WM_SIZE, 0, 0);
 				}
 				return TRUE;
@@ -2163,7 +2162,6 @@ int MsgWindowDrawHandler(WPARAM wParam, LPARAM lParam, HWND hwndDlg, struct Mess
             }
 			if(dat->panelWidth == -1) {
 				dat->panelWidth = (int)dNewWidth + 2;
-                dat->dwFlagsEx |= MWF_SHOW_RESIZEIPONLY;
 				SendMessage(hwndDlg, WM_SIZE, 0, 0);
 			}
         }
@@ -2305,7 +2303,6 @@ int MsgWindowDrawHandler(WPARAM wParam, LPARAM lParam, HWND hwndDlg, struct Mess
         dat->panelStatusCX = sStatus.cx + sProto.cx + 14 + (dat->hClientIcon ? 20 : 0);
         
         if(dat->panelStatusCX != oldPanelStatusCX) {
-            dat->dwFlagsEx |= MWF_SHOW_RESIZEIPONLY;
             SendMessage(hwndDlg, WM_SIZE, 0, 0);
         }
     
@@ -2952,11 +2949,21 @@ void GetMyNick(HWND hwndDlg, struct MessageWindowData *dat)
         ci.dwFlag |= CNF_UNICODE;
     if(!CallService(MS_CONTACT_GETCONTACTINFO, 0, (LPARAM)&ci)) {
         if(ci.type == CNFT_ASCIIZ) {
-            _tcsncpy(dat->szMyNickname, ci.pszVal, 110);
-            dat->szMyNickname[109] = 0;
-            if(ci.pszVal) {
-                mir_free(ci.pszVal);
-                ci.pszVal = NULL;
+            if(lstrlen(ci.pszVal) < 1 || !_tcscmp(ci.pszVal, TranslateT("'(Unknown Contact)'"))) {
+                MultiByteToWideChar(CP_ACP, 0, dat->myUin, -1, dat->szMyNickname, 130);
+                dat->szMyNickname[129] = 0;
+                if(ci.pszVal) {
+                    mir_free(ci.pszVal);
+                    ci.pszVal = NULL;
+                }
+            }
+            else {
+                _tcsncpy(dat->szMyNickname, ci.pszVal, 110);
+                dat->szMyNickname[109] = 0;
+                if(ci.pszVal) {
+                    mir_free(ci.pszVal);
+                    ci.pszVal = NULL;
+                }
             }
         }
         else if(ci.type == CNFT_DWORD)
@@ -2969,10 +2976,22 @@ void GetMyNick(HWND hwndDlg, struct MessageWindowData *dat)
 #else
     if(!CallService(MS_CONTACT_GETCONTACTINFO, 0, (LPARAM)&ci)) {
         if(ci.type == CNFT_ASCIIZ) {
-            _tcsncpy(dat->szMyNickname, ci.pszVal, 110);
-            dat->szMyNickname[109] = 0;
-            mir_free(ci.pszVal);
-            ci.pszVal = NULL;
+            if(lstrlen(ci.pszVal) < 1 || !_tcscmp(ci.pszVal, TranslateT("'(Unknown Contact)'"))) {
+                lstrcpynA(dat->szMyNickname, dat->myUin, 130);
+                dat->szMyNickname[129] = 0;
+                if(ci.pszVal) {
+                    mir_free(ci.pszVal);
+                    ci.pszVal = NULL;
+                }
+            }
+            else {
+                _tcsncpy(dat->szMyNickname, ci.pszVal, 130);
+                dat->szMyNickname[129] = 0;
+                if(ci.pszVal) {
+                    mir_free(ci.pszVal);
+                    ci.pszVal = NULL;
+                }
+            }
         }
         else if(ci.type == CNFT_DWORD)
             _ltoa(ci.dVal, dat->szMyNickname, 10);

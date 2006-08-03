@@ -183,7 +183,7 @@ typedef struct _settextex {
 #define MWF_SHOW_ISIDLE 4096
 #define MWF_SHOW_AWAYMSGTIMER 8192
 #define MWF_SHOW_USELOCALTIME 16384
-#define MWF_SHOW_RESIZEIPONLY 0x10000000
+#define MWF_EX_DELAYEDSPLITTER 32768
 
 #define SMODE_DEFAULT 0
 #define SMODE_MULTIPLE 1
@@ -426,6 +426,8 @@ struct MessageWindowData {
     WNDPROC oldIEViewProc;
     BOOL    clr_added;
 	BOOL	fIsReattach;
+	WPARAM  wParam;
+	LPARAM  lParam;
 };
 
 typedef struct _recentinfo {

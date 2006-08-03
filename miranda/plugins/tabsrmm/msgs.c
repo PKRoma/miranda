@@ -1241,10 +1241,6 @@ static int AvatarChanged(WPARAM wParam, LPARAM lParam)
             if(dat->showPic == 0 || dat->showInfoPic == 0)
                 GetAvatarVisibility(hwnd, dat);
             ShowPicture(hwnd, dat, TRUE);
-			if(dat->dwFlagsEx & MWF_SHOW_INFOPANEL) {
-				InvalidateRect(GetDlgItem(hwnd, IDC_PANELPIC), NULL, TRUE);
-				SendMessage(hwnd, WM_SIZE, 0, 0);
-			}
         }
     }
     return 0;

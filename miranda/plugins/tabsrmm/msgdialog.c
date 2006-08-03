@@ -326,6 +326,12 @@ static void MsgWindowUpdateState(HWND hwndDlg, struct MessageWindowData *dat, UI
             }
             dat->hwndIWebBrowserControl = WindowFromPoint(pt);
         }
+        if(dat->dwFlagsEx & MWF_EX_DELAYEDSPLITTER) {
+            dat->dwFlagsEx &= ~MWF_EX_DELAYEDSPLITTER;
+            ShowWindow(dat->pContainer->hwnd, SW_RESTORE);
+            PostMessage(hwndDlg, DM_SPLITTERMOVEDGLOBAL, dat->wParam, dat->lParam);
+            dat->wParam = dat->lParam = 0;
+        }
     }
 }
 
@@ -1241,7 +1247,7 @@ LRESULT CALLBACK SplitterSubclassProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM
                             }
                             else {
                                 SM_BroadcastMessage(NULL, DM_SAVESIZE, 0, 0, 0);
-                                SM_BroadcastMessage(NULL, DM_SPLITTERMOVED, (short) HIWORD(messagePos) + rc.bottom / 2, (LPARAM) -1, 0);
+                                SM_BroadcastMessage(NULL, DM_SPLITTERMOVEDGLOBAL, rcWin.bottom - (short)HIWORD(messagePos) + rc.bottom / 2, (LPARAM)rc.bottom, 0);
                                 SM_BroadcastMessage(NULL, WM_SIZE, 0, 0, 1);
                                 DBWriteContactSettingWord(NULL, "Chat", "splitY", (WORD)g_Settings.iSplitterY);
                             }
@@ -2653,7 +2659,6 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                     }
                 }
                 CallService(MS_UTILS_RESIZEDIALOG, 0, (LPARAM) & urd);
-                dat->dwFlagsEx &= ~MWF_SHOW_RESIZEIPONLY;
                 
                 if(GetDlgItem(hwndDlg, IDC_CLIST) != 0) {
                     RECT rc, rcClient, rcLog;
@@ -2687,13 +2692,20 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
 				short newMessagePos;
 				RECT rcWin, rcClient;
 
-				GetWindowRect(hwndDlg, &rcWin);
+                if(IsIconic(m_pContainer->hwnd) || m_pContainer->hwndActive != hwndDlg) {
+                    dat->dwFlagsEx |= MWF_EX_DELAYEDSPLITTER;
+                    dat->wParam = wParam;
+                    dat->lParam = lParam;
+                    return 0;
+                }
+                GetWindowRect(hwndDlg, &rcWin);
 				GetClientRect(hwndDlg, &rcClient);
 				newMessagePos = (short)rcWin.bottom - (short)wParam;
 
-                SendMessage(hwndDlg, DM_SAVESIZE, 0, 0);
+                //SendMessage(hwndDlg, DM_SAVESIZE, 0, 0);
                 SendMessage(hwndDlg, DM_SPLITTERMOVED, newMessagePos + lParam / 2, (LPARAM)GetDlgItem(hwndDlg, IDC_SPLITTER));
 				SaveSplitter(hwndDlg, dat);
+                PostMessage(hwndDlg, DM_DELAYEDSCROLL, 0, 1);
 			}
 			return 0;
         case DM_SPLITTERMOVED:
@@ -2937,7 +2949,7 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                     //dat->dwLastActivity = GetTickCount();
                     //dat->pContainer->dwLastActivity = dat->dwLastActivity;
                     // tab flashing
-                    if ((IsIconic(hwndContainer) || TabCtrl_GetCurSel(hwndTab) != dat->iTabID) && !(dbei.flags & DBEF_SENT) && !fIsStatusChangeEvent) {
+                    if ((/* IsIconic(hwndContainer) ||*/ TabCtrl_GetCurSel(hwndTab) != dat->iTabID) && !(dbei.flags & DBEF_SENT) && !fIsStatusChangeEvent) {
                         switch (dbei.eventType) {
                             case EVENTTYPE_MESSAGE:
                                 dat->iFlashIcon = myGlobals.g_IconMsgEvent;

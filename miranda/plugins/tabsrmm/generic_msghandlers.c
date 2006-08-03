@@ -579,4 +579,5 @@ LRESULT DM_ThemeChanged(HWND hwnd, struct MessageWindowData *dat)
         if(dat->bFlatMsgLog || dat->hTheme != 0 || (dat->pContainer->bSkinned && !item_msg->IGNORED))
             SetWindowLong(GetDlgItem(hwnd, IDC_CHAT_MESSAGE), GWL_EXSTYLE, GetWindowLong(GetDlgItem(hwnd, IDC_CHAT_MESSAGE), GWL_EXSTYLE) & ~WS_EX_STATICEDGE);
     }
+	return 0;
 }

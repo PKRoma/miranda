@@ -9,6 +9,7 @@ Support: http://www.miranda.or.at/forums/
 						
 				    Version History:
 				    ================
+
 + : new feature
 * : changed
 ! : bufgix						
@@ -21,8 +22,11 @@ Version 1.0.0.1 - 2006/07/31
 	  container while the option to delete temporary contacts on close
 	  is enabled.
 	! fixed minor issue with [color] bbcode
-	
-	
+	! using the own UIN as fallback for own nickname, to solve the "Unknown
+	  Contact" problem which can appear when the own nickname is not 
+	  properly set.
+	! fixed a few issues with global splitter positioning.
+
 Version 1.0.0.0
 
 	Released and declared as "stable" branch, 2006/07/30
