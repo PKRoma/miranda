@@ -51,7 +51,7 @@ static int HttpGatewaySendGet(struct NetlibConnection *nlc)
 	 *          receiving
 	 */
 	nlhrSend.requestType=(nlc->nlhpi.szHttpGetUrl == NULL) ? REQUEST_POST : REQUEST_GET;
-	nlhrSend.flags=NLHRF_GENERATEHOST|NLHRF_DUMPPROXY|NLHRF_SMARTAUTHHEADER;
+	nlhrSend.flags=NLHRF_GENERATEHOST|NLHRF_DUMPPROXY|NLHRF_SMARTAUTHHEADER|NLHRF_HTTP11;
 
 	/*
 	 * Gena01 - fixing a possible crash, can't use GET Sequence if there is no GET URL
@@ -105,6 +105,8 @@ static int HttpGatewaySendGet(struct NetlibConnection *nlc)
 
 	if(NetlibHttpSendRequest((WPARAM)&nlcSend,(LPARAM)&nlhrSend)==SOCKET_ERROR) {
 		struct NetlibHTTPProxyPacketQueue *p = nlc->pHttpProxyPacketQueue;
+		
+		mir_free(nlhrSend.pData);
 
 		nlc->usingHttpGateway=1;
 
@@ -124,6 +126,7 @@ static int HttpGatewaySendGet(struct NetlibConnection *nlc)
 
 		return 0;
 	}
+	mir_free(nlhrSend.pData);
 	nlc->dwLastGetSentTime=GetTickCount();
 	return 1;
 }
@@ -265,11 +268,6 @@ int NetlibHttpGatewayPost(struct NetlibConnection *nlc,const char *buf,int len,i
 #define NETLIBHTTP_RETRYCOUNT   3
 #define NETLIBHTTP_RETRYTIMEOUT 5000
 
-static int HttpGatewaySendGetService(WPARAM wParam, LPARAM lParam )
-{
-	return 0;
-}
-
 int NetlibHttpGatewayRecv(struct NetlibConnection *nlc,char *buf,int len,int flags)
 {
 	DWORD dwTimeNow;
@@ -304,7 +302,7 @@ int NetlibHttpGatewayRecv(struct NetlibConnection *nlc,char *buf,int len,int fla
 			}
 */
 			if ( nlc->pHttpProxyPacketQueue == 0 && nlc->nlu->user.pfnHttpGatewayWrapSend != NULL )
-				nlc->nlu->user.pfnHttpGatewayWrapSend((HANDLE)nlc,"",0,MSG_NOHTTPGATEWAYWRAP,HttpGatewaySendGetService);
+				nlc->nlu->user.pfnHttpGatewayWrapSend((HANDLE)nlc,"",0,MSG_NOHTTPGATEWAYWRAP,NetlibSend);
 
 			if(!HttpGatewaySendGet(nlc)) {
 				return SOCKET_ERROR;
@@ -349,7 +347,10 @@ int NetlibHttpGatewayRecv(struct NetlibConnection *nlc,char *buf,int len,int fla
 		if(nlhrReply==NULL) return SOCKET_ERROR;
         // ignore 1xx result codes
         if (nlhrReply->resultCode < 200)
+		{
+			NetlibHttpFreeRequestStruct(0,(LPARAM)nlhrReply);
 			continue;
+		}
 		// 0.3.1+
 		// Attempt to retry NETLIBHTTP_RETRYCOUNT times if the result code is >300
         if (nlhrReply->resultCode >= 300)
@@ -372,10 +373,12 @@ int NetlibHttpGatewayRecv(struct NetlibConnection *nlc,char *buf,int len,int fla
 		retryCount = 0;
 		contentLength=-1;
 		for(i=0;i<nlhrReply->headersCount;i++)
+		{
 			if(!lstrcmpiA(nlhrReply->headers[i].szName,"Content-Length")) {
 				contentLength=atoi(nlhrReply->headers[i].szValue);
 				break;
 			}
+		}
 
 		/*
 		if(contentLength<0) {
@@ -384,7 +387,10 @@ int NetlibHttpGatewayRecv(struct NetlibConnection *nlc,char *buf,int len,int fla
 			return SOCKET_ERROR;
 		}*/
 		if(contentLength==0 && nlc->nlu->user.szHttpGatewayHello != NULL)
+		{
+			NetlibHttpFreeRequestStruct(0,(LPARAM)nlhrReply);
 			continue;
+		}
 
 
 		if (contentLength < 0) {
@@ -507,7 +513,7 @@ int NetlibInitHttpConnection(struct NetlibConnection *nlc,struct NetlibUser *nlu
 	nlhrSend.cbSize=sizeof(nlhrSend);
 	nlhrSend.nlc=nlc;
 	nlhrSend.requestType=REQUEST_GET;
-	nlhrSend.flags=NLHRF_GENERATEHOST|NLHRF_DUMPPROXY|NLHRF_SMARTAUTHHEADER;
+	nlhrSend.flags=NLHRF_GENERATEHOST|NLHRF_DUMPPROXY|NLHRF_SMARTAUTHHEADER|NLHRF_HTTP11;
 	nlhrSend.szUrl=nlu->user.szHttpGatewayHello;
 	nlhrSend.headers=httpHeaders;
     nlhrSend.headersCount=3;

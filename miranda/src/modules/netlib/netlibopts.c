@@ -232,6 +232,7 @@ void NetlibSaveUserSettingsStruct(const char *szSettingsModule,NETLIBUSERSETTING
 		LeaveCriticalSection(&csNetlibUser);
 		return;
 	}
+	NetlibFreeUserSettingsStruct(&netlibUser[iUser]->settings);
 	CopySettingsStruct(&netlibUser[iUser]->settings,settings);
 	WriteSettingsStructToDb(netlibUser[iUser]->user.szSettingsModule,&netlibUser[iUser]->settings,netlibUser[iUser]->user.flags);
 	combinedSettings.cbSize=sizeof(combinedSettings);
@@ -290,6 +291,7 @@ static BOOL CALLBACK DlgProcNetlibOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LP
 				}
 			}
 			else {
+				NetlibFreeUserSettingsStruct(&settings);
 				CopySettingsStruct(&settings,&tempSettings[iUser].settings);
 				flags=tempSettings[iUser].flags;
 			}

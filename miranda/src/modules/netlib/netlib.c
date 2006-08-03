@@ -233,13 +233,28 @@ int NetlibCloseHandle(WPARAM wParam,LPARAM lParam)
 			DWORD waitResult;
 
 			WaitForSingleObject(hConnectionHeaderMutex,INFINITE);
-			if(nlc->handleType!=NLH_CONNECTION || nlc->s==INVALID_SOCKET) {
-				ReleaseMutex(hConnectionHeaderMutex);
-				SetLastError(ERROR_INVALID_PARAMETER);	  //already been closed
-				return 0;
+			if (nlc->usingHttpGateway)
+			{
+				struct NetlibHTTPProxyPacketQueue *p = nlc->pHttpProxyPacketQueue;
+				while (p != NULL) {
+					struct NetlibHTTPProxyPacketQueue *t = p;
+
+					p = p->next;
+
+					mir_free(t->dataBuffer);
+					mir_free(t);
+				}
 			}
-			closesocket(nlc->s);
-			nlc->s=INVALID_SOCKET;
+			else
+			{
+				if(nlc->handleType!=NLH_CONNECTION || nlc->s==INVALID_SOCKET) {
+					ReleaseMutex(hConnectionHeaderMutex);
+					SetLastError(ERROR_INVALID_PARAMETER);	  //already been closed
+					return 0;
+				}
+				closesocket(nlc->s);
+				nlc->s=INVALID_SOCKET;
+			}
 			ReleaseMutex(hConnectionHeaderMutex);
 
 			waitHandles[0]=hConnectionHeaderMutex;
