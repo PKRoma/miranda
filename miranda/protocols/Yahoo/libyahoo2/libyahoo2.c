@@ -99,6 +99,8 @@ void yahoo_register_callbacks(struct yahoo_callbacks * tyc)
 #define YAHOO_CALLBACK(x)	x
 #endif
 
+static int yahoo_send_data(int fd, void *data, int len);
+
 int yahoo_log_message(char * fmt, ...)
 {
 	char out[1024];
@@ -745,11 +747,13 @@ static struct yahoo_input_data * find_input_by_id_and_webcam_user(int id, const 
 static struct yahoo_input_data * find_input_by_id_and_type(int id, enum yahoo_connection_type type)
 {
 	YList *l;
-	LOG(("find_input_by_id_and_type"));
+	LOG(("[find_input_by_id_and_type] id: %d, type: %d", id, type));
 	for(l = inputs; l; l = y_list_next(l)) {
 		struct yahoo_input_data *yid = l->data;
-		if(yid->type == type && yid->yd->client_id == id)
+		if(yid->type == type && yid->yd->client_id == id) {
+			LOG(("[find_input_by_id_and_type] Got it!!!"));
 			return yid;
+	}
 	}
 	return NULL;
 }
@@ -1097,7 +1101,6 @@ static void yahoo_send_packet(struct yahoo_input_data *yid, struct yahoo_packet 
 
 	unsigned char *data;
 	int pos = 0;
-	int ret = 0;
 
 	if (yid->fd < 0)
 		return;
@@ -1121,10 +1124,12 @@ static void yahoo_send_packet(struct yahoo_input_data *yid, struct yahoo_packet 
 
 	yahoo_packet_read(pkt, data + pos, len - pos);	
 	
-	//yahoo_add_to_send_queue(yid, data, len);
-	do {
-		ret = write(yid->fd, data, len);
-	} while(ret == -1 && errno==EINTR);
+/*	if( yid->type == YAHOO_CONNECTION_FT )
+		yahoo_send_data(yid->fd, data, len);
+	else
+	yahoo_add_to_send_queue(yid, data, len);
+	*/
+	yahoo_send_data(yid->fd, data, len);
 
 	FREE(data);
 }
@@ -4121,7 +4126,7 @@ int yahoo_write_ready(int id, int fd, void *data)
 		yid->txqueues = y_list_remove_link(yid->txqueues, yid->txqueues);
 		y_list_free_1(l);
 		if(!yid->txqueues) {
-			LOG(("yahoo_write_ready(%d, %d) !yxqueues", id, fd));
+			LOG(("yahoo_write_ready(%d, %d) !txqueues", id, fd));
 			YAHOO_CALLBACK(ext_yahoo_remove_handler)(id, yid->write_tag);
 			yid->write_tag = 0;
 		}
