@@ -214,7 +214,6 @@ void YAHOO_SendAvatar(const char *szFile);
 void YAHOO_set_avatar(int buddy_icon);
 void YAHOO_bcast_picture_update(int buddy_icon);
 void YAHOO_bcast_picture_checksum(int cksum);
-BOOL YAHOO_LoadPngModule();
 int YAHOO_SaveBitmapAsAvatar( HBITMAP hBitmap, const char* szFileName );
 HBITMAP YAHOO_StretchBitmap( HBITMAP hBitmap );
 void yahoo_reset_avatar(HANDLE 	hContact);
