@@ -163,8 +163,7 @@ static void xmlStreamInitializeNow(struct ThreadData *info){
 			stream.addAttr( "version", "1.0" );
 			stream.dirtyHack = true; // this is to keep the node open - do not send </stream:stream>
 			JabberSend( info->s, stream );
-	}
-}
+}	}
 
 void __cdecl JabberServerThread( struct ThreadData *info )
 {
@@ -812,15 +811,14 @@ static void JabberProcessMessage( XmlNode *node, void *userdata )
 	if ( !node->name || strcmp( node->name, "message" )) return;
 	if (( info=( struct ThreadData * ) userdata ) == NULL ) return;
 
-	if (( type = JabberXmlGetAttrValue( node, "type" )) == NULL )
-		return;
+	type = JabberXmlGetAttrValue( node, "type" );
 	if (( from = JabberXmlGetAttrValue( node, "from" )) == NULL )
 		return;
 
-	if ( !lstrcmp( type, _T("error"))) {
+	XmlNode* errorNode = JabberXmlGetChild( node, "error" );
+	if ( errorNode != NULL || !lstrcmp( type, _T("error"))) {
 		//we  check if is message delivery failure
-		XmlNode* errorNode = JabberXmlGetChild( node, "error" );
-		if ( errorNode != NULL && (idStr = JabberXmlGetAttrValue( node, "id" )) != NULL ) {
+		if (( idStr = JabberXmlGetAttrValue( node, "id" )) != NULL ) {
 			if ( !_tcsncmp( idStr, _T(JABBER_IQID), strlen( JABBER_IQID )) ){
 				JABBER_LIST_ITEM* item = JabberListGetItemPtr( LIST_ROSTER, from );
 				if ( item != NULL ){
