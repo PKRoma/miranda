@@ -105,12 +105,12 @@ BOOL WINAPI DllMain(HINSTANCE hinst,DWORD fdwReason,LPVOID lpvReserved)
 __declspec(dllexport) PLUGININFO* MirandaPluginInfo(DWORD mirandaVersion)
 {
 	//
-    // We require Miranda 0.4
+	// We require Miranda 0.4
 	//
     if (mirandaVersion < PLUGIN_MAKE_VERSION(0, 4, 0, 0)) {
 		MessageBox( NULL, 
-				Translate("Yahoo plugin cannot be loaded. It requires Miranda IM 0.4 or later."), 
-				Translate("Yahoo"), 
+				"Yahoo plugin cannot be loaded. It requires Miranda IM 0.4 or later.", 
+				"Yahoo", 
 				MB_OK|MB_ICONWARNING|MB_SETFOREGROUND|MB_TOPMOST );
 
         return NULL;
