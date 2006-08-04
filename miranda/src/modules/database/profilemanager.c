@@ -308,7 +308,7 @@ BOOL EnumProfilesForList(char * fullpath, char * profile, LPARAM lParam)
 		SendMessage( hwndList, LVM_SETITEMTEXT, iItem, (LPARAM)&item2 );
 
 		item2.iSubItem = 4;
-		item2.pszText = rtrim( _tctime( &statbuf.st_atime ));
+		item2.pszText = rtrim( _tctime( &statbuf.st_mtime ));
 		SendMessage( hwndList, LVM_SETITEMTEXT, iItem, (LPARAM)&item2 );
 	}
 	return TRUE;
