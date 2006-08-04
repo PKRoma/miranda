@@ -543,13 +543,11 @@ UINT DrawRichEditFrame(HWND hwnd, struct MessageWindowData *mwdat, UINT skinID, 
 	LRESULT result = 0;
     BOOL isMultipleReason;
 
-    //SetWindowLong(hwnd, GWL_STYLE, GetWindowLong(hwnd, GWL_STYLE) & ~WS_VSCROLL);
-    //ShowScrollBar(hwnd, SB_VERT, FALSE);
-    //EnableScrollBar(hwnd, SB_VERT, ESB_DISABLE_BOTH);
     result = CallWindowProc(OldWndProc, hwnd, msg, wParam, lParam);			// do default processing (otherwise, NO scrollbar as it is painted in NC_PAINT)
     if(!mwdat)
         return result;
 
+	// isMultipleReason means that the msg window is in multisend mode (draw attention by rendering a red border around the text input field)
     isMultipleReason = ((skinID == ID_EXTBKINPUTAREA) && (mwdat->sendMode & SMODE_MULTIPLE || mwdat->sendMode & SMODE_CONTAINER));
 
 	if(isMultipleReason || ((mwdat && mwdat->hTheme) || (mwdat && mwdat->pContainer->bSkinned && !item->IGNORED && !mwdat->bFlatMsgLog))) {
@@ -582,33 +580,14 @@ UINT DrawRichEditFrame(HWND hwnd, struct MessageWindowData *mwdat, UINT skinID, 
 		rcWindow.bottom -= rcWindow.top;
 		rcWindow.left = rcWindow.top = 0;
 
-        //right_off += myGlobals.ncm.iScrollWidth;
-		// clip the client area from the dc
-
+		// clip the client area from the dc to avoid flickering
         ExcludeClipRect(hdc, left_off, top_off, rcWindow.right - right_off, rcWindow.bottom - bottom_off);
-        if(mwdat->pContainer->bSkinned && !item->IGNORED) {
-            ReleaseDC(hwnd, hdc);
+
+        if(mwdat->pContainer->bSkinned && !item->IGNORED) {					// this drawing is done by the parent actually 
+            ReleaseDC(hwnd, hdc);											// (skin underlays).
             return result;
-            /*
-            dcMem = CreateCompatibleDC(hdc);
-			hbm = CreateCompatibleBitmap(hdc, rcWindow.right, rcWindow.bottom);
-			hbmOld = SelectObject(dcMem, hbm);
-			ExcludeClipRect(dcMem, left_off, top_off, rcWindow.right - right_off, rcWindow.bottom - bottom_off);
-			SkinDrawBG(hwnd, mwdat->pContainer->hwnd, mwdat->pContainer, &rcWindow, dcMem);
-            if(isMultipleReason) {
-                HBRUSH br = CreateSolidBrush(RGB(255, 130, 130));
-                FillRect(dcMem, &rcWindow, br);
-                DeleteObject(br);
-            }
-			DrawAlpha(dcMem, &rcWindow, item->COLOR, isMultipleReason ? (item->ALPHA * 3) / 4 : item->ALPHA, item->COLOR2, item->COLOR2_TRANSPARENT, item->GRADIENT,
-					  item->CORNER, item->RADIUS, item->imageItem);
-			BitBlt(hdc, 0, 0, rcWindow.right, rcWindow.bottom, dcMem, 0, 0, SRCCOPY);
-			SelectObject(dcMem, hbmOld);
-			DeleteObject(hbm);
-			DeleteDC(dcMem);
-            */
 		}
-		else if(pfnDrawThemeBackground) {
+		else if(pfnDrawThemeBackground) {									// XP visual styles support
             if(isMultipleReason) {
                 HBRUSH br = CreateSolidBrush(RGB(255, 130, 130));
                 FillRect(hdc, &rcWindow, br);
