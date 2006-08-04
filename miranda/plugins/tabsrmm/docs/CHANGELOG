@@ -15,7 +15,7 @@ Support: http://www.miranda.or.at/forums/
 ! : bufgix						
 - : feature removed or disabled because of pending bugs
 
-Version 1.0.0.1 - 2006/07/31
+Version 1.0.0.1 - 2006/08/05
 
 	! fixed updater support (301, invalid response).
 	! fixed bug when re-attaching a temporary contact to a new
@@ -26,7 +26,13 @@ Version 1.0.0.1 - 2006/07/31
 	  Contact" problem which can appear when the own nickname is not 
 	  properly set.
 	! fixed a few issues with global splitter positioning.
-
+	* selecting offline sub protocol throws a warning instead of an error.
+	- removed the feature to load a background image for the message input area.
+	  was causing too many troubles and people did not understand that it was an
+	  experimental feature, thus sending bug reports.
+	! fixed problem with freezing when opening a message window by clicking on a
+	  typing notify popup
+	  	
 Version 1.0.0.0
 
 	Released and declared as "stable" branch, 2006/07/30

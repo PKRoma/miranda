@@ -65,7 +65,6 @@ BOOL CALLBACK DlgProcUserPrefs(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPa
     switch (msg) {
         case WM_INITDIALOG:
         {
-            DBVARIANT dbv;
             TCHAR szBuffer[180];
 #if defined(_UNICODE)
             TCHAR contactName[100];
@@ -152,18 +151,6 @@ BOOL CALLBACK DlgProcUserPrefs(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPa
 #endif            
             CheckDlgButton(hwndDlg, IDC_IGNORETIMEOUTS, DBGetContactSettingByte(hContact, SRMSGMOD_T, "no_ack", 0));
             SetWindowText(hwndDlg, szBuffer);
-            if(DBGetContactSettingByte(hContact, SRMSGMOD_T, "private_bg", 0)) {
-                CheckDlgButton(hwndDlg, IDC_USEPRIVATEIMAGE, TRUE);
-                EnableWindow(GetDlgItem(hwndDlg, IDC_GETBGIMAGE), TRUE);
-            }
-            else {
-                CheckDlgButton(hwndDlg, IDC_USEPRIVATEIMAGE, FALSE);
-                EnableWindow(GetDlgItem(hwndDlg, IDC_GETBGIMAGE), FALSE);
-            }
-            if(DBGetContactSetting(hContact, SRMSGMOD_T, "bgimage", &dbv) == 0) {
-                SetDlgItemTextA(hwndDlg, IDC_BACKGROUNDIMAGE, dbv.pszVal);
-                DBFreeVariant(&dbv);
-            }
             SendDlgItemMessage(hwndDlg, IDC_TIMEZONE, CB_INSERTSTRING, -1, (LPARAM)TranslateT("<default, no change>"));
             timezone = (DWORD)DBGetContactSettingByte(hContact,"UserInfo","Timezone", DBGetContactSettingByte(hContact, (char *)CallService(MS_PROTO_GETCONTACTBASEPROTO, (WPARAM)hContact, 0), "Timezone",-1));
             for(i = -12; i <= 12; i++) {
@@ -189,30 +176,6 @@ BOOL CALLBACK DlgProcUserPrefs(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPa
 					EnableWindow(GetDlgItem(hwndDlg, IDC_TRIMSPIN), IsDlgButtonChecked(hwndDlg, IDC_ALWAYSTRIM2));
 					EnableWindow(GetDlgItem(hwndDlg, IDC_TRIM), IsDlgButtonChecked(hwndDlg, IDC_ALWAYSTRIM2));
 					break;
-                case IDC_USEPRIVATEIMAGE:
-                    EnableWindow(GetDlgItem(hwndDlg, IDC_GETBGIMAGE), IsDlgButtonChecked(hwndDlg, IDC_USEPRIVATEIMAGE));
-                    break;
-                case IDC_GETBGIMAGE:
-                    {
-                        char FileName[MAX_PATH];
-                        char Filters[512];
-                        OPENFILENAMEA ofn={0};
-
-                        CallService(MS_UTILS_GETBITMAPFILTERSTRINGS,sizeof(Filters),(LPARAM)(char*)Filters);
-                        ofn.lStructSize = OPENFILENAME_SIZE_VERSION_400;
-                        ofn.hwndOwner=0;
-                        ofn.lpstrFile = FileName;
-                        ofn.lpstrFilter = Filters;
-                        ofn.nMaxFile = MAX_PATH;
-                        ofn.nMaxFileTitle = MAX_PATH;
-                        ofn.Flags=OFN_HIDEREADONLY;
-                        ofn.lpstrInitialDir = ".";
-                        *FileName = '\0';
-                        ofn.lpstrDefExt="";
-                        if (GetOpenFileNameA(&ofn))
-                            SetDlgItemTextA(hwndDlg, IDC_BACKGROUNDIMAGE, FileName);
-                        break;
-                    }
                 case IDOK:
                 {
                     struct MessageWindowData *dat = 0;
@@ -289,12 +252,6 @@ BOOL CALLBACK DlgProcUserPrefs(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPa
                     DBWriteContactSettingByte(hContact, TEMPLATES_MODULE, "enabled", (BYTE)(IsDlgButtonChecked(hwndDlg, IDC_TEMPLOVERRIDE)));
                     DBWriteContactSettingByte(hContact, RTLTEMPLATES_MODULE, "enabled", (BYTE)(IsDlgButtonChecked(hwndDlg, IDC_RTLTEMPLOVERRIDE)));
 
-                    DBWriteContactSettingByte(hContact, SRMSGMOD_T, "private_bg", (BYTE)(IsDlgButtonChecked(hwndDlg, IDC_USEPRIVATEIMAGE)));
-                    if(IsDlgButtonChecked(hwndDlg, IDC_USEPRIVATEIMAGE)) {
-                        char szFilename[MAX_PATH];
-                        GetDlgItemTextA(hwndDlg, IDC_BACKGROUNDIMAGE, szFilename, MAX_PATH - 1);
-                        DBWriteContactSettingString(hContact, SRMSGMOD_T, "bgimage", szFilename);
-                    }
                     offset = SendDlgItemMessage(hwndDlg, IDC_TIMEZONE, CB_GETCURSEL, 0, 0);
                     if(offset > 0) {
                         BYTE timezone = (13 - offset) * 2;

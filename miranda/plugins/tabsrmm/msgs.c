@@ -40,6 +40,9 @@ static char *relnotes[] = {
 	"*\tFixed a bug with re-attaching temporary (\"not-on-list\") contacts to a different container.\\par",
 	"*\tFixed problems with updater (\"Invalid response 301\") message.\\par",
 	"*\tFixed minor issues when using IEView (scolling, flickering).\\par",
+	"*\tFixed various problems with global splitter positioning.\\par",
+	"*\tSelecting an offline subcontact for sending will now only throw a warning instead of an error.\\par",
+	"*\tRemoved the feature to load a background image for the message input area. as it was causing too many troubles and people did not understand that it was an experimental feature, thus sending bug reports.\\par",
     NULL
 };
 
@@ -583,15 +586,28 @@ nowindowcreate:
 }
 
 #if defined(_UNICODE)
-static int SendMessageCommand_W(WPARAM wParam, LPARAM lParam)
+int SendMessageCommand_W(WPARAM wParam, LPARAM lParam)
 {
     HWND hwnd;
 	char *szProto;
     struct NewMessageWindowLParam newData = { 0 };
     struct ContainerWindowData *pContainer = 0;
-    
     int isSplit = 1;
     
+    if(GetCurrentThreadId() != myGlobals.dwThreadID) {
+        //_DebugTraceA("sendmessagecommand_W called from different thread (%d), main thread = %d", GetCurrentThreadId(), myGlobals.dwThreadID);
+        if(lParam) {
+            unsigned iLen = lstrlenW((wchar_t *)lParam);
+            wchar_t *tszText = (wchar_t *)malloc((iLen + 1) * sizeof(wchar_t));
+            wcsncpy(tszText, iLen + 1, (wchar_t *)lParam);
+            tszText[iLen] = 0;
+            PostMessage(myGlobals.g_hwndHotkeyHandler, DM_SENDMESSAGECOMMANDW, wParam, (LPARAM)tszText);
+        }
+        else
+            PostMessage(myGlobals.g_hwndHotkeyHandler, DM_SENDMESSAGECOMMANDW, wParam, 0);
+        return 0;
+    }
+
     /* does the HCONTACT's protocol support IM messages? */
     szProto = (char *) CallService(MS_PROTO_GETCONTACTBASEPROTO, wParam, 0);
     if (szProto) {
@@ -639,15 +655,28 @@ static int SendMessageCommand_W(WPARAM wParam, LPARAM lParam)
 
 #endif
 
-static int SendMessageCommand(WPARAM wParam, LPARAM lParam)
+int SendMessageCommand(WPARAM wParam, LPARAM lParam)
 {
     HWND hwnd;
 	char *szProto;
     struct NewMessageWindowLParam newData = { 0 };
     struct ContainerWindowData *pContainer = 0;
-    
     int isSplit = 1;
     
+    if(GetCurrentThreadId() != myGlobals.dwThreadID) {
+        //_DebugTraceA("sendmessagecommand called from different thread (%d), main thread = %d", GetCurrentThreadId(), myGlobals.dwThreadID);
+        if(lParam) {
+            unsigned iLen = lstrlenA((char *)lParam);
+            char *szText = (char *)malloc(iLen + 1);
+            strncpy(szText, iLen + 1, (char *)lParam);
+            szText[iLen] = 0;
+            PostMessage(myGlobals.g_hwndHotkeyHandler, DM_SENDMESSAGECOMMAND, wParam, (LPARAM)szText);
+        }
+        else
+            PostMessage(myGlobals.g_hwndHotkeyHandler, DM_SENDMESSAGECOMMAND, wParam, 0);
+        return 0;
+    }
+
     /* does the HCONTACT's protocol support IM messages? */
     szProto = (char *) CallService(MS_PROTO_GETCONTACTBASEPROTO, wParam, 0);
     if (szProto) {
@@ -1181,8 +1210,6 @@ int SplitmsgShutdown(void)
         free(rtf_ctable);
 
     UnloadTSButtonModule(0, 0);
-    if(myGlobals.m_hbmMsgArea)
-        DeleteObject(myGlobals.m_hbmMsgArea);
     
 	if(sendJobs) {
 		for(i = 0; i < NR_SENDJOBS; i++) {
@@ -1377,6 +1404,7 @@ tzdone:
     //RegisterContainer();
     RegisterTabCtrlClass();
     ReloadGlobals();
+    myGlobals.dwThreadID = GetCurrentThreadId();
     GetDataDir();
     ReloadTabConfig();
     NEN_ReadOptions(&nen_options);
@@ -1838,27 +1866,6 @@ int TABSRMM_FireEvent(HANDLE hContact, HWND hwnd, unsigned int type, unsigned in
     return(NotifyEventHooks(g_hEvent_MsgWin, 0, (LPARAM)&mwe));
 }
 
-void LoadMsgAreaBackground()
-{
-    char szFilename[MAX_PATH];
-    DBVARIANT dbv;
-    HBITMAP hbmNew;
-    
-    if(DBGetContactSetting(NULL, SRMSGMOD_T, "bgimage", &dbv) == 0) {
-        MY_pathToAbsolute(dbv.pszVal, szFilename);
-        hbmNew = (HBITMAP)CallService(MS_UTILS_LOADBITMAP, 0, (LPARAM) szFilename);
-        if(myGlobals.m_hbmMsgArea != 0)
-            DeleteObject(myGlobals.m_hbmMsgArea);
-        myGlobals.m_hbmMsgArea = hbmNew;
-        DBFreeVariant(&dbv);
-    }
-    else {
-        if(myGlobals.m_hbmMsgArea != 0)
-            DeleteObject(myGlobals.m_hbmMsgArea);
-        myGlobals.m_hbmMsgArea = 0;
-    }
-        
-}
 static ICONDESC _toolbaricons[] = {
     "tabSRMM_history", "Show History", &myGlobals.g_buttonBarIcons[1], -IDI_HISTORY, 1,
     "tabSRMM_mlog", "Message Log Options", &myGlobals.g_buttonBarIcons[2], -IDI_MSGLOGOPT, 1,
@@ -1982,7 +1989,6 @@ static int SetupIconLibConfig()
         myGlobals.g_hbmUnknown = CreateCompatibleBitmap(dc, 20, 20);
         ReleaseDC(0, dc);
     }
-    LoadMsgAreaBackground();
     FreeLibrary(g_hIconDLL);
     g_hIconDLL = 0;
     
@@ -2065,8 +2071,6 @@ static void LoadIconTheme()
             myGlobals.g_hbmUnknown = CreateCompatibleBitmap(dc, 20, 20);
             ReleaseDC(0, dc);
         }
-        LoadMsgAreaBackground();
-        
         while(ICONBLOCKS[n].szSection) {
             i = 0;
             while(ICONBLOCKS[n].idesc[i].szDesc) {

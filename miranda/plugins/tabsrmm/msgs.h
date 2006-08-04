@@ -392,7 +392,6 @@ struct MessageWindowData {
     int     iNextQueuedEvent;
 #define EVENT_QUEUE_SIZE 10
     int     iEventQueueSize;
-    HBITMAP hbmMsgArea;
     TCHAR   newtitle[130];        // tab title...
     LCID    lcid;
     char    lcID[4];
@@ -539,7 +538,6 @@ typedef struct _globals {
     BOOL        m_SuperQuiet;
     HANDLE      m_TipOwner;
     HANDLE      m_UserMenuItem;
-    HBITMAP     m_hbmMsgArea;
     BYTE        m_WinVerMajor;
     BYTE        m_WinVerMinor;
     BYTE        m_bIsXP;
@@ -583,6 +581,7 @@ typedef struct _globals {
     BOOL        m_visualMessageSizeIndicator;
     BOOL        m_autoSplit;
     int         rtf_ctablesize;
+	DWORD		dwThreadID;
 } MYGLOBALS;
 
 typedef struct _tag_ICONDESC {
@@ -756,7 +755,7 @@ struct ProtocolData {
 #define DM_ACTIVATETOOLTIP   (WM_USER+58)
 #define DM_UINTOCLIPBOARD   (WM_USER+59)
 #define DM_SPLITTEREMERGENCY (WM_USER+60)
-#define DM_RECALCPICTURESIZE (WM_USER+61) **FREE**
+#define DM_SENDMESSAGECOMMAND (WM_USER+61)
 #define DM_FORCEDREMAKELOG   (WM_USER+62)
 #define DM_QUERYFLAGS        (WM_USER+63)
 #define DM_STATUSBARCHANGED  (WM_USER+64)
@@ -788,6 +787,8 @@ struct ProtocolData {
 #define DM_DOCREATETAB_CHAT    (WM_USER+90)
 #define DM_CLIENTCHANGED       (WM_USER+91)
 #define DM_PLAYINCOMINGSOUND   (WM_USER+92)
+#define DM_SENDMESSAGECOMMANDW (WM_USER+93)
+#define DM_REMOVEPOPUPS        (WM_USER+94)
 
 #define DM_SC_BUILDLIST      (WM_USER+100)
 #define DM_SC_INITDIALOG     (WM_USER+101)

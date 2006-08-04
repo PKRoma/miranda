@@ -1451,7 +1451,7 @@ static BOOL CALLBACK SkinOptionsDlgProc(HWND hwnd, UINT msg, WPARAM wParam, LPAR
          TCITEM tci;
          RECT rcClient;
          int oPage = DBGetContactSettingByte(NULL, SRMSGMOD_T, "skin_opage", 0);
-         SKINDESCRIPTION sd;
+         //SKINDESCRIPTION sd;
 		 HWND hwndFirstPage;
 
          GetClientRect(hwnd, &rcClient);
@@ -1477,7 +1477,7 @@ static BOOL CALLBACK SkinOptionsDlgProc(HWND hwnd, UINT msg, WPARAM wParam, LPAR
          if(MyEnableThemeDialogTexture)
              MyEnableThemeDialogTexture((HWND)tci.lParam, ETDT_ENABLETAB);
 
-         if(myGlobals.m_WinVerMajor >= 5) {
+         /*if(myGlobals.m_WinVerMajor >= 5 && 0) {						// disabled because skin editor doesn't do anything for tabsrmm (yet)
              if(ServiceExists(MS_CLNSE_INVOKE)) {
 
                  ZeroMemory(&sd, sizeof(sd));
@@ -1515,7 +1515,7 @@ static BOOL CALLBACK SkinOptionsDlgProc(HWND hwnd, UINT msg, WPARAM wParam, LPAR
                  TabCtrl_SetCurSel(GetDlgItem(hwnd, IDC_OPTIONSTAB), oPage);
              }
          }
-         else {
+         else */{
              TabCtrl_SetCurSel(GetDlgItem(hwnd, IDC_OPTIONSTAB), 0);
 			 ShowWindow(hwndFirstPage, SW_SHOW);
          }
