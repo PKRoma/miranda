@@ -144,6 +144,14 @@ static void Chat_UpdateWindowState(HWND hwndDlg, struct MessageWindowData *dat, 
         UpdateContainerMenu(hwndDlg, dat);
         UpdateTrayMenuState(dat, FALSE);
         DM_SetDBButtonStates(hwndDlg, dat);
+
+        if(dat->dwFlagsEx & MWF_EX_DELAYEDSPLITTER) {
+            dat->dwFlagsEx &= ~MWF_EX_DELAYEDSPLITTER;
+            ShowWindow(dat->pContainer->hwnd, SW_RESTORE);
+            PostMessage(hwndDlg, DM_SPLITTERMOVEDGLOBAL, dat->wParam, dat->lParam);
+            PostMessage(hwndDlg, WM_SIZE, 0, 0);
+            dat->wParam = dat->lParam = 0;
+        }
     }
 }
 
@@ -1445,6 +1453,7 @@ BOOL CALLBACK RoomWndProc(HWND hwndDlg,UINT uMsg,WPARAM wParam,LPARAM lParam)
             psi->pContainer = newData->pContainer;
             dat->hwnd = hwndDlg;
             psi->hWnd = hwndDlg;
+            psi->iSplitterY = g_Settings.iSplitterY;
 
             BroadCastContainer(dat->pContainer, DM_REFRESHTABINDEX, 0, 0);
 
@@ -1959,9 +1968,10 @@ LABEL_SHOWWINDOW:
 				g_Settings.iSplitterX = si->iSplitterX;
 			}
 			else if((HWND)lParam==GetDlgItem(hwndDlg,IDC_SPLITTERY) || lParam == -1) {
-				int oldSplitterY;
+                int oldSplitterY;
+
 				GetClientRect(hwndDlg,&rc);
-				pt.x=0; pt.y=wParam;
+				pt.x=0; pt.y = wParam;
 				ScreenToClient(hwndDlg,&pt);
 				oldSplitterY=si->iSplitterY;
 				si->iSplitterY=bFormat?rc.bottom-pt.y+1:rc.bottom-pt.y+20;
@@ -1981,6 +1991,25 @@ LABEL_SHOWWINDOW:
 		}
         break;
 
+        case DM_SPLITTERMOVEDGLOBAL:
+        {
+            short newMessagePos;
+            RECT rcWin, rcClient;
+
+            if(IsIconic(dat->pContainer->hwnd) || dat->pContainer->hwndActive != hwndDlg) {
+                dat->dwFlagsEx |= MWF_EX_DELAYEDSPLITTER;
+                dat->wParam = wParam;
+                dat->lParam = lParam;
+                return 0;
+            }
+            GetWindowRect(hwndDlg, &rcWin);
+            GetClientRect(hwndDlg, &rcClient);
+            newMessagePos = (short)rcWin.bottom - (short)wParam;
+
+            SendMessage(hwndDlg, DM_SPLITTERMOVED, newMessagePos + lParam / 2, (LPARAM)GetDlgItem(hwndDlg, IDC_SPLITTERY));
+            //PostMessage(hwndDlg, DM_DELAYEDSCROLL, 0, 1);
+			return 0;
+        }
 		case GC_FIREHOOK:
 		{
 			if (lParam)

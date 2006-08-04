@@ -531,6 +531,18 @@ BOOL CALLBACK HotkeyHandlerDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM
             }
             break;
         }
+#if defined(_UNICODE)
+        case DM_SENDMESSAGECOMMANDW:
+            SendMessageCommand_W(wParam, lParam);
+            if(lParam)
+                free((void *)lParam);
+            return 0;
+#endif
+        case DM_SENDMESSAGECOMMAND:
+            SendMessageCommand(wParam, lParam);
+            if(lParam)
+                free((void *)lParam);
+            return 0;
          /*
          * sent from the popup to "dismiss" the event. we should do this in the main thread
          */

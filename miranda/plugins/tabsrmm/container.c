@@ -1480,7 +1480,8 @@ buttons_done:
                 if(pContainer->dwFlags & CNT_VERTICALMAX || (GetKeyState(VK_CONTROL) & 0x8000)) {
                     RECT rcDesktop = {0};
                     BOOL fDesktopValid = FALSE;
-                    WINDOWPLACEMENT wp = {0};
+                    RECT rcDlg = {0};
+                    int monitorXOffset = 0;
 
                     if (MyMonitorFromWindow) {
                         MONITORINFO mi = { 0 };
@@ -1489,23 +1490,21 @@ buttons_done:
                         if(hMonitor) {
                             MyGetMonitorInfoA(hMonitor, &mi);
                             rcDesktop = mi.rcWork;
+                            OffsetRect(&rcDesktop, 0, -mi.rcMonitor.top);
+                            monitorXOffset = mi.rcMonitor.left;
                             fDesktopValid = TRUE;
                         }
                         goto default_monitor_handling;
                     }
                     else {
 default_monitor_handling:
-                        wp.length = sizeof(wp);
-                        GetWindowPlacement(hwndDlg, &wp);
+                        GetWindowRect(hwndDlg, &rcDlg);
                         if(!fDesktopValid)
                             SystemParametersInfo(SPI_GETWORKAREA, 0, &rcDesktop, 0);
                         mmi->ptMaxSize.y = rcDesktop.bottom - rcDesktop.top;
-                        mmi->ptMaxSize.x = wp.rcNormalPosition.right - wp.rcNormalPosition.left;
-                        mmi->ptMaxPosition.x = wp.rcNormalPosition.left;
-                        if(IsIconic(hwndDlg))
-                            mmi->ptMaxPosition.y = rcDesktop.top;
-                        else
-                            mmi->ptMaxPosition.y = 0;
+                        mmi->ptMaxSize.x = rcDlg.right - rcDlg.left;
+                        mmi->ptMaxPosition.x = rcDlg.left - monitorXOffset;
+                        mmi->ptMaxPosition.y = rcDesktop.top;
                     }
 #if defined(__MATHMOD_SUPPORT)
                     if(myGlobals.m_MathModAvail) {

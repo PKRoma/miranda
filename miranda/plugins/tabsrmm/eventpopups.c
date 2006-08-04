@@ -822,7 +822,6 @@ static int PopupShow(NEN_OPTIONS *pluginOptions, HANDLE hContact, HANDLE hEvent,
     pdata->eventData[0].szText[MAX_SECONDLINE - 1] = 0;
     pdata->nrEventsAlloced = NR_MERGED;
     pdata->nrMerged = 1;
-
     PopupCount++;
 
     PopUpList[NumberPopupData(NULL)] = pdata;

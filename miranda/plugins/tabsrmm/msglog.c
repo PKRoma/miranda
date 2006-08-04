@@ -809,7 +809,7 @@ nounicode:
 
     g_groupBreak = TRUE;
 
-    if(dat->dwFlags & MWF_DIVIDERWANTED) {
+    if(dwEffectiveFlags & MWF_DIVIDERWANTED) {
         static char szStyle_div[128] = "\0";
         if(szStyle_div[0] == 0)
             mir_snprintf(szStyle_div, 128, "\\f%u\\cf%u\\ul0\\b%d\\i%d\\fs%u", H_MSGFONTID_DIVIDERS, H_MSGFONTID_DIVIDERS, 0, 0, 5);
@@ -852,7 +852,7 @@ nounicode:
     /*
      * templated code starts here
      */
-	if (dat->dwFlags & MWF_LOG_SHOWTIME) {
+	if (dwEffectiveFlags & MWF_LOG_SHOWTIME) {
         final_time = dbei.timestamp;
         if(dat->dwFlagsEx & MWF_SHOW_USELOCALTIME) {
             if(!isSent && dat->timediff != 0)
@@ -861,14 +861,14 @@ nounicode:
         _tzset();
         event_time = *localtime(&final_time);
     }
-    this_templateset = (dat->dwFlags & MWF_LOG_RTL || dbei.flags & DBEF_RTL) ? dat->rtl_templates : dat->ltr_templates;
+    this_templateset = dbei.flags & DBEF_RTL ? dat->rtl_templates : dat->ltr_templates;
     
     if(fIsStatusChangeEvent)
         szTemplate = this_templateset->szTemplates[TMPL_STATUSCHG];
     else if(dbei.eventType == EVENTTYPE_ERRMSG)
         szTemplate = this_templateset->szTemplates[TMPL_ERRMSG];
     else {
-        if(dat->dwFlags & MWF_LOG_GROUPMODE)
+        if(dwEffectiveFlags & MWF_LOG_GROUPMODE)
             szTemplate = isSent ? (g_groupBreak ? this_templateset->szTemplates[TMPL_GRPSTARTOUT] : this_templateset->szTemplates[TMPL_GRPINNEROUT]) : 
                                   (g_groupBreak ? this_templateset->szTemplates[TMPL_GRPSTARTIN] : this_templateset->szTemplates[TMPL_GRPINNERIN]);
         else
@@ -876,8 +876,8 @@ nounicode:
     }
 
     iTemplateLen = _tcslen(szTemplate);
-    showTime = dat->dwFlags & MWF_LOG_SHOWTIME;
-    showDate = dat->dwFlags & MWF_LOG_SHOWDATES;
+    showTime = dwEffectiveFlags & MWF_LOG_SHOWTIME;
+    showDate = dwEffectiveFlags & MWF_LOG_SHOWDATES;
 
 	if(dat->hHistoryEvents) {
 		if(dat->curHistory == dat->maxHistory) {
@@ -926,7 +926,7 @@ nounicode:
                         skipFont = TRUE;
                         break;
                     case '?':
-                        if(dat->dwFlags & MWF_LOG_NORMALTEMPLATES) {
+                        if(dwEffectiveFlags & MWF_LOG_NORMALTEMPLATES) {
                             i++;
                             cc = szTemplate[i + 1];
                             continue;
@@ -937,7 +937,7 @@ nounicode:
                             goto skip;
                         }
                     case '\\':
-                        if(!(dat->dwFlags & MWF_LOG_NORMALTEMPLATES)) {
+                        if(!(dwEffectiveFlags & MWF_LOG_NORMALTEMPLATES)) {
                             i++;
                             cc = szTemplate[i + 1];
                             continue;
@@ -955,9 +955,9 @@ nounicode:
 					break;
                 case 'I':
                 {
-                    if(dat->dwFlags & MWF_LOG_SHOWICONS) {
+                    if(dwEffectiveFlags & MWF_LOG_SHOWICONS) {
                         int icon;
-                        if((dat->dwFlags & MWF_LOG_INOUTICONS) && dbei.eventType == EVENTTYPE_MESSAGE)
+                        if((dwEffectiveFlags & MWF_LOG_INOUTICONS) && dbei.eventType == EVENTTYPE_MESSAGE)
                             icon = isSent ? LOGICON_OUT : LOGICON_IN;
                         else {
                             switch (dbei.eventType) {
@@ -1034,7 +1034,7 @@ nounicode:
                         skipToNext = TRUE;
                     break;
                 case 's':           //second
-                    if(showTime && dat->dwFlags & MWF_LOG_SHOWSECONDS) {
+                    if(showTime && dwEffectiveFlags & MWF_LOG_SHOWSECONDS) {
                         if(skipFont)
                             AppendToBuffer(&buffer, &bufferEnd, &bufferAlloced, "%02d", event_time.tm_sec);
                         else
@@ -1133,7 +1133,7 @@ nounicode:
                 case 't':
                 case 'T':
                     if(showTime) {
-                        szFinalTimestamp = Template_MakeRelativeDate(dat, final_time, g_groupBreak, dat->dwFlags & MWF_LOG_SHOWSECONDS ? cc : (TCHAR)'t');
+                        szFinalTimestamp = Template_MakeRelativeDate(dat, final_time, g_groupBreak, dwEffectiveFlags & MWF_LOG_SHOWSECONDS ? cc : (TCHAR)'t');
                         AppendTimeStamp(szFinalTimestamp, isSent, &buffer, &bufferEnd, &bufferAlloced, skipFont, dat, iFontIDOffset);
                     }
                     else
@@ -1141,8 +1141,8 @@ nounicode:
                     break;
                 case 'S':           // symbol
                 {
-                    if(dat->dwFlags & MWF_LOG_SYMBOLS) {
-                        if((dat->dwFlags & MWF_LOG_INOUTICONS) && dbei.eventType == EVENTTYPE_MESSAGE)
+                    if(dwEffectiveFlags & MWF_LOG_SYMBOLS) {
+                        if((dwEffectiveFlags & MWF_LOG_INOUTICONS) && dbei.eventType == EVENTTYPE_MESSAGE)
                             c = isSent ? 0x37 : 0x38;
                         else {
                             switch(dbei.eventType) {
@@ -1291,11 +1291,14 @@ nounicode:
                         i++;
                     }
                     else
-                        AppendToBuffer(&buffer, &bufferEnd, &bufferAlloced, "\\highlight%d", (dat->dwFlags & MWF_LOG_INDIVIDUALBKG) ? (MSGDLGFONTCOUNT + 1 + (isSent ? 1 : 0)) : MSGDLGFONTCOUNT + 3);
+                        AppendToBuffer(&buffer, &bufferEnd, &bufferAlloced, "\\highlight%d", (dwEffectiveFlags & MWF_LOG_INDIVIDUALBKG) ? (MSGDLGFONTCOUNT + 1 + (isSent ? 1 : 0)) : MSGDLGFONTCOUNT + 3);
                     break;
                 }
                 case '|':       // tab
-                    AppendToBuffer(&buffer, &bufferEnd, &bufferAlloced, "\\tab");
+                    if(dwEffectiveFlags & MWF_LOG_INDENT)
+                        AppendToBuffer(&buffer, &bufferEnd, &bufferAlloced, "\\tab");
+                    else
+                        AppendToBuffer(&buffer, &bufferEnd, &bufferAlloced, " ");
                     break;
                 case 'f':       // font tag...
                 {

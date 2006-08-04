@@ -453,10 +453,7 @@
 #define IDC_IGNORETIMEOUTS              1372
 #define IDC_TEMPLOVERRIDE2              1373
 #define IDC_RTLTEMPLOVERRIDE            1373
-#define IDC_USEPRIVATEIMAGE             1374
-#define IDC_BACKGROUNDIMAGE             1375
 #define IDC_BUTTON2                     1376
-#define IDC_GETBGIMAGE                  1376
 #define IDC_SELECTTHEME                 1376
 #define IDC_RELOAD                      1376
 #define IDC_LOGOPTIONS                  1377
@@ -624,8 +621,6 @@
 #define ID_FAVORITES_REMOVECONTACTFROMFAVORITES 40181
 #define ID_FILE_HTTP                    40182
 #define ID_LOG_FREEZELOG                40183
-#define ID_EDITOR_LOADBACKGROUNDIMAGE   40184
-#define ID_EDITOR_REMOVEBACKGROUNDIMAGE 40185
 #define ID_FONT_SIZE                    40186
 #define ID_SIZE_LARGE                   40187
 #define ID_SIZE_BIGGER                  40188
