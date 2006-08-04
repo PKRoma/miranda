@@ -61,7 +61,7 @@ extern int bHideXStatusUI;
 PLUGININFO pluginInfo = {
   sizeof(PLUGININFO),
   NULL,
-  PLUGIN_MAKE_VERSION(0,3,7,0),
+  PLUGIN_MAKE_VERSION(0,3,7,1),
   "Support for ICQ network, enhanced.",
   "Joe Kucera, Bio, Martin Öberg, Richard Hughes, Jon Keating, etc",
   "jokusoftware@miranda-im.org",
@@ -74,6 +74,7 @@ PLUGININFO pluginInfo = {
 static char pluginName[64];
 
 static int OnSystemModulesLoaded(WPARAM wParam,LPARAM lParam);
+static int OnSystemPreShutdown(WPARAM wParam,LPARAM lParam);
 static int icq_PrebuildContactMenu(WPARAM wParam, LPARAM lParam);
 static int IconLibIconsChanged(WPARAM wParam, LPARAM lParam);
 
@@ -165,6 +166,7 @@ int __declspec(dllexport) Load(PLUGINLINK *link)
   icq_FirstRunCheck();
 
   HookEvent(ME_SYSTEM_MODULESLOADED, OnSystemModulesLoaded);
+  HookEvent(ME_SYSTEM_PRESHUTDOWN, OnSystemPreShutdown);
 
   InitializeCriticalSection(&connectionHandleMutex);
   InitializeCriticalSection(&localSeqMutex);
@@ -285,16 +287,8 @@ int __declspec(dllexport) Unload(void)
 
   UninitXStatusEvents();
 
-  if (hServerConn)
-  {
-    icq_sendCloseConnection();
-
-    icq_serverDisconnect(TRUE);
-  }
-
   UninitServerLists();
   UninitDirectConns();
-  icq_InfoUpdateCleanup();
 
   Netlib_CloseHandle(ghDirectNetlibUser);
   Netlib_CloseHandle(ghServerNetlibUser);
@@ -458,6 +452,22 @@ static int OnSystemModulesLoaded(WPARAM wParam,LPARAM lParam)
 
     CallService(MS_UPDATE_REGISTERFL, 1683, (WPARAM)&pluginInfo);
   }
+
+  return 0;
+}
+
+
+
+static int OnSystemPreShutdown(WPARAM wParam,LPARAM lParam)
+{ // all threads should be terminated here
+  if (hServerConn)
+  {
+    icq_sendCloseConnection();
+
+    icq_serverDisconnect(TRUE);
+  }
+
+  icq_InfoUpdateCleanup();
 
   return 0;
 }
