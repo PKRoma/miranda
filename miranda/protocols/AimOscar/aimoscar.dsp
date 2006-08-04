@@ -161,6 +161,10 @@ SOURCE=.\strl.cpp
 # End Source File
 # Begin Source File
 
+SOURCE=.\theme.cpp
+# End Source File
+# Begin Source File
+
 SOURCE=.\thread.cpp
 # End Source File
 # Begin Source File
@@ -254,6 +258,10 @@ SOURCE=.\snac.h
 # Begin Source File
 
 SOURCE=.\strl.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\theme.h
 # End Source File
 # Begin Source File
 
