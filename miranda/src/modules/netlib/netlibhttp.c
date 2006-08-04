@@ -2,7 +2,7 @@
 
 Miranda IM: the free IM client for Microsoft* Windows*
 
-Copyright 2000-2003 Miranda ICQ/IM project,
+Copyright 2000-2006 Miranda ICQ/IM project,
 all portions of this codebase are copyrighted to the people
 listed in contributors.txt.
 
@@ -280,6 +280,7 @@ int NetlibHttpSendRequest(WPARAM wParam,LPARAM lParam)
 		case REQUEST_GET: pszRequest="GET"; break;
 		case REQUEST_POST: pszRequest="POST"; break;
 		case REQUEST_CONNECT: pszRequest="CONNECT"; break;
+		case REQUEST_HEAD:pszRequest="HEAD"; break;
 		default:
 			SetLastError(ERROR_INVALID_PARAMETER);
 			return SOCKET_ERROR;
@@ -314,7 +315,7 @@ int NetlibHttpSendRequest(WPARAM wParam,LPARAM lParam)
 	//if (nlhr->dataLength > 0)
 	//	AppendToCharBuffer(&httpRequest,"Content-Length: %d\r\n",nlhr->dataLength);
 
-	//proxy auth initialisation
+	//proxy auth initialization
 	useProxyHttpAuth=nlhr->flags&NLHRF_SMARTAUTHHEADER && nlc->nlu->settings.useProxy && nlc->nlu->settings.useProxyAuth && (nlc->nlu->settings.proxyType==PROXYTYPE_HTTP || nlc->nlu->settings.proxyType==PROXYTYPE_HTTPS);
 	usingNtlmAuthentication=0;
 	if(useProxyHttpAuth) {
@@ -514,6 +515,7 @@ int NetlibHttpRecvHeaders(WPARAM wParam,LPARAM lParam)
 	nlhr->requestType=REQUEST_RESPONSE;
 	if(!HttpPeekFirstResponseLine(nlc,dwRequestTimeoutTime,lParam|MSG_PEEK,&nlhr->resultCode,&nlhr->szResultDescr,&firstLineLength)) {
 		NetlibLeaveNestedCS(&nlc->ncsRecv);
+		NetlibHttpFreeRequestStruct(0,(LPARAM)nlhr);
 		return (int)(NETLIBHTTPREQUEST*)NULL;
 	}
 	bytesPeeked=NLRecv(nlc,buffer,firstLineLength,lParam|MSG_DUMPASTEXT);
@@ -672,10 +674,9 @@ int NetlibHttpTransaction(WPARAM wParam,LPARAM lParam)
 		if(nlhrReply==NULL) {
 			NetlibCloseHandle((WPARAM)hConnection,0);
 			return (int)(HANDLE)NULL;
-		}
-	}
+	}	}
 
-	{
+	if (nlhr->requestType != REQUEST_HEAD){
 		int recvResult;
 		int dataBufferAlloced=0;
 

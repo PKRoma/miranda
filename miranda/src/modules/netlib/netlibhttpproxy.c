@@ -2,7 +2,7 @@
 
 Miranda IM: the free IM client for Microsoft* Windows*
 
-Copyright 2000-2003 Miranda ICQ/IM project,
+Copyright 2000-2006 Miranda ICQ/IM project,
 all portions of this codebase are copyrighted to the people
 listed in contributors.txt.
 
@@ -105,6 +105,8 @@ static int HttpGatewaySendGet(struct NetlibConnection *nlc)
 
 	if(NetlibHttpSendRequest((WPARAM)&nlcSend,(LPARAM)&nlhrSend)==SOCKET_ERROR) {
 		struct NetlibHTTPProxyPacketQueue *p = nlc->pHttpProxyPacketQueue;
+		
+		mir_free(nlhrSend.pData);
 
 		nlc->usingHttpGateway=1;
 
@@ -124,6 +126,7 @@ static int HttpGatewaySendGet(struct NetlibConnection *nlc)
 
 		return 0;
 	}
+	mir_free(nlhrSend.pData);
 	nlc->dwLastGetSentTime=GetTickCount();
 	return 1;
 }
@@ -349,7 +352,10 @@ int NetlibHttpGatewayRecv(struct NetlibConnection *nlc,char *buf,int len,int fla
 		if(nlhrReply==NULL) return SOCKET_ERROR;
         // ignore 1xx result codes
         if (nlhrReply->resultCode < 200)
+		{
+			NetlibHttpFreeRequestStruct(0,(LPARAM)nlhrReply);
 			continue;
+		}
 		// 0.3.1+
 		// Attempt to retry NETLIBHTTP_RETRYCOUNT times if the result code is >300
         if (nlhrReply->resultCode >= 300)
@@ -384,7 +390,10 @@ int NetlibHttpGatewayRecv(struct NetlibConnection *nlc,char *buf,int len,int fla
 			return SOCKET_ERROR;
 		}*/
 		if(contentLength==0 && nlc->nlu->user.szHttpGatewayHello != NULL)
+		{
+			NetlibHttpFreeRequestStruct(0,(LPARAM)nlhrReply);
 			continue;
+		}
 
 
 		if (contentLength < 0) {
