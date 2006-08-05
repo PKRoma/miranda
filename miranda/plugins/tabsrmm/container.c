@@ -1480,39 +1480,33 @@ buttons_done:
                 if(pContainer->dwFlags & CNT_VERTICALMAX || (GetKeyState(VK_CONTROL) & 0x8000)) {
                     RECT rcDesktop = {0};
                     BOOL fDesktopValid = FALSE;
-                    RECT rcDlg = {0};
                     int monitorXOffset = 0;
                     WINDOWPLACEMENT wp = {0};
 
                     if (MyMonitorFromWindow) {
-                        MONITORINFO mi = { 0 };
                         HMONITOR hMonitor = MyMonitorFromWindow(hwndDlg, 2);
-                        mi.cbSize = sizeof(mi);
                         if(hMonitor) {
+                            MONITORINFO mi = { 0 };
+                            mi.cbSize = sizeof(mi);
                             MyGetMonitorInfoA(hMonitor, &mi);
                             rcDesktop = mi.rcWork;
-                            OffsetRect(&rcDesktop, 0, -mi.rcMonitor.top);
+                            OffsetRect(&rcDesktop, -mi.rcMonitor.left, -mi.rcMonitor.top);
                             monitorXOffset = mi.rcMonitor.left;
                             fDesktopValid = TRUE;
-                            _DebugTraceA("rcmon: %d, %d, %d, %d", rcDesktop.left, rcDesktop.top, rcDesktop.right, rcDesktop.bottom);
                         }
-                        goto default_monitor_handling;
                     }
-                    else {
-default_monitor_handling:
-                        wp.length = sizeof(wp);
-                        GetWindowPlacement(hwndDlg, &wp);
-                        GetWindowRect(hwndDlg, &rcDlg);
-                        if(!fDesktopValid)
-                            SystemParametersInfo(SPI_GETWORKAREA, 0, &rcDesktop, 0);
-                        if(!IsIconic(hwndDlg))
-                            OffsetRect(&rcDesktop, 0, -rcDesktop.top);
-                        mmi->ptMaxSize.y = rcDesktop.bottom - rcDesktop.top;
-                        //mmi->ptMaxSize.x = rcDlg.right - rcDlg.left;
-                        mmi->ptMaxSize.x = wp.rcNormalPosition.right - wp.rcNormalPosition.left;
-                        mmi->ptMaxPosition.x = wp.rcNormalPosition.left - monitorXOffset;
-                        //mmi->ptMaxPosition.x = rcDlg.left - monitorXOffset;
-                        mmi->ptMaxPosition.y = rcDesktop.top;
+                    if (!fDesktopValid)
+                        SystemParametersInfo(SPI_GETWORKAREA, 0, &rcDesktop, 0);
+
+                    wp.length = sizeof(wp);
+                    GetWindowPlacement(hwndDlg, &wp);
+                    mmi->ptMaxSize.y = rcDesktop.bottom - rcDesktop.top;
+                    mmi->ptMaxSize.x = wp.rcNormalPosition.right - wp.rcNormalPosition.left;
+                    mmi->ptMaxPosition.x = wp.rcNormalPosition.left - monitorXOffset;
+                    mmi->ptMaxPosition.y = 0;
+                    if (IsIconic(hwndDlg)) {
+                        mmi->ptMaxPosition.x += rcDesktop.left;
+                        mmi->ptMaxPosition.y += rcDesktop.top;
                     }
 #if defined(__MATHMOD_SUPPORT)
                     if(myGlobals.m_MathModAvail) {
