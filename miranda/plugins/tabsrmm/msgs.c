@@ -593,7 +593,7 @@ int SendMessageCommand_W(WPARAM wParam, LPARAM lParam)
         if(lParam) {
             unsigned iLen = lstrlenW((wchar_t *)lParam);
             wchar_t *tszText = (wchar_t *)malloc((iLen + 1) * sizeof(wchar_t));
-            wcsncpy(tszText, iLen + 1, (wchar_t *)lParam);
+            wcsncpy(tszText, (wchar_t *)lParam, iLen + 1);
             tszText[iLen] = 0;
             PostMessage(myGlobals.g_hwndHotkeyHandler, DM_SENDMESSAGECOMMANDW, wParam, (LPARAM)tszText);
         }
@@ -662,7 +662,7 @@ int SendMessageCommand(WPARAM wParam, LPARAM lParam)
         if(lParam) {
             unsigned iLen = lstrlenA((char *)lParam);
             char *szText = (char *)malloc(iLen + 1);
-            strncpy(szText, iLen + 1, (char *)lParam);
+            strncpy(szText, (char *)lParam, iLen + 1);
             szText[iLen] = 0;
             PostMessage(myGlobals.g_hwndHotkeyHandler, DM_SENDMESSAGECOMMAND, wParam, (LPARAM)szText);
         }

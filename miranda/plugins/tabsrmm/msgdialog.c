@@ -4343,7 +4343,6 @@ quote_from_last:
 					//mathMod end
 #endif                     
                     if (HIWORD(wParam) == EN_CHANGE) {
-                        RECT rc;
                         if(m_pContainer->hwndActive == hwndDlg)
                             UpdateReadChars(hwndDlg, dat);
                         dat->dwFlags |= MWF_NEEDHISTORYSAVE;
@@ -5087,7 +5086,7 @@ verify:
 
                         if(!DBGetContactSettingTString(dat->bIsMeta ? dat->hSubContact : dat->hContact, dat->bIsMeta ? dat->szMetaProto : dat->szProto, "XStatusName", &dbv)) {
                             if(lstrlen(dbv.ptszVal) > 1) {
-                                _sntprintf(szTitle, safe_sizeof(szTitle), _T("Extended status for %s: %s"), dat->szNickname, dbv.ptszVal);
+                                _sntprintf(szTitle, safe_sizeof(szTitle), TranslateT("Extended status for %s: %s"), dat->szNickname, dbv.ptszVal);
                                 szTitle[safe_sizeof(szTitle) - 1] = 0;
                                 DBFreeVariant(&dbv);
                                 break;
@@ -5097,7 +5096,7 @@ verify:
                         if(dat->xStatus > 0 && dat->xStatus <= 32) {
                             WCHAR xStatusDescW[100];
                             MultiByteToWideChar(myGlobals.m_LangPackCP, 0, xStatusDescr[dat->xStatus - 1], -1, xStatusDescW, 90);
-                            _sntprintf(szTitle, safe_sizeof(szTitle), _T("Extended status for %s: %s"), dat->szNickname, xStatusDescW);
+                            _sntprintf(szTitle, safe_sizeof(szTitle), TranslateT("Extended status for %s: %s"), dat->szNickname, xStatusDescW);
                             szTitle[safe_sizeof(szTitle) - 1] = 0;
                         }
                         else
@@ -5106,7 +5105,7 @@ verify:
                     }
                     case IDC_PANELSTATUS + 1:
                     {
-                        _sntprintf(szTitle, safe_sizeof(szTitle), _T("%s is using"), dat->szNickname);
+                        _sntprintf(szTitle, safe_sizeof(szTitle), TranslateT("%s is using"), dat->szNickname);
                         szTitle[safe_sizeof(szTitle) - 1] = 0;
                         break;
                     }
@@ -5114,12 +5113,12 @@ verify:
                     {
                         WCHAR szwStatus[100];
                         MultiByteToWideChar(myGlobals.m_LangPackCP, 0, dat->szStatus, -1, szwStatus, 90);
-                        _sntprintf(szTitle, safe_sizeof(szTitle), _T("Status message for %s (%s)"), dat->szNickname, szwStatus);
+                        _sntprintf(szTitle, safe_sizeof(szTitle), TranslateT("Status message for %s (%s)"), dat->szNickname, szwStatus);
                         szTitle[safe_sizeof(szTitle) - 1] = 0;
                         break;
                     }
                     default:
-                        _sntprintf(szTitle, safe_sizeof(szTitle), _T("tabSRMM Information"));
+                        _sntprintf(szTitle, safe_sizeof(szTitle), TranslateT("tabSRMM Information"));
                 }
                 SendMessage(dat->hwndTip, TTM_SETTITLE, 1, (LPARAM)szTitle);
 #else
@@ -5141,7 +5140,7 @@ verify:
                     }
                     case IDC_PANELSTATUS + 1:
                     {
-                        mir_snprintf(szTitle, sizeof(szTitle), _T("%s is using"), dat->szNickname);
+                        mir_snprintf(szTitle, sizeof(szTitle), Translate("%s is using"), dat->szNickname);
                         break;
                     }
                     case IDC_PANELSTATUS:
