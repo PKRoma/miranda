@@ -1482,6 +1482,7 @@ buttons_done:
                     BOOL fDesktopValid = FALSE;
                     RECT rcDlg = {0};
                     int monitorXOffset = 0;
+                    WINDOWPLACEMENT wp = {0};
 
                     if (MyMonitorFromWindow) {
                         MONITORINFO mi = { 0 };
@@ -1493,17 +1494,24 @@ buttons_done:
                             OffsetRect(&rcDesktop, 0, -mi.rcMonitor.top);
                             monitorXOffset = mi.rcMonitor.left;
                             fDesktopValid = TRUE;
+                            _DebugTraceA("rcmon: %d, %d, %d, %d", rcDesktop.left, rcDesktop.top, rcDesktop.right, rcDesktop.bottom);
                         }
                         goto default_monitor_handling;
                     }
                     else {
 default_monitor_handling:
+                        wp.length = sizeof(wp);
+                        GetWindowPlacement(hwndDlg, &wp);
                         GetWindowRect(hwndDlg, &rcDlg);
                         if(!fDesktopValid)
                             SystemParametersInfo(SPI_GETWORKAREA, 0, &rcDesktop, 0);
+                        if(!IsIconic(hwndDlg))
+                            OffsetRect(&rcDesktop, 0, -rcDesktop.top);
                         mmi->ptMaxSize.y = rcDesktop.bottom - rcDesktop.top;
-                        mmi->ptMaxSize.x = rcDlg.right - rcDlg.left;
-                        mmi->ptMaxPosition.x = rcDlg.left - monitorXOffset;
+                        //mmi->ptMaxSize.x = rcDlg.right - rcDlg.left;
+                        mmi->ptMaxSize.x = wp.rcNormalPosition.right - wp.rcNormalPosition.left;
+                        mmi->ptMaxPosition.x = wp.rcNormalPosition.left - monitorXOffset;
+                        //mmi->ptMaxPosition.x = rcDlg.left - monitorXOffset;
                         mmi->ptMaxPosition.y = rcDesktop.top;
                     }
 #if defined(__MATHMOD_SUPPORT)
