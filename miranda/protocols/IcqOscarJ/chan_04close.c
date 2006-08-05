@@ -185,6 +185,7 @@ static int connectNewServer(serverthread_info *info)
   }
 
   /* Get the ip and port */
+  servport = info->wServerPort; // prepare default port
   parseServerAddress(info->newServer, &servport);
 
   nloc.cbSize = sizeof(nloc);

@@ -61,6 +61,8 @@ static DWORD __stdcall icq_serverThread(serverthread_start_info* infoParam)
   info.isLoginServer = 1;
   info.wAuthKeyLen = infoParam->wPassLen;
   strncpy(info.szAuthKey, infoParam->szPass, info.wAuthKeyLen);
+  // store server port
+  info.wServerPort = infoParam->nloc.wPort;
 
   srand(time(NULL));
 

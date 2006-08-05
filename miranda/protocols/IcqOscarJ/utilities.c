@@ -777,12 +777,7 @@ void parseServerAddress(char* szServer, WORD* wPort)
   if (szServer[i] == ':')
   { // port included
     *wPort = atoi(&szServer[i + 1]);
-  }
-  else // port not found, use pre-configured
-  {
-    *wPort = ICQGetContactSettingWord(NULL, "OscarPort", DEFAULT_SERVER_PORT);
-    if (!*wPort) *wPort = (WORD)RandRange(1024, 65535);
-  }
+  } // otherwise do not change port
 
   szServer[i] = '\0';
 }

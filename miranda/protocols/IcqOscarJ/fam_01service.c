@@ -398,6 +398,7 @@ void handleServiceFam(unsigned char* pBuffer, WORD wBufferLength, snac_header* p
       }
 
       // Get new family server ip and port
+      wPort = info->wServerPort; // get default port
       parseServerAddress(pServer, &wPort);
 
       nloc.cbSize = sizeof(nloc); // establish connection

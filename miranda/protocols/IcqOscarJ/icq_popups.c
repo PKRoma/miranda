@@ -240,8 +240,9 @@ int ShowPopUpMsg(HANDLE hContact, const char* szTitle, const char* szMsg, BYTE b
     strcat(szSetting, "Timeout");
     ppd.iSeconds = ICQGetContactSettingDword(NULL, szSetting, ppd.iSeconds);
 
-    if (ServiceExists(MS_POPUP_ADDPOPUPW))
-    { // call unicode popup module
+    if (gbUnicodeAPI && ServiceExists(MS_POPUP_ADDPOPUPW))
+    { // call unicode popup module - only on unicode OS otherwise it will not work properly :(
+      // due to Popup Plug bug in ADDPOPUPW implementation
       wchar_t *tmp;
       char str[MAX_SECONDLINE];
 
