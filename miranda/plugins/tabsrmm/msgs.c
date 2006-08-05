@@ -42,7 +42,9 @@ static char *relnotes[] = {
 	"*\tFixed minor issues when using IEView (scolling, flickering).\\par",
 	"*\tFixed various problems with global splitter positioning.\\par",
 	"*\tSelecting an offline subcontact for sending will now only throw a warning instead of an error.\\par",
-	"*\tRemoved the feature to load a background image for the message input area. as it was causing too many troubles and people did not understand that it was an experimental feature, thus sending bug reports.\\par",
+	"*\tRemoved the feature to load a background image for the message input area. as it was causing too many troubles.\\par",
+	"*\tFixed problem with vertical maximize on multimonitor systems.\\par",
+	"*\tFixed freezing problems when clicking on typing notify popups.\\par",
     NULL
 };
 
@@ -599,7 +601,7 @@ int SendMessageCommand_W(WPARAM wParam, LPARAM lParam)
         if(lParam) {
             unsigned iLen = lstrlenW((wchar_t *)lParam);
             wchar_t *tszText = (wchar_t *)malloc((iLen + 1) * sizeof(wchar_t));
-            wcsncpy(tszText, iLen + 1, (wchar_t *)lParam);
+            wcsncpy(tszText, (wchar_t *)lParam, iLen + 1);
             tszText[iLen] = 0;
             PostMessage(myGlobals.g_hwndHotkeyHandler, DM_SENDMESSAGECOMMANDW, wParam, (LPARAM)tszText);
         }
@@ -668,7 +670,7 @@ int SendMessageCommand(WPARAM wParam, LPARAM lParam)
         if(lParam) {
             unsigned iLen = lstrlenA((char *)lParam);
             char *szText = (char *)malloc(iLen + 1);
-            strncpy(szText, iLen + 1, (char *)lParam);
+            strncpy(szText, (char *)lParam, iLen + 1);
             szText[iLen] = 0;
             PostMessage(myGlobals.g_hwndHotkeyHandler, DM_SENDMESSAGECOMMAND, wParam, (LPARAM)szText);
         }

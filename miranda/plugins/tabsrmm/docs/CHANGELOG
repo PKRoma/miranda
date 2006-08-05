@@ -32,7 +32,9 @@ Version 1.0.0.1 - 2006/08/05
 	  experimental feature, thus sending bug reports.
 	! fixed problem with freezing when opening a message window by clicking on a
 	  typing notify popup
-	  	
+	! fixed vertiacl maximize (patch by SloMo)	  	
+	! some translation fixes
+
 Version 1.0.0.0
 
 	Released and declared as "stable" branch, 2006/07/30
