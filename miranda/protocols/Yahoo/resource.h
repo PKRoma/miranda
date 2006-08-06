@@ -46,7 +46,6 @@
 #define IDC_NEWYAHOOACCOUNTLINK         1438
 #define IDC_RESETSERVER                 1472
 #define IDC_DISMAINMENU                 1475
-#define IDC_DISABLE_UTF8                1476 
 #define IDC_USE_YAB		                1477
 #define IDC_SHOW_ERRORS	                1478
 #define IDC_SHOW_AVATARS                1479

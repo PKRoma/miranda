@@ -48,35 +48,32 @@ BEGIN
                     BS_AUTOCHECKBOX | WS_TABSTOP,16,128,140,10 					
 	
 	
-	CONTROL         "Disable UTF8 encoding",IDC_DISABLE_UTF8,"Button",
+    CONTROL         "Disable main menu (needs restart)",IDC_DISMAINMENU,"Button",
                     BS_AUTOCHECKBOX | WS_TABSTOP,16,148,140,10 					
 
-    CONTROL         "Disable main menu (needs restart)",IDC_DISMAINMENU,"Button",
+	CONTROL         "Use Yahoo Address Book (YAB)",IDC_USE_YAB,"Button",
                     BS_AUTOCHECKBOX | WS_TABSTOP,16,158,140,10
 	
-	CONTROL         "Use Yahoo Address Book (YAB)",IDC_USE_YAB,"Button",
-                    BS_AUTOCHECKBOX | WS_TABSTOP,16,168,140,10 					
-
 	CONTROL         "Show Avatars",IDC_SHOW_AVATARS,"Button",
-                    BS_AUTOCHECKBOX | WS_TABSTOP,16,178,120,10 					
+                    BS_AUTOCHECKBOX | WS_TABSTOP,16,168,120,10 					
 
 	CONTROL         "AutoLogin to Yahoo ",IDC_MAIL_AUTOLOGIN,"Button",
-                    BS_AUTOCHECKBOX | WS_TABSTOP,16,188,120,10 					
+                    BS_AUTOCHECKBOX | WS_TABSTOP,16,178,120,10 					
 
 	CONTROL         "Display Yahoo notifications", IDC_DISABLEYAHOOMAIL,"Button",
-					BS_AUTOCHECKBOX | WS_TABSTOP,16,198,120,10
+					BS_AUTOCHECKBOX | WS_TABSTOP,16,188,120,10
 					
 	CONTROL         "Show Errors",IDC_SHOW_ERRORS,"Button",
-                    BS_AUTOCHECKBOX | WS_TABSTOP,16,208,120,10 					
+                    BS_AUTOCHECKBOX | WS_TABSTOP,16,198,120,10 					
 					
     GROUPBOX        "Yahoo Ignore List",IDC_STIGNGROUP,158,84,130,136,WS_GROUP
 	
 	EDITTEXT 		IDC_YIGN_EDIT,164,98,84,13,ES_AUTOHSCROLL
-	PUSHBUTTON 		"Add",IDC_IGN_ADD,250,98,34,12
+	PUSHBUTTON 		"&Add",IDC_IGN_ADD,250,98,34,12
 	
-	CONTROL 		"",IDC_YIGN_LIST,"ListBox",0x50010141,164,114,84,103,0x00000200
+	LISTBOX			IDC_YIGN_LIST,164,114,84,103, LBS_NOTIFY | LBS_HASSTRINGS | LBS_SORT | WS_BORDER | WS_VSCROLL
 		
-	PUSHBUTTON 		"Remove", IDC_IGN_REMOVE, 250,204,34,12
+	PUSHBUTTON 		"&Remove", IDC_IGN_REMOVE, 250,204,34,12
 
 END
 

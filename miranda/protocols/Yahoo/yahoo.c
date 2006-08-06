@@ -24,7 +24,6 @@
 #include <m_popup.h>
 #include <m_message.h>
 #include <m_png.h>
-#include "utf8.h"
 
 typedef struct {
 	int id;
@@ -581,33 +580,7 @@ void yahoo_send_msg(const char *id, const char *msg, int utf8)
 	
 	buddy_icon = (YAHOO_GetDword("AvatarHash", 0) != 0) ? 2: 0;
 	
-    if (YAHOO_GetByte( "DisableUTF8", 0 ) ) { /* Send ANSI */
-		/* need to convert it to ascii argh */
-		char 	*umsg = (char *)msg;
-		
-		if (utf8) {
-			wchar_t* tRealBody = NULL;
-			
-			umsg = (char *) alloca(lstrlen(msg) + 1);
-			lstrcpy(umsg, msg);
-			Utf8Decode( umsg, 0, &tRealBody );
-			free( tRealBody );
-		} 
-			
-		yahoo_send_im(ylad->id, NULL, id, umsg, 0, buddy_icon);
-    } else { /* Send Unicode */
-	    
-		if (!utf8) {
-			char *tmp;
-			
-			utf8_encode(msg, &tmp);
-        	//tmp = y_str_to_utf8(msg);
-			yahoo_send_im(ylad->id, NULL, id, tmp, 1, buddy_icon);
-			free(tmp);
-		} else 
-			yahoo_send_im(ylad->id, NULL, id, msg, 1, buddy_icon);
-    } 
-   
+	yahoo_send_im(ylad->id, NULL, id, msg, utf8, buddy_icon);
 }
 
 HANDLE getbuddyH(const char *yahoo_id)
