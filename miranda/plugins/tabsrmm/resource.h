@@ -382,7 +382,6 @@
 #define IDC_AVADYNAMIC                  1292
 #define IDC_FLATTABS2                   1292
 #define IDC_USESNAPPING                 1293
-#define IDC_EXTRAMICROLF                1294
 #define IDC_SENDFORMAT                  1295
 #define IDC_FLATMSGLOG                  1296
 #define IDC_TOGGLESIDEBAR               1299
@@ -422,7 +421,6 @@
 #define IDC_NRFLASHSPIN2                1329
 #define IDC_TAB1                        1330
 #define IDC_OPTIONSTAB                  1331
-#define IDC_EXTRALFSPIN                 1332
 #define IDC_ALWAYSFULLWIDTHTOOLBAR      1335
 #define IDC_FORMATWHOLEWORDSONLY        1337
 #define IDC_STATUSGROUP                 1338
