@@ -106,7 +106,6 @@ void __cdecl yahoo_server_main(void *empty)
 				if(c->remove) {
 					YList *n = y_list_next(l);
 					LOG(("Removing id:%d fd:%d tag:%d", c->id, c->fd, c->tag));
-					Netlib_CloseHandle((HANDLE)c->fd);
 					connections = y_list_remove_link(connections, l);
 					y_list_free_1(l);
 					FREE(c);
