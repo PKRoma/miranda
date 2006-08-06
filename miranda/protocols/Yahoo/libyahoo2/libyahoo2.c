@@ -1179,8 +1179,6 @@ void yahoo_close(int id)
 	if(!yd)
 		return;
 
-	YAHOO_CALLBACK(ext_yahoo_cleanup)(id);
-	
 	del_from_list(yd);
 
 	yahoo_free_data(yd);

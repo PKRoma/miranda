@@ -557,22 +557,6 @@ void yahoo_logout()
 	//pthread_mutex_unlock(&connectionHandleMutex);
 }
 
-void ext_yahoo_cleanup(int id)
-{
-	LOG(("[ext_yahoo_cleanup] id: %d", id));
-	
-/*	if (!ylad)
-		return;
-	
-	if (ylad->id != id) {
-		return;
-	}
-	
-	LOG(("[ext_yahoo_cleanup] id matched!!! Doing Cleanup!"));
-	FREE(ylad);
-	ylad = NULL;*/
-}
-
 void yahoo_send_msg(const char *id, const char *msg, int utf8)
 {
 	int buddy_icon = 0;
@@ -2335,7 +2319,6 @@ void register_callbacks()
 	yc.ext_yahoo_got_avatar_share = ext_yahoo_got_avatar_share;
 	
 	yc.ext_yahoo_buddy_added = ext_yahoo_buddy_added;
-	yc.ext_yahoo_cleanup = ext_yahoo_cleanup;
 	yc.ext_yahoo_got_picture_upload = ext_yahoo_got_picture_upload;
 	yc.ext_yahoo_got_avatar_update = ext_yahoo_got_avatar_update;
 	yc.ext_yahoo_got_audible = ext_yahoo_got_audible;

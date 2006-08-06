@@ -535,14 +535,6 @@ void YAHOO_CALLBACK_TYPE(ext_yahoo_buddy_added)(int id, char *myid, char *who, c
 
 
 /*
- * Name: ext_yahoo_cleanup
- * 	Called when we need to cleanup ALL our references and pointers
- * Params:
- * 	id   - the id that identifies the server connection
- */
-void YAHOO_CALLBACK_TYPE(ext_yahoo_cleanup)(int id);
-
-/*
  * Name: ext_yahoo_rejected
  * 	Called when a contact rejects your add
  * Params:
