@@ -398,7 +398,6 @@ static struct LISTOPTIONSITEM lvItems[] = {
     0, _T("Log status changes"), 0, LOI_TYPE_SETTING, (UINT_PTR)"logstatus", 2,
     0, _T("Automatically copy selected text"), 0, LOI_TYPE_SETTING, (UINT_PTR)"autocopy", 2,
     0, _T("Use multiple background colors"), IDC_AUTOSELECTCOPY, LOI_TYPE_FLAG, (UINT_PTR)MWF_LOG_INDIVIDUALBKG, 0,
-    0, _T("Also draw vertical grid lines"), 0, LOI_TYPE_SETTING, (UINT_PTR)"wantvgrid", 0,
     0, _T("Enable IEView as default message log"), 1, LOI_TYPE_SETTING, (UINT_PTR)"default_ieview", 1,
     0, NULL, 0, 0, 0, 0
 };
@@ -486,10 +485,6 @@ static BOOL CALLBACK DlgProcLogOptions(HWND hwndDlg, UINT msg, WPARAM wParam, LP
 			SendDlgItemMessage(hwndDlg, IDC_RINDENTSPIN, UDM_SETRANGE, 0, MAKELONG(1000, 0));
 			SendDlgItemMessage(hwndDlg, IDC_RINDENTSPIN, UDM_SETPOS, 0, GetDlgItemInt(hwndDlg, IDC_RIGHTINDENT, &translated, FALSE));
 			SendMessage(hwndDlg, WM_COMMAND, MAKELONG(IDC_INDENT, 0), 0);
-
-			SetDlgItemInt(hwndDlg, IDC_EXTRAMICROLF, DBGetContactSettingByte(NULL, SRMSGMOD_T, "extramicrolf", 0), FALSE);
-			SendDlgItemMessage(hwndDlg, IDC_EXTRALFSPIN, UDM_SETRANGE, 0, MAKELONG(5, 0));
-			SendDlgItemMessage(hwndDlg, IDC_EXTRALFSPIN, UDM_SETPOS, 0, GetDlgItemInt(hwndDlg, IDC_EXTRAMICROLF, &translated, FALSE));
 
 			SendDlgItemMessage(hwndDlg, IDC_TRIMSPIN, UDM_SETRANGE, 0, MAKELONG(1000, 5));
 			SendDlgItemMessage(hwndDlg, IDC_TRIMSPIN, UDM_SETPOS, 0, maxhist);
@@ -607,7 +602,6 @@ static BOOL CALLBACK DlgProcLogOptions(HWND hwndDlg, UINT msg, WPARAM wParam, LP
 						i++;
 					}
 					DBWriteContactSettingDword(NULL, SRMSGMOD_T, "mwflags", dwFlags);
-					DBWriteContactSettingByte(NULL, SRMSGMOD_T, "extramicrolf", (BYTE)GetDlgItemInt(hwndDlg, IDC_EXTRAMICROLF, &translated, FALSE));
 					if(IsDlgButtonChecked(hwndDlg, IDC_ALWAYSTRIM))
 						DBWriteContactSettingDword(NULL, SRMSGMOD_T, "maxhist", (DWORD)SendDlgItemMessage(hwndDlg, IDC_TRIMSPIN, UDM_GETPOS, 0, 0));
 					else
@@ -1649,7 +1643,6 @@ void ReloadGlobals()
      myGlobals.m_MsgTimeout = (int)DBGetContactSettingDword(NULL, SRMSGMOD, SRMSGSET_MSGTIMEOUT, SRMSGDEFSET_MSGTIMEOUT);
      myGlobals.m_EscapeCloses = (int)DBGetContactSettingByte(NULL, SRMSGMOD_T, "escmode", 0);
      myGlobals.m_WarnOnClose = (int)DBGetContactSettingByte(NULL, SRMSGMOD_T, "warnonexit", 0);
-     myGlobals.m_ExtraMicroLF = (int)DBGetContactSettingByte(NULL, SRMSGMOD_T, "extramicrolf", 0);
      myGlobals.m_AvatarMode = (int)DBGetContactSettingByte(NULL, SRMSGMOD_T, "avatarmode", 0);
 
      if(myGlobals.m_AvatarMode == 1 || myGlobals.m_AvatarMode == 2)

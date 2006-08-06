@@ -1449,8 +1449,6 @@ static DWORD CALLBACK LogStreamInEvents(DWORD_PTR dwCookie, LPBYTE pbBuff, LONG 
 
 static void SetupLogFormatting(struct MessageWindowData *dat)
 {
-    DWORD   dwExtraLf = myGlobals.m_ExtraMicroLF;
-
     if(dat->hHistoryEvents) {
         mir_snprintf(dat->szMicroLf, sizeof(dat->szMicroLf), "%s", "\\v\\cf%d \\ ~-+%d+-~\\v0 ");
     }

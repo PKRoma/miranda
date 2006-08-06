@@ -66,6 +66,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #define NIN_BALLOONUSERCLICK (WM_USER + 5)
 #define NIN_BALLOONHIDE (WM_USER + 3)
 #define NIN_BALLOONTIMEOUT (WM_USER + 4)
+#define IMF_AUTOFONTSIZEADJUST	0x0010
 
 #define WM_THEMECHANGED 0x031A
 
@@ -517,7 +518,6 @@ typedef struct _globals {
     int         m_MsgTimeout;
     int         m_EscapeCloses;
     int         m_WarnOnClose;
-    int         m_ExtraMicroLF;
     int         m_AvatarMode, m_OwnAvatarMode;
     int         m_FlashOnClist;
     int         m_TabAutoClose;
