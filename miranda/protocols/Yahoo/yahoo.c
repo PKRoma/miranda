@@ -275,9 +275,23 @@ void get_fd(int id, int fd, int error, void *data)
     }	
 
 	if (fd > 0) {
+		int tr = 0;
+		
 		do {
 			rw = Netlib_Recv((HANDLE)fd, buf, sizeof(buf), 0);
 			LOG(("Got: %d bytes", rw));
+			
+			if (tr == 0) {
+				//"HTTP/1.1 999" 12
+				// 012345678901
+				if (rw > 12) {
+					if (buf[9] != '2' || buf[10] != '0' || buf[11] != '0') {
+						LOG(("File Transfer Failed: %c%c%c", buf[9], buf[10], buf[11]));
+						error=1;
+					}
+				}
+			}
+			tr +=rw;
 		} while (rw > 0);
 	
 		Netlib_CloseHandle((HANDLE)fd);
@@ -1830,6 +1844,7 @@ void ext_yahoo_webcam_invite_reply(int id, char *me, char *from, int accept)
 void ext_yahoo_system_message(int id, char *msg)
 {
 	LOG(("Yahoo System Message: %s", msg));
+	YAHOO_ShowPopup( "Yahoo System Message", msg, NULL);
 }
 
 void ext_yahoo_got_file(int id, char *me, char *who, char *url, long expires, char *msg, char *fname, unsigned long fesize, char *ft_token)

@@ -1419,7 +1419,8 @@ static void yahoo_process_filetransfer(struct yahoo_input_data *yid, struct yaho
 	}
 	if(url && from)
 		YAHOO_CALLBACK(ext_yahoo_got_file)(yd->client_id, to, from, url, expires, msg, filename, filesize, ft_token);
-
+	else if (strcmp(from, "FILE_TRANSFER_SYSTEM") == 0 && msg != NULL)
+		YAHOO_CALLBACK(ext_yahoo_system_message)(yd->client_id, msg);
 }
 
 static void yahoo_process_conference(struct yahoo_input_data *yid, struct yahoo_packet *pkt)
