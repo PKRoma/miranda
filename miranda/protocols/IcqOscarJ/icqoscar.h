@@ -121,5 +121,3 @@
 
 // :TODO: This should not be here :p
 void icq_FirstRunCheck(void);
-
-__inline static int Netlib_MyCloseHandle(HANDLE h) {FreeGatewayIndex(h); return CallService(MS_NETLIB_CLOSEHANDLE,(WPARAM)h,0);}

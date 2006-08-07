@@ -290,8 +290,8 @@ int __declspec(dllexport) Unload(void)
   UninitServerLists();
   UninitDirectConns();
 
-  Netlib_CloseHandle(ghDirectNetlibUser);
-  Netlib_CloseHandle(ghServerNetlibUser);
+  NetLib_SafeCloseHandle(&ghDirectNetlibUser, FALSE);
+  NetLib_SafeCloseHandle(&ghServerNetlibUser, FALSE);
   UninitRates();
   UninitCookies();
   UninitCache();

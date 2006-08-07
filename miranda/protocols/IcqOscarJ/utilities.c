@@ -1390,6 +1390,19 @@ HANDLE NetLib_OpenConnection(HANDLE hUser, NETLIBOPENCONNECTION* nloc)
 
 
 
+void NetLib_SafeCloseHandle(HANDLE *hConnection, int bServerConn)
+{
+  if (*hConnection)
+  {
+    Netlib_CloseHandle(*hConnection);
+    if (bServerConn)
+      FreeGatewayIndex(*hConnection);
+    *hConnection = NULL;
+  }
+}
+
+
+
 int NetLog_Server(const char *fmt,...)
 {
   va_list va;

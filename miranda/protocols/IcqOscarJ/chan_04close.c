@@ -45,8 +45,6 @@ static int connectNewServer(serverthread_info *info);
 static void handleRuntimeError(WORD wError);
 static void handleSignonError(WORD wError);
 
-static void NetLib_SafeCloseHandle(HANDLE *hConnection);
-
 
 void handleCloseChannel(unsigned char *buf, WORD datalen, serverthread_info *info)
 {
@@ -91,7 +89,7 @@ void handleCloseChannel(unsigned char *buf, WORD datalen, serverthread_info *inf
     disposeChain(&chain);
   }
   // Server closed connection on error, or sign off
-  NetLib_SafeCloseHandle(&hServerConn);
+  NetLib_SafeCloseHandle(&hServerConn, TRUE);
 }
 
 
@@ -99,15 +97,6 @@ void handleCloseChannel(unsigned char *buf, WORD datalen, serverthread_info *inf
 static int IsGatewayModeActive()
 {
   return ICQGetContactSettingByte(NULL, "UseGateway", 0) && ICQGetContactSettingByte(NULL, "NLUseProxy", 0);
-}
-
-
-
-static void NetLib_SafeCloseHandle(HANDLE *hConnection)
-{
-  if (*hConnection) Netlib_MyCloseHandle(*hConnection);
-
-  *hConnection = NULL;
 }
 
 
@@ -122,7 +111,7 @@ void handleLoginReply(unsigned char *buf, WORD datalen, serverthread_info *info)
   if (!(chain = readIntoTLVChain(&buf, datalen, 0)))
   {
     NetLog_Server("Error: Missing chain on close channel");
-    NetLib_SafeCloseHandle(&hServerConn);
+    NetLib_SafeCloseHandle(&hServerConn, TRUE);
     return; // Invalid data
   }
 
@@ -137,7 +126,7 @@ void handleLoginReply(unsigned char *buf, WORD datalen, serverthread_info *info)
     {
       disposeChain(&chain);
       SetCurrentStatus(ID_STATUS_OFFLINE);
-      NetLib_SafeCloseHandle(&hServerConn);
+      NetLib_SafeCloseHandle(&hServerConn, TRUE);
       return; // Failure
     }
   }
@@ -160,7 +149,7 @@ void handleLoginReply(unsigned char *buf, WORD datalen, serverthread_info *info)
     info->cookieDataLen = 0;
 
     SetCurrentStatus(ID_STATUS_OFFLINE);
-    NetLib_SafeCloseHandle(&hServerConn);
+    NetLib_SafeCloseHandle(&hServerConn, TRUE);
     return; // Failure
   }
 
@@ -180,8 +169,7 @@ static int connectNewServer(serverthread_info *info)
 
   if (!IsGatewayModeActive())
   { // close connection only if not in gateway mode
-    Netlib_CloseHandle(hServerConn);
-    hServerConn = NULL;
+    NetLib_SafeCloseHandle(&hServerConn, TRUE);
   }
 
   /* Get the ip and port */
@@ -196,8 +184,7 @@ static int connectNewServer(serverthread_info *info)
   if (!IsGatewayModeActive())
   {
     { /* Time to release packet receiver, connection already closed */
-      Netlib_CloseHandle(hServerPacketRecver);
-      hServerPacketRecver = NULL; // clear the variable
+      NetLib_SafeCloseHandle(&hServerPacketRecver, FALSE);
 
       NetLog_Server("Closed connection to login server");
     }

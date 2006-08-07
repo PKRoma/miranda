@@ -158,6 +158,7 @@
 // Message Capability IDs
 #define MCAP_TLV2711_FMT_s          0x09461349, 0x4c7f11d1, 0x82224445, 0x53540000
 #define MCAP_REVERSE_REQ_s          0x09461344, 0x4c7f11d1, 0x82224445, 0x53540000
+#define MCAP_OSCAR_FT_s             0x09461343, 0x4c7f11d1, 0x82224445, 0x53540000
 
 // Plugin Type GUIDs
 #define PSIG_MESSAGE_s              0x00000000, 0x00000000, 0x00000000, 0x00000000
@@ -527,7 +528,7 @@
 
 
 // Internal Constants
-#define ICQ_PLUG_VERSION            0x00030700
+#define ICQ_PLUG_VERSION            0x00030701
 #define ICQ_VERSION                 8
 #define DC_TYPE                     DC_NORMAL // Used for DC settings
 #define MAX_NICK_SIZE               32

@@ -224,12 +224,10 @@ void icq_CancelFileTransfer(HANDLE hContact, filetransfer* ft)
   if (FindCookieByData(ft, &dwCookie, NULL))
     FreeCookie(dwCookie);      /* this bit stops a send that's waiting for acceptance */
 
-  if (ft->hConnection)
-  {
-    ICQBroadcastAck(ft->hContact, ACKTYPE_FILE, ACKRESULT_FAILED, ft, 0);
-    Netlib_CloseHandle(ft->hConnection);
-    ft->hConnection = NULL;
-  }
+  NetLib_SafeCloseHandle(&ft->hConnection, FALSE);
+
+  ICQBroadcastAck(ft->hContact, ACKTYPE_FILE, ACKRESULT_FAILED, ft, 0);
+
   /* FIXME: Do not free ft, or anything therein, it is freed inside DC thread ! */
   #ifdef _DEBUG
     NetLog_Direct("icq_CancelFileTransfer: OK");
