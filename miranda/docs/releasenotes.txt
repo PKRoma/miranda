@@ -42,6 +42,10 @@ Enhancements
 
 Bugfixes:
  - db3x driver text was cut off in profile selector dialog
+ - ICQ: Fixed possible hang on exit
+ - ICQ: Fixed avatars were not working when server port set to 0
+ - ICQ: Made message parser more strict (fixes bug allowing stealth invisible client detection)
+ - ICQ: Fixed Popup's unicode support cannot be used in ANSI mode even if available (caused empty Popups)
 
 * New in 0.5
 Enhancements:
