@@ -246,6 +246,7 @@ BYTE GetCachedStatusMsg(int iExtraCacheEntry, char *szProto)
 	DBVARIANT dbv = {0};
 	HANDLE hContact;
 	struct ExtraCache *cEntry;
+	int result;
 
 	if(iExtraCacheEntry < 0 || iExtraCacheEntry > g_nextExtraCacheEntry)
 		return 0;
@@ -255,22 +256,26 @@ BYTE GetCachedStatusMsg(int iExtraCacheEntry, char *szProto)
 	cEntry->bStatusMsgValid = STATUSMSG_NOTFOUND;
 	hContact = cEntry->hContact;
 
-    if(!DBGetContactSettingTString(hContact, "CList", "StatusMsg", &dbv) && lstrlen(dbv.ptszVal) > 1)
-        cEntry->bStatusMsgValid = STATUSMSG_CLIST;
-    else {
-        if(!szProto)
-            szProto = (char *)CallService(MS_PROTO_GETCONTACTBASEPROTO, (WPARAM)hContact, 0);
-        if(szProto) {
-            if(!DBGetContactSettingTString(hContact, szProto, "YMsg", &dbv) && lstrlen(dbv.ptszVal) > 1)
-                cEntry->bStatusMsgValid = STATUSMSG_YIM;
-            else if(!DBGetContactSettingTString(hContact, szProto, "StatusDescr", &dbv) && lstrlen(dbv.ptszVal) > 1)
-                cEntry->bStatusMsgValid = STATUSMSG_GG;
-            else if(!DBGetContactSettingTString(hContact, szProto, "XStatusMsg", &dbv) && lstrlen(dbv.ptszVal) > 1)
-                cEntry->bStatusMsgValid = STATUSMSG_XSTATUS;
-        }
-    }
+	result = DBGetContactSettingTString(hContact, "CList", "StatusMsg", &dbv);
+	if ( !result && lstrlen(dbv.ptszVal) > 1)
+		cEntry->bStatusMsgValid = STATUSMSG_CLIST;
+	else {
+		if(!szProto)
+			szProto = (char *)CallService(MS_PROTO_GETCONTACTBASEPROTO, (WPARAM)hContact, 0);
+		if(szProto) {
+			if ( !result )
+				DBFreeVariant( &dbv );
+			if( !( result = DBGetContactSettingTString(hContact, szProto, "YMsg", &dbv)) && lstrlen(dbv.ptszVal) > 1)
+				cEntry->bStatusMsgValid = STATUSMSG_YIM;
+			else if ( !(result = DBGetContactSettingTString(hContact, szProto, "StatusDescr", &dbv)) && lstrlen(dbv.ptszVal) > 1)
+				cEntry->bStatusMsgValid = STATUSMSG_GG;
+			else if( !(result = DBGetContactSettingTString(hContact, szProto, "XStatusMsg", &dbv)) && lstrlen(dbv.ptszVal) > 1)
+				cEntry->bStatusMsgValid = STATUSMSG_XSTATUS;
+	}	}
+
 	if(cEntry->bStatusMsgValid == STATUSMSG_NOTFOUND) {      // no status msg, consider xstatus name (if available)
-		if(!DBGetContactSettingTString(hContact, szProto, "XStatusName", &dbv) && lstrlen(dbv.ptszVal) > 1) {
+		result = DBGetContactSettingTString(hContact, szProto, "XStatusName", &dbv);
+		if ( !result && lstrlen(dbv.ptszVal) > 1) {
 			int iLen = lstrlen(dbv.ptszVal);
 			cEntry->bStatusMsgValid = STATUSMSG_XSTATUSNAME;
 			cEntry->statusMsg = (TCHAR *)realloc(cEntry->statusMsg, (iLen + 2) * sizeof(TCHAR));
@@ -297,8 +302,10 @@ BYTE GetCachedStatusMsg(int iExtraCacheEntry, char *szProto)
 			j++;
 		}
 		cEntry->statusMsg[j] = (TCHAR)0;
-		mir_free(dbv.ptszVal);
 	}
+	if ( !result )
+		DBFreeVariant( &dbv );
+
 #if defined(_UNICODE)
 	if(cEntry->bStatusMsgValid != STATUSMSG_NOTFOUND) {
 		WORD infoTypeC2[12];
