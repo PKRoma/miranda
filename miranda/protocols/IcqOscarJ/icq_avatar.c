@@ -302,7 +302,7 @@ void StartAvatarThread(HANDLE hConn, char* cookie, WORD cookieLen) // called fro
   if (atsi && atsi->pendingLogin) // this is not safe...
   {
     NetLog_Server("Avatar, Multiple start thread attempt, ignored.");
-    Netlib_CloseHandle(hConn);
+    NetLib_SafeCloseHandle(&hConn, FALSE);
     SAFE_FREE(&cookie);
     return;
   }
@@ -808,9 +808,9 @@ static DWORD __stdcall icq_avatarThread(avatarthreadstartinfo *atsi)
         LeaveCriticalSection(&cookieMutex);
       }
     }
-    Netlib_CloseHandle(atsi->hAvatarPacketRecver); // Close the packet receiver 
+    NetLib_SafeCloseHandle(&atsi->hAvatarPacketRecver, FALSE); // Close the packet receiver 
   }
-  Netlib_CloseHandle(atsi->hConnection); // Close the connection
+  NetLib_SafeCloseHandle(&atsi->hConnection, FALSE); // Close the connection
   
   DeleteCriticalSection(&atsi->localSeqMutex);
 

@@ -313,8 +313,7 @@ void icq_sendFileResume(filetransfer* ft, int action, const char* szFilename)
   if (ft->fileId == -1)
   {
     icq_LogMessage(LOG_ERROR, "Your file receive has been aborted because Miranda could not open the destination file in order to write to it. You may be trying to save to a read-only folder.");
-    Netlib_CloseHandle(ft->hConnection);
-    ft->hConnection = NULL;
+    NetLib_SafeCloseHandle(&ft->hConnection, FALSE);
     return;
   }
 

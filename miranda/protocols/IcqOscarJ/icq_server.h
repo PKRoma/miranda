@@ -48,6 +48,7 @@ typedef struct serverthread_info_s {
   int isLoginServer;
   BYTE szAuthKey[20];
   WORD wAuthKeyLen;
+  WORD wServerPort;
   char *newServer;
   BYTE* cookieData;
   int cookieDataLen;

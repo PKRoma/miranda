@@ -51,6 +51,15 @@ __________
 Changes
 _______
 
+0.3.7.1
+
+Bugfixes:
+  Fixed possible hang on exit
+  Fixed avatars were not working when server port set to 0
+  Made message parser more strict (fixes bug allowing stealth invisible client detection)
+  Fixed Popup's unicode support cannot be used in ANSI mode even if available
+
+
 0.3.7
 
 Bugfixes:

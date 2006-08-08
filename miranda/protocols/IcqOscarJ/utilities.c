@@ -777,12 +777,7 @@ void parseServerAddress(char* szServer, WORD* wPort)
   if (szServer[i] == ':')
   { // port included
     *wPort = atoi(&szServer[i + 1]);
-  }
-  else // port not found, use pre-configured
-  {
-    *wPort = ICQGetContactSettingWord(NULL, "OscarPort", DEFAULT_SERVER_PORT);
-    if (!*wPort) *wPort = (WORD)RandRange(1024, 65535);
-  }
+  } // otherwise do not change port
 
   szServer[i] = '\0';
 }
@@ -1391,6 +1386,19 @@ HANDLE NetLib_OpenConnection(HANDLE hUser, NETLIBOPENCONNECTION* nloc)
     hConnection = (HANDLE)CallService(MS_NETLIB_OPENCONNECTION, (WPARAM)hUser, (LPARAM)nloc);
   }
   return hConnection;
+}
+
+
+
+void NetLib_SafeCloseHandle(HANDLE *hConnection, int bServerConn)
+{
+  if (*hConnection)
+  {
+    Netlib_CloseHandle(*hConnection);
+    if (bServerConn)
+      FreeGatewayIndex(*hConnection);
+    *hConnection = NULL;
+  }
 }
 
 

@@ -119,6 +119,7 @@ void LinkContactPhotoToFile(HANDLE hContact, char* szFile);
 void ContactPhotoSettingChanged(HANDLE hContact);
 
 HANDLE NetLib_OpenConnection(HANDLE hUser, NETLIBOPENCONNECTION* nloc);
+void NetLib_SafeCloseHandle(HANDLE *hConnection, int bServerConn);
 int NetLog_Server(const char *fmt,...);
 int NetLog_Direct(const char *fmt,...);
 int NetLog_Uni(BOOL bDC, const char *fmt,...);

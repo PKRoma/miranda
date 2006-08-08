@@ -2123,6 +2123,18 @@ int IcqSendUserIsTyping(WPARAM wParam, LPARAM lParam)
    ---------------------------------
 */
 
+static void ICQAddRecvEvent(HANDLE hContact, WORD wType, PROTORECVEVENT* pre, DWORD cbBlob, PBYTE pBlob)
+{
+  DWORD flags = (pre->flags & PREF_CREATEREAD) ? DBEF_READ : 0;
+
+  if (hContact)
+    SetContactHidden(hContact, 0);
+
+  ICQAddEvent(hContact, wType, pre->timestamp, flags, cbBlob, pBlob);
+}
+
+
+
 int IcqRecvAwayMsg(WPARAM wParam,LPARAM lParam)
 {
   CCSDATA* ccs = (CCSDATA*)lParam;
@@ -2139,25 +2151,15 @@ int IcqRecvAwayMsg(WPARAM wParam,LPARAM lParam)
 
 int IcqRecvMessage(WPARAM wParam, LPARAM lParam)
 {
-  DBEVENTINFO dbei;
   CCSDATA* ccs = (CCSDATA*)lParam;
   PROTORECVEVENT* pre = (PROTORECVEVENT*)ccs->lParam;
+  DWORD cbBlob;
 
-
-  SetContactHidden(ccs->hContact, 0);
-
-  ZeroMemory(&dbei, sizeof(dbei));
-  dbei.cbSize = sizeof(dbei);
-  dbei.szModule = gpszICQProtoName;
-  dbei.timestamp = pre->timestamp;
-  dbei.flags = (pre->flags & PREF_CREATEREAD) ? DBEF_READ : 0;
-  dbei.eventType = EVENTTYPE_MESSAGE;
-  dbei.cbBlob = strlennull(pre->szMessage) + 1;
+  cbBlob = strlennull(pre->szMessage) + 1;
   if ( pre->flags & PREF_UNICODE )
-    dbei.cbBlob *= ( sizeof( wchar_t )+1 );
-  dbei.pBlob = (PBYTE)pre->szMessage;
+    cbBlob *= ( sizeof( wchar_t )+1 );
 
-  CallService(MS_DB_EVENT_ADD, (WPARAM)ccs->hContact, (LPARAM)&dbei);
+  ICQAddRecvEvent(ccs->hContact, EVENTTYPE_MESSAGE, pre, cbBlob, (PBYTE)pre->szMessage);
 
   // stop contact from typing - some clients do not sent stop notify
   if (CheckContactCapabilities(ccs->hContact, CAPF_TYPING))
@@ -2170,26 +2172,16 @@ int IcqRecvMessage(WPARAM wParam, LPARAM lParam)
 
 int IcqRecvUrl(WPARAM wParam, LPARAM lParam)
 {
-  DBEVENTINFO dbei;
   CCSDATA* ccs = (CCSDATA*)lParam;
   PROTORECVEVENT* pre = (PROTORECVEVENT*)ccs->lParam;
   char* szDesc;
-
-
-  SetContactHidden(ccs->hContact, 0);
+  DWORD cbBlob;
 
   szDesc = pre->szMessage + strlennull(pre->szMessage) + 1;
 
-  ZeroMemory(&dbei, sizeof(dbei));
-  dbei.cbSize = sizeof(dbei);
-  dbei.szModule = gpszICQProtoName;
-  dbei.timestamp = pre->timestamp;
-  dbei.flags = (pre->flags & PREF_CREATEREAD) ? DBEF_READ : 0;
-  dbei.eventType = EVENTTYPE_URL;
-  dbei.cbBlob = strlennull(pre->szMessage) + strlennull(szDesc) + 2;
-  dbei.pBlob = (PBYTE)pre->szMessage;
+  cbBlob = strlennull(pre->szMessage) + strlennull(szDesc) + 2;
 
-  CallService(MS_DB_EVENT_ADD, (WPARAM)ccs->hContact, (LPARAM)&dbei);
+  ICQAddRecvEvent(ccs->hContact, EVENTTYPE_URL, pre, cbBlob, (PBYTE)pre->szMessage);
 
   return 0;
 }
@@ -2198,46 +2190,38 @@ int IcqRecvUrl(WPARAM wParam, LPARAM lParam)
 
 int IcqRecvContacts(WPARAM wParam, LPARAM lParam)
 {
-  DBEVENTINFO dbei = {0};
   CCSDATA* ccs = (CCSDATA*)lParam;
   PROTORECVEVENT* pre = (PROTORECVEVENT*)ccs->lParam;
   ICQSEARCHRESULT** isrList = (ICQSEARCHRESULT**)pre->szMessage;
   int i;
   char szUin[UINMAXLEN];
-  PBYTE pBlob;
-
-
-  SetContactHidden(ccs->hContact, 0);
+  DWORD cbBlob = 0;
+  PBYTE pBlob,pCurBlob;
 
   for (i = 0; i < pre->lParam; i++)
   {
-    dbei.cbBlob += strlennull(isrList[i]->hdr.nick) + 2; // both trailing zeros
+    cbBlob += strlennull(isrList[i]->hdr.nick) + 2; // both trailing zeros
     if (isrList[i]->uin)
-      dbei.cbBlob += getUINLen(isrList[i]->uin);
+      cbBlob += getUINLen(isrList[i]->uin);
     else 
-      dbei.cbBlob += strlennull(isrList[i]->uid);
+      cbBlob += strlennull(isrList[i]->uid);
   }
-  dbei.cbSize = sizeof(dbei);
-  dbei.szModule = gpszICQProtoName;
-  dbei.timestamp = pre->timestamp;
-  dbei.flags = (pre->flags & PREF_CREATEREAD) ? DBEF_READ : 0;
-  dbei.eventType = EVENTTYPE_CONTACTS;
-  dbei.pBlob = (PBYTE)_alloca(dbei.cbBlob);
-  for (i = 0, pBlob = dbei.pBlob; i < pre->lParam; i++)
+  pBlob = (PBYTE)_alloca(cbBlob);
+  for (i = 0, pCurBlob = pBlob; i < pre->lParam; i++)
   {
-    strcpy(pBlob, isrList[i]->hdr.nick);
-    pBlob += strlennull(pBlob) + 1;
+    strcpy(pCurBlob, isrList[i]->hdr.nick);
+    pCurBlob += strlennull(pCurBlob) + 1;
     if (isrList[i]->uin)
     {
       _itoa(isrList[i]->uin, szUin, 10);
-      strcpy(pBlob, szUin);
+      strcpy(pCurBlob, szUin);
     }
     else // aim contact
-      strcpy(pBlob, isrList[i]->uid);
-    pBlob += strlennull(pBlob) + 1;
+      strcpy(pCurBlob, isrList[i]->uid);
+    pCurBlob += strlennull(pCurBlob) + 1;
   }
 
-  CallService(MS_DB_EVENT_ADD, (WPARAM)ccs->hContact, (LPARAM)&dbei);
+  ICQAddRecvEvent(ccs->hContact, EVENTTYPE_CONTACTS, pre, cbBlob, pBlob);
 
   return 0;
 }
@@ -2246,28 +2230,18 @@ int IcqRecvContacts(WPARAM wParam, LPARAM lParam)
 
 int IcqRecvFile(WPARAM wParam, LPARAM lParam)
 {
-  DBEVENTINFO dbei;
   CCSDATA* ccs = (CCSDATA*)lParam;
   PROTORECVEVENT* pre = (PROTORECVEVENT*)ccs->lParam;
   char* szDesc;
   char* szFile;
-
-
-  SetContactHidden(ccs->hContact, 0);
+  DWORD cbBlob;
 
   szFile = pre->szMessage + sizeof(DWORD);
   szDesc = szFile + strlennull(szFile) + 1;
 
-  ZeroMemory(&dbei, sizeof(dbei));
-  dbei.cbSize = sizeof(dbei);
-  dbei.szModule = gpszICQProtoName;
-  dbei.timestamp = pre->timestamp;
-  dbei.flags = (pre->flags & PREF_CREATEREAD) ? DBEF_READ : 0;
-  dbei.eventType = EVENTTYPE_FILE;
-  dbei.cbBlob = sizeof(DWORD) + strlennull(szFile) + strlennull(szDesc) + 2;
-  dbei.pBlob = (PBYTE)pre->szMessage;
+  cbBlob = sizeof(DWORD) + strlennull(szFile) + strlennull(szDesc) + 2;
 
-  CallService(MS_DB_EVENT_ADD, (WPARAM)ccs->hContact, (LPARAM)&dbei);
+  ICQAddRecvEvent(ccs->hContact, EVENTTYPE_FILE, pre, cbBlob, (PBYTE)pre->szMessage);
 
   return 0;
 }
@@ -2276,23 +2250,12 @@ int IcqRecvFile(WPARAM wParam, LPARAM lParam)
 
 int IcqRecvAuth(WPARAM wParam, LPARAM lParam)
 {
-  DBEVENTINFO dbei;
   CCSDATA* ccs = (CCSDATA*)lParam;
   PROTORECVEVENT* pre = (PROTORECVEVENT*)ccs->lParam;
 
-
   SetContactHidden(ccs->hContact, 0);
 
-  ZeroMemory(&dbei, sizeof(dbei));
-  dbei.cbSize = sizeof(dbei);
-  dbei.szModule = gpszICQProtoName;
-  dbei.timestamp = pre->timestamp;
-  dbei.flags=(pre->flags & PREF_CREATEREAD) ? DBEF_READ : 0;
-  dbei.eventType = EVENTTYPE_AUTHREQUEST;
-  dbei.cbBlob = pre->lParam;
-  dbei.pBlob = (PBYTE)pre->szMessage;
-
-  CallService(MS_DB_EVENT_ADD, (WPARAM)NULL, (LPARAM)&dbei);
+  ICQAddRecvEvent(NULL, EVENTTYPE_AUTHREQUEST, pre, pre->lParam, (PBYTE)pre->szMessage);
 
   return 0;
 }

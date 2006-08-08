@@ -61,6 +61,8 @@ static DWORD __stdcall icq_serverThread(serverthread_start_info* infoParam)
   info.isLoginServer = 1;
   info.wAuthKeyLen = infoParam->wPassLen;
   strncpy(info.szAuthKey, infoParam->szPass, info.wAuthKeyLen);
+  // store server port
+  info.wServerPort = infoParam->nloc.wPort;
 
   srand(time(NULL));
 
@@ -155,12 +157,10 @@ static DWORD __stdcall icq_serverThread(serverthread_start_info* infoParam)
     }
 
     // Close the packet receiver (connection may still be open)
-    Netlib_CloseHandle(hServerPacketRecver);
-    hServerPacketRecver = 0;
+    NetLib_SafeCloseHandle(&hServerPacketRecver, FALSE);
 
     // Close DC port
-    Netlib_CloseHandle(hDirectBoundPort);
-    hDirectBoundPort = 0;
+    NetLib_SafeCloseHandle(&hDirectBoundPort, FALSE);
   }
 
   // Time to shutdown
@@ -223,9 +223,7 @@ void icq_serverDisconnect(BOOL bBlock)
   {
     int sck = CallService(MS_NETLIB_GETSOCKET, (WPARAM)hServerConn, (LPARAM)0);
     if (sck!=INVALID_SOCKET) shutdown(sck, 2); // close gracefully
-    Netlib_CloseHandle(hServerConn);
-    FreeGatewayIndex(hServerConn);
-    hServerConn = NULL;
+    NetLib_SafeCloseHandle(&hServerConn, TRUE);
     LeaveCriticalSection(&connectionHandleMutex);
     
     // Not called from network thread?
