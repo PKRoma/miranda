@@ -24,7 +24,7 @@ Version 1.0.0.1 - 2006/08/05
 	! fixed minor issue with [color] bbcode
 	! using the own UIN as fallback for own nickname, to solve the "Unknown
 	  Contact" problem which can appear when the own nickname is not 
-	  properly set.
+	  properly set by the protocol.
 	! fixed a few issues with global splitter positioning.
 	* selecting offline sub protocol throws a warning instead of an error.
 	- removed the feature to load a background image for the message input area.
@@ -34,6 +34,7 @@ Version 1.0.0.1 - 2006/08/05
 	  typing notify popup
 	! fixed vertiacl maximize (patch by SloMo)	  	
 	! some translation fixes
+	! fixed rare bug with lost keyboard layouts
 
 Version 1.0.0.0
 
