@@ -34,6 +34,108 @@ Last change by : $Author$
 extern char* jabberVcardPhotoFileName;
 extern char* jabberVcardPhotoType;
 
+void JabberIqResultGetAuth( XmlNode *iqNode, void *userdata )
+{
+	// RECVED: result of the request for authentication method
+	// ACTION: send account authentication information to log in
+	JabberLog( "<iq/> iqIdGetAuth" );
+
+	struct ThreadData *info = ( struct ThreadData * ) userdata;
+	XmlNode *queryNode;
+	TCHAR* type;
+	if (( type=JabberXmlGetAttrValue( iqNode, "type" )) == NULL ) return;
+	if (( queryNode=JabberXmlGetChild( iqNode, "query" )) == NULL ) return;
+
+	if ( !lstrcmp( type, _T("result"))) {
+		int iqId = JabberSerialNext();
+		JabberIqAdd( iqId, IQ_PROC_NONE, JabberIqResultSetAuth );
+
+		XmlNodeIq iq( "set", iqId );
+		XmlNode* query = iq.addQuery( "jabber:iq:auth" );
+		query->addChild( "username", info->username );
+		if ( JabberXmlGetChild( queryNode, "digest" )!=NULL && streamId ) {
+			char* str = JabberUtf8Encode( info->password );
+			char text[200];
+			mir_snprintf( text, SIZEOF(text), "%s%s", streamId, str );
+			mir_free( str );
+         if (( str=JabberSha1( text )) != NULL ) {
+				query->addChild( "digest", str );
+				mir_free( str );
+			}
+		}
+		else if ( JabberXmlGetChild( queryNode, "password" ) != NULL )
+			query->addChild( "password", info->password );
+		else {
+			JabberLog( "No known authentication mechanism accepted by the server." );
+
+			JabberSend( info->s, "</stream:stream>" );
+			return;
+		}
+
+		if ( JabberXmlGetChild( queryNode, "resource" ) != NULL )
+			query->addChild( "resource", info->resource );
+
+		JabberSend( info->s, iq );
+	}
+	else if ( !lstrcmp( type, _T("error"))) {
+ 		JabberSend( info->s, "</stream:stream>" );
+
+		TCHAR text[128];
+		mir_sntprintf( text, SIZEOF( text ), _T("%s %s."), TranslateT( "Authentication failed for" ), info->username );
+		MessageBox( NULL, text, TranslateT( "Jabber Authentication" ), MB_OK|MB_ICONSTOP|MB_SETFOREGROUND );
+		JSendBroadcast( NULL, ACKTYPE_LOGIN, ACKRESULT_FAILED, NULL, LOGINERR_WRONGPASSWORD );
+		jabberThreadInfo = NULL;	// To disallow auto reconnect
+}	}
+
+void JabberIqResultSetAuth( XmlNode *iqNode, void *userdata )
+{
+	struct ThreadData *info = ( struct ThreadData * ) userdata;
+	TCHAR* type;
+	int iqId;
+
+	// RECVED: authentication result
+	// ACTION: if successfully logged in, continue by requesting roster list and set my initial status
+	JabberLog( "<iq/> iqIdSetAuth" );
+	if (( type=JabberXmlGetAttrValue( iqNode, "type" )) == NULL ) return;
+
+	if ( !lstrcmp( type, _T("result"))) {
+		DBVARIANT dbv;
+		if ( JGetStringT( NULL, "Nick", &dbv ))
+			JSetStringT( NULL, "Nick", info->username );
+		else
+			JFreeVariant( &dbv );
+
+		jabberOnline = TRUE;
+		jabberLoggedInTime = time(0);
+
+		iqId = JabberSerialNext();
+		JabberIqAdd( iqId, IQ_PROC_NONE, JabberIqResultGetRoster );
+		{	XmlNodeIq iq( "get", iqId ); 
+			XmlNode* query = iq.addQuery( "jabber:iq:roster" );
+			JabberSend( info->s, iq );
+		}
+
+		if ( hwndJabberAgents ) {
+			// Retrieve agent information
+			iqId = JabberSerialNext();
+			JabberIqAdd( iqId, IQ_PROC_GETAGENTS, JabberIqResultGetAgents );
+
+			XmlNodeIq iq( "get", iqId ); 
+			XmlNode* query = iq.addQuery( "jabber:iq:agents" );
+			JabberSend( info->s, iq );
+		}
+	}
+	// What to do if password error? etc...
+	else if ( !lstrcmp( type, _T("error"))) {
+		TCHAR text[128];
+
+		JabberSend( info->s, "</stream:stream>" );
+		mir_sntprintf( text, SIZEOF( text ), _T("%s %s."), TranslateT( "Authentication failed for" ), info->username );
+		MessageBox( NULL, text, TranslateT( "Jabber Authentication" ), MB_OK|MB_ICONSTOP|MB_SETFOREGROUND );
+		JSendBroadcast( NULL, ACKTYPE_LOGIN, ACKRESULT_FAILED, NULL, LOGINERR_WRONGPASSWORD );
+		jabberThreadInfo = NULL;	// To disallow auto reconnect
+}	}
+
 void JabberIqResultBind( XmlNode *iqNode, void *userdata )
 {
 //	JabberXmlDumpNode( iqNode );
