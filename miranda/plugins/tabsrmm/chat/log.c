@@ -722,42 +722,12 @@ void Log_StreamInEvent(HWND hwndDlg,  LOGINFO* lin, SESSION_INFO* si, BOOL bRedr
 						 )))
 		{
 			SMADD_RICHEDIT3 sm = {0};
-            FINDTEXTEXA fi;
 
 //			newsel.cpMin = newsel.cpMax - lstrlenA(lin->pszText) - 10;
 			newsel.cpMin = sel.cpMin;
 			if(newsel.cpMin < 0)
 				newsel.cpMin = 0;
 
-
-            if(g_Settings.ClickableNicks) {
-                CHARFORMAT2 cf2 = {0};
-                FINDTEXTEXA fi2;
-
-                fi2.lpstrText = " ";
-                fi.chrg.cpMin = bRedraw ? 0 : sel.cpMin;
-                fi.chrg.cpMax = -1;
-                fi.lpstrText = "~~++#";
-                cf2.cbSize = sizeof(cf2);
-
-                while(SendMessageA(hwndRich, EM_FINDTEXTEX, FR_DOWN, (LPARAM)&fi) > -1) {
-                    SendMessage(hwndRich, EM_EXSETSEL, 0, (LPARAM)&fi.chrgText);
-                    SendMessage(hwndRich, EM_REPLACESEL, TRUE, (LPARAM)_T(""));
-                    fi2.chrg.cpMin = fi.chrgText.cpMin;
-                    fi2.chrg.cpMax = -1;
-
-                    if(SendMessageA(hwndRich, EM_FINDTEXTEX, FR_DOWN, (LPARAM)&fi2) > -1) {
-                        fi2.chrgText.cpMin = fi.chrgText.cpMin;
-                        fi2.chrgText.cpMax--;
-                        SendMessage(hwndRich, EM_EXSETSEL, 0, (LPARAM)&fi2.chrgText);
-                        cf2.dwMask = CFM_LINK;
-                        cf2.dwEffects = CFE_LINK;
-                        SendMessage(hwndRich, EM_SETCHARFORMAT, SCF_SELECTION, (LPARAM)&cf2);
-                    }
-                    fi.chrg.cpMin = fi.chrgText.cpMax;
-                }
-            }
-            
 			ZeroMemory(&sm, sizeof(sm));
 			sm.cbSize = sizeof(sm);
 			sm.hwndRichEditControl = hwndRich;
@@ -768,6 +738,35 @@ void Log_StreamInEvent(HWND hwndDlg,  LOGINFO* lin, SESSION_INFO* si, BOOL bRedr
 			CallService(MS_SMILEYADD_REPLACESMILEYS, 0, (LPARAM)&sm);
 
 		}
+
+        if(g_Settings.ClickableNicks) {
+            CHARFORMAT2 cf2 = {0};
+            FINDTEXTEXA fi2;
+            FINDTEXTEXA fi;
+
+            fi2.lpstrText = " ";
+            fi.chrg.cpMin = bRedraw ? 0 : sel.cpMin;
+            fi.chrg.cpMax = -1;
+            fi.lpstrText = "~~++#";
+            cf2.cbSize = sizeof(cf2);
+
+            while(SendMessageA(hwndRich, EM_FINDTEXTEX, FR_DOWN, (LPARAM)&fi) > -1) {
+                SendMessage(hwndRich, EM_EXSETSEL, 0, (LPARAM)&fi.chrgText);
+                SendMessage(hwndRich, EM_REPLACESEL, TRUE, (LPARAM)_T(""));
+                fi2.chrg.cpMin = fi.chrgText.cpMin;
+                fi2.chrg.cpMax = -1;
+
+                if(SendMessageA(hwndRich, EM_FINDTEXTEX, FR_DOWN, (LPARAM)&fi2) > -1) {
+                    fi2.chrgText.cpMin = fi.chrgText.cpMin;
+                    fi2.chrgText.cpMax--;
+                    SendMessage(hwndRich, EM_EXSETSEL, 0, (LPARAM)&fi2.chrgText);
+                    cf2.dwMask = CFM_LINK;
+                    cf2.dwEffects = CFE_LINK;
+                    SendMessage(hwndRich, EM_SETCHARFORMAT, SCF_SELECTION, (LPARAM)&cf2);
+                }
+                fi.chrg.cpMin = fi.chrgText.cpMax;
+            }
+        }
 
         if(si->wasTrimmed) {
             char szPattern[50];

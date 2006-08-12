@@ -2969,10 +2969,10 @@ void GetMyNick(HWND hwndDlg, struct MessageWindowData *dat)
         else if(ci.type == CNFT_DWORD)
             _ltow(ci.dVal, dat->szMyNickname, 10);
         else
-            _tcsncpy(dat->szMyNickname, _T("<undef>"), 110);
+            _tcsncpy(dat->szMyNickname, _T("<undef>"), 110);                // that really should *never* happen
     }
     else
-        _tcsncpy(dat->szMyNickname, _T(""), 110);
+        _tcsncpy(dat->szMyNickname, _T("<undef>"), 110);                    // same here
 #else
     if(!CallService(MS_CONTACT_GETCONTACTINFO, 0, (LPARAM)&ci)) {
         if(ci.type == CNFT_ASCIIZ) {
@@ -3004,3 +3004,4 @@ void GetMyNick(HWND hwndDlg, struct MessageWindowData *dat)
     if(ci.pszVal)
         mir_free(ci.pszVal);
 }
+

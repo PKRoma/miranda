@@ -559,23 +559,25 @@ static int MessageEventAdded(WPARAM wParam, LPARAM lParam)
      * for tray support, we add the event to the tray menu. otherwise we send it back to
      * the contact list for flashing
      */
-nowindowcreate:    
-    UpdateTrayMenu(0, 0, dbei.szModule, NULL, (HANDLE)wParam, 1);
-    if(!nen_options.bTraySupport || myGlobals.m_WinVerMajor < 5) {
-	     TCHAR toolTip[256], *contactName;
-        ZeroMemory(&cle, sizeof(cle));
-        cle.cbSize = sizeof(cle);
-        cle.hContact = (HANDLE) wParam;
-        cle.hDbEvent = (HANDLE) lParam;
-		  cle.flags = CLEF_TCHAR;
-        cle.hIcon = LoadSkinnedIcon(SKINICON_EVENT_MESSAGE);
-        cle.pszService = "SRMsg/ReadMessage";
-        contactName = (TCHAR*) CallService(MS_CLIST_GETCONTACTDISPLAYNAME, wParam, GCDNF_TCHAR);
-        mir_sntprintf(toolTip, SIZEOF(toolTip), TranslateT("Message from %s"), contactName);
-        cle.ptszTooltip = toolTip;
-        CallService(MS_CLIST_ADDEVENT, 0, (LPARAM) & cle);
+nowindowcreate:
+    if(!(dbei.flags & DBEF_READ)) {
+        UpdateTrayMenu(0, 0, dbei.szModule, NULL, (HANDLE)wParam, 1);
+        if(!nen_options.bTraySupport || myGlobals.m_WinVerMajor < 5) {
+             TCHAR toolTip[256], *contactName;
+            ZeroMemory(&cle, sizeof(cle));
+            cle.cbSize = sizeof(cle);
+            cle.hContact = (HANDLE) wParam;
+            cle.hDbEvent = (HANDLE) lParam;
+              cle.flags = CLEF_TCHAR;
+            cle.hIcon = LoadSkinnedIcon(SKINICON_EVENT_MESSAGE);
+            cle.pszService = "SRMsg/ReadMessage";
+            contactName = (TCHAR*) CallService(MS_CLIST_GETCONTACTDISPLAYNAME, wParam, GCDNF_TCHAR);
+            mir_sntprintf(toolTip, SIZEOF(toolTip), TranslateT("Message from %s"), contactName);
+            cle.ptszTooltip = toolTip;
+            CallService(MS_CLIST_ADDEVENT, 0, (LPARAM) & cle);
+        }
+        tabSRMM_ShowPopup(wParam, lParam, dbei.eventType, 0, 0, 0, dbei.szModule, 0);
     }
-    tabSRMM_ShowPopup(wParam, lParam, dbei.eventType, 0, 0, 0, dbei.szModule, 0);
     return 0;
 }
 

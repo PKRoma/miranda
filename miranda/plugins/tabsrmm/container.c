@@ -1547,10 +1547,10 @@ buttons_done:
                     pContainer->dwFlags |= CNT_DEFERREDSIZEREQUEST;
                     break;
                 }
-                if(wParam == SIZE_MINIMIZED) {
-                    pContainer->hwndSaved = 0;
-                    break;
-                }
+                //if(wParam == SIZE_MINIMIZED) {
+                    //pContainer->hwndSaved = 0;
+                //    break;
+                //}
 
                 if (pContainer->hwndStatus) {
                     RECT rcs;
@@ -2063,7 +2063,7 @@ panel_found:
 				if (pContainer->dwFlags & CNT_TRANSPARENCY && pSetLayeredWindowAttributes != NULL && !bSkinned)
 					pSetLayeredWindowAttributes(hwndDlg, g_ContainerColorKey, (BYTE)HIWORD(pContainer->dwTransparency), (/* pContainer->bSkinned ? LWA_COLORKEY :  */ 0) | (pContainer->dwFlags & CNT_TRANSPARENCY ? LWA_ALPHA : 0));
 			}
-            if(LOWORD(wParam) == WA_INACTIVE)
+            //if(LOWORD(wParam) == WA_INACTIVE)
                 pContainer->hwndSaved = 0;
 
             if (LOWORD(wParam) != WA_ACTIVE)
@@ -2118,7 +2118,6 @@ panel_found:
                     if(pContainer->hwndActive != 0 && IsWindow(pContainer->hwndActive)) {
                         ShowWindow(pContainer->hwndActive, SW_SHOW);
                         SetFocus(pContainer->hwndActive);
-                        pContainer->hwndSaved = 0;
                         SendMessage(pContainer->hwndActive, WM_ACTIVATE, WA_ACTIVE, 0);
                         RedrawWindow(pContainer->hwndActive, NULL, NULL, RDW_INVALIDATE | RDW_ALLCHILDREN);
                     }

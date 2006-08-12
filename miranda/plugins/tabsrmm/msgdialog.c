@@ -242,7 +242,7 @@ static void MsgWindowUpdateState(HWND hwndDlg, struct MessageWindowData *dat, UI
             return;
 
         dat->pContainer->hwndSaved = hwndDlg;
-
+        //_DebugTraceW(L"activate handler for %s with %x", dat->szNickname, msg);
         dat->dwTickLastEvent = 0;
         dat->dwFlags &= ~MWF_DIVIDERSET;
         if (KillTimer(hwndDlg, TIMERID_FLASHWND)) {
@@ -973,6 +973,7 @@ static LRESULT CALLBACK MessageEditSubclassProc(HWND hwnd, UINT msg, WPARAM wPar
         case WM_INPUTLANGCHANGE:
             if (myGlobals.m_AutoLocaleSupport && GetFocus() == hwnd && mwdat->pContainer->hwndActive == hwndParent && GetForegroundWindow() == mwdat->pContainer->hwnd && GetActiveWindow() == mwdat->pContainer->hwnd) {
                 DM_SaveLocale(hwndParent, mwdat, wParam, lParam);
+                SendMessage(hwnd, EM_SETLANGOPTIONS, 0, (LPARAM) SendMessage(hwnd, EM_GETLANGOPTIONS, 0, 0) & ~IMF_AUTOKEYBOARD);
             }
             return 1;
         case WM_ERASEBKGND:
@@ -1853,7 +1854,6 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                 
                 /* OnO: higligh lines to their end */
                 SendDlgItemMessage(hwndDlg, IDC_LOG, EM_SETEDITSTYLE, SES_EXTENDBACKCOLOR, SES_EXTENDBACKCOLOR);
-                SendDlgItemMessage(hwndDlg, IDC_MESSAGE, EM_SETLANGOPTIONS, 0, (LPARAM) SendDlgItemMessage(hwndDlg, IDC_MESSAGE, EM_GETLANGOPTIONS, 0, 0) & ~IMF_AUTOKEYBOARD);
 
                 SendDlgItemMessage(hwndDlg, IDC_LOG, EM_SETLANGOPTIONS, 0, SendDlgItemMessage(hwndDlg, IDC_LOG, EM_GETLANGOPTIONS, 0, 0) & ~IMF_AUTOFONTSIZEADJUST);
 
@@ -2189,10 +2189,14 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                     ZeroMemory((void *)&pf2, sizeof(pf2));
                     pf2.cbSize = sizeof(pf2);
 
-                    pf2.wEffects = dat->dwFlags & MWF_LOG_RTL ? PFE_RTLPARA : 0;
+                    pf2.wEffects = PFE_RTLPARA;// dat->dwFlags & MWF_LOG_RTL ? PFE_RTLPARA : 0;
                     pf2.dwMask = PFM_RTLPARA;
                     SendDlgItemMessage(hwndDlg, IDC_MESSAGE, EM_SETPARAFORMAT, 0, (LPARAM)&pf2);
-
+                    if(!(dat->dwFlags & MWF_LOG_RTL)) {
+                        pf2.wEffects = 0;
+                        SendDlgItemMessage(hwndDlg, IDC_MESSAGE, EM_SETPARAFORMAT, 0, (LPARAM)&pf2);
+                    }
+                    SendDlgItemMessage(hwndDlg, IDC_MESSAGE, EM_SETLANGOPTIONS, 0, (LPARAM) SendDlgItemMessage(hwndDlg, IDC_MESSAGE, EM_GETLANGOPTIONS, 0, 0) & ~IMF_AUTOKEYBOARD);
                     pf2.wEffects = PFE_RTLPARA;
                     pf2.dwMask |= PFM_OFFSET;
                     if(dat->dwFlags & MWF_INITMODE) {
@@ -2203,6 +2207,7 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                     pf2.dxOffset = dat->theme.left_indent + 30;
                     SetDlgItemText(hwndDlg, IDC_LOG, _T(""));
                     SendDlgItemMessage(hwndDlg, IDC_LOG, EM_SETPARAFORMAT, 0, (LPARAM)&pf2);
+                    SendDlgItemMessage(hwndDlg, IDC_LOG, EM_SETLANGOPTIONS, 0, (LPARAM) SendDlgItemMessage(hwndDlg, IDC_LOG, EM_GETLANGOPTIONS, 0, 0) & ~IMF_AUTOKEYBOARD);
                 }
 
                 /*
@@ -2213,13 +2218,12 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                     SetWindowLong(GetDlgItem(hwndDlg, IDC_MESSAGE),GWL_EXSTYLE,GetWindowLong(GetDlgItem(hwndDlg, IDC_MESSAGE),GWL_EXSTYLE) | WS_EX_RIGHT | WS_EX_RTLREADING | WS_EX_LEFTSCROLLBAR);
                     SetWindowLong(GetDlgItem(hwndDlg, IDC_LOG),GWL_EXSTYLE,GetWindowLong(GetDlgItem(hwndDlg, IDC_LOG),GWL_EXSTYLE) | WS_EX_RIGHT | WS_EX_RTLREADING | WS_EX_LEFTSCROLLBAR);
                     SetWindowLong(GetDlgItem(hwndDlg, IDC_NOTES),GWL_EXSTYLE,GetWindowLong(GetDlgItem(hwndDlg, IDC_NOTES),GWL_EXSTYLE) | (WS_EX_RIGHT | WS_EX_RTLREADING | WS_EX_LEFTSCROLLBAR));
-                    SetDlgItemText(hwndDlg, IDC_MESSAGE, _T(""));
                 } else {
                     SetWindowLong(GetDlgItem(hwndDlg, IDC_MESSAGE),GWL_EXSTYLE,GetWindowLong(GetDlgItem(hwndDlg, IDC_MESSAGE),GWL_EXSTYLE) &~ (WS_EX_RIGHT | WS_EX_RTLREADING | WS_EX_LEFTSCROLLBAR));
                     SetWindowLong(GetDlgItem(hwndDlg, IDC_LOG),GWL_EXSTYLE,GetWindowLong(GetDlgItem(hwndDlg, IDC_LOG),GWL_EXSTYLE) &~ (WS_EX_RIGHT | WS_EX_RTLREADING | WS_EX_LEFTSCROLLBAR));
                     SetWindowLong(GetDlgItem(hwndDlg, IDC_NOTES),GWL_EXSTYLE,GetWindowLong(GetDlgItem(hwndDlg, IDC_NOTES),GWL_EXSTYLE) & ~(WS_EX_RIGHT | WS_EX_RTLREADING | WS_EX_LEFTSCROLLBAR));
-                    SetDlgItemText(hwndDlg, IDC_MESSAGE, _T(""));
                 }
+                SetDlgItemText(hwndDlg, IDC_MESSAGE, _T(""));
                 InvalidateRect(GetDlgItem(hwndDlg, IDC_NOTES), NULL, FALSE);
                 if(szStreamOut != NULL) {
                     SendDlgItemMessage(hwndDlg, IDC_MESSAGE, EM_SETTEXTEX, (WPARAM)&stx, (LPARAM)szStreamOut);
@@ -2484,7 +2488,7 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
 
         case WM_ACTIVATE:
             if (LOWORD(wParam) != WA_ACTIVE) {
-                m_pContainer->hwndSaved = 0;
+                //m_pContainer->hwndSaved = 0;
                 break;
             }
             //fall through
