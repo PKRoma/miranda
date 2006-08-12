@@ -165,6 +165,8 @@ static void xmlStreamInitializeNow(struct ThreadData *info){
 			JabberSend( info->s, stream );
 }	}
 
+static bool wasSaslPerformed = 0;
+
 void __cdecl JabberServerThread( struct ThreadData *info )
 {
 	DBVARIANT dbv;
@@ -175,6 +177,7 @@ void __cdecl JabberServerThread( struct ThreadData *info )
 
 	JabberLog( "Thread started: type=%d", info->type );
 
+	wasSaslPerformed = false;
 	if ( info->type == JABBER_SESSION_NORMAL ) {
 
 		// Normal server connection, we will fetch all connection parameters
@@ -582,6 +585,7 @@ static void JabberProcessFeatures( XmlNode *node, void *userdata )
 {
 	struct ThreadData *info = ( struct ThreadData * ) userdata;
 	bool isPlainAvailable = false;
+	bool isAuthAvailable = false;
 	bool isXGoogleTokenAvailable = false;
 	bool isRegisterAvailable = false;
 	bool areMechanismsDefined = false;
@@ -607,10 +611,11 @@ static void JabberProcessFeatures( XmlNode *node, void *userdata )
 					if (!_tcscmp( c->text, _T("X-GOOGLE-TOKEN"))) isXGoogleTokenAvailable = true;
 		}	}
 		else if ( !strcmp( n->name, "register" )) isRegisterAvailable = true;
+		else if ( !strcmp( n->name, "auth"     )) isAuthAvailable = true;
 		else if ( !strcmp( n->name, "session"  )) isSessionAvailable = true;
 	}
 
-	if (areMechanismsDefined) {
+	if ( areMechanismsDefined ) {
 		char *PLAIN = 0;
 		if ( isPlainAvailable ) {
 			char *temp = t2a(info->username);
@@ -623,7 +628,10 @@ static void JabberProcessFeatures( XmlNode *node, void *userdata )
 			JabberLog( "Never publish the hash below" );
 		} 
 		else {
-			// MessagePopup( NULL, TranslateT("No known auth methods available. Giving up."), TranslateT( "Jabber Authentication" ), MB_OK|MB_ICONSTOP|MB_SETFOREGROUND );
+			if ( isAuthAvailable )
+				goto LBL_TryIqAuth;   // no known mechanisms but iq_auth is available
+
+			MessageBox( NULL, TranslateT("No known auth methods available. Giving up."), TranslateT( "Jabber Authentication" ), MB_OK|MB_ICONSTOP|MB_SETFOREGROUND );
 			JabberSend( info->s, "</stream:stream>" );
 			JSendBroadcast( NULL, ACKTYPE_LOGIN, ACKRESULT_FAILED, NULL, LOGINERR_WRONGPASSWORD );
 			return;
@@ -634,6 +642,7 @@ static void JabberProcessFeatures( XmlNode *node, void *userdata )
 			auth.addAttr( "xmlns", "urn:ietf:params:xml:ns:xmpp-sasl" );
 			auth.addAttr( "mechanism", "PLAIN");
 			JabberSend(info->s,auth);
+			wasSaslPerformed = true; //sasl was requested, but we dont know the result
 		}
 		else if ( info->type == JABBER_SESSION_REGISTER ) {
 			iqIdRegGetReg = JabberSerialNext();
@@ -644,18 +653,43 @@ static void JabberProcessFeatures( XmlNode *node, void *userdata )
 		}
 		else JabberSend( info->s, "</stream:stream>" );
 		if (PLAIN) mir_free(PLAIN);
+		return;
 	} 
-	else { // mechanisms are not defined. We are already logged-in
+
+	// mechanisms are not defined.
+	if ( wasSaslPerformed ) { //We are already logged-in
 		int iqId = JabberSerialNext();
 		JabberIqAdd( iqId, IQ_PROC_NONE, JabberIqResultBind );
 		XmlNodeIq iq("set",iqId);
 		XmlNode* bind = iq.addChild( "bind" ); bind->addAttr( "xmlns", "urn:ietf:params:xml:ns:xmpp-bind" );
 		bind->addChild( "resource", info->resource );
 		JabberSend( info->s, iq );
-		if (isSessionAvailable) {
+
+		if ( isSessionAvailable ) {
 			XmlNodeIq iq("set");
-			XmlNode* sess = iq.addChild( "session" ); sess->addAttr ( "xmlns", "urn:ietf:params:xml:ns:xmpp-session" );
+			iq.addChild( "session" )->addAttr( "xmlns", "urn:ietf:params:xml:ns:xmpp-session" );
+			JabberSend( info->s, iq );		
+		}	
+		return;
+	}
+	
+	//mechanisms not available and we are not logged in
+	if ( isAuthAvailable ) {
+LBL_TryIqAuth:
+		if ( info->type == JABBER_SESSION_NORMAL ) {
+			int iqId = JabberSerialNext();
+			JabberIqAdd( iqId, IQ_PROC_NONE, JabberIqResultGetAuth );
+			XmlNodeIq iq( "get", iqId );
+			XmlNode* query = iq.addQuery( "jabber:iq:auth" );
+			query->addChild( "username", info->username );
 			JabberSend( info->s, iq );
+		}
+		else if ( info->type == JABBER_SESSION_REGISTER ) {
+			iqIdRegGetReg = JabberSerialNext();
+			XmlNodeIq iq("get",iqIdRegGetReg,info->server);
+			XmlNode* query = iq.addQuery("jabber:iq:register");
+			JabberSend(info->s,iq);
+			SendMessage( info->reg_hwndDlg, WM_JABBER_REGDLG_UPDATE, 50, ( LPARAM )TranslateT( "Requesting registration instruction..." ));
 }	}	}
 
 static void __cdecl JabberWaitAndReconnectThread( int unused )
