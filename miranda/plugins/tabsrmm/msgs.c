@@ -36,15 +36,9 @@ $Id$
 
 static char *relnotes[] = {
     "{\\rtf1\\ansi\\deff0\\pard\\li%u\\fi-%u\\ri%u\\tx%u}",
-    "\\par\t\\b\\ul1 Release notes for version 1.0.0.1\\b0\\ul0\\par ",
-	"*\tFixed a bug with re-attaching temporary (\"not-on-list\") contacts to a different container.\\par",
-	"*\tFixed problems with updater (\"Invalid response 301\") message.\\par",
-	"*\tFixed minor issues when using IEView (scolling, flickering).\\par",
-	"*\tFixed various problems with global splitter positioning.\\par",
-	"*\tSelecting an offline subcontact for sending will now only throw a warning instead of an error.\\par",
-	"*\tRemoved the feature to load a background image for the message input area. as it was causing too many troubles.\\par",
-	"*\tFixed problem with vertical maximize on multimonitor systems.\\par",
-	"*\tFixed freezing problems when clicking on typing notify popups.\\par",
+    "\\par\t\\b\\ul1 Release notes for version 1.0.0.2\\b0\\ul0\\par ",
+	"*\tFixed forgetting the tab nickname length limit.\\par",
+	"*\tFixed a few visual glitches in the option pages.\\par",
     NULL
 };
 
