@@ -90,5 +90,6 @@ int IcqAvatarFormatSupported(WPARAM wParam, LPARAM lParam);
 int IcqGetMyAvatar(WPARAM wParam, LPARAM lParam);
 int IcqSetMyAvatar(WPARAM wParam, LPARAM lParam);
 
+int IcqSetPassword(WPARAM wParam, LPARAM lParam);
 
 #endif /* __ICQOSC_SVCS_H */

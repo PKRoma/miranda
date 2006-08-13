@@ -58,6 +58,9 @@ Bugfixes:
   Fixed avatars were not working when server port set to 0
   Made message parser more strict (fixes bug allowing stealth invisible client detection)
   Fixed Popup's unicode support cannot be used in ANSI mode even if available
+  
+Improvements:
+  Added new session password API - allowing plugins like Secure Login to work better
 
 
 0.3.7
