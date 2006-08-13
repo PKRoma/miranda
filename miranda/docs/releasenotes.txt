@@ -38,7 +38,7 @@ Bugfixes:
 
 * New in 0.5.1
 Enhancements
- - 
+ - ICQ: Added new session password API - allowing plugins like Secure Login to work better
 
 Bugfixes:
  - db3x driver text was cut off in profile selector dialog
