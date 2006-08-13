@@ -4,7 +4,8 @@
 // 
 // Copyright © 2000,2001 Richard Hughes, Roland Rabien, Tristan Van de Vreede
 // Copyright © 2001,2002 Jon Keating, Richard Hughes
-// Copyright © 2002,2003,2004,2005 Martin Öberg, Sam Kothari, Robert Rainwater
+// Copyright © 2002,2003,2004 Martin  berg, Sam Kothari, Robert Rainwater
+// Copyright © 2004,2005,2006 Joe Kucera
 // 
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License
@@ -22,7 +23,7 @@
 //
 // -----------------------------------------------------------------------------
 //
-// File name      : $Source: /cvsroot/miranda/miranda/include/m_icq.h,v $
+// File name      : $Source: /cvsroot/miranda/miranda/protocols/IcqOscarJ/m_icq.h,v $
 // Revision       : $Revision$
 // Last change on : $Date$
 // Last change by : $Author$
@@ -50,9 +51,10 @@
 //Results are returned using the same scheme documented in PSS_BASICSEARCH
 //**DEPRECATED** in favour of PS_SEARCHBYEMAIL
 typedef struct {   //extended search result structure, used for all searches
-	PROTOSEARCHRESULT hdr;
-	DWORD uin;
-	BYTE auth;
+  PROTOSEARCHRESULT hdr;
+  DWORD uin;
+  BYTE auth;
+  char* uid;
 } ICQSEARCHRESULT;
 #define MS_ICQ_SEARCHBYEMAIL   "/SearchByEmail"
 
@@ -63,15 +65,27 @@ typedef struct {   //extended search result structure, used for all searches
 //Results are returned using the same scheme documented in PSS_BASICSEARCH
 //**DEPRECATED** in favour of PS_SEARCHBYNAME
 typedef struct {
-	char *nick;
-	char *firstName;
-	char *lastName;
+  char *nick;
+  char *firstName;
+  char *lastName;
 } ICQDETAILSSEARCH;
 #define MS_ICQ_SEARCHBYDETAILS   "/SearchByDetails"
 
 // Request authorization
 // wParam=(WPARAM)hContact
 #define MS_REQ_AUTH "/ReqAuth"
+
+// Grant authorization
+// wParam=(WPARAM)hContact;
+#define MS_GRANT_AUTH "/GrantAuth"
+
+// Revoke authorization
+// wParam=(WPARAM)hContact
+#define MS_REVOKE_AUTH "/RevokeAuth"
+
+// Display XStatus detail (internal use only)
+// wParam=(WPARAM)hContact;
+#define MS_XSTATUS_SHOWDETAILS "/ShowXStatusDetails"
 
 //Send an SMS via the ICQ network
 //wParam=(WPARAM)(const char*)szPhoneNumber
@@ -103,7 +117,7 @@ typedef struct {
 //an XML parser in the protocol module. Here's one I got:
 //"<sms_message><source>MTN</source><destination_UIN>[UIN of recipient, ie this account]</destination_UIN><sender>[sending phone number, without +]</sender><senders_network>[contains one space, because I sent from ICQ]</senders_network><text>[body of the message]</text><time>Fri, 16 Nov 2001 03:12:33 GMT</time></sms_message>"
 #define ICQACKTYPE_SMS      1001
-#define ICQEVENTTYPE_SMS    2001	  //database event type
+#define ICQEVENTTYPE_SMS    2001    //database event type
 #define MS_ICQ_SENDSMS      "/SendSMS" 
 
 //e-mail express
@@ -112,7 +126,7 @@ typedef struct {
 //ASCIIZ    text, usually of the form "Subject: %s\r\n%s"
 //ASCIIZ    from name
 //ASCIIZ    from e-mail
-#define ICQEVENTTYPE_EMAILEXPRESS 2002    //database event type
+#define ICQEVENTTYPE_EMAILEXPRESS 2002  //database event type
 
 //www pager
 //db event added to NULL contact
@@ -120,92 +134,48 @@ typedef struct {
 //ASCIIZ    text, usually "Sender IP: xxx.xxx.xxx.xxx\r\n%s"
 //ASCIIZ    from name
 //ASCIIZ    from e-mail
-#define ICQEVENTTYPE_WEBPAGER 2003    //database event type
+#define ICQEVENTTYPE_WEBPAGER   2003    //database event type
 
 //for server-side lists, used internally only
 //hProcess=dwSequence
 //lParam=server's error code, 0 for success
 #define ICQACKTYPE_SERVERCLIST  1003
 
-//Changing user info:
-//See documentation of PS_CHANGEINFO
-//The changing user info stuff built into the protocol is purposely extremely
-//thin, to the extent that your data is passed as-is to the server without
-//verification. Don't mess up.
-//Everything is byte-aligned
-//WORD:  2 bytes, little-endian (that's x86 order)
-//DWORD: 4 bytes, little-endian
-//LNTS:  a WORD containing the length of the string, followed by the string
-//       itself. No zero terminator.
-#define ICQCHANGEINFO_MAIN     0xEA03
-/* pInfoData points to:
-    WORD    datalen
-    LNTS    nick
-    LNTS    first
-    LNTS    last
-    LNTS    email
-    LNTS    city
-    LNTS    state
-    LNTS    phone
-    LNTS    fax
-    LNTS    street
-    LNTS    cellular (if SMS-able string contains an ending ' SMS')
-    LNTS    zip
-    WORD    country
-    BYTE    gmt
-    BYTE    unknown, usually 0
-*/
-#define ICQCHANGEINFO_MORE     0xFD03
-/* pInfoData points to:
-    WORD    datalen
-    BYTE    age
-    BYTE    0
-    BYTE    sex
-    LNTS    homepage
-    WORD    birth-year
-    BYTE    birth-month
-    BYTE    birth-day
-    BYTE    lang1
-    BYTE    lang2
-    BYTE    lang3
-*/
-#define ICQCHANGEINFO_ABOUT	   0x0604
-/* pInfoData points to:
-    WORD    datalen
-	LNTS    about
-*/
-#define ICQCHANGEINFO_WORK	   0xF303
-/* pInfoData points to:
-    WORD    datalen
-    LNTS    city
-    LNTS    state
-    DWORD   0
-    LNTS    street
-    LNTS    zip
-    WORD    country
-    LNTS    company-name
-    LNTS    company-dept
-    LNTS    company-position
-    WORD    0
-    LNTS    company-web
-*/
-#define ICQCHANGEINFO_PASSWORD 0x2E04
-/* pInfoData points to:
-    WORD    datalen
-	LNTS    newpassword
-*/
+//for rate warning distribution (mainly upload dlg)
+//hProcess=Rate class ID
+//lParam=server's status code
+#define ICQACKTYPE_RATEWARNING  1004
 
-#define ICQCHANGEINFO_SECURITY 0x2404
-/* pInfoData points to:
-    BYTE    AUTH     0x01 - don't require authorization
-                     0x00 - require authorization to add to contact list  
-    BYTE    WEBAWARE 0x01 - disallow seeing status on the web
-                     0x00 - be web aware  
-    BYTE    DIRECT   0x00 - allow direct connection with any user.
-                     0x01 - allow direct connection with users on the contact list.
-                     0x02 - allow direct connections only upon authorization.  
-    BYTE    KIND     User kind (unknown, use 0)
-*/
+//received Xtraz Notify response
+//hProcess=dwSequence
+//lParam=contents of RES node
+#define ICQACKTYPE_XTRAZNOTIFY_RESPONSE 1005
+
+//received Custom Status details response
+//hProcess=dwSequence
+//lParam=0
+#define ICQACKTYPE_XSTATUS_RESPONSE 1006
+
+
+//Update user details on server
+//Permited operation types:
+#define CIXT_BASIC      0x0001
+#define CIXT_MORE       0x0002
+#define CIXT_WORK       0x0004
+#define CIXT_CONTACT    0x0008
+#define CIXT_LOCATION   0x0010
+#define CIXT_BACKGROUND 0x0020
+#define CIXT_FULL       0x003F
+//wParam=operationType
+#define PS_CHANGEINFOEX "/ChangeInfoEx"
+
+//Change nickname in White pages
+//lParam=(LPARAM)(const char*)szNewNickName
+#define PS_SET_NICKNAME "/SetNickname"
+
+//Set password for current session
+//lParam=(LPARAM)(const char*)szPassword
+#define PS_ICQ_SETPASSWORD "/SetPassword"
 
 //miranda/icqoscar/statusmsgreq event
 //called when our status message is requested
@@ -213,7 +183,116 @@ typedef struct {
 //lParam=(DWORD)uin
 //msgType is one of the ICQ_MSGTYPE_GET###MSG constants in icq_constants.h
 //uin is the UIN of the contact requesting our status message
-#define ME_ICQ_STATUSMSGREQ			"/StatusMsgReq"
+#define ME_ICQ_STATUSMSGREQ      "/StatusMsgReq"
+
+
+//set owner avatar
+//wParam=0
+//lParam=(const char *)Avatar file name
+//return=0 for success
+#define PS_ICQ_SETMYAVATAR "/SetMyAvatar"
+
+//get current owner avatar
+//wParam=(char *)Buffer to file name
+//lParam=(int)Buffer size
+//return=0 for success
+#define PS_ICQ_GETMYAVATAR "/GetMyAvatar"
+
+//get size limit for avatar image
+//wParam=(int *)max width of avatar - will be set
+//lParam=(int *)max height of avatar - will be set
+//return=0 for success
+#define PS_ICQ_GETMYAVATARMAXSIZE "/GetMyAvatarMaxSize"
+
+//check if image format supported for avatars
+//wParam = 0
+//lParam = PA_FORMAT_*   // avatar format
+//return = 1 (supported) or 0 (not supported)
+#define PS_ICQ_ISAVATARFORMATSUPPORTED "/IsAvatarFormatSupported"
+
+
+/* Custom Status helper API *
+ - to set custom status message & title use PS_ICQ_GETCUSTOMSTATUS to obtain
+   DB settings and write values to them (UTF-8 strings best). (obsolete)
+ - use PS_ICQ_GETCUSTOMSTATUSEX and PS_ICQ_SETCUSTOMSTATUSEX for controling Custom Status
+ - custom messages for each user supported - ME_ICQ_STATUSMSGREQ with type MTYPE_SCRIPT_NOTIFY
+ */
+#define CSSF_MASK_STATUS    0x0001  // status member valid for set/get
+#define CSSF_MASK_NAME      0x0002  // pszName member valid for set/get
+#define CSSF_MASK_MESSAGE   0x0004  // pszMessage member valid for set/get
+#define CSSF_DISABLE_UI     0x0040  // disable default custom status UI, wParam = bEnable
+#define CSSF_DEFAULT_NAME   0x0080  // only with CSSF_MASK_NAME and get API to get default custom status name (wParam = status)
+#define CSSF_STATUSES_COUNT 0x0100  // returns number of custom statuses in wParam, only get API
+#define CSSF_STR_SIZES      0x0200  // returns sizes of custom status name & message (wParam & lParam members) in chars
+#define CSSF_UNICODE        0x1000  // strings are in UCS-2
+
+#if defined(_UNICODE)
+  #define CSSF_TCHAR  CSSF_UNICODE
+#else
+  #define CSSF_TCHAR  0
+#endif
+
+
+typedef struct {
+  int cbSize;         // size of the structure
+  int flags;          // combination of CSSF_*
+  int *status;        // custom status id
+  union {
+    char *pszName;    // buffer for custom status name
+    TCHAR *ptszName;
+    WCHAR *pwszName;
+  };
+  union {
+    char *pszMessage; // buffer for custom status message
+    TCHAR *ptszMessage;
+    WCHAR *pwszMessage;
+  };
+  WPARAM *wParam;     // extra params, see flags
+  LPARAM *lParam;
+} ICQ_CUSTOM_STATUS;
+
+
+// Sets owner current custom status (obsolete)
+//wParam = (int)N   // custom status id (1-32)
+//lParam = 0         
+//return = N (id of status set) or 0 (failed - probably bad params)
+#define PS_ICQ_SETCUSTOMSTATUS "/SetXStatus"
+
+// Sets owner current custom status
+//wParam = 0                          // reserved
+//lParam = (ICQ_CUSTOM_STATUS*)pData  // contains what to set and new values
+//return = 0 (for success)
+#define PS_ICQ_SETCUSTOMSTATUSEX "/SetXStatusEx"
+
+// Retrieves custom status details for specified hContact
+//wParam = (HANDLE)hContact
+//lParam = (ICQ_CUSTOM_STATUS*)pData  // receives details (members must be prepared)
+//return = 0 (for success)
+#define PS_ICQ_GETCUSTOMSTATUSEX "/GetXStatusEx"
+
+// Retrieves specified custom status icon
+//wParam = (int)N  // custom status id (1-32), 0 = my current custom status
+//lParam = 0
+//return = HICON   // custom status icon (use DestroyIcon to release resources)
+#define PS_ICQ_GETCUSTOMSTATUSICON "/GetXStatusIcon"
+
+// Get Custom status DB field names & current owner custom status (obsolete)
+//wParam = (char**)szDBTitle // will receive title DB setting name (do not free)
+//lParam = (char**)szDBMsg   // will receive message DB setting name
+//return = N  // current custom status id if successful, 0 otherwise
+#define PS_ICQ_GETCUSTOMSTATUS "/GetXStatus"
+
+// Request Custom status details (messages) for specified contact
+//wParam = hContact  // request custom status details for this contact
+//lParam = 0  
+//return = (int)dwSequence   // if successful it is sequence for ICQACKTYPE_XSTATUS_RESPONSE
+                             // 0 failed to request (e.g. auto-request enabled)
+                             // -1 delayed (rate control) - sequence unknown
+#define PS_ICQ_REQUESTCUSTOMSTATUS "/RequestXStatusDetails"
+
+// Called when contact changes custom status and extra icon is set to clist_mw
+//wParam = hContact    // contact changing status
+//lParam = hIcon       // HANDLE to clist extra icon set as custom status
+#define ME_ICQ_CUSTOMSTATUS_EXTRAICON_CHANGED "/XStatusExtraIconChanged"
 
 #endif // M_ICQ_H__
-
