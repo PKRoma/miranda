@@ -61,7 +61,7 @@ PLUGININFO pluginInfo={
 		"Yahoo Protocol support via libyahoo2 library.",
 #endif		
 		"Gennady Feldman, Laurent Marechal",
-		"gena01@gmail.com",
+		"gena01@miranda-im.org",
 		"© 2003-2006 G.Feldman",
 		"http://www.miranda-im.org/download/details.php?action=viewfile&id=1248",
 		0, //not transient
