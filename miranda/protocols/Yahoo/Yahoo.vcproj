@@ -162,9 +162,6 @@
 				RelativePath=".\services.c">
 			</File>
 			<File
-				RelativePath=".\utf8.c">
-			</File>
-			<File
 				RelativePath=".\util.c">
 			</File>
 			<File

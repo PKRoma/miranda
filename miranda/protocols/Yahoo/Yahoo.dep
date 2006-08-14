@@ -82,6 +82,7 @@
 	"..\..\include\m_netlib.h"\
 	"..\..\include\m_options.h"\
 	"..\..\include\m_plugins.h"\
+	"..\..\include\m_png.h"\
 	"..\..\include\m_protocols.h"\
 	"..\..\include\m_protomod.h"\
 	"..\..\include\m_skin.h"\
@@ -233,10 +234,6 @@
 	".\yahoo.h"\
 	
 
-.\utf8.c : \
-	".\utf8.h"\
-	
-
 .\util.c : \
 	"..\..\include\m_clist.h"\
 	"..\..\include\m_database.h"\
@@ -272,6 +269,7 @@
 	"..\..\include\m_message.h"\
 	"..\..\include\m_netlib.h"\
 	"..\..\include\m_plugins.h"\
+	"..\..\include\m_png.h"\
 	"..\..\include\m_popup.h"\
 	"..\..\include\m_protocols.h"\
 	"..\..\include\m_protomod.h"\
@@ -288,14 +286,12 @@
 	".\libyahoo2\yahoo_list.h"\
 	".\libyahoo2\yahoo_util.h"\
 	".\pthread.h"\
-	".\utf8.h"\
 	".\yahoo.h"\
 	
 
 .\Yahoo.rc : \
-	".\icos\inbox.ico"\
-	".\icos\yahoo.ico"\
-	".\resource.h"\
-	".\version.h"\
-	".\version.rc"\
+	".\icos\calendar.ico"\
+	".\icos\profile.ico"\
+	".\icos\refresh.ico"\
+	".\icos\set_status.ico"\
 	
