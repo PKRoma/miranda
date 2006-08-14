@@ -676,8 +676,7 @@ int NetlibHttpTransaction(WPARAM wParam,LPARAM lParam)
 			return (int)(HANDLE)NULL;
 	}	}
 
-	if (nlhr->requestType != REQUEST_HEAD)
-	{
+	if (nlhr->requestType != REQUEST_HEAD){
 		int recvResult;
 		int dataBufferAlloced=0;
 

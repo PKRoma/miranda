@@ -160,6 +160,8 @@ CLEAN :
 	-@erase "$(INTDIR)\netlibpktrecver.sbr"
 	-@erase "$(INTDIR)\netlibsock.obj"
 	-@erase "$(INTDIR)\netlibsock.sbr"
+	-@erase "$(INTDIR)\netlibupnp.obj"
+	-@erase "$(INTDIR)\netlibupnp.sbr"
 	-@erase "$(INTDIR)\newplugins.obj"
 	-@erase "$(INTDIR)\newplugins.sbr"
 	-@erase "$(INTDIR)\openurl.obj"
@@ -288,6 +290,7 @@ BSC32_SBRS= \
 	"$(INTDIR)\netlibopts.sbr" \
 	"$(INTDIR)\netlibpktrecver.sbr" \
 	"$(INTDIR)\netlibsock.sbr" \
+	"$(INTDIR)\netlibupnp.sbr" \
 	"$(INTDIR)\options.sbr" \
 	"$(INTDIR)\newplugins.sbr" \
 	"$(INTDIR)\protochains.sbr" \
@@ -380,6 +383,7 @@ LINK32_OBJS= \
 	"$(INTDIR)\netlibopts.obj" \
 	"$(INTDIR)\netlibpktrecver.obj" \
 	"$(INTDIR)\netlibsock.obj" \
+	"$(INTDIR)\netlibupnp.obj" \
 	"$(INTDIR)\options.obj" \
 	"$(INTDIR)\newplugins.obj" \
 	"$(INTDIR)\protochains.obj" \
@@ -572,6 +576,8 @@ CLEAN :
 	-@erase "$(INTDIR)\netlibpktrecver.sbr"
 	-@erase "$(INTDIR)\netlibsock.obj"
 	-@erase "$(INTDIR)\netlibsock.sbr"
+	-@erase "$(INTDIR)\netlibupnp.obj"
+	-@erase "$(INTDIR)\netlibupnp.sbr"
 	-@erase "$(INTDIR)\newplugins.obj"
 	-@erase "$(INTDIR)\newplugins.sbr"
 	-@erase "$(INTDIR)\openurl.obj"
@@ -701,6 +707,7 @@ BSC32_SBRS= \
 	"$(INTDIR)\netlibopts.sbr" \
 	"$(INTDIR)\netlibpktrecver.sbr" \
 	"$(INTDIR)\netlibsock.sbr" \
+	"$(INTDIR)\netlibupnp.sbr" \
 	"$(INTDIR)\options.sbr" \
 	"$(INTDIR)\newplugins.sbr" \
 	"$(INTDIR)\protochains.sbr" \
@@ -760,7 +767,7 @@ BSC32_SBRS= \
 <<
 
 LINK32=link.exe
-LINK32_FLAGS=ws2_32.lib kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib comctl32.lib winmm.lib version.lib /nologo /subsystem:windows /incremental:yes /pdb:"$(OUTDIR)\miranda32.pdb" /map:"$(INTDIR)\miranda32.map" /debug /machine:I386 /out:"../bin/debug/miranda32.exe"
+LINK32_FLAGS=wsock32.lib kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib comctl32.lib winmm.lib version.lib /nologo /subsystem:windows /incremental:yes /pdb:"$(OUTDIR)\miranda32.pdb" /map:"$(INTDIR)\miranda32.map" /debug /machine:I386 /out:"../bin/debug/miranda32.exe"
 LINK32_OBJS= \
 	"$(INTDIR)\commonheaders.obj" \
 	"$(INTDIR)\memory.obj" \
@@ -793,6 +800,7 @@ LINK32_OBJS= \
 	"$(INTDIR)\netlibopts.obj" \
 	"$(INTDIR)\netlibpktrecver.obj" \
 	"$(INTDIR)\netlibsock.obj" \
+	"$(INTDIR)\netlibupnp.obj" \
 	"$(INTDIR)\options.obj" \
 	"$(INTDIR)\newplugins.obj" \
 	"$(INTDIR)\protochains.obj" \
@@ -922,6 +930,7 @@ CLEAN :
 	-@erase "$(INTDIR)\netlibopts.obj"
 	-@erase "$(INTDIR)\netlibpktrecver.obj"
 	-@erase "$(INTDIR)\netlibsock.obj"
+	-@erase "$(INTDIR)\netlibupnp.obj"
 	-@erase "$(INTDIR)\newplugins.obj"
 	-@erase "$(INTDIR)\openurl.obj"
 	-@erase "$(INTDIR)\options.obj"
@@ -1030,6 +1039,7 @@ LINK32_OBJS= \
 	"$(INTDIR)\netlibopts.obj" \
 	"$(INTDIR)\netlibpktrecver.obj" \
 	"$(INTDIR)\netlibsock.obj" \
+	"$(INTDIR)\netlibupnp.obj" \
 	"$(INTDIR)\options.obj" \
 	"$(INTDIR)\newplugins.obj" \
 	"$(INTDIR)\protochains.obj" \
@@ -1222,6 +1232,8 @@ CLEAN :
 	-@erase "$(INTDIR)\netlibpktrecver.sbr"
 	-@erase "$(INTDIR)\netlibsock.obj"
 	-@erase "$(INTDIR)\netlibsock.sbr"
+	-@erase "$(INTDIR)\netlibupnp.obj"
+	-@erase "$(INTDIR)\netlibupnp.sbr"
 	-@erase "$(INTDIR)\newplugins.obj"
 	-@erase "$(INTDIR)\newplugins.sbr"
 	-@erase "$(INTDIR)\openurl.obj"
@@ -1351,6 +1363,7 @@ BSC32_SBRS= \
 	"$(INTDIR)\netlibopts.sbr" \
 	"$(INTDIR)\netlibpktrecver.sbr" \
 	"$(INTDIR)\netlibsock.sbr" \
+	"$(INTDIR)\netlibupnp.sbr" \
 	"$(INTDIR)\options.sbr" \
 	"$(INTDIR)\newplugins.sbr" \
 	"$(INTDIR)\protochains.sbr" \
@@ -1410,7 +1423,7 @@ BSC32_SBRS= \
 <<
 
 LINK32=link.exe
-LINK32_FLAGS=ws2_32.lib kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib comctl32.lib winmm.lib version.lib /nologo /subsystem:windows /incremental:yes /pdb:"$(OUTDIR)\miranda32.pdb" /map:"$(INTDIR)\miranda32.map" /debug /machine:I386 /out:"../bin/Debug Unicode/miranda32.exe"
+LINK32_FLAGS=wsock32.lib kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib comctl32.lib winmm.lib version.lib /nologo /subsystem:windows /incremental:yes /pdb:"$(OUTDIR)\miranda32.pdb" /map:"$(INTDIR)\miranda32.map" /debug /machine:I386 /out:"../bin/Debug Unicode/miranda32.exe"
 LINK32_OBJS= \
 	"$(INTDIR)\commonheaders.obj" \
 	"$(INTDIR)\memory.obj" \
@@ -1443,6 +1456,7 @@ LINK32_OBJS= \
 	"$(INTDIR)\netlibopts.obj" \
 	"$(INTDIR)\netlibpktrecver.obj" \
 	"$(INTDIR)\netlibsock.obj" \
+	"$(INTDIR)\netlibupnp.obj" \
 	"$(INTDIR)\options.obj" \
 	"$(INTDIR)\newplugins.obj" \
 	"$(INTDIR)\protochains.obj" \
@@ -2562,6 +2576,38 @@ SOURCE=.\modules\netlib\netlibsock.c
 
 
 "$(INTDIR)\netlibsock.obj"	"$(INTDIR)\netlibsock.sbr" : $(SOURCE) "$(INTDIR)" "$(INTDIR)\miranda32.pch"
+	$(CPP) $(CPP_PROJ) $(SOURCE)
+
+
+!ENDIF
+
+SOURCE=.\modules\netlib\netlibupnp.c
+
+!IF  "$(CFG)" == "miranda32 - Win32 Release"
+
+
+"$(INTDIR)\netlibupnp.obj"	"$(INTDIR)\netlibupnp.sbr" : $(SOURCE) "$(INTDIR)" "$(INTDIR)\miranda32.pch"
+	$(CPP) $(CPP_PROJ) $(SOURCE)
+
+
+!ELSEIF  "$(CFG)" == "miranda32 - Win32 Debug"
+
+
+"$(INTDIR)\netlibupnp.obj"	"$(INTDIR)\netlibupnp.sbr" : $(SOURCE) "$(INTDIR)" "$(INTDIR)\miranda32.pch"
+	$(CPP) $(CPP_PROJ) $(SOURCE)
+
+
+!ELSEIF  "$(CFG)" == "miranda32 - Win32 Release Unicode"
+
+
+"$(INTDIR)\netlibupnp.obj" : $(SOURCE) "$(INTDIR)" "$(INTDIR)\miranda32.pch"
+	$(CPP) $(CPP_PROJ) $(SOURCE)
+
+
+!ELSEIF  "$(CFG)" == "miranda32 - Win32 Debug Unicode"
+
+
+"$(INTDIR)\netlibupnp.obj"	"$(INTDIR)\netlibupnp.sbr" : $(SOURCE) "$(INTDIR)" "$(INTDIR)\miranda32.pch"
 	$(CPP) $(CPP_PROJ) $(SOURCE)
 
 

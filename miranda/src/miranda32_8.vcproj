@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="windows-1251"?>
 <VisualStudioProject
 	ProjectType="Visual C++"
-	Version="8,00"
+	Version="8.00"
 	Name="miranda32"
 	ProjectGUID="{F9916510-9055-4C9F-997A-3755DEC1511B}"
 	RootNamespace="miranda32"
@@ -181,7 +181,7 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalDependencies="ws2_32.lib odbc32.lib odbccp32.lib comctl32.lib winmm.lib version.lib"
+				AdditionalDependencies="wsock32.lib odbc32.lib odbccp32.lib comctl32.lib winmm.lib version.lib"
 				SuppressStartupBanner="true"
 				GenerateDebugInformation="true"
 				SubSystem="2"
@@ -378,7 +378,7 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalDependencies="ws2_32.lib odbc32.lib odbccp32.lib comctl32.lib winmm.lib version.lib"
+				AdditionalDependencies="wsock32.lib odbc32.lib odbccp32.lib comctl32.lib winmm.lib version.lib"
 				SuppressStartupBanner="true"
 				GenerateDebugInformation="true"
 				SubSystem="2"
@@ -1977,6 +1977,10 @@
 							BrowseInformation="1"
 						/>
 					</FileConfiguration>
+				</File>
+				<File
+					RelativePath=".\modules\netlib\netlibupnp.c"
+					>
 				</File>
 			</Filter>
 			<Filter

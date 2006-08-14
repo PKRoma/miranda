@@ -70,6 +70,7 @@ struct NetlibBoundPort {
 	int handleType;
 	SOCKET s;
 	WORD wPort;
+	WORD wExPort;
 	struct NetlibUser *nlu;
 	NETLIBNEWCONNECTIONPROC_V2 pfnNewConnectionV2;
 	HANDLE hThread;
@@ -139,6 +140,11 @@ int NetlibSend(WPARAM wParam,LPARAM lParam);
 int NetlibRecv(WPARAM wParam,LPARAM lParam);
 int NetlibSelect(WPARAM wParam,LPARAM lParam);
 int NetlibSelectEx(WPARAM wParam,LPARAM lParam);
+
+//netlibupnp.c
+BOOL NetlibUPnPAddPortMapping(WORD intport, char *proto, 
+							  WORD *extport, DWORD *extip, BOOL search);
+void NetlibUPnPDeletePortMapping(WORD extport, char* proto);
 
 static __inline int NLSend(struct NetlibConnection *nlc,const char *buf,int len,int flags) {
 	NETLIBBUFFER nlb={(char*)buf,len,flags};

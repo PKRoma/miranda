@@ -243,6 +243,7 @@ __inline static int Netlib_CloseHandle(HANDLE h) {return CallService(MS_NETLIB_C
 it shouldnt matter */
 
 #define NETLIBBIND_SIZEOF_V1 16 // sizeof(NETLIBBIND) prior to 0.3.4+ (2004/08/05)
+#define NETLIBBIND_SIZEOF_V2 20 // sizeof(NETLIBBIND) prior to 0.6+ (2006/07/03)
 
 typedef void (*NETLIBNEWCONNECTIONPROC_V2)(HANDLE hNewConnection,DWORD dwRemoteIP, void * pExtra);
 typedef void (*NETLIBNEWCONNECTIONPROC)(HANDLE hNewConnection,DWORD dwRemoteIP);
@@ -272,6 +273,8 @@ typedef struct {
 	DWORD dwInternalIP;   //set on return, host byte order
 	WORD wPort;			  //set on return, host byte order
 	void * pExtra;		  //argument is sent to callback, added during 0.3.4+
+	DWORD dwExternalIP;   //set on return, host byte order
+	WORD wExPort;		  //set on return, host byte order
 } NETLIBBIND;
 #define MS_NETLIB_BINDPORT     "Netlib/BindPort"
 
