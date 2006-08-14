@@ -88,7 +88,7 @@ rem ---------------------------------------------------------------------------
 
 cd "..\..\bin\Release Unicode"
 copy ..\release\dbtool.exe
-copy ..\release\Plugins\AimOSCAR.dll Plugins
+copy ..\release\Plugins\aim.dll      Plugins
 copy ..\release\Plugins\dbx_3x.dll   Plugins
 copy ..\release\Plugins\ICQ.dll      Plugins
 copy ..\release\Plugins\import.dll   Plugins
@@ -194,7 +194,7 @@ md %Temp%\pdbw\plugins
 copy ..\..\src\Release_Unicode\miranda32.pdb                   %Temp%\pdbw
 copy ..\..\..\miranda-tools\dbtool\Release\dbtool.pdb          %Temp%\pdbw
 rem  Protocols
-copy ..\..\protocols\AimOscar\Release\AimOSCAR.pdb             %Temp%\pdbw\plugins
+copy ..\..\protocols\AimOscar\Release\Aim.pdb                  %Temp%\pdbw\plugins
 copy ..\..\protocols\IcqOscarJ\Release\ICQ.pdb                 %Temp%\pdbw\plugins
 copy ..\..\protocols\IRC\Release\IRC.pdb                       %Temp%\pdbw\plugins
 copy ..\..\protocols\JabberG\Release_Unicode\jabber.pdb        %Temp%\pdbw\plugins
