@@ -543,6 +543,7 @@ static void OpenOptionsNow(const char *pszGroup,const char *pszPage)
 	OPENOPTIONSDIALOG ood;
 
 	if(IsWindow(hwndOptions)) {
+		ShowWindow(hwndOptions,SW_RESTORE);
 		SetForegroundWindow(hwndOptions);
 		return;
 	}
