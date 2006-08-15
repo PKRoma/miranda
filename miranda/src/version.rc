@@ -26,7 +26,7 @@ BEGIN
             VALUE "FileDescription", "Miranda IM\0"                           
             VALUE "FileVersion", "0.6 alpha build #1\0"                    
             VALUE "InternalName", "miranda32\0"                               
-            VALUE "LegalCopyright", "Copyright © 2000-2005 Richard Hughes, Roland Rabien, Tristan Van de Vreede, Martin Öberg, Robert Rainwater, Sam Kothari and Lyon Lim\0" 
+            VALUE "LegalCopyright", "Copyright © 2000-2006 Miranda IM Project\0" 
             VALUE "LegalTrademarks", "\0"                                     
             VALUE "OriginalFilename", "miranda32.exe\0"                       
             VALUE "PrivateBuild", "\0"                                        
