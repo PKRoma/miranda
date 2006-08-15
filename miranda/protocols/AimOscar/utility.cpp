@@ -2,6 +2,7 @@
 #include "utility.h"
 void broadcast_status(int status)
 {
+	LOG("Broadcast Status: %d",status);
 	int old_status=conn.status;
 	conn.status=status;
 	if(conn.status==ID_STATUS_OFFLINE)
@@ -26,6 +27,7 @@ void broadcast_status(int status)
 		conn.idle=0;
 		conn.instantidle=0;
 		conn.checking_mail=0;
+		conn.list_received=0;
 		conn.state=0;
 	}
 	ProtoBroadcastAck(AIM_PROTOCOL_NAME, NULL, ACKTYPE_STATUS, ACKRESULT_SUCCESS, (HANDLE)old_status, status);	

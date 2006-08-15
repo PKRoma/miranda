@@ -411,13 +411,13 @@ void snac_user_online(SNAC &snac)//family 0x0003
 				caps_included=1;
 				bool f002=0, f003=0, f004=0, f005=0, f007=0, f008=0, 
 					O101=0, O102=0, O103=0, O104=0, O105=0, O107=0, O1ff=0, 
-					l341=0, l343=0, l345=0, l346=0, l347=0, l348=0, l34b=0, l34e=0,
-					utf8=0;//O actually means 0 in this case
+					l341=0, l343=0, l345=0, l346=0, l347=0, l348=0, l34b=0, l34e=0;
+					//utf8=0;//O actually means 0 in this case
 				for(int i=0;i<tlv.len();i=i+2)
 				{
 					unsigned short cap=tlv.ushort(i);
-					if(cap==0x134E)
-						utf8=1;
+					//if(cap==0x134E)
+					//	utf8=1;
 					if(cap==0xf002)
 						f002=1;
 					if(cap==0xf003)
@@ -490,10 +490,10 @@ void snac_user_online(SNAC &snac)//family 0x0003
 					strlcpy(client,CLIENT_AIM_TRITON,100);
 				else if(l346&&tlv.len()==2)
 					strlcpy(client,CLIENT_MEEBO,100);
-				if(utf8)
-					DBWriteContactSettingByte(hContact, AIM_PROTOCOL_NAME, AIM_KEY_US, 1);
-				else
-					DBWriteContactSettingByte(hContact, AIM_PROTOCOL_NAME, AIM_KEY_US, 0);
+				//if(utf8)
+				//	DBWriteContactSettingByte(hContact, AIM_PROTOCOL_NAME, AIM_KEY_US, 1);
+				//else
+				//	DBWriteContactSettingByte(hContact, AIM_PROTOCOL_NAME, AIM_KEY_US, 0);
 			}
 			else if(tlv.cmp(0x0004))//idle tlv
 			{
@@ -606,6 +606,7 @@ void snac_contact_list(SNAC &snac,HANDLE hServerConn,unsigned short &seqno)//fam
 {
 	if(snac.subcmp(0x0006))
 	{
+		LOG("Contact List Received");
 		for(int offset=3;offset<snac.len()-4;)//last four bytes are time change
 		{//note: +8 if we want to account for the contact list version info that aol sends after you send client ready
 			//however we don't because we aren't sending that until after we get our contact list;-) hack baby
@@ -673,11 +674,16 @@ void snac_contact_list(SNAC &snac,HANDLE hServerConn,unsigned short &seqno)//fam
 			delete[] name;
 		}
 		add_contacts_to_groups();//woo
-		aim_client_ready(hServerConn,seqno);
-		if(DBGetContactSettingByte(NULL, AIM_PROTOCOL_NAME, AIM_KEY_CM, 0))
-			aim_new_service_request(hServerConn,seqno,0x0018);
-		aim_activate_list(hServerConn,seqno);
-		conn.state=1;
+		if(!conn.list_received)//because they can send us multiple buddy list packets
+		{//only want one finished connection
+			conn.list_received=1;
+			aim_client_ready(hServerConn,seqno);
+			if(DBGetContactSettingByte(NULL, AIM_PROTOCOL_NAME, AIM_KEY_CM, 0))
+				aim_new_service_request(hServerConn,seqno,0x0018);
+			aim_activate_list(hServerConn,seqno);
+			LOG("Connection Negotiation Finished");
+			conn.state=1;
+		}
 	}
 }
 void snac_message_accepted(SNAC &snac)//family 0x004

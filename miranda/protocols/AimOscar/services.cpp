@@ -121,7 +121,7 @@ static int SendMsg(WPARAM /*wParam*/, LPARAM lParam)
 	}
 	return 0;
 }
-static int SendMsgW(WPARAM wParam, LPARAM lParam)
+static int SendMsgW(WPARAM /*wParam*/, LPARAM lParam)
 {
 	CCSDATA *ccs = (CCSDATA *)lParam;
 	DBVARIANT dbv;
@@ -131,39 +131,39 @@ static int SendMsgW(WPARAM wParam, LPARAM lParam)
 		{
 			ForkThread(msg_ack_success,ccs->hContact);
 		}
-		if(DBGetContactSettingByte(ccs->hContact, AIM_PROTOCOL_NAME, AIM_KEY_US, 0))
+		//if(DBGetContactSettingByte(ccs->hContact, AIM_PROTOCOL_NAME, AIM_KEY_US, 0))
+		//{
+		wchar_t* msg=wcsldup((wchar_t*)((char*)ccs->lParam+lstrlen((char*)ccs->lParam)+1),wcslen((wchar_t*)((char*)ccs->lParam+lstrlen((char*)ccs->lParam)+1)));
+		wchar_t* smsg=strip_carrots(msg);
+		delete[] msg;
+		if(DBGetContactSettingByte(NULL, AIM_PROTOCOL_NAME, AIM_KEY_FO, 0))
 		{
-			wchar_t* msg=wcsldup((wchar_t*)((char*)ccs->lParam+lstrlen((char*)ccs->lParam)+1),wcslen((wchar_t*)((char*)ccs->lParam+lstrlen((char*)ccs->lParam)+1)));
-			wchar_t* smsg=strip_carrots(msg);
-			delete[] msg;
-			if(DBGetContactSettingByte(NULL, AIM_PROTOCOL_NAME, AIM_KEY_FO, 0))
+			wchar_t* html_msg=bbcodes_to_html(smsg);
+			delete[] smsg;
+			if(aim_send_unicode_message(conn.hServerConn,conn.seqno,dbv.pszVal,html_msg))
 			{
-				wchar_t* html_msg=bbcodes_to_html(smsg);
-				delete[] smsg;
-				if(aim_send_unicode_message(conn.hServerConn,conn.seqno,dbv.pszVal,html_msg))
-				{
-					delete[] html_msg;
-					DBFreeVariant(&dbv);
-					return 1;
-				}
 				delete[] html_msg;
+				DBFreeVariant(&dbv);
+				return 1;
 			}
-			else
-			{
-				if(aim_send_unicode_message(conn.hServerConn,conn.seqno,dbv.pszVal,smsg))
-				{
-					delete[] smsg;
-					DBFreeVariant(&dbv);
-					return 1;
-				}
-				delete[] smsg;
-			}
+			delete[] html_msg;
 		}
 		else
 		{
-			DBFreeVariant(&dbv);
-			return SendMsg(wParam,lParam);
+			if(aim_send_unicode_message(conn.hServerConn,conn.seqno,dbv.pszVal,smsg))
+			{
+				delete[] smsg;
+				DBFreeVariant(&dbv);
+				return 1;
+			}
+			delete[] smsg;
 		}
+		//}
+		//else
+		//{
+		//	DBFreeVariant(&dbv);
+		//	return SendMsg(wParam,lParam);
+		//}
 		DBFreeVariant(&dbv);
 	}
 	return 0;

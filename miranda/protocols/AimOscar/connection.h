@@ -12,6 +12,7 @@ extern CRITICAL_SECTION modeMsgsMutex;
 extern CRITICAL_SECTION statusMutex;
 extern CRITICAL_SECTION connectionMutex;
 extern CRITICAL_SECTION SendingMutex;
+int LOG(const char *fmt, ...);
 HANDLE aim_connect(char* server);
 HANDLE aim_peer_connect(char* ip,unsigned short port);
 void aim_connection_authorization();
