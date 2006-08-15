@@ -423,7 +423,7 @@ typedef struct {
 #define REQUEST_GET      1
 #define REQUEST_POST     2
 #define REQUEST_CONNECT  3
-#define REQUEST_HEAD  	 4	// new in 0.6
+#define REQUEST_HEAD  	 4	// new in 0.5.1
 #define NLHRF_GENERATEHOST    0x00000001   //auto-generate a "Host" header from szUrl
 #define NLHRF_REMOVEHOST      0x00000002   //remove any host and/or protocol portion of szUrl before sending it
 #define NLHRF_SMARTREMOVEHOST 0x00000004   //removes host and/or protocol from szUrl unless the connection was opened through an HTTP or HTTPS proxy.
