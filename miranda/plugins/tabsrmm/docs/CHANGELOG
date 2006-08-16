@@ -20,6 +20,11 @@ Version 1.0.0.2 - 2006/08/20
 	! fixed a few visual glitches in the option pages (static edges on tree views
 	  etc.)
 	! fixed forgetting the tab nickname length limit.
+	* the message input box is now only switched to auto bidirectional mode when a
+	  valid RTL keyboard layout is installed on the system. This re-enables the 
+	  ability to switch keyboard layouts with the right shift/ctrl keyboard shortcut
+	  without changing text direction. If a RTL keyboard layout is installed, the old
+	  behaviour is preserved (right ctrl/shift will change to RTL).
 
 Version 1.0.0.1 - 2006/08/09
 

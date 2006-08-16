@@ -428,6 +428,7 @@ struct MessageWindowData {
 	BOOL	fIsReattach;
 	WPARAM  wParam;
 	LPARAM  lParam;
+    int     iHaveRTLLang;
 };
 
 typedef struct _recentinfo {

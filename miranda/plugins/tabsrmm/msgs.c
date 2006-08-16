@@ -39,6 +39,7 @@ static char *relnotes[] = {
     "\\par\t\\b\\ul1 Release notes for version 1.0.0.2\\b0\\ul0\\par ",
 	"*\tFixed forgetting the tab nickname length limit.\\par",
 	"*\tFixed a few visual glitches in the option pages.\\par",
+	"*\tAuto-bidi mode for the message editor is now only enabled when a valid RTL language is installed on the system.\\par",
     NULL
 };
 
