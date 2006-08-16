@@ -428,6 +428,7 @@ struct MessageWindowData {
     BOOL    fIsReattach;
     WPARAM  wParam;          // used for "delayed" actions like moved splitters in minimized windows
     LPARAM  lParam;
+    int     iHaveRTLLang;
 };
 
 typedef struct _recentinfo {

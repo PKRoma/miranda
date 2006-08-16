@@ -626,6 +626,16 @@ static LRESULT CALLBACK MessageLogSubclassProc(HWND hwnd, UINT msg, WPARAM wPara
 	struct MessageWindowData *mwdat = (struct MessageWindowData *)GetWindowLong(GetParent(hwnd), GWL_USERDATA);
 
     switch(msg) {
+        case WM_KILLFOCUS:
+            {
+                CHARRANGE cr;
+                SendMessage(hwnd, EM_EXGETSEL, 0, (LPARAM)&cr);
+                if(cr.cpMax != cr.cpMin) {
+                    cr.cpMin = cr.cpMax;
+                    SendMessage(hwnd, EM_EXSETSEL, 0, (LPARAM)&cr);
+                }
+                break;
+            }
         case WM_CHAR:
             if(wParam == 0x03 && (GetKeyState(VK_CONTROL) & 0x8000))
                 return SendMessage(hwnd, WM_COPY, 0, 0);
@@ -2191,7 +2201,8 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
 
                     pf2.wEffects = PFE_RTLPARA;// dat->dwFlags & MWF_LOG_RTL ? PFE_RTLPARA : 0;
                     pf2.dwMask = PFM_RTLPARA;
-                    SendDlgItemMessage(hwndDlg, IDC_MESSAGE, EM_SETPARAFORMAT, 0, (LPARAM)&pf2);
+                    if(FindRTLLocale(dat))
+                        SendDlgItemMessage(hwndDlg, IDC_MESSAGE, EM_SETPARAFORMAT, 0, (LPARAM)&pf2);
                     if(!(dat->dwFlags & MWF_LOG_RTL)) {
                         pf2.wEffects = 0;
                         SendDlgItemMessage(hwndDlg, IDC_MESSAGE, EM_SETPARAFORMAT, 0, (LPARAM)&pf2);
@@ -4608,13 +4619,13 @@ quote_from_last:
                                                     SendMessage(GetDlgItem(hwndDlg, IDC_MESSAGE), EM_SETTEXTEX, (WPARAM)&stx, (LPARAM)streamOut);
                                                     free(streamOut);
                                                 }
-                                                SendMessage(GetDlgItem(hwndDlg, IDC_LOG), EM_EXSETSEL, 0, (LPARAM)&cr);
                                                 SetFocus(GetDlgItem(hwndDlg, IDC_MESSAGE));
                                             }
                                             else if(DBGetContactSettingByte(NULL, SRMSGMOD_T, "autocopy", 0) && !(GetKeyState(VK_SHIFT) & 0x8000)) {
                                                 SendMessage(GetDlgItem(hwndDlg, IDC_LOG), WM_COPY, 0, 0);
-                                                SendMessage(GetDlgItem(hwndDlg, IDC_LOG), EM_EXSETSEL, 0, (LPARAM)&cr);
                                                 SetFocus(GetDlgItem(hwndDlg, IDC_MESSAGE));
+                                                if(m_pContainer->hwndStatus)
+                                                    SendMessage(m_pContainer->hwndStatus, SB_SETTEXT, 0, (LPARAM)TranslateT("Selection copied to clipboard"));
                                             }
                                         }
                                     }

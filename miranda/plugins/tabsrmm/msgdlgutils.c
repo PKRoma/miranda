@@ -1851,10 +1851,12 @@ void GetLocaleID(struct MessageWindowData *dat, char *szKLName)
     USHORT langID;
     WORD   wCtype2[3];
     PARAFORMAT2 pf2 = {0};
+    BOOL fLocaleNotSet;
 
     langID = (USHORT)strtol(szKLName, &stopped, 16);
     dat->lcid = MAKELCID(langID, 0);
     GetLocaleInfoA(dat->lcid, LOCALE_SISO639LANGNAME , szLI, 10);
+    fLocaleNotSet = (dat->lcID[0] == 0 && dat->lcID[1] == 0);
     dat->lcID[0] = toupper(szLI[0]);
     dat->lcID[1] = toupper(szLI[1]);
     dat->lcID[2] = 0;
@@ -1862,21 +1864,22 @@ void GetLocaleID(struct MessageWindowData *dat, char *szKLName)
     pf2.cbSize = sizeof(pf2);
     pf2.dwMask = PFM_RTLPARA;
     SendDlgItemMessage(dat->hwnd, IDC_MESSAGE, EM_GETPARAFORMAT, 0, (LPARAM)&pf2);
-    if(wCtype2[0] == C2_RIGHTTOLEFT || wCtype2[1] == C2_RIGHTTOLEFT || wCtype2[2] == C2_RIGHTTOLEFT) {
-        ZeroMemory(&pf2, sizeof(pf2));
-        pf2.dwMask = PFM_RTLPARA;
-        pf2.cbSize = sizeof(pf2);
-        pf2.wEffects = PFE_RTLPARA;
-        //SendDlgItemMessage(dat->hwnd, IDC_MESSAGE, EM_SETPARAFORMAT, 0, (LPARAM)&pf2);
-    }
-    else {
-        if(pf2.wEffects & PFE_RTLPARA) {
+    if(FindRTLLocale(dat) && fLocaleNotSet) {
+        if(wCtype2[0] == C2_RIGHTTOLEFT || wCtype2[1] == C2_RIGHTTOLEFT || wCtype2[2] == C2_RIGHTTOLEFT) {
+            ZeroMemory(&pf2, sizeof(pf2));
+            pf2.dwMask = PFM_RTLPARA;
+            pf2.cbSize = sizeof(pf2);
+            pf2.wEffects = PFE_RTLPARA;
+            SendDlgItemMessage(dat->hwnd, IDC_MESSAGE, EM_SETPARAFORMAT, 0, (LPARAM)&pf2);
+        }
+        else {
             ZeroMemory(&pf2, sizeof(pf2));
             pf2.dwMask = PFM_RTLPARA;
             pf2.cbSize = sizeof(pf2);
             pf2.wEffects = 0;
-            //SendDlgItemMessage(dat->hwnd, IDC_MESSAGE, EM_SETPARAFORMAT, 0, (LPARAM)&pf2);
+            SendDlgItemMessage(dat->hwnd, IDC_MESSAGE, EM_SETPARAFORMAT, 0, (LPARAM)&pf2);
         }
+        SendDlgItemMessage(dat->hwnd, IDC_MESSAGE, EM_SETLANGOPTIONS, 0, (LPARAM) SendDlgItemMessage(dat->hwnd, IDC_MESSAGE, EM_GETLANGOPTIONS, 0, 0) & ~IMF_AUTOKEYBOARD);
     }
 }
 
@@ -3005,3 +3008,34 @@ void GetMyNick(HWND hwndDlg, struct MessageWindowData *dat)
         mir_free(ci.pszVal);
 }
 
+/*
+ * returns != 0 when one of the installed keyboard layouts belongs to an rtl language
+ * used to find out whether we need to configure the message input box for bidirectional mode
+ */
+
+int FindRTLLocale(struct MessageWindowData *dat)
+{
+    HKL layouts[20];
+    int i, result = 0;
+    LCID lcid;
+    WORD wCtype2[5];
+    
+    if(dat->iHaveRTLLang == 0) {
+        ZeroMemory(layouts, 20 * sizeof(HKL));
+        //EnumSystemLanguageGroups(pfnEnumProc, LGRPID_INSTALLED, 0);
+        //EnumSystemLocales(pfnEnumProc, LCID_INSTALLED);
+        //EnumUILanguages(pfnEnumProc, 0, 0);
+        GetKeyboardLayoutList(20, layouts);
+        for(i = 0; i < 20 && layouts[i]; i++) {
+            lcid = MAKELCID(LOWORD(layouts[i]), 0);
+            GetStringTypeA(lcid, CT_CTYPE2, "הצü", 3, wCtype2);
+            if(wCtype2[0] == C2_RIGHTTOLEFT || wCtype2[1] == C2_RIGHTTOLEFT || wCtype2[2] == C2_RIGHTTOLEFT)
+                result = 1;
+        }
+        dat->iHaveRTLLang = (result ? 1 : -1);
+    }
+    else
+        result = dat->iHaveRTLLang == 1 ? 1 : 0;
+
+    return result;
+}
