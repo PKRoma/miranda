@@ -41,6 +41,8 @@ Enhancements
  - ICQ: Added new session password API - allowing plugins like Secure Login to work better
 
 Bugfixes:
+ - Options dialog didn't activate if currently open when using the main menu item
+ - Profile selector didn't show last modified time correctly
  - db3x driver text was cut off in profile selector dialog
  - ICQ: Fixed possible hang on exit
  - ICQ: Fixed avatars were not working when server port set to 0
