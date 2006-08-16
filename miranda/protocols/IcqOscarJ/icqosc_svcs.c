@@ -140,6 +140,21 @@ int IcqLoadIcon(WPARAM wParam, LPARAM lParam)
 
 
 
+int IcqSetPassword(WPARAM wParam, LPARAM lParam)
+{
+  char *pwd = (char*)lParam;
+  int len = strlennull(pwd);
+
+  if (len && len <= 8)
+  {
+    strcpy(gpszPassword, pwd);
+    gbRememberPwd = 1;
+  }
+  return 0;
+}
+
+
+
 int IcqIdleChanged(WPARAM wParam, LPARAM lParam)
 {
   int bIdle = (lParam&IDF_ISIDLE);

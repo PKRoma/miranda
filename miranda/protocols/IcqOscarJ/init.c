@@ -231,6 +231,8 @@ int __declspec(dllexport) Load(PLUGINLINK *link)
   ICQCreateServiceFunction(PSS_ADDED, IcqSendYouWereAdded);
   ICQCreateServiceFunction(PSS_USERISTYPING, IcqSendUserIsTyping);
   ICQCreateServiceFunction(PS_GETAVATARINFO, IcqGetAvatarInfo);
+  // Session password API
+  ICQCreateServiceFunction(PS_ICQ_SETPASSWORD, IcqSetPassword);
   // ChangeInfo API
   ICQCreateServiceFunction(PS_CHANGEINFOEX, IcqChangeInfoEx);
   // My Avatar API

@@ -100,7 +100,9 @@ void handleFileAck(PBYTE buf, WORD wLen, DWORD dwUin, DWORD dwCookie, WORD wStat
   wLen -= 4;
   
   NetLog_Direct("File transfer ack from %u, port %u, name %s, size %u", dwUin, ft->dwRemotePort, pszFileName, dwFileSize);
-  
+
+  ICQBroadcastAck(ft->hContact, ACKTYPE_FILE, ACKRESULT_CONNECTING, (HANDLE)ft, 0);
+
   OpenDirectConnection(ft->hContact, DIRECTCONN_FILE, ft);
 }
 
@@ -113,7 +115,6 @@ filetransfer *CreateFileTransfer(HANDLE hContact, DWORD dwUin, int nVersion)
   ft = (filetransfer*)SAFE_MALLOC(sizeof(filetransfer));
   if (ft)
   {
-    ZeroMemory(ft, sizeof(filetransfer));
     ft->dwUin = dwUin;
     ft->hContact = hContact;
     ft->nVersion = nVersion;

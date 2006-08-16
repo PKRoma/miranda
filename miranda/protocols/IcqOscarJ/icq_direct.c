@@ -454,8 +454,6 @@ static DWORD __stdcall icq_directThread(directthreadstartinfo *dtsi)
       return 0; 
     }
 
-    dc.dwReqId = 0;
-
     if (dc.type == DIRECTCONN_STANDARD)
     {
       // do nothing - some specific init for msg sessions
