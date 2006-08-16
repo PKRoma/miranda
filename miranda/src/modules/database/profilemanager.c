@@ -25,6 +25,9 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include "profilemanager.h"
 #include <sys/stat.h>
 
+#define WM_INPUTCHANGED (WM_USER + 0x3000)
+#define WM_FOCUSTEXTBOX (WM_USER + 0x3001)
+
 typedef BOOL (__cdecl *ENUMPROFILECALLBACK) (char * fullpath, char * profile, LPARAM lParam);
 
 struct DetailsPageInit {
@@ -97,7 +100,7 @@ static LRESULT CALLBACK ProfileNameValidate(HWND edit, UINT msg, WPARAM wParam, 
 {
 	if ( msg==WM_CHAR ) {		
 		if ( strchr(".?/\\#' ",(char)wParam&0xFF) != 0 ) return 0;
-		PostMessage(GetParent(edit),WM_USER+2,0,0);
+		PostMessage(GetParent(edit),WM_INPUTCHANGED,0,0);
 	}
 	return CallWindowProc((WNDPROC)GetWindowLong(edit,GWL_USERDATA),edit,msg,wParam,lParam);
 }
@@ -167,15 +170,15 @@ static BOOL CALLBACK DlgProfileNew(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM
 				if ( checkAutoCreateProfile((char*)&profile) ) SetDlgItemTextA(hwndDlg, IDC_PROFILENAME, profile);
 			}
 			// focus on the textbox
-			PostMessage(hwndDlg,WM_USER+10,0,0);
+			PostMessage(hwndDlg,WM_FOCUSTEXTBOX,0,0);
 			return TRUE;
 		}
-		case WM_USER+10:
+		case WM_FOCUSTEXTBOX:
 		{
 			SetFocus(GetDlgItem(hwndDlg,IDC_PROFILENAME));
 			break;
 		}
-		case WM_USER+2: // when input in the edit box changes
+		case WM_INPUTCHANGED: // when input in the edit box changes
 		{
 			SendMessage(GetParent(hwndDlg),PSM_CHANGED,0,0);
 			EnableWindow(dat->hwndOK, GetWindowTextLength(GetDlgItem(hwndDlg,IDC_PROFILENAME)) > 0 );
@@ -185,7 +188,7 @@ static BOOL CALLBACK DlgProfileNew(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM
 		{
 			if ( wParam ) { 
 				SetWindowText( dat->hwndOK, TranslateT("&Create"));
-				SendMessage(hwndDlg,WM_USER+2,0,0);
+				SendMessage(hwndDlg,WM_INPUTCHANGED,0,0);
 			}
 			break;
 		}
@@ -359,10 +362,10 @@ static BOOL CALLBACK DlgProfileSelect(HWND hwndDlg, UINT msg, WPARAM wParam, LPA
 			ListView_SetImageList(hwndList, hImgList, LVSIL_SMALL);			
 			// find all the profiles
 			findProfiles(dat->pd->szProfileDir, EnumProfilesForList, (LPARAM)hwndDlg);
-			PostMessage(hwndDlg,WM_USER+10,0,0);
+			PostMessage(hwndDlg,WM_FOCUSTEXTBOX,0,0);
 			return TRUE;
 		}
-		case WM_USER+10:
+		case WM_FOCUSTEXTBOX:
 		{
 			HWND hwndList=GetDlgItem(hwndDlg,IDC_PROFILELIST);
 			SetFocus(hwndList);		
