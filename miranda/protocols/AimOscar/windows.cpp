@@ -727,7 +727,7 @@ BOOL CALLBACK userinfo_dialog(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPar
     }
 	return FALSE;
 }
-BOOL CALLBACK options_dialog(HWND hwndDlg, UINT msg, WPARAM /*wParam*/, LPARAM lParam)
+BOOL CALLBACK options_dialog(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam)
 {
     switch (msg)
 	{
@@ -780,7 +780,8 @@ BOOL CALLBACK options_dialog(HWND hwndDlg, UINT msg, WPARAM /*wParam*/, LPARAM l
 		}
 		case WM_COMMAND:
         {
-            if ((HWND) lParam != GetFocus())
+            if ((LOWORD(wParam) == IDC_SN || LOWORD(wParam) == IDC_NK || LOWORD(wParam) == IDC_PW || LOWORD(wParam) == IDC_HN
+                 || LOWORD(wParam) == IDC_KA || LOWORD(wParam) == IDC_GP) && (HIWORD(wParam) != EN_CHANGE || (HWND) lParam != GetFocus()))
                 return 0;
             SendMessage(GetParent(hwndDlg), PSM_CHANGED, 0, 0);
             break;
@@ -831,7 +832,7 @@ BOOL CALLBACK options_dialog(HWND hwndDlg, UINT msg, WPARAM /*wParam*/, LPARAM l
 
 					//GP
 					unsigned long timeout=GetDlgItemInt(hwndDlg, IDC_GP,0,0);
-					if(timeout>0xffff||timeout<30)
+					if(timeout>0xffff||timeout<15)
 						 DBWriteContactSettingWord(NULL, AIM_PROTOCOL_NAME, AIM_KEY_GP,DEFAULT_GRACE_PERIOD);
 					else
 						DBWriteContactSettingWord(NULL, AIM_PROTOCOL_NAME, AIM_KEY_GP,(WORD)timeout);
@@ -904,7 +905,7 @@ BOOL CALLBACK options_dialog(HWND hwndDlg, UINT msg, WPARAM /*wParam*/, LPARAM l
 
 					//Keep alive timer
 					unsigned long timer=GetDlgItemInt(hwndDlg, IDC_KA,0,0);
-					if(timer>0xffff||timer<15)
+					if(timer>0xffff||timer<30)
 						 DBWriteContactSettingWord(NULL, AIM_PROTOCOL_NAME, AIM_KEY_KA,DEFAULT_KEEPALIVE_TIMER);
 					else
 						DBWriteContactSettingWord(NULL, AIM_PROTOCOL_NAME, AIM_KEY_KA,(WORD)timer);

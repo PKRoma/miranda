@@ -316,7 +316,7 @@ int aim_client_ready(HANDLE hServerConn,unsigned short &seqno)
 	}
 	if (conn.hDirectBoundPort == NULL)
 	{
-		ShowPopup("Aim Protocol","AimOSCAR was unable to bind to a port. File transfers may not succeed in some cases.", 0);
+		ShowPopup("Aim Protocol","Aim was unable to bind to a port. File transfers may not succeed in some cases.", 0);
 	}
 	conn.LocalPort=nlb.wPort;
 	conn.InternalIP=nlb.dwInternalIP;

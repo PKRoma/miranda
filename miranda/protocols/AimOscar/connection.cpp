@@ -1,6 +1,17 @@
 #include "connection.h"
 CRITICAL_SECTION statusMutex;
 CRITICAL_SECTION connectionMutex;
+int LOG(const char *fmt, ...)
+{
+	va_list va;
+	char szText[1024];
+	if (!conn.hNetlib)
+		return 0;
+	va_start(va, fmt);
+	mir_vsnprintf(szText, sizeof(szText), fmt, va);
+	va_end(va);
+	return CallService(MS_NETLIB_LOG, (WPARAM) conn.hNetlib, (LPARAM) szText);
+}
 HANDLE aim_connect(char* server)
 {
 	char* server_dup=strldup(server,lstrlen(server));
@@ -66,12 +77,16 @@ void __cdecl aim_connection_authorization()
 		#pragma warning( default: 4127)
 		#endif
 		recvResult = CallService(MS_NETLIB_GETMOREPACKETS, (WPARAM) conn.hServerPacketRecver, (LPARAM) & packetRecv);
-		if (recvResult == 0) {
-                break;
-            }
-        if (recvResult == SOCKET_ERROR) {
-                break;
-            }
+		if (recvResult == 0)
+		{
+			LOG("Connection Closed: No Error? during Connection Authorization");
+			break;
+		}
+        if (recvResult == SOCKET_ERROR)
+		{
+			LOG("Connection Closed: Socket Error during Connection Authorization");
+			break;
+		}
 		if(recvResult>0)
 		{
 			unsigned short flap_length=0;
@@ -101,6 +116,7 @@ void __cdecl aim_connection_authorization()
 							delete[] conn.username;
 							delete[] conn.password;
 							Netlib_CloseHandle(conn.hServerPacketRecver);
+							LOG("Connection Authorization Thread Ending: Negotiation Beginning");
 							LeaveCriticalSection(&connectionMutex);
 							return;
 						}
@@ -111,6 +127,7 @@ void __cdecl aim_connection_authorization()
 					delete[] conn.username;
 					delete[] conn.password;
 					broadcast_status(ID_STATUS_OFFLINE);
+					LOG("Connection Authorization Thread Ending: Flap 0x04");
 					LeaveCriticalSection(&connectionMutex);
 					return;
 				}
@@ -120,6 +137,7 @@ void __cdecl aim_connection_authorization()
 	delete[] conn.username;
 	delete[] conn.password;
 	broadcast_status(ID_STATUS_OFFLINE);
+	LOG("Connection Authorization Thread Ending: End of Thread");
 	LeaveCriticalSection(&connectionMutex);
 }
 void __cdecl aim_protocol_negotiation()
@@ -143,11 +161,13 @@ void __cdecl aim_protocol_negotiation()
 		recvResult = CallService(MS_NETLIB_GETMOREPACKETS, (WPARAM) conn.hServerPacketRecver, (LPARAM) & packetRecv);
 		if (recvResult == 0)
 		{
-                break;
+			LOG("Connection Closed: No Error during Connection Negotiation?");
+			break;
 		}
         if (recvResult == SOCKET_ERROR)
 		{
-                break;
+			LOG("Connection Closed: Socket Error during Connection Negotiation");
+			break;
 		}
 		if(recvResult>0)
 		{
@@ -208,6 +228,7 @@ void __cdecl aim_protocol_negotiation()
 				{
 					offline_contacts();
 					broadcast_status(ID_STATUS_OFFLINE);
+					LOG("Connection Negotiation Thread Ending: Flap 0x04");
 					LeaveCriticalSection(&connectionMutex);
 					return;
 				}
@@ -216,6 +237,7 @@ void __cdecl aim_protocol_negotiation()
 	}
 	offline_contacts();
 	broadcast_status(ID_STATUS_OFFLINE);
+	LOG("Connection Negotiation Thread Ending: End of Thread");
 	LeaveCriticalSection(&connectionMutex);
 }
 void __cdecl aim_mail_negotiation()

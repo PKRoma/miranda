@@ -282,6 +282,7 @@ public:
 	bool idle;
 	bool instantidle;
 	bool checking_mail;
+	bool list_received;
 
 	HINSTANCE hInstance;//plugin handle instance
 	
