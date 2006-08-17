@@ -394,9 +394,8 @@ int YAHOO_SaveBitmapAsAvatar( HBITMAP hBitmap, const char* szFileName )
 	GlobalFree( pDib );
 	{	
 		FILE* out;
-		char tFileName[ MAX_PATH ];
-		GetAvatarFileName( NULL, tFileName, sizeof tFileName, 2);
-		out = fopen( tFileName, "wb" );
+		
+		out = fopen( szFileName, "wb" );
 		if ( out != NULL ) {
 			fwrite( convertor.pResult, dwPngSize, 1, out );
 			fclose( out );
