@@ -121,7 +121,7 @@ int __stdcall MSN_GetMyHostAsString( char* parBuf, int parBufSize )
 /////////////////////////////////////////////////////////////////////////////////////////
 // Starts a file sending thread
 
-void MSN_ConnectionProc( HANDLE hNewConnection, DWORD dwRemoteIP )
+void MSN_ConnectionProc( HANDLE hNewConnection, DWORD dwRemoteIP, void* )
 {
 	MSN_DebugLog( "File transfer connection accepted" );
 
@@ -805,7 +805,7 @@ int MSN_HandleCommands( ThreadData* info, char* cmdString )
 		case ' KCA':    //********* ACK: section 8.7 Instant Messages
 			if ( info->mP2PInitTrid == trid ) {
 				info->mP2PInitTrid = 0;
-				p2p_sendViaServer( info->mP2pSession, info );
+				p2p_sendFeedStart( info->mP2pSession, info );
 				info->mP2pSession = NULL;
 			}
 			else if ( info->mJoinedCount > 0 && MyOptions.SlowSend )

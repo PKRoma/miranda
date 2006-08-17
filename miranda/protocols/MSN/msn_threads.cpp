@@ -54,7 +54,7 @@ void __cdecl msn_keepAliveThread( void* )
 				return;
 		}	}
 
-		msnPingTimeout = msnPingTimeoutCurrent * 2;
+		msnPingTimeout = msnPingTimeoutCurrent = 45;
 
 		/*
 		 * if proxy is not used, every connection uses select() to send PNG
@@ -149,6 +149,9 @@ void __cdecl MSNServerThread( ThreadData* info )
 		MSN_EnableMenuItems( TRUE );
 
 		sl = time(NULL); //for hotmail
+
+		msnPingTimeout = msnPingTimeoutCurrent;
+
 		msnNsThread = info;
 		if (hKeepAliveThreadEvt == NULL) {
 			hKeepAliveThreadEvt = ::CreateEvent( NULL, TRUE, FALSE, NULL );
@@ -268,16 +271,14 @@ void __stdcall MSN_CloseConnections()
 				T->sendPacket( "OUT", NULL );
 			break;
 
-		case SERVER_FILETRANS :
 		case SERVER_P2P_DIRECT :
 			if (p2p_sessionRegistered(T->mP2pSession)) {
 				filetransfer *ft = T->mP2pSession;
-				ft->bCanceled = true;
 				if ( ft->hWaitEvent != INVALID_HANDLE_VALUE )
 					SetEvent( ft->hWaitEvent );
 
 				if ( ft->p2p_appID != 0 ) 
-					p2p_sendBye( T, ft );
+					p2p_sendCancel( T, ft );
 
 				ft->std.files = NULL;
 				ft->std.totalFiles = 0;
@@ -393,6 +394,24 @@ ThreadData* __stdcall MSN_GetThreadByConnection( HANDLE s )
 	return tResult;
 }
 
+ThreadData* __stdcall MSN_GetThreadByID( LONG id )
+{
+	ThreadData* tResult = NULL;
+
+	EnterCriticalSection( &sttLock );
+
+	for ( int i=0; i < MAX_THREAD_COUNT; i++ )
+	{
+		ThreadData* T = sttThreads[ i ];
+		if ( T != NULL && T->mUniqueID == id )
+		{	tResult = T;
+			break;
+	}	}
+
+	LeaveCriticalSection( &sttLock );
+	return tResult;
+}
+
 ThreadData* __stdcall MSN_GetThreadByPort( WORD wPort )
 {
 	ThreadData* tResult = NULL;
@@ -427,7 +446,8 @@ void __stdcall MSN_PingParentThread( ThreadData* parentThread, filetransfer* ft 
 	{
 		if ( sttThreads[ i ] == parentThread ) {
 			parentThread->mP2pSession = ft;
-			parentThread->mP2PInitTrid = p2p_sendPortionViaServer( ft, parentThread );
+            ft->p2p_sendmsgid = ++ft->p2p_msgid;
+			parentThread->mP2PInitTrid = p2p_sendPortion( ft, parentThread );
 			break;
 	}	}
 

@@ -54,12 +54,8 @@ int MSN_HandleMSNFTP( ThreadData *info, char *cmdString )
 			if ( sscanf( params, "%s", filesize ) < 1 )
 				goto LBL_InvalidCommand;
 
-			if ( ft->create() == -1 )
-				break;
-
 			info->mCaller = 1;
 			info->send( "TFR\r\n", 5 );
-			MSN_SendBroadcast( ft->std.hContact, ACKTYPE_FILE, ACKRESULT_INITIALISING, ft, 0);
 			break;
 		}
 		case ' RFT':    //********* TFR
@@ -278,7 +274,7 @@ void ft_startFileSend( ThreadData* info, const char* Invcommand, const char* Inv
 		return;
 
 	bool bHasError = false;
-	NETLIBBINDOLD nlb = {0};
+	NETLIBBIND nlb = {0};
 	char ipaddr[256];
 
 	filetransfer* ft = info->mMsnFtp; info->mMsnFtp = NULL;
@@ -287,7 +283,7 @@ void ft_startFileSend( ThreadData* info, const char* Invcommand, const char* Inv
 			bHasError = true;
 		else {
 			nlb.cbSize = sizeof nlb;
-			nlb.pfnNewConnection = MSN_ConnectionProc;
+			nlb.pfnNewConnectionV2 = MSN_ConnectionProc;
 			nlb.wPort = 0;	// Use user-specified incoming port ranges, if available
 			if (( ft->mIncomingBoundPort = ( HANDLE )MSN_CallService( MS_NETLIB_BINDPORT, ( WPARAM )hNetlibUser, ( LPARAM )&nlb)) == NULL ) {
 				MSN_DebugLog( "Unable to bind the port for incoming transfers" );
@@ -309,7 +305,7 @@ void ft_startFileSend( ThreadData* info, const char* Invcommand, const char* Inv
 		"Launch-Application: FALSE\r\n"
 		"Request-Data: IP-Address:\r\n\r\n",
 		( bHasError ) ? "CANCEL" : "ACCEPT",
-		Invcookie, ipaddr, nlb.wPort, WORD((( double )rand() / ( double )RAND_MAX ) * 4294967295 ));
+		Invcookie, ipaddr, nlb.wExPort, WORD((( double )rand() / ( double )RAND_MAX ) * 4294967295 ));
 	info->sendPacket( "MSG", "N %d\r\n%s", nBytes, command );
 
 	if ( bHasError ) {

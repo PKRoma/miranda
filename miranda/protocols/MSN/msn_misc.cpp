@@ -912,20 +912,6 @@ int filetransfer::create()
 		return ( int )fileBuffer;
 	}
 
-	if ( fileId != -1 )
-		return fileId;
-
-	char filefull[ MAX_PATH ];
-	mir_snprintf( filefull, sizeof filefull, "%s\\%s", std.workingDir, std.currentFile );
-	replaceStr( std.currentFile, filefull );
-
-	if ( hWaitEvent != INVALID_HANDLE_VALUE )
-		CloseHandle( hWaitEvent );
-   hWaitEvent = CreateEvent( NULL, FALSE, FALSE, NULL );
-
-	if ( MSN_SendBroadcast( std.hContact, ACKTYPE_FILE, ACKRESULT_FILERESUME, this, ( LPARAM )&std ))
-		WaitForSingleObject( hWaitEvent, INFINITE );
-
 	#if defined( _UNICODE )	
 		if ( wszFileName != NULL ) {
 			WCHAR wszTemp[ MAX_PATH ];
@@ -942,6 +928,7 @@ int filetransfer::create()
 					WideCharToMultiByte( CP_ACP, 0, 
 						( data.cAlternateFileName[0] != 0 ) ? data.cAlternateFileName : data.cFileName, 
 						-1, tShortName, sizeof tShortName, 0, 0 );
+					char filefull[ MAX_PATH ];
 					mir_snprintf( filefull, sizeof( filefull ), "%s\\%s", std.workingDir, tShortName );
 					std.currentFile = strdup( filefull );
 					FindClose( hFind );
@@ -953,9 +940,9 @@ int filetransfer::create()
 	#endif
 
 	if ( fileId == -1 )
-		MSN_DebugLog( "Cannot create file '%s' during a file transfer", filefull );
-	else if ( std.currentFileSize != 0 )
-		_chsize( fileId, std.currentFileSize );
+		MSN_DebugLog( "Cannot create file '%s' during a file transfer", std.currentFile );
+//	else if ( std.currentFileSize != 0 )
+//		_chsize( fileId, std.currentFileSize );
 
 	return fileId;
 }

@@ -167,7 +167,7 @@ void		__stdcall	MSN_DumpMemory( const char* buffer, int bufSize );
 void		__stdcall	MSN_HandleFromContact( unsigned long uin, char* uhandle );
 int		__stdcall	MSN_GetMyHostAsString( char* parBuf, int parBufSize );
 
-void		__cdecl		MSN_ConnectionProc( HANDLE hNewConnection, DWORD dwRemoteIP );
+void		__cdecl     MSN_ConnectionProc( HANDLE hNewConnection, DWORD dwRemoteIP, void* );
 void		__stdcall	MSN_GoOffline( void );
 void		__stdcall	MSN_GetAvatarFileName( HANDLE hContact, char* pszDest, int cbLen );
 LPTSTR	__stdcall   MSN_GetErrorText( DWORD parErrorCode );
@@ -268,7 +268,7 @@ struct P2P_Header
 {
 	DWORD		mSessionID;
 	DWORD		mID;
-	__int64	mOffset;
+	__int64  mOffset;
 	__int64  mTotalSize;
 	DWORD		mPacketLen;
 	DWORD		mFlags;
@@ -318,11 +318,13 @@ struct filetransfer
 	HANDLE		mIncomingBoundPort;
 	HANDLE		hWaitEvent;
 
-	long        p2p_sessionid;	// session id
-	long        p2p_msgid;		// message id
-	long        p2p_acksessid;	// acknowledged session id
-	int         p2p_ackID;		// number of ack's state
-	int         p2p_appID;		// application id: 1 = avatar, 2 = file transfer
+	unsigned    p2p_sessionid;	// session id
+	unsigned    p2p_msgid;		// message id
+	unsigned    p2p_acksessid;	// acknowledged session id
+	unsigned    p2p_sendmsgid;  // send message id
+	unsigned    p2p_byemsgid;   // bye message id
+	unsigned    p2p_ackID;		// number of ack's state
+	unsigned    p2p_appID;		// application id: 1 = avatar, 2 = file transfer
 	char*       p2p_branch;		// header Branch: field
 	char*       p2p_callID;		// header Call-ID: field
 	char*       p2p_dest;		// destination e-mail address
@@ -427,6 +429,7 @@ ThreadData* __stdcall MSN_GetThreadByConnection( HANDLE hConn );
 ThreadData*	__stdcall MSN_GetThreadByContact( HANDLE hContact );
 ThreadData*	__stdcall MSN_GetThreadByPort( WORD wPort );
 ThreadData* __stdcall MSN_GetUnconnectedThread( HANDLE hContact );
+ThreadData* __stdcall MSN_GetThreadByID( LONG id );
 void			__stdcall MSN_PingParentThread( ThreadData*, filetransfer* ft );
 void        __stdcall MSN_StartThread( pThreadFunc parFunc, void* arg );
 
@@ -442,9 +445,10 @@ void __stdcall p2p_processMsg( ThreadData* info, const char* msgbody );
 void __stdcall p2p_sendAck( filetransfer* ft, ThreadData* info, P2P_Header* hdrdata );
 void __stdcall p2p_sendStatus( filetransfer* ft, ThreadData* info, long lStatus );
 void __stdcall p2p_sendBye( ThreadData* info, filetransfer* ft );
+void __stdcall p2p_sendCancel( ThreadData* info, filetransfer* ft );
 
-void __stdcall p2p_sendViaServer( filetransfer* ft, ThreadData* T );
-long __stdcall p2p_sendPortionViaServer( filetransfer* ft, ThreadData* T );
+void __stdcall p2p_sendFeedStart( filetransfer* ft, ThreadData* T );
+long __stdcall p2p_sendPortion( filetransfer* ft, ThreadData* T );
 
 void __stdcall p2p_registerSession( filetransfer* ft );
 void __stdcall p2p_unregisterSession( filetransfer* ft );
@@ -452,8 +456,8 @@ void __stdcall p2p_unregisterThreadSession( LONG threadID );
 
 filetransfer* __stdcall p2p_getAnotherContactSession( filetransfer* ft );
 filetransfer* __stdcall p2p_getFirstSession( HANDLE hContact );
-filetransfer* __stdcall p2p_getSessionByID( long ID );
-filetransfer* __stdcall p2p_getSessionByMsgID( long ID );
+filetransfer* __stdcall p2p_getSessionByID( unsigned ID );
+filetransfer* __stdcall p2p_getSessionByMsgID( unsigned ID );
 filetransfer* __stdcall p2p_getSessionByCallID( const char* CallID );
 
 BOOL __stdcall p2p_sessionRegistered( filetransfer* ft );
