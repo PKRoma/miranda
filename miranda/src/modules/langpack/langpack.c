@@ -186,7 +186,7 @@ static int LoadLangPack(const TCHAR *szLangPack)
 	int startOfLine=0;
 	unsigned int linePos=1;
 	USHORT langID;
-
+	
 	lstrcpy(langPack.filename,szLangPack);
 	fp = _tfopen(szLangPack,_T("rt"));
 	if(fp==NULL) return 1;
@@ -203,10 +203,10 @@ static int LoadLangPack(const TCHAR *szLangPack)
 		pszColon=strchr(line,':');
 		if(pszColon==NULL) {fclose(fp); return 3;}
 		*pszColon=0;
-		if(!lstrcmpA(line,"Language")) {lstrcpyA(langPack.language,pszColon+1); TrimString(langPack.language);}
-		else if(!lstrcmpA(line,"Last-Modified-Using")) {lstrcpyA(langPack.lastModifiedUsing,pszColon+1); TrimString(langPack.lastModifiedUsing);}
-		else if(!lstrcmpA(line,"Authors")) {lstrcpyA(langPack.authors,pszColon+1); TrimString(langPack.authors);}
-		else if(!lstrcmpA(line,"Author-email")) {lstrcpyA(langPack.authorEmail,pszColon+1); TrimString(langPack.authorEmail);}
+		if(!lstrcmpA(line,"Language")) {mir_snprintf(langPack.language,sizeof(langPack.language),"%s",pszColon+1); TrimString(langPack.language);}
+		else if(!lstrcmpA(line,"Last-Modified-Using")) {mir_snprintf(langPack.lastModifiedUsing,sizeof(langPack.lastModifiedUsing),"%s",pszColon+1); TrimString(langPack.lastModifiedUsing);}
+		else if(!lstrcmpA(line,"Authors")) {mir_snprintf(langPack.authors,sizeof(langPack.authors),"%s",pszColon+1); TrimString(langPack.authors);}
+		else if(!lstrcmpA(line,"Author-email")) {mir_snprintf(langPack.authorEmail,sizeof(langPack.authorEmail),"%s",pszColon+1); TrimString(langPack.authorEmail);}
 		else if(!lstrcmpA(line, "Locale")) {
 			char szBuf[20], *stopped;
 
