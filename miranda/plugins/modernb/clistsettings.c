@@ -565,7 +565,7 @@ int ContactSettingChanged(WPARAM wParam,LPARAM lParam)
 						||!mir_strcmp(cws->szSetting, "InfoTS")
 						))
 					{
-						pcli->pfnSortContacts();
+							pcli->pfnSortContacts();
 					}
 					DBFreeVariant(&dbv);
 					return 0;

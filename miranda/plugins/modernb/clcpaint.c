@@ -2746,8 +2746,11 @@ void InternalPaintClc(HWND hwnd,struct ClcData *dat,HDC hdc,RECT *rcPaint)
   // Draw background
   if (NotInMain || dat->force_in_dialog)
   {
-    FillRect(hdcMem,rcPaint,GetSysColorBrush(COLOR_BTNFACE));
-    SetRectAlpha_255(hdcMem,rcPaint);
+	 
+	FillRect(hdcMem,rcPaint,GetSysColorBrush(COLOR_BTNFACE));
+	SetRectAlpha_255(hdcMem,rcPaint);
+	if (!(style&CLS_GREYALTERNATE))
+		SkinDrawGlyph(hdcMem,&clRect,rcPaint,"CL,ID=Background,Type=Control");
   }
   else
   {

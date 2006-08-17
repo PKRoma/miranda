@@ -465,7 +465,7 @@ char * GetUniqueProtoName(char * proto)
 	PROTOCOLDESCRIPTOR **protos;
 	CallService(MS_PROTO_ENUMPROTOCOLS, (WPARAM) & count, (LPARAM) & protos);
 	for (i=0; i<count; i++)
-		if (!_strcmpi(proto,protos[i]->szName))
+		if (!strcmpi(proto,protos[i]->szName))
 			return protos[i]->szName;
 	return NULL;
 }

@@ -16,6 +16,7 @@
 			IntermediateDirectory="../../bin7/Release/Obj/$(ProjectName)"
 			ConfigurationType="2"
 			UseOfMFC="0"
+			UseOfATL="0"
 			ATLMinimizesCRunTimeLibraryUsage="TRUE"
 			CharacterSet="2"
 			WholeProgramOptimization="TRUE">
@@ -30,7 +31,7 @@
 				AdditionalIncludeDirectories="../../include"
 				PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;_USRDLL;CLIST_EXPORTS"
 				StringPooling="TRUE"
-				RuntimeLibrary="2"
+				RuntimeLibrary="0"
 				EnableFunctionLevelLinking="FALSE"
 				EnableEnhancedInstructionSet="0"
 				DefaultCharIsUnsigned="TRUE"
@@ -230,6 +231,7 @@
 			IntermediateDirectory="../../bin7/Release/Obj/$(ProjectName)"
 			ConfigurationType="2"
 			UseOfMFC="0"
+			UseOfATL="0"
 			ATLMinimizesCRunTimeLibraryUsage="TRUE"
 			CharacterSet="1"
 			WholeProgramOptimization="TRUE">
@@ -243,7 +245,7 @@
 				AdditionalIncludeDirectories="../../include"
 				PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;_USRDLL;CLIST_EXPORTS"
 				StringPooling="TRUE"
-				RuntimeLibrary="2"
+				RuntimeLibrary="0"
 				EnableFunctionLevelLinking="FALSE"
 				EnableEnhancedInstructionSet="0"
 				DefaultCharIsUnsigned="TRUE"

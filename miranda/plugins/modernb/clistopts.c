@@ -1327,7 +1327,7 @@ BOOL CALLBACK DlgProcGenOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
 			HANDLE hContact=(HANDLE)wParam;
 			DBCONTACTWRITESETTING * ws = (DBCONTACTWRITESETTING *)lParam;
 			if ( hContact == NULL && ws != NULL && ws->szModule != NULL && ws->szSetting != NULL
-				&& _strcmpi(ws->szModule,"CList")==0 && _strcmpi(ws->szSetting,"UseGroups")==0
+				&& strcmpi(ws->szModule,"CList")==0 && strcmpi(ws->szSetting,"UseGroups")==0
 				&& IsWindowVisible(hwndDlg) ) {
 					CheckDlgButton(hwndDlg,IDC_DISABLEGROUPS,ws->value.bVal == 0);
 				}
@@ -1400,7 +1400,7 @@ BOOL CALLBACK DlgProcGenOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
 		}
 		CheckDlgButton(hwndDlg, IDC_ALWAYSSTATUS, DBGetContactSettingByte(NULL,"CList","AlwaysStatus",SETTING_ALWAYSSTATUS_DEFAULT) ? BST_CHECKED : BST_UNCHECKED);
 		
-		CheckDlgButton(hwndDlg, IDC_ALWAYSPRIMARY, !DBGetContactSettingByte(NULL,"CList","AlwaysPremary",0) ? BST_CHECKED : BST_UNCHECKED);
+		CheckDlgButton(hwndDlg, IDC_ALWAYSPRIMARY, !DBGetContactSettingByte(NULL,"CList","AlwaysPrimary",0) ? BST_CHECKED : BST_UNCHECKED);
 		
 		CheckDlgButton(hwndDlg, IDC_ALWAYSMULTI, !DBGetContactSettingByte(NULL,"CList","AlwaysMulti",SETTING_ALWAYSMULTI_DEFAULT) ? BST_CHECKED : BST_UNCHECKED);
 		CheckDlgButton(hwndDlg, IDC_DONTCYCLE, DBGetContactSettingByte(NULL,"CList","TrayIcon",SETTING_TRAYICON_DEFAULT)==SETTING_TRAYICON_SINGLE ? BST_CHECKED : BST_UNCHECKED);

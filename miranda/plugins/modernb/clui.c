@@ -98,7 +98,7 @@ BOOL CheckOwner(HWND hwnd)
 	{
 		char buf[255];
 		GetClassNameA(midWnd,buf,254);
-		if (!_strcmpi(buf,CLUIFrameSubContainerClassName)) return TRUE;
+		if (!strcmpi(buf,CLUIFrameSubContainerClassName)) return TRUE;
 	}
 	return FALSE;
 }
@@ -686,7 +686,12 @@ static int CluiModulesLoaded(WPARAM wParam,LPARAM lParam)
 	/*
 	 *	Updater support
 	*/
+#ifdef _UNICODE
 	CallService("Update/RegisterFL", (WPARAM)2103, (LPARAM)&pluginInfo);
+#else
+	CallService("Update/RegisterFL", (WPARAM)2996, (LPARAM)&pluginInfo);
+#endif 
+		
 	/*
 	 *  End of updater support
 	 */
@@ -1327,7 +1332,36 @@ BOOL CALLBACK RepositChildInZORDER(HWND hwnd,LPARAM lParam)
 //	SetWindowPos(hwnd,
 	return TRUE;
 }
+void SnappingToEdge(HWND hwnd, WINDOWPOS * wp) //by ZORG
+{
+	if (DBGetContactSettingByte(NULL,"CLUI","SnapToEdges",0))
+	{
+		RECT* dr;
+		MONITORINFO monInfo;
+		HMONITOR curMonitor = MonitorFromWindow(hwnd, MONITOR_DEFAULTTONEAREST);
 
+		monInfo.cbSize = sizeof(monInfo);
+		GetMonitorInfo(curMonitor, &monInfo);
+
+		dr = &(monInfo.rcWork);
+
+		// Left side
+		if ( wp->x < dr->left + 10 && wp->x > dr->left - 10 && BehindEdgeSettings!=1)
+			wp->x = dr->left;
+
+		// Right side
+		if ( dr->right - wp->x - wp->cx <10 && dr->right - wp->x - wp->cx > -10 && BehindEdgeSettings!=2)
+			wp->x = dr->right - wp->cx;
+
+		// Top side
+		if ( wp->y < dr->top + 10 && wp->y > dr->top - 10)
+			wp->y = dr->top;
+				
+		// Bottom side
+		if ( dr->bottom - wp->y - wp->cy <10 && dr->bottom - wp->y - wp->cy > -10)
+			wp->y = dr->bottom - wp->cy;
+		}
+}
 
 LRESULT CALLBACK cli_ContactListWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 {    
@@ -1389,35 +1423,9 @@ LRESULT CALLBACK cli_ContactListWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPAR
 			wp=(WINDOWPOS *)lParam;
 			GetWindowRect(hwnd,&old_window_rect);
 
-			// Прилипание к краям by ZorG
-			if (DBGetContactSettingByte(NULL,"CLUI","SnapToEdges",0))
-			{
-				RECT* dr;
-				MONITORINFO monInfo;
-				HMONITOR curMonitor = MonitorFromWindow(hwnd, MONITOR_DEFAULTTONEAREST);
+			// Прилипание к краям by ZorG	
+			SnappingToEdge(hwnd, wp);
 
-				monInfo.cbSize = sizeof(monInfo);
-				GetMonitorInfo(curMonitor, &monInfo);
-
-				dr = &(monInfo.rcWork);
-
-				// Left side
-				if ( wp->x < dr->left + 10 && wp->x > dr->left - 10 && BehindEdgeSettings!=1)
-					wp->x = dr->left;
-
-				// Right side
-				if ( dr->right - wp->x - wp->cx <10 && dr->right - wp->x - wp->cx > -10 && BehindEdgeSettings!=2)
-					wp->x = dr->right - wp->cx;
-
-				// Top side
-				if ( wp->y < dr->top + 10 && wp->y > dr->top - 10)
-					wp->y = dr->top;
-				
-				// Bottom side
-				if ( dr->bottom - wp->y - wp->cy <10 && dr->bottom - wp->y - wp->cy > -10)
-					wp->y = dr->bottom - wp->cy;
-
-			}
 			if ((old_window_rect.bottom-old_window_rect.top!=wp->cy || old_window_rect.right-old_window_rect.left !=wp->cx)&&!(wp->flags&SWP_NOSIZE))
 			{
 				{         
@@ -1477,6 +1485,14 @@ LRESULT CALLBACK cli_ContactListWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPAR
 	}	
 }
 
+	else if (msg==WM_WINDOWPOSCHANGING)
+	{
+		// Snaping if it is not in LayeredMode	
+		WINDOWPOS * wp;
+		wp=(WINDOWPOS *)lParam;
+		SnappingToEdge(hwnd, wp);
+		return DefWindowProc(hwnd,msg,wParam,lParam); 
+	}
 	switch (msg) {
 	case WM_EXITSIZEMOVE:
 		{

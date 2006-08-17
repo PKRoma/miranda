@@ -819,11 +819,19 @@ case INTM_STATUSCHANGED:
 					(dat->second_line_show)// && dat->second_line_type==TEXT_STATUS)
 					|| (dat->third_line_show)// && dat->third_line_type==TEXT_STATUS)
 					))
-					Cache_RenewText(pdnce->hContact);							
+					Cache_RenewText(pdnce->hContact);	
+
 			}
 		}
-		pcli->pfnSortContacts();
-		PostMessage(hwnd,INTM_INVALIDATE,0,0);
+		if (DBGetContactSettingByte(NULL,"CList","PlaceOfflineToRoot",0) )
+		{
+			SendMessage(hwnd,CLM_AUTOREBUILD,0,0);	
+		}
+		else
+		{
+			pcli->pfnSortContacts();
+			PostMessage(hwnd,INTM_INVALIDATE,0,0);
+		}
 		return ret;
 	}
 case INTM_RELOADOPTIONS:

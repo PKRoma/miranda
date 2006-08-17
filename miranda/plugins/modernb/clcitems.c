@@ -339,13 +339,14 @@ void cliRebuildEntireList(HWND hwnd,struct ClcData *dat)
   static int rebuildCounter=0;
 	BOOL GroupShowOfflineHere=FALSE;
 	int tick=GetTickCount();
+	BOOL PlaceOfflineToRoot=DBGetContactSettingByte(NULL,"CList","PlaceOfflineToRoot",0);
 	KillTimer(hwnd,TIMERID_REBUILDAFTER);
 	lockdat;
 	ClearRowByIndexCache();
 	ImageArray_Clear(&dat->avatar_cache);
 	RowHeights_Clear(dat);
 	RowHeights_GetMaxRowHeight(dat, hwnd);
-  TRACEVAR("Rebuild Entire List %d times\n",++rebuildCounter);
+    TRACEVAR("Rebuild Entire List %d times\n",++rebuildCounter);
   
 	dat->list.expanded=1;
 	dat->list.hideOffline=DBGetContactSettingByte(NULL,"CLC","HideOfflineRoot",0);
@@ -389,7 +390,7 @@ void cliRebuildEntireList(HWND hwnd,struct ClcData *dat)
 			if(group!=NULL) 
 			{
 				if (cacheEntry->status==ID_STATUS_OFFLINE)
-					if (DBGetContactSettingByte(NULL,"CList","PlaceOfflineToRoot",0))
+					if (PlaceOfflineToRoot)
 						group=&dat->list;
 				group->totalMembers++;
 
