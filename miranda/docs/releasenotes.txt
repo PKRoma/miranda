@@ -29,11 +29,20 @@ to list all the important ones without getting too technical.
 If you want to see the full changelogs, go here:
 http://files.miranda-im.org/builds/ChangeLog
 
+* New in 0.6
+Enhancements
+ - UPnP support
+
+Bugfixes:
+
+
 * New in 0.5.1
 Enhancements
  - ICQ: Added new session password API - allowing plugins like Secure Login to work better
 
 Bugfixes:
+ - Cannot create new profile through startup dialog (under NT4/95)
+ - Crash reading language pack headers
  - Options dialog didn't activate if currently open when using the main menu item
  - Profile selector didn't show last modified time correctly
  - db3x driver text was cut off in profile selector dialog
