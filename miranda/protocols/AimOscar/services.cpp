@@ -138,6 +138,7 @@ static int SendMsgW(WPARAM wParam, LPARAM lParam)
 			delete[] msg;
 			if(DBGetContactSettingByte(NULL, AIM_PROTOCOL_NAME, AIM_KEY_FO, 0))
 			{
+				//CHANGESD SMSG TO MSG
 				wchar_t* html_msg=bbcodes_to_html(smsg);
 				delete[] smsg;
 				if(aim_send_unicode_message(conn.hServerConn,conn.seqno,dbv.pszVal,html_msg))
@@ -172,18 +173,45 @@ static int RecvMsg(WPARAM /*wParam*/, LPARAM lParam)
 {
 	CCSDATA *ccs = ( CCSDATA* )lParam;
 	PROTORECVEVENT *pre = ( PROTORECVEVENT* )ccs->lParam;
-
 	DBEVENTINFO dbei = { 0 };
 	dbei.cbSize = sizeof( dbei );
 	dbei.szModule = AIM_PROTOCOL_NAME;
 	dbei.timestamp = pre->timestamp;
 	dbei.flags = pre->flags&PREF_CREATEREAD?DBEF_READ:0;
 	dbei.eventType = EVENTTYPE_MESSAGE;
-	dbei.cbBlob = lstrlen( pre->szMessage ) + 1;
 	if ( pre->flags & PREF_UNICODE )
-		dbei.cbBlob *= ( sizeof( wchar_t )+1 );
-
-	dbei.pBlob = ( PBYTE ) pre->szMessage;
+	{
+		wchar_t* wbuf=(wchar_t*)&pre->szMessage[lstrlen(pre->szMessage)+1];
+		wchar_t* st_wbuf;
+		if(DBGetContactSettingByte(NULL, AIM_PROTOCOL_NAME, AIM_KEY_FI, 0))
+		{
+			wchar_t* bbuf=html_to_bbcodes(wbuf);
+			st_wbuf=strip_html(bbuf);
+		}
+		else
+			st_wbuf=strip_html(wbuf);
+		delete[] pre->szMessage;
+		char* buf=new char[wcslen(st_wbuf)*3+3];
+		WideCharToMultiByte( CP_ACP, 0,st_wbuf, -1,buf,wcslen(st_wbuf)+1, NULL, NULL);
+		memcpy(&buf[strlen(buf)+1],st_wbuf,lstrlen(buf)*2+2);
+		delete[] st_wbuf;
+		dbei.pBlob=(PBYTE)buf;
+		dbei.cbBlob = lstrlen(buf)+1;
+		dbei.cbBlob*=(sizeof(wchar_t)+1);
+	}
+	else
+	{
+		char* buf;
+		if(DBGetContactSettingByte(NULL, AIM_PROTOCOL_NAME, AIM_KEY_FI, 0))
+		{
+			char* bbuf=html_to_bbcodes(pre->szMessage);
+			buf=strip_html(bbuf);
+		}
+		else
+			buf=strip_html(pre->szMessage);
+		dbei.pBlob=(PBYTE)buf;
+		dbei.cbBlob = lstrlen(buf)+1;
+	}
     CallService(MS_DB_EVENT_ADD, (WPARAM) ccs->hContact, (LPARAM) & dbei);
     return 0;
 }

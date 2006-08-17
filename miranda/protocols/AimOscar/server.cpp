@@ -732,7 +732,7 @@ void snac_received_message(SNAC &snac,HANDLE hServerConn,unsigned short &seqno)/
 				unsigned short caps_length=tlv.ushort(2);
 				unsigned short msg_length=tlv.ushort(6+caps_length)-4;
 				unsigned short encoding=tlv.ushort(8+caps_length);
-				char* msg=tlv.part(12+caps_length,msg_length);
+				char* buf=tlv.part(12+caps_length,msg_length);
 				hContact=find_contact(sn);
 				if(!hContact)
 				{
@@ -746,42 +746,18 @@ void snac_received_message(SNAC &snac,HANDLE hServerConn,unsigned short &seqno)/
 					if(encoding==0x0002)
 					{
 						unicode_message=1;
-						wchar_t* wch=new wchar_t[msg_length+1];
-						memcpy(wch,msg,msg_length);	
-						wch[msg_length/2]=0x00;
-						wcs_htons(wch);
-						wchar_t* stripped_wch;
-						if(DBGetContactSettingByte(NULL, AIM_PROTOCOL_NAME, AIM_KEY_FI, 0))
-						{
-							wchar_t* bbmsg=html_to_bbcodes(wch);
-							stripped_wch=strip_html(bbmsg);
-						}
-						else
-							stripped_wch=strip_html(wch);
-						delete[] wch;
-						char* mbch=new char[msg_length/2+1];
-						WideCharToMultiByte( CP_ACP, 0, stripped_wch, -1,mbch, msg_length/2+1, NULL, NULL );
-						msg_buf=new char[msg_length/2+(msg_length)+2+1];
-						char* p=msg_buf;
-						memcpy( p, mbch, lstrlen(mbch)+1);
-						p+=(lstrlen(msg_buf)+1);
-						memcpy( p,stripped_wch,wcslen(stripped_wch)*2+2);
-						delete[] stripped_wch;
-						delete[] mbch;
+						wchar_t* wbuf=new wchar_t[msg_length+1];
+						memcpy(wbuf,buf,msg_length);	
+						wbuf[msg_length/2]=0x00;
+						wcs_htons(wbuf);
+						msg_buf=new char[msg_length/2+msg_length+3];
+						WideCharToMultiByte( CP_ACP, 0, wbuf, -1,msg_buf, msg_length/2+1, NULL, NULL );
+						char* p=msg_buf+lstrlen(msg_buf)+1;
+						memcpy(p,wbuf,msg_length+2);
 					}
 					else
-					{
-						if(DBGetContactSettingByte(NULL, AIM_PROTOCOL_NAME, AIM_KEY_FI, 0))
-						{
-							char* bbmsg=html_to_bbcodes(msg);
-							msg_buf=strip_html(bbmsg);
-							delete[] bbmsg;
-						}
-						else
-							msg_buf=strip_html(msg);
-					}
+						msg_buf=buf;
 				}
-				delete[] msg;
 			}
 			if(tlv.cmp(0x0004)&&!tlv.len())//auto response flag
 			{

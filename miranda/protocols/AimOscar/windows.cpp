@@ -831,7 +831,7 @@ BOOL CALLBACK options_dialog(HWND hwndDlg, UINT msg, WPARAM /*wParam*/, LPARAM l
 
 					//GP
 					unsigned long timeout=GetDlgItemInt(hwndDlg, IDC_GP,0,0);
-					if(timeout>0xffff||timeout<15)
+					if(timeout>0xffff||timeout<30)
 						 DBWriteContactSettingWord(NULL, AIM_PROTOCOL_NAME, AIM_KEY_GP,DEFAULT_GRACE_PERIOD);
 					else
 						DBWriteContactSettingWord(NULL, AIM_PROTOCOL_NAME, AIM_KEY_GP,(WORD)timeout);
