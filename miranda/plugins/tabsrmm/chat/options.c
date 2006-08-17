@@ -795,6 +795,9 @@ static BOOL CALLBACK DlgProcOptions2(HWND hwndDlg,UINT uMsg,WPARAM wParam,LPARAM
         SendDlgItemMessage(hwndDlg, IDC_FONTCATEGORY, CB_SETCURSEL, 0, 0);
         SendDlgItemMessage(hwndDlg, IDC_NICKCOLORS, CB_SETCURSEL, 0, 0);
 
+        SendDlgItemMessage(hwndDlg, IDC_CHAT_CHOOSEFONT, BM_SETIMAGE, IMAGE_ICON, (LPARAM)myGlobals.g_buttonBarIcons[21]);
+        SendDlgItemMessage(hwndDlg, IDC_CHAT_CHOOSEFONT, BUTTONADDTOOLTIP, (WPARAM)Translate("Select font"), 0);
+
         fontOptionsList = IM_fontOptionsList;
 		fontCount = MSGDLGFONTCOUNT;
 
