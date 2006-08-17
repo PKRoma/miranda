@@ -76,7 +76,7 @@ BEGIN
     GROUPBOX        "AIM User Details",IDC_DETAILS,3,7,161,95,WS_GROUP
     GROUPBOX        "Advanced Options",IDC_EXPERT,166,7,156,95,WS_GROUP
     EDITTEXT        IDC_KA,234,23,20,12,ES_AUTOHSCROLL | ES_NUMBER,WS_EX_RIGHT
-    LTEXT           "*AimOSCAR must be reconnected  for some option to take effect.",IDC_MASQ,186,109,115,18,NOT WS_VISIBLE
+    LTEXT           "*Aim must be reconnected  for some option to take effect.",IDC_MASQ,186,109,115,18,NOT WS_VISIBLE
     LTEXT           "Keep Alive Timer:",IDC_STATIC,173,25,56,15
     LTEXT           "(seconds)",IDC_STATIC,255,25,32,12
     LTEXT           "File Transfer Grace Period:",IDC_STATIC,174,40,87,12

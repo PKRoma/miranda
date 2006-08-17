@@ -442,7 +442,7 @@ static int SendFile(WPARAM /*wParam*/,LPARAM lParam)
 				for(int file_amt=0;files[file_amt];file_amt++)
 					if(file_amt==1)
 					{
-						ShowPopup("Aim Protocol","AimOSCAR allows only one file to be sent at a time.", 0);
+						ShowPopup("Aim Protocol","Aim allows only one file to be sent at a time.", 0);
 						DBFreeVariant(&dbv);
 						return 0;
 					}

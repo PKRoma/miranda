@@ -6,11 +6,15 @@ void sending_file(HANDLE hContact, HANDLE hNewConnection)
 {
 	DBVARIANT dbv;
 	char* file;
+	char* wd;
 	unsigned long size;
 	if (!DBGetContactSetting(hContact, AIM_PROTOCOL_NAME, AIM_KEY_FN, &dbv))
 	{
 		file=strldup(dbv.pszVal,lstrlen(dbv.pszVal));
 		DBFreeVariant(&dbv);
+		wd=strldup(file,lstrlen(file));
+		char* swd=strrchr(wd,'\\');
+		*swd='\0';
 		size=DBGetContactSettingDword(hContact, AIM_PROTOCOL_NAME, AIM_KEY_FS, 0);
 		if(!size)
 			return;
@@ -104,6 +108,7 @@ void sending_file(HANDLE hContact, HANDLE hNewConnection)
 						pfts.totalBytes=size;
 						pfts.totalFiles=1;
 						pfts.totalProgress=0;
+						pfts.workingDir=wd;
 						ProtoBroadcastAck(AIM_PROTOCOL_NAME, hContact, ACKTYPE_FILE, ACKRESULT_DATA,hContact, (LPARAM) & pfts);
 						int bytes;
 						unsigned char buffer[1024];
@@ -154,6 +159,7 @@ void receiving_file(HANDLE hContact, HANDLE hNewConnection)
 	if (!DBGetContactSetting(hContact, AIM_PROTOCOL_NAME, AIM_KEY_FN, &dbv))
 	{
 		file=strldup(dbv.pszVal,lstrlen(dbv.pszVal));
+		pfts.workingDir=strldup(file,lstrlen(file));
 		DBFreeVariant(&dbv);
 	}
 	//start listen for packets stuff

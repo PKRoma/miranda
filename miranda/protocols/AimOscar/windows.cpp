@@ -88,7 +88,7 @@ BOOL CALLBACK userinfo_dialog(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPar
     }
     return FALSE;
 }
-BOOL CALLBACK options_dialog(HWND hwndDlg, UINT msg, WPARAM /*wParam*/, LPARAM lParam)
+BOOL CALLBACK options_dialog(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam)
 {
     switch (msg)
 	{
@@ -141,7 +141,8 @@ BOOL CALLBACK options_dialog(HWND hwndDlg, UINT msg, WPARAM /*wParam*/, LPARAM l
 		}
 		case WM_COMMAND:
         {
-            if ((HWND) lParam != GetFocus())
+            if ((LOWORD(wParam) == IDC_SN || LOWORD(wParam) == IDC_NK || LOWORD(wParam) == IDC_PW || LOWORD(wParam) == IDC_HN
+                 || LOWORD(wParam) == IDC_KA || LOWORD(wParam) == IDC_GP) && (HIWORD(wParam) != EN_CHANGE || (HWND) lParam != GetFocus()))
                 return 0;
             SendMessage(GetParent(hwndDlg), PSM_CHANGED, 0, 0);
             break;
