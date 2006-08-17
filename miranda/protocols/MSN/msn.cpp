@@ -63,7 +63,7 @@ bool		msnHaveChatDll = false;
 
 MYOPTIONS MyOptions;
 
-MSN_StatusMessage msnModeMsgs[ MSN_NUM_MODES ] = { 
+MSN_StatusMessage msnModeMsgs[ MSN_NUM_MODES ] = {
 	{ ID_STATUS_ONLINE,     NULL },
 	{ ID_STATUS_AWAY,       NULL },
 	{ ID_STATUS_NA,         NULL },
@@ -301,7 +301,7 @@ extern "C" int __declspec(dllexport) Load( PLUGINLINK* link )
 	char nudge[250];
 	sprintf(nudge,"%s/Nudge",protocolname);
 	hMSNNudge = CreateHookableEvent(nudge);
-	
+
 	MSN_InitThreads();
 
 	PROTOCOLDESCRIPTOR pd;
@@ -395,8 +395,8 @@ extern "C" int __declspec( dllexport ) Unload( void )
 
 extern "C" __declspec(dllexport) PLUGININFO* MirandaPluginInfo(DWORD mirandaVersion)
 {
-	if ( mirandaVersion < PLUGIN_MAKE_VERSION( 0, 4, 0, 0 )) {
-		MessageBox( NULL, _T("The MSN protocol plugin cannot be loaded. It requires Miranda IM 0.4.0 or later."), _T("MSN Protocol Plugin"), MB_OK|MB_ICONWARNING|MB_SETFOREGROUND|MB_TOPMOST );
+	if ( mirandaVersion < PLUGIN_MAKE_VERSION( 0, 5, 0, 0 )) {
+		MessageBox( NULL, _T("The MSN protocol plugin cannot be loaded. It requires Miranda IM 0.5.0 or later."), _T("MSN Protocol Plugin"), MB_OK|MB_ICONWARNING|MB_SETFOREGROUND|MB_TOPMOST );
 		return NULL;
 	}
 
