@@ -103,7 +103,7 @@ BOOL CALLBACK DlgProcYahooOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPa
 			struct yahoo_buddy *b = (struct yahoo_buddy *) l->data;
 			
 			//MessageBox(NULL, b->id, "ID", MB_OK);
-			SendMessage(GetDlgItem(hwndDlg,IDC_YIGN_LIST), LB_INSERTSTRING, 0, (LPARAM)b->id);
+			SendMessage(GetDlgItem(hwndDlg,IDC_YIGN_LIST), LB_ADDSTRING, 0, (LPARAM)b->id);
 			l = l->next;
 		}
 		return TRUE;
@@ -147,7 +147,7 @@ BOOL CALLBACK DlgProcYahooOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPa
 								break;
 							  }
 							   YAHOO_IgnoreBuddy(id, 0);
-							   SendMessage(GetDlgItem(hwndDlg,IDC_YIGN_LIST), LB_INSERTSTRING, -1, (LPARAM)id);
+							   SendMessage(GetDlgItem(hwndDlg,IDC_YIGN_LIST), LB_ADDSTRING, 0, (LPARAM)id);
 							   SetDlgItemText( hwndDlg, IDC_YIGN_EDIT, "" );
 							}  
 							break;
