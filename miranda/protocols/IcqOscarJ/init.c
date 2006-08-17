@@ -4,7 +4,7 @@
 //
 // Copyright © 2000,2001 Richard Hughes, Roland Rabien, Tristan Van de Vreede
 // Copyright © 2001,2002 Jon Keating, Richard Hughes
-// Copyright © 2002,2003,2004 Martin Öberg, Sam Kothari, Robert Rainwater
+// Copyright © 2002,2003,2004 Martin  berg, Sam Kothari, Robert Rainwater
 // Copyright © 2004,2005,2006 Joe Kucera
 //
 // This program is free software; you can redistribute it and/or
@@ -61,11 +61,11 @@ extern int bHideXStatusUI;
 PLUGININFO pluginInfo = {
   sizeof(PLUGININFO),
   NULL,
-  PLUGIN_MAKE_VERSION(0,3,7,1),
+  PLUGIN_MAKE_VERSION(0,3,7,2),
   "Support for ICQ network, enhanced.",
-  "Joe Kucera, Bio, Martin Öberg, Richard Hughes, Jon Keating, etc",
+  "Joe Kucera, Bio, Martin  berg, Richard Hughes, Jon Keating, etc",
   "jokusoftware@miranda-im.org",
-  "(C) 2000-2006 M.Öberg, R.Hughes, J.Keating, Bio, Angeli-Ka, J.Kucera",
+  "(C) 2000-2006 M. berg, R.Hughes, J.Keating, Bio, Angeli-Ka, J.Kucera",
   "http://addons.miranda-im.org/details.php?action=viewfile&id=1683",
   0,  //not transient
   0   //doesn't replace anything built-in

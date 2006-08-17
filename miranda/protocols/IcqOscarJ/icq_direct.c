@@ -425,6 +425,8 @@ static DWORD __stdcall icq_directThread(directthreadstartinfo *dtsi)
   NETLIBPACKETRECVER packetRecv={0};
   HANDLE hPacketRecver;
   BOOL bFirstPacket = TRUE;
+  DWORD dwReqMsgID1;
+  DWORD dwReqMsgID2;
 
 
   srand(time(NULL));
@@ -465,7 +467,12 @@ static DWORD __stdcall icq_directThread(directthreadstartinfo *dtsi)
     }
     else if (dc.type == DIRECTCONN_REVERSE)
     {
-      dc.dwReqId = (DWORD)dtsi->pvExtra;
+      reverse_cookie *pCookie = (reverse_cookie*)dtsi->pvExtra;
+
+      dwReqMsgID1 = pCookie->pMessage.dwMsgID1;
+      dwReqMsgID2 = pCookie->pMessage.dwMsgID2;
+      dc.dwReqId = (DWORD)pCookie->ft;
+      SAFE_FREE(&pCookie);
     }
   }
   else
@@ -531,15 +538,8 @@ static DWORD __stdcall icq_directThread(directthreadstartinfo *dtsi)
           NetLog_Direct("Reverse failed (%s)", "malloc failed");
       }
       else // we failed reverse connection
-      {
-        reverse_cookie *pCookie;
-        DWORD dwUin;
-
-        if (FindCookie(dc.dwReqId, &dwUin, &pCookie))
-        { // release cookie
-          icq_sendReverseFailed(&dc, pCookie->pMessage.dwMsgID1, pCookie->pMessage.dwMsgID2, dc.dwReqId);
-          ReleaseCookie(dc.dwReqId);
-        }
+      { // announce we failed
+        icq_sendReverseFailed(&dc, dwReqMsgID1, dwReqMsgID2, dc.dwReqId);
       }
       NetLog_Direct("connect() failed (%d)", GetLastError());
       RemoveDirectConnFromList(&dc);

@@ -41,6 +41,7 @@
 static void handleExtensionError(unsigned char *buf, WORD wPackLen);
 static void handleExtensionServerInfo(unsigned char *buf, WORD wPackLen, WORD wFlags);
 static void parseOfflineMessage(unsigned char *databuf, WORD wPacketLen);
+static void parseOfflineGreeting(BYTE* pDataBuf, WORD wLen, WORD wMsgLen, DWORD dwUin, DWORD dwTimestamp, BYTE bFlags);
 static void parseEndOfOfflineMessages(unsigned char *databuf, WORD wPacketLen);
 static void handleExtensionMetaResponse(unsigned char *databuf, WORD wPacketLen, WORD wCookie, WORD wFlags);
 static void parseSearchReplies(unsigned char *databuf, WORD wPacketLen, WORD wCookie, WORD wReplySubtype, BYTE bResultCode);
@@ -259,8 +260,7 @@ static void parseOfflineMessage(unsigned char *databuf, WORD wPacketLen)
     NetLog_Server("Offline message time: %u-%u-%u %u:%u", wYear, nMonth, nDay, nHour, nMinute);
     NetLog_Server("Offline message type %u from %u", bType, dwUin);
 
-    _ASSERTE(wMsgLen == wPacketLen);
-    if (wMsgLen == wPacketLen)
+    if (wMsgLen == wPacketLen || bType == MTYPE_PLUGIN)
     {
       struct tm *sentTm;
 
@@ -331,8 +331,10 @@ static void parseOfflineMessage(unsigned char *databuf, WORD wPacketLen)
       }
 
       // Handle the actual message
-      handleMessageTypes(dwUin, dwTimestamp, 0, 0, 0, 0, bType, bFlags,
-        0, wPacketLen, wMsgLen, databuf, FALSE);
+      if (bType == MTYPE_PLUGIN)
+        parseOfflineGreeting(databuf, wPacketLen, wMsgLen, dwUin, dwTimestamp, bFlags);
+      else
+        handleMessageTypes(dwUin, dwTimestamp, 0, 0, 0, 0, bType, bFlags, 0, wPacketLen, wMsgLen, databuf, FALSE);
 
       // Success
       return; 
@@ -341,6 +343,72 @@ static void parseOfflineMessage(unsigned char *databuf, WORD wPacketLen)
 
   // Failure
   NetLog_Server("Error: Broken offline message");
+}
+
+
+
+static void parseOfflineGreeting(BYTE* pDataBuf, WORD wLen, WORD wMsgLen, DWORD dwUin, DWORD dwTimestamp, BYTE bFlags)
+{
+  WORD wInfoLen;
+  DWORD dwPluginNameLen;
+  DWORD dwLengthToEnd;
+  DWORD dwDataLen;
+  DWORD q1,q2,q3,q4;
+  WORD qt;
+  char* szPluginName;
+  int typeId;
+
+  NetLog_Server("Parsing Greeting message through server");
+
+  pDataBuf += wMsgLen;   // Message
+  wLen -= wMsgLen;
+
+  //
+  unpackLEWord(&pDataBuf, &wInfoLen);
+
+  unpackDWord(&pDataBuf, &q1); // get data GUID & function id
+  unpackDWord(&pDataBuf, &q2);
+  unpackDWord(&pDataBuf, &q3);
+  unpackDWord(&pDataBuf, &q4);
+  unpackLEWord(&pDataBuf, &qt);
+  wLen -= 20;
+
+  unpackLEDWord(&pDataBuf, &dwPluginNameLen);
+  wLen -= 4;
+
+  if (dwPluginNameLen > wLen)
+  { // check for malformed plugin name
+    dwPluginNameLen = wLen;
+    NetLog_Server("Warning: malformed size of plugin name.");
+  }
+  szPluginName = (char *)_alloca(dwPluginNameLen + 1);
+  memcpy(szPluginName, pDataBuf, dwPluginNameLen);
+  szPluginName[dwPluginNameLen] = '\0';
+  wLen -= (WORD)dwPluginNameLen;
+
+  pDataBuf += dwPluginNameLen + 15;
+
+  typeId = TypeGUIDToTypeId(q1, q2, q3, q4, qt);
+  if (!typeId)
+    NetLog_Server("Error: Unknown type {%08x-%08x-%08x-%08x:%04x}: %s", q1,q2,q3,q4,qt, szPluginName);
+
+  if (wLen > 8)
+  {
+    // Length of remaining data
+    unpackLEDWord(&pDataBuf, &dwLengthToEnd);
+
+    // Length of message
+    unpackLEDWord(&pDataBuf, &dwDataLen);
+    wLen -= 8;
+
+    if (dwDataLen > wLen)
+      dwDataLen = wLen;
+
+    if (typeId)
+      handleMessageTypes(dwUin, dwTimestamp, 0, 0, 0, 0, typeId, bFlags, 0, dwLengthToEnd, (WORD)dwDataLen, pDataBuf, FALSE);
+    else
+      NetLog_Server("Unsupported plugin message type '%s'", szPluginName);
+  }
 }
 
 

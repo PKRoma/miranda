@@ -283,7 +283,6 @@ static void handleUserOnline(BYTE* buf, WORD wLen)
         ClearAllContactCapabilities(hContact);
 
         {
-          BYTE capBufDat[0x200]; // max 0x20 caps, currently used max 0x12
           BYTE* capBuf = NULL;
           WORD capLen = 0;
           oscar_tlv* pNewTLV;
@@ -303,7 +302,7 @@ static void handleUserOnline(BYTE* buf, WORD wLen)
             int i;
             BYTE* pCap;
 
-            capBuf = pCap = capBufDat;
+            capBuf = pCap = (BYTE*)_alloca(capLen + 0x10);
 
             if (pTLV && (pTLV->wLen >= 16))
             { // copy classic Capabilities

@@ -51,6 +51,15 @@ __________
 Changes
 _______
 
+0.3.7.2
+
+Bugfixes:
+  Fixes possible buffer overflow with contact status change
+  Fixed migration was not working at all (should not disconnect so often on server's upgrading)
+  Fixed offline greeting cards were not processed properly
+  Fixed small protocol glitch with reverse peer-to-peer connection
+
+  
 0.3.7.1
 
 Bugfixes:
@@ -58,6 +67,9 @@ Bugfixes:
   Fixed avatars were not working when server port set to 0
   Made message parser more strict (fixes bug allowing stealth invisible client detection)
   Fixed Popup's unicode support cannot be used in ANSI mode even if available
+
+Improvements:
+  Added new session password API - allowing plugins like Secure Login to work better
 
 
 0.3.7

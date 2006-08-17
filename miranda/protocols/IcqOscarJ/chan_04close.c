@@ -59,7 +59,7 @@ void handleCloseChannel(unsigned char *buf, WORD datalen, serverthread_info *inf
   if (info->isMigrating)
     handleMigration(info);
 
-  if (!info->bLoggedIn && info->newServerReady)
+  if ((!info->bLoggedIn || info->isMigrating) && info->newServerReady)
   {
     if (!connectNewServer(info))
     { // Connecting failed

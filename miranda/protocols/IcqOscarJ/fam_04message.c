@@ -560,7 +560,7 @@ static void handleRecvServMsgType2(unsigned char *buf, WORD wLen, DWORD dwUin, c
         if (tlv->wLen == 0x1B)
         {
           char* buf=tlv->pData;
-          DWORD dwUin, dwIp, dwPort, dwId;
+          DWORD dwUin, dwIp, dwPort;
           WORD wVersion;
           BYTE bMode;
           HANDLE hContact;
@@ -590,9 +590,13 @@ static void handleRecvServMsgType2(unsigned char *buf, WORD wLen, DWORD dwUin, c
             ICQWriteContactSettingWord(hContact,  "Version", wVersion);
             if (wVersion>6)
             {
-              unpackLEDWord(&buf, &dwId);
+              reverse_cookie *pCookie = (reverse_cookie*)SAFE_MALLOC(sizeof(reverse_cookie));
 
-              OpenDirectConnection(hContact, DIRECTCONN_REVERSE, (void*)dwId);
+              unpackLEDWord(&buf, (DWORD*)&pCookie->ft);
+              pCookie->pMessage.dwMsgID1 = dwID1;
+              pCookie->pMessage.dwMsgID2 = dwID2;
+
+              OpenDirectConnection(hContact, DIRECTCONN_REVERSE, (void*)pCookie);
             }
             else
               NetLog_Server("Warning: Unsupported direct protocol version in %s", "Reverse Connect Request");
