@@ -65,7 +65,7 @@ struct MessageWindowData
 	WORD wOldStatus;
 	TCmdList *cmdList;
 	TCmdList *cmdListCurrent;
-	int bIsRtl, bIsFirstAppend;
+	int bIsRtl, bIsFirstAppend, bIsAutoRTL;
 	int lastEventType;
 };
 

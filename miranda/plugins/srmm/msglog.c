@@ -138,10 +138,7 @@ static char *CreateRTFHeader(struct MessageWindowData *dat)
 	bufferAlloced = 1024;
 	buffer = (char *) malloc(bufferAlloced);
 	buffer[0] = '\0';
-	if ( dat->bIsRtl )
-		AppendToBuffer(&buffer, &bufferEnd, &bufferAlloced, "{\\rtf1\\ansi\\deff0\\rtldoc{\\fonttbl");
-	else	
-		AppendToBuffer(&buffer, &bufferEnd, &bufferAlloced, "{\\rtf1\\ansi\\deff0{\\fonttbl");
+	AppendToBuffer(&buffer, &bufferEnd, &bufferAlloced, "{\\rtf1\\ansi\\deff0{\\fonttbl");
 
 	for (i = 0; i < msgDlgFontCount; i++) {
 		LoadMsgDlgFont(i, &lf, NULL);
@@ -157,7 +154,8 @@ static char *CreateRTFHeader(struct MessageWindowData *dat)
 	else
 		colour = GetSysColor(COLOR_HOTLIGHT);
 	AppendToBuffer(&buffer, &bufferEnd, &bufferAlloced, "\\red%u\\green%u\\blue%u;", GetRValue(colour), GetGValue(colour), GetBValue(colour));
-	AppendToBuffer(&buffer, &bufferEnd, &bufferAlloced, "}\\pard");
+	AppendToBuffer(&buffer, &bufferEnd, &bufferAlloced, "}");
+	//AppendToBuffer(&buffer, &bufferEnd, &bufferAlloced, "}\\pard");
 	return buffer;
 }
 
@@ -229,18 +227,25 @@ static char *CreateRTFFromDbEvent(struct MessageWindowData *dat, HANDLE hContact
 	buffer = (char *) malloc(bufferAlloced);
 	buffer[0] = '\0';
 
-	if ( dat->bIsFirstAppend ) {
-		AppendToBuffer(&buffer, &bufferEnd, &bufferAlloced, "%s", (dat->lastEventType & DBEF_RTL) ? "\\rtlpar\\rtlmark\\par " : "\\par ");
-		dat->bIsFirstAppend = FALSE;
+	if (!dat->bIsAutoRTL && !streamData->isEmpty)
+		AppendToBuffer(&buffer, &bufferEnd, &bufferAlloced, "\\par");
+
+	if (dbei.flags & DBEF_RTL) {
+        AppendToBuffer(&buffer, &bufferEnd, &bufferAlloced, "\\rtlpar");
+		dat->bIsAutoRTL = TRUE;
 	}
+    else
+        AppendToBuffer(&buffer, &bufferEnd, &bufferAlloced, "\\ltrpar");
 
-	if (dbei.flags & DBEF_RTL)
-		AppendToBuffer(&buffer, &bufferEnd, &bufferAlloced, "\\rtlpar\\rtlmark ");
-	else
-		AppendToBuffer(&buffer, &bufferEnd, &bufferAlloced, "\\ltrpar\\ltrmark ");
+	streamData->isEmpty = 0;
 
-	if (!streamData->isEmpty)
-		AppendToBuffer(&buffer, &bufferEnd, &bufferAlloced, "\\par ");
+	if (dat->bIsAutoRTL) {
+		if(dbei.flags & DBEF_RTL) {
+			AppendToBuffer(&buffer, &bufferEnd, &bufferAlloced, "\\ltrch\\rtlch");
+		}else{
+			AppendToBuffer(&buffer, &bufferEnd, &bufferAlloced, "\\rtlch\\ltrch");
+		}
+	}
 
 	if (g_dat->flags&SMF_SHOWICONS) {
 		int i;
@@ -372,6 +377,9 @@ static char *CreateRTFFromDbEvent(struct MessageWindowData *dat, HANDLE hContact
 			break;
 		}
 	}
+	if(dat->bIsAutoRTL)
+		AppendToBuffer(&buffer, &bufferEnd, &bufferAlloced, "\\par");
+
 	dat->lastEventType = dbei.flags;
 	free(dbei.pBlob);
 	return buffer;
@@ -450,7 +458,7 @@ void StreamInEvents(HWND hwndDlg, HANDLE hDbEventFirst, int count, int fAppend)
 	strcpy(szSep2, fAppend ? "\\par\\sl0" : "\\sl1000");
 	strcpy(szSep2_RTL, fAppend ? "\\rtlpar\\rtlmark\\par\\sl1000" : "\\sl1000");
 
-	SendDlgItemMessage(hwndDlg, IDC_LOG, EM_STREAMIN, fAppend ? SFF_SELECTION | SF_RTF : SF_RTF, (LPARAM) & stream);
+	SendDlgItemMessage(hwndDlg, IDC_LOG, EM_STREAMIN, fAppend ? SFF_SELECTION | SF_RTF : SFF_SELECTION | SF_RTF, (LPARAM) & stream);
 	SendDlgItemMessage(hwndDlg, IDC_LOG, EM_EXSETSEL, 0, (LPARAM) & oldSel);
 	SendDlgItemMessage(hwndDlg, IDC_LOG, EM_HIDESELECTION, FALSE, 0);
 	dat->hDbEventLast = streamData.hDbEventLast;

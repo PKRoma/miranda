@@ -1080,6 +1080,24 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
 			hFont = CreateFontIndirect(&lf);
 			SendDlgItemMessage(hwndDlg, IDC_MESSAGE, WM_SETFONT, (WPARAM) hFont, MAKELPARAM(TRUE, 0));
 		}
+
+        /*
+		 * configure message history for proper RTL formatting
+		 */
+
+		{
+            PARAFORMAT2 pf2;
+            ZeroMemory((void *)&pf2, sizeof(pf2));
+            pf2.cbSize = sizeof(pf2);
+
+            pf2.wEffects = PFE_RTLPARA;
+            pf2.dwMask = PFM_RTLPARA;
+            SetDlgItemText(hwndDlg, IDC_LOG, _T(""));
+            SendDlgItemMessage(hwndDlg, IDC_LOG, EM_SETPARAFORMAT, 0, (LPARAM)&pf2);
+            pf2.wEffects = 0;
+            SendDlgItemMessage(hwndDlg, IDC_LOG, EM_SETPARAFORMAT, 0, (LPARAM)&pf2);
+            SendDlgItemMessage(hwndDlg, IDC_LOG, EM_SETLANGOPTIONS, 0, (LPARAM) SendDlgItemMessage(hwndDlg, IDC_LOG, EM_GETLANGOPTIONS, 0, 0) & ~IMF_AUTOKEYBOARD);
+        }
 		SendMessage(hwndDlg, DM_REMAKELOG, 0, 0);
 		SendMessage(hwndDlg, DM_UPDATEWINICON, 0, 0);
 		break;
