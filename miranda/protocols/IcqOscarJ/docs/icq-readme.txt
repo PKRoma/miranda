@@ -40,7 +40,7 @@ __________
   Manage server-list dialog now groups requests - much faster
   Full support for sub-groups in Manage server-list dialog
   Real Level 1 rate management (will solve multi-recipient message problems)
-  AIM file transfers (OFT) - like icq5 (including transfer thru server)
+  
 
 0.5
   Account management (together with Miranda core changes)
@@ -50,6 +50,20 @@ __________
 
 Changes
 _______
+
+0.3.8.0 Devel builds
+
+New Features:
+  TODO: AIM file transfers (OFT) - like icq5 (including transfer thru server)
+
+0.3.7.2
+
+Bugfixes:
+  Fixes possible buffer overflow with contact status change
+  Fixed migration was not working at all (should not disconnect so often on server's upgrading)
+  Fixed offline greeting cards were not processed properly
+  Fixed small protocol glitch with reverse peer-to-peer connection
+
 
 0.3.7.1
 

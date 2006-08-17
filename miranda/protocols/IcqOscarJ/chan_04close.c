@@ -59,7 +59,7 @@ void handleCloseChannel(unsigned char *buf, WORD datalen, serverthread_info *inf
   if (info->isMigrating)
     handleMigration(info);
 
-  if (!info->bLoggedIn && info->newServerReady)
+  if ((!info->bLoggedIn || info->isMigrating) && info->newServerReady)
   {
     if (!connectNewServer(info))
     { // Connecting failed
@@ -96,7 +96,7 @@ void handleCloseChannel(unsigned char *buf, WORD datalen, serverthread_info *inf
 
 static int IsGatewayModeActive()
 {
-  return ICQGetContactSettingByte(NULL, "UseGateway", 0) && ICQGetContactSettingByte(NULL, "NLUseProxy", 0);
+  return gbUseGateway && ICQGetContactSettingByte(NULL, "NLUseProxy", 0);
 }
 
 

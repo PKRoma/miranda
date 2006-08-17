@@ -84,6 +84,7 @@
 #include "capabilities.h"
 #include "icq_packet.h"
 #include "icq_direct.h"
+#include "oscar_filetransfer.h"
 #include "icq_server.h"
 #include "icqosc_svcs.h"
 #include "icq_xtraz.h"

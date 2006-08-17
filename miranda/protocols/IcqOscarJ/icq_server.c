@@ -105,8 +105,8 @@ static DWORD __stdcall icq_serverThread(serverthread_start_info* infoParam)
     nlb.pfnNewConnection = icq_newConnectionReceived;
     hDirectBoundPort = (HANDLE)CallService(MS_NETLIB_BINDPORT, (WPARAM)ghDirectNetlibUser, (LPARAM)&nlb);
     if (!hDirectBoundPort && (GetLastError() == 87))
-    { // this ensures old Miranda also can bind a port for a dc
-      nlb.cbSize = NETLIBBIND_SIZEOF_V1;
+    { // this ensures older Miranda also can bind a port for a dc
+      nlb.cbSize = NETLIBBIND_SIZEOF_V2;
       hDirectBoundPort = (HANDLE)CallService(MS_NETLIB_BINDPORT, (WPARAM)ghDirectNetlibUser, (LPARAM)&nlb);
     }
     if (hDirectBoundPort == NULL)

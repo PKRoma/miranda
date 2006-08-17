@@ -4,7 +4,7 @@
 // 
 // Copyright © 2000,2001 Richard Hughes, Roland Rabien, Tristan Van de Vreede
 // Copyright © 2001,2002 Jon Keating, Richard Hughes
-// Copyright © 2002,2003,2004 Martin  berg, Sam Kothari, Robert Rainwater
+// Copyright © 2002,2003,2004 Martin Öberg, Sam Kothari, Robert Rainwater
 // Copyright © 2004,2005,2006 Angeli-Ka, Joe Kucera
 // 
 // This program is free software; you can redistribute it and/or
@@ -97,25 +97,34 @@ static DWORD requestXStatusDetails(HANDLE hContact, BOOL bAllowDelay)
 
 
 
+static HANDLE LoadXStatusIconLibrary(char* path, const char* sub)
+{
+  char* p = strrchr(path, '\\');
+  HANDLE hLib;
+
+  strcpy(p, sub);
+  strcat(p, "\\xstatus_ICQ.dll");
+  if (hLib = LoadLibrary(path)) return hLib;
+  strcpy(p, sub);
+  strcat(p, "\\xstatus_icons.dll");
+  if (hLib = LoadLibrary(path)) return hLib;
+  strcpy(p, "\\");
+  return hLib;
+}
+
+
+
 static char* InitXStatusIconLibrary(char* buf)
 {
 	char path[2*MAX_PATH];
-  char* p;
 
   // get miranda's exe path
   GetModuleFileNameA(NULL, path, MAX_PATH);
-  // find the last \ and null it out, this leaves no trailing slash
-  p = strrchr(path, '\\');
-  strcpy(p, "\\Icons");
-  strcat(p, "\\xstatus_ICQ.dll");
-  hXStatusIconsDLL = LoadLibrary(path);
 
-  if (!hXStatusIconsDLL)
-  {
-    strcpy(p, "\\Plugins");
-    strcat(p, "\\xstatus_icons.dll");
-    hXStatusIconsDLL = LoadLibrary(path);
-  }
+  hXStatusIconsDLL = LoadXStatusIconLibrary(path, "\\Icons");
+  if (!hXStatusIconsDLL) // TODO: add "Custom Folders" support
+    hXStatusIconsDLL = LoadXStatusIconLibrary(path, "\\Plugins");
+
   if (hXStatusIconsDLL)
   {
     strcpy(buf, path);

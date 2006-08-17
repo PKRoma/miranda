@@ -61,7 +61,7 @@ extern int bHideXStatusUI;
 PLUGININFO pluginInfo = {
   sizeof(PLUGININFO),
   NULL,
-  PLUGIN_MAKE_VERSION(0,3,7,1),
+  PLUGIN_MAKE_VERSION(0,3,8,0),
   "Support for ICQ network, enhanced.",
   "Joe Kucera, Bio, Martin Öberg, Richard Hughes, Jon Keating, etc",
   "jokusoftware@miranda-im.org",
@@ -361,7 +361,8 @@ static int OnSystemModulesLoaded(WPARAM wParam,LPARAM lParam)
   nlu.szDescriptiveName = szBuffer;
   nlu.szSettingsModule = gpszICQProtoName;
 
-  if (ICQGetContactSettingByte(NULL, "UseGateway", 0))
+  gbUseGateway = ICQGetContactSettingByte(NULL, "UseGateway", 0);
+  if (gbUseGateway)
   {
     nlu.flags |= NUF_HTTPGATEWAY;
     nlu.szHttpGatewayHello = "http://http.proxy.icq.com/hello";
