@@ -30,8 +30,11 @@ int PASCAL send(SOCKET s, const char FAR *buf, int len, int flags)
 	}
 
     rlen = Netlib_Send((HANDLE)s, buf, len, 0);
-	
-	lLastSend = time(NULL);
+
+#ifdef HTTP_GATEWAY				
+	if (iHTTPGateway)
+		lLastSend = time(NULL);
+#endif
 	
     if (rlen == SOCKET_ERROR) {
         LOG(("SEND Error."));

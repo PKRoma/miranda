@@ -2290,7 +2290,9 @@ void ext_yahoo_login(int login_mode)
 	char host[128], fthost[128];
 	int port=0;
     DBVARIANT dbv;
+#ifdef HTTP_GATEWAY				
 	NETLIBUSERSETTINGS nlus = { 0 };
+#endif
 	
 	LOG(("ext_yahoo_login"));
 
@@ -2308,6 +2310,7 @@ void ext_yahoo_login(int login_mode)
 	lstrcpyn(fthost,YAHOO_GetByte("YahooJapan",0)?"filetransfer.msg.yahoo.co.jp":"filetransfer.msg.yahoo.com" , sizeof(fthost));
 	port = DBGetContactSettingWord(NULL, yahooProtocolName, YAHOO_LOGINPORT, 5050);
 	
+#ifdef HTTP_GATEWAY			
 	nlus.cbSize = sizeof( nlus );
 	if (CallService(MS_NETLIB_GETUSERSETTINGS, (WPARAM) hnuMain, (LPARAM) &nlus) == 0) {
 		LOG(("ERROR: Problem retrieving miranda network settings!!!"));
@@ -2315,14 +2318,17 @@ void ext_yahoo_login(int login_mode)
 	
 	LOG(("Proxy Type: %d", nlus.proxyType));
 	iHTTPGateway = (nlus.proxyType == PROXYTYPE_HTTP);
-	
+#endif
+
 	//ylad->id = yahoo_init(ylad->yahoo_id, ylad->password);
 	ylad->id = yahoo_init_with_attributes(ylad->yahoo_id, ylad->password, 
 			"pager_host", host,
 			"pager_port", port,
 			"filetransfer_host", fthost,
 			"picture_checksum", YAHOO_GetDword("AvatarHash", -1),
+#ifdef HTTP_GATEWAY			
 			"web_messenger", iHTTPGateway,
+#endif
 			NULL);
 	
 	ylad->status = YAHOO_STATUS_OFFLINE;
