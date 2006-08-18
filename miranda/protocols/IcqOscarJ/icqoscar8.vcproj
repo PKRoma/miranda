@@ -250,6 +250,9 @@
 				RelativePath="md5.h">
 			</File>
 			<File
+				RelativePath=".\oscar_filetransfer.h">
+			</File>
+			<File
 				RelativePath="resource.h">
 			</File>
 			<File
@@ -662,6 +665,9 @@
 						BasicRuntimeChecks="3"
 						BrowseInformation="1"/>
 				</FileConfiguration>
+			</File>
+			<File
+				RelativePath=".\oscar_filetransfer.c">
 			</File>
 		</Filter>
 		<Filter
