@@ -25,7 +25,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 //#include "database.h"
 
 static HANDLE hIniChangeNotification;
-static char szMirandaBootIni[MAX_PATH];
+extern char mirandabootini[MAX_PATH];
 
 int GetCommandLineDbName(char *szName,int cbName)
 {
@@ -64,7 +64,7 @@ void GetProfileDirectory(char *szPath,int cbPath)
 	GetModuleFileNameA(GetModuleHandle(NULL),szMirandaDir,sizeof(szMirandaDir));
 	str2=strrchr(szMirandaDir,'\\');
 	if(str2!=NULL) *str2=0;
-	GetPrivateProfileStringA("Database","ProfileDir",".",szProfileDir,sizeof(szProfileDir),szMirandaBootIni);
+	GetPrivateProfileStringA("Database","ProfileDir",".",szProfileDir,sizeof(szProfileDir),mirandabootini);
 	ExpandEnvironmentStringsA(szProfileDir,szExpandedProfileDir,sizeof(szExpandedProfileDir));
 	_chdir(szMirandaDir);
 	if(!_fullpath(szPath,szExpandedProfileDir,cbPath))
@@ -77,7 +77,7 @@ void GetProfileDirectory(char *szPath,int cbPath)
 int ShouldAutoCreate(void)
 {
 	char szAutoCreate[4];
-	GetPrivateProfileStringA("Database","AutoCreate","no",szAutoCreate,sizeof(szAutoCreate),szMirandaBootIni);
+	GetPrivateProfileStringA("Database","AutoCreate","no",szAutoCreate,sizeof(szAutoCreate),mirandabootini);
 	return !lstrcmpiA(szAutoCreate,"yes");
 }
 
@@ -92,7 +92,7 @@ int GetDefaultProfilePath(char *szPath,int cbPath,int *specified)
 	GetProfileDirectory(szProfileDir,sizeof(szProfileDir));
 	if(GetCommandLineDbName(szDefaultName,sizeof(szDefaultName))) {
 		if(specified) *specified=0;
-		GetPrivateProfileStringA("Database","DefaultProfile","",szDefaultName,sizeof(szDefaultName),szMirandaBootIni);
+		GetPrivateProfileStringA("Database","DefaultProfile","",szDefaultName,sizeof(szDefaultName),mirandabootini);
 	}
 	ExpandEnvironmentStringsA(szDefaultName,szExpandedDefaultName,sizeof(szExpandedDefaultName));
 
@@ -135,17 +135,11 @@ int GetDefaultProfilePath(char *szPath,int cbPath,int *specified)
 int ShouldShowProfileManager(void)
 {
 	char szShowValue[7];
-	char szDefaultProfile[MAX_PATH],szMirandaDir[MAX_PATH];
-	char *str2;
+	char szDefaultProfile[MAX_PATH];
 	int defaultProfileSpecified;
 
-	GetModuleFileNameA(GetModuleHandle(NULL),szMirandaDir,sizeof(szMirandaDir));
-	str2=strrchr(szMirandaDir,'\\');
-	if(str2!=NULL) *str2=0;
-	lstrcpyA(szMirandaBootIni,szMirandaDir);
-	lstrcatA(szMirandaBootIni,"\\mirandaboot.ini");
 	if(GetAsyncKeyState(VK_CONTROL)&0x8000) return 1;
-	GetPrivateProfileStringA("Database","ShowProfileMgr","smart",szShowValue,sizeof(szShowValue),szMirandaBootIni);
+	GetPrivateProfileStringA("Database","ShowProfileMgr","smart",szShowValue,sizeof(szShowValue),mirandabootini);
 	if(!lstrcmpiA(szShowValue,"always")) return 1;
 	if(!lstrcmpiA(szShowValue,"never")) {
 		return GetDefaultProfilePath(szDefaultProfile,sizeof(szDefaultProfile),NULL);
@@ -161,7 +155,7 @@ static BOOL CALLBACK InstallIniDlgProc(HWND hwndDlg,UINT message,WPARAM wParam,L
 			TranslateDialogDefault(hwndDlg);
 			SetDlgItemTextA(hwndDlg,IDC_ININAME,(char*)lParam);
 			{	char szSecurity[11],*pszSecurityInfo;
-			  	GetPrivateProfileStringA("AutoExec","Warn","notsafe",szSecurity,sizeof(szSecurity),szMirandaBootIni);
+			  	GetPrivateProfileStringA("AutoExec","Warn","notsafe",szSecurity,sizeof(szSecurity),mirandabootini);
 				if(!lstrcmpiA(szSecurity,"all"))
 					pszSecurityInfo="Security systems to prevent malicious changes are in place and you will be warned before every change that is made.";
 				else if(!lstrcmpiA(szSecurity,"onlyunsafe"))
@@ -311,17 +305,17 @@ static void DoAutoExec(void)
 	char szSafeSections[2048],szUnsafeSections[2048],szSecurity[11],szOverrideSecurityFilename[MAX_PATH];
 	int warnThisSection=0;
 
-	GetPrivateProfileStringA("AutoExec","Use","prompt",szUse,sizeof(szUse),szMirandaBootIni);
+	GetPrivateProfileStringA("AutoExec","Use","prompt",szUse,sizeof(szUse),mirandabootini);
 	if(!lstrcmpiA(szUse,"no")) return;
-	GetPrivateProfileStringA("AutoExec","Safe","CLC Icons CLUI CList SkinSounds",szSafeSections,sizeof(szSafeSections),szMirandaBootIni);
-	GetPrivateProfileStringA("AutoExec","Unsafe","ICQ MSN",szUnsafeSections,sizeof(szUnsafeSections),szMirandaBootIni);
-	GetPrivateProfileStringA("AutoExec","Warn","notsafe",szSecurity,sizeof(szSecurity),szMirandaBootIni);
-	GetPrivateProfileStringA("AutoExec","OverrideSecurityFilename","",szOverrideSecurityFilename,sizeof(szOverrideSecurityFilename),szMirandaBootIni);
+	GetPrivateProfileStringA("AutoExec","Safe","CLC Icons CLUI CList SkinSounds",szSafeSections,sizeof(szSafeSections),mirandabootini);
+	GetPrivateProfileStringA("AutoExec","Unsafe","ICQ MSN",szUnsafeSections,sizeof(szUnsafeSections),mirandabootini);
+	GetPrivateProfileStringA("AutoExec","Warn","notsafe",szSecurity,sizeof(szSecurity),mirandabootini);
+	GetPrivateProfileStringA("AutoExec","OverrideSecurityFilename","",szOverrideSecurityFilename,sizeof(szOverrideSecurityFilename),mirandabootini);
 	GetModuleFileNameA(GetModuleHandle(NULL),szMirandaDir,sizeof(szMirandaDir));
 	str2=strrchr(szMirandaDir,'\\');
 	if(str2!=NULL) *str2=0;
 	_chdir(szMirandaDir);
-	GetPrivateProfileStringA("AutoExec","Glob","autoexec_*.ini",szFindPath,sizeof(szFindPath),szMirandaBootIni);
+	GetPrivateProfileStringA("AutoExec","Glob","autoexec_*.ini",szFindPath,sizeof(szFindPath),mirandabootini);
 	ExpandEnvironmentStringsA(szFindPath,szExpandedFindPath,sizeof(szExpandedFindPath));
 	hFind=FindFirstFileA(szExpandedFindPath,&fd);
 	if(hFind==INVALID_HANDLE_VALUE) return;
@@ -343,7 +337,7 @@ static void DoAutoExec(void)
 			if(fgets(szLine,sizeof(szLine),fp)==NULL) break;
 			lineLength=lstrlenA(szLine);
 			while(lineLength && szLine[lineLength-1]<=' ') szLine[--lineLength]='\0';
-			if(szLine[0]==';' || szLine[0]=='#' || szLine[0]<=' ') continue;
+			if(szLine[0]==';' || szLine[0]<=' ') continue;
 			if(szLine[0]=='[') {
 				char *szEnd=strchr(szLine+1,']');
 				if(szEnd==NULL) continue;
@@ -443,7 +437,7 @@ static void DoAutoExec(void)
 			DeleteFileA(szIniPath);
 		else {
 			char szOnCompletion[8];
-			GetPrivateProfileStringA("AutoExec","OnCompletion","recycle",szOnCompletion,sizeof(szOnCompletion),szMirandaBootIni);
+			GetPrivateProfileStringA("AutoExec","OnCompletion","recycle",szOnCompletion,sizeof(szOnCompletion),mirandabootini);
 			if(!lstrcmpiA(szOnCompletion,"delete"))
 				DeleteFileA(szIniPath);
 			else if(!lstrcmpiA(szOnCompletion,"recycle")) {
@@ -457,7 +451,7 @@ static void DoAutoExec(void)
 			else if(!lstrcmpiA(szOnCompletion,"rename")) {
 				char szRenamePrefix[MAX_PATH];
 				char szNewPath[MAX_PATH];
-				GetPrivateProfileStringA("AutoExec","RenamePrefix","done_",szRenamePrefix,sizeof(szRenamePrefix),szMirandaBootIni);
+				GetPrivateProfileStringA("AutoExec","RenamePrefix","done_",szRenamePrefix,sizeof(szRenamePrefix),mirandabootini);
 				lstrcpyA(szNewPath,szExpandedFindPath);
 				lstrcatA(szNewPath,szRenamePrefix);
 				lstrcatA(szNewPath,fd.cFileName);
