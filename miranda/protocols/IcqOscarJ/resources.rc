@@ -111,12 +111,10 @@ BEGIN
     LTEXT           "Hint: Use port 0 to connect on a random port. Try port 80 or port 443 if you are having problems connecting through a http proxy server.",
                     IDC_STATIC,12,125,290,19
     CONTROL         "Secure (MD5) login",IDC_SECURE,"Button",BS_AUTOCHECKBOX | 
-                    BS_TOP | WS_TABSTOP,12,148,290,10
-    CONTROL         "Use HTTP Gateway mode for HTTP proxy",IDC_USEGATEWAY,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,12,160,290,10
+                    BS_TOP | WS_TABSTOP,12,154,290,10
     CONTROL         "Send 'Keep-alives' (enable this if you use a proxy server and frequently get disconnected)",
                     IDC_KEEPALIVE,"Button",BS_AUTOCHECKBOX | BS_TOP | 
-                    BS_MULTILINE | WS_TABSTOP,12,172,290,18
+                    BS_MULTILINE | WS_TABSTOP,12,168,290,18
     CONTROL         "Ignore concurrent error messages",IDC_NOERRMULTI,"Button",
                     BS_AUTOCHECKBOX | WS_TABSTOP,12,192,290,10
     LTEXT           "Show connection error messages:",IDC_STATIC,12,206,238,

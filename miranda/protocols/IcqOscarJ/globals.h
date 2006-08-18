@@ -48,7 +48,7 @@ HANDLE ghServerNetlibUser;
 HANDLE ghDirectNetlibUser;
 
 // from init.h
-BYTE gbUseGateway;
+BYTE gbGatewayMode;
 BYTE gbSecureLogin;
 BYTE gbAimEnabled;
 BYTE gbUtfEnabled;

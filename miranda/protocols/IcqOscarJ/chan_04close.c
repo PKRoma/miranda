@@ -94,13 +94,6 @@ void handleCloseChannel(unsigned char *buf, WORD datalen, serverthread_info *inf
 
 
 
-static int IsGatewayModeActive()
-{
-  return gbUseGateway && ICQGetContactSettingByte(NULL, "NLUseProxy", 0);
-}
-
-
-
 void handleLoginReply(unsigned char *buf, WORD datalen, serverthread_info *info)
 {
   oscar_tlv_chain* chain = NULL;
@@ -167,7 +160,7 @@ static int connectNewServer(serverthread_info *info)
   NETLIBOPENCONNECTION nloc = {0};
   int res = 0;
 
-  if (!IsGatewayModeActive())
+  if (!gbGatewayMode)
   { // close connection only if not in gateway mode
     NetLib_SafeCloseHandle(&hServerConn, TRUE);
   }
@@ -181,7 +174,7 @@ static int connectNewServer(serverthread_info *info)
   nloc.szHost = info->newServer;
   nloc.wPort = servport;
 
-  if (!IsGatewayModeActive())
+  if (!gbGatewayMode)
   {
     { /* Time to release packet receiver, connection already closed */
       NetLib_SafeCloseHandle(&hServerPacketRecver, FALSE);

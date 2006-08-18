@@ -53,6 +53,9 @@ _______
 
 0.3.8.0 Devel builds
 
+Bugfixes:
+  Fixed HTTP/HTTPS proxy support (removed useless gateway option), long messages are now sent properly
+
 New Features:
   TODO: AIM file transfers (OFT) - like icq5 (including transfer thru server)
 

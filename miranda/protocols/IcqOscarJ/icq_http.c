@@ -30,7 +30,7 @@
 //
 // DESCRIPTION:
 //
-//  Describe me here please...
+//  HTTP Gateway Handling routines
 //
 // -----------------------------------------------------------------------------
 
@@ -39,7 +39,7 @@
 
 
 int icq_httpGatewayInit(HANDLE hConn, NETLIBOPENCONNECTION *nloc, NETLIBHTTPREQUEST *nlhr)
-{
+{ // initial response from ICQ http gateway
   WORD wLen, wVersion, wType;
   WORD wIpLen;
   DWORD dwSid1, dwSid2, dwSid3, dwSid4;
@@ -101,7 +101,7 @@ int icq_httpGatewayInit(HANDLE hConn, NETLIBOPENCONNECTION *nloc, NETLIBHTTPREQU
 
 
 int icq_httpGatewayBegin(HANDLE hConn, NETLIBOPENCONNECTION* nloc)
-{
+{ // open our "virual data connection"
   icq_packet packet;
   int serverNameLen;
 
@@ -122,22 +122,35 @@ int icq_httpGatewayBegin(HANDLE hConn, NETLIBOPENCONNECTION* nloc)
 
 int icq_httpGatewayWrapSend(HANDLE hConn, PBYTE buf, int len, int flags, MIRANDASERVICE pfnNetlibSend)
 {
-  icq_packet packet;
-  int sendResult;
+  PBYTE sendBuf = buf;
+  int sendLen = len;
+  int sendResult = 0;
 
-  packet.wLen = len;
-  write_httphdr(&packet, HTTP_PACKETTYPE_FLAP, GetGatewayIndex(hConn));
-  packBuffer(&packet, buf, (WORD)len);
-  sendResult = Netlib_Send(hConn, packet.pData, packet.wLen, flags);
-  SAFE_FREE(&packet.pData);
+  while (sendLen > 0)
+  { // imitate polite behaviour of icq5.1 and split large packets
+    icq_packet packet;
+    WORD curLen;
+    int curResult;
 
-  if(sendResult <= 0)
-    return sendResult;
+    if (sendLen > 512) curLen = 512; else curLen = (WORD)sendLen;
+    // send wrapped data
+    packet.wLen = curLen;
+    write_httphdr(&packet, HTTP_PACKETTYPE_FLAP, GetGatewayIndex(hConn));
+    packBuffer(&packet, sendBuf, (WORD)curLen);
+    curResult = Netlib_Send(hConn, packet.pData, packet.wLen, flags);
+    SAFE_FREE(&packet.pData);
 
-  if(sendResult < 14)
-    return 0;
+    // sending failed, end loop
+    if (curResult <= 0)
+      return curResult;
+    // calculare real number of data bytes sent
+    if (curResult > 14) sendResult += curResult - 14;
+    // move on
+    sendLen -= curLen;
+    sendBuf += curLen;
+  }
 
-  return sendResult - 14;
+  return sendResult;
 }
 
 
@@ -165,7 +178,7 @@ PBYTE icq_httpGatewayUnwrapRecv(NETLIBHTTPREQUEST* nlhr, PBYTE buf, int len, int
     tbuf += 4;    /* flags */
     unpackDWord(&tbuf, &dwPackSeq);
     if (wType == HTTP_PACKETTYPE_FLAP)
-    {
+    { // it is normal data packet
       copyBytes = wLen - 12;
       if (copyBytes > len - i)
       {
@@ -176,7 +189,7 @@ PBYTE icq_httpGatewayUnwrapRecv(NETLIBHTTPREQUEST* nlhr, PBYTE buf, int len, int
       i += copyBytes;
     }
     else if (wType == HTTP_PACKETTYPE_LOGINREPLY)
-    {
+    { // our "virtual connection" was established, good
       BYTE bRes;
 
       unpackByte(&tbuf, &bRes);
@@ -187,7 +200,7 @@ PBYTE icq_httpGatewayUnwrapRecv(NETLIBHTTPREQUEST* nlhr, PBYTE buf, int len, int
         NetLog_Server("Gateway Connection #%d Failed, error: %d", dwPackSeq, bRes);
     }
     else if (wType == HTTP_PACKETTYPE_CLOSEREPLY)
-    {
+    { // "virtual connection" closed - only received if any other "virual connection" still active
       NetLog_Server("Gateway Connection #%d Closed.", dwPackSeq);
     }
     tbuf += wLen - 12;
@@ -198,8 +211,10 @@ PBYTE icq_httpGatewayUnwrapRecv(NETLIBHTTPREQUEST* nlhr, PBYTE buf, int len, int
 }
 
 
+
 int icq_httpGatewayWalkTo(HANDLE hConn, NETLIBOPENCONNECTION* nloc)
-{
+{ // this is bad simplification - for avatars to work we need to handle
+  // two "virtual connections" at the same time
   icq_packet packet;
   DWORD dwGatewaySeq = GetGatewayIndex(hConn);
 
