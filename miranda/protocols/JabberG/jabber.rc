@@ -112,7 +112,7 @@ BEGIN
                     WS_VSCROLL | WS_TABSTOP
 END
 
-IDD_OPT_JABBER2 DIALOGEX 0, 0, 304, 182
+IDD_OPT_JABBER2 DIALOGEX 0, 0, 304, 199
 STYLE DS_SETFONT | DS_FIXEDSYS | WS_CHILD
 EXSTYLE WS_EX_CONTROLPARENT
 FONT 8, "MS Shell Dlg", 0, 0, 0x1
@@ -131,25 +131,28 @@ BEGIN
     CONTROL         "Specify external address",IDC_DIRECT_MANUAL,"Button",
                     BS_AUTOCHECKBOX | WS_TABSTOP,16,30,101,10
     EDITTEXT        IDC_DIRECT_ADDR,124,29,81,12,ES_AUTOHSCROLL
-    GROUPBOX        "Miscellaneous",IDC_STATIC,8,78,290,100
+    GROUPBOX        "Miscellaneous",IDC_STATIC,8,75,290,116
     CONTROL         "Automatically add contact when accept authorization",
                     IDC_AUTO_ADD,"Button",BS_AUTOCHECKBOX | BS_TOP | 
-                    WS_TABSTOP,16,90,203,12
+                    WS_TABSTOP,16,90,280,12
     CONTROL         "Automatically join conferences on login",IDC_AUTOJOIN,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,16,102,202,10
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,16,102,280,10
     CONTROL         "Autoaccept multiuser chat invitations",
                     IDC_AUTO_ACCEPT_MUC,"Button",BS_AUTOCHECKBOX | 
-                    WS_TABSTOP,16,114,202,9
+                    WS_TABSTOP,16,114,280,10
     CONTROL         "Send messages slower, but with full acknowledgement",
                     IDC_MSG_ACK,"Button",BS_AUTOCHECKBOX | BS_TOP | 
-                    WS_TABSTOP,16,126,203,12
+                    WS_TABSTOP,16,126,269,10
     CONTROL         "Disable main menu",IDC_DISABLE_MAINMENU,"Button",
-                    BS_AUTOCHECKBOX | WS_TABSTOP,16,138,202,9
+                    BS_AUTOCHECKBOX | WS_TABSTOP,16,138,280,10
     CONTROL         "Show transport agents on contact list",
                     IDC_SHOW_TRANSPORT,"Button",BS_AUTOCHECKBOX | BS_TOP | 
-                    WS_TABSTOP,16,150,202,11
+                    WS_TABSTOP,16,150,280,10 
     CONTROL         "Enable avatars",IDC_ENABLE_AVATARS,"Button",
-                    BS_AUTOCHECKBOX | WS_TABSTOP,16,162,201,10
+                    BS_AUTOCHECKBOX | WS_TABSTOP,16,162,280,10
+    CONTROL         "Disable SASL authentication (for old servers)",
+                    IDC_DISABLE_SASL,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,
+                    16,174,279,10
 END
 
 IDD_INFO_JABBER DIALOGEX 0, 0, 221, 132
@@ -605,7 +608,7 @@ BEGIN
         RIGHTMARGIN, 296
         VERTGUIDE, 9
         TOPMARGIN, 3
-        BOTTOMMARGIN, 174
+        BOTTOMMARGIN, 191
     END
 
     IDD_INFO_JABBER, DIALOG
