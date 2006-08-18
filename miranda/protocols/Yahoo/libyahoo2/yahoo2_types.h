@@ -182,6 +182,7 @@ struct yahoo_data {
 	int   session_id;
 
 	int   client_id;
+	long session_timestamp;
 
 	char  *rawbuddylist;
 	char  *rawstealthlist;

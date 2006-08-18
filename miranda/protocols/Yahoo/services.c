@@ -1150,6 +1150,12 @@ int YahooFileAllow(WPARAM wParam,LPARAM lParam)
     y_filetransfer *ft = (y_filetransfer *) ccs->wParam;
 	int len;
 	
+	YAHOO_DebugLog("[YahooFileAllow]");
+	
+	if (ft->y7) {
+		YAHOO_DebugLog("[YahooFileAllow] We don't handle y7 stuff yet.");
+		return ccs->wParam;
+	}
     //LOG(LOG_INFO, "[%s] Requesting file from %s", ft->cookie, ft->user);
     ft->savepath = _strdup((char *) ccs->lParam);
 	
@@ -1173,6 +1179,11 @@ int YahooFileDeny(WPARAM wParam,LPARAM lParam)
 	if ( !yahooLoggedIn || ft == NULL ) {
 		YAHOO_DebugLog("[YahooFileResume] Not logged-in or some other error!");
 		return 1;
+	}
+
+	if (ft->y7) {
+		YAHOO_DebugLog("[YahooFileDeny] We don't handle y7 stuff yet.");
+		return 0;
 	}
 
 	if (ft->ftoken != NULL) {

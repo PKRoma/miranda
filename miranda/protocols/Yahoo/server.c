@@ -16,7 +16,7 @@
 #include <time.h>
 
 int poll_loop = 1;
-
+long lLastSend;
 extern YList *connections;
 
 int PASCAL send(SOCKET s, const char FAR *buf, int len, int flags)
@@ -30,7 +30,9 @@ int PASCAL send(SOCKET s, const char FAR *buf, int len, int flags)
 	}
 
     rlen = Netlib_Send((HANDLE)s, buf, len, 0);
-
+	
+	lLastSend = time(NULL);
+	
     if (rlen == SOCKET_ERROR) {
         LOG(("SEND Error."));
         return -1;
@@ -139,11 +141,24 @@ void __cdecl yahoo_server_main(void *empty)
 			}
 			
 			/* do the timer check */
-			if (yahooLoggedIn && ylad != NULL && time(NULL) - lLastPing > 60) {
-				LOG(("[TIMER] Sending a keep alive message"));
-				yahoo_keepalive(ylad->id);
-				
-				lLastPing = time(NULL);
+			if (ylad != NULL && yahooLoggedIn) {
+				if	(!iHTTPGateway) {
+					if (time(NULL) - lLastPing > 60) {
+						LOG(("[TIMER] Sending a keep alive message"));
+						yahoo_keepalive(ylad->id);
+						
+						lLastPing = time(NULL);
+					}
+				} else {
+					YAHOO_DebugLog("[SERVER] Got packets: %d", ylad->rpkts);
+					
+					if ( (ylad->rpkts > 0 && (time(NULL) - lLastSend) >=3) ||
+						 ( (time(NULL) - lLastSend) >= 13) ) {
+							 
+						LOG(("[TIMER] Sending an idle message..."));
+						yahoo_send_idle_packet(ylad->id);
+					}
+				}
 			}
 			/* do the timer check ends */
 			

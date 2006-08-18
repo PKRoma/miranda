@@ -505,8 +505,10 @@ void YAHOO_CALLBACK_TYPE(ext_yahoo_conf_message)(int id, char *who, char *room, 
  * 	msg  - the message
  * 	fname- the file name if direct transfer
  * 	fsize- the file size if direct transfer
+ *  ftoken - file token
+ *  y7    - flag signalling y7 transfer
  */
-void YAHOO_CALLBACK_TYPE(ext_yahoo_got_file)(int id, char *me, char *who, char *url, long expires, char *msg, char *fname, unsigned long fesize, char *ft_token);
+void YAHOO_CALLBACK_TYPE(ext_yahoo_got_file)(int id, char *me, char *who, char *url, long expires, char *msg, char *fname, unsigned long fesize, char *ft_token, int y7);
 
 
 

@@ -106,6 +106,7 @@ extern BOOL             yahooLoggedIn;
 
 extern HANDLE           YahooMenuItems[ MENU_ITEMS_COUNT ];
 extern pthread_mutex_t connectionHandleMutex;
+extern int 				iHTTPGateway;
 
 //int ext_yahoo_log(char *fmt,...);
 
@@ -191,6 +192,7 @@ typedef struct {
 	int fd;
 	int status;
 	char *msg;
+	int  rpkts;
 } yahoo_local_account;
 
 
@@ -206,6 +208,7 @@ typedef struct {
 	unsigned long fsize;
 	HANDLE hWaitEvent;
 	DWORD action;
+	int y7;
 } y_filetransfer;
 
 void YAHOO_SendFile(y_filetransfer *ft);

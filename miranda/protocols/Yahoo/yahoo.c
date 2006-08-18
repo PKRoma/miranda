@@ -61,6 +61,7 @@ yahoo_idlabel yahoo_status_codes[] = {
 yahoo_local_account * ylad = NULL;
 
 int do_yahoo_debug = 0;
+int iHTTPGateway = 0;
 extern int poll_loop;
 extern int gStartStatus;
 extern char *szStartMsg;
@@ -1715,7 +1716,7 @@ void ext_yahoo_system_message(int id, char *msg)
 	YAHOO_ShowPopup( "Yahoo System Message", msg, NULL);
 }
 
-void ext_yahoo_got_file(int id, char *me, char *who, char *url, long expires, char *msg, char *fname, unsigned long fesize, char *ft_token)
+void ext_yahoo_got_file(int id, char *me, char *who, char *url, long expires, char *msg, char *fname, unsigned long fesize, char *ft_token, int y7)
 {
     CCSDATA ccs;
     PROTORECVEVENT pre;
@@ -1723,7 +1724,7 @@ void ext_yahoo_got_file(int id, char *me, char *who, char *url, long expires, ch
 	char *szBlob;
 	y_filetransfer *ft;
 	
-    LOG(("[ext_yahoo_got_file] id: %i, ident:%s, who: %s, url: %s, expires: %lu, msg: %s, fname: %s, fsize: %lu ftoken: %s", id, me, who, url, expires, msg, fname, fesize, ft_token == NULL ? "NULL" : ft_token));
+    LOG(("[ext_yahoo_got_file] id: %i, ident:%s, who: %s, url: %s, expires: %lu, msg: %s, fname: %s, fsize: %lu ftoken: %s y7: %d", id, me, who, url, expires, msg, fname, fesize, ft_token == NULL ? "NULL" : ft_token, y7));
 	
 	hContact = getbuddyH(who);
 	if (hContact == NULL) 
@@ -1763,6 +1764,7 @@ void ext_yahoo_got_file(int id, char *me, char *who, char *url, long expires, ch
 	ft->url = strdup(url);
 	ft->fsize = fesize;
 	ft->cancel = 0;
+	ft->y7 = y7;
 	ft->ftoken = (ft_token == NULL) ? NULL : strdup(ft_token);
 	
     // blob is DWORD(*ft), ASCIIZ(filenames), ASCIIZ(description)
@@ -1866,7 +1868,15 @@ void ext_yahoo_got_cookies(int id)
     LOG(("Our Cookie: '%s'", z));
     YAHOO_CallService(MS_NETLIB_SETSTICKYHEADERS, (WPARAM)hnuMain, (LPARAM)z);*/
 	
-	//check_for_update();
+	if (iHTTPGateway) {
+		char z[1024];
+		
+		// need to add Cookie header to our requests or we get booted w/ "Bad Cookie" message.
+		mir_snprintf(z, sizeof(z), "Cookie: Y=%s; T=%s; C=%s", yahoo_get_cookie(id, "y"), 
+				yahoo_get_cookie(id, "t"), yahoo_get_cookie(id, "c"));    
+		LOG(("Our Cookie: '%s'", z));
+		YAHOO_CallService(MS_NETLIB_SETSTICKYHEADERS, (WPARAM)hnuMain, (LPARAM)z);
+	}
 	
 	/*if (YAHOO_GetByte( "UseYAB", 1 )) {
 		LOG(("GET YAB [Before final check] "));
@@ -2280,11 +2290,12 @@ void ext_yahoo_login(int login_mode)
 	char host[128], fthost[128];
 	int port=0;
     DBVARIANT dbv;
-
+	NETLIBUSERSETTINGS nlus = { 0 };
+	
 	LOG(("ext_yahoo_login"));
 
 	if (!DBGetContactSetting(NULL, yahooProtocolName, YAHOO_LOGINSERVER, &dbv)) {
-        _snprintf(host, sizeof(host), "%s", dbv.pszVal);
+        mir_snprintf(host, sizeof(host), "%s", dbv.pszVal);
         DBFreeVariant(&dbv);
     }
     else {
@@ -2297,14 +2308,23 @@ void ext_yahoo_login(int login_mode)
 	lstrcpyn(fthost,YAHOO_GetByte("YahooJapan",0)?"filetransfer.msg.yahoo.co.jp":"filetransfer.msg.yahoo.com" , sizeof(fthost));
 	port = DBGetContactSettingWord(NULL, yahooProtocolName, YAHOO_LOGINPORT, 5050);
 	
+	nlus.cbSize = sizeof( nlus );
+	if (CallService(MS_NETLIB_GETUSERSETTINGS, (WPARAM) hnuMain, (LPARAM) &nlus) == 0) {
+		LOG(("ERROR: Problem retrieving miranda network settings!!!"));
+	}
+	
+	LOG(("Proxy Type: %d", nlus.proxyType));
+	iHTTPGateway = (nlus.proxyType == PROXYTYPE_HTTP);
+	
 	//ylad->id = yahoo_init(ylad->yahoo_id, ylad->password);
 	ylad->id = yahoo_init_with_attributes(ylad->yahoo_id, ylad->password, 
 			"pager_host", host,
 			"pager_port", port,
 			"filetransfer_host", fthost,
 			"picture_checksum", YAHOO_GetDword("AvatarHash", -1),
+			"web_messenger", iHTTPGateway,
 			NULL);
-
+	
 	ylad->status = YAHOO_STATUS_OFFLINE;
 	yahoo_login(ylad->id, login_mode);
 
