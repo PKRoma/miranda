@@ -28,6 +28,7 @@
 #include <m_popup.h>
 #include <m_idle.h>
 
+#include "avatar.h"
 #include "resource.h"
 
 extern HANDLE   hYahooNudge;
@@ -1361,31 +1362,6 @@ int YahooSetApparentMode(WPARAM wParam, LPARAM lParam)
 	
     DBWriteContactSettingWord(ccs->hContact, yahooProtocolName, "ApparentMode", (WORD) ccs->wParam);
     return 1;
-}
-
-void GetAvatarFileName(HANDLE hContact, char* pszDest, int cbLen, int type)
-{
-  int tPathLen;
-  DBVARIANT dbv;
-  
-  CallService(MS_DB_GETPROFILEPATH, cbLen, (LPARAM)pszDest);
-
-  tPathLen = lstrlen(pszDest);
-  _snprintf(pszDest + tPathLen, MAX_PATH-tPathLen, "\\%s\\", yahooProtocolName);
-  CreateDirectory(pszDest, NULL);
-
-  if (hContact != NULL && !DBGetContactSetting(hContact, yahooProtocolName, YAHOO_LOGINID, &dbv)) {
-		lstrcat(pszDest, dbv.pszVal);
-		DBFreeVariant(&dbv);
-  }else {
-		lstrcat(pszDest, "avatar");
-  }
-  
-  if (type == 1) {
-	lstrcat(pszDest, ".swf" );
-  } else
-	lstrcat(pszDest, ".png" );
-  
 }
 
 int YahooGetAvatarInfo(WPARAM wParam,LPARAM lParam)

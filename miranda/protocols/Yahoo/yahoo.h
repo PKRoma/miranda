@@ -10,6 +10,9 @@
  * I want to thank Robert Rainwater and George Hazan for their code and support
  * and for answering some of my questions during development of this plugin.
  */
+#ifndef _YAHOO_YAHOO_H_
+#define _YAHOO_YAHOO_H_
+
 #include <windows.h>
 //#include <stdio.h>
 
@@ -95,7 +98,7 @@ struct _conn {
 //	Defines
 //=======================================================
 //General
-extern HANDLE			hNetlibUser;
+extern HANDLE			hnuMain, hnuP2P;
 extern HINSTANCE		hinstance;
 extern int				yahooStatus;
 extern char				yahooProtocolName[MAX_PATH];
@@ -208,16 +211,6 @@ typedef struct {
 void YAHOO_SendFile(y_filetransfer *ft);
 void YAHOO_RecvFile(y_filetransfer *ft);
 void YAHOO_FT_cancel(const char *buddy, const char *filename, const char *ft_token, int command);
-void YAHOO_request_avatar(const char* who);
-void GetAvatarFileName(HANDLE hContact, char* pszDest, int cbLen, int type);
-void YAHOO_SendAvatar(const char *szFile);
-void YAHOO_set_avatar(int buddy_icon);
-void YAHOO_bcast_picture_update(int buddy_icon);
-void YAHOO_bcast_picture_checksum(int cksum);
-int YAHOO_SaveBitmapAsAvatar( HBITMAP hBitmap, const char* szFileName );
-HBITMAP YAHOO_StretchBitmap( HBITMAP hBitmap );
-void yahoo_reset_avatar(HANDLE 	hContact);
-HBITMAP YAHOO_SetAvatar(const char *szFile);
 void SetButtonCheck(HWND hwndDlg, int CtrlID, BOOL bCheck);
 void YahooOpenURL(const char *url, int autoLogin);
 #define FILERESUME_CANCEL	11
@@ -231,3 +224,5 @@ void ext_yahoo_login(int login_mode);
 void __stdcall Utf8Decode( char* str, int maxSize, wchar_t** ucs2 );
 char* __stdcall Utf8EncodeUcs2( const wchar_t* src );
 int YahooGotoMailboxCommand( WPARAM wParam, LPARAM lParam );
+
+#endif

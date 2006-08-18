@@ -34,7 +34,7 @@ HINSTANCE		hinstance;
 PLUGINLINK		*pluginLink;
 char			yahooProtocolName[MAX_PATH];
 
-HANDLE		    hNetlibUser = NULL;
+HANDLE		    hnuMain = NULL, hnuP2P = NULL;
 HANDLE			YahooMenuItems[ MENU_ITEMS_COUNT ];
 static HANDLE   hHookOptsInit;
 static HANDLE   hHookModulesLoaded;
@@ -61,7 +61,7 @@ PLUGININFO pluginInfo={
 		"Yahoo Protocol support via libyahoo2 library.",
 #endif		
 		"Gennady Feldman, Laurent Marechal",
-		"gena01@gmail.com",
+		"gena01@miranda-im.org",
 		"© 2003-2006 G.Feldman",
 		"http://www.miranda-im.org/download/details.php?action=viewfile&id=1248",
 		0, //not transient
@@ -148,8 +148,8 @@ int __declspec(dllexport) Unload(void)
 		free(szStartMsg);
 	
 	YAHOO_DebugLog("Before Netlib_CloseHandle");
-    Netlib_CloseHandle( hNetlibUser );
-
+    Netlib_CloseHandle( hnuMain );
+	Netlib_CloseHandle( hnuP2P );
 	return 0;
 }
 
@@ -175,15 +175,14 @@ static int OnModulesLoaded( WPARAM wParam, LPARAM lParam )
 	}
 
 	CharUpper( lstrcpy( tModule, yahooProtocolName ));
-	lstrcpyn(tModuleDescr, yahooProtocolName , sizeof( tModuleDescr ) - 25);
-	lstrcat(tModuleDescr," plugin connections");
+	wsprintf(tModuleDescr, "%s plugin connections", yahooProtocolName);
 	
 	nlu.cbSize = sizeof(nlu);
 
 #ifdef HTTP_GATEWAY
-	nlu.flags =  NUF_OUTGOING | NUF_HTTPGATEWAY;
+	nlu.flags = NUF_OUTGOING | NUF_HTTPGATEWAY;
 #else
-   	nlu.flags = /*NUF_INCOMING |*/ NUF_OUTGOING | NUF_HTTPCONNS;
+   	nlu.flags = NUF_OUTGOING;
 #endif
 
 	nlu.szSettingsModule = tModule;
@@ -200,7 +199,16 @@ static int OnModulesLoaded( WPARAM wParam, LPARAM lParam )
 	nlu.pfnHttpGatewayUnwrapRecv = YAHOO_httpGatewayUnwrapRecv;
 #endif	
 	
-	hNetlibUser = ( HANDLE )YAHOO_CallService( MS_NETLIB_REGISTERUSER, 0, ( LPARAM )&nlu );
+	hnuMain = ( HANDLE )YAHOO_CallService( MS_NETLIB_REGISTERUSER, 0, ( LPARAM )&nlu );
+	
+	nlu.flags = NUF_OUTGOING | NUF_HTTPCONNS;
+	
+	wsprintf(tModuleDescr, "%s plugin P2P/Avatar connections", yahooProtocolName);
+	nlu.szDescriptiveName = Translate( tModuleDescr );
+	CharUpper( lstrcpy( tModule, yahooProtocolName ));
+	lstrcat(tModule, "P2P");
+	nlu.szSettingsModule = tModule;
+	hnuP2P = ( HANDLE )YAHOO_CallService( MS_NETLIB_REGISTERUSER, 0, ( LPARAM )&nlu );
 	
 	hHookOptsInit = HookEvent( ME_OPT_INITIALISE, YahooOptInit );
     hHookSettingChanged = HookEvent(ME_DB_CONTACT_SETTINGCHANGED, YAHOO_util_dbsettingchanged);

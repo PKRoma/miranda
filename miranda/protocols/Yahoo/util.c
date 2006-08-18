@@ -59,7 +59,7 @@ int YAHOO_DebugLog( const char *fmt, ... )
 
 	va_end( vararg );
 	
-	return CallService( MS_NETLIB_LOG, ( WPARAM )hNetlibUser, ( LPARAM )str );
+	return CallService( MS_NETLIB_LOG, ( WPARAM )hnuMain, ( LPARAM )str );
 }
 
 DWORD __stdcall YAHOO_GetByte( const char* valueName, int parDefltValue )
