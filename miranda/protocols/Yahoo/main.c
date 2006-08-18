@@ -190,12 +190,11 @@ static int OnModulesLoaded( WPARAM wParam, LPARAM lParam )
 	
 #ifdef HTTP_GATEWAY
 	// Here comes the Gateway Code! 
-	nlu.szHttpGatewayHello = NULL;//"http://http.proxy.icq.com/hello";
-	nlu.szHttpGatewayUserAgent = "Mozilla/4.08 [en] (WinNT; U ;Nav)";//"Mozilla/4.5 [en] (X11; U; FreeBSD 2.2.8-STABLE i386)";
- //"Mozilla/4.01 [en] (Win95; I)";//"Mozilla/4.08 [en] (WinNT; U ;Nav)";//\nTest-Header: boo";
-	nlu.pfnHttpGatewayInit = YAHOO_httpGatewayInit;
+	nlu.szHttpGatewayHello = NULL;
+	nlu.szHttpGatewayUserAgent = "User-Agent: Mozilla/4.01 [en] (Win95; I)";
+ 	nlu.pfnHttpGatewayInit = YAHOO_httpGatewayInit;
 	nlu.pfnHttpGatewayBegin = NULL;
-	nlu.pfnHttpGatewayWrapSend = NULL;
+	nlu.pfnHttpGatewayWrapSend = YAHOO_httpGatewayWrapSend;
 	nlu.pfnHttpGatewayUnwrapRecv = YAHOO_httpGatewayUnwrapRecv;
 #endif	
 	

@@ -1925,7 +1925,8 @@ static void yahoo_process_status(struct yahoo_input_data *yid, struct yahoo_pack
 	
 	if (name != NULL) 
 		YAHOO_CALLBACK(ext_yahoo_status_changed)(yd->client_id, name, state, msg, away, idle, mobile);
-	
+	else if (pkt->service == YAHOO_SERVICE_LOGOFF) 
+		YAHOO_CALLBACK(ext_yahoo_login_response)(yd->client_id, YAHOO_LOGIN_LOGOFF, NULL);
 }
 
 static void yahoo_process_list(struct yahoo_input_data *yid, struct yahoo_packet *pkt)
@@ -3699,7 +3700,14 @@ static struct yahoo_packet * yahoo_getdata(struct yahoo_input_data * yid)
 	/*DEBUG_MSG(("Dumping Packet Header:"));
 	yahoo_packet_dump(yid->rxqueue + pos, YAHOO_PACKET_HDRLEN);
 	DEBUG_MSG(("--- Done Dumping Packet Header ---"));*/
+	{
+		char *buf = yid->rxqueue + pos;
 		
+		if	(buf[0] != 'Y' || buf[1] != 'M' || buf[2] != 'S' || buf[3] != 'G') {
+			DEBUG_MSG(("Not a YMSG packet?"));
+			return NULL;
+		}
+	}
 	pos += 4; /* YMSG */
 	pos += 2;
 	pos += 2;
@@ -4114,6 +4122,7 @@ int yahoo_write_ready(int id, int fd, void *data)
 
 
 	tx->len -= len;
+	LOG(("yahoo_write_ready(%d, %d) tx->len: %d, len: %d", id, fd, tx->len, len));
 	if(tx->len > 0) {
 		unsigned char *tmp = y_memdup(tx->queue + len, tx->len);
 		FREE(tx->queue);

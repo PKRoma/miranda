@@ -51,6 +51,7 @@ enum yahoo_status {
 
 enum yahoo_login_status {
 	YAHOO_LOGIN_OK = 0,
+	YAHOO_LOGIN_LOGOFF = 2,
 	YAHOO_LOGIN_UNAME = 3,
 	YAHOO_LOGIN_PASSWD = 13,
 	YAHOO_LOGIN_LOCK = 14,
@@ -84,7 +85,8 @@ enum yahoo_log_level {
 };
 
 /* Yahoo Protocol versions. Thanks to GAIM devs.*/
-#define YAHOO_WEBMESSENGER_PROTO_VER 0x0065
+//#define YAHOO_WEBMESSENGER_PROTO_VER 0x0065
+#define YAHOO_WEBMESSENGER_PROTO_VER 0x000D
 //#define YAHOO_PROTO_VER 0x000c
 #define YAHOO_PROTO_VER 0x000d
 

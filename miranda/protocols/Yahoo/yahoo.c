@@ -1792,8 +1792,6 @@ void ext_yahoo_got_identities(int id, YList * ids)
 	
 }
 
-extern char *Bcookie;
-
 void __cdecl yahoo_get_yab_thread(void *psf) 
 {
 	int id = (int)psf;
@@ -1940,6 +1938,9 @@ void ext_yahoo_login_response(int id, int succ, char *url)
 	} else if(succ == YAHOO_LOGIN_DUPL) {
 		snprintf(buff, sizeof(buff), Translate("You have been logged out of the yahoo service, possibly due to a duplicate login."));
 		ProtoBroadcastAck(yahooProtocolName, NULL, ACKTYPE_LOGIN, ACKRESULT_FAILED, NULL, LOGINERR_OTHERLOCATION);
+	}else if(succ == YAHOO_LOGIN_LOGOFF) {
+		snprintf(buff, sizeof(buff), Translate("You have been logged out of the yahoo service."));
+		//ProtoBroadcastAck(yahooProtocolName, NULL, ACKTYPE_LOGIN, ACKRESULT_FAILED, NULL, LOGINERR_OTHERLOCATION);
 	}else if(succ == -1) {
 		/// Can't Connect or got disconnected.
 		if (yahooStatus == ID_STATUS_CONNECTING)
@@ -1956,6 +1957,8 @@ void ext_yahoo_login_response(int id, int succ, char *url)
 	 * Show Error Message
 	 */
 	YAHOO_ShowError(Translate("Yahoo Login Error"), buff);
+	
+	yahoo_logout();
 }
 
 void ext_yahoo_error(int id, char *err, int fatal, int num)
