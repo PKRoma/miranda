@@ -131,13 +131,14 @@ static int ClcEventAdded(WPARAM wParam, LPARAM lParam)
             new_freq = count ? (dbei.timestamp - firstTime) / count : 0x7fffffff;
             DBWriteContactSettingDword((HANDLE)wParam, "CList", "mf_freq", new_freq);
             DBWriteContactSettingDword((HANDLE)wParam, "CList", "mf_count", count);
-        }
-        iEntry = GetExtraCache((HANDLE)wParam, NULL);
-        if(iEntry >= 0 && iEntry <= g_nextExtraCacheEntry) {
-            g_ExtraCache[iEntry].dwLastMsgTime = dbei.timestamp;
-            if(new_freq)
-                g_ExtraCache[iEntry].msgFrequency = new_freq;
-            pcli->pfnClcBroadcast(INTM_FORCESORT, 0, 1);
+            iEntry = GetExtraCache((HANDLE)wParam, NULL);
+            if(iEntry >= 0 && iEntry < g_nextExtraCacheEntry) {
+                _DebugTraceA("got last msg time for %d -> %d", wParam, dbei.timestamp);
+                g_ExtraCache[iEntry].dwLastMsgTime = dbei.timestamp;
+                if(new_freq)
+                    g_ExtraCache[iEntry].msgFrequency = new_freq;
+                pcli->pfnClcBroadcast(INTM_FORCESORT, 0, 1);
+            }
         }
 	}
 	return 0;

@@ -621,6 +621,11 @@ void FLT_Create(int iEntry)
 	}
 }
 
+extern HDC hdcAV;
+extern HDC hdcTempAV;
+extern HBITMAP hbmTempAV, hbmTempOldAV;
+extern LONG g_maxAV_X, g_maxAV_Y;
+
 void FLT_Update(struct ClcData *dat, struct ClcContact *contact)
 {
 	RECT rcClient, rcWindow;
@@ -666,7 +671,7 @@ void FLT_Update(struct ClcData *dat, struct ClcContact *contact)
 	bf.AlphaFormat = 0;
 	bf.SourceConstantAlpha = g_floatoptions.transparency;
 
-	rgn = CreateRoundRectRgn(0, 0, rcClient.right, rcClient.bottom, 10, 10);
+	rgn = CreateRoundRectRgn(0, 0, rcClient.right, rcClient.bottom, 6, 6);
 	SelectClipRgn(hdc, rgn);
 
 	if(FindItem(pcli->hwndContactTree, dat, contact->hContact, &newContact, &group, 0)) {
@@ -687,7 +692,19 @@ void FLT_Update(struct ClcData *dat, struct ClcContact *contact)
 		}
 
 		g_HDC = hdc;
+
+        hdcTempAV = CreateCompatibleDC(g_HDC);
+        hdcAV = CreateCompatibleDC(g_HDC);
+        hbmTempAV = CreateCompatibleBitmap(g_HDC, g_maxAV_X, g_maxAV_Y);
+        hbmTempOldAV = SelectObject(hdcTempAV, hbmTempAV);
+
 		PaintItem(hdc, group, contact, 0, 0, dat, -4, pcli->hwndContactTree, 0, &rcClient, &firstDrawn, 0, rcClient.bottom - rcClient.top);
+
+        SelectObject(hdcTempAV, hbmTempOldAV);
+        DeleteObject(hbmTempAV);
+        DeleteDC(hdcTempAV);
+        DeleteDC(hdcAV);
+
 		g_CluiData.dwFlags = oldFlags;
 		contact->ace = ace_old;
 		g_CluiData.dualRowMode = oldDualRow;

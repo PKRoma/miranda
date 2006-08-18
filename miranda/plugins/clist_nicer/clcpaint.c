@@ -301,7 +301,7 @@ HBITMAP hbmTempAV, hbmTempOldAV;
 
 HDC hdcAV;
 
-static LONG g_maxAV_X = 200, g_maxAV_Y = 200;
+LONG g_maxAV_X = 200, g_maxAV_Y = 200;
 
 static int __fastcall DrawAvatar(HDC hdcMem, RECT *rc, struct ClcContact *contact, int y, struct ClcData *dat, WORD cstatus, int rowHeight)
 {
@@ -413,7 +413,6 @@ static int __fastcall DrawAvatar(HDC hdcMem, RECT *rc, struct ClcContact *contac
 			StretchBlt(hdcMem, leftoffset + rc->left - (g_RTL ? 1 : 0), y + topoffset, (int)newWidth, (int)newHeight, hdcTempAV, 0, 0, bmWidth, bmHeight, SRCCOPY);
 		}
         SelectObject(hdcAV, hbmOldAV);
-
 	}
 	else {
 		UCHAR alpha = 255; //g_CluiData.dwFlags & CLUI_FRAME_TRANSPARENTAVATAR ? (UCHAR)saved_alpha : 255;
