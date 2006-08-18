@@ -159,7 +159,7 @@ HBITMAP YAHOO_SetAvatar(const char *szFile)
 			/* now check and make sure we don't reupload same thing over again */
 			if (hash != YAHOO_GetDword("AvatarHash", 0) || time(NULL) > YAHOO_GetDword("AvatarTS",0)) {
 				YAHOO_SetString(NULL, "AvatarFile", szMyFile);
-				DBWriteContactSettingDword(NULL, yahooProtocolName, "AvatarHash", hash);
+				DBWriteContactSettingDword(NULL, yahooProtocolName, "TMPAvatarHash", hash);
 			
 				YAHOO_SendAvatar(szMyFile);
 			} else {

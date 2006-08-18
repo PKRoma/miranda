@@ -1103,7 +1103,7 @@ void ext_yahoo_got_picture_upload(int id, const char *me, const char *url,unsign
 		return;
 	}
 	
-	cksum = YAHOO_GetDword("AvatarHash", 0);
+	cksum = YAHOO_GetDword("TMPAvatarHash", 0);
 	if (cksum != 0) {
 		DBVARIANT dbv;
 		
@@ -1112,6 +1112,7 @@ void ext_yahoo_got_picture_upload(int id, const char *me, const char *url,unsign
 		YAHOO_SetString(NULL, "AvatarURL", url);
 		//YAHOO_SetDword("AvatarTS", ts);
 		YAHOO_SetDword("AvatarTS", time(NULL) + 60*60*24);
+		YAHOO_SetDword("AvatarHash", cksum);
 		
 		YAHOO_bcast_picture_checksum(cksum);
 		if  (!DBGetContactSetting(NULL, yahooProtocolName, "AvatarInv", &dbv) ){
