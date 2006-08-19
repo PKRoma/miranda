@@ -844,9 +844,9 @@ static int MsnSendFile( WPARAM wParam, LPARAM lParam )
 			( WORD )(((double)rand()/(double)RAND_MAX)*4294967295), UTF8(pszFiles), tFileSize );
 
 		if ( thread == NULL )
-			MsgQueue_Add( ccs->hContact, 'D', msg, -1, sft );
+			MsgQueue_Add( ccs->hContact, 'S', msg, -1, sft );
 		else
-			thread->sendMessage( 'D', msg, MSG_DISABLE_HDR );
+			thread->sendMessage( 'S', msg, MSG_DISABLE_HDR );
 	}
 
 	MSN_SendBroadcast( ccs->hContact, ACKTYPE_FILE, ACKRESULT_SENTREQUEST, sft, 0 );
