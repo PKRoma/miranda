@@ -25,7 +25,9 @@ Version 1.0.0.2 - 2006/08/20
 	  ability to switch keyboard layouts with the right shift/ctrl keyboard shortcut
 	  without changing text direction. If a RTL keyboard layout is installed, the old
 	  behaviour is preserved (right ctrl/shift will change to RTL).
-
+	! workaround for avatar display glitches with certain versions of loadavatars
+	  (bottom avatar may not appear until window is resized).
+	
 Version 1.0.0.1 - 2006/08/09
 
 	! fixed updater support (301, invalid response).

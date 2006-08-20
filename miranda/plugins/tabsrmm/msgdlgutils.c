@@ -1923,6 +1923,22 @@ void GetDataDir()
     CreateDirectoryA(pszDataPath, NULL);
 }
 
+void LoadContactAvatar(HWND hwndDlg, struct MessageWindowData *dat)
+{
+	if(ServiceExists(MS_AV_GETAVATARBITMAP) && dat)
+		dat->ace = (AVATARCACHEENTRY *)CallService(MS_AV_GETAVATARBITMAP, (WPARAM)dat->hContact, 0);
+
+    if(dat && dat->ace && dat->ace->hbmPic && !(dat->dwFlagsEx & MWF_SHOW_INFOPANEL)) {
+        BITMAP bm;
+        
+        dat->iRealAvatarHeight = 0;
+        AdjustBottomAvatarDisplay(hwndDlg, dat);
+        GetObject(dat->hOwnPic, sizeof(bm), &bm);
+        CalcDynamicAvatarSize(hwndDlg, dat, &bm);
+        PostMessage(hwndDlg, WM_SIZE, 0, 0);
+    }
+}
+
 void LoadOwnAvatar(HWND hwndDlg, struct MessageWindowData *dat)
 {
 	AVATARCACHEENTRY *ace = NULL;

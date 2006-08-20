@@ -185,6 +185,7 @@ typedef struct _settextex {
 #define MWF_SHOW_AWAYMSGTIMER 8192
 #define MWF_SHOW_USELOCALTIME 16384
 #define MWF_EX_DELAYEDSPLITTER 32768
+#define MWF_EX_AVATARCHANGED 65536
 
 #define SMODE_DEFAULT 0
 #define SMODE_MULTIPLE 1
@@ -725,7 +726,7 @@ struct ProtocolData {
 #define DM_SESSIONLIST       (WM_USER+27)
 #define DM_QUERYLASTUNREAD   (WM_USER+28)
 #define DM_QUERYPENDING      (WM_USER+29)
-//#define DM_UPDATEPICLAYOUT   (WM_USER+30) ** FREE **
+#define DM_UPDATEPICLAYOUT   (WM_USER+30)
 #define DM_QUERYCONTAINER    (WM_USER+31)
 #define DM_QUERYCONTAINERHWND    (WM_USER+32)
 #define DM_CALCMINHEIGHT     (WM_USER+33)       // msgdialog asked to recalculate its minimum height

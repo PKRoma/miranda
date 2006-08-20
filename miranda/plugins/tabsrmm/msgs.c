@@ -40,6 +40,7 @@ static char *relnotes[] = {
 	"*\tFixed forgetting the tab nickname length limit.\\par",
 	"*\tFixed a few visual glitches in the option pages.\\par",
 	"*\tAuto-bidi mode for the message editor is now only enabled when a valid RTL language is installed on the system.\\par",
+	"*\tWorkaround for avatar display problems (loadavatars related).\\par",
     NULL
 };
 
@@ -1267,6 +1268,7 @@ static int AvatarChanged(WPARAM wParam, LPARAM lParam)
             if(dat->showPic == 0 || dat->showInfoPic == 0)
                 GetAvatarVisibility(hwnd, dat);
             ShowPicture(hwnd, dat, TRUE);
+            dat->dwFlagsEx |= MWF_EX_AVATARCHANGED;
         }
     }
     return 0;
