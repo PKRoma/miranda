@@ -23,6 +23,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 #include "msn_global.h"
 
+#include <fcntl.h>
 #include <io.h>
 #include <sys/stat.h>
 
@@ -30,6 +31,8 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 void __cdecl MSNServerThread( ThreadData* info );
 void MSN_ChatStart(ThreadData* info);
+
+void msnftp_sendAcceptReject( filetransfer *ft, bool acc );
 
 HANDLE msnBlockMenuItem = NULL;
 extern char* profileURL;
@@ -313,16 +316,16 @@ static int MsnDbSettingChanged(WPARAM wParam,LPARAM lParam)
 
 		if ( !strcmp( cws->szSetting, "MyHandle" )) {
 			char szContactID[ 100 ], szNewNick[ 387 ];
-			if ( !MSN_GetStaticString( "ID", hContact, szContactID, sizeof szContactID )) {
+			if ( !MSN_GetStaticString( "ID", hContact, szContactID, sizeof( szContactID ))) {
 				if ( cws->value.type != DBVT_DELETED ) {
 					if ( cws->value.type == DBVT_UTF8 )
-						UrlEncode( cws->value.pszVal, szNewNick, sizeof szNewNick );
+						UrlEncode( cws->value.pszVal, szNewNick, sizeof( szNewNick ));
 					else
-						UrlEncode( UTF8(cws->value.pszVal), szNewNick, sizeof szNewNick );
+						UrlEncode( UTF8(cws->value.pszVal), szNewNick, sizeof( szNewNick ));
 					msnNsThread->sendPacket( "SBP", "%s MFN %s", szContactID, szNewNick );
 				}
 				else {
-					MSN_GetStaticString( "e-mail", hContact, szNewNick, sizeof szNewNick );
+					MSN_GetStaticString( "e-mail", hContact, szNewNick, sizeof( szNewNick ));
 					msnNsThread->sendPacket( "SBP", "%s MFN %s", szContactID, szNewNick );
 				}
 				return 0;
@@ -345,6 +348,33 @@ static int MsnEditProfile( WPARAM, LPARAM )
 /////////////////////////////////////////////////////////////////////////////////////////
 // MsnFileAllow - starts the file transfer
 
+static void __cdecl MsnFileAckThread( void* arg )
+{
+	filetransfer* ft = (filetransfer*)arg;
+	if ( !ft->inmemTransfer ) 
+	{
+		char filefull[ MAX_PATH ];
+		mir_snprintf( filefull, sizeof filefull, "%s\\%s", ft->std.workingDir, ft->std.currentFile );
+		replaceStr( ft->std.currentFile, filefull );
+
+		if ( MSN_SendBroadcast( ft->std.hContact, ACKTYPE_FILE, ACKRESULT_FILERESUME, ft, ( LPARAM )&ft->std ))
+			return;
+
+		if ( ft->wszFileName != NULL ) {
+			free( ft->wszFileName );
+			ft->wszFileName = NULL;
+	}	}
+
+	bool fcrt = ft->create() != -1;
+
+	if ( ft->p2p_appID != 0)
+		p2p_sendStatus( ft, MSN_GetThreadByID( ft->mThreadId ), fcrt ? 200 : 603 );
+	else
+		msnftp_sendAcceptReject (ft, fcrt);
+
+	MSN_SendBroadcast( ft->std.hContact, ACKTYPE_FILE, ACKRESULT_INITIALISING, ft, 0);
+}
+
 int MsnFileAllow(WPARAM wParam, LPARAM lParam)
 {
 	if ( !msnLoggedIn )
@@ -353,27 +383,9 @@ int MsnFileAllow(WPARAM wParam, LPARAM lParam)
 	CCSDATA* ccs = ( CCSDATA* )lParam;
 	filetransfer* ft = ( filetransfer* )ccs->wParam;
 
-	ThreadData* thread = MSN_GetThreadByContact( ccs->hContact );
-	if ( thread != NULL ) {
-		if ( ft->p2p_appID == 0 ) {
-			thread->sendPacket( "MSG",
-				"U %d\r\nMIME-Version: 1.0\r\n"
-				"Content-Type: text/x-msmsgsinvite; charset=UTF-8\r\n\r\n"
-				"Invitation-Command: ACCEPT\r\n"
-				"Invitation-Cookie: %s\r\n"
-				"Launch-Application: FALSE\r\n"
-				"Request-Data: IP-Address:\r\n\r\n",
-				172+4+strlen( ft->szInvcookie ), ft->szInvcookie );
-		}
-		else {
-			//---- send 200 OK Message
-//			if ( ft->mIsFirst )
-			p2p_sendStatus( ft, thread, 200 );
-	}	}
-
 	if (( ft->std.workingDir = strdup(( char* )ccs->lParam )) == NULL ) {
 		char szCurrDir[ MAX_PATH ];
-		GetCurrentDirectoryA( sizeof szCurrDir, szCurrDir );
+		GetCurrentDirectoryA( sizeof( szCurrDir ), szCurrDir );
 		ft->std.workingDir = strdup( szCurrDir );
 	}
 	else {
@@ -381,6 +393,9 @@ int MsnFileAllow(WPARAM wParam, LPARAM lParam)
 		if ( ft->std.workingDir[ len ] == '\\' )
 			ft->std.workingDir[ len ] = 0;
 	}
+
+	MSN_StartThread( MsnFileAckThread, ft );
+
 	return int( ft );
 }
 
@@ -392,14 +407,23 @@ int MsnFileCancel(WPARAM wParam, LPARAM lParam)
 	CCSDATA* ccs = ( CCSDATA* )lParam;
 	filetransfer* ft = ( filetransfer* )ccs->wParam;
 
-	ft->bCanceled = true;
 	if ( ft->hWaitEvent != INVALID_HANDLE_VALUE )
 		SetEvent( ft->hWaitEvent );
 
-	if ( ft->p2p_appID != 0 ) {
-		ThreadData* thread = MSN_GetThreadByContact( ccs->hContact );
-		if ( thread != NULL )
-			p2p_sendBye( thread, ft );
+	ThreadData* thread = MSN_GetThreadByID( ft->mThreadId );
+	if (!ft->std.sending && ft->fileId == -1)
+	{
+		if ( ft->p2p_appID != 0 )
+			p2p_sendStatus(ft, thread, 603);
+		else
+			msnftp_sendAcceptReject (ft, false);
+	}
+	else
+	{
+		if ( ft->p2p_appID != 0 )
+			p2p_sendCancel( thread, ft );
+		else
+			ft->bCanceled = true;
 	}
 
 	ft->std.files = NULL;
@@ -418,21 +442,10 @@ int MsnFileDeny( WPARAM wParam, LPARAM lParam )
 	CCSDATA* ccs = ( CCSDATA* )lParam;
 	filetransfer* ft = ( filetransfer* )ccs->wParam;
 
-	ThreadData* thread = MSN_GetThreadByContact( ccs->hContact );
-	if ( thread != NULL ) {
-		if ( ft->p2p_appID == 0 ) {
-			thread->sendPacket( "MSG",
-				"U %d\r\nMIME-Version: 1.0\r\n"
-				"Content-Type: text/x-msmsgsinvite; charset=UTF-8\r\n\r\n"
-				"Invitation-Command: CANCEL\r\n"
-				"Invitation-Cookie: %s\r\n"
-				"Cancel-Code: REJECT\r\n\r\n",
-				172-33+4+strlen( ft->szInvcookie ), ft->szInvcookie );
-		}
-		else {
-			//---- send 603 DECLINE Message
-			p2p_sendStatus( ft, thread, 603 );
-	}	}
+	if ( ft->p2p_appID != 0 )
+		p2p_sendStatus( ft, MSN_GetThreadByID(ft->mThreadId), 603 );
+	else 
+		msnftp_sendAcceptReject (ft, false);
 
 	return 0;
 }
@@ -446,18 +459,34 @@ int MsnFileResume( WPARAM wParam, LPARAM lParam )
 	if ( !msnLoggedIn || ft == NULL )
 		return 1;
 
-	if ( ft->p2p_appID != 0 ) {
-		PROTOFILERESUME *pfr = (PROTOFILERESUME*)lParam;
-		if ( pfr->action == FILERESUME_RENAME ) {
+	PROTOFILERESUME *pfr = (PROTOFILERESUME*)lParam;
+	switch (pfr->action)
+	{
+		case FILERESUME_SKIP:
+			if ( ft->p2p_appID != 0 )
+				p2p_sendStatus( ft, MSN_GetThreadByID( ft->mThreadId ), 603 );
+			else 
+				msnftp_sendAcceptReject (ft, false);
+			break;
+
+		case FILERESUME_RENAME:
 			if ( ft->wszFileName != NULL ) {
 				free( ft->wszFileName );
 				ft->wszFileName = NULL;
 			}
-
 			replaceStr( ft->std.currentFile, pfr->szFilename );
-	}	}
+		
+		default:
+			bool fcrt = ft->create() != -1;
+			if ( ft->p2p_appID != 0 )
+				p2p_sendStatus( ft, MSN_GetThreadByID( ft->mThreadId ), fcrt ? 200 : 603 );
+			else 
+				msnftp_sendAcceptReject (ft, fcrt);
 
-	SetEvent( ft->hWaitEvent );
+			MSN_SendBroadcast( ft->std.hContact, ACKTYPE_FILE, ACKRESULT_INITIALISING, ft, 0);
+			break;
+	}
+
 	return 0;
 }
 
@@ -466,10 +495,10 @@ int MsnFileResume( WPARAM wParam, LPARAM lParam )
 
 static int MsnGetAvatarInfo(WPARAM wParam,LPARAM lParam)
 {
-	if ( !MyOptions.EnableAvatars )
-		return GAIR_NOAVATAR;
-
 	PROTO_AVATAR_INFORMATION* AI = ( PROTO_AVATAR_INFORMATION* )lParam;
+
+	if ( !MyOptions.EnableAvatars || ( MSN_GetDword( AI->hContact, "FlagBits", 0 ) & 0x40000000 ) == 0 )
+		return GAIR_NOAVATAR;
 
 	char szContext[ MAX_PATH ];
 	if ( MSN_GetStaticString(( AI->hContact == NULL ) ? "PictObject" : "PictContext", AI->hContact, szContext, sizeof szContext ))
@@ -780,7 +809,10 @@ static int MsnSendFile( WPARAM wParam, LPARAM lParam )
 	sft->std.hContact = ccs->hContact;
 	sft->std.sending = 1;
 	sft->std.currentFileNumber = 0;
-	sft->fileId = -1;
+
+	sft->fileId = _open( sft->std.currentFile, _O_BINARY | _O_RDONLY, _S_IREAD );
+	MSN_DebugLog( "Unable to open file '%s', error %d", sft->std.currentFile, errno );
+	if ( sft->fileId == -1 ) return NULL;
 
 	DWORD dwFlags = MSN_GetDword( ccs->hContact, "FlagBits", 0 );
 	if ( dwFlags & 0x70000000 )

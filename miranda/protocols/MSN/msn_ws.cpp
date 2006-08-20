@@ -305,14 +305,19 @@ LBL_RecvAgain:
 		return ret;
 	}
 
-	if ( MyOptions.UseGateway && ret == 1 && *data == 0 ) {
-		int tOldTimeout = MSN_CallService( MS_NETLIB_SETPOLLINGTIMEOUT, WPARAM( s ), 2 );
-		tOldTimeout *= 2;
-		if ( tOldTimeout > 16 )
-			tOldTimeout = 16;
+	if ( MyOptions.UseGateway)
+	{
+		if ( ret == 1 && *data == 0 ) 
+		{
+			int tOldTimeout = MSN_CallService( MS_NETLIB_SETPOLLINGTIMEOUT, WPARAM( s ), 2 );
+			tOldTimeout += 2;
+			if ( tOldTimeout > 8 )
+				tOldTimeout = 8;
 
-		MSN_CallService( MS_NETLIB_SETPOLLINGTIMEOUT, WPARAM( s ), tOldTimeout );
-		goto LBL_RecvAgain;
+			MSN_CallService( MS_NETLIB_SETPOLLINGTIMEOUT, WPARAM( s ), tOldTimeout );
+			goto LBL_RecvAgain;
+		}
+		else MSN_CallService( MS_NETLIB_SETPOLLINGTIMEOUT, WPARAM( s ), 1 );
 	}
 
 	return ret;

@@ -92,7 +92,7 @@ void __stdcall p2p_unregisterThreadSession( LONG threadID )
 /////////////////////////////////////////////////////////////////////////////////////////
 // get session by some parameter
 
-filetransfer* __stdcall p2p_getSessionByID( long ID )
+filetransfer* __stdcall p2p_getSessionByID( unsigned ID )
 {
 	if ( ID == 0 )
 		return NULL;
@@ -109,12 +109,12 @@ filetransfer* __stdcall p2p_getSessionByID( long ID )
 
 	LeaveCriticalSection( &sessionLock );
 	if ( ft == NULL )
-		MSN_DebugLog( "Ignoring unknown session id %ld", ID );
+		MSN_DebugLog( "Ignoring unknown session id %lu", ID );
 
 	return ft;
 }
 
-filetransfer* __stdcall p2p_getSessionByMsgID( long ID )
+filetransfer* __stdcall p2p_getSessionByMsgID( unsigned ID )
 {
 	if ( ID == 0 )
 		return NULL;
@@ -124,14 +124,14 @@ filetransfer* __stdcall p2p_getSessionByMsgID( long ID )
 
 	for ( int i=0; i < sessionCount; i++ ) {
 		filetransfer* FT = sessionList[i];
-		if ( FT->p2p_msgid-1 == ID ) {
+		if ( FT->p2p_msgid == ID || FT->p2p_msgid == (ID + 1) ) {
 			ft = FT;
 			break;
 	}	}
 
 	LeaveCriticalSection( &sessionLock );
 	if ( ft == NULL )
-		MSN_DebugLog( "Ignoring unknown message id %ld", ID );
+		MSN_DebugLog( "Ignoring unknown message id %lu", ID );
 
 	return ft;
 }

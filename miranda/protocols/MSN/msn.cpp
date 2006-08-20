@@ -301,7 +301,7 @@ extern "C" int __declspec(dllexport) Load( PLUGINLINK* link )
 	char nudge[250];
 	sprintf(nudge,"%s/Nudge",protocolname);
 	hMSNNudge = CreateHookableEvent(nudge);
-
+	
 	MSN_InitThreads();
 
 	PROTOCOLDESCRIPTOR pd;
