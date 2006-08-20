@@ -133,7 +133,7 @@ void mmdecode( char *trg, char *str )
 	char buf[BUFLEN], mmbuf[BUFLEN];
 	char *s, *t, *u;
 	int  base64, quote;
-	int  jis;
+	int  jis = 0;
 	char *c;
 
 	buf[0] = '\0';
