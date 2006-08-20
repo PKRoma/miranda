@@ -63,7 +63,7 @@ bool		msnHaveChatDll = false;
 
 MYOPTIONS MyOptions;
 
-MSN_StatusMessage msnModeMsgs[ MSN_NUM_MODES ] = { 
+MSN_StatusMessage msnModeMsgs[ MSN_NUM_MODES ] = {
 	{ ID_STATUS_ONLINE,     NULL },
 	{ ID_STATUS_AWAY,       NULL },
 	{ ID_STATUS_NA,         NULL },

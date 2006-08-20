@@ -841,7 +841,7 @@ filetransfer::filetransfer()
 
 filetransfer::~filetransfer()
 {
-	MSN_DebugLog( "Destroying file transfer session %ld", p2p_sessionid );
+	MSN_DebugLog( "Destroying file transfer session %lu", p2p_sessionid );
 
 	if ( !bCompleted ) {
 		std.files = NULL;

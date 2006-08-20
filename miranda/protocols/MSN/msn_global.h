@@ -430,6 +430,7 @@ ThreadData*	__stdcall MSN_GetThreadByContact( HANDLE hContact );
 ThreadData*	__stdcall MSN_GetThreadByPort( WORD wPort );
 ThreadData* __stdcall MSN_GetUnconnectedThread( HANDLE hContact );
 ThreadData* __stdcall MSN_GetThreadByID( LONG id );
+ThreadData* __stdcall MSN_GetOtherContactThread( ThreadData* thread );
 void			__stdcall MSN_PingParentThread( ThreadData*, filetransfer* ft );
 void        __stdcall MSN_StartThread( pThreadFunc parFunc, void* arg );
 

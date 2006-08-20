@@ -180,6 +180,17 @@ static void sttNotificationMessage( const char* msgBody, bool isInitial )
 	}
 
 	if ( From != NULL && Subject != NULL && Fromaddr != NULL ) {
+		const char* SrcFolder = tFileInfo[ "Src-Folder" ];
+		const char* DestFolder = tFileInfo[ "Dest-Folder" ];
+		if ( DestFolder != NULL && SrcFolder == NULL ) {
+			UnreadMessages = strcmp( DestFolder, "ACTIVE" ) == 0;
+			UnreadJunkEmails = strcmp( DestFolder, "HM_BuLkMail_" ) == 0;
+		}
+
+		// nothing to do, a fake notification
+		if ( UnreadMessages == 0 && UnreadJunkEmails == 0 )
+			return;
+
 		char mimeFrom[ 1024 ], mimeSubject[ 1024 ];
 		mmdecode( mimeFrom,    ( char* )From );
 		mmdecode( mimeSubject, ( char* )Subject );
@@ -289,6 +300,11 @@ static void sttInviteMessage( ThreadData* info, const char* msgBody, char* email
 			return;
 	}	}
 
+	if ( Invcommand && ( strcmp( Invcommand, "CANCEL" ) == 0 )) {
+		delete info->mMsnFtp;
+		info->mMsnFtp = NULL;
+	}
+
 	if ( Appname != NULL && Appfile != NULL && Appfilesize != NULL ) { // receive first
 		filetransfer* ft = info->mMsnFtp = new filetransfer();
 
@@ -304,7 +320,7 @@ static void sttInviteMessage( ThreadData* info, const char* msgBody, char* email
 
 		int tFileNameLen = strlen( ft->std.currentFile );
 		char tComment[ 40 ];
-		int tCommentLen = mir_snprintf( tComment, sizeof( tComment ), "%ld bytes", ft->std.currentFileSize );
+		int tCommentLen = mir_snprintf( tComment, sizeof( tComment ), "%lu bytes", ft->std.currentFileSize );
 		char* szBlob = ( char* )malloc( sizeof( DWORD ) + tFileNameLen + tCommentLen + 2 );
 		*( PDWORD )szBlob = ( DWORD )ft;
 		strcpy( szBlob + sizeof( DWORD ), ft->std.currentFile );
@@ -331,6 +347,17 @@ static void sttInviteMessage( ThreadData* info, const char* msgBody, char* email
 		strcat( newThread->mServer, ":" );
 		strcat( newThread->mServer, Port );
 		newThread->mType = SERVER_FILETRANS;
+
+		if ( info->mMsnFtp == NULL )
+		{
+			ThreadData* otherThread = MSN_GetOtherContactThread( info );
+			if ( otherThread )
+			{
+				info->mMsnFtp = otherThread->mMsnFtp;
+				otherThread->mMsnFtp = NULL;
+			}
+		}
+
 		newThread->mMsnFtp = info->mMsnFtp; info->mMsnFtp = NULL;
 		strcpy( newThread->mCookie, AuthCookie );
 
@@ -1054,7 +1081,7 @@ LBL_InvalidCommand:
 					md5hash[i] &= 0x7FFFFFFF;
 
 				char chlString[128];
-				_snprintf( chlString, sizeof chlString, "%s%s00000000", authChallengeInfo, msnProductID );
+				_snprintf( chlString, sizeof( chlString ), "%s%s00000000", authChallengeInfo, msnProductID );
 				chlString[ (strlen(authChallengeInfo)+strlen(msnProductID)+7) & 0xF8 ] = 0;
 
 				LONGLONG high=0, low=0, bskey=0;

@@ -23,12 +23,39 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 #include "msn_global.h"
 
-#include <fcntl.h>
 #include <io.h>
-#include <sys/stat.h>
 
 int MSN_HandleCommands(ThreadData *info,char *cmdString);
 int MSN_HandleErrors(ThreadData *info,char *cmdString);
+
+void msnftp_sendAcceptReject( filetransfer *ft, bool acc )
+{
+	ThreadData* thread = MSN_GetThreadByContact( ft->std.hContact );
+	if ( thread == NULL ) return;
+
+	if ( acc )
+	{
+		thread->sendPacket( "MSG",
+			"U %d\r\nMIME-Version: 1.0\r\n"
+			"Content-Type: text/x-msmsgsinvite; charset=UTF-8\r\n\r\n"
+			"Invitation-Command: ACCEPT\r\n"
+			"Invitation-Cookie: %s\r\n"
+			"Launch-Application: FALSE\r\n"
+			"Request-Data: IP-Address:\r\n\r\n",
+			172+4+strlen( ft->szInvcookie ), ft->szInvcookie );
+	}
+	else
+	{
+		thread->sendPacket( "MSG",
+			"U %d\r\nMIME-Version: 1.0\r\n"
+			"Content-Type: text/x-msmsgsinvite; charset=UTF-8\r\n\r\n"
+			"Invitation-Command: CANCEL\r\n"
+			"Invitation-Cookie: %s\r\n"
+			"Cancel-Code: REJECT\r\n\r\n",
+			172-33+4+strlen( ft->szInvcookie ), ft->szInvcookie );
+	}
+}
+
 
 /////////////////////////////////////////////////////////////////////////////////////////
 //	MSN File Transfer Protocol commands processing
@@ -64,17 +91,16 @@ int MSN_HandleMSNFTP( ThreadData *info, char *cmdString )
 			filetransfer* ft = info->mMsnFtp;
 
 			info->mCaller = 3;
-			ft->std.currentFileSize = ft->std.totalBytes;
-			ft->std.currentFileProgress = 0;
-			ft->fileId = _open( ft->std.currentFile, _O_BINARY | _O_RDONLY );
-			if ( ft->fileId == -1 )
-				break;
 
-			MSN_SendBroadcast( ft->std.hContact, ACKTYPE_FILE, ACKRESULT_INITIALISING, ft, 0 );
 			while( ft->std.currentFileProgress < ft->std.currentFileSize )
 			{
-				if ( ft->bCanceled )
-					break;
+				if ( ft->bCanceled ) {
+					sendpacket[0] = 0x01;
+					sendpacket[1] = 0x00;
+					sendpacket[2] = 0x00;
+					info->send( sendpacket, 3 );
+					return 0;
+				}
 
 				int wPlace = 0;
 				sendpacket[ wPlace++ ] = 0x00;
@@ -94,8 +120,7 @@ int MSN_HandleMSNFTP( ThreadData *info, char *cmdString )
 				MSN_SendBroadcast( ft->std.hContact, ACKTYPE_FILE, ACKRESULT_DATA, ft, ( LPARAM )&ft->std );
 			}
 
-			ft->bCompleted = true;
-			ft->close();
+			ft->complete();
 			break;
 		}
 		case ' RSU':    //********* USR
@@ -160,7 +185,7 @@ LBL_InvalidCommand:
 				if ( ft->bCanceled )
 				{	info->send( "CCL\r\n", 5 );
 					ft->close();
-					return 0;
+					return 1;
 				}
 
 				BYTE* p = tBuf.surelyRead( 3 );
@@ -175,12 +200,10 @@ LBL_Error:		ft->close();
 				dataLen |= (*p++ << 8);
 
 				if ( tIsTransitionFinished ) {
-LBL_Success:	ft->complete();
-					ft->close();
-
+LBL_Success:
 					static char sttCommand[] = "BYE 16777989\r\n";
 					info->send( sttCommand, strlen( sttCommand ));
-					return 0;
+					return 1;
 				}
 
 				p = tBuf.surelyRead( dataLen );
@@ -193,9 +216,10 @@ LBL_Success:	ft->complete();
 
 				MSN_SendBroadcast( ft->std.hContact, ACKTYPE_FILE, ACKRESULT_DATA, ft, ( LPARAM )&ft->std );
 
-				if ( ft->std.currentFileProgress == ft->std.totalBytes )
+				if ( ft->std.currentFileProgress == ft->std.totalBytes ) {
+					ft->complete();
 					goto LBL_Success;
-	}	}	}
+	}	}	}	}
 
 	return 0;
 }

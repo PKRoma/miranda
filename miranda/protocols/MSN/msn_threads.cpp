@@ -334,6 +334,29 @@ ThreadData* __stdcall MSN_GetThreadByContact( HANDLE hContact )
 	return T;
 }
 
+ThreadData* __stdcall MSN_GetOtherContactThread( ThreadData* thread )
+{
+	EnterCriticalSection( &sttLock );
+
+	ThreadData* T = NULL;
+
+	for ( int i=0; i < MAX_THREAD_COUNT; i++ )
+	{
+		T = sttThreads[ i ];
+		if ( T == NULL )
+			continue;
+
+		if ( T->mJoinedCount == 0 || T->mJoinedContacts == NULL || T->s == NULL )
+			continue;
+
+		if ( T != thread && T->mJoinedContacts[0] == thread->mJoinedContacts[0] )
+			break;
+	}
+
+	LeaveCriticalSection( &sttLock );
+	return T;
+}
+
 ThreadData* __stdcall MSN_GetUnconnectedThread( HANDLE hContact )
 {
 	EnterCriticalSection( &sttLock );
@@ -475,8 +498,10 @@ ThreadData::~ThreadData()
 		Netlib_CloseHandle( s );
 	}
 
-	if ( mMsnFtp != NULL )
+	if ( mMsnFtp != NULL ) {
 		delete mMsnFtp;
+		mMsnFtp = NULL;
+	}
 
 	if ( mUniqueID )
 		p2p_unregisterThreadSession( mUniqueID );

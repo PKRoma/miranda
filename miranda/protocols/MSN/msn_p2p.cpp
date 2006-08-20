@@ -778,7 +778,7 @@ static void sttInitFileTransfer(
 	if ( dwAppID == 1 && !strcmp( szEufGuid, "{A4268EEC-FEC5-49E5-95C3-F126696BDBF6}" )) {
 		char szFileName[ MAX_PATH ];
 		MSN_GetAvatarFileName( NULL, szFileName, sizeof( szFileName ));
-		ft->fileId = open( szFileName, O_RDONLY | _O_BINARY, _S_IREAD | _S_IWRITE );
+		ft->fileId = _open( szFileName, O_RDONLY | _O_BINARY, _S_IREAD );
 		if ( ft->fileId == -1 ) {
 			p2p_sendStatus( ft, info, 603 );
 			MSN_DebugLog( "Unable to open avatar file '%s', error %d", szFileName, errno );
@@ -1034,11 +1034,6 @@ LBL_Close:
 	char* szBody = ( char* )alloca( 1024 );
 	int   cbBody = 0;
 	if ( !strcmp( szOldContentType, "application/x-msnmsgr-sessionreqbody" )) {
-		if ( ft->fileId == -1 )
-			if (( ft->fileId = open( ft->std.currentFile, O_RDONLY | _O_BINARY, _S_IREAD | _S_IWRITE )) == -1 ) {
-				MSN_DebugLog( "Unable to open file '%s', error %d", ft->std.currentFile, errno );
-				goto LBL_Close;
-			}
 
 		tResult.addString( "Content-Type", "application/x-msnmsgr-transreqbody" );
 		cbBody = mir_snprintf( szBody, 1024,
@@ -1201,7 +1196,6 @@ void __stdcall p2p_processMsg( ThreadData* info, const char* msgbody )
 			}
 			return;
 		}
-		return;
 	}
 
 	//---- receiving ack -----------
