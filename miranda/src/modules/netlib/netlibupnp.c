@@ -107,9 +107,11 @@ static BOOL txtParseParam(char* szData, char* presearch,
 	cp = strstr(cp1, start);
 	if (cp == NULL) return FALSE;
 	cp += strlen(start);
+	while (*cp == ' ') ++cp;
 
 	cp1 = strstr(cp, finish);
 	if (cp1 == NULL) return FALSE;
+	while (*cp1 == ' ' && cp1 > cp) --cp1;
 
 	len = cp1 - cp;
 	strncpy(param, cp, len);
@@ -256,6 +258,8 @@ static void httpTransact (char* szUrl, char* szResult, int resSize, char* szActi
 		enetaddr.sin_port = htons((unsigned short)atol(szPort));
 		enetaddr.sin_addr.s_addr = inet_addr(szHost);
 
+		Netlib_Logf(NULL, "UPnP HTTP connection Host: %s Port: %s\n", szHost, szPort); 
+
 		FD_ZERO(&readfd);
 		FD_SET(sock, &readfd);
 
@@ -289,7 +293,11 @@ static void httpTransact (char* szUrl, char* szResult, int resSize, char* szActi
 				}
 				LongLog(szResult);
 			}
+			else
+				Netlib_Logf(NULL, "UPnP send failed %d", WSAGetLastError()); 
 		}
+		else
+			Netlib_Logf(NULL, "UPnP connect failed %d", WSAGetLastError()); 
 
 		if (szActionName == NULL) 
 		{
@@ -328,11 +336,22 @@ static void findUPnPGateway(void)
 
 			mir_snprintf(szTemp, sizeof(szTemp), search_device, szDev);
 			txtParseParam(szData, szTemp, "<controlURL>", "</controlURL>", szUrl);
-			if (szUrl[0] != '/') 
-				strcpy(szCtlUrl, szUrl);
-			else 
-				strcat(szCtlUrl, szUrl);
+			switch (szUrl[0])
+			{
+				case 0:
+					gatewayFound = FALSE;
+					break;
+
+				case '/': 
+					strcat(szCtlUrl, szUrl);
+					break;
+
+				default: 
+					strcpy(szCtlUrl, szUrl);
+					break;
+			}
 		}
+		Netlib_Logf(NULL, "UPnP Gateway detected %d, Control URL: %s\n", gatewayFound, szCtlUrl); 
 		mir_free(szData);
 	}
 }
