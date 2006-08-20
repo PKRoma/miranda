@@ -111,7 +111,7 @@ static BOOL txtParseParam(char* szData, char* presearch,
 
 	cp1 = strstr(cp, finish);
 	if (cp1 == NULL) return FALSE;
-	while (*cp1 == ' ' && cp1 > cp) --cp1;
+	while (*(cp1-1) == ' ' && cp1 > cp) --cp1;
 
 	len = cp1 - cp;
 	strncpy(param, cp, len);

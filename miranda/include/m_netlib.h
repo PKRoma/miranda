@@ -340,6 +340,7 @@ struct NETLIBOPENCONNECTION_tag {
 #define NLHPIF_USEGETSEQUENCE      0x0001   //append sequence numbers to GET requests
 #define NLHPIF_USEPOSTSEQUENCE     0x0002   //append sequence numbers to POST requests
 #define NLHPIF_GETPOSTSAMESEQUENCE 0x0004	//GET and POST use the same sequence
+#define NLHPIF_HTTP11              0x0008	//HTTP 1.1 proxy
 typedef struct {
 	int cbSize;
 	DWORD flags;

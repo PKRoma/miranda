@@ -522,7 +522,7 @@ void ThreadData::applyGatewayData( HANDLE hConn, bool isPoll )
 
 	NETLIBHTTPPROXYINFO nlhpi = {0};
 	nlhpi.cbSize = sizeof(nlhpi);
-	nlhpi.flags = 0;
+	nlhpi.flags = NLHPIF_HTTP11;
 	nlhpi.szHttpGetUrl = NULL;
 	nlhpi.szHttpPostUrl = szHttpPostUrl;
 	nlhpi.firstPostSequence = 1;

@@ -51,7 +51,8 @@ static int HttpGatewaySendGet(struct NetlibConnection *nlc)
 	 *          receiving
 	 */
 	nlhrSend.requestType=(nlc->nlhpi.szHttpGetUrl == NULL) ? REQUEST_POST : REQUEST_GET;
-	nlhrSend.flags=NLHRF_GENERATEHOST|NLHRF_DUMPPROXY|NLHRF_SMARTAUTHHEADER|NLHRF_HTTP11;
+	nlhrSend.flags=NLHRF_GENERATEHOST|NLHRF_DUMPPROXY|NLHRF_SMARTAUTHHEADER;
+	if (nlc->nlhpi.flags & NLHPIF_HTTP11) nlhrSend.flags |= NLHRF_HTTP11;
 
 	/*
 	 * Gena01 - fixing a possible crash, can't use GET Sequence if there is no GET URL
@@ -513,7 +514,9 @@ int NetlibInitHttpConnection(struct NetlibConnection *nlc,struct NetlibUser *nlu
 	nlhrSend.cbSize=sizeof(nlhrSend);
 	nlhrSend.nlc=nlc;
 	nlhrSend.requestType=REQUEST_GET;
-	nlhrSend.flags=NLHRF_GENERATEHOST|NLHRF_DUMPPROXY|NLHRF_SMARTAUTHHEADER|NLHRF_HTTP11;
+	nlhrSend.flags=NLHRF_GENERATEHOST|NLHRF_DUMPPROXY|NLHRF_SMARTAUTHHEADER;
+	if (nlc->nlhpi.flags & NLHPIF_HTTP11) nlhrSend.flags |= NLHRF_HTTP11;
+
 	nlhrSend.szUrl=nlu->user.szHttpGatewayHello;
 	nlhrSend.headers=httpHeaders;
     nlhrSend.headersCount=3;
