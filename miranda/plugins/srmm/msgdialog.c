@@ -19,6 +19,9 @@ You should have received a copy of the GNU General Public License
 along with this program; if not, write to the Free Software
 Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 */
+
+#define _USE_32BIT_TIME_T
+
 #include "commonheaders.h"
 #pragma hdrstop
 
@@ -77,6 +80,34 @@ static char *MsgServiceName(HANDLE hContact)
 #endif
     return PSS_MESSAGE;
 }
+
+#if defined(_UNICODE)
+static int RTL_Detect(WCHAR *pszwText)
+{
+    WORD *infoTypeC2;
+    int i;
+    int iLen = lstrlenW(pszwText);
+
+    infoTypeC2 = (WORD *)malloc(sizeof(WORD) * (iLen + 2));
+
+    if(infoTypeC2) {
+        ZeroMemory(infoTypeC2, sizeof(WORD) * (iLen + 2));
+
+        GetStringTypeW(CT_CTYPE2, pszwText, iLen, infoTypeC2);
+
+        for(i = 0; i < iLen; i++) {
+            if(infoTypeC2[i] == C2_RIGHTTOLEFT) {
+                free(infoTypeC2);
+                //_DebugTraceA("RTL text found");
+                return 1;
+            }
+        }
+        free(infoTypeC2);
+        //_DebugTraceA("NO RTL text detected");
+    }
+    return 0;
+}
+#endif
 
 // mod from tabsrmm
 static void AddToFileList(char ***pppFiles,int *totalCount,const char *szFilename) {
@@ -592,14 +623,21 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
 		{
 			struct NewMessageWindowLParam *newData = (struct NewMessageWindowLParam *) lParam;
 			TranslateDialogDefault(hwndDlg);
-			dat = (struct MessageWindowData *) malloc(sizeof(struct MessageWindowData));
+			dat = (struct MessageWindowData *) calloc(sizeof(struct MessageWindowData),1);
 			SetWindowLong(hwndDlg, GWL_USERDATA, (LONG) dat);
 			{
 				dat->hContact = newData->hContact;
 				NotifyLocalWinEvent(dat->hContact, hwndDlg, MSG_WINDOW_EVT_OPENING);
 				if (newData->szInitialText) {
 					int len;
+#if defined(_UNICODE)
+                    if(newData->isWchar)
+    					SetDlgItemText(hwndDlg, IDC_MESSAGE, (TCHAR *)newData->szInitialText);
+    				else
+    					SetDlgItemTextA(hwndDlg, IDC_MESSAGE, newData->szInitialText);                    
+#else					
 					SetDlgItemTextA(hwndDlg, IDC_MESSAGE, newData->szInitialText);
+#endif					
 					len = GetWindowTextLength(GetDlgItem(hwndDlg, IDC_MESSAGE));
 					PostMessage(GetDlgItem(hwndDlg, IDC_MESSAGE), EM_SETSEL, len, len);
 				}
@@ -632,6 +670,7 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
 			dat->nTypeMode = PROTOTYPE_SELFTYPING_OFF;
 			SetTimer(hwndDlg, TIMERID_TYPE, 1000, NULL);
 			dat->lastMessage = 0;
+			dat->lastEventType = -1;
 			dat->nFlashMax = DBGetContactSettingByte(NULL, SRMMMOD, SRMSGSET_FLASHCOUNT, SRMSGDEFSET_FLASHCOUNT);
 			{
 				RECT rc, rc2;
@@ -1041,6 +1080,24 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
 			hFont = CreateFontIndirect(&lf);
 			SendDlgItemMessage(hwndDlg, IDC_MESSAGE, WM_SETFONT, (WPARAM) hFont, MAKELPARAM(TRUE, 0));
 		}
+
+        /*
+		 * configure message history for proper RTL formatting
+		 */
+
+		{
+            PARAFORMAT2 pf2;
+            ZeroMemory((void *)&pf2, sizeof(pf2));
+            pf2.cbSize = sizeof(pf2);
+
+            pf2.wEffects = PFE_RTLPARA;
+            pf2.dwMask = PFM_RTLPARA;
+            SetDlgItemText(hwndDlg, IDC_LOG, _T(""));
+            SendDlgItemMessage(hwndDlg, IDC_LOG, EM_SETPARAFORMAT, 0, (LPARAM)&pf2);
+            pf2.wEffects = 0;
+            SendDlgItemMessage(hwndDlg, IDC_LOG, EM_SETPARAFORMAT, 0, (LPARAM)&pf2);
+            SendDlgItemMessage(hwndDlg, IDC_LOG, EM_SETLANGOPTIONS, 0, (LPARAM) SendDlgItemMessage(hwndDlg, IDC_LOG, EM_GETLANGOPTIONS, 0, 0) & ~IMF_AUTOKEYBOARD);
+        }
 		SendMessage(hwndDlg, DM_REMAKELOG, 0, 0);
 		SendMessage(hwndDlg, DM_UPDATEWINICON, 0, 0);
 		break;
@@ -1261,6 +1318,7 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
 			break;
 		}
 	case DM_REMAKELOG:
+		dat->lastEventType = -1;
 		StreamInEvents(hwndDlg, dat->hDbEventFirst, -1, 0);
 		break;
 	case DM_APPENDTOLOG:   //takes wParam=hDbEvent
@@ -1452,11 +1510,11 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
 				if (!IsWindowEnabled(GetDlgItem(hwndDlg, IDOK)))
 					break;
 				{
+					int flags = SEND_FLAGS;
 					//this is a 'send' button
-					int bufSize;
-
-					bufSize = GetWindowTextLengthA(GetDlgItem(hwndDlg, IDC_MESSAGE)) + 1;
+					int bufSize = GetWindowTextLengthA(GetDlgItem(hwndDlg, IDC_MESSAGE)) + 1;
 					dat->sendBuffer = (char *) realloc(dat->sendBuffer, bufSize * (sizeof(TCHAR) + 1));
+					dat->bIsRtl = 0;
 					GetDlgItemTextA(hwndDlg, IDC_MESSAGE, dat->sendBuffer, bufSize);
 					#if defined( _UNICODE )
 					// all that crap with temporary buffers is related to the bug #0001466 (empty messages 
@@ -1464,6 +1522,10 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
 					{	WCHAR* temp = ( WCHAR* )alloca( bufSize * sizeof( TCHAR ));
 						GetDlgItemTextW(hwndDlg, IDC_MESSAGE, temp, bufSize);
 						memcpy(( TCHAR*)&dat->sendBuffer[bufSize], temp, bufSize * sizeof( TCHAR ));
+						if ( RTL_Detect( temp )) {
+							flags |= PREF_RTL;
+							dat->bIsRtl = 1;
+						}
 					}
 					#endif
 					if (dat->sendBuffer[0] == 0)
@@ -1471,7 +1533,7 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
 					#if defined( _UNICODE )
 						dat->cmdList = tcmdlist_append(dat->cmdList, (TCHAR *) & dat->sendBuffer[bufSize]);
 					#else
-							dat->cmdList = tcmdlist_append(dat->cmdList, dat->sendBuffer);
+						dat->cmdList = tcmdlist_append(dat->cmdList, dat->sendBuffer);
 					#endif
 					dat->cmdListCurrent = 0;
 					if (dat->nTypeMode == PROTOTYPE_SELFTYPING_ON) {
@@ -1481,7 +1543,7 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
 					if (dat->hContact == NULL)
 						break;      //never happens
 					dat->sendCount = 1;
-					dat->hSendId = (HANDLE) CallContactService(dat->hContact, MsgServiceName(dat->hContact), SEND_FLAGS, (LPARAM) dat->sendBuffer);
+					dat->hSendId = (HANDLE) CallContactService(dat->hContact, MsgServiceName(dat->hContact), flags, (LPARAM) dat->sendBuffer);
 					EnableWindow(GetDlgItem(hwndDlg, IDOK), FALSE);
 					SendDlgItemMessage(hwndDlg, IDC_MESSAGE, EM_SETREADONLY, TRUE, 0);
 
@@ -1705,7 +1767,8 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
 			if (dat->sendBuffer==NULL) return 0;
 			dbei.cbSize = sizeof(dbei);
 			dbei.eventType = EVENTTYPE_MESSAGE;
-			dbei.flags = DBEF_SENT;
+			dbei.flags = DBEF_SENT + (( dat->bIsRtl ) ? DBEF_RTL : 0 );
+
 			dbei.szModule = (char *) CallService(MS_PROTO_GETCONTACTBASEPROTO, (WPARAM) dat->hContact, 0);
 			dbei.timestamp = time(NULL);
 			dbei.cbBlob = lstrlenA(dat->sendBuffer) + 1;

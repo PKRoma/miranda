@@ -249,17 +249,12 @@
 	"..\..\src\res\dragcopy.cur"\
 	"..\..\src\res\dropuser.cur"\
 	"..\..\src\res\hyperlin.cur"\
-	".\res\add32.ico"\
-	".\res\add8.ico"\
-	".\res\Details32.ico"\
-	".\res\Details8.ico"\
-	".\res\Downarrow32.ico"\
-	".\res\Downarrow8.ico"\
-	".\res\History32.ico"\
-	".\res\History8.ico"\
+	".\res\add.ico"\
+	".\res\details.ico"\
+	".\res\downarrow.ico"\
+	".\res\history.ico"\
 	".\res\incoming.ico"\
 	".\res\notice.ico"\
 	".\res\outgoing.ico"\
-	".\res\Typing32.ico"\
-	".\res\Typing8.ico"\
+	".\res\typing.ico"\
 	
