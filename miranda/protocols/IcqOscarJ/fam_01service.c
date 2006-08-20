@@ -313,7 +313,8 @@ void handleServiceFam(unsigned char* pBuffer, WORD wBufferLength, snac_header* p
         dwValue = getDWordFromChain(chain, 5, 1); 
         if (dwValue) ICQWriteContactSettingDword(NULL, "MemberTS", dwValue);
 
-        ICQWriteContactSettingDword(NULL, "LogonTS", time(NULL));
+        dwValue = getDWordFromChain(chain, 3, 1);
+        ICQWriteContactSettingDword(NULL, "LogonTS", dwValue ? dwValue : time(NULL));
 
         disposeChain(&chain);
 
