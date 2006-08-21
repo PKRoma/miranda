@@ -48,6 +48,7 @@ Bugfixes:
  - db3x driver text was cut off in profile selector dialog
  - AutoExec files were deleted after use instead of renaming
  - Allow use of '#' as the beginning character in a autoexec file
+ - Typo in about dialog
  - AIM: Fixed login problems from previous login order change
  - AIM: Fixed utf8 sending for aim clients
  - AIM: Keepalive timer fixes
