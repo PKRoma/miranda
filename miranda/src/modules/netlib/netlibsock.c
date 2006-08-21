@@ -146,7 +146,7 @@ int NetlibSelectEx(WPARAM wParam,LPARAM lParam)
 		conn=(struct NetlibConnection*)nls->hReadConns[j];
 		if (conn==NULL || conn==INVALID_HANDLE_VALUE) break;
 		
-		if (conn->usingHttpGateway && conn->nlhpi.szHttpGetUrl == NULL) 
+		if (conn->usingHttpGateway && conn->nlhpi.szHttpGetUrl == NULL && conn->dataBuffer == NULL)
 			nls->hReadStatus[j] = (conn->pHttpProxyPacketQueue != NULL);
 		else
 			nls->hReadStatus[j] = FD_ISSET(conn->s,&readfd);
