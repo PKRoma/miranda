@@ -202,10 +202,8 @@ DWORD __forceinline INTSORT_GetLastMsgTime(HANDLE hContact)
         dbei.pBlob = 0;
         dbei.cbBlob = 0;
         CallService(MS_DB_EVENT_GET, (WPARAM)hDbEvent, (LPARAM)&dbei);
-        if(dbei.eventType == EVENTTYPE_MESSAGE && !(dbei.flags & DBEF_SENT)) {
-            _DebugTraceA("got the INITIAL last msg time for %d -> %d", hContact, dbei.timestamp);
+        if(dbei.eventType == EVENTTYPE_MESSAGE && !(dbei.flags & DBEF_SENT))
             return dbei.timestamp;
-        }
         hDbEvent = (HANDLE)CallService(MS_DB_EVENT_FINDPREV, (WPARAM)hDbEvent, 0);
     }
 	return 0;
