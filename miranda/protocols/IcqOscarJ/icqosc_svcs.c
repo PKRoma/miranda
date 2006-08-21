@@ -2088,7 +2088,7 @@ int IcqRevokeAuthorization(WPARAM wParam, LPARAM lParam)
     if (ICQGetContactSettingUID((HANDLE)wParam, &dwUin, &szUid))
       return 0; // Invalid contact
 
-    if (MessageBoxUtf(NULL, ICQTranslateUtfStatic("Are you sure you want to revoke user's autorisation (this will remove you from his/her list on some clients) ?", str), ICQTranslateUtfStatic("Confirmation", cap), MB_ICONQUESTION | MB_YESNO) != IDYES)
+    if (MessageBoxUtf(NULL, ICQTranslateUtfStatic("Are you sure you want to revoke user's authorisation (this will remove you from his/her list on some clients) ?", str), ICQTranslateUtfStatic("Confirmation", cap), MB_ICONQUESTION | MB_YESNO) != IDYES)
       return 0;
 
     icq_sendRevokeAuthServ(dwUin, szUid);
