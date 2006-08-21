@@ -2,8 +2,8 @@
 
 Miranda IM: the free IM client for Microsoft* Windows*
 
-Copyright 2000-2005 Miranda ICQ/IM project, 
-all portions of this codebase are copyrighted to the people 
+Copyright 2000-2005 Miranda ICQ/IM project,
+all portions of this codebase are copyrighted to the people
 listed in contributors.txt.
 
 This program is free software; you can redistribute it and/or
@@ -29,6 +29,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #define IDL_IDLETIME1ST   "IdleTime1st"
 #define IDL_IDLEONSAVER   "IdleOnSaver" // IDC_SCREENSAVER
 #define IDL_IDLEONLOCK    "IdleOnLock" // IDC_LOCKED
+#define IDL_IDLEONTSDC    "IdleOnTerminalDisconnect" //
 #define IDL_IDLEPRIVATE   "IdlePrivate" // IDC_IDLEPRIVATE
 #define IDL_IDLESTATUSLOCK "IdleStatusLock" // IDC_IDLESTATUSLOCK
 #define IDL_AAENABLE      "AAEnable"
@@ -36,7 +37,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 #define IdleObject_IsIdle(obj) (obj->state&0x1)
 #define IdleObject_SetIdle(obj) (obj->state|=0x1)
-#define IdleObject_ClearIdle(obj) (obj->state&=~0x1) 
+#define IdleObject_ClearIdle(obj) (obj->state&=~0x1)
 
 // either use meth 0,1 or figure out which one
 #define IdleObject_UseMethod0(obj) (obj->state&=~0x2)
@@ -54,10 +55,101 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 #define IdleObject_SetStatusLock(obj) (obj->state|=0x20)
 
+#define IdleObject_IdleCheckTerminal(obj) (obj->state|=0x40)
+#define IdleObject_SetTerminalCheck(obj) (obj->state|=0x40)
+
+//#include <Wtsapi32.h>
+
+#ifndef _INC_WTSAPI
+
+#define WTS_CURRENT_SERVER_HANDLE  ((HANDLE)NULL)
+#define WTS_CURRENT_SESSION ((DWORD)-1)
+
+typedef enum _WTS_CONNECTSTATE_CLASS {
+    WTSActive,              // User logged on to WinStation
+    WTSConnected,           // WinStation connected to client
+    WTSConnectQuery,        // In the process of connecting to client
+    WTSShadow,              // Shadowing another WinStation
+    WTSDisconnected,        // WinStation logged on without client
+    WTSIdle,                // Waiting for client to connect
+    WTSListen,              // WinStation is listening for connection
+    WTSReset,               // WinStation is being reset
+    WTSDown,                // WinStation is down due to error
+    WTSInit,                // WinStation in initialization
+} WTS_CONNECTSTATE_CLASS;
+
+
+typedef enum _WTS_INFO_CLASS {
+    WTSInitialProgram,
+    WTSApplicationName,
+    WTSWorkingDirectory,
+    WTSOEMId,
+    WTSSessionId,
+    WTSUserName,
+    WTSWinStationName,
+    WTSDomainName,
+    WTSConnectState,
+    WTSClientBuildNumber,
+    WTSClientName,
+    WTSClientDirectory,
+    WTSClientProductId,
+    WTSClientHardwareId,
+    WTSClientAddress,
+    WTSClientDisplay,
+    WTSClientProtocolType,
+} WTS_INFO_CLASS;
+
+#endif
+
+VOID (WINAPI *_WTSFreeMemory)(PVOID);
+BOOL (WINAPI *_WTSQuerySessionInformation)(HANDLE, DWORD, WTS_INFO_CLASS, PVOID, DWORD*);
+
+BOOL WTSAPI = FALSE;
+
+BOOL InitWTSAPI()
+{
+	HMODULE hDll = LoadLibraryA("wtsapi32.dll");
+	if (hDll) {
+		_WTSFreeMemory = (VOID (WINAPI *)(PVOID))GetProcAddress(hDll, "WTSFreeMemory");
+		#ifdef UNICODE
+			_WTSQuerySessionInformation = (BOOL (WINAPI *)(HANDLE, DWORD, WTS_INFO_CLASS, PVOID, DWORD*))GetProcAddress(hDll, "WTSQuerySessionInformationW");
+		#else
+			_WTSQuerySessionInformation = (BOOL (WINAPI *)(HANDLE, DWORD, WTS_INFO_CLASS, PVOID, DWORD*))GetProcAddress(hDll, "WTSQuerySessionInformationA");
+		#endif
+
+		if (_WTSFreeMemory && _WTSQuerySessionInformation) return 1;
+	}
+	return 0;
+}
+
+BOOL IsTerminalDisconnected()
+{
+	PVOID pBuffer = NULL;
+	DWORD pBytesReturned = 0;
+	BOOL result = FALSE;
+
+	if (!WTSAPI) return FALSE;
+
+	if (_WTSQuerySessionInformation(
+		WTS_CURRENT_SERVER_HANDLE,
+		WTS_CURRENT_SESSION,
+		WTSConnectState,
+		&pBuffer,
+		&pBytesReturned)
+	) {
+
+		if (*(PDWORD)pBuffer == WTSDisconnected)
+			result = TRUE;
+
+		_WTSFreeMemory(pBuffer);
+	}
+	return result;
+}
+
 typedef struct {
 	UINT hTimer;
 	unsigned int useridlecheck;
-	unsigned int state; 
+	unsigned int state;
 	unsigned int minutes;	// user setting, number of minutes of inactivity to wait for
 	POINT mousepos;
 	unsigned int mouseidle;
@@ -84,12 +176,13 @@ static void IdleObject_ReadSettings(IdleObject * obj)
 	if ( DBGetContactSettingByte(NULL, IDLEMOD, IDL_IDLEONSAVER, 0) ) IdleObject_SetSaverCheck(obj);
 	if ( DBGetContactSettingByte(NULL, IDLEMOD, IDL_IDLEONLOCK, 0 ) ) IdleObject_SetWorkstationCheck(obj);
 	if ( DBGetContactSettingByte(NULL, IDLEMOD, IDL_IDLEPRIVATE, 0) ) IdleObject_SetPrivacy(obj);
-	if ( DBGetContactSettingByte(NULL, IDLEMOD, IDL_IDLESTATUSLOCK, 0) ) IdleObject_SetStatusLock(obj); 
+	if ( DBGetContactSettingByte(NULL, IDLEMOD, IDL_IDLESTATUSLOCK, 0) ) IdleObject_SetStatusLock(obj);
+	if ( DBGetContactSettingByte(NULL, IDLEMOD, IDL_IDLEONTSDC, 0) ) IdleObject_SetTerminalCheck(obj);
 }
 
 static void IdleObject_Create(IdleObject * obj)
 {
-	ZeroMemory(obj, sizeof(IdleObject));	
+	ZeroMemory(obj, sizeof(IdleObject));
 	obj->hTimer=SetTimer(NULL, 0, 2000, IdleTimer);
 	IdleObject_ReadSettings(obj);
 }
@@ -114,12 +207,12 @@ static int IdleObject_IsUserIdle(IdleObject * obj)
 			ii.cbSize=sizeof(ii);
 			if ( MyGetLastInputInfo(&ii) ) return GetTickCount() - ii.dwTime > (obj->minutes * 60 * 1000);
 		} else {
-			POINT pt;			
+			POINT pt;
 			GetCursorPos(&pt);
 			if ( pt.x != obj->mousepos.x || pt.y != obj->mousepos.y ) {
 				obj->mousepos=pt;
 				obj->mouseidle=0;
-			} else obj->mouseidle += 2;	
+			} else obj->mouseidle += 2;
 			if ( obj->mouseidle ) return obj->mouseidle * 1000 >= (obj->minutes * 60 * 1000);
 		}
 		return FALSE;
@@ -129,8 +222,9 @@ static int IdleObject_IsUserIdle(IdleObject * obj)
 static void IdleObject_Tick(IdleObject * obj)
 {
 	BOOL idle = ( obj->useridlecheck ? IdleObject_IsUserIdle(obj) : FALSE )
-		|| ( IdleObject_IdleCheckSaver(obj) ? IsScreenSaverRunning() : FALSE  ) 
-			|| ( IdleObject_IdleCheckWorkstation(obj) ? IsWorkstationLocked() : FALSE );
+		|| ( IdleObject_IdleCheckSaver(obj) ? IsScreenSaverRunning() : FALSE  )
+			|| ( IdleObject_IdleCheckWorkstation(obj) ? IsWorkstationLocked() : FALSE )
+				|| (IdleObject_IdleCheckTerminal(obj) ? IsTerminalDisconnected() : FALSE );
 
 	unsigned int flags = IdleObject_IsPrivacy(obj) ? IDF_PRIVACY : 0;
 
@@ -154,7 +248,7 @@ void CALLBACK IdleTimer(HWND hwnd, UINT umsg, UINT idEvent, DWORD dwTime)
 // delphi code here http://www.swissdelphicenter.ch/torry/printcode.php?id=2048
 static BOOL IsWorkstationLocked(void)
 {
-	BOOL rc=0;	
+	BOOL rc=0;
 	HDESK hDesk = OpenDesktop( _T("default"), 0, FALSE, DESKTOP_SWITCHDESKTOP);
 	if ( hDesk != 0 ) {
 		rc = SwitchDesktop(hDesk) == FALSE;
@@ -170,7 +264,8 @@ static BOOL IsScreenSaverRunning()
 	return rc;
 }
 
-int IdleGetStatusIndex(WORD status) {
+int IdleGetStatusIndex(WORD status)
+{
     int j;
     for (j = 0; j < SIZEOF(aa_Status); j++ ) {
         if (aa_Status[j]==status) return j;
@@ -193,11 +288,11 @@ static BOOL CALLBACK IdleOptsDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPAR
 		CheckDlgButton(hwndDlg, IDC_LOCKED, DBGetContactSettingByte(NULL,IDLEMOD,IDL_IDLEONLOCK,0) ? BST_CHECKED : BST_UNCHECKED);
 		CheckDlgButton(hwndDlg, IDC_IDLEPRIVATE, DBGetContactSettingByte(NULL,IDLEMOD,IDL_IDLEPRIVATE,0) ? BST_CHECKED : BST_UNCHECKED);
 		CheckDlgButton(hwndDlg, IDC_IDLESTATUSLOCK, DBGetContactSettingByte(NULL,IDLEMOD,IDL_IDLESTATUSLOCK,0) ? BST_CHECKED : BST_UNCHECKED);
-		SendDlgItemMessage(hwndDlg, IDC_IDLESPIN, UDM_SETBUDDY, (WPARAM)GetDlgItem(hwndDlg, IDC_IDLE1STTIME), 0);			
+		SendDlgItemMessage(hwndDlg, IDC_IDLESPIN, UDM_SETBUDDY, (WPARAM)GetDlgItem(hwndDlg, IDC_IDLE1STTIME), 0);
 		SendDlgItemMessage(hwndDlg, IDC_IDLESPIN, UDM_SETRANGE32, 1, 60);
 		SendDlgItemMessage(hwndDlg, IDC_IDLESPIN, UDM_SETPOS, 0, MAKELONG((short) DBGetContactSettingByte(NULL,IDLEMOD,IDL_IDLETIME1ST, 10), 0));
 		SendDlgItemMessage(hwndDlg, IDC_IDLE1STTIME, EM_LIMITTEXT, (WPARAM)2, 0);
-    
+
       CheckDlgButton(hwndDlg, IDC_AASHORTIDLE, DBGetContactSettingByte(NULL, IDLEMOD, IDL_AAENABLE, 0) ? BST_CHECKED:BST_UNCHECKED);
 		for ( j = 0; j < SIZEOF(aa_Status); j++ ) {
 			TCHAR* szDesc = LangPackPcharToTchar(( LPCSTR )CallService(MS_CLIST_GETSTATUSMODEDESCRIPTION, (WPARAM)aa_Status[j], 0));
@@ -215,12 +310,12 @@ static BOOL CALLBACK IdleOptsDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPAR
 		BOOL checked = IsDlgButtonChecked(hwndDlg, IDC_IDLESHORT) == BST_CHECKED;
 		EnableWindow(GetDlgItem(hwndDlg, IDC_IDLEONWINDOWS), checked);
 		EnableWindow(GetDlgItem(hwndDlg, IDC_IDLEONMIRANDA), checked);
-		EnableWindow(GetDlgItem(hwndDlg, IDC_IDLE1STTIME), checked);	
+		EnableWindow(GetDlgItem(hwndDlg, IDC_IDLE1STTIME), checked);
          EnableWindow(GetDlgItem(hwndDlg, IDC_AASTATUS), IsDlgButtonChecked(hwndDlg, IDC_AASHORTIDLE)==BST_CHECKED?1:0);
 		EnableWindow(GetDlgItem(hwndDlg, IDC_IDLESTATUSLOCK), IsDlgButtonChecked(hwndDlg, IDC_AASHORTIDLE)==BST_CHECKED?1:0);
 		break;
 	}
-	case WM_NOTIFY: 
+	case WM_NOTIFY:
 	{
 		NMHDR * hdr = (NMHDR *)lParam;
 		if ( hdr && hdr->code == PSN_APPLY ) {
@@ -249,11 +344,11 @@ static BOOL CALLBACK IdleOptsDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPAR
 	case WM_COMMAND:
 		switch ( LOWORD( wParam )) {
 		case IDC_IDLE1STTIME:
-		{								
-			int min;			
+		{
+			int min;
 			if ( (HWND)lParam != GetFocus() || HIWORD(wParam) != EN_CHANGE ) return FALSE;
 			min=GetDlgItemInt(hwndDlg, IDC_IDLE1STTIME, NULL, FALSE);
-			if ( min == 0 && GetWindowTextLength(GetDlgItem(hwndDlg, IDC_IDLE1STTIME)) ) 
+			if ( min == 0 && GetWindowTextLength(GetDlgItem(hwndDlg, IDC_IDLE1STTIME)) )
 				SendDlgItemMessage(hwndDlg, IDC_IDLESPIN, UDM_SETPOS, 0, MAKELONG((short) 1, 0));
 			break;
 		}
@@ -309,6 +404,7 @@ static int UnloadIdleModule(WPARAM wParam, LPARAM lParam)
 
 int LoadIdleModule(void)
 {
+	WTSAPI = InitWTSAPI();
 	MyGetLastInputInfo=(BOOL (WINAPI *)(LASTINPUTINFO*))GetProcAddress(GetModuleHandleA("user32"), "GetLastInputInfo");
 	hIdleEvent=CreateHookableEvent(ME_IDLE_CHANGED);
 	IdleObject_Create(&gIdleObject);
@@ -317,5 +413,3 @@ int LoadIdleModule(void)
 	HookEvent(ME_OPT_INITIALISE, IdleOptInit);
 	return 0;
 }
-
-
