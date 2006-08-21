@@ -16,7 +16,11 @@ Simply copy "srmm.dll" into your Miranda IM plugin directory (usually
 
 Changes
 -------
-2.5.0.0.
+2.6.0.0
+ - Improved RTL support
+ - Removed offline from autopopup options
+
+2.5.0.0
  - RTL support added
  - Updated icons
 
