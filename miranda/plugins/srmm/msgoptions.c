@@ -96,7 +96,6 @@ struct CheckBoxValues_t
 }
 static const statusValues[] = 
 {
-	{ MODEF_OFFLINE,  _T("Offline")       },
 	{ PF2_ONLINE,     _T("Online")        },
 	{ PF2_SHORTAWAY,  _T("Away")          },
 	{ PF2_LONGAWAY,   _T("NA")            },
