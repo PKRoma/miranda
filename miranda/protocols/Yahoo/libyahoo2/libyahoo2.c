@@ -1437,7 +1437,7 @@ static void yahoo_process_filetransfer7(struct yahoo_input_data *yid, struct yah
 	char *url=NULL;
 	long expires=0;
 
-	char *service=NULL;
+	int service=0;
 	char *ft_token=NULL;
 	char *filename=NULL;
 	unsigned long filesize=0L;
@@ -1461,7 +1461,7 @@ static void yahoo_process_filetransfer7(struct yahoo_input_data *yid, struct yah
 			break;
 			
 		case 222:
-			service = pair->value;
+			service = atol(pair->value);
 			break;
 		case 265:
 			ft_token = pair->value;
@@ -1469,7 +1469,101 @@ static void yahoo_process_filetransfer7(struct yahoo_input_data *yid, struct yah
 		}
 	}
 
+	switch (service) {
+	case 1: // FT7 
 	YAHOO_CALLBACK(ext_yahoo_got_file)(yd->client_id, to, from, url, expires, msg, filename, filesize, ft_token, 1);
+		break;
+	case 2: // FT7 Cancelled
+		break;
+	}
+}
+
+static void yahoo_process_filetransfer7info(struct yahoo_input_data *yid, struct yahoo_packet *pkt)
+{
+	struct yahoo_data *yd = yid->yd;
+	char *from=NULL;
+	char *to=NULL;
+	int service=0;
+	char *ft_token=NULL;
+	char *filename=NULL;
+	char *host = NULL;
+	char *token = NULL;
+	unsigned long filesize=0L;
+
+	YList *l;
+	for (l = pkt->hash; l; l = l->next) {
+		struct yahoo_pair *pair = l->data;
+		switch (pair->key) {
+		case 4:
+			from = pair->value;
+			break;
+		case 5:
+			to = pair->value;
+			break;
+		case 27:
+			filename = pair->value;
+			break;
+		
+		case 28:
+			filesize = atol(pair->value);
+			break;
+			
+		case 249:
+			service = atol(pair->value);
+			break;
+		case 250:
+			host = pair->value;
+			break;
+		case 251:
+			token = pair->value;
+			break;
+		case 265:
+			ft_token = pair->value;
+			break;
+		}
+	}
+
+	switch (service) {
+	case 1: // P2P
+		//YAHOO_CALLBACK(ext_yahoo_got_file)(yd->client_id, to, from, url, expires, msg, filename, filesize, ft_token, 1);
+		{
+			/*
+			 * From Kopete: deny P2P
+			 */
+			struct yahoo_packet *pkt1 = NULL;
+
+			pkt1 = yahoo_packet_new(YAHOO_SERVICE_YAHOO7_FILETRANSFERACCEPT, YAHOO_STATUS_AVAILABLE, yd->session_id);
+			yahoo_packet_hash(pkt1, 1, yd->user);
+			yahoo_packet_hash(pkt1, 5, from);
+			yahoo_packet_hash(pkt1,265, ft_token);
+			yahoo_packet_hash(pkt1,66, "-3");
+			
+			yahoo_send_packet(yid, pkt1, 0);
+			yahoo_packet_free(pkt1);
+
+		}
+		break;
+	case 3: // Relay
+		{
+			/*
+			 * From Kopete: accept the info?
+			 */
+			struct yahoo_packet *pkt1 = NULL;
+
+			pkt1 = yahoo_packet_new(YAHOO_SERVICE_YAHOO7_FILETRANSFERACCEPT, YAHOO_STATUS_AVAILABLE, yd->session_id);
+			yahoo_packet_hash(pkt1, 1, yd->user);
+			yahoo_packet_hash(pkt1, 5, from);
+			yahoo_packet_hash(pkt1,265, ft_token);
+			yahoo_packet_hash(pkt1,27, filename);
+			yahoo_packet_hash(pkt1,249, "3"); // use reflection server
+			yahoo_packet_hash(pkt1,251, token);
+			
+			yahoo_send_packet(yid, pkt1, 0);
+			yahoo_packet_free(pkt1);
+			
+		}
+		break;
+	}
 }
 
 static void yahoo_process_conference(struct yahoo_input_data *yid, struct yahoo_packet *pkt)
@@ -3035,6 +3129,36 @@ static void yahoo_process_buddydel(struct yahoo_input_data *yid, struct yahoo_pa
 		bud=NULL;
 	}
 }
+static void yahoo_process_yahoo7_change_group(struct yahoo_input_data *yid, struct yahoo_packet *pkt)
+{
+	struct yahoo_data *yd = yid->yd;
+	char *who = NULL;
+	char *me = NULL;
+	char *old_group = NULL;
+	char *new_group = NULL;
+
+	YList *l;
+	for (l = pkt->hash; l; l = l->next) {
+		struct yahoo_pair *pair = l->data;
+		
+		switch (pair->key){ 
+		case 1:
+			me = pair->value;
+			break;
+		case 7:
+			who = pair->value;
+			break;
+		case 224:
+			old_group = pair->value;
+			break;
+		case 264:
+			new_group = pair->value;
+			break;
+		}
+	}
+
+	YAHOO_CALLBACK(ext_yahoo_buddy_group_changed)(yd->client_id, me, who, old_group, new_group); 
+}
 
 static void yahoo_process_ignore(struct yahoo_input_data *yid, struct yahoo_packet *pkt)
 {
@@ -3737,6 +3861,12 @@ static void yahoo_packet_process(struct yahoo_input_data *yid, struct yahoo_pack
 		break;
 	case YAHOO_SERVICE_YAHOO7_FILETRANSFER:
 		yahoo_process_filetransfer7(yid, pkt);
+		break;
+	case YAHOO_SERVICE_YAHOO7_FILETRANSFERINFO:
+		yahoo_process_filetransfer7info(yid, pkt);
+		break;
+	case YAHOO_SERVICE_YAHOO7_CHANGE_GROUP:
+		yahoo_process_yahoo7_change_group(yid, pkt);
 		break;
 	case YAHOO_SERVICE_IDLE:
 	case YAHOO_SERVICE_MAILSTAT:
@@ -6086,6 +6216,50 @@ void yahoo_ftdc_cancel(int id, const char *buddy, const char *filename, const ch
 	yahoo_packet_hash(pkt, 13, (command == 2) ? "2" : "3");
 	yahoo_packet_hash(pkt, 27, filename);
 	yahoo_packet_hash(pkt, 53, ft_token);
+	
+	yahoo_send_packet(yid, pkt, 0);
+	yahoo_packet_free(pkt);
+
+}
+
+void yahoo_ft7dc_accept(int id, const char *buddy, const char *ft_token)
+{
+	struct yahoo_input_data *yid = find_input_by_id_and_type(id, YAHOO_CONNECTION_PAGER);
+	struct yahoo_data *yd;
+	struct yahoo_packet *pkt = NULL;
+
+	if(!yid)
+		return;
+
+	yd = yid->yd;
+
+	pkt = yahoo_packet_new(YAHOO_SERVICE_YAHOO7_FILETRANSFER, YAHOO_STATUS_AVAILABLE, yd->session_id);
+	yahoo_packet_hash(pkt, 1, yd->user);
+	yahoo_packet_hash(pkt, 5, buddy);
+	yahoo_packet_hash(pkt,265, ft_token);
+	yahoo_packet_hash(pkt,222, "3");
+	
+	yahoo_send_packet(yid, pkt, 0);
+	yahoo_packet_free(pkt);
+
+}
+
+void yahoo_ft7dc_cancel(int id, const char *buddy, const char *ft_token)
+{
+	struct yahoo_input_data *yid = find_input_by_id_and_type(id, YAHOO_CONNECTION_PAGER);
+	struct yahoo_data *yd;
+	struct yahoo_packet *pkt = NULL;
+
+	if(!yid)
+		return;
+
+	yd = yid->yd;
+
+	pkt = yahoo_packet_new(YAHOO_SERVICE_YAHOO7_FILETRANSFER, YAHOO_STATUS_AVAILABLE, yd->session_id);
+	yahoo_packet_hash(pkt, 1, yd->user);
+	yahoo_packet_hash(pkt, 5, buddy);
+	yahoo_packet_hash(pkt,265, ft_token);
+	yahoo_packet_hash(pkt,222, "4");
 	
 	yahoo_send_packet(yid, pkt, 0);
 	yahoo_packet_free(pkt);

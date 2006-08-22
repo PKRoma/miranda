@@ -524,6 +524,18 @@ void YAHOO_CALLBACK_TYPE(ext_yahoo_got_file)(int id, char *me, char *who, char *
 void YAHOO_CALLBACK_TYPE(ext_yahoo_contact_added)(int id, char *myid, char *who, char *fname, char *lname, char *msg);
 
 /*
+ * Name: ext_yahoo_buddy_group_changed
+ * 	Called when a buddy is moved from one group into another
+ * Params:
+ * 	id   - the id that identifies the server connection
+ * 	myid - the identity he was added to
+ * 	who  - who was added
+ * 	from_group  
+ *  to_group
+ */
+void YAHOO_CALLBACK_TYPE(ext_yahoo_buddy_group_changed)(int id, char *myid, char *who, char *old_group, char *new_group);
+
+/*
  * Name: ext_yahoo_buddy_added
  * 	Called when a contact is added to our server list
  * Params:

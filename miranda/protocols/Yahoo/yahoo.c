@@ -1453,6 +1453,11 @@ void ext_yahoo_buddy_added(int id, char *myid, char *who, char *group, int statu
 	
 }
 
+void ext_yahoo_buddy_group_changed(int id, char *myid, char *who, char *old_group, char *new_group)
+{
+LOG(("[ext_yahoo_buddy_group_changed] %s has been moved from group: %s to: %s", who, old_group, new_group));
+}
+
 void ext_yahoo_contact_added(int id, char *myid, char *who, char *fname, char *lname, char *msg)
 {
 	char *szBlob,*pCurBlob;
@@ -1733,6 +1738,7 @@ void ext_yahoo_got_file(int id, char *me, char *who, char *url, long expires, ch
 		hContact = add_buddy(who, who, PALF_TEMPORARY);
 	
 	ft= (y_filetransfer*) malloc(sizeof(y_filetransfer));
+	ft->id  = id;
 	ft->who = strdup(who);
 	ft->hWaitEvent = INVALID_HANDLE_VALUE;
 	if (msg != NULL)
@@ -2133,6 +2139,8 @@ void yahoo_callback(struct _conn *c, yahoo_input_condition cond)
 		} else if(ret == 0)
 			LOG(("Yahoo read error: Server closed socket"));
 	}
+	
+	LOG(("[yahoo_callback] id: %d exiting...", c->id));
 }
 
 int ext_yahoo_connect_async(int id, char *host, int port, 
@@ -2283,6 +2291,7 @@ void register_callbacks()
 	yc.ext_yahoo_got_avatar_update = ext_yahoo_got_avatar_update;
 	yc.ext_yahoo_got_audible = ext_yahoo_got_audible;
 	yc.ext_yahoo_got_calendar = ext_yahoo_got_calendar;
+	yc.ext_yahoo_buddy_group_changed = ext_yahoo_buddy_group_changed;
 	
 	yahoo_register_callbacks(&yc);
 	

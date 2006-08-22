@@ -1154,6 +1154,9 @@ int YahooFileAllow(WPARAM wParam,LPARAM lParam)
 	
 	if (ft->y7) {
 		YAHOO_DebugLog("[YahooFileAllow] We don't handle y7 stuff yet.");
+		//void yahoo_ft7dc_accept(int id, const char *buddy, const char *ft_token);
+		yahoo_ft7dc_accept(ft->id, ft->who, ft->ftoken);
+
 		return ccs->wParam;
 	}
     //LOG(LOG_INFO, "[%s] Requesting file from %s", ft->cookie, ft->user);
@@ -1183,6 +1186,8 @@ int YahooFileDeny(WPARAM wParam,LPARAM lParam)
 
 	if (ft->y7) {
 		YAHOO_DebugLog("[YahooFileDeny] We don't handle y7 stuff yet.");
+		//void yahoo_ft7dc_accept(int id, const char *buddy, const char *ft_token);
+		yahoo_ft7dc_cancel(ft->id, ft->who, ft->ftoken);
 		return 0;
 	}
 

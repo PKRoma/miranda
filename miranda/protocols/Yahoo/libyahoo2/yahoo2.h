@@ -203,6 +203,8 @@ void yahoo_send_avatar_update(int id, int buddy_icon);
 void yahoo_send_picture_update(int id, const char *who, int type);
 
 void yahoo_ftdc_cancel(int id, const char *buddy, const char *filename, const char *ft_token, int command);
+void yahoo_ft7dc_accept(int id, const char *buddy, const char *ft_token);
+void yahoo_ft7dc_cancel(int id, const char *buddy, const char *ft_token);
 char *yahoo_webmessenger_idle_packet(int id, int* len);
 void yahoo_send_idle_packet(int id);
 #include "yahoo_httplib.h"
