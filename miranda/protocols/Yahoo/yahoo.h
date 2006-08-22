@@ -197,6 +197,7 @@ typedef struct {
 
 
 typedef struct {
+	int id;
 	char *who;
 	char *msg;
 	char *filename;
