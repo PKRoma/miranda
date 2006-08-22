@@ -751,7 +751,8 @@ void ext_yahoo_status_changed(int id, const char *who, int stat, const char *msg
 	if(msg) {
 		LOG(("%s custom message '%s'", who, msg));
 		//YAHOO_SetString(hContact, "YMsg", msg);
-		DBWriteContactSettingString( hContact, "CList", "StatusMsg", msg);
+		//DBWriteContactSettingString( hContact, "CList", "StatusMsg", msg);
+		DBWriteContactSettingStringUtf( hContact, "CList", "StatusMsg", msg);
 	} else {
 		//YAHOO_SetString(hContact, "YMsg", "");
 		DBDeleteContactSetting(hContact, "CList", "StatusMsg" );
@@ -1969,6 +1970,7 @@ void ext_yahoo_login_response(int id, int succ, char *url)
 	 */
 	YAHOO_ShowError(Translate("Yahoo Login Error"), buff);
 	
+	yahooLoggedIn = FALSE; /* don't send logout message */
 	yahoo_logout();
 }
 
@@ -2317,8 +2319,8 @@ void ext_yahoo_login(int login_mode)
 		LOG(("ERROR: Problem retrieving miranda network settings!!!"));
 	}
 	
-	LOG(("Proxy Type: %d", nlus.proxyType));
-	iHTTPGateway = (nlus.proxyType == PROXYTYPE_HTTP);
+	iHTTPGateway = (nlus.useProxy && nlus.proxyType == PROXYTYPE_HTTP) ? 1:0;
+	LOG(("Proxy Type: %d HTTP Gateway: %d", nlus.proxyType, iHTTPGateway));
 #endif
 
 	//ylad->id = yahoo_init(ylad->yahoo_id, ylad->password);

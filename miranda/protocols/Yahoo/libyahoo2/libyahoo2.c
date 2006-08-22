@@ -495,13 +495,15 @@ static const value_string packet_keys[]={
 	{206, "display image type"},
 	{213, "share avatar type"},
 	{219, "cookie separator?"},
+	{222, "FT7 Service"},
 	{223, "authorized?"},
 	{230, "the audible, in foo.bar.baz format"},
 	{231, "audible text"},
 	{232, "weird number (md5 hash?) [audible]"},
 	{244, "YIM6/YIM7 detection.(278527 - YIM6, 524223 - YIM7)"},
+	{265, "FT7 Token"},
 	{1002, "YIM6+"},
-	{10093, "YIM7 (sets it to 4 for Tping/IM)"},
+	{10093, "YIM7 (sets it to 4)"},
 	{10097, "Region (SMS?)"},
 	{ -1, "" }
 };
@@ -1895,12 +1897,14 @@ static void yahoo_process_status(struct yahoo_input_data *yid, struct yahoo_pack
 	int away = 0;
 	int idle = 0;
 	int mobile = 0;
+	int login_status=YAHOO_LOGIN_LOGOFF;
 	char *msg = NULL;
+	char *errmsg = NULL;
 	
-	if (pkt->service == YAHOO_SERVICE_LOGOFF && pkt->status == YAHOO_STATUS_DISCONNECTED) {
+	/*if (pkt->service == YAHOO_SERVICE_LOGOFF && pkt->status == YAHOO_STATUS_DISCONNECTED) {
 		YAHOO_CALLBACK(ext_yahoo_login_response)(yd->client_id, YAHOO_LOGIN_DUPL, NULL);
 		return;
-	}
+	}*/
 
 	for (l = pkt->hash; l; l = l->next) {
 		struct yahoo_pair *pair = l->data;
@@ -1964,9 +1968,22 @@ static void yahoo_process_status(struct yahoo_input_data *yid, struct yahoo_pack
 				mobile = 1;
 			break;
 		case 16: /* Custom error message */
-			YAHOO_CALLBACK(ext_yahoo_error)(yd->client_id, pair->value, 0, E_CUSTOM);
+			errmsg = pair->value;
 			break;
+		case 66: /* login status */
+			{
+				int i = atoi(pair->value);
+				
+				switch(i) {
+				case 42: /* duplicate login */
+					login_status = YAHOO_LOGIN_DUPL;
+			break;
+				case 28: /* session expired */
 			
+					break;
+				}
+			}
+			break;
 		default:
 			WARNING(("unknown status key %d:%s", pair->key, pair->value));
 			break;
@@ -1975,8 +1992,17 @@ static void yahoo_process_status(struct yahoo_input_data *yid, struct yahoo_pack
 	
 	if (name != NULL) 
 		YAHOO_CALLBACK(ext_yahoo_status_changed)(yd->client_id, name, state, msg, away, idle, mobile);
-	else if (pkt->service == YAHOO_SERVICE_LOGOFF) 
-		YAHOO_CALLBACK(ext_yahoo_login_response)(yd->client_id, YAHOO_LOGIN_LOGOFF, NULL);
+	else if (pkt->service == YAHOO_SERVICE_LOGOFF && pkt->status == YAHOO_STATUS_DISCONNECTED) 
+		//
+		//Key: Error msg (16)  	Value: 'Session expired. Please relogin'
+		//Key: login status (66)  	Value: '28'
+		//
+		YAHOO_CALLBACK(ext_yahoo_login_response)(yd->client_id, login_status, NULL);
+	else if (errmsg != NULL)
+		YAHOO_CALLBACK(ext_yahoo_error)(yd->client_id, errmsg, 0, E_CUSTOM);
+	else if (pkt->service == YAHOO_SERVICE_LOGOFF && pkt->status == YAHOO_STATUS_AVAILABLE && pkt->hash == NULL) 
+		// Server Acking our Logoff (close connection)
+		yahoo_input_close(yid);
 }
 
 static void yahoo_process_list(struct yahoo_input_data *yid, struct yahoo_packet *pkt)
@@ -5289,7 +5315,7 @@ void yahoo_change_buddy_group(int id, const char *who, const char *old_group, co
 		return;
 	yd = yid->yd;
 
-	pkt = yahoo_packet_new(YAHOO_SERVICE_ADDBUDDY, YAHOO_STATUS_AVAILABLE, yd->session_id);
+	/*pkt = yahoo_packet_new(YAHOO_SERVICE_ADDBUDDY, YAHOO_STATUS_AVAILABLE, yd->session_id);
 	yahoo_packet_hash(pkt, 1, yd->user);
 	yahoo_packet_hash(pkt, 7, who);
 	yahoo_packet_hash(pkt, 14, "");
@@ -5302,6 +5328,18 @@ void yahoo_change_buddy_group(int id, const char *who, const char *old_group, co
 	yahoo_packet_hash(pkt, 1, yd->user);
 	yahoo_packet_hash(pkt, 7, who);
 	yahoo_packet_hash(pkt, 65, old_group);
+	yahoo_send_packet(yid, pkt, 0);
+	yahoo_packet_free(pkt);*/
+	
+	pkt = yahoo_packet_new(YAHOO_SERVICE_YAHOO7_CHANGE_GROUP, YAHOO_STATUS_AVAILABLE, yd->session_id);
+	yahoo_packet_hash(pkt, 1, yd->user);
+	yahoo_packet_hash(pkt, 302, "240"); //???
+	yahoo_packet_hash(pkt, 300, "240"); //???
+	yahoo_packet_hash(pkt, 7, who);
+	yahoo_packet_hash(pkt, 224, old_group);
+	yahoo_packet_hash(pkt, 264, new_group);
+	yahoo_packet_hash(pkt, 301, "240"); //???
+	yahoo_packet_hash(pkt, 303, "240"); //???
 	yahoo_send_packet(yid, pkt, 0);
 	yahoo_packet_free(pkt);
 }
@@ -6072,6 +6110,8 @@ char *yahoo_webmessenger_idle_packet(int id, int *len)
 
 	yd = yid->yd;
 
+	DEBUG_MSG(("[yahoo_webmessenger_idle_packet] Session: %d", yd->session_timestamp));
+	
 	pkt = yahoo_packet_new(YAHOO_SERVICE_IDLE, YAHOO_STATUS_AVAILABLE, yd->session_id);
 	yahoo_packet_hash(pkt, 0, yd->user);
 	
@@ -6117,6 +6157,8 @@ void yahoo_send_idle_packet(int id)
 
 	yd = yid->yd;
 
+	DEBUG_MSG(("[yahoo_send_idle_packet] Session: %d", yd->session_timestamp));
+	
 	pkt = yahoo_packet_new(YAHOO_SERVICE_IDLE, YAHOO_STATUS_AVAILABLE, yd->session_id);
 	yahoo_packet_hash(pkt, 0, yd->user);
 	
