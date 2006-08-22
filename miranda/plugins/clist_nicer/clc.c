@@ -97,7 +97,6 @@ HMENU BuildGroupPopupMenu( struct ClcGroup* group )
 
 int AvatarChanged(WPARAM wParam, LPARAM lParam)
 {
-	struct avatarCacheEntry *cEntry = (struct avatarCacheEntry *)lParam;
 	pcli->pfnClcBroadcast(INTM_AVATARCHANGED, wParam, lParam);
 	return 0;
 }
@@ -525,22 +524,14 @@ LBL_Def:
 			if(wParam == 0) {
 				//RemoveFromImgCache(0, cEntry);
 				g_CluiData.bForceRefetchOnPaint = TRUE;
-				InvalidateRect(hwnd, NULL, FALSE);
-				UpdateWindow(hwnd);
+                RedrawWindow(hwnd, NULL, NULL, RDW_ERASE | RDW_INVALIDATE | RDW_UPDATENOW);
 				g_CluiData.bForceRefetchOnPaint = FALSE;
 				goto LBL_Def;
 			}
 
 			if(!FindItem(hwnd, dat, (HANDLE)wParam, &contact, NULL, NULL))
 				return 0;
-			/*
-			if(contact->ace) {
-			if(!(contact->ace->dwFlags & AVS_PROTOPIC))
-			RemoveFromImgCache(contact->hContact, contact->ace);
-			}*/
-			//contact->gdipObject = NULL;
 			contact->ace = cEntry;
-			// XXX InvalidateRect(hwnd, NULL, FALSE);
 			PostMessage(hwnd, INTM_INVALIDATE, 0, (LPARAM)contact->hContact);
 			goto LBL_Def;
 		}
