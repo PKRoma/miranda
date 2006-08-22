@@ -27,7 +27,7 @@ int YAHOO_httpGatewayInit(HANDLE hConn, NETLIBOPENCONNECTION *nloc, NETLIBHTTPRE
 	nlhpi.cbSize = sizeof(nlhpi);
 	nlhpi.szHttpPostUrl = "http://shttp.msg.yahoo.com/notify/";
 	
-	CallService( MS_NETLIB_SETPOLLINGTIMEOUT, (WPARAM) hConn, 15 );
+	//CallService( MS_NETLIB_SETPOLLINGTIMEOUT, (WPARAM) hConn, 15 );
 	
 	return CallService(MS_NETLIB_SETHTTPPROXYINFO, (WPARAM)hConn, (LPARAM)&nlhpi);
 }
