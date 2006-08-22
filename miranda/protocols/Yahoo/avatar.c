@@ -34,19 +34,6 @@ int YAHOO_SaveBitmapAsAvatar( HBITMAP hBitmap, const char* szFileName );
 HBITMAP YAHOO_StretchBitmap( HBITMAP hBitmap );
 
 extern yahoo_local_account *ylad;
-/*
- * The Following PNG related stuff copied from MSN. Thanks George!
- */
-BOOL YAHOO_LoadPngModule()
-{
-	if ( !ServiceExists(MS_DIB2PNG)) {
-		MessageBox( NULL, Translate( "Your png2dib.dll is either obsolete or damaged. " ),
-				Translate( "Error" ), MB_OK | MB_ICONSTOP );
-		return FALSE;
-	}
-
-	return TRUE;		
-}
 
 int OnDetailsInit(WPARAM wParam, LPARAM lParam)
 {
@@ -171,9 +158,9 @@ HBITMAP YAHOO_SetAvatar(const char *szFile)
 			LOG(("[YAHOO_SetAvatar] File: '%s' CK: %d", szMyFile, hash));	
 			  
 			/* now check and make sure we don't reupload same thing over again */
-			if (hash != YAHOO_GetDword("AvatarHash", 0) || time(NULL) > YAHOO_GetDword("AvatarTS",0)) {
+			if (hash != YAHOO_GetDword("AvatarHash", 0)) {
 				YAHOO_SetString(NULL, "AvatarFile", szMyFile);
-				DBWriteContactSettingDword(NULL, yahooProtocolName, "AvatarHash", hash);
+				DBWriteContactSettingDword(NULL, yahooProtocolName, "TMPAvatarHash", hash);
 			
 				YAHOO_SendAvatar(szMyFile);
 			} else {
@@ -353,8 +340,11 @@ int YAHOO_SaveBitmapAsAvatar( HBITMAP hBitmap, const char* szFileName )
 	long dwPngSize = 0;
 	DIB2PNG convertor;
 	
-	if ( !YAHOO_LoadPngModule())
+	if ( !ServiceExists(MS_DIB2PNG)) {
+		MessageBox( NULL, Translate( "Your png2dib.dll is either obsolete or damaged. " ),
+				Translate( "Error" ), MB_OK | MB_ICONSTOP );
 		return 1;
+	}
 
 	hdc = CreateCompatibleDC( NULL );
 	hOldBitmap = ( HBITMAP )SelectObject( hdc, hBitmap );
@@ -363,8 +353,6 @@ int YAHOO_SaveBitmapAsAvatar( HBITMAP hBitmap, const char* szFileName )
 	memset( bmi, 0, sizeof (BITMAPINFO ));
 	bmi->bmiHeader.biSize = 0x28;
 	if ( GetDIBits( hdc, hBitmap, 0, 96, NULL, bmi, DIB_RGB_COLORS ) == 0 ) {
-		/*TWinErrorCode errCode;
-		MSN_ShowError( "Unable to get the bitmap: error %d (%s)", errCode.mErrorCode, errCode.getText() );*/
 		return 2;
 	}
 
@@ -469,10 +457,12 @@ void __cdecl yahoo_send_avt_thread(void *psf)
 		return;
 	}
 	
+	YAHOO_SetByte("AvatarUL", 1);
 	yahoo_send_avatar(ylad->id, sf->filename, sf->fsize, &upload_avt, sf);
 
 	free(sf->filename);
 	free(sf);
+	if (YAHOO_GetByte("AvatarUL", 1) == 1) YAHOO_SetByte("AvatarUL", 0);
 }
 
 void YAHOO_SendAvatar(const char *szFile)

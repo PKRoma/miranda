@@ -99,6 +99,8 @@ void yahoo_register_callbacks(struct yahoo_callbacks * tyc)
 #define YAHOO_CALLBACK(x)	x
 #endif
 
+static int yahoo_send_data(int fd, void *data, int len);
+
 int yahoo_log_message(char * fmt, ...)
 {
 	char out[1024];
@@ -292,12 +294,6 @@ File List Cancel:
 	  1: me
 	  5: who
 	 13: 1
-	
-	YAHOO_SERVICE_YAHOO7_??? = 0xd6 (214) ?? Buddy Add? Authorize Buddy add?
-	  removes "Add request pending"????
-	   4: who
-	   5: id
-	  13: 1
 	*/	
 	YAHOO_SERVICE_YAHOO7_PHOTO_SHARING = 0xd2,
 	YAHOO_SERVICE_YAHOO7_CONTACT_DETAILS = 0xd3,	/* YMSG13 */
@@ -489,16 +485,19 @@ static const value_string packet_keys[]={
 	{185, "stealth/hide?"},
 	{192, "Pictures/Buddy Icons"},
 	{197, "Avatars"},
+	{203, "YAB data?"},
 	{206, "display image type"},
 	{213, "share avatar type"},
 	{219, "cookie separator?"},
+	{222, "FT7 Service"},
 	{223, "authorized?"},
 	{230, "the audible, in foo.bar.baz format"},
 	{231, "audible text"},
 	{232, "weird number (md5 hash?) [audible]"},
 	{244, "YIM6/YIM7 detection.(278527 - YIM6, 524223 - YIM7)"},
+	{265, "FT7 Token"},
 	{1002, "YIM6+"},
-	{10093, "YIM7 (sets it to 4 for Tping/IM)"},
+	{10093, "YIM7 (sets it to 4)"},
 	{10097, "Region (SMS?)"},
 	{ -1, "" }
 };
@@ -1093,10 +1092,8 @@ static void yahoo_send_packet(struct yahoo_input_data *yid, struct yahoo_packet 
 {
 	int pktlen = yahoo_packet_length(pkt);
 	int len = YAHOO_PACKET_HDRLEN + pktlen;
-
 	unsigned char *data;
 	int pos = 0;
-	int ret = 0;
 
 	if (yid->fd < 0)
 		return;
@@ -1120,10 +1117,12 @@ static void yahoo_send_packet(struct yahoo_input_data *yid, struct yahoo_packet 
 
 	yahoo_packet_read(pkt, data + pos, len - pos);	
 	
-	//yahoo_add_to_send_queue(yid, data, len);
-	do {
-		ret = write(yid->fd, data, len);
-	} while(ret == -1 && errno==EINTR);
+/*	if( yid->type == YAHOO_CONNECTION_FT )
+		yahoo_send_data(yid->fd, data, len);
+	else
+	yahoo_add_to_send_queue(yid, data, len);
+	*/
+	yahoo_send_data(yid->fd, data, len);
 
 	FREE(data);
 }
@@ -1173,8 +1172,6 @@ void yahoo_close(int id)
 	if(!yd)
 		return;
 
-	YAHOO_CALLBACK(ext_yahoo_cleanup)(id);
-	
 	del_from_list(yd);
 
 	yahoo_free_data(yd);
@@ -1911,7 +1908,6 @@ static void yahoo_process_status(struct yahoo_input_data *yid, struct yahoo_pack
 		case 16: /* Custom error message */
 			YAHOO_CALLBACK(ext_yahoo_error)(yd->client_id, pair->value, 0, E_CUSTOM);
 			break;
-			
 		default:
 			WARNING(("unknown status key %d:%s", pair->key, pair->value));
 			break;
@@ -3619,7 +3615,14 @@ static struct yahoo_packet * yahoo_getdata(struct yahoo_input_data * yid)
 	/*DEBUG_MSG(("Dumping Packet Header:"));
 	yahoo_packet_dump(yid->rxqueue + pos, YAHOO_PACKET_HDRLEN);
 	DEBUG_MSG(("--- Done Dumping Packet Header ---"));*/
+	{
+		char *buf = yid->rxqueue + pos;
 		
+		if	(buf[0] != 'Y' || buf[1] != 'M' || buf[2] != 'S' || buf[3] != 'G') {
+			DEBUG_MSG(("Not a YMSG packet?"));
+			return NULL;
+		}
+	}
 	pos += 4; /* YMSG */
 	pos += 2;
 	pos += 2;
@@ -4045,7 +4048,7 @@ int yahoo_write_ready(int id, int fd, void *data)
 		yid->txqueues = y_list_remove_link(yid->txqueues, yid->txqueues);
 		y_list_free_1(l);
 		if(!yid->txqueues) {
-			LOG(("yahoo_write_ready(%d, %d) !yxqueues", id, fd));
+			LOG(("yahoo_write_ready(%d, %d) !txqueues", id, fd));
 			YAHOO_CALLBACK(ext_yahoo_remove_handler)(id, yid->write_tag);
 			yid->write_tag = 0;
 		}

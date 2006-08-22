@@ -51,6 +51,7 @@ enum yahoo_status {
 
 enum yahoo_login_status {
 	YAHOO_LOGIN_OK = 0,
+	YAHOO_LOGIN_LOGOFF = 2,
 	YAHOO_LOGIN_UNAME = 3,
 	YAHOO_LOGIN_PASSWD = 13,
 	YAHOO_LOGIN_LOCK = 14,
