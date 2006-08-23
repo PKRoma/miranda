@@ -1184,7 +1184,6 @@ void ext_yahoo_got_stealth(int id, char *stealthlist)
 }
 
 
-}
 void ext_yahoo_got_buddies(int id, YList * buds)
 {
     LOG(("ext_yahoo_got_buddies"));
@@ -1868,7 +1867,8 @@ void ext_yahoo_got_cookies(int id)
     wsprintf(z, "Cookie: Y=%s; T=%s", yahoo_get_cookie(id, "y"), yahoo_get_cookie(id, "t"));    
     LOG(("Our Cookie: '%s'", z));
     YAHOO_CallService(MS_NETLIB_SETSTICKYHEADERS, (WPARAM)hnuMain, (LPARAM)z);*/
-	
+
+#ifdef HTTP_GATEWAY	
 	if (iHTTPGateway) {
 		char z[1024];
 		
@@ -1878,6 +1878,7 @@ void ext_yahoo_got_cookies(int id)
 		LOG(("Our Cookie: '%s'", z));
 		YAHOO_CallService(MS_NETLIB_SETSTICKYHEADERS, (WPARAM)hnuMain, (LPARAM)z);
 	}
+#endif
 	
 	/*if (YAHOO_GetByte( "UseYAB", 1 )) {
 		LOG(("GET YAB [Before final check] "));
