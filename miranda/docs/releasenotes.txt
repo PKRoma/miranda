@@ -61,6 +61,7 @@ Bugfixes:
  - ICQ: Fixed migration was not working at all (should not disconnect so often on server's upgrading)
  - ICQ: Fixed offline greeting cards were not processed properly
  - ICQ: Fixed small protocol glitch with reverse peer-to-peer connection
+ - ICQ: Fixed HTTP/HTTPS proxy support (removed useless gateway option), long messages are now sent properly
  - Yahoo: Fixed avatar upload bug
 
 * New in 0.5
