@@ -73,6 +73,8 @@ Thanks:
   -To the Project members for making the plugin possible to code.
   -To AOL for a badly designed protocol.
   -To Koobs for keeping me smiling(he made me put it).
+  -To Kimberly Myers who I love a great deal more than Anything else.
+  -To Elise Bader for being the greatest secret holder and friend ever.
 
 License and Copyright
 _____________________
