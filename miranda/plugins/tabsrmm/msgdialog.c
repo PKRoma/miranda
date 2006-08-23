@@ -3263,8 +3263,7 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                     dat->dwFlags &= ~MWF_WASBACKGROUNDCREATE;
                     SendMessage(hwndDlg, WM_SIZE, 0, 0);
                     LoadSplitter(hwndDlg, dat);
-                    ShowPicture(hwndDlg,dat,TRUE);
-                    DM_RecalcPictureSize(hwndDlg, dat);
+                    PostMessage(hwndDlg, DM_UPDATEPICLAYOUT, 0, 0);
                     DM_LoadLocale(hwndDlg, dat);
                     SendMessage(hwndDlg, DM_SETLOCALE, 0, 0);
                     //DM_ScrollToBottom(hwndDlg, dat, 1, 1);
