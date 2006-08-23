@@ -401,7 +401,6 @@ static BOOL CALLBACK DlgProcIcqOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARA
       
       SetDlgItemInt(hwndDlg, IDC_ICQPORT, ICQGetContactSettingWord(NULL, "OscarPort", DEFAULT_SERVER_PORT), FALSE);
       LoadDBCheckState(hwndDlg, IDC_KEEPALIVE, "KeepAlive", 1);
-      LoadDBCheckState(hwndDlg, IDC_USEGATEWAY, "UseGateway", 0);
       LoadDBCheckState(hwndDlg, IDC_SECURE, "SecureLogin", DEFAULT_SECURE_LOGIN);
       SendDlgItemMessage(hwndDlg, IDC_LOGLEVEL, TBM_SETRANGE, FALSE, MAKELONG(0, 3));
       SendDlgItemMessage(hwndDlg, IDC_LOGLEVEL, TBM_SETPOS, TRUE, 3-ICQGetContactSettingByte(NULL, "ShowLogLevel", LOG_WARNING));
@@ -488,7 +487,6 @@ static BOOL CALLBACK DlgProcIcqOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARA
           ICQWriteContactSettingString(NULL, "OscarServer", str);
           ICQWriteContactSettingWord(NULL, "OscarPort", (WORD)GetDlgItemInt(hwndDlg, IDC_ICQPORT, NULL, FALSE));
           StoreDBCheckState(hwndDlg, IDC_KEEPALIVE, "KeepAlive");
-          StoreDBCheckState(hwndDlg, IDC_USEGATEWAY, "UseGateway");
           StoreDBCheckState(hwndDlg, IDC_SECURE, "SecureLogin");
           StoreDBCheckState(hwndDlg, IDC_NOERRMULTI, "IgnoreMultiErrorBox");
           ICQWriteContactSettingByte(NULL, "ShowLogLevel", (BYTE)(3-SendDlgItemMessage(hwndDlg, IDC_LOGLEVEL, TBM_GETPOS, 0, 0)));

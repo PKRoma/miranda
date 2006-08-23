@@ -4,7 +4,7 @@
 //
 // Copyright © 2000,2001 Richard Hughes, Roland Rabien, Tristan Van de Vreede
 // Copyright © 2001,2002 Jon Keating, Richard Hughes
-// Copyright © 2002,2003,2004 Martin  berg, Sam Kothari, Robert Rainwater
+// Copyright © 2002,2003,2004 Martin Öberg, Sam Kothari, Robert Rainwater
 // Copyright © 2004,2005,2006 Joe Kucera
 //
 // This program is free software; you can redistribute it and/or
@@ -61,11 +61,11 @@ extern int bHideXStatusUI;
 PLUGININFO pluginInfo = {
   sizeof(PLUGININFO),
   NULL,
-  PLUGIN_MAKE_VERSION(0,3,7,2),
+  PLUGIN_MAKE_VERSION(0,3,7,3),
   "Support for ICQ network, enhanced.",
-  "Joe Kucera, Bio, Martin  berg, Richard Hughes, Jon Keating, etc",
+  "Joe Kucera, Bio, Martin Öberg, Richard Hughes, Jon Keating, etc",
   "jokusoftware@miranda-im.org",
-  "(C) 2000-2006 M. berg, R.Hughes, J.Keating, Bio, Angeli-Ka, J.Kucera",
+  "(C) 2000-2006 M.Öberg, R.Hughes, J.Keating, Bio, Angeli-Ka, J.Kucera",
   "http://addons.miranda-im.org/details.php?action=viewfile&id=1683",
   0,  //not transient
   0   //doesn't replace anything built-in
@@ -357,20 +357,16 @@ static int OnSystemModulesLoaded(WPARAM wParam,LPARAM lParam)
 
   null_snprintf(szBuffer, sizeof szBuffer, ICQTranslate("%s server connection"), gpszICQProtoName);
   nlu.cbSize = sizeof(nlu);
-  nlu.flags = NUF_OUTGOING | NUF_HTTPCONNS; 
+  nlu.flags = NUF_OUTGOING | NUF_HTTPGATEWAY;
   nlu.szDescriptiveName = szBuffer;
   nlu.szSettingsModule = gpszICQProtoName;
+  nlu.szHttpGatewayHello = "http://http.proxy.icq.com/hello";
+  nlu.szHttpGatewayUserAgent = "Mozilla/4.08 [en] (WinNT; U ;Nav)";
+  nlu.pfnHttpGatewayInit = icq_httpGatewayInit;
+  nlu.pfnHttpGatewayBegin = icq_httpGatewayBegin;
+  nlu.pfnHttpGatewayWrapSend = icq_httpGatewayWrapSend;
+  nlu.pfnHttpGatewayUnwrapRecv = icq_httpGatewayUnwrapRecv;
 
-  if (ICQGetContactSettingByte(NULL, "UseGateway", 0))
-  {
-    nlu.flags |= NUF_HTTPGATEWAY;
-    nlu.szHttpGatewayHello = "http://http.proxy.icq.com/hello";
-    nlu.szHttpGatewayUserAgent = "Mozilla/4.08 [en] (WinNT; U ;Nav)";
-    nlu.pfnHttpGatewayInit = icq_httpGatewayInit;
-    nlu.pfnHttpGatewayBegin = icq_httpGatewayBegin;
-    nlu.pfnHttpGatewayWrapSend = icq_httpGatewayWrapSend;
-    nlu.pfnHttpGatewayUnwrapRecv = icq_httpGatewayUnwrapRecv;
-  }
   ghServerNetlibUser = (HANDLE)CallService(MS_NETLIB_REGISTERUSER, 0, (LPARAM)&nlu);
 
   null_snprintf(szBuffer, sizeof szBuffer, ICQTranslate("%s client-to-client connections"), gpszICQProtoName);
@@ -542,7 +538,20 @@ static int IconLibIconsChanged(WPARAM wParam, LPARAM lParam)
 
 
 void UpdateGlobalSettings()
-{ 
+{
+  NETLIBUSERSETTINGS nlus = {0};
+
+  nlus.cbSize = sizeof(NETLIBUSERSETTINGS);
+  if (CallService(MS_NETLIB_GETUSERSETTINGS, (WPARAM)ghServerNetlibUser, (LPARAM)&nlus))
+  {
+    if (nlus.useProxy && nlus.proxyType == PROXYTYPE_HTTP)
+      gbGatewayMode = 1;
+    else
+      gbGatewayMode = 0;
+  }
+  else
+    gbGatewayMode = 0;
+
   gbSecureLogin = ICQGetContactSettingByte(NULL, "SecureLogin", DEFAULT_SECURE_LOGIN);
   gbAimEnabled = ICQGetContactSettingByte(NULL, "AimEnabled", DEFAULT_AIM_ENABLED);
   gbUtfEnabled = ICQGetContactSettingByte(NULL, "UtfEnabled", DEFAULT_UTF_ENABLED);

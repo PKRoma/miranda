@@ -51,6 +51,13 @@ __________
 Changes
 _______
 
+0.3.7.3
+
+Bugfixes:
+  Fixed HTTP/HTTPS proxy support (removed useless gateway option), long messages are now sent properly
+  Improved status change handling (can handle broken packets)
+
+
 0.3.7.2
 
 Bugfixes:
