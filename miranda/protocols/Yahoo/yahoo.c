@@ -860,20 +860,12 @@ void ext_yahoo_got_picture(int id, const char *me, const char *who, const char *
 			/* need to read CheckSum */
 			cksum = YAHOO_GetDword("AvatarHash", 0);
 			if (cksum) {
-				/*LOG(("[ext_yahoo_got_picture] URL Expiration Check. Now: %ld Expires: %ld", time(NULL), YAHOO_GetDword("AvatarTS",0)));
-				if (time(NULL) >= YAHOO_GetDword("AvatarTS",0) && !DBGetContactSetting(NULL, yahooProtocolName, "AvatarFile", &dbv)) {
-					LOG(("[ext_yahoo_got_picture] Expired. Re-uploading"));
-					YAHOO_SendAvatar(dbv.pszVal);
-					DBFreeVariant(&dbv);
-					break;
-				}*/
-				
 				if (!DBGetContactSetting(NULL, yahooProtocolName, "AvatarURL", &dbv)) {
 					LOG(("[ext_yahoo_got_picture] Sending url: %s checksum: %d to '%s'!", dbv.pszVal, cksum, who));
 					//void yahoo_send_picture_info(int id, const char *me, const char *who, const char *pic_url, int cksum)
 					yahoo_send_picture_info(id, who, 2, dbv.pszVal, cksum);
 					DBFreeVariant(&dbv);
-				} else {
+				} else if (YAHOO_GetByte("AvatarUL", 0) != 1){
 					// NO avatar URL??
 					if (!DBGetContactSetting(NULL, yahooProtocolName, "AvatarFile", &dbv)) {
 						DBWriteContactSettingString(NULL, yahooProtocolName, "AvatarInv", who);
@@ -882,8 +874,8 @@ void ext_yahoo_got_picture(int id, const char *me, const char *who, const char *
 					} else {
 						LOG(("[ext_yahoo_got_picture] No Local Avatar File??? "));
 					}
-
-				}
+				} else 
+						LOG(("[ext_yahoo_got_picture] Another avatar upload in progress?"));
 			}
 		}
 		break;
@@ -1098,6 +1090,7 @@ void ext_yahoo_got_calendar(int id, const char *url, int type, const char *msg, 
 void ext_yahoo_got_picture_upload(int id, const char *me, const char *url,unsigned int ts)
 {
 	int cksum = 0;
+	DBVARIANT dbv;	
 	
 	LOG(("[ext_yahoo_got_picture_upload] url: %s timestamp: %d", url, ts));
 
@@ -1108,27 +1101,24 @@ void ext_yahoo_got_picture_upload(int id, const char *me, const char *url,unsign
 	
 	cksum = YAHOO_GetDword("TMPAvatarHash", 0);
 	if (cksum != 0) {
-		DBVARIANT dbv;
-		
-		LOG(("[ext_yahoo_got_picture_upload] My Checksum: %d", cksum));
-		
-		YAHOO_SetString(NULL, "AvatarURL", url);
-		//YAHOO_SetDword("AvatarTS", ts);
-		YAHOO_SetDword("AvatarTS", time(NULL) + 60*60*24);
+		LOG(("[ext_yahoo_got_picture_upload] Updating Checksum to: %d", cksum));
 		YAHOO_SetDword("AvatarHash", cksum);
+		DBDeleteContactSetting(NULL, yahooProtocolName, "TMPAvatarHash");
 		
 		YAHOO_bcast_picture_checksum(cksum);
-		if  (!DBGetContactSetting(NULL, yahooProtocolName, "AvatarInv", &dbv) ){
-			LOG(("[ext_yahoo_got_picture_upload] Buddy: %s told us this is bad??", dbv.pszVal));
-
-			LOG(("[ext_yahoo_got_picture] Sending url: %s checksum: %d to '%s'!", url, cksum, dbv.pszVal));
-			//void yahoo_send_picture_info(int id, const char *me, const char *who, const char *pic_url, int cksum)
-			yahoo_send_picture_info(id, dbv.pszVal, 2, url, cksum);
-
-			DBDeleteContactSetting(NULL, yahooProtocolName, "AvatarInv");
-			DBFreeVariant(&dbv);
-		}
+	}	
 		
+	YAHOO_SetString(NULL, "AvatarURL", url);
+
+	if  (!DBGetContactSetting(NULL, yahooProtocolName, "AvatarInv", &dbv) ){
+		LOG(("[ext_yahoo_got_picture_upload] Buddy: %s told us this is bad??", dbv.pszVal));
+
+		LOG(("[ext_yahoo_got_picture] Sending url: %s checksum: %d to '%s'!", url, cksum, dbv.pszVal));
+		//void yahoo_send_picture_info(int id, const char *me, const char *who, const char *pic_url, int cksum)
+		yahoo_send_picture_info(id, dbv.pszVal, 2, url, cksum);
+
+		DBDeleteContactSetting(NULL, yahooProtocolName, "AvatarInv");
+		DBFreeVariant(&dbv);
 	}
 }
 
@@ -1191,6 +1181,7 @@ void ext_yahoo_got_stealth(int id, char *stealthlist)
 			DBFreeVariant( &dbv );
 		}		
     }
+}
 
 
 }

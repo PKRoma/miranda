@@ -157,7 +157,7 @@ HBITMAP YAHOO_SetAvatar(const char *szFile)
 			LOG(("[YAHOO_SetAvatar] File: '%s' CK: %d", szMyFile, hash));	
 			  
 			/* now check and make sure we don't reupload same thing over again */
-			if (hash != YAHOO_GetDword("AvatarHash", 0) || time(NULL) > YAHOO_GetDword("AvatarTS",0)) {
+			if (hash != YAHOO_GetDword("AvatarHash", 0)) {
 				YAHOO_SetString(NULL, "AvatarFile", szMyFile);
 				DBWriteContactSettingDword(NULL, yahooProtocolName, "TMPAvatarHash", hash);
 			
@@ -352,8 +352,6 @@ int YAHOO_SaveBitmapAsAvatar( HBITMAP hBitmap, const char* szFileName )
 	memset( bmi, 0, sizeof (BITMAPINFO ));
 	bmi->bmiHeader.biSize = 0x28;
 	if ( GetDIBits( hdc, hBitmap, 0, 96, NULL, bmi, DIB_RGB_COLORS ) == 0 ) {
-		/*TWinErrorCode errCode;
-		MSN_ShowError( "Unable to get the bitmap: error %d (%s)", errCode.mErrorCode, errCode.getText() );*/
 		return 2;
 	}
 
@@ -458,10 +456,12 @@ void __cdecl yahoo_send_avt_thread(void *psf)
 		return;
 	}
 	
+	YAHOO_SetByte("AvatarUL", 1);
 	yahoo_send_avatar(ylad->id, sf->filename, sf->fsize, &upload_avt, sf);
 
 	free(sf->filename);
 	free(sf);
+	if (YAHOO_GetByte("AvatarUL", 1) == 1) YAHOO_SetByte("AvatarUL", 0);
 }
 
 void YAHOO_SendAvatar(const char *szFile)

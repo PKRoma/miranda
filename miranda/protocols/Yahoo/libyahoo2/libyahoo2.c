@@ -294,12 +294,6 @@ File List Cancel:
 	  1: me
 	  5: who
 	 13: 1
-	
-	YAHOO_SERVICE_YAHOO7_??? = 0xd6 (214) ?? Buddy Add? Authorize Buddy add?
-	  removes "Add request pending"????
-	   4: who
-	   5: id
-	  13: 1
 	*/	
 	YAHOO_SERVICE_YAHOO7_PHOTO_SHARING = 0xd2,
 	YAHOO_SERVICE_YAHOO7_CONTACT_DETAILS = 0xd3,	/* YMSG13 */
@@ -1471,7 +1465,7 @@ static void yahoo_process_filetransfer7(struct yahoo_input_data *yid, struct yah
 
 	switch (service) {
 	case 1: // FT7 
-	YAHOO_CALLBACK(ext_yahoo_got_file)(yd->client_id, to, from, url, expires, msg, filename, filesize, ft_token, 1);
+		YAHOO_CALLBACK(ext_yahoo_got_file)(yd->client_id, to, from, url, expires, msg, filename, filesize, ft_token, 1);
 		break;
 	case 2: // FT7 Cancelled
 		break;
@@ -2071,9 +2065,9 @@ static void yahoo_process_status(struct yahoo_input_data *yid, struct yahoo_pack
 				switch(i) {
 				case 42: /* duplicate login */
 					login_status = YAHOO_LOGIN_DUPL;
-			break;
+					break;
 				case 28: /* session expired */
-			
+					
 					break;
 				}
 			}
