@@ -61,7 +61,9 @@ yahoo_idlabel yahoo_status_codes[] = {
 yahoo_local_account * ylad = NULL;
 
 int do_yahoo_debug = 0;
+#ifdef HTTP_GATEWAY
 int iHTTPGateway = 0;
+#endif
 extern int poll_loop;
 extern int gStartStatus;
 extern char *szStartMsg;

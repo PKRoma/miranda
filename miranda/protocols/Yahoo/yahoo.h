@@ -106,7 +106,10 @@ extern BOOL             yahooLoggedIn;
 
 extern HANDLE           YahooMenuItems[ MENU_ITEMS_COUNT ];
 extern pthread_mutex_t connectionHandleMutex;
+
+#ifdef HTTP_GATEWAY
 extern int 				iHTTPGateway;
+#endif
 
 //int ext_yahoo_log(char *fmt,...);
 

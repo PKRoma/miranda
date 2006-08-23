@@ -110,7 +110,7 @@ void __cdecl yahoo_server_main(void *empty)
 				//LOG(("Connection tag:%d id:%d fd:%d remove:%d", c->tag, c->id, c->fd, c->remove));
 				if(c->remove) {
 					YList *n = y_list_next(l);
-					LOG(("Removing id:%d fd:%d tag:%d", c->id, c->fd, c->tag));
+					//LOG(("Removing id:%d fd:%d tag:%d", c->id, c->fd, c->tag));
 					connections = y_list_remove_link(connections, l);
 					y_list_free_1(l);
 					FREE(c);
@@ -144,24 +144,34 @@ void __cdecl yahoo_server_main(void *empty)
 			}
 			
 			/* do the timer check */
-			if (ylad != NULL && yahooLoggedIn) {
+			if (ylad != NULL) {
+#ifdef	HTTP_GATEWAY			
+				//YAHOO_DebugLog("HTTPGateway: %d", iHTTPGateway);
 				if	(!iHTTPGateway) {
-					if (time(NULL) - lLastPing > 60) {
+#endif					
+					if (yahooLoggedIn && time(NULL) - lLastPing > 60) {
 						LOG(("[TIMER] Sending a keep alive message"));
 						yahoo_keepalive(ylad->id);
 						
 						lLastPing = time(NULL);
 					}
+#ifdef HTTP_GATEWAY					
 				} else {
 					YAHOO_DebugLog("[SERVER] Got packets: %d", ylad->rpkts);
 					
-					if ( (ylad->rpkts > 0 && (time(NULL) - lLastSend) >=3) ||
-						 ( (time(NULL) - lLastSend) >= 13) ) {
+					if ( yahooLoggedIn && ( (ylad->rpkts > 0 && (time(NULL) - lLastSend) >=3) ||
+						 ( (time(NULL) - lLastSend) >= 13) ) ) {
 							 
 						LOG(("[TIMER] Sending an idle message..."));
 						yahoo_send_idle_packet(ylad->id);
 					}
+						 
+					//
+					// need to sleep, cause netlibselectex is too fast?
+					//
+					SleepEx(500, TRUE);
 				}
+#endif				
 			}
 			/* do the timer check ends */
 			
