@@ -85,6 +85,7 @@ void mir_strset(TCHAR ** dest, TCHAR *source)
 static DLLVERSIONINFO dviShell;
 BOOL gl_MultiConnectionMode=FALSE;
 char * gl_ConnectingProto=NULL;
+static BOOL g_trayMenuOnScreen=FALSE;
 int GetStatusVal(int status)
 {
 	switch(status)
@@ -942,6 +943,7 @@ void cliTrayIconSetToBase(char *szPreferredProto)
 
 static int autoHideTimerId;
 extern BOOL CheckOwner(HWND hwnd);
+#define TOOLTIP_TOLERANCE 5
 
 static VOID CALLBACK TrayIconAutoHideTimer(HWND hwnd,UINT message,UINT idEvent,DWORD dwTime)
 {
@@ -985,7 +987,7 @@ static void CALLBACK TrayHideToolTipTimerProc(HWND hwnd, UINT msg, UINT_PTR id, 
 	{
 		POINT pt;
 		GetCursorPos(&pt);
-		if(pt.x != tray_hover_pos.x || pt.y != tray_hover_pos.y)
+		if(abs(pt.x - tray_hover_pos.x)>TOOLTIP_TOLERANCE || abs(pt.y - tray_hover_pos.y)>TOOLTIP_TOLERANCE)
 		{
 			CallService("mToolTip/HideTip", 0, 0);
 			g_trayTooltipActive = FALSE;
@@ -997,11 +999,13 @@ static void CALLBACK TrayHideToolTipTimerProc(HWND hwnd, UINT msg, UINT_PTR id, 
 
 static void CALLBACK TrayToolTipTimerProc(HWND hwnd, UINT msg, UINT_PTR id, DWORD elapsed)
 {
-	if(!g_trayTooltipActive) {
+	if(!g_trayTooltipActive && !g_trayMenuOnScreen) 
+	{
 		CLCINFOTIP ti = {0};	
 		POINT pt;
 		GetCursorPos(&pt);
-		if(pt.x == tray_hover_pos.x && pt.y == tray_hover_pos.y) {
+		if(abs(pt.x-tray_hover_pos.x)<=TOOLTIP_TOLERANCE && abs(pt.y-tray_hover_pos.y)<=TOOLTIP_TOLERANCE) 
+		{
 			TCHAR * szTipCur=szTip;
 			{
 				int n=s_LastHoverIconID-100;
@@ -1020,15 +1024,14 @@ static void CALLBACK TrayToolTipTimerProc(HWND hwnd, UINT msg, UINT_PTR id, DWOR
 			#if defined( _UNICODE )
 			{	char* p = u2a( szTipCur );
 	        	CallService("mToolTip/ShowTip", (WPARAM)p, (LPARAM)&ti);
-				mir_free( p );
-				
+				mir_free( p );			
 			}
 			#else
 	        	CallService("mToolTip/ShowTip", (WPARAM)szTipCur, (LPARAM)&ti);
 			#endif
 			GetCursorPos(&tray_hover_pos);
 			SetTimer(pcli->hwndContactList, TIMERID_TRAYHOVER_2, 600, TrayHideToolTipTimerProc);
-			g_trayTooltipActive = TRUE;
+			g_trayTooltipActive = TRUE;		
 		}
 	}
 	KillTimer(hwnd, id);
@@ -1043,6 +1046,11 @@ case WM_CREATE: {
 	PostMessage(msg->hwnd,TIM_CREATE,0,0);	
 	return FALSE;
 				}
+case WM_EXITMENULOOP:
+	if (g_trayMenuOnScreen) 
+		g_trayMenuOnScreen=FALSE;
+	break;
+
 case WM_DRAWITEM:
 	return CallService(MS_CLIST_MENUDRAWITEM,msg->wParam,msg->lParam);
 	break;
@@ -1071,6 +1079,11 @@ case WM_DESTROY:
 	return FALSE;
 
 case TIM_CALLBACK:
+	if (msg->lParam==WM_MBUTTONDOWN || msg->lParam==WM_LBUTTONDOWN || msg->lParam==WM_RBUTTONDOWN && g_trayTooltipActive)
+	{
+		CallService("mToolTip/HideTip", 0, 0);
+		g_trayTooltipActive = FALSE;
+	}
 	if (msg->lParam==WM_MBUTTONUP)
 	{
 		cliShowHide(0,0);				
@@ -1086,6 +1099,7 @@ case TIM_CALLBACK:
 		SetFocus(msg->hwnd);
 		GetCursorPos(&pt);
 		TrackPopupMenu(hMenu, TPM_TOPALIGN | TPM_LEFTALIGN|TPM_LEFTBUTTON, pt.x, pt.y, 0, msg->hwnd, NULL);
+		g_trayMenuOnScreen=TRUE;
 		OnTrayRightClick=0;
 		IS_WM_MOUSE_DOWN_IN_TRAY=0;
 	}
@@ -1135,24 +1149,30 @@ case TIM_CALLBACK:
 		
 		GetCursorPos(&pt);
 
-		TrackPopupMenu(hMenu, TPM_TOPALIGN | TPM_LEFTALIGN|TPM_LEFTBUTTON, pt.x, pt.y, 0, msg->hwnd, NULL);
+		TrackPopupMenu(hMenu, TPM_TOPALIGN | TPM_LEFTALIGN|TPM_LEFTBUTTON, pt.x, pt.y, 0, msg->hwnd, NULL);		
 		PostMessage(msg->hwnd, WM_NULL, 0, 0);
+		g_trayMenuOnScreen=TRUE;
 
 	}
 		else if (msg->lParam == WM_MOUSEMOVE) {
 			s_LastHoverIconID=msg->wParam;
-			if(g_trayTooltipActive) {
+			if(g_trayTooltipActive) 
+			{
 				POINT pt;
 				GetCursorPos(&pt);
-				if(pt.x != tray_hover_pos.x || pt.y != tray_hover_pos.y) {
+				if(abs(pt.x - tray_hover_pos.x)>TOOLTIP_TOLERANCE || abs(pt.y - tray_hover_pos.y)>TOOLTIP_TOLERANCE) 
+				{
 					CallService("mToolTip/HideTip", 0, 0);
 					g_trayTooltipActive = FALSE;
+					ReleaseCapture();
 				}
 				break;
 			}
-
-			GetCursorPos(&tray_hover_pos);
-			SetTimer(pcli->hwndContactList, TIMERID_TRAYHOVER, 600, TrayToolTipTimerProc);
+			else
+			{
+				GetCursorPos(&tray_hover_pos);
+				SetTimer(pcli->hwndContactList, TIMERID_TRAYHOVER, 600, TrayToolTipTimerProc);
+			}
 		}
 		else break;
 		*((LRESULT*)lParam)=0;

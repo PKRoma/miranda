@@ -503,8 +503,10 @@ int ModernDrawStatusBarWorker(HWND hWnd, HDC hDC)
 extern TMO_IntMenuItem * GetMenuItemByGlobalID(int globalMenuID);
 extern MenuProto * menusProto;
 extern int AllocedProtos;
+#define TOOLTIP_TOLERANCE 5
 LRESULT CALLBACK ModernStatusProc(HWND hwnd,UINT msg,WPARAM wParam,LPARAM lParam)
 {
+  static POINT ptToolTipShow={0};
   switch (msg)
   {
   case WM_DESTROY:
@@ -639,6 +641,9 @@ LRESULT CALLBACK ModernStatusProc(HWND hwnd,UINT msg,WPARAM wParam,LPARAM lParam
               NotifyEventHooks(hStatusBarShowToolTipEvent,(WPARAM)ProtosData[i].ProtoName,0);
               SetTimer(hwnd,TM_STATUSBARHIDE,DBGetContactSettingWord(NULL,"CLUIFrames","HideToolTipTime",5000),0);
               tooltipshoing=TRUE;
+			  ClientToScreen(hwnd,&pt);
+			  ptToolTipShow=pt;
+			  SetCapture(hwnd);
               return 0;
             }
           }
@@ -647,6 +652,20 @@ LRESULT CALLBACK ModernStatusProc(HWND hwnd,UINT msg,WPARAM wParam,LPARAM lParam
       }
       return 0;
     };
+  case WM_MOUSEMOVE:
+	  if (tooltipshoing)
+	  {
+		  POINT pt;
+		  GetCursorPos(&pt);
+		  if (abs(pt.x-ptToolTipShow.x)>TOOLTIP_TOLERANCE || abs(pt.y-ptToolTipShow.y)>TOOLTIP_TOLERANCE)
+		  {
+              KillTimer(hwnd,TM_STATUSBARHIDE);
+              NotifyEventHooks(hStatusBarHideToolTipEvent,0,0);
+              tooltipshoing=FALSE;
+		      ReleaseCapture();
+          }
+	  }
+	  break;
   case WM_SETCURSOR:
     {
       if (BehindEdgeSettings) UpdateTimer(0);
@@ -659,10 +678,13 @@ LRESULT CALLBACK ModernStatusProc(HWND hwnd,UINT msg,WPARAM wParam,LPARAM lParam
           return(TestCursorOnBorders());
         };
         lastpnt=pt;
-        if (tooltipshoing){
+        if (tooltipshoing)
+			if	(abs(pt.x-ptToolTipShow.x)>TOOLTIP_TOLERANCE || abs(pt.y-ptToolTipShow.y)>TOOLTIP_TOLERANCE)
+		{
           KillTimer(hwnd,TM_STATUSBARHIDE);
           NotifyEventHooks(hStatusBarHideToolTipEvent,0,0);
           tooltipshoing=FALSE;
+		  ReleaseCapture();
         };
         KillTimer(hwnd,TM_STATUSBAR);
         SetTimer(hwnd,TM_STATUSBAR,DBGetContactSettingWord(NULL,"CLC","InfoTipHoverTime",750),0);
@@ -682,6 +704,7 @@ LRESULT CALLBACK ModernStatusProc(HWND hwnd,UINT msg,WPARAM wParam,LPARAM lParam
       pt.x=(short)LOWORD(lParam);
       pt.y=(short)HIWORD(lParam);
       KillTimer(hwnd,TM_STATUSBARHIDE);
+	  KillTimer(hwnd,TM_STATUSBAR);
 
       if (tooltipshoing){
         NotifyEventHooks(hStatusBarHideToolTipEvent,0,0);
