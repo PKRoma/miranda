@@ -2689,7 +2689,7 @@ LABEL_SHOWWINDOW:
 							
 						if(end - start > 0)
 						{
-							TEXTRANGE tr;
+							TEXTRANGEA tr;
 							CHARRANGE cr;
 							static char szTrimString[] = ":;,.!?\'\"><()[]- \r\n";
 							ZeroMemory(&tr, sizeof(TEXTRANGE));
@@ -2697,8 +2697,8 @@ LABEL_SHOWWINDOW:
 							cr.cpMin = start;
 							cr.cpMax = end;
 							tr.chrg = cr;
-							tr.lpstrText = (LPWSTR)pszWord;
-							iRes = SendMessage(GetDlgItem(hwndDlg, IDC_LOG), EM_GETTEXTRANGE, 0, (LPARAM)&tr);
+							tr.lpstrText = pszWord;
+							iRes = SendMessageA(GetDlgItem(hwndDlg, IDC_LOG), EM_GETTEXTRANGE, 0, (LPARAM)&tr);
 							
 							if(iRes > 0)
 							{
