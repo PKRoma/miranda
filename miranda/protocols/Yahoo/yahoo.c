@@ -701,7 +701,7 @@ void ext_yahoo_got_conf_invite(int id, char *who, char *room, char *msg, YList *
 	
 	_snprintf(z, sizeof(z), Translate("[miranda] Got conference invite to room: %s with msg: %s"), room ?room:"", msg ?msg:"");
 	LOG(("[ext_yahoo_got_conf_invite] %s", z));
-	ext_yahoo_got_im(id, "me", who, z, 0, 0, 0, -1);
+	ext_yahoo_got_im(id, "me", who, z, 0, 0, 1, -1);
 	
 	yahoo_conference_decline(ylad->id, NULL, members, room, Translate("I am sorry, but i can't join your conference since this feature is not currently implemented in my client."));
 }
@@ -1239,7 +1239,7 @@ void ext_yahoo_got_audible(int id, const char *me, const char *who, const char *
 	}
 	
 	_snprintf(z, sizeof(z), "[miranda-audible] %s", msg ?msg:"");
-	ext_yahoo_got_im(id, (char*)me, (char*)who, z, 0, 0, 0, -1);
+	ext_yahoo_got_im(id, (char*)me, (char*)who, z, 0, 0, 1, -1);
 }
 
 void ext_yahoo_got_calendar(int id, const char *url, int type, const char *msg, int svc)
@@ -1262,7 +1262,6 @@ void ext_yahoo_got_picture_upload(int id, const char *me, const char *url,unsign
 		return;
 	}
 	
-	
 	cksum = YAHOO_GetDword("TMPAvatarHash", 0);
 	if (cksum != 0) {
 		LOG(("[ext_yahoo_got_picture_upload] Updating Checksum to: %d", cksum));
@@ -1284,7 +1283,6 @@ void ext_yahoo_got_picture_upload(int id, const char *me, const char *url,unsign
 		DBDeleteContactSetting(NULL, yahooProtocolName, "AvatarInv");
 		DBFreeVariant(&dbv);
 	}
-	
 }
 
 void ext_yahoo_got_avatar_share(int id, int buddy_icon)
