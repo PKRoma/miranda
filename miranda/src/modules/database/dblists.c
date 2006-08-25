@@ -69,7 +69,7 @@ int List_GetIndex( SortedList* p_list, void* p_value, int* p_index )
 			int result = p_list->sortFunc( p_list->items[ i ], p_value );
 			if ( result == 0 )
 			{	*p_index = i;
-				return(1);
+				return 1;
 			}
 
 			if ( result < 0 )
@@ -113,6 +113,13 @@ int List_Insert( SortedList* p_list, void* p_value, int p_index)
    return 1;
 }
 
+int List_InsertPtr( SortedList* list, void* p )
+{
+	int idx;
+	List_GetIndex( list, p, &idx );
+	return List_Insert( list, p, idx );
+}
+
 int List_Remove( SortedList* p_list, int index )
 {
 	if ( index < 0 || index > p_list->realCount )
@@ -126,4 +133,13 @@ int List_Remove( SortedList* p_list, int index )
 	}
 
    return 1;
+}
+
+int List_RemovePtr( SortedList* list, void* p )
+{
+	int idx = -1;
+	if ( List_GetIndex( list, p, &idx ))
+		List_Remove( list, idx );
+
+	return idx;
 }

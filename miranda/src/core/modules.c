@@ -25,6 +25,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 typedef struct {
 	MIRANDAHOOK pfnHook;
+	HINSTANCE hOwner;
 	HWND hwnd;
 	UINT message;
 } THookSubscriber;
@@ -40,6 +41,7 @@ typedef struct {
 typedef struct {
 	char name[MAXMODULELABELLENGTH];
 	DWORD nameHash;
+	HINSTANCE hOwner;
 	MIRANDASERVICE pfnService;
 } TServiceList;
 
@@ -66,6 +68,8 @@ static CRITICAL_SECTION csHooks,csServices;
 static DWORD mainThreadId;
 static HANDLE hMainThread;
 static HANDLE hMissingService;
+
+HINSTANCE GetInstByAddress( void* codePtr );
 
 int LoadSystemModule(void);		// core: m_system.h services
 int LoadNewPluginsModuleInfos(void); // core: preloading plugins
@@ -321,7 +325,6 @@ static void CALLBACK HookToMainAPCFunc(DWORD dwParam)
 
 int NotifyEventHooks(HANDLE hEvent,WPARAM wParam,LPARAM lParam)
 {
-
 	extern HWND hAPCWindow;
 
 	if(GetCurrentThreadId()!=mainThreadId) {
@@ -359,9 +362,11 @@ HANDLE HookEvent(const char *name,MIRANDAHOOK hookProc)
 		return NULL;
 	}
 	hook[hookId].subscriber=(THookSubscriber*)mir_realloc(hook[hookId].subscriber,sizeof(THookSubscriber)*(hook[hookId].subscriberCount+1));
-	hook[hookId].subscriber[hook[hookId].subscriberCount].pfnHook=hookProc;
-	hook[hookId].subscriber[hook[hookId].subscriberCount].hwnd=NULL;
+	hook[hookId].subscriber[hook[hookId].subscriberCount].pfnHook = hookProc;
+	hook[hookId].subscriber[hook[hookId].subscriberCount].hOwner  = GetInstByAddress(hookProc);
+	hook[hookId].subscriber[hook[hookId].subscriberCount].hwnd    = NULL;
 	hook[hookId].subscriberCount++;
+
 	ret=(HANDLE)((hookId<<16)|hook[hookId].subscriberCount);
 	LeaveCriticalSection(&csHooks);
 	return ret;
@@ -410,6 +415,29 @@ int UnhookEvent(HANDLE hHook)
 	}
 	LeaveCriticalSection(&csHooks);
 	return 0;
+}
+
+void KillModuleEventHooks( HINSTANCE hInst )
+{
+	int i, j;
+
+	EnterCriticalSection(&csHooks);
+	for ( i = hookCount-1; i >= 0; i-- ) {
+		if ( hook[i].subscriberCount == 0 )
+			continue;
+
+		for ( j = hook[i].subscriberCount-1; j >= 0; j-- ) {
+			if ( hook[i].subscriber[j].hOwner == hInst ) {
+				char szModuleName[ MAX_PATH ];
+				GetModuleFileNameA( hook[i].subscriber[j].hOwner, szModuleName, sizeof(szModuleName));
+				Netlib_Logf( NULL, "A hook %08x for event '%s' was abnormally deleted because module '%s' didn't released it",
+					hook[i].subscriber[j].pfnHook, hook[i].name, szModuleName );
+				UnhookEvent(( HANDLE )(( i << 16 ) + j + 1 ));
+				if ( hook[i].subscriberCount == 0 )
+					break;
+	}	}	}
+
+	LeaveCriticalSection(&csHooks);
 }
 
 /////////////////////SERVICES
@@ -501,8 +529,9 @@ HANDLE CreateServiceFunction(const char *name,MIRANDASERVICE serviceProc)
 	service=(TServiceList*)mir_realloc(service,sizeof(TServiceList)*(serviceCount+1));
 	if ( serviceCount > 0 && shift) MoveMemory(service+i+1,service+i,sizeof(TServiceList)*(serviceCount-i));
 	strncpy(service[i].name,name,sizeof(service[i].name));
-	service[i].nameHash=hash;
-	service[i].pfnService=serviceProc;
+	service[i].nameHash   = hash;
+	service[i].pfnService = serviceProc;
+	service[i].hOwner     = GetInstByAddress( serviceProc );
 	serviceCount++;
 	LeaveCriticalSection(&csServices);
 	return (HANDLE)hash;
@@ -584,8 +613,7 @@ int CallServiceSync(const char *name, WPARAM wParam, LPARAM lParam)
 	// the service is looked up within the main thread, since the time it takes
 	// for the APC queue to clear the service being called maybe removed.
 	// even thou it may exists before the call, the critsec can't be locked between calls.
-	if (GetCurrentThreadId() != mainThreadId)
-	{
+	if (GetCurrentThreadId() != mainThreadId) {
 		TServiceToMainThreadItem item;
 		item.wParam = wParam;
 		item.lParam = lParam;
@@ -596,9 +624,9 @@ int CallServiceSync(const char *name, WPARAM wParam, LPARAM lParam)
 		WaitForSingleObject(item.hDoneEvent, INFINITE);
 		CloseHandle(item.hDoneEvent);
 		return item.result;
-	} else {
-		return CallService(name, wParam, lParam);
 	}
+
+   return CallService(name, wParam, lParam);
 }
 
 int CallFunctionAsync( void (__stdcall *func)(void *), void *arg)
@@ -608,4 +636,21 @@ int CallFunctionAsync( void (__stdcall *func)(void *), void *arg)
 	r=QueueUserAPC((void (__stdcall *)(DWORD))func,hMainThread,(DWORD)arg);
 	PostMessage(hAPCWindow,WM_NULL,0,0);
 	return r;
+}
+
+void KillModuleServices( HINSTANCE hInst )
+{
+	int i;
+
+	EnterCriticalSection(&csServices);
+	for ( i = serviceCount-1; i >= 0; i-- ) {
+		if ( service[i].hOwner == hInst ) {
+			char szModuleName[ MAX_PATH ];
+			GetModuleFileNameA( service[i].hOwner, szModuleName, sizeof(szModuleName));
+			Netlib_Logf( NULL, "A service function '%s' was abnormally deleted because module '%s' didn't released it",
+				service[i].name, szModuleName );
+			DestroyServiceFunction(( HANDLE )service[i].nameHash );
+	}	}
+
+	LeaveCriticalSection(&csServices);
 }
