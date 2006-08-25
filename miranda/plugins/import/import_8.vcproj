@@ -54,10 +54,10 @@
 				OmitFramePointers="true"
 				WholeProgramOptimization="true"
 				AdditionalIncludeDirectories="../../include"
-				PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;_USRDLL;IMPORT_EXPORTS"
+				PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;_USRDLL;IMPORT_EXPORTS;_USE_32BIT_TIME_T"
 				StringPooling="true"
 				ExceptionHandling="0"
-				RuntimeLibrary="3"
+				RuntimeLibrary="2"
 				EnableFunctionLevelLinking="true"
 				UsePrecompiledHeader="0"
 				AssemblerOutput="3"
@@ -156,7 +156,7 @@
 				Name="VCCLCompilerTool"
 				Optimization="0"
 				AdditionalIncludeDirectories="../../include"
-				PreprocessorDefinitions="WIN32;_DEBUG;_WINDOWS;_USRDLL;IMPORT_EXPORTS"
+				PreprocessorDefinitions="WIN32;_DEBUG;_WINDOWS;_USRDLL;IMPORT_EXPORTS;_USE_32BIT_TIME_T"
 				ExceptionHandling="0"
 				BasicRuntimeChecks="3"
 				RuntimeLibrary="3"
@@ -230,7 +230,6 @@
 						Name="VCCLCompilerTool"
 						Optimization="1"
 						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;_MBCS;_USRDLL;IMPORT_EXPORTS;$(NoInherit)"
 						BrowseInformation="1"
 					/>
 				</FileConfiguration>
@@ -241,7 +240,6 @@
 						Name="VCCLCompilerTool"
 						Optimization="0"
 						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions="WIN32;_DEBUG;_WINDOWS;_MBCS;_USRDLL;IMPORT_EXPORTS;$(NoInherit)"
 						BasicRuntimeChecks="3"
 						BrowseInformation="1"
 					/>
@@ -257,7 +255,6 @@
 						Name="VCCLCompilerTool"
 						Optimization="1"
 						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;_MBCS;_USRDLL;IMPORT_EXPORTS;$(NoInherit)"
 						BrowseInformation="1"
 					/>
 				</FileConfiguration>
@@ -268,7 +265,6 @@
 						Name="VCCLCompilerTool"
 						Optimization="0"
 						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions="WIN32;_DEBUG;_WINDOWS;_MBCS;_USRDLL;IMPORT_EXPORTS;$(NoInherit)"
 						BasicRuntimeChecks="3"
 						BrowseInformation="1"
 					/>
@@ -284,7 +280,6 @@
 						Name="VCCLCompilerTool"
 						Optimization="1"
 						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;_MBCS;_USRDLL;IMPORT_EXPORTS;$(NoInherit)"
 						BrowseInformation="1"
 					/>
 				</FileConfiguration>
@@ -295,7 +290,6 @@
 						Name="VCCLCompilerTool"
 						Optimization="0"
 						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions="WIN32;_DEBUG;_WINDOWS;_MBCS;_USRDLL;IMPORT_EXPORTS;$(NoInherit)"
 						BasicRuntimeChecks="3"
 						BrowseInformation="1"
 					/>
@@ -311,7 +305,6 @@
 						Name="VCCLCompilerTool"
 						Optimization="1"
 						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;_MBCS;_USRDLL;IMPORT_EXPORTS;$(NoInherit)"
 						BrowseInformation="1"
 					/>
 				</FileConfiguration>
@@ -322,7 +315,6 @@
 						Name="VCCLCompilerTool"
 						Optimization="0"
 						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions="WIN32;_DEBUG;_WINDOWS;_MBCS;_USRDLL;IMPORT_EXPORTS;$(NoInherit)"
 						BasicRuntimeChecks="3"
 						BrowseInformation="1"
 					/>
@@ -338,7 +330,6 @@
 						Name="VCCLCompilerTool"
 						Optimization="1"
 						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;_MBCS;_USRDLL;IMPORT_EXPORTS;$(NoInherit)"
 						BrowseInformation="1"
 					/>
 				</FileConfiguration>
@@ -349,7 +340,6 @@
 						Name="VCCLCompilerTool"
 						Optimization="0"
 						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions="WIN32;_DEBUG;_WINDOWS;_MBCS;_USRDLL;IMPORT_EXPORTS;$(NoInherit)"
 						BasicRuntimeChecks="3"
 						BrowseInformation="1"
 					/>
@@ -365,7 +355,6 @@
 						Name="VCCLCompilerTool"
 						Optimization="1"
 						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;_MBCS;_USRDLL;IMPORT_EXPORTS;$(NoInherit)"
 						BrowseInformation="1"
 					/>
 				</FileConfiguration>
@@ -376,7 +365,6 @@
 						Name="VCCLCompilerTool"
 						Optimization="0"
 						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions="WIN32;_DEBUG;_WINDOWS;_MBCS;_USRDLL;IMPORT_EXPORTS;$(NoInherit)"
 						BasicRuntimeChecks="3"
 						BrowseInformation="1"
 					/>

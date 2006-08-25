@@ -352,7 +352,7 @@
 				PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;_USRDLL;CLIST_EXPORTS;UNICODE"
 				StringPooling="true"
 				ExceptionHandling="0"
-				RuntimeLibrary="3"
+				RuntimeLibrary="2"
 				EnableFunctionLevelLinking="true"
 				UsePrecompiledHeader="2"
 				PrecompiledHeaderThrough="commonheaders.h"

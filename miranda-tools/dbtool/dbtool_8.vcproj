@@ -5,9 +5,6 @@
 	Name="dbtool"
 	ProjectGUID="{A2E9DA24-95E4-4414-94AF-488A382E276A}"
 	RootNamespace="dbtool"
-	SccProjectName="&quot;$/Miranda/miranda-tools/dbtool&quot;, DIIAAAAA"
-	SccLocalPath="."
-	SccProvider="MSSCCI:Microsoft Visual SourceSafe"
 	>
 	<Platforms>
 		<Platform
@@ -112,7 +109,7 @@
 		<Configuration
 			Name="Release|Win32"
 			OutputDirectory="$(SolutionDir)$(ConfigurationName)"
-			IntermediateDirectory="$(SolutionDir)$(ConfigurationName)/Obj/$(ProjectName)"
+			IntermediateDirectory="$(SolutionDir)/Release/Obj/$(ProjectName)"
 			ConfigurationType="1"
 			InheritedPropertySheets="$(VCInstallDir)VCProjectDefaults\UpgradeFromVC71.vsprops"
 			UseOfMFC="0"

@@ -57,7 +57,7 @@
 				PreprocessorDefinitions="NDEBUG;WIN32;_WINDOWS;_USRDLL;NO_GZIP;PNG_NO_STDIO;PNG_NO_CONSOLE_IO"
 				StringPooling="true"
 				ExceptionHandling="0"
-				RuntimeLibrary="3"
+				RuntimeLibrary="2"
 				EnableFunctionLevelLinking="true"
 				BrowseInformationFile="$(IntDir)/"
 				WarningLevel="3"

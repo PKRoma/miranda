@@ -253,7 +253,7 @@
 				PreprocessorDefinitions="NDEBUG;WIN32;_WINDOWS;_NOSDK;_USE_32BIT_TIME_T"
 				StringPooling="true"
 				ExceptionHandling="0"
-				RuntimeLibrary="3"
+				RuntimeLibrary="2"
 				EnableFunctionLevelLinking="true"
 				UsePrecompiledHeader="2"
 				PrecompiledHeaderThrough="commonheaders.h"

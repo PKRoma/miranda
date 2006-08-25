@@ -57,7 +57,7 @@
 				PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;_USRDLL;MSN_EXPORTS;_USE_32BIT_TIME_T"
 				StringPooling="true"
 				ExceptionHandling="0"
-				RuntimeLibrary="3"
+				RuntimeLibrary="2"
 				EnableFunctionLevelLinking="true"
 				UsePrecompiledHeader="2"
 				PrecompiledHeaderThrough="msn_global.h"
@@ -307,8 +307,8 @@
 		</Configuration>
 		<Configuration
 			Name="Release Unicode|Win32"
-			OutputDirectory="$(SolutionDir)/Release/Plugins"
-			IntermediateDirectory="$(SolutionDir)/Release/Obj/$(ProjectName)"
+			OutputDirectory="$(SolutionDir)Release/Plugins"
+			IntermediateDirectory="$(SolutionDir)Release/Obj/$(ProjectName)"
 			ConfigurationType="2"
 			InheritedPropertySheets="$(VCInstallDir)VCProjectDefaults\UpgradeFromVC71.vsprops"
 			UseOfMFC="0"

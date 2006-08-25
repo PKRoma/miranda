@@ -252,7 +252,7 @@
 				WholeProgramOptimization="true"
 				PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;_USRDLL;CHAT_EXPORTS;UNICODE"
 				StringPooling="true"
-				RuntimeLibrary="3"
+				RuntimeLibrary="2"
 				EnableFunctionLevelLinking="true"
 				PrecompiledHeaderFile=".\Release_Unicode/chat.pch"
 				AssemblerListingLocation=".\Release_Unicode/"
