@@ -280,7 +280,6 @@ BYTE GetCachedStatusMsg(int iExtraCacheEntry, char *szProto)
 			cEntry->bStatusMsgValid = STATUSMSG_XSTATUSNAME;
 			cEntry->statusMsg = (TCHAR *)realloc(cEntry->statusMsg, (iLen + 2) * sizeof(TCHAR));
 			_tcsncpy(cEntry->statusMsg, dbv.ptszVal, iLen + 1);
-			mir_free(dbv.ptszVal);
 		}
 		else {
 			BYTE bXStatus = DBGetContactSettingByte(hContact, szProto, "XStatusId", 0);
