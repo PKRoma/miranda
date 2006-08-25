@@ -488,6 +488,7 @@ static const value_string packet_keys[]={
 	{203, "YAB data?"},
 	{206, "display image type"},
 	{213, "share avatar type"},
+	{216, "first name"},
 	{219, "cookie separator?"},
 	{222, "FT7 Service"},
 	{223, "authorized?"},
@@ -495,6 +496,7 @@ static const value_string packet_keys[]={
 	{231, "audible text"},
 	{232, "weird number (md5 hash?) [audible]"},
 	{244, "YIM6/YIM7 detection.(278527 - YIM6, 524223 - YIM7)"},
+	{254, "last name"},
 	{265, "FT7 Token"},
 	{1002, "YIM6+"},
 	{10093, "YIM7 (sets it to 4)"},
@@ -2993,11 +2995,11 @@ static void yahoo_process_authorization(struct yahoo_input_data *yid, struct yah
 			utf8 = strtol(pair->value, NULL, 10);
 			break;
 			
-		case 216:
+		case 216: /* first name */
 			fname = pair->value;
 			break;
 
-		case 254:
+		case 254: /* last name */
 			lname = pair->value;
 			break;
 			
