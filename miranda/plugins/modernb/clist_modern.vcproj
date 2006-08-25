@@ -678,6 +678,9 @@
 				RelativePath="SkinEngine.c">
 			</File>
 			<File
+				RelativePath=".\tabbedoptions.c">
+			</File>
+			<File
 				RelativePath=".\utf.c">
 			</File>
 			<Filter

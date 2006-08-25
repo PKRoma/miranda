@@ -5,10 +5,6 @@
 	Name="chat"
 	ProjectGUID="{268BD296-8DD3-4715-A386-CF120398EC98}"
 	RootNamespace="chat"
-	SccProjectName="SAK"
-	SccAuxPath="SAK"
-	SccLocalPath="SAK"
-	SccProvider="SAK"
 	>
 	<Platforms>
 		<Platform
@@ -20,8 +16,8 @@
 	<Configurations>
 		<Configuration
 			Name="Debug|Win32"
-			OutputDirectory="$(SolutionDir)$(ConfigurationName)/Plugins"
-			IntermediateDirectory="$(SolutionDir)$(ConfigurationName)/Obj/$(ProjectName)"
+			OutputDirectory="$(SolutionDir)Debug/Plugins"
+			IntermediateDirectory="$(SolutionDir)Debug/Obj/$(PluginName)"
 			ConfigurationType="2"
 			InheritedPropertySheets="$(VCInstallDir)VCProjectDefaults\UpgradeFromVC60.vsprops"
 			UseOfMFC="0"
@@ -119,8 +115,8 @@
 		</Configuration>
 		<Configuration
 			Name="Debug Unicode|Win32"
-			OutputDirectory="$(SolutionDir)/Debug/Plugins"
-			IntermediateDirectory="$(SolutionDir)/Debug/Obj/$(ProjectName)"
+			OutputDirectory="$(SolutionDir)Debug/Plugins"
+			IntermediateDirectory="$(SolutionDir)Debug/Obj/$(ProjectName)"
 			ConfigurationType="2"
 			InheritedPropertySheets="$(VCInstallDir)VCProjectDefaults\UpgradeFromVC60.vsprops"
 			UseOfMFC="0"
@@ -256,7 +252,7 @@
 				WholeProgramOptimization="true"
 				PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;_USRDLL;CHAT_EXPORTS;UNICODE"
 				StringPooling="true"
-				RuntimeLibrary="2"
+				RuntimeLibrary="3"
 				EnableFunctionLevelLinking="true"
 				PrecompiledHeaderFile=".\Release_Unicode/chat.pch"
 				AssemblerListingLocation=".\Release_Unicode/"
@@ -321,8 +317,8 @@
 		</Configuration>
 		<Configuration
 			Name="Release|Win32"
-			OutputDirectory="$(SolutionDir)$(ConfigurationName)/Plugins"
-			IntermediateDirectory="$(SolutionDir)$(ConfigurationName)/Obj/$(ProjectName)"
+			OutputDirectory="$(SolutionDir)/Release/Plugins"
+			IntermediateDirectory="$(SolutionDir)/Release/Obj/$(ProjectName)"
 			ConfigurationType="2"
 			InheritedPropertySheets="$(VCInstallDir)VCProjectDefaults\UpgradeFromVC60.vsprops"
 			UseOfMFC="0"

@@ -1,13 +1,10 @@
 <?xml version="1.0" encoding="windows-1251"?>
 <VisualStudioProject
 	ProjectType="Visual C++"
-	Version="8.00"
+	Version="8,00"
 	Name="miranda32"
 	ProjectGUID="{F9916510-9055-4C9F-997A-3755DEC1511B}"
 	RootNamespace="miranda32"
-	SccProjectName="&quot;$/Miranda/miranda&quot;, FJDAAAAA"
-	SccLocalPath=".."
-	SccProvider="MSSCCI:Microsoft Visual SourceSafe"
 	>
 	<Platforms>
 		<Platform
@@ -19,8 +16,8 @@
 	<Configurations>
 		<Configuration
 			Name="Release|Win32"
-			OutputDirectory="..\bin7\Release"
-			IntermediateDirectory="$(SolutionDir)$(ConfigurationName)/Obj/$(ProjectName)"
+			OutputDirectory="$(SolutionDir)/Release"
+			IntermediateDirectory="$(SolutionDir)/Release/Obj/$(ProjectName)"
 			ConfigurationType="1"
 			InheritedPropertySheets="$(VCInstallDir)VCProjectDefaults\UpgradeFromVC71.vsprops"
 			UseOfMFC="0"
@@ -53,7 +50,7 @@
 				InlineFunctionExpansion="1"
 				FavorSizeOrSpeed="2"
 				AdditionalIncludeDirectories="../include"
-				PreprocessorDefinitions="NDEBUG;WIN32;_WINDOWS;_NOSDK"
+				PreprocessorDefinitions="NDEBUG;WIN32;_WINDOWS;_NOSDK;_USE_32BIT_TIME_T"
 				StringPooling="true"
 				ExceptionHandling="0"
 				RuntimeLibrary="2"
@@ -123,8 +120,8 @@
 		</Configuration>
 		<Configuration
 			Name="Debug|Win32"
-			OutputDirectory="..\bin7\Debug"
-			IntermediateDirectory="$(SolutionDir)$(ConfigurationName)/Obj/$(ProjectName)"
+			OutputDirectory="$(SolutionDir)/Debug"
+			IntermediateDirectory="$(SolutionDir)/Debug/Obj/$(ProjectName)"
 			ConfigurationType="1"
 			InheritedPropertySheets="$(VCInstallDir)VCProjectDefaults\UpgradeFromVC71.vsprops"
 			UseOfMFC="0"
@@ -155,7 +152,7 @@
 				Name="VCCLCompilerTool"
 				Optimization="0"
 				AdditionalIncludeDirectories="../include"
-				PreprocessorDefinitions="_DEBUG;WIN32;_WINDOWS;_NOSDK"
+				PreprocessorDefinitions="_DEBUG;WIN32;_WINDOWS;_NOSDK;_USE_32BIT_TIME_T"
 				ExceptionHandling="0"
 				RuntimeLibrary="3"
 				UsePrecompiledHeader="2"
@@ -253,10 +250,10 @@
 				OmitFramePointers="true"
 				WholeProgramOptimization="true"
 				AdditionalIncludeDirectories="../include"
-				PreprocessorDefinitions="NDEBUG;WIN32;_WINDOWS;_NOSDK"
+				PreprocessorDefinitions="NDEBUG;WIN32;_WINDOWS;_NOSDK;_USE_32BIT_TIME_T"
 				StringPooling="true"
 				ExceptionHandling="0"
-				RuntimeLibrary="2"
+				RuntimeLibrary="3"
 				EnableFunctionLevelLinking="true"
 				UsePrecompiledHeader="2"
 				PrecompiledHeaderThrough="commonheaders.h"
@@ -354,7 +351,7 @@
 				Name="VCCLCompilerTool"
 				Optimization="0"
 				AdditionalIncludeDirectories="../include"
-				PreprocessorDefinitions="_DEBUG;WIN32;_WINDOWS;_NOSDK"
+				PreprocessorDefinitions="_DEBUG;WIN32;_WINDOWS;_NOSDK;_USE_32BIT_TIME_T"
 				ExceptionHandling="0"
 				RuntimeLibrary="3"
 				UsePrecompiledHeader="2"

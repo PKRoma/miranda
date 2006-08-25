@@ -5,10 +5,6 @@
 	Name="clist_mw"
 	ProjectGUID="{56997126-0098-407A-94E1-7C5748C1C9EF}"
 	RootNamespace="clist_mw"
-	SccProjectName="SAK"
-	SccAuxPath="SAK"
-	SccLocalPath="SAK"
-	SccProvider="SAK"
 	>
 	<Platforms>
 		<Platform
@@ -20,8 +16,8 @@
 	<Configurations>
 		<Configuration
 			Name="Release|Win32"
-			OutputDirectory="$(SolutionDir)$(ConfigurationName)/Plugins"
-			IntermediateDirectory="$(SolutionDir)$(ConfigurationName)/Obj/$(ProjectName)"
+			OutputDirectory="$(SolutionDir)/Release/Plugins"
+			IntermediateDirectory="$(SolutionDir)/Release/Obj/$(ProjectName)"
 			ConfigurationType="2"
 			InheritedPropertySheets="$(VCInstallDir)VCProjectDefaults\UpgradeFromVC71.vsprops"
 			UseOfMFC="0"
@@ -122,8 +118,8 @@
 		</Configuration>
 		<Configuration
 			Name="Debug|Win32"
-			OutputDirectory="$(SolutionDir)$(ConfigurationName)/Plugins"
-			IntermediateDirectory="$(SolutionDir)$(ConfigurationName)/Obj/$(ProjectName)"
+			OutputDirectory="$(SolutionDir)Debug/Plugins"
+			IntermediateDirectory="$(SolutionDir)Debug/Obj/$(PluginName)"
 			ConfigurationType="2"
 			InheritedPropertySheets="$(VCInstallDir)VCProjectDefaults\UpgradeFromVC71.vsprops"
 			UseOfMFC="0"
@@ -215,8 +211,8 @@
 		</Configuration>
 		<Configuration
 			Name="Debug Unicode|Win32"
-			OutputDirectory="$(SolutionDir)/Debug/Plugins"
-			IntermediateDirectory="$(SolutionDir)/Debug/Obj/$(ProjectName)"
+			OutputDirectory="$(SolutionDir)Debug/Plugins"
+			IntermediateDirectory="$(SolutionDir)Debug/Obj/$(ProjectName)"
 			ConfigurationType="2"
 			InheritedPropertySheets="$(VCInstallDir)VCProjectDefaults\UpgradeFromVC71.vsprops"
 			UseOfMFC="0"
@@ -349,7 +345,7 @@
 				PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;_USRDLL;clist_mw_EXPORTS"
 				StringPooling="true"
 				ExceptionHandling="0"
-				RuntimeLibrary="2"
+				RuntimeLibrary="3"
 				EnableFunctionLevelLinking="true"
 				UsePrecompiledHeader="2"
 				PrecompiledHeaderThrough="commonheaders.h"

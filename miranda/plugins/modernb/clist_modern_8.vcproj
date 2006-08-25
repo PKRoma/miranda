@@ -5,10 +5,6 @@
 	Name="clist_modern"
 	ProjectGUID="{D9057E63-AAAA-4FE7-800A-20C02F4761F3}"
 	RootNamespace="clist_modern"
-	SccProjectName="SAK"
-	SccAuxPath="SAK"
-	SccLocalPath="SAK"
-	SccProvider="SAK"
 	>
 	<Platforms>
 		<Platform
@@ -20,8 +16,8 @@
 	<Configurations>
 		<Configuration
 			Name="Release|Win32"
-			OutputDirectory="$(SolutionDir)$(ConfigurationName)/Plugins"
-			IntermediateDirectory="$(SolutionDir)$(ConfigurationName)/Obj/$(ProjectName)"
+			OutputDirectory="$(SolutionDir)/Release/Plugins"
+			IntermediateDirectory="$(SolutionDir)/Release/Obj/$(ProjectName)"
 			ConfigurationType="2"
 			InheritedPropertySheets="$(VCInstallDir)VCProjectDefaults\UpgradeFromVC71.vsprops"
 			UseOfMFC="0"
@@ -128,8 +124,8 @@
 		</Configuration>
 		<Configuration
 			Name="Debug|Win32"
-			OutputDirectory="$(SolutionDir)$(ConfigurationName)/Plugins"
-			IntermediateDirectory="$(SolutionDir)$(ConfigurationName)/Obj/$(ProjectName)"
+			OutputDirectory="$(SolutionDir)Debug/Plugins"
+			IntermediateDirectory="$(SolutionDir)Debug/Obj/$(PluginName)"
 			ConfigurationType="2"
 			InheritedPropertySheets="$(VCInstallDir)VCProjectDefaults\UpgradeFromVC71.vsprops"
 			UseOfMFC="0"
@@ -226,8 +222,8 @@
 		</Configuration>
 		<Configuration
 			Name="Debug Unicode|Win32"
-			OutputDirectory="$(SolutionDir)/Debug/Plugins"
-			IntermediateDirectory="$(SolutionDir)/Debug/Obj/$(ProjectName)"
+			OutputDirectory="$(SolutionDir)Debug/Plugins"
+			IntermediateDirectory="$(SolutionDir)Debug/Obj/$(ProjectName)"
 			ConfigurationType="2"
 			InheritedPropertySheets="$(VCInstallDir)VCProjectDefaults\UpgradeFromVC71.vsprops"
 			UseOfMFC="0"
@@ -363,7 +359,7 @@
 				AdditionalIncludeDirectories="../../include"
 				PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;_USRDLL;CLIST_EXPORTS"
 				StringPooling="true"
-				RuntimeLibrary="2"
+				RuntimeLibrary="3"
 				EnableFunctionLevelLinking="false"
 				EnableEnhancedInstructionSet="0"
 				DefaultCharIsUnsigned="true"
@@ -401,104 +397,6 @@
 				OptimizeReferences="2"
 				EnableCOMDATFolding="2"
 				OptimizeForWindows98="1"
-				BaseAddress=""
-			/>
-			<Tool
-				Name="VCALinkTool"
-			/>
-			<Tool
-				Name="VCManifestTool"
-			/>
-			<Tool
-				Name="VCXDCMakeTool"
-			/>
-			<Tool
-				Name="VCBscMakeTool"
-			/>
-			<Tool
-				Name="VCFxCopTool"
-			/>
-			<Tool
-				Name="VCAppVerifierTool"
-			/>
-			<Tool
-				Name="VCWebDeploymentTool"
-			/>
-			<Tool
-				Name="VCPostBuildEventTool"
-			/>
-		</Configuration>
-		<Configuration
-			Name="Debug unicode in main|Win32"
-			OutputDirectory="$(SolutionDir)$(ConfigurationName)"
-			IntermediateDirectory="$(ConfigurationName)"
-			ConfigurationType="2"
-			InheritedPropertySheets="$(VCInstallDir)VCProjectDefaults\UpgradeFromVC71.vsprops"
-			UseOfMFC="0"
-			UseOfATL="0"
-			ATLMinimizesCRunTimeLibraryUsage="true"
-			CharacterSet="1"
-			>
-			<Tool
-				Name="VCPreBuildEventTool"
-			/>
-			<Tool
-				Name="VCCustomBuildTool"
-			/>
-			<Tool
-				Name="VCXMLDataGeneratorTool"
-			/>
-			<Tool
-				Name="VCWebServiceProxyGeneratorTool"
-			/>
-			<Tool
-				Name="VCMIDLTool"
-				PreprocessorDefinitions="_DEBUG"
-				MkTypLibCompatible="true"
-				SuppressStartupBanner="true"
-				TargetEnvironment="1"
-				TypeLibraryName=".\Debug/mwclist.tlb"
-			/>
-			<Tool
-				Name="VCCLCompilerTool"
-				Optimization="0"
-				AdditionalIncludeDirectories="../../include"
-				PreprocessorDefinitions="WIN32;_DEBUG;_WINDOWS;_USRDLL;CLIST_EXPORTS"
-				GeneratePreprocessedFile="0"
-				BasicRuntimeChecks="3"
-				RuntimeLibrary="3"
-				DefaultCharIsUnsigned="true"
-				UsePrecompiledHeader="2"
-				PrecompiledHeaderThrough="commonheaders.h"
-				BrowseInformation="1"
-				WarningLevel="3"
-				SuppressStartupBanner="true"
-				DebugInformationFormat="4"
-				ShowIncludes="false"
-			/>
-			<Tool
-				Name="VCManagedResourceCompilerTool"
-			/>
-			<Tool
-				Name="VCResourceCompilerTool"
-				PreprocessorDefinitions="_DEBUG"
-				Culture="1033"
-			/>
-			<Tool
-				Name="VCPreLinkEventTool"
-			/>
-			<Tool
-				Name="VCLinkerTool"
-				AdditionalOptions="/MACHINE:I386"
-				AdditionalDependencies="MSImg32.Lib comctl32.lib shlwapi.lib gdiplus.lib Delayimp.lib"
-				ShowProgress="0"
-				OutputFile="c:/program files/miranda im/plugins/$(ProjectName).dll"
-				LinkIncremental="2"
-				SuppressStartupBanner="true"
-				AdditionalLibraryDirectories=""
-				DelayLoadDLLs="gdiplus.dll"
-				GenerateDebugInformation="true"
-				GenerateMapFile="false"
 				BaseAddress=""
 			/>
 			<Tool
@@ -821,14 +719,6 @@
 						PrecompiledHeaderThrough="commonheaders.h"
 					/>
 				</FileConfiguration>
-				<FileConfiguration
-					Name="Debug unicode in main|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						UsePrecompiledHeader="1"
-					/>
-				</FileConfiguration>
 			</File>
 			<File
 				RelativePath=".\contact.c"
@@ -1022,14 +912,6 @@
 							PrecompiledHeaderThrough="../commonheaders.h"
 						/>
 					</FileConfiguration>
-					<FileConfiguration
-						Name="Debug unicode in main|Win32"
-						>
-						<Tool
-							Name="VCCLCompilerTool"
-							PrecompiledHeaderThrough="../commonheaders.h"
-						/>
-					</FileConfiguration>
 				</File>
 				<File
 					RelativePath=".\CLUIFrames\cluiframes.h"
@@ -1070,14 +952,6 @@
 							PrecompiledHeaderThrough="../commonheaders.h"
 						/>
 					</FileConfiguration>
-					<FileConfiguration
-						Name="Debug unicode in main|Win32"
-						>
-						<Tool
-							Name="VCCLCompilerTool"
-							PrecompiledHeaderThrough="../commonheaders.h"
-						/>
-					</FileConfiguration>
 				</File>
 				<File
 					RelativePath=".\CLUIFrames\framesmenu.c"
@@ -1108,14 +982,6 @@
 					</FileConfiguration>
 					<FileConfiguration
 						Name="Release Unicode|Win32"
-						>
-						<Tool
-							Name="VCCLCompilerTool"
-							PrecompiledHeaderThrough="../commonheaders.h"
-						/>
-					</FileConfiguration>
-					<FileConfiguration
-						Name="Debug unicode in main|Win32"
 						>
 						<Tool
 							Name="VCCLCompilerTool"
@@ -1244,17 +1110,21 @@
 							PrecompiledHeaderThrough="../commonheaders.h"
 						/>
 					</FileConfiguration>
-					<FileConfiguration
-						Name="Debug unicode in main|Win32"
-						>
-						<Tool
-							Name="VCCLCompilerTool"
-							PrecompiledHeaderThrough="../commonheaders.h"
-						/>
-					</FileConfiguration>
+				</File>
+				<File
+					RelativePath=".\rowtemplateopt.c"
+					>
+				</File>
+				<File
+					RelativePath=".\SkinEditor.c"
+					>
 				</File>
 				<File
 					RelativePath=".\SkinOpt.c"
+					>
+				</File>
+				<File
+					RelativePath=".\tabbedoptions.c"
 					>
 				</File>
 			</Filter>
@@ -1300,13 +1170,40 @@
 							CompileAs="2"
 						/>
 					</FileConfiguration>
+				</File>
+				<File
+					RelativePath=".\modern_row.cpp"
+					>
 					<FileConfiguration
-						Name="Debug unicode in main|Win32"
+						Name="Release|Win32"
 						>
 						<Tool
 							Name="VCCLCompilerTool"
 							UsePrecompiledHeader="0"
-							CompileAs="2"
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="Debug|Win32"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+							UsePrecompiledHeader="0"
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="Debug Unicode|Win32"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+							UsePrecompiledHeader="0"
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="Release Unicode|Win32"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+							UsePrecompiledHeader="0"
 						/>
 					</FileConfiguration>
 				</File>

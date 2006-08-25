@@ -5,9 +5,6 @@
 	Name="png2dib"
 	ProjectGUID="{0257CAFD-704D-4419-B2B1-80605E81F0A3}"
 	RootNamespace="png2dib"
-	SccProjectName="&quot;$/Miranda/miranda/plugins/png2dib&quot;, FLIAAAAA"
-	SccLocalPath="."
-	SccProvider="MSSCCI:Microsoft Visual SourceSafe"
 	>
 	<Platforms>
 		<Platform
@@ -19,8 +16,8 @@
 	<Configurations>
 		<Configuration
 			Name="Release|Win32"
-			OutputDirectory="$(SolutionDir)$(ConfigurationName)/Plugins"
-			IntermediateDirectory="$(SolutionDir)$(ConfigurationName)/Obj/$(ProjectName)"
+			OutputDirectory="$(SolutionDir)/Release/Plugins"
+			IntermediateDirectory="$(SolutionDir)/Release/Obj/$(ProjectName)"
 			ConfigurationType="2"
 			InheritedPropertySheets="$(VCInstallDir)VCProjectDefaults\UpgradeFromVC71.vsprops"
 			UseOfMFC="0"
@@ -60,7 +57,7 @@
 				PreprocessorDefinitions="NDEBUG;WIN32;_WINDOWS;_USRDLL;NO_GZIP;PNG_NO_STDIO;PNG_NO_CONSOLE_IO"
 				StringPooling="true"
 				ExceptionHandling="0"
-				RuntimeLibrary="2"
+				RuntimeLibrary="3"
 				EnableFunctionLevelLinking="true"
 				BrowseInformationFile="$(IntDir)/"
 				WarningLevel="3"
@@ -122,8 +119,8 @@
 		</Configuration>
 		<Configuration
 			Name="Debug|Win32"
-			OutputDirectory="$(SolutionDir)$(ConfigurationName)/Plugins"
-			IntermediateDirectory="$(SolutionDir)$(ConfigurationName)/Obj/$(ProjectName)"
+			OutputDirectory="$(SolutionDir)Debug/Plugins"
+			IntermediateDirectory="$(SolutionDir)Debug/Obj/$(ProjectName)"
 			ConfigurationType="2"
 			InheritedPropertySheets="$(VCInstallDir)VCProjectDefaults\UpgradeFromVC71.vsprops"
 			UseOfMFC="0"
