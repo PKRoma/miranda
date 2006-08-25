@@ -132,7 +132,7 @@ int __stdcall Lists_Add( int list, const char* email, const char* nick )
 		C = &lists[ count++ ];
 		C->list = 0;
 		C->email = strdup( email );
-		C->nick  = ( char* )_mbsdup(( const BYTE* )nick );
+		C->nick  = ( char* )_mbsdup(( const char* )nick );
 	}
 	else C = &lists[ idx-1 ];
 
