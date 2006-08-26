@@ -1258,9 +1258,11 @@ static int AvatarChanged(WPARAM wParam, LPARAM lParam)
             dat->ace = ace;
             if(dat->hwndFlash == 0)
                 dat->panelWidth = -1;				// force new size calculations (not for flash avatars)
+            DM_RecalcPictureSize(hwnd, dat);
             if(dat->showPic == 0 || dat->showInfoPic == 0)
                 GetAvatarVisibility(hwnd, dat);
             ShowPicture(hwnd, dat, TRUE);
+            dat->dwFlagsEx |= MWF_EX_AVATARCHANGED;
         }
     }
     return 0;

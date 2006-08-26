@@ -19,6 +19,12 @@ the file listing the same day.
 Trunk is now using version numbers 1.1.0.x until the next major release. Bugfixes
 will be backported to stable branch, new features will only go into trunk.
 
+Version 1.1.0.7 - 2006/08/20
+
+        ! disable auto-bidi mode when no RTL language is installed
+        ! workaround for a loadavatars problem (may cause disappearing avatars in
+          the message window).
+
 Version 1.1.0.6 - 2006/08/05
 
     Mainly bugfixes from 1.0.0.0 release.

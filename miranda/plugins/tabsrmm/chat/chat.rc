@@ -177,7 +177,8 @@ BEGIN
     LTEXT           "Words to highlight (wildcards allowed)",IDC_STATIC,10,164,240,8
     LTEXT           "Log directory",IDC_STATIC,10,198,211,8
     CONTROL         "",IDC_STATIC,"Static",SS_ETCHEDVERT,176,12,1,88
-    PUSHBUTTON      "...",IDC_CHAT_CHOOSEFONT,148,58,20,14
+    CONTROL         "",IDC_CHAT_CHOOSEFONT,"MButtonClass",WS_TABSTOP,148,58,20,14,0x18000000L
+    //PUSHBUTTON      "...",IDC_CHAT_CHOOSEFONT,148,58,20,14
     CONTROL         "Enable logging to disk",IDC_LOGGING,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,10,188,211,10
     CONTROL         "",IDC_INFOPANELBG,"ColourPicker",WS_TABSTOP,266,57,22,10
     LTEXT           "Info panel fields",IDC_STATIC,180,58,81,10

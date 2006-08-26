@@ -330,6 +330,10 @@ static void MsgWindowUpdateState(HWND hwndDlg, struct MessageWindowData *dat, UI
             PostMessage(hwndDlg, DM_SPLITTERMOVEDGLOBAL, dat->wParam, dat->lParam);
             dat->wParam = dat->lParam = 0;
         }
+        if(dat->dwFlagsEx & MWF_EX_AVATARCHANGED) {
+            dat->dwFlagsEx &= ~MWF_EX_AVATARCHANGED;
+            PostMessage(hwndDlg, DM_UPDATEPICLAYOUT, 0, 0);
+        }
     }
 }
 
@@ -1657,8 +1661,6 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                 dat->sendMode |= DBGetContactSettingByte(dat->hContact, SRMSGMOD_T, "forceansi", 0) ? SMODE_FORCEANSI : 0;
                 dat->sendMode |= dat->hContact == 0 ? SMODE_MULTIPLE : 0;
                 dat->sendMode |= DBGetContactSettingByte(dat->hContact, SRMSGMOD_T, "no_ack", 0) ? SMODE_NOACK : 0;
-                if(ServiceExists(MS_AV_GETAVATARBITMAP))
-                    dat->ace = (struct avatarCacheEntry *)CallService(MS_AV_GETAVATARBITMAP, (WPARAM)dat->hContact, 0);
 
                 dat->hwnd = hwndDlg;
 
@@ -1902,6 +1904,7 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                     GetCachedStatusMsg(hwndDlg, dat);
                 }
                 dat->stats.started = time(NULL);
+                LoadContactAvatar(hwndDlg, dat);
                 SendMessage(hwndDlg, DM_OPTIONSAPPLIED, 0, 0);
                 LoadOwnAvatar(hwndDlg, dat);
                 /*
@@ -2648,6 +2651,10 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                     RedrawWindow(hwndDlg, NULL, NULL, RDW_UPDATENOW | RDW_NOCHILDREN | RDW_INVALIDATE);
                 break;
             }
+        case DM_UPDATEPICLAYOUT:
+            LoadContactAvatar(hwndDlg, dat);
+            SendMessage(hwndDlg, WM_SIZE, 0, 0);
+            return 0;
 		case DM_SPLITTERMOVEDGLOBAL:
 			if(!(dat->dwFlagsEx & MWF_SHOW_SPLITTEROVERRIDE)) {
 				short newMessagePos;
@@ -3297,8 +3304,7 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                     dat->dwFlags &= ~MWF_WASBACKGROUNDCREATE;
                     SendMessage(hwndDlg, WM_SIZE, 0, 0);
                     LoadSplitter(hwndDlg, dat);
-                    ShowPicture(hwndDlg,dat,TRUE);
-                    DM_RecalcPictureSize(hwndDlg, dat);
+                    PostMessage(hwndDlg, DM_UPDATEPICLAYOUT, 0, 0);
                     DM_LoadLocale(hwndDlg, dat);
                     SendMessage(hwndDlg, DM_SETLOCALE, 0, 0);
                     //DM_ScrollToBottom(hwndDlg, dat, 1, 1);

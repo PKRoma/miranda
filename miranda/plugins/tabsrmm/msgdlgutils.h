@@ -61,6 +61,7 @@ void        GetLocaleID(struct MessageWindowData *dat, char *szKLName);
 BOOL        IsUnicodeAscii(const wchar_t* pBuffer, int nSize);
 void        GetDataDir();
 void        LoadOwnAvatar(HWND hwndDlg, struct MessageWindowData *dat);
+void        LoadContactAvatar(HWND hwndDlg, struct MessageWindowData *dat);
 BYTE        GetInfoPanelSetting(HWND hwndDlg, struct MessageWindowData *dat);
 void        UpdateApparentModeDisplay(HWND hwndDlg, struct MessageWindowData *dat);
 void        LoadPanelHeight(HWND hwndDlg, struct MessageWindowData *dat);
