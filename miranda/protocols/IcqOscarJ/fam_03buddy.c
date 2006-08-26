@@ -306,8 +306,21 @@ static void handleUserOnline(BYTE* buf, WORD wLen)
 
             if (pTLV && (pTLV->wLen >= 16))
             { // copy classic Capabilities
-              pCap += pTLV->wLen;
-              memcpy(capBuf, pTLV->pData, pTLV->wLen);
+              char* cData = pTLV->pData;
+              int cLen = pTLV->wLen;
+              
+              capLen = 0; // we need to recount that
+              while (cLen)
+              { // ohh, those damned AOL updates.... they broke it again
+                if (!MatchCap(capBuf, capLen, (capstr*)cData, 0x10))
+                { // not there, add
+                  memcpy(pCap, cData, 0x10);
+                  capLen += 0x10;
+                  pCap += 0x10;
+                }
+                cData += 0x10;
+                cLen -= 0x10;
+              }
             }
 
             if (pNewTLV && (pNewTLV->wLen >= 2))
@@ -328,8 +341,12 @@ static void handleUserOnline(BYTE* buf, WORD wLen)
   
                 capNew += 2;
 
-                memcpy(pCap, tmp, 0x10);
-                pCap += 0x10;
+                if (!MatchCap(capBuf, capLen, &tmp, 0x10))
+                { // not present, add
+                  memcpy(pCap, tmp, 0x10);
+                  pCap += 0x10;
+                  capLen += 0x10;
+                }
               }
             }
             AddCapabilitiesFromBuffer(hContact, capBuf, capLen);
