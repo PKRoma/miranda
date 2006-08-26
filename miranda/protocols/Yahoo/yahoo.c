@@ -1268,7 +1268,10 @@ void ext_yahoo_got_picture_upload(int id, const char *me, const char *url,unsign
 		YAHOO_SetDword("AvatarHash", cksum);
 		DBDeleteContactSetting(NULL, yahooProtocolName, "TMPAvatarHash");
 		
+		// This is only meant for message sessions, but we don't got those in miranda yet
 		YAHOO_bcast_picture_checksum(cksum);
+		// need to tell the stupid Yahoo that our icon updated
+		YAHOO_bcast_picture_update(2);
 	}	
 		
 	YAHOO_SetString(NULL, "AvatarURL", url);
