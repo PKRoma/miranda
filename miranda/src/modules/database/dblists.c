@@ -42,8 +42,12 @@ void List_Destroy( SortedList* p_list )
 	if ( p_list == NULL )
 		return;
 
-	if ( p_list->items != NULL )
+	if ( p_list->items != NULL ) {
 		mir_free( p_list->items );
+		p_list->items = NULL;
+	}
+
+	p_list->realCount = p_list->limit = 0;
 }
 
 void* List_Find( SortedList* p_list, void* p_value )
@@ -113,6 +117,13 @@ int List_Insert( SortedList* p_list, void* p_value, int p_index)
    return 1;
 }
 
+int List_InsertPtr( SortedList* list, void* p )
+{
+	int idx;
+	List_GetIndex( list, p, &idx );
+	return List_Insert( list, p, idx );
+}
+
 int List_Remove( SortedList* p_list, int index )
 {
 	if ( index < 0 || index > p_list->realCount )
@@ -126,4 +137,13 @@ int List_Remove( SortedList* p_list, int index )
 	}
 
    return 1;
+}
+
+int List_RemovePtr( SortedList* list, void* p )
+{
+	int idx = -1;
+	if ( List_GetIndex( list, p, &idx ))
+		List_Remove( list, idx );
+
+	return idx;
 }
