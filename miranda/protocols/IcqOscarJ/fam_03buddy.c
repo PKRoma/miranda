@@ -101,14 +101,14 @@ void handleBuddyFam(unsigned char* pBuffer, WORD wBufferLength, snac_header* pSn
 static void handleUserOnline(BYTE* buf, WORD wLen)
 {
   HANDLE hContact;
-  DWORD dwPort;
-  DWORD dwRealIP;
-  DWORD dwIP;
+  DWORD dwPort = 0;
+  DWORD dwRealIP = 0;
+  DWORD dwIP = 0;
   DWORD dwUIN;
   uid_str szUID;
-  DWORD dwDirectConnCookie;
-  DWORD dwWebPort;
-  DWORD dwFT1, dwFT2, dwFT3;
+  DWORD dwDirectConnCookie = 0;
+  DWORD dwWebPort = 0;
+  DWORD dwFT1 = 0, dwFT2 = 0, dwFT3 = 0;
   LPSTR szClient = 0;
   BYTE bClientId = 0;
   WORD wVersion = 0;
@@ -116,9 +116,9 @@ static void handleUserOnline(BYTE* buf, WORD wLen)
   WORD wWarningLevel;
   WORD wStatusFlags;
   WORD wStatus;
-  BYTE nTCPFlag;
+  BYTE nTCPFlag = 0;
   DWORD dwOnlineSince;
-  WORD wIdleTimer = 0;
+  WORD wIdleTimer;
   time_t tIdleTS = 0;
   char szStrBuf[MAX_PATH];
 
@@ -186,20 +186,10 @@ static void handleUserOnline(BYTE* buf, WORD wLen)
           unpackDWord(&pBuffer, &dwFT2);
           unpackDWord(&pBuffer, &dwFT3);
         }
-        else
-        {  // just for the case the timestamps are not there
-          dwFT1 = dwFT2 = dwFT3 = 0;
-        }
       }
       else
       {
         // This client doesnt want DCs
-        dwRealIP = 0;
-        dwPort = 0;
-        nTCPFlag = 0;
-        dwDirectConnCookie = 0;
-        dwWebPort = 0;
-        dwFT1 = dwFT2 = dwFT3 = 0;
       }
 
       // Get Status info TLV
@@ -230,11 +220,6 @@ static void handleUserOnline(BYTE* buf, WORD wLen)
         wStatus = ID_STATUS_ONLINE;
 
       wStatusFlags = 0;
-      dwRealIP = 0;
-      dwPort = 0;
-      nTCPFlag = 0;
-      dwDirectConnCookie = 0;
-      dwFT1 = dwFT2 = dwFT3 = 0;
     }
 
 #ifdef _DEBUG
