@@ -42,8 +42,12 @@ void List_Destroy( SortedList* p_list )
 	if ( p_list == NULL )
 		return;
 
-	if ( p_list->items != NULL )
+	if ( p_list->items != NULL ) {
 		mir_free( p_list->items );
+		p_list->items = NULL;
+	}
+
+	p_list->realCount = p_list->limit = 0;
 }
 
 void* List_Find( SortedList* p_list, void* p_value )
@@ -69,7 +73,7 @@ int List_GetIndex( SortedList* p_list, void* p_value, int* p_index )
 			int result = p_list->sortFunc( p_list->items[ i ], p_value );
 			if ( result == 0 )
 			{	*p_index = i;
-				return 1;
+				return(1);
 			}
 
 			if ( result < 0 )

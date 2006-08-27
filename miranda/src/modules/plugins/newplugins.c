@@ -808,6 +808,8 @@ int UnloadNewPluginsModule(void)
 
 	if ( hPluginListHeap ) HeapDestroy(hPluginListHeap);
 	hPluginListHeap=0;
-	pluginList.realCount = pluginList.limit = 0;
+
+	List_Destroy( &pluginList );
+	List_Destroy( &pluginListAddr );
 	return 0;
 }
