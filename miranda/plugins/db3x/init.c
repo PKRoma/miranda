@@ -2,8 +2,8 @@
 
 Miranda IM: the free IM client for Microsoft* Windows*
 
-Copyright 2000-2003 Miranda ICQ/IM project, 
-all portions of this codebase are copyrighted to the people 
+Copyright 2000-2003 Miranda ICQ/IM project,
+all portions of this codebase are copyrighted to the people
 listed in contributors.txt.
 
 This program is free software; you can redistribute it and/or
@@ -38,7 +38,7 @@ static int getCapability( int flag )
 }
 
 // returns 0 if the profile is created, EMKPRF*
-static int makeDatabase(char * profile, int * error) 
+static int makeDatabase(char * profile, int * error)
 {
 	HANDLE hFile=CreateFile(profile, GENERIC_READ|GENERIC_WRITE, 0, NULL, CREATE_ALWAYS, 0, NULL);
 	if ( hFile != INVALID_HANDLE_VALUE ) {
@@ -57,10 +57,10 @@ static int grokHeader( char * profile, int * error )
 	int chk=0;
 	struct DBHeader hdr;
 	HANDLE hFile = INVALID_HANDLE_VALUE;
-	DWORD dummy=0;	
+	DWORD dummy=0;
 
 	hFile = CreateFile(profile, GENERIC_READ, FILE_SHARE_READ, NULL, OPEN_EXISTING, 0, NULL);
-	if ( hFile == INVALID_HANDLE_VALUE ) { 		
+	if ( hFile == INVALID_HANDLE_VALUE ) {
 		if ( error != NULL ) *error=EGROKPRF_CANTREAD;
 		return 1;
 	}
@@ -78,7 +78,7 @@ static int grokHeader( char * profile, int * error )
 	} else {
 		// didn't pass at all, or some did.
 		switch ( chk ) {
-			case 1: 
+			case 1:
 			{
 				// "Miranda ICQ DB" wasn't present
 				if ( error != NULL ) *error = EGROKPRF_UNKHEADER;
@@ -108,7 +108,7 @@ static int LoadDatabase( char * profile, void * plink )
 	PLUGINLINK *link = plink;
 #ifdef _DEBUG
 	_CrtSetDbgFlag( _CRTDBG_ALLOC_MEM_DF | _CRTDBG_LEAK_CHECK_DF);
-#endif	
+#endif
 	// don't need thread notifications
 	strncpy(szDbPath, profile, sizeof(szDbPath));
 	// this is like Load()'s pluginLink
@@ -148,7 +148,7 @@ static DATABASELINK dblink = {
 	makeDatabase,
 	grokHeader,
 	LoadDatabase,
-	UnloadDatabase,	
+	UnloadDatabase,
 };
 
 static PLUGININFO pluginInfo = {
