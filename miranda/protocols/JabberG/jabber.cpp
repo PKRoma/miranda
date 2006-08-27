@@ -255,6 +255,9 @@ extern "C" int __declspec( dllexport ) Load( PLUGINLINK *link )
 	jabberProtoName = mir_strdup( p );
 	_strupr( jabberProtoName );
 
+	mir_snprintf( text, sizeof( text ), "%s/Status", jabberProtoName );
+	JCallService( MS_DB_SETSETTINGRESIDENT, TRUE, ( LPARAM )text );
+
 	jabberModuleName = mir_strdup( jabberProtoName );
 	_strlwr( jabberModuleName );
 	jabberModuleName[0] = toupper( jabberModuleName[0] );
