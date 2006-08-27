@@ -131,6 +131,22 @@ Package=<4>
 
 ###############################################################################
 
+Project: "db3x_mmap"=..\plugins\db3x_mmap\db3x_mmap.dsp - Package Owner=<4>
+
+Package=<5>
+{{{
+    begin source code control
+    "$/Miranda/miranda/plugins/db3x_mmap", WKIAAAAA
+    ..\plugins\db3x_mmap
+    end source code control
+}}}
+
+Package=<4>
+{{{
+}}}
+
+###############################################################################
+
 Project: "dbsqlite"=..\plugins\dbsqlite\dbsqlite.dsp - Package Owner=<4>
 
 Package=<5>

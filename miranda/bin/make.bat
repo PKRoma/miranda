@@ -62,6 +62,10 @@ cd ..\db3x
 nmake /f db3x.mak CFG="db3x - Win32 Release"
 if errorlevel 1 goto :Error
 
+cd ..\db3x_mmap
+nmake /f db3x_mmap.mak CFG="db3x_mmap - Win32 Release"
+if errorlevel 1 goto :Error
+
 cd ..\help
 nmake /f help.mak CFG="help - Win32 Release"
 if errorlevel 1 goto :Error
@@ -209,6 +213,7 @@ copy ..\..\plugins\chat\Release\chat.pdb               %Temp%\pdba\plugins
 copy ..\..\plugins\clist\Release\clist_classic.pdb     %Temp%\pdba\plugins
 copy ..\..\plugins\clist_nicer\Release\clist_nicer.pdb %Temp%\pdba\plugins
 copy ..\..\plugins\db3x\Release\dbx_3x.pdb             %Temp%\pdba\plugins
+copy ..\..\plugins\db3x_mmap\Release\dbx_mmap.pdb      %Temp%\pdba\plugins
 copy ..\..\plugins\help\Release\help.pdb               %Temp%\pdba\plugins
 copy ..\..\plugins\import\Release\import.pdb           %Temp%\pdba\plugins
 copy ..\..\plugins\modernb\Release\clist_modern.pdb    %Temp%\pdba\plugins

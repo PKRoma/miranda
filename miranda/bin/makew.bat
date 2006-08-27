@@ -90,6 +90,7 @@ cd "..\..\bin\Release Unicode"
 copy ..\release\dbtool.exe
 copy ..\release\Plugins\aim.dll      Plugins
 copy ..\release\Plugins\dbx_3x.dll   Plugins
+copy ..\release\Plugins\dbx_mmap.dll Plugins
 copy ..\release\Plugins\ICQ.dll      Plugins
 copy ..\release\Plugins\import.dll   Plugins
 copy ..\release\Plugins\IRC.dll      Plugins
@@ -211,6 +212,7 @@ copy ..\..\plugins\srmm\Release_Unicode\srmm.pdb               %Temp%\pdbw\plugi
 copy ..\..\plugins\tabSRMM\Release_Unicode\tabSRMM.pdb         %Temp%\pdbw\plugins
 rem  Non-Unicode plugins
 copy ..\..\plugins\db3x\Release\dbx_3x.pdb                     %Temp%\pdbw\plugins
+copy ..\..\plugins\db3x_mmap\Release\dbx_mmap.pdb              %Temp%\pdbw\plugins
 copy ..\..\plugins\import\Release\import.pdb                   %Temp%\pdbw\plugins
 copy ..\..\plugins\png2dib\Release\png2dib.pdb                 %Temp%\pdbw\plugins
 rem Zip now
