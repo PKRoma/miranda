@@ -64,7 +64,7 @@ extern int poll_loop;
 extern int gStartStatus;
 extern char *szStartMsg;
 
-void ext_yahoo_got_im(int id, char *me, char *who, char *msg, long tm, int stat, int utf8, int buddy_icon);
+void ext_yahoo_got_im(int id, const char *me, const char *who, const char *msg, long tm, int stat, int utf8, int buddy_icon);
 
 char * yahoo_status_code(enum yahoo_status s)
 {
@@ -695,7 +695,7 @@ const char *find_buddy( const char *yahoo_id)
 /* Required handlers bellow */
 
 /* Conference handlers */
-void ext_yahoo_got_conf_invite(int id, char *who, char *room, char *msg, YList *members)
+void ext_yahoo_got_conf_invite(int id, const char *me, const char *who, const char *room, const char *msg, YList *members)
 {
 	char z[1024];
 	
@@ -706,39 +706,39 @@ void ext_yahoo_got_conf_invite(int id, char *who, char *room, char *msg, YList *
 	yahoo_conference_decline(ylad->id, NULL, members, room, Translate("I am sorry, but i can't join your conference since this feature is not currently implemented in my client."));
 }
 
-void ext_yahoo_conf_userdecline(int id, char *who, char *room, char *msg)
+void ext_yahoo_conf_userdecline(int id, const char *me, const char *who, const char *room, const char *msg)
 {
 }
 
-void ext_yahoo_conf_userjoin(int id, char *who, char *room)
+void ext_yahoo_conf_userjoin(int id, const char *me, const char *who, const char *room)
 {
 }
 
-void ext_yahoo_conf_userleave(int id, char *who, char *room)
+void ext_yahoo_conf_userleave(int id, const char *me, const char *who, const char *room)
 {
 }
 
-void ext_yahoo_conf_message(int id, char *who, char *room, char *msg, int utf8)
+void ext_yahoo_conf_message(int id, const char *me, const char *who, const char *room, const char *msg, int utf8)
 {
 }
 
 /* chat handlers */
-void ext_yahoo_chat_cat_xml(int id, char *xml) 
+void ext_yahoo_chat_cat_xml(int id, const char *xml) 
 {
 }
 
-void ext_yahoo_chat_join(int id, char *room, char * topic, YList *members, int fd)
+void ext_yahoo_chat_join(int id, const char *me, const char *room, const char * topic, YList *members, int fd)
 {
 }
 
-void ext_yahoo_chat_userjoin(int id, char *room, struct yahoo_chat_member *who)
+void ext_yahoo_chat_userjoin(int id, const char *me, const char *room, struct yahoo_chat_member *who)
 {
 }
 
-void ext_yahoo_chat_userleave(int id, char *room, char *who)
+void ext_yahoo_chat_userleave(int id, const char *me, const char *room, const char *who)
 {
 }
-void ext_yahoo_chat_message(int id, char *who, char *room, char *msg, int msgtype, int utf8)
+void ext_yahoo_chat_message(int id, const char *me, const char *who, const char *room, const char *msg, int msgtype, int utf8)
 {
 }
 
@@ -1420,9 +1420,10 @@ void ext_yahoo_got_ignore(int id, YList * igns)
     LOG(("ext_yahoo_got_ignore"));
 }
 
-void ext_yahoo_got_im(int id, char *me, char *who, char *msg, long tm, int stat, int utf8, int buddy_icon)
+void ext_yahoo_got_im(int id, const char *me, const char *who, const char *msg, long tm, int stat, int utf8, int buddy_icon)
 {
-    char 		*umsg, *c = msg;
+    char 		*umsg;
+	const char	*c = msg;
 	int 		oidx = 0;
 	wchar_t* 	tRealBody = NULL;
 	int      	tRealBodyLen = 0;
@@ -1571,7 +1572,7 @@ void ext_yahoo_got_im(int id, char *me, char *who, char *msg, long tm, int stat,
 	} 
 }
 
-void ext_yahoo_rejected(int id, char *who, char *msg)
+void ext_yahoo_rejected(int id, const char *who, const char *msg)
 {
    	char buff[1024]={0};
    	HANDLE hContact;
@@ -1681,7 +1682,7 @@ void ext_yahoo_contact_added(int id, char *myid, char *who, char *msg)
 	CallService(MS_PROTO_CHAINRECV,0,(LPARAM)&ccs);
 }
 
-void ext_yahoo_typing_notify(int id, char *me, char *who, int stat)
+void ext_yahoo_typing_notify(int id, const char *me, const char *who, int stat)
 {
     const char *c;
     HANDLE hContact;
@@ -1793,7 +1794,7 @@ void ext_yahoo_game_notify(int id, char *me, char *who, int stat, char *msg)
 	}
 }
 
-void ext_yahoo_mail_notify(int id, char *from, char *subj, int cnt)
+void ext_yahoo_mail_notify(int id, const char *from, const char *subj, int cnt)
 {
 	LOG(("[ext_yahoo_mail_notify] from: %s subject: %s count: %d", from, subj, cnt));
 	
@@ -1827,12 +1828,12 @@ void ext_yahoo_got_webcam_image(int id, const char *who,
     LOG(("ext_yahoo_got_webcam_image"));
 }
 
-void ext_yahoo_webcam_viewer(int id, char *who, int connect)
+void ext_yahoo_webcam_viewer(int id, const char *who, int connect)
 {
     LOG(("ext_yahoo_webcam_viewer"));
 }
 
-void ext_yahoo_webcam_closed(int id, char *who, int reason)
+void ext_yahoo_webcam_closed(int id, const char *who, int reason)
 {
     LOG(("ext_yahoo_webcam_closed"));
 }
@@ -1842,25 +1843,25 @@ void ext_yahoo_webcam_data_request(int id, int send)
     LOG(("ext_yahoo_webcam_data_request"));
 }
 
-void ext_yahoo_webcam_invite(int id, char *me, char *from)
+void ext_yahoo_webcam_invite(int id, const char *me, const char *from)
 {
     LOG(("ext_yahoo_webcam_invite"));
 	
 	ext_yahoo_got_im(id, me, from, Translate("[miranda] Got webcam invite. (not currently supported)"), 0, 0, 0, -1);
 }
 
-void ext_yahoo_webcam_invite_reply(int id, char *me, char *from, int accept)
+void ext_yahoo_webcam_invite_reply(int id, const char *me, const char *from, int accept)
 {
     LOG(("ext_yahoo_webcam_invite_reply"));
 }
 
-void ext_yahoo_system_message(int id, char *msg)
+void ext_yahoo_system_message(int id, const char *msg)
 {
 	LOG(("Yahoo System Message: %s", msg));
 	YAHOO_ShowPopup( "Yahoo System Message", msg, NULL);
 }
 
-void ext_yahoo_got_file(int id, char *me, char *who, char *url, long expires, char *msg, char *fname, unsigned long fesize, char *ft_token)
+void ext_yahoo_got_file(int id, const char *me, const char *who, const char *url, long expires, const char *msg, const char *fname, unsigned long fesize, const char *ft_token)
 {
     CCSDATA ccs;
     PROTORECVEVENT pre;
@@ -2000,7 +2001,7 @@ void ext_yahoo_got_ping(int id, const char *errormsg)
 	}
 }
 
-void ext_yahoo_login_response(int id, int succ, char *url)
+void ext_yahoo_login_response(int id, int succ, const char *url)
 {
 	char buff[1024];
 
@@ -2045,7 +2046,7 @@ void ext_yahoo_login_response(int id, int succ, char *url)
 	yahoo_logout();
 }
 
-void ext_yahoo_error(int id, char *err, int fatal, int num)
+void ext_yahoo_error(int id, const char *err, int fatal, int num)
 {
 	char buff[1024];
 	
@@ -2090,7 +2091,7 @@ void ext_yahoo_error(int id, char *err, int fatal, int num)
 
 }
 
-int ext_yahoo_connect(char *h, int p)
+int ext_yahoo_connect(const char *h, int p)
 {
 	NETLIBOPENCONNECTION ncon = {0};
     HANDLE con;
@@ -2206,7 +2207,7 @@ void yahoo_callback(struct _conn *c, yahoo_input_condition cond)
 	}
 }
 
-int ext_yahoo_connect_async(int id, char *host, int port, 
+int ext_yahoo_connect_async(int id, const char *host, int port, 
 		yahoo_connect_callback callback, void *data)
 {
     int res;
@@ -2229,11 +2230,11 @@ int ext_yahoo_connect_async(int id, char *host, int port,
 /*
  * Callback handling code ends here
  ***********************************/
-void ext_yahoo_chat_yahoologout(int id)
+void ext_yahoo_chat_yahoologout(int id, const char *me)
 { 
  	LOG(("got chat logout"));
 }
-void ext_yahoo_chat_yahooerror(int id)
+void ext_yahoo_chat_yahooerror(int id, const char *me)
 { 
  	LOG(("got chat error"));
 }

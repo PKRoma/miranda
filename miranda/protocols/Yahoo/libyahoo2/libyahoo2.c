@@ -283,26 +283,20 @@ File List Cancel:
 	YAHOO_SERVICE_PICTURE_UPDATE = 0xc1,
 	YAHOO_SERVICE_PICTURE_UPLOAD = 0xc2,
 	YAHOO_SERVICE_YAB_UPDATE = 0xc4,
-	YAHOO_SERVICE_YAHOO6_VISIBLE_TOGGLE = 0xc5, /* YMSG13, key 13: 2 = invisible, 1 = visible */
-	YAHOO_SERVICE_YAHOO6_STATUS_UPDATE = 0xc6,  /* YMSG13 */
+	YAHOO_SERVICE_Y6_VISIBLE_TOGGLE = 0xc5, /* YMSG13, key 13: 2 = invisible, 1 = visible */
+	YAHOO_SERVICE_Y6_STATUS_UPDATE = 0xc6,  /* YMSG13 */
 	/* Kopete Calls YAHOO_SERVICE_AVATAR_UPDATE = ServicePictureStatus ? */
 	YAHOO_SERVICE_AVATAR_UPDATE = 0xc7,			/* YMSG13, key 213: 0 = none, 1 = avatar, 2 = picture */
-	
+	YAHOO_SERVICE_VERIFY_ID_EXISTS = 0xc8,
 	YAHOO_SERVICE_AUDIBLE = 0xd0,
-/*
-	YAHOO_SERVICE_YAHOO?_??? = 0xd4 (212) ?? 
-	  1: me
-	  5: who
-	 13: 1
-	*/	
-	YAHOO_SERVICE_YAHOO7_PHOTO_SHARING = 0xd2,
-	YAHOO_SERVICE_YAHOO7_CONTACT_DETAILS = 0xd3,	/* YMSG13 */
-	YAHOO_SERVICE_YAHOO7_CHAT_SESSION = 0xd4,	
-	YAHOO_SERVICE_YAHOO7_AUTHORIZATION = 0xd6,	/* YMSG13 */
-	YAHOO_SERVICE_YAHOO7_FILETRANSFER = 0xdc,	/* YMSG13 */
-	YAHOO_SERVICE_YAHOO7_FILETRANSFERINFO,	/* YMSG13 */
-	YAHOO_SERVICE_YAHOO7_FILETRANSFERACCEPT,	/* YMSG13 */
-	YAHOO_SERVICE_YAHOO7_CHANGE_GROUP = 0xe7, /* YMSG13 */
+	YAHOO_SERVICE_Y7_PHOTO_SHARING = 0xd2,
+	YAHOO_SERVICE_Y7_CONTACT_DETAILS = 0xd3,	/* YMSG13 */
+	YAHOO_SERVICE_Y7_CHAT_SESSION = 0xd4,	
+	YAHOO_SERVICE_Y7_AUTHORIZATION = 0xd6,	/* YMSG13 */
+	YAHOO_SERVICE_Y7_FILETRANSFER = 0xdc,	/* YMSG13 */
+	YAHOO_SERVICE_Y7_FILETRANSFERINFO,	/* YMSG13 */
+	YAHOO_SERVICE_Y7_FILETRANSFERACCEPT,	/* YMSG13 */
+	YAHOO_SERVICE_Y7_CHANGE_GROUP = 0xe7, /* YMSG13 */
 	YAHOO_SERVICE_WEBLOGIN = 0x0226,
 	YAHOO_SERVICE_SMS_MSG = 0x02ea
 };
@@ -377,17 +371,17 @@ static const value_string ymsg_service_vals[] = {
 	{YAHOO_SERVICE_YAB_UPDATE,"YAHOO_SERVICE_YAB_UPDATE"},
 	{YAHOO_SERVICE_PICTURE_UPDATE,"YAHOO_SERVICE_PICTURE_UPDATE"},
 	{YAHOO_SERVICE_PICTURE_UPLOAD,"YAHOO_SERVICE_PICTURE_UPLOAD"},
-	{YAHOO_SERVICE_YAHOO6_VISIBLE_TOGGLE, "YAHOO_SERVICE_YAHOO6_VISIBLE_TOGGLE"},
-	{YAHOO_SERVICE_YAHOO6_STATUS_UPDATE,"YAHOO_SERVICE_YAHOO6_STATUS_UPDATE"},
+	{YAHOO_SERVICE_Y6_VISIBLE_TOGGLE, "YAHOO_SERVICE_Y6_VISIBLE_TOGGLE"},
+	{YAHOO_SERVICE_Y6_STATUS_UPDATE,"YAHOO_SERVICE_Y6_STATUS_UPDATE"},
 	{YAHOO_SERVICE_AVATAR_UPDATE,"YAHOO_SERVICE_AVATAR_UPDATE"},
 	{YAHOO_SERVICE_AUDIBLE,"YAHOO_SERVICE_AUDIBLE"},
-	{YAHOO_SERVICE_YAHOO7_CONTACT_DETAILS,"YAHOO_SERVICE_YAHOO7_CONTACT_DETAILS"},
-	{YAHOO_SERVICE_YAHOO7_CHAT_SESSION,	"YAHOO_SERVICE_YAHOO7_CHAT_SESSION"},
-	{YAHOO_SERVICE_YAHOO7_AUTHORIZATION,"YAHOO_SERVICE_YAHOO7_AUTHORIZATION"},
-	{YAHOO_SERVICE_YAHOO7_FILETRANSFER,"YAHOO_SERVICE_YAHOO7_FILETRANSFER"},
-	{YAHOO_SERVICE_YAHOO7_FILETRANSFERINFO,"YAHOO_SERVICE_YAHOO7_FILETRANSFERINFO"},
-	{YAHOO_SERVICE_YAHOO7_FILETRANSFERACCEPT,"YAHOO_SERVICE_YAHOO7_FILETRANSFERACCEPT"},
-	{YAHOO_SERVICE_YAHOO7_CHANGE_GROUP, "YAHOO_SERVICE_YAHOO7_CHANGE_GROUP"},
+	{YAHOO_SERVICE_Y7_CONTACT_DETAILS,"YAHOO_SERVICE_Y7_CONTACT_DETAILS"},
+	{YAHOO_SERVICE_Y7_CHAT_SESSION,	"YAHOO_SERVICE_Y7_CHAT_SESSION"},
+	{YAHOO_SERVICE_Y7_AUTHORIZATION,"YAHOO_SERVICE_Y7_AUTHORIZATION"},
+	{YAHOO_SERVICE_Y7_FILETRANSFER,"YAHOO_SERVICE_Y7_FILETRANSFER"},
+	{YAHOO_SERVICE_Y7_FILETRANSFERINFO,"YAHOO_SERVICE_Y7_FILETRANSFERINFO"},
+	{YAHOO_SERVICE_Y7_FILETRANSFERACCEPT,"YAHOO_SERVICE_Y7_FILETRANSFERACCEPT"},
+	{YAHOO_SERVICE_Y7_CHANGE_GROUP, "YAHOO_SERVICE_Y7_CHANGE_GROUP"},
 	{YAHOO_SERVICE_WEBLOGIN,"YAHOO_SERVICE_WEBLOGIN"},
 	{YAHOO_SERVICE_SMS_MSG,"YAHOO_SERVICE_SMS_MSG"},
 	{0, NULL}
@@ -488,6 +482,7 @@ static const value_string packet_keys[]={
 	{203, "YAB data?"},
 	{206, "display image type"},
 	{213, "share avatar type"},
+	{216, "first name"},
 	{219, "cookie separator?"},
 	{222, "FT7 Service"},
 	{223, "authorized?"},
@@ -495,6 +490,7 @@ static const value_string packet_keys[]={
 	{231, "audible text"},
 	{232, "weird number (md5 hash?) [audible]"},
 	{244, "YIM6/YIM7 detection.(278527 - YIM6, 524223 - YIM7)"},
+	{254, "last name"},
 	{265, "FT7 Token"},
 	{1002, "YIM6+"},
 	{10093, "YIM7 (sets it to 4)"},
@@ -1101,7 +1097,7 @@ static void yahoo_send_packet(struct yahoo_input_data *yid, struct yahoo_packet 
 	data = y_new0(unsigned char, len + 1);
 
 	memcpy(data + pos, "YMSG", 4); pos += 4;
-	pos += yahoo_put16(data + pos, YAHOO_PROTO_VER); /* version [latest 12 0x000c */
+	pos += yahoo_put16(data + pos, YAHOO_PROTO_VER); /* version [latest 12 0x000c] */
 	pos += yahoo_put16(data + pos, 0x0000); /* HIWORD pkt length??? */
 	pos += yahoo_put16(data + pos, pktlen + extra_pad); /* LOWORD pkt length? */
 	pos += yahoo_put16(data + pos, pkt->service); /* service */
@@ -1487,7 +1483,7 @@ static void yahoo_process_conference(struct yahoo_input_data *yid, struct yahoo_
 		if(pkt->status == 2)
 			;
 		else if(members)
-			YAHOO_CALLBACK(ext_yahoo_got_conf_invite)(yd->client_id, host, room, msg, members);
+			YAHOO_CALLBACK(ext_yahoo_got_conf_invite)(yd->client_id, id, host, room, msg, members);
 		else if(msg)
 			YAHOO_CALLBACK(ext_yahoo_error)(yd->client_id, msg, 0, E_CONFNOTAVAIL);
 		break;
@@ -1495,23 +1491,23 @@ static void yahoo_process_conference(struct yahoo_input_data *yid, struct yahoo_
 		if(pkt->status == 2)
 			;
 		else
-			YAHOO_CALLBACK(ext_yahoo_got_conf_invite)(yd->client_id, host, room, msg, members);
+			YAHOO_CALLBACK(ext_yahoo_got_conf_invite)(yd->client_id, id, host, room, msg, members);
 		break;
 	case YAHOO_SERVICE_CONFDECLINE:
 		if(who)
-			YAHOO_CALLBACK(ext_yahoo_conf_userdecline)(yd->client_id, who, room, msg);
+			YAHOO_CALLBACK(ext_yahoo_conf_userdecline)(yd->client_id, id, who, room, msg);
 		break;
 	case YAHOO_SERVICE_CONFLOGON:
 		if(who)
-			YAHOO_CALLBACK(ext_yahoo_conf_userjoin)(yd->client_id, who, room);
+			YAHOO_CALLBACK(ext_yahoo_conf_userjoin)(yd->client_id, id, who, room);
 		break;
 	case YAHOO_SERVICE_CONFLOGOFF:
 		if(who)
-			YAHOO_CALLBACK(ext_yahoo_conf_userleave)(yd->client_id, who, room);
+			YAHOO_CALLBACK(ext_yahoo_conf_userleave)(yd->client_id, id, who, room);
 		break;
 	case YAHOO_SERVICE_CONFMSG:
 		if(who)
-			YAHOO_CALLBACK(ext_yahoo_conf_message)(yd->client_id, who, room, msg, utf8);
+			YAHOO_CALLBACK(ext_yahoo_conf_message)(yd->client_id, id, who, room, msg, utf8);
 		break;
 	}
 }
@@ -1519,6 +1515,7 @@ static void yahoo_process_conference(struct yahoo_input_data *yid, struct yahoo_
 static void yahoo_process_chat(struct yahoo_input_data *yid, struct yahoo_packet *pkt)
 {
 	char *msg = NULL;
+	char *id = NULL;
 	char *who = NULL;
 	char *room = NULL;
 	char *topic = NULL;
@@ -1534,6 +1531,11 @@ static void yahoo_process_chat(struct yahoo_input_data *yid, struct yahoo_packet
 	yahoo_dump_unhandled(pkt);
 	for (l = pkt->hash; l; l = l->next) {
 		struct yahoo_pair *pair = l->data;
+
+		if (pair->key == 1) {
+			/* My identity */
+			id = pair->value;
+		}
 
 		if (pair->key == 104) {
 			/* Room name */
@@ -1609,11 +1611,11 @@ static void yahoo_process_chat(struct yahoo_input_data *yid, struct yahoo_packet
 
 	if(!room) {
 		if (pkt->service == YAHOO_SERVICE_CHATLOGOUT) { /* yahoo originated chat logout */
-			YAHOO_CALLBACK(ext_yahoo_chat_yahoologout)(yid->yd->client_id);
+			YAHOO_CALLBACK(ext_yahoo_chat_yahoologout)(yid->yd->client_id, id);
 			return ;
 		}
 		if (pkt->service == YAHOO_SERVICE_COMMENT && chaterr)  {
-			YAHOO_CALLBACK(ext_yahoo_chat_yahooerror)(yid->yd->client_id);
+			YAHOO_CALLBACK(ext_yahoo_chat_yahooerror)(yid->yd->client_id, id);
 			return ;
 		}
 
@@ -1627,7 +1629,7 @@ static void yahoo_process_chat(struct yahoo_input_data *yid, struct yahoo_packet
 			WARNING(("Count of members doesn't match No. of members we got"));
 		}
 		if(firstjoin && members) {
-			YAHOO_CALLBACK(ext_yahoo_chat_join)(yid->yd->client_id, room, topic, members, yid->fd);
+			YAHOO_CALLBACK(ext_yahoo_chat_join)(yid->yd->client_id, id, room, topic, members, yid->fd);
 		} else if(who) {
 			if(y_list_length(members) != 1) {
 				WARNING(("Got more than 1 member on a normal join"));
@@ -1636,7 +1638,7 @@ static void yahoo_process_chat(struct yahoo_input_data *yid, struct yahoo_packet
 			while(members) {
 				YList *n = members->next;
 				currentmember = members->data;
-				YAHOO_CALLBACK(ext_yahoo_chat_userjoin)(yid->yd->client_id, room, currentmember);
+				YAHOO_CALLBACK(ext_yahoo_chat_userjoin)(yid->yd->client_id, id, room, currentmember);
 				y_list_free_1(members);
 				members=n;
 			}
@@ -1644,12 +1646,12 @@ static void yahoo_process_chat(struct yahoo_input_data *yid, struct yahoo_packet
 		break;
 	case YAHOO_SERVICE_CHATEXIT:
 		if(who) {
-			YAHOO_CALLBACK(ext_yahoo_chat_userleave)(yid->yd->client_id, room, who);
+			YAHOO_CALLBACK(ext_yahoo_chat_userleave)(yid->yd->client_id, id, room, who);
 		}
 		break;
 	case YAHOO_SERVICE_COMMENT:
 		if(who) {
-			YAHOO_CALLBACK(ext_yahoo_chat_message)(yid->yd->client_id, who, room, msg, msgtype, utf8);
+			YAHOO_CALLBACK(ext_yahoo_chat_message)(yid->yd->client_id, id, who, room, msg, msgtype, utf8);
 		}
 		break;
 	}
@@ -3477,7 +3479,7 @@ static void yahoo_packet_process(struct yahoo_input_data *yid, struct yahoo_pack
 	case YAHOO_SERVICE_GAMELOGOFF:
 	case YAHOO_SERVICE_IDACT:
 	case YAHOO_SERVICE_IDDEACT:
-	case YAHOO_SERVICE_YAHOO6_STATUS_UPDATE:
+	case YAHOO_SERVICE_Y6_STATUS_UPDATE:
 		yahoo_process_status(yid, pkt);
 		break;
 	case YAHOO_SERVICE_NOTIFY:
@@ -4643,7 +4645,7 @@ void yahoo_set_away(int id, enum yahoo_status state, const char *msg, int away)
 	cs = yd->current_status;
 	
 	if (state == YAHOO_STATUS_INVISIBLE) {
-		pkt = yahoo_packet_new(YAHOO_SERVICE_YAHOO6_VISIBLE_TOGGLE, YAHOO_STATUS_AVAILABLE, yd->session_id);
+		pkt = yahoo_packet_new(YAHOO_SERVICE_Y6_VISIBLE_TOGGLE, YAHOO_STATUS_AVAILABLE, yd->session_id);
 		yahoo_packet_hash(pkt, 13, "2");
 		yd->current_status = state;
 	} else {
@@ -4660,7 +4662,7 @@ void yahoo_set_away(int id, enum yahoo_status state, const char *msg, int away)
 		//else
 		//	service = YAHOO_SERVICE_ISAWAY;
 		 
-		pkt = yahoo_packet_new(YAHOO_SERVICE_YAHOO6_STATUS_UPDATE, YAHOO_STATUS_AVAILABLE, yd->session_id);
+		pkt = yahoo_packet_new(YAHOO_SERVICE_Y6_STATUS_UPDATE, YAHOO_STATUS_AVAILABLE, yd->session_id);
 		if ((away == 2) && (yd->current_status == YAHOO_STATUS_AVAILABLE)) {
 			//pkt = yahoo_packet_new(YAHOO_SERVICE_ISAWAY, YAHOO_STATUS_BRB, yd->session_id);
 			yahoo_packet_hash(pkt, 10, "999");
@@ -4686,7 +4688,7 @@ void yahoo_set_away(int id, enum yahoo_status state, const char *msg, int away)
 	yahoo_packet_free(pkt);
 	
 	if (cs == YAHOO_STATUS_INVISIBLE && state != YAHOO_STATUS_INVISIBLE){
-		pkt = yahoo_packet_new(YAHOO_SERVICE_YAHOO6_VISIBLE_TOGGLE, YAHOO_STATUS_AVAILABLE, yd->session_id);
+		pkt = yahoo_packet_new(YAHOO_SERVICE_Y6_VISIBLE_TOGGLE, YAHOO_STATUS_AVAILABLE, yd->session_id);
 		yahoo_packet_hash(pkt, 13, "1");
 		yd->current_status = state;
 
