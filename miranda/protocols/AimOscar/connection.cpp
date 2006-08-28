@@ -216,6 +216,7 @@ void __cdecl aim_protocol_negotiation()
 						snac_received_message(snac,conn.hServerConn,conn.seqno);
 						snac_typing_notification(snac);
 						snac_error(snac);
+						snac_busted_payload(snac);
 					}
 					else if(snac.cmp(0x0013))
 					{
