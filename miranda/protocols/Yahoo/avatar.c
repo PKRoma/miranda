@@ -15,20 +15,15 @@
 #include <sys/stat.h>
 
 #include "yahoo.h"
-#include "http_gateway.h"
-#include "version.h"
 #include "resource.h"
 
-#include <m_system.h>
 #include <m_langpack.h>
 #include <m_options.h>
-#include <m_skin.h>
-#include <m_message.h>
-#include <m_idle.h>
 #include <m_userinfo.h>
 #include <m_png.h>
 
 #include "avatar.h"
+#include "file_transfer.h"
 
 static BOOL CALLBACK AvatarDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam);
 

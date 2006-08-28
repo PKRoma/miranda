@@ -10,14 +10,6 @@
  * I want to thank Robert Rainwater and George Hazan for their code and support
  * and for answering some of my questions during development of this plugin.
  */
-#include <time.h>
-#include <sys/stat.h>
-#include <malloc.h>
-#include <io.h>
-
-/*
- * Miranda headers
- */
 #include "yahoo.h"
 #include <m_protosvc.h>
 #include <m_langpack.h>

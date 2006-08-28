@@ -10,12 +10,10 @@
  * I want to thank Robert Rainwater and George Hazan for their code and support
  * and for answering some of my questions during development of this plugin.
  */
-#include <windows.h>
-#include <stdio.h>
 #include <malloc.h>
 #include <time.h>
 #include <io.h>
-#include "pthread.h"
+
 #include "yahoo.h"
 
 #include <m_system.h>
@@ -30,6 +28,7 @@
 
 #include "avatar.h"
 #include "resource.h"
+#include "file_transfer.h"
 
 extern HANDLE   hYahooNudge;
 
@@ -1115,231 +1114,6 @@ int YAHOOSendTyping(WPARAM wParam, LPARAM lParam)
 	}
 	return 0;
 }
-
-//=======================================================
-//Files transfert
-//=======================================================
-static void __cdecl yahoo_recv_filethread(void *psf) 
-{
-	y_filetransfer *sf = psf;
-	
-//    ProtoBroadcastAck(yahooProtocolName, hContact, ACKTYPE_GETINFO, ACKRESULT_SUCCESS, (HANDLE) 1, 0);
-	if (sf == NULL) {
-		YAHOO_DebugLog("SF IS NULL!!!");
-		return;
-	}
-	YAHOO_DebugLog("who %s, msg: %s, filename: %s ", sf->who, sf->msg, sf->filename);
-	
-	YAHOO_RecvFile(sf);
-	if ( sf->hWaitEvent != INVALID_HANDLE_VALUE )
-		CloseHandle( sf->hWaitEvent );
-	
-	free(sf->who);
-	free(sf->msg);
-	free(sf->filename);
-	free(sf->url);
-	free(sf->savepath);
-	free(sf);
-	
-}
-
-/**************** Receive File ********************/
-int YahooFileAllow(WPARAM wParam,LPARAM lParam) 
-{
-    CCSDATA *ccs = (CCSDATA *) lParam;
-    y_filetransfer *ft = (y_filetransfer *) ccs->wParam;
-	int len;
-	
-	YAHOO_DebugLog("[YahooFileAllow]");
-	
-	if (ft->y7) {
-		YAHOO_DebugLog("[YahooFileAllow] We don't handle y7 stuff yet.");
-		//void yahoo_ft7dc_accept(int id, const char *buddy, const char *ft_token);
-		yahoo_ft7dc_accept(ft->id, ft->who, ft->ftoken);
-
-		return ccs->wParam;
-	}
-    //LOG(LOG_INFO, "[%s] Requesting file from %s", ft->cookie, ft->user);
-    ft->savepath = _strdup((char *) ccs->lParam);
-	
-	len = lstrlen(ft->savepath) - 1;
-	if (ft->savepath[len] == '\\')
-		ft->savepath[len] = '\0';
-	
-    pthread_create(yahoo_recv_filethread, (void *) ft);
-	
-    return ccs->wParam;
-}
-
-int YahooFileDeny(WPARAM wParam,LPARAM lParam) 
-{
-	/* deny file receive request.. just ignore it! */
-	CCSDATA *ccs = (CCSDATA *) lParam;
-    y_filetransfer *ft = (y_filetransfer *) ccs->wParam;
-	
-	YAHOO_DebugLog("[YahooFileDeny]");
-	
-	if ( !yahooLoggedIn || ft == NULL ) {
-		YAHOO_DebugLog("[YahooFileResume] Not logged-in or some other error!");
-		return 1;
-	}
-
-	if (ft->y7) {
-		YAHOO_DebugLog("[YahooFileDeny] We don't handle y7 stuff yet.");
-		//void yahoo_ft7dc_accept(int id, const char *buddy, const char *ft_token);
-		yahoo_ft7dc_cancel(ft->id, ft->who, ft->ftoken);
-		return 0;
-	}
-
-	if (ft->ftoken != NULL) {
-		YAHOO_DebugLog("[] DC Detected: Denying File Transfer!");
-		YAHOO_FT_cancel(ft->who, ft->filename, ft->ftoken, 2);	
-	}
-	return 0;
-}
-
-int YahooFileResume( WPARAM wParam, LPARAM lParam )
-{
-    PROTOFILERESUME *pfr;
-	y_filetransfer *ft = (y_filetransfer *) wParam;
-	
-	YAHOO_DebugLog("[YahooFileResume]");
-	
-	if ( !yahooLoggedIn || ft == NULL ) {
-		YAHOO_DebugLog("[YahooFileResume] Not loggedin or some other error!");
-		return 1;
-	}
-
-	pfr = (PROTOFILERESUME*)lParam;
-	
-	ft->action = pfr->action;
-	
-	YAHOO_DebugLog("[YahooFileResume] Action: %d", pfr->action);
-	
-	if ( pfr->action == FILERESUME_RENAME ) {
-		YAHOO_DebugLog("[YahooFileResume] Renamed file!");
-		if ( ft->filename != NULL ) {
-			free( ft->filename );
-			ft->filename = NULL;
-		}
-
-		ft->filename = strdup( pfr->szFilename );
-	}	
-	
-
-	SetEvent( ft->hWaitEvent );
-	return 0;
-}
-
-/**************** Send File ********************/
-static void __cdecl yahoo_send_filethread(void *psf) 
-{
-	y_filetransfer *sf = psf;
-	
-//    ProtoBroadcastAck(yahooProtocolName, hContact, ACKTYPE_GETINFO, ACKRESULT_SUCCESS, (HANDLE) 1, 0);
-	if (sf == NULL) {
-		YAHOO_DebugLog("SF IS NULL!!!");
-		return;
-	}
-	YAHOO_DebugLog("who %s, msg: %s, filename: %s ", sf->who, sf->msg, sf->filename);
-	
-	YAHOO_SendFile(sf);
-	free(sf->who);
-	free(sf->msg);
-	free(sf->filename);
-	free(sf);
-	
-}
-
-int YahooFileCancel(WPARAM wParam,LPARAM lParam) 
-{
-	CCSDATA* ccs = ( CCSDATA* )lParam;
-	y_filetransfer* ft = (y_filetransfer*)ccs->wParam;
-	
-	YAHOO_DebugLog("[YahooFileCancel]");
-	
-	if ( ft->hWaitEvent != INVALID_HANDLE_VALUE )
-		SetEvent( ft->hWaitEvent );
-	
-	ft->action = FILERESUME_CANCEL;
-	ft->cancel = 1;
-	return 0;
-}
-
-/*
- *
- */
-int YahooSendFile(WPARAM wParam,LPARAM lParam) 
-{
-	DBVARIANT dbv;
-	y_filetransfer *sf;
-	CCSDATA *ccs;
-	char** files;
-	
-	YAHOO_DebugLog("YahooSendFile");
-	
-	if ( !yahooLoggedIn )
-		return 0;
-
-	YAHOO_DebugLog("Gathering Data");
-	
-	ccs = ( CCSDATA* )lParam;
-	//if ( YAHOO_GetWord( ccs->hContact, "Status", ID_STATUS_OFFLINE ) == ID_STATUS_OFFLINE )
-	//	return 0;
-
-	YAHOO_DebugLog("Getting Files");
-	
-	files = ( char** )ccs->lParam;
-	if ( files[1] != NULL ){
-		MessageBox(NULL, "YAHOO protocol allows only one file to be sent at a time", "Yahoo", MB_OK | MB_ICONINFORMATION);
-		return 0;
- 	}
-	
-	YAHOO_DebugLog("Getting Yahoo ID");
-	
-	if (!DBGetContactSetting(ccs->hContact, yahooProtocolName, YAHOO_LOGINID, &dbv)) {
-
-		sf = (y_filetransfer*) malloc(sizeof(y_filetransfer));
-		sf->who = strdup(dbv.pszVal);
-		sf->msg = strdup(( char* )ccs->wParam );
-		sf->filename = strdup(files[0]);
-		sf->hContact = ccs->hContact;
-		sf->cancel = 0;
-		
-		YAHOO_DebugLog("who: %s, msg: %s, filename: %s", sf->who, sf->msg, sf->filename);
-		pthread_create(yahoo_send_filethread, sf);
-		
-		DBFreeVariant(&dbv);
-		YAHOO_DebugLog("Exiting SendRequest...");
-		return (int)(HANDLE)sf;
-	}
-	
-	YAHOO_DebugLog("Exiting SendFile");
-	return 0;
-}
-
-int YahooRecvFile(WPARAM wParam,LPARAM lParam) 
-{
-    DBEVENTINFO dbei;
-    CCSDATA *ccs = (CCSDATA *) lParam;
-    PROTORECVEVENT *pre = (PROTORECVEVENT *) ccs->lParam;
-    char *szDesc, *szFile;
-
-    DBDeleteContactSetting(ccs->hContact, "CList", "Hidden");
-    szFile = pre->szMessage + sizeof(DWORD);
-    szDesc = szFile + lstrlen(szFile) + 1;
-    ZeroMemory(&dbei, sizeof(dbei));
-    dbei.cbSize = sizeof(dbei);
-    dbei.szModule = yahooProtocolName;
-    dbei.timestamp = pre->timestamp;
-    dbei.flags = pre->flags & (PREF_CREATEREAD ? DBEF_READ : 0);
-    dbei.eventType = EVENTTYPE_FILE;
-    dbei.cbBlob = sizeof(DWORD) + lstrlen(szFile) + lstrlen(szDesc) + 2;
-    dbei.pBlob = (PBYTE) pre->szMessage;
-    CallService(MS_DB_EVENT_ADD, (WPARAM) ccs->hContact, (LPARAM) & dbei);
-    return 0;
-}
-
 
 int YahooIdleEvent(WPARAM wParam, LPARAM lParam)
 {

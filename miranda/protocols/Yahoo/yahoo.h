@@ -14,8 +14,6 @@
 #define _YAHOO_YAHOO_H_
 
 #include <windows.h>
-//#include <stdio.h>
-
 
 /* 
  * Yahoo Services
@@ -198,29 +196,8 @@ typedef struct {
 	int  rpkts;
 } yahoo_local_account;
 
-
-typedef struct {
-	int id;
-	char *who;
-	char *msg;
-	char *filename;
-	char *ftoken;
-	HANDLE hContact;
-	int  cancel;
-	char *url;
-	char *savepath;
-	unsigned long fsize;
-	HANDLE hWaitEvent;
-	DWORD action;
-	int y7;
-} y_filetransfer;
-
-void YAHOO_SendFile(y_filetransfer *ft);
-void YAHOO_RecvFile(y_filetransfer *ft);
-void YAHOO_FT_cancel(const char *buddy, const char *filename, const char *ft_token, int command);
 void SetButtonCheck(HWND hwndDlg, int CtrlID, BOOL bCheck);
 void YahooOpenURL(const char *url, int autoLogin);
-#define FILERESUME_CANCEL	11
 
 char * yahoo_status_code(enum yahoo_status s);
 void YAHOO_refresh();
