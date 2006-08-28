@@ -137,6 +137,8 @@ void snac_icbm_limitations(SNAC &snac,HANDLE hServerConn,unsigned short &seqno)/
 							else
 								assign_modmsg(DEFAULT_AWAY_MSG);
 						}
+						else
+							assign_modmsg(DEFAULT_AWAY_MSG);
 					}
 					else if(conn.initial_status==ID_STATUS_DND)
 					{
@@ -155,6 +157,8 @@ void snac_icbm_limitations(SNAC &snac,HANDLE hServerConn,unsigned short &seqno)/
 							else
 								assign_modmsg(DEFAULT_AWAY_MSG);
 						}
+						else
+							assign_modmsg(DEFAULT_AWAY_MSG);
 					}
 					else if(conn.initial_status==ID_STATUS_OCCUPIED)
 					{
@@ -173,6 +177,8 @@ void snac_icbm_limitations(SNAC &snac,HANDLE hServerConn,unsigned short &seqno)/
 							else
 								assign_modmsg(DEFAULT_AWAY_MSG);
 						}
+						else
+							assign_modmsg(DEFAULT_AWAY_MSG);
 					}
 					else if(conn.initial_status==ID_STATUS_ONTHEPHONE)
 					{
@@ -191,6 +197,8 @@ void snac_icbm_limitations(SNAC &snac,HANDLE hServerConn,unsigned short &seqno)/
 							else
 								assign_modmsg(DEFAULT_AWAY_MSG);
 						}
+						else
+							assign_modmsg(DEFAULT_AWAY_MSG);
 					}
 					else if(conn.initial_status==ID_STATUS_NA)
 					{
@@ -209,6 +217,8 @@ void snac_icbm_limitations(SNAC &snac,HANDLE hServerConn,unsigned short &seqno)/
 							else
 								assign_modmsg(DEFAULT_AWAY_MSG);
 						}
+						else
+							assign_modmsg(DEFAULT_AWAY_MSG);
 					}
 					else if(conn.initial_status==ID_STATUS_OUTTOLUNCH)
 					{
@@ -227,6 +237,8 @@ void snac_icbm_limitations(SNAC &snac,HANDLE hServerConn,unsigned short &seqno)/
 							else
 								assign_modmsg(DEFAULT_AWAY_MSG);
 						}
+						else
+							assign_modmsg(DEFAULT_AWAY_MSG);
 					}
 				}
 					aim_set_invis(hServerConn,seqno,AIM_STATUS_AWAY,AIM_STATUS_NULL);
