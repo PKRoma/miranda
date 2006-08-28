@@ -618,7 +618,7 @@ static void JabberProcessFeatures( XmlNode *node, void *userdata )
 	for ( int i=0; i < node->numChild; i++ ) {
 		XmlNode* n = node->child[i];
 		if ( !strcmp( n->name, "starttls" )) {
-			if ( !info->useSSL && JGetByte( "UseTLS", TRUE )) {
+			if ( !info->useSSL && JGetByte( "UseTLS", FALSE )) {
 				JabberLog( "Requesting TLS" );
 				XmlNode stls( n->name ); stls.addAttr( "xmlns", "urn:ietf:params:xml:ns:xmpp-tls" );
 				JabberSend( info->s, stls );
@@ -638,7 +638,7 @@ static void JabberProcessFeatures( XmlNode *node, void *userdata )
 		else if ( !strcmp( n->name, "register" )) isRegisterAvailable = true;
 		else if ( !strcmp( n->name, "auth"     )) isAuthAvailable = true;
 		else if ( !strcmp( n->name, "session"  )) isSessionAvailable = true;
-	}
+	} 
 
 	if ( areMechanismsDefined ) {
 		char *PLAIN = NULL, *mechanism = NULL;
