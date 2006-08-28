@@ -1697,7 +1697,7 @@ void ext_yahoo_typing_notify(int id, const char *me, const char *who, int stat)
 	CallService(MS_PROTO_CONTACTISTYPING, (WPARAM)hContact, (LPARAM)stat?10:0);
 }
 
-void ext_yahoo_game_notify(int id, char *me, char *who, int stat, char *msg)
+void ext_yahoo_game_notify(int id, const char *me, const char *who, int stat, const char *msg)
 {
 	HANDLE hContact;
 	

@@ -204,77 +204,7 @@ enum yahoo_service { /* these are easier to see in hex */
 	YAHOO_SERVICE_CHATLOGOUT = 0xa0,
 	YAHOO_SERVICE_CHATPING,
 	YAHOO_SERVICE_COMMENT = 0xa8,
-	/* adding new statuses, Thank you GAIM */
 	YAHOO_SERVICE_GAME_INVITE = 0xb7,
-	/*
-	[22:40:53 YAHOO] Service: (null) (0xb7)	Status: YAHOO_STATUS_BRB (1)
-[22:40:53 YAHOO]  
-[22:40:53 YAHOO] 	4 => xxxxx
-[22:40:53 YAHOO]  
-[22:40:53 YAHOO] 	5 => xxxxx
-[22:40:53 YAHOO]  
-[22:40:53 YAHOO] 	180 => pl 
-[22:40:53 YAHOO]  
-[22:40:53 YAHOO] 	13 => 4
-
-	
-			pl   -> Pool
-			lt	 -> Literati
-			bg	 -> Backgammon
-			ttb	 -> Toki Toki Boom
-			ck	 -> Checkers
-			ch	 -> Chess
-			do	 -> Dominoes
-			ph	 -> Pearl Hunter
-			ww	 -> Word Racer
-
-File List Request:
-	
-[22:48:09 YAHOO] libyahoo2/libyahoo2.c:2824: debug: 
-[22:48:09 YAHOO] Yahoo Service: YAHOO_SERVICE_P2PFILEXFER (0x4d) Status: YAHOO_STATUS_BRB (1)
-[22:48:09 YAHOO]  
-[22:48:09 YAHOO] libyahoo2/libyahoo2.c:792: debug: 
-[22:48:09 YAHOO] [Reading packet] len: 80
-[22:48:09 YAHOO]  
-[22:48:09 YAHOO] Key: To (5)  	Value: xxxxx
-[22:48:09 YAHOO]  
-[22:48:09 YAHOO] Key: From (4)  	Value: xxxxx
-[22:48:09 YAHOO]  
-[22:48:09 YAHOO] Key: service (49)  	Value: FILEXFER
-[22:48:09 YAHOO]  
-[22:48:09 YAHOO] Key: ID (1)  	Value: jrb1203
-[22:48:09 YAHOO]  
-[22:48:09 YAHOO] Key: stat/location (13)  	Value: 5
-[22:48:09 YAHOO]  
-[22:48:09 YAHOO] Key: conf decline (54)  	Value: MSG1.0
-[22:48:09 YAHOO]  
-[22:48:09 YAHOO] Key: (null) (140)  	Value: 1
-[22:48:09 YAHOO]  
-	
-	
-File List Cancel:
-	
-	[22:48:41 YAHOO] Yahoo Service: YAHOO_SERVICE_P2PFILEXFER (0x4d) Status: YAHOO_STATUS_BRB (1)
-[22:48:41 YAHOO]  
-[22:48:41 YAHOO] libyahoo2/libyahoo2.c:792: debug: 
-[22:48:41 YAHOO] [Reading packet] len: 74
-[22:48:41 YAHOO]  
-[22:48:41 YAHOO] Key: To (5)  	Value: xxxxx
-[22:48:41 YAHOO]  
-[22:48:41 YAHOO] Key: From (4)  	Value: xxxxx
-[22:48:41 YAHOO]  
-[22:48:41 YAHOO] Key: service (49)  	Value: FILEXFER
-[22:48:41 YAHOO]  
-[22:48:41 YAHOO] Key: ID (1)  	Value: yyyyy
-[22:48:41 YAHOO]  
-[22:48:41 YAHOO] Key: stat/location (13)  	Value: 9
-[22:48:41 YAHOO]  
-[22:48:41 YAHOO] Key: conf logon (53)  	Value: 
-[22:48:41 YAHOO]  
-[22:48:41 YAHOO] Key: (null) (140)  	Value: 1
-[22:48:41 YAHOO]  
-
-	 */
 	YAHOO_SERVICE_STEALTH_PERM = 0xb9,
 	YAHOO_SERVICE_STEALTH_SESSION = 0xba,
 	YAHOO_SERVICE_AVATAR = 0xbc,
@@ -2005,7 +1935,6 @@ static void yahoo_process_list(struct yahoo_input_data *yid, struct yahoo_packet
 			break;
 		}
 	}
-
 	/* we could be getting multiple packets here */
 	if (pkt->status != 0) /* Thanks for the fix GAIM */
 		return;
