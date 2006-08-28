@@ -1148,10 +1148,10 @@ case TIM_CALLBACK:
 		SetFocus(msg->hwnd);
 		
 		GetCursorPos(&pt);
-
+		g_trayMenuOnScreen=TRUE;
 		TrackPopupMenu(hMenu, TPM_TOPALIGN | TPM_LEFTALIGN|TPM_LEFTBUTTON, pt.x, pt.y, 0, msg->hwnd, NULL);		
 		PostMessage(msg->hwnd, WM_NULL, 0, 0);
-		g_trayMenuOnScreen=TRUE;
+		
 
 	}
 		else if (msg->lParam == WM_MOUSEMOVE) {
