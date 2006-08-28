@@ -14,7 +14,7 @@ static int GetCaps(WPARAM wParam, LPARAM /*lParam*/)
             ret = PF2_SHORTAWAY;
             break;
 		case PFLAGNUM_4:
-			ret = PF4_SUPPORTTYPING | PF4_FORCEAUTH | PF4_SUPPORTIDLE;
+			ret = PF4_SUPPORTTYPING | PF4_FORCEAUTH | PF4_FORCEADDED | PF4_SUPPORTIDLE;
             break;
 		case PFLAGNUM_5:                
             ret = PF2_ONTHEPHONE;
