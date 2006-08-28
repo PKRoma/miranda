@@ -27,6 +27,8 @@
 #include <m_png.h>
 
 #include "avatar.h"
+#include "chat.h"
+#include "webcam.h"
 
 typedef struct {
 	int id;
@@ -677,54 +679,6 @@ const char *find_buddy( const char *yahoo_id)
 }
 
 /* Required handlers bellow */
-
-/* Conference handlers */
-void ext_yahoo_got_conf_invite(int id, const char *me, const char *who, const char *room, const char *msg, YList *members)
-{
-	char z[1024];
-	
-	_snprintf(z, sizeof(z), Translate("[miranda] Got conference invite to room: %s with msg: %s"), room ?room:"", msg ?msg:"");
-	LOG(("[ext_yahoo_got_conf_invite] %s", z));
-	ext_yahoo_got_im(id, "me", who, z, 0, 0, 1, -1);
-	
-	yahoo_conference_decline(ylad->id, NULL, members, room, Translate("I am sorry, but i can't join your conference since this feature is not currently implemented in my client."));
-}
-
-void ext_yahoo_conf_userdecline(int id, const char *me, const char *who, const char *room, const char *msg)
-{
-}
-
-void ext_yahoo_conf_userjoin(int id, const char *me, const char *who, const char *room)
-{
-}
-
-void ext_yahoo_conf_userleave(int id, const char *me, const char *who, const char *room)
-{
-}
-
-void ext_yahoo_conf_message(int id, const char *me, const char *who, const char *room, const char *msg, int utf8)
-{
-}
-
-/* chat handlers */
-void ext_yahoo_chat_cat_xml(int id, const char *xml) 
-{
-}
-
-void ext_yahoo_chat_join(int id, const char *me, const char *room, const char * topic, YList *members, int fd)
-{
-}
-
-void ext_yahoo_chat_userjoin(int id, const char *me, const char *room, struct yahoo_chat_member *who)
-{
-}
-
-void ext_yahoo_chat_userleave(int id, const char *me, const char *room, const char *who)
-{
-}
-void ext_yahoo_chat_message(int id, const char *me, const char *who, const char *room, const char *msg, int msgtype, int utf8)
-{
-}
 
 /* Other handlers */
 void ext_yahoo_status_changed(int id, const char *who, int stat, const char *msg, int away, int idle, int mobile)
@@ -1680,41 +1634,6 @@ void ext_yahoo_mail_notify(int id, const char *from, const char *subj, int cnt)
 	}
 }    
     
-/* WEBCAM callbacks */
-void ext_yahoo_got_webcam_image(int id, const char *who,
-		const unsigned char *image, unsigned int image_size, unsigned int real_size,
-		unsigned int timestamp)
-{
-    LOG(("ext_yahoo_got_webcam_image"));
-}
-
-void ext_yahoo_webcam_viewer(int id, const char *who, int connect)
-{
-    LOG(("ext_yahoo_webcam_viewer"));
-}
-
-void ext_yahoo_webcam_closed(int id, const char *who, int reason)
-{
-    LOG(("ext_yahoo_webcam_closed"));
-}
-
-void ext_yahoo_webcam_data_request(int id, int send)
-{
-    LOG(("ext_yahoo_webcam_data_request"));
-}
-
-void ext_yahoo_webcam_invite(int id, const char *me, const char *from)
-{
-    LOG(("ext_yahoo_webcam_invite"));
-	
-	ext_yahoo_got_im(id, me, from, Translate("[miranda] Got webcam invite. (not currently supported)"), 0, 0, 0, -1);
-}
-
-void ext_yahoo_webcam_invite_reply(int id, const char *me, const char *from, int accept)
-{
-    LOG(("ext_yahoo_webcam_invite_reply"));
-}
-
 void ext_yahoo_system_message(int id, const char *me, const char *who, const char *msg)
 {
 	LOG(("Yahoo System Message to: %s from: %s msg: %s", me, who, msg));
@@ -2168,14 +2087,6 @@ int ext_yahoo_connect_async(int id, const char *host, int port,
 /*
  * Callback handling code ends here
  ***********************************/
-void ext_yahoo_chat_yahoologout(int id, const char *me)
-{ 
- 	LOG(("got chat logout"));
-}
-void ext_yahoo_chat_yahooerror(int id, const char *me)
-{ 
- 	LOG(("got chat error"));
-}
 
 void ext_yahoo_got_search_result(int id, int found, int start, int total, YList *contacts)
 {
