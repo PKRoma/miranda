@@ -567,7 +567,7 @@ void YAHOO_CALLBACK_TYPE(ext_yahoo_mail_notify)(int id, const char *from, const 
  * 	id   - the id that identifies the server connection
  * 	msg  - the message
  */
-void YAHOO_CALLBACK_TYPE(ext_yahoo_system_message)(int id, const char *msg);
+void YAHOO_CALLBACK_TYPE(ext_yahoo_system_message)(int id, const char *me, const char *who, const char *msg);
 
 
 /*

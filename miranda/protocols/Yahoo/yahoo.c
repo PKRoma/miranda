@@ -14,6 +14,7 @@
 #include <sys/stat.h>
 #include <malloc.h>
 #include <io.h>
+
 /*
  * Miranda headers
  */
@@ -1856,10 +1857,12 @@ void ext_yahoo_webcam_invite_reply(int id, const char *me, const char *from, int
     LOG(("ext_yahoo_webcam_invite_reply"));
 }
 
-void ext_yahoo_system_message(int id, const char *msg)
+void ext_yahoo_system_message(int id, const char *me, const char *who, const char *msg)
 {
-	LOG(("Yahoo System Message: %s", msg));
-	YAHOO_ShowPopup( "Yahoo System Message", msg, NULL);
+	LOG(("Yahoo System Message to: %s from: %s msg: %s", me, who, msg));
+	
+	if (strncmp(msg, "A user on Windows Live", lstrlen("A user on Windows Live")) != 0)
+		YAHOO_ShowPopup( (who != NULL) ? who : "Yahoo System Message", msg, NULL);
 }
 
 void ext_yahoo_got_file(int id, const char *me, const char *who, const char *url, long expires, const char *msg, const char *fname, unsigned long fesize, const char *ft_token)
