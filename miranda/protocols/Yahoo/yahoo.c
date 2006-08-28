@@ -1736,8 +1736,10 @@ void ext_yahoo_game_notify(int id, const char *me, const char *who, int stat, co
 		YAHOO_SetString(hContact, "YGMsg", "");
 	else if (msg) {
 		char z[1024];
-		char *c, *l = msg, *u = NULL;
+		char *c;
+		const char *l = msg, *u = NULL;
 		int i = 0;
+		
 		/* Parse and Set a custom Message 
 		 *
 		 * Format: 1 [09] ygamesp [09] 1 [09] 0 [09] ante?room=yahoo_1078798506&follow=rrrrrrr	
@@ -1779,11 +1781,10 @@ void ext_yahoo_game_notify(int id, const char *me, const char *who, int stat, co
 				}
 			} while (c != NULL);
 			
-			lstrcat(z, "\r\n\r\n");
-			lstrcat(z, "http://games.yahoo.com/games/");
-			c = strchr(u, 0x09);
-			(*c) = '\0';
+			lstrcat(z, "\r\n\r\nhttp://games.yahoo.com/games/");
 			lstrcat(z, u);
+			c = strchr(z, 0x09);
+			(*c) = '\0';
 		}
 		
 		YAHOO_SetString(hContact, "YGMsg", z);
