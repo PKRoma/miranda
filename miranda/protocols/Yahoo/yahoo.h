@@ -156,7 +156,7 @@ void yahoo_util_broadcaststatus(int s);
 void __cdecl yahoo_server_main(void *empty);
 const char *find_buddy( const char *yahoo_id);
 HANDLE getbuddyH(const char *yahoo_id);
-void yahoo_send_msg(const char *id, const char *msg, int utf8);
+
 void yahoo_logoff_buddies();
 void yahoo_set_status(int myyahooStatus, char *msg, int away);
 int miranda_to_yahoo(int myyahooStatus);

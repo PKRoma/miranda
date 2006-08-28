@@ -28,6 +28,7 @@
 #include "chat.h"
 #include "webcam.h"
 #include "file_transfer.h"
+#include "im.h"
 
 typedef struct {
 	int id;
@@ -69,8 +70,6 @@ int iHTTPGateway = 0;
 extern int poll_loop;
 extern int gStartStatus;
 extern char *szStartMsg;
-
-void ext_yahoo_got_im(int id, const char *me, const char *who, const char *msg, long tm, int stat, int utf8, int buddy_icon);
 
 char * yahoo_status_code(enum yahoo_status s)
 {
@@ -279,16 +278,6 @@ void yahoo_logout()
     
     
 	//pthread_mutex_unlock(&connectionHandleMutex);
-}
-
-void yahoo_send_msg(const char *id, const char *msg, int utf8)
-{
-	int buddy_icon = 0;
-	LOG(("yahoo_send_msg: %s: %s, utf: %d", id, msg, utf8));
-	
-	buddy_icon = (YAHOO_GetDword("AvatarHash", 0) != 0) ? 2: 0;
-	
-	yahoo_send_im(ylad->id, NULL, id, msg, utf8, buddy_icon);
 }
 
 HANDLE getbuddyH(const char *yahoo_id)
@@ -912,158 +901,6 @@ void ext_yahoo_got_buddies(int id, YList * buds)
 void ext_yahoo_got_ignore(int id, YList * igns)
 {
     LOG(("ext_yahoo_got_ignore"));
-}
-
-void ext_yahoo_got_im(int id, const char *me, const char *who, const char *msg, long tm, int stat, int utf8, int buddy_icon)
-{
-    char 		*umsg;
-	const char	*c = msg;
-	int 		oidx = 0;
-	wchar_t* 	tRealBody = NULL;
-	int      	tRealBodyLen = 0;
-	int 		msgLen;
-	char* 		tMsgBuf = NULL;
-	char* 		p = NULL;
-	CCSDATA 		ccs;
-	PROTORECVEVENT 	pre;
-	HANDLE 			hContact;
-
-	
-    LOG(("YAHOO_GOT_IM id:%s %s: %s tm:%lu stat:%i utf8:%i buddy_icon: %i", me, who, msg, tm, stat, utf8, buddy_icon));
-   	
-	if(stat == 2) {
-		char z[1024];
-		
-		snprintf(z, sizeof z, "Error sending message to %s", who);
-		LOG((z));
-		YAHOO_ShowError(Translate("Yahoo Error"), z);
-		return;
-	}
-
-	if(!msg) {
-		LOG(("Empty Incoming Message, exiting."));
-		return;
-	}
-
-	{
-		YList *l;
-		
-		/* show our current ignore list */
-		l = (YList *)YAHOO_GetIgnoreList();
-		while (l != NULL) {
-			struct yahoo_buddy *b = (struct yahoo_buddy *) l->data;
-			
-			//MessageBox(NULL, b->id, "ID", MB_OK);
-			//SendMessage(GetDlgItem(hwndDlg,IDC_YIGN_LIST), LB_INSERTSTRING, 0, (LPARAM)b->id);
-			if (lstrcmpi(b->id, who) == 0) {
-				LOG(("User '%s' on our Ignore List. Dropping Message.", who));
-				return;
-			}
-			l = l->next;
-		}
-
-	}
-		
-	umsg = (char *) alloca(lstrlen(msg) * 2 + 1); /* double size to be on the safe side */
-	while ( *c != '\0') {
-		        // Strip the font and font size tag
-        if (!strnicmp(c,"<font face=",11) || !strnicmp(c,"<font size=",11) || 
-			!strnicmp(c, "<font color=",12) || !strnicmp(c,"</font>",6) ||
-			// strip the fade tag
-			!strnicmp(c, "<FADE ",6) || !strnicmp(c,"</FADE>",7) ||
-			// strip the alternate colors tag
-			!strnicmp(c, "<ALT ",5) || !strnicmp(c, "</ALT>",6)){ 
-                while ((*c++ != '>') && (*c != '\0')); 
-		} else
-        // strip ANSI color combination
-        if ((*c == 0x1b) && (*(c+1) == '[')){ 
-               while ((*c++ != 'm') && (*c != '\0')); 
-		} else
-		
-		if (*c != '\0'){
-			umsg[oidx++] = *c;
-			
-			/* Adding \r to \r\n conversion */
-			if (*c == '\r' && *(c + 1) != '\n') 
-				umsg[oidx++] = '\n';
-			
-			c++;
-		}
-	}
-
-	umsg[oidx++]= '\0';
-		
-	/* Need to strip off formatting stuff first. Then do all decoding/converting */
-	if (utf8){	
-		Utf8Decode( umsg, 0, &tRealBody );
-		tRealBodyLen = wcslen( tRealBody );
-	} 
-
-	LOG(("%s: %s", who, umsg));
-	
-	//if(!strcmp(umsg, "<ding>")) 
-	//	:P("\a");
-	
-	if (utf8)
-		msgLen = (lstrlen(umsg) + 1) * (sizeof(wchar_t) + 1);
-	else
-		msgLen = (lstrlen(umsg) + 1);
-	
-	tMsgBuf = ( char* )alloca( msgLen );
-	p = tMsgBuf;
-
-	// MSGBUF Blob:  <ASCII> \0 <UNICODE> \0 
-	strcpy( p, umsg );
-	
-	p += lstrlen(umsg) + 1;
-
-	if ( tRealBodyLen != 0 ) {
-		memcpy( p, tRealBody, sizeof( wchar_t )*( tRealBodyLen+1 ));
-		free( tRealBody );
-	} 
-
-	ccs.szProtoService = PSR_MESSAGE;
-	ccs.hContact = hContact = add_buddy(who, who, PALF_TEMPORARY);
-	ccs.wParam = 0;
-	ccs.lParam = (LPARAM) &pre;
-	pre.flags = (utf8) ? PREF_UNICODE : 0;
-	
-	if (tm) {
-		HANDLE hEvent = (HANDLE)CallService(MS_DB_EVENT_FINDLAST, (WPARAM)hContact, 0);
-	
-		if (hEvent) { // contact has events
-			DBEVENTINFO dbei;
-			DWORD dummy;
-	
-			dbei.cbSize = sizeof (DBEVENTINFO);
-			dbei.pBlob = (char*)&dummy;
-			dbei.cbBlob = 2;
-			if (!CallService(MS_DB_EVENT_GET, (WPARAM)hEvent, (LPARAM)&dbei)) 
-				// got that event, if newer than ts then reset to current time
-				if (tm < dbei.timestamp) tm = time(NULL);
-		}
-
-		pre.timestamp = tm;
-	} else
-		pre.timestamp = time(NULL);
-		
-	pre.szMessage = tMsgBuf;
-	pre.lParam = 0;
-	
-    // Turn off typing
-    CallService(MS_PROTO_CONTACTISTYPING, (WPARAM) hContact, PROTOTYPE_CONTACTTYPING_OFF);
-	CallService(MS_PROTO_CHAINRECV, 0, (LPARAM) & ccs);
-
-	if (buddy_icon < 0) return;
-	
-	//?? Don't generate floods!!
-	DBWriteContactSettingByte(hContact, yahooProtocolName, "AvatarType", buddy_icon);
-	if (buddy_icon != 2) {
-		yahoo_reset_avatar(hContact);
-	} else if (DBGetContactSettingDword(hContact, yahooProtocolName,"PictCK", 0) == 0) {
-		/* request the buddy image */
-		YAHOO_request_avatar(who); 
-	} 
 }
 
 void ext_yahoo_rejected(int id, const char *who, const char *msg)

@@ -13,6 +13,7 @@
 #include <time.h>
 #include <malloc.h>
 #include <sys/stat.h>
+#include <io.h>
 
 #include "yahoo.h"
 #include "resource.h"
@@ -741,3 +742,180 @@ void GetAvatarFileName(HANDLE hContact, char* pszDest, int cbLen, int type)
   
 }
 
+int YahooGetAvatarInfo(WPARAM wParam,LPARAM lParam)
+{
+	PROTO_AVATAR_INFORMATION* AI = ( PROTO_AVATAR_INFORMATION* )lParam;
+
+	DBVARIANT dbv;
+	int avtType;
+	
+	if (!DBGetContactSetting(AI->hContact, yahooProtocolName, YAHOO_LOGINID, &dbv)) {
+		YAHOO_DebugLog("[YAHOO_GETAVATARINFO] For: %s", dbv.pszVal);
+		DBFreeVariant(&dbv);
+	}else {
+		YAHOO_DebugLog("[YAHOO_GETAVATARINFO]");
+	}
+
+	if (!YAHOO_GetByte( "ShowAvatars", 0 ) || !yahooLoggedIn) {
+		YAHOO_DebugLog("[YAHOO_GETAVATARINFO] %s", yahooLoggedIn ? "We are not using/showing avatars!" : "We are not logged in. Can't load avatars now!");
+		
+		/*if (DBGetContactSettingDword(AI->hContact, yahooProtocolName,"PictCK", 0) != 0) {
+			YAHOO_DebugLog("[YAHOO_GETAVATARINFO] Removing avatar information!");
+			
+			DBWriteContactSettingDword(AI->hContact, yahooProtocolName, "PictCK", 0);
+			DBWriteContactSettingDword(AI->hContact, yahooProtocolName, "PictLastCheck", 0);
+			DBWriteContactSettingDword(AI->hContact, yahooProtocolName, "PictLoading", 0);
+			//GetAvatarFileName(AI->hContact, AI->filename, sizeof AI->filename);
+			//DeleteFile(AI->filename);
+		}*/
+
+		return GAIR_NOAVATAR;
+	}
+	
+	avtType  = DBGetContactSettingByte(AI->hContact, yahooProtocolName,"AvatarType", 0);
+	YAHOO_DebugLog("[YAHOO_GETAVATARINFO] Avatar Type: %d", avtType);
+	
+	if ( avtType != 2) {
+		if (avtType != 0)
+			YAHOO_DebugLog("[YAHOO_GETAVATARINFO] Not handling this type yet!");
+		
+		return GAIR_NOAVATAR;
+	}
+	
+	if (DBGetContactSettingDword(AI->hContact, yahooProtocolName,"PictCK", 0) != 0) {
+		
+		GetAvatarFileName(AI->hContact, AI->filename, sizeof AI->filename,DBGetContactSettingByte(AI->hContact, yahooProtocolName,"AvatarType", 0));
+		//if ( access( AI->filename, 0 ) == 0 ) {
+		AI->format = PA_FORMAT_PNG;
+		YAHOO_DebugLog("[YAHOO_GETAVATARINFO] filename: %s", AI->filename);
+		
+		if (_access( AI->filename, 0 ) == 0 ) {
+			return GAIR_SUCCESS;
+		} else {
+			/* need to request it again? */
+			if (YAHOO_GetWord(AI->hContact, "PictLoading", 0) != 0 &&
+				(time(NULL) - YAHOO_GetWord(AI->hContact, "PictLastCK", 0) < 500)) {
+				YAHOO_DebugLog("[YAHOO_GETAVATARINFO] Waiting for avatar to load!");
+				return GAIR_WAITFOR;
+			} else if ( yahooLoggedIn ) {
+				DBVARIANT dbv;
+	  
+				if (!DBGetContactSetting(AI->hContact, yahooProtocolName, YAHOO_LOGINID, &dbv)) {
+					YAHOO_DebugLog("[YAHOO_GETAVATARINFO] Requesting avatar!");
+					
+					YAHOO_request_avatar(dbv.pszVal/*who */);
+					DBFreeVariant(&dbv);
+					return GAIR_WAITFOR;
+				} else {
+					YAHOO_DebugLog("[YAHOO_GETAVATARINFO] Can't retrieve user id?!");
+				}
+			}
+		}
+	} 
+	
+	YAHOO_DebugLog("[YAHOO_GETAVATARINFO] NO AVATAR???");
+	return GAIR_NOAVATAR;
+}
+
+/*
+ * --=[ AVS / LoadAvatars API/Services ]=--
+ */
+
+/*
+Optional. Will pass PNG or BMP if this is not found
+wParam = 0
+lParam = PA_FORMAT_*   // avatar format
+return = 1 (supported) or 0 (not supported)
+*/
+int YahooAvatarFormatSupported(WPARAM wParam, LPARAM lParam)
+{
+  YAHOO_DebugLog("[YahooAvatarFormatSupported]");
+
+  if (lParam == PA_FORMAT_PNG)
+    return 1;
+  else
+    return 0;
+}
+
+/*
+Service: /GetMyAvatarMaxSize
+wParam=(int *)max width of avatar
+lParam=(int *)max height of avatar
+return=0
+*/
+int YahooGetAvatarSize(WPARAM wParam, LPARAM lParam)
+{
+	YAHOO_DebugLog("[YahooGetAvatarSize]");
+	
+	if (wParam != 0) *((int*) wParam) = 96;
+	if (lParam != 0) *((int*) lParam) = 96;
+
+	return 0;
+}
+
+/*
+Service: /GetMyAvatar
+wParam=(char *)Buffer to file name
+lParam=(int)Buffer size
+return=0 on success, else on error
+*/
+int YahooGetMyAvatar(WPARAM wParam, LPARAM lParam)
+{
+	char *buffer = (char *)wParam;
+	int size = (int)lParam;
+
+	YAHOO_DebugLog("[YahooGetMyAvatar]");
+	
+	if (buffer == NULL || size <= 0)
+		return -1;
+	
+
+	if (!YAHOO_GetByte( "ShowAvatars", 0 ))
+		return -2;
+	
+	{
+		DBVARIANT dbv;
+		int ret = -3;
+
+		if (YAHOO_GetDword("AvatarHash", 0)){
+			
+			if (!DBGetContactSetting(NULL, yahooProtocolName, "AvatarFile", &dbv)){
+				if (access(dbv.pszVal, 0) == 0){
+					strncpy(buffer, dbv.pszVal, size-1);
+					buffer[size-1] = '\0';
+
+					ret = 0;
+				}
+				DBFreeVariant(&dbv);
+			}
+		}
+
+		return ret;
+	}
+}
+
+/*
+#define PS_SETMYAVATAR "/SetMyAvatar"
+wParam=0
+lParam=(const char *)Avatar file name
+return=0 for sucess
+*/
+
+int YahooSetMyAvatar(WPARAM wParam, LPARAM lParam)
+{
+	char *szFile = (char *)lParam;
+	HANDLE avt;
+
+	YAHOO_DebugLog("[YahooSetMyAvatar]");
+	
+	avt = YAHOO_SetAvatar(szFile);
+	if (avt) {
+		DeleteObject(avt); // we release old avatar if any
+		return 0; 
+	} else 
+		return 1; /* error for now */
+}
+
+/*
+ * --=[ ]=--
+ */
