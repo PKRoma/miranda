@@ -1,5 +1,5 @@
 /*
- * $Id: chat.h 3627 2006-08-28 16:11:15Z gena01 $
+ * $Id$
  *
  * myYahoo Miranda Plugin 
  *

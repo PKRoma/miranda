@@ -149,7 +149,6 @@ void YAHOO_ShowError(const char *title, const char *buff);
 //Services.c
 int GetCaps(WPARAM wParam,LPARAM lParam);
 int GetName(WPARAM wParam,LPARAM lParam);
-int BPLoadIcon(WPARAM wParam,LPARAM lParam); //BPLoadIcon because LoadIcon wont work..
 int SetStatus(WPARAM wParam,LPARAM lParam);
 int GetStatus(WPARAM wParam,LPARAM lParam);
 void yahoo_util_broadcaststatus(int s);
