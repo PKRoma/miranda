@@ -205,6 +205,22 @@
 				>
 			</File>
 			<File
+				RelativePath=".\chat.c"
+				>
+			</File>
+			<File
+				RelativePath=".\file_transfer.c"
+				>
+			</File>
+			<File
+				RelativePath=".\http_gateway.c"
+				>
+			</File>
+			<File
+				RelativePath=".\im.c"
+				>
+			</File>
+			<File
 				RelativePath=".\main.c"
 				>
 			</File>
@@ -217,6 +233,10 @@
 				>
 			</File>
 			<File
+				RelativePath=".\search.c"
+				>
+			</File>
+			<File
 				RelativePath=".\server.c"
 				>
 			</File>
@@ -226,6 +246,10 @@
 			</File>
 			<File
 				RelativePath=".\util.c"
+				>
+			</File>
+			<File
+				RelativePath=".\webcam.c"
 				>
 			</File>
 			<File

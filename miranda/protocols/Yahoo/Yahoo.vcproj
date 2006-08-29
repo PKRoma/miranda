@@ -15,8 +15,8 @@
 	<Configurations>
 		<Configuration
 			Name="Debug|Win32"
-			OutputDirectory="../../bin7/Debug/Plugins"
-			IntermediateDirectory="../../bin7/Debug/Obj/$(ProjectName)"
+			OutputDirectory="$(SolutionDir)/Debug/Plugins"
+			IntermediateDirectory="$(SolutionDir)/Debug/Obj/$(ProjectName)"
 			ConfigurationType="2"
 			UseOfMFC="0"
 			ATLMinimizesCRunTimeLibraryUsage="FALSE"
@@ -71,8 +71,8 @@
 		</Configuration>
 		<Configuration
 			Name="Release|Win32"
-			OutputDirectory="../../bin7/Release/Plugins"
-			IntermediateDirectory="../../bin7/Release/Obj/$(ProjectName)"
+			OutputDirectory="$(SolutionDir)/Release/Plugins"
+			IntermediateDirectory="$(SolutionDir)/Release/Obj/$(ProjectName)"
 			ConfigurationType="2"
 			UseOfMFC="0"
 			ATLMinimizesCRunTimeLibraryUsage="FALSE"
@@ -147,6 +147,18 @@
 				RelativePath=".\avatar.c">
 			</File>
 			<File
+				RelativePath=".\chat.c">
+			</File>
+			<File
+				RelativePath=".\file_transfer.c">
+			</File>
+			<File
+				RelativePath=".\http_gateway.c">
+			</File>
+			<File
+				RelativePath=".\im.c">
+			</File>
+			<File
 				RelativePath=".\main.c">
 			</File>
 			<File
@@ -156,6 +168,9 @@
 				RelativePath=".\pthread.c">
 			</File>
 			<File
+				RelativePath=".\search.c">
+			</File>
+			<File
 				RelativePath=".\server.c">
 			</File>
 			<File
@@ -163,6 +178,9 @@
 			</File>
 			<File
 				RelativePath=".\util.c">
+			</File>
+			<File
+				RelativePath=".\webcam.c">
 			</File>
 			<File
 				RelativePath=".\yahoo.c">

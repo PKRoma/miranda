@@ -15,8 +15,8 @@
 	<Configurations>
 		<Configuration
 			Name="Debug|Win32"
-			OutputDirectory="../../bin7/Debug/Plugins"
-			IntermediateDirectory="../../bin7/Debug/Obj/$(ProjectName)"
+			OutputDirectory="$(SolutionDir)/Debug/Plugins"
+			IntermediateDirectory="$(SolutionDir)/Debug/Obj/$(ProjectName)"
 			ConfigurationType="2"
 			UseOfMFC="0"
 			ATLMinimizesCRunTimeLibraryUsage="FALSE"
@@ -77,8 +77,8 @@
 		</Configuration>
 		<Configuration
 			Name="Release Unicode|Win32"
-			OutputDirectory="../../bin7/Release/Plugins"
-			IntermediateDirectory="../../bin7/Release/Obj/$(ProjectName)"
+			OutputDirectory="$(SolutionDir)/Release/Plugins"
+			IntermediateDirectory="$(SolutionDir)/Release/Obj/$(ProjectName)"
 			ConfigurationType="2"
 			UseOfMFC="0"
 			ATLMinimizesCRunTimeLibraryUsage="FALSE"
@@ -149,8 +149,8 @@
 		</Configuration>
 		<Configuration
 			Name="Release|Win32"
-			OutputDirectory="../../bin7/Release/Plugins"
-			IntermediateDirectory="../../bin7/Release/Obj/$(ProjectName)"
+			OutputDirectory="$(SolutionDir)/Release/Plugins"
+			IntermediateDirectory="$(SolutionDir)/Release/Obj/$(ProjectName)"
 			ConfigurationType="2"
 			UseOfMFC="0"
 			ATLMinimizesCRunTimeLibraryUsage="FALSE"
@@ -222,8 +222,8 @@
 		</Configuration>
 		<Configuration
 			Name="Debug Unicode|Win32"
-			OutputDirectory="../../bin7/Debug/Plugins"
-			IntermediateDirectory="../../bin7/Debug/Obj/$(ProjectName)"
+			OutputDirectory="$(SolutionDir)/Debug/Plugins"
+			IntermediateDirectory="$(SolutionDir)/Debug/Obj/$(ProjectName)"
 			ConfigurationType="2"
 			UseOfMFC="0"
 			ATLMinimizesCRunTimeLibraryUsage="FALSE"
@@ -579,10 +579,10 @@
 			Name="Resource Files"
 			Filter="ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe">
 			<File
-				RelativePath="..\..\Miranda-IM\res\addcontact.ico">
+				RelativePath="..\..\src\res\addcontact.ico">
 			</File>
 			<File
-				RelativePath="..\..\src\res\addcontact.ico">
+				RelativePath="..\..\Miranda-IM\res\addcontact.ico">
 			</File>
 			<File
 				RelativePath="res\Clock32.ico">
@@ -606,16 +606,16 @@
 				RelativePath="res\Downarrow8.ico">
 			</File>
 			<File
-				RelativePath="..\..\Miranda-IM\res\dragcopy.cur">
-			</File>
-			<File
 				RelativePath="..\..\src\res\dragcopy.cur">
 			</File>
 			<File
-				RelativePath="..\..\Miranda-IM\res\dropuser.cur">
+				RelativePath="..\..\Miranda-IM\res\dragcopy.cur">
 			</File>
 			<File
 				RelativePath="..\..\src\res\dropuser.cur">
+			</File>
+			<File
+				RelativePath="..\..\Miranda-IM\res\dropuser.cur">
 			</File>
 			<File
 				RelativePath="..\..\Miranda-IM\res\history.ico">
@@ -627,10 +627,10 @@
 				RelativePath="res\History8.ico">
 			</File>
 			<File
-				RelativePath="..\..\Miranda-IM\res\hyperlin.cur">
+				RelativePath="..\..\src\res\hyperlin.cur">
 			</File>
 			<File
-				RelativePath="..\..\src\res\hyperlin.cur">
+				RelativePath="..\..\Miranda-IM\res\hyperlin.cur">
 			</File>
 			<File
 				RelativePath="..\..\Miranda-IM\res\multisend.ico">

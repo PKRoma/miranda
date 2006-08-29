@@ -13,7 +13,7 @@
 		<Configuration
 			Name="Release|Win32"
 			OutputDirectory="C:\Dev_CVS\miranda\bin\release\ansi\plugins"
-			IntermediateDirectory="../../bin7/Release/Obj/$(ProjectName)"
+			IntermediateDirectory="$(SolutionDir)/Release/Obj/$(ProjectName)"
 			ConfigurationType="2"
 			UseOfMFC="0"
 			UseOfATL="0"
@@ -92,8 +92,8 @@
 		</Configuration>
 		<Configuration
 			Name="Debug|Win32"
-			OutputDirectory="../../bin7/Debug/Plugins"
-			IntermediateDirectory="../../bin7/Debug/Obj/$(ProjectName)"
+			OutputDirectory="$(SolutionDir)/Debug/Plugins"
+			IntermediateDirectory="$(SolutionDir)/Debug/Obj/$(ProjectName)"
 			ConfigurationType="2"
 			UseOfMFC="0"
 			UseOfATL="0"
@@ -160,7 +160,7 @@
 		<Configuration
 			Name="Debug Unicode|Win32"
 			OutputDirectory="c:\debug\plugins"
-			IntermediateDirectory="../../bin7/Debug/Obj/$(ProjectName)"
+			IntermediateDirectory="$(SolutionDir)/Debug/Obj/$(ProjectName)"
 			ConfigurationType="2"
 			UseOfMFC="0"
 			UseOfATL="0"
@@ -228,7 +228,7 @@
 		<Configuration
 			Name="Release Unicode|Win32"
 			OutputDirectory="C:\Dev_CVS\miranda\bin\release\unicode\plugins"
-			IntermediateDirectory="../../bin7/Release/Obj/$(ProjectName)"
+			IntermediateDirectory="$(SolutionDir)/Release/Obj/$(ProjectName)"
 			ConfigurationType="2"
 			UseOfMFC="0"
 			UseOfATL="0"

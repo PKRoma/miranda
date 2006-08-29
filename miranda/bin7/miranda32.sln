@@ -15,10 +15,6 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "contactsex", "..\plugins\co
 	ProjectSection(ProjectDependencies) = postProject
 	EndProjectSection
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "db3x", "..\plugins\db3x\db3x.vcproj", "{8B778B6A-F5EF-49A4-8437-424832F2B280}"
-	ProjectSection(ProjectDependencies) = postProject
-	EndProjectSection
-EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "dbtool", "..\..\miranda-tools\dbtool\dbtool.vcproj", "{A2E9DA24-95E4-4414-94AF-488A382E276A}"
 	ProjectSection(ProjectDependencies) = postProject
 	EndProjectSection
@@ -79,19 +75,11 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "findAmsg", "..\plugins\find
 	ProjectSection(ProjectDependencies) = postProject
 	EndProjectSection
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "ISee", "..\protocols\ISee\ISee.vcproj", "{937A4316-03FD-46B9-8E68-9D162932D9A5}"
-	ProjectSection(ProjectDependencies) = postProject
-	EndProjectSection
-EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "icqoscar8", "..\protocols\IcqOscarJ\icqoscar8.vcproj", "{01DDCB36-4DE2-405D-BC36-2C8BDEB86659}"
 	ProjectSection(ProjectDependencies) = postProject
 	EndProjectSection
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "TypingNotify", "..\plugins\TypingNotify\typingnotify.vcproj", "{213AFEA4-6E8D-4B09-A134-D8490F97DB95}"
-	ProjectSection(ProjectDependencies) = postProject
-	EndProjectSection
-EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "loadavatars", "..\plugins\avatarservice\avatars.vcproj", "{987F026D-EB1F-4013-ADA8-2406ACCDA526}"
 	ProjectSection(ProjectDependencies) = postProject
 	EndProjectSection
 EndProject
@@ -135,15 +123,31 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "dbeditorpp", "..\plugins\db
 	ProjectSection(ProjectDependencies) = postProject
 	EndProjectSection
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "popups2", "..\plugins\Popup2\popups2.vcproj", "{B6FC188B-8E54-4197-9444-8BADE9AA75E2}"
-	ProjectSection(ProjectDependencies) = postProject
-	EndProjectSection
-EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "fingerprint", "..\plugins\fingerprint\fingerprint.vcproj", "{AF7D71D4-19B7-42B8-91DD-701F155AC4AE}"
 	ProjectSection(ProjectDependencies) = postProject
 	EndProjectSection
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "tipper", "..\plugins\tipper\tipper.vcproj", "{2C818919-A38F-44FF-BD91-A6A204AC592A}"
+	ProjectSection(ProjectDependencies) = postProject
+	EndProjectSection
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "loadavatars", "..\plugins\loadavatars\avatars.vcproj", "{987F026D-EB1F-4013-ADA8-2406ACCDA526}"
+	ProjectSection(ProjectDependencies) = postProject
+	EndProjectSection
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "yapp", "..\plugins\yapp\popups2.vcproj", "{B6FC188B-8E54-4197-9444-8BADE9AA75E2}"
+	ProjectSection(ProjectDependencies) = postProject
+	EndProjectSection
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Scriver", "..\plugins\Scriver\scriver.vcproj", "{B8928210-546C-4AE3-956B-E2B724E6B8E5}"
+	ProjectSection(ProjectDependencies) = postProject
+	EndProjectSection
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "db3x_mmap", "..\plugins\db3x_mmap\db3x_mmap.vcproj", "{20D781FB-4A20-4B75-B863-304A47182966}"
+	ProjectSection(ProjectDependencies) = postProject
+	EndProjectSection
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "db3x", "..\plugins\db3x\db3x.vcproj", "{18ED0397-6E30-4A6B-8FA5-1348E12B6DB8}"
 	ProjectSection(ProjectDependencies) = postProject
 	EndProjectSection
 EndProject
@@ -165,144 +169,144 @@ Global
 		SccProjectName3 = \u0022$/Miranda/miranda/plugins/contactsex\u0022,\u0020UKIAAAAA
 		SccLocalPath3 = ..\\plugins\\contactsex
 		CanCheckoutShared = false
-		SccProjectUniqueName4 = ..\\plugins\\db3x\\db3x.vcproj
-		SccProjectName4 = \u0022$/Miranda/miranda/plugins/db3x\u0022,\u0020WKIAAAAA
-		SccLocalPath4 = ..\\plugins\\db3x
+		SccProjectUniqueName4 = ..\\..\\miranda-tools\\dbtool\\dbtool.vcproj
+		SccProjectName4 = \u0022$/Miranda/miranda-tools/dbtool\u0022,\u0020DIIAAAAA
+		SccLocalPath4 = ..\\..\\miranda-tools\\dbtool
 		CanCheckoutShared = false
-		SccProjectUniqueName5 = ..\\..\\miranda-tools\\dbtool\\dbtool.vcproj
-		SccProjectName5 = \u0022$/Miranda/miranda-tools/dbtool\u0022,\u0020DIIAAAAA
-		SccLocalPath5 = ..\\..\\miranda-tools\\dbtool
+		SccProjectUniqueName5 = ..\\plugins\\fastlock\\fastlock.vcproj
+		SccProjectName5 = \u0022$/Miranda/miranda/plugins/fastlock\u0022,\u0020XKIAAAAA
+		SccLocalPath5 = ..\\plugins\\fastlock
 		CanCheckoutShared = false
-		SccProjectUniqueName6 = ..\\plugins\\fastlock\\fastlock.vcproj
-		SccProjectName6 = \u0022$/Miranda/miranda/plugins/fastlock\u0022,\u0020XKIAAAAA
-		SccLocalPath6 = ..\\plugins\\fastlock
+		SccProjectUniqueName6 = ..\\plugins\\help\\help.vcproj
+		SccProjectName6 = \u0022$/Miranda/miranda/plugins/help\u0022,\u0020YKIAAAAA
+		SccLocalPath6 = ..\\plugins\\help
 		CanCheckoutShared = false
-		SccProjectUniqueName7 = ..\\plugins\\help\\help.vcproj
-		SccProjectName7 = \u0022$/Miranda/miranda/plugins/help\u0022,\u0020YKIAAAAA
-		SccLocalPath7 = ..\\plugins\\help
+		SccProjectUniqueName7 = ..\\plugins\\import\\import.vcproj
+		SccProjectName7 = \u0022$/Miranda/miranda/plugins/import\u0022,\u0020BLIAAAAA
+		SccLocalPath7 = ..\\plugins\\import
 		CanCheckoutShared = false
-		SccProjectUniqueName8 = ..\\plugins\\import\\import.vcproj
-		SccProjectName8 = \u0022$/Miranda/miranda/plugins/import\u0022,\u0020BLIAAAAA
-		SccLocalPath8 = ..\\plugins\\import
+		SccProjectUniqueName8 = ..\\src\\miranda32.vcproj
+		SccProjectName8 = \u0022$/Miranda/miranda\u0022,\u0020SHIAAAAA
+		SccLocalPath8 = ..
 		CanCheckoutShared = false
-		SccProjectUniqueName9 = ..\\src\\miranda32.vcproj
-		SccProjectName9 = \u0022$/Miranda/miranda\u0022,\u0020SHIAAAAA
-		SccLocalPath9 = ..
+		SccProjectFilePathRelativizedFromConnection8 = src\\
+		SccProjectUniqueName9 = ..\\protocols\\MSN\\msn.vcproj
+		SccProjectName9 = \u0022$/Miranda/miranda/protocols/msn\u0022,\u0020SLIAAAAA
+		SccLocalPath9 = ..\\protocols\\MSN
 		CanCheckoutShared = false
-		SccProjectFilePathRelativizedFromConnection9 = src\\
-		SccProjectUniqueName10 = ..\\protocols\\MSN\\msn.vcproj
-		SccProjectName10 = \u0022$/Miranda/miranda/protocols/msn\u0022,\u0020SLIAAAAA
-		SccLocalPath10 = ..\\protocols\\MSN
+		SccProjectUniqueName10 = ..\\plugins\\png2dib\\png2dib.vcproj
+		SccProjectName10 = \u0022$/Miranda/miranda/plugins/png2dib\u0022,\u0020FLIAAAAA
+		SccLocalPath10 = ..\\plugins\\png2dib
 		CanCheckoutShared = false
-		SccProjectUniqueName11 = ..\\plugins\\png2dib\\png2dib.vcproj
-		SccProjectName11 = \u0022$/Miranda/miranda/plugins/png2dib\u0022,\u0020FLIAAAAA
-		SccLocalPath11 = ..\\plugins\\png2dib
+		SccProjectUniqueName11 = ..\\plugins\\srmm\\srmm.vcproj
+		SccProjectName11 = \u0022$/Miranda/miranda/plugins/srmm\u0022,\u0020ILIAAAAA
+		SccLocalPath11 = ..\\plugins\\srmm
 		CanCheckoutShared = false
-		SccProjectUniqueName12 = ..\\plugins\\srmm\\srmm.vcproj
-		SccProjectName12 = \u0022$/Miranda/miranda/plugins/srmm\u0022,\u0020ILIAAAAA
-		SccLocalPath12 = ..\\plugins\\srmm
+		SccProjectUniqueName12 = ..\\plugins\\tabsrmm\\tabsrmm.vcproj
+		SccProjectName12 = \u0022$/Miranda/miranda/plugins/tabsrmm\u0022,\u0020JLIAAAAA
+		SccLocalPath12 = ..\\plugins\\tabsrmm
 		CanCheckoutShared = false
-		SccProjectUniqueName13 = ..\\plugins\\tabsrmm\\tabsrmm.vcproj
-		SccProjectName13 = \u0022$/Miranda/miranda/plugins/tabsrmm\u0022,\u0020JLIAAAAA
-		SccLocalPath13 = ..\\plugins\\tabsrmm
+		SccProjectUniqueName13 = ..\\plugins\\wassup\\Wassup.vcproj
+		SccProjectName13 = \u0022$/Miranda/miranda/plugins/wassup\u0022,\u0020FODAAAAA
+		SccLocalPath13 = ..\\plugins\\wassup
 		CanCheckoutShared = false
-		SccProjectUniqueName14 = ..\\plugins\\wassup\\Wassup.vcproj
-		SccProjectName14 = \u0022$/Miranda/miranda/plugins/wassup\u0022,\u0020FODAAAAA
-		SccLocalPath14 = ..\\plugins\\wassup
+		SccProjectUniqueName14 = ..\\plugins\\KeepStatus\\KeepStatus\\KeepStatus.vcproj
+		SccProjectName14 = \u0022$/Miranda/miranda/plugins/KeepStatus\u0022,\u0020KWNAAAAA
+		SccLocalPath14 = ..\\plugins\\KeepStatus
 		CanCheckoutShared = false
-		SccProjectUniqueName15 = ..\\plugins\\KeepStatus\\KeepStatus\\KeepStatus.vcproj
-		SccProjectName15 = \u0022$/Miranda/miranda/plugins/KeepStatus\u0022,\u0020KWNAAAAA
-		SccLocalPath15 = ..\\plugins\\KeepStatus
+		SccProjectFilePathRelativizedFromConnection14 = KeepStatus\\
+		SccProjectUniqueName15 = ..\\protocols\\JabberG\\jabber.vcproj
+		SccProjectName15 = \u0022$/Miranda/miranda/protocols/JabberG\u0022,\u0020NEOAAAAA
+		SccLocalPath15 = ..\\protocols\\JabberG
 		CanCheckoutShared = false
-		SccProjectFilePathRelativizedFromConnection15 = KeepStatus\\
-		SccProjectUniqueName16 = ..\\protocols\\JabberG\\jabber.vcproj
-		SccProjectName16 = \u0022$/Miranda/miranda/protocols/JabberG\u0022,\u0020NEOAAAAA
-		SccLocalPath16 = ..\\protocols\\JabberG
+		SccProjectUniqueName16 = ..\\plugins\\MenuItemEx\\menuex.vcproj
+		SccProjectName16 = \u0022$/Miranda/miranda/plugins/MenuItemEx\u0022,\u0020NLOAAAAA
+		SccLocalPath16 = ..\\plugins\\MenuItemEx
 		CanCheckoutShared = false
-		SccProjectUniqueName17 = ..\\plugins\\MenuItemEx\\menuex.vcproj
-		SccProjectName17 = \u0022$/Miranda/miranda/plugins/MenuItemEx\u0022,\u0020NLOAAAAA
-		SccLocalPath17 = ..\\plugins\\MenuItemEx
+		SccProjectUniqueName17 = ..\\plugins\\SmileyAdd\\SmileyAdd.vcproj
+		SccProjectName17 = \u0022$/Miranda/miranda/plugins/SmileyAdd\u0022,\u0020ZIPAAAAA
+		SccLocalPath17 = ..\\plugins\\SmileyAdd
 		CanCheckoutShared = false
-		SccProjectUniqueName18 = ..\\protocols\\ISee\\ISee.vcproj
-		SccProjectName18 = \u0022$/Miranda/miranda/protocols/ISee\u0022,\u0020NCLAAAAA
-		SccLocalPath18 = ..\\protocols\\ISee
+		SccProjectUniqueName18 = ..\\plugins\\IcoLib\\IcoLib.vcproj
+		SccProjectName18 = \u0022$/Miranda/miranda/plugins/IcoLib\u0022,\u0020MKPAAAAA
+		SccLocalPath18 = ..\\plugins\\IcoLib
 		CanCheckoutShared = false
-		SccProjectUniqueName19 = ..\\plugins\\SmileyAdd\\SmileyAdd.vcproj
-		SccProjectName19 = \u0022$/Miranda/miranda/plugins/SmileyAdd\u0022,\u0020ZIPAAAAA
-		SccLocalPath19 = ..\\plugins\\SmileyAdd
+		SccProjectUniqueName19 = ..\\plugins\\clist_nicer\\clist_nicer.vcproj
+		SccProjectName19 = \u0022$/Miranda/miranda/plugins/clist_nicer\u0022,\u0020EOPAAAAA
+		SccLocalPath19 = ..\\plugins\\clist_nicer
 		CanCheckoutShared = false
-		SccProjectUniqueName20 = ..\\plugins\\IcoLib\\IcoLib.vcproj
-		SccProjectName20 = \u0022$/Miranda/miranda/plugins/IcoLib\u0022,\u0020MKPAAAAA
-		SccLocalPath20 = ..\\plugins\\IcoLib
+		SccProjectUniqueName20 = ..\\plugins\\mwclist\\clist_mw.vcproj
+		SccProjectName20 = \u0022$/Miranda/miranda/plugins/mwclist\u0022,\u0020VNDAAAAA
+		SccLocalPath20 = ..\\plugins\\mwclist
 		CanCheckoutShared = false
-		SccProjectUniqueName21 = ..\\plugins\\clist_nicer\\clist_nicer.vcproj
-		SccProjectName21 = \u0022$/Miranda/miranda/plugins/clist_nicer\u0022,\u0020EOPAAAAA
-		SccLocalPath21 = ..\\plugins\\clist_nicer
+		SccProjectUniqueName21 = ..\\plugins\\modernb\\clist_modern.vcproj
+		SccProjectName21 = \u0022$/Miranda/miranda/plugins/modernb\u0022,\u0020FQUAAAAA
+		SccLocalPath21 = ..\\plugins\\modernb
 		CanCheckoutShared = false
-		SccProjectUniqueName22 = ..\\plugins\\mwclist\\clist_mw.vcproj
-		SccProjectName22 = \u0022$/Miranda/miranda/plugins/mwclist\u0022,\u0020VNDAAAAA
-		SccLocalPath22 = ..\\plugins\\mwclist
+		SccProjectUniqueName22 = ..\\plugins\\fontservice\\FontService.vcproj
+		SccProjectName22 = \u0022$/Miranda/miranda/plugins/fontservice\u0022,\u0020OXTAAAAA
+		SccLocalPath22 = ..\\plugins\\fontservice
 		CanCheckoutShared = false
-		SccProjectUniqueName23 = ..\\plugins\\modernb\\clist_modern.vcproj
-		SccProjectName23 = \u0022$/Miranda/miranda/plugins/modernb\u0022,\u0020FQUAAAAA
-		SccLocalPath23 = ..\\plugins\\modernb
+		SccProjectUniqueName23 = ..\\plugins\\nudge\\nudge.vcproj
+		SccProjectName23 = \u0022$/Miranda/miranda/plugins/nudge\u0022,\u0020DEVAAAAA
+		SccLocalPath23 = ..\\plugins\\nudge
 		CanCheckoutShared = false
-		SccProjectUniqueName24 = ..\\plugins\\fontservice\\FontService.vcproj
-		SccProjectName24 = \u0022$/Miranda/miranda/plugins/fontservice\u0022,\u0020OXTAAAAA
-		SccLocalPath24 = ..\\plugins\\fontservice
+		SccProjectUniqueName24 = ..\\protocols\\Yahoo\\Yahoo.vcproj
+		SccProjectName24 = \u0022$/Miranda/miranda/protocols/Yahoo\u0022,\u0020TLIAAAAA
+		SccLocalPath24 = ..\\protocols\\Yahoo
 		CanCheckoutShared = false
-		SccProjectUniqueName25 = ..\\plugins\\nudge\\nudge.vcproj
-		SccProjectName25 = \u0022$/Miranda/miranda/plugins/nudge\u0022,\u0020DEVAAAAA
-		SccLocalPath25 = ..\\plugins\\nudge
+		SccProjectUniqueName25 = ..\\protocols\\IcqOscarJ\\icqoscar8.vcproj
+		SccProjectName25 = \u0022$/Miranda/miranda/protocols/IcqOscarJ\u0022,\u0020QLIAAAAA
+		SccLocalPath25 = ..\\protocols\\IcqOscarJ
 		CanCheckoutShared = false
-		SccProjectUniqueName26 = ..\\protocols\\Yahoo\\Yahoo.vcproj
-		SccProjectName26 = \u0022$/Miranda/miranda/protocols/Yahoo\u0022,\u0020TLIAAAAA
-		SccLocalPath26 = ..\\protocols\\Yahoo
+		SccProjectUniqueName26 = ..\\plugins\\clist\\clist.vcproj
+		SccProjectName26 = \u0022$/Miranda/miranda/plugins/clist\u0022,\u0020SKIAAAAA
+		SccLocalPath26 = ..\\plugins\\clist
 		CanCheckoutShared = false
-		SccProjectUniqueName27 = ..\\protocols\\IcqOscarJ\\icqoscar8.vcproj
-		SccProjectName27 = \u0022$/Miranda/miranda/protocols/IcqOscarJ\u0022,\u0020QLIAAAAA
-		SccLocalPath27 = ..\\protocols\\IcqOscarJ
+		SccProjectUniqueName27 = ..\\plugins\\findamsg\\findAmsg.vcproj
+		SccProjectName27 = \u0022$/Miranda/miranda/plugins/findAmsg\u0022,\u0020STQAAAAA
+		SccLocalPath27 = ..\\plugins\\findamsg
 		CanCheckoutShared = false
-		SccProjectUniqueName28 = ..\\plugins\\clist\\clist.vcproj
-		SccProjectName28 = \u0022$/Miranda/miranda/plugins/clist\u0022,\u0020SKIAAAAA
-		SccLocalPath28 = ..\\plugins\\clist
+		SccProjectUniqueName28 = ..\\plugins\\TypingNotify\\typingnotify.vcproj
+		SccProjectName28 = \u0022$/Miranda/miranda/plugins/TypingNotify\u0022,\u0020LVQAAAAA
+		SccLocalPath28 = ..\\plugins\\TypingNotify
 		CanCheckoutShared = false
-		SccProjectUniqueName29 = ..\\plugins\\findamsg\\findAmsg.vcproj
-		SccProjectName29 = \u0022$/Miranda/miranda/plugins/findAmsg\u0022,\u0020STQAAAAA
-		SccLocalPath29 = ..\\plugins\\findamsg
+		SccProjectUniqueName29 = ..\\plugins\\console\\Console.vcproj
+		SccProjectName29 = \u0022$/Miranda/miranda/plugins/console\u0022,\u0020LBRAAAAA
+		SccLocalPath29 = ..\\plugins\\console
 		CanCheckoutShared = false
-		SccProjectUniqueName30 = ..\\plugins\\TypingNotify\\typingnotify.vcproj
-		SccProjectName30 = \u0022$/Miranda/miranda/plugins/TypingNotify\u0022,\u0020LVQAAAAA
-		SccLocalPath30 = ..\\plugins\\TypingNotify
+		SccProjectUniqueName30 = ..\\plugins\\dbeditorpp\\dbeditorpp.vcproj
+		SccProjectName30 = \u0022$/Miranda/miranda/plugins/dbeditorpp\u0022,\u0020MBRAAAAA
+		SccLocalPath30 = ..\\plugins\\dbeditorpp
 		CanCheckoutShared = false
-		SccProjectUniqueName31 = ..\\plugins\\avatarservice\\avatars.vcproj
-		SccProjectName31 = \u0022$/Miranda/miranda/plugins/avatarservice\u0022,\u0020EORAAAAA
-		SccLocalPath31 = ..\\plugins\\avatarservice
+		SccProjectUniqueName31 = ..\\plugins\\chat\\chat.vcproj
+		SccProjectName31 = \u0022$/Miranda/miranda/plugins/chat\u0022,\u0020RHIAAAAA
+		SccLocalPath31 = ..\\plugins\\chat
 		CanCheckoutShared = false
-		SccProjectUniqueName32 = ..\\plugins\\console\\Console.vcproj
-		SccProjectName32 = \u0022$/Miranda/miranda/plugins/console\u0022,\u0020LBRAAAAA
-		SccLocalPath32 = ..\\plugins\\console
+		SccProjectUniqueName32 = ..\\plugins\\fingerprint\\fingerprint.vcproj
+		SccProjectName32 = \u0022$/Miranda/miranda\u0022,\u0020SHIAAAAA
+		SccLocalPath32 = ..
 		CanCheckoutShared = false
-		SccProjectUniqueName33 = ..\\plugins\\dbeditorpp\\dbeditorpp.vcproj
-		SccProjectName33 = \u0022$/Miranda/miranda/plugins/dbeditorpp\u0022,\u0020MBRAAAAA
-		SccLocalPath33 = ..\\plugins\\dbeditorpp
+		SccProjectFilePathRelativizedFromConnection32 = plugins\\fingerprint\\
+		SccProjectUniqueName33 = ..\\plugins\\tipper\\tipper.vcproj
+		SccProjectName33 = \u0022$/Miranda/miranda/plugins/tipper\u0022,\u0020DRVAAAAA
+		SccLocalPath33 = ..\\plugins\\tipper
 		CanCheckoutShared = false
-		SccProjectUniqueName34 = ..\\plugins\\chat\\chat.vcproj
-		SccProjectName34 = \u0022$/Miranda/miranda/plugins/chat\u0022,\u0020RHIAAAAA
-		SccLocalPath34 = ..\\plugins\\chat
+		SccProjectUniqueName34 = ..\\plugins\\loadavatars\\avatars.vcproj
+		SccProjectName34 = \u0022$/Miranda/miranda/plugins/loadavatars\u0022,\u0020EORAAAAA
+		SccLocalPath34 = ..\\plugins\\loadavatars
 		CanCheckoutShared = false
-		SccProjectUniqueName35 = ..\\plugins\\Popup2\\popups2.vcproj
-		SccProjectName35 = \u0022$/Miranda/miranda/plugins/Popup2\u0022,\u0020EJRAAAAA
-		SccLocalPath35 = ..\\plugins\\Popup2
+		SccProjectUniqueName35 = ..\\plugins\\yapp\\popups2.vcproj
+		SccProjectName35 = \u0022$/Miranda/miranda/plugins/yapp\u0022,\u0020EJRAAAAA
+		SccLocalPath35 = ..\\plugins\\yapp
 		CanCheckoutShared = false
-		SccProjectUniqueName36 = ..\\plugins\\fingerprint\\fingerprint.vcproj
-		SccProjectName36 = \u0022$/Miranda/miranda\u0022,\u0020SHIAAAAA
-		SccLocalPath36 = ..
+		SccProjectUniqueName36 = ..\\plugins\\db3x_mmap\\db3x_mmap.vcproj
+		SccProjectName36 = \u0022$/Miranda/miranda/plugins/db3x_mmap\u0022,\u0020WKIAAAAA
+		SccLocalPath36 = ..\\plugins\\db3x_mmap
 		CanCheckoutShared = false
-		SccProjectFilePathRelativizedFromConnection36 = plugins\\fingerprint\\
-		SccProjectUniqueName37 = ..\\plugins\\tipper\\tipper.vcproj
-		SccProjectName37 = \u0022$/Miranda/miranda/plugins/tipper\u0022,\u0020DRVAAAAA
-		SccLocalPath37 = ..\\plugins\\tipper
+		SccProjectUniqueName37 = ..\\plugins\\db3x\\db3x.vcproj
+		SccProjectName37 = \u0022$/Miranda/miranda/plugins/db3x\u0022,\u0020WKIAAAAA
+		SccLocalPath37 = ..\\plugins\\db3x
 		CanCheckoutShared = false
 	EndGlobalSection
 	GlobalSection(SolutionConfiguration) = preSolution
@@ -346,14 +350,6 @@ Global
 		{2905A7F3-10FD-44CA-9801-5F4A5CAACFDC}.Release.Build.0 = Release|Win32
 		{2905A7F3-10FD-44CA-9801-5F4A5CAACFDC}.Release Unicode.ActiveCfg = Release|Win32
 		{2905A7F3-10FD-44CA-9801-5F4A5CAACFDC}.Release Unicode.Build.0 = Release|Win32
-		{8B778B6A-F5EF-49A4-8437-424832F2B280}.Debug.ActiveCfg = Debug|Win32
-		{8B778B6A-F5EF-49A4-8437-424832F2B280}.Debug.Build.0 = Debug|Win32
-		{8B778B6A-F5EF-49A4-8437-424832F2B280}.Debug Unicode.ActiveCfg = Debug|Win32
-		{8B778B6A-F5EF-49A4-8437-424832F2B280}.Debug Unicode.Build.0 = Debug|Win32
-		{8B778B6A-F5EF-49A4-8437-424832F2B280}.Release.ActiveCfg = Release|Win32
-		{8B778B6A-F5EF-49A4-8437-424832F2B280}.Release.Build.0 = Release|Win32
-		{8B778B6A-F5EF-49A4-8437-424832F2B280}.Release Unicode.ActiveCfg = Release|Win32
-		{8B778B6A-F5EF-49A4-8437-424832F2B280}.Release Unicode.Build.0 = Release|Win32
 		{A2E9DA24-95E4-4414-94AF-488A382E276A}.Debug.ActiveCfg = Debug|Win32
 		{A2E9DA24-95E4-4414-94AF-488A382E276A}.Debug.Build.0 = Debug|Win32
 		{A2E9DA24-95E4-4414-94AF-488A382E276A}.Debug Unicode.ActiveCfg = Debug|Win32
@@ -430,6 +426,7 @@ Global
 		{C2864EAC-BFFF-4AF6-B81E-65995907F83B}.Debug Unicode.ActiveCfg = Debug|Win32
 		{C2864EAC-BFFF-4AF6-B81E-65995907F83B}.Release.ActiveCfg = Release|Win32
 		{C2864EAC-BFFF-4AF6-B81E-65995907F83B}.Release Unicode.ActiveCfg = Release|Win32
+		{C2864EAC-BFFF-4AF6-B81E-65995907F83B}.Release Unicode.Build.0 = Release|Win32
 		{D548A54E-310B-4A86-A545-64BDD5748745}.Debug.ActiveCfg = Debug|Win32
 		{D548A54E-310B-4A86-A545-64BDD5748745}.Debug.Build.0 = Debug|Win32
 		{D548A54E-310B-4A86-A545-64BDD5748745}.Debug Unicode.ActiveCfg = Debug|Win32
@@ -470,12 +467,6 @@ Global
 		{89F8422E-0932-4C7B-92CB-372582EBA69D}.Release.Build.0 = Release|Win32
 		{89F8422E-0932-4C7B-92CB-372582EBA69D}.Release Unicode.ActiveCfg = Release|Win32
 		{89F8422E-0932-4C7B-92CB-372582EBA69D}.Release Unicode.Build.0 = Release|Win32
-		{937A4316-03FD-46B9-8E68-9D162932D9A5}.Debug.ActiveCfg = Debug|Win32
-		{937A4316-03FD-46B9-8E68-9D162932D9A5}.Debug.Build.0 = Debug|Win32
-		{937A4316-03FD-46B9-8E68-9D162932D9A5}.Debug Unicode.ActiveCfg = Debug|Win32
-		{937A4316-03FD-46B9-8E68-9D162932D9A5}.Release.ActiveCfg = Release|Win32
-		{937A4316-03FD-46B9-8E68-9D162932D9A5}.Release.Build.0 = Release|Win32
-		{937A4316-03FD-46B9-8E68-9D162932D9A5}.Release Unicode.ActiveCfg = Release|Win32
 		{01DDCB36-4DE2-405D-BC36-2C8BDEB86659}.Debug.ActiveCfg = Debug|Win32
 		{01DDCB36-4DE2-405D-BC36-2C8BDEB86659}.Debug.Build.0 = Debug|Win32
 		{01DDCB36-4DE2-405D-BC36-2C8BDEB86659}.Debug Unicode.ActiveCfg = Debug|Win32
@@ -491,14 +482,6 @@ Global
 		{213AFEA4-6E8D-4B09-A134-D8490F97DB95}.Release.Build.0 = Release|Win32
 		{213AFEA4-6E8D-4B09-A134-D8490F97DB95}.Release Unicode.ActiveCfg = Release|Win32
 		{213AFEA4-6E8D-4B09-A134-D8490F97DB95}.Release Unicode.Build.0 = Release|Win32
-		{987F026D-EB1F-4013-ADA8-2406ACCDA526}.Debug.ActiveCfg = Debug|Win32
-		{987F026D-EB1F-4013-ADA8-2406ACCDA526}.Debug.Build.0 = Debug|Win32
-		{987F026D-EB1F-4013-ADA8-2406ACCDA526}.Debug Unicode.ActiveCfg = Debug Unicode|Win32
-		{987F026D-EB1F-4013-ADA8-2406ACCDA526}.Debug Unicode.Build.0 = Debug Unicode|Win32
-		{987F026D-EB1F-4013-ADA8-2406ACCDA526}.Release.ActiveCfg = Release|Win32
-		{987F026D-EB1F-4013-ADA8-2406ACCDA526}.Release.Build.0 = Release|Win32
-		{987F026D-EB1F-4013-ADA8-2406ACCDA526}.Release Unicode.ActiveCfg = Release Unicode|Win32
-		{987F026D-EB1F-4013-ADA8-2406ACCDA526}.Release Unicode.Build.0 = Release Unicode|Win32
 		{5BBA7E51-B494-4462-BC4F-1AE5F57F9857}.Debug.ActiveCfg = Debug|Win32
 		{5BBA7E51-B494-4462-BC4F-1AE5F57F9857}.Debug.Build.0 = Debug|Win32
 		{5BBA7E51-B494-4462-BC4F-1AE5F57F9857}.Debug Unicode.ActiveCfg = Debug|Win32
@@ -579,14 +562,6 @@ Global
 		{942D329B-2BD6-4C73-B3FF-C9C431154A17}.Release.Build.0 = Release|Win32
 		{942D329B-2BD6-4C73-B3FF-C9C431154A17}.Release Unicode.ActiveCfg = Release|Win32
 		{942D329B-2BD6-4C73-B3FF-C9C431154A17}.Release Unicode.Build.0 = Release|Win32
-		{B6FC188B-8E54-4197-9444-8BADE9AA75E2}.Debug.ActiveCfg = Debug|Win32
-		{B6FC188B-8E54-4197-9444-8BADE9AA75E2}.Debug.Build.0 = Debug|Win32
-		{B6FC188B-8E54-4197-9444-8BADE9AA75E2}.Debug Unicode.ActiveCfg = Debug|Win32
-		{B6FC188B-8E54-4197-9444-8BADE9AA75E2}.Debug Unicode.Build.0 = Debug|Win32
-		{B6FC188B-8E54-4197-9444-8BADE9AA75E2}.Release.ActiveCfg = Release|Win32
-		{B6FC188B-8E54-4197-9444-8BADE9AA75E2}.Release.Build.0 = Release|Win32
-		{B6FC188B-8E54-4197-9444-8BADE9AA75E2}.Release Unicode.ActiveCfg = Release|Win32
-		{B6FC188B-8E54-4197-9444-8BADE9AA75E2}.Release Unicode.Build.0 = Release|Win32
 		{AF7D71D4-19B7-42B8-91DD-701F155AC4AE}.Debug.ActiveCfg = Debug|Win32
 		{AF7D71D4-19B7-42B8-91DD-701F155AC4AE}.Debug.Build.0 = Debug|Win32
 		{AF7D71D4-19B7-42B8-91DD-701F155AC4AE}.Debug Unicode.ActiveCfg = Debug|Win32
@@ -603,6 +578,46 @@ Global
 		{2C818919-A38F-44FF-BD91-A6A204AC592A}.Release.Build.0 = Release|Win32
 		{2C818919-A38F-44FF-BD91-A6A204AC592A}.Release Unicode.ActiveCfg = Release|Win32
 		{2C818919-A38F-44FF-BD91-A6A204AC592A}.Release Unicode.Build.0 = Release|Win32
+		{987F026D-EB1F-4013-ADA8-2406ACCDA526}.Debug.ActiveCfg = Debug|Win32
+		{987F026D-EB1F-4013-ADA8-2406ACCDA526}.Debug.Build.0 = Debug|Win32
+		{987F026D-EB1F-4013-ADA8-2406ACCDA526}.Debug Unicode.ActiveCfg = Debug Unicode|Win32
+		{987F026D-EB1F-4013-ADA8-2406ACCDA526}.Debug Unicode.Build.0 = Debug Unicode|Win32
+		{987F026D-EB1F-4013-ADA8-2406ACCDA526}.Release.ActiveCfg = Release|Win32
+		{987F026D-EB1F-4013-ADA8-2406ACCDA526}.Release.Build.0 = Release|Win32
+		{987F026D-EB1F-4013-ADA8-2406ACCDA526}.Release Unicode.ActiveCfg = Release Unicode|Win32
+		{987F026D-EB1F-4013-ADA8-2406ACCDA526}.Release Unicode.Build.0 = Release Unicode|Win32
+		{B6FC188B-8E54-4197-9444-8BADE9AA75E2}.Debug.ActiveCfg = Debug|Win32
+		{B6FC188B-8E54-4197-9444-8BADE9AA75E2}.Debug.Build.0 = Debug|Win32
+		{B6FC188B-8E54-4197-9444-8BADE9AA75E2}.Debug Unicode.ActiveCfg = Debug|Win32
+		{B6FC188B-8E54-4197-9444-8BADE9AA75E2}.Debug Unicode.Build.0 = Debug|Win32
+		{B6FC188B-8E54-4197-9444-8BADE9AA75E2}.Release.ActiveCfg = Release|Win32
+		{B6FC188B-8E54-4197-9444-8BADE9AA75E2}.Release.Build.0 = Release|Win32
+		{B6FC188B-8E54-4197-9444-8BADE9AA75E2}.Release Unicode.ActiveCfg = Release|Win32
+		{B6FC188B-8E54-4197-9444-8BADE9AA75E2}.Release Unicode.Build.0 = Release|Win32
+		{B8928210-546C-4AE3-956B-E2B724E6B8E5}.Debug.ActiveCfg = Debug|Win32
+		{B8928210-546C-4AE3-956B-E2B724E6B8E5}.Debug.Build.0 = Debug|Win32
+		{B8928210-546C-4AE3-956B-E2B724E6B8E5}.Debug Unicode.ActiveCfg = Debug Unicode|Win32
+		{B8928210-546C-4AE3-956B-E2B724E6B8E5}.Debug Unicode.Build.0 = Debug Unicode|Win32
+		{B8928210-546C-4AE3-956B-E2B724E6B8E5}.Release.ActiveCfg = Release|Win32
+		{B8928210-546C-4AE3-956B-E2B724E6B8E5}.Release.Build.0 = Release|Win32
+		{B8928210-546C-4AE3-956B-E2B724E6B8E5}.Release Unicode.ActiveCfg = Release Unicode|Win32
+		{B8928210-546C-4AE3-956B-E2B724E6B8E5}.Release Unicode.Build.0 = Release Unicode|Win32
+		{20D781FB-4A20-4B75-B863-304A47182966}.Debug.ActiveCfg = Debug|Win32
+		{20D781FB-4A20-4B75-B863-304A47182966}.Debug.Build.0 = Debug|Win32
+		{20D781FB-4A20-4B75-B863-304A47182966}.Debug Unicode.ActiveCfg = Debug|Win32
+		{20D781FB-4A20-4B75-B863-304A47182966}.Debug Unicode.Build.0 = Debug|Win32
+		{20D781FB-4A20-4B75-B863-304A47182966}.Release.ActiveCfg = Release|Win32
+		{20D781FB-4A20-4B75-B863-304A47182966}.Release.Build.0 = Release|Win32
+		{20D781FB-4A20-4B75-B863-304A47182966}.Release Unicode.ActiveCfg = Release|Win32
+		{20D781FB-4A20-4B75-B863-304A47182966}.Release Unicode.Build.0 = Release|Win32
+		{18ED0397-6E30-4A6B-8FA5-1348E12B6DB8}.Debug.ActiveCfg = Debug|Win32
+		{18ED0397-6E30-4A6B-8FA5-1348E12B6DB8}.Debug.Build.0 = Debug|Win32
+		{18ED0397-6E30-4A6B-8FA5-1348E12B6DB8}.Debug Unicode.ActiveCfg = Debug|Win32
+		{18ED0397-6E30-4A6B-8FA5-1348E12B6DB8}.Debug Unicode.Build.0 = Debug|Win32
+		{18ED0397-6E30-4A6B-8FA5-1348E12B6DB8}.Release.ActiveCfg = Release|Win32
+		{18ED0397-6E30-4A6B-8FA5-1348E12B6DB8}.Release.Build.0 = Release|Win32
+		{18ED0397-6E30-4A6B-8FA5-1348E12B6DB8}.Release Unicode.ActiveCfg = Release|Win32
+		{18ED0397-6E30-4A6B-8FA5-1348E12B6DB8}.Release Unicode.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 	EndGlobalSection
