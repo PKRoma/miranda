@@ -123,6 +123,7 @@ extraResourceOptions=
 18=webcam.h
 19=options.h
 20=file_transfer.h
+21=avatar.h
 [Resource]
 1=Yahoo.rc
 [Other]

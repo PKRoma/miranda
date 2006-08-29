@@ -185,20 +185,8 @@ typedef struct {
 	char *msg;
 } yahoo_local_account;
 
-
-void YAHOO_request_avatar(const char* who);
-void GetAvatarFileName(HANDLE hContact, char* pszDest, int cbLen, int type);
-void YAHOO_SendAvatar(const char *szFile);
-void YAHOO_set_avatar(int buddy_icon);
-void YAHOO_bcast_picture_update(int buddy_icon);
-void YAHOO_bcast_picture_checksum(int cksum);
-int YAHOO_SaveBitmapAsAvatar( HBITMAP hBitmap, const char* szFileName );
-HBITMAP YAHOO_StretchBitmap( HBITMAP hBitmap );
-void yahoo_reset_avatar(HANDLE 	hContact);
-HBITMAP YAHOO_SetAvatar(const char *szFile);
 void SetButtonCheck(HWND hwndDlg, int CtrlID, BOOL bCheck);
 void YahooOpenURL(const char *url, int autoLogin);
-
 
 char * yahoo_status_code(enum yahoo_status s);
 void YAHOO_refresh();
