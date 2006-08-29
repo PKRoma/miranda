@@ -52,4 +52,15 @@ int YahooGetMyAvatar(WPARAM wParam, LPARAM lParam);
 
 int YahooSetMyAvatar(WPARAM wParam, LPARAM lParam);
 
+/**
+ * Callbacks for libyahoo2
+ */
+void ext_yahoo_got_picture(int id, const char *me, const char *who, const char *pic_url, int cksum, int type);
+
+void ext_yahoo_got_picture_checksum(int id, const char *me, const char *who, int cksum);
+
+void ext_yahoo_got_picture_update(int id, const char *me, const char *who, int buddy_icon);
+
+void ext_yahoo_got_avatar_update(int id, const char *me, const char *who, int buddy_icon);
+
 #endif
