@@ -101,6 +101,7 @@ extraResourceOptions=
 18=avatar.c
 19=chat.c
 20=webcam.c
+21=file_transfer.c
 [Header]
 1=http_gateway.h
 2=pthread.h
@@ -121,6 +122,7 @@ extraResourceOptions=
 17=chat.h
 18=webcam.h
 19=options.h
+20=file_transfer.h
 [Resource]
 1=Yahoo.rc
 [Other]

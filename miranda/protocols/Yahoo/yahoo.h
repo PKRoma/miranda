@@ -186,23 +186,6 @@ typedef struct {
 } yahoo_local_account;
 
 
-typedef struct {
-	char *who;
-	char *msg;
-	char *filename;
-	char *ftoken;
-	HANDLE hContact;
-	int  cancel;
-	char *url;
-	char *savepath;
-	unsigned long fsize;
-	HANDLE hWaitEvent;
-	DWORD action;
-} y_filetransfer;
-
-void YAHOO_SendFile(y_filetransfer *ft);
-void YAHOO_RecvFile(y_filetransfer *ft);
-void YAHOO_FT_cancel(const char *buddy, const char *filename, const char *ft_token, int command);
 void YAHOO_request_avatar(const char* who);
 void GetAvatarFileName(HANDLE hContact, char* pszDest, int cbLen, int type);
 void YAHOO_SendAvatar(const char *szFile);
@@ -215,7 +198,7 @@ void yahoo_reset_avatar(HANDLE 	hContact);
 HBITMAP YAHOO_SetAvatar(const char *szFile);
 void SetButtonCheck(HWND hwndDlg, int CtrlID, BOOL bCheck);
 void YahooOpenURL(const char *url, int autoLogin);
-#define FILERESUME_CANCEL	11
+
 
 char * yahoo_status_code(enum yahoo_status s);
 void YAHOO_refresh();
