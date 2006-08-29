@@ -2358,7 +2358,7 @@ BOOL mod_TextOutA(HDC hdc, int x, int y, char * lpString, int nCount)
 #ifdef UNICODE
 	TCHAR *buf=mir_alloc((2+nCount)*sizeof(TCHAR));
 	BOOL res;
-	MultiByteToWideChar(CP_ACP, 0, lpString, -1, buf, (2+nCount)*sizeof(TCHAR)); 
+	MultiByteToWideChar(CallService( MS_LANGPACK_GETCODEPAGE, 0, 0 ), 0, lpString, -1, buf, (2+nCount)*sizeof(TCHAR)); 
 	res=mod_TextOut(hdc,x,y,buf,nCount);
 	mir_free(buf);
 	return res;
@@ -3229,40 +3229,34 @@ BOOL mod_DrawIconEx(HDC hdcDst,int xLeft,int yTop,HICON hIcon,int cxWidth,int cy
       for (x=0; x<right; x++)
       {
         DWORD * src, *dest;               
-        BYTE mask=((1<<(7-x%8))&(*(t3+(x>>3))))!=0;
+        BYTE mask=0;
+        BYTE a; 
         src=(DWORD*)(t1+(x<<2));
-        dest=(DWORD*)(t2+(x<<2));
-        if (hasalpha && !hasmask)
-          *dest=*src;
+        dest=(DWORD*)(t2+(x<<2));              
+        if (hasalpha && !hasmask)  
+            a=((BYTE*)src)[3];
         else
-        {
-          if (mask)// && !hasalpha)
-			  // TODO: ADD verification about validity #0.4.2.8
-			{
-				if (!hasalpha)
-					*dest=0;  
-				else
-				{
-					
-					BYTE a;
-					a=((BYTE*)src)[3]>0?((BYTE*)src)[3]:0;//255;
-					((BYTE*)dest)[3]=a;
-					((BYTE*)dest)[0]=((BYTE*)src)[0]*a/255;
-					((BYTE*)dest)[1]=((BYTE*)src)[1]*a/255;
-					((BYTE*)dest)[2]=((BYTE*)src)[2]*a/255;
-					a=a;
-				}
-			}
-          else
-          {
-			BYTE a;
-            a=(((BYTE*)src)[3]>0?((BYTE*)src)[3]:255);
-            ((BYTE*)dest)[3]=a;
-            ((BYTE*)dest)[0]=((BYTE*)src)[0]*a/255;
-            ((BYTE*)dest)[1]=((BYTE*)src)[1]*a/255;
-            ((BYTE*)dest)[2]=((BYTE*)src)[2]*a/255;
-          }
+        { 
+          mask=((1<<(7-x%8))&(*(t3+(x>>3))))!=0;
+          if (mask)// && !hasalpha)		
+		  {
+				if (!hasalpha) 
+                {  *dest=0; continue; }
+				else 
+                    a=((BYTE*)src)[3]>0?((BYTE*)src)[3]:0;//255;
+		  }
+          else  
+              a=(((BYTE*)src)[3]>0?((BYTE*)src)[3]:255);
         }
+        if (a>0)
+        {
+            ((BYTE*)dest)[3]=a;
+		    ((BYTE*)dest)[0]=((BYTE*)src)[0]*a/255;
+		    ((BYTE*)dest)[1]=((BYTE*)src)[1]*a/255;
+		    ((BYTE*)dest)[2]=((BYTE*)src)[2]*a/255;
+        }
+        else 
+            *dest=0;
       }
     }
   }
