@@ -163,12 +163,9 @@ void yahoo_stealth(const char *buddy, int add);
 const YList* YAHOO_GetIgnoreList(void);
 void YAHOO_IgnoreBuddy(const char *buddy, int ignore);
 
-BOOL CALLBACK DlgProcYahooOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam);
-BOOL CALLBACK DlgProcYahooPopUpOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam);
-int YahooOptInit(WPARAM wParam,LPARAM lParam);
 void register_callbacks();
 char* YAHOO_GetContactName(HANDLE hContact);
-void YAHOO_basicsearch(const char *nick);
+
 void YAHOO_remove_buddy(const char *who);
 void YAHOO_reject(const char *who, const char *msg);
 void YAHOO_accept(const char *who);

@@ -11,7 +11,6 @@
  * and for answering some of my questions during development of this plugin.
  */
 #include <windows.h>
-#include <windowsx.h>
 #include <shlwapi.h>
 
 #include "yahoo.h"
@@ -21,6 +20,8 @@
 #include <m_utils.h>
 #include <m_options.h>
 #include <m_popup.h>
+
+#include "options.h"
 
 /*
  * YahooOptInit - initialize/register our Options w/ Miranda.
@@ -42,13 +43,6 @@ int YahooOptInit(WPARAM wParam,LPARAM lParam)
 	YAHOO_CallService( MS_OPT_ADDPAGE, wParam,( LPARAM )&odp );
 
 	return 0;
-}
-
-void SetButtonCheck(HWND hwndDlg, int CtrlID, BOOL bCheck)
-{
-	HWND hwndCtrl = GetDlgItem(hwndDlg, CtrlID);
-	
-	Button_SetCheck(hwndCtrl, (bCheck)?BST_CHECKED:BST_UNCHECKED);
 }
 
 /*

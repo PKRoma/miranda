@@ -24,6 +24,8 @@
 #include <m_idle.h>
 #include <m_userinfo.h>
 
+#include "options.h"
+
 //#define HTTP_GATEWAY
 extern char *szStartMsg;
 

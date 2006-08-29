@@ -11,6 +11,7 @@
  * and for answering some of my questions during development of this plugin.
  */
 #include <windows.h>
+#include <windowsx.h>
 #include <stdio.h>
 #include <shlwapi.h>
 #include <malloc.h>
@@ -374,5 +375,12 @@ char* __stdcall Utf8EncodeUcs2( const wchar_t* src )
 	}
 
 	return result;
+}
+
+void SetButtonCheck(HWND hwndDlg, int CtrlID, BOOL bCheck)
+{
+	HWND hwndCtrl = GetDlgItem(hwndDlg, CtrlID);
+	
+	Button_SetCheck(hwndCtrl, (bCheck)?BST_CHECKED:BST_UNCHECKED);
 }
 
