@@ -99,6 +99,8 @@ extraResourceOptions=
 16=libyahoo2\yahoo_fn.c
 17=utf8.c
 18=avatar.c
+19=chat.c
+20=webcam.c
 [Header]
 1=http_gateway.h
 2=pthread.h
@@ -116,6 +118,9 @@ extraResourceOptions=
 14=libyahoo2\yahoo_util.h
 15=libyahoo2\yahoo_fn.h
 16=version.h
+17=chat.h
+18=webcam.h
+19=options.h
 [Resource]
 1=Yahoo.rc
 [Other]
@@ -127,3 +132,5 @@ extraResourceOptions=
 6=libyahoo2\Docs\TODO
 7=libyahoo2\Docs\ymsg-9.txt
 [History]
+libyahoo2\yahoo_list.c,0
+server.c,463

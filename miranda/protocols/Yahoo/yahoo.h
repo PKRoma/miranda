@@ -14,8 +14,6 @@
 #define _YAHOO_YAHOO_H_
 
 #include <windows.h>
-//#include <stdio.h>
-
 
 /* 
  * Yahoo Services
@@ -146,7 +144,6 @@ void YAHOO_ShowError(const char *title, const char *buff);
 //Services.c
 int GetCaps(WPARAM wParam,LPARAM lParam);
 int GetName(WPARAM wParam,LPARAM lParam);
-int BPLoadIcon(WPARAM wParam,LPARAM lParam); //BPLoadIcon because LoadIcon wont work..
 int SetStatus(WPARAM wParam,LPARAM lParam);
 int GetStatus(WPARAM wParam,LPARAM lParam);
 void yahoo_util_broadcaststatus(int s);
@@ -161,9 +158,6 @@ void yahoo_stealth(const char *buddy, int add);
 const YList* YAHOO_GetIgnoreList(void);
 void YAHOO_IgnoreBuddy(const char *buddy, int ignore);
 
-BOOL CALLBACK DlgProcYahooOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam);
-BOOL CALLBACK DlgProcYahooPopUpOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam);
-int YahooOptInit(WPARAM wParam,LPARAM lParam);
 void register_callbacks();
 char* YAHOO_GetContactName(HANDLE hContact);
 void YAHOO_basicsearch(const char *nick);
