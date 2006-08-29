@@ -745,7 +745,7 @@ void YAHOO_CALLBACK_TYPE(ext_yahoo_remove_handler)(int id, int tag);
  * Returns:
  * 	a unix file descriptor to the socket
  */
-int YAHOO_CALLBACK_TYPE(ext_yahoo_connect)(const char *host, int port);
+int YAHOO_CALLBACK_TYPE(ext_yahoo_connect)(const char *host, int port, int type);
 
 
 /*
@@ -766,7 +766,7 @@ int YAHOO_CALLBACK_TYPE(ext_yahoo_connect)(const char *host, int port);
  * Returns:
  * 	a unix file descriptor to the socket
  */
-int YAHOO_CALLBACK_TYPE(ext_yahoo_connect_async)(int id, const char *host, int port, 
+int YAHOO_CALLBACK_TYPE(ext_yahoo_connect_async)(int id, const char *host, int port, int type,
 		yahoo_connect_callback callback, void *callback_data);
 
 #ifdef USE_STRUCT_CALLBACKS

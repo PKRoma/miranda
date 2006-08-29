@@ -1410,10 +1410,10 @@ void ext_yahoo_error(int id, const char *err, int fatal, int num)
 
 }
 
-int ext_yahoo_connect(const char *h, int p)
+int ext_yahoo_connect(const char *h, int p, int type)
 {
 	NETLIBOPENCONNECTION ncon = {0};
-    HANDLE con;
+    HANDLE con, hNetLibU;
     
 	LOG(("ext_yahoo_connect %s:%d", h, p));
 	
@@ -1421,7 +1421,12 @@ int ext_yahoo_connect(const char *h, int p)
 	ncon.szHost = h;
     ncon.wPort = p;
     
-    con = (HANDLE) CallService(MS_NETLIB_OPENCONNECTION, (WPARAM) hnuMain, (LPARAM) & ncon);
+	if (type == YAHOO_CONNECTION_PAGER)
+		hNetLibU = hnuMain;
+	else
+		hNetLibU = hnuP2P;
+	
+    con = (HANDLE) CallService(MS_NETLIB_OPENCONNECTION, (WPARAM) hNetLibU, (LPARAM) & ncon);
     if (con == NULL)  {
 		LOG(("ERROR: Connect Failed!"));
         return -1;
@@ -1528,14 +1533,14 @@ void yahoo_callback(struct _conn *c, yahoo_input_condition cond)
 	LOG(("[yahoo_callback] id: %d exiting...", c->id));
 }
 
-int ext_yahoo_connect_async(int id, const char *host, int port, 
+int ext_yahoo_connect_async(int id, const char *host, int port, int type, 
 		yahoo_connect_callback callback, void *data)
 {
     int res;
     
-    LOG(("ext_yahoo_connect_async %s:%d", host, port));
+    LOG(("ext_yahoo_connect_async %s:%d type: %d", host, port, type));
     
-    res = ext_yahoo_connect(host, port);
+    res = ext_yahoo_connect(host, port, type);
 
 	/*
 	 * need to call the callback so we could handle the failure condition!!!

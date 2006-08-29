@@ -111,9 +111,9 @@ int yahoo_log_message(char * fmt, ...)
 	return YAHOO_CALLBACK(ext_yahoo_log)("%s", out);
 }
 
-int yahoo_connect(char * host, int port)
+int yahoo_connect(char * host, int port, int type)
 {
-	return YAHOO_CALLBACK(ext_yahoo_connect)(host, port);
+	return YAHOO_CALLBACK(ext_yahoo_connect)(host, port, type);
 }
 
 static enum yahoo_log_level log_level = YAHOO_LOG_NONE;
@@ -3637,7 +3637,7 @@ static void yahoo_webcam_get_server(struct yahoo_input_data *y, char *who, char 
 	yid->wcm->direction = who?YAHOO_WEBCAM_DOWNLOAD:YAHOO_WEBCAM_UPLOAD;
 	yid->wcm->key = strdup(key);
 
-	YAHOO_CALLBACK(ext_yahoo_connect_async)(yid->yd->client_id, yss->webcam_host, yss->webcam_port, 
+	YAHOO_CALLBACK(ext_yahoo_connect_async)(yid->yd->client_id, yss->webcam_host, yss->webcam_port, yid->type,
 			_yahoo_webcam_get_server_connected, yid);
 
 }
@@ -4559,7 +4559,7 @@ static void yahoo_webcam_connect(struct yahoo_input_data *y)
 	yid->wcd = y_new0(struct yahoo_webcam_data, 1);
 
 	LOG(("Connecting to: %s:%d", wcm->server, wcm->port));
-	YAHOO_CALLBACK(ext_yahoo_connect_async)(y->yd->client_id, wcm->server, wcm->port,
+	YAHOO_CALLBACK(ext_yahoo_connect_async)(y->yd->client_id, wcm->server, wcm->port, yid->type,
 			_yahoo_webcam_connected, yid);
 
 }
@@ -4718,7 +4718,7 @@ static void yahoo_connected(int fd, int error, void *data)
 		if(fallback_ports[ccd->i]) {
 			int tag;
 			yss->pager_port = fallback_ports[ccd->i++];
-			tag = YAHOO_CALLBACK(ext_yahoo_connect_async)(yd->client_id, yss->pager_host,
+			tag = YAHOO_CALLBACK(ext_yahoo_connect_async)(yd->client_id, yss->pager_host, YAHOO_CONNECTION_PAGER,
 					yss->pager_port, yahoo_connected, ccd);
 
 			if(tag > 0)
@@ -4776,7 +4776,7 @@ void yahoo_login(int id, int initial)
 
 	ccd = y_new0(struct connect_callback_data, 1);
 	ccd->yd = yd;
-	tag = YAHOO_CALLBACK(ext_yahoo_connect_async)(yd->client_id, yss->pager_host, yss->pager_port, 
+	tag = YAHOO_CALLBACK(ext_yahoo_connect_async)(yd->client_id, yss->pager_host, yss->pager_port, YAHOO_CONNECTION_PAGER,
 			yahoo_connected, ccd);
 
 	/*
