@@ -242,8 +242,6 @@ void yahoo_util_broadcaststatus(int s)
     ProtoBroadcastAck(yahooProtocolName, NULL, ACKTYPE_STATUS, ACKRESULT_SUCCESS, (HANDLE) oldStatus, (LPARAM)yahooStatus);
 }
 
-
-
 static int YahooContactDeleted( WPARAM wParam, LPARAM lParam )
 {
 	char* szProto;
@@ -984,8 +982,6 @@ int YahooSetApparentMode(WPARAM wParam, LPARAM lParam)
     DBWriteContactSettingWord(ccs->hContact, yahooProtocolName, "ApparentMode", (WORD) ccs->wParam);
     return 1;
 }
-
-
 
 extern HANDLE   hHookContactDeleted;
 extern HANDLE   hHookIdle;
