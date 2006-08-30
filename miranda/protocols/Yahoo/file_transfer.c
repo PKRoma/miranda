@@ -388,7 +388,7 @@ void ext_yahoo_got_file(int id, const char *me, const char *who, const char *url
 }
 
 //=======================================================
-//File transfer
+//File Transfer
 //=======================================================
 static void __cdecl yahoo_recv_filethread(void *psf) 
 {

@@ -57,11 +57,7 @@ PLUGININFO pluginInfo={
 		"Yahoo Protocol",
 #endif
 		__VERSION_DWORD,
-#ifdef YAHOO_CVSBUILD
 		"Yahoo Protocol support via libyahoo2 library. [Built: "__DATE__" "__TIME__"]",
-#else
-		"Yahoo Protocol support via libyahoo2 library.",
-#endif		
 		"Gennady Feldman, Laurent Marechal",
 		"gena01@miranda-im.org",
 		"© 2003-2006 G.Feldman",
