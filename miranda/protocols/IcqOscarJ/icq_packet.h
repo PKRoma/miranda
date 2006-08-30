@@ -54,6 +54,7 @@ typedef struct icq_packet_s
 
 /*---------* Functions *---------------*/
 
+void __fastcall init_generic_packet(icq_packet* pPacket, WORD wHeaderLen);
 void write_httphdr(icq_packet *d, WORD wType, DWORD dwSeq);
 void __fastcall write_flap(icq_packet *, BYTE);
 void __fastcall serverPacketInit(icq_packet *, WORD);

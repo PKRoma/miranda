@@ -75,29 +75,36 @@ static void packServIcqExtensionHeader(icq_packet *p, WORD wLen, WORD wType, WOR
 {
   serverPacketInit(p, (WORD)(24 + wLen));
   packFNACHeaderFull(p, ICQ_EXTENSIONS_FAMILY, ICQ_META_CLI_REQ, 0, wSeq | ICQ_META_CLI_REQ<<0x10);
-  packWord(p, 0x01);               // TLV type 1
-  packWord(p, (WORD)(10 + wLen));  // TLV len
-  packLEWord(p, (WORD)(8 + wLen)); // Data chunk size (TLV.Length-2)
-  packLEDWord(p, dwLocalUIN);      // My UIN
-  packLEWord(p, wType);            // Request type
+  packWord(p, 0x01);                // TLV type 1
+  packWord(p, (WORD)(10 + wLen));   // TLV len
+  packLEWord(p, (WORD)(8 + wLen));  // Data chunk size (TLV.Length-2)
+  packLEDWord(p, dwLocalUIN);       // My UIN
+  packLEWord(p, wType);             // Request type
   packWord(p, wSeq);
 }
 
 
 
-static void packServTLV5Header(icq_packet *p, WORD wLen, DWORD TS1, DWORD TS2, WORD wAckType)
+static void packServTLV5HeaderBasic(icq_packet *p, WORD wLen, DWORD ID1, DWORD ID2, WORD wCommand, plugin_guid pGuid)
 {
   // TLV(5) header
-  packWord(p, 0x05);              // Type
-  packWord(p, (WORD)(36 + wLen)); // Len
+  packWord(p, 0x05);                // Type
+  packWord(p, (WORD)(26 + wLen));   // Len
   // TLV(5) data
-  packWord(p, 0);                 // Command
-  packLEDWord(p, TS1);            // msgid1
-  packLEDWord(p, TS2);            // msgid2
-  packGUID(p, MCAP_TLV2711_FMT);  // capabilities (4 dwords)
-  packDWord(p, 0x000A0002);       // TLV: 0x0A Acktype: 1 for normal, 2 for ack
-  packWord(p, wAckType);
-  packDWord(p, 0x000F0000);       // TLV: 0x0F empty
+  packWord(p, wCommand);            // Command
+  packLEDWord(p, ID1);              // msgid1
+  packLEDWord(p, ID2);              // msgid2
+  packGUID(p, pGuid);               // capabilities (4 dwords)
+}
+
+
+
+static void packServTLV5HeaderMsg(icq_packet *p, WORD wLen, DWORD ID1, DWORD ID2, WORD wAckType)
+{
+  packServTLV5HeaderBasic(p, (WORD)(wLen + 10), ID1, ID2, 0, MCAP_TLV2711_FMT);
+
+  packTLVWord(p, 0x0A, wAckType);   // TLV: 0x0A Acktype: 1 for normal, 2 for ack
+  packDWord(p, 0x000F0000);         // TLV: 0x0F empty
 }
 
 
@@ -677,7 +684,7 @@ void icq_sendFileSendServv8(filetransfer* ft, const char *szFiles, int nAckType)
   packServMsgSendHeader(&packet, ft->dwCookie, ft->pMessage.dwMsgID1, ft->pMessage.dwMsgID2, ft->dwUin, NULL, 2, wFlapLen);
 
   // TLV(5) header
-  packServTLV5Header(&packet, (WORD)(138 + wDescrLen + wFilesLen), ft->pMessage.dwMsgID1, ft->pMessage.dwMsgID2, 1); 
+  packServTLV5HeaderMsg(&packet, (WORD)(138 + wDescrLen + wFilesLen), ft->pMessage.dwMsgID1, ft->pMessage.dwMsgID2, 1); 
 
   // Port & IP information
   packServDCInfo(&packet, FALSE);
@@ -731,7 +738,7 @@ void icq_sendFileAcceptServv8(DWORD dwUin, DWORD TS1, DWORD TS2, DWORD dwCookie,
   packServMsgSendHeader(&packet, dwCookie, TS1, TS2, dwUin, NULL, 2, wFlapLen);
 
   // TLV(5) header
-  packServTLV5Header(&packet, (WORD)(138 + wDescrLen + wFilesLen), TS1, TS2, 2); 
+  packServTLV5HeaderMsg(&packet, (WORD)(138 + wDescrLen + wFilesLen), TS1, TS2, 2); 
 
   // Port & IP information
   packServDCInfo(&packet, !accepted);
@@ -784,7 +791,7 @@ void icq_sendFileAcceptServv7(DWORD dwUin, DWORD TS1, DWORD TS2, DWORD dwCookie,
   packServMsgSendHeader(&packet, dwCookie, TS1, TS2, dwUin, NULL, 2, wFlapLen);
 
   // TLV(5) header
-  packServTLV5Header(&packet, (WORD)(88 + wDescrLen + wFilesLen), TS1, TS2, 2); 
+  packServTLV5HeaderMsg(&packet, (WORD)(88 + wDescrLen + wFilesLen), TS1, TS2, 2); 
 
   // Port & IP information
   packServDCInfo(&packet, !accepted);
@@ -1058,12 +1065,6 @@ DWORD sendTLVSearchPacket(BYTE bType, char* pSearchDataBuf, WORD wSearchType, WO
   { // Pack "Online users only" flag - only for generic search
     BYTE bData = 1;
     packTLV(&packet, TLV_ONLINEONLY, 1, &bData);
-/*    packLEWord(&packet, TLV_ONLINEONLY);
-    packLEWord(&packet, 0x0001);
-    if (bOnlineUsersOnly)
-      packByte(&packet, 0x0001);
-    else
-      packByte(&packet, 0x0000);*/
   }
 
   // Go!
@@ -1139,7 +1140,6 @@ DWORD icq_changeUserDetailsServ(WORD type, const unsigned char *pData, WORD wDat
 {
   icq_packet packet;
   DWORD dwCookie;
-
 
   dwCookie = GenerateCookie(0);
 
@@ -1472,7 +1472,7 @@ void icq_sendXtrazRequestServ(DWORD dwUin, DWORD dwCookie, char* szBody, int nBo
   packServMsgSendHeader(&packet, dwCookie, pCookieData->dwMsgID1, pCookieData->dwMsgID2, dwUin, NULL, 2, (WORD)(99 + wCoreLen));
 
   // TLV(5) header
-  packServTLV5Header(&packet, (WORD)(55 + wCoreLen), pCookieData->dwMsgID1, pCookieData->dwMsgID2, 1); 
+  packServTLV5HeaderMsg(&packet, (WORD)(55 + wCoreLen), pCookieData->dwMsgID1, pCookieData->dwMsgID2, 1); 
 
   // TLV(0x2711) header
   packServTLV2711Header(&packet, (WORD)dwCookie, ICQ_VERSION, MTYPE_PLUGIN, 0, 0, 0x100, wCoreLen);
@@ -1520,16 +1520,9 @@ void icq_sendReverseReq(directconnect *dc, DWORD dwCookie, message_cookie_data *
 
   packServMsgSendHeader(&packet, dwCookie, pCookie->dwMsgID1, pCookie->dwMsgID2, dc->dwRemoteUin, NULL, 2, 0x47);
 
-  // TLV(5) header
-  packWord(&packet, 0x05);                  // Type
-  packWord(&packet, 0x43);                  // Len
-  // TLV(5) data
-  packWord(&packet, 0);                     // Command
-  packLEDWord(&packet, pCookie->dwMsgID1);  // msgid1
-  packLEDWord(&packet, pCookie->dwMsgID2);  // msgid2
-  packGUID(&packet, MCAP_REVERSE_REQ);      // capabilities (4 dwords)
-  packDWord(&packet, 0x000A0002);           // TLV: 0x0A Acktype: 1 for normal, 2 for ack
-  packWord(&packet, 1);
+  packServTLV5HeaderBasic(&packet, 0x29, pCookie->dwMsgID1, pCookie->dwMsgID2, 0, MCAP_REVERSE_REQ);
+
+  packTLVWord(&packet, 0x0A, 1);            // TLV: 0x0A Acktype: 1 for normal, 2 for ack
   packDWord(&packet, 0x000F0000);           // TLV: 0x0F empty
   packDWord(&packet, 0x2711001B);           // TLV: 0x2711 Content
   // TLV(0x2711) data
@@ -1567,4 +1560,31 @@ void icq_sendReverseFailed(directconnect* dc, DWORD dwMsgID1, DWORD dwMsgID2, DW
   packLEDWord(&packet, dwCookie);
 
   sendServPacket(&packet);
+}
+
+
+// OSCAR file-transfer packets starts here
+//
+static void oft_sendFileReply(DWORD dwUin, char *szUid, oscar_filetransfer* ft, WORD wResult)
+{
+  icq_packet packet;
+
+  packServMsgSendHeader(&packet, 0, ft->pMessage.dwMsgID1, ft->pMessage.dwMsgID2, dwUin, szUid, 2, 0x1E);
+  packServTLV5HeaderBasic(&packet, 0, ft->pMessage.dwMsgID1, ft->pMessage.dwMsgID2, wResult, MCAP_OSCAR_FT);
+
+  sendServPacket(&packet);
+}
+
+
+
+void oft_sendFileAccept(DWORD dwUin, char *szUid, oscar_filetransfer* ft)
+{
+  oft_sendFileReply(dwUin, szUid, ft, 0x02);
+}
+
+
+
+void oft_sendFileDeny(DWORD dwUin, char *szUid, oscar_filetransfer* ft)
+{
+  oft_sendFileReply(dwUin, szUid, ft, 0x01);
 }

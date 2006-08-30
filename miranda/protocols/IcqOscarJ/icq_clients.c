@@ -133,7 +133,6 @@ const capstr capJimm      = {'J', 'i', 'm', 'm', ' ', 0, 0, 0, 0, 0, 0, 0, 0, 0,
 const capstr capQip       = {0x56, 0x3F, 0xC8, 0x09, 0x0B, 0x6F, 0x41, 'Q', 'I', 'P', ' ', '2', '0', '0', '5', 'a'};
 const capstr capIm2       = {0x74, 0xED, 0xC3, 0x36, 0x44, 0xDF, 0x48, 0x5B, 0x8B, 0x1C, 0x67, 0x1A, 0x1F, 0x86, 0x09, 0x9F}; // IM2 Ext Msg
 const capstr capMacIcq    = {0xdd, 0x16, 0xf2, 0x02, 0x84, 0xe6, 0x11, 0xd4, 0x90, 0xdb, 0x00, 0x10, 0x4b, 0x9b, 0x4b, 0x7d};
-const capstr capRichText  = {0x97, 0xb1, 0x27, 0x51, 0x24, 0x3c, 0x43, 0x34, 0xad, 0x22, 0xd6, 0xab, 0xf7, 0x3f, 0x14, 0x92};
 const capstr capIs2001    = {0x2e, 0x7a, 0x64, 0x75, 0xfa, 0xdf, 0x4d, 0xc8, 0x88, 0x6f, 0xea, 0x35, 0x95, 0xfd, 0xb6, 0xdf};
 const capstr capIs2002    = {0x10, 0xcf, 0x40, 0xd1, 0x4c, 0x7f, 0x11, 0xd1, 0x82, 0x22, 0x44, 0x45, 0x53, 0x54, 0x00, 0x00};
 const capstr capComm20012 = {0xa0, 0xe9, 0x3f, 0x37, 0x4c, 0x7f, 0x11, 0xd1, 0x82, 0x22, 0x44, 0x45, 0x53, 0x54, 0x00, 0x00};
@@ -152,19 +151,6 @@ const capstr capSimpLite  = {0x53, 0x49, 0x4D, 0x50, 0x53, 0x49, 0x4D, 0x50, 0x5
 const capstr capSimpPro   = {0x53, 0x49, 0x4D, 0x50, 0x5F, 0x50, 0x52, 0x4F, 0x53, 0x49, 0x4D, 0x50, 0x5F, 0x50, 0x52, 0x4F};
 
 
-static BOOL hasRichText, hasRichChecked;
-
-static BOOL hasCapRichText(BYTE* caps, WORD wLen)
-{
-  if (!hasRichChecked) 
-  {
-    hasRichText = MatchCap(caps, wLen, &capRichText, 0x10)?TRUE:FALSE;
-    hasRichChecked = TRUE;
-  }
-  return hasRichText;
-}
-
-
 char* cliLibicq2k  = "libicq2000";
 char* cliLicqVer   = "Licq ";
 char* cliCentericq = "Centericq";
@@ -180,7 +166,6 @@ char* detectUserClient(HANDLE hContact, DWORD dwUin, WORD wVersion, DWORD dwFT1,
   LPSTR szClient = NULL;
 
   *bClientId = 1; // Most clients does not tick as MsgIDs
-  hasRichChecked = FALSE; // init fast rich text detection
 
   // Is this a Miranda IM client?
   if (dwFT1 == 0xffffffff)
@@ -310,7 +295,7 @@ char* detectUserClient(HANDLE hContact, DWORD dwUin, WORD wVersion, DWORD dwFT1,
       }
       else if (MatchCap(caps, wLen, &capTrillian, 0x10) || MatchCap(caps, wLen, &capTrilCrypt, 0x10))
       { // this is Trillian, check for new version
-        if (hasCapRichText(caps, wLen))
+        if (CheckContactCapabilities(hContact, CAPF_RTF))
           szClient = "Trillian v3";
         else
           szClient = cliTrillian;
@@ -432,7 +417,7 @@ char* detectUserClient(HANDLE hContact, DWORD dwUin, WORD wVersion, DWORD dwFT1,
       }
       else if (szClient == cliLibicq2k)
       { // try to determine which client is behind libicq2000
-        if (hasCapRichText(caps, wLen))
+        if (CheckContactCapabilities(hContact, CAPF_RTF))
           szClient = cliCentericq; // centericq added rtf capability to libicq2000
         else if (CheckContactCapabilities(hContact, CAPF_UTF))
           szClient = cliLibicqUTF; // IcyJuice added unicode capability to libicq2000
@@ -445,7 +430,7 @@ char* detectUserClient(HANDLE hContact, DWORD dwUin, WORD wVersion, DWORD dwFT1,
           if (MatchCap(caps, wLen, &capIs2001, 0x10))
           {
             if (!dwFT1 && !dwFT2 && !dwFT3)
-              if (hasCapRichText(caps, wLen))
+              if (CheckContactCapabilities(hContact, CAPF_RTF))
                 szClient = "TICQClient"; // possibly also older GnomeICU
               else
                 szClient = "ICQ for Pocket PC";
@@ -460,7 +445,7 @@ char* detectUserClient(HANDLE hContact, DWORD dwUin, WORD wVersion, DWORD dwFT1,
             *bClientId = 0;
             szClient = "ICQ 2002";
           }
-          else if (CheckContactCapabilities(hContact, CAPF_SRV_RELAY | CAPF_UTF) && hasCapRichText(caps, wLen))
+          else if (CheckContactCapabilities(hContact, CAPF_SRV_RELAY | CAPF_UTF | CAPF_RTF))
           {
             if (!dwFT1 && !dwFT2 && !dwFT3)
             {
@@ -520,7 +505,7 @@ char* detectUserClient(HANDLE hContact, DWORD dwUin, WORD wVersion, DWORD dwFT1,
         }
         else if (wVersion == 7)
         {
-          if (hasCapRichText(caps, wLen))
+          if (CheckContactCapabilities(hContact, CAPF_RTF))
             szClient = "GnomeICU"; // this is an exception
           else if (CheckContactCapabilities(hContact, CAPF_SRV_RELAY))
           {
@@ -539,13 +524,13 @@ char* detectUserClient(HANDLE hContact, DWORD dwUin, WORD wVersion, DWORD dwFT1,
         }
         else if (wVersion == 0xA)
         {
-          if (!hasCapRichText(caps, wLen) && !CheckContactCapabilities(hContact, CAPF_UTF))
+          if (!CheckContactCapabilities(hContact, CAPF_RTF) && !CheckContactCapabilities(hContact, CAPF_UTF))
           { // this is bad, but we must do it - try to detect QNext
             ClearContactCapabilities(hContact, CAPF_SRV_RELAY);
             NetLog_Server("Forcing simple messages (QNext client).");
             szClient = "QNext";
           }
-          else if (!hasCapRichText(caps, wLen) && CheckContactCapabilities(hContact, CAPF_UTF) && !dwFT1 && !dwFT2 && !dwFT3)
+          else if (!CheckContactCapabilities(hContact, CAPF_RTF) && CheckContactCapabilities(hContact, CAPF_UTF) && !dwFT1 && !dwFT2 && !dwFT3)
           { // not really good, but no other option
             szClient = "NanoICQ";
           }

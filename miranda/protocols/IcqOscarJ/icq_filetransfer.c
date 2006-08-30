@@ -332,7 +332,7 @@ void icq_sendFileResume(filetransfer* ft, int action, const char* szFilename)
 
 
 // small utility function
-static void NormalizeBackslash(char* path)
+void NormalizeBackslash(char* path)
 {
   int len = strlennull(path);
 

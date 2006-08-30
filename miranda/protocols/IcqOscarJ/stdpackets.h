@@ -104,4 +104,7 @@ DWORD SearchByEmail(char *pszEmail);
 
 DWORD icq_searchAimByEmail(char* pszEmail, DWORD dwSearchId);
 
+void oft_sendFileAccept(DWORD dwUin, char *szUid, oscar_filetransfer* ft);
+void oft_sendFileDeny(DWORD dwUin, char *szUid, oscar_filetransfer* ft);
+
 #endif /* __STDPACKETS_H */

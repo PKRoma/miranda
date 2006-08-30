@@ -87,6 +87,8 @@ void parseServerAddress(char *szServer, WORD* wPort);
 char *DemangleXml(const char *string, int len);
 char *MangleXml(const char *string, int len);
 char *EliminateHtml(const char *string, int len);
+char* ApplyEncoding(const char *string, const char* pszEncoding);
+
 
 void ResetSettingsOnListReload(void);
 void ResetSettingsOnConnect(void);
@@ -119,6 +121,7 @@ void LinkContactPhotoToFile(HANDLE hContact, char* szFile);
 void ContactPhotoSettingChanged(HANDLE hContact);
 
 HANDLE NetLib_OpenConnection(HANDLE hUser, NETLIBOPENCONNECTION* nloc);
+HANDLE NetLib_BindPort(NETLIBNEWCONNECTIONPROC_V2 pFunc, void* lParam, WORD* pwPort, DWORD* pdwIntIP);
 void NetLib_SafeCloseHandle(HANDLE *hConnection, int bServerConn);
 int NetLog_Server(const char *fmt,...);
 int NetLog_Direct(const char *fmt,...);

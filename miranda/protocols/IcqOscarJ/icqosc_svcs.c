@@ -1067,24 +1067,34 @@ int IcqFileAllow(WPARAM wParam, LPARAM lParam)
   {
     CCSDATA* ccs = (CCSDATA*)lParam;
     DWORD dwUin;
+    uid_str szUid;
 
-    if (ICQGetContactSettingUID(ccs->hContact, &dwUin, NULL))
+    if (ICQGetContactSettingUID(ccs->hContact, &dwUin, &szUid))
       return 0; // Invalid contact
 
-    if (dwUin && icqOnline && ccs->hContact && ccs->lParam && ccs->wParam)
-    {
-      filetransfer* ft = ((filetransfer *)ccs->wParam);
+    if (icqOnline && ccs->hContact && ccs->lParam && ccs->wParam)
+    { // approve old fashioned file transfer
+      basic_filetransfer* ft = ((basic_filetransfer *)ccs->wParam);
 
-      ft->szSavePath = null_strdup((char *)ccs->lParam);
-      AddExpectedFileRecv(ft);
+      if (dwUin && ft->ft_magic == FT_MAGIC_ICQ)
+      {
+        filetransfer* ft = ((filetransfer *)ccs->wParam);
 
-      // Was request received thru DC and have we a open DC, send through that
-      if (ft->bDC && IsDirectConnectionOpen(ccs->hContact, DIRECTCONN_STANDARD))
-        icq_sendFileAcceptDirect(ccs->hContact, ft);
-      else
-        icq_sendFileAcceptServ(dwUin, ft, 0);
+        ft->szSavePath = null_strdup((char *)ccs->lParam);
+        AddExpectedFileRecv(ft);
 
-      return ccs->wParam; // Success
+        // Was request received thru DC and have we a open DC, send through that
+        if (ft->bDC && IsDirectConnectionOpen(ccs->hContact, DIRECTCONN_STANDARD))
+          icq_sendFileAcceptDirect(ccs->hContact, ft);
+        else
+          icq_sendFileAcceptServ(dwUin, ft, 0);
+
+        return ccs->wParam; // Success
+      }
+      else if (ft->ft_magic == FT_MAGIC_OSCAR)
+      { // approve oscar file transfer
+        return oftFileAllow(ccs->hContact, ccs->wParam, ccs->lParam);
+      }
     }
   }
 
@@ -1100,21 +1110,31 @@ int IcqFileDeny(WPARAM wParam, LPARAM lParam)
   if (lParam)
   {
     CCSDATA *ccs = (CCSDATA *)lParam;
-    filetransfer *ft = (filetransfer*)ccs->wParam;
     DWORD dwUin;
+    uid_str szUid;
 
-    if (ICQGetContactSettingUID(ccs->hContact, &dwUin, NULL))
+    if (ICQGetContactSettingUID(ccs->hContact, &dwUin, &szUid))
       return 1; // Invalid contact
 
-    if (icqOnline && dwUin && ccs->wParam && ccs->hContact) 
+    if (icqOnline && ccs->wParam && ccs->hContact) 
     {
-      // Was request received thru DC and have we a open DC, send through that
-      if (ft->bDC && IsDirectConnectionOpen(ccs->hContact, DIRECTCONN_STANDARD))
-        icq_sendFileDenyDirect(ccs->hContact, ft, (char*)ccs->lParam);
-      else
-        icq_sendFileDenyServ(dwUin, ft, (char*)ccs->lParam, 0);
+      basic_filetransfer *ft = (basic_filetransfer*)ccs->wParam;
 
-      nReturnValue = 0; // Success
+      if (dwUin && ft->ft_magic == FT_MAGIC_ICQ)
+      { // deny old fashioned file transfer
+        filetransfer *ft = (filetransfer*)ccs->wParam;
+        // Was request received thru DC and have we a open DC, send through that
+        if (ft->bDC && IsDirectConnectionOpen(ccs->hContact, DIRECTCONN_STANDARD))
+          icq_sendFileDenyDirect(ccs->hContact, ft, (char*)ccs->lParam);
+        else
+          icq_sendFileDenyServ(dwUin, ft, (char*)ccs->lParam, 0);
+
+        nReturnValue = 0; // Success
+      }
+      else if (ft->ft_magic == FT_MAGIC_OSCAR)
+      { // deny oscar file transfer
+        return oftFileDeny(ccs->hContact, ccs->wParam, ccs->lParam);
+      }
     }
     /* FIXME: ft leaks (but can get double freed?) */
   }
@@ -1130,17 +1150,27 @@ int IcqFileCancel(WPARAM wParam, LPARAM lParam)
   {
     CCSDATA* ccs = (CCSDATA*)lParam;
     DWORD dwUin;
+    uid_str szUid;
 
-    if (ICQGetContactSettingUID(ccs->hContact, &dwUin, NULL))
+    if (ICQGetContactSettingUID(ccs->hContact, &dwUin, &szUid))
       return 1; // Invalid contact
 
-    if (ccs->hContact && dwUin && ccs->wParam)
+    if (ccs->hContact && ccs->wParam)
     {
-      filetransfer * ft = (filetransfer * ) ccs->wParam;
+      basic_filetransfer *ft = (basic_filetransfer *)ccs->wParam;
 
-      icq_CancelFileTransfer(ccs->hContact, ft);
+      if (dwUin && ft->ft_magic == FT_MAGIC_ICQ)
+      { // cancel old fashioned file transfer
+        filetransfer * ft = (filetransfer * ) ccs->wParam;
 
-      return 0; // Success
+        icq_CancelFileTransfer(ccs->hContact, ft);
+
+        return 0; // Success
+      }
+      else if (ft->ft_magic = FT_MAGIC_OSCAR)
+      { // cancel oscar file transfer
+        return oftFileCancel(ccs->hContact, ccs->wParam, ccs->lParam);
+      }
     }
   }
 
@@ -1154,8 +1184,18 @@ int IcqFileResume(WPARAM wParam, LPARAM lParam)
   if (icqOnline && wParam)
   {
     PROTOFILERESUME *pfr = (PROTOFILERESUME*)lParam;
+    basic_filetransfer *ft = (basic_filetransfer *)wParam;
 
-    icq_sendFileResume((filetransfer *)wParam, pfr->action, pfr->szFilename);
+    if (ft->ft_magic == FT_MAGIC_ICQ)
+    {
+      icq_sendFileResume((filetransfer *)wParam, pfr->action, pfr->szFilename);
+    }
+    else if (ft->ft_magic == FT_MAGIC_OSCAR)
+    {
+      oftFileResume((oscar_filetransfer *)wParam, pfr->action, pfr->szFilename);
+    }
+    else
+      return 1; // Failure
 
     return 0; // Success
   }

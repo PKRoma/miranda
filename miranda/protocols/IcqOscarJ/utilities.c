@@ -910,6 +910,43 @@ char *EliminateHtml(const char *string, int len)
 
 
 
+char* ApplyEncoding(const char *string, const char* pszEncoding)
+{ // decode encoding to Utf-8
+  if (string && pszEncoding)
+  { // we do only encodings known to icq5.1 // TODO: check if this is enough
+    if (!strnicmp(pszEncoding, "utf-8", 5))
+    { // it is utf-8 encoded
+      return null_strdup(string);
+    }
+    else if (!strnicmp(pszEncoding, "unicode-2-0", 11))
+    { // it is UCS-2 encoded
+      int wLen = wcslen((wchar_t*)string) + 1;
+      wchar_t *szStr = (wchar_t*)_alloca(wLen*2);
+      char *tmp = (char*)string;
+
+      unpackWideString(&tmp, szStr, (WORD)(wLen*2));
+
+      return make_utf8_string(szStr);
+    }
+    else if (!strnicmp(pszEncoding, "iso-8859-1", 10))
+    { // we use "Latin I" instead - it does the job
+      char *szRes = ansi_to_utf8_codepage(string, 1252);
+      
+      return szRes;
+    }
+  }
+  if (string)
+  { // consider it CP_ACP
+    char *szRes = ansi_to_utf8(string);
+
+    return szRes;
+  }
+
+  return NULL;
+}
+
+
+
 void ResetSettingsOnListReload()
 {
   HANDLE hContact;
@@ -1386,6 +1423,29 @@ HANDLE NetLib_OpenConnection(HANDLE hUser, NETLIBOPENCONNECTION* nloc)
     hConnection = (HANDLE)CallService(MS_NETLIB_OPENCONNECTION, (WPARAM)hUser, (LPARAM)nloc);
   }
   return hConnection;
+}
+
+
+
+HANDLE NetLib_BindPort(NETLIBNEWCONNECTIONPROC_V2 pFunc, void* lParam, WORD* pwPort, DWORD* pdwIntIP)
+{
+  NETLIBBIND nlb = {0};
+  HANDLE hBoundPort;
+
+  nlb.cbSize = sizeof(NETLIBBIND); 
+  nlb.pfnNewConnectionV2 = pFunc;
+  nlb.pExtra = lParam;
+  SetLastError(ERROR_INVALID_PARAMETER); // this must be here - NetLib does not set any error :((
+  hBoundPort = (HANDLE)CallService(MS_NETLIB_BINDPORT, (WPARAM)ghDirectNetlibUser, (LPARAM)&nlb);
+  if (!hBoundPort && (GetLastError() == ERROR_INVALID_PARAMETER))
+  { // this ensures older Miranda also can bind a port for a dc - pre 0.6
+    nlb.cbSize = NETLIBBIND_SIZEOF_V2;
+    hBoundPort = (HANDLE)CallService(MS_NETLIB_BINDPORT, (WPARAM)ghDirectNetlibUser, (LPARAM)&nlb);
+  }
+  if (pwPort) *pwPort = nlb.wPort;
+  if (pdwIntIP) *pdwIntIP = nlb.dwInternalIP;
+
+  return hBoundPort;
 }
 
 

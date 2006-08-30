@@ -789,6 +789,9 @@ void setUserInfo()
 #ifdef DBG_CAPXTRAZ
   wAdditionalData += 16;
 #endif
+#ifdef DBG_OSCARFT
+  wAdditionalData += 16;
+#endif
   if (gbAvatarsEnabled)
     wAdditionalData += 16;
   if (bXStatus)
@@ -843,7 +846,12 @@ void setUserInfo()
   if (gbAvatarsEnabled)
   {
     packNewCap(&packet, 0x134C);    // CAP_DEVILS
-  } 
+  }
+#ifdef DBG_OSCARFT
+  {
+    packNewCap(&packet, 0x1343);    // CAP_AIM_FILE
+  } // Broadcasts the capability to receive Oscar File Transfers
+#endif
   if (gbAimEnabled)
   {
     packNewCap(&packet, 0x134D);    // Tells the server we can speak to AIM

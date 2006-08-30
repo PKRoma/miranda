@@ -61,7 +61,7 @@ extern int bHideXStatusUI;
 PLUGININFO pluginInfo = {
   sizeof(PLUGININFO),
   NULL,
-  PLUGIN_MAKE_VERSION(0,3,8,0),
+  PLUGIN_MAKE_VERSION(0,3,8,1),
   "Support for ICQ network, enhanced.",
   "Joe Kucera, Bio, Martin Öberg, Richard Hughes, Jon Keating, etc",
   "jokusoftware@miranda-im.org",
@@ -259,6 +259,7 @@ int __declspec(dllexport) Load(PLUGINLINK *link)
   }
 
   InitDirectConns();
+  InitOscarFileTransfer();
   InitServerLists();
   icq_InitInfoUpdate();
 
@@ -290,6 +291,7 @@ int __declspec(dllexport) Unload(void)
   UninitXStatusEvents();
 
   UninitServerLists();
+  UninitOscarFileTransfer();
   UninitDirectConns();
 
   NetLib_SafeCloseHandle(&ghDirectNetlibUser, FALSE);

@@ -94,31 +94,16 @@ static char* AimApplyEncoding(char* pszStr, const char* pszEncoding)
     char *szEnc = strstr(pszEncoding, "charset=");
 
     if (szEnc)
-    {
-      szEnc = szEnc + 9; // get charset string
+    { // decode custom encoding to Utf-8
+      char* szStr = ApplyEncoding(pszStr, szEnc + 9);
+      // decode utf-8 to ansi
+      char *szRes = NULL;
 
-      if (!strnicmp(szEnc, "utf-8", 5))
-      { // it is utf-8 encoded
-        char *szRes = NULL;
+      SAFE_FREE(&pszStr);
+      utf8_decode(szStr, &szRes);
+      SAFE_FREE(&szStr);
 
-        utf8_decode(pszStr, &szRes);
-        SAFE_FREE(&pszStr);
-
-        return szRes;
-      }
-      if (!strnicmp(szEnc, "unicode-2-0", 11))
-      { // it is UCS-2 encoded
-        int wLen = wcslen((wchar_t*)pszStr) + 1;
-        wchar_t *szStr = (wchar_t*)_alloca(wLen*2);
-        char *szRes = (char*)SAFE_MALLOC(wLen);
-        char *tmp = pszStr;
-
-        unpackWideString(&tmp, szStr, (WORD)(wLen*2));
-        WideCharToMultiByte(CP_ACP, 0, szStr, -1, szRes, wLen, NULL, NULL);
-        SAFE_FREE(&pszStr);
-
-        return szRes;
-      }
+      return szRes;
     }
   }
   return pszStr;

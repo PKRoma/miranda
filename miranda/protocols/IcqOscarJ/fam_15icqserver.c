@@ -818,10 +818,11 @@ static void parseUserInfoRequestReplies(unsigned char *databuf, WORD wPacketLen,
       if (bOK && (wPacketLen >= 3))
       {
         if (hContact == NULL)
-        {
+        { // auth flag is the same for normal contacts also
           ICQWriteContactSettingByte(hContact, "Auth", (BYTE)!(*databuf));
           databuf += 1;
 
+          // webaware is also the same, but gives different values
           ICQWriteContactSettingByte(hContact, "WebAware", (*databuf));
           databuf += 1;
 
@@ -832,11 +833,12 @@ static void parseUserInfoRequestReplies(unsigned char *databuf, WORD wPacketLen,
           databuf += 3;
 
         wPacketLen -= 3;
-      }
-      if (bOK && (wPacketLen >= 1))
-      {
-        databuf++;
-        wPacketLen--;
+
+        if (wPacketLen >= 1 && (!hContact || dwCookieUin == dwLocalUIN))
+        { // owner or owner contact contains one more unknown byte value
+          databuf += 1; // OMG!
+          wPacketLen -= 1;
+        }
       }
       if (bOK) bOK = writeDbInfoSettingString(hContact, "ZIP", &databuf, &wPacketLen);
     }
