@@ -1,5 +1,5 @@
 /*
- * $Id: yahoo.c 3624 2006-08-28 14:49:14Z gena01 $
+ * $Id$
  *
  * myYahoo Miranda Plugin 
  *

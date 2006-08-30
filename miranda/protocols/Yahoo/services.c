@@ -29,6 +29,7 @@
 #include "resource.h"
 #include "file_transfer.h"
 #include "search.h"
+#include "im.h"
 
 extern HANDLE   hYahooNudge;
 
@@ -241,123 +242,6 @@ void yahoo_util_broadcaststatus(int s)
 			NEWSTR_ALLOCA((char *) CallService(MS_CLIST_GETSTATUSMODEDESCRIPTION, oldStatus, 0)), oldStatus,
 			NEWSTR_ALLOCA((char *) CallService(MS_CLIST_GETSTATUSMODEDESCRIPTION, yahooStatus, 0)), yahooStatus);	
     ProtoBroadcastAck(yahooProtocolName, NULL, ACKTYPE_STATUS, ACKRESULT_SUCCESS, (HANDLE) oldStatus, (LPARAM)yahooStatus);
-}
-
-
-static void __cdecl yahoo_im_sendacksuccess(HANDLE hContact)
-{
-    ProtoBroadcastAck(yahooProtocolName, hContact, ACKTYPE_MESSAGE, ACKRESULT_SUCCESS, (HANDLE) 1, 0);
-}
-
-static void __cdecl yahoo_im_sendackfail(HANDLE hContact)
-{
-    SleepEx(1000, TRUE);
-    ProtoBroadcastAck(yahooProtocolName, hContact, ACKTYPE_MESSAGE, ACKRESULT_FAILED, (HANDLE) 1, 
-						(LPARAM) Translate("The message send timed out."));
-}
-
-static void __cdecl yahoo_im_sendackfail_longmsg(HANDLE hContact)
-{
-    SleepEx(1000, TRUE);
-    ProtoBroadcastAck(yahooProtocolName, hContact, ACKTYPE_MESSAGE, ACKRESULT_FAILED, (HANDLE) 1, 
-						(LPARAM)Translate("Message is too long: Yahoo messages are limited by 800 UTF8 chars"));
-}
-
-//=======================================================
-//Send a message
-//=======================================================
-//#define MSG_LEN                                   2048
-int YahooSendMessage(WPARAM wParam, LPARAM lParam)
-{
-    CCSDATA *ccs = (CCSDATA *) lParam;
-    DBVARIANT dbv;
-    char *msg = (char *) ccs->lParam;
-    
-    if (!yahooLoggedIn) {/* don't send message if we not connected! */
-        pthread_create(yahoo_im_sendackfail, ccs->hContact);
-        return 1;
-    }
-        
-    if (lstrlen(msg) > 800) {/* don't send message if we not connected! */
-        pthread_create(	yahoo_im_sendackfail_longmsg, ccs->hContact);
-        return 1;
-    }
-
-	if (!DBGetContactSetting(ccs->hContact, yahooProtocolName, YAHOO_LOGINID, &dbv)) {
-        yahoo_send_msg(dbv.pszVal, msg, 0);
-        DBFreeVariant(&dbv);
-
-        pthread_create(yahoo_im_sendacksuccess, ccs->hContact);
-    
-        return 1;
-    }
-    
-    return 0;
-}
-
-int YahooSendMessageW(WPARAM wParam, LPARAM lParam)
-{
-    CCSDATA *ccs = (CCSDATA *) lParam;
-    DBVARIANT dbv;
-        
-    if (!yahooLoggedIn) {/* don't send message if we not connected! */
-        pthread_create(yahoo_im_sendackfail, ccs->hContact);
-        return 1;
-    }
-
-
-	if (!DBGetContactSetting(ccs->hContact, yahooProtocolName, YAHOO_LOGINID, &dbv)) {
-		char* p = ( char* )ccs->lParam;
-		char* msg = Utf8EncodeUcs2(( wchar_t* )&p[ strlen(p)+1 ] );
-
-		if (lstrlen(msg) > 800) {/* don't send message if we not connected! */
-			pthread_create(yahoo_im_sendackfail_longmsg, ccs->hContact);
-		} else {
-			yahoo_send_msg(dbv.pszVal, msg, 1);
-		    pthread_create(yahoo_im_sendacksuccess, ccs->hContact);
-		}
-
-        DBFreeVariant(&dbv);
-		free(msg);
-		
-        return 1;
-    }
-    
-    return 0;
-}
-
-//=======================================================
-//Receive a message
-//=======================================================
-int YahooRecvMessage(WPARAM wParam, LPARAM lParam)
-{
-    DBEVENTINFO dbei;
-    CCSDATA *ccs = (CCSDATA *) lParam;
-    PROTORECVEVENT *pre = (PROTORECVEVENT *) ccs->lParam;
-
-    DBDeleteContactSetting(ccs->hContact, "CList", "Hidden");
-
-	// NUDGES
-    if( !lstrcmp(pre->szMessage, "<ding>")  && ServiceExists("NUDGE/Send")){
-		YAHOO_DebugLog("[YahooRecvMessage] Doing Nudge Service!");
-		NotifyEventHooks(hYahooNudge, (WPARAM) ccs->hContact, 0);
-		return 0;
-    } 
-	
-    ZeroMemory(&dbei, sizeof(dbei));
-    dbei.cbSize = sizeof(dbei);
-    dbei.szModule = yahooProtocolName;
-    dbei.timestamp = pre->timestamp;
-    dbei.flags = pre->flags & (PREF_CREATEREAD ? DBEF_READ : 0);
-    dbei.eventType = EVENTTYPE_MESSAGE;
-    dbei.cbBlob = (!lstrcmp(pre->szMessage, "<ding>"))? lstrlen("BUZZ!!!")+1:lstrlen(pre->szMessage) + 1;
-	if ( pre->flags & PREF_UNICODE )
-		dbei.cbBlob *= ( sizeof( wchar_t )+1 );
-
-	
-    dbei.pBlob = (PBYTE) (!lstrcmp(pre->szMessage, "<ding>"))? "BUZZ!!!":pre->szMessage;
-    CallService(MS_DB_EVENT_ADD, (WPARAM) ccs->hContact, (LPARAM) & dbei);
-    return 0;
 }
 
 static int YahooContactDeleted( WPARAM wParam, LPARAM lParam )
@@ -1099,34 +983,6 @@ int YahooSetApparentMode(WPARAM wParam, LPARAM lParam)
     DBWriteContactSettingWord(ccs->hContact, yahooProtocolName, "ApparentMode", (WORD) ccs->wParam);
     return 1;
 }
-
-//=======================================================
-//Send a nudge
-//=======================================================
-int YahooSendNudge(WPARAM wParam, LPARAM lParam)
-{
-    HANDLE hContact = (HANDLE) wParam;
-    DBVARIANT dbv;
-    
-	YAHOO_DebugLog("[YAHOO_SENDNUDGE]");
-	
-    if (!yahooLoggedIn) {/* don't send nudge if we not connected! */
-        pthread_create(yahoo_im_sendackfail, hContact);
-        return 1;
-    }
-
-    if (!DBGetContactSetting(hContact, yahooProtocolName, YAHOO_LOGINID, &dbv)) {
-        yahoo_send_msg(dbv.pszVal, "<ding>", 0);
-        DBFreeVariant(&dbv);
-
-        pthread_create(yahoo_im_sendacksuccess, hContact);
-    
-        return 1;
-    }
-    
-    return 0;
-}
-
 
 extern HANDLE   hHookContactDeleted;
 extern HANDLE   hHookIdle;

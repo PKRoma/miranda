@@ -150,7 +150,7 @@ void yahoo_util_broadcaststatus(int s);
 void __cdecl yahoo_server_main(void *empty);
 const char *find_buddy( const char *yahoo_id);
 HANDLE getbuddyH(const char *yahoo_id);
-void yahoo_send_msg(const char *id, const char *msg, int utf8);
+
 void yahoo_logoff_buddies();
 void yahoo_set_status(int myyahooStatus, char *msg, int away);
 int miranda_to_yahoo(int myyahooStatus);
@@ -160,7 +160,7 @@ void YAHOO_IgnoreBuddy(const char *buddy, int ignore);
 
 void register_callbacks();
 char* YAHOO_GetContactName(HANDLE hContact);
-void YAHOO_basicsearch(const char *nick);
+
 void YAHOO_remove_buddy(const char *who);
 void YAHOO_reject(const char *who, const char *msg);
 void YAHOO_add_buddy(const char *who, const char *group, const char *msg);

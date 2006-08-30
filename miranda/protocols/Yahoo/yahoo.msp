@@ -103,6 +103,7 @@ extraResourceOptions=
 20=webcam.c
 21=file_transfer.c
 22=search.c
+23=im.c
 [Header]
 1=http_gateway.h
 2=pthread.h
@@ -126,6 +127,7 @@ extraResourceOptions=
 20=file_transfer.h
 21=avatar.h
 22=search.h
+23=im.h
 [Resource]
 1=Yahoo.rc
 [Other]
