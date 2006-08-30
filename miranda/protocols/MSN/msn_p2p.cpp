@@ -1154,16 +1154,19 @@ void __stdcall p2p_processMsg( ThreadData* info, const char* msgbody )
 
 			switch( iMsgType ) {
 			case 1:
-				if ( !strcmp( szContentType, "application/x-msnmsgr-sessionreqbody" ))
-					sttInitFileTransfer( hdrdata, info, tFileInfo, tFileInfo2, msgbody );
-				else if ( iMsgType == 1 && !strcmp( szContentType, "application/x-msnmsgr-transreqbody" ))
-					sttInitDirectTransfer( hdrdata, info, tFileInfo, tFileInfo2 );
-				else if ( iMsgType == 1 && !strcmp( szContentType, "application/x-msnmsgr-transrespbody" ))
-					sttInitDirectTransfer2( hdrdata, info, tFileInfo, tFileInfo2 );
+				if ( info->mType == SERVER_SWITCHBOARD) {
+					if ( !strcmp( szContentType, "application/x-msnmsgr-sessionreqbody" ))
+						sttInitFileTransfer( hdrdata, info, tFileInfo, tFileInfo2, msgbody );
+					else if ( iMsgType == 1 && !strcmp( szContentType, "application/x-msnmsgr-transreqbody" ))
+						sttInitDirectTransfer( hdrdata, info, tFileInfo, tFileInfo2 );
+					else if ( iMsgType == 1 && !strcmp( szContentType, "application/x-msnmsgr-transrespbody" ))
+						sttInitDirectTransfer2( hdrdata, info, tFileInfo, tFileInfo2 );
+				}
 				break;
 
 			case 2:
-				sttAcceptTransfer( hdrdata, info, tFileInfo, tFileInfo2 );
+				if ( info->mType == SERVER_SWITCHBOARD)
+					sttAcceptTransfer( hdrdata, info, tFileInfo, tFileInfo2 );
 				break;
 
 			case 3:
