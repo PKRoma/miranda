@@ -1,5 +1,5 @@
 /*
- * $Id: avatar.c 3629 2006-08-28 19:45:06Z gena01 $
+ * $Id$
  *
  * myYahoo Miranda Plugin 
  *
