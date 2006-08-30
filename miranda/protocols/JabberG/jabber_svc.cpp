@@ -1245,6 +1245,8 @@ int JabberUserIsTyping( WPARAM wParam, LPARAM lParam )
 		XmlNode m( "message" ); m.addAttr( "to", szClientJid );
 
 		if ( item->cap & CLIENT_CAP_CHATSTAT ) {
+			m.addAttr( "type", "chat" );
+			m.addAttrID( JabberSerialNext());
 			switch ( lParam ){
 			case PROTOTYPE_SELFTYPING_OFF:
 				m.addChild( "paused" )->addAttr( "xmlns", _T("http://jabber.org/protocol/chatstates"));
