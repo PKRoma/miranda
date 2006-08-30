@@ -11,7 +11,6 @@
  * and for answering some of my questions during development of this plugin.
  */
 #include <time.h>
-#include <sys/stat.h>
 #include <malloc.h>
 #include <io.h>
 
@@ -29,8 +28,8 @@
 #include "chat.h"
 #include "webcam.h"
 #include "file_transfer.h"
-#include "search.h"
 #include "im.h"
+#include "search.h"
 
 typedef struct {
 	int id;

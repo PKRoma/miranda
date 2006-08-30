@@ -28,10 +28,8 @@
 #include "avatar.h"
 #include "resource.h"
 #include "file_transfer.h"
-#include "search.h"
 #include "im.h"
-
-extern HANDLE   hYahooNudge;
+#include "search.h"
 
 void yahoo_logoff_buddies()
 {
