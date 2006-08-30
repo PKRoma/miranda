@@ -140,7 +140,13 @@ void __cdecl yahoo_server_main(void *empty)
 			
 			/* do the timer check */
 			if (time(NULL) - lLastPing > 60) {
-				YAHOO_ping();
+				LOG(("[TIMER] yahoo_ping_timeout"));
+	
+				if (yahooLoggedIn && (ylad != NULL) && (ylad->id > 0) ) {
+					LOG(("[TIMER] Sending a keep alive message"));
+					yahoo_keepalive(ylad->id);
+				} 
+
 				lLastPing = time(NULL);
 			}
 			/* do the timer check ends */

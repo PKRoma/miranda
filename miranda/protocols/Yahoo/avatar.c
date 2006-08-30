@@ -620,8 +620,6 @@ static void __cdecl yahoo_recv_avatarthread(void *pavt)
 	free(avt);
 }
 
-
-
 void ext_yahoo_got_picture(int id, const char *me, const char *who, const char *pic_url, int cksum, int type)
 {
 	HANDLE 	hContact = 0;
