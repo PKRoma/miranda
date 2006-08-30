@@ -47,10 +47,8 @@
 # include "config.h"
 #endif
 
-#ifndef _MSC_VER
-#ifndef __GNUC__
+#ifndef _WIN32
 # include <unistd.h>
-#endif
 #endif
 
 #include <errno.h>
