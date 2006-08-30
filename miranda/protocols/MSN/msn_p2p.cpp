@@ -1034,7 +1034,6 @@ LBL_Close:
 	char* szBody = ( char* )alloca( 1024 );
 	int   cbBody = 0;
 	if ( !strcmp( szOldContentType, "application/x-msnmsgr-sessionreqbody" )) {
-
 		tResult.addString( "Content-Type", "application/x-msnmsgr-transreqbody" );
 		cbBody = mir_snprintf( szBody, 1024,
 			"Bridges: TCPv1\r\nNetID: 0\r\nConn-Type: %s\r\nUPnPNat: false\r\nICF: false\r\n\r\n%c",
@@ -1158,16 +1157,19 @@ void __stdcall p2p_processMsg( ThreadData* info, const char* msgbody )
 
 			switch( iMsgType ) {
 			case 1:
-				if ( !strcmp( szContentType, "application/x-msnmsgr-sessionreqbody" ))
-					sttInitFileTransfer( hdrdata, info, tFileInfo, tFileInfo2, msgbody );
-				else if ( iMsgType == 1 && !strcmp( szContentType, "application/x-msnmsgr-transreqbody" ))
-					sttInitDirectTransfer( hdrdata, info, tFileInfo, tFileInfo2 );
-				else if ( iMsgType == 1 && !strcmp( szContentType, "application/x-msnmsgr-transrespbody" ))
-					sttInitDirectTransfer2( hdrdata, info, tFileInfo, tFileInfo2 );
+				if ( info->mType == SERVER_SWITCHBOARD) {
+					if ( !strcmp( szContentType, "application/x-msnmsgr-sessionreqbody" ))
+						sttInitFileTransfer( hdrdata, info, tFileInfo, tFileInfo2, msgbody );
+					else if ( iMsgType == 1 && !strcmp( szContentType, "application/x-msnmsgr-transreqbody" ))
+						sttInitDirectTransfer( hdrdata, info, tFileInfo, tFileInfo2 );
+					else if ( iMsgType == 1 && !strcmp( szContentType, "application/x-msnmsgr-transrespbody" ))
+						sttInitDirectTransfer2( hdrdata, info, tFileInfo, tFileInfo2 );
+				}
 				break;
 
 			case 2:
-				sttAcceptTransfer( hdrdata, info, tFileInfo, tFileInfo2 );
+				if ( info->mType == SERVER_SWITCHBOARD)
+					sttAcceptTransfer( hdrdata, info, tFileInfo, tFileInfo2 );
 				break;
 
 			case 3:
@@ -1182,12 +1184,11 @@ void __stdcall p2p_processMsg( ThreadData* info, const char* msgbody )
 							p2p_sendEndSession(info, ft);
 							ft->bCanceled = true;
 						}
-						else
-							if ( !ft->std.sending ) ft->complete();
+						else if ( !ft->std.sending ) 
+							ft->complete();
 
 						p2p_unregisterSession( ft );
-					}
-				}
+				}	}
 				break;
 
 			case 4:
@@ -1195,8 +1196,7 @@ void __stdcall p2p_processMsg( ThreadData* info, const char* msgbody )
 				break;
 			}
 			return;
-		}
-	}
+	}	}
 
 	//---- receiving ack -----------
 	if ( hdrdata->mFlags == 0x02 ) {
