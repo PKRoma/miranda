@@ -192,27 +192,42 @@ static void sttSavePicture2disk( ThreadData* info, filetransfer* ft )
 	if ( !CallService( MS_PNG2DIB, 0, (LPARAM)&convert ))
 		return;
 
-	PROTO_AVATAR_INFORMATION AI;
-	AI.cbSize = sizeof( AI );
-	AI.format = PA_FORMAT_BMP;
-	AI.hContact = info->mJoinedContacts[0];
-	MSN_GetAvatarFileName( info->mJoinedContacts[0], AI.filename, sizeof( AI.filename ));
-	FILE* out = fopen( AI.filename, "wb" );
-	if ( out != NULL ) {
-		BITMAPFILEHEADER tHeader = { 0 };
-		tHeader.bfType = 0x4d42;
-		tHeader.bfOffBits = sizeof( tHeader ) + sizeof( BITMAPINFOHEADER );
-		tHeader.bfSize = tHeader.bfOffBits + pDib->biSizeImage;
-		fwrite( &tHeader, sizeof( tHeader ), 1, out );
-		fwrite( pDib, sizeof( BITMAPINFOHEADER ), 1, out );
-		fwrite( pDib+1, pDib->biSizeImage, 1, out );
-		fclose( out );
+	HANDLE hContact;
+	if ( info->mJoinedContacts == NULL ) {
+		if ( info->mParentThread == NULL )
+			goto LBL_Exit;
 
-		MSN_SendBroadcast( info->mJoinedContacts[0], ACKTYPE_AVATAR, ACKRESULT_SUCCESS, HANDLE( &AI ), NULL );
+		if ( info->mParentThread->mJoinedContacts == NULL )
+			goto LBL_Exit;
+
+		hContact = info->mParentThread->mJoinedContacts[0];
 	}
-	else MSN_SendBroadcast( info->mJoinedContacts[0], ACKTYPE_AVATAR, ACKRESULT_FAILED, HANDLE( &AI ), NULL );
+	else hContact = info->mJoinedContacts[0];
 
-   GlobalFree( pDib );
+	if ( hContact != NULL ) {
+		PROTO_AVATAR_INFORMATION AI;
+		AI.cbSize = sizeof( AI );
+		AI.format = PA_FORMAT_BMP;
+		AI.hContact = hContact;
+		MSN_GetAvatarFileName( hContact, AI.filename, sizeof( AI.filename ));
+		FILE* out = fopen( AI.filename, "wb" );
+		if ( out != NULL ) {
+			BITMAPFILEHEADER tHeader = { 0 };
+			tHeader.bfType = 0x4d42;
+			tHeader.bfOffBits = sizeof( tHeader ) + sizeof( BITMAPINFOHEADER );
+			tHeader.bfSize = tHeader.bfOffBits + pDib->biSizeImage;
+			fwrite( &tHeader, sizeof( tHeader ), 1, out );
+			fwrite( pDib, sizeof( BITMAPINFOHEADER ), 1, out );
+			fwrite( pDib+1, pDib->biSizeImage, 1, out );
+			fclose( out );
+
+			MSN_SendBroadcast( hContact, ACKTYPE_AVATAR, ACKRESULT_SUCCESS, HANDLE( &AI ), NULL );
+		}
+		else MSN_SendBroadcast( hContact, ACKTYPE_AVATAR, ACKRESULT_FAILED, HANDLE( &AI ), NULL );
+	}
+	
+LBL_Exit:
+	GlobalFree( pDib );
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////
