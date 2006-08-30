@@ -28,6 +28,8 @@
 #include "avatar.h"
 #include "resource.h"
 #include "file_transfer.h"
+#include "search.h"
+
 extern HANDLE   hYahooNudge;
 
 void yahoo_logoff_buddies()
@@ -356,58 +358,6 @@ int YahooRecvMessage(WPARAM wParam, LPARAM lParam)
     dbei.pBlob = (PBYTE) (!lstrcmp(pre->szMessage, "<ding>"))? "BUZZ!!!":pre->szMessage;
     CallService(MS_DB_EVENT_ADD, (WPARAM) ccs->hContact, (LPARAM) & dbei);
     return 0;
-}
-
-//=======================================================
-//Search for user
-//=======================================================
-static void __cdecl yahoo_search_simplethread(void *snsearch)
-{
-    PROTOSEARCHRESULT psr;
-
-/*    if (aim_util_isme(sn)) {
-        ProtoBroadcastAck(AIM_PROTO, NULL, ACKTYPE_SEARCH, ACKRESULT_SUCCESS, (HANDLE) 1, 0);
-        return;
-    }
-    */
-    ZeroMemory(&psr, sizeof(psr));
-    psr.cbSize = sizeof(psr);
-    psr.nick = (char *)snsearch;
-    //psr.email = (char *)snsearch;
-    
-	//void yahoo_search(int id, enum yahoo_search_type t, const char *text, enum yahoo_search_gender g, enum yahoo_search_agerange ar, 
-	//	int photo, int yahoo_only)
-
-    YAHOO_SendBroadcast(NULL, ACKTYPE_SEARCH, ACKRESULT_DATA, (HANDLE) 1, (LPARAM) & psr);
-    //YAHOO_SendBroadcast(NULL, ACKTYPE_SEARCH, ACKRESULT_SUCCESS, (HANDLE) 1, 0);
-}
-
-void yahoo_search_simple(const char *nick)
-{
-    static char m[255];
-    char *c;
-    
-    c = strchr(nick, '@');
-    
-    if (c != NULL){
-        int l =  c - nick;
-
-        strncpy(m, nick, l);
-        m[l] = '\0';        
-    }else
-        strcpy(m, nick);
-        
-	YAHOO_basicsearch(nick);
-    pthread_create(yahoo_search_simplethread, (void *) m);
-}
-
-static int YahooBasicSearch(WPARAM wParam,LPARAM lParam)
-{
-	if ( !yahooLoggedIn )
-		return 0;
-
-    yahoo_search_simple((char *) lParam);
-    return 1;
 }
 
 static int YahooContactDeleted( WPARAM wParam, LPARAM lParam )

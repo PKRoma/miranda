@@ -102,6 +102,7 @@ extraResourceOptions=
 19=chat.c
 20=webcam.c
 21=file_transfer.c
+22=search.c
 [Header]
 1=http_gateway.h
 2=pthread.h
@@ -124,6 +125,7 @@ extraResourceOptions=
 19=options.h
 20=file_transfer.h
 21=avatar.h
+22=search.h
 [Resource]
 1=Yahoo.rc
 [Other]
@@ -135,5 +137,5 @@ extraResourceOptions=
 6=libyahoo2\Docs\TODO
 7=libyahoo2\Docs\ymsg-9.txt
 [History]
-libyahoo2\yahoo_list.c,0
-server.c,463
+avatar.h,2063
+avatar.c,0
