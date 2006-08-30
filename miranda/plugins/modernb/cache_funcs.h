@@ -40,7 +40,7 @@ void Cache_DestroySmileyList(SortedList* p_list);
 
 void Cache_GetTimezone(struct ClcData *dat, HANDLE hContact);
 
-void Cache_GetLineText(PDNCE pdnce, int type, LPTSTR text, int text_size, TCHAR *variable_text, BOOL xstatus_has_priority, BOOL show_status_if_no_away, BOOL use_name_and_message_for_xstatus, BOOL contact_time_show_only_if_different);
+int Cache_GetLineText(PDNCE pdnce, int type, LPTSTR text, int text_size, TCHAR *variable_text, BOOL xstatus_has_priority, BOOL show_status_if_no_away, BOOL use_name_and_message_for_xstatus, BOOL contact_time_show_only_if_different);
 
 
 #endif // __CACHE_FUNCS_H__

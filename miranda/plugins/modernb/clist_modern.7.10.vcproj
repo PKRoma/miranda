@@ -1483,6 +1483,9 @@
 				RelativePath=".\res\invisible.ico">
 			</File>
 			<File
+				RelativePath=".\res\listening_to.ico">
+			</File>
+			<File
 				RelativePath=".\res\lunch.ico">
 			</File>
 			<File

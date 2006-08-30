@@ -182,6 +182,7 @@
 #define IDI_NEVERVIS                    454
 #define IDI_ICON5                       455
 #define IDI_CHAT                        455
+#define IDI_LISTENING_TO                456
 #define IDC_RESETPROTOCOLDATA           1000
 #define IDC_SAVE                        1001
 #define IDC_DEFBKCOLOR                  1001

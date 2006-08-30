@@ -107,6 +107,7 @@ IDI_RENAME              ICON                    "res\\rename.ico"
 IDI_NOTICK              ICON                    "res\\notick.ico"
 IDI_TICK                ICON                    "res\\notick1.ico"
 IDI_NEWGROUP2           ICON                    "res\\addgoupp.ico"
+IDI_LISTENING_TO        ICON                    "res\\listening_to.ico"
 
 /////////////////////////////////////////////////////////////////////////////
 //

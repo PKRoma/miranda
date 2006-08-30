@@ -162,6 +162,8 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 struct ClcGroup;
 
+extern HICON listening_to_icon;
+
 #define CONTACTF_ONLINE    1
 #define CONTACTF_INVISTO   2
 #define CONTACTF_VISTO     4
@@ -264,6 +266,7 @@ struct ClcContact {
 #define TEXT_STATUS_MESSAGE 2
 #define TEXT_TEXT 3
 #define TEXT_CONTACT_TIME 4
+#define TEXT_LISTENING_TO 5
 
 #define TEXT_TEXT_MAX_LENGTH 1024
 

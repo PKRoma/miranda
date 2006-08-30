@@ -55,6 +55,8 @@ extern void SetAllExtraIcons(HWND hwndList,HANDLE hContact);
 extern void UpdateAllAvatars(struct ClcData *dat);
 extern int GetContactIndex(struct ClcGroup *group,struct ClcContact *contact);
 
+HICON listening_to_icon = NULL;
+
 struct AvatarOverlayIconConfig 
 {
 	char *name;
@@ -104,6 +106,9 @@ void UnloadAvatarOverlayIcon()
 			status_overlay_icons[i].icon=NULL;
 		}
 	}
+
+	DestroyIcon(listening_to_icon);
+	listening_to_icon=NULL;
 }
 
 /*
@@ -202,6 +207,8 @@ static int ClcSettingChanged(WPARAM wParam,LPARAM lParam)
 					pcli->pfnClcBroadcast( INTM_STATUSCHANGED,wParam,0);
 				else if (!strcmp(cws->szSetting,"Timezone"))
 					pcli->pfnClcBroadcast( INTM_TIMEZONECHANGED,wParam,0);
+				else if (!strcmp(cws->szSetting,"ListeningTo"))
+					pcli->pfnClcBroadcast( INTM_STATUSMSGCHANGED,wParam,0);
 			}
 		}
 	}
@@ -219,6 +226,8 @@ static int ReloadAvatarOverlayIcons(WPARAM wParam, LPARAM lParam)
 		avatar_overlay_icons[i].icon = (HICON)CallService(MS_SKIN2_GETICON, 0, (LPARAM)avatar_overlay_icons[i].name);
 		status_overlay_icons[i].icon = (HICON)CallService(MS_SKIN2_GETICON, 0, (LPARAM)status_overlay_icons[i].name);
 	}
+
+	listening_to_icon = (HICON)CallService(MS_SKIN2_GETICON, 0, (LPARAM)"LISTENING_TO_ICON");
 
 	pcli->pfnClcBroadcast( INTM_INVALIDATE,0,0);
 
@@ -273,6 +282,12 @@ static int ClcModulesLoaded(WPARAM wParam,LPARAM lParam) {
 			CallService(MS_SKIN2_ADDICON, 0, (LPARAM)&sid);
 		}
 
+		sid.pszSection = Translate("Contact List");
+		sid.pszDescription = Translate("Listening to");
+		sid.pszName = "LISTENING_TO_ICON";
+		sid.iDefaultIndex = - IDI_LISTENING_TO;
+		CallService(MS_SKIN2_ADDICON, 0, (LPARAM)&sid);
+
 		ReloadAvatarOverlayIcons(0,0);
 
 		HookEvent(ME_SKIN2_ICONSCHANGED, ReloadAvatarOverlayIcons);
@@ -285,7 +300,7 @@ static int ClcModulesLoaded(WPARAM wParam,LPARAM lParam) {
 			avatar_overlay_icons[i].icon = (HICON)LoadImage(g_hInst, MAKEINTRESOURCE(avatar_overlay_icons[i].id), IMAGE_ICON, 0, 0, 0);
 			status_overlay_icons[i].icon = (HICON)LoadImage(g_hInst, MAKEINTRESOURCE(status_overlay_icons[i].id), IMAGE_ICON, 0, 0, 0);
 		}
-	}
+		listening_to_icon = (HICON)LoadImage(g_hInst, MAKEINTRESOURCE(IDI_LISTENING_TO), IMAGE_ICON, 0, 0, 0);}
 
 	// Register smiley category
 	if (ServiceExists(MS_SMILEYADD_REGISTERCATEGORY))

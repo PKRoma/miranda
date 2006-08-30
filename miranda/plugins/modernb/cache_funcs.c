@@ -415,7 +415,7 @@ void Cache_DestroySmileyList( SortedList* p_list )
 
 				if (!IsBadWritePtr(piece, sizeof(ClcContactTextPiece)))
 				{
-				if (piece->smiley)
+				if (piece->smiley && piece->smiley != listening_to_icon)
 					DestroyIcon(piece->smiley);
 
 					mir_free(piece);
@@ -428,6 +428,67 @@ void Cache_DestroySmileyList( SortedList* p_list )
 	
 }
 
+void Cache_AddListeningToIcon(struct ClcData *dat, PDNCE pdnce, TCHAR *text, int text_size, SortedList **plText, 
+						 int *max_smiley_height, BOOL replace_smileys)
+{
+	*max_smiley_height = 0;
+
+	if (!dat->text_replace_smileys || !replace_smileys || text == NULL)
+	{
+		Cache_DestroySmileyList(*plText);
+		*plText = NULL;
+		return;
+	}
+
+	// Free old list
+	if (*plText != NULL)
+	{
+		Cache_DestroySmileyList(*plText);
+		*plText = NULL;
+	}
+
+	*plText = li.List_Create( 0, 2 );
+
+	// Add Icon
+	{
+		BITMAP bm;
+		ICONINFO icon;
+		ClcContactTextPiece *piece = (ClcContactTextPiece *) mir_alloc(sizeof(ClcContactTextPiece));
+
+		piece->type = TEXT_PIECE_TYPE_SMILEY;
+		piece->len = 0;
+		piece->smiley = listening_to_icon;
+
+		piece->smiley_width = 16;
+		piece->smiley_height = 16;
+		if (GetIconInfo(piece->smiley, &icon))
+		{
+			if (GetObject(icon.hbmColor,sizeof(BITMAP),&bm))
+			{
+				piece->smiley_width = bm.bmWidth;
+				piece->smiley_height = bm.bmHeight;
+			}
+
+			DeleteObject(icon.hbmMask);
+			DeleteObject(icon.hbmColor);
+		}
+
+		dat->text_smiley_height = max(piece->smiley_height, dat->text_smiley_height);
+		*max_smiley_height = max(piece->smiley_height, *max_smiley_height);
+
+		li.List_Insert(*plText, piece, plText[0]->realCount);
+	}
+
+	// Add text
+	{
+		ClcContactTextPiece *piece = (ClcContactTextPiece *) mir_alloc(sizeof(ClcContactTextPiece));
+
+		piece->type = TEXT_PIECE_TYPE_TEXT;
+		piece->start_pos = 0;
+		piece->len = text_size;
+		li.List_Insert(*plText, piece, plText[0]->realCount);
+	}
+}
 
 /*
 * Parsing of text for smiley
@@ -460,7 +521,7 @@ void Cache_ReplaceSmileys(struct ClcData *dat, PDNCE pdnce, TCHAR *text, int tex
 	{
 		sp.Protocolname = pdnce->szProto;
 
-		if (DBGetContactSettingByte(NULL,"CLC","Meta",0) != 1 && pdnce->szProto != NULL && strcmp(pdnce->szProto, "Metapdnces") == 0)
+		if (DBGetContactSettingByte(NULL,"CLC","Meta",0) != 1) // && pdnce->szProto != NULL && strcmp(pdnce->szProto, "Metapdnces") == 0)
 		{
 			HANDLE hContact = (HANDLE)CallService(MS_MC_GETMOSTONLINECONTACT, (UINT)pdnce->hContact, 0);
 			if (hContact != 0)
@@ -622,6 +683,24 @@ int GetStatusName(TCHAR *text, int text_size, PDNCE pdnce, BOOL xstatus_has_prio
 }
 
 /*
+ * Get Listening to information
+ */
+void GetListeningTo(TCHAR *text, int text_size,  PDNCE pdnce)
+{
+	DBVARIANT dbv={0};
+	text[0] = _T('\0');
+
+	if (pdnce->status==ID_STATUS_OFFLINE || pdnce->status==0)
+		return;
+
+	if (!DBGetContactSettingTString(pdnce->hContact, pdnce->szProto, "ListeningTo", &dbv)) 
+	{
+		CopySkipUnPrintableChars(text, dbv.ptszVal, text_size-1);
+		DBFreeVariant(&dbv);
+	}
+}
+
+/*
 *	Getting Status message (Away message)
 *  -1 for XStatus, 1 for Status
 */
@@ -683,7 +762,7 @@ int GetStatusMessage(TCHAR *text, int text_size,  PDNCE pdnce, BOOL xstatus_has_
 /*
  *	Get the text for specified lines
  */
-void Cache_GetLineText(PDNCE pdnce, int type, LPTSTR text, int text_size, TCHAR *variable_text, BOOL xstatus_has_priority, BOOL show_status_if_no_away, BOOL use_name_and_message_for_xstatus, BOOL pdnce_time_show_only_if_different)
+int Cache_GetLineText(PDNCE pdnce, int type, LPTSTR text, int text_size, TCHAR *variable_text, BOOL xstatus_has_priority, BOOL show_status_if_no_away, BOOL use_name_and_message_for_xstatus, BOOL pdnce_time_show_only_if_different)
 {
 	text[0] = '\0';
 	switch(type)
@@ -707,7 +786,7 @@ void Cache_GetLineText(PDNCE pdnce, int type, LPTSTR text, int text_size, TCHAR 
 				}
 			}
 
-			break;
+			return TEXT_STATUS;
 		}
 	case TEXT_NICKNAME:
 		{
@@ -720,7 +799,8 @@ void Cache_GetLineText(PDNCE pdnce, int type, LPTSTR text, int text_size, TCHAR 
 					DBFreeVariant(&dbv);
 				}
 			}
-			break;
+
+			return TEXT_NICKNAME;
 		}
 	case TEXT_STATUS_MESSAGE:
 		{
@@ -752,15 +832,30 @@ void Cache_GetLineText(PDNCE pdnce, int type, LPTSTR text, int text_size, TCHAR 
 				}
 			}
 
-			break;
+			if (text[0] == '\0')
+			{
+				Cache_GetLineText(pdnce, TEXT_LISTENING_TO, text, text_size, variable_text, xstatus_has_priority,0, use_name_and_message_for_xstatus, pdnce_time_show_only_if_different);
+				if (text[0] != '\0')
+					return TEXT_LISTENING_TO;
+
+				if (show_status_if_no_away)
+					//re-request status if no away
+					return Cache_GetLineText(pdnce, TEXT_STATUS, text, text_size, variable_text, xstatus_has_priority,0, use_name_and_message_for_xstatus, pdnce_time_show_only_if_different);		
+			}
+			return TEXT_STATUS_MESSAGE;
+		}
+	case TEXT_LISTENING_TO:
+		{
+			GetListeningTo(text, text_size, pdnce);
+			return TEXT_LISTENING_TO;
 		}
 	case TEXT_TEXT:
 		{
 			TCHAR *tmp = variables_parsedup(variable_text, pdnce->name, pdnce->hContact);
 			lstrcpyn(text, tmp, text_size);
 			if (tmp) free(tmp);
-			
-			break;
+
+			return TEXT_TEXT;
 		}
 	case TEXT_CONTACT_TIME:
 		{
@@ -779,15 +874,11 @@ void Cache_GetLineText(PDNCE pdnce, int type, LPTSTR text, int text_size, TCHAR 
 				CallService(MS_DB_TIME_TIMESTAMPTOSTRINGT, (WPARAM)pdnce_time, (LPARAM) & dbtts);
 			}
 
-			break;
+			return TEXT_CONTACT_TIME;
 		}
 	}
-	if (type==TEXT_STATUS_MESSAGE && show_status_if_no_away && text[0] == '\0')
-	{
-		//re-request status if no away
-		Cache_GetLineText(pdnce, TEXT_STATUS, text, text_size, variable_text, xstatus_has_priority,0, use_name_and_message_for_xstatus, pdnce_time_show_only_if_different);		
-	}
 
+	return TEXT_EMPTY;
 }
 
 /*
@@ -832,8 +923,9 @@ void Cache_GetSecondLineText(struct ClcData *dat, PDNCE pdnce)
 {
   HANDLE hContact=pdnce->hContact;
   TCHAR Text[120-MAXEXTRACOLUMNS]={0};
+  int type = TEXT_EMPTY;
   if (dat->second_line_show)	
-	Cache_GetLineText(pdnce, dat->second_line_type, (TCHAR*)Text, SIZEOF(Text), dat->second_line_text,
+	type = Cache_GetLineText(pdnce, dat->second_line_type, (TCHAR*)Text, SIZEOF(Text), dat->second_line_text,
 		dat->second_line_xstatus_has_priority,dat->second_line_show_status_if_no_away,
 		dat->second_line_use_name_and_message_for_xstatus, dat->contact_time_show_only_if_different);
  
@@ -845,8 +937,18 @@ void Cache_GetSecondLineText(struct ClcData *dat, PDNCE pdnce)
     pdnce->szSecondLineText=NULL;
   Text[120-MAXEXTRACOLUMNS-1]='\0';
   if (pdnce->szSecondLineText) 
-	Cache_ReplaceSmileys(dat, pdnce, pdnce->szSecondLineText, lstrlen(pdnce->szSecondLineText), &pdnce->plSecondLineText, 
-    &pdnce->iSecondLineMaxSmileyHeight,dat->second_line_draw_smileys);
+  {
+    if (type == TEXT_LISTENING_TO && pdnce->szSecondLineText[0] != _T('\0'))
+	{
+      Cache_AddListeningToIcon(dat, pdnce, pdnce->szSecondLineText, lstrlen(pdnce->szSecondLineText), &pdnce->plSecondLineText, 
+        &pdnce->iSecondLineMaxSmileyHeight,dat->second_line_draw_smileys);
+	}
+	else
+	{
+	  Cache_ReplaceSmileys(dat, pdnce, pdnce->szSecondLineText, lstrlen(pdnce->szSecondLineText), &pdnce->plSecondLineText, 
+        &pdnce->iSecondLineMaxSmileyHeight,dat->second_line_draw_smileys);
+	}
+  }
   UnlockCacheItem(hContact);
 }
 
@@ -857,8 +959,9 @@ void Cache_GetThirdLineText(struct ClcData *dat, PDNCE pdnce)
 {
   TCHAR Text[120-MAXEXTRACOLUMNS]={0};
   HANDLE hContact=pdnce->hContact;
+  int type = TEXT_EMPTY;
   if (dat->third_line_show)
-	Cache_GetLineText(pdnce, dat->third_line_type,(TCHAR*)Text, SIZEOF(Text), dat->third_line_text,
+	type = Cache_GetLineText(pdnce, dat->third_line_type,(TCHAR*)Text, SIZEOF(Text), dat->third_line_text,
 		dat->third_line_xstatus_has_priority,dat->third_line_show_status_if_no_away,
 		dat->third_line_use_name_and_message_for_xstatus, dat->contact_time_show_only_if_different);
   
@@ -870,8 +973,18 @@ void Cache_GetThirdLineText(struct ClcData *dat, PDNCE pdnce)
     pdnce->szThirdLineText=NULL;
   Text[120-MAXEXTRACOLUMNS-1]='\0';
   if (pdnce->szThirdLineText) 
-	Cache_ReplaceSmileys(dat, pdnce, pdnce->szThirdLineText, lstrlen(pdnce->szThirdLineText), &pdnce->plThirdLineText, 
+  {
+    if (type == TEXT_LISTENING_TO)
+	{
+      Cache_AddListeningToIcon(dat, pdnce, pdnce->szThirdLineText, lstrlen(pdnce->szThirdLineText), &pdnce->plThirdLineText, 
 		&pdnce->iThirdLineMaxSmileyHeight,dat->third_line_draw_smileys);
+	}
+	else
+	{
+	  Cache_ReplaceSmileys(dat, pdnce, pdnce->szThirdLineText, lstrlen(pdnce->szThirdLineText), &pdnce->plThirdLineText, 
+		&pdnce->iThirdLineMaxSmileyHeight,dat->third_line_draw_smileys);
+	}
+  }
   UnlockCacheItem(hContact);
 }
 
