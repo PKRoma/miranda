@@ -638,7 +638,7 @@ static void JabberProcessFeatures( XmlNode *node, void *userdata )
 		else if ( !strcmp( n->name, "register" )) isRegisterAvailable = true;
 		else if ( !strcmp( n->name, "auth"     )) isAuthAvailable = true;
 		else if ( !strcmp( n->name, "session"  )) isSessionAvailable = true;
-	} 
+	}
 
 	if ( areMechanismsDefined ) {
 		char *PLAIN = NULL, *mechanism = NULL;
@@ -857,6 +857,7 @@ static void JabberProcessMessage( XmlNode *node, void *userdata )
 	XmlNode *subjectNode, *xNode, *inviteNode, *idNode, *n;
 	TCHAR* from, *type, *nick, *p, *idStr, *fromResource;
 	int id;
+	HANDLE hContact;
 
 	if ( !node->name || strcmp( node->name, "message" )) return;
 	if (( info=( struct ThreadData * ) userdata ) == NULL ) return;
@@ -914,6 +915,24 @@ static void JabberProcessMessage( XmlNode *node, void *userdata )
 	TCHAR* invitePassword = NULL;
 	BOOL delivered = FALSE, composing = FALSE;
 
+	n = JabberXmlGetChild( node, "active" );
+	if ( item != NULL && bodyNode != NULL ) {
+		if ( n != NULL && !lstrcmp( JabberXmlGetAttrValue( n, "xmlns" ), _T("http://jabber.org/protocol/chatstates")))
+			item->cap |= CLIENT_CAP_CHATSTAT;
+		else
+			item->cap &= ~CLIENT_CAP_CHATSTAT;
+	}
+
+	n = JabberXmlGetChild( node, "composing" );
+	if ( n != NULL && !lstrcmp( JabberXmlGetAttrValue( n, "xmlns" ), _T("http://jabber.org/protocol/chatstates")))
+		if (( hContact = JabberHContactFromJID( from )) != NULL )
+			JCallService( MS_PROTO_CONTACTISTYPING, ( WPARAM ) hContact, 60 );
+
+	n = JabberXmlGetChild( node, "paused" );
+	if ( n != NULL && !lstrcmp( JabberXmlGetAttrValue( n, "xmlns" ), _T("http://jabber.org/protocol/chatstates")))
+		if (( hContact = JabberHContactFromJID( from )) != NULL )
+			JCallService( MS_PROTO_CONTACTISTYPING, ( WPARAM ) hContact, PROTOTYPE_CONTACTTYPING_OFF );
+
 	for ( int i = 1; ( xNode = JabberXmlGetNthChild( node, "x", i )) != NULL; i++ ) {
 		if (( p=JabberXmlGetAttrValue( xNode, "xmlns" )) != NULL ) {
 			if ( !_tcscmp( p, _T("jabber:x:encrypted" ))) {
@@ -946,7 +965,6 @@ static void JabberProcessMessage( XmlNode *node, void *userdata )
 								JSendBroadcast( JabberHContactFromJID( from ), ACKTYPE_MESSAGE, ACKRESULT_SUCCESS, ( HANDLE ) 1, 0 );
 					}
 
-					HANDLE hContact;
 					if ( JabberXmlGetChild( xNode, "composing" ) != NULL )
 						if (( hContact = JabberHContactFromJID( from )) != NULL )
  							JCallService( MS_PROTO_CONTACTISTYPING, ( WPARAM ) hContact, 60 );

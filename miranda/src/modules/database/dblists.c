@@ -73,7 +73,7 @@ int List_GetIndex( SortedList* p_list, void* p_value, int* p_index )
 			int result = p_list->sortFunc( p_list->items[ i ], p_value );
 			if ( result == 0 )
 			{	*p_index = i;
-				return(1);
+				return 1;
 			}
 
 			if ( result < 0 )
