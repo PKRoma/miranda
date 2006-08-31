@@ -572,7 +572,6 @@
 						PreprocessorDefinitions=""
 						UsePrecompiledHeader="1"
 						PrecompiledHeaderThrough="commonheaders.h"
-						BrowseInformation="1"
 					/>
 				</FileConfiguration>
 				<FileConfiguration
@@ -585,7 +584,6 @@
 						PreprocessorDefinitions=""
 						UsePrecompiledHeader="1"
 						PrecompiledHeaderThrough="commonheaders.h"
-						BrowseInformation="1"
 					/>
 				</FileConfiguration>
 				<FileConfiguration
@@ -610,7 +608,6 @@
 						PreprocessorDefinitions=""
 						UsePrecompiledHeader="1"
 						PrecompiledHeaderThrough="commonheaders.h"
-						BrowseInformation="1"
 					/>
 				</FileConfiguration>
 			</File>
@@ -638,7 +635,6 @@
 						AdditionalIncludeDirectories=""
 						PreprocessorDefinitions=""
 						PrecompiledHeaderThrough="commonheaders.h"
-						BrowseInformation="1"
 					/>
 				</FileConfiguration>
 				<FileConfiguration
@@ -650,7 +646,6 @@
 						AdditionalIncludeDirectories=""
 						PreprocessorDefinitions=""
 						PrecompiledHeaderThrough="commonheaders.h"
-						BrowseInformation="1"
 					/>
 				</FileConfiguration>
 				<FileConfiguration
@@ -673,7 +668,6 @@
 						AdditionalIncludeDirectories=""
 						PreprocessorDefinitions=""
 						PrecompiledHeaderThrough="commonheaders.h"
-						BrowseInformation="1"
 					/>
 				</FileConfiguration>
 			</File>
@@ -693,7 +687,6 @@
 						AdditionalIncludeDirectories=""
 						PreprocessorDefinitions=""
 						PrecompiledHeaderThrough="commonheaders.h"
-						BrowseInformation="1"
 					/>
 				</FileConfiguration>
 				<FileConfiguration
@@ -705,7 +698,6 @@
 						AdditionalIncludeDirectories=""
 						PreprocessorDefinitions=""
 						PrecompiledHeaderThrough="commonheaders.h"
-						BrowseInformation="1"
 					/>
 				</FileConfiguration>
 				<FileConfiguration
@@ -728,7 +720,6 @@
 						AdditionalIncludeDirectories=""
 						PreprocessorDefinitions=""
 						PrecompiledHeaderThrough="commonheaders.h"
-						BrowseInformation="1"
 					/>
 				</FileConfiguration>
 			</File>
@@ -754,7 +745,6 @@
 							Optimization="1"
 							AdditionalIncludeDirectories=""
 							PreprocessorDefinitions=""
-							BrowseInformation="1"
 						/>
 					</FileConfiguration>
 					<FileConfiguration
@@ -765,7 +755,6 @@
 							Optimization="0"
 							AdditionalIncludeDirectories=""
 							PreprocessorDefinitions=""
-							BrowseInformation="1"
 						/>
 					</FileConfiguration>
 					<FileConfiguration
@@ -786,7 +775,6 @@
 							Optimization="0"
 							AdditionalIncludeDirectories=""
 							PreprocessorDefinitions=""
-							BrowseInformation="1"
 						/>
 					</FileConfiguration>
 				</File>
@@ -805,7 +793,6 @@
 							Optimization="1"
 							AdditionalIncludeDirectories=""
 							PreprocessorDefinitions=""
-							BrowseInformation="1"
 						/>
 					</FileConfiguration>
 					<FileConfiguration
@@ -816,7 +803,6 @@
 							Optimization="0"
 							AdditionalIncludeDirectories=""
 							PreprocessorDefinitions=""
-							BrowseInformation="1"
 						/>
 					</FileConfiguration>
 					<FileConfiguration
@@ -837,7 +823,6 @@
 							Optimization="0"
 							AdditionalIncludeDirectories=""
 							PreprocessorDefinitions=""
-							BrowseInformation="1"
 						/>
 					</FileConfiguration>
 				</File>
@@ -856,7 +841,6 @@
 							Optimization="1"
 							AdditionalIncludeDirectories=""
 							PreprocessorDefinitions=""
-							BrowseInformation="1"
 						/>
 					</FileConfiguration>
 					<FileConfiguration
@@ -867,7 +851,6 @@
 							Optimization="0"
 							AdditionalIncludeDirectories=""
 							PreprocessorDefinitions=""
-							BrowseInformation="1"
 						/>
 					</FileConfiguration>
 					<FileConfiguration
@@ -888,7 +871,6 @@
 							Optimization="0"
 							AdditionalIncludeDirectories=""
 							PreprocessorDefinitions=""
-							BrowseInformation="1"
 						/>
 					</FileConfiguration>
 				</File>
@@ -907,7 +889,6 @@
 							Optimization="1"
 							AdditionalIncludeDirectories=""
 							PreprocessorDefinitions=""
-							BrowseInformation="1"
 						/>
 					</FileConfiguration>
 					<FileConfiguration
@@ -918,7 +899,6 @@
 							Optimization="0"
 							AdditionalIncludeDirectories=""
 							PreprocessorDefinitions=""
-							BrowseInformation="1"
 						/>
 					</FileConfiguration>
 					<FileConfiguration
@@ -929,7 +909,6 @@
 							Optimization="1"
 							AdditionalIncludeDirectories=""
 							PreprocessorDefinitions=""
-							BrowseInformation="1"
 						/>
 					</FileConfiguration>
 					<FileConfiguration
@@ -940,7 +919,6 @@
 							Optimization="0"
 							AdditionalIncludeDirectories=""
 							PreprocessorDefinitions=""
-							BrowseInformation="1"
 						/>
 					</FileConfiguration>
 				</File>
@@ -959,7 +937,6 @@
 							Optimization="1"
 							AdditionalIncludeDirectories=""
 							PreprocessorDefinitions=""
-							BrowseInformation="1"
 						/>
 					</FileConfiguration>
 					<FileConfiguration
@@ -970,7 +947,6 @@
 							Optimization="0"
 							AdditionalIncludeDirectories=""
 							PreprocessorDefinitions=""
-							BrowseInformation="1"
 						/>
 					</FileConfiguration>
 					<FileConfiguration
@@ -991,7 +967,6 @@
 							Optimization="0"
 							AdditionalIncludeDirectories=""
 							PreprocessorDefinitions=""
-							BrowseInformation="1"
 						/>
 					</FileConfiguration>
 				</File>
@@ -1042,7 +1017,6 @@
 							Optimization="1"
 							AdditionalIncludeDirectories=""
 							PreprocessorDefinitions=""
-							BrowseInformation="1"
 						/>
 					</FileConfiguration>
 					<FileConfiguration
@@ -1053,7 +1027,6 @@
 							Optimization="0"
 							AdditionalIncludeDirectories=""
 							PreprocessorDefinitions=""
-							BrowseInformation="1"
 						/>
 					</FileConfiguration>
 					<FileConfiguration
@@ -1074,7 +1047,6 @@
 							Optimization="0"
 							AdditionalIncludeDirectories=""
 							PreprocessorDefinitions=""
-							BrowseInformation="1"
 						/>
 					</FileConfiguration>
 				</File>
@@ -1109,7 +1081,6 @@
 							Optimization="1"
 							AdditionalIncludeDirectories=""
 							PreprocessorDefinitions=""
-							BrowseInformation="1"
 						/>
 					</FileConfiguration>
 					<FileConfiguration
@@ -1120,7 +1091,6 @@
 							Optimization="0"
 							AdditionalIncludeDirectories=""
 							PreprocessorDefinitions=""
-							BrowseInformation="1"
 						/>
 					</FileConfiguration>
 					<FileConfiguration
@@ -1141,7 +1111,6 @@
 							Optimization="0"
 							AdditionalIncludeDirectories=""
 							PreprocessorDefinitions=""
-							BrowseInformation="1"
 						/>
 					</FileConfiguration>
 				</File>
@@ -1160,7 +1129,6 @@
 							Optimization="1"
 							AdditionalIncludeDirectories=""
 							PreprocessorDefinitions=""
-							BrowseInformation="1"
 						/>
 					</FileConfiguration>
 					<FileConfiguration
@@ -1171,7 +1139,6 @@
 							Optimization="0"
 							AdditionalIncludeDirectories=""
 							PreprocessorDefinitions=""
-							BrowseInformation="1"
 						/>
 					</FileConfiguration>
 					<FileConfiguration
@@ -1192,7 +1159,6 @@
 							Optimization="0"
 							AdditionalIncludeDirectories=""
 							PreprocessorDefinitions=""
-							BrowseInformation="1"
 						/>
 					</FileConfiguration>
 				</File>
@@ -1211,7 +1177,6 @@
 							Optimization="1"
 							AdditionalIncludeDirectories=""
 							PreprocessorDefinitions=""
-							BrowseInformation="1"
 						/>
 					</FileConfiguration>
 					<FileConfiguration
@@ -1222,7 +1187,6 @@
 							Optimization="0"
 							AdditionalIncludeDirectories=""
 							PreprocessorDefinitions=""
-							BrowseInformation="1"
 						/>
 					</FileConfiguration>
 					<FileConfiguration
@@ -1243,7 +1207,6 @@
 							Optimization="0"
 							AdditionalIncludeDirectories=""
 							PreprocessorDefinitions=""
-							BrowseInformation="1"
 						/>
 					</FileConfiguration>
 				</File>
@@ -1258,7 +1221,6 @@
 							Optimization="1"
 							AdditionalIncludeDirectories=""
 							PreprocessorDefinitions=""
-							BrowseInformation="1"
 						/>
 					</FileConfiguration>
 					<FileConfiguration
@@ -1269,7 +1231,6 @@
 							Optimization="0"
 							AdditionalIncludeDirectories=""
 							PreprocessorDefinitions=""
-							BrowseInformation="1"
 						/>
 					</FileConfiguration>
 					<FileConfiguration
@@ -1290,7 +1251,6 @@
 							Optimization="0"
 							AdditionalIncludeDirectories=""
 							PreprocessorDefinitions=""
-							BrowseInformation="1"
 						/>
 					</FileConfiguration>
 				</File>
@@ -1309,7 +1269,6 @@
 							Optimization="1"
 							AdditionalIncludeDirectories=""
 							PreprocessorDefinitions=""
-							BrowseInformation="1"
 						/>
 					</FileConfiguration>
 					<FileConfiguration
@@ -1320,7 +1279,6 @@
 							Optimization="0"
 							AdditionalIncludeDirectories=""
 							PreprocessorDefinitions=""
-							BrowseInformation="1"
 						/>
 					</FileConfiguration>
 					<FileConfiguration
@@ -1341,7 +1299,6 @@
 							Optimization="0"
 							AdditionalIncludeDirectories=""
 							PreprocessorDefinitions=""
-							BrowseInformation="1"
 						/>
 					</FileConfiguration>
 				</File>
@@ -1360,7 +1317,6 @@
 							Optimization="1"
 							AdditionalIncludeDirectories=""
 							PreprocessorDefinitions=""
-							BrowseInformation="1"
 						/>
 					</FileConfiguration>
 					<FileConfiguration
@@ -1371,7 +1327,6 @@
 							Optimization="0"
 							AdditionalIncludeDirectories=""
 							PreprocessorDefinitions=""
-							BrowseInformation="1"
 						/>
 					</FileConfiguration>
 					<FileConfiguration
@@ -1392,7 +1347,6 @@
 							Optimization="0"
 							AdditionalIncludeDirectories=""
 							PreprocessorDefinitions=""
-							BrowseInformation="1"
 						/>
 					</FileConfiguration>
 				</File>
@@ -1411,7 +1365,6 @@
 							Optimization="1"
 							AdditionalIncludeDirectories=""
 							PreprocessorDefinitions=""
-							BrowseInformation="1"
 						/>
 					</FileConfiguration>
 					<FileConfiguration
@@ -1422,7 +1375,6 @@
 							Optimization="0"
 							AdditionalIncludeDirectories=""
 							PreprocessorDefinitions=""
-							BrowseInformation="1"
 						/>
 					</FileConfiguration>
 					<FileConfiguration
@@ -1443,7 +1395,6 @@
 							Optimization="0"
 							AdditionalIncludeDirectories=""
 							PreprocessorDefinitions=""
-							BrowseInformation="1"
 						/>
 					</FileConfiguration>
 				</File>
@@ -1462,7 +1413,6 @@
 							Optimization="1"
 							AdditionalIncludeDirectories=""
 							PreprocessorDefinitions=""
-							BrowseInformation="1"
 						/>
 					</FileConfiguration>
 					<FileConfiguration
@@ -1473,7 +1423,6 @@
 							Optimization="0"
 							AdditionalIncludeDirectories=""
 							PreprocessorDefinitions=""
-							BrowseInformation="1"
 						/>
 					</FileConfiguration>
 					<FileConfiguration
@@ -1494,7 +1443,6 @@
 							Optimization="0"
 							AdditionalIncludeDirectories=""
 							PreprocessorDefinitions=""
-							BrowseInformation="1"
 						/>
 					</FileConfiguration>
 				</File>
@@ -1509,7 +1457,6 @@
 							Optimization="1"
 							AdditionalIncludeDirectories=""
 							PreprocessorDefinitions=""
-							BrowseInformation="1"
 						/>
 					</FileConfiguration>
 					<FileConfiguration
@@ -1520,7 +1467,6 @@
 							Optimization="0"
 							AdditionalIncludeDirectories=""
 							PreprocessorDefinitions=""
-							BrowseInformation="1"
 						/>
 					</FileConfiguration>
 					<FileConfiguration
@@ -1541,7 +1487,6 @@
 							Optimization="0"
 							AdditionalIncludeDirectories=""
 							PreprocessorDefinitions=""
-							BrowseInformation="1"
 						/>
 					</FileConfiguration>
 				</File>
@@ -1560,7 +1505,6 @@
 							Optimization="1"
 							AdditionalIncludeDirectories=""
 							PreprocessorDefinitions=""
-							BrowseInformation="1"
 						/>
 					</FileConfiguration>
 					<FileConfiguration
@@ -1571,7 +1515,6 @@
 							Optimization="0"
 							AdditionalIncludeDirectories=""
 							PreprocessorDefinitions=""
-							BrowseInformation="1"
 						/>
 					</FileConfiguration>
 					<FileConfiguration
@@ -1592,7 +1535,6 @@
 							Optimization="0"
 							AdditionalIncludeDirectories=""
 							PreprocessorDefinitions=""
-							BrowseInformation="1"
 						/>
 					</FileConfiguration>
 				</File>
@@ -1611,7 +1553,6 @@
 							Optimization="1"
 							AdditionalIncludeDirectories=""
 							PreprocessorDefinitions=""
-							BrowseInformation="1"
 						/>
 					</FileConfiguration>
 					<FileConfiguration
@@ -1622,7 +1563,6 @@
 							Optimization="0"
 							AdditionalIncludeDirectories=""
 							PreprocessorDefinitions=""
-							BrowseInformation="1"
 						/>
 					</FileConfiguration>
 					<FileConfiguration
@@ -1643,7 +1583,6 @@
 							Optimization="0"
 							AdditionalIncludeDirectories=""
 							PreprocessorDefinitions=""
-							BrowseInformation="1"
 						/>
 					</FileConfiguration>
 				</File>
@@ -1658,7 +1597,6 @@
 							Optimization="1"
 							AdditionalIncludeDirectories=""
 							PreprocessorDefinitions=""
-							BrowseInformation="1"
 						/>
 					</FileConfiguration>
 					<FileConfiguration
@@ -1669,7 +1607,6 @@
 							Optimization="0"
 							AdditionalIncludeDirectories=""
 							PreprocessorDefinitions=""
-							BrowseInformation="1"
 						/>
 					</FileConfiguration>
 					<FileConfiguration
@@ -1690,7 +1627,6 @@
 							Optimization="0"
 							AdditionalIncludeDirectories=""
 							PreprocessorDefinitions=""
-							BrowseInformation="1"
 						/>
 					</FileConfiguration>
 				</File>
@@ -1705,7 +1641,6 @@
 							Optimization="1"
 							AdditionalIncludeDirectories=""
 							PreprocessorDefinitions=""
-							BrowseInformation="1"
 						/>
 					</FileConfiguration>
 					<FileConfiguration
@@ -1716,7 +1651,6 @@
 							Optimization="0"
 							AdditionalIncludeDirectories=""
 							PreprocessorDefinitions=""
-							BrowseInformation="1"
 						/>
 					</FileConfiguration>
 					<FileConfiguration
@@ -1737,7 +1671,6 @@
 							Optimization="0"
 							AdditionalIncludeDirectories=""
 							PreprocessorDefinitions=""
-							BrowseInformation="1"
 						/>
 					</FileConfiguration>
 				</File>
@@ -1752,7 +1685,6 @@
 							Optimization="1"
 							AdditionalIncludeDirectories=""
 							PreprocessorDefinitions=""
-							BrowseInformation="1"
 						/>
 					</FileConfiguration>
 					<FileConfiguration
@@ -1763,7 +1695,6 @@
 							Optimization="0"
 							AdditionalIncludeDirectories=""
 							PreprocessorDefinitions=""
-							BrowseInformation="1"
 						/>
 					</FileConfiguration>
 					<FileConfiguration
@@ -1784,7 +1715,6 @@
 							Optimization="0"
 							AdditionalIncludeDirectories=""
 							PreprocessorDefinitions=""
-							BrowseInformation="1"
 						/>
 					</FileConfiguration>
 				</File>
@@ -1799,7 +1729,6 @@
 							Optimization="1"
 							AdditionalIncludeDirectories=""
 							PreprocessorDefinitions=""
-							BrowseInformation="1"
 						/>
 					</FileConfiguration>
 					<FileConfiguration
@@ -1810,7 +1739,6 @@
 							Optimization="0"
 							AdditionalIncludeDirectories=""
 							PreprocessorDefinitions=""
-							BrowseInformation="1"
 						/>
 					</FileConfiguration>
 					<FileConfiguration
@@ -1831,7 +1759,6 @@
 							Optimization="0"
 							AdditionalIncludeDirectories=""
 							PreprocessorDefinitions=""
-							BrowseInformation="1"
 						/>
 					</FileConfiguration>
 				</File>
@@ -1846,7 +1773,6 @@
 							Optimization="1"
 							AdditionalIncludeDirectories=""
 							PreprocessorDefinitions=""
-							BrowseInformation="1"
 						/>
 					</FileConfiguration>
 					<FileConfiguration
@@ -1857,7 +1783,6 @@
 							Optimization="0"
 							AdditionalIncludeDirectories=""
 							PreprocessorDefinitions=""
-							BrowseInformation="1"
 						/>
 					</FileConfiguration>
 					<FileConfiguration
@@ -1878,7 +1803,6 @@
 							Optimization="0"
 							AdditionalIncludeDirectories=""
 							PreprocessorDefinitions=""
-							BrowseInformation="1"
 						/>
 					</FileConfiguration>
 				</File>
@@ -1893,7 +1817,6 @@
 							Optimization="1"
 							AdditionalIncludeDirectories=""
 							PreprocessorDefinitions=""
-							BrowseInformation="1"
 						/>
 					</FileConfiguration>
 					<FileConfiguration
@@ -1904,7 +1827,6 @@
 							Optimization="0"
 							AdditionalIncludeDirectories=""
 							PreprocessorDefinitions=""
-							BrowseInformation="1"
 						/>
 					</FileConfiguration>
 					<FileConfiguration
@@ -1925,7 +1847,6 @@
 							Optimization="0"
 							AdditionalIncludeDirectories=""
 							PreprocessorDefinitions=""
-							BrowseInformation="1"
 						/>
 					</FileConfiguration>
 				</File>
@@ -1940,7 +1861,6 @@
 							Optimization="1"
 							AdditionalIncludeDirectories=""
 							PreprocessorDefinitions=""
-							BrowseInformation="1"
 						/>
 					</FileConfiguration>
 					<FileConfiguration
@@ -1951,7 +1871,6 @@
 							Optimization="0"
 							AdditionalIncludeDirectories=""
 							PreprocessorDefinitions=""
-							BrowseInformation="1"
 						/>
 					</FileConfiguration>
 					<FileConfiguration
@@ -1972,7 +1891,6 @@
 							Optimization="0"
 							AdditionalIncludeDirectories=""
 							PreprocessorDefinitions=""
-							BrowseInformation="1"
 						/>
 					</FileConfiguration>
 				</File>
@@ -1995,7 +1913,6 @@
 							Optimization="1"
 							AdditionalIncludeDirectories=""
 							PreprocessorDefinitions=""
-							BrowseInformation="1"
 						/>
 					</FileConfiguration>
 					<FileConfiguration
@@ -2006,7 +1923,6 @@
 							Optimization="0"
 							AdditionalIncludeDirectories=""
 							PreprocessorDefinitions=""
-							BrowseInformation="1"
 						/>
 					</FileConfiguration>
 					<FileConfiguration
@@ -2027,7 +1943,6 @@
 							Optimization="0"
 							AdditionalIncludeDirectories=""
 							PreprocessorDefinitions=""
-							BrowseInformation="1"
 						/>
 					</FileConfiguration>
 				</File>
@@ -2046,7 +1961,6 @@
 							Optimization="1"
 							AdditionalIncludeDirectories=""
 							PreprocessorDefinitions=""
-							BrowseInformation="1"
 						/>
 					</FileConfiguration>
 					<FileConfiguration
@@ -2057,7 +1971,6 @@
 							Optimization="0"
 							AdditionalIncludeDirectories=""
 							PreprocessorDefinitions=""
-							BrowseInformation="1"
 						/>
 					</FileConfiguration>
 					<FileConfiguration
@@ -2078,7 +1991,6 @@
 							Optimization="0"
 							AdditionalIncludeDirectories=""
 							PreprocessorDefinitions=""
-							BrowseInformation="1"
 						/>
 					</FileConfiguration>
 				</File>
@@ -2097,7 +2009,6 @@
 							Optimization="1"
 							AdditionalIncludeDirectories=""
 							PreprocessorDefinitions=""
-							BrowseInformation="1"
 						/>
 					</FileConfiguration>
 					<FileConfiguration
@@ -2108,7 +2019,6 @@
 							Optimization="0"
 							AdditionalIncludeDirectories=""
 							PreprocessorDefinitions=""
-							BrowseInformation="1"
 						/>
 					</FileConfiguration>
 					<FileConfiguration
@@ -2129,7 +2039,6 @@
 							Optimization="0"
 							AdditionalIncludeDirectories=""
 							PreprocessorDefinitions=""
-							BrowseInformation="1"
 						/>
 					</FileConfiguration>
 				</File>
@@ -2144,7 +2053,6 @@
 							Optimization="1"
 							AdditionalIncludeDirectories=""
 							PreprocessorDefinitions=""
-							BrowseInformation="1"
 						/>
 					</FileConfiguration>
 					<FileConfiguration
@@ -2155,7 +2063,6 @@
 							Optimization="0"
 							AdditionalIncludeDirectories=""
 							PreprocessorDefinitions=""
-							BrowseInformation="1"
 						/>
 					</FileConfiguration>
 					<FileConfiguration
@@ -2176,7 +2083,6 @@
 							Optimization="0"
 							AdditionalIncludeDirectories=""
 							PreprocessorDefinitions=""
-							BrowseInformation="1"
 						/>
 					</FileConfiguration>
 				</File>
@@ -2191,7 +2097,6 @@
 							Optimization="1"
 							AdditionalIncludeDirectories=""
 							PreprocessorDefinitions=""
-							BrowseInformation="1"
 						/>
 					</FileConfiguration>
 					<FileConfiguration
@@ -2202,7 +2107,6 @@
 							Optimization="0"
 							AdditionalIncludeDirectories=""
 							PreprocessorDefinitions=""
-							BrowseInformation="1"
 						/>
 					</FileConfiguration>
 					<FileConfiguration
@@ -2223,7 +2127,6 @@
 							Optimization="0"
 							AdditionalIncludeDirectories=""
 							PreprocessorDefinitions=""
-							BrowseInformation="1"
 						/>
 					</FileConfiguration>
 				</File>
@@ -2242,7 +2145,6 @@
 							Optimization="1"
 							AdditionalIncludeDirectories=""
 							PreprocessorDefinitions=""
-							BrowseInformation="1"
 						/>
 					</FileConfiguration>
 					<FileConfiguration
@@ -2253,7 +2155,6 @@
 							Optimization="0"
 							AdditionalIncludeDirectories=""
 							PreprocessorDefinitions=""
-							BrowseInformation="1"
 						/>
 					</FileConfiguration>
 					<FileConfiguration
@@ -2274,7 +2175,6 @@
 							Optimization="0"
 							AdditionalIncludeDirectories=""
 							PreprocessorDefinitions=""
-							BrowseInformation="1"
 						/>
 					</FileConfiguration>
 				</File>
@@ -2289,7 +2189,6 @@
 							Optimization="1"
 							AdditionalIncludeDirectories=""
 							PreprocessorDefinitions=""
-							BrowseInformation="1"
 						/>
 					</FileConfiguration>
 					<FileConfiguration
@@ -2300,7 +2199,6 @@
 							Optimization="0"
 							AdditionalIncludeDirectories=""
 							PreprocessorDefinitions=""
-							BrowseInformation="1"
 						/>
 					</FileConfiguration>
 					<FileConfiguration
@@ -2321,7 +2219,6 @@
 							Optimization="0"
 							AdditionalIncludeDirectories=""
 							PreprocessorDefinitions=""
-							BrowseInformation="1"
 						/>
 					</FileConfiguration>
 				</File>
@@ -2336,7 +2233,6 @@
 							Optimization="1"
 							AdditionalIncludeDirectories=""
 							PreprocessorDefinitions=""
-							BrowseInformation="1"
 						/>
 					</FileConfiguration>
 					<FileConfiguration
@@ -2347,7 +2243,6 @@
 							Optimization="0"
 							AdditionalIncludeDirectories=""
 							PreprocessorDefinitions=""
-							BrowseInformation="1"
 						/>
 					</FileConfiguration>
 					<FileConfiguration
@@ -2368,7 +2263,6 @@
 							Optimization="0"
 							AdditionalIncludeDirectories=""
 							PreprocessorDefinitions=""
-							BrowseInformation="1"
 						/>
 					</FileConfiguration>
 				</File>
@@ -2387,7 +2281,6 @@
 							Optimization="1"
 							AdditionalIncludeDirectories=""
 							PreprocessorDefinitions=""
-							BrowseInformation="1"
 						/>
 					</FileConfiguration>
 					<FileConfiguration
@@ -2398,7 +2291,6 @@
 							Optimization="0"
 							AdditionalIncludeDirectories=""
 							PreprocessorDefinitions=""
-							BrowseInformation="1"
 						/>
 					</FileConfiguration>
 					<FileConfiguration
@@ -2419,7 +2311,6 @@
 							Optimization="0"
 							AdditionalIncludeDirectories=""
 							PreprocessorDefinitions=""
-							BrowseInformation="1"
 						/>
 					</FileConfiguration>
 				</File>
@@ -2434,7 +2325,6 @@
 							Optimization="1"
 							AdditionalIncludeDirectories=""
 							PreprocessorDefinitions=""
-							BrowseInformation="1"
 						/>
 					</FileConfiguration>
 					<FileConfiguration
@@ -2445,7 +2335,6 @@
 							Optimization="0"
 							AdditionalIncludeDirectories=""
 							PreprocessorDefinitions=""
-							BrowseInformation="1"
 						/>
 					</FileConfiguration>
 					<FileConfiguration
@@ -2466,7 +2355,6 @@
 							Optimization="0"
 							AdditionalIncludeDirectories=""
 							PreprocessorDefinitions=""
-							BrowseInformation="1"
 						/>
 					</FileConfiguration>
 				</File>
@@ -2485,7 +2373,6 @@
 							Optimization="1"
 							AdditionalIncludeDirectories=""
 							PreprocessorDefinitions=""
-							BrowseInformation="1"
 						/>
 					</FileConfiguration>
 					<FileConfiguration
@@ -2496,7 +2383,6 @@
 							Optimization="0"
 							AdditionalIncludeDirectories=""
 							PreprocessorDefinitions=""
-							BrowseInformation="1"
 						/>
 					</FileConfiguration>
 					<FileConfiguration
@@ -2517,7 +2403,6 @@
 							Optimization="0"
 							AdditionalIncludeDirectories=""
 							PreprocessorDefinitions=""
-							BrowseInformation="1"
 						/>
 					</FileConfiguration>
 				</File>
@@ -2532,7 +2417,6 @@
 							Optimization="1"
 							AdditionalIncludeDirectories=""
 							PreprocessorDefinitions=""
-							BrowseInformation="1"
 						/>
 					</FileConfiguration>
 					<FileConfiguration
@@ -2543,7 +2427,6 @@
 							Optimization="0"
 							AdditionalIncludeDirectories=""
 							PreprocessorDefinitions=""
-							BrowseInformation="1"
 						/>
 					</FileConfiguration>
 					<FileConfiguration
@@ -2564,7 +2447,6 @@
 							Optimization="0"
 							AdditionalIncludeDirectories=""
 							PreprocessorDefinitions=""
-							BrowseInformation="1"
 						/>
 					</FileConfiguration>
 				</File>
@@ -2583,7 +2465,6 @@
 							Optimization="1"
 							AdditionalIncludeDirectories=""
 							PreprocessorDefinitions=""
-							BrowseInformation="1"
 						/>
 					</FileConfiguration>
 					<FileConfiguration
@@ -2594,7 +2475,6 @@
 							Optimization="0"
 							AdditionalIncludeDirectories=""
 							PreprocessorDefinitions=""
-							BrowseInformation="1"
 						/>
 					</FileConfiguration>
 					<FileConfiguration
@@ -2615,7 +2495,6 @@
 							Optimization="0"
 							AdditionalIncludeDirectories=""
 							PreprocessorDefinitions=""
-							BrowseInformation="1"
 						/>
 					</FileConfiguration>
 				</File>
@@ -2634,7 +2513,6 @@
 							Optimization="1"
 							AdditionalIncludeDirectories=""
 							PreprocessorDefinitions=""
-							BrowseInformation="1"
 						/>
 					</FileConfiguration>
 					<FileConfiguration
@@ -2645,7 +2523,6 @@
 							Optimization="0"
 							AdditionalIncludeDirectories=""
 							PreprocessorDefinitions=""
-							BrowseInformation="1"
 						/>
 					</FileConfiguration>
 					<FileConfiguration
@@ -2666,7 +2543,6 @@
 							Optimization="0"
 							AdditionalIncludeDirectories=""
 							PreprocessorDefinitions=""
-							BrowseInformation="1"
 						/>
 					</FileConfiguration>
 				</File>
@@ -2685,7 +2561,6 @@
 							Optimization="1"
 							AdditionalIncludeDirectories=""
 							PreprocessorDefinitions=""
-							BrowseInformation="1"
 						/>
 					</FileConfiguration>
 					<FileConfiguration
@@ -2696,7 +2571,6 @@
 							Optimization="0"
 							AdditionalIncludeDirectories=""
 							PreprocessorDefinitions=""
-							BrowseInformation="1"
 						/>
 					</FileConfiguration>
 					<FileConfiguration
@@ -2717,7 +2591,6 @@
 							Optimization="0"
 							AdditionalIncludeDirectories=""
 							PreprocessorDefinitions=""
-							BrowseInformation="1"
 						/>
 					</FileConfiguration>
 				</File>
@@ -2732,7 +2605,6 @@
 							Optimization="1"
 							AdditionalIncludeDirectories=""
 							PreprocessorDefinitions=""
-							BrowseInformation="1"
 						/>
 					</FileConfiguration>
 					<FileConfiguration
@@ -2743,7 +2615,6 @@
 							Optimization="0"
 							AdditionalIncludeDirectories=""
 							PreprocessorDefinitions=""
-							BrowseInformation="1"
 						/>
 					</FileConfiguration>
 					<FileConfiguration
@@ -2764,7 +2635,6 @@
 							Optimization="0"
 							AdditionalIncludeDirectories=""
 							PreprocessorDefinitions=""
-							BrowseInformation="1"
 						/>
 					</FileConfiguration>
 				</File>
@@ -2779,7 +2649,6 @@
 							Optimization="1"
 							AdditionalIncludeDirectories=""
 							PreprocessorDefinitions=""
-							BrowseInformation="1"
 						/>
 					</FileConfiguration>
 					<FileConfiguration
@@ -2790,7 +2659,6 @@
 							Optimization="0"
 							AdditionalIncludeDirectories=""
 							PreprocessorDefinitions=""
-							BrowseInformation="1"
 						/>
 					</FileConfiguration>
 					<FileConfiguration
@@ -2811,7 +2679,6 @@
 							Optimization="0"
 							AdditionalIncludeDirectories=""
 							PreprocessorDefinitions=""
-							BrowseInformation="1"
 						/>
 					</FileConfiguration>
 				</File>
@@ -2826,7 +2693,6 @@
 							Optimization="1"
 							AdditionalIncludeDirectories=""
 							PreprocessorDefinitions=""
-							BrowseInformation="1"
 						/>
 					</FileConfiguration>
 					<FileConfiguration
@@ -2837,7 +2703,6 @@
 							Optimization="0"
 							AdditionalIncludeDirectories=""
 							PreprocessorDefinitions=""
-							BrowseInformation="1"
 						/>
 					</FileConfiguration>
 					<FileConfiguration
@@ -2858,7 +2723,6 @@
 							Optimization="0"
 							AdditionalIncludeDirectories=""
 							PreprocessorDefinitions=""
-							BrowseInformation="1"
 						/>
 					</FileConfiguration>
 				</File>
@@ -2873,7 +2737,6 @@
 							Optimization="1"
 							AdditionalIncludeDirectories=""
 							PreprocessorDefinitions=""
-							BrowseInformation="1"
 						/>
 					</FileConfiguration>
 					<FileConfiguration
@@ -2884,7 +2747,6 @@
 							Optimization="0"
 							AdditionalIncludeDirectories=""
 							PreprocessorDefinitions=""
-							BrowseInformation="1"
 						/>
 					</FileConfiguration>
 					<FileConfiguration
@@ -2905,7 +2767,6 @@
 							Optimization="0"
 							AdditionalIncludeDirectories=""
 							PreprocessorDefinitions=""
-							BrowseInformation="1"
 						/>
 					</FileConfiguration>
 				</File>
@@ -2924,7 +2785,6 @@
 							Optimization="1"
 							AdditionalIncludeDirectories=""
 							PreprocessorDefinitions=""
-							BrowseInformation="1"
 						/>
 					</FileConfiguration>
 					<FileConfiguration
@@ -2935,7 +2795,6 @@
 							Optimization="0"
 							AdditionalIncludeDirectories=""
 							PreprocessorDefinitions=""
-							BrowseInformation="1"
 						/>
 					</FileConfiguration>
 					<FileConfiguration
@@ -2956,7 +2815,6 @@
 							Optimization="0"
 							AdditionalIncludeDirectories=""
 							PreprocessorDefinitions=""
-							BrowseInformation="1"
 						/>
 					</FileConfiguration>
 				</File>
@@ -2975,7 +2833,6 @@
 							Optimization="1"
 							AdditionalIncludeDirectories=""
 							PreprocessorDefinitions=""
-							BrowseInformation="1"
 						/>
 					</FileConfiguration>
 					<FileConfiguration
@@ -2986,7 +2843,6 @@
 							Optimization="0"
 							AdditionalIncludeDirectories=""
 							PreprocessorDefinitions=""
-							BrowseInformation="1"
 						/>
 					</FileConfiguration>
 					<FileConfiguration
@@ -3007,7 +2863,6 @@
 							Optimization="0"
 							AdditionalIncludeDirectories=""
 							PreprocessorDefinitions=""
-							BrowseInformation="1"
 						/>
 					</FileConfiguration>
 				</File>
@@ -3026,7 +2881,6 @@
 							Optimization="1"
 							AdditionalIncludeDirectories=""
 							PreprocessorDefinitions=""
-							BrowseInformation="1"
 						/>
 					</FileConfiguration>
 					<FileConfiguration
@@ -3037,7 +2891,6 @@
 							Optimization="0"
 							AdditionalIncludeDirectories=""
 							PreprocessorDefinitions=""
-							BrowseInformation="1"
 						/>
 					</FileConfiguration>
 					<FileConfiguration
@@ -3058,7 +2911,6 @@
 							Optimization="0"
 							AdditionalIncludeDirectories=""
 							PreprocessorDefinitions=""
-							BrowseInformation="1"
 						/>
 					</FileConfiguration>
 				</File>
@@ -3073,7 +2925,6 @@
 							Optimization="1"
 							AdditionalIncludeDirectories=""
 							PreprocessorDefinitions=""
-							BrowseInformation="1"
 						/>
 					</FileConfiguration>
 					<FileConfiguration
@@ -3105,7 +2956,6 @@
 							Optimization="0"
 							AdditionalIncludeDirectories=""
 							PreprocessorDefinitions=""
-							BrowseInformation="1"
 						/>
 					</FileConfiguration>
 				</File>
@@ -3120,7 +2970,6 @@
 							Optimization="1"
 							AdditionalIncludeDirectories=""
 							PreprocessorDefinitions=""
-							BrowseInformation="1"
 						/>
 					</FileConfiguration>
 					<FileConfiguration
@@ -3131,7 +2980,6 @@
 							Optimization="0"
 							AdditionalIncludeDirectories=""
 							PreprocessorDefinitions=""
-							BrowseInformation="1"
 						/>
 					</FileConfiguration>
 					<FileConfiguration
@@ -3152,7 +3000,6 @@
 							Optimization="0"
 							AdditionalIncludeDirectories=""
 							PreprocessorDefinitions=""
-							BrowseInformation="1"
 						/>
 					</FileConfiguration>
 				</File>
@@ -3171,7 +3018,6 @@
 							Optimization="1"
 							AdditionalIncludeDirectories=""
 							PreprocessorDefinitions=""
-							BrowseInformation="1"
 						/>
 					</FileConfiguration>
 					<FileConfiguration
@@ -3182,7 +3028,6 @@
 							Optimization="0"
 							AdditionalIncludeDirectories=""
 							PreprocessorDefinitions=""
-							BrowseInformation="1"
 						/>
 					</FileConfiguration>
 					<FileConfiguration
@@ -3203,7 +3048,6 @@
 							Optimization="0"
 							AdditionalIncludeDirectories=""
 							PreprocessorDefinitions=""
-							BrowseInformation="1"
 						/>
 					</FileConfiguration>
 				</File>
@@ -3222,7 +3066,6 @@
 							Optimization="1"
 							AdditionalIncludeDirectories=""
 							PreprocessorDefinitions=""
-							BrowseInformation="1"
 						/>
 					</FileConfiguration>
 					<FileConfiguration
@@ -3233,7 +3076,6 @@
 							Optimization="0"
 							AdditionalIncludeDirectories=""
 							PreprocessorDefinitions=""
-							BrowseInformation="1"
 						/>
 					</FileConfiguration>
 					<FileConfiguration
@@ -3254,7 +3096,6 @@
 							Optimization="0"
 							AdditionalIncludeDirectories=""
 							PreprocessorDefinitions=""
-							BrowseInformation="1"
 						/>
 					</FileConfiguration>
 				</File>
@@ -3269,7 +3110,6 @@
 							Optimization="1"
 							AdditionalIncludeDirectories=""
 							PreprocessorDefinitions=""
-							BrowseInformation="1"
 						/>
 					</FileConfiguration>
 					<FileConfiguration
@@ -3280,7 +3120,6 @@
 							Optimization="0"
 							AdditionalIncludeDirectories=""
 							PreprocessorDefinitions=""
-							BrowseInformation="1"
 						/>
 					</FileConfiguration>
 					<FileConfiguration
@@ -3301,7 +3140,6 @@
 							Optimization="0"
 							AdditionalIncludeDirectories=""
 							PreprocessorDefinitions=""
-							BrowseInformation="1"
 						/>
 					</FileConfiguration>
 				</File>
@@ -3316,7 +3154,6 @@
 							Optimization="1"
 							AdditionalIncludeDirectories=""
 							PreprocessorDefinitions=""
-							BrowseInformation="1"
 						/>
 					</FileConfiguration>
 					<FileConfiguration
@@ -3327,7 +3164,6 @@
 							Optimization="0"
 							AdditionalIncludeDirectories=""
 							PreprocessorDefinitions=""
-							BrowseInformation="1"
 						/>
 					</FileConfiguration>
 					<FileConfiguration
@@ -3348,7 +3184,6 @@
 							Optimization="0"
 							AdditionalIncludeDirectories=""
 							PreprocessorDefinitions=""
-							BrowseInformation="1"
 						/>
 					</FileConfiguration>
 				</File>
@@ -3363,7 +3198,6 @@
 							Optimization="1"
 							AdditionalIncludeDirectories=""
 							PreprocessorDefinitions=""
-							BrowseInformation="1"
 						/>
 					</FileConfiguration>
 					<FileConfiguration
@@ -3374,7 +3208,6 @@
 							Optimization="0"
 							AdditionalIncludeDirectories=""
 							PreprocessorDefinitions=""
-							BrowseInformation="1"
 						/>
 					</FileConfiguration>
 					<FileConfiguration
@@ -3395,7 +3228,6 @@
 							Optimization="0"
 							AdditionalIncludeDirectories=""
 							PreprocessorDefinitions=""
-							BrowseInformation="1"
 						/>
 					</FileConfiguration>
 				</File>
@@ -3410,7 +3242,6 @@
 							Optimization="1"
 							AdditionalIncludeDirectories=""
 							PreprocessorDefinitions=""
-							BrowseInformation="1"
 						/>
 					</FileConfiguration>
 					<FileConfiguration
@@ -3421,7 +3252,6 @@
 							Optimization="0"
 							AdditionalIncludeDirectories=""
 							PreprocessorDefinitions=""
-							BrowseInformation="1"
 						/>
 					</FileConfiguration>
 					<FileConfiguration
@@ -3442,7 +3272,6 @@
 							Optimization="0"
 							AdditionalIncludeDirectories=""
 							PreprocessorDefinitions=""
-							BrowseInformation="1"
 						/>
 					</FileConfiguration>
 				</File>
@@ -3457,7 +3286,6 @@
 							Optimization="1"
 							AdditionalIncludeDirectories=""
 							PreprocessorDefinitions=""
-							BrowseInformation="1"
 						/>
 					</FileConfiguration>
 					<FileConfiguration
@@ -3468,7 +3296,6 @@
 							Optimization="0"
 							AdditionalIncludeDirectories=""
 							PreprocessorDefinitions=""
-							BrowseInformation="1"
 						/>
 					</FileConfiguration>
 					<FileConfiguration
@@ -3489,7 +3316,6 @@
 							Optimization="0"
 							AdditionalIncludeDirectories=""
 							PreprocessorDefinitions=""
-							BrowseInformation="1"
 						/>
 					</FileConfiguration>
 				</File>
@@ -3508,7 +3334,6 @@
 							Optimization="1"
 							AdditionalIncludeDirectories=""
 							PreprocessorDefinitions=""
-							BrowseInformation="1"
 						/>
 					</FileConfiguration>
 					<FileConfiguration
@@ -3519,7 +3344,6 @@
 							Optimization="0"
 							AdditionalIncludeDirectories=""
 							PreprocessorDefinitions=""
-							BrowseInformation="1"
 						/>
 					</FileConfiguration>
 					<FileConfiguration
@@ -3540,7 +3364,6 @@
 							Optimization="0"
 							AdditionalIncludeDirectories=""
 							PreprocessorDefinitions=""
-							BrowseInformation="1"
 						/>
 					</FileConfiguration>
 				</File>
@@ -3555,7 +3378,6 @@
 							Optimization="1"
 							AdditionalIncludeDirectories=""
 							PreprocessorDefinitions=""
-							BrowseInformation="1"
 						/>
 					</FileConfiguration>
 					<FileConfiguration
@@ -3566,7 +3388,6 @@
 							Optimization="0"
 							AdditionalIncludeDirectories=""
 							PreprocessorDefinitions=""
-							BrowseInformation="1"
 						/>
 					</FileConfiguration>
 					<FileConfiguration
@@ -3587,7 +3408,6 @@
 							Optimization="0"
 							AdditionalIncludeDirectories=""
 							PreprocessorDefinitions=""
-							BrowseInformation="1"
 						/>
 					</FileConfiguration>
 				</File>
@@ -3606,7 +3426,6 @@
 							Optimization="1"
 							AdditionalIncludeDirectories=""
 							PreprocessorDefinitions=""
-							BrowseInformation="1"
 						/>
 					</FileConfiguration>
 					<FileConfiguration
@@ -3617,7 +3436,6 @@
 							Optimization="0"
 							AdditionalIncludeDirectories=""
 							PreprocessorDefinitions=""
-							BrowseInformation="1"
 						/>
 					</FileConfiguration>
 					<FileConfiguration
@@ -3638,7 +3456,6 @@
 							Optimization="0"
 							AdditionalIncludeDirectories=""
 							PreprocessorDefinitions=""
-							BrowseInformation="1"
 						/>
 					</FileConfiguration>
 				</File>

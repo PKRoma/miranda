@@ -72,6 +72,10 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "tipper", "..\plugins\tipper
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "yapp", "..\plugins\yapp\popups2_8.vcproj", "{B6FC188B-8E54-4197-9444-8BADE9AA75E2}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "db3x_mmap", "..\plugins\db3x_mmap\db3x_mmap_8.vcproj", "{20D781FB-4A20-4B75-B863-304A47182966}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Yahoo", "..\protocols\Yahoo\Yahoo_8.vcproj", "{E42870DB-9FED-44E7-9C93-4E64D0C87F51}"
+EndProject
 Global
 	GlobalSection(SourceCodeControl) = preSolution
 		SccNumberOfProjects = 17
@@ -438,6 +442,22 @@ Global
 		{B6FC188B-8E54-4197-9444-8BADE9AA75E2}.Release Unicode|Win32.Build.0 = Release|Win32
 		{B6FC188B-8E54-4197-9444-8BADE9AA75E2}.Release|Win32.ActiveCfg = Release|Win32
 		{B6FC188B-8E54-4197-9444-8BADE9AA75E2}.Release|Win32.Build.0 = Release|Win32
+		{20D781FB-4A20-4B75-B863-304A47182966}.Debug Unicode|Win32.ActiveCfg = Debug|Win32
+		{20D781FB-4A20-4B75-B863-304A47182966}.Debug Unicode|Win32.Build.0 = Debug|Win32
+		{20D781FB-4A20-4B75-B863-304A47182966}.Debug|Win32.ActiveCfg = Debug|Win32
+		{20D781FB-4A20-4B75-B863-304A47182966}.Debug|Win32.Build.0 = Debug|Win32
+		{20D781FB-4A20-4B75-B863-304A47182966}.Release Unicode|Win32.ActiveCfg = Release|Win32
+		{20D781FB-4A20-4B75-B863-304A47182966}.Release Unicode|Win32.Build.0 = Release|Win32
+		{20D781FB-4A20-4B75-B863-304A47182966}.Release|Win32.ActiveCfg = Release|Win32
+		{20D781FB-4A20-4B75-B863-304A47182966}.Release|Win32.Build.0 = Release|Win32
+		{E42870DB-9FED-44E7-9C93-4E64D0C87F51}.Debug Unicode|Win32.ActiveCfg = Debug|Win32
+		{E42870DB-9FED-44E7-9C93-4E64D0C87F51}.Debug Unicode|Win32.Build.0 = Debug|Win32
+		{E42870DB-9FED-44E7-9C93-4E64D0C87F51}.Debug|Win32.ActiveCfg = Debug|Win32
+		{E42870DB-9FED-44E7-9C93-4E64D0C87F51}.Debug|Win32.Build.0 = Debug|Win32
+		{E42870DB-9FED-44E7-9C93-4E64D0C87F51}.Release Unicode|Win32.ActiveCfg = Release|Win32
+		{E42870DB-9FED-44E7-9C93-4E64D0C87F51}.Release Unicode|Win32.Build.0 = Release|Win32
+		{E42870DB-9FED-44E7-9C93-4E64D0C87F51}.Release|Win32.ActiveCfg = Release|Win32
+		{E42870DB-9FED-44E7-9C93-4E64D0C87F51}.Release|Win32.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

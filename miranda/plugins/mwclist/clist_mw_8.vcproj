@@ -79,8 +79,8 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
+				IgnoreImportLibrary="true"
 				AdditionalDependencies="comctl32.lib"
-				OutputFile="$(OutDir)/clist_mw.dll"
 				LinkIncremental="1"
 				SuppressStartupBanner="true"
 				GenerateDebugInformation="true"
@@ -177,7 +177,6 @@
 			<Tool
 				Name="VCLinkerTool"
 				AdditionalDependencies="comctl32.lib"
-				OutputFile="$(OutDir)/clist_mw.dll"
 				SuppressStartupBanner="true"
 				GenerateDebugInformation="true"
 				BaseAddress="0x6590000"
@@ -270,7 +269,6 @@
 			<Tool
 				Name="VCLinkerTool"
 				AdditionalDependencies="comctl32.lib"
-				OutputFile="$(OutDir)/clist_mw.dll"
 				SuppressStartupBanner="true"
 				GenerateDebugInformation="true"
 				BaseAddress="0x6590000"
@@ -369,8 +367,8 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
+				IgnoreImportLibrary="true"
 				AdditionalDependencies="comctl32.lib"
-				OutputFile="$(OutDir)/clist_mw.dll"
 				LinkIncremental="0"
 				SuppressStartupBanner="true"
 				GenerateManifest="false"

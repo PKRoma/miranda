@@ -142,7 +142,7 @@
 				AdditionalIncludeDirectories="../../include"
 				PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;_USRDLL;HAVE_CONFIG_H;YAHOO_EXPORTS;_USE_32BIT_TIME_T"
 				StringPooling="true"
-				RuntimeLibrary="2"
+				RuntimeLibrary="0"
 				EnableFunctionLevelLinking="true"
 				UsePrecompiledHeader="0"
 				WarningLevel="3"
@@ -162,8 +162,10 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
+				IgnoreImportLibrary="true"
 				LinkIncremental="1"
 				SuppressStartupBanner="true"
+				GenerateManifest="false"
 				LinkTimeCodeGeneration="1"
 				TargetMachine="1"
 			/>

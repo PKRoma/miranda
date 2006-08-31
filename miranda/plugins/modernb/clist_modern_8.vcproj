@@ -82,6 +82,7 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
+				IgnoreImportLibrary="true"
 				AdditionalOptions="/MACHINE:I386"
 				AdditionalDependencies="MSImg32.Lib comctl32.lib shlwapi.lib gdiplus.lib Delayimp.lib"
 				OutputFile="../../bin/release/ansi/Plugins/$(ProjectName).dll"
@@ -284,7 +285,6 @@
 				AdditionalOptions="/MACHINE:I386"
 				AdditionalDependencies="MSImg32.Lib comctl32.lib shlwapi.lib gdiplus.lib Delayimp.lib"
 				ShowProgress="0"
-				OutputFile="C:/dev/miranda_src_0401_тест/bin/unicode/plugins/$(ProjectName).dll"
 				LinkIncremental="2"
 				SuppressStartupBanner="true"
 				AdditionalLibraryDirectories=""
@@ -385,6 +385,7 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
+				IgnoreImportLibrary="true"
 				AdditionalOptions="/MACHINE:I386"
 				AdditionalDependencies="MSImg32.Lib comctl32.lib shlwapi.lib gdiplus.lib Delayimp.lib"
 				LinkIncremental="0"
