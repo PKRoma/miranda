@@ -76,7 +76,8 @@ static HANDLE hPluginListHeap = NULL;
 static pluginEntry * pluginDefModList[DEFMOD_HIGHEST+1]; // do not free this memory
 static int askAboutIgnoredPlugins;
 
-int InitIni(void);
+int  InitIni(void);
+void UninitIni(void);
 
 #define PLUGINDISABLELIST "PluginDisable"
 
@@ -811,5 +812,6 @@ int UnloadNewPluginsModule(void)
 
 	List_Destroy( &pluginList );
 	List_Destroy( &pluginListAddr );
+	UninitIni();
 	return 0;
 }
