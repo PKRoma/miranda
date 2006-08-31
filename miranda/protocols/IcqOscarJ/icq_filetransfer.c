@@ -245,7 +245,7 @@ static void file_sendData(directconnect* dc)
   dc->ft->dwBytesDone += bytesRead;
   dc->ft->dwFileBytesDone += bytesRead;
 
-  if (GetTickCount() > dc->ft->dwLastNotify + 500 || bytesRead == 0)
+  if (GetTickCount() > dc->ft->dwLastNotify + 700 || bytesRead == 0)
   {
     PROTOFILETRANSFERSTATUS pfts;
 
@@ -546,7 +546,7 @@ void handleFileTransferPacket(directconnect* dc, PBYTE buf, WORD wLen)
         wLen = 0;
       dc->ft->dwBytesDone += wLen;
       dc->ft->dwFileBytesDone += wLen;
-      if (GetTickCount() > dc->ft->dwLastNotify + 500 || wLen < 2048) 
+      if (GetTickCount() > dc->ft->dwLastNotify + 700 || wLen < 2048) 
       {
         PROTOFILETRANSFERSTATUS pfts;
 
