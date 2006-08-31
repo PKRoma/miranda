@@ -131,7 +131,7 @@ echo             VALUE "CompanyName", " \0"                                     
 echo             VALUE "FileDescription", "Miranda IM\0"                           >>..\src\version.rc
 echo             VALUE "FileVersion", "0.6 alpha build #%2\0"                    >>..\src\version.rc
 echo             VALUE "InternalName", "miranda32\0"                               >>..\src\version.rc
-echo             VALUE "LegalCopyright", "Copyright © 2000-2005 Richard Hughes, Roland Rabien, Tristan Van de Vreede, Martin Öberg, Robert Rainwater, Sam Kothari and Lyon Lim\0" >>..\src\version.rc
+echo             VALUE "LegalCopyright", "Copyright c 2000-2006 Miranda IM Project. This software is released under the terms of the GNU General Public License.\0" >>..\src\version.rc
 echo             VALUE "LegalTrademarks", "\0"                                     >>..\src\version.rc
 echo             VALUE "OriginalFilename", "miranda32.exe\0"                       >>..\src\version.rc
 echo             VALUE "PrivateBuild", "\0"                                        >>..\src\version.rc
