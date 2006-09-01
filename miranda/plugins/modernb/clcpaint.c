@@ -1667,6 +1667,11 @@ void InternalPaintRowItems(HWND hwnd, HDC hdcMem, struct ClcData *dat, struct Cl
 
               if (rc.left < rc.right)
               {
+                /* center icon in avatar place */
+                {
+                    if (rc.right-rc.left>16) rc.left+=(((rc.right-rc.left)-16)>>1);
+                    if (rc.bottom-rc.top>16) rc.top+=(((rc.bottom-rc.top)-16)>>1);
+                }
                 // Store pos
                 Drawing->pos_icon = rc;
 
@@ -1692,7 +1697,6 @@ void InternalPaintRowItems(HWND hwnd, HDC hdcMem, struct ClcData *dat, struct Cl
                 {
                   mode=ILD_SELECTED;
                 }
-
                 mod_ImageList_DrawEx(himlCListClc, iImage, hdcMem, 
                   rc.left, rc.top,
                   0,0,CLR_NONE,colourFg,mode);
