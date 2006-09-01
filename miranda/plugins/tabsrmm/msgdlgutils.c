@@ -1759,8 +1759,8 @@ void SaveSplitter(HWND hwndDlg, struct MessageWindowData *dat)
     }
 
     if(dat->splitterY < MINSPLITTERY || dat->splitterY < 0)
-        return;             // do not save "invalid" splitter values
-        
+		dat->splitterY = MINSPLITTERY;
+
     if(dat->dwFlagsEx & MWF_SHOW_SPLITTEROVERRIDE)
         DBWriteContactSettingDword(dat->hContact, SRMSGMOD_T, "splitsplity", dat->splitterY);
     else
@@ -1927,15 +1927,25 @@ void LoadContactAvatar(HWND hwndDlg, struct MessageWindowData *dat)
 {
 	if(ServiceExists(MS_AV_GETAVATARBITMAP) && dat)
 		dat->ace = (AVATARCACHEENTRY *)CallService(MS_AV_GETAVATARBITMAP, (WPARAM)dat->hContact, 0);
+    else if(dat)
+        dat->ace = NULL;
 
-    if(dat && dat->ace && dat->ace->hbmPic && !(dat->dwFlagsEx & MWF_SHOW_INFOPANEL)) {
+    if(dat && !(dat->dwFlagsEx & MWF_SHOW_INFOPANEL)) {
         BITMAP bm;
-        
         dat->iRealAvatarHeight = 0;
-        AdjustBottomAvatarDisplay(hwndDlg, dat);
-        GetObject(dat->hOwnPic, sizeof(bm), &bm);
-        CalcDynamicAvatarSize(hwndDlg, dat, &bm);
-        PostMessage(hwndDlg, WM_SIZE, 0, 0);
+
+        if(dat->ace && dat->ace->hbmPic) {
+            AdjustBottomAvatarDisplay(hwndDlg, dat);
+            GetObject(dat->ace->hbmPic, sizeof(bm), &bm);
+            CalcDynamicAvatarSize(hwndDlg, dat, &bm);
+            PostMessage(hwndDlg, WM_SIZE, 0, 0);
+        }
+        else if(dat->ace == NULL) {
+            AdjustBottomAvatarDisplay(hwndDlg, dat);
+            GetObject(myGlobals.g_hbmUnknown, sizeof(bm), &bm);
+            CalcDynamicAvatarSize(hwndDlg, dat, &bm);
+            PostMessage(hwndDlg, WM_SIZE, 0, 0);
+        }
     }
 }
 

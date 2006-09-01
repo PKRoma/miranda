@@ -2668,8 +2668,8 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                  * attempt to fix splitter troubles..
                  * hardcoded limits... better solution is possible, but this works for now
                  */
-                    if (dat->splitterY <= MINSPLITTERY)           // min splitter size
-                        dat->splitterY = oldSplitterY;
+                    if (dat->splitterY < MINSPLITTERY)           // min splitter size
+                        dat->splitterY = MINSPLITTERY;
                     else if (dat->splitterY > ((rc.bottom - rc.top) - 50)) 
                         dat->splitterY = oldSplitterY;
                     else {
@@ -4828,6 +4828,7 @@ quote_from_last:
                         CallService(MS_MC_SETDEFAULTCONTACTNUM, (WPARAM)dat->hContact, (LPARAM)(iSelection - 1000));
                     }
                     DestroyMenu(hMC);
+					return TRUE;
                 }
                 break;
             }
