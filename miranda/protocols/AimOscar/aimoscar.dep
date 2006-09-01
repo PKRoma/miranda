@@ -1,9 +1,6 @@
 # Microsoft Developer Studio Generated Dependency File, included by aimoscar.mak
 
 .\aim.cpp : \
-	"..\..\..\..\..\vc\sdk\include\schemadef.h"\
-	"..\..\..\..\..\vc\sdk\include\tmschema.h"\
-	"..\..\..\..\..\vc\sdk\include\windows.h"\
 	"..\..\include\m_addcontact.h"\
 	"..\..\include\m_button.h"\
 	"..\..\include\m_clist.h"\
@@ -49,12 +46,12 @@
 	".\tlv.h"\
 	".\utility.h"\
 	".\windows.h"\
+	{$(INCLUDE)}"SchemaDef.h"\
+	{$(INCLUDE)}"Tmschema.h"\
+	{$(INCLUDE)}"windows.h"\
 	
 
 .\client.cpp : \
-	"..\..\..\..\..\vc\sdk\include\schemadef.h"\
-	"..\..\..\..\..\vc\sdk\include\tmschema.h"\
-	"..\..\..\..\..\vc\sdk\include\windows.h"\
 	"..\..\include\m_addcontact.h"\
 	"..\..\include\m_button.h"\
 	"..\..\include\m_clist.h"\
@@ -100,12 +97,12 @@
 	".\tlv.h"\
 	".\utility.h"\
 	".\windows.h"\
+	{$(INCLUDE)}"SchemaDef.h"\
+	{$(INCLUDE)}"Tmschema.h"\
+	{$(INCLUDE)}"windows.h"\
 	
 
 .\connection.cpp : \
-	"..\..\..\..\..\vc\sdk\include\schemadef.h"\
-	"..\..\..\..\..\vc\sdk\include\tmschema.h"\
-	"..\..\..\..\..\vc\sdk\include\windows.h"\
 	"..\..\include\m_addcontact.h"\
 	"..\..\include\m_button.h"\
 	"..\..\include\m_clist.h"\
@@ -151,12 +148,12 @@
 	".\tlv.h"\
 	".\utility.h"\
 	".\windows.h"\
+	{$(INCLUDE)}"SchemaDef.h"\
+	{$(INCLUDE)}"Tmschema.h"\
+	{$(INCLUDE)}"windows.h"\
 	
 
 .\conv.cpp : \
-	"..\..\..\..\..\vc\sdk\include\schemadef.h"\
-	"..\..\..\..\..\vc\sdk\include\tmschema.h"\
-	"..\..\..\..\..\vc\sdk\include\windows.h"\
 	"..\..\include\m_addcontact.h"\
 	"..\..\include\m_button.h"\
 	"..\..\include\m_clist.h"\
@@ -202,12 +199,12 @@
 	".\tlv.h"\
 	".\utility.h"\
 	".\windows.h"\
+	{$(INCLUDE)}"SchemaDef.h"\
+	{$(INCLUDE)}"Tmschema.h"\
+	{$(INCLUDE)}"windows.h"\
 	
 
 .\direct_connect.cpp : \
-	"..\..\..\..\..\vc\sdk\include\schemadef.h"\
-	"..\..\..\..\..\vc\sdk\include\tmschema.h"\
-	"..\..\..\..\..\vc\sdk\include\windows.h"\
 	"..\..\include\m_addcontact.h"\
 	"..\..\include\m_button.h"\
 	"..\..\include\m_clist.h"\
@@ -253,12 +250,12 @@
 	".\tlv.h"\
 	".\utility.h"\
 	".\windows.h"\
+	{$(INCLUDE)}"SchemaDef.h"\
+	{$(INCLUDE)}"Tmschema.h"\
+	{$(INCLUDE)}"windows.h"\
 	
 
 .\error.cpp : \
-	"..\..\..\..\..\vc\sdk\include\schemadef.h"\
-	"..\..\..\..\..\vc\sdk\include\tmschema.h"\
-	"..\..\..\..\..\vc\sdk\include\windows.h"\
 	"..\..\include\m_addcontact.h"\
 	"..\..\include\m_button.h"\
 	"..\..\include\m_clist.h"\
@@ -304,12 +301,12 @@
 	".\tlv.h"\
 	".\utility.h"\
 	".\windows.h"\
+	{$(INCLUDE)}"SchemaDef.h"\
+	{$(INCLUDE)}"Tmschema.h"\
+	{$(INCLUDE)}"windows.h"\
 	
 
 .\file.cpp : \
-	"..\..\..\..\..\vc\sdk\include\schemadef.h"\
-	"..\..\..\..\..\vc\sdk\include\tmschema.h"\
-	"..\..\..\..\..\vc\sdk\include\windows.h"\
 	"..\..\include\m_addcontact.h"\
 	"..\..\include\m_button.h"\
 	"..\..\include\m_clist.h"\
@@ -355,12 +352,12 @@
 	".\tlv.h"\
 	".\utility.h"\
 	".\windows.h"\
+	{$(INCLUDE)}"SchemaDef.h"\
+	{$(INCLUDE)}"Tmschema.h"\
+	{$(INCLUDE)}"windows.h"\
 	
 
 .\flap.cpp : \
-	"..\..\..\..\..\vc\sdk\include\schemadef.h"\
-	"..\..\..\..\..\vc\sdk\include\tmschema.h"\
-	"..\..\..\..\..\vc\sdk\include\windows.h"\
 	"..\..\include\m_addcontact.h"\
 	"..\..\include\m_button.h"\
 	"..\..\include\m_clist.h"\
@@ -406,12 +403,12 @@
 	".\tlv.h"\
 	".\utility.h"\
 	".\windows.h"\
+	{$(INCLUDE)}"SchemaDef.h"\
+	{$(INCLUDE)}"Tmschema.h"\
+	{$(INCLUDE)}"windows.h"\
 	
 
 .\links.cpp : \
-	"..\..\..\..\..\vc\sdk\include\schemadef.h"\
-	"..\..\..\..\..\vc\sdk\include\tmschema.h"\
-	"..\..\..\..\..\vc\sdk\include\windows.h"\
 	"..\..\include\m_addcontact.h"\
 	"..\..\include\m_button.h"\
 	"..\..\include\m_clist.h"\
@@ -457,6 +454,9 @@
 	".\tlv.h"\
 	".\utility.h"\
 	".\windows.h"\
+	{$(INCLUDE)}"SchemaDef.h"\
+	{$(INCLUDE)}"Tmschema.h"\
+	{$(INCLUDE)}"windows.h"\
 	
 
 .\md5.cpp : \
@@ -464,9 +464,6 @@
 	
 
 .\packets.cpp : \
-	"..\..\..\..\..\vc\sdk\include\schemadef.h"\
-	"..\..\..\..\..\vc\sdk\include\tmschema.h"\
-	"..\..\..\..\..\vc\sdk\include\windows.h"\
 	"..\..\include\m_addcontact.h"\
 	"..\..\include\m_button.h"\
 	"..\..\include\m_clist.h"\
@@ -512,12 +509,12 @@
 	".\tlv.h"\
 	".\utility.h"\
 	".\windows.h"\
+	{$(INCLUDE)}"SchemaDef.h"\
+	{$(INCLUDE)}"Tmschema.h"\
+	{$(INCLUDE)}"windows.h"\
 	
 
 .\popup.cpp : \
-	"..\..\..\..\..\vc\sdk\include\schemadef.h"\
-	"..\..\..\..\..\vc\sdk\include\tmschema.h"\
-	"..\..\..\..\..\vc\sdk\include\windows.h"\
 	"..\..\include\m_addcontact.h"\
 	"..\..\include\m_button.h"\
 	"..\..\include\m_clist.h"\
@@ -563,12 +560,12 @@
 	".\tlv.h"\
 	".\utility.h"\
 	".\windows.h"\
+	{$(INCLUDE)}"SchemaDef.h"\
+	{$(INCLUDE)}"Tmschema.h"\
+	{$(INCLUDE)}"windows.h"\
 	
 
 .\proxy.cpp : \
-	"..\..\..\..\..\vc\sdk\include\schemadef.h"\
-	"..\..\..\..\..\vc\sdk\include\tmschema.h"\
-	"..\..\..\..\..\vc\sdk\include\windows.h"\
 	"..\..\include\m_addcontact.h"\
 	"..\..\include\m_button.h"\
 	"..\..\include\m_clist.h"\
@@ -614,12 +611,12 @@
 	".\tlv.h"\
 	".\utility.h"\
 	".\windows.h"\
+	{$(INCLUDE)}"SchemaDef.h"\
+	{$(INCLUDE)}"Tmschema.h"\
+	{$(INCLUDE)}"windows.h"\
 	
 
 .\server.cpp : \
-	"..\..\..\..\..\vc\sdk\include\schemadef.h"\
-	"..\..\..\..\..\vc\sdk\include\tmschema.h"\
-	"..\..\..\..\..\vc\sdk\include\windows.h"\
 	"..\..\include\m_addcontact.h"\
 	"..\..\include\m_button.h"\
 	"..\..\include\m_clist.h"\
@@ -665,12 +662,12 @@
 	".\tlv.h"\
 	".\utility.h"\
 	".\windows.h"\
+	{$(INCLUDE)}"SchemaDef.h"\
+	{$(INCLUDE)}"Tmschema.h"\
+	{$(INCLUDE)}"windows.h"\
 	
 
 .\services.cpp : \
-	"..\..\..\..\..\vc\sdk\include\schemadef.h"\
-	"..\..\..\..\..\vc\sdk\include\tmschema.h"\
-	"..\..\..\..\..\vc\sdk\include\windows.h"\
 	"..\..\include\m_addcontact.h"\
 	"..\..\include\m_button.h"\
 	"..\..\include\m_clist.h"\
@@ -716,12 +713,12 @@
 	".\tlv.h"\
 	".\utility.h"\
 	".\windows.h"\
+	{$(INCLUDE)}"SchemaDef.h"\
+	{$(INCLUDE)}"Tmschema.h"\
+	{$(INCLUDE)}"windows.h"\
 	
 
 .\snac.cpp : \
-	"..\..\..\..\..\vc\sdk\include\schemadef.h"\
-	"..\..\..\..\..\vc\sdk\include\tmschema.h"\
-	"..\..\..\..\..\vc\sdk\include\windows.h"\
 	"..\..\include\m_addcontact.h"\
 	"..\..\include\m_button.h"\
 	"..\..\include\m_clist.h"\
@@ -767,17 +764,17 @@
 	".\tlv.h"\
 	".\utility.h"\
 	".\windows.h"\
+	{$(INCLUDE)}"SchemaDef.h"\
+	{$(INCLUDE)}"Tmschema.h"\
+	{$(INCLUDE)}"windows.h"\
 	
 
 .\strl.cpp : \
-	"..\..\..\..\..\vc\sdk\include\windows.h"\
 	".\strl.h"\
+	{$(INCLUDE)}"windows.h"\
 	
 
 .\theme.cpp : \
-	"..\..\..\..\..\vc\sdk\include\schemadef.h"\
-	"..\..\..\..\..\vc\sdk\include\tmschema.h"\
-	"..\..\..\..\..\vc\sdk\include\windows.h"\
 	"..\..\include\m_addcontact.h"\
 	"..\..\include\m_button.h"\
 	"..\..\include\m_clist.h"\
@@ -823,12 +820,12 @@
 	".\tlv.h"\
 	".\utility.h"\
 	".\windows.h"\
+	{$(INCLUDE)}"SchemaDef.h"\
+	{$(INCLUDE)}"Tmschema.h"\
+	{$(INCLUDE)}"windows.h"\
 	
 
 .\thread.cpp : \
-	"..\..\..\..\..\vc\sdk\include\schemadef.h"\
-	"..\..\..\..\..\vc\sdk\include\tmschema.h"\
-	"..\..\..\..\..\vc\sdk\include\windows.h"\
 	"..\..\include\m_addcontact.h"\
 	"..\..\include\m_button.h"\
 	"..\..\include\m_clist.h"\
@@ -874,12 +871,12 @@
 	".\tlv.h"\
 	".\utility.h"\
 	".\windows.h"\
+	{$(INCLUDE)}"SchemaDef.h"\
+	{$(INCLUDE)}"Tmschema.h"\
+	{$(INCLUDE)}"windows.h"\
 	
 
 .\tlv.cpp : \
-	"..\..\..\..\..\vc\sdk\include\schemadef.h"\
-	"..\..\..\..\..\vc\sdk\include\tmschema.h"\
-	"..\..\..\..\..\vc\sdk\include\windows.h"\
 	"..\..\include\m_addcontact.h"\
 	"..\..\include\m_button.h"\
 	"..\..\include\m_clist.h"\
@@ -925,12 +922,12 @@
 	".\tlv.h"\
 	".\utility.h"\
 	".\windows.h"\
+	{$(INCLUDE)}"SchemaDef.h"\
+	{$(INCLUDE)}"Tmschema.h"\
+	{$(INCLUDE)}"windows.h"\
 	
 
 .\utility.cpp : \
-	"..\..\..\..\..\vc\sdk\include\schemadef.h"\
-	"..\..\..\..\..\vc\sdk\include\tmschema.h"\
-	"..\..\..\..\..\vc\sdk\include\windows.h"\
 	"..\..\include\m_addcontact.h"\
 	"..\..\include\m_button.h"\
 	"..\..\include\m_clist.h"\
@@ -976,12 +973,12 @@
 	".\tlv.h"\
 	".\utility.h"\
 	".\windows.h"\
+	{$(INCLUDE)}"SchemaDef.h"\
+	{$(INCLUDE)}"Tmschema.h"\
+	{$(INCLUDE)}"windows.h"\
 	
 
 .\windows.cpp : \
-	"..\..\..\..\..\vc\sdk\include\schemadef.h"\
-	"..\..\..\..\..\vc\sdk\include\tmschema.h"\
-	"..\..\..\..\..\vc\sdk\include\windows.h"\
 	"..\..\include\m_addcontact.h"\
 	"..\..\include\m_button.h"\
 	"..\..\include\m_clist.h"\
@@ -1027,6 +1024,9 @@
 	".\tlv.h"\
 	".\utility.h"\
 	".\windows.h"\
+	{$(INCLUDE)}"SchemaDef.h"\
+	{$(INCLUDE)}"Tmschema.h"\
+	{$(INCLUDE)}"windows.h"\
 	
 
 .\aim.rc : \
