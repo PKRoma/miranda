@@ -2,8 +2,8 @@
 
 Miranda IM: the free IM client for Microsoft* Windows*
 
-Copyright 2000-2006 Miranda ICQ/IM project, 
-all portions of this codebase are copyrighted to the people 
+Copyright 2000-2006 Miranda ICQ/IM project,
+all portions of this codebase are copyrighted to the people
 listed in contributors.txt.
 
 This program is free software; you can redistribute it and/or
@@ -41,7 +41,7 @@ struct IconPreview {
 	int main;
 };
 
-struct IconPreview static mainIcons[] = 
+struct IconPreview static mainIcons[] =
 {
 	{ SKINICON_OTHER_MIRANDA,    "Miranda IM",     1 },
 	{ SKINICON_EVENT_MESSAGE,    "Message",        1 },
@@ -87,7 +87,7 @@ static int LoadSkinProtoIcon(WPARAM wParam,LPARAM lParam)
 			HICON hIcon=protoIcons[0].hIcons[IdStatusToSkinIconStatus(lParam)];
 			if (hIcon) {
 				if (protoCount) {
-					for (j=0;j<protoCount;j++) {	
+					for (j=0;j<protoCount;j++) {
 						if (proto[j]->type!=PROTOTYPE_PROTOCOL) continue;
 						if (!_strcmpi(proto[j]->szName,protoIcons[0].szProto)) return (int)hIcon;
 					} //for
@@ -156,7 +156,7 @@ static HICON ImportIcon(const char *szProto,int n)
 
 	if(szProto==NULL && n<SKINICON_EVENT_MESSAGE) {
 		/* return 'all protocol status icon' */
-		int i;	
+		int i;
 		for(i=0;;i++) {
 			szSetting[0]='p';
 			_itoa(i,szSetting+1,10);
@@ -169,7 +169,7 @@ static HICON ImportIcon(const char *szProto,int n)
 				if (hIcon)
 					return hIcon;
 			} //if
-		} //for			
+		} //for
 		return hStatusIcons[n];
 	}//if
 
@@ -209,13 +209,13 @@ static void LoadAllIcons(void)
 	DBVARIANT dbv;
 	int i,j,z;
 	char szSetting[128];
-	
+
 	for( i=0; i < SIZEOF(hEventIcons); i++ )
 		hEventIcons[i]=ImportIcon(NULL,i+SKINICON_EVENT_MESSAGE);
 	for( i=0; i < SIZEOF(hOtherIcons); i++ )
 		hOtherIcons[i]=ImportIcon(NULL,i+SKINICON_OTHER_MIRANDA);
 	ZeroMemory(hStatusIcons,sizeof(hStatusIcons));
-	for( i=0; i < SIZEOF(hStatusIcons); i++ ) 
+	for( i=0; i < SIZEOF(hStatusIcons); i++ )
 	{
 		_itoa(skinIconStatusToIdStatus[i], szSetting, 10);
 		hStatusIcons[i] = NULL;
@@ -234,7 +234,7 @@ static void LoadAllIcons(void)
 		if(DBGetContactSetting(NULL,"Icons",szSetting,&dbv)) break;
 		for(j=0;j<protoIconsCount;j++) {
 			if (!strcmp(dbv.pszVal,protoIcons[j].szProto)) z = 1;
-		}		
+		}
 		if (!z) {
 			protoIcons=(struct ProtoIcons*)mir_realloc(protoIcons,sizeof(struct ProtoIcons)*(protoIconsCount+1));
 			protoIcons[protoIconsCount].szProto=dbv.pszVal;
@@ -309,7 +309,7 @@ BOOL CALLBACK DlgProcIconsOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPa
 			int protoCount,i,j;
 			char szSetting[64];
 			DBVARIANT dbv;
-			
+
 			TranslateDialogDefault(hwndDlg);
 			dat=(struct IconsOptsData*)mir_alloc(sizeof(struct IconsOptsData));
 			SetWindowLong(hwndDlg,GWL_USERDATA,(LONG)dat);
@@ -537,7 +537,7 @@ BOOL CALLBACK DlgProcIconsOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPa
 					int i;
 					struct IconPreview ico;
 					HICON hIcon;
-                    
+
                     CallService(MS_UTILS_PATHTORELATIVE, (WPARAM)filetmp, (LPARAM)filename);
 					ico.description=path;
 					if(SendDlgItemMessage(hwndDlg,IDC_CATEGORYLIST,LB_GETCURSEL,0,0)==0) {
@@ -642,6 +642,7 @@ BOOL CALLBACK DlgProcIconsOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPa
 							break;
 						}
 					}
+					return TRUE;
 				}
 			}
 			break;
