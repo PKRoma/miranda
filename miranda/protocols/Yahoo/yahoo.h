@@ -96,7 +96,7 @@ struct _conn {
 //	Defines
 //=======================================================
 //General
-extern HANDLE			hnuMain, hnuP2P;
+extern HANDLE			hNetlibUser;
 extern HINSTANCE		hinstance;
 extern int				yahooStatus;
 extern char				yahooProtocolName[MAX_PATH];

@@ -71,12 +71,11 @@ void __cdecl yahoo_server_main(void *empty)
     YList *l;
     NETLIBSELECTEX nls = {0};
 	
-	
-	if (hnuMain  == 0) {
+	if (hNetlibUser  == 0) {
 		/* wait for the stupid netlib to load!!!! */
 		int i;
 		
-		for (i = 0; (i < 3) && (hnuMain == 0); i++)
+		for (i = 0; (i < 3) && (hNetlibUser == 0); i++)
 			SleepEx(30, TRUE);
 		
 	}

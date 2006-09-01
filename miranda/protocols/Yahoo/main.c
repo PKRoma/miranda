@@ -36,7 +36,7 @@ HINSTANCE		hinstance;
 PLUGINLINK		*pluginLink;
 char			yahooProtocolName[MAX_PATH];
 
-HANDLE		    hnuMain = NULL, hnuP2P = NULL;
+HANDLE		    hNetlibUser = NULL;
 HANDLE			YahooMenuItems[ MENU_ITEMS_COUNT ];
 static HANDLE   hHookOptsInit;
 static HANDLE   hHookModulesLoaded;
@@ -110,7 +110,7 @@ __declspec(dllexport) PLUGININFO* MirandaPluginInfo(DWORD mirandaVersion)
 		MessageBox( NULL, 
 				"Yahoo plugin cannot be loaded. It requires Miranda IM 0.6 or later.", 
 				"Yahoo", 
-				MB_OK|MB_ICONWARNING|MB_SETFOREGROUND|MB_TOPMOST);
+				MB_OK|MB_ICONWARNING|MB_SETFOREGROUND|MB_TOPMOST );
 
         return NULL;
 	}
@@ -146,8 +146,8 @@ int __declspec(dllexport) Unload(void)
 		free(szStartMsg);
 	
 	YAHOO_DebugLog("Before Netlib_CloseHandle");
-    Netlib_CloseHandle( hnuMain );
-	Netlib_CloseHandle( hnuP2P );
+    Netlib_CloseHandle( hNetlibUser );
+
 	return 0;
 }
 
@@ -178,9 +178,9 @@ static int OnModulesLoaded( WPARAM wParam, LPARAM lParam )
 	nlu.cbSize = sizeof(nlu);
 
 #ifdef HTTP_GATEWAY
-	nlu.flags = NUF_OUTGOING | NUF_HTTPGATEWAY;
+	nlu.flags = NUF_OUTGOING | NUF_HTTPGATEWAY| NUF_HTTPCONNS;
 #else
-   	nlu.flags = NUF_OUTGOING;
+   	nlu.flags = NUF_OUTGOING | NUF_HTTPCONNS;
 #endif
 
 	nlu.szSettingsModule = tModule;
@@ -196,16 +196,7 @@ static int OnModulesLoaded( WPARAM wParam, LPARAM lParam )
 	nlu.pfnHttpGatewayUnwrapRecv = YAHOO_httpGatewayUnwrapRecv;
 #endif	
 	
-	hnuMain = ( HANDLE )YAHOO_CallService( MS_NETLIB_REGISTERUSER, 0, ( LPARAM )&nlu );
-	
-	nlu.flags = NUF_OUTGOING | NUF_HTTPCONNS;
-	
-	wsprintf(tModuleDescr, "%s plugin P2P/Avatar connections", yahooProtocolName);
-	nlu.szDescriptiveName = Translate( tModuleDescr );
-	CharUpper( lstrcpy( tModule, yahooProtocolName ));
-	lstrcat(tModule, "P2P");
-	nlu.szSettingsModule = tModule;
-	hnuP2P = ( HANDLE )YAHOO_CallService( MS_NETLIB_REGISTERUSER, 0, ( LPARAM )&nlu );
+	hNetlibUser = ( HANDLE )YAHOO_CallService( MS_NETLIB_REGISTERUSER, 0, ( LPARAM )&nlu );
 	
 	hHookOptsInit = HookEvent( ME_OPT_INITIALISE, YahooOptInit );
     hHookSettingChanged = HookEvent(ME_DB_CONTACT_SETTINGCHANGED, YAHOO_util_dbsettingchanged);

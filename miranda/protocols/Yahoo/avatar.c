@@ -527,7 +527,7 @@ static void __cdecl yahoo_recv_avatarthread(void *pavt)
 	nlhr.flags		= NLHRF_NODUMP|NLHRF_GENERATEHOST|NLHRF_SMARTAUTHHEADER;
 	nlhr.szUrl		= avt->pic_url;
 
-	nlhrReply=(NETLIBHTTPREQUEST*)CallService(MS_NETLIB_HTTPTRANSACTION,(WPARAM)hnuP2P,(LPARAM)&nlhr);
+	nlhrReply=(NETLIBHTTPREQUEST*)CallService(MS_NETLIB_HTTPTRANSACTION,(WPARAM)hNetlibUser,(LPARAM)&nlhr);
 
 	if(nlhrReply) {
 		

@@ -3250,12 +3250,14 @@ void yahoo_send_picture_info(int id, const char *who, int type, const char *pic_
 	struct yahoo_input_data *yid = find_input_by_id_and_type(id, YAHOO_CONNECTION_PAGER);
 	struct yahoo_data *yd;
 	struct yahoo_packet *pkt = NULL;
+	struct yahoo_server_settings *yss;
 	char buf[15];
 	
 	if(!yid)
 		return;
 
 	yd = yid->yd;
+	yss = yd->server_settings;
 	pkt = yahoo_packet_new(YAHOO_SERVICE_PICTURE, YAHOO_STATUS_AVAILABLE, yd->session_id);
 
 	yahoo_packet_hash(pkt, 1, yd->user);
@@ -3271,6 +3273,14 @@ void yahoo_send_picture_info(int id, const char *who, int type, const char *pic_
 	yahoo_packet_hash(pkt, 192, buf);
 	yahoo_send_packet(yid, pkt, 0);
 
+	if (yss->web_messenger) {
+		char z[128];
+		
+		yahoo_packet_hash(pkt, 0, yd->user); 
+		wsprintf(z, "%d", yd->session_timestamp);
+		yahoo_packet_hash(pkt, 24, z);
+	}
+
 	yahoo_packet_free(pkt);
 }
 
@@ -3279,12 +3289,14 @@ void yahoo_send_picture_update(int id, const char *who, int type)
 	struct yahoo_input_data *yid = find_input_by_id_and_type(id, YAHOO_CONNECTION_PAGER);
 	struct yahoo_data *yd;
 	struct yahoo_packet *pkt = NULL;
+	struct yahoo_server_settings *yss;
 	char buf[2];
 		
 	if(!yid)
 		return;
 
 	yd = yid->yd;
+	yss = yd->server_settings;
 	pkt = yahoo_packet_new(YAHOO_SERVICE_PICTURE_UPDATE, YAHOO_STATUS_AVAILABLE, yd->session_id);
 	yahoo_packet_hash(pkt, 1, yd->user);
 	yahoo_packet_hash(pkt, 5, who);
@@ -3292,6 +3304,14 @@ void yahoo_send_picture_update(int id, const char *who, int type)
 	snprintf(buf, sizeof(buf), "%d", type);
 	yahoo_packet_hash(pkt, 206, buf);
 	yahoo_send_packet(yid, pkt, 0);
+
+	if (yss->web_messenger) {
+		char z[128];
+		
+		yahoo_packet_hash(pkt, 0, yd->user); 
+		wsprintf(z, "%d", yd->session_timestamp);
+		yahoo_packet_hash(pkt, 24, z);
+	}
 
 	yahoo_packet_free(pkt);
 }
@@ -3302,12 +3322,14 @@ void yahoo_send_picture_checksum(int id, const char *who, int cksum)
 	struct yahoo_input_data *yid = find_input_by_id_and_type(id, YAHOO_CONNECTION_PAGER);
 	struct yahoo_data *yd;
 	struct yahoo_packet *pkt = NULL;
+	struct yahoo_server_settings *yss;	
 	char buf[22];
 		
 	if(!yid)
 		return;
 
 	yd = yid->yd;
+	yss = yd->server_settings;
 	pkt = yahoo_packet_new(YAHOO_SERVICE_PICTURE_CHECKSUM, YAHOO_STATUS_AVAILABLE, yd->session_id);
 	yahoo_packet_hash(pkt, 1, yd->user);
 		
@@ -3320,6 +3342,14 @@ void yahoo_send_picture_checksum(int id, const char *who, int cksum)
 	yahoo_packet_hash(pkt, 192, buf);	 // checksum
 	yahoo_send_packet(yid, pkt, 0);
 
+	if (yss->web_messenger) {
+		char z[128];
+		
+		yahoo_packet_hash(pkt, 0, yd->user); 
+		wsprintf(z, "%d", yd->session_timestamp);
+		yahoo_packet_hash(pkt, 24, z);
+	}
+
 	yahoo_packet_free(pkt);
 	
 	/* weird YIM7 sends another packet! See avatar_update below*/
@@ -3330,16 +3360,27 @@ void yahoo_send_avatar_update(int id, int buddy_icon)
 	struct yahoo_input_data *yid = find_input_by_id_and_type(id, YAHOO_CONNECTION_PAGER);
 	struct yahoo_data *yd;
 	struct yahoo_packet *pkt = NULL;
+	struct yahoo_server_settings *yss;	
 	char buf[2];
 		
 	if(!yid)
 		return;
 
 	yd = yid->yd;
+	yss = yd->server_settings;
 	pkt = yahoo_packet_new(YAHOO_SERVICE_AVATAR_UPDATE, YAHOO_STATUS_AVAILABLE, yd->session_id);
 	yahoo_packet_hash(pkt, 3, yd->user);
 	snprintf(buf, sizeof(buf), "%d", buddy_icon);
 	yahoo_packet_hash(pkt, 213, buf);
+
+	if (yss->web_messenger) {
+		char z[128];
+		
+		yahoo_packet_hash(pkt, 0, yd->user); 
+		wsprintf(z, "%d", yd->session_timestamp);
+		yahoo_packet_hash(pkt, 24, z);
+	}
+	
 	yahoo_send_packet(yid, pkt, 0);
 
 	yahoo_packet_free(pkt);
@@ -6107,16 +6148,26 @@ void yahoo_request_buddy_avatar(int id, const char *buddy)
 	struct yahoo_input_data *yid = find_input_by_id_and_type(id, YAHOO_CONNECTION_PAGER);
 	struct yahoo_data *yd;
 	struct yahoo_packet *pkt = NULL;
+	struct yahoo_server_settings *yss;
 
 	if(!yid)
 		return;
 
 	yd = yid->yd;
-
+	yss = yd->server_settings;
+	
 	pkt = yahoo_packet_new(YAHOO_SERVICE_PICTURE, YAHOO_STATUS_AVAILABLE, yd->session_id);
 	yahoo_packet_hash(pkt, 1, yd->user);
 	yahoo_packet_hash(pkt, 5, buddy);
 	yahoo_packet_hash(pkt, 13, "1");
+
+	if (yss->web_messenger) {
+		char z[128];
+		
+		yahoo_packet_hash(pkt, 0, yd->user); 
+		wsprintf(z, "%d", yd->session_timestamp);
+		yahoo_packet_hash(pkt, 24, z);
+	}
 	
 	yahoo_send_packet(yid, pkt, 0);
 	yahoo_packet_free(pkt);

@@ -990,7 +990,7 @@ void check_for_update(void)
 	httpHeaders[2].szName="Pragma";
 	httpHeaders[2].szValue="no-cache";
 
-	nlhrReply=(NETLIBHTTPREQUEST*)CallService(MS_NETLIB_HTTPTRANSACTION,(WPARAM)hnuP2P,(LPARAM)&nlhr);
+	nlhrReply=(NETLIBHTTPREQUEST*)CallService(MS_NETLIB_HTTPTRANSACTION,(WPARAM)hNetlibUser,(LPARAM)&nlhr);
 
 	if(nlhrReply) {
 		int i;
@@ -1044,7 +1044,7 @@ void ext_yahoo_got_cookies(int id)
 		mir_snprintf(z, sizeof(z), "Cookie: Y=%s; T=%s; C=%s", yahoo_get_cookie(id, "y"), 
 				yahoo_get_cookie(id, "t"), yahoo_get_cookie(id, "c"));    
 		LOG(("Our Cookie: '%s'", z));
-		YAHOO_CallService(MS_NETLIB_SETSTICKYHEADERS, (WPARAM)hnuMain, (LPARAM)z);
+		YAHOO_CallService(MS_NETLIB_SETSTICKYHEADERS, (WPARAM)hNetlibUser, (LPARAM)z);
 	}
 #endif
 	
@@ -1190,20 +1190,19 @@ void ext_yahoo_error(int id, const char *err, int fatal, int num)
 int ext_yahoo_connect(const char *h, int p, int type)
 {
 	NETLIBOPENCONNECTION ncon = {0};
-    HANDLE con, hNetLibU;
+    HANDLE con;
     
 	LOG(("ext_yahoo_connect %s:%d", h, p));
 	
     ncon.cbSize = sizeof(ncon); 
 	ncon.szHost = h;
     ncon.wPort = p;
-    
-	if (type == YAHOO_CONNECTION_PAGER)
-		hNetLibU = hnuMain;
-	else
-		hNetLibU = hnuP2P;
+    	
+	if (type != YAHOO_CONNECTION_PAGER)
+		ncon.flags = NLOCF_HTTP;
 	
-    con = (HANDLE) CallService(MS_NETLIB_OPENCONNECTION, (WPARAM) hNetLibU, (LPARAM) & ncon);
+	
+    con = (HANDLE) CallService(MS_NETLIB_OPENCONNECTION, (WPARAM) hNetlibUser, (LPARAM) & ncon);
     if (con == NULL)  {
 		LOG(("ERROR: Connect Failed!"));
         return -1;
@@ -1424,7 +1423,7 @@ void ext_yahoo_login(int login_mode)
 	
 #ifdef HTTP_GATEWAY			
 	nlus.cbSize = sizeof( nlus );
-	if (CallService(MS_NETLIB_GETUSERSETTINGS, (WPARAM) hnuMain, (LPARAM) &nlus) == 0) {
+	if (CallService(MS_NETLIB_GETUSERSETTINGS, (WPARAM) hNetlibUser, (LPARAM) &nlus) == 0) {
 		LOG(("ERROR: Problem retrieving miranda network settings!!!"));
 	}
 	
