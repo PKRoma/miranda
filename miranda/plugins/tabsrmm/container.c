@@ -2592,7 +2592,7 @@ panel_found:
                         DestroyMenu(hMenu);
                     }
                 }
-                break;
+                return TRUE;
             }
         case DM_SETICON:
             {

@@ -1759,7 +1759,7 @@ void SaveSplitter(HWND hwndDlg, struct MessageWindowData *dat)
     }
 
     if(dat->splitterY < MINSPLITTERY || dat->splitterY < 0)
-        return;             // do not save "invalid" splitter values
+        dat->splitterY = MINSPLITTERY;
         
     if(dat->dwFlagsEx & MWF_SHOW_SPLITTEROVERRIDE)
         DBWriteContactSettingDword(dat->hContact, SRMSGMOD_T, "splitsplity", dat->splitterY);
