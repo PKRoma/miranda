@@ -39,12 +39,17 @@ ALL : "..\..\Bin\Release\Plugins\Yahoo.dll"
 
 CLEAN :
 	-@erase "$(INTDIR)\avatar.obj"
+	-@erase "$(INTDIR)\chat.obj"
 	-@erase "$(INTDIR)\crypt.obj"
+	-@erase "$(INTDIR)\file_transfer.obj"
+	-@erase "$(INTDIR)\http_gateway.obj"
+	-@erase "$(INTDIR)\im.obj"
 	-@erase "$(INTDIR)\libyahoo2.obj"
 	-@erase "$(INTDIR)\main.obj"
 	-@erase "$(INTDIR)\md5.obj"
 	-@erase "$(INTDIR)\options.obj"
 	-@erase "$(INTDIR)\pthread.obj"
+	-@erase "$(INTDIR)\search.obj"
 	-@erase "$(INTDIR)\server.obj"
 	-@erase "$(INTDIR)\services.obj"
 	-@erase "$(INTDIR)\sha.obj"
@@ -52,6 +57,7 @@ CLEAN :
 	-@erase "$(INTDIR)\util.obj"
 	-@erase "$(INTDIR)\vc60.idb"
 	-@erase "$(INTDIR)\vc60.pdb"
+	-@erase "$(INTDIR)\webcam.obj"
 	-@erase "$(INTDIR)\yahoo.obj"
 	-@erase "$(INTDIR)\Yahoo.res"
 	-@erase "$(INTDIR)\yahoo_fn.obj"
@@ -85,6 +91,7 @@ LINK32_OBJS= \
 	"$(INTDIR)\yahoo_httplib.obj" \
 	"$(INTDIR)\yahoo_list.obj" \
 	"$(INTDIR)\yahoo_util.obj" \
+	"$(INTDIR)\avatar.obj" \
 	"$(INTDIR)\main.obj" \
 	"$(INTDIR)\options.obj" \
 	"$(INTDIR)\pthread.obj" \
@@ -94,7 +101,12 @@ LINK32_OBJS= \
 	"$(INTDIR)\util.obj" \
 	"$(INTDIR)\yahoo.obj" \
 	"$(INTDIR)\Yahoo.res" \
-	"$(INTDIR)\avatar.obj"
+	"$(INTDIR)\im.obj" \
+	"$(INTDIR)\chat.obj" \
+	"$(INTDIR)\file_transfer.obj" \
+	"$(INTDIR)\http_gateway.obj" \
+	"$(INTDIR)\webcam.obj" \
+	"$(INTDIR)\search.obj"
 
 "..\..\Bin\Release\Plugins\Yahoo.dll" : "$(OUTDIR)" $(DEF_FILE) $(LINK32_OBJS)
     $(LINK32) @<<
@@ -111,12 +123,17 @@ ALL : "..\..\Bin\Debug\Plugins\Yahoo.dll"
 
 CLEAN :
 	-@erase "$(INTDIR)\avatar.obj"
+	-@erase "$(INTDIR)\chat.obj"
 	-@erase "$(INTDIR)\crypt.obj"
+	-@erase "$(INTDIR)\file_transfer.obj"
+	-@erase "$(INTDIR)\http_gateway.obj"
+	-@erase "$(INTDIR)\im.obj"
 	-@erase "$(INTDIR)\libyahoo2.obj"
 	-@erase "$(INTDIR)\main.obj"
 	-@erase "$(INTDIR)\md5.obj"
 	-@erase "$(INTDIR)\options.obj"
 	-@erase "$(INTDIR)\pthread.obj"
+	-@erase "$(INTDIR)\search.obj"
 	-@erase "$(INTDIR)\server.obj"
 	-@erase "$(INTDIR)\services.obj"
 	-@erase "$(INTDIR)\sha.obj"
@@ -124,6 +141,7 @@ CLEAN :
 	-@erase "$(INTDIR)\util.obj"
 	-@erase "$(INTDIR)\vc60.idb"
 	-@erase "$(INTDIR)\vc60.pdb"
+	-@erase "$(INTDIR)\webcam.obj"
 	-@erase "$(INTDIR)\yahoo.obj"
 	-@erase "$(INTDIR)\Yahoo.res"
 	-@erase "$(INTDIR)\yahoo_fn.obj"
@@ -157,6 +175,7 @@ LINK32_OBJS= \
 	"$(INTDIR)\yahoo_httplib.obj" \
 	"$(INTDIR)\yahoo_list.obj" \
 	"$(INTDIR)\yahoo_util.obj" \
+	"$(INTDIR)\avatar.obj" \
 	"$(INTDIR)\main.obj" \
 	"$(INTDIR)\options.obj" \
 	"$(INTDIR)\pthread.obj" \
@@ -166,7 +185,12 @@ LINK32_OBJS= \
 	"$(INTDIR)\util.obj" \
 	"$(INTDIR)\yahoo.obj" \
 	"$(INTDIR)\Yahoo.res" \
-	"$(INTDIR)\avatar.obj"
+	"$(INTDIR)\im.obj" \
+	"$(INTDIR)\chat.obj" \
+	"$(INTDIR)\file_transfer.obj" \
+	"$(INTDIR)\http_gateway.obj" \
+	"$(INTDIR)\webcam.obj" \
+	"$(INTDIR)\search.obj"
 
 "..\..\Bin\Debug\Plugins\Yahoo.dll" : "$(OUTDIR)" $(DEF_FILE) $(LINK32_OBJS)
     $(LINK32) @<<
@@ -269,6 +293,26 @@ SOURCE=.\avatar.c
 "$(INTDIR)\avatar.obj" : $(SOURCE) "$(INTDIR)"
 
 
+SOURCE=.\chat.c
+
+"$(INTDIR)\chat.obj" : $(SOURCE) "$(INTDIR)"
+
+
+SOURCE=.\file_transfer.c
+
+"$(INTDIR)\file_transfer.obj" : $(SOURCE) "$(INTDIR)"
+
+
+SOURCE=.\http_gateway.c
+
+"$(INTDIR)\http_gateway.obj" : $(SOURCE) "$(INTDIR)"
+
+
+SOURCE=.\im.c
+
+"$(INTDIR)\im.obj" : $(SOURCE) "$(INTDIR)"
+
+
 SOURCE=.\main.c
 
 "$(INTDIR)\main.obj" : $(SOURCE) "$(INTDIR)"
@@ -282,6 +326,11 @@ SOURCE=.\options.c
 SOURCE=.\pthread.c
 
 "$(INTDIR)\pthread.obj" : $(SOURCE) "$(INTDIR)"
+
+
+SOURCE=.\search.c
+
+"$(INTDIR)\search.obj" : $(SOURCE) "$(INTDIR)"
 
 
 SOURCE=.\server.c
@@ -302,6 +351,11 @@ SOURCE=.\utf8.c
 SOURCE=.\util.c
 
 "$(INTDIR)\util.obj" : $(SOURCE) "$(INTDIR)"
+
+
+SOURCE=.\webcam.c
+
+"$(INTDIR)\webcam.obj" : $(SOURCE) "$(INTDIR)"
 
 
 SOURCE=.\yahoo.c

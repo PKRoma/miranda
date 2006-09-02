@@ -162,6 +162,22 @@ SOURCE=.\avatar.c
 # End Source File
 # Begin Source File
 
+SOURCE=.\chat.c
+# End Source File
+# Begin Source File
+
+SOURCE=.\file_transfer.c
+# End Source File
+# Begin Source File
+
+SOURCE=.\http_gateway.c
+# End Source File
+# Begin Source File
+
+SOURCE=.\im.c
+# End Source File
+# Begin Source File
+
 SOURCE=.\main.c
 # End Source File
 # Begin Source File
@@ -182,6 +198,10 @@ SOURCE=.\resource.h
 # End Source File
 # Begin Source File
 
+SOURCE=.\search.c
+# End Source File
+# Begin Source File
+
 SOURCE=.\server.c
 # End Source File
 # Begin Source File
@@ -198,6 +218,10 @@ SOURCE=.\util.c
 # End Source File
 # Begin Source File
 
+SOURCE=.\webcam.c
+# End Source File
+# Begin Source File
+
 SOURCE=.\yahoo.c
 # End Source File
 # End Group
@@ -211,4 +235,3 @@ SOURCE=.\Yahoo.rc
 # End Group
 # End Target
 # End Project
-

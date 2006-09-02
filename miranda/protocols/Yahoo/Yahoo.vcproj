@@ -147,6 +147,18 @@
 				RelativePath=".\avatar.c">
 			</File>
 			<File
+				RelativePath=".\chat.c">
+			</File>
+			<File
+				RelativePath=".\file_transfer.c">
+			</File>
+			<File
+				RelativePath=".\http_gateway.c">
+			</File>
+			<File
+				RelativePath=".\im.c">
+			</File>
+			<File
 				RelativePath=".\main.c">
 			</File>
 			<File
@@ -154,6 +166,9 @@
 			</File>
 			<File
 				RelativePath=".\pthread.c">
+			</File>
+			<File
+				RelativePath=".\search.c">
 			</File>
 			<File
 				RelativePath=".\server.c">
@@ -166,6 +181,9 @@
 			</File>
 			<File
 				RelativePath=".\util.c">
+			</File>
+			<File
+				RelativePath=".\webcam.c">
 			</File>
 			<File
 				RelativePath=".\yahoo.c">
@@ -236,13 +254,40 @@
 			Name="Header Files"
 			Filter="h;hpp;hxx;hm;inl">
 			<File
+				RelativePath=".\avatar.h">
+			</File>
+			<File
+				RelativePath=".\chat.h">
+			</File>
+			<File
+				RelativePath=".\file_transfer.h">
+			</File>
+			<File
 				RelativePath=".\http_gateway.h">
+			</File>
+			<File
+				RelativePath=".\im.h">
+			</File>
+			<File
+				RelativePath=".\options.h">
 			</File>
 			<File
 				RelativePath=".\pthread.h">
 			</File>
 			<File
 				RelativePath=".\resource.h">
+			</File>
+			<File
+				RelativePath=".\search.h">
+			</File>
+			<File
+				RelativePath=".\utf8.h">
+			</File>
+			<File
+				RelativePath=".\version.h">
+			</File>
+			<File
+				RelativePath=".\webcam.h">
 			</File>
 			<File
 				RelativePath=".\yahoo.h">
