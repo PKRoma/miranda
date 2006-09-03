@@ -306,7 +306,7 @@ static void yahoo_send_http_request(int id, char *host, int port, char *request,
 	ccd->request = strdup(request);
 	ccd->user_data = data;
 	
-	YAHOO_CALLBACK(ext_yahoo_connect_async)(id, host, port, connect_complete, ccd);
+	YAHOO_CALLBACK(ext_yahoo_connect_async)(id, host, port, YAHOO_CONNECTION_FT, connect_complete, ccd);
 }
 
 void yahoo_http_post(int id, const char *url, const char *cookies, long content_length,
