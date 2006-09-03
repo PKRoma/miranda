@@ -428,6 +428,7 @@ void ext_yahoo_status_logon(int id, const char *who, int stat, const char *msg, 
 		case 262655: s = "< Yahoo 6.x (Yahoo 5.x?)"; break;
 		case 278527: s = "Yahoo 6.x"; break;
 		case 524223: s = "Yahoo 7.x"; break;
+		case 1572799: s = "Yahoo 8.x"; break;
 	}
 	
 	if (s != NULL) 
