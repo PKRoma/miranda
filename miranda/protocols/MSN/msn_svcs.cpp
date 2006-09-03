@@ -811,8 +811,10 @@ static int MsnSendFile( WPARAM wParam, LPARAM lParam )
 	sft->std.currentFileNumber = 0;
 
 	sft->fileId = _open( sft->std.currentFile, _O_BINARY | _O_RDONLY, _S_IREAD );
-	MSN_DebugLog( "Unable to open file '%s', error %d", sft->std.currentFile, errno );
-	if ( sft->fileId == -1 ) return NULL;
+	if ( sft->fileId == -1 ) {
+		MSN_DebugLog( "Unable to open file '%s', error %d", sft->std.currentFile, errno );
+		return NULL;
+	}
 
 	DWORD dwFlags = MSN_GetDword( ccs->hContact, "FlagBits", 0 );
 	if ( dwFlags & 0x70000000 )

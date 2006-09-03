@@ -132,11 +132,14 @@ static int sttCreateListener(
 		"Bridge: TCPv1\r\n"
 		"Listening: true\r\n"
 		"Nonce: %s\r\n"
+		"IPv4External-Addrs: %s\r\n"
+		"IPv4External-Port: %u\r\n"
 		"IPv4Internal-Addrs: %s\r\n"
 		"IPv4Internal-Port: %u\r\n"
 		"SessionID: %lu\r\n"
 		"SChannelState: 0\r\n\r\n%c",
 		szUuid, 
+		ipaddr, nlb.wPort, 
 		hostname, ft->mIncomingPort, 
 		ft->p2p_sessionid, 0 );
 	free( szUuid );
