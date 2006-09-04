@@ -25,6 +25,7 @@ extern char *			IRCPROTONAME;
 extern PLUGININFO		pluginInfo;
 extern HWND				list_hWnd;
 extern int				NoOfChannels;
+extern DWORD			mirVersion;
 bool					bEcho = true;
 extern int				ManualWhoisCount ;
 bool					bTempDisableCheck = false;
@@ -159,7 +160,11 @@ static String DoIdentifiers (String text, const char * window)
 	text = ReplaceString(text, "%newl", "\r\n");
 	text = ReplaceString(text, "%network", (char*)g_ircSession.GetInfo().sNetwork.c_str());
 	text = ReplaceString(text, "%me", (char *)g_ircSession.GetInfo().sNick.c_str());
-	mir_snprintf(str,511,"%d.%d.%d.%d",(pluginInfo.version>>24)&0xFF,(pluginInfo.version>>16)&0xFF,(pluginInfo.version>>8)&0xFF,pluginInfo.version&0xFF);
+   
+    mir_snprintf(str,511,"%d.%d.%d.%d",(mirVersion>>24)&0xFF,(mirVersion>>16)&0xFF,(mirVersion>>8)&0xFF,mirVersion&0xFF);
+	text = ReplaceString(text, "%mirver", str);
+
+    mir_snprintf(str,511,"%d.%d.%d.%d",(pluginInfo.version>>24)&0xFF,(pluginInfo.version>>16)&0xFF,(pluginInfo.version>>8)&0xFF,pluginInfo.version&0xFF);
 	text = ReplaceString(text, "%version", str);
 	str[0] = (char)3; str[1] = '\0'	;
 	text = ReplaceString(text, "%color", str);
