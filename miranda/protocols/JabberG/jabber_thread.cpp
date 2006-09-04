@@ -457,7 +457,7 @@ LBL_Exit:
 					mir_free( szLogBuffer );
 			}	}
 
-			bytesParsed = JabberXmlParse( &xmlState, buffer, datalen );
+			bytesParsed = JabberXmlParse( &xmlState, buffer );
 			JabberLog( "bytesParsed = %d", bytesParsed );
 			if ( bytesParsed > 0 ) {
 				if ( bytesParsed < datalen )
