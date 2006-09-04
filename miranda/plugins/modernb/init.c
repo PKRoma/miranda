@@ -104,6 +104,11 @@ void cli_ChangeContactIcon(HANDLE hContact,int iIcon,int add);
 LRESULT ( *saveProcessExternalMessages )(HWND hwnd,struct ClcData *dat,UINT msg,WPARAM wParam,LPARAM lParam);
 LRESULT cli_ProcessExternalMessages(HWND hwnd,struct ClcData *dat,UINT msg,WPARAM wParam,LPARAM lParam);
 
+// WinXP tabbed pane stuff
+HMODULE hUxTheme = NULL;
+typedef BOOL (WINAPI *fEnableThemeDialogTexture)(HANDLE, DWORD);
+fEnableThemeDialogTexture pfEnableThemeDialogTexture = NULL;
+
 
 PLUGININFO pluginInfo = {
 	sizeof(PLUGININFO),
@@ -153,7 +158,20 @@ __declspec(dllexport) PLUGININFO* MirandaPluginInfo(DWORD mirandaVersion)
 	return &pluginInfo;
 }
 
+void InitUxTheme()
+{
+	hUxTheme = LoadLibraryA("uxtheme.dll");
+    if(hUxTheme == NULL)
+        return;
 
+    pfEnableThemeDialogTexture = (fEnableThemeDialogTexture) GetProcAddress(hUxTheme, "EnableThemeDialogTexture");
+}
+
+void FreeUxTheme()
+{
+    if(hUxTheme != NULL)
+        FreeLibrary(hUxTheme);
+}
 
 int SetDrawer(WPARAM wParam,LPARAM lParam)
 {
@@ -177,6 +195,8 @@ int __declspec(dllexport) CListInitialise(PLUGINLINK * link)
 	memset(&memoryManagerInterface,0,sizeof(memoryManagerInterface));
 	memoryManagerInterface.cbSize = sizeof(memoryManagerInterface);
 	CallService(MS_SYSTEM_GET_MMI, 0, (LPARAM)&memoryManagerInterface);
+
+	InitUxTheme();
 
 	// get the lists manager interface
 	li.cbSize = sizeof(li);
@@ -318,6 +338,7 @@ int __declspec(dllexport) Unload(void)
 	FreeRowCell();
 	pcli->hwndContactList=0;
 	UnhookAll();
+	FreeUxTheme();
 	TRACE("Unloading ClistMW COMPLETE\r\n");
 	return 0;
 }

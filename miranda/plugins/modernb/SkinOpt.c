@@ -495,9 +495,12 @@ int FillAvailableSkinList(HWND hwndDlg)
 	//long hFile; 
 	int res=-1;
 	char path[MAX_PATH];//,mask[MAX_PATH];
+	int attrib;
 	CallService(MS_UTILS_PATHTOABSOLUTE, (WPARAM)"Skins", (LPARAM)path);
 	AddSkinToList(hwndDlg,Translate("Default Skin"),"%Default Skin%");
-	SearchSkinFiles(hwndDlg,path);
+	attrib = GetFileAttributesA(path);
+	if (attrib != INVALID_FILE_ATTRIBUTES && (attrib & FILE_ATTRIBUTE_DIRECTORY))
+		SearchSkinFiles(hwndDlg,path);
 	/*_snprintf(mask,sizeof(mask),"%s\\*.msf",path); 
 	//fd.attrib=_A_SUBDIR;
 	hFile=_findfirst(mask,&fd);
@@ -778,44 +781,26 @@ static void SkinChangeTab(HWND hwndDlg, WndItemsData *data, int sel)
 	HWND hwndTab;
 	RECT rc_tab;
 	RECT rc_item;
-	int top;
 
 	hwndTab = GetDlgItem(hwndDlg, IDC_SKIN_TAB);
 
 	// Get avaible space
 	GetWindowRect(hwndTab, &rc_tab);
-	ScreenToClientRect(hwndDlg, &rc_tab);
-	top = rc_tab.top;
-
-	GetWindowRect(hwndTab, &rc_tab);
 	ScreenToClientRect(hwndTab, &rc_tab);
 	TabCtrl_AdjustRect(hwndTab, FALSE, &rc_tab); 
-
 
 	// Get item size
 	GetClientRect(data->items[sel].hwnd, &rc_item);
 
 	// Fix rc_item
 	rc_item.right -= rc_item.left;	// width
-	rc_item.left = 0;
+	rc_item.left = rc_tab.left + (rc_tab.right - rc_tab.left - rc_item.right) / 2;
+
 	rc_item.bottom -= rc_item.top;	// height
-	rc_item.top = 0;
-
-	//OffsetRect(&rc_item,30,0);
-
-	if (rc_item.right < rc_tab.right - rc_tab.left)
-		rc_item.left = rc_tab.left + (rc_tab.right - rc_tab.left - rc_item.right) / 2;
-	else
-		rc_item.left = rc_tab.left;
-
-	if (rc_item.bottom < rc_tab.bottom - rc_tab.top)
-		rc_item.top = top + rc_tab.top + (rc_tab.bottom - rc_tab.top - rc_item.bottom) / 2;
-	else
-		rc_item.top = top + rc_tab.top;
+	rc_item.top = rc_tab.top + (rc_tab.bottom - rc_tab.top - rc_item.bottom) / 2;
 
 	// Set pos
-	//SetParent(data->items[sel].hwnd,hwndTab);
-	SetWindowPos(data->items[sel].hwnd, HWND_TOP/*data->hwndDisplay*/, rc_item.left, rc_item.top, rc_item.right,
+	SetWindowPos(data->items[sel].hwnd, HWND_TOP, rc_item.left, rc_item.top, rc_item.right,
 		rc_item.bottom, SWP_SHOWWINDOW);
 
 	data->selected_item = sel;
@@ -832,7 +817,6 @@ static BOOL CALLBACK DlgProcSkinTabbedOpts(HWND hwndDlg, UINT msg, WPARAM wParam
 			WndItemsData *data;
 			int i;
 			TCITEM tie={0}; 
-			RECT rc_tab;
 
 			TranslateDialogDefault(hwndDlg);
 
@@ -857,21 +841,12 @@ static BOOL CALLBACK DlgProcSkinTabbedOpts(HWND hwndDlg, UINT msg, WPARAM wParam
 				TranslateDialogDefault(data->items[i].hwnd);
 				ShowWindowNew(data->items[i].hwnd, SW_HIDE);
 
+				if (pfEnableThemeDialogTexture != NULL)
+					pfEnableThemeDialogTexture(data->items[i].hwnd, ETDT_ENABLETAB);
+
 				tie.pszText = TranslateTS(data->items[i].conf->name); 
 				TabCtrl_InsertItem(hwndTab, i, &tie);
 			}
-
-			// Get avaible space
-			GetWindowRect(hwndTab, &rc_tab);
-			ScreenToClientRect(hwndTab, &rc_tab);
-			TabCtrl_AdjustRect(hwndTab, FALSE, &rc_tab); 
-			rc_tab.left+=1;
-			rc_tab.right-=1;
-			// Create big display
-			data->hwndDisplay = CreateWindow(TEXT("STATIC"), TEXT(""), WS_CHILD|WS_VISIBLE, 
-				rc_tab.left, rc_tab.top, 
-				rc_tab.right-rc_tab.left, rc_tab.bottom-rc_tab.top, 
-				hwndTab, NULL, g_hInst, NULL); 
 
 			// Show first item
 			SkinChangeTab(hwndDlg, data, 0);

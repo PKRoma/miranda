@@ -401,6 +401,7 @@ static BOOL CALLBACK DlgProcItemAvatarOpts(HWND hwndDlg, UINT msg, WPARAM wParam
 				EnableWindow(GetDlgItem(hwndDlg,IDC_AVATAR_BORDER_COLOR_L),FALSE);
 				EnableWindow(GetDlgItem(hwndDlg,IDC_AVATAR_BORDER_COLOR),FALSE);
 				EnableWindow(GetDlgItem(hwndDlg,IDC_AVATAR_ROUND_CORNERS),FALSE);
+				EnableWindow(GetDlgItem(hwndDlg,IDC_AVATAR_CUSTOM_CORNER_SIZE_CHECK),FALSE);
 				EnableWindow(GetDlgItem(hwndDlg,IDC_AVATAR_IGNORE_SIZE),FALSE);
 				EnableWindow(GetDlgItem(hwndDlg,IDC_AVATAR_OVERLAY_ICONS),FALSE);
 				EnableWindow(GetDlgItem(hwndDlg,IDC_AVATAR_OVERLAY_ICON_NORMAL),FALSE);
@@ -410,6 +411,7 @@ static BOOL CALLBACK DlgProcItemAvatarOpts(HWND hwndDlg, UINT msg, WPARAM wParam
 				EnableWindow(GetDlgItem(hwndDlg,IDC_AVATAR_SIZE),FALSE);
 				EnableWindow(GetDlgItem(hwndDlg,IDC_AVATAR_SIZE_SPIN),FALSE);
 				EnableWindow(GetDlgItem(hwndDlg,IDC_AVATAR_SIZE_PIXELS),FALSE);
+				EnableWindow(GetDlgItem(hwndDlg,IDC_AVATAR_WIDTH),FALSE);
 				EnableWindow(GetDlgItem(hwndDlg,IDC_AVATAR_WIDTH_SPIN),FALSE);
 				EnableWindow(GetDlgItem(hwndDlg,IDC_AVATAR_SIZE_PIXELS2),FALSE);
 				EnableWindow(GetDlgItem(hwndDlg,IDC_AVATAR_SIZE_PIXELS3),FALSE);
@@ -447,26 +449,29 @@ static BOOL CALLBACK DlgProcItemAvatarOpts(HWND hwndDlg, UINT msg, WPARAM wParam
 				EnableWindow(GetDlgItem(hwndDlg,IDC_AVATAR_BORDER_COLOR_L),enabled && IsDlgButtonChecked(hwndDlg,IDC_AVATAR_DRAW_BORDER));
 				EnableWindow(GetDlgItem(hwndDlg,IDC_AVATAR_BORDER_COLOR),enabled && IsDlgButtonChecked(hwndDlg,IDC_AVATAR_DRAW_BORDER));
 				EnableWindow(GetDlgItem(hwndDlg,IDC_AVATAR_ROUND_CORNERS),enabled);
+				EnableWindow(GetDlgItem(hwndDlg,IDC_AVATAR_CUSTOM_CORNER_SIZE_CHECK),enabled);
 				EnableWindow(GetDlgItem(hwndDlg,IDC_AVATAR_IGNORE_SIZE),enabled);
 				EnableWindow(GetDlgItem(hwndDlg,IDC_AVATAR_OVERLAY_ICONS),enabled);
-				EnableWindow(GetDlgItem(hwndDlg,IDC_AVATAR_OVERLAY_ICON_NORMAL),enabled);
-				EnableWindow(GetDlgItem(hwndDlg,IDC_AVATAR_OVERLAY_ICON_PROTOCOL),enabled);
-				EnableWindow(GetDlgItem(hwndDlg,IDC_AVATAR_OVERLAY_ICON_CONTACT),enabled);
+				EnableWindow(GetDlgItem(hwndDlg,IDC_AVATAR_OVERLAY_ICON_NORMAL),enabled && IsDlgButtonChecked(hwndDlg,IDC_AVATAR_OVERLAY_ICONS));
+				EnableWindow(GetDlgItem(hwndDlg,IDC_AVATAR_OVERLAY_ICON_PROTOCOL),enabled && IsDlgButtonChecked(hwndDlg,IDC_AVATAR_OVERLAY_ICONS));
+				EnableWindow(GetDlgItem(hwndDlg,IDC_AVATAR_OVERLAY_ICON_CONTACT),enabled && IsDlgButtonChecked(hwndDlg,IDC_AVATAR_OVERLAY_ICONS));
 				EnableWindow(GetDlgItem(hwndDlg,IDC_AVATAR_SIZE_L),enabled);
 				EnableWindow(GetDlgItem(hwndDlg,IDC_AVATAR_SIZE),enabled);
 				EnableWindow(GetDlgItem(hwndDlg,IDC_AVATAR_SIZE_SPIN),enabled);
-				EnableWindow(GetDlgItem(hwndDlg,IDC_AVATAR_SIZE_PIXELS),enabled);
-				if (DBGetContactSettingByte(NULL,"ModernData","UseAdvancedRowLayout",0)==1)
-				{
+				EnableWindow(GetDlgItem(hwndDlg,IDC_AVATAR_SIZE_PIXELS2),enabled);
+				EnableWindow(GetDlgItem(hwndDlg,IDC_AVATAR_SIZE_PIXELS3),enabled);
+//				if (DBGetContactSettingByte(NULL,"ModernData","UseAdvancedRowLayout",0)==1)
+//				{
+					EnableWindow(GetDlgItem(hwndDlg,IDC_AVATAR_WIDTH),enabled);
 					EnableWindow(GetDlgItem(hwndDlg,IDC_AVATAR_WIDTH_SPIN),enabled);
-					EnableWindow(GetDlgItem(hwndDlg,IDC_AVATAR_SIZE_PIXELS2),enabled);
-					EnableWindow(GetDlgItem(hwndDlg,IDC_AVATAR_SIZE_PIXELS3),enabled);
-				}
-				else
-				{	EnableWindow(GetDlgItem(hwndDlg,IDC_AVATAR_WIDTH_SPIN),FALSE);
-					EnableWindow(GetDlgItem(hwndDlg,IDC_AVATAR_SIZE_PIXELS2),FALSE);
-					EnableWindow(GetDlgItem(hwndDlg,IDC_AVATAR_SIZE_PIXELS3),FALSE);
-				}
+					EnableWindow(GetDlgItem(hwndDlg,IDC_AVATAR_SIZE_PIXELS),enabled);
+//				}
+//				else
+//				{
+//					EnableWindow(GetDlgItem(hwndDlg,IDC_AVATAR_WIDTH),FALSE);
+//					EnableWindow(GetDlgItem(hwndDlg,IDC_AVATAR_WIDTH_SPIN),FALSE);
+//					EnableWindow(GetDlgItem(hwndDlg,IDC_AVATAR_SIZE_PIXELS),FALSE);
+//				}
 			}
 
 			if (LOWORD(wParam)==IDC_AVATAR_DRAW_BORDER)
@@ -1157,42 +1162,23 @@ static void ChangeTab(HWND hwndDlg, WndItemsData *data, int sel)
 	HWND hwndTab;
 	RECT rc_tab;
 	RECT rc_item;
-	int top;
 
 	hwndTab = GetDlgItem(hwndDlg, IDC_TAB);
 
 	// Get avaible space
 	GetWindowRect(hwndTab, &rc_tab);
-	ScreenToClientRect(hwndDlg, &rc_tab);
-	top = rc_tab.top;
-
-	GetWindowRect(hwndTab, &rc_tab);
 	ScreenToClientRect(hwndTab, &rc_tab);
 	TabCtrl_AdjustRect(hwndTab, FALSE, &rc_tab); 
-
-
-
 
 	// Get item size
 	GetClientRect(data->items[sel].hwnd, &rc_item);
 
 	// Fix rc_item
 	rc_item.right -= rc_item.left;	// width
-	rc_item.left = 0;
+	rc_item.left = rc_tab.left + (rc_tab.right - rc_tab.left - rc_item.right) / 2;
+
 	rc_item.bottom -= rc_item.top;	// height
-	rc_item.top = 0;
-
-	//OffsetRect(&rc_item,30,0);
-
-	if (rc_item.right < rc_tab.right - rc_tab.left)
-		rc_item.left = rc_tab.left + (rc_tab.right - rc_tab.left - rc_item.right) / 2;
-	else
-		rc_item.left = rc_tab.left;
-
-	if (rc_item.bottom < rc_tab.bottom - rc_tab.top)
-		rc_item.top = top + rc_tab.top + (rc_tab.bottom - rc_tab.top - rc_item.bottom) / 2;
-	else
-		rc_item.top = top + rc_tab.top;
+	rc_item.top = rc_tab.top + (rc_tab.bottom - rc_tab.top - rc_item.bottom) / 2;
 
 	// Set pos
 	SetWindowPos(data->items[sel].hwnd, HWND_TOP, rc_item.left, rc_item.top, rc_item.right,
@@ -1211,7 +1197,6 @@ static BOOL CALLBACK DlgProcItemsOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPA
 			WndItemsData *data;
 			int i;
 			TCITEM tie; 
-			RECT rc_tab;
 
 			TranslateDialogDefault(hwndDlg);
 
@@ -1236,21 +1221,12 @@ static BOOL CALLBACK DlgProcItemsOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPA
 				TranslateDialogDefault(data->items[i].hwnd);
 				ShowWindowNew(data->items[i].hwnd, SW_HIDE);
 
+				if (pfEnableThemeDialogTexture != NULL)
+					pfEnableThemeDialogTexture(data->items[i].hwnd, ETDT_ENABLETAB);
+
 				tie.pszText = TranslateTS(data->items[i].conf->name); 
 				TabCtrl_InsertItem(hwndTab, i, &tie);
 			}
-
-			// Get avaible space
-			GetWindowRect(hwndTab, &rc_tab);
-			ScreenToClientRect(hwndTab, &rc_tab);
-			TabCtrl_AdjustRect(hwndTab, FALSE, &rc_tab); 
-			rc_tab.left+=3;
-			rc_tab.right-=3;
-			// Create big display
-			data->hwndDisplay = CreateWindow(TEXT("STATIC"), TEXT(""), WS_CHILD|WS_VISIBLE, 
-				rc_tab.left, rc_tab.top, 
-				rc_tab.right-rc_tab.left, rc_tab.bottom-rc_tab.top, 
-				hwndTab, NULL, g_hInst, NULL); 
 
 			// Show first item
 			ChangeTab(hwndDlg, data, 0);

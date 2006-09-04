@@ -432,6 +432,12 @@ BOOL CALLBACK DlgProcCluiOpts2(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPa
 			EnableWindow(GetDlgItem(hwndDlg,IDC_HIDETIMESPIN3),mode!=0);
 			EnableWindow(GetDlgItem(hwndDlg,IDC_HIDETIMESPIN4),mode!=0);
 			EnableWindow(GetDlgItem(hwndDlg,IDC_HIDEDELAY2),mode!=0);
+			EnableWindow(GetDlgItem(hwndDlg,IDC_STATIC5),mode!=0);
+			EnableWindow(GetDlgItem(hwndDlg,IDC_STATIC6),mode!=0);
+			EnableWindow(GetDlgItem(hwndDlg,IDC_STATIC7),mode!=0);
+			EnableWindow(GetDlgItem(hwndDlg,IDC_STATIC8),mode!=0);
+			EnableWindow(GetDlgItem(hwndDlg,IDC_STATIC10),mode!=0);
+			EnableWindow(GetDlgItem(hwndDlg,IDC_STATIC13),mode!=0);
 		}
 
 		if(!IsDlgButtonChecked(hwndDlg,IDC_AUTOSIZE)) {
@@ -470,6 +476,12 @@ BOOL CALLBACK DlgProcCluiOpts2(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPa
 			EnableWindow(GetDlgItem(hwndDlg,IDC_HIDETIMESPIN3),mode!=0);
 			EnableWindow(GetDlgItem(hwndDlg,IDC_HIDETIMESPIN4),mode!=0);     
 			EnableWindow(GetDlgItem(hwndDlg,IDC_HIDEDELAY2),mode!=0);
+			EnableWindow(GetDlgItem(hwndDlg,IDC_STATIC5),mode!=0);
+			EnableWindow(GetDlgItem(hwndDlg,IDC_STATIC6),mode!=0);
+			EnableWindow(GetDlgItem(hwndDlg,IDC_STATIC7),mode!=0);
+			EnableWindow(GetDlgItem(hwndDlg,IDC_STATIC8),mode!=0);
+			EnableWindow(GetDlgItem(hwndDlg,IDC_STATIC10),mode!=0);
+			EnableWindow(GetDlgItem(hwndDlg,IDC_STATIC13),mode!=0);
 		}
 		if ((LOWORD(wParam)==IDC_HIDETIME || LOWORD(wParam)==IDC_HIDEDELAY2 ||LOWORD(wParam)==IDC_HIDEDELAY ||LOWORD(wParam)==IDC_SHOWDELAY || LOWORD(wParam)==IDC_MAXSIZEHEIGHT) &&
 			(HIWORD(wParam)!=EN_CHANGE || (HWND)lParam!=GetFocus()))

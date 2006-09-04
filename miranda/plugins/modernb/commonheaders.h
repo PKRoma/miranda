@@ -258,6 +258,13 @@ extern SortedList *clistCache;
 extern void LockCacheItem(HANDLE hContact, char*, int);
 extern void UnlockCacheItem(HANDLE hContact);
 
+extern BOOL (WINAPI *pfEnableThemeDialogTexture)(HANDLE, DWORD);
+
+#ifndef ETDT_ENABLETAB
+# define ETDT_ENABLETAB      0x00000006
+#endif
+
+
 #define TreeView_InsertItemA(hwnd, lpis) \
 	(HTREEITEM)SendMessageA((hwnd), TVM_INSERTITEMA, 0, (LPARAM)(LPTV_INSERTSTRUCTA)(lpis))
 

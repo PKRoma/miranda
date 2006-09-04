@@ -413,7 +413,7 @@ BEGIN
                     8
     CONTROL         "Show",IDC_DONTCYCLE,"Button",BS_AUTORADIOBUTTON | 
                     WS_GROUP,10,176,97,10
-    COMBOBOX        IDC_PRIMARYSTATUS,107,175,78,101,CBS_DROPDOWN | 
+    COMBOBOX        IDC_PRIMARYSTATUS,107,175,78,101,CBS_DROPDOWNLIST | 
                     WS_VSCROLL | WS_TABSTOP
     CONTROL         "Cycle icons every",IDC_CYCLE,"Button",
                     BS_AUTORADIOBUTTON,10,192,97,10
@@ -1465,8 +1465,8 @@ BEGIN
                     BS_AUTOCHECKBOX | WS_TABSTOP,21,90,232,8
     CONTROL         "Align to right",IDC_ALIGN_RIGHT,"Button",
                     BS_AUTOCHECKBOX | WS_TABSTOP,7,38,246,8
-    COMBOBOX        IDC_ALIGNGROUPCOMBO,6,7,140,45,CBS_DROPDOWN | WS_VSCROLL | 
-                    WS_TABSTOP
+    COMBOBOX        IDC_ALIGNGROUPCOMBO,6,7,140,45,CBS_DROPDOWNLIST | 
+                    WS_VSCROLL | WS_TABSTOP
     CONTROL         "Append nick if different from custom name",
                     IDC_APPEND_NICK,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,
                     114,246,8
