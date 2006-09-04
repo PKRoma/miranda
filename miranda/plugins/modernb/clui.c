@@ -61,6 +61,14 @@ WORD BehindEdgeShowDelay;
 WORD BehindEdgeHideDelay;
 WORD BehindEdgeBorderSize;
 
+
+HANDLE hAskStatusMessageThread=NULL;
+HANDLE hGetTextThread=NULL;
+HANDLE hSmoothAnimationThread=NULL;
+HANDLE hFillFontListThread=NULL;
+
+BYTE g_STATE=STATE_NORMAL;
+
 extern BOOL LOCK_IMAGE_UPDATING;
 extern BOOL LOCK_UPDATING;
 #define UM_ALPHASUPPORT WM_USER+100
@@ -253,6 +261,15 @@ extern int dock_prevent_moving;
 int show_event_started=0;
 extern int JustUpdateWindowImage();
 BOOL TransparentFlag=FALSE;// TransparentFlag
+
+void DestroyThreads()
+{
+    TerminateThread(hAskStatusMessageThread,0);
+    TerminateThread(hGetTextThread,0);
+    TerminateThread(hSmoothAnimationThread,0);
+    TerminateThread(hFillFontListThread,0);
+}
+
 
 void ChangeWindowMode()
 {
@@ -2383,7 +2400,9 @@ LRESULT CALLBACK cli_ContactListWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPAR
 	case WM_DESTROY:
 		{
 			int state=DBGetContactSettingByte(NULL,"CList","State",SETTING_STATE_NORMAL);
-			DisconnectAll();
+			g_STATE=STATE_EXITING;
+            DisconnectAll();
+            DestroyThreads(); //stop all my threads            
 			if (state==SETTING_STATE_NORMAL){ShowWindowNew(hwnd,SW_HIDE);};				
 			if(hSettingChangedHook!=0){UnhookEvent(hSettingChangedHook);};
 			TrayIconDestroy(hwnd);	
@@ -2873,7 +2892,7 @@ int SmoothAlphaTransition(HWND hwnd, BYTE GoalAlpha, BOOL wParam)
 					PAUSE=FALSE;
 				ANIMATION_IS_IN_PROGRESS=1;
 				if (SmoothAnimation)
-					forkthread(SmoothAnimationThread,0,pcli->hwndContactList);	
+					hSmoothAnimationThread=(HANDLE)forkthread(SmoothAnimationThread,0,pcli->hwndContactList);	
 
 			}
 		}

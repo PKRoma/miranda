@@ -211,10 +211,12 @@ void ReAskStatusMessage(HANDLE wParam)
   res=AddHandleToChain(wParam); 
   if (!ISTREADSTARTED && res) 
   {
-    forkthread(AskStatusMessageThread,0,0);
+    hAskStatusMessageThread=(HANDLE)forkthread(AskStatusMessageThread,0,0);
   }
   return;
 }
+
+
 
 
 
@@ -349,7 +351,7 @@ int AddToCacheChain(struct ClcData *dat,struct ClcContact *contact,HANDLE Contac
 			if (!ISCacheTREADSTARTED)
 			{
 				//StartThreadHere();
-				forkthread(GetTextThread,0,0);
+				hGetTextThread=forkthread(GetTextThread,0,0);
 				ISCacheTREADSTARTED=TRUE;
 			}
 		}

@@ -736,10 +736,17 @@ case INTM_ICONCHANGED:
 case INTM_AVATARCHANGED:
 	{
 		struct ClcContact *contact;
+        lockdat;
 		if (FindItem(hwnd,dat,(HANDLE)wParam,&contact,NULL,NULL,FALSE)) 
-			Cache_GetAvatar(dat, contact); 
+        {
+            Cache_GetAvatar(dat, contact); 
+            ulockdat;
+        }
 		else if (dat->use_avatar_service && !wParam)
+        {
+            ulockdat;
 			UpdateAllAvatars(dat);
+        }
 		cliInvalidateRect(hwnd, NULL, FALSE);
 		return 0;
 	}

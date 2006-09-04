@@ -1228,13 +1228,16 @@ extern void DisconnectAll();
 int CloseAction(WPARAM wParam,LPARAM lParam)
 {
   int k;
-  k=CallService(MS_SYSTEM_OKTOEXIT,(WPARAM)0,(LPARAM)0);
+  do
+  {
+      k=CallService(MS_SYSTEM_OKTOEXIT,(WPARAM)0,(LPARAM)0);
+  } while (!k);
   if(k)
   {
 	DisconnectAll();
-    SendMessage((HWND)CallService(MS_CLUI_GETHWND,(WPARAM)0,(LPARAM)0),WM_DESTROY,0,0);
-    PostQuitMessage(0);
-    SleepEx(0,TRUE);
+    PostMessage((HWND)CallService(MS_CLUI_GETHWND,(WPARAM)0,(LPARAM)0),WM_DESTROY,0,0);
+//   PostQuitMessage(0);
+//   SleepEx(0,TRUE);
   }
 
   return(0);
