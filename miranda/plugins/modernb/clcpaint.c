@@ -39,6 +39,7 @@ static HRESULT  (WINAPI *MyCloseThemeData)(HANDLE);
 static HRESULT  (WINAPI *MyDrawThemeBackground)(HANDLE,HDC,int,int,const RECT *,const RECT *);
 #define MGPROC(x) GetProcAddress(themeAPIHandle,x)
 
+extern HIMAGELIST hAvatarOverlays;
 tPaintCallbackProc ClcPaintCallbackProc(HWND hWnd, HDC hDC, RECT * rcPaint,HRGN rgn,  DWORD dFlags, void * CallBackData);
 //#include <gdiplus.h>
 #include "modern_row.h"
@@ -49,8 +50,9 @@ extern struct AvatarOverlayIconConfig
   char *name;
   char *description;
   int id;
-  HICON icon;
+  int listID;
 } avatar_overlay_icons[ID_STATUS_OUTTOLUNCH - ID_STATUS_OFFLINE + 1];
+extern HIMAGELIST hAvatarOverlays;
 //extern BOOL mod_ImageList_DrawEx( HIMAGELIST himl,int i,HDC hdcDst,int x,int y,int dx,int dy,COLORREF rgbBk,COLORREF rgbFg,UINT fStyle);
 
 //extern void DrawAvatarImageWithGDIp(HDC hDestDC,int x, int y, DWORD width, DWORD height, HBITMAP hbmp, int x1, int y1, DWORD width1, DWORD height1,DWORD flag);
@@ -1449,8 +1451,14 @@ void ModernInternalPaintRowItems(HWND hwnd, HDC hdcMem, struct ClcData *dat, str
 						  {
 							UINT a=blendmode;
 							a=(a<<24);
-							mod_DrawIconEx(hdcMem, p_rect.left, p_rect.top, avatar_overlay_icons[GetContactCachedStatus(Drawing->hContact) - ID_STATUS_OFFLINE].icon, 
-							  ICON_HEIGHT, ICON_HEIGHT, 0, NULL, DI_NORMAL|a); 
+                            mod_ImageList_DrawEx(hAvatarOverlays,avatar_overlay_icons[GetContactCachedStatus(Drawing->hContact) - ID_STATUS_OFFLINE].listID,
+                                                 hdcMem,
+                                                 p_rect.left, p_rect.top,ICON_HEIGHT,ICON_HEIGHT,
+                                                 CLR_NONE,CLR_NONE,
+                                                 (blendmode==255)?ILD_NORMAL:(blendmode==128)?ILD_BLEND50:ILD_BLEND25);
+
+							//mod_DrawIconEx(hdcMem, p_rect.left, p_rect.top, avatar_overlay_icons[GetContactCachedStatus(Drawing->hContact) - ID_STATUS_OFFLINE].icon, 
+							//  ICON_HEIGHT, ICON_HEIGHT, 0, NULL, DI_NORMAL|a); 
 							break;
 						  }
 						case SETTING_AVATAR_OVERLAY_TYPE_PROTOCOL:
@@ -1915,10 +1923,15 @@ void InternalPaintRowItems(HWND hwnd, HDC hdcMem, struct ClcData *dat, struct Cl
             {
             case SETTING_AVATAR_OVERLAY_TYPE_NORMAL:
               {
-                UINT a=blendmode;
-                a=(a<<24);
-                mod_DrawIconEx(hdcMem, real_rc.left, real_rc.top, avatar_overlay_icons[GetContactCachedStatus(Drawing->hContact) - ID_STATUS_OFFLINE].icon, 
-                  ICON_HEIGHT, ICON_HEIGHT, 0, NULL, DI_NORMAL|a); 
+                mod_ImageList_DrawEx(hAvatarOverlays,avatar_overlay_icons[GetContactCachedStatus(Drawing->hContact) - ID_STATUS_OFFLINE].listID,
+                                     hdcMem,
+                                     real_rc.left, real_rc.top,ICON_HEIGHT,ICON_HEIGHT,
+                                     CLR_NONE,CLR_NONE,
+                                     (blendmode==255)?ILD_NORMAL:(blendmode==128)?ILD_BLEND50:ILD_BLEND25);
+                //UINT a=blendmode;
+                //a=(a<<24);
+                //mod_DrawIconEx(hdcMem, real_rc.left, real_rc.top, avatar_overlay_icons[GetContactCachedStatus(Drawing->hContact) - ID_STATUS_OFFLINE].icon, 
+                //  ICON_HEIGHT, ICON_HEIGHT, 0, NULL, DI_NORMAL|a); 
                 break;
               }
             case SETTING_AVATAR_OVERLAY_TYPE_PROTOCOL:

@@ -57,37 +57,39 @@ extern int GetContactIndex(struct ClcGroup *group,struct ClcContact *contact);
 
 HICON listening_to_icon = NULL;
 
+HIMAGELIST hAvatarOverlays=NULL;
+
 struct AvatarOverlayIconConfig 
 {
 	char *name;
 	char *description;
 	int id;
-	HICON icon;
+	int listID;
 } avatar_overlay_icons[ID_STATUS_OUTTOLUNCH - ID_STATUS_OFFLINE + 1] = 
 {
-	{ "AVATAR_OVERLAY_OFFLINE", "Offline", IDI_AVATAR_OVERLAY_OFFLINE, NULL},
-	{ "AVATAR_OVERLAY_ONLINE", "Online", IDI_AVATAR_OVERLAY_ONLINE, NULL},
-	{ "AVATAR_OVERLAY_AWAY", "Away", IDI_AVATAR_OVERLAY_AWAY, NULL},
-	{ "AVATAR_OVERLAY_DND", "DND", IDI_AVATAR_OVERLAY_DND, NULL},
-	{ "AVATAR_OVERLAY_NA", "NA", IDI_AVATAR_OVERLAY_NA, NULL},
-	{ "AVATAR_OVERLAY_OCCUPIED", "Occupied", IDI_AVATAR_OVERLAY_OCCUPIED, NULL},
-	{ "AVATAR_OVERLAY_CHAT", "Free for chat", IDI_AVATAR_OVERLAY_CHAT, NULL},
-	{ "AVATAR_OVERLAY_INVISIBLE", "Invisible", IDI_AVATAR_OVERLAY_INVISIBLE, NULL},
-	{ "AVATAR_OVERLAY_PHONE", "On the phone", IDI_AVATAR_OVERLAY_PHONE, NULL},
-	{ "AVATAR_OVERLAY_LUNCH", "Out to lunch", IDI_AVATAR_OVERLAY_LUNCH, NULL}
+	{ "AVATAR_OVERLAY_OFFLINE", "Offline", IDI_AVATAR_OVERLAY_OFFLINE, -1},
+	{ "AVATAR_OVERLAY_ONLINE", "Online", IDI_AVATAR_OVERLAY_ONLINE, -1},
+	{ "AVATAR_OVERLAY_AWAY", "Away", IDI_AVATAR_OVERLAY_AWAY, -1},
+	{ "AVATAR_OVERLAY_DND", "DND", IDI_AVATAR_OVERLAY_DND, -1},
+	{ "AVATAR_OVERLAY_NA", "NA", IDI_AVATAR_OVERLAY_NA, -1},
+	{ "AVATAR_OVERLAY_OCCUPIED", "Occupied", IDI_AVATAR_OVERLAY_OCCUPIED, -1},
+	{ "AVATAR_OVERLAY_CHAT", "Free for chat", IDI_AVATAR_OVERLAY_CHAT, -1},
+	{ "AVATAR_OVERLAY_INVISIBLE", "Invisible", IDI_AVATAR_OVERLAY_INVISIBLE, -1},
+	{ "AVATAR_OVERLAY_PHONE", "On the phone", IDI_AVATAR_OVERLAY_PHONE, -1},
+	{ "AVATAR_OVERLAY_LUNCH", "Out to lunch", IDI_AVATAR_OVERLAY_LUNCH, -1}
 };
 struct AvatarOverlayIconConfig status_overlay_icons[ID_STATUS_OUTTOLUNCH - ID_STATUS_OFFLINE + 1] = 
 {
-	{ "STATUS_OVERLAY_OFFLINE", "Offline", IDI_STATUS_OVERLAY_OFFLINE, NULL},
-	{ "STATUS_OVERLAY_ONLINE", "Online", IDI_STATUS_OVERLAY_ONLINE, NULL},
-	{ "STATUS_OVERLAY_AWAY", "Away", IDI_STATUS_OVERLAY_AWAY, NULL},
-	{ "STATUS_OVERLAY_DND", "DND", IDI_STATUS_OVERLAY_DND, NULL},
-	{ "STATUS_OVERLAY_NA", "NA", IDI_STATUS_OVERLAY_NA, NULL},
-	{ "STATUS_OVERLAY_OCCUPIED", "Occupied", IDI_STATUS_OVERLAY_OCCUPIED, NULL},
-	{ "STATUS_OVERLAY_CHAT", "Free for chat", IDI_STATUS_OVERLAY_CHAT, NULL},
-	{ "STATUS_OVERLAY_INVISIBLE", "Invisible", IDI_STATUS_OVERLAY_INVISIBLE, NULL},
-	{ "STATUS_OVERLAY_PHONE", "On the phone", IDI_STATUS_OVERLAY_PHONE, NULL},
-	{ "STATUS_OVERLAY_LUNCH", "Out to lunch", IDI_STATUS_OVERLAY_LUNCH, NULL}
+	{ "STATUS_OVERLAY_OFFLINE", "Offline", IDI_STATUS_OVERLAY_OFFLINE, -1},
+	{ "STATUS_OVERLAY_ONLINE", "Online", IDI_STATUS_OVERLAY_ONLINE, -1},
+	{ "STATUS_OVERLAY_AWAY", "Away", IDI_STATUS_OVERLAY_AWAY, -1},
+	{ "STATUS_OVERLAY_DND", "DND", IDI_STATUS_OVERLAY_DND, -1},
+	{ "STATUS_OVERLAY_NA", "NA", IDI_STATUS_OVERLAY_NA, -1},
+	{ "STATUS_OVERLAY_OCCUPIED", "Occupied", IDI_STATUS_OVERLAY_OCCUPIED, -1},
+	{ "STATUS_OVERLAY_CHAT", "Free for chat", IDI_STATUS_OVERLAY_CHAT, -1},
+	{ "STATUS_OVERLAY_INVISIBLE", "Invisible", IDI_STATUS_OVERLAY_INVISIBLE, -1},
+	{ "STATUS_OVERLAY_PHONE", "On the phone", IDI_STATUS_OVERLAY_PHONE, -1},
+	{ "STATUS_OVERLAY_LUNCH", "Out to lunch", IDI_STATUS_OVERLAY_LUNCH, -1}
 };
 
 void UnloadAvatarOverlayIcon()
@@ -95,18 +97,11 @@ void UnloadAvatarOverlayIcon()
 	int i;
 	for (i = 0 ; i < MAX_REGS(avatar_overlay_icons) ; i++)
 	{
-		if (avatar_overlay_icons[i].icon) 
-		{
-			DestroyIcon_protect(avatar_overlay_icons[i].icon);
-			avatar_overlay_icons[i].icon=NULL;
-		}
-		if (status_overlay_icons[i].icon)
-		{
-			DestroyIcon_protect(status_overlay_icons[i].icon);
-			status_overlay_icons[i].icon=NULL;
-		}
+		avatar_overlay_icons[i].listID=-1;
+		status_overlay_icons[i].listID=-1;
 	}
-
+    ImageList_Destroy(hAvatarOverlays);
+    hAvatarOverlays=NULL;
 	DestroyIcon_protect(listening_to_icon);
 	listening_to_icon=NULL;
 }
@@ -221,10 +216,21 @@ static int ClcSettingChanged(WPARAM wParam,LPARAM lParam)
 static int ReloadAvatarOverlayIcons(WPARAM wParam, LPARAM lParam) 
 {
 	int i;
+   	for (i = 0 ; i < MAX_REGS(avatar_overlay_icons) ; i++)
+	{
+		avatar_overlay_icons[i].listID=-1;
+		status_overlay_icons[i].listID=-1;
+	}
+    if (hAvatarOverlays) ImageList_Destroy(hAvatarOverlays);
+    hAvatarOverlays=ImageList_Create(16,16,ILC_COLOR32,MAX_REGS(avatar_overlay_icons)*2,1);
 	for (i = 0 ; i < MAX_REGS(avatar_overlay_icons) ; i++)
 	{
-		avatar_overlay_icons[i].icon = (HICON)CallService(MS_SKIN2_GETICON, 0, (LPARAM)avatar_overlay_icons[i].name);
-		status_overlay_icons[i].icon = (HICON)CallService(MS_SKIN2_GETICON, 0, (LPARAM)status_overlay_icons[i].name);
+        HICON hIcon=(HICON)CallService(MS_SKIN2_GETICON, 0, (LPARAM)avatar_overlay_icons[i].name);
+		avatar_overlay_icons[i].listID = ImageList_AddIcon(hAvatarOverlays,hIcon);
+        //destroy icon
+        hIcon=(HICON)CallService(MS_SKIN2_GETICON, 0, (LPARAM)status_overlay_icons[i].name);    
+		status_overlay_icons[i].listID = ImageList_AddIcon(hAvatarOverlays,hIcon);            
+        //destroy icon
 	}
 
 	listening_to_icon = (HICON)CallService(MS_SKIN2_GETICON, 0, (LPARAM)"LISTENING_TO_ICON");
@@ -294,13 +300,19 @@ static int ClcModulesLoaded(WPARAM wParam,LPARAM lParam) {
 	}
 	else 
 	{
-		int i;
-		for (i = 0 ; i < MAX_REGS(avatar_overlay_icons) ; i++)
-		{
-			avatar_overlay_icons[i].icon = (HICON)LoadImage(g_hInst, MAKEINTRESOURCE(avatar_overlay_icons[i].id), IMAGE_ICON, 16, 16, 0);
-			status_overlay_icons[i].icon = (HICON)LoadImage(g_hInst, MAKEINTRESOURCE(status_overlay_icons[i].id), IMAGE_ICON, 16, 16, 0);
-		}
-		listening_to_icon = (HICON)LoadImage(g_hInst, MAKEINTRESOURCE(IDI_LISTENING_TO), IMAGE_ICON, 16, 16, 0);}
+        if (hAvatarOverlays) ImageList_Destroy(hAvatarOverlays);
+        hAvatarOverlays=ImageList_Create(16,16,ILC_COLOR32,MAX_REGS(avatar_overlay_icons)*2,1);
+	    for (i = 0 ; i < MAX_REGS(avatar_overlay_icons) ; i++)
+	    {
+            HICON hIcon=LoadSmallIcon(g_hInst, MAKEINTRESOURCE(avatar_overlay_icons[i].id));
+		    avatar_overlay_icons[i].listID = ImageList_AddIcon(hAvatarOverlays,hIcon);
+            DestroyIcon_protect(hIcon);
+            hIcon=LoadSmallIcon(g_hInst, MAKEINTRESOURCE(status_overlay_icons[i].id));
+		    status_overlay_icons[i].listID = ImageList_AddIcon(hAvatarOverlays,hIcon);            
+            DestroyIcon_protect(hIcon);
+	    }	
+		listening_to_icon = (HICON)LoadImage(g_hInst, MAKEINTRESOURCE(IDI_LISTENING_TO), IMAGE_ICON, 16, 16, 0);
+    }
 
 	// Register smiley category
 	if (ServiceExists(MS_SMILEYADD_REGISTERCATEGORY))
@@ -327,7 +339,7 @@ static int ClcModulesLoaded(WPARAM wParam,LPARAM lParam) {
 
 HICON GetMainStatusOverlay(int STATUS)
 {
-	return status_overlay_icons[STATUS-ID_STATUS_OFFLINE].icon;
+	return ImageList_GetIcon(hAvatarOverlays,status_overlay_icons[STATUS-ID_STATUS_OFFLINE].listID,ILD_NORMAL);
 }
 /*
 *	Proto ack hook

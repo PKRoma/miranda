@@ -236,8 +236,10 @@ extern void Utf8Decode( char* str, wchar_t** ucs2 );
 #define DeleteObject(a) DebugDeleteObject(a)
 #endif 
 
-#define lockdat //EnterCriticalSection(&(dat->lockitemCS))
-#define ulockdat //LeaveCriticalSection(&(dat->lockitemCS))
+#define lockdat 
+//EnterCriticalSection(&(dat->lockitemCS))
+#define ulockdat 
+//LeaveCriticalSection(&(dat->lockitemCS))
 
 #define strsetA(a,b) {if (a) mir_free(a); a=mir_strdup(b);}
 #define strsetT(a,b) {if (a) mir_free(a); a=mir_tstrdup(b);}

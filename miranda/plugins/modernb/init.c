@@ -116,22 +116,26 @@ PLUGININFO pluginInfo = {
 	#ifdef UNICODE
 		"Modern Contact List (UNICODE)",
 	#else
-		"Modern Contact List",
+		"Modern Contact List (ANSI)",
 	#endif
 
 #else
 	#ifdef UNICODE
 			"Debug of Modern Contact List (UNICODE)",
 	#else
-			"Debug of Modern Contact List",
+			"Debug of Modern Contact List (ANSI)",
 	#endif
 #endif
 	0,                              //will initiate later in MirandaPluginInfo
 	"Display contacts, event notifications, protocol status with advantage visual modifications. Supported MW modifications, enchanced metacontact cooperation.",
-	"Artem Shpynov, Anton Senko and Ricardo Pescuma Domenecci, based on clist_mw by Bethoven",
-	"shpynov@nm.ru" ,
+	"Artem Shpynov, Ricardo Pescuma Domenecci and Anton Senko based on clist_mw by Bethoven",
+	"ashpynov@gmail.com" ,
 	"Copyright 2000-2006 Miranda-IM project ["__DATE__" "__TIME__"]",
+#ifdef UNICODE
 	"http://miranda-im.org/download/details.php?action=viewfile&id=2103",
+#else
+    "http://miranda-im.org/download/details.php?action=viewfile&id=2996",
+#endif
 	UNICODE_AWARE,
 	DEFMOD_CLISTALL
 };

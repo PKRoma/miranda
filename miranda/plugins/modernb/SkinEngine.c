@@ -3245,8 +3245,9 @@ BOOL mod_DrawIconEx(HDC hdcDst,int xLeft,int yTop,HICON hIcon,int cxWidth,int cy
 				else 
                     a=((BYTE*)src)[3]>0?((BYTE*)src)[3]:0;//255;
 		  }
-          else  
+          else if (hasalpha || hasmask)
               a=(((BYTE*)src)[3]>0?((BYTE*)src)[3]:255);
+          else {  *dest=0; continue; }
         }
         if (a>0)
         {

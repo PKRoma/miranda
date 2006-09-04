@@ -371,6 +371,7 @@ int ModernDrawStatusBarWorker(HWND hWnd, HDC hDC)
 					if (((sbdat.xStatusMode)&3)==2)
 					{
 						hIcon=GetMainStatusOverlay(ProtosData[i].ProtoStatus);
+                        NeedDestroy=TRUE;
 					}
 					else if (((sbdat.xStatusMode)&3)==1)
 					{

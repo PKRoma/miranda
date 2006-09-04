@@ -351,7 +351,7 @@ int AddToCacheChain(struct ClcData *dat,struct ClcContact *contact,HANDLE Contac
 			if (!ISCacheTREADSTARTED)
 			{
 				//StartThreadHere();
-				hGetTextThread=forkthread(GetTextThread,0,0);
+				hGetTextThread=(HANDLE)forkthread(GetTextThread,0,0);
 				ISCacheTREADSTARTED=TRUE;
 			}
 		}

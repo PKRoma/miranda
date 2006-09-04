@@ -102,6 +102,7 @@ HICON GetIconFromStatusMode(HANDLE hContact, const char *szProto,int status)
 						HICON MainOverlay=(HICON)GetMainStatusOverlay(status);
 						hIcon=CreateJoinedIcon(hXIcon,MainOverlay,(trayOption&4)?192:0);
 						DestroyIcon_protect(hXIcon);
+                        DestroyIcon_protect(MainOverlay);
 					}
 					else
 					{
