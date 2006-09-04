@@ -559,6 +559,15 @@ static void JabberIqProcessSearch( XmlNode *node, void *userdata )
 {
 }
 
+static void JabberPerformRegistration( ThreadData* info )
+{
+	iqIdRegGetReg = JabberSerialNext();
+	XmlNodeIq iq("get",iqIdRegGetReg,(char*)NULL); 
+	XmlNode* query = iq.addQuery("jabber:iq:register");
+	JabberSend(info->s,iq);
+	SendMessage( info->reg_hwndDlg, WM_JABBER_REGDLG_UPDATE, 50, ( LPARAM )TranslateT( "Requesting registration instruction..." ));
+}
+
 static void JabberPerformIqAuth( ThreadData* info )
 {
 	if ( info->type == JABBER_SESSION_NORMAL ) {
@@ -569,13 +578,9 @@ static void JabberPerformIqAuth( ThreadData* info )
 		query->addChild( "username", info->username );
 		JabberSend( info->s, iq );
 	}
-	else if ( info->type == JABBER_SESSION_REGISTER ) {
-		iqIdRegGetReg = JabberSerialNext();
-		XmlNodeIq iq("get",iqIdRegGetReg,info->server);
-		XmlNode* query = iq.addQuery("jabber:iq:register");
-		JabberSend(info->s,iq);
-		SendMessage( info->reg_hwndDlg, WM_JABBER_REGDLG_UPDATE, 50, ( LPARAM )TranslateT( "Requesting registration instruction..." ));
-}	}
+	else if ( info->type == JABBER_SESSION_REGISTER )
+		JabberPerformRegistration( info );
+}
 
 static void JabberProcessStreamOpening( XmlNode *node, void *userdata )
 {
@@ -674,14 +679,10 @@ static void JabberProcessFeatures( XmlNode *node, void *userdata )
 			JabberSend(info->s,auth);
 			wasSaslPerformed = true; //sasl was requested, but we dont know the result
 		}
-		else if ( info->type == JABBER_SESSION_REGISTER ) {
-			iqIdRegGetReg = JabberSerialNext();
-			XmlNodeIq iq("get",iqIdRegGetReg,info->server);
-			XmlNode* query = iq.addQuery("jabber:iq:register");
-			JabberSend(info->s,iq);
-			SendMessage( info->reg_hwndDlg, WM_JABBER_REGDLG_UPDATE, 50, ( LPARAM )TranslateT( "Requesting registration instruction..." ));
-		}
-		else JabberSend( info->s, "</stream:stream>" );
+		else if ( info->type == JABBER_SESSION_REGISTER )
+			JabberPerformRegistration( info );
+		else 
+			JabberSend( info->s, "</stream:stream>" );
 		if (PLAIN) mir_free(PLAIN);
 		return;
 	} 
