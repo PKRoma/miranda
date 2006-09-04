@@ -198,6 +198,9 @@ void __cdecl yahoo_server_main(void *empty)
         }
 		YAHOO_DebugLog("Exited loop");
     }
+
+	/* need to logout first */
+    yahoo_logout();
 	
 	/* cleanup the data stuff and close our connection handles */
 	while(connections) {
@@ -208,9 +211,6 @@ void __cdecl yahoo_server_main(void *empty)
 		connections = y_list_remove_link(connections, connections);
 		y_list_free_1(tmp);
 	}
-	
-	/* need to logout first */
-    yahoo_logout();
 	
 	/* now set ourselves to offline */
 	yahoo_util_broadcaststatus(ID_STATUS_OFFLINE);
