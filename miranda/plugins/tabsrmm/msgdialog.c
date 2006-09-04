@@ -4854,8 +4854,8 @@ quote_from_last:
                         CallService(MS_MC_SETDEFAULTCONTACTNUM, (WPARAM)dat->hContact, (LPARAM)(iSelection - 1000));
                     }
                     DestroyMenu(hMC);
+                    return TRUE;
                 }
-                return TRUE;
             }
             break;
             /*

@@ -2591,8 +2591,9 @@ panel_found:
                         TrackPopupMenu(hMenu, 0, pt.x, pt.y, 0, hwndDlg, NULL);
                         DestroyMenu(hMenu);
                     }
+                    return TRUE;
                 }
-                return TRUE;
+                break;
             }
         case DM_SETICON:
             {
