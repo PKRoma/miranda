@@ -336,7 +336,7 @@ static void DoAutoExec(void)
 		while(!feof(fp)) {
 			if(fgets(szLine,sizeof(szLine),fp)==NULL) break;
 			lineLength=lstrlenA(szLine);
-			while(lineLength && szLine[lineLength-1]<=' ') szLine[--lineLength]='\0';
+			while(lineLength && (BYTE)(szLine[lineLength-1])<=' ') szLine[--lineLength]='\0';
 			if(szLine[0]==';' || szLine[0]<=' ') continue;
 			if(szLine[0]=='[') {
 				char *szEnd=strchr(szLine+1,']');
