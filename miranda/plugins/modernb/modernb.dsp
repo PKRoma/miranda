@@ -886,14 +886,6 @@ SOURCE=.\res\na2.ico
 # End Source File
 # Begin Source File
 
-SOURCE=.\res\notick.ico
-# End Source File
-# Begin Source File
-
-SOURCE=.\res\notick1.ico
-# End Source File
-# Begin Source File
-
 SOURCE=.\res\occupied.ico
 # End Source File
 # Begin Source File
