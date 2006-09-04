@@ -16,7 +16,7 @@ static int AddGroupItem(int rootid,TCHAR *name,int pos,int poppos,WPARAM wParam)
 {
 	CLISTMENUITEM mi={0};
 	mi.cbSize=sizeof(mi);
-	mi.hIcon=NULL;//LoadIcon(hInst,MAKEINTRESOURCEA(IDI_MIRANDA));
+	mi.hIcon=NULL;//LoadSmallIconShared(hInst,MAKEINTRESOURCEA(IDI_MIRANDA));
 	mi.pszPopupName=(char *)rootid;
 	mi.popupPosition=poppos;
 	mi.position=pos;
@@ -43,7 +43,7 @@ static int OnContactMenuBuild(WPARAM wParam,LPARAM lParam)
 	};
 	ZeroMemory(&mi,sizeof(mi));
 	mi.cbSize=sizeof(mi);
-	mi.hIcon=NULL;//LoadIcon(hInst,MAKEINTRESOURCEA(IDI_MIRANDA));
+	mi.hIcon=NULL;//LoadSmallIconShared(hInst,MAKEINTRESOURCEA(IDI_MIRANDA));
 	mi.pszPopupName=(char *)-1;
 	mi.position=100000;
 	mi.ptszName=TranslateT("&Move to Group");

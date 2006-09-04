@@ -416,7 +416,7 @@ void Cache_DestroySmileyList( SortedList* p_list )
 				if (!IsBadWritePtr(piece, sizeof(ClcContactTextPiece)))
 				{
 				if (piece->smiley && piece->smiley != listening_to_icon)
-					DestroyIcon(piece->smiley);
+					DestroyIcon_protect(piece->smiley);
 
 					mir_free(piece);
 				}

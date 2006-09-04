@@ -1215,7 +1215,7 @@ int OnIconLibChanges(WPARAM wParam,LPARAM lParam)
         {
           ImageList_ReplaceIcon(MenuObjects[mo].hMenuIcons,MenuObjects[mo].MenuItems[mi].iconId,newIcon);
         }
-		if (deficon) DestroyIcon(deficon);
+		if (deficon) DestroyIcon_protect(deficon);
       }	
 	  #ifdef UNICODE
 	   if (descr) mir_free(descr);
@@ -1257,7 +1257,7 @@ int RegisterOneIcon(int mo,int mi)
       defic,
       TRUE,&MenuObjects[mo].MenuItems[mi].IconRegistred);	
     if (newIcon) ImageList_ReplaceIcon(MenuObjects[mo].hMenuIcons,MenuObjects[mo].MenuItems[mi].iconId,newIcon);
-	if (defic) DestroyIcon(defic);
+	if (defic) DestroyIcon_protect(defic);
   };
 
 #ifdef UNICODE

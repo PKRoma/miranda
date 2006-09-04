@@ -3098,7 +3098,7 @@ BOOL mod_ImageList_DrawEx( HIMAGELIST himl,int i,HDC hdcDst,int x,int y,int dx,i
     }
   }
   {
-	  BOOL ret=DestroyIcon(ic);
+	  BOOL ret=DestroyIcon_protect(ic);
 	  if (!ret)
 		  ret=ret;
 
@@ -3763,6 +3763,7 @@ int ReCreateBackImage(BOOL Erase,RECT *w)
 		SelectObject(cachedWindow->hBackDC,hb2);
 		DeleteObject(cachedWindow->hBackDIB);
 		cachedWindow->hBackDIB=hb2;
+		FillRect(cachedWindow->hBackDC,&wnd,GetSysColorBrush(COLOR_BTNFACE));
 		SkinDrawGlyph(cachedWindow->hBackDC,&wnd,&wnd,"Main,ID=Background,Opt=Non-Layered");
 		SetRectAlpha_255(cachedWindow->hBackDC,&wnd);
 	}

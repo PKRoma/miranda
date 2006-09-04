@@ -1097,12 +1097,6 @@
 				RelativePath=".\res\neo_meta_move.cur">
 			</File>
 			<File
-				RelativePath=".\res\notick.ico">
-			</File>
-			<File
-				RelativePath=".\res\notick1.ico">
-			</File>
-			<File
 				RelativePath=".\res\occupied.ico">
 			</File>
 			<File

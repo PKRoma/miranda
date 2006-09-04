@@ -41,6 +41,8 @@ extern int GetProtocolVisibility(char * ProtoName);
 extern int CheckProtocolOrder();
 extern int HideWindow(HWND hwndContactList, int mode);
 extern int (* saveTrayIconProcessMessage) ( WPARAM wParam, LPARAM lParam );
+#include "modern_statusbar.h"
+extern StatusBarData sbdat;
 
 static UINT WM_TASKBARCREATED;
 static int cycleTimerId=0,cycleStep=0;
@@ -489,7 +491,7 @@ static void TrayIconRemove(HWND hwnd,const char *szProto)
 		nid.uID = trayIcon[i].id;
 		Shell_NotifyIcon(NIM_DELETE, &nid);
 
-		DestroyIcon(trayIcon[i].hBaseIcon);
+		DestroyIcon_protect(trayIcon[i].hBaseIcon);
 		if (trayIcon[i].iconTip) mir_free(trayIcon[i].iconTip);
 		trayIcon[i].id=0;
 		break;
@@ -574,7 +576,7 @@ void TrayIconDestroy(HWND hwnd)
 		if(trayIcon[i].id==0) continue;
 		nid.uID = trayIcon[i].id;
 		Shell_NotifyIcon(NIM_DELETE, &nid);
-		DestroyIcon(trayIcon[i].hBaseIcon);
+		DestroyIcon_protect(trayIcon[i].hBaseIcon);
 		if (trayIcon[i].iconTip) mir_free(trayIcon[i].iconTip);
 	}
 	if (trayIcon) mir_free(trayIcon);
@@ -671,7 +673,7 @@ static int TrayIconSetBaseInfo(HICON hIcon, char *szPreferredProto)
 		for(i=0;i<trayIconCount;i++) {
 			if(trayIcon[i].id==0) continue;
 			if(lstrcmpA(trayIcon[i].szProto,szPreferredProto)) continue;
-			DestroyIcon(trayIcon[i].hBaseIcon);
+			DestroyIcon_protect(trayIcon[i].hBaseIcon);
 			trayIcon[i].hBaseIcon=hIcon;
 			return i;
 		}
@@ -685,11 +687,11 @@ static int TrayIconSetBaseInfo(HICON hIcon, char *szPreferredProto)
 	//if there wasn't a specific icon, there will only be one suitable
 	for(i=0;i<trayIconCount;i++) {
 		if(trayIcon[i].id==0) continue;
-		DestroyIcon(trayIcon[i].hBaseIcon);
+		DestroyIcon_protect(trayIcon[i].hBaseIcon);
 		trayIcon[i].hBaseIcon=hIcon;
 		return i;
 	}
-	DestroyIcon(hIcon);
+	DestroyIcon_protect(hIcon);
 	return -1;
 }
 
@@ -699,7 +701,7 @@ void cliTrayIconUpdateWithImageList(int iImage,const TCHAR *szNewTip,char *szPre
 
 	hIcon=mod_ImageList_GetIcon(himlCListClc,iImage,ILD_NORMAL);
 	TrayIconUpdate(hIcon,szNewTip,szPreferredProto,0);
-	DestroyIcon(hIcon);
+	DestroyIcon_protect(hIcon);
 }
 
 
@@ -715,7 +717,7 @@ static VOID CALLBACK TrayCycleTimerProc(HWND hwnd,UINT message,UINT idEvent,DWOR
 		if(protos[cycleStep]->type==PROTOTYPE_PROTOCOL && (GetProtocolVisibility(protos[cycleStep]->szName)!=0)) break;
 		if (iteration>5) break;
 	}
-	DestroyIcon(trayIcon[0].hBaseIcon);
+	DestroyIcon_protect(trayIcon[0].hBaseIcon);
 	trayIcon[0].hBaseIcon=GetIconFromStatusMode(NULL,protos[cycleStep]->szName,CallProtoService(protos[cycleStep]->szName,PS_GETSTATUS,0,0));
 	//trayIcon[0].hBaseIcon=mod_ImageList_GetIcon(himlCListClc,pcli->pfnIconFromStatusMode(protos[cycleStep]->szName,CallProtoService(protos[cycleStep]->szName,PS_GETSTATUS,0,0),NULL),ILD_NORMAL);
 	if(trayIcon[0].isBase)
@@ -783,7 +785,7 @@ void cliTrayIconUpdateBase(char *szChangedProto)
 					else szProto=dbv.pszVal;
 					status=CallProtoService(szChangedProto,PS_GETSTATUS,0,0);
 					
-					if ((DBGetContactSettingByte(NULL,"CLUI","UseConnectingIcon",1)==1)&&status>=ID_STATUS_CONNECTING&&status<=ID_STATUS_CONNECTING+MAX_CONNECT_RETRIES)
+					if ((sbdat.connectingIcon==1)&&status>=ID_STATUS_CONNECTING&&status<=ID_STATUS_CONNECTING+MAX_CONNECT_RETRIES)
 					{
 						//
 						HICON hIcon;
@@ -793,15 +795,15 @@ void cliTrayIconUpdateBase(char *szChangedProto)
 							if (strcmpi(szChangedProto,gl_ConnectingProto))
 								return;
 							else 
-								hIcon=(HICON)CallService("CLUI/GetConnectingIconForProtocol",(WPARAM)GLOBAL_PROTO_NAME/*(WPARAM)szChangedProto*/,1);
+								hIcon=(HICON)GetConnectingIconService((WPARAM)GLOBAL_PROTO_NAME/*(WPARAM)szChangedProto*/,1);
 						else
-							hIcon=(HICON)CallService("CLUI/GetConnectingIconForProtocol",(WPARAM)szChangedProto,0);										
+							hIcon=(HICON)GetConnectingIconService((WPARAM)szChangedProto,0);										
 						if (hIcon)
 						{
 							changed=TrayIconSetBaseInfo(hIcon,NULL);						
 							//TrayIconUpdate(hIcon,NULL,NULL,1);
 
-							//DestroyIcon(hIcon);
+							//DestroyIcon_protect(hIcon);
 							DBFreeVariant(&dbv);
 							break;
 						}
@@ -834,16 +836,16 @@ void cliTrayIconUpdateBase(char *szChangedProto)
 
 							int status;
 							status=CallProtoService(szChangedProto,PS_GETSTATUS,0,0);
-							if ((DBGetContactSettingByte(NULL,"CLUI","UseConnectingIcon",1)==1)&&status>=ID_STATUS_CONNECTING&&status<=ID_STATUS_CONNECTING+MAX_CONNECT_RETRIES)
+							if ((sbdat.connectingIcon==1)&&status>=ID_STATUS_CONNECTING&&status<=ID_STATUS_CONNECTING+MAX_CONNECT_RETRIES)
 							{
 								//
 								HICON hIcon;
-								hIcon=(HICON)CallService("CLUI/GetConnectingIconForProtocol",(WPARAM)szChangedProto,0);;										
+								hIcon=(HICON)GetConnectingIconService((WPARAM)szChangedProto,0);;										
 								if (hIcon)
 								{
 									changed=TrayIconSetBaseInfo(hIcon,szChangedProto);						
 									TrayIconUpdate(hIcon,NULL,szChangedProto,1);					
-									DestroyIcon(hIcon);
+									DestroyIcon_protect(hIcon);
 								}
 							}
 							else
@@ -869,16 +871,16 @@ void cliTrayIconUpdateBase(char *szChangedProto)
 							int status;
 							changed=i;
 							status=CallProtoService(szChangedProto,PS_GETSTATUS,0,0);
-							if ((DBGetContactSettingByte(NULL,"CLUI","UseConnectingIcon",1)==1)&&status>=ID_STATUS_CONNECTING&&status<=ID_STATUS_CONNECTING+MAX_CONNECT_RETRIES)
+							if ((sbdat.connectingIcon==1)&&status>=ID_STATUS_CONNECTING&&status<=ID_STATUS_CONNECTING+MAX_CONNECT_RETRIES)
 							{
 								//
 								HICON hIcon;
-								hIcon=(HICON)CallService("CLUI/GetConnectingIconForProtocol",(WPARAM)szChangedProto,0);;										
+								hIcon=(HICON)GetConnectingIconService((WPARAM)szChangedProto,0);;										
 								if (hIcon)
 								{
 									changed=TrayIconSetBaseInfo(hIcon,szChangedProto);						
 									TrayIconUpdate(hIcon,NULL,szChangedProto,1);					
-									DestroyIcon(hIcon);
+									DestroyIcon_protect(hIcon);
 								}
 							}
 						}
@@ -893,18 +895,18 @@ void cliTrayIconUpdateBase(char *szChangedProto)
 		int status=CallProtoService(szChangedProto,PS_GETSTATUS,0,0);
 		BOOL workAround;
 		workAround=(status>=ID_STATUS_OFFLINE && status<=ID_STATUS_IDLE);
-		if ((DBGetContactSettingByte(NULL,"CLUI","UseConnectingIcon",1)==1)&&status>=ID_STATUS_CONNECTING&&status<=ID_STATUS_CONNECTING+MAX_CONNECT_RETRIES)
+		if ((sbdat.connectingIcon==1)&&status>=ID_STATUS_CONNECTING&&status<=ID_STATUS_CONNECTING+MAX_CONNECT_RETRIES)
 		{
 			//
 			HICON hIcon;
 
-			hIcon=(HICON)CallService("CLUI/GetConnectingIconForProtocol",(WPARAM)szChangedProto,0);;										
+			hIcon=(HICON)GetConnectingIconService((WPARAM)szChangedProto,0);;										
 			if (hIcon)
 			{
 				changed=TrayIconSetBaseInfo(hIcon,NULL);						
 				TrayIconUpdate(hIcon,NULL,NULL,1);					
 
-				DestroyIcon(hIcon);
+				DestroyIcon_protect(hIcon);
 				//return;
 			}
 		}
@@ -1494,11 +1496,11 @@ void InitTrayMenus(void)
 		memset(&mi,0,sizeof(mi));
 		mi.cbSize=sizeof(mi);
 		mi.position=200000;
-		mi.hIcon=LoadIcon(GetModuleHandle(NULL), MAKEINTRESOURCE(IDI_FINDUSER));
+		mi.hIcon=LoadSmallIcon(GetModuleHandle(NULL), MAKEINTRESOURCE(IDI_FINDUSER));
 		mi.pszService="FindAdd/FindAddCommand";
 		mi.pszName=Translate("&Find/Add Contacts...");
 		AddTrayMenuItem((WPARAM)0,(LPARAM)&mi);
-
+		DestroyIcon_protect(mi.hIcon);
 
 
 		memset(&mi,0,sizeof(mi));
@@ -1518,21 +1520,20 @@ void InitTrayMenus(void)
 		memset(&mi,0,sizeof(mi));
 		mi.cbSize=sizeof(mi);
 		mi.position=400000;
-		mi.hIcon=LoadIcon(GetModuleHandle(NULL),MAKEINTRESOURCE(IDI_OPTIONS));
+		mi.hIcon=LoadSmallIcon(GetModuleHandle(NULL),MAKEINTRESOURCE(IDI_OPTIONS));
 		mi.pszService="Options/OptionsCommand";
 		mi.pszName=Translate("&Options...");
-
 		AddTrayMenuItem((WPARAM)0,(LPARAM)&mi);
-
+		DestroyIcon_protect(mi.hIcon);
 
 		memset(&mi,0,sizeof(mi));
 		mi.cbSize=sizeof(mi);
 		mi.position=500000;
-		mi.hIcon=LoadIcon(GetModuleHandle(NULL),MAKEINTRESOURCE(IDI_MIRANDA));
+		mi.hIcon=LoadSmallIcon(GetModuleHandle(NULL),MAKEINTRESOURCE(IDI_MIRANDA));
 		mi.pszService="Help/AboutCommand";
 		mi.pszName=Translate("&About");
-
 		AddTrayMenuItem((WPARAM)0,(LPARAM)&mi);
+		DestroyIcon_protect(mi.hIcon);
 
 	};
 }

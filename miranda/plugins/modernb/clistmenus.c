@@ -637,7 +637,7 @@ int StatusMenuCheckService(WPARAM wParam, LPARAM lParam)
 					timi->mi.flags|=CMIM_ICON;
 					CallService(MO_MODIFYMENUITEM,(WPARAM)timi->globalid,(LPARAM)(&(timi->mi)));
 					if (IconNeedDestroy) 
-						DestroyIcon(timi->mi.hIcon);
+						DestroyIcon_protect(timi->mi.hIcon);
 				}
 			}
 		}
@@ -1001,7 +1001,7 @@ int MenuModulesLoaded(WPARAM wParam,LPARAM lParam)
         op.Setting=OPT_MENUITEMSETUNIQNAME;
         CallService(MO_SETOPTIONSMENUITEM,(WPARAM)0,(LPARAM)&op);
       }
-
+      DestroyIcon_protect(tmi.hIcon);
       pos+=100000;
 
       for(j=0;j<sizeof(statusModeList)/sizeof(statusModeList[0]);j++) {

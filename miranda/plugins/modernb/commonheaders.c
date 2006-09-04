@@ -280,3 +280,24 @@ BOOL mod_DeleteDC(HDC hdc)
 #define DeleteObject(a) DebugDeleteObject(a)
 #endif 
 
+HICON LoadSmallIconShared(HINSTANCE hInstance, LPCTSTR lpIconName)
+{
+		int cx=GetSystemMetrics(SM_CXSMICON);
+		return LoadImage(hInstance,lpIconName, IMAGE_ICON,cx,cx, LR_DEFAULTCOLOR|LR_SHARED);
+}
+
+HICON LoadSmallIcon(HINSTANCE hInstance, LPCTSTR lpIconName)
+{
+	HICON hIcon=NULL;				  // icon handle 
+	int index=-(int)lpIconName;
+	TCHAR filename[MAX_PATH]={0};
+	GetModuleFileName(hInstance,filename,MAX_PATH);
+ 	ExtractIconEx(filename,index,NULL,&hIcon,1);
+	return hIcon;
+}
+
+BOOL DestroyIcon_protect(HICON icon)
+{
+	if (icon) return DestroyIcon(icon);
+	return FALSE;
+}

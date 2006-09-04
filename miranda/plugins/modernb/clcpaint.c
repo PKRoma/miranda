@@ -2749,8 +2749,7 @@ void InternalPaintClc(HWND hwnd,struct ClcData *dat,HDC hdc,RECT *rcPaint)
 
   // Draw background
   if (NotInMain || dat->force_in_dialog)
-  {
-	 
+  { 
 	FillRect(hdcMem,rcPaint,GetSysColorBrush(COLOR_BTNFACE));
 	SetRectAlpha_255(hdcMem,rcPaint);
 	if (!(style&CLS_GREYALTERNATE))
@@ -2760,6 +2759,7 @@ void InternalPaintClc(HWND hwnd,struct ClcData *dat,HDC hdc,RECT *rcPaint)
   {
     if (!LayeredFlag)
     {
+	  //FillRect(grey?hdcMem2:hdcMem,rcPaint,GetSysColorBrush(GetSysColor(COLOR_3DFACE)));
       BltBackImage(hwnd,grey?hdcMem2:hdcMem,rcPaint);
     }
     SkinDrawGlyph(hdcMem,&clRect,rcPaint,"CL,ID=Background");

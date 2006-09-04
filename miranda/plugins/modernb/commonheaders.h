@@ -258,6 +258,9 @@ extern SortedList *clistCache;
 extern void LockCacheItem(HANDLE hContact, char*, int);
 extern void UnlockCacheItem(HANDLE hContact);
 
+HICON LoadSmallIconShared(HINSTANCE hInstance, LPCTSTR lpIconName);
+HICON LoadSmallIcon(HINSTANCE hInstance, LPCTSTR lpIconName);
+BOOL DestroyIcon_protect(HICON icon);
 extern BOOL (WINAPI *pfEnableThemeDialogTexture)(HANDLE, DWORD);
 
 #ifndef ETDT_ENABLETAB

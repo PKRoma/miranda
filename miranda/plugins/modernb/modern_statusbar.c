@@ -20,22 +20,7 @@ HANDLE hFramehModernStatusBar=NULL;
 #define DBFONTF_ITALIC     2
 #define DBFONTF_UNDERLINE  4
 
-typedef struct
-{
-  BOOL sameWidth;
-  RECT rectBorders;
-  BYTE extraspace;
-  BYTE Align;
-  BYTE showProtoName;
-  BYTE showStatusName;
-  HFONT BarFont;
-  DWORD fontColor;
-  BYTE connectingIcon;
-  BYTE TextEffectID;
-  DWORD TextEffectColor1;
-  DWORD TextEffectColor2;
-  BYTE xStatusMode;     // 0-only main, 1-xStatus, 2-main as overlay
-}StatusBarData;
+//_StatusbarData StatusBarData={0};
 
 typedef struct
 {
@@ -446,8 +431,8 @@ int ModernDrawStatusBarWorker(HWND hWnd, HDC hDC)
 			if (hxIcon) mod_DrawIconEx_helper(hDC,x,iconY,hxIcon,GetSystemMetrics(SM_CXSMICON),GetSystemMetrics(SM_CYSMICON),0,NULL,DI_NORMAL);
 			if (hIcon) mod_DrawIconEx_helper(hDC,x,iconY,hIcon,GetSystemMetrics(SM_CXSMICON),GetSystemMetrics(SM_CYSMICON),0,NULL,DI_NORMAL|((hxIcon&&(sbdat.xStatusMode&4))?(192<<24):0));
 		}
-		if (hxIcon) DestroyIcon(hxIcon);
-        if (NeedDestroy) DestroyIcon(hIcon);
+		if (hxIcon) DestroyIcon_protect(hxIcon);
+        if (NeedDestroy) DestroyIcon_protect(hIcon);
         x+=GetSystemMetrics(SM_CXSMICON)+1;
         if (sbdat.showProtoName)
         {
@@ -544,7 +529,7 @@ LRESULT CALLBACK ModernStatusProc(HWND hwnd,UINT msg,WPARAM wParam,LPARAM lParam
 		hdc = GetDC(hwnd);
 		hdc2=CreateCompatibleDC(hdc);
 		hbmp=CreateBitmap32(rc.right,rc.bottom);
-		hbmpo=SelectObject(hdc2,hbmp);
+		hbmpo=SelectObject(hdc2,hbmp);		
 		BltBackImage(hwnd,hdc2,&rc);
 		ModernDrawStatusBarWorker(hwnd,hdc2);
 		BitBlt(hdc,rc.left,rc.top,rc.right-rc.left,rc.bottom-rc.top,

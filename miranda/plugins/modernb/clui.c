@@ -31,9 +31,11 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include "wingdi.h"
 #include <Winuser.h>
 #include "skinengine.h"
+#include "modern_statusbar.h"
 
 HANDLE gl_event_hSkinLoaded;
 BOOL ON_SIZING_CYCLE=0;
+extern StatusBarData sbdat;
 extern BYTE CALLED_FROM_SHOWHIDE;
 extern void (*saveLoadCluiGlobalOpts)(void);
 #define TM_AUTOALPHA  1
@@ -192,6 +194,7 @@ typedef struct{
 	int n;
 	int TimerCreated;
 	BOOL isGlobal;
+	HIMAGELIST IconsList;
 } ProtoTicks,*pProtoTicks;
 //int SkinUpdateWindowProc(HWND hwnd1);
 
@@ -737,6 +740,7 @@ pProtoTicks GetProtoTicksByProto(char * szProto)
 			CycleStartTick[i].CycleStartTick=0;
 			CycleStartTick[i].n=i;			
 			CycleStartTick[i].isGlobal=strcmpi(szProto,GLOBAL_PROTO_NAME)==0;
+			CycleStartTick[i].IconsList=NULL;
 			return(&CycleStartTick[i]);
 		}
 	}
@@ -763,7 +767,7 @@ int GetConnectingIconForProtoCount(char *szProto)
 
 }
 
-static HICON ExtractIconFromPath(const char *path)
+static HICON ExtractIconFromPath(const char *path, BOOL * needFree)
 {
 	char *comma;
 	char file[MAX_PATH],fileFull[MAX_PATH];
@@ -776,15 +780,19 @@ static HICON ExtractIconFromPath(const char *path)
 	CallService(MS_UTILS_PATHTOABSOLUTE, (WPARAM)file, (LPARAM)fileFull);
 	hIcon=NULL;
 	ExtractIconExA(fileFull,n,NULL,&hIcon,1);
+	if (needFree)
+	{
+		*needFree=(hIcon!=NULL);
+	}
 	return hIcon;
 }
 
-HICON LoadIconFromExternalFile(char *filename,int i,boolean UseLibrary,boolean registerit,char *IconName,char *SectName,char *Description,int internalidx)
+HICON LoadIconFromExternalFile(char *filename,int i,boolean UseLibrary,boolean registerit,char *IconName,char *SectName,char *Description,int internalidx, BOOL * needFree)
 {
 	char szPath[MAX_PATH],szMyPath[MAX_PATH], szFullPath[MAX_PATH],*str;
 	HICON hIcon=NULL;
 	SKINICONDESC sid={0};
-
+	if (needFree) *needFree=FALSE;
 	GetModuleFileNameA(GetModuleHandle(NULL), szPath, MAX_PATH);
 	GetModuleFileNameA(g_hInst, szMyPath, MAX_PATH);
 	str=strrchr(szPath,'\\');
@@ -793,12 +801,12 @@ HICON LoadIconFromExternalFile(char *filename,int i,boolean UseLibrary,boolean r
 
 	if (!UseLibrary||!ServiceExists(MS_SKIN2_ADDICON))
 	{		
-		hIcon=ExtractIconFromPath(szFullPath);
+		hIcon=ExtractIconFromPath(szFullPath,needFree);
 		if (hIcon) return hIcon;
 		if (UseLibrary)
 		{
 			_snprintf(szFullPath, sizeof(szFullPath), "%s,%d", szMyPath, internalidx);
-			hIcon=ExtractIconFromPath(szFullPath);
+			hIcon=ExtractIconFromPath(szFullPath,needFree);
 			if (hIcon) return hIcon;		
 		}
 	}
@@ -814,7 +822,7 @@ HICON LoadIconFromExternalFile(char *filename,int i,boolean UseLibrary,boolean r
 			sid.pszDescription=Description;
 			sid.pszDefaultFile=szMyPath;
 			sid.iDefaultIndex=internalidx;
-			CallService(MS_SKIN2_ADDICON, 0, (LPARAM)&sid);
+			//CallService(MS_SKIN2_ADDICON, 0, (LPARAM)&sid);
 		}
 		return ((HICON)CallService(MS_SKIN2_GETICON, 0, (LPARAM)IconName));
 	}
@@ -829,12 +837,12 @@ HICON GetConnectingIconForProto(char *szProto,int b)
 {
 	char szFullPath[MAX_PATH];
 	HICON hIcon=NULL;
-
+	BOOL needFree;
 	b=b-1;
 	_snprintf(szFullPath, sizeof(szFullPath), "proto_conn_%s.dll",szProto);
-	hIcon=LoadIconFromExternalFile(szFullPath,b+1,FALSE,FALSE,NULL,NULL,NULL,0);
+	hIcon=LoadIconFromExternalFile(szFullPath,b+1,FALSE,FALSE,NULL,NULL,NULL,0,&needFree);
 	if (hIcon) return hIcon;
-	hIcon=(LoadIconA(g_hInst,(char *)(IDI_ICQC1+b+1)));
+	hIcon=(LoadSmallIcon(g_hInst,(TCHAR *)(IDI_ICQC1+b+1)));
 	return(hIcon);
 }
 
@@ -867,7 +875,11 @@ int GetConnectingIconService(WPARAM wParam,LPARAM lParam)
 		//	if (lParam)
 		//		hIcon=GetConnectingIconForProto("Global",b);
 		//	else
-				hIcon=GetConnectingIconForProto(szProto,b);
+			if (pt->IconsList)
+				hIcon=ImageList_GetIcon(pt->IconsList,b,ILD_NORMAL);
+			else
+				hIcon=NULL;
+				//hIcon=GetConnectingIconForProto(szProto,b);
 		};
 	}
 
@@ -884,7 +896,7 @@ int CreateTimerForConnectingIcon(WPARAM wParam,LPARAM lParam)
 	if (!szProto) return (0);
 	if (!status) return (0);
 
-	if ((DBGetContactSettingByte(NULL,"CLUI","UseConnectingIcon",1)==1)&&status>=ID_STATUS_CONNECTING&&status<=ID_STATUS_CONNECTING+MAX_CONNECT_RETRIES)
+	if ((sbdat.connectingIcon==1)&&status>=ID_STATUS_CONNECTING&&status<=ID_STATUS_CONNECTING+MAX_CONNECT_RETRIES)
 	{
 
 		ProtoTicks *pt=NULL;
@@ -899,8 +911,17 @@ int CreateTimerForConnectingIcon(WPARAM wParam,LPARAM lParam)
 				cnt=GetConnectingIconForProtoCount(szProto);
 				if (cnt!=0)
 				{
-					DefaultStep=DBGetContactSettingWord(NULL,"CLUI","DefaultStepConnectingIcon",100);
+					int i=0;
+					DefaultStep=100;/*DBGetContactSettingWord(NULL,"CLUI","DefaultStepConnectingIcon",100);*/
 					pt->IconsCount=cnt;
+					if (pt->IconsList) ImageList_Destroy(pt->IconsList);
+					pt->IconsList=ImageList_Create(16,16,ILC_COLORDDB,cnt,1);
+					for (i=0; i<cnt; i++)
+					{
+						HICON ic=GetConnectingIconForProto(szProto,i);
+						if (ic) ImageList_AddIcon(pt->IconsList,ic);
+						DestroyIcon_protect(ic);
+					}
 					SetTimer(pcli->hwndContactList,TM_STATUSBARUPDATE+pt->n,(int)(DefaultStep)/1,0);
 					pt->TimerCreated=1;
 					pt->CycleStartTick=GetTickCount();
@@ -1042,7 +1063,7 @@ int CreateCLC(HWND parent)
 		Frame.hWnd=pcli->hwndContactTree;
 		Frame.align=alClient;
 		Frame.hIcon=LoadSkinnedIcon(SKINICON_OTHER_MIRANDA);
-		//LoadIcon(hInst,MAKEINTRESOURCEA(IDI_MIRANDA));
+		//LoadSmallIconShared(hInst,MAKEINTRESOURCEA(IDI_MIRANDA));
 		Frame.Flags=F_VISIBLE|F_SHOWTB|F_SHOWTBTIP|F_NO_SUBCONTAINER;
 		Frame.name=Translate("My Contacts");
 		hFrameContactTree=(HWND)CallService(MS_CLIST_FRAMES_ADDFRAME,(WPARAM)&Frame,(LPARAM)0);
@@ -1929,6 +1950,8 @@ LRESULT CALLBACK cli_ContactListWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPAR
 					if (!(status>=ID_STATUS_CONNECTING&&status<=ID_STATUS_CONNECTING+MAX_CONNECT_RETRIES))
 					{													
 						pt->CycleStartTick=0;
+						ImageList_Destroy(pt->IconsList);
+						pt->IconsList=NULL;
 						KillTimer(hwnd,TM_STATUSBARUPDATE+pt->n);
 						pt->TimerCreated=0;
 					}
@@ -2307,7 +2330,7 @@ LRESULT CALLBACK cli_ContactListWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPAR
 						_snprintf(buf,sizeof(buf),"Main,ID=MainMenu,Selected=%s,Hot=%s",(dis->itemState&ODS_SELECTED)?"True":"False",(dis->itemState&ODS_HOTLIGHT)?"True":"False");
 						SkinDrawGlyph(dis->hDC,&dis->rcItem,&dis->rcItem,buf);
 						DrawState(dis->hDC,NULL,NULL,(LPARAM)hIcon,0,(dis->rcItem.right+dis->rcItem.left-GetSystemMetrics(SM_CXSMICON))/2+dx,(dis->rcItem.bottom+dis->rcItem.top-GetSystemMetrics(SM_CYSMICON))/2+dx,0,0,DST_ICON|(dis->itemState&ODS_INACTIVE&&FALSE?DSS_DISABLED:DSS_NORMAL));
-						DestroyIcon(hIcon);         
+						DestroyIcon_protect(hIcon);         
 						MirMenuState=dis->itemState;
 					} else {
 						MirMenuState=dis->itemState;
@@ -2568,7 +2591,7 @@ void cliOnCreateClc(void)
 
 	InitModernRow();
   
-	CreateServiceFunction("CLUI/GetConnectingIconForProtocol",GetConnectingIconService);
+	//CreateServiceFunction("CLUI/GetConnectingIconForProtocol",GetConnectingIconService);
 
 	oldhideoffline=DBGetContactSettingByte(NULL,"CList","HideOffline",SETTING_HIDEOFFLINE_DEFAULT);
 
@@ -2587,18 +2610,19 @@ void cliOnCreateClc(void)
 		mi.pszContactOwner=NULL;    //on every contact
 		CreateServiceFunction("CList/ShowContactAvatar",MenuItem_ShowContactAvatar);
 		mi.position=2000150000;
-		mi.hIcon=LoadIcon(g_hInst,MAKEINTRESOURCE(IDI_SHOW_AVATAR));
+		mi.hIcon=LoadSmallIcon(g_hInst,MAKEINTRESOURCE(IDI_SHOW_AVATAR));
 		mi.pszName=Translate("Show Contact &Avatar");
 		mi.pszService="CList/ShowContactAvatar";
 		hShowAvatarMenuItem = (HANDLE)CallService(MS_CLIST_ADDCONTACTMENUITEM,0,(LPARAM)&mi);
+		DestroyIcon_protect(mi.hIcon);
 
 		CreateServiceFunction("CList/HideContactAvatar",MenuItem_HideContactAvatar);
 		mi.position=2000150001;
-		mi.hIcon=LoadIcon(g_hInst,MAKEINTRESOURCE(IDI_HIDE_AVATAR));
+		mi.hIcon=LoadSmallIcon(g_hInst,MAKEINTRESOURCE(IDI_HIDE_AVATAR));
 		mi.pszName=Translate("Hide Contact &Avatar");
 		mi.pszService="CList/HideContactAvatar";
 		hHideAvatarMenuItem = (HANDLE)CallService(MS_CLIST_ADDCONTACTMENUITEM,0,(LPARAM)&mi);
-
+		DestroyIcon_protect(mi.hIcon);
 		HookEvent(ME_CLIST_PREBUILDCONTACTMENU, MenuItem_PreBuild);
 	}
 
@@ -2889,3 +2913,4 @@ int SmoothAlphaTransition(HWND hwnd, BYTE GoalAlpha, BOOL wParam)
 
 	return 0;
 }
+

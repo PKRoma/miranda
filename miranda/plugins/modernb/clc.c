@@ -97,17 +97,17 @@ void UnloadAvatarOverlayIcon()
 	{
 		if (avatar_overlay_icons[i].icon) 
 		{
-			DestroyIcon(avatar_overlay_icons[i].icon);
+			DestroyIcon_protect(avatar_overlay_icons[i].icon);
 			avatar_overlay_icons[i].icon=NULL;
 		}
 		if (status_overlay_icons[i].icon)
 		{
-			DestroyIcon(status_overlay_icons[i].icon);
+			DestroyIcon_protect(status_overlay_icons[i].icon);
 			status_overlay_icons[i].icon=NULL;
 		}
 	}
 
-	DestroyIcon(listening_to_icon);
+	DestroyIcon_protect(listening_to_icon);
 	listening_to_icon=NULL;
 }
 
@@ -297,10 +297,10 @@ static int ClcModulesLoaded(WPARAM wParam,LPARAM lParam) {
 		int i;
 		for (i = 0 ; i < MAX_REGS(avatar_overlay_icons) ; i++)
 		{
-			avatar_overlay_icons[i].icon = (HICON)LoadImage(g_hInst, MAKEINTRESOURCE(avatar_overlay_icons[i].id), IMAGE_ICON, 0, 0, 0);
-			status_overlay_icons[i].icon = (HICON)LoadImage(g_hInst, MAKEINTRESOURCE(status_overlay_icons[i].id), IMAGE_ICON, 0, 0, 0);
+			avatar_overlay_icons[i].icon = (HICON)LoadImage(g_hInst, MAKEINTRESOURCE(avatar_overlay_icons[i].id), IMAGE_ICON, 16, 16, 0);
+			status_overlay_icons[i].icon = (HICON)LoadImage(g_hInst, MAKEINTRESOURCE(status_overlay_icons[i].id), IMAGE_ICON, 16, 16, 0);
 		}
-		listening_to_icon = (HICON)LoadImage(g_hInst, MAKEINTRESOURCE(IDI_LISTENING_TO), IMAGE_ICON, 0, 0, 0);}
+		listening_to_icon = (HICON)LoadImage(g_hInst, MAKEINTRESOURCE(IDI_LISTENING_TO), IMAGE_ICON, 16, 16, 0);}
 
 	// Register smiley category
 	if (ServiceExists(MS_SMILEYADD_REGISTERCATEGORY))
@@ -524,7 +524,7 @@ void ClcOptionsChanged(void)
 void SortClcByTimer (HWND hwnd)
 {
 	KillTimer(hwnd,TIMERID_DELAYEDRESORTCLC);
-	SetTimer(hwnd,TIMERID_DELAYEDRESORTCLC,DBGetContactSettingByte(NULL,"CLUI","DELAYEDTIMER",10),NULL);
+	SetTimer(hwnd,TIMERID_DELAYEDRESORTCLC,10 /*DBGetContactSettingByte(NULL,"CLUI","DELAYEDTIMER",10)*/,NULL);
 }
 
 /*

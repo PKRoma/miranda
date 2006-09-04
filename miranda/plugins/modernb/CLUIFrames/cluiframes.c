@@ -908,7 +908,7 @@ HMENU CLUIFramesCreateMenuForFrame(int frameid,int root,int popuppos,char *addse
   ZeroMemory(&mi,sizeof(mi));
 
   mi.cbSize=sizeof(mi);
-  mi.hIcon=LoadIcon(g_hInst,MAKEINTRESOURCE(IDI_MIRANDA));
+  mi.hIcon=LoadSmallIcon(g_hInst,MAKEINTRESOURCE(IDI_MIRANDA));
   mi.pszPopupName=(char *)root;
   mi.popupPosition=frameid;
   mi.position=popuppos++;
@@ -916,6 +916,7 @@ HMENU CLUIFramesCreateMenuForFrame(int frameid,int root,int popuppos,char *addse
   mi.flags=CMIF_CHILDPOPUP|CMIF_GRAYED;
   mi.pszContactOwner=(char *)0;
   menuid=(HANDLE)CallService(addservice,0,(LPARAM)&mi);
+  DestroyIcon_protect(mi.hIcon);
   if(frameid==-1) contMITitle=menuid;
   else Frames[framepos].MenuHandles.MITitle=menuid;
 
@@ -1827,7 +1828,7 @@ static int CLUIFramesLoadMainMenu()
     ZeroMemory(&mi,sizeof(mi));
     mi.cbSize=sizeof(mi);
     // create "show all frames" menu
-    mi.hIcon=NULL;//LoadIcon(g_hInst,MAKEINTRESOURCEA(IDI_MIRANDA));
+    mi.hIcon=NULL;//LoadSmallIconShared(g_hInst,MAKEINTRESOURCEA(IDI_MIRANDA));
     mi.flags=CMIF_GRAYED;
     mi.position=10000000;
     mi.pszPopupName=Translate("Frames");
@@ -1836,7 +1837,7 @@ static int CLUIFramesLoadMainMenu()
     CallService(MS_CLIST_ADDMAINMENUITEM,0,(LPARAM)&mi);
 
     // create "show all frames" menu
-    mi.hIcon=NULL;//LoadIcon(g_hInst,MAKEINTRESOURCEA(IDI_MIRANDA));
+    mi.hIcon=NULL;//LoadSmallIconShared(g_hInst,MAKEINTRESOURCEA(IDI_MIRANDA));
     mi.flags=0;
     mi.position=10100000;
     mi.pszPopupName=Translate("Frames");
@@ -1844,7 +1845,7 @@ static int CLUIFramesLoadMainMenu()
     mi.pszService=MS_CLIST_FRAMES_SHOWALLFRAMES;
     CallService(MS_CLIST_ADDMAINMENUITEM,0,(LPARAM)&mi);
 
-    mi.hIcon=NULL;//LoadIcon(g_hInst,MAKEINTRESOURCEA(IDI_HELP));
+    mi.hIcon=NULL;//LoadSmallIconShared(g_hInst,MAKEINTRESOURCEA(IDI_HELP));
     mi.position=10100001;
     mi.pszPopupName=Translate("Frames");
     mi.flags=CMIF_CHILDPOPUP;
@@ -1861,14 +1862,14 @@ static int CLUIFramesLoadMainMenu()
   ZeroMemory(&mi,sizeof(mi));
   mi.cbSize=sizeof(mi);
   // create root menu
-  mi.hIcon=LoadIcon(g_hInst,MAKEINTRESOURCE(IDI_MIRANDA));
+  mi.hIcon=LoadSmallIcon(g_hInst,MAKEINTRESOURCE(IDI_MIRANDA));
   mi.flags=CMIF_ROOTPOPUP;
   mi.position=3000090000;
   mi.pszPopupName=(char*)-1;
   mi.pszName=Translate("Frames");
   mi.pszService=0;
   MainMIRoot=(HANDLE)CallService(MS_CLIST_ADDMAINMENUITEM,0,(LPARAM)&mi);
-
+  DestroyIcon_protect(mi.hIcon);
   // create frames menu
   separator=3000200000;
   for (i=0;i<nFramescount;i++) {
@@ -1889,7 +1890,7 @@ static int CLUIFramesLoadMainMenu()
   separator+=100000;
 
   // create "show all frames" menu
-  mi.hIcon=NULL;//LoadIcon(g_hInst,MAKEINTRESOURCEA(IDI_MIRANDA));
+  mi.hIcon=NULL;//LoadSmallIconShared(g_hInst,MAKEINTRESOURCEA(IDI_MIRANDA));
   mi.flags=CMIF_CHILDPOPUP;
   mi.position=separator++;
   mi.pszPopupName=(char*)MainMIRoot;
@@ -1898,7 +1899,7 @@ static int CLUIFramesLoadMainMenu()
   CallService(MS_CLIST_ADDMAINMENUITEM,0,(LPARAM)&mi);
 
   // create "show all titlebars" menu
-  mi.hIcon=NULL;//LoadIcon(g_hInst,MAKEINTRESOURCEA(IDI_HELP));
+  mi.hIcon=NULL;//LoadSmallIconShared(g_hInst,MAKEINTRESOURCEA(IDI_HELP));
   mi.position=separator++;
   mi.pszPopupName=(char*)MainMIRoot;
   mi.flags=CMIF_CHILDPOPUP;
@@ -1907,7 +1908,7 @@ static int CLUIFramesLoadMainMenu()
   CallService(MS_CLIST_ADDMAINMENUITEM,0,(LPARAM)&mi);
 
   // create "hide all titlebars" menu
-  mi.hIcon=NULL;//LoadIcon(g_hInst,MAKEINTRESOURCEA(IDI_HELP));
+  mi.hIcon=NULL;//LoadSmallIconShared(g_hInst,MAKEINTRESOURCEA(IDI_HELP));
   mi.position=separator++;
   mi.pszPopupName=(char*)MainMIRoot;
   mi.flags=CMIF_CHILDPOPUP;
