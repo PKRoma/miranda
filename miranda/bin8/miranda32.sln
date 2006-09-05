@@ -66,8 +66,6 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "dbeditorpp", "..\plugins\db
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "loadavatars", "..\plugins\loadavatars\avatars_8.vcproj", "{987F026D-EB1F-4013-ADA8-2406ACCDA526}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "fingerprint", "..\plugins\fingerprint\fingerprint_8.vcproj", "{AF7D71D4-19B7-42B8-91DD-701F155AC4AE}"
-EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "tipper", "..\plugins\tipper\tipper_8.vcproj", "{2C818919-A38F-44FF-BD91-A6A204AC592A}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "yapp", "..\plugins\yapp\popups2_8.vcproj", "{B6FC188B-8E54-4197-9444-8BADE9AA75E2}"
@@ -76,79 +74,17 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "db3x_mmap", "..\plugins\db3
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Yahoo", "..\protocols\Yahoo\Yahoo_8.vcproj", "{E42870DB-9FED-44E7-9C93-4E64D0C87F51}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "fingerprint", "..\plugins\fingerprint\mod\fingerprint_8.vcproj", "{AF7D71D4-19B7-42B8-91DD-701F155AC4AE}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "scriver", "..\plugins\Scriver\scriver_8.vcproj", "{B8928210-546C-4AE3-956B-E2B724E6B8E5}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "nudge", "..\plugins\nudge\nudge_8.vcproj", "{8190CFAA-3B73-43D8-9101-8368E21F1864}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "updater", "..\plugins\updater\updater_8.vcproj", "{51B3810B-0FB4-4F36-B313-9A6D4714FFCF}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Console", "..\plugins\console\Console_8.vcproj", "{8657FFF0-BEE0-49C5-A674-D26550E60697}"
+EndProject
 Global
-	GlobalSection(SourceCodeControl) = preSolution
-		SccNumberOfProjects = 17
-		SccProjectUniqueName0 = ..\\plugins\\VersionInfo\\VersionInfo_8.vcproj
-		SccProjectName0 = \u0022$/Miranda/miranda/plugins/VersionInfo\u0022,\u0020LLIAAAAA
-		SccLocalPath0 = ..\\plugins\\VersionInfo
-		SccProvider0 = MSSCCI:Microsoft\u0020Visual\u0020SourceSafe
-		SccProjectUniqueName1 = ..\\plugins\\contacts\\contacts_8.vcproj
-		SccProjectName1 = \u0022$/Miranda/miranda/plugins/contacts\u0022,\u0020DYKAAAAA
-		SccLocalPath1 = ..\\plugins\\contacts
-		SccProvider1 = MSSCCI:Microsoft\u0020Visual\u0020SourceSafe
-		SccProjectUniqueName2 = ..\\plugins\\contactsex\\contactsex_8.vcproj
-		SccProjectName2 = \u0022$/Miranda/miranda/plugins/contactsex\u0022,\u0020UKIAAAAA
-		SccLocalPath2 = ..\\plugins\\contactsex
-		SccProvider2 = MSSCCI:Microsoft\u0020Visual\u0020SourceSafe
-		SccProjectUniqueName3 = ..\\plugins\\fastlock\\fastlock_8.vcproj
-		SccProjectName3 = \u0022$/Miranda/miranda/plugins/fastlock\u0022,\u0020XKIAAAAA
-		SccLocalPath3 = ..\\plugins\\fastlock
-		SccProvider3 = MSSCCI:Microsoft\u0020Visual\u0020SourceSafe
-		SccProjectUniqueName4 = ..\\plugins\\wassup\\Wassup_8.vcproj
-		SccProjectName4 = \u0022$/Miranda/miranda/plugins/wassup\u0022,\u0020FODAAAAA
-		SccLocalPath4 = ..\\plugins\\wassup
-		SccProvider4 = MSSCCI:Microsoft\u0020Visual\u0020SourceSafe
-		SccProjectUniqueName5 = ..\\plugins\\KeepStatus\\KeepStatus\\KeepStatus_8.vcproj
-		SccProjectName5 = \u0022$/Miranda/miranda/plugins/KeepStatus\u0022,\u0020KWNAAAAA
-		SccLocalPath5 = ..\\plugins\\KeepStatus
-		SccProvider5 = MSSCCI:Microsoft\u0020Visual\u0020SourceSafe
-		SccProjectFilePathRelativizedFromConnection5 = KeepStatus\\
-		SccProjectUniqueName6 = ..\\plugins\\MenuItemEx\\menuex_8.vcproj
-		SccProjectName6 = \u0022$/Miranda/miranda/plugins/MenuItemEx\u0022,\u0020NLOAAAAA
-		SccLocalPath6 = ..\\plugins\\MenuItemEx
-		SccProvider6 = MSSCCI:Microsoft\u0020Visual\u0020SourceSafe
-		SccProjectUniqueName7 = ..\\plugins\\findamsg\\findAmsg_8.vcproj
-		SccProjectName7 = \u0022$/Miranda/miranda/plugins/findAmsg\u0022,\u0020SROAAAAA
-		SccLocalPath7 = ..\\plugins\\findamsg
-		SccProvider7 = MSSCCI:Microsoft\u0020Visual\u0020SourceSafe
-		SccProjectUniqueName8 = ..\\plugins\\NickChangeNotify\\ncn_8.vcproj
-		SccProjectName8 = \u0022$/Miranda/miranda/plugins/NickChangeNotify\u0022,\u0020ZSOAAAAA
-		SccLocalPath8 = ..\\plugins\\NickChangeNotify
-		SccProvider8 = MSSCCI:Microsoft\u0020Visual\u0020SourceSafe
-		SccProjectUniqueName9 = ..\\plugins\\TypingNotify\\typingnotify_8.vcproj
-		SccProjectName9 = \u0022$/Miranda/miranda/plugins/TypingNotify\u0022,\u0020EVOAAAAA
-		SccLocalPath9 = ..\\plugins\\TypingNotify
-		SccProvider9 = MSSCCI:Microsoft\u0020Visual\u0020SourceSafe
-		SccProjectUniqueName10 = ..\\plugins\\SmileyAdd\\SmileyAdd_8.vcproj
-		SccProjectName10 = \u0022$/Miranda/miranda/plugins/SmileyAdd\u0022,\u0020ZIPAAAAA
-		SccLocalPath10 = ..\\plugins\\SmileyAdd
-		SccProvider10 = MSSCCI:Microsoft\u0020Visual\u0020SourceSafe
-		SccProjectUniqueName11 = ..\\plugins\\IcoLib\\IcoLib_8.vcproj
-		SccProjectName11 = \u0022$/Miranda/miranda/plugins/IcoLib\u0022,\u0020MKPAAAAA
-		SccLocalPath11 = ..\\plugins\\IcoLib
-		SccProvider11 = MSSCCI:Microsoft\u0020Visual\u0020SourceSafe
-		SccProjectUniqueName12 = ..\\plugins\\fontservice\\FontService_8.vcproj
-		SccProjectName12 = \u0022$/Miranda/miranda/plugins/fontservice\u0022,\u0020PDQAAAAA
-		SccLocalPath12 = ..\\plugins\\fontservice
-		SccProvider12 = MSSCCI:Microsoft\u0020Visual\u0020SourceSafe
-		SccProjectUniqueName13 = ..\\plugins\\metacontacts\\MetaContacts_8.vcproj
-		SccProjectName13 = \u0022$/Miranda/miranda/plugins/metacontacts\u0022,\u0020FEQAAAAA
-		SccLocalPath13 = ..\\plugins\\metacontacts
-		SccProvider13 = MSSCCI:Microsoft\u0020Visual\u0020SourceSafe
-		SccProjectUniqueName14 = ..\\plugins\\gnupg\\gnupg_8.vcproj
-		SccProjectName14 = \u0022$/Miranda/miranda/plugins/gnupg\u0022,\u0020KVQAAAAA
-		SccLocalPath14 = ..\\plugins\\gnupg
-		SccProvider14 = MSSCCI:Microsoft\u0020Visual\u0020SourceSafe
-		SccProjectUniqueName15 = ..\\plugins\\dbeditorpp\\dbeditorpp_8.vcproj
-		SccProjectName15 = \u0022$/Miranda/miranda/plugins/dbeditor\u0022,\u0020EUMAAAAA
-		SccLocalPath15 = ..\\plugins\\dbeditorpp
-		SccProvider15 = MSSCCI:Microsoft\u0020Visual\u0020SourceSafe
-		SccProjectUniqueName16 = ..\\plugins\\loadavatars\\avatars_8.vcproj
-		SccProjectName16 = \u0022$/Miranda/miranda/plugins/loadavatars\u0022,\u0020EORAAAAA
-		SccLocalPath16 = ..\\plugins\\loadavatars
-		SccProvider16 = MSSCCI:Microsoft\u0020Visual\u0020SourceSafe
-	EndGlobalSection
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug Unicode|Win32 = Debug Unicode|Win32
 		Debug|Win32 = Debug|Win32
@@ -418,14 +354,6 @@ Global
 		{987F026D-EB1F-4013-ADA8-2406ACCDA526}.Release Unicode|Win32.Build.0 = Release Unicode|Win32
 		{987F026D-EB1F-4013-ADA8-2406ACCDA526}.Release|Win32.ActiveCfg = Release|Win32
 		{987F026D-EB1F-4013-ADA8-2406ACCDA526}.Release|Win32.Build.0 = Release|Win32
-		{AF7D71D4-19B7-42B8-91DD-701F155AC4AE}.Debug Unicode|Win32.ActiveCfg = Debug|Win32
-		{AF7D71D4-19B7-42B8-91DD-701F155AC4AE}.Debug Unicode|Win32.Build.0 = Debug|Win32
-		{AF7D71D4-19B7-42B8-91DD-701F155AC4AE}.Debug|Win32.ActiveCfg = Debug|Win32
-		{AF7D71D4-19B7-42B8-91DD-701F155AC4AE}.Debug|Win32.Build.0 = Debug|Win32
-		{AF7D71D4-19B7-42B8-91DD-701F155AC4AE}.Release Unicode|Win32.ActiveCfg = Release|Win32
-		{AF7D71D4-19B7-42B8-91DD-701F155AC4AE}.Release Unicode|Win32.Build.0 = Release|Win32
-		{AF7D71D4-19B7-42B8-91DD-701F155AC4AE}.Release|Win32.ActiveCfg = Release|Win32
-		{AF7D71D4-19B7-42B8-91DD-701F155AC4AE}.Release|Win32.Build.0 = Release|Win32
 		{2C818919-A38F-44FF-BD91-A6A204AC592A}.Debug Unicode|Win32.ActiveCfg = Debug|Win32
 		{2C818919-A38F-44FF-BD91-A6A204AC592A}.Debug Unicode|Win32.Build.0 = Debug|Win32
 		{2C818919-A38F-44FF-BD91-A6A204AC592A}.Debug|Win32.ActiveCfg = Debug|Win32
@@ -458,6 +386,46 @@ Global
 		{E42870DB-9FED-44E7-9C93-4E64D0C87F51}.Release Unicode|Win32.Build.0 = Release|Win32
 		{E42870DB-9FED-44E7-9C93-4E64D0C87F51}.Release|Win32.ActiveCfg = Release|Win32
 		{E42870DB-9FED-44E7-9C93-4E64D0C87F51}.Release|Win32.Build.0 = Release|Win32
+		{AF7D71D4-19B7-42B8-91DD-701F155AC4AE}.Debug Unicode|Win32.ActiveCfg = Debug|Win32
+		{AF7D71D4-19B7-42B8-91DD-701F155AC4AE}.Debug Unicode|Win32.Build.0 = Debug|Win32
+		{AF7D71D4-19B7-42B8-91DD-701F155AC4AE}.Debug|Win32.ActiveCfg = Debug|Win32
+		{AF7D71D4-19B7-42B8-91DD-701F155AC4AE}.Debug|Win32.Build.0 = Debug|Win32
+		{AF7D71D4-19B7-42B8-91DD-701F155AC4AE}.Release Unicode|Win32.ActiveCfg = Release|Win32
+		{AF7D71D4-19B7-42B8-91DD-701F155AC4AE}.Release Unicode|Win32.Build.0 = Release|Win32
+		{AF7D71D4-19B7-42B8-91DD-701F155AC4AE}.Release|Win32.ActiveCfg = Release|Win32
+		{AF7D71D4-19B7-42B8-91DD-701F155AC4AE}.Release|Win32.Build.0 = Release|Win32
+		{B8928210-546C-4AE3-956B-E2B724E6B8E5}.Debug Unicode|Win32.ActiveCfg = Debug Unicode|Win32
+		{B8928210-546C-4AE3-956B-E2B724E6B8E5}.Debug Unicode|Win32.Build.0 = Debug Unicode|Win32
+		{B8928210-546C-4AE3-956B-E2B724E6B8E5}.Debug|Win32.ActiveCfg = Debug|Win32
+		{B8928210-546C-4AE3-956B-E2B724E6B8E5}.Debug|Win32.Build.0 = Debug|Win32
+		{B8928210-546C-4AE3-956B-E2B724E6B8E5}.Release Unicode|Win32.ActiveCfg = Release Unicode|Win32
+		{B8928210-546C-4AE3-956B-E2B724E6B8E5}.Release Unicode|Win32.Build.0 = Release Unicode|Win32
+		{B8928210-546C-4AE3-956B-E2B724E6B8E5}.Release|Win32.ActiveCfg = Release|Win32
+		{B8928210-546C-4AE3-956B-E2B724E6B8E5}.Release|Win32.Build.0 = Release|Win32
+		{8190CFAA-3B73-43D8-9101-8368E21F1864}.Debug Unicode|Win32.ActiveCfg = Debug|Win32
+		{8190CFAA-3B73-43D8-9101-8368E21F1864}.Debug Unicode|Win32.Build.0 = Debug|Win32
+		{8190CFAA-3B73-43D8-9101-8368E21F1864}.Debug|Win32.ActiveCfg = Debug|Win32
+		{8190CFAA-3B73-43D8-9101-8368E21F1864}.Debug|Win32.Build.0 = Debug|Win32
+		{8190CFAA-3B73-43D8-9101-8368E21F1864}.Release Unicode|Win32.ActiveCfg = Release|Win32
+		{8190CFAA-3B73-43D8-9101-8368E21F1864}.Release Unicode|Win32.Build.0 = Release|Win32
+		{8190CFAA-3B73-43D8-9101-8368E21F1864}.Release|Win32.ActiveCfg = Release|Win32
+		{8190CFAA-3B73-43D8-9101-8368E21F1864}.Release|Win32.Build.0 = Release|Win32
+		{51B3810B-0FB4-4F36-B313-9A6D4714FFCF}.Debug Unicode|Win32.ActiveCfg = Debug Unicode|Win32
+		{51B3810B-0FB4-4F36-B313-9A6D4714FFCF}.Debug Unicode|Win32.Build.0 = Debug Unicode|Win32
+		{51B3810B-0FB4-4F36-B313-9A6D4714FFCF}.Debug|Win32.ActiveCfg = Debug|Win32
+		{51B3810B-0FB4-4F36-B313-9A6D4714FFCF}.Debug|Win32.Build.0 = Debug|Win32
+		{51B3810B-0FB4-4F36-B313-9A6D4714FFCF}.Release Unicode|Win32.ActiveCfg = Release Unicode|Win32
+		{51B3810B-0FB4-4F36-B313-9A6D4714FFCF}.Release Unicode|Win32.Build.0 = Release Unicode|Win32
+		{51B3810B-0FB4-4F36-B313-9A6D4714FFCF}.Release|Win32.ActiveCfg = Release|Win32
+		{51B3810B-0FB4-4F36-B313-9A6D4714FFCF}.Release|Win32.Build.0 = Release|Win32
+		{8657FFF0-BEE0-49C5-A674-D26550E60697}.Debug Unicode|Win32.ActiveCfg = Debug|Win32
+		{8657FFF0-BEE0-49C5-A674-D26550E60697}.Debug Unicode|Win32.Build.0 = Debug|Win32
+		{8657FFF0-BEE0-49C5-A674-D26550E60697}.Debug|Win32.ActiveCfg = Debug|Win32
+		{8657FFF0-BEE0-49C5-A674-D26550E60697}.Debug|Win32.Build.0 = Debug|Win32
+		{8657FFF0-BEE0-49C5-A674-D26550E60697}.Release Unicode|Win32.ActiveCfg = Release|Win32
+		{8657FFF0-BEE0-49C5-A674-D26550E60697}.Release Unicode|Win32.Build.0 = Release|Win32
+		{8657FFF0-BEE0-49C5-A674-D26550E60697}.Release|Win32.ActiveCfg = Release|Win32
+		{8657FFF0-BEE0-49C5-A674-D26550E60697}.Release|Win32.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

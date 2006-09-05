@@ -348,7 +348,7 @@
 				PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;_USRDLL;CLIST_EXPORTS"
 				StringPooling="true"
 				ExceptionHandling="0"
-				RuntimeLibrary="0"
+				RuntimeLibrary="2"
 				EnableFunctionLevelLinking="true"
 				UsePrecompiledHeader="2"
 				PrecompiledHeaderThrough="commonheaders.h"
@@ -376,7 +376,7 @@
 				AdditionalDependencies="comctl32.lib msimg32.lib gdiplus.lib shlwapi.lib"
 				LinkIncremental="0"
 				SuppressStartupBanner="true"
-				GenerateManifest="false"
+				AdditionalManifestDependencies="type=&apos;Win32&apos; name=&apos;Microsoft.Windows.Common-Controls&apos; version=&apos;6.0.0.0&apos; processorArchitecture=&apos;X86&apos; publicKeyToken=&apos;6595b64144ccf1df&apos; language=&apos;*&apos;"
 				DelayLoadDLLs="gdiplus.dll"
 				GenerateDebugInformation="true"
 				GenerateMapFile="true"
@@ -1682,11 +1682,11 @@
 				>
 			</File>
 			<File
-				RelativePath=".\res\overlay\invisible.ico"
+				RelativePath="res\invisible.ico"
 				>
 			</File>
 			<File
-				RelativePath="res\invisible.ico"
+				RelativePath=".\res\overlay\invisible.ico"
 				>
 			</File>
 			<File
@@ -1754,11 +1754,11 @@
 				>
 			</File>
 			<File
-				RelativePath=".\res\online.ico"
+				RelativePath=".\res\overlay\online.ico"
 				>
 			</File>
 			<File
-				RelativePath=".\res\overlay\online.ico"
+				RelativePath=".\res\online.ico"
 				>
 			</File>
 			<File

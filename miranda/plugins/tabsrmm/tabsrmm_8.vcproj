@@ -152,7 +152,7 @@
 				PreprocessorDefinitions="_CRT_SECURE_NO_DEPRECATE"
 				StringPooling="true"
 				ExceptionHandling="0"
-				RuntimeLibrary="0"
+				RuntimeLibrary="2"
 				BufferSecurityCheck="false"
 				EnableFunctionLevelLinking="false"
 				FloatingPointModel="1"
@@ -181,7 +181,7 @@
 				AdditionalDependencies="comctl32.lib shlwapi.lib"
 				LinkIncremental="1"
 				SuppressStartupBanner="true"
-				GenerateManifest="false"
+				AdditionalManifestDependencies="type=&apos;Win32&apos; name=&apos;Microsoft.Windows.Common-Controls&apos; version=&apos;6.0.0.0&apos; processorArchitecture=&apos;X86&apos; publicKeyToken=&apos;6595b64144ccf1df&apos; language=&apos;*&apos;"
 				IgnoreAllDefaultLibraries="false"
 				DelayLoadDLLs=""
 				GenerateDebugInformation="false"
@@ -1327,11 +1327,11 @@
 				>
 			</File>
 			<File
-				RelativePath="..\..\src\res\dropuser.cur"
+				RelativePath="..\..\Miranda-IM\res\dropuser.cur"
 				>
 			</File>
 			<File
-				RelativePath="..\..\Miranda-IM\res\dropuser.cur"
+				RelativePath="..\..\src\res\dropuser.cur"
 				>
 			</File>
 			<File
@@ -1355,11 +1355,11 @@
 				>
 			</File>
 			<File
-				RelativePath=".\res\angeli-icons\History.ico"
+				RelativePath="..\..\Miranda-IM\res\history.ico"
 				>
 			</File>
 			<File
-				RelativePath="..\..\Miranda-IM\res\history.ico"
+				RelativePath=".\res\angeli-icons\History.ico"
 				>
 			</File>
 			<File
@@ -1383,11 +1383,11 @@
 				>
 			</File>
 			<File
-				RelativePath="..\..\src\res\icon1.ico"
+				RelativePath=".\res\icon1.ico"
 				>
 			</File>
 			<File
-				RelativePath=".\res\icon1.ico"
+				RelativePath="..\..\src\res\icon1.ico"
 				>
 			</File>
 			<File
@@ -1563,11 +1563,11 @@
 				>
 			</File>
 			<File
-				RelativePath=".\res\angeli-icons\Save.ico"
+				RelativePath=".\res\save.ico"
 				>
 			</File>
 			<File
-				RelativePath=".\res\save.ico"
+				RelativePath=".\res\angeli-icons\Save.ico"
 				>
 			</File>
 			<File
