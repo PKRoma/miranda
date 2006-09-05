@@ -164,7 +164,7 @@ void __cdecl aim_protocol_negotiation()
 			LOG("Connection Closed: No Error during Connection Negotiation?");
 			break;
 		}
-        if (recvResult == SOCKET_ERROR)
+		if (recvResult == SOCKET_ERROR)
 		{
 			LOG("Connection Closed: Socket Error during Connection Negotiation");
 			break;

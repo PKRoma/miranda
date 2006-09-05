@@ -117,6 +117,7 @@ HANDLE add_contact(char* buddy)
 			DBWriteContactSettingByte(hContact,AIM_PROTOCOL_NAME,AIM_KEY_NC,1);
 			DBWriteContactSettingString(hContact, AIM_PROTOCOL_NAME, AIM_KEY_SN, normalize_name(buddy));
 			DBWriteContactSettingString(hContact, AIM_PROTOCOL_NAME, AIM_KEY_NK, buddy);
+			LOG("Adding contact %s to client side list.",buddy);
 			return hContact;
 		}
 	}
@@ -166,11 +167,13 @@ void add_contact_to_group(HANDLE hContact,char* group)
 	unsigned short new_group_id=(unsigned short)DBGetContactSettingWord(NULL, GROUP_ID_KEY,lowercased_group,0);
 	if(!new_group_id)
 	{
+		LOG("Group %s not on list.",tgroup);
 		new_group_id=search_for_free_group_id(tgroup);
 		group_exist=0;
 	}
 	if(!item_id)
 	{
+		LOG("Contact %u not on list.",hContact);
 		item_id=search_for_free_item_id(hContact);
 	}
 	if(new_group_id&&new_group_id!=old_group_id)
@@ -184,7 +187,11 @@ void add_contact_to_group(HANDLE hContact,char* group)
 			unsigned short user_id_array_size;
 			char* user_id_array=get_members_of_group(new_group_id,user_id_array_size);
 			if(old_group_id)
+			{
+				LOG("Removing buddy %s:%u to the serverside list",dbv.pszVal,item_id);
 				aim_delete_contact(conn.hServerConn,conn.seqno,dbv.pszVal,item_id,old_group_id);
+			}
+			LOG("Adding buddy %s:%u to the serverside list",dbv.pszVal,item_id);
 			aim_add_contact(conn.hServerConn,conn.seqno,dbv.pszVal,item_id,new_group_id);
 			if(!group_exist)
 			{
@@ -195,8 +202,10 @@ void add_contact_to_group(HANDLE hContact,char* group)
 				else
 					DBWriteContactSettingString(NULL, ID_GROUP_KEY,group_id_string, tgroup);
 				DBWriteContactSettingWord(NULL, GROUP_ID_KEY,group, new_group_id);
+				LOG("Adding group %s:%u to the serverside list",group,new_group_id);
 				aim_add_group(conn.hServerConn,conn.seqno,group,new_group_id);//add the group server-side even if it exist
 			}
+			LOG("Modifying group %s:%u on the serverside list",tgroup,new_group_id);
 			aim_mod_group(conn.hServerConn,conn.seqno,tgroup,new_group_id,user_id_array,user_id_array_size);//mod the group so that aim knows we want updates on the user's status during this session			
 			DBFreeVariant(&dbv);
 			delete[] user_id_array;
