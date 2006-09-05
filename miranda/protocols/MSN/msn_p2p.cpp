@@ -1377,10 +1377,18 @@ void __stdcall p2p_invite( HANDLE hContact, int iAppID, filetransfer* ft )
 		MSN_GetStaticString( "PictContext", hContact, tBuffer, sizeof( tBuffer ));
 
 		char* p = strstr( tBuffer, "Size=\"" );
-		if ( p != NULL )
-			ft->std.totalBytes = ft->std.currentFileSize = atol( p+6 );
+		if ( p != NULL ) {
+			p += 6;
+			char* q = strchr( p+1, '\"' );
+			if ( q != NULL )
+				*q = 0;
+			ft->std.totalBytes = ft->std.currentFileSize = atol( p );
+		}
 
-		if (ft->create() == -1) return;
+		if (ft->create() == -1) {
+			MSN_DebugLog( "Avatar creation failed for MSNCTX=\'%s\'", tBuffer );
+			return;
+		}
 
 		pContext = ( BYTE* )tBuffer;
 		cbContext = strlen( tBuffer )+1;

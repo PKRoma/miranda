@@ -904,6 +904,11 @@ int filetransfer::create()
 {
 	if ( inmemTransfer ) {
 		if ( fileBuffer == NULL ) {
+			if ( std.totalBytes == 0 ) {
+				MSN_DebugLog( "Zero buffer size was requested for avatar" );
+				return -1;
+			}
+
 			if (( fileBuffer = ( char* )LocalAlloc( LPTR, DWORD( std.totalBytes ))) == NULL ) {
 				MSN_DebugLog( "Not enough memory to receive file '%s'", std.currentFile );
 				return -1;
