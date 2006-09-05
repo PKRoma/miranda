@@ -187,6 +187,13 @@ int __declspec(dllexport) Load(PLUGINLINK *link)
   // Initialize status message struct
   ZeroMemory(&modeMsgs, sizeof(icq_mode_messages));
 
+  // Initialize temporary DB settings
+  ICQCreateResidentSetting("Status"); // NOTE: XStatus cannot be temporary
+  ICQCreateResidentSetting("TemporaryVisible");
+  ICQCreateResidentSetting("TickTS");
+  ICQCreateResidentSetting("IdleTS");
+  ICQCreateResidentSetting("LogonTS");
+
   // Reset a bunch of session specific settings
   ResetSettingsOnLoad();
 

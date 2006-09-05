@@ -477,7 +477,7 @@ static void handleRecvServMsgType2(unsigned char *buf, WORD wLen, DWORD dwUin, c
     WORD wAckType;
     DWORD q1,q2,q3,q4;
 
-    if (wTLVLen < 30)
+    if (wTLVLen < 26)
     { // just check if all basic data is there
       NetLog_Server("Message (format %u) - Ignoring empty message", 2);
       return;
@@ -508,6 +508,12 @@ static void handleRecvServMsgType2(unsigned char *buf, WORD wLen, DWORD dwUin, c
     if (CompareGUIDs(q1,q2,q3,q4, MCAP_TLV2711_FMT))
     { // we surely have at least 4 bytes for TLV chain
       HANDLE hContact = HContactFromUIN(dwUin, NULL);
+
+      if (wTLVLen < 4)
+      { // just check if at least one tlv is there
+        NetLog_Server("Message (format %u) - Ignoring empty message", 2);
+        return;
+      }
 
       // This TLV chain may contain the following TLVs:
       // TLV(A): Acktype 0x0000 - normal message
@@ -550,7 +556,11 @@ static void handleRecvServMsgType2(unsigned char *buf, WORD wLen, DWORD dwUin, c
     }
     else if (CompareGUIDs(q1,q2,q3,q4,MCAP_REVERSE_REQ))
     { // Handle reverse DC request
-      // we surely have at least 4 bytes for TLV chain
+      if (wTLVLen < 4)
+      { // just check if at least one tlv is there
+        NetLog_Server("Message (format %u) - Ignoring empty message", 2);
+        return;
+      }
       chain = readIntoTLVChain(&pDataBuf, wTLVLen, 0);
 
       wAckType = getWordFromChain(chain, 0x0A, 1);

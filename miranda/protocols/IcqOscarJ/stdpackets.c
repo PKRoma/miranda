@@ -1588,3 +1588,26 @@ void oft_sendFileDeny(DWORD dwUin, char *szUid, oscar_filetransfer* ft)
 {
   oft_sendFileReply(dwUin, szUid, ft, 0x01);
 }
+
+
+
+void oft_sendFileRedirect(DWORD dwUin, char *szUid, oscar_filetransfer* ft, DWORD dwIP, WORD wPort, int bProxy)
+{
+  icq_packet packet;
+
+  packServMsgSendHeader(&packet, 0, ft->pMessage.dwMsgID1, ft->pMessage.dwMsgID2, dwUin, szUid, 2, (WORD)(bProxy ? 0x4a : 0x4e));
+  packServTLV5HeaderBasic(&packet, (WORD)(bProxy ? 0x2C : 0x30), ft->pMessage.dwMsgID1, ft->pMessage.dwMsgID2, 0, MCAP_OSCAR_FT);
+  // Connection point data
+  packTLVWord(&packet, 0x0A, (WORD)(bProxy ? 0x03 : 0x02)); // Ack Type
+  packTLVWord(&packet, 0x14, 0x0A);                         // Unknown ?
+  packTLVDWord(&packet, 0x02, dwIP);                        // Internal IP / Proxy IP
+  packTLVDWord(&packet, 0x16, dwIP ^ 0x0FFFFFFFF);          // IP Check ?  
+  if (!bProxy)
+    packTLVDWord(&packet, 0x03, dwIP);
+  packTLVWord(&packet, 0x05, wPort);                        // Listening Port
+  packTLVWord(&packet, 0x17, (WORD)(wPort ^ 0x0FFFF));      // Port Check ?
+  if (bProxy)
+    packDWord(&packet, 0x00100000);                         // Proxy Flag
+
+  sendServPacket(&packet);
+}

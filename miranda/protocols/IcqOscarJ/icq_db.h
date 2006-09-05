@@ -39,6 +39,8 @@
 
 void InitDB();
 
+void ICQCreateResidentSetting(const char* szSetting);
+
 BYTE ICQGetContactSettingByte(HANDLE hContact, const char* szSetting, BYTE bDef);
 WORD ICQGetContactSettingWord(HANDLE hContact, const char* szSetting, WORD wDef);
 DWORD ICQGetContactSettingDword(HANDLE hContact, const char* szSetting, DWORD dwDef);

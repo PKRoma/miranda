@@ -48,6 +48,18 @@ void InitDB()
 
 
 
+void ICQCreateResidentSetting(const char* szSetting)
+{
+  char pszSetting[2*MAX_PATH];
+
+  strcpy(pszSetting, gpszICQProtoName);
+  strcat(pszSetting, "/");
+  strcat(pszSetting, szSetting);
+  CallService(MS_DB_SETSETTINGRESIDENT, 1, (WPARAM)pszSetting);
+}
+
+
+
 BYTE ICQGetContactSettingByte(HANDLE hContact, const char* szSetting, BYTE bDef)
 {
   return DBGetContactSettingByte(hContact, gpszICQProtoName, szSetting, bDef);

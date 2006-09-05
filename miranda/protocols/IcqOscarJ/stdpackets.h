@@ -106,5 +106,6 @@ DWORD icq_searchAimByEmail(char* pszEmail, DWORD dwSearchId);
 
 void oft_sendFileAccept(DWORD dwUin, char *szUid, oscar_filetransfer* ft);
 void oft_sendFileDeny(DWORD dwUin, char *szUid, oscar_filetransfer* ft);
+void oft_sendFileRedirect(DWORD dwUin, char *szUid, oscar_filetransfer* ft, DWORD dwIP, WORD wPort, int bProxy);
 
 #endif /* __STDPACKETS_H */

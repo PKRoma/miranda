@@ -24,9 +24,9 @@
 // -----------------------------------------------------------------------------
 //
 // File name      : $Source: /cvsroot/miranda/miranda/protocols/IcqOscarJ/oscar_filetransfer.h,v $
-// Revision       : $Revision: 2874 $
-// Last change on : $Date: 2006-05-16 23:38:00 +0200 (út, 16 V 2006) $
-// Last change by : $Author: ghazan $
+// Revision       : $Revision$
+// Last change on : $Date$
+// Last change by : $Author$
 //
 // DESCRIPTION:
 //
@@ -95,6 +95,7 @@ typedef struct {
   DWORD dwFileBytesDone;
   int fileId;
   void* connection;
+  void* listener;
   DWORD dwLastNotify;
 } oscar_filetransfer;
 
@@ -138,6 +139,7 @@ typedef struct {
 } oscar_listener;
 
 oscar_listener* CreateOscarListener(oscar_filetransfer *ft, NETLIBNEWCONNECTIONPROC_V2 handler);
+void ReleaseOscarListener(oscar_listener **pListener);
 
 void OpenOscarConnection(HANDLE hContact, oscar_filetransfer *ft, int type);
 void CloseOscarConnection(oscar_connection *oc);
