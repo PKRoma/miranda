@@ -1,7 +1,7 @@
                    Miranda Instant Messenger Release Notes
                    ---------------------------------------
 
-                             August 2006 (v0.5.1)
+                           September 2006 (v0.5.1)
 
                           http://www.miranda-im.org
 
@@ -54,6 +54,10 @@ Bugfixes:
  - AIM: Modified the gaim/adium detection to show as only gaim detection
  - AIM: Fixed file transfer directory opening bug.
  - AIM: Apply button in options got enabled by default
+ - AIM: Require "You were added" on new contact additions
+ - AIM: Fixed a memory leak on deny file transfer
+ - AIM: Removed extra mail service request at login
+ - AIM: Fixed problems with initial signon as away when "Do not reply to request for this message" is set
  - ICQ: Fixed possible hang on exit
  - ICQ: Fixed avatars were not working when server port set to 0
  - ICQ: Made message parser more strict (fixes bug allowing stealth invisible client detection)
