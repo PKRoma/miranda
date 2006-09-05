@@ -44,6 +44,7 @@ void yahoo_logoff_buddies()
 				DBWriteContactSettingDword(hContact, yahooProtocolName, "PictLoading", 0);
 				DBDeleteContactSetting(hContact, "CList", "StatusMsg" );
 				DBDeleteContactSetting(hContact, yahooProtocolName, "YMsg" );
+				DBDeleteContactSetting(hContact, yahooProtocolName, "YGMsg" );
 				//DBDeleteContactSetting(hContact, yahooProtocolName, "MirVer" );
 			}
 

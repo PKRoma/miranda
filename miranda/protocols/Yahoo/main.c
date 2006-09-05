@@ -250,6 +250,21 @@ int __declspec(dllexport)Load(PLUGINLINK *link)
 	} else 
 		lstrcpy(yahooProtocolName, "YAHOO");
 
+	mir_snprintf( path, sizeof( path ), "%s/Status", yahooProtocolName );
+	CallService( MS_DB_SETSETTINGRESIDENT, TRUE, ( LPARAM )path );
+
+	mir_snprintf( path, sizeof( path ), "%s/YStatus", yahooProtocolName );
+	CallService( MS_DB_SETSETTINGRESIDENT, TRUE, ( LPARAM )path );
+
+	mir_snprintf( path, sizeof( path ), "%s/YAway", yahooProtocolName );
+	CallService( MS_DB_SETSETTINGRESIDENT, TRUE, ( LPARAM )path );
+
+	mir_snprintf( path, sizeof( path ), "%s/Mobile", yahooProtocolName );
+	CallService( MS_DB_SETSETTINGRESIDENT, TRUE, ( LPARAM )path );
+	
+	mir_snprintf( path, sizeof( path ), "%s/YGMsg", yahooProtocolName );
+	CallService( MS_DB_SETSETTINGRESIDENT, TRUE, ( LPARAM )path );
+	
 	// 1.
 	hHookModulesLoaded = HookEvent( ME_SYSTEM_MODULESLOADED, OnModulesLoaded );
 	// Create nudge event
