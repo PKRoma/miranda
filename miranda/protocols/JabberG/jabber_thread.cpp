@@ -696,11 +696,9 @@ static void JabberProcessFeatures( XmlNode *node, void *userdata )
 		bind->addChild( "resource", info->resource );
 		JabberSend( info->s, iq );
 
-		if ( isSessionAvailable ) {
-			XmlNodeIq iq("set");
-			iq.addChild( "session" )->addAttr( "xmlns", "urn:ietf:params:xml:ns:xmpp-session" );
-			JabberSend( info->s, iq );		
-		}	
+		if ( isSessionAvailable )
+			info->bIsSessionAvailable = TRUE;
+
 		return;
 	}
 	

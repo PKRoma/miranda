@@ -150,7 +150,16 @@ int JabberXmlParse( XmlState *xmlState, char* buffer )
 
 	while ( *p != 0 ) {
 		// found starting bracket
-		if ( *p == '<' ) {	
+		if ( *p == '<' ) {
+			if ( memcmp( p, "<!--", 4 ) == 0 ) {
+				char* q = strstr( p+4, "-->" );
+				if ( q == NULL )
+					break;
+
+				p = q+3;
+				continue;
+			}
+
 			char* q = findClose( p+1 );
 			if ( q == NULL )
 				break;

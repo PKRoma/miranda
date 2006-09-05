@@ -186,14 +186,14 @@ struct ThreadData {
 	char  manualHost[128];
 	TCHAR resource[128];
 	TCHAR fullJID[256];
-	WORD port;
+	WORD  port;
 	JABBER_SOCKET s;
-	BOOL useSSL;
+	BOOL  useSSL;
 
 	char newPassword[128];
 
 	HWND reg_hwndDlg;
-	BOOL reg_done;
+	BOOL reg_done, bIsSessionAvailable;
 };
 
 struct JABBER_MODEMSGS
