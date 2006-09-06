@@ -702,7 +702,7 @@ static void __cdecl JabberGetAwayMsgThread( HANDLE hContact )
 				#if defined( _UNICODE )
 					char* msg = u2a(item->statusMessage);
 				#else
-					char* msg = str;
+					char* msg = item->statusMessage;
 				#endif
 				JSendBroadcast( hContact, ACKTYPE_AWAYMSG, ACKRESULT_SUCCESS, ( HANDLE ) 1, ( LPARAM )msg );
 				#if defined( _UNICODE )
