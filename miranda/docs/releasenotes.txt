@@ -32,7 +32,11 @@ http://files.miranda-im.org/builds/ChangeLog
 * New in 0.5.1
 Enhancements
  - ICQ: Added new session password API - allowing plugins like Secure Login to work better
+ - Yahoo: Ignore list is now sorted
+ - Yahoo: Added vertical scrollbar to the Ignore list.
  - Yahoo: Show a Popup for System Messages.
+ - Yahoo: Improvements to the request handling when behind HTTP/HTTPS proxies
+ - Yahoo: Added System Message handling (via Popup).
 
 Bugfixes:
  - Cannot create new profile through startup dialog (under NT4/95)
@@ -68,6 +72,8 @@ Bugfixes:
  - ICQ: Fixed small protocol glitch with reverse peer-to-peer connection
  - ICQ: Fixed HTTP/HTTPS proxy support (removed useless gateway option), long messages are now sent properly
  - Yahoo: Fixed avatar upload bug
+ - Yahoo: Show a system message when a file is successfully uploaded to Yahoo servers.
+ - Yahoo: various small fixes.
 
 * New in 0.5
 Enhancements:
