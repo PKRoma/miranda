@@ -527,7 +527,7 @@ void oftFileResume(oscar_filetransfer *ft, int action, const char *szFilename)
 
   switch (action)
   {
-    case FILERESUME_RESUME:
+    case FILERESUME_RESUME: // FIX ME: this needs to request resume!!!
       openFlags = _O_BINARY | _O_WRONLY;
       break;
 
@@ -570,8 +570,13 @@ void oftFileResume(oscar_filetransfer *ft, int action, const char *szFilename)
   oc->status = OCS_DATA;
 
   sendOFT2FramePacket(oc, OFT_TYPE_READY);
-
   ICQBroadcastAck(ft->hContact, ACKTYPE_FILE, ACKRESULT_NEXTFILE, ft, 0);
+
+  if (!ft->dwThisFileSize)
+  { // if the file is empty we will not receive any data
+    BYTE buf;
+    oft_handleFileData(oc, &buf, 0);
+  }
 }
 
 
@@ -1063,6 +1068,8 @@ static void handleOFT2FramePacket(oscar_connection *oc, WORD datatype, BYTE *pBu
 
       ft->initalized = 1; // First Frame Processed
 
+      NetLog_Direct("File '%s', %d Bytes", ft->szThisFile, ft->dwThisFileSize);
+
       { // Prepare Path Information
         char* szFile = strrchr(ft->szThisFile, '\\');
 
@@ -1135,6 +1142,12 @@ static void handleOFT2FramePacket(oscar_connection *oc, WORD datatype, BYTE *pBu
 
       sendOFT2FramePacket(oc, OFT_TYPE_READY);
       ICQBroadcastAck(ft->hContact, ACKTYPE_FILE, ACKRESULT_NEXTFILE, ft, 0);
+      if (!ft->dwThisFileSize)
+      { // if the file is empty we will not receive any data
+        BYTE buf;
+
+        oft_handleFileData(oc, &buf, 0);
+      }
       return;
     }
   }

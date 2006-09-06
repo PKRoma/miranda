@@ -156,15 +156,7 @@ static void handleRecvServMsg(unsigned char *buf, WORD wLen, WORD wFlags, DWORD 
   wLen -= 2;                         //  0x0002: Advanced message format
                                      //  0x0004: 'New' message format
   // Sender UIN
-  if (wMessageFormat == 1)
-  {
-    if (!unpackUID(&buf, &wLen, &dwUin, &szUID)) return;
-  }
-  else
-  {
-    szUID[0] = '\0';
-    if (!unpackUID(&buf, &wLen, &dwUin, NULL)) return;
-  }
+  if (!unpackUID(&buf, &wLen, &dwUin, &szUID)) return;
 
   if (dwUin && IsOnSpammerList(dwUin))
   {
@@ -514,6 +506,11 @@ static void handleRecvServMsgType2(unsigned char *buf, WORD wLen, DWORD dwUin, c
         NetLog_Server("Message (format %u) - Ignoring empty message", 2);
         return;
       }
+      if (!dwUin)
+      { // AIM cannot send this, just sanity
+        NetLog_Server("Error: Malformed UIN in packet");
+        return;
+      }
 
       // This TLV chain may contain the following TLVs:
       // TLV(A): Acktype 0x0000 - normal message
@@ -559,6 +556,11 @@ static void handleRecvServMsgType2(unsigned char *buf, WORD wLen, DWORD dwUin, c
       if (wTLVLen < 4)
       { // just check if at least one tlv is there
         NetLog_Server("Message (format %u) - Ignoring empty message", 2);
+        return;
+      }
+      if (!dwUin)
+      { // AIM cannot send this, just sanity
+        NetLog_Server("Error: Malformed UIN in packet");
         return;
       }
       chain = readIntoTLVChain(&pDataBuf, wTLVLen, 0);
