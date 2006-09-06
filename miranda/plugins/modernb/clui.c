@@ -2795,7 +2795,7 @@ void SmoothAnimationThread(HWND hwnd)
 	} while (ANIMATION_IS_IN_PROGRESS);
 	return;
 }
-#define ANIMATION_STEP 20
+#define ANIMATION_STEP 40
 
 int SmoothAlphaThreadTransition(HWND hwnd)
 {

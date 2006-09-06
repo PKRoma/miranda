@@ -2702,6 +2702,7 @@ void InternalPaintClc(HWND hwnd,struct ClcData *dat,HDC hdc,RECT *rcPaint)
   COLORREF tmpbkcolour = style&CLS_CONTACTLIST ? ( /*dat->useWindowsColours ? GetSysColor(COLOR_3DFACE) :*/ dat->bkColour ) : dat->bkColour;
   int old_stretch_mode;
   int old_bk_mode;
+  DWORD currentCounter;
 
   /*
   #ifdef _DEBUG
@@ -2711,13 +2712,15 @@ void InternalPaintClc(HWND hwnd,struct ClcData *dat,HDC hdc,RECT *rcPaint)
   #endif
   */
   
-
+  if (!IsWindowVisible(hwnd)) return;
   if(dat->greyoutFlags&pcli->pfnClcStatusToPf2(status) || style&WS_DISABLED) grey=1;
   else if(GetFocus()!=hwnd && dat->greyoutFlags&GREYF_UNFOCUS) grey=1;
   GetClientRect(hwnd,&clRect);
   if(rcPaint==NULL) rcPaint=&clRect;
   if(IsRectEmpty(rcPaint)) return;
   lockdat; 
+  dat->m_paintCouter++;
+  currentCounter= dat->m_paintCouter;
   y=-dat->yScroll;
   if (grey && (!LayeredFlag))
   {
@@ -2787,10 +2790,7 @@ void InternalPaintClc(HWND hwnd,struct ClcData *dat,HDC hdc,RECT *rcPaint)
   //---
 
   if (dat->row_heights ) 
-  {
-
-    
-	
+  {  	
     while(y < rcPaint->bottom)
     {
       if (subindex==-1)
@@ -2845,6 +2845,7 @@ void InternalPaintClc(HWND hwnd,struct ClcData *dat,HDC hdc,RECT *rcPaint)
         {
 		  //ulockdat;
           // Calc row height
+          Drawing->lastPaintCounter=currentCounter;
           if (!gl_RowRoot) RowHeights_GetRowHeight(dat, hwnd, Drawing, line_num);
           else mod_CalcRowHeight(dat, hwnd, Drawing, line_num);
           /*-        {

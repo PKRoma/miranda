@@ -72,6 +72,7 @@ void AddSubcontacts(struct ClcData *dat, struct ClcContact * cont, BOOL showOffl
 			cont->subcontacts[i].type=CLCIT_CONTACT;
 			cont->subcontacts[i].flags=0;//CONTACTF_ONLINE;
 			cont->subcontacts[i].isSubcontact=i+1;
+            cont->subcontacts[i].lastPaintCounter=0;
 			cont->subcontacts[i].subcontacts=cont;
 			cont->subcontacts[i].image_is_special=FALSE;
 			//cont->subcontacts[i].status=cacheEntry->status;
@@ -193,6 +194,7 @@ static struct ClcContact * AddContactToGroup(struct ClcData *dat,struct ClcGroup
 	group->cl.items[i]->isSubcontact=0;
 	group->cl.items[i]->subcontacts=NULL;
 	group->cl.items[i]->szText[0]=0;
+    group->cl.items[i]->lastPaintCounter=0;
 //	group->cl.items[i]->szSecondLineText=NULL;
 //	group->cl.items[i]->szThirdLineText=NULL;
 	group->cl.items[i]->image_is_special=FALSE;
@@ -297,6 +299,7 @@ void cli_AddContactToTree(HWND hwnd,struct ClcData *dat,HANDLE hContact,int upda
 				if (mir_strcmp(cont->proto,"MetaContacts")==0) 
 					AddSubcontacts(dat,cont,IsShowOfflineGroup(group));
 			}
+            cont->lastPaintCounter=0;
 			cont->avatar_pos=AVATAR_POS_DONT_HAVE;
 			Cache_GetAvatar(dat,cont);
 			Cache_GetText(dat,cont,1);

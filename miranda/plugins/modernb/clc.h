@@ -245,6 +245,7 @@ struct ClcContact {
 	RECT pos_rename_rect;
 	RECT pos_contact_time;
 	RECT pos_extra[MAXEXTRACOLUMNS];
+    DWORD lastPaintCounter;
 };
 
 #define DRAGSTAGE_NOTMOVED  0
@@ -416,6 +417,7 @@ struct ClcData {
 	HWND hWnd;
 	BYTE menuOwnerType;
 	int menuOwnerID;
+    DWORD m_paintCouter; //range is enoght to 49 days if painting will occure each one millisecond
 };
 
 //clc.c

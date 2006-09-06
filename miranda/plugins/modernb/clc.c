@@ -266,10 +266,17 @@ static int ClcModulesLoaded(WPARAM wParam,LPARAM lParam) {
 		GetModuleFileNameA(g_hInst, szMyPath, MAX_PATH);
 
 		sid.cbSize = sizeof(sid);
-		sid.pszSection = Translate("Contact List/Avatar Overlay");
-		sid.pszDefaultFile = szMyPath;
-		sid.cx=16;
+        sid.cx=16;
 		sid.cy=16;
+        sid.pszDefaultFile = szMyPath;
+
+        sid.pszSection = Translate("Contact List");
+		sid.pszDescription = Translate("Listening to");
+		sid.pszName = "LISTENING_TO_ICON";
+		sid.iDefaultIndex = - IDI_LISTENING_TO;
+		CallService(MS_SKIN2_ADDICON, 0, (LPARAM)&sid);
+
+        sid.pszSection = Translate("Contact List/Avatar Overlay");
 
 		for (i = 0 ; i < MAX_REGS(avatar_overlay_icons) ; i++)
 		{
@@ -288,11 +295,7 @@ static int ClcModulesLoaded(WPARAM wParam,LPARAM lParam) {
 			CallService(MS_SKIN2_ADDICON, 0, (LPARAM)&sid);
 		}
 
-		sid.pszSection = Translate("Contact List");
-		sid.pszDescription = Translate("Listening to");
-		sid.pszName = "LISTENING_TO_ICON";
-		sid.iDefaultIndex = - IDI_LISTENING_TO;
-		CallService(MS_SKIN2_ADDICON, 0, (LPARAM)&sid);
+
 
 		ReloadAvatarOverlayIcons(0,0);
 
@@ -536,7 +539,7 @@ void ClcOptionsChanged(void)
 void SortClcByTimer (HWND hwnd)
 {
 	KillTimer(hwnd,TIMERID_DELAYEDRESORTCLC);
-	SetTimer(hwnd,TIMERID_DELAYEDRESORTCLC,10 /*DBGetContactSettingByte(NULL,"CLUI","DELAYEDTIMER",10)*/,NULL);
+	SetTimer(hwnd,TIMERID_DELAYEDRESORTCLC,100 /*DBGetContactSettingByte(NULL,"CLUI","DELAYEDTIMER",10)*/,NULL);
 }
 
 /*
@@ -575,6 +578,7 @@ case WM_CREATE:
 	{
 		dat=(struct ClcData*)mir_calloc(1,sizeof(struct ClcData));
 		SetWindowLong(hwnd,0,(long)dat);
+        dat->m_paintCouter=0;
 		dat->hWnd=hwnd;
 		//			dat->isStarting=TRUE;
 		InitializeCriticalSection(&dat->lockitemCS);
@@ -689,7 +693,7 @@ case WM_SIZE:
 	KillTimer(hwnd,TIMERID_RENAME);
 	cliRecalcScrollBar(hwnd,dat);
 	return 0;
-
+/*
 case INTM_ICONCHANGED:
 	{
 		struct ClcContact *contact=NULL;
@@ -700,6 +704,7 @@ case INTM_ICONCHANGED:
 		HANDLE hContact=(HANDLE)wParam;
 
 		int ret=saveContactListControlWndProc(hwnd, msg, wParam, lParam);
+        return ret;
 		cacheEntry=(pdisplayNameCacheEntry)pcli->pfnGetCacheEntry((HANDLE)wParam);
 
 		if(FindItem(hwnd,dat,(HANDLE)wParam,&contact,&group,NULL,FALSE)) 
@@ -731,17 +736,111 @@ case INTM_ICONCHANGED:
 								}
 							}
 						}
-						contact->iImage=iIcon;	
-						{
-							int ic=GetContactIconC(cacheEntry);
-							if (ic != iIcon)
-								image_is_special = TRUE;
-							else
-								image_is_special = FALSE;
-							contact->image_is_special=image_is_special;
-						}
+			contact->iImage=iIcon;	
+			{
+				int ic=GetContactIconC(cacheEntry);
+				if (ic != iIcon)
+					image_is_special = TRUE;
+				else
+					image_is_special = FALSE;
+				contact->image_is_special=image_is_special;
+				}
 		}
 
+		return 0;
+	}
+
+*/
+case INTM_ICONCHANGED:
+	{
+		struct ClcContact *contact = NULL;
+		struct ClcGroup *group = NULL;
+		int recalcScrollBar = 0, shouldShow;
+        BOOL needRepaint=FALSE;
+		WORD status;
+		char *szProto;
+        BOOL image_is_special=FALSE;
+        int contacticon=CallService(MS_CLIST_GETCONTACTICON, wParam, 0);
+
+		szProto = (char *) CallService(MS_PROTO_GETCONTACTBASEPROTO, wParam, 0);
+		if (szProto == NULL)
+			status = ID_STATUS_OFFLINE;
+		else
+			status = DBGetContactSettingWord((HANDLE) wParam, szProto, "Status", ID_STATUS_OFFLINE);
+        image_is_special=(contacticon != lParam);
+		shouldShow = (GetWindowLong(hwnd, GWL_STYLE) & CLS_SHOWHIDDEN || !DBGetContactSettingByte((HANDLE) wParam, "CList", "Hidden", 0))
+			&& (!pcli->pfnIsHiddenMode(dat, status)
+			|| contacticon != lParam);      //this means an offline msg is flashing, so the contact should be shown
+		if (!pcli->pfnFindItem(hwnd, dat, (HANDLE) wParam, &contact, &group, NULL)) 
+        {
+			if (shouldShow) 
+            {
+				pcli->pfnAddContactToTree(hwnd, dat, (HANDLE) wParam, 0, 0);
+				recalcScrollBar = 1;
+                needRepaint=TRUE;
+				pcli->pfnFindItem(hwnd, dat, (HANDLE) wParam, &contact, NULL, NULL);
+				if (contact) 
+                {
+					contact->iImage = (WORD) lParam;
+                    contact->image_is_special=image_is_special;
+					pcli->pfnNotifyNewContact(hwnd, (HANDLE) wParam);
+					dat->NeedResort = 1;
+			    }	
+            }
+		}
+		else 
+        {              //item in list already
+			DWORD style = GetWindowLong(hwnd, GWL_STYLE);
+			if (contact->iImage == (WORD) lParam)
+				return 0;
+			if (!shouldShow && !(style & CLS_NOHIDEOFFLINE) && (style & CLS_HIDEOFFLINE || group->hideOffline)) 
+            {
+				HANDLE hSelItem;
+				struct ClcContact *selcontact;
+				struct ClcGroup *selgroup;
+				if (pcli->pfnGetRowByIndex(dat, dat->selection, &selcontact, NULL) == -1)
+					hSelItem = NULL;
+				else
+					hSelItem = pcli->pfnContactToHItem(selcontact);
+				pcli->pfnRemoveItemFromGroup(hwnd, group, contact, 0);
+				if (hSelItem)
+					if (pcli->pfnFindItem(hwnd, dat, hSelItem, &selcontact, &selgroup, NULL))
+						dat->selection = pcli->pfnGetRowsPriorTo(&dat->list, selgroup, li.List_IndexOf(( SortedList* )&selgroup->cl, selcontact));
+                needRepaint=TRUE;
+				recalcScrollBar = 1;
+                dat->NeedResort = 1;
+			}
+			else 
+            {
+				contact->iImage = (WORD) lParam;
+				if (!pcli->pfnIsHiddenMode(dat, status))
+					contact->flags |= CONTACTF_ONLINE;
+				else
+					contact->flags &= ~CONTACTF_ONLINE;
+                contact->image_is_special=image_is_special;
+                if (!image_is_special) //Only if it is status changing
+                {
+                    dat->NeedResort = 1; 
+                    needRepaint=TRUE; 
+                }
+                else if (dat->m_paintCouter==contact->lastPaintCounter) //if contacts is visible
+                {
+                    needRepaint=TRUE; 
+                }
+			}
+			
+		}
+//        dat->NeedResort = 1; 
+//        SortClcByTimer(hwnd);
+        if (dat->NeedResort) SortClcByTimer(hwnd);
+        else if (needRepaint) cliInvalidateRect(hwnd,NULL,FALSE);
+        else 
+        {
+#ifdef _DEBUG
+            TRACE("Drawing should be skipped\n");
+      //      DebugBreak();
+#endif
+        }
 		return 0;
 	}
 
@@ -1117,6 +1216,14 @@ case WM_TIMER:
 			break;
 		}			
 
+        else if (wParam==TIMERID_DELAYEDRESORTCLC)
+        {
+			KillTimer(hwnd,TIMERID_DELAYEDRESORTCLC);
+			pcli->pfnInvalidateRect(hwnd,NULL,FALSE);
+			pcli->pfnSortCLC(hwnd,dat,1);
+			pcli->pfnRecalcScrollBar(hwnd,dat);
+            return 0;
+        }
 		break;
 	}
 case WM_SETCURSOR: 
