@@ -482,6 +482,7 @@ int GetContactCachedStatus(HANDLE hContact)
 
 int ContactAdded(WPARAM wParam,LPARAM lParam)
 {
+    if (MirandaExiting()) return 0;
 	cli_ChangeContactIcon((HANDLE)wParam,ExtIconFromStatusMode((HANDLE)wParam,(char*)GetContactCachedProtocol((HANDLE)wParam),ID_STATUS_OFFLINE),1); ///by FYR
 	//	ChangeContactIcon((HANDLE)wParam,pcli->pfnIconFromStatusMode((char*)GetContactCachedProtocol((HANDLE)wParam),ID_STATUS_OFFLINE),1);
 	pcli->pfnSortContacts();
@@ -495,7 +496,7 @@ int ContactSettingChanged(WPARAM wParam,LPARAM lParam)
 	DBCONTACTWRITESETTING *cws = (DBCONTACTWRITESETTING*)lParam;
 	DBVARIANT dbv={0};
 	pdisplayNameCacheEntry pdnce;
-
+    if (MirandaExiting()) return 0;
 	// Early exit
 	if ((HANDLE)wParam == NULL)
 		return 0;

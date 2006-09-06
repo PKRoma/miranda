@@ -1185,6 +1185,7 @@ int OnIconLibChanges(WPARAM wParam,LPARAM lParam)
 {
   int mo,mi;
   HICON newIcon;
+  if (MirandaExiting()) return 0;
   lockmo();
   for (mo=0;mo<MenuObjectsCount;mo++)
   {

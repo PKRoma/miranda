@@ -195,6 +195,7 @@ void GetFontSetting(int i,LOGFONTA *lf,COLORREF *colour,BYTE *effect, COLORREF *
 
 int BgMenuChange(WPARAM wParam,LPARAM lParam)
 {
+  if (MirandaExiting()) return 0;
   ClcOptionsChanged();
   return 0;
 }
@@ -207,6 +208,7 @@ int BgClcChange(WPARAM wParam,LPARAM lParam)
 
 int BgStatusBarChange(WPARAM wParam,LPARAM lParam)
 {
+  if (MirandaExiting()) return 0;
   ClcOptionsChanged();
   //OnStatusBarBackgroundChange();
   return 0;
@@ -242,6 +244,7 @@ BOOL CALLBACK DlgProcClcTabbedOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM
 int ClcOptInit(WPARAM wParam,LPARAM lParam)
 {
    OPTIONSDIALOGPAGE odp;
+   if (MirandaExiting()) return 0;
    ZeroMemory(&odp,sizeof(odp));
    odp.cbSize=sizeof(odp);
    odp.position=0;
@@ -957,6 +960,7 @@ struct CheckBoxToStyleEx_t {
         lf.lfPitchAndFamily=0;
         EnumFontFamiliesExA(hdc,&lf,(FONTENUMPROCA)EnumFontsProc,(LPARAM)GetDlgItem(hwndDlg,IDC_TYPEFACE),0);
         ReleaseDC(hwndDlg,hdc);
+        hFillFontListThread=NULL;
         return;
       }
 

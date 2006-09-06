@@ -3889,7 +3889,7 @@ int ValidateFrameImageProc(RECT * r)                                // Calling q
 
 int UpdateWindowImage()
 {
-  if (Miranda_Terminated()) 
+  if (MirandaExiting()) 
 	  return 0;
   if (LayeredFlag)
   {

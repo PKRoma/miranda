@@ -37,7 +37,7 @@ static int OnContactMenuBuild(WPARAM wParam,LPARAM lParam)
 	boolean grpexists;
 	TCHAR *grpname;
 	char intname[20];
-
+    if (MirandaExiting()) return 0;
 	if (prevmenu!=0){
 		CallService(MS_CLIST_REMOVECONTACTMENUITEM,(WPARAM)prevmenu,(LPARAM)0);
 	};

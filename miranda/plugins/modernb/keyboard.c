@@ -653,6 +653,7 @@ int InitSkinHotKeys(void)
 void UninitSkinHotKeys(void)
 {
 	int i;
+    if (!HotKeyList) return;
 	for(i=0;i<HotKeyCount;i++) {
 		mir_free(HotKeyList[i].name);
 		mir_free(HotKeyList[i].section);

@@ -72,7 +72,7 @@ int AddHandleToChain(HANDLE hContact)
   while (LockChainAddition) 
   {
     SleepEx(0,TRUE);
-    if (Miranda_Terminated()) return 0;
+    if (MirandaExiting()) return 0;
   }
   LockChainDeletion=1;
   {
@@ -119,7 +119,7 @@ HANDLE GetCurrChain()
   while (LockChainDeletion)   
   {
     SleepEx(0,TRUE);
-    if (Miranda_Terminated()) return 0;
+    if (MirandaExiting()) return 0;
   }
   LockChainAddition=1;
   if (FirstChain)
@@ -144,7 +144,11 @@ int AskStatusMessageThread(HWND hwnd)
   HANDLE ACK=0;
   pdisplayNameCacheEntry pdnce=NULL;
   h=GetCurrChain(); 
-  if (!h) return 0;
+  if (!h) 
+  {
+      hAskStatusMessageThread=NULL;
+      return 0;
+  }
 
   ISTREADSTARTED=1;
   while (h)
@@ -153,9 +157,10 @@ int AskStatusMessageThread(HWND hwnd)
     if ((time-RequestTick)<ASKPERIOD)
     {
             SleepEx(ASKPERIOD-(time-RequestTick)+10,TRUE);
-            if (Miranda_Terminated()) 
+            if (MirandaExiting()) 
             {
               ISTREADSTARTED=0;
+              hAskStatusMessageThread=NULL;
               return 0; 
             }
     }
@@ -180,14 +185,16 @@ int AskStatusMessageThread(HWND hwnd)
     RequestTick=time;
     h=GetCurrChain();
     if (h) SleepEx(ASKPERIOD,TRUE); else break;
-    if (Miranda_Terminated()) 
+    if (MirandaExiting()) 
     {
+      hAskStatusMessageThread=NULL;
       ISTREADSTARTED=0;
       return 0; 
     }
 
   }
   ISTREADSTARTED=0;
+  hAskStatusMessageThread=NULL;
   return 1;
 }
 
@@ -271,7 +278,7 @@ BOOL GetCacheChain(CacheAskChain * chain)
 	while (LockCacheChain) 
 	{
 	    SleepEx(0,TRUE);
-		if (Miranda_Terminated()) return FALSE;
+		if (MirandaExiting()) return FALSE;
 	}
 	if (!FirstCacheChain) return FALSE;
 	else if (chain)
@@ -294,8 +301,11 @@ int GetTextThread(void * a)
 	do
 	{
 		SleepEx(0,TRUE); //1000 contacts per second
-		if (Miranda_Terminated()) 
+		if (MirandaExiting()) 
+        {
+            hGetTextThread=NULL;
 			return 0;
+        }
 		else
 		{
 			CacheAskChain chain={0};
@@ -323,6 +333,7 @@ int GetTextThread(void * a)
     while (!exit);
 	ISCacheTREADSTARTED=FALSE;	
 	TRACE("ALL Done\n");
+    hGetTextThread=NULL;
 	return 1;
 }
 int AddToCacheChain(struct ClcData *dat,struct ClcContact *contact,HANDLE ContactRequest)
@@ -330,7 +341,7 @@ int AddToCacheChain(struct ClcData *dat,struct ClcContact *contact,HANDLE Contac
 	while (LockCacheChain) 
 	{
 	    SleepEx(0,TRUE);
-		if (Miranda_Terminated()) return 0;
+		if (MirandaExiting()) return 0;
 	}
 	LockCacheChain=TRUE;
 	{
@@ -1254,7 +1265,8 @@ void Cache_GetAvatar(struct ClcData *dat, struct ClcContact *contact)
 		if (dat->avatars_show && !DBGetContactSettingByte(contact->hContact, "CList", "HideContactAvatar", 0))
 		{
 			contact->avatar_data = (struct avatarCacheEntry *)CallService(MS_AV_GETAVATARBITMAP, (WPARAM)contact->hContact, 0);
-
+            if (contact->avatar_data==0x80000000) 
+                return;
 			if (contact->avatar_data == NULL || contact->avatar_data->cbSize != sizeof(struct avatarCacheEntry) 
 				|| contact->avatar_data->dwFlags == AVS_BITMAP_EXPIRED)
 			{

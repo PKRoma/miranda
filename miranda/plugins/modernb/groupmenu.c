@@ -238,7 +238,7 @@ SendMessage(
 static int OnBuildGroupMenu(WPARAM wParam,LPARAM lParam)
 {
 	CLISTMENUITEM mi;
-
+    if (MirandaExiting()) return 0;
 	
 	ZeroMemory(&mi,sizeof(mi));
 	mi.cbSize = sizeof(mi);
@@ -268,6 +268,7 @@ int static OnIconLibIconChanged(WPARAM wParam,LPARAM lParam)
 	HICON hicon;
 	CLISTMENUITEM clmi={0};
 	BOOL needFree;
+    if (MirandaExiting()) return 0;
 	hicon=LoadIconFromExternalFile("clisticons.dll",2,TRUE,FALSE,"NewGroup","Contact List","New Group",-IDI_NEWGROUP,&needFree);
 	NewGroupIconidx=ImageList_ReplaceIcon(hCListImages,NewGroupIconidx,hicon);	
 	if (needFree) DestroyIcon_protect(hicon);
@@ -482,11 +483,12 @@ static int OnBuildSubGroupMenu(WPARAM wParam,LPARAM lParam)
   BOOL gray1=FALSE;
   BOOL gray2=FALSE;
   BOOL showOfflineinGroup=FALSE;
+ 
   
 	struct ClcGroup *group=(struct ClcGroup *)wParam;
 	if (wParam==0) return 0;
 
-
+ if (MirandaExiting()) return 0;
 	//contact->group
   ZeroMemory(&mi,sizeof(mi));
 	mi.cbSize = sizeof(mi);

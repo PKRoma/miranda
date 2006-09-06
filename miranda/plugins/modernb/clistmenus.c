@@ -743,7 +743,7 @@ static int MenuProcessHotkey(WPARAM vKey,LPARAM lParam)
 
 static int MenuIconsChanged(WPARAM wParam,LPARAM lParam)
 {
-
+  if (MirandaExiting()) return 0;
   //just rebuild menu
   MenuModulesLoaded(0,0);
 
@@ -846,8 +846,10 @@ int MenuModulesLoaded(WPARAM wParam,LPARAM lParam)
   TMO_MenuItem tmi;
   TMenuParam tmp;
   int pos=0;
+  
   OptParam op;
 
+  if (MirandaExiting()) return 0;
   //
   CallService(MS_PROTO_ENUMPROTOCOLS,(WPARAM)&protoCount,(LPARAM)&proto);
   networkProtoCount=0;
@@ -1134,7 +1136,7 @@ static int MenuProtoAck(WPARAM wParam,LPARAM lParam)
   ACKDATA *ack=(ACKDATA*)lParam;
   int overallStatus=0,thisStatus;
   TMO_MenuItem tmi;
-
+  if (MirandaExiting()) return 0;
   if(ack->type!=ACKTYPE_STATUS) return 0;
   if(ack->result!=ACKRESULT_SUCCESS) return 0;
   if (hStatusMainMenuHandles==NULL) return(0);
@@ -1382,6 +1384,7 @@ int InitCustomMenus(void)
 void UninitCustomMenus(void)
 {
   int i;
+  if (!menusProto) return;
   for (i=0; i<AllocedProtos; i++)
         if (menusProto[i].szProto) 
 			mir_free(menusProto[i].szProto);

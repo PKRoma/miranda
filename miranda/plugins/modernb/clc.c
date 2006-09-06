@@ -111,6 +111,7 @@ void UnloadAvatarOverlayIcon()
 */
 int SmileyAddOptionsChanged(WPARAM wParam,LPARAM lParam)
 {
+    if (MirandaExiting()) return 0;
 	pcli->pfnClcBroadcast( CLM_AUTOREBUILD,0,0);
 	pcli->pfnClcBroadcast( INTM_INVALIDATE,0,0);
 	return 0;
@@ -121,7 +122,7 @@ int SmileyAddOptionsChanged(WPARAM wParam,LPARAM lParam)
 static int ClcSettingChanged(WPARAM wParam,LPARAM lParam)
 {
 	DBCONTACTWRITESETTING *cws=(DBCONTACTWRITESETTING*)lParam;
-
+    if (MirandaExiting()) return 0;
 	if ((HANDLE)wParam==NULL)
 	{
 		if (!mir_strcmp(cws->szModule,"MetaContacts"))
@@ -216,6 +217,7 @@ static int ClcSettingChanged(WPARAM wParam,LPARAM lParam)
 static int ReloadAvatarOverlayIcons(WPARAM wParam, LPARAM lParam) 
 {
 	int i;
+    if (MirandaExiting()) return 0;
    	for (i = 0 ; i < MAX_REGS(avatar_overlay_icons) ; i++)
 	{
 		avatar_overlay_icons[i].listID=-1;
@@ -247,7 +249,7 @@ static int ReloadAvatarOverlayIcons(WPARAM wParam, LPARAM lParam)
 static int ClcModulesLoaded(WPARAM wParam,LPARAM lParam) {
 	PROTOCOLDESCRIPTOR **proto;
 	int protoCount,i;
-
+    if (MirandaExiting()) return 0;
 	if (ServiceExists(MS_MC_DISABLEHIDDENGROUP));
 	CallService(MS_MC_DISABLEHIDDENGROUP, (WPARAM)TRUE, (LPARAM)0);
 
@@ -353,7 +355,7 @@ int ExtraToColumnNum(int extra);
 int ClcProtoAck(WPARAM wParam,LPARAM lParam)
 {
 	ACKDATA *ack=(ACKDATA*)lParam;
-
+    if (MirandaExiting()) return 0;
 	if (ack->type == ACKTYPE_STATUS) 
 	{ int i;
 	if (ack->result == ACKRESULT_SUCCESS) {
@@ -447,6 +449,7 @@ static int ClcShutdown(WPARAM wParam,LPARAM lParam)
 
 int AvatarChanged(WPARAM wParam, LPARAM lParam)
 {
+    if (MirandaExiting()) return 0;
 	pcli->pfnClcBroadcast(INTM_AVATARCHANGED, wParam, lParam);
 	return 0;
 }

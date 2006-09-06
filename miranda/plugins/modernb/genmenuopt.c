@@ -854,7 +854,7 @@ int GenMenuOptInit(WPARAM wParam,LPARAM lParam)
 {
 	OPTIONSDIALOGPAGE odp;
 	//hInst=GetModuleHandle(NULL);
-
+    if (MirandaExiting()) return 0;
 	ZeroMemory(&odp,sizeof(odp));
 	odp.cbSize=sizeof(odp);
 	odp.position=-1000000000;

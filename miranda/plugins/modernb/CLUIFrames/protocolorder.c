@@ -428,7 +428,7 @@ BOOL CALLBACK ProtocolOrderOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lP
 
 static int ProtocolOrderInit(WPARAM wParam,LPARAM lParam) {
 	OPTIONSDIALOGPAGE odp;
-
+    if (MirandaExiting()) return 0;
 	ZeroMemory(&odp,sizeof(odp));
 	odp.cbSize=sizeof(odp);
 	odp.position=-10000000;

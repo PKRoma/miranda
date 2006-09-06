@@ -1095,7 +1095,7 @@ static int CLUIFramesModifyContextMenuForFrame(WPARAM wParam,LPARAM lParam)
   int pos;
   CLISTMENUITEM mi;
   //TMO_MenuItem tmi;
-
+  if (MirandaExiting()) return 0;
   if (FramesSysNotStarted) return -1;
 
   lockfrm();
@@ -3049,6 +3049,7 @@ boolean AlignCOLLIconToLeft; //will hide frame icon
 
 int OnFrameTitleBarBackgroundChange(WPARAM wParam,LPARAM lParam)
 {
+    if (MirandaExiting()) return 0;
   {	
     DBVARIANT dbv={0};
 
@@ -3886,6 +3887,7 @@ int CLUIFrameResizeFloatingFrame(int framepos)
 
 static int CLUIFrameOnMainMenuBuild(WPARAM wParam,LPARAM lParam)
 {
+  if (MirandaExiting()) return 0;
   CLUIFramesLoadMainMenu();
  
   return 0;
@@ -4291,6 +4293,7 @@ static CLUIFrameOnModulesLoad(WPARAM wParam,LPARAM lParam)
 static CLUIFrameOnModulesUnload(WPARAM wParam,LPARAM lParam)
 {
   //
+  if (MirandaExiting()) return 0;
   if (!contMIVisible) return 0;
   CallService( MS_CLIST_REMOVECONTEXTFRAMEMENUITEM, ( LPARAM )contMIVisible, 1 );
   CallService( MS_CLIST_REMOVECONTEXTFRAMEMENUITEM, ( LPARAM )contMITitle, 1 );

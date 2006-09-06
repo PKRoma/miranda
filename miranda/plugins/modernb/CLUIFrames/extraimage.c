@@ -152,6 +152,7 @@ int OnIconLibIconChanged(WPARAM wParam,LPARAM lParam)
 {
 	HICON hicon;
 	BOOL needFree;
+    if (MirandaExiting()) return 0;
 	hicon=LoadIconFromExternalFile("clisticons.dll",0,TRUE,FALSE,"Email","Contact List",Translate("Email Icon"),-IDI_EMAIL, &needFree);
 	ExtraImageIconsIndex[0]=ImageList_ReplaceIcon(hExtraImageList,ExtraImageIconsIndex[0],hicon );		
     if (needFree) DestroyIcon_protect(hicon);

@@ -264,10 +264,14 @@ BOOL TransparentFlag=FALSE;// TransparentFlag
 
 void DestroyThreads()
 {
-    TerminateThread(hAskStatusMessageThread,0);
-    TerminateThread(hGetTextThread,0);
-    TerminateThread(hSmoothAnimationThread,0);
-    TerminateThread(hFillFontListThread,0);
+    while (hAskStatusMessageThread || hGetTextThread || hSmoothAnimationThread || hFillFontListThread)
+    {
+        Sleep(0);
+    }
+ //   TerminateThread(hAskStatusMessageThread,0);
+ //   TerminateThread(hGetTextThread,0);
+ //   TerminateThread(hSmoothAnimationThread,0);
+ //   TerminateThread(hFillFontListThread,0);
 }
 
 
@@ -981,7 +985,7 @@ int ReloadCLUIOptions()
 int OnSettingChanging(WPARAM wParam,LPARAM lParam)
 {
 	DBCONTACTWRITESETTING *dbcws=(DBCONTACTWRITESETTING *)lParam;
-
+    if (MirandaExiting()) return 0;
 	if (wParam==0)
 	{
 		if ((dbcws->value.type==DBVT_BYTE)&&!mir_strcmp(dbcws->szModule,"CLUI"))
@@ -1410,6 +1414,8 @@ LRESULT CALLBACK cli_ContactListWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPAR
 
 	The caller is expected to create this mapping object and tell us the ID we need to open ours.	
 	*/
+    if (MirandaExiting()) 
+        return 0;
 	if (msg==hMsgGetProfile && wParam != 0) { /* got IPC message */
 		HANDLE hMap;
 		char szName[MAX_PATH];
@@ -1946,7 +1952,7 @@ LRESULT CALLBACK cli_ContactListWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPAR
 		}
 
 	case WM_TIMER:
-		if (Miranda_Terminated()) return 0;
+		if (MirandaExiting()) return 0;
 		if ((int)wParam>=TM_STATUSBARUPDATE&&(int)wParam<=TM_STATUSBARUPDATE+64)
 		{		
 			int status,i;
@@ -2405,6 +2411,7 @@ LRESULT CALLBACK cli_ContactListWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPAR
             DestroyThreads(); //stop all my threads            
 			if (state==SETTING_STATE_NORMAL){ShowWindowNew(hwnd,SW_HIDE);};				
 			if(hSettingChangedHook!=0){UnhookEvent(hSettingChangedHook);};
+            
 			TrayIconDestroy(hwnd);	
 			ANIMATION_IS_IN_PROGRESS=0;  		
 			CallService(MS_CLIST_FRAMES_REMOVEFRAME,(WPARAM)hFrameContactTree,(LPARAM)0);		
@@ -2423,7 +2430,15 @@ LRESULT CALLBACK cli_ContactListWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPAR
 						DBWriteContactSettingDword(NULL,"CList","Height",r.bottom-r.top);
 					}
 			}
+            /*{
+               UninitCustomMenus();
+	           UnloadAvatarOverlayIcon();
+	           UninitSkinHotKeys();
+	           UnhookEvent(gl_event_hSkinLoaded);
+	           UnhookAll();
+            }
 			UnLoadCLUIFramesModule();	
+            */
 			pcli->hwndStatus=NULL;
 			ImageList_Destroy(himlMirandaIcon);
 			DBWriteContactSettingByte(NULL,"CList","State",(BYTE)state);
@@ -2431,8 +2446,8 @@ LRESULT CALLBACK cli_ContactListWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPAR
 			FreeLibrary(hUserDll);
 			pcli->hwndContactList=NULL;
 			pcli->hwndStatus=NULL;
-			PostQuitMessage(0);
-			UnhookAll();
+			PostQuitMessage(0);	
+            //UnhookAll();
 			return 0;
 	}	}
 
@@ -2441,6 +2456,7 @@ LRESULT CALLBACK cli_ContactListWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPAR
 
 int CluiIconsChanged(WPARAM wParam,LPARAM lParam)
 {
+    if (MirandaExiting()) return 0;
 	ImageList_ReplaceIcon(himlMirandaIcon,0,LoadSkinnedIcon(SKINICON_OTHER_MIRANDA));
 	DrawMenuBar(pcli->hwndContactList);
 	ReloadExtraIcons();
@@ -2460,7 +2476,7 @@ static int MenuItem_PreBuild(WPARAM wParam, LPARAM lParam)
 	HANDLE hItem;
 	HWND hwndClist = GetFocus();
 	CLISTMENUITEM mi;
-
+    if (MirandaExiting()) return 0;
 	ZeroMemory(&mi,sizeof(mi));
 	mi.cbSize = sizeof(mi);
 	mi.flags = CMIM_FLAGS;
@@ -2781,18 +2797,27 @@ BYTE PAUSE=FALSE;
 void SmoothAnimationThread(HWND hwnd)
 {
 	//  return;
-	if (!ANIMATION_IS_IN_PROGRESS) return;  /// Should be some locked to avoid painting against contact deletion.
+	if (!ANIMATION_IS_IN_PROGRESS) 
+    {
+        hSmoothAnimationThread=NULL;
+        return;  /// Should be some locked to avoid painting against contact deletion.
+    }
 	do
 	{
 		if (!LOCK_UPDATING)
 		{
 			SmoothAlphaThreadTransition(hwnd);       
 			SleepEx(20,TRUE);
-			if (Miranda_Terminated()) return;
+			if (MirandaExiting()) 
+            {
+                hSmoothAnimationThread=NULL;
+                return;
+            }
 		}
 		else SleepEx(0,TRUE);
 
 	} while (ANIMATION_IS_IN_PROGRESS);
+    hSmoothAnimationThread=NULL;
 	return;
 }
 #define ANIMATION_STEP 40
