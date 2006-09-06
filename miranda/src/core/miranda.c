@@ -157,6 +157,22 @@ static int MirandaWaitForMutex(HANDLE hEvent)
 	}
 }
 
+VOID CALLBACK KillAllThreads(HWND hwnd, UINT uMsg, UINT_PTR idEvent, DWORD dwTime)
+{
+	if ( MirandaWaitForMutex( hStackMutex )) {
+		int j;
+		for ( j=0; j < WaitingThreadsCount; j++ ) {
+			char szModuleName[ MAX_PATH ];
+			GetModuleFileNameA( WaitingThreads[j].hOwner, szModuleName, sizeof(szModuleName));
+			Netlib_Logf( NULL, "Thread %08x was abnormally terminated because module '%s' didn't released it",
+				WaitingThreads[j].hThread, szModuleName );
+			TerminateThread( WaitingThreads[j].hThread, 9999 );
+		}
+
+		ReleaseMutex(hStackMutex);
+		SetEvent(hThreadQueueEmpty);
+}	}
+
 static void UnwindThreadWait(void)
 {
 	// acquire the list and wake up any alertable threads
@@ -166,25 +182,14 @@ static void UnwindThreadWait(void)
 			QueueUserAPC(DummyAPCFunc,WaitingThreads[j].hThread, 0);
 		ReleaseMutex(hStackMutex);
 	}
+
+	// give all unclosed threads 5 seconds to close
+	SetTimer( NULL, 0, 5000, KillAllThreads );
+
 	// wait til the thread list is empty
 	MirandaWaitForMutex(hThreadQueueEmpty);
 }
 
-void KillModuleThreads( HINSTANCE hInst )
-{
-	if ( MirandaWaitForMutex( hStackMutex )) {
-		int j;
-		for ( j=0; j < WaitingThreadsCount; j++ ) {
-			if ( WaitingThreads[j].hOwner == hInst ) {
-				char szModuleName[ MAX_PATH ];
-				GetModuleFileNameA( WaitingThreads[j].hOwner, szModuleName, sizeof(szModuleName));
-				Netlib_Logf( NULL, "Thread %08x was abnormally terminated because module '%s' didn't released it",
-					WaitingThreads[j].hThread, szModuleName );
-				TerminateThread( WaitingThreads[j].hThread, 9999 );
-		}	}
-
-		ReleaseMutex(hStackMutex);
-}	}
 
 /////////////////////////////////////////////////////////////////////////////////////////
 

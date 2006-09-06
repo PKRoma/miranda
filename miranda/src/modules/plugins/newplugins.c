@@ -83,7 +83,6 @@ void UninitIni(void);
 
 void KillModuleEventHooks( HINSTANCE );
 void KillModuleServices( HINSTANCE );
-void KillModuleThreads( HINSTANCE );
 
 int LoadDatabaseModule(void);	
 void ListView_SetItemTextA( HWND hwndLV, int i, int iSubItem, char* pszText );
@@ -239,7 +238,6 @@ static void Plugin_Uninit(pluginEntry * p)
 		// we need to kill all resources which belong to that DLL before calling FreeLibrary
 		KillModuleEventHooks( p->bpi.hInst );
 		KillModuleServices( p->bpi.hInst );
-		KillModuleThreads( p->bpi.hInst );
 
 		FreeLibrary( p->bpi.hInst );
 		ZeroMemory( &p->bpi, sizeof( p->bpi ));
