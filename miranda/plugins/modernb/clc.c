@@ -810,7 +810,7 @@ case INTM_ICONCHANGED:
 				recalcScrollBar = 1;
                 dat->NeedResort = 1;
 			}
-			else 
+			else if (contact)
             {
 				contact->iImage = (WORD) lParam;
 				if (!pcli->pfnIsHiddenMode(dat, status))

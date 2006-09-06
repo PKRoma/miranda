@@ -2716,10 +2716,16 @@ void InternalPaintClc(HWND hwnd,struct ClcData *dat,HDC hdc,RECT *rcPaint)
   if(dat->greyoutFlags&pcli->pfnClcStatusToPf2(status) || style&WS_DISABLED) grey=1;
   else if(GetFocus()!=hwnd && dat->greyoutFlags&GREYF_UNFOCUS) grey=1;
   GetClientRect(hwnd,&clRect);
-  if(rcPaint==NULL) rcPaint=&clRect;
+  if(rcPaint==NULL) 
+  {
+      rcPaint=&clRect;
+  }
   if(IsRectEmpty(rcPaint)) return;
+  if (rcPaint->top<=clRect.top && rcPaint->bottom>=clRect.bottom)
+  {
+      dat->m_paintCouter++;
+  }
   lockdat; 
-  dat->m_paintCouter++;
   currentCounter= dat->m_paintCouter;
   y=-dat->yScroll;
   if (grey && (!LayeredFlag))
