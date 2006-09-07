@@ -224,7 +224,7 @@ static int ReloadAvatarOverlayIcons(WPARAM wParam, LPARAM lParam)
 		status_overlay_icons[i].listID=-1;
 	}
     if (hAvatarOverlays) ImageList_Destroy(hAvatarOverlays);
-    hAvatarOverlays=ImageList_Create(16,16,ILC_COLOR32,MAX_REGS(avatar_overlay_icons)*2,1);
+    hAvatarOverlays=ImageList_Create(16,16,ILC_MASK|ILC_COLOR32,MAX_REGS(avatar_overlay_icons)*2,1);
 	for (i = 0 ; i < MAX_REGS(avatar_overlay_icons) ; i++)
 	{
         HICON hIcon=(HICON)CallService(MS_SKIN2_GETICON, 0, (LPARAM)avatar_overlay_icons[i].name);
@@ -306,7 +306,7 @@ static int ClcModulesLoaded(WPARAM wParam,LPARAM lParam) {
 	else 
 	{
         if (hAvatarOverlays) ImageList_Destroy(hAvatarOverlays);
-        hAvatarOverlays=ImageList_Create(16,16,ILC_COLOR32,MAX_REGS(avatar_overlay_icons)*2,1);
+        hAvatarOverlays=ImageList_Create(16,16,ILC_MASK|ILC_COLOR32,MAX_REGS(avatar_overlay_icons)*2,1);
 	    for (i = 0 ; i < MAX_REGS(avatar_overlay_icons) ; i++)
 	    {
             HICON hIcon=LoadSmallIcon(g_hInst, MAKEINTRESOURCE(avatar_overlay_icons[i].id));

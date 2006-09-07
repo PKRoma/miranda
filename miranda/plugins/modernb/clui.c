@@ -936,7 +936,7 @@ int CreateTimerForConnectingIcon(WPARAM wParam,LPARAM lParam)
 					DefaultStep=100;/*DBGetContactSettingWord(NULL,"CLUI","DefaultStepConnectingIcon",100);*/
 					pt->IconsCount=cnt;
 					if (pt->IconsList) ImageList_Destroy(pt->IconsList);
-					pt->IconsList=ImageList_Create(16,16,ILC_COLORDDB,cnt,1);
+					pt->IconsList=ImageList_Create(16,16,ILC_MASK|ILC_COLOR32,cnt,1);
 					for (i=0; i<cnt; i++)
 					{
 						HICON ic=GetConnectingIconForProto(szProto,i);
