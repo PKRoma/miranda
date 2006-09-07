@@ -397,7 +397,7 @@ void DrawTextSmiley(HDC hdcMem, RECT free_rc, SIZE text_size, TCHAR *szText, int
     // Just draw ellipsis
     if (free_rc.right <= free_rc.left)
     {
-      mod_DrawText(hdcMem, TEXT("..."), 3, &free_rc, uTextFormat & ~DT_END_ELLIPSIS);
+      if (gl_TrimText) mod_DrawText(hdcMem, TEXT("..."), 3, &free_rc, uTextFormat & ~DT_END_ELLIPSIS);
     }
     else
     {
@@ -776,7 +776,7 @@ void ModernInternalPaintRowItems(HWND hwnd, HDC hdcMem, struct ClcData *dat, str
       char * szCounts=NULL;
       RECT text_rect=fr_rc;
       RECT counts_rc={0};
-      UINT uTextFormat=DT_LEFT|DT_VCENTER|DT_END_ELLIPSIS|DT_SINGLELINE;
+      UINT uTextFormat=DT_LEFT|DT_VCENTER|(gl_TrimText?DT_END_ELLIPSIS:0)|DT_SINGLELINE;
 	  uTextFormat|=dat->text_rtl?DT_RTLREADING:0;
       // Select font
       ChangeToFont(hdcMem,dat,GetBasicFontID(Drawing),NULL);
@@ -1013,7 +1013,7 @@ void ModernInternalPaintRowItems(HWND hwnd, HDC hdcMem, struct ClcData *dat, str
           uTextFormat|=(gl_RowTabAccess[i]->valign==TC_VCENTER)?DT_VCENTER:(gl_RowTabAccess[i]->valign==TC_BOTTOM)?DT_BOTTOM:0; 
           uTextFormat|=(gl_RowTabAccess[i]->halign==TC_HCENTER)?DT_CENTER:(gl_RowTabAccess[i]->halign==TC_RIGHT)?DT_RIGHT:0; 
 
-          uTextFormat = uTextFormat | DT_END_ELLIPSIS|DT_SINGLELINE;
+          uTextFormat = uTextFormat | (gl_TrimText?DT_END_ELLIPSIS:0)|DT_SINGLELINE;
           if (Drawing->type==CLCIT_CONTACT)
           {			
             if (selected)
@@ -1164,7 +1164,7 @@ void ModernInternalPaintRowItems(HWND hwnd, HDC hdcMem, struct ClcData *dat, str
           text_size.cy=p_rect.bottom-p_rect.top;
 
           ChangeToFont(hdcMem,dat,FONTID_SECONDLINE,NULL);
-          uTextFormat = uTextFormat | DT_END_ELLIPSIS|DT_SINGLELINE;
+          uTextFormat = uTextFormat | (gl_TrimText?DT_END_ELLIPSIS:0)|DT_SINGLELINE;
           if (Drawing->type==CLCIT_CONTACT)
             DrawTextSmiley(hdcMem, p_rect, text_size, pdnce->szSecondLineText, lstrlen(pdnce->szSecondLineText), pdnce->plSecondLineText, uTextFormat, dat->text_resize_smileys);
           break;
@@ -1201,7 +1201,7 @@ void ModernInternalPaintRowItems(HWND hwnd, HDC hdcMem, struct ClcData *dat, str
           text_size.cy=p_rect.bottom-p_rect.top;
 
           ChangeToFont(hdcMem,dat,FONTID_THIRDLINE,NULL);
-          uTextFormat = uTextFormat | DT_END_ELLIPSIS|DT_SINGLELINE;
+          uTextFormat = uTextFormat | (gl_TrimText?DT_END_ELLIPSIS:0)|DT_SINGLELINE;
           if (Drawing->type==CLCIT_CONTACT)
             DrawTextSmiley(hdcMem, p_rect, text_size, pdnce->szThirdLineText, lstrlen(pdnce->szThirdLineText), pdnce->plThirdLineText, uTextFormat, dat->text_resize_smileys);
           break;
@@ -2463,7 +2463,7 @@ void InternalPaintRowItems(HWND hwnd, HDC hdcMem, struct ClcData *dat, struct Cl
       }
 
       // Draw text
-      uTextFormat = uTextFormat | DT_END_ELLIPSIS;
+      uTextFormat = uTextFormat | (gl_TrimText?DT_END_ELLIPSIS:0);
 
       switch (Drawing->type)
       {

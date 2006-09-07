@@ -1045,6 +1045,9 @@
 				RelativePath=".\res\addgoupp.ico">
 			</File>
 			<File
+				RelativePath=".\res\AlwaysVis.ico">
+			</File>
+			<File
 				RelativePath=".\res\away.ico">
 			</File>
 			<File
@@ -1055,6 +1058,9 @@
 			</File>
 			<File
 				RelativePath=".\res\chat.ico">
+			</File>
+			<File
+				RelativePath=".\res\Chatchannel.ico">
 			</File>
 			<File
 				RelativePath=".\res\delete.ico">
@@ -1081,7 +1087,40 @@
 				RelativePath=".\res\invisible.ico">
 			</File>
 			<File
+				RelativePath=".\res\listening_to.ico">
+			</File>
+			<File
 				RelativePath=".\res\lunch.ico">
+			</File>
+			<File
+				RelativePath=".\res\MicroAway.ico">
+			</File>
+			<File
+				RelativePath=".\res\MicroChat.ico">
+			</File>
+			<File
+				RelativePath=".\res\MicroDnd.ico">
+			</File>
+			<File
+				RelativePath=".\res\MicroInvisible.ico">
+			</File>
+			<File
+				RelativePath=".\res\MicroLunch.ico">
+			</File>
+			<File
+				RelativePath=".\res\MicroNa.ico">
+			</File>
+			<File
+				RelativePath=".\res\MicroOccupied.ico">
+			</File>
+			<File
+				RelativePath=".\res\MicroOffline.ico">
+			</File>
+			<File
+				RelativePath=".\res\MicroPhone.ico">
+			</File>
+			<File
+				RelativePath=".\res\Miranda.ico">
 			</File>
 			<File
 				RelativePath=".\res\NA.ico">
@@ -1097,6 +1136,9 @@
 			</File>
 			<File
 				RelativePath=".\res\neo_meta_move.cur">
+			</File>
+			<File
+				RelativePath=".\res\NeverVis.ico">
 			</File>
 			<File
 				RelativePath=".\res\occupied.ico">
@@ -1126,6 +1168,12 @@
 				RelativePath=".\res\sms.ico">
 			</File>
 		</Filter>
+		<File
+			RelativePath=".\res\Back.tga">
+		</File>
+		<File
+			RelativePath=".\res\skin.msf">
+		</File>
 	</Files>
 	<Globals>
 	</Globals>

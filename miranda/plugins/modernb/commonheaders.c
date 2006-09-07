@@ -3,7 +3,7 @@
 
 #define SAFE_PTR(a) a?(IsBadReadPtr(a,1)?a=NULL:a):a
 #define SAFE_STR(a) a?a:""
-
+BYTE gl_TrimText=1;
 
 
 int mir_realloc_proxy(void *ptr,int size)

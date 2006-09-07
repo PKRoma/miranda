@@ -554,6 +554,7 @@ void LoadCLCOptions(HWND hwnd, struct ClcData *dat)
 	// First line
 	dat->first_line_draw_smileys = DBGetContactSettingByte(NULL,"CList","FirstLineDrawSmileys",1);
 	dat->first_line_append_nick = DBGetContactSettingByte(NULL,"CList","FirstLineAppendNick",0);
+    gl_TrimText=DBGetContactSettingByte(NULL,"CList","TrimText",1);
 
 	// Second line
 	if (pcli->hwndContactTree == hwnd || pcli->hwndContactTree==NULL)

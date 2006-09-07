@@ -287,3 +287,4 @@ extern HANDLE hFillFontListThread;
 #define STATE_EXITING 1
 extern BYTE g_STATE;
 #define MirandaExiting() (g_STATE==STATE_EXITING)
+extern BYTE gl_TrimText;

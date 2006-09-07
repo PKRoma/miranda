@@ -838,6 +838,8 @@
 #define IDC_DRAW_SMILEYS_ON_FIRST_LINE2 1828
 #define IDC_APPEND_NICK                 1828
 #define IDC_DRAW_SMILEYS                1829
+#define IDC_APPEND_NICK2                1829
+#define IDC_TRIM_TEXT                   1829
 #define IDC_EMPTY                       1830
 #define IDC_NICKNAME                    1831
 #define IDC_STATUS_MESSAGE              1832
@@ -845,7 +847,7 @@
 #define IDC_DRAW_SMILEYS2               1834
 #define IDC_SHOW                        1834
 #define IDC_CONTACT_TIME                1835
-#define IDC_LISTENING_TO         1836
+#define IDC_LISTENING_TO                1836
 #define IDC_STATIC_PIXELS               1837
 #define IDC_STATIC_TEXT                 1838
 #define IDC_AVATAR_BORDER_COLOR_L       1839
