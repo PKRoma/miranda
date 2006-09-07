@@ -286,5 +286,5 @@ extern HANDLE hFillFontListThread;
 #define STATE_NORMAL 0
 #define STATE_EXITING 1
 extern BYTE g_STATE;
-#define MirandaExiting() (g_STATE==STATE_EXITING)
+#define MirandaExiting() ((g_STATE==STATE_EXITING) || Miranda_Terminated())
 extern BYTE gl_TrimText;

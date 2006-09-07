@@ -264,9 +264,9 @@ BOOL TransparentFlag=FALSE;// TransparentFlag
 
 void DestroyThreads()
 {
-    while (hAskStatusMessageThread || hGetTextThread || hSmoothAnimationThread || hFillFontListThread)
+    while (hAskStatusMessageThread || hGetTextThread || hSmoothAnimationThread || hFillFontListThread ||Miranda_Terminated())
     {
-        Sleep(0);
+        SleepEx(0,TRUE);
     }
  //   TerminateThread(hAskStatusMessageThread,0);
  //   TerminateThread(hGetTextThread,0);
@@ -843,7 +843,7 @@ HICON LoadIconFromExternalFile(char *filename,int i,boolean UseLibrary,boolean r
 			sid.pszDescription=Description;
 			sid.pszDefaultFile=szMyPath;
 			sid.iDefaultIndex=internalidx;
-			//CallService(MS_SKIN2_ADDICON, 0, (LPARAM)&sid);
+			CallService(MS_SKIN2_ADDICON, 0, (LPARAM)&sid);
 		}
 		return ((HICON)CallService(MS_SKIN2_GETICON, 0, (LPARAM)IconName));
 	}
@@ -897,7 +897,7 @@ int GetConnectingIconService(WPARAM wParam,LPARAM lParam)
 		//		hIcon=GetConnectingIconForProto("Global",b);
 		//	else
 			if (pt->IconsList)
-				hIcon=ImageList_GetIcon(pt->IconsList,b,ILD_NORMAL);
+				hIcon=mod_ImageList_GetIcon(pt->IconsList,b,ILD_NORMAL);
 			else
 				hIcon=NULL;
 				//hIcon=GetConnectingIconForProto(szProto,b);
@@ -2411,7 +2411,6 @@ LRESULT CALLBACK cli_ContactListWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPAR
             DestroyThreads(); //stop all my threads            
 			if (state==SETTING_STATE_NORMAL){ShowWindowNew(hwnd,SW_HIDE);};				
 			if(hSettingChangedHook!=0){UnhookEvent(hSettingChangedHook);};
-            
 			TrayIconDestroy(hwnd);	
 			ANIMATION_IS_IN_PROGRESS=0;  		
 			CallService(MS_CLIST_FRAMES_REMOVEFRAME,(WPARAM)hFrameContactTree,(LPARAM)0);		
@@ -2430,15 +2429,7 @@ LRESULT CALLBACK cli_ContactListWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPAR
 						DBWriteContactSettingDword(NULL,"CList","Height",r.bottom-r.top);
 					}
 			}
-            /*{
-               UninitCustomMenus();
-	           UnloadAvatarOverlayIcon();
-	           UninitSkinHotKeys();
-	           UnhookEvent(gl_event_hSkinLoaded);
-	           UnhookAll();
-            }
 			UnLoadCLUIFramesModule();	
-            */
 			pcli->hwndStatus=NULL;
 			ImageList_Destroy(himlMirandaIcon);
 			DBWriteContactSettingByte(NULL,"CList","State",(BYTE)state);
@@ -2446,8 +2437,8 @@ LRESULT CALLBACK cli_ContactListWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPAR
 			FreeLibrary(hUserDll);
 			pcli->hwndContactList=NULL;
 			pcli->hwndStatus=NULL;
-			PostQuitMessage(0);	
-            //UnhookAll();
+			PostQuitMessage(0);
+			UnhookAll();
 			return 0;
 	}	}
 
