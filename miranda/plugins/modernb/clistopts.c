@@ -771,11 +771,13 @@ static BOOL CALLBACK DlgProcItemSecondLineOpts(HWND hwndDlg, UINT msg, WPARAM wP
 			CheckDlgButton(hwndDlg, IDC_STATUS, radio == TEXT_STATUS ? BST_CHECKED : BST_UNCHECKED );
 			CheckDlgButton(hwndDlg, IDC_NICKNAME, radio == TEXT_NICKNAME ? BST_CHECKED : BST_UNCHECKED );
 			CheckDlgButton(hwndDlg, IDC_STATUS_MESSAGE, radio == TEXT_STATUS_MESSAGE ? BST_CHECKED : BST_UNCHECKED );
+			CheckDlgButton(hwndDlg, IDC_LISTENING_TO, radio == TEXT_LISTENING_TO ? BST_CHECKED : BST_UNCHECKED );
 			CheckDlgButton(hwndDlg, IDC_CONTACT_TIME, radio == TEXT_CONTACT_TIME ? BST_CHECKED : BST_UNCHECKED );
 			CheckDlgButton(hwndDlg, IDC_TEXT, radio == TEXT_TEXT ? BST_CHECKED : BST_UNCHECKED );
 
 			CheckDlgButton(hwndDlg, IDC_XSTATUS_HAS_PRIORITY, DBGetContactSettingByte(NULL,"CList","SecondLineXStatusHasPriority",1) == 1 ? BST_CHECKED : BST_UNCHECKED);
 			CheckDlgButton(hwndDlg, IDC_SHOW_STATUS_IF_NOAWAY, DBGetContactSettingByte(NULL,"CList","SecondLineShowStatusIfNoAway",0) == 1 ? BST_CHECKED : BST_UNCHECKED);
+			CheckDlgButton(hwndDlg, IDC_SHOW_LISTENING_IF_NOAWAY, DBGetContactSettingByte(NULL,"CList","SecondLineShowListeningIfNoAway",1) == 1 ? BST_CHECKED : BST_UNCHECKED);
 			CheckDlgButton(hwndDlg, IDC_USE_NAME_AND_MESSAGE, DBGetContactSettingByte(NULL,"CList","SecondLineUseNameAndMessageForXStatus",0) == 1 ? BST_CHECKED : BST_UNCHECKED);
 
 			if (!IsDlgButtonChecked(hwndDlg,IDC_SHOW))
@@ -787,6 +789,7 @@ static BOOL CALLBACK DlgProcItemSecondLineOpts(HWND hwndDlg, UINT msg, WPARAM wP
 				EnableWindow(GetDlgItem(hwndDlg,IDC_STATUS),FALSE);
 				EnableWindow(GetDlgItem(hwndDlg,IDC_NICKNAME),FALSE);
 				EnableWindow(GetDlgItem(hwndDlg,IDC_STATUS_MESSAGE),FALSE);
+				EnableWindow(GetDlgItem(hwndDlg,IDC_LISTENING_TO),FALSE);
 				EnableWindow(GetDlgItem(hwndDlg,IDC_CONTACT_TIME),FALSE);
 				EnableWindow(GetDlgItem(hwndDlg,IDC_TEXT),FALSE);
 				EnableWindow(GetDlgItem(hwndDlg,IDC_VARIABLE_TEXT),FALSE);
@@ -795,6 +798,7 @@ static BOOL CALLBACK DlgProcItemSecondLineOpts(HWND hwndDlg, UINT msg, WPARAM wP
 				EnableWindow(GetDlgItem(hwndDlg,IDC_STATIC_TEXT),FALSE);
 				EnableWindow(GetDlgItem(hwndDlg,IDC_VARIABLES_L),FALSE);
 				EnableWindow(GetDlgItem(hwndDlg,IDC_SHOW_STATUS_IF_NOAWAY),FALSE);
+				EnableWindow(GetDlgItem(hwndDlg,IDC_SHOW_LISTENING_IF_NOAWAY),FALSE);
 				EnableWindow(GetDlgItem(hwndDlg,IDC_XSTATUS_HAS_PRIORITY),FALSE);
 				EnableWindow(GetDlgItem(hwndDlg,IDC_USE_NAME_AND_MESSAGE),FALSE);
 			}
@@ -811,7 +815,10 @@ static BOOL CALLBACK DlgProcItemSecondLineOpts(HWND hwndDlg, UINT msg, WPARAM wP
 					EnableWindow(GetDlgItem(hwndDlg,IDC_USE_NAME_AND_MESSAGE),FALSE);
 				}
 				if (!IsDlgButtonChecked(hwndDlg,IDC_STATUS_MESSAGE))
+				{
 					EnableWindow(GetDlgItem(hwndDlg,IDC_SHOW_STATUS_IF_NOAWAY),FALSE);
+					EnableWindow(GetDlgItem(hwndDlg,IDC_SHOW_LISTENING_IF_NOAWAY),FALSE);
+				}
 			}
 
 			ShowWindowNew(GetDlgItem(hwndDlg,IDC_DRAW_SMILEYS), ServiceExists(MS_SMILEYADD_PARSE) ? SW_SHOW : SW_HIDE);
@@ -822,7 +829,7 @@ static BOOL CALLBACK DlgProcItemSecondLineOpts(HWND hwndDlg, UINT msg, WPARAM wP
 	case WM_COMMAND:
 		{
 			if (LOWORD(wParam)==IDC_TEXT || LOWORD(wParam)==IDC_STATUS || LOWORD(wParam)==IDC_NICKNAME || LOWORD(wParam)==IDC_STATUS_MESSAGE
-				 || LOWORD(wParam)==IDC_CONTACT_TIME)
+				 || LOWORD(wParam)==IDC_LISTENING_TO || LOWORD(wParam)==IDC_CONTACT_TIME)
 			{
 				EnableWindow(GetDlgItem(hwndDlg,IDC_VARIABLE_TEXT), IsDlgButtonChecked(hwndDlg,IDC_TEXT) 
 					&& IsDlgButtonChecked(hwndDlg,IDC_SHOW));
@@ -832,6 +839,8 @@ static BOOL CALLBACK DlgProcItemSecondLineOpts(HWND hwndDlg, UINT msg, WPARAM wP
 					(IsDlgButtonChecked(hwndDlg,IDC_STATUS) 
 					|| IsDlgButtonChecked(hwndDlg,IDC_STATUS_MESSAGE)));
 				EnableWindow(GetDlgItem(hwndDlg,IDC_SHOW_STATUS_IF_NOAWAY), IsDlgButtonChecked(hwndDlg,IDC_SHOW) && 
+					(IsDlgButtonChecked(hwndDlg,IDC_STATUS_MESSAGE)));
+				EnableWindow(GetDlgItem(hwndDlg,IDC_SHOW_LISTENING_IF_NOAWAY), IsDlgButtonChecked(hwndDlg,IDC_SHOW) && 
 					(IsDlgButtonChecked(hwndDlg,IDC_STATUS_MESSAGE)));
 				EnableWindow(GetDlgItem(hwndDlg,IDC_USE_NAME_AND_MESSAGE), IsDlgButtonChecked(hwndDlg,IDC_SHOW) && 
 					(IsDlgButtonChecked(hwndDlg,IDC_STATUS) 
@@ -848,6 +857,7 @@ static BOOL CALLBACK DlgProcItemSecondLineOpts(HWND hwndDlg, UINT msg, WPARAM wP
 				EnableWindow(GetDlgItem(hwndDlg,IDC_NICKNAME),enabled);
 				EnableWindow(GetDlgItem(hwndDlg,IDC_CONTACT_TIME),enabled);
 				EnableWindow(GetDlgItem(hwndDlg,IDC_STATUS_MESSAGE),enabled);
+				EnableWindow(GetDlgItem(hwndDlg,IDC_LISTENING_TO),enabled);
 				EnableWindow(GetDlgItem(hwndDlg,IDC_TEXT),enabled);
 				EnableWindow(GetDlgItem(hwndDlg,IDC_VARIABLE_TEXT),enabled && IsDlgButtonChecked(hwndDlg,IDC_TEXT));
 				EnableWindow(GetDlgItem(hwndDlg,IDC_STATIC_TOP),enabled);
@@ -859,6 +869,7 @@ static BOOL CALLBACK DlgProcItemSecondLineOpts(HWND hwndDlg, UINT msg, WPARAM wP
 				EnableWindow(GetDlgItem(hwndDlg,IDC_XSTATUS_HAS_PRIORITY), enabled && (IsDlgButtonChecked(hwndDlg,IDC_STATUS) 
 					|| IsDlgButtonChecked(hwndDlg,IDC_STATUS_MESSAGE)));
 				EnableWindow(GetDlgItem(hwndDlg,IDC_SHOW_STATUS_IF_NOAWAY), enabled && IsDlgButtonChecked(hwndDlg,IDC_STATUS_MESSAGE));
+				EnableWindow(GetDlgItem(hwndDlg,IDC_SHOW_LISTENING_IF_NOAWAY), enabled && IsDlgButtonChecked(hwndDlg,IDC_STATUS_MESSAGE));
 				EnableWindow(GetDlgItem(hwndDlg,IDC_USE_NAME_AND_MESSAGE), enabled && (IsDlgButtonChecked(hwndDlg,IDC_STATUS) 
 					|| IsDlgButtonChecked(hwndDlg,IDC_STATUS_MESSAGE)));			
 			}
@@ -892,6 +903,8 @@ static BOOL CALLBACK DlgProcItemSecondLineOpts(HWND hwndDlg, UINT msg, WPARAM wP
 								radio = TEXT_TEXT;
 							else if (IsDlgButtonChecked(hwndDlg,IDC_CONTACT_TIME))
 								radio = TEXT_CONTACT_TIME;
+							else if (IsDlgButtonChecked(hwndDlg,IDC_LISTENING_TO))
+								radio = TEXT_LISTENING_TO;
 							else
 								radio = TEXT_STATUS_MESSAGE;
 							DBWriteContactSettingWord(NULL,"CList","SecondLineType", (WORD)radio);
@@ -907,6 +920,7 @@ static BOOL CALLBACK DlgProcItemSecondLineOpts(HWND hwndDlg, UINT msg, WPARAM wP
 
 							DBWriteContactSettingByte(NULL,"CList","SecondLineXStatusHasPriority", (BYTE)IsDlgButtonChecked(hwndDlg,IDC_XSTATUS_HAS_PRIORITY));
 							DBWriteContactSettingByte(NULL,"CList","SecondLineShowStatusIfNoAway", (BYTE)IsDlgButtonChecked(hwndDlg,IDC_SHOW_STATUS_IF_NOAWAY));
+							DBWriteContactSettingByte(NULL,"CList","SecondLineShowListeningIfNoAway", (BYTE)IsDlgButtonChecked(hwndDlg,IDC_SHOW_LISTENING_IF_NOAWAY));
 							DBWriteContactSettingByte(NULL,"CList","SecondLineUseNameAndMessageForXStatus", (BYTE)IsDlgButtonChecked(hwndDlg,IDC_USE_NAME_AND_MESSAGE));
 
 							return TRUE;
@@ -954,12 +968,13 @@ static BOOL CALLBACK DlgProcItemThirdLineOpts(HWND hwndDlg, UINT msg, WPARAM wPa
 			CheckDlgButton(hwndDlg, IDC_STATUS, radio == TEXT_STATUS ? BST_CHECKED : BST_UNCHECKED );
 			CheckDlgButton(hwndDlg, IDC_NICKNAME, radio == TEXT_NICKNAME ? BST_CHECKED : BST_UNCHECKED );
 			CheckDlgButton(hwndDlg, IDC_STATUS_MESSAGE, radio == TEXT_STATUS_MESSAGE ? BST_CHECKED : BST_UNCHECKED );
+			CheckDlgButton(hwndDlg, IDC_LISTENING_TO, radio == TEXT_LISTENING_TO ? BST_CHECKED : BST_UNCHECKED );
 			CheckDlgButton(hwndDlg, IDC_CONTACT_TIME, radio == TEXT_CONTACT_TIME ? BST_CHECKED : BST_UNCHECKED );
 			CheckDlgButton(hwndDlg, IDC_TEXT, radio == TEXT_TEXT ? BST_CHECKED : BST_UNCHECKED );
 
 			CheckDlgButton(hwndDlg, IDC_XSTATUS_HAS_PRIORITY, DBGetContactSettingByte(NULL,"CList","ThirdLineXStatusHasPriority",1) == 1 ? BST_CHECKED : BST_UNCHECKED);
-
 			CheckDlgButton(hwndDlg, IDC_SHOW_STATUS_IF_NOAWAY, DBGetContactSettingByte(NULL,"CList","ThirdLineShowStatusIfNoAway",0) == 1 ? BST_CHECKED : BST_UNCHECKED);
+			CheckDlgButton(hwndDlg, IDC_SHOW_LISTENING_IF_NOAWAY, DBGetContactSettingByte(NULL,"CList","ThirdLineShowListeningIfNoAway",1) == 1 ? BST_CHECKED : BST_UNCHECKED);
 			CheckDlgButton(hwndDlg, IDC_USE_NAME_AND_MESSAGE, DBGetContactSettingByte(NULL,"CList","ThirdLineUseNameAndMessageForXStatus",0) == 1 ? BST_CHECKED : BST_UNCHECKED);
 
 			if (!IsDlgButtonChecked(hwndDlg,IDC_SHOW))
@@ -971,6 +986,7 @@ static BOOL CALLBACK DlgProcItemThirdLineOpts(HWND hwndDlg, UINT msg, WPARAM wPa
 				EnableWindow(GetDlgItem(hwndDlg,IDC_STATUS),FALSE);
 				EnableWindow(GetDlgItem(hwndDlg,IDC_NICKNAME),FALSE);
 				EnableWindow(GetDlgItem(hwndDlg,IDC_STATUS_MESSAGE),FALSE);
+				EnableWindow(GetDlgItem(hwndDlg,IDC_LISTENING_TO),FALSE);
 				EnableWindow(GetDlgItem(hwndDlg,IDC_CONTACT_TIME),FALSE);
 				EnableWindow(GetDlgItem(hwndDlg,IDC_TEXT),FALSE);
 				EnableWindow(GetDlgItem(hwndDlg,IDC_VARIABLE_TEXT),FALSE);
@@ -981,6 +997,7 @@ static BOOL CALLBACK DlgProcItemThirdLineOpts(HWND hwndDlg, UINT msg, WPARAM wPa
 				EnableWindow(GetDlgItem(hwndDlg,IDC_XSTATUS_HAS_PRIORITY),FALSE);
 				EnableWindow(GetDlgItem(hwndDlg,IDC_USE_NAME_AND_MESSAGE),FALSE);
 				EnableWindow(GetDlgItem(hwndDlg,IDC_SHOW_STATUS_IF_NOAWAY),FALSE);
+				EnableWindow(GetDlgItem(hwndDlg,IDC_SHOW_LISTENING_IF_NOAWAY),FALSE);
 			}
 			else
 			{
@@ -995,7 +1012,10 @@ static BOOL CALLBACK DlgProcItemThirdLineOpts(HWND hwndDlg, UINT msg, WPARAM wPa
 					EnableWindow(GetDlgItem(hwndDlg,IDC_USE_NAME_AND_MESSAGE),FALSE);
 				}
 				if (!IsDlgButtonChecked(hwndDlg,IDC_STATUS_MESSAGE))
+				{
 					EnableWindow(GetDlgItem(hwndDlg,IDC_SHOW_STATUS_IF_NOAWAY),FALSE);
+					EnableWindow(GetDlgItem(hwndDlg,IDC_SHOW_LISTENING_IF_NOAWAY),FALSE);
+				}
 			}
 
 			ShowWindowNew(GetDlgItem(hwndDlg,IDC_DRAW_SMILEYS), ServiceExists(MS_SMILEYADD_PARSE) ? SW_SHOW : SW_HIDE);
@@ -1006,7 +1026,7 @@ static BOOL CALLBACK DlgProcItemThirdLineOpts(HWND hwndDlg, UINT msg, WPARAM wPa
 	case WM_COMMAND:
 		{
 			if (LOWORD(wParam)==IDC_TEXT || LOWORD(wParam)==IDC_STATUS || LOWORD(wParam)==IDC_NICKNAME || LOWORD(wParam)==IDC_STATUS_MESSAGE
-				 || LOWORD(wParam)==IDC_CONTACT_TIME)
+				|| LOWORD(wParam)==IDC_LISTENING_TO || LOWORD(wParam)==IDC_CONTACT_TIME)
 			{
 				EnableWindow(GetDlgItem(hwndDlg,IDC_VARIABLE_TEXT), IsDlgButtonChecked(hwndDlg,IDC_TEXT) 
 					&& IsDlgButtonChecked(hwndDlg,IDC_SHOW));
@@ -1017,6 +1037,7 @@ static BOOL CALLBACK DlgProcItemThirdLineOpts(HWND hwndDlg, UINT msg, WPARAM wPa
 					|| IsDlgButtonChecked(hwndDlg,IDC_STATUS_MESSAGE)));
 				EnableWindow(GetDlgItem(hwndDlg,IDC_USE_NAME_AND_MESSAGE), IsDlgButtonChecked(hwndDlg,IDC_SHOW) && (IsDlgButtonChecked(hwndDlg,IDC_STATUS) || IsDlgButtonChecked(hwndDlg,IDC_STATUS_MESSAGE)));
 				EnableWindow(GetDlgItem(hwndDlg,IDC_SHOW_STATUS_IF_NOAWAY), IsDlgButtonChecked(hwndDlg,IDC_SHOW) && (IsDlgButtonChecked(hwndDlg,IDC_STATUS_MESSAGE)));																	
+				EnableWindow(GetDlgItem(hwndDlg,IDC_SHOW_LISTENING_IF_NOAWAY), IsDlgButtonChecked(hwndDlg,IDC_SHOW) && (IsDlgButtonChecked(hwndDlg,IDC_STATUS_MESSAGE)));																	
 			}
 			else if (LOWORD(wParam)==IDC_SHOW)
 			{
@@ -1028,6 +1049,7 @@ static BOOL CALLBACK DlgProcItemThirdLineOpts(HWND hwndDlg, UINT msg, WPARAM wPa
 				EnableWindow(GetDlgItem(hwndDlg,IDC_STATUS),enabled);
 				EnableWindow(GetDlgItem(hwndDlg,IDC_NICKNAME),enabled);
 				EnableWindow(GetDlgItem(hwndDlg,IDC_STATUS_MESSAGE),enabled);
+				EnableWindow(GetDlgItem(hwndDlg,IDC_LISTENING_TO),enabled);
 				EnableWindow(GetDlgItem(hwndDlg,IDC_CONTACT_TIME),enabled);
 				EnableWindow(GetDlgItem(hwndDlg,IDC_TEXT),enabled);
 				EnableWindow(GetDlgItem(hwndDlg,IDC_VARIABLE_TEXT),enabled && IsDlgButtonChecked(hwndDlg,IDC_TEXT));
@@ -1042,6 +1064,7 @@ static BOOL CALLBACK DlgProcItemThirdLineOpts(HWND hwndDlg, UINT msg, WPARAM wPa
 				EnableWindow(GetDlgItem(hwndDlg,IDC_USE_NAME_AND_MESSAGE), enabled && (IsDlgButtonChecked(hwndDlg,IDC_STATUS) 
 					|| IsDlgButtonChecked(hwndDlg,IDC_STATUS_MESSAGE)));
 				EnableWindow(GetDlgItem(hwndDlg,IDC_SHOW_STATUS_IF_NOAWAY), enabled && IsDlgButtonChecked(hwndDlg,IDC_STATUS_MESSAGE));
+				EnableWindow(GetDlgItem(hwndDlg,IDC_SHOW_LISTENING_IF_NOAWAY), enabled && IsDlgButtonChecked(hwndDlg,IDC_STATUS_MESSAGE));
 			}
 
 			if (LOWORD(wParam)==IDC_TOP_SPACE && HIWORD(wParam) != EN_CHANGE || (HWND)lParam != GetFocus()) return 0; // dont make apply enabled during buddy set crap
@@ -1073,6 +1096,8 @@ static BOOL CALLBACK DlgProcItemThirdLineOpts(HWND hwndDlg, UINT msg, WPARAM wPa
 								radio = TEXT_TEXT;
 							else if (IsDlgButtonChecked(hwndDlg,IDC_CONTACT_TIME))
 								radio = TEXT_CONTACT_TIME;
+							else if (IsDlgButtonChecked(hwndDlg,IDC_LISTENING_TO))
+								radio = TEXT_LISTENING_TO;
 							else
 								radio = TEXT_STATUS_MESSAGE;
 							DBWriteContactSettingWord(NULL,"CList","ThirdLineType", (WORD)radio);
@@ -1089,6 +1114,7 @@ static BOOL CALLBACK DlgProcItemThirdLineOpts(HWND hwndDlg, UINT msg, WPARAM wPa
 							DBWriteContactSettingByte(NULL,"CList","ThirdLineXStatusHasPriority", (BYTE)IsDlgButtonChecked(hwndDlg,IDC_XSTATUS_HAS_PRIORITY));
 							DBWriteContactSettingByte(NULL,"CList","ThirdLineUseNameAndMessageForXStatus", (BYTE)IsDlgButtonChecked(hwndDlg,IDC_USE_NAME_AND_MESSAGE));
 							DBWriteContactSettingByte(NULL,"CList","ThirdLineShowStatusIfNoAway", (BYTE)IsDlgButtonChecked(hwndDlg,IDC_SHOW_STATUS_IF_NOAWAY));
+							DBWriteContactSettingByte(NULL,"CList","ThirdLineShowListeningIfNoAway", (BYTE)IsDlgButtonChecked(hwndDlg,IDC_SHOW_LISTENING_IF_NOAWAY));
 
 							return TRUE;
 						}
@@ -1178,7 +1204,7 @@ static void ChangeTab(HWND hwndDlg, WndItemsData *data, int sel)
 	rc_item.left = rc_tab.left + (rc_tab.right - rc_tab.left - rc_item.right) / 2;
 
 	rc_item.bottom -= rc_item.top;	// height
-	rc_item.top = rc_tab.top + (rc_tab.bottom - rc_tab.top - rc_item.bottom) / 2;
+	rc_item.top = rc_tab.top; // + (rc_tab.bottom - rc_tab.top - rc_item.bottom) / 2;
 
 	// Set pos
 	SetWindowPos(data->items[sel].hwnd, HWND_TOP, rc_item.left, rc_item.top, rc_item.right,

@@ -578,6 +578,7 @@ void LoadCLCOptions(HWND hwnd, struct ClcData *dat)
 		}
 		dat->second_line_xstatus_has_priority = DBGetContactSettingByte(NULL,"CList","SecondLineXStatusHasPriority",1);
 		dat->second_line_show_status_if_no_away=DBGetContactSettingByte(NULL,"CList","SecondLineShowStatusIfNoAway",0);
+		dat->second_line_show_listening_if_no_away=DBGetContactSettingByte(NULL,"CList","SecondLineShowListeningIfNoAway",1);
 		dat->second_line_use_name_and_message_for_xstatus = DBGetContactSettingByte(NULL,"CList","SecondLineUseNameAndMessageForXStatus",0);
 	}
 	else
@@ -615,6 +616,7 @@ void LoadCLCOptions(HWND hwnd, struct ClcData *dat)
 		}
 		dat->third_line_xstatus_has_priority = DBGetContactSettingByte(NULL,"CList","ThirdLineXStatusHasPriority",1);
 		dat->third_line_show_status_if_no_away=DBGetContactSettingByte(NULL,"CList","ThirdLineShowStatusIfNoAway",0);
+		dat->third_line_show_listening_if_no_away=DBGetContactSettingByte(NULL,"CList","ThirdLineShowListeningIfNoAway",1);
 		dat->third_line_use_name_and_message_for_xstatus = DBGetContactSettingByte(NULL,"CList","ThirdLineUseNameAndMessageForXStatus",0);
 	}
 	else

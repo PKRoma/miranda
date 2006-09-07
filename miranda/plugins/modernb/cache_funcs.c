@@ -775,7 +775,9 @@ int GetStatusMessage(TCHAR *text, int text_size,  PDNCE pdnce, BOOL xstatus_has_
 /*
  *	Get the text for specified lines
  */
-int Cache_GetLineText(PDNCE pdnce, int type, LPTSTR text, int text_size, TCHAR *variable_text, BOOL xstatus_has_priority, BOOL show_status_if_no_away, BOOL use_name_and_message_for_xstatus, BOOL pdnce_time_show_only_if_different)
+int Cache_GetLineText(PDNCE pdnce, int type, LPTSTR text, int text_size, TCHAR *variable_text, BOOL xstatus_has_priority, 
+					  BOOL show_status_if_no_away, BOOL show_listening_if_no_away, BOOL use_name_and_message_for_xstatus, 
+					  BOOL pdnce_time_show_only_if_different)
 {
 	text[0] = '\0';
 	switch(type)
@@ -847,13 +849,18 @@ int Cache_GetLineText(PDNCE pdnce, int type, LPTSTR text, int text_size, TCHAR *
 
 			if (text[0] == '\0')
 			{
-				Cache_GetLineText(pdnce, TEXT_LISTENING_TO, text, text_size, variable_text, xstatus_has_priority,0, use_name_and_message_for_xstatus, pdnce_time_show_only_if_different);
-				if (text[0] != '\0')
-					return TEXT_LISTENING_TO;
+				if (show_listening_if_no_away)
+				{
+					Cache_GetLineText(pdnce, TEXT_LISTENING_TO, text, text_size, variable_text, xstatus_has_priority, 0, 0, use_name_and_message_for_xstatus, pdnce_time_show_only_if_different);
+					if (text[0] != '\0')
+						return TEXT_LISTENING_TO;
+				}
 
 				if (show_status_if_no_away)
+				{
 					//re-request status if no away
-					return Cache_GetLineText(pdnce, TEXT_STATUS, text, text_size, variable_text, xstatus_has_priority,0, use_name_and_message_for_xstatus, pdnce_time_show_only_if_different);		
+					return Cache_GetLineText(pdnce, TEXT_STATUS, text, text_size, variable_text, xstatus_has_priority, 0, 0, use_name_and_message_for_xstatus, pdnce_time_show_only_if_different);		
+				}
 			}
 			return TEXT_STATUS_MESSAGE;
 		}
@@ -939,7 +946,7 @@ void Cache_GetSecondLineText(struct ClcData *dat, PDNCE pdnce)
   int type = TEXT_EMPTY;
   if (dat->second_line_show)	
 	type = Cache_GetLineText(pdnce, dat->second_line_type, (TCHAR*)Text, SIZEOF(Text), dat->second_line_text,
-		dat->second_line_xstatus_has_priority,dat->second_line_show_status_if_no_away,
+		dat->second_line_xstatus_has_priority,dat->second_line_show_status_if_no_away,dat->second_line_show_listening_if_no_away,
 		dat->second_line_use_name_and_message_for_xstatus, dat->contact_time_show_only_if_different);
  
   LockCacheItem(hContact, __FILE__,__LINE__);
@@ -975,7 +982,7 @@ void Cache_GetThirdLineText(struct ClcData *dat, PDNCE pdnce)
   int type = TEXT_EMPTY;
   if (dat->third_line_show)
 	type = Cache_GetLineText(pdnce, dat->third_line_type,(TCHAR*)Text, SIZEOF(Text), dat->third_line_text,
-		dat->third_line_xstatus_has_priority,dat->third_line_show_status_if_no_away,
+		dat->third_line_xstatus_has_priority,dat->third_line_show_status_if_no_away,dat->third_line_show_listening_if_no_away,
 		dat->third_line_use_name_and_message_for_xstatus, dat->contact_time_show_only_if_different);
   
   LockCacheItem(hContact, __FILE__,__LINE__);
@@ -987,7 +994,7 @@ void Cache_GetThirdLineText(struct ClcData *dat, PDNCE pdnce)
   Text[120-MAXEXTRACOLUMNS-1]='\0';
   if (pdnce->szThirdLineText) 
   {
-    if (type == TEXT_LISTENING_TO)
+    if (type == TEXT_LISTENING_TO && pdnce->szThirdLineText[0] != _T('\0'))
 	{
       Cache_AddListeningToIcon(dat, pdnce, pdnce->szThirdLineText, lstrlen(pdnce->szThirdLineText), &pdnce->plThirdLineText, 
 		&pdnce->iThirdLineMaxSmileyHeight,dat->third_line_draw_smileys);

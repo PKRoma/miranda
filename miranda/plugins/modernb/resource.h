@@ -728,6 +728,8 @@
 #define IDC_CHECK_ALPHA                 1764
 #define IDC_AVATAR_DRAW_BORDER          1764
 #define IDC_OFFSETICON2                 1764
+#define IDC_SHOW_STATUS_IF_NOAWAY2      1764
+#define IDC_SHOW_LISTENING_IF_NOAWAY    1764
 #define IDC_COMBO1                      1765
 #define IDC_SUBINDENTSPIN               1765
 #define IDC_HIDEMETHOD                  1765
@@ -842,8 +844,8 @@
 #define IDC_VARIABLE_TEXT               1833
 #define IDC_DRAW_SMILEYS2               1834
 #define IDC_SHOW                        1834
-#define IDC_STATUS_MESSAGE2             1835
 #define IDC_CONTACT_TIME                1835
+#define IDC_LISTENING_TO         1836
 #define IDC_STATIC_PIXELS               1837
 #define IDC_STATIC_TEXT                 1838
 #define IDC_AVATAR_BORDER_COLOR_L       1839

@@ -797,7 +797,7 @@ static void SkinChangeTab(HWND hwndDlg, WndItemsData *data, int sel)
 	rc_item.left = rc_tab.left + (rc_tab.right - rc_tab.left - rc_item.right) / 2;
 
 	rc_item.bottom -= rc_item.top;	// height
-	rc_item.top = rc_tab.top + (rc_tab.bottom - rc_tab.top - rc_item.bottom) / 2;
+	rc_item.top = rc_tab.top; // + (rc_tab.bottom - rc_tab.top - rc_item.bottom) / 2;
 
 	// Set pos
 	SetWindowPos(data->items[sel].hwnd, HWND_TOP, rc_item.left, rc_item.top, rc_item.right,

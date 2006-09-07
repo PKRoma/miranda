@@ -402,6 +402,7 @@ struct ClcData {
 	TCHAR second_line_text[TEXT_TEXT_MAX_LENGTH];
 	BOOL second_line_xstatus_has_priority;
 	BOOL second_line_show_status_if_no_away;
+	BOOL second_line_show_listening_if_no_away;
 	BOOL second_line_use_name_and_message_for_xstatus;
 
 	// Third line
@@ -412,6 +413,7 @@ struct ClcData {
 	TCHAR third_line_text[TEXT_TEXT_MAX_LENGTH];
 	BOOL third_line_xstatus_has_priority;
 	BOOL third_line_show_status_if_no_away;
+	BOOL third_line_show_listening_if_no_away;
 	BOOL third_line_use_name_and_message_for_xstatus;
 	struct ClcModernFontInfo fontModernInfo[FONTID_MODERN_MAX+1];
 	HWND hWnd;

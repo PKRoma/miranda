@@ -55,12 +55,52 @@ END
 #undef APSTUDIO_READONLY_SYMBOLS
 
 /////////////////////////////////////////////////////////////////////////////
+// Russian resources
+
+#if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_RUS)
+#ifdef _WIN32
+LANGUAGE LANG_RUSSIAN, SUBLANG_DEFAULT
+#pragma code_page(1251)
+#endif //_WIN32
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Icon
+//
+
+// Icon with lowest ID value placed first to ensure application icon
+// remains consistent on all systems.
+IDI_BLANK               ICON                    "res\\blank.ico"
+IDI_MIRANDA             ICON                    "res\\Miranda.ico"
+IDI_ALWAYSVIS           ICON                    "res\\AlwaysVis.ico"
+IDI_NEVERVIS            ICON                    "res\\NeverVis.ico"
+IDI_DELETE              ICON                    "res\\delete.ico"
+IDI_CHAT                ICON                    "res\\Chatchannel.ico"
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// TGA
+//
+
+IDR_TGA_DEFAULT_SKIN    TGA                     "res\\Back.tga"
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// MSF
+//
+
+IDR_MSF_DEFAULT_SKIN    MSF                     "res\\skin.msf"
+#endif    // Russian resources
+/////////////////////////////////////////////////////////////////////////////
+
+
+/////////////////////////////////////////////////////////////////////////////
 // Neutral resources
 
 #if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_NEU)
 #ifdef _WIN32
 LANGUAGE LANG_NEUTRAL, SUBLANG_NEUTRAL
-#pragma code_page(1251)
+#pragma code_page(1252)
 #endif //_WIN32
 
 /////////////////////////////////////////////////////////////////////////////
@@ -230,6 +270,14 @@ BEGIN
                     WS_DISABLED
 END
 
+IDD_OPT_ITEMS DIALOGEX 0, 0, 315, 243
+STYLE DS_SETFONT | DS_FIXEDSYS | DS_CENTER | WS_CHILD
+EXSTYLE WS_EX_CONTROLPARENT
+FONT 8, "MS Shell Dlg", 400, 0, 0x1
+BEGIN
+    CONTROL         "",IDC_TAB,"SysTabControl32",0x0,0,0,315,243
+END
+
 IDD_SKIN_TAB DIALOGEX 0, 0, 315, 243
 STYLE DS_SETFONT | DS_FIXEDSYS | DS_CENTER | WS_CHILD
 EXSTYLE WS_EX_CONTROLPARENT
@@ -280,46 +328,6 @@ END
 #endif    // APSTUDIO_INVOKED
 
 #endif    // Neutral resources
-/////////////////////////////////////////////////////////////////////////////
-
-
-/////////////////////////////////////////////////////////////////////////////
-// Russian resources
-
-#if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_RUS)
-#ifdef _WIN32
-LANGUAGE LANG_RUSSIAN, SUBLANG_DEFAULT
-#pragma code_page(1251)
-#endif //_WIN32
-
-/////////////////////////////////////////////////////////////////////////////
-//
-// Icon
-//
-
-// Icon with lowest ID value placed first to ensure application icon
-// remains consistent on all systems.
-IDI_BLANK               ICON                    "res\\blank.ico"
-IDI_MIRANDA             ICON                    "res\\Miranda.ico"
-IDI_ALWAYSVIS           ICON                    "res\\AlwaysVis.ico"
-IDI_NEVERVIS            ICON                    "res\\NeverVis.ico"
-IDI_DELETE              ICON                    "res\\delete.ico"
-IDI_CHAT                ICON                    "res\\Chatchannel.ico"
-
-/////////////////////////////////////////////////////////////////////////////
-//
-// TGA
-//
-
-IDR_TGA_DEFAULT_SKIN    TGA                     "res\\Back.tga"
-
-/////////////////////////////////////////////////////////////////////////////
-//
-// MSF
-//
-
-IDR_MSF_DEFAULT_SKIN    MSF                     "res\\skin.msf"
-#endif    // Russian resources
 /////////////////////////////////////////////////////////////////////////////
 
 
@@ -1280,14 +1288,6 @@ LANGUAGE LANG_ENGLISH, SUBLANG_ENGLISH_CAN
 // Dialog
 //
 
-IDD_OPT_ITEMS DIALOGEX 0, 0, 310, 249
-STYLE DS_SETFONT | DS_FIXEDSYS | DS_CENTER | WS_CHILD
-EXSTYLE WS_EX_CONTROLPARENT
-FONT 8, "MS Shell Dlg", 400, 0, 0x1
-BEGIN
-    CONTROL         "",IDC_TAB,"SysTabControl32",0x0,0,6,310,243
-END
-
 IDD_OPT_ITEM_ROW DIALOGEX 0, 0, 178, 183
 STYLE DS_SETFONT | DS_FIXEDSYS | DS_CENTER | WS_CHILD
 EXSTYLE WS_EX_CONTROLPARENT
@@ -1470,84 +1470,96 @@ BEGIN
                     114,246,8
 END
 
-IDD_OPT_ITEM_SECOND_LINE DIALOGEX 0, 0, 256, 206
+IDD_OPT_ITEM_SECOND_LINE DIALOGEX 0, 0, 256, 221
 STYLE DS_SETFONT | DS_FIXEDSYS | WS_CHILD
 EXSTYLE WS_EX_CONTROLPARENT
 FONT 8, "MS Shell Dlg", 400, 0, 0x1
 BEGIN
+    CONTROL         "Show second line",IDC_SHOW,"Button",BS_AUTOCHECKBOX | 
+                    WS_TABSTOP,7,7,242,8
     LTEXT           "Top space:",IDC_STATIC_TOP,7,28,40,8
-    LTEXT           "pixels",IDC_STATIC_PIXELS,96,28,18,8
     EDITTEXT        IDC_TOP_SPACE,50,26,35,12,ES_NUMBER
     CONTROL         "",IDC_TOP_SPACE_SPIN,"msctls_updown32",UDS_SETBUDDYINT | 
                     UDS_ALIGNRIGHT | UDS_ARROWKEYS | UDS_NOTHOUSANDS | 
                     UDS_HOTTRACK,84,26,11,12
+    LTEXT           "pixels",IDC_STATIC_PIXELS,96,28,18,8
     CONTROL         "Draw smileys on second line",IDC_DRAW_SMILEYS,"Button",
                     BS_AUTOCHECKBOX | WS_TABSTOP,7,43,242,8
+    LTEXT           "Text:",IDC_STATIC_TEXT,7,58,83,9
     CONTROL         "Status",IDC_STATUS,"Button",BS_AUTORADIOBUTTON,18,70,
                     118,8
     CONTROL         "Nickname",IDC_NICKNAME,"Button",BS_AUTORADIOBUTTON,18,
                     81,118,8
     CONTROL         "Away Message",IDC_STATUS_MESSAGE,"Button",
                     BS_AUTORADIOBUTTON,18,92,118,8
-    CONTROL         "Contact time",IDC_CONTACT_TIME,"Button",
+    CONTROL         "Listening to",IDC_LISTENING_TO,"Button",
                     BS_AUTORADIOBUTTON,18,103,118,8
-    CONTROL         "Text:",IDC_TEXT,"Button",BS_AUTORADIOBUTTON,18,113,118,
+    CONTROL         "Contact time",IDC_CONTACT_TIME,"Button",
+                    BS_AUTORADIOBUTTON,18,114,118,8
+    CONTROL         "Text:",IDC_TEXT,"Button",BS_AUTORADIOBUTTON,18,125,118,
                     8
-    EDITTEXT        IDC_VARIABLE_TEXT,32,126,217,73,ES_MULTILINE | 
+    EDITTEXT        IDC_VARIABLE_TEXT,32,141,217,73,ES_MULTILINE | 
                     ES_AUTOVSCROLL | ES_WANTRETURN | WS_VSCROLL
-    CONTROL         "Show second line",IDC_SHOW,"Button",BS_AUTOCHECKBOX | 
-                    WS_TABSTOP,7,7,115,8
-    LTEXT           "Text:",IDC_STATIC_TEXT,7,58,83,9
-    CONTROL         "XStatus has priority",IDC_XSTATUS_HAS_PRIORITY,"Button",
-                    BS_AUTOCHECKBOX | WS_TABSTOP,150,91,99,12
-    RTEXT           "(Variables will be replaced)",IDC_VARIABLES_L,141,116,
-                    108,8
-    CONTROL         "Use 'XStatus: XMessage'",IDC_USE_NAME_AND_MESSAGE,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,150,102,99,12
     CONTROL         "Show status if there isn't away message",
                     IDC_SHOW_STATUS_IF_NOAWAY,"Button",BS_AUTOCHECKBOX | 
-                    BS_LEFT | BS_TOP | BS_MULTILINE | WS_TABSTOP,150,73,99,
+                    BS_LEFT | BS_TOP | BS_MULTILINE | WS_TABSTOP,150,67,99,
                     18
+    CONTROL         "Show listening to if there isn't away message",
+                    IDC_SHOW_LISTENING_IF_NOAWAY,"Button",BS_AUTOCHECKBOX | 
+                    BS_LEFT | BS_TOP | BS_MULTILINE | WS_TABSTOP,150,85,99,
+                    18
+    CONTROL         "XStatus has priority",IDC_XSTATUS_HAS_PRIORITY,"Button",
+                    BS_AUTOCHECKBOX | WS_TABSTOP,150,102,99,12
+    CONTROL         "Use 'XStatus: XMessage'",IDC_USE_NAME_AND_MESSAGE,
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,150,113,99,12
+    RTEXT           "(Variables will be replaced)",IDC_VARIABLES_L,141,127,
+                    108,8
 END
 
-IDD_OPT_ITEM_THIRD_LINE DIALOGEX 0, 0, 256, 206
+IDD_OPT_ITEM_THIRD_LINE DIALOGEX 0, 0, 256, 221
 STYLE DS_SETFONT | DS_FIXEDSYS | WS_CHILD
 EXSTYLE WS_EX_CONTROLPARENT
 FONT 8, "MS Shell Dlg", 400, 0, 0x1
 BEGIN
+    CONTROL         "Show third line",IDC_SHOW,"Button",BS_AUTOCHECKBOX | 
+                    WS_TABSTOP,7,7,242,8
     LTEXT           "Top space:",IDC_STATIC_TOP,7,28,40,8
-    LTEXT           "pixels",IDC_STATIC_PIXELS,96,28,18,8
     EDITTEXT        IDC_TOP_SPACE,50,26,35,12,ES_NUMBER
     CONTROL         "",IDC_TOP_SPACE_SPIN,"msctls_updown32",UDS_SETBUDDYINT | 
                     UDS_ALIGNRIGHT | UDS_ARROWKEYS | UDS_NOTHOUSANDS | 
                     UDS_HOTTRACK,84,26,11,12
+    LTEXT           "pixels",IDC_STATIC_PIXELS,96,28,18,8
     CONTROL         "Draw smileys on third line",IDC_DRAW_SMILEYS,"Button",
                     BS_AUTOCHECKBOX | WS_TABSTOP,7,43,242,8
+    LTEXT           "Text:",IDC_STATIC_TEXT,7,58,83,9
     CONTROL         "Status",IDC_STATUS,"Button",BS_AUTORADIOBUTTON,18,70,
                     118,8
     CONTROL         "Nickname",IDC_NICKNAME,"Button",BS_AUTORADIOBUTTON,18,
                     81,118,8
     CONTROL         "Away Message",IDC_STATUS_MESSAGE,"Button",
                     BS_AUTORADIOBUTTON,18,92,118,8
-    CONTROL         "Contact time",IDC_CONTACT_TIME,"Button",
+    CONTROL         "Listening to",IDC_LISTENING_TO,"Button",
                     BS_AUTORADIOBUTTON,18,103,118,8
-    CONTROL         "Text:",IDC_TEXT,"Button",BS_AUTORADIOBUTTON,18,113,118,
+    CONTROL         "Contact time",IDC_CONTACT_TIME,"Button",
+                    BS_AUTORADIOBUTTON,18,114,118,8
+    CONTROL         "Text:",IDC_TEXT,"Button",BS_AUTORADIOBUTTON,18,125,118,
                     8
-    EDITTEXT        IDC_VARIABLE_TEXT,32,126,217,73,ES_MULTILINE | 
+    EDITTEXT        IDC_VARIABLE_TEXT,32,141,217,73,ES_MULTILINE | 
                     ES_AUTOVSCROLL | ES_WANTRETURN | WS_VSCROLL
-    CONTROL         "Show third line",IDC_SHOW,"Button",BS_AUTOCHECKBOX | 
-                    WS_TABSTOP,7,7,242,8
-    LTEXT           "Text:",IDC_STATIC_TEXT,7,58,83,9
-    CONTROL         "XStatus has priority",IDC_XSTATUS_HAS_PRIORITY,"Button",
-                    BS_AUTOCHECKBOX | WS_TABSTOP,150,91,99,12
-    RTEXT           "(Variables will be replaced)",IDC_VARIABLES_L,141,113,
-                    108,8
-    CONTROL         "Use 'XStatus: XMessage'",IDC_USE_NAME_AND_MESSAGE,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,150,102,99,12
     CONTROL         "Show status if there isn't away message",
                     IDC_SHOW_STATUS_IF_NOAWAY,"Button",BS_AUTOCHECKBOX | 
-                    BS_LEFT | BS_TOP | BS_MULTILINE | WS_TABSTOP,150,74,99,
+                    BS_LEFT | BS_TOP | BS_MULTILINE | WS_TABSTOP,150,67,99,
                     18
+    CONTROL         "Show listening to if there isn't away message",
+                    IDC_SHOW_LISTENING_IF_NOAWAY,"Button",BS_AUTOCHECKBOX | 
+                    BS_LEFT | BS_TOP | BS_MULTILINE | WS_TABSTOP,150,85,99,
+                    18
+    CONTROL         "XStatus has priority",IDC_XSTATUS_HAS_PRIORITY,"Button",
+                    BS_AUTOCHECKBOX | WS_TABSTOP,150,102,99,12
+    CONTROL         "Use 'XStatus: XMessage'",IDC_USE_NAME_AND_MESSAGE,
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,150,113,99,12
+    RTEXT           "(Variables will be replaced)",IDC_VARIABLES_L,141,127,
+                    108,8
 END
 
 IDD_OPT_ITEM_EXTRAICONS DIALOGEX 0, 0, 222, 148
@@ -1663,7 +1675,7 @@ BEGIN
         LEFTMARGIN, 7
         RIGHTMARGIN, 249
         TOPMARGIN, 7
-        BOTTOMMARGIN, 199
+        BOTTOMMARGIN, 214
     END
 
     IDD_OPT_ITEM_THIRD_LINE, DIALOG
