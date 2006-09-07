@@ -33,8 +33,8 @@ http://files.miranda-im.org/builds/ChangeLog
 Enhancements
  - ICQ: Added new session password API - allowing plugins like Secure Login to work better
  - Jabber: Improved the compatibility with the GTalk clients:
-   - typing notification (JEP-0085);
-   - avatars retrieving and publication (JEP-0153).
+   - Typing notification (JEP-0085);
+   - Avatars retrieving and publication (JEP-0153).
  - Jabber: SASL authentication implemented, to allow the TLS usage. For old
    servers which don't support SASL, the special option was added to disable
    SASL, it guarantees the full compatilibily with almost all servers.
@@ -51,6 +51,7 @@ Bugfixes:
  - AutoExec files were deleted after use instead of renaming
  - Allow use of '#' as the beginning character in a autoexec file
  - Typo in about dialog
+ - Importing from autoexec_*.ini now supports CP1251 and UTF-8
  - AIM: Fixed login problems from previous login order change
  - AIM: Fixed utf8 sending for aim clients
  - AIM: Keepalive timer fixes
@@ -79,6 +80,7 @@ Bugfixes:
  - Jabber: JEP-0077 compliance fixed
  - MSN: Fixed sending files to old Windows Messengers (4.x-5.x)
  - MSN: Fixed direct avatars transfers for Windows Live Messenger
+ - SRMM: Improved RTL support
  - Yahoo: Fixed avatar upload bug
  - Yahoo: Show a system message when a file is successfully uploaded to Yahoo servers.
  - Yahoo: various small fixes.
