@@ -2752,7 +2752,7 @@ BOOL DrawTextEffect_(BYTE* destPt,BYTE* maskPt, DWORD width, DWORD height, DWORD
 
 
 
-int AlphaTextOut (HDC hDC, LPCTSTR lpString, int nCount, RECT * lpRect, UINT format, DWORD ARGBcolor)
+int AlphaTextOut (HDC hDC, LPCTSTR lpstring, int nCount, RECT * lpRect, UINT format, DWORD ARGBcolor)
 {
   HBITMAP destBitmap;
   SIZE sz, fsize;
@@ -2768,6 +2768,7 @@ int AlphaTextOut (HDC hDC, LPCTSTR lpString, int nCount, RECT * lpRect, UINT for
   BYTE * bits;
   BYTE * bufbits;
   HFONT hfnt, holdfnt;
+  LPTSTR lpString=NULL;
   
   int drx=0;
   int dry=0;
@@ -2798,7 +2799,8 @@ int AlphaTextOut (HDC hDC, LPCTSTR lpString, int nCount, RECT * lpRect, UINT for
     }
     weightfilled=1;
   }
-  if (!lpString) return 0;
+  if (!lpstring) return 0;
+  lpString=mir_tstrdup(lpstring);
   if (nCount==-1) nCount=lstrlen(lpString);
   // retrieve destination bitmap bits
   {
@@ -2822,11 +2824,34 @@ int AlphaTextOut (HDC hDC, LPCTSTR lpString, int nCount, RECT * lpRect, UINT for
     SetTextColor(memdc,RGB(255,255,255));
     holdfnt=(HFONT)SelectObject(memdc,hfnt);
   }
+  {
+      GetTextExtentPoint32(memdc,lpString,nCount,&sz);
+      if ((format&DT_END_ELLIPSIS) && sz.cx>workRect.right-workRect.left-2)
+      {
+          SIZE szElipses={0};
+          TCHAR *tem=NULL;
+          int number=0;
+          GetTextExtentPoint32A(memdc,"...",3,&szElipses);
+          szElipses.cx+=2;
+          GetTextExtentExPoint(memdc,lpString,nCount,
+                               workRect.right-workRect.left-szElipses.cx,
+                               &number, NULL, &sz);
+          
+          tem=(TCHAR*)mir_alloc((number+5)*sizeof(TCHAR));
+          //memset(tem,0,(number+5)*sizeof(TCHAR));
+          memcpy((void*)tem,lpString,number*sizeof(TCHAR));
+          memcpy((void*)((TCHAR*)tem+number),_T("..."),3*sizeof(TCHAR));
+          //tem[number+3]=(TCHAR)'\0';
+          nCount=number+3;
+          mir_free(lpString);
+          lpString=tem;
 
+      }
+  }
   // Calc Sizes
   {
     //Calc full text size
-    GetTextExtentPoint32(memdc,lpString,nCount,&sz);
+    //GetTextExtentPoint32(memdc,lpString,nCount,&sz);
     sz.cx+=2;
     fsize=sz;
     {
@@ -2983,6 +3008,7 @@ int AlphaTextOut (HDC hDC, LPCTSTR lpString, int nCount, RECT * lpRect, UINT for
   SelectObject(memdc,holdfnt);
   mod_DeleteDC(memdc); 
   if (noDIB) free(destBits);
+  mir_free(lpString);
   return 0;
 }
 BOOL mod_DrawTextA(HDC hdc, char * lpString, int nCount, RECT * lpRect, UINT format)
@@ -3004,7 +3030,7 @@ BOOL mod_DrawText(HDC hdc, LPCTSTR lpString, int nCount, RECT * lpRect, UINT for
   DWORD form=0, color=0;
   RECT r=*lpRect;
   OffsetRect(&r,1,1);
-  if (format|DT_RTLREADING) SetTextAlign(hdc,TA_RTLREADING);
+  if (format&DT_RTLREADING) SetTextAlign(hdc,TA_RTLREADING);
   if (format&DT_CALCRECT) return DrawText(hdc,lpString,nCount,lpRect,format);
   form=format;
   color=GetTextColor(hdc);
