@@ -2523,7 +2523,7 @@ void InternalPaintRowItems(HWND hwnd, HDC hdcMem, struct ClcData *dat, struct Cl
           if(counts_size.cx > 0) 
           {
             RECT counts_rc = text_rc;
-
+            //counts_size.cx;
             if (dat->text_align_right) 
               counts_rc.right = text_rc.left + counts_size.cx;
             else

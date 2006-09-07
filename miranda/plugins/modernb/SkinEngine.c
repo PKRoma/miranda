@@ -2826,13 +2826,13 @@ int AlphaTextOut (HDC hDC, LPCTSTR lpstring, int nCount, RECT * lpRect, UINT for
   }
   {
       GetTextExtentPoint32(memdc,lpString,nCount,&sz);
-      if ((format&DT_END_ELLIPSIS) && sz.cx>workRect.right-workRect.left-2)
+      if ((format&DT_END_ELLIPSIS) && sz.cx>workRect.right-workRect.left)
       {
           SIZE szElipses={0};
           TCHAR *tem=NULL;
           int number=0;
           GetTextExtentPoint32A(memdc,"...",3,&szElipses);
-          szElipses.cx+=2;
+          szElipses.cx+=1;
           GetTextExtentExPoint(memdc,lpString,nCount,
                                workRect.right-workRect.left-szElipses.cx,
                                &number, NULL, &sz);
