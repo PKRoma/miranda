@@ -1065,7 +1065,7 @@ int JabberSendMessage( WPARAM wParam, LPARAM lParam )
 			else {
 				id = JabberSerialNext();
 				TCHAR szClientJid[ 256 ];
-				JabberGetClientJID( dbv.ptszVal, szClientJid, sizeof( szClientJid ));
+				JabberGetClientJID( dbv.ptszVal, szClientJid, SIZEOF( szClientJid ));
 
 				m.addAttr( "to", szClientJid ); m.addAttrID( id );
 				XmlNode* x = m.addChild( "x" ); x->addAttr( "xmlns", "jabber:x:event" ); x->addChild( "composing" );
