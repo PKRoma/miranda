@@ -2,6 +2,10 @@
 
 for /F "tokens=1,2 delims= " %%i in (build.no) do call :WriteVer %%i %%j
 
+md Release
+md "Release/Icons"
+md "Release/Plugins"
+
 rem ---------------------------------------------------------------------------
 rem Main modules
 rem ---------------------------------------------------------------------------
@@ -22,7 +26,11 @@ cd ..\..\miranda\protocols\IcqOscarJ
 nmake /f IcqOscar8.mak CFG="icqoscar8 - Win32 Release"
 if errorlevel 1 goto :Error
 
-cd ..\MSN
+cd icons_pack
+nmake /f ICONS.mak CFG="ICONS - Win32 Release"
+if errorlevel 1 goto :Error
+
+cd ..\..\MSN
 nmake /f MSN.mak CFG="msn - Win32 Release"
 if errorlevel 1 goto :Error
 
@@ -193,7 +201,7 @@ goto :eof
 
 :Pack
 del %Temp%\miranda-v%1a%2.zip
-7za.exe a -tzip -r -mx=9 %Temp%\miranda-v%1a%2.zip ./* ..\ChangeLog.txt
+7z.exe a -tzip -r -mx=9 %Temp%\miranda-v%1a%2.zip ./* ..\ChangeLog.txt
 
 rd /Q /S %Temp%\pdba >nul
 md %Temp%\pdba
@@ -222,7 +230,7 @@ copy ..\..\plugins\png2dib\Release\png2dib.pdb         %Temp%\pdba\plugins
 copy ..\..\plugins\srmm\Release\srmm.pdb               %Temp%\pdba\plugins
 copy ..\..\plugins\tabSRMM\Release\tabSRMM.pdb         %Temp%\pdba\plugins
 
-7za.exe a -tzip -r -mx=9 %Temp%\miranda-pdb-v%1a%2.zip %Temp%\pdba/*
+7z.exe a -tzip -r -mx=9 %Temp%\miranda-pdb-v%1a%2.zip %Temp%\pdba/*
 rd /Q /S %Temp%\pdba
 goto :eof
 

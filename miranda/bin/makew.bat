@@ -2,6 +2,10 @@
 
 for /F "tokens=1,2 delims= " %%i in (build.no) do call :WriteVer %%i %%j
 
+md "Release Unicode"
+md "Release Unicode/Icons"
+md "Release Unicode/Plugins"
+
 rem ---------------------------------------------------------------------------
 rem Main modules
 rem ---------------------------------------------------------------------------
@@ -88,14 +92,17 @@ rem ---------------------------------------------------------------------------
 
 cd "..\..\bin\Release Unicode"
 copy ..\release\dbtool.exe
-copy ..\release\Plugins\aim.dll      Plugins
-copy ..\release\Plugins\dbx_3x.dll   Plugins
-copy ..\release\Plugins\dbx_mmap.dll Plugins
-copy ..\release\Plugins\ICQ.dll      Plugins
-copy ..\release\Plugins\import.dll   Plugins
-copy ..\release\Plugins\IRC.dll      Plugins
-copy ..\release\Plugins\png2dib.dll  Plugins
-copy ..\release\Plugins\Yahoo.dll    Plugins
+
+copy ..\release\Icons\xstatus_ICQ.dll    Icons
+
+copy ..\release\Plugins\aim.dll          Plugins
+copy ..\release\Plugins\dbx_3x.dll       Plugins
+copy ..\release\Plugins\dbx_mmap.dll     Plugins
+copy ..\release\Plugins\ICQ.dll          Plugins
+copy ..\release\Plugins\import.dll       Plugins
+copy ..\release\Plugins\IRC.dll          Plugins
+copy ..\release\Plugins\png2dib.dll      Plugins
+copy ..\release\Plugins\Yahoo.dll        Plugins
 
 dir /B /S *.dll | rebase
 
@@ -186,7 +193,7 @@ goto :eof
 
 :Pack
 del %Temp%\miranda-v%1a%2w.zip
-7za.exe a -tzip -r -mx=9 %Temp%\miranda-v%1a%2w.zip ./*  ..\ChangeLog.txt
+7z.exe a -tzip -r -mx=9 %Temp%\miranda-v%1a%2w.zip ./*  ..\ChangeLog.txt
 
 rd /Q /S %Temp%\pdbw >nul
 md %Temp%\pdbw
@@ -216,7 +223,7 @@ copy ..\..\plugins\db3x_mmap\Release\dbx_mmap.pdb              %Temp%\pdbw\plugi
 copy ..\..\plugins\import\Release\import.pdb                   %Temp%\pdbw\plugins
 copy ..\..\plugins\png2dib\Release\png2dib.pdb                 %Temp%\pdbw\plugins
 rem Zip now
-7za.exe a -tzip -r -mx=9 %Temp%\miranda-pdb-v%1a%2w.zip %Temp%\pdbw/*
+7z.exe a -tzip -r -mx=9 %Temp%\miranda-pdb-v%1a%2w.zip %Temp%\pdbw/*
 rd /Q /S %Temp%\pdbw
 goto :eof
 
