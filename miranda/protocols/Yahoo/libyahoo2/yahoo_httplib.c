@@ -99,8 +99,7 @@ int yahoo_tcp_readline(char *ptr, int maxlen, int fd)
 	return (n);
 }
 
-static int url_to_host_port_path(const char *url,
-		char *host, int *port, char *path)
+int url_to_host_port_path(const char *url, char *host, int *port, char *path)
 {
 	char *urlcopy=NULL;
 	char *slash=NULL;
@@ -321,7 +320,7 @@ void yahoo_http_post(int id, const char *url, const char *cookies, long content_
 	if(!url_to_host_port_path(url, host, &port, path))
 		return;
 
-	if (cookies == NULL) 
+	if (cookies == NULL || cookies[0] == '\0') 
 		ck[0] = '\0';
 	else
 		snprintf(ck, sizeof(ck), "Cookie: %s\r\n", cookies);
@@ -330,12 +329,12 @@ void yahoo_http_post(int id, const char *url, const char *cookies, long content_
 			"POST %s HTTP/1.0\r\n"
 			"User-Agent: Mozilla/4.0 (compatible; MSIE 5.5)\r\n"
 			"Pragma: no-cache\r\n"
-			"Host: %s:%d\r\n"
+			"Host: %s\r\n"
 			"Content-Length: %ld\r\n"
 			"%s"
 			"\r\n",
 			path, 
-			host, port,content_length, 
+			host, content_length, 
 			ck);
 			
 	yahoo_send_http_request(id, host, port, buff, callback, data);
@@ -353,7 +352,7 @@ void yahoo_http_get(int id, const char *url, const char *cookies,
 	if(!url_to_host_port_path(url, host, &port, path))
 		return;
 
-	if (cookies == NULL) 
+	if (cookies == NULL || cookies[0] == '\0') 
 		ck[0] = '\0';
 	else
 		snprintf(ck, sizeof(ck), "Cookie: %s\r\n", cookies);
@@ -446,6 +445,7 @@ void yahoo_get_url_fd(int id, const char *url, const struct yahoo_data *yd,
 	buff[0]='\0'; /*don't send them our cookies!! */
 	ud->callback = callback;
 	ud->user_data = data;
-	yahoo_http_get(id, url, buff, yahoo_got_url_fd, ud);
+//	yahoo_http_get(id, url, buff, yahoo_got_url_fd, ud);
+	YAHOO_CALLBACK(ext_yahoo_send_http_request)(id, "GET", url, buff, 0, yahoo_got_url_fd, ud);
 }
 

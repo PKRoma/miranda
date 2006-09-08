@@ -64,7 +64,7 @@ void __cdecl yahoo_server_main(void *empty)
 	int status = (int) empty;
 	long lLastPing;
     YList *l;
-    NETLIBSELECTEX nls;
+    NETLIBSELECTEX nls = {0};
 	
 	if (hNetlibUser  == 0) {
 		/* wait for the stupid netlib to load!!!! */
