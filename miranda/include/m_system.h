@@ -134,6 +134,9 @@ If the sortFunc member of the list gets assigned, the list becomes sorted
 wParam=0, lParam = 0
 */
 
+#define LIST_INTERFACE_V1_SIZE  (8*sizeof(void*))
+#define LIST_INTERFACE_V2_SIZE  (10*sizeof(void*))
+
 typedef int ( *FSortFunc )( void*, void* );
 
 typedef struct
@@ -158,6 +161,9 @@ struct LIST_INTERFACE {
 	int   ( *List_Insert )( SortedList*, void*, int );
 	int   ( *List_Remove )( SortedList*, int );
 	int   ( *List_IndexOf )( SortedList*, void* );
+
+	int   ( *List_InsertPtr)( SortedList* list, void* p );
+	int   ( *List_RemovePtr)( SortedList* list, void* p );
 };
 
 #define MS_SYSTEM_GET_LI  "Miranda/System/GetLI"

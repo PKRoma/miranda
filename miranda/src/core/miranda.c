@@ -507,21 +507,29 @@ static int RemoveWait(WPARAM wParam,LPARAM lParam)
 int GetMemoryManagerInterface(WPARAM wParam, LPARAM lParam)
 {
 	struct MM_INTERFACE *mmi = (struct MM_INTERFACE*) lParam;
-	if (mmi || mmi->cbSize == sizeof(struct MM_INTERFACE))
-	{
-		mmi->mmi_malloc = mir_alloc;
-		mmi->mmi_realloc = mir_realloc;
-		mmi->mmi_free = mir_free;
-		return 0;
-	}
-	return 1;
+	if ( mmi == NULL )
+		return 1;
+	if ( mmi->cbSize != sizeof(struct MM_INTERFACE))
+		return 1;
+
+	mmi->mmi_malloc = mir_alloc;
+	mmi->mmi_realloc = mir_realloc;
+	mmi->mmi_free = mir_free;
+	return 0;
 }
 
 int GetListInterface(WPARAM wParam, LPARAM lParam)
 {
 	struct LIST_INTERFACE *li = (struct LIST_INTERFACE*) lParam;
-	if (li || li->cbSize == sizeof(struct LIST_INTERFACE))
-	{
+	if ( li == NULL )
+		return 1;
+
+	if (li->cbSize == LIST_INTERFACE_V2_SIZE) {
+		li->List_InsertPtr = List_InsertPtr;
+		li->List_RemovePtr = List_RemovePtr;
+	}
+
+	if (li->cbSize == LIST_INTERFACE_V1_SIZE || li->cbSize == LIST_INTERFACE_V2_SIZE) {
 		li->List_Create   = List_Create;
 		li->List_Destroy  = List_Destroy;
 		li->List_Find     = List_Find;
