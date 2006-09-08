@@ -3267,12 +3267,14 @@ BOOL mod_DrawIconEx(HDC hdcDst,int xLeft,int yTop,HICON hIcon,int cxWidth,int cy
           if (mask)// && !hasalpha)		
 		  {
 				if (!hasalpha) 
-                {  *dest=0; continue; }
+                { *dest=0; continue; }
 				else 
                     a=((BYTE*)src)[3]>0?((BYTE*)src)[3]:0;//255;
 		  }
           else if (hasalpha || hasmask)
               a=(((BYTE*)src)[3]>0?((BYTE*)src)[3]:255);
+          else if (!hasalpha && !hasmask)
+              a=255;
           else {  *dest=0; continue; }
         }
         if (a>0)
