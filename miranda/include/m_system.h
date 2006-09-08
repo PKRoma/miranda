@@ -134,8 +134,8 @@ If the sortFunc member of the list gets assigned, the list becomes sorted
 wParam=0, lParam = 0
 */
 
-#define LIST_INTERFACE_V1_SIZE  (8*sizeof(void*))
-#define LIST_INTERFACE_V2_SIZE  (10*sizeof(void*))
+#define LIST_INTERFACE_V1_SIZE  (sizeof(int)+7*sizeof(void*))
+#define LIST_INTERFACE_V2_SIZE  (sizeof(int)+9*sizeof(void*))
 
 typedef int ( *FSortFunc )( void*, void* );
 
@@ -151,6 +151,19 @@ typedef struct
 	SortedList;
 
 struct LIST_INTERFACE {
+	int    cbSize;
+
+   SortedList* ( *List_Create )( int, int );
+	void        ( *List_Destroy )( SortedList* );
+
+	void*	( *List_Find )( SortedList*, void* );
+	int	( *List_GetIndex )( SortedList*, void*, int* );
+	int   ( *List_Insert )( SortedList*, void*, int );
+	int   ( *List_Remove )( SortedList*, int );
+	int   ( *List_IndexOf )( SortedList*, void* );
+};
+
+struct LIST_INTERFACE_V2 {
 	int    cbSize;
 
    SortedList* ( *List_Create )( int, int );

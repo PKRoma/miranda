@@ -45,7 +45,10 @@ static int compareListItems( JABBER_LIST_ITEM* p1, JABBER_LIST_ITEM* p2 )
 	if ( p1->list != p2->list )
 		return p1->list - p2->list;
 
-	return lstrcmp( p1->jid, p2->jid );
+	TCHAR szp1[ JABBER_MAX_JID_LEN ], szp2[ JABBER_MAX_JID_LEN ];
+	JabberStripJid( p1->jid, szp1, sizeof( szp1 ));
+	JabberStripJid( p2->jid, szp2, sizeof( szp2 ));
+	return lstrcmpi( szp1, szp2 );
 }
 
 void JabberListInit( void )
@@ -107,21 +110,20 @@ static void JabberListFreeItemInternal( JABBER_LIST_ITEM *item )
 
 int JabberListExist( JABBER_LIST list, const TCHAR* jid )
 {
-	TCHAR szSrc[ JABBER_MAX_JID_LEN ];
-	JabberStripJid( jid, szSrc, sizeof( szSrc ));
+	JABBER_LIST_ITEM tmp;
+	tmp.list = list;
+	tmp.jid  = (TCHAR*)jid;
 
 	EnterCriticalSection( &csLists );
-	for ( int i=0; i<roster.count; i++ ) {
-		JABBER_LIST_ITEM* p = roster.items[i];
-		if ( p->list == list ) {
-			TCHAR szTempJid[ JABBER_MAX_JID_LEN ];
-			if ( !_tcsicmp( szSrc, JabberStripJid( p->jid, szTempJid, sizeof( szTempJid )))) {
-			  	LeaveCriticalSection( &csLists );
-				return i+1;
-	}	}	}
+
+	int idx;
+	if ( !li.List_GetIndex(( SortedList* )&roster, &tmp, &idx )) {
+		LeaveCriticalSection( &csLists );
+		return 0;
+	}
 
 	LeaveCriticalSection( &csLists );
-	return 0;
+	return idx+1;
 }
 
 JABBER_LIST_ITEM *JabberListAdd( JABBER_LIST list, const TCHAR* jid )

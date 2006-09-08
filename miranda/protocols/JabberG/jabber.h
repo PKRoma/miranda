@@ -537,7 +537,7 @@ __forceinline WCHAR* mir_wstrdup(const WCHAR *src)
 	#define mir_tstrdup mir_strdup
 #endif
 
-extern LIST_INTERFACE li;
+extern LIST_INTERFACE_V2 li;
 
 ///////////////////////////////////////////////////////////////////////////////
 // TXT encode helper
