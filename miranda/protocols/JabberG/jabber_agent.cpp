@@ -203,6 +203,11 @@ static BOOL CALLBACK JabberAgentsDlgProc( HWND hwndDlg, UINT msg, WPARAM wParam,
 					_tcscpy( text, item->jid );
 					if (( p=_tcschr( text, '/' )) != NULL )
 						*p = '\0';
+
+					HANDLE hContact = JabberHContactFromJID( text );
+					if ( hContact != NULL )
+						JSetByte( hContact, "IsTransport", TRUE );
+
 					lvItem.mask = LVIF_TEXT;
 					lvItem.iSubItem = 0;
 					lvItem.pszText = text;
