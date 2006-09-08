@@ -436,7 +436,7 @@ static BOOL CALLBACK JabberSetAvatarDlgProc( HWND hwndDlg, UINT msg, WPARAM wPar
 		return TRUE;
 
 	case WM_COMMAND:
-		if ( HIWORD( wParam ) == BN_CLICKED )
+		if ( HIWORD( wParam ) == BN_CLICKED ) {
 			switch( LOWORD( wParam )) {
 			case IDC_SETAVATAR:
 				if ( JabberEnterBitmapName( szFileName ) == ERROR_SUCCESS ) {
@@ -468,8 +468,9 @@ static BOOL CALLBACK JabberSetAvatarDlgProc( HWND hwndDlg, UINT msg, WPARAM wPar
 
 				if ( jabberConnected )
 					JabberSendPresence( jabberDesiredStatus );
+				RedrawWindow(GetDlgItem(hwndDlg, IDC_AVATAR), NULL, NULL, RDW_INVALIDATE);
 				break;
-			}
+		}	}
 		break;
 
 	case WM_DESTROY:
