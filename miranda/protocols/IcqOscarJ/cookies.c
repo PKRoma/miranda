@@ -363,3 +363,4 @@ message_cookie_data *CreateMessageCookie(WORD bMsgType, BYTE bAckType)
   }
   return pCookie;
 }
+

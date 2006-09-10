@@ -153,3 +153,4 @@ DWORD oftFileCancel(HANDLE hContact, WPARAM wParam, LPARAM lParam);
 void oftFileResume(oscar_filetransfer *ft, int action, const char *szFilename);
 
 #endif /* __OSCAR_FILETRANSFER_H */
+
