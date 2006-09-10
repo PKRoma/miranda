@@ -299,7 +299,7 @@ int JabberContactDeleted( WPARAM wParam, LPARAM lParam )
 		return 0;
 
 	DBVARIANT dbv;
-	if ( !JGetStringT(( HANDLE ) wParam, JGetByte( (HANDLE ) wParam, "ChatRoom", 0 )?"ChatRoomID":"jid", &dbv )) {
+	if ( !JGetStringT(( HANDLE ) wParam, JGetByte( (HANDLE ) wParam, "ChatRoom", 0 )?(char*)"ChatRoomID":(char*)"jid", &dbv )) {
 		TCHAR* jid, *p, *q = NULL;
 
 		jid = dbv.ptszVal;

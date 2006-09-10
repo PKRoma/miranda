@@ -297,14 +297,14 @@ END
 
 // Icon with lowest ID value placed first to ensure application icon
 // remains consistent on all systems.
-IDI_USERDETAILS         ICON    DISCARDABLE     "res/Details.ico"
-IDI_ADDCONTACT          ICON    DISCARDABLE     "res\\add.ico"
-IDI_HISTORY             ICON    DISCARDABLE     "res/History.ico"
-IDI_DOWNARROW           ICON    DISCARDABLE     "res/Downarrow.ico"
-IDI_TYPING              ICON    DISCARDABLE     "res/Typing.ico"
-IDI_OUTGOING            ICON    DISCARDABLE     "res\\outgoing.ico"
-IDI_INCOMING            ICON    DISCARDABLE     "res\\incoming.ico"
-IDI_NOTICE              ICON    DISCARDABLE     "res\\notice.ico"
+IDI_USERDETAILS         ICON    DISCARDABLE     "res/details.ico"
+IDI_ADDCONTACT          ICON    DISCARDABLE     "res/add.ico"
+IDI_HISTORY             ICON    DISCARDABLE     "res/history.ico"
+IDI_DOWNARROW           ICON    DISCARDABLE     "res/downarrow.ico"
+IDI_TYPING              ICON    DISCARDABLE     "res/typing.ico"
+IDI_OUTGOING            ICON    DISCARDABLE     "res/outgoing.ico"
+IDI_INCOMING            ICON    DISCARDABLE     "res/incoming.ico"
+IDI_NOTICE              ICON    DISCARDABLE     "res/notice.ico"
 
 /////////////////////////////////////////////////////////////////////////////
 //

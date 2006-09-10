@@ -1593,56 +1593,56 @@ END
 
 // Icon with lowest ID value placed first to ensure application icon
 // remains consistent on all systems.
-IDI_MIRANDA             ICON    DISCARDABLE     "res\\miranda.ico"
-IDI_SEARCHALL           ICON    DISCARDABLE     "res\\searchal.ico"
-IDI_SMS                 ICON    DISCARDABLE     "res\\sms.ico"
-IDI_BLANK               ICON    DISCARDABLE     "res\\blank.ico"
-IDI_NOTICK              ICON    DISCARDABLE     "res\\notick.ico"
-IDI_TICK                ICON    DISCARDABLE     "res\\notick1.ico"
-IDI_FILE                ICON    DISCARDABLE     "res\\file.ico"
-IDI_TIMESTAMP           ICON    DISCARDABLE     "res\\timestamp.ico"
-IDI_CHANGEFONT          ICON    DISCARDABLE     "res\\changefont.ico"
-IDI_ADDCONTACT          ICON    DISCARDABLE     "res\\addcontact.ico"
-IDI_USERDETAILS         ICON    DISCARDABLE     "res\\viewdetails.ico"
-IDI_SMALLDOT            ICON    DISCARDABLE     "res\\smalldot.ico"
-IDI_FILLEDBLOB          ICON    DISCARDABLE     "res\\filledbl.ico"
-IDI_EMPTYBLOB           ICON    DISCARDABLE     "res\\emptyblo.ico"
-IDI_DETAILSLOGO         ICON    DISCARDABLE     "res\\detailsl.ico"
-IDI_RECVMSG             ICON    DISCARDABLE     "res\\message.ico"
-IDI_SENDMSG             ICON    DISCARDABLE     "res\\reply.ico"
-IDI_URL                 ICON    DISCARDABLE     "res\\url.ico"
-IDI_NA                  ICON    DISCARDABLE     "res\\na2.ico"
-IDI_AWAY                ICON    DISCARDABLE     "res\\away.ico"
-IDI_FREE4CHAT           ICON    DISCARDABLE     "res\\freechat.ico"
-IDI_ONLINE              ICON    DISCARDABLE     "res\\online2.ico"
-IDI_OFFLINE             ICON    DISCARDABLE     "res\\offline2.ico"
-IDI_DND                 ICON    DISCARDABLE     "res\\dnd.ico"
-IDI_OCCUPIED            ICON    DISCARDABLE     "res\\occupied.ico"
-IDI_FINDUSER            ICON    DISCARDABLE     "res\\finduser.ico"
-IDI_HELP                ICON    DISCARDABLE     "res\\help.ico"
-IDI_OPTIONS             ICON    DISCARDABLE     "res\\options.ico"
-IDI_MIRANDAWEBSITE      ICON    DISCARDABLE     "res\\mirandaw.ico"
-IDI_RENAME              ICON    DISCARDABLE     "res\\rename.ico"
-IDI_HISTORY             ICON    DISCARDABLE     "res\\history.ico"
-IDI_DELETE              ICON    DISCARDABLE     "res\\delete.ico"
-IDI_SENDEMAIL           ICON    DISCARDABLE     "res\\sendmail.ico"
-IDI_USERONLINE          ICON    DISCARDABLE     "res\\useronli.ico"
-IDI_GROUPSHUT           ICON    DISCARDABLE     "res\\groupshu.ico"
-IDI_GROUPOPEN           ICON    DISCARDABLE     "res\\groupope.ico"
-IDI_ONTHEPHONE          ICON    DISCARDABLE     "res\\onthepho.ico"
-IDI_OUTTOLUNCH          ICON    DISCARDABLE     "res\\outtolun.ico"
-IDI_INVISIBLE           ICON    DISCARDABLE     "res\\invisible.ico"
-IDI_MULTISEND           ICON    DISCARDABLE     "res\\multisend.ico"
-IDI_DOWNARROW           ICON    DISCARDABLE     "res\\downarrow.ico"
+IDI_MIRANDA             ICON    DISCARDABLE     "res/miranda.ico"
+IDI_SEARCHALL           ICON    DISCARDABLE     "res/searchal.ico"
+IDI_SMS                 ICON    DISCARDABLE     "res/sms.ico"
+IDI_BLANK               ICON    DISCARDABLE     "res/blank.ico"
+IDI_NOTICK              ICON    DISCARDABLE     "res/notick.ico"
+IDI_TICK                ICON    DISCARDABLE     "res/notick1.ico"
+IDI_FILE                ICON    DISCARDABLE     "res/file.ico"
+IDI_TIMESTAMP           ICON    DISCARDABLE     "res/timestamp.ico"
+IDI_CHANGEFONT          ICON    DISCARDABLE     "res/changefont.ico"
+IDI_ADDCONTACT          ICON    DISCARDABLE     "res/addcontact.ico"
+IDI_USERDETAILS         ICON    DISCARDABLE     "res/viewdetails.ico"
+IDI_SMALLDOT            ICON    DISCARDABLE     "res/smalldot.ico"
+IDI_FILLEDBLOB          ICON    DISCARDABLE     "res/filledbl.ico"
+IDI_EMPTYBLOB           ICON    DISCARDABLE     "res/emptyblo.ico"
+IDI_DETAILSLOGO         ICON    DISCARDABLE     "res/detailsl.ico"
+IDI_RECVMSG             ICON    DISCARDABLE     "res/message.ico"
+IDI_SENDMSG             ICON    DISCARDABLE     "res/reply.ico"
+IDI_URL                 ICON    DISCARDABLE     "res/url.ico"
+IDI_NA                  ICON    DISCARDABLE     "res/na2.ico"
+IDI_AWAY                ICON    DISCARDABLE     "res/away.ico"
+IDI_FREE4CHAT           ICON    DISCARDABLE     "res/freechat.ico"
+IDI_ONLINE              ICON    DISCARDABLE     "res/online2.ico"
+IDI_OFFLINE             ICON    DISCARDABLE     "res/offline2.ico"
+IDI_DND                 ICON    DISCARDABLE     "res/dnd.ico"
+IDI_OCCUPIED            ICON    DISCARDABLE     "res/occupied.ico"
+IDI_FINDUSER            ICON    DISCARDABLE     "res/finduser.ico"
+IDI_HELP                ICON    DISCARDABLE     "res/help.ico"
+IDI_OPTIONS             ICON    DISCARDABLE     "res/options.ico"
+IDI_MIRANDAWEBSITE      ICON    DISCARDABLE     "res/mirandaw.ico"
+IDI_RENAME              ICON    DISCARDABLE     "res/rename.ico"
+IDI_HISTORY             ICON    DISCARDABLE     "res/history.ico"
+IDI_DELETE              ICON    DISCARDABLE     "res/delete.ico"
+IDI_SENDEMAIL           ICON    DISCARDABLE     "res/sendmail.ico"
+IDI_USERONLINE          ICON    DISCARDABLE     "res/useronli.ico"
+IDI_GROUPSHUT           ICON    DISCARDABLE     "res/groupshu.ico"
+IDI_GROUPOPEN           ICON    DISCARDABLE     "res/groupope.ico"
+IDI_ONTHEPHONE          ICON    DISCARDABLE     "res/onthepho.ico"
+IDI_OUTTOLUNCH          ICON    DISCARDABLE     "res/outtolun.ico"
+IDI_INVISIBLE           ICON    DISCARDABLE     "res/invisible.ico"
+IDI_MULTISEND           ICON    DISCARDABLE     "res/multisend.ico"
+IDI_DOWNARROW           ICON    DISCARDABLE     "res/downarrow.ico"
 
 /////////////////////////////////////////////////////////////////////////////
 //
 // Cursor
 //
 
-IDC_HYPERLINKHAND       CURSOR  DISCARDABLE     "res\\hyperlin.cur"
-IDC_DROP                CURSOR  DISCARDABLE     "res\\dragcopy.cur"
-IDC_DROPUSER            CURSOR  DISCARDABLE     "res\\dropuser.cur"
+IDC_HYPERLINKHAND       CURSOR  DISCARDABLE     "res/hyperlin.cur"
+IDC_DROP                CURSOR  DISCARDABLE     "res/dragcopy.cur"
+IDC_DROPUSER            CURSOR  DISCARDABLE     "res/dropuser.cur"
 
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -1731,15 +1731,15 @@ END
 // TEXT
 //
 
-IDR_CREDITS             TEXT    MOVEABLE PURE   "..\\docs\\credits.txt"
+IDR_CREDITS             TEXT    MOVEABLE PURE   "../docs/credits.txt"
 
 /////////////////////////////////////////////////////////////////////////////
 //
 // Bitmap
 //
 
-IDB_SORTCOLUP           BITMAP  MOVEABLE PURE   "res\\sortcolu.bmp"
-IDB_SORTCOLDOWN         BITMAP  MOVEABLE PURE   "res\\sortcold.bmp"
+IDB_SORTCOLUP           BITMAP  MOVEABLE PURE   "res/sortcolu.bmp"
+IDB_SORTCOLDOWN         BITMAP  MOVEABLE PURE   "res/sortcold.bmp"
 
 /////////////////////////////////////////////////////////////////////////////
 //

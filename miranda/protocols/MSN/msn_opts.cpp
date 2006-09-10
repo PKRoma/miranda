@@ -210,7 +210,7 @@ LBL_Continue:
 			DBVARIANT dbv;
 
 			GetDlgItemText( hwndDlg, IDC_HANDLE, screenStr, sizeof( screenStr ));
-			if ( DBGetContactSettingTString( "e-mail", msnProtocolName, NULL, &dbv ))
+			if ( DBGetContactSettingTString( (char *)"e-mail", msnProtocolName, NULL, &dbv ))
 				dbv.ptszVal = NULL;
 			if ( lstrcmp( screenStr, dbStr ))
 				reconnectRequired = true;
@@ -219,7 +219,7 @@ LBL_Continue:
 
 			GetDlgItemTextA( hwndDlg, IDC_PASSWORD, password, sizeof( password ));
 			MSN_CallService( MS_DB_CRYPT_ENCODESTRING, sizeof( password ),( LPARAM )password );
-			if ( DBGetContactSetting( "Password", msnProtocolName, NULL, &dbv ))
+			if ( DBGetContactSetting( (char *)"Password", msnProtocolName, NULL, &dbv ))
 				dbv.pszVal = NULL;
 			if ( lstrcmp( screenStr, dbStr ))
 				reconnectRequired = true;
