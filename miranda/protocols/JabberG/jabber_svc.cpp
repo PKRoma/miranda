@@ -299,7 +299,7 @@ int JabberContactDeleted( WPARAM wParam, LPARAM lParam )
 		return 0;
 
 	DBVARIANT dbv;
-	if ( !JGetStringT(( HANDLE ) wParam, JGetByte( (HANDLE ) wParam, "ChatRoom", 0 )?"ChatRoomID":"jid", &dbv )) {
+	if ( !JGetStringT(( HANDLE ) wParam, JGetByte( (HANDLE ) wParam, "ChatRoom", 0 )?(char*)"ChatRoomID":(char*)"jid", &dbv )) {
 		TCHAR* jid, *p, *q = NULL;
 
 		jid = dbv.ptszVal;
@@ -699,13 +699,21 @@ static void __cdecl JabberGetAwayMsgThread( HANDLE hContact )
 			}
 			
 			if ( item->statusMessage != NULL ) {
-				JSendBroadcast( hContact, ACKTYPE_AWAYMSG, ACKRESULT_SUCCESS, ( HANDLE ) 1, ( LPARAM )item->statusMessage );
+				#if defined( _UNICODE )
+					char* msg = u2a(item->statusMessage);
+				#else
+					char* msg = item->statusMessage;
+				#endif
+				JSendBroadcast( hContact, ACKTYPE_AWAYMSG, ACKRESULT_SUCCESS, ( HANDLE ) 1, ( LPARAM )msg );
+				#if defined( _UNICODE )
+					mir_free(msg);
+				#endif
 				return;
 			}
 		}
 		else JFreeVariant( &dbv );
 	}
-	//JSendBroadcast( hContact, ACKTYPE_AWAYMSG, ACKRESULT_FAILED, ( HANDLE ) 1, ( LPARAM )0 );
+
 	JSendBroadcast( hContact, ACKTYPE_AWAYMSG, ACKRESULT_SUCCESS, ( HANDLE ) 1, ( LPARAM )"" );
 }
 

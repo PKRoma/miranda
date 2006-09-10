@@ -65,7 +65,7 @@ int JabberMenuPrebuildContactMenu( WPARAM wParam, LPARAM lParam )
 
 	if ((chatRoomType == GCW_CHATROOM) || chatRoomType == 0 ) {
 		DBVARIANT dbv;
-		if ( !JGetStringT( hContact, chatRoomType?"ChatRoomID":"jid", &dbv )) {
+		if ( !JGetStringT( hContact, chatRoomType?(char*)"ChatRoomID":(char*)"jid", &dbv )) {
 			JFreeVariant( &dbv );
 			CLISTMENUITEM clmi = { 0 };
 			sttEnableMenuItem( hMenuConvert, TRUE );
@@ -114,7 +114,7 @@ int JabberMenuConvertChatContact( WPARAM wParam, LPARAM lParam )
 	BYTE chatRoomType = (BYTE)JGetByte( (HANDLE ) wParam, "ChatRoom", 0 );
 	if ((chatRoomType == GCW_CHATROOM) || chatRoomType == 0 ) {
 		DBVARIANT dbv;
-		if ( !JGetStringT( (HANDLE ) wParam, (chatRoomType == GCW_CHATROOM)?"ChatRoomID":"jid", &dbv )) {
+		if ( !JGetStringT( (HANDLE ) wParam, (chatRoomType == GCW_CHATROOM)?(char*)"ChatRoomID":(char*)"jid", &dbv )) {
 			JDeleteSetting( (HANDLE ) wParam, (chatRoomType == GCW_CHATROOM)?"ChatRoomID":"jid");
 			JSetStringT( (HANDLE ) wParam, (chatRoomType != GCW_CHATROOM)?"ChatRoomID":"jid", dbv.ptszVal);
 			JFreeVariant( &dbv );
