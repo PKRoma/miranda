@@ -241,6 +241,7 @@ int JabberMenuTransportLogin( WPARAM wParam, LPARAM lParam )
 		JabberSend( jabberThreadInfo->s, p );
 	}
 
+	JFreeVariant( &jid );
 	return 0;
 }
 

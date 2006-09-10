@@ -38,8 +38,6 @@ struct RosterList
 
 static CRITICAL_SECTION csLists;
 
-static void JabberListFreeItemInternal( JABBER_LIST_ITEM *item );
-
 static int compareListItems( JABBER_LIST_ITEM* p1, JABBER_LIST_ITEM* p2 )
 {
 	if ( p1->list != p2->list )
@@ -66,17 +64,8 @@ void JabberListUninit( void )
 	DeleteCriticalSection( &csLists );
 }
 
-void JabberListWipe( void )
-{
-	int i;
-
-	EnterCriticalSection( &csLists );
-	for( i=0; i < roster.count; i++ )
-		JabberListFreeItemInternal( roster.items[i] );
-
-	li.List_Destroy(( SortedList* )&roster );
-	LeaveCriticalSection( &csLists );
-}
+/////////////////////////////////////////////////////////////////////////////////////////
+// List item freeing
 
 static void JabberListFreeItemInternal( JABBER_LIST_ITEM *item )
 {
@@ -106,6 +95,19 @@ static void JabberListFreeItemInternal( JABBER_LIST_ITEM *item )
 	if ( item->type ) mir_free( item->type );
 	if ( item->service ) mir_free( item->service );
 	if ( item->list==LIST_ROSTER && item->ft ) delete item->ft;
+	mir_free( item );
+}
+
+void JabberListWipe( void )
+{
+	int i;
+
+	EnterCriticalSection( &csLists );
+	for( i=0; i < roster.count; i++ )
+		JabberListFreeItemInternal( roster.items[i] );
+
+	li.List_Destroy(( SortedList* )&roster );
+	LeaveCriticalSection( &csLists );
 }
 
 int JabberListExist( JABBER_LIST list, const TCHAR* jid )
@@ -163,12 +165,10 @@ void JabberListRemove( JABBER_LIST list, const TCHAR* jid )
 {
 	EnterCriticalSection( &csLists );
 	int i = JabberListExist( list, jid );
-	if ( !i ) {
-		LeaveCriticalSection( &csLists );
-		return;
+	if ( i != 0 ) {
+		JabberListFreeItemInternal( roster.items[ --i ] );
+		li.List_Remove(( SortedList* )&roster, i );
 	}
-	JabberListFreeItemInternal( roster.items[--i] );
-	li.List_Remove(( SortedList* )&roster, i );
 	LeaveCriticalSection( &csLists );
 }
 
@@ -182,7 +182,7 @@ void JabberListRemoveList( JABBER_LIST list )
 void JabberListRemoveByIndex( int index )
 {
 	EnterCriticalSection( &csLists );
-	if ( index>=0 && index<roster.count ) {
+	if ( index >= 0 && index < roster.count ) {
 		JabberListFreeItemInternal( roster.items[index] );
 		li.List_Remove(( SortedList* )&roster, index );
 	}
