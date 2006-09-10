@@ -57,7 +57,12 @@ Bugfixes:
   Fixed HTTP/HTTPS proxy support (removed useless gateway option), long messages are now sent properly
 
 New Features:
-  TODO: AIM file transfers (OFT) - like icq5 (including transfer thru server)
+  TODO: Oscar File Transfers - like icq5 (including transfer thru server)
+
+Improvements:
+  Added avatar validity checking
+  Client detection improvements
+
 
 0.3.7.2
 

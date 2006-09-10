@@ -56,10 +56,15 @@ static DWORD __stdcall oft_connectionThread(oscarthreadstartinfo *otsi);
 static void sendOscarPacket(oscar_connection *oc, icq_packet *packet);
 static int oft_handlePackets(oscar_connection *oc, unsigned char *buf, int len);
 static int oft_handleFileData(oscar_connection *oc, unsigned char *buf, int len);
+static int oft_handleProxyData(oscar_connection *oc, unsigned char *buf, int len);
 static void handleOFT2FramePacket(oscar_connection *oc, WORD datatype, BYTE *pBuffer, WORD wLen);
 static void sendOFT2FramePacket(oscar_connection *oc, WORD datatype);
 
 static void oft_sendPeerInit(oscar_connection *oc);
+
+static void proxy_sendInitTunnel(oscar_connection *oc);
+static void proxy_sendJoinTunnel(oscar_connection *oc, WORD wPort);
+
 
 static CRITICAL_SECTION oftMutex;
 static int oftTransferCount = 0;
@@ -439,9 +444,44 @@ void handleRecvServMsgOFT(unsigned char *buf, WORD wLen, DWORD dwUin, char *szUI
       }
       else if (wAckType == 2)
       { // First attempt failed, reverse requested
+        oscar_filetransfer *ft = FindOscarTransfer(hContact, dwID1, dwID2);
+
+        if (ft)
+        {
+          if (ft->sending)
+          {
+            // FIX ME: really create that connection
+            // OpenOscarConnection(hContact, ft, OCT_REVERSE);
+          }
+          else
+          { // FIX ME: can this really happen ??
+            SafeReleaseOscarTransfer(ft);
+          }
+        }
+        else
+          NetLog_Server("Error: Invalid request, no such transfer");
       }
       else if (wAckType == 3)
-      { // Reverse attempt failed, trying proxy
+      { // Transfering thru proxy, join tunnel
+        oscar_filetransfer *ft = FindOscarTransfer(hContact, dwID1, dwID2);
+
+        if (ft)
+        { // release possible previous listener
+          ReleaseOscarListener((oscar_listener**)&ft->listener);
+
+          ft->bUseProxy = getTLV(chain, 0x10, 1) ? 1 : 0;
+          ft->dwProxyIP = getDWordFromChain(chain, 0x02, 1);
+          ft->wProxyCode = getWordFromChain(chain, 0x05, 1);
+
+          if (ft->bUseProxy && ft->dwProxyIP)
+          { // Init proxy connection
+            OpenOscarConnection(hContact, ft, OCT_PROXY_RECV);
+          }
+          else
+            NetLog_Server("Error: Invalid proxy request");
+        }
+        else
+          NetLog_Server("Error: Invalid request, no such transfer");
       }
 
       disposeChain(&chain);
@@ -449,8 +489,17 @@ void handleRecvServMsgOFT(unsigned char *buf, WORD wLen, DWORD dwUin, char *szUI
     else
       NetLog_Server("Error: Missing TLV chain in OFT request");
   }
+  else if (wCommand == 1)
+  { // transfer canceled/aborted
+    // FIX ME: cleanup
+  }
+  else if (wCommand == 2)
+  { // transfer accepted - connection established
+    // TODO: should we do something here or ignore quietly ?
+  }
   else
-  { // TODO: handle other commands / cancels
+  {
+    NetLog_Server("Error: Unknown wCommand=0x%x in OFT request", wCommand);
   }
 }
 
@@ -462,7 +511,7 @@ DWORD oftFileAllow(HANDLE hContact, WPARAM wParam, LPARAM lParam)
 
   ft->szSavePath = null_strdup((char *)lParam);
 
-  OpenOscarConnection(hContact, ft, ft->bUseProxy ? OCT_PROXY: OCT_NORMAL);
+  OpenOscarConnection(hContact, ft, ft->bUseProxy ? OCT_PROXY_RECV: OCT_NORMAL);
 
   return wParam; // Success
 }
@@ -678,6 +727,8 @@ static DWORD __stdcall oft_connectionThread(oscarthreadstartinfo *otsi)
       oc.ft->dwRemoteExternalIP = otsi->dwRemoteIP;
       oc.hContact = oc.ft->hContact;
       oc.ft->connection = &oc;
+
+      ReleaseOscarListener((oscar_listener**)&oc.ft->listener);
     }
     else
     { // FT is already over, kill listener
@@ -702,14 +753,13 @@ static DWORD __stdcall oft_connectionThread(oscarthreadstartinfo *otsi)
 
   if (!oc.incoming)
   { // FIX ME: this needs more work for proxy & sending
-    if (oc.type == OCT_NORMAL)
+    if (oc.type == OCT_NORMAL || oc.type == OCT_REVERSE)
     { // create outgoing connection to peer
       NETLIBOPENCONNECTION nloc = {0};
       IN_ADDR addr = {0};
 
       nloc.cbSize = sizeof(nloc);
 
-      // FIX ME: Just for testing reverse
       if (oc.ft->dwRemoteExternalIP == oc.dwLocalExternalIP && oc.ft->dwRemoteInternalIP)
         addr.S_un.S_addr = htonl(oc.ft->dwRemoteInternalIP);
       else
@@ -728,43 +778,96 @@ static DWORD __stdcall oft_connectionThread(oscarthreadstartinfo *otsi)
           oft_sendFileRedirect(oc.dwUin, oc.szUid, oc.ft, oc.dwLocalInternalIP, listener->wPort, FALSE);
 // FIX ME: FT UI should support this
 //          ICQBroadcastAck(oc.ft->hContact, ACKTYPE_FILE, ACKRESULT_LISTENING, oc.ft, 0);
+
+          return 0;
         }
-        // FIX ME: try proxy
-        return 0;
+        nloc.szHost = OSCAR_PROXY_HOST;
+        nloc.wPort = OSCAR_PROXY_PORT;
+        oc.hConnection = NetLib_OpenConnection(ghServerNetlibUser, "Proxy ", &nloc);
+        if (!oc.hConnection)
+        { // proxy connection failed, we are out of possibilities
+          ICQBroadcastAck(oc.ft->hContact, ACKTYPE_FILE, ACKRESULT_FAILED, oc.ft, 0);
+
+          return 0;
+        }
+        oc.type = OCT_PROXY;
+        oc.status = OCS_PROXY;
+        oc.ft->connection = &oc;
+        // init proxy
+        proxy_sendInitTunnel(&oc);
       }
-      nloc.szHost = inet_ntoa(addr);
-      nloc.wPort = (WORD)oc.ft->dwRemotePort;
-      NetLog_Direct("%sConnecting to %s:%u", oc.type==OCT_REVERSE?"Reverse ":"", nloc.szHost, nloc.wPort);
+      else
+      {
+        nloc.szHost = inet_ntoa(addr);
+        nloc.wPort = (WORD)oc.ft->dwRemotePort;
+        oc.hConnection = NetLib_OpenConnection(ghDirectNetlibUser, oc.type==OCT_REVERSE?"Reverse ":NULL, &nloc);
+        if (!oc.hConnection)
+        { // connection failed, try reverse
+          oscar_listener* listener = CreateOscarListener(oc.ft, oft_newConnectionReceived);
 
-      oc.hConnection = NetLib_OpenConnection(ghDirectNetlibUser, &nloc);
-      if (!oc.hConnection)
-      { // connection failed, try reverse
-        oscar_listener* listener = CreateOscarListener(oc.ft, oft_newConnectionReceived);
-
-        if (listener)
-        { // we got listening port, fine send request
-          oc.ft->listener = listener;
-          oft_sendFileRedirect(oc.dwUin, oc.szUid, oc.ft, oc.dwLocalInternalIP, listener->wPort, FALSE);
+          if (listener)
+          { // we got listening port, fine send request
+            oc.ft->listener = listener;
+            oft_sendFileRedirect(oc.dwUin, oc.szUid, oc.ft, oc.dwLocalInternalIP, listener->wPort, FALSE);
 // FIX ME: FT UI should support this
-//          ICQBroadcastAck(oc.ft->hContact, ACKTYPE_FILE, ACKRESULT_LISTENING, oc.ft, 0);
+//            ICQBroadcastAck(oc.ft->hContact, ACKTYPE_FILE, ACKRESULT_LISTENING, oc.ft, 0);
+
+            return 0;
+          }
+          nloc.szHost = OSCAR_PROXY_HOST;
+          nloc.wPort = OSCAR_PROXY_PORT;
+          oc.hConnection = NetLib_OpenConnection(ghServerNetlibUser, "Proxy ", &nloc);
+          if (!oc.hConnection)
+          { // proxy connection failed, we are out of possibilities
+            ICQBroadcastAck(oc.ft->hContact, ACKTYPE_FILE, ACKRESULT_FAILED, oc.ft, 0);
+
+            return 0;
+          }
+          oc.type = OCT_PROXY;
+          oc.status = OCS_PROXY;
+          oc.ft->connection = &oc;
+          // init proxy
+          proxy_sendInitTunnel(&oc);
         }
-        // FIX ME: try proxy
+        else
+        { // ack normal connection
+          oc.ft->connection = &oc;
+          // acknowledge OFT - connection is ready
+          oft_sendFileAccept(oc.dwUin, oc.szUid, oc.ft);
+        }
+      }
+    }
+    else if (oc.type == OCT_PROXY_RECV)
+    { // create proxy connection, join tunnel
+      NETLIBOPENCONNECTION nloc = {0};
+      IN_ADDR addr = {0};
+
+      nloc.cbSize = sizeof(nloc);
+      addr.S_un.S_addr = htonl(oc.ft->dwProxyIP);
+      nloc.szHost = inet_ntoa(addr);
+      nloc.wPort = OSCAR_PROXY_PORT;
+      oc.hConnection = NetLib_OpenConnection(ghServerNetlibUser, "Proxy ", &nloc);
+      if (!oc.hConnection)
+      { // proxy connection failed, we are out of possibilities
+        ICQBroadcastAck(oc.ft->hContact, ACKTYPE_FILE, ACKRESULT_FAILED, oc.ft, 0);
+        // FIX ME: here probably should be notified the other side, that we failed
         return 0;
       }
+      oc.status = OCS_PROXY;
       oc.ft->connection = &oc;
-      // acknowledge OFT - connection is ready
-      oft_sendFileAccept(oc.dwUin, oc.szUid, oc.ft);
+      // Join proxy tunnel
+      proxy_sendJoinTunnel(&oc, oc.ft->wProxyCode);
     }
   }
   if (!oc.hConnection)
-  { // one more sanity chech
+  { // one more sanity check
     NetLog_Direct("Error: No OFT connection.");
     return 0;
   }
   // Connected, notify FT UI
   ICQBroadcastAck(oc.ft->hContact, ACKTYPE_FILE, ACKRESULT_INITIALISING, oc.ft, 0);
   // Init connection
-  if (oc.ft->sending)
+  if (oc.ft->sending && oc.status != OCS_PROXY)
     oft_sendPeerInit(&oc); // only if sending file...
 
   hPacketRecver = (HANDLE)CallService(MS_NETLIB_CREATEPACKETRECVER, (WPARAM)oc.hConnection, 8192);
@@ -863,6 +966,10 @@ static int oft_handlePackets(oscar_connection *oc, unsigned char *buf, int len)
     {
       return oft_handleFileData(oc, buf, len);
     }
+    else if (oc->status == OCS_PROXY)
+    {
+      return oft_handleProxyData(oc, buf, len);
+    }
     if (len < 6)
       break;
 
@@ -886,6 +993,78 @@ static int oft_handlePackets(oscar_connection *oc, unsigned char *buf, int len)
     handleOFT2FramePacket(oc, datatype, pBuf, (WORD)(datalen - 8));
 
     /* Increase pointers so we can check for more data */
+    buf += datalen;
+    len -= datalen;
+    bytesUsed += datalen;
+  }
+
+  return bytesUsed;
+}
+
+
+
+static int oft_handleProxyData(oscar_connection *oc, unsigned char *buf, int len)
+{
+  oscar_filetransfer *ft = oc->ft;
+  BYTE *pBuf; 
+  WORD datalen;
+  WORD wCommand;
+  int bytesUsed = 0;
+
+
+  while (len > 2)
+  {
+    pBuf = buf;
+
+    unpackWord(&pBuf, &datalen);
+    datalen += 2;
+
+    if (len < datalen)
+      break; // packet is not complete
+
+    pBuf += 2; // packet version
+    unpackWord(&pBuf, &wCommand);
+    pBuf += 6;
+    // handle packet
+    switch (wCommand) /// FIX ME: this needs length checking
+    {
+    case 0x01: // Error
+      {
+        WORD wError;
+
+        unpackWord(&pBuf, &wError);
+        NetLog_Server("Proxy Error %x", wError);
+        // FIX ME: this needs to be handled properly
+      }
+      break;
+
+    case 0x03: // Tunnel created
+      {
+        WORD wCode;
+        DWORD dwIP;
+
+        unpackWord(&pBuf, &wCode);
+        unpackDWord(&pBuf, &dwIP);
+
+        NetLog_Server("Proxy Tunnel ready, notify peer.");
+        oft_sendFileRedirect(oc->dwUin, oc->szUid, ft, dwIP, wCode, TRUE);
+      }
+      break;
+
+    case 0x05: // Connection ready
+      oc->status = OCS_CONNECTED; // connection ready to send packets
+      // signal we are ready
+      if (oc->type == OCT_PROXY_RECV)
+        oft_sendFileAccept(oc->dwUin, oc->szUid, ft);
+      NetLog_Server("Proxy Tunnel established");
+      if (ft->sending)
+        oft_sendPeerInit(oc); // only if sending file...
+      break;
+
+    default:
+      NetLog_Server("Unknown proxy command 0x%x", wCommand);
+    }
+
     buf += datalen;
     len -= datalen;
     bytesUsed += datalen;
@@ -1151,6 +1330,56 @@ static void handleOFT2FramePacket(oscar_connection *oc, WORD datatype, BYTE *pBu
       return;
     }
   }
+}
+
+
+//
+// Proxy packets
+/////////////////////////////
+
+static void proxy_sendInitTunnel(oscar_connection *oc)
+{
+  icq_packet packet;
+
+  packet.wLen = 0x30;
+  init_generic_packet(&packet, 2);
+
+  packWord(&packet, (WORD)(packet.wLen - 2));
+  packWord(&packet, OSCAR_PROXY_VERSION);
+  packWord(&packet, 0x02);                      // wCommand
+  packDWord(&packet, 0);                        // Unknown
+  packWord(&packet, 0);                         // Flags?
+  packUIN(&packet, dwLocalUIN);
+  packLEDWord(&packet, oc->ft->pMessage.dwMsgID1);
+  packLEDWord(&packet, oc->ft->pMessage.dwMsgID2);
+  packDWord(&packet, 0x00010010);               // TLV(1)
+  packGUID(&packet, MCAP_OSCAR_FT);
+
+  sendOscarPacket(oc, &packet);
+}
+
+
+
+static void proxy_sendJoinTunnel(oscar_connection *oc, WORD wPort)
+{
+  icq_packet packet;
+
+  packet.wLen = 0x32;
+  init_generic_packet(&packet, 2);
+
+  packWord(&packet, (WORD)(packet.wLen - 2));
+  packWord(&packet, OSCAR_PROXY_VERSION);
+  packWord(&packet, 0x04);                      // wCommand
+  packDWord(&packet, 0);                        // Unknown
+  packWord(&packet, 0);                         // Flags?
+  packUIN(&packet, dwLocalUIN);
+  packWord(&packet, wPort);
+  packLEDWord(&packet, oc->ft->pMessage.dwMsgID1);
+  packLEDWord(&packet, oc->ft->pMessage.dwMsgID2);
+  packDWord(&packet, 0x00010010);               // TLV(1)
+  packGUID(&packet, MCAP_OSCAR_FT);
+
+  sendOscarPacket(oc, &packet);
 }
 
 

@@ -508,9 +508,7 @@ static DWORD __stdcall icq_directThread(directthreadstartinfo *dtsi)
     }
     nloc.szHost = inet_ntoa(addr);
     nloc.wPort = (WORD)dc.dwRemotePort;
-    NetLog_Direct("%sConnecting to %s:%u", dc.type==DIRECTCONN_REVERSE?"Reverse ":"", nloc.szHost, nloc.wPort);
-
-    dc.hConnection = NetLib_OpenConnection(ghDirectNetlibUser, &nloc);
+    dc.hConnection = NetLib_OpenConnection(ghDirectNetlibUser, dc.type==DIRECTCONN_REVERSE?"Reverse ":NULL, &nloc);
     if (dc.hConnection == NULL)
     {
       if (dc.type != DIRECTCONN_REVERSE)

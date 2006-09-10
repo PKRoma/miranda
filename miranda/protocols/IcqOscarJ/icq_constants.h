@@ -64,6 +64,7 @@
 #define DEFAULT_AVATARS_ENABLED     1
 #define DEFAULT_LOAD_AVATARS        1
 #define DEFAULT_LINK_AVATARS        1
+#define DEFAULT_AVATARS_CHECK       1
 #define DEFAULT_XSTATUS_ENABLED     1
 #define DEFAULT_XSTATUS_AUTO        1
 #define DEFAULT_XSTATUS_RESET       0
@@ -530,7 +531,7 @@
 
 
 // Internal Constants
-#define ICQ_PLUG_VERSION            0x80030801
+#define ICQ_PLUG_VERSION            0x80030802
 #define ICQ_VERSION                 8
 #define DC_TYPE                     DC_NORMAL // Used for DC settings
 #define MAX_NICK_SIZE               32
@@ -548,5 +549,8 @@
 #define CLIENT_MD5_STRING           "AOL Instant Messenger (SM)"
 #define UNIQUEIDSETTING             "UIN"
 #define UINMAXLEN                   11 // DWORD string max len + 1
+#define OSCAR_PROXY_HOST            "ars.oscar.aol.com"
+#define OSCAR_PROXY_PORT            5190
+#define OSCAR_PROXY_VERSION         0x044A
 
 #endif /* __ICQ_CONSTANTS_H */

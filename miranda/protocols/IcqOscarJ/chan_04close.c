@@ -182,8 +182,7 @@ static int connectNewServer(serverthread_info *info)
       NetLog_Server("Closed connection to login server");
     }
 
-    NetLog_Server("Connecting to %s", info->newServer);
-    hServerConn = NetLib_OpenConnection(ghServerNetlibUser, &nloc);
+    hServerConn = NetLib_OpenConnection(ghServerNetlibUser, NULL, &nloc);
     if (hServerConn)
     { /* Time to recreate the packet receiver */
       hServerPacketRecver = (HANDLE)CallService(MS_NETLIB_CREATEPACKETRECVER, (WPARAM)hServerConn, 8192);

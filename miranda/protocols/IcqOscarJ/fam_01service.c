@@ -407,7 +407,7 @@ void handleServiceFam(unsigned char* pBuffer, WORD wBufferLength, snac_header* p
       nloc.szHost = pServer; 
       nloc.wPort = wPort;
 
-      hConnection = NetLib_OpenConnection(ghServerNetlibUser, &nloc);
+      hConnection = NetLib_OpenConnection(ghServerNetlibUser, wFamily == 0x10 ? "Avatar " : NULL, &nloc);
       
       if (hConnection == NULL)
       {

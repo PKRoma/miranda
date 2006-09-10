@@ -61,6 +61,7 @@ typedef struct {
   int currentIsDir;
   int bUseProxy;
   DWORD dwProxyIP;
+  WORD wProxyCode;
   DWORD dwRemoteInternalIP;
   DWORD dwRemoteExternalIP;
   DWORD dwRemotePort;
@@ -125,12 +126,14 @@ typedef struct {
 #define OCT_NORMAL      0
 #define OCT_REVERSE     1
 #define OCT_PROXY       2
+#define OCT_PROXY_RECV  4
 #define OCT_CLOSING     10
 
 #define OCS_READY       0
 #define OCS_CONNECTED   1
 #define OCS_NEGOTIATION 2
 #define OCS_DATA        4
+#define OCS_PROXY       8
 
 typedef struct {
   WORD wPort;

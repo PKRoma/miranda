@@ -75,7 +75,7 @@ static DWORD __stdcall icq_serverThread(serverthread_start_info* infoParam)
   {
     NETLIBOPENCONNECTION nloc = infoParam->nloc;
 
-    hServerConn = NetLib_OpenConnection(ghServerNetlibUser, &nloc);
+    hServerConn = NetLib_OpenConnection(ghServerNetlibUser, NULL, &nloc);
 
     SAFE_FREE((void**)&nloc.szHost);
   }

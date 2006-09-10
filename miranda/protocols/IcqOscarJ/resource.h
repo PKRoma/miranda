@@ -178,6 +178,7 @@
 #define IDC_SAVETOSERVER                1533
 #define IDC_ENABLEAVATARS               1536
 #define IDC_AUTOLOADAVATARS             1537
+#define IDC_STRICTAVATARCHECK           1539
 #define IDC_WEBAWARE                    1546
 #define IDC_DCALLOW_ANY                 1547
 #define IDC_DCALLOW_CLIST               1548

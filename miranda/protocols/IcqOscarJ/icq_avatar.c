@@ -1060,19 +1060,6 @@ void handleAvatarServiceFam(unsigned char* pBuffer, WORD wBufferLength, snac_hea
     NetLog_Server(" *** Yeehah, avatar login sequence complete");
     break;
 
-/*  case ICQ_SERVER_PAUSE:
-    NetLog_Server("Avatar server is going down in a few seconds... (Flags: %u, Ref: %u)", pSnacHeader->wFlags, pSnacHeader->dwRef);
-    // This is the list of groups that we want to have on the next server
-    serverPacketInit(&packet, 14);
-    packFNACHeader(&packet, ICQ_SERVICE_FAMILY, ICQ_CLIENT_PAUSE_ACK);
-    packWord(&packet,ICQ_SERVICE_FAMILY);
-    packWord(&packet,ICQ_AVATAR_FAMILY);
-    sendAvatarPacket(&packet, atsi);
-#ifdef _DEBUG
-    NetLog_Server("Sent server pause ack");
-#endif 
-    break; // TODO: avatar migration is not working, should be ?*/
-
   default:
     NetLog_Server("Warning: Ignoring SNAC(x%02x,x%02x) - Unknown SNAC (Flags: %u, Ref: %u)", ICQ_SERVICE_FAMILY, pSnacHeader->wSubtype, pSnacHeader->wFlags, pSnacHeader->dwRef);
     break;
@@ -1148,55 +1135,77 @@ void handleAvatarFam(unsigned char *pBuffer, WORD wBufferLength, snac_header* pS
         if (datalen > 4)
         { // store to file...
           int dwPaFormat;
+          int aValid = 1;
 
-          NetLog_Server("Received user avatar, storing (%d bytes).", datalen);
-
-          dwPaFormat = DetectAvatarFormatBuffer(pBuffer);
-          ICQWriteContactSettingByte(ac->hContact, "AvatarType", (BYTE)dwPaFormat);
-          ai.format = dwPaFormat; // set the format
-          AddAvatarExt(dwPaFormat, szMyFile);
-          strcpy(ai.filename, szMyFile);
-
-          out = _open(szMyFile, _O_BINARY | _O_CREAT | _O_TRUNC | _O_WRONLY, _S_IREAD | _S_IWRITE);
-          if (out) 
-          {
-            DBVARIANT dbv;
-
-            _write(out, pBuffer, datalen);
-            _close(out);
+          if (ac->hashlen == 0x14 && ac->hash[3] == 0x10 && ICQGetContactSettingByte(NULL, "StrictAvatarCheck", DEFAULT_AVATARS_CHECK))
+          { // check only standard hashes
+            md5_state_t state;
+            md5_byte_t digest[16];
             
-            if (dwPaFormat != PA_FORMAT_XML && dwPaFormat != PA_FORMAT_UNKNOWN)
-              LinkContactPhotoToFile(ac->hContact, szMyFile); // this should not be here, but no other simple solution available
+            md5_init(&state);
+            md5_append(&state, (const md5_byte_t *)pBuffer, datalen);
+            md5_finish(&state, digest);
+            // check if received data corresponds to specified hash
+            if (memcmp(ac->hash+4, digest, 0x10)) aValid = 0;
+          }
 
-            if (!ac->hContact) // our avatar, set filename
-              storeMyAvatarFileName(szMyFile);
-            else
-            { // contact's avatar set hash
-              if (!ICQGetContactSetting(ac->hContact, "AvatarHash", &dbv))
-              {
-                if (ICQWriteContactSettingBlob(ac->hContact, "AvatarSaved", dbv.pbVal, dbv.cpbVal))
-                  NetLog_Server("Failed to set file hash.");
+          if (aValid)
+          {
+            NetLog_Server("Received user avatar, storing (%d bytes).", datalen);
 
-                ICQFreeVariant(&dbv);
-              }
+            dwPaFormat = DetectAvatarFormatBuffer(pBuffer);
+            ICQWriteContactSettingByte(ac->hContact, "AvatarType", (BYTE)dwPaFormat);
+            ai.format = dwPaFormat; // set the format
+            AddAvatarExt(dwPaFormat, szMyFile);
+            strcpy(ai.filename, szMyFile);
+
+            out = _open(szMyFile, _O_BINARY | _O_CREAT | _O_TRUNC | _O_WRONLY, _S_IREAD | _S_IWRITE);
+            if (out) 
+            {
+              DBVARIANT dbv;
+
+              _write(out, pBuffer, datalen);
+              _close(out);
+            
+              if (dwPaFormat != PA_FORMAT_XML && dwPaFormat != PA_FORMAT_UNKNOWN)
+                LinkContactPhotoToFile(ac->hContact, szMyFile); // this should not be here, but no other simple solution available
+
+              if (!ac->hContact) // our avatar, set filename
+                storeMyAvatarFileName(szMyFile);
               else
-              {
-                NetLog_Server("Warning: DB error (no hash in DB).");
-                // the hash was lost, try to fix that
-                if (ICQWriteContactSettingBlob(ac->hContact, "AvatarSaved", ac->hash, ac->hashlen) ||
-                  ICQWriteContactSettingBlob(ac->hContact, "AvatarHash", ac->hash, ac->hashlen))
+              { // contact's avatar set hash
+                if (!ICQGetContactSetting(ac->hContact, "AvatarHash", &dbv))
                 {
-                  NetLog_Server("Failed to save avatar hash to DB");
+                  if (ICQWriteContactSettingBlob(ac->hContact, "AvatarSaved", dbv.pbVal, dbv.cpbVal))
+                    NetLog_Server("Failed to set file hash.");
+
+                  ICQFreeVariant(&dbv);
+                }
+                else
+                {
+                  NetLog_Server("Warning: DB error (no hash in DB).");
+                  // the hash was lost, try to fix that
+                  if (ICQWriteContactSettingBlob(ac->hContact, "AvatarSaved", ac->hash, ac->hashlen) ||
+                    ICQWriteContactSettingBlob(ac->hContact, "AvatarHash", ac->hash, ac->hashlen))
+                  {
+                    NetLog_Server("Failed to save avatar hash to DB");
+                  }
                 }
               }
-            }
 
-            ICQBroadcastAck(ac->hContact, ACKTYPE_AVATAR, ACKRESULT_SUCCESS, (HANDLE)&ai, 0);
+              ICQBroadcastAck(ac->hContact, ACKTYPE_AVATAR, ACKRESULT_SUCCESS, (HANDLE)&ai, 0);
+            }  
+          }
+          else
+          { // avatar is broken
+            NetLog_Server("Error: Avatar data does not match avatar hash, ignoring.");
+
+            ICQBroadcastAck(ac->hContact, ACKTYPE_AVATAR, ACKRESULT_FAILED, (HANDLE)&ai, 0);
           }
         }
         else
         { // the avatar is empty
-          NetLog_Server("Received empty avatar, nothing written.", datalen);
+          NetLog_Server("Received empty avatar, nothing written.");
 
           ICQBroadcastAck(ac->hContact, ACKTYPE_AVATAR, ACKRESULT_FAILED, (HANDLE)&ai, 0);
         }

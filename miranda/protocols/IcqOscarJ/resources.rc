@@ -124,7 +124,7 @@ BEGIN
     LTEXT           "",IDC_LEVELDESCR,72,216,230,8,SS_NOPREFIX
 END
 
-IDD_OPT_ICQCONTACTS DIALOGEX 0, 0, 314, 228
+IDD_OPT_ICQCONTACTS DIALOGEX 0, 0, 314, 236
 STYLE DS_FIXEDSYS | WS_CHILD | WS_VISIBLE
 EXSTYLE WS_EX_CONTROLPARENT
 FONT 8, "MS Shell Dlg", 0, 0, 0x1
@@ -143,21 +143,23 @@ BEGIN
     CONTROL         "Update contacts' details on the server's list when I change them in mine",
                     IDC_SAVETOSERVER,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,
                     12,59,290,10
-    GROUPBOX        "ICQ avatars",IDC_STATIC,4,100,306,53
+    GROUPBOX        "ICQ avatars",IDC_STATIC,4,100,306,70
     CONTROL         "Enable avatar support",IDC_ENABLEAVATARS,"Button",
                     BS_AUTOCHECKBOX | WS_TABSTOP,12,112,290,10
+    CONTROL         "Check avatar validity before saving *",IDC_STRICTAVATARCHECK,"Button",
+                    BS_AUTOCHECKBOX | WS_TABSTOP,12,126,290,10
     CONTROL         "Load avatars automatically (like ICQ Lite)",
                     IDC_AUTOLOADAVATARS,"Button",BS_AUTOCHECKBOX | 
-                    WS_TABSTOP,12,124,290,10
+                    WS_TABSTOP,12,140,290,10
     CONTROL         "Link avatars as contact photos (mToolTip photos)",
                     IDC_LINKAVATARS,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,12,
-                    138,290,10
+                    154,290,10
     LTEXT           "You will need to reconnect to the ICQ network for the changes you have made on this page to take effect.",
-                    IDC_RECONNECTREQD,12,161,290,16,NOT WS_VISIBLE
+                    IDC_RECONNECTREQD,12,176,290,16,NOT WS_VISIBLE
     LTEXT           "You cannot enable/disable the server-side contact list while you are connected to the ICQ network.",
-                    IDC_OFFLINETOENABLE,12,182,290,16,NOT WS_VISIBLE
+                    IDC_OFFLINETOENABLE,12,196,290,16,NOT WS_VISIBLE
     CTEXT           "Note: The options marked with an asterisk have important side-effects or caveats that may not be initially apparent documented in the help.",
-                    IDC_STATIC,12,203,290,16
+                    IDC_STATIC,12,216,290,16
 END
 
 IDD_OPT_ICQFEATURES DIALOGEX 0, 0, 314, 236
@@ -542,7 +544,7 @@ BEGIN
         VERTGUIDE, 12
         VERTGUIDE, 302
         TOPMARGIN, 4
-        BOTTOMMARGIN, 224
+        BOTTOMMARGIN, 232
     END
 
     IDD_OPT_ICQFEATURES, DIALOG
@@ -664,7 +666,7 @@ END
 //
 
 VS_VERSION_INFO VERSIONINFO
- FILEVERSION 0,3,8,1
+ FILEVERSION 0,3,8,2
  PRODUCTVERSION 0,6,0,0
  FILEFLAGSMASK 0x3fL
 #ifdef _DEBUG
@@ -683,7 +685,7 @@ BEGIN
             VALUE "Comments", "Licensed under the terms of the GNU General Public License\0"
             VALUE "CompanyName", "\0"
             VALUE "FileDescription", "ICQ protocol plugin for Miranda IM, enhanced\0"
-            VALUE "FileVersion", "0, 3, 8, 1\0"
+            VALUE "FileVersion", "0, 3, 8, 2\0"
             VALUE "InternalName", "ICQJ protocol plugin for Miranda IM\0"
             VALUE "LegalCopyright", "Copyright (C) 2000-2006 Joe Kucera, Angeli-Ka, Bio, Martin Öberg, Richard Hughes, Jon Keating\0"
             VALUE "OriginalFilename", "ICQ.dll\0"

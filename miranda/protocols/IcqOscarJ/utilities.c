@@ -1414,9 +1414,13 @@ void ContactPhotoSettingChanged(HANDLE hContact)
 
 
 
-HANDLE NetLib_OpenConnection(HANDLE hUser, NETLIBOPENCONNECTION* nloc)
+HANDLE NetLib_OpenConnection(HANDLE hUser, const char* szIdent, NETLIBOPENCONNECTION* nloc)
 {
-  HANDLE hConnection = (HANDLE)CallService(MS_NETLIB_OPENCONNECTION, (WPARAM)hUser, (LPARAM)nloc);
+  HANDLE hConnection;
+
+  Netlib_Logf(hUser, "%sConnecting to %s:%u", szIdent?szIdent:"", nloc->szHost, nloc->wPort);
+
+  hConnection = (HANDLE)CallService(MS_NETLIB_OPENCONNECTION, (WPARAM)hUser, (LPARAM)nloc);
   if (!hConnection && (GetLastError() == 87))
   { // this ensures, an old Miranda will be able to connect also
     nloc->cbSize = NETLIBOPENCONNECTION_V1_SIZE;
