@@ -1,22 +1,22 @@
 // ---------------------------------------------------------------------------80
 //                ICQ plugin for Miranda Instant Messenger
 //                ________________________________________
-// 
+//
 // Copyright © 2000,2001 Richard Hughes, Roland Rabien, Tristan Van de Vreede
 // Copyright © 2001,2002 Jon Keating, Richard Hughes
 // Copyright © 2002,2003,2004 Martin Öberg, Sam Kothari, Robert Rainwater
 // Copyright © 2004,2005,2006 Joe Kucera
-// 
+//
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License
 // as published by the Free Software Foundation; either version 2
 // of the License, or (at your option) any later version.
-// 
+//
 // This program is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU General Public License for more details.
-// 
+//
 // You should have received a copy of the GNU General Public License
 // along with this program; if not, write to the Free Software
 // Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
@@ -59,7 +59,7 @@ static int oft_handleFileData(oscar_connection *oc, unsigned char *buf, int len)
 static void handleOFT2FramePacket(oscar_connection *oc, WORD datatype, BYTE *pBuffer, WORD wLen);
 static void sendOFT2FramePacket(oscar_connection *oc, WORD datatype);
 
-void oft_sendPeerInit(oscar_connection *oc);
+static void oft_sendPeerInit(oscar_connection *oc);
 
 static CRITICAL_SECTION oftMutex;
 static int oftTransferCount = 0;
@@ -390,7 +390,7 @@ void handleRecvServMsgOFT(unsigned char *buf, WORD wLen, DWORD dwUin, char *szUI
           tLen -= 8;
           // Filename
           wFilenameLength = tLen - 1;
-          pszFileName = (char*)_alloca(tLen); 
+          pszFileName = (char*)_alloca(tLen);
           unpackString(&tBuf, pszFileName, wFilenameLength);
           pszFileName[wFilenameLength] = '\0';
           { // apply Filename encoding
@@ -419,7 +419,7 @@ void handleRecvServMsgOFT(unsigned char *buf, WORD wLen, DWORD dwUin, char *szUI
           ft->szFilename = pszFileName;
           ft->szDescription = pszDescription;
           ft->fileId = -1;
-    
+
           // Send chain event
           szBlob = (char*)_alloca(sizeof(DWORD) + strlennull(pszFileName) + strlennull(pszDescription) + 2);
           *(PDWORD)szBlob = (DWORD)ft;
@@ -504,7 +504,7 @@ DWORD oftFileCancel(HANDLE hContact, WPARAM wParam, LPARAM lParam)
   ICQBroadcastAck(hContact, ACKTYPE_FILE, ACKRESULT_FAILED, ft, 0);
 
   if (ft->connection)
-  { 
+  {
     CloseOscarConnection((oscar_connection*)ft->connection);
   }
   // Release structure
@@ -843,7 +843,7 @@ static void sendOscarPacket(oscar_connection *oc, icq_packet *packet)
       CloseOscarConnection(oc);
     }
   }
-  
+
   SAFE_FREE(&packet->pData);
 }
 
@@ -851,7 +851,7 @@ static void sendOscarPacket(oscar_connection *oc, icq_packet *packet)
 
 static int oft_handlePackets(oscar_connection *oc, unsigned char *buf, int len)
 {
-  BYTE *pBuf; 
+  BYTE *pBuf;
   DWORD dwHead;
   WORD datalen;
   WORD datatype;
@@ -903,7 +903,7 @@ static int oft_handleFileData(oscar_connection *oc, unsigned char *buf, int len)
   int bytesUsed = 0;
 
   // do not accept more data than expected
-  if (ft->dwThisFileSize - ft->dwFileBytesDone < dwLen) 
+  if (ft->dwThisFileSize - ft->dwFileBytesDone < dwLen)
     dwLen = ft->dwThisFileSize - ft->dwFileBytesDone;
 
   if (ft->fileId == -1)
@@ -918,7 +918,7 @@ static int oft_handleFileData(oscar_connection *oc, unsigned char *buf, int len)
   ft->dwBytesDone += dwLen;
   ft->dwFileBytesDone += dwLen;
 
-  if (GetTickCount() > ft->dwLastNotify + 700 || ft->dwFileBytesDone == ft->dwThisFileSize) 
+  if (GetTickCount() > ft->dwLastNotify + 700 || ft->dwFileBytesDone == ft->dwThisFileSize)
   { // notify FT UI of our progress, at most every 700ms - do not be faster than Miranda
     PROTOFILETRANSFERSTATUS pfts;
 
@@ -1096,7 +1096,7 @@ static void handleOFT2FramePacket(oscar_connection *oc, WORD datatype, BYTE *pBu
           _mkdir(szNewDir); // FIX ME: this will fail for multi sub-sub-sub-dirs at once
         }
         else
-          ft->szThisSubdir = null_strdup(""); 
+          ft->szThisSubdir = null_strdup("");
       }
 
       /* no cheating with paths */
@@ -1171,7 +1171,7 @@ static void sendOFT2FramePacket(oscar_connection *oc, WORD datatype)
 {
   oscar_filetransfer *ft = oc->ft;
   icq_packet packet;
-  
+
   packet.wLen = 192 + ft->cbRawFileName;
   init_generic_packet(&packet, 0);
   // Basic Oscar Frame
