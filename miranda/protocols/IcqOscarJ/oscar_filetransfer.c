@@ -336,8 +336,8 @@ void handleRecvServMsgOFT(unsigned char *buf, WORD wLen, DWORD dwUin, char *szUI
         ft->pMessage.dwMsgID2 = dwID2;
         ft->bUseProxy = getTLV(chain, 0x10, 1) ? 1 : 0;
         ft->dwProxyIP = getDWordFromChain(chain, 0x02, 1);
-        ft->dwRemoteExternalIP = getDWordFromChain(chain, 0x03, 1);
-        ft->dwRemoteInternalIP = getDWordFromChain(chain, 0x04, 1);
+        ft->dwRemoteInternalIP = getDWordFromChain(chain, 0x03, 1);
+        ft->dwRemoteExternalIP = getDWordFromChain(chain, 0x04, 1);
         ft->dwRemotePort = getWordFromChain(chain, 0x05, 1);
 
         { // User Message
