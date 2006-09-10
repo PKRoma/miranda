@@ -61,10 +61,9 @@ typedef struct {
   int currentIsDir;
   int bUseProxy;
   DWORD dwProxyIP;
-  WORD wProxyCode;
   DWORD dwRemoteInternalIP;
   DWORD dwRemoteExternalIP;
-  DWORD dwRemotePort;
+  WORD wRemotePort;
   char *szSavePath;
   char *szDescription;
   char *szFilename;

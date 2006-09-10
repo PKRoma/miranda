@@ -338,7 +338,7 @@ void handleRecvServMsgOFT(unsigned char *buf, WORD wLen, DWORD dwUin, char *szUI
         ft->dwProxyIP = getDWordFromChain(chain, 0x02, 1);
         ft->dwRemoteInternalIP = getDWordFromChain(chain, 0x03, 1);
         ft->dwRemoteExternalIP = getDWordFromChain(chain, 0x04, 1);
-        ft->dwRemotePort = getWordFromChain(chain, 0x05, 1);
+        ft->wRemotePort = getWordFromChain(chain, 0x05, 1);
 
         { // User Message
           oscar_tlv* tlv = getTLV(chain, 0x0C, 1);
@@ -471,7 +471,7 @@ void handleRecvServMsgOFT(unsigned char *buf, WORD wLen, DWORD dwUin, char *szUI
 
           ft->bUseProxy = getTLV(chain, 0x10, 1) ? 1 : 0;
           ft->dwProxyIP = getDWordFromChain(chain, 0x02, 1);
-          ft->wProxyCode = getWordFromChain(chain, 0x05, 1);
+          ft->wRemotePort = getWordFromChain(chain, 0x05, 1);
 
           if (ft->bUseProxy && ft->dwProxyIP)
           { // Init proxy connection
@@ -799,7 +799,7 @@ static DWORD __stdcall oft_connectionThread(oscarthreadstartinfo *otsi)
       else
       {
         nloc.szHost = inet_ntoa(addr);
-        nloc.wPort = (WORD)oc.ft->dwRemotePort;
+        nloc.wPort = oc.ft->wRemotePort;
         oc.hConnection = NetLib_OpenConnection(ghDirectNetlibUser, oc.type==OCT_REVERSE?"Reverse ":NULL, &nloc);
         if (!oc.hConnection)
         { // connection failed, try reverse
@@ -856,7 +856,7 @@ static DWORD __stdcall oft_connectionThread(oscarthreadstartinfo *otsi)
       oc.status = OCS_PROXY;
       oc.ft->connection = &oc;
       // Join proxy tunnel
-      proxy_sendJoinTunnel(&oc, oc.ft->wProxyCode);
+      proxy_sendJoinTunnel(&oc, oc.ft->wRemotePort);
     }
   }
   if (!oc.hConnection)
