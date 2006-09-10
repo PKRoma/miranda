@@ -40,6 +40,7 @@ void yahoo_http_get(int id, const char *url, const char *cookies,
 void yahoo_get_url_fd(int id, const char *url, const struct yahoo_data *yd,
 		yahoo_get_url_handle_callback callback, void *data);
 
+int url_to_host_port_path(const char *url, char *host, int *port, char *path);
 
 #ifdef __cplusplus
 }

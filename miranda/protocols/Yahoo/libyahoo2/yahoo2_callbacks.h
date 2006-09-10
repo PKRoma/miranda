@@ -769,6 +769,26 @@ int YAHOO_CALLBACK_TYPE(ext_yahoo_connect)(const char *host, int port, int type)
 int YAHOO_CALLBACK_TYPE(ext_yahoo_connect_async)(int id, const char *host, int port, int type,
 		yahoo_connect_callback callback, void *callback_data);
 
+/*
+ * Name: ext_yahoo_send_http_request
+ * 	This function opens a connection and sends the proper request for a specified resource
+ *  by utilizing the provided method.
+ *
+ *  This callback allows us to do proper proxy authentication on the user level. As well as
+ *  possibly using some other routines for HTTP requests. (miranda has HTTP netlib api)
+ * Params:
+ * 	id   - the id that identifies this connection
+ *  method - HTTP method to use HEAD/GET/POST
+ * 	url  - the URL that specifies the resource to reference
+ *  cookies - cookies to send with the request
+ *  content_length - the length of content to POST 
+ * 	callback - function to call when connect completes
+ * 	callback_data - data to pass to the callback function
+ */
+void YAHOO_CALLBACK_TYPE(ext_yahoo_send_http_request)(int id, const char *method, const char *url, const char *cookies, long content_length,
+		yahoo_get_fd_callback callback, void *callback_data);
+
+
 #ifdef USE_STRUCT_CALLBACKS
 };
 

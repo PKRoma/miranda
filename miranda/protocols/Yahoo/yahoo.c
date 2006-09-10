@@ -437,6 +437,7 @@ void ext_yahoo_status_logon(int id, const char *who, int stat, const char *msg, 
 		case 262655: s = "< Yahoo 6.x (Yahoo 5.x?)"; break;
 		case 278527: s = "Yahoo 6.x"; break;
 		case 524223: s = "Yahoo 7.x"; break;
+		case 1572799: s = "Yahoo 8.x"; break;
 	}
 	
 	if (s != NULL) 
@@ -1211,6 +1212,62 @@ int ext_yahoo_connect(const char *h, int p, int type)
     return (int)con;
 }
 
+void ext_yahoo_send_http_request(int id, const char *method, const char *url, const char *cookies, long content_length,
+		yahoo_get_fd_callback callback, void *callback_data)
+{
+/*	if (lstrcmpi(method, "GET") == 0) 
+		yahoo_http_get(id, url, cookies, callback, callback_data);
+	else if (lstrcmpi(method, "POST") == 0) 
+		yahoo_http_post(id, url, cookies, content_length, callback, callback_data);
+	else 
+		LOG(("ERROR: Unknown method: %s", method));
+*/
+    NETLIBHTTPREQUEST nlhr={0};
+	NETLIBHTTPHEADER httpHeaders[5];
+	int fd, error = 0;
+
+	char host[255];
+	int port = 80;
+	char path[255];
+	char z[1024];
+	
+	if(!url_to_host_port_path(url, host, &port, path))
+		return;
+
+	fd = ext_yahoo_connect(host, port, YAHOO_CONNECTION_FT);
+	nlhr.cbSize=sizeof(nlhr);
+	nlhr.requestType=(lstrcmpi(method, "GET") == 0) ? REQUEST_GET : REQUEST_POST;
+	nlhr.flags=NLHRF_DUMPASTEXT|NLHRF_GENERATEHOST|NLHRF_SMARTREMOVEHOST|NLHRF_SMARTAUTHHEADER|NLHRF_HTTP11;
+	nlhr.szUrl=(char *)url;
+	nlhr.headers = httpHeaders;
+	nlhr.headersCount = 3;
+	
+	httpHeaders[0].szName="Accept";
+	httpHeaders[0].szValue="*/*";
+	httpHeaders[1].szName="User-Agent";
+	httpHeaders[1].szValue="Mozilla/4.0 (compatible; MSIE 5.5)";
+	httpHeaders[2].szName="Pragma";
+	httpHeaders[2].szValue="no-cache";
+	
+	if (cookies != NULL && cookies[0] != '\0') {
+		httpHeaders[3].szName="Cookie";
+		httpHeaders[3].szValue=(char *)cookies;
+		nlhr.headersCount = 4;
+	}
+	
+	if (nlhr.requestType == REQUEST_POST) {
+		httpHeaders[nlhr.headersCount].szName="Content-Length";
+		mir_snprintf(z, 1024, "%d", content_length);
+		httpHeaders[nlhr.headersCount].szValue=z;
+
+		nlhr.headersCount++;
+	}
+	
+	error = CallService(MS_NETLIB_SENDHTTPREQUEST,(WPARAM)fd,(LPARAM)&nlhr);
+    
+	callback(id, fd, error == SOCKET_ERROR, callback_data);
+}
+
 /*************************************
  * Callback handling code starts here
  */
@@ -1377,6 +1434,7 @@ void register_callbacks()
 	yc.ext_yahoo_remove_handler = ext_yahoo_remove_handler;
 	yc.ext_yahoo_connect = ext_yahoo_connect;
 	yc.ext_yahoo_connect_async = ext_yahoo_connect_async;
+	yc.ext_yahoo_send_http_request = ext_yahoo_send_http_request;
 
 	yc.ext_yahoo_got_stealthlist = ext_yahoo_got_stealth;
 	yc.ext_yahoo_got_ping  = ext_yahoo_got_ping;
