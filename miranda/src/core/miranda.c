@@ -509,12 +509,18 @@ int GetMemoryManagerInterface(WPARAM wParam, LPARAM lParam)
 	struct MM_INTERFACE *mmi = (struct MM_INTERFACE*) lParam;
 	if ( mmi == NULL )
 		return 1;
-	if ( mmi->cbSize != sizeof(struct MM_INTERFACE))
-		return 1;
 
 	mmi->mmi_malloc = mir_alloc;
 	mmi->mmi_realloc = mir_realloc;
 	mmi->mmi_free = mir_free;
+
+	if ( mmi->cbSize != sizeof(struct MM_INTERFACE)) {
+		#if defined( _DEBUG )
+			DebugBreak();
+		#endif
+		return 1;
+	}
+
 	return 0;
 }
 
