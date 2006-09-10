@@ -348,8 +348,7 @@
 					<Tool
 						Name="VCCLCompilerTool"
 						Optimization="1"
-						AdditionalIncludeDirectories=""
-					/>
+						AdditionalIncludeDirectories=""/>
 				</FileConfiguration>
 				<FileConfiguration
 					Name="Debug Unicode|Win32">
@@ -1254,6 +1253,9 @@
 			</File>
 			<File
 				RelativePath="icos\key.ico">
+			</File>
+			<File
+				RelativePath=".\icos\login.ico">
 			</File>
 			<File
 				RelativePath="icos\message.ico">

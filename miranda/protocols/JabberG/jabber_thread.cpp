@@ -901,9 +901,6 @@ static void JabberProcessMessage( XmlNode *node, void *userdata )
 			szMessage = p;
 		}
 		else szMessage = bodyNode->text;
-
-		if (( szMessage = JabberUnixToDosT( szMessage )) == NULL )
-			szMessage = mir_tstrdup( _T(""));
 	}
 
 	time_t msgTime = 0;
@@ -1030,6 +1027,9 @@ static void JabberProcessMessage( XmlNode *node, void *userdata )
 		WCHAR* wszMessage;
 		char*  szAnsiMsg;
 		int    cbAnsiLen, cbWideLen;
+
+		if (( szMessage = JabberUnixToDosT( szMessage )) == NULL )
+			szMessage = mir_tstrdup( _T(""));
 
 		#if defined( _UNICODE )
 			wszMessage = szMessage; cbWideLen = wcslen( szMessage );
