@@ -2,10 +2,10 @@
 //                ICQ plugin for Miranda Instant Messenger
 //                ________________________________________
 //
-// Copyright  2000,2001 Richard Hughes, Roland Rabien, Tristan Van de Vreede
-// Copyright  2001,2002 Jon Keating, Richard Hughes
-// Copyright  2002,2003,2004 Martin  berg, Sam Kothari, Robert Rainwater
-// Copyright  2004,2005,2006 Joe Kucera
+// Copyright © 2000,2001 Richard Hughes, Roland Rabien, Tristan Van de Vreede
+// Copyright © 2001,2002 Jon Keating, Richard Hughes
+// Copyright © 2002,2003,2004 Martin Öberg, Sam Kothari, Robert Rainwater
+// Copyright © 2004,2005,2006 Joe Kucera
 //
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License
@@ -684,7 +684,7 @@ void icq_sendFileSendServv8(filetransfer* ft, const char *szFiles, int nAckType)
   packServMsgSendHeader(&packet, ft->dwCookie, ft->pMessage.dwMsgID1, ft->pMessage.dwMsgID2, ft->dwUin, NULL, 2, wFlapLen);
 
   // TLV(5) header
-  packServTLV5HeaderMsg(&packet, (WORD)(138 + wDescrLen + wFilesLen), ft->pMessage.dwMsgID1, ft->pMessage.dwMsgID2, 1); 
+  packServTLV5HeaderMsg(&packet, (WORD)(138 + wDescrLen + wFilesLen), ft->pMessage.dwMsgID1, ft->pMessage.dwMsgID2, 1);
 
   // Port & IP information
   packServDCInfo(&packet, FALSE);
@@ -738,7 +738,7 @@ void icq_sendFileAcceptServv8(DWORD dwUin, DWORD TS1, DWORD TS2, DWORD dwCookie,
   packServMsgSendHeader(&packet, dwCookie, TS1, TS2, dwUin, NULL, 2, wFlapLen);
 
   // TLV(5) header
-  packServTLV5HeaderMsg(&packet, (WORD)(138 + wDescrLen + wFilesLen), TS1, TS2, 2); 
+  packServTLV5HeaderMsg(&packet, (WORD)(138 + wDescrLen + wFilesLen), TS1, TS2, 2);
 
   // Port & IP information
   packServDCInfo(&packet, !accepted);
@@ -791,7 +791,7 @@ void icq_sendFileAcceptServv7(DWORD dwUin, DWORD TS1, DWORD TS2, DWORD dwCookie,
   packServMsgSendHeader(&packet, dwCookie, TS1, TS2, dwUin, NULL, 2, wFlapLen);
 
   // TLV(5) header
-  packServTLV5HeaderMsg(&packet, (WORD)(88 + wDescrLen + wFilesLen), TS1, TS2, 2); 
+  packServTLV5HeaderMsg(&packet, (WORD)(88 + wDescrLen + wFilesLen), TS1, TS2, 2);
 
   // Port & IP information
   packServDCInfo(&packet, !accepted);
@@ -1472,7 +1472,7 @@ void icq_sendXtrazRequestServ(DWORD dwUin, DWORD dwCookie, char* szBody, int nBo
   packServMsgSendHeader(&packet, dwCookie, pCookieData->dwMsgID1, pCookieData->dwMsgID2, dwUin, NULL, 2, (WORD)(99 + wCoreLen));
 
   // TLV(5) header
-  packServTLV5HeaderMsg(&packet, (WORD)(55 + wCoreLen), pCookieData->dwMsgID1, pCookieData->dwMsgID2, 1); 
+  packServTLV5HeaderMsg(&packet, (WORD)(55 + wCoreLen), pCookieData->dwMsgID1, pCookieData->dwMsgID2, 1);
 
   // TLV(0x2711) header
   packServTLV2711Header(&packet, (WORD)dwCookie, ICQ_VERSION, MTYPE_PLUGIN, 0, 0, 0x100, wCoreLen);
@@ -1601,7 +1601,7 @@ void oft_sendFileRedirect(DWORD dwUin, char *szUid, oscar_filetransfer* ft, DWOR
   packTLVWord(&packet, 0x0A, (WORD)(bProxy ? 0x03 : 0x02)); // Ack Type
   packTLVWord(&packet, 0x14, 0x0A);                         // Unknown ?
   packTLVDWord(&packet, 0x02, dwIP);                        // Internal IP / Proxy IP
-  packTLVDWord(&packet, 0x16, dwIP ^ 0x0FFFFFFFF);          // IP Check ?  
+  packTLVDWord(&packet, 0x16, dwIP ^ 0x0FFFFFFFF);          // IP Check ?
   if (!bProxy)
     packTLVDWord(&packet, 0x03, dwIP);
   packTLVWord(&packet, 0x05, wPort);                        // Listening Port
@@ -1611,4 +1611,3 @@ void oft_sendFileRedirect(DWORD dwUin, char *szUid, oscar_filetransfer* ft, DWOR
 
   sendServPacket(&packet);
 }
-
