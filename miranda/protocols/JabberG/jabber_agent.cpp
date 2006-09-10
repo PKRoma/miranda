@@ -472,7 +472,7 @@ BOOL CALLBACK JabberAgentRegInputDlgProc( HWND hwndDlg, UINT msg, WPARAM wParam,
 		}
 		else if ( wParam == 0 ) {
 			// lParam = error message
-			SetDlgItemTextA( hwndDlg, IDC_FRAME_TEXT, ( LPCSTR ) lParam );
+			SetDlgItemText( hwndDlg, IDC_FRAME_TEXT, ( LPCTSTR ) lParam );
 		}
 		return TRUE;
 	case WM_DESTROY:
