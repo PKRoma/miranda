@@ -123,6 +123,7 @@ int __declspec(dllexport) Load(PLUGINLINK *link)
 //	RichUtil_Load();
 	UpgradeCheck();
 
+	mmi.cbSize = sizeof(mmi);
 	CallService(MS_SYSTEM_GET_MMI, 0, (LPARAM) &mmi);
 	g_hMenu = LoadMenu(g_hInst, MAKEINTRESOURCE(IDR_MENU));
     OleInitialize(NULL);
