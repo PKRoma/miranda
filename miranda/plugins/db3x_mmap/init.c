@@ -22,8 +22,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 */
 
 #include "commonheaders.h"
-#include "database.h"
-#include <m_plugins.h>
+#include "version.h"
 
 struct MM_INTERFACE memoryManagerInterface;
 struct LIST_INTERFACE li;
@@ -136,10 +135,9 @@ static int UnloadDatabase(int wasLoaded)
 
 static int getFriendlyName( char * buf, size_t cch, int shortName )
 {
-	strncpy(buf,shortName ? "db3x driver" : "db3x database support",cch);
+	strncpy(buf,shortName ? "db3x mmap driver" : "db3x mmap database support",cch);
 	return 0;
 }
-
 
 static DATABASELINK dblink = {
 	sizeof(DATABASELINK),
@@ -153,11 +151,11 @@ static DATABASELINK dblink = {
 
 static PLUGININFO pluginInfo = {
 	sizeof(PLUGININFO),
-	"Miranda database driver",
-	PLUGIN_MAKE_VERSION(0,6,1,3),
+	"Miranda mmap database driver",
+	__VERSION_DWORD,
 	"Provides Miranda database support: global settings, contacts, history, settings per contact.",
 	"Miranda-IM project",
-	"ghazan@miranda-im.org",
+	"bio; ghazan@miranda-im.org",
 	"Copyright 2000-2006 Miranda IM project",
 	"",
 	0,
@@ -178,7 +176,7 @@ __declspec(dllexport) DATABASELINK* DatabasePluginInfo(void * reserved)
 
 __declspec(dllexport) PLUGININFO * MirandaPluginInfo(DWORD mirandaVersion)
 {
-	if ( mirandaVersion < PLUGIN_MAKE_VERSION(0,4,0,0) ) return NULL;
+	if ( mirandaVersion < PLUGIN_MAKE_VERSION(0,4,0,0)) return NULL;
 	return &pluginInfo;
 }
 

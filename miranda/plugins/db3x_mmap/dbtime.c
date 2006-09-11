@@ -2,8 +2,8 @@
 
 Miranda IM: the free IM client for Microsoft* Windows*
 
-Copyright 2000-2003 Miranda ICQ/IM project, 
-all portions of this codebase are copyrighted to the people 
+Copyright 2000-2003 Miranda ICQ/IM project,
+all portions of this codebase are copyrighted to the people
 listed in contributors.txt.
 
 This program is free software; you can redistribute it and/or
@@ -22,7 +22,6 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 */
 
 #include "commonheaders.h"
-#include "database.h"
 
 static int daysInMonth[12]={31,28,31,30,31,30,31,31,30,31,30,31};
 static int IsLeapYear(int year)
@@ -36,14 +35,14 @@ static int IsLeapYear(int year)
 static int CompareSystemTimes(SYSTEMTIME *st,SYSTEMTIME *switchDate)
 {
 	FILETIME ft1,ft2;
-	
+
 	if(switchDate->wYear==0) {	   //strange day-in-month thing
 		SYSTEMTIME tempst;
 
 		//short-circuit if the months aren't the same
 		if(st->wMonth<switchDate->wMonth) return -1;
 		if(st->wMonth>switchDate->wMonth) return 1;
-		
+
 		tempst=*switchDate;
 		tempst.wYear=st->wYear;
 		tempst.wDay=1;

@@ -22,12 +22,8 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 */
 
 #include "commonheaders.h"
-#include "database.h"
 
-#pragma comment(exestr, "\n\n Bio was here 8-) \n")
-
-extern HANDLE hDbFile;
-extern CRITICAL_SECTION csDbAccess;
+#pragma comment(exestr, "\r\n\r\n Bio was here 8-) \r\n")
 
 static BOOL safetyMode=TRUE;
 static int flushBuffersTimerId;
@@ -57,12 +53,17 @@ void ReMap(DWORD needed)
 {
 	KillTimer(NULL,flushBuffersTimerId);
 
-	log2("remapping %d + %d",dwFileSize,needed);
+	log3("remapping %d + %d (file end: %d)",dwFileSize,needed,dbHeader.ofsFileEnd);
 
-	if (needed > ChunkSize) {
-//		int i = needed/ChunkSize;
-//		dwFileSize += (i+1)*ChunkSize;
-		DatabaseCorruption(Translate("%s (Too large increment)"));
+	if (needed > ChunkSize)
+	{
+		if (dbHeader.ofsFileEnd > dwFileSize)
+		{
+			DWORD x = dbHeader.ofsFileEnd/ChunkSize;
+			dwFileSize += (x+1)*ChunkSize;
+		}
+		else
+			DatabaseCorruption("%s (Too large increment)");
 	}
 	else
 		dwFileSize += ChunkSize;
@@ -108,8 +109,20 @@ PBYTE DBRead(DWORD ofs,int bytesRequired,int *bytesAvail)
 void DBWrite(DWORD ofs,PVOID pData,int bytes)
 {
 	log2("write %d@%08x",bytes,ofs);
-	if (ofs+bytes>dwFileSize) ReMap(ofs+bytes-dwFileSize);
+	if (ofs+bytes>dwFileSize) {
+		log0("buggy write!");
+		ReMap(ofs+bytes-dwFileSize);
+	}
 	CopyMemory(pDbCache+ofs,pData,bytes);
+	logg();
+}
+
+//we are assumed to be in a mutex here
+void DBFill(DWORD ofs,int bytes)
+{
+	log2("zerofill %d@%08x",bytes,ofs);
+	if (ofs+bytes<=dwFileSize)
+		ZeroMemory(pDbCache+ofs,bytes);
 	logg();
 }
 

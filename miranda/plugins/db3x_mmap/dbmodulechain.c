@@ -22,9 +22,6 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 */
 
 #include "commonheaders.h"
-#include "database.h"
-
-extern struct DBHeader dbHeader;
 
 static int EnumModuleNames(WPARAM wParam,LPARAM lParam);
 
@@ -39,10 +36,8 @@ static SortedList lMods, lOfs;
 
 
 
-static int ModCompare( void* p1, void* p2 )
+static int ModCompare( ModuleName *mn1, ModuleName *mn2 )
 {
-	ModuleName *mn1 = (ModuleName *)p1, *mn2 = (ModuleName *)p2;
-
 	if (mn1->hash != mn2->hash)
 		return mn1->hash - mn2->hash;
 
@@ -50,10 +45,8 @@ static int ModCompare( void* p1, void* p2 )
 }
 
 
-static int OfsCompare( void* p1, void* p2 )
+static int OfsCompare( ModuleName *mn1, ModuleName *mn2 )
 {
-	ModuleName *mn1 = (ModuleName *)p1, *mn2 = (ModuleName *)p2;
-
 	return ( mn1->ofs - mn2->ofs );
 }
 

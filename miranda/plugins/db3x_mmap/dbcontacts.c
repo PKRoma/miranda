@@ -22,7 +22,6 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 */
 
 #include "commonheaders.h"
-#include "database.h"
 
 static int GetContactCount(WPARAM wParam,LPARAM lParam);
 static int FindFirstContact(WPARAM wParam,LPARAM lParam);
@@ -31,8 +30,6 @@ static int DeleteContact(WPARAM wParam,LPARAM lParam);
 static int AddContact(WPARAM wParam,LPARAM lParam);
 static int IsDbContact(WPARAM wParam,LPARAM lParam);
 
-extern CRITICAL_SECTION csDbAccess;
-extern struct DBHeader dbHeader;
 static HANDLE hContactDeletedEvent,hContactAddedEvent;
 
 extern HANDLE hCacheHeap;

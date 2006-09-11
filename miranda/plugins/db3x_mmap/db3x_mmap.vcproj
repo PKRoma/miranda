@@ -207,7 +207,10 @@
 			Name="Resource Files"
 			Filter="ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe">
 			<File
-				RelativePath=".\resource.rc">
+				RelativePath=".\db3x_mmap.rc">
+			</File>
+			<File
+				RelativePath=".\version.rc">
 			</File>
 		</Filter>
 	</Files>

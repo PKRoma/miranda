@@ -21,7 +21,6 @@ along with this program; if not, write to the Free Software
 Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 */
 #include "commonheaders.h"
-#include "database.h"
 
 int ProfileManager(char *szDbDest,int cbDbDest);
 int ShouldAutoCreate(void);
@@ -65,14 +64,33 @@ DWORD CreateNewSpace(int bytes)
 
 void DeleteSpace(DWORD ofs,int bytes)
 {
-	PBYTE buf;
 	log2("deletespace %d@%08x",bytes,ofs);
 	dbHeader.slackSpace+=bytes;
 	DBWrite(0,&dbHeader,sizeof(dbHeader));
-	buf=(PBYTE)mir_alloc(bytes);
-	memset(buf,0,bytes);
-	DBWrite(ofs,buf,bytes);
-	mir_free(buf);
+	DBFill(ofs,bytes);
+}
+
+DWORD ReallocSpace(DWORD ofs,int oldSize,int newSize)
+{
+	DWORD ofsNew;
+
+	if (oldSize >= newSize) return ofs;
+
+	if (ofs+oldSize == dbHeader.ofsFileEnd)
+	{
+		ofsNew = ofs;
+		dbHeader.ofsFileEnd+=newSize-oldSize;
+		DBWrite(0,&dbHeader,sizeof(dbHeader));
+		log3("adding newspace %d@%08x+%d",newSize,ofsNew,oldSize);
+	}
+	else
+	{
+		ofsNew=CreateNewSpace(newSize);
+		DBMoveChunk(ofsNew,ofs,oldSize);
+		DeleteSpace(ofs,oldSize);
+	}
+
+	return ofsNew;
 }
 
 void UnloadDatabaseModule(void)

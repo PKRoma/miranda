@@ -46,15 +46,22 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include "resource.h"
 #include <newpluginapi.h>
 #include <win2k.h>
+#include <m_plugins.h>
 #include <m_system.h>
 #include <m_database.h>
 #include <m_langpack.h>
 #include <m_utils.h>
 
+#include "database.h"
+
 extern PLUGINLINK *pluginLink;
 
 extern struct MM_INTERFACE memoryManagerInterface;
 extern struct LIST_INTERFACE li;
+
+extern CRITICAL_SECTION csDbAccess;
+extern struct DBHeader dbHeader;
+extern HANDLE hDbFile;
 
 #define mir_alloc(n) memoryManagerInterface.mmi_malloc(n)
 #define mir_free(ptr) memoryManagerInterface.mmi_free(ptr)

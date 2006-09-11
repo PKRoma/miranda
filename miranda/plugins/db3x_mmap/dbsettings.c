@@ -23,18 +23,26 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 #include "commonheaders.h"
 
-#include "database.h"
-
 DWORD GetModuleNameOfs(const char *szName);
-
-extern CRITICAL_SECTION csDbAccess;
-extern struct DBHeader dbHeader;
 
 HANDLE hCacheHeap = NULL;
 SortedList lContacts;
 
 static SortedList lSettings, lGlobalSettings;
 static HANDLE hSettingChangeEvent = NULL;
+
+/*
+#define SETTINGSGROUPOFSCOUNT    32
+
+struct SettingsGroupOfsCacheEntry {
+	DWORD ofsContact;
+	DWORD ofsModuleName;
+	DWORD ofsSettingsGroup;
+};
+static struct  settingsGroupOfsCache[SETTINGSGROUPOFSCOUNT];
+static int nextSGOCacheEntry;
+*/
+
 
 //this function caches results
 static DWORD GetSettingsGroupOfsByModuleNameOfs(struct DBContact *dbc,DWORD ofsContact,DWORD ofsModuleName)
@@ -102,7 +110,7 @@ static char* GetCachedSetting(const char *szModuleName,const char *szSettingName
 	szFullName[moduleNameLen+1]='/';
 	strcpy(szFullName+moduleNameLen+2,szSettingName);
 
-	if ( li.List_GetIndex(&lSettings, szFullName, &index))
+	if ( li.List_GetIndex(&lSettings,szFullName,&index))
 		return((char*)lSettings.items[index] + 1);
 
 	return InsertCachedSetting( szFullName, moduleNameLen+settingNameLen+3, index )+1;
@@ -480,7 +488,7 @@ static int SetSettingResident(WPARAM wParam,LPARAM lParam)
 	else
 		szSetting = lSettings.items[ idx ];
 
-   *szSetting = (char)wParam;
+	*szSetting = (char)wParam;
 
 	LeaveCriticalSection(&csDbAccess);
 	return 0;
@@ -687,7 +695,7 @@ static int WriteContactSetting(WPARAM wParam,LPARAM lParam)
 	if((DWORD)bytesRequired>dbcs.cbBlob) {
 		//doesn't fit: move entire group
 		struct DBContactSettings *dbcsPrev;
-		DWORD ofsDbcsPrev,oldSize,ofsNew;
+		DWORD ofsDbcsPrev,ofsNew;
 
 //		InvalidateSettingsGroupOfsCacheEntry(ofsSettingsGroup);
 		bytesRequired+=(DB_SETTINGS_RESIZE_GRANULARITY-(bytesRequired%DB_SETTINGS_RESIZE_GRANULARITY))%DB_SETTINGS_RESIZE_GRANULARITY;
@@ -702,12 +710,12 @@ static int WriteContactSetting(WPARAM wParam,LPARAM lParam)
 				dbcsPrev=(struct DBContactSettings*)DBRead(ofsDbcsPrev,sizeof(struct DBContactSettings),NULL);
 			}
 		}
+
 		//create the new one
-		ofsNew=CreateNewSpace(bytesRequired+offsetof(struct DBContactSettings,blob));
-		//copy across
-		DBMoveChunk(ofsNew,ofsSettingsGroup,bytesRequired+offsetof(struct DBContactSettings,blob));
-		oldSize=dbcs.cbBlob;
+		ofsNew=ReallocSpace(ofsSettingsGroup, dbcs.cbBlob+offsetof(struct DBContactSettings,blob), bytesRequired+offsetof(struct DBContactSettings,blob));
+
 		dbcs.cbBlob=bytesRequired;
+
 		DBWrite(ofsNew,&dbcs,offsetof(struct DBContactSettings,blob));
 		if(ofsDbcsPrev==0) {
 			dbc.ofsFirstSettings=ofsNew;
@@ -718,7 +726,6 @@ static int WriteContactSetting(WPARAM wParam,LPARAM lParam)
 			dbcsPrev->ofsNext=ofsNew;
 			DBWrite(ofsDbcsPrev,dbcsPrev,offsetof(struct DBContactSettings,blob));
 		}
-		DeleteSpace(ofsSettingsGroup,oldSize+offsetof(struct DBContactSettings,blob));
 		ofsBlobPtr+=ofsNew-ofsSettingsGroup;
 		ofsSettingsGroup=ofsNew;
 		pBlob=(PBYTE)DBRead(ofsBlobPtr,1,&bytesRemaining);
