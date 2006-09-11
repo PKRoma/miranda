@@ -96,6 +96,7 @@ int IconsChanged(WPARAM wParam, LPARAM lParam)
 	FreeMsgLogIcons();
 	LoadMsgLogIcons();
 	LoadProtocolIcons();
+	Chat_IconsChanged();
 	WindowList_Broadcast(g_dat->hMessageWindowList, DM_REMAKELOG, 0, 0);
 	// change all the icons
 	WindowList_Broadcast(g_dat->hMessageWindowList, DM_CHANGEICONS, 0, 0);
@@ -301,7 +302,8 @@ void FreeGlobals() {
 		//	for (i=0;i<sizeof(g_dat->hIcons)/sizeof(g_dat->hIcons[0]);i++)
 		//		DestroyIcon(g_dat->hIcons[i]);
 		free(g_dat);
-}	}
+	}
+}
 
 void ReloadGlobals() {
 	g_dat->avatarServiceExists = ServiceExists(MS_AV_GETAVATARBITMAP);
