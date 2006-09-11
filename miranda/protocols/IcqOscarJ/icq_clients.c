@@ -397,7 +397,10 @@ char* detectUserClient(HANDLE hContact, DWORD dwUin, WORD wVersion, DWORD dwFT1,
         if (dwFT3 == 0x0F)
           strcpy(ver, "2005");
         else
+        {
           strncpy(ver, (*capId)+11, 5);
+          ver[5] = '\0'; // fill in missing zero
+        }
 
         null_snprintf(szClientBuf, 64, cliQip, ver);
         if (dwFT1 && dwFT2 == 0x0E)
