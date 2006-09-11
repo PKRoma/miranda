@@ -662,6 +662,8 @@ void ShowRoom(SESSION_INFO * si, WPARAM wp, BOOL bSetForeground)
 	    si->hWnd = CreateDialogParam(g_hInst, MAKEINTRESOURCE(IDD_CHANNEL), hParent, RoomWndProc, (LPARAM)si);
 	}
 	SendMessage(si->hWnd, DM_UPDATETABCONTROL, -1, (LPARAM)si);
+	SendMessage(GetParent(si->hWnd), CM_ACTIVATECHILD, 0, (LPARAM) si->hWnd);
+	/*
 	if(!IsWindowVisible(si->hWnd) || wp == WINDOW_HIDDEN)
 		SendMessage(si->hWnd, GC_EVENT_CONTROL + WM_USER + 500, wp, 0);
 	else
@@ -671,6 +673,7 @@ void ShowRoom(SESSION_INFO * si, WPARAM wp, BOOL bSetForeground)
 		ShowWindow(si->hWnd, SW_SHOW);
 		SetForegroundWindow(si->hWnd);
 	}
+	*/
 	ShowWindow(hParent, SW_NORMAL);
 	SendMessage(si->hWnd, WM_MOUSEACTIVATE, 0, 0);
 	SetFocus(GetDlgItem(si->hWnd, IDC_CHAT_MESSAGE));

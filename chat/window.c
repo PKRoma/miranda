@@ -1341,6 +1341,7 @@ BOOL CALLBACK RoomWndProc(HWND hwndDlg,UINT uMsg,WPARAM wParam,LPARAM lParam)
 {
 	SESSION_INFO * si;
 	si = (SESSION_INFO *)GetWindowLong(hwndDlg,GWL_USERDATA);
+	if (!si && uMsg!=WM_INITDIALOG) return FALSE;
 	switch (uMsg)
 	{
 		case WM_INITDIALOG:
@@ -1379,7 +1380,6 @@ BOOL CALLBACK RoomWndProc(HWND hwndDlg,UINT uMsg,WPARAM wParam,LPARAM lParam)
 			SendMessage(hwndDlg, DM_UPDATETITLEBAR, 0, 0);
 
 			SendMessage(GetParent(hwndDlg), CM_ADDCHILD, (WPARAM) hwndDlg, (LPARAM) psi->hContact);
-			SendMessage(GetParent(hwndDlg), CM_ACTIVATECHILD, 0, (LPARAM) hwndDlg);
 
 		} break;
 
@@ -1458,7 +1458,6 @@ BOOL CALLBACK RoomWndProc(HWND hwndDlg,UINT uMsg,WPARAM wParam,LPARAM lParam)
 		{
 			StatusBarData sbd;
 			HICON hIcon;
-			int iStatusbarParts[2];
 			char *pszDispName = MM_FindModule(si->pszModule)->pszModDispName;
 			char szTemp[512];
 			hIcon = si->wStatus==ID_STATUS_ONLINE?MM_FindModule(si->pszModule)->hOnlineIcon:MM_FindModule(si->pszModule)->hOfflineIcon;
@@ -2817,7 +2816,8 @@ LABEL_SHOWWINDOW:
 		case WM_CLOSE:
 		{
 			SendMessage(hwndDlg, GC_CLOSEWINDOW, 0, 0);
-		} break;
+			return TRUE;
+		} 
 
 
 
@@ -2825,7 +2825,8 @@ LABEL_SHOWWINDOW:
 		case GC_CLOSEWINDOW:
 		{
 			DestroyWindow(hwndDlg);
-		} break;
+			return TRUE;
+		} 
 
 
 
@@ -2833,7 +2834,6 @@ LABEL_SHOWWINDOW:
 		case WM_DESTROY:
 		{
 			si->hWnd = NULL;
-
 			SetWindowLong(hwndDlg,GWL_USERDATA,0);
 			SetWindowLong(GetDlgItem(hwndDlg,IDC_CHAT_SPLITTERX),GWL_WNDPROC,(LONG)OldSplitterProc);
 			SetWindowLong(GetDlgItem(hwndDlg,IDC_CHAT_SPLITTERY),GWL_WNDPROC,(LONG)OldSplitterProc);
