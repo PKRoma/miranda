@@ -3798,6 +3798,7 @@ quote_from_last:
                             wchar_t *converted = 0;
                             szFromStream = Message_GetFromStream(GetDlgItem(hwndDlg, IDC_LOG), dat, SF_TEXT|SF_USECODEPAGE|SFF_SELECTION);
                             converted = Utf8_Decode(szFromStream);
+                            FilterEventMarkers(converted);
                             szQuoted = QuoteText(converted, 64, 0);
                             SendDlgItemMessage(hwndDlg, IDC_MESSAGE, EM_SETTEXTEX, (WPARAM)&stx, (LPARAM)szQuoted);
                             free(szQuoted);
@@ -3805,6 +3806,7 @@ quote_from_last:
                             free(szFromStream);
 #else
                             szFromStream = Message_GetFromStream(GetDlgItem(hwndDlg, IDC_LOG), dat, SF_TEXT|SFF_SELECTION);
+                            FilterEventMarkers(szFromStream);
                             szQuoted=QuoteText(szFromStream, 64, 0);
                             SendDlgItemMessageA(hwndDlg, IDC_MESSAGE, EM_REPLACESEL, TRUE, (LPARAM)szQuoted);
                             free(szQuoted);

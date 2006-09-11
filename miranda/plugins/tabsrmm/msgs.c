@@ -36,8 +36,9 @@ $Id$
 
 static char *relnotes[] = {
     "{\\rtf1\\ansi\\deff0\\pard\\li%u\\fi-%u\\ri%u\\tx%u}",
-    "\\par\t\\b\\ul1 Release notes for version 1.1.0.7\\b0\\ul0\\par ",
+    "\\par\t\\b\\ul1 Release notes for version 1.1.0.8\\b0\\ul0\\par ",
     "*\tMerged back fixes from 1.0.0.1 and 1.0.0.2 stable branches.\\par",
+    "*\tChecked plugin for compatibility under Windows Vista RC1.\\par",
     NULL
 };
 

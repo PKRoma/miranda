@@ -51,7 +51,7 @@ PLUGININFO pluginInfo = {
         "tabSRMsg",
     #endif    
 #endif
-    PLUGIN_MAKE_VERSION(1, 1, 0, 7),
+    PLUGIN_MAKE_VERSION(1, 1, 0, 8),
     "Chat module for instant messaging and group chat, offering a tabbed interface and many advanced features.",
     "The Miranda developers team",
     "silvercircle@gmail.com",
@@ -118,6 +118,8 @@ int _DebugTraceW(const wchar_t *fmt, ...)
 	return 0;
 }
 #endif
+#endif
+
 int _DebugTraceA(const char *fmt, ...)
 {
     char    debug[2048];
@@ -127,10 +129,25 @@ int _DebugTraceA(const char *fmt, ...)
 
 	lstrcpyA(debug, "TABSRMM: ");
 	_vsnprintf(&debug[9], ibsize - 10, fmt, va);
+#ifdef _DEBUG
     OutputDebugStringA(debug);
+#else
+    {
+        char szLogFileName[MAX_PATH], szDataPath[MAX_PATH];
+        FILE *f;
+
+        CallService(MS_DB_GETPROFILEPATH, MAX_PATH, (LPARAM)szDataPath);
+        mir_snprintf(szLogFileName, MAX_PATH, "%s\\%s", szDataPath, "tabsrmm_debug.log");
+        f = fopen(szLogFileName, "a+");
+        if(f) {
+            fputs(debug, f);
+            fputs("\n", f);
+            fclose(f);
+        }
+    }
+#endif
 	return 0;
 }
-#endif
 
 /*
  * output a notification message.
