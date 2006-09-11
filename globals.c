@@ -292,17 +292,16 @@ void FreeGlobals() {
 	if (g_hAck) UnhookEvent(g_hAck);
 	if (g_dat) {
 		if (g_dat->draftList != NULL) tcmdlist_free(g_dat->draftList);
-	//	for (i=0;i<sizeof(g_dat->hIcons)/sizeof(g_dat->hIcons[0]);i++)
-	//		DestroyIcon(g_dat->hIcons[i]);
+		if (g_dat->hTabIconList) {
+			ImageList_Destroy(g_dat->hTabIconList);
+		}
+		if (g_dat->hButtonIconList) {
+			ImageList_Destroy(g_dat->hButtonIconList);
+		}
+		//	for (i=0;i<sizeof(g_dat->hIcons)/sizeof(g_dat->hIcons[0]);i++)
+		//		DestroyIcon(g_dat->hIcons[i]);
 		free(g_dat);
-	}
-	if (g_dat->hTabIconList) {
-		ImageList_Destroy(g_dat->hTabIconList);
-	}
-	if (g_dat->hButtonIconList) {
-		ImageList_Destroy(g_dat->hButtonIconList);
-	}
-}
+}	}
 
 void ReloadGlobals() {
 	g_dat->avatarServiceExists = ServiceExists(MS_AV_GETAVATARBITMAP);
