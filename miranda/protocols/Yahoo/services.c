@@ -77,7 +77,7 @@ int GetCaps(WPARAM wParam,LPARAM lParam)
             break;
             
         case PFLAGNUM_4:
-            ret = PF4_FORCEAUTH|PF4_FORCEADDED|PF4_SUPPORTTYPING|PF4_SUPPORTIDLE| PF4_AVATARS;
+            ret = PF4_FORCEAUTH|PF4_FORCEADDED|PF4_SUPPORTTYPING|PF4_SUPPORTIDLE|PF4_AVATARS|PF4_OFFLINEFILES;
             break;
         case PFLAG_UNIQUEIDTEXT:
             ret = (int) Translate("ID");
