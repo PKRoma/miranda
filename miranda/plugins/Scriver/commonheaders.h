@@ -22,7 +22,7 @@ along with this program; if not, write to the Free Software
 Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 */
 
-#if defined( UNICODE ) && !defined( _UNICODE )
+#if defined(UNICODE)
    #define _UNICODE
 #endif
 #include <wchar.h>
@@ -74,9 +74,8 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include <m_addcontact.h>
 #include <m_message.h>
 #include <m_file.h>
-#include "cmdlist.h"
-#include "msgs.h"
 #include "globals.h"
+#include "msgs.h"
 #include "richutil.h"
 #include "msgwindow.h"
 
