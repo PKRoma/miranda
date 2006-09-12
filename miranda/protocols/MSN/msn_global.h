@@ -125,7 +125,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #define MENU_ITEMS_COUNT 2
 #define MS_GOTO_INBOX		"/GotoInbox"
 #define MS_EDIT_PROFILE		"/EditProfile"
-#define MS_SET_AVATAR		"/SetAvatar"
+#define MS_SET_AVATAR		"/SetMyAvatar"
 #define MS_VIEW_STATUS		"/ViewMsnStatus"
 #define MS_SET_NICKNAME_UI "/SetNicknameUI"
 #define MS_SET_AVATAR_UI	"/SetAvatarUI"
