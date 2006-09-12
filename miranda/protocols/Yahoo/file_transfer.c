@@ -152,11 +152,6 @@ void YAHOO_SendFile(y_filetransfer *sf)
 	yahoo_send_file(ylad->id, sf->who, sf->msg, sf->filename, tFileSize, &get_fd, sf);
 }
 
-void YAHOO_FT_cancel(const char *buddy, const char *filename, const char *ft_token, int command)
-{
-	yahoo_ftdc_cancel(ylad->id, buddy, filename, ft_token, command);	
-}
-
 void get_url(int id, int fd, int error,	const char *filename, unsigned long size, void *data) 
 {
     y_filetransfer *sf = (y_filetransfer*) data;
@@ -169,7 +164,7 @@ void get_url(int id, int fd, int error,	const char *filename, unsigned long size
 		
 		if (sf->ftoken != NULL) {
 			LOG(("[get_url] DC Detected: asking sender to upload to Yahoo FileServers!"));
-			YAHOO_FT_cancel(sf->who, sf->filename, sf->ftoken, 3);	
+			yahoo_ftdc_cancel(ylad->id, sf->who, sf->filename, sf->ftoken, 3);	
 		}
 		
 		error = 1;
@@ -464,7 +459,7 @@ int YahooFileDeny(WPARAM wParam,LPARAM lParam)
 
 	if (ft->ftoken != NULL) {
 		YAHOO_DebugLog("[] DC Detected: Denying File Transfer!");
-		YAHOO_FT_cancel(ft->who, ft->filename, ft->ftoken, 2);	
+		yahoo_ftdc_cancel(ylad->id, ft->who, ft->filename, ft->ftoken, 2);	
 	}
 	return 0;
 }

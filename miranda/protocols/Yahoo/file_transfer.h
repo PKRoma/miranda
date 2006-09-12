@@ -33,7 +33,6 @@ typedef struct {
 
 void YAHOO_SendFile(y_filetransfer *ft);
 void YAHOO_RecvFile(y_filetransfer *ft);
-void YAHOO_FT_cancel(const char *buddy, const char *filename, const char *ft_token, int command);
 
 void ext_yahoo_got_file(int id, const char *me, const char *who, const char *url, long expires, const char *msg, const char *fname, unsigned long fesize, const char *ft_token, int y7);
 
