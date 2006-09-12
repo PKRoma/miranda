@@ -31,9 +31,7 @@ typedef struct {
 	int y7;
 } y_filetransfer;
 
-void YAHOO_SendFile(y_filetransfer *ft);
-void YAHOO_RecvFile(y_filetransfer *ft);
-
+/* libyahoo2 callback(s) */
 void ext_yahoo_got_file(int id, const char *me, const char *who, const char *url, long expires, const char *msg, const char *fname, unsigned long fesize, const char *ft_token, int y7);
 
 /* service functions */

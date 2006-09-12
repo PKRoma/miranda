@@ -19,7 +19,7 @@
 
 extern yahoo_local_account * ylad;
 
-void get_fd(int id, int fd, int error, void *data) 
+static void upload_file(int id, int fd, int error, void *data) 
 {
     y_filetransfer *sf = (y_filetransfer*) data;
     char buf[1024];
@@ -141,18 +141,7 @@ void get_fd(int id, int fd, int error, void *data)
 	ProtoBroadcastAck(yahooProtocolName, sf->hContact, ACKTYPE_FILE, !error ? ACKRESULT_SUCCESS:ACKRESULT_FAILED, sf, 0);
 }
 
-void YAHOO_SendFile(y_filetransfer *sf)
-{
-	long tFileSize = 0;
-	{	struct _stat statbuf;
-		if ( _stat( sf->filename, &statbuf ) == 0 )
-			tFileSize += statbuf.st_size;
-	}
-
-	yahoo_send_file(ylad->id, sf->who, sf->msg, sf->filename, tFileSize, &get_fd, sf);
-}
-
-void get_url(int id, int fd, int error,	const char *filename, unsigned long size, void *data) 
+static void dl_file(int id, int fd, int error,	const char *filename, unsigned long size, void *data) 
 {
     y_filetransfer *sf = (y_filetransfer*) data;
     char buf[1024];
@@ -307,11 +296,6 @@ void get_url(int id, int fd, int error,	const char *filename, unsigned long size
     ProtoBroadcastAck(yahooProtocolName, sf->hContact, ACKTYPE_FILE, !error ? ACKRESULT_SUCCESS:ACKRESULT_FAILED, sf, 0);
 }
 
-void YAHOO_RecvFile(y_filetransfer *ft)
-{
-	yahoo_get_url_handle(ylad->id, ft->url, &get_url, ft);
-}
-
 void ext_yahoo_got_file(int id, const char *me, const char *who, const char *url, long expires, const char *msg, const char *fname, unsigned long fesize, const char *ft_token, int y7)
 {
     CCSDATA ccs;
@@ -396,7 +380,8 @@ static void __cdecl yahoo_recv_filethread(void *psf)
 	}
 	YAHOO_DebugLog("who %s, msg: %s, filename: %s ", sf->who, sf->msg, sf->filename);
 	
-	YAHOO_RecvFile(sf);
+	yahoo_get_url_handle(ylad->id, sf->url, &dl_file, sf);
+	
 	if ( sf->hWaitEvent != INVALID_HANDLE_VALUE )
 		CloseHandle( sf->hWaitEvent );
 	
@@ -501,6 +486,8 @@ int YahooFileResume( WPARAM wParam, LPARAM lParam )
 static void __cdecl yahoo_send_filethread(void *psf) 
 {
 	y_filetransfer *sf = psf;
+	long tFileSize = 0;
+	struct _stat statbuf;
 	
 //    ProtoBroadcastAck(yahooProtocolName, hContact, ACKTYPE_GETINFO, ACKRESULT_SUCCESS, (HANDLE) 1, 0);
 	if (sf == NULL) {
@@ -509,7 +496,11 @@ static void __cdecl yahoo_send_filethread(void *psf)
 	}
 	YAHOO_DebugLog("who %s, msg: %s, filename: %s ", sf->who, sf->msg, sf->filename);
 	
-	YAHOO_SendFile(sf);
+	if ( _stat( sf->filename, &statbuf ) == 0 )
+			tFileSize += statbuf.st_size;
+	
+	yahoo_send_file(ylad->id, sf->who, sf->msg, sf->filename, tFileSize, &upload_file, sf);
+	
 	free(sf->who);
 	free(sf->msg);
 	free(sf->filename);
