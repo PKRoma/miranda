@@ -92,7 +92,7 @@ struct XmlNode
 	XmlNode **child;							// child node list
 	XmlNodeType state;						// internal use by parser
 	char* props;
-	boolean dirtyHack;						// to allow generator to issue the unclosed tag
+	BOOL dirtyHack;						// to allow generator to issue the unclosed tag
 };
 
 struct XmlNodeIq : public XmlNode
@@ -125,7 +125,7 @@ struct XmlState
 void JabberXmlInitState( XmlState *xmlState );
 void JabberXmlDestroyState( XmlState *xmlState );
 BOOL JabberXmlSetCallback( XmlState *xmlState, int depth, XmlElemType type, void ( *callback )(), void *userdata );
-int JabberXmlParse( XmlState *xmlState, char* buffer, int datalen );
+int JabberXmlParse( XmlState *xmlState, char* buffer );
 TCHAR* JabberXmlGetAttrValue( XmlNode *node, char* key );
 XmlNode *JabberXmlGetChild( XmlNode *node, char* tag );
 XmlNode *JabberXmlGetNthChild( XmlNode *node, char* tag, int nth );

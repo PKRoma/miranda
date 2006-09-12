@@ -492,10 +492,15 @@ void JabberIqResultSetRegister( XmlNode *iqNode, void *userdata )
 	// ACTION: notify of successful agent registration
 	JabberLog( "<iq/> iqIdSetRegister" );
 
-	TCHAR *type;
-	if (( type=JabberXmlGetAttrValue( iqNode, "type" )) == NULL ) return;
+	TCHAR *type, *from;
+	if (( type = JabberXmlGetAttrValue( iqNode, "type" )) == NULL ) return;
+	if (( from = JabberXmlGetAttrValue( iqNode, "from" )) == NULL ) return;
 
 	if ( !lstrcmp( type, _T("result"))) {
+		HANDLE hContact = JabberHContactFromJID( from );
+		if ( hContact != NULL )
+			JSetByte( hContact, "IsTransport", TRUE );
+
 		if ( hwndRegProgress )
 			SendMessage( hwndRegProgress, WM_JABBER_REGDLG_UPDATE, 100, ( LPARAM )TranslateT( "Registration successful" ));
 	}
