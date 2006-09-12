@@ -57,6 +57,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include <newpluginapi.h>
 #include <m_system.h>
 #include <m_netlib.h>
+#include <m_png.h>
 #include <m_protomod.h>
 #include <m_protosvc.h>
 #include <m_clist.h>
@@ -160,10 +161,14 @@ enum {
 };
 
 // Services and Events
-#define JE_RAWXMLIN "/RawXMLIn"
-#define JE_RAWXMLOUT "/RawXMLOut"
+#define JE_RAWXMLIN                "/RawXMLIn"
+#define JE_RAWXMLOUT               "/RawXMLOut"
 
-#define JS_SENDXML "/SendXML"
+#define JS_SENDXML                 "/SendXML"
+#define JS_ISAVATARFORMATSUPPORTED "/IsAvatarFormatSupported"
+#define JS_GETMYAVATARMAXSIZE      "/GetMyAvatarMaxSize"
+#define JS_SETMYAVATAR             "/SetMyAvatar"
+#define JS_GETMYAVATAR             "/GetMyAvatar"
 
 /*******************************************************************
  * Global data structures and data type definitions
@@ -357,8 +362,9 @@ extern HANDLE heventRawXMLOut;
 
 //---- jabber_bitmap.cpp ----------------------------------------------
 
-HBITMAP __stdcall JabberBitmapToAvatar( HBITMAP hBitmap );
+int     __stdcall JabberBitmapToAvatar( HBITMAP hBitmap );
 int     __stdcall JabberEnterBitmapName( char* szDest );
+HBITMAP __stdcall JabberStretchBitmap( HBITMAP hBitmap );
 
 //---- jabber_chat.cpp ----------------------------------------------
 

@@ -592,6 +592,32 @@ int JabberFileResume( WPARAM wParam, LPARAM lParam )
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////
+// JabberGetAvatar - retrieves the file name of my own avatar
+
+int JabberGetAvatar(WPARAM wParam, LPARAM lParam)
+{
+	char* buf = ( char* )wParam;
+	int  size = ( int )lParam;
+
+	if ( buf == NULL || size <= 0 )
+		return -1;
+
+	if ( !JGetByte( "EnableAvatars", TRUE ))
+		return -2;
+
+	JabberGetAvatarFileName( NULL, buf, size );
+	return 0;
+}	
+
+/////////////////////////////////////////////////////////////////////////////////////////
+// JabberGetAvatarFormatSupported - Jabber supports avatars of virtually all formats
+
+int JabberGetAvatarFormatSupported(WPARAM wParam, LPARAM lParam)
+{
+	return 1;
+}
+
+/////////////////////////////////////////////////////////////////////////////////////////
 // JabberGetAvatarInfo - retrieves the avatar info
 
 static int JabberGetAvatarInfo(WPARAM wParam,LPARAM lParam)
@@ -648,6 +674,16 @@ static int JabberGetAvatarInfo(WPARAM wParam,LPARAM lParam)
 
 	JabberLog( "No avatar" );
 	return GAIR_NOAVATAR;
+}
+
+/////////////////////////////////////////////////////////////////////////////////////////
+// JabberGetAvatarMaxSize - retrieves the optimal avatar size
+
+int JabberGetAvatarMaxSize(WPARAM wParam, LPARAM lParam)
+{
+	if (wParam != 0) *((int*) wParam) = 64;
+	if (lParam != 0) *((int*) lParam) = 64;
+	return 0;
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////
@@ -1136,6 +1172,26 @@ int JabberSetApparentMode( WPARAM wParam, LPARAM lParam )
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////
+// JabberSetAvatar - sets an avatar without UI
+
+static int JabberSetAvatar( WPARAM wParam, LPARAM lParam )
+{
+	HBITMAP hBitmap = ( HBITMAP )JCallService( MS_UTILS_LOADBITMAP, 0, lParam );
+	if ( hBitmap == NULL )
+		return 1;
+
+	if (( hBitmap = JabberStretchBitmap( hBitmap )) == NULL )
+		return 2;
+
+	JabberBitmapToAvatar( hBitmap );
+	DeleteObject( hBitmap );
+
+	if ( jabberConnected )
+		JabberSendPresence( jabberDesiredStatus );
+	return 0;
+}
+
+////////////////////////////////////////////////////////////////////////////////////////
 // JabberSetAwayMsg - sets the away status message
 
 int JabberSetAwayMsg( WPARAM wParam, LPARAM lParam )
@@ -1362,6 +1418,10 @@ int JabberSvcInit( void )
 	heventRawXMLIn = JCreateHookableEvent( JE_RAWXMLIN );
 	heventRawXMLOut = JCreateHookableEvent( JE_RAWXMLOUT );
 	JCreateServiceFunction( JS_SENDXML, ServiceSendXML );
+	JCreateServiceFunction( JS_ISAVATARFORMATSUPPORTED, JabberGetAvatarFormatSupported );
+	JCreateServiceFunction( JS_GETMYAVATARMAXSIZE, JabberGetAvatarMaxSize );
+	JCreateServiceFunction( JS_GETMYAVATAR, JabberGetAvatar );
+	JCreateServiceFunction( JS_SETMYAVATAR, JabberSetAvatar );
 
 	// Menu items
 	CLISTMENUITEM mi, clmi;
