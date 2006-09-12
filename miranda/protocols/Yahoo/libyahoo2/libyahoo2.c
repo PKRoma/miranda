@@ -224,7 +224,10 @@ enum yahoo_service { /* these are easier to see in hex */
 	YAHOO_SERVICE_Y7_FILETRANSFER = 0xdc,	/* YMSG13 */
 	YAHOO_SERVICE_Y7_FILETRANSFERINFO,	/* YMSG13 */
 	YAHOO_SERVICE_Y7_FILETRANSFERACCEPT,	/* YMSG13 */
+	YAHOO_SERVICE_Y7_MINGLE = 0xe1, /* YMSG13 */
 	YAHOO_SERVICE_Y7_CHANGE_GROUP = 0xe7, /* YMSG13 */
+	YAHOO_SERVICE_STATUS_15 = 0xf0,			/* YMSG15 */
+	YAHOO_SERVICE_LIST_15 = 0Xf1,			/* YMSG15 */
 	YAHOO_SERVICE_WEBLOGIN = 0x0226,
 	YAHOO_SERVICE_SMS_MSG = 0x02ea
 };
@@ -316,23 +319,13 @@ static const value_string ymsg_service_vals[] = {
 };
 
 static const value_string ymsg_status_vals[] = {
-	{YAHOO_STATUS_DISCONNECTED, "YAHOO_STATUS_DISCONNECTED"},
-	{YAHOO_STATUS_AVAILABLE, "YAHOO_STATUS_AVAILABLE"},
-	{YAHOO_STATUS_BRB, "YAHOO_STATUS_BRB"},
-	{YAHOO_STATUS_BUSY, "YAHOO_STATUS_BUSY"},
-	{YAHOO_STATUS_NOTATHOME, "YAHOO_STATUS_NOTATHOME"},
-	{YAHOO_STATUS_NOTATDESK, "YAHOO_STATUS_NOTATDESK"},
-	{YAHOO_STATUS_NOTINOFFICE, "YAHOO_STATUS_NOTINOFFICE"},
-	{YAHOO_STATUS_ONPHONE, "YAHOO_STATUS_ONPHONE"},
-	{YAHOO_STATUS_ONVACATION, "YAHOO_STATUS_ONVACATION"},
-	{YAHOO_STATUS_OUTTOLUNCH, "YAHOO_STATUS_OUTTOLUNCH"},
-	{YAHOO_STATUS_STEPPEDOUT, "YAHOO_STATUS_STEPPEDOUT"},
-	{YAHOO_STATUS_INVISIBLE, "YAHOO_STATUS_INVISIBLE"},
-	{YAHOO_STATUS_CUSTOM, "YAHOO_STATUS_CUSTOM"},
-	{YAHOO_STATUS_IDLE, "YAHOO_STATUS_IDLE"},
-	{YAHOO_STATUS_OFFLINE, "YAHOO_STATUS_OFFLINE"},
-	{YAHOO_STATUS_NOTIFY, "YAHOO_STATUS_NOTIFY"},
-	{YAHOO_STATUS_WEBLOGIN, "YAHOO_STATUS_WEBLOGIN"},
+	{YPACKET_STATUS_DISCONNECTED,"Disconnected"},
+	{YPACKET_STATUS_DEFAULT,""},
+	{YPACKET_STATUS_SERVERACK,"Server Ack"},
+	{YPACKET_STATUS_GAME,"Playing Game"},
+	{YPACKET_STATUS_CONTINUED,"More Packets??"},
+	{YPACKET_STATUS_NOTIFY, "Notify"},
+	{YPACKET_STATUS_WEBLOGIN,"Web Login"},
 	{0, NULL}
 };
 
@@ -850,7 +843,9 @@ static void yahoo_packet_read(struct yahoo_packet *pkt, unsigned char *data, int
 {
 	int pos = 0;
 
-	DEBUG_MSG(("[Reading packet] len: %d", len));
+	DEBUG_MSG1(("[Reading packet] Yahoo Service: %s (0x%02x) Status: %s (%d) Length: %d", dbg_service(pkt->service), pkt->service,
+				dbg_status(pkt->status),pkt->status, len));
+
 	while (pos + 1 < len) {
 		char *key, *value = NULL;
 		int accept;
@@ -895,7 +890,7 @@ static void yahoo_packet_read(struct yahoo_packet *pkt, unsigned char *data, int
 		}
 	}
 	
-	DEBUG_MSG(("[Reading packet done]"));
+	DEBUG_MSG1(("[Reading packet done]"));
 }
 
 static void yahoo_packet_write(struct yahoo_packet *pkt, unsigned char *data)
@@ -1041,9 +1036,7 @@ static void yahoo_send_packet(struct yahoo_input_data *yid, struct yahoo_packet 
 	yahoo_packet_write(pkt, data + pos);
 
 	//yahoo_packet_dump(data, len);
-	DEBUG_MSG(("Sending Packet:"));
-	DEBUG_MSG(("Yahoo Service: %s (0x%02x) Status: %s (%d)", dbg_service(pkt->service), pkt->service,
-				dbg_status(pkt->status),pkt->status));
+	DEBUG_MSG1(("Sending Packet:"));
 
 	yahoo_packet_read(pkt, data + pos, len - pos);	
 	
@@ -2010,7 +2003,7 @@ static void yahoo_process_status(struct yahoo_input_data *yid, struct yahoo_pack
 	
 	if (name != NULL) 
 		YAHOO_CALLBACK(ext_yahoo_status_changed)(yd->client_id, name, state, msg, away, idle, mobile);
-	else if (pkt->service == YAHOO_SERVICE_LOGOFF && pkt->status == YAHOO_STATUS_DISCONNECTED) 
+	else if (pkt->service == YAHOO_SERVICE_LOGOFF && pkt->status == YPACKET_STATUS_DISCONNECTED) 
 		//
 		//Key: Error msg (16)  	Value: 'Session expired. Please relogin'
 		//Key: login status (66)  	Value: '28'
@@ -2686,7 +2679,7 @@ static void yahoo_process_auth_0x0b(struct yahoo_input_data *yid, const char *se
 	
 	yss = yd->server_settings;
 
-	pack = yahoo_packet_new(YAHOO_SERVICE_AUTHRESP, (yd->initial_status == YAHOO_STATUS_INVISIBLE) ?YAHOO_STATUS_INVISIBLE:YAHOO_STATUS_WEBLOGIN, yd->session_id);
+	pack = yahoo_packet_new(YAHOO_SERVICE_AUTHRESP, (yd->initial_status == YAHOO_STATUS_INVISIBLE) ?YPACKET_STATUS_INVISIBLE:YPACKET_STATUS_WEBLOGIN, yd->session_id);
 	yahoo_packet_hash(pack, 6, resp_6);
 	yahoo_packet_hash(pack, 96, resp_96);
 	yahoo_packet_hash(pack, 0, sn);
@@ -3897,15 +3890,13 @@ static struct yahoo_packet * yahoo_getdata(struct yahoo_input_data * yid)
 		return NULL;
 	}
 
-	LOG(("reading packet"));
+	//LOG(("reading packet"));
 	//yahoo_packet_dump(yid->rxqueue, YAHOO_PACKET_HDRLEN + pktlen);
 
 	pkt = yahoo_packet_new(0, 0, 0);
 
 	pkt->service = yahoo_get16(yid->rxqueue + pos); pos += 2;
 	pkt->status = yahoo_get32(yid->rxqueue + pos); pos += 4;
-	DEBUG_MSG(("Yahoo Service: %s (0x%02x) Status: %s (%d)", dbg_service(pkt->service), pkt->service,
-				dbg_status(pkt->status),pkt->status));
 	pkt->id = yahoo_get32(yid->rxqueue + pos); pos += 4;
 
 	yd->session_id = pkt->id;
@@ -4903,7 +4894,7 @@ void yahoo_send_typing(int id, const char *from, const char *who, int typ)
 	yd = yid->yd;
 	yss = yd->server_settings;
 	
-	pkt = yahoo_packet_new(YAHOO_SERVICE_NOTIFY, YAHOO_STATUS_NOTIFY, yd->session_id);
+	pkt = yahoo_packet_new(YAHOO_SERVICE_NOTIFY, YPACKET_STATUS_NOTIFY, yd->session_id);
 
 	yahoo_packet_hash(pkt, 49, "TYPING");
 	yahoo_packet_hash(pkt, 1, from?from:yd->user);
@@ -5831,7 +5822,7 @@ void yahoo_webcam_invite(int id, const char *who)
 	if(!yid)
 		return;
 
-	pkt = yahoo_packet_new(YAHOO_SERVICE_NOTIFY, YAHOO_STATUS_NOTIFY, yid->yd->session_id);
+	pkt = yahoo_packet_new(YAHOO_SERVICE_NOTIFY, YPACKET_STATUS_NOTIFY, yid->yd->session_id);
 
 	yahoo_packet_hash(pkt, 49, "WEBCAMINVITE");
 	yahoo_packet_hash(pkt, 14, " ");
@@ -6298,8 +6289,6 @@ char *yahoo_webmessenger_idle_packet(int id, int *len)
 
 	//yahoo_packet_dump(data, len);
 	DEBUG_MSG(("Sending Idle Packet:"));
-	DEBUG_MSG(("Yahoo Service: %s (0x%02x) Status: %s (%d)", dbg_service(pkt->service), pkt->service,
-				dbg_status(pkt->status),pkt->status));
 
 	yahoo_packet_read(pkt, data + pos, (*len) - pos);	
 	
