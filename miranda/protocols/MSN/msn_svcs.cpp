@@ -491,6 +491,32 @@ int MsnFileResume( WPARAM wParam, LPARAM lParam )
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////
+// MsnGetAvatar - retrieves the file name of my own avatar
+
+int MsnGetAvatar(WPARAM wParam, LPARAM lParam)
+{
+	char* buf = ( char* )wParam;
+	int  size = ( int )lParam;
+
+	if ( buf == NULL || size <= 0 )
+		return -1;
+
+	if ( !MyOptions.EnableAvatars )
+		return -2;
+
+	MSN_GetAvatarFileName( NULL, buf, size );
+	return 0;
+}	
+
+/////////////////////////////////////////////////////////////////////////////////////////
+// MsnGetAvatarFormatSupported - Msn supports avatars of virtually all formats
+
+int MsnGetAvatarFormatSupported(WPARAM wParam, LPARAM lParam)
+{
+	return (lParam == PA_FORMAT_PNG) ? 1 : 0;
+}
+
+/////////////////////////////////////////////////////////////////////////////////////////
 // MsnGetAvatarInfo - retrieve the avatar info
 
 static int MsnGetAvatarInfo(WPARAM wParam,LPARAM lParam)
@@ -520,6 +546,16 @@ static int MsnGetAvatarInfo(WPARAM wParam,LPARAM lParam)
 	}
 
 	return GAIR_NOAVATAR;
+}
+
+/////////////////////////////////////////////////////////////////////////////////////////
+// MsnGetAvatarMaxSize - retrieves the optimal avatar size
+
+int MsnGetAvatarMaxSize(WPARAM wParam, LPARAM lParam)
+{
+	if (wParam != 0) *((int*) wParam) = 96;
+	if (lParam != 0) *((int*) lParam) = 96;
+	return 0;
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////
@@ -811,8 +847,10 @@ static int MsnSendFile( WPARAM wParam, LPARAM lParam )
 	sft->std.currentFileNumber = 0;
 
 	sft->fileId = _open( sft->std.currentFile, _O_BINARY | _O_RDONLY, _S_IREAD );
-	MSN_DebugLog( "Unable to open file '%s', error %d", sft->std.currentFile, errno );
-	if ( sft->fileId == -1 ) return NULL;
+	if ( sft->fileId == -1 ) {
+		MSN_DebugLog( "Unable to open file '%s', error %d", sft->std.currentFile, errno );
+		return NULL;
+	}
 
 	DWORD dwFlags = MSN_GetDword( ccs->hContact, "FlagBits", 0 );
 	if ( dwFlags & 0x70000000 )
@@ -1385,9 +1423,13 @@ int LoadMsnServices( void )
 		MSN_CreateProtoServiceFunction( PS_SETAWAYMSG,		MsnSetAwayMsg );
 	}
 
-	MSN_CreateProtoServiceFunction( MSN_SET_AVATAR,			MsnSetAvatar );
-	MSN_CreateProtoServiceFunction( MSN_SET_NICKNAME,		MsnSetNickName );
-	MSN_CreateProtoServiceFunction( MSN_SEND_NUDGE,			MsnSendNudge );
+	MSN_CreateProtoServiceFunction( MSN_ISAVATARFORMATSUPPORTED, MsnGetAvatarFormatSupported );
+	MSN_CreateProtoServiceFunction( MSN_GETMYAVATARMAXSIZE, MsnGetAvatarMaxSize );
+	MSN_CreateProtoServiceFunction( MSN_GETMYAVATAR,      MsnGetAvatar );
+	MSN_CreateProtoServiceFunction( MSN_SETMYAVATAR,      MsnSetAvatar );
+
+	MSN_CreateProtoServiceFunction( MSN_SET_NICKNAME,     MsnSetNickName );
+	MSN_CreateProtoServiceFunction( MSN_SEND_NUDGE,       MsnSendNudge );
 	return 0;
 }
 

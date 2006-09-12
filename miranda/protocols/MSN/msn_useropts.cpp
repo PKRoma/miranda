@@ -203,7 +203,7 @@ BOOL CALLBACK AvatarDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam
 		TranslateDialogDefault( hwndDlg );
 
 		hAvatar = NULL;
-		if ( MSN_GetByte( "EnableAvatars", 0 )) {
+		if ( MyOptions.EnableAvatars ) {
 			if ( MSN_LoadPngModule() ) {
 				char tBuffer[ MAX_PATH ];
 				MSN_GetAvatarFileName( NULL, tBuffer, sizeof tBuffer );
@@ -211,8 +211,10 @@ BOOL CALLBACK AvatarDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam
 				if ( hAvatar != NULL )
 		         SendDlgItemMessage(hwndDlg, IDC_AVATAR, STM_SETIMAGE, IMAGE_BITMAP, (WPARAM)hAvatar );
 			}	
-			else MSN_SetByte( "EnableAvatars", 0 );
-		}
+			else { 
+				MSN_SetByte( "EnableAvatars", 0 );
+				MyOptions.EnableAvatars = FALSE;
+		}	}
 		return TRUE;
 
 	case WM_COMMAND:

@@ -125,13 +125,15 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #define MENU_ITEMS_COUNT 2
 #define MS_GOTO_INBOX		"/GotoInbox"
 #define MS_EDIT_PROFILE		"/EditProfile"
-#define MS_SET_AVATAR		"/SetMyAvatar"
 #define MS_VIEW_STATUS		"/ViewMsnStatus"
 #define MS_SET_NICKNAME_UI "/SetNicknameUI"
 #define MS_SET_AVATAR_UI	"/SetAvatarUI"
 
-#define MSN_SET_NICKNAME  "/SetNickname"
-#define MSN_SET_AVATAR    "/SetAvatar"
+#define MSN_ISAVATARFORMATSUPPORTED "/IsAvatarFormatSupported"
+#define MSN_GETMYAVATARMAXSIZE      "/GetMyAvatarMaxSize"
+#define MSN_GETMYAVATAR             "/GetMyAvatar"
+#define MSN_SETMYAVATAR             "/SetMyAvatar"
+#define MSN_SET_NICKNAME            "/SetNickname"
 
 /////////////////////////////////////////////////////////////////////////////////////////
 //	MSN plugin functions
