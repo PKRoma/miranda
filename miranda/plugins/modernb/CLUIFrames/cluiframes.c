@@ -806,7 +806,7 @@ int LocateStorePosition(int Frameid,int maxstored)
 		mir_snprintf(settingname,sizeof(settingname),"%s%d","Name",i);
     frmname=DBGetStringA(0,CLUIFrameModule,settingname);
     if(frmname==NULL) continue;
-    if(strcmpi(frmname,Frames[Frameid].name)==0) {
+    if(_strcmpi(frmname,Frames[Frameid].name)==0) {
       storpos=i;
       mir_free(frmname);
       break;

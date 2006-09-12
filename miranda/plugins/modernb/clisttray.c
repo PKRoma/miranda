@@ -792,7 +792,7 @@ void cliTrayIconUpdateBase(char *szChangedProto)
 						// 1 check if multi connecting icon
 						GetGlobalStatus(0,0);
 						if (gl_MultiConnectionMode)
-							if (strcmpi(szChangedProto,gl_ConnectingProto))
+							if (_strcmpi(szChangedProto,gl_ConnectingProto))
 								return;
 							else 
 								hIcon=(HICON)GetConnectingIconService((WPARAM)GLOBAL_PROTO_NAME/*(WPARAM)szChangedProto*/,1);

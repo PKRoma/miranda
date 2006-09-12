@@ -108,7 +108,7 @@ BOOL CheckOwner(HWND hwnd)
 	{
 		char buf[255];
 		GetClassNameA(midWnd,buf,254);
-		if (!strcmpi(buf,CLUIFrameSubContainerClassName)) return TRUE;
+		if (!_strcmpi(buf,CLUIFrameSubContainerClassName)) return TRUE;
 	}
 	return FALSE;
 }
@@ -760,7 +760,7 @@ pProtoTicks GetProtoTicksByProto(char * szProto)
 			CycleStartTick[i].szProto=mir_strdup(szProto);
 			CycleStartTick[i].CycleStartTick=0;
 			CycleStartTick[i].n=i;			
-			CycleStartTick[i].isGlobal=strcmpi(szProto,GLOBAL_PROTO_NAME)==0;
+			CycleStartTick[i].isGlobal=_strcmpi(szProto,GLOBAL_PROTO_NAME)==0;
 			CycleStartTick[i].IconsList=NULL;
 			return(&CycleStartTick[i]);
 		}
