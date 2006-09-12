@@ -56,7 +56,7 @@ yahoo_idlabel yahoo_status_codes[] = {
 	{YAHOO_STATUS_IDLE, "Idle"},
 	{YAHOO_STATUS_OFFLINE, "Offline"},
 	{YAHOO_STATUS_CUSTOM, "[Custom]"},
-	{YAHOO_STATUS_NOTIFY, "Notify"},
+//	{YAHOO_STATUS_NOTIFY, "Notify"},
 	{0, NULL}
 };
 
@@ -1193,7 +1193,7 @@ int ext_yahoo_connect(const char *h, int p, int type)
 	NETLIBOPENCONNECTION ncon = {0};
     HANDLE con;
     
-	LOG(("ext_yahoo_connect %s:%d", h, p));
+	LOG(("[ext_yahoo_connect] %s:%d type: %d", h, p, type));
 	
     ncon.cbSize = sizeof(ncon); 
 	ncon.szHost = h;
@@ -1209,6 +1209,7 @@ int ext_yahoo_connect(const char *h, int p, int type)
         return -1;
 	}
 
+	LOG(("[ext_yahoo_connect] Got: %d", (int)con));
     return (int)con;
 }
 
