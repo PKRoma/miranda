@@ -484,7 +484,7 @@ static LONG sttThreadID = 1;
 
 ThreadData::ThreadData()
 {
-	memset( this, 0, sizeof ThreadData );
+	memset( this, 0, sizeof( ThreadData ));
 	mUniqueID = MyInterlockedIncrement( &sttThreadID );
 	mGatewayTimeout = 2;
 	mWaitPeriod = 60;

@@ -86,7 +86,7 @@ static BOOL CALLBACK DlgProcMsnOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARA
 			EnableWindow( wnd, FALSE );
 
 		CheckDlgButton( hwndDlg, IDC_DISABLE_MAIN_MENU, MSN_GetByte( "DisableSetNickname", 0 ));
-		CheckDlgButton( hwndDlg, IDC_ENABLE_AVATARS,    MSN_GetByte( "EnableAvatars", 0 ));
+		CheckDlgButton( hwndDlg, IDC_ENABLE_AVATARS,    MSN_GetByte( "EnableAvatars", TRUE ));
 		CheckDlgButton( hwndDlg, IDC_SENDFONTINFO,      MSN_GetByte( "SendFontInfo", 1 ));
 		CheckDlgButton( hwndDlg, IDC_USE_OWN_NICKNAME,  MSN_GetByte( "NeverUpdateNickname", 0 ));
 		CheckDlgButton( hwndDlg, IDC_AWAY_AS_BRB,       MSN_GetByte( "AwayAsBrb", 0 ));
@@ -210,7 +210,7 @@ LBL_Continue:
 			DBVARIANT dbv;
 
 			GetDlgItemText( hwndDlg, IDC_HANDLE, screenStr, sizeof( screenStr ));
-			if ( DBGetContactSettingTString( "e-mail", msnProtocolName, NULL, &dbv ))
+			if ( DBGetContactSettingTString( (char *)"e-mail", msnProtocolName, NULL, &dbv ))
 				dbv.ptszVal = NULL;
 			if ( lstrcmp( screenStr, dbStr ))
 				reconnectRequired = true;
@@ -219,7 +219,7 @@ LBL_Continue:
 
 			GetDlgItemTextA( hwndDlg, IDC_PASSWORD, password, sizeof( password ));
 			MSN_CallService( MS_DB_CRYPT_ENCODESTRING, sizeof( password ),( LPARAM )password );
-			if ( DBGetContactSetting( "Password", msnProtocolName, NULL, &dbv ))
+			if ( DBGetContactSetting( (char *)"Password", msnProtocolName, NULL, &dbv ))
 				dbv.pszVal = NULL;
 			if ( lstrcmp( screenStr, dbStr ))
 				reconnectRequired = true;
@@ -768,7 +768,7 @@ void __stdcall LoadOptions()
 
 	MyOptions.AwayAsBrb = MSN_GetByte( "AwayAsBrb", FALSE );
 	MyOptions.DisableMenu = MSN_GetByte( "DisableSetNickname", FALSE );
-	MyOptions.EnableAvatars = MSN_GetByte( "EnableAvatars", FALSE );
+	MyOptions.EnableAvatars = MSN_GetByte( "EnableAvatars", TRUE );
 	MyOptions.KeepConnectionAlive = MSN_GetByte( "KeepAlive", FALSE );
 	MyOptions.ManageServer = MSN_GetByte( "ManageServer", FALSE );
 	MyOptions.PopupTimeoutHotmail = MSN_GetDword( NULL, "PopupTimeout", 3 );
