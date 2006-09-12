@@ -1272,7 +1272,7 @@ void Cache_GetAvatar(struct ClcData *dat, struct ClcContact *contact)
 		if (dat->avatars_show && !DBGetContactSettingByte(contact->hContact, "CList", "HideContactAvatar", 0))
 		{
 			contact->avatar_data = (struct avatarCacheEntry *)CallService(MS_AV_GETAVATARBITMAP, (WPARAM)contact->hContact, 0);
-            if (contact->avatar_data==0x80000000) 
+            if (contact->avatar_data==(struct avatarCacheEntry *)0x80000000) 
                 return;
 			if (contact->avatar_data == NULL || contact->avatar_data->cbSize != sizeof(struct avatarCacheEntry) 
 				|| contact->avatar_data->dwFlags == AVS_BITMAP_EXPIRED)

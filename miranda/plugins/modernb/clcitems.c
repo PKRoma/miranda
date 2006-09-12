@@ -701,3 +701,32 @@ char* cli_GetGroupCountsText(struct ClcData *dat, struct ClcContact *contact)
 	ulockdat;
 	return res;
 }
+
+int cliGetGroupContentsCount(struct ClcGroup *group, int visibleOnly)
+{
+	int count = group->cl.count;
+	struct ClcGroup *topgroup = group;
+
+	group->scanIndex = 0;
+	for (;;) {
+		if (group->scanIndex == group->cl.count) {
+			if (group == topgroup)
+				break;
+			group = group->parent;
+		}
+		else if (group->cl.items[group->scanIndex]->type == CLCIT_GROUP && (!(visibleOnly&0x01) || group->cl.items[group->scanIndex]->group->expanded)) {
+			group = group->cl.items[group->scanIndex]->group;
+			group->scanIndex = 0;
+			count += group->cl.count;
+			continue;
+		}
+        else if ((group->cl.items[group->scanIndex]->type == CLCIT_CONTACT) && 
+                 (group->cl.items[group->scanIndex]->subcontacts !=NULL)  && 
+                 ((group->cl.items[group->scanIndex]->SubExpanded || (!visibleOnly))))
+        {
+            count+=group->cl.items[group->scanIndex]->SubAllocated;
+        }
+		group->scanIndex++;
+	}
+	return count;
+}

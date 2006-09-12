@@ -49,6 +49,7 @@ int		cliHotKeysUnregister(HWND hwnd);
 void	cliOnCreateClc(void);
 int		cli_AddItemToGroup(struct ClcGroup *group, int iAboveItem);
 int		cli_AddInfoItemToGroup(struct ClcGroup *group,int flags,const TCHAR *pszText);
+int     cliGetGroupContentsCount(struct ClcGroup *group, int visibleOnly);
 
 int cliGetRowsPriorTo(struct ClcGroup *group,struct ClcGroup *subgroup,int contactIndex);
 
@@ -96,6 +97,8 @@ void (*saveSaveStateAndRebuildList)(HWND hwnd, struct ClcData *dat);
 
 char* cli_GetGroupCountsText(struct ClcData *dat, struct ClcContact *contact);
 char* (*saveGetGroupCountsText)(struct ClcData *dat, struct ClcContact *contact);
+
+
 
 
 void ( *saveChangeContactIcon)(HANDLE hContact,int iIcon,int add);
@@ -258,6 +261,7 @@ int __declspec(dllexport) CListInitialise(PLUGINLINK * link)
 	pcli->pfnFindItem			= cliFindItem;
 	pcli->pfnGetRowByIndex		= cliGetRowByIndex;
 	pcli->pfnGetRowsPriorTo		= cliGetRowsPriorTo;
+    pcli->pfnGetGroupContentsCount =cliGetGroupContentsCount;
 
 	//partialy overloaded - call default handlers from inside
 	saveLoadCluiGlobalOpts		= pcli->pfnLoadCluiGlobalOpts;
