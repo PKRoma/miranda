@@ -1422,7 +1422,7 @@ BOOL DoRtfToTags(TCHAR * pszText, struct MessageWindowData *dat)
 				{
 					int j = 1;
 					bJustRemovedRTF = TRUE;
-                    while(!_tcschr(_T(" !$%()#*"), p1[j]) && p1[j] != (TCHAR)'§' && p1[j] != (TCHAR)'\\' && p1[j] != (TCHAR)'\0')
+                    while(!_tcschr(_T(" !$%()#*\"'"), p1[j]) && p1[j] != (TCHAR)'§' && p1[j] != (TCHAR)'\\' && p1[j] != (TCHAR)'\0')
 //                    while(!_tcschr(_T(" !§$%&()#*"), p1[j]) && p1[j] != (TCHAR)'\\' && p1[j] != (TCHAR)'\0')
                           j++;
 //					while(p1[j] != (TCHAR)' ' && p1[j] != (TCHAR)'\\' && p1[j] != (TCHAR)'\0')

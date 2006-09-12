@@ -3806,7 +3806,7 @@ quote_from_last:
                             free(szFromStream);
 #else
                             szFromStream = Message_GetFromStream(GetDlgItem(hwndDlg, IDC_LOG), dat, SF_TEXT|SFF_SELECTION);
-                            FilterEventMarkers(szFromStream);
+                            FilterEventMarkersA(szFromStream);
                             szQuoted=QuoteText(szFromStream, 64, 0);
                             SendDlgItemMessageA(hwndDlg, IDC_MESSAGE, EM_REPLACESEL, TRUE, (LPARAM)szQuoted);
                             free(szQuoted);

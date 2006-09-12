@@ -462,11 +462,15 @@ static char* Log_CreateRTF(LOGSTREAMDATA *streamData)
                 
                 lin->dwFlags |= MWF_DIVIDERWANTED;
                 if(lin->prev || !streamData->bRedraw)
-                    Log_Append(&buffer, &bufferEnd, &bufferAlloced, "\\par\\qc\\sl-1\\highlight%d %s ---------------------------------------------------------------------------------------", 18, szStyle_div);
+                    Log_Append(&buffer, &bufferEnd, &bufferAlloced, "\\par\\qc\\sl-1\\highlight%d %s ---------------------------------------------------------------------------------------\\par ", 18, szStyle_div);
                 streamData->dat->dwFlags &= ~MWF_DIVIDERWANTED;
             }
             // create new line, and set font and color
-			Log_Append(&buffer, &bufferEnd, &bufferAlloced, "\\par\\ql\\sl0%s ", Log_SetStyle(0, 0));
+            /*
+            if(!lin->prev)
+                Log_Append(&buffer, &bufferEnd, &bufferAlloced, "\\par\\ql\\sl0%s ", Log_SetStyle(0, 0));
+            else*/
+                Log_Append(&buffer, &bufferEnd, &bufferAlloced, "\\ql\\sl0%s ", Log_SetStyle(0, 0));
 
             Log_Append(&buffer, &bufferEnd, &bufferAlloced, "\\v~-+%d+-~\\v0 ", lin);
             //_DebugTraceA("log stats: begin %d, end %d, cur %d", streamData->si->pLog, streamData->si->pLogEnd, lin);
@@ -507,8 +511,8 @@ static char* Log_CreateRTF(LOGSTREAMDATA *streamData)
 			else
 				Log_Append(&buffer, &bufferEnd, &bufferAlloced, "%s ", Log_SetStyle(0, 0 ));
 			// insert a TAB if necessary to put the timestamp in the right position
-			if (g_Settings.dwIconFlags)
-				Log_Append(&buffer, &bufferEnd, &bufferAlloced, "\\tab ");
+			//if (g_Settings.dwIconFlags)
+			//	Log_Append(&buffer, &bufferEnd, &bufferAlloced, "\\tab ");
 
 			//insert timestamp
 			if(g_Settings.ShowTime)
@@ -601,12 +605,15 @@ static char* Log_CreateRTF(LOGSTREAMDATA *streamData)
 				streamData->lin = lin;
 				AddEventToBuffer(&buffer, &bufferEnd, &bufferAlloced, streamData);
 			}
-
+            Log_Append(&buffer, &bufferEnd, &bufferAlloced, "\\par ");
 		}
 		lin = lin->prev;
 	}
 	// ### RTF END
-	Log_Append(&buffer, &bufferEnd, &bufferAlloced, "}");
+    if(streamData->bRedraw)
+        Log_Append(&buffer, &bufferEnd, &bufferAlloced, "\\par}");
+    else
+        Log_Append(&buffer, &bufferEnd, &bufferAlloced, "}");
 	return buffer;
 }
 
