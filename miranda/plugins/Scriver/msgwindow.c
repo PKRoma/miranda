@@ -167,6 +167,8 @@ TCHAR* GetWindowTitle(HANDLE *hContact, const char *szProto)
 	free(szContactName);
 	free(szStatus);
 	free(pszNewTitleEnd);
+	if (szStatusMsg)
+		free(szStatusMsg);
 	return title;
 }
 
