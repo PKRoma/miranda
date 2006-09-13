@@ -120,7 +120,7 @@ void yahoo_set_status(int myyahooStatus, char *msg, int away)
 	LOG(("yahoo_set_status myyahooStatus: %d, msg: %s, away: %d", myyahooStatus, msg, away));
 
 	/* Safety check, don't dereference Invalid pointers */
-	if ((ylad != NULL) && (ylad->id > 0) )  {
+	if (ylad->id > 0)  {
 			
 		if (YAHOO_CUSTOM_STATUS != myyahooStatus)
 			yahoo_set_away(ylad->id, miranda_to_yahoo(myyahooStatus), msg, away);
@@ -134,7 +134,7 @@ void yahoo_stealth(const char *buddy, int add)
 	LOG(("yahoo_stealth buddy: %s, add: %d", buddy, add));
 
 	/* Safety check, don't dereference Invalid pointers */
-	if ((ylad != NULL) && (ylad->id > 0) )  {
+	if (ylad->id > 0) {
 		yahoo_set_stealth(ylad->id, buddy, add);
 	}
 }
@@ -190,7 +190,7 @@ int yahoo_to_miranda_status(int yahooStatus, int away)
 
 const YList* YAHOO_GetIgnoreList(void)
 {
-	if (!ylad)
+	if (ylad->id < 1)
 		return NULL;
 	
 	return yahoo_get_ignorelist(ylad->id);
@@ -198,7 +198,7 @@ const YList* YAHOO_GetIgnoreList(void)
 
 void YAHOO_IgnoreBuddy(const char *buddy, int ignore)
 {
-	if (!ylad)
+	if (ylad->id < 1)
 		return;
 	
 	yahoo_ignore_buddy(ylad->id, buddy, ignore);
@@ -246,33 +246,21 @@ void YAHOO_reject(const char *who, const char *msg)
 
 void yahoo_logout()
 {
-	//poll_loop = 0; <- don't kill us before we do full cleanup!!!
+	LOG(("[yahoo_logout]"));
 	
-	if (ylad == NULL)
-        return;
-        
-	if (ylad->id <= 0) {
-		return;
-	}
-
-	if (yahooLoggedIn) {
-		yahoo_logoff(ylad->id);
-	} else {
-		poll_loop = 0; /* we need to trigger server stop */
-	}
-	
-	if (ylad)
-		yahoo_close(ylad->id);
-
 	yahooLoggedIn = FALSE; 
 	
-	FREE(ylad);
-	ylad = NULL;
+	if (ylad->id <= 0) 
+		return;
 
-	//pthread_mutex_lock(&connectionHandleMutex);
-    
-    
-	//pthread_mutex_unlock(&connectionHandleMutex);
+	yahoo_logoff(ylad->id);
+	yahoo_close(ylad->id);
+	
+	ylad->status = YAHOO_STATUS_OFFLINE;
+	ylad->id = 0;
+
+	poll_loop=0;
+	LOG(("[yahoo_logout] Logged out"));	
 }
 
 HANDLE getbuddyH(const char *yahoo_id)
@@ -1504,7 +1492,7 @@ void ext_yahoo_login(int login_mode)
 	ylad->status = YAHOO_STATUS_OFFLINE;
 	yahoo_login(ylad->id, login_mode);
 
-	if (ylad == NULL || ylad->id <= 0) {
+	if (ylad->id <= 0) {
 		LOG(("Could not connect to Yahoo server.  Please verify that you are connected to the net and the pager host and port are correctly entered."));
 		YAHOO_ShowError(Translate("Yahoo Login Error"), Translate("Could not connect to Yahoo server.  Please verify that you are connected to the net and the pager host and port are correctly entered."));
 		return;

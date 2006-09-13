@@ -143,7 +143,7 @@ void __cdecl yahoo_server_main(void *empty)
 			}
 			
 			/* do the timer check */
-			if (ylad != NULL) {
+			if (ylad->id > 0) {
 #ifdef	HTTP_GATEWAY			
 				//YAHOO_DebugLog("HTTPGateway: %d", iHTTPGateway);
 				if	(!iHTTPGateway) {

@@ -28,7 +28,7 @@ optimizeLevel=0
 // linker
 libraryPath=
 outputFilename=..\..\Bin\Release\Plugins\Yahoo.dll
-libraries=
+libraries=comdlg32,gdi32
 extraLinkerOptions=
 ignoreStartupFile=0
 ignoreDefaultLibs=0

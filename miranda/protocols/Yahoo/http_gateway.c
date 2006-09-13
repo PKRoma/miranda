@@ -36,7 +36,7 @@ int YAHOO_httpGatewayWrapSend(HANDLE hConn, PBYTE buf, int len, int flags, MIRAN
 {
 	YAHOO_DebugLog("YAHOO_httpGatewayWrapSend!!! Len: %d", len);
 
-	if (len == 0 && ylad != NULL) { // we need to send something!!!
+	if (len == 0 && ylad->id > 0) { // we need to send something!!!
 		int n;
 		char *z = yahoo_webmessenger_idle_packet(ylad->id, &n);
 		int ret = 0;
@@ -67,10 +67,8 @@ PBYTE YAHOO_httpGatewayUnwrapRecv(NETLIBHTTPREQUEST *nlhr, PBYTE buf, int len, i
 	if (len < 4) 
 		return NULL;
 
-	if (ylad != NULL) {
-		ylad->rpkts = buf[0] + buf[1] *256;
-		YAHOO_DebugLog("Got packets: %d", ylad->rpkts);
-	}
+	ylad->rpkts = buf[0] + buf[1] *256;
+	YAHOO_DebugLog("Got packets: %d", ylad->rpkts);
 	
     if (len == 4){
         *outBufLen = 0;

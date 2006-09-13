@@ -157,8 +157,6 @@ int SetStatus(WPARAM wParam,LPARAM lParam)
 
 		YAHOO_utils_logversion();
 		
-		ylad = y_new0(yahoo_local_account, 1);
-
 		/*
 		 * Load Yahoo ID form the database.
 		 */
@@ -191,8 +189,6 @@ int SetStatus(WPARAM wParam,LPARAM lParam)
 		}
 
 		if (err != 0){
-			FREE(ylad);
-			ylad = NULL;
 			yahoo_util_broadcaststatus(ID_STATUS_OFFLINE);
         
 			YAHOO_ShowError(Translate("Yahoo Login Error"), errmsg);

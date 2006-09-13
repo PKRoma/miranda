@@ -28,6 +28,7 @@
 
 //#define HTTP_GATEWAY
 extern char *szStartMsg;
+extern yahoo_local_account *ylad;
 
 /*
  * Global Variables
@@ -144,6 +145,8 @@ int __declspec(dllexport) Unload(void)
 	
 	if (szStartMsg)
 		free(szStartMsg);
+	
+	FREE(ylad);
 	
 	YAHOO_DebugLog("Before Netlib_CloseHandle");
     Netlib_CloseHandle( hNetlibUser );
@@ -288,6 +291,9 @@ int __declspec(dllexport)Load(PLUGINLINK *link)
 	pd.type=PROTOTYPE_PROTOCOL;
 	CallService(MS_PROTO_REGISTERMODULE,0,(LPARAM)&pd);
 
+	// Initialize our important variable
+	ylad = y_new0(yahoo_local_account, 1);
+	
 	register_callbacks();
 	// 3.
 	yahoo_logoff_buddies();
