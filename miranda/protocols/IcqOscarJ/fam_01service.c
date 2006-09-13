@@ -431,6 +431,27 @@ void handleServiceFam(unsigned char* pBuffer, WORD wBufferLength, snac_header* p
 
     if ((wBufferLength >= 0x14) && gbAvatarsEnabled)
     {
+      if (!info->bMyAvatarInited) // signal the server after login
+      { // this refreshes avatar state - it used to work automatically, but now it does not
+        if (ICQGetContactSettingByte(NULL, "ForceOurAvatar", 0))
+        { // keep our avatar
+          char* file = loadMyAvatarFileName();
+
+          IcqSetMyAvatar(0, (LPARAM)file);
+          SAFE_FREE(&file);
+        }
+        else // only change avatar hash to the same one
+        {
+          char hash[0x14];
+
+          memcpy(hash, pBuffer, 0x14);
+          hash[2] = 1; // update image status
+          updateServAvatarHash(hash, 0x14);
+        }
+        info->bMyAvatarInited = TRUE;
+        break;
+      }
+
       switch (pBuffer[2])
       {
         case 1: // our avatar is on the server
@@ -563,7 +584,7 @@ void handleServiceFam(unsigned char* pBuffer, WORD wBufferLength, snac_header* p
           SAFE_FREE(&file);
           break;
         default:
-          NetLog_Server("Reiceived UNKNOWN Avatar Status.");
+          NetLog_Server("Received UNKNOWN Avatar Status.");
         }
       }
     }

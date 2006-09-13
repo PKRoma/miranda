@@ -288,7 +288,8 @@ int IcqSetMyAvatar(WPARAM wParam, LPARAM lParam)
       DeleteObject(avt);
     }
     GetFullAvatarFileName(0, NULL, dwPaFormat, szMyFile, MAX_PATH);
-    if (!CopyFile(szFile, szMyFile, FALSE))
+    // if not in our storage, copy
+    if (strcmpnull(szFile, szMyFile) && !CopyFile(szFile, szMyFile, FALSE))
     {
       NetLog_Server("Failed to copy our avatar to local storage.");
       return iRet;

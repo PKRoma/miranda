@@ -55,6 +55,7 @@ typedef struct serverthread_info_s {
   int newServerReady;
   int isMigrating;
   int bReinitRecver;
+  int bMyAvatarInited;
 } serverthread_info;
 
 /*---------* Functions *---------------*/

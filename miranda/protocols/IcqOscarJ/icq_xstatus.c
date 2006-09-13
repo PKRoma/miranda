@@ -129,7 +129,7 @@ static char* InitXStatusIconLibrary(char* buf)
   {
     strcpy(buf, path);
 
-    if (LoadStringA(hXStatusIconsDLL, IDS_IDENTIFY, path, sizeof(path)) == 0 || strcmp(path, "# Custom Status Icons #"))
+    if (LoadStringA(hXStatusIconsDLL, IDS_IDENTIFY, path, sizeof(path)) == 0 || strcmpnull(path, "# Custom Status Icons #"))
     {
       FreeLibrary(hXStatusIconsDLL);
       hXStatusIconsDLL = NULL;
