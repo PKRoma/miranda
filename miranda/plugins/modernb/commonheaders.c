@@ -301,3 +301,4 @@ BOOL DestroyIcon_protect(HICON icon)
 	if (icon) return DestroyIcon(icon);
 	return FALSE;
 }
+

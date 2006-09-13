@@ -96,6 +96,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #define INTM_STATUSCHANGED	(WM_USER+27)
 #define INTM_AVATARCHANGED	(WM_USER+28)
 #define INTM_TIMEZONECHANGED	(WM_USER+29)
+#define INTM_TRANSPORTCHANGED   (WM_USER+40)
 
 #define CLCDEFAULT_EXSTYLE       (CLS_EX_EDITLABELS|CLS_EX_TRACKSELECT|CLS_EX_SHOWGROUPCOUNTS|CLS_EX_HIDECOUNTSWHENEMPTY|CLS_EX_TRACKSELECT|CLS_EX_NOTRANSLUCENTSEL)  //plus CLS_EX_NOSMOOTHSCROLL is got from the system
 #define CLCDEFAULT_SCROLLTIME    150
@@ -246,6 +247,9 @@ struct ClcContact {
 	RECT pos_contact_time;
 	RECT pos_extra[MAXEXTRACOLUMNS];
     DWORD lastPaintCounter;
+    int  xStatus;
+    int  isTransport;  // transport ID+1
+    int  iTransportProtoIconID; // do not destroy it
 };
 
 #define DRAGSTAGE_NOTMOVED  0
@@ -420,6 +424,7 @@ struct ClcData {
 	BYTE menuOwnerType;
 	int menuOwnerID;
     DWORD m_paintCouter; //range is enoght to 49 days if painting will occure each one millisecond
+    BYTE useMetaIcon;
 };
 
 //clc.c

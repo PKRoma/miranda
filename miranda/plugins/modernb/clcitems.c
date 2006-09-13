@@ -28,6 +28,129 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include "commonprototypes.h"
 extern void ( *saveAddContactToTree)(HWND hwnd,struct ClcData *dat,HANDLE hContact,int updateTotalCount,int checkHideOffline);
 
+HIMAGELIST hAnvancedStatusIcon=NULL;
+static int lastIcon=0;
+
+typedef struct _TransportProtoTable
+{
+    char * mask;
+    char * proto;
+    int startIndex;
+} TransportProtoTableStruct;
+
+TransportProtoTableStruct TransportProtoTable[]=
+{
+    {"|icq*|jit*","ICQ",-1},
+    {"msn*","MSN",-1},
+    {"yahoo*","YAHOO",-1},
+    {"mrim*","MRA",-1},
+    {"aim*","AIM",-1},
+};
+
+
+int ReloadAllAdvancedIcons()
+{
+    int i=0;
+    for (i=0; i<SIZEOF(TransportProtoTable); i++)
+        if (TransportProtoTable[i].startIndex!=-1)   
+            LoadAdvancedIcons(i);
+    return 0;
+}
+
+#define IDI_ONLINE                      104
+#define IDI_OFFLINE                     105
+#define IDI_AWAY                        128
+#define IDI_FREE4CHAT                   129
+#define IDI_INVISIBLE                   130
+#define IDI_NA                          131
+#define IDI_DND                         158
+#define IDI_OCCUPIED                    159
+#define IDI_ONTHEPHONE                  1002
+#define IDI_OUTTOLUNCH                  1003
+
+static int skinIconStatusToResourceId[]={IDI_OFFLINE,IDI_ONLINE,IDI_AWAY,IDI_NA,IDI_OCCUPIED,IDI_DND,IDI_FREE4CHAT,IDI_INVISIBLE,IDI_ONTHEPHONE,IDI_OUTTOLUNCH};
+
+int LoadAdvancedIcons(int ID)
+{
+    int i;
+    char * proto=TransportProtoTable[ID].proto;    
+    char * defFile[MAX_PATH]={0};
+    char * Group[255];
+    char * Uname[255];
+    HICON empty=LoadSmallIcon(NULL,MAKEINTRESOURCE(IDI_BLANK));
+    
+    _snprintf((char *)Group, sizeof(Group),"%s/%s",Translate("Transports"),proto);
+    _snprintf((char *)defFile, sizeof(defFile),"proto_%s.dll",proto);
+    if (!hAnvancedStatusIcon)
+        hAnvancedStatusIcon=ImageList_Create(16,16,ILC_MASK|ILC_COLOR32,16,8);
+    for (i=0; i<ID_STATUS_OUTTOLUNCH-ID_STATUS_OFFLINE; i++)
+    {
+        HICON hicon;
+        BOOL needFree;
+        char * descr=(char*)CallService(MS_CLIST_GETSTATUSMODEDESCRIPTION,i+ID_STATUS_OFFLINE,0);
+        _snprintf((char *)Uname, sizeof(Uname),"Transport_%s_%d",proto,i);
+        hicon=(HICON)LoadIconFromExternalFile((char*)defFile,-skinIconStatusToResourceId[i],3,TRUE,(char*)Uname,(char*)Group,(char*)descr,-(i+ID_STATUS_OFFLINE),&needFree);
+        {
+            int index=(TransportProtoTable[ID].startIndex==-1)?-1:TransportProtoTable[ID].startIndex+i;
+            ImageList_ReplaceIcon(hAnvancedStatusIcon,index,hicon?hicon:empty);          
+        }
+        if (hicon && needFree) DestroyIcon(hicon);
+    }
+    if (TransportProtoTable[ID].startIndex==-1)
+    {
+        TransportProtoTable[ID].startIndex=lastIcon;
+        lastIcon+=(ID_STATUS_OUTTOLUNCH-ID_STATUS_OFFLINE);
+    }
+    return 0;
+}
+
+int GetTransportProtoID(char * TransportDomain)
+{
+    int i=0;
+    for (i=0; i<SIZEOF(TransportProtoTable); i++)
+    {
+        if (MatchMask(TransportDomain,TransportProtoTable[i].mask)) 
+            return i;
+    }
+    return -1;
+}
+
+int GetTransportProtoIDFromHCONTACT(HANDLE hContact, char * protocol)
+{
+    int res=-1;
+    if (DBGetContactSettingByte(hContact,protocol,"IsTransported",0))
+    {
+        char * transport=DBGetStringA(hContact,protocol,"Transport");
+        if (transport) 
+        {
+            res=GetTransportProtoID(transport);
+            mir_free(transport);
+        }
+    }
+    return res;
+}
+
+char* GetTransportProtoName(int ID)
+{
+    if (ID>=0 && ID<SIZEOF(TransportProtoTable))
+        return TransportProtoTable[ID].proto;
+    else
+        return NULL;
+}
+
+int GetTrasportStatusIconIndex(int ID, int Status)
+{
+    if (!(ID>=0 && ID<SIZEOF(TransportProtoTable)))
+        return -1;
+    if (TransportProtoTable[ID].startIndex==-1)
+    {
+        LoadAdvancedIcons(ID);
+        //icons not loaded - loading icons
+    }
+    if (TransportProtoTable[ID].startIndex==-1) return -1; //some fault on loading icons
+    if (Status<ID_STATUS_OFFLINE) Status=ID_STATUS_OFFLINE;
+    return (TransportProtoTable[ID].startIndex+Status-ID_STATUS_OFFLINE);
+}
 
 void AddSubcontacts(struct ClcData *dat, struct ClcContact * cont, BOOL showOfflineHereGroup)
 {
@@ -75,6 +198,9 @@ void AddSubcontacts(struct ClcData *dat, struct ClcContact * cont, BOOL showOffl
             cont->subcontacts[i].lastPaintCounter=0;
 			cont->subcontacts[i].subcontacts=cont;
 			cont->subcontacts[i].image_is_special=FALSE;
+            cont->subcontacts[i].isTransport=0;
+            cont->subcontacts[i].iTransportProtoIconID=-1;
+            cont->subcontacts[i].xStatus=-1;
 			//cont->subcontacts[i].status=cacheEntry->status;
 			Cache_GetTimezone(dat, (&cont->subcontacts[i])->hContact);
 			Cache_GetText(dat, &cont->subcontacts[i],1);
@@ -83,6 +209,7 @@ void AddSubcontacts(struct ClcData *dat, struct ClcContact * cont, BOOL showOffl
 				int apparentMode;
 				char *szProto;  
 				int idleMode;
+                int trID=0;
 				szProto=cacheEntry->szProto;
 				if(szProto!=NULL&&!pcli->pfnIsHiddenMode(dat,cacheEntry->status))
 					cont->subcontacts[i].flags|=CONTACTF_ONLINE;
@@ -94,7 +221,13 @@ void AddSubcontacts(struct ClcData *dat, struct ClcContact * cont, BOOL showOffl
 				if(cacheEntry->NotOnList) cont->subcontacts[i].flags|=CONTACTF_NOTONLIST;
 				idleMode=szProto!=NULL?cacheEntry->IdleTS:0;
 				if (idleMode) cont->subcontacts[i].flags|=CONTACTF_IDLE;
-			}
+		        trID=GetTransportProtoIDFromHCONTACT(cont->subcontacts[i].hContact,szProto);
+                if (trID!=-1) 
+                {
+                    cont->subcontacts[i].isTransport=trID+1;
+                    cont->subcontacts[i].iTransportProtoIconID=GetTrasportStatusIconIndex(trID,cacheEntry->status);
+                }
+            }
 			i++;
 		}	}
 
@@ -219,7 +352,6 @@ static struct ClcContact * AddContactToGroup(struct ClcData *dat,struct ClcGroup
 	if (idleMode) 
 		group->cl.items[i]->flags|=CONTACTF_IDLE;
 	group->cl.items[i]->proto = szProto;
-
 //	group->cl.items[i]->timezone = (DWORD)DBGetContactSettingByte(hContact,"UserInfo","Timezone", DBGetContactSettingByte(hContact, szProto,"Timezone",-1));
 /*
 if (group->cl.items[i]->timezone != -1)
@@ -234,6 +366,16 @@ if (group->cl.items[i]->timezone != -1)
 			group->cl.items[i]->timediff = (int)dat->local_gmt_diff_dst - contact_gmt_diff;
 	}
 */
+                //transports
+   {
+      int trID=GetTransportProtoIDFromHCONTACT(group->cl.items[i]->hContact,szProto);
+      if (trID!=-1) 
+      {
+      int status=GetStatusForContact(group->cl.items[i]->hContact,szProto);
+         group->cl.items[i]->isTransport=trID+1;
+         group->cl.items[i]->iTransportProtoIconID=GetTrasportStatusIconIndex(trID,status);
+      }
+    }
 	pcli->pfnInvalidateDisplayNameCacheEntry(hContact);	
 	Cache_GetTimezone(dat, group->cl.items[i]->hContact);
 	Cache_GetText(dat, group->cl.items[i],1);
@@ -298,6 +440,15 @@ void cli_AddContactToTree(HWND hwnd,struct ClcData *dat,HANDLE hContact,int upda
 				cont->SubAllocated=0;
 				if (mir_strcmp(cont->proto,"MetaContacts")==0) 
 					AddSubcontacts(dat,cont,IsShowOfflineGroup(group));
+                {
+                    int trID=GetTransportProtoIDFromHCONTACT(cont->hContact,cont->proto);
+                    if (trID!=-1) 
+                    {
+                        int status=GetStatusForContact(cont->hContact,cont->proto);
+                        cont->isTransport=trID+1;
+                        cont->iTransportProtoIconID=GetTrasportStatusIconIndex(trID,status);
+                    }
+                }
 			}
             cont->lastPaintCounter=0;
 			cont->avatar_pos=AVATAR_POS_DONT_HAVE;

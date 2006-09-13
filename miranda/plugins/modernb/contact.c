@@ -84,6 +84,27 @@ void cli_ChangeContactIcon(HANDLE hContact,int iIcon,int add)
 							szRealProto=(char*)CallService(MS_PROTO_GETCONTACTBASEPROTO,(UINT)hMostMeta,0);
 							RealStatus=DBGetContactSettingWord(hMostMeta,szRealProto,"Status",ID_STATUS_OFFLINE);
 							iIcon=pcli->pfnIconFromStatusMode(szRealProto,RealStatus,NULL);
+                            
+                            // copy data to host contact
+                            if (DBGetContactSettingByte(hMostMeta,szRealProto,"IsTransported",0))
+                            {
+                                char * transport=DBGetStringA(hMostMeta,szRealProto,"Transport");
+                                if (transport) 
+                                {
+                                    DBWriteContactSettingByte(hContact,szMetaProto,"IsTransported",1);
+                                    DBWriteContactSettingString(hContact,szMetaProto,"Transport",transport);
+                                    mir_free(transport);
+                                }
+                            }
+                            else 
+                            {
+                                int i=DBGetContactSettingByte(hContact,szMetaProto,"IsTransported",2);
+                                if (i==1)
+                                {
+                                    DBWriteContactSettingByte(hContact,szMetaProto,"IsTransported",0);
+                                    DBWriteContactSettingString(hContact,szMetaProto,"Transport","");
+                                }
+                            }
 
 						}
 					}

@@ -38,6 +38,8 @@ static HANDLE   (WINAPI *MyOpenThemeData)(HWND,LPCWSTR);
 static HRESULT  (WINAPI *MyCloseThemeData)(HANDLE);
 static HRESULT  (WINAPI *MyDrawThemeBackground)(HANDLE,HDC,int,int,const RECT *,const RECT *);
 #define MGPROC(x) GetProcAddress(themeAPIHandle,x)
+extern HIMAGELIST hAnvancedStatusIcon;
+void DrawStatusIcon(struct ClcContact * Drawing, struct ClcData *dat, int iImage, HDC hDC, int x, int y, int cx, int cy, DWORD colorbg,DWORD colorfg, int mode);
 
 extern HIMAGELIST hAvatarOverlays;
 tPaintCallbackProc ClcPaintCallbackProc(HWND hWnd, HDC hDC, RECT * rcPaint,HRGN rgn,  DWORD dFlags, void * CallBackData);
@@ -709,7 +711,7 @@ void ModernInternalPaintRowItems(HWND hwnd, HDC hdcMem, struct ClcData *dat, str
         {
           mode=ILD_SELECTED;
         }
-        mod_ImageList_DrawEx(himlCListClc, iImage, hdcMem, p_rect.left, p_rect.top,	0,0,CLR_NONE,colourFg,mode);
+        DrawStatusIcon(Drawing,dat, iImage, hdcMem, p_rect.left, p_rect.top,	0,0,CLR_NONE,colourFg,mode);
 		
       }
       fr_rc.left+=ICON_HEIGHT+2;
@@ -1254,7 +1256,7 @@ void ModernInternalPaintRowItems(HWND hwnd, HDC hdcMem, struct ClcData *dat, str
                 mode=ILD_SELECTED;
               }
 
-              mod_ImageList_DrawEx(himlCListClc, iImage, hdcMem, p_rect.left, p_rect.top,	0,0,CLR_NONE,colourFg,mode);
+              DrawStatusIcon(Drawing,dat, iImage, hdcMem, p_rect.left, p_rect.top,	0,0,CLR_NONE,colourFg,mode);
 
             }
           }
@@ -1303,7 +1305,7 @@ void ModernInternalPaintRowItems(HWND hwnd, HDC hdcMem, struct ClcData *dat, str
 					mode=ILD_SELECTED;
 				  }
 
-				  mod_ImageList_DrawEx(himlCListClc, iImage, hdcMem, p_rect.left, p_rect.top,	0,0,CLR_NONE,colourFg,mode);
+				  DrawStatusIcon(Drawing,dat, iImage, hdcMem, p_rect.left, p_rect.top,	0,0,CLR_NONE,colourFg,mode);
 
 				}
 		  }
@@ -1468,7 +1470,7 @@ void ModernInternalPaintRowItems(HWND hwnd, HDC hdcMem, struct ClcData *dat, str
 							item = ExtIconFromStatusMode(Drawing->hContact, Drawing->proto,
 							  Drawing->proto==NULL ? ID_STATUS_OFFLINE : GetContactCachedStatus(Drawing->hContact));
 							if (item != -1)
-							  mod_ImageList_DrawEx(himlCListClc, item, hdcMem, 
+							  DrawStatusIcon(Drawing,dat, item, hdcMem, 
 							  p_rect.left,  p_rect.top,ICON_HEIGHT,ICON_HEIGHT,
 							  CLR_NONE,CLR_NONE,(blendmode==255)?ILD_NORMAL:(blendmode==128)?ILD_BLEND50:ILD_BLEND25);
 							break;
@@ -1476,7 +1478,7 @@ void ModernInternalPaintRowItems(HWND hwnd, HDC hdcMem, struct ClcData *dat, str
 						case SETTING_AVATAR_OVERLAY_TYPE_CONTACT:
 						  {
 							if (Drawing->iImage != -1)
-							  mod_ImageList_DrawEx(himlCListClc, Drawing->iImage, hdcMem, 
+							  DrawStatusIcon(Drawing,dat, Drawing->iImage, hdcMem, 
 							  p_rect.left,  p_rect.top,ICON_HEIGHT,ICON_HEIGHT,
 							  CLR_NONE,CLR_NONE,(blendmode==255)?ILD_NORMAL:(blendmode==128)?ILD_BLEND50:ILD_BLEND25);
 							break;
@@ -1612,6 +1614,40 @@ void ModernInternalPaintRowItems(HWND hwnd, HDC hdcMem, struct ClcData *dat, str
   return;
 }
 
+
+void DrawStatusIcon(struct ClcContact * Drawing, struct ClcData *dat,
+                    int iImage, HDC hdcMem, int x, int y, int cx, int cy, DWORD colorbg,DWORD colorfg, int mode)
+{
+    if (Drawing->type!=CLCIT_CONTACT)
+    {
+      mod_ImageList_DrawEx(himlCListClc, iImage, hdcMem, 
+            x, y,cx,cy,colorbg,colorfg,mode);
+    }
+    else if (Drawing->image_is_special) 
+    {
+       mod_ImageList_DrawEx(himlCListClc, iImage, hdcMem, 
+                  x, y,cx,cy,colorbg,colorfg,mode);
+    }
+    else if (Drawing->SubAllocated>0 && !dat->useMetaIcon && Drawing->isTransport>0)
+    { 
+       mod_ImageList_DrawEx(hAnvancedStatusIcon, Drawing->iTransportProtoIconID, hdcMem, 
+                  x, y,cx,cy,colorbg,colorfg,mode);
+    }
+    else if (Drawing->isTransport>0)
+    {
+       mod_ImageList_DrawEx(hAnvancedStatusIcon, Drawing->iTransportProtoIconID, hdcMem, 
+                  x, y,cx,cy,colorbg,colorfg,mode);
+    }
+    else if (Drawing->xStatus>0)
+    {
+        //draw xStatus
+    }
+    else
+    {
+       mod_ImageList_DrawEx(himlCListClc, iImage, hdcMem, 
+                  x, y,cx,cy,colorbg,colorfg,mode);
+    }
+}
 void InternalPaintRowItems(HWND hwnd, HDC hdcMem, struct ClcData *dat, struct ClcContact *Drawing,RECT row_rc, RECT free_row_rc, int left_pos, int right_pos, int selected,int hottrack, RECT *rcPaint)
 {
   int item, item_iterator, item_text;
@@ -1705,7 +1741,7 @@ void InternalPaintRowItems(HWND hwnd, HDC hdcMem, struct ClcData *dat, struct Cl
                 {
                   mode=ILD_SELECTED;
                 }
-                mod_ImageList_DrawEx(himlCListClc, iImage, hdcMem, 
+                DrawStatusIcon(Drawing,dat, iImage, hdcMem, 
                   rc.left, rc.top,
                   0,0,CLR_NONE,colourFg,mode);
               }
@@ -1941,7 +1977,7 @@ void InternalPaintRowItems(HWND hwnd, HDC hdcMem, struct ClcData *dat, struct Cl
                 item = ExtIconFromStatusMode(Drawing->hContact, Drawing->proto,
                   Drawing->proto==NULL ? ID_STATUS_OFFLINE : GetContactCachedStatus(Drawing->hContact));
                 if (item != -1)
-                  mod_ImageList_DrawEx(himlCListClc, item, hdcMem, 
+                  DrawStatusIcon(Drawing,dat, item, hdcMem, 
                   real_rc.left,  real_rc.top,ICON_HEIGHT,ICON_HEIGHT,
                   CLR_NONE,CLR_NONE,(blendmode==255)?ILD_NORMAL:(blendmode==128)?ILD_BLEND50:ILD_BLEND25);
                 break;
@@ -1949,7 +1985,7 @@ void InternalPaintRowItems(HWND hwnd, HDC hdcMem, struct ClcData *dat, struct Cl
             case SETTING_AVATAR_OVERLAY_TYPE_CONTACT:
               {
                 if (Drawing->iImage != -1)
-                  mod_ImageList_DrawEx(himlCListClc, Drawing->iImage, hdcMem, 
+                  DrawStatusIcon(Drawing,dat, Drawing->iImage, hdcMem, 
                   real_rc.left,  real_rc.top,ICON_HEIGHT,ICON_HEIGHT,
                   CLR_NONE,CLR_NONE,(blendmode==255)?ILD_NORMAL:(blendmode==128)?ILD_BLEND50:ILD_BLEND25);
                 break;
@@ -2052,7 +2088,7 @@ void InternalPaintRowItems(HWND hwnd, HDC hdcMem, struct ClcData *dat, struct Cl
                 mode=ILD_SELECTED;
               }
 
-              mod_ImageList_DrawEx(himlCListClc, iImage, hdcMem, 
+              DrawStatusIcon(Drawing,dat, iImage, hdcMem, 
                 rc.left, rc.top,
                 0,0,CLR_NONE,colourFg,mode);
             }

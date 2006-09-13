@@ -682,6 +682,7 @@ void LoadCLCOptions(HWND hwnd, struct ClcData *dat)
 		DBGetContactSettingByte(NULL,"MetaContacts","Enabled",1) && ServiceExists(MS_MC_GETDEFAULTCONTACT);
 	dat->MetaIgnoreEmptyExtra=DBGetContactSettingByte(NULL,"CLC","MetaIgnoreEmptyExtra",1);
 	dat->expandMeta=DBGetContactSettingByte(NULL,"CLC","MetaExpanding",1);
+    dat->useMetaIcon=DBGetContactSettingByte(NULL,"CLC","Meta",0);
 	if ((pcli->hwndContactTree == hwnd || pcli->hwndContactTree==NULL))
 	{
 		IvalidateDisplayNameCache(16);

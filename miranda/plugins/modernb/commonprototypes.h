@@ -43,6 +43,7 @@ void TextOutWithGDIp(HDC hDestDC, int x, int y, LPCTSTR lpString, int nCount);
 void InitGdiPlus(void);
 void ShutdownGdiPlus(void);
 BOOL _inline WildCompare(char * name, char * mask, BYTE option);
+BOOL MatchMask(char * name, char * mask);
 void ApplyTransluency();
 int DeleteAllSettingInSection(char * SectionName);
 int ImageList_ReplaceIcon_FixAlpha(HIMAGELIST himl, int i, HICON hicon);
@@ -148,7 +149,11 @@ void UninitCustomMenus(void);
 extern HICON mod_ImageList_GetIcon(HIMAGELIST himl, int i, UINT fStyle);
 int CreateTabPage(char *Group, char * Title, WPARAM wParam, DLGPROC DlgProcOpts);
 BOOL CALLBACK DlgProcTabbedOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam);
-
+int ReloadAllAdvancedIcons();
+int LoadAdvancedIcons(int ID);
+int GetTrasportStatusIconIndex(int ID, int Status);
+HICON LoadIconFromExternalFile(char *filename,int i,boolean UseLibrary,boolean registerit,char *IconName,char *SectName,char *Description,int internalidx, BOOL * needFree);
+int GetTransportProtoIDFromHCONTACT(HANDLE hContact, char * protocol);
 #ifndef _COMMONPROTOTYPES
 #define _COMMONPROTOTYPES
 typedef struct _TabItemOptionConf 

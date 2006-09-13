@@ -180,6 +180,7 @@ int OnIconLibIconChanged(WPARAM wParam,LPARAM lParam)
 	CluiIconsChanged(wParam,lParam);
 	NotifyEventHooks(ME_SKIN_ICONSCHANGED,0,0);
 	pcli->pfnClcBroadcast( INTM_INVALIDATE,0,0);
+  
 	return 0;
 };
 

@@ -37,6 +37,7 @@ HANDLE gl_event_hSkinLoaded;
 BOOL ON_SIZING_CYCLE=0;
 extern StatusBarData sbdat;
 extern BYTE CALLED_FROM_SHOWHIDE;
+extern HIMAGELIST hAnvancedStatusIcon;
 extern void (*saveLoadCluiGlobalOpts)(void);
 #define TM_AUTOALPHA  1
 #define TM_DELAYEDSIZING 2
@@ -812,14 +813,23 @@ HICON LoadIconFromExternalFile(char *filename,int i,boolean UseLibrary,boolean r
 {
 	char szPath[MAX_PATH],szMyPath[MAX_PATH], szFullPath[MAX_PATH],*str;
 	HICON hIcon=NULL;
+    BOOL has_proto_icon=FALSE;
 	SKINICONDESC sid={0};
 	if (needFree) *needFree=FALSE;
 	GetModuleFileNameA(GetModuleHandle(NULL), szPath, MAX_PATH);
-	GetModuleFileNameA(g_hInst, szMyPath, MAX_PATH);
+    GetModuleFileNameA(g_hInst, szMyPath, MAX_PATH);
 	str=strrchr(szPath,'\\');
 	if(str!=NULL) *str=0;
+    if (UseLibrary&2) 
+        _snprintf(szMyPath, sizeof(szMyPath), "%s\\Icons\\%s", szPath, filename);
 	_snprintf(szFullPath, sizeof(szFullPath), "%s\\Icons\\%s,%d", szPath, filename, i);
-
+    if (UseLibrary&2)
+    {
+        BOOL nf;
+        HICON hi=ExtractIconFromPath(szFullPath,&nf);
+        if (hi) has_proto_icon=TRUE;
+        if (hi && nf) DestroyIcon(hi);
+    }
 	if (!UseLibrary||!ServiceExists(MS_SKIN2_ADDICON))
 	{		
 		hIcon=ExtractIconFromPath(szFullPath,needFree);
@@ -838,11 +848,12 @@ HICON LoadIconFromExternalFile(char *filename,int i,boolean UseLibrary,boolean r
 			sid.cbSize = sizeof(sid);
 			sid.cx=16;
 			sid.cy=16;
+            sid.hDefaultIcon = (has_proto_icon||!(UseLibrary&2))?NULL:(HICON)CallService(MS_SKIN_LOADPROTOICON,(WPARAM)NULL,(LPARAM)(-internalidx));
 			sid.pszSection = Translate(SectName);				
 			sid.pszName=IconName;
 			sid.pszDescription=Description;
-			sid.pszDefaultFile=szMyPath;
-			sid.iDefaultIndex=internalidx;
+            sid.pszDefaultFile=szMyPath;
+            sid.iDefaultIndex=(UseLibrary&2)?i:internalidx;
 			CallService(MS_SKIN2_ADDICON, 0, (LPARAM)&sid);
 		}
 		return ((HICON)CallService(MS_SKIN2_GETICON, 0, (LPARAM)IconName));
@@ -2431,6 +2442,7 @@ LRESULT CALLBACK cli_ContactListWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPAR
 			}
 			UnLoadCLUIFramesModule();	
 			pcli->hwndStatus=NULL;
+            if (hAnvancedStatusIcon) ImageList_Destroy(hAnvancedStatusIcon);
 			ImageList_Destroy(himlMirandaIcon);
 			DBWriteContactSettingByte(NULL,"CList","State",(BYTE)state);
 			UnloadSkin(&glObjectList);
@@ -2451,6 +2463,7 @@ int CluiIconsChanged(WPARAM wParam,LPARAM lParam)
 	ImageList_ReplaceIcon(himlMirandaIcon,0,LoadSkinnedIcon(SKINICON_OTHER_MIRANDA));
 	DrawMenuBar(pcli->hwndContactList);
 	ReloadExtraIcons();
+    ReloadAllAdvancedIcons();
 	SetAllExtraIcons(pcli->hwndContactTree,0);
 	RedrawCompleteWindow();
 	//	pcli->pfnClcBroadcast( INTM_INVALIDATE,0,0);

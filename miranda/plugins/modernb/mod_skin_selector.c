@@ -62,7 +62,6 @@ int DeleteMask(TLO_MMask * mm)
   mir_free(mm->pl_Params);
   return 1;
 }
-
 BOOL WildComparei(char * name, char * mask)
 {
   char * last='\0';
@@ -107,6 +106,33 @@ BOOL _inline WildCompare(char * name, char * mask, BYTE option)
 
 
 
+BOOL MatchMask(char * name, char * mask)
+{
+    if (!mask || !name) return mask==name;
+    if (*mask!='|') return WildComparei(name,mask);
+    {
+        int s=1,e=1;
+        char * temp;
+        while (mask[e]!='\0')
+        {
+            s=e;
+            while(mask[e]!='\0' && mask[e]!='|') e++;
+            temp=(char*)malloc(e-s+1);
+            memcpy(temp,mask+s,e-s);
+            temp[e-s]='\0';
+            if (WildComparei(name,temp)) 
+            {
+                free(temp);
+                return TRUE;
+            }
+            free(temp);
+            if (mask[e]!='\0') e++;
+            else return FALSE;
+         }
+        return FALSE;
+    }
+    return FALSE;
+}
 DWORD mod_CalcHash(char * a)
 {
     DWORD Val=0;
