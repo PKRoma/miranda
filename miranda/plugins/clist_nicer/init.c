@@ -109,9 +109,9 @@ void RecalcScrollBar(HWND hwnd, struct ClcData *dat);
 
 PLUGININFO pluginInfo = {
 #if defined(_UNICODE)
-	sizeof(PLUGININFO), "CList Nicer+ (Unicode)", PLUGIN_MAKE_VERSION(0, 7, 0, 4),
+	sizeof(PLUGININFO), "CList Nicer+ (Unicode)", PLUGIN_MAKE_VERSION(0, 7, 0, 5),
 #else
-	sizeof(PLUGININFO), "CList Nicer+", PLUGIN_MAKE_VERSION(0, 7, 0, 4),
+	sizeof(PLUGININFO), "CList Nicer+", PLUGIN_MAKE_VERSION(0, 7, 0, 5),
 #endif
 		"Display contacts, event notifications, protocol status",
 		"Pixel, egoDust, cyreve, Nightwish", "", "Copyright 2000-2006 Miranda-IM project", "http://www.miranda-im.org",
@@ -340,7 +340,7 @@ int __declspec(dllexport) CListInitialise(PLUGINLINK * link)
 	pcli = ( CLIST_INTERFACE* )CallService(MS_CLIST_RETRIEVE_INTERFACE, 0, (LPARAM)g_hInst);
 	if ( (int)pcli == CALLSERVICE_NOTFOUND ) {
 LBL_Error:
-		MessageBoxA( NULL, "This version of plugin requires Miranda IM 0.5 or later", "Fatal error", MB_OK );
+		MessageBoxA( NULL, "This plugin requires Miranda IM 0.5 or later", "Fatal error", MB_OK );
 		return 1;
 	}
 	if ( pcli->version < 3 ) // don't join it with the previous if()

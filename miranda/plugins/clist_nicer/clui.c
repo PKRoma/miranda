@@ -43,7 +43,6 @@ static RECT rcWPC;
 
 static HMODULE hUserDll;
 HMENU hMenuMain;
-static HANDLE hStatusBarShowToolTipEvent, hStatusBarHideToolTipEvent;
 static int transparentFocus = 1;
 static byte oldhideoffline;
 static int disableautoupd=1;
@@ -2606,8 +2605,6 @@ void LoadCLUIModule(void)
 	HookEvent(ME_MC_DEFAULTTCHANGED, MetaChanged);
 	HookEvent(ME_MC_SUBCONTACTSCHANGED, MetaChanged);
 
-	hStatusBarShowToolTipEvent=CreateHookableEvent(ME_CLIST_FRAMES_SB_SHOW_TOOLTIP);
-	hStatusBarHideToolTipEvent=CreateHookableEvent(ME_CLIST_FRAMES_SB_HIDE_TOOLTIP);
 	InitGroupMenus();
 
 	wndclass.style = 0;

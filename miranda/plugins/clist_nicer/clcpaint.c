@@ -1016,7 +1016,7 @@ bgskipped:
 				colourFg = dat->fontInfo[FONTID_NOTONLIST].colour; 
 				mode = ILD_BLEND50;
 			}
-			if (type == CLCIT_CONTACT && dat->showIdle && (flags & CONTACTF_IDLE) && GetRealStatus(group->cl.items[scanIndex], ID_STATUS_OFFLINE) != ID_STATUS_OFFLINE)
+			if (type == CLCIT_CONTACT && dat->showIdle && (flags & CONTACTF_IDLE) && contact->wStatus != ID_STATUS_OFFLINE)
 				mode = ILD_SELECTED;
 
 			if(pi_selectiveIcon && av_right) {
