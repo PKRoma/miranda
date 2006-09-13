@@ -143,9 +143,7 @@ int __declspec(dllexport) Unload(void)
 	LocalEventUnhook(hHookSettingChanged);
 	LocalEventUnhook(hHookUserTyping);
 	
-	if (szStartMsg)
-		free(szStartMsg);
-	
+	FREE(szStartMsg);
 	FREE(ylad);
 	
 	YAHOO_DebugLog("Before Netlib_CloseHandle");

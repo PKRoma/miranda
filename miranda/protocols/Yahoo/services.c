@@ -212,10 +212,8 @@ int SetStatus(WPARAM wParam,LPARAM lParam)
 		yahoo_set_status(yahooStatus,NULL,(yahooStatus != ID_STATUS_ONLINE) ? 1 : 0);
     } else {
 		/* clear out our message just in case, STUPID AA! */
-		if (szStartMsg) free(szStartMsg);
+		FREE(szStartMsg);
 			
-		szStartMsg = NULL;
-
 		/* now tell miranda that we are Online, don't tell Yahoo server yet though! */
 		yahoo_util_broadcaststatus(status);
 	}
