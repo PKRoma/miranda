@@ -573,152 +573,23 @@ static BOOL CALLBACK JabberAdvOptDlgProc( HWND hwndDlg, UINT msg, WPARAM wParam,
 /////////////////////////////////////////////////////////////////////////////////////////
 // JabberOptInit - initializes all options dialogs
 
-static HWND hwndAcc = 0, hwndAdv = 0; 
-
-static void SetOptionsDlgToType(HWND hwnd, int iExpert)
-{
-	TCITEM tci;
-	RECT rcClient;
-	HWND hwndTab = GetDlgItem(hwnd, IDC_OPTIONSTAB), hwndEnum;
-	int iPages = 0;
-
-	if(!hwndAcc)
-		hwndAcc = CreateDialog(hInst,MAKEINTRESOURCE(IDD_OPT_JABBER), hwnd, JabberOptDlgProc);
-
-	hwndEnum = GetWindow(hwndAcc, GW_CHILD);
-	
-	while(hwndEnum) {
-		ShowWindow(hwndEnum, iExpert ? SW_SHOW : SW_HIDE);
-		hwndEnum = GetWindow(hwndEnum, GW_HWNDNEXT);
-	}
-	if(!iExpert) {
-		hwndEnum = GetDlgItem(hwndAcc, IDC_SIMPLE);
-		ShowWindow(hwndEnum, SW_SHOW);
-		hwndEnum = GetWindow(hwndEnum, GW_HWNDNEXT);
-		do {
-			ShowWindow(hwndEnum, SW_SHOW);
-			hwndEnum = GetWindow(hwndEnum, GW_HWNDNEXT);
-		} while(hwndEnum && hwndEnum != GetDlgItem(hwndAcc, IDC_LINK_PUBLIC_SERVER));
-	}
-	ShowWindow(hwndEnum, SW_SHOW);
-	GetClientRect(hwnd, &rcClient);
-	TabCtrl_DeleteAllItems(hwndTab);
-
-	tci.mask = TCIF_PARAM|TCIF_TEXT;
-	tci.lParam = (LPARAM)hwndAcc;
-	tci.pszText = TranslateT("Account");
-	TabCtrl_InsertItem(hwndTab, 0, &tci);
-	MoveWindow((HWND)tci.lParam,5,26,rcClient.right-8,rcClient.bottom-29,1);
-	iPages++;
-
-	if(!hwndAdv)
-		hwndAdv = CreateDialog(hInst,MAKEINTRESOURCE(IDD_OPT_JABBER2),hwnd,JabberAdvOptDlgProc);
-
-    if(pfnEnableThemeDialogTexture) {
-        if(hwndAcc)
-            pfnEnableThemeDialogTexture(hwndAcc, ETDT_ENABLETAB);
-        if(hwndAdv)
-            pfnEnableThemeDialogTexture(hwndAdv, ETDT_ENABLETAB);
-    }
-
-    ShowWindow(hwndAdv, SW_HIDE);
-	ShowWindow(hwndAcc, SW_SHOW);
-
-	if(iExpert) {
-		tci.lParam = (LPARAM)hwndAdv;
-		tci.pszText = TranslateT("Advanced");
-		TabCtrl_InsertItem(hwndTab, iPages++, &tci);
-		MoveWindow((HWND)tci.lParam,5,26,rcClient.right-8,rcClient.bottom-29,1);
-	}
-	TabCtrl_SetCurSel(hwndTab, 0);
-}
-
-static BOOL CALLBACK OptionsDlgProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
-{
-   static int iInit = TRUE;
-   
-   switch(msg) {
-   case WM_INITDIALOG:
-   {
-		iInit = TRUE;
-		int iExpert = SendMessage(GetParent(hwnd), PSM_ISEXPERT, 0, 0);
-		SetOptionsDlgToType(hwnd, iExpert);
-      iInit = FALSE;
-      return FALSE;
-   }
-	case WM_DESTROY:
-		hwndAcc = hwndAdv = 0;
-		break;
-   case PSM_CHANGED: // used so tabs dont have to call SendMessage(GetParent(GetParent(hwnd)), PSM_CHANGED, 0, 0);
-      if(!iInit)
-			SendMessage(GetParent(hwnd), PSM_CHANGED, 0, 0);
-      break;
-   case WM_NOTIFY:
-      switch(((LPNMHDR)lParam)->idFrom) {
-      case 0:
-         switch (((LPNMHDR)lParam)->code) {
-         case PSN_APPLY:
-            {
-               TCITEM tci;
-               int i,count = TabCtrl_GetItemCount(GetDlgItem(hwnd,IDC_OPTIONSTAB));
-               tci.mask = TCIF_PARAM;
-               for (i=0;i<count;i++) {
-                  TabCtrl_GetItem(GetDlgItem(hwnd,IDC_OPTIONSTAB),i,&tci);
-                  SendMessage((HWND)tci.lParam,WM_NOTIFY,0,lParam);
-               }
-		         break;
-            }
-			case PSN_EXPERTCHANGED:
-				{
-					int iExpert = SendMessage(GetParent(hwnd), PSM_ISEXPERT, 0, 0);
-					SetOptionsDlgToType(hwnd, iExpert);
-					break;
-			}	}
-	      break;
-      case IDC_OPTIONSTAB:
-         switch (((LPNMHDR)lParam)->code) {
-         case TCN_SELCHANGING:
-            {
-               TCITEM tci;
-               tci.mask = TCIF_PARAM;
-               TabCtrl_GetItem(GetDlgItem(hwnd,IDC_OPTIONSTAB),TabCtrl_GetCurSel(GetDlgItem(hwnd,IDC_OPTIONSTAB)),&tci);
-               ShowWindow((HWND)tci.lParam,SW_HIDE);                     
-            }
-				break;
-         case TCN_SELCHANGE:
-            {
-               TCITEM tci;
-               tci.mask = TCIF_PARAM;
-               TabCtrl_GetItem(GetDlgItem(hwnd,IDC_OPTIONSTAB),TabCtrl_GetCurSel(GetDlgItem(hwnd,IDC_OPTIONSTAB)),&tci);
-               ShowWindow((HWND)tci.lParam,SW_SHOW);                     
-			      break;
-			}	}
-         break;
-      }
-      break;
-   }
-   return FALSE;
-}
-
 int JabberOptInit( WPARAM wParam, LPARAM lParam )
 {
 	OPTIONSDIALOGPAGE odp = { 0 };
-    HMODULE			  hUxTheme = 0;
-
-    if(IsWinVerXPPlus()) {
-        hUxTheme = GetModuleHandle(_T("uxtheme.dll"));
-
-        if(hUxTheme)	
-            pfnEnableThemeDialogTexture = (BOOL (WINAPI *)(HANDLE, DWORD))GetProcAddress(hUxTheme, "EnableThemeDialogTexture");
-    }
 
 	odp.cbSize      = sizeof( odp );
 	odp.hInstance   = hInst;
 	odp.pszGroup    = "Network";
-	odp.pszTemplate = MAKEINTRESOURCEA( IDD_OPT_JABBERMAIN );
+	odp.pszTab      = "Account";
+	odp.pszTemplate = MAKEINTRESOURCEA( IDD_OPT_JABBER );
 	odp.pszTitle    = jabberModuleName;
-	odp.pfnDlgProc  = OptionsDlgProc;
+	odp.pfnDlgProc  = JabberOptDlgProc;
 	odp.flags       = ODPF_BOLDGROUPS;
+	JCallService( MS_OPT_ADDPAGE, wParam, ( LPARAM )&odp );
+
+	odp.pszTab      = "Advanced";
+	odp.pszTemplate = MAKEINTRESOURCEA( IDD_OPT_JABBER2 );
+	odp.pfnDlgProc  = JabberAdvOptDlgProc;
 	JCallService( MS_OPT_ADDPAGE, wParam, ( LPARAM )&odp );
 	return 0;
 }
