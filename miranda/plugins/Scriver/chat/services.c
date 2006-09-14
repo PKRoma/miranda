@@ -167,7 +167,6 @@ int PreShutdown(WPARAM wParam,LPARAM lParam)
 
 	SM_RemoveAll();
 	MM_RemoveAll();
-	TabM_RemoveAll();
 	return 0;
 }
 
@@ -400,15 +399,6 @@ int Service_NewChat(WPARAM wParam, LPARAM lParam)
 					if(si2->hWnd )
 						RedrawWindow(GetDlgItem(si2->hWnd, IDC_CHAT_LIST), NULL, NULL, RDW_INVALIDATE);
 				}
-				else
-				{
-					if(g_TabSession.hWnd)
-					{
-						RedrawWindow(GetDlgItem(g_TabSession.hWnd, IDC_CHAT_LIST), NULL, NULL, RDW_INVALIDATE);
-					}
-
-				}
-
 
 			}
 //			SendMessage(hwnd, GC_NICKLISTREINIT, 0, 0);

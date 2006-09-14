@@ -181,10 +181,7 @@ int	CList_RoomDoubleclicked(WPARAM wParam,LPARAM lParam)
 					&& IsWindowVisible(si->hWnd)
 					&& !IsIconic(si->hWnd))
 			{
-					if(g_Settings.TabsEnable)
-						SendMessage(si->hWnd, GC_REMOVETAB, 1, (LPARAM) si );
-					else
-						PostMessage(si->hWnd, GC_CLOSEWINDOW, 0, 0);	
+					PostMessage(si->hWnd, GC_CLOSEWINDOW, 0, 0);
 					DBFreeVariant(&dbv);
 					return 1;
 				}

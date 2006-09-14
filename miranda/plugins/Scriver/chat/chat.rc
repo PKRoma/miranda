@@ -1,30 +1,3 @@
-// Microsoft Visual C++ generated resource script.
-//
-#include "resource.h"
-
-#define APSTUDIO_READONLY_SYMBOLS
-/////////////////////////////////////////////////////////////////////////////
-//
-// Generated from the TEXTINCLUDE 2 resource.
-//
-//#include "winres.h"
-
-/////////////////////////////////////////////////////////////////////////////
-#undef APSTUDIO_READONLY_SYMBOLS
-
-/////////////////////////////////////////////////////////////////////////////
-// Neutral resources
-
-#if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_NEU)
-#ifdef _WIN32
-LANGUAGE LANG_NEUTRAL, SUBLANG_NEUTRAL
-#pragma code_page(1252)
-#endif //_WIN32
-
-/////////////////////////////////////////////////////////////////////////////
-//
-// Dialog
-//
 
 IDD_CHANNEL DIALOGEX 0, 0, 252, 140
 STYLE DS_FIXEDSYS | DS_CONTROL | WS_CHILD | WS_CLIPCHILDREN
@@ -70,53 +43,6 @@ BEGIN
     CONTROL         "Notices",IDC_CHAT_11,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,5,113,73,10
 END
 
-
-/////////////////////////////////////////////////////////////////////////////
-//
-// DESIGNINFO
-//
-
-#ifdef APSTUDIO_INVOKED
-GUIDELINES DESIGNINFO
-BEGIN
-    IDD_CHANNEL, DIALOG
-    BEGIN
-        RIGHTMARGIN, 251
-        VERTGUIDE, 8
-        VERTGUIDE, 172
-        VERTGUIDE, 182
-        VERTGUIDE, 237
-        HORZGUIDE, 8
-        HORZGUIDE, 23
-        HORZGUIDE, 70
-        HORZGUIDE, 96
-        HORZGUIDE, 102
-        HORZGUIDE, 108
-        HORZGUIDE, 121
-    END
-
-    IDD_FILTER, DIALOG
-    BEGIN
-        VERTGUIDE, 5
-        VERTGUIDE, 78
-        HORZGUIDE, 13
-        HORZGUIDE, 117
-    END
-END
-#endif    // APSTUDIO_INVOKED
-
-#endif    // Neutral resources
-/////////////////////////////////////////////////////////////////////////////
-
-
-/////////////////////////////////////////////////////////////////////////////
-// Neutral (Default) resources
-
-#if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_NEUD)
-#ifdef _WIN32
-LANGUAGE LANG_NEUTRAL, SUBLANG_DEFAULT
-#pragma code_page(1252)
-#endif //_WIN32
 
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -263,20 +189,9 @@ END
 // remains consistent on all systems.
 IDI_TAG1                ICON                    "chat\\Icons\\tag1.ico"
 IDI_TAG2                ICON                    "chat\\Icons\\tag2.ico"
-#endif    // Neutral (Default) resources
 /////////////////////////////////////////////////////////////////////////////
 
-
-/////////////////////////////////////////////////////////////////////////////
-// Swedish resources
-
-#if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_SVE)
-#ifdef _WIN32
-LANGUAGE LANG_SWEDISH, SUBLANG_DEFAULT
-#pragma code_page(1252)
-#endif //_WIN32
-
-/////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////
 //
 // Dialog
 //
@@ -335,32 +250,6 @@ IDI_OVERLAY             ICON                    "chat\\Icons\\overlay.ico"
 IDI_NICKLIST2           ICON                    "chat\\Icons\\nicklist2.ico"
 IDI_FILTER2             ICON                    "chat\\Icons\\filter2.ico"
 
-#ifdef APSTUDIO_INVOKED
-/////////////////////////////////////////////////////////////////////////////
-//
-// TEXTINCLUDE
-//
-
-1 TEXTINCLUDE
-BEGIN
-    "resource.h\0"
-END
-
-2 TEXTINCLUDE
-BEGIN
-    "#include ""winres.h""\r\n"
-    "\0"
-END
-
-3 TEXTINCLUDE
-BEGIN
-    "\r\n"
-    "\0"
-END
-
-#endif    // APSTUDIO_INVOKED
-
-
 /////////////////////////////////////////////////////////////////////////////
 //
 // Menu
@@ -411,19 +300,4 @@ BEGIN
         MENUITEM "&Open at this position",      ID_LOCKPOSITION
     END
 END
-
-#endif    // Swedish resources
-/////////////////////////////////////////////////////////////////////////////
-
-
-
-#ifndef APSTUDIO_INVOKED
-/////////////////////////////////////////////////////////////////////////////
-//
-// Generated from the TEXTINCLUDE 3 resource.
-//
-
-
-/////////////////////////////////////////////////////////////////////////////
-#endif    // not APSTUDIO_INVOKED
 
