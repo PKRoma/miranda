@@ -72,6 +72,8 @@ MSN_StatusMessage msnModeMsgs[ MSN_NUM_MODES ] = {
 	{ ID_STATUS_ONTHEPHONE, NULL },
 	{ ID_STATUS_OUTTOLUNCH, NULL } };
 
+struct MSN_CurrentMedia msnCurrentMedia;
+
 char* msnProtocolName = NULL;
 char* msnProtChallenge = NULL;
 char* msnProductID  = NULL;
@@ -301,9 +303,9 @@ extern "C" int __declspec(dllexport) Load( PLUGINLINK* link )
 	HookEvent( ME_OPT_INITIALISE, MsnOptInit );
 	HookEvent( ME_SYSTEM_PRESHUTDOWN, OnPreShutdown );
 
-	char nudge[250];
-	sprintf(nudge,"%s/Nudge",protocolname);
-	hMSNNudge = CreateHookableEvent(nudge);
+	char evtname[250];
+	sprintf(evtname,"%s/Nudge",protocolname);
+	hMSNNudge = CreateHookableEvent(evtname);
 	
 	MSN_InitThreads();
 
@@ -329,6 +331,7 @@ extern "C" int __declspec(dllexport) Load( PLUGINLINK* link )
 	SkinAddNewSound( mailsoundtemp, mailsoundtemp, "hotmail.wav" );
 
 	msnStatusMode = msnDesiredStatus = ID_STATUS_OFFLINE;
+	ZeroMemory(&msnCurrentMedia, sizeof(struct MSN_CurrentMedia));
 	msnLoggedIn = false;
 	LoadMsnServices();
 	Lists_Init();

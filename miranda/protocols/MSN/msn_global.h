@@ -135,6 +135,15 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #define MSN_SETMYAVATAR             "/SetMyAvatar"
 #define MSN_SET_NICKNAME            "/SetNickname"
 
+struct MSN_CurrentMedia {
+	int cbSize;
+	char *szFormat; // default is "{0} - {1}" 0=song 1=artist 2=album
+	char *szSong;
+	char *szArtist;
+	char *szAlbum;
+};
+#define MSN_SET_CURRENTMEDIA	"/SetCurrentMedia"
+
 /////////////////////////////////////////////////////////////////////////////////////////
 //	MSN plugin functions
 
@@ -173,7 +182,7 @@ void		__cdecl     MSN_ConnectionProc( HANDLE hNewConnection, DWORD dwRemoteIP, v
 void		__stdcall	MSN_GoOffline( void );
 void		__stdcall	MSN_GetAvatarFileName( HANDLE hContact, char* pszDest, int cbLen );
 LPTSTR	__stdcall   MSN_GetErrorText( DWORD parErrorCode );
-void     __stdcall   MSN_SendStatusMessage( const char* msg );
+void     __stdcall   MSN_SendStatusMessage( const char* msg, struct MSN_CurrentMedia *cm );
 void		__stdcall	MSN_SetServerStatus( int newStatus );
 char*		__stdcall	MSN_StoreLen( char* dest, char* last );
 void		__stdcall	LoadOptions( void );
@@ -582,6 +591,8 @@ struct MSN_StatusMessage
 };
 
 extern   MSN_StatusMessage    msnModeMsgs[ MSN_NUM_MODES ];
+
+extern   MSN_CurrentMedia     msnCurrentMedia;
 
 extern	ThreadData*	volatile msnNsThread;
 extern	bool			volatile msnLoggedIn;

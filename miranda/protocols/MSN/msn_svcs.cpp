@@ -1105,7 +1105,7 @@ static int MsnSetAwayMsg(WPARAM wParam,LPARAM lParam)
 	replaceStr( msnModeMsgs[i].m_msg, ( char* )lParam );
 
 	if ( (int)wParam == msnDesiredStatus )
-		MSN_SendStatusMessage(( char* )lParam );
+		MSN_SendStatusMessage(( char* )lParam, &msnCurrentMedia );
 
 	return 0;
 }
@@ -1116,6 +1116,55 @@ static int MsnSetAwayMsg(WPARAM wParam,LPARAM lParam)
 static int MsnSetNickName( WPARAM wParam, LPARAM lParam )
 {
 	MSN_SendNickname(( char* )lParam );
+	return 0;
+}
+
+static int MsnSetCurrentMedia(WPARAM wParam, LPARAM lParam) {
+
+	int i;
+	struct MSN_CurrentMedia *cm;
+
+	cm = (struct MSN_CurrentMedia *)lParam;
+	if (msnCurrentMedia.szFormat != NULL) {
+		free(msnCurrentMedia.szFormat);
+		msnCurrentMedia.szFormat = NULL;
+	}
+	if (msnCurrentMedia.szAlbum != NULL) {
+		free(msnCurrentMedia.szAlbum);
+		msnCurrentMedia.szAlbum = NULL;
+	}
+	if (msnCurrentMedia.szArtist != NULL) {
+		free(msnCurrentMedia.szArtist);
+		msnCurrentMedia.szArtist = NULL;
+	}
+	if (msnCurrentMedia.szSong != NULL) {
+		free(msnCurrentMedia.szSong);
+		msnCurrentMedia.szSong = NULL;
+	}
+	if (cm == NULL) {
+		ZeroMemory(&msnCurrentMedia, sizeof(struct MSN_CurrentMedia));
+	}
+	else {
+		if (cm->szFormat != NULL) {
+			replaceStr(msnCurrentMedia.szFormat, cm->szFormat);
+		}
+		if (cm->szAlbum != NULL) {
+			replaceStr(msnCurrentMedia.szAlbum, cm->szAlbum);
+		}
+		if (cm->szArtist != NULL) {
+			replaceStr(msnCurrentMedia.szArtist, cm->szArtist);
+		}
+		if (cm->szSong != NULL) {
+			replaceStr(msnCurrentMedia.szSong, cm->szSong);
+		}
+	}
+	for ( i=0; i < MSN_NUM_MODES; i++ ) {
+		if ( msnModeMsgs[i].m_mode == msnDesiredStatus ) {
+			MSN_SendStatusMessage( msnModeMsgs[i].m_msg, &msnCurrentMedia );
+			break;
+		}
+	}
+
 	return 0;
 }
 
@@ -1425,6 +1474,7 @@ int LoadMsnServices( void )
 
 	MSN_CreateProtoServiceFunction( MSN_ISAVATARFORMATSUPPORTED, MsnGetAvatarFormatSupported );
 	MSN_CreateProtoServiceFunction( MSN_GETMYAVATARMAXSIZE, MsnGetAvatarMaxSize );
+	MSN_CreateProtoServiceFunction( MSN_SET_CURRENTMEDIA,   MsnSetCurrentMedia );
 	MSN_CreateProtoServiceFunction( MSN_GETMYAVATAR,      MsnGetAvatar );
 	MSN_CreateProtoServiceFunction( MSN_SETMYAVATAR,      MsnSetAvatar );
 

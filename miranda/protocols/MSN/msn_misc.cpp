@@ -395,15 +395,30 @@ int __stdcall MSN_SendNicknameW( WCHAR* nickname)
 /////////////////////////////////////////////////////////////////////////////////////////
 // MSN_SendStatusMessage - notify a server about the status message change
 
-void __stdcall MSN_SendStatusMessage( const char* msg )
+void __stdcall MSN_SendStatusMessage( const char* msg, struct MSN_CurrentMedia *cm )
 {
 	if ( !msnLoggedIn || !MyOptions.UseMSNP11 )
 		return;
 
 	char* msgEnc = HtmlEncode(( msg == NULL ) ? "" : msg );
+	char *cmArtistEnc = NULL, *cmAlbumEnc = NULL, *cmSongEnc = NULL, *cmFormatEnc = NULL;
 	char  szMsg[ 1024 ], szEmail[ MSN_MAX_EMAIL_LEN ];
+
+	if ( (cm == NULL) || ( (cm->szAlbum == NULL) && (cm->szArtist == NULL) && (cm->szSong == NULL) ) ) {
 	mir_snprintf( szMsg, sizeof szMsg, "<Data><PSM>%s</PSM><CurrentMedia></CurrentMedia></Data>", UTF8(msgEnc));
 	free( msgEnc );
+	}
+	else {
+		cmAlbumEnc = HtmlEncode(( cm->szAlbum == NULL ) ? "" : cm->szAlbum );
+		cmArtistEnc = HtmlEncode(( cm->szArtist == NULL ) ? "" : cm->szArtist );
+		cmSongEnc = HtmlEncode(( cm->szSong == NULL ) ? "" : cm->szSong );
+		cmFormatEnc = HtmlEncode(( cm->szFormat == NULL ) ? "{0} - {1}" : cm->szFormat );
+		mir_snprintf( szMsg, sizeof szMsg, "<Data><PSM>%s</PSM><CurrentMedia>\\0Music\\01\\0%s\\0%s\\0%s\\0%s\\0\\0</CurrentMedia></Data>", UTF8(msgEnc), UTF8(cmFormatEnc), UTF8(cmSongEnc), UTF8(cmArtistEnc), UTF8(cmAlbumEnc));
+		free(cmFormatEnc);
+		free(cmAlbumEnc);
+		free(cmArtistEnc);
+		free(cmSongEnc);
+	}
 
 	if ( !lstrcmpA( msnPreviousUUX, szMsg ))
 		return;
@@ -474,7 +489,7 @@ void __stdcall MSN_SetServerStatus( int newStatus )
 		if ( MyOptions.UseMSNP11 ) {
 			for ( int i=0; i < MSN_NUM_MODES; i++ ) { 
 				if ( msnModeMsgs[ i ].m_mode == newStatus ) {
-					MSN_SendStatusMessage( msnModeMsgs[ i ].m_msg );
+					MSN_SendStatusMessage( msnModeMsgs[ i ].m_msg, &msnCurrentMedia );
 					break;
 		}	}	}
 	}
