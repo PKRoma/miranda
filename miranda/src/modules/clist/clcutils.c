@@ -668,7 +668,7 @@ void fnGetDefaultFontSetting(int i, LOGFONT* lf, COLORREF* colour)
 void fnGetFontSetting(int i, LOGFONT* lf, COLORREF* colour)
 {
 	DBVARIANT dbv;
-	char idstr[10];
+	char idstr[20];
 	BYTE style;
 
 	cli.pfnGetDefaultFontSetting(i, lf, colour);
