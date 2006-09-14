@@ -15,8 +15,8 @@
 	<Configurations>
 		<Configuration
 			Name="Release|Win32"
-			OutputDirectory="$(SolutionDir)/Release/Plugins"
-			IntermediateDirectory="$(SolutionDir)/Release/Obj/$(ProjectName)"
+			OutputDirectory="$(SolutionDir)$(ConfigurationName)/Plugins"
+			IntermediateDirectory="$(SolutionDir)$(ConfigurationName)/Obj/$(ProjectName)"
 			ConfigurationType="2"
 			UseOfMFC="0"
 			ATLMinimizesCRunTimeLibraryUsage="FALSE"
@@ -90,8 +90,8 @@
 		</Configuration>
 		<Configuration
 			Name="Debug|Win32"
-			OutputDirectory="$(SolutionDir)/Debug/Plugins"
-			IntermediateDirectory="$(SolutionDir)/Debug/Obj/$(ProjectName)"
+			OutputDirectory="$(SolutionDir)$(ConfigurationName)/Plugins"
+			IntermediateDirectory="$(SolutionDir)$(ConfigurationName)/Obj/$(ProjectName)"
 			ConfigurationType="2"
 			UseOfMFC="0"
 			ATLMinimizesCRunTimeLibraryUsage="FALSE"
@@ -103,7 +103,8 @@
 				PreprocessorDefinitions="WIN32;_DEBUG;_WINDOWS;_USRDLL;MSN_EXPORTS"
 				ExceptionHandling="FALSE"
 				BasicRuntimeChecks="3"
-				RuntimeLibrary="3"
+				RuntimeLibrary="2"
+				BufferSecurityCheck="TRUE"
 				UsePrecompiledHeader="3"
 				PrecompiledHeaderThrough="msn_global.h"
 				BrowseInformation="1"
@@ -116,6 +117,7 @@
 			<Tool
 				Name="VCLinkerTool"
 				AdditionalDependencies="odbc32.lib odbccp32.lib wsock32.lib comctl32.lib Rpcrt4.lib"
+				LinkIncremental="2"
 				SuppressStartupBanner="TRUE"
 				ModuleDefinitionFile=".\msn.def"
 				GenerateDebugInformation="TRUE"
@@ -152,8 +154,8 @@
 		</Configuration>
 		<Configuration
 			Name="Debug Unicode|Win32"
-			OutputDirectory="$(SolutionDir)/Debug/Plugins"
-			IntermediateDirectory="$(SolutionDir)/Debug/Obj/$(ProjectName)"
+			OutputDirectory="$(SolutionDir)$(ConfigurationName)/Plugins"
+			IntermediateDirectory="$(SolutionDir)$(ConfigurationName)/Obj/$(ProjectName)"
 			ConfigurationType="2"
 			UseOfMFC="0"
 			ATLMinimizesCRunTimeLibraryUsage="FALSE"
@@ -166,6 +168,7 @@
 				ExceptionHandling="FALSE"
 				BasicRuntimeChecks="3"
 				RuntimeLibrary="3"
+				BufferSecurityCheck="TRUE"
 				UsePrecompiledHeader="3"
 				PrecompiledHeaderThrough="msn_global.h"
 				BrowseInformation="1"
@@ -177,7 +180,9 @@
 				Name="VCCustomBuildTool"/>
 			<Tool
 				Name="VCLinkerTool"
+				IgnoreImportLibrary="TRUE"
 				AdditionalDependencies="odbc32.lib odbccp32.lib wsock32.lib comctl32.lib Rpcrt4.lib"
+				LinkIncremental="2"
 				SuppressStartupBanner="TRUE"
 				ModuleDefinitionFile=".\msn.def"
 				GenerateDebugInformation="TRUE"
@@ -214,26 +219,25 @@
 		</Configuration>
 		<Configuration
 			Name="Release Unicode|Win32"
-			OutputDirectory="$(SolutionDir)/Release/Plugins"
-			IntermediateDirectory="$(SolutionDir)/Release/Obj/$(ProjectName)"
+			OutputDirectory="$(SolutionDir)$(ConfigurationName)/Plugins"
+			IntermediateDirectory="$(SolutionDir)$(ConfigurationName)/Obj/$(ProjectName)"
 			ConfigurationType="2"
 			UseOfMFC="0"
 			ATLMinimizesCRunTimeLibraryUsage="FALSE"
 			CharacterSet="1"
-			WholeProgramOptimization="TRUE">
+			WholeProgramOptimization="FALSE">
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="3"
 				GlobalOptimizations="TRUE"
 				InlineFunctionExpansion="1"
 				FavorSizeOrSpeed="2"
-				OmitFramePointers="FALSE"
 				AdditionalIncludeDirectories="../../include"
 				PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;_USRDLL;MSN_EXPORTS"
 				StringPooling="TRUE"
 				ExceptionHandling="FALSE"
 				RuntimeLibrary="2"
-				EnableFunctionLevelLinking="TRUE"
+				BufferSecurityCheck="TRUE"
 				UsePrecompiledHeader="3"
 				PrecompiledHeaderThrough="msn_global.h"
 				AssemblerOutput="3"
@@ -248,7 +252,6 @@
 				IgnoreImportLibrary="TRUE"
 				AdditionalOptions="/filealign:512"
 				AdditionalDependencies="odbc32.lib odbccp32.lib wsock32.lib comctl32.lib Rpcrt4.lib"
-				SuppressStartupBanner="TRUE"
 				ModuleDefinitionFile=".\msn.def"
 				GenerateDebugInformation="TRUE"
 				GenerateMapFile="TRUE"

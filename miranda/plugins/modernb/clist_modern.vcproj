@@ -16,8 +16,8 @@
 	<Configurations>
 		<Configuration
 			Name="Release|Win32"
-			OutputDirectory="$(SolutionDir)/Release/Plugins"
-			IntermediateDirectory="$(SolutionDir)/Release/Obj/$(ProjectName)"
+			OutputDirectory="$(SolutionDir)$(ConfigurationName)/Plugins"
+			IntermediateDirectory="$(SolutionDir)$(ConfigurationName)/Obj/$(ProjectName)"
 			ConfigurationType="2"
 			UseOfMFC="0"
 			ATLMinimizesCRunTimeLibraryUsage="TRUE"
@@ -34,7 +34,7 @@
 				AdditionalIncludeDirectories="../../include"
 				PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;_USRDLL;CLIST_EXPORTS"
 				StringPooling="TRUE"
-				RuntimeLibrary="0"
+				RuntimeLibrary="2"
 				EnableFunctionLevelLinking="FALSE"
 				EnableEnhancedInstructionSet="0"
 				DefaultCharIsUnsigned="TRUE"
@@ -44,7 +44,7 @@
 				BrowseInformation="0"
 				WarningLevel="3"
 				SuppressStartupBanner="TRUE"
-				DebugInformationFormat="1"
+				DebugInformationFormat="3"
 				CompileAs="0"/>
 			<Tool
 				Name="VCCustomBuildTool"/>
@@ -52,7 +52,6 @@
 				Name="VCLinkerTool"
 				AdditionalOptions="/MACHINE:I386"
 				AdditionalDependencies="MSImg32.Lib comctl32.lib shlwapi.lib  gdiplus.lib Delayimp.lib"
-				OutputFile="c:\release\ansi/$(ProjectName).dll"
 				LinkIncremental="1"
 				SuppressStartupBanner="TRUE"
 				IgnoreAllDefaultLibraries="FALSE"
@@ -95,8 +94,8 @@
 		</Configuration>
 		<Configuration
 			Name="Debug|Win32"
-			OutputDirectory="$(SolutionDir)/Debug/Plugins"
-			IntermediateDirectory="$(SolutionDir)/Debug/Obj/$(ProjectName)"
+			OutputDirectory="$(SolutionDir)$(ConfigurationName)/Plugins"
+			IntermediateDirectory="$(SolutionDir)$(ConfigurationName)/Obj/$(ProjectName)"
 			ConfigurationType="2"
 			UseOfMFC="0"
 			UseOfATL="0"
@@ -109,7 +108,8 @@
 				PreprocessorDefinitions="WIN32;_DEBUG;_WINDOWS;_USRDLL;CLIST_EXPORTS"
 				GeneratePreprocessedFile="0"
 				BasicRuntimeChecks="3"
-				RuntimeLibrary="3"
+				RuntimeLibrary="2"
+				BufferSecurityCheck="TRUE"
 				DefaultCharIsUnsigned="TRUE"
 				UsePrecompiledHeader="3"
 				PrecompiledHeaderThrough="commonheaders.h"
@@ -162,8 +162,8 @@
 		</Configuration>
 		<Configuration
 			Name="Debug Unicode|Win32"
-			OutputDirectory="$(SolutionDir)/Debug/Plugins"
-			IntermediateDirectory="$(SolutionDir)/Debug/Obj/$(ProjectName)"
+			OutputDirectory="$(SolutionDir)$(ConfigurationName)/Plugins"
+			IntermediateDirectory="$(SolutionDir)$(ConfigurationName)/Obj/$(ProjectName)"
 			ConfigurationType="2"
 			UseOfMFC="0"
 			UseOfATL="0"
@@ -177,6 +177,7 @@
 				GeneratePreprocessedFile="0"
 				BasicRuntimeChecks="3"
 				RuntimeLibrary="3"
+				BufferSecurityCheck="TRUE"
 				DefaultCharIsUnsigned="TRUE"
 				UsePrecompiledHeader="3"
 				PrecompiledHeaderThrough="commonheaders.h"
@@ -189,10 +190,10 @@
 				Name="VCCustomBuildTool"/>
 			<Tool
 				Name="VCLinkerTool"
+				IgnoreImportLibrary="TRUE"
 				AdditionalOptions="/MACHINE:I386"
 				AdditionalDependencies="MSImg32.Lib comctl32.lib shlwapi.lib gdiplus.lib Delayimp.lib"
 				ShowProgress="0"
-				OutputFile="c:\program files\miranda im\plugins/$(ProjectName).dll"
 				LinkIncremental="2"
 				SuppressStartupBanner="TRUE"
 				AdditionalLibraryDirectories=""
@@ -230,25 +231,24 @@
 		</Configuration>
 		<Configuration
 			Name="Release Unicode|Win32"
-			OutputDirectory="$(SolutionDir)/Release/Plugins"
-			IntermediateDirectory="$(SolutionDir)/Release/Obj/$(ProjectName)"
+			OutputDirectory="$(SolutionDir)$(ConfigurationName)/Plugins"
+			IntermediateDirectory="$(SolutionDir)$(ConfigurationName)/Obj/$(ProjectName)"
 			ConfigurationType="2"
 			UseOfMFC="0"
 			ATLMinimizesCRunTimeLibraryUsage="TRUE"
 			CharacterSet="1"
-			WholeProgramOptimization="TRUE">
+			WholeProgramOptimization="FALSE">
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="3"
 				GlobalOptimizations="TRUE"
 				InlineFunctionExpansion="1"
 				FavorSizeOrSpeed="2"
-				OmitFramePointers="FALSE"
 				AdditionalIncludeDirectories="../../include"
 				PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;_USRDLL;CLIST_EXPORTS"
 				StringPooling="TRUE"
-				RuntimeLibrary="0"
-				EnableFunctionLevelLinking="FALSE"
+				RuntimeLibrary="2"
+				BufferSecurityCheck="TRUE"
 				EnableEnhancedInstructionSet="0"
 				DefaultCharIsUnsigned="TRUE"
 				UsePrecompiledHeader="3"
@@ -257,17 +257,15 @@
 				BrowseInformation="0"
 				WarningLevel="3"
 				SuppressStartupBanner="TRUE"
-				DebugInformationFormat="1"
+				DebugInformationFormat="3"
 				CompileAs="0"/>
 			<Tool
 				Name="VCCustomBuildTool"/>
 			<Tool
 				Name="VCLinkerTool"
+				IgnoreImportLibrary="TRUE"
 				AdditionalOptions="/MACHINE:I386"
 				AdditionalDependencies="MSImg32.Lib comctl32.lib shlwapi.lib  gdiplus.lib Delayimp.lib"
-				OutputFile="c:\release\unicode/$(ProjectName).dll"
-				LinkIncremental="1"
-				SuppressStartupBanner="TRUE"
 				IgnoreAllDefaultLibraries="FALSE"
 				IgnoreDefaultLibraryNames=""
 				DelayLoadDLLs="gdiplus.dll"
@@ -1052,6 +1050,9 @@
 				RelativePath=".\res\away.ico">
 			</File>
 			<File
+				RelativePath=".\res\Back.tga">
+			</File>
+			<File
 				RelativePath=".\res\blank.ico">
 			</File>
 			<File
@@ -1166,15 +1167,12 @@
 				RelativePath=".\res\show_avatar.ico">
 			</File>
 			<File
+				RelativePath=".\res\skin.msf">
+			</File>
+			<File
 				RelativePath=".\res\sms.ico">
 			</File>
 		</Filter>
-		<File
-			RelativePath=".\res\Back.tga">
-		</File>
-		<File
-			RelativePath=".\res\skin.msf">
-		</File>
 	</Files>
 	<Globals>
 	</Globals>
