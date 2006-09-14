@@ -71,6 +71,10 @@ typedef struct {
 	int nIDRightSimpleControl;  //v0.1.2.1+  if in simple mode the dlg will be cut off after this control, 0 to disable
 	UINT *expertOnlyControls;
 	int nExpertOnlyControls;    //v0.1.2.1+  these controls will be hidden in simple mode. Array must remain valid for duration of dlg.
+	union {
+		char* pszTab;		 //v0.6.0.0+
+		TCHAR* ptszTab;		 //v0.6.0.0+
+	};
 } OPTIONSDIALOGPAGE;
 #define ODPF_SIMPLEONLY   1	// page is only shown when in simple mode
 #define ODPF_EXPERTONLY   2	//         "                 expert mode
@@ -99,6 +103,8 @@ typedef struct {
 	const char *pszGroup;	 //set to NULL if it's a root item
 	const char *pszPage;	 //set to NULL to just open the options at no
 	                         //specific page
+	const char *pszTab;		 //set to NULL to just open the options at no
+	                         //specific tab
 } OPENOPTIONSDIALOG;
 #define MS_OPT_OPENOPTIONS  "Opt/OpenOptions"
 

@@ -237,6 +237,8 @@ BEGIN
                     TVS_HASLINES | TVS_LINESATROOT | TVS_DISABLEDRAGDROP | 
                     TVS_SHOWSELALWAYS | TVS_TRACKSELECT | WS_TABSTOP,4,4,102,
                     247,WS_EX_STATICEDGE
+    CONTROL         "",IDC_TAB,"SysTabControl32",NOT WS_VISIBLE | WS_TABSTOP,
+                    111,4,313,247
     CONTROL         "Show expert options",IDC_EXPERT,"Button",
                     BS_AUTOCHECKBOX | WS_TABSTOP,5,257,102,10
     CTEXT           "Please select a subentry from the list",IDC_STNOPAGE,
