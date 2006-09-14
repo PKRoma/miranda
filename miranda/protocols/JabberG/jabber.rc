@@ -13,27 +13,6 @@
 #undef APSTUDIO_READONLY_SYMBOLS
 
 /////////////////////////////////////////////////////////////////////////////
-// Russian resources
-
-#if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_RUS)
-#ifdef _WIN32
-LANGUAGE LANG_RUSSIAN, SUBLANG_DEFAULT
-#pragma code_page(1251)
-#endif //_WIN32
-
-/////////////////////////////////////////////////////////////////////////////
-//
-// Icon
-//
-
-// Icon with lowest ID value placed first to ensure application icon
-// remains consistent on all systems.
-IDI_LOGIN               ICON                    "icos\\login.ico"
-#endif    // Russian resources
-/////////////////////////////////////////////////////////////////////////////
-
-
-/////////////////////////////////////////////////////////////////////////////
 // English (U.S.) resources
 
 #if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_ENU)
@@ -843,6 +822,8 @@ IDI_REQUEST             ICON                    "icos\\request.ico"
 IDI_USER2ROOM           ICON                    "icos\\user2room.ico"
 IDI_WRITE               ICON                    "icos\\write.ico"
 IDI_SAVE                ICON                    "icos\\save.ico"
+IDI_LOGIN               ICON                    "icos\\login.ico"
+
 #endif    // English (U.S.) resources
 /////////////////////////////////////////////////////////////////////////////
 
