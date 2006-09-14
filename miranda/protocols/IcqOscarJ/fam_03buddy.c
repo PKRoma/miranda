@@ -289,12 +289,13 @@ static void handleUserOnline(BYTE* buf, WORD wLen)
 
             capBuf = pCap = (BYTE*)_alloca(capLen + 0x10);
 
+            capLen = 0; // we need to recount that
+
             if (pTLV && (pTLV->wLen >= 16))
             { // copy classic Capabilities
               char* cData = pTLV->pData;
               int cLen = pTLV->wLen;
               
-              capLen = 0; // we need to recount that
               while (cLen)
               { // ohh, those damned AOL updates.... they broke it again
                 if (!MatchCap(capBuf, capLen, (capstr*)cData, 0x10))
@@ -317,12 +318,8 @@ static void handleUserOnline(BYTE* buf, WORD wLen)
 
               for (i = 0; i<pNewTLV->wLen; i+=2)
               {
-                BYTE capVal;
-
-                capVal = capNew[0];
-                tmp[2] = capVal;
-                capVal = capNew[1];
-                tmp[3] = capVal;
+                tmp[2] = capNew[0];
+                tmp[3] = capNew[1];
   
                 capNew += 2;
 
