@@ -122,18 +122,23 @@ HICON GetIconFromStatusMode(HANDLE hContact, const char *szProto,int status)
 }
 ////////// By FYR/////////////
 int ExtIconFromStatusMode(HANDLE hContact, const char *szProto,int status)
-{
-	if (DBGetContactSettingByte(NULL,"CLC","Meta",0)==1)
-		return pcli->pfnIconFromStatusMode(szProto,status,hContact);
-	if (szProto!=NULL)
-		if (mir_strcmp(szProto,"MetaContacts")==0)      {
+{    
+	pdisplayNameCacheEntry cacheEntry;	
+	if ((DBGetContactSettingByte(NULL,"CLC","Meta",0)!=1) && szProto!=NULL)
+    {
+		if (mir_strcmp(szProto,"MetaContacts")==0)      
+        {
 			hContact=(HANDLE)CallService(MS_MC_GETMOSTONLINECONTACT,(UINT)hContact,0);
-			if (hContact!=0)            {
+			if (hContact!=0)            
+            {
 				szProto=(char*)CallService(MS_PROTO_GETCONTACTBASEPROTO,(UINT)hContact,0);
 				status=DBGetContactSettingWord(hContact,szProto,"Status",ID_STATUS_OFFLINE);
-			}	}
-
-		return pcli->pfnIconFromStatusMode(szProto,status,hContact);
+			}	
+        }
+    }
+    cacheEntry=(pdisplayNameCacheEntry)pcli->pfnGetCacheEntry(hContact);
+    if (cacheEntry->isTransport>0)  return GetTrasportStatusIconIndex(cacheEntry->isTransport-1,status);
+    return pcli->pfnIconFromStatusMode(szProto,status,hContact);
 }
 /////////// End by FYR ////////
 
@@ -142,6 +147,10 @@ int GetContactIconC(pdisplayNameCacheEntry cacheEntry)
 {
 	return ExtIconFromStatusMode(cacheEntry->hContact,cacheEntry->szProto,cacheEntry->szProto==NULL ? ID_STATUS_OFFLINE : cacheEntry->status);
 }
+
+//lParam
+// 0 - default - return icon id in order: transport status icon, protostatus icon, meta is affected
+
 
 int GetContactIcon(WPARAM wParam,LPARAM lParam)
 {

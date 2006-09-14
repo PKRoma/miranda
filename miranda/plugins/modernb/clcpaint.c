@@ -1628,6 +1628,7 @@ void DrawStatusIcon(struct ClcContact * Drawing, struct ClcData *dat,
        mod_ImageList_DrawEx(himlCListClc, iImage, hdcMem, 
                   x, y,cx,cy,colorbg,colorfg,mode);
     }
+  /*
     else if (Drawing->SubAllocated>0 && !dat->useMetaIcon && Drawing->isTransport>0)
     { 
        mod_ImageList_DrawEx(hAnvancedStatusIcon, Drawing->iTransportProtoIconID, hdcMem, 
@@ -1642,6 +1643,7 @@ void DrawStatusIcon(struct ClcContact * Drawing, struct ClcData *dat,
     {
         //draw xStatus
     }
+   */
     else
     {
        mod_ImageList_DrawEx(himlCListClc, iImage, hdcMem, 

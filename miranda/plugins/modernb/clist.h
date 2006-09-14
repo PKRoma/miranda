@@ -61,7 +61,9 @@ typedef struct  {
     int iSecondLineMaxSmileyHeight;
 	DWORD timezone;
     DWORD timediff;
-
+    int  xStatus;
+    int  isTransport;  // transport ID+1
+    int  iTransportProtoIconID;
 } displayNameCacheEntry,*pdisplayNameCacheEntry, *PDNCE;
 
 

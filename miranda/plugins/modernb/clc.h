@@ -247,9 +247,6 @@ struct ClcContact {
 	RECT pos_contact_time;
 	RECT pos_extra[MAXEXTRACOLUMNS];
     DWORD lastPaintCounter;
-    int  xStatus;
-    int  isTransport;  // transport ID+1
-    int  iTransportProtoIconID; // do not destroy it
 };
 
 #define DRAGSTAGE_NOTMOVED  0

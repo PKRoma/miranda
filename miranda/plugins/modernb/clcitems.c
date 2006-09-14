@@ -77,29 +77,31 @@ int LoadAdvancedIcons(int ID)
     char * defFile[MAX_PATH]={0};
     char * Group[255];
     char * Uname[255];
+    int first=-1;
     HICON empty=LoadSmallIcon(NULL,MAKEINTRESOURCE(IDI_BLANK));
     
     _snprintf((char *)Group, sizeof(Group),"%s/%s",Translate("Transports"),proto);
     _snprintf((char *)defFile, sizeof(defFile),"proto_%s.dll",proto);
     if (!hAnvancedStatusIcon)
-        hAnvancedStatusIcon=ImageList_Create(16,16,ILC_MASK|ILC_COLOR32,16,8);
+        hAnvancedStatusIcon=himlCListClc;//ImageList_Create(16,16,ILC_MASK|ILC_COLOR32,16,8);
     for (i=0; i<ID_STATUS_OUTTOLUNCH-ID_STATUS_OFFLINE; i++)
     {
         HICON hicon;
+        
         BOOL needFree;
         char * descr=(char*)CallService(MS_CLIST_GETSTATUSMODEDESCRIPTION,i+ID_STATUS_OFFLINE,0);
         _snprintf((char *)Uname, sizeof(Uname),"Transport_%s_%d",proto,i);
         hicon=(HICON)LoadIconFromExternalFile((char*)defFile,-skinIconStatusToResourceId[i],3,TRUE,(char*)Uname,(char*)Group,(char*)descr,-(i+ID_STATUS_OFFLINE),&needFree);
         {
             int index=(TransportProtoTable[ID].startIndex==-1)?-1:TransportProtoTable[ID].startIndex+i;
-            ImageList_ReplaceIcon(hAnvancedStatusIcon,index,hicon?hicon:empty);          
+            int added=ImageList_ReplaceIcon(hAnvancedStatusIcon,index,hicon?hicon:empty);          
+            if (first==-1) first=added;
         }
         if (hicon && needFree) DestroyIcon(hicon);
     }
     if (TransportProtoTable[ID].startIndex==-1)
     {
-        TransportProtoTable[ID].startIndex=lastIcon;
-        lastIcon+=(ID_STATUS_OUTTOLUNCH-ID_STATUS_OFFLINE);
+        TransportProtoTable[ID].startIndex=first;
     }
     return 0;
 }
@@ -198,9 +200,6 @@ void AddSubcontacts(struct ClcData *dat, struct ClcContact * cont, BOOL showOffl
             cont->subcontacts[i].lastPaintCounter=0;
 			cont->subcontacts[i].subcontacts=cont;
 			cont->subcontacts[i].image_is_special=FALSE;
-            cont->subcontacts[i].isTransport=0;
-            cont->subcontacts[i].iTransportProtoIconID=-1;
-            cont->subcontacts[i].xStatus=-1;
 			//cont->subcontacts[i].status=cacheEntry->status;
 			Cache_GetTimezone(dat, (&cont->subcontacts[i])->hContact);
 			Cache_GetText(dat, &cont->subcontacts[i],1);
@@ -221,12 +220,14 @@ void AddSubcontacts(struct ClcData *dat, struct ClcContact * cont, BOOL showOffl
 				if(cacheEntry->NotOnList) cont->subcontacts[i].flags|=CONTACTF_NOTONLIST;
 				idleMode=szProto!=NULL?cacheEntry->IdleTS:0;
 				if (idleMode) cont->subcontacts[i].flags|=CONTACTF_IDLE;
-		        trID=GetTransportProtoIDFromHCONTACT(cont->subcontacts[i].hContact,szProto);
+		        /*
+                trID=GetTransportProtoIDFromHCONTACT(cont->subcontacts[i].hContact,szProto);
                 if (trID!=-1) 
                 {
                     cont->subcontacts[i].isTransport=trID+1;
                     cont->subcontacts[i].iTransportProtoIconID=GetTrasportStatusIconIndex(trID,cacheEntry->status);
                 }
+                */
             }
 			i++;
 		}	}
@@ -367,15 +368,6 @@ if (group->cl.items[i]->timezone != -1)
 	}
 */
                 //transports
-   {
-      int trID=GetTransportProtoIDFromHCONTACT(group->cl.items[i]->hContact,szProto);
-      if (trID!=-1) 
-      {
-      int status=GetStatusForContact(group->cl.items[i]->hContact,szProto);
-         group->cl.items[i]->isTransport=trID+1;
-         group->cl.items[i]->iTransportProtoIconID=GetTrasportStatusIconIndex(trID,status);
-      }
-    }
 	pcli->pfnInvalidateDisplayNameCacheEntry(hContact);	
 	Cache_GetTimezone(dat, group->cl.items[i]->hContact);
 	Cache_GetText(dat, group->cl.items[i],1);
@@ -440,15 +432,6 @@ void cli_AddContactToTree(HWND hwnd,struct ClcData *dat,HANDLE hContact,int upda
 				cont->SubAllocated=0;
 				if (mir_strcmp(cont->proto,"MetaContacts")==0) 
 					AddSubcontacts(dat,cont,IsShowOfflineGroup(group));
-                {
-                    int trID=GetTransportProtoIDFromHCONTACT(cont->hContact,cont->proto);
-                    if (trID!=-1) 
-                    {
-                        int status=GetStatusForContact(cont->hContact,cont->proto);
-                        cont->isTransport=trID+1;
-                        cont->iTransportProtoIconID=GetTrasportStatusIconIndex(trID,status);
-                    }
-                }
 			}
             cont->lastPaintCounter=0;
 			cont->avatar_pos=AVATAR_POS_DONT_HAVE;

@@ -315,6 +315,16 @@ void cliCheckCacheItem(pdisplayNameCacheEntry pdnce)
 		{
 			pdnce->IsExpanded=DBGetContactSettingByte(pdnce->hContact,"CList","Expanded",0);
 		}
+        if (pdnce->isTransport==-1 && pdnce->szProto)
+        {
+            pdnce->isTransport=(GetTransportProtoIDFromHCONTACT(pdnce->hContact,pdnce->szProto)+1);
+            //GetTransport
+        }
+        if (pdnce->xStatus==-1)
+        {
+            //GetXStatus
+        }
+
 	}
 }
 
@@ -391,6 +401,9 @@ void InvalidateDNCEbyPointer(HANDLE hContact,pdisplayNameCacheEntry pdnce,int Se
 			pdnce->isUnknown=FALSE;
 			pdnce->noHiddenOffline=-1;
 			pdnce->IsExpanded=-1;
+
+            pdnce->isTransport=-1;
+            pdnce->xStatus=-1;
 			
 			return;
 		}
@@ -415,6 +428,8 @@ void InvalidateDNCEbyPointer(HANDLE hContact,pdisplayNameCacheEntry pdnce,int Se
 		pdnce->isUnknown=FALSE;
 		pdnce->noHiddenOffline=-1;
 		pdnce->IsExpanded=-1;
+        pdnce->isTransport=-1;
+        pdnce->xStatus=-1;
 	};
 };
 

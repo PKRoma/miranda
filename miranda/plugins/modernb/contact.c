@@ -63,8 +63,18 @@ void cli_ChangeContactIcon(HANDLE hContact,int iIcon,int add)
 	HANDLE hMostMeta=NULL;
 	cacheEntry=(pdisplayNameCacheEntry)pcli->pfnGetCacheEntry((HANDLE)hContact);
 	if (iIcon)
-		if (cacheEntry)
-			if (!mir_strcmp(cacheEntry->szProto,"MetaContacts"))
+        if (cacheEntry)
+        {
+            BOOL isMeta=!mir_strcmp(cacheEntry->szProto,"MetaContacts");
+            if (cacheEntry->isTransport>0 && !isMeta)
+            {
+                int statusicon=pcli->pfnIconFromStatusMode(cacheEntry->szProto,cacheEntry->status,NULL);
+                if (statusicon==iIcon) //going to set status icon but has transport;
+                {
+                    iIcon=GetTrasportStatusIconIndex(cacheEntry->isTransport-1,cacheEntry->status);
+                }
+            }
+			if (isMeta)
 				if (!DBGetContactSettingByte(NULL,"CLC","Meta",0))
 				{
 					int iMetaStatusIcon;
@@ -78,37 +88,18 @@ void cli_ChangeContactIcon(HANDLE hContact,int iIcon,int add)
 							hMostMeta=(HANDLE)CallService(MS_MC_GETMOSTONLINECONTACT,(UINT)hContact,0);
 							if (hMostMeta!=0)            
 							{   
-							char * szRealProto;
-							int RealStatus;					
-						
-							szRealProto=(char*)CallService(MS_PROTO_GETCONTACTBASEPROTO,(UINT)hMostMeta,0);
-							RealStatus=DBGetContactSettingWord(hMostMeta,szRealProto,"Status",ID_STATUS_OFFLINE);
-							iIcon=pcli->pfnIconFromStatusMode(szRealProto,RealStatus,NULL);
-                            
-                            // copy data to host contact
-                            if (DBGetContactSettingByte(hMostMeta,szRealProto,"IsTransported",0))
-                            {
-                                char * transport=DBGetStringA(hMostMeta,szRealProto,"Transport");
-                                if (transport) 
+            				    cacheEntry=(pdisplayNameCacheEntry)pcli->pfnGetCacheEntry((HANDLE)hMostMeta);
+                                if (cacheEntry)
                                 {
-                                    DBWriteContactSettingByte(hContact,szMetaProto,"IsTransported",1);
-                                    DBWriteContactSettingString(hContact,szMetaProto,"Transport",transport);
-                                    mir_free(transport);
+                                    if (cacheEntry->isTransport>0)
+                                        iIcon=GetTrasportStatusIconIndex(cacheEntry->isTransport-1,cacheEntry->status);
+                                    else
+    							        iIcon=pcli->pfnIconFromStatusMode(cacheEntry->szProto,cacheEntry->status,NULL);
                                 }
-                            }
-                            else 
-                            {
-                                int i=DBGetContactSettingByte(hContact,szMetaProto,"IsTransported",2);
-                                if (i==1)
-                                {
-                                    DBWriteContactSettingByte(hContact,szMetaProto,"IsTransported",0);
-                                    DBWriteContactSettingString(hContact,szMetaProto,"Transport","");
-                                }
-                            }
-
-						}
+    						}
 					}
 				}
+        }
 	//clui MS_CLUI_CONTACTADDED MS_CLUI_CONTACTSETICON this methods is null
 	saveChangeContactIcon((HANDLE) hContact,(int) iIcon,(int) add);
 	//CallService(add?MS_CLUI_CONTACTADDED:MS_CLUI_CONTACTSETICON,(WPARAM)hContact,iIcon);

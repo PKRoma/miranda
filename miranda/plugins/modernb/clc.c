@@ -701,64 +701,6 @@ case WM_SIZE:
     KillTimer(hwnd,TIMERID_RENAME);
     cliRecalcScrollBar(hwnd,dat);
     return 0;
-    /*
-    case INTM_ICONCHANGED:
-    {
-    struct ClcContact *contact=NULL;
-    struct ClcGroup *group=NULL;
-    BOOL image_is_special;
-    pdisplayNameCacheEntry cacheEntry;
-    int iIcon=(int)lParam;
-    HANDLE hContact=(HANDLE)wParam;
-
-    int ret=saveContactListControlWndProc(hwnd, msg, wParam, lParam);
-    return ret;
-    cacheEntry=(pdisplayNameCacheEntry)pcli->pfnGetCacheEntry((HANDLE)wParam);
-
-    if(FindItem(hwnd,dat,(HANDLE)wParam,&contact,&group,NULL,FALSE)) 
-    {
-
-    HANDLE hMostMeta=NULL;								
-    if (iIcon&&0)
-    if (cacheEntry)
-    if (!mir_strcmp(cacheEntry->szProto,"MetaContacts"))
-    if (!DBGetContactSettingByte(NULL,"CLC","Meta",0))
-    {
-    int iMetaStatusIcon;
-    char * szMetaProto;
-    int MetaStatus;
-    szMetaProto=(char*)CallService(MS_PROTO_GETCONTACTBASEPROTO,(UINT)hContact,0);
-    MetaStatus=DBGetContactSettingWord(hContact,szMetaProto,"Status",ID_STATUS_OFFLINE);
-    iMetaStatusIcon=pcli->pfnIconFromStatusMode(szMetaProto,MetaStatus,hContact);
-    if (iIcon==iMetaStatusIcon) //going to set meta icon but need to set most online icon
-    {
-    hMostMeta=(HANDLE)CallService(MS_MC_GETMOSTONLINECONTACT,(UINT)hContact,0);
-    if (hMostMeta!=0)            
-    {   
-    char * szRealProto;
-    int RealStatus;					
-
-    szRealProto=(char*)CallService(MS_PROTO_GETCONTACTBASEPROTO,(UINT)hMostMeta,0);
-    RealStatus=DBGetContactSettingWord(hMostMeta,szRealProto,"Status",ID_STATUS_OFFLINE);
-    contact->iImage=pcli->pfnIconFromStatusMode(szRealProto,RealStatus,hMostMeta);
-    }
-    }
-    }
-    contact->iImage=iIcon;	
-    {
-    int ic=GetContactIconC(cacheEntry);
-    if (ic != iIcon)
-    image_is_special = TRUE;
-    else
-    image_is_special = FALSE;
-    contact->image_is_special=image_is_special;
-    }
-    }
-
-    return 0;
-    }
-
-    */
 case INTM_ICONCHANGED:
     {
         struct ClcContact *contact = NULL;
@@ -970,16 +912,8 @@ case INTM_STATUSCHANGED:
                     || (dat->third_line_show)// && dat->third_line_type==TEXT_STATUS)
                     ))
                     Cache_RenewText(pdnce->hContact);	
-                lockdat;
-                if (FindItem(hwnd,dat,(HANDLE)wParam,&contact,NULL,NULL,FALSE)) 
-                {
-                      if (contact->isTransport)
-                      {
-                          contact->iTransportProtoIconID=GetTrasportStatusIconIndex(contact->isTransport-1,pdnce->status);
-                      }              
-                }
-                ulockdat;
-
+                if (pdnce->isTransport)
+                          pdnce->iTransportProtoIconID=GetTrasportStatusIconIndex(pdnce->isTransport-1,pdnce->status);
             }
         }
         if (DBGetContactSettingByte(NULL,"CList","PlaceOfflineToRoot",0) )
@@ -1002,32 +936,28 @@ case INTM_TRANSPORTCHANGED:
             {
                 struct ClcContact *contact=NULL;
                 int *isv=NULL;
-                pdnce->status = GetStatusForContact(pdnce->hContact,pdnce->szProto);
-                lockdat;
-                if (FindItem(hwnd,dat,(HANDLE)wParam,&contact,NULL,NULL,FALSE)) 
+                pdnce->status = GetStatusForContact(pdnce->hContact,pdnce->szProto);                            
                 {
                       BYTE trans=DBGetContactSettingByte((HANDLE)wParam,pdnce->szProto,"IsTransported", 0);
                       if (!trans)
                       {
-                        if (contact->isTransport)
+                        if (pdnce->isTransport)
                         {
-                            contact->isTransport=0;
-                            contact->iTransportProtoIconID=-1;
+                            pdnce->isTransport=0;
+                            pdnce->iTransportProtoIconID=-1;
                         }              
                       }
                       else
                       {
-                        int trID=GetTransportProtoIDFromHCONTACT(contact->hContact,contact->proto);
+                        int trID=GetTransportProtoIDFromHCONTACT(pdnce->hContact,pdnce->szProto);
                         if (trID!=-1) 
                         {
-                            int status=GetStatusForContact(contact->hContact,contact->proto);
-                            contact->isTransport=trID+1;
-                            contact->iTransportProtoIconID=GetTrasportStatusIconIndex(trID,status);
+                            int status=GetStatusForContact(pdnce->hContact,pdnce->szProto);
+                            pdnce->isTransport=trID+1;
+                            pdnce->iTransportProtoIconID=GetTrasportStatusIconIndex(trID,status);
                         }
                       }
                 }
-                ulockdat;
-
             }
         }
      break;
