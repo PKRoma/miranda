@@ -207,8 +207,11 @@ static int ClcSettingChanged(WPARAM wParam,LPARAM lParam)
                     pcli->pfnClcBroadcast( INTM_TIMEZONECHANGED,wParam,0);
                 else if (!strcmp(cws->szSetting,"ListeningTo"))
                     pcli->pfnClcBroadcast( INTM_STATUSMSGCHANGED,wParam,0);
-                else if (!strcmp(cws->szSetting,"Transport"))
-                    pcli->pfnClcBroadcast( INTM_TRANSPORTCHANGED,wParam,0);
+                else if (!strcmp(cws->szSetting,"Transport") || !strcmp(cws->szSetting,"IsTransported") )
+                {
+                    pcli->pfnInvalidateDisplayNameCacheEntry((HANDLE)wParam);
+                    pcli->pfnClcBroadcast( CLM_AUTOREBUILD,wParam,0);
+                }
             }
         }
     }
@@ -927,41 +930,7 @@ case INTM_STATUSCHANGED:
         }
         return ret;
     }
-case INTM_TRANSPORTCHANGED:
-    {
-     if (wParam != 0 && !dat->useMetaIcon)
-        {
-            pdisplayNameCacheEntry pdnce = (pdisplayNameCacheEntry)pcli->pfnGetCacheEntry((HANDLE)wParam);
-            if (pdnce && pdnce->szProto)
-            {
-                struct ClcContact *contact=NULL;
-                int *isv=NULL;
-                pdnce->status = GetStatusForContact(pdnce->hContact,pdnce->szProto);                            
-                {
-                      BYTE trans=DBGetContactSettingByte((HANDLE)wParam,pdnce->szProto,"IsTransported", 0);
-                      if (!trans)
-                      {
-                        if (pdnce->isTransport)
-                        {
-                            pdnce->isTransport=0;
-                            pdnce->iTransportProtoIconID=-1;
-                        }              
-                      }
-                      else
-                      {
-                        int trID=GetTransportProtoIDFromHCONTACT(pdnce->hContact,pdnce->szProto);
-                        if (trID!=-1) 
-                        {
-                            int status=GetStatusForContact(pdnce->hContact,pdnce->szProto);
-                            pdnce->isTransport=trID+1;
-                            pdnce->iTransportProtoIconID=GetTrasportStatusIconIndex(trID,status);
-                        }
-                      }
-                }
-            }
-        }
-     break;
-    }
+
 case INTM_RELOADOPTIONS:
     {
         pcli->pfnLoadClcOptions(hwnd,dat);
