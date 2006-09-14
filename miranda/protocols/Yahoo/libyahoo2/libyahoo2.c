@@ -213,12 +213,11 @@ enum yahoo_service { /* these are easier to see in hex */
 	YAHOO_SERVICE_YAB_UPDATE = 0xc4,
 	YAHOO_SERVICE_Y6_VISIBLE_TOGGLE = 0xc5, /* YMSG13, key 13: 2 = invisible, 1 = visible */
 	YAHOO_SERVICE_Y6_STATUS_UPDATE = 0xc6,  /* YMSG13 */
-	/* Kopete Calls YAHOO_SERVICE_AVATAR_UPDATE = ServicePictureStatus ? */
-	YAHOO_SERVICE_AVATAR_UPDATE = 0xc7,			/* YMSG13, key 213: 0 = none, 1 = avatar, 2 = picture */
+	YAHOO_SERVICE_PICTURE_STATUS = 0xc7,	/* YMSG13, key 213: 0 = none, 1 = avatar, 2 = picture */
 	YAHOO_SERVICE_VERIFY_ID_EXISTS = 0xc8,
 	YAHOO_SERVICE_AUDIBLE = 0xd0,
 	YAHOO_SERVICE_Y7_PHOTO_SHARING = 0xd2,
-	YAHOO_SERVICE_Y7_CONTACT_DETAILS = 0xd3,	/* YMSG13 */
+	YAHOO_SERVICE_Y7_CONTACT_DETAILS = 0xd3,/* YMSG13 */
 	YAHOO_SERVICE_Y7_CHAT_SESSION = 0xd4,	
 	YAHOO_SERVICE_Y7_AUTHORIZATION = 0xd6,	/* YMSG13 */
 	YAHOO_SERVICE_Y7_FILETRANSFER = 0xdc,	/* YMSG13 */
@@ -258,6 +257,7 @@ static const value_string ymsg_service_vals[] = {
 	{YAHOO_SERVICE_PING, "Ping"},
 	{YAHOO_SERVICE_GOTGROUPRENAME, "YAHOO_SERVICE_GOTGROUPRENAME"},
 	{YAHOO_SERVICE_SYSMESSAGE, "System Message"},
+	{YAHOO_SERVICE_SKINNAME, "YAHOO_SERVICE_SKINNAME"},
 	{YAHOO_SERVICE_PASSTHROUGH2, "Passthrough 2"},
 	{YAHOO_SERVICE_CONFINVITE, "Conference Invitation"},
 	{YAHOO_SERVICE_CONFLOGON, "Conference Logon"},
@@ -277,6 +277,7 @@ static const value_string ymsg_service_vals[] = {
 	{YAHOO_SERVICE_VERIFY, "YAHOO_SERVICE_VERIFY"},
 	{YAHOO_SERVICE_P2PFILEXFER, "YAHOO_SERVICE_P2PFILEXFER"}, 
 	{YAHOO_SERVICE_PEERTOPEER, "YAHOO_SERVICE_PEERTOPEER"},
+	{YAHOO_SERVICE_WEBCAM, "YAHOO_SERVICE_WEBCAM"},
 	{YAHOO_SERVICE_AUTHRESP, "YAHOO_SERVICE_AUTHRESP"},
 	{YAHOO_SERVICE_LIST, "YAHOO_SERVICE_LIST"},
 	{YAHOO_SERVICE_AUTH, "YAHOO_SERVICE_AUTH"},
@@ -290,6 +291,7 @@ static const value_string ymsg_service_vals[] = {
 	{YAHOO_SERVICE_CHATJOIN, "YAHOO_SERVICE_CHATJOIN"},
 	{YAHOO_SERVICE_CHATLEAVE, "YAHOO_SERVICE_CHATLEAVE"},
 	{YAHOO_SERVICE_CHATEXIT, "YAHOO_SERVICE_CHATEXIT"},
+	{YAHOO_SERVICE_CHATADDINVITE, "YAHOO_SERVICE_CHATADDINVITE"},
 	{YAHOO_SERVICE_CHATLOGOUT, "YAHOO_SERVICE_CHATLOGOUT"},
 	{YAHOO_SERVICE_CHATPING, "YAHOO_SERVICE_CHATPING"},
 	{YAHOO_SERVICE_COMMENT, "YAHOO_SERVICE_COMMENT"},
@@ -299,13 +301,14 @@ static const value_string ymsg_service_vals[] = {
 	{YAHOO_SERVICE_AVATAR,"YAHOO_SERVICE_AVATAR"},
 	{YAHOO_SERVICE_PICTURE_CHECKSUM,"YAHOO_SERVICE_PICTURE_CHECKSUM"},
 	{YAHOO_SERVICE_PICTURE,"YAHOO_SERVICE_PICTURE"},
-	{YAHOO_SERVICE_YAB_UPDATE,"YAHOO_SERVICE_YAB_UPDATE"},
 	{YAHOO_SERVICE_PICTURE_UPDATE,"YAHOO_SERVICE_PICTURE_UPDATE"},
 	{YAHOO_SERVICE_PICTURE_UPLOAD,"YAHOO_SERVICE_PICTURE_UPLOAD"},
+	{YAHOO_SERVICE_YAB_UPDATE,"YAHOO_SERVICE_YAB_UPDATE"},
 	{YAHOO_SERVICE_Y6_VISIBLE_TOGGLE, "YAHOO_SERVICE_Y6_VISIBLE_TOGGLE"},
-	{YAHOO_SERVICE_Y6_STATUS_UPDATE,"YAHOO_SERVICE_Y6_STATUS_UPDATE"},
-	{YAHOO_SERVICE_AVATAR_UPDATE,"YAHOO_SERVICE_AVATAR_UPDATE"},
-	{YAHOO_SERVICE_AUDIBLE,"YAHOO_SERVICE_AUDIBLE"},
+	{YAHOO_SERVICE_Y6_STATUS_UPDATE, "YAHOO_SERVICE_Y6_STATUS_UPDATE"},
+	{YAHOO_SERVICE_PICTURE_STATUS, "YAHOO_SERVICE_PICTURE_STATUS"},
+	{YAHOO_SERVICE_VERIFY_ID_EXISTS, "YAHOO_SERVICE_VERIFY_ID_EXISTS"},
+	{YAHOO_SERVICE_AUDIBLE, "YAHOO_SERVICE_AUDIBLE"},
 	{YAHOO_SERVICE_Y7_CONTACT_DETAILS,"YAHOO_SERVICE_Y7_CONTACT_DETAILS"},
 	{YAHOO_SERVICE_Y7_CHAT_SESSION,	"YAHOO_SERVICE_Y7_CHAT_SESSION"},
 	{YAHOO_SERVICE_Y7_AUTHORIZATION,"YAHOO_SERVICE_Y7_AUTHORIZATION"},
@@ -3345,10 +3348,10 @@ void yahoo_send_picture_checksum(int id, const char *who, int cksum)
 
 	yahoo_packet_free(pkt);
 	
-	/* weird YIM7 sends another packet! See avatar_update below*/
+	/* weird YIM7 sends another packet! See picture_status below*/
 }
 
-void yahoo_send_avatar_update(int id, int buddy_icon)
+void yahoo_send_picture_status(int id, int buddy_icon)
 {
 	struct yahoo_input_data *yid = find_input_by_id_and_type(id, YAHOO_CONNECTION_PAGER);
 	struct yahoo_data *yd;
@@ -3361,7 +3364,7 @@ void yahoo_send_avatar_update(int id, int buddy_icon)
 
 	yd = yid->yd;
 	yss = yd->server_settings;
-	pkt = yahoo_packet_new(YAHOO_SERVICE_AVATAR_UPDATE, YAHOO_STATUS_AVAILABLE, yd->session_id);
+	pkt = yahoo_packet_new(YAHOO_SERVICE_PICTURE_STATUS, YAHOO_STATUS_AVAILABLE, yd->session_id);
 	yahoo_packet_hash(pkt, 3, yd->user);
 	snprintf(buf, sizeof(buf), "%d", buddy_icon);
 	yahoo_packet_hash(pkt, 213, buf);
@@ -3448,7 +3451,7 @@ static void yahoo_process_picture_upload(struct yahoo_input_data *yid, struct ya
 	YAHOO_CALLBACK(ext_yahoo_got_picture_upload)(yid->yd->client_id, me, url, ts);
 }
 
-static void yahoo_process_avatar_update(struct yahoo_input_data *yid, struct yahoo_packet *pkt)
+static void yahoo_process_picture_status(struct yahoo_input_data *yid, struct yahoo_packet *pkt)
 {
 	char *who = NULL;
 	char *me = NULL;
@@ -3471,7 +3474,7 @@ static void yahoo_process_avatar_update(struct yahoo_input_data *yid, struct yah
 	}
 	NOTICE(("got picture_upload packet"));
 	if (who) // sometimes we just get a confirmation without the WHO.(ack on our avt update)
-		YAHOO_CALLBACK(ext_yahoo_got_avatar_update)(yid->yd->client_id, me, who, buddy_icon);
+		YAHOO_CALLBACK(ext_yahoo_got_picture_status)(yid->yd->client_id, me, who, buddy_icon);
 }
 
 static void yahoo_process_audible(struct yahoo_input_data *yid, struct yahoo_packet *pkt)
@@ -3805,8 +3808,8 @@ static void yahoo_packet_process(struct yahoo_input_data *yid, struct yahoo_pack
 	case YAHOO_SERVICE_YAB_UPDATE:
 		yahoo_process_yab_update(yid, pkt);
 		break;
-	case YAHOO_SERVICE_AVATAR_UPDATE:
-		yahoo_process_avatar_update(yid, pkt);
+	case YAHOO_SERVICE_PICTURE_STATUS:
+		yahoo_process_picture_status(yid, pkt);
 		break;
 	case YAHOO_SERVICE_AUDIBLE:
 		yahoo_process_audible(yid, pkt);

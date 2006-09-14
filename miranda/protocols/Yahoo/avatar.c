@@ -811,11 +811,11 @@ void ext_yahoo_got_picture_update(int id, const char *me, const char *who, int b
 	yahoo_reset_avatar(hContact);
 }
 
-void ext_yahoo_got_avatar_update(int id, const char *me, const char *who, int buddy_icon)
+void ext_yahoo_got_picture_status(int id, const char *me, const char *who, int buddy_icon)
 {
 	HANDLE 	hContact = 0;
 
-	LOG(("ext_yahoo_got_avatar_update for %s buddy_icon: %d", who, buddy_icon));
+	LOG(("ext_yahoo_got_picture_status for %s buddy_icon: %d", who, buddy_icon));
 
 	hContact = getbuddyH(who);
 	if (hContact == NULL) {
@@ -905,7 +905,7 @@ void YAHOO_bcast_picture_update(int buddy_icon)
 
 void YAHOO_set_avatar(int buddy_icon)
 {
-	yahoo_send_avatar_update(ylad->id,buddy_icon);
+	yahoo_send_picture_status(ylad->id,buddy_icon);
 	
 	YAHOO_bcast_picture_update(buddy_icon);
 }

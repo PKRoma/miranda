@@ -1434,7 +1434,7 @@ void register_callbacks()
 	
 	yc.ext_yahoo_buddy_added = ext_yahoo_buddy_added;
 	yc.ext_yahoo_got_picture_upload = ext_yahoo_got_picture_upload;
-	yc.ext_yahoo_got_avatar_update = ext_yahoo_got_avatar_update;
+	yc.ext_yahoo_got_picture_status = ext_yahoo_got_picture_status;
 	yc.ext_yahoo_got_audible = ext_yahoo_got_audible;
 	yc.ext_yahoo_got_calendar = ext_yahoo_got_calendar;
 	yc.ext_yahoo_buddy_group_changed = ext_yahoo_buddy_group_changed;

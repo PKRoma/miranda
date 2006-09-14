@@ -250,7 +250,7 @@ void YAHOO_CALLBACK_TYPE(ext_yahoo_got_picture_upload)(int id, const char *me, c
 
 
 /*
- * Name: ext_yahoo_got_avatar_update (Apparently this is also a GLOBAL Notification.)
+ * Name: ext_yahoo_got_picture_status (Apparently this is also a GLOBAL Notification.)
  *  GF Personal Notes: 2 Notifications?? 1 for Checksum, 1 for Global? To shut it off too?
  * 	Called when our buddy shares or stops sharing pictures with us.
  * Params:
@@ -259,7 +259,7 @@ void YAHOO_CALLBACK_TYPE(ext_yahoo_got_picture_upload)(int id, const char *me, c
  * 	who  - the handle of the remote user
  * cksum - checksum
  */
-void YAHOO_CALLBACK_TYPE(ext_yahoo_got_avatar_update)(int id, const char *me, const char *who, int buddy_icon);
+void YAHOO_CALLBACK_TYPE(ext_yahoo_got_picture_status)(int id, const char *me, const char *who, int buddy_icon);
 
 
 /*
