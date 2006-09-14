@@ -68,7 +68,7 @@ int ReloadAllAdvancedIcons()
 #define IDI_ONTHEPHONE                  1002
 #define IDI_OUTTOLUNCH                  1003
 
-static int skinIconStatusToResourceId[]={IDI_OFFLINE,IDI_ONLINE,IDI_AWAY,IDI_NA,IDI_OCCUPIED,IDI_DND,IDI_FREE4CHAT,IDI_INVISIBLE,IDI_ONTHEPHONE,IDI_OUTTOLUNCH};
+static int skinIconStatusToResourceId[]={IDI_OFFLINE,IDI_ONLINE,IDI_AWAY,IDI_DND,IDI_NA,IDI_OCCUPIED,IDI_FREE4CHAT,IDI_INVISIBLE,IDI_ONTHEPHONE,IDI_OUTTOLUNCH};
 
 int LoadAdvancedIcons(int ID)
 {
@@ -220,14 +220,6 @@ void AddSubcontacts(struct ClcData *dat, struct ClcContact * cont, BOOL showOffl
 				if(cacheEntry->NotOnList) cont->subcontacts[i].flags|=CONTACTF_NOTONLIST;
 				idleMode=szProto!=NULL?cacheEntry->IdleTS:0;
 				if (idleMode) cont->subcontacts[i].flags|=CONTACTF_IDLE;
-		        /*
-                trID=GetTransportProtoIDFromHCONTACT(cont->subcontacts[i].hContact,szProto);
-                if (trID!=-1) 
-                {
-                    cont->subcontacts[i].isTransport=trID+1;
-                    cont->subcontacts[i].iTransportProtoIconID=GetTrasportStatusIconIndex(trID,cacheEntry->status);
-                }
-                */
             }
 			i++;
 		}	}
