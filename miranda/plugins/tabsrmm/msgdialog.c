@@ -60,7 +60,8 @@ extern PITBPT pfnIsThemeBackgroundPartiallyTransparent;
 extern PDTPB  pfnDrawThemeParentBackground;
 extern PGTBCR pfnGetThemeBackgroundContentRect;
 
-extern          char *FilterEventMarkersA(char *szText);
+extern          char  *FilterEventMarkersA(char *szText);
+extern			WCHAR *FilterEventMarkers(WCHAR *wszText);
 
 char *xStatusDescr[] = { "Angry", "Duck", "Tired", "Party", "Beer", "Thinking", "Eating", "TV", "Friends", "Coffee",
                          "Music", "Business", "Camera", "Funny", "Phone", "Games", "College", "Shopping", "Sick", "Sleeping",
@@ -2049,8 +2050,15 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
 					DestroyIcon(dat->hXStatusIcon);
 					dat->hXStatusIcon = 0;
 				}
+
+                if (dat->hTabStatusIcon) {
+                    DestroyIcon(dat->hTabStatusIcon);
+                    dat->hTabStatusIcon=0;
+                }
+
                 if (szProto) {
-                    dat->hTabIcon = dat->hTabStatusIcon = LoadSkinnedProtoIcon(szProto, wStatus);
+                    dat->hTabIcon = dat->hTabStatusIcon = MY_GetContactIcon(dat->hContact,szProto, wStatus);
+                    //dat->hTabIcon = dat->hTabStatusIcon = LoadSkinnedProtoIcon(szProto, wStatus);
 					if(DBGetContactSettingByte(NULL, SRMSGMOD_T, "use_xicons", 0))
 						dat->hXStatusIcon = GetXStatusIcon(dat);
                     SendDlgItemMessage(hwndDlg, IDC_PROTOCOL, BUTTONSETASFLATBTN + 11, 0, dat->dwFlagsEx & MWF_SHOW_ISIDLE ? 1 : 0);
@@ -5631,6 +5639,9 @@ verify:
 
 			if (dat->hXStatusIcon)
 				DestroyIcon(dat->hXStatusIcon);
+
+            if (dat->hTabStatusIcon) 
+                DestroyIcon(dat->hTabStatusIcon);
 
             if (dat->hwndTip)
                 DestroyWindow(dat->hwndTip);

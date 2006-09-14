@@ -19,7 +19,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 */
 #include "../commonheaders.h"
 
-extern HANDLE hMessageWindowList;
+extern HANDLE		hMessageWindowList;
 extern BOOL			IEviewInstalled;
 extern int          g_chat_integration_enabled;
 extern int          g_chat_fully_initialized;
