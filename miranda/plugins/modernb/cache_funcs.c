@@ -534,7 +534,7 @@ void Cache_ReplaceSmileys(struct ClcData *dat, PDNCE pdnce, TCHAR *text, int tex
 	{
 		sp.Protocolname = pdnce->szProto;
 
-		if (DBGetContactSettingByte(NULL,"CLC","Meta",0) != 1) // && pdnce->szProto != NULL && strcmp(pdnce->szProto, "Metapdnces") == 0)
+		if (DBGetContactSettingByte(NULL,"CLC","Meta",0) != 1 && pdnce->szProto != NULL && strcmp(pdnce->szProto, "MetaContacts") == 0)
 		{
 			HANDLE hContact = (HANDLE)CallService(MS_MC_GETMOSTONLINECONTACT, (UINT)pdnce->hContact, 0);
 			if (hContact != 0)
