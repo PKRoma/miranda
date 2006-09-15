@@ -407,6 +407,7 @@ int UnhookEvent(HANDLE hHook)
 	if(subscriberId>=hook[hookId].subscriberCount || subscriberId<0) {LeaveCriticalSection(&csHooks); return 1;}
 	hook[hookId].subscriber[subscriberId].pfnHook=NULL;
 	hook[hookId].subscriber[subscriberId].hwnd=NULL;
+	hook[hookId].subscriber[subscriberId].hOwner=NULL;
 	while(hook[hookId].subscriberCount && hook[hookId].subscriber[hook[hookId].subscriberCount-1].pfnHook==NULL && hook[hookId].subscriber[hook[hookId].subscriberCount-1].hwnd==NULL)
 		hook[hookId].subscriberCount--;
 	if (hook[hookId].subscriberCount==0) {
