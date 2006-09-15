@@ -30,6 +30,7 @@ Last change by : $Author$
 #include "jabber_iq.h"
 #include "resource.h"
 #include "version.h"
+#include "sdk/m_icolib.h"
 
 HINSTANCE hInst;
 PLUGINLINK *pluginLink;
@@ -52,7 +53,7 @@ PLUGININFO pluginInfo = {
 };
 
 MM_INTERFACE memoryManagerInterface;
-LIST_INTERFACE_V2 li = { 0 };
+LIST_INTERFACE li = { 0 };
 
 HANDLE hMainThread = NULL;
 DWORD jabberMainThreadId;
@@ -75,7 +76,6 @@ char*  streamId = NULL;
 DWORD  jabberLocalIP;
 UINT   jabberCodePage;
 JABBER_MODEMSGS modeMsgs;
-//char* jabberModeMsg;
 CRITICAL_SECTION modeMsgMutex;
 char* jabberVcardPhotoFileName = NULL;
 char* jabberVcardPhotoType = NULL;
@@ -107,6 +107,12 @@ HWND hwndJabberChangePassword = NULL;
 // Service and event handles
 HANDLE heventRawXMLIn;
 HANDLE heventRawXMLOut;
+
+static int compareTransports( const TCHAR* p1, const TCHAR* p2 )
+{	return _tcsicmp( p1, p2 );
+}
+
+LIST<TCHAR> jabberTransports( 50, compareTransports );
 
 int JabberOptInit( WPARAM wParam, LPARAM lParam );
 int JabberUserInfoInit( WPARAM wParam, LPARAM lParam );
@@ -182,6 +188,7 @@ int JabberGcInit( WPARAM, LPARAM );
 static COLORREF crCols[16] = {0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15};
 HANDLE hChatEvent = NULL,
        hChatMenu = NULL,
+		 hReloadIcons = NULL,
 		 hChatMess = NULL,
 		 hInitChat = NULL,
 		 hEvInitChat = NULL,
@@ -212,12 +219,16 @@ static int OnModulesLoaded( WPARAM wParam, LPARAM lParam )
 		hChatEvent = HookEvent( ME_GC_EVENT, JabberGcEventHook );
 		hChatMenu = HookEvent( ME_GC_BUILDMENU, JabberGcMenuHook );
 
+		JCreateServiceFunction( JS_GETADVANCEDSTATUSICON, JGetAdvancedStatusIcon );
+		hReloadIcons = HookEvent(ME_SKIN2_ICONSCHANGED,ReloadIconsEventHook);
+
 		char szEvent[ 200 ];
 		mir_snprintf( szEvent, sizeof szEvent, "%s\\ChatInit", jabberProtoName );
 		hInitChat = CreateHookableEvent( szEvent );
 		hEvInitChat = HookEvent( szEvent, JabberGcInit );
 	}
 
+	JabberCheckAllContactsAreTransported();
 	return 0;
 }
 
@@ -288,15 +299,21 @@ LBL_Ver:
 	HANDLE hContact = ( HANDLE ) JCallService( MS_DB_CONTACT_FINDFIRST, 0, 0 );
 	while ( hContact != NULL ) {
 		char* szProto = ( char* )JCallService( MS_PROTO_GETCONTACTBASEPROTO, ( WPARAM ) hContact, 0 );
-		if ( szProto != NULL && !strcmp( szProto, jabberProtoName ))
+		if ( szProto != NULL && !strcmp( szProto, jabberProtoName )) {
 			if ( JGetWord( hContact, "Status", ID_STATUS_OFFLINE ) != ID_STATUS_OFFLINE )
 				JSetWord( hContact, "Status", ID_STATUS_OFFLINE );
+
+			if ( JGetByte( hContact, "IsTransport", 0 )) {
+				DBVARIANT dbv;
+				if ( !JGetStringT( hContact, "jid", &dbv )) {
+					jabberTransports.insert( _tcsdup( dbv.ptszVal ));
+					JFreeVariant( &dbv );
+		}	}	}
 
 		hContact = ( HANDLE ) JCallService( MS_DB_CONTACT_FINDNEXT, ( WPARAM ) hContact, 0 );
 	}
 
 	memset(( char* )&modeMsgs, 0, sizeof( JABBER_MODEMSGS ));
-	//jabberModeMsg = NULL;
 	jabberCodePage = JGetWord( NULL, "CodePage", CP_ACP );
 
 	InitializeCriticalSection( &mutex );
@@ -319,6 +336,7 @@ extern "C" int __declspec( dllexport ) Unload( void )
 	if ( hChatEvent  )      UnhookEvent( hChatEvent );
 	if ( hChatMenu   )      UnhookEvent( hChatMenu );
 	if ( hChatMess   )      UnhookEvent( hChatMess );
+	if ( hReloadIcons )     UnhookEvent( hReloadIcons );
 	if ( hEvInitChat )      UnhookEvent( hEvInitChat );
 	if ( hEvModulesLoaded ) UnhookEvent( hEvModulesLoaded );
 	if ( hEvOptInit  )      UnhookEvent( hEvOptInit );
@@ -349,6 +367,10 @@ extern "C" int __declspec( dllexport ) Unload( void )
 	}
 	if ( jabberVcardPhotoType ) mir_free( jabberVcardPhotoType );
 	if ( streamId ) mir_free( streamId );
+
+	for ( int i=0; i < jabberTransports.getCount(); i++ )
+		free( jabberTransports[i] );
+	jabberTransports.destroy();
 
 	if ( hMainThread ) CloseHandle( hMainThread );
 	return 0;

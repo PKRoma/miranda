@@ -75,6 +75,8 @@ static HANDLE AddToListByJID( const TCHAR* newJid, DWORD flags )
 			DBWriteContactSettingByte( hContact, "CList", "NotOnList", 1 );
 	}
 
+	if (hContact && newJid)
+		JabberDBCheckIsTransportedContact( newJid, hContact );
 	return hContact;
 }
 

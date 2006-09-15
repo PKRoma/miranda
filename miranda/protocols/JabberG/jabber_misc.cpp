@@ -20,7 +20,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 File name      : $Source: /cvsroot/miranda/miranda/protocols/JabberG/jabber_misc.cpp,v $
 Revision       : $Revision$
-Last change on : $Date$
+Last change on : $Date: 2006-07-13 16:11:29 +0400 
 Last change by : $Author$
 
 */
@@ -216,6 +216,7 @@ HANDLE JabberDBCreateContact( TCHAR* jid, TCHAR* nick, BOOL temporary, BOOL stri
 		if ( temporary )
 			DBWriteContactSettingByte( hContact, "CList", "NotOnList", 1 );
 		JabberLog( "Create Jabber contact jid=" TCHAR_STR_PARAM ", nick=" TCHAR_STR_PARAM, s, nick );
+        JabberDBCheckIsTransportedContact(s,hContact);
 	}
 
 	mir_free( s );

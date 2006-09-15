@@ -42,7 +42,7 @@
 				Name="VCCustomBuildTool"/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalDependencies="odbc32.lib odbccp32.lib wsock32.lib version.lib"
+				AdditionalDependencies="odbc32.lib odbccp32.lib wsock32.lib version.lib comctl32.lib"
 				LinkIncremental="2"
 				SuppressStartupBanner="TRUE"
 				GenerateDebugInformation="TRUE"
@@ -114,7 +114,7 @@
 				Name="VCLinkerTool"
 				IgnoreImportLibrary="TRUE"
 				AdditionalOptions="/ALIGN:4096 /ignore:4108"
-				AdditionalDependencies="odbc32.lib odbccp32.lib wsock32.lib version.lib"
+				AdditionalDependencies="odbc32.lib odbccp32.lib wsock32.lib version.lib comctl32.lib"
 				SuppressStartupBanner="TRUE"
 				GenerateDebugInformation="TRUE"
 				GenerateMapFile="TRUE"
@@ -183,7 +183,7 @@
 			<Tool
 				Name="VCLinkerTool"
 				IgnoreImportLibrary="TRUE"
-				AdditionalDependencies="odbc32.lib odbccp32.lib wsock32.lib version.lib"
+				AdditionalDependencies="odbc32.lib odbccp32.lib wsock32.lib version.lib comctl32.lib"
 				LinkIncremental="2"
 				SuppressStartupBanner="TRUE"
 				GenerateDebugInformation="TRUE"
@@ -253,7 +253,7 @@
 				Name="VCLinkerTool"
 				IgnoreImportLibrary="TRUE"
 				AdditionalOptions="/ALIGN:4096 /ignore:4108"
-				AdditionalDependencies="odbc32.lib odbccp32.lib wsock32.lib version.lib"
+				AdditionalDependencies="odbc32.lib odbccp32.lib wsock32.lib version.lib comctl32.lib"
 				GenerateDebugInformation="TRUE"
 				GenerateMapFile="TRUE"
 				MapFileName="$(OutDir)/$(ProjectName).map"
@@ -539,6 +539,9 @@
 						Optimization="1"
 						AdditionalIncludeDirectories=""/>
 				</FileConfiguration>
+			</File>
+			<File
+				RelativePath=".\jabber_icolib.cpp">
 			</File>
 			<File
 				RelativePath="jabber_iq.cpp">

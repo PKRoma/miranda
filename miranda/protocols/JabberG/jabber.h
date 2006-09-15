@@ -23,11 +23,12 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #ifndef _JABBER_H_
 #define _JABBER_H_
 
+// this plugin is for Miranda 0.6 only
+#define MIRANDA_VER 0x0600
+
 #if defined(UNICODE) && !defined(_UNICODE)
 	#define _UNICODE
 #endif
-
-#include <malloc.h>
 
 #define NEWSTR_ALLOCA(A) (A==NULL)?NULL:strcpy((char*)alloca(strlen(A)+1),A)
 #define NEWTSTR_ALLOCA(A) (A==NULL)?NULL:_tcscpy((TCHAR*)alloca(sizeof(TCHAR)*(_tcslen(A)+1)),A)
@@ -43,6 +44,8 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include <stdlib.h>
 #include <crtdbg.h>
 #endif
+
+#include <malloc.h>
 
 /*******************************************************************
  * Global header files
@@ -169,6 +172,7 @@ enum {
 #define JS_GETMYAVATARMAXSIZE      "/GetMyAvatarMaxSize"
 #define JS_SETMYAVATAR             "/SetMyAvatar"
 #define JS_GETMYAVATAR             "/GetMyAvatar"
+#define JS_GETADVANCEDSTATUSICON   "/GetAdvancedStatusIcon"
 
 /*******************************************************************
  * Global data structures and data type definitions
@@ -356,6 +360,9 @@ extern const char xmlnsOwner[], xmlnsAdmin[];
 extern HANDLE heventRawXMLIn;
 extern HANDLE heventRawXMLOut;
 
+// Transports list
+extern LIST<TCHAR> jabberTransports;
+
 /*******************************************************************
  * Function declarations
  *******************************************************************/
@@ -399,6 +406,13 @@ void JabberGroupchatJoinRoom( const TCHAR* server, const TCHAR* room, const TCHA
 void JabberGroupchatProcessPresence( XmlNode *node, void *userdata );
 void JabberGroupchatProcessMessage( XmlNode *node, void *userdata );
 void JabberGroupchatProcessInvite( TCHAR* roomJid, TCHAR* from, TCHAR* reason, TCHAR* password );
+
+//---- jabber_icolib.c ----------------------------------------------
+
+void   JabberCheckAllContactsAreTransported( void );
+BOOL   JabberDBCheckIsTransportedContact(const TCHAR* jid, HANDLE hContact);
+int    ReloadIconsEventHook(WPARAM wParam, LPARAM lParam);   
+int    JGetAdvancedStatusIcon(WPARAM wParam, LPARAM lParam);
 
 //---- jabber_libstr.c ----------------------------------------------
 
@@ -543,7 +557,7 @@ __forceinline WCHAR* mir_wstrdup(const WCHAR *src)
 	#define mir_tstrdup mir_strdup
 #endif
 
-extern LIST_INTERFACE_V2 li;
+extern LIST_INTERFACE li;
 
 ///////////////////////////////////////////////////////////////////////////////
 // TXT encode helper

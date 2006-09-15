@@ -926,7 +926,6 @@ void __stdcall JabberSendPresenceTo( int status, TCHAR* to, XmlNode* extra )
 	if ( !jabberOnline ) return;
 
 	// Send <presence/> update for status ( we won't handle ID_STATUS_OFFLINE here )
-	// Note: jabberModeMsg is already encoded using JabberTextEncode()
 	EnterCriticalSection( &modeMsgMutex );
 
 	char szPriority[40];
