@@ -62,12 +62,14 @@ int DeleteMask(TLO_MMask * mm)
   mir_free(mm->pl_Params);
   return 1;
 }
+
+#define _qtoupper(_c) (((_c)>='a' && (_c)<='z')?((_c)-('a'+'A')):(_c)) 
 BOOL WildComparei(char * name, char * mask)
 {
   char * last='\0';
   for(;; mask++, name++)
   {
-    if(*mask != '?' && (*mask&223) != (*name&223)) break;
+    if(*mask != '?' && _qtoupper(*mask) != _qtoupper(*name)) break;
     if(*name == '\0') return ((BOOL)!*mask);
   }
   if(*mask != '*') return FALSE;
@@ -79,7 +81,7 @@ BOOL WildComparei(char * name, char * mask)
       if(*mask == '\0') return ((BOOL)!*mask);   /* true */
     }
     if(*name == '\0') return ((BOOL)!*mask);      /* *mask == EOS */
-    if(*mask != '?' && (*mask&223)  != (*name&223) ) name -= (size_t)(mask - last) - 1, mask = last;
+    if(*mask != '?' && _qtoupper(*mask)  != _qtoupper(*name) ) name -= (size_t)(mask - last) - 1, mask = last;
   }
 }
 
