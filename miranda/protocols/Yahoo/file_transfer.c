@@ -25,9 +25,11 @@ static y_filetransfer* new_ft(int id, HANDLE hContact, const char *who, const ch
 					const char *fname, unsigned long fesize,
 					const char *url, const char *ft_token, int y7)
 {
+	y_filetransfer* ft;
+
 	LOG(("[new_ft]"));
 	
-	y_filetransfer* ft= (y_filetransfer*) malloc(sizeof(y_filetransfer));
+	ft= (y_filetransfer*) malloc(sizeof(y_filetransfer));
 	ft->id  = id;
 	ft->who = strdup(who);
 	ft->hWaitEvent = INVALID_HANDLE_VALUE;
