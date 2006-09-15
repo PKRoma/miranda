@@ -1,7 +1,6 @@
 # Microsoft Developer Studio Generated Dependency File, included by aimoscar.mak
 
 .\aim.cpp : \
-	"..\..\..\..\..\vc\sdk\include\windows.h"\
 	"..\..\include\m_addcontact.h"\
 	"..\..\include\m_clist.h"\
 	"..\..\include\m_clui.h"\
@@ -48,7 +47,6 @@
 	
 
 .\client.cpp : \
-	"..\..\..\..\..\vc\sdk\include\windows.h"\
 	"..\..\include\m_addcontact.h"\
 	"..\..\include\m_clist.h"\
 	"..\..\include\m_clui.h"\
@@ -95,7 +93,6 @@
 	
 
 .\connection.cpp : \
-	"..\..\..\..\..\vc\sdk\include\windows.h"\
 	"..\..\include\m_addcontact.h"\
 	"..\..\include\m_clist.h"\
 	"..\..\include\m_clui.h"\
@@ -142,7 +139,6 @@
 	
 
 .\conv.cpp : \
-	"..\..\..\..\..\vc\sdk\include\windows.h"\
 	"..\..\include\m_addcontact.h"\
 	"..\..\include\m_clist.h"\
 	"..\..\include\m_clui.h"\
@@ -189,7 +185,6 @@
 	
 
 .\direct_connect.cpp : \
-	"..\..\..\..\..\vc\sdk\include\windows.h"\
 	"..\..\include\m_addcontact.h"\
 	"..\..\include\m_clist.h"\
 	"..\..\include\m_clui.h"\
@@ -236,7 +231,6 @@
 	
 
 .\error.cpp : \
-	"..\..\..\..\..\vc\sdk\include\windows.h"\
 	"..\..\include\m_addcontact.h"\
 	"..\..\include\m_clist.h"\
 	"..\..\include\m_clui.h"\
@@ -283,7 +277,6 @@
 	
 
 .\file.cpp : \
-	"..\..\..\..\..\vc\sdk\include\windows.h"\
 	"..\..\include\m_addcontact.h"\
 	"..\..\include\m_clist.h"\
 	"..\..\include\m_clui.h"\
@@ -330,12 +323,10 @@
 	
 
 .\flap.cpp : \
-	"..\..\..\..\..\vc\sdk\include\windows.h"\
 	".\flap.h"\
 	
 
 .\links.cpp : \
-	"..\..\..\..\..\vc\sdk\include\windows.h"\
 	"..\..\include\m_addcontact.h"\
 	"..\..\include\m_clist.h"\
 	"..\..\include\m_clui.h"\
@@ -386,7 +377,6 @@
 	
 
 .\packets.cpp : \
-	"..\..\..\..\..\vc\sdk\include\windows.h"\
 	"..\..\include\m_addcontact.h"\
 	"..\..\include\m_clist.h"\
 	"..\..\include\m_clui.h"\
@@ -433,7 +423,6 @@
 	
 
 .\popup.cpp : \
-	"..\..\..\..\..\vc\sdk\include\windows.h"\
 	"..\..\include\m_addcontact.h"\
 	"..\..\include\m_clist.h"\
 	"..\..\include\m_clui.h"\
@@ -480,7 +469,6 @@
 	
 
 .\proxy.cpp : \
-	"..\..\..\..\..\vc\sdk\include\windows.h"\
 	"..\..\include\m_addcontact.h"\
 	"..\..\include\m_clist.h"\
 	"..\..\include\m_clui.h"\
@@ -527,7 +515,6 @@
 	
 
 .\server.cpp : \
-	"..\..\..\..\..\vc\sdk\include\windows.h"\
 	"..\..\include\m_addcontact.h"\
 	"..\..\include\m_clist.h"\
 	"..\..\include\m_clui.h"\
@@ -574,7 +561,6 @@
 	
 
 .\services.cpp : \
-	"..\..\..\..\..\vc\sdk\include\windows.h"\
 	"..\..\include\m_addcontact.h"\
 	"..\..\include\m_clist.h"\
 	"..\..\include\m_clui.h"\
@@ -621,17 +607,14 @@
 	
 
 .\snac.cpp : \
-	"..\..\..\..\..\vc\sdk\include\windows.h"\
 	".\snac.h"\
 	
 
 .\strl.cpp : \
-	"..\..\..\..\..\vc\sdk\include\windows.h"\
 	".\strl.h"\
 	
 
 .\thread.cpp : \
-	"..\..\..\..\..\vc\sdk\include\windows.h"\
 	"..\..\include\m_addcontact.h"\
 	"..\..\include\m_clist.h"\
 	"..\..\include\m_clui.h"\
@@ -678,12 +661,10 @@
 	
 
 .\tlv.cpp : \
-	"..\..\..\..\..\vc\sdk\include\windows.h"\
 	".\tlv.h"\
 	
 
 .\utility.cpp : \
-	"..\..\..\..\..\vc\sdk\include\windows.h"\
 	"..\..\include\m_addcontact.h"\
 	"..\..\include\m_clist.h"\
 	"..\..\include\m_clui.h"\
@@ -730,7 +711,6 @@
 	
 
 .\windows.cpp : \
-	"..\..\..\..\..\vc\sdk\include\windows.h"\
 	"..\..\include\m_addcontact.h"\
 	"..\..\include\m_clist.h"\
 	"..\..\include\m_clui.h"\
