@@ -54,7 +54,7 @@
 #define DEFAULT_SS_GROUP            "General"
 
 #define DEFAULT_SECURE_LOGIN        1
-#define DEFAULT_AIM_ENABLED         0
+#define DEFAULT_AIM_ENABLED         1
 #define DEFAULT_UTF_ENABLED         2 // everything unicode is default
 #define DEFAULT_ANSI_CODEPAGE       CP_ACP
 #define DEFAULT_DCMSG_ENABLED       1 // passive dc messaging is default
@@ -64,6 +64,7 @@
 #define DEFAULT_AVATARS_ENABLED     1
 #define DEFAULT_LOAD_AVATARS        1
 #define DEFAULT_LINK_AVATARS        1
+#define DEFAULT_AVATARS_CHECK       1
 #define DEFAULT_XSTATUS_ENABLED     1
 #define DEFAULT_XSTATUS_AUTO        1
 #define DEFAULT_XSTATUS_RESET       0
