@@ -341,13 +341,12 @@ void JabberCheckAllContactsAreTransported()
 	HANDLE hContact = ( HANDLE ) JCallService( MS_DB_CONTACT_FINDFIRST, 0, 0 );
 	while ( hContact != NULL ) {
 		char* szProto = ( char* )JCallService( MS_PROTO_GETCONTACTBASEPROTO, ( WPARAM ) hContact, 0 );
-		if ( lstrcmpA( jabberProtoName, szProto ))
-			continue;
+		if ( !lstrcmpA( jabberProtoName, szProto )) {
+			DBVARIANT dbv;
+			if ( !JGetStringT( hContact, "jid", &dbv )) {
+				JabberDBCheckIsTransportedContact( dbv.ptszVal, hContact );
+				JFreeVariant( &dbv );
+		}	}
 
-		DBVARIANT dbv;
-		if ( !JGetStringT( hContact, "jid", &dbv )) {
-			JabberDBCheckIsTransportedContact( dbv.ptszVal, hContact );
-			JFreeVariant( &dbv );
-		}
 		hContact = ( HANDLE )JCallService( MS_DB_CONTACT_FINDNEXT, ( WPARAM )hContact, 0 );
 }	}
