@@ -21,7 +21,8 @@ along with this program; if not, write to the Free Software
 Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 */
 
-#include <malloc.h>
+// this plugin is for Miranda 0.6 only
+#define MIRANDA_VER 0x0600
 
 #if defined(UNICODE) && !defined(_UNICODE)
 	#define _UNICODE
@@ -32,6 +33,8 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 	#include <stdlib.h>
 	#include <crtdbg.h>
 #endif
+
+#include <malloc.h>
 
 #define _WIN32_WINNT 0x0400
 #include <windows.h>
@@ -293,7 +296,7 @@ struct HReadBuffer
 	HReadBuffer( ThreadData* info, int iStart = 0 );
 	~HReadBuffer();
 
-	BYTE* surelyRead( int parBytes );
+	BYTE* surelyRead( int parBytes, bool timeout = false );
 
 	ThreadData* owner;
 	BYTE*			buffer;
@@ -301,14 +304,26 @@ struct HReadBuffer
 	int			startOffset;
 };
 
+
+enum TInfoType
+{
+	SERVER_DISPATCH,
+	SERVER_NOTIFICATION,
+	SERVER_SWITCHBOARD,
+	SERVER_FILETRANS,
+	SERVER_P2P_DIRECT
+};
+
+
 struct filetransfer
 {
 	filetransfer();
 	~filetransfer( void );
 
-	void close();
-	void complete();
-	int  create();
+	void close( void );
+	void complete( void );
+	int  create( void );
+	int openNext( void );
 
 	PROTOFILETRANSFERSTATUS std;
 
@@ -321,13 +336,9 @@ struct filetransfer
 		char*	   fileBuffer;		// buffer of memory to handle the file
 	};
 
-	bool        mOwnsThread,	// thread was created specifically for that file transfer
-					mIsFirst;		//	set for the first transfer for a contact
-	LONG        mThreadId;     // unique id of the parent thread
-
-	WORD			mIncomingPort;
-	HANDLE		mIncomingBoundPort;
-	HANDLE		hWaitEvent;
+	HANDLE		hLockHandle;
+    
+	TInfoType	tType;
 
 	unsigned    p2p_sessionid;	// session id
 	unsigned    p2p_msgid;		// message id
@@ -352,15 +363,6 @@ struct filetransfer
 
 typedef void ( __cdecl* pThreadFunc )( void* );
 
-enum TInfoType
-{
-	SERVER_DISPATCH,
-	SERVER_NOTIFICATION,
-	SERVER_SWITCHBOARD,
-	SERVER_FILETRANS,
-	SERVER_P2P_DIRECT
-};
-
 struct TQueueItem
 {
 	TQueueItem* next;
@@ -379,11 +381,13 @@ struct ThreadData
 
 	TInfoType      mType;            // thread type
 	char           mServer[80];      // server name
-	LONG				mUniqueID;			// unique thread ID
 
 	HANDLE         s;	               // NetLib connection for the thread
-	char				mChatID[10];
-	bool				mIsMainThread;
+	HANDLE		   mIncomingBoundPort; // Netlib listen for the thread	
+	HANDLE         hWaitEvent;
+	WORD           mIncomingPort;
+	char           mChatID[10];
+	bool           mIsMainThread;
 	int            mWaitPeriod;
 
 	//----| for gateways |----------------------------------------------------------------
@@ -400,15 +404,13 @@ struct ThreadData
 	HANDLE         mInitialContact;  // initial switchboard contact
 	HANDLE*        mJoinedContacts;  //	another contacts
 	int            mJoinedCount;     // another contacts count
-	int            mMessageCount;    // message counter
 	LONG           mTrid;            // current message ID
 	bool           mIsCalSent;       // is CAL already sent?
 
 	//----| for file transfers only |-----------------------------------------------------
 	filetransfer*  mMsnFtp;          // file transfer block
 	filetransfer*  mP2pSession;		// new styled transfer
-	ThreadData*    mParentThread;		// thread that began the f/t
-	LONG				mP2PInitTrid;
+	bool           mAuthComplete;    // P2P authentication complete 
 
 	//----| internal data buffer |--------------------------------------------------------
 	int            mBytesInData;     // bytes available in data buffer
@@ -437,34 +439,38 @@ void			__stdcall MSN_InitThreads( void );
 int			__stdcall MSN_GetChatThreads( ThreadData** parResult );
 int         __stdcall MSN_GetActiveThreads( ThreadData** );
 ThreadData* __stdcall MSN_GetThreadByConnection( HANDLE hConn );
-ThreadData*	__stdcall MSN_GetThreadByContact( HANDLE hContact );
+ThreadData*	__stdcall MSN_GetThreadByContact( HANDLE hContact, TInfoType type = SERVER_SWITCHBOARD );
+ThreadData* __stdcall MSN_GetP2PThreadByContact( HANDLE hContact );
+ThreadData* __stdcall MSN_StartP2PTransferByContact( HANDLE hContact );
 ThreadData*	__stdcall MSN_GetThreadByPort( WORD wPort );
 ThreadData* __stdcall MSN_GetUnconnectedThread( HANDLE hContact );
-ThreadData* __stdcall MSN_GetThreadByID( LONG id );
 ThreadData* __stdcall MSN_GetOtherContactThread( ThreadData* thread );
-void			__stdcall MSN_PingParentThread( ThreadData*, filetransfer* ft );
 void        __stdcall MSN_StartThread( pThreadFunc parFunc, void* arg );
 
 /////////////////////////////////////////////////////////////////////////////////////////
 // MSN P2P session support
 
 #define MSN_APPID_AVATAR 1
+#define MSN_APPID_AVATAR2 12
 #define MSN_APPID_FILE   2
 
-void __stdcall p2p_ackOtherFiles( ThreadData* info );
+void __stdcall p2p_clearDormantSessions( void );
+void __stdcall p2p_cancelAllSessions( void );
+void __stdcall p2p_redirectSessions( HANDLE hContact );
+
 void __stdcall p2p_invite( HANDLE hContact, int iAppID, filetransfer* ft = NULL );
 void __stdcall p2p_processMsg( ThreadData* info, const char* msgbody );
 void __stdcall p2p_sendAck( filetransfer* ft, ThreadData* info, P2P_Header* hdrdata );
 void __stdcall p2p_sendStatus( filetransfer* ft, ThreadData* info, long lStatus );
 void __stdcall p2p_sendBye( ThreadData* info, filetransfer* ft );
 void __stdcall p2p_sendCancel( ThreadData* info, filetransfer* ft );
+void __stdcall p2p_sendRedirect( ThreadData* info, filetransfer* ft );
 
-void __stdcall p2p_sendFeedStart( filetransfer* ft, ThreadData* T );
-long __stdcall p2p_sendPortion( filetransfer* ft, ThreadData* T );
+void __stdcall p2p_sendFeedStart( filetransfer* ft );
 
 void __stdcall p2p_registerSession( filetransfer* ft );
 void __stdcall p2p_unregisterSession( filetransfer* ft );
-void __stdcall p2p_unregisterThreadSession( LONG threadID );
+void __stdcall p2p_sessionComplete( filetransfer* ft );
 
 filetransfer* __stdcall p2p_getAnotherContactSession( filetransfer* ft );
 filetransfer* __stdcall p2p_getFirstSession( HANDLE hContact );
@@ -491,7 +497,7 @@ struct MsgQueueEntry
 	int				seq;
 	int				allocatedToThread;
 	int				timeout;
-	int            flags;
+	int				flags;
 };
 
 int		__stdcall MsgQueue_Add( HANDLE hContact, int msgType, const char* msg, int msglen, filetransfer* ft = NULL, int flags = 0 );

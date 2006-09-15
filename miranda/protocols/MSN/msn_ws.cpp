@@ -143,7 +143,7 @@ LBL_RecvAgain:
 			// Timeout switchboard session if inactive
 			if ( !mIsMainThread && mJoinedCount <= 1 && --mWaitPeriod <= 0 ) 
 			{
-				if (mJoinedCount == 0 || p2p_getFirstSession(mJoinedContacts[0]) == NULL)
+				if (mJoinedCount == 0 )
 				{
 					MSN_DebugLog( "Dropping the idle switchboard due to the 60 sec timeout" );
 					return 0;
@@ -287,7 +287,7 @@ LBL_RecvAgain:
 		}
 
 		if ( mWaitPeriod < 0 && mJoinedCount <= 1 ) {
-			if (mJoinedCount == 0 || p2p_getFirstSession(mJoinedContacts[0]) == NULL) {
+			if ( mJoinedCount == 0 || mType != SERVER_SWITCHBOARD ) {
 				MSN_DebugLog( "Dropping the idle switchboard due to the 60 sec timeout" );
 				return 0;
 			}

@@ -148,8 +148,6 @@ void __cdecl MSNServerThread( ThreadData* info )
 	if ( info->mIsMainThread ) {
 		MSN_EnableMenuItems( TRUE );
 
-		sl = time(NULL); //for hotmail
-
 		msnPingTimeout = msnPingTimeoutCurrent;
 
 		msnNsThread = info;
@@ -231,10 +229,6 @@ LBL_Exit:
 		if ( hKeepAliveThreadEvt )
 			SetEvent( hKeepAliveThreadEvt );
 	}
-	else if ( info->mType == SERVER_SWITCHBOARD ) {
-		if ( info->mJoinedContacts != NULL )
-			free( info->mJoinedContacts );
-	}
 
 	MSN_DebugLog( "Thread [%d] ending now", GetCurrentThreadId() );
 }
@@ -272,16 +266,10 @@ void __stdcall MSN_CloseConnections()
 			break;
 
 		case SERVER_P2P_DIRECT :
-			if (p2p_sessionRegistered(T->mP2pSession)) {
-				filetransfer *ft = T->mP2pSession;
-				if ( ft->hWaitEvent != INVALID_HANDLE_VALUE )
-					SetEvent( ft->hWaitEvent );
-
-				if ( ft->p2p_appID != 0 ) 
-					p2p_sendCancel( T, ft );
-
-				ft->std.files = NULL;
-				ft->std.totalFiles = 0;
+			{
+				SOCKET s = MSN_CallService( MS_NETLIB_GETSOCKET, LPARAM( T->s ), 0 );
+				if ( s != INVALID_SOCKET )
+					shutdown( s, 2 );
 			}
 			break;
 	}	}
@@ -311,7 +299,7 @@ void Threads_Uninit( void )
 	DeleteCriticalSection( &sttLock );
 }
 
-ThreadData* __stdcall MSN_GetThreadByContact( HANDLE hContact )
+ThreadData* __stdcall MSN_GetThreadByContact( HANDLE hContact, TInfoType type )
 {
 	EnterCriticalSection( &sttLock );
 
@@ -326,13 +314,71 @@ ThreadData* __stdcall MSN_GetThreadByContact( HANDLE hContact )
 		if ( T->mJoinedCount == 0 || T->mJoinedContacts == NULL || T->s == NULL )
 			continue;
 
-		if ( T->mJoinedContacts[0] == hContact )
+		if ( T->mJoinedContacts[0] == hContact && T->mType == type)
 			break;
 	}
 
 	LeaveCriticalSection( &sttLock );
 	return T;
 }
+
+ThreadData* __stdcall MSN_GetP2PThreadByContact( HANDLE hContact )
+{
+	ThreadData *p2pT = NULL, *sbT = NULL;
+
+	EnterCriticalSection( &sttLock );
+
+	for ( int i=0; p2pT == NULL && i < MAX_THREAD_COUNT; i++ )
+	{
+		ThreadData* T = sttThreads[ i ];
+		if ( T == NULL )
+			continue;
+
+		if ( T->mJoinedCount == 0 || T->mJoinedContacts == NULL )
+			continue;
+
+		if ( T->mJoinedContacts[0] == hContact ) {
+			switch ( T->mType ) {
+				case SERVER_SWITCHBOARD:
+					sbT = T;
+					break;
+
+				case SERVER_P2P_DIRECT:
+					if ( T->s != NULL && T->mAuthComplete)
+						p2pT = T;
+					break;
+	}	}	}
+
+	LeaveCriticalSection( &sttLock );
+
+	return ( p2pT ? p2pT : sbT );
+}
+
+
+ThreadData* __stdcall MSN_StartP2PTransferByContact( HANDLE hContact )
+{
+	EnterCriticalSection( &sttLock );
+
+	ThreadData* T = NULL;
+
+	for ( int i=0; i < MAX_THREAD_COUNT; i++ )
+	{
+		T = sttThreads[ i ];
+		if ( T == NULL )
+			continue;
+
+		if ( T->mJoinedCount == 0 || T->mJoinedContacts == NULL )
+			continue;
+
+		if ( T->mJoinedContacts[0] == hContact && T->mType == SERVER_FILETRANS && 
+			T->hWaitEvent != INVALID_HANDLE_VALUE )
+				SetEvent( T->hWaitEvent );
+	}
+
+	LeaveCriticalSection( &sttLock );
+	return T;
+}
+
 
 ThreadData* __stdcall MSN_GetOtherContactThread( ThreadData* thread )
 {
@@ -417,24 +463,6 @@ ThreadData* __stdcall MSN_GetThreadByConnection( HANDLE s )
 	return tResult;
 }
 
-ThreadData* __stdcall MSN_GetThreadByID( LONG id )
-{
-	ThreadData* tResult = NULL;
-
-	EnterCriticalSection( &sttLock );
-
-	for ( int i=0; i < MAX_THREAD_COUNT; i++ )
-	{
-		ThreadData* T = sttThreads[ i ];
-		if ( T != NULL && T->mUniqueID == id )
-		{	tResult = T;
-			break;
-	}	}
-
-	LeaveCriticalSection( &sttLock );
-	return tResult;
-}
-
 ThreadData* __stdcall MSN_GetThreadByPort( WORD wPort )
 {
 	ThreadData* tResult = NULL;
@@ -447,34 +475,13 @@ ThreadData* __stdcall MSN_GetThreadByPort( WORD wPort )
 		if ( T == NULL )
 			continue;
 
-		if ( T->mP2pSession != NULL && T->mP2pSession->mIncomingPort == wPort ) {
-			tResult = T;
-			break;
-		}
-
-		if ( T->mMsnFtp != NULL && T->mMsnFtp->mIncomingPort == wPort ) {
+		if ( T->mIncomingPort == wPort ) {
 			tResult = T;
 			break;
 	}	}
 
 	LeaveCriticalSection( &sttLock );
 	return tResult;
-}
-
-void __stdcall MSN_PingParentThread( ThreadData* parentThread, filetransfer* ft )
-{
-	EnterCriticalSection( &sttLock );
-
-	for ( int i=0; i < MAX_THREAD_COUNT; i++ )
-	{
-		if ( sttThreads[ i ] == parentThread ) {
-			parentThread->mP2pSession = ft;
-            ft->p2p_sendmsgid = ++ft->p2p_msgid;
-			parentThread->mP2PInitTrid = p2p_sendPortion( ft, parentThread );
-			break;
-	}	}
-
-	LeaveCriticalSection( &sttLock );
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////
@@ -485,10 +492,10 @@ static LONG sttThreadID = 1;
 ThreadData::ThreadData()
 {
 	memset( this, 0, sizeof( ThreadData ));
-	mUniqueID = MyInterlockedIncrement( &sttThreadID );
 	mGatewayTimeout = 2;
 	mWaitPeriod = 60;
 	mIsMainThread = false;
+	hWaitEvent = INVALID_HANDLE_VALUE;
 }
 
 ThreadData::~ThreadData()
@@ -498,14 +505,22 @@ ThreadData::~ThreadData()
 		Netlib_CloseHandle( s );
 	}
 
+	if ( mIncomingBoundPort != NULL ) {
+		Netlib_CloseHandle( mIncomingBoundPort );
+	}
+
 	if ( mMsnFtp != NULL ) {
 		delete mMsnFtp;
 		mMsnFtp = NULL;
 	}
 
-	if ( mUniqueID )
-		p2p_unregisterThreadSession( mUniqueID );
-	
+	if ( hWaitEvent != INVALID_HANDLE_VALUE )
+		CloseHandle( hWaitEvent );
+
+	p2p_clearDormantSessions();
+
+	free( mJoinedContacts );
+
 	while (mFirstQueueItem != NULL)
 	{
 		TQueueItem* QI = mFirstQueueItem;
@@ -689,7 +704,7 @@ HReadBuffer::~HReadBuffer()
 		memmove( owner->mData, owner->mData + startOffset, owner->mBytesInData );
 }
 
-BYTE* HReadBuffer::surelyRead( int parBytes )
+BYTE* HReadBuffer::surelyRead( int parBytes, bool timeout )
 {
 	if ( startOffset + parBytes > totalDataSize )
 	{
@@ -703,7 +718,7 @@ BYTE* HReadBuffer::surelyRead( int parBytes )
 		totalDataSize = tNewLen;
 	}
 
-	int bufferSize = sizeof owner->mData;
+	int bufferSize = sizeof( owner->mData );
 	if ( parBytes > bufferSize - startOffset ) {
 		MSN_DebugLog( "HReadBuffer::surelyRead: not enough memory, %d %d %d", parBytes, bufferSize, startOffset );
 		return NULL;
@@ -712,6 +727,10 @@ BYTE* HReadBuffer::surelyRead( int parBytes )
 	while( totalDataSize - startOffset < parBytes )
 	{
 		int recvResult = owner->recv(( char* )buffer + totalDataSize, bufferSize - totalDataSize );
+		
+		if ( timeout && recvResult == 0 )
+			return (BYTE*)-1;
+
 		if ( recvResult <= 0 )
 			return NULL;
 

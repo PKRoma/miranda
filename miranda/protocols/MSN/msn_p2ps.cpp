@@ -43,7 +43,6 @@ void __stdcall p2p_registerSession( filetransfer* ft )
 
 	sessionList = ( filetransfer** )realloc( sessionList, sizeof( void* ) * ( sessionCount+1 ));
 	sessionList[ sessionCount++ ] = ft;
-	ft->mIsFirst = bIsFirst;
 
 	LeaveCriticalSection( &sessionLock );
 }
@@ -64,26 +63,6 @@ void __stdcall p2p_unregisterSession( filetransfer* ft )
 			}
 			sessionCount--;
 			break;
-	}	}
-
-	LeaveCriticalSection( &sessionLock );
-}
-
-/////////////////////////////////////////////////////////////////////////////////////////
-// remove file sessions for a thread
-
-void __stdcall p2p_unregisterThreadSession( LONG threadID )
-{
-	EnterCriticalSection( &sessionLock );
-
-	for ( int i=0; i < sessionCount; i++ ) {
-		if ( sessionList[i]->mThreadId == threadID ) {
-         delete sessionList[i];
-			while( i < sessionCount-1 ) {
-				sessionList[ i ] = sessionList[ i+1 ];
-				i++;
-			}
-			sessionCount--;
 	}	}
 
 	LeaveCriticalSection( &sessionLock );
@@ -175,13 +154,56 @@ filetransfer* __stdcall p2p_getFirstSession( HANDLE hContact )
 
 	for ( int i=0; i < sessionCount; i++ ) {
 		filetransfer* FT = sessionList[i];
-		if ( FT->std.hContact == hContact && FT->mIsFirst ) {
+		if ( FT->std.hContact == hContact ) {
 			result = FT;
 			break;
 	}	}
 
 	LeaveCriticalSection( &sessionLock );
 	return result;
+}
+
+void __stdcall p2p_clearDormantSessions( void )
+{
+	EnterCriticalSection( &sessionLock );
+
+	for ( int i=0; i < sessionCount; i++ ) {
+		filetransfer* FT = sessionList[i];
+		if ( MSN_GetP2PThreadByContact( FT->std.hContact ) == NULL ) {
+			LeaveCriticalSection( &sessionLock );
+			p2p_unregisterSession( FT );
+			EnterCriticalSection( &sessionLock );
+			i = 0;
+	}	}
+
+	LeaveCriticalSection( &sessionLock );
+}
+
+void __stdcall p2p_redirectSessions( HANDLE hContact )
+{
+	EnterCriticalSection( &sessionLock );
+
+	ThreadData* T = MSN_GetP2PThreadByContact( hContact );
+	for ( int i=0; i < sessionCount; i++ ) {
+		filetransfer* FT = sessionList[i];
+		if ( FT->std.hContact == hContact && !FT->std.sending && 
+			( T == NULL || ( FT->tType != T->mType && FT->tType != 0 ))) 
+			p2p_sendRedirect( T, FT );
+	}
+
+	LeaveCriticalSection( &sessionLock );
+}
+
+void __stdcall p2p_cancelAllSessions( void )
+{
+	EnterCriticalSection( &sessionLock );
+
+	for ( int i=0; i < sessionCount; i++ ) {
+		filetransfer* FT = sessionList[i];
+		p2p_sendCancel( MSN_GetP2PThreadByContact( FT->std.hContact ), FT );
+	}
+
+	LeaveCriticalSection( &sessionLock );
 }
 
 filetransfer* __stdcall p2p_getSessionByCallID( const char* CallID )
@@ -207,23 +229,6 @@ filetransfer* __stdcall p2p_getSessionByCallID( const char* CallID )
 		MSN_DebugLog( "Ignoring unknown session call id %s", CallID );
 
 	return ft;
-}
-
-/////////////////////////////////////////////////////////////////////////////////////////
-// push another file transfers
-
-void __stdcall p2p_ackOtherFiles( ThreadData* info )
-{
-	filetransfer* ft = info->mP2pSession;
-	EnterCriticalSection( &sessionLock );
-
-	for ( int i=0; i < sessionCount; i++ ) {
-		filetransfer* FT = sessionList[i];
-		if ( FT->std.hContact == ft->std.hContact && FT != ft )
-			p2p_sendStatus( FT, info->mParentThread, 200 );
-	}
-
-	LeaveCriticalSection( &sessionLock );
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////

@@ -130,7 +130,7 @@ int __stdcall MSN_SaveBitmapAsAvatar( HBITMAP hBitmap, const char* szFileName )
 	SHA1Reset( &sha1ctx );
 	SHA1Input( &sha1ctx, convertor.pResult, dwPngSize );
 	SHA1Result( &sha1ctx, sha1d );
-	{	NETLIBBASE64 nlb = { szSha1d, sizeof szSha1d, ( PBYTE )sha1d, sizeof sha1d };
+	{	NETLIBBASE64 nlb = { szSha1d, sizeof( szSha1d ), ( PBYTE )sha1d, sizeof( sha1d ) };
 		MSN_CallService( MS_NETLIB_BASE64ENCODE, 0, LPARAM( &nlb ));
 	}
 	char drive[_MAX_DRIVE];
@@ -141,7 +141,7 @@ int __stdcall MSN_SaveBitmapAsAvatar( HBITMAP hBitmap, const char* szFileName )
 	SHA1Reset( &sha1ctx );
 
 	char szEmail[ MSN_MAX_EMAIL_LEN ];
-	MSN_GetStaticString( "e-mail", NULL, szEmail, sizeof szEmail );
+	MSN_GetStaticString( "e-mail", NULL, szEmail, sizeof( szEmail ));
 	SHA1Input( &sha1ctx, ( PBYTE )"Creator", 7 );
 	SHA1Input( &sha1ctx, ( PBYTE )szEmail, strlen( szEmail ));
 
@@ -154,7 +154,7 @@ int __stdcall MSN_SaveBitmapAsAvatar( HBITMAP hBitmap, const char* szFileName )
 	SHA1Input( &sha1ctx, ( PBYTE )"3", 1 );
 
 	SHA1Input( &sha1ctx, ( PBYTE )"Location", 8 );
-	SHA1Input( &sha1ctx, ( PBYTE )fname, sizeof(fname));
+	SHA1Input( &sha1ctx, ( PBYTE )fname, sizeof( fname ));
 
 	SHA1Input( &sha1ctx, ( PBYTE )"Friendly", 8 );
 	SHA1Input( &sha1ctx, ( PBYTE )"AAA=", 4 );
@@ -162,7 +162,7 @@ int __stdcall MSN_SaveBitmapAsAvatar( HBITMAP hBitmap, const char* szFileName )
 	SHA1Input( &sha1ctx, ( PBYTE )"SHA1D", 5 );
 	SHA1Input( &sha1ctx, ( PBYTE )szSha1d, strlen( szSha1d ));
 	SHA1Result( &sha1ctx, sha1c );
-	{	NETLIBBASE64 nlb = { szSha1c, sizeof szSha1c, ( PBYTE )sha1c, sizeof sha1c };
+	{	NETLIBBASE64 nlb = { szSha1c, sizeof( szSha1c ), ( PBYTE )sha1c, sizeof( sha1c ) };
 		MSN_CallService( MS_NETLIB_BASE64ENCODE, 0, LPARAM( &nlb ));
 	}
 	{
@@ -177,7 +177,7 @@ int __stdcall MSN_SaveBitmapAsAvatar( HBITMAP hBitmap, const char* szFileName )
 		MSN_SetString( NULL, "PictObject", szEncodedBuffer );
 	}
 	{	char tFileName[ MAX_PATH ];
-		MSN_GetAvatarFileName( NULL, tFileName, sizeof tFileName );
+		MSN_GetAvatarFileName( NULL, tFileName, sizeof( tFileName ));
 		FILE* out = fopen( tFileName, "wb" );
 		if ( out != NULL ) {
 			fwrite( convertor.pResult, dwPngSize, 1, out );

@@ -136,16 +136,9 @@ void MSN_ConnectionProc( HANDLE hNewConnection, DWORD dwRemoteIP, void* )
 
 	if ( localPort != 0 ) {
 		ThreadData* T = MSN_GetThreadByPort( localPort );
-		if ( T != NULL ) {
+		if ( T != NULL && T->s == NULL ) {
 			T->s = hNewConnection;
-			if ( T->mMsnFtp != NULL ) {
-				T->mMsnFtp->mIncomingPort = 0;
-				SetEvent( T->mMsnFtp->hWaitEvent );
-			}
-			else {
-				T->mP2pSession->mIncomingPort = 0;
-				SetEvent( T->mP2pSession->hWaitEvent );
-			}
+			SetEvent( T->hWaitEvent );
 			return;
 		}
 		MSN_DebugLog( "There's no registered file transfers for incoming port #%d, connection closed", localPort );
@@ -308,7 +301,6 @@ static void sttInviteMessage( ThreadData* info, const char* msgBody, char* email
 	if ( Appname != NULL && Appfile != NULL && Appfilesize != NULL ) { // receive first
 		filetransfer* ft = info->mMsnFtp = new filetransfer();
 
-		ft->mThreadId = info->mUniqueID;
 		ft->std.hContact = MSN_HContactFromEmail( email, nick, 1, 1 );
 		replaceStr( ft->std.currentFile, Appfile );
 		Utf8Decode( ft->std.currentFile, &ft->wszFileName );
@@ -830,12 +822,7 @@ int MSN_HandleCommands( ThreadData* info, char* cmdString )
 	switch(( *( PDWORD )cmdString & 0x00FFFFFF ) | 0x20000000 )
 	{
 		case ' KCA':    //********* ACK: section 8.7 Instant Messages
-			if ( info->mP2PInitTrid == trid ) {
-				info->mP2PInitTrid = 0;
-				p2p_sendFeedStart( info->mP2pSession, info );
-				info->mP2pSession = NULL;
-			}
-			else if ( info->mJoinedCount > 0 && MyOptions.SlowSend )
+			if ( info->mJoinedCount > 0 && MyOptions.SlowSend )
 				MSN_SendBroadcast( info->mJoinedContacts[0], ACKTYPE_MESSAGE, ACKRESULT_SUCCESS, ( HANDLE )trid, 0 );
 			break;
 
@@ -916,7 +903,6 @@ LBL_InvalidCommand:
 
 						if ( E.ft != NULL ) {
 							info->mMsnFtp = E.ft;
-							info->mMsnFtp->mOwnsThread = true;
 						}
 					}
 					while (MsgQueue_GetNext( hContact, E ) != 0 );
@@ -1214,7 +1200,7 @@ LBL_InvalidCommand:
 				else
 					MSN_SetString( hContact, "MirVer", "MSN 4.x-5.x" );
 
-				if ( data.cmdstring[0] ) {
+				if (( dwValue & 0x40000000 ) && data.cmdstring[0] ) {
 					int temp_status = MSN_GetWord(hContact, "Status", ID_STATUS_OFFLINE);
 					if (temp_status == (WORD)ID_STATUS_OFFLINE)
 						MSN_SetWord( hContact, "Status", (WORD)ID_STATUS_INVISIBLE);
@@ -1286,7 +1272,6 @@ LBL_InvalidCommand:
 			MSN_DebugLog( "New contact in channel %s %s", data.userEmail, data.userNick );
 
 			info->mInitialContact = NULL;
-			info->mMessageCount = 0;
 
 			if ( MSN_ContactJoined( info, hContact ) == 1 ) {
 				MsgQueueEntry E;
@@ -1302,7 +1287,6 @@ LBL_InvalidCommand:
 
 						if ( E.ft != NULL ) {
 							info->mMsnFtp = E.ft;
-							info->mMsnFtp->mOwnsThread = true;
 						}
 					}
 					while (MsgQueue_GetNext( hContact, E ) != 0 );
@@ -1720,6 +1704,8 @@ LBL_InvalidCommand:
 				else if ( !strcmp( data.security, "OK" )) {
 					UrlDecode( tWords[1] ); UrlDecode( tWords[2] );
 
+					sl = time(NULL); //for hotmail
+
 					if ( MSN_GetByte( "NeverUpdateNickname", 0 )) {
 						DBVARIANT dbv;
 						if ( !DBGetContactSettingTString( NULL, msnProtocolName, "Nick", &dbv )) {
@@ -1836,6 +1822,5 @@ LBL_InvalidCommand:
 			break;
 	}
 
-	info->mMessageCount++;
 	return 0;
 }
