@@ -2,8 +2,8 @@
 
 Miranda IM: the free IM client for Microsoft* Windows*
 
-Copyright 2000-2006 Miranda ICQ/IM project, 
-all portions of this codebase are copyrighted to the people 
+Copyright 2000-2006 Miranda ICQ/IM project,
+all portions of this codebase are copyrighted to the people
 listed in contributors.txt.
 
 This program is free software; you can redistribute it and/or
@@ -24,9 +24,6 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 char* u2a( wchar_t* src );
 
-#define OPTIONPAGE_OLD_SIZE 40
-#define OPTIONPAGE_OLD_SIZE2 60
-
 #define OPENOPTIONSDIALOG_OLD_SIZE 12
 
 static HANDLE hOptionsInitEvent;
@@ -42,17 +39,17 @@ struct OptionsPageInit
 };
 
 struct DlgTemplateExBegin
-{  
-    WORD   dlgVer; 
-    WORD   signature; 
-    DWORD  helpID; 
-    DWORD  exStyle; 
-    DWORD  style; 
-    WORD   cDlgItems; 
-    short  x; 
-    short  y; 
-    short  cx; 
-    short  cy; 
+{
+    WORD   dlgVer;
+    WORD   signature;
+    DWORD  helpID;
+    DWORD  exStyle;
+    DWORD  style;
+    WORD   cDlgItems;
+    short  x;
+    short  y;
+    short  cx;
+    short  cy;
 };
 
 struct OptionsPageData
@@ -167,7 +164,7 @@ static int lstrcmpnull(TCHAR *str1, TCHAR *str2)
 		return 1;
 	if ( str1 == NULL && str2 != NULL )
 		return -1;
-	
+
    return lstrcmp(str1, str2);
 }
 
@@ -178,7 +175,7 @@ static BOOL CALLBACK OptionsDlgProc(HWND hdlg,UINT message,WPARAM wParam,LPARAM 
 	switch ( message ) {
 	case WM_INITDIALOG:
 	{	HRSRC hrsrc;
-		HGLOBAL hglb;			
+		HGLOBAL hglb;
 		PROPSHEETHEADER *psh=(PROPSHEETHEADER*)lParam;
 		OPENOPTIONSDIALOG *ood=(OPENOPTIONSDIALOG*)psh->pStartPage;
 		OPTIONSDIALOGPAGE *odp;
@@ -188,7 +185,7 @@ static BOOL CALLBACK OptionsDlgProc(HWND hdlg,UINT message,WPARAM wParam,LPARAM 
 		struct DlgTemplateExBegin *dte;
 		TCHAR *lastPage = NULL, *lastGroup = NULL, *lastTab = NULL;
 		DBVARIANT dbv;
-		TCITEM tie; 
+		TCITEM tie;
 
 		Utils_RestoreWindowPositionNoSize(hdlg, NULL, "Options", "");
 		TranslateDialogDefault(hdlg);
@@ -234,7 +231,7 @@ static BOOL CALLBACK OptionsDlgProc(HWND hdlg,UINT message,WPARAM wParam,LPARAM 
 		else lastTab = LangPackPcharToTchar( ood->pszTab );
 
 		for ( i=0; i < dat->pageCount; i++ ) {
-			DWORD resSize;				
+			DWORD resSize;
 			hrsrc=FindResourceA(odp[i].hInstance,odp[i].pszTemplate,MAKEINTRESOURCEA(5));
 			hglb=LoadResource(odp[i].hInstance,hrsrc);
 			resSize=SizeofResource(odp[i].hInstance,hrsrc);
@@ -316,8 +313,8 @@ static BOOL CALLBACK OptionsDlgProc(HWND hdlg,UINT message,WPARAM wParam,LPARAM 
 
 		// Add an item to count in height
 		tie.mask = TCIF_TEXT | TCIF_IMAGE;
-		tie.iImage = -1; 
-		tie.pszText = _T("X"); 
+		tie.iImage = -1;
+		tie.pszText = _T("X");
 		TabCtrl_InsertItem(GetDlgItem(hdlg,IDC_TAB), 0, &tie);
 
 		GetWindowRect(GetDlgItem(hdlg,IDC_TAB), &dat->rcTab);
@@ -337,7 +334,7 @@ static BOOL CALLBACK OptionsDlgProc(HWND hdlg,UINT message,WPARAM wParam,LPARAM 
 		char str[128],buf[130];
 
 		TreeView_SelectItem(GetDlgItem(hdlg,IDC_PAGETREE),NULL);
-		if ( dat->currentPage != (-1)) 
+		if ( dat->currentPage != (-1))
 			ShowWindow(dat->opd[dat->currentPage].hwnd,SW_HIDE);
 		ShowWindow(GetDlgItem(hdlg,IDC_PAGETREE),SW_HIDE);	 //deleteall is annoyingly visible
 		TreeView_DeleteAllItems(GetDlgItem(hdlg,IDC_PAGETREE));
@@ -426,7 +423,7 @@ static BOOL CALLBACK OptionsDlgProc(HWND hdlg,UINT message,WPARAM wParam,LPARAM 
 		return TRUE;
 	case WM_NOTIFY:
 		switch(wParam) {
-		case IDC_TAB: 
+		case IDC_TAB:
 		case IDC_PAGETREE:
 			switch(((LPNMHDR)lParam)->code) {
 				case TVN_ITEMEXPANDING:
@@ -446,7 +443,7 @@ static BOOL CALLBACK OptionsDlgProc(HWND hdlg,UINT message,WPARAM wParam,LPARAM 
 					}
 					break;
 				}
-				case TCN_SELCHANGE: 
+				case TCN_SELCHANGE:
 				case TVN_SELCHANGED:
 				{	BOOL tabChange = (wParam == IDC_TAB);
 					ShowWindow(GetDlgItem(hdlg,IDC_STNOPAGE),SW_HIDE);
@@ -530,18 +527,18 @@ static BOOL CALLBACK OptionsDlgProc(HWND hdlg,UINT message,WPARAM wParam,LPARAM 
 						if (!tabChange && dat->opd[dat->currentPage].insideTab) {
 							// Make tabbed pane
 							int i,pages=0,sel=0;
-							TCITEM tie; 
+							TCITEM tie;
 							HWND hwndTab = GetDlgItem(hdlg,IDC_TAB);
 
 							TabCtrl_DeleteAllItems(hwndTab);
 							tie.mask = TCIF_TEXT | TCIF_IMAGE | TCIF_PARAM;
-							tie.iImage = -1; 
+							tie.iImage = -1;
 							for ( i=0; i < dat->pageCount; i++ ) {
 								if (( dat->opd[i].flags & ODPF_SIMPLEONLY ) && IsDlgButtonChecked( hdlg, IDC_EXPERT )) continue;
 								if (( dat->opd[i].flags & ODPF_EXPERTONLY ) && !IsDlgButtonChecked( hdlg, IDC_EXPERT )) continue;
 								if ( lstrcmp(dat->opd[i].pszTitle, dat->opd[dat->currentPage].pszTitle) || lstrcmpnull(dat->opd[i].pszGroup, dat->opd[dat->currentPage].pszGroup) ) continue;
 
-								tie.pszText = dat->opd[i].pszTab; 
+								tie.pszText = dat->opd[i].pszTab;
 								tie.lParam = i;
 								TabCtrl_InsertItem(hwndTab, pages, &tie);
 								if ( !lstrcmp(dat->opd[i].pszTab,dat->opd[dat->currentPage].pszTab) )
@@ -701,10 +698,10 @@ static BOOL CALLBACK OptionsDlgProc(HWND hdlg,UINT message,WPARAM wParam,LPARAM 
 	case WM_DESTROY:
 		SaveOptionsTreeState( hdlg );
 		if ( dat->currentPage != -1 ) {
-			if ( dat->opd[dat->currentPage].pszTab ) 
+			if ( dat->opd[dat->currentPage].pszTab )
 				DBWriteContactSettingTString( NULL, "Options", "LastTab", dat->opd[dat->currentPage].pszTab );
 			else DBDeleteContactSetting( NULL, "Options", "LastTab" );
-			if ( dat->opd[dat->currentPage].pszGroup ) 
+			if ( dat->opd[dat->currentPage].pszGroup )
 				DBWriteContactSettingTString( NULL, "Options", "LastGroup", dat->opd[dat->currentPage].pszGroup );
 			else DBDeleteContactSetting( NULL, "Options", "LastGroup" );
 			DBWriteContactSettingTString( NULL, "Options", "LastPage", dat->opd[dat->currentPage].pszTitle );
@@ -758,7 +755,7 @@ static void OpenOptionsNow(const char *pszGroup,const char *pszPage,const char *
 	ood.pszPage=pszPage;
 	ood.pszTab=pszTab;
 	psh.pStartPage = (LPCTSTR)&ood;	  //more structure misuse
-	psh.pszCaption = TranslateT("Miranda IM Options");	
+	psh.pszCaption = TranslateT("Miranda IM Options");
 	psh.ppsp = (PROPSHEETPAGE*)opi.odp;		  //blatent misuse of the structure, but what the hell
 	hwndOptions=CreateDialogParam(GetModuleHandle(NULL),MAKEINTRESOURCE(IDD_OPTIONS),NULL,OptionsDlgProc,(LPARAM)&psh);
 	for(i=0;i<opi.pageCount;i++) {
@@ -773,13 +770,13 @@ static void OpenOptionsNow(const char *pszGroup,const char *pszPage,const char *
 static int OpenOptions(WPARAM wParam,LPARAM lParam)
 {
 	OPENOPTIONSDIALOG *ood=(OPENOPTIONSDIALOG*)lParam;
-	if(ood==NULL) 
+	if(ood==NULL)
 		return 1;
 	else if (ood->cbSize == OPENOPTIONSDIALOG_OLD_SIZE)
 		OpenOptionsNow(ood->pszGroup,ood->pszPage,NULL);
 	else if (ood->cbSize == sizeof(OPENOPTIONSDIALOG))
 		OpenOptionsNow(ood->pszGroup,ood->pszPage,ood->pszTab);
-	else 
+	else
 		return 1;
 
 	return 0;
@@ -794,9 +791,9 @@ static int OpenOptionsDialog(WPARAM wParam,LPARAM lParam)
 static int AddOptionsPage(WPARAM wParam,LPARAM lParam)
 {	OPTIONSDIALOGPAGE *odp=(OPTIONSDIALOGPAGE*)lParam, *dst;
 	struct OptionsPageInit *opi=(struct OptionsPageInit*)wParam;
-	
+
 	if(odp==NULL||opi==NULL) return 1;
-	if(odp->cbSize!=sizeof(OPTIONSDIALOGPAGE) 
+	if(odp->cbSize!=sizeof(OPTIONSDIALOGPAGE)
 			&& odp->cbSize != OPTIONPAGE_OLD_SIZE
 			&& odp->cbSize != OPTIONPAGE_OLD_SIZE2)
 		return 1;

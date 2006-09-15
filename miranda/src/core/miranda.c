@@ -526,7 +526,7 @@ int GetMemoryManagerInterface(WPARAM wParam, LPARAM lParam)
 
 int GetListInterface(WPARAM wParam, LPARAM lParam)
 {
-	struct LIST_INTERFACE_V2 *li = (struct LIST_INTERFACE_V2*) lParam;
+	struct LIST_INTERFACE *li = (struct LIST_INTERFACE*) lParam;
 	if ( li == NULL )
 		return 1;
 

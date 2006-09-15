@@ -24,10 +24,15 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #define M_SYSTEM_H__ 1
 
 #ifndef MIRANDANAME
-#define MIRANDANAME		"Miranda IM"
+# define MIRANDANAME		"Miranda IM"
 #endif
 #ifndef MIRANDACLASS
-#define MIRANDACLASS	"Miranda"
+# define MIRANDACLASS	"Miranda"
+#endif
+
+// set the default compatibility lever for Miranda 0.4.x
+#ifndef MIRANDA_VER
+# define MIRANDA_VER    0x0400
 #endif
 
 //miranda/system/modulesloaded
@@ -161,23 +166,49 @@ struct LIST_INTERFACE {
 	int   ( *List_Insert )( SortedList*, void*, int );
 	int   ( *List_Remove )( SortedList*, int );
 	int   ( *List_IndexOf )( SortedList*, void* );
-};
 
-struct LIST_INTERFACE_V2 {
-	int    cbSize;
-
-   SortedList* ( *List_Create )( int, int );
-	void        ( *List_Destroy )( SortedList* );
-
-	void*	( *List_Find )( SortedList*, void* );
-	int	( *List_GetIndex )( SortedList*, void*, int* );
-	int   ( *List_Insert )( SortedList*, void*, int );
-	int   ( *List_Remove )( SortedList*, int );
-	int   ( *List_IndexOf )( SortedList*, void* );
-
+	#if MIRANDA_VER >= 0x0600
 	int   ( *List_InsertPtr)( SortedList* list, void* p );
 	int   ( *List_RemovePtr)( SortedList* list, void* p );
+	#endif
 };
+
+#if defined( __cplusplus )
+extern LIST_INTERFACE li;
+
+template<class T> struct LIST
+{
+	typedef int ( *FTSortFunc )( const T* p1, const T* p2 );
+
+	inline LIST( int aincr, FTSortFunc afunc = NULL )
+	{	memset( this, 0, sizeof( *this ));
+		increment = aincr;
+		sortFunc = afunc;
+	}
+
+	inline T* operator[]( int idx ) const { return ( idx >= 0 && idx < count ) ? items[idx] : NULL; }
+	inline int getCount( void )     const { return count; }
+
+	inline int getIndex( T* p ) const
+	{	int idx;
+		return ( !li.List_GetIndex(( SortedList* )this, p, &idx )) ? -1 : idx;
+	}
+
+	inline void destroy( void )        { li.List_Destroy(( SortedList* )this ); }
+
+	inline int indexOf( T* p )         { return li.List_IndexOf(( SortedList* )this, p ); }
+	inline int insert( T* p, int idx ) { return li.List_Insert(( SortedList* )this, p, idx ); }
+	inline int remove( int idx )       { return li.List_Remove(( SortedList* )this, idx ); }
+
+	inline int insert( T* p )          { return li.List_InsertPtr(( SortedList* )this, p ); }
+	inline int remove( T* p )          { return li.List_RemovePtr(( SortedList* )this, p ); }
+
+private:
+	T**        items;
+	int        count, limit, increment;
+	FTSortFunc sortFunc;
+};
+#endif
 
 #define MS_SYSTEM_GET_LI  "Miranda/System/GetLI"
 
