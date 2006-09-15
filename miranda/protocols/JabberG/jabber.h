@@ -36,7 +36,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #if defined( _UNICODE )
 	#define TCHAR_STR_PARAM "%S"
 #else
--	#define TCHAR_STR_PARAM "%s"
+	#define TCHAR_STR_PARAM "%s"
 #endif
 
 #include <malloc.h>
@@ -59,6 +59,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include <limits.h>
 #include <newpluginapi.h>
 #include <m_system.h>
+#include <m_system_cpp.h>
 #include <m_netlib.h>
 #include <m_png.h>
 #include <m_protomod.h>
