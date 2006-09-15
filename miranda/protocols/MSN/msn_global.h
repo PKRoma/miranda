@@ -28,13 +28,13 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 	#define _UNICODE
 #endif
 
+#include <malloc.h>
+
 #ifdef _DEBUG
 	#define _CRTDBG_MAP_ALLOC
 	#include <stdlib.h>
 	#include <crtdbg.h>
 #endif
-
-#include <malloc.h>
 
 #define _WIN32_WINNT 0x0400
 #include <windows.h>
