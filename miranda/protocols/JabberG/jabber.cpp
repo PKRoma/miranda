@@ -52,7 +52,7 @@ PLUGININFO pluginInfo = {
 };
 
 MM_INTERFACE memoryManagerInterface;
-LIST_INTERFACE_V2 li;
+LIST_INTERFACE_V2 li = { 0 };
 
 HANDLE hMainThread = NULL;
 DWORD jabberMainThreadId;
@@ -235,9 +235,14 @@ extern "C" int __declspec( dllexport ) Load( PLUGINLINK *link )
 	// set the lists manager;
 	li.cbSize = sizeof( li );
 	if ( CallService(MS_SYSTEM_GET_LI,0,(LPARAM)&li) == CALLSERVICE_NOTFOUND ) {
-		MessageBoxA( NULL, "This plugin requires Miranda IM 0.5 or later", "Fatal error", MB_OK );
+LBL_Ver:
+		MessageBoxA( NULL, "This plugin requires Miranda IM 0.6 bld. 8 or later", "Fatal error", MB_OK );
 		return 1;
 	}
+
+	// this check is important because of the error in Miranda's core...
+	if ( li.List_InsertPtr == NULL )
+		goto LBL_Ver;
 
 	if ( !ServiceExists( MS_DB_CONTACT_GETSETTING_STR )) {
 		MessageBoxA( NULL, "This plugin requires db3x plugin version 0.5.1.0 or later", "Jabber", MB_OK );
