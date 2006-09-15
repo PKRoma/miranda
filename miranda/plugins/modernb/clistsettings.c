@@ -244,6 +244,7 @@ void cliCheckCacheItem(pdisplayNameCacheEntry pdnce)
 			}
 			else
 			{
+                if (!pdnce->isUnknown && pdnce->name &&pdnce->name!=UnknownConctactTranslatedName) mir_free (pdnce->name);
 				if (OnModulesLoadedCalled)
 					pdnce->name = GetNameForContact(pdnce->hContact,0,&pdnce->isUnknown); //TODO UNICODE
 				else
@@ -258,7 +259,7 @@ void cliCheckCacheItem(pdisplayNameCacheEntry pdnce)
 				{
 					pdnce->protoNotExists=FALSE;						
 
-					mir_free(pdnce->name);
+					//mir_free(pdnce->name);
 					pdnce->name= GetNameForContact(pdnce->hContact,0,&pdnce->isUnknown); //TODO UNICODE
 				}
 			}
@@ -395,7 +396,7 @@ void InvalidateDNCEbyPointer(HANDLE hContact,pdisplayNameCacheEntry pdnce,int Se
 		}
 		if (SettingType==DBVT_ASCIIZ||SettingType==DBVT_BLOB)
 		{
-			if (pdnce->name) mir_free(pdnce->name);
+			if (pdnce->name && !pdnce->isUnknown) mir_free(pdnce->name);
 			if (pdnce->szGroup) mir_free(pdnce->szGroup);
 			//if (pdnce->szProto) mir_free(pdnce->szProto);
 			pdnce->name=NULL;			

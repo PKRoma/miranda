@@ -36,6 +36,12 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #define _EFFECTENUM_FULL_H
   #include "effectenum.h"
 #undef _EFFECTENUM_FULL_H
+typedef  struct _EFFECTSSTACKITEM {
+  HDC hdc;
+  BYTE EffectID;
+  DWORD FirstColor;
+  DWORD SecondColor;
+} EFFECTSSTACKITEM;
 
 //Definition
 #define ScaleBord 2
@@ -48,7 +54,8 @@ static BOOL ON_TERMINATION=TRUE;
 int LOCK_UPDATING=0;
 BYTE UseKeyColor=1;
 DWORD KeyColor=RGB(255,0,255);
-
+extern struct LIST_INTERFACE li;
+SortedList * EffectStack=NULL;
 //type definition
 
 int LoadSkinFromResource();
@@ -218,6 +225,22 @@ int UnloadSkinModule()
   UnloadSkin(&glObjectList);
   if (glObjectList.Objects) 
 	  mir_free(glObjectList.Objects);
+  if (glObjectList.MaskList) 
+      mir_free(glObjectList.MaskList);
+  if (MainModernMaskList)
+      mir_free(MainModernMaskList);
+  if (EffectStack)
+  {
+     int i;
+     for (i=0; i<EffectStack->realCount; i++)
+     if (EffectStack->items[i])
+      {
+        EFFECTSSTACKITEM * effect=(EFFECTSSTACKITEM*)(EffectStack->items[i]);
+        mir_free(effect);
+      }
+      li.List_Destroy(EffectStack);
+      mir_free(EffectStack);
+  }
   if (cachedWindow)
   {
 	  SelectObject(cachedWindow->hBackDC,cachedWindow->hBackOld);
@@ -2429,14 +2452,7 @@ void SetEffect(BYTE EffectID, DWORD FirstColor, DWORD SecondColor)
 		CurrentEffect.EffectColor2=SecondColor;
 	}
 }
-extern struct LIST_INTERFACE li;
-SortedList * EffectStack=NULL;
-typedef  struct _EFFECTSSTACKITEM {
-  HDC hdc;
-  BYTE EffectID;
-  DWORD FirstColor;
-  DWORD SecondColor;
-} EFFECTSSTACKITEM;
+
 
 
 BOOL ResetEffect(HDC hdc)

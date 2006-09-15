@@ -214,7 +214,7 @@ int GetContactIcon(WPARAM wParam,LPARAM lParam)
     return res;
 }
 
-static int ContactListShutdownProc(WPARAM wParam,LPARAM lParam)
+int ContactListShutdownProc(WPARAM wParam,LPARAM lParam)
 {
 	FreeDisplayNameCache();
 	UnhookEvent(hSettingChanged);

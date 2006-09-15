@@ -53,6 +53,7 @@ extern BOOL TransparentFlag;
 extern int UnhookAll();
 extern void Docking_GetMonitorRectFromWindow(HWND hWnd,RECT *rc);
 extern sCurrentWindowImageData * cachedWindow;
+int ContactListShutdownProc(WPARAM wParam,LPARAM lParam);
 
 int gl_i_BehindEdge_CurrentState=0;
 
@@ -206,7 +207,7 @@ typedef struct{
 } ProtoTicks,*pProtoTicks;
 //int SkinUpdateWindowProc(HWND hwnd1);
 
-ProtoTicks CycleStartTick[64];//max 64 protocols 
+ProtoTicks CycleStartTick[64]={0};//max 64 protocols 
 
 int CycleTimeInterval=2000;
 int CycleIconCount=8;
@@ -2418,7 +2419,12 @@ LRESULT CALLBACK cli_ContactListWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPAR
 			int state=DBGetContactSettingByte(NULL,"CList","State",SETTING_STATE_NORMAL);
 			g_STATE=STATE_EXITING;
             DisconnectAll();
-            DestroyThreads(); //stop all my threads            
+            DestroyThreads(); //stop all my threads                
+            {
+                int i=0;
+                for(i=0; i<64; i++)
+                    if(CycleStartTick[i].szProto) mir_free(CycleStartTick[i].szProto);
+            }
 			if (state==SETTING_STATE_NORMAL){ShowWindowNew(hwnd,SW_HIDE);};				
 			if(hSettingChangedHook!=0){UnhookEvent(hSettingChangedHook);};
 			TrayIconDestroy(hwnd);	
@@ -2439,7 +2445,8 @@ LRESULT CALLBACK cli_ContactListWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPAR
 						DBWriteContactSettingDword(NULL,"CList","Height",r.bottom-r.top);
 					}
 			}
-			UnLoadCLUIFramesModule();	
+			UnLoadCLUIFramesModule();
+            ContactListShutdownProc(0,0);
 			pcli->hwndStatus=NULL;
 			ImageList_Destroy(himlMirandaIcon);
 			DBWriteContactSettingByte(NULL,"CList","State",(BYTE)state);

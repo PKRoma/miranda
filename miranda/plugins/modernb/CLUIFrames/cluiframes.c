@@ -4293,7 +4293,7 @@ static CLUIFrameOnModulesLoad(WPARAM wParam,LPARAM lParam)
 static CLUIFrameOnModulesUnload(WPARAM wParam,LPARAM lParam)
 {
   //
-  if (MirandaExiting()) return 0;
+  //if (MirandaExiting()) return 0;
   if (!contMIVisible) return 0;
   CallService( MS_CLIST_REMOVECONTEXTFRAMEMENUITEM, ( LPARAM )contMIVisible, 1 );
   CallService( MS_CLIST_REMOVECONTEXTFRAMEMENUITEM, ( LPARAM )contMITitle, 1 );
