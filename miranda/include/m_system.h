@@ -173,43 +173,6 @@ struct LIST_INTERFACE {
 	#endif
 };
 
-#if defined( __cplusplus )
-extern LIST_INTERFACE li;
-
-template<class T> struct LIST
-{
-	typedef int ( *FTSortFunc )( const T* p1, const T* p2 );
-
-	inline LIST( int aincr, FTSortFunc afunc = NULL )
-	{	memset( this, 0, sizeof( *this ));
-		increment = aincr;
-		sortFunc = afunc;
-	}
-
-	inline T* operator[]( int idx ) const { return ( idx >= 0 && idx < count ) ? items[idx] : NULL; }
-	inline int getCount( void )     const { return count; }
-
-	inline int getIndex( T* p ) const
-	{	int idx;
-		return ( !li.List_GetIndex(( SortedList* )this, p, &idx )) ? -1 : idx;
-	}
-
-	inline void destroy( void )        { li.List_Destroy(( SortedList* )this ); }
-
-	inline int indexOf( T* p )         { return li.List_IndexOf(( SortedList* )this, p ); }
-	inline int insert( T* p, int idx ) { return li.List_Insert(( SortedList* )this, p, idx ); }
-	inline int remove( int idx )       { return li.List_Remove(( SortedList* )this, idx ); }
-
-	inline int insert( T* p )          { return li.List_InsertPtr(( SortedList* )this, p ); }
-	inline int remove( T* p )          { return li.List_RemovePtr(( SortedList* )this, p ); }
-
-private:
-	T**        items;
-	int        count, limit, increment;
-	FTSortFunc sortFunc;
-};
-#endif
-
 #define MS_SYSTEM_GET_LI  "Miranda/System/GetLI"
 
 /*
