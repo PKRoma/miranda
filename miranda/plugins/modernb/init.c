@@ -71,6 +71,10 @@ void (*saveSortCLC) (HWND hwnd, struct ClcData *dat, int useInsertionSort );
 int  (*saveAddItemToGroup)( struct ClcGroup *group, int iAboveItem );
 int  (*saveAddInfoItemToGroup)(struct ClcGroup *group,int flags,const TCHAR *pszText);
 
+int  (*saveIconFromStatusMode)(const char *szProto,int nStatus, HANDLE hContact);
+int  cli_IconFromStatusMode(const char *szProto,int nStatus, HANDLE hContact);
+
+
 LRESULT (CALLBACK *saveContactListControlWndProc )( HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam );
 LRESULT CALLBACK cli_ContactListControlWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam);
 
@@ -262,8 +266,12 @@ int __declspec(dllexport) CListInitialise(PLUGINLINK * link)
 	pcli->pfnGetRowByIndex		= cliGetRowByIndex;
 	pcli->pfnGetRowsPriorTo		= cliGetRowsPriorTo;
     pcli->pfnGetGroupContentsCount =cliGetGroupContentsCount;
+    
 
 	//partialy overloaded - call default handlers from inside
+    saveIconFromStatusMode      = pcli->pfnIconFromStatusMode;
+    pcli->pfnIconFromStatusMode = cli_IconFromStatusMode;
+
 	saveLoadCluiGlobalOpts		= pcli->pfnLoadCluiGlobalOpts;
 	pcli->pfnLoadCluiGlobalOpts = cli_LoadCluiGlobalOpts;
 
@@ -299,7 +307,7 @@ int __declspec(dllexport) CListInitialise(PLUGINLINK * link)
 	
 	saveChangeContactIcon		= pcli->pfnChangeContactIcon;
 	pcli->pfnChangeContactIcon	= cli_ChangeContactIcon;
-	
+    
 	saveTrayIconProcessMessage		= pcli->pfnTrayIconProcessMessage; 
 	pcli->pfnTrayIconProcessMessage	= cli_TrayIconProcessMessage;
 	

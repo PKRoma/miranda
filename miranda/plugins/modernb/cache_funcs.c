@@ -1030,6 +1030,12 @@ int CopySkipUnPrintableChars(TCHAR *to, TCHAR * buf, DWORD size)
 	DWORD i;
 	BOOL keep=0;
 	TCHAR * cp=to;
+    if (!to) return 0;
+    if (!buf) 
+    {
+        to[0]='\0';
+        return 0;
+    }
 	for (i=0; i<size; i++)
 	{
 		if (buf[i]==0) break;

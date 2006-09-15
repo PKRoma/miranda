@@ -624,7 +624,6 @@ int StatusMenuCheckService(WPARAM wParam, LPARAM lParam)
 				curProtoStatus=CallProtoService(prot,PS_GETSTATUS,0,0);
 				if (curProtoStatus>=ID_STATUS_OFFLINE && curProtoStatus<ID_STATUS_IDLE)
 				{
-				//	timi->iconId=pcli->pfnIconFromStatusMode(timi->mi.pszName,curProtoStatus);
 					timi->mi.hIcon=LoadSkinnedProtoIcon(prot,curProtoStatus);				
 				}
 				else

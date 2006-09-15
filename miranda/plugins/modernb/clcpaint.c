@@ -38,7 +38,6 @@ static HANDLE   (WINAPI *MyOpenThemeData)(HWND,LPCWSTR);
 static HRESULT  (WINAPI *MyCloseThemeData)(HANDLE);
 static HRESULT  (WINAPI *MyDrawThemeBackground)(HANDLE,HDC,int,int,const RECT *,const RECT *);
 #define MGPROC(x) GetProcAddress(themeAPIHandle,x)
-extern HIMAGELIST hAnvancedStatusIcon;
 void DrawStatusIcon(struct ClcContact * Drawing, struct ClcData *dat, int iImage, HDC hDC, int x, int y, int cx, int cy, DWORD colorbg,DWORD colorfg, int mode);
 
 extern HIMAGELIST hAvatarOverlays;
@@ -1614,39 +1613,35 @@ void ModernInternalPaintRowItems(HWND hwnd, HDC hdcMem, struct ClcData *dat, str
   return;
 }
 
+extern struct AvatarOverlayIconConfig status_overlay_icons[];
 
 void DrawStatusIcon(struct ClcContact * Drawing, struct ClcData *dat,
                     int iImage, HDC hdcMem, int x, int y, int cx, int cy, DWORD colorbg,DWORD colorfg, int mode)
 {
     if (Drawing->type!=CLCIT_CONTACT)
     {
-      mod_ImageList_DrawEx(himlCListClc, iImage, hdcMem, 
+      mod_ImageList_DrawEx(himlCListClc, iImage&0xFFFF, hdcMem, 
             x, y,cx,cy,colorbg,colorfg,mode);
     }
     else if (Drawing->image_is_special) 
     {
-       mod_ImageList_DrawEx(himlCListClc, iImage, hdcMem, 
+       mod_ImageList_DrawEx(himlCListClc, iImage&0xFFFF, hdcMem, 
                   x, y,cx,cy,colorbg,colorfg,mode);
     }
-  /*
-    else if (Drawing->SubAllocated>0 && !dat->useMetaIcon && Drawing->isTransport>0)
-    { 
-       mod_ImageList_DrawEx(hAnvancedStatusIcon, Drawing->iTransportProtoIconID, hdcMem, 
+    else if (iImage!=-1 && iImage&0xFFFF0000 && dat->drawOverlayedStatus)
+    {    
+       int status=GetContactCachedStatus(Drawing->hContact);
+       if (status<ID_STATUS_OFFLINE) status=ID_STATUS_OFFLINE;
+       else if (status>ID_STATUS_OUTTOLUNCH) status=ID_STATUS_ONLINE;
+       mod_ImageList_DrawEx(himlCListClc, (iImage&0xFFFF0000)>>16, hdcMem, 
+                  x, y,cx,cy,colorbg,colorfg,mode);
+       if (dat->drawOverlayedStatus&2) //draw overlay 
+       mod_ImageList_DrawEx(hAvatarOverlays, status_overlay_icons[status-ID_STATUS_OFFLINE].listID, hdcMem, 
                   x, y,cx,cy,colorbg,colorfg,mode);
     }
-    else if (Drawing->isTransport>0)
-    {
-       mod_ImageList_DrawEx(hAnvancedStatusIcon, Drawing->iTransportProtoIconID, hdcMem, 
-                  x, y,cx,cy,colorbg,colorfg,mode);
-    }
-    else if (Drawing->xStatus>0)
-    {
-        //draw xStatus
-    }
-   */
     else
     {
-       mod_ImageList_DrawEx(himlCListClc, iImage, hdcMem, 
+       mod_ImageList_DrawEx(himlCListClc, iImage&0xFFFF, hdcMem, 
                   x, y,cx,cy,colorbg,colorfg,mode);
     }
 }

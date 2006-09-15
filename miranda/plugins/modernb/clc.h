@@ -201,7 +201,7 @@ struct ClcContact {
 	BYTE flags;
 	union {
 		struct {
-			WORD iImage;
+			int iImage;
 			HANDLE hContact;
 		};
 		struct {
@@ -421,6 +421,7 @@ struct ClcData {
 	int menuOwnerID;
     DWORD m_paintCouter; //range is enoght to 49 days if painting will occure each one millisecond
     BYTE useMetaIcon;
+    BYTE drawOverlayedStatus;
 };
 
 //clc.c

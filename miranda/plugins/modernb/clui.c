@@ -37,7 +37,6 @@ HANDLE gl_event_hSkinLoaded;
 BOOL ON_SIZING_CYCLE=0;
 extern StatusBarData sbdat;
 extern BYTE CALLED_FROM_SHOWHIDE;
-extern HIMAGELIST hAnvancedStatusIcon;
 extern void (*saveLoadCluiGlobalOpts)(void);
 #define TM_AUTOALPHA  1
 #define TM_DELAYEDSIZING 2
@@ -2442,7 +2441,6 @@ LRESULT CALLBACK cli_ContactListWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPAR
 			}
 			UnLoadCLUIFramesModule();	
 			pcli->hwndStatus=NULL;
-            if (hAnvancedStatusIcon) ImageList_Destroy(hAnvancedStatusIcon);
 			ImageList_Destroy(himlMirandaIcon);
 			DBWriteContactSettingByte(NULL,"CList","State",(BYTE)state);
 			UnloadSkin(&glObjectList);
@@ -2463,7 +2461,6 @@ int CluiIconsChanged(WPARAM wParam,LPARAM lParam)
 	ImageList_ReplaceIcon(himlMirandaIcon,0,LoadSkinnedIcon(SKINICON_OTHER_MIRANDA));
 	DrawMenuBar(pcli->hwndContactList);
 	ReloadExtraIcons();
-    ReloadAllAdvancedIcons();
 	SetAllExtraIcons(pcli->hwndContactTree,0);
 	RedrawCompleteWindow();
 	//	pcli->pfnClcBroadcast( INTM_INVALIDATE,0,0);

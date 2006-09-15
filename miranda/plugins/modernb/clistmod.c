@@ -123,7 +123,7 @@ HICON GetIconFromStatusMode(HANDLE hContact, const char *szProto,int status)
 ////////// By FYR/////////////
 int ExtIconFromStatusMode(HANDLE hContact, const char *szProto,int status)
 {    
-	pdisplayNameCacheEntry cacheEntry;	
+	/*pdisplayNameCacheEntry cacheEntry;	
 	if ((DBGetContactSettingByte(NULL,"CLC","Meta",0)!=1) && szProto!=NULL)
     {
 		if (mir_strcmp(szProto,"MetaContacts")==0)      
@@ -138,9 +138,55 @@ int ExtIconFromStatusMode(HANDLE hContact, const char *szProto,int status)
     }
     cacheEntry=(pdisplayNameCacheEntry)pcli->pfnGetCacheEntry(hContact);
     if (cacheEntry->isTransport>0)  return GetTrasportStatusIconIndex(cacheEntry->isTransport-1,status);
+    */
     return pcli->pfnIconFromStatusMode(szProto,status,hContact);
 }
 /////////// End by FYR ////////
+int cli_IconFromStatusMode(const char *szProto,int nStatus, HANDLE hContact)
+{
+   int result=-1;
+   if (hContact && szProto)
+   {
+       char * szActProto=(char*)szProto;
+       char AdvancedService[255]={0};
+       int  nActStatus=nStatus;
+       int  basicIcon=-1;
+       HANDLE hActContact=hContact;
+       if (!DBGetContactSettingByte(NULL,"CLC","Meta",0) && !mir_strcmp(szActProto,"MetaContacts"))
+       {
+            // substitute params by mostonline contact datas
+           HANDLE hMostOnlineContact=(HANDLE)CallService(MS_MC_GETMOSTONLINECONTACT,(UINT)hActContact,0);
+           if (hMostOnlineContact)
+           {
+                pdisplayNameCacheEntry cacheEntry;
+                cacheEntry=(pdisplayNameCacheEntry)pcli->pfnGetCacheEntry(hMostOnlineContact);
+                if (cacheEntry && cacheEntry->szProto)
+                {
+                    szActProto=cacheEntry->szProto;
+                    nActStatus=cacheEntry->status;
+                    hActContact=hMostOnlineContact;
+                }
+           }
+       }         
+       _snprintf(AdvancedService,sizeof(AdvancedService),"%s%s",szActProto,"/GetAdvancedStatusIcon");
+       
+       if (ServiceExists(AdvancedService)) 
+          result=CallService(AdvancedService,(WPARAM)hActContact, (LPARAM)0); 
+
+       if (result==-1 || !(result&0xFFFF))
+       {  
+           //Get normal Icon
+           int  basicIcon=saveIconFromStatusMode(szActProto,nActStatus,NULL);
+           if (result!=-1 && basicIcon!=1) result|=basicIcon;
+           else result=basicIcon;
+       }
+   }
+   else
+   {
+       result=saveIconFromStatusMode(szProto,nStatus,NULL);
+   }
+   return result;
+}
 
 
 int GetContactIconC(pdisplayNameCacheEntry cacheEntry)
@@ -156,14 +202,16 @@ int GetContactIcon(WPARAM wParam,LPARAM lParam)
 {
 	char *szProto;
 	int status;
-
 	pdisplayNameCacheEntry cacheEntry;
-	cacheEntry=(pdisplayNameCacheEntry)pcli->pfnGetCacheEntry((HANDLE)wParam);
+    int res;
 
-	//szProto=(char*)CallService(MS_PROTO_GETCONTACTBASEPROTO,wParam,0);
+    cacheEntry=(pdisplayNameCacheEntry)pcli->pfnGetCacheEntry((HANDLE)wParam);
 	szProto=cacheEntry->szProto;
 	status=cacheEntry->status;
-	return ExtIconFromStatusMode((HANDLE)wParam,szProto,szProto==NULL?ID_STATUS_OFFLINE:status); //by FYR
+
+    res=ExtIconFromStatusMode((HANDLE)wParam,szProto,szProto==NULL?ID_STATUS_OFFLINE:status); //by FYR
+    if (lParam==0 && res!=-1) res&=0xFFFF;
+    return res;
 }
 
 static int ContactListShutdownProc(WPARAM wParam,LPARAM lParam)

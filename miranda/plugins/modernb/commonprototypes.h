@@ -138,6 +138,7 @@ extern void ( *saveFreeContact )( struct ClcContact* );
 extern void ( *saveFreeGroup )( struct ClcGroup* );
 extern LRESULT ( CALLBACK *saveContactListControlWndProc )(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam);
 extern char* (*saveGetGroupCountsText)(struct ClcData *dat, struct ClcContact *contact);
+extern int  (*saveIconFromStatusMode)(const char *szProto,int nStatus, HANDLE hContact);
 
 int LoadMoveToGroup();
 int GetContactIcon(WPARAM wParam,LPARAM lParam);
@@ -149,7 +150,6 @@ void UninitCustomMenus(void);
 extern HICON mod_ImageList_GetIcon(HIMAGELIST himl, int i, UINT fStyle);
 int CreateTabPage(char *Group, char * Title, WPARAM wParam, DLGPROC DlgProcOpts);
 BOOL CALLBACK DlgProcTabbedOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam);
-int ReloadAllAdvancedIcons();
 int LoadAdvancedIcons(int ID);
 int GetTrasportStatusIconIndex(int ID, int Status);
 HICON LoadIconFromExternalFile(char *filename,int i,boolean UseLibrary,boolean registerit,char *IconName,char *SectName,char *Description,int internalidx, BOOL * needFree);

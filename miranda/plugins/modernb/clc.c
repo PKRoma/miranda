@@ -613,6 +613,7 @@ case WM_CREATE:
             && DBGetContactSettingByte(NULL,"MetaContacts","Enabled",1) && ServiceExists(MS_MC_GETDEFAULTCONTACT);
         dat->expandMeta=DBGetContactSettingByte(NULL,"CLC","MetaExpanding",1);		
         dat->useMetaIcon=DBGetContactSettingByte(NULL,"CLC","Meta",0);
+        dat->drawOverlayedStatus=DBGetContactSettingByte(NULL,"CLC","DrawOverlayedStatus",3);
         sortBy[0]=DBGetContactSettingByte(NULL,"CList","SortBy1",SETTING_SORTBY1_DEFAULT);
         sortBy[1]=DBGetContactSettingByte(NULL,"CList","SortBy2",SETTING_SORTBY2_DEFAULT);
         sortBy[2]=DBGetContactSettingByte(NULL,"CList","SortBy3",SETTING_SORTBY3_DEFAULT);
@@ -713,7 +714,7 @@ case INTM_ICONCHANGED:
         WORD status;
         char *szProto;
         BOOL image_is_special=FALSE;
-        int contacticon=CallService(MS_CLIST_GETCONTACTICON, wParam, 0);
+        int contacticon=CallService(MS_CLIST_GETCONTACTICON, wParam, 1);
 
         szProto = (char *) CallService(MS_PROTO_GETCONTACTBASEPROTO, wParam, 0);
         if (szProto == NULL)
@@ -743,7 +744,7 @@ case INTM_ICONCHANGED:
                 pcli->pfnFindItem(hwnd, dat, (HANDLE) wParam, &contact, NULL, NULL);
                 if (contact) 
                 {
-                    contact->iImage = (WORD) lParam;
+                    contact->iImage = lParam;
                     contact->image_is_special=image_is_special;
                     pcli->pfnNotifyNewContact(hwnd, (HANDLE) wParam);
                     dat->NeedResort = 1;
@@ -753,7 +754,7 @@ case INTM_ICONCHANGED:
         else 
         {              //item in list already
             DWORD style = GetWindowLong(hwnd, GWL_STYLE);
-            if (contact->iImage == (WORD) lParam)
+            if (contact->iImage == lParam)
                 return 0;
             if (!shouldShow && !(style & CLS_NOHIDEOFFLINE) && (style & CLS_HIDEOFFLINE || group->hideOffline)) 
             {
@@ -774,7 +775,7 @@ case INTM_ICONCHANGED:
             }
             else if (contact)
             {
-                contact->iImage = (WORD) lParam;
+                contact->iImage = lParam;
                 if (!pcli->pfnIsHiddenMode(dat, status))
                     contact->flags |= CONTACTF_ONLINE;
                 else
@@ -914,9 +915,7 @@ case INTM_STATUSCHANGED:
                     (dat->second_line_show)// && dat->second_line_type==TEXT_STATUS)
                     || (dat->third_line_show)// && dat->third_line_type==TEXT_STATUS)
                     ))
-                    Cache_RenewText(pdnce->hContact);	
-                if (pdnce->isTransport)
-                          pdnce->iTransportProtoIconID=GetTrasportStatusIconIndex(pdnce->isTransport-1,pdnce->status);
+                    Cache_RenewText(pdnce->hContact);	                
             }
         }
         if (DBGetContactSettingByte(NULL,"CList","PlaceOfflineToRoot",0) )

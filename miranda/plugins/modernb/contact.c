@@ -59,7 +59,7 @@ static int GetContactStatus(HANDLE hContact)
 extern void ( *saveChangeContactIcon)(HANDLE hContact,int iIcon,int add);
 void cli_ChangeContactIcon(HANDLE hContact,int iIcon,int add)
 {
-	pdisplayNameCacheEntry cacheEntry;
+	/*pdisplayNameCacheEntry cacheEntry;
 	HANDLE hMostMeta=NULL;
 	cacheEntry=(pdisplayNameCacheEntry)pcli->pfnGetCacheEntry((HANDLE)hContact);
 	if (iIcon)
@@ -101,7 +101,9 @@ void cli_ChangeContactIcon(HANDLE hContact,int iIcon,int add)
 				}
         }
 	//clui MS_CLUI_CONTACTADDED MS_CLUI_CONTACTSETICON this methods is null
+    */
 	saveChangeContactIcon((HANDLE) hContact,(int) iIcon,(int) add);
+    
 	//CallService(add?MS_CLUI_CONTACTADDED:MS_CLUI_CONTACTSETICON,(WPARAM)hContact,iIcon);
 }
 

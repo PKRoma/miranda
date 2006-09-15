@@ -315,16 +315,6 @@ void cliCheckCacheItem(pdisplayNameCacheEntry pdnce)
 		{
 			pdnce->IsExpanded=DBGetContactSettingByte(pdnce->hContact,"CList","Expanded",0);
 		}
-        if (pdnce->isTransport==-1 && pdnce->szProto)
-        {
-            pdnce->isTransport=(GetTransportProtoIDFromHCONTACT(pdnce->hContact,pdnce->szProto)+1);
-            //GetTransport
-        }
-        if (pdnce->xStatus==-1)
-        {
-            //GetXStatus
-        }
-
 	}
 }
 
@@ -401,10 +391,6 @@ void InvalidateDNCEbyPointer(HANDLE hContact,pdisplayNameCacheEntry pdnce,int Se
 			pdnce->isUnknown=FALSE;
 			pdnce->noHiddenOffline=-1;
 			pdnce->IsExpanded=-1;
-
-            pdnce->isTransport=-1;
-            pdnce->xStatus=-1;
-			
 			return;
 		}
 		if (SettingType==DBVT_ASCIIZ||SettingType==DBVT_BLOB)
@@ -428,8 +414,6 @@ void InvalidateDNCEbyPointer(HANDLE hContact,pdisplayNameCacheEntry pdnce,int Se
 		pdnce->isUnknown=FALSE;
 		pdnce->noHiddenOffline=-1;
 		pdnce->IsExpanded=-1;
-        pdnce->isTransport=-1;
-        pdnce->xStatus=-1;
 	};
 };
 
@@ -499,7 +483,6 @@ int ContactAdded(WPARAM wParam,LPARAM lParam)
 {
     if (MirandaExiting()) return 0;
 	cli_ChangeContactIcon((HANDLE)wParam,ExtIconFromStatusMode((HANDLE)wParam,(char*)GetContactCachedProtocol((HANDLE)wParam),ID_STATUS_OFFLINE),1); ///by FYR
-	//	ChangeContactIcon((HANDLE)wParam,pcli->pfnIconFromStatusMode((char*)GetContactCachedProtocol((HANDLE)wParam),ID_STATUS_OFFLINE),1);
 	pcli->pfnSortContacts();
 	return 0;
 }
