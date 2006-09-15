@@ -1410,6 +1410,7 @@ void register_callbacks()
 	yc.ext_yahoo_webcam_viewer = ext_yahoo_webcam_viewer;
 	yc.ext_yahoo_webcam_data_request = ext_yahoo_webcam_data_request;
 	yc.ext_yahoo_got_file = ext_yahoo_got_file;
+	yc.ext_yahoo_got_file7info = ext_yahoo_got_file7info;
 	yc.ext_yahoo_contact_added = ext_yahoo_contact_added;
 	yc.ext_yahoo_rejected = ext_yahoo_rejected;
 	yc.ext_yahoo_typing_notify = ext_yahoo_typing_notify;

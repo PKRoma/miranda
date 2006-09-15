@@ -1392,6 +1392,57 @@ static void yahoo_process_filetransfer7(struct yahoo_input_data *yid, struct yah
 	}
 }
 
+char *yahoo_decode(const char *t)
+{
+	/*
+	 * Need to process URL ??? we get sent \002 style thingies.. which need to be decoded
+	 * and then urlencoded?
+	 *
+	 * Thanks GAIM for the code...
+	 */
+	char y[1024];
+	char *n;
+	const char *end, *p;
+	int i, k;
+
+	n = y;
+	end = t + lstrlen(t);
+	
+	for (p = t; p < end; p++, n++) {
+		if (*p == '\\') {
+			if (p[1] >= '0' && p[1] <= '7') {
+				p += 1;
+				for (i = 0, k = 0; k < 3; k += 1) {
+					char c = p[k];
+					if (c < '0' || c > '7') break;
+					i *= 8;
+					i += c - '0';
+				}
+				*n = i;
+				p += k - 1;
+			} else { /* bug 959248 */
+				/* If we see a \ not followed by an octal number,
+				 * it means that it is actually a \\ with one \
+				 * already eaten by some unknown function.
+				 * This is arguably broken.
+				 *
+				 * I think wing is wrong here, there is no function
+				 * called that I see that could have done it. I guess
+				 * it is just really sending single \'s. That's yahoo
+				 * for you.
+				 */
+				*n = *p;
+			}
+		}
+		else
+			*n = *p;
+	}
+
+	*n = '\0';
+
+	return yahoo_urlencode(y);
+}
+
 static void yahoo_process_filetransfer7info(struct yahoo_input_data *yid, struct yahoo_packet *pkt)
 {
 	struct yahoo_data *yd = yid->yd;
@@ -1459,6 +1510,9 @@ static void yahoo_process_filetransfer7info(struct yahoo_input_data *yid, struct
 		break;
 	case 3: // Relay
 		{
+			char url[1024];
+			char *t;
+			
 			/*
 			 * From Kopete: accept the info?
 			 */
@@ -1475,6 +1529,12 @@ static void yahoo_process_filetransfer7info(struct yahoo_input_data *yid, struct
 			yahoo_send_packet(yid, pkt1, 0);
 			yahoo_packet_free(pkt1);
 			
+			t = yahoo_decode(token);
+			sprintf(url,"http://%s/relay?token=%s&sender=%s&recver=%s", host, t, from, to);
+			
+			YAHOO_CALLBACK(ext_yahoo_got_file7info)(yd->client_id, to, from, url, filename, ft_token);
+			
+			FREE(t);
 		}
 		break;
 	}
@@ -4360,6 +4420,7 @@ static void yahoo_process_yab_connection(struct yahoo_input_data *yid, int over)
 			&& (yab = yahoo_getyab(yid)) != NULL) {
 		if(!yab->id)
 			continue;
+		
 		changed=1;
 		for(buds = yd->buddies; buds; buds=buds->next) {
 			struct yahoo_buddy * bud = buds->data;
@@ -6244,7 +6305,29 @@ void yahoo_ft7dc_cancel(int id, const char *buddy, const char *ft_token)
 	yahoo_packet_hash(pkt, 5, buddy);
 	yahoo_packet_hash(pkt,265, ft_token);
 	yahoo_packet_hash(pkt,222, "4");
-	
+
+	yahoo_send_packet(yid, pkt, 0);
+	yahoo_packet_free(pkt);
+
+}
+
+void yahoo_ft7dc_relay(int id, const char *buddy, const char *ft_token)
+{
+	struct yahoo_input_data *yid = find_input_by_id_and_type(id, YAHOO_CONNECTION_PAGER);
+	struct yahoo_data *yd;
+	struct yahoo_packet *pkt = NULL;
+
+	if(!yid)
+		return;
+
+	yd = yid->yd;
+
+	pkt = yahoo_packet_new(YAHOO_SERVICE_Y7_FILETRANSFERACCEPT, YAHOO_STATUS_AVAILABLE, yd->session_id);
+	yahoo_packet_hash(pkt, 1, yd->user);
+	yahoo_packet_hash(pkt, 5, buddy);
+	yahoo_packet_hash(pkt,265, ft_token);
+	yahoo_packet_hash(pkt,66, "-3");
+
 	yahoo_send_packet(yid, pkt, 0);
 	yahoo_packet_free(pkt);
 

@@ -33,6 +33,7 @@ typedef struct {
 
 /* libyahoo2 callback(s) */
 void ext_yahoo_got_file(int id, const char *me, const char *who, const char *url, long expires, const char *msg, const char *fname, unsigned long fesize, const char *ft_token, int y7);
+void ext_yahoo_got_file7info(int id, const char *me, const char *who, const char *url, const char *fname, const char *ft_token);
 
 /* service functions */
 int YahooFileAllow(WPARAM wParam,LPARAM lParam);
