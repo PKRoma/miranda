@@ -56,29 +56,48 @@ void LoadProtocolIcons() {
 	g_dat->protoNames = (char **) malloc(sizeof(char **) * g_dat->protoNum);
 	if (g_dat->hTabIconList == NULL) {
 		g_dat->hTabIconList = ImageList_Create(16, 16, IsWinVerXPPlus() ? ILC_COLOR32 | ILC_MASK : ILC_COLOR8 | ILC_MASK, (g_dat->protoNum + 1) * 12 + 8, 0);
-	} else {
-		ImageList_RemoveAll(g_dat->hTabIconList);
-	}
+		ImageList_AddIcon(g_dat->hTabIconList, LoadSkinnedIcon(SKINICON_EVENT_MESSAGE));
+		ImageList_AddIcon(g_dat->hTabIconList, g_dat->hIcons[SMF_ICON_TYPING]);
+		for (i = ID_STATUS_OFFLINE; i <= ID_STATUS_OUTTOLUNCH; i++) {
+			ImageList_AddIcon(g_dat->hTabIconList, LoadSkinnedProtoIcon(NULL, i));
+		}
 
-    ImageList_AddIcon(g_dat->hTabIconList, LoadSkinnedIcon(SKINICON_EVENT_MESSAGE));
-	ImageList_AddIcon(g_dat->hTabIconList, g_dat->hIcons[SMF_ICON_TYPING]);
-	for (i = ID_STATUS_OFFLINE; i <= ID_STATUS_OUTTOLUNCH; i++) {
-		ImageList_AddIcon(g_dat->hTabIconList, LoadSkinnedProtoIcon(NULL, i));
-	}
-
-	for(i = j = 0; i < allProtoNum; i++) {
-        if (pProtos[i]->type != PROTOTYPE_PROTOCOL) continue;
-		g_dat->protoNames[j] = _strdup(pProtos[i]->szName);
-        for (k = ID_STATUS_OFFLINE; k <= ID_STATUS_OUTTOLUNCH; k++) {
-            hIcon = LoadSkinnedProtoIcon(pProtos[i]->szName, k);
-            if (hIcon != NULL) {
-				ImageList_AddIcon(g_dat->hTabIconList, hIcon);
-            } else {
-				ImageList_AddIcon(g_dat->hTabIconList, LoadSkinnedProtoIcon(NULL, ID_STATUS_OFFLINE));
+		for(i = j = 0; i < allProtoNum; i++) {
+			if (pProtos[i]->type != PROTOTYPE_PROTOCOL) continue;
+			g_dat->protoNames[j] = _strdup(pProtos[i]->szName);
+			for (k = ID_STATUS_OFFLINE; k <= ID_STATUS_OUTTOLUNCH; k++) {
+				hIcon = LoadSkinnedProtoIcon(pProtos[i]->szName, k);
+				if (hIcon != NULL) {
+					ImageList_AddIcon(g_dat->hTabIconList, hIcon);
+				} else {
+					ImageList_AddIcon(g_dat->hTabIconList, LoadSkinnedProtoIcon(NULL, ID_STATUS_OFFLINE));
+				}
 			}
-        }
-		j++;
-    }
+			j++;
+		}
+	} else {
+		int index = 0;
+		ImageList_ReplaceIcon(g_dat->hTabIconList, index++, LoadSkinnedIcon(SKINICON_EVENT_MESSAGE));
+		ImageList_ReplaceIcon(g_dat->hTabIconList, index++, g_dat->hIcons[SMF_ICON_TYPING]);
+		for (i = ID_STATUS_OFFLINE; i <= ID_STATUS_OUTTOLUNCH; i++) {
+			ImageList_ReplaceIcon(g_dat->hTabIconList, index++, LoadSkinnedProtoIcon(NULL, i));
+		}
+
+		for(i = j = 0; i < allProtoNum; i++) {
+			if (pProtos[i]->type != PROTOTYPE_PROTOCOL) continue;
+			g_dat->protoNames[j] = _strdup(pProtos[i]->szName);
+			for (k = ID_STATUS_OFFLINE; k <= ID_STATUS_OUTTOLUNCH; k++) {
+				hIcon = LoadSkinnedProtoIcon(pProtos[i]->szName, k);
+				if (hIcon != NULL) {
+					ImageList_ReplaceIcon(g_dat->hTabIconList, index++, hIcon);
+				} else {
+					ImageList_ReplaceIcon(g_dat->hTabIconList, index++, LoadSkinnedProtoIcon(NULL, ID_STATUS_OFFLINE));
+				}
+			}
+			j++;
+		}
+	}
+
 }
 
 int IconsChanged(WPARAM wParam, LPARAM lParam)
@@ -96,11 +115,11 @@ int IconsChanged(WPARAM wParam, LPARAM lParam)
 	FreeMsgLogIcons();
 	LoadMsgLogIcons();
 	LoadProtocolIcons();
-	Chat_IconsChanged();
 	WindowList_Broadcast(g_dat->hMessageWindowList, DM_REMAKELOG, 0, 0);
 	// change all the icons
 	WindowList_Broadcast(g_dat->hMessageWindowList, DM_CHANGEICONS, 0, 0);
 	WindowList_Broadcast(g_dat->hMessageWindowList, DM_UPDATETITLEBAR, 0, 0);
+	Chat_IconsChanged();
 	return 0;
 }
 

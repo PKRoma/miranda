@@ -1080,10 +1080,10 @@ void MM_IconsChanged(void)
 		pTemp->hOfflineIcon = ImageList_GetIcon(g_dat->hTabIconList, pTemp->OfflineIconIndex, ILD_TRANSPARENT);
 		pTemp->hOnlineIcon = ImageList_GetIcon(g_dat->hTabIconList, pTemp->OnlineIconIndex, ILD_TRANSPARENT);
 
-		pTemp->hOnlineTalkIcon = ImageList_GetIcon(g_dat->hTabIconList, pTemp->OnlineIconIndex, ILD_TRANSPARENT|INDEXTOOVERLAYMASK(overlayIcon));
+		pTemp->hOnlineTalkIcon = ImageList_GetIcon(g_dat->hTabIconList, pTemp->OnlineIconIndex, ILD_TRANSPARENT|INDEXTOOVERLAYMASK(1));
 		ImageList_ReplaceIcon(g_dat->hTabIconList, pTemp->OnlineIconIndex+1, pTemp->hOnlineTalkIcon);
 
-		pTemp->hOfflineTalkIcon = ImageList_GetIcon(g_dat->hTabIconList, pTemp->OfflineIconIndex, ILD_TRANSPARENT|INDEXTOOVERLAYMASK(overlayIcon));
+		pTemp->hOfflineTalkIcon = ImageList_GetIcon(g_dat->hTabIconList, pTemp->OfflineIconIndex, ILD_TRANSPARENT|INDEXTOOVERLAYMASK(1));
 		ImageList_ReplaceIcon(g_dat->hTabIconList, pTemp->OfflineIconIndex+1, pTemp->hOfflineTalkIcon);
 
 		pLast = pTemp;

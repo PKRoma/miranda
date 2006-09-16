@@ -322,7 +322,7 @@ BOOL DoSoundsFlashPopupTrayStuff(SESSION_INFO * si, GCEVENT * gce, BOOL bHighlig
 	if(!gce || !si ||  gce->bIsMe || si->iType == GCW_SERVER)
 		return FALSE;
 
-	bInactive = si->hWnd == NULL || GetForegroundWindow() != si->hWnd;
+	bInactive = si->hWnd == NULL || GetForegroundWindow() != GetParent(si->hWnd);
 	// bInactive |=  GetActiveWindow() != si->hWnd; // Removed this, because it seemed to be FALSE, even when window was focused, causing incorrect notifications
 
 	iEvent = gce->pDest->iType;
@@ -340,8 +340,8 @@ BOOL DoSoundsFlashPopupTrayStuff(SESSION_INFO * si, GCEVENT * gce, BOOL bHighlig
 			DoTrayIcon(si, gce);
 		if(bInactive || !g_Settings.PopUpInactiveOnly)
 			DoPopup(si, gce);
-		if(g_Settings.TabsEnable && bInactive && g_TabSession.hWnd)
-			SendMessage(g_TabSession.hWnd, GC_SETMESSAGEHIGHLIGHT, 0, (LPARAM) si);
+		if(bInactive && si->hWnd)
+			SendMessage(si->hWnd, GC_SETMESSAGEHIGHLIGHT, 0, 0);
 		return TRUE;
 	}
 
@@ -390,8 +390,8 @@ BOOL DoSoundsFlashPopupTrayStuff(SESSION_INFO * si, GCEVENT * gce, BOOL bHighlig
 				si->wState |= STATE_TALK;
 				DBWriteContactSettingWord(si->hContact, si->pszModule,"ApparentMode",(LPARAM)(WORD) 40071);
 			}
-			if(g_Settings.TabsEnable && bInactive && g_TabSession.hWnd)
-				SendMessage(g_TabSession.hWnd, GC_SETTABHIGHLIGHT, 0, (LPARAM) si);
+			if(bInactive && si->hWnd)
+				SendMessage(si->hWnd, GC_SETTABHIGHLIGHT, 0, 0);
 			break;
 		case GC_EVENT_ACTION:
 			if(bInactive || !g_Settings.SoundsFocus)
