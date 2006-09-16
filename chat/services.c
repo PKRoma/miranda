@@ -252,7 +252,17 @@ int Service_GetInfo(WPARAM wParam,LPARAM lParam)
 }
 
 void LoadModuleIcons(MODULEINFO * mi) {
+	mi->OnlineIconIndex = ImageList_AddIcon(g_dat->hTabIconList, LoadSkinnedProtoIcon(mi->pszModule, ID_STATUS_ONLINE));
+	mi->hOnlineIcon = ImageList_GetIcon(g_dat->hTabIconList, mi->OnlineIconIndex, ILD_TRANSPARENT);
 
+	mi->hOnlineTalkIcon = ImageList_GetIcon(g_dat->hTabIconList, mi->OnlineIconIndex, ILD_TRANSPARENT|INDEXTOOVERLAYMASK(1));
+	ImageList_AddIcon(g_dat->hTabIconList, mi->hOnlineTalkIcon);
+
+	mi->OfflineIconIndex = ImageList_AddIcon(g_dat->hTabIconList, LoadSkinnedProtoIcon(mi->pszModule, ID_STATUS_OFFLINE));
+	mi->hOfflineIcon = ImageList_GetIcon(g_dat->hTabIconList, mi->OfflineIconIndex, ILD_TRANSPARENT);
+
+	mi->hOfflineTalkIcon = ImageList_GetIcon(g_dat->hTabIconList, mi->OfflineIconIndex, ILD_TRANSPARENT|INDEXTOOVERLAYMASK(1));
+	ImageList_AddIcon(g_dat->hTabIconList, mi->hOfflineTalkIcon);
 }
 
 int Service_Register(WPARAM wParam, LPARAM lParam)
@@ -295,18 +305,13 @@ int Service_Register(WPARAM wParam, LPARAM lParam)
 			mi->crColors = malloc(sizeof(COLORREF) * gcr->nColors);
 			memcpy(mi->crColors, gcr->pColors, sizeof(COLORREF) * gcr->nColors);
 		}
-		mi->OnlineIconIndex = ImageList_AddIcon(g_dat->hTabIconList, LoadSkinnedProtoIcon(gcr->pszModule, ID_STATUS_ONLINE));
-		mi->hOnlineIcon = ImageList_GetIcon(g_dat->hTabIconList, mi->OnlineIconIndex, ILD_TRANSPARENT);
 
-		mi->hOnlineTalkIcon = ImageList_GetIcon(g_dat->hTabIconList, mi->OnlineIconIndex, ILD_TRANSPARENT|INDEXTOOVERLAYMASK(overlayIcon));
-		ImageList_AddIcon(g_dat->hTabIconList, mi->hOnlineTalkIcon);
-
-		mi->OfflineIconIndex = ImageList_AddIcon(g_dat->hTabIconList, LoadSkinnedProtoIcon(gcr->pszModule, ID_STATUS_OFFLINE));
-		mi->hOfflineIcon = ImageList_GetIcon(g_dat->hTabIconList, mi->OfflineIconIndex, ILD_TRANSPARENT);
-
-		mi->hOfflineTalkIcon = ImageList_GetIcon(g_dat->hTabIconList, mi->OfflineIconIndex, ILD_TRANSPARENT|INDEXTOOVERLAYMASK(overlayIcon));
-		ImageList_AddIcon(g_dat->hTabIconList, mi->hOfflineTalkIcon);
-
+		mi->OnlineIconIndex = -1;
+		mi->hOnlineIcon = NULL;
+		mi->hOnlineTalkIcon = NULL;
+		mi->OfflineIconIndex = -1;
+		mi->hOfflineIcon = NULL;
+		mi->hOfflineTalkIcon = NULL;
 		mi->pszHeader = Log_CreateRtfHeader(mi);
 
 		CheckColorsInModule((char*)gcr->pszModule);
@@ -330,9 +335,13 @@ int Service_NewChat(WPARAM wParam, LPARAM lParam)
 		return GC_NEWSESSION_WRONGVER;
 
 	EnterCriticalSection(&cs);
+	MODULEINFO * mi = MM_FindModule((char *)gcw->pszModule);
 
-	if(MM_FindModule((char *)gcw->pszModule))
+	if(mi)
 	{
+		if (mi->OnlineIconIndex == -1) {
+			LoadModuleIcons(mi);
+		}
 		// create a new session and set the defaults
 		SESSION_INFO * si = SM_AddSession((char *)gcw->pszID, (char *)gcw->pszModule);
 		if(si)
@@ -509,11 +518,6 @@ static int DoControl(GCEVENT * gce, WPARAM wp)
 			{
 //				g_TabSession.pszName = si->pszName;
 				SendMessage(si->hWnd, DM_UPDATETITLEBAR, 0, 0);
-			}
-			if(g_TabSession.hWnd && g_Settings.TabsEnable)
-			{
-				g_TabSession.pszName = si->pszName;
-				SendMessage(g_TabSession.hWnd, GC_SESSIONNAMECHANGE, 0, (LPARAM)si);
 			}
 
 		}
