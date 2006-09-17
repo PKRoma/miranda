@@ -327,6 +327,7 @@ int Service_Register(WPARAM wParam, LPARAM lParam)
 int Service_NewChat(WPARAM wParam, LPARAM lParam)
 {
 	GCSESSION *gcw =(GCSESSION *)lParam;
+	MODULEINFO *mi;
 
 	if(gcw== NULL)
 		return GC_NEWSESSION_ERROR;
@@ -335,15 +336,17 @@ int Service_NewChat(WPARAM wParam, LPARAM lParam)
 		return GC_NEWSESSION_WRONGVER;
 
 	EnterCriticalSection(&cs);
-	MODULEINFO * mi = MM_FindModule((char *)gcw->pszModule);
+	mi = MM_FindModule((char *)gcw->pszModule);
 
 	if(mi)
 	{
+		SESSION_INFO *si;
+
 		if (mi->OnlineIconIndex == -1) {
 			LoadModuleIcons(mi);
 		}
 		// create a new session and set the defaults
-		SESSION_INFO * si = SM_AddSession((char *)gcw->pszID, (char *)gcw->pszModule);
+		si = SM_AddSession((char *)gcw->pszID, (char *)gcw->pszModule);
 		if(si)
 		{
 			char szTemp[256];
