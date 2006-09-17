@@ -66,7 +66,7 @@ static int skinStatusToJabberStatus[] = {0,1,2,3,4,4,6,7,2,2};
 /////////////////////////////////////////////////////////////////////////////////////////
 // internal functions
 
-static inline qtoupper( BYTE c )
+static inline BYTE qtoupper( BYTE c )
 {
 	return ( c >= 'a' && c <= 'z' ) ? c - 'a' + 'A' : c;
 }
@@ -315,7 +315,7 @@ BOOL JabberDBCheckIsTransportedContact(const TCHAR* jid, HANDLE hContact)
 		return FALSE;
 
 	// strip domain part from jid
-	TCHAR* domain  = _tcschr( jid, '@' );
+	TCHAR* domain  = _tcschr(( TCHAR* )jid, '@' );
 	BOOL   isAgent = (domain == NULL) ? TRUE : FALSE;
 
 	if ( domain!=NULL )
