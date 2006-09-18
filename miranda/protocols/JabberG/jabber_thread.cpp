@@ -160,6 +160,7 @@ static void xmlStreamInitializeNow(struct ThreadData *info){
 		stream.addAttr( "to", info->server ); 
 		stream.addAttr( "xmlns", "jabber:client" );
 		stream.addAttr( "xmlns:stream", "http://etherx.jabber.org/streams" );
+		stream.addAttr( "xml:lang", "en" );
 		if ( !JGetByte( "Disable3920auth", 0 ))
 			stream.addAttr( "version", "1.0" );
 		stream.dirtyHack = true; // this is to keep the node open - do not send </stream:stream>
@@ -1230,13 +1231,10 @@ static void JabberProcessPresence( XmlNode *node, void *userdata )
 	}
 
 	if ( !_tcscmp( type, _T("unavailable"))) {
-		if ( !JabberListExist( LIST_ROSTER, from )) {
-            JabberLog( "SKIP Receive presence offline from " TCHAR_STR_PARAM " ( who is not in my roster )", from );
-            //return;
-		    //JabberLog( "Receive presence offline from " TCHAR_STR_PARAM " ( who is not in my roster )", from );
-			//JabberListAdd( LIST_ROSTER, from );
-		}
-		else JabberListRemoveResource( LIST_ROSTER, from );
+		if ( !JabberListExist( LIST_ROSTER, from ))
+			JabberLog( "SKIP Receive presence offline from " TCHAR_STR_PARAM " ( who is not in my roster )", from );
+		else 
+			JabberListRemoveResource( LIST_ROSTER, from );
 
 		int status = ID_STATUS_OFFLINE;
 		if (( statusNode = JabberXmlGetChild( node, "status" )) != NULL ) {
@@ -1258,7 +1256,6 @@ static void JabberProcessPresence( XmlNode *node, void *userdata )
 			item->status = status;
 		}
 		if (( hContact=JabberHContactFromJID( from )) != NULL ) {
-            
 			if ( _tcschr( from, '@' )!=NULL || JGetByte( "ShowTransport", TRUE )==TRUE )
 				if ( JGetWord( hContact, "Status", ID_STATUS_OFFLINE ) != status )
 					JSetWord( hContact, "Status", ( WORD )status );
