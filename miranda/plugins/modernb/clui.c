@@ -78,6 +78,9 @@ extern BOOL LOCK_IMAGE_UPDATING;
 extern BOOL LOCK_UPDATING;
 #define UM_ALPHASUPPORT WM_USER+100
 
+extern HWND g_hwndEventFrame;
+int EventArea_LoadModule(HWND hCluiWnd);
+
 extern char * gl_ConnectingProto;
 static HMODULE hUserDll;
 static HIMAGELIST himlMirandaIcon;
@@ -2680,7 +2683,8 @@ void cliOnCreateClc(void)
 	CreateServiceFunction(MS_CLUI_SHOWSTATUSMENU,CList_ShowStatusMenu);
 	
 	ReloadCLUIOptions();
-	pcli->hwndStatus=(HWND)CreateModernStatusBar(pcli->hwndContactList);
+    EventArea_LoadModule(pcli->hwndContactList);
+	pcli->hwndStatus=(HWND)CreateModernStatusBar(pcli->hwndContactList);    
 }
 
 int TestCursorOnBorders()

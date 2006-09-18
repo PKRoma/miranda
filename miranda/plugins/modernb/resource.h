@@ -242,6 +242,8 @@
 #define IDC_ONTOP                       1074
 #define IDC_SHOWMAINMENU                1075
 #define IDC_CLIENTDRAG                  1076
+#define IDC_CLIENTDRAG2                 1077
+#define IDC_EVENTAREA                   1077
 #define IDC_EDIT                        1078
 #define IDC_LIST                        1079
 #define IDC_HISTORY                     1080
@@ -838,7 +840,6 @@
 #define IDC_DRAW_SMILEYS_ON_FIRST_LINE2 1828
 #define IDC_APPEND_NICK                 1828
 #define IDC_DRAW_SMILEYS                1829
-#define IDC_APPEND_NICK2                1829
 #define IDC_TRIM_TEXT                   1829
 #define IDC_EMPTY                       1830
 #define IDC_NICKNAME                    1831

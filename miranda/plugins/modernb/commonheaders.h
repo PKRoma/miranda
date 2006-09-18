@@ -136,6 +136,8 @@ typedef  struct _menuProto
   HANDLE hasAdded;
 } MenuProto;
 
+#define CLUI_FRAME_AUTOHIDENOTIFY 512
+
 struct CluiData
 {
 	/************************************ 
@@ -148,6 +150,10 @@ struct CluiData
 	int			iIconNotify;
 	BOOL		bEventAreaEnabled;
 	BOOL		bNotifyActive;
+    DWORD       dwFlags;
+    TCHAR *     szNoEvents;
+    int         hIconNotify;
+    HANDLE      hUpdateContact;
 };
 
 extern struct LIST_INTERFACE li;

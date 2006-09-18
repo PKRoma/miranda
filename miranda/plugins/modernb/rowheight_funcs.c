@@ -68,9 +68,13 @@ int mod_CalcRowHeight(struct ClcData *dat, HWND hwnd, struct ClcContact *contact
   BYTE i=0;
   int res=0;
   int height=0;
+  displayNameCacheEntry * pdnce; 
   BOOL hasAvatar=FALSE;
-  DWORD style=GetWindowLong(hwnd,GWL_STYLE);
-  displayNameCacheEntry * pdnce=(displayNameCacheEntry*)pcli->pfnGetCacheEntry(contact->hContact);
+  DWORD style;
+
+  if (MirandaExiting()) return 0;
+  style=GetWindowLong(hwnd,GWL_STYLE);
+  pdnce=(displayNameCacheEntry*)pcli->pfnGetCacheEntry(contact->hContact);
   if (!RowHeights_Alloc(dat, item + 1))
     return -1;
   if (!pcli->hwndContactTree) return 0;
@@ -522,17 +526,15 @@ void RowHeights_CalcRowHeights(struct ClcData *dat, HWND hwnd)
   int indent, subident, subindex, line_num;
   struct ClcContact *Drawing;
   struct ClcGroup *group;
-
+  
+  if (MirandaExiting()) return;
   lockdat;
- 
   // Draw lines
   group=&dat->list;
   group->scanIndex=0;
   indent=0;
   subindex=-1;
   line_num = -1;
-
-
 
   RowHeights_Clear(dat);
 
@@ -603,7 +605,7 @@ void RowHeights_CalcRowHeights(struct ClcData *dat, HWND hwnd)
 int RowHeights_GetRowHeight(struct ClcData *dat, HWND hwnd, struct ClcContact *contact, int item)
 {
   int height = 0;
-
+  if (MirandaExiting()) return 0;
   if (gl_RowRoot)
     return mod_CalcRowHeight(dat, hwnd, contact, item);
   else

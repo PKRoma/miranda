@@ -50,6 +50,7 @@ void	cliOnCreateClc(void);
 int		cli_AddItemToGroup(struct ClcGroup *group, int iAboveItem);
 int		cli_AddInfoItemToGroup(struct ClcGroup *group,int flags,const TCHAR *pszText);
 int     cliGetGroupContentsCount(struct ClcGroup *group, int visibleOnly);
+struct CListEvent* cliCreateEvent( void );
 
 int cliGetRowsPriorTo(struct ClcGroup *group,struct ClcGroup *subgroup,int contactIndex);
 
@@ -271,7 +272,7 @@ int __declspec(dllexport) CListInitialise(PLUGINLINK * link)
 	pcli->pfnGetRowByIndex		= cliGetRowByIndex;
 	pcli->pfnGetRowsPriorTo		= cliGetRowsPriorTo;
     pcli->pfnGetGroupContentsCount =cliGetGroupContentsCount;
-    
+    pcli->pfnCreateEvent        = cliCreateEvent;
 
 	//partialy overloaded - call default handlers from inside
     saveIconFromStatusMode      = pcli->pfnIconFromStatusMode;

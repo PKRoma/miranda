@@ -14,7 +14,7 @@ extern int BehindEdgeSettings;
 HWND hModernStatusBar=NULL;
 HANDLE hFramehModernStatusBar=NULL;
 
-
+int FindFrameID(HWND FrameHwnd);
 
 #define DBFONTF_BOLD       1
 #define DBFONTF_ITALIC     2
@@ -48,54 +48,6 @@ char * ApendSubSetting(char * buf, int size, char *first, char *second)
   _snprintf(buf,size,"%sFont%s",first,second);
   return buf;
 }
-
-//LOGFONTA LoadLogFontFromDB(char * section, char * id, DWORD * color);
-
-/*HFONT LoadFontFromDB(char * section, char * id, DWORD * color)
-{
-  LOGFONTA logfont=LoadLogFontFromDB(section, id, color);
-  HFONT hfont=NULL;
-  hfont=CreateFontIndirectA(&logfont);
-  return hfont;
-}
-
-LOGFONTA LoadLogFontFromDB(char * section, char * id, DWORD * color)
-{
-  char * facename;
-  char buf[255];
-  LOGFONTA logfont;
-  facename=DBGetStringA(NULL,section,ApendSubSetting(buf,sizeof(buf),id,"Name"));
-  if (!facename) facename=mir_strdup("MS Shell Dlg");
-  {
-
-    BYTE style;
-	BYTE len=min(MyStrLen(facename)+1,sizeof(logfont.lfFaceName));
-    memset(&logfont,0,sizeof(logfont));
-
-    memmove(logfont.lfFaceName,facename,len);
-    style=(BYTE)DBGetContactSettingByte(NULL,section,ApendSubSetting(buf,sizeof(buf),id,"Sty"),0);
-    logfont.lfWeight=style&DBFONTF_BOLD?FW_BOLD:FW_NORMAL;
-    logfont.lfItalic=(style&DBFONTF_ITALIC)!=0;
-    logfont.lfUnderline=(style&DBFONTF_UNDERLINE)!=0;
-    logfont.lfCharSet=DBGetContactSettingByte(NULL,section,ApendSubSetting(buf,sizeof(buf),id,"Set"),DEFAULT_CHARSET);
-    logfont.lfOutPrecision=OUT_DEFAULT_PRECIS;
-    logfont.lfClipPrecision=CLIP_DEFAULT_PRECIS;
-    logfont.lfQuality=DEFAULT_QUALITY;
-    logfont.lfPitchAndFamily=DEFAULT_PITCH|FF_DONTCARE;
-    {
-      HDC hdc=CreateCompatibleDC(NULL);
-      int h=(int)(BYTE)DBGetContactSettingByte(NULL,section,ApendSubSetting(buf,sizeof(buf),id,"Size"),10);
-      logfont.lfHeight=(long)-MulDiv(h, GetDeviceCaps(hdc, LOGPIXELSY), 72);
-      ModernDeleteDC(hdc);
-    }
-    *color=DBGetContactSettingDword(NULL,section,ApendSubSetting(buf,sizeof(buf),id,"Col"),0);
-    mir_free(facename);
-  }
-  return logfont;
-}
-*/
-
-extern int FindFrameID(HWND FrameHwnd);
 
 int LoadStatusBarData()
 {

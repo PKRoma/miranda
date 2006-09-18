@@ -460,7 +460,7 @@ BEGIN
                     BS_AUTOCHECKBOX | WS_TABSTOP,190,176,104,10
 END
 
-IDD_OPT_CLUI_2 DIALOGEX 0, 0, 201, 180
+IDD_OPT_CLUI_2 DIALOGEX 0, 0, 201, 203
 STYLE DS_SETFONT | DS_FIXEDSYS | DS_CENTER | WS_CHILD
 EXSTYLE WS_EX_CONTROLPARENT
 FONT 8, "MS Shell Dlg", 0, 0, 0x1
@@ -521,6 +521,9 @@ BEGIN
     RTEXT           "keep on screen",IDC_STATIC13,39,77,63,8
     CONTROL         "Snap to edges",IDC_SNAPTOEDGES,"Button",BS_AUTOCHECKBOX | 
                     WS_TABSTOP,105,157,74,8
+    GROUPBOX        "Event notify area",IDC_STATIC,5,180,193,22
+    CONTROL         "Auto show/hide event area",IDC_EVENTAREA,"Button",
+                    BS_AUTOCHECKBOX | WS_TABSTOP,13,190,178,8
 END
 
 IDD_OPT_CLC DIALOGEX 0, 0, 303, 221
@@ -830,6 +833,7 @@ BEGIN
         VERTGUIDE, 142
         VERTGUIDE, 164
         TOPMARGIN, 4
+        BOTTOMMARGIN, 180
         HORZGUIDE, 14
         HORZGUIDE, 36
     END
