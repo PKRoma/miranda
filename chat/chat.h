@@ -341,11 +341,8 @@ struct GlobalLogSettings_t {
 	BOOL		PopUpInactiveOnly;
 	BOOL		TrayIconInactiveOnly;
 	BOOL		AddColonToAutoComplete;
-	BOOL		TabsEnable;
-	BOOL		TabCloseOnDblClick;
 	BOOL		TabRestore;
 	BOOL		LogLimitNames;
-	BOOL		TabsAtBottom;
 	BOOL		TimeStampEventColour;
 	DWORD		dwIconFlags;
 	DWORD		dwTrayIconFlags;

@@ -174,7 +174,6 @@ static int RoomWndResize(HWND hwndDlg,LPARAM lParam,UTILRESIZECONTROL *urc)
 	ShowWindow(GetDlgItem(hwndDlg, IDOK), bSend?SW_SHOW:SW_HIDE);
 	ShowWindow(GetDlgItem(hwndDlg, IDC_CHAT_SPLITTERX), bNick?SW_SHOW:SW_HIDE);
 	ShowWindow(GetDlgItem(hwndDlg, IDC_CHAT_CLOSE), SW_HIDE);
-	ShowWindow(GetDlgItem(hwndDlg, IDC_CHAT_TAB), SW_HIDE);
 	if(si->iType != GCW_SERVER)
 		ShowWindow(GetDlgItem(hwndDlg, IDC_CHAT_LIST), si->bNicklistEnabled?SW_SHOW:SW_HIDE);
 	else

@@ -83,9 +83,7 @@ struct branch_t
 };
 static struct branch_t branch0[] = {
 	{_T("Use a tabbed interface"), "Tabs", 0, 1, NULL},
-	{_T("Close tab on doubleclick"), "TabCloseOnDblClick", 0, 0, NULL},
 	{_T("Restore previously open tabs when showing the window"), "TabRestore", 0, 0, NULL},
-	{_T("Show tabs at the bottom"), "TabBottom", 0, 0, NULL},
 
 };
 static struct branch_t branch1[] = {
@@ -684,8 +682,6 @@ static BOOL CALLBACK DlgProcOptions1(HWND hwndDlg,UINT uMsg,WPARAM wParam,LPARAM
 					{
 						int iLen;
 						char * pszText = NULL;
-						BYTE b;
-
 						iLen = GetWindowTextLength(GetDlgItem(hwndDlg, IDC_CHAT_GROUP));
 						if(iLen > 0)
 						{
@@ -703,7 +699,6 @@ static BOOL CALLBACK DlgProcOptions1(HWND hwndDlg,UINT uMsg,WPARAM wParam,LPARAM
 							DBWriteContactSettingByte(NULL, "Chat", "NicklistRowDist", (BYTE)iLen);
 						else
 							DBDeleteContactSetting(NULL, "Chat", "NicklistRowDist");
-						b = DBGetContactSettingByte(NULL, "Chat", "Tabs", 1);
 						SaveBranch(GetDlgItem(hwndDlg, IDC_CHAT_CHECKBOXES), branch0, sizeof(branch0) / sizeof(branch0[0]));
 						SaveBranch(GetDlgItem(hwndDlg, IDC_CHAT_CHECKBOXES), branch1, sizeof(branch1) / sizeof(branch1[0]));
 						SaveBranch(GetDlgItem(hwndDlg, IDC_CHAT_CHECKBOXES), branch2, sizeof(branch2) / sizeof(branch2[0]));
@@ -721,12 +716,7 @@ static BOOL CALLBACK DlgProcOptions1(HWND hwndDlg,UINT uMsg,WPARAM wParam,LPARAM
 
 						g_Settings.LogIndentEnabled = (DBGetContactSettingByte(NULL, "Chat", "LogIndentEnabled", 1) != 0)?TRUE:FALSE;
 						MM_FontsChanged();
-						if(b != DBGetContactSettingByte(NULL, "Chat", "Tabs", 1))
-						{
-							SM_BroadcastMessage(NULL, GC_CLOSEWINDOW, 0, 1, FALSE);
-							g_Settings.TabsEnable = DBGetContactSettingByte(NULL, "Chat", "Tabs", 1);
-						}
-						else SM_BroadcastMessage(NULL, GC_SETWNDPROPS, 0, 0, TRUE);
+						SM_BroadcastMessage(NULL, GC_SETWNDPROPS, 0, 0, TRUE);
 					}
 					return TRUE;
 				}
@@ -1271,9 +1261,6 @@ void LoadGlobalSettings(void)
 
 	g_Settings.LogLimitNames = DBGetContactSettingByte(NULL, "Chat", "LogLimitNames", 1);
 	g_Settings.ShowTime = DBGetContactSettingByte(NULL, "Chat", "ShowTimeStamp", 1);
-	g_Settings.TabsEnable = DBGetContactSettingByte(NULL, "Chat", "Tabs", 1);
-	g_Settings.TabsAtBottom = DBGetContactSettingByte(NULL, "Chat", "TabBottom", 0);
-	g_Settings.TabCloseOnDblClick = DBGetContactSettingByte(NULL, "Chat", "TabCloseOnDblClick", 0);
 	g_Settings.TabRestore = DBGetContactSettingByte(NULL, "Chat", "TabRestore", 0);
 	g_Settings.SoundsFocus = DBGetContactSettingByte(NULL, "Chat", "SoundsFocus", 0);
 	g_Settings.ShowTimeIfChanged = (BOOL)DBGetContactSettingByte(NULL, "Chat", "ShowTimeStampIfChanged", 0);
