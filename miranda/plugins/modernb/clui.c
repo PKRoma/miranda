@@ -33,6 +33,8 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include "skinengine.h"
 #include "modern_statusbar.h"
 
+struct CluiData g_CluiData={0};
+
 HANDLE gl_event_hSkinLoaded;
 BOOL ON_SIZING_CYCLE=0;
 extern StatusBarData sbdat;
@@ -48,10 +50,12 @@ extern void (*saveLoadCluiGlobalOpts)(void);
 #define TM_STATUSBARUPDATE  200
 #define MENU_MIRANDAMENU         0xFFFF1234
 #define MENU_STATUSMENU         0xFFFF1235
-extern int CLUIFramesGetTotalHeight();
-extern BOOL TransparentFlag;
-extern int UnhookAll();
-extern void Docking_GetMonitorRectFromWindow(HWND hWnd,RECT *rc);
+
+int CLUIFramesGetTotalHeight();
+BOOL TransparentFlag;
+int UnhookAll();
+void Docking_GetMonitorRectFromWindow(HWND hWnd,RECT *rc);
+
 extern sCurrentWindowImageData * cachedWindow;
 int ContactListShutdownProc(WPARAM wParam,LPARAM lParam);
 
@@ -63,7 +67,7 @@ WORD BehindEdgeHideDelay;
 WORD BehindEdgeBorderSize;
 
 
-HANDLE hAskStatusMessageThread=NULL;
+HANDLE hAskAwayMsgThread=NULL;
 HANDLE hGetTextThread=NULL;
 HANDLE hSmoothAnimationThread=NULL;
 HANDLE hFillFontListThread=NULL;
@@ -262,14 +266,14 @@ extern int dock_prevent_moving;
 int show_event_started=0;
 extern int JustUpdateWindowImage();
 BOOL TransparentFlag=FALSE;// TransparentFlag
-
+extern int g_PaintLock;
 void DestroyThreads()
 {
-    while (hAskStatusMessageThread || hGetTextThread || hSmoothAnimationThread || hFillFontListThread ||Miranda_Terminated())
+    while (g_PaintLock || hAskAwayMsgThread || hGetTextThread || hSmoothAnimationThread || hFillFontListThread ||Miranda_Terminated())
     {
         SleepEx(0,TRUE);
     }
- //   TerminateThread(hAskStatusMessageThread,0);
+ //   TerminateThread(hAskAwayMsgThread,0);
  //   TerminateThread(hGetTextThread,0);
  //   TerminateThread(hSmoothAnimationThread,0);
  //   TerminateThread(hFillFontListThread,0);

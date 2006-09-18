@@ -1,3 +1,5 @@
+/* CODE STYLE */
+
 /*
 
 Miranda IM: the free IM client for Microsoft* Windows*
@@ -33,78 +35,84 @@ Modified by FYR
 #include "cache_funcs.h"
 #include "newpluginapi.h"
 
-
-/*
- *	Module Prototypes
- */
-int CopySkipUnPrintableChars(TCHAR *to, TCHAR * buf, DWORD size);
-SortedList *CopySmileyString(SortedList *plInput);
 typedef BOOL (* ExecuteOnAllContactsFuncPtr) (struct ClcContact *contact, BOOL subcontact, void *param);
-BOOL ExecuteOnAllContacts(struct ClcData *dat, ExecuteOnAllContactsFuncPtr func, void *param);
-BOOL ExecuteOnAllContactsOfGroup(struct ClcGroup *group, ExecuteOnAllContactsFuncPtr func, void *param);
 
+/***********************************/
+/**   Module static declarations  **/
+/***********************************/
+
+/* 	   Module Static Prototypes    */
+
+static int CopySkipUnprintableChars(TCHAR *to, TCHAR * buf, DWORD size);
+static SortedList *CopySmileyString(SortedList *plInput);
+static BOOL ExecuteOnAllContacts(struct ClcData *dat, ExecuteOnAllContactsFuncPtr func, void *param);
+static BOOL ExecuteOnAllContactsOfGroup(struct ClcGroup *group, ExecuteOnAllContactsFuncPtr func, void *param);
+
+static int		cache_AskAwayMsg_AddHandleToChain(HANDLE hContact);
+static HANDLE	cache_AskAwayMsg_GetCurrentChain();
+static int cache_AskAwayMsgThread(HWND hwnd);
 /*
  *	Module global variables to implement away messages requests queue
  *  need to avoid disconnection from server (ICQ)
  */
-
-#define ASKPERIOD 3000
-
-typedef struct _AskChain {
+typedef struct _ASK_AWAYMSG_CHAIN {
 	HANDLE ContactRequest;
-	struct AskChain *Next;
-}AskChain;
+	struct ASK_AWAYMSG_CHAIN *Next;
+} ASK_AWAYMSG_CHAIN;
 
-AskChain * FirstChain=NULL;
-AskChain * LastChain=NULL;
-BOOL LockChainAddition=0;
-BOOL LockChainDeletion=0;
-DWORD RequestTick=0;
-BOOL ISTREADSTARTED=0;
+ASK_AWAYMSG_CHAIN * pAskAwayMsgFirstChain = NULL;
+ASK_AWAYMSG_CHAIN * pAskAwayMsgLastChain  = NULL;
 
+BOOL b_aam_LockChainAdd		= FALSE;
+BOOL b_aam_LockChainDel	    = FALSE;
+BOOL b_AskAwayMsgThreadStarted	= FALSE;
+
+DWORD dwRequestTick		= 0;
+
+const DWORD const_AskPeriod = 3000;
 
 /*
  *  Add contact handle to requests queue
  */
-int AddHandleToChain(HANDLE hContact)
+static int cache_AskAwayMsg_AddHandleToChain(HANDLE hContact)
 {
-  AskChain * workChain;
-  while (LockChainAddition) 
+	ASK_AWAYMSG_CHAIN * workChain;
+	while (b_aam_LockChainAdd) 
   {
     SleepEx(0,TRUE);
     if (MirandaExiting()) return 0;
   }
-  LockChainDeletion=1;
+	b_aam_LockChainDel=1;
   {
     //check that handle is present
-     AskChain * wChain;
-     wChain=FirstChain;
+		ASK_AWAYMSG_CHAIN * wChain;
+		wChain=pAskAwayMsgFirstChain;
      if (wChain)
      {
        do {
          if (wChain->ContactRequest==hContact)
          {
-           LockChainDeletion=0;
+					b_aam_LockChainDel=0;
            return 0;
          }
-       } while(wChain=(AskChain *)wChain->Next);
+			} while(wChain=(ASK_AWAYMSG_CHAIN *)wChain->Next);
      }
   }
-  if (!FirstChain)  
+	if (!pAskAwayMsgFirstChain)  
   {
-    FirstChain=mir_alloc(sizeof(AskChain));
-    workChain=FirstChain;
+		pAskAwayMsgFirstChain=mir_alloc(sizeof(ASK_AWAYMSG_CHAIN));
+		workChain=pAskAwayMsgFirstChain;
 
   }
   else 
   {
-    LastChain->Next=mir_alloc(sizeof(AskChain));
-    workChain=(AskChain *)LastChain->Next;
+		pAskAwayMsgLastChain->Next=mir_alloc(sizeof(ASK_AWAYMSG_CHAIN));
+		workChain=(ASK_AWAYMSG_CHAIN *)pAskAwayMsgLastChain->Next;
   }
-  LastChain=workChain;
+	pAskAwayMsgLastChain=workChain;
   workChain->Next=NULL;
   workChain->ContactRequest=hContact;
-  LockChainDeletion=0;
+	b_aam_LockChainDel=0;
   return 1;
 }
 
@@ -112,24 +120,24 @@ int AddHandleToChain(HANDLE hContact)
 /*
  *	Gets handle from queue for request
  */
-HANDLE GetCurrChain()
+static HANDLE cache_AskAwayMsg_GetCurrentChain()
 {
-  struct AskChain * workChain;
+	struct ASK_AWAYMSG_CHAIN * workChain;
   HANDLE res=NULL;
-  while (LockChainDeletion)   
+	while (b_aam_LockChainDel)   
   {
     SleepEx(0,TRUE);
     if (MirandaExiting()) return 0;
   }
-  LockChainAddition=1;
-  if (FirstChain)
+	b_aam_LockChainAdd=TRUE;
+	if (pAskAwayMsgFirstChain)
   {
-    res=FirstChain->ContactRequest;
-    workChain=FirstChain->Next;
-    mir_free(FirstChain);
-    FirstChain=(AskChain *)workChain;
+		res=pAskAwayMsgFirstChain->ContactRequest;
+		workChain=pAskAwayMsgFirstChain->Next;
+		mir_free(pAskAwayMsgFirstChain);
+		pAskAwayMsgFirstChain=(ASK_AWAYMSG_CHAIN *)workChain;
   }
-  LockChainAddition=0;
+	b_aam_LockChainAdd=FALSE;
   return res;
 }
 
@@ -137,30 +145,30 @@ HANDLE GetCurrChain()
 /*
  *	Tread sub to ask protocol to retrieve away message
  */
-int AskStatusMessageThread(HWND hwnd)
+static int cache_AskAwayMsgThread(HWND hwnd)
 {
   DWORD time;
   HANDLE h;
   HANDLE ACK=0;
   pdisplayNameCacheEntry pdnce=NULL;
-  h=GetCurrChain(); 
+	h=cache_AskAwayMsg_GetCurrentChain(); 
   if (!h) 
   {
-      hAskStatusMessageThread=NULL;
+		hAskAwayMsgThread=NULL;
       return 0;
   }
 
-  ISTREADSTARTED=1;
+	b_AskAwayMsgThreadStarted = TRUE;
   while (h)
   { 
     time=GetTickCount();
-    if ((time-RequestTick)<ASKPERIOD)
+		if ((time-dwRequestTick)<const_AskPeriod)
     {
-            SleepEx(ASKPERIOD-(time-RequestTick)+10,TRUE);
+			SleepEx(const_AskPeriod-(time-dwRequestTick)+10,TRUE);
             if (MirandaExiting()) 
             {
-              ISTREADSTARTED=0;
-              hAskStatusMessageThread=NULL;
+				b_AskAwayMsgThreadStarted = FALSE;
+				hAskAwayMsgThread=NULL;
               return 0; 
             }
     }
@@ -182,19 +190,19 @@ int AskStatusMessageThread(HWND hwnd)
         ack.szModule=NULL;
       ClcProtoAck((WPARAM)h,(LPARAM) &ack);
     }
-    RequestTick=time;
-    h=GetCurrChain();
-    if (h) SleepEx(ASKPERIOD,TRUE); else break;
+		dwRequestTick=time;
+		h=cache_AskAwayMsg_GetCurrentChain();
+		if (h) SleepEx(const_AskPeriod,TRUE); else break;
     if (MirandaExiting()) 
     {
-      hAskStatusMessageThread=NULL;
-      ISTREADSTARTED=0;
+			hAskAwayMsgThread = NULL;
+			b_AskAwayMsgThreadStarted = FALSE;
       return 0; 
     }
 
   }
-  ISTREADSTARTED=0;
-  hAskStatusMessageThread=NULL;
+	b_AskAwayMsgThreadStarted = 0;
+	hAskAwayMsgThread=NULL;
   return 1;
 }
 
@@ -203,7 +211,7 @@ int AskStatusMessageThread(HWND hwnd)
 /*
  *	Sub to be called outside on status changing to retrieve away message
  */
-void ReAskStatusMessage(HANDLE wParam)
+void Cache_ReAskAwayMsg(HANDLE wParam)
 {
   int res;
   if (!DBGetContactSettingByte(NULL,"ModernData","InternalAwayMsgDiscovery",0)) return;
@@ -215,10 +223,10 @@ void ReAskStatusMessage(HANDLE wParam)
 	}
 	else return;
   }
-  res=AddHandleToChain(wParam); 
-  if (!ISTREADSTARTED && res) 
+	res=cache_AskAwayMsg_AddHandleToChain(wParam); 
+	if (!b_AskAwayMsgThreadStarted && res) 
   {
-    hAskStatusMessageThread=(HANDLE)forkthread(AskStatusMessageThread,0,0);
+		hAskAwayMsgThread=(HANDLE)forkthread(cache_AskAwayMsgThread,0,0);
   }
   return;
 }
@@ -388,7 +396,6 @@ void Cache_GetText(struct ClcData *dat, struct ClcContact *contact, BOOL forceRe
 {
 	Cache_GetFirstLineText(dat, contact);
 	if (!dat->force_in_dialog)// && !dat->isStarting)
-		if (1)
 		{
 			PDNCE pdnce=(PDNCE)pcli->pfnGetCacheEntry(contact->hContact);
 			if (  (dat->second_line_show&&(forceRenew||pdnce->szSecondLineText==NULL))
@@ -397,16 +404,6 @@ void Cache_GetText(struct ClcData *dat, struct ClcContact *contact, BOOL forceRe
 				AddToCacheChain(dat,contact, contact->hContact);
 			}
 		}
-		/*
-		else 
-			if (1)
-				AddToCacheChain(dat,contact, contact->hContact);
-			else
-			{
-				Cache_GetSecondLineText(dat, contact);
-				Cache_GetThirdLineText(dat, contact);
-			}
-		*/
 }
 
 /*
@@ -660,7 +657,7 @@ int GetStatusName(TCHAR *text, int text_size, PDNCE pdnce, BOOL xstatus_has_prio
 		if (!DBGetContactSettingTString(pdnce->hContact, pdnce->szProto, "XStatusName", &dbv)) 
 		{
 			//lstrcpyn(text, dbv.pszVal, text_size);
-			CopySkipUnPrintableChars(text, dbv.ptszVal, text_size-1);
+			CopySkipUnprintableChars(text, dbv.ptszVal, text_size-1);
 			DBFreeVariant(&dbv);
 
 			if (text[0] != '\0')
@@ -672,7 +669,7 @@ int GetStatusName(TCHAR *text, int text_size, PDNCE pdnce, BOOL xstatus_has_prio
 	{
 		TCHAR *tmp = (TCHAR *)CallService(MS_CLIST_GETSTATUSMODEDESCRIPTION, (WPARAM)pdnce->status, GCMDF_TCHAR_MY);
 		lstrcpyn(text, tmp, text_size);
-		//CopySkipUnPrintableChars(text, dbv.pszVal, text_size-1);
+		//CopySkipUnprintableChars(text, dbv.pszVal, text_size-1);
 		if (text[0] != '\0')
 			return 1;
 	}
@@ -684,7 +681,7 @@ int GetStatusName(TCHAR *text, int text_size, PDNCE pdnce, BOOL xstatus_has_prio
 		if (!DBGetContactSettingTString(pdnce->hContact, pdnce->szProto, "XStatusName", &dbv)) 
 		{
 			//lstrcpyn(text, dbv.pszVal, text_size);
-			CopySkipUnPrintableChars(text, dbv.ptszVal, text_size-1);
+			CopySkipUnprintableChars(text, dbv.ptszVal, text_size-1);
 			DBFreeVariant(&dbv);
 
 			if (text[0] != '\0')
@@ -708,7 +705,7 @@ void GetListeningTo(TCHAR *text, int text_size,  PDNCE pdnce)
 
 	if (!DBGetContactSettingTString(pdnce->hContact, pdnce->szProto, "ListeningTo", &dbv)) 
 	{
-		CopySkipUnPrintableChars(text, dbv.ptszVal, text_size-1);
+		CopySkipUnprintableChars(text, dbv.ptszVal, text_size-1);
 		DBFreeVariant(&dbv);
 	}
 }
@@ -731,7 +728,7 @@ int GetStatusMessage(TCHAR *text, int text_size,  PDNCE pdnce, BOOL xstatus_has_
 		if (!DBGetContactSettingTString(pdnce->hContact, pdnce->szProto, "XStatusMsg", &dbv)) 
 		{
 			//lstrcpyn(text, dbv.pszVal, text_size);
-			CopySkipUnPrintableChars(text, dbv.ptszVal, text_size-1);
+			CopySkipUnprintableChars(text, dbv.ptszVal, text_size-1);
 			DBFreeVariant(&dbv);
 
 			if (text[0] != '\0')
@@ -745,7 +742,7 @@ int GetStatusMessage(TCHAR *text, int text_size,  PDNCE pdnce, BOOL xstatus_has_
 		if (!DBGetContactSettingTString(pdnce->hContact, "CList", "StatusMsg", &dbv)) 
 		{
 			//lstrcpyn(text, dbv.pszVal, text_size);
-			CopySkipUnPrintableChars(text, dbv.ptszVal, text_size-1);
+			CopySkipUnprintableChars(text, dbv.ptszVal, text_size-1);
 			DBFreeVariant(&dbv);
 
 			if (text[0] != '\0')
@@ -760,7 +757,7 @@ int GetStatusMessage(TCHAR *text, int text_size,  PDNCE pdnce, BOOL xstatus_has_
 		if (!DBGetContactSettingTString(pdnce->hContact, pdnce->szProto, "XStatusMsg", &dbv)) 
 		{
 			//lstrcpyn(text, dbv.pszVal, text_size);
-			CopySkipUnPrintableChars(text, dbv.ptszVal, text_size-1);
+			CopySkipUnprintableChars(text, dbv.ptszVal, text_size-1);
 			DBFreeVariant(&dbv);
 
 			if (text[0] != '\0')
@@ -1025,7 +1022,7 @@ void RemoveTag(TCHAR *to, TCHAR *tag)
 *	Copy string with removing Escape chars from text
 *   And BBcodes
 */
-int CopySkipUnPrintableChars(TCHAR *to, TCHAR * buf, DWORD size)
+static int CopySkipUnprintableChars(TCHAR *to, TCHAR * buf, DWORD size)
 {
 	DWORD i;
 	BOOL keep=0;
@@ -1087,7 +1084,7 @@ typedef struct _CONTACTDATASTORED
 CONTACTDATASTORED * StoredContactsList=NULL;
 static int ContactsStoredCount=0;
 
-SortedList *CopySmileyString(SortedList *plInput)
+static SortedList *CopySmileyString(SortedList *plInput)
 {
 	SortedList * plText;
 	int i;
@@ -1200,7 +1197,7 @@ int RestoreAllContactData(struct ClcData *dat)
 
 // If ExecuteOnAllContactsFuncPtr returns FALSE, stop loop
 // Return TRUE if finished, FALSE if was stoped
-BOOL ExecuteOnAllContacts(struct ClcData *dat, ExecuteOnAllContactsFuncPtr func, void *param)
+static BOOL ExecuteOnAllContacts(struct ClcData *dat, ExecuteOnAllContactsFuncPtr func, void *param)
 {
 	BOOL res;
 	lockdat;
@@ -1209,7 +1206,7 @@ BOOL ExecuteOnAllContacts(struct ClcData *dat, ExecuteOnAllContactsFuncPtr func,
 	return res;
 }
 
-BOOL ExecuteOnAllContactsOfGroup(struct ClcGroup *group, ExecuteOnAllContactsFuncPtr func, void *param)
+static BOOL ExecuteOnAllContactsOfGroup(struct ClcGroup *group, ExecuteOnAllContactsFuncPtr func, void *param)
 {
 	int scanIndex, i;
 	if (group)
@@ -1396,15 +1393,4 @@ void Cache_GetAvatar(struct ClcData *dat, struct ClcContact *contact)
 		}
 	}
 }
-
-
-
-
-
-
-
-
-
-
-
 

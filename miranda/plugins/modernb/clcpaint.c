@@ -3158,7 +3158,7 @@ void InternalPaintClc(HWND hwnd,struct ClcData *dat,HDC hdc,RECT *rcPaint)
 
 }
 
-
+int g_PaintLock=0;
 void cliPaintClc(HWND hwnd,struct ClcData *dat,HDC hdc,RECT *rcPaint)
 {
 
@@ -3167,5 +3167,8 @@ void cliPaintClc(HWND hwnd,struct ClcData *dat,HDC hdc,RECT *rcPaint)
     SED.PaintClc(hwnd,dat,hdc,rcPaint,pcli->hClcProtoCount,clcProto,himlCListClc);
     return;
   }
+  if (MirandaExiting()) return;
+  g_PaintLock++;
   InternalPaintClc(hwnd,dat,hdc,rcPaint);
+  g_PaintLock--;
 }

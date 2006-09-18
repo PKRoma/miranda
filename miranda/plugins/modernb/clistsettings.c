@@ -488,8 +488,6 @@ int ContactAdded(WPARAM wParam,LPARAM lParam)
 	return 0;
 }
 
-extern void ReAskStatusMessage(HANDLE wParam);
-
 int ContactSettingChanged(WPARAM wParam,LPARAM lParam)
 {
 	DBCONTACTWRITESETTING *cws = (DBCONTACTWRITESETTING*)lParam;
@@ -532,7 +530,7 @@ int ContactSettingChanged(WPARAM wParam,LPARAM lParam)
 					if ((DBGetContactSettingWord(NULL,"CList","SecondLineType",0)==TEXT_STATUS_MESSAGE||DBGetContactSettingWord(NULL,"CList","ThirdLineType",0)==TEXT_STATUS_MESSAGE) &&pdnce->hContact && pdnce->szProto)
 					{
 						//	if (pdnce->status!=ID_STATUS_OFFLINE)  
-						ReAskStatusMessage((HANDLE)wParam);  
+						Cache_ReAskAwayMsg((HANDLE)wParam);  
 					}
 					DBFreeVariant(&dbv);
 					return 0;
@@ -552,7 +550,7 @@ int ContactSettingChanged(WPARAM wParam,LPARAM lParam)
 					if ((DBGetContactSettingWord(NULL,"CList","SecondLineType",0)==TEXT_STATUS_MESSAGE||DBGetContactSettingWord(NULL,"CList","ThirdLineType",0)==TEXT_STATUS_MESSAGE) &&pdnce->hContact && pdnce->szProto)
 					{
 						//	if (pdnce->status!=ID_STATUS_OFFLINE)  
-						ReAskStatusMessage((HANDLE)wParam);  
+						Cache_ReAskAwayMsg((HANDLE)wParam);  
 					}
 					pcli->pfnClcBroadcast( INTM_STATUSCHANGED,wParam,0);
 					cli_ChangeContactIcon((HANDLE)wParam, ExtIconFromStatusMode((HANDLE)wParam,cws->szModule, cws->value.wVal), 0); //by FYR

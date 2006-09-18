@@ -136,6 +136,20 @@ typedef  struct _menuProto
   HANDLE hasAdded;
 } MenuProto;
 
+struct CluiData
+{
+	/************************************ 
+	 **         Global variables       **
+	 ************************************/
+
+	/*         NotifyArea menu          */
+	HANDLE		hMenuNotify;             
+	WORD		wNextMenuID;	
+	int			iIconNotify;
+	BOOL		bEventAreaEnabled;
+	BOOL		bNotifyActive;
+};
+
 extern struct LIST_INTERFACE li;
 extern struct MM_INTERFACE memoryManagerInterface;
 
@@ -278,7 +292,7 @@ extern BOOL (WINAPI *pfEnableThemeDialogTexture)(HANDLE, DWORD);
 #define TreeView_GetItemA(hwnd, pitem) \
 	(BOOL)SendMessageA((hwnd), TVM_GETITEMA, 0, (LPARAM)(TV_ITEM *)(pitem))
 
-extern HANDLE hAskStatusMessageThread;
+extern HANDLE hAskAwayMsgThread;
 extern HANDLE hGetTextThread;
 extern HANDLE hSmoothAnimationThread;
 extern HANDLE hFillFontListThread;
@@ -288,3 +302,7 @@ extern HANDLE hFillFontListThread;
 extern BYTE g_STATE;
 #define MirandaExiting() ((g_STATE==STATE_EXITING) || Miranda_Terminated())
 extern BYTE gl_TrimText;
+
+extern struct CluiData g_CluiData;
+
+

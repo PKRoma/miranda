@@ -405,6 +405,9 @@
 				</FileConfiguration>
 			</File>
 			<File
+				RelativePath=".\clistevents.c">
+			</File>
+			<File
 				RelativePath=".\clistmenus.c">
 				<FileConfiguration
 					Name="Release|Win32">

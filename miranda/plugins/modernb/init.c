@@ -74,6 +74,11 @@ int  (*saveAddInfoItemToGroup)(struct ClcGroup *group,int flags,const TCHAR *psz
 int  (*saveIconFromStatusMode)(const char *szProto,int nStatus, HANDLE hContact);
 int  cli_IconFromStatusMode(const char *szProto,int nStatus, HANDLE hContact);
 
+struct CListEvent* cli_AddEvent(CLISTEVENT *cle);
+struct CListEvent* (*saveAddEvent) (CLISTEVENT *cle);
+
+int (* saveRemoveEvent) (HANDLE hContact, HANDLE hDbEvent);
+int cli_RemoveEvent(HANDLE hContact, HANDLE hDbEvent);
 
 LRESULT (CALLBACK *saveContactListControlWndProc )( HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam );
 LRESULT CALLBACK cli_ContactListControlWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam);
@@ -319,6 +324,12 @@ int __declspec(dllexport) CListInitialise(PLUGINLINK * link)
 
 	saveProcessExternalMessages			= pcli->pfnProcessExternalMessages; 
 	pcli->pfnProcessExternalMessages	= cli_ProcessExternalMessages;	
+
+	saveAddEvent			= pcli->pfnAddEvent;
+	pcli->pfnAddEvent		= cli_AddEvent;
+
+	saveRemoveEvent			= pcli->pfnRemoveEvent; 
+	pcli->pfnRemoveEvent	= cli_RemoveEvent;
 
 	memset(&SED,0,sizeof(SED));
 	CreateServiceFunction(CLUI_SetDrawerService,SetDrawer);
