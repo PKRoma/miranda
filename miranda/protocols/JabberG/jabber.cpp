@@ -75,7 +75,6 @@ char*  streamId = NULL;
 DWORD  jabberLocalIP;
 UINT   jabberCodePage;
 JABBER_MODEMSGS modeMsgs;
-//char* jabberModeMsg;
 CRITICAL_SECTION modeMsgMutex;
 char* jabberVcardPhotoFileName = NULL;
 char* jabberVcardPhotoType = NULL;
@@ -288,7 +287,6 @@ extern "C" int __declspec( dllexport ) Load( PLUGINLINK *link )
 	}
 
 	memset(( char* )&modeMsgs, 0, sizeof( JABBER_MODEMSGS ));
-	//jabberModeMsg = NULL;
 	jabberCodePage = JGetWord( NULL, "CodePage", CP_ACP );
 
 	InitializeCriticalSection( &mutex );
