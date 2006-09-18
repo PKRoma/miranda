@@ -145,6 +145,8 @@ int NetlibSelectEx(WPARAM wParam,LPARAM lParam);
 BOOL NetlibUPnPAddPortMapping(WORD intport, char *proto, 
 							  WORD *extport, DWORD *extip, BOOL search);
 void NetlibUPnPDeletePortMapping(WORD extport, char* proto);
+void NetlibUPnPInit(void);
+void NetlibUPnPDestroy(void);
 
 static __inline int NLSend(struct NetlibConnection *nlc,const char *buf,int len,int flags) {
 	NETLIBBUFFER nlb={(char*)buf,len,flags};

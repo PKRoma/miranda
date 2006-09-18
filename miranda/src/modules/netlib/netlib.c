@@ -448,6 +448,7 @@ static int NetlibShutdown(WPARAM wParam,LPARAM lParam)
 {
 	int i;
 	
+	NetlibUPnPDestroy();
 	NetlibLogShutdown();
 	for(i=netlibUserCount;i>0;i--)
 		NetlibCloseHandle((WPARAM)netlibUser[i-1],0);
@@ -499,5 +500,7 @@ int LoadNetlibModule(void)
 	CreateServiceFunction(MS_NETLIB_CREATEPACKETRECVER,NetlibPacketRecverCreate);
 	CreateServiceFunction(MS_NETLIB_GETMOREPACKETS,NetlibPacketRecverGetMore);
 	CreateServiceFunction(MS_NETLIB_SETPOLLINGTIMEOUT,NetlibHttpSetPollingTimeout);	
+
+	NetlibUPnPInit();
 	return 0;
 }
