@@ -2649,10 +2649,10 @@ BOOL DrawTextEffect(BYTE* destPt,BYTE* maskPt, DWORD width, DWORD height, MODERN
 					
 					absVal=absVal*a1/255;				
 
-					destline[0]=((destline[0]*(128-absVal))+absVal*b1)/128;
-					destline[1]=((destline[1]*(128-absVal))+absVal*g1)/128;
-					destline[2]=((destline[2]*(128-absVal))+absVal*r1)/128;
-					destline[3]=((destline[3]*(128-absVal))+(a1*absVal))/128;				
+					destline[0]=((destline[0]*(128-absVal))+absVal*b1)>>7;
+					destline[1]=((destline[1]*(128-absVal))+absVal*g1)>>7;
+					destline[2]=((destline[2]*(128-absVal))+absVal*r1)>>7;
+					destline[3]+=((255-destline[3])*(a1*absVal))/32640;				
 				}
 				bufline++;
 				destline+=4;

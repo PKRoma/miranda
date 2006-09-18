@@ -53,6 +53,8 @@
  ;StatusBar 
   $$StatusBar=sGlyph,Fragment,back%.tga,83,48,3,18,StretchBoth,1,2,1,1,250
 
+ ;StatusBar
+  $$EventArea=sGlyph,Fragment,back%.tga,83,48,3,18,StretchBoth,1,2,1,1,250
 
   ;Objects for buttons
 
@@ -128,6 +130,10 @@
 
 ;StatusBar
   @130=s$$StatusBar:Main,ID=StatusBar
+
+;EventArea
+  @135=s$$EventArea:Main,ID=EventArea
+
 
 ;Buttons
 
