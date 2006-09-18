@@ -406,11 +406,8 @@ int Service_NewChat(WPARAM wParam, LPARAM lParam)
 				si2->iStatusCount = 0;
 				si2->nUsersInNicklist = 0;
 
-				if(!g_Settings.TabsEnable)
-				{
-					if(si2->hWnd )
-						RedrawWindow(GetDlgItem(si2->hWnd, IDC_CHAT_LIST), NULL, NULL, RDW_INVALIDATE);
-				}
+				if(si2->hWnd )
+					RedrawWindow(GetDlgItem(si2->hWnd, IDC_CHAT_LIST), NULL, NULL, RDW_INVALIDATE);
 
 			}
 //			SendMessage(hwnd, GC_NICKLISTREINIT, 0, 0);
