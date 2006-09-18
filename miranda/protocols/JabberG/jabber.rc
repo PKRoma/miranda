@@ -52,58 +52,58 @@ END
 // Dialog
 //
 
-IDD_OPT_JABBER DIALOGEX 0, 0, 304, 227
+IDD_OPT_JABBER DIALOGEX 0, 0, 304, 226
 STYLE DS_SETFONT | DS_FIXEDSYS | WS_CHILD
 EXSTYLE WS_EX_CONTROLPARENT
 FONT 8, "MS Shell Dlg", 0, 0, 0x1
 BEGIN
-    GROUPBOX        "Jabber",IDC_SIMPLE,8,4,290,115
-    LTEXT           "Username:",IDC_STATIC,19,21,45,8
-    EDITTEXT        IDC_EDIT_USERNAME,70,19,86,12,ES_AUTOHSCROLL
-    LTEXT           "Password:",IDC_STATIC,19,35,45,8
-    EDITTEXT        IDC_EDIT_PASSWORD,70,33,86,12,ES_PASSWORD | 
+    GROUPBOX        "Jabber",IDC_SIMPLE,4,0,298,116
+    LTEXT           "Username:",IDC_STATIC,15,16,45,8
+    EDITTEXT        IDC_EDIT_USERNAME,66,14,86,12,ES_AUTOHSCROLL
+    LTEXT           "Password:",IDC_STATIC,15,30,45,8
+    EDITTEXT        IDC_EDIT_PASSWORD,66,28,86,12,ES_PASSWORD | 
                     ES_AUTOHSCROLL
-    LTEXT           "Resource:",IDC_RESOURCE_T,19,49,45,8
-    EDITTEXT        IDC_EDIT_RESOURCE,70,47,86,12,ES_AUTOHSCROLL
-    LTEXT           "Priority:",IDC_PRIORITY_LABEL,165,49,31,8
-    EDITTEXT        IDC_PRIORITY,199,47,42,12,ES_AUTOHSCROLL | ES_NUMBER
+    LTEXT           "Resource:",IDC_RESOURCE_T,15,44,45,8
+    EDITTEXT        IDC_EDIT_RESOURCE,66,42,86,12,ES_AUTOHSCROLL
+    LTEXT           "Priority:",IDC_PRIORITY_LABEL,161,44,31,8
+    EDITTEXT        IDC_PRIORITY,195,42,42,12,ES_AUTOHSCROLL | ES_NUMBER
     CONTROL         "Spin1",IDC_PRIORITY_SPIN,"msctls_updown32",
                     UDS_SETBUDDYINT | UDS_ALIGNRIGHT | UDS_AUTOBUDDY | 
-                    UDS_NOTHOUSANDS,231,47,11,12
+                    UDS_NOTHOUSANDS,236,42,11,12
     CONTROL         "Save password",IDC_SAVEPASSWORD,"Button",
-                    BS_AUTOCHECKBOX | WS_TABSTOP,70,61,172,10
-    LTEXT           "Login server:",IDC_STATIC,19,75,45,8
-    EDITTEXT        IDC_EDIT_LOGIN_SERVER,70,73,86,12,ES_AUTOHSCROLL
-    LTEXT           "Port:",IDC_STATIC,19,89,45,8
-    EDITTEXT        IDC_PORT,70,87,26,12,ES_AUTOHSCROLL | ES_NUMBER
+                    BS_AUTOCHECKBOX | WS_TABSTOP,66,56,172,10
+    LTEXT           "Login server:",IDC_STATIC,15,70,45,8
+    EDITTEXT        IDC_EDIT_LOGIN_SERVER,66,68,86,12,ES_AUTOHSCROLL
+    LTEXT           "Port:",IDC_STATIC,15,84,45,8
+    EDITTEXT        IDC_PORT,66,82,26,12,ES_AUTOHSCROLL | ES_NUMBER
     CONTROL         "Use SSL",IDC_USE_SSL,"Button",BS_AUTOCHECKBOX | 
-                    WS_TABSTOP,104,88,82,10
+                    WS_TABSTOP,100,83,82,10
     CONTROL         "Use TLS",IDC_USE_TLS,"Button",BS_AUTOCHECKBOX | 
-                    WS_TABSTOP,193,88,97,10
-    PUSHBUTTON      "Register new user",IDC_BUTTON_REGISTER,165,19,78,13
+                    WS_TABSTOP,189,83,97,10
+    PUSHBUTTON      "Register new user",IDC_BUTTON_REGISTER,156,14,78,13
+    PUSHBUTTON      "Unregister",IDC_UNREGISTER,238,14,56,13
     CONTROL         "List of public servers",IDC_LINK_PUBLIC_SERVER,
-                    "Hyperlink",WS_TABSTOP,165,74,79,11
-    GROUPBOX        "Expert",IDC_STATIC,8,122,290,98
+                    "Hyperlink",WS_TABSTOP,161,69,79,11
+    GROUPBOX        "Expert",IDC_STATIC,4,120,298,106
     CONTROL         "Manually specify connection host",IDC_MANUAL,"Button",
-                    BS_AUTOCHECKBOX | WS_TABSTOP,19,135,223,10
-    LTEXT           "Host:",IDC_STATIC,31,148,26,8
-    EDITTEXT        IDC_HOST,62,146,90,12,ES_AUTOHSCROLL | WS_DISABLED
+                    BS_AUTOCHECKBOX | WS_TABSTOP,14,134,223,10
+    LTEXT           "Host:",IDC_STATIC,26,148,26,8
+    EDITTEXT        IDC_HOST,57,145,90,12,ES_AUTOHSCROLL | WS_DISABLED
     LTEXT           "Port:",IDC_STATIC,161,148,21,8
-    EDITTEXT        IDC_HOSTPORT,186,146,31,12,ES_AUTOHSCROLL | ES_NUMBER | 
+    EDITTEXT        IDC_HOSTPORT,181,145,31,12,ES_AUTOHSCROLL | ES_NUMBER | 
                     WS_DISABLED
     CONTROL         "Keep connection alive",IDC_KEEPALIVE,"Button",
-                    BS_AUTOCHECKBOX | WS_TABSTOP,19,159,221,10
+                    BS_AUTOCHECKBOX | WS_TABSTOP,14,158,221,10
     CONTROL         "Automatically delete contacts not in my roster",
-                    IDC_ROSTER_SYNC,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,19,
+                    IDC_ROSTER_SYNC,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,14,
                     172,221,10
-    LTEXT           "User directory:",IDC_JUD_LABEL,19,188,68,8
-    EDITTEXT        IDC_JUD,92,186,103,12,ES_AUTOHSCROLL
-    LTEXT           "Messaging language:",IDC_MSGLANG_LABEL,19,202,70,8
-    COMBOBOX        IDC_MSGLANG,92,201,103,69,CBS_DROPDOWNLIST | CBS_SORT | 
+    LTEXT           "User directory:",IDC_JUD_LABEL,14,188,68,8
+    EDITTEXT        IDC_JUD,87,185,103,12,ES_AUTOHSCROLL
+    LTEXT           "Messaging language:",IDC_MSGLANG_LABEL,14,203,70,8
+    COMBOBOX        IDC_MSGLANG,87,201,103,69,CBS_DROPDOWNLIST | CBS_SORT | 
                     WS_VSCROLL | WS_TABSTOP
     CONTROL         "Press here to download OpenSSL, required for SSL & TLS support",
-                    IDC_DOWNLOAD_OPENSSL,"Hyperlink",WS_TABSTOP,20,102,270,
-                    11
+                    IDC_DOWNLOAD_OPENSSL,"Hyperlink",WS_TABSTOP,16,97,270,11
 END
 
 IDD_OPT_JABBER2 DIALOGEX 0, 0, 304, 199
@@ -592,7 +592,7 @@ BEGIN
     IDD_OPT_JABBER, DIALOG
     BEGIN
         LEFTMARGIN, 7
-        RIGHTMARGIN, 297
+        RIGHTMARGIN, 302
         TOPMARGIN, 7
         BOTTOMMARGIN, 220
     END
