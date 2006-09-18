@@ -143,6 +143,8 @@ extern "C" int __declspec(dllexport) Load( PLUGINLINK *link )
 
 	GetModuleName();
 	UpgradeCheck();
+
+	mmi.cbSize = sizeof(mmi);
 	CallService(MS_SYSTEM_GET_MMI, 0, (LPARAM) &mmi);
 	
 	InitializeCriticalSection(&cs);
