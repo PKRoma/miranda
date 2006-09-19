@@ -451,7 +451,7 @@ BOOL				SM_SetOffline(char *pszID, char * pszModule);
 BOOL				SM_SetTabbedWindowHwnd(SESSION_INFO * si, HWND hwnd);
 HICON				SM_GetStatusIcon(SESSION_INFO * si, USERINFO * ui);
 BOOL				SM_SetStatus(char *pszID, char * pszModule, int wStatus);
-BOOL				SM_SetStatusEx(char *pszID, char * pszModule, char * pszText, int onlyMe );
+BOOL				SM_SetStatusEx(char *pszID, char * pszModule, char * pszText, int flags );
 BOOL				SM_SendUserMessage(char *pszID, char * pszModule, char * pszText);
 STATUSINFO *		SM_AddStatus(char *pszID, char * pszModule, char * pszStatus);
 SESSION_INFO *		SM_GetNextWindow(SESSION_INFO * si);
