@@ -270,9 +270,16 @@ int show_event_started=0;
 extern int JustUpdateWindowImage();
 BOOL TransparentFlag=FALSE;// TransparentFlag
 extern int g_PaintLock;
+extern int g_CalcRowHeightLock;
 void DestroyThreads()
 {
-    while (g_PaintLock || hAskAwayMsgThread || hGetTextThread || hSmoothAnimationThread || hFillFontListThread ||Miranda_Terminated())
+    while (g_CalcRowHeightLock ||
+           g_PaintLock || 
+           hAskAwayMsgThread || 
+           hGetTextThread || 
+           hSmoothAnimationThread || 
+           hFillFontListThread ||
+           Miranda_Terminated())
     {
         SleepEx(0,TRUE);
     }

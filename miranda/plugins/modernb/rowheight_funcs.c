@@ -30,6 +30,11 @@ Created by Pescuma, modified by Artem Shpynov
 extern int GetRealStatus(struct ClcContact * contact, int status);
 extern int GetBasicFontID(struct ClcContact * contact);
 
+int g_CalcRowHeightLock=0;
+int mod_CalcRowHeight_worker(struct ClcData *dat, HWND hwnd, struct ClcContact *contact, int item);
+void RowHeights_CalcRowHeights_Worker(struct ClcData *dat, HWND hwnd);
+int RowHeights_GetRowHeight_worker(struct ClcData *dat, HWND hwnd, struct ClcContact *contact, int item);
+
 /*
 *
 */
@@ -65,14 +70,21 @@ SIZE GetAvatarSize(int imageWidth, int imageHeight, int maxWidth, int maxHeight)
 
 int mod_CalcRowHeight(struct ClcData *dat, HWND hwnd, struct ClcContact *contact, int item)
 {
+    int res;
+    if (MirandaExiting()) return 0;
+    g_CalcRowHeightLock++;
+    res=mod_CalcRowHeight_worker(dat,hwnd,contact,item);
+    g_CalcRowHeightLock--;
+    return res;
+}
+int mod_CalcRowHeight_worker(struct ClcData *dat, HWND hwnd, struct ClcContact *contact, int item)
+{
   BYTE i=0;
   int res=0;
   int height=0;
   displayNameCacheEntry * pdnce; 
   BOOL hasAvatar=FALSE;
   DWORD style;
-
-  if (MirandaExiting()) return 0;
   style=GetWindowLong(hwnd,GWL_STYLE);
   pdnce=(displayNameCacheEntry*)pcli->pfnGetCacheEntry(contact->hContact);
   if (!RowHeights_Alloc(dat, item + 1))
@@ -520,8 +532,15 @@ int RowHeights_GetMaxRowHeight(struct ClcData *dat, HWND hwnd)
 }
 
 
-// Calc and store row height for all itens in the list
+// Calc and store row height for all items in the list
 void RowHeights_CalcRowHeights(struct ClcData *dat, HWND hwnd)
+{
+    g_CalcRowHeightLock++;
+    RowHeights_CalcRowHeights_Worker(dat, hwnd);
+    g_CalcRowHeightLock--;
+}
+
+void RowHeights_CalcRowHeights_Worker(struct ClcData *dat, HWND hwnd)
 {
   int indent, subident, subindex, line_num;
   struct ClcContact *Drawing;
@@ -603,6 +622,15 @@ void RowHeights_CalcRowHeights(struct ClcData *dat, HWND hwnd)
 
 // Calc and store row height
 int RowHeights_GetRowHeight(struct ClcData *dat, HWND hwnd, struct ClcContact *contact, int item)
+{
+    int res;
+    g_CalcRowHeightLock++;
+    res=RowHeights_GetRowHeight_worker(dat, hwnd, contact, item);
+    g_CalcRowHeightLock--;
+    return res;
+}
+
+int RowHeights_GetRowHeight_worker(struct ClcData *dat, HWND hwnd, struct ClcContact *contact, int item)
 {
   int height = 0;
   if (MirandaExiting()) return 0;
