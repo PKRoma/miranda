@@ -511,7 +511,7 @@ BOOL NetlibUPnPAddPortMapping(WORD intport, char *proto,
 			if (res == 200 && txtParseParam(szData, "<NewExternalIPAddress", ">", "<", szExtIP, sizeof(szExtIP)))
 				*extip = ntohl(inet_addr(szExtIP));
 
-			if (numports < numportsAlloc)
+			if (numports >= numportsAlloc)
 				mir_realloc(portList, sizeof(WORD)*(numportsAlloc += 10));
 			portList[numports++] = *extport;
 		}
@@ -574,7 +574,10 @@ static void NetlibUPnPCleanup(void* extra)
 			WaitForSingleObject(portListMutex, INFINITE);
 
 			if (httpTransact(szCtlUrl, szData, 4096, "GetGenericPortMappingEntry") != 200)
+			{
+				ReleaseMutex(portListMutex);
 				break;
+			}
 
 			if (!txtParseParam(szData, "<NewPortMappingDescription", ">", "<", buf, sizeof(buf)) || strcmp(buf, "Miranda") != 0)
 				continue;
