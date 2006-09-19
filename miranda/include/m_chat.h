@@ -46,10 +46,8 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 	NOTE. Chat keeps its own copies of strings passed.
 
-
-
-
-	* * Example of implementing this rule * *:
+  
+	* * Example of implementing this rule * *: 
 	* * This is a code snippet that is common in protocols * *:
 
 
@@ -129,15 +127,15 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 */
 
 // Flags
-#define GC_BOLD				0x0001		//enable the 'bold' button
-#define GC_ITALICS			0x0002		//enable the 'italics' button
-#define GC_UNDERLINE		0x0004		//enable the 'underline' button
-#define GC_COLOR			0x0008		//enable the 'foreground color' button
-#define GC_BKGCOLOR			0x0010		//enable the 'background color' button
-#define GC_ACKMSG			0x0020		//the protocol must acknowlege messages sent
-#define GC_TYPNOTIF			0x0040		//NOT SUPPORTED YET! Enable typing notifications.
-#define GC_CHANMGR			0x0080		//enable the 'channel settings' button
-#define GC_UNICODE			0x0100		//NOT SUPPORTED YET! Enable unicode (if chat supports it),
+#define GC_BOLD            0x0001		//enable the 'bold' button
+#define GC_ITALICS         0x0002		//enable the 'italics' button
+#define GC_UNDERLINE	      0x0004		//enable the 'underline' button
+#define GC_COLOR           0x0008		//enable the 'foreground color' button
+#define GC_BKGCOLOR        0x0010		//enable the 'background color' button
+#define GC_ACKMSG          0x0020		//the protocol must acknowlege messages sent
+#define GC_TYPNOTIF        0x0040		//NOT SUPPORTED YET! Enable typing notifications.
+#define GC_CHANMGR         0x0080		//enable the 'channel settings' button
+#define GC_UNICODE         0x0100		//NOT SUPPORTED YET! Enable unicode (if chat supports it),
 										//Pass UNICODE instead of ASCII. Note that
 										//registration will fail if the unicode version	of chat is not installed									//isn't installed. Check what MS_GC_REGISTER returns.
 // Error messages
@@ -407,11 +405,15 @@ typedef struct {
 //	pszText		- The text
 #define GC_EVENT_SENDMESSAGE	0x1008
 
-//	GC_EVENT_SETSTATUSEX - not shown in the log (Space separated list of pszUID's to indicate as away).
-//  Used by IRC to mark users as away in the nicklist. Remember that UID's cannot contain spaces.
-//  Let me know if you need some other support for your protocol.
-//	pszText		- The space separated list of pszUID's
-#define GC_EVENT_SETSTATUSEX	0x1009
+//	GC_EVENT_SETSTATUSEX - not shown in the log (Space or tab delimited list of pszUID's to indicate as away). 
+//  Used by IRC to mark users as away in the nicklist. If UIDs can contain spaces, use tabs
+//	pszText		- Space or tab delimited list of pszUID's
+
+#define GC_SSE_ONLYLISTED     0x0001  // processes only listed contacts, resets all contacts otherwise
+#define GC_SSE_ONLINE         0x0002  // displays a contact online, otherwise away
+#define GC_SSE_TABDELIMITED   0x0004  // use tabs as delimiters
+
+#define GC_EVENT_SETSTATUSEX	0x1009 
 
 //	GC_EVENT_CONTROL  - not shown in the log (Control window associated to a session and the session itself)
 //	NOTE 1: No members of GCEVENT are used, send one of the below flags in wParam instead,
