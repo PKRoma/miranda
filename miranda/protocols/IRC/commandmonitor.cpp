@@ -2294,7 +2294,7 @@ bool CMyMonitor::OnIrc_WHO_END(const CIrcMessage* pmsg)
 					if(GetWord(WhoReply.c_str(), 3)[0] == 'G')
 					{
 						S += User;
-						S += " ";
+						S += "\t";
 					}
 					SS = GetWordAddress(WhoReply.c_str(), 4);
 					if(SS.empty())
@@ -2302,7 +2302,7 @@ bool CMyMonitor::OnIrc_WHO_END(const CIrcMessage* pmsg)
 					WhoReply = SS;
 					User = GetWord(WhoReply.c_str(), 0);
 				}
-				DoEvent(GC_EVENT_SETSTATUSEX, pmsg->parameters[1].c_str(), NULL, S == ""?NULL:S.c_str(), NULL, NULL, NULL, FALSE, FALSE); 
+				DoEvent(GC_EVENT_SETSTATUSEX, pmsg->parameters[1].c_str(), NULL, S == ""?NULL:S.c_str(), NULL, NULL, GC_SSE_TABDELIMITED, FALSE, FALSE); 
 
 				return true;
 			}
