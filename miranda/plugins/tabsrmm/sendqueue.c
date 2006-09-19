@@ -83,7 +83,16 @@ void HandleQueueError(HWND hwndDlg, struct MessageWindowData *dat, int iEntry)
     
     dat->iCurrentQueueError = iEntry;
     _snprintf(szErrorMsg, 500, "%s", sendJobs[iEntry].szErrorMsg);
-    LogErrorMessage(hwndDlg, dat, iEntry, (char *)szErrorMsg);
+#if defined(_UNICODE)
+    {
+        wchar_t wszErrorMsg[512];
+        MultiByteToWideChar(myGlobals.m_LangPackCP, 0, szErrorMsg, -1, wszErrorMsg, 512);
+        wszErrorMsg[511] = 0;
+        LogErrorMessage(hwndDlg, dat, iEntry, wszErrorMsg);
+    }
+#else
+    LogErrorMessage(hwndDlg, dat, iEntry, szErrorMsg);
+#endif
     RecallFailedMessage(hwndDlg, dat, iEntry);
     ShowErrorControls(hwndDlg, dat, TRUE);
     HandleIconFeedback(hwndDlg, dat, myGlobals.g_iconErr);
@@ -345,7 +354,7 @@ static int SendQueuedMessage(HWND hwndDlg, struct MessageWindowData *dat, int iE
             }
         } while (hContact = (HANDLE) CallService(MS_DB_CONTACT_FINDNEXT, (WPARAM) hContact, 0));
         if (sendJobs[iEntry].sendCount == 0) {
-            LogErrorMessage(hwndDlg, dat, -1, Translate("You haven't selected any contacts from the list. Click the checkbox box next to a name to send the message to that person."));
+            LogErrorMessage(hwndDlg, dat, -1, TranslateT("You haven't selected any contacts from the list. Click the checkbox box next to a name to send the message to that person."));
             return 0;
         }
         
@@ -497,7 +506,7 @@ void CheckSendQueue(HWND hwndDlg, struct MessageWindowData *dat)
  * from the given sendJob (queue index)
  */
 
-void LogErrorMessage(HWND hwndDlg, struct MessageWindowData *dat, int iSendJobIndex, char *szErrMsg)
+void LogErrorMessage(HWND hwndDlg, struct MessageWindowData *dat, int iSendJobIndex, TCHAR *szErrMsg)
 {
     DBEVENTINFO dbei = {0};
     int iMsgLen;
@@ -520,7 +529,7 @@ void LogErrorMessage(HWND hwndDlg, struct MessageWindowData *dat, int iSendJobIn
 #endif
     dbei.cbBlob = iMsgLen;
     dbei.timestamp = time(NULL);
-    dbei.szModule = szErrMsg;
+    dbei.szModule = (char *)szErrMsg;
     StreamInEvents(hwndDlg, NULL, 1, 1, &dbei);
 }
 

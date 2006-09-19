@@ -1200,7 +1200,12 @@ nounicode:
                     AppendToBufferWithRTF(0, &buffer, &bufferEnd, &bufferAlloced, "%s", isSent ? dat->myUin : dat->uin);
                     break;
                 case 'e':           // error message
+#if defined(_UNICODE)
+                    AppendToBuffer(&buffer, &bufferEnd, &bufferAlloced, "%s ", GetRTFFont(MSGFONTID_ERROR));
+                    AppendUnicodeToBuffer(&buffer, &bufferEnd, &bufferAlloced, (wchar_t *)dbei.szModule, MAKELONG(isSent, dat->isHistory));
+#else
                     AppendToBuffer(&buffer, &bufferEnd, &bufferAlloced, "%s %s", GetRTFFont(MSGFONTID_ERROR), dbei.szModule);
+#endif
                     break;
                 case 'M':           // message
                 {

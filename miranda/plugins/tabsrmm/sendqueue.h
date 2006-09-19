@@ -51,7 +51,7 @@ void HandleQueueError(HWND hwndDlg, struct MessageWindowData *dat, int iEntry);
 int AddToSendQueue(HWND hwndDlg, struct MessageWindowData *dat, int iLen, int dwFlags);
 static int SendQueuedMessage(HWND hwndDlg, struct MessageWindowData *dat, int iEntry);
 void CheckSendQueue(HWND hwndDlg, struct MessageWindowData *dat);
-void LogErrorMessage(HWND hwndDlg, struct MessageWindowData *dat, int iSendJobIndex, char *szErrMsg);
+void LogErrorMessage(HWND hwndDlg, struct MessageWindowData *dat, int iSendJobIndex, TCHAR *szErrMsg);
 void RecallFailedMessage(HWND hwndDlg, struct MessageWindowData *dat, int iEntry);
 void UpdateSaveAndSendButton(HWND hwndDlg, struct MessageWindowData *dat);
 void NotifyDeliveryFailure(HWND hwndDlg, struct MessageWindowData *dat);

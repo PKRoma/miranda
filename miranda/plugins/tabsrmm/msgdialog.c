@@ -3641,7 +3641,7 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                             SendMessage(m_pContainer->hwndStatus, SB_SETTEXTA, 0, (LPARAM)Translate("Message saved for later delivery"));
                         }
                         else
-                            LogErrorMessage(hwndDlg, dat, -1, Translate("Message saved for later delivery"));
+                            LogErrorMessage(hwndDlg, dat, -1, TranslateT("Message saved for later delivery"));
                         
                         SetDlgItemText(hwndDlg, IDC_MESSAGE, _T(""));
                         break;
@@ -4914,12 +4914,21 @@ quote_from_last:
                         SkinPlaySound("SendError");
                     if(sendJobs[iFound].sendCount > 1) {         // multisend is different...
                         char szErrMsg[256];
-                        mir_snprintf(szErrMsg, sizeof(szErrMsg), "Multisend: failed sending to: %s", dat->szProto);
+                        mir_snprintf(szErrMsg, sizeof(szErrMsg), Translate("Multisend: failed sending to: %s"), dat->szProto);
+#if defined(_UNICODE)
+                        {
+                            wchar_t wszErrMsg[256];
+                            MultiByteToWideChar(myGlobals.m_LangPackCP, 0, szErrMsg, -1, wszErrMsg, 256);
+                            wszErrMsg[255] = 0;
+                            LogErrorMessage(hwndDlg, dat, -1, wszErrMsg);
+                        }
+#else
                         LogErrorMessage(hwndDlg, dat, -1, szErrMsg);
+#endif
                         goto verify;
                     }
                     else {
-                        mir_snprintf(sendJobs[iFound].szErrorMsg, sizeof(sendJobs[iFound].szErrorMsg), "Delivery failure: %s", (char *)ack->lParam);
+                        mir_snprintf(sendJobs[iFound].szErrorMsg, sizeof(sendJobs[iFound].szErrorMsg), Translate("Delivery failure: %s"), (char *)ack->lParam);
                         sendJobs[iFound].iStatus = SQ_ERROR;
                         KillTimer(hwndDlg, TIMERID_MSGSEND + iFound);
                         if(!(dat->dwFlags & MWF_ERRORSTATE))
@@ -4954,9 +4963,9 @@ quote_from_last:
                  */
 
                 if(sendJobs[iFound].hContact[i] != sendJobs[iFound].hOwner) {
-                    char szErrMsg[256];
-                    char *szReceiver = (char *)CallService(MS_CLIST_GETCONTACTDISPLAYNAME, (WPARAM)sendJobs[iFound].hContact[i], 0);
-                    mir_snprintf(szErrMsg, sizeof(szErrMsg), "Multisend: successfully sent to: %s", szReceiver);
+                    TCHAR szErrMsg[256];
+                    TCHAR *szReceiver = (TCHAR *)CallService(MS_CLIST_GETCONTACTDISPLAYNAME, (WPARAM)sendJobs[iFound].hContact[i], GCDNF_TCHAR);
+                    mir_sntprintf(szErrMsg, safe_sizeof(szErrMsg), TranslateT("Multisend: successfully sent to: %s"), szReceiver);
                     LogErrorMessage(hwndDlg, dat, -1, szErrMsg);
                 }
 

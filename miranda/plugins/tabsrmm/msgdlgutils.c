@@ -1955,10 +1955,14 @@ void LoadOwnAvatar(HWND hwndDlg, struct MessageWindowData *dat)
 	if(ServiceExists(MS_AV_GETMYAVATAR))
 		ace = (AVATARCACHEENTRY *)CallService(MS_AV_GETMYAVATAR, 0, (LPARAM)(dat->bIsMeta ? dat->szMetaProto : dat->szProto));
 
-	if(ace)
-		dat->hOwnPic = ace->hbmPic;
-	else
-		dat->hOwnPic = myGlobals.g_hbmUnknown;
+	if(ace) {
+        dat->hOwnPic = ace->hbmPic;
+        dat->ownAce = ace;
+    }
+	else {
+        dat->hOwnPic = myGlobals.g_hbmUnknown;
+        dat->ownAce = NULL;
+    }
 
     if(dat->dwFlagsEx & MWF_SHOW_INFOPANEL) {
         BITMAP bm;
@@ -2154,6 +2158,9 @@ int MsgWindowDrawHandler(WPARAM wParam, LPARAM lParam, HWND hwndDlg, struct Mess
                 if(dat->ace)
                     aceFlags = dat->ace->dwFlags;
             }
+            else if(dat->ownAce)
+                aceFlags = dat->ownAce->dwFlags;
+
             GetObject(dat->dwFlagsEx & MWF_SHOW_INFOPANEL ? dat->hOwnPic : (dat->ace ? dat->ace->hbmPic : myGlobals.g_hbmUnknown), sizeof(bminfo), &bminfo);
         }
     

@@ -411,7 +411,7 @@ struct MessageWindowData {
     COLORREF inputbg;
     SIZE    szLabel;
     struct  MessageWindowTheme theme;
-    struct  avatarCacheEntry *ace;
+    struct  avatarCacheEntry *ace, *ownAce;
     COLORREF avatarbg;
 	HANDLE  *hHistoryEvents;
 	int     maxHistory, curHistory;
