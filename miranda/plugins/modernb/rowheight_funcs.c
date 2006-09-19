@@ -535,6 +535,7 @@ int RowHeights_GetMaxRowHeight(struct ClcData *dat, HWND hwnd)
 // Calc and store row height for all items in the list
 void RowHeights_CalcRowHeights(struct ClcData *dat, HWND hwnd)
 {
+    if (MirandaExiting()) return;
     g_CalcRowHeightLock++;
     RowHeights_CalcRowHeights_Worker(dat, hwnd);
     g_CalcRowHeightLock--;
@@ -624,6 +625,7 @@ void RowHeights_CalcRowHeights_Worker(struct ClcData *dat, HWND hwnd)
 int RowHeights_GetRowHeight(struct ClcData *dat, HWND hwnd, struct ClcContact *contact, int item)
 {
     int res;
+    if (MirandaExiting()) return 0;
     g_CalcRowHeightLock++;
     res=RowHeights_GetRowHeight_worker(dat, hwnd, contact, item);
     g_CalcRowHeightLock--;
