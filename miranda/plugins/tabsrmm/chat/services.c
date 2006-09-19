@@ -31,7 +31,7 @@ SESSION_INFO		g_TabSession;
 CRITICAL_SECTION	cs;
 int                 g_sessionshutdown = 0;
 
-static HANDLE     hServiceRegister = NULL, 
+static HANDLE     hServiceRegister = NULL,
                   hServiceNewChat = NULL,
                   hServiceAddEvent = NULL,
                   hServiceGetAddEventPtr = NULL,
@@ -76,8 +76,8 @@ void DestroyServiceFunctions(void)
 	DestroyServiceFunction(hServiceNewChat        );
 	DestroyServiceFunction(hServiceAddEvent       );
 	DestroyServiceFunction(hServiceGetAddEventPtr );
-	DestroyServiceFunction(hServiceGetInfo        );       
-	DestroyServiceFunction(hServiceGetCount       );      
+	DestroyServiceFunction(hServiceGetInfo        );
+	DestroyServiceFunction(hServiceGetCount       );
 	DestroyServiceFunction(hEventDoubleclicked    );
 	return;
 }
@@ -92,7 +92,7 @@ void CreateHookableEvents(void)
 void TabsInit(void)
 {
 	ZeroMemory(&g_TabSession, sizeof(SESSION_INFO));
-			
+
 	//g_TabSession.iType = GCW_TABROOM;
 	g_TabSession.iSplitterX = g_Settings.iSplitterX;
 	g_TabSession.iSplitterY = g_Settings.iSplitterY;
@@ -102,8 +102,8 @@ void TabsInit(void)
 	g_TabSession.iFG = 4;
 	g_TabSession.bFGSet = TRUE;
 	g_TabSession.iBG = 2;
-	g_TabSession.bBGSet = TRUE;	
-		
+	g_TabSession.bBGSet = TRUE;
+
 	return;
 }
 
@@ -111,8 +111,8 @@ int Chat_ModulesLoaded(WPARAM wParam,LPARAM lParam)
 {
     if(!g_chat_integration_enabled)
         return 0;
-    
-    { 
+
+    {
 		char * mods[3] = {"Chat",CHAT_FONTMODULE};
 		CallService("DBEditorpp/RegisterModule",(WPARAM)mods,(LPARAM)2);
 	}
@@ -204,9 +204,9 @@ int Service_GetInfo(WPARAM wParam,LPARAM lParam)
 			gci->iCount = si->nUsersInNicklist;
 		if(gci->Flags&USERS)
 			gci->pszUsers = SM_GetUsers(si);
-	
+
 		LeaveCriticalSection(&cs);
-	
+
 		return 0;
 	}
 
@@ -240,9 +240,9 @@ int Service_Register(WPARAM wParam, LPARAM lParam)
 			mi->pszModDispName = (char *) malloc(lstrlenA(gcr->pszModuleDispName) + 1);
 			lstrcpynA(mi->pszModDispName, gcr->pszModuleDispName, lstrlenA(gcr->pszModuleDispName) + 1);
 		}
-		mi->bBold = gcr->dwFlags&GC_BOLD;	
-		mi->bUnderline = gcr->dwFlags&GC_UNDERLINE ;	
-		mi->bItalics = gcr->dwFlags&GC_ITALICS ;	
+		mi->bBold = gcr->dwFlags&GC_BOLD;
+		mi->bUnderline = gcr->dwFlags&GC_UNDERLINE ;
+		mi->bItalics = gcr->dwFlags&GC_ITALICS ;
 		mi->bColor = gcr->dwFlags&GC_COLOR ;
 		mi->bBkgColor = gcr->dwFlags&GC_BKGCOLOR ;
 		mi->bAckMsg = gcr->dwFlags&GC_ACKMSG ;
@@ -285,7 +285,7 @@ int Service_NewChat(WPARAM wParam, LPARAM lParam)
 		if(si)
 		{
 			char szTemp[256];
-			
+
 			si->dwItemData = gcw->dwItemData;
 			if(gcw->iType != GCW_SERVER)
 				si->wStatus = ID_STATUS_ONLINE;
@@ -318,7 +318,7 @@ int Service_NewChat(WPARAM wParam, LPARAM lParam)
 				mir_snprintf(szTemp, sizeof(szTemp), "Server: %s", gcw->pszName);
 			else
 				mir_snprintf(szTemp, sizeof(szTemp), "%s", gcw->pszName);
-			si->hContact = CList_AddRoom((char *)gcw->pszModule, (char *)gcw->pszID, szTemp, si->iType); 
+			si->hContact = CList_AddRoom((char *)gcw->pszModule, (char *)gcw->pszID, szTemp, si->iType);
 
             si->iLogFilterFlags = (int)DBGetContactSettingDword(si->hContact, "Chat", "FilterFlags", DBGetContactSettingDword(NULL, "Chat", "FilterFlags", 0x03E0));
 
@@ -340,7 +340,7 @@ int Service_NewChat(WPARAM wParam, LPARAM lParam)
 				UM_RemoveAll(&si2->pUsers);
 				TM_RemoveAll(&si2->pStatuses);
 
-				si2->iStatusCount = 0;	
+				si2->iStatusCount = 0;
 				si2->nUsersInNicklist = 0;
 
 				if(si2->hWnd )
@@ -348,7 +348,7 @@ int Service_NewChat(WPARAM wParam, LPARAM lParam)
 			}
 //			SendMessage(hwnd, GC_NICKLISTREINIT, 0, 0);
 		}
-	
+
 		LeaveCriticalSection(&cs);
 		return 0;
 	}
@@ -369,7 +369,7 @@ void AddStatus(GCEVENT * gce)
 static int DoControl(GCEVENT * gce, WPARAM wp)
 {
 	if(gce->pDest->iType == GC_EVENT_CONTROL)
-	{ 
+	{
         switch (wp)
 		{
 		case WINDOW_HIDDEN:
@@ -405,7 +405,7 @@ static int DoControl(GCEVENT * gce, WPARAM wp)
 			}break;
 		case SESSION_OFFLINE:
 			{
-				SM_SetOffline(gce->pDest->pszID, gce->pDest->pszModule);		
+				SM_SetOffline(gce->pDest->pszID, gce->pDest->pszModule);
 			} // fall through
 		case SESSION_ONLINE:
 			SM_SetStatus((char *)gce->pDest->pszID, (char *)gce->pDest->pszModule, wp==SESSION_ONLINE?ID_STATUS_ONLINE:ID_STATUS_OFFLINE);
@@ -471,7 +471,7 @@ static int DoControl(GCEVENT * gce, WPARAM wp)
 			return si->dwItemData;
 		}
 		return 0;
-		
+
 	}
 	else if(gce->pDest->iType ==GC_EVENT_SETSBTEXT)
 	{
@@ -502,7 +502,7 @@ static int DoControl(GCEVENT * gce, WPARAM wp)
 				SendMessage(si->hWnd, GC_UPDATESTATUSBAR, 0, 0);
 			}
 		}
-		
+
 	}
 	else if(gce->pDest->iType == GC_EVENT_ACK)
 	{
@@ -516,7 +516,7 @@ static int DoControl(GCEVENT * gce, WPARAM wp)
 	{
 		SM_SetStatusEx((char *)gce->pDest->pszID, (char *)gce->pDest->pszModule, (char *)gce->pszText, gce->dwItemData);
 	}
-	else 
+	else
 		return 1;
 
 	return 0;
@@ -531,14 +531,14 @@ static void AddUser(GCEVENT * gce)
 		USERINFO * ui = SM_AddUser((char *)gce->pDest->pszID, (char *)gce->pDest->pszModule, (char *)gce->pszUID, (char *)gce->pszNick, status);
 		if(ui)
 		{
-			ui->pszNick = (char*)malloc(lstrlenA(gce->pszNick) + 1); 
+			ui->pszNick = (char*)malloc(lstrlenA(gce->pszNick) + 1);
 			lstrcpyA(ui->pszNick, gce->pszNick);
 
 			if(gce->bIsMe)
 				si->pMe = ui;
-	
-			ui->Status = status; 
-			ui->Status |= si->pStatuses->Status; 
+
+			ui->Status = status;
+			ui->Status |= si->pStatuses->Status;
 
 			if(si->hWnd)
 			{
@@ -584,7 +584,7 @@ HWND CreateNewRoom(struct ContainerWindowData *pContainer, SESSION_INFO *si, BOO
     HWND hwndTab;
 #if defined(_UNICODE)
     WCHAR contactNameW[100];
-#endif    
+#endif
     if(WindowList_Find(hMessageWindowList, hContact) != 0) {
         _DebugPopup(hContact, "Warning: trying to create duplicate window");
         return 0;
@@ -610,7 +610,7 @@ HWND CreateNewRoom(struct ContainerWindowData *pContainer, SESSION_INFO *si, BOO
     contactName = contactNameW;
 #else
 	contactName = (char *) CallService(MS_CLIST_GETCONTACTDISPLAYNAME, (WPARAM) newData.hContact, 0);
-#endif    
+#endif
 
 	/*
 	 * cut nickname if larger than x chars...
@@ -629,7 +629,7 @@ HWND CreateNewRoom(struct ContainerWindowData *pContainer, SESSION_INFO *si, BOO
 
 	wStatus = szProto == NULL ? ID_STATUS_OFFLINE : DBGetContactSettingWord((HANDLE) newData.hContact, szProto, "Status", ID_STATUS_OFFLINE);
 	szStatus = (char *) CallService(MS_CLIST_GETSTATUSMODEDESCRIPTION, szProto == NULL ? ID_STATUS_OFFLINE : DBGetContactSettingWord((HANDLE)newData.hContact, szProto, "Status", ID_STATUS_OFFLINE), 0);
-    
+
 	if(DBGetContactSettingByte(NULL, SRMSGMOD_T, "tabstatus", 0))
 		_snprintf(tabtitle, sizeof(tabtitle), "%s (%s)", newcontactname, szStatus);
 	else
@@ -724,7 +724,7 @@ void ShowRoom(SESSION_INFO * si, WPARAM wp, BOOL bSetForeground)
 	if (si->hWnd == NULL) {
         TCHAR szName[CONTAINER_NAMELEN + 2];
         struct ContainerWindowData *pContainer = si->pContainer;
-        
+
         szName[0] = 0;
         if(pContainer == NULL) {
             GetContainerNameForContact(si->hContact, szName, CONTAINER_NAMELEN);
@@ -739,7 +739,7 @@ void ShowRoom(SESSION_INFO * si, WPARAM wp, BOOL bSetForeground)
 	}
     else
         ActivateExistingTab(si->pContainer, si->hWnd);
-    
+
 	return;
 }
 
@@ -769,22 +769,8 @@ int Service_AddEvent(WPARAM wParam, LPARAM lParam)
 
 	EnterCriticalSection(&cs);
 
-	//remove spaces in UID
-	if(gce->pszUID)
-	{
-		char * p = (char *)gce->pszUID;
-		while (*p)
-		{
-			if(*p == ' ')
-				memmove(p, p+1, lstrlenA(p));
-			p++;
-		}
-
-	}
-
 	// Do different things according to type of event
-	switch(gcd->iType)
-	{
+	switch(gcd->iType) {
 	case GC_EVENT_ADDGROUP:
 		AddStatus(gce);
 		LeaveCriticalSection(&cs);
@@ -884,7 +870,7 @@ int Service_AddEvent(WPARAM wParam, LPARAM lParam)
 	}
 	// add to log
 	if(pWnd)
-	{	
+	{
 		SESSION_INFO * si = SM_FindSession(pWnd, pMod);
 
 		// fix for IRC's old stuyle mode notifications. Should not affect any other protocol

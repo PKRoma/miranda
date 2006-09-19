@@ -163,14 +163,14 @@ typedef struct COMMAND_INFO_TYPE
 } COMMAND_INFO;
 
 typedef struct{
-	LOGFONT  lf;
+	LOGFONT	lf;
 	COLORREF color;
 }FONTINFO;
 
 typedef struct  LOG_INFO_TYPE{
 	char *		pszText;
 	char *		pszNick;
-	char *		pszUID;	
+	char *		pszUID;
 	char *		pszStatus;
 	char *		pszUserInfo;
 	BOOL		bIsMe;
@@ -193,7 +193,7 @@ typedef struct STATUSINFO_TYPE{
 typedef struct  USERINFO_TYPE{
 	char *		pszNick;
 	char *		pszUID;
-	WORD 		Status;	
+	WORD 		Status;
 	int			iStatusEx;
 	struct USERINFO_TYPE *next;
 

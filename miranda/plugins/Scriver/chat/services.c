@@ -645,7 +645,7 @@ static void TakeStatus(GCEVENT * gce)
 
 void ShowRoom(SESSION_INFO * si, WPARAM wp, BOOL bSetForeground)
 {
-	HWND hParent;
+	HWND hParent = NULL;
 	if(!si)
 		return;
 
@@ -668,14 +668,13 @@ void ShowRoom(SESSION_INFO * si, WPARAM wp, BOOL bSetForeground)
 		SetForegroundWindow(si->hWnd);
 	}
 	*/
-	ShowWindow(hParent, SW_NORMAL);
+	if ( hParent != NULL )
+		ShowWindow(hParent, SW_NORMAL);
 	SendMessage(si->hWnd, WM_MOUSEACTIVATE, 0, 0);
 	SetFocus(GetDlgItem(si->hWnd, IDC_CHAT_MESSAGE));
 
 	return;
 }
-
-
 
 int Service_AddEvent(WPARAM wParam, LPARAM lParam)
 {
@@ -698,22 +697,8 @@ int Service_AddEvent(WPARAM wParam, LPARAM lParam)
 
 	EnterCriticalSection(&cs);
 
-	//remove spaces in UID
-	if(gce->pszUID)
-	{
-		char * p = (char *)gce->pszUID;
-		while (*p)
-		{
-			if(*p == ' ')
-				memmove(p, p+1, lstrlenA(p));
-			p++;
-		}
-
-	}
-
 	// Do different things according to type of event
-	switch(gcd->iType)
-	{
+	switch(gcd->iType) {
 	case GC_EVENT_ADDGROUP:
 		AddStatus(gce);
 		LeaveCriticalSection(&cs);
