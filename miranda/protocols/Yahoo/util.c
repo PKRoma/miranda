@@ -377,6 +377,33 @@ char* __stdcall Utf8EncodeUcs2( const wchar_t* src )
 	return result;
 }
 
+char* __stdcall Utf8EncodeANSI(const char *msg)
+{
+	wchar_t *unicode;
+	int wchars, err;
+	char *ut;
+	
+	wchars = MultiByteToWideChar(CP_ACP, MB_PRECOMPOSED, msg, lstrlen(msg), NULL, 0);
+	
+	if(wchars == 0)
+		return NULL;
+	
+	unicode = calloc(wchars + 1, sizeof(unsigned short));
+	if(unicode == NULL)
+		return NULL;
+	
+	err = MultiByteToWideChar(CP_ACP, MB_PRECOMPOSED, msg, lstrlen(msg), unicode, wchars);
+	if(err != wchars) {
+		free(unicode);
+		return NULL;
+	}
+			
+	ut = Utf8EncodeUcs2(unicode );
+	free(unicode);
+			
+	return ut;
+}
+
 void SetButtonCheck(HWND hwndDlg, int CtrlID, BOOL bCheck)
 {
 	HWND hwndCtrl = GetDlgItem(hwndDlg, CtrlID);

@@ -228,11 +228,23 @@ int YahooSendMessage(WPARAM wParam, LPARAM lParam)
     }
 
 	if (!DBGetContactSetting(ccs->hContact, yahooProtocolName, YAHOO_LOGINID, &dbv)) {
-        yahoo_send_msg(dbv.pszVal, msg, 0);
+		if (YAHOO_GetByte( "DisableUTF8", 0 )){
+			// don't send UTF8, because settings say so
+			yahoo_send_msg(dbv.pszVal, msg, 0);
+			pthread_create(yahoo_im_sendacksuccess, ccs->hContact);
+		} else {
+		
+			msg = Utf8EncodeANSI((char *) ccs->lParam );
+			
+			if (msg) {
+				yahoo_send_msg(dbv.pszVal, msg, 1);
+				free(msg);
+				pthread_create(yahoo_im_sendacksuccess, ccs->hContact);
+			} else
+				pthread_create(yahoo_im_sendackfail, ccs->hContact);
+		}
+		
         DBFreeVariant(&dbv);
-
-        pthread_create(yahoo_im_sendacksuccess, ccs->hContact);
-    
         return 1;
     }
     
