@@ -1071,7 +1071,7 @@ LRESULT CALLBACK CLUI__cli_ContactListWndProc(HWND hwnd, UINT msg, WPARAM wParam
 
     The caller is expected to create this mapping object and tell us the ID we need to open ours.	
     */
-    if (MirandaExiting()) 
+    if (MirandaExiting() && msg!=WM_DESTROY) 
         return 0;
     if (msg==UM_CALLSYNCRONIZED)
     {

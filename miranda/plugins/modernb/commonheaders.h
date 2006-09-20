@@ -314,7 +314,8 @@ extern DWORD g_hSmoothAnimationThreadID;
 extern DWORD g_hFillFontListThreadID;
 
 #define STATE_NORMAL 0
-#define STATE_EXITING 1
+#define STATE_PREPEARETOEXIT 1
+#define STATE_EXITING 2
 extern BYTE g_bSTATE;
 #define MirandaExiting() ((g_bSTATE==STATE_EXITING) || Miranda_Terminated())
 extern BYTE gl_TrimText;
