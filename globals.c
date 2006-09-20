@@ -33,6 +33,7 @@ extern int hMsgMenuItemCount;
 static HANDLE g_hAck = 0;
 static int ackevent(WPARAM wParam, LPARAM lParam);
 
+void Chat_IconsChanged();
 
 void LoadProtocolIcons() {
 	PROTOCOLDESCRIPTOR **pProtos;
@@ -322,6 +323,7 @@ void FreeGlobals() {
 			int i;
 			for (i=0; i < g_dat->protoNum; i++ )
 				free( g_dat->protoNames[i] );
+			free( g_dat->protoNames );
 		}
 
 		//	for (i=0;i<sizeof(g_dat->hIcons)/sizeof(g_dat->hIcons[0]);i++)
