@@ -69,7 +69,7 @@ BOOL LOCK_IMAGE_UPDATING=0;
 BOOL (WINAPI *g_proc_UpdateLayeredWindow)(HWND,HDC,POINT*,SIZE*,HDC,POINT*,COLORREF,BLENDFUNCTION*,DWORD);
 BOOL g_flag_bUpdateQueued=0;
 BOOL g_flag_bPostWasCanceled=0;
-BYTE CURRENT_ALPHA=255;
+BYTE g_bCurrentAlpha=255;
 DWORD MSG_COUNTER=0;
 SKINOBJECTSLIST * CURRENTSKIN=NULL;
 HWND DialogWnd;
@@ -3973,17 +3973,17 @@ void SkinEngine_ApplyTransluency()
 	BOOL layered=(GetWindowLong(hwnd, GWL_EXSTYLE) & WS_EX_LAYERED)?TRUE:FALSE;
 	
 	IsTransparancy=g_bSmoothAnimation || g_bTransparentFlag;
-	if (!g_bTransparentFlag && !g_bSmoothAnimation && CURRENT_ALPHA!=0)
-		CURRENT_ALPHA=255;
-	if (!g_bLayered && (/*(CURRENT_ALPHA==255)||*/(g_proc_SetLayeredWindowAttributesNew && IsTransparancy)))
+	if (!g_bTransparentFlag && !g_bSmoothAnimation && g_bCurrentAlpha!=0)
+		g_bCurrentAlpha=255;
+	if (!g_bLayered && (/*(g_bCurrentAlpha==255)||*/(g_proc_SetLayeredWindowAttributesNew && IsTransparancy)))
 	{
 			if (!layered) SetWindowLong(hwnd, GWL_EXSTYLE, GetWindowLong(hwnd, GWL_EXSTYLE) | WS_EX_LAYERED);
-			if (g_proc_SetLayeredWindowAttributesNew) g_proc_SetLayeredWindowAttributesNew(hwnd, RGB(0,0,0), (BYTE)CURRENT_ALPHA, LWA_ALPHA);
+			if (g_proc_SetLayeredWindowAttributesNew) g_proc_SetLayeredWindowAttributesNew(hwnd, RGB(0,0,0), (BYTE)g_bCurrentAlpha, LWA_ALPHA);
 	}
 	return;
 }
 
-int SkinEngine_JustSkinEngine_UpdateWindowImage()
+int SkinEngine_JustUpdateWindowImage()
 {
   RECT r;
   if (!g_bLayered)
@@ -3997,7 +3997,7 @@ int SkinEngine_JustSkinEngine_UpdateWindowImage()
 int JustSkinEngine_UpdateWindowImageRect(RECT * rty)
 //Update window image
 {
-  BLENDFUNCTION bf={AC_SRC_OVER, 0,CURRENT_ALPHA, AC_SRC_ALPHA };
+  BLENDFUNCTION bf={AC_SRC_OVER, 0,g_bCurrentAlpha, AC_SRC_ALPHA };
   POINT dest={0}, src={0};
   int res;
   RECT wnd=*rty;
@@ -4021,7 +4021,7 @@ int JustSkinEngine_UpdateWindowImageRect(RECT * rty)
   {
     if (!(GetWindowLong(pcli->hwndContactList, GWL_EXSTYLE)&WS_EX_LAYERED))
       SetWindowLong(pcli->hwndContactList,GWL_EXSTYLE, GetWindowLong(pcli->hwndContactList, GWL_EXSTYLE) |WS_EX_LAYERED);
-    SetAlpha(CURRENT_ALPHA);
+    SetAlpha(g_bCurrentAlpha);
 
     res=g_proc_UpdateLayeredWindow(pcli->hwndContactList,g_pCachedWindow->hScreenDC,&dest,&sz,g_pCachedWindow->hImageDC,&src,RGB(1,1,1),&bf,ULW_ALPHA);
   }

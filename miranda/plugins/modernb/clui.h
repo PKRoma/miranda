@@ -45,7 +45,10 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 #define M_CREATECLC                 (WM_USER+1)
 #define M_SETALLEXTRAICONS          (WM_USER+2)
-#define UM_ALPHASUPPORT             (WM_USER+100)
+#define UM_CALLSYNCRONIZED          (WM_USER+100)  // message will be sent to call procedure in mail thread context
+
+#define SYNC_SMOOTHANIMATION        1  // lParam is hWnd to single param CLUI_SmoothAlphaThreadTransition(hwnd);
+
 
 #define MS_CLUI_SHOWMAINMENU    "CList/ShowMainMenu"
 #define MS_CLUI_SHOWSTATUSMENU  "CList/ShowStatusMenu"
@@ -105,7 +108,7 @@ int ProtocolOrder_LoadModule(void);
 void SkinEngine_ApplyTransluency();
 HBITMAP SkinEngine_CreateDIB32(int cx, int cy);
 HBITMAP SkinEngine_CreateDIB32Point(int cx, int cy, void ** bits);
-int SkinEngine_JustSkinEngine_UpdateWindowImage();
+int SkinEngine_JustUpdateWindowImage();
 void SkinEngine_LoadSkinFromDB(void);
 int SkinEngine_RedrawCompleteWindow();
 BOOL SkinEngine_SetRectOpaque(HDC memdc,RECT *fr);
