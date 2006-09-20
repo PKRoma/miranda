@@ -574,7 +574,7 @@ static void InitSetting(char ** ppPointer, char * pszSetting, char*pszDefault)
 
 }
 #define OPT_FIXHEADINGS (WM_USER+1)
-static BOOL CALLBACK DlgProcOptions1(HWND hwndDlg,UINT uMsg,WPARAM wParam,LPARAM lParam)
+BOOL CALLBACK DlgProcOptions1(HWND hwndDlg,UINT uMsg,WPARAM wParam,LPARAM lParam)
 {
 	static HTREEITEM hListHeading1 = 0;
 	static HTREEITEM hListHeading2= 0;
@@ -628,7 +628,7 @@ static BOOL CALLBACK DlgProcOptions1(HWND hwndDlg,UINT uMsg,WPARAM wParam,LPARAM
 				&& (HIWORD(wParam)!=EN_CHANGE || (HWND)lParam!=GetFocus()))	return 0;
 
 		if(lParam != (LPARAM)NULL)
-			SendMessage(GetParent(hwndDlg), PSM_CHANGED, 0, 0);
+			SendMessage(GetParent(hwndDlg), PSM_CHANGED, 0, (LPARAM)hwndDlg);
 		break;
 	case WM_NOTIFY:
 	{
@@ -668,7 +668,7 @@ static BOOL CALLBACK DlgProcOptions1(HWND hwndDlg,UINT uMsg,WPARAM wParam,LPARAM
 							CheckBranches(GetDlgItem(hwndDlg, IDC_CHAT_CHECKBOXES), hListHeading6);
 						else
 							PostMessage(hwndDlg, OPT_FIXHEADINGS, 0, 0);
-						SendMessage(GetParent(hwndDlg), PSM_CHANGED, 0, 0);
+						SendMessage(GetParent(hwndDlg), PSM_CHANGED, 0, (LPARAM)hwndDlg);
 					}
 
 			}
@@ -748,7 +748,7 @@ static BOOL CALLBACK DlgProcOptions1(HWND hwndDlg,UINT uMsg,WPARAM wParam,LPARAM
 	return FALSE;
 }
 
-static BOOL CALLBACK DlgProcOptions2(HWND hwndDlg,UINT uMsg,WPARAM wParam,LPARAM lParam)
+BOOL CALLBACK DlgProcOptions2(HWND hwndDlg,UINT uMsg,WPARAM wParam,LPARAM lParam)
 {
 	static HBRUSH hBkgColourBrush;
 	static HBRUSH hListColourBrush;
@@ -993,7 +993,7 @@ static BOOL CALLBACK DlgProcOptions2(HWND hwndDlg,UINT uMsg,WPARAM wParam,LPARAM
 		}
 
 		if(lParam != (LPARAM)NULL)
-			SendMessage(GetParent(hwndDlg), PSM_CHANGED, 0, 0);
+			SendMessage(GetParent(hwndDlg), PSM_CHANGED, 0, (LPARAM)hwndDlg);
 		break;
 	case WM_NOTIFY:
 		if (((LPNMHDR)lParam)->idFrom == 0 && ((LPNMHDR)lParam)->code == PSN_APPLY ) {
@@ -1160,7 +1160,7 @@ static BOOL CALLBACK DlgProcOptionsPopup(HWND hwndDlg,UINT uMsg,WPARAM wParam,LP
 				&& (HIWORD(wParam)!=EN_CHANGE || (HWND)lParam!=GetFocus()))	return 0;
 
 		if(lParam != (LPARAM)NULL)
-			SendMessage(GetParent(hwndDlg), PSM_CHANGED, 0, 0);
+			SendMessage(GetParent(hwndDlg), PSM_CHANGED, 0, (LPARAM)hwndDlg);
 		switch (LOWORD(wParam)) {
 
 		case IDC_CHAT_RADIO1:
@@ -1219,7 +1219,7 @@ static int OptionsInitialize(WPARAM wParam, LPARAM lParam)
 {
 
 	OPTIONSDIALOGPAGE odp = {0};
-
+/*
 	odp.cbSize = sizeof(odp);
 	odp.position = 910000000;
 	odp.hInstance = g_hInst;
@@ -1239,7 +1239,7 @@ static int OptionsInitialize(WPARAM wParam, LPARAM lParam)
 	odp.pfnDlgProc = DlgProcOptions2;
 	odp.flags = ODPF_BOLDGROUPS;
 	CallService(MS_OPT_ADDPAGE, wParam, (LPARAM)&odp);
-
+*/
 	if(PopUpInstalled)
 	{
 		odp.cbSize = sizeof(odp);
@@ -1252,6 +1252,7 @@ static int OptionsInitialize(WPARAM wParam, LPARAM lParam)
 		odp.flags = ODPF_BOLDGROUPS;
 		CallService(MS_OPT_ADDPAGE, wParam, (LPARAM)&odp);
 	}
+
 	return 0;
 }
 

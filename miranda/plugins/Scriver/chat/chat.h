@@ -58,12 +58,13 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include <m_clist.h>
 #include <m_clui.h>
 #include <m_popup.h>
-#include "resource.h"
+#include "../resource.h"
 #include "m_chat.h"
 #include "m_ieview.h"
 #include "m_smileyadd.h"
 #include "IcoLib.h"
 #include "../globals.h"
+#include "../msgwindow.h"
 
 #ifndef TVM_GETITEMSTATE
 #define TVM_GETITEMSTATE        (TV_FIRST + 39)
@@ -120,8 +121,6 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #define EM_SUBCLASSED			(WM_USER+200)
 #define EM_UNSUBCLASSED			(WM_USER+201)
 #define EM_ACTIVATE				(WM_USER+202)
-
-#define TIMERID_FLASHWND		205
 
 #define GCW_TABROOM				10
 #define GCW_TABPRIVMSG			11
