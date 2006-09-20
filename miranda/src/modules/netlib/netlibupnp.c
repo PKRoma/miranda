@@ -557,8 +557,7 @@ static void NetlibUPnPCleanup(void* extra)
 {
 	findUPnPGateway();
 
-	if (gatewayFound)
-	{
+	if ( gatewayFound ) {
 		char* szData = mir_alloc(4096);
 		char buf[50], lip[50];
 		unsigned i, j = 0, k;
@@ -567,14 +566,12 @@ static void NetlibUPnPCleanup(void* extra)
 
 		strcpy(lip, inet_ntoa(locIP.sin_addr));
 
-		for (i=0; !Miranda_Terminated(); ++i) 
-		{
+		for (i=0; !Miranda_Terminated(); ++i)  {
 			mir_snprintf(szData, 4096, get_port_mapping, i);
 
 			WaitForSingleObject(portListMutex, INFINITE);
 
-			if (httpTransact(szCtlUrl, szData, 4096, "GetGenericPortMappingEntry") != 200)
-			{
+			if (httpTransact(szCtlUrl, szData, 4096, "GetGenericPortMappingEntry") != 200) {
 				ReleaseMutex(portListMutex);
 				break;
 			}
@@ -585,8 +582,7 @@ static void NetlibUPnPCleanup(void* extra)
 			if (!txtParseParam(szData, "<NewInternalClient", ">", "<", buf, sizeof(buf)) || strcmp(buf, lip) != 0)
 				continue;
 
-			if (txtParseParam(szData, "<NewExternalPort", ">", "<", buf, sizeof(buf)))
-			{
+			if (txtParseParam(szData, "<NewExternalPort", ">", "<", buf, sizeof(buf))) {
 				WORD mport = (WORD)atol(buf);
 
 				for (k=0; k<numports; ++k)
@@ -603,8 +599,10 @@ static void NetlibUPnPCleanup(void* extra)
 
 		for (i=0; i<j && !Miranda_Terminated(); ++i) 
 			NetlibUPnPDeletePortMapping(ports[i], "TCP");
-
 	}
+
+	// this handle will be closed automatically by _endthread()
+	cleanupThread = NULL;
 }
 
 void NetlibUPnPInit(void)
@@ -620,7 +618,8 @@ void NetlibUPnPInit(void)
 
 void NetlibUPnPDestroy(void)
 {
-	WaitForSingleObject(cleanupThread, INFINITE);
+	if ( cleanupThread != NULL )
+		WaitForSingleObject(cleanupThread, INFINITE);
 
 	mir_free(portList);
 	CloseHandle(portListMutex);
