@@ -846,7 +846,7 @@ static void MessageDialogResize(HWND hwndDlg, struct MessageWindowData *dat, int
 
 static void UpdateReadChars(HWND hwndDlg, struct MessageWindowData * dat)
 {
-	if (dat->parent->hwndActive == hwndDlg && dat->parent->hwndStatus) {
+	if (dat->parent->hwndActive == hwndDlg) {
 		TCHAR szText[256];
 		StatusBarData sbd;
 		int len = GetWindowTextLength(GetDlgItem(hwndDlg, IDC_MESSAGE));
@@ -1369,7 +1369,7 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
 			}
 			NotifyLocalWinEvent(dat->hContact, hwndDlg, MSG_WINDOW_EVT_OPEN);
 			if (notifyUnread) {
-				SendMessage(dat->hwndParent, DM_STARTFLASHING, 0, 0);
+				SendMessage(dat->hwndParent, CM_STARTFLASHING, 0, 0);
 //				if (GetActiveWindow() != dat->hwndParent || GetForegroundWindow() != dat->hwndParent || dat->parent->hwndActive != hwndDlg) {
 				if (GetForegroundWindow() != dat->hwndParent || dat->parent->hwndActive != hwndDlg) {
 					dat->showUnread = 0;
@@ -2078,7 +2078,7 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
 					SendMessage(hwndDlg, DM_REMAKELOG, 0, 0);
 				if (!(dbei.flags & DBEF_SENT) && dbei.eventType != EVENTTYPE_STATUSCHANGE) {
 //					dat->nFlash = dat->nFlashMax;
-					SendMessage(dat->hwndParent, DM_STARTFLASHING, 0, 0);
+					SendMessage(dat->hwndParent, CM_STARTFLASHING, 0, 0);
 					if (GetActiveWindow() != dat->hwndParent || GetForegroundWindow() != dat->hwndParent || dat->parent->hwndActive != hwndDlg) {
 						dat->showUnread = 0;
 						SetTimer(hwndDlg, TIMERID_FLASHWND, TIMEOUT_FLASHWND, NULL);

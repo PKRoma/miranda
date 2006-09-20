@@ -19,7 +19,6 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 */
 
 #include "chat.h"
-#include "../msgwindow.h"
 
 #define __try
 #define __except(x) if (0)
@@ -1276,6 +1275,7 @@ BOOL CALLBACK RoomWndProc(HWND hwndDlg,UINT uMsg,WPARAM wParam,LPARAM lParam)
 		} break;
 
 
+
 		case WM_SIZE:
 		{
 			UTILRESIZEDIALOG urd;
@@ -1453,13 +1453,13 @@ BOOL CALLBACK RoomWndProc(HWND hwndDlg,UINT uMsg,WPARAM wParam,LPARAM lParam)
 			si->wState |= GC_EVENT_HIGHLIGHT;
 			SendMessage(si->hWnd, GC_FIXTABICONS, 0, 0);
 			if(DBGetContactSettingByte(NULL, "Chat", "FlashWindowHighlight", 0) != 0 && GetActiveWindow() != hwndDlg && GetForegroundWindow() != GetParent(hwndDlg))
-				SetTimer(hwndDlg, TIMERID_FLASHWND, 900, NULL);
+				SendMessage(GetParent(si->hWnd), CM_STARTFLASHING, 0, 0);
 		}break;
 		case GC_SETTABHIGHLIGHT:
 		{
 			SendMessage(si->hWnd, GC_FIXTABICONS, 0, 0);
 			if(g_Settings.FlashWindow && GetActiveWindow() != GetParent(hwndDlg) && GetForegroundWindow() != GetParent(hwndDlg))
-				SetTimer(hwndDlg, TIMERID_FLASHWND, 900, NULL);
+				SendMessage(GetParent(si->hWnd), CM_STARTFLASHING, 0, 0);
 		}break;
 		case DM_ACTIVATE:
 		{
@@ -1781,17 +1781,6 @@ LABEL_SHOWWINDOW:
 
 
 
- 		case WM_TIMER:
-		{
-			if (wParam == TIMERID_FLASHWND)
-			{
-				FlashWindow(hwndDlg, TRUE);
-			}
-		}break;
-
-
-
-
 
 
 		case WM_ACTIVATE:
@@ -1818,8 +1807,7 @@ LABEL_SHOWWINDOW:
 
 			SetActiveSession(si->pszID, si->pszModule);
 
-			if (KillTimer(hwndDlg, TIMERID_FLASHWND))
-				FlashWindow(hwndDlg, FALSE);
+
 			if(DBGetContactSettingWord(si->hContact, si->pszModule ,"ApparentMode", 0) != 0)
 				DBWriteContactSettingWord(si->hContact, si->pszModule ,"ApparentMode",(LPARAM) 0);
 			if(CallService(MS_CLIST_GETEVENT, (WPARAM)si->hContact, (LPARAM)0))

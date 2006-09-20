@@ -123,9 +123,6 @@ static int CALLBACK PopupDlgProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM 
 					if(CallService(MS_CLIST_GETEVENT, (WPARAM)si->hContact, (LPARAM)0))
 						CallService(MS_CLIST_REMOVEEVENT, (WPARAM)si->hContact, (LPARAM)"chaticon");
 				}
-				if (si->hWnd && KillTimer(si->hWnd, TIMERID_FLASHWND))
-					FlashWindow(si->hWnd, FALSE);
-
 				PUDeletePopUp( hWnd );
 			}
 			break;
@@ -333,7 +330,7 @@ BOOL DoSoundsFlashPopupTrayStuff(SESSION_INFO * si, GCEVENT * gce, BOOL bHighlig
 		if(bInactive || !g_Settings.SoundsFocus)
 			SkinPlaySound("ChatHighlight");
 		if(bInactive && si->hWnd && DBGetContactSettingByte(NULL, "Chat", "FlashWindowHighlight", 0) != 0) //!g_Settings.TabsEnable &&
-			SetTimer(si->hWnd, TIMERID_FLASHWND, 900, NULL);
+			SendMessage(GetParent(si->hWnd), CM_STARTFLASHING, 0, 0);
 		if(DBGetContactSettingByte(si->hContact, "CList", "Hidden", 0) != 0)
 			DBDeleteContactSetting(si->hContact, "CList", "Hidden");
 		if(bInactive)
@@ -384,7 +381,7 @@ BOOL DoSoundsFlashPopupTrayStuff(SESSION_INFO * si, GCEVENT * gce, BOOL bHighlig
 			if(bInactive || !g_Settings.SoundsFocus)
 				SkinPlaySound("ChatMessage");
 			if(bInactive && g_Settings.FlashWindow && si->hWnd) // !g_Settings.TabsEnable &&
-				SetTimer(si->hWnd, TIMERID_FLASHWND, 900, NULL);
+				SendMessage(GetParent(si->hWnd), CM_STARTFLASHING, 0, 0);
 			if(bInactive && !(si->wState&STATE_TALK))
 			{
 				si->wState |= STATE_TALK;

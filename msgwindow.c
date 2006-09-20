@@ -816,7 +816,7 @@ BOOL CALLBACK DlgProcParentWindow(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM 
 		break;
 	case DM_ERRORDECIDED:
 		break;
-	case DM_STARTFLASHING:
+	case CM_STARTFLASHING:
 		if ((GetActiveWindow() != hwndDlg || GetForegroundWindow() != hwndDlg)) {// && !(g_dat->flags2 & SMF2_STAYMINIMIZED)) {
 			dat->nFlash = 0;
 			SetTimer(hwndDlg, TIMERID_FLASHWND, TIMEOUT_FLASHWND, NULL);
@@ -1282,7 +1282,7 @@ HWND GetParentWindow(HANDLE hContact, BOOL bChat) {
 		struct NewMessageWindowLParam newData = { 0 };
 		newData.hContact = hContact;
 		return CreateDialogParam(g_hInst, MAKEINTRESOURCE(IDD_MSGWIN), NULL, DlgProcParentWindow, (LPARAM) & newData);
-	} 
+	}
 	return g_dat->lastParent->hwnd;
 }
 
