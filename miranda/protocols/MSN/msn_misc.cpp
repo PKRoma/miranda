@@ -960,15 +960,14 @@ int filetransfer::create( void )
 
 int filetransfer::openNext( void )
 {
-	if ( std.currentFile != NULL) {
+	if ( fileId != -1 ) {
 		close();
-		free( std.currentFile ); std.currentFile = NULL;
 		++std.currentFileNumber;
 	}
 
 	if ( std.currentFileNumber < std.totalFiles) {
 		bCompleted = false;
-		std.currentFile = strdup( std.files[std.currentFileNumber] );
+		replaceStr(std.currentFile, std.files[std.currentFileNumber] );
 		fileId = _open( std.currentFile, _O_BINARY | _O_RDONLY, _S_IREAD );
 		if ( fileId != -1 ) {
 			std.currentFileSize = filelength( fileId );

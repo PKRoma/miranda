@@ -864,6 +864,20 @@ static void sttInitFileTransfer(
 	p2p_sendAck( ft, info, hdrdata );
 
 	if ( dwAppID == 1 && !strcmp( szEufGuid, "{A4268EEC-FEC5-49E5-95C3-F126696BDBF6}" )) {
+		DBVARIANT dbv;
+		bool pictmatch = !DBGetContactSetting( NULL, msnProtocolName, "PictObject", &dbv ); 
+		if ( pictmatch ) {
+			UrlDecode(dbv.pszVal);
+			pictmatch = szContext != NULL && strcmp(dbv.pszVal, szContext) == 0; 
+			MSN_FreeVariant( &dbv );
+		}
+		if ( !pictmatch ) {
+			p2p_sendStatus( ft, info, 603 );
+			MSN_DebugLog( "Requested avatar does not match current avatar" );
+			delete ft;
+			return;
+		}
+
 		char szFileName[ MAX_PATH ];
 		MSN_GetAvatarFileName( NULL, szFileName, sizeof( szFileName ));
 		ft->fileId = _open( szFileName, O_RDONLY | _O_BINARY, _S_IREAD );
@@ -873,6 +887,7 @@ static void sttInitFileTransfer(
 			delete ft;
 			return;
 		}
+		replaceStr(ft->std.currentFile, szFileName);
 		MSN_DebugLog( "My avatar file opened for %s as %08p::%d", szContactEmail, ft, ft->fileId );
 		ft->std.totalBytes = ft->std.currentFileSize = filelength( ft->fileId );
 		ft->std.sending = true;
@@ -947,6 +962,7 @@ static void sttInitFileTransfer(
 			return;
 	}	}
 
+	p2p_sendStatus( ft, info, 603 );
 	delete ft;
 	MSN_DebugLog( "Invalid or unknown AppID/EUF-GUID combination: %ld/%s", dwAppID, szEufGuid );
 }
@@ -1360,23 +1376,25 @@ void __stdcall p2p_processMsg( ThreadData* info, const char* msgbody )
 		if ( ft->p2p_sendmsgid == 0 ) {
 			ft->tType = info->mType;
 			ft->p2p_sendmsgid = hdrdata->mID;
-//			ft->std.totalBytes = ft->std.currentFileSize = ( long )hdrdata->mTotalSize;
 		}
 		
 		int sk = 0;
-		if ( ft->tType == info->mType ) {
+		
+		__int64 dsz = ft->std.currentFileSize - hdrdata->mOffset;
+		if ( dsz > hdrdata->mPacketLen) dsz = hdrdata->mPacketLen;
+
+		if ( ft->tType == info->mType && dsz > 0) {
 			if ( ft->inmemTransfer )
-				memcpy( ft->fileBuffer + hdrdata->mOffset, msgbody, hdrdata->mPacketLen );
+				memcpy( ft->fileBuffer + hdrdata->mOffset, msgbody, (size_t)dsz );
 			else {
-				if ( hdrdata->mOffset != ft->std.currentFileProgress )
-					::_lseeki64( ft->fileId, hdrdata->mOffset, SEEK_SET );
-				::_write( ft->fileId, msgbody, hdrdata->mPacketLen );
+				::_lseeki64( ft->fileId, hdrdata->mOffset, SEEK_SET );
+				::_write( ft->fileId, msgbody, (unsigned int)dsz );
 			}
 
-			int dp = (int)(hdrdata->mOffset + hdrdata->mPacketLen - ft->std.currentFileProgress);
+			__int64 dp = hdrdata->mOffset + dsz - ft->std.currentFileProgress;
 			if ( dp > 0) {
-				ft->std.totalProgress += dp;
-				ft->std.currentFileProgress += dp;
+				ft->std.totalProgress += (unsigned long)dp;
+				ft->std.currentFileProgress += (unsigned long)dp;
 
 				if ( ft->p2p_appID == 2 )
 					MSN_SendBroadcast( ft->std.hContact, ACKTYPE_FILE, ACKRESULT_DATA, ft, ( LPARAM )&ft->std );
