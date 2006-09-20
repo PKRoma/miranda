@@ -1284,13 +1284,19 @@ BOOL ReduceAvatarPosition(struct ClcContact *contact, BOOL subcontact, void *par
 
 void Cache_GetAvatar(struct ClcData *dat, struct ClcContact *contact)
 {
-	if (dat->use_avatar_service)
+    if (MirandaExiting() 
+        || (dat->use_avatar_service && !ServiceExists(MS_AV_GETAVATARBITMAP)) ) // workaround for avatar service and other wich destroys service on OK_TOEXIT
+    {
+        contact->avatar_pos = AVATAR_POS_DONT_HAVE;
+        contact->avatar_data = NULL;
+        return;
+    }
+
+	if (dat->use_avatar_service && ServiceExists(MS_AV_GETAVATARBITMAP))
 	{
 		if (dat->avatars_show && !DBGetContactSettingByte(contact->hContact, "CList", "HideContactAvatar", 0))
 		{
 			contact->avatar_data = (struct avatarCacheEntry *)CallService(MS_AV_GETAVATARBITMAP, (WPARAM)contact->hContact, 0);
-            if (contact->avatar_data==(struct avatarCacheEntry *)0x80000000) 
-                return;
 			if (contact->avatar_data == NULL || contact->avatar_data->cbSize != sizeof(struct avatarCacheEntry) 
 				|| contact->avatar_data->dwFlags == AVS_BITMAP_EXPIRED)
 			{
@@ -1406,5 +1412,6 @@ void Cache_GetAvatar(struct ClcData *dat, struct ClcContact *contact)
 			ExecuteOnAllContacts(dat, ReduceAvatarPosition, (void *)&old_pos);
 		}
 	}
+
 }
 

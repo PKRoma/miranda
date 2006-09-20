@@ -1229,6 +1229,7 @@ extern void CLUI_DisconnectAll();
 int CloseAction(WPARAM wParam,LPARAM lParam)
 {
   int k;
+  g_bSTATE=STATE_EXITING;  // workaround for avatar service and other wich destroys service on OK_TOEXIT
   do
   {
       k=CallService(MS_SYSTEM_OKTOEXIT,(WPARAM)0,(LPARAM)0);
