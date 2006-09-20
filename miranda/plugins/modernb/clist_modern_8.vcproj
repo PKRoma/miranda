@@ -553,6 +553,23 @@
 				</FileConfiguration>
 			</File>
 			<File
+				RelativePath=".\clistmenus.c">
+				<FileConfiguration
+					Name="Release|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						UsePrecompiledHeader="3"
+						PrecompiledHeaderThrough="commonheaders.h"/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release Unicode|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						UsePrecompiledHeader="3"
+						PrecompiledHeaderThrough="commonheaders.h"/>
+				</FileConfiguration>
+			</File>
+			<File
 				RelativePath=".\clistmenus.c"
 				>
 				<FileConfiguration
