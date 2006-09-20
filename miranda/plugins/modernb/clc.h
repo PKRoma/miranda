@@ -424,6 +424,35 @@ struct ClcData {
     BYTE drawOverlayedStatus;
 };
 
+struct SHORTDATA
+{
+    HWND    hWnd;
+    BOOL    contact_time_show_only_if_different;
+    int     text_smiley_height;
+    BOOL    text_replace_smileys;
+    BOOL    text_use_protocol_smileys;
+
+	// Second line
+	BOOL    second_line_show;
+	BOOL    second_line_draw_smileys;
+	int     second_line_type;
+	TCHAR   second_line_text[TEXT_TEXT_MAX_LENGTH];
+	BOOL    second_line_xstatus_has_priority;
+	BOOL    second_line_show_status_if_no_away;
+	BOOL    second_line_show_listening_if_no_away;
+	BOOL    second_line_use_name_and_message_for_xstatus;
+
+	// Third line
+	BOOL    third_line_show;
+	BOOL    third_line_draw_smileys;
+	int     third_line_type;
+	TCHAR   third_line_text[TEXT_TEXT_MAX_LENGTH];
+	BOOL    third_line_xstatus_has_priority;
+	BOOL    third_line_show_status_if_no_away;
+	BOOL    third_line_show_listening_if_no_away;
+	BOOL    third_line_use_name_and_message_for_xstatus;
+};
+
 //clc.c
 void ClcOptionsChanged(void);
 

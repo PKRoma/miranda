@@ -129,6 +129,14 @@ extern HINSTANCE g_hInst;
   * easy search and replace
 
 */
+
+#define UM_CALLSYNCRONIZED          (WM_USER+100)  // message will be sent to call procedure in mail thread context
+
+#define SYNC_SMOOTHANIMATION        1  // lParam is hWnd to single param CLUI_SmoothAlphaThreadTransition(hwnd);
+#define SYNC_GETSHORTDATA           2  // lParam is a pointer to empty SHORTDATA structure to be filled
+#define SYNC_GETPDNCE               3  // lParam is a pointer to empty PDNCE structure to be filled (except hContact)
+#define SYNC_SETPDNCE               4  // lParam is a pointer to PDNCE structure to be copied to cache
+
 typedef  struct _menuProto 
 {
   char *szProto;
@@ -155,6 +163,8 @@ struct CluiData
     int         hIconNotify;
     HANDLE      hUpdateContact;
 };
+
+
 
 extern struct LIST_INTERFACE li;
 extern struct MM_INTERFACE memoryManagerInterface;
@@ -298,10 +308,10 @@ extern BOOL (WINAPI *pfEnableThemeDialogTexture)(HANDLE, DWORD);
 #define TreeView_GetItemA(hwnd, pitem) \
 	(BOOL)SendMessageA((hwnd), TVM_GETITEMA, 0, (LPARAM)(TV_ITEM *)(pitem))
 
-extern HANDLE g_hAskAwayMsgThreadID;
-extern HANDLE g_hGetTextThreadID;
-extern HANDLE g_hSmoothAnimationThreadID;
-extern HANDLE g_hFillFontListThreadID;
+extern DWORD g_hAskAwayMsgThreadID;
+extern DWORD g_hGetTextThreadID;
+extern DWORD g_hSmoothAnimationThreadID;
+extern DWORD g_hFillFontListThreadID;
 
 #define STATE_NORMAL 0
 #define STATE_EXITING 1

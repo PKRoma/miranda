@@ -165,7 +165,7 @@ void UnlockCacheItem(HANDLE hContact)
 
 ClcCacheEntryBase* cliGetCacheEntry(HANDLE hContact)
 {
-	ClcCacheEntryBase* p;
+	ClcCacheEntryBase* p;   
 	int idx;
 	if (!clistCache) return NULL;
 	if ( !li.List_GetIndex( clistCache, &hContact, &idx )) {	
@@ -177,6 +177,82 @@ ClcCacheEntryBase* cliGetCacheEntry(HANDLE hContact)
 	else p = ( ClcCacheEntryBase* )clistCache->items[idx];
 	pcli->pfnCheckCacheItem( p );
 	return p;
+}
+
+SortedList *CopySmileyString( SortedList *plInput );
+void Cache_DestroySmileyList( SortedList *p_list );
+
+void CListSettings_FreeCacheItemData(pdisplayNameCacheEntry pDst)
+{
+    if (!pDst) return;
+    if (pDst->name) mir_free(pDst->name);
+    #if defined( _UNICODE )
+        if (pDst->szName) mir_free(pDst->szName);
+	#endif
+    if (pDst->szGroup) mir_free(pDst->szGroup);
+    if (pDst->szSecondLineText) mir_free(pDst->szSecondLineText);
+    if (pDst->szThirdLineText)  mir_free(pDst->szThirdLineText);
+    if (pDst->plSecondLineText) {Cache_DestroySmileyList(pDst->plSecondLineText); pDst->plSecondLineText=NULL;}
+    if (pDst->plThirdLineText) {Cache_DestroySmileyList(pDst->plThirdLineText); pDst->plThirdLineText=NULL;}
+}
+
+
+int CListSettings_GetCopyFromCache(pdisplayNameCacheEntry pDest);
+int CListSettings_SetToCache(pdisplayNameCacheEntry pSrc);
+
+void CListSettings_CopyCacheItems(pdisplayNameCacheEntry pDst, pdisplayNameCacheEntry pSrc)
+{
+    if (!pDst||!pSrc) return;
+    CListSettings_FreeCacheItemData(pDst);
+    pDst->name=mir_tstrdup(pSrc->name);
+	#if defined( _UNICODE )
+        pDst->szName=mir_strdup(pSrc->szName);
+	#endif
+    pDst->szGroup=mir_tstrdup(pSrc->szGroup);
+
+    pDst->Hidden=pSrc->Hidden;
+	pDst->noHiddenOffline=pSrc->noHiddenOffline;
+	pDst->szProto=pSrc->szProto;
+	pDst->protoNotExists=pSrc->protoNotExists;
+	pDst->status=pSrc->status;
+	pDst->HiddenSubcontact=pSrc->HiddenSubcontact;
+	pDst->i=pSrc->i;
+	pDst->ApparentMode=pSrc->ApparentMode;
+	pDst->NotOnList=pSrc->NotOnList;
+	pDst->IdleTS=pSrc->IdleTS;
+	pDst->ClcContact=pSrc->ClcContact;
+	pDst->IsExpanded=pSrc->IsExpanded;
+	pDst->isUnknown=pSrc->isUnknown;
+    pDst->iThirdLineMaxSmileyHeight=pSrc->iThirdLineMaxSmileyHeight;
+    pDst->iSecondLineMaxSmileyHeight=pSrc->iSecondLineMaxSmileyHeight;
+	pDst->timezone=pSrc->timezone;
+    pDst->timediff=pSrc->timediff;
+    
+    pDst->szSecondLineText=mir_tstrdup(pSrc->szSecondLineText);
+    pDst->szThirdLineText=mir_tstrdup(pSrc->szThirdLineText);
+      
+	if (pSrc->plSecondLineText) pDst->plSecondLineText=CopySmileyString(pSrc->plSecondLineText);  
+	if (pSrc->plThirdLineText) pDst->plThirdLineText=CopySmileyString(pSrc->plThirdLineText);
+}
+
+int CListSettings_GetCopyFromCache(pdisplayNameCacheEntry pDest)
+{
+    pdisplayNameCacheEntry pSource;
+    if (!pDest || !pDest->hContact) return -1;
+    pSource=(pdisplayNameCacheEntry)pcli->pfnGetCacheEntry(pDest->hContact);
+    if (!pSource) return -1;
+    CListSettings_CopyCacheItems(pDest, pSource);
+    return 0;
+}
+
+int CListSettings_SetToCache(pdisplayNameCacheEntry pSrc)
+{
+    pdisplayNameCacheEntry pDst;
+    if (!pSrc || !pSrc->hContact) return -1;
+    pDst=(pdisplayNameCacheEntry)pcli->pfnGetCacheEntry(pSrc->hContact);
+    if (!pDst) return -1;
+    CListSettings_CopyCacheItems(pDst, pSrc);
+    return 0;
 }
 
 void cliFreeCacheItem( pdisplayNameCacheEntry p )

@@ -31,8 +31,8 @@ Created by Pescuma
 
 void Cache_GetText(struct ClcData *dat, struct ClcContact *contact, BOOL forceRenew);
 void Cache_GetFirstLineText(struct ClcData *dat, struct ClcContact *contact);
-void Cache_GetSecondLineText(struct ClcData *dat, PDNCE pdnce);
-void Cache_GetThirdLineText(struct ClcData *dat, PDNCE pdnce);
+void Cache_GetSecondLineText(struct SHORTDATA *dat, PDNCE pdnce);
+void Cache_GetThirdLineText(struct SHORTDATA *dat, PDNCE pdnce);
 void Cache_GetAvatar(struct ClcData *dat, struct ClcContact *contact);
 void Cache_DestroySmileyList(SortedList* p_list);
 void Cache_GetTimezone(struct ClcData *dat, HANDLE hContact);

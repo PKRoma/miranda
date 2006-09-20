@@ -576,11 +576,55 @@ extern int sortBy[3], sortNoOfflineBottom;
 #define GROUPF_SHOWOFFLINE 0x80   
 extern _inline BOOL IsShowOfflineGroup(struct ClcGroup* group);
 
+int CLC_GetShortData(struct ClcData* pData, struct SHORTDATA *pShortData)
+{
+    if (!pData|| !pShortData) return -1;
+    pShortData->hWnd=pData->hWnd;
+    pShortData->text_replace_smileys=pData->text_replace_smileys;
+    pShortData->text_smiley_height=pData->text_smiley_height;
+    pShortData->text_use_protocol_smileys=pData->text_use_protocol_smileys;
+    pShortData->contact_time_show_only_if_different=pData->contact_time_show_only_if_different;
+	// Second line
+	pShortData->second_line_show=pData->second_line_show;
+	pShortData->second_line_draw_smileys=pData->second_line_draw_smileys;
+	pShortData->second_line_type=pData->second_line_type;
+	
+    _tcsncpy(pShortData->second_line_text,pData->second_line_text,TEXT_TEXT_MAX_LENGTH);
+	
+    pShortData->second_line_xstatus_has_priority=pData->second_line_xstatus_has_priority;
+	pShortData->second_line_show_status_if_no_away=pData->second_line_show_status_if_no_away;
+	pShortData->second_line_show_listening_if_no_away=pData->second_line_show_listening_if_no_away;
+	pShortData->second_line_use_name_and_message_for_xstatus=pData->second_line_use_name_and_message_for_xstatus;
+
+    pShortData->third_line_show=pData->third_line_show;
+	pShortData->third_line_draw_smileys=pData->third_line_draw_smileys;
+	pShortData->third_line_type=pData->third_line_type;
+	
+    _tcsncpy(pShortData->third_line_text,pData->third_line_text,TEXT_TEXT_MAX_LENGTH);
+	
+    pShortData->third_line_xstatus_has_priority=pData->third_line_xstatus_has_priority;
+	pShortData->third_line_show_status_if_no_away=pData->third_line_show_status_if_no_away;
+	pShortData->third_line_show_listening_if_no_away=pData->third_line_show_listening_if_no_away;
+	pShortData->third_line_use_name_and_message_for_xstatus=pData->third_line_use_name_and_message_for_xstatus;
+
+    return 0;
+}
+
 LRESULT CALLBACK cli_ContactListControlWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 {     
     struct ClcData *dat;
 
     dat=(struct ClcData*)GetWindowLong(hwnd,0);
+
+    if (msg==UM_CALLSYNCRONIZED)
+    {
+        switch (wParam)
+        {
+        case SYNC_GETSHORTDATA:
+            return CLC_GetShortData(dat,(struct SHORTDATA *)lParam);
+        }
+        return 0;
+    }
 
     if(msg>=CLM_FIRST && msg<CLM_LAST) return cli_ProcessExternalMessages(hwnd,dat,msg,wParam,lParam);
     switch (msg) {

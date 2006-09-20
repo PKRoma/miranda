@@ -815,7 +815,7 @@ void CLUI_DisconnectAll()
 
 static int CLUI_PreCreateCLC(HWND parent)
 {
-    g_hMainThreadID=(HANDLE)GetCurrentThreadId();
+    g_hMainThreadID=GetCurrentThreadId();
     pcli->hwndContactTree=CreateWindow(CLISTCONTROL_CLASS,TEXT(""),
         WS_CHILD|WS_CLIPCHILDREN|CLS_CONTACTLIST
         |(DBGetContactSettingByte(NULL,"CList","UseGroups",SETTING_USEGROUPS_DEFAULT)?CLS_USEGROUPS:0)
@@ -1078,6 +1078,10 @@ LRESULT CALLBACK CLUI__cli_ContactListWndProc(HWND hwnd, UINT msg, WPARAM wParam
         {
         case SYNC_SMOOTHANIMATION:
             return CLUI_SmoothAlphaThreadTransition((HWND)lParam);
+        case SYNC_GETPDNCE:
+            return CListSettings_GetCopyFromCache((pdisplayNameCacheEntry)lParam);
+        case SYNC_SETPDNCE:
+            return CListSettings_SetToCache((pdisplayNameCacheEntry)lParam);
         }
         return 0;
     }
@@ -2456,7 +2460,7 @@ static void CLUI_SmoothAnimationThreadProc(HWND hwnd)
     //  return;
     if (!mutex_bAnimationInProgress) 
     {
-        g_hSmoothAnimationThreadID=NULL;
+        g_hSmoothAnimationThreadID=0;
         return;  /// Should be some locked to avoid painting against contact deletion.
     }
     do
@@ -2467,14 +2471,14 @@ static void CLUI_SmoothAnimationThreadProc(HWND hwnd)
             SleepEx(20,TRUE);
             if (MirandaExiting()) 
             {
-                g_hSmoothAnimationThreadID=NULL;
+                g_hSmoothAnimationThreadID=0;
                 return;
             }
         }
         else SleepEx(0,TRUE);
 
     } while (mutex_bAnimationInProgress);
-    g_hSmoothAnimationThreadID=NULL;
+    g_hSmoothAnimationThreadID=0;
     return;
 }
 
@@ -2569,7 +2573,7 @@ int CLUI_SmoothAlphaTransition(HWND hwnd, BYTE GoalAlpha, BOOL wParam)
             {
                 mutex_bAnimationInProgress=1;
                 if (g_bSmoothAnimation)
-                    g_hSmoothAnimationThreadID=(HANDLE)forkthread(CLUI_SmoothAnimationThreadProc,0,pcli->hwndContactList);	
+                    g_hSmoothAnimationThreadID=(DWORD)forkthread(CLUI_SmoothAnimationThreadProc,0,pcli->hwndContactList);	
 
             }
         }

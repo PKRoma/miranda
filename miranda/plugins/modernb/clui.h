@@ -45,9 +45,6 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 #define M_CREATECLC                 (WM_USER+1)
 #define M_SETALLEXTRAICONS          (WM_USER+2)
-#define UM_CALLSYNCRONIZED          (WM_USER+100)  // message will be sent to call procedure in mail thread context
-
-#define SYNC_SMOOTHANIMATION        1  // lParam is hWnd to single param CLUI_SmoothAlphaThreadTransition(hwnd);
 
 
 #define MS_CLUI_SHOWMAINMENU    "CList/ShowMainMenu"
@@ -67,6 +64,9 @@ HFONT CLCPaint_ChangeToFont(HDC hdc,struct ClcData *dat,int id,int *fontHeight);
 
 int CListMod_ContactListShutdownProc(WPARAM wParam,LPARAM lParam);
 int CListMod_HideWindow(HWND hwndContactList, int mode);
+
+int CListSettings_GetCopyFromCache(pdisplayNameCacheEntry pDest);
+int CListSettings_SetToCache(pdisplayNameCacheEntry pSrc);
 
 int CListTray_GetGlobalStatus(WPARAM wparam,LPARAM lparam);
 void CListTray_TrayIconDestroy(HWND hwnd);
@@ -164,11 +164,11 @@ struct CluiData g_CluiData={0};
 BYTE    g_bSTATE=STATE_NORMAL;
 HANDLE  g_hSkinLoadedEvent;
 
-HANDLE  g_hMainThreadID=NULL,
-        g_hAskAwayMsgThreadID=NULL,
-        g_hGetTextThreadID=NULL,
-        g_hSmoothAnimationThreadID=NULL,
-        g_hFillFontListThreadID=NULL;
+DWORD   g_hMainThreadID=0,
+        g_hAskAwayMsgThreadID=0,
+        g_hGetTextThreadID=0,
+        g_hSmoothAnimationThreadID=0,
+        g_hFillFontListThreadID=0;
         
 HMENU   g_hMenuMain;
 BOOL    g_bTransparentFlag=FALSE;

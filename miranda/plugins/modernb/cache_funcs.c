@@ -44,13 +44,13 @@ typedef BOOL (* ExecuteOnAllContactsFuncPtr) (struct ClcContact *contact, BOOL s
 /* 	   Module Static Prototypes    */
 
 static int CopySkipUnprintableChars(TCHAR *to, TCHAR * buf, DWORD size);
-static SortedList *CopySmileyString(SortedList *plInput);
+
 static BOOL ExecuteOnAllContacts(struct ClcData *dat, ExecuteOnAllContactsFuncPtr func, void *param);
 static BOOL ExecuteOnAllContactsOfGroup(struct ClcGroup *group, ExecuteOnAllContactsFuncPtr func, void *param);
 
 static int		cache_AskAwayMsg_AddHandleToChain(HANDLE hContact);
 static HANDLE	cache_AskAwayMsg_GetCurrentChain();
-static int cache_AskAwayMsgThread(HWND hwnd);
+static int Cache_AskAwayMsgThreadProc(HWND hwnd);
 /*
  *	Module global variables to implement away messages requests queue
  *  need to avoid disconnection from server (ICQ)
@@ -71,6 +71,7 @@ DWORD dwRequestTick		= 0;
 
 const DWORD const_AskPeriod = 3000;
 
+SortedList *CopySmileyString(SortedList *plInput);
 /*
  *  Add contact handle to requests queue
  */
@@ -141,69 +142,71 @@ static HANDLE cache_AskAwayMsg_GetCurrentChain()
   return res;
 }
 
-
+void CListSettings_FreeCacheItemData(pdisplayNameCacheEntry pDst);
 /*
- *	Tread sub to ask protocol to retrieve away message
- */
-static int cache_AskAwayMsgThread(HWND hwnd)
+*	Tread sub to ask protocol to retrieve away message
+*/
+static int Cache_AskAwayMsgThreadProc(HWND hwnd)
 {
-  DWORD time;
-  HANDLE h;
-  HANDLE ACK=0;
-  pdisplayNameCacheEntry pdnce=NULL;
-	h=cache_AskAwayMsg_GetCurrentChain(); 
-  if (!h) 
-  {
-		g_hAskAwayMsgThreadID=NULL;
-      return 0;
-  }
-
-	b_AskAwayMsgThreadStarted = TRUE;
-  while (h)
-  { 
-    time=GetTickCount();
-		if ((time-dwRequestTick)<const_AskPeriod)
+    DWORD time;
+    HANDLE h;
+    HANDLE ACK=0;
+    displayNameCacheEntry dnce={0};
+    h=cache_AskAwayMsg_GetCurrentChain(); 
+    if (!h) 
     {
-			SleepEx(const_AskPeriod-(time-dwRequestTick)+10,TRUE);
+        g_hAskAwayMsgThreadID=0;
+        return 0;
+    }
+
+    b_AskAwayMsgThreadStarted = TRUE;
+    while (h)
+    { 
+        time=GetTickCount();
+        if ((time-dwRequestTick)<const_AskPeriod)
+        {
+            SleepEx(const_AskPeriod-(time-dwRequestTick)+10,TRUE);
             if (MirandaExiting()) 
             {
-				b_AskAwayMsgThreadStarted = FALSE;
-				g_hAskAwayMsgThreadID=NULL;
-              return 0; 
+                b_AskAwayMsgThreadStarted = FALSE;
+                g_hAskAwayMsgThreadID=0;
+                return 0; 
             }
-    }
+        }
 
-	{
-		pdnce = (pdisplayNameCacheEntry)pcli->pfnGetCacheEntry((HANDLE)h);
-		if (pdnce->ApparentMode!=ID_STATUS_OFFLINE) //don't ask if contact is always invisible (should be done with protocol)
-			ACK=(HANDLE)CallContactService(h,PSS_GETAWAYMSG,0,0);
-	}   
-    if (!ACK)
-    {
-      ACKDATA ack;
-      ack.hContact=h;
-      ack.type=ACKTYPE_AWAYMSG;
-      ack.result=ACKRESULT_FAILED;
-      if (pdnce)
-        ack.szModule=pdnce->szProto;
-      else
-        ack.szModule=NULL;
-      ClcProtoAck((WPARAM)h,(LPARAM) &ack);
-    }
-		dwRequestTick=time;
-		h=cache_AskAwayMsg_GetCurrentChain();
-		if (h) SleepEx(const_AskPeriod,TRUE); else break;
-    if (MirandaExiting()) 
-    {
-			g_hAskAwayMsgThreadID = NULL;
-			b_AskAwayMsgThreadStarted = FALSE;
-      return 0; 
-    }
+        {
+            CListSettings_FreeCacheItemData(&dnce);
+            dnce.hContact=(HANDLE)h;
+            SendMessage(hwnd,UM_CALLSYNCRONIZED,SYNC_GETPDNCE,(LPARAM)&dnce);
+            if (dnce.ApparentMode!=ID_STATUS_OFFLINE) //don't ask if contact is always invisible (should be done with protocol)
+                ACK=(HANDLE)CallContactService(h,PSS_GETAWAYMSG,0,0);
+        }   
+        if (!ACK)
+        {
+            ACKDATA ack;
+            ack.hContact=h;
+            ack.type=ACKTYPE_AWAYMSG;
+            ack.result=ACKRESULT_FAILED;
+            if (dnce.szProto)
+                ack.szModule=dnce.szProto;
+            else
+                ack.szModule=NULL;
+            ClcProtoAck((WPARAM)h,(LPARAM) &ack);
+        }
+        dwRequestTick=time;
+        h=cache_AskAwayMsg_GetCurrentChain();
+        if (h) SleepEx(const_AskPeriod,TRUE); else break;
+        if (MirandaExiting()) 
+        {
+            g_hAskAwayMsgThreadID = 0;
+            b_AskAwayMsgThreadStarted = FALSE;
+            return 0; 
+        }
 
-  }
-	b_AskAwayMsgThreadStarted = 0;
-	g_hAskAwayMsgThreadID=NULL;
-  return 1;
+    }
+    b_AskAwayMsgThreadStarted = 0;
+    g_hAskAwayMsgThreadID=0;
+    return 1;
 }
 
 
@@ -226,7 +229,7 @@ void Cache_ReAskAwayMsg(HANDLE wParam)
 	res=cache_AskAwayMsg_AddHandleToChain(wParam); 
 	if (!b_AskAwayMsgThreadStarted && res) 
   {
-		g_hAskAwayMsgThreadID=(HANDLE)forkthread(cache_AskAwayMsgThread,0,0);
+		g_hAskAwayMsgThreadID=(DWORD)forkthread(Cache_AskAwayMsgThreadProc,0,0);
   }
   return;
 }
@@ -272,7 +275,6 @@ void Cache_GetTimezone(struct ClcData *dat, HANDLE hContact)
 typedef struct _CacheAskChain {
 	HANDLE ContactRequest;
 	struct ClcData *dat;
-	struct ClcContact *contact;
 	struct CacheAskChain *Next;
 } CacheAskChain;
 
@@ -302,46 +304,51 @@ BOOL GetCacheChain(CacheAskChain * chain)
 	return FALSE;
 }
 
-int GetTextThread(void * a)
+int Cache_GetTextThreadProc(void * a)
 {
 	BOOL exit=FALSE;
 	BOOL err=FALSE;
+    HWND hwnd=(HWND)CallService(MS_CLUI_GETHWND,0,0);
+    struct SHORTDATA data={0};
+    struct SHORTDATA * dat;
+    SendMessage(pcli->hwndContactTree,UM_CALLSYNCRONIZED,(WPARAM)SYNC_GETSHORTDATA,(LPARAM)&data);
 	do
 	{
 		SleepEx(0,TRUE); //1000 contacts per second
 		if (MirandaExiting()) 
         {
-            g_hGetTextThreadID=NULL;
+            g_hGetTextThreadID=0;
 			return 0;
         }
 		else
 		{
 			CacheAskChain chain={0};
-			struct ClcData *dat;
-//			struct ClcContact * contact;
+			struct SHORTDATA dat2={0};
 			if (!GetCacheChain(&chain)) break;
-			if (chain.dat==NULL) chain.dat=(struct ClcData*)GetWindowLong(pcli->hwndContactTree,0);
-			if (!IsBadReadPtr(chain.dat,sizeof(struct ClcData))) dat=chain.dat;
-			else err=TRUE;
-			if (!err)
+            if (chain.dat==NULL || chain.dat->hWnd==data.hWnd) dat=&data;
+            else
+            {                
+                SendMessage(chain.dat->hWnd,UM_CALLSYNCRONIZED,(WPARAM)SYNC_GETSHORTDATA,(LPARAM)&dat2);
+                dat=&dat2;
+            }
 			{
-				{
-
-					PDNCE cacheEntry=NULL;
-					cacheEntry=(PDNCE)pcli->pfnGetCacheEntry(chain.ContactRequest);
-					Cache_GetSecondLineText(dat, cacheEntry);
-					Cache_GetThirdLineText(dat, cacheEntry);
-				}
-				KillTimer(dat->hWnd,TIMERID_INVALIDATE_FULL);
-				SetTimer(dat->hWnd,TIMERID_INVALIDATE_FULL,500,NULL);
-			}
-			err=FALSE;
+               displayNameCacheEntry cacheEntry={0};
+               cacheEntry.hContact=chain.ContactRequest;
+               if (!SendMessage(hwnd,UM_CALLSYNCRONIZED,SYNC_GETPDNCE,(LPARAM)&cacheEntry))
+               {
+                   Cache_GetSecondLineText(dat, &cacheEntry);
+    			   Cache_GetThirdLineText(dat, &cacheEntry);
+                   SendMessage(hwnd,UM_CALLSYNCRONIZED,(WPARAM)SYNC_SETPDNCE,(LPARAM)&cacheEntry);
+               }
+		    }
+			KillTimer(dat->hWnd,TIMERID_INVALIDATE_FULL);
+			SetTimer(dat->hWnd,TIMERID_INVALIDATE_FULL,500,NULL);
 		}
 	}
     while (!exit);
 	ISCacheTREADSTARTED=FALSE;	
 	TRACE("ALL Done\n");
-    g_hGetTextThreadID=NULL;
+    g_hGetTextThreadID=0;
 	return 1;
 }
 int AddToCacheChain(struct ClcData *dat,struct ClcContact *contact,HANDLE ContactRequest)
@@ -356,7 +363,7 @@ int AddToCacheChain(struct ClcData *dat,struct ClcContact *contact,HANDLE Contac
 		CacheAskChain * chain=(CacheAskChain *)mir_alloc(sizeof(CacheAskChain));
 		chain->ContactRequest=ContactRequest;
 		chain->dat=dat;
-		chain->contact=contact;
+//		chain->contact=contact;
 		chain->Next=NULL;
 		if (LastCacheChain) 
 		{
@@ -370,7 +377,7 @@ int AddToCacheChain(struct ClcData *dat,struct ClcContact *contact,HANDLE Contac
 			if (!ISCacheTREADSTARTED)
 			{
 				//StartThreadHere();
-				g_hGetTextThreadID=(HANDLE)forkthread(GetTextThread,0,0);
+				g_hGetTextThreadID=(DWORD)forkthread(Cache_GetTextThreadProc,0,0);
 				ISCacheTREADSTARTED=TRUE;
 			}
 		}
@@ -438,7 +445,7 @@ void Cache_DestroySmileyList( SortedList* p_list )
 	
 }
 
-void Cache_AddListeningToIcon(struct ClcData *dat, PDNCE pdnce, TCHAR *text, int text_size, SortedList **plText, 
+void Cache_AddListeningToIcon(struct SHORTDATA *dat, PDNCE pdnce, TCHAR *text, int text_size, SortedList **plText, 
 						 int *max_smiley_height, BOOL replace_smileys)
 {
 	*max_smiley_height = 0;
@@ -503,7 +510,7 @@ void Cache_AddListeningToIcon(struct ClcData *dat, PDNCE pdnce, TCHAR *text, int
 /*
 * Parsing of text for smiley
 */
-void Cache_ReplaceSmileys(struct ClcData *dat, PDNCE pdnce, TCHAR *text, int text_size, SortedList **plText, 
+void Cache_ReplaceSmileys(struct SHORTDATA *dat, PDNCE pdnce, TCHAR *text, int text_size, SortedList **plText, 
 						 int *max_smiley_height, BOOL replace_smileys)
 {
 	SMADD_PARSET sp;
@@ -929,14 +936,21 @@ void Cache_GetFirstLineText(struct ClcData *dat, struct ClcContact *contact)
 	} else {
 		lstrcpyn(contact->szText, name, SIZEOF(contact->szText));
 	}
-	Cache_ReplaceSmileys(dat, pdnce, contact->szText, lstrlen(contact->szText)+1, &(contact->plText),
-		&contact->iTextMaxSmileyHeight,dat->first_line_draw_smileys);
+    {
+        struct SHORTDATA data={0};
+        SendMessage(pcli->hwndContactTree,UM_CALLSYNCRONIZED,(WPARAM)SYNC_GETSHORTDATA,(LPARAM)&data);
+	    Cache_ReplaceSmileys(&data, pdnce, contact->szText, lstrlen(contact->szText)+1, &(contact->plText),
+		    &contact->iTextMaxSmileyHeight,dat->first_line_draw_smileys);
+    }
 }
 
 /*
 *	Get the text for Second Line
 */
-void Cache_GetSecondLineText(struct ClcData *dat, PDNCE pdnce)
+
+
+
+void Cache_GetSecondLineText(struct SHORTDATA *dat, PDNCE pdnce)
 {
   HANDLE hContact=pdnce->hContact;
   TCHAR Text[120-MAXEXTRACOLUMNS]={0};
@@ -946,7 +960,7 @@ void Cache_GetSecondLineText(struct ClcData *dat, PDNCE pdnce)
 		dat->second_line_xstatus_has_priority,dat->second_line_show_status_if_no_away,dat->second_line_show_listening_if_no_away,
 		dat->second_line_use_name_and_message_for_xstatus, dat->contact_time_show_only_if_different);
  
-  LockCacheItem(hContact, __FILE__,__LINE__);
+  //LockCacheItem(hContact, __FILE__,__LINE__);
   if (pdnce->szSecondLineText) mir_free(pdnce->szSecondLineText);
   if (dat->second_line_show)// Text[0]!='\0')
     pdnce->szSecondLineText=mir_tstrdup((TCHAR*)Text);
@@ -966,13 +980,13 @@ void Cache_GetSecondLineText(struct ClcData *dat, PDNCE pdnce)
         &pdnce->iSecondLineMaxSmileyHeight,dat->second_line_draw_smileys);
 	}
   }
-  UnlockCacheItem(hContact);
+  //UnlockCacheItem(hContact);
 }
 
 /*
 *	Get the text for Third Line
 */
-void Cache_GetThirdLineText(struct ClcData *dat, PDNCE pdnce)
+void Cache_GetThirdLineText(struct SHORTDATA *dat, PDNCE pdnce)
 {
   TCHAR Text[120-MAXEXTRACOLUMNS]={0};
   HANDLE hContact=pdnce->hContact;
@@ -982,7 +996,7 @@ void Cache_GetThirdLineText(struct ClcData *dat, PDNCE pdnce)
 		dat->third_line_xstatus_has_priority,dat->third_line_show_status_if_no_away,dat->third_line_show_listening_if_no_away,
 		dat->third_line_use_name_and_message_for_xstatus, dat->contact_time_show_only_if_different);
   
-  LockCacheItem(hContact, __FILE__,__LINE__);
+ // LockCacheItem(hContact, __FILE__,__LINE__);
   if (pdnce->szThirdLineText) mir_free(pdnce->szThirdLineText);
   if (dat->third_line_show)//Text[0]!='\0')
     pdnce->szThirdLineText=mir_tstrdup((TCHAR*)Text);
@@ -1002,7 +1016,7 @@ void Cache_GetThirdLineText(struct ClcData *dat, PDNCE pdnce)
 		&pdnce->iThirdLineMaxSmileyHeight,dat->third_line_draw_smileys);
 	}
   }
-  UnlockCacheItem(hContact);
+ // UnlockCacheItem(hContact);
 }
 
 
@@ -1084,7 +1098,7 @@ typedef struct _CONTACTDATASTORED
 CONTACTDATASTORED * StoredContactsList=NULL;
 static int ContactsStoredCount=0;
 
-static SortedList *CopySmileyString(SortedList *plInput)
+SortedList *CopySmileyString(SortedList *plInput)
 {
 	SortedList * plText;
 	int i;
