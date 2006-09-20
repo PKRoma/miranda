@@ -88,10 +88,10 @@ int CLUI_ShowWindowMod(HWND hWnd, int nCmd)
     return ShowWindow(hWnd,nCmd);
 }
 
-static void CLUI_WaitThreadsCompletion()
+static BOOL CLUI_WaitThreadsCompletion(HWND hwnd)
 {
  
-    while (g_mutex_nCalcRowHeightLock ||
+    if (g_mutex_nCalcRowHeightLock ||
         g_mutex_nPaintLock || 
         g_hAskAwayMsgThreadID || 
         g_hGetTextThreadID || 
@@ -99,8 +99,10 @@ static void CLUI_WaitThreadsCompletion()
         g_hFillFontListThreadID ||
         Miranda_Terminated())
     {
-        SleepEx(0,TRUE);
+        PostMessage(hwnd,WM_DESTROY,0,0);
+        return TRUE;
     }
+    return FALSE;
     //   TerminateThread(g_hAskAwayMsgThreadID,0);
     //   TerminateThread(g_hGetTextThreadID,0);
     //   TerminateThread(g_hSmoothAnimationThreadID,0);
@@ -2077,7 +2079,7 @@ LRESULT CALLBACK CLUI__cli_ContactListWndProc(HWND hwnd, UINT msg, WPARAM wParam
             int state=DBGetContactSettingByte(NULL,"CList","State",SETTING_STATE_NORMAL);
             g_bSTATE=STATE_EXITING;
             CLUI_DisconnectAll();
-            //CLUI_WaitThreadsCompletion(); //stop all my threads                
+            if (CLUI_WaitThreadsCompletion(hwnd)) return 0; //stop all my threads                
             {
                 int i=0;
                 for(i=0; i<64; i++)
