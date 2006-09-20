@@ -32,6 +32,7 @@ extern      struct ContainerWindowData *pFirstContainer;
 extern      MYGLOBALS myGlobals;
 extern      NEN_OPTIONS nen_options;
 extern      BOOL g_skinnedContainers;
+extern      BOOL g_framelessSkinmode;
 
 static void MY_CheckDlgButton(HWND hWnd, UINT id, int iCheck)
 {
@@ -147,7 +148,8 @@ BOOL CALLBACK DlgProcContainerOptions(HWND hwndDlg, UINT msg, WPARAM wParam, LPA
                 TranslateDialogDefault(hwndDlg);
 				mir_sntprintf(szNewTitle, SIZEOF(szNewTitle), _T("\t%s"), pContainer->szName);
 				SetWindowText(hwndDlg, TranslateT("Container options"));
-				
+
+                EnableWindow(GetDlgItem(hwndDlg, IDC_O_HIDETITLE), g_framelessSkinmode ? FALSE : TRUE);
                 //ShowWindow(hwndDlg, SW_SHOWNORMAL);
                 CheckDlgButton(hwndDlg, IDC_CNTPRIVATE, !(pContainer->dwPrivateFlags & CNT_GLOBALSETTINGS));
                 EnableWindow(GetDlgItem(hwndDlg, IDC_TITLEFORMAT), IsDlgButtonChecked(hwndDlg, IDC_USEPRIVATETITLE));

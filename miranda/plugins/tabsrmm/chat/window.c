@@ -27,6 +27,7 @@ extern StatusItems_t StatusItems[];
 extern LRESULT CALLBACK SplitterSubclassProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam);
 extern NEN_OPTIONS nen_options;
 extern HRESULT  (WINAPI *MyCloseThemeData)(HANDLE);
+extern BOOL g_framelessSkinmode;
 
 extern MYGLOBALS	myGlobals;
 extern HBRUSH		hListBkgBrush;
@@ -1586,7 +1587,7 @@ BOOL CALLBACK RoomWndProc(HWND hwndDlg,UINT uMsg,WPARAM wParam,LPARAM lParam)
 		{	
 			char szTemp [100];
             HICON hIcon;
-            BOOL fNoCopy = FALSE;
+            BOOL fNoCopy = TRUE;
 
 #if defined(_UNICODE)
             MultiByteToWideChar(dat->codePage, 0, si->pszName, -1, dat->szNickname, 120);
@@ -1600,10 +1601,10 @@ BOOL CALLBACK RoomWndProc(HWND hwndDlg,UINT uMsg,WPARAM wParam,LPARAM lParam)
             
             switch(si->iType) {
                 case GCW_CHATROOM:
-                    //hIcon = dat->wStatus <= ID_STATUS_OFFLINE ? LoadSkinnedProtoIcon(si->pszModule, ID_STATUS_OFFLINE) : LoadSkinnedProtoIcon(si->pszModule, dat->wStatus);
-                    hIcon = dat->wStatus <= ID_STATUS_OFFLINE ? MY_GetContactIcon(dat->hContact, si->pszModule, ID_STATUS_OFFLINE) : 
-                        MY_GetContactIcon(dat->hContact, si->pszModule, dat->wStatus);
-                    fNoCopy=TRUE;
+                    hIcon = dat->wStatus <= ID_STATUS_OFFLINE ? LoadSkinnedProtoIcon(si->pszModule, ID_STATUS_OFFLINE) : LoadSkinnedProtoIcon(si->pszModule, dat->wStatus);
+                    //hIcon = dat->wStatus <= ID_STATUS_OFFLINE ? MY_GetContactIcon(dat->hContact, si->pszModule, ID_STATUS_OFFLINE) : 
+                    //    MY_GetContactIcon(dat->hContact, si->pszModule, dat->wStatus);
+                    fNoCopy = FALSE;
 
                     mir_snprintf(szTemp, sizeof(szTemp), si->nUsersInNicklist ==1?Translate("%s: Chat Room (%u user)"):Translate("%s: Chat Room (%u users)"), si->pszName, si->nUsersInNicklist);
                     break;
@@ -1618,14 +1619,13 @@ BOOL CALLBACK RoomWndProc(HWND hwndDlg,UINT uMsg,WPARAM wParam,LPARAM lParam)
                     break;
             }
 
-            //dat->hTabStatusIcon = hIcon;
+            dat->hTabStatusIcon = hIcon;
 
-            if(dat->hTabStatusIcon) {
+            /*if(dat->hTabStatusIcon) {
                 DestroyIcon(dat->hTabStatusIcon);
                 dat->hTabStatusIcon=0;
             }
-
-            dat->hTabStatusIcon = fNoCopy ? hIcon : CopyIcon(hIcon);
+            dat->hTabStatusIcon = fNoCopy ? hIcon : CopyIcon(hIcon);*/
 
             if(lParam)
                 dat->hTabIcon = dat->hTabStatusIcon;
@@ -2759,7 +2759,7 @@ LABEL_SHOWWINDOW:
                 SendMessage(dat->pContainer->hwnd, WM_CLOSE, 1, 0);
                 break;
             }
-            if(GetKeyState(VK_SHIFT) & 0x8000) {
+            if(GetKeyState(VK_SHIFT) & 0x8000 && !g_framelessSkinmode) {
                 SendMessage(dat->pContainer->hwnd, WM_SYSCOMMAND, IDM_NOTITLE, 0);
                 break;
             }

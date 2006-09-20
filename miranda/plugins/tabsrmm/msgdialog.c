@@ -50,6 +50,7 @@ extern PSLWA pSetLayeredWindowAttributes;
 extern COLORREF g_ContainerColorKey;
 extern StatusItems_t StatusItems[];
 extern struct GlobalLogSettings_t g_Settings;
+extern BOOL g_framelessSkinmode;
 
 extern PITA pfnIsThemeActive;
 extern POTD pfnOpenThemeData;
@@ -3343,7 +3344,7 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                 SendMessage(hwndContainer, WM_CLOSE, 1, 0);
                 break;
             }
-            if(GetKeyState(VK_SHIFT) & 0x8000) {
+            if(GetKeyState(VK_SHIFT) & 0x8000 && !g_framelessSkinmode) {
                 SendMessage(hwndContainer, WM_SYSCOMMAND, IDM_NOTITLE, 0);
                 break;
             }
