@@ -90,6 +90,7 @@ int CLUI_ShowWindowMod(HWND hWnd, int nCmd)
 
 static void CLUI_WaitThreadsCompletion()
 {
+ 
     while (g_mutex_nCalcRowHeightLock ||
         g_mutex_nPaintLock || 
         g_hAskAwayMsgThreadID || 
@@ -2076,7 +2077,7 @@ LRESULT CALLBACK CLUI__cli_ContactListWndProc(HWND hwnd, UINT msg, WPARAM wParam
             int state=DBGetContactSettingByte(NULL,"CList","State",SETTING_STATE_NORMAL);
             g_bSTATE=STATE_EXITING;
             CLUI_DisconnectAll();
-            CLUI_WaitThreadsCompletion(); //stop all my threads                
+            //CLUI_WaitThreadsCompletion(); //stop all my threads                
             {
                 int i=0;
                 for(i=0; i<64; i++)
