@@ -76,7 +76,7 @@ int hStatusMenuHandlesCnt;
 
 extern HANDLE hStatusModeChangeEvent;
 extern int GetProtocolVisibility(char * ProtoName);
-extern int 	CheckProtocolOrder();
+extern int 	ProtocolOrder_CheckOrder();
 //mainmenu exec param(ownerdata)
 typedef struct{
   char *szServiceName;
@@ -852,7 +852,7 @@ int MenuModulesLoaded(WPARAM wParam,LPARAM lParam)
   //
   CallService(MS_PROTO_ENUMPROTOCOLS,(WPARAM)&protoCount,(LPARAM)&proto);
   networkProtoCount=0;
-  CheckProtocolOrder();
+  ProtocolOrder_CheckOrder();
 
   //
 
@@ -1225,7 +1225,7 @@ int MenuModulesShutdown(WPARAM wParam,LPARAM lParam)
   UnhookEvent(hAckHook);
   return 0;
 }
-extern void DisconnectAll();
+extern void CLUI_DisconnectAll();
 int CloseAction(WPARAM wParam,LPARAM lParam)
 {
   int k;
@@ -1235,7 +1235,7 @@ int CloseAction(WPARAM wParam,LPARAM lParam)
   } while (!k);
   if(k)
   {
-	DisconnectAll();
+	CLUI_DisconnectAll();
     PostMessage((HWND)CallService(MS_CLUI_GETHWND,(WPARAM)0,(LPARAM)0),WM_DESTROY,0,0);
 //   PostQuitMessage(0);
 //   SleepEx(0,TRUE);

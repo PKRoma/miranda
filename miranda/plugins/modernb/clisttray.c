@@ -29,7 +29,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #define TIM_CREATE     (WM_USER+1858)
 
 int cliShowHide(WPARAM wParam,LPARAM lParam);
-int OnTrayRightClick=0;
+int g_mutex_bOnTrayRightClick=0;
 static VOID CALLBACK TrayCycleTimerProc(HWND hwnd,UINT message,UINT idEvent,DWORD dwTime);
 
 extern HICON GetIconFromStatusMode(HANDLE hContact, const char *szProto,int status);
@@ -38,18 +38,18 @@ extern int currentStatusMenuItem,currentDesiredStatusMode;
 extern BOOL (WINAPI *MySetProcessWorkingSetSize)(HANDLE,SIZE_T,SIZE_T);
 extern int GetProtoIndexByPos(PROTOCOLDESCRIPTOR ** proto, int protoCnt, int Pos);
 extern int GetProtocolVisibility(char * ProtoName);
-extern int CheckProtocolOrder();
-extern int HideWindow(HWND hwndContactList, int mode);
+extern int ProtocolOrder_CheckOrder();
+extern int CListMod_HideWindow(HWND hwndContactList, int mode);
 extern int (* saveTrayIconProcessMessage) ( WPARAM wParam, LPARAM lParam );
 #include "modern_statusbar.h"
-extern StatusBarData sbdat;
-
+extern STATUSBARDATA g_StatusBarData;
+BOOL g_bMultiConnectionMode=FALSE;
 static UINT WM_TASKBARCREATED;
 static int cycleTimerId=0,cycleStep=0;
 static int RefreshTimerId=0;   /////by FYR
 static VOID CALLBACK RefreshTimerProc(HWND hwnd,UINT message,UINT idEvent,DWORD dwTime); ///// by FYR
 void cliTrayIconUpdateBase(char *szChangedProto);///by FYR
-extern BOOL IS_WM_MOUSE_DOWN_IN_TRAY;
+BOOL IS_WM_MOUSE_DOWN_IN_TRAY;
 struct trayIconInfo_t {
 	int id;
 	char *szProto;
@@ -85,8 +85,8 @@ void mir_strset(TCHAR ** dest, TCHAR *source)
 }
 
 static DLLVERSIONINFO dviShell;
-BOOL gl_MultiConnectionMode=FALSE;
-char * gl_ConnectingProto=NULL;
+BOOL g_MultiConnectionMode=FALSE;
+char * g_szConnectingProto=NULL;
 static BOOL g_trayMenuOnScreen=FALSE;
 int GetStatusVal(int status)
 {
@@ -126,19 +126,19 @@ int GetGlobalStatus(WPARAM wparam,LPARAM lparam)
 			pcli->clcProto[i].dwStatus<ID_STATUS_CONNECTING+MAX_CONNECT_RETRIES)
 		{
 			connectingCount++;
-			if (connectingCount==1) gl_ConnectingProto=pcli->clcProto[i].szProto;
+			if (connectingCount==1) g_szConnectingProto=pcli->clcProto[i].szProto;
 		}
 		curstatus=GetStatusOrder(curstatus,pcli->clcProto[i].dwStatus);
 	}
 	if (connectingCount==0)
 	{
-		//gl_ConnectingProto=NULL;
-		gl_MultiConnectionMode=FALSE;
+		//g_szConnectingProto=NULL;
+		g_bMultiConnectionMode=FALSE;
 	}
 	else if (connectingCount>1) 
-		gl_MultiConnectionMode=TRUE;
+		g_bMultiConnectionMode=TRUE;
 	else 
-		gl_MultiConnectionMode=FALSE;
+		g_bMultiConnectionMode=FALSE;
 	return curstatus?curstatus:ID_STATUS_OFFLINE;
 }
 
@@ -184,7 +184,7 @@ static TCHAR* TrayIconMakeTooltip(const TCHAR *szPrefix, const char *szProto)
 
 			t=0;
 			cn=DBGetContactSettingDword(NULL,"Protocols","ProtoCount",-1);
-			if (cn==-1) CheckProtocolOrder();
+			if (cn==-1) ProtocolOrder_CheckOrder();
 			cn=DBGetContactSettingDword(NULL,"Protocols","ProtoCount",0);
 			for(t=0;t<cn;t++) {
 				TCHAR *ProtoXStatus=NULL;
@@ -360,7 +360,7 @@ static TCHAR *TrayIconMakeTooltip(const TCHAR *szPrefix,const char *szProto) //T
 		szTip[SIZEOF(szTip)-1]=TEXT('\0');
 		t=0;
 		cn=DBGetContactSettingDword(NULL,"Protocols","ProtoCount",-1);
-		if (cn==-1) CheckProtocolOrder();
+		if (cn==-1) ProtocolOrder_CheckOrder();
 		cn=DBGetContactSettingDword(NULL,"Protocols","ProtoCount",0);
 		for(t=0;t<cn;t++) {
 			i=GetProtoIndexByPos(protos, count,t);
@@ -564,7 +564,7 @@ static int TrayIconInit(HWND hwnd)
 	return 0;
 }
 
-void TrayIconDestroy(HWND hwnd)
+void CListTray_TrayIconDestroy(HWND hwnd)
 {
 	NOTIFYICONDATA nid={0};
 	int i;
@@ -586,7 +586,7 @@ void TrayIconDestroy(HWND hwnd)
 //called when Explorer crashes and the taskbar is remade
 static void TrayIconTaskbarCreated(HWND hwnd)
 {
-	TrayIconDestroy(hwnd);
+	CListTray_TrayIconDestroy(hwnd);
 	TrayIconInit(hwnd);
 }
 
@@ -746,7 +746,7 @@ void cliTrayIconUpdateBase(char *szChangedProto)
 				if(DBGetContactSettingByte(NULL,"CList","AlwaysMulti",SETTING_ALWAYSMULTI_DEFAULT))				
 					changed=TrayIconSetBaseInfo(GetIconFromStatusMode(NULL,szChangedProto,averageMode),szChangedProto);
 				else if(trayIcon && trayIcon[0].szProto!=NULL) {
-					TrayIconDestroy(hwnd);
+					CListTray_TrayIconDestroy(hwnd);
 					TrayIconInit(hwnd);
 				}
 				else 
@@ -780,19 +780,19 @@ void cliTrayIconUpdateBase(char *szChangedProto)
 					else szProto=dbv.pszVal;
 					status=CallProtoService(szChangedProto,PS_GETSTATUS,0,0);
 					
-					if ((sbdat.connectingIcon==1)&&status>=ID_STATUS_CONNECTING&&status<=ID_STATUS_CONNECTING+MAX_CONNECT_RETRIES)
+					if ((g_StatusBarData.connectingIcon==1)&&status>=ID_STATUS_CONNECTING&&status<=ID_STATUS_CONNECTING+MAX_CONNECT_RETRIES)
 					{
 						//
 						HICON hIcon;
 						// 1 check if multi connecting icon
 						GetGlobalStatus(0,0);
-						if (gl_MultiConnectionMode)
-							if (_strcmpi(szChangedProto,gl_ConnectingProto))
+						if (g_bMultiConnectionMode)
+							if (_strcmpi(szChangedProto,g_szConnectingProto))
 								return;
 							else 
-								hIcon=(HICON)GetConnectingIconService((WPARAM)GLOBAL_PROTO_NAME/*(WPARAM)szChangedProto*/,1);
+								hIcon=(HICON)CLUI_GetConnectingIconService((WPARAM)GLOBAL_PROTO_NAME/*(WPARAM)szChangedProto*/,1);
 						else
-							hIcon=(HICON)GetConnectingIconService((WPARAM)szChangedProto,0);										
+							hIcon=(HICON)CLUI_GetConnectingIconService((WPARAM)szChangedProto,0);										
 						if (hIcon)
 						{
 							changed=TrayIconSetBaseInfo(hIcon,NULL);						
@@ -829,11 +829,11 @@ void cliTrayIconUpdateBase(char *szChangedProto)
 
 							int status;
 							status=CallProtoService(szChangedProto,PS_GETSTATUS,0,0);
-							if ((sbdat.connectingIcon==1)&&status>=ID_STATUS_CONNECTING&&status<=ID_STATUS_CONNECTING+MAX_CONNECT_RETRIES)
+							if ((g_StatusBarData.connectingIcon==1)&&status>=ID_STATUS_CONNECTING&&status<=ID_STATUS_CONNECTING+MAX_CONNECT_RETRIES)
 							{
 								//
 								HICON hIcon;
-								hIcon=(HICON)GetConnectingIconService((WPARAM)szChangedProto,0);;										
+								hIcon=(HICON)CLUI_GetConnectingIconService((WPARAM)szChangedProto,0);;										
 								if (hIcon)
 								{
 									changed=TrayIconSetBaseInfo(hIcon,szChangedProto);						
@@ -854,7 +854,7 @@ void cliTrayIconUpdateBase(char *szChangedProto)
 						i=TrayIconSetBaseInfo(GetIconFromStatusMode(NULL,szChangedProto,CallProtoService(szChangedProto,PS_GETSTATUS,0,0)),szChangedProto);
 						if (i<0 || (avg!=-1))
 						{
-							TrayIconDestroy(hwnd);
+							CListTray_TrayIconDestroy(hwnd);
 							TrayIconInit(hwnd);
 						}
 						else 
@@ -862,11 +862,11 @@ void cliTrayIconUpdateBase(char *szChangedProto)
 							int status;
 							changed=i;
 							status=CallProtoService(szChangedProto,PS_GETSTATUS,0,0);
-							if ((sbdat.connectingIcon==1)&&status>=ID_STATUS_CONNECTING&&status<=ID_STATUS_CONNECTING+MAX_CONNECT_RETRIES)
+							if ((g_StatusBarData.connectingIcon==1)&&status>=ID_STATUS_CONNECTING&&status<=ID_STATUS_CONNECTING+MAX_CONNECT_RETRIES)
 							{
 								//
 								HICON hIcon;
-								hIcon=(HICON)GetConnectingIconService((WPARAM)szChangedProto,0);;										
+								hIcon=(HICON)CLUI_GetConnectingIconService((WPARAM)szChangedProto,0);;										
 								if (hIcon)
 								{
 									changed=TrayIconSetBaseInfo(hIcon,szChangedProto);						
@@ -886,12 +886,12 @@ void cliTrayIconUpdateBase(char *szChangedProto)
 		int status=CallProtoService(szChangedProto,PS_GETSTATUS,0,0);
 		BOOL workAround;
 		workAround=(status>=ID_STATUS_OFFLINE && status<=ID_STATUS_IDLE);
-		if ((sbdat.connectingIcon==1)&&status>=ID_STATUS_CONNECTING&&status<=ID_STATUS_CONNECTING+MAX_CONNECT_RETRIES)
+		if ((g_StatusBarData.connectingIcon==1)&&status>=ID_STATUS_CONNECTING&&status<=ID_STATUS_CONNECTING+MAX_CONNECT_RETRIES)
 		{
 			//
 			HICON hIcon;
 
-			hIcon=(HICON)GetConnectingIconService((WPARAM)szChangedProto,0);;										
+			hIcon=(HICON)CLUI_GetConnectingIconService((WPARAM)szChangedProto,0);;										
 			if (hIcon)
 			{
 				changed=TrayIconSetBaseInfo(hIcon,NULL);						
@@ -934,7 +934,7 @@ void cliTrayIconSetToBase(char *szPreferredProto)
 }
 
 static int autoHideTimerId;
-extern BOOL CheckOwner(HWND hwnd);
+extern BOOL CLUI_CheckOwnedByClui(HWND hwnd);
 #define TOOLTIP_TOLERANCE 5
 
 static VOID CALLBACK TrayIconAutoHideTimer(HWND hwnd,UINT message,UINT idEvent,DWORD dwTime)
@@ -944,9 +944,9 @@ static VOID CALLBACK TrayIconAutoHideTimer(HWND hwnd,UINT message,UINT idEvent,D
 	hwndClui=(HWND)CallService(MS_CLUI_GETHWND,0,0);
 	ActiveWindow=GetActiveWindow();
 	if(ActiveWindow==hwndClui) return;
-	if (CheckOwner(ActiveWindow)) return; 
-	//ShowWindowNew(hwndClui,SW_HIDE);
-	HideWindow(hwndClui, SW_HIDE);
+	if (CLUI_CheckOwnedByClui(ActiveWindow)) return; 
+	//CLUI_ShowWindowMod(hwndClui,SW_HIDE);
+	CListMod_HideWindow(hwndClui, SW_HIDE);
 	if(MySetProcessWorkingSetSize!=NULL)
 		MySetProcessWorkingSetSize(GetCurrentProcess(),-1,-1);
 }
@@ -1067,7 +1067,7 @@ case WM_ACTIVATE:
 	}
 	break;
 case WM_DESTROY:
-	TrayIconDestroy(msg->hwnd);
+	CListTray_TrayIconDestroy(msg->hwnd);
 	return FALSE;
 
 case TIM_CALLBACK:
@@ -1085,14 +1085,14 @@ case TIM_CALLBACK:
 		POINT pt;	
 		HMENU hMenu;
 		hMenu=(HMENU)CallService(MS_CLIST_MENUGETSTATUS,(WPARAM)0,(LPARAM)0);
-		OnTrayRightClick=1;
+		g_mutex_bOnTrayRightClick=1;
 		IS_WM_MOUSE_DOWN_IN_TRAY=1;
 		SetForegroundWindow(msg->hwnd);
 		SetFocus(msg->hwnd);
 		GetCursorPos(&pt);
 		TrackPopupMenu(hMenu, TPM_TOPALIGN | TPM_LEFTALIGN|TPM_LEFTBUTTON, pt.x, pt.y, 0, msg->hwnd, NULL);
 		g_trayMenuOnScreen=TRUE;
-		OnTrayRightClick=0;
+		g_mutex_bOnTrayRightClick=0;
 		IS_WM_MOUSE_DOWN_IN_TRAY=0;
 	}
 	else if (msg->lParam==WM_MBUTTONDOWN ||msg->lParam==WM_LBUTTONDOWN ||msg->lParam==WM_RBUTTONDOWN)
@@ -1101,7 +1101,7 @@ case TIM_CALLBACK:
 	}
 	else if (msg->lParam==(DBGetContactSettingByte(NULL,"CList","Tray1Click",SETTING_TRAY1CLICK_DEFAULT)?WM_LBUTTONUP:WM_LBUTTONDBLCLK))
 	{
-		OnTrayRightClick=1;
+		g_mutex_bOnTrayRightClick=1;
 		if ((GetAsyncKeyState(VK_CONTROL)&0x8000)) cliShowHide(0,0);
 		else {
 			if(pcli->pfnEventsProcessTrayDoubleClick()) 
@@ -1134,7 +1134,7 @@ case TIM_CALLBACK:
 		SetMenuDefaultItem(hMenu,ID_TRAY_HIDE,FALSE);
 		*/
 		hMenu=(HMENU)CallService(MS_CLIST_MENUBUILDTRAY,(WPARAM)0,(LPARAM)0);
-		OnTrayRightClick=1;
+		g_mutex_bOnTrayRightClick=1;
 		
 		SetForegroundWindow(msg->hwnd);
 		SetFocus(msg->hwnd);
@@ -1532,7 +1532,7 @@ void InitTrayMenus(void)
 void cliTrayIconIconsChanged(void)
 {
 	HWND hwnd = (HWND) CallService(MS_CLUI_GETHWND, 0, 0);
-	TrayIconDestroy(hwnd);
+	CListTray_TrayIconDestroy(hwnd);
 	TrayIconInit(hwnd);
 }
 

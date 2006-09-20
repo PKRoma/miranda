@@ -38,7 +38,7 @@ TCHAR* GetNameForContact(HANDLE hContact,int flag,boolean *isUnknown);
 char *GetProtoForContact(HANDLE hContact);
 int GetStatusForContact(HANDLE hContact,char *szProto);
 TCHAR *UnknownConctactTranslatedName;
-extern boolean OnModulesLoadedCalled;
+extern boolean g_flag_bOnModulesLoadedCalled;
 void InvalidateDNCEbyPointer(HANDLE hContact,pdisplayNameCacheEntry pdnce,int SettingType);
 
 static int handleCompare( void* c1, void* c2 )
@@ -245,7 +245,7 @@ void cliCheckCacheItem(pdisplayNameCacheEntry pdnce)
 			else
 			{
                 if (!pdnce->isUnknown && pdnce->name &&pdnce->name!=UnknownConctactTranslatedName) mir_free (pdnce->name);
-				if (OnModulesLoadedCalled)
+				if (g_flag_bOnModulesLoadedCalled)
 					pdnce->name = GetNameForContact(pdnce->hContact,0,&pdnce->isUnknown); //TODO UNICODE
 				else
 					pdnce->name = GetNameForContact(pdnce->hContact,0,&pdnce->isUnknown); //TODO UNICODE
@@ -253,7 +253,7 @@ void cliCheckCacheItem(pdisplayNameCacheEntry pdnce)
 		}
 		else
 		{
-			if (pdnce->isUnknown&&pdnce->szProto&&pdnce->protoNotExists==TRUE&&OnModulesLoadedCalled)
+			if (pdnce->isUnknown&&pdnce->szProto&&pdnce->protoNotExists==TRUE&&g_flag_bOnModulesLoadedCalled)
 			{
 				if (CallService(MS_PROTO_ISPROTOCOLLOADED,0,(LPARAM)pdnce->szProto)==(int)NULL)
 				{
@@ -525,7 +525,7 @@ int ContactSettingChanged(WPARAM wParam,LPARAM lParam)
 				{
 					int res=0;
 					//InvalidateDisplayNameCacheEntryByPDNE((HANDLE)wParam,pdnce,cws->value.type);
-					if (pcli->hwndContactTree && OnModulesLoadedCalled) 
+					if (pcli->hwndContactTree && g_flag_bOnModulesLoadedCalled) 
 						res=PostAutoRebuidMessage(pcli->hwndContactTree);
 					if ((DBGetContactSettingWord(NULL,"CList","SecondLineType",0)==TEXT_STATUS_MESSAGE||DBGetContactSettingWord(NULL,"CList","ThirdLineType",0)==TEXT_STATUS_MESSAGE) &&pdnce->hContact && pdnce->szProto)
 					{

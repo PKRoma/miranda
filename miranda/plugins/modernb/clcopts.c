@@ -48,7 +48,7 @@ static BOOL CALLBACK DlgProcClcBkgOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LP
 static BOOL CALLBACK DlgProcClcTextOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam);
 static BOOL CALLBACK DlgProcStatusBarBkgOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam);
 //extern void OnStatusBarBackgroundChange();
-extern int CluiProtocolStatusChanged(WPARAM,LPARAM);
+extern int CLUIServices_ProtocolStatusChanged(WPARAM,LPARAM);
 //extern int ImageList_AddIcon_FixAlpha(HIMAGELIST,HICON);
 
 DWORD GetDefaultExStyle(void)
@@ -384,16 +384,16 @@ struct CheckBoxToStyleEx_t {
           {
             BYTE t;
             t=ServiceExists(MS_MC_GETMOSTONLINECONTACT);
-            ShowWindowNew(GetDlgItem(hwndDlg,IDC_META),t);
-            ShowWindowNew(GetDlgItem(hwndDlg,IDC_METADBLCLK),t);
-            ShowWindowNew(GetDlgItem(hwndDlg,IDC_METASUB_HIDEOFFLINE),t);
-            ShowWindowNew(GetDlgItem(hwndDlg,IDC_METAEXPAND),t);
-            ShowWindowNew(GetDlgItem(hwndDlg,IDC_METASUBEXTRA),t);
-            ShowWindowNew(GetDlgItem(hwndDlg,IDC_FRAME_META),t);
-            ShowWindowNew(GetDlgItem(hwndDlg,IDC_FRAME_META_CAPT),!t); 
-            ShowWindowNew(GetDlgItem(hwndDlg,IDC_SUBINDENTSPIN),t);
-            ShowWindowNew(GetDlgItem(hwndDlg,IDC_SUBINDENT),t);
-            ShowWindowNew(GetDlgItem(hwndDlg,IDC_SUBIDENTCAPT),t);
+            CLUI_ShowWindowMod(GetDlgItem(hwndDlg,IDC_META),t);
+            CLUI_ShowWindowMod(GetDlgItem(hwndDlg,IDC_METADBLCLK),t);
+            CLUI_ShowWindowMod(GetDlgItem(hwndDlg,IDC_METASUB_HIDEOFFLINE),t);
+            CLUI_ShowWindowMod(GetDlgItem(hwndDlg,IDC_METAEXPAND),t);
+            CLUI_ShowWindowMod(GetDlgItem(hwndDlg,IDC_METASUBEXTRA),t);
+            CLUI_ShowWindowMod(GetDlgItem(hwndDlg,IDC_FRAME_META),t);
+            CLUI_ShowWindowMod(GetDlgItem(hwndDlg,IDC_FRAME_META_CAPT),!t); 
+            CLUI_ShowWindowMod(GetDlgItem(hwndDlg,IDC_SUBINDENTSPIN),t);
+            CLUI_ShowWindowMod(GetDlgItem(hwndDlg,IDC_SUBINDENT),t);
+            CLUI_ShowWindowMod(GetDlgItem(hwndDlg,IDC_SUBIDENTCAPT),t);
           }
           return TRUE;
         case WM_COMMAND:
@@ -544,7 +544,7 @@ struct CheckBoxToStyleEx_t {
               SendMessage(GetParent(hwndDlg), PSM_CHANGED, (WPARAM)hwndDlg, 0);
 
               //all changes take effect in runtime
-              //ShowWindowNew(GetDlgItem(hwndDlg,IDC_PROTOCOLORDERWARNING),SW_SHOW);
+              //CLUI_ShowWindowMod(GetDlgItem(hwndDlg,IDC_PROTOCOLORDERWARNING),SW_SHOW);
               }
               */
           }
@@ -876,11 +876,11 @@ struct CheckBoxToStyleEx_t {
             }
             */
             ClcOptionsChanged();
-            CluiProtocolStatusChanged(0,0);
+            CLUIServices_ProtocolStatusChanged(0,0);
             if (IsWindowVisible(pcli->hwndContactList))
             {
-              ShowWindowNew(pcli->hwndContactList,SW_HIDE);
-              ShowWindowNew(pcli->hwndContactList,SW_SHOW);
+              CLUI_ShowWindowMod(pcli->hwndContactList,SW_HIDE);
+              CLUI_ShowWindowMod(pcli->hwndContactList,SW_SHOW);
             }
 
             return TRUE;
@@ -960,7 +960,7 @@ struct CheckBoxToStyleEx_t {
         lf.lfPitchAndFamily=0;
         EnumFontFamiliesExA(hdc,&lf,(FONTENUMPROCA)EnumFontsProc,(LPARAM)GetDlgItem(hwndDlg,IDC_TYPEFACE),0);
         ReleaseDC(hwndDlg,hdc);
-        hFillFontListThread=NULL;
+        g_hFillFontListThreadID=NULL;
         return;
       }
 
@@ -980,15 +980,15 @@ struct CheckBoxToStyleEx_t {
 
       static void SwitchTextDlgToMode(HWND hwndDlg,int expert)
       {
-        ShowWindowNew(GetDlgItem(hwndDlg,IDC_GAMMACORRECT),expert?SW_SHOW:SW_HIDE);
-        ShowWindowNew(GetDlgItem(hwndDlg,IDC_STSAMETEXT),expert?SW_SHOW:SW_HIDE);
-        ShowWindowNew(GetDlgItem(hwndDlg,IDC_SAMETYPE),expert?SW_SHOW:SW_HIDE);
-        ShowWindowNew(GetDlgItem(hwndDlg,IDC_SAMESIZE),expert?SW_SHOW:SW_HIDE);
-        ShowWindowNew(GetDlgItem(hwndDlg,IDC_SAMESTYLE),expert?SW_SHOW:SW_HIDE);
-        ShowWindowNew(GetDlgItem(hwndDlg,IDC_SAMECOLOUR),expert?SW_SHOW:SW_HIDE);
-		ShowWindowNew(GetDlgItem(hwndDlg,IDC_SAMEEFFECT),expert?SW_SHOW:SW_HIDE);
-        ShowWindowNew(GetDlgItem(hwndDlg,IDC_STSIZETEXT),expert?SW_HIDE:SW_SHOW);
-        ShowWindowNew(GetDlgItem(hwndDlg,IDC_STCOLOURTEXT),expert?SW_HIDE:SW_SHOW);
+        CLUI_ShowWindowMod(GetDlgItem(hwndDlg,IDC_GAMMACORRECT),expert?SW_SHOW:SW_HIDE);
+        CLUI_ShowWindowMod(GetDlgItem(hwndDlg,IDC_STSAMETEXT),expert?SW_SHOW:SW_HIDE);
+        CLUI_ShowWindowMod(GetDlgItem(hwndDlg,IDC_SAMETYPE),expert?SW_SHOW:SW_HIDE);
+        CLUI_ShowWindowMod(GetDlgItem(hwndDlg,IDC_SAMESIZE),expert?SW_SHOW:SW_HIDE);
+        CLUI_ShowWindowMod(GetDlgItem(hwndDlg,IDC_SAMESTYLE),expert?SW_SHOW:SW_HIDE);
+        CLUI_ShowWindowMod(GetDlgItem(hwndDlg,IDC_SAMECOLOUR),expert?SW_SHOW:SW_HIDE);
+		CLUI_ShowWindowMod(GetDlgItem(hwndDlg,IDC_SAMEEFFECT),expert?SW_SHOW:SW_HIDE);
+        CLUI_ShowWindowMod(GetDlgItem(hwndDlg,IDC_STSIZETEXT),expert?SW_HIDE:SW_SHOW);
+        CLUI_ShowWindowMod(GetDlgItem(hwndDlg,IDC_STCOLOURTEXT),expert?SW_HIDE:SW_SHOW);
         SetDlgItemTextA(hwndDlg,IDC_STASTEXT,Translate(expert?"as:":"based on:"));
         {	UTILRESIZEDIALOG urd={0};
         urd.cbSize=sizeof(urd);
@@ -1027,7 +1027,7 @@ struct CheckBoxToStyleEx_t {
 
           if(!SendMessage(GetParent(hwndDlg),PSM_ISEXPERT,0,0))
             SwitchTextDlgToMode(hwndDlg,0);
-          hFillFontListThread=(HANDLE)forkthread(FillFontListThread,0,hwndDlg);				
+          g_hFillFontListThreadID=(HANDLE)forkthread(FillFontListThread,0,hwndDlg);				
           {	int i,itemId,fontId;
           LOGFONTA lf={0};
           COLORREF colour;
@@ -1523,14 +1523,14 @@ struct CheckBoxToStyleEx_t {
             LPDRAWITEMSTRUCT dis = (LPDRAWITEMSTRUCT) lParam;
             HBRUSH hBrush=CreateSolidBrush(GetSysColor(COLOR_3DFACE));
             HDC hdc=CreateCompatibleDC(dis->hDC);
-            HBITMAP hbmp=CreateBitmap32(dis->rcItem.right-dis->rcItem.left,dis->rcItem.bottom-dis->rcItem.top);
+            HBITMAP hbmp=SkinEngine_CreateDIB32(dis->rcItem.right-dis->rcItem.left,dis->rcItem.bottom-dis->rcItem.top);
             HBITMAP obmp=SelectObject(hdc,hbmp);
             HFONT oldFnt=SelectObject(hdc,hFontSample);
             RECT rc={0};
             rc.right=dis->rcItem.right-dis->rcItem.left;
             rc.bottom=dis->rcItem.bottom-dis->rcItem.top;
             FillRect(hdc,&rc,hBrush);
-            SetRectAlpha_255(hdc,&rc);
+            SkinEngine_SetRectOpaque(hdc,&rc);
             SetTextColor(hdc,ColorSample);
               SelectEffect(hdc,EffectSample-1,Color1Sample,Color2Sample);
               mod_DrawText(hdc,TranslateT("Sample"),lstrlen(TranslateT("Sample")),&rc,DT_CENTER|DT_VCENTER);

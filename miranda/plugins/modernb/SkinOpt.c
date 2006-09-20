@@ -44,8 +44,8 @@ HBITMAP hPreviewBitmap=NULL;
 extern HWND hCLUIwnd;
 static int AddItemToTree(HWND hTree, char * folder, char * itemName, void * data);
 extern int LoadSkinFromIniFile(char*);
-extern int RedrawCompleteWindow();
-extern int LoadSkinFromDB(void);
+extern int SkinEngine_RedrawCompleteWindow();
+extern int SkinEngine_LoadSkinFromDB(void);
 int AddSkinToListFullName(HWND hwndDlg,char * fullName);
 int AddSkinToList(HWND hwndDlg,char * path, char* file);
 int FillAvailableSkinList(HWND hwndDlg);
@@ -193,17 +193,17 @@ static BOOL CALLBACK DlgSkinOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM l
 						if (res!=IDOK) return 0;
 					}
 					LoadSkinFromIniFile(sd->File);
-					LoadSkinFromDB();	
+					SkinEngine_LoadSkinFromDB();	
 					glOtherSkinWasLoaded=TRUE;
 					pcli->pfnClcBroadcast( INTM_RELOADOPTIONS,0,0);
-					CLUIFramesOnClistResize2(0,0,0);
-					RedrawCompleteWindow();        
-					CLUIFramesOnClistResize2(0,0,0);
+					CLUIFrames_OnClistResize_mod(0,0,0);
+					SkinEngine_RedrawCompleteWindow();        
+					CLUIFrames_OnClistResize_mod(0,0,0);
 					{
 						HWND hwnd=(HWND)CallService(MS_CLUI_GETHWND,0,0);
 						RECT rc={0};
 						GetWindowRect(hwnd, &rc);
-						OnMoving(hwnd,&rc);
+						CLUIFrames_OnMoving(hwnd,&rc);
 					}
 					if (hCLUIwnd)
 					{
@@ -272,7 +272,7 @@ static BOOL CALLBACK DlgSkinOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM l
 			mWidth=dis->rcItem.right-dis->rcItem.left;
 			mHeight=dis->rcItem.bottom-dis->rcItem.top;
 			memDC=CreateCompatibleDC(dis->hDC);
-			hbmp=CreateBitmap32(mWidth,mHeight);
+			hbmp=SkinEngine_CreateDIB32(mWidth,mHeight);
 			holdbmp=SelectObject(memDC,hbmp);
 			workRect=dis->rcItem;
 			OffsetRect(&workRect,-workRect.left,-workRect.top);
@@ -839,7 +839,7 @@ static BOOL CALLBACK DlgProcSkinTabbedOpts(HWND hwndDlg, UINT msg, WPARAM wParam
 				data->items[i].hwnd = CreateDialogIndirectA(g_hInst, templ, hwndDlg, 
 					data->items[i].conf->wnd_proc); 
 				TranslateDialogDefault(data->items[i].hwnd);
-				ShowWindowNew(data->items[i].hwnd, SW_HIDE);
+				CLUI_ShowWindowMod(data->items[i].hwnd, SW_HIDE);
 
 				if (pfEnableThemeDialogTexture != NULL)
 					pfEnableThemeDialogTexture(data->items[i].hwnd, ETDT_ENABLETAB);
@@ -861,7 +861,7 @@ static BOOL CALLBACK DlgProcSkinTabbedOpts(HWND hwndDlg, UINT msg, WPARAM wParam
 			case TCN_SELCHANGING:
 				{
 					WndItemsData *data = (WndItemsData *) GetWindowLong(hwndDlg, GWL_USERDATA);
-					ShowWindowNew(data->items[data->selected_item].hwnd, SW_HIDE);
+					CLUI_ShowWindowMod(data->items[data->selected_item].hwnd, SW_HIDE);
 					break;
 				}
 			case TCN_SELCHANGE: 

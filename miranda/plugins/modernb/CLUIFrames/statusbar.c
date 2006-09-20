@@ -4,7 +4,7 @@ extern BOOL InvalidateRectZ(HWND hWnd, CONST RECT* lpRect,BOOL bErase );
 extern BOOL DrawIconExS(HDC hdc,int xLeft,int yTop,HICON hIcon,int cxWidth,int cyWidth,UINT istepIfAniCur,HBRUSH hbrFlickerFreeDraw,UINT diFlags);
 extern BOOL DrawTextS(HDC hdc, LPCTSTR lpString, int nCount, RECT * lpRect, UINT format);
 extern BOOL TextOutS(HDC hdc, int x, int y, LPCTSTR lpString, int nCount);
-extern int BehindEdgeSettings;
+extern int g_nBehindEdgeSettings;
 
 extern HINSTANCE g_hInst;
 
@@ -14,12 +14,12 @@ extern HWND hwndContactList;
 boolean canloadstatusbar=FALSE;
 HWND helperhwnd=0;
 HANDLE hFrameHelperStatusBar;
-extern	 int CluiProtocolStatusChanged(WPARAM wParam,LPARAM lParam);
-extern int GetConnectingIconService (WPARAM wParam,LPARAM lParam);
-extern int CluiProtocolStatusChanged(WPARAM wParam,LPARAM lParam);
-int TestCursorOnBorders();
+extern	 int CLUIServices_ProtocolStatusChanged(WPARAM wParam,LPARAM lParam);
+extern int CLUI_GetConnectingIconService (WPARAM wParam,LPARAM lParam);
+extern int CLUIServices_ProtocolStatusChanged(WPARAM wParam,LPARAM lParam);
+int CLUI_TestCursorOnBorders();
 int RecreateStatusBar();
-int SizingOnBorder(POINT pt,int size);
+int CLUI_SizingOnBorder(POINT pt,int size);
 
 void DrawBackGround(HWND hwnd, HDC mdc);
 int UseOwnerDrawStatusBar;
@@ -45,7 +45,7 @@ int OnStatusBarBackgroundChange()
 {
 		{	
 		DBVARIANT dbv;
-		showOpts=DBGetContactSettingByte(NULL,"CLUI","SBarShow",1);		
+		g_bStatusBarShowOptions=DBGetContactSettingByte(NULL,"CLUI","SBarShow",1);		
 		bkColour=DBGetContactSettingDword(NULL,"StatusBar","BkColour",CLCDEFAULT_BKCOLOUR);
 		if(hBmpBackground) {DeleteObject(hBmpBackground); hBmpBackground=NULL;}
 		if(DBGetContactSettingByte(NULL,"StatusBar","UseBitmap",CLCDEFAULT_USEBITMAP)) {
@@ -62,7 +62,7 @@ int OnStatusBarBackgroundChange()
 
         if (hwndStatus) 
         {
-            CluiProtocolStatusChanged(0,0);
+            CLUIServices_ProtocolStatusChanged(0,0);
             InvalidateRectZ(hwndStatus,NULL,TRUE);
             //DrawBackGround(hwndStatus,0);
         }
@@ -102,13 +102,13 @@ void DrawDataForStatusBar(DRAWITEMSTRUCT * dis)
                 SetTextColor(dis->hDC,DBGetContactSettingDword(NULL,"StatusBar","TextColour",CLCDEFAULT_TEXTCOLOUR));
 				x=dis->rcItem.left+extraspace;
 
-				if(showOpts&1) {
+				if(g_bStatusBarShowOptions&1) {
 					
 					//char buf [256];
 					
 					if ((DBGetContactSettingByte(NULL,"CLUI","UseConnectingIcon",1)==1)&&status>=ID_STATUS_CONNECTING&&status<=ID_STATUS_CONNECTING+MAX_CONNECT_RETRIES)
 						{
-						hIcon=(HICON)GetConnectingIconService((WPARAM)szProto,0);
+						hIcon=(HICON)CLUI_GetConnectingIconService((WPARAM)szProto,0);
 
 							if (hIcon)
 							{
@@ -127,7 +127,7 @@ void DrawDataForStatusBar(DRAWITEMSTRUCT * dis)
 					x+=GetSystemMetrics(SM_CXSMICON)+2;
 				}
 				else x+=2;
-				if(showOpts&2) {
+				if(g_bStatusBarShowOptions&2) {
 					char szName[64];
 					szName[0]=0;
 					if (CallProtoService(szProto,PS_GETNAME,sizeof(szName),(LPARAM)szName)) {
@@ -143,7 +143,7 @@ void DrawDataForStatusBar(DRAWITEMSTRUCT * dis)
                    
 					x+=textSize.cx;
 				}
-				if(showOpts&4) {
+				if(g_bStatusBarShowOptions&4) {
 					char *szStatus;
 					szStatus=(char*)CallService(MS_CLIST_GETSTATUSMODEDESCRIPTION,status,0);
 					if (!szStatus) szStatus="";
@@ -445,14 +445,14 @@ LRESULT CALLBACK StatusHelperProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lPa
 	
 	case WM_SETCURSOR:
 		{
-         if (BehindEdgeSettings) UpdateTimer(0);
+         if (g_nBehindEdgeSettings) CLUI_UpdateTimer(0);
 				{	
                     POINT pt;
                     GetCursorPos(&pt);  
                     SendMessage(GetParent(hwnd),msg,wParam,lParam);
 					if (pt.x==lastpnt.x&&pt.y==lastpnt.y)
 					{
-						return(TestCursorOnBorders());
+						return(CLUI_TestCursorOnBorders());
 					};
 					lastpnt=pt;
 					if (tooltipshoing){
@@ -463,7 +463,7 @@ LRESULT CALLBACK StatusHelperProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lPa
 					KillTimer(hwnd,TM_STATUSBAR);
 					SetTimer(hwnd,TM_STATUSBAR,DBGetContactSettingWord(NULL,"CLC","InfoTipHoverTime",750),0);
 
-					return(TestCursorOnBorders());
+					return(CLUI_TestCursorOnBorders());
 				};			
 
 		};
@@ -475,7 +475,7 @@ LRESULT CALLBACK StatusHelperProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lPa
                 pt.x = LOWORD(lParam); 
                 pt.y = HIWORD(lParam); 
                 ClientToScreen(hwndStatus,&pt);
-                if (SizingOnBorder(pt,0)==0 && OnFreePoint)
+                if (CLUI_SizingOnBorder(pt,0)==0 && OnFreePoint)
                 {
                    SendMessage(GetParent(GetParent(hwnd)), WM_SYSCOMMAND, SC_MOVE|HTCAPTION,MAKELPARAM(pt.x,pt.y));		
                    return 0;
@@ -562,7 +562,7 @@ LRESULT CALLBACK StatusHelperProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lPa
 			if (canloadstatusbar)
 			{	
 				if(DBGetContactSettingByte(NULL,"CLUI","EqualSections",1)) {
-					CluiProtocolStatusChanged(0,0);
+					CLUIServices_ProtocolStatusChanged(0,0);
 					}
 			};
 			};
@@ -662,7 +662,7 @@ int RecreateStatusBar(HWND parent)
 	SetWindowPos(helperhwnd,NULL,1,1,
 					1,1,SWP_NOZORDER);
 
-	CluiProtocolStatusChanged(0,0);
+	CLUIServices_ProtocolStatusChanged(0,0);
 		CallService(MS_CLIST_FRAMES_UPDATEFRAME,-1,0);
 	};
 

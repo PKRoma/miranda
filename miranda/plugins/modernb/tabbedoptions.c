@@ -147,7 +147,7 @@ BOOL CALLBACK DlgProcTabbedOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lP
 				data->items[i].hwnd = CreateDialogIndirectA(g_hInst, templ, hwndDlg, 
 					data->items[i].conf->wnd_proc); 
 				TranslateDialogDefault(data->items[i].hwnd);
-				ShowWindowNew(data->items[i].hwnd, SW_HIDE);
+				CLUI_ShowWindowMod(data->items[i].hwnd, SW_HIDE);
 
 				if (pfEnableThemeDialogTexture != NULL)
 					pfEnableThemeDialogTexture(data->items[i].hwnd, ETDT_ENABLETAB);
@@ -168,7 +168,7 @@ BOOL CALLBACK DlgProcTabbedOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lP
 			case TCN_SELCHANGING:
 				{
 					TabWndItemsData *data = (TabWndItemsData *) GetWindowLong(hwndDlg, GWL_USERDATA);
-					ShowWindowNew(data->items[data->selected_item].hwnd, SW_HIDE);
+					CLUI_ShowWindowMod(data->items[data->selected_item].hwnd, SW_HIDE);
 					break;
 				}
 			case TCN_SELCHANGE: 

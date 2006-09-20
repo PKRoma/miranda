@@ -23,7 +23,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include "commonheaders.h"
 #include "m_clc.h"
 #include "clc.h"
-extern BOOL cliInvalidateRect(HWND hWnd, CONST RECT* lpRect,BOOL bErase );
+extern BOOL CLUI__cliInvalidateRect(HWND hWnd, CONST RECT* lpRect,BOOL bErase );
 extern ON_SETALLEXTRAICON_CYCLE;
 extern BOOL CLM_AUTOREBUILD_WAS_POSTED;
 
@@ -50,7 +50,7 @@ LRESULT cli_ProcessExternalMessages(HWND hwnd,struct ClcData *dat,UINT msg,WPARA
 
 	case CLM_SETEXTRACOLUMNSSPACE:
 		dat->extraColumnSpacing=(int)wParam;
-		cliInvalidateRect(hwnd,NULL,FALSE);
+		CLUI__cliInvalidateRect(hwnd,NULL,FALSE);
 		return 0;
 
 	case CLM_SETFONT:
@@ -62,7 +62,7 @@ LRESULT cli_ProcessExternalMessages(HWND hwnd,struct ClcData *dat,UINT msg,WPARA
 		RowHeights_GetMaxRowHeight(dat, hwnd);
 
 		if(LOWORD(lParam))
-			cliInvalidateRect(hwnd,NULL,FALSE);
+			CLUI__cliInvalidateRect(hwnd,NULL,FALSE);
 		return 0;
 
 

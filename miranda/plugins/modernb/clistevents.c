@@ -25,7 +25,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include "clist.h"
 #include "cluiframes/cluiframes.h"
 
-HFONT ChangeToFont(HDC hdc,struct ClcData *dat,int id,int *fontHeight);
+HFONT CLCPaint_ChangeToFont(HDC hdc,struct ClcData *dat,int id,int *fontHeight);
 
 /**************************************************/
 /*   Notify Event Area Frame implementation       */
@@ -40,7 +40,7 @@ static int EventArea_DrawWorker(HWND hwnd, HDC hDC);
 static void EventArea_HideShowNotifyFrame();
 static LRESULT CALLBACK EventArea_WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam);
 
-int EventArea_LoadModule(HWND hCluiWnd);
+int EventArea_Create(HWND hCluiWnd);
 int EventArea_UnloadModule();
 void EventArea_ConfigureEventArea();
 
@@ -176,7 +176,7 @@ struct CListEvent* cli_AddEvent(CLISTEVENT *cle)
 				EventArea_HideShowNotifyFrame();
 			}
 		}
-		cliInvalidateRect(g_hwndEventFrame, NULL, FALSE);
+		CLUI__cliInvalidateRect(g_hwndEventFrame, NULL, FALSE);
 	}
 	
 	return p;
@@ -237,7 +237,7 @@ int cli_RemoveEvent(HANDLE hContact, HANDLE hDbEvent)
 		g_CluiData.hUpdateContact = 0;
     if (g_CluiData.bNotifyActive) 
     {
-		cliInvalidateRect(g_hwndEventFrame, NULL, FALSE);
+		CLUI__cliInvalidateRect(g_hwndEventFrame, NULL, FALSE);
     }
 	return res;
 }
@@ -283,7 +283,7 @@ static int EventArea_Draw(HWND hwnd, HDC hDC)
   if (GetParent(hwnd)==pcli->hwndContactList)
     return EventArea_DrawWorker(hwnd,hDC);
   else
-    cliInvalidateRect(hwnd,NULL,FALSE);
+    CLUI__cliInvalidateRect(hwnd,NULL,FALSE);
   return 0;
 }
 
@@ -293,7 +293,7 @@ static int EventArea_DrawWorker(HWND hWnd, HDC hDC)
     HFONT hOldFont;
     GetClientRect(hWnd,&rc);   
     SkinDrawGlyph(hDC,&rc,&rc,"Main,ID=EventArea");
-    hOldFont=ChangeToFont(hDC,NULL,FONTID_CONTACTS,NULL);
+    hOldFont=CLCPaint_ChangeToFont(hDC,NULL,FONTID_CONTACTS,NULL);
     //mod_DrawText(hDC,_T("DEBUG"),lstrlen(_T("DEBUG")),&rc,0);
     {
         struct ClcData *dat = (struct ClcData *) GetWindowLong(pcli->hwndContactTree, 0);
@@ -362,7 +362,7 @@ static void EventArea_HideShowNotifyFrame()
 }
 
 
-int EventArea_LoadModule(HWND hCluiWnd)
+int EventArea_Create(HWND hCluiWnd)
 {
   WNDCLASS wndclass={0};
   TCHAR pluginname[]=TEXT("EventArea");
@@ -502,15 +502,15 @@ static LRESULT CALLBACK EventArea_WndProc(HWND hwnd, UINT msg, WPARAM wParam, LP
 		}
 		break;
     case WM_SIZE:
-	  if (!LayeredFlag)InvalidateRect(hwnd,NULL,FALSE);
+	  if (!g_bLayered)InvalidateRect(hwnd,NULL,FALSE);
 	  return DefWindowProc(hwnd, msg, wParam, lParam);
     case WM_ERASEBKGND:
 	  return FALSE;
     case WM_PAINT:
         {
-            if (GetParent(hwnd)==pcli->hwndContactList && LayeredFlag)
+            if (GetParent(hwnd)==pcli->hwndContactList && g_bLayered)
                 InvalidateFrameImage((WPARAM)hwnd,0);
-            else if (GetParent(hwnd)==pcli->hwndContactList && !LayeredFlag)
+            else if (GetParent(hwnd)==pcli->hwndContactList && !g_bLayered)
 	        {
 		        HDC hdc, hdc2;
 		        HBITMAP hbmp,hbmpo;
@@ -520,7 +520,7 @@ static LRESULT CALLBACK EventArea_WndProc(HWND hwnd, UINT msg, WPARAM wParam, LP
 		        rc.bottom++;
 		        hdc = GetDC(hwnd);
 		        hdc2=CreateCompatibleDC(hdc);
-		        hbmp=CreateBitmap32(rc.right,rc.bottom);
+		        hbmp=SkinEngine_CreateDIB32(rc.right,rc.bottom);
 		        hbmpo=SelectObject(hdc2,hbmp);		
 		        BltBackImage(hwnd,hdc2,&rc);
 		        EventArea_DrawWorker(hwnd,hdc2);
@@ -546,7 +546,7 @@ static LRESULT CALLBACK EventArea_WndProc(HWND hwnd, UINT msg, WPARAM wParam, LP
                 GetClientRect(hwnd,&rc);
                 hdc=BeginPaint(hwnd,&ps);
                 hdc2=CreateCompatibleDC(hdc);
-                hbmp=CreateBitmap32(rc.right,rc.bottom);
+                hbmp=SkinEngine_CreateDIB32(rc.right,rc.bottom);
                 hbmpo=SelectObject(hdc2,hbmp);
                 FillRect(hdc2,&ps.rcPaint,br);
                 EventArea_DrawWorker(hwnd,hdc2);

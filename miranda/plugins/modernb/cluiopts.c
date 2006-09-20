@@ -27,29 +27,29 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #define DBFONTF_ITALIC     2
 #define DBFONTF_UNDERLINE  4
 extern int SkinEditorOptInit(WPARAM wParam,LPARAM lParam);
-extern BOOL (WINAPI *MyUpdateLayeredWindow)(HWND,HDC,POINT*,SIZE*,HDC,POINT*,COLORREF,BLENDFUNCTION*,DWORD);
+extern BOOL (WINAPI *g_proc_UpdateLayeredWindow)(HWND,HDC,POINT*,SIZE*,HDC,POINT*,COLORREF,BLENDFUNCTION*,DWORD);
 HWND hCLUIwnd=NULL;
 //LOGFONTA LoadLogFontFromDB(char * section, char * id, DWORD * color);
-extern HMENU hMenuMain;
-extern BOOL IsOnDesktop;
-extern BOOL (WINAPI *MySetLayeredWindowAttributes)(HWND,COLORREF,BYTE,DWORD);
+extern HMENU g_hMenuMain;
+extern BOOL g_bOnDesktop;
+extern BOOL (WINAPI *g_proc_SetLayeredWindowAttributes)(HWND,COLORREF,BYTE,DWORD);
 BOOL CALLBACK DlgProcCluiOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam);
 BOOL CALLBACK DlgProcSBarOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam);
 void EventArea_ConfigureEventArea();
 //extern hFrameHelperStatusBar;
 extern void ReAssignExtraIcons();
-extern int CluiProtocolStatusChanged(WPARAM wParam,LPARAM lParam);
+extern int CLUIServices_ProtocolStatusChanged(WPARAM wParam,LPARAM lParam);
 extern int UseOwnerDrawStatusBar;
 //extern int OnStatusBarBackgroundChange();
-extern BOOL SmoothAnimation;
-extern int SetParentForContainers(HWND parent);
+extern BOOL g_bSmoothAnimation;
+extern int CLUIFrames_SetParentForContainers(HWND parent);
 static UINT expertOnlyControls[]={IDC_BRINGTOFRONT, IDC_AUTOSIZE,IDC_STATIC21,IDC_MAXSIZEHEIGHT,IDC_MAXSIZESPIN,IDC_STATIC22,IDC_AUTOSIZEUPWARD,IDC_SHOWMAINMENU,IDC_SHOWCAPTION,IDC_CLIENTDRAG};
 extern BYTE UseKeyColor;
 extern DWORD KeyColor;
-extern BOOL IsInChangingMode;
-extern void ChangeWindowMode();
+extern BOOL g_mutex_bChangingMode;
+extern void CLUI_ChangeWindowMode();
 
-int CluiOptInit(WPARAM wParam,LPARAM lParam)
+int CLUIOpt_Init(WPARAM wParam,LPARAM lParam)
 {
 	OPTIONSDIALOGPAGE odp;
 
@@ -268,7 +268,7 @@ BOOL CALLBACK DlgProcExtraIconsOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARA
 						{
 							SaveOrderTree(hwndDlg,GetDlgItem(hwndDlg,IDC_EXTRAORDER));      
 							ReAssignExtraIcons();	
-							ReloadCLUIOptions();
+							CLUI_ReloadCLUIOptions();
 							return TRUE;
 						}
 					}
@@ -501,7 +501,7 @@ BOOL CALLBACK DlgProcCluiOpts2(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPa
 			//DBWriteContactSettingByte(NULL,"CLUI","RightClientMargin",(BYTE)SendDlgItemMessage(hwndDlg,IDC_RIGHTMARGINSPIN,UDM_GETPOS,0,0));
 			//DBWriteContactSettingByte(NULL,"CLUI","TopClientMargin",(BYTE)SendDlgItemMessage(hwndDlg,IDC_TOPMARGINSPIN,UDM_GETPOS,0,0));
 			//DBWriteContactSettingByte(NULL,"CLUI","BottomClientMargin",(BYTE)SendDlgItemMessage(hwndDlg,IDC_BOTTOMMARGINSPIN,UDM_GETPOS,0,0));
-			//if (MyUpdateLayeredWindow!=NULL && IsDlgButtonChecked(hwndDlg,IDC_LAYERENGINE)) 
+			//if (g_proc_UpdateLayeredWindow!=NULL && IsDlgButtonChecked(hwndDlg,IDC_LAYERENGINE)) 
 			//	DBWriteContactSettingByte(NULL,"ModernData","EnableLayering",0);
 			//else 
 			//	DBDeleteContactSetting(NULL,"ModernData","EnableLayering");	
@@ -523,7 +523,7 @@ BOOL CALLBACK DlgProcCluiOpts2(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPa
 			//SetWindowPos(pcli->hwndContactList, IsDlgButtonChecked(hwndDlg,IDC_ONTOP)?HWND_TOPMOST:HWND_NOTOPMOST, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE |SWP_NOACTIVATE);
 			DBWriteContactSettingByte(NULL,"CLUI","DragToScroll",(BYTE)IsDlgButtonChecked(hwndDlg,IDC_DRAGTOSCROLL));
 			DBWriteContactSettingByte(NULL,"CList","BringToFront",(BYTE)IsDlgButtonChecked(hwndDlg,IDC_BRINGTOFRONT));
-			IsInChangingMode=TRUE;
+			g_mutex_bChangingMode=TRUE;
 			DBWriteContactSettingByte(NULL,"CLUI","ClientAreaDrag",(BYTE)IsDlgButtonChecked(hwndDlg,IDC_CLIENTDRAG));
 			DBWriteContactSettingByte(NULL,"CLUI","AutoSize",(BYTE)IsDlgButtonChecked(hwndDlg,IDC_AUTOSIZE));
 			DBWriteContactSettingByte(NULL,"CLUI","LockSize",(BYTE)IsDlgButtonChecked(hwndDlg,IDC_LOCKSIZING));
@@ -534,12 +534,12 @@ BOOL CALLBACK DlgProcCluiOpts2(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPa
 			DBWriteContactSettingByte(NULL,"CList","AutoHide",(BYTE)IsDlgButtonChecked(hwndDlg,IDC_AUTOHIDE));
 			DBWriteContactSettingWord(NULL,"CList","HideTime",(WORD)SendDlgItemMessage(hwndDlg,IDC_HIDETIMESPIN,UDM_GETPOS,0,0));
 
-			ChangeWindowMode(); 
+			CLUI_ChangeWindowMode(); 
 			SendMessage(pcli->hwndContactTree,WM_SIZE,0,0);	//forces it to send a cln_listsizechanged
-			ReloadCLUIOptions();
+			CLUI_ReloadCLUIOptions();
             EventArea_ConfigureEventArea();
 			cliShowHide(0,1);
-			IsInChangingMode=FALSE;
+			g_mutex_bChangingMode=FALSE;
 			return TRUE;
 		}
 		break;
@@ -556,7 +556,7 @@ BOOL CALLBACK DlgProcCluiOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPar
 		TranslateDialogDefault(hwndDlg);
 		CheckDlgButton(hwndDlg, IDC_ONTOP, DBGetContactSettingByte(NULL,"CList","OnTop",SETTING_ONTOP_DEFAULT) ? BST_CHECKED : BST_UNCHECKED);		
 		{	// ====== Activate/Deactivate Non-Layered items =======
-			MODE=!LayeredFlag;
+			MODE=!g_bLayered;
 			EnableWindow(GetDlgItem(hwndDlg,IDC_TOOLWND),MODE);
 			EnableWindow(GetDlgItem(hwndDlg,IDC_MIN2TRAY),MODE);
 			EnableWindow(GetDlgItem(hwndDlg,IDC_BORDER),MODE);
@@ -611,8 +611,8 @@ BOOL CALLBACK DlgProcCluiOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPar
 		SendDlgItemMessage(hwndDlg,IDC_RIGHTMARGINSPIN,UDM_SETPOS,0,DBGetContactSettingByte(NULL,"CLUI","RightClientMargin",0));
 		SendDlgItemMessage(hwndDlg,IDC_TOPMARGINSPIN,UDM_SETPOS,0,DBGetContactSettingByte(NULL,"CLUI","TopClientMargin",0));
 		SendDlgItemMessage(hwndDlg,IDC_BOTTOMMARGINSPIN,UDM_SETPOS,0,DBGetContactSettingByte(NULL,"CLUI","BottomClientMargin",0));
-		EnableWindow(GetDlgItem(hwndDlg,IDC_LAYERENGINE),(MyUpdateLayeredWindow!=NULL)?TRUE:FALSE);
-		CheckDlgButton(hwndDlg, IDC_LAYERENGINE, (DBGetContactSettingByte(NULL,"ModernData","EnableLayering",1)&&MyUpdateLayeredWindow!=NULL) ? BST_UNCHECKED:BST_CHECKED);   
+		EnableWindow(GetDlgItem(hwndDlg,IDC_LAYERENGINE),(g_proc_UpdateLayeredWindow!=NULL)?TRUE:FALSE);
+		CheckDlgButton(hwndDlg, IDC_LAYERENGINE, (DBGetContactSettingByte(NULL,"ModernData","EnableLayering",1)&&g_proc_UpdateLayeredWindow!=NULL) ? BST_UNCHECKED:BST_CHECKED);   
 		CheckDlgButton(hwndDlg, IDC_CHECKKEYCOLOR, DBGetContactSettingByte(NULL,"ModernSettings","UseKeyColor",1) ? BST_CHECKED : BST_UNCHECKED);
 		EnableWindow(GetDlgItem(hwndDlg,IDC_COLOUR_KEY),!MODE&&IsDlgButtonChecked(hwndDlg,IDC_CHECKKEYCOLOR));
 		SendDlgItemMessage(hwndDlg,IDC_COLOUR_KEY,CPM_SETCOLOUR,0,DBGetContactSettingDword(NULL,"ModernSettings","KeyColor",(DWORD)RGB(255,0,255)));	
@@ -738,7 +738,7 @@ BOOL CALLBACK DlgProcCluiOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPar
 			DBWriteContactSettingByte(NULL,"CLUI","RightClientMargin",(BYTE)SendDlgItemMessage(hwndDlg,IDC_RIGHTMARGINSPIN,UDM_GETPOS,0,0));
 			DBWriteContactSettingByte(NULL,"CLUI","TopClientMargin",(BYTE)SendDlgItemMessage(hwndDlg,IDC_TOPMARGINSPIN,UDM_GETPOS,0,0));
 			DBWriteContactSettingByte(NULL,"CLUI","BottomClientMargin",(BYTE)SendDlgItemMessage(hwndDlg,IDC_BOTTOMMARGINSPIN,UDM_GETPOS,0,0));
-			if (MyUpdateLayeredWindow!=NULL && IsDlgButtonChecked(hwndDlg,IDC_LAYERENGINE)) 
+			if (g_proc_UpdateLayeredWindow!=NULL && IsDlgButtonChecked(hwndDlg,IDC_LAYERENGINE)) 
 				DBWriteContactSettingByte(NULL,"ModernData","EnableLayering",0);
 			else 
 				DBDeleteContactSetting(NULL,"ModernData","EnableLayering");	
@@ -776,15 +776,15 @@ BOOL CALLBACK DlgProcCluiOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPar
 				DBWriteContactSettingByte(NULL,"CList","WindowShadow",(BYTE)IsDlgButtonChecked(hwndDlg,IDC_DROPSHADOW));
 				DBWriteContactSettingByte(NULL,"CLC","RoundCorners",(BYTE)IsDlgButtonChecked(hwndDlg,IDC_ROUNDCORNERS));		
 			} //====== End of Non-Layered Mode ======
-			IsInChangingMode=TRUE;
+			g_mutex_bChangingMode=TRUE;
 			if (IsDlgButtonChecked(hwndDlg,IDC_ONDESKTOP)) 
 			{
 				HWND hProgMan=FindWindow(TEXT("Progman"),NULL);
 				if (IsWindow(hProgMan)) 
 				{
 					SetParent(pcli->hwndContactList,hProgMan);
-					SetParentForContainers(hProgMan);
-					IsOnDesktop=1;
+					CLUIFrames_SetParentForContainers(hProgMan);
+					g_bOnDesktop=1;
 				}
 			} 
 			else 
@@ -792,15 +792,15 @@ BOOL CALLBACK DlgProcCluiOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPar
 				if (GetParent(pcli->hwndContactList))
 				{
 					SetParent(pcli->hwndContactList,NULL);
-					SetParentForContainers(NULL);
+					CLUIFrames_SetParentForContainers(NULL);
 				}
-				IsOnDesktop=0;
+				g_bOnDesktop=0;
 			}
 
 
 			//DBWriteContactSettingByte(NULL,"CLUI","ClientAreaDrag",(BYTE)IsDlgButtonChecked(hwndDlg,IDC_CLIENTDRAG));
 			DBWriteContactSettingByte(NULL,"CLUI","FadeInOut",(BYTE)IsDlgButtonChecked(hwndDlg,IDC_FADEINOUT));
-			SmoothAnimation=IsWinVer2000Plus()&&(BYTE)IsDlgButtonChecked(hwndDlg,IDC_FADEINOUT);
+			g_bSmoothAnimation=IsWinVer2000Plus()&&(BYTE)IsDlgButtonChecked(hwndDlg,IDC_FADEINOUT);
 
 			//DBWriteContactSettingByte(NULL,"CLUI","AutoSize",(BYTE)IsDlgButtonChecked(hwndDlg,IDC_AUTOSIZE));
 			//DBWriteContactSettingByte(NULL,"CLUI","LockSize",(BYTE)IsDlgButtonChecked(hwndDlg,IDC_LOCKSIZING));
@@ -827,18 +827,18 @@ BOOL CALLBACK DlgProcCluiOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPar
 
 			//if(IsDlgButtonChecked(hwndDlg,IDC_TRANSPARENT))	{
 			//	SetWindowLong(pcli->hwndContactList, GWL_EXSTYLE, GetWindowLong(pcli->hwndContactList, GWL_EXSTYLE) | WS_EX_LAYERED);
-			//	if(MySetLayeredWindowAttributes) MySetLayeredWindowAttributes(pcli->hwndContactList, RGB(0,0,0), (BYTE)DBGetContactSettingByte(NULL,"CList","AutoAlpha",SETTING_AUTOALPHA_DEFAULT), LWA_ALPHA);
+			//	if(g_proc_SetLayeredWindowAttributes) g_proc_SetLayeredWindowAttributes(pcli->hwndContactList, RGB(0,0,0), (BYTE)DBGetContactSettingByte(NULL,"CList","AutoAlpha",SETTING_AUTOALPHA_DEFAULT), LWA_ALPHA);
 			//}
 			//else {
 			//	SetWindowLong(pcli->hwndContactList, GWL_EXSTYLE, GetWindowLong(pcli->hwndContactList, GWL_EXSTYLE) & ~WS_EX_LAYERED);
 			//}
 
-			ChangeWindowMode(); 
+			CLUI_ChangeWindowMode(); 
 			SendMessage(pcli->hwndContactTree,WM_SIZE,0,0);	//forces it to send a cln_listsizechanged
-			ReloadCLUIOptions();
+			CLUI_ReloadCLUIOptions();
 
 			cliShowHide(0,1);
-			IsInChangingMode=FALSE;
+			g_mutex_bChangingMode=FALSE;
 			return TRUE;
 		}
 		break;
@@ -1020,7 +1020,7 @@ BOOL CALLBACK DlgProcSBarOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPar
 				DBWriteContactSettingByte(NULL,"CLUI","ShowSBar",(BYTE)IsDlgButtonChecked(hwndDlg,IDC_SHOWSBAR));
 
 				LoadStatusBarData();
-				CluiProtocolStatusChanged(0,0);	
+				CLUIServices_ProtocolStatusChanged(0,0);	
 				return TRUE;
 			}
 		}

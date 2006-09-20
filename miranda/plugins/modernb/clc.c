@@ -51,7 +51,7 @@ static int StartScrollPos=0;
 ClcProtoStatus *clcProto = NULL;
 HIMAGELIST himlCListClc=NULL;
 struct ClcContact * hitcontact=NULL;
-extern void SetAllExtraIcons(HWND hwndList,HANDLE hContact);
+extern void ExtraImage_SetAllExtraIcons(HWND hwndList,HANDLE hContact);
 extern void UpdateAllAvatars(struct ClcData *dat);
 extern int GetContactIndex(struct ClcGroup *group,struct ClcContact *contact);
 
@@ -136,7 +136,7 @@ static int ClcSettingChanged(WPARAM wParam,LPARAM lParam)
         }
         else if (!strcmp(cws->szSetting,"XStatusId") || !strcmp(cws->szSetting,"XStatusName") )
         {
-            CluiProtocolStatusChanged(0,(LPARAM)cws->szModule);	
+            CLUIServices_ProtocolStatusChanged(0,(LPARAM)cws->szModule);	
         }
     }
     else // (HANDLE)wParam != NULL
@@ -358,7 +358,7 @@ HICON GetMainStatusOverlay(int STATUS)
 */
 void Cache_RenewText(HANDLE hContact);
 
-int ExtraToColumnNum(int extra);
+int ExtraImage_ExtraIDToColumnNum(int extra);
 int ClcProtoAck(WPARAM wParam,LPARAM lParam)
 {
     ACKDATA *ack=(ACKDATA*)lParam;
@@ -373,8 +373,8 @@ int ClcProtoAck(WPARAM wParam,LPARAM lParam)
                 if (pcli->clcProto[i].dwStatus>=ID_STATUS_OFFLINE)
                     pcli->pfnTrayIconUpdateBase(pcli->clcProto[i].szProto);
                 //TODO call update icons here
-                if(ExtraToColumnNum(EXTRA_ICON_VISMODE)!=-1)
-                    SetAllExtraIcons(pcli->hwndContactTree,(HANDLE)NULL);				
+                if(ExtraImage_ExtraIDToColumnNum(EXTRA_ICON_VISMODE)!=-1)
+                    ExtraImage_SetAllExtraIcons(pcli->hwndContactTree,(HANDLE)NULL);				
                 return 0;
             }
         }
@@ -463,7 +463,7 @@ int AvatarChanged(WPARAM wParam, LPARAM lParam)
 /*
 *	Drag-to-scroll implementation
 */
-int EnterDragToScroll(HWND hwnd, int Y)
+int CLC_EnterDragToScroll(HWND hwnd, int Y)
 {
     struct ClcData * dat;
     if (IsDragToScrollMode) return 0;
@@ -796,7 +796,7 @@ case INTM_ICONCHANGED:
         //        dat->NeedResort = 1; 
         //        SortClcByTimer(hwnd);
         if (dat->NeedResort) SortClcByTimer(hwnd);
-        else if (needRepaint) cliInvalidateRect(hwnd,NULL,FALSE);
+        else if (needRepaint) CLUI__cliInvalidateRect(hwnd,NULL,FALSE);
         else 
         {
 #ifdef _DEBUG
@@ -821,7 +821,7 @@ case INTM_AVATARCHANGED:
             ulockdat;
             UpdateAllAvatars(dat);
         }
-        cliInvalidateRect(hwnd, NULL, FALSE);
+        CLUI__cliInvalidateRect(hwnd, NULL, FALSE);
         return 0;
     }
 
@@ -859,7 +859,7 @@ case INTM_NAMECHANGED:
 case INTM_APPARENTMODECHANGED:
     {
         int res=saveContactListControlWndProc(hwnd, msg, wParam, lParam);
-        SetAllExtraIcons(pcli->hwndContactTree,(HANDLE)wParam);
+        ExtraImage_SetAllExtraIcons(pcli->hwndContactTree,(HANDLE)wParam);
         return res;
     }
 case INTM_STATUSMSGCHANGED:
@@ -887,7 +887,7 @@ case INTM_NOTONLISTCHANGED:
         if(contact->type!=CLCIT_CONTACT) break;
         if(dbcws->value.type==DBVT_DELETED || dbcws->value.bVal==0) contact->flags&=~CONTACTF_NOTONLIST;
         else contact->flags|=CONTACTF_NOTONLIST;
-        cliInvalidateRect(hwnd,NULL,FALSE);
+        CLUI__cliInvalidateRect(hwnd,NULL,FALSE);
         break;
     }
 case INTM_SCROLLBARCHANGED:
@@ -949,7 +949,7 @@ case WM_PAINT:
         {
             HWND h;
             h=GetParent(hwnd);  
-            if (h!=pcli->hwndContactList || !LayeredFlag)
+            if (h!=pcli->hwndContactList || !g_bLayered)
             {       
                 hdc=BeginPaint(hwnd,&ps);
                 cliPaintClc(hwnd,dat,ps.hdc,&ps.rcPaint);
@@ -1118,7 +1118,7 @@ default:
             if(dat->selection>=pcli->pfnGetGroupContentsCount(&dat->list,1))
                 dat->selection=pcli->pfnGetGroupContentsCount(&dat->list,1)-1;
             if(dat->selection<0) dat->selection=0;
-            cliInvalidateRect(hwnd,NULL,FALSE);
+            CLUI__cliInvalidateRect(hwnd,NULL,FALSE);
             pcli->pfnEnsureVisible(hwnd,dat,dat->selection,0);
             UpdateWindow(hwnd);
             SetCapture(hwnd);
@@ -1142,7 +1142,7 @@ case WM_TIMER:
             time_t cur_time=(time(NULL)/60);
             if (cur_time!=dat->last_tick_time)
             {
-                cliInvalidateRect(hwnd,NULL,FALSE);
+                CLUI__cliInvalidateRect(hwnd,NULL,FALSE);
                 dat->last_tick_time=cur_time;
             }
             break;
@@ -1191,10 +1191,10 @@ case WM_TIMER:
 case WM_SETCURSOR: 
     { 
         int k; 
-        if (!IsInMainWindow(hwnd)) return DefWindowProc(hwnd,msg,wParam,lParam);
-        if (gl_i_BehindEdge_CurrentState>0)  BehindEdge_Show();
-        if (BehindEdgeSettings) UpdateTimer(0);
-        k=TestCursorOnBorders();     
+        if (!CLUI_IsInMainWindow(hwnd)) return DefWindowProc(hwnd,msg,wParam,lParam);
+        if (g_nBehindEdgeState>0)  CLUI_ShowFromBehindEdge();
+        if (g_nBehindEdgeSettings) CLUI_UpdateTimer(0);
+        k=CLUI_TestCursorOnBorders();     
         return k?k:DefWindowProc(hwnd,msg,wParam,lParam);
     }
 case WM_LBUTTONDOWN:
@@ -1205,7 +1205,7 @@ case WM_LBUTTONDOWN:
             pt.x = LOWORD(lParam); 
             pt.y = HIWORD(lParam); 
             ClientToScreen(hwnd,&pt);
-            k=SizingOnBorder(pt,0);
+            k=CLUI_SizingOnBorder(pt,0);
             if (k) 
             {         
                 int io=dat->iHotTrack;
@@ -1277,7 +1277,7 @@ case WM_LBUTTONDOWN:
                         dat->selection=cliGetRowsPriorTo(&dat->list,selgroup,GetContactIndex(selgroup,selcontact));
                         if(dat->selection==-1) dat->selection=cliGetRowsPriorTo(&dat->list,contact->group,-1);
                     }
-                    cliInvalidateRect(hwnd,NULL,FALSE);
+                    CLUI__cliInvalidateRect(hwnd,NULL,FALSE);
                     UpdateWindow(hwnd);
                     return TRUE;
                 }
@@ -1286,7 +1286,7 @@ case WM_LBUTTONDOWN:
                     contact->flags^=CONTACTF_CHECKED;
                     if(contact->type==CLCIT_GROUP) pcli->pfnSetGroupChildCheckboxes(contact->group,contact->flags&CONTACTF_CHECKED);
                     pcli->pfnRecalculateGroupCheckboxes(hwnd,dat);
-                    cliInvalidateRect(hwnd,NULL,FALSE);
+                    CLUI__cliInvalidateRect(hwnd,NULL,FALSE);
                     nm.hdr.code=CLN_CHECKCHANGED;
                     nm.hdr.hwndFrom=hwnd;
                     nm.hdr.idFrom=GetDlgCtrlID(hwnd);
@@ -1308,7 +1308,7 @@ case WM_LBUTTONDOWN:
                 }
                 if(hitFlags&(CLCHT_ONITEMCHECK|CLCHT_ONITEMEXTRA)) return 0;
                 dat->selection=hit;
-                cliInvalidateRect(hwnd,NULL,FALSE);
+                CLUI__cliInvalidateRect(hwnd,NULL,FALSE);
                 if(dat->selection!=-1) pcli->pfnEnsureVisible(hwnd,dat,hit,0);
                 UpdateWindow(hwnd);
                 if(dat->selection!=-1 && (contact->type==CLCIT_CONTACT || contact->type==CLCIT_GROUP) && !(hitFlags&(CLCHT_ONITEMEXTRA|CLCHT_ONITEMCHECK))) {
@@ -1341,10 +1341,10 @@ case WM_CAPTURECHANGED:
 case WM_MOUSEMOVE:
     {
         BOOL isOutside=FALSE;
-        if (IsInMainWindow(hwnd))
+        if (CLUI_IsInMainWindow(hwnd))
         {
-            if (BehindEdgeSettings) UpdateTimer(0);
-            TestCursorOnBorders();
+            if (g_nBehindEdgeSettings) CLUI_UpdateTimer(0);
+            CLUI_TestCursorOnBorders();
         }
         if (ProceedDragToScroll(hwnd, (short)HIWORD(lParam))) return 0;		
 
@@ -1422,7 +1422,7 @@ case WM_MOUSEMOVE:
             GetClientRect(hwnd,&clRect);
             pt.x=(short)LOWORD(lParam); pt.y=(short)HIWORD(lParam);
             hNewCursor=LoadCursor(NULL, IDC_NO);
-            cliInvalidateRect(hwnd,NULL,FALSE);
+            CLUI__cliInvalidateRect(hwnd,NULL,FALSE);
             if(dat->dragAutoScrolling)
             {KillTimer(hwnd,TIMERID_DRAGAUTOSCROLL); dat->dragAutoScrolling=0;}
             target=GetDropTargetInformation(hwnd,dat,pt);
@@ -1755,7 +1755,7 @@ case WM_LBUTTONUP:
             }
         }
 
-        cliInvalidateRect(hwnd,NULL,FALSE);
+        CLUI__cliInvalidateRect(hwnd,NULL,FALSE);
         dat->iDragItem=-1;
         dat->iInsertionMark=-1;
         return 0;

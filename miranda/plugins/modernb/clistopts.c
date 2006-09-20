@@ -680,10 +680,10 @@ static BOOL CALLBACK DlgProcItemTextOpts(HWND hwndDlg, UINT msg, WPARAM wParam, 
 			CheckDlgButton(hwndDlg, IDC_APPEND_NICK, DBGetContactSettingByte(NULL,"CList","FirstLineAppendNick",0) == 1 ? BST_CHECKED : BST_UNCHECKED );
             CheckDlgButton(hwndDlg, IDC_TRIM_TEXT, DBGetContactSettingByte(NULL,"CList","TrimText",1) == 1 ? BST_CHECKED : BST_UNCHECKED );
 
-			ShowWindowNew(GetDlgItem(hwndDlg,IDC_REPLACE_SMILEYS), ServiceExists(MS_SMILEYADD_PARSE) ? SW_SHOW : SW_HIDE);
-			ShowWindowNew(GetDlgItem(hwndDlg,IDC_USE_PROTOCOL_SMILEYS), ServiceExists(MS_SMILEYADD_PARSE) ? SW_SHOW : SW_HIDE);
-			ShowWindowNew(GetDlgItem(hwndDlg,IDC_RESIZE_SMILEYS), ServiceExists(MS_SMILEYADD_PARSE) ? SW_SHOW : SW_HIDE);
-			ShowWindowNew(GetDlgItem(hwndDlg,IDC_DRAW_SMILEYS_ON_FIRST_LINE), ServiceExists(MS_SMILEYADD_PARSE) ? SW_SHOW : SW_HIDE);
+			CLUI_ShowWindowMod(GetDlgItem(hwndDlg,IDC_REPLACE_SMILEYS), ServiceExists(MS_SMILEYADD_PARSE) ? SW_SHOW : SW_HIDE);
+			CLUI_ShowWindowMod(GetDlgItem(hwndDlg,IDC_USE_PROTOCOL_SMILEYS), ServiceExists(MS_SMILEYADD_PARSE) ? SW_SHOW : SW_HIDE);
+			CLUI_ShowWindowMod(GetDlgItem(hwndDlg,IDC_RESIZE_SMILEYS), ServiceExists(MS_SMILEYADD_PARSE) ? SW_SHOW : SW_HIDE);
+			CLUI_ShowWindowMod(GetDlgItem(hwndDlg,IDC_DRAW_SMILEYS_ON_FIRST_LINE), ServiceExists(MS_SMILEYADD_PARSE) ? SW_SHOW : SW_HIDE);
 
 			if (!IsDlgButtonChecked(hwndDlg,IDC_REPLACE_SMILEYS))
 			{
@@ -822,8 +822,8 @@ static BOOL CALLBACK DlgProcItemSecondLineOpts(HWND hwndDlg, UINT msg, WPARAM wP
 				}
 			}
 
-			ShowWindowNew(GetDlgItem(hwndDlg,IDC_DRAW_SMILEYS), ServiceExists(MS_SMILEYADD_PARSE) ? SW_SHOW : SW_HIDE);
-			ShowWindowNew(GetDlgItem(hwndDlg,IDC_VARIABLES_L), ServiceExists(MS_VARS_FORMATSTRING) ? SW_SHOW : SW_HIDE);
+			CLUI_ShowWindowMod(GetDlgItem(hwndDlg,IDC_DRAW_SMILEYS), ServiceExists(MS_SMILEYADD_PARSE) ? SW_SHOW : SW_HIDE);
+			CLUI_ShowWindowMod(GetDlgItem(hwndDlg,IDC_VARIABLES_L), ServiceExists(MS_VARS_FORMATSTRING) ? SW_SHOW : SW_HIDE);
 
 			break;
 		}
@@ -1019,8 +1019,8 @@ static BOOL CALLBACK DlgProcItemThirdLineOpts(HWND hwndDlg, UINT msg, WPARAM wPa
 				}
 			}
 
-			ShowWindowNew(GetDlgItem(hwndDlg,IDC_DRAW_SMILEYS), ServiceExists(MS_SMILEYADD_PARSE) ? SW_SHOW : SW_HIDE);
-			ShowWindowNew(GetDlgItem(hwndDlg,IDC_VARIABLES_L), ServiceExists(MS_VARS_FORMATSTRING) ? SW_SHOW : SW_HIDE);
+			CLUI_ShowWindowMod(GetDlgItem(hwndDlg,IDC_DRAW_SMILEYS), ServiceExists(MS_SMILEYADD_PARSE) ? SW_SHOW : SW_HIDE);
+			CLUI_ShowWindowMod(GetDlgItem(hwndDlg,IDC_VARIABLES_L), ServiceExists(MS_VARS_FORMATSTRING) ? SW_SHOW : SW_HIDE);
 
 			break;
 		}
@@ -1246,7 +1246,7 @@ static BOOL CALLBACK DlgProcItemsOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPA
 				data->items[i].hwnd = CreateDialogIndirect(g_hInst, templ, hwndDlg, 
 					data->items[i].conf->wnd_proc); 
 				TranslateDialogDefault(data->items[i].hwnd);
-				ShowWindowNew(data->items[i].hwnd, SW_HIDE);
+				CLUI_ShowWindowMod(data->items[i].hwnd, SW_HIDE);
 
 				if (pfEnableThemeDialogTexture != NULL)
 					pfEnableThemeDialogTexture(data->items[i].hwnd, ETDT_ENABLETAB);
@@ -1268,7 +1268,7 @@ static BOOL CALLBACK DlgProcItemsOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPA
 			case TCN_SELCHANGING:
 				{
 					WndItemsData *data = (WndItemsData *) GetWindowLong(hwndDlg, GWL_USERDATA);
-					ShowWindowNew(data->items[data->selected_item].hwnd, SW_HIDE);
+					CLUI_ShowWindowMod(data->items[data->selected_item].hwnd, SW_HIDE);
 					break;
 				}
 			case TCN_SELCHANGE: 
@@ -1378,14 +1378,14 @@ BOOL CALLBACK DlgProcGenOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
 		{
 			DWORD caps=CallService(MS_CLUI_GETCAPS,CLUICAPS_FLAGS1,0);
 			caps=CLUIF_HIDEEMPTYGROUPS|CLUIF_DISABLEGROUPS|CLUIF_HASONTOPOPTION|CLUIF_HASAUTOHIDEOPTION;
-			if(!(caps&CLUIF_HIDEEMPTYGROUPS)) ShowWindowNew(GetDlgItem(hwndDlg,IDC_HIDEEMPTYGROUPS),SW_HIDE);
-			if(!(caps&CLUIF_DISABLEGROUPS)) ShowWindowNew(GetDlgItem(hwndDlg,IDC_DISABLEGROUPS),SW_HIDE);
-			if(caps&CLUIF_HASONTOPOPTION) ShowWindowNew(GetDlgItem(hwndDlg,IDC_ONTOP),SW_HIDE);
+			if(!(caps&CLUIF_HIDEEMPTYGROUPS)) CLUI_ShowWindowMod(GetDlgItem(hwndDlg,IDC_HIDEEMPTYGROUPS),SW_HIDE);
+			if(!(caps&CLUIF_DISABLEGROUPS)) CLUI_ShowWindowMod(GetDlgItem(hwndDlg,IDC_DISABLEGROUPS),SW_HIDE);
+			if(caps&CLUIF_HASONTOPOPTION) CLUI_ShowWindowMod(GetDlgItem(hwndDlg,IDC_ONTOP),SW_HIDE);
 			if(caps&CLUIF_HASAUTOHIDEOPTION) {
-				ShowWindowNew(GetDlgItem(hwndDlg,IDC_AUTOHIDE),SW_HIDE);
-				ShowWindowNew(GetDlgItem(hwndDlg,IDC_HIDETIME),SW_HIDE);
-				ShowWindowNew(GetDlgItem(hwndDlg,IDC_HIDETIMESPIN),SW_HIDE);
-				ShowWindowNew(GetDlgItem(hwndDlg,IDC_STAUTOHIDESECS),SW_HIDE);
+				CLUI_ShowWindowMod(GetDlgItem(hwndDlg,IDC_AUTOHIDE),SW_HIDE);
+				CLUI_ShowWindowMod(GetDlgItem(hwndDlg,IDC_HIDETIME),SW_HIDE);
+				CLUI_ShowWindowMod(GetDlgItem(hwndDlg,IDC_HIDETIMESPIN),SW_HIDE);
+				CLUI_ShowWindowMod(GetDlgItem(hwndDlg,IDC_STAUTOHIDESECS),SW_HIDE);
 			}
 		}
 		SendDlgItemMessage(hwndDlg,IDC_HIDETIMESPIN,UDM_SETRANGE,0,MAKELONG(900,1));

@@ -29,8 +29,8 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include "commonprototypes.h"
 
 
-extern void LoadSkinFromDB(void);
-extern int RedrawCompleteWindow();
+extern void SkinEngine_LoadSkinFromDB(void);
+extern int SkinEngine_RedrawCompleteWindow();
 typedef struct _OPT_OBJECT_DATA
 {
 	char * szName;
@@ -810,16 +810,16 @@ BOOL CALLBACK DlgSkinEditorOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lP
 				{
 					StoreTreeToDB(GetDlgItem(hwndDlg,IDC_OBJECT_TREE),SKIN);
 					//ReloadSkin
-					LoadSkinFromDB();	
+					SkinEngine_LoadSkinFromDB();	
 					pcli->pfnClcBroadcast( INTM_RELOADOPTIONS,0,0);
-					CLUIFramesOnClistResize2(0,0,0);
-					RedrawCompleteWindow();        
-					CLUIFramesOnClistResize2(0,0,0);
+					CLUIFrames_OnClistResize_mod(0,0,0);
+					SkinEngine_RedrawCompleteWindow();        
+					CLUIFrames_OnClistResize_mod(0,0,0);
 					{
 						HWND hwnd=(HWND)CallService(MS_CLUI_GETHWND,0,0);
 						RECT rc={0};
 						GetWindowRect(hwnd, &rc);
-						OnMoving(hwnd,&rc);
+						CLUIFrames_OnMoving(hwnd,&rc);
 					}
 					return TRUE;
 				}

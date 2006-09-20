@@ -64,7 +64,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #define ADT_BOTTOM                   0x00000008
 //#define ADT_ECLIPSE 64
 
-extern BOOL LayeredFlag;  
+extern BOOL g_bLayered;  
 
 /*SERVICES*/
 
@@ -321,7 +321,7 @@ int __inline SkinEngUpdateImageFrame(HWND hwnd, RECT * rcUpdate, DWORD dwFlags, 
 int __inline SkinEngInvalidateImageFrame(HWND hwnd, CONST RECT * rcUpdate, DWORD dwFlags, void * CallBackData)
 {
   sPaintRequest sr={0};
-  if (!LayeredFlag && hwnd) return InvalidateRect(hwnd,rcUpdate,dwFlags);
+  if (!g_bLayered && hwnd) return InvalidateRect(hwnd,rcUpdate,dwFlags);
   sr.dStructSize=sizeof(sPaintRequest);
   sr.hWnd=hwnd;
   if (rcUpdate)

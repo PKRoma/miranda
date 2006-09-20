@@ -42,8 +42,8 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 //lParam=(LPARAM)(const char*)szProtocolID
 //returns 0 on success, nonzero on failure
 //protocol modules don't want to call this. They want
-//clist/protocolstatuschanged instead
-#define MS_CLUI_PROTOCOLSTATUSCHANGED       "CLUI/ProtocolStatusChanged"
+//clist/CLUIServices_ProtocolStatusChanged instead
+#define MS_CLUI_PROTOCOLSTATUSCHANGED       "CLUI/CLUIServices_ProtocolStatusChanged"
 
 //a new group was created. Add it to the list
 //wParam=(WPARAM)(HANDLE)hGroup
@@ -116,7 +116,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 //returns 0 on success, nonzero on failure
 //sorts are buffered so you won't get this message lots of times if the list
 //needs to be re-sorted many times rapidly.
-#define MS_CLUI_SORTLIST        "CLUI/SortList"
+#define MS_CLUI_SORTLIST        "CLUI/CLUIServices_SortList"
 
 
 //Gets a load of capabilities for the loaded CLUI    v0.1.2.1+

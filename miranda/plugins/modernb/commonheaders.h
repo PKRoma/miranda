@@ -229,10 +229,10 @@ extern int UnhookAll();
 
 
 
-HBITMAP CreateBitmap32(int cx, int cy);
+HBITMAP SkinEngine_CreateDIB32(int cx, int cy);
 extern void InitDisplayNameCache(void);
 extern void FreeDisplayNameCache();
-extern int ShowWindowNew(HWND hwnd, int cmd);
+extern int CLUI_ShowWindowMod(HWND hwnd, int cmd);
 
 #ifdef UNICODE
 	#define GCMDF_TCHAR_MY GCMDF_TCHAR|CNF_UNICODE
@@ -298,17 +298,17 @@ extern BOOL (WINAPI *pfEnableThemeDialogTexture)(HANDLE, DWORD);
 #define TreeView_GetItemA(hwnd, pitem) \
 	(BOOL)SendMessageA((hwnd), TVM_GETITEMA, 0, (LPARAM)(TV_ITEM *)(pitem))
 
-extern HANDLE hAskAwayMsgThread;
-extern HANDLE hGetTextThread;
-extern HANDLE hSmoothAnimationThread;
-extern HANDLE hFillFontListThread;
+extern HANDLE g_hAskAwayMsgThreadID;
+extern HANDLE g_hGetTextThreadID;
+extern HANDLE g_hSmoothAnimationThreadID;
+extern HANDLE g_hFillFontListThreadID;
 
 #define STATE_NORMAL 0
 #define STATE_EXITING 1
-extern BYTE g_STATE;
-#define MirandaExiting() ((g_STATE==STATE_EXITING) || Miranda_Terminated())
+extern BYTE g_bSTATE;
+#define MirandaExiting() ((g_bSTATE==STATE_EXITING) || Miranda_Terminated())
 extern BYTE gl_TrimText;
 
 extern struct CluiData g_CluiData;
-
+extern HANDLE g_hMainThreadID;
 

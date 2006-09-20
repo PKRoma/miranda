@@ -27,10 +27,10 @@ Created by Pescuma
 #include "image_array.h"
 #include "commonprototypes.h"
 //extern BYTE gdiPlusFail;
-// To use this code in other places, replace the body of this func by the body of CreateBitmap32
+// To use this code in other places, replace the body of this func by the body of SkinEngine_CreateDIB32
 static HBITMAP ImageArray_CreateBitmap(int cx, int cy)
 {
-	return CreateBitmap32(cx, cy);
+	return SkinEngine_CreateDIB32(cx, cy);
 }
 
 

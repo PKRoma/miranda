@@ -23,16 +23,16 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include "commonheaders.h"
 
 extern HWND hwndContactList,hwndContactTree,hwndStatus;
-extern HMENU hMenuMain;
-extern BOOL (WINAPI *MySetLayeredWindowAttributes)(HWND,COLORREF,BYTE,DWORD);
+extern HMENU g_hMenuMain;
+extern BOOL (WINAPI *g_proc_SetLayeredWindowAttributes)(HWND,COLORREF,BYTE,DWORD);
 static BOOL CALLBACK DlgProcCluiOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam);
 static BOOL CALLBACK DlgProcSBarOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam);
 extern hFrameHelperStatusBar;
 extern void ReAssignExtraIcons();
-extern int CluiProtocolStatusChanged(WPARAM wParam,LPARAM lParam);
+extern int CLUIServices_ProtocolStatusChanged(WPARAM wParam,LPARAM lParam);
 
 static UINT expertOnlyControls[]={IDC_BRINGTOFRONT, IDC_AUTOSIZE,IDC_STATIC21,IDC_MAXSIZEHEIGHT,IDC_MAXSIZESPIN,IDC_STATIC22,IDC_AUTOSIZEUPWARD,IDC_SHOWMAINMENU,IDC_SHOWCAPTION,IDC_CLIENTDRAG};
-int CluiOptInit(WPARAM wParam,LPARAM lParam)
+int CLUIOpt_Init(WPARAM wParam,LPARAM lParam)
 {
 	OPTIONSDIALOGPAGE odp;
 
@@ -264,7 +264,7 @@ static BOOL CALLBACK DlgProcCluiOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPAR
 						SetWindowLong(hwndContactList,GWL_STYLE,GetWindowLong(hwndContactList,GWL_STYLE)&~(WS_CAPTION|WS_SYSMENU|WS_MINIMIZEBOX));
 
 					if(!IsDlgButtonChecked(hwndDlg,IDC_SHOWMAINMENU)) SetMenu(hwndContactList,NULL);
-					else SetMenu(hwndContactList,hMenuMain);
+					else SetMenu(hwndContactList,g_hMenuMain);
 
 					SetWindowPos(hwndContactList,0,0,0,0,0,SWP_NOZORDER|SWP_NOMOVE|SWP_NOSIZE|SWP_FRAMECHANGED);
 					RedrawWindow(hwndContactList,NULL,NULL,RDW_FRAME|RDW_INVALIDATE);
@@ -295,7 +295,7 @@ static BOOL CALLBACK DlgProcCluiOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPAR
 
 					if(IsDlgButtonChecked(hwndDlg,IDC_TRANSPARENT))	{
 						SetWindowLong(hwndContactList, GWL_EXSTYLE, GetWindowLong(hwndContactList, GWL_EXSTYLE) | WS_EX_LAYERED);
-						if(MySetLayeredWindowAttributes) MySetLayeredWindowAttributes(hwndContactList, RGB(0,0,0), (BYTE)DBGetContactSettingByte(NULL,"CList","AutoAlpha",SETTING_AUTOALPHA_DEFAULT), LWA_ALPHA);
+						if(g_proc_SetLayeredWindowAttributes) g_proc_SetLayeredWindowAttributes(hwndContactList, RGB(0,0,0), (BYTE)DBGetContactSettingByte(NULL,"CList","AutoAlpha",SETTING_AUTOALPHA_DEFAULT), LWA_ALPHA);
 					}
 					else {
 						SetWindowLong(hwndContactList, GWL_EXSTYLE, GetWindowLong(hwndContactList, GWL_EXSTYLE) & ~WS_EX_LAYERED);
@@ -307,7 +307,7 @@ static BOOL CALLBACK DlgProcCluiOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPAR
 						DBWriteContactSettingByte(NULL,CLUIFrameModule,"EXTRA_ICON_SMS",(BYTE)IsDlgButtonChecked(hwndDlg,IDC_EXTRA_CELLULAR));
 						DBWriteContactSettingByte(NULL,CLUIFrameModule,"EXTRA_ICON_ADV1",(BYTE)IsDlgButtonChecked(hwndDlg,IDC_EXTRA_ADV1));
 						DBWriteContactSettingByte(NULL,CLUIFrameModule,"EXTRA_ICON_ADV2",(BYTE)IsDlgButtonChecked(hwndDlg,IDC_EXTRA_ADV2));
-						//SetAllExtraIcons()	
+						//ExtraImage_SetAllExtraIcons()	
 						ReAssignExtraIcons();
 					};			
 					
@@ -413,8 +413,8 @@ static BOOL CALLBACK DlgProcSBarOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPAR
 				    CallService(MS_CLIST_FRAMES_SETFRAMEOPTIONS,MAKEWPARAM(FO_FLAGS,hFrameHelperStatusBar),frameopt);
 
 					SendMessage(hwndContactList,WM_SIZE,0,0);
-					//CheckProtocolOrder();
-					CluiProtocolStatusChanged(0,0);			
+					//ProtocolOrder_CheckOrder();
+					CLUIServices_ProtocolStatusChanged(0,0);			
 					return TRUE;
 					}
 			}

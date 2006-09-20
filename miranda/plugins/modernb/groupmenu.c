@@ -43,7 +43,7 @@ HANDLE hNewSubGroupMenuItem;
 int NewGroupIconidx;
 
 extern HIMAGELIST hCListImages;
-extern HICON LoadIconFromExternalFile (char *filename,int i,boolean UseLibrary,boolean registerit,char *IconName,char *SectName,char *Description,int internalidx, BOOL *needFree);
+extern HICON CLUI_LoadIconFromExternalFile (char *filename,int i,boolean UseLibrary,boolean registerit,char *IconName,char *SectName,char *Description,int internalidx, BOOL *needFree);
 
 void InitSubGroupMenus(void);
 
@@ -269,7 +269,7 @@ int static OnIconLibIconChanged(WPARAM wParam,LPARAM lParam)
 	CLISTMENUITEM clmi={0};
 	BOOL needFree;
     if (MirandaExiting()) return 0;
-	hicon=LoadIconFromExternalFile("clisticons.dll",2,TRUE,FALSE,"NewGroup","Contact List","New Group",-IDI_NEWGROUP,&needFree);
+	hicon=CLUI_LoadIconFromExternalFile("clisticons.dll",2,TRUE,FALSE,"NewGroup","Contact List","New Group",-IDI_NEWGROUP,&needFree);
 	NewGroupIconidx=ImageList_ReplaceIcon(hCListImages,NewGroupIconidx,hicon);	
 	if (needFree) DestroyIcon_protect(hicon);
 	clmi.cbSize=sizeof(clmi);
@@ -283,13 +283,13 @@ int static OnIconLibIconChanged(WPARAM wParam,LPARAM lParam)
 	return 0;
 };
 
-void InitGroupMenus(void)
+void GroupMenus_Init(void)
 {
 	TMenuParam tmp;
 	OptParam op;
 	HICON hicon;
 	BOOL needFree;
-	hicon=LoadIconFromExternalFile("clisticons.dll",2,TRUE,TRUE,"NewGroup","Contact List","New Group",-IDI_NEWGROUP2,&needFree);
+	hicon=CLUI_LoadIconFromExternalFile("clisticons.dll",2,TRUE,TRUE,"NewGroup","Contact List","New Group",-IDI_NEWGROUP2,&needFree);
 	NewGroupIconidx=hicon?ImageList_AddIcon(hCListImages,hicon ):-1;	
 	if (needFree) DestroyIcon_protect(hicon);
 	CreateServiceFunction("CLISTMENUSGroup/ExecService",GroupMenuExecService);

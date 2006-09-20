@@ -41,7 +41,7 @@ static HRESULT  (WINAPI *MyDrawThemeBackground)(HANDLE,HDC,int,int,const RECT *,
 void DrawStatusIcon(struct ClcContact * Drawing, struct ClcData *dat, int iImage, HDC hDC, int x, int y, int cx, int cy, DWORD colorbg,DWORD colorfg, int mode);
 
 extern HIMAGELIST hAvatarOverlays;
-tPaintCallbackProc ClcPaintCallbackProc(HWND hWnd, HDC hDC, RECT * rcPaint,HRGN rgn,  DWORD dFlags, void * CallBackData);
+tPaintCallbackProc CLC_PaintCallbackProc(HWND hWnd, HDC hDC, RECT * rcPaint,HRGN rgn,  DWORD dFlags, void * CallBackData);
 //#include <gdiplus.h>
 #include "modern_row.h"
 extern int mod_CalcRowHeight(struct ClcData *dat, HWND hwnd, struct ClcContact *contact, int item);
@@ -74,7 +74,7 @@ extern BOOL ResetEffect(HDC);
 extern BOOL SelectEffect(HDC hdc, BYTE EffectID, DWORD FirstColor, DWORD SecondColor);
 
 
-HFONT ChangeToFont(HDC hdc,struct ClcData *dat,int id,int *fontHeight)
+HFONT CLCPaint_ChangeToFont(HDC hdc,struct ClcData *dat,int id,int *fontHeight)
 {
   HFONT res;
   if (!dat)
@@ -611,7 +611,7 @@ _inline char * GetCLCContactRowBackObject(struct ClcGroup * group, struct ClcCon
 }
 #undef BUFSIZE
 #undef BUF2SIZE
-tPaintCallbackProc ClcPaintCallbackProc(HWND hWnd, HDC hDC, RECT * rcPaint, HRGN rgn, DWORD dFlags, void * CallBackData)
+tPaintCallbackProc CLC_PaintCallbackProc(HWND hWnd, HDC hDC, RECT * rcPaint, HRGN rgn, DWORD dFlags, void * CallBackData)
 {
   struct ClcData* dat;
   dat=(struct ClcData*)GetWindowLong(hWnd,0);
@@ -780,7 +780,7 @@ void ModernInternalPaintRowItems(HWND hwnd, HDC hdcMem, struct ClcData *dat, str
       UINT uTextFormat=DT_LEFT|DT_VCENTER|(gl_TrimText?DT_END_ELLIPSIS:0)|DT_SINGLELINE;
 	  uTextFormat|=dat->text_rtl?DT_RTLREADING:0;
       // Select font
-      ChangeToFont(hdcMem,dat,GetBasicFontID(Drawing),NULL);
+      CLCPaint_ChangeToFont(hdcMem,dat,GetBasicFontID(Drawing),NULL);
 
       // Get text size
       GetTextSize(&text_size, hdcMem, fr_rc, Drawing->szText, Drawing->plText, uTextFormat, 
@@ -798,7 +798,7 @@ void ModernInternalPaintRowItems(HWND hwnd, HDC hdcMem, struct ClcData *dat, str
             if(szCounts && strlen(szCounts)>0) 
             {
               // calc width and height
-              ChangeToFont(hdcMem,dat,Drawing->group->expanded?FONTID_OPENGROUPCOUNTS:FONTID_CLOSEDGROUPCOUNTS,NULL);
+              CLCPaint_ChangeToFont(hdcMem,dat,Drawing->group->expanded?FONTID_OPENGROUPCOUNTS:FONTID_CLOSEDGROUPCOUNTS,NULL);
               mod_DrawText(hdcMem,_T(" "),1,&count_rc,DT_CALCRECT | DT_NOPREFIX);
               count_size.cx =count_rc.right-count_rc.left;
               space_width=count_size.cx;
@@ -813,7 +813,7 @@ void ModernInternalPaintRowItems(HWND hwnd, HDC hdcMem, struct ClcData *dat, str
             {
               SIZE text_size={0};             
               int wid=fr_rc.right-fr_rc.left;
-              ChangeToFont(hdcMem,dat,Drawing->group->expanded?FONTID_OPENGROUPS:FONTID_CLOSEDGROUPS,NULL);
+              CLCPaint_ChangeToFont(hdcMem,dat,Drawing->group->expanded?FONTID_OPENGROUPS:FONTID_CLOSEDGROUPS,NULL);
               GetTextSize(&text_size,hdcMem,fr_rc,Drawing->szText,Drawing->plText,0, dat->text_resize_smileys ? 0 : Drawing->iTextMaxSmileyHeight);
 
               if (wid-count_size.cx > text_size.cx )
@@ -853,7 +853,7 @@ void ModernInternalPaintRowItems(HWND hwnd, HDC hdcMem, struct ClcData *dat, str
             //uTextFormat|=(dat->row_align_group_mode==2)?DT_RIGHT:(dat->row_align_group_mode==1)?DT_CENTER:DT_LEFT;
 
             uTextFormat|=DT_VCENTER;
-            ChangeToFont(hdcMem,dat,Drawing->group->expanded?FONTID_OPENGROUPS:FONTID_CLOSEDGROUPS,NULL);
+            CLCPaint_ChangeToFont(hdcMem,dat,Drawing->group->expanded?FONTID_OPENGROUPS:FONTID_CLOSEDGROUPS,NULL);
             if (selected)
               SetTextColor(hdcMem,dat->selTextColour);
             else if(hottrack)
@@ -867,7 +867,7 @@ void ModernInternalPaintRowItems(HWND hwnd, HDC hdcMem, struct ClcData *dat, str
             }
             if(szCounts && strlen(szCounts)>0)
             {
-              ChangeToFont(hdcMem,dat,Drawing->group->expanded?FONTID_OPENGROUPCOUNTS:FONTID_CLOSEDGROUPCOUNTS,NULL);
+              CLCPaint_ChangeToFont(hdcMem,dat,Drawing->group->expanded?FONTID_OPENGROUPCOUNTS:FONTID_CLOSEDGROUPCOUNTS,NULL);
               if (selected)
                 SetTextColor(hdcMem,dat->selTextColour);
               else if(hottrack)
@@ -902,7 +902,7 @@ void ModernInternalPaintRowItems(HWND hwnd, HDC hdcMem, struct ClcData *dat, str
           space_size.cx = space_rc.right - space_rc.left;
           space_size.cy = min(space_rc.bottom - space_rc.top, fr_rc.bottom-fr_rc.top);
 
-          ChangeToFont(hdcMem,dat,Drawing->group->expanded?FONTID_OPENGROUPCOUNTS:FONTID_CLOSEDGROUPCOUNTS,NULL);
+          CLCPaint_ChangeToFont(hdcMem,dat,Drawing->group->expanded?FONTID_OPENGROUPCOUNTS:FONTID_CLOSEDGROUPCOUNTS,NULL);
           DrawTextA(hdcMem,szCounts,lstrlenA(szCounts),&counts_rc,DT_CALCRECT);
 
           counts_size.cx = counts_rc.right - counts_rc.left;
@@ -927,7 +927,7 @@ void ModernInternalPaintRowItems(HWND hwnd, HDC hdcMem, struct ClcData *dat, str
           counts_rc.right=counts_rc.left+counts_size.cx;
         }
       }
-      ChangeToFont(hdcMem,dat,GetBasicFontID(Drawing),NULL);
+      CLCPaint_ChangeToFont(hdcMem,dat,GetBasicFontID(Drawing),NULL);
       
       // Set color
       if (selected)
@@ -943,9 +943,9 @@ void ModernInternalPaintRowItems(HWND hwnd, HDC hdcMem, struct ClcData *dat, str
       }
       if (Drawing->type == CLCIT_GROUP && szCounts && szCounts[0] && counts_rc.right-counts_rc.left>0)
       {
-          ChangeToFont(hdcMem,dat,Drawing->group->expanded?FONTID_OPENGROUPCOUNTS:FONTID_CLOSEDGROUPCOUNTS,NULL);
+          CLCPaint_ChangeToFont(hdcMem,dat,Drawing->group->expanded?FONTID_OPENGROUPCOUNTS:FONTID_CLOSEDGROUPCOUNTS,NULL);
           if (dat->text_rtl!=0) RTLrect(&counts_rc, free_row_rc.right, dx);
-		  if (InClistWindow && LayeredFlag)
+		  if (InClistWindow && g_bLayered)
 			mod_DrawTextA(hdcMem,szCounts,lstrlenA(szCounts),&counts_rc,uTextFormat);
 		  else
 			  //88
@@ -962,7 +962,7 @@ void ModernInternalPaintRowItems(HWND hwnd, HDC hdcMem, struct ClcData *dat, str
 		  Drawing->pos_rename_rect=rc;
 	  }
       
-      if ((!InClistWindow || !LayeredFlag)&& ((Drawing->type == CLCIT_DIVIDER) || (Drawing->type == CLCIT_GROUP && dat->exStyle&CLS_EX_LINEWITHGROUPS)))
+      if ((!InClistWindow || !g_bLayered)&& ((Drawing->type == CLCIT_DIVIDER) || (Drawing->type == CLCIT_GROUP && dat->exStyle&CLS_EX_LINEWITHGROUPS)))
       {
 		//???
         RECT rc=fr_rc;
@@ -978,7 +978,7 @@ void ModernInternalPaintRowItems(HWND hwnd, HDC hdcMem, struct ClcData *dat, str
           rc.top+=((rc.bottom-rc.top)>>1)-1;
           rc.bottom=rc.top+2;		  
           DrawEdge(hdcMem,&rc,BDR_SUNKENOUTER,BF_RECT);
-		  SetRectAlpha_255(hdcMem,&rc);
+		  SkinEngine_SetRectOpaque(hdcMem,&rc);
         }
       }
 
@@ -1009,7 +1009,7 @@ void ModernInternalPaintRowItems(HWND hwnd, HDC hdcMem, struct ClcData *dat, str
           UINT uTextFormat=(dat->text_rtl ? DT_RTLREADING : 0) ;
           text_size.cx=p_rect.right-p_rect.left;
           text_size.cy=p_rect.bottom-p_rect.top;
-          ChangeToFont(hdcMem,dat,GetBasicFontID(Drawing),NULL);
+          CLCPaint_ChangeToFont(hdcMem,dat,GetBasicFontID(Drawing),NULL);
 
           uTextFormat|=(gl_RowTabAccess[i]->valign==TC_VCENTER)?DT_VCENTER:(gl_RowTabAccess[i]->valign==TC_BOTTOM)?DT_BOTTOM:0; 
           uTextFormat|=(gl_RowTabAccess[i]->halign==TC_HCENTER)?DT_CENTER:(gl_RowTabAccess[i]->halign==TC_RIGHT)?DT_RIGHT:0; 
@@ -1050,7 +1050,7 @@ void ModernInternalPaintRowItems(HWND hwnd, HDC hdcMem, struct ClcData *dat, str
 
 
               // calc width and height
-              ChangeToFont(hdcMem,dat,Drawing->group->expanded?FONTID_OPENGROUPCOUNTS:FONTID_CLOSEDGROUPCOUNTS,NULL);
+              CLCPaint_ChangeToFont(hdcMem,dat,Drawing->group->expanded?FONTID_OPENGROUPCOUNTS:FONTID_CLOSEDGROUPCOUNTS,NULL);
               mod_DrawText(hdcMem,_T(" "),1,&count_rc,DT_CALCRECT | DT_NOPREFIX);
               count_size.cx =count_rc.right-count_rc.left;
               space_width=count_size.cx;
@@ -1065,7 +1065,7 @@ void ModernInternalPaintRowItems(HWND hwnd, HDC hdcMem, struct ClcData *dat, str
             {
               SIZE text_size={0};             
               int wid=p_rect.right-p_rect.left;
-              ChangeToFont(hdcMem,dat,Drawing->group->expanded?FONTID_OPENGROUPS:FONTID_CLOSEDGROUPS,NULL);
+              CLCPaint_ChangeToFont(hdcMem,dat,Drawing->group->expanded?FONTID_OPENGROUPS:FONTID_CLOSEDGROUPS,NULL);
               GetTextSize(&text_size,hdcMem,p_rect,Drawing->szText,Drawing->plText,0, dat->text_resize_smileys ? 0 : Drawing->iTextMaxSmileyHeight);
 
               if (wid-count_size.cx > text_size.cx )
@@ -1105,7 +1105,7 @@ void ModernInternalPaintRowItems(HWND hwnd, HDC hdcMem, struct ClcData *dat, str
             //uTextFormat|=(dat->row_align_group_mode==2)?DT_RIGHT:(dat->row_align_group_mode==1)?DT_CENTER:DT_LEFT;
 
             uTextFormat|=DT_VCENTER;
-            ChangeToFont(hdcMem,dat,Drawing->group->expanded?FONTID_OPENGROUPS:FONTID_CLOSEDGROUPS,NULL);
+            CLCPaint_ChangeToFont(hdcMem,dat,Drawing->group->expanded?FONTID_OPENGROUPS:FONTID_CLOSEDGROUPS,NULL);
             if (selected)
               SetTextColor(hdcMem,dat->selTextColour);
             else if(hottrack)
@@ -1118,7 +1118,7 @@ void ModernInternalPaintRowItems(HWND hwnd, HDC hdcMem, struct ClcData *dat, str
             }
             if(szCounts && strlen(szCounts)>0)
             {
-              ChangeToFont(hdcMem,dat,Drawing->group->expanded?FONTID_OPENGROUPCOUNTS:FONTID_CLOSEDGROUPCOUNTS,NULL);
+              CLCPaint_ChangeToFont(hdcMem,dat,Drawing->group->expanded?FONTID_OPENGROUPCOUNTS:FONTID_CLOSEDGROUPCOUNTS,NULL);
               if (selected)
                 SetTextColor(hdcMem,dat->selTextColour);
               else if(hottrack)
@@ -1164,7 +1164,7 @@ void ModernInternalPaintRowItems(HWND hwnd, HDC hdcMem, struct ClcData *dat, str
           text_size.cx=p_rect.right-p_rect.left;
           text_size.cy=p_rect.bottom-p_rect.top;
 
-          ChangeToFont(hdcMem,dat,FONTID_SECONDLINE,NULL);
+          CLCPaint_ChangeToFont(hdcMem,dat,FONTID_SECONDLINE,NULL);
           uTextFormat = uTextFormat | (gl_TrimText?DT_END_ELLIPSIS:0)|DT_SINGLELINE;
           if (Drawing->type==CLCIT_CONTACT)
             DrawTextSmiley(hdcMem, p_rect, text_size, pdnce->szSecondLineText, lstrlen(pdnce->szSecondLineText), pdnce->plSecondLineText, uTextFormat, dat->text_resize_smileys);
@@ -1201,7 +1201,7 @@ void ModernInternalPaintRowItems(HWND hwnd, HDC hdcMem, struct ClcData *dat, str
           text_size.cx=p_rect.right-p_rect.left;
           text_size.cy=p_rect.bottom-p_rect.top;
 
-          ChangeToFont(hdcMem,dat,FONTID_THIRDLINE,NULL);
+          CLCPaint_ChangeToFont(hdcMem,dat,FONTID_THIRDLINE,NULL);
           uTextFormat = uTextFormat | (gl_TrimText?DT_END_ELLIPSIS:0)|DT_SINGLELINE;
           if (Drawing->type==CLCIT_CONTACT)
             DrawTextSmiley(hdcMem, p_rect, text_size, pdnce->szThirdLineText, lstrlen(pdnce->szThirdLineText), pdnce->plThirdLineText, uTextFormat, dat->text_resize_smileys);
@@ -1390,7 +1390,7 @@ void ModernInternalPaintRowItems(HWND hwnd, HDC hdcMem, struct ClcData *dat, str
 							  RECT r={0,0,w,h};
 							  HDC hdcTmp2 = CreateCompatibleDC(hdcMem);
 							  HBITMAP bmo=SelectObject(hdcTmp,Drawing->avatar_data->hbmPic);
-							  HBITMAP b2=CreateBitmap32(w,h);
+							  HBITMAP b2=SkinEngine_CreateDIB32(w,h);
 							  HBITMAP bmo2=SelectObject(hdcTmp2,b2);
 							  SetStretchBltMode(hdcTmp,  HALFTONE);
 							  SetStretchBltMode(hdcTmp2,  HALFTONE);
@@ -1398,7 +1398,7 @@ void ModernInternalPaintRowItems(HWND hwnd, HDC hdcMem, struct ClcData *dat, str
 								hdcTmp, 0, 0, Drawing->avatar_data->bmWidth, Drawing->avatar_data->bmHeight, 
 								SRCCOPY);
 
-							  SetRectAlpha_255(hdcTmp2,&r);
+							  SkinEngine_SetRectOpaque(hdcTmp2,&r);
 							  BitBlt(hdcMem, p_rect.left, p_rect.top, w, h,hdcTmp2,0,0,SRCCOPY);
 							  SelectObject(hdcTmp2,bmo2);
 							  SelectObject(hdcTmp,bmo);
@@ -1601,7 +1601,7 @@ void ModernInternalPaintRowItems(HWND hwnd, HDC hdcMem, struct ClcData *dat, str
           if (szResult[0] != '\0')
           {
             // Select font
-            ChangeToFont(hdcMem,dat,FONTID_CONTACT_TIME,NULL);
+            CLCPaint_ChangeToFont(hdcMem,dat,FONTID_CONTACT_TIME,NULL);
             mod_DrawText(hdcMem, szResult, lstrlen(szResult), &p_rect, DT_NOPREFIX | DT_SINGLELINE|(dat->text_rtl ? DT_RTLREADING : 0) );
           }
           break;
@@ -1895,7 +1895,7 @@ void InternalPaintRowItems(HWND hwnd, HDC hdcMem, struct ClcData *dat, struct Cl
                   RECT r={0,0,w,h};
                   HDC hdcTmp2 = CreateCompatibleDC(hdcMem);
                   HBITMAP bmo=SelectObject(hdcTmp,Drawing->avatar_data->hbmPic);
-                  HBITMAP b2=CreateBitmap32(w,h);
+                  HBITMAP b2=SkinEngine_CreateDIB32(w,h);
                   HBITMAP bmo2=SelectObject(hdcTmp2,b2);
                   SetStretchBltMode(hdcTmp,  HALFTONE);
                   SetStretchBltMode(hdcTmp2,  HALFTONE);
@@ -1903,7 +1903,7 @@ void InternalPaintRowItems(HWND hwnd, HDC hdcMem, struct ClcData *dat, struct Cl
                     hdcTmp, 0, 0, Drawing->avatar_data->bmWidth, Drawing->avatar_data->bmHeight, 
                     SRCCOPY);
 
-                  SetRectAlpha_255(hdcTmp2,&r);
+                  SkinEngine_SetRectOpaque(hdcTmp2,&r);
                   BitBlt(hdcMem, rc.left, rc.top, w, h,hdcTmp2,0,0,SRCCOPY);
                   SelectObject(hdcTmp2,bmo2);
                   SelectObject(hdcTmp,bmo);
@@ -2118,7 +2118,7 @@ void InternalPaintRowItems(HWND hwnd, HDC hdcMem, struct ClcData *dat, struct Cl
               // Draw
 
               // Select font
-              ChangeToFont(hdcMem,dat,FONTID_CONTACT_TIME,NULL);
+              CLCPaint_ChangeToFont(hdcMem,dat,FONTID_CONTACT_TIME,NULL);
 
               // Get text size
               text_size.cy = mod_DrawText(hdcMem, szResult, lstrlen(szResult), &rc, DT_CALCRECT | DT_NOPREFIX | DT_SINGLELINE);
@@ -2253,7 +2253,7 @@ void InternalPaintRowItems(HWND hwnd, HDC hdcMem, struct ClcData *dat, struct Cl
       free_height = free_row_rc.bottom - free_row_rc.top;
 
       // Select font
-      ChangeToFont(hdcMem,dat,GetBasicFontID(Drawing),NULL);
+      CLCPaint_ChangeToFont(hdcMem,dat,GetBasicFontID(Drawing),NULL);
 
       // Get text size
       GetTextSize(&text_size, hdcMem, free_row_rc, Drawing->szText, Drawing->plText, uTextFormat, 
@@ -2294,7 +2294,7 @@ void InternalPaintRowItems(HWND hwnd, HDC hdcMem, struct ClcData *dat, struct Cl
           space_size.cx = space_rc.right - space_rc.left;
           space_size.cy = min(space_rc.bottom - space_rc.top, free_height);
 
-          ChangeToFont(hdcMem,dat,Drawing->group->expanded?FONTID_OPENGROUPCOUNTS:FONTID_CLOSEDGROUPCOUNTS,NULL);
+          CLCPaint_ChangeToFont(hdcMem,dat,Drawing->group->expanded?FONTID_OPENGROUPCOUNTS:FONTID_CLOSEDGROUPCOUNTS,NULL);
           mod_DrawTextA(hdcMem,szCounts,lstrlenA(szCounts),&counts_rc,DT_CALCRECT | uTextFormat);
 
           counts_size.cx = counts_rc.right - counts_rc.left;
@@ -2328,7 +2328,7 @@ void InternalPaintRowItems(HWND hwnd, HDC hdcMem, struct ClcData *dat, struct Cl
 
           selection_text_rc = text_rc;
           full_text_width=text_width;
-          ChangeToFont(hdcMem,dat,Drawing->group->expanded?FONTID_OPENGROUPS:FONTID_CLOSEDGROUPS,NULL);
+          CLCPaint_ChangeToFont(hdcMem,dat,Drawing->group->expanded?FONTID_OPENGROUPS:FONTID_CLOSEDGROUPS,NULL);
         }
 
         if (dat->row_align_group_mode==1) //center
@@ -2381,7 +2381,7 @@ void InternalPaintRowItems(HWND hwnd, HDC hdcMem, struct ClcData *dat, struct Cl
         {
           //RECT rc_tmp = free_row_rc;
 
-          ChangeToFont(hdcMem,dat,FONTID_SECONDLINE,NULL);
+          CLCPaint_ChangeToFont(hdcMem,dat,FONTID_SECONDLINE,NULL);
 
           // Get sizes
           GetTextSize(&second_line_text_size, hdcMem, free_row_rc, pdnce->szSecondLineText, pdnce->plSecondLineText, 
@@ -2426,7 +2426,7 @@ void InternalPaintRowItems(HWND hwnd, HDC hdcMem, struct ClcData *dat, struct Cl
         {
           //RECT rc_tmp = free_row_rc;
 
-          ChangeToFont(hdcMem,dat,FONTID_THIRDLINE,NULL);
+          CLCPaint_ChangeToFont(hdcMem,dat,FONTID_THIRDLINE,NULL);
 
           // Get sizes
           GetTextSize(&third_line_text_size, hdcMem, free_row_rc, pdnce->szThirdLineText, pdnce->plThirdLineText, 
@@ -2450,7 +2450,7 @@ void InternalPaintRowItems(HWND hwnd, HDC hdcMem, struct ClcData *dat, struct Cl
           max_bottom_selection_border = min(max_bottom_selection_border, dat->third_line_top_space / 2);
         }
 
-        ChangeToFont(hdcMem,dat,GetBasicFontID(Drawing),NULL);
+        CLCPaint_ChangeToFont(hdcMem,dat,GetBasicFontID(Drawing),NULL);
       }
 
       // Store pos
@@ -2508,9 +2508,9 @@ void InternalPaintRowItems(HWND hwnd, HDC hdcMem, struct ClcData *dat, struct Cl
           rc.top += (rc.bottom - rc.top) >> 1; 
           rc.bottom = rc.top + 2;
           rc.right = rc.left + ((rc.right - rc.left - text_size.cx)>>1) - 3;
-		  //if (!LayeredFlag)
+		  //if (!g_bLayered)
 		  DrawEdge(hdcMem,&rc,BDR_SUNKENOUTER,BF_RECT);
-		  SetRectAlpha_255(hdcMem,&rc);
+		  SkinEngine_SetRectOpaque(hdcMem,&rc);
           trc.left = rc.right + 3;
           if (text_size.cy < trc.bottom - trc.top)
           {
@@ -2521,9 +2521,9 @@ void InternalPaintRowItems(HWND hwnd, HDC hdcMem, struct ClcData *dat, struct Cl
 
           rc.left = rc.right + 6 + text_size.cx;
           rc.right = free_row_rc.right;
-          //if (!LayeredFlag)
+          //if (!g_bLayered)
           DrawEdge(hdcMem,&rc,BDR_SUNKENOUTER,BF_RECT);
-		  SetRectAlpha_255(hdcMem,&rc);
+		  SkinEngine_SetRectOpaque(hdcMem,&rc);
           break;
         }
       case CLCIT_GROUP:
@@ -2568,7 +2568,7 @@ void InternalPaintRowItems(HWND hwnd, HDC hdcMem, struct ClcData *dat, struct Cl
               counts_rc.bottom = counts_rc.top + counts_size.cy;
             }
 
-            ChangeToFont(hdcMem,dat,Drawing->group->expanded?FONTID_OPENGROUPCOUNTS:FONTID_CLOSEDGROUPCOUNTS,NULL);
+            CLCPaint_ChangeToFont(hdcMem,dat,Drawing->group->expanded?FONTID_OPENGROUPCOUNTS:FONTID_CLOSEDGROUPCOUNTS,NULL);
             if (selected)
               SetTextColor(hdcMem,dat->selTextColour);
             else if(hottrack)
@@ -2580,7 +2580,7 @@ void InternalPaintRowItems(HWND hwnd, HDC hdcMem, struct ClcData *dat, struct Cl
 
           // Update free
 
-          if (/*!LayeredFlag &&*/dat->exStyle&CLS_EX_LINEWITHGROUPS) 
+          if (/*!g_bLayered &&*/dat->exStyle&CLS_EX_LINEWITHGROUPS) 
           {
 
             //	free_row_rc.right -= text_rc.right - text_rc.left;
@@ -2604,12 +2604,12 @@ void InternalPaintRowItems(HWND hwnd, HDC hdcMem, struct ClcData *dat, struct Cl
               if (rc1.right-rc1.left>=6)
 			  {
                 DrawEdge(hdcMem,&rc1,BDR_SUNKENOUTER,BF_RECT);
-				SetRectAlpha_255(hdcMem,&rc1);
+				SkinEngine_SetRectOpaque(hdcMem,&rc1);
 			  }
               if (rc2.right-rc2.left>=6)
               {
 				  DrawEdge(hdcMem,&rc2,BDR_SUNKENOUTER,BF_RECT);
-				  SetRectAlpha_255(hdcMem,&rc2);
+				  SkinEngine_SetRectOpaque(hdcMem,&rc2);
 			  }
             }
           }
@@ -2662,7 +2662,7 @@ void InternalPaintRowItems(HWND hwnd, HDC hdcMem, struct ClcData *dat, struct Cl
                   rc.right = rc.left + second_line_text_size.cx;
               }
 
-              ChangeToFont(hdcMem,dat,FONTID_SECONDLINE,NULL);
+              CLCPaint_ChangeToFont(hdcMem,dat,FONTID_SECONDLINE,NULL);
               DrawTextSmiley(hdcMem, rc, second_line_text_size, pdnce->szSecondLineText, lstrlen(pdnce->szSecondLineText), 
                 pdnce->plSecondLineText, uTextFormat, dat->text_resize_smileys);
 
@@ -2687,7 +2687,7 @@ void InternalPaintRowItems(HWND hwnd, HDC hdcMem, struct ClcData *dat, struct Cl
                   rc.right = rc.left + third_line_text_size.cx;
               }
 
-              ChangeToFont(hdcMem,dat,FONTID_THIRDLINE,NULL);
+              CLCPaint_ChangeToFont(hdcMem,dat,FONTID_THIRDLINE,NULL);
               //DrawTextS(hdcMem,pdnce->szThirdLineText,lstrlenA(pdnce->szThirdLineText),&rc,uTextFormat);
               DrawTextSmiley(hdcMem, rc, third_line_text_size, pdnce->szThirdLineText, lstrlen(pdnce->szThirdLineText), 
                 pdnce->plThirdLineText, uTextFormat, dat->text_resize_smileys);
@@ -2730,7 +2730,7 @@ void InternalPaintClc(HWND hwnd,struct ClcData *dat,HDC hdc,RECT *rcPaint)
   int status=GetGeneralisedStatus();
   int grey=0; //,groupCountsFontTopShift;
   HBRUSH hBrushAlternateGrey=NULL;
-  BOOL NotInMain=!IsInMainWindow(hwnd);
+  BOOL NotInMain=!CLUI_IsInMainWindow(hwnd);
   // yes I know about GetSysColorBrush()
   COLORREF tmpbkcolour = style&CLS_CONTACTLIST ? ( /*dat->useWindowsColours ? GetSysColor(COLOR_3DFACE) :*/ dat->bkColour ) : dat->bkColour;
   int old_stretch_mode;
@@ -2761,20 +2761,20 @@ void InternalPaintClc(HWND hwnd,struct ClcData *dat,HDC hdc,RECT *rcPaint)
   lockdat; 
   currentCounter= dat->m_paintCouter;
   y=-dat->yScroll;
-  if (grey && (!LayeredFlag))
+  if (grey && (!g_bLayered))
   {
     hdcMem2=CreateCompatibleDC(hdc);
-    hBmpOsb2=CreateBitmap32(clRect.right,clRect.bottom);//,1,GetDeviceCaps(hdc,BITSPIXEL),NULL);
+    hBmpOsb2=SkinEngine_CreateDIB32(clRect.right,clRect.bottom);//,1,GetDeviceCaps(hdc,BITSPIXEL),NULL);
     oldbmp2=(HBITMAP)  SelectObject(hdcMem2,hBmpOsb2);
   }
-  if (!(NotInMain || dat->force_in_dialog || !LayeredFlag ||grey))
+  if (!(NotInMain || dat->force_in_dialog || !g_bLayered ||grey))
     hdcMem=hdc;
   else
     hdcMem=CreateCompatibleDC(hdc);
   hdcMemOldFont=GetCurrentObject(hdcMem,OBJ_FONT);
-  if (NotInMain || dat->force_in_dialog || !LayeredFlag || grey)
+  if (NotInMain || dat->force_in_dialog || !g_bLayered || grey)
   {
-    hBmpOsb=CreateBitmap32(clRect.right,clRect.bottom);//,1,GetDeviceCaps(hdc,BITSPIXEL),NULL);
+    hBmpOsb=SkinEngine_CreateDIB32(clRect.right,clRect.bottom);//,1,GetDeviceCaps(hdc,BITSPIXEL),NULL);
     oldbmp=(HBITMAP)  SelectObject(hdcMem,hBmpOsb);
   }
   if(style&CLS_GREYALTERNATE)
@@ -2806,13 +2806,13 @@ void InternalPaintClc(HWND hwnd,struct ClcData *dat,HDC hdc,RECT *rcPaint)
   if (NotInMain || dat->force_in_dialog)
   { 
 	FillRect(hdcMem,rcPaint,GetSysColorBrush(COLOR_BTNFACE));
-	SetRectAlpha_255(hdcMem,rcPaint);
+	SkinEngine_SetRectOpaque(hdcMem,rcPaint);
 	if (!(style&CLS_GREYALTERNATE))
 		SkinDrawGlyph(hdcMem,&clRect,rcPaint,"CL,ID=Background,Type=Control");
   }
   else
   {
-    if (!LayeredFlag)
+    if (!g_bLayered)
     {
 	  //FillRect(grey?hdcMem2:hdcMem,rcPaint,GetSysColorBrush(GetSysColor(COLOR_3DFACE)));
       BltBackImage(hwnd,grey?hdcMem2:hdcMem,rcPaint);
@@ -2897,11 +2897,11 @@ void InternalPaintClc(HWND hwnd,struct ClcData *dat,HDC hdc,RECT *rcPaint)
           SIZE sz;        
           int FontID=0;
           FontID=GetBasicFontID(Drawing);
-          ChangeToFont(hdcMem,dat,FontID,NULL);
+          CLCPaint_ChangeToFont(hdcMem,dat,FontID,NULL);
           // Get sizes
           GetTextExtentPoint32A(hdcMem,"A",1,&sz);
           h1=sz.cy;
-          ChangeToFont(hdcMem,dat,FONTID_SECONDLINE,NULL);
+          CLCPaint_ChangeToFont(hdcMem,dat,FONTID_SECONDLINE,NULL);
           GetTextExtentPoint32A(hdcMem,"A",1,&sz);
           h2=sz.cy;
           dat->row_heights[line_num]=max(dat->row_heights[line_num],h1+h2+ROW_SPACE_BEETWEEN_LINES+dat->row_border*2);
@@ -3121,7 +3121,7 @@ void InternalPaintClc(HWND hwnd,struct ClcData *dat,HDC hdc,RECT *rcPaint)
   }
   if(!grey)
   {
-    if (NotInMain || dat->force_in_dialog || !LayeredFlag)
+    if (NotInMain || dat->force_in_dialog || !g_bLayered)
     {
       BitBlt(hdc,rcPaint->left,rcPaint->top,rcPaint->right-rcPaint->left,rcPaint->bottom-rcPaint->top,hdcMem,rcPaint->left,rcPaint->top,SRCCOPY);
     }
@@ -3130,7 +3130,7 @@ void InternalPaintClc(HWND hwnd,struct ClcData *dat,HDC hdc,RECT *rcPaint)
   if(grey && hdc && hdc!=hdcMem)
   {
     BLENDFUNCTION bf={AC_SRC_OVER, 0, 80, AC_SRC_ALPHA }; 
-    BOOL a=(grey && (!LayeredFlag));
+    BOOL a=(grey && (!g_bLayered));
     mod_AlphaBlend(a?hdcMem2:hdc,rcPaint->left,rcPaint->top,rcPaint->right-rcPaint->left,rcPaint->bottom-rcPaint->top,hdcMem,rcPaint->left,rcPaint->top,rcPaint->right-rcPaint->left,rcPaint->bottom-rcPaint->top,bf);
     if (a)
       BitBlt(hdc,rcPaint->left,rcPaint->top,rcPaint->right-rcPaint->left,rcPaint->bottom-rcPaint->top,hdcMem2,rcPaint->left,rcPaint->top,SRCCOPY);
@@ -3141,13 +3141,13 @@ void InternalPaintClc(HWND hwnd,struct ClcData *dat,HDC hdc,RECT *rcPaint)
   if (old_stretch_mode != HALFTONE)
     SetStretchBltMode(hdcMem, old_stretch_mode);
   SelectObject(hdcMem,hdcMemOldFont);
-  if (NotInMain || dat->force_in_dialog || !LayeredFlag ||grey)
+  if (NotInMain || dat->force_in_dialog || !g_bLayered ||grey)
   {
     SelectObject(hdcMem,oldbmp);
     DeleteObject(hBmpOsb);
     mod_DeleteDC(hdcMem);
   }
-  if (grey && (!LayeredFlag))
+  if (grey && (!g_bLayered))
   {
     SelectObject(hdcMem2,oldbmp2);
     DeleteObject(hBmpOsb2);
@@ -3158,7 +3158,7 @@ void InternalPaintClc(HWND hwnd,struct ClcData *dat,HDC hdc,RECT *rcPaint)
 
 }
 
-int g_PaintLock=0;
+int g_mutex_nPaintLock=0;
 void cliPaintClc(HWND hwnd,struct ClcData *dat,HDC hdc,RECT *rcPaint)
 {
 
@@ -3168,7 +3168,7 @@ void cliPaintClc(HWND hwnd,struct ClcData *dat,HDC hdc,RECT *rcPaint)
     return;
   }
   if (MirandaExiting()) return;
-  g_PaintLock++;
+  g_mutex_nPaintLock++;
   InternalPaintClc(hwnd,dat,hdc,rcPaint);
-  g_PaintLock--;
+  g_mutex_nPaintLock--;
 }

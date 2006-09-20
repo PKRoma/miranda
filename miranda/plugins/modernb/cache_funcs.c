@@ -154,7 +154,7 @@ static int cache_AskAwayMsgThread(HWND hwnd)
 	h=cache_AskAwayMsg_GetCurrentChain(); 
   if (!h) 
   {
-		hAskAwayMsgThread=NULL;
+		g_hAskAwayMsgThreadID=NULL;
       return 0;
   }
 
@@ -168,7 +168,7 @@ static int cache_AskAwayMsgThread(HWND hwnd)
             if (MirandaExiting()) 
             {
 				b_AskAwayMsgThreadStarted = FALSE;
-				hAskAwayMsgThread=NULL;
+				g_hAskAwayMsgThreadID=NULL;
               return 0; 
             }
     }
@@ -195,14 +195,14 @@ static int cache_AskAwayMsgThread(HWND hwnd)
 		if (h) SleepEx(const_AskPeriod,TRUE); else break;
     if (MirandaExiting()) 
     {
-			hAskAwayMsgThread = NULL;
+			g_hAskAwayMsgThreadID = NULL;
 			b_AskAwayMsgThreadStarted = FALSE;
       return 0; 
     }
 
   }
 	b_AskAwayMsgThreadStarted = 0;
-	hAskAwayMsgThread=NULL;
+	g_hAskAwayMsgThreadID=NULL;
   return 1;
 }
 
@@ -226,7 +226,7 @@ void Cache_ReAskAwayMsg(HANDLE wParam)
 	res=cache_AskAwayMsg_AddHandleToChain(wParam); 
 	if (!b_AskAwayMsgThreadStarted && res) 
   {
-		hAskAwayMsgThread=(HANDLE)forkthread(cache_AskAwayMsgThread,0,0);
+		g_hAskAwayMsgThreadID=(HANDLE)forkthread(cache_AskAwayMsgThread,0,0);
   }
   return;
 }
@@ -311,7 +311,7 @@ int GetTextThread(void * a)
 		SleepEx(0,TRUE); //1000 contacts per second
 		if (MirandaExiting()) 
         {
-            hGetTextThread=NULL;
+            g_hGetTextThreadID=NULL;
 			return 0;
         }
 		else
@@ -341,7 +341,7 @@ int GetTextThread(void * a)
     while (!exit);
 	ISCacheTREADSTARTED=FALSE;	
 	TRACE("ALL Done\n");
-    hGetTextThread=NULL;
+    g_hGetTextThreadID=NULL;
 	return 1;
 }
 int AddToCacheChain(struct ClcData *dat,struct ClcContact *contact,HANDLE ContactRequest)
@@ -370,7 +370,7 @@ int AddToCacheChain(struct ClcData *dat,struct ClcContact *contact,HANDLE Contac
 			if (!ISCacheTREADSTARTED)
 			{
 				//StartThreadHere();
-				hGetTextThread=(HANDLE)forkthread(GetTextThread,0,0);
+				g_hGetTextThreadID=(HANDLE)forkthread(GetTextThread,0,0);
 				ISCacheTREADSTARTED=TRUE;
 			}
 		}
@@ -1332,7 +1332,7 @@ void Cache_GetAvatar(struct ClcData *dat, struct ClcContact *contact)
 
 						// Create objs
 						hdc = CreateCompatibleDC(dat->avatar_cache.hdc); 
-						hDrawBmp = CreateBitmap32(width_clip, height_clip);
+						hDrawBmp = SkinEngine_CreateDIB32(width_clip, height_clip);
 						oldBmp=SelectObject(hdc, hDrawBmp);
 						SetBkMode(hdc,TRANSPARENT);
 						{
@@ -1357,7 +1357,7 @@ void Cache_GetAvatar(struct ClcData *dat, struct ClcContact *contact)
               RECT rtr={0};
               rtr.right=width_clip+1;
               rtr.bottom=height_clip+1;
-              SetRectAlpha_255(hdc,&rtr);
+              SkinEngine_SetRectOpaque(hdc,&rtr);
             }
 
             hDrawBmp = GetCurrentObject(hdc, OBJ_BITMAP);

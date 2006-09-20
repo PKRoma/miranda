@@ -7,7 +7,7 @@
 
 extern HINSTANCE g_hInst;
 extern char *DBGetStringA(HANDLE hContact,const char *szModule,const char *szSetting);
-extern int CluiProtocolStatusChanged(WPARAM wParam,LPARAM lParam);
+extern int CLUIServices_ProtocolStatusChanged(WPARAM wParam,LPARAM lParam);
 extern int MenuModulesLoaded(WPARAM wParam,LPARAM lParam);
 extern void ClcOptionsChanged(void);
 //extern int ImageList_AddIcon_FixAlpha(HIMAGELIST himl,HICON hicon);
@@ -62,7 +62,7 @@ return(0);
 };
 
 
-int CheckProtocolOrder()
+int ProtocolOrder_CheckOrder()
 {
 	boolean protochanged=FALSE;
 	int StoredProtoCount;
@@ -164,7 +164,7 @@ int FillTree(HWND hwnd)
 			tvis.hInsertAfter=TVI_LAST;
 			tvis.item.mask=TVIF_PARAM|TVIF_TEXT|TVIF_IMAGE|TVIF_SELECTEDIMAGE;	
 			
-//			CheckProtocolOrder();
+//			ProtocolOrder_CheckOrder();
 			TreeView_DeleteAllItems(hwnd);
 			count=DBGetContactSettingDword(0,"Protocols","ProtoCount",-1);
 			if (count==-1){return(FALSE);};
@@ -236,7 +236,7 @@ BOOL CALLBACK ProtocolOrderOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lP
 				TreeView_SetImageList(GetDlgItem(hwndDlg,IDC_PROTOCOLORDER),himlCheckBoxes,TVSIL_NORMAL);
 			}
 
-			CheckProtocolOrder();
+			ProtocolOrder_CheckOrder();
 			FillTree(GetDlgItem(hwndDlg,IDC_PROTOCOLORDER));
 
 			return TRUE;
@@ -249,9 +249,9 @@ BOOL CALLBACK ProtocolOrderOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lP
 				if (lParam==(LPARAM)GetDlgItem(hwndDlg,IDC_RESETPROTOCOLDATA))	
 				{
 							DBWriteContactSettingDword(0,"Protocols","ProtoCount",-1);
-							CheckProtocolOrder();
+							ProtocolOrder_CheckOrder();
 							FillTree(GetDlgItem(hwndDlg,IDC_PROTOCOLORDER));
-							CluiProtocolStatusChanged(0,0);
+							CLUIServices_ProtocolStatusChanged(0,0);
 							SendMessage(GetParent(hwndDlg), PSM_CHANGED, (WPARAM)hwndDlg, 0);
 							//BuildStatusMenu(0,0);
 				return(0);			
@@ -296,7 +296,7 @@ BOOL CALLBACK ProtocolOrderOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lP
 								
 								count++;
 							}
-							CluiProtocolStatusChanged(0,0);
+							CLUIServices_ProtocolStatusChanged(0,0);
 							MenuModulesLoaded(0,0);
 							pcli->pfnTrayIconIconsChanged();
 							ClcOptionsChanged();
@@ -320,7 +320,7 @@ BOOL CALLBACK ProtocolOrderOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lP
 								((ProtocolData *)tvi.lParam)->show=tvi.iImage;
 								TreeView_SetItem(((LPNMHDR)lParam)->hwndFrom,&tvi);
 								SendMessage(GetParent(hwndDlg), PSM_CHANGED, (WPARAM)hwndDlg, 0);
-								ShowWindowNew(GetDlgItem(hwndDlg,IDC_PROTOCOLORDERWARNING),SW_SHOW);
+								CLUI_ShowWindowMod(GetDlgItem(hwndDlg,IDC_PROTOCOLORDERWARNING),SW_SHOW);
 							}
 					}
 					break;
@@ -332,7 +332,7 @@ BOOL CALLBACK ProtocolOrderOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lP
 							dat->dragging=1;
 							dat->hDragItem=((LPNMTREEVIEW)lParam)->itemNew.hItem;
 							TreeView_SelectItem(GetDlgItem(hwndDlg,IDC_PROTOCOLORDER),dat->hDragItem);
-							//ShowWindowNew(GetDlgItem(hwndDlg,IDC_PROTOCOLORDERWARNING),SW_SHOW);
+							//CLUI_ShowWindowMod(GetDlgItem(hwndDlg,IDC_PROTOCOLORDERWARNING),SW_SHOW);
 							break;
 						case NM_CLICK:
 							{
@@ -353,7 +353,7 @@ BOOL CALLBACK ProtocolOrderOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lP
 								SendMessage(GetParent(hwndDlg), PSM_CHANGED, (WPARAM)hwndDlg, 0);
 								
 								//all changes take effect in runtime
-								//ShowWindowNew(GetDlgItem(hwndDlg,IDC_PROTOCOLORDERWARNING),SW_SHOW);
+								//CLUI_ShowWindowMod(GetDlgItem(hwndDlg,IDC_PROTOCOLORDERWARNING),SW_SHOW);
 							}
 							
 							
@@ -444,7 +444,7 @@ static int ProtocolOrderInit(WPARAM wParam,LPARAM lParam) {
 	return 0;
 }
 
-int LoadProtocolOrderModule(void) {
+int ProtocolOrder_LoadModule(void) {
 	HookEvent(ME_OPT_INITIALISE,ProtocolOrderInit);
 	return 0;
 }

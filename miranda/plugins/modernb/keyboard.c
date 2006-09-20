@@ -389,7 +389,7 @@ BOOL CALLBACK DlgProcHotKeyOpts2(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM l
 			TVINSERTSTRUCT tvis;
 			int i;
 			TreeView_SelectItem(hwndTree ,NULL);
-			ShowWindowNew(hwndTree,SW_HIDE);
+			CLUI_ShowWindowMod(hwndTree,SW_HIDE);
 			TreeView_DeleteAllItems(hwndTree);
 			tvis.hParent=NULL;
 			tvis.hInsertAfter=TVI_SORT;
@@ -426,34 +426,34 @@ BOOL CALLBACK DlgProcHotKeyOpts2(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM l
 					tvi.hItem=TreeView_GetNextSibling(hwndTree,tvi.hItem);
 				}
 			}
-			ShowWindowNew(hwndTree, SW_SHOW);
+			CLUI_ShowWindowMod(hwndTree, SW_SHOW);
 			break;
 		}
 	case DM_HIDEPANE:
-		ShowWindowNew(GetDlgItem(hwndDlg, IDC_SGROUP), SW_HIDE);
-		ShowWindowNew(GetDlgItem(hwndDlg, IDC_NAME), SW_HIDE);
-		ShowWindowNew(GetDlgItem(hwndDlg, IDC_NAMEVAL), SW_HIDE);
-		ShowWindowNew(GetDlgItem(hwndDlg, IDC_SLOC), SW_HIDE);
-		ShowWindowNew(GetDlgItem(hwndDlg, IDC_LOCATION), SW_HIDE);
-		ShowWindowNew(GetDlgItem(hwndDlg, IDC_CHANGE), SW_HIDE);
-		ShowWindowNew(GetDlgItem(hwndDlg, IDC_PREVIEW), SW_HIDE);
-		ShowWindowNew(GetDlgItem(hwndDlg, IDC_SETHOTKEY), SW_HIDE);
-		ShowWindowNew(GetDlgItem(hwndDlg, IDC_HKTITLE), SW_HIDE);
+		CLUI_ShowWindowMod(GetDlgItem(hwndDlg, IDC_SGROUP), SW_HIDE);
+		CLUI_ShowWindowMod(GetDlgItem(hwndDlg, IDC_NAME), SW_HIDE);
+		CLUI_ShowWindowMod(GetDlgItem(hwndDlg, IDC_NAMEVAL), SW_HIDE);
+		CLUI_ShowWindowMod(GetDlgItem(hwndDlg, IDC_SLOC), SW_HIDE);
+		CLUI_ShowWindowMod(GetDlgItem(hwndDlg, IDC_LOCATION), SW_HIDE);
+		CLUI_ShowWindowMod(GetDlgItem(hwndDlg, IDC_CHANGE), SW_HIDE);
+		CLUI_ShowWindowMod(GetDlgItem(hwndDlg, IDC_PREVIEW), SW_HIDE);
+		CLUI_ShowWindowMod(GetDlgItem(hwndDlg, IDC_SETHOTKEY), SW_HIDE);
+		CLUI_ShowWindowMod(GetDlgItem(hwndDlg, IDC_HKTITLE), SW_HIDE);
 
 
-		ShowWindowNew(GetDlgItem(hwndDlg, IDC_GETMORE), SW_HIDE);
+		CLUI_ShowWindowMod(GetDlgItem(hwndDlg, IDC_GETMORE), SW_HIDE);
 		break;
 	case DM_SHOWPANE:
-		ShowWindowNew(GetDlgItem(hwndDlg, IDC_SGROUP), SW_SHOW);
-		ShowWindowNew(GetDlgItem(hwndDlg, IDC_NAME), SW_SHOW);
-		ShowWindowNew(GetDlgItem(hwndDlg, IDC_NAMEVAL), SW_SHOW);
-		//ShowWindowNew(GetDlgItem(hwndDlg, IDC_SLOC), SW_SHOW);
-		//ShowWindowNew(GetDlgItem(hwndDlg, IDC_LOCATION), SW_SHOW);
-		//ShowWindowNew(GetDlgItem(hwndDlg, IDC_CHANGE), SW_SHOW);
-		//ShowWindowNew(GetDlgItem(hwndDlg, IDC_PREVIEW), SW_SHOW);
-		//ShowWindowNew(GetDlgItem(hwndDlg, IDC_GETMORE), SW_SHOW);
-		ShowWindowNew(GetDlgItem(hwndDlg, IDC_SETHOTKEY), SW_SHOW);
-		ShowWindowNew(GetDlgItem(hwndDlg, IDC_HKTITLE), SW_SHOW);
+		CLUI_ShowWindowMod(GetDlgItem(hwndDlg, IDC_SGROUP), SW_SHOW);
+		CLUI_ShowWindowMod(GetDlgItem(hwndDlg, IDC_NAME), SW_SHOW);
+		CLUI_ShowWindowMod(GetDlgItem(hwndDlg, IDC_NAMEVAL), SW_SHOW);
+		//CLUI_ShowWindowMod(GetDlgItem(hwndDlg, IDC_SLOC), SW_SHOW);
+		//CLUI_ShowWindowMod(GetDlgItem(hwndDlg, IDC_LOCATION), SW_SHOW);
+		//CLUI_ShowWindowMod(GetDlgItem(hwndDlg, IDC_CHANGE), SW_SHOW);
+		//CLUI_ShowWindowMod(GetDlgItem(hwndDlg, IDC_PREVIEW), SW_SHOW);
+		//CLUI_ShowWindowMod(GetDlgItem(hwndDlg, IDC_GETMORE), SW_SHOW);
+		CLUI_ShowWindowMod(GetDlgItem(hwndDlg, IDC_SETHOTKEY), SW_SHOW);
+		CLUI_ShowWindowMod(GetDlgItem(hwndDlg, IDC_HKTITLE), SW_SHOW);
 		break;
 	case WM_COMMAND:
 		if(LOWORD(wParam)==IDC_PREVIEW) {

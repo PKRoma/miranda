@@ -26,7 +26,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include "commonprototypes.h"
 
 extern void cliTrayIconUpdateBase(char *szChangedProto);
-int CluiProtocolStatusChanged(WPARAM wParam,LPARAM lParam)
+int CLUIServices_ProtocolStatusChanged(WPARAM wParam,LPARAM lParam)
 {
 	InvalidateFrameImage((WPARAM)pcli->hwndStatus,0);
 	if (lParam) cliTrayIconUpdateBase((char*)lParam);
@@ -35,7 +35,7 @@ int CluiProtocolStatusChanged(WPARAM wParam,LPARAM lParam)
 
 void cliCluiProtocolStatusChanged(int status,const unsigned char * proto)
 {
-	CluiProtocolStatusChanged((WPARAM)status,(LPARAM)proto);
+	CLUIServices_ProtocolStatusChanged((WPARAM)status,(LPARAM)proto);
 }
 
 int SortList(WPARAM wParam,LPARAM lParam)
@@ -51,10 +51,10 @@ static int MetaSupportCheck(WPARAM wParam,LPARAM lParam)
 	return 1;
 }
 
-int LoadCLUIServices(void)
+int CLUIServices_LoadModule(void)
 {
 	CreateServiceFunction(MS_CLUI_METASUPPORT,MetaSupportCheck);
-	CreateServiceFunction(MS_CLUI_PROTOCOLSTATUSCHANGED,CluiProtocolStatusChanged);
+	CreateServiceFunction(MS_CLUI_PROTOCOLSTATUSCHANGED,CLUIServices_ProtocolStatusChanged);
 	CreateServiceFunction(MS_CLUI_SORTLIST,SortList);
 	return 0;
 }

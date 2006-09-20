@@ -529,7 +529,7 @@ static BOOL CALLBACK GenMenuOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM l
 							dat->dragging=1;
 							dat->hDragItem=((LPNMTREEVIEW)lParam)->itemNew.hItem;
 							TreeView_SelectItem(GetDlgItem(hwndDlg,IDC_MENUITEMS),dat->hDragItem);
-							//ShowWindowNew(GetDlgItem(hwndDlg,IDC_BUTTONORDERTREEWARNING),SW_SHOW);
+							//CLUI_ShowWindowMod(GetDlgItem(hwndDlg,IDC_BUTTONORDERTREEWARNING),SW_SHOW);
 							break;
 						
 						case NM_CLICK:
@@ -551,7 +551,7 @@ static BOOL CALLBACK GenMenuOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM l
 							SendMessage(GetParent(hwndDlg), PSM_CHANGED, 0, 0);
 											
 											//all changes take effect in runtime
-											//ShowWindowNew(GetDlgItem(hwndDlg,IDC_BUTTONORDERTREEWARNING),SW_SHOW);
+											//CLUI_ShowWindowMod(GetDlgItem(hwndDlg,IDC_BUTTONORDERTREEWARNING),SW_SHOW);
 										}
                                         /*--------MultiSelection----------*/
 						if (hti.flags&TVHT_ONITEMLABEL) {

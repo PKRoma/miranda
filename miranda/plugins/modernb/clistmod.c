@@ -29,11 +29,11 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 extern void Docking_GetMonitorRectFromWindow(HWND hWnd,RECT *rc);
 extern HICON GetMainStatusOverlay(int STATUS);
-int HideWindow(HWND hwndContactList, int mode);
-extern int SmoothAlphaTransition(HWND hwnd, BYTE GoalAlpha, BOOL wParam);
+int CListMod_HideWindow(HWND hwndContactList, int mode);
+extern int CLUI_SmoothAlphaTransition(HWND hwnd, BYTE GoalAlpha, BOOL wParam);
 extern void InitTray(void);
 
-void InitGroupMenus(void);
+void GroupMenus_Init(void);
 int AddMainMenuItem(WPARAM wParam,LPARAM lParam);
 int AddContactMenuItem(WPARAM wParam,LPARAM lParam);
 int InitCustomMenus(void);
@@ -51,8 +51,8 @@ int TrayIconPauseAutoHide(WPARAM wParam,LPARAM lParam);
 int ContactChangeGroup(WPARAM wParam,LPARAM lParam);
 void InitTrayMenus(void);
 
-extern int ActivateSubContainers(BOOL active);
-extern int BehindEdgeSettings;
+extern int CLUIFrames_ActivateSubContainers(BOOL active);
+extern int g_nBehindEdgeSettings;
 
 HANDLE hStatusModeChangeEvent,hContactIconChangedEvent;
 HIMAGELIST hCListImages=NULL;
@@ -63,11 +63,7 @@ extern SortedList lContactsCache;
 extern HBITMAP GetCurrentWindowImage();
 
 
-extern int BehindEdgeSettings;
-extern WORD BehindEdgeShowDelay;
-extern WORD BehindEdgeHideDelay;
-extern WORD BehindEdgeBorderSize;
-
+extern int g_nBehindEdgeSettings;
 static HANDLE hSettingChanged;
 
 
@@ -214,7 +210,7 @@ int GetContactIcon(WPARAM wParam,LPARAM lParam)
     return res;
 }
 
-int ContactListShutdownProc(WPARAM wParam,LPARAM lParam)
+int CListMod_ContactListShutdownProc(WPARAM wParam,LPARAM lParam)
 {
 	FreeDisplayNameCache();
 	UnhookEvent(hSettingChanged);
@@ -274,7 +270,7 @@ int LoadContactListModule(void)
 	*/
 	CreateServiceFunction(MS_CLUI_GETCAPS,CLUIGetCapsService);
 	InitDisplayNameCache();
-	HookEvent(ME_SYSTEM_SHUTDOWN,ContactListShutdownProc);
+	HookEvent(ME_SYSTEM_SHUTDOWN,CListMod_ContactListShutdownProc);
 	HookEvent(ME_OPT_INITIALISE,CListOptInit);
 	HookEvent(ME_OPT_INITIALISE,SkinOptInit);
 	HookEvent(ME_OPT_INITIALISE,SkinEditorOptInit);
@@ -316,7 +312,7 @@ _inline DWORD GetDIBPixelColor(int X, int Y, int Width, int Height, int ByteWidt
 		res=*((DWORD*)(ptr+ByteWidth*(Height-Y-1)+X*4));
 	return res;
 }
-extern BYTE CURRENT_ALPHA;
+extern BYTE g_bCurrentAlpha;
 int GetWindowVisibleState(HWND hWnd, int iStepX, int iStepY) {
 	RECT rc = { 0 };
 	POINT pt = { 0 };
@@ -346,8 +342,8 @@ int GetWindowVisibleState(HWND hWnd, int iStepX, int iStepY) {
 		int dx,dy;
 		BYTE *ptr=NULL;
 		HRGN rgn=NULL;
-		WindowImage=LayeredFlag?GetCurrentWindowImage():0;
-		if (WindowImage&&LayeredFlag)
+		WindowImage=g_bLayered?GetCurrentWindowImage():0;
+		if (WindowImage&&g_bLayered)
 		{
 			GetObject(WindowImage,sizeof(BITMAP),&bmp);
 			ptr=bmp.bmBits;
@@ -396,7 +392,7 @@ int GetWindowVisibleState(HWND hWnd, int iStepX, int iStepY) {
 				else
 				{
 					DWORD a=(GetDIBPixelColor(j+dx,i+dy,maxx,maxy,wx,ptr)&0xFF000000)>>24;
-					a=((a*CURRENT_ALPHA)>>8);
+					a=((a*g_bCurrentAlpha)>>8);
 					po=(a>16);
 				}
 				if (po||(!rgn&&ptr==0))
@@ -447,7 +443,7 @@ int GetWindowVisibleState(HWND hWnd, int iStepX, int iStepY) {
 			return GWVS_PARTIALLY_COVERED;
 	}
 }
-BYTE CALLED_FROM_SHOWHIDE=0;
+BYTE g_bCalledFromShowHide=0;
 int cliShowHide(WPARAM wParam,LPARAM lParam) 
 {
 	BOOL bShow = FALSE;
@@ -460,11 +456,11 @@ int cliShowHide(WPARAM wParam,LPARAM lParam)
 		if (DBGetContactSettingByte(NULL, "ModernData", "BehindEdge", 0)==0 && lParam!=1)
 		{
 			//hide
-			BehindEdge_Hide();
+			CLUI_HideBehindEdge();
 		}
 		else
 		{
-			BehindEdge_Show();
+			CLUI_ShowFromBehindEdge();
 		}
 		bShow=TRUE;
 		iVisibleState=GWVS_HIDDEN;
@@ -472,10 +468,10 @@ int cliShowHide(WPARAM wParam,LPARAM lParam)
 
 	if (!method && DBGetContactSettingByte(NULL, "ModernData", "BehindEdge", 0)>0)
 	{
-		BehindEdgeSettings=DBGetContactSettingByte(NULL, "ModernData", "BehindEdge", 0);
-		BehindEdge_Show();
-		BehindEdgeSettings=0;
-		gl_i_BehindEdge_CurrentState=0;
+		g_nBehindEdgeSettings=DBGetContactSettingByte(NULL, "ModernData", "BehindEdge", 0);
+		CLUI_ShowFromBehindEdge();
+		g_nBehindEdgeSettings=0;
+		g_nBehindEdgeState=0;
 		DBDeleteContactSetting(NULL, "ModernData", "BehindEdge");
 	}
 
@@ -501,25 +497,25 @@ int cliShowHide(WPARAM wParam,LPARAM lParam)
 		SystemParametersInfo(SPI_GETWORKAREA,0,&rcScreen,FALSE);
 		GetWindowRect(pcli->hwndContactList,&rcWindow);
 
-		ActivateSubContainers(TRUE);
-		ShowWindowNew(pcli->hwndContactList, SW_RESTORE);
+		CLUIFrames_ActivateSubContainers(TRUE);
+		CLUI_ShowWindowMod(pcli->hwndContactList, SW_RESTORE);
 
 		if (!DBGetContactSettingByte(NULL,"CList","OnDesktop",0))
 		{
-			OnShowHide(pcli->hwndContactList,1);
+			CLUIFrames_OnShowHide(pcli->hwndContactList,1);
 			SetWindowPos(pcli->hwndContactList, HWND_TOPMOST, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE |SWP_NOACTIVATE);           
-			CALLED_FROM_SHOWHIDE=1;
+			g_bCalledFromShowHide=1;
 			//BringWindowToTop(pcli->hwndContactList);			     
 			if (!DBGetContactSettingByte(NULL,"CList","OnTop",SETTING_ONTOP_DEFAULT))
 				//&& ((DBGetContactSettingByte(NULL, "CList", "BringToFront", SETTING_BRINGTOFRONT_DEFAULT) /*&& iVisibleState>=2*/)))
 				SetWindowPos(pcli->hwndContactList, HWND_NOTOPMOST, 0, 0, 0, 0, SWP_NOSIZE | SWP_NOMOVE);
 			//SetForegroundWindow(pcli->hwndContactList);	     
-			CALLED_FROM_SHOWHIDE=0;
+			g_bCalledFromShowHide=0;
 		}
 		else
 		{
 			SetWindowPos(pcli->hwndContactList, HWND_NOTOPMOST, 0, 0, 0, 0, SWP_NOSIZE | SWP_NOMOVE);
-			OnShowHide(pcli->hwndContactList,1);
+			CLUIFrames_OnShowHide(pcli->hwndContactList,1);
 			SetForegroundWindow(pcli->hwndContactList);	
 		}
 		DBWriteContactSettingByte(NULL,"CList","State",SETTING_STATE_NORMAL);
@@ -554,8 +550,8 @@ int cliShowHide(WPARAM wParam,LPARAM lParam)
 	}
 	else { //It needs to be hidden
 
-		HideWindow(pcli->hwndContactList, SW_HIDE);
-		//OnShowHide(pcli->hwndContactList,0);
+		CListMod_HideWindow(pcli->hwndContactList, SW_HIDE);
+		//CLUIFrames_OnShowHide(pcli->hwndContactList,0);
 
 		DBWriteContactSettingByte(NULL,"CList","State",SETTING_STATE_HIDDEN);
 		if(MySetProcessWorkingSetSize!=NULL && DBGetContactSettingByte(NULL,"CList","DisableWorkingSet",1)) MySetProcessWorkingSetSize(GetCurrentProcess(),-1,-1);
@@ -563,9 +559,9 @@ int cliShowHide(WPARAM wParam,LPARAM lParam)
 	return 0;
 }
 
-int HideWindow(HWND hwndContactList, int mode)
+int CListMod_HideWindow(HWND hwndContactList, int mode)
 {
 	KillTimer(pcli->hwndContactList,1/*TM_AUTOALPHA*/);
-	if (!BehindEdge_Hide())  return SmoothAlphaTransition(pcli->hwndContactList, 0, 1);
+	if (!CLUI_HideBehindEdge())  return CLUI_SmoothAlphaTransition(pcli->hwndContactList, 0, 1);
 	return 0;
 }

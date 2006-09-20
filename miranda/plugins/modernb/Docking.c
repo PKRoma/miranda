@@ -34,12 +34,12 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #define DOCKED_RIGHT   2
 
 BOOL LockSubframeMoving=0;
-int docked=0;
-int dock_prevent_moving=0;
+int g_bDocked=0;
+int g_mutex_uPreventDockMoving=0;
 static TempDock=0;
 static int dock_drag_dx=0;
 static int dock_drag_dy=0;
-extern int OnMoving(HWND hwnd,RECT *lParam);
+extern int CLUIFrames_OnMoving(HWND hwnd,RECT *lParam);
 typedef HMONITOR WINAPI MyMonitorFromPoint(POINT,DWORD);
 typedef BOOL WINAPI MyGetMonitorInfo(HMONITOR,LPMONITORINFO);
 
@@ -84,11 +84,11 @@ static void Docking_AdjustPosition(HWND hwnd,RECT *rcDisplay,RECT *rc)
 	ZeroMemory(&abd,sizeof(abd));
 	abd.cbSize=sizeof(abd);
 	abd.hWnd=hwnd;
-	abd.uEdge=docked==DOCKED_LEFT?ABE_LEFT:ABE_RIGHT;
+	abd.uEdge=g_bDocked==DOCKED_LEFT?ABE_LEFT:ABE_RIGHT;
 	abd.rc=*rc;
 	abd.rc.top=rcDisplay->top;
 	abd.rc.bottom=rcDisplay->bottom;
-	if(docked==DOCKED_LEFT) {
+	if(g_bDocked==DOCKED_LEFT) {
 		abd.rc.right=rcDisplay->left+abd.rc.right-abd.rc.left;
 		abd.rc.left=rcDisplay->left;
 	}
@@ -102,13 +102,13 @@ static void Docking_AdjustPosition(HWND hwnd,RECT *rcDisplay,RECT *rc)
     {
         //RECT r;
         //SetWindowRect(hwnd,&r);
-        //OnMoving(hwnd,&r);
+        //CLUIFrames_OnMoving(hwnd,&r);
     }
 }
 
 int Docking_IsDocked(WPARAM wParam,LPARAM lParam)
 {
-	return docked;
+	return g_bDocked;
 }
 
 int Docking_ProcessWindowMessage(WPARAM wParam,LPARAM lParam)
@@ -118,9 +118,9 @@ int Docking_ProcessWindowMessage(WPARAM wParam,LPARAM lParam)
 	MSG *msg=(MSG*)wParam;
 
 	if(msg->message==WM_DESTROY) 
-		DBWriteContactSettingByte(NULL,"CList","Docked",(BYTE)docked);
+		DBWriteContactSettingByte(NULL,"CList","Docked",(BYTE)g_bDocked);
   
-	if(!docked && msg->message!=WM_CREATE && msg->message!=WM_MOVING && msg->message!=WM_CREATEDOCKED && msg->message != WM_MOVE && msg->message != WM_SIZE) return 0;
+	if(!g_bDocked && msg->message!=WM_CREATE && msg->message!=WM_MOVING && msg->message!=WM_CREATEDOCKED && msg->message != WM_MOVE && msg->message != WM_SIZE) return 0;
 	switch(msg->message) {
 		case WM_CREATE:
 			//if(GetSystemMetrics(SM_CMONITORS)>1) return 0;
@@ -133,7 +133,7 @@ int Docking_ProcessWindowMessage(WPARAM wParam,LPARAM lParam)
 
 		case WM_CREATEDOCKED:
 			//we need to post a message just after creation to let main message function do some work
-			docked=(int)(char)DBGetContactSettingByte(NULL,"CList","Docked",0);
+			g_bDocked=(int)(char)DBGetContactSettingByte(NULL,"CList","Docked",0);
 			if(IsWindowVisible(msg->hwnd) && !IsIconic(msg->hwnd)) {
 				RECT rc, rcMonitor;
 				ZeroMemory(&abd,sizeof(abd));
@@ -146,14 +146,14 @@ int Docking_ProcessWindowMessage(WPARAM wParam,LPARAM lParam)
 				Docking_GetMonitorRectFromWindow(msg->hwnd,&rcMonitor);
 				Docking_AdjustPosition(msg->hwnd,&rcMonitor,&rc);
 				MoveWindow(msg->hwnd,rc.left,rc.top,rc.right-rc.left,rc.bottom-rc.top,TRUE);
-				dock_prevent_moving=0;
-				OnMoving(msg->hwnd,&rc);
-				dock_prevent_moving=1;
-				ReposButtons(msg->hwnd,0,NULL);
+				g_mutex_uPreventDockMoving=0;
+				CLUIFrames_OnMoving(msg->hwnd,&rc);
+				g_mutex_uPreventDockMoving=1;
+				ModernButton_ReposButtons(msg->hwnd,0,NULL);
 			}
 			break;
     case WM_CAPTURECHANGED:
-      ReposButtons(msg->hwnd,0,NULL);
+      ModernButton_ReposButtons(msg->hwnd,0,NULL);
       return 0;
 		case WM_ACTIVATE:
 			ZeroMemory(&abd,sizeof(abd));
@@ -162,18 +162,18 @@ int Docking_ProcessWindowMessage(WPARAM wParam,LPARAM lParam)
 			SHAppBarMessage(ABM_ACTIVATE,&abd);
 			return 0;
    case WM_SIZE:
-      ReposButtons(msg->hwnd,1,NULL);
+      ModernButton_ReposButtons(msg->hwnd,1,NULL);
       return 0;
 
 		case WM_WINDOWPOSCHANGED:
 			{
-			 if (docked) ReposButtons(msg->hwnd,0,NULL);
+			 if (g_bDocked) ModernButton_ReposButtons(msg->hwnd,0,NULL);
 			 return 0;
 			ZeroMemory(&abd,sizeof(abd));
 			abd.cbSize=sizeof(abd);
 			abd.hWnd=msg->hwnd;
 			SHAppBarMessage(ABM_WINDOWPOSCHANGED,&abd);
-			ReposButtons(msg->hwnd,0,NULL);
+			ModernButton_ReposButtons(msg->hwnd,0,NULL);
 			return 0;
 			}
 		case WM_MOVING:
@@ -183,7 +183,7 @@ int Docking_ProcessWindowMessage(WPARAM wParam,LPARAM lParam)
 				RECT *rc;
 				int dx=0;
 				POINT ptCursor;
-                if (docked) return 0;
+                if (g_bDocked) return 0;
 				// stop early
 				if(!(GetAsyncKeyState(VK_CONTROL)&0x8000)) return 0;
 
@@ -204,24 +204,24 @@ int Docking_ProcessWindowMessage(WPARAM wParam,LPARAM lParam)
 					abd.lParam=0;
 					abd.uCallbackMessage=WM_DOCKCALLBACK;
 					SHAppBarMessage(ABM_NEW,&abd);
-					if(ptCursor.x<rcMonitor.left+EDGESENSITIVITY) docked=DOCKED_LEFT;
-					else docked=DOCKED_RIGHT;
+					if(ptCursor.x<rcMonitor.left+EDGESENSITIVITY) g_bDocked=DOCKED_LEFT;
+					else g_bDocked=DOCKED_RIGHT;
 				//	TempDock=1;				
 					GetWindowRect(msg->hwnd,(LPRECT)msg->lParam);
 					rc=(RECT*)msg->lParam;
-					if (docked==DOCKED_RIGHT)
+					if (g_bDocked==DOCKED_RIGHT)
 						dx=(rc->right>rcMonitor.right)?rc->right-rcMonitor.right:0;
 					else
 						dx=(rc->left<rcMonitor.left)?rc->left-rcMonitor.left:0;
 					OffsetRect(rc,-dx,0);
 					Docking_AdjustPosition(msg->hwnd,(LPRECT)&rcMonitor,(LPRECT)msg->lParam);
 					SendMessage(msg->hwnd,WM_SIZE,0,0);				
-					dock_prevent_moving=0;
-                    OnMoving(msg->hwnd,(LPRECT)msg->lParam);
-					dock_prevent_moving=1;
+					g_mutex_uPreventDockMoving=0;
+                    CLUIFrames_OnMoving(msg->hwnd,(LPRECT)msg->lParam);
+					g_mutex_uPreventDockMoving=1;
 					mouse_event(MOUSEEVENTF_LEFTUP,0,0,0,0);
-					DBWriteContactSettingByte(NULL,"CList","Docked",(BYTE)docked);
-          ReposButtons(msg->hwnd,0,NULL);
+					DBWriteContactSettingByte(NULL,"CList","Docked",(BYTE)g_bDocked);
+          ModernButton_ReposButtons(msg->hwnd,0,NULL);
 					return TRUE;
 				}
 				return 0;
@@ -235,29 +235,29 @@ int Docking_ProcessWindowMessage(WPARAM wParam,LPARAM lParam)
 			  Docking_GetMonitorRectFromWindow(msg->hwnd,&rcMonitor);
 			  Docking_AdjustPosition(msg->hwnd,&rcMonitor,&rcWindow);
 			  *((LRESULT*)lParam)=TRUE;
-			  dock_prevent_moving=0;
+			  g_mutex_uPreventDockMoving=0;
 			  SetWindowPos(msg->hwnd,0,rcWindow.left,rcWindow.top,0,0,SWP_NOSIZE|SWP_NOZORDER|SWP_NOREDRAW|SWP_NOSENDCHANGING);
-              OnMoving(msg->hwnd,&rcWindow);
-              ReposButtons(msg->hwnd,0,NULL);//-=-=-=
-			  dock_prevent_moving=1;		  
+              CLUIFrames_OnMoving(msg->hwnd,&rcWindow);
+              ModernButton_ReposButtons(msg->hwnd,0,NULL);//-=-=-=
+			  g_mutex_uPreventDockMoving=1;		  
               return 1;
             }
 
 		case WM_MOVE:
 		{
 
-			if(docked && 0) {
+			if(g_bDocked && 0) {
 				RECT rc, rcMonitor;
 				Docking_GetMonitorRectFromWindow(msg->hwnd,&rcMonitor);
 				GetWindowRect(msg->hwnd,&rc);
 				Docking_AdjustPosition(msg->hwnd,&rcMonitor,&rc);
 				MoveWindow(msg->hwnd,rc.left,rc.top,rc.right-rc.left,rc.bottom-rc.top,TRUE);
-        OnMoving(msg->hwnd,&rc); 
-        ReposButtons(msg->hwnd,0,NULL);//-=-=-=
+        CLUIFrames_OnMoving(msg->hwnd,&rc); 
+        ModernButton_ReposButtons(msg->hwnd,0,NULL);//-=-=-=
        
 				return 1;
 			}
-      ReposButtons(msg->hwnd,2,NULL);
+      ModernButton_ReposButtons(msg->hwnd,2,NULL);
 			return 0;
 		}
 		case WM_SIZING:
@@ -271,17 +271,17 @@ int Docking_ProcessWindowMessage(WPARAM wParam,LPARAM lParam)
 			RECT rc;
 			int dx=0, dy=0;
 			int  d=0; 
-      if (docked) ReposButtons(msg->hwnd,0,NULL);
+      if (g_bDocked) ModernButton_ReposButtons(msg->hwnd,0,NULL);
       return FALSE;
 			rc=*(RECT*)(msg->lParam);
-			dock_prevent_moving=0;
-            OnMoving(msg->hwnd,&rc);
+			g_mutex_uPreventDockMoving=0;
+            CLUIFrames_OnMoving(msg->hwnd,&rc);
             //-=-=-=		
 			return TRUE;
 			}
 		case WM_SHOWWINDOW:
 			if(msg->lParam) return 0;
-			if((msg->wParam && docked<0) || (!msg->wParam && docked>0)) docked=-docked;
+			if((msg->wParam && g_bDocked<0) || (!msg->wParam && g_bDocked>0)) g_bDocked=-g_bDocked;
 			ZeroMemory(&abd,sizeof(abd));
 			abd.cbSize=sizeof(abd);
 			abd.hWnd=msg->hwnd;
@@ -294,8 +294,8 @@ int Docking_ProcessWindowMessage(WPARAM wParam,LPARAM lParam)
 				GetWindowRect(msg->hwnd,&rc);
 				Docking_AdjustPosition(msg->hwnd,&rcMonitor,&rc);
 				MoveWindow(msg->hwnd,rc.left,rc.top,rc.right-rc.left,rc.bottom-rc.top,FALSE);
-                OnMoving(msg->hwnd,&rc);
-                ReposButtons(msg->hwnd,0,NULL);//-=-=-=
+                CLUIFrames_OnMoving(msg->hwnd,&rc);
+                ModernButton_ReposButtons(msg->hwnd,0,NULL);//-=-=-=
 			}
 			else {
 				SHAppBarMessage(ABM_REMOVE,&abd);
@@ -306,8 +306,8 @@ int Docking_ProcessWindowMessage(WPARAM wParam,LPARAM lParam)
 			result=DefWindowProc(msg->hwnd,WM_NCHITTEST,msg->wParam,msg->lParam);
 			if(result==HTSIZE || result==HTTOP || result==HTTOPLEFT || result==HTTOPRIGHT ||
 			   result==HTBOTTOM || result==HTBOTTOMRIGHT || result==HTBOTTOMLEFT) {*((LRESULT*)lParam)=HTCLIENT; return TRUE;}
-			if(docked==DOCKED_LEFT && result==HTLEFT) {*((LRESULT*)lParam)=HTCLIENT; return TRUE;}
-			if(docked==DOCKED_RIGHT && result==HTRIGHT) {*((LRESULT*)lParam)=HTCLIENT; return TRUE;}
+			if(g_bDocked==DOCKED_LEFT && result==HTLEFT) {*((LRESULT*)lParam)=HTCLIENT; return TRUE;}
+			if(g_bDocked==DOCKED_RIGHT && result==HTRIGHT) {*((LRESULT*)lParam)=HTCLIENT; return TRUE;}
 		
 			
 			return 0;
@@ -325,20 +325,20 @@ int Docking_ProcessWindowMessage(WPARAM wParam,LPARAM lParam)
 		{	RECT rc;
 			POINT pt;
 			GetClientRect(msg->hwnd,&rc);
-			if(((docked==DOCKED_LEFT || docked==-DOCKED_LEFT) && (short)LOWORD(msg->lParam)>rc.right) ||
-			   ((docked==DOCKED_RIGHT || docked==-DOCKED_RIGHT) && (short)LOWORD(msg->lParam)<0)) {
+			if(((g_bDocked==DOCKED_LEFT || g_bDocked==-DOCKED_LEFT) && (short)LOWORD(msg->lParam)>rc.right) ||
+			   ((g_bDocked==DOCKED_RIGHT || g_bDocked==-DOCKED_RIGHT) && (short)LOWORD(msg->lParam)<0)) {
 				ReleaseCapture();
 				draggingTitle=0;
 				ZeroMemory(&abd,sizeof(abd));
 				abd.cbSize=sizeof(abd);
 				abd.hWnd=msg->hwnd;
 				SHAppBarMessage(ABM_REMOVE,&abd);
-				docked=0;
+				g_bDocked=0;
 				GetCursorPos(&pt);
 				PostMessage(msg->hwnd,WM_NCLBUTTONDOWN,HTCAPTION,MAKELPARAM(pt.x,pt.y));
 				SetWindowPos(msg->hwnd,0,pt.x-rc.right/2,pt.y-GetSystemMetrics(SM_CYFRAME)-GetSystemMetrics(SM_CYSMCAPTION)/2,DBGetContactSettingDword(NULL,"CList","Width",0),DBGetContactSettingDword(NULL,"CList","Height",0),SWP_NOZORDER);
-				DBWriteContactSettingByte(NULL,"CList","Docked",(BYTE)docked);
-       // ReposButtons(msg->hwnd,0);
+				DBWriteContactSettingByte(NULL,"CList","Docked",(BYTE)g_bDocked);
+       // ModernButton_ReposButtons(msg->hwnd,0);
 			}
 			return 1;
 		}
@@ -351,28 +351,28 @@ int Docking_ProcessWindowMessage(WPARAM wParam,LPARAM lParam)
 		case WM_DOCKCALLBACK:
 			switch(msg->wParam) {
 				case ABN_WINDOWARRANGE:
-					ShowWindowNew(msg->hwnd,msg->lParam?SW_HIDE:SW_SHOW);
+					CLUI_ShowWindowMod(msg->hwnd,msg->lParam?SW_HIDE:SW_SHOW);
                     {
 
 						RECT rc, rcMonitor;
 						Docking_GetMonitorRectFromWindow(msg->hwnd,&rcMonitor);
 						GetWindowRect(msg->hwnd,&rc);
 						Docking_AdjustPosition(msg->hwnd,&rcMonitor,&rc);
-						OnMoving(msg->hwnd,&rc); //-=-=-=		
-            ReposButtons(msg->hwnd,0,NULL);
+						CLUIFrames_OnMoving(msg->hwnd,&rc); //-=-=-=		
+            ModernButton_ReposButtons(msg->hwnd,0,NULL);
 
-						dock_prevent_moving=1;
+						g_mutex_uPreventDockMoving=1;
 					}
 					break;
 			}
 			return TRUE;
 		case WM_DESTROY:
-			if(docked>0) {
+			if(g_bDocked>0) {
 				ZeroMemory(&abd,sizeof(abd));
 				abd.cbSize=sizeof(abd);
 				abd.hWnd=msg->hwnd;
 				SHAppBarMessage(ABM_REMOVE,&abd);
-        ReposButtons(msg->hwnd,0,NULL);
+        ModernButton_ReposButtons(msg->hwnd,0,NULL);
 			}
 			return 0;
 	}

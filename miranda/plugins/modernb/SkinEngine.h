@@ -86,10 +86,10 @@ pfnImgGetHandle ImgGetHandle;
 
 int GetSkinFromDB(char * szSection, SKINOBJECTSLIST * Skin);
 int PutSkinToDB(char * szSection, SKINOBJECTSLIST * Skin);
-extern int UpdateWindowImageProc(BOOL WholeImage);
+extern int SkinEngine_UpdateWindowImageProc(BOOL WholeImage);
 extern void AddParseTextGlyphObject(char * szGlyphTextID,char * szDefineString,SKINOBJECTSLIST *Skin);
 extern void AddParseSkinFont(char * szFontID,char * szDefineString,SKINOBJECTSLIST *Skin);
-typedef struct _sCurrentWindowImageData
+typedef struct tagCURRWNDIMAGEDATA
 {
 	HDC hImageDC;
 	HDC hBackDC;
@@ -101,7 +101,7 @@ typedef struct _sCurrentWindowImageData
 
 	int Width,Height;
 
-}sCurrentWindowImageData;
+}CURRWNDIMAGEDATA;
 
 extern int ReCreateBackImage(BOOL Erase,RECT *w);
 

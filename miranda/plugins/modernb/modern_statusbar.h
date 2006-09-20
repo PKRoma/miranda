@@ -3,7 +3,7 @@
 int ModernDrawStatusBar(HWND hwnd, HDC hDC);
 int ModernDrawStatusBarWorker(HWND hWnd, HDC hDC);
 
-typedef struct 
+typedef struct tagSTATUSBARDATA 
 {
   BOOL sameWidth;
   RECT rectBorders;
@@ -18,5 +18,5 @@ typedef struct
   DWORD TextEffectColor1;
   DWORD TextEffectColor2;
   BYTE xStatusMode;     // 0-only main, 1-xStatus, 2-main as overlay
-} StatusBarData;
+} STATUSBARDATA;
 

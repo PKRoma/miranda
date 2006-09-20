@@ -34,7 +34,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 //current module prototypes
 void  UninitSkinHotKeys();
 void  GetDefaultFontSetting(int i,LOGFONT *lf,COLORREF *colour);
-int   OnSkinLoad(WPARAM wParam, LPARAM lParam);
+int   CLUI_OnSkinLoad(WPARAM wParam, LPARAM lParam);
 int	  LoadContactListModule(void);
 int   LoadCLCModule(void);
 
@@ -252,7 +252,7 @@ int __declspec(dllexport) CListInitialise(PLUGINLINK * link)
 	pcli->pfnGetRowHeight		= cliGetRowHeight;
 	pcli->pfnGetRowTopY			= cliGetRowTopY;
 	pcli->pfnGetRowTotalHeight	= cliGetRowTotalHeight;
-	pcli->pfnInvalidateRect		= cliInvalidateRect;
+	pcli->pfnInvalidateRect		= CLUI__cliInvalidateRect;
 	pcli->pfnGetCacheEntry		= cliGetCacheEntry;
 	pcli->pfnOnCreateClc		= cliOnCreateClc;
 	pcli->pfnHotKeysProcess		= cliHotKeysProcess;
@@ -336,7 +336,7 @@ int __declspec(dllexport) CListInitialise(PLUGINLINK * link)
 	CreateServiceFunction(CLUI_SetDrawerService,SetDrawer);
 
 	///test///
-	LoadModernButtonModule();
+	ModernButton_LoadModule();
 	LoadSkinModule();
 	rc=LoadContactListModule();
 	if (rc==0) rc=LoadCLCModule();
@@ -360,7 +360,7 @@ int __declspec(dllexport) Unload(void)
 	UninitCustomMenus();
 	UnloadAvatarOverlayIcon();
 	UninitSkinHotKeys();
-	UnhookEvent(gl_event_hSkinLoaded);
+	UnhookEvent(g_hSkinLoadedEvent);
 	UnhookAll();
 	UnloadSkinModule();
 	FreeRowCell();

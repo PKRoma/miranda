@@ -26,9 +26,9 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include "commonprototypes.h"
 
 //loads of stuff that didn't really fit anywhere else
-extern BOOL cliInvalidateRect(HWND hWnd, CONST RECT* lpRect,BOOL bErase );
+extern BOOL CLUI__cliInvalidateRect(HWND hWnd, CONST RECT* lpRect,BOOL bErase );
 
-extern BOOL ON_SIZING_CYCLE;
+extern BOOL g_mutex_bSizing;
 
 BOOL RectHitTest(RECT *rc, int testx, int testy)
 {
@@ -41,7 +41,7 @@ int cliHitTest(HWND hwnd,struct ClcData *dat,int testx,int testy,struct ClcConta
 	struct ClcGroup *hitgroup;
 	int hit;
 	RECT clRect;
- if (TestCursorOnBorders()!=0)
+ if (CLUI_TestCursorOnBorders()!=0)
  {
    	if(flags) *flags=CLCHT_NOWHERE;
 	  return -1;
@@ -175,7 +175,7 @@ void cliScrollTo(HWND hwnd,struct ClcData *dat,int desty,int noSmooth)
 	if((dat->backgroundBmpUse&CLBF_SCROLL || dat->hBmpBackground==NULL) && FALSE)
 		ScrollWindowEx(hwnd,0,previousy-dat->yScroll,NULL,NULL,NULL,NULL,SW_INVALIDATE);
 	else
-		cliInvalidateRect(hwnd,NULL,FALSE);
+		CLUI__cliInvalidateRect(hwnd,NULL,FALSE);
 	SetScrollPos(hwnd,SB_VERT,dat->yScroll,TRUE);
 }
 
@@ -218,9 +218,9 @@ void cliRecalcScrollBar(HWND hwnd,struct ClcData *dat)
 	} 
 	else 
 		SetScrollInfo(hwnd,SB_VERT,&si,TRUE);
-	ON_SIZING_CYCLE=1;
+	g_mutex_bSizing=1;
 	cliScrollTo(hwnd,dat,dat->yScroll,1);
-	ON_SIZING_CYCLE=0;
+	g_mutex_bSizing=0;
 }
 
 
@@ -335,7 +335,7 @@ void cliBeginRenameSelection(HWND hwnd,struct ClcData *dat)
 
 	SendMessage(dat->hwndRenameEdit,EM_SETRECT,0,(LPARAM)(&r));
 
-	ShowWindowNew(dat->hwndRenameEdit,SW_SHOW);
+	CLUI_ShowWindowMod(dat->hwndRenameEdit,SW_SHOW);
 	SetWindowPos(dat->hwndRenameEdit,HWND_TOP,0,0,0,0,SWP_NOMOVE|SWP_NOSIZE);
 	SetFocus(dat->hwndRenameEdit);
 }
