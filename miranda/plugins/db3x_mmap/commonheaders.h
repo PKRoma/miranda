@@ -44,6 +44,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include <string.h>
 #include <direct.h>
 #include "resource.h"
+#include "version.h"
 #include <newpluginapi.h>
 #include <win2k.h>
 #include <m_plugins.h>

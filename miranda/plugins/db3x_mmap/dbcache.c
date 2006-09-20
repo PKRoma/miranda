@@ -41,7 +41,7 @@ void Map()
 	hMap = CreateFileMapping(hDbFile, NULL, PAGE_READWRITE, 0, dwFileSize, NULL);
 
 	if (hMap)
-		pDbCache = 	MapViewOfFile(hMap, FILE_MAP_ALL_ACCESS/*FILE_MAP_WRITE*/, 0, 0 ,0);
+		pDbCache = MapViewOfFile(hMap, FILE_MAP_ALL_ACCESS/*FILE_MAP_WRITE*/, 0, 0 ,0);
 	else
 		DatabaseCorruption("%s (CreateFileMapping failed. Code: %d)");
 

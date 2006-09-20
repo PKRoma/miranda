@@ -51,6 +51,13 @@ DBHeader
 #define DB_THIS_VERSION          0x00000700u
 #define DB_SETTINGS_RESIZE_GRANULARITY  128
 
+struct DBSignature {
+  char name[15];
+  BYTE eof;
+};
+
+static struct DBSignature dbSignature={"Miranda ICQ DB",0x1A};
+
 #include <pshpack1.h>
 struct DBHeader {
   BYTE signature[16];      // 'Miranda ICQ DB',0,26

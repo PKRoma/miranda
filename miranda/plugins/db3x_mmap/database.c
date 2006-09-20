@@ -48,6 +48,11 @@ char szDbPath[MAX_PATH];
 
 static void UnloadDatabase(void)
 {
+	// update profile last modified time
+	DWORD bytesWritten;
+	SetFilePointer(hDbFile,0,NULL,FILE_BEGIN);
+	WriteFile(hDbFile,&dbSignature,1,&bytesWritten,NULL);
+
 	CloseHandle(hDbFile);
 }
 
@@ -64,8 +69,16 @@ DWORD CreateNewSpace(int bytes)
 
 void DeleteSpace(DWORD ofs,int bytes)
 {
-	log2("deletespace %d@%08x",bytes,ofs);
-	dbHeader.slackSpace+=bytes;
+	if (ofs+bytes == dbHeader.ofsFileEnd)
+	{
+		log2("freespace %d@%08x",bytes,ofs);
+		dbHeader.ofsFileEnd=ofs;
+	}
+	else
+	{
+		log2("deletespace %d@%08x",bytes,ofs);
+		dbHeader.slackSpace+=bytes;
+	}
 	DBWrite(0,&dbHeader,sizeof(dbHeader));
 	DBFill(ofs,bytes);
 }

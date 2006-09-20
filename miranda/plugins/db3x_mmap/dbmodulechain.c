@@ -27,43 +27,41 @@ static int EnumModuleNames(WPARAM wParam,LPARAM lParam);
 
 typedef struct {
 	char *name;
-	DWORD hash;
 	DWORD ofs;
 }  ModuleName;
 
 HANDLE hModHeap = NULL;
 static SortedList lMods, lOfs;
 
-
+static ModuleName *lastmn = NULL;
+static ModuleName *lastmn2 = NULL;
 
 static int ModCompare( ModuleName *mn1, ModuleName *mn2 )
 {
-	if (mn1->hash != mn2->hash)
-		return mn1->hash - mn2->hash;
-
 	return strcmp( mn1->name, mn2->name );
 }
-
 
 static int OfsCompare( ModuleName *mn1, ModuleName *mn2 )
 {
 	return ( mn1->ofs - mn2->ofs );
 }
 
-
 void AddToList(char *name, DWORD len, DWORD ofs)
 {
 	int index;
 	ModuleName *mn = (ModuleName*)HeapAlloc(hModHeap,HEAP_NO_SERIALIZE,sizeof(ModuleName));
 	mn->name = name;
-	mn->hash = len;
 	mn->ofs = ofs;
 
-	li.List_GetIndex(&lOfs,mn,&index);
-	li.List_Insert(&lOfs,mn,index);
+	if (li.List_GetIndex(&lMods,mn,&index))
+		DatabaseCorruption("%s (Module Name not unique)");
 
-	li.List_GetIndex(&lMods,mn,&index);
 	li.List_Insert(&lMods,mn,index);
+
+	if (li.List_GetIndex(&lOfs,mn,&index))
+		DatabaseCorruption("%s (Module Offset not unique)");
+
+	li.List_Insert(&lOfs,mn,index);
 }
 
 
@@ -113,11 +111,14 @@ static DWORD FindExistingModuleNameOfs(const char *szName,int nameLen)
 	int index;
 
 	mn.name = (char*)szName;
-	mn.hash = nameLen;
 	mn.ofs = 0;
+
+	if (lastmn && ModCompare(&mn,lastmn) == 0)
+		return lastmn->ofs;
 
 	if (li.List_GetIndex(&lMods,&mn,&index)) {
 		pmn = (ModuleName*)lMods.items[index];
+		lastmn = pmn;
 		return pmn->ofs;
 	}
 
@@ -154,18 +155,20 @@ DWORD GetModuleNameOfs(const char *szName)
 	return ofsNew;
 }
 
-
 char *GetModuleNameByOfs(DWORD ofs)
 {
 	ModuleName mn, *pmn;
 	int index;
 
 	mn.name = NULL;
-//	mn.hash = 0;
 	mn.ofs = ofs;
+
+	if (lastmn2 && OfsCompare(&mn,lastmn2) == 0)
+		return lastmn2->name;
 
 	if (li.List_GetIndex(&lOfs,&mn,&index)) {
 		pmn = (ModuleName*)lOfs.items[index];
+		lastmn2 = pmn;
 		return pmn->name;
 	}
 

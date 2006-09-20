@@ -923,9 +923,6 @@ static int stringCompare2( DBCachedGlobalValue* p1, DBCachedGlobalValue* p2 )
 
 static int handleCompare( void* p1, void* p2 )
 {
-	if ( *( long* )p1 == *( long* )p2 )
-		return 0;
-
 	return *( long* )p1 - *( long* )p2;
 }
 

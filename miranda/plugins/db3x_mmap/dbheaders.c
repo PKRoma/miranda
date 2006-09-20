@@ -23,12 +23,6 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 #include "commonheaders.h"
 
-struct DBSignature {
-  char name[15];
-  BYTE eof;
-};
-static struct DBSignature dbSignature={"Miranda ICQ DB",0x1A};
-
 //the cache has not been loaded when these functions are used
 
 int CreateDbHeaders(HANDLE hFile)
