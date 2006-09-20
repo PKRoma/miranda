@@ -53,7 +53,7 @@ void LoadProtocolIcons() {
 		}
 		free(g_dat->protoNames);
 	}
-	g_dat->protoNames = (char **) malloc(sizeof(char **) * g_dat->protoNum);
+	g_dat->protoNames = (char **) malloc(sizeof(char*) * g_dat->protoNum);
 	if (g_dat->hTabIconList == NULL) {
 		g_dat->hTabIconList = ImageList_Create(16, 16, IsWinVerXPPlus() ? ILC_COLOR32 | ILC_MASK : ILC_COLOR8 | ILC_MASK, (g_dat->protoNum + 1) * 12 + 8, 0);
 		ImageList_AddIcon(g_dat->hTabIconList, LoadSkinnedIcon(SKINICON_EVENT_MESSAGE));
@@ -312,12 +312,18 @@ void FreeGlobals() {
 	if (g_hAck) UnhookEvent(g_hAck);
 	if (g_dat) {
 		if (g_dat->draftList != NULL) tcmdlist_free(g_dat->draftList);
-		if (g_dat->hTabIconList) {
+		if (g_dat->hTabIconList)
 			ImageList_Destroy(g_dat->hTabIconList);
-		}
-		if (g_dat->hButtonIconList) {
+
+		if (g_dat->hButtonIconList)
 			ImageList_Destroy(g_dat->hButtonIconList);
+
+		if (g_dat->protoNum && g_dat->protoNames) {
+			int i;
+			for (i=0; i < g_dat->protoNum; i++ )
+				free( g_dat->protoNames[i] );
 		}
+
 		//	for (i=0;i<sizeof(g_dat->hIcons)/sizeof(g_dat->hIcons[0]);i++)
 		//		DestroyIcon(g_dat->hIcons[i]);
 		free(g_dat);
