@@ -416,9 +416,6 @@ void ext_yahoo_got_file(int id, const char *me, const char *who, const char *url
 		end = strrchr(url, '?');
 		
 		if (start && *start && end) {
-			/* argh WINDOWS SUCKS!!! */
-			//ft->filename = strndup(start, end-start);
-			ft->filename = (char *)malloc(end - start + 1);
 			lstrcpyn(fn, start, end-start);
 		} else 
 			lstrcpy(fn, "filename.ext");
