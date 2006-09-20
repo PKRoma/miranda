@@ -17,7 +17,7 @@ static HIMAGELIST hExtraImageList;
 extern HINSTANCE g_hInst;
 extern HIMAGELIST hCListImages;
 
-extern int CluiIconsChanged(WPARAM,LPARAM);
+extern int CLUI_IconsChanged(WPARAM,LPARAM);
 extern int ClcIconsChanged(WPARAM,LPARAM);
 extern BOOL CLUI__cliInvalidateRect(HWND hWnd, CONST RECT* lpRect,BOOL bErase);
 
@@ -177,7 +177,7 @@ int OnIconLibIconChanged(WPARAM wParam,LPARAM lParam)
 	ExtraImageIconsIndex[5]=ImageList_ReplaceIcon(hExtraImageList,ExtraImageIconsIndex[5],hicon );
 	if (needFree) DestroyIcon_protect(hicon);
 
-	CluiIconsChanged(wParam,lParam);
+	CLUI_IconsChanged(wParam,lParam);
 	NotifyEventHooks(ME_SKIN_ICONSCHANGED,0,0);
 	pcli->pfnClcBroadcast( INTM_INVALIDATE,0,0);
   

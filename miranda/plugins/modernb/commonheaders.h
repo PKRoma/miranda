@@ -310,5 +310,4 @@ extern BYTE g_bSTATE;
 extern BYTE gl_TrimText;
 
 extern struct CluiData g_CluiData;
-extern HANDLE g_hMainThreadID;
 

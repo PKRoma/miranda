@@ -123,8 +123,6 @@ static int RemoveItemFromList(int pos,wndFrame **lpFrames,int *FrameItemCount);
 HWND hWndExplorerToolBar;
 static int GapBetweenFrames=1;
 
-extern RECT changedWindowRect;
-
 int CLUIFrames_OnMoving(HWND hwnd,RECT *lParam)
 {
   RECT * r;

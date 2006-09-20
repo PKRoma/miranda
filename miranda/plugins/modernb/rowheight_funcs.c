@@ -50,7 +50,7 @@ void FreeRowCell ()
 extern void GetTextSize(SIZE *text_size, HDC hdcMem, RECT free_row_rc, TCHAR *szText, SortedList *plText, UINT uTextFormat, int smiley_height);
 extern HFONT CLCPaint_ChangeToFont(HDC hdc,struct ClcData *dat,int id,int *fontHeight);
 
-void InitModernRow()
+void RowHeight_InitModernRow()
 {
   gl_RowRoot=cppInitModernRow(gl_RowTabAccess);
   return;
@@ -90,7 +90,7 @@ int mod_CalcRowHeight_worker(struct ClcData *dat, HWND hwnd, struct ClcContact *
   if (!RowHeights_Alloc(dat, item + 1))
     return -1;
   if (!pcli->hwndContactTree) return 0;
-  //if (!gl_RowRoot) InitModernRow();
+  //if (!gl_RowRoot) RowHeight_InitModernRow();
   if (dat->hWnd!=pcli->hwndContactTree || !gl_RowRoot || contact->type == CLCIT_GROUP) 
   {
     int tmp=0;

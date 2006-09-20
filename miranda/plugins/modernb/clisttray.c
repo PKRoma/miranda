@@ -114,7 +114,7 @@ int GetStatusOrder(int currentStatus, int newStatus)
 	return (current>newstat)?currentStatus:newStatus;
 }
 
-int GetGlobalStatus(WPARAM wparam,LPARAM lparam)
+int CListTray_GetGlobalStatus(WPARAM wparam,LPARAM lparam)
 {
 	int curstatus=0;
 	int i;
@@ -558,7 +558,7 @@ static int TrayIconInit(HWND hwnd)
 		DBFreeVariant(&dbv);
 	}
 	else 
-		TrayIconAdd(hwnd,NULL,NULL,GetGlobalStatus(0,0) /*averageMode*/);
+		TrayIconAdd(hwnd,NULL,NULL,CListTray_GetGlobalStatus(0,0) /*averageMode*/);
 	if(averageMode<=0 && DBGetContactSettingByte(NULL,"CList","TrayIcon",SETTING_TRAYICON_DEFAULT)==SETTING_TRAYICON_CYCLE)
 		cycleTimerId=SetTimer(NULL,0,DBGetContactSettingWord(NULL,"CList","CycleTime",SETTING_CYCLETIME_DEFAULT)*1000,TrayCycleTimerProc);
 	return 0;
@@ -785,7 +785,7 @@ void cliTrayIconUpdateBase(char *szChangedProto)
 						//
 						HICON hIcon;
 						// 1 check if multi connecting icon
-						GetGlobalStatus(0,0);
+						CListTray_GetGlobalStatus(0,0);
 						if (g_bMultiConnectionMode)
 							if (_strcmpi(szChangedProto,g_szConnectingProto))
 								return;

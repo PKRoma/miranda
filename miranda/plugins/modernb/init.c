@@ -46,7 +46,7 @@ int		cliHotKeysProcess(HWND hwnd,WPARAM wParam,LPARAM lParam);
 int		cliHotkeysProcessMessage(WPARAM wParam,LPARAM lParam);
 int		cliHotKeysRegister(HWND hwnd);
 int		cliHotKeysUnregister(HWND hwnd);
-void	cliOnCreateClc(void);
+void	CLUI_cliOnCreateClc(void);
 int		cli_AddItemToGroup(struct ClcGroup *group, int iAboveItem);
 int		cli_AddInfoItemToGroup(struct ClcGroup *group,int flags,const TCHAR *pszText);
 int     cliGetGroupContentsCount(struct ClcGroup *group, int visibleOnly);
@@ -85,7 +85,7 @@ LRESULT (CALLBACK *saveContactListControlWndProc )( HWND hwnd, UINT msg, WPARAM 
 LRESULT CALLBACK cli_ContactListControlWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam);
 
 LRESULT ( CALLBACK *saveContactListWndProc )(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam);
-LRESULT CALLBACK cli_ContactListWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam);
+LRESULT CALLBACK CLUI__cli_ContactListWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam);
 
 int (* saveTrayIconProcessMessage) ( WPARAM wParam, LPARAM lParam );
 
@@ -254,7 +254,7 @@ int __declspec(dllexport) CListInitialise(PLUGINLINK * link)
 	pcli->pfnGetRowTotalHeight	= cliGetRowTotalHeight;
 	pcli->pfnInvalidateRect		= CLUI__cliInvalidateRect;
 	pcli->pfnGetCacheEntry		= cliGetCacheEntry;
-	pcli->pfnOnCreateClc		= cliOnCreateClc;
+	pcli->pfnOnCreateClc		= CLUI_cliOnCreateClc;
 	pcli->pfnHotKeysProcess		= cliHotKeysProcess;
 	pcli->pfnHotKeysRegister	= cliHotKeysRegister;
 	pcli->pfnHotKeysUnregister	= cliHotKeysUnregister;
@@ -279,7 +279,7 @@ int __declspec(dllexport) CListInitialise(PLUGINLINK * link)
     pcli->pfnIconFromStatusMode = cli_IconFromStatusMode;
 
 	saveLoadCluiGlobalOpts		= pcli->pfnLoadCluiGlobalOpts;
-	pcli->pfnLoadCluiGlobalOpts = cli_LoadCluiGlobalOpts;
+	pcli->pfnLoadCluiGlobalOpts = CLUI_cli_LoadCluiGlobalOpts;
 
 	saveSortCLC					= pcli->pfnSortCLC;	
 	pcli->pfnSortCLC			= cli_SortCLC;
@@ -300,7 +300,7 @@ int __declspec(dllexport) CListInitialise(PLUGINLINK * link)
 	pcli->pfnAddItemToGroup		= cli_AddItemToGroup;
 
 	saveContactListWndProc		= pcli->pfnContactListWndProc; 
-	pcli->pfnContactListWndProc = cli_ContactListWndProc;
+	pcli->pfnContactListWndProc = CLUI__cli_ContactListWndProc;
 
 	saveDeleteItemFromTree		= pcli->pfnDeleteItemFromTree; 
 	pcli->pfnDeleteItemFromTree = cli_DeleteItemFromTree;

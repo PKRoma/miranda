@@ -929,6 +929,9 @@
 				RelativePath=".\clist.h">
 			</File>
 			<File
+				RelativePath=".\clui.h">
+			</File>
+			<File
 				RelativePath=".\commonheaders.h">
 			</File>
 			<File

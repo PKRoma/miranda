@@ -3561,7 +3561,7 @@ int ValidateSingleFrameImage(wndFrame * Frame, BOOL SkipBkgBlitting)            
     int w,h,x,y;
     int w1,h1,x1,y1;
 
-    SizingGetWindowRect(pcli->hwndContactList,&wnd);
+    CLUI_SizingGetWindowRect(pcli->hwndContactList,&wnd);
     rcPaint=Frame->wndSize;
     {
       int dx,dy,bx,by;
@@ -3818,7 +3818,7 @@ int DrawNonFramedObjects(BOOL Erase,RECT *r)
 {
   RECT w,wnd;
   if (r) w=*r;
-  else SizingGetWindowRect(pcli->hwndContactList,&w);
+  else CLUI_SizingGetWindowRect(pcli->hwndContactList,&w);
   if (!g_bLayered) return ReCreateBackImage(FALSE,0);
   if (g_pCachedWindow==NULL)
     return SkinEngine_ValidateFrameImageProc(&w);
@@ -3943,7 +3943,7 @@ int SkinEngine_UpdateWindowImage()
   }
   else
 	  ReCreateBackImage(FALSE,0);
-	  ApplyTransluency();
+	  SkinEngine_ApplyTransluency();
   return 0;
 }
 
@@ -3966,7 +3966,7 @@ int SkinEngine_UpdateWindowImageRect(RECT * r)                                  
 }
 extern BOOL g_bSmoothAnimation;
 extern BOOL g_bTransparentFlag;
-void ApplyTransluency()
+void SkinEngine_ApplyTransluency()
 {
 	int IsTransparancy;
 	HWND hwnd=(HWND)CallService(MS_CLUI_GETHWND,0,0);
@@ -3988,7 +3988,7 @@ int SkinEngine_JustSkinEngine_UpdateWindowImage()
   RECT r;
   if (!g_bLayered)
   {
-	  ApplyTransluency();
+	  SkinEngine_ApplyTransluency();
 	  return 0;
   }
   GetWindowRect(pcli->hwndContactList,&r);
@@ -4007,7 +4007,7 @@ int JustSkinEngine_UpdateWindowImageRect(RECT * rty)
 
   if (!g_bLayered)
   {
-	  ApplyTransluency();
+	  SkinEngine_ApplyTransluency();
 	  return 0;
   }
   LOCK_IMAGE_UPDATING=1;
