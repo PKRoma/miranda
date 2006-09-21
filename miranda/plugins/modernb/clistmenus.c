@@ -108,6 +108,7 @@ typedef struct{
 
   BOOL custom;
   char *svc;
+  int hMenuItem;
 }StatusMenuExecParam,*lpStatusMenuExecParam;
 
 //////////////////////////////MAIN MENU/////////////////////////
@@ -651,9 +652,9 @@ int StatusMenuExecService(WPARAM wParam,LPARAM lParam)
     if (smep->custom)
     {
       if (smep->svc && *smep->svc)
-        CallService(smep->svc, 0, 0);
-
-    } else
+        CallService(smep->svc, 0, (LPARAM)smep->hMenuItem);
+    } 
+    else
     {
       PROTOCOLDESCRIPTOR **proto;
       int protoCount;
@@ -1426,11 +1427,6 @@ static int AddStatusMenuItem(WPARAM wParam,LPARAM lParam)
         break;
       }   
     }
-    /* UnregistereD sturtup status fix
-	if (AllocedProtos==0)
-      mp=&menusProtoSingle;
-	*/
-
 	if (AllocedProtos==0) {
 		if (!val)
 			_snprintf(buf,sizeof(buf),Translate("%s Custom Status"),menusProtoSingle.szProto);
@@ -1465,15 +1461,7 @@ static int AddStatusMenuItem(WPARAM wParam,LPARAM lParam)
   tmi.hIcon=mi->hIcon;
   tmi.hotKey=mi->hotKey;
   tmi.position=mi->position;
-  tmi.pszName=mi->pszName;
-  
-  /*
-  if (!(mi->flags&CMIF_ROOTPOPUP||mi->flags&CMIF_CHILDPOPUP)) {
-  //old system
-  tmi.flags|=CMIF_CHILDPOPUP;
-  tmi.root=-1;
-  };
-  */
+  tmi.pszName=mi->pszName; 
   {
     //owner data
     lpStatusMenuExecParam smep;
@@ -1481,9 +1469,7 @@ static int AddStatusMenuItem(WPARAM wParam,LPARAM lParam)
     memset(smep,0,sizeof(StatusMenuExecParam));
     smep->custom = TRUE;
     smep->svc=mir_strdup(mi->pszService);
-//	if (mp)
-//		smep->proto=mir_strdup(mp.szProto);
-//	else
+	
 	{
 		char *buf=mir_strdup(mi->pszService);
 		int i=0;
@@ -1495,6 +1481,8 @@ static int AddStatusMenuItem(WPARAM wParam,LPARAM lParam)
     tmi.ownerdata=smep;
   }; 
   op.Handle=(int)CallService(MO_ADDNEWMENUITEM,(WPARAM)hStatusMenuObject,(LPARAM)&tmi);  
+  ((lpStatusMenuExecParam)(tmi.ownerdata))->hMenuItem=op.Handle;
+
   op.Setting=OPT_MENUITEMSETUNIQNAME;
   {
     char buf[256];
