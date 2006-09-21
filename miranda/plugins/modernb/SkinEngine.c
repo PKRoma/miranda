@@ -3581,6 +3581,11 @@ int ValidateSingleFrameImage(wndFrame * Frame, BOOL SkipBkgBlitting)            
     //OffsetRect(&rcPaint,-wnd.left,-wnd.top);
     w=rcPaint.right-rcPaint.left;
     h=rcPaint.bottom-rcPaint.top;
+    if (w<=0 || h<=0) 
+    { 
+        TRACE("Frame size smaller than 0\n");
+        return 0;
+    }
     x=rcPaint.left;
     y=rcPaint.top;
     hdc=CreateCompatibleDC(g_pCachedWindow->hImageDC);
