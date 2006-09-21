@@ -4,6 +4,11 @@ Legend:
 [-] deleted
 [!] bug fixed
 
+
+Version 0.5.0.3
+===============
+[!] bug 0001996 fixed: No Contact Idetification When an Unsupport Feature Even Occurs
+
 Version 0.5.0.1
 ===============
 [!] bug 0002083 fixed: Filetransfer suddenly stops
