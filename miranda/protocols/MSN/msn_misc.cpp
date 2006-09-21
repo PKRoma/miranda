@@ -532,9 +532,11 @@ void CALLBACK sttMainThreadCallback( ULONG dwParam )
 void __stdcall	MSN_ShowPopup( const char* nickname, const char* msg, int flags )
 {
 	if ( !ServiceExists( MS_POPUP_ADDPOPUP )) {
-		if ( flags & MSN_ALLOW_MSGBOX )
-			MessageBoxA( NULL, msg, "MSN Protocol", MB_OK + ( flags & MSN_SHOW_ERROR ) ? MB_ICONERROR : MB_ICONINFORMATION );
-
+		if ( flags & MSN_ALLOW_MSGBOX ) {
+			char szMsg[ 1024 ];
+			mir_snprintf( szMsg, SIZEOF( szMsg ), "%s:\n%s", nickname, msg );
+			MessageBoxA( NULL, szMsg, "MSN Protocol", MB_OK + ( flags & MSN_SHOW_ERROR ) ? MB_ICONERROR : MB_ICONINFORMATION );
+		}
 		return;
 	}
 
