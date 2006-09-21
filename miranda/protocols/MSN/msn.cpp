@@ -105,6 +105,9 @@ HANDLE			msnMenuItems[ MENU_ITEMS_COUNT ];
 HANDLE			hNetlibUser = NULL;
 HANDLE         hInitChat = NULL;
 HANDLE			hEvInitChat = NULL;
+HANDLE			hEvModLoaded = NULL;
+HANDLE			hEvOptInit = NULL;
+HANDLE			hEvShtd = NULL;
 bool				msnUseExtendedPopups;
 
 int MsnOnDetailsInit( WPARAM wParam, LPARAM lParam );
@@ -290,17 +293,17 @@ extern "C" int __declspec(dllexport) Load( PLUGINLINK* link )
 //	if (ServiceExists("PluginSweeper/Add"))
 //		MSN_CallService("PluginSweeper/Add",(WPARAM)MSN_Translate(ModuleName),(LPARAM)ModuleName);
 
-	HookEvent( ME_SYSTEM_MODULESLOADED, OnModulesLoaded );
+	hEvModLoaded = HookEvent( ME_SYSTEM_MODULESLOADED, OnModulesLoaded );
 
 	srand(( unsigned int )time( NULL ));
 
 	LoadOptions();
-	HookEvent( ME_OPT_INITIALISE, MsnOptInit );
-	HookEvent( ME_SYSTEM_PRESHUTDOWN, OnPreShutdown );
+	hEvOptInit = HookEvent( ME_OPT_INITIALISE, MsnOptInit );
+	hEvShtd = HookEvent( ME_SYSTEM_PRESHUTDOWN, OnPreShutdown );
 
-	char nudge[250];
-	sprintf(nudge,"%s/Nudge",protocolname);
-	hMSNNudge = CreateHookableEvent(nudge);
+	char evtname[250];
+	sprintf(evtname,"%s/Nudge",protocolname);
+	hMSNNudge = CreateHookableEvent(evtname);
 	
 	MSN_InitThreads();
 
@@ -351,12 +354,17 @@ extern "C" int __declspec( dllexport ) Unload( void )
 	if ( hChatEvent  ) UnhookEvent( hChatEvent );
 	if ( hChatMenu   ) UnhookEvent( hChatMenu );
 	if ( hEvInitChat ) UnhookEvent( hEvInitChat );
+	if ( hEvModLoaded ) UnhookEvent( hEvModLoaded );
+	if ( hEvOptInit ) UnhookEvent( hEvOptInit );
+	if ( hEvShtd ) UnhookEvent( hEvShtd );
 
 	if ( hInitChat )
 		DestroyHookableEvent( hInitChat );
 
 	if ( hMSNNudge )
 		DestroyHookableEvent( hMSNNudge );
+
+	UnloadMsnServices();
 
 	UninitSsl();
 	MSN_FreeGroups();
@@ -365,8 +373,6 @@ extern "C" int __declspec( dllexport ) Unload( void )
 	Lists_Uninit();
 	P2pSessions_Uninit();
 	Netlib_CloseHandle( hNetlibUser );
-
-	UnloadMsnServices();
 
 	free( mailsoundname );
 	free( msnProtocolName );
