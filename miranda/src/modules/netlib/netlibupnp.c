@@ -531,25 +531,25 @@ void NetlibUPnPDeletePortMapping(WORD extport, char* proto)
 		unsigned i;
 //		findUPnPGateway();
 
-		WaitForSingleObject(portListMutex, INFINITE);
-
 		if (gatewayFound)
 		{
 			char* szData = mir_alloc(4096);
 			
+			WaitForSingleObject(portListMutex, INFINITE);
+
 			mir_snprintf(szData, 4096, delete_port_mapping, 
 				extport, proto);
 			httpTransact(szCtlUrl, szData, 4096, "DeletePortMapping");
 
+			for (i=0; i<numports; ++i)
+			{
+				if ( portList[i] == extport && --numports > 0)
+					memmove(&portList[i], &portList[i+1], (numports - i)*sizeof(WORD));
+			}
+			ReleaseMutex(portListMutex);
+
 			mir_free(szData);
 		}
-
-		for (i=0; i<numports; ++i)
-		{
-			if ( portList[i] == extport && --numports > 0)
-				memmove(&portList[i], &portList[i+1], (numports - i)*sizeof(WORD));
-		}
-		ReleaseMutex(portListMutex);
 	}
 }
 
@@ -569,12 +569,11 @@ static void NetlibUPnPCleanup(void* extra)
 		for (i=0; !Miranda_Terminated(); ++i)  {
 			mir_snprintf(szData, 4096, get_port_mapping, i);
 
+			ReleaseMutex(portListMutex);
 			WaitForSingleObject(portListMutex, INFINITE);
 
-			if (httpTransact(szCtlUrl, szData, 4096, "GetGenericPortMappingEntry") != 200) {
-				ReleaseMutex(portListMutex);
+			if (httpTransact(szCtlUrl, szData, 4096, "GetGenericPortMappingEntry") != 200)
 				break;
-			}
 
 			if (!txtParseParam(szData, "<NewPortMappingDescription", ">", "<", buf, sizeof(buf)) || strcmp(buf, "Miranda") != 0)
 				continue;
@@ -592,13 +591,15 @@ static void NetlibUPnPCleanup(void* extra)
 				if (k >= numports && j < 30)
 					ports[j++] = mport;
 			}
-			
-			ReleaseMutex(portListMutex);
 		}
+		ReleaseMutex(portListMutex);
 		mir_free(szData);
 
-		for (i=0; i<j && !Miranda_Terminated(); ++i) 
+		for (i=0; i<j && !Miranda_Terminated(); ++i) { 
+			WaitForSingleObject(portListMutex, INFINITE);
 			NetlibUPnPDeletePortMapping(ports[i], "TCP");
+			ReleaseMutex(portListMutex);
+		}
 	}
 
 	// this handle will be closed automatically by _endthread()
@@ -624,4 +625,3 @@ void NetlibUPnPDestroy(void)
 	mir_free(portList);
 	CloseHandle(portListMutex);
 }
-
