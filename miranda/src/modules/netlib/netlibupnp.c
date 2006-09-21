@@ -235,7 +235,7 @@ static void discoverUPnP(char* szUrl, int sizeUrl)
 			ips[j] = *(unsigned*)he->h_addr_list[j];
 	}
 
-	buf = mir_alloc(1500);
+	buf = ( char* )alloca(1500);
 
 	for(i = 3;  --i && szUrl[0] == 0;) 
 	{
@@ -269,19 +269,14 @@ static void discoverUPnP(char* szUrl, int sizeUrl)
 					txtParseParam(buf, "max-age", "=", "\r", age, sizeof(age));
 					expireTime = atoi(age);
 					break;
-				}
-			}
-		}
-	}
+	}	}	}	}
 
-	mir_free(buf);
 	mir_free(ips);
 	setsockopt(sock, IPPROTO_IP, IP_MULTICAST_IF, (char *)&any, sizeof(unsigned));
 	closesocket(sock);
 }
 
-
-static int httpTransact (char* szUrl, char* szResult, int resSize, char* szActionName)
+static int httpTransact(char* szUrl, char* szResult, int resSize, char* szActionName)
 {
 	// Parse URL
 	char szHost[256], szPort[6], szPath[256], szRes[6];
@@ -297,8 +292,7 @@ static int httpTransact (char* szUrl, char* szResult, int resSize, char* szActio
 	for (;;)
 	{
 		if (szActionName == NULL) 
-			sz = mir_snprintf (szData, 4096,
-				xml_get_hdr, szPath, szHost, szPort);
+			sz = mir_snprintf (szData, 4096, xml_get_hdr, szPath, szHost, szPort);
 		else
 		{
 			char szData1[1024];
@@ -412,7 +406,6 @@ static int httpTransact (char* szUrl, char* szResult, int resSize, char* szActio
 	return res;
 }
 
-
 static void findUPnPGateway(void)
 {
 	time_t curTime = time(NULL);
@@ -420,30 +413,25 @@ static void findUPnPGateway(void)
 	if ((curTime - lastDiscTime) >= expireTime)
 	{
 		char szUrl[256];
-		char* szData = mir_alloc(8192);
+		char szHostNew[256], szHostExist[256];
+		char* szData = (char*)alloca(8192);
 
 		lastDiscTime = curTime;
 
 		discoverUPnP(szUrl, sizeof(szUrl));
 		
 		gatewayFound = szUrl[0] != 0;
-
-		if (gatewayFound)
-		{
-			char szHostNew[256], szHostExist[256];
-			parseURL(szUrl, szHostNew, NULL, NULL);
-			parseURL(szCtlUrl, szHostExist, NULL, NULL);
-
-			if (strcmp(szHostNew, szHostExist) == 0)
-				return;
-			else
-				txtParseParam(szUrl, NULL, "http://", "/", szCtlUrl, sizeof(szCtlUrl));
-		}
-		else
+		if ( !gatewayFound )
 			return;
+
+		parseURL(szUrl, szHostNew, NULL, NULL);
+		parseURL(szCtlUrl, szHostExist, NULL, NULL);
+		if (strcmp(szHostNew, szHostExist) == 0)
+			return;
+
+		txtParseParam(szUrl, NULL, "http://", "/", szCtlUrl, sizeof(szCtlUrl));
 		
 		gatewayFound = httpTransact(szUrl, szData, 8192, NULL) == 200;
-
 		if (gatewayFound)
 		{
 			char szTemp[256];
@@ -472,23 +460,18 @@ static void findUPnPGateway(void)
 					strncpy(szCtlUrl, szUrl, sizeof(szCtlUrl));
 					szCtlUrl[sizeof(szCtlUrl)-1] = 0;
 					break;
-			}
-		}
+		}	}
+
 		Netlib_Logf(NULL, "UPnP Gateway detected %d, Control URL: %s\n", gatewayFound, szCtlUrl); 
-		mir_free(szData);
-	}
-}
+}	}
 
-
-BOOL NetlibUPnPAddPortMapping(WORD intport, char *proto, 
-							  WORD *extport, DWORD *extip, BOOL search)
+BOOL NetlibUPnPAddPortMapping(WORD intport, char *proto, WORD *extport, DWORD *extip, BOOL search)
 {
 	int res = 0;
 
 	findUPnPGateway();
 
-	if (gatewayFound)
-	{
+	if ( gatewayFound ) {
 		char* szData = mir_alloc(4096);
 		char szExtIP[30];
 
@@ -502,10 +485,10 @@ BOOL NetlibUPnPAddPortMapping(WORD intport, char *proto,
 			mir_snprintf(szData, 4096, add_port_mapping, 
 				*extport, proto, intport, inet_ntoa(locIP.sin_addr));
 			res = httpTransact(szCtlUrl, szData, 4096, "AddPortMapping");
-		} while (search && res == 718);
+		}
+			while (search && res == 718);
 		
-		if (res == 200)
-		{
+		if (res == 200) {
 			szData[0] = 0;
 			res = httpTransact(szCtlUrl, szData, 4096, "GetExternalIPAddress");
 			if (res == 200 && txtParseParam(szData, "<NewExternalIPAddress", ">", "<", szExtIP, sizeof(szExtIP)))
@@ -523,42 +506,35 @@ BOOL NetlibUPnPAddPortMapping(WORD intport, char *proto,
 	return res == 200;
 }
 
-
 void NetlibUPnPDeletePortMapping(WORD extport, char* proto)
 {
-	if (extport != 0)
-	{
+	if (extport == 0)
+		return;
+
+//	findUPnPGateway();
+
+	if (gatewayFound) {
 		unsigned i;
-//		findUPnPGateway();
+		char* szData = (char*)alloca(4096);
+		
+		WaitForSingleObject(portListMutex, INFINITE);
 
-		if (gatewayFound)
-		{
-			char* szData = mir_alloc(4096);
-			
-			WaitForSingleObject(portListMutex, INFINITE);
+		mir_snprintf(szData, 4096, delete_port_mapping, extport, proto);
+		httpTransact(szCtlUrl, szData, 4096, "DeletePortMapping");
 
-			mir_snprintf(szData, 4096, delete_port_mapping, 
-				extport, proto);
-			httpTransact(szCtlUrl, szData, 4096, "DeletePortMapping");
+		for ( i=0; i < numports; ++i )
+			if ( portList[i] == extport && --numports > 0)
+				memmove(&portList[i], &portList[i+1], (numports - i)*sizeof(WORD));
 
-			for (i=0; i<numports; ++i)
-			{
-				if ( portList[i] == extport && --numports > 0)
-					memmove(&portList[i], &portList[i+1], (numports - i)*sizeof(WORD));
-			}
-			ReleaseMutex(portListMutex);
-
-			mir_free(szData);
-		}
-	}
-}
+		ReleaseMutex(portListMutex);
+}	}
 
 static void NetlibUPnPCleanup(void* extra)
 {
 	findUPnPGateway();
 
 	if ( gatewayFound ) {
-		char* szData = mir_alloc(4096);
+		char* szData = ( char* )alloca(4096);
 		char buf[50], lip[50];
 		unsigned i, j = 0, k;
 		
@@ -590,17 +566,15 @@ static void NetlibUPnPCleanup(void* extra)
 
 				if (k >= numports && j < 30)
 					ports[j++] = mport;
-			}
-		}
+		}	}
+
 		ReleaseMutex(portListMutex);
-		mir_free(szData);
 
 		for (i=0; i<j && !Miranda_Terminated(); ++i) { 
 			WaitForSingleObject(portListMutex, INFINITE);
 			NetlibUPnPDeletePortMapping(ports[i], "TCP");
 			ReleaseMutex(portListMutex);
-		}
-	}
+	}	}
 
 	// this handle will be closed automatically by _endthread()
 	cleanupThread = NULL;
