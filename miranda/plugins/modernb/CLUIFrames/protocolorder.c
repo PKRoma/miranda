@@ -21,7 +21,7 @@ struct ProtocolOrderData {
 
 #define PrVer 3
 
-char **settingname;
+char **pszSettingName;
 int arrlen;
 
 int enumDB_ProtoProc (const char *szSetting,LPARAM lParam)
@@ -29,8 +29,8 @@ int enumDB_ProtoProc (const char *szSetting,LPARAM lParam)
 	
 	if (szSetting==NULL){return(0);};
 	arrlen++;
-	settingname=(char **)realloc(settingname,arrlen*sizeof(char *));
-	settingname[arrlen-1]=_strdup(szSetting);
+	pszSettingName=(char **)realloc(pszSettingName,arrlen*sizeof(char *));
+	pszSettingName[arrlen-1]=_strdup(szSetting);
 	return(0);
 };
 
@@ -52,11 +52,11 @@ if (arrlen==0){return(0);};
 	int i;
 	for (i=0;i<arrlen;i++)
 	{
-	  DBDeleteContactSetting(0,"Protocols",settingname[i]);
-	  free(settingname[i]);
+	  DBDeleteContactSetting(0,"Protocols",pszSettingName[i]);
+	  free(pszSettingName[i]);
 	};
-	free(settingname);
-	settingname=NULL;
+	free(pszSettingName);
+	pszSettingName=NULL;
 };
 return(0);
 };

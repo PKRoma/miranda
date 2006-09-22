@@ -28,7 +28,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include "commonheaders.h"
 #include "commonprototypes.h"
 #include <time.h>
-#include "skinEngine.h"
+//#include "skinEngine.h"
 #include "version.h"
 
 //current module prototypes
@@ -337,7 +337,7 @@ int __declspec(dllexport) CListInitialise(PLUGINLINK * link)
 
 	///test///
 	ModernButton_LoadModule();
-	LoadSkinModule();
+	SkinEngine_LoadModule();
 	rc=LoadContactListModule();
 	if (rc==0) rc=LoadCLCModule();
 	LoadMoveToGroup();
@@ -362,7 +362,7 @@ int __declspec(dllexport) Unload(void)
 	UninitSkinHotKeys();
 	UnhookEvent(g_hSkinLoadedEvent);
 	UnhookAll();
-	UnloadSkinModule();
+	SkinEngine_UnloadModule();
 	FreeRowCell();
 	pcli->hwndContactList=0;
 	UnhookAll();

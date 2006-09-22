@@ -239,7 +239,7 @@ BOOL DebugDeleteObject(HGDIOBJ a)
 
 BOOL mod_DeleteDC(HDC hdc)
 {
-  ResetEffect(hdc);
+  SkinEngine_ResetTextEffect(hdc);
   return DeleteDC(hdc);
 }
 #ifdef _DEBUG

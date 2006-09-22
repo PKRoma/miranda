@@ -27,51 +27,50 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include "newpluginapi.h"
 #include "commonheaders.h"
 
-//#define MAXPARAMS 20
 #define MAXVALUE 20
 
-typedef struct _LO_MaskParam 
+typedef struct tagMASKPARAM 
 {
     DWORD	dwId;
     BYTE	bFlag;
     char*	szName;
     DWORD	dwValueHash;
     char*	szValue;
-} TLO_MaskParam;
+} MASKPARAM;
 
 
-typedef struct _LO_ModernMask 
+typedef struct tagMODERNMASK 
 {
-  TLO_MaskParam*	pl_Params;
+  MASKPARAM*	pl_Params;
   DWORD				dwParamCnt;
   void*				pObject; 
   DWORD				dwMaskId;
-} TLO_MMask;
+} MODERNMASK;
 
-typedef struct _List_ModernMask 
+typedef struct tagLISTMODERNMASK 
 {
-  TLO_MMask*	pl_Masks;
+  MODERNMASK*	pl_Masks;
   DWORD			dwMaskCnt;  
-} TList_ModernMask;
+} LISTMODERNMASK;
 
 /// PROTOTYPES
-int AddModernMaskToList(TLO_MMask * mm,  TList_ModernMask * mmTemplateList);
-int AddStrModernMaskToList(DWORD maskID, char * szStr, char * objectName,  TList_ModernMask * mmTemplateList, void * pObjectList);
-int SortMaskList(TList_ModernMask * mmList);
+int AddModernMaskToList(MODERNMASK * mm,  LISTMODERNMASK * mmTemplateList);
+int AddStrModernMaskToList(DWORD maskID, char * szStr, char * objectName,  LISTMODERNMASK * mmTemplateList, void * pObjectList);
+int SortMaskList(LISTMODERNMASK * mmList);
 
-int DeleteMaskByItID(DWORD mID,TList_ModernMask * mmTemplateList);
-int ClearMaskList(TList_ModernMask * mmTemplateList);
-int ExchangeMasksByID(DWORD mID1, DWORD mID2, TList_ModernMask * mmTemplateList);
+int DeleteMaskByItID(DWORD mID,LISTMODERNMASK * mmTemplateList);
+int ClearMaskList(LISTMODERNMASK * mmTemplateList);
+int ExchangeMasksByID(DWORD mID1, DWORD mID2, LISTMODERNMASK * mmTemplateList);
 
-int ParseToModernMask(TLO_MMask * mm, char * szText);
-BOOL CompareModernMask(TLO_MMask * mmValue,TLO_MMask * mmTemplate);
-BOOL CompareStrWithModernMask(char * szValue,TLO_MMask * mmTemplate);
-TLO_MMask *  FindMaskByStr(char * szValue,TList_ModernMask * mmTemplateList);
+int ParseToModernMask(MODERNMASK * mm, char * szText);
+BOOL CompareModernMask(MODERNMASK * mmValue,MODERNMASK * mmTemplate);
+BOOL CompareStrWithModernMask(char * szValue,MODERNMASK * mmTemplate);
+MODERNMASK *  FindMaskByStr(char * szValue,LISTMODERNMASK * mmTemplateList);
 DWORD mod_CalcHash(char * a);
-char * ModernMaskToString(TLO_MMask * mm, char * buf, UINT bufsize);
-BOOL _inline WildCompare(char * name, char * mask, BYTE option);
+char * ModernMaskToString(MODERNMASK * mm, char * buf, UINT bufsize);
+BOOL _inline wildcmp(char * name, char * mask, BYTE option);
 int RegisterObjectByParce(char * ObjectName, char * Params);
-SKINOBJECTDESCRIPTOR *  skin_FindObjectByRequest(char * szValue,TList_ModernMask * mmTemplateList);
+SKINOBJECTDESCRIPTOR *  skin_FindObjectByRequest(char * szValue,LISTMODERNMASK * mmTemplateList);
 TCHAR * GetParamNT(char * string, TCHAR * buf, int buflen, BYTE paramN, char Delim, BOOL SkipSpaces);
 
 #endif

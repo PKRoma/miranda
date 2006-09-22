@@ -126,7 +126,7 @@ int UnhookAll();
 /* External variables */
 
 extern STATUSBARDATA g_StatusBarData;
-
+extern SKINOBJECTSLIST g_SkinObjectList;
 extern void (*saveLoadCluiGlobalOpts)(void);
 extern CURRWNDIMAGEDATA * g_pCachedWindow;
             
@@ -142,7 +142,6 @@ extern int  g_mutex_nPaintLock;
 extern int  g_mutex_nCalcRowHeightLock;
 extern int  g_mutex_bOnTrayRightClick;
 
-extern BOOL g_flag_bUpdateQueued;
 extern BOOL g_flag_bPostWasCanceled;
 extern BOOL g_flag_bFullRepaint;   
 

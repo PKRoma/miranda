@@ -24,7 +24,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include "m_clui.h"
 #include "clist.h"
 #include "m_clc.h"
-#include "SkinEngine.h"
+//#include "SkinEngine.h"
 #include "io.h"
 #include "commonprototypes.h"
 
@@ -43,7 +43,7 @@ typedef struct _SkinListData
 HBITMAP hPreviewBitmap=NULL;
 extern HWND hCLUIwnd;
 static int AddItemToTree(HWND hTree, char * folder, char * itemName, void * data);
-extern int LoadSkinFromIniFile(char*);
+extern int SkinEngine_LoadSkinFromIniFile(char*);
 extern int SkinEngine_RedrawCompleteWindow();
 extern int SkinEngine_LoadSkinFromDB(void);
 int AddSkinToListFullName(HWND hwndDlg,char * fullName);
@@ -192,7 +192,7 @@ static BOOL CALLBACK DlgSkinOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM l
 							res=MessageBoxA(hwndDlg,Translate("Current skin was not saved to file.\n\nAll changes will be lost.\n\n Continue to load new skin?"),Translate("Warning!"),MB_OKCANCEL|MB_ICONWARNING|MB_DEFBUTTON2|MB_TOPMOST);
 						if (res!=IDOK) return 0;
 					}
-					LoadSkinFromIniFile(sd->File);
+					SkinEngine_LoadSkinFromIniFile(sd->File);
 					SkinEngine_LoadSkinFromDB();	
 					glOtherSkinWasLoaded=TRUE;
 					pcli->pfnClcBroadcast( INTM_RELOADOPTIONS,0,0);
@@ -309,7 +309,7 @@ static BOOL CALLBACK DlgSkinOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM l
 					BLENDFUNCTION bf={AC_SRC_OVER, 0, 255, AC_SRC_ALPHA };
 					imgDC=CreateCompatibleDC(dis->hDC);
 					imgOldbmp=SelectObject(imgDC,hPreviewBitmap);                 
-					mod_AlphaBlend(memDC,imgPos.x,imgPos.y,dWidth,dHeight,imgDC,0,0,bmp.bmWidth,bmp.bmHeight,bf);
+					SkinEngine_AlphaBlend(memDC,imgPos.x,imgPos.y,dWidth,dHeight,imgDC,0,0,bmp.bmWidth,bmp.bmHeight,bf);
 					SelectObject(imgDC,imgOldbmp);
 					mod_DeleteDC(imgDC);
 				}
@@ -352,10 +352,10 @@ static BOOL CALLBACK DlgSkinOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM l
 							char imfn[MAX_PATH]={0};
 							char skinfolder[MAX_PATH]={0};
 							GetPrivateProfileStringA("Skin_Description_Section","Preview","",imfn,sizeof(imfn),sd->File);
-							GetSkinFolder(sd->File,skinfolder);
+							SkinEngine_GetSkinFolder(sd->File,skinfolder);
 							_snprintf(prfn,sizeof(prfn),"%s\\%s",skinfolder,imfn);
 							CallService(MS_UTILS_PATHTOABSOLUTE,(WPARAM)prfn,(LPARAM) imfn);
-							hPreviewBitmap=skin_LoadGlyphImage(imfn);
+							hPreviewBitmap=SkinEngine_LoadGlyphImage(imfn);
 						}
 						EnableWindow(GetDlgItem(hwndDlg,IDC_BUTTON_APPLY_SKIN),TRUE);
 						EnableWindow(GetDlgItem(hwndDlg,IDC_BUTTON_INFO),TRUE);

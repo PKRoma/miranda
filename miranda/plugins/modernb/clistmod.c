@@ -60,7 +60,7 @@ extern int currentDesiredStatusMode;
 BOOL (WINAPI *MySetProcessWorkingSetSize)(HANDLE,SIZE_T,SIZE_T);
 extern BYTE nameOrder[];
 extern SortedList lContactsCache;
-extern HBITMAP GetCurrentWindowImage();
+extern HBITMAP SkinEngine_GetCurrentWindowImage();
 
 
 extern int g_nBehindEdgeSettings;
@@ -96,7 +96,7 @@ HICON GetIconFromStatusMode(HANDLE hContact, const char *szProto,int status)
 					{
 						// get overlay
 						HICON MainOverlay=(HICON)GetMainStatusOverlay(status);
-						hIcon=CreateJoinedIcon(hXIcon,MainOverlay,(trayOption&4)?192:0);
+						hIcon=SkinEngine_CreateJoinedIcon(hXIcon,MainOverlay,(trayOption&4)?192:0);
 						DestroyIcon_protect(hXIcon);
                         DestroyIcon_protect(MainOverlay);
 					}
@@ -111,7 +111,7 @@ HICON GetIconFromStatusMode(HANDLE hContact, const char *szProto,int status)
 	}
 	if (!hIcon)
 	{
-		hIcon=mod_ImageList_GetIcon(himlCListClc,ExtIconFromStatusMode(hContact,szProto,status),ILD_NORMAL);
+		hIcon=SkinEngine_ImageList_GetIcon(himlCListClc,ExtIconFromStatusMode(hContact,szProto,status),ILD_NORMAL);
 	}
 	// if not ready take normal icon
 	return hIcon;
@@ -342,7 +342,7 @@ int GetWindowVisibleState(HWND hWnd, int iStepX, int iStepY) {
 		int dx,dy;
 		BYTE *ptr=NULL;
 		HRGN rgn=NULL;
-		WindowImage=g_bLayered?GetCurrentWindowImage():0;
+		WindowImage=g_bLayered?SkinEngine_GetCurrentWindowImage():0;
 		if (WindowImage&&g_bLayered)
 		{
 			GetObject(WindowImage,sizeof(BITMAP),&bmp);

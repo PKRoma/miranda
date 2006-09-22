@@ -1533,8 +1533,8 @@ struct CheckBoxToStyleEx_t {
             FillRect(hdc,&rc,hBrush);
             SkinEngine_SetRectOpaque(hdc,&rc);
             SetTextColor(hdc,ColorSample);
-              SelectEffect(hdc,EffectSample-1,Color1Sample,Color2Sample);
-              mod_DrawText(hdc,TranslateT("Sample"),lstrlen(TranslateT("Sample")),&rc,DT_CENTER|DT_VCENTER);
+              SkinEngine_SelectTextEffect(hdc,EffectSample-1,Color1Sample,Color2Sample);
+              SkinEngine_DrawText(hdc,TranslateT("Sample"),lstrlen(TranslateT("Sample")),&rc,DT_CENTER|DT_VCENTER);
               BitBlt(dis->hDC,dis->rcItem.left,dis->rcItem.top,rc.right,rc.bottom,hdc,0,0,SRCCOPY);
             SelectObject(hdc,obmp);
             SelectObject(hdc,oldFnt);

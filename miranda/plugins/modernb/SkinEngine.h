@@ -1,110 +1,103 @@
 #ifndef SKINENGINE_H_INC
 #define SKINENGINE_H_INC
 
-#include "Wingdi.h"
-#include "m_skin_eng.h"
 #include "mod_skin_selector.h"
-#include "commonheaders.h" 
 
-/*defaults*/
+/* Definitions */
+#define GetAValue(argb)((BYTE)((argb)>>24))
 
 #define DEFAULTSKINSECTION  "ModernSkin"
-#define SKIN "ModernSkin"
-#define UM_UPDATE       WM_USER+50
 
-typedef struct s_SKINOBJECTSLIST
+#define UM_UPDATE           WM_USER+50
+
+#define MAX_BUFF_SIZE       255*400
+#define MAXSN_BUFF_SIZE     255*1000
+
+/* External variables */
+
+extern struct LIST_INTERFACE li;
+extern BOOL (WINAPI *g_proc_SetLayeredWindowAttributesNew)(HWND,COLORREF,BYTE,DWORD);
+extern int  g_nTitleBarHeight;
+extern int  g_nGapBetweenTitlebar;
+extern BOOL g_bSmoothAnimation;
+extern BOOL g_bTransparentFlag;
+
+/* External procedures */
+
+BOOL    GDIPlus_AlphaBlend(HDC hdcDest,int nXOriginDest,int nYOriginDest,int nWidthDest,int nHeightDest,HDC hdcSrc,int nXOriginSrc,int nYOriginSrc,int nWidthSrc,int nHeightSrc, BLENDFUNCTION * blendFunction);
+HBITMAP GDIPlus_LoadGlyphImage(char *szFileName);
+int     ModernButton_UnloadModule(WPARAM,LPARAM);
+BOOL    wildcmp(char * name, char * mask, BYTE option);
+
+
+/* Structs */
+
+typedef struct tagSKINOBJECTSLIST
 {
     DWORD               dwObjLPReserved;
     DWORD               dwObjLPAlocated;
-	char	*			SkinPlace;
-    TList_ModernMask  *   MaskList;
-    SKINOBJECTDESCRIPTOR  * Objects;
-    
+    char              * szSkinPlace;
+    LISTMODERNMASK  * pMaskList;
+    SKINOBJECTDESCRIPTOR  * pObjects;   
 } SKINOBJECTSLIST;
 
-extern SKINOBJECTSLIST glObjectList;
-
-typedef struct s_GLYPHIMAGE
+typedef struct tagGLYPHIMAGE
 {
-  char * szFileName;
-  DWORD dwLoadedTimes;
-  HBITMAP hGlyph;
-  BYTE isSemiTransp;
+    char * szFileName;
+    DWORD dwLoadedTimes;
+    HBITMAP hGlyph;
+    BYTE isSemiTransp;
 } GLYPHIMAGE,*LPGLYPHIMAGE;
 
-static GLYPHIMAGE * glLoadedImages=NULL;
-static DWORD glLoadedImagesCount=0;
-static DWORD glLoadedImagesAlocated=0;
-
-HBITMAP skin_LoadGlyphImage(char * szFileName);
-HANDLE hEventServicesCreated;
-
-int LoadSkinModule();
-int UnloadSkinModule();
-int Skin_RegisterObject(WPARAM wParam,LPARAM lParam);
-int Skin_DrawGlyph(WPARAM wParam,LPARAM lParam);
-int ServCreateGlyphedObjectDefExt(WPARAM wParam, LPARAM lParam);
-int RegisterPaintSub(WPARAM wParam, LPARAM lParam);
-int UpdateFrameImage(WPARAM wParam, LPARAM lParam);
-int InvalidateFrameImage(WPARAM wParam, LPARAM lParam);
-
-SKINOBJECTDESCRIPTOR * skin_FindObject(const char * szName, BYTE objType,SKINOBJECTSLIST* Skin);
-int AddObjectDescriptorToSkinObjectList (LPSKINOBJECTDESCRIPTOR lpDescr, SKINOBJECTSLIST* Skin);
-HBITMAP LoadGlyphImage(char * szFileName);
-GLYPHOBJECT DBGetGlyphSetting(char * szSection, char* szObjectName);
-
-//extern int ImageList_ReplaceIcon(HIMAGELIST himl, int i, HICON hicon);
-//extern int ImageList_AddIcon_FixAlpha(HIMAGELIST himl,HICON hicon);
-
-int UnloadGlyphImage(HBITMAP hbmp);
-
-/* HELPERS*/
-
-int UnloadSkin(SKINOBJECTSLIST * Skin);
-
-//int SkinDup(SKINOBJECTSLIST * Dest, SKINOBJECTSLIST * Sour );
-
-
-void PreMultiplyChanells(HBITMAP hbmp,BYTE Mult);
-//Decoders
-HMODULE hImageDecoderModule;
-
-typedef  DWORD  (__stdcall *pfnImgNewDecoder)(void ** ppDecoder); 
-pfnImgNewDecoder ImgNewDecoder;
-
-typedef DWORD (__stdcall *pfnImgDeleteDecoder)(void * pDecoder);
-pfnImgDeleteDecoder ImgDeleteDecoder;
- 
-typedef  DWORD  (__stdcall *pfnImgNewDIBFromFile)(LPVOID /*in*/pDecoder, LPCSTR /*in*/pFileName, LPVOID /*out*/*pImg);
-pfnImgNewDIBFromFile ImgNewDIBFromFile;
-
-typedef DWORD (__stdcall *pfnImgDeleteDIBSection)(LPVOID /*in*/pImg);
-pfnImgDeleteDIBSection ImgDeleteDIBSection;
-
-typedef DWORD (__stdcall *pfnImgGetHandle)(LPVOID /*in*/pImg, HBITMAP /*out*/*pBitmap, LPVOID /*out*/*ppDIBBits);
-pfnImgGetHandle ImgGetHandle;    
-
-int GetSkinFromDB(char * szSection, SKINOBJECTSLIST * Skin);
-int PutSkinToDB(char * szSection, SKINOBJECTSLIST * Skin);
-extern int SkinEngine_UpdateWindowImageProc(BOOL WholeImage);
-extern void AddParseTextGlyphObject(char * szGlyphTextID,char * szDefineString,SKINOBJECTSLIST *Skin);
-extern void AddParseSkinFont(char * szFontID,char * szDefineString,SKINOBJECTSLIST *Skin);
 typedef struct tagCURRWNDIMAGEDATA
 {
-	HDC hImageDC;
-	HDC hBackDC;
-	HDC hScreenDC;
-	HBITMAP hImageDIB, hImageOld;
-	HBITMAP hBackDIB, hBackOld;
-	BYTE * hImageDIBByte;
-	BYTE * hBackDIBByte;
-
-	int Width,Height;
+    HDC hImageDC;
+    HDC hBackDC;
+    HDC hScreenDC;
+    HBITMAP hImageDIB, hImageOld;
+    HBITMAP hBackDIB, hBackOld;
+    BYTE * hImageDIBByte;
+    BYTE * hBackDIBByte;
+    int Width,Height;
 
 }CURRWNDIMAGEDATA;
 
-extern int ReCreateBackImage(BOOL Erase,RECT *w);
+typedef  struct tagEFFECTSSTACKITEM 
+{
+    HDC hdc;
+    BYTE EffectID;
+    DWORD FirstColor;
+    DWORD SecondColor;
+} EFFECTSSTACKITEM;
+
+#pragma pack(push, 1)
+/* tga header */
+typedef struct
+{
+    BYTE id_lenght;          /* size of image id */
+    BYTE colormap_type;      /* 1 is has a colormap */
+    BYTE image_type;         /* compression type */
+
+    short	cm_first_entry;       /* colormap origin */
+    short	cm_length;            /* colormap length */
+    BYTE cm_size;               /* colormap size */
+
+    short	x_origin;             /* bottom left x coord origin */
+    short	y_origin;             /* bottom left y coord origin */
+
+    short	width;                /* picture width (in pixels) */
+    short	height;               /* picture height (in pixels) */
+
+    BYTE pixel_depth;        /* bits per pixel: 8, 16, 24 or 32 */
+    BYTE image_descriptor;   /* 24 bits = 0x00; 32 bits = 0x80 */
+
+} tga_header_t;
+#pragma pack(pop)
+
+
+
+int SkinEngine_UnloadSkin(SKINOBJECTSLIST * Skin);
+int SkinEngine_AddDescriptorToSkinObjectList (LPSKINOBJECTDESCRIPTOR lpDescr, SKINOBJECTSLIST* Skin);
 
 #endif
-
 

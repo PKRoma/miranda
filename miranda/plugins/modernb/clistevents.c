@@ -288,7 +288,7 @@ static int EventArea_DrawWorker(HWND hWnd, HDC hDC)
     GetClientRect(hWnd,&rc);   
     SkinDrawGlyph(hDC,&rc,&rc,"Main,ID=EventArea");
     hOldFont=CLCPaint_ChangeToFont(hDC,NULL,FONTID_EVENTAREA,NULL);
-    //mod_DrawText(hDC,_T("DEBUG"),lstrlen(_T("DEBUG")),&rc,0);
+    //SkinEngine_DrawText(hDC,_T("DEBUG"),lstrlen(_T("DEBUG")),&rc,0);
     {
         struct ClcData *dat = (struct ClcData *) GetWindowLong(pcli->hwndContactTree, 0);
 	    int iCount = GetMenuItemCount(g_CluiData.hMenuNotify);
@@ -298,10 +298,10 @@ static int EventArea_DrawWorker(HWND hWnd, HDC hDC)
 		    TCHAR *szName = pcli->pfnGetContactDisplayName(g_CluiData.hUpdateContact, 0);
 		    int iIcon = CallService(MS_CLIST_GETCONTACTICON, (WPARAM) g_CluiData.hUpdateContact, 0);
 
-		    mod_ImageList_DrawEx(himlCListClc, iIcon, hDC, rc.left, (rc.bottom + rc.top - GetSystemMetrics(SM_CYSMICON)) / 2, GetSystemMetrics(SM_CXSMICON), GetSystemMetrics(SM_CYSMICON), CLR_NONE, CLR_NONE, ILD_NORMAL);
+		    SkinEngine_ImageList_DrawEx(himlCListClc, iIcon, hDC, rc.left, (rc.bottom + rc.top - GetSystemMetrics(SM_CYSMICON)) / 2, GetSystemMetrics(SM_CXSMICON), GetSystemMetrics(SM_CYSMICON), CLR_NONE, CLR_NONE, ILD_NORMAL);
 		    rc.left += 18;
-		    mod_DrawText(hDC, szName, -1, &rc, DT_VCENTER | DT_SINGLELINE);
-		    mod_ImageList_DrawEx(himlCListClc, (int)g_CluiData.iIconNotify, hDC, 4, (rc.bottom + rc.top - 16) / 2, 16, 16, CLR_NONE, CLR_NONE, ILD_NORMAL);
+		    SkinEngine_DrawText(hDC, szName, -1, &rc, DT_VCENTER | DT_SINGLELINE);
+		    SkinEngine_ImageList_DrawEx(himlCListClc, (int)g_CluiData.iIconNotify, hDC, 4, (rc.bottom + rc.top - 16) / 2, 16, 16, CLR_NONE, CLR_NONE, ILD_NORMAL);
 	    }
         else if (iCount > 0) 
         {
@@ -316,16 +316,16 @@ static int EventArea_DrawWorker(HWND hWnd, HDC hDC)
 		    nmi = (struct NotifyMenuItemExData *) mii.dwItemData;
 		    szName = pcli->pfnGetContactDisplayName(nmi->hContact, 0);
 		    iIcon = CallService(MS_CLIST_GETCONTACTICON, (WPARAM) nmi->hContact, 0);
-		    mod_ImageList_DrawEx(himlCListClc, iIcon, hDC, rc.left, (rc.bottom + rc.top - GetSystemMetrics(SM_CYSMICON)) / 2, GetSystemMetrics(SM_CXSMICON), GetSystemMetrics(SM_CYSMICON), CLR_NONE, CLR_NONE, ILD_NORMAL);
+		    SkinEngine_ImageList_DrawEx(himlCListClc, iIcon, hDC, rc.left, (rc.bottom + rc.top - GetSystemMetrics(SM_CYSMICON)) / 2, GetSystemMetrics(SM_CXSMICON), GetSystemMetrics(SM_CYSMICON), CLR_NONE, CLR_NONE, ILD_NORMAL);
 		    rc.left += 18;
-		    mod_ImageList_DrawEx(himlCListClc, nmi->iIcon, hDC, 4, (rc.bottom + rc.top) / 2 - 8, 16, 16, CLR_NONE, CLR_NONE, ILD_NORMAL);
-		    mod_DrawText(hDC, szName, -1, &rc, DT_VCENTER | DT_SINGLELINE);
+		    SkinEngine_ImageList_DrawEx(himlCListClc, nmi->iIcon, hDC, 4, (rc.bottom + rc.top) / 2 - 8, 16, 16, CLR_NONE, CLR_NONE, ILD_NORMAL);
+		    SkinEngine_DrawText(hDC, szName, -1, &rc, DT_VCENTER | DT_SINGLELINE);
 	    } 
         else 
         {
 		    HICON hIcon = LoadImage(g_hInst, MAKEINTRESOURCE(IDI_BLANK), IMAGE_ICON, 16, 16, 0);
-		    mod_DrawText(hDC, g_CluiData.szNoEvents, lstrlen(g_CluiData.szNoEvents), &rc, DT_VCENTER | DT_SINGLELINE);
-		    mod_DrawIconEx(hDC, 4, (rc.bottom + rc.top - 16) / 2, hIcon, 16, 16, 0, 0, DI_NORMAL | DI_COMPAT);
+		    SkinEngine_DrawText(hDC, g_CluiData.szNoEvents, lstrlen(g_CluiData.szNoEvents), &rc, DT_VCENTER | DT_SINGLELINE);
+		    SkinEngine_DrawIconEx(hDC, 4, (rc.bottom + rc.top - 16) / 2, hIcon, 16, 16, 0, 0, DI_NORMAL | DI_COMPAT);
 		    DestroyIcon(hIcon);
 	    }
     }
@@ -448,8 +448,8 @@ static LRESULT CALLBACK EventArea_WndProc(HWND hwnd, UINT msg, WPARAM wParam, LP
 					if (nmi) 
                     {
 						iIcon = CallService(MS_CLIST_GETCONTACTICON, (WPARAM) nmi->hContact, 0);                        
-                        mod_ImageList_DrawEx(himlCListClc, nmi->iIcon, dis->hDC, 2, (dis->rcItem.bottom + dis->rcItem.top - GetSystemMetrics(SM_CYSMICON)) / 2, GetSystemMetrics(SM_CXSMICON), GetSystemMetrics(SM_CYSMICON), CLR_NONE, CLR_NONE, ILD_NORMAL);
-                        mod_ImageList_DrawEx(himlCListClc, iIcon, dis->hDC, 2+GetSystemMetrics(SM_CXSMICON)+2, (dis->rcItem.bottom + dis->rcItem.top - GetSystemMetrics(SM_CYSMICON)) / 2, GetSystemMetrics(SM_CXSMICON), GetSystemMetrics(SM_CYSMICON), CLR_NONE, CLR_NONE, ILD_NORMAL);
+                        SkinEngine_ImageList_DrawEx(himlCListClc, nmi->iIcon, dis->hDC, 2, (dis->rcItem.bottom + dis->rcItem.top - GetSystemMetrics(SM_CYSMICON)) / 2, GetSystemMetrics(SM_CXSMICON), GetSystemMetrics(SM_CYSMICON), CLR_NONE, CLR_NONE, ILD_NORMAL);
+                        SkinEngine_ImageList_DrawEx(himlCListClc, iIcon, dis->hDC, 2+GetSystemMetrics(SM_CXSMICON)+2, (dis->rcItem.bottom + dis->rcItem.top - GetSystemMetrics(SM_CYSMICON)) / 2, GetSystemMetrics(SM_CXSMICON), GetSystemMetrics(SM_CYSMICON), CLR_NONE, CLR_NONE, ILD_NORMAL);
 						return TRUE;
 					}
 				}
@@ -503,7 +503,7 @@ static LRESULT CALLBACK EventArea_WndProc(HWND hwnd, UINT msg, WPARAM wParam, LP
     case WM_PAINT:
         {
             if (GetParent(hwnd)==pcli->hwndContactList && g_bLayered)
-                InvalidateFrameImage((WPARAM)hwnd,0);
+                SkinEngine_Service_InvalidateFrameImage((WPARAM)hwnd,0);
             else if (GetParent(hwnd)==pcli->hwndContactList && !g_bLayered)
 	        {
 		        HDC hdc, hdc2;
@@ -516,7 +516,7 @@ static LRESULT CALLBACK EventArea_WndProc(HWND hwnd, UINT msg, WPARAM wParam, LP
 		        hdc2=CreateCompatibleDC(hdc);
 		        hbmp=SkinEngine_CreateDIB32(rc.right,rc.bottom);
 		        hbmpo=SelectObject(hdc2,hbmp);		
-		        BltBackImage(hwnd,hdc2,&rc);
+		        SkinEngine_BltBackImage(hwnd,hdc2,&rc);
 		        EventArea_DrawWorker(hwnd,hdc2);
 		        BitBlt(hdc,rc.left,rc.top,rc.right-rc.left,rc.bottom-rc.top,
 			        hdc2,rc.left,rc.top,SRCCOPY);

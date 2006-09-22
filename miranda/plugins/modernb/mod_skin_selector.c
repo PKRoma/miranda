@@ -28,12 +28,13 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include "mod_skin_selector.h"
 #include "SkinEngine.h"  
 #include "m_skin_eng.h"
-extern LPSKINOBJECTDESCRIPTOR skin_FindObjectByName(const char * szName, BYTE objType, SKINOBJECTSLIST* Skin);
+extern LPSKINOBJECTDESCRIPTOR SkinEngine_FindObjectByName(const char * szName, BYTE objType, SKINOBJECTSLIST* Skin);
 extern int AddButton(HWND parent,char * ID,char * CommandService,char * StateDefService,char * HandeService,             int Left, int Top, int Right, int Bottom, DWORD AlignedTo,TCHAR * Hint,char * DBkey,char * TypeDef,int MinWidth, int MinHeight);
-struct TList_ModernMask * MainModernMaskList=NULL;
+struct LISTMODERNMASK * MainModernMaskList=NULL;
+extern SKINOBJECTSLIST g_SkinObjectList;
 
 /// IMPLEMENTATIONS
-char * ModernMaskToString(TLO_MMask * mm, char * buf, UINT bufsize)
+char * ModernMaskToString(MODERNMASK * mm, char * buf, UINT bufsize)
 {
     int i=0;
     for (i=0; i<(int)mm->dwParamCnt;i++)
@@ -50,7 +51,7 @@ char * ModernMaskToString(TLO_MMask * mm, char * buf, UINT bufsize)
     }
     return buf;
 }
-int DeleteMask(TLO_MMask * mm)
+int DeleteMask(MODERNMASK * mm)
 {
   int i;
   if (!mm->pl_Params) return 0;
@@ -64,7 +65,7 @@ int DeleteMask(TLO_MMask * mm)
 }
 
 #define _qtoupper(_c) (((_c)>='a' && (_c)<='z')?((_c)-('a'+'A')):(_c)) 
-BOOL WildComparei(char * name, char * mask)
+BOOL wildcmpi(char * name, char * mask)
 {
   char * last='\0';
   for(;; mask++, name++)
@@ -85,7 +86,7 @@ BOOL WildComparei(char * name, char * mask)
   }
 }
 
-BOOL _inline WildCompare(char * name, char * mask, BYTE option)
+BOOL _inline wildcmp(char * name, char * mask, BYTE option)
     {
          char * last='\0';
          for(;; mask++, name++)
@@ -111,7 +112,7 @@ BOOL _inline WildCompare(char * name, char * mask, BYTE option)
 BOOL MatchMask(char * name, char * mask)
 {
     if (!mask || !name) return mask==name;
-    if (*mask!='|') return WildComparei(name,mask);
+    if (*mask!='|') return wildcmpi(name,mask);
     {
         int s=1,e=1;
         char * temp;
@@ -122,7 +123,7 @@ BOOL MatchMask(char * name, char * mask)
             temp=(char*)malloc(e-s+1);
             memcpy(temp,mask+s,e-s);
             temp[e-s]='\0';
-            if (WildComparei(name,temp)) 
+            if (wildcmpi(name,temp)) 
             {
                 free(temp);
                 return TRUE;
@@ -149,16 +150,16 @@ DWORD mod_CalcHash(char * a)
     }
     return Val;
 }
-int AddModernMaskToList(TLO_MMask * mm,  TList_ModernMask * mmTemplateList)
+int AddModernMaskToList(MODERNMASK * mm,  LISTMODERNMASK * mmTemplateList)
 {
     if (!mmTemplateList || !mm) return -1;
-	mmTemplateList->pl_Masks=mir_realloc(mmTemplateList->pl_Masks,sizeof(TLO_MMask)*(mmTemplateList->dwMaskCnt+1));
-    memmove(&(mmTemplateList->pl_Masks[mmTemplateList->dwMaskCnt]),mm,sizeof(TLO_MMask));
+	mmTemplateList->pl_Masks=mir_realloc(mmTemplateList->pl_Masks,sizeof(MODERNMASK)*(mmTemplateList->dwMaskCnt+1));
+    memmove(&(mmTemplateList->pl_Masks[mmTemplateList->dwMaskCnt]),mm,sizeof(MODERNMASK));
     mmTemplateList->dwMaskCnt++;
     return mmTemplateList->dwMaskCnt-1;
 }
 
-int ClearMaskList(TList_ModernMask * mmTemplateList)
+int ClearMaskList(LISTMODERNMASK * mmTemplateList)
 {
   	int i;
     if (!mmTemplateList) return -1;
@@ -170,7 +171,7 @@ int ClearMaskList(TList_ModernMask * mmTemplateList)
     mmTemplateList->dwMaskCnt=0;
     return 0;
 }
-int DeleteMaskByItID(DWORD mID,TList_ModernMask * mmTemplateList)
+int DeleteMaskByItID(DWORD mID,LISTMODERNMASK * mmTemplateList)
 {
     if (!mmTemplateList) return -1;
     if (mID<0|| mID>=mmTemplateList->dwMaskCnt) return -1;
@@ -183,11 +184,11 @@ int DeleteMaskByItID(DWORD mID,TList_ModernMask * mmTemplateList)
     }
     else
     {
-      TLO_MMask * newAlocation;
+      MODERNMASK * newAlocation;
       DWORD i;
       DeleteMask(&(mmTemplateList->pl_Masks[mID]));
-	  newAlocation=mir_alloc(sizeof(TLO_MMask)*mmTemplateList->dwMaskCnt-1);
-      memmove(newAlocation,mmTemplateList->pl_Masks,sizeof(TLO_MMask)*(mID+1));
+	  newAlocation=mir_alloc(sizeof(MODERNMASK)*mmTemplateList->dwMaskCnt-1);
+      memmove(newAlocation,mmTemplateList->pl_Masks,sizeof(MODERNMASK)*(mID+1));
       for (i=mID; i<mmTemplateList->dwMaskCnt-1; i++)
       {
           newAlocation[i]=mmTemplateList->pl_Masks[i+1];
@@ -201,21 +202,21 @@ int DeleteMaskByItID(DWORD mID,TList_ModernMask * mmTemplateList)
 }
 
 
-int ExchangeMasksByID(DWORD mID1, DWORD mID2, TList_ModernMask * mmTemplateList)
+int ExchangeMasksByID(DWORD mID1, DWORD mID2, LISTMODERNMASK * mmTemplateList)
 {
     if (!mmTemplateList) return 0;
     if (mID1<0|| mID1>=mmTemplateList->dwMaskCnt) return 0;
     if (mID2<0|| mID2>=mmTemplateList->dwMaskCnt) return 0;
     if (mID1==mID2) return 0;
     {
-        TLO_MMask mm;
+        MODERNMASK mm;
         mm=mmTemplateList->pl_Masks[mID1];
         mmTemplateList->pl_Masks[mID1]=mmTemplateList->pl_Masks[mID2];
         mmTemplateList->pl_Masks[mID2]=mm;
     }
     return 1;
 }
-int SortMaskList(TList_ModernMask * mmList)
+int SortMaskList(LISTMODERNMASK * mmList)
 {
         DWORD pos=1;
         if (mmList->dwMaskCnt<2) return 0;
@@ -233,7 +234,7 @@ int SortMaskList(TList_ModernMask * mmList)
 
         return 1;
 }
-int ParseToModernMask(TLO_MMask * mm, char * szText)
+int ParseToModernMask(MODERNMASK * mm, char * szText)
 {
     //TODO
     if (!mm || !szText) return -1;
@@ -241,7 +242,7 @@ int ParseToModernMask(TLO_MMask * mm, char * szText)
     {
         UINT textLen=mir_strlen(szText);
         BYTE curParam=0;
-        TLO_MaskParam param={0};
+        MASKPARAM param={0};
         UINT currentPos=0;
         UINT startPos=0;
         while (currentPos<textLen)
@@ -308,12 +309,12 @@ int ParseToModernMask(TLO_MMask * mm, char * szText)
                 {//Adding New Parameter;
                   if (curParam>=mm->dwParamCnt)
                   {
-					mm->pl_Params=mir_realloc(mm->pl_Params,(mm->dwParamCnt+1)*sizeof(TLO_MaskParam));
+					mm->pl_Params=mir_realloc(mm->pl_Params,(mm->dwParamCnt+1)*sizeof(MASKPARAM));
 					mm->dwParamCnt++;                    
                   }
-                  memmove(&(mm->pl_Params[curParam]),&param,sizeof(TLO_MaskParam));
+                  memmove(&(mm->pl_Params[curParam]),&param,sizeof(MASKPARAM));
                   curParam++;
-                  memset(&param,0,sizeof(TLO_MaskParam));
+                  memset(&param,0,sizeof(MASKPARAM));
             }
         }
     }
@@ -321,7 +322,7 @@ int ParseToModernMask(TLO_MMask * mm, char * szText)
     return 0;
 };
 
-BOOL CompareModernMask(TLO_MMask * mmValue,TLO_MMask * mmTemplate)
+BOOL CompareModernMask(MODERNMASK * mmValue,MODERNMASK * mmTemplate)
 {
     //TODO
     BOOL res=TRUE;
@@ -332,7 +333,7 @@ BOOL CompareModernMask(TLO_MMask * mmValue,TLO_MMask * mmTemplate)
       // find pTemp parameter in mValue
       DWORD vh, ph;
       BOOL finded=0;
-      TLO_MaskParam p=mmTemplate->pl_Params[pTemp];
+      MASKPARAM p=mmTemplate->pl_Params[pTemp];
       ph=p.dwId;      
       vh=p.dwValueHash;
       pVal=0;
@@ -351,7 +352,7 @@ BOOL CompareModernMask(TLO_MMask * mmValue,TLO_MMask * mmTemplate)
           {
              if (mmValue->pl_Params[pVal].dwId==ph)
              {
-                 if (WildCompare(mmValue->pl_Params[pVal].szValue,p.szValue,0)){finded=1; break;}
+                 if (wildcmp(mmValue->pl_Params[pVal].szValue,p.szValue,0)){finded=1; break;}
                  else {finded=0; break;}
              }
              pVal++;
@@ -363,9 +364,9 @@ BOOL CompareModernMask(TLO_MMask * mmValue,TLO_MMask * mmTemplate)
     return res;
 };
 
-BOOL CompareStrWithModernMask(char * szValue,TLO_MMask * mmTemplate)
+BOOL CompareStrWithModernMask(char * szValue,MODERNMASK * mmTemplate)
 {
-    TLO_MMask mmValue={0};
+    MODERNMASK mmValue={0};
   int res;
   if (!ParseToModernMask(&mmValue, szValue))
   {
@@ -376,12 +377,12 @@ BOOL CompareStrWithModernMask(char * szValue,TLO_MMask * mmTemplate)
   else return 0;
 };
 //AddingMask
-int AddStrModernMaskToList(DWORD maskID, char * szStr, char * objectName,  TList_ModernMask * mmTemplateList, void * pObjectList)
+int AddStrModernMaskToList(DWORD maskID, char * szStr, char * objectName,  LISTMODERNMASK * mmTemplateList, void * pObjectList)
 {
-    TLO_MMask mm={0};
+    MODERNMASK mm={0};
     if (!szStr || !mmTemplateList) return -1;
     if (ParseToModernMask(&mm,szStr)) return -1;
-    mm.pObject=(void*) skin_FindObjectByName(objectName, OT_ANY, (SKINOBJECTSLIST*) pObjectList);
+    mm.pObject=(void*) SkinEngine_FindObjectByName(objectName, OT_ANY, (SKINOBJECTSLIST*) pObjectList);
         mm.dwMaskId=maskID;
     return AddModernMaskToList(&mm,mmTemplateList);    
 }
@@ -389,20 +390,20 @@ int AddStrModernMaskToList(DWORD maskID, char * szStr, char * objectName,  TList
 
 
 //Searching
-TLO_MMask *  FindMaskByStr(char * szValue,TList_ModernMask * mmTemplateList)
+MODERNMASK *  FindMaskByStr(char * szValue,LISTMODERNMASK * mmTemplateList)
 {
     //TODO
     return NULL;
 }
-SKINOBJECTDESCRIPTOR *  skin_FindObjectByRequest(char * szValue,TList_ModernMask * mmTemplateList)
+SKINOBJECTDESCRIPTOR *  skin_FindObjectByRequest(char * szValue,LISTMODERNMASK * mmTemplateList)
 {
     //TODO
-    TLO_MMask mm={0};
+    MODERNMASK mm={0};
     SKINOBJECTDESCRIPTOR * res=NULL;
     DWORD i=0;
     if (!mmTemplateList)    
-        if (glObjectList.MaskList)
-            mmTemplateList=glObjectList.MaskList;
+        if (g_SkinObjectList.pMaskList)
+            mmTemplateList=g_SkinObjectList.pMaskList;
 		else return NULL;
     if (!mmTemplateList) return NULL;
     ParseToModernMask(&mm,szValue);
@@ -600,7 +601,7 @@ int RegisterObjectByParce(char * ObjectName, char * Params)
                  gl.Style=ST_SKIP;
              }
              obj.Data=&gl;
-             res=AddObjectDescriptorToSkinObjectList(&obj,NULL);
+             res=SkinEngine_AddDescriptorToSkinObjectList(&obj,NULL);
              mir_free(obj.szObjectID);
              if (gl.szFileName) mir_free(gl.szFileName);
              return res;

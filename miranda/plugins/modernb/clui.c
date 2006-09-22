@@ -662,7 +662,7 @@ int CLUI_GetConnectingIconService(WPARAM wParam,LPARAM lParam)
             //		hIcon=CLUI_GetConnectingIconForProto("Global",b);
             //	else
             if (pt->himlIconList)
-                hIcon=mod_ImageList_GetIcon(pt->himlIconList,b,ILD_NORMAL);
+                hIcon=SkinEngine_ImageList_GetIcon(pt->himlIconList,b,ILD_NORMAL);
             else
                 hIcon=NULL;
             //hIcon=CLUI_GetConnectingIconForProto(szProto,b);
@@ -933,7 +933,7 @@ static int CLUI_DrawMenuBackGround(HWND hwnd, HDC hdc, int item)
         OffsetRect(&rc,-rc.left, -rc.top);
         FillRect(hdc,&r1,GetSysColorBrush(COLOR_MENU));
         SkinEngine_SetRectOpaque(hdc,&r1);
-        //BltBackImage(hwnd,hdc,&r1);
+        //SkinEngine_BltBackImage(hwnd,hdc,&r1);
     }
     SkinDrawGlyph(hdc,&r1,&r1,"Main,ID=MenuBar");
     /*   New Skin Engine
@@ -1181,7 +1181,7 @@ LRESULT CALLBACK CLUI__cli_ContactListWndProc(HWND hwnd, UINT msg, WPARAM wParam
                 //reposition buttons and new size applying
                 {
                     ModernButton_ReposButtons(hwnd,FALSE,&work_rect);
-                    PrepeareImageButDontUpdateIt(&work_rect);
+                    SkinEngine_PrepeareImageButDontUpdateIt(&work_rect);
                     g_mutex_uPreventDockMoving=0;			
                     SkinEngine_UpdateWindowImageRect(&work_rect);        
                     EndDeferWindowPos(PosBatch);
@@ -1270,7 +1270,7 @@ LRESULT CALLBACK CLUI__cli_ContactListWndProc(HWND hwnd, UINT msg, WPARAM wParam
             hdc=CreateCompatibleDC(paintDC);
             hbmp=SkinEngine_CreateDIB32(w.right,w.bottom);
             oldbmp=SelectObject(hdc,hbmp);
-            ReCreateBackImage(FALSE,NULL);
+            SkinEngine_ReCreateBackImage(FALSE,NULL);
             BitBlt(paintDC,w2.left,w2.top,w2.right-w2.left,w2.bottom-w2.top,g_pCachedWindow->hBackDC,w2.left,w2.top,SRCCOPY);
             SelectObject(hdc,oldbmp);
             DeleteObject(hbmp);
@@ -1417,14 +1417,14 @@ LRESULT CALLBACK CLUI__cli_ContactListWndProc(HWND hwnd, UINT msg, WPARAM wParam
                     return 0;
 
                 if (!g_bLayered)
-                    ReCreateBackImage(TRUE,NULL);
+                    SkinEngine_ReCreateBackImage(TRUE,NULL);
 
                 GetWindowRect(hwnd, &rc);
                 CheckFramesPos(&rc);
                 ModernButton_ReposButtons(hwnd,FALSE,&rc);
                 ModernButton_ReposButtons(hwnd,7,NULL);
                 if (g_bLayered)
-                    UpdateFrameImage((WPARAM)hwnd,0);
+                    SkinEngine_Service_UpdateFrameImage((WPARAM)hwnd,0);
                 if (!g_bLayered)
                 {
                     g_mutex_bSizing=1;
@@ -2010,7 +2010,7 @@ LRESULT CALLBACK CLUI__cli_ContactListWndProc(HWND hwnd, UINT msg, WPARAM wParam
             if (!dat) return 0;
             //if(dis->hwndItem==pcli->hwndStatus/*&&IsWindowVisible(pcli->hwndStatus)*/) {
             //  //DrawDataForStatusBar(dis);  //possible issue with hangin for some protocol is here
-            //  InvalidateFrameImage((WPARAM)pcli->hwndStatus,0);
+            //  SkinEngine_Service_InvalidateFrameImage((WPARAM)pcli->hwndStatus,0);
             //}
 
             if (dis->CtlType==ODT_MENU) {
@@ -2019,7 +2019,7 @@ LRESULT CALLBACK CLUI__cli_ContactListWndProc(HWND hwnd, UINT msg, WPARAM wParam
                     {	
                         char buf[255]={0};	
                         short dx=1+(dis->itemState&ODS_SELECTED?1:0)-(dis->itemState&ODS_HOTLIGHT?1:0);
-                        HICON hIcon=mod_ImageList_GetIcon(himlMirandaIcon,0,ILD_NORMAL);
+                        HICON hIcon=SkinEngine_ImageList_GetIcon(himlMirandaIcon,0,ILD_NORMAL);
                         CLUI_DrawMenuBackGround(hwnd, dis->hDC, 1);
                         _snprintf(buf,sizeof(buf),"Main,ID=MainMenu,Selected=%s,Hot=%s",(dis->itemState&ODS_SELECTED)?"True":"False",(dis->itemState&ODS_HOTLIGHT)?"True":"False");
                         SkinDrawGlyph(dis->hDC,&dis->rcItem,&dis->rcItem,buf);
@@ -2110,7 +2110,7 @@ LRESULT CALLBACK CLUI__cli_ContactListWndProc(HWND hwnd, UINT msg, WPARAM wParam
             pcli->hwndStatus=NULL;
             ImageList_Destroy(himlMirandaIcon);
             DBWriteContactSettingByte(NULL,"CList","State",(BYTE)state);
-            UnloadSkin(&glObjectList);
+            SkinEngine_UnloadSkin(&g_SkinObjectList);
             FreeLibrary(hUserDll);
             pcli->hwndContactList=NULL;
             pcli->hwndStatus=NULL;

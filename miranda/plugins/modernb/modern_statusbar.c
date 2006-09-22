@@ -296,7 +296,7 @@ int ModernDrawStatusBarWorker(HWND hWnd, HDC hDC)
     else if (g_StatusBarData.Align==2) //right
       aligndx=(rectwidth-SumWidth);
     // Draw in rects
-  	//SelectEffect(hDC,g_StatusBarData.TextEffectID,g_StatusBarData.TextEffectColor1,g_StatusBarData.TextEffectColor2);
+  	//SkinEngine_SelectTextEffect(hDC,g_StatusBarData.TextEffectID,g_StatusBarData.TextEffectColor1,g_StatusBarData.TextEffectColor2);
     {
       RECT r=rc;
       r.top+=g_StatusBarData.rectBorders.top;
@@ -393,7 +393,7 @@ int ModernDrawStatusBarWorker(HWND hWnd, HDC hDC)
 		  RECT rt=r;
 		  rt.left=x+(spaceWidth>>1);
 		  rt.top=textY;
-		  mod_DrawTextA(hDC,ProtosData[i].ProtoName,lstrlenA(ProtosData[i].ProtoName),&rt,0);
+		  SkinEngine_DrawTextA(hDC,ProtosData[i].ProtoName,lstrlenA(ProtosData[i].ProtoName),&rt,0);
           //TextOutS(hDC,x,textY,ProtosData[i].ProtoName,lstrlenA(ProtosData[i].ProtoName));
           if (g_StatusBarData.showStatusName || ((g_StatusBarData.xStatusMode&8) && ProtosData[i].ProtoXStatus))
           {
@@ -407,7 +407,7 @@ int ModernDrawStatusBarWorker(HWND hWnd, HDC hDC)
 			RECT rt=r;
 			rt.left=x+(spaceWidth>>1);
 			rt.top=textY;
-			mod_DrawTextA(hDC,ProtosData[i].ProtoStatusText,lstrlenA(ProtosData[i].ProtoStatusText),&rt,0);
+			SkinEngine_DrawTextA(hDC,ProtosData[i].ProtoStatusText,lstrlenA(ProtosData[i].ProtoStatusText),&rt,0);
 			if ((g_StatusBarData.xStatusMode&8) && ProtosData[i].ProtoXStatus)
 			{
 				GetTextExtentPoint32A(hDC,ProtosData[i].ProtoStatusText,lstrlenA(ProtosData[i].ProtoStatusText),&textSize);
@@ -420,7 +420,7 @@ int ModernDrawStatusBarWorker(HWND hWnd, HDC hDC)
 			RECT rt=r;
 			rt.left=x+(spaceWidth>>1);
 			rt.top=textY;
-			mod_DrawText(hDC,ProtosData[i].ProtoXStatus,lstrlen(ProtosData[i].ProtoXStatus),&rt,0);
+			SkinEngine_DrawText(hDC,ProtosData[i].ProtoXStatus,lstrlen(ProtosData[i].ProtoXStatus),&rt,0);
 			//TextOutS(hDC,x,textY,ProtosData[i].ProtoStatusText,lstrlenA(ProtosData[i].ProtoStatusText));
 		}
 
@@ -470,7 +470,7 @@ LRESULT CALLBACK ModernStatusProc(HWND hwnd,UINT msg,WPARAM wParam,LPARAM lParam
 	  return 0;
   case WM_PAINT:
     if (GetParent(hwnd)==pcli->hwndContactList && g_bLayered)
-      InvalidateFrameImage((WPARAM)hwnd,0);
+      SkinEngine_Service_InvalidateFrameImage((WPARAM)hwnd,0);
     else if (GetParent(hwnd)==pcli->hwndContactList && !g_bLayered)
 	{
 		HDC hdc, hdc2;
@@ -483,7 +483,7 @@ LRESULT CALLBACK ModernStatusProc(HWND hwnd,UINT msg,WPARAM wParam,LPARAM lParam
 		hdc2=CreateCompatibleDC(hdc);
 		hbmp=SkinEngine_CreateDIB32(rc.right,rc.bottom);
 		hbmpo=SelectObject(hdc2,hbmp);		
-		BltBackImage(hwnd,hdc2,&rc);
+		SkinEngine_BltBackImage(hwnd,hdc2,&rc);
 		ModernDrawStatusBarWorker(hwnd,hdc2);
 		BitBlt(hdc,rc.left,rc.top,rc.right-rc.left,rc.bottom-rc.top,
 			hdc2,rc.left,rc.top,SRCCOPY);

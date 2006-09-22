@@ -529,7 +529,7 @@ int MO_CreateNewMenuObject(WPARAM wParam,LPARAM lParam)
 
 	//if (IsWinVerXPPlus())		//need 32-bit icons on XP for alpha channels
   MenuObjects[MenuObjectsCount].hMenuIcons=ImageList_Create(GetSystemMetrics(SM_CXSMICON),GetSystemMetrics(SM_CYSMICON),ILC_COLOR32|ILC_MASK,15,100);
-	//else	  //Win2k won't blend icons with imagelist_drawex when color-depth>16-bit. Don't know about WinME, but it certainly doesn't support alpha channels
+	//else	  //Win2k won't SkinEngine_Blend icons with imagelist_drawex when color-depth>16-bit. Don't know about WinME, but it certainly doesn't support alpha channels
 	//  MenuObjects[MenuObjectsCount].hMenuIcons=ImageList_Create(GetSystemMetrics(SM_CXSMICON),GetSystemMetrics(SM_CYSMICON),ILC_COLOR16|ILC_MASK,15,100);
 
   result=MenuObjects[MenuObjectsCount].id;
@@ -1207,7 +1207,7 @@ int OnIconLibChanges(WPARAM wParam,LPARAM lParam)
       //&&MenuObjects[mo].MenuItems[mi].iconId!=-1	
       if (MenuObjects[mo].MenuItems[mi].IconRegistred&&uname!=NULL)
       {	
-		  HICON deficon=mod_ImageList_GetIcon(MenuObjects[mo].hMenuIcons,MenuObjects[mo].MenuItems[mi].iconId,0);
+		  HICON deficon=SkinEngine_ImageList_GetIcon(MenuObjects[mo].hMenuIcons,MenuObjects[mo].MenuItems[mi].iconId,0);
           newIcon=LoadIconFromLibrary(	MenuObjects[mo].Name,
 										uname,
 										descr,
@@ -1250,7 +1250,7 @@ int RegisterOneIcon(int mo,int mi)
     char mn[255];
 	HICON defic=0;
     sprintf(mn,Translate("Menu icons/%s"),MenuObjects[mo].Name);
-	defic=mod_ImageList_GetIcon(MenuObjects[mo].hMenuIcons,MenuObjects[mo].MenuItems[mi].iconId,0);
+	defic=SkinEngine_ImageList_GetIcon(MenuObjects[mo].hMenuIcons,MenuObjects[mo].MenuItems[mi].iconId,0);
     newIcon=LoadIconFromLibrary(
       mn,
       uname,

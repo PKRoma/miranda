@@ -162,12 +162,12 @@ void cliScrollTo(HWND hwnd,struct ClcData *dat,int desty,int noSmooth)
 				ScrollWindowEx(hwnd,0,previousy-dat->yScroll,NULL,NULL,NULL,NULL,SW_INVALIDATE);
 			else
 			{
-				UpdateFrameImage((WPARAM) hwnd, (LPARAM) 0); 
+				SkinEngine_Service_UpdateFrameImage((WPARAM) hwnd, (LPARAM) 0); 
 				//InvalidateRectZ(hwnd,NULL,FALSE);
 			}
 			previousy=dat->yScroll;
 			SetScrollPos(hwnd,SB_VERT,dat->yScroll,TRUE);
-			UpdateFrameImage((WPARAM) hwnd, (LPARAM) 0); 
+			SkinEngine_Service_UpdateFrameImage((WPARAM) hwnd, (LPARAM) 0); 
 			UpdateWindow(hwnd);
 		}
 	}

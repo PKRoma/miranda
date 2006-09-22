@@ -24,7 +24,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include "m_clui.h"
 #include "clist.h"
 #include "m_clc.h"
-#include "SkinEngine.h"
+//#include "SkinEngine.h"
 #include "io.h"
 #include "commonprototypes.h"
 
@@ -131,7 +131,7 @@ int TreeAddObject(HWND hwndDlg, int ID, OPT_OBJECT_DATA * data)
 
 int enumDB_SkinObjectsForEditorProc(const char *szSetting,LPARAM lParam)
 {
-	if (WildCompare((char *)szSetting,gl_Mask,0)||WildCompare((char *)szSetting,"$*",0))
+	if (wildcmp((char *)szSetting,gl_Mask,0)||wildcmp((char *)szSetting,"$*",0))
 	{
 		char * value;
 		char *desc;
@@ -140,7 +140,7 @@ int enumDB_SkinObjectsForEditorProc(const char *szSetting,LPARAM lParam)
 		descKey[0]='%';
 		value=DBGetStringA(NULL,SKIN,szSetting);
 		desc=DBGetStringA(NULL,SKIN,descKey);
-		if (WildCompare(value,"?lyph*",0))
+		if (wildcmp(value,"?lyph*",0))
 		{
 			OPT_OBJECT_DATA * a=mir_alloc(sizeof(OPT_OBJECT_DATA));
 			a->szPath=desc;
@@ -346,14 +346,14 @@ void SetControls(HWND hwndDlg, char * str)
 }
 
 
-extern int GetFullFilename(char * buf, char *file, char * skinfolder,BOOL madeAbsolute);
+extern int SkinEngine_GetFullFilename(char * buf, char *file, char * skinfolder,BOOL madeAbsolute);
 int GetShortFileName(char * FullFile)
 {
 	char buf[MAX_PATH]={0};
 	char * f=strrchr(FullFile,'\\');
 	char * file=f?mir_strdup(f+1):0;
 	if (!file) return 0;
-	GetFullFilename(buf,file,0,TRUE);
+	SkinEngine_GetFullFilename(buf,file,0,TRUE);
 	if (mir_bool_strcmpi(buf,FullFile))
 	{
 		_snprintf(FullFile,MAX_PATH,"%s",file);
@@ -516,16 +516,16 @@ int GetFileSizes(HWND hwndDlg)
 	char buf[MAX_PATH];
 	SIZE sz={0};
 	SendDlgItemMessageA(hwndDlg,IDC_FILE,WM_GETTEXT,(WPARAM)MAX_PATH,(LPARAM)buf);
-	GetFullFilename(buf,buf,0,TRUE);
+	SkinEngine_GetFullFilename(buf,buf,0,TRUE);
 	{
-		HBITMAP hbmp=LoadGlyphImage(buf);
+		HBITMAP hbmp=SkinEngine_LoadGlyphImage(buf);
 		if (hbmp)
 		{
 			BITMAP bm={0};
 			GetObject(hbmp,sizeof(BITMAP),&bm);
 			sz.cx=bm.bmWidth;
 			sz.cy=bm.bmHeight;
-			UnloadGlyphImage(hbmp);
+			SkinEngine_UnloadGlyphImage(hbmp);
 		}
 	}
 	_snprintf(buf, MAX_PATH, "%s %d x %d %s",Translate("Image size is"),sz.cx, sz.cy, Translate("pixels")); 
@@ -675,7 +675,7 @@ BOOL CALLBACK DlgSkinEditorOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lP
 						}
 						else
 						{
-							GetFullFilename(str,str,(char*)0,TRUE);
+							SkinEngine_GetFullFilename(str,str,(char*)0,TRUE);
 						}
 						ofn.lpstrFile = str;
 						

@@ -479,7 +479,7 @@ int StatusMenuCheckService(WPARAM wParam, LPARAM lParam)
 	smep=(StatusMenuExecParam *)pcpp->MenuItemOwnerData;
 	if (smep && !smep->status && smep->custom)
 	{
-		if (WildCompare(smep->svc,"*XStatus*",255))
+		if (wildcmp(smep->svc,"*XStatus*",255))
 		{
 			//TODO Set parent icon/text as current
 			//Get parent menu ID
@@ -489,9 +489,9 @@ int StatusMenuCheckService(WPARAM wParam, LPARAM lParam)
 			{
 				char buf[255];
 				_snprintf(buf,sizeof(buf),"*XStatus%d",XStatus);
-				if (WildCompare(smep->svc,buf,255))	check=TRUE;
+				if (wildcmp(smep->svc,buf,255))	check=TRUE;
 			}
-			if (WildCompare(smep->svc,"*XStatus0",255))
+			if (wildcmp(smep->svc,"*XStatus0",255))
 				reset=TRUE;
 			else 
 				reset=FALSE;

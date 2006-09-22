@@ -28,7 +28,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 extern void cliTrayIconUpdateBase(char *szChangedProto);
 int CLUIServices_ProtocolStatusChanged(WPARAM wParam,LPARAM lParam)
 {
-	InvalidateFrameImage((WPARAM)pcli->hwndStatus,0);
+	SkinEngine_Service_InvalidateFrameImage((WPARAM)pcli->hwndStatus,0);
 	if (lParam) cliTrayIconUpdateBase((char*)lParam);
 	return 0;
 }

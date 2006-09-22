@@ -31,8 +31,8 @@ This file contains code related to new modern free positioned skinned buttons
 BOOL ModernButtonModuleIsLoaded=FALSE;
 
 static LRESULT CALLBACK ModernButtonWndProc(HWND hwndDlg, UINT msg,  WPARAM wParam, LPARAM lParam);
-int UnloadModernButtonModule(WPARAM wParam, LPARAM lParam);
-extern int SkinDrawImageAt(HDC hdc, RECT *rc);
+int ModernButton_UnloadModule(WPARAM wParam, LPARAM lParam);
+extern int SkinEngine_DrawImageAt(HDC hdc, RECT *rc);
 int SetToolTip(HWND hwnd, TCHAR * tip);
 typedef struct _ModernButtonCtrl
 {
@@ -91,12 +91,12 @@ int ModernButton_LoadModule()
   wc.style          = CS_GLOBALCLASS;
   RegisterClassExA(&wc);
   InitializeCriticalSection(&csTips);
-  HookEvent(ME_SYSTEM_SHUTDOWN, UnloadModernButtonModule);
+  HookEvent(ME_SYSTEM_SHUTDOWN, ModernButton_UnloadModule);
   ModernButtonModuleIsLoaded=TRUE;
   return 0;
 }
 
-int UnloadModernButtonModule(WPARAM wParam, LPARAM lParam)
+int ModernButton_UnloadModule(WPARAM wParam, LPARAM lParam)
 {
   DeleteCriticalSection(&csTips);
   return 0;
@@ -123,7 +123,7 @@ int PaintWorker(HWND hwnd, HDC whdc)
   bmp=SkinEngine_CreateDIB32(rc.right,rc.bottom);
   oldbmp=SelectObject(hdc,bmp);
   if (!g_bLayered)
-	BltBackImage(bct->hwnd,hdc,NULL);
+	SkinEngine_BltBackImage(bct->hwnd,hdc,NULL);
   {
     char Request[250];
     //   int res;
@@ -188,7 +188,7 @@ int PaintWorker(HWND hwnd, HDC whdc)
   {
     RECT r;
     SetRect(&r,bct->Left,bct->Top,bct->Right,bct->Bottom);
-    SkinDrawImageAt(hdc,&r);
+    SkinEngine_DrawImageAt(hdc,&r);
     //CallingService to immeadeately update window with new image.
   }
   if (whdc && !g_bLayered)
@@ -568,6 +568,7 @@ int AddButton(HWND parent,
 }
 
 extern CURRWNDIMAGEDATA * g_pCachedWindow;
+
 int EraseButton(int l,int t,int r, int b)
 {
   DWORD i;

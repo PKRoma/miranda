@@ -44,8 +44,8 @@ extern int UseOwnerDrawStatusBar;
 extern BOOL g_bSmoothAnimation;
 extern int CLUIFrames_SetParentForContainers(HWND parent);
 static UINT expertOnlyControls[]={IDC_BRINGTOFRONT, IDC_AUTOSIZE,IDC_STATIC21,IDC_MAXSIZEHEIGHT,IDC_MAXSIZESPIN,IDC_STATIC22,IDC_AUTOSIZEUPWARD,IDC_SHOWMAINMENU,IDC_SHOWCAPTION,IDC_CLIENTDRAG};
-extern BYTE UseKeyColor;
-extern DWORD KeyColor;
+extern BYTE g_bUseKeyColor;
+extern DWORD g_dwKeyColor;
 extern BOOL g_mutex_bChangingMode;
 extern void CLUI_ChangeWindowMode();
 
@@ -105,23 +105,23 @@ TOrderTreeData OrderTreeData[]=
 #define PrVer 4
 
 char **settingname;
-int arrlen;
+int nArrayLen;
 
 static int OrderEnumProc (const char *szSetting,LPARAM lParam)
 {
 
 	if (szSetting==NULL) return 0;
-	if (!WildCompare((char*) szSetting,(char *) lParam,0)) return 0;
-	arrlen++;
-	settingname=(char **)realloc(settingname,arrlen*sizeof(char *));
-	settingname[arrlen-1]=_strdup(szSetting);
+	if (!wildcmp((char*) szSetting,(char *) lParam,0)) return 0;
+	nArrayLen++;
+	settingname=(char **)realloc(settingname,nArrayLen*sizeof(char *));
+	settingname[nArrayLen-1]=_strdup(szSetting);
 	return 0;
 };
 
 int  DeleteAllSettingInOrder()
 {
 	DBCONTACTENUMSETTINGS dbces;
-	arrlen=0;
+	nArrayLen=0;
 
 	dbces.pfnEnumProc=OrderEnumProc;
 	dbces.szModule=CLUIFrameModule;
@@ -131,10 +131,10 @@ int  DeleteAllSettingInOrder()
 	CallService(MS_DB_CONTACT_ENUMSETTINGS,0,(LPARAM)&dbces);
 
 	//delete all settings
-	if (arrlen==0){return(0);};
+	if (nArrayLen==0){return(0);};
 	{
 		int i;
-		for (i=0;i<arrlen;i++)
+		for (i=0;i<nArrayLen;i++)
 		{
 			DBDeleteContactSetting(0,CLUIFrameModule,settingname[i]);
 			free(settingname[i]);
@@ -513,14 +513,14 @@ BOOL CALLBACK DlgProcCluiOpts2(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPa
 			DBWriteContactSettingWord(NULL,"ModernData","HideDelay",(WORD)SendDlgItemMessage(hwndDlg,IDC_HIDETIMESPIN3,UDM_GETPOS,0,0));
 			DBWriteContactSettingWord(NULL,"ModernData","HideBehindBorderSize",(WORD)SendDlgItemMessage(hwndDlg,IDC_HIDETIMESPIN4,UDM_GETPOS,0,0));
 
-			//    CheckDlgButton(hwndDlg, IDC_CHECKKEYCOLOR, DBGetContactSettingByte(NULL,"ModernSettings","UseKeyColor",1) ? BST_CHECKED : BST_UNCHECKED);
+			//    CheckDlgButton(hwndDlg, IDC_CHECKKEYCOLOR, DBGetContactSettingByte(NULL,"ModernSettings","g_bUseKeyColor",1) ? BST_CHECKED : BST_UNCHECKED);
 			//    EnableWindow(GetDlgItem(hwndDlg,IDC_COLOUR_KEY),IsDlgButtonChecked(hwndDlg,IDC_CHECKKEYCOLOR));
-			//    SendDlgItemMessage(hwndDlg,IDC_COLOUR_KEY,CPM_SETCOLOUR,0,DBGetContactSettingDword(NULL,"ModernSettings","KeyColor",(DWORD)RGB(255,0,255)));
+			//    SendDlgItemMessage(hwndDlg,IDC_COLOUR_KEY,CPM_SETCOLOUR,0,DBGetContactSettingDword(NULL,"ModernSettings","g_dwKeyColor",(DWORD)RGB(255,0,255)));
 
-			//DBWriteContactSettingByte(NULL,"ModernSettings","UseKeyColor",IsDlgButtonChecked(hwndDlg,IDC_CHECKKEYCOLOR)?1:0);
-			//DBWriteContactSettingDword(NULL,"ModernSettings","KeyColor",SendDlgItemMessage(hwndDlg,IDC_COLOUR_KEY,CPM_GETCOLOUR,0,0));
-			//UseKeyColor=DBGetContactSettingByte(NULL,"ModernSettings","UseKeyColor",1);
-			//KeyColor=DBGetContactSettingDword(NULL,"ModernSettings","KeyColor",(DWORD)RGB(255,0,255));
+			//DBWriteContactSettingByte(NULL,"ModernSettings","g_bUseKeyColor",IsDlgButtonChecked(hwndDlg,IDC_CHECKKEYCOLOR)?1:0);
+			//DBWriteContactSettingDword(NULL,"ModernSettings","g_dwKeyColor",SendDlgItemMessage(hwndDlg,IDC_COLOUR_KEY,CPM_GETCOLOUR,0,0));
+			//g_bUseKeyColor=DBGetContactSettingByte(NULL,"ModernSettings","g_bUseKeyColor",1);
+			//g_dwKeyColor=DBGetContactSettingDword(NULL,"ModernSettings","g_dwKeyColor",(DWORD)RGB(255,0,255));
 			//DBWriteContactSettingByte(NULL,"CList","OnDesktop",(BYTE)IsDlgButtonChecked(hwndDlg,IDC_ONDESKTOP));
 			//DBWriteContactSettingByte(NULL,"CList","OnTop",(BYTE)IsDlgButtonChecked(hwndDlg,IDC_ONTOP));
 			//SetWindowPos(pcli->hwndContactList, IsDlgButtonChecked(hwndDlg,IDC_ONTOP)?HWND_TOPMOST:HWND_NOTOPMOST, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE |SWP_NOACTIVATE);
@@ -619,9 +619,9 @@ BOOL CALLBACK DlgProcCluiOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPar
 		SendDlgItemMessage(hwndDlg,IDC_BOTTOMMARGINSPIN,UDM_SETPOS,0,DBGetContactSettingByte(NULL,"CLUI","BottomClientMargin",0));
 		EnableWindow(GetDlgItem(hwndDlg,IDC_LAYERENGINE),(g_proc_UpdateLayeredWindow!=NULL)?TRUE:FALSE);
 		CheckDlgButton(hwndDlg, IDC_LAYERENGINE, (DBGetContactSettingByte(NULL,"ModernData","EnableLayering",1)&&g_proc_UpdateLayeredWindow!=NULL) ? BST_UNCHECKED:BST_CHECKED);   
-		CheckDlgButton(hwndDlg, IDC_CHECKKEYCOLOR, DBGetContactSettingByte(NULL,"ModernSettings","UseKeyColor",1) ? BST_CHECKED : BST_UNCHECKED);
+		CheckDlgButton(hwndDlg, IDC_CHECKKEYCOLOR, DBGetContactSettingByte(NULL,"ModernSettings","g_bUseKeyColor",1) ? BST_CHECKED : BST_UNCHECKED);
 		EnableWindow(GetDlgItem(hwndDlg,IDC_COLOUR_KEY),!MODE&&IsDlgButtonChecked(hwndDlg,IDC_CHECKKEYCOLOR));
-		SendDlgItemMessage(hwndDlg,IDC_COLOUR_KEY,CPM_SETCOLOUR,0,DBGetContactSettingDword(NULL,"ModernSettings","KeyColor",(DWORD)RGB(255,0,255)));	
+		SendDlgItemMessage(hwndDlg,IDC_COLOUR_KEY,CPM_SETCOLOUR,0,DBGetContactSettingDword(NULL,"ModernSettings","g_dwKeyColor",(DWORD)RGB(255,0,255)));	
 		{
 			DBVARIANT dbv={0};
 		TCHAR *s=NULL;
@@ -716,7 +716,7 @@ BOOL CALLBACK DlgProcCluiOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPar
 		else if (LOWORD(wParam)==IDC_CHECKKEYCOLOR) 
 		{
 			EnableWindow(GetDlgItem(hwndDlg,IDC_COLOUR_KEY),IsDlgButtonChecked(hwndDlg,IDC_CHECKKEYCOLOR));
-			SendDlgItemMessage(hwndDlg,IDC_COLOUR_KEY,CPM_SETCOLOUR,0,DBGetContactSettingDword(NULL,"ModernSettings","KeyColor",(DWORD)RGB(255,0,255)));
+			SendDlgItemMessage(hwndDlg,IDC_COLOUR_KEY,CPM_SETCOLOUR,0,DBGetContactSettingDword(NULL,"ModernSettings","g_dwKeyColor",(DWORD)RGB(255,0,255)));
 		}
 		if ((LOWORD(wParam)==IDC_TITLETEXT || LOWORD(wParam)==IDC_MAXSIZEHEIGHT || LOWORD(wParam)==IDC_FRAMESGAP || LOWORD(wParam)==IDC_CAPTIONSGAP ||
 			  LOWORD(wParam)==IDC_LEFTMARGIN || LOWORD(wParam)==IDC_RIGHTMARGIN|| LOWORD(wParam)==IDC_TOPMARGIN || LOWORD(wParam)==IDC_BOTTOMMARGIN) 
@@ -753,14 +753,14 @@ BOOL CALLBACK DlgProcCluiOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPar
 			//DBWriteContactSettingWord(NULL,"ModernData","HideDelay",(WORD)SendDlgItemMessage(hwndDlg,IDC_HIDETIMESPIN3,UDM_GETPOS,0,0));
 			//DBWriteContactSettingWord(NULL,"ModernData","HideBehindBorderSize",(WORD)SendDlgItemMessage(hwndDlg,IDC_HIDETIMESPIN4,UDM_GETPOS,0,0));
 
-			//    CheckDlgButton(hwndDlg, IDC_CHECKKEYCOLOR, DBGetContactSettingByte(NULL,"ModernSettings","UseKeyColor",1) ? BST_CHECKED : BST_UNCHECKED);
+			//    CheckDlgButton(hwndDlg, IDC_CHECKKEYCOLOR, DBGetContactSettingByte(NULL,"ModernSettings","g_bUseKeyColor",1) ? BST_CHECKED : BST_UNCHECKED);
 			//    EnableWindow(GetDlgItem(hwndDlg,IDC_COLOUR_KEY),IsDlgButtonChecked(hwndDlg,IDC_CHECKKEYCOLOR));
-			//    SendDlgItemMessage(hwndDlg,IDC_COLOUR_KEY,CPM_SETCOLOUR,0,DBGetContactSettingDword(NULL,"ModernSettings","KeyColor",(DWORD)RGB(255,0,255)));
+			//    SendDlgItemMessage(hwndDlg,IDC_COLOUR_KEY,CPM_SETCOLOUR,0,DBGetContactSettingDword(NULL,"ModernSettings","g_dwKeyColor",(DWORD)RGB(255,0,255)));
 
-			DBWriteContactSettingByte(NULL,"ModernSettings","UseKeyColor",IsDlgButtonChecked(hwndDlg,IDC_CHECKKEYCOLOR)?1:0);
-			DBWriteContactSettingDword(NULL,"ModernSettings","KeyColor",SendDlgItemMessage(hwndDlg,IDC_COLOUR_KEY,CPM_GETCOLOUR,0,0));
-			UseKeyColor=DBGetContactSettingByte(NULL,"ModernSettings","UseKeyColor",1);
-			KeyColor=DBGetContactSettingDword(NULL,"ModernSettings","KeyColor",(DWORD)RGB(255,0,255));
+			DBWriteContactSettingByte(NULL,"ModernSettings","g_bUseKeyColor",IsDlgButtonChecked(hwndDlg,IDC_CHECKKEYCOLOR)?1:0);
+			DBWriteContactSettingDword(NULL,"ModernSettings","g_dwKeyColor",SendDlgItemMessage(hwndDlg,IDC_COLOUR_KEY,CPM_GETCOLOUR,0,0));
+			g_bUseKeyColor=DBGetContactSettingByte(NULL,"ModernSettings","g_bUseKeyColor",1);
+			g_dwKeyColor=DBGetContactSettingDword(NULL,"ModernSettings","g_dwKeyColor",(DWORD)RGB(255,0,255));
 			DBWriteContactSettingByte(NULL,"CList","OnDesktop",(BYTE)IsDlgButtonChecked(hwndDlg,IDC_ONDESKTOP));
 			DBWriteContactSettingByte(NULL,"CList","OnTop",(BYTE)IsDlgButtonChecked(hwndDlg,IDC_ONTOP));
 			SetWindowPos(pcli->hwndContactList, IsDlgButtonChecked(hwndDlg,IDC_ONTOP)?HWND_TOPMOST:HWND_NOTOPMOST, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE |SWP_NOACTIVATE);

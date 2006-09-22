@@ -54,7 +54,7 @@ extern struct AvatarOverlayIconConfig
   int listID;
 } avatar_overlay_icons[ID_STATUS_OUTTOLUNCH - ID_STATUS_OFFLINE + 1];
 extern HIMAGELIST hAvatarOverlays;
-//extern BOOL mod_ImageList_DrawEx( HIMAGELIST himl,int i,HDC hdcDst,int x,int y,int dx,int dy,COLORREF rgbBk,COLORREF rgbFg,UINT fStyle);
+//extern BOOL SkinEngine_ImageList_DrawEx( HIMAGELIST himl,int i,HDC hdcDst,int x,int y,int dx,int dy,COLORREF rgbBk,COLORREF rgbFg,UINT fStyle);
 
 //extern void DrawAvatarImageWithGDIp(HDC hDestDC,int x, int y, DWORD width, DWORD height, HBITMAP hbmp, int x1, int y1, DWORD width1, DWORD height1,DWORD flag);
 
@@ -70,8 +70,8 @@ BOOL IsForegroundWindow(HWND hwnd)
   return FALSE;
 
 }
-extern BOOL ResetEffect(HDC);
-extern BOOL SelectEffect(HDC hdc, BYTE EffectID, DWORD FirstColor, DWORD SecondColor);
+extern BOOL SkinEngine_ResetTextEffect(HDC);
+extern BOOL SkinEngine_SelectTextEffect(HDC hdc, BYTE EffectID, DWORD FirstColor, DWORD SecondColor);
 
 
 HFONT CLCPaint_ChangeToFont(HDC hdc,struct ClcData *dat,int id,int *fontHeight)
@@ -87,8 +87,8 @@ HFONT CLCPaint_ChangeToFont(HDC hdc,struct ClcData *dat,int id,int *fontHeight)
   SetTextColor(hdc,dat->fontModernInfo[id].colour);
   if(fontHeight) *fontHeight=dat->fontModernInfo[id].fontHeight;
   if (dat->hWnd==pcli->hwndContactTree && dat->fontModernInfo[id].effect!=0)
-	  SelectEffect(hdc,dat->fontModernInfo[id].effect-1,dat->fontModernInfo[id].effectColour1,dat->fontModernInfo[id].effectColour2);
-  else ResetEffect(hdc);
+	  SkinEngine_SelectTextEffect(hdc,dat->fontModernInfo[id].effect-1,dat->fontModernInfo[id].effectColour1,dat->fontModernInfo[id].effectColour2);
+  else SkinEngine_ResetTextEffect(hdc);
   
   return res;
 }
@@ -315,7 +315,7 @@ void GetTextSize(SIZE *text_size, HDC hdcMem, RECT free_row_rc, TCHAR *szText, S
     free_height = text_rc.bottom - text_rc.top;
 
     // Always need cy...
-    text_size->cy = mod_DrawText(hdcMem,szText,lstrlen(szText), &text_rc, DT_CALCRECT | uTextFormat);
+    text_size->cy = SkinEngine_DrawText(hdcMem,szText,lstrlen(szText), &text_rc, DT_CALCRECT | uTextFormat);
     text_size->cy = min(text_size->cy, free_height);
     if (plText == NULL) 
     {
@@ -338,7 +338,7 @@ void GetTextSize(SIZE *text_size, HDC hdcMem, RECT free_row_rc, TCHAR *szText, S
         {
           text_rc = free_row_rc;
 
-          mod_DrawText(hdcMem, &szText[piece->start_pos], piece->len, &text_rc, DT_CALCRECT | uTextFormat);
+          SkinEngine_DrawText(hdcMem, &szText[piece->start_pos], piece->len, &text_rc, DT_CALCRECT | uTextFormat);
           text_size->cx = min(text_size->cx + text_rc.right - text_rc.left + 2, free_width);
         }
         else
@@ -377,7 +377,7 @@ void DrawTextSmiley(HDC hdcMem, RECT free_rc, SIZE text_size, TCHAR *szText, int
   if (plText == NULL) 
   {
     // Draw text
-    mod_DrawText(hdcMem,szText, len, &free_rc, uTextFormat);
+    SkinEngine_DrawText(hdcMem,szText, len, &free_rc, uTextFormat);
   }
   else
   {
@@ -393,12 +393,12 @@ void DrawTextSmiley(HDC hdcMem, RECT free_rc, SIZE text_size, TCHAR *szText, int
       i = 0;
 
     // Get real height of the line
-    row_height = mod_DrawText(hdcMem, TEXT("A"), 1, &tmp_rc, DT_CALCRECT | uTextFormat);
+    row_height = SkinEngine_DrawText(hdcMem, TEXT("A"), 1, &tmp_rc, DT_CALCRECT | uTextFormat);
 
     // Just draw ellipsis
     if (free_rc.right <= free_rc.left)
     {
-      if (gl_TrimText) mod_DrawText(hdcMem, TEXT("..."), 3, &free_rc, uTextFormat & ~DT_END_ELLIPSIS);
+      if (gl_TrimText) SkinEngine_DrawText(hdcMem, TEXT("..."), 3, &free_rc, uTextFormat & ~DT_END_ELLIPSIS);
     }
     else
     {
@@ -417,13 +417,13 @@ void DrawTextSmiley(HDC hdcMem, RECT free_rc, SIZE text_size, TCHAR *szText, int
         {
           tmp_rc = text_rc;
           tmp_rc.right += 50;
-          mod_DrawText(hdcMem, &szText[piece->start_pos], min(len, piece->len), &tmp_rc, DT_CALCRECT | (uTextFormat & ~DT_END_ELLIPSIS));
+          SkinEngine_DrawText(hdcMem, &szText[piece->start_pos], min(len, piece->len), &tmp_rc, DT_CALCRECT | (uTextFormat & ~DT_END_ELLIPSIS));
           pos_x += tmp_rc.right - tmp_rc.left + 2;
 
           if (uTextFormat & DT_RTLREADING)
             text_rc.left = max(text_rc.left, text_rc.right - (tmp_rc.right - tmp_rc.left));
 
-          mod_DrawText(hdcMem, &szText[piece->start_pos], min(len, piece->len), &text_rc, uTextFormat);
+          SkinEngine_DrawText(hdcMem, &szText[piece->start_pos], min(len, piece->len), &text_rc, uTextFormat);
           len -= piece->len;
         }
         else
@@ -458,12 +458,12 @@ void DrawTextSmiley(HDC hdcMem, RECT free_rc, SIZE text_size, TCHAR *szText, int
             {
               text_rc.top += (row_height - fac_height) >> 1;
 
-              mod_DrawIconEx(hdcMem, text_rc.left, text_rc.top, piece->smiley, 
+              SkinEngine_DrawIconEx(hdcMem, text_rc.left, text_rc.top, piece->smiley, 
                 fac_width, fac_height, 0, NULL, DI_NORMAL|((factor<1)?128:0)); //TO DO enchance drawing quality
             }
             else
             {
-              mod_DrawText(hdcMem, TEXT("..."), 3, &text_rc, uTextFormat);
+              SkinEngine_DrawText(hdcMem, TEXT("..."), 3, &text_rc, uTextFormat);
             }
 
             pos_x += fac_width;
@@ -765,7 +765,7 @@ void ModernInternalPaintRowItems(HWND hwnd, HDC hdcMem, struct ClcData *dat, str
               if (dat->text_rtl!=0) RTLrect(&rc, free_row_rc.right, dx);
 			  Drawing->pos_extra[iImage] = rc;
               Drawing->pos_extra[iImage] = rc;		  
-              mod_ImageList_DrawEx(dat->himlExtraColumns,Drawing->iExtraImage[iImage],hdcMem,
+              SkinEngine_ImageList_DrawEx(dat->himlExtraColumns,Drawing->iExtraImage[iImage],hdcMem,
                 rc.left, rc.top,0,0,CLR_NONE,colourFg,mode);
             }
             fr_rc.right-=x;
@@ -799,12 +799,12 @@ void ModernInternalPaintRowItems(HWND hwnd, HDC hdcMem, struct ClcData *dat, str
             {
               // calc width and height
               CLCPaint_ChangeToFont(hdcMem,dat,Drawing->group->expanded?FONTID_OPENGROUPCOUNTS:FONTID_CLOSEDGROUPCOUNTS,NULL);
-              mod_DrawText(hdcMem,_T(" "),1,&count_rc,DT_CALCRECT | DT_NOPREFIX);
+              SkinEngine_DrawText(hdcMem,_T(" "),1,&count_rc,DT_CALCRECT | DT_NOPREFIX);
               count_size.cx =count_rc.right-count_rc.left;
               space_width=count_size.cx;
               count_rc.right=0;
               count_rc.left=0;    			
-              mod_DrawTextA(hdcMem,szCounts,lstrlenA(szCounts),&count_rc,DT_CALCRECT);
+              SkinEngine_DrawTextA(hdcMem,szCounts,lstrlenA(szCounts),&count_rc,DT_CALCRECT);
               count_size.cx +=count_rc.right-count_rc.left;
               count_size.cy =count_rc.bottom-count_rc.top;
             }
@@ -873,7 +873,7 @@ void ModernInternalPaintRowItems(HWND hwnd, HDC hdcMem, struct ClcData *dat, str
               else if(hottrack)
                 SetHotTrackColour(hdcMem,dat);
 			  if (dat->text_rtl!=0) RTLrect(&countRect, free_row_rc.right, dx);
-              mod_DrawTextA(hdcMem,szCounts,lstrlenA(szCounts),&countRect,uTextFormat);
+              SkinEngine_DrawTextA(hdcMem,szCounts,lstrlenA(szCounts),&countRect,uTextFormat);
             }
 			{
 				RECT rc=fr_rc;
@@ -946,10 +946,10 @@ void ModernInternalPaintRowItems(HWND hwnd, HDC hdcMem, struct ClcData *dat, str
           CLCPaint_ChangeToFont(hdcMem,dat,Drawing->group->expanded?FONTID_OPENGROUPCOUNTS:FONTID_CLOSEDGROUPCOUNTS,NULL);
           if (dat->text_rtl!=0) RTLrect(&counts_rc, free_row_rc.right, dx);
 		  if (InClistWindow && g_bLayered)
-			mod_DrawTextA(hdcMem,szCounts,lstrlenA(szCounts),&counts_rc,uTextFormat);
+			SkinEngine_DrawTextA(hdcMem,szCounts,lstrlenA(szCounts),&counts_rc,uTextFormat);
 		  else
 			  //88
-			mod_DrawTextA(hdcMem,szCounts,lstrlenA(szCounts),&counts_rc,uTextFormat);
+			SkinEngine_DrawTextA(hdcMem,szCounts,lstrlenA(szCounts),&counts_rc,uTextFormat);
           if (dat->text_rtl==0)
 			  text_rect.right=counts_rc.right;
 		  else
@@ -1051,12 +1051,12 @@ void ModernInternalPaintRowItems(HWND hwnd, HDC hdcMem, struct ClcData *dat, str
 
               // calc width and height
               CLCPaint_ChangeToFont(hdcMem,dat,Drawing->group->expanded?FONTID_OPENGROUPCOUNTS:FONTID_CLOSEDGROUPCOUNTS,NULL);
-              mod_DrawText(hdcMem,_T(" "),1,&count_rc,DT_CALCRECT | DT_NOPREFIX);
+              SkinEngine_DrawText(hdcMem,_T(" "),1,&count_rc,DT_CALCRECT | DT_NOPREFIX);
               count_size.cx =count_rc.right-count_rc.left;
               space_width=count_size.cx;
               count_rc.right=0;
               count_rc.left=0;    			
-              mod_DrawTextA(hdcMem,szCounts,lstrlenA(szCounts),&count_rc,DT_CALCRECT);
+              SkinEngine_DrawTextA(hdcMem,szCounts,lstrlenA(szCounts),&count_rc,DT_CALCRECT);
               count_size.cx +=count_rc.right-count_rc.left;
               count_size.cy =count_rc.bottom-count_rc.top;
             }
@@ -1123,7 +1123,7 @@ void ModernInternalPaintRowItems(HWND hwnd, HDC hdcMem, struct ClcData *dat, str
                 SetTextColor(hdcMem,dat->selTextColour);
               else if(hottrack)
                 SetHotTrackColour(hdcMem,dat);
-              mod_DrawTextA(hdcMem,szCounts,lstrlenA(szCounts),&countRect,uTextFormat);
+              SkinEngine_DrawTextA(hdcMem,szCounts,lstrlenA(szCounts),&countRect,uTextFormat);
             }
             Drawing->pos_rename_rect=p_rect;
             Drawing->pos_label=nameRect;
@@ -1342,7 +1342,7 @@ void ModernInternalPaintRowItems(HWND hwnd, HDC hdcMem, struct ClcData *dat, str
 						CombineRgn(rgn2,rgn,rgn2,RGN_DIFF);
 						// FrameRgn(hdcMem,rgn,hBrush,1,1);
 						FillRgn(hdcMem,rgn2,hBrush);
-						SetRgnAlpha_255(hdcMem,rgn2);
+						SkinEngine_SetRgnQpaque(hdcMem,rgn2);
 						SelectObject(hdcMem, hOldBrush);
 						DeleteObject(hBrush);
 						DeleteObject(rgn);
@@ -1411,7 +1411,7 @@ void ModernInternalPaintRowItems(HWND hwnd, HDC hdcMem, struct ClcData *dat, str
 							  HDC hdcTempAv = CreateCompatibleDC(hdcMem);                 
 							  HBITMAP hbmTempAvOld;
 							  hbmTempAvOld = SelectObject(hdcTempAv,Drawing->avatar_data->hbmPic);
-							  mod_AlphaBlend(hdcMem, p_rect.left, p_rect.top, w, h, hdcTempAv, 0, 0,Drawing->avatar_data->bmWidth,Drawing->avatar_data->bmHeight, bf);
+							  SkinEngine_AlphaBlend(hdcMem, p_rect.left, p_rect.top, w, h, hdcTempAv, 0, 0,Drawing->avatar_data->bmWidth,Drawing->avatar_data->bmHeight, bf);
 							  SelectObject(hdcTempAv, hbmTempAvOld);
 							  mod_DeleteDC(hdcTempAv);
 							}
@@ -1452,13 +1452,13 @@ void ModernInternalPaintRowItems(HWND hwnd, HDC hdcMem, struct ClcData *dat, str
 						  {
 							UINT a=blendmode;
 							a=(a<<24);
-                            mod_ImageList_DrawEx(hAvatarOverlays,avatar_overlay_icons[GetContactCachedStatus(Drawing->hContact) - ID_STATUS_OFFLINE].listID,
+                            SkinEngine_ImageList_DrawEx(hAvatarOverlays,avatar_overlay_icons[GetContactCachedStatus(Drawing->hContact) - ID_STATUS_OFFLINE].listID,
                                                  hdcMem,
                                                  p_rect.left, p_rect.top,ICON_HEIGHT,ICON_HEIGHT,
                                                  CLR_NONE,CLR_NONE,
                                                  (blendmode==255)?ILD_NORMAL:(blendmode==128)?ILD_BLEND50:ILD_BLEND25);
 
-							//mod_DrawIconEx(hdcMem, p_rect.left, p_rect.top, avatar_overlay_icons[GetContactCachedStatus(Drawing->hContact) - ID_STATUS_OFFLINE].icon, 
+							//SkinEngine_DrawIconEx(hdcMem, p_rect.left, p_rect.top, avatar_overlay_icons[GetContactCachedStatus(Drawing->hContact) - ID_STATUS_OFFLINE].icon, 
 							//  ICON_HEIGHT, ICON_HEIGHT, 0, NULL, DI_NORMAL|a); 
 							break;
 						  }
@@ -1534,7 +1534,7 @@ void ModernInternalPaintRowItems(HWND hwnd, HDC hdcMem, struct ClcData *dat, str
               count++;
 			  if (dat->text_rtl!=0) RTLrect(&rc, free_row_rc.right, 0);
               Drawing->pos_extra[iImage] = rc;
-              mod_ImageList_DrawEx(dat->himlExtraColumns,Drawing->iExtraImage[iImage],hdcMem,
+              SkinEngine_ImageList_DrawEx(dat->himlExtraColumns,Drawing->iExtraImage[iImage],hdcMem,
                 rc.left, rc.top,0,0,CLR_NONE,colourFg,mode);
             }
           }
@@ -1579,7 +1579,7 @@ void ModernInternalPaintRowItems(HWND hwnd, HDC hdcMem, struct ClcData *dat, str
 						}
 						if (dat->text_rtl!=0) RTLrect(&p_rect, free_row_rc.right, 0);
 						Drawing->pos_extra[eNum] = p_rect;
-						mod_ImageList_DrawEx(dat->himlExtraColumns,Drawing->iExtraImage[eNum],hdcMem,
+						SkinEngine_ImageList_DrawEx(dat->himlExtraColumns,Drawing->iExtraImage[eNum],hdcMem,
 							p_rect.left, p_rect.top,0,0,CLR_NONE,colourFg,mode);
 					}
 			}
@@ -1602,7 +1602,7 @@ void ModernInternalPaintRowItems(HWND hwnd, HDC hdcMem, struct ClcData *dat, str
           {
             // Select font
             CLCPaint_ChangeToFont(hdcMem,dat,FONTID_CONTACT_TIME,NULL);
-            mod_DrawText(hdcMem, szResult, lstrlen(szResult), &p_rect, DT_NOPREFIX | DT_SINGLELINE|(dat->text_rtl ? DT_RTLREADING : 0) );
+            SkinEngine_DrawText(hdcMem, szResult, lstrlen(szResult), &p_rect, DT_NOPREFIX | DT_SINGLELINE|(dat->text_rtl ? DT_RTLREADING : 0) );
           }
           break;
         }
@@ -1620,12 +1620,12 @@ void DrawStatusIcon(struct ClcContact * Drawing, struct ClcData *dat,
 {
     if (Drawing->type!=CLCIT_CONTACT)
     {
-      mod_ImageList_DrawEx(himlCListClc, iImage&0xFFFF, hdcMem, 
+      SkinEngine_ImageList_DrawEx(himlCListClc, iImage&0xFFFF, hdcMem, 
             x, y,cx,cy,colorbg,colorfg,mode);
     }
     else if (Drawing->image_is_special) 
     {
-       mod_ImageList_DrawEx(himlCListClc, iImage&0xFFFF, hdcMem, 
+       SkinEngine_ImageList_DrawEx(himlCListClc, iImage&0xFFFF, hdcMem, 
                   x, y,cx,cy,colorbg,colorfg,mode);
     }
     else if (iImage!=-1 && iImage&0xFFFF0000 && dat->drawOverlayedStatus)
@@ -1633,15 +1633,15 @@ void DrawStatusIcon(struct ClcContact * Drawing, struct ClcData *dat,
        int status=GetContactCachedStatus(Drawing->hContact);
        if (status<ID_STATUS_OFFLINE) status=ID_STATUS_OFFLINE;
        else if (status>ID_STATUS_OUTTOLUNCH) status=ID_STATUS_ONLINE;
-       mod_ImageList_DrawEx(himlCListClc, (iImage&0xFFFF0000)>>16, hdcMem, 
+       SkinEngine_ImageList_DrawEx(himlCListClc, (iImage&0xFFFF0000)>>16, hdcMem, 
                   x, y,cx,cy,colorbg,colorfg,mode);
        if (dat->drawOverlayedStatus&2) //draw overlay 
-       mod_ImageList_DrawEx(hAvatarOverlays, status_overlay_icons[status-ID_STATUS_OFFLINE].listID, hdcMem, 
+       SkinEngine_ImageList_DrawEx(hAvatarOverlays, status_overlay_icons[status-ID_STATUS_OFFLINE].listID, hdcMem, 
                   x, y,cx,cy,colorbg,colorfg,mode);
     }
     else
     {
-       mod_ImageList_DrawEx(himlCListClc, iImage&0xFFFF, hdcMem, 
+       SkinEngine_ImageList_DrawEx(himlCListClc, iImage&0xFFFF, hdcMem, 
                   x, y,cx,cy,colorbg,colorfg,mode);
     }
 }
@@ -1845,7 +1845,7 @@ void InternalPaintRowItems(HWND hwnd, HDC hdcMem, struct ClcData *dat, struct Cl
             CombineRgn(rgn2,rgn,rgn2,RGN_DIFF);
             // FrameRgn(hdcMem,rgn,hBrush,1,1);
             FillRgn(hdcMem,rgn2,hBrush);
-            SetRgnAlpha_255(hdcMem,rgn2);
+            SkinEngine_SetRgnQpaque(hdcMem,rgn2);
             SelectObject(hdcMem, hOldBrush);
             DeleteObject(hBrush);
             DeleteObject(rgn);
@@ -1914,7 +1914,7 @@ void InternalPaintRowItems(HWND hwnd, HDC hdcMem, struct ClcData *dat, struct Cl
                   HDC hdcTempAv = CreateCompatibleDC(hdcMem);                 
                   HBITMAP hbmTempAvOld;
                   hbmTempAvOld = SelectObject(hdcTempAv,Drawing->avatar_data->hbmPic);
-                  mod_AlphaBlend(hdcMem, rc.left, rc.top, w, h, hdcTempAv, 0, 0,Drawing->avatar_data->bmWidth,Drawing->avatar_data->bmHeight, bf);
+                  SkinEngine_AlphaBlend(hdcMem, rc.left, rc.top, w, h, hdcTempAv, 0, 0,Drawing->avatar_data->bmWidth,Drawing->avatar_data->bmHeight, bf);
                   SelectObject(hdcTempAv, hbmTempAvOld);
                   mod_DeleteDC(hdcTempAv);
                 }
@@ -1954,14 +1954,14 @@ void InternalPaintRowItems(HWND hwnd, HDC hdcMem, struct ClcData *dat, struct Cl
             {
             case SETTING_AVATAR_OVERLAY_TYPE_NORMAL:
               {
-                mod_ImageList_DrawEx(hAvatarOverlays,avatar_overlay_icons[GetContactCachedStatus(Drawing->hContact) - ID_STATUS_OFFLINE].listID,
+                SkinEngine_ImageList_DrawEx(hAvatarOverlays,avatar_overlay_icons[GetContactCachedStatus(Drawing->hContact) - ID_STATUS_OFFLINE].listID,
                                      hdcMem,
                                      real_rc.left, real_rc.top,ICON_HEIGHT,ICON_HEIGHT,
                                      CLR_NONE,CLR_NONE,
                                      (blendmode==255)?ILD_NORMAL:(blendmode==128)?ILD_BLEND50:ILD_BLEND25);
                 //UINT a=blendmode;
                 //a=(a<<24);
-                //mod_DrawIconEx(hdcMem, real_rc.left, real_rc.top, avatar_overlay_icons[GetContactCachedStatus(Drawing->hContact) - ID_STATUS_OFFLINE].icon, 
+                //SkinEngine_DrawIconEx(hdcMem, real_rc.left, real_rc.top, avatar_overlay_icons[GetContactCachedStatus(Drawing->hContact) - ID_STATUS_OFFLINE].icon, 
                 //  ICON_HEIGHT, ICON_HEIGHT, 0, NULL, DI_NORMAL|a); 
                 break;
               }
@@ -2119,7 +2119,7 @@ void InternalPaintRowItems(HWND hwnd, HDC hdcMem, struct ClcData *dat, struct Cl
               CLCPaint_ChangeToFont(hdcMem,dat,FONTID_CONTACT_TIME,NULL);
 
               // Get text size
-              text_size.cy = mod_DrawText(hdcMem, szResult, lstrlen(szResult), &rc, DT_CALCRECT | DT_NOPREFIX | DT_SINGLELINE);
+              text_size.cy = SkinEngine_DrawText(hdcMem, szResult, lstrlen(szResult), &rc, DT_CALCRECT | DT_NOPREFIX | DT_SINGLELINE);
               text_size.cy = min(text_size.cy, free_row_rc.bottom - free_row_rc.top);
               text_size.cx = rc.right - rc.left;
 
@@ -2132,7 +2132,7 @@ void InternalPaintRowItems(HWND hwnd, HDC hdcMem, struct ClcData *dat, struct Cl
                 // Store pos
                 Drawing->pos_contact_time = rc;
 
-                mod_DrawText(hdcMem, szResult, lstrlen(szResult), &rc, DT_NOPREFIX | DT_SINGLELINE);
+                SkinEngine_DrawText(hdcMem, szResult, lstrlen(szResult), &rc, DT_NOPREFIX | DT_SINGLELINE);
               }
             }
           }
@@ -2213,7 +2213,7 @@ void InternalPaintRowItems(HWND hwnd, HDC hdcMem, struct ClcData *dat, struct Cl
 
                 count++;
 
-                mod_ImageList_DrawEx(dat->himlExtraColumns,Drawing->iExtraImage[iImage],hdcMem,
+                SkinEngine_ImageList_DrawEx(dat->himlExtraColumns,Drawing->iExtraImage[iImage],hdcMem,
                   rc.left, rc.top,0,0,CLR_NONE,colourFg,mode);
               }
             }
@@ -2288,12 +2288,12 @@ void InternalPaintRowItems(HWND hwnd, HDC hdcMem, struct ClcData *dat, struct Cl
           free_height = free_row_rc.bottom - free_row_rc.top;
 
           // Get widths
-          mod_DrawText(hdcMem,_T(" "),1,&space_rc,DT_CALCRECT | DT_NOPREFIX);
+          SkinEngine_DrawText(hdcMem,_T(" "),1,&space_rc,DT_CALCRECT | DT_NOPREFIX);
           space_size.cx = space_rc.right - space_rc.left;
           space_size.cy = min(space_rc.bottom - space_rc.top, free_height);
 
           CLCPaint_ChangeToFont(hdcMem,dat,Drawing->group->expanded?FONTID_OPENGROUPCOUNTS:FONTID_CLOSEDGROUPCOUNTS,NULL);
-          mod_DrawTextA(hdcMem,szCounts,lstrlenA(szCounts),&counts_rc,DT_CALCRECT | uTextFormat);
+          SkinEngine_DrawTextA(hdcMem,szCounts,lstrlenA(szCounts),&counts_rc,DT_CALCRECT | uTextFormat);
 
           counts_size.cx = counts_rc.right - counts_rc.left;
           counts_size.cy = min(counts_rc.bottom - counts_rc.top, free_height);
@@ -2515,7 +2515,7 @@ void InternalPaintRowItems(HWND hwnd, HDC hdcMem, struct ClcData *dat, struct Cl
             trc.top += (trc.bottom - trc.top - text_size.cy) >> 1;
             trc.bottom = trc.top + text_size.cy;
           }
-          mod_DrawText(hdcMem,Drawing->szText,lstrlen(Drawing->szText),&trc, uTextFormat);
+          SkinEngine_DrawText(hdcMem,Drawing->szText,lstrlen(Drawing->szText),&trc, uTextFormat);
 
           rc.left = rc.right + 6 + text_size.cx;
           rc.right = free_row_rc.right;
@@ -2542,12 +2542,12 @@ void InternalPaintRowItems(HWND hwnd, HDC hdcMem, struct ClcData *dat, struct Cl
           }
 
           // Draw text
-          mod_DrawText(hdcMem,Drawing->szText,lstrlen(Drawing->szText),&rc,uTextFormat);
+          SkinEngine_DrawText(hdcMem,Drawing->szText,lstrlen(Drawing->szText),&rc,uTextFormat);
 
           if(selected && dat->szQuickSearch[0] != '\0') 
           {
             SetTextColor(hdcMem, dat->quickSearchColour);
-            mod_DrawText(hdcMem,Drawing->szText,lstrlen(dat->szQuickSearch),&rc,uTextFormat);
+            SkinEngine_DrawText(hdcMem,Drawing->szText,lstrlen(dat->szQuickSearch),&rc,uTextFormat);
           }
 
           // Has to draw the count?
@@ -2573,7 +2573,7 @@ void InternalPaintRowItems(HWND hwnd, HDC hdcMem, struct ClcData *dat, struct Cl
               SetHotTrackColour(hdcMem,dat);
 
             // Draw counts
-            mod_DrawTextA(hdcMem,szCounts,lstrlenA(szCounts),&counts_rc,uTextFormat);
+            SkinEngine_DrawTextA(hdcMem,szCounts,lstrlenA(szCounts),&counts_rc,uTextFormat);
           }
 
           // Update free
@@ -2697,12 +2697,12 @@ void InternalPaintRowItems(HWND hwnd, HDC hdcMem, struct ClcData *dat, struct Cl
         }
       default: // CLCIT_INFO
         {
-          mod_DrawText(hdcMem,Drawing->szText,lstrlen(Drawing->szText),&text_rc,uTextFormat);
+          SkinEngine_DrawText(hdcMem,Drawing->szText,lstrlen(Drawing->szText),&text_rc,uTextFormat);
 
           if(selected && dat->szQuickSearch[0] != '\0') 
           {
             SetTextColor(hdcMem, dat->quickSearchColour);
-            mod_DrawText(hdcMem,Drawing->szText,lstrlen(dat->szQuickSearch),&text_rc,uTextFormat);
+            SkinEngine_DrawText(hdcMem,Drawing->szText,lstrlen(dat->szQuickSearch),&text_rc,uTextFormat);
           }
         }
       }
@@ -2812,7 +2812,7 @@ void InternalPaintClc(HWND hwnd,struct ClcData *dat,HDC hdc,RECT *rcPaint)
     if (!g_bLayered)
     {
 	  //FillRect(grey?hdcMem2:hdcMem,rcPaint,GetSysColorBrush(GetSysColor(COLOR_3DFACE)));
-      BltBackImage(hwnd,grey?hdcMem2:hdcMem,rcPaint);
+      SkinEngine_BltBackImage(hwnd,grey?hdcMem2:hdcMem,rcPaint);
     }
     SkinDrawGlyph(hdcMem,&clRect,rcPaint,"CL,ID=Background");
   }
@@ -3128,7 +3128,7 @@ void InternalPaintClc(HWND hwnd,struct ClcData *dat,HDC hdc,RECT *rcPaint)
   {
     BLENDFUNCTION bf={AC_SRC_OVER, 0, 80, AC_SRC_ALPHA }; 
     BOOL a=(grey && (!g_bLayered));
-    mod_AlphaBlend(a?hdcMem2:hdc,rcPaint->left,rcPaint->top,rcPaint->right-rcPaint->left,rcPaint->bottom-rcPaint->top,hdcMem,rcPaint->left,rcPaint->top,rcPaint->right-rcPaint->left,rcPaint->bottom-rcPaint->top,bf);
+    SkinEngine_AlphaBlend(a?hdcMem2:hdc,rcPaint->left,rcPaint->top,rcPaint->right-rcPaint->left,rcPaint->bottom-rcPaint->top,hdcMem,rcPaint->left,rcPaint->top,rcPaint->right-rcPaint->left,rcPaint->bottom-rcPaint->top,bf);
     if (a)
       BitBlt(hdc,rcPaint->left,rcPaint->top,rcPaint->right-rcPaint->left,rcPaint->bottom-rcPaint->top,hdcMem2,rcPaint->left,rcPaint->top,SRCCOPY);
   }

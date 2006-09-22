@@ -145,9 +145,16 @@ static int ClcSettingChanged(WPARAM wParam,LPARAM lParam)
         {
             pcli->pfnClcBroadcast( INTM_STATUSCHANGED,wParam,0);
         }
-        else if (!strcmp(cws->szModule,"MetaContacts") && !strcmp(cws->szSetting,"Handle"))
-        {
-            pcli->pfnClcBroadcast( INTM_NAMEORDERCHANGED,0,0);	
+        else if (!strcmp(cws->szModule,"MetaContacts"))
+        { 
+            if(!strcmp(cws->szSetting,"Handle"))
+            {
+                pcli->pfnClcBroadcast( INTM_NAMEORDERCHANGED,0,0);	
+            }
+            else if (!strcmp(cws->szSetting,"Default"))
+            {
+                pcli->pfnClcBroadcast( INTM_NAMEORDERCHANGED,0,0);	
+            }
         }
         else if (!strcmp(cws->szModule,"UserInfo"))
         {
@@ -955,7 +962,17 @@ case INTM_STATUSCHANGED:
                     (dat->second_line_show)// && dat->second_line_type==TEXT_STATUS)
                     || (dat->third_line_show)// && dat->third_line_type==TEXT_STATUS)
                     ))
-                    Cache_RenewText(pdnce->hContact);	                
+                    Cache_RenewText(pdnce->hContact);
+                if(FindItem(hwnd,dat,(HANDLE)wParam,&contact,NULL,NULL,TRUE))
+                {
+                    if (contact && contact->type==CLCIT_CONTACT)
+                    {
+                        if (contact->isSubcontact 
+                            && contact->subcontacts 
+                            && contact->subcontacts->type==CLCIT_CONTACT)
+                            pcli->pfnClcBroadcast( INTM_STATUSCHANGED,(WPARAM)contact->subcontacts->hContact,0); //forward status changing to host meta contact
+                    }
+                }
             }
         }
         if (DBGetContactSettingByte(NULL,"CList","PlaceOfflineToRoot",0) )
@@ -995,7 +1012,7 @@ case WM_PAINT:
                 cliPaintClc(hwnd,dat,ps.hdc,&ps.rcPaint);
                 EndPaint(hwnd,&ps);
             }
-            else InvalidateFrameImage((WPARAM)hwnd,0);
+            else SkinEngine_Service_InvalidateFrameImage((WPARAM)hwnd,0);
         }
         return DefWindowProc(hwnd, msg, wParam, lParam);           
     }

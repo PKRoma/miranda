@@ -253,7 +253,7 @@ void * AddTempGroup(HWND hwnd,struct ClcData *dat,const TCHAR *szName,DWORD flag
 #else
 	char *mbuf=mir_strdup((char *)szName);
 #endif
-	if (WildCompare(mbuf,"-@-HIDDEN-GROUP-@-",0))
+	if (wildcmp(mbuf,"-@-HIDDEN-GROUP-@-",0))
 	{
 		mir_free(mbuf);
 		return NULL;

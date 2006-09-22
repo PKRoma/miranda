@@ -529,7 +529,7 @@ int ContactSettingChanged(WPARAM wParam,LPARAM lParam)
 				PostMessage(pcli->hwndContactTree,CLM_AUTOREBUILD,0,0);
 			}
 			if (!mir_strcmp(cws->szSetting, "Status") ||
-					WildCompare((char*)cws->szSetting, (char*) "Status?",2))
+					wildcmp((char*)cws->szSetting, (char*) "Status?",2))
 			{
 				
 				if (!mir_strcmp(cws->szModule,"MetaContacts") && mir_strcmp(cws->szSetting, "Status"))

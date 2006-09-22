@@ -698,7 +698,7 @@ void cliTrayIconUpdateWithImageList(int iImage,const TCHAR *szNewTip,char *szPre
 {
 	HICON hIcon;
 
-	hIcon=mod_ImageList_GetIcon(himlCListClc,iImage,ILD_NORMAL);
+	hIcon=SkinEngine_ImageList_GetIcon(himlCListClc,iImage,ILD_NORMAL);
 	TrayIconUpdate(hIcon,szNewTip,szPreferredProto,0);
 	DestroyIcon_protect(hIcon);
 }

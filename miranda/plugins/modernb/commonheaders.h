@@ -273,8 +273,8 @@ extern void Utf8Decode( char* str, wchar_t** ucs2 );
 extern void TRACE_ERROR();
 extern BOOL DebugDeleteObject(HGDIOBJ a);
 extern BOOL mod_DeleteDC(HDC hdc);
-extern BOOL ResetEffect(HDC hdc);
-extern BOOL SelectEffect(HDC hdc, BYTE EffectID, DWORD FirstColor, DWORD SecondColor);
+extern BOOL SkinEngine_ResetTextEffect(HDC hdc);
+extern BOOL SkinEngine_SelectTextEffect(HDC hdc, BYTE EffectID, DWORD FirstColor, DWORD SecondColor);
 #define GLOBAL_PROTO_NAME "global_connect"
 extern void IvalidateDisplayNameCache(DWORD mode);
 
