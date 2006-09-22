@@ -144,7 +144,8 @@ typedef  struct _menuProto
   HANDLE hasAdded;
 } MenuProto;
 
-#define CLUI_FRAME_AUTOHIDENOTIFY 512
+#define CLUI_FRAME_AUTOHIDENOTIFY  512
+#define CLUI_FRAME_SHOWALWAYS      1024
 
 struct CluiData
 {
@@ -266,11 +267,6 @@ extern void Utf8Decode( char* str, wchar_t** ucs2 );
 #define DeleteObject(a) DebugDeleteObject(a)
 #endif 
 
-#define lockdat 
-//EnterCriticalSection(&(dat->lockitemCS))
-#define ulockdat 
-//LeaveCriticalSection(&(dat->lockitemCS))
-
 #define strsetA(a,b) {if (a) mir_free(a); a=mir_strdup(b);}
 #define strsetT(a,b) {if (a) mir_free(a); a=mir_tstrdup(b);}
 
@@ -281,12 +277,8 @@ extern BOOL ResetEffect(HDC hdc);
 extern BOOL SelectEffect(HDC hdc, BYTE EffectID, DWORD FirstColor, DWORD SecondColor);
 #define GLOBAL_PROTO_NAME "global_connect"
 extern void IvalidateDisplayNameCache(DWORD mode);
-CRITICAL_SECTION cacheSection;
+
 extern SortedList *clistCache;
-//#define lockcache {if(clistCache) EnterCriticalSection(&cacheSection); if (cacheSection.RecursionCount>20) DebugBreak();}
-//#define ulockcache if(clistCache) LeaveCriticalSection(&cacheSection)
-extern void LockCacheItem(HANDLE hContact, char*, int);
-extern void UnlockCacheItem(HANDLE hContact);
 
 HICON LoadSmallIconShared(HINSTANCE hInstance, LPCTSTR lpIconName);
 HICON LoadSmallIcon(HINSTANCE hInstance, LPCTSTR lpIconName);

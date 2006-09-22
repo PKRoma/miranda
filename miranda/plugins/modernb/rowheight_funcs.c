@@ -167,7 +167,6 @@ int mod_CalcRowHeight_worker(struct ClcData *dat, HWND hwnd, struct ClcContact *
         {
           int tmp=0;
 		  HANDLE hContact=pdnce->hContact;
-		  LockCacheItem(hContact, __FILE__,__LINE__);
           if (dat->second_line_show && pdnce->szSecondLineText && pdnce->szSecondLineText[0] )
           {
             tmp = dat->fontModernInfo[FONTID_SECONDLINE].fontHeight;
@@ -188,14 +187,12 @@ int mod_CalcRowHeight_worker(struct ClcData *dat, HWND hwnd, struct ClcContact *
             }
           }
           gl_RowTabAccess[i]->h=tmp;
-		  UnlockCacheItem(hContact);
           break;
         }
       case TC_TEXT3:
         {
           int tmp=0;
 		  HANDLE hContact=pdnce->hContact;
-		  LockCacheItem(hContact, __FILE__,__LINE__);
           if (dat->third_line_show && pdnce->szThirdLineText && pdnce->szThirdLineText[0])
           {
             tmp = dat->fontModernInfo[FONTID_THIRDLINE].fontHeight;
@@ -215,7 +212,6 @@ int mod_CalcRowHeight_worker(struct ClcData *dat, HWND hwnd, struct ClcContact *
             }
           }
           gl_RowTabAccess[i]->h=tmp;			    
-		  UnlockCacheItem(hContact);
           break;
         }
       case TC_STATUS:
@@ -454,7 +450,7 @@ int RowHeights_GetMaxRowHeight(struct ClcData *dat, HWND hwnd)
 {
   int max_height = 0, i, tmp;
   DWORD style=GetWindowLong(hwnd,GWL_STYLE);
-  lockdat;
+  
   if (!dat->text_ignore_size_for_row_height)
   {
     int contact_fonts[] = {FONTID_CONTACTS, FONTID_INVIS, FONTID_OFFLINE, FONTID_NOTONLIST, FONTID_OFFINVIS, 
@@ -527,7 +523,7 @@ int RowHeights_GetMaxRowHeight(struct ClcData *dat, HWND hwnd)
   max_height = max(max_height, dat->row_min_heigh);
 
   dat->max_row_height = max_height;
-  ulockdat;
+  
   return max_height;
 }
 
@@ -548,7 +544,7 @@ void RowHeights_CalcRowHeights_Worker(struct ClcData *dat, HWND hwnd)
   struct ClcGroup *group;
   
   if (MirandaExiting()) return;
-  lockdat;
+  
   // Draw lines
   group=&dat->list;
   group->scanIndex=0;
@@ -617,7 +613,7 @@ void RowHeights_CalcRowHeights_Worker(struct ClcData *dat, HWND hwnd)
       group->scanIndex++;
     }
   }
-  ulockdat;
+  
 }
 
 
@@ -658,7 +654,6 @@ int RowHeights_GetRowHeight_worker(struct ClcData *dat, HWND hwnd, struct ClcCon
           tmp = max(tmp, contact->iTextMaxSmileyHeight);
         }
         height += tmp;
-		LockCacheItem(hContact, __FILE__, __LINE__);
         if (dat->second_line_show && pdnce->szSecondLineText && pdnce->szSecondLineText[0])
         {
           tmp = dat->fontModernInfo[FONTID_SECONDLINE].fontHeight;
@@ -678,7 +673,6 @@ int RowHeights_GetRowHeight_worker(struct ClcData *dat, HWND hwnd, struct ClcCon
           }
           height += dat->third_line_top_space + tmp;
         }
-		UnlockCacheItem(hContact);
       }
 
       // Avatar size

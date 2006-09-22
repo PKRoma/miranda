@@ -88,21 +88,6 @@ extern "C" void rowDeleteTree(ROWCELL* cell);
 
 char *tmplbuf;		// Буфер для хранения шаблона в текстовом виде
 
-/*
-#define mir_free(ptr) { mir_free_proxy(ptr); ptr=NULL; }
-
-int mir_free_proxy(void *ptr)
-{
-	if (ptr==NULL||IsBadCodePtr((FARPROC)ptr))
-	{
-		DebugBreak();
-		return 0;
-	}
-    memoryManagerInterface.mmi_free(ptr);
-	return 0;
-
-}
-*/
 #ifndef TEST_SOURCE
 	extern "C" 
 #endif

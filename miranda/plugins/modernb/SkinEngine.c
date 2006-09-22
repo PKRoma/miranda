@@ -3176,25 +3176,15 @@ BOOL mod_DrawIconEx(HDC hdcDst,int xLeft,int yTop,HICON hIcon,int cxWidth,int cy
   BYTE no32bit=FALSE;
   BYTE noMirrorMask=FALSE;
   BYTE hasalpha=FALSE;
-  CRITICAL_SECTION cs;
   alpha=alpha?alpha:255;
-  InitializeCriticalSection(&cs);
-  EnterCriticalSection(&cs);
   //return DrawIconEx(hdc,xLeft,yTop,hIcon,cxWidth,cyWidth,istepIfAniCur,hbrFlickerFreeDraw,DI_NORMAL);
-  if (!GetIconInfo(hIcon,&ici)) 
-  {
-    LeaveCriticalSection(&cs);
-    DeleteCriticalSection(&cs);
-    return 0;
-  }
+  if (!GetIconInfo(hIcon,&ici))  return 0;
 
   GetObject(ici.hbmColor,sizeof(BITMAP),&imbt);
   if (imbt.bmWidth*imbt.bmHeight==0)
   {
 	  DeleteObject(ici.hbmColor);
 	  DeleteObject(ici.hbmMask);
-	  LeaveCriticalSection(&cs);
-	  DeleteCriticalSection(&cs);
 	  return 0;
   }
   GetObject(ici.hbmMask,sizeof(BITMAP),&immaskbt);
@@ -3305,9 +3295,6 @@ BOOL mod_DrawIconEx(HDC hdcDst,int xLeft,int yTop,HICON hIcon,int cxWidth,int cy
       }
     }
   }
-
-  LeaveCriticalSection(&cs);
-  DeleteCriticalSection(&cs);
   {
     BLENDFUNCTION bf={AC_SRC_OVER, diFlags&128, alpha, AC_SRC_ALPHA };   
     mod_AlphaBlend(hdcDst,xLeft,yTop,cxWidth, cyWidth, imDC,0,0, cx,icy,bf);

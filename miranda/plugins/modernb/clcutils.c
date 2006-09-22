@@ -417,7 +417,7 @@ extern int sortNoOfflineBottom;
 void LoadCLCOptions(HWND hwnd, struct ClcData *dat)
 { 
 	int i;
-	lockdat;
+	
 	{	
 		LOGFONTA lf;
 		HFONT holdfont;
@@ -689,7 +689,7 @@ void LoadCLCOptions(HWND hwnd, struct ClcData *dat)
 		IvalidateDisplayNameCache(16);
 
 	}
-	ulockdat;
+	
 	{
 		NMHDR hdr;
 		hdr.code=CLN_OPTIONSCHANGED;

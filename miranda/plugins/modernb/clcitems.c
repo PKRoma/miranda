@@ -345,7 +345,7 @@ void cliRebuildEntireList(HWND hwnd,struct ClcData *dat)
 	int tick=GetTickCount();
 	BOOL PlaceOfflineToRoot=DBGetContactSettingByte(NULL,"CList","PlaceOfflineToRoot",0);
 	KillTimer(hwnd,TIMERID_REBUILDAFTER);
-	lockdat;
+	
 	ClearRowByIndexCache();
 	ImageArray_Clear(&dat->avatar_cache);
 	RowHeights_Clear(dat);
@@ -441,7 +441,7 @@ void cliRebuildEntireList(HWND hwnd,struct ClcData *dat)
 			group->scanIndex++;
 		}
 	}
-	ulockdat;
+	
 
 	pcli->pfnSortCLC(hwnd,dat,0);
 
@@ -452,7 +452,7 @@ void cli_SortCLC( HWND hwnd, struct ClcData *dat, int useInsertionSort )
 	HANDLE hSelItem;
 	struct ClcContact *selcontact;
 	struct ClcGroup *group = &dat->list, *selgroup;
-	lockdat;
+	
 	if ( 1 ) {
 		if (pcli->pfnGetRowByIndex(dat, dat->selection, &selcontact, NULL) == -1)
 			hSelItem = NULL;
@@ -472,7 +472,7 @@ void cli_SortCLC( HWND hwnd, struct ClcData *dat, int useInsertionSort )
 				if (dat->selection!=-1) dat->selection+=i;
 			}
 		}
-	ulockdat;
+	
 }
 
 int GetNewSelection(struct ClcGroup *group, int selection, int direction)
@@ -528,7 +528,7 @@ extern int RestoreAllContactData(struct ClcData *dat);
 void cli_SaveStateAndRebuildList(HWND hwnd, struct ClcData *dat)
 {
 	
-	lockdat;
+	
 	LOCK_RECALC_SCROLLBAR=TRUE;
 	//saveSaveStateAndRebuildList(hwnd,dat);
 {
@@ -654,7 +654,7 @@ void cli_SaveStateAndRebuildList(HWND hwnd, struct ClcData *dat)
 	nm.hdr.idFrom = GetDlgCtrlID(hwnd);
 	SendMessage(GetParent(hwnd), WM_NOTIFY, 0, (LPARAM) & nm);
 	}
-	ulockdat;
+	
 }
 
 
@@ -685,21 +685,17 @@ ClcCacheEntryBase* cliCreateCacheItem( HANDLE hContact )
 void cliInvalidateDisplayNameCacheEntry(HANDLE hContact)
 {	
 	pdisplayNameCacheEntry p;
-	//if (IsBadWritePtr((void*)hContact,sizeof(displayNameCacheEntry)))
-		p = (pdisplayNameCacheEntry) pcli->pfnGetCacheEntry(hContact);
-	//else 
-	//	p=(pdisplayNameCacheEntry)hContact; //handle give us incorrect hContact on GetCacheEntry;
-	if (p)
-		InvalidateDNCEbyPointer(hContact,p,0);
+	p = (pdisplayNameCacheEntry) pcli->pfnGetCacheEntry(hContact);
+	if (p) InvalidateDNCEbyPointer(hContact,p,0);
 	return;
 }
 
 char* cli_GetGroupCountsText(struct ClcData *dat, struct ClcContact *contact)
 {
 	char * res;
-	lockdat;
+	
 	res=saveGetGroupCountsText(dat, contact);
-	ulockdat;
+	
 	return res;
 }
 

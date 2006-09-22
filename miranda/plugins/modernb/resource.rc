@@ -124,109 +124,109 @@ IDC_DROP                CURSOR                  "res\\DRAGCOPY.CUR"
 // Dialog
 //
 
-IDD_OPT_SKIN DIALOGEX 0, 0, 303, 224
+IDD_OPT_SKIN DIALOGEX 0, 0, 303, 220
 STYLE DS_SETFONT | DS_FIXEDSYS | WS_CHILD
 EXSTYLE WS_EX_CONTROLPARENT
 FONT 8, "MS Shell Dlg", 400, 0, 0x1
 BEGIN
-    GROUPBOX        "Available skins",IDC_STATIC,0,0,173,190,WS_DISABLED
-    EDITTEXT        IDC_EDIT_SKIN_FILENAME,4,10,162,12,ES_AUTOHSCROLL | 
+    GROUPBOX        "Available skins",IDC_STATIC,0,5,173,182,WS_DISABLED
+    EDITTEXT        IDC_EDIT_SKIN_FILENAME,4,15,162,12,ES_AUTOHSCROLL | 
                     ES_READONLY | WS_GROUP,WS_EX_ACCEPTFILES
-    PUSHBUTTON      "Browse",IDC_BUTTON_LOAD,5,175,48,12
-    PUSHBUTTON      "Apply",IDC_BUTTON_APPLY_SKIN,61,175,48,12,WS_DISABLED
-    PUSHBUTTON      "Info",IDC_BUTTON_INFO,118,175,48,12,WS_DISABLED
+    PUSHBUTTON      "Browse",IDC_BUTTON_LOAD,5,170,48,12
+    PUSHBUTTON      "Apply",IDC_BUTTON_APPLY_SKIN,61,170,48,12,WS_DISABLED
+    PUSHBUTTON      "Info",IDC_BUTTON_INFO,118,170,48,12,WS_DISABLED
     CTEXT           "\n\n\nPlease select one of available skins. \n\nOr browse for skin not in list.",
-                    IDC_STATIC_INFO,180,13,108,168
+                    IDC_STATIC_INFO,180,30,108,150
     CONTROL         "",IDC_PREVIEW,"Static",SS_OWNERDRAW | SS_CENTERIMAGE | 
-                    SS_REALSIZEIMAGE,180,11,113,174
-    GROUPBOX        "Skin Preview",IDC_STATIC,175,0,123,191,WS_DISABLED
-    RTEXT           "Frame Titles Color",IDC_STATIC_COLOR4,199,214,66,8
-    CONTROL         "",IDC_COLOUR_FRAMES,"ColourPicker",WS_TABSTOP,270,212,
+                    SS_REALSIZEIMAGE,180,16,113,167
+    GROUPBOX        "Skin Preview",IDC_STATIC,175,5,123,182,WS_DISABLED
+    RTEXT           "Frame Titles Color",IDC_STATIC_COLOR4,199,209,66,8
+    CONTROL         "",IDC_COLOUR_FRAMES,"ColourPicker",WS_TABSTOP,270,207,
                     32,11
     LTEXT           "WARNING: \tSkins can modify your current profile. Rollback is not possible. \n\t\tPlease BACKUP your database before applying skin.",
-                    IDC_STATIC,3,193,294,17
+                    IDC_STATIC,3,188,294,17
     LTEXT           "* Restart can be required to all changes take effect",
-                    IDC_STATIC,3,215,200,8
-    COMBOBOX        IDC_COMBO1,177,194,123,76,CBS_DROPDOWN | CBS_SORT | NOT 
+                    IDC_STATIC,3,210,200,8
+    COMBOBOX        IDC_COMBO1,177,189,123,76,CBS_DROPDOWN | CBS_SORT | NOT 
                     WS_VISIBLE | WS_VSCROLL | WS_TABSTOP
     CONTROL         "",IDC_TREE1,"SysTreeView32",TVS_HASBUTTONS | 
                     TVS_HASLINES | TVS_LINESATROOT | TVS_SHOWSELALWAYS | 
-                    WS_BORDER | WS_TABSTOP | 0x400,5,25,161,147
+                    WS_BORDER | WS_TABSTOP | 0x400,5,30,161,133
 END
 
-IDD_OPT_SKINEDITOR DIALOGEX 0, 0, 305, 219
+IDD_OPT_SKINEDITOR DIALOGEX 0, 0, 305, 222
 STYLE DS_SETFONT | DS_FIXEDSYS | WS_CHILD
 EXSTYLE WS_EX_CONTROLPARENT
 FONT 8, "MS Shell Dlg", 400, 0, 0x1
 BEGIN
-    GROUPBOX        "Available objects",IDC_GROUP_0,0,1,124,216,WS_GROUP
+    GROUPBOX        "Available objects",IDC_GROUP_0,0,6,124,216,WS_GROUP
     CONTROL         "",IDC_OBJECT_TREE,"SysTreeView32",TVS_HASBUTTONS | 
                     TVS_LINESATROOT | TVS_SHOWSELALWAYS | WS_BORDER | 
-                    WS_TABSTOP,6,14,112,182
-    PUSHBUTTON      "Copy",IDC_COPY,7,200,50,13
-    PUSHBUTTON      "Paste",IDC_PASTE,68,200,50,13
-    GROUPBOX        "Object properties",IDC_GROUP_1,127,1,178,49,WS_GROUP
-    LTEXT           "Type",IDC_STATIC,136,13,29,11,NOT WS_GROUP
-    COMBOBOX        IDC_TYPE,168,11,133,69,CBS_DROPDOWNLIST | WS_VSCROLL | 
+                    WS_TABSTOP,6,19,112,182
+    PUSHBUTTON      "Copy",IDC_COPY,7,205,50,13
+    PUSHBUTTON      "Paste",IDC_PASTE,68,205,50,13
+    GROUPBOX        "Object properties",IDC_GROUP_1,127,6,178,49,WS_GROUP
+    LTEXT           "Type",IDC_STATIC,136,18,29,11,NOT WS_GROUP
+    COMBOBOX        IDC_TYPE,168,16,133,69,CBS_DROPDOWNLIST | WS_VSCROLL | 
                     WS_TABSTOP
-    LTEXT           "Colour",IDC_ST_COLOUR,136,33,29,11
-    CONTROL         "",IDC_COLOR,"ColourPicker",WS_TABSTOP,168,32,41,12
-    LTEXT           "Alpha",IDC_ST_ALPHA,222,33,33,11
-    EDITTEXT        IDC_EDIT_ALPHA,261,32,40,12,ES_NUMBER
+    LTEXT           "Colour",IDC_ST_COLOUR,136,38,29,11
+    CONTROL         "",IDC_COLOR,"ColourPicker",WS_TABSTOP,168,37,41,12
+    LTEXT           "Alpha",IDC_ST_ALPHA,222,38,33,11
+    EDITTEXT        IDC_EDIT_ALPHA,261,37,40,12,ES_NUMBER
     CONTROL         "",IDC_SPIN_ALPHA,"msctls_updown32",UDS_SETBUDDYINT | 
-                    UDS_ALIGNRIGHT | UDS_AUTOBUDDY | UDS_ARROWKEYS,291,28,10,
+                    UDS_ALIGNRIGHT | UDS_AUTOBUDDY | UDS_ARROWKEYS,291,33,10,
                     14
-    GROUPBOX        "Image file and fitting mode",IDC_GROUP_2,127,51,178,93,
+    GROUPBOX        "Image file and fitting mode",IDC_GROUP_2,127,56,178,93,
                     WS_GROUP
-    LTEXT           "File",IDC_STATIC,136,67,29,11,NOT WS_GROUP
-    EDITTEXT        IDC_FILE,168,65,115,12,ES_AUTOHSCROLL
-    PUSHBUTTON      "...",IDC_BROWSE,286,65,15,11
-    LTEXT           "Borders",IDC_STATIC,136,88,49,9,NOT WS_GROUP
-    EDITTEXT        IDC_E_LEFT,149,100,45,12,ES_NUMBER
+    LTEXT           "File",IDC_STATIC,136,72,29,11,NOT WS_GROUP
+    EDITTEXT        IDC_FILE,168,70,115,12,ES_AUTOHSCROLL
+    PUSHBUTTON      "...",IDC_BROWSE,286,70,15,11
+    LTEXT           "Borders",IDC_STATIC,136,93,49,9,NOT WS_GROUP
+    EDITTEXT        IDC_E_LEFT,149,105,45,12,ES_NUMBER
     CONTROL         "",IDC_SPIN_LEFT,"msctls_updown32",UDS_SETBUDDYINT | 
-                    UDS_ALIGNRIGHT | UDS_AUTOBUDDY | UDS_ARROWKEYS,190,100,
+                    UDS_ALIGNRIGHT | UDS_AUTOBUDDY | UDS_ARROWKEYS,190,105,
                     10,14
-    EDITTEXT        IDC_E_TOP,204,91,45,12,ES_NUMBER
+    EDITTEXT        IDC_E_TOP,204,96,45,12,ES_NUMBER
     CONTROL         "",IDC_SPIN_TOP,"msctls_updown32",UDS_SETBUDDYINT | 
-                    UDS_ALIGNRIGHT | UDS_AUTOBUDDY | UDS_ARROWKEYS,244,90,10,
+                    UDS_ALIGNRIGHT | UDS_AUTOBUDDY | UDS_ARROWKEYS,244,95,10,
                     14
-    EDITTEXT        IDC_E_RIGHT,255,100,43,12,ES_NUMBER
+    EDITTEXT        IDC_E_RIGHT,255,105,43,12,ES_NUMBER
     CONTROL         "",IDC_SPIN_RIGHT,"msctls_updown32",UDS_SETBUDDYINT | 
-                    UDS_ALIGNRIGHT | UDS_AUTOBUDDY | UDS_ARROWKEYS,292,95,10,
-                    14
-    EDITTEXT        IDC_E_BOTTOM,204,108,45,12,ES_NUMBER
+                    UDS_ALIGNRIGHT | UDS_AUTOBUDDY | UDS_ARROWKEYS,292,100,
+                    10,14
+    EDITTEXT        IDC_E_BOTTOM,204,113,45,12,ES_NUMBER
     CONTROL         "",IDC_SPIN_BOTTOM,"msctls_updown32",UDS_SETBUDDYINT | 
-                    UDS_ALIGNRIGHT | UDS_AUTOBUDDY | UDS_ARROWKEYS,246,107,
+                    UDS_ALIGNRIGHT | UDS_AUTOBUDDY | UDS_ARROWKEYS,246,112,
                     10,14
-    RTEXT           "Fit mode",IDC_STATIC,134,128,58,11,NOT WS_GROUP
-    COMBOBOX        IDC_FIT,198,126,100,69,CBS_DROPDOWNLIST | WS_VSCROLL | 
+    RTEXT           "Fit mode",IDC_STATIC,134,133,58,11,NOT WS_GROUP
+    COMBOBOX        IDC_FIT,198,131,100,69,CBS_DROPDOWNLIST | WS_VSCROLL | 
                     WS_TABSTOP
-    GROUPBOX        "Fragment location",IDC_GROUP_3,127,145,178,72,WS_GROUP
-    LTEXT           "Position:",IDC_STATIC,133,158,42,11,NOT WS_GROUP
-    RTEXT           "Left",IDC_STATIC,134,171,23,11,NOT WS_GROUP
-    EDITTEXT        IDC_E_X,166,170,43,12,ES_NUMBER
+    GROUPBOX        "Fragment location",IDC_GROUP_3,127,150,178,72,WS_GROUP
+    LTEXT           "Position:",IDC_STATIC,133,163,42,11,NOT WS_GROUP
+    RTEXT           "Left",IDC_STATIC,134,176,23,11,NOT WS_GROUP
+    EDITTEXT        IDC_E_X,166,175,43,12,ES_NUMBER
     CONTROL         "",IDC_SPIN_POSLEFT,"msctls_updown32",UDS_SETBUDDYINT | 
-                    UDS_ALIGNRIGHT | UDS_AUTOBUDDY | UDS_ARROWKEYS,211,169,
+                    UDS_ALIGNRIGHT | UDS_AUTOBUDDY | UDS_ARROWKEYS,211,174,
                     10,14
-    RTEXT           "Top",IDC_STATIC,214,171,34,11,NOT WS_GROUP
-    EDITTEXT        IDC_E_Y,252,170,46,12,ES_NUMBER
+    RTEXT           "Top",IDC_STATIC,214,176,34,11,NOT WS_GROUP
+    EDITTEXT        IDC_E_Y,252,175,46,12,ES_NUMBER
     CONTROL         "",IDC_SPIN_POSTOP,"msctls_updown32",UDS_SETBUDDYINT | 
-                    UDS_ALIGNRIGHT | UDS_AUTOBUDDY | UDS_ARROWKEYS,292,169,
+                    UDS_ALIGNRIGHT | UDS_AUTOBUDDY | UDS_ARROWKEYS,292,174,
                     10,14
-    LTEXT           "Size:",IDC_STATIC,133,187,67,11,NOT WS_GROUP
-    RTEXT           "Width",IDC_STATIC,138,200,24,11,NOT WS_GROUP
-    EDITTEXT        IDC_E_W,166,199,45,12,ES_NUMBER
+    LTEXT           "Size:",IDC_STATIC,133,192,67,11,NOT WS_GROUP
+    RTEXT           "Width",IDC_STATIC,138,205,24,11,NOT WS_GROUP
+    EDITTEXT        IDC_E_W,166,204,45,12,ES_NUMBER
     CONTROL         "",IDC_SPIN_WIDTH,"msctls_updown32",UDS_SETBUDDYINT | 
-                    UDS_ALIGNRIGHT | UDS_AUTOBUDDY | UDS_ARROWKEYS,211,198,
+                    UDS_ALIGNRIGHT | UDS_AUTOBUDDY | UDS_ARROWKEYS,211,203,
                     10,14
-    RTEXT           "Height",IDC_STATIC,215,201,34,9,NOT WS_GROUP
-    EDITTEXT        IDC_E_H,252,199,46,12,ES_NUMBER
+    RTEXT           "Height",IDC_STATIC,215,206,34,9,NOT WS_GROUP
+    EDITTEXT        IDC_E_H,252,204,46,12,ES_NUMBER
     CONTROL         "",IDC_SPIN_HEIGHT,"msctls_updown32",UDS_SETBUDDYINT | 
-                    UDS_ALIGNRIGHT | UDS_AUTOBUDDY | UDS_ARROWKEYS,293,198,
+                    UDS_ALIGNRIGHT | UDS_AUTOBUDDY | UDS_ARROWKEYS,293,203,
                     10,14
-    EDITTEXT        IDC_EDIT1,0,201,6,12,ES_AUTOHSCROLL | NOT WS_VISIBLE | 
+    EDITTEXT        IDC_EDIT1,0,206,6,12,ES_AUTOHSCROLL | NOT WS_VISIBLE | 
                     WS_GROUP
-    RTEXT           "W x H: 0 x 0 pixels",IDC_S_SIZE,135,79,148,8,
+    RTEXT           "W x H: 0 x 0 pixels",IDC_S_SIZE,135,84,148,8,
                     WS_DISABLED
 END
 
@@ -266,6 +266,7 @@ BEGIN
     IDD_OPT_SKINEDITOR, DIALOG
     BEGIN
         TOPMARGIN, 1
+        BOTTOMMARGIN, 219
         HORZGUIDE, 22
         HORZGUIDE, 35
         HORZGUIDE, 55
@@ -389,211 +390,215 @@ BEGIN
                     IDC_STATIC,7,18,239,14
 END
 
-IDD_OPT_CLIST DIALOGEX 0, 0, 308, 226
+IDD_OPT_CLIST DIALOGEX 0, 0, 308, 230
 STYLE DS_SETFONT | DS_FIXEDSYS | DS_CENTER | WS_CHILD
 EXSTYLE WS_EX_CONTROLPARENT
 FONT 8, "MS Shell Dlg", 0, 0, 0x1
 BEGIN
     CONTROL         "Hide offline users",IDC_HIDEOFFLINE,"Button",
-                    BS_AUTOCHECKBOX | WS_TABSTOP,10,19,124,10
+                    BS_AUTOCHECKBOX | WS_TABSTOP,10,25,124,10
     CONTROL         "Hide empty groups",IDC_HIDEEMPTYGROUPS,"Button",
-                    BS_AUTOCHECKBOX | WS_TABSTOP,10,31,124,10
+                    BS_AUTOCHECKBOX | WS_TABSTOP,10,37,124,10
     CONTROL         "Disable groups",IDC_DISABLEGROUPS,"Button",
-                    BS_AUTOCHECKBOX | WS_TABSTOP,10,43,124,10
+                    BS_AUTOCHECKBOX | WS_TABSTOP,10,49,124,10
     CONTROL         "Ask before deleting contacts",IDC_CONFIRMDELETE,"Button",
-                    BS_AUTOCHECKBOX | WS_TABSTOP,10,55,124,10
+                    BS_AUTOCHECKBOX | WS_TABSTOP,10,61,124,10
     CONTROL         "Dont move offline user to bottom",IDC_NOOFFLINEMOVE,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,156,71,138,10
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,156,77,138,10
     CONTROL         "Single click interface",IDC_ONECLK,"Button",
-                    BS_AUTOCHECKBOX | WS_TABSTOP,10,100,156,10
+                    BS_AUTOCHECKBOX | WS_TABSTOP,10,106,156,10
     CONTROL         "Always show status in tooltip",IDC_ALWAYSSTATUS,"Button",
                     BS_AUTOCHECKBOX | BS_TOP | BS_MULTILINE | WS_TABSTOP,10,
-                    113,156,11
+                    119,156,11
     CONTROL         "Disable icon blinking",IDC_DISABLEBLINK,"Button",
-                    BS_AUTOCHECKBOX | WS_TABSTOP,10,126,156,9
-    EDITTEXT        IDC_BLINKTIME,12,140,35,12,ES_NUMBER
+                    BS_AUTOCHECKBOX | WS_TABSTOP,10,132,156,9
+    EDITTEXT        IDC_BLINKTIME,12,146,35,12,ES_NUMBER
     CONTROL         "Spin5",IDC_BLINKSPIN,"msctls_updown32",UDS_SETBUDDYINT | 
                     UDS_ALIGNRIGHT | UDS_ARROWKEYS | UDS_NOTHOUSANDS | 
-                    UDS_HOTTRACK,48,139,11,12
-    LTEXT           "ms, delay between icon blinking",IDC_STATIC,62,142,104,
+                    UDS_HOTTRACK,48,145,11,12
+    LTEXT           "ms, delay between icon blinking",IDC_STATIC,62,148,104,
                     8
     CONTROL         "Show",IDC_DONTCYCLE,"Button",BS_AUTORADIOBUTTON | 
-                    WS_GROUP,10,176,97,10
-    COMBOBOX        IDC_PRIMARYSTATUS,107,175,78,101,CBS_DROPDOWNLIST | 
+                    WS_GROUP,10,182,97,10
+    COMBOBOX        IDC_PRIMARYSTATUS,107,181,78,101,CBS_DROPDOWNLIST | 
                     WS_VSCROLL | WS_TABSTOP
     CONTROL         "Cycle icons every",IDC_CYCLE,"Button",
-                    BS_AUTORADIOBUTTON,10,192,97,10
-    EDITTEXT        IDC_CYCLETIME,107,191,29,12,ES_RIGHT | ES_NUMBER
+                    BS_AUTORADIOBUTTON,10,198,97,10
+    EDITTEXT        IDC_CYCLETIME,107,197,29,12,ES_RIGHT | ES_NUMBER
     CONTROL         "Spin1",IDC_CYCLETIMESPIN,"msctls_updown32",
                     UDS_SETBUDDYINT | UDS_ALIGNRIGHT | UDS_AUTOBUDDY | 
-                    UDS_ARROWKEYS | UDS_NOTHOUSANDS | UDS_HOTTRACK,136,190,
+                    UDS_ARROWKEYS | UDS_NOTHOUSANDS | UDS_HOTTRACK,136,196,
                     11,14
-    LTEXT           "seconds, when statuses differ",IDC_STATIC,151,192,132,8,
+    LTEXT           "seconds, when statuses differ",IDC_STATIC,151,198,132,8,
                     NOT WS_GROUP
     CONTROL         "Show multiple icons",IDC_MULTITRAY,"Button",
-                    BS_AUTORADIOBUTTON,10,208,97,10
+                    BS_AUTORADIOBUTTON,10,214,97,10
     CONTROL         "Only when statuses differ",IDC_ALWAYSMULTI,"Button",
-                    BS_AUTOCHECKBOX | WS_TABSTOP,107,208,187,10
-    GROUPBOX        "Contact List",IDC_STCLISTGROUP,2,2,142,84
-    GROUPBOX        "System tray icon",IDC_STATIC,2,87,298,73
+                    BS_AUTOCHECKBOX | WS_TABSTOP,107,214,187,10
+    GROUPBOX        "Contact List",IDC_STCLISTGROUP,2,8,142,84
+    GROUPBOX        "System tray icon",IDC_STATIC,2,93,298,73
     GROUPBOX        "System tray icon when using multiple protocols",
-                    IDC_STATIC,2,161,298,61
-    GROUPBOX        "Contact List Sorting",IDC_STATIC,146,2,154,84,WS_GROUP
-    LTEXT           "1st:",IDC_STATIC,153,13,14,8
-    LTEXT           "2nd:",IDC_STATIC,152,29,16,8
-    LTEXT           "3rd:",IDC_STATIC,154,43,14,8
-    COMBOBOX        IDC_CLSORT1,169,12,125,146,CBS_DROPDOWNLIST | WS_VSCROLL | 
+                    IDC_STATIC,2,167,298,61
+    GROUPBOX        "Contact List Sorting",IDC_STATIC,146,8,154,84,WS_GROUP
+    LTEXT           "1st:",IDC_STATIC,153,19,14,8
+    LTEXT           "2nd:",IDC_STATIC,152,35,16,8
+    LTEXT           "3rd:",IDC_STATIC,154,49,14,8
+    COMBOBOX        IDC_CLSORT1,169,18,125,146,CBS_DROPDOWNLIST | WS_VSCROLL | 
                     WS_TABSTOP
-    COMBOBOX        IDC_CLSORT2,169,27,125,140,CBS_DROPDOWNLIST | WS_VSCROLL | 
+    COMBOBOX        IDC_CLSORT2,169,33,125,140,CBS_DROPDOWNLIST | WS_VSCROLL | 
                     WS_TABSTOP
-    COMBOBOX        IDC_CLSORT3,169,42,125,140,CBS_DROPDOWNLIST | WS_VSCROLL | 
+    COMBOBOX        IDC_CLSORT3,169,48,125,140,CBS_DROPDOWNLIST | WS_VSCROLL | 
                     WS_TABSTOP
     CONTROL         "Place offline users out of groups",IDC_OFFLINETOROOT,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,156,58,138,10
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,156,64,138,10
     CONTROL         "Use xStatus icon",IDC_SHOWXSTATUS,"Button",
-                    BS_AUTOCHECKBOX | WS_TABSTOP,171,100,123,10
+                    BS_AUTOCHECKBOX | WS_TABSTOP,171,106,123,10
     CONTROL         "Show normal status as overlay",IDC_SHOWNORMAL,"Button",
-                    BS_AUTOCHECKBOX | WS_TABSTOP,171,112,123,10
+                    BS_AUTOCHECKBOX | WS_TABSTOP,171,118,123,10
     CONTROL         "Status overlay opacity is 75% ",IDC_TRANSPARENTOVERLAY,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,171,124,123,10
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,171,130,123,10
     CONTROL         "only when statuses differ",IDC_ALWAYSPRIMARY,"Button",
-                    BS_AUTOCHECKBOX | WS_TABSTOP,190,176,104,10
+                    BS_AUTOCHECKBOX | WS_TABSTOP,190,182,104,10
 END
 
-IDD_OPT_CLUI_2 DIALOGEX 0, 0, 201, 203
+IDD_OPT_CLUI_2 DIALOGEX 0, 0, 266, 219
 STYLE DS_SETFONT | DS_FIXEDSYS | DS_CENTER | WS_CHILD
 EXSTYLE WS_EX_CONTROLPARENT
 FONT 8, "MS Shell Dlg", 0, 0, 0x1
 BEGIN
     CONTROL         "Bring to front if covered",IDC_BRINGTOFRONT,"Button",
-                    BS_AUTOCHECKBOX | BS_MULTILINE | WS_TABSTOP,11,10,166,8,
+                    BS_AUTOCHECKBOX | BS_MULTILINE | WS_TABSTOP,11,23,166,8,
                     WS_EX_TRANSPARENT
     CONTROL         "Hide contact list after ",IDC_AUTOHIDE,"Button",
-                    BS_AUTOCHECKBOX | BS_TOP | WS_TABSTOP,11,21,94,10
-    EDITTEXT        IDC_HIDETIME,108,20,31,12,ES_RIGHT | ES_NUMBER
+                    BS_AUTOCHECKBOX | BS_TOP | WS_TABSTOP,11,34,94,10
+    EDITTEXT        IDC_HIDETIME,108,33,31,12,ES_RIGHT | ES_NUMBER
     CONTROL         "Spin1",IDC_HIDETIMESPIN,"msctls_updown32",
                     UDS_SETBUDDYINT | UDS_ALIGNRIGHT | UDS_AUTOBUDDY | 
-                    UDS_ARROWKEYS | UDS_NOTHOUSANDS | UDS_HOTTRACK,133,19,9,
+                    UDS_ARROWKEYS | UDS_NOTHOUSANDS | UDS_HOTTRACK,133,32,9,
                     14
-    LTEXT           "seconds",IDC_STATIC01,140,22,35,8
+    LTEXT           "seconds",IDC_STATIC01,140,35,35,8
     CONTROL         "Automatically resize window to height of list",
                     IDC_AUTOSIZE,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,11,
-                    100,166,12,WS_EX_TRANSPARENT
-    LTEXT           "maximum",IDC_STATIC21,24,115,44,8
-    EDITTEXT        IDC_MAXSIZEHEIGHT,70,113,31,12,ES_RIGHT | ES_AUTOHSCROLL | 
+                    113,237,12,WS_EX_TRANSPARENT
+    LTEXT           "maximum",IDC_STATIC21,24,128,44,8
+    EDITTEXT        IDC_MAXSIZEHEIGHT,70,126,31,12,ES_RIGHT | ES_AUTOHSCROLL | 
                     ES_NUMBER
     CONTROL         "Spin1",IDC_MAXSIZESPIN,"msctls_updown32",
                     UDS_SETBUDDYINT | UDS_ALIGNRIGHT | UDS_AUTOBUDDY | 
-                    UDS_ARROWKEYS | UDS_HOTTRACK,102,112,9,14
-    LTEXT           "% of screen",IDC_STATIC22,114,115,63,8
+                    UDS_ARROWKEYS | UDS_HOTTRACK,102,125,9,14
+    LTEXT           "% of screen",IDC_STATIC22,114,128,63,8
     CONTROL         "Size upwards",IDC_AUTOSIZEUPWARD,"Button",
-                    BS_AUTOCHECKBOX | WS_TABSTOP,11,130,88,8,
+                    BS_AUTOCHECKBOX | WS_TABSTOP,11,143,230,8,
                     WS_EX_TRANSPARENT
-    GROUPBOX        "Behaviour",IDC_STWINDOWGROUP2,5,0,193,142,0,
+    GROUPBOX        "Behaviour",IDC_STWINDOWGROUP2,0,12,258,142,0,
                     WS_EX_TRANSPARENT
     CONTROL         "Lock manual resize",IDC_LOCKSIZING,"Button",
-                    BS_AUTOCHECKBOX | WS_TABSTOP,11,89,157,12
-    GROUPBOX        "Drag to ",IDC_STATIC,5,146,193,33
+                    BS_AUTOCHECKBOX | WS_TABSTOP,11,102,237,12
+    GROUPBOX        "Drag to ",IDC_STATIC,0,158,124,49
     CONTROL         "Easy Scroll",IDC_DRAGTOSCROLL,"Button",BS_AUTOCHECKBOX | 
-                    WS_TABSTOP,12,168,114,8
+                    WS_TABSTOP,12,181,99,8
     CONTROL         "Easy move",IDC_CLIENTDRAG,"Button",BS_AUTOCHECKBOX | 
-                    WS_TABSTOP,12,157,90,8
-    COMBOBOX        IDC_HIDEMETHOD,93,35,84,73,CBS_DROPDOWNLIST | 
+                    WS_TABSTOP,12,170,104,8
+    COMBOBOX        IDC_HIDEMETHOD,93,48,148,73,CBS_DROPDOWNLIST | 
                     CBS_DISABLENOSCROLL | WS_TABSTOP
-    EDITTEXT        IDC_SHOWDELAY,109,50,36,12,ES_RIGHT | ES_NUMBER
+    EDITTEXT        IDC_SHOWDELAY,164,63,36,12,ES_RIGHT | ES_NUMBER
     CONTROL         "",IDC_HIDETIMESPIN2,"msctls_updown32",UDS_SETBUDDYINT | 
                     UDS_ALIGNRIGHT | UDS_AUTOBUDDY | UDS_ARROWKEYS | 
-                    UDS_NOTHOUSANDS | UDS_HOTTRACK,139,48,9,14
-    LTEXT           "x100 msec",IDC_STATIC5,151,52,35,8
-    RTEXT           "show delay",IDC_STATIC6,39,52,63,8
-    EDITTEXT        IDC_HIDEDELAY,109,63,36,12,ES_RIGHT | ES_NUMBER
+                    UDS_NOTHOUSANDS | UDS_HOTTRACK,194,61,9,14
+    LTEXT           "x100 msec",IDC_STATIC5,206,65,35,8
+    RTEXT           "show delay",IDC_STATIC6,94,65,63,8
+    EDITTEXT        IDC_HIDEDELAY,164,76,36,12,ES_RIGHT | ES_NUMBER
     CONTROL         "",IDC_HIDETIMESPIN3,"msctls_updown32",UDS_SETBUDDYINT | 
                     UDS_ALIGNRIGHT | UDS_AUTOBUDDY | UDS_ARROWKEYS | 
-                    UDS_NOTHOUSANDS | UDS_HOTTRACK,141,62,9,14
-    LTEXT           "x100 msec",IDC_STATIC7,151,65,36,8
-    RTEXT           "hide delay",IDC_STATIC8,39,65,63,8
-    LTEXT           "Hide method",IDC_STATIC9,23,38,64,8
-    EDITTEXT        IDC_HIDEDELAY2,109,76,36,12,ES_RIGHT | ES_NUMBER
+                    UDS_NOTHOUSANDS | UDS_HOTTRACK,196,75,9,14
+    LTEXT           "x100 msec",IDC_STATIC7,206,78,36,8
+    RTEXT           "hide delay",IDC_STATIC8,94,78,63,8
+    LTEXT           "Hide method",IDC_STATIC9,23,51,64,8
+    EDITTEXT        IDC_HIDEDELAY2,164,89,36,12,ES_RIGHT | ES_NUMBER
     CONTROL         "",IDC_HIDETIMESPIN4,"msctls_updown32",UDS_SETBUDDYINT | 
                     UDS_ALIGNRIGHT | UDS_AUTOBUDDY | UDS_ARROWKEYS | 
-                    UDS_NOTHOUSANDS | UDS_HOTTRACK,141,74,9,14
-    LTEXT           "pixels",IDC_STATIC10,151,77,35,8
-    RTEXT           "keep on screen",IDC_STATIC13,39,77,63,8
+                    UDS_NOTHOUSANDS | UDS_HOTTRACK,196,87,9,14
+    LTEXT           "pixels",IDC_STATIC10,206,90,35,8
+    RTEXT           "keep on screen",IDC_STATIC13,94,90,63,8
     CONTROL         "Snap to edges",IDC_SNAPTOEDGES,"Button",BS_AUTOCHECKBOX | 
-                    WS_TABSTOP,105,157,74,8
-    GROUPBOX        "Event notify area",IDC_STATIC,5,180,193,22
-    CONTROL         "Auto show/hide event area",IDC_EVENTAREA,"Button",
-                    BS_AUTOCHECKBOX | WS_TABSTOP,13,190,178,8
+                    WS_TABSTOP,12,195,74,8
+    GROUPBOX        "Event notify area",IDC_STATIC,128,158,130,49
+    CONTROL         "Disabled",IDC_EVENTAREA_NONE,"Button",
+                    BS_AUTORADIOBUTTON,141,170,109,10
+    CONTROL         "Show automaticaly",IDC_EVENTAREA,"Button",
+                    BS_AUTORADIOBUTTON,141,181,106,10
+    CONTROL         "Always Visible",IDC_EVENTAREA_ALWAYS,"Button",
+                    BS_AUTORADIOBUTTON,141,192,110,10
 END
 
-IDD_OPT_CLC DIALOGEX 0, 0, 303, 221
+IDD_OPT_CLC DIALOGEX 0, 0, 303, 225
 STYLE DS_SETFONT | DS_FIXEDSYS | WS_CHILD | WS_VISIBLE
 EXSTYLE WS_EX_CONTROLPARENT
 FONT 8, "MS Shell Dlg", 0, 0, 0x1
 BEGIN
-    GROUPBOX        "Items",IDC_STATIC,2,2,298,98
+    GROUPBOX        "Items",IDC_STATIC,2,6,298,98
     CONTROL         "Show divider between online and offline contacts",
                     IDC_DIVIDERONOFF,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,
-                    11,13,175,10
+                    11,17,175,10
     CONTROL         "Hot track items as mouse passes over",IDC_TRACKSELECT,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,11,25,175,10
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,11,29,175,10
     CONTROL         "Disable drag and drop of items",IDC_DISABLEDRAGDROP,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,11,37,175,10
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,11,41,175,10
     CONTROL         "Disable rename of items by clicking twice",
                     IDC_NOTEDITLABELS,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,
-                    11,49,175,10
+                    11,53,175,10
     CONTROL         "Show selection even when list is not focused",
                     IDC_SHOWSELALWAYS,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,
-                    11,61,175,10
+                    11,65,175,10
     CONTROL         "Make selection highlight translucent",
                     IDC_NOTNOTRANSLUCENTSEL,"Button",BS_AUTOCHECKBOX | 
-                    WS_TABSTOP,11,73,175,10
+                    WS_TABSTOP,11,77,175,10
     CONTROL         "Dim idle contacts",IDC_IDLE,"Button",BS_AUTOCHECKBOX | 
-                    WS_TABSTOP,11,85,153,10
-    LTEXT           "'Hide Offline' means to hide:",IDC_STATIC,191,10,104,8
+                    WS_TABSTOP,11,89,153,10
+    LTEXT           "'Hide Offline' means to hide:",IDC_STATIC,191,14,104,8
     CONTROL         "Tree1",IDC_HIDEOFFLINEOPTS,"SysTreeView32",
                     TVS_DISABLEDRAGDROP | TVS_NOTOOLTIPS | WS_BORDER | 
-                    WS_TABSTOP | 0x4000,191,20,105,73
-    GROUPBOX        "Groups",IDC_STATIC,2,101,148,115
+                    WS_TABSTOP | 0x4000,191,24,105,73
+    GROUPBOX        "Groups",IDC_STATIC,2,105,148,115
     CONTROL         "Draw a line alongside group names",IDC_LINEWITHGROUPS,
                     "Button",BS_AUTOCHECKBOX | BS_MULTILINE | WS_TABSTOP,11,
-                    110,131,16
+                    114,131,16
     CONTROL         "Show counts of number of contacts in a group",
                     IDC_SHOWGROUPCOUNTS,"Button",BS_AUTOCHECKBOX | 
-                    BS_MULTILINE | WS_TABSTOP,11,128,131,16
+                    BS_MULTILINE | WS_TABSTOP,11,132,131,16
     CONTROL         "Hide group counts when there are none online",
                     IDC_HIDECOUNTSWHENEMPTY,"Button",BS_AUTOCHECKBOX | 
-                    BS_MULTILINE | WS_TABSTOP,11,146,131,16
+                    BS_MULTILINE | WS_TABSTOP,11,150,131,16
     CONTROL         "Sort groups alphabetically",IDC_SORTGROUPSALPHA,"Button",
-                    BS_AUTOCHECKBOX | BS_MULTILINE | WS_TABSTOP,11,164,131,
+                    BS_AUTOCHECKBOX | BS_MULTILINE | WS_TABSTOP,11,168,131,
                     16
     CONTROL         "Quicksearch in open groups only",IDC_QUICKSEARCHVISONLY,
                     "Button",BS_AUTOCHECKBOX | BS_MULTILINE | WS_TABSTOP,11,
-                    182,131,16
-    LTEXT           "Indent groups by:",IDC_STATIC,11,202,67,8
-    EDITTEXT        IDC_GROUPINDENT,78,200,31,12,ES_RIGHT | ES_NUMBER
+                    186,131,16
+    LTEXT           "Indent groups by:",IDC_STATIC,11,206,67,8
+    EDITTEXT        IDC_GROUPINDENT,78,204,31,12,ES_RIGHT | ES_NUMBER
     CONTROL         "Spin1",IDC_GROUPINDENTSPIN,"msctls_updown32",
                     UDS_SETBUDDYINT | UDS_ALIGNRIGHT | UDS_AUTOBUDDY | 
-                    UDS_ARROWKEYS | UDS_NOTHOUSANDS | UDS_HOTTRACK,95,196,10,
+                    UDS_ARROWKEYS | UDS_NOTHOUSANDS | UDS_HOTTRACK,95,200,10,
                     14
-    LTEXT           "pixels",IDC_STATIC,112,202,36,8
-    GROUPBOX        "Visual",IDC_STATIC,156,101,144,115
+    LTEXT           "pixels",IDC_STATIC,112,206,36,8
+    GROUPBOX        "Visual",IDC_STATIC,156,105,144,115
     CONTROL         "Scroll list smoothly",IDC_NOTNOSMOOTHSCROLLING,"Button",
-                    BS_AUTOCHECKBOX | WS_TABSTOP,164,111,131,10
-    LTEXT           "Time:",IDC_STATIC11,174,125,42,8
-    EDITTEXT        IDC_SMOOTHTIME,215,123,31,12,ES_RIGHT | ES_NUMBER
+                    BS_AUTOCHECKBOX | WS_TABSTOP,164,115,131,10
+    LTEXT           "Time:",IDC_STATIC11,174,129,42,8
+    EDITTEXT        IDC_SMOOTHTIME,215,127,31,12,ES_RIGHT | ES_NUMBER
     CONTROL         "Spin1",IDC_SMOOTHTIMESPIN,"msctls_updown32",
                     UDS_SETBUDDYINT | UDS_ALIGNRIGHT | UDS_AUTOBUDDY | 
-                    UDS_ARROWKEYS | UDS_NOTHOUSANDS | UDS_HOTTRACK,237,122,
+                    UDS_ARROWKEYS | UDS_NOTHOUSANDS | UDS_HOTTRACK,237,126,
                     10,14
-    LTEXT           "milliseconds",IDC_STATIC12,250,125,45,8,SS_CENTERIMAGE
+    LTEXT           "milliseconds",IDC_STATIC12,250,129,45,8,SS_CENTERIMAGE
     CONTROL         "Hide vertical scrollbar",IDC_NOSCROLLBAR,"Button",
-                    BS_AUTOCHECKBOX | WS_TABSTOP,165,140,130,10
+                    BS_AUTOCHECKBOX | WS_TABSTOP,165,144,130,10
     CONTROL         "Fade out entire list when:",IDC_GREYOUT,"Button",
-                    BS_AUTOCHECKBOX | WS_TABSTOP,165,152,130,10
+                    BS_AUTOCHECKBOX | WS_TABSTOP,165,156,130,10
     CONTROL         "Tree1",IDC_GREYOUTOPTS,"SysTreeView32",
                     TVS_DISABLEDRAGDROP | TVS_NOTOOLTIPS | WS_BORDER | 
-                    WS_TABSTOP | 0x4000,165,164,130,46
+                    WS_TABSTOP | 0x4000,165,168,130,46
 END
 
 IDD_OPT_CLCTEXT DIALOGEX 0, 0, 277, 237
@@ -675,45 +680,6 @@ BEGIN
                     WS_TABSTOP,221,32,39,10
 END
 
-IDD_OPT_CLCBKG2 DIALOGEX 0, 0, 234, 199
-STYLE DS_SETFONT | DS_FIXEDSYS | WS_CHILD | WS_VISIBLE
-EXSTYLE WS_EX_CONTROLPARENT
-FONT 8, "MS Shell Dlg", 0, 0, 0x1
-BEGIN
-    GROUPBOX        "Image",IDC_STATIC,4,94,225,101
-    LTEXT           "Background:",1763,12,57,68,8,NOT WS_GROUP
-    LTEXT           "Selected backgnd:",1764,12,73,63,8
-    CONTROL         "",IDC_BKGCOLOUR,"ColourPicker",WS_TABSTOP,79,56,32,10
-    CONTROL         "Use background bitmap",IDC_BITMAP,"Button",
-                    BS_AUTOCHECKBOX | WS_TABSTOP,12,108,161,10
-    EDITTEXT        IDC_FILENAME,22,122,184,12,ES_AUTOHSCROLL
-    CONTROL         "",IDC_SELCOLOUR,"ColourPicker",WS_TABSTOP,79,72,32,10
-    CONTROL         "Stretch to width",IDC_STRETCHH,"Button",BS_AUTOCHECKBOX | 
-                    WS_TABSTOP,22,139,98,10
-    CONTROL         "Stretch to height",IDC_STRETCHV,"Button",
-                    BS_AUTOCHECKBOX | WS_TABSTOP,121,139,101,10
-    CONTROL         "Tile horizontally",IDC_TILEH,"Button",BS_AUTOCHECKBOX | 
-                    WS_TABSTOP,22,152,98,10
-    CONTROL         "Tile vertically",IDC_TILEV,"Button",BS_AUTOCHECKBOX | 
-                    WS_TABSTOP,22,165,98,10
-    CONTROL         "Scroll with text",IDC_SCROLL,"Button",BS_AUTOCHECKBOX | 
-                    WS_TABSTOP,121,165,100,10
-    CONTROL         "Stretch proportionally",IDC_PROPORTIONAL,"Button",
-                    BS_AUTOCHECKBOX | WS_TABSTOP,121,152,101,10
-    CONTROL         "Tile vertically according to Row Height",IDC_TILEVROWH,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,22,180,205,10
-    COMBOBOX        IDC_BKGRLIST,4,22,225,155,CBS_DROPDOWNLIST | CBS_SORT | 
-                    WS_VSCROLL | WS_TABSTOP
-    PUSHBUTTON      "...",IDC_BROWSE,208,122,15,11
-    LTEXT           "Normal text:",1765,122,57,66,8,NOT WS_GROUP
-    LTEXT           "Selected text:",1767,122,73,65,8
-    CONTROL         "",IDC_TXTCOLOUR,"ColourPicker",WS_TABSTOP,191,56,32,10
-    CONTROL         "",IDC_SELTXTCOLOUR,"ColourPicker",WS_TABSTOP,191,72,32,
-                    10
-    GROUPBOX        "Colors",IDC_STATIC,4,41,225,49
-    LTEXT           "Select object:",IDC_STATIC,4,9,113,10
-END
-
 IDD_OPT_HOTKEYS DIALOGEX 0, 0, 285, 240
 STYLE DS_SETFONT | DS_3DLOOK | DS_FIXEDSYS | WS_CHILD | WS_VISIBLE
 EXSTYLE WS_EX_CONTROLPARENT
@@ -738,52 +704,52 @@ BEGIN
     LTEXT           "Hotkey",IDC_HKTITLE,15,190,40,8
 END
 
-IDD_OPT_META_CLC DIALOGEX 0, 0, 225, 156
+IDD_OPT_META_CLC DIALOGEX 0, 0, 225, 173
 STYLE DS_SETFONT | DS_FIXEDSYS | WS_CHILD | WS_VISIBLE
 EXSTYLE WS_EX_CONTROLPARENT
 FONT 8, "MS Shell Dlg", 0, 0, 0x1
 BEGIN
     CONTROL         "Ignore Empty Extra icons places (arrange to right).",
                     IDC_METASUBEXTRA_IGN,"Button",BS_AUTOCHECKBOX | 
-                    WS_TABSTOP,11,13,201,10
+                    WS_TABSTOP,11,29,201,10
     CONTROL         "Use 'Meta' protocol icons for Metacontacts",IDC_META,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,11,69,201,10
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,11,85,201,10
     CONTROL         "Expand metacontacts",IDC_METAEXPAND,"Button",
-                    BS_AUTOCHECKBOX | WS_TABSTOP,11,81,201,16
+                    BS_AUTOCHECKBOX | WS_TABSTOP,11,97,201,16
     CONTROL         "Avoid doubleclick expand",IDC_METADBLCLK,"Button",
-                    BS_AUTOCHECKBOX | WS_TABSTOP,16,98,196,10
+                    BS_AUTOCHECKBOX | WS_TABSTOP,16,114,196,10
     CONTROL         "Hide all 'Extra icons' for subcontacts",
                     IDC_METASUBEXTRA,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,
-                    16,111,196,10
+                    16,127,196,10
     CONTROL         "Hide offline subcontacts.",IDC_METASUB_HIDEOFFLINE,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,16,125,196,10
-    GROUPBOX        "MetaContacts stuff",IDC_FRAME_META,2,55,218,101
-    GROUPBOX        "Additional stuff",IDC_FRAME_META2,2,0,218,53
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,16,141,196,10
+    GROUPBOX        "MetaContacts stuff",IDC_FRAME_META,2,71,218,101
+    GROUPBOX        "Additional stuff",IDC_FRAME_META2,2,16,218,53
     CTEXT           "For other stuffs MetaContacts plugin should be loaded.\n\nhttp://miranda-im.org/download",
-                    IDC_FRAME_META_CAPT,11,71,201,26,NOT WS_VISIBLE
+                    IDC_FRAME_META_CAPT,11,87,201,26,NOT WS_VISIBLE
     CONTROL         "Allow internal requesting of away message text",
                     IDC_DISCOVER_AWAYMSG,"Button",BS_AUTOCHECKBOX | 
-                    WS_TABSTOP,11,26,201,10
-    EDITTEXT        IDC_SUBINDENT,154,137,35,12,ES_NUMBER
+                    WS_TABSTOP,11,42,201,10
+    EDITTEXT        IDC_SUBINDENT,154,153,35,12,ES_NUMBER
     CONTROL         "",IDC_SUBINDENTSPIN,"msctls_updown32",UDS_SETBUDDYINT | 
                     UDS_ALIGNRIGHT | UDS_ARROWKEYS | UDS_NOTHOUSANDS | 
-                    UDS_HOTTRACK,190,136,11,12
-    LTEXT           "Subcontacts indent:",IDC_SUBIDENTCAPT,26,138,126,10
+                    UDS_HOTTRACK,190,152,11,12
+    LTEXT           "Subcontacts indent:",IDC_SUBIDENTCAPT,26,154,126,10
     CONTROL         "Remove away message if contact became offline",
                     IDC_REMOVE_OFFLINE_AWAYMSG,"Button",BS_AUTOCHECKBOX | 
-                    WS_TABSTOP,11,38,201,10
+                    WS_TABSTOP,11,54,201,10
 END
 
-IDD_OPT_ITEM_CONTACT_TIME DIALOGEX 0, 0, 243, 35
+IDD_OPT_ITEM_CONTACT_TIME DIALOGEX 0, 0, 243, 52
 STYLE DS_SETFONT | DS_FIXEDSYS | WS_CHILD
 EXSTYLE WS_EX_CONTROLPARENT
 FONT 8, "MS Shell Dlg", 0, 0, 0x1
 BEGIN
     CONTROL         "Show time only if it is different from current time",
                     IDC_SHOW_ONLY_IF_DIFFERENT,"Button",BS_AUTOCHECKBOX | 
-                    WS_TABSTOP,7,20,217,8
+                    WS_TABSTOP,7,38,217,8
     CONTROL         "Show contact time as row item",IDC_SHOW,"Button",
-                    BS_AUTOCHECKBOX | WS_TABSTOP,7,7,217,8
+                    BS_AUTOCHECKBOX | WS_TABSTOP,7,25,217,8
 END
 
 
@@ -815,7 +781,7 @@ BEGIN
         VERTGUIDE, 294
         VERTGUIDE, 300
         TOPMARGIN, 2
-        BOTTOMMARGIN, 223
+        BOTTOMMARGIN, 227
         HORZGUIDE, 86
         HORZGUIDE, 93
     END
@@ -823,7 +789,7 @@ BEGIN
     IDD_OPT_CLUI_2, DIALOG
     BEGIN
         LEFTMARGIN, 4
-        RIGHTMARGIN, 198
+        RIGHTMARGIN, 263
         VERTGUIDE, 13
         VERTGUIDE, 23
         VERTGUIDE, 75
@@ -832,10 +798,13 @@ BEGIN
         VERTGUIDE, 136
         VERTGUIDE, 142
         VERTGUIDE, 164
+        VERTGUIDE, 258
         TOPMARGIN, 4
-        BOTTOMMARGIN, 180
         HORZGUIDE, 14
         HORZGUIDE, 36
+        HORZGUIDE, 141
+        HORZGUIDE, 148
+        HORZGUIDE, 194
     END
 
     IDD_OPT_CLC, DIALOG
@@ -849,6 +818,7 @@ BEGIN
         VERTGUIDE, 295
         VERTGUIDE, 300
         TOPMARGIN, 2
+        BOTTOMMARGIN, 221
         HORZGUIDE, 145
         HORZGUIDE, 163
     END
@@ -876,25 +846,6 @@ BEGIN
         HORZGUIDE, 206
     END
 
-    IDD_OPT_CLCBKG2, DIALOG
-    BEGIN
-        LEFTMARGIN, 4
-        VERTGUIDE, 12
-        VERTGUIDE, 22
-        VERTGUIDE, 137
-        VERTGUIDE, 229
-        TOPMARGIN, 4
-        BOTTOMMARGIN, 195
-        HORZGUIDE, 24
-        HORZGUIDE, 40
-        HORZGUIDE, 73
-        HORZGUIDE, 89
-        HORZGUIDE, 102
-        HORZGUIDE, 115
-        HORZGUIDE, 145
-        HORZGUIDE, 161
-    END
-
     IDD_OPT_HOTKEYS, DIALOG
     BEGIN
         LEFTMARGIN, 4
@@ -913,7 +864,7 @@ BEGIN
         VERTGUIDE, 16
         VERTGUIDE, 212
         TOPMARGIN, 2
-        BOTTOMMARGIN, 151
+        BOTTOMMARGIN, 168
     END
 
     IDD_OPT_ITEM_CONTACT_TIME, DIALOG
@@ -921,6 +872,7 @@ BEGIN
         LEFTMARGIN, 7
         RIGHTMARGIN, 236
         TOPMARGIN, 7
+        BOTTOMMARGIN, 35
     END
 END
 #endif    // APSTUDIO_INVOKED
@@ -1158,89 +1110,89 @@ LANGUAGE LANG_ENGLISH, SUBLANG_ENGLISH_UK
 // Dialog
 //
 
-IDD_OPT_CLUI DIALOGEX 0, 0, 307, 192
+IDD_OPT_CLUI DIALOGEX 0, 0, 307, 202
 STYLE DS_SETFONT | DS_FIXEDSYS | DS_CENTER | WS_CHILD
 EXSTYLE WS_EX_CONTROLPARENT
 FONT 8, "MS Shell Dlg", 0, 0, 0x1
 BEGIN
-    GROUPBOX        "Appearance",IDC_STWINDOWGROUP,4,0,115,55
+    GROUPBOX        "Appearance",IDC_STWINDOWGROUP,4,11,115,55
     CONTROL         "Always on top",IDC_ONTOP,"Button",BS_AUTOCHECKBOX | 
-                    WS_TABSTOP,13,10,102,8
+                    WS_TABSTOP,13,21,102,8
     CONTROL         "Pin to desktop",IDC_ONDESKTOP,"Button",BS_AUTOCHECKBOX | 
-                    WS_TABSTOP,13,22,102,8
-    GROUPBOX        "Client area margins",IDC_FRAME_META2,124,69,179,45
-    EDITTEXT        IDC_LEFTMARGIN,152,87,33,12,ES_NUMBER
+                    WS_TABSTOP,13,33,102,8
+    GROUPBOX        "Client area margins",IDC_FRAME_META2,124,80,179,45
+    EDITTEXT        IDC_LEFTMARGIN,152,98,33,12,ES_NUMBER
     CONTROL         "",IDC_LEFTMARGINSPIN,"msctls_updown32",UDS_SETBUDDYINT | 
                     UDS_ALIGNRIGHT | UDS_AUTOBUDDY | UDS_ARROWKEYS | 
-                    UDS_NOTHOUSANDS | UDS_HOTTRACK,174,88,10,12
-    EDITTEXT        IDC_RIGHTMARGIN,247,87,33,12,ES_NUMBER
+                    UDS_NOTHOUSANDS | UDS_HOTTRACK,174,99,10,12
+    EDITTEXT        IDC_RIGHTMARGIN,247,98,33,12,ES_NUMBER
     CONTROL         "",IDC_RIGHTMARGINSPIN,"msctls_updown32",UDS_SETBUDDYINT | 
                     UDS_ALIGNRIGHT | UDS_AUTOBUDDY | UDS_ARROWKEYS | 
-                    UDS_NOTHOUSANDS | UDS_HOTTRACK,270,88,10,12
-    EDITTEXT        IDC_TOPMARGIN,200,80,33,12,ES_NUMBER
+                    UDS_NOTHOUSANDS | UDS_HOTTRACK,270,99,10,12
+    EDITTEXT        IDC_TOPMARGIN,200,91,33,12,ES_NUMBER
     CONTROL         "",IDC_TOPMARGINSPIN,"msctls_updown32",UDS_SETBUDDYINT | 
                     UDS_ALIGNRIGHT | UDS_AUTOBUDDY | UDS_ARROWKEYS | 
-                    UDS_NOTHOUSANDS | UDS_HOTTRACK,219,78,10,12
-    EDITTEXT        IDC_BOTTOMMARGIN,200,93,33,12,ES_NUMBER
+                    UDS_NOTHOUSANDS | UDS_HOTTRACK,219,89,10,12
+    EDITTEXT        IDC_BOTTOMMARGIN,200,104,33,12,ES_NUMBER
     CONTROL         "",IDC_BOTTOMMARGINSPIN,"msctls_updown32",
                     UDS_SETBUDDYINT | UDS_ALIGNRIGHT | UDS_AUTOBUDDY | 
-                    UDS_ARROWKEYS | UDS_NOTHOUSANDS | UDS_HOTTRACK,226,95,10,
-                    12
+                    UDS_ARROWKEYS | UDS_NOTHOUSANDS | UDS_HOTTRACK,226,106,
+                    10,12
     CONTROL         "Thin border main window",IDC_BORDER,"Button",
-                    BS_AUTOCHECKBOX | WS_DISABLED | WS_TABSTOP,13,158,102,8
+                    BS_AUTOCHECKBOX | WS_DISABLED | WS_TABSTOP,13,169,102,8
     CONTROL         "Borderless main window",IDC_NOBORDERWND,"Button",
-                    BS_AUTOCHECKBOX | WS_DISABLED | WS_TABSTOP,13,146,102,8
+                    BS_AUTOCHECKBOX | WS_DISABLED | WS_TABSTOP,13,157,102,8
     CONTROL         "Show menu bar",IDC_SHOWMAINMENU,"Button",
-                    BS_AUTOCHECKBOX | WS_DISABLED | WS_TABSTOP,13,134,102,8
+                    BS_AUTOCHECKBOX | WS_DISABLED | WS_TABSTOP,13,145,102,8
     CONTROL         "Show title bar",IDC_SHOWCAPTION,"Button",
-                    BS_AUTOCHECKBOX | WS_DISABLED | WS_TABSTOP,13,122,102,8
-    LTEXT           "Title bar text:",IDC_TITLEBAR_STATIC,13,68,102,8,
+                    BS_AUTOCHECKBOX | WS_DISABLED | WS_TABSTOP,13,133,102,8
+    LTEXT           "Title bar text:",IDC_TITLEBAR_STATIC,13,79,102,8,
                     WS_DISABLED
-    EDITTEXT        IDC_TITLETEXT,23,78,92,12,ES_AUTOHSCROLL | WS_DISABLED
+    EDITTEXT        IDC_TITLETEXT,23,89,92,12,ES_AUTOHSCROLL | WS_DISABLED
     CONTROL         "Tool style main window",IDC_TOOLWND,"Button",
-                    BS_AUTOCHECKBOX | WS_DISABLED | WS_TABSTOP,13,110,102,8
+                    BS_AUTOCHECKBOX | WS_DISABLED | WS_TABSTOP,13,121,102,8
     CONTROL         "Minimize to tray",IDC_MIN2TRAY,"Button",BS_AUTOCHECKBOX | 
-                    WS_DISABLED | WS_TABSTOP,13,98,102,8
-    GROUPBOX        "Translucency options (Windows 2000/XP only)",-1,124,116,
+                    WS_DISABLED | WS_TABSTOP,13,109,102,8
+    GROUPBOX        "Translucency options (Windows 2000/XP only)",-1,124,127,
                     179,71
     CONTROL         "Fade contact list in/out",IDC_FADEINOUT,"Button",
-                    BS_AUTOCHECKBOX | WS_TABSTOP,129,125,133,10
+                    BS_AUTOCHECKBOX | WS_TABSTOP,129,136,133,10
     CONTROL         "Transparent contact list",IDC_TRANSPARENT,"Button",
-                    BS_AUTOCHECKBOX | WS_TABSTOP,129,136,133,9
-    LTEXT           "Inactive opacity:",IDC_STATIC11,130,149,67,8
+                    BS_AUTOCHECKBOX | WS_TABSTOP,129,147,133,9
+    LTEXT           "Inactive opacity:",IDC_STATIC11,130,160,67,8
     CONTROL         "Slider2",IDC_TRANSINACTIVE,"msctls_trackbar32",TBS_TOP | 
-                    TBS_NOTICKS | WS_TABSTOP,197,145,64,14
-    LTEXT           "000%",IDC_INACTIVEPERC,267,148,25,8,SS_NOPREFIX
-    LTEXT           "Active opacity:",IDC_STATIC12,130,162,67,8
+                    TBS_NOTICKS | WS_TABSTOP,197,156,64,14
+    LTEXT           "000%",IDC_INACTIVEPERC,267,159,25,8,SS_NOPREFIX
+    LTEXT           "Active opacity:",IDC_STATIC12,130,173,67,8
     CONTROL         "Slider2",IDC_TRANSACTIVE,"msctls_trackbar32",TBS_TOP | 
-                    TBS_NOTICKS | WS_TABSTOP,197,159,64,14
-    LTEXT           "000%",IDC_ACTIVEPERC,267,163,25,8,SS_NOPREFIX
+                    TBS_NOTICKS | WS_TABSTOP,197,170,64,14
+    LTEXT           "000%",IDC_ACTIVEPERC,267,174,25,8,SS_NOPREFIX
     CONTROL         "Enable drop shadow (restart required)",IDC_DROPSHADOW,
                     "Button",BS_AUTOCHECKBOX | WS_DISABLED | WS_TABSTOP,130,
-                    175,166,10
-    GROUPBOX        "Frames",-1,124,0,179,65
-    RTEXT           "Between frames:",-1,152,37,86,10
-    EDITTEXT        IDC_FRAMESGAP,238,34,26,12,ES_RIGHT | ES_NUMBER
+                    186,166,10
+    GROUPBOX        "Frames",-1,124,11,179,65
+    RTEXT           "Between frames:",-1,152,48,86,10
+    EDITTEXT        IDC_FRAMESGAP,238,45,26,12,ES_RIGHT | ES_NUMBER
     CONTROL         "",IDC_FRAMESSPIN,"msctls_updown32",UDS_SETBUDDYINT | 
                     UDS_ALIGNRIGHT | UDS_AUTOBUDDY | UDS_ARROWKEYS | 
-                    UDS_NOTHOUSANDS | UDS_HOTTRACK,233,34,10,14
-    RTEXT           "After captions:",-1,152,48,86,10
-    EDITTEXT        IDC_CAPTIONSGAP,238,48,26,12,ES_RIGHT | ES_NUMBER
+                    UDS_NOTHOUSANDS | UDS_HOTTRACK,233,45,10,14
+    RTEXT           "After captions:",-1,152,59,86,10
+    EDITTEXT        IDC_CAPTIONSGAP,238,59,26,12,ES_RIGHT | ES_NUMBER
     CONTROL         "",IDC_CAPTIONSSPIN,"msctls_updown32",UDS_SETBUDDYINT | 
                     UDS_ALIGNRIGHT | UDS_AUTOBUDDY | UDS_ARROWKEYS | 
-                    UDS_NOTHOUSANDS | UDS_HOTTRACK,233,48,10,14
-    LTEXT           "pixels",IDC_STATIC3,266,49,21,8
-    LTEXT           "pixels",IDC_STATIC2,266,35,21,8
-    LTEXT           "Gaps",-1,133,26,38,9
-    CONTROL         "",IDC_COLOUR_KEY,"ColourPicker",WS_TABSTOP,133,13,32,12
+                    UDS_NOTHOUSANDS | UDS_HOTTRACK,233,59,10,14
+    LTEXT           "pixels",IDC_STATIC3,266,60,21,8
+    LTEXT           "pixels",IDC_STATIC2,266,46,21,8
+    LTEXT           "Gaps",-1,133,37,38,9
+    CONTROL         "",IDC_COLOUR_KEY,"ColourPicker",WS_TABSTOP,133,24,32,12
     CONTROL         "Key color for owned frames",IDC_CHECKKEYCOLOR,"Button",
-                    BS_AUTOCHECKBOX | BS_MULTILINE | WS_TABSTOP,172,10,72,20
+                    BS_AUTOCHECKBOX | BS_MULTILINE | WS_TABSTOP,172,21,72,20
     CONTROL         "Disable Layer Engine\n(restart required)",
                     IDC_LAYERENGINE,"Button",BS_AUTOCHECKBOX | BS_MULTILINE | 
-                    WS_TABSTOP,13,33,102,17
+                    WS_TABSTOP,13,44,102,17
     CONTROL         "Round corners",IDC_ROUNDCORNERS,"Button",
-                    BS_AUTOCHECKBOX | WS_DISABLED | WS_TABSTOP,13,170,102,8
-    GROUPBOX        "Non-layered mode",IDC_STWINDOWGROUP3,4,57,115,130
+                    BS_AUTOCHECKBOX | WS_DISABLED | WS_TABSTOP,13,181,102,8
+    GROUPBOX        "Non-layered mode",IDC_STWINDOWGROUP3,4,68,115,130
 END
 
 
@@ -1268,6 +1220,7 @@ BEGIN
         VERTGUIDE, 234
         VERTGUIDE, 303
         TOPMARGIN, 4
+        BOTTOMMARGIN, 192
         HORZGUIDE, 14
         HORZGUIDE, 36
     END
@@ -1292,290 +1245,290 @@ LANGUAGE LANG_ENGLISH, SUBLANG_ENGLISH_CAN
 // Dialog
 //
 
-IDD_OPT_ITEM_ROW DIALOGEX 0, 0, 178, 183
+IDD_OPT_ITEM_ROW DIALOGEX 0, 0, 178, 189
 STYLE DS_SETFONT | DS_FIXEDSYS | DS_CENTER | WS_CHILD
 EXSTYLE WS_EX_CONTROLPARENT
 FONT 8, "MS Shell Dlg", 400, 0, 0x1
 BEGIN
-    LISTBOX         IDC_LIST_ORDER,7,20,128,52,LBS_NOINTEGRALHEIGHT | 
+    LISTBOX         IDC_LIST_ORDER,7,26,128,52,LBS_NOINTEGRALHEIGHT | 
                     WS_VSCROLL | WS_TABSTOP
-    LTEXT           "Order of items:",IDC_STATIC,7,7,117,10
-    LTEXT           "Min row height:",IDC_STATIC,7,84,50,8
-    LTEXT           "pixels",IDC_STATIC,111,86,54,8
-    LTEXT           "Row border:",IDC_STATIC,7,98,44,8
-    LTEXT           "pixels",IDC_STATIC,111,99,54,8
-    EDITTEXT        IDC_MIN_ROW_HEIGHT,65,84,35,12,ES_NUMBER
+    LTEXT           "Order of items:",IDC_STATIC,7,13,117,10
+    LTEXT           "Min row height:",IDC_STATIC,7,90,50,8
+    LTEXT           "pixels",IDC_STATIC,111,92,54,8
+    LTEXT           "Row border:",IDC_STATIC,7,104,44,8
+    LTEXT           "pixels",IDC_STATIC,111,105,54,8
+    EDITTEXT        IDC_MIN_ROW_HEIGHT,65,90,35,12,ES_NUMBER
     CONTROL         "",IDC_MIN_ROW_HEIGHT_SPIN,"msctls_updown32",
                     UDS_SETBUDDYINT | UDS_ALIGNRIGHT | UDS_ARROWKEYS | 
-                    UDS_NOTHOUSANDS | UDS_HOTTRACK,98,84,11,12
-    EDITTEXT        IDC_ROW_BORDER,65,97,35,12,ES_NUMBER
+                    UDS_NOTHOUSANDS | UDS_HOTTRACK,98,90,11,12
+    EDITTEXT        IDC_ROW_BORDER,65,103,35,12,ES_NUMBER
     CONTROL         "",IDC_ROW_BORDER_SPIN,"msctls_updown32",UDS_SETBUDDYINT | 
                     UDS_ALIGNRIGHT | UDS_ARROWKEYS | UDS_NOTHOUSANDS | 
-                    UDS_HOTTRACK,99,98,11,12
+                    UDS_HOTTRACK,99,104,11,12
     CONTROL         "Variable row height",IDC_VARIABLE_ROW_HEIGHT,"Button",
-                    BS_AUTOCHECKBOX | WS_TABSTOP,8,142,126,10
+                    BS_AUTOCHECKBOX | WS_TABSTOP,8,148,126,10
     CONTROL         "Align left items to left",IDC_ALIGN_TO_LEFT,"Button",
-                    BS_AUTOCHECKBOX | WS_TABSTOP,8,154,126,10
+                    BS_AUTOCHECKBOX | WS_TABSTOP,8,160,126,10
     CONTROL         "Align right items to right",IDC_ALIGN_TO_RIGHT,"Button",
-                    BS_AUTOCHECKBOX | WS_TABSTOP,8,166,126,10
-    PUSHBUTTON      "Up",IDC_UP,140,20,31,12
-    PUSHBUTTON      "Down",IDC_DOWN,140,33,31,12
-    LTEXT           "Left margin:",IDC_STATIC,7,112,52,8
-    EDITTEXT        IDC_LEFTMARGIN,65,110,35,12,ES_NUMBER
+                    BS_AUTOCHECKBOX | WS_TABSTOP,8,172,126,10
+    PUSHBUTTON      "Up",IDC_UP,140,26,31,12
+    PUSHBUTTON      "Down",IDC_DOWN,140,39,31,12
+    LTEXT           "Left margin:",IDC_STATIC,7,118,52,8
+    EDITTEXT        IDC_LEFTMARGIN,65,116,35,12,ES_NUMBER
     CONTROL         "",IDC_LEFTMARGINSPIN,"msctls_updown32",UDS_SETBUDDYINT | 
                     UDS_ALIGNRIGHT | UDS_ARROWKEYS | UDS_NOTHOUSANDS | 
-                    UDS_HOTTRACK,100,111,11,14
-    LTEXT           "pixels",IDC_STATIC,111,112,54,8
-    LTEXT           "Right margin:",IDC_STATIC,7,126,52,8
-    EDITTEXT        IDC_RIGHTMARGIN,65,123,35,12,ES_NUMBER
+                    UDS_HOTTRACK,100,117,11,14
+    LTEXT           "pixels",IDC_STATIC,111,118,54,8
+    LTEXT           "Right margin:",IDC_STATIC,7,132,52,8
+    EDITTEXT        IDC_RIGHTMARGIN,65,129,35,12,ES_NUMBER
     CONTROL         "",IDC_RIGHTMARGINSPIN,"msctls_updown32",UDS_SETBUDDYINT | 
                     UDS_ALIGNRIGHT | UDS_ARROWKEYS | UDS_NOTHOUSANDS | 
-                    UDS_HOTTRACK,100,121,11,14
-    LTEXT           "pixels",IDC_STATIC,111,125,54,8
+                    UDS_HOTTRACK,100,127,11,14
+    LTEXT           "pixels",IDC_STATIC,111,131,54,8
 END
 
-IDD_OPT_SBAR DIALOGEX 0, 0, 287, 195
+IDD_OPT_SBAR DIALOGEX 0, 0, 287, 197
 STYLE DS_SETFONT | DS_FIXEDSYS | DS_CENTER | WS_CHILD
 EXSTYLE WS_EX_CONTROLPARENT
 FONT 8, "MS Shell Dlg", 0, 0, 0x1
 BEGIN
-    GROUPBOX        "Status Bar",IDC_STATIC,4,4,279,186
+    GROUPBOX        "Status Bar",IDC_STATIC,4,24,279,161
     CONTROL         "Show protocol names",IDC_SHOWPROTO,"Button",
-                    BS_AUTOCHECKBOX | WS_TABSTOP,22,33,134,10
+                    BS_AUTOCHECKBOX | WS_TABSTOP,22,53,134,10
     CONTROL         "Show status text",IDC_SHOWSTATUS,"Button",
-                    BS_AUTOCHECKBOX | WS_TABSTOP,22,46,124,10
+                    BS_AUTOCHECKBOX | WS_TABSTOP,22,66,124,10
     CONTROL         "Use connecting Icon",IDC_USECONNECTINGICON,"Button",
-                    BS_AUTOCHECKBOX | WS_TABSTOP,22,72,124,10
+                    BS_AUTOCHECKBOX | WS_TABSTOP,22,92,124,10
     CONTROL         "Right click opens status menu",IDC_RIGHTSTATUS,"Button",
-                    BS_AUTORADIOBUTTON,24,166,122,10
+                    BS_AUTORADIOBUTTON,156,120,120,10
     CONTROL         "Right click opens Miranda menu",IDC_RIGHTMIRANDA,"Button",
-                    BS_AUTORADIOBUTTON,24,177,122,10
+                    BS_AUTORADIOBUTTON,156,131,120,10
     CONTROL         "Make sections equal width",IDC_EQUALSECTIONS,"Button",
-                    BS_AUTOCHECKBOX | WS_TABSTOP,22,85,124,10
-    EDITTEXT        IDC_OFFSETICON,89,100,35,12,ES_NUMBER
+                    BS_AUTOCHECKBOX | WS_TABSTOP,22,105,124,10
+    EDITTEXT        IDC_OFFSETICON,89,120,35,12,ES_NUMBER
     CONTROL         "",IDC_OFFSETSPIN,"msctls_updown32",UDS_SETBUDDYINT | 
                     UDS_ALIGNRIGHT | UDS_AUTOBUDDY | UDS_ARROWKEYS | 
-                    UDS_NOTHOUSANDS | UDS_HOTTRACK,125,99,11,12
-    RTEXT           "Left border",IDC_STATIC,24,102,60,10
-    EDITTEXT        IDC_OFFSETICON2,89,115,35,12,ES_NUMBER
+                    UDS_NOTHOUSANDS | UDS_HOTTRACK,125,119,11,12
+    RTEXT           "Left border",IDC_STATIC,24,122,60,10
+    EDITTEXT        IDC_OFFSETICON2,89,135,35,12,ES_NUMBER
     CONTROL         "",IDC_OFFSETSPIN2,"msctls_updown32",UDS_SETBUDDYINT | 
                     UDS_ALIGNRIGHT | UDS_AUTOBUDDY | UDS_ARROWKEYS | 
-                    UDS_NOTHOUSANDS | UDS_HOTTRACK,125,114,11,12
-    RTEXT           "Right border",IDC_STATIC,23,117,60,10
-    EDITTEXT        IDC_OFFSETICON3,89,129,35,12,ES_NUMBER
+                    UDS_NOTHOUSANDS | UDS_HOTTRACK,125,134,11,12
+    RTEXT           "Right border",IDC_STATIC,23,137,60,10
+    EDITTEXT        IDC_OFFSETICON3,89,149,35,12,ES_NUMBER
     CONTROL         "",IDC_OFFSETSPIN3,"msctls_updown32",UDS_SETBUDDYINT | 
                     UDS_ALIGNRIGHT | UDS_AUTOBUDDY | UDS_ARROWKEYS | 
-                    UDS_NOTHOUSANDS | UDS_HOTTRACK,125,128,10,12
-    RTEXT           "Space between ",IDC_STATIC,23,131,60,10
-    COMBOBOX        IDC_COMBO2,88,147,49,48,CBS_DROPDOWNLIST | WS_VSCROLL | 
+                    UDS_NOTHOUSANDS | UDS_HOTTRACK,125,148,10,12
+    RTEXT           "Space between ",IDC_STATIC,23,151,60,10
+    COMBOBOX        IDC_COMBO2,88,167,49,48,CBS_DROPDOWNLIST | WS_VSCROLL | 
                     WS_TABSTOP
-    RTEXT           "Align",IDC_STATIC,25,149,57,10
+    RTEXT           "Align",IDC_STATIC,25,169,57,10
     CONTROL         "Show xStatus icon",IDC_SHOWXSTATUS,"Button",
-                    BS_AUTOCHECKBOX | WS_TABSTOP,156,34,120,10
+                    BS_AUTOCHECKBOX | WS_TABSTOP,156,54,120,10
     CONTROL         "Show normal status as overlay",IDC_SHOWNORMAL,"Button",
-                    BS_AUTOCHECKBOX | WS_TABSTOP,156,57,120,10
+                    BS_AUTOCHECKBOX | WS_TABSTOP,156,77,120,10
     CONTROL         "Status overlay opacity is 75% ",IDC_TRANSPARENTOVERLAY,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,156,69,120,10
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,156,89,120,10
     CONTROL         "Show both icons",IDC_SHOWBOTH,"Button",BS_AUTOCHECKBOX | 
-                    WS_TABSTOP,156,45,120,10
+                    WS_TABSTOP,156,65,120,10
     CONTROL         "Show status bar",IDC_SHOWSBAR,"Button",BS_AUTOCHECKBOX | 
-                    WS_TABSTOP,12,17,144,10
+                    WS_TABSTOP,12,37,144,10
     CONTROL         "Show xStatus Name",IDC_SHOWXSTATUSNAME,"Button",
-                    BS_AUTOCHECKBOX | WS_TABSTOP,22,59,124,10
+                    BS_AUTOCHECKBOX | WS_TABSTOP,22,79,124,10
 END
 
-IDD_OPT_ITEM_AVATAR DIALOGEX 0, 0, 260, 164
+IDD_OPT_ITEM_AVATAR DIALOGEX 0, 0, 260, 171
 STYLE DS_SETFONT | DS_FIXEDSYS | WS_CHILD
 EXSTYLE WS_EX_CONTROLPARENT
 FONT 8, "MS Shell Dlg", 400, 0, 0x1
 BEGIN
     CONTROL         "Draw border on avatar",IDC_AVATAR_DRAW_BORDER,"Button",
-                    BS_AUTOCHECKBOX | WS_TABSTOP,7,18,246,9
+                    BS_AUTOCHECKBOX | WS_TABSTOP,7,25,246,9
     CONTROL         "Show Avatars",IDC_SHOW_AVATARS,"Button",BS_AUTOCHECKBOX | 
-                    WS_TABSTOP,7,7,246,8
+                    WS_TABSTOP,7,14,246,8
     CONTROL         "Draw overlay icons",IDC_AVATAR_OVERLAY_ICONS,"Button",
-                    BS_AUTOCHECKBOX | WS_TABSTOP,7,104,246,8
-    LTEXT           "Size:",IDC_AVATAR_SIZE_L,7,88,18,8
-    EDITTEXT        IDC_AVATAR_SIZE,170,87,35,12,ES_NUMBER
+                    BS_AUTOCHECKBOX | WS_TABSTOP,7,111,246,8
+    LTEXT           "Size:",IDC_AVATAR_SIZE_L,7,95,18,8
+    EDITTEXT        IDC_AVATAR_SIZE,170,94,35,12,ES_NUMBER
     CONTROL         "",IDC_AVATAR_SIZE_SPIN,"msctls_updown32",
                     UDS_SETBUDDYINT | UDS_ALIGNRIGHT | UDS_ARROWKEYS | 
-                    UDS_NOTHOUSANDS | UDS_HOTTRACK,194,87,11,12
+                    UDS_NOTHOUSANDS | UDS_HOTTRACK,194,94,11,12
     CONTROL         "Round corners of avatars",IDC_AVATAR_ROUND_CORNERS,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,47,246,8
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,54,246,8
     CONTROL         "Ignore size for row height calcs",
                     IDC_AVATAR_IGNORE_SIZE,"Button",BS_AUTOCHECKBOX | 
-                    WS_TABSTOP,7,75,246,8
-    LTEXT           "Border Color:",IDC_AVATAR_BORDER_COLOR_L,20,31,53,10
+                    WS_TABSTOP,7,82,246,8
+    LTEXT           "Border Color:",IDC_AVATAR_BORDER_COLOR_L,20,38,53,10
     CONTROL         "",IDC_AVATAR_BORDER_COLOR,"ColourPicker",WS_TABSTOP,77,
-                    29,17,13
+                    36,17,13
     CONTROL         "Custom corner size:",
                     IDC_AVATAR_CUSTOM_CORNER_SIZE_CHECK,"Button",
-                    BS_AUTOCHECKBOX | WS_TABSTOP,18,59,78,11
-    EDITTEXT        IDC_AVATAR_CUSTOM_CORNER_SIZE,97,58,35,12,ES_NUMBER
+                    BS_AUTOCHECKBOX | WS_TABSTOP,18,66,78,11
+    EDITTEXT        IDC_AVATAR_CUSTOM_CORNER_SIZE,97,65,35,12,ES_NUMBER
     CONTROL         "",IDC_AVATAR_CUSTOM_CORNER_SIZE_SPIN,"msctls_updown32",
                     UDS_SETBUDDYINT | UDS_ALIGNRIGHT | UDS_ARROWKEYS | 
-                    UDS_NOTHOUSANDS | UDS_HOTTRACK,125,58,11,12
+                    UDS_NOTHOUSANDS | UDS_HOTTRACK,125,65,11,12
     CONTROL         "Normal overlay icon",IDC_AVATAR_OVERLAY_ICON_NORMAL,
-                    "Button",BS_AUTORADIOBUTTON,29,117,224,8
+                    "Button",BS_AUTORADIOBUTTON,29,124,224,8
     CONTROL         "Protocol status icon",IDC_AVATAR_OVERLAY_ICON_PROTOCOL,
-                    "Button",BS_AUTORADIOBUTTON,29,128,224,8
+                    "Button",BS_AUTORADIOBUTTON,29,135,224,8
     CONTROL         "Contact icon",IDC_AVATAR_OVERLAY_ICON_CONTACT,"Button",
-                    BS_AUTORADIOBUTTON,29,139,186,8
-    LTEXT           "pixels",IDC_AVATAR_SIZE_PIXELS2,210,89,18,8
-    RTEXT           "height",IDC_AVATAR_SIZE_PIXELS3,121,88,44,8
-    EDITTEXT        IDC_AVATAR_WIDTH,78,87,35,12,ES_NUMBER
+                    BS_AUTORADIOBUTTON,29,146,186,8
+    LTEXT           "pixels",IDC_AVATAR_SIZE_PIXELS2,210,96,18,8
+    RTEXT           "height",IDC_AVATAR_SIZE_PIXELS3,121,95,44,8
+    EDITTEXT        IDC_AVATAR_WIDTH,78,94,35,12,ES_NUMBER
     CONTROL         "",IDC_AVATAR_WIDTH_SPIN,"msctls_updown32",
                     UDS_SETBUDDYINT | UDS_ALIGNRIGHT | UDS_ARROWKEYS | 
-                    UDS_NOTHOUSANDS | UDS_HOTTRACK,102,87,11,12
-    RTEXT           "Max width",IDC_AVATAR_SIZE_PIXELS,31,89,44,8
+                    UDS_NOTHOUSANDS | UDS_HOTTRACK,102,94,11,12
+    RTEXT           "Max width",IDC_AVATAR_SIZE_PIXELS,31,96,44,8
 END
 
-IDD_OPT_ITEM_ICON DIALOGEX 0, 0, 260, 85
+IDD_OPT_ITEM_ICON DIALOGEX 0, 0, 260, 108
 STYLE DS_SETFONT | DS_FIXEDSYS | WS_CHILD
 EXSTYLE WS_EX_CONTROLPARENT
 FONT 8, "MS Shell Dlg", 400, 0, 0x1
 BEGIN
     CONTROL         "Hide icon when showing avatar",IDC_HIDE_ICON_ON_AVATAR,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,7,246,8
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,24,246,8
     CONTROL         "Ignore size for row height calcs",IDC_NOTCHECKICONSIZE,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,44,246,8
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,61,246,8
     CONTROL         "Draw icon in avatar space",IDC_DRAW_ON_AVATAR_SPACE,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,19,19,234,8
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,19,36,234,8
     CONTROL         "Disable icon blinking",IDC_ICONBLINK,"Button",
-                    BS_AUTOCHECKBOX | WS_TABSTOP,7,30,246,10
+                    BS_AUTOCHECKBOX | WS_TABSTOP,7,47,246,10
     CONTROL         "Hide groups icon",IDC_HIDE_GROUPSICON,"Button",
-                    BS_AUTOCHECKBOX | WS_TABSTOP,7,58,127,8
+                    BS_AUTOCHECKBOX | WS_TABSTOP,7,75,127,8
 END
 
-IDD_OPT_ITEM_TEXT DIALOGEX 0, 0, 260, 144
+IDD_OPT_ITEM_TEXT DIALOGEX 0, 0, 260, 160
 STYLE DS_SETFONT | DS_FIXEDSYS | WS_CHILD
 EXSTYLE WS_EX_CONTROLPARENT
 FONT 8, "MS Shell Dlg", 400, 0, 0x1
 BEGIN
     CONTROL         "Right-To-Left reading mode (mirror template)",IDC_RTL,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,25,246,8
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,42,246,8
     CONTROL         "Replace smileys in clist",IDC_REPLACE_SMILEYS,"Button",
-                    BS_AUTOCHECKBOX | WS_TABSTOP,7,64,246,8
+                    BS_AUTOCHECKBOX | WS_TABSTOP,7,81,246,8
     CONTROL         "Use protocol smileys",IDC_USE_PROTOCOL_SMILEYS,"Button",
-                    BS_AUTOCHECKBOX | WS_TABSTOP,21,77,232,8
+                    BS_AUTOCHECKBOX | WS_TABSTOP,21,94,232,8
     CONTROL         "Draw smileys on first line",
                     IDC_DRAW_SMILEYS_ON_FIRST_LINE,"Button",BS_AUTOCHECKBOX | 
-                    WS_TABSTOP,7,102,246,8
+                    WS_TABSTOP,7,119,246,8
     CONTROL         "Ignore size for row height calcs",IDC_IGNORE_SIZE,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,51,246,8
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,68,246,8
     CONTROL         "Resize smileys",IDC_RESIZE_SMILEYS,"Button",
-                    BS_AUTOCHECKBOX | WS_TABSTOP,21,90,232,8
+                    BS_AUTOCHECKBOX | WS_TABSTOP,21,107,232,8
     CONTROL         "Align to right",IDC_ALIGN_RIGHT,"Button",
-                    BS_AUTOCHECKBOX | WS_TABSTOP,7,38,246,8
-    COMBOBOX        IDC_ALIGNGROUPCOMBO,6,7,140,45,CBS_DROPDOWNLIST | 
+                    BS_AUTOCHECKBOX | WS_TABSTOP,7,55,246,8
+    COMBOBOX        IDC_ALIGNGROUPCOMBO,6,24,140,45,CBS_DROPDOWNLIST | 
                     WS_VSCROLL | WS_TABSTOP
     CONTROL         "Append nick if different from custom name",
                     IDC_APPEND_NICK,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,
-                    114,246,8
+                    131,246,8
     CONTROL         "Trim long text with ellipsis",IDC_TRIM_TEXT,"Button",
-                    BS_AUTOCHECKBOX | WS_TABSTOP,7,127,246,8
+                    BS_AUTOCHECKBOX | WS_TABSTOP,7,143,246,8
 END
 
-IDD_OPT_ITEM_SECOND_LINE DIALOGEX 0, 0, 256, 221
+IDD_OPT_ITEM_SECOND_LINE DIALOGEX 0, 0, 256, 231
 STYLE DS_SETFONT | DS_FIXEDSYS | WS_CHILD
 EXSTYLE WS_EX_CONTROLPARENT
 FONT 8, "MS Shell Dlg", 400, 0, 0x1
 BEGIN
     CONTROL         "Show second line",IDC_SHOW,"Button",BS_AUTOCHECKBOX | 
-                    WS_TABSTOP,7,7,242,8
-    LTEXT           "Top space:",IDC_STATIC_TOP,7,28,40,8
-    EDITTEXT        IDC_TOP_SPACE,50,26,35,12,ES_NUMBER
+                    WS_TABSTOP,7,16,242,8
+    LTEXT           "Top space:",IDC_STATIC_TOP,7,37,40,8
+    EDITTEXT        IDC_TOP_SPACE,50,35,35,12,ES_NUMBER
     CONTROL         "",IDC_TOP_SPACE_SPIN,"msctls_updown32",UDS_SETBUDDYINT | 
                     UDS_ALIGNRIGHT | UDS_ARROWKEYS | UDS_NOTHOUSANDS | 
-                    UDS_HOTTRACK,84,26,11,12
-    LTEXT           "pixels",IDC_STATIC_PIXELS,96,28,18,8
+                    UDS_HOTTRACK,84,35,11,12
+    LTEXT           "pixels",IDC_STATIC_PIXELS,96,37,18,8
     CONTROL         "Draw smileys on second line",IDC_DRAW_SMILEYS,"Button",
-                    BS_AUTOCHECKBOX | WS_TABSTOP,7,43,242,8
-    LTEXT           "Text:",IDC_STATIC_TEXT,7,58,83,9
-    CONTROL         "Status",IDC_STATUS,"Button",BS_AUTORADIOBUTTON,18,70,
+                    BS_AUTOCHECKBOX | WS_TABSTOP,7,52,242,8
+    LTEXT           "Text:",IDC_STATIC_TEXT,7,67,83,9
+    CONTROL         "Status",IDC_STATUS,"Button",BS_AUTORADIOBUTTON,18,79,
                     118,8
     CONTROL         "Nickname",IDC_NICKNAME,"Button",BS_AUTORADIOBUTTON,18,
-                    81,118,8
+                    90,118,8
     CONTROL         "Away Message",IDC_STATUS_MESSAGE,"Button",
-                    BS_AUTORADIOBUTTON,18,92,118,8
+                    BS_AUTORADIOBUTTON,18,101,118,8
     CONTROL         "Listening to",IDC_LISTENING_TO,"Button",
-                    BS_AUTORADIOBUTTON,18,103,118,8
+                    BS_AUTORADIOBUTTON,18,112,118,8
     CONTROL         "Contact time",IDC_CONTACT_TIME,"Button",
-                    BS_AUTORADIOBUTTON,18,114,118,8
-    CONTROL         "Text:",IDC_TEXT,"Button",BS_AUTORADIOBUTTON,18,125,118,
+                    BS_AUTORADIOBUTTON,18,123,118,8
+    CONTROL         "Text:",IDC_TEXT,"Button",BS_AUTORADIOBUTTON,18,134,118,
                     8
-    EDITTEXT        IDC_VARIABLE_TEXT,32,141,217,73,ES_MULTILINE | 
+    EDITTEXT        IDC_VARIABLE_TEXT,32,149,217,73,ES_MULTILINE | 
                     ES_AUTOVSCROLL | ES_WANTRETURN | WS_VSCROLL
     CONTROL         "Show status if there isn't away message",
                     IDC_SHOW_STATUS_IF_NOAWAY,"Button",BS_AUTOCHECKBOX | 
-                    BS_LEFT | BS_TOP | BS_MULTILINE | WS_TABSTOP,150,67,99,
+                    BS_LEFT | BS_TOP | BS_MULTILINE | WS_TABSTOP,150,76,99,
                     18
     CONTROL         "Show listening to if there isn't away message",
                     IDC_SHOW_LISTENING_IF_NOAWAY,"Button",BS_AUTOCHECKBOX | 
-                    BS_LEFT | BS_TOP | BS_MULTILINE | WS_TABSTOP,150,85,99,
+                    BS_LEFT | BS_TOP | BS_MULTILINE | WS_TABSTOP,150,94,99,
                     18
     CONTROL         "XStatus has priority",IDC_XSTATUS_HAS_PRIORITY,"Button",
-                    BS_AUTOCHECKBOX | WS_TABSTOP,150,102,99,12
+                    BS_AUTOCHECKBOX | WS_TABSTOP,150,111,99,12
     CONTROL         "Use 'XStatus: XMessage'",IDC_USE_NAME_AND_MESSAGE,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,150,113,99,12
-    RTEXT           "(Variables will be replaced)",IDC_VARIABLES_L,141,127,
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,150,122,99,12
+    RTEXT           "(Variables will be replaced)",IDC_VARIABLES_L,141,136,
                     108,8
 END
 
-IDD_OPT_ITEM_THIRD_LINE DIALOGEX 0, 0, 256, 221
+IDD_OPT_ITEM_THIRD_LINE DIALOGEX 0, 0, 256, 227
 STYLE DS_SETFONT | DS_FIXEDSYS | WS_CHILD
 EXSTYLE WS_EX_CONTROLPARENT
 FONT 8, "MS Shell Dlg", 400, 0, 0x1
 BEGIN
     CONTROL         "Show third line",IDC_SHOW,"Button",BS_AUTOCHECKBOX | 
-                    WS_TABSTOP,7,7,242,8
-    LTEXT           "Top space:",IDC_STATIC_TOP,7,28,40,8
-    EDITTEXT        IDC_TOP_SPACE,50,26,35,12,ES_NUMBER
+                    WS_TABSTOP,7,16,242,8
+    LTEXT           "Top space:",IDC_STATIC_TOP,7,37,40,8
+    EDITTEXT        IDC_TOP_SPACE,50,35,35,12,ES_NUMBER
     CONTROL         "",IDC_TOP_SPACE_SPIN,"msctls_updown32",UDS_SETBUDDYINT | 
                     UDS_ALIGNRIGHT | UDS_ARROWKEYS | UDS_NOTHOUSANDS | 
-                    UDS_HOTTRACK,84,26,11,12
-    LTEXT           "pixels",IDC_STATIC_PIXELS,96,28,18,8
+                    UDS_HOTTRACK,84,35,11,12
+    LTEXT           "pixels",IDC_STATIC_PIXELS,96,37,18,8
     CONTROL         "Draw smileys on third line",IDC_DRAW_SMILEYS,"Button",
-                    BS_AUTOCHECKBOX | WS_TABSTOP,7,43,242,8
-    LTEXT           "Text:",IDC_STATIC_TEXT,7,58,83,9
-    CONTROL         "Status",IDC_STATUS,"Button",BS_AUTORADIOBUTTON,18,70,
+                    BS_AUTOCHECKBOX | WS_TABSTOP,7,52,242,8
+    LTEXT           "Text:",IDC_STATIC_TEXT,7,67,83,9
+    CONTROL         "Status",IDC_STATUS,"Button",BS_AUTORADIOBUTTON,18,79,
                     118,8
     CONTROL         "Nickname",IDC_NICKNAME,"Button",BS_AUTORADIOBUTTON,18,
-                    81,118,8
+                    90,118,8
     CONTROL         "Away Message",IDC_STATUS_MESSAGE,"Button",
-                    BS_AUTORADIOBUTTON,18,92,118,8
+                    BS_AUTORADIOBUTTON,18,101,118,8
     CONTROL         "Listening to",IDC_LISTENING_TO,"Button",
-                    BS_AUTORADIOBUTTON,18,103,118,8
+                    BS_AUTORADIOBUTTON,18,112,118,8
     CONTROL         "Contact time",IDC_CONTACT_TIME,"Button",
-                    BS_AUTORADIOBUTTON,18,114,118,8
-    CONTROL         "Text:",IDC_TEXT,"Button",BS_AUTORADIOBUTTON,18,125,118,
+                    BS_AUTORADIOBUTTON,18,123,118,8
+    CONTROL         "Text:",IDC_TEXT,"Button",BS_AUTORADIOBUTTON,18,134,118,
                     8
-    EDITTEXT        IDC_VARIABLE_TEXT,32,141,217,73,ES_MULTILINE | 
+    EDITTEXT        IDC_VARIABLE_TEXT,32,150,217,73,ES_MULTILINE | 
                     ES_AUTOVSCROLL | ES_WANTRETURN | WS_VSCROLL
     CONTROL         "Show status if there isn't away message",
                     IDC_SHOW_STATUS_IF_NOAWAY,"Button",BS_AUTOCHECKBOX | 
-                    BS_LEFT | BS_TOP | BS_MULTILINE | WS_TABSTOP,150,67,99,
+                    BS_LEFT | BS_TOP | BS_MULTILINE | WS_TABSTOP,150,76,99,
                     18
     CONTROL         "Show listening to if there isn't away message",
                     IDC_SHOW_LISTENING_IF_NOAWAY,"Button",BS_AUTOCHECKBOX | 
-                    BS_LEFT | BS_TOP | BS_MULTILINE | WS_TABSTOP,150,85,99,
+                    BS_LEFT | BS_TOP | BS_MULTILINE | WS_TABSTOP,150,94,99,
                     18
     CONTROL         "XStatus has priority",IDC_XSTATUS_HAS_PRIORITY,"Button",
-                    BS_AUTOCHECKBOX | WS_TABSTOP,150,102,99,12
+                    BS_AUTOCHECKBOX | WS_TABSTOP,150,111,99,12
     CONTROL         "Use 'XStatus: XMessage'",IDC_USE_NAME_AND_MESSAGE,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,150,113,99,12
-    RTEXT           "(Variables will be replaced)",IDC_VARIABLES_L,141,127,
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,150,122,99,12
+    RTEXT           "(Variables will be replaced)",IDC_VARIABLES_L,141,136,
                     108,8
 END
 
-IDD_OPT_ITEM_EXTRAICONS DIALOGEX 0, 0, 222, 148
+IDD_OPT_ITEM_EXTRAICONS DIALOGEX 0, 0, 222, 162
 STYLE DS_SETFONT | DS_FIXEDSYS | WS_CHILD
 EXSTYLE WS_EX_CONTROLPARENT
 FONT 8, "MS Shell Dlg", 400, 0, 0x1
 BEGIN
-    GROUPBOX        "Contact List Extra Icons",IDC_STATIC,7,7,205,134
+    GROUPBOX        "Contact List Extra Icons",IDC_STATIC,7,19,205,131
     CONTROL         "",IDC_EXTRAORDER,"SysTreeView32",TVS_NOTOOLTIPS | 
-                    WS_BORDER | WS_TABSTOP,18,22,182,107
+                    WS_BORDER | WS_TABSTOP,18,36,182,107
 END
 
 IDD_OPT_ROWTMPL DIALOGEX 0, 0, 299, 207
@@ -1630,7 +1583,7 @@ BEGIN
         LEFTMARGIN, 7
         RIGHTMARGIN, 171
         TOPMARGIN, 7
-        BOTTOMMARGIN, 176
+        BOTTOMMARGIN, 182
     END
 
     IDD_OPT_SBAR, DIALOG
@@ -1643,7 +1596,7 @@ BEGIN
         VERTGUIDE, 156
         VERTGUIDE, 276
         TOPMARGIN, 4
-        BOTTOMMARGIN, 191
+        BOTTOMMARGIN, 193
         HORZGUIDE, 33
     END
 
@@ -1652,7 +1605,7 @@ BEGIN
         LEFTMARGIN, 7
         RIGHTMARGIN, 253
         TOPMARGIN, 7
-        BOTTOMMARGIN, 157
+        BOTTOMMARGIN, 164
     END
 
     IDD_OPT_ITEM_ICON, DIALOG
@@ -1660,7 +1613,7 @@ BEGIN
         LEFTMARGIN, 7
         RIGHTMARGIN, 144
         TOPMARGIN, 7
-        BOTTOMMARGIN, 78
+        BOTTOMMARGIN, 101
     END
 
     IDD_OPT_ITEM_TEXT, DIALOG
@@ -1668,7 +1621,7 @@ BEGIN
         LEFTMARGIN, 7
         RIGHTMARGIN, 253
         TOPMARGIN, 7
-        BOTTOMMARGIN, 135
+        BOTTOMMARGIN, 151
     END
 
     IDD_OPT_ITEM_SECOND_LINE, DIALOG
@@ -1676,7 +1629,7 @@ BEGIN
         LEFTMARGIN, 7
         RIGHTMARGIN, 249
         TOPMARGIN, 7
-        BOTTOMMARGIN, 214
+        BOTTOMMARGIN, 224
     END
 
     IDD_OPT_ITEM_THIRD_LINE, DIALOG
@@ -1684,7 +1637,7 @@ BEGIN
         LEFTMARGIN, 7
         RIGHTMARGIN, 249
         TOPMARGIN, 7
-        BOTTOMMARGIN, 199
+        BOTTOMMARGIN, 205
     END
 
     IDD_OPT_ITEM_EXTRAICONS, DIALOG
@@ -1693,8 +1646,8 @@ BEGIN
         RIGHTMARGIN, 212
         VERTGUIDE, 18
         VERTGUIDE, 200
-        TOPMARGIN, 7
-        BOTTOMMARGIN, 141
+        TOPMARGIN, 5
+        BOTTOMMARGIN, 155
     END
 
     IDD_OPT_ROWTMPL, DIALOG

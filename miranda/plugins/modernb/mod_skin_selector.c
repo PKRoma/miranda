@@ -405,7 +405,6 @@ SKINOBJECTDESCRIPTOR *  skin_FindObjectByRequest(char * szValue,TList_ModernMask
             mmTemplateList=glObjectList.MaskList;
 		else return NULL;
     if (!mmTemplateList) return NULL;
-	if (IsBadReadPtr(mmTemplateList,sizeof(TList_ModernMask)))return NULL;
     ParseToModernMask(&mm,szValue);
     while (i<mmTemplateList->dwMaskCnt)
     {

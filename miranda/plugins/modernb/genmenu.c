@@ -33,7 +33,7 @@ void FreeAndNil(void **p)
   {
     if (*p!=NULL)
     {
-      if (!IsBadCodePtr(*p))
+      if (!p)
       {
         mir_free(*p);
 	  }

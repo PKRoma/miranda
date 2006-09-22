@@ -79,24 +79,10 @@ static int handleCompare( void* c1, void* c2 )
 //		hContact=(HANDLE)CallService(MS_DB_CONTACT_FINDNEXT,(WPARAM)hContact,0);
 //		i++;
 //}	}
-#define MAX_SECTIONS 5
-
-typedef struct _section
-{
-	HANDLE hContact;
-	CRITICAL_SECTION cacheSection;
-} LOCKPDNCE;
-
-CRITICAL_SECTION protectSection={0};
-LOCKPDNCE lockedPDNCE[MAX_SECTIONS]={0};
-
 
 void InitDisplayNameCache(void)
 {
 	int i=0;
-	for (i=0;i<MAX_SECTIONS; i++) InitializeCriticalSection(&(lockedPDNCE[i].cacheSection));
-	InitializeCriticalSection(&protectSection);
-	InitializeCriticalSection(&cacheSection);
 	clistCache = li.List_Create( 0, 50 );
 	clistCache->sortFunc = handleCompare;
 }
@@ -112,56 +98,9 @@ void FreeDisplayNameCache()
 		li.List_Destroy( clistCache ); 
 		mir_free(clistCache);
 		clistCache = NULL;
-		{
-			int i=0;
-			for (i=0;i<MAX_SECTIONS; i++)	DeleteCriticalSection(&(lockedPDNCE[i].cacheSection));
-			DeleteCriticalSection(&protectSection);
-			DeleteCriticalSection(&cacheSection);
-		}
 	}	
 }
 
-
-void LockCacheItem(HANDLE hContact, char * debug, int line)
-{
-	//
-	int ind=0;
-	int zero=-1;
-	if (!clistCache) return;
-	EnterCriticalSection(&protectSection);
-	//find here
-	for (ind=0; ind<MAX_SECTIONS-1; ind++) 
-		if (lockedPDNCE[ind].hContact==hContact) break;
-	if (ind==MAX_SECTIONS-1) // was not found 
-	{
-		for (zero=0; zero<MAX_SECTIONS-1; zero++) if (lockedPDNCE[zero].hContact==NULL) break;
-		if (zero!=MAX_SECTIONS-1)
-			lockedPDNCE[zero].hContact=hContact;
-		ind=zero;
-	}
-	LeaveCriticalSection(&protectSection);
-	//enter here
-	//TRACEVAR("In file %s ", debug);
-	//TRACEVAR("at line %d ", line);
-	//TRACEVAR("locking - %d", hContact);
-	EnterCriticalSection(&(lockedPDNCE[ind].cacheSection));
-}
-
-void UnlockCacheItem(HANDLE hContact)
-{
-	int ind=0;
-	if (!clistCache) return;
-	EnterCriticalSection(&protectSection);
-	for (ind=0; ind<MAX_SECTIONS-1; ind++) if (lockedPDNCE[ind].hContact==hContact) break;
-	if (ind!=MAX_SECTIONS-1) 
-		if (lockedPDNCE[ind].cacheSection.LockCount<1)  lockedPDNCE[ind].hContact=NULL;
-
-	//find here
-	LeaveCriticalSection(&protectSection);
-	//leave here
-	//TRACEVAR(" ... and unlock - %d\n", hContact);
-	LeaveCriticalSection(&(lockedPDNCE[ind].cacheSection));
-}
 
 ClcCacheEntryBase* cliGetCacheEntry(HANDLE hContact)
 {
@@ -258,7 +197,6 @@ int CListSettings_SetToCache(pdisplayNameCacheEntry pSrc)
 void cliFreeCacheItem( pdisplayNameCacheEntry p )
 {
 	HANDLE hContact=p->hContact;
-	LockCacheItem(hContact, __FILE__, __LINE__);
 	if ( !p->isUnknown && p->name && p->name!=UnknownConctactTranslatedName) mir_free(p->name);
 	p->name = NULL; 
 	#if defined( _UNICODE )
@@ -269,7 +207,6 @@ void cliFreeCacheItem( pdisplayNameCacheEntry p )
 	if ( p->szThirdLineText) mir_free(p->szThirdLineText);
 	if ( p->plSecondLineText) {Cache_DestroySmileyList(p->plSecondLineText);p->plSecondLineText=NULL;}
 	if ( p->plThirdLineText)  {Cache_DestroySmileyList(p->plThirdLineText);p->plThirdLineText=NULL;}
-	UnlockCacheItem(hContact);
 }
 
 
@@ -420,7 +357,6 @@ void InvalidateDNCEbyPointer(HANDLE hContact,pdisplayNameCacheEntry pdnce,int Se
 	{
 		if (SettingType==16)
 		{
-			LockCacheItem(hContact, __FILE__, __LINE__);
 			if (pdnce->szSecondLineText) 
 			{
 				
@@ -446,7 +382,6 @@ void InvalidateDNCEbyPointer(HANDLE hContact,pdisplayNameCacheEntry pdnce,int Se
 			pdnce->timezone=-1;
 			Cache_GetTimezone(NULL,pdnce->hContact);
 			SettingType&=~16;
-			UnlockCacheItem(hContact);
 		}
 
 		if (SettingType==-1||SettingType==DBVT_DELETED)

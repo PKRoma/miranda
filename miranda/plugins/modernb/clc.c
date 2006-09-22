@@ -634,9 +634,6 @@ case WM_CREATE:
         SetWindowLong(hwnd,0,(long)dat);
         dat->m_paintCouter=0;
         dat->hWnd=hwnd;
-        //			dat->isStarting=TRUE;
-        InitializeCriticalSection(&dat->lockitemCS);
-
         dat->use_avatar_service = ServiceExists(MS_AV_GETAVATARBITMAP);
         if (dat->use_avatar_service)
         {
@@ -854,15 +851,14 @@ case INTM_ICONCHANGED:
 case INTM_AVATARCHANGED:
     {
         struct ClcContact *contact;
-        lockdat;
         if (FindItem(hwnd,dat,(HANDLE)wParam,&contact,NULL,NULL,FALSE)) 
         {
             Cache_GetAvatar(dat, contact); 
-            ulockdat;
+            
         }
         else if (dat->use_avatar_service && !wParam)
         {
-            ulockdat;
+            
             UpdateAllAvatars(dat);
         }
         CLUI__cliInvalidateRect(hwnd, NULL, FALSE);
@@ -873,7 +869,7 @@ case INTM_TIMEZONECHANGED:
     {
         struct ClcContact *contact;
         if(!FindItem(hwnd,dat,(HANDLE)wParam,&contact,NULL,NULL,FALSE)) break;
-        if (!IsBadWritePtr(contact, sizeof(struct ClcContact)))
+        if (contact) //!IsBadWritePtr(contact, sizeof(struct ClcContact)))
         {
             Cache_GetTimezone(dat,contact->hContact);
             Cache_GetText(dat, contact,1);
@@ -890,7 +886,7 @@ case INTM_NAMECHANGED:
         pcli->pfnInvalidateDisplayNameCacheEntry((HANDLE)wParam);
         if(!FindItem(hwnd,dat,(HANDLE)wParam,&contact,NULL,NULL,FALSE)) break;
         lstrcpyn(contact->szText, pcli->pfnGetContactDisplayName((HANDLE)wParam,0),sizeof(contact->szText));
-        if (!IsBadWritePtr(contact, sizeof(struct ClcContact)))
+        if (contact)//!IsBadWritePtr(contact, sizeof(struct ClcContact)))
         {
             Cache_GetText(dat,contact,1);
             cliRecalcScrollBar(hwnd,dat);
@@ -914,7 +910,7 @@ case INTM_STATUSMSGCHANGED:
             break;
         if (!FindItem(hwnd,dat,hContact,&contact,NULL,NULL,FALSE)) 
             break;
-        if (!IsBadWritePtr(contact, sizeof(struct ClcContact)))
+        if (contact)//!IsBadWritePtr(contact, sizeof(struct ClcContact)))
         {
             Cache_GetText(dat,contact,1);
             cliRecalcScrollBar(hwnd,dat);
@@ -1812,7 +1808,7 @@ case WM_LBUTTONDBLCLK:
 case WM_DESTROY:
     {
         int i=0;
-        lockdat;
+        
         for(i=0;i<=FONTID_MODERN_MAX;i++) 
         {
             if(dat->fontModernInfo[i].hFont) DeleteObject(dat->fontModernInfo[i].hFont);
@@ -1832,12 +1828,7 @@ case WM_DESTROY:
             ImageArray_Free(&dat->avatar_cache, FALSE);
 
         RowHeights_Free(dat);
-        ulockdat;
-        { 
-            CRITICAL_SECTION cs=dat->lockitemCS;
-            saveContactListControlWndProc(hwnd, msg, wParam, lParam);			
-            DeleteCriticalSection(&cs);
-        }
+        saveContactListControlWndProc(hwnd, msg, wParam, lParam);			
         return 0;
     }
     }

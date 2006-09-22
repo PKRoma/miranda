@@ -1492,8 +1492,9 @@ int CLUIFramesShowHideFrame(WPARAM wParam,LPARAM lParam)
   lockfrm();
   pos=id2pos(wParam);
   if(pos>=0&&(int)pos<nFramescount)
+  {
     Frames[pos].visible=!Frames[pos].visible;
-  if (Frames[pos].OwnerWindow!=(HWND)-2)
+    if (Frames[pos].OwnerWindow!=(HWND)-2)
   {
     if (Frames[pos].OwnerWindow) 
       CLUI_ShowWindowMod(Frames[pos].OwnerWindow,(Frames[pos].visible&& Frames[pos].collapsed && IsWindowVisible(pcli->hwndContactList))?SW_SHOW/*NOACTIVATE*/:SW_HIDE);
@@ -1504,9 +1505,10 @@ int CLUIFramesShowHideFrame(WPARAM wParam,LPARAM lParam)
       CLUI_ShowWindowMod(Frames[pos].OwnerWindow,(Frames[pos].visible && Frames[pos].collapsed && IsWindowVisible(pcli->hwndContactList))?SW_SHOW/*NOACTIVATE*/:SW_HIDE);
     }
   }
-  if (Frames[pos].floating){CLUIFrameResizeFloatingFrame(pos);};
-  CLUIFrames_UnLockFrame();
-  if (!Frames[pos].floating) CLUIFramesOnClistResize((WPARAM)pcli->hwndContactList,(LPARAM)0);
+    if (Frames[pos].floating){CLUIFrameResizeFloatingFrame(pos);};
+    CLUIFrames_UnLockFrame();
+    if (!Frames[pos].floating) CLUIFramesOnClistResize((WPARAM)pcli->hwndContactList,(LPARAM)0);
+  }
   return 0;
 }
 

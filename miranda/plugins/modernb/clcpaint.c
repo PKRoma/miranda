@@ -82,14 +82,14 @@ HFONT CLCPaint_ChangeToFont(HDC hdc,struct ClcData *dat,int id,int *fontHeight)
     dat=(struct ClcData*)GetWindowLong(pcli->hwndContactTree,0);
   }
   if (!dat) return NULL;
-  lockdat;
+  
   res=SelectObject(hdc,dat->fontModernInfo[id].hFont);
   SetTextColor(hdc,dat->fontModernInfo[id].colour);
   if(fontHeight) *fontHeight=dat->fontModernInfo[id].fontHeight;
   if (dat->hWnd==pcli->hwndContactTree && dat->fontModernInfo[id].effect!=0)
 	  SelectEffect(hdc,dat->fontModernInfo[id].effect-1,dat->fontModernInfo[id].effectColour1,dat->fontModernInfo[id].effectColour2);
   else ResetEffect(hdc);
-  ulockdat;
+  
   return res;
 }
 
@@ -1651,12 +1651,10 @@ void InternalPaintRowItems(HWND hwnd, HDC hdcMem, struct ClcData *dat, struct Cl
   BOOL left = TRUE;
   int text_left_pos = free_row_rc.right + 1;
   HANDLE hContact=(dat->hWnd==pcli->hwndContactTree)?Drawing->hContact:0;
-  if (hContact) LockCacheItem(hContact, __FILE__,__LINE__);
   if (gl_RowRoot || (dat->hWnd!=pcli->hwndContactTree))
   {
 	
     ModernInternalPaintRowItems(hwnd,hdcMem,dat,Drawing,row_rc,free_row_rc,left_pos,right_pos,selected,hottrack,rcPaint);
-	if (hContact) UnlockCacheItem(hContact);
     return;
   }
   else
@@ -2710,7 +2708,6 @@ void InternalPaintRowItems(HWND hwnd, HDC hdcMem, struct ClcData *dat, struct Cl
       }
     }
   }
-  if (hContact) UnlockCacheItem(hContact);
 }
 
 
@@ -2758,7 +2755,7 @@ void InternalPaintClc(HWND hwnd,struct ClcData *dat,HDC hdc,RECT *rcPaint)
   {
       dat->m_paintCouter++;
   }
-  lockdat; 
+   
   currentCounter= dat->m_paintCouter;
   y=-dat->yScroll;
   if (grey && (!g_bLayered))
@@ -2880,9 +2877,9 @@ void InternalPaintClc(HWND hwnd,struct ClcData *dat,HDC hdc,RECT *rcPaint)
         if (request) mir_free(request);
 
         // Something to draw?
-        if (!(!Drawing || IsBadCodePtr((FARPROC)Drawing)))
+        if (Drawing)//(!(!Drawing ||  IsBadCodePtr((FARPROC)Drawing)))
         {
-		  //ulockdat;
+		  //
           // Calc row height
           Drawing->lastPaintCounter=currentCounter;
           if (!gl_RowRoot) RowHeights_GetRowHeight(dat, hwnd, Drawing, line_num);
@@ -3097,7 +3094,7 @@ void InternalPaintClc(HWND hwnd,struct ClcData *dat,HDC hdc,RECT *rcPaint)
 
     //---
   }
-  ulockdat;
+  
   SelectClipRgn(hdcMem, NULL);
   if(dat->iInsertionMark!=-1) {	//insertion mark
     HBRUSH hBrush,hoBrush;

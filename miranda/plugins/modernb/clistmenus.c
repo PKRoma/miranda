@@ -439,21 +439,6 @@ int MenuProcessCommand(WPARAM wParam,LPARAM lParam)
   }
   else
   {
-
-    /*
-    if (!IsBadCodePtr(wParam))
-    {
-    pcp=(lpProcessCommandParam)wParam;
-    mii.cbSize=sizeof(mii);
-    mii.fMask=MIIM_DATA;
-
-    if (GetMenuItemInfo(pcp->menu,pcp->ident,FALSE,&mii)!=0)
-    {0
-    return(CallService(MO_PROCESSCOMMAND,mii.dwItemData,pcp->lParam));
-    };
-    };
-    */
-    //prefered to call top way but only if caller KNOW hmenu 
     return(CallService(MO_PROCESSCOMMANDBYMENUIDENT,LOWORD(wParam),lParam));	
 
   };

@@ -246,7 +246,6 @@ void Cache_ReAskAwayMsg(HANDLE wParam)
  */
 void Cache_GetTimezone(struct ClcData *dat, HANDLE hContact)
 {
-	//if (IsBadWritePtr(contact,sizeof(struct ClcContact))) return;
 	PDNCE pdnce=(PDNCE)pcli->pfnGetCacheEntry(hContact);
 	if (dat==NULL && pcli->hwndContactTree) 
 		dat=(struct ClcData *)GetWindowLong(pcli->hwndContactTree,0);
@@ -1214,9 +1213,7 @@ int RestoreAllContactData(struct ClcData *dat)
 static BOOL ExecuteOnAllContacts(struct ClcData *dat, ExecuteOnAllContactsFuncPtr func, void *param)
 {
 	BOOL res;
-	lockdat;
 	res=ExecuteOnAllContactsOfGroup(&dat->list, func, param);
-	ulockdat;
 	return res;
 }
 

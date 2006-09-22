@@ -156,9 +156,10 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #define FONTID_CLOSEDGROUPS 19
 #define FONTID_CLOSEDGROUPCOUNTS 20
 #define FONTID_STATUSBAR_PROTONAME 21
+#define FONTID_EVENTAREA 22
 
 
-#define FONTID_MODERN_MAX 21
+#define FONTID_MODERN_MAX 22
 
 struct ClcGroup;
 
@@ -326,7 +327,6 @@ struct ClcData {
 	int MetaIgnoreEmptyExtra;
 	BYTE expandMeta;
 	BYTE IsMetaContactsEnabled;
-	CRITICAL_SECTION lockitemCS;
 	time_t last_tick_time;
 	BOOL force_in_dialog;
 	int subIndent;

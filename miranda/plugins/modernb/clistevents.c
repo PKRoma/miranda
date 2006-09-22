@@ -226,13 +226,10 @@ int cli_RemoveEvent(HANDLE hContact, HANDLE hDbEvent)
 
 	if (pcli->events.count == 0) 
     {
-		g_CluiData.bEventAreaEnabled = FALSE;
-		if (g_CluiData.dwFlags & CLUI_FRAME_AUTOHIDENOTIFY) 
-        {
-			g_CluiData.bNotifyActive = FALSE;
-			EventArea_HideShowNotifyFrame();
-        }	
+		g_CluiData.bNotifyActive = FALSE;
+		EventArea_HideShowNotifyFrame();
     }
+
 	if (hContact == g_CluiData.hUpdateContact || (int)hDbEvent == 1)
 		g_CluiData.hUpdateContact = 0;
     if (g_CluiData.bNotifyActive) 
@@ -246,23 +243,20 @@ int cli_RemoveEvent(HANDLE hContact, HANDLE hDbEvent)
 /* Implementations */
 void EventArea_ConfigureEventArea()
 {
-	int iCount = GetMenuItemCount(g_CluiData.hMenuNotify);
-	DWORD dwFlags = g_CluiData.dwFlags;
-	int oldstate = g_CluiData.bNotifyActive;
-    int dwVisible = CallService(MS_CLIST_FRAMES_GETFRAMEOPTIONS, MAKEWPARAM(FO_FLAGS, hNotifyFrame), 0) & F_VISIBLE;
-    g_CluiData.dwFlags&=~CLUI_FRAME_AUTOHIDENOTIFY;
-    if (DBGetContactSettingByte(NULL,"CLUI","AutoEventArea",0)) g_CluiData.dwFlags|=CLUI_FRAME_AUTOHIDENOTIFY;
+	int iCount = pcli->events.count;
+  
+    g_CluiData.dwFlags&=~(CLUI_FRAME_AUTOHIDENOTIFY|CLUI_FRAME_SHOWALWAYS);
+    if (DBGetContactSettingByte(NULL,"CLUI","EventArea",0)==1) g_CluiData.dwFlags|=CLUI_FRAME_AUTOHIDENOTIFY;
+    if (DBGetContactSettingByte(NULL,"CLUI","EventArea",0)==2) g_CluiData.dwFlags|=CLUI_FRAME_SHOWALWAYS;
 
-	if (dwVisible) {
-		if (dwFlags & CLUI_FRAME_AUTOHIDENOTIFY)
-			g_CluiData.bNotifyActive = iCount > 0 ? 1 : 0;
-		else
-			g_CluiData.bNotifyActive = 1;
-	} else
+	if (g_CluiData.dwFlags & CLUI_FRAME_SHOWALWAYS)
+		g_CluiData.bNotifyActive = 1;
+    else if (g_CluiData.dwFlags & CLUI_FRAME_AUTOHIDENOTIFY)
+        g_CluiData.bNotifyActive = iCount > 0 ? 1 : 0;
+	else
 		g_CluiData.bNotifyActive = 0;
 
-	if (oldstate != g_CluiData.bNotifyActive)
-		EventArea_HideShowNotifyFrame();
+	EventArea_HideShowNotifyFrame();
 }
 
 
@@ -293,7 +287,7 @@ static int EventArea_DrawWorker(HWND hWnd, HDC hDC)
     HFONT hOldFont;
     GetClientRect(hWnd,&rc);   
     SkinDrawGlyph(hDC,&rc,&rc,"Main,ID=EventArea");
-    hOldFont=CLCPaint_ChangeToFont(hDC,NULL,FONTID_CONTACTS,NULL);
+    hOldFont=CLCPaint_ChangeToFont(hDC,NULL,FONTID_EVENTAREA,NULL);
     //mod_DrawText(hDC,_T("DEBUG"),lstrlen(_T("DEBUG")),&rc,0);
     {
         struct ClcData *dat = (struct ClcData *) GetWindowLong(pcli->hwndContactTree, 0);
@@ -343,11 +337,13 @@ static void EventArea_HideShowNotifyFrame()
 {
  	int dwVisible = CallService(MS_CLIST_FRAMES_GETFRAMEOPTIONS, MAKEWPARAM(FO_FLAGS, hNotifyFrame), 0) & F_VISIBLE;
     int desired;
-
-    if(g_CluiData.dwFlags & CLUI_FRAME_AUTOHIDENOTIFY)
+    
+    if (g_CluiData.dwFlags & CLUI_FRAME_SHOWALWAYS)
+        desired = TRUE;
+    else if(g_CluiData.dwFlags & CLUI_FRAME_AUTOHIDENOTIFY)
         desired = g_CluiData.bNotifyActive ? TRUE : FALSE;
     else
-        desired = dwVisible;
+        desired = FALSE;
 
     if(desired) 
     {
@@ -384,6 +380,7 @@ int EventArea_Create(HWND hCluiWnd)
   g_hwndEventFrame=CreateWindow(pluginname,pluginname,WS_CHILD|WS_VISIBLE|WS_CLIPCHILDREN,
     0,0,0,h,hCluiWnd,NULL,g_hInst,NULL);
   // register frame
+
   {
     CLISTFrame Frame;
     memset(&Frame,0,sizeof(Frame));
@@ -416,9 +413,6 @@ static LRESULT CALLBACK EventArea_WndProc(HWND hwnd, UINT msg, WPARAM wParam, LP
 {
     switch(msg) 
     {
-    case WM_CREATE:
-        EventArea_ConfigureEventArea();
-        return DefWindowProc(hwnd, msg, wParam, lParam);
 	case WM_MEASUREITEM:
 		{
 			MEASUREITEMSTRUCT *lpi = (LPMEASUREITEMSTRUCT) lParam;

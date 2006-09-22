@@ -127,7 +127,6 @@
 #define IDC_CURSOR1                     296
 #define IDC_REGROUP                     296
 #define IDI_MIRANDA2                    307
-#define IDD_OPT_CLCBKG2                 308
 #define IDI_CLIENTICQL5                 315
 #define IDI_AVATAR_OVERLAY_NA           357
 #define IDI_AVATAR_OVERLAY_OCCUPIED     358
@@ -242,7 +241,6 @@
 #define IDC_ONTOP                       1074
 #define IDC_SHOWMAINMENU                1075
 #define IDC_CLIENTDRAG                  1076
-#define IDC_CLIENTDRAG2                 1077
 #define IDC_EVENTAREA                   1077
 #define IDC_EDIT                        1078
 #define IDC_LIST                        1079
@@ -812,10 +810,12 @@
 #define IDC_CHECK5                      1810
 #define IDC_RADIO1                      1811
 #define IDC_AVATAR_OVERLAY_ICON_NORMAL  1811
+#define IDC_EVENTAREA_NONE              1811
 #define IDC_RADIO2                      1812
 #define IDC_AVATAR_OVERLAY_ICON_PROTOCOL 1812
 #define IDC_RADIO3                      1813
 #define IDC_OVERLAY_ICON3               1813
+#define IDC_EVENTAREA_ALWAYS            1813
 #define IDC_RADIO4                      1814
 #define IDC_RADIO5                      1815
 #define IDC_CHECK7                      1816
