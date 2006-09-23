@@ -41,8 +41,8 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #define DM_SETPARENT	 	 (WM_USER+0x203)
 #define DM_ACTIVATE			 (WM_USER+0x206)
 
-#define SBDF_TEXT 1
-#define SBDF_ICON 2
+#define SBDF_TEXT  1
+#define SBDF_ICON  2
 
 typedef struct StatusBarDataStruct
 {

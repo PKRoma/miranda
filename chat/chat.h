@@ -410,7 +410,7 @@ int					GetTextPixelSize(char * pszText, HFONT hFont, BOOL bWidth);
 //options.c
 int					OptionsInit(void);
 int					OptionsUnInit(void);
-void				LoadMsgDlgFont(int i, LOGFONT * lf, COLORREF * colour);
+void				Chat_LoadMsgDlgFont(int i, LOGFONT * lf, COLORREF * colour);
 void				LoadGlobalSettings(void);
 void				AddIcons(void);
 HICON				LoadIconEx(int iIndex, char * pszIcoLibName, int iX, int iY);
@@ -527,7 +527,5 @@ BOOL				LogToFile(SESSION_INFO * si, GCEVENT * gce);
 // message.c
 char *				Message_GetFromStream(HWND hwndDlg, SESSION_INFO* si);
 BOOL				DoRtfToTags(char * pszText, SESSION_INFO * si);
-
-#pragma comment(lib,"comctl32.lib")
 
 #endif

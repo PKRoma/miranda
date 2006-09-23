@@ -248,7 +248,7 @@ static BOOL CALLBACK DlgProcOptionsMain(HWND hwndDlg, UINT msg, WPARAM wParam, L
 		{
 			int i;
 			for (i=0; i < sizeof(tabPages)/sizeof(tabPages[0]); i++) {
-				if (tabPages[i].hwnd == (HWND) lParam) {
+				if (tabPages[i].hwnd == hwndCurrentTab) {
 					tabPages[i].bChanged = TRUE;
 				}
 			}
@@ -481,7 +481,7 @@ static BOOL CALLBACK DlgProcOptions(HWND hwndDlg, UINT msg, WPARAM wParam, LPARA
 					}
 					break;
 			}
-			SendMessage(GetParent(hwndDlg), PSM_CHANGED, 0, (LPARAM)hwndDlg);
+			SendMessage(GetParent(hwndDlg), PSM_CHANGED, 0, 0);
 			break;
 		case WM_HSCROLL:
 			{	char str[10];
@@ -489,7 +489,7 @@ static BOOL CALLBACK DlgProcOptions(HWND hwndDlg, UINT msg, WPARAM wParam, LPARA
 				SetDlgItemTextA(hwndDlg, IDC_ATRANSPARENCYPERC, str);
 				sprintf(str,"%d%%",(int)(100*SendDlgItemMessage(hwndDlg,IDC_ITRANSPARENCYVALUE,TBM_GETPOS,0,0)/256));
 				SetDlgItemTextA(hwndDlg, IDC_ITRANSPARENCYPERC, str);
-				SendMessage(GetParent(hwndDlg), PSM_CHANGED, 0, (LPARAM)hwndDlg);
+				SendMessage(GetParent(hwndDlg), PSM_CHANGED, 0, 0);
 			}
 			break;
 		case WM_NOTIFY:
@@ -508,7 +508,7 @@ static BOOL CALLBACK DlgProcOptions(HWND hwndDlg, UINT msg, WPARAM wParam, LPARA
                                 TreeView_GetItem(((LPNMHDR) lParam)->hwndFrom, &tvi);
                                 tvi.iImage = tvi.iSelectedImage = tvi.iImage == 1 ? 2 : 1;
                                 TreeView_SetItem(((LPNMHDR) lParam)->hwndFrom, &tvi);
-								SendMessage(GetParent(hwndDlg), PSM_CHANGED, 0, (LPARAM)hwndDlg);
+								SendMessage(GetParent(hwndDlg), PSM_CHANGED, 0, 0);
                             }
                     }
                     break;
@@ -839,7 +839,7 @@ static BOOL CALLBACK DlgProcLogOptions(HWND hwndDlg, UINT msg, WPARAM wParam, LP
 						return TRUE;
 					break;
 			}
-			SendMessage(GetParent(hwndDlg), PSM_CHANGED, 0, (LPARAM)hwndDlg);
+			SendMessage(GetParent(hwndDlg), PSM_CHANGED, 0, 0);
 			break;
 		case WM_NOTIFY:
 			switch (((LPNMHDR) lParam)->idFrom) {
