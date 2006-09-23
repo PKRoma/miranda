@@ -29,31 +29,31 @@ unsigned long ForkThread(pThreadFunc threadcode,void *arg)
 }
 void __cdecl aim_keepalive_thread(void* /*fa*/)
 {
-	HANDLE hKeepAliveEvent = CreateEvent(NULL, FALSE, FALSE, NULL);
-	#if _MSC_VER
-	#pragma warning( disable: 4127)
-	#endif
-	while(1)
+	if(!conn.hKeepAliveEvent)
 	{
+		conn.hKeepAliveEvent = CreateEvent(NULL, FALSE, FALSE, NULL);
 		#if _MSC_VER
-		#pragma warning( default: 4127)
+		#pragma warning( disable: 4127)
 		#endif
-		int timer=DBGetContactSettingWord(NULL, AIM_PROTOCOL_NAME, AIM_KEY_KA, DEFAULT_KEEPALIVE_TIMER);
-		if(timer<30)
-			timer=DEFAULT_KEEPALIVE_TIMER;
-		DWORD dwWait = WaitForSingleObjectEx(hKeepAliveEvent, 1000*timer, TRUE);
-		if (dwWait == WAIT_OBJECT_0) break; // we should end
-		else if (dwWait == WAIT_TIMEOUT)
+		while(1)
 		{
-			if (conn.state==1)
-				aim_keepalive(conn.hServerConn,conn.seqno);
+			#if _MSC_VER
+			#pragma warning( default: 4127)
+			#endif
+			DWORD dwWait = WaitForSingleObjectEx(conn.hKeepAliveEvent, 1000*DEFAULT_KEEPALIVE_TIMER, TRUE);
+			if (dwWait == WAIT_OBJECT_0) break; // we should end
+			else if (dwWait == WAIT_TIMEOUT)
+			{
+				if (conn.state==1)
+					aim_keepalive(conn.hServerConn,conn.seqno);
+			}
+			//else if (dwWait == WAIT_IO_COMPLETION)
+			// Possible shutdown in progress
+			if (Miranda_Terminated()) break;
 		}
-		//else if (dwWait == WAIT_IO_COMPLETION)
-		// Possible shutdown in progress
-		if (Miranda_Terminated()) break;
+		CloseHandle(conn.hKeepAliveEvent);
+		conn.hKeepAliveEvent = NULL;
 	}
-	CloseHandle(hKeepAliveEvent);
-	hKeepAliveEvent = NULL;
 }
 /*void message_box_thread(char* data)
 {

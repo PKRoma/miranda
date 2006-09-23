@@ -763,8 +763,6 @@ BOOL CALLBACK options_dialog(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
             }
 			unsigned short timeout=(unsigned short)DBGetContactSettingWord(NULL, AIM_PROTOCOL_NAME, AIM_KEY_GP, DEFAULT_GRACE_PERIOD);
 			SetDlgItemInt(hwndDlg, IDC_GP, timeout,0);
-			unsigned short timer=(unsigned short)DBGetContactSettingWord(NULL, AIM_PROTOCOL_NAME, AIM_KEY_KA, DEFAULT_KEEPALIVE_TIMER);
-			SetDlgItemInt(hwndDlg, IDC_KA, timer,0);
 			CheckDlgButton(hwndDlg, IDC_DC, DBGetContactSettingByte(NULL, AIM_PROTOCOL_NAME, AIM_KEY_DC, 0));//Message Delivery Confirmation
             CheckDlgButton(hwndDlg, IDC_FP, DBGetContactSettingByte(NULL, AIM_PROTOCOL_NAME, AIM_KEY_FP, 0));//force proxy
 			CheckDlgButton(hwndDlg, IDC_AT, DBGetContactSettingByte(NULL, AIM_PROTOCOL_NAME, AIM_KEY_AT, 0));//Account Type Icons
@@ -775,13 +773,14 @@ BOOL CALLBACK options_dialog(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
 			CheckDlgButton(hwndDlg, IDC_FO, DBGetContactSettingByte(NULL, AIM_PROTOCOL_NAME, AIM_KEY_FO, 0));//Format outgoing messages
 			CheckDlgButton(hwndDlg, IDC_WEBSUPPORT, DBGetContactSettingByte(NULL, AIM_PROTOCOL_NAME, AIM_KEY_AL, 0));
 			CheckDlgButton(hwndDlg, IDC_II, DBGetContactSettingByte(NULL, AIM_PROTOCOL_NAME, AIM_KEY_II, 0));//Instant Idle
-			CheckDlgButton(hwndDlg, IDC_CM, DBGetContactSettingByte(NULL, AIM_PROTOCOL_NAME, AIM_KEY_CM, 0));//Instant Idle
+			CheckDlgButton(hwndDlg, IDC_CM, DBGetContactSettingByte(NULL, AIM_PROTOCOL_NAME, AIM_KEY_CM, 0));//Check Mail
+			CheckDlgButton(hwndDlg, IDC_KA, DBGetContactSettingByte(NULL, AIM_PROTOCOL_NAME, AIM_KEY_KA, 0));//Keep Alive
 			break;
 		}
 		case WM_COMMAND:
         {
             if ((LOWORD(wParam) == IDC_SN || LOWORD(wParam) == IDC_NK || LOWORD(wParam) == IDC_PW || LOWORD(wParam) == IDC_HN
-                 || LOWORD(wParam) == IDC_KA || LOWORD(wParam) == IDC_GP) && (HIWORD(wParam) != EN_CHANGE || (HWND) lParam != GetFocus()))
+                 || LOWORD(wParam) == IDC_GP) && (HIWORD(wParam) != EN_CHANGE || (HWND) lParam != GetFocus()))
                 return 0;
             SendMessage(GetParent(hwndDlg), PSM_CHANGED, 0, 0);
             break;
@@ -903,14 +902,6 @@ BOOL CALLBACK options_dialog(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
 					}
 					//End
 
-					//Keep alive timer
-					unsigned long timer=GetDlgItemInt(hwndDlg, IDC_KA,0,0);
-					if(timer>0xffff||timer<30)
-						 DBWriteContactSettingWord(NULL, AIM_PROTOCOL_NAME, AIM_KEY_KA,DEFAULT_KEEPALIVE_TIMER);
-					else
-						DBWriteContactSettingWord(NULL, AIM_PROTOCOL_NAME, AIM_KEY_KA,(WORD)timer);
-					//End
-					
 					//Disable Mode Message Sending
 					if (IsDlgButtonChecked(hwndDlg, IDC_DM))
                         DBWriteContactSettingByte(NULL, AIM_PROTOCOL_NAME, AIM_KEY_DM, 1);
@@ -956,6 +947,19 @@ BOOL CALLBACK options_dialog(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
 					else
 						DBWriteContactSettingByte(NULL, AIM_PROTOCOL_NAME, AIM_KEY_CM, 0);
 					//End
+					
+					//Keep alive timer
+					if (IsDlgButtonChecked(hwndDlg, IDC_KA))
+					{
+						DBWriteContactSettingByte(NULL, AIM_PROTOCOL_NAME, AIM_KEY_KA, 1);
+						ForkThread(aim_keepalive_thread,NULL);
+					}
+					else
+					{
+						DBWriteContactSettingByte(NULL, AIM_PROTOCOL_NAME, AIM_KEY_KA, 0);
+						SetEvent(conn.hKeepAliveEvent);
+					}
+					//End 
 				}
             }
             break;

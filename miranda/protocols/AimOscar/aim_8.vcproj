@@ -356,11 +356,23 @@
 				>
 			</File>
 			<File
+				RelativePath=".\icons\backgroundcolor.ico"
+				>
+			</File>
+			<File
+				RelativePath=".\icons\bold.ico"
+				>
+			</File>
+			<File
 				RelativePath=".\icons\bot.ico"
 				>
 			</File>
 			<File
 				RelativePath=".\icons\confirmed.ico"
+				>
+			</File>
+			<File
+				RelativePath=".\icons\foregroundcolor.ico"
 				>
 			</File>
 			<File
@@ -380,6 +392,38 @@
 				>
 			</File>
 			<File
+				RelativePath=".\icons\italic.ico"
+				>
+			</File>
+			<File
+				RelativePath=".\icons\nbold.ico"
+				>
+			</File>
+			<File
+				RelativePath=".\icons\nitalic.ico"
+				>
+			</File>
+			<File
+				RelativePath=".\icons\nnormalscript.ico"
+				>
+			</File>
+			<File
+				RelativePath=".\icons\normalscript.ico"
+				>
+			</File>
+			<File
+				RelativePath=".\icons\nsubscript.ico"
+				>
+			</File>
+			<File
+				RelativePath=".\icons\nsuperscript.ico"
+				>
+			</File>
+			<File
+				RelativePath=".\icons\nunderline.ico"
+				>
+			</File>
+			<File
 				RelativePath=".\icons\oscar.ico"
 				>
 			</File>
@@ -388,7 +432,19 @@
 				>
 			</File>
 			<File
+				RelativePath=".\icons\subscript.ico"
+				>
+			</File>
+			<File
+				RelativePath=".\icons\superscript.ico"
+				>
+			</File>
+			<File
 				RelativePath=".\icons\unconfirmed.ico"
+				>
+			</File>
+			<File
+				RelativePath=".\icons\underline.ico"
 				>
 			</File>
 		</Filter>

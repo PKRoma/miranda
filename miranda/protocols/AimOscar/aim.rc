@@ -7,7 +7,7 @@
 //
 // Generated from the TEXTINCLUDE 2 resource.
 //
-#include <winresrc.h>
+#include "afxres.h"
 
 /////////////////////////////////////////////////////////////////////////////
 #undef APSTUDIO_READONLY_SYMBOLS
@@ -73,20 +73,18 @@ BEGIN
     CONTROL         "Disable Account Type Icons",IDC_AT,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,14,170,133,13
     CONTROL         "Disable Extended Status Icons",IDC_ES,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,14,183,143,13
     CONTROL         "Handle aim: links on websites",IDC_WEBSUPPORT,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,14,196,143,13
-    GROUPBOX        "AIM User Details",IDC_DETAILS,3,7,161,95,WS_GROUP
+    CONTROL         "Check Mail on Login",IDC_CM,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,14,209,143,13
+	GROUPBOX        "AIM User Details",IDC_DETAILS,3,7,161,95,WS_GROUP
     GROUPBOX        "Advanced Options",IDC_EXPERT,166,7,156,95,WS_GROUP
-    EDITTEXT        IDC_KA,234,23,20,12,ES_AUTOHSCROLL | ES_NUMBER,WS_EX_RIGHT
     LTEXT           "*Aim must be reconnected  for some option to take effect.",IDC_MASQ,186,109,115,18,NOT WS_VISIBLE
-    LTEXT           "Keep Alive Timer:",IDC_STATIC,173,25,56,15
-    LTEXT           "(seconds)",IDC_STATIC,255,25,32,12
-    LTEXT           "File Transfer Grace Period:",IDC_STATIC,174,40,87,12
+    CONTROL         "Send Keep Alive Packets",IDC_KA,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,174,21,93,13
+	LTEXT           "File Transfer Grace Period:",IDC_STATIC,174,40,87,12
     EDITTEXT        IDC_GP,261,39,20,12,ES_AUTOHSCROLL | ES_NUMBER,WS_EX_RIGHT
     LTEXT           "(seconds)",IDC_STATIC,285,41,32,12
-    CONTROL         "Instant Idle on Login",IDC_II,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,174,52,93,13
+	CONTROL         "Instant Idle on Login",IDC_II,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,174,52,93,13
     CONTROL         "Force Proxy File Transfers",IDC_FP,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,174,65,130,11
     CONTROL         "Masquerade as a Sidekick/Hiptop User",IDC_HF,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,174,76,143,13
-    CONTROL         "Check Mail on Login",IDC_CM,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,14,209,143,13
-END
+  END
 
 IDD_INFO DIALOGEX 0, 0, 329, 190
 STYLE DS_SETFONT | DS_3DLOOK | DS_FIXEDSYS | WS_MINIMIZEBOX | WS_MAXIMIZEBOX | WS_POPUP | WS_CAPTION | WS_SYSMENU | WS_THICKFRAME
@@ -174,8 +172,8 @@ END
 
 // Icon with lowest ID value placed first to ensure application icon
 // remains consistent on all systems.
-IDI_ADD                 ICON                    "icons\\add.ico"
 IDI_AIM                 ICON                    "icons\\oscar.ico"
+IDI_ADD                 ICON                    "icons\\add.ico"
 IDI_ICQ                 ICON                    "icons\\icq.ico"
 IDI_AOL                 ICON                    "icons\\aol.ico"
 IDI_HIPTOP              ICON                    "icons\\hiptop.ico"

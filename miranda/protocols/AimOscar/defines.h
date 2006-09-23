@@ -289,6 +289,7 @@ public:
 	bool instantidle;
 	bool checking_mail;
 	bool list_received;
+	HANDLE hKeepAliveEvent;
 
 	HINSTANCE hInstance;//plugin handle instance
 	

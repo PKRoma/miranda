@@ -85,7 +85,8 @@ extern "C" int __declspec(dllexport) Load(PLUGINLINK *link)
 	InitializeCriticalSection(&SendingMutex);
 	if(DBGetContactSettingByte(NULL, AIM_PROTOCOL_NAME, AIM_KEY_FR, 0)==0)
 		DialogBox(conn.hInstance, MAKEINTRESOURCE(IDD_AIMACCOUNT), NULL, first_run_dialog);
-	ForkThread(aim_keepalive_thread,NULL);
+	if(DBGetContactSettingByte(NULL, AIM_PROTOCOL_NAME, AIM_KEY_KA, 0))
+		ForkThread(aim_keepalive_thread,NULL);
 	CreateServices();
 	return 0;
 }
@@ -150,10 +151,6 @@ int ModulesLoaded(WPARAM /*wParam*/,LPARAM /*lParam*/)
 			DBDeleteContactSetting(NULL, AIM_PROTOCOL_NAME, OLD_KEY_DM);
 		}
 	}
-
-	unsigned long timer=DBGetContactSettingWord(NULL, AIM_PROTOCOL_NAME, AIM_KEY_KA, 0);
-	if(timer>0xffff||timer<15)
-		DBWriteContactSettingWord(NULL, AIM_PROTOCOL_NAME, AIM_KEY_KA, DEFAULT_KEEPALIVE_TIMER);
 	conn.hookEvent[conn.hookEvent_size++]=HookEvent(ME_OPT_INITIALISE, OptionsInit);
 	conn.hookEvent[conn.hookEvent_size++]=HookEvent(ME_USERINFO_INITIALISE, UserInfoInit);
 	conn.hookEvent[conn.hookEvent_size++]=HookEvent(ME_IDLE_CHANGED,IdleChanged);
