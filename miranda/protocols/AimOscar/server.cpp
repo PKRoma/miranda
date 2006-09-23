@@ -137,6 +137,8 @@ void snac_icbm_limitations(SNAC &snac,HANDLE hServerConn,unsigned short &seqno)/
 							else
 								assign_modmsg(DEFAULT_AWAY_MSG);
 						}
+						else
+							assign_modmsg(DEFAULT_AWAY_MSG);
 					}
 					else if(conn.initial_status==ID_STATUS_DND)
 					{
@@ -155,6 +157,8 @@ void snac_icbm_limitations(SNAC &snac,HANDLE hServerConn,unsigned short &seqno)/
 							else
 								assign_modmsg(DEFAULT_AWAY_MSG);
 						}
+						else
+							assign_modmsg(DEFAULT_AWAY_MSG);
 					}
 					else if(conn.initial_status==ID_STATUS_OCCUPIED)
 					{
@@ -173,6 +177,8 @@ void snac_icbm_limitations(SNAC &snac,HANDLE hServerConn,unsigned short &seqno)/
 							else
 								assign_modmsg(DEFAULT_AWAY_MSG);
 						}
+						else
+							assign_modmsg(DEFAULT_AWAY_MSG);
 					}
 					else if(conn.initial_status==ID_STATUS_ONTHEPHONE)
 					{
@@ -191,6 +197,8 @@ void snac_icbm_limitations(SNAC &snac,HANDLE hServerConn,unsigned short &seqno)/
 							else
 								assign_modmsg(DEFAULT_AWAY_MSG);
 						}
+						else
+							assign_modmsg(DEFAULT_AWAY_MSG);
 					}
 					else if(conn.initial_status==ID_STATUS_NA)
 					{
@@ -209,6 +217,8 @@ void snac_icbm_limitations(SNAC &snac,HANDLE hServerConn,unsigned short &seqno)/
 							else
 								assign_modmsg(DEFAULT_AWAY_MSG);
 						}
+						else
+							assign_modmsg(DEFAULT_AWAY_MSG);
 					}
 					else if(conn.initial_status==ID_STATUS_OUTTOLUNCH)
 					{
@@ -227,6 +237,8 @@ void snac_icbm_limitations(SNAC &snac,HANDLE hServerConn,unsigned short &seqno)/
 							else
 								assign_modmsg(DEFAULT_AWAY_MSG);
 						}
+						else
+							assign_modmsg(DEFAULT_AWAY_MSG);
 					}
 				}
 					aim_set_invis(hServerConn,seqno,AIM_STATUS_AWAY,AIM_STATUS_NULL);
@@ -241,6 +253,11 @@ void snac_icbm_limitations(SNAC &snac,HANDLE hServerConn,unsigned short &seqno)/
 			conn.instantidle=1;
 		}
 		aim_request_list(hServerConn,seqno);
+		aim_client_ready(hServerConn,seqno);
+		if(DBGetContactSettingByte(NULL, AIM_PROTOCOL_NAME, AIM_KEY_CM, 0))
+			aim_new_service_request(hServerConn,seqno,0x0018);
+		aim_activate_list(hServerConn,seqno);
+		LOG("Connection Negotiation Finished");
 	}
 }
 void snac_user_online(SNAC &snac)//family 0x0003
@@ -1141,10 +1158,12 @@ void snac_list_modification_ack(SNAC &snac)//family 0x0013
 		{
 			if(code==0x0000)
 			{
+				LOG("Successfully removed buddy from list.");
 				ShowPopup("Aim Protocol","Successfully removed buddy from list.", 0);
 			}
 			else if(code==0x0002)
 			{
+				LOG("Item you want to delete not found in list.");
 				ShowPopup("Aim Protocol","Item you want to delete not found in list.", 0);
 			}
 			else
@@ -1160,6 +1179,7 @@ void snac_list_modification_ack(SNAC &snac)//family 0x0013
 				}
 				msg[lstrlen(msg)-2]=ccode[0];
 				msg[lstrlen(msg)-1]=ccode[1];
+				LOG("msg");
 				ShowPopup("Aim Protocol",msg, 0);
 			}
 		}
@@ -1167,26 +1187,32 @@ void snac_list_modification_ack(SNAC &snac)//family 0x0013
 		{
 			if(code==0x0000)
 			{
+				LOG("Successfully added buddy to list.");
 				ShowPopup("Aim Protocol","Successfully added buddy to list.", 0);
 			}
 			else if(code==0x0003)
 			{
+				LOG("Failed to add buddy to list: Item already exist.");
 				ShowPopup("Aim Protocol","Failed to add buddy to list: Item already exist.", 0);
 			}
 			else if(code==0x000a)
 			{
+				LOG("Error adding buddy(invalid id?, already in list?)");
 				ShowPopup("Aim Protocol","Error adding buddy(invalid id?, already in list?)", 0);
 			}
 			else if(code==0x000c)
 			{
+				LOG("Cannot add buddy. Limit for this type of item exceeded.");
 				ShowPopup("Aim Protocol","Cannot add buddy. Limit for this type of item exceeded.", 0);
 			}
 			else if(code==0x000d)
 			{
+				LOG("Error? Attempting to add ICQ contact to an AIM list.");
 				ShowPopup("Aim Protocol","Error? Attempting to add ICQ contact to an AIM list.", 0);
 			}
 			else if(code==0x000e)
 			{
+				LOG("Cannot add this buddy because it requires authorization.");
 				ShowPopup("Aim Protocol","Cannot add this buddy because it requires authorization.", 0);
 			}
 			else
@@ -1202,6 +1228,7 @@ void snac_list_modification_ack(SNAC &snac)//family 0x0013
 				}
 				msg[lstrlen(msg)-2]=ccode[0];
 				msg[lstrlen(msg)-1]=ccode[1];
+				LOG(msg);
 				ShowPopup("Aim Protocol",msg, 0);
 			}
 		}
@@ -1209,10 +1236,12 @@ void snac_list_modification_ack(SNAC &snac)//family 0x0013
 		{
 			if(code==0x0000)
 			{
+				LOG("Successfully modified group.");
 				ShowPopup("Aim Protocol","Successfully modified group.", 0);
 			}
 			else if(code==0x0002)
 			{
+				LOG("Item you want to modify not found in list.");
 				ShowPopup("Aim Protocol","Item you want to modify not found in list.", 0);
 			}
 			else
@@ -1228,6 +1257,7 @@ void snac_list_modification_ack(SNAC &snac)//family 0x0013
 				}
 				msg[lstrlen(msg)-2]=ccode[0];
 				msg[lstrlen(msg)-1]=ccode[1];
+				LOG(msg);
 				ShowPopup("Aim Protocol",msg, 0);
 			}
 		}

@@ -676,80 +676,48 @@ int aim_keepalive(HANDLE hServerConn,unsigned short &seqno)
 	else
 		return -1;
 }
-int aim_send_file(HANDLE hServerConn,unsigned short &seqno,char* sn,char* icbm_cookie, char* file_name,unsigned long total_bytes,char* descr)//used when requesting a regular file transfer
+int aim_send_file(HANDLE hServerConn,unsigned short &seqno,char* sn,char* icbm_cookie,unsigned long ip, unsigned short port, bool force_proxy, unsigned short request_num ,char* file_name,unsigned long total_bytes,char* descr)//used when requesting a regular file transfer
 {	
-	unsigned short offset=0;
 	//see http://iserverd.khstu.ru/oscar/snac_04_06_ch2.html
-	char temp[]="\0\x0a\0\x02\0\x01\0\x0f\0\0\0\x0e\0\x02\x65\x6e\0\x0d\0\x08us-ascii\0\x0c";
-	char* msg_frag=new char[70+sizeof(AIM_CAP_SEND_FILES)+sizeof(temp)+lstrlen(descr)+lstrlen(file_name)];
-	ZeroMemory(msg_frag,70+sizeof(AIM_CAP_SEND_FILES)+sizeof(temp)+lstrlen(descr)+lstrlen(file_name));
+	unsigned short offset=0;
 	unsigned short sn_length=(unsigned short)lstrlen(sn);
-	char* buf=new char[SNAC_SIZE+TLV_HEADER_SIZE+82+sizeof(AIM_CAP_SEND_FILES)+sizeof(temp)+lstrlen(descr)+lstrlen(file_name)+sn_length];
+	char* buf=new char[SNAC_SIZE+TLV_HEADER_SIZE*51+sizeof(AIM_CAP_SEND_FILES)+lstrlen(descr)+lstrlen(file_name)+sn_length];
 	aim_writesnac(0x04,0x06,6,offset,buf);
 	aim_writegeneric(8,icbm_cookie,offset,buf);
 	aim_writegeneric(2,"\0\x02",offset,buf);//channel
 	aim_writegeneric(1,(char*)&sn_length,offset,buf);
 	aim_writegeneric(sn_length,sn,offset,buf);
+
+	char* msg_frag=new char[TLV_HEADER_SIZE*50+sizeof(AIM_CAP_SEND_FILES)+lstrlen(descr)+lstrlen(file_name)];
+	unsigned short frag_offset=0;
 	{
-		int loc=0;
-		//0x05 tlv data begin
-		memcpy(&msg_frag[loc],"\0\0",2);
-		loc+=2;
-		memcpy(&msg_frag[loc],icbm_cookie,8);
-		loc+=8;
-		memcpy(&msg_frag[loc],AIM_CAP_SEND_FILES,sizeof(AIM_CAP_SEND_FILES));
-		loc+=sizeof(AIM_CAP_SEND_FILES)-1;
-		memcpy(&msg_frag[loc],temp,sizeof(temp));	
-		
-		unsigned short descr_size =_htons((unsigned short)lstrlen(descr));
-		if(descr_size)
+		aim_writegeneric(2,"\0\0",frag_offset,msg_frag);//request type
+		aim_writegeneric(8,icbm_cookie,frag_offset,msg_frag);//cookie
+		aim_writegeneric(AIM_CAPS_LENGTH,AIM_CAP_SEND_FILES,frag_offset,msg_frag);
+		request_num=_htons(request_num);
+		aim_writetlv(0x0a,2,(char*)&request_num,frag_offset,msg_frag);//request number
+		aim_writetlv(0x0f,0,0,frag_offset,msg_frag);
+		aim_writetlv(0x0e,2,"\x65\x6e",frag_offset,msg_frag);
+		aim_writetlv(0x0d,8,"us-ascii",frag_offset,msg_frag);
+		if(descr)
+			aim_writetlv(0x0c,lstrlen(descr),descr,frag_offset,msg_frag);
+		else
+			aim_writetlv(0x0c,6,"<HTML>",frag_offset,msg_frag);
+		unsigned long lip=_htonl(ip);
+		if(force_proxy)
 		{
-			loc+=sizeof(temp)-1;
-			memcpy(&msg_frag[loc],(char*)&descr_size,2);
-			loc+=2;
-			descr_size =_htons(descr_size);
-			memcpy(&msg_frag[loc],descr,descr_size);
-			loc+=descr_size;
+			aim_writetlv(0x02,4,(char*)&lip,frag_offset,msg_frag);//proxy ip
+			lip=~lip;
+			aim_writetlv(0x16,4,(char*)&lip,frag_offset,msg_frag);//proxy ip check
 		}
 		else
-			loc+=sizeof(temp)+1;
-		//memcpy(&msg_frag[loc],"\0\x02\0\x04",4);
-		//loc+=4;
-
-		unsigned long lip=_htonl(conn.InternalIP);
-		char *ip=(char*)&lip;
-
-		//memcpy(&msg_frag[loc],ip,4);
-		//loc+=4;
-
-		//memcpy(&msg_frag[loc],"\0\x16\0\x04",4);
-		//loc+=4;
-
-		//unsigned long bw_lip=~lip;
-		//char* bw_ip=(char*)&bw_lip;
-		//memcpy(&msg_frag[loc],bw_ip,4);
-		//loc+=4;
-
-		memcpy(&msg_frag[loc],"\0\x03\0\x04",4);
-		loc+=4;
-		memcpy(&msg_frag[loc],ip,4);
-		loc+=4;
-
-		unsigned short lport=_htons(conn.LocalPort);
-		memcpy(&msg_frag[loc],"\0\x05\0\x02",4);
-		loc+=4;
-		char *port=(char*)&lport;
-		memcpy(&msg_frag[loc],port,2);
-		loc+=2;
-
-		//unsigned short bw_lport=~lport;
-		//memcpy(&msg_frag[loc],"\0\x17\0\x02",4);
-		//loc+=4;
-
-		//char *bw_port=(char*)&bw_lport;
-		//memcpy(&msg_frag[loc],bw_port,2);
-		//loc+=2;
-
+			aim_writetlv(0x03,4,(char*)&lip,frag_offset,msg_frag);//ip
+		unsigned short lport=_htons(port);
+		aim_writetlv(0x05,2,(char*)&lport,frag_offset,msg_frag);//port
+		lport=~lport;
+		aim_writetlv(0x17,2,(char*)&lport,frag_offset,msg_frag);//port ip check
+		if(force_proxy)
+			aim_writetlv(0x10,0,0,frag_offset,msg_frag);//force proxy tlv- YOU HEAR THAT TRILLIAN FUCKING FORCE PROXY ABIDE BY IT
 		/*
 		from: On Sending Files via OSCAR
 		for tlv 0x2711
@@ -763,30 +731,29 @@ int aim_send_file(HANDLE hServerConn,unsigned short &seqno,char* sn,char* icbm_c
 		* The remaining bytes is a null-terminated string that is the name of the
 		file.
 		*/
-		memcpy(&msg_frag[loc],"\x27\x11",2);
-		loc+=2;
-		unsigned short packet_size=_htons(9+(unsigned short)lstrlen(file_name));
-		memcpy(&msg_frag[loc],(char*)&packet_size,2);
-		loc+=2;
-		memcpy(&msg_frag[loc],"\0\x01\0\x01",4);
-		loc+=4;
-		total_bytes=_htonl(total_bytes);
-		memcpy(&msg_frag[loc],(char*)&total_bytes,4);
-		loc+=4;
-		memcpy(&msg_frag[loc],file_name,lstrlen(file_name));
-		loc+=lstrlen(file_name);
-		memcpy(&msg_frag[loc],"\0",1);
-		loc+=1;
-		memcpy(&msg_frag[loc],"\x27\x12\0\x08us-ascii",12);
-		loc+=12;
-		aim_writetlv(0x05,loc,msg_frag,offset,buf);
-		aim_writetlv(0x03,0,0,offset,buf);
-		//end huge ass tlv hell
+		//begin tlv
+		if(request_num==0x0100)
+		{
+			aim_writegeneric(2,"\x27\x11",frag_offset,msg_frag);//type
+			unsigned short tlv_size=_htons(9+(unsigned short)lstrlen(file_name));
+			aim_writegeneric(2,(char*)&tlv_size,frag_offset,msg_frag);//size
+			aim_writegeneric(2,"\0\1",frag_offset,msg_frag);//whether one or files are being transfered
+			aim_writegeneric(2,"\0\1",frag_offset,msg_frag);//number of files being transfered
+			total_bytes=_htonl(total_bytes);
+			aim_writegeneric(4,(char*)&total_bytes,frag_offset,msg_frag);//number of bytes in file
+			aim_writegeneric(lstrlen(file_name),file_name,frag_offset,msg_frag);//filename
+			aim_writegeneric(1,"\0",frag_offset,msg_frag);//null termination
+			//end tlv
+			aim_writetlv(0x2712,8,"us-ascii",frag_offset,msg_frag);//character set
+		}
 	}
+	aim_writetlv(0x05,frag_offset,msg_frag,offset,buf);//giant tlv that encapsulates a bunch of other tlvs
+	aim_writetlv(0x03,0,0,offset,buf);//request ack back
+
 	char cip[20];
-	long_ip_to_char_ip(conn.InternalIP,cip);
+	long_ip_to_char_ip(ip,cip);
 	LOG("Attempting to Send a file to a buddy.");
-	LOG("IP for Buddy to connect to: %s:%u",cip,conn.LocalPort);
+	LOG("IP for Buddy to connect to: %s:%u",cip,port);
 	if(aim_sendflap(hServerConn,0x02,offset,buf,seqno)==0)
 	{
 		delete[] msg_frag;
@@ -858,6 +825,10 @@ int aim_send_file_proxy(HANDLE hServerConn,unsigned short &seqno,char* sn,char* 
 	aim_writetlv(0x05,(unsigned short)(75+sizeof(AIM_CAP_SEND_FILES)+sizeof(temp)+descr_size+lstrlen(file_name)),msg_frag,offset,buf);
 	//end huge ass tlv hell
 	}
+	char cip[20];
+	long_ip_to_char_ip(proxy_ip,cip);
+	LOG("Attempting to Send a file to a buddy over proxy.");
+	LOG("IP for Buddy to connect to: %s:%u",cip,port);
 	if(aim_sendflap(hServerConn,0x02,offset,buf,seqno)==0)
 	{
 		delete[] msg_frag;
@@ -993,6 +964,7 @@ int aim_accept_file(HANDLE hServerConn,unsigned short &seqno,char* sn,char* icbm
 	aim_writetlv(0x05,(9+sizeof(AIM_CAP_SEND_FILES)),msg_frag,offset,buf);
 	//end tlv
 	}
+	LOG("Accepting a file transfer.");
 	if(aim_sendflap(hServerConn,0x02,offset,buf,seqno)==0)
 	{
 		delete[] buf;

@@ -149,7 +149,7 @@ void accept_file_thread(char* data)//buddy sending file
 		}
 		else
 		{
-			if (!DBGetContactSetting(ccs->hContact, AIM_PROTOCOL_NAME, AIM_KEY_SN, &dbv))
+			if (!DBGetContactSetting(hContact, AIM_PROTOCOL_NAME, AIM_KEY_SN, &dbv))
 			{
 				LOG("We failed to connect to the buddy over the proxy transfer.");
 				char cookie[8];
@@ -158,11 +158,15 @@ void accept_file_thread(char* data)//buddy sending file
 				aim_deny_file(conn.hServerConn,conn.seqno,dbv.pszVal,cookie);
 				DBFreeVariant(&dbv);
 			}
+			else
+			{
+				ProtoBroadcastAck(AIM_PROTOCOL_NAME, hContact, ACKTYPE_FILE, ACKRESULT_FAILED,hContact,0);
+			}
 		}
 	}
 	else if(force_proxy)//we are forcing a proxy
 	{
-		HANDLE hProxy=aim_connect("ars.oscar.aol.com:5190");
+		HANDLE hProxy=aim_peer_connect("ars.oscar.aol.com",5190);
 		if(hProxy)
 		{
 			LOG("Connected to proxy ip because we want to use a proxy for the file transfer.");
@@ -170,10 +174,6 @@ void accept_file_thread(char* data)//buddy sending file
 			DBWriteContactSettingDword(*hContact,AIM_PROTOCOL_NAME,AIM_KEY_DH,(DWORD)hProxy);//not really a direct connection
 			DBWriteContactSettingString(*hContact,AIM_PROTOCOL_NAME,AIM_KEY_IP,"ars.oscar.aol.com:5190");
 			ForkThread(aim_proxy_helper,*hContact);
-		}
-		else
-		{
-			ProtoBroadcastAck(AIM_PROTOCOL_NAME, hContact, ACKTYPE_FILE, ACKRESULT_FAILED,hContact,0);
 		}
 	}
 	else
@@ -191,8 +191,7 @@ void accept_file_thread(char* data)//buddy sending file
 		}
 		else
 		{
-			//hDirect=aim_peer_connect(local_ip,port);
-			hDirect=0;
+			hDirect=aim_peer_connect(local_ip,port);
 			if(hDirect)
 			{
 				LOG("Connected to buddy over P2P port via local ip.");
@@ -205,7 +204,10 @@ void accept_file_thread(char* data)//buddy sending file
 			{
 				LOG("Failed to connect to buddy- asking buddy to connect to us.");
 				DBWriteContactSettingString(*hContact,AIM_PROTOCOL_NAME,AIM_KEY_IP,verified_ip);
-				aim_file_redirected_request(conn.hServerConn,conn.seqno,sn,cookie);
+				//aim_file_redirected_request(conn.hServerConn,conn.seqno,sn,cookie);
+				DBWriteContactSettingByte(*hContact,AIM_PROTOCOL_NAME,AIM_KEY_FT,0);
+				conn.current_rendezvous_accept_user=*hContact;
+				aim_send_file(conn.hServerConn,conn.seqno,sn,cookie,conn.InternalIP,conn.LocalPort,0,2,0,0,0);
 			}
 		}
 	}
@@ -245,7 +247,7 @@ void redirected_file_thread(char* blob)//we are sending file
 			}
 			else//stage 3 proxy
 			{
-				HANDLE hProxy=aim_connect("ars.oscar.aol.com:5190");
+				HANDLE hProxy=aim_peer_connect("ars.oscar.aol.com",5190);
 				if(hProxy)
 				{
 					DBWriteContactSettingByte(*hContact,AIM_PROTOCOL_NAME,AIM_KEY_PS,3);

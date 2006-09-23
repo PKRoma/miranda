@@ -70,22 +70,27 @@ void __cdecl aim_proxy_helper(HANDLE hContact)
 						*error=_htons(*error);
 						if(*error==0x000D)
 						{
+							LOG("Proxy FT Error: Bad Request");
 							ShowPopup("Aim Protocol: Proxy Server File Transfer Error","Bad Request.", 0);
 						}
 						else if(*error==0x0010)
 						{
+							LOG("Proxy FT Error: Initial Request Timed Out.");
 							ShowPopup("Aim Protocol: Proxy Server File Transfer Error","Initial Request Timed Out.", 0);
 						}
 						else if(*error==0x001A)
 						{
+							LOG("Proxy FT Error: Accept Period Timed Out.");
 							ShowPopup("Aim Protocol: Proxy Server File Transfer Error","Accept Period Timed Out.", 0);
 						}
 						else if(*error==0x000e)
 						{
+							LOG("Proxy FT Error: Incorrect command syntax.");
 							ShowPopup("Aim Protocol: Proxy Server File Transfer Error","Incorrect command syntax.", 0);
 						}
 						else if(*error==0x0016)
 						{
+							LOG("Proxy FT Error: Unknown command issued.");
 							ShowPopup("Aim Protocol: Proxy Server File Transfer Error","Unknown command issued.", 0);
 						}
 					}
@@ -99,6 +104,7 @@ void __cdecl aim_proxy_helper(HANDLE hContact)
 						{
 							if(stage==1&&sender)
 							{
+								LOG("Stage 1 Proxy ft and we are the sender.");
 								char* sn=strldup(dbv.pszVal,lstrlen(dbv.pszVal));
 								DBFreeVariant(&dbv);
 								char vip[20];
@@ -125,18 +131,20 @@ void __cdecl aim_proxy_helper(HANDLE hContact)
 									return;
 								char* pszfile = strrchr(file, '\\');
 								pszfile++;
-								aim_send_file_proxy(conn.hServerConn,conn.seqno,sn,cookie,pszfile,size,descr,*ip,*port);
+								aim_send_file(conn.hServerConn,conn.seqno,sn,cookie,*ip,*port,1,1,pszfile,size,descr);
 								delete[] file;
 								delete[] sn;
 								delete[] descr;
 							}
 							else if(stage==2&&!sender)
 							{
+								LOG("Stage 2 Proxy ft and we are not the sender.");
 								aim_file_proxy_request(conn.hServerConn,conn.seqno,dbv.pszVal,cookie,0x02,*ip,*port);
 								DBFreeVariant(&dbv);
 							}
 							else if(stage==3&&sender)
 							{
+								LOG("Stage 3 Proxy ft and we are the sender.");
 								aim_file_proxy_request(conn.hServerConn,conn.seqno,dbv.pszVal,cookie,0x03,*ip,*port);
 								DBFreeVariant(&dbv);
 							}

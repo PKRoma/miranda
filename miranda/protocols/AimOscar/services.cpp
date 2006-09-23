@@ -14,7 +14,7 @@ static int GetCaps(WPARAM wParam, LPARAM /*lParam*/)
             ret = PF2_SHORTAWAY;
             break;
 		case PFLAGNUM_4:
-			ret = PF4_SUPPORTTYPING | PF4_FORCEAUTH | PF4_SUPPORTIDLE;
+			ret = PF4_SUPPORTTYPING | PF4_FORCEAUTH | PF4_FORCEADDED | PF4_SUPPORTIDLE;
             break;
 		case PFLAGNUM_5:                
             ret = PF2_ONTHEPHONE;
@@ -484,7 +484,7 @@ static int SendFile(WPARAM /*wParam*/,LPARAM lParam)
 				if(force_proxy)
 				{
 					LOG("We are forcing a proxy file transfer.");
-					HANDLE hProxy=aim_connect("ars.oscar.aol.com:5190");
+					HANDLE hProxy=aim_peer_connect("ars.oscar.aol.com",5190);
 					if(hProxy)
 					{
 						DBWriteContactSettingByte(ccs->hContact,AIM_PROTOCOL_NAME,AIM_KEY_PS,1);
@@ -493,7 +493,7 @@ static int SendFile(WPARAM /*wParam*/,LPARAM lParam)
 					}
 				}
 				else
-					aim_send_file(conn.hServerConn,conn.seqno,dbv.pszVal,cookie,pszFile,pszSize,pszDesc);
+					aim_send_file(conn.hServerConn,conn.seqno,dbv.pszVal,cookie,conn.InternalIP,conn.LocalPort,0,1,pszFile,pszSize,pszDesc);
 				DBFreeVariant(&dbv);
 				return (int)ccs->hContact;
 			}

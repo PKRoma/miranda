@@ -123,7 +123,6 @@ void sending_file(HANDLE hContact, HANDLE hNewConnection)
 						unsigned int lNotify=GetTickCount()-500;
 						while ((bytes = fread(buffer, 1, 1024*4, fd)))
 						{
-							LOG("P2P: Sending File bytes...");
 							Netlib_Send(hNewConnection,(char*)&buffer,bytes,MSG_NODUMP);
 							pfts.currentFileProgress+=bytes;
 							pfts.totalProgress+=bytes;
@@ -133,6 +132,7 @@ void sending_file(HANDLE hContact, HANDLE hNewConnection)
 								lNotify=GetTickCount();
 							}
 						}
+						ProtoBroadcastAck(AIM_PROTOCOL_NAME, hContact, ACKTYPE_FILE, ACKRESULT_DATA,hContact, (LPARAM) & pfts);
 						LOG("P2P: Finished sending file bytes.");
 						fclose(fd);
 					}
@@ -170,6 +170,7 @@ void sending_file(HANDLE hContact, HANDLE hNewConnection)
 #endif
 void receiving_file(HANDLE hContact, HANDLE hNewConnection)
 {
+	LOG("P2P: Entered file receiving thread.");
 	bool accepted_file=0;
 	DBVARIANT dbv;
 	char* file=0;
@@ -211,12 +212,14 @@ void receiving_file(HANDLE hContact, HANDLE hNewConnection)
 		recvResult = CallService(MS_NETLIB_GETMOREPACKETS, (WPARAM) hServerPacketRecver, (LPARAM) & packetRecv);
 		if (recvResult == 0)
 			{
+				LOG("P2P: File transfer connection Error: 0");
 				ProtoBroadcastAck(AIM_PROTOCOL_NAME, hContact, ACKTYPE_FILE, ACKRESULT_FAILED,hContact,0);
 				Netlib_CloseHandle(hNewConnection);
                 break;
             }
         if (recvResult == SOCKET_ERROR)
 			{
+				LOG("P2P: File transfer connection Error: -1");
 				ProtoBroadcastAck(AIM_PROTOCOL_NAME, hContact, ACKTYPE_FILE, ACKRESULT_FAILED,hContact,0);
 				Netlib_CloseHandle(hNewConnection);
                 break;
@@ -232,6 +235,7 @@ void receiving_file(HANDLE hContact, HANDLE hNewConnection)
 					unsigned short type=_htons(recv_ft->type);
 					if(type==0x0101)
 					{
+						LOG("P2P: Buddy Ready to begin transfer.");
 						memcpy(&ft,recv_ft,sizeof(oft2));
 						char cookie[8];
 						read_cookie(hContact,cookie);
@@ -273,6 +277,7 @@ void receiving_file(HANDLE hContact, HANDLE hNewConnection)
 					fclose(fd);
 					fd=0;
 					ft.recv_checksum=_htonl(aim_oft_checksum_file(file));
+					LOG("P2P: We got the file successfully");
 					Netlib_Send(hNewConnection,(char*)&ft,sizeof(oft2),0);
 					ProtoBroadcastAck(AIM_PROTOCOL_NAME, hContact, ACKTYPE_FILE, ACKRESULT_SUCCESS,hContact,0);
 					break;
