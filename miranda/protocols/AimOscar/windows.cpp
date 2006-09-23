@@ -29,7 +29,7 @@ static DWORD CALLBACK Message_StreamCallback(DWORD dwCookie, LPBYTE pbBuff, LONG
 	
     return 0;
 }
-static int CALLBACK EnumFontsProc(ENUMLOGFONTEX *lpelfe, NEWTEXTMETRICEX *lpntme, int FontType, LPARAM lParam)
+static int CALLBACK EnumFontsProc(ENUMLOGFONTEX *lpelfe, NEWTEXTMETRICEX* /*lpntme*/, int /*FontType*/, LPARAM lParam)
 {
     if (!IsWindow((HWND) lParam))
         return FALSE;
@@ -37,11 +37,11 @@ static int CALLBACK EnumFontsProc(ENUMLOGFONTEX *lpelfe, NEWTEXTMETRICEX *lpntme
         SendMessage((HWND) lParam, CB_ADDSTRING, 0, (LPARAM) lpelfe->elfLogFont.lfFaceName);
     return TRUE;
 }
-void DrawMyControl(HDC hDC, HWND hwndButton, HANDLE hTheme, UINT iState, RECT rect)
+void DrawMyControl(HDC hDC, HWND /*hwndButton*/, HANDLE hTheme, UINT iState, RECT rect)
 {
 	BOOL bIsPressed = (iState & ODS_SELECTED);
 	BOOL bIsFocused  = (iState & ODS_FOCUS);
-	BOOL bIsDisabled = (iState & ODS_DISABLED);
+	//BOOL bIsDisabled = (iState & ODS_DISABLED);
     if (hTheme)
 	{
 		DWORD state = (bIsPressed)?PBS_PRESSED:PBS_NORMAL;

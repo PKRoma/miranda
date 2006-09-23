@@ -60,55 +60,6 @@ void __cdecl aim_keepalive_thread(void* /*fa*/)
 	MessageBox( NULL, Translate(data), AIM_PROTOCOL_NAME, MB_OK );
 	delete[] data;
 }*/
-void set_status_thread(int status)
-{
-	if(conn.shutting_down)
-		return;
-	EnterCriticalSection(&statusMutex);
-	start_connection(status);
-	if(conn.state==1)
-		switch(status)
-		{
-			case ID_STATUS_OFFLINE:
-				{
-					broadcast_status(ID_STATUS_OFFLINE);
-					break;
-				}
-			case ID_STATUS_ONLINE:
-			case ID_STATUS_FREECHAT:
-				{
-					broadcast_status(ID_STATUS_ONLINE);
-					aim_set_away(conn.hServerConn,conn.seqno,NULL);//unset away message
-					aim_set_invis(conn.hServerConn,conn.seqno,AIM_STATUS_ONLINE,AIM_STATUS_NULL);//online not invis	
-					break;
-				}
-			case ID_STATUS_INVISIBLE:
-				{
-					broadcast_status(status);
-					aim_set_invis(conn.hServerConn,conn.seqno,AIM_STATUS_INVISIBLE,AIM_STATUS_NULL);
-					break;
-				}
-			case ID_STATUS_AWAY:
-			case ID_STATUS_OUTTOLUNCH:
-			case ID_STATUS_NA:
-			case ID_STATUS_DND:
-			case ID_STATUS_OCCUPIED:
-			case ID_STATUS_ONTHEPHONE:
-				{
-					start_connection(ID_STATUS_AWAY);// if not started
-					if(conn.status!=ID_STATUS_AWAY)
-					{
-						assign_modmsg((char*)&DEFAULT_AWAY_MSG);
-						broadcast_status(ID_STATUS_AWAY);
-						aim_set_away(conn.hServerConn,conn.seqno,conn.szModeMsg);//set actual away message
-						aim_set_invis(conn.hServerConn,conn.seqno,AIM_STATUS_AWAY,AIM_STATUS_NULL);//away not invis
-					}
-					//see SetAwayMsg for status away
-					break;
-				}
-		}
-	LeaveCriticalSection(&statusMutex);
-}
 /*void contact_setting_changed_thread(char* data)
 {
 	HANDLE* hContact=(HANDLE*)data;
