@@ -552,7 +552,7 @@ static LRESULT CALLBACK MessageSubclassProc(HWND hwnd, UINT msg, WPARAM wParam, 
 
 				SendMessage(hwnd, WM_SETREDRAW, FALSE, 0);
 
-				LoadMsgDlgFont(17, &lf, NULL);
+				Chat_LoadMsgDlgFont(17, &lf, NULL);
 				ste.flags = ST_DEFAULT;
 				ste.codepage = CP_ACP;
 				if(lpPrevCmd)
@@ -680,7 +680,7 @@ static LRESULT CALLBACK MessageSubclassProc(HWND hwnd, UINT msg, WPARAM wParam, 
 			UINT u2 = 0;
 			COLORREF cr;
 
-			LoadMsgDlgFont(17, NULL, &cr);
+			Chat_LoadMsgDlgFont(17, NULL, &cr);
 
 			cf.cbSize = sizeof(CHARFORMAT2);
 			cf.dwMask = CFM_BOLD|CFM_ITALIC|CFM_UNDERLINE|CFM_BACKCOLOR|CFM_COLOR;
@@ -1195,7 +1195,7 @@ BOOL CALLBACK RoomWndProc(HWND hwndDlg,UINT uMsg,WPARAM wParam,LPARAM lParam)
 				COLORREF	crFore;
 
 				CHARFORMAT2 cf;
-				LoadMsgDlgFont(17, NULL, &crFore);
+				Chat_LoadMsgDlgFont(17, NULL, &crFore);
 				cf.cbSize = sizeof(CHARFORMAT2);
 				cf.dwMask = CFM_COLOR|CFM_BOLD|CFM_UNDERLINE|CFM_BACKCOLOR;
 				cf.dwEffects = 0;
@@ -2243,7 +2243,7 @@ LABEL_SHOWWINDOW:
 					{
 						COLORREF cr;
 
-						LoadMsgDlgFont(17, NULL, &cr);
+						Chat_LoadMsgDlgFont(17, NULL, &cr);
 						cf.dwMask = CFM_COLOR;
 						cf.crTextColor = cr;
 						SendDlgItemMessage(hwndDlg, IDC_CHAT_MESSAGE, EM_SETCHARFORMAT, SCF_SELECTION, (LPARAM)&cf);

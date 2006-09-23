@@ -442,7 +442,7 @@ void CheckColorsInModule(char * pszModule)
 	COLORREF crFG;
 	COLORREF crBG = (COLORREF)DBGetContactSettingDword(NULL, "Chat", "ColorMessageBG", GetSysColor(COLOR_WINDOW));
 
-	LoadMsgDlgFont(17, NULL, &crFG);
+	Chat_LoadMsgDlgFont(17, NULL, &crFG);
 
 	if(!pMod)
 		return;

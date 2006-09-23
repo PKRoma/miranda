@@ -303,10 +303,10 @@ static void LoadLogFonts(void)
 	int i;
 
 	for( i = 0; i<OPTIONS_FONTCOUNT; i++)
-		LoadMsgDlgFont(i, &aFonts[i].lf, &aFonts[i].color);
+		Chat_LoadMsgDlgFont(i, &aFonts[i].lf, &aFonts[i].color);
 }
 
-static void LoadMsgDlgFont(int i, LOGFONT* lf, COLORREF* colour)
+void Chat_LoadMsgDlgFont(int i, LOGFONT* lf, COLORREF* colour)
 {
     char str[32];
     int style;
@@ -628,7 +628,7 @@ BOOL CALLBACK DlgProcOptions1(HWND hwndDlg,UINT uMsg,WPARAM wParam,LPARAM lParam
 				&& (HIWORD(wParam)!=EN_CHANGE || (HWND)lParam!=GetFocus()))	return 0;
 
 		if(lParam != (LPARAM)NULL)
-			SendMessage(GetParent(hwndDlg), PSM_CHANGED, 0, (LPARAM)hwndDlg);
+			SendMessage(GetParent(hwndDlg), PSM_CHANGED, 0, 0);
 		break;
 	case WM_NOTIFY:
 	{
@@ -668,7 +668,7 @@ BOOL CALLBACK DlgProcOptions1(HWND hwndDlg,UINT uMsg,WPARAM wParam,LPARAM lParam
 							CheckBranches(GetDlgItem(hwndDlg, IDC_CHAT_CHECKBOXES), hListHeading6);
 						else
 							PostMessage(hwndDlg, OPT_FIXHEADINGS, 0, 0);
-						SendMessage(GetParent(hwndDlg), PSM_CHANGED, 0, (LPARAM)hwndDlg);
+						SendMessage(GetParent(hwndDlg), PSM_CHANGED, 0, 0);
 					}
 
 			}
@@ -789,7 +789,7 @@ BOOL CALLBACK DlgProcOptions2(HWND hwndDlg,UINT uMsg,WPARAM wParam,LPARAM lParam
 		{	int i;
 			LOGFONT lf;
 			for (i = 0; i < SIZEOF(fontOptionsList); i++) {
-				LoadMsgDlgFont(i, &lf, &fontOptionsList[i].colour);
+				Chat_LoadMsgDlgFont(i, &lf, &fontOptionsList[i].colour);
 				lstrcpy(fontOptionsList[i].szFace, lf.lfFaceName);
 				fontOptionsList[i].size = (char) lf.lfHeight;
 				fontOptionsList[i].style = (lf.lfWeight >= FW_BOLD ? FONTF_BOLD : 0) | (lf.lfItalic ? FONTF_ITALIC : 0);
@@ -993,7 +993,7 @@ BOOL CALLBACK DlgProcOptions2(HWND hwndDlg,UINT uMsg,WPARAM wParam,LPARAM lParam
 		}
 
 		if(lParam != (LPARAM)NULL)
-			SendMessage(GetParent(hwndDlg), PSM_CHANGED, 0, (LPARAM)hwndDlg);
+			SendMessage(GetParent(hwndDlg), PSM_CHANGED, 0, 0);
 		break;
 	case WM_NOTIFY:
 		if (((LPNMHDR)lParam)->idFrom == 0 && ((LPNMHDR)lParam)->code == PSN_APPLY ) {
@@ -1106,7 +1106,7 @@ BOOL CALLBACK DlgProcOptions2(HWND hwndDlg,UINT uMsg,WPARAM wParam,LPARAM lParam
 				HFONT hFont;
 				int iText;
 
-				LoadMsgDlgFont(0, &lf, NULL);
+				Chat_LoadMsgDlgFont(0, &lf, NULL);
 				hFont = CreateFontIndirect(&lf);
 				iText = GetTextPixelSize(MakeTimeStamp(g_Settings.pszTimeStamp, time(NULL)),hFont, TRUE);
 				DeleteObject(hFont);
@@ -1160,7 +1160,7 @@ static BOOL CALLBACK DlgProcOptionsPopup(HWND hwndDlg,UINT uMsg,WPARAM wParam,LP
 				&& (HIWORD(wParam)!=EN_CHANGE || (HWND)lParam!=GetFocus()))	return 0;
 
 		if(lParam != (LPARAM)NULL)
-			SendMessage(GetParent(hwndDlg), PSM_CHANGED, 0, (LPARAM)hwndDlg);
+			SendMessage(GetParent(hwndDlg), PSM_CHANGED, 0, 0);
 		switch (LOWORD(wParam)) {
 
 		case IDC_CHAT_RADIO1:
@@ -1313,17 +1313,17 @@ void LoadGlobalSettings(void)
 
 	if(g_Settings.MessageBoxFont)
 		DeleteObject(g_Settings.MessageBoxFont);
-	LoadMsgDlgFont(17, &lf, NULL);
+	Chat_LoadMsgDlgFont(17, &lf, NULL);
 	g_Settings.MessageBoxFont = CreateFontIndirect(&lf);
 
 	if(g_Settings.UserListFont)
 		DeleteObject(g_Settings.UserListFont);
-	LoadMsgDlgFont(18, &lf, NULL);
+	Chat_LoadMsgDlgFont(18, &lf, NULL);
 	g_Settings.UserListFont = CreateFontIndirect(&lf);
 
 	if(g_Settings.UserListHeadingsFont)
 		DeleteObject(g_Settings.UserListHeadingsFont);
-	LoadMsgDlgFont(19, &lf, NULL);
+	Chat_LoadMsgDlgFont(19, &lf, NULL);
 	g_Settings.UserListHeadingsFont = CreateFontIndirect(&lf);
 
 
@@ -1352,7 +1352,7 @@ int OptionsInit(void)
 	g_hOptions = HookEvent(ME_OPT_INITIALISE, OptionsInitialize);
 
 	LoadLogFonts();
-	LoadMsgDlgFont(18, &lf, NULL);
+	Chat_LoadMsgDlgFont(18, &lf, NULL);
 	lstrcpy(lf.lfFaceName, _T("MS Shell Dlg"));
 	lf.lfUnderline = lf.lfItalic = lf.lfStrikeOut = 0;
 	lf.lfHeight = -17;
@@ -1394,7 +1394,7 @@ int OptionsInit(void)
 		HFONT hFont;
 		int iText;
 
-		LoadMsgDlgFont(0, &lf, NULL);
+		Chat_LoadMsgDlgFont(0, &lf, NULL);
 		hFont = CreateFontIndirect(&lf);
 		iText = GetTextPixelSize(MakeTimeStamp(g_Settings.pszTimeStamp, time(NULL)),hFont, TRUE);
 		DeleteObject(hFont);
