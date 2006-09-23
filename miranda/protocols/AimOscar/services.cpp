@@ -225,6 +225,7 @@ static int RecvMsg(WPARAM /*wParam*/, LPARAM lParam)
 	dbei.timestamp = pre->timestamp;
 	dbei.flags = pre->flags&PREF_CREATEREAD?DBEF_READ:0;
 	dbei.eventType = EVENTTYPE_MESSAGE;
+	char* buf = 0;
 	if ( pre->flags & PREF_UNICODE )
 	{
 		wchar_t* wbuf=(wchar_t*)&pre->szMessage[lstrlen(pre->szMessage)+1];
@@ -233,11 +234,12 @@ static int RecvMsg(WPARAM /*wParam*/, LPARAM lParam)
 		{
 			wchar_t* bbuf=html_to_bbcodes(wbuf);
 			st_wbuf=strip_html(bbuf);
+			free(bbuf);
 		}
 		else
 			st_wbuf=strip_html(wbuf);
-		delete[] pre->szMessage;
-		char* buf=new char[wcslen(st_wbuf)*3+3];
+		//delete[] pre->szMessage; not necessary - done in server.cpp
+		buf=(char *)malloc(wcslen(st_wbuf)*3+3);
 		WideCharToMultiByte( CP_ACP, 0,st_wbuf, -1,buf,wcslen(st_wbuf)+1, NULL, NULL);
 		memcpy(&buf[strlen(buf)+1],st_wbuf,lstrlen(buf)*2+2);
 		delete[] st_wbuf;
@@ -247,11 +249,11 @@ static int RecvMsg(WPARAM /*wParam*/, LPARAM lParam)
 	}
 	else
 	{
-		char* buf;
 		if(DBGetContactSettingByte(NULL, AIM_PROTOCOL_NAME, AIM_KEY_FI, 0))
 		{
 			char* bbuf=html_to_bbcodes(pre->szMessage);
 			buf=strip_html(bbuf);
+			free(bbuf);
 		}
 		else
 			buf=strip_html(pre->szMessage);
@@ -259,6 +261,7 @@ static int RecvMsg(WPARAM /*wParam*/, LPARAM lParam)
 		dbei.cbBlob = lstrlen(buf)+1;
 	}
     CallService(MS_DB_EVENT_ADD, (WPARAM) ccs->hContact, (LPARAM) & dbei);
+	if(buf) free(buf);
     return 0;
 }
 static int GetProfile(WPARAM wParam, LPARAM /*lParam*/)
