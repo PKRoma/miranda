@@ -256,8 +256,6 @@ void snac_icbm_limitations(SNAC &snac,HANDLE hServerConn,unsigned short &seqno)/
 		aim_client_ready(hServerConn,seqno);
 		if(DBGetContactSettingByte(NULL, AIM_PROTOCOL_NAME, AIM_KEY_CM, 0))
 			aim_new_service_request(hServerConn,seqno,0x0018);
-		aim_activate_list(hServerConn,seqno);
-		LOG("Connection Negotiation Finished");
 	}
 }
 void snac_user_online(SNAC &snac)//family 0x0003
