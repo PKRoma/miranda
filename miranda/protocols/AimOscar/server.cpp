@@ -707,9 +707,6 @@ void snac_contact_list(SNAC &snac,HANDLE hServerConn,unsigned short &seqno)//fam
 			aim_client_ready(hServerConn,seqno);
 			if(DBGetContactSettingByte(NULL, AIM_PROTOCOL_NAME, AIM_KEY_CM, 0))
 				aim_new_service_request(hServerConn,seqno,0x0018);
-			aim_activate_list(hServerConn,seqno);
-			LOG("Connection Negotiation Finished");
-			conn.state=1;
 		}
 	}
 }
