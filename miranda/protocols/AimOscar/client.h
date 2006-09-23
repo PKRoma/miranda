@@ -37,4 +37,5 @@ int aim_deny_file(HANDLE hServerConn,unsigned short &seqno,char* sn,char* icbm_c
 int aim_typing_notification(HANDLE hServerConn,unsigned short &seqno,char* sn,unsigned short type);
 int aim_set_idle(HANDLE hServerConn,unsigned short &seqno,unsigned long seconds);
 int aim_request_mail(HANDLE hServerConn,unsigned short &seqno);
+int aim_request_avatar(HANDLE hServerConn,unsigned short &seqno,char* sn, char* hash);//family 0x0010
 #endif

@@ -97,7 +97,7 @@ int aim_send_service_request(HANDLE hServerConn,unsigned short &seqno)
 	aim_writefamily(AIM_SERVICE_BOS,offset,buf);
 	aim_writefamily(AIM_SERVICE_USERLOOKUP,offset,buf);
 	aim_writefamily(AIM_SERVICE_STATS,offset,buf);
-	aim_writefamily(AIM_SERVICE_MAIL,offset,buf);
+	//aim_writefamily(AIM_SERVICE_MAIL,offset,buf);
 	if(aim_sendflap(hServerConn,0x02,offset,buf,seqno)==0)
 		return 0;
 	else
@@ -193,19 +193,37 @@ int aim_set_caps(HANDLE hServerConn,unsigned short &seqno)
 	if (!DBGetContactSetting(NULL, AIM_PROTOCOL_NAME, AIM_KEY_PR, &dbv))
 	{
 		profile_buf=strip_linebreaks(dbv.pszVal);
-		buf=new char[SNAC_SIZE+TLV_HEADER_SIZE*3+AIM_CAPS_LENGTH*7+lstrlen(AIM_MSG_TYPE)+lstrlen(profile_buf)];
+		buf=new char[SNAC_SIZE+TLV_HEADER_SIZE*3+AIM_CAPS_LENGTH*50+lstrlen(AIM_MSG_TYPE)+lstrlen(profile_buf)];
 		DBFreeVariant(&dbv);
 	}
 	else
 	{
-		buf=new char[SNAC_SIZE+TLV_HEADER_SIZE*3+AIM_CAPS_LENGTH*7+lstrlen(AIM_MSG_TYPE)];
+		buf=new char[SNAC_SIZE+TLV_HEADER_SIZE*3+AIM_CAPS_LENGTH*50+lstrlen(AIM_MSG_TYPE)];
 	}
-	char temp[AIM_CAPS_LENGTH*7];
-	memcpy(temp,AIM_CAP_ICQ_SUPPORT,AIM_CAPS_LENGTH);
-	memcpy(&temp[AIM_CAPS_LENGTH*i++],AIM_CAP_RECEIVE_FILES,AIM_CAPS_LENGTH);
+	char temp[AIM_CAPS_LENGTH*50];
+	memcpy(temp,AIM_CAP_ICHAT,AIM_CAPS_LENGTH);
+	//memcpy(&temp[AIM_CAPS_LENGTH*i++],AIM_CAP_UNKNOWN3,AIM_CAPS_LENGTH);
+	//memcpy(&temp[AIM_CAPS_LENGTH*i++],AIM_CAP_UNKNOWNA,AIM_CAPS_LENGTH);
+	//memcpy(&temp[AIM_CAPS_LENGTH*i++],AIM_CAP_UNKNOWNB,AIM_CAPS_LENGTH);
+	//memcpy(&temp[AIM_CAPS_LENGTH*i++],AIM_CAP_VOICE_CHAT,AIM_CAPS_LENGTH);
+	//memcpy(&temp[AIM_CAPS_LENGTH*i++],AIM_CAP_DIRECT_PLAY,AIM_CAPS_LENGTH);
 	memcpy(&temp[AIM_CAPS_LENGTH*i++],AIM_CAP_SEND_FILES,AIM_CAPS_LENGTH);
-	memcpy(&temp[AIM_CAPS_LENGTH*i++],AIM_CAP_ICHAT,AIM_CAPS_LENGTH);
+	//memcpy(&temp[AIM_CAPS_LENGTH*i++],AIM_CAP_ROUTER_FIND,AIM_CAPS_LENGTH);
+	//memcpy(&temp[AIM_CAPS_LENGTH*i++],AIM_CAP_DIRECT_IM,AIM_CAPS_LENGTH);
+	//memcpy(&temp[AIM_CAPS_LENGTH*i++],AIM_CAP_AVATARS,AIM_CAPS_LENGTH);
+	//memcpy(&temp[AIM_CAPS_LENGTH*i++],AIM_CAP_ADDINS,AIM_CAPS_LENGTH);
+	memcpy(&temp[AIM_CAPS_LENGTH*i++],AIM_CAP_RECEIVE_FILES,AIM_CAPS_LENGTH);
+	//memcpy(&temp[AIM_CAPS_LENGTH*i++],AIM_CAP_CHANNEL_TWO,AIM_CAPS_LENGTH);
+	//memcpy(&temp[AIM_CAPS_LENGTH*i++],AIM_CAP_GAMES,AIM_CAPS_LENGTH);
+	//memcpy(&temp[AIM_CAPS_LENGTH*i++],AIM_CAP_LIST_TRANSFER,AIM_CAPS_LENGTH);
+	memcpy(&temp[AIM_CAPS_LENGTH*i++],AIM_CAP_ICQ_SUPPORT,AIM_CAPS_LENGTH);
 	memcpy(&temp[AIM_CAPS_LENGTH*i++],AIM_CAP_UTF8,AIM_CAPS_LENGTH);
+	//memcpy(&temp[AIM_CAPS_LENGTH*i++],AIM_CAP_UNKNOWN4,AIM_CAPS_LENGTH);
+	//memcpy(&temp[AIM_CAPS_LENGTH*i++],AIM_CAP_UNKNOWN1,AIM_CAPS_LENGTH);
+	//memcpy(&temp[AIM_CAPS_LENGTH*i++],AIM_CAP_UNKNOWNC,AIM_CAPS_LENGTH);
+	//memcpy(&temp[AIM_CAPS_LENGTH*i++],AIM_CAP_CHAT,AIM_CAPS_LENGTH);
+	//memcpy(&temp[AIM_CAPS_LENGTH*i++],AIM_CAP_IM2,AIM_CAPS_LENGTH);
+	//memcpy(&temp[AIM_CAPS_LENGTH*i++],AIM_CAP_TRILLIAN,AIM_CAPS_LENGTH);
 	memcpy(&temp[AIM_CAPS_LENGTH*i++],AIM_CAP_MIRANDA,AIM_CAPS_LENGTH);
 	if(DBGetContactSettingByte(NULL, AIM_PROTOCOL_NAME, AIM_KEY_HF, 0))
 		memcpy(&temp[AIM_CAPS_LENGTH*i++],AIM_CAP_HIPTOP,AIM_CAPS_LENGTH);
@@ -334,10 +352,9 @@ int aim_client_ready(HANDLE hServerConn,unsigned short &seqno)
 	aim_writegeneric(4,AIM_TOOL_VERSION,offset,buf);
 	aim_writefamily(AIM_SERVICE_INVITATION,offset,buf);
 	aim_writegeneric(4,AIM_TOOL_VERSION,offset,buf);
-	aim_writefamily(AIM_SERVICE_GENERIC,offset,buf);
-	aim_writegeneric(4,AIM_TOOL_VERSION,offset,buf);
+	//removed extra generic server 
 	aim_writefamily(AIM_SERVICE_POPUP,offset,buf);
-	aim_writegeneric(4,AIM_TOOL_VERSION,offset,buf);
+	aim_writegeneric(4,"\x01\x04\0\x01",offset,buf);//different version number like trillian 3.1
 	aim_writefamily(AIM_SERVICE_BOS,offset,buf);
 	aim_writegeneric(4,AIM_TOOL_VERSION,offset,buf);
 	aim_writefamily(AIM_SERVICE_USERLOOKUP,offset,buf);
@@ -664,7 +681,8 @@ int aim_send_file(HANDLE hServerConn,unsigned short &seqno,char* sn,char* icbm_c
 	unsigned short offset=0;
 	//see http://iserverd.khstu.ru/oscar/snac_04_06_ch2.html
 	char temp[]="\0\x0a\0\x02\0\x01\0\x0f\0\0\0\x0e\0\x02\x65\x6e\0\x0d\0\x08us-ascii\0\x0c";
-	char* msg_frag=new char[71+sizeof(AIM_CAP_SEND_FILES)+sizeof(temp)+lstrlen(descr)+lstrlen(file_name)];
+	char* msg_frag=new char[70+sizeof(AIM_CAP_SEND_FILES)+sizeof(temp)+lstrlen(descr)+lstrlen(file_name)];
+	ZeroMemory(msg_frag,70+sizeof(AIM_CAP_SEND_FILES)+sizeof(temp)+lstrlen(descr)+lstrlen(file_name));
 	unsigned short sn_length=(unsigned short)lstrlen(sn);
 	char* buf=new char[SNAC_SIZE+TLV_HEADER_SIZE+82+sizeof(AIM_CAP_SEND_FILES)+sizeof(temp)+lstrlen(descr)+lstrlen(file_name)+sn_length];
 	aim_writesnac(0x04,0x06,6,offset,buf);
@@ -673,61 +691,102 @@ int aim_send_file(HANDLE hServerConn,unsigned short &seqno,char* sn,char* icbm_c
 	aim_writegeneric(1,(char*)&sn_length,offset,buf);
 	aim_writegeneric(sn_length,sn,offset,buf);
 	{
-	//0x05 tlv data begin
-	memcpy(&msg_frag[0],"\0\0",2);
-	memcpy(&msg_frag[2],icbm_cookie,8);
-	memcpy(&msg_frag[10],AIM_CAP_SEND_FILES,sizeof(AIM_CAP_SEND_FILES));
-	memcpy(&msg_frag[9+sizeof(AIM_CAP_SEND_FILES)],temp,sizeof(temp));	
-	unsigned short descr_size =_htons((unsigned short)lstrlen(descr));
-	memcpy(&msg_frag[8+sizeof(AIM_CAP_SEND_FILES)+sizeof(temp)],(char*)&descr_size,2);
-	descr_size =_htons(descr_size);
-	memcpy(&msg_frag[10+sizeof(AIM_CAP_SEND_FILES)+sizeof(temp)],descr,descr_size);
-	memcpy(&msg_frag[10+sizeof(AIM_CAP_SEND_FILES)+sizeof(temp)+descr_size],"\0\x02\0\x04",4);
-	unsigned long lip=_htonl(conn.InternalIP);
-	char *ip=(char*)&lip;
-	memcpy(&msg_frag[14+sizeof(AIM_CAP_SEND_FILES)+sizeof(temp)+descr_size],ip,4);
-	memcpy(&msg_frag[18+sizeof(AIM_CAP_SEND_FILES)+sizeof(temp)+descr_size],"\0\x16\0\x04",4);
-	unsigned long bw_lip=~lip;
-	char* bw_ip=(char*)&bw_lip;
-	memcpy(&msg_frag[22+sizeof(AIM_CAP_SEND_FILES)+sizeof(temp)+descr_size],bw_ip,4);
+		int loc=0;
+		//0x05 tlv data begin
+		memcpy(&msg_frag[loc],"\0\0",2);
+		loc+=2;
+		memcpy(&msg_frag[loc],icbm_cookie,8);
+		loc+=8;
+		memcpy(&msg_frag[loc],AIM_CAP_SEND_FILES,sizeof(AIM_CAP_SEND_FILES));
+		loc+=sizeof(AIM_CAP_SEND_FILES)-1;
+		memcpy(&msg_frag[loc],temp,sizeof(temp));	
+		
+		unsigned short descr_size =_htons((unsigned short)lstrlen(descr));
+		if(descr_size)
+		{
+			loc+=sizeof(temp)-1;
+			memcpy(&msg_frag[loc],(char*)&descr_size,2);
+			loc+=2;
+			descr_size =_htons(descr_size);
+			memcpy(&msg_frag[loc],descr,descr_size);
+			loc+=descr_size;
+		}
+		else
+			loc+=sizeof(temp)+1;
+		//memcpy(&msg_frag[loc],"\0\x02\0\x04",4);
+		//loc+=4;
 
-	memcpy(&msg_frag[26+sizeof(AIM_CAP_SEND_FILES)+sizeof(temp)+descr_size],"\0\x03\0\x04",4);
-	memcpy(&msg_frag[30+sizeof(AIM_CAP_SEND_FILES)+sizeof(temp)+descr_size],ip,4);
+		unsigned long lip=_htonl(conn.InternalIP);
+		char *ip=(char*)&lip;
 
+		//memcpy(&msg_frag[loc],ip,4);
+		//loc+=4;
 
-	unsigned short lport=_htons(conn.LocalPort);
-	memcpy(&msg_frag[34+sizeof(AIM_CAP_SEND_FILES)+sizeof(temp)+descr_size],"\0\x05\0\x02",4);
-	char *port=(char*)&lport;
-	memcpy(&msg_frag[38+sizeof(AIM_CAP_SEND_FILES)+sizeof(temp)+descr_size],port,2);
-	unsigned short bw_lport=~lport;
-	memcpy(&msg_frag[40+sizeof(AIM_CAP_SEND_FILES)+sizeof(temp)+descr_size],"\0\x17\0\x02",4);
-	char *bw_port=(char*)&bw_lport;
-	memcpy(&msg_frag[44+sizeof(AIM_CAP_SEND_FILES)+sizeof(temp)+descr_size],bw_port,2);
-	/*
-	from: On Sending Files via OSCAR
-	for tlv 0x2711
-	* The first 2 bytes are the Multiple Files Flag. A value of 0x0001 indicates
-	that only one file is being transferred while a value of 0x0002 indicates that more
-	than one file is being transferred.
-	* The next 2 bytes is the File Count, the total number of files that will be
-	transmitted during this file transfer.
-	* The next 4 bytes is the Total Bytes, the sum of the size in bytes of all files
-	to be transferred.
-	* The remaining bytes is a null-terminated string that is the name of the
-	file.
-	*/
-	memcpy(&msg_frag[46+sizeof(AIM_CAP_SEND_FILES)+sizeof(temp)+descr_size],"\x27\x11",2);
-	unsigned short packet_size=_htons(9+(unsigned short)lstrlen(file_name));
-	memcpy(&msg_frag[48+sizeof(AIM_CAP_SEND_FILES)+sizeof(temp)+descr_size],(char*)&packet_size,2);
-	memcpy(&msg_frag[50+sizeof(AIM_CAP_SEND_FILES)+sizeof(temp)+descr_size],"\0\x01\0\x01",4);
-	total_bytes=_htonl(total_bytes);
-	memcpy(&msg_frag[54+sizeof(AIM_CAP_SEND_FILES)+sizeof(temp)+descr_size],(char*)&total_bytes,4);
-	memcpy(&msg_frag[58+sizeof(AIM_CAP_SEND_FILES)+sizeof(temp)+descr_size],file_name,lstrlen(file_name));
-	memcpy(&msg_frag[58+sizeof(AIM_CAP_SEND_FILES)+sizeof(temp)+descr_size+lstrlen(file_name)],"\0",1);
-	memcpy(&msg_frag[59+sizeof(AIM_CAP_SEND_FILES)+sizeof(temp)+descr_size+lstrlen(file_name)],"\x27\x12\0\x08us-ascii",12);
-	aim_writetlv(0x05,(unsigned short)(71+sizeof(AIM_CAP_SEND_FILES)+sizeof(temp)+descr_size+lstrlen(file_name)),msg_frag,offset,buf);
-	//end huge ass tlv hell
+		//memcpy(&msg_frag[loc],"\0\x16\0\x04",4);
+		//loc+=4;
+
+		//unsigned long bw_lip=~lip;
+		//char* bw_ip=(char*)&bw_lip;
+		//memcpy(&msg_frag[loc],bw_ip,4);
+		//loc+=4;
+
+		memcpy(&msg_frag[loc],"\0\x03\0\x04",4);
+		loc+=4;
+		memcpy(&msg_frag[loc],ip,4);
+		loc+=4;
+
+		unsigned short lport=_htons(conn.LocalPort);
+		memcpy(&msg_frag[loc],"\0\x05\0\x02",4);
+		loc+=4;
+		char *port=(char*)&lport;
+		memcpy(&msg_frag[loc],port,2);
+		loc+=2;
+
+		//unsigned short bw_lport=~lport;
+		//memcpy(&msg_frag[loc],"\0\x17\0\x02",4);
+		//loc+=4;
+
+		//char *bw_port=(char*)&bw_lport;
+		//memcpy(&msg_frag[loc],bw_port,2);
+		//loc+=2;
+
+		/*
+		from: On Sending Files via OSCAR
+		for tlv 0x2711
+		* The first 2 bytes are the Multiple Files Flag. A value of 0x0001 indicates
+		that only one file is being transferred while a value of 0x0002 indicates that more
+		than one file is being transferred.
+		* The next 2 bytes is the File Count, the total number of files that will be
+		transmitted during this file transfer.
+		* The next 4 bytes is the Total Bytes, the sum of the size in bytes of all files
+		to be transferred.
+		* The remaining bytes is a null-terminated string that is the name of the
+		file.
+		*/
+		memcpy(&msg_frag[loc],"\x27\x11",2);
+		loc+=2;
+		unsigned short packet_size=_htons(9+(unsigned short)lstrlen(file_name));
+		memcpy(&msg_frag[loc],(char*)&packet_size,2);
+		loc+=2;
+		memcpy(&msg_frag[loc],"\0\x01\0\x01",4);
+		loc+=4;
+		total_bytes=_htonl(total_bytes);
+		memcpy(&msg_frag[loc],(char*)&total_bytes,4);
+		loc+=4;
+		memcpy(&msg_frag[loc],file_name,lstrlen(file_name));
+		loc+=lstrlen(file_name);
+		memcpy(&msg_frag[loc],"\0",1);
+		loc+=1;
+		memcpy(&msg_frag[loc],"\x27\x12\0\x08us-ascii",12);
+		loc+=12;
+		aim_writetlv(0x05,loc,msg_frag,offset,buf);
+		aim_writetlv(0x03,0,0,offset,buf);
+		//end huge ass tlv hell
 	}
+	char cip[20];
+	long_ip_to_char_ip(conn.InternalIP,cip);
+	LOG("Attempting to Send a file to a buddy.");
+	LOG("IP for Buddy to connect to: %s:%u",cip,conn.LocalPort);
 	if(aim_sendflap(hServerConn,0x02,offset,buf,seqno)==0)
 	{
 		delete[] msg_frag;
@@ -951,7 +1010,7 @@ int aim_deny_file(HANDLE hServerConn,unsigned short &seqno,char* sn,char* icbm_c
 	//see http://iserverd.khstu.ru/oscar/snac_04_06_ch2.html
 	char msg_frag[10+sizeof(AIM_CAP_SEND_FILES)];
 	unsigned short sn_length=(unsigned short)lstrlen(sn);
-	char* buf=new char[SNAC_SIZE+TLV_HEADER_SIZE+21+sizeof(AIM_CAP_SEND_FILES)+sn_length];
+	char* buf=new char[SNAC_SIZE*2+TLV_HEADER_SIZE+21+sizeof(AIM_CAP_SEND_FILES)+sn_length];
 	aim_writesnac(0x04,0x06,6,offset,buf);
 	aim_writegeneric(8,icbm_cookie,offset,buf);
 	aim_writegeneric(2,"\0\x02",offset,buf);//channel
@@ -1013,15 +1072,33 @@ int aim_set_idle(HANDLE hServerConn,unsigned short &seqno,unsigned long seconds)
 int aim_request_mail(HANDLE hServerConn,unsigned short &seqno)
 {
 	unsigned short offset=0;
-	char buf[SNAC_SIZE+34];
+	char buf[SNAC_SIZE];
 	aim_writesnac(0x18,0x06,0x06,offset,buf);
-	//aim_writegeneric(2,"\0\x02",offset,buf);
-	//aim_writegeneric(16,"\xb3\x80\x9a\xd8\x0d\xba\x11\xd5\x9f\x8a\0\x60\xb0\xee\x06\x31",offset,buf);
-	//aim_writegeneric(16,"\x5d\x5e\x17\x08\x55\xaa\x11\xd3\xb1\x43\0\x60\xb0\xfb\x1e\xcb",offset,buf);
 	if(aim_sendflap(hServerConn,0x02,offset,buf,seqno)==0)
 		return 1;
 	else
 		return 0;
+}
+int aim_request_avatar(HANDLE hServerConn,unsigned short &seqno,char* sn, char* hash)
+{
+	unsigned short offset=0;
+	char sn_length=(char)strlen(sn);
+	char* buf= new char[SNAC_SIZE+sn_length+22];
+	aim_writesnac(0x10,0x04,6,offset,buf);
+	aim_writegeneric(1,&sn_length,offset,buf);
+	aim_writegeneric(sn_length,sn,offset,buf);
+	aim_writegeneric(5,"\x01\0\x01\0\x10",offset,buf);
+	aim_writegeneric(16,hash,offset,buf);
+	if(aim_sendflap(hServerConn,0x02,offset,buf,seqno)==0)
+	{
+		delete[] buf;
+		return 1;
+	}
+	else
+	{
+		delete[] buf;
+		return 0;
+	}
 }
 /* See icq server relaying for retrieving client away message: http://forums.miranda-im.org/showpost.php?p=73099&postcount=939
 int aim_request_crap(HANDLE hServerConn,int &seqno)

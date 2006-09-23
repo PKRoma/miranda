@@ -4,9 +4,11 @@
 #endif
 void sending_file(HANDLE hContact, HANDLE hNewConnection)
 {
+	LOG("P2P: Entered file sending thread.");
 	DBVARIANT dbv;
 	char* file;
 	char* wd;
+	int file_start_point=0;
 	unsigned long size;
 	if (!DBGetContactSetting(hContact, AIM_PROTOCOL_NAME, AIM_KEY_FN, &dbv))
 	{
@@ -54,6 +56,7 @@ void sending_file(HANDLE hContact, HANDLE hNewConnection)
 		Netlib_CloseHandle(hNewConnection);
 		return;
 	}
+	LOG("Sent file information to buddy.");
 	//start listen for packets stuff
 	int recvResult=0;
 	NETLIBPACKETRECVER packetRecv;
@@ -73,12 +76,14 @@ void sending_file(HANDLE hContact, HANDLE hNewConnection)
 		recvResult = CallService(MS_NETLIB_GETMOREPACKETS, (WPARAM) hServerPacketRecver, (LPARAM) & packetRecv);
 		if (recvResult == 0)
 			{
+				LOG("P2P: File transfer connection Error: 0");
 				ProtoBroadcastAck(AIM_PROTOCOL_NAME, hContact, ACKTYPE_FILE, ACKRESULT_FAILED,hContact,0);
                 Netlib_CloseHandle(hNewConnection);
 				break;
             }
         if (recvResult == SOCKET_ERROR)
 			{
+				LOG("P2P: File transfer connection Error: -1");
 				ProtoBroadcastAck(AIM_PROTOCOL_NAME, hContact, ACKTYPE_FILE, ACKRESULT_FAILED,hContact,0);
 				Netlib_CloseHandle(hNewConnection);
                 break;
@@ -90,11 +95,14 @@ void sending_file(HANDLE hContact, HANDLE hNewConnection)
 				packetRecv.bytesUsed=256;
 				oft2* recv_ft=(oft2*)&packetRecv.buffer[0];
 				unsigned short type=_htons(recv_ft->type);
-				if(type==0x0202)
+				if(type==0x0202||type==0x0207)
 				{
+					LOG("P2P: Buddy Accepts our file transfer.");
 					FILE *fd= fopen(file, "rb");
 					if (fd)
 					{
+						if(file_start_point)
+							fseek(fd,file_start_point,SEEK_SET);
 						PROTOFILETRANSFERSTATUS pfts;
 						memset(&pfts, 0, sizeof(PROTOFILETRANSFERSTATUS));
 						pfts.currentFile=pszFile;
@@ -111,14 +119,21 @@ void sending_file(HANDLE hContact, HANDLE hNewConnection)
 						pfts.workingDir=wd;
 						ProtoBroadcastAck(AIM_PROTOCOL_NAME, hContact, ACKTYPE_FILE, ACKRESULT_DATA,hContact, (LPARAM) & pfts);
 						int bytes;
-						unsigned char buffer[1024];
-						while ((bytes = fread(buffer, 1, 1024, fd)))
+						unsigned char buffer[1024*4];
+						unsigned int lNotify=GetTickCount()-500;
+						while ((bytes = fread(buffer, 1, 1024*4, fd)))
 						{
-							Netlib_Send(hNewConnection,(char*)&buffer,bytes,0);
+							LOG("P2P: Sending File bytes...");
+							Netlib_Send(hNewConnection,(char*)&buffer,bytes,MSG_NODUMP);
 							pfts.currentFileProgress+=bytes;
 							pfts.totalProgress+=bytes;
-							ProtoBroadcastAck(AIM_PROTOCOL_NAME, hContact, ACKTYPE_FILE, ACKRESULT_DATA,hContact, (LPARAM) & pfts);
-						}	
+							if(GetTickCount()>lNotify+500)
+							{
+								ProtoBroadcastAck(AIM_PROTOCOL_NAME, hContact, ACKTYPE_FILE, ACKRESULT_DATA,hContact, (LPARAM) & pfts);
+								lNotify=GetTickCount();
+							}
+						}
+						LOG("P2P: Finished sending file bytes.");
 						fclose(fd);
 					}
 					ProtoBroadcastAck(AIM_PROTOCOL_NAME, hContact, ACKTYPE_FILE, ACKRESULT_SUCCESS,hContact,0);
@@ -127,9 +142,24 @@ void sending_file(HANDLE hContact, HANDLE hNewConnection)
 				}
 				else if(type==0x0204)
 				{
+					LOG("P2P: Buddy says they got the file successfully");
 					ProtoBroadcastAck(AIM_PROTOCOL_NAME, hContact, ACKTYPE_FILE, ACKRESULT_SUCCESS,hContact,0);
 					delete[] file;
 					return;
+				}
+				else if(type==0x0205)
+				{
+					LOG("P2P: Buddy wants us to start sending at a specified file point.");
+					oft2* recv_ft=(oft2*)&packetRecv.buffer[0];
+					recv_ft->type=_htons(0x0106);
+					file_start_point=_htonl(recv_ft->recv_bytes);
+					char* buf = (char*)recv_ft;
+					if(Netlib_Send(hNewConnection,buf,sizeof(oft2),0)==SOCKET_ERROR)
+					{
+						ProtoBroadcastAck(AIM_PROTOCOL_NAME,hContact, ACKTYPE_FILE, ACKRESULT_FAILED,hContact,0);
+						Netlib_CloseHandle(hNewConnection);
+						return;
+					}
 				}
 			}
 		}
@@ -239,6 +269,10 @@ void receiving_file(HANDLE hContact, HANDLE hNewConnection)
 				{
 
 					ft.type=_htons(0x0204);
+					ft.recv_bytes=_htonl(pfts.totalBytes);
+					fclose(fd);
+					fd=0;
+					ft.recv_checksum=_htonl(aim_oft_checksum_file(file));
 					Netlib_Send(hNewConnection,(char*)&ft,sizeof(oft2),0);
 					ProtoBroadcastAck(AIM_PROTOCOL_NAME, hContact, ACKTYPE_FILE, ACKRESULT_SUCCESS,hContact,0);
 					break;
@@ -246,7 +280,7 @@ void receiving_file(HANDLE hContact, HANDLE hNewConnection)
 			}
 		}
 	}
-	if(accepted_file)
+	if(accepted_file&&fd)
 		fclose(fd);
 	delete[] file;
 }

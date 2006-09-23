@@ -483,6 +483,7 @@ static int SendFile(WPARAM /*wParam*/,LPARAM lParam)
 				int force_proxy=DBGetContactSettingByte(NULL,AIM_PROTOCOL_NAME,AIM_KEY_FP,0);
 				if(force_proxy)
 				{
+					LOG("We are forcing a proxy file transfer.");
 					HANDLE hProxy=aim_connect("ars.oscar.aol.com:5190");
 					if(hProxy)
 					{
@@ -553,6 +554,7 @@ static int DenyFile(WPARAM /*wParam*/, LPARAM lParam)
 	DBVARIANT dbv;
 	if (!DBGetContactSetting(ccs->hContact, AIM_PROTOCOL_NAME, AIM_KEY_SN, &dbv))
 	{
+		LOG("We are denying a file transfer.");
 		char cookie[8];
 		read_cookie(ccs->hContact,cookie);
 		aim_deny_file(conn.hServerConn,conn.seqno,dbv.pszVal,cookie);
@@ -567,6 +569,7 @@ static int CancelFile(WPARAM /*wParam*/, LPARAM lParam)
 	DBVARIANT dbv;
 	if (!DBGetContactSetting(ccs->hContact, AIM_PROTOCOL_NAME, AIM_KEY_SN, &dbv))
 	{
+		LOG("We are cancelling a file transfer.");
 		char cookie[8];
 		read_cookie(ccs->hContact,cookie);
 		aim_deny_file(conn.hServerConn,conn.seqno,dbv.pszVal,cookie);

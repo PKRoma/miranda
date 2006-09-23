@@ -140,11 +140,24 @@ void accept_file_thread(char* data)//buddy sending file
 		HANDLE hProxy=aim_peer_connect(proxy_ip,5190);
 		if(hProxy)
 		{
+			LOG("Connected to proxy ip that buddy specified.");
 			DBWriteContactSettingByte(*hContact,AIM_PROTOCOL_NAME,AIM_KEY_PS,1);
 			DBWriteContactSettingDword(*hContact,AIM_PROTOCOL_NAME,AIM_KEY_DH,(DWORD)hProxy);//not really a direct connection
 			DBWriteContactSettingWord(*hContact,AIM_PROTOCOL_NAME,AIM_KEY_PC,port);//needed to verify the proxy connection as legit
 			DBWriteContactSettingString(*hContact,AIM_PROTOCOL_NAME,AIM_KEY_IP,proxy_ip);
 			ForkThread(aim_proxy_helper,*hContact);
+		}
+		else
+		{
+			if (!DBGetContactSetting(ccs->hContact, AIM_PROTOCOL_NAME, AIM_KEY_SN, &dbv))
+			{
+				LOG("We failed to connect to the buddy over the proxy transfer.");
+				char cookie[8];
+				read_cookie(hContact,cookie);
+				ProtoBroadcastAck(AIM_PROTOCOL_NAME, hContact, ACKTYPE_FILE, ACKRESULT_FAILED,hContact,0);
+				aim_deny_file(conn.hServerConn,conn.seqno,dbv.pszVal,cookie);
+				DBFreeVariant(&dbv);
+			}
 		}
 	}
 	else if(force_proxy)//we are forcing a proxy
@@ -152,10 +165,15 @@ void accept_file_thread(char* data)//buddy sending file
 		HANDLE hProxy=aim_connect("ars.oscar.aol.com:5190");
 		if(hProxy)
 		{
+			LOG("Connected to proxy ip because we want to use a proxy for the file transfer.");
 			DBWriteContactSettingByte(*hContact,AIM_PROTOCOL_NAME,AIM_KEY_PS,2);
 			DBWriteContactSettingDword(*hContact,AIM_PROTOCOL_NAME,AIM_KEY_DH,(DWORD)hProxy);//not really a direct connection
 			DBWriteContactSettingString(*hContact,AIM_PROTOCOL_NAME,AIM_KEY_IP,"ars.oscar.aol.com:5190");
 			ForkThread(aim_proxy_helper,*hContact);
+		}
+		else
+		{
+			ProtoBroadcastAck(AIM_PROTOCOL_NAME, hContact, ACKTYPE_FILE, ACKRESULT_FAILED,hContact,0);
 		}
 	}
 	else
@@ -165,23 +183,30 @@ void accept_file_thread(char* data)//buddy sending file
 		HANDLE hDirect =aim_peer_connect(verified_ip,port);
 		if(hDirect)
 		{
+			LOG("Connected to buddy over P2P port via verified ip.");
 			aim_accept_file(conn.hServerConn,conn.seqno,sn,cookie);
 			DBWriteContactSettingDword(*hContact,AIM_PROTOCOL_NAME,AIM_KEY_DH,(DWORD)hDirect);
 			DBWriteContactSettingString(*hContact,AIM_PROTOCOL_NAME,AIM_KEY_IP,verified_ip);
-			ForkThread(aim_dc_helper,*hContact);
-		}
-		hDirect=aim_peer_connect(local_ip,port);
-		if(hDirect)
-		{
-			aim_accept_file(conn.hServerConn,conn.seqno,sn,cookie);
-			DBWriteContactSettingDword(*hContact,AIM_PROTOCOL_NAME,AIM_KEY_DH,(DWORD)hDirect);
-			DBWriteContactSettingString(*hContact,AIM_PROTOCOL_NAME,AIM_KEY_IP,local_ip);
 			ForkThread(aim_dc_helper,*hContact);
 		}
 		else
 		{
-			DBWriteContactSettingString(*hContact,AIM_PROTOCOL_NAME,AIM_KEY_IP,verified_ip);
-			aim_file_redirected_request(conn.hServerConn,conn.seqno,sn,cookie);
+			//hDirect=aim_peer_connect(local_ip,port);
+			hDirect=0;
+			if(hDirect)
+			{
+				LOG("Connected to buddy over P2P port via local ip.");
+				aim_accept_file(conn.hServerConn,conn.seqno,sn,cookie);
+				DBWriteContactSettingDword(*hContact,AIM_PROTOCOL_NAME,AIM_KEY_DH,(DWORD)hDirect);
+				DBWriteContactSettingString(*hContact,AIM_PROTOCOL_NAME,AIM_KEY_IP,local_ip);
+				ForkThread(aim_dc_helper,*hContact);
+			}
+			else
+			{
+				LOG("Failed to connect to buddy- asking buddy to connect to us.");
+				DBWriteContactSettingString(*hContact,AIM_PROTOCOL_NAME,AIM_KEY_IP,verified_ip);
+				aim_file_redirected_request(conn.hServerConn,conn.seqno,sn,cookie);
+			}
 		}
 	}
 	delete[] sn;
