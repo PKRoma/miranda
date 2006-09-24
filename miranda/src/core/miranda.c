@@ -249,6 +249,7 @@ int UnwindThreadPop(WPARAM wParam,LPARAM lParam)
 		int j;
 		for (j=0;j<WaitingThreadsCount;j++) {
 			if (WaitingThreads[j].dwThreadId == dwThreadId) {
+				SetThreadPriority(GetCurrentThread(), THREAD_PRIORITY_TIME_CRITICAL);
 				CloseHandle(WaitingThreads[j].hThread);
 				WaitingThreadsCount--;
 				if (j<WaitingThreadsCount) memmove(&WaitingThreads[j],&WaitingThreads[j+1],(WaitingThreadsCount-j) * sizeof(struct THREAD_WAIT_ENTRY));
