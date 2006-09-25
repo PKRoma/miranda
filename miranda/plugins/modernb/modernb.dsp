@@ -315,6 +315,10 @@ SOURCE=.\clcutils.c
 # End Source File
 # Begin Source File
 
+SOURCE=.\clistevents.c
+# End Source File
+# Begin Source File
+
 SOURCE=.\clistmenus.c
 
 !IF  "$(CFG)" == "modernb - Win32 Release"

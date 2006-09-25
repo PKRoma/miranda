@@ -48,6 +48,7 @@ CLEAN :
 	-@erase "$(INTDIR)\clcopts.obj"
 	-@erase "$(INTDIR)\clcpaint.obj"
 	-@erase "$(INTDIR)\clcutils.obj"
+	-@erase "$(INTDIR)\clistevents.obj"
 	-@erase "$(INTDIR)\clistmenus.obj"
 	-@erase "$(INTDIR)\clistmod.obj"
 	-@erase "$(INTDIR)\clistopts.obj"
@@ -146,9 +147,10 @@ LINK32_OBJS= \
 	"$(INTDIR)\SkinEditor.obj" \
 	"$(INTDIR)\SkinEngine.obj" \
 	"$(INTDIR)\SkinOpt.obj" \
+	"$(INTDIR)\tabbedoptions.obj" \
 	"$(INTDIR)\utf.obj" \
 	"$(INTDIR)\resource.res" \
-	"$(INTDIR)\tabbedoptions.obj"
+	"$(INTDIR)\clistevents.obj"
 
 "..\..\bin\release\plugins\clist_modern.dll" : "$(OUTDIR)" $(DEF_FILE) $(LINK32_OBJS)
     $(LINK32) @<<
@@ -172,6 +174,7 @@ CLEAN :
 	-@erase "$(INTDIR)\clcopts.obj"
 	-@erase "$(INTDIR)\clcpaint.obj"
 	-@erase "$(INTDIR)\clcutils.obj"
+	-@erase "$(INTDIR)\clistevents.obj"
 	-@erase "$(INTDIR)\clistmenus.obj"
 	-@erase "$(INTDIR)\clistmod.obj"
 	-@erase "$(INTDIR)\clistopts.obj"
@@ -271,9 +274,10 @@ LINK32_OBJS= \
 	"$(INTDIR)\SkinEditor.obj" \
 	"$(INTDIR)\SkinEngine.obj" \
 	"$(INTDIR)\SkinOpt.obj" \
+	"$(INTDIR)\tabbedoptions.obj" \
 	"$(INTDIR)\utf.obj" \
 	"$(INTDIR)\resource.res" \
-	"$(INTDIR)\tabbedoptions.obj"
+	"$(INTDIR)\clistevents.obj"
 
 "..\..\bin\debug\plugins\clist_modern.dll" : "$(OUTDIR)" $(DEF_FILE) $(LINK32_OBJS)
     $(LINK32) @<<
@@ -297,6 +301,7 @@ CLEAN :
 	-@erase "$(INTDIR)\clcopts.obj"
 	-@erase "$(INTDIR)\clcpaint.obj"
 	-@erase "$(INTDIR)\clcutils.obj"
+	-@erase "$(INTDIR)\clistevents.obj"
 	-@erase "$(INTDIR)\clistmenus.obj"
 	-@erase "$(INTDIR)\clistmod.obj"
 	-@erase "$(INTDIR)\clistopts.obj"
@@ -395,9 +400,10 @@ LINK32_OBJS= \
 	"$(INTDIR)\SkinEditor.obj" \
 	"$(INTDIR)\SkinEngine.obj" \
 	"$(INTDIR)\SkinOpt.obj" \
+	"$(INTDIR)\tabbedoptions.obj" \
 	"$(INTDIR)\utf.obj" \
 	"$(INTDIR)\resource.res" \
-	"$(INTDIR)\tabbedoptions.obj"
+	"$(INTDIR)\clistevents.obj"
 
 "..\..\bin\release Unicode\plugins\clist_modern.dll" : "$(OUTDIR)" $(DEF_FILE) $(LINK32_OBJS)
     $(LINK32) @<<
@@ -421,6 +427,7 @@ CLEAN :
 	-@erase "$(INTDIR)\clcopts.obj"
 	-@erase "$(INTDIR)\clcpaint.obj"
 	-@erase "$(INTDIR)\clcutils.obj"
+	-@erase "$(INTDIR)\clistevents.obj"
 	-@erase "$(INTDIR)\clistmenus.obj"
 	-@erase "$(INTDIR)\clistmod.obj"
 	-@erase "$(INTDIR)\clistopts.obj"
@@ -519,9 +526,10 @@ LINK32_OBJS= \
 	"$(INTDIR)\SkinEditor.obj" \
 	"$(INTDIR)\SkinEngine.obj" \
 	"$(INTDIR)\SkinOpt.obj" \
+	"$(INTDIR)\tabbedoptions.obj" \
 	"$(INTDIR)\utf.obj" \
 	"$(INTDIR)\resource.res" \
-	"$(INTDIR)\tabbedoptions.obj"
+	"$(INTDIR)\clistevents.obj"
 
 "..\..\bin\debug Unicode\plugins\clist_modern.dll" : "$(OUTDIR)" $(DEF_FILE) $(LINK32_OBJS)
     $(LINK32) @<<
@@ -1020,6 +1028,11 @@ CPP_SWITCHES=/nologo /MDd /W3 /Gm /GX /ZI /Od /I "../../include" /D "WIN32" /D "
 
 
 !ENDIF
+
+SOURCE=.\clistevents.c
+
+"$(INTDIR)\clistevents.obj" : $(SOURCE) "$(INTDIR)" "$(INTDIR)\modernb.pch"
+
 
 SOURCE=.\clistmenus.c
 
