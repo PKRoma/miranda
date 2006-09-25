@@ -1593,7 +1593,7 @@ USERINFO* UM_TakeStatus(USERINFO* pUserList, char* pszUID, WORD status)
 char* UM_FindUserAutoComplete(USERINFO* pUserList, char * pszOriginal, char* pszCurrent)
 {
 	char * pszName = NULL;
-	USERINFO *pTemp = pUserList, *pLast = NULL;
+	USERINFO *pTemp = pUserList;
 
 	if(!pUserList || !pszOriginal || !pszCurrent)
 		return NULL;
@@ -1605,7 +1605,6 @@ char* UM_FindUserAutoComplete(USERINFO* pUserList, char * pszOriginal, char* psz
 			if(lstrcmpiA(pTemp->pszNick, pszCurrent) > 0 && (!pszName || lstrcmpiA(pTemp->pszNick, pszName) < 0) )
 				pszName =pTemp->pszNick;
 		}
-		pLast = pTemp;
 		pTemp = pTemp->next;
 	}
 	return pszName;
