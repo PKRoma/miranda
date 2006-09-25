@@ -407,8 +407,9 @@ int __declspec(dllexport) Unload(void)
 {
 	if (IsWindow(pcli->hwndContactList))
 		DestroyWindow(pcli->hwndContactList);
+	ImageList_Destroy(himlExtraImages);
 	ClcShutdown(0, 0);
-    UnLoadCLUIFramesModule();
+	UnLoadCLUIFramesModule();
 	return 0;
 }
 

@@ -264,6 +264,8 @@ int ClcShutdown(WPARAM wParam, LPARAM lParam)
 	if (g_CluiData.hIconChatactive)
 		DestroyIcon(g_CluiData.hIconChatactive);
 
+	DeleteObject(g_CluiData.hPen3DBright);
+	DeleteObject(g_CluiData.hPen3DDark);
 	DeleteObject(g_CluiData.hBrushColorKey);
 	DeleteObject(g_CluiData.hBrushCLCBk);
 	DeleteObject(g_CluiData.hBrushAvatarBorder);
