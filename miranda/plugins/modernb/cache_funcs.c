@@ -173,14 +173,11 @@ static int Cache_AskAwayMsgThreadProc(HWND hwnd)
                 return 0; 
             }
         }
-
-        {
-            CListSettings_FreeCacheItemData(&dnce);
-            dnce.hContact=(HANDLE)h;
-            SendMessage(hwnd,UM_CALLSYNCRONIZED,SYNC_GETPDNCE,(LPARAM)&dnce);
-            if (dnce.ApparentMode!=ID_STATUS_OFFLINE) //don't ask if contact is always invisible (should be done with protocol)
-                ACK=(HANDLE)CallContactService(h,PSS_GETAWAYMSG,0,0);
-        }   
+        CListSettings_FreeCacheItemData(&dnce);
+        dnce.hContact=(HANDLE)h;
+        SendMessage(hwnd,UM_CALLSYNCRONIZED,SYNC_GETPDNCE,(LPARAM)&dnce);
+        if (dnce.ApparentMode!=ID_STATUS_OFFLINE) //don't ask if contact is always invisible (should be done with protocol)
+            ACK=(HANDLE)CallContactService(h,PSS_GETAWAYMSG,0,0);		
         if (!ACK)
         {
             ACKDATA ack;
@@ -193,7 +190,8 @@ static int Cache_AskAwayMsgThreadProc(HWND hwnd)
                 ack.szModule=NULL;
             ClcProtoAck((WPARAM)h,(LPARAM) &ack);
         }
-        dwRequestTick=time;
+		CListSettings_FreeCacheItemData(&dnce);
+		dwRequestTick=time;
         h=cache_AskAwayMsg_GetCurrentChain();
         if (h) SleepEx(const_AskPeriod,TRUE); else break;
         if (MirandaExiting()) 
@@ -330,6 +328,7 @@ int Cache_GetTextThreadProc(void * a)
                 SendMessage(chain.dat->hWnd,UM_CALLSYNCRONIZED,(WPARAM)SYNC_GETSHORTDATA,(LPARAM)&dat2);
                 dat=&dat2;
             }
+			if (!MirandaExiting())
 			{
                displayNameCacheEntry cacheEntry={0};
                cacheEntry.hContact=chain.ContactRequest;
@@ -337,7 +336,9 @@ int Cache_GetTextThreadProc(void * a)
                {
                    Cache_GetSecondLineText(dat, &cacheEntry);
     			   Cache_GetThirdLineText(dat, &cacheEntry);
-                   SendMessage(hwnd,UM_CALLSYNCRONIZED,(WPARAM)SYNC_SETPDNCE,(LPARAM)&cacheEntry);
+				   if (!MirandaExiting()) 
+						SendMessage(hwnd,UM_CALLSYNCRONIZED,(WPARAM)SYNC_SETPDNCE,(LPARAM)&cacheEntry);
+				   CListSettings_FreeCacheItemData(&cacheEntry);
                }
 		    }
 			KillTimer(dat->hWnd,TIMERID_INVALIDATE_FULL);

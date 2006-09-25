@@ -422,6 +422,7 @@ struct ClcData {
     DWORD m_paintCouter; //range is enoght to 49 days if painting will occure each one millisecond
     BYTE useMetaIcon;
     BYTE drawOverlayedStatus;
+    int nInsertionLevel;
 };
 
 struct SHORTDATA

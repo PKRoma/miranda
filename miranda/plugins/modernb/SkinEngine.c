@@ -279,7 +279,7 @@ int SkinEngine_UnloadModule()
 }
 
 
-BOOL SkinEngine_SetRgnQpaque(HDC memdc,HRGN hrgn)
+BOOL SkinEngine_SetRgnOpaque(HDC memdc,HRGN hrgn)
 {
     RGNDATA * rdata;
     DWORD rgnsz;
@@ -4148,7 +4148,7 @@ HICON SkinEngine_CreateJoinedIcon(HICON hBottom, HICON hTop, BYTE alpha)
         int vstep_t=bmp_top.bmWidthBytes;
         int vstep_bm=bmp_bottom_mask.bmWidthBytes;
         int vstep_tm=bmp_top_mask.bmWidthBytes;
-
+		alpha=alpha?alpha:255;
         if (bmp_bottom.bmBits) bb=BottomBuffer=(BYTE*)bmp_bottom.bmBits;
         else
         {

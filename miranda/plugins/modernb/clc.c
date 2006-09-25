@@ -1554,8 +1554,7 @@ case DROPTARGET_ONGROUP:
     }				
     break;
 case DROPTARGET_INSERTION:
-
-    hNewCursor=LoadCursor(g_hInst, MAKEINTRESOURCE(IDC_DROPUSER));
+    hNewCursor=LoadCursor(g_hInst, MAKEINTRESOURCE(IDC_DROP));
     break;
 case DROPTARGET_OUTSIDE:
     {	NMCLISTCONTROL nm;
@@ -1800,8 +1799,42 @@ case WM_LBUTTONUP:
                 saveContactListControlWndProc(hwnd, msg, wParam, lParam);
                 break;
             case DROPTARGET_INSERTION:
-                saveContactListControlWndProc(hwnd, msg, wParam, lParam);
-                break;
+				{
+					struct ClcContact *contact, *destcontact;
+					struct ClcGroup *group, *destgroup;
+					BOOL NeedRename=FALSE;
+					TCHAR newName[128]={0};
+					int newIndex,i;
+					pcli->pfnGetRowByIndex(dat, dat->iDragItem, &contact, &group);
+					i=pcli->pfnGetRowByIndex(dat, dat->iInsertionMark, &destcontact, &destgroup);				
+					if (i!=-1 && group->groupId!=destgroup->groupId)
+					{
+						TCHAR * groupName=mir_tstrdup(pcli->pfnGetGroupName(contact->groupId,0));
+						TCHAR * shortGroup=NULL;
+						TCHAR * sourceGrName=mir_tstrdup(pcli->pfnGetGroupName(destgroup->groupId,0));
+						if (groupName)
+						{
+							int len=_tcslen(groupName);
+							do {len--;}while(len>=0 && groupName[len]!='\\');
+							if (len>=0) shortGroup=groupName+len+1;
+							else shortGroup=groupName;
+						}
+						if (shortGroup) 
+						{
+							NeedRename=TRUE;
+							if (sourceGrName)
+								_sntprintf(newName,SIZEOF(newName),_T("%s\\%s"),sourceGrName,shortGroup);
+							else
+								_sntprintf(newName,SIZEOF(newName),_T("%s"),shortGroup);
+						}
+						if (groupName) mir_free(groupName);
+						if (sourceGrName) mir_free(sourceGrName);
+					}
+					newIndex=CallService(MS_CLIST_GROUPMOVEBEFORE, contact->groupId, (destcontact&&i!=-1)?destcontact->groupId:0);							
+					newIndex=newIndex?newIndex:contact->groupId;
+					if (NeedRename) pcli->pfnRenameGroup(newIndex,newName);
+					break;
+				}
             case DROPTARGET_OUTSIDE:
                 saveContactListControlWndProc(hwnd, msg, wParam, lParam);
                 break;

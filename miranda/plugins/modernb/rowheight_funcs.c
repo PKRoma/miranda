@@ -732,9 +732,8 @@ int cliGetRowTopY(struct ClcData *dat, int item)
 {
   int i;
   int y = 0;
-
   if (item >= dat->row_heights_size)
-    return -1;
+    return cliGetRowBottomY(dat,item-1);
 
   for (i = 0 ; i < item ; i++)
   {

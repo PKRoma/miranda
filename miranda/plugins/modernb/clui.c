@@ -2470,7 +2470,8 @@ static void CLUI_SmoothAnimationThreadProc(HWND hwnd)
     {
         if (!g_mutex_bLockUpdating)
         {
-            SendMessage(hwnd,UM_CALLSYNCRONIZED, (WPARAM)SYNC_SMOOTHANIMATION,(LPARAM) hwnd);       
+			if (!MirandaExiting())
+				SendMessage(hwnd,UM_CALLSYNCRONIZED, (WPARAM)SYNC_SMOOTHANIMATION,(LPARAM) hwnd);       
             SleepEx(20,TRUE);
             if (MirandaExiting()) 
             {

@@ -39,7 +39,7 @@ int cliHitTest(HWND hwnd,struct ClcData *dat,int testx,int testy,struct ClcConta
 {
 	struct ClcContact *hitcontact;
 	struct ClcGroup *hitgroup;
-	int hit;
+	int hit=-1;
 	RECT clRect;
  if (CLUI_TestCursorOnBorders()!=0)
  {
@@ -128,7 +128,7 @@ int cliHitTest(HWND hwnd,struct ClcData *dat,int testx,int testy,struct ClcConta
 	}
 
 	if(flags) *flags|=CLCHT_NOWHERE;
-	return -1;
+	return hit;
 }
 
 void cliScrollTo(HWND hwnd,struct ClcData *dat,int desty,int noSmooth)
@@ -347,10 +347,12 @@ int GetDropTargetInformation(HWND hwnd,struct ClcData *dat,POINT pt)
 	struct ClcContact *contact=NULL,*movecontact=NULL;
 	struct ClcGroup *group,*movegroup;
 	DWORD hitFlags;
+    int nSetSelection=-1;
 
 	GetClientRect(hwnd,&clRect);
 	dat->selection=dat->iDragItem;
 	dat->iInsertionMark=-1;
+    dat->nInsertionLevel=0;
 	if(!PtInRect(&clRect,pt)) return DROPTARGET_OUTSIDE;
 
 	hit=cliHitTest(hwnd,dat,pt.x,pt.y,&contact,&group,&hitFlags);
@@ -360,50 +362,87 @@ int GetDropTargetInformation(HWND hwnd,struct ClcData *dat,POINT pt)
 
 	if(movecontact->type==CLCIT_GROUP) {
 		struct ClcContact *bottomcontact=NULL,*topcontact=NULL;
-		struct ClcGroup *topgroup=NULL;
-		int topItem=-1,bottomItem;
+		struct ClcGroup *topgroup=NULL, *bottomgroup=NULL;
+		int topItem=-1,bottomItem=-1;
 		int ok=0;
-		if(pt.y+dat->yScroll<cliGetRowTopY(dat,hit)+dat->insertionMarkHitHeight) {
+		if(pt.y+dat->yScroll<cliGetRowTopY(dat,hit)+dat->insertionMarkHitHeight || contact->type!=CLCIT_GROUP) {
 			//could be insertion mark (above)
 			topItem=hit-1; bottomItem=hit;
 			bottomcontact=contact;
+			bottomgroup=group;
 			topItem=cliGetRowByIndex(dat,topItem,&topcontact,&topgroup);
 			ok=1;
-		}
-		if(pt.y+dat->yScroll>=cliGetRowTopY(dat,hit+1)-dat->insertionMarkHitHeight) {
+		} else if ((pt.y+dat->yScroll>=cliGetRowTopY(dat,hit+1)-dat->insertionMarkHitHeight)
+                 ||(contact->type==CLCIT_GROUP && contact->group->expanded && contact->group->cl.count>0)) 
+		{
 			//could be insertion mark (below)
 			topItem=hit; bottomItem=hit+1;
 			topcontact=contact; topgroup=group;
-			bottomItem=cliGetRowByIndex(dat,bottomItem,&bottomcontact,NULL);
-			ok=1;
+			bottomItem=cliGetRowByIndex(dat,bottomItem,&bottomcontact,&bottomgroup);
+			ok=1;	
 		}
-		if(ok) {
-			ok=0;
-			if(bottomItem==-1 || bottomcontact->type!=CLCIT_GROUP) {	   //need to special-case moving to end
-				if(topItem!=dat->iDragItem) {
-					for(;topgroup;topgroup=topgroup->parent) {
-						if(topgroup==movecontact->group) break;
-						if(topgroup==movecontact->group->parent) {ok=1; break;}
+		if (ok)
+		{
+			if (bottomItem==-1 && contact->type==CLCIT_GROUP)
+			{
+				bottomItem=topItem+1;
+			} 
+			else 
+			{
+				if (bottomItem==-1 && contact->type!=CLCIT_GROUP && contact->groupId==0)
+				{
+					if (contact->type!=CLCIT_GROUP && contact->groupId==0)
+					{
+						bottomItem=topItem;
+						cliGetRowByIndex(dat,bottomItem,&bottomcontact,&bottomgroup);
 					}
-					if(ok) bottomItem=topItem+1;
+				}
+				if (bottomItem!=-1 && bottomcontact->type!=CLCIT_GROUP)
+				{
+					struct ClcGroup * gr=bottomgroup;
+					do 
+					{
+						bottomItem=cliGetRowByIndex(dat,bottomItem-1,&bottomcontact,&bottomgroup);}
+					while (bottomItem>=0 && bottomcontact->type!=CLCIT_GROUP && bottomgroup==gr);
+                    nSetSelection=bottomItem;
+					bottomItem=cliGetRowByIndex(dat,bottomItem+1,&bottomcontact,&bottomgroup);
 				}
 			}
-			else if(bottomItem!=dat->iDragItem && bottomcontact->type==CLCIT_GROUP && bottomcontact->group->parent==movecontact->group->parent) {
-				if(bottomcontact!=movecontact+1) ok=1;
-			}
-			if(ok) {
-				dat->iInsertionMark=bottomItem;
-				dat->selection=-1;
-				return DROPTARGET_INSERTION;
-			}
+            
+			if (bottomItem==-1)	bottomItem=topItem+1;
+			{
+				int bi=cliGetRowByIndex(dat,bottomItem,&bottomcontact,&bottomgroup);
+				if (bi!=-1)
+				{
+					group=bottomgroup;                    
+					if (bottomcontact==movecontact || group==movecontact->group)	return DROPTARGET_ONSELF;
+					dat->nInsertionLevel=-1; // decreasing here
+                    for(;group;group=group->parent)
+                    {   
+                        dat->nInsertionLevel++;
+						if (group==movecontact->group) return DROPTARGET_ONSELF;
+                    }
+				}
+			}           
+			dat->iInsertionMark=bottomItem;
+			dat->selection=nSetSelection;
+			return DROPTARGET_INSERTION;
 		}
 	}
-	if(contact->type==CLCIT_GROUP) {
-		if(dat->iInsertionMark==-1) {
-			if(movecontact->type==CLCIT_GROUP) {	 //check not moving onto its own subgroup
-				for(;group;group=group->parent) if(group==movecontact->group) return DROPTARGET_ONSELF;
+	if(contact->type==CLCIT_GROUP) 
+    {
+		if(dat->iInsertionMark==-1) 
+        {
+			if(movecontact->type==CLCIT_GROUP) 
+            {	 //check not moving onto its own subgroup
+                dat->iInsertionMark=hit+1;
+				for(;group;group=group->parent) 
+                {
+                     dat->nInsertionLevel++;
+                    if(group==movecontact->group) return DROPTARGET_ONSELF;
+                }
 			}
-			dat->selection=hit;
+			dat->selection=hit;            
 			return DROPTARGET_ONGROUP;
 		}
 	}

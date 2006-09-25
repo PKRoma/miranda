@@ -105,7 +105,7 @@ int SizeFramesByWindowRect(RECT *r, HDWP * PosBatch, int mode);
 int SkinEngine_PrepeareImageButDontUpdateIt(RECT * r);
 int SkinEngine_UpdateWindowImageRect(RECT * r);
 int CheckFramesPos(RECT *wr);
-BOOL SkinEngine_SetRgnQpaque(HDC memdc,HRGN hrgn);
+BOOL SkinEngine_SetRgnOpaque(HDC memdc,HRGN hrgn);
 int ModernButton_ReposButtons(HWND parent, BOOL draw, RECT * r);
 char *DBGetStringA(HANDLE hContact,const char *szModule,const char *szSetting);
 BOOL SkinEngine_ImageList_DrawEx( HIMAGELIST himl,int i,HDC hdcDst,int x,int y,int dx,int dy,COLORREF rgbBk,COLORREF rgbFg,UINT fStyle);

@@ -1342,7 +1342,7 @@ void ModernInternalPaintRowItems(HWND hwnd, HDC hdcMem, struct ClcData *dat, str
 						CombineRgn(rgn2,rgn,rgn2,RGN_DIFF);
 						// FrameRgn(hdcMem,rgn,hBrush,1,1);
 						FillRgn(hdcMem,rgn2,hBrush);
-						SkinEngine_SetRgnQpaque(hdcMem,rgn2);
+						SkinEngine_SetRgnOpaque(hdcMem,rgn2);
 						SelectObject(hdcMem, hOldBrush);
 						DeleteObject(hBrush);
 						DeleteObject(rgn);
@@ -1845,7 +1845,7 @@ void InternalPaintRowItems(HWND hwnd, HDC hdcMem, struct ClcData *dat, struct Cl
             CombineRgn(rgn2,rgn,rgn2,RGN_DIFF);
             // FrameRgn(hdcMem,rgn,hBrush,1,1);
             FillRgn(hdcMem,rgn2,hBrush);
-            SkinEngine_SetRgnQpaque(hdcMem,rgn2);
+            SkinEngine_SetRgnOpaque(hdcMem,rgn2);
             SelectObject(hdcMem, hOldBrush);
             DeleteObject(hBrush);
             DeleteObject(rgn);
@@ -3100,11 +3100,23 @@ void InternalPaintClc(HWND hwnd,struct ClcData *dat,HDC hdc,RECT *rcPaint)
     HBRUSH hBrush,hoBrush;
     POINT pts[8];
     HRGN hRgn;
+    int identation=dat->nInsertionLevel*dat->groupIndent;
+	int yt=cliGetRowTopY(dat, dat->iInsertionMark);
+	//if (yt=-1) yt=cliGetRowBottomY(dat, dat->iInsertionMark-1);
+	
+	pts[0].y=yt - dat->yScroll - 4;
+	if (pts[0].y<-3) pts[0].y=-3;
+    pts[0].x=1+identation*(dat->text_rtl?0:1);/*dat->leftMargin;*/
 
-    pts[0].x=dat->leftMargin; pts[0].y= cliGetRowTopY(dat, dat->iInsertionMark) - dat->yScroll - 4;
-    pts[1].x=pts[0].x+2;      pts[1].y=pts[0].y+3;
-    pts[2].x=clRect.right-4;  pts[2].y=pts[1].y;
-    pts[3].x=clRect.right-1;  pts[3].y=pts[0].y-1;
+    pts[1].x=pts[0].x+2;  
+    pts[1].y=pts[0].y+3;
+
+    pts[2].x=clRect.right-identation*(dat->text_rtl?1:0)-4;
+    pts[2].y=pts[1].y;
+
+    pts[3].x=clRect.right-1-identation*(dat->text_rtl?1:0);  
+    pts[3].y=pts[0].y-1;
+
     pts[4].x=pts[3].x;        pts[4].y=pts[0].y+7;
     pts[5].x=pts[2].x+1;      pts[5].y=pts[1].y+2;
     pts[6].x=pts[1].x;        pts[6].y=pts[5].y;
@@ -3113,6 +3125,7 @@ void InternalPaintClc(HWND hwnd,struct ClcData *dat,HDC hdc,RECT *rcPaint)
     hBrush=CreateSolidBrush(dat->fontModernInfo[FONTID_CONTACTS].colour);
     hoBrush=(HBRUSH)SelectObject(hdcMem,hBrush);
     FillRgn(hdcMem,hRgn,hBrush);
+	SkinEngine_SetRgnOpaque(hdcMem,hRgn);
     SelectObject(hdcMem,hoBrush);
     DeleteObject(hBrush);
   }
