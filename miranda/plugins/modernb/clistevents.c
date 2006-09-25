@@ -232,10 +232,7 @@ int cli_RemoveEvent(HANDLE hContact, HANDLE hDbEvent)
 
 	if (hContact == g_CluiData.hUpdateContact || (int)hDbEvent == 1)
 		g_CluiData.hUpdateContact = 0;
-    if (g_CluiData.bNotifyActive) 
-    {
-		CLUI__cliInvalidateRect(g_hwndEventFrame, NULL, FALSE);
-    }
+    CLUI__cliInvalidateRect(g_hwndEventFrame, NULL, FALSE);
 	return res;
 }
 
@@ -267,13 +264,7 @@ static int EventArea_PaintCallbackProc(HWND hWnd, HDC hDC, RECT * rcPaint, HRGN 
 
 static int EventArea_Draw(HWND hwnd, HDC hDC)
 {
-  RECT rc;
-  HBRUSH br;
   if (hwnd==(HWND)-1) return 0;
-  br=CreateSolidBrush(RGB(0,0,0));
-  GetClientRect(hwnd,&rc);  
-  FillRect(hDC,&rc,br);
-  DeleteObject(br);
   if (GetParent(hwnd)==pcli->hwndContactList)
     return EventArea_DrawWorker(hwnd,hDC);
   else

@@ -432,9 +432,8 @@ void Cache_DestroySmileyList( SortedList* p_list )
 
 				if (!IsBadWritePtr(piece, sizeof(ClcContactTextPiece)))
 				{
-				if (piece->smiley && piece->smiley != listening_to_icon)
+                    if (piece->type==TEXT_PIECE_TYPE_SMILEY && piece->smiley != listening_to_icon)
 					DestroyIcon_protect(piece->smiley);
-
 					mir_free(piece);
 				}
 			}
@@ -1111,7 +1110,7 @@ SortedList *CopySmileyString(SortedList *plInput)
 			{
 				ClcContactTextPiece *piece = (ClcContactTextPiece *) mir_alloc(sizeof(ClcContactTextPiece));			
 				*piece=*pieceFrom;
-				if (pieceFrom->smiley)
+                if (pieceFrom->type==TEXT_PIECE_TYPE_SMILEY)
 					piece->smiley=CopyIcon(pieceFrom->smiley);
 				li.List_Insert(plText, piece, plText->realCount);
 			}

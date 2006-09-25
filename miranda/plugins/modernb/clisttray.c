@@ -161,7 +161,8 @@ static TCHAR* TrayIconMakeTooltip(const TCHAR *szPrefix, const char *szProto)
 	else
 		szSeparator = _T("\n");
 
-	if (szProto == NULL) {
+	if (szProto == NULL) 
+    {
 		PROTOCOLDESCRIPTOR **protos;
 		int count, netProtoCount, i;
 		CallService(MS_PROTO_ENUMPROTOCOLS, (WPARAM) &count, (LPARAM) &protos);
@@ -331,114 +332,9 @@ static TCHAR* TrayIconMakeTooltip(const TCHAR *szPrefix, const char *szProto)
 	}
 	return szTip;
 }
-/*
-static TCHAR *TrayIconMakeTooltip(const TCHAR *szPrefix,const char *szProto) //TODO: UNICODE
+static int TrayIconAddEventsToTooltip(const char *szProto)
 {
-	static TCHAR szTip[256];
-	TCHAR * szProtoName=NULL;
-
-	char  szProtoNameTemp[32]={0};
-	TCHAR *szStatus, *szSeparator;
-	int t,cn;
-#ifndef UNICODE
-	szProtoName=(char*)szProtoNameTemp;
-#endif
-	szSeparator=(IsWinVerMEPlus())?szSeparator=TEXT("\n"):TEXT(" | ");
-	if(szProto==NULL) {
-		PROTOCOLDESCRIPTOR **protos;
-		int count,netProtoCount,i;
-		CallService(MS_PROTO_ENUMPROTOCOLS,(WPARAM)&count,(LPARAM)&protos);
-		for(i=0,netProtoCount=0;i<count;i++) if(protos[i]->type==PROTOTYPE_PROTOCOL && (GetProtocolVisibility(protos[i]->szName)!=0) ) netProtoCount++;
-		if(netProtoCount==1)
-			for(i=0;i<count;i++) if(protos[i]->type==PROTOTYPE_PROTOCOL && (GetProtocolVisibility(protos[i]->szName)!=0)) return TrayIconMakeTooltip(szPrefix,protos[i]->szName);
-		if(szPrefix && szPrefix[0]) { 
-			lstrcpyn(szTip,szPrefix,SIZEOF(szTip));
-			if(!DBGetContactSettingByte(NULL,"CList","AlwaysStatus",SETTING_ALWAYSSTATUS_DEFAULT))
-				return szTip;
-		}
-		else szTip[0]=TEXT('\0');
-		szTip[SIZEOF(szTip)-1]=TEXT('\0');
-		t=0;
-		cn=DBGetContactSettingDword(NULL,"Protocols","ProtoCount",-1);
-		if (cn==-1) ProtocolOrder_CheckOrder();
-		cn=DBGetContactSettingDword(NULL,"Protocols","ProtoCount",0);
-		for(t=0;t<cn;t++) {
-			i=GetProtoIndexByPos(protos, count,t);
-			if (i==-1) return TEXT("???");
-
-			if(protos[i]->type!=PROTOTYPE_PROTOCOL || (GetProtocolVisibility(protos[i]->szName)==0)) continue;
-			CallProtoService(protos[i]->szName,PS_GETNAME,sizeof(szProtoNameTemp),(LPARAM)szProtoNameTemp);
-
-#ifdef UNICODE
-			szProtoName=a2u(szProtoNameTemp);
-#else
-			szProtoName=szProtoNameTemp;
-#endif
-
-			szStatus=(TCHAR*)CallService(MS_CLIST_GETSTATUSMODEDESCRIPTION,CallProtoService(protos[i]->szName,PS_GETSTATUS,0,0),GCMDF_TCHAR_MY); //TODO:UNICODE
-			if(szTip[0]) _tcsncat(szTip,szSeparator,sizeof(szTip)/sizeof(TCHAR)-1-lstrlen(szTip));
-			_tcsncat(szTip,szProtoName,sizeof(szTip)/sizeof(TCHAR)-1-lstrlen(szTip));
-			_tcsncat(szTip,TEXT(" "),sizeof(szTip)/sizeof(TCHAR)-1-lstrlen(szTip));
-			_tcsncat(szTip,szStatus,sizeof(szTip)/sizeof(TCHAR)-1-lstrlen(szTip));
-
-			if (szProto)
-			{
-				TCHAR *ProtoXStatus=NULL;
-				int xstatus=0;
-				if (CallProtoService(protos[i]->szName,PS_GETSTATUS,0,0)>ID_STATUS_OFFLINE && (DBGetContactSettingByte(NULL,"CLUI","XStatusTray",15)&3) )	
-				{
-					char str[MAXMODULELABELLENGTH];
-					strcpy(str,protos[i]->szName);
-					strcat(str,"/GetXStatus");
-					if (ServiceExists(str))
-					{
-						char * dbTitle="XStatusName";
-						char * dbTitle2=NULL;
-						xstatus=CallProtoService(protos[i]->szName,"/GetXStatus",(WPARAM)&dbTitle,(LPARAM)&dbTitle2);
-						if (dbTitle && xstatus)
-						{
-							DBVARIANT dbv={0};
-							if (!DBGetContactSettingTString(NULL,protos[i]->szName,dbTitle,&dbv))
-							{
-								ProtoXStatus=mir_tstrdup(dbv.ptszVal);
-								mir_free(dbv.ptszVal);
-							}
-						}
-					}
-				}
-				if (ProtoXStatus)
-				{
-					_tcsncat(szTip,TEXT(":"),sizeof(szTip)/sizeof(TCHAR)-1-lstrlen(szTip));
-					_tcsncat(szTip,ProtoXStatus,sizeof(szTip)/sizeof(TCHAR)-1-lstrlen(szTip));
-					mir_free(ProtoXStatus);
-				}
-			}
-#ifdef UNICODE
-			if (szProtoName) mir_free(szProtoName);
-#endif
-		}
-	}
-	else {
-		CallProtoService(szProto,PS_GETNAME,sizeof(szProtoNameTemp),(LPARAM)szProtoNameTemp);
-#ifdef UNICODE
-		szProtoName=a2u(szProtoNameTemp);
-#else
-		szProtoName=szProtoNameTemp;
-#endif
-		szStatus=(TCHAR*)CallService(MS_CLIST_GETSTATUSMODEDESCRIPTION,CallProtoService(szProto,PS_GETSTATUS,0,0),GCMDF_TCHAR_MY);
-		if(szPrefix && szPrefix[0]) {
-			if(DBGetContactSettingByte(NULL,"CList","AlwaysStatus",SETTING_ALWAYSSTATUS_DEFAULT))
-				_sntprintf(szTip,SIZEOF(szTip),_T("%s%s%s %s"),szPrefix,szSeparator,szProtoName,szStatus);
-			else lstrcpyn(szTip,szPrefix,sizeof(szTip)/sizeof(TCHAR));
-		}
-		else _sntprintf(szTip,sizeof(szTip),_T("%s %s"),szProtoName,szStatus);
-	}
-#ifdef UNICODE
-	if (szProtoName) mir_free(szProtoName);
-#endif
-	return szTip;
-}
-*/
+};
 
 static int TrayIconAdd(HWND hwnd,const char *szProto,const char *szIconProto,int status)
 {
@@ -1003,6 +899,7 @@ static void CALLBACK TrayToolTipTimerProc(HWND hwnd, UINT msg, UINT_PTR id, DWOR
 				int n=s_LastHoverIconID-100;
 				if (n>=0 && n<trayIconCount)
 				{
+                    //TODO event support
 					szTipCur=trayIcon[n].iconTip;
 					//TrayIconMakeTooltip(NULL,trayIcon[n].szProto);
 				}
@@ -1090,8 +987,9 @@ case TIM_CALLBACK:
 		SetForegroundWindow(msg->hwnd);
 		SetFocus(msg->hwnd);
 		GetCursorPos(&pt);
+        g_trayMenuOnScreen=TRUE;
 		TrackPopupMenu(hMenu, TPM_TOPALIGN | TPM_LEFTALIGN|TPM_LEFTBUTTON, pt.x, pt.y, 0, msg->hwnd, NULL);
-		g_trayMenuOnScreen=TRUE;
+        PostMessage(msg->hwnd, WM_NULL, 0, 0);		
 		g_mutex_bOnTrayRightClick=0;
 		IS_WM_MOUSE_DOWN_IN_TRAY=0;
 	}
