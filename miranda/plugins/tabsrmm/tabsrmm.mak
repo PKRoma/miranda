@@ -143,6 +143,7 @@ CLEAN :
 	-@erase "$(INTDIR)\containeroptions.obj"
 	-@erase "$(INTDIR)\eventpopups.obj"
 	-@erase "$(INTDIR)\formatting.obj"
+	-@erase "$(INTDIR)\generic_msghandlers.obj"
 	-@erase "$(INTDIR)\hotkeyhandler.obj"
 	-@erase "$(INTDIR)\ImageDataObject.obj"
 	-@erase "$(INTDIR)\log.obj"
@@ -202,6 +203,7 @@ LINK32_OBJS= \
 	"$(INTDIR)\containeroptions.obj" \
 	"$(INTDIR)\eventpopups.obj" \
 	"$(INTDIR)\formatting.obj" \
+	"$(INTDIR)\generic_msghandlers.obj" \
 	"$(INTDIR)\hotkeyhandler.obj" \
 	"$(INTDIR)\ImageDataObject.obj" \
 	"$(INTDIR)\msgdialog.obj" \
@@ -240,6 +242,7 @@ CLEAN :
 	-@erase "$(INTDIR)\containeroptions.obj"
 	-@erase "$(INTDIR)\eventpopups.obj"
 	-@erase "$(INTDIR)\formatting.obj"
+	-@erase "$(INTDIR)\generic_msghandlers.obj"
 	-@erase "$(INTDIR)\hotkeyhandler.obj"
 	-@erase "$(INTDIR)\ImageDataObject.obj"
 	-@erase "$(INTDIR)\log.obj"
@@ -299,6 +302,7 @@ LINK32_OBJS= \
 	"$(INTDIR)\containeroptions.obj" \
 	"$(INTDIR)\eventpopups.obj" \
 	"$(INTDIR)\formatting.obj" \
+	"$(INTDIR)\generic_msghandlers.obj" \
 	"$(INTDIR)\hotkeyhandler.obj" \
 	"$(INTDIR)\ImageDataObject.obj" \
 	"$(INTDIR)\msgdialog.obj" \
@@ -346,6 +350,8 @@ CLEAN :
 	-@erase "$(INTDIR)\eventpopups.sbr"
 	-@erase "$(INTDIR)\formatting.obj"
 	-@erase "$(INTDIR)\formatting.sbr"
+	-@erase "$(INTDIR)\generic_msghandlers.obj"
+	-@erase "$(INTDIR)\generic_msghandlers.sbr"
 	-@erase "$(INTDIR)\hotkeyhandler.obj"
 	-@erase "$(INTDIR)\hotkeyhandler.sbr"
 	-@erase "$(INTDIR)\ImageDataObject.obj"
@@ -426,6 +432,7 @@ BSC32_SBRS= \
 	"$(INTDIR)\containeroptions.sbr" \
 	"$(INTDIR)\eventpopups.sbr" \
 	"$(INTDIR)\formatting.sbr" \
+	"$(INTDIR)\generic_msghandlers.sbr" \
 	"$(INTDIR)\hotkeyhandler.sbr" \
 	"$(INTDIR)\ImageDataObject.sbr" \
 	"$(INTDIR)\msgdialog.sbr" \
@@ -465,6 +472,7 @@ LINK32_OBJS= \
 	"$(INTDIR)\containeroptions.obj" \
 	"$(INTDIR)\eventpopups.obj" \
 	"$(INTDIR)\formatting.obj" \
+	"$(INTDIR)\generic_msghandlers.obj" \
 	"$(INTDIR)\hotkeyhandler.obj" \
 	"$(INTDIR)\ImageDataObject.obj" \
 	"$(INTDIR)\msgdialog.obj" \
@@ -1092,6 +1100,50 @@ CPP_SWITCHES=/nologo /MD /W3 /GX /Zi /O1 /I "../../include" /D "WIN32" /D "NDEBU
 CPP_SWITCHES=/nologo /MDd /W3 /GX /ZI /Od /I "../../include" /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /D "_USRDLL" /D "SRMM_EXPORTS" /D "UNICODE" /D "_MBCS" /FR"$(INTDIR)\\" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /GZ /c 
 
 "$(INTDIR)\formatting.obj"	"$(INTDIR)\formatting.sbr" : $(SOURCE) "$(INTDIR)"
+	$(CPP) @<<
+  $(CPP_SWITCHES) $(SOURCE)
+<<
+
+
+!ENDIF 
+
+SOURCE=.\generic_msghandlers.c
+
+!IF  "$(CFG)" == "tabSRMM - Win32 Debug"
+
+CPP_SWITCHES=/nologo /MDd /W3 /GX /ZI /Od /I "../../include" /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /D "_USRDLL" /D "SRMM_EXPORTS" /D "_MBCS" /Fp"$(INTDIR)\srmm.pch" /Yu"commonheaders.h" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /GZ /c 
+
+"$(INTDIR)\generic_msghandlers.obj" : $(SOURCE) "$(INTDIR)" "$(INTDIR)\srmm.pch"
+	$(CPP) @<<
+  $(CPP_SWITCHES) $(SOURCE)
+<<
+
+
+!ELSEIF  "$(CFG)" == "tabSRMM - Win32 Release Unicode"
+
+CPP_SWITCHES=/nologo /MD /W3 /GX /Zi /O1 /I "../../include" /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "_USRDLL" /D "SRMM_EXPORTS" /D "UNICODE" /Fp"$(INTDIR)\srmm.pch" /Yu"commonheaders.h" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /GF /c 
+
+"$(INTDIR)\generic_msghandlers.obj" : $(SOURCE) "$(INTDIR)" "$(INTDIR)\srmm.pch"
+	$(CPP) @<<
+  $(CPP_SWITCHES) $(SOURCE)
+<<
+
+
+!ELSEIF  "$(CFG)" == "tabSRMM - Win32 Release"
+
+CPP_SWITCHES=/nologo /MD /W3 /GX /Zi /O1 /I "../../include" /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "_USRDLL" /D "SRMM_EXPORTS" /D "_MBCS" /Fp"$(INTDIR)\srmm.pch" /Yu"commonheaders.h" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /GF /c 
+
+"$(INTDIR)\generic_msghandlers.obj" : $(SOURCE) "$(INTDIR)" "$(INTDIR)\srmm.pch"
+	$(CPP) @<<
+  $(CPP_SWITCHES) $(SOURCE)
+<<
+
+
+!ELSEIF  "$(CFG)" == "tabSRMM - Win32 Debug Unicode"
+
+CPP_SWITCHES=/nologo /MDd /W3 /GX /ZI /Od /I "../../include" /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /D "_USRDLL" /D "SRMM_EXPORTS" /D "UNICODE" /D "_MBCS" /FR"$(INTDIR)\\" /Fp"$(INTDIR)\srmm.pch" /Yu"commonheaders.h" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /GZ /c 
+
+"$(INTDIR)\generic_msghandlers.obj"	"$(INTDIR)\generic_msghandlers.sbr" : $(SOURCE) "$(INTDIR)" "$(INTDIR)\srmm.pch"
 	$(CPP) @<<
   $(CPP_SWITCHES) $(SOURCE)
 <<
