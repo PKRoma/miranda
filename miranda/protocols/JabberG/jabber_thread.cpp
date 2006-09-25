@@ -34,6 +34,7 @@ Last change by : $Author$
 #include "jabber_list.h"
 #include "jabber_iq.h"
 #include "resource.h"
+#include "version.h"
 
 // <iq/> identification number for various actions
 // for JABBER_REGISTER thread
@@ -143,7 +144,7 @@ static void xmlStreamInitialize(char *which){
 	JabberLog("Stream will be initialized %s",which);
 	xmlStreamToBeInitialized = strdup(which);
 }
-static void xmlStreamInitializeNow(struct ThreadData *info){
+static void xmlStreamInitializeNow(struct ThreadData* info){
 	JabberLog("Stream is initializing %s",xmlStreamToBeInitialized?xmlStreamToBeInitialized:"after connect");
 	if (xmlStreamToBeInitialized){
 		free(xmlStreamToBeInitialized);
@@ -169,7 +170,7 @@ static void xmlStreamInitializeNow(struct ThreadData *info){
 
 static bool wasSaslPerformed = 0;
 
-void __cdecl JabberServerThread( struct ThreadData *info )
+void __cdecl JabberServerThread( struct ThreadData* info )
 {
 	DBVARIANT dbv;
 	char* buffer;
@@ -584,17 +585,19 @@ static void JabberPerformIqAuth( ThreadData* info )
 
 static void JabberProcessStreamOpening( XmlNode *node, void *userdata )
 {
-	struct ThreadData *info = ( struct ThreadData * ) userdata;
-	TCHAR* sid;
-
-	if ( node->name==NULL || strcmp( node->name, "stream:stream" ))
+	if ( node->name == NULL || strcmp( node->name, "stream:stream" ))
 		return;
 
+	struct ThreadData* info = ( struct ThreadData* ) userdata;
 	if ( info->type == JABBER_SESSION_NORMAL ) {
-		if (( sid=JabberXmlGetAttrValue( node, "id" )) != NULL ) {
-			if ( streamId ) mir_free( streamId );
-			streamId = t2a( sid );
-	}	}
+		TCHAR* sid = JabberXmlGetAttrValue( node, "id" );
+		if ( sid != NULL )
+			replaceStr( streamId, t2a( sid ));
+	}
+
+	// old server - disable SASL then
+	if ( JabberXmlGetAttrValue( node, "version" ) == NULL )
+		JSetByte( "Disable3920auth", TRUE );
 
 	if ( JGetByte( "Disable3920auth", 0 ))
 		JabberPerformIqAuth( info );
@@ -602,7 +605,7 @@ static void JabberProcessStreamOpening( XmlNode *node, void *userdata )
 
 static void JabberProcessStreamClosing( XmlNode *node, void *userdata )
 {
-	struct ThreadData *info = ( struct ThreadData * ) userdata;
+	struct ThreadData* info = ( struct ThreadData* ) userdata;
 
 	Netlib_CloseHandle( info->s );
 	if ( node->name && !strcmp( node->name, "stream:error" ) && node->text )
@@ -611,7 +614,7 @@ static void JabberProcessStreamClosing( XmlNode *node, void *userdata )
 
 static void JabberProcessFeatures( XmlNode *node, void *userdata )
 {
-	struct ThreadData *info = ( struct ThreadData * ) userdata;
+	struct ThreadData* info = ( struct ThreadData* ) userdata;
 	bool isPlainAvailable = false;
 	bool isMd5available = false;
 	bool isAuthAvailable = false;
@@ -720,7 +723,7 @@ static void __cdecl JabberWaitAndReconnectThread( int unused )
 
 static void JabberProcessFailure( XmlNode *node, void *userdata ){
 //	JabberXmlDumpNode( node );
-	struct ThreadData *info = ( struct ThreadData * ) userdata;
+	struct ThreadData* info = ( struct ThreadData* ) userdata;
 	TCHAR* type;
 //failure xmlns=\"urn:ietf:params:xml:ns:xmpp-sasl\"
 	if (( type=JabberXmlGetAttrValue( node, "xmlns" )) == NULL ) return;
@@ -736,7 +739,7 @@ static void JabberProcessFailure( XmlNode *node, void *userdata ){
 
 static void JabberProcessError( XmlNode *node, void *userdata )
 {
-	struct ThreadData *info = ( struct ThreadData * ) userdata;
+	struct ThreadData* info = ( struct ThreadData* ) userdata;
 	TCHAR *buff;
 	int i;
 	int pos;
@@ -757,7 +760,7 @@ static void JabberProcessError( XmlNode *node, void *userdata )
 
 static void JabberProcessSuccess( XmlNode *node, void *userdata )
 {
-	struct ThreadData *info = ( struct ThreadData * ) userdata;
+	struct ThreadData* info = ( struct ThreadData* ) userdata;
 	TCHAR* type;
 //	int iqId;
 	// RECVED: <success ...
@@ -781,9 +784,9 @@ static void JabberProcessSuccess( XmlNode *node, void *userdata )
 
 static void JabberProcessProtocol( XmlNode *node, void *userdata )
 {
-	struct ThreadData *info;
+	struct ThreadData* info;
 
-	info = ( struct ThreadData * ) userdata;
+	info = ( struct ThreadData* ) userdata;
 	if ( !strcmp( node->name, "proceed" )){
 		JabberProcessProceed( node, userdata );
 		return;
@@ -819,10 +822,10 @@ static void JabberProcessProtocol( XmlNode *node, void *userdata )
 
 static void JabberProcessProceed( XmlNode *node, void *userdata )
 {
-	struct ThreadData *info;
+	struct ThreadData* info;
 	TCHAR* type;
 	node = node;
-	if (( info=( struct ThreadData * ) userdata ) == NULL ) return;
+	if (( info=( struct ThreadData* ) userdata ) == NULL ) return;
 	if (( type = JabberXmlGetAttrValue( node, "xmlns" )) != NULL && !lstrcmp( type, _T("error")))
 		return;
 
@@ -852,14 +855,14 @@ static void JabberProcessProceed( XmlNode *node, void *userdata )
 
 static void JabberProcessMessage( XmlNode *node, void *userdata )
 {
-	struct ThreadData *info;
+	struct ThreadData* info;
 	XmlNode *subjectNode, *xNode, *inviteNode, *idNode, *n;
 	TCHAR* from, *type, *nick, *p, *idStr, *fromResource;
 	int id;
 	HANDLE hContact;
 
 	if ( !node->name || strcmp( node->name, "message" )) return;
-	if (( info=( struct ThreadData * ) userdata ) == NULL ) return;
+	if (( info=( struct ThreadData* ) userdata ) == NULL ) return;
 
 	type = JabberXmlGetAttrValue( node, "type" );
 	if (( from = JabberXmlGetAttrValue( node, "from" )) == NULL )
@@ -1108,7 +1111,7 @@ static void JabberProcessMessage( XmlNode *node, void *userdata )
 
 static void JabberProcessPresence( XmlNode *node, void *userdata )
 {
-	struct ThreadData *info;
+	struct ThreadData* info;
 	HANDLE hContact;
 	XmlNode *showNode, *statusNode;
 	JABBER_LIST_ITEM *item;
@@ -1117,7 +1120,7 @@ static void JabberProcessPresence( XmlNode *node, void *userdata )
 	TCHAR* p;
 
 	if ( !node || !node->name || strcmp( node->name, "presence" )) return;
-	if (( info=( struct ThreadData * ) userdata ) == NULL ) return;
+	if (( info=( struct ThreadData* ) userdata ) == NULL ) return;
 	if (( from = JabberXmlGetAttrValue( node, "from" )) == NULL ) return;
 
 	if ( JabberListExist( LIST_CHATROOM, from )) {
@@ -1329,12 +1332,15 @@ static void JabberProcessIqVersion( TCHAR* idStr, XmlNode* node )
 	if ( os == NULL ) os = TranslateT( "Windows" );
 
 	char mversion[100];
-	strcpy( mversion, "Miranda IM " );
-	JCallService( MS_SYSTEM_GETVERSIONTEXT, sizeof( mversion )-12, ( LPARAM )&mversion[11] );
+	JCallService( MS_SYSTEM_GETVERSIONTEXT, sizeof( mversion ), ( LPARAM )mversion );
+
+	TCHAR* fullVer = (TCHAR*)alloca(1000 * sizeof( TCHAR ));
+	mir_sntprintf( fullVer, 1000, _T("Miranda IM ") _T(TCHAR_STR_PARAM) _T("; Jabber v.") _T(TCHAR_STR_PARAM) _T(" (%s)"),
+		mversion, __VERSION_STRING, jabberThreadInfo->resource );
 
 	XmlNodeIq iq( "result", idStr, from );
 	XmlNode* query = iq.addQuery( "jabber:iq:version" );
-	query->addChild( "name", mversion ); query->addChild( "version", version ); query->addChild( "os", os );
+	query->addChild( "name", fullVer ); query->addChild( "version", version ); query->addChild( "os", os );
 	JabberSend( jabberThreadInfo->s, iq );
 
 	if ( version ) mir_free( version );
@@ -1466,7 +1472,7 @@ static void JabberProcessIqResultVersion( TCHAR* type, XmlNode* node, XmlNode* q
 
 static void JabberProcessIq( XmlNode *node, void *userdata )
 {
-	struct ThreadData *info;
+	struct ThreadData* info;
 	HANDLE hContact;
 	XmlNode *queryNode, *siNode, *n;
 	TCHAR* from, *type, *jid, *nick;
@@ -1478,7 +1484,7 @@ static void JabberProcessIq( XmlNode *node, void *userdata )
 	JABBER_IQ_PFUNC pfunc;
 
 	if ( !node->name || strcmp( node->name, "iq" )) return;
-	if (( info=( struct ThreadData * ) userdata ) == NULL ) return;
+	if (( info=( struct ThreadData* ) userdata ) == NULL ) return;
 	if (( type=JabberXmlGetAttrValue( node, "type" )) == NULL ) return;
 
 	id = -1;
@@ -1739,12 +1745,12 @@ static void JabberProcessIq( XmlNode *node, void *userdata )
 
 static void JabberProcessRegIq( XmlNode *node, void *userdata )
 {
-	struct ThreadData *info;
+	struct ThreadData* info;
 	XmlNode *errorNode;
 	TCHAR *type, *str;
 
 	if ( !node->name || strcmp( node->name, "iq" )) return;
-	if (( info=( struct ThreadData * ) userdata ) == NULL ) return;
+	if (( info=( struct ThreadData* ) userdata ) == NULL ) return;
 	if (( type=JabberXmlGetAttrValue( node, "type" )) == NULL ) return;
 
 	unsigned int id = -1;
