@@ -364,25 +364,25 @@ void handleRecvServMsgOFT(unsigned char *buf, WORD wLen, DWORD dwUin, char *szUI
                 str = ApplyEncoding(pszDescription, szEnc);
               }
               // decode XML tags
-              str = DemangleXml(str, strlennull(str));
-              if (charset) SAFE_FREE(&pszDescription);
-              pszDescription = str;
+              pszDescription = DemangleXml(str, strlennull(str));
+              if (charset) SAFE_FREE(&str);
 
-              bTag = strstr(str, "<FS>");
+              bTag = strstr(pszDescription, "<FS>");
               if (bTag)
               { // take only <FS> - Description tag if present
                 eTag = strstr(bTag, "</FS>");
                 if (eTag)
                 {
                   *eTag = '\0';
-                  pszDescription = null_strdup(bTag + 4);
-                  SAFE_FREE(&str);
+                  str = null_strdup(bTag + 4);
+                  SAFE_FREE(&pszDescription);
+                  pszDescription = str;
                 }
               }
             }
 
           }
-          if (!strlennull(pszDescription)) pszDescription = ICQTranslate("No description given");
+          if (!strlennull(pszDescription)) pszDescription = ICQTranslateUtf("No description given");
         }
         { // parse File Transfer Info block
           oscar_tlv* tlv = getTLV(chain, 0x2711, 1);
