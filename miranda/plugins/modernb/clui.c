@@ -2573,7 +2573,7 @@ int CLUI_SmoothAlphaTransition(HWND hwnd, BYTE GoalAlpha, BOOL wParam)
                 g_bCurrentAlpha=1;
                 SkinEngine_UpdateWindowImage();
             }
-            if (IsWindowVisible(hwnd))
+            if (IsWindowVisible(hwnd) && !g_hSmoothAnimationThreadID)
             {
                 mutex_bAnimationInProgress=1;
                 if (g_bSmoothAnimation)

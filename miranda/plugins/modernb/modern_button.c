@@ -50,19 +50,7 @@ typedef struct _ModernButtonCtrl
   char    * ValueDBSection;
   char    * ValueTypeDef;
   int     Left, Top, Bottom, Right;
-  //   BYTE    ConstrainPositionFrom;  //(0000BRTL)  L=0 - from left, L=1 from right, 
 
-  //HFONT   hFont;   // font
-  //HICON   arrow;   // uses down arrow
-  //int     defbutton; // default button
-  //HICON   hIcon;
-  //HBITMAP hBitmap;
-  //int     pushBtn;
-  //int     pbState;
-  //HANDLE  hThemeButton;
-  //HANDLE  hThemeToolbar;
-  //char	cHot;
-  //int     flatBtn;
 } ModernButtonCtrl;
 typedef struct _HandleServiceParams
 {
@@ -80,16 +68,16 @@ static HWND hwndToolTips = NULL;
 
 int ModernButton_LoadModule() 
 {
-  WNDCLASSEXA wc;	
+  WNDCLASSEX wc;	
   ZeroMemory(&wc, sizeof(wc));
   wc.cbSize         = sizeof(wc);
-  wc.lpszClassName  = MODERNBUTTONCLASS;
+  wc.lpszClassName  = _T(MODERNBUTTONCLASS);
   wc.lpfnWndProc    = ModernButtonWndProc;
   wc.hCursor        = LoadCursor(NULL, IDC_ARROW);
   wc.cbWndExtra     = sizeof(ModernButtonCtrl*);
   wc.hbrBackground  = 0;
   wc.style          = CS_GLOBALCLASS;
-  RegisterClassExA(&wc);
+  RegisterClassEx(&wc);
   InitializeCriticalSection(&csTips);
   HookEvent(ME_SYSTEM_SHUTDOWN, ModernButton_UnloadModule);
   ModernButtonModuleIsLoaded=TRUE;
@@ -108,7 +96,7 @@ int PaintWorker(HWND hwnd, HDC whdc)
   HBITMAP bmp,oldbmp;
   RECT rc;
   HDC sdc=NULL;
-  ModernButtonCtrl* bct =  (ModernButtonCtrl *)GetWindowLong(hwnd, 0);
+  ModernButtonCtrl* bct =  (ModernButtonCtrl *)GetWindowLong(hwnd, GWL_USERDATA);
   if (!bct) return 0;
   if (!IsWindowVisible(hwnd)) return 0;
   if (!whdc && !g_bLayered) InvalidateRect(hwnd,NULL,FALSE);
@@ -280,181 +268,172 @@ return 0;
 
 static LRESULT CALLBACK ModernButtonWndProc(HWND hwndDlg, UINT msg,  WPARAM wParam, LPARAM lParam)
 {
-  ModernButtonCtrl* bct =  (ModernButtonCtrl *)GetWindowLong(hwndDlg, 0);
-  if (bct)
-    if (bct->HandleService)
-      if (ServiceExists(bct->HandleService))
-      {
-        int t;
-        HandleServiceParams MSG={0};
-        MSG.hwnd=hwndDlg;
-        MSG.msg=msg;
-        MSG.wParam=wParam;
-        MSG.lParam=lParam;
-        t=CallService(bct->HandleService,(WPARAM)&MSG,0);
-        if (MSG.handled) return t;
-      }
-      switch(msg) 
-      {
-      case WM_NCCREATE:
+    ModernButtonCtrl* bct =  (msg!=WM_NCCREATE)?(ModernButtonCtrl *)GetWindowLong(hwndDlg, GWL_USERDATA):0;
+    if (bct)
+      if (bct->HandleService)
+        if (ServiceExists(bct->HandleService))
         {
-          SetWindowLong(hwndDlg, GWL_STYLE, GetWindowLong(hwndDlg, GWL_STYLE)|BS_OWNERDRAW);
-          //			bct = mir_alloc(sizeof(ModernButtonCtrl));
-          //			if (bct==NULL) return FALSE;
-          //            memset(bct,0,sizeof(ModernButtonCtrl));
-          //			bct->hwnd = hwndDlg;
-
-          //			bct->focus = 0;
-          //			//bct->hFont = GetStockObject(DEFAULT_GUI_FONT);
-          //		    bct->HandleService=NULL;
-          //            bct->ID=NULL;
-          //			SetWindowLong(hwndDlg, 0, (long)bct);
-          if (((CREATESTRUCTA *)lParam)->lpszName) SetWindowTextA(hwndDlg, ((CREATESTRUCTA *)lParam)->lpszName);  
-          return TRUE;
+            int t;
+            HandleServiceParams MSG={0};
+            MSG.hwnd=hwndDlg;
+            MSG.msg=msg;
+            MSG.wParam=wParam;
+            MSG.lParam=lParam;
+            t=CallService(bct->HandleService,(WPARAM)&MSG,0);
+            if (MSG.handled) return t;
         }
-      case WM_DESTROY:
-        {
-          if (bct) {
-            EnterCriticalSection(&csTips);
-            if (hwndToolTips) {
-              TOOLINFO ti;
-              ZeroMemory(&ti, sizeof(ti));
-              ti.cbSize = sizeof(ti);
-              ti.uFlags = TTF_IDISHWND;
-              ti.hwnd = bct->hwnd;
-              ti.uId = (UINT)bct->hwnd;
-              if (SendMessage(hwndToolTips, TTM_GETTOOLINFO, 0, (LPARAM)&ti)) {
-                SendMessage(hwndToolTips, TTM_DELTOOL, 0, (LPARAM)&ti);
-              }
-              if (SendMessage(hwndToolTips, TTM_GETTOOLCOUNT, 0, (LPARAM)&ti)==0) {
-                DestroyWindow(hwndToolTips);
-                hwndToolTips = NULL;
-              }
+    switch(msg) 
+    {
+    case WM_NCCREATE:
+    {
+        SetWindowLong(hwndDlg, GWL_STYLE, GetWindowLong(hwndDlg, GWL_STYLE)|BS_OWNERDRAW);
+        SetWindowLong(hwndDlg, GWL_USERDATA, (long)0);
+        if (((CREATESTRUCT *)lParam)->lpszName) SetWindowText(hwndDlg, ((CREATESTRUCT *)lParam)->lpszName);  
+        return TRUE;
+    }
+    case WM_DESTROY:
+    {
+        if (bct) {
+        EnterCriticalSection(&csTips);
+        if (hwndToolTips) {
+            TOOLINFO ti;
+            ZeroMemory(&ti, sizeof(ti));
+            ti.cbSize = sizeof(ti);
+            ti.uFlags = TTF_IDISHWND;
+            ti.hwnd = bct->hwnd;
+            ti.uId = (UINT)bct->hwnd;
+            if (SendMessage(hwndToolTips, TTM_GETTOOLINFO, 0, (LPARAM)&ti)) {
+            SendMessage(hwndToolTips, TTM_DELTOOL, 0, (LPARAM)&ti);
             }
-            LeaveCriticalSection(&csTips);
-            if (bct->ID) mir_free(bct->ID);
-            if (bct->CommandService) mir_free(bct->CommandService);
-            if (bct->StateService) mir_free (bct->StateService); 
-            if (bct->HandleService) mir_free(bct->HandleService);               
-            if (bct->Hint) mir_free(bct->Hint);  
-            if (bct->ValueDBSection) mir_free(bct->ValueDBSection);
-            if (bct->ValueTypeDef) mir_free(bct->ValueTypeDef);
+            if (SendMessage(hwndToolTips, TTM_GETTOOLCOUNT, 0, (LPARAM)&ti)==0) {
+            DestroyWindow(hwndToolTips);
+            hwndToolTips = NULL;
+            }
+        }
+        LeaveCriticalSection(&csTips);
+        if (bct->ID) mir_free(bct->ID);
+        if (bct->CommandService) mir_free(bct->CommandService);
+        if (bct->StateService) mir_free (bct->StateService); 
+        if (bct->HandleService) mir_free(bct->HandleService);               
+        if (bct->Hint) mir_free(bct->Hint);  
+        if (bct->ValueDBSection) mir_free(bct->ValueDBSection);
+        if (bct->ValueTypeDef) mir_free(bct->ValueTypeDef);
 
-            mir_free(bct);
-          }
-          SetWindowLong(hwndDlg,0,(long)NULL);
-          break;	// DONT! fall thru
+        mir_free(bct);
         }
-      case WM_SETCURSOR:
+        SetWindowLong(hwndDlg, GWL_USERDATA,(long)NULL);
+        break;	// DONT! fall thru
+    }
+    case WM_SETCURSOR:
+    {
+        HCURSOR hCurs1;
+        hCurs1 = LoadCursor(NULL, IDC_ARROW);
+        if (hCurs1) SetCursor(hCurs1);
+        SetToolTip(hwndDlg, bct->Hint);
+        return 1;			
+    }
+    case WM_PRINT:
+    {
+        if (IsWindowVisible(hwndDlg))
+        PaintWorker(hwndDlg,(HDC)wParam);
+        break;
+    }
+    case WM_PAINT:
+	    {
+		    if (IsWindowVisible(hwndDlg) && !g_bLayered)
+		    {
+			    PAINTSTRUCT ps={0};
+			    BeginPaint(hwndDlg,&ps);
+			    PaintWorker(hwndDlg,(HDC)ps.hdc);
+			    EndPaint(hwndDlg,&ps);
+		    }
+		    return DefWindowProc(hwndDlg, msg, wParam, lParam); 
+	    }
+    case WM_CAPTURECHANGED:
+    {                
+        bct->hover=0;
+        bct->down=0;
+        PaintWorker(bct->hwnd,0);
+        //	KillTimer(bct->hwnd,1234);
+        break;
+    }
+    //case WM_TIMER:
+    //	{
+    //		    POINT t;
+    //                  GetCursorPos(&t);
+    //                  if (bct->hover && WindowFromPoint(t)!=bct->hwnd)
+    //			{
+    //				KillTimer(bct->hwnd,1234);
+    //				bct->hover=0;
+    //				ReleaseCapture();
+    //				PaintWorker(bct->hwnd,0);
+    //			}
+    //			return 0;
+    //	}
+    case WM_MOUSEMOVE:
+    {
+        if (!bct->hover) 
         {
-          HCURSOR hCurs1;
-          hCurs1 = LoadCursor(NULL, IDC_ARROW);
-          if (hCurs1) SetCursor(hCurs1);
-          SetToolTip(hwndDlg, bct->Hint);
-          return 1;			
+        SetCapture(bct->hwnd);
+        bct->hover=1;
+        //KillTimer(bct->hwnd,1234);
+        //SetTimer(bct->hwnd,1234,100,NULL);
+        PaintWorker(bct->hwnd,0);
+        return 0;
         }
-      case WM_PRINT:
+        else
         {
-          if (IsWindowVisible(hwndDlg))
-            PaintWorker(hwndDlg,(HDC)wParam);
-          break;
+        POINT t;
+        t.x=LOWORD(lParam);
+        t.y=HIWORD(lParam);
+        ClientToScreen(bct->hwnd,&t);
+        if (WindowFromPoint(t)!=bct->hwnd)
+            ReleaseCapture();
+        return 0;
         }
-	  case WM_PAINT:
-		  {
-			  if (IsWindowVisible(hwndDlg) && !g_bLayered)
-			  {
-				  PAINTSTRUCT ps={0};
-				  BeginPaint(hwndDlg,&ps);
-				  PaintWorker(hwndDlg,(HDC)ps.hdc);
-				  EndPaint(hwndDlg,&ps);
-			  }
-			  return DefWindowProc(hwndDlg, msg, wParam, lParam); 
-		  }
-      case WM_CAPTURECHANGED:
-        {                
-          bct->hover=0;
-          bct->down=0;
-          PaintWorker(bct->hwnd,0);
-          //	KillTimer(bct->hwnd,1234);
-          break;
-        }
-        //case WM_TIMER:
-        //	{
-        //		    POINT t;
-        //                  GetCursorPos(&t);
-        //                  if (bct->hover && WindowFromPoint(t)!=bct->hwnd)
-        //			{
-        //				KillTimer(bct->hwnd,1234);
-        //				bct->hover=0;
-        //				ReleaseCapture();
-        //				PaintWorker(bct->hwnd,0);
-        //			}
-        //			return 0;
-        //	}
-      case WM_MOUSEMOVE:
-        {
-          if (!bct->hover) 
-          {
-            SetCapture(bct->hwnd);
-            bct->hover=1;
-            //KillTimer(bct->hwnd,1234);
-            //SetTimer(bct->hwnd,1234,100,NULL);
-            PaintWorker(bct->hwnd,0);
-            return 0;
-          }
-          else
-          {
-            POINT t;
-            t.x=LOWORD(lParam);
-            t.y=HIWORD(lParam);
-            ClientToScreen(bct->hwnd,&t);
-            if (WindowFromPoint(t)!=bct->hwnd)
-              ReleaseCapture();
-            return 0;
-          }
 
 
-        }
-      case WM_LBUTTONDOWN:
+    }
+    case WM_LBUTTONDOWN:
+    {
+        //KillTimer(bct->hwnd,1234);
+        //SetTimer(bct->hwnd,1234,100,NULL);
+        bct->down=1;
+	    SetForegroundWindow(GetParent(bct->hwnd));
+        PaintWorker(bct->hwnd,0);
+        if (bct->Imm)
         {
-          //KillTimer(bct->hwnd,1234);
-          //SetTimer(bct->hwnd,1234,100,NULL);
-          bct->down=1;
-		  SetForegroundWindow(GetParent(bct->hwnd));
-          PaintWorker(bct->hwnd,0);
-          if (bct->Imm)
-          {
-            if (bct->CommandService)
-              if (ServiceExists(bct->CommandService))
-                CallService(bct->CommandService,0,0);
-              else if (bct->ValueDBSection && bct->ValueTypeDef)          
-                ToggleDBValue(bct->ValueDBSection,bct->ValueTypeDef);                      
-            bct->down=0;
-
-            PaintWorker(bct->hwnd,0);
-          }
-
-          return 0;
-        }
-      case WM_LBUTTONUP:
-        if (bct->down)
-        {
-          //KillTimer(bct->hwnd,1234);
-          //SetTimer(bct->hwnd,1234,100,NULL);
-          ReleaseCapture();
-          bct->hover=0;
-          bct->down=0;
-          PaintWorker(bct->hwnd,0);
-          if (bct->CommandService)
+        if (bct->CommandService)
             if (ServiceExists(bct->CommandService))
-              CallService(bct->CommandService,0,0);
+            CallService(bct->CommandService,0,0);
             else if (bct->ValueDBSection && bct->ValueTypeDef)          
-              ToggleDBValue(bct->ValueDBSection,bct->ValueTypeDef); 
+            ToggleDBValue(bct->ValueDBSection,bct->ValueTypeDef);                      
+        bct->down=0;
+
+        PaintWorker(bct->hwnd,0);
         }
 
+        return 0;
+    }
+    case WM_LBUTTONUP:
+    if (bct->down)
+    {
+        //KillTimer(bct->hwnd,1234);
+        //SetTimer(bct->hwnd,1234,100,NULL);
+        ReleaseCapture();
+        bct->hover=0;
+        bct->down=0;
+        PaintWorker(bct->hwnd,0);
+        if (bct->CommandService)
+        if (ServiceExists(bct->CommandService))
+            CallService(bct->CommandService,0,0);
+        else if (bct->ValueDBSection && bct->ValueTypeDef)          
+            ToggleDBValue(bct->ValueDBSection,bct->ValueTypeDef); 
+    }
 
-      }
-      return DefWindowProc(hwndDlg, msg, wParam, lParam);
+
+    }
+    return DefWindowProc(hwndDlg, msg, wParam, lParam);
 }
 
 
@@ -598,11 +577,22 @@ int EraseButton(int l,int t,int r, int b)
 HWND CreateButtonWindow(ModernButtonCtrl * bct, HWND parent)
 {
   HWND hwnd;
+  
   if (bct==NULL) return FALSE;
-  hwnd=CreateWindowA(MODERNBUTTONCLASS,bct->ID,WS_VISIBLE|WS_CHILD,bct->Left,bct->Top,bct->Right-bct->Left,bct->Bottom-bct->Top,parent,NULL,g_hInst,NULL);       
+#ifdef _UNICODE
+  {
+    TCHAR *UnicodeID;
+    UnicodeID=a2u(bct->ID);
+    hwnd=CreateWindow(_T(MODERNBUTTONCLASS),UnicodeID,WS_VISIBLE|WS_CHILD,bct->Left,bct->Top,bct->Right-bct->Left,bct->Bottom-bct->Top,parent,NULL,g_hInst,NULL);       
+    mir_free(UnicodeID);
+  }
+#else
+    hwnd=CreateWindow(_T(MODERNBUTTONCLASS),bct->ID,WS_VISIBLE|WS_CHILD,bct->Left,bct->Top,bct->Right-bct->Left,bct->Bottom-bct->Top,parent,NULL,g_hInst,NULL);         
+#endif
+
   bct->hwnd = hwnd;	
   bct->focus = 0;
-  SetWindowLong(hwnd, 0, (long)bct);
+  SetWindowLong(hwnd, GWL_USERDATA, (long)bct);
   return hwnd;
 }
 

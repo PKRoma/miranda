@@ -225,7 +225,7 @@ void Cache_ReAskAwayMsg(HANDLE wParam)
 	else return;
   }
 	res=cache_AskAwayMsg_AddHandleToChain(wParam); 
-	if (!b_AskAwayMsgThreadStarted && res) 
+	if (!b_AskAwayMsgThreadStarted && res && !g_hAskAwayMsgThreadID) 
   {
 		g_hAskAwayMsgThreadID=(DWORD)forkthread(Cache_AskAwayMsgThreadProc,0,0);
   }
@@ -374,7 +374,7 @@ int AddToCacheChain(struct ClcData *dat,struct ClcContact *contact,HANDLE Contac
 		{
 			FirstCacheChain=chain;
 			LastCacheChain=chain;
-			if (!ISCacheTREADSTARTED)
+			if (!ISCacheTREADSTARTED && !g_hGetTextThreadID)
 			{
 				//StartThreadHere();
 				g_hGetTextThreadID=(DWORD)forkthread(Cache_GetTextThreadProc,0,0);

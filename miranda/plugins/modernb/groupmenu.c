@@ -671,33 +671,7 @@ int FreeOwnerDataSubGroupMenu (WPARAM wParam,LPARAM lParam)
 
 return(0);
 };
-/*
-int HideSubGroupsHelper(WPARAM wParam,LPARAM lParam)
-{
-	int newVal=!(GetWindowLong((HWND)CallService(MS_CLUI_GETHWNDTREE,0,0),GWL_STYLE)&CLS_HIDEEMPTYSubGroupS);
-	DBWriteContactSettingByte(NULL,"CList","HideEmptySubGroups",(BYTE)newVal);
-	SendMessage((HWND)CallService(MS_CLUI_GETHWNDTREE,0,0),CLM_SETHIDEEMPTYSubGroupS,newVal,0);
-	return 0;
-}
 
-int UseSubGroupsHelper(WPARAM wParam,LPARAM lParam)
-{	
-	int newVal=!(GetWindowLong((HWND)CallService(MS_CLUI_GETHWNDTREE,0,0),GWL_STYLE)&CLS_USESubGroupS);
-	DBWriteContactSettingByte(NULL,"CList","UseSubGroups",(BYTE)newVal);
-	SendMessage((HWND)CallService(MS_CLUI_GETHWNDTREE,0,0),CLM_SETUSESubGroupS,newVal,0);
-	return 0;
-}
-
-int HideOfflineRootHelper(WPARAM wParam,LPARAM lParam)
-{
-SendMessage(
-			(HWND)CallService(MS_CLUI_GETHWNDTREE,0,0),
-			CLM_SETHIDEOFFLINEROOT,
-			!SendMessage((HWND)CallService(MS_CLUI_GETHWNDTREE,0,0),CLM_GETHIDEOFFLINEROOT,0,0),
-			0);
-	return 0;
-};
-*/
 //wparam menu handle to pass to clc.c
 //lparam WM_COMMAND HWND
 int GroupMenuExecProxy(WPARAM wParam,LPARAM lParam)
