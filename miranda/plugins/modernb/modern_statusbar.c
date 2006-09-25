@@ -559,6 +559,7 @@ LRESULT CALLBACK ModernStatusProc(HWND hwnd,UINT msg,WPARAM wParam,LPARAM lParam
         {
           NotifyEventHooks(hStatusBarHideToolTipEvent,0,0);
           tooltipshoing=FALSE;
+          ReleaseCapture();
         };
       }
       else if (wParam==TM_STATUSBAR)

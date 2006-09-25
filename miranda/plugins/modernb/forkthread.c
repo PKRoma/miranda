@@ -52,7 +52,7 @@ unsigned long forkthread (
 {
 	unsigned long rc;
 	struct FORK_ARG fa;
-    if (g_bSTATE==STATE_EXITING) return 0; //not start the new thead if exiting
+    if (g_bSTATE!=STATE_NORMAL) return 0; //not start the new thead if exiting
 	fa.hEvent=CreateEvent(NULL,FALSE,FALSE,NULL);
 	fa.threadcode=threadcode;
 	fa.arg=arg;
