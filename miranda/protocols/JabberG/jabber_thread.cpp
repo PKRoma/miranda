@@ -1333,7 +1333,7 @@ static void JabberProcessIqVersion( TCHAR* idStr, XmlNode* node )
 	JCallService( MS_SYSTEM_GETVERSIONTEXT, sizeof( mversion ), ( LPARAM )mversion );
 
 	TCHAR* fullVer = (TCHAR*)alloca(1000 * sizeof( TCHAR ));
-	mir_sntprintf( fullVer, 1000, _T("Miranda IM ") _T(TCHAR_STR_PARAM) _T("; Jabber v.") _T(TCHAR_STR_PARAM) _T(" (%s)"),
+	mir_sntprintf( fullVer, 1000, _T("Miranda IM ") _T(TCHAR_STR_PARAM) _T(" (Jabber v.") _T(TCHAR_STR_PARAM) _T(" [%s])"),
 		mversion, __VERSION_STRING, jabberThreadInfo->resource );
 
 	XmlNodeIq iq( "result", idStr, from );
