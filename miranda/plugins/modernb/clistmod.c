@@ -27,6 +27,13 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include "clist.h"
 #include "commonprototypes.h"
 
+
+static HANDLE hookSystemShutdown_CListMod=NULL;
+HANDLE  hookOptInitialise_CList=NULL,
+        hookOptInitialise_Skin=NULL,
+        hookOptInitialise_SkinEditor=NULL,
+        hookContactAdded_CListSettings=NULL;
+
 extern void Docking_GetMonitorRectFromWindow(HWND hWnd,RECT *rc);
 extern HICON GetMainStatusOverlay(int STATUS);
 int CListMod_HideWindow(HWND hwndContactList, int mode);
@@ -210,12 +217,20 @@ int GetContactIcon(WPARAM wParam,LPARAM lParam)
     return res;
 }
 
+void UnLoadContactListModule()  //unhooks noncritical events
+{
+
+    UnhookEvent(hookOptInitialise_CList);
+    UnhookEvent(hookOptInitialise_Skin);
+    UnhookEvent(hookOptInitialise_SkinEditor);
+    UnhookEvent(hSettingChanged);
+    UnhookEvent(hookContactAdded_CListSettings);
+}
 int CListMod_ContactListShutdownProc(WPARAM wParam,LPARAM lParam)
 {
-	FreeDisplayNameCache();
-	UnhookEvent(hSettingChanged);
+    UnhookEvent(hookSystemShutdown_CListMod);	
 	UninitCustomMenus();
-	//UninitCListEvents();
+    FreeDisplayNameCache();
 	return 0;
 }
 extern int ToggleHideOffline(WPARAM wParam,LPARAM lParam);
@@ -262,23 +277,17 @@ int CLUIGetCapsService(WPARAM wParam,LPARAM lParam)
 
 int LoadContactListModule(void)
 {
-	/*	HANDLE hContact = (HANDLE) CallService(MS_DB_CONTACT_FINDFIRST, 0, 0);
-	while (hContact!=NULL) {
-	DBWriteContactSettingString(hContact, "CList", "StatusMsg", "");
-	hContact = (HANDLE) CallService(MS_DB_CONTACT_FINDNEXT, (WPARAM) hContact, 0);
-	}
-	*/
 	CreateServiceFunction(MS_CLUI_GETCAPS,CLUIGetCapsService);
 	InitDisplayNameCache();
-	HookEvent(ME_SYSTEM_SHUTDOWN,CListMod_ContactListShutdownProc);
-	HookEvent(ME_OPT_INITIALISE,CListOptInit);
-	HookEvent(ME_OPT_INITIALISE,SkinOptInit);
-	HookEvent(ME_OPT_INITIALISE,SkinEditorOptInit);
-	
-	hSettingChanged=HookEvent(ME_DB_CONTACT_SETTINGCHANGED,ContactSettingChanged);
-	HookEvent(ME_DB_CONTACT_ADDED,ContactAdded);
-	hStatusModeChangeEvent=CreateHookableEvent(ME_CLIST_STATUSMODECHANGE);
-	hContactIconChangedEvent=CreateHookableEvent(ME_CLIST_CONTACTICONCHANGED);
+	hookSystemShutdown_CListMod  = HookEvent(ME_SYSTEM_SHUTDOWN,CListMod_ContactListShutdownProc);
+	hookOptInitialise_CList      = HookEvent(ME_OPT_INITIALISE,CListOptInit);
+	hookOptInitialise_Skin       = HookEvent(ME_OPT_INITIALISE,SkinOptInit);
+	hookOptInitialise_SkinEditor = HookEvent(ME_OPT_INITIALISE,SkinEditorOptInit);
+
+	hSettingChanged              = HookEvent(ME_DB_CONTACT_SETTINGCHANGED,ContactSettingChanged);
+	hookContactAdded_CListSettings = HookEvent(ME_DB_CONTACT_ADDED,ContactAdded);
+	hStatusModeChangeEvent       = CreateHookableEvent(ME_CLIST_STATUSMODECHANGE);
+	hContactIconChangedEvent     = CreateHookableEvent(ME_CLIST_CONTACTICONCHANGED);
 	CreateServiceFunction(MS_CLIST_TRAYICONPROCESSMESSAGE,cli_TrayIconProcessMessage);
 	CreateServiceFunction(MS_CLIST_PAUSEAUTOHIDE,TrayIconPauseAutoHide);
 	CreateServiceFunction(MS_CLIST_CONTACTCHANGEGROUP,ContactChangeGroup);

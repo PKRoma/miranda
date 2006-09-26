@@ -62,7 +62,7 @@ struct MM_INTERFACE memoryManagerInterface;
 struct LIST_INTERFACE li;
 
 //current module private variables
-static HANDLE hCListShutdown = 0;
+HANDLE hCListShutdown = 0;
 
 //stored core interfaces
 
@@ -374,7 +374,11 @@ int __declspec(dllexport) Unload(void)
 typedef struct _HookRec
 {
   HANDLE hHook;
+#ifdef _DEBUG
   char * HookStr;
+  char *    _debug_file;
+  int       _debug_line;
+#endif
 } HookRec;
 //UnhookAll();
 
@@ -384,7 +388,12 @@ DWORD hooksRecAlloced=0;
 #undef HookEvent
 #undef UnhookEvent
 
-HANDLE mod_HookEvent(char *EventID,MIRANDAHOOK HookProc)
+HANDLE mod_HookEvent(char *EventID, MIRANDAHOOK HookProc
+                            #ifdef _DEBUG
+                                , char * file, int line)
+                            #else
+                                                         )
+                            #endif                     
 {
 	HookRec * hr=NULL;
 	DWORD i;
@@ -408,7 +417,12 @@ HANDLE mod_HookEvent(char *EventID,MIRANDAHOOK HookProc)
 	hr->hHook=pluginLink->HookEvent(EventID,HookProc);
 	hr->HookStr=NULL;
 #ifdef _DEBUG
-	if (hr->hHook) hr->HookStr=mir_strdup(EventID);
+	if (hr->hHook)
+    {
+        hr->HookStr=mir_strdup(EventID);
+        hr->_debug_file=mir_strdup(file);
+        hr->_debug_line=line;
+    }
 #endif
 	//3. Hook and rec
 	return hr->hHook;
@@ -425,7 +439,10 @@ int mod_UnhookEvent(HANDLE hHook)
 		{
 			pluginLink->UnhookEvent(hHook);
 			hooksrec[i].hHook=NULL;
+#ifdef _DEBUG
 			if (hooksrec[i].HookStr) mir_free(hooksrec[i].HookStr);
+            if (hooksrec[i]._debug_file) mir_free(hooksrec[i]._debug_file);
+#endif
 			return 1;
 		}
 	}
@@ -443,12 +460,11 @@ int UnhookAll()
 		{
 			pluginLink->UnhookEvent(hooksrec[i].hHook);
 			hooksrec[i].hHook=NULL;
-			if (hooksrec[i].HookStr)
-			{
-				TRACE(hooksrec[i].HookStr);
-				TRACE("\n");
-				mir_free(hooksrec[i].HookStr);
-			}
+#ifdef _DEBUG
+            log3("Unhook:%s (hooked at %s Ln %d)",hooksrec[i].HookStr,hooksrec[i]._debug_file,hooksrec[i]._debug_line);
+    		mir_free(hooksrec[i].HookStr);
+            mir_free(hooksrec[i]._debug_file);
+#endif
 		}
 	}
 	mir_free(hooksrec);
@@ -457,5 +473,10 @@ int UnhookAll()
 }
 
 
-#define HookEvent(a,b)  mod_HookEvent(a,b)
+#ifdef _DEBUG
+#define HookEvent(a,b)  mod_HookEvent(a,b,__FILE__,__LINE__);
+#else /* _DEBUG */
+#define HookEvent(a,b)  mod_HookEvent(a,b);
+#endif /* _DEBUG */
+
 #define UnhookEvent(a)  mod_UnhookEvent(a)

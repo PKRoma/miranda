@@ -36,7 +36,6 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 *	Private module variables
 */
 static HANDLE hShowInfoTipEvent;
-static HANDLE hAckHook, hAvatarChanged;
 static HANDLE hSettingChanged1;
 static POINT HitPoint;
 static int mUpped;
@@ -54,7 +53,10 @@ struct ClcContact * hitcontact=NULL;
 extern void ExtraImage_SetAllExtraIcons(HWND hwndList,HANDLE hContact);
 extern void UpdateAllAvatars(struct ClcData *dat);
 extern int GetContactIndex(struct ClcGroup *group,struct ClcContact *contact);
-
+HANDLE  hSmileyAddOptionsChangedHook=NULL,
+        hIconChangedHook=NULL,
+        hAckHook=NULL,
+        hAvatarChanged=NULL;
 HICON listening_to_icon = NULL;
 
 HIMAGELIST hAvatarOverlays=NULL;
@@ -314,8 +316,8 @@ static int ClcModulesLoaded(WPARAM wParam,LPARAM lParam) {
 
 
         ReloadAvatarOverlayIcons(0,0);
-
-        HookEvent(ME_SKIN2_ICONSCHANGED, ReloadAvatarOverlayIcons);
+        
+        hIconChangedHook=HookEvent(ME_SKIN2_ICONSCHANGED, ReloadAvatarOverlayIcons);
     }
     else 
     {
@@ -344,7 +346,7 @@ static int ClcModulesLoaded(WPARAM wParam,LPARAM lParam) {
 
         CallService(MS_SMILEYADD_REGISTERCATEGORY, 0, (LPARAM)&rc);
 
-        HookEvent(ME_SMILEYADD_OPTIONSCHANGED,SmileyAddOptionsChanged);
+        hSmileyAddOptionsChangedHook=HookEvent(ME_SMILEYADD_OPTIONSCHANGED,SmileyAddOptionsChanged);
     }
 
     HookEvent(ME_BACKGROUNDCONFIG_CHANGED,BgClcChange);

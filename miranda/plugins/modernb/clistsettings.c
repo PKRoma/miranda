@@ -197,6 +197,7 @@ int CListSettings_SetToCache(pdisplayNameCacheEntry pSrc)
 void cliFreeCacheItem( pdisplayNameCacheEntry p )
 {
 	HANDLE hContact=p->hContact;
+    TRACEVAR("cliFreeCacheItem hContact=%d",hContact);
 	if ( !p->isUnknown && p->name && p->name!=UnknownConctactTranslatedName) mir_free(p->name);
 	p->name = NULL; 
 	#if defined( _UNICODE )

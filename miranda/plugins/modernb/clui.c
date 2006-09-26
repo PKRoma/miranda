@@ -90,23 +90,38 @@ int CLUI_ShowWindowMod(HWND hWnd, int nCmd)
 
 static BOOL CLUI_WaitThreadsCompletion(HWND hwnd)
 {
- 
-    if (g_mutex_nCalcRowHeightLock ||
-        g_mutex_nPaintLock || 
-        g_hAskAwayMsgThreadID || 
-        g_hGetTextThreadID || 
-        g_hSmoothAnimationThreadID || 
-        g_hFillFontListThreadID ||
-        Miranda_Terminated())
+    static BYTE bEntersCount=0;
+    static const BYTE bcMAX_AWAITING_RETRY = 10; //repeat awaiting only 10 times
+    TRACE("CLUI_WaitThreadsCompletion Enter");
+    if (bEntersCount<bcMAX_AWAITING_RETRY
+        &&( g_mutex_nCalcRowHeightLock ||
+          g_mutex_nPaintLock || 
+          g_hAskAwayMsgThreadID || 
+          g_hGetTextThreadID || 
+          g_hSmoothAnimationThreadID || 
+          g_hFillFontListThreadID) 
+         &&!Miranda_Terminated())
     {
+        TRACE("Waiting threads");
+        TRACEVAR("g_mutex_nCalcRowHeightLock: %x",g_mutex_nCalcRowHeightLock);
+        TRACEVAR("g_mutex_nPaintLock: %x",g_mutex_nPaintLock);
+        TRACEVAR("g_hAskAwayMsgThreadID: %x",g_hAskAwayMsgThreadID);
+        TRACEVAR("g_hGetTextThreadID: %x",g_hGetTextThreadID);
+        TRACEVAR("g_hSmoothAnimationThreadID: %x",g_hSmoothAnimationThreadID);
+        TRACEVAR("g_hFillFontListThreadID: %x",g_hFillFontListThreadID);
         PostMessage(hwnd,WM_DESTROY,0,0);
+        SleepEx(10,TRUE);
         return TRUE;
     }
+
+    if (bEntersCount==bcMAX_AWAITING_RETRY)
+    {   //force to terminate threads after max times repeating of awaiting
+        if (g_hAskAwayMsgThreadID)      TerminateThread((HANDLE)g_hAskAwayMsgThreadID,0);
+        if (g_hGetTextThreadID)         TerminateThread((HANDLE)g_hGetTextThreadID,0);
+        if (g_hSmoothAnimationThreadID) TerminateThread((HANDLE)g_hSmoothAnimationThreadID,0);
+        if (g_hFillFontListThreadID)    TerminateThread((HANDLE)g_hFillFontListThreadID,0);
+    }
     return FALSE;
-    //   TerminateThread(g_hAskAwayMsgThreadID,0);
-    //   TerminateThread(g_hGetTextThreadID,0);
-    //   TerminateThread(g_hSmoothAnimationThreadID,0);
-    //   TerminateThread(g_hFillFontListThreadID,0);
 }
 
 
@@ -1073,7 +1088,7 @@ LRESULT CALLBACK CLUI__cli_ContactListWndProc(HWND hwnd, UINT msg, WPARAM wParam
 
     The caller is expected to create this mapping object and tell us the ID we need to open ours.	
     */
-    if (MirandaExiting() && msg!=WM_DESTROY) 
+    if (g_bSTATE==STATE_EXITING && msg!=WM_DESTROY) 
         return 0;
     if (msg==UM_CALLSYNCRONIZED)
     {
@@ -2077,19 +2092,29 @@ LRESULT CALLBACK CLUI__cli_ContactListWndProc(HWND hwnd, UINT msg, WPARAM wParam
     case WM_DESTROY:
         {
             int state=DBGetContactSettingByte(NULL,"CList","State",SETTING_STATE_NORMAL);
+            TRACE("CLUI.c: WM_DESTROY\n");
             g_bSTATE=STATE_EXITING;
             CLUI_DisconnectAll();
+            TRACE("CLUI.c: WM_DESTROY - WaitThreadsCompletion \n");
             if (CLUI_WaitThreadsCompletion(hwnd)) return 0; //stop all my threads                
+            TRACE("CLUI.c: WM_DESTROY - WaitThreadsCompletion DONE\n");
             {
                 int i=0;
                 for(i=0; i<64; i++)
                     if(CycleStartTick[i].szProto) mir_free(CycleStartTick[i].szProto);
             }
-            if (state==SETTING_STATE_NORMAL){CLUI_ShowWindowMod(hwnd,SW_HIDE);};				
+
+            if (state==SETTING_STATE_NORMAL){CLUI_ShowWindowMod(hwnd,SW_HIDE);};
+            UnLoadContactListModule();
             if(hSettingChangedHook!=0){UnhookEvent(hSettingChangedHook);};
+            if(hAvatarChanged!=0){UnhookEvent(hAvatarChanged);};
+            if(hSmileyAddOptionsChangedHook!=0){UnhookEvent(hSmileyAddOptionsChangedHook);};
+            if(hIconChangedHook!=0){UnhookEvent(hIconChangedHook);};
+
             CListTray_TrayIconDestroy(hwnd);	
             mutex_bAnimationInProgress=0;  		
             CallService(MS_CLIST_FRAMES_REMOVEFRAME,(WPARAM)hFrameContactTree,(LPARAM)0);		
+            TRACE("CLUI.c: WM_DESTROY - hFrameContactTree removed\n");
             pcli->hwndContactTree=NULL;
             pcli->hwndStatus=NULL;
             {
@@ -2106,16 +2131,17 @@ LRESULT CALLBACK CLUI__cli_ContactListWndProc(HWND hwnd, UINT msg, WPARAM wParam
                 }
             }
             UnLoadCLUIFramesModule();
-            CListMod_ContactListShutdownProc(0,0);
-            pcli->hwndStatus=NULL;
+            TRACE("CLUI.c: WM_DESTROY - UnLoadCLUIFramesModule DONE\n");
             ImageList_Destroy(himlMirandaIcon);
             DBWriteContactSettingByte(NULL,"CList","State",(BYTE)state);
             SkinEngine_UnloadSkin(&g_SkinObjectList);
             FreeLibrary(hUserDll);
+            TRACE("CLUI.c: WM_DESTROY - hUserDll freed\n");
             pcli->hwndContactList=NULL;
             pcli->hwndStatus=NULL;
             PostQuitMessage(0);
-            UnhookAll();
+            TRACE("CLUI.c: WM_DESTROY - PostQuitMessage posted\n");
+            TRACE("CLUI.c: WM_DESTROY - ALL DONE\n");
             return 0;
         }	}
 

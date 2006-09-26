@@ -426,8 +426,9 @@ int MO_ProcessCommand(WPARAM wParam,LPARAM lParam)
   srvname=MenuObjects[objidx].ExecService;
   ownerdata=MenuObjects[objidx].MenuItems[menuitemidx].mi.ownerdata;
   unlockmo();
-  return CallService(srvname,(WPARAM)ownerdata,lParam);
-};
+  CallService(srvname,(WPARAM)ownerdata,lParam);
+  return(1);
+}
 
 
 int setcnt=0;

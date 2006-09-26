@@ -193,7 +193,17 @@ static int Cache_AskAwayMsgThreadProc(HWND hwnd)
 		CListSettings_FreeCacheItemData(&dnce);
 		dwRequestTick=time;
         h=cache_AskAwayMsg_GetCurrentChain();
-        if (h) SleepEx(const_AskPeriod,TRUE); else break;
+        if (h) 
+        {
+            DWORD i=0;
+            do 
+            {
+              i++;
+              SleepEx(50,TRUE);
+            } while (i<const_AskPeriod/50&&!MirandaExiting());
+            
+        }
+        else break;
         if (MirandaExiting()) 
         {
             g_hAskAwayMsgThreadID = 0;
@@ -311,9 +321,11 @@ int Cache_GetTextThreadProc(void * a)
     SendMessage(pcli->hwndContactTree,UM_CALLSYNCRONIZED,(WPARAM)SYNC_GETSHORTDATA,(LPARAM)&data);
 	do
 	{
-		SleepEx(0,TRUE); //1000 contacts per second
+		if (!MirandaExiting()) 
+            SleepEx(0,TRUE); //1000 contacts per second
 		if (MirandaExiting()) 
         {
+            ISCacheTREADSTARTED=FALSE;	
             g_hGetTextThreadID=0;
 			return 0;
         }
@@ -334,13 +346,22 @@ int Cache_GetTextThreadProc(void * a)
                cacheEntry.hContact=chain.ContactRequest;
                if (!SendMessage(hwnd,UM_CALLSYNCRONIZED,SYNC_GETPDNCE,(LPARAM)&cacheEntry))
                {
-                   Cache_GetSecondLineText(dat, &cacheEntry);
-    			   Cache_GetThirdLineText(dat, &cacheEntry);
+                   if (!MirandaExiting()) 
+                        Cache_GetSecondLineText(dat, &cacheEntry);
+                   if (!MirandaExiting()) 
+    			        Cache_GetThirdLineText(dat, &cacheEntry);
 				   if (!MirandaExiting()) 
 						SendMessage(hwnd,UM_CALLSYNCRONIZED,(WPARAM)SYNC_SETPDNCE,(LPARAM)&cacheEntry);
 				   CListSettings_FreeCacheItemData(&cacheEntry);
                }
 		    }
+            else 
+            {
+                ISCacheTREADSTARTED=FALSE;	
+                g_hGetTextThreadID=0;
+                return 0;
+            }
+
 			KillTimer(dat->hWnd,TIMERID_INVALIDATE_FULL);
 			SetTimer(dat->hWnd,TIMERID_INVALIDATE_FULL,500,NULL);
 		}

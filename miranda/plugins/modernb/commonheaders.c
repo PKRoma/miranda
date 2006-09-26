@@ -268,3 +268,4 @@ BOOL DestroyIcon_protect(HICON icon)
 	return FALSE;
 }
 
+

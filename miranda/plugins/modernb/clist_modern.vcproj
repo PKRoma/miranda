@@ -173,7 +173,7 @@
 				Name="VCCLCompilerTool"
 				Optimization="0"
 				AdditionalIncludeDirectories="../../include"
-				PreprocessorDefinitions="WIN32;_DEBUG;_WINDOWS;_USRDLL;CLIST_EXPORTS"
+				PreprocessorDefinitions="_DEBUG_LOG;WIN32;_DEBUG;_WINDOWS;_USRDLL;CLIST_EXPORTS"
 				GeneratePreprocessedFile="0"
 				BasicRuntimeChecks="3"
 				RuntimeLibrary="3"

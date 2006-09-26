@@ -1858,7 +1858,7 @@ int SkinEngine_GetSkinFolder(char * szFileName, char * t2)
 }
 //
 
-void WriteParamToDatabase(char *cKey, char* cName, char* cVal, BOOL SecCheck)
+static void SkinEngine_WriteParamToDatabase(char *cKey, char* cName, char* cVal, BOOL SecCheck)
 {
     if (SecCheck)
     {
@@ -1911,7 +1911,7 @@ void WriteParamToDatabase(char *cKey, char* cName, char* cVal, BOOL SecCheck)
     }
 }
 
-BOOL ParseLineOfIniFile(char * Line)
+static BOOL SkinEngine_ParseLineOfIniFile(char * Line)
 {
     DWORD i=0;
     DWORD len=strlen(Line);
@@ -1968,7 +1968,7 @@ BOOL ParseLineOfIniFile(char * Line)
                 while (j>0 && (keyValue[j]==' ' || keyValue[j]=='\t')) j--;
                 if (j>=0) keyValue[j+1]='\0';
             }
-            WriteParamToDatabase(iniCurrentSection,keyName,keyValue,TRUE);
+            SkinEngine_WriteParamToDatabase(iniCurrentSection,keyName,keyValue,TRUE);
         }
     }
     return FALSE;
@@ -2002,7 +2002,7 @@ static int SkinEngine_LoadSkinFromResource()
                 line[i]='\0';
             }
             TRACE(line); TRACE("\n");
-            ParseLineOfIniFile(line);
+            SkinEngine_ParseLineOfIniFile(line);
             pos++;
         }
     }
@@ -2031,7 +2031,7 @@ int SkinEngine_LoadSkinFromIniFile(char * szFileName)
         szFileName=szFileName;
         while (fgets( line, SIZEOF(line),stream ) != NULL)
         {
-            ParseLineOfIniFile(line);
+            SkinEngine_ParseLineOfIniFile(line);
         }
         fclose( stream );
         szFileName=NULL;
@@ -4023,10 +4023,10 @@ HICON SkinEngine_CreateJoinedIcon_Old(HICON hBottom, HICON hTop,BYTE alpha)
 
 
 /*
-*   checkHasAlfa - checks if image has at least one BYTE in alpha chennel
+*   SkinEngine_CheckHasAlfaChannel - checks if image has at least one BYTE in alpha chennel
 *                  that is not a 0. (is image real 32 bit or just 24 bit)
 */
-BOOL checkHasAlfa(BYTE * from, int widthByte, int height)
+static BOOL SkinEngine_CheckHasAlfaChannel(BYTE * from, int widthByte, int height)
 {
     int i=0,j=0;
     DWORD * pt=(DWORD*)from;
@@ -4045,10 +4045,10 @@ BOOL checkHasAlfa(BYTE * from, int widthByte, int height)
 }
 
 /*
-*   checkHasMask - checks if mask image has at least one that is not a 0.
+*   SkinEngine_CheckIconHasMask - checks if mask image has at least one that is not a 0.
 *                  Not sure is ir required or not
 */
-BOOL checkHasMask(BYTE * from)
+static BOOL SkinEngine_CheckIconHasMask(BYTE * from)
 {
     int i=0;
     for (i=0; i<16*16/8; i++)
@@ -4059,9 +4059,9 @@ BOOL checkHasMask(BYTE * from)
 }
 
 /*
-*   GetMaskBit - return value of apropriate mask bit in line at x position
+*   SkinEngine_GetMaskBit - return value of apropriate mask bit in line at x position
 */
-BOOL GetMaskBit(BYTE *line, int x)
+static BOOL SkinEngine_GetMaskBit(BYTE *line, int x)
 {
     return ((*(line+(x>>3)))&(0x01<<(7-(x&0x07))))!=0;
 }
@@ -4070,7 +4070,7 @@ BOOL GetMaskBit(BYTE *line, int x)
 *            X2 - overlaying points.
 */
 
-DWORD SkinEngine_Blend(DWORD X1,DWORD X2, BYTE alpha)
+static DWORD SkinEngine_Blend(DWORD X1,DWORD X2, BYTE alpha)
 {
    BYTE a1=(BYTE)(X1>>24);
    BYTE a2=(BYTE)(((X2>>24)*alpha)>>8);
@@ -4148,7 +4148,7 @@ HICON SkinEngine_CreateJoinedIcon(HICON hBottom, HICON hTop, BYTE alpha)
         int vstep_t=bmp_top.bmWidthBytes;
         int vstep_bm=bmp_bottom_mask.bmWidthBytes;
         int vstep_tm=bmp_top_mask.bmWidthBytes;
-		alpha=alpha?alpha:255;
+        alpha=alpha?alpha:255;
         if (bmp_bottom.bmBits) bb=BottomBuffer=(BYTE*)bmp_bottom.bmBits;
         else
         {
@@ -4189,16 +4189,16 @@ HICON SkinEngine_CreateJoinedIcon(HICON hBottom, HICON hTop, BYTE alpha)
         }
         {
             int x=0; int y=0;
-            BOOL topHasAlpha=checkHasAlfa(TopBuffer,bmp_top.bmWidthBytes,bmp_top.bmHeight);
-            BOOL bottomHasAlpha=checkHasAlfa(BottomBuffer,bmp_bottom.bmWidthBytes,bmp_bottom.bmHeight);
-            BOOL topHasMask=checkHasMask(TopMaskBuffer);
-            BOOL bottomHasMask=checkHasMask(BottomMaskBuffer);
+            BOOL topHasAlpha=SkinEngine_CheckHasAlfaChannel(TopBuffer,bmp_top.bmWidthBytes,bmp_top.bmHeight);
+            BOOL bottomHasAlpha=SkinEngine_CheckHasAlfaChannel(BottomBuffer,bmp_bottom.bmWidthBytes,bmp_bottom.bmHeight);
+            BOOL topHasMask=SkinEngine_CheckIconHasMask(TopMaskBuffer);
+            BOOL bottomHasMask=SkinEngine_CheckIconHasMask(BottomMaskBuffer);
             for (y=0; y<16; y++)
             {
                 for (x=0; x<16; x++)
                 {
-                    BOOL mask_b=GetMaskBit(bmb,x);
-                    BOOL mask_t=GetMaskBit(tmb,x);
+                    BOOL mask_b=SkinEngine_GetMaskBit(bmb,x);
+                    BOOL mask_t=SkinEngine_GetMaskBit(tmb,x);
                     DWORD bottom_d=((DWORD*)bb)[x];
                     DWORD top_d=((DWORD*)tb)[x];
                     if (topHasMask)

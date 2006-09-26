@@ -105,7 +105,7 @@ static int OnmodulesLoad(WPARAM wParam,LPARAM lParam)
 		MessageBoxA(0,"New menu system not found - plugin disabled.","MoveToGroup",0);
 		return(0);
 	};
-	hOnCntMenuBuild=HookEvent(ME_CLIST_PREBUILDCONTACTMENU,OnContactMenuBuild);	
+	hOnCntMenuBuild=(HANDLE)HookEvent(ME_CLIST_PREBUILDCONTACTMENU,OnContactMenuBuild);	
 	CreateServiceFunction(MTG_MOVE,MTG_DOMOVE);
 	return(0);
 };
@@ -113,7 +113,7 @@ static int OnmodulesLoad(WPARAM wParam,LPARAM lParam)
 
 int LoadMoveToGroup()
 {
-	hModulesLoaded=HookEvent(ME_SYSTEM_MODULESLOADED,OnmodulesLoad);	
+	hModulesLoaded=(HANDLE)HookEvent(ME_SYSTEM_MODULESLOADED,OnmodulesLoad);	
 	return 0;
 }
 

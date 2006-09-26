@@ -43,13 +43,13 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #endif
 
 #if defined (_DEBUG)
-  #define TRACE(str)  OutputDebugStringA(str)
+#define TRACE(str)  { log0(str); }
 #else
-  #define TRACE(str)
+  #define TRACE(str)  
 #endif
 
 #if defined (_DEBUG)
-  #define TRACEVAR(str,n) {char buf[255]; _snprintf(buf,sizeof(buf),str,n); OutputDebugStringA(buf);}
+  #define TRACEVAR(str,n) { log1(str,n); }
 #else
   #define TRACEVAR(str,n)
 #endif
@@ -209,10 +209,21 @@ extern DWORD exceptFunction(LPEXCEPTION_POINTERS EP);
 #undef HookEvent
 #undef UnhookEvent
 
+#ifdef _DEBUG
+#define HookEvent(a,b)  mod_HookEvent(a,b,__FILE__,__LINE__)
+#else /* _DEBUG */
 #define HookEvent(a,b)  mod_HookEvent(a,b)
+#endif /* _DEBUG */
+
 #define UnhookEvent(a)  mod_UnhookEvent(a)
 
-extern HANDLE mod_HookEvent(char *EventID,MIRANDAHOOK HookProc);
+extern HANDLE mod_HookEvent(char *EventID, MIRANDAHOOK HookProc
+               #ifdef _DEBUG
+                            , char * file, int line);
+                #else
+                            );
+                #endif                  
+
 extern int mod_UnhookEvent(HANDLE hHook);
 extern int UnhookAll();
 
@@ -305,12 +316,15 @@ extern DWORD g_hGetTextThreadID;
 extern DWORD g_hSmoothAnimationThreadID;
 extern DWORD g_hFillFontListThreadID;
 
+extern HANDLE hSmileyAddOptionsChangedHook,hAvatarChanged,hIconChangedHook;
+
 #define STATE_NORMAL 0
 #define STATE_PREPEARETOEXIT 1
 #define STATE_EXITING 2
 extern BYTE g_bSTATE;
-#define MirandaExiting() ((g_bSTATE==STATE_EXITING) || Miranda_Terminated())
+#define MirandaExiting() ((g_bSTATE>STATE_NORMAL) || Miranda_Terminated())
 extern BYTE gl_TrimText;
 
 extern struct CluiData g_CluiData;
+extern void UnLoadContactListModule();
 
