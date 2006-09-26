@@ -726,8 +726,11 @@ void ext_yahoo_got_picture(int id, const char *me, const char *who, const char *
 			LOG(("[ext_yahoo_got_picture] My Checksum: %d", mcksum));
 			
 			if (!DBGetContactSetting(NULL, yahooProtocolName, "AvatarURL", &dbv)){
-					if (mcksum == cksum && lstrcmpi(pic_url, dbv.pszVal) == 0) {
+					if (lstrcmpi(pic_url, dbv.pszVal) == 0) {
 						DBVARIANT dbv2;
+						
+						if (mcksum != cksum)
+							LOG(("[ext_yahoo_got_picture] WARNING: Checksums don't match!"));	
 						
 						LOG(("[ext_yahoo_got_picture] Buddy: %s told us this is bad??Expired??. Re-uploading", who));
 						DBDeleteContactSetting(NULL, yahooProtocolName, "AvatarURL");
@@ -741,7 +744,7 @@ void ext_yahoo_got_picture(int id, const char *me, const char *who, const char *
 							LOG(("[ext_yahoo_got_picture] No Local Avatar File??? "));
 						}
 					} else {
-						LOG(("[ext_yahoo_got_picture] URLs or checksums don't match? Tell them the right thing!!!"));
+						LOG(("[ext_yahoo_got_picture] URL doesn't match? Tell them the right thing!!!"));
 						yahoo_send_picture_info(id, who, 2, dbv.pszVal, mcksum);
 					}
 					// don't leak stuff
