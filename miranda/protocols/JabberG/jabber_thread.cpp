@@ -156,9 +156,9 @@ static void xmlStreamInitializeNow(struct ThreadData* info){
 	JabberXmlSetCallback( &xmlState, 1, ELEM_CLOSE, JabberProcessStreamClosing, info );
 	JabberXmlSetCallback( &xmlState, 2, ELEM_CLOSE, JabberProcessProtocol, info );
 	//JabberSend( info->s, "<?xml version=\"1.0\" encoding=\"UTF-8\"?><stream:stream to=\"%s\" xmlns=\"jabber:client\" xmlns:stream=\"http://etherx.jabber.org/streams\" version=\"1.0\">", TXT(info->server) );
-	{	XmlNode stream( "stream:stream" ); 
+	{	XmlNode stream( "stream:stream" );
 		stream.props = "<?xml version='1.0' encoding='UTF-8'?>";
-		stream.addAttr( "to", info->server ); 
+		stream.addAttr( "to", info->server );
 		stream.addAttr( "xmlns", "jabber:client" );
 		stream.addAttr( "xmlns:stream", "http://etherx.jabber.org/streams" );
 		stream.addAttr( "xml:lang", "en" );
@@ -563,7 +563,7 @@ static void JabberIqProcessSearch( XmlNode *node, void *userdata )
 static void JabberPerformRegistration( ThreadData* info )
 {
 	iqIdRegGetReg = JabberSerialNext();
-	XmlNodeIq iq("get",iqIdRegGetReg,(char*)NULL); 
+	XmlNodeIq iq("get",iqIdRegGetReg,(char*)NULL);
 	XmlNode* query = iq.addQuery("jabber:iq:register");
 	JabberSend(info->s,iq);
 	SendMessage( info->reg_hwndDlg, WM_JABBER_REGDLG_UPDATE, 50, ( LPARAM )TranslateT( "Requesting registration instruction..." ));
@@ -631,7 +631,7 @@ static void JabberProcessFeatures( XmlNode *node, void *userdata )
 				XmlNode stls( n->name ); stls.addAttr( "xmlns", "urn:ietf:params:xml:ns:xmpp-tls" );
 				JabberSend( info->s, stls );
 				return;
-		}	} 
+		}	}
 		else if ( !strcmp( n->name, "mechanisms" )) {
 			areMechanismsDefined = true;
 			//JabberLog("%d mechanisms\n",n->numChild);
@@ -662,7 +662,7 @@ static void JabberProcessFeatures( XmlNode *node, void *userdata )
 			mir_free(temp);
 			JabberLog( "Never publish the hash below" );
 			mechanism = NEWSTR_ALLOCA( "PLAIN" );
-		} 
+		}
 		else {
 			if ( isAuthAvailable ) { // no known mechanisms but iq_auth is available
 				JabberPerformIqAuth( info );
@@ -676,7 +676,7 @@ static void JabberProcessFeatures( XmlNode *node, void *userdata )
 		}
 
 		if ( info->type == JABBER_SESSION_NORMAL ) {
-			XmlNode auth( "auth", PLAIN ); 
+			XmlNode auth( "auth", PLAIN );
 			auth.addAttr( "xmlns", "urn:ietf:params:xml:ns:xmpp-sasl" );
 			auth.addAttr( "mechanism", mechanism );
 			JabberSend(info->s,auth);
@@ -684,11 +684,11 @@ static void JabberProcessFeatures( XmlNode *node, void *userdata )
 		}
 		else if ( info->type == JABBER_SESSION_REGISTER )
 			JabberPerformRegistration( info );
-		else 
+		else
 			JabberSend( info->s, "</stream:stream>" );
 		if (PLAIN) mir_free(PLAIN);
 		return;
-	} 
+	}
 
 	// mechanisms are not defined.
 	if ( wasSaslPerformed ) { //We are already logged-in
@@ -704,7 +704,7 @@ static void JabberProcessFeatures( XmlNode *node, void *userdata )
 
 		return;
 	}
-	
+
 	//mechanisms not available and we are not logged in
 	if ( isAuthAvailable )
 		JabberPerformIqAuth( info );
@@ -1135,7 +1135,7 @@ static void JabberProcessPresence( XmlNode *node, void *userdata )
 		if (( hContact = JabberHContactFromJID( from )) == NULL )
         {
             if (!JabberListExist( LIST_ROSTER, from ))
-            {                
+            {
                 JabberLog("SKIP Receive presence online from "TCHAR_STR_PARAM" ( who is not in my roster and not in list - skiping)", from );
                 return;
             }
@@ -1236,7 +1236,7 @@ static void JabberProcessPresence( XmlNode *node, void *userdata )
 	if ( !_tcscmp( type, _T("unavailable"))) {
 		if ( !JabberListExist( LIST_ROSTER, from ))
 			JabberLog( "SKIP Receive presence offline from " TCHAR_STR_PARAM " ( who is not in my roster )", from );
-		else 
+		else
 			JabberListRemoveResource( LIST_ROSTER, from );
 
 		int status = ID_STATUS_OFFLINE;
@@ -1335,7 +1335,7 @@ static void JabberProcessIqVersion( TCHAR* idStr, XmlNode* node )
 	JCallService( MS_SYSTEM_GETVERSIONTEXT, sizeof( mversion ), ( LPARAM )mversion );
 
 	TCHAR* fullVer = (TCHAR*)alloca(1000 * sizeof( TCHAR ));
-	mir_sntprintf( fullVer, 1000, _T("Miranda IM ") _T(TCHAR_STR_PARAM) _T("; Jabber v.") _T(TCHAR_STR_PARAM) _T(" (%s)"),
+	mir_sntprintf( fullVer, 1000, _T("Miranda IM ") _T(TCHAR_STR_PARAM) _T(" (Jabber v.") _T(TCHAR_STR_PARAM) _T(" [%s])"),
 		mversion, __VERSION_STRING, jabberThreadInfo->resource );
 
 	XmlNodeIq iq( "result", idStr, from );
