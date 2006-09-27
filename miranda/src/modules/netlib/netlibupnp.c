@@ -36,11 +36,11 @@ static char search_request_msg[] =
 static char xml_get_hdr[] =
 	"GET %s HTTP/1.1\r\n"
 	"Connection: close\r\n"
-	"Host: %s:%s\r\n\r\n";
+	"Host: %s:%u\r\n\r\n";
 
 static char soap_post_hdr[] =
 	"POST %s HTTP/1.1\r\n"
-	"HOST: %s:%s\r\n"
+	"HOST: %s:%u\r\n"
 	"CONTENT-LENGTH: %u\r\n"
 	"CONTENT-TYPE: text/xml; charset=\"utf-8\"\r\n"
 	"SOAPACTION: \"%s#%s\"\r\n\r\n"
@@ -48,7 +48,7 @@ static char soap_post_hdr[] =
 
 static char soap_post_hdr_m[] =
 	"M-POST %s URL HTTP/1.1\r\n"
-	"HOST: %s:%s\r\n"
+	"HOST: %s:%u\r\n"
 	"CONTENT-LENGTH: %u\r\n"
 	"CONTENT-TYPE: text/xml; charset=\"utf-8\"\r\n"
 	"MAN: \"http://schemas.xmlsoap.org/soap/envelope/\"; ns=01\r\n"
@@ -86,8 +86,6 @@ static char delete_port_mapping[] =
 
 static char get_port_mapping[] =
 	"     <NewPortMappingIndex>%i</NewPortMappingIndex>\r\n";
-
-static char default_http_port[] = "80";
 
 static BOOL gatewayFound = FALSE;
 static SOCKADDR_IN locIP;
@@ -133,7 +131,7 @@ static BOOL txtParseParam(char* szData, char* presearch,
 	return TRUE;
 }
 
-void parseURL(char* szUrl, char* szHost, char* szPort, char* szPath)
+void parseURL(char* szUrl, char* szHost, unsigned short* sPort, char* szPath)
 {
 	char *ppath, *phost, *pport;
 	int sz;
@@ -156,22 +154,21 @@ void parseURL(char* szUrl, char* szHost, char* szPort, char* szPath)
 		szHost[sz-1] = 0;
 	}
 
-	if (szPort != NULL)
+	if (sPort != NULL)
 	{
-		sz = ppath - pport;
-		if (sz > 1 && sz <= 5)
+		if (pport < ppath)
 		{
-			strncpy(szPort, pport+1, sz);
-			szPort[sz-1] = 0;
+			long prt = atol(pport+1);
+			*sPort = prt != 0 ? (unsigned short)prt : 80;
 		}
 		else
-			szPort = default_http_port;
+			*sPort = 80;
 	}
 
 	if (szPath != NULL)
 	{
 		strncpy(szPath, ppath, 256);
-		szPort[255] = 0;
+		szPath[255] = 0;
 	}
 }
 
@@ -279,20 +276,21 @@ static void discoverUPnP(char* szUrl, int sizeUrl)
 static int httpTransact(char* szUrl, char* szResult, int resSize, char* szActionName)
 {
 	// Parse URL
-	char szHost[256], szPort[6], szPath[256], szRes[6];
+	char szHost[256], szPath[256], szRes[6];
 	int sz, res = 0;
+	unsigned short sPort;
 
 	char* szPostHdr = soap_post_hdr;
 	char* szData = mir_alloc(4096);
 	char* szReq = szActionName ? mir_strdup(szResult) : NULL;
 	szResult[0] = 0;
 
-	parseURL(szUrl, szHost, szPort, szPath);
+	parseURL(szUrl, szHost, &sPort, szPath);
 
 	for (;;)
 	{
 		if (szActionName == NULL) 
-			sz = mir_snprintf (szData, 4096, xml_get_hdr, szPath, szHost, szPort);
+			sz = mir_snprintf (szData, 4096, xml_get_hdr, szPath, szHost, sPort);
 		else
 		{
 			char szData1[1024];
@@ -301,12 +299,12 @@ static int httpTransact(char* szUrl, char* szResult, int resSize, char* szAction
 				soap_action, szActionName, szDev, szReq, szActionName);
 
 			sz = mir_snprintf (szData, 4096,
-				szPostHdr, szPath, szHost, szPort, 
+				szPostHdr, szPath, szHost, sPort, 
 				sz, szDev, szActionName, szData1);
 		}
 
 		{
-			static TIMEVAL tv = { 3, 0 };
+			static TIMEVAL tv = { 5, 0 };
 			static unsigned ttl = 4;
 			fd_set readfd;
 
@@ -314,7 +312,7 @@ static int httpTransact(char* szUrl, char* szResult, int resSize, char* szAction
 
 			SOCKADDR_IN enetaddr;
 			enetaddr.sin_family = AF_INET;
-			enetaddr.sin_port = htons((unsigned short)atol(szPort));
+			enetaddr.sin_port = htons(sPort);
 			enetaddr.sin_addr.s_addr = inet_addr(szHost);
 
 			if (enetaddr.sin_addr.s_addr == INADDR_NONE)
@@ -324,7 +322,7 @@ static int httpTransact(char* szUrl, char* szResult, int resSize, char* szAction
 					enetaddr.sin_addr.s_addr = *(unsigned*)he->h_addr_list[0];
 			}
 
-			Netlib_Logf(NULL, "UPnP HTTP connection Host: %s Port: %s\n", szHost, szPort); 
+			Netlib_Logf(NULL, "UPnP HTTP connection Host: %s Port: %u\n", szHost, sPort); 
 
 			FD_ZERO(&readfd);
 			FD_SET(sock, &readfd);
