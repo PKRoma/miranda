@@ -413,10 +413,11 @@ HANDLE mod_HookEvent(char *EventID, MIRANDAHOOK HookProc
 		hr=&(hooksrec[hooksRecAlloced]);
 		hooksRecAlloced++;
 	}
-	//3. Hook and rec
+	
 	hr->hHook=pluginLink->HookEvent(EventID,HookProc);
-	hr->HookStr=NULL;
 #ifdef _DEBUG
+    //3. Hook and rec
+    hr->HookStr=NULL;
 	if (hr->hHook)
     {
         hr->HookStr=mir_strdup(EventID);
@@ -424,7 +425,6 @@ HANDLE mod_HookEvent(char *EventID, MIRANDAHOOK HookProc
         hr->_debug_line=line;
     }
 #endif
-	//3. Hook and rec
 	return hr->hHook;
 }
 
