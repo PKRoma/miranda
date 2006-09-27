@@ -109,6 +109,7 @@ static BOOL CLUI_WaitThreadsCompletion(HWND hwnd)
         TRACEVAR("g_hGetTextThreadID: %x",g_hGetTextThreadID);
         TRACEVAR("g_hSmoothAnimationThreadID: %x",g_hSmoothAnimationThreadID);
         TRACEVAR("g_hFillFontListThreadID: %x",g_hFillFontListThreadID);
+        bEntersCount++;
         PostMessage(hwnd,WM_DESTROY,0,0);
         SleepEx(10,TRUE);
         return TRUE;
