@@ -4,10 +4,10 @@
 	Version="7.10"
 	Name="Scriver"
 	ProjectGUID="{B8928210-546C-4AE3-956B-E2B724E6B8E5}"
-	SccProjectName="&quot;$/Miranda/miranda/plugins/Scriver&quot;, GLIAAAAA"
-	SccAuxPath=""
-	SccLocalPath="."
-	SccProvider="MSSCCI:Microsoft Visual SourceSafe">
+	SccProjectName="SAK"
+	SccAuxPath="SAK"
+	SccLocalPath="SAK"
+	SccProvider="SAK">
 	<Platforms>
 		<Platform
 			Name="Win32"/>
