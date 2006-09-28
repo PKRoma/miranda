@@ -1875,7 +1875,7 @@ void InternalPaintRowItems(HWND hwnd, HDC hdcMem, struct ClcData *dat, struct Cl
               adr.radius = round_radius;
               adr.alpha = blendmode;
 
-              CallService(MS_AV_DRAWAVATAR, 0, (LPARAM) &adr);
+              CallService(MS_AV_BLENDDRAWAVATAR, 0, (LPARAM) &adr);
             }
             else
             {
@@ -2877,36 +2877,14 @@ void InternalPaintClc(HWND hwnd,struct ClcData *dat,HDC hdc,RECT *rcPaint)
         if (request) mir_free(request);
 
         // Something to draw?
-        if (Drawing)//(!(!Drawing ||  IsBadCodePtr((FARPROC)Drawing)))
+        if (Drawing)
         {
-		  //
+
           // Calc row height
           Drawing->lastPaintCounter=currentCounter;
           if (!gl_RowRoot) RowHeights_GetRowHeight(dat, hwnd, Drawing, line_num);
           else mod_CalcRowHeight(dat, hwnd, Drawing, line_num);
-          /*-        {
-          secondLineSize.cy=0;
-          //Adjust text sizes
-          if (Drawing->type==CLCIT_CONTACT && dat->show_status_msg && Drawing->szStatusMsg[0]!='\0')
-          {
-          int h1=0;
-          int h2=0;    
-          SIZE sz;        
-          int FontID=0;
-          FontID=GetBasicFontID(Drawing);
-          CLCPaint_ChangeToFont(hdcMem,dat,FontID,NULL);
-          // Get sizes
-          GetTextExtentPoint32A(hdcMem,"A",1,&sz);
-          h1=sz.cy;
-          CLCPaint_ChangeToFont(hdcMem,dat,FONTID_SECONDLINE,NULL);
-          GetTextExtentPoint32A(hdcMem,"A",1,&sz);
-          h2=sz.cy;
-          dat->row_heights[line_num]=max(dat->row_heights[line_num],h1+h2+ROW_SPACE_BEETWEEN_LINES+dat->row_border*2);
-          secondLineSize.cy = h2;
-          }
 
-          }
-          -*/
           // Init settings
           selected = ((line_num==dat->selection) && (dat->showSelAlways || dat->exStyle&CLS_EX_SHOWSELALWAYS || IsForegroundWindow(hwnd)) && Drawing->type!=CLCIT_DIVIDER);
           hottrack = dat->exStyle&CLS_EX_TRACKSELECT && Drawing->type!=CLCIT_DIVIDER && dat->iHotTrack==line_num;

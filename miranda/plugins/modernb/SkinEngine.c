@@ -728,6 +728,7 @@ static int SkinEngine_DrawSkinObject(SKINDRAWREQUEST * preq, GLYPHOBJECT * pobj)
 {
     HDC memdc=NULL, glyphdc=NULL;
     int k=0;
+    //BITMAP bmp={0};
     HBITMAP membmp=0,oldbmp=0,oldglyph=0;
     BYTE Is32Bit=0;
     RECT PRect;
@@ -736,15 +737,11 @@ static int SkinEngine_DrawSkinObject(SKINDRAWREQUEST * preq, GLYPHOBJECT * pobj)
     int mode=0; //0-FastDraw, 1-DirectAlphaDraw, 2-BufferedAlphaDraw
 
     if (!(preq && pobj)) return -1;
-    if (!pobj->hGlyph && ((pobj->Style&7) ==ST_IMAGE ||(pobj->Style&7) ==ST_FRAGMENT|| (pobj->Style&7) ==ST_SOLARIZE)) return 0;
-    // Determine painting mode
+    if ((!pobj->hGlyph || pobj->hGlyph==(HBITMAP)-1) && ((pobj->Style&7) ==ST_IMAGE ||(pobj->Style&7) ==ST_FRAGMENT|| (pobj->Style&7) ==ST_SOLARIZE)) return 0;
+    // Determine painting mode   
     depth=GetDeviceCaps(preq->hDC,BITSPIXEL);
     depth=depth<16?16:depth;
-    {
-        BITMAP bm={0};
-        GetObject(pobj->hGlyph,sizeof(BITMAP),&bm);
-        Is32Bit=bm.bmBitsPixel==32;
-    }
+    Is32Bit=pobj->bmBitsPixel==32;
     if ((!Is32Bit && pobj->dwAlpha==255)&& pobj->Style!=ST_BRUSH) mode=0;
     else if (pobj->dwAlpha==255 && pobj->Style!=ST_BRUSH) mode=1;
     else mode=2;
@@ -778,7 +775,7 @@ static int SkinEngine_DrawSkinObject(SKINDRAWREQUEST * preq, GLYPHOBJECT * pobj)
 
     if (mode!=2) memdc=preq->hDC;
     {
-        if (pobj->hGlyph)
+        if (pobj->hGlyph && pobj->hGlyph!=(HBITMAP)-1)
         {
             glyphdc=CreateCompatibleDC(preq->hDC);
             if (!oldglyph) oldglyph=SelectObject(glyphdc,pobj->hGlyph);
@@ -787,7 +784,6 @@ static int SkinEngine_DrawSkinObject(SKINDRAWREQUEST * preq, GLYPHOBJECT * pobj)
         }
         // Drawing
         {    
-            BITMAP bmp;
             RECT rFill, rGlyph, rClip;
             if ((pobj->Style&7) ==ST_BRUSH)
             {
@@ -817,16 +813,13 @@ static int SkinEngine_DrawSkinObject(SKINDRAWREQUEST * preq, GLYPHOBJECT * pobj)
                     mode2offset.y=PRect.top;
                     OffsetRect(&PRect,-mode2offset.x,-mode2offset.y);
                 }
-
-
-                GetObject(pobj->hGlyph,sizeof(BITMAP),&bmp);
                 rClip=(preq->rcClipRect);
 
                 {
                     int lft=0;
                     int top=0;
-                    int rgh=bmp.bmWidth;
-                    int btm=bmp.bmHeight;
+                    int rgh=pobj->bmWidth;
+                    int btm=pobj->bmHeight;
                     if ((pobj->Style&7) ==ST_FRAGMENT)
                     {
                         lft=pobj->clipArea.x;
@@ -1015,11 +1008,9 @@ static int SkinEngine_DrawSkinObject(SKINDRAWREQUEST * preq, GLYPHOBJECT * pobj)
             }
 
             if ((k>0 || k==-1) && mode==2)
-            {
-                BITMAP bm={0};
-                GetObject(pobj->hGlyph,sizeof(BITMAP),&bm);               
+            {            
                 {
-                    BLENDFUNCTION bf={AC_SRC_OVER, 0, /*(bm.bmBitsPixel==32)?255:*/pobj->dwAlpha, (bm.bmBitsPixel==32 && pobj->Style!=ST_BRUSH)?AC_SRC_ALPHA:0};
+                    BLENDFUNCTION bf={AC_SRC_OVER, 0, /*(bm.bmBitsPixel==32)?255:*/pobj->dwAlpha, (pobj->bmBitsPixel==32 && pobj->Style!=ST_BRUSH)?AC_SRC_ALPHA:0};
                     if (mode==2)
                         OffsetRect(&PRect,mode2offset.x,mode2offset.y);
                     SkinEngine_AlphaBlend( preq->hDC,PRect.left,PRect.top,PRect.right-PRect.left,PRect.bottom-PRect.top, 
@@ -1216,9 +1207,21 @@ static int SkinEngine_Service_DrawGlyph(WPARAM wParam,LPARAM lParam)
         }
     }while ((gl->Style&7) ==ST_PARENT);
     {
-        if (gl->hGlyph==NULL && ((gl->Style&7) ==ST_IMAGE || (gl->Style&7) ==ST_FRAGMENT || (gl->Style&7) ==ST_SOLARIZE))
+        if (gl->hGlyph==NULL && gl->hGlyph!=(HBITMAP)-1 &&((gl->Style&7) ==ST_IMAGE || (gl->Style&7) ==ST_FRAGMENT || (gl->Style&7) ==ST_SOLARIZE))
             if (gl->szFileName) 
+            {
                 gl->hGlyph=SkinEngine_LoadGlyphImage(gl->szFileName);
+                if (gl->hGlyph)
+                {
+                    BITMAP bmp={0};
+                    GetObject(gl->hGlyph,sizeof(BITMAP),&bmp);
+                    gl->bmBitsPixel=(BYTE)bmp.bmBitsPixel;
+                    gl->bmHeight=bmp.bmHeight;
+                    gl->bmWidth=bmp.bmWidth;
+                }
+                else
+                    gl->hGlyph=(HBITMAP)-1; //invalid
+            }
     }
     res=SkinEngine_DrawSkinObject(preq,gl);
     SkinEngine_UnlockSkin();
@@ -1690,7 +1693,8 @@ int SkinEngine_UnloadSkin(SKINOBJECTSLIST * Skin)
             {
                 GLYPHOBJECT * dt;
                 dt=(GLYPHOBJECT*)Skin->pObjects[i].Data;
-                if (dt->hGlyph) SkinEngine_UnloadGlyphImage(dt->hGlyph);
+                if (dt->hGlyph && dt->hGlyph!=(HBITMAP)-1) 
+                    SkinEngine_UnloadGlyphImage(dt->hGlyph);
                 dt->hGlyph=NULL;
                 if (dt->szFileName) mir_free(dt->szFileName);
                 {// delete texts
@@ -2555,9 +2559,13 @@ static int SkinEngine_AlphaTextOut (HDC hDC, LPCTSTR lpstring, int nCount, RECT 
             int number=0;
             GetTextExtentPoint32A(memdc,"...",3,&szElipses);
             szElipses.cx+=1;
-            GetTextExtentExPoint(memdc,lpString,nCount,
-                workRect.right-workRect.left-szElipses.cx,
-                &number, NULL, &sz);
+            if (workRect.right-workRect.left-szElipses.cx>0)
+                GetTextExtentExPoint(memdc,lpString,nCount,
+                                     workRect.right-workRect.left-szElipses.cx,
+                                     &number, NULL, &sz);
+            else
+                GetTextExtentExPoint(memdc,lpString,nCount,
+                                     0, &number, NULL, &sz);
 
             tem=(TCHAR*)mir_alloc((number+5)*sizeof(TCHAR));
             //memset(tem,0,(number+5)*sizeof(TCHAR));

@@ -41,7 +41,7 @@ typedef struct tagMASKPARAM
 
 typedef struct tagMODERNMASK 
 {
-  MASKPARAM*	pl_Params;
+  MASKPARAM*	    pl_Params;
   DWORD				dwParamCnt;
   void*				pObject; 
   DWORD				dwMaskId;
@@ -66,7 +66,7 @@ int ParseToModernMask(MODERNMASK * mm, char * szText);
 BOOL CompareModernMask(MODERNMASK * mmValue,MODERNMASK * mmTemplate);
 BOOL CompareStrWithModernMask(char * szValue,MODERNMASK * mmTemplate);
 MODERNMASK *  FindMaskByStr(char * szValue,LISTMODERNMASK * mmTemplateList);
-DWORD mod_CalcHash(char * a);
+_inline DWORD mod_CalcHash(const char * a);
 char * ModernMaskToString(MODERNMASK * mm, char * buf, UINT bufsize);
 BOOL _inline wildcmp(char * name, char * mask, BYTE option);
 int RegisterObjectByParce(char * ObjectName, char * Params);

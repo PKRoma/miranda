@@ -322,9 +322,9 @@ extern HANDLE hSmileyAddOptionsChangedHook,hAvatarChanged,hIconChangedHook;
 #define STATE_PREPEARETOEXIT 1
 #define STATE_EXITING 2
 extern BYTE g_bSTATE;
-#define MirandaExiting() ((g_bSTATE>STATE_NORMAL) || Miranda_Terminated())
+#define MirandaExiting() ((g_bSTATE>STATE_NORMAL))
 extern BYTE gl_TrimText;
 
 extern struct CluiData g_CluiData;
 extern void UnLoadContactListModule();
-
+extern _inline char * mir_strdupn(const char * src, int len);

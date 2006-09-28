@@ -129,9 +129,12 @@ typedef struct s_GLYPHOBJECT
   DWORD dwColor;                             // Fill color
   BYTE dwAlpha;                              // Constant alpha-transparency level
   BYTE FitMode;                              // One of FM_* values
-  POINT clipArea;                             // Object image rect on full image
-  SIZE szclipArea;                             // Object image rect on full image
+  POINT clipArea;                            // Object image rect on full image
+  SIZE szclipArea;                           // Object image rect on full image
   SortedList * plTextList;                   // List of GLYPHTEXT
+  LONG bmWidth;
+  LONG bmHeight;
+  BYTE bmBitsPixel;
 } GLYPHOBJECT,*LPGLYPHOBJECT;
 
 /* SKINTEXTDESCRIPTOR opbject descriptor structure */

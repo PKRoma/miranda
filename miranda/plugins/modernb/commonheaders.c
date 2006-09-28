@@ -121,6 +121,17 @@ __inline char * mir_strdup(const char * src)
 	return p;
 }
 
+//copy len symbols from string - do not check is it null terminated or len is more then actual 
+_inline char * mir_strdupn(const char * src, int len)
+{
+    char * p;
+    if (src==NULL) return NULL;
+    p= malloc(len+1);
+    if (!p) return 0;
+    memcpy(p,src,len);
+    p[len]='\0';
+    return p;
+}
 
 TCHAR *DBGetStringT(HANDLE hContact,const char *szModule,const char *szSetting)
 {
@@ -237,9 +248,9 @@ BOOL DebugDeleteObject(HGDIOBJ a)
 	return res;
 }
 
-BOOL mod_DeleteDC(HDC hdc)
+_inline BOOL mod_DeleteDC(HDC hdc)
 {
-  SkinEngine_ResetTextEffect(hdc);
+//  SkinEngine_ResetTextEffect(hdc);
   return DeleteDC(hdc);
 }
 #ifdef _DEBUG

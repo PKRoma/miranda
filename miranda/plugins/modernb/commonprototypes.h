@@ -95,7 +95,7 @@ BOOL SkinEngine_SetRectOpaque(HDC memdc,RECT *fr);
 int DrawTitleBar(HDC hdcMem2,RECT rect,int Frameid);
 int SkinEngine_Service_UpdateFrameImage(WPARAM wParam, LPARAM lParam);
 int CLUI_OnSkinLoad(WPARAM wParam, LPARAM lParam);
-DWORD mod_CalcHash(char * a);
+_inline DWORD mod_CalcHash(const char * a);
 int  QueueAllFramesUpdating (BYTE);
 int  SetAlpha(BYTE);
 int  DeleteButtons();

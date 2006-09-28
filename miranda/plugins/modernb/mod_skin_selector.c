@@ -57,10 +57,10 @@ int DeleteMask(MODERNMASK * mm)
   if (!mm->pl_Params) return 0;
   for (i=0;i<(int)mm->dwParamCnt;i++)
   {
-    if (mm->pl_Params[i].szName) mir_free(mm->pl_Params[i].szName);
-    if (mm->pl_Params[i].szValue) mir_free(mm->pl_Params[i].szValue);
+    if (mm->pl_Params[i].szName) free(mm->pl_Params[i].szName);
+    if (mm->pl_Params[i].szValue) free(mm->pl_Params[i].szValue);
   }
-  mir_free(mm->pl_Params);
+  free(mm->pl_Params);
   return 1;
 }
 
@@ -136,7 +136,48 @@ BOOL MatchMask(char * name, char * mask)
     }
     return FALSE;
 }
-DWORD mod_CalcHash(char * a)
+#if __GNUC__
+#define NOINLINEASM
+#endif
+
+_inline DWORD mod_CalcHash(const char *szStr)
+{
+#if defined _M_IX86 && !defined _NUMEGA_BC_FINALCHECK && !defined NOINLINEASM
+    __asm {		   //this breaks if szStr is empty
+        xor  edx,edx
+            xor  eax,eax
+            mov  esi,szStr
+            mov  al,[esi]
+            xor  cl,cl
+lph_top:	 //only 4 of 9 instructions in here don't use AL, so optimal pipe use is impossible
+            xor  edx,eax
+                inc  esi
+                xor  eax,eax
+                and  cl,31
+                mov  al,[esi]
+                add  cl,5
+                    test al,al
+                    rol  eax,cl		 //rol is u-pipe only, but pairable
+                    //rol doesn't touch z-flag
+                    jnz  lph_top  //5 clock tick loop. not bad.
+
+                    xor  eax,edx
+    }
+#else
+    DWORD hash=0;
+    int i;
+    int shift=0;
+    for(i=0;szStr[i];i++) {
+        hash^=szStr[i]<<shift;
+        if(shift>24) hash^=(szStr[i]>>(32-shift))&0x7F;
+        shift=(shift+5)&0x1F;
+    }
+    return hash;
+#endif
+}
+
+/*
+DWORD mod_CalcHash(const char * a)
 {
     DWORD Val=0;
     BYTE N;
@@ -150,6 +191,7 @@ DWORD mod_CalcHash(char * a)
     }
     return Val;
 }
+*/
 int AddModernMaskToList(MODERNMASK * mm,  LISTMODERNMASK * mmTemplateList)
 {
     if (!mmTemplateList || !mm) return -1;
@@ -269,13 +311,11 @@ int ParseToModernMask(MODERNMASK * mm, char * szText)
                     //szText[keyPos]='/0';
                     {
                         DWORD k;
-                        char v[MAXVALUE];
                         k=keyPos-startPos;
                         if (k>MAXVALUE-1) k=MAXVALUE-1;
-                        strncpy(v,szText+startPos,k);
-                        v[k]='\0';
-                        param.dwId=mod_CalcHash(v);
-                        param.szName=mir_strdup(v);
+                        param.szName=mir_strdupn(szText+startPos,k);
+                        param.dwId=mod_CalcHash(param.szName);
+
                         startPos=keyPos+1;
                     }
                 }
@@ -283,24 +323,22 @@ int ParseToModernMask(MODERNMASK * mm, char * szText)
                 {
                     param.bFlag=1;
                     param.dwId=mod_CalcHash("Module");
-                    param.szName=mir_strdup("Module");
+                    param.szName=mir_strdupn("Module",6);
                 }
                 //szText[currentPos]='/0';
                 {
                   int k;
 				  int m;
-                  char v[MAXVALUE]={0};
                   k=currentPos-startPos;
                   if (k>MAXVALUE-1) k=MAXVALUE-1;
-				          m=min((UINT)k,mir_strlen(szText)-startPos+1);
-                  strncpy(v,&(szText[startPos]),k);
-                  param.szValue=mir_strdup(v);
+				  m=min((UINT)k,textLen-startPos+1);
+                  param.szValue=mir_strdupn(szText+startPos,k);
                 }
                 param.dwValueHash=mod_CalcHash(param.szValue);
                 {   // if Value don't contain '*' or '?' count add flag
                     UINT i=0;
                     BOOL f=4;
-                    while (param.szValue[i]!='\0' && i<(UINT)mir_strlen(param.szValue)+1)
+                    while (param.szValue[i]!='\0')
                         if (param.szValue[i]=='*' || param.szValue[i]=='?') {f=0; break;} else i++;
                     param.bFlag|=f;
                 }
@@ -309,7 +347,7 @@ int ParseToModernMask(MODERNMASK * mm, char * szText)
                 {//Adding New Parameter;
                   if (curParam>=mm->dwParamCnt)
                   {
-					mm->pl_Params=mir_realloc(mm->pl_Params,(mm->dwParamCnt+1)*sizeof(MASKPARAM));
+					mm->pl_Params=realloc(mm->pl_Params,(mm->dwParamCnt+1)*sizeof(MASKPARAM));
 					mm->dwParamCnt++;                    
                   }
                   memmove(&(mm->pl_Params[curParam]),&param,sizeof(MASKPARAM));

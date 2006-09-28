@@ -165,11 +165,20 @@ int PaintWorker(HWND hwnd, HDC whdc)
     }
     if (Value)
     {
-      _snprintf(Request,sizeof(Request),"MButton,ID=%s,Down=%d,Focused=%d,Hovered=%d,Value=%s",bct->ID,bct->down, bct->focus,bct->hover,Value);
+      _snprintf(Request,sizeof(Request),"MButton,ID=%s,Down=%d,Focused=%d,Hovered=%d,Value=%s",
+                bct->ID,
+                bct->down,
+                bct->focus,
+                bct->hover,
+                Value);
       mir_free(Value);
     }
     else
-      _snprintf(Request,sizeof(Request),"MButton,ID=%s,Down=%d,Focused=%d,Hovered=%d",bct->ID,bct->down, bct->focus,bct->hover);
+      _snprintf(Request,sizeof(Request),"MButton,ID=%s,Down=%d,Focused=%d,Hovered=%d",
+                bct->ID,
+                bct->down, 
+                bct->focus,
+                bct->hover);
 
     SkinDrawGlyph(hdc,&rc,&rc,Request);
     // DeleteObject(br);
