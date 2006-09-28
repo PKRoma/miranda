@@ -475,6 +475,8 @@ int CLUI_OnSkinLoad(WPARAM wParam, LPARAM lParam)
     return 0;
 }
 
+#include <locale.h>
+
 static int CLUI_ModulesLoaded(WPARAM wParam,LPARAM lParam)
 {
     MENUITEMINFO mii;
@@ -492,8 +494,10 @@ static int CLUI_ModulesLoaded(WPARAM wParam,LPARAM lParam)
     */
 
     /*
-    *  Methacontact groups support
+    *  Metacontact groups support
     */
+    setlocale(LC_ALL,"");  //fix for case insensitive comparing
+
     if (ServiceExists(MS_MC_DISABLEHIDDENGROUP));
     CallService(MS_MC_DISABLEHIDDENGROUP, (WPARAM)TRUE, (LPARAM)0);
 
