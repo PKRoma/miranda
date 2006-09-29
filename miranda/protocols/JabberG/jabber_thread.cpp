@@ -1130,22 +1130,22 @@ static void JabberProcessPresence( XmlNode *node, void *userdata )
 
 	TCHAR* type = JabberXmlGetAttrValue( node, "type" );
 	if ( type == NULL || !_tcscmp( type, _T("available"))) {
-		if (( nick=JabberNickFromJID( from )) == NULL )
+		if (( nick = JabberNickFromJID( from )) == NULL )
 			return;
-		if (( hContact = JabberHContactFromJID( from )) == NULL )
-        {
-            if (!JabberListExist( LIST_ROSTER, from ))
-            {
-                JabberLog("SKIP Receive presence online from "TCHAR_STR_PARAM" ( who is not in my roster and not in list - skiping)", from );
-                return;
-            }
+
+		if (( hContact = JabberHContactFromJID( from )) == NULL ) {
+			if (!JabberListExist( LIST_ROSTER, from )) {
+				JabberLog("SKIP Receive presence online from "TCHAR_STR_PARAM" ( who is not in my roster and not in list - skiping)", from );
+				mir_free( nick );
+				return;
+			}
 			hContact = JabberDBCreateContact( from, nick, TRUE, TRUE );
-        }
+		}
 		if ( !JabberListExist( LIST_ROSTER, from )) {
 			JabberLog("Receive presence online from "TCHAR_STR_PARAM" ( who is not in my roster )", from );
 			JabberListAdd( LIST_ROSTER, from );
 		}
-        JabberDBCheckIsTransportedContact(from,hContact);
+		JabberDBCheckIsTransportedContact(from,hContact);
 		int status = ID_STATUS_ONLINE;
 		if (( showNode = JabberXmlGetChild( node, "show" )) != NULL ) {
 			if (( show = showNode->text ) != NULL ) {
@@ -1267,7 +1267,7 @@ static void JabberProcessPresence( XmlNode *node, void *userdata )
 		}
 		if ( _tcschr( from, '@' )==NULL && hwndJabberAgents )
 			SendMessage( hwndJabberAgents, WM_JABBER_TRANSPORT_REFRESH, 0, 0 );
-        JabberDBCheckIsTransportedContact(from, hContact);
+		JabberDBCheckIsTransportedContact(from, hContact);
 		return;
 	}
 
@@ -1277,11 +1277,14 @@ static void JabberProcessPresence( XmlNode *node, void *userdata )
 			XmlNode p( "presence" ); p.addAttr( "to", from ); p.addAttr( "type", "subscribed" );
 			JabberSend( info->s, p );
 		}
-		else if (( nick=JabberNickFromJID( from )) != NULL ) {
-			JabberLog( TCHAR_STR_PARAM " ( " TCHAR_STR_PARAM " ) requests authorization", nick, from );
-			JabberDBAddAuthRequest( from, nick );
-			mir_free( nick );
-		}
+		else {
+			XmlNode* n = JabberXmlGetChild( node, "nick" );
+			nick = ( n == NULL ) ? JabberNickFromJID( from ) : mir_tstrdup( n->text );
+			if ( nick != NULL ) {
+				JabberLog( TCHAR_STR_PARAM " ( " TCHAR_STR_PARAM " ) requests authorization", nick, from );
+				JabberDBAddAuthRequest( from, nick );
+				mir_free( nick );
+		}	}
 		return;
 	}
 
@@ -1582,7 +1585,7 @@ static void JabberProcessIq( XmlNode *node, void *userdata )
 					else if ( !_tcscmp( str, _T("to"))) item->subscription = SUB_TO;
 					else if ( !_tcscmp( str, _T("from"))) item->subscription = SUB_FROM;
 					else item->subscription = SUB_NONE;
-					JabberLog( "Roster push for jid=" TCHAR_STR_PARAM ", set subscription to %s", jid, str );
+					JabberLog( "Roster push for jid=" TCHAR_STR_PARAM ", set subscription to " TCHAR_STR_PARAM, jid, str );
 					// subscription = remove is to remove from roster list
 					// but we will just set the contact to offline and not actually
 					// remove, so that history will be retained.
