@@ -264,28 +264,28 @@ void LoadGlobalIcons() {
 static BOOL CALLBACK LangAddCallback(CHAR * str) {
 	int i, count;
 	UINT cp;
-	static struct { UINT cpId; char *cpName; } cpTable[] = {
-		{	874,	"Thai" },
-		{	932,	"Japanese" },
-		{	936,	"Simplified Chinese" },
-		{	949,	"Korean" },
-		{	950,	"Traditional Chinese" },
-		{	1250,	"Central European" },
-		{	1251,	"Cyrillic" },
-		{	1252,	"Latin I" },
-		{	1253,	"Greek" },
-		{	1254,	"Turkish" },
-		{	1255,	"Hebrew" },
-		{	1256,	"Arabic" },
-		{	1257,	"Baltic" },
-		{	1258,	"Vietnamese" },
-		{	1361,	"Korean (Johab)" }
+	static struct { UINT cpId; TCHAR *cpName; } cpTable[] = {
+		{	874,	_T("Thai") },
+		{	932,	_T("Japanese") },
+		{	936,	_T("Simplified Chinese") },
+		{	949,	_T("Korean") },
+		{	950,	_T("Traditional Chinese") },
+		{	1250,	_T("Central European") },
+		{	1251,	_T("Cyrillic") },
+		{	1252,	_T("Latin I") },
+		{	1253,	_T("Greek") },
+		{	1254,	_T("Turkish") },
+		{	1255,	_T("Hebrew") },
+		{	1256,	_T("Arabic") },
+		{	1257,	_T("Baltic") },
+		{	1258,	_T("Vietnamese") },
+		{	1361,	_T("Korean (Johab)") }
 	};
     cp = atoi(str);
 	count = sizeof(cpTable)/sizeof(cpTable[0]);
 	for (i=0; i<count && cpTable[i].cpId!=cp; i++);
 	if (i < count) {
-        AppendMenuA(g_dat->hMenuANSIEncoding, MF_STRING, cp, Translate(cpTable[i].cpName));
+        AppendMenu(g_dat->hMenuANSIEncoding, MF_STRING, cp, TranslateTS(cpTable[i].cpName));
 	}
 	return TRUE;
 }

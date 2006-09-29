@@ -329,7 +329,7 @@ BOOL DoSoundsFlashPopupTrayStuff(SESSION_INFO * si, GCEVENT * gce, BOOL bHighlig
 		gce->pDest->iType |= GC_EVENT_HIGHLIGHT;
 		if(bInactive || !g_Settings.SoundsFocus)
 			SkinPlaySound("ChatHighlight");
-		if(bInactive && si->hWnd && DBGetContactSettingByte(NULL, "Chat", "FlashWindowHighlight", 0) != 0) //!g_Settings.TabsEnable &&
+		if(bInactive && si->hWnd && DBGetContactSettingByte(NULL, "Chat", "FlashWindowHighlight", 0) != 0)
 			SendMessage(GetParent(si->hWnd), CM_STARTFLASHING, 0, 0);
 		if(DBGetContactSettingByte(si->hContact, "CList", "Hidden", 0) != 0)
 			DBDeleteContactSetting(si->hContact, "CList", "Hidden");
@@ -380,7 +380,7 @@ BOOL DoSoundsFlashPopupTrayStuff(SESSION_INFO * si, GCEVENT * gce, BOOL bHighlig
 		case GC_EVENT_MESSAGE:
 			if(bInactive || !g_Settings.SoundsFocus)
 				SkinPlaySound("ChatMessage");
-			if(bInactive && g_Settings.FlashWindow && si->hWnd) // !g_Settings.TabsEnable &&
+			if(bInactive && g_Settings.FlashWindow && si->hWnd)
 				SendMessage(GetParent(si->hWnd), CM_STARTFLASHING, 0, 0);
 			if(bInactive && !(si->wState&STATE_TALK))
 			{

@@ -338,11 +338,11 @@ static void ShowMultipleControls(HWND hwndDlg, const UINT * controls, int cContr
 static void SetDialogToType(HWND hwndDlg)
 {
 	struct MessageWindowData *dat;
-	struct ParentWindowData *pdat;
+	ParentWindowData *pdat;
 	WINDOWPLACEMENT pl = { 0 };
 
 	dat = (struct MessageWindowData *) GetWindowLong(hwndDlg, GWL_USERDATA);
-	pdat = (struct ParentWindowData *) GetWindowLong(GetParent(hwndDlg), GWL_USERDATA);
+	pdat = (ParentWindowData *) GetWindowLong(GetParent(hwndDlg), GWL_USERDATA);
 	if (dat->hContact) {
 		ShowMultipleControls(hwndDlg, buttonLineControls, sizeof(buttonLineControls) / sizeof(buttonLineControls[0]), (pdat->flags&SMF_SHOWBTNS) ? SW_SHOW : SW_HIDE);
 		if (!DBGetContactSettingByte(dat->hContact, "CList", "NotOnList", 0)) {
@@ -774,7 +774,7 @@ static void UnsubclassLogEdit(HWND hwnd) {
 
 static void MessageDialogResize(HWND hwndDlg, struct MessageWindowData *dat, int w, int h) {
 	HDWP hdwp;
-	struct ParentWindowData *pdat = dat->parent;
+	ParentWindowData *pdat = dat->parent;
 	int i, lPos, rPos, vPos;
 	int vSplitterPos = 0, hSplitterPos = dat->splitterPos, toolbarHeight = pdat->flags&SMF_SHOWBTNS ? dat->toolbarSize.cy : 0;
 	int hSplitterMinTop = toolbarHeight + dat->minLogBoxHeight, hSplitterMinBottom = dat->minEditBoxHeight;
@@ -1096,7 +1096,7 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
 			}
 			dat->hwnd = hwndDlg;
 			dat->hwndParent = GetParent(hwndDlg);
-			dat->parent = (struct ParentWindowData *) GetWindowLong(dat->hwndParent, GWL_USERDATA);
+			dat->parent = (ParentWindowData *) GetWindowLong(dat->hwndParent, GWL_USERDATA);
 			dat->hwndLog = NULL;
 			dat->szProto = (char *) CallService(MS_PROTO_GETCONTACTBASEPROTO, (WPARAM) dat->hContact, 0);
 	//		RichUtil_SubClass(GetDlgItem(hwndDlg, IDC_LOG));
@@ -1378,6 +1378,12 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
 			}
 			return TRUE;
 		}
+	case DM_GETCONTEXTMENU:
+		{
+			HMENU hMenu = (HMENU) CallService(MS_CLIST_MENUBUILDCONTACT, (WPARAM) dat->hContact, 0);
+			SetWindowLong(hwndDlg, DWL_MSGRESULT, hMenu);
+			return TRUE;
+		}
 	case WM_CONTEXTMENU:
 		if (dat->hwndParent == (HWND) wParam) {
 			POINT pt;
@@ -1483,7 +1489,7 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
 	{
 		BITMAP bminfo;
 		int avatarH;
-		struct ParentWindowData *pdat;
+		ParentWindowData *pdat;
 		pdat = dat->parent;
 		dat->avatarWidth = 0;
 		dat->avatarHeight = 0;
@@ -1951,7 +1957,7 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
 		return TRUE;
 	case DM_SETPARENT:
 		dat->hwndParent = (HWND) lParam;
-		dat->parent = (struct ParentWindowData *) GetWindowLong(dat->hwndParent, GWL_USERDATA);
+		dat->parent = (ParentWindowData *) GetWindowLong(dat->hwndParent, GWL_USERDATA);
 		SetParent(hwndDlg, dat->hwndParent);
 		return TRUE;
 	case WM_GETMINMAXINFO:
