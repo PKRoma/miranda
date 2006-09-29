@@ -84,11 +84,11 @@ typedef struct {
   int packetPending;
   DWORD dwRemotePort;
   DWORD dwRemoteUin;
+  DWORD dwRemoteConnCookie;
   DWORD dwRemoteExternalIP;
   DWORD dwRemoteInternalIP;
   DWORD dwLocalExternalIP;
   DWORD dwLocalInternalIP;
-  DWORD dwConnCookie;
   int initialised;
   int handshake;
   DWORD dwThreadId;
