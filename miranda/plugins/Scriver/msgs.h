@@ -55,13 +55,12 @@ typedef struct TabCtrlDataStruct
 	int		srcTab;
 } TabCtrlData;
 
-struct ParentWindowData
+typedef struct ParentWindowDataStruct
 {
 	HWND	hwnd;
 	HANDLE	hContact;
-	HWND *	children;
-	struct ParentWindowData 	*prev;
-	struct ParentWindowData 	*next;
+	struct ParentWindowDataStruct 	*prev;
+	struct ParentWindowDataStruct 	*next;
 	int	    childrenCount;
 	HWND	hwndActive;
 	HWND	hwndStatus;
@@ -78,15 +77,15 @@ struct ParentWindowData
 	int		bTopmost;
 	int		windowWasCascaded;
 	TabCtrlData *tabCtrlDat;
-};
+}ParentWindowData;
 
-struct MessageWindowTabData
+typedef struct MessageWindowTabDataStruct
 {
 	HWND	hwnd;
 	HANDLE	hContact;
 	char *szProto;
-	struct ParentWindowData *parent;
-};
+	ParentWindowData *parent;
+}MessageWindowTabData;
 
 #define NMWLP_INCOMING 1
 
@@ -113,7 +112,7 @@ struct MessageWindowData
 	HWND hwnd;
 	int	tabId;
 	HANDLE hContact;
-	struct ParentWindowData *parent;
+	ParentWindowData *parent;
 	HWND hwndParent;
 	HWND hwndLog;
 	HANDLE hDbEventFirst, hDbEventLast;

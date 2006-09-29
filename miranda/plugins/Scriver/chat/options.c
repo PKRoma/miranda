@@ -83,6 +83,7 @@ struct branch_t
 };
 static struct branch_t branch0[] = {
 	{_T("Use a tabbed interface"), "Tabs", 0, 1, NULL},
+	{_T("Use common tabbed window"), "Tabs", 0, 1, NULL},
 	{_T("Restore previously open tabs when showing the window"), "TabRestore", 0, 0, NULL},
 
 };
