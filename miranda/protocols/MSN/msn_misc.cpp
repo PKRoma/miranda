@@ -436,8 +436,8 @@ LONG ThreadData::sendPacket( const char* cmd, const char* fmt,...)
 	if ( this == NULL )  // :)
 		return 0;
 
-	if ( !strcmp( cmd, "CAL" ) && mIsCalSent )
-		return 0;
+//	if ( !strcmp( cmd, "CAL" ) && mIsCalSent )
+//		return 0;
 
 	va_list vararg;
 	va_start( vararg, fmt );

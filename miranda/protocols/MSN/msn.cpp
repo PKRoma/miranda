@@ -251,13 +251,8 @@ static int OnModulesLoaded( WPARAM wParam, LPARAM lParam )
 /////////////////////////////////////////////////////////////////////////////////////////
 // OnPreShutdown - prepare a global Miranda shutdown
 
-extern HANDLE hKeepAliveThreadEvt;
-
 static int OnPreShutdown( WPARAM wParam, LPARAM lParam )
 {
-	if ( hKeepAliveThreadEvt != NULL )
-		SetEvent( hKeepAliveThreadEvt );
-
 	MSN_CloseThreads();
 	return 0;
 }

@@ -65,8 +65,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include <m_langpack.h>
 #include <m_netlib.h>
 #include <m_popup.h>
-
-#include "SDK/m_chat.h"
+#include <m_chat.h>
 
 /////////////////////////////////////////////////////////////////////////////////////////
 //	MSN error codes
@@ -311,7 +310,8 @@ enum TInfoType
 	SERVER_NOTIFICATION,
 	SERVER_SWITCHBOARD,
 	SERVER_FILETRANS,
-	SERVER_P2P_DIRECT
+	SERVER_P2P_DIRECT,
+	SERVER_KEEPALIVE
 };
 
 
@@ -339,6 +339,7 @@ struct filetransfer
 	HANDLE		hLockHandle;
     
 	TInfoType	tType;
+	time_t		ts;
 
 	unsigned    p2p_sessionid;	// session id
 	unsigned    p2p_msgid;		// message id
@@ -394,9 +395,12 @@ struct ThreadData
 	char           mSessionID[ 50 ]; // Gateway session ID
 	char           mGatewayIP[ 80 ]; // Gateway IP address
 	int            mGatewayTimeout;
-	char*				mReadAheadBuffer;
-	int				mEhoughData;
+	char*          mReadAheadBuffer;
+	int            mEhoughData;
+
 	TQueueItem*		mFirstQueueItem;
+	unsigned       numQueueItems; 
+	HANDLE			hQueueMutex;
 
 	//----| for switchboard servers only |------------------------------------------------
 	int            mCaller;
@@ -474,8 +478,8 @@ void __stdcall p2p_sessionComplete( filetransfer* ft );
 
 filetransfer* __stdcall p2p_getAnotherContactSession( filetransfer* ft );
 filetransfer* __stdcall p2p_getFirstSession( HANDLE hContact );
-filetransfer* __stdcall p2p_getSessionByID( unsigned ID );
-filetransfer* __stdcall p2p_getSessionByMsgID( unsigned ID );
+filetransfer* __stdcall p2p_getSessionByID( unsigned id );
+filetransfer* __stdcall p2p_getSessionByMsgID( unsigned id );
 filetransfer* __stdcall p2p_getSessionByCallID( const char* CallID );
 
 BOOL __stdcall p2p_sessionRegistered( filetransfer* ft );

@@ -39,31 +39,38 @@ bool DoingNudge = false;
 /////////////////////////////////////////////////////////////////////////////////////////
 //	Keep-alive thread for the main connection
 
-int msnPingTimeout = 45, msnPingTimeoutCurrent = 45;
+int msnPingTimeout = 45;
 
 void __cdecl msn_keepAliveThread( void* )
 {
-	msnPingTimeout = msnPingTimeoutCurrent;
+	bool keepFlag = true;
 
-	while( TRUE )
+	hKeepAliveThreadEvt = CreateEvent( NULL, FALSE, FALSE, NULL );
+
+	if ( msnPingTimeout < 0 ) msnPingTimeout *= -1;
+
+	while ( keepFlag )
 	{
-		while ( --msnPingTimeout > 0 ) {
-			if ( ::WaitForSingleObject( hKeepAliveThreadEvt, 1000 ) != WAIT_TIMEOUT ) {
-				::CloseHandle( hKeepAliveThreadEvt ); hKeepAliveThreadEvt = NULL;
-				MSN_DebugLog( "Closing keep-alive thread" );
-				return;
-		}	}
+		switch ( WaitForSingleObject( hKeepAliveThreadEvt, msnPingTimeout * 1000 ))
+		{
+			case WAIT_TIMEOUT:
+				msnPingTimeout = 45;
+				keepFlag = msnNsThread != NULL && msnNsThread->send( "PNG\r\n", 5 );
+				p2p_clearDormantSessions();
+				break;
 
-		msnPingTimeout = msnPingTimeoutCurrent = 45;
+			case WAIT_OBJECT_0:
+				keepFlag = msnPingTimeout > 0;
+				break;
 
-		/*
-		 * if proxy is not used, every connection uses select() to send PNG
-		 */
+			default:
+				keepFlag = false;
+				break;
+	}	}
 
-		if ( msnLoggedIn && !MyOptions.UseGateway )
-			if ( MSN_GetByte( "KeepAlive", 0 ))
-				msnNsThread->send( "PNG\r\n", 5 );
-}	}
+	CloseHandle( hKeepAliveThreadEvt ); hKeepAliveThreadEvt = NULL;
+	MSN_DebugLog( "Closing keep-alive thread" );
+}
 
 /////////////////////////////////////////////////////////////////////////////////////////
 //	MSN redirector detection thread - refreshes the information about the redirector
@@ -97,6 +104,7 @@ void __cdecl MSNServerThread( ThreadData* info )
 	if ( MyOptions.UseGateway && !MyOptions.UseProxy ) {
 		tConn.szHost = MSN_DEFAULT_GATEWAY;
 		tConn.wPort = 80;
+		info->hQueueMutex = CreateMutex( NULL, FALSE, NULL );
 	}
 	else {
 		tConn.szHost = info->mServer;
@@ -147,14 +155,11 @@ void __cdecl MSNServerThread( ThreadData* info )
 
 	if ( info->mIsMainThread ) {
 		MSN_EnableMenuItems( TRUE );
-
-		msnPingTimeout = msnPingTimeoutCurrent;
-
 		msnNsThread = info;
-		if (hKeepAliveThreadEvt == NULL) {
-			hKeepAliveThreadEvt = ::CreateEvent( NULL, TRUE, FALSE, NULL );
-			MSN_StartThread(( pThreadFunc )msn_keepAliveThread, NULL );
-	}	}
+	}
+
+	if ( info->mType == SERVER_NOTIFICATION )
+		MSN_StartThread(( pThreadFunc )msn_keepAliveThread, NULL );
 
 	MSN_DebugLog( "Entering main recv loop" );
 	info->mBytesInData = 0;
@@ -206,6 +211,9 @@ void __cdecl MSNServerThread( ThreadData* info )
 				}
 
 				if ( info->mType != SERVER_FILETRANS ) {
+					if ( info->mType == SERVER_NOTIFICATION )
+						SetEvent( hKeepAliveThreadEvt );
+
 					if ( isdigit(msg[0]) && isdigit(msg[1]) && isdigit(msg[2]))   //all error messages
 						handlerResult = MSN_HandleErrors( info, msg );
 					else
@@ -226,8 +234,10 @@ LBL_Exit:
 	if ( info->mIsMainThread ) {
 		MSN_GoOffline();
 		msnNsThread = NULL;
-		if ( hKeepAliveThreadEvt )
+		if ( hKeepAliveThreadEvt ) {
+			msnPingTimeout *= -1;
 			SetEvent( hKeepAliveThreadEvt );
+		}
 	}
 
 	MSN_DebugLog( "Thread [%d] ending now", GetCurrentThreadId() );
@@ -256,7 +266,7 @@ void __stdcall MSN_CloseConnections()
 		ThreadData* T = sttThreads[ i ];
 		if ( T == NULL )
 			continue;
-			
+
 		switch (T->mType) {
 		case SERVER_DISPATCH :
 		case SERVER_NOTIFICATION :
@@ -370,7 +380,7 @@ ThreadData* __stdcall MSN_StartP2PTransferByContact( HANDLE hContact )
 		if ( T->mJoinedCount == 0 || T->mJoinedContacts == NULL )
 			continue;
 
-		if ( T->mJoinedContacts[0] == hContact && T->mType == SERVER_FILETRANS && 
+		if ( T->mJoinedContacts[0] == hContact && T->mType == SERVER_FILETRANS &&
 			T->hWaitEvent != INVALID_HANDLE_VALUE )
 				SetEvent( T->hWaitEvent );
 	}
@@ -495,7 +505,7 @@ ThreadData::ThreadData()
 	mGatewayTimeout = 2;
 	mWaitPeriod = 60;
 	mIsMainThread = false;
-	hWaitEvent = INVALID_HANDLE_VALUE;
+	hWaitEvent = CreateEvent( NULL, FALSE, FALSE, NULL );
 }
 
 ThreadData::~ThreadData()
@@ -521,12 +531,18 @@ ThreadData::~ThreadData()
 
 	free( mJoinedContacts );
 
-	while (mFirstQueueItem != NULL)
-	{
+	if ( hQueueMutex ) WaitForSingleObject( hQueueMutex, INFINITE );
+	while (mFirstQueueItem != NULL) {
 		TQueueItem* QI = mFirstQueueItem;
 		mFirstQueueItem = mFirstQueueItem->next;
 		free(QI);
-}	}
+		--numQueueItems;
+	}
+	if ( hQueueMutex )  {
+		ReleaseMutex( hQueueMutex );
+		CloseHandle( hQueueMutex );
+	}
+}
 
 void ThreadData::applyGatewayData( HANDLE hConn, bool isPoll )
 {
@@ -727,7 +743,7 @@ BYTE* HReadBuffer::surelyRead( int parBytes, bool timeout )
 	while( totalDataSize - startOffset < parBytes )
 	{
 		int recvResult = owner->recv(( char* )buffer + totalDataSize, bufferSize - totalDataSize );
-		
+
 		if ( timeout && recvResult == 0 )
 			return (BYTE*)-1;
 

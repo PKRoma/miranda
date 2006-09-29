@@ -44,7 +44,7 @@ int ThreadData::send( char* data, int datalen )
 
 	mWaitPeriod = 60;
 
-	if ( MyOptions.UseGateway && !( mType == SERVER_FILETRANS && mP2pSession != NULL )) {
+	if ( MyOptions.UseGateway && !( mType == SERVER_FILETRANS || mType == SERVER_P2P_DIRECT )) {
 		mGatewayTimeout = 2;
 
 		if ( !MyOptions.UseProxy ) {
@@ -52,17 +52,15 @@ int ThreadData::send( char* data, int datalen )
 			tNewItem->datalen = datalen;
 			memcpy( tNewItem->data, data, datalen );
 			tNewItem->data[datalen] = 0;
-
-			TQueueItem* p = mFirstQueueItem;
-			if ( p != NULL ) {
-				while ( p->next != NULL )
-					p = p->next;
-
-				p ->next = tNewItem;
-			}
-			else mFirstQueueItem = tNewItem;
-
 			tNewItem->next = NULL;
+
+			WaitForSingleObject( hQueueMutex, INFINITE );
+			TQueueItem **p = &mFirstQueueItem;
+			while ( *p != NULL ) p = &(*p)->next;
+			*p = tNewItem;
+			++numQueueItems;
+			ReleaseMutex( hQueueMutex );
+
 			return TRUE;
 		}
 
@@ -109,47 +107,67 @@ LBL_RecvAgain:
 		tSelect.hReadConns[ 0 ] = ( HANDLE )s;
 
 		for ( int i=0; i < mGatewayTimeout || !bCanPeekMsg; i++ ) {
-			if ( bCanPeekMsg ) {
+			if ( bCanPeekMsg && numQueueItems > 0) {
+				unsigned np = 0, dlen = 0;
+				
+				WaitForSingleObject( hQueueMutex, INFINITE );
 				TQueueItem* QI = mFirstQueueItem;
-				if ( QI != NULL )
-				{
-					char szHttpPostUrl[300];
-					getGatewayUrl( szHttpPostUrl, sizeof( szHttpPostUrl ), QI->datalen == 0 );
+				while ( QI != NULL && np < 5) { ++np; dlen += QI->datalen;  QI = QI->next;}
 
-					char* tBuffer = ( char* )alloca( QI->datalen+400 );
-					int cbBytes = mir_snprintf( tBuffer, QI->datalen+400, sttGatewayHeader,
-						szHttpPostUrl, QI->datalen, MSN_USER_AGENT, mGatewayIP);
+				if ( np == 0 ) { 
+					ReleaseMutex( hQueueMutex );
+					continue;
+				}
+
+				char szHttpPostUrl[300];
+				getGatewayUrl( szHttpPostUrl, sizeof( szHttpPostUrl ), mFirstQueueItem->datalen == 0 );
+
+				char* tBuffer = ( char* )alloca( 8192 );
+				int cbBytes = mir_snprintf( tBuffer, 8192, sttGatewayHeader,
+					szHttpPostUrl, dlen, MSN_USER_AGENT, mGatewayIP);
+				
+				QI = mFirstQueueItem;
+				for ( unsigned i=0; i<np; ++i ) {
 					memcpy( tBuffer+cbBytes, QI->data, QI->datalen );
 					cbBytes += QI->datalen;
-					tBuffer[ cbBytes ] = 0;
+					QI = QI->next;
+				}
+				ReleaseMutex( hQueueMutex );
 
-					NETLIBBUFFER nlb = { tBuffer, cbBytes, 0 };
-					ret = MSN_CallService( MS_NETLIB_SEND, ( WPARAM )s, ( LPARAM )&nlb );
-					if ( ret == SOCKET_ERROR ) {
-						MSN_DebugLog( "Send failed: %d", WSAGetLastError() );
-						return 0;
-					}
+				tBuffer[ cbBytes ] = 0;
 
+				NETLIBBUFFER nlb = { tBuffer, cbBytes, 0 };
+				ret = MSN_CallService( MS_NETLIB_SEND, ( WPARAM )s, ( LPARAM )&nlb );
+				if ( ret == SOCKET_ERROR ) {
+					MSN_DebugLog( "Send failed: %d", WSAGetLastError() );
+					return 0;
+				}
+
+				WaitForSingleObject( hQueueMutex, INFINITE );
+				for ( unsigned i=0; i<np && mFirstQueueItem != NULL; ++i ) {
+					QI = mFirstQueueItem;
 					mFirstQueueItem = QI->next;
 					free( QI );
+					--numQueueItems;
+				}
 
-					ret = 1;
-					break;
-			}	}
+				if ( numQueueItems < 5 )
+					SetEvent( hWaitEvent );
+
+				ReleaseMutex( hQueueMutex );
+
+				ret = 1;
+				break;
+			}
 
 			ret = MSN_CallService( MS_NETLIB_SELECT, 0, ( LPARAM )&tSelect );
 			if ( ret != 0 )
 				break;
 			// Timeout switchboard session if inactive
-			if ( !mIsMainThread && mJoinedCount <= 1 && --mWaitPeriod <= 0 ) 
+			if ( !mIsMainThread && ( mJoinedCount <= 1 || mChatID[0] == 0 ) && --mWaitPeriod <= 0 ) 
 			{
-				if (mJoinedCount == 0 )
-				{
-					MSN_DebugLog( "Dropping the idle switchboard due to the 60 sec timeout" );
-					return 0;
-				}
-				else
-					mWaitPeriod = 60;
+				MSN_DebugLog( "Dropping the idle switchboard due to the 60 sec timeout" );
+				return 0;
 			}
 		}	
 	}
@@ -269,7 +287,7 @@ LBL_RecvAgain:
 int ThreadData::recv( char* data, long datalen )
 {
 	if ( MyOptions.UseGateway && !MyOptions.UseProxy )
-		if ( mType != SERVER_FILETRANS || mP2pSession == 0 )
+		if ( mType != SERVER_FILETRANS && mType != SERVER_P2P_DIRECT )
 			return recv_dg( data, datalen );
 
 	NETLIBBUFFER nlb = { data, datalen, 0 };
@@ -286,12 +304,9 @@ LBL_RecvAgain:
 				break;
 		}
 
-		if ( mWaitPeriod < 0 && mJoinedCount <= 1 ) {
-			if ( mJoinedCount == 0 || mType != SERVER_SWITCHBOARD ) {
-				MSN_DebugLog( "Dropping the idle switchboard due to the 60 sec timeout" );
-				return 0;
-			}
-			else mWaitPeriod = 60;
+		if ( mWaitPeriod < 0 && ( mJoinedCount <= 1 || mChatID[0] == 0 )) {
+			MSN_DebugLog( "Dropping the idle switchboard due to the 60 sec timeout" );
+			return 0;
 	}	}
 
 	int ret = MSN_CallService( MS_NETLIB_RECV, ( WPARAM )s, ( LPARAM )&nlb );

@@ -699,8 +699,7 @@ LRESULT CALLBACK NullWindowProc( HWND hWnd, UINT message, WPARAM wParam, LPARAM 
 		case WM_COMMAND: {
 			void* tData = PUGetPluginData( hWnd );
 			if ( tData != NULL ) {
-				DWORD tThreadID;
-				CreateThread( NULL, 0, MsnShowMailThread, hWnd, 0, &tThreadID );
+				MsnShowMailThread( NULL );
 				PUDeletePopUp( hWnd );
 			}
 			break;

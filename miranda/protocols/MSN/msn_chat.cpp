@@ -30,7 +30,7 @@ extern HANDLE hInitChat;
 int MSN_ChatInit( WPARAM wParam, LPARAM lParam )
 {
 	ThreadData *info = (ThreadData*)wParam;
-	GCWINDOW gcw = {0};
+	GCSESSION gcw = {0};
 	GCDEST gcd = {0};
 	GCEVENT gce = {0};
 
@@ -43,16 +43,16 @@ int MSN_ChatInit( WPARAM wParam, LPARAM lParam )
 
 	char szName[ 512 ];
 	char tEmail[ MSN_MAX_EMAIL_LEN ], tNick[ 1024 ];
-	mir_snprintf( szName, sizeof( szName ), "%s%s", Translate("MSN Chat #"), info->mChatID );
+	mir_snprintf( szName, sizeof( szName ), "%s %s%s", msnProtocolName, Translate( "Chat #" ), info->mChatID );
 
-	gcw.cbSize = sizeof(GCWINDOW);
+	gcw.cbSize = sizeof(GCSESSION);
 	gcw.iType = GCW_CHATROOM;
 	gcw.pszModule = msnProtocolName;
 	gcw.pszName = szName;
 	gcw.pszID = info->mChatID;
 	gcw.pszStatusbarText = NULL;
 	gcw.bDisableNickList = FALSE;
-	MSN_CallService(MS_GC_NEWCHAT, NULL, (LPARAM)&gcw);
+	MSN_CallService(MS_GC_NEWSESSION, NULL, (LPARAM)&gcw);
 
 	gce.cbSize = sizeof(GCEVENT);
 	gcd.pszModule = msnProtocolName;
@@ -81,8 +81,8 @@ int MSN_ChatInit( WPARAM wParam, LPARAM lParam )
 	gce.cbSize = sizeof(GCEVENT);
 	gcd.iType = GC_EVENT_CONTROL;
 	gce.pDest = &gcd;
-	MSN_CallService(MS_GC_EVENT, WINDOW_INITDONE, (LPARAM)&gce);
-	MSN_CallService(MS_GC_EVENT, WINDOW_ONLINE, (LPARAM)&gce);
+	MSN_CallService(MS_GC_EVENT, SESSION_INITDONE, (LPARAM)&gce);
+	MSN_CallService(MS_GC_EVENT, SESSION_ONLINE, (LPARAM)&gce);
 	MSN_CallService(MS_GC_EVENT, WINDOW_VISIBLE, (LPARAM)&gce);
 	return 0;
 }
@@ -116,16 +116,16 @@ void MSN_ChatStart(ThreadData* info) {
 	}	}	}	}
 }
 
-void KillChatSession(char* id, GCHOOK* gch) {
+void MSN_KillChatSession(char* id) {
 	GCDEST gcd = {0};
 	GCEVENT gce = {0};
 	gce.cbSize = sizeof(GCEVENT);
 	gce.pDest = &gcd;
-	gcd.pszModule = gch->pDest->pszModule;
-	gcd.pszID = gch->pDest->pszID;
+	gcd.pszModule = msnProtocolName;
+	gcd.pszID = id;
 	gcd.iType = GC_EVENT_CONTROL;
-	MSN_CallService(MS_GC_EVENT, WINDOW_OFFLINE, (LPARAM)&gce);
-	MSN_CallService(MS_GC_EVENT, WINDOW_TERMINATE, (LPARAM)&gce);
+	MSN_CallService(MS_GC_EVENT, SESSION_OFFLINE, (LPARAM)&gce);
+	MSN_CallService(MS_GC_EVENT, SESSION_TERMINATE, (LPARAM)&gce);
 }
 
 void InviteUser(ThreadData* info) {
@@ -181,7 +181,7 @@ int MSN_GCEventHook(WPARAM wParam,LPARAM lParam) {
 			char *p = new char[lstrlenA(gch->pDest->pszID)+1];
 			lstrcpyA(p, gch->pDest->pszID);
 			switch (gch->pDest->iType) {
-			case GC_USER_TERMINATE: {
+			case GC_SESSION_TERMINATE: {
 				int chatID = atoi( p );
 				ThreadData* thread = MSN_GetThreadByContact((HANDLE)-chatID);
 				if ( thread != NULL ) {
@@ -255,7 +255,8 @@ int MSN_GCEventHook(WPARAM wParam,LPARAM lParam) {
 					break;
 				}
 				case 20:
-					KillChatSession(p, gch);
+	//				CallService(MS_DB_CONTACT_DELETE, hContact, 0);
+					MSN_KillChatSession(p);
 					break;
 				}
 				break;
@@ -270,7 +271,7 @@ int MSN_GCEventHook(WPARAM wParam,LPARAM lParam) {
 					MSN_CallService(MS_HISTORY_SHOWCONTACTHISTORY, (WPARAM)hContact, 0);
 					break;
 				case 110:
-					KillChatSession(p, gch);
+					MSN_KillChatSession(p);
 					break;
 				}
 				break;

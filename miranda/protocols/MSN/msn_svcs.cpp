@@ -30,7 +30,9 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include "resource.h"
 
 void __cdecl MSNServerThread( ThreadData* info );
+
 void MSN_ChatStart(ThreadData* info);
+void MSN_KillChatSession(char* id);
 
 void msnftp_sendAcceptReject( filetransfer *ft, bool acc );
 
@@ -253,6 +255,14 @@ static int MsnContactDeleted( WPARAM wParam, LPARAM lParam )
 		else {
 			MSN_AddUser( hContact, tEmail, LIST_BL );
 			Lists_Remove( LIST_FL, tEmail );
+	}	}
+
+	int type = DBGetContactSettingByte( hContact, msnProtocolName, "ChatRoom", 0 );
+	if ( type != 0 ) {
+		DBVARIANT dbv;
+		if ( !DBGetContactSetting( hContact, msnProtocolName, "ChatRoomID", &dbv )) {
+			MSN_KillChatSession( dbv.pszVal );
+			MSN_FreeVariant( &dbv );
 	}	}
 
 	return 0;
@@ -537,7 +547,7 @@ static int MsnGetAvatarInfo(WPARAM wParam,LPARAM lParam)
 {
 	PROTO_AVATAR_INFORMATION* AI = ( PROTO_AVATAR_INFORMATION* )lParam;
 
-	if ( !MyOptions.EnableAvatars || ( MSN_GetDword( AI->hContact, "FlagBits", 0 ) & 0x40000000 ) == 0 )
+	if ( !MyOptions.EnableAvatars || ( MSN_GetDword( AI->hContact, "FlagBits", 0 ) & 0x70000000 ) == 0 )
 		return GAIR_NOAVATAR;
 
 	char szContext[ MAX_PATH ];
@@ -668,8 +678,7 @@ static int MsnGetStatus(WPARAM wParam,LPARAM lParam)
 
 static int MsnGotoInbox( WPARAM, LPARAM )
 {
-	DWORD tThreadID;
-	CreateThread( NULL, 0, MsnShowMailThread, NULL, 0, &tThreadID );
+	MsnShowMailThread( NULL );
 	return 0;
 }
 
@@ -698,8 +707,8 @@ static int MsnInviteCommand( WPARAM wParam, LPARAM lParam )
 		for ( int i=0; i < tThreads; i++ ) {
 			if (( long )tActiveThreads[i]->mJoinedContacts[0] < 0 ) {
 				char sessionName[ 255 ];
-				mir_snprintf( sessionName, sizeof( sessionName ), "%s%s",
-					Translate( "MSN Chat #" ), tActiveThreads[i]->mChatID );
+				mir_snprintf( sessionName, sizeof( sessionName ), "%s %s%s",
+					msnProtocolName, Translate( "Chat #" ), tActiveThreads[i]->mChatID );
 				::AppendMenuA( tMenu, MF_STRING, ( UINT_PTR )( i+1 ), sessionName );
 			}
 			else ::AppendMenu( tMenu, MF_STRING, ( UINT_PTR )( i+1 ), MSN_GetContactNameT( *tActiveThreads[i]->mJoinedContacts ));
@@ -904,33 +913,26 @@ static int MsnSendFile( WPARAM wParam, LPARAM lParam )
 
 struct TFakeAckParams
 {
-	inline TFakeAckParams( HANDLE p1, HANDLE p2, LONG p3, LPCSTR p4 ) :
-		hEvent( p1 ),
+	inline TFakeAckParams( HANDLE p2, LONG p3, LPCSTR p4 ) :
 		hContact( p2 ),
 		id( p3 ),
 		msg( p4 )
 		{}
 
-	HANDLE	hEvent;
 	HANDLE	hContact;
 	LONG		id;
 	LPCSTR	msg;
 };
 
-static DWORD CALLBACK sttFakeAck( LPVOID param )
+static void sttFakeAck( LPVOID param )
 {
 	TFakeAckParams* tParam = ( TFakeAckParams* )param;
-	WaitForSingleObject( tParam->hEvent, INFINITE );
 
 	Sleep( 100 );
-	if ( tParam->msg == NULL )
-		MSN_SendBroadcast( tParam->hContact, ACKTYPE_MESSAGE, ACKRESULT_SUCCESS, ( HANDLE )tParam->id, 0 );
-	else
-		MSN_SendBroadcast( tParam->hContact, ACKTYPE_MESSAGE, ACKRESULT_FAILED, ( HANDLE )tParam->id, LPARAM( tParam->msg ));
+	MSN_SendBroadcast( tParam->hContact, ACKTYPE_MESSAGE, tParam->msg ? ACKRESULT_FAILED : ACKRESULT_SUCCESS, 
+		( HANDLE )tParam->id, LPARAM( tParam->msg ));
 
-	CloseHandle( tParam->hEvent );
 	delete tParam;
-	return 0;
 }
 
 static int MsnSendMessage( WPARAM wParam, LPARAM lParam )
@@ -949,10 +951,7 @@ static int MsnSendMessage( WPARAM wParam, LPARAM lParam )
 LBL_Error:
 		free( msg );
 
-		HANDLE hEvent = CreateEvent( NULL, TRUE, FALSE, NULL );
-		DWORD dwThreadId;
-		CloseHandle( CreateThread( NULL, 0, sttFakeAck, new TFakeAckParams( hEvent, ccs->hContact, 999999, errMsg ), 0, &dwThreadId ));
-		SetEvent( hEvent );
+		MSN_StartThread( sttFakeAck, new TFakeAckParams( ccs->hContact, 999999, errMsg ));
 		return 999999;
 	}
 
@@ -982,12 +981,9 @@ LBL_Error:
 				seq = MsgQueue_Add( ccs->hContact, msgType, msg, 0, 0, rtlFlag );
 				msnNsThread->sendPacket( "XFR", "SB" );
 			}
-			else if ( !MyOptions.SlowSend ) {
-				HANDLE hEvent = CreateEvent( NULL, TRUE, FALSE, NULL );
-				DWORD dwThreadId;
-				CloseHandle( CreateThread( NULL, 0, sttFakeAck, new TFakeAckParams( hEvent, ccs->hContact, seq, 0 ), 0, &dwThreadId ));
-				SetEvent( hEvent );
-	}	}	}
+			else if ( !MyOptions.SlowSend )
+				MSN_StartThread( sttFakeAck, new TFakeAckParams( ccs->hContact, seq, 0 ));
+	}	}
 
 	free( msg );
 	return seq;

@@ -25,7 +25,6 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 #include <io.h>
 
-int MSN_HandleCommands(ThreadData *info,char *cmdString);
 int MSN_HandleErrors(ThreadData *info,char *cmdString);
 
 void msnftp_sendAcceptReject( filetransfer *ft, bool acc )
@@ -343,6 +342,5 @@ void ft_startFileSend( ThreadData* info, const char* Invcommand, const char* Inv
 	newThread->mMsnFtp = ft;
 	newThread->mIncomingBoundPort = sb;
 	newThread->mIncomingPort = nlb.wPort;
-	newThread->hWaitEvent = CreateEvent( NULL, FALSE, FALSE, NULL );
 	newThread->startThread(( pThreadFunc )sttSendFileThread );
 }
