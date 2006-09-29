@@ -39,7 +39,7 @@ static HRESULT  (WINAPI *MyCloseThemeData)(HANDLE);
 static HRESULT  (WINAPI *MyDrawThemeBackground)(HANDLE,HDC,int,int,const RECT *,const RECT *);
 #define MGPROC(x) GetProcAddress(themeAPIHandle,x)
 void DrawStatusIcon(struct ClcContact * Drawing, struct ClcData *dat, int iImage, HDC hDC, int x, int y, int cx, int cy, DWORD colorbg,DWORD colorfg, int mode);
-
+extern int SkinEngine_Service_DrawGlyph(WPARAM wParam,LPARAM lParam);
 extern HIMAGELIST hAvatarOverlays;
 tPaintCallbackProc CLC_PaintCallbackProc(HWND hWnd, HDC hDC, RECT * rcPaint,HRGN rgn,  DWORD dFlags, void * CallBackData);
 //#include <gdiplus.h>
@@ -478,137 +478,417 @@ void DrawTextSmiley(HDC hdcMem, RECT free_rc, SIZE text_size, TCHAR *szText, int
 
 #define BUFSIZE 255
 #define BUF2SIZE 7
-_inline char * GetCLCContactRowBackObject(struct ClcGroup * group, struct ClcContact * Drawing, int indent, int index, BOOL selected, BOOL hottrack,struct ClcData * dat)
+// TODO: Directly make Modern Mask
+
+//////////////////////////////////////////////////////////////////////////
+// AddParameter - adds modenn mask parameter lpParam to mpModernMask 
+// and memset lpParam to zeros
+//////////////////////////////////////////////////////////////////////////
+
+void AddParameter(MODERNMASK * mpModernMask, MASKPARAM * lpParam)
 {
-  char buf[BUFSIZE];
-  char b2[BUF2SIZE];
-  _snprintf(buf,BUFSIZE,"CL,ID=Row");
-  switch (Drawing->type)
-  {
-  case CLCIT_GROUP:
-    {
-      AppendChar(buf,BUFSIZE,",Type=Group");
-      AppendChar(buf,BUFSIZE,",Open=");
-      AppendChar(buf,BUFSIZE,(Drawing && Drawing->group && Drawing->group->expanded)?"True":"False");
-      if (Drawing->group->cl.count==0) AppendChar(buf,BUFSIZE,",IsEmpty=True");
-      else AppendChar(buf,BUFSIZE,",IsEmpty=False"); 
-    }
-    break;
-  case CLCIT_CONTACT:
-    {
-      struct ClcContact * mCont=Drawing;
-      if (Drawing->isSubcontact)
-      {
-        AppendChar(buf,BUFSIZE,",Type=SubContact");
-        if (Drawing->isSubcontact==1 && Drawing->subcontacts->SubAllocated==1) AppendChar(buf,BUFSIZE,",SubPos=First-Single");
-        else if (Drawing->isSubcontact==1) AppendChar(buf,BUFSIZE,",SubPos=First");    
-        else if (Drawing->isSubcontact==Drawing->subcontacts->SubAllocated) AppendChar(buf,BUFSIZE,",SubPos=Last");
-        else AppendChar(buf,BUFSIZE,",SubPos=Middle");
-        mCont=Drawing->subcontacts;
-      }
-      else if (Drawing->SubAllocated)
-      {
-        AppendChar(buf,BUFSIZE,",Type=MetaContact");
-        AppendChar(buf,BUFSIZE,",Open=");
-        AppendChar(buf,BUFSIZE,(Drawing->SubExpanded)?"True":"False");
-      }
-      else AppendChar(buf,BUFSIZE,",Type=Contact");
-      AppendChar(buf,BUFSIZE,",Protocol=");	
-      AppendChar(buf,BUFSIZE,Drawing->proto);
-	  if (group && group->parent==NULL)
-		  AppendChar(buf,BUFSIZE,",RootGroup=True");
-	  else
-		  AppendChar(buf,BUFSIZE,",RootGroup=False");
-      AppendChar(buf,BUFSIZE,",Status=");	
-      switch(GetContactCachedStatus(Drawing->hContact))
-      {
-        // case ID_STATUS_CONNECTING: AppendChar(buf,BUFSIZE,"CONNECTING"); break;
-      case ID_STATUS_ONLINE: AppendChar(buf,BUFSIZE,"ONLINE"); break;
-      case ID_STATUS_AWAY: AppendChar(buf,BUFSIZE,"AWAY");  break;
-      case ID_STATUS_DND:	AppendChar(buf,BUFSIZE,"DND"); break;
-      case ID_STATUS_NA: AppendChar(buf,BUFSIZE,"NA"); break;
-      case ID_STATUS_OCCUPIED: AppendChar(buf,BUFSIZE,"OCCUPIED"); break;
-      case ID_STATUS_FREECHAT: AppendChar(buf,BUFSIZE,"FREECHAT"); break;
-      case ID_STATUS_INVISIBLE:  AppendChar(buf,BUFSIZE,"INVISIBLE"); break;
-      case ID_STATUS_OUTTOLUNCH: AppendChar(buf,BUFSIZE,"OUTTOLUNCH"); break;
-      case ID_STATUS_ONTHEPHONE: AppendChar(buf,BUFSIZE,"ONTHEPHONE"); break;
-      case ID_STATUS_IDLE:  AppendChar(buf,BUFSIZE,"IDLE");  break;
-      default:	AppendChar(buf,BUFSIZE,"OFFLINE");
-      }
-      AppendChar(buf,BUFSIZE,",HasAvatar=");
-      if (dat->avatars_show  && Drawing->avatar_data != NULL) AppendChar(buf,BUFSIZE,"True");
-      else AppendChar(buf,BUFSIZE,"False");
-      break;    
-    }
-  case CLCIT_DIVIDER:
-    {
-      AppendChar(buf,BUFSIZE,",Type=Divider");
-    }
-    break;
-  case CLCIT_INFO:
-    {
-      AppendChar(buf,BUFSIZE,",Type=Info");
-    }
-    break;
-  }
-  if (group->scanIndex==0 && group->cl.count==1) AppendChar(buf,BUFSIZE,",GroupPos=First-Single");
-  else if (group->scanIndex==0) AppendChar(buf,BUFSIZE,",GroupPos=First");
-  else if (group->scanIndex+1==group->cl.count) AppendChar(buf,BUFSIZE,",GroupPos=Last");
-  else AppendChar(buf,BUFSIZE,",GroupPos=Mid");
-
-  AppendChar(buf,BUFSIZE,",Selected=");
-  AppendChar(buf,BUFSIZE,selected?"True":"False");
-  AppendChar(buf,BUFSIZE,",Hot=");
-  AppendChar(buf,BUFSIZE,hottrack?"True":"False");
-  AppendChar(buf,BUFSIZE,",Odd=");    
-  AppendChar(buf,BUFSIZE,(index&1)?"True":"False");
-  AppendChar(buf,BUFSIZE,",Indent=");
-  AppendChar(buf,BUFSIZE,_itoa(indent,b2,BUF2SIZE));
-  AppendChar(buf,BUFSIZE,",Index=");
-  AppendChar(buf,BUFSIZE,_itoa(index,b2,BUF2SIZE));
-  {
-    TCHAR * b2=mir_tstrdup(Drawing->szText);
-    int i,m;
-    m=lstrlen(b2);	
-    for (i=0; i<m;i++)
-      if (b2[i]==TEXT(',')) b2[i]=TEXT('.');
-    //TODO b2 to UTF8
-    AppendChar(buf,BUFSIZE,",Name=");
-#ifdef UNICODE
-    {
-      char* b3=Utf8EncodeUcs2(b2);
-      AppendChar(buf,BUFSIZE,b3);
-      free(b3);
-    }
-
-#else
-    AppendChar(buf,BUFSIZE,b2);
-#endif
-    mir_free(b2);
-
-  }
-  if (group->parent)
-  {
-    TCHAR * b2=mir_tstrdup(group->parent->cl.items[0]->szText);
-    int i,m;
-    m=lstrlen(b2);	
-    for (i=0; i<m;i++)
-      if (b2[i]==TEXT(',')) b2[i]=TEXT('.');
-    //TODO b2 to UTF8
-    AppendChar(buf,BUFSIZE,",Group=");		
-#ifdef UNICODE
-    {
-      char * b3=Utf8EncodeUcs2(b2);
-      AppendChar(buf,BUFSIZE,b3);
-      free(b3);
-    }
-#else
-    AppendChar(buf,BUFSIZE,b2);
-#endif
-    mir_free(b2);		
-  }
-  return mir_strdup(buf);  
+    mpModernMask->pl_Params=realloc(mpModernMask->pl_Params,(mpModernMask->dwParamCnt+1)*sizeof(MASKPARAM));                     
+    memmove(&(mpModernMask->pl_Params[mpModernMask->dwParamCnt]),lpParam,sizeof(MASKPARAM));
+    mpModernMask->dwParamCnt++;  
+    memset(lpParam,0,sizeof(MASKPARAM));
 }
+
+void FillParam(MASKPARAM * lpParam, DWORD dwParamHash, char *szValue, DWORD dwValueHash)
+{
+    lpParam->bFlag=4|1;
+    lpParam->dwId=dwParamHash;
+    //if (szParamName) lpParam->szName=mir_strdupn(szParamName,strlen(szParamName));
+    //else lpParam->szName=NULL;
+    
+    if (!dwValueHash && szValue) lpParam->dwValueHash=mod_CalcHash(szValue);
+    else lpParam->dwValueHash=dwValueHash;
+    if (szValue) lpParam->szValue=mir_strdupn(szValue,strlen(szValue));
+    else lpParam->szValue=NULL;
+
+}
+
+
+
+_inline void AddParam(MODERNMASK * mpModernMask, DWORD dwParamHash, char *szValue, DWORD dwValueHash)
+{
+    static MASKPARAM param={0}; //AddParameter will clear it so it can be static to avoid initializations
+    FillParam(&param,dwParamHash,szValue,dwValueHash);
+    AddParameter(mpModernMask, &param);
+}
+
+static enum tagHashIndex
+{
+    hi_Module=0,
+    hi_ID,
+    hi_Type,
+    hi_Open,
+    hi_IsEmpty,
+    hi_SubPos,
+    hi_Protocol,
+    hi_RootGroup,
+    hi_Status,
+    hi_HasAvatar,
+    hi_GroupPos,
+    hi_Selected,
+    hi_Hot,
+    hi_Odd,
+    hi_Indent,
+    hi_Index,
+    hi_Name,
+    hi_Group,
+    hi_True,
+    hi_False,
+    hi_ONLINE,
+    hi_AWAY,
+    hi_DND,
+    hi_NA,
+    hi_OCCUPIED,
+    hi_FREECHAT,
+    hi_INVISIBLE,
+    hi_OUTTOLUNCH,
+    hi_ONTHEPHONE,
+    hi_IDLE,
+    hi_OFFLINE,
+    hi_Row,
+    hi_CL,
+    hi_SubContact,
+    hi_MetaContact,
+    hi_Contact,
+    hi_Divider,
+    hi_Info,
+    hi_First_Single,
+    hi_First,
+    hi_Middle,
+    hi_Mid,
+    hi_Single,
+    hi_Last,
+    //ADD new item above here
+    hi_LastItem
+} HashIndex;
+
+static char *quickHashText[hi_LastItem]=
+{
+    "Module",
+        "ID",
+        "Type",
+        "Open",
+        "IsEmpty",
+        "SubPos",
+        "Protocol",
+        "RootGroup",
+        "Status",
+        "HasAvatar",
+        "GroupPos",
+        "Selected",
+        "Hot",
+        "Odd",
+        "Indent",
+        "Index",
+        "Name",
+        "Group",
+        "True",
+        "False",
+        "ONLINE",
+        "AWAY",
+        "DND",
+        "NA",
+        "OCCUPIED",
+        "FREECHAT",
+        "INVISIBLE",
+        "OUTTOLUNCH",
+        "ONTHEPHONE",
+        "IDLE",
+        "OFFLINE",
+        "Row",
+        "CL",
+        "SubContact",
+        "MetaContact",
+        "Contact",
+        "Divider",
+        "Info",
+        "First-Single",
+        "First",
+        "Middle",
+        "Mid",
+        "Single",
+        "Last",
+        //ADD item here
+};
+
+static DWORD quickHash[hi_LastItem]={0};
+
+_inline void AddParamShort(MODERNMASK * mpModernMask, DWORD dwParamIndex, DWORD dwValueIndex)
+{
+    AddParam(mpModernMask, quickHash[dwParamIndex], quickHashText[dwValueIndex], quickHash[dwValueIndex]);
+} 
+
+
+
+void CLCPaint_FillQuickHash()
+{
+    int i;
+    for (i=0;i<hi_LastItem;i++)
+         quickHash[i]=mod_CalcHash(quickHashText[i]);   
+}
+
+_inline MODERNMASK * GetCLCContactRowBackModernMask(struct ClcGroup * group, struct ClcContact * Drawing, int indent, int index, BOOL selected, BOOL hottrack,struct ClcData * dat)
+{
+    MODERNMASK * mpModernMask=NULL;
+    char buf[BUF2SIZE]={0};
+    mpModernMask=(MODERNMASK*)mir_alloc(sizeof(MODERNMASK));
+    memset(mpModernMask,0,sizeof(MODERNMASK));
+    
+    AddParamShort(mpModernMask,hi_Module,hi_CL);
+    AddParamShort(mpModernMask,hi_ID,hi_Row);
+    switch (Drawing->type)
+    {
+    case CLCIT_GROUP:
+        {
+            AddParamShort(mpModernMask,hi_Type,hi_Group);
+            AddParamShort(mpModernMask,hi_Open,(Drawing && Drawing->group && Drawing->group->expanded)?hi_True:hi_False);
+            AddParamShort(mpModernMask,hi_IsEmpty,(Drawing->group->cl.count==0)?hi_True:hi_False);
+        }
+        break;
+    case CLCIT_CONTACT:
+        {
+            struct ClcContact * mCont=Drawing;
+            if (Drawing->isSubcontact)
+            {
+                AddParamShort(mpModernMask,hi_Type,hi_SubContact);
+                if (Drawing->isSubcontact==1 && Drawing->subcontacts->SubAllocated==1)
+                    AddParamShort(mpModernMask,hi_SubPos,hi_First_Single);    
+                else if (Drawing->isSubcontact==1) 
+                    AddParamShort(mpModernMask,hi_SubPos,hi_First); 
+                else if (Drawing->isSubcontact==Drawing->subcontacts->SubAllocated) 
+                    AddParamShort(mpModernMask,hi_SubPos,hi_Last);
+                else 
+                    AddParamShort(mpModernMask,hi_SubPos,hi_Middle);
+                mCont=Drawing->subcontacts;
+            }
+            else if (Drawing->SubAllocated)
+            {
+                AddParamShort(mpModernMask,hi_Type,hi_MetaContact);
+                AddParamShort(mpModernMask,hi_Open,(Drawing->SubExpanded)?hi_True:hi_False);
+            }
+            else 
+                AddParamShort(mpModernMask,hi_Type,hi_Contact);
+            AddParam(mpModernMask,quickHash[hi_Protocol],Drawing->proto,0);
+            AddParamShort(mpModernMask,hi_RootGroup,(group && group->parent==NULL)?hi_True:hi_False);
+            switch(GetContactCachedStatus(Drawing->hContact))
+            {                
+                // case ID_STATUS_CONNECTING: AppendChar(buf,BUFSIZE,"CONNECTING"); break;
+            case ID_STATUS_ONLINE:      AddParamShort(mpModernMask,hi_Status,hi_ONLINE);    break;
+            case ID_STATUS_AWAY:        AddParamShort(mpModernMask,hi_Status,hi_AWAY);      break;
+            case ID_STATUS_DND:	        AddParamShort(mpModernMask,hi_Status,hi_DND);       break;
+            case ID_STATUS_NA:          AddParamShort(mpModernMask,hi_Status,hi_NA);        break;
+            case ID_STATUS_OCCUPIED:    AddParamShort(mpModernMask,hi_Status,hi_OCCUPIED);  break;
+            case ID_STATUS_FREECHAT:    AddParamShort(mpModernMask,hi_Status,hi_FREECHAT);  break;
+            case ID_STATUS_INVISIBLE:   AddParamShort(mpModernMask,hi_Status,hi_INVISIBLE); break;
+            case ID_STATUS_OUTTOLUNCH:  AddParamShort(mpModernMask,hi_Status,hi_OUTTOLUNCH);break;
+            case ID_STATUS_ONTHEPHONE:  AddParamShort(mpModernMask,hi_Status,hi_ONTHEPHONE);break;
+            case ID_STATUS_IDLE:        AddParamShort(mpModernMask,hi_Status,hi_IDLE);      break;
+            default:	                AddParamShort(mpModernMask,hi_Status,hi_OFFLINE);
+            }
+            AddParamShort(mpModernMask,hi_HasAvatar,(dat->avatars_show  && Drawing->avatar_data != NULL)?hi_True:hi_False);
+            break;    
+        }
+    case CLCIT_DIVIDER:
+        {
+            AddParamShort(mpModernMask,hi_Type,hi_Divider);
+        }
+        break;
+    case CLCIT_INFO:
+        {
+            AddParamShort(mpModernMask,hi_Type,hi_Info);
+        }
+        break;
+    }
+    if (group->scanIndex==0 && group->cl.count==1) 
+        AddParamShort(mpModernMask,hi_GroupPos,hi_First_Single);
+    else if (group->scanIndex==0) 
+        AddParamShort(mpModernMask,hi_GroupPos,hi_First);
+    else if (group->scanIndex+1==group->cl.count) 
+        AddParamShort(mpModernMask,hi_GroupPos,hi_Last);
+    else 
+        AddParamShort(mpModernMask,hi_GroupPos,hi_Mid);
+   
+    AddParamShort(mpModernMask,hi_Selected,(selected)?hi_True:hi_False);
+    AddParamShort(mpModernMask,hi_Hot,(hottrack)?hi_True:hi_False);
+    AddParamShort(mpModernMask,hi_Odd,(index&1)?hi_True:hi_False);
+
+    _itoa(indent,buf,BUF2SIZE);
+    AddParam(mpModernMask,quickHash[hi_Indent],buf,0);
+    _itoa(index,buf,BUF2SIZE);
+    AddParam(mpModernMask,quickHash[hi_Index],buf,0);   
+    {
+        TCHAR * b2=mir_tstrdup(Drawing->szText);
+        int i,m;
+        m=lstrlen(b2);	
+        for (i=0; i<m;i++)
+            if (b2[i]==TEXT(',')) b2[i]=TEXT('.');
+#ifdef UNICODE
+        {
+            char* b3=Utf8EncodeUcs2(b2);
+            AddParam(mpModernMask,quickHash[hi_Name],b3,0);
+            free(b3);
+        }
+
+#else
+        AddParam(mpModernMask,quickHash[hi_Name],b2,0);
+#endif
+        mir_free(b2);
+    }
+    if (group->parent)
+    {
+        TCHAR * b2=mir_tstrdup(group->parent->cl.items[0]->szText);
+        int i,m;
+        m=lstrlen(b2);	
+        for (i=0; i<m;i++)
+            if (b2[i]==TEXT(',')) b2[i]=TEXT('.');
+#ifdef UNICODE
+        {
+            char * b3=Utf8EncodeUcs2(b2);
+            AddParam(mpModernMask,quickHash[hi_Group],b3,0);
+            free(b3);
+        }
+#else
+        AddParam(mpModernMask,quickHash[hi_Group],b2,0);
+#endif
+        mir_free(b2);		
+    }
+    return mpModernMask;  
+}
+//_inline char * GetCLCContactRowBackObject(struct ClcGroup * group, struct ClcContact * Drawing, int indent, int index, BOOL selected, BOOL hottrack,struct ClcData * dat)
+//{
+//  char buf[BUFSIZE];
+//  char b2[BUF2SIZE];
+//  _snprintf(buf,BUFSIZE,"CL,ID=Row");
+//  switch (Drawing->type)
+//  {
+//  case CLCIT_GROUP:
+//    {
+//      AppendChar(buf,BUFSIZE,",Type=Group");
+//      AppendChar(buf,BUFSIZE,",Open=");
+//      AppendChar(buf,BUFSIZE,(Drawing && Drawing->group && Drawing->group->expanded)?"True":"False");
+//      if (Drawing->group->cl.count==0) AppendChar(buf,BUFSIZE,",IsEmpty=True");
+//      else AppendChar(buf,BUFSIZE,",IsEmpty=False"); 
+//    }
+//    break;
+//  case CLCIT_CONTACT:
+//    {
+//      struct ClcContact * mCont=Drawing;
+//      if (Drawing->isSubcontact)
+//      {
+//        AppendChar(buf,BUFSIZE,",Type=SubContact");
+//        if (Drawing->isSubcontact==1 && Drawing->subcontacts->SubAllocated==1) AppendChar(buf,BUFSIZE,",SubPos=First-Single");
+//        else if (Drawing->isSubcontact==1) AppendChar(buf,BUFSIZE,",SubPos=First");    
+//        else if (Drawing->isSubcontact==Drawing->subcontacts->SubAllocated) AppendChar(buf,BUFSIZE,",SubPos=Last");
+//        else AppendChar(buf,BUFSIZE,",SubPos=Middle");
+//        mCont=Drawing->subcontacts;
+//      }
+//      else if (Drawing->SubAllocated)
+//      {
+//        AppendChar(buf,BUFSIZE,",Type=MetaContact");
+//        AppendChar(buf,BUFSIZE,",Open=");
+//        AppendChar(buf,BUFSIZE,(Drawing->SubExpanded)?"True":"False");
+//      }
+//      else AppendChar(buf,BUFSIZE,",Type=Contact");
+//      AppendChar(buf,BUFSIZE,",Protocol=");	
+//      AppendChar(buf,BUFSIZE,Drawing->proto);
+//	  if (group && group->parent==NULL)
+//		  AppendChar(buf,BUFSIZE,",RootGroup=True");
+//	  else
+//		  AppendChar(buf,BUFSIZE,",RootGroup=False");
+//      AppendChar(buf,BUFSIZE,",Status=");	
+//      switch(GetContactCachedStatus(Drawing->hContact))
+//      {
+//        // case ID_STATUS_CONNECTING: AppendChar(buf,BUFSIZE,"CONNECTING"); break;
+//      case ID_STATUS_ONLINE: AppendChar(buf,BUFSIZE,"ONLINE"); break;
+//      case ID_STATUS_AWAY: AppendChar(buf,BUFSIZE,"AWAY");  break;
+//      case ID_STATUS_DND:	AppendChar(buf,BUFSIZE,"DND"); break;
+//      case ID_STATUS_NA: AppendChar(buf,BUFSIZE,"NA"); break;
+//      case ID_STATUS_OCCUPIED: AppendChar(buf,BUFSIZE,"OCCUPIED"); break;
+//      case ID_STATUS_FREECHAT: AppendChar(buf,BUFSIZE,"FREECHAT"); break;
+//      case ID_STATUS_INVISIBLE:  AppendChar(buf,BUFSIZE,"INVISIBLE"); break;
+//      case ID_STATUS_OUTTOLUNCH: AppendChar(buf,BUFSIZE,"OUTTOLUNCH"); break;
+//      case ID_STATUS_ONTHEPHONE: AppendChar(buf,BUFSIZE,"ONTHEPHONE"); break;
+//      case ID_STATUS_IDLE:  AppendChar(buf,BUFSIZE,"IDLE");  break;
+//      default:	AppendChar(buf,BUFSIZE,"OFFLINE");
+//      }
+//      AppendChar(buf,BUFSIZE,",HasAvatar=");
+//      if (dat->avatars_show  && Drawing->avatar_data != NULL) AppendChar(buf,BUFSIZE,"True");
+//      else AppendChar(buf,BUFSIZE,"False");
+//      break;    
+//    }
+//  case CLCIT_DIVIDER:
+//    {
+//      AppendChar(buf,BUFSIZE,",Type=Divider");
+//    }
+//    break;
+//  case CLCIT_INFO:
+//    {
+//      AppendChar(buf,BUFSIZE,",Type=Info");
+//    }
+//    break;
+//  }
+//  if (group->scanIndex==0 && group->cl.count==1) AppendChar(buf,BUFSIZE,",GroupPos=First-Single");
+//  else if (group->scanIndex==0) AppendChar(buf,BUFSIZE,",GroupPos=First");
+//  else if (group->scanIndex+1==group->cl.count) AppendChar(buf,BUFSIZE,",GroupPos=Last");
+//  else AppendChar(buf,BUFSIZE,",GroupPos=Mid");
+//
+//  AppendChar(buf,BUFSIZE,",Selected=");
+//  AppendChar(buf,BUFSIZE,selected?"True":"False");
+//  AppendChar(buf,BUFSIZE,",Hot=");
+//  AppendChar(buf,BUFSIZE,hottrack?"True":"False");
+//  AppendChar(buf,BUFSIZE,",Odd=");    
+//  AppendChar(buf,BUFSIZE,(index&1)?"True":"False");
+//  AppendChar(buf,BUFSIZE,",Indent=");
+//  AppendChar(buf,BUFSIZE,_itoa(indent,b2,BUF2SIZE));
+//  AppendChar(buf,BUFSIZE,",Index=");
+//  AppendChar(buf,BUFSIZE,_itoa(index,b2,BUF2SIZE));
+//  {
+//    TCHAR * b2=mir_tstrdup(Drawing->szText);
+//    int i,m;
+//    m=lstrlen(b2);	
+//    for (i=0; i<m;i++)
+//      if (b2[i]==TEXT(',')) b2[i]=TEXT('.');
+//    //TODO b2 to UTF8
+//    AppendChar(buf,BUFSIZE,",Name=");
+//#ifdef UNICODE
+//    {
+//      char* b3=Utf8EncodeUcs2(b2);
+//      AppendChar(buf,BUFSIZE,b3);
+//      free(b3);
+//    }
+//
+//#else
+//    AppendChar(buf,BUFSIZE,b2);
+//#endif
+//    mir_free(b2);
+//
+//  }
+//  if (group->parent)
+//  {
+//    TCHAR * b2=mir_tstrdup(group->parent->cl.items[0]->szText);
+//    int i,m;
+//    m=lstrlen(b2);	
+//    for (i=0; i<m;i++)
+//      if (b2[i]==TEXT(',')) b2[i]=TEXT('.');
+//    //TODO b2 to UTF8
+//    AppendChar(buf,BUFSIZE,",Group=");		
+//#ifdef UNICODE
+//    {
+//      char * b3=Utf8EncodeUcs2(b2);
+//      AppendChar(buf,BUFSIZE,b3);
+//      free(b3);
+//    }
+//#else
+//    AppendChar(buf,BUFSIZE,b2);
+//#endif
+//    mir_free(b2);		
+//  }
+//  return mir_strdup(buf);  
+//}
 #undef BUFSIZE
 #undef BUF2SIZE
 tPaintCallbackProc CLC_PaintCallbackProc(HWND hWnd, HDC hDC, RECT * rcPaint, HRGN rgn, DWORD dFlags, void * CallBackData)
@@ -2709,7 +2989,7 @@ void InternalPaintRowItems(HWND hwnd, HDC hdcMem, struct ClcData *dat, struct Cl
     }
   }
 }
-
+extern int DeleteMask(MODERNMASK * mm);
 
 void InternalPaintClc(HWND hwnd,struct ClcData *dat,HDC hdc,RECT *rcPaint)
 {
@@ -2733,15 +3013,7 @@ void InternalPaintClc(HWND hwnd,struct ClcData *dat,HDC hdc,RECT *rcPaint)
   int old_stretch_mode;
   int old_bk_mode;
   DWORD currentCounter;
-
-  /*
-  #ifdef _DEBUG
-  DWORD time_ini, time_end;
-  char time_diff[128];
-  time_ini = GetTickCount();
-  #endif
-  */
-  
+ 
   if (!IsWindowVisible(hwnd)) return;
   if(dat->greyoutFlags&pcli->pfnClcStatusToPf2(status) || style&WS_DISABLED) grey=1;
   else if(GetFocus()!=hwnd && dat->greyoutFlags&GREYF_UNFOCUS) grey=1;
@@ -2785,20 +3057,6 @@ void InternalPaintClc(HWND hwnd,struct ClcData *dat,HDC hdc,RECT *rcPaint)
     old_stretch_mode = SetStretchBltMode(hdcMem, HALFTONE);
     SetBrushOrgEx(hdcMem, org.x, org.y, NULL);
   }
-
-  //// Draw parent background
-  //   {
-  //       HWND parent;
-  //       parent=(HWND)CallService(MS_CLUI_GETHWND,0,0);
-  //       if (GetParent(hwnd)!=parent)
-  //           NotInMain=1;
-
-  //       if (NotInMain) 
-  //		SkinDrawGlyph(hdcMem,&clRect,rcPaint,"Main Window/Backgrnd");
-  //       else  
-  //		SkinDrawWindowBack(hwnd,hdcMem,rcPaint,"Main Window/Backgrnd");
-  //   }
-
   // Draw background
   if (NotInMain || dat->force_in_dialog)
   { 
@@ -2810,10 +3068,7 @@ void InternalPaintClc(HWND hwnd,struct ClcData *dat,HDC hdc,RECT *rcPaint)
   else
   {
     if (!g_bLayered)
-    {
-	  //FillRect(grey?hdcMem2:hdcMem,rcPaint,GetSysColorBrush(GetSysColor(COLOR_3DFACE)));
       SkinEngine_BltBackImage(hwnd,grey?hdcMem2:hdcMem,rcPaint);
-    }
     SkinDrawGlyph(hdcMem,&clRect,rcPaint,"CL,ID=Background");
   }
 
@@ -2849,18 +3104,12 @@ void InternalPaintClc(HWND hwnd,struct ClcData *dat,HDC hdc,RECT *rcPaint)
         //-        int iImage;
         int selected;
         int hottrack;
-        /*-        SIZE textSize, secondLineSize;
-        int space_width = 0;
-        int counts_width = 0;
-        int counts_height = 0;
-        char *szCounts = "";
-        -*/
         int left_pos;
         int right_pos;
         int free_row_height;
         RECT row_rc;
         RECT free_row_rc;
-        char * request=NULL;
+        MODERNMASK * mpRequest=NULL;
         RECT rc;
 
         // Get item to draw
@@ -2874,7 +3123,11 @@ void InternalPaintClc(HWND hwnd,struct ClcData *dat,HDC hdc,RECT *rcPaint)
           Drawing = &(group->cl.items[group->scanIndex]->subcontacts[subindex]);
           subident = dat->subIndent;
         }
-        if (request) mir_free(request);
+        if (mpRequest) 
+        {
+            DeleteMask(mpRequest);
+            mir_free(mpRequest);
+        }
 
         // Something to draw?
         if (Drawing)
@@ -2924,8 +3177,8 @@ void InternalPaintClc(HWND hwnd,struct ClcData *dat,HDC hdc,RECT *rcPaint)
           }
           // Row background
           if (!dat->force_in_dialog)
-          {   //Build request string
-            request=GetCLCContactRowBackObject(group,Drawing,indent,line_num,selected,hottrack,dat);
+          {   //Build mpRequest string
+            mpRequest=GetCLCContactRowBackModernMask(group,Drawing,indent,line_num,selected,hottrack,dat);
 			{
 				RECT mrc=row_rc;
 				if (group->parent==0 
@@ -2934,10 +3187,8 @@ void InternalPaintClc(HWND hwnd,struct ClcData *dat,HDC hdc,RECT *rcPaint)
 				{
 					mrc.top+=dat->row_before_group_space;
 				}
-				SkinDrawGlyph(hdcMem,&mrc,rcPaint,request);
+				SkinDrawGlyphMask(hdcMem,&mrc,rcPaint,mpRequest);
 			}
-
-            //mir_free(request);
           }
           if (selected || hottrack)
           {
@@ -3016,11 +3267,12 @@ void InternalPaintClc(HWND hwnd,struct ClcData *dat,HDC hdc,RECT *rcPaint)
             Drawing->pos_check = rc;
           }
           InternalPaintRowItems(hwnd, hdcMem, dat, Drawing, row_rc, free_row_rc, left_pos, right_pos, selected, hottrack, rcPaint);
-          if (request && !dat->force_in_dialog)
+          if (mpRequest && !dat->force_in_dialog)
           {
-            request[6]='O';
-            request[7]='v';
-            request[8]='l';
+              if (mpRequest->pl_Params[1].szValue)
+                  free(mpRequest->pl_Params[1].szValue);
+            mpRequest->pl_Params[1].szValue=mir_strdupn("Ovl",3);
+            mpRequest->pl_Params[1].dwValueHash=mod_CalcHash("Ovl");
 			{
 				RECT mrc=row_rc;
 				if(Drawing->type == CLCIT_GROUP && 
@@ -3029,10 +3281,11 @@ void InternalPaintClc(HWND hwnd,struct ClcData *dat,HDC hdc,RECT *rcPaint)
 				{
 					mrc.top+=dat->row_before_group_space;
 				}
-			    SkinDrawGlyph(hdcMem,&mrc,rcPaint,request);
+			    SkinDrawGlyphMask(hdcMem,&mrc,rcPaint,mpRequest);
 			}
-            mir_free(request);
-            request=NULL;
+            DeleteMask(mpRequest);
+            mir_free(mpRequest);
+            mpRequest=NULL;
           }
         }
       }

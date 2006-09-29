@@ -172,6 +172,7 @@ extern int __inline CreateGlyphedObjectDefColor(char * ObjID,DWORD defColor);
 extern int __inline CreateGlyphedObject(char * ObjID);
 
 
+
 //// Creating and registering objects
 //int __inline CreateGlyphedObject(char * ObjID)
 //{   
@@ -225,6 +226,7 @@ static BOOL __inline ScreenToClientRect(HWND hWnd, LPRECT lpRect)
 //    prm.szObjectID=ObjID;
 //    return CallService(MS_SKIN_REGISTERDEFOBJECT,(WPARAM)&prm,0);
 //}  
+extern int SkinEngine_Service_DrawGlyph(WPARAM wParam,LPARAM lParam);
 int __inline SkinDrawGlyph(HDC hdc, RECT * rcSize, RECT * rcClip, char * objectID)
 {
   SKINDRAWREQUEST rq;
@@ -233,8 +235,20 @@ int __inline SkinDrawGlyph(HDC hdc, RECT * rcSize, RECT * rcClip, char * objectI
   rq.rcDestRect=*rcSize;
   rq.rcClipRect=*rcClip;  
   strncpy(rq.szObjectID,objectID,sizeof(rq.szObjectID));
-  //SkinEngine_Service_DrawGlyph((WPARAM)&rq,0); //$$$
-  return CallService(MS_SKIN_DRAWGLYPH,(WPARAM)&rq,0);
+  return SkinEngine_Service_DrawGlyph((WPARAM)&rq,0);
+  //return CallService(MS_SKIN_DRAWGLYPH,(WPARAM)&rq,0);
+}
+#include "mod_skin_selector.h"
+
+int __inline SkinDrawGlyphMask(HDC hdc, RECT * rcSize, RECT * rcClip, MODERNMASK * ModernMask)
+{
+    SKINDRAWREQUEST rq;
+    if (!ModernMask) return 0;
+    rq.hDC=hdc;
+    rq.rcDestRect=*rcSize;
+    rq.rcClipRect=*rcClip;  
+    strncpy(rq.szObjectID,"Masked draw",sizeof("Masked draw"));
+    return SkinEngine_Service_DrawGlyph((WPARAM)&rq,(LPARAM)ModernMask);
 }
 
 

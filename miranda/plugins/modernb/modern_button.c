@@ -92,6 +92,8 @@ int ModernButton_UnloadModule(WPARAM wParam, LPARAM lParam)
   DeleteCriticalSection(&csTips);
   return 0;
 }
+int DeleteMask(MODERNMASK * mm);
+void AddParam(MODERNMASK * mpModernMask, DWORD dwParamHash, char *szValue, DWORD dwValueHash);
 
 int PaintWorker(HWND hwnd, HDC whdc)
 {
@@ -116,7 +118,7 @@ int PaintWorker(HWND hwnd, HDC whdc)
   if (!g_bLayered)
 	SkinEngine_BltBackImage(bct->hwnd,hdc,NULL);
   {
-    char Request[250];
+    MODERNMASK Request={0};
     //   int res;
     //HBRUSH br=CreateSolidBrush(RGB(255,255,255));
     char * Value=NULL;
@@ -163,24 +165,18 @@ int PaintWorker(HWND hwnd, HDC whdc)
       }  
 
     }
+    AddParam(&Request,mod_CalcHash("Module"),"MButton",0);
+    AddParam(&Request,mod_CalcHash("ID"),bct->ID,0);
+    AddParam(&Request,mod_CalcHash("Down"),bct->down?"1":"0",0);
+    AddParam(&Request,mod_CalcHash("Focused"),bct->focus?"1":"0",0);
+    AddParam(&Request,mod_CalcHash("Hovered"),bct->hover?"1":0,0);
     if (Value)
     {
-      _snprintf(Request,sizeof(Request),"MButton,ID=%s,Down=%d,Focused=%d,Hovered=%d,Value=%s",
-                bct->ID,
-                bct->down,
-                bct->focus,
-                bct->hover,
-                Value);
+      AddParam(&Request,mod_CalcHash("Value"),Value,0);
       mir_free(Value);
-    }
-    else
-      _snprintf(Request,sizeof(Request),"MButton,ID=%s,Down=%d,Focused=%d,Hovered=%d",
-                bct->ID,
-                bct->down, 
-                bct->focus,
-                bct->hover);
-
-    SkinDrawGlyph(hdc,&rc,&rc,Request);
+    }    
+    SkinDrawGlyphMask(hdc,&rc,&rc,&Request);
+    DeleteMask(&Request);
     // DeleteObject(br);
   }
 
@@ -608,17 +604,19 @@ HWND CreateButtonWindow(ModernButtonCtrl * bct, HWND parent)
   return hwnd;
 }
 
-
+extern BOOL g_mutex_bLockUpdating;
 int RedrawButtons(HDC hdc)
 {
   DWORD i;
   if (!ModernButtonModuleIsLoaded) return 0;
+  g_mutex_bLockUpdating++;
   for(i=0; i<ButtonsCount; i++)
   {
     if (pcli->hwndContactList && Buttons[i].hwnd==NULL)
       Buttons[i].hwnd=CreateButtonWindow(Buttons[i].bct,pcli->hwndContactList);
     PaintWorker(Buttons[i].hwnd,0); 
   }
+  g_mutex_bLockUpdating--;
   return 0;
 }
 int DeleteButtons()

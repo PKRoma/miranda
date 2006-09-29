@@ -71,6 +71,7 @@ char * ModernMaskToString(MODERNMASK * mm, char * buf, UINT bufsize);
 BOOL _inline wildcmp(char * name, char * mask, BYTE option);
 int RegisterObjectByParce(char * ObjectName, char * Params);
 SKINOBJECTDESCRIPTOR *  skin_FindObjectByRequest(char * szValue,LISTMODERNMASK * mmTemplateList);
+SKINOBJECTDESCRIPTOR *  skin_FindObjectByMask (MODERNMASK * mm,LISTMODERNMASK * mmTemplateList);
 TCHAR * GetParamNT(char * string, TCHAR * buf, int buflen, BYTE paramN, char Delim, BOOL SkipSpaces);
 
 #endif

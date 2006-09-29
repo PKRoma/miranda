@@ -60,7 +60,9 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 /* Declaration of prototypes in other modules */
 
 int  CLC_EnterDragToScroll(HWND hwnd, int Y);
+
 HFONT CLCPaint_ChangeToFont(HDC hdc,struct ClcData *dat,int id,int *fontHeight);
+void CLCPaint_FillQuickHash();
 
 int CListMod_ContactListShutdownProc(WPARAM wParam,LPARAM lParam);
 int CListMod_HideWindow(HWND hwndContactList, int mode);

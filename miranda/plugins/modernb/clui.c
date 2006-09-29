@@ -35,7 +35,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include "modern_statusbar.h"
 
 #include "clui.h"
-
+#include <locale.h>
 
 /*
 *  Function CLUI_CheckOwnedByClui returns true if given window is in 
@@ -475,7 +475,7 @@ int CLUI_OnSkinLoad(WPARAM wParam, LPARAM lParam)
     return 0;
 }
 
-#include <locale.h>
+
 
 static int CLUI_ModulesLoaded(WPARAM wParam,LPARAM lParam)
 {
@@ -497,7 +497,7 @@ static int CLUI_ModulesLoaded(WPARAM wParam,LPARAM lParam)
     *  Metacontact groups support
     */
     setlocale(LC_ALL,"");  //fix for case insensitive comparing
-
+    CLCPaint_FillQuickHash();
     if (ServiceExists(MS_MC_DISABLEHIDDENGROUP));
     CallService(MS_MC_DISABLEHIDDENGROUP, (WPARAM)TRUE, (LPARAM)0);
 

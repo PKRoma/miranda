@@ -98,6 +98,7 @@ typedef struct
 
 int SkinEngine_UnloadSkin(SKINOBJECTSLIST * Skin);
 int SkinEngine_AddDescriptorToSkinObjectList (LPSKINOBJECTDESCRIPTOR lpDescr, SKINOBJECTSLIST* Skin);
+int SkinEngine_Service_DrawGlyph(WPARAM wParam,LPARAM lParam);
 
 #endif
 

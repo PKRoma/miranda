@@ -60,8 +60,8 @@ typedef struct _ASK_AWAYMSG_CHAIN {
 	struct ASK_AWAYMSG_CHAIN *Next;
 } ASK_AWAYMSG_CHAIN;
 
-ASK_AWAYMSG_CHAIN * pAskAwayMsgFirstChain = NULL;
-ASK_AWAYMSG_CHAIN * pAskAwayMsgLastChain  = NULL;
+ASK_AWAYMSG_CHAIN * mpAskAwayMsgFirstChain = NULL;
+ASK_AWAYMSG_CHAIN * mpAskAwayMsgLastChain  = NULL;
 
 BOOL b_aam_LockChainAdd		= FALSE;
 BOOL b_aam_LockChainDel	    = FALSE;
@@ -87,7 +87,7 @@ static int cache_AskAwayMsg_AddHandleToChain(HANDLE hContact)
   {
     //check that handle is present
 		ASK_AWAYMSG_CHAIN * wChain;
-		wChain=pAskAwayMsgFirstChain;
+		wChain=mpAskAwayMsgFirstChain;
      if (wChain)
      {
        do {
@@ -99,18 +99,18 @@ static int cache_AskAwayMsg_AddHandleToChain(HANDLE hContact)
 			} while(wChain=(ASK_AWAYMSG_CHAIN *)wChain->Next);
      }
   }
-	if (!pAskAwayMsgFirstChain)  
+	if (!mpAskAwayMsgFirstChain)  
   {
-		pAskAwayMsgFirstChain=mir_alloc(sizeof(ASK_AWAYMSG_CHAIN));
-		workChain=pAskAwayMsgFirstChain;
+		mpAskAwayMsgFirstChain=mir_alloc(sizeof(ASK_AWAYMSG_CHAIN));
+		workChain=mpAskAwayMsgFirstChain;
 
   }
   else 
   {
-		pAskAwayMsgLastChain->Next=mir_alloc(sizeof(ASK_AWAYMSG_CHAIN));
-		workChain=(ASK_AWAYMSG_CHAIN *)pAskAwayMsgLastChain->Next;
+		mpAskAwayMsgLastChain->Next=mir_alloc(sizeof(ASK_AWAYMSG_CHAIN));
+		workChain=(ASK_AWAYMSG_CHAIN *)mpAskAwayMsgLastChain->Next;
   }
-	pAskAwayMsgLastChain=workChain;
+	mpAskAwayMsgLastChain=workChain;
   workChain->Next=NULL;
   workChain->ContactRequest=hContact;
 	b_aam_LockChainDel=0;
@@ -131,12 +131,12 @@ static HANDLE cache_AskAwayMsg_GetCurrentChain()
     if (MirandaExiting()) return 0;
   }
 	b_aam_LockChainAdd=TRUE;
-	if (pAskAwayMsgFirstChain)
+	if (mpAskAwayMsgFirstChain)
   {
-		res=pAskAwayMsgFirstChain->ContactRequest;
-		workChain=pAskAwayMsgFirstChain->Next;
-		mir_free(pAskAwayMsgFirstChain);
-		pAskAwayMsgFirstChain=(ASK_AWAYMSG_CHAIN *)workChain;
+		res=mpAskAwayMsgFirstChain->ContactRequest;
+		workChain=mpAskAwayMsgFirstChain->Next;
+		mir_free(mpAskAwayMsgFirstChain);
+		mpAskAwayMsgFirstChain=(ASK_AWAYMSG_CHAIN *)workChain;
   }
 	b_aam_LockChainAdd=FALSE;
   return res;
@@ -290,7 +290,7 @@ CacheAskChain * LastCacheChain=NULL;
 BOOL LockCacheChain=0;
 BOOL ISCacheTREADSTARTED=0;
 
-BOOL GetCacheChain(CacheAskChain * chain)
+BOOL GetCacheChain(CacheAskChain * mpChain)
 {
 	while (LockCacheChain) 
 	{
@@ -298,11 +298,11 @@ BOOL GetCacheChain(CacheAskChain * chain)
 		if (MirandaExiting()) return FALSE;
 	}
 	if (!FirstCacheChain) return FALSE;
-	else if (chain)
+	else if (mpChain)
 	{
 		CacheAskChain * ch;
 		ch=FirstCacheChain;
-		*chain=*ch;
+		*mpChain=*ch;
 		FirstCacheChain=(CacheAskChain *)ch->Next;
 		if (!FirstCacheChain) LastCacheChain=NULL;
 		mir_free(ch);
@@ -331,19 +331,19 @@ int Cache_GetTextThreadProc(void * a)
         }
 		else
 		{
-			CacheAskChain chain={0};
+			CacheAskChain mpChain={0};
 			struct SHORTDATA dat2={0};
-			if (!GetCacheChain(&chain)) break;
-            if (chain.dat==NULL || chain.dat->hWnd==data.hWnd) dat=&data;
+			if (!GetCacheChain(&mpChain)) break;
+            if (mpChain.dat==NULL || mpChain.dat->hWnd==data.hWnd) dat=&data;
             else
             {                
-                SendMessage(chain.dat->hWnd,UM_CALLSYNCRONIZED,(WPARAM)SYNC_GETSHORTDATA,(LPARAM)&dat2);
+                SendMessage(mpChain.dat->hWnd,UM_CALLSYNCRONIZED,(WPARAM)SYNC_GETSHORTDATA,(LPARAM)&dat2);
                 dat=&dat2;
             }
 			if (!MirandaExiting())
 			{
                displayNameCacheEntry cacheEntry={0};
-               cacheEntry.hContact=chain.ContactRequest;
+               cacheEntry.hContact=mpChain.ContactRequest;
                if (!SendMessage(hwnd,UM_CALLSYNCRONIZED,SYNC_GETPDNCE,(LPARAM)&cacheEntry))
                {
                    if (!MirandaExiting()) 
@@ -381,20 +381,20 @@ int AddToCacheChain(struct ClcData *dat,struct ClcContact *contact,HANDLE Contac
 	}
 	LockCacheChain=TRUE;
 	{
-		CacheAskChain * chain=(CacheAskChain *)mir_alloc(sizeof(CacheAskChain));
-		chain->ContactRequest=ContactRequest;
-		chain->dat=dat;
-//		chain->contact=contact;
-		chain->Next=NULL;
+		CacheAskChain * mpChain=(CacheAskChain *)mir_alloc(sizeof(CacheAskChain));
+		mpChain->ContactRequest=ContactRequest;
+		mpChain->dat=dat;
+//		mpChain->contact=contact;
+		mpChain->Next=NULL;
 		if (LastCacheChain) 
 		{
-			LastCacheChain->Next=(struct CacheAskChain *)chain;
-			LastCacheChain=chain;
+			LastCacheChain->Next=(struct CacheAskChain *)mpChain;
+			LastCacheChain=mpChain;
 		}
 		else 
 		{
-			FirstCacheChain=chain;
-			LastCacheChain=chain;
+			FirstCacheChain=mpChain;
+			LastCacheChain=mpChain;
 			if (!ISCacheTREADSTARTED && !g_hGetTextThreadID)
 			{
 				//StartThreadHere();

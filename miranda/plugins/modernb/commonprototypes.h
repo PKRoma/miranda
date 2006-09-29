@@ -10,10 +10,10 @@ extern BOOL g_mutex_bOnEdgeSizing;
 
 extern HANDLE g_hSkinLoadedEvent;         
 
-extern struct LISTMODERNMASK *MainModernMaskList;
+
 extern wndFrame *Frames;
 extern int nFramescount;
-
+//extern struct LISTMODERNMASK *MainModernMaskList;
 extern RECT g_rcEdgeSizingRect;
 extern int g_nBehindEdgeState;
 extern int g_nBehindEdgeSettings;

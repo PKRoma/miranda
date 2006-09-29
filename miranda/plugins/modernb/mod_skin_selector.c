@@ -433,31 +433,36 @@ MODERNMASK *  FindMaskByStr(char * szValue,LISTMODERNMASK * mmTemplateList)
     //TODO
     return NULL;
 }
-SKINOBJECTDESCRIPTOR *  skin_FindObjectByRequest(char * szValue,LISTMODERNMASK * mmTemplateList)
+
+SKINOBJECTDESCRIPTOR *  skin_FindObjectByMask (MODERNMASK * mm,LISTMODERNMASK * mmTemplateList)
 {
-    //TODO
-    MODERNMASK mm={0};
     SKINOBJECTDESCRIPTOR * res=NULL;
     DWORD i=0;
+    while (i<mmTemplateList->dwMaskCnt)
+    {
+        if (CompareModernMask(mm,&(mmTemplateList->pl_Masks[i])))
+        {
+            res=(SKINOBJECTDESCRIPTOR*) mmTemplateList->pl_Masks[i].pObject; 
+            return res;
+        }
+        i++;
+    }
+    return res;
+}
+
+SKINOBJECTDESCRIPTOR *  skin_FindObjectByRequest(char * szValue,LISTMODERNMASK * mmTemplateList)
+{
+    MODERNMASK mm={0};
+    SKINOBJECTDESCRIPTOR * res=NULL;
     if (!mmTemplateList)    
         if (g_SkinObjectList.pMaskList)
             mmTemplateList=g_SkinObjectList.pMaskList;
 		else return NULL;
     if (!mmTemplateList) return NULL;
     ParseToModernMask(&mm,szValue);
-    while (i<mmTemplateList->dwMaskCnt)
-    {
-        if (CompareModernMask(&mm,&(mmTemplateList->pl_Masks[i])))
-        {
-
-            res=(SKINOBJECTDESCRIPTOR*) mmTemplateList->pl_Masks[i].pObject; 
-            DeleteMask(&mm);
-            return res;
-        }
-        i++;
-    }
+    res=skin_FindObjectByMask(&mm,mmTemplateList);
     DeleteMask(&mm);
-    return NULL;
+    return res;
 }
 
 TCHAR * GetParamNT(char * string, TCHAR * buf, int buflen, BYTE paramN, char Delim, BOOL SkipSpaces)

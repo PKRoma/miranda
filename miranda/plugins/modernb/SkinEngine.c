@@ -44,6 +44,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include "shlwapi.h"
 #include "math.h"
 
+extern struct LISTMODERNMASK *MainModernMaskList;
 /* Global variables */
 
 SKINOBJECTSLIST g_SkinObjectList={0};
@@ -58,12 +59,12 @@ DWORD   g_dwKeyColor=RGB(255,0,255);
 BOOL (WINAPI *g_proc_UpdateLayeredWindow)(HWND,HDC,POINT*,SIZE*,HDC,POINT*,COLORREF,BLENDFUNCTION*,DWORD);
 
 BOOL    g_flag_bPostWasCanceled =FALSE,
-        g_flag_bFullRepaint     =FALSE;
+g_flag_bFullRepaint     =FALSE;
 
 BOOL    g_mutex_bLockUpdating   =FALSE;
 
 SortedList * gl_plGlyphTexts=NULL,
-           * gl_plSkinFonts =NULL;
+* gl_plSkinFonts =NULL;
 
 /* Private module variables */
 
@@ -95,7 +96,6 @@ static CRITICAL_SECTION cs_SkinChanging={0};
 
 static int  SkinEngine_Service_AlphaTextOut(WPARAM wParam,LPARAM lParam);
 static BOOL SkinEngine_Service_DrawIconEx(WPARAM wParam,LPARAM lParam);
-static int  SkinEngine_Service_DrawGlyph(WPARAM wParam,LPARAM lParam);
 static int  SkinEngine_Service_RegisterFramePaintCallbackProcedure(WPARAM wParam, LPARAM lParam);
 
 
@@ -109,6 +109,7 @@ static HBITMAP SkinEngine_LoadGlyphImageByDecoders(char * szFileName);
 static int  SkinEngine_LoadSkinFromResource();
 static void SkinEngine_PreMultiplyChanells(HBITMAP hbmp,BYTE Mult);
 static int  SkinEngine_ValidateSingleFrameImage(wndFrame * Frame, BOOL SkipBkgBlitting);
+
 
 //Decoders
 static HMODULE hImageDecoderModule;
@@ -153,6 +154,7 @@ static int SkinEngine_UnlockSkin()
     LeaveCriticalSection(&cs_SkinChanging);
     return 0;
 }
+
 int SkinEngine_LoadModule()
 {
     InitializeCriticalSection(&cs_SkinChanging);
@@ -1151,17 +1153,14 @@ static LPSKINOBJECTDESCRIPTOR SkinEngine_FindObject(const char * szName, BYTE ob
     SKINOBJECTSLIST* sk;
     sk=(Skin==NULL)?(&g_SkinObjectList):Skin;
     return skin_FindObjectByRequest((char *)szName,sk->pMaskList);
+}
 
-    /*  for (i=0; i<sk->dwObjLPAlocated; i++)
-    {
-    if (sk->Objects[i].bType==objType || objType==OT_ANY)
-    {
-    if (!MyStrCmp(sk->Objects[i].szObjectID,szName))
-    return &(sk->Objects[i]);
-    }
-    }
-    return NULL;
-    */
+static LPSKINOBJECTDESCRIPTOR SkinEngine_FindObjectByMask(MODERNMASK * pModernMask, BYTE objType, SKINOBJECTSLIST* Skin)
+{
+    // DWORD i;
+    SKINOBJECTSLIST* sk;
+    sk=(Skin==NULL)?(&g_SkinObjectList):Skin;
+    return skin_FindObjectByMask(pModernMask,sk->pMaskList);
 }
 
 LPSKINOBJECTDESCRIPTOR SkinEngine_FindObjectByName(const char * szName, BYTE objType, SKINOBJECTSLIST* Skin)
@@ -1180,34 +1179,34 @@ LPSKINOBJECTDESCRIPTOR SkinEngine_FindObjectByName(const char * szName, BYTE obj
     return NULL;
 }
 
-static int SkinEngine_Service_DrawGlyph(WPARAM wParam,LPARAM lParam)
+//////////////////////////////////////////////////////////////////////////
+// Paint glyph
+// wParam - LPSKINDRAWREQUEST
+// lParam - possible direct pointer to modern mask
+//////////////////////////////////////////////////////////////////////////
+
+int SkinEngine_Service_DrawGlyph(WPARAM wParam,LPARAM lParam)
 {
     LPSKINDRAWREQUEST preq;
     LPSKINOBJECTDESCRIPTOR pgl;
     LPGLYPHOBJECT gl;
-    char buf[255];
-    int res;
     if (!wParam) return -1;
     SkinEngine_LockSkin();
-    preq=(LPSKINDRAWREQUEST)wParam;   
-    strncpy(buf,preq->szObjectID,sizeof(buf));   
-    do
+    __try
     {
-        pgl=SkinEngine_FindObject(buf, OT_GLYPHOBJECT,(SKINOBJECTSLIST*)lParam);
-        if (pgl==NULL) {SkinEngine_UnlockSkin(); return -1;}
-        if (pgl->Data==NULL){SkinEngine_UnlockSkin(); return -1;}
+        preq=(LPSKINDRAWREQUEST)wParam;   
+        if (lParam)
+            pgl=SkinEngine_FindObjectByMask((MODERNMASK*)lParam, OT_GLYPHOBJECT,NULL);
+        else
+            pgl=SkinEngine_FindObject(preq->szObjectID, OT_GLYPHOBJECT,NULL);
+        if (pgl==NULL) return -1;
+        if (pgl->Data==NULL) return -1;
         gl= (LPGLYPHOBJECT)pgl->Data;
-        if ((gl->Style&7) ==ST_SKIP) {SkinEngine_UnlockSkin(); return ST_SKIP;}
-        if ((gl->Style&7) ==ST_PARENT) 
-        {
-            int i;
-            for (i=mir_strlen(buf); i>0; i--)
-                if (buf[i]=='/')  {buf[i]='\0'; break;}
-                if (i==0) {SkinEngine_UnlockSkin(); return -1;}
-        }
-    }while ((gl->Style&7) ==ST_PARENT);
-    {
-        if (gl->hGlyph==NULL && gl->hGlyph!=(HBITMAP)-1 &&((gl->Style&7) ==ST_IMAGE || (gl->Style&7) ==ST_FRAGMENT || (gl->Style&7) ==ST_SOLARIZE))
+        if ((gl->Style&7) ==ST_SKIP) return ST_SKIP;
+        if (gl->hGlyph==NULL && gl->hGlyph!=(HBITMAP)-1 &&
+            (  (gl->Style&7)==ST_IMAGE 
+            ||(gl->Style&7)==ST_FRAGMENT 
+            ||(gl->Style&7)==ST_SOLARIZE ) )
             if (gl->szFileName) 
             {
                 gl->hGlyph=SkinEngine_LoadGlyphImage(gl->szFileName);
@@ -1222,10 +1221,13 @@ static int SkinEngine_Service_DrawGlyph(WPARAM wParam,LPARAM lParam)
                 else
                     gl->hGlyph=(HBITMAP)-1; //invalid
             }
+            return SkinEngine_DrawSkinObject(preq,gl);
     }
-    res=SkinEngine_DrawSkinObject(preq,gl);
-    SkinEngine_UnlockSkin();
-    return res;
+    __finally
+    {
+        SkinEngine_UnlockSkin();
+    }   
+    return -1;
 }
 
 
@@ -2561,11 +2563,11 @@ static int SkinEngine_AlphaTextOut (HDC hDC, LPCTSTR lpstring, int nCount, RECT 
             szElipses.cx+=1;
             if (workRect.right-workRect.left-szElipses.cx>0)
                 GetTextExtentExPoint(memdc,lpString,nCount,
-                                     workRect.right-workRect.left-szElipses.cx,
-                                     &number, NULL, &sz);
+                workRect.right-workRect.left-szElipses.cx,
+                &number, NULL, &sz);
             else
                 GetTextExtentExPoint(memdc,lpString,nCount,
-                                     0, &number, NULL, &sz);
+                0, &number, NULL, &sz);
 
             tem=(TCHAR*)mir_alloc((number+5)*sizeof(TCHAR));
             //memset(tem,0,(number+5)*sizeof(TCHAR));
@@ -3737,7 +3739,8 @@ int SkinEngine_DrawImageAt(HDC hdc, RECT *rc)
     BLENDFUNCTION bf={AC_SRC_OVER, 0, 255, AC_SRC_ALPHA };
     BitBlt(g_pCachedWindow->hImageDC,rc->left,rc->top,rc->right-rc->left,rc->bottom-rc->top,g_pCachedWindow->hBackDC,rc->left,rc->top,SRCCOPY);
     SkinEngine_AlphaBlend(g_pCachedWindow->hImageDC,rc->left,rc->top,rc->right-rc->left,rc->bottom-rc->top,hdc,0,0,rc->right-rc->left,rc->bottom-rc->top,bf);    
-    if (!g_mutex_bLockUpdating) SkinEngine_UpdateWindowImage();
+    if (!g_mutex_bLockUpdating)
+        SkinEngine_UpdateWindowImage();
     return 0;
 }
 
@@ -3988,44 +3991,44 @@ static void SkinEngine_AddParseSkinFont(char * szFontID,char * szDefineString,SK
 /*
 HICON SkinEngine_CreateJoinedIcon_Old(HICON hBottom, HICON hTop,BYTE alpha)
 {
-    HDC tempDC;
-    HICON res=NULL;
-    HBITMAP oImage,nImage;
-    HBITMAP nMask;
-    ICONINFO iNew={0};
-    ICONINFO iciBottom={0};
-    ICONINFO iciTop={0};
-    BITMAP bmp={0};
-    SIZE sz={0};
-    {
-        if (!GetIconInfo(hBottom,&iciBottom)) return NULL;
-        GetObject(iciBottom.hbmColor,sizeof(BITMAP),&bmp);
-        sz.cx=bmp.bmWidth; sz.cy=bmp.bmHeight;
-        if(iciBottom.hbmColor) DeleteObject(iciBottom.hbmColor);
-        if(iciBottom.hbmMask) DeleteObject(iciBottom.hbmMask);
-    }
-    if (sz.cx==0 || sz.cy==0) return NULL;
-    tempDC=CreateCompatibleDC(NULL);
-    nImage=SkinEngine_CreateDIB32(sz.cx,sz.cy);
-    oImage=SelectObject(tempDC,nImage);
-    SkinEngine_DrawIconEx(tempDC,0,0,hBottom,sz.cx,sz.cy,0,NULL,DI_NORMAL);
-    SkinEngine_DrawIconEx(tempDC,0,0,hTop,sz.cx,sz.cy,0,NULL,DI_NORMAL|(alpha<<24));
-    SelectObject(tempDC,oImage);
-    DeleteDC(tempDC);
-    {
-        BYTE * p=malloc(sz.cx*sz.cy/8+10);
-        nMask=CreateBitmap(sz.cx,sz.cy,1,1,(void*)p);
-        iNew.fIcon=TRUE;
-        iNew.hbmColor=nImage;
-        iNew.hbmMask=nMask;
-        res=CreateIconIndirect(&iNew);
-        if (!res) 
-            TRACE_ERROR();
-        DeleteObject(nImage);
-        DeleteObject(nMask);
-        free(p);
-    }
-    return res;
+HDC tempDC;
+HICON res=NULL;
+HBITMAP oImage,nImage;
+HBITMAP nMask;
+ICONINFO iNew={0};
+ICONINFO iciBottom={0};
+ICONINFO iciTop={0};
+BITMAP bmp={0};
+SIZE sz={0};
+{
+if (!GetIconInfo(hBottom,&iciBottom)) return NULL;
+GetObject(iciBottom.hbmColor,sizeof(BITMAP),&bmp);
+sz.cx=bmp.bmWidth; sz.cy=bmp.bmHeight;
+if(iciBottom.hbmColor) DeleteObject(iciBottom.hbmColor);
+if(iciBottom.hbmMask) DeleteObject(iciBottom.hbmMask);
+}
+if (sz.cx==0 || sz.cy==0) return NULL;
+tempDC=CreateCompatibleDC(NULL);
+nImage=SkinEngine_CreateDIB32(sz.cx,sz.cy);
+oImage=SelectObject(tempDC,nImage);
+SkinEngine_DrawIconEx(tempDC,0,0,hBottom,sz.cx,sz.cy,0,NULL,DI_NORMAL);
+SkinEngine_DrawIconEx(tempDC,0,0,hTop,sz.cx,sz.cy,0,NULL,DI_NORMAL|(alpha<<24));
+SelectObject(tempDC,oImage);
+DeleteDC(tempDC);
+{
+BYTE * p=malloc(sz.cx*sz.cy/8+10);
+nMask=CreateBitmap(sz.cx,sz.cy,1,1,(void*)p);
+iNew.fIcon=TRUE;
+iNew.hbmColor=nImage;
+iNew.hbmMask=nMask;
+res=CreateIconIndirect(&iNew);
+if (!res) 
+TRACE_ERROR();
+DeleteObject(nImage);
+DeleteObject(nMask);
+free(p);
+}
+return res;
 }
 */
 
@@ -4080,37 +4083,37 @@ static BOOL SkinEngine_GetMaskBit(BYTE *line, int x)
 
 static DWORD SkinEngine_Blend(DWORD X1,DWORD X2, BYTE alpha)
 {
-   BYTE a1=(BYTE)(X1>>24);
-   BYTE a2=(BYTE)(((X2>>24)*alpha)>>8);
-   BYTE r1=(BYTE)(X1>>16);
-   BYTE r2=(BYTE)(X2>>16);
-   BYTE g1=(BYTE)(X1>>8);
-   BYTE g2=(BYTE)(X2>>8);
-   BYTE b1=(BYTE)(X1);
-   BYTE b2=(BYTE)(X2);
+    BYTE a1=(BYTE)(X1>>24);
+    BYTE a2=(BYTE)(((X2>>24)*alpha)>>8);
+    BYTE r1=(BYTE)(X1>>16);
+    BYTE r2=(BYTE)(X2>>16);
+    BYTE g1=(BYTE)(X1>>8);
+    BYTE g2=(BYTE)(X2>>8);
+    BYTE b1=(BYTE)(X1);
+    BYTE b2=(BYTE)(X2);
 
-   BYTE a_1=~a1;
-   BYTE a_2=~a2;
+    BYTE a_1=~a1;
+    BYTE a_2=~a2;
 
-   /*  it is possible to use >>8 instead of /255 but it is require additional
-   *   checking of alphavalues
-   */
-   WORD ar=a1+(((WORD)a_1*a2)/255);
-   // if a2 more than 0 than result should be more
-   // or equal (if a1==0) to a2, else in combination
-   // with mask we can get here black points
+    /*  it is possible to use >>8 instead of /255 but it is require additional
+    *   checking of alphavalues
+    */
+    WORD ar=a1+(((WORD)a_1*a2)/255);
+    // if a2 more than 0 than result should be more
+    // or equal (if a1==0) to a2, else in combination
+    // with mask we can get here black points
 
-   ar=(a2>ar)?a2:ar;
+    ar=(a2>ar)?a2:ar;
 
-   if (ar==0) return 0;
+    if (ar==0) return 0;
 
-   //else
-   {
-    WORD rr=(((WORD)r1*a_2+(WORD)r2*a2))/255;
-    WORD gr=(((WORD)g1*a_2+(WORD)g2*a2))/255;
-    WORD br=(((WORD)b1*a_2+(WORD)b2*a2))/255;
-    return (ar<<24)|(rr<<16)|(gr<<8)|br;
-   }
+    //else
+    {
+        WORD rr=(((WORD)r1*a_2+(WORD)r2*a2))/255;
+        WORD gr=(((WORD)g1*a_2+(WORD)g2*a2))/255;
+        WORD br=(((WORD)b1*a_2+(WORD)b2*a2))/255;
+        return (ar<<24)|(rr<<16)|(gr<<8)|br;
+    }
 
 }
 /*
@@ -4118,15 +4121,15 @@ static DWORD SkinEngine_Blend(DWORD X1,DWORD X2, BYTE alpha)
 */
 HICON SkinEngine_CreateJoinedIcon(HICON hBottom, HICON hTop, BYTE alpha)
 {
-	HDC tempDC;
-	HICON res=NULL;
-	HBITMAP oImage,nImage;
+    HDC tempDC;
+    HICON res=NULL;
+    HBITMAP oImage,nImage;
     HBITMAP nMask;
     BITMAP bmp={0};
     BYTE *ptPixels;
-	ICONINFO iNew={0};
-	ICONINFO iciBottom={0};
-	ICONINFO iciTop={0};
+    ICONINFO iNew={0};
+    ICONINFO iciBottom={0};
+    ICONINFO iciTop={0};
 
     BITMAP bmp_top={0};
     BITMAP bmp_top_mask={0};
@@ -4134,9 +4137,9 @@ HICON SkinEngine_CreateJoinedIcon(HICON hBottom, HICON hTop, BYTE alpha)
     BITMAP bmp_bottom={0};
     BITMAP bmp_bottom_mask={0};
 
-  	tempDC=CreateCompatibleDC(NULL);
-	nImage=SkinEngine_CreateDIB32Point(16,16,(void**)&ptPixels);
-	oImage=SelectObject(tempDC,nImage);
+    tempDC=CreateCompatibleDC(NULL);
+    nImage=SkinEngine_CreateDIB32Point(16,16,(void**)&ptPixels);
+    oImage=SelectObject(tempDC,nImage);
 
     GetIconInfo(hBottom,&iciBottom);
     GetObject(iciBottom.hbmColor,sizeof(BITMAP),&bmp_bottom);
@@ -4216,8 +4219,8 @@ HICON SkinEngine_CreateJoinedIcon(HICON hBottom, HICON hTop, BYTE alpha)
                     }
                     if (bottomHasMask)
                     {
-                       if (mask_b==1 && !bottomHasAlpha) bottom_d&=0xFFFFFF;
-                       else if (!bottomHasAlpha) bottom_d|=0xFF000000;
+                        if (mask_b==1 && !bottomHasAlpha) bottom_d&=0xFFFFFF;
+                        else if (!bottomHasAlpha) bottom_d|=0xFF000000;
                     }
                     ((DWORD*)db)[x]=SkinEngine_Blend(bottom_d,top_d,alpha);
                 }
@@ -4235,29 +4238,29 @@ HICON SkinEngine_CreateJoinedIcon(HICON hBottom, HICON hTop, BYTE alpha)
     }
     else
     {
-	    SkinEngine_DrawIconEx(tempDC,0,0,hBottom,16,16,0,NULL,DI_NORMAL);
+        SkinEngine_DrawIconEx(tempDC,0,0,hBottom,16,16,0,NULL,DI_NORMAL);
         SkinEngine_DrawIconEx(tempDC,0,0,hTop,16,16,0,NULL,DI_NORMAL|(alpha<<24));
     }
     DeleteObject(iciBottom.hbmColor);
     DeleteObject(iciTop.hbmColor);
-	DeleteObject(iciBottom.hbmMask);
+    DeleteObject(iciBottom.hbmMask);
     DeleteObject(iciTop.hbmMask);
 
     SelectObject(tempDC,oImage);
-	DeleteDC(tempDC);
-	{
-		//BYTE *p=malloc(32);
+    DeleteDC(tempDC);
+    {
+        //BYTE *p=malloc(32);
         //memset(p,0,32);
-		BYTE p[32] = {0};
-		nMask=CreateBitmap(16,16,1,1,(void*)&p);
+        BYTE p[32] = {0};
+        nMask=CreateBitmap(16,16,1,1,(void*)&p);
         {
             HDC tempDC2=CreateCompatibleDC(NULL);
             HDC tempDC3=CreateCompatibleDC(NULL);
             HBITMAP hbm=CreateCompatibleBitmap(tempDC3,16,16);
             HBITMAP obmp=SelectObject(tempDC2,nMask);
             HBITMAP obmp2=SelectObject(tempDC3,hbm);
-	        DrawIconEx(tempDC2,0,0,hBottom,16,16,0,NULL,DI_MASK);
-	        DrawIconEx(tempDC3,0,0,hTop,16,16,0,NULL,DI_MASK);
+            DrawIconEx(tempDC2,0,0,hBottom,16,16,0,NULL,DI_MASK);
+            DrawIconEx(tempDC3,0,0,hTop,16,16,0,NULL,DI_MASK);
             BitBlt(tempDC2,0,0,16,16,tempDC3,0,0,SRCAND);
             SelectObject(tempDC2,obmp);
             SelectObject(tempDC3,obmp2);
@@ -4265,12 +4268,12 @@ HICON SkinEngine_CreateJoinedIcon(HICON hBottom, HICON hTop, BYTE alpha)
             DeleteDC(tempDC2);
             DeleteDC(tempDC3);
         }
-		iNew.fIcon=TRUE;
-		iNew.hbmColor=nImage;
-		iNew.hbmMask=nMask;
-		res=CreateIconIndirect(&iNew);
-		DeleteObject(nImage);
-		DeleteObject(nMask);
-	}
-	return res;
+        iNew.fIcon=TRUE;
+        iNew.hbmColor=nImage;
+        iNew.hbmMask=nMask;
+        res=CreateIconIndirect(&iNew);
+        DeleteObject(nImage);
+        DeleteObject(nMask);
+    }
+    return res;
 }
