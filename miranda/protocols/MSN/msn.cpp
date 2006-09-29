@@ -72,6 +72,8 @@ MSN_StatusMessage msnModeMsgs[ MSN_NUM_MODES ] = {
 	{ ID_STATUS_ONTHEPHONE, NULL },
 	{ ID_STATUS_OUTTOLUNCH, NULL } };
 
+struct MSN_CurrentMedia msnCurrentMedia;
+
 char* msnProtocolName = NULL;
 char* msnProtChallenge = NULL;
 char* msnProductID  = NULL;
@@ -249,13 +251,8 @@ static int OnModulesLoaded( WPARAM wParam, LPARAM lParam )
 /////////////////////////////////////////////////////////////////////////////////////////
 // OnPreShutdown - prepare a global Miranda shutdown
 
-extern HANDLE hKeepAliveThreadEvt;
-
 static int OnPreShutdown( WPARAM wParam, LPARAM lParam )
 {
-	if ( hKeepAliveThreadEvt != NULL )
-		SetEvent( hKeepAliveThreadEvt );
-
 	MSN_CloseThreads();
 	return 0;
 }
@@ -329,6 +326,7 @@ extern "C" int __declspec(dllexport) Load( PLUGINLINK* link )
 	SkinAddNewSound( mailsoundtemp, mailsoundtemp, "hotmail.wav" );
 
 	msnStatusMode = msnDesiredStatus = ID_STATUS_OFFLINE;
+	ZeroMemory(&msnCurrentMedia, sizeof(struct MSN_CurrentMedia));
 	msnLoggedIn = false;
 	LoadMsnServices();
 	Lists_Init();

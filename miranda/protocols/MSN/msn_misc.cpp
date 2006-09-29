@@ -395,15 +395,30 @@ int __stdcall MSN_SendNicknameW( WCHAR* nickname)
 /////////////////////////////////////////////////////////////////////////////////////////
 // MSN_SendStatusMessage - notify a server about the status message change
 
-void __stdcall MSN_SendStatusMessage( const char* msg )
+void __stdcall MSN_SendStatusMessage( const char* msg, struct MSN_CurrentMedia *cm )
 {
 	if ( !msnLoggedIn || !MyOptions.UseMSNP11 )
 		return;
 
 	char* msgEnc = HtmlEncode(( msg == NULL ) ? "" : msg );
+	char *cmArtistEnc = NULL, *cmAlbumEnc = NULL, *cmSongEnc = NULL, *cmFormatEnc = NULL;
 	char  szMsg[ 1024 ], szEmail[ MSN_MAX_EMAIL_LEN ];
+
+	if ( (cm == NULL) || ( (cm->szAlbum == NULL) && (cm->szArtist == NULL) && (cm->szSong == NULL) ) ) {
 	mir_snprintf( szMsg, sizeof szMsg, "<Data><PSM>%s</PSM><CurrentMedia></CurrentMedia></Data>", UTF8(msgEnc));
 	free( msgEnc );
+	}
+	else {
+		cmAlbumEnc = HtmlEncode(( cm->szAlbum == NULL ) ? "" : cm->szAlbum );
+		cmArtistEnc = HtmlEncode(( cm->szArtist == NULL ) ? "" : cm->szArtist );
+		cmSongEnc = HtmlEncode(( cm->szSong == NULL ) ? "" : cm->szSong );
+		cmFormatEnc = HtmlEncode(( cm->szFormat == NULL ) ? "{0} - {1}" : cm->szFormat );
+		mir_snprintf( szMsg, sizeof szMsg, "<Data><PSM>%s</PSM><CurrentMedia>\\0Music\\01\\0%s\\0%s\\0%s\\0%s\\0\\0</CurrentMedia></Data>", UTF8(msgEnc), UTF8(cmFormatEnc), UTF8(cmSongEnc), UTF8(cmArtistEnc), UTF8(cmAlbumEnc));
+		free(cmFormatEnc);
+		free(cmAlbumEnc);
+		free(cmArtistEnc);
+		free(cmSongEnc);
+	}
 
 	if ( !lstrcmpA( msnPreviousUUX, szMsg ))
 		return;
@@ -421,8 +436,8 @@ LONG ThreadData::sendPacket( const char* cmd, const char* fmt,...)
 	if ( this == NULL )  // :)
 		return 0;
 
-	if ( !strcmp( cmd, "CAL" ) && mIsCalSent )
-		return 0;
+//	if ( !strcmp( cmd, "CAL" ) && mIsCalSent )
+//		return 0;
 
 	va_list vararg;
 	va_start( vararg, fmt );
@@ -474,7 +489,7 @@ void __stdcall MSN_SetServerStatus( int newStatus )
 		if ( MyOptions.UseMSNP11 ) {
 			for ( int i=0; i < MSN_NUM_MODES; i++ ) { 
 				if ( msnModeMsgs[ i ].m_mode == newStatus ) {
-					MSN_SendStatusMessage( msnModeMsgs[ i ].m_msg );
+					MSN_SendStatusMessage( msnModeMsgs[ i ].m_msg, &msnCurrentMedia );
 					break;
 		}	}	}
 	}
@@ -837,13 +852,17 @@ filetransfer::filetransfer()
 {
 	memset( this, 0, sizeof( filetransfer ));
 	fileId = -1;
-	hWaitEvent = INVALID_HANDLE_VALUE;
 	std.cbSize = sizeof( std );
+
+	hLockHandle = CreateMutex( NULL, FALSE, NULL );
 }
 
-filetransfer::~filetransfer()
+filetransfer::~filetransfer( void )
 {
 	MSN_DebugLog( "Destroying file transfer session %lu", p2p_sessionid );
+
+	WaitForSingleObject( hLockHandle, 2000 );
+	CloseHandle( hLockHandle );
 
 	if ( !bCompleted ) {
 		std.files = NULL;
@@ -857,19 +876,6 @@ filetransfer::~filetransfer()
 	}
 	else if ( fileId != -1 )
 		_close( fileId );
-
-	if ( mIncomingBoundPort != NULL ) {
-		ThreadData* T = MSN_GetThreadByPort(mIncomingPort);
-		if ( T != NULL && T->s != NULL )
-		{
-			Netlib_CloseHandle( T->s );
-			T->s = NULL;
-		}
-		Netlib_CloseHandle( mIncomingBoundPort );
-	}
-
-	if ( hWaitEvent != INVALID_HANDLE_VALUE )
-		CloseHandle( hWaitEvent );
 
 	if ( p2p_branch != NULL ) free( p2p_branch );
 	if ( p2p_callID != NULL ) free( p2p_callID );
@@ -887,14 +893,14 @@ filetransfer::~filetransfer()
 	if ( szInvcookie != NULL ) free( szInvcookie );
 }
 
-void filetransfer::close()
+void filetransfer::close( void )
 {
 	if ( !inmemTransfer && fileId != -1 ) {
 		_close( fileId );
 		fileId = -1;
 }	}
 
-void filetransfer::complete()
+void filetransfer::complete( void )
 {
 	close();
 
@@ -902,7 +908,7 @@ void filetransfer::complete()
 	MSN_SendBroadcast( std.hContact, ACKTYPE_FILE, ACKRESULT_SUCCESS, this, 0);
 }
 
-int filetransfer::create()
+int filetransfer::create( void )
 {
 	if ( inmemTransfer ) {
 		if ( fileBuffer == NULL ) {
@@ -911,7 +917,7 @@ int filetransfer::create()
 				return -1;
 			}
 
-			if (( fileBuffer = ( char* )LocalAlloc( LPTR, DWORD( std.totalBytes ))) == NULL ) {
+			if (( fileBuffer = ( char* )LocalAlloc( LPTR, DWORD( std.currentFileSize ))) == NULL ) {
 				MSN_DebugLog( "Not enough memory to receive file '%s'", std.currentFile );
 				return -1;
 		}	}
@@ -953,6 +959,36 @@ int filetransfer::create()
 
 	return fileId;
 }
+
+int filetransfer::openNext( void )
+{
+	if ( fileId != -1 ) {
+		close();
+		++std.currentFileNumber;
+	}
+
+	if ( std.currentFileNumber < std.totalFiles) {
+		bCompleted = false;
+		replaceStr(std.currentFile, std.files[std.currentFileNumber] );
+		fileId = _open( std.currentFile, _O_BINARY | _O_RDONLY, _S_IREAD );
+		if ( fileId != -1 ) {
+			std.currentFileSize = filelength( fileId );
+			std.currentFileProgress = 0;
+			
+			p2p_sendmsgid = 0;
+			p2p_byemsgid = 0;
+			tType = SERVER_DISPATCH;
+
+			free( p2p_branch ); p2p_branch = NULL;
+			free( p2p_callID ); p2p_callID = NULL;
+		}
+		else
+			MSN_DebugLog( "Unable to open file '%s', error %d", std.currentFile, errno );
+	}
+
+	return fileId;
+}
+
 
 /////////////////////////////////////////////////////////////////////////////////////////
 // TWinErrorCode class

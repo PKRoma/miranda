@@ -41,6 +41,7 @@ int MSN_GetPassportAuth( char* authChallengeInfo, char*& parResult );
 void mmdecode(char *trg, char *str);
 
 void MSN_ChatStart(ThreadData* info);
+void MSN_KillChatSession(char* id);
 
  int tridUrlInbox = -1, tridUrlEdit = -1;
 
@@ -52,7 +53,8 @@ char* profileURL = NULL;
 char* rru = NULL;
 extern HANDLE	 hMSNNudge;
 
-extern int msnPingTimeout, msnPingTimeoutCurrent;
+extern int msnPingTimeout;
+extern HANDLE hKeepAliveThreadEvt;
 
 unsigned long sl;
 
@@ -136,16 +138,9 @@ void MSN_ConnectionProc( HANDLE hNewConnection, DWORD dwRemoteIP, void* )
 
 	if ( localPort != 0 ) {
 		ThreadData* T = MSN_GetThreadByPort( localPort );
-		if ( T != NULL ) {
+		if ( T != NULL && T->s == NULL ) {
 			T->s = hNewConnection;
-			if ( T->mMsnFtp != NULL ) {
-				T->mMsnFtp->mIncomingPort = 0;
-				SetEvent( T->mMsnFtp->hWaitEvent );
-			}
-			else {
-				T->mP2pSession->mIncomingPort = 0;
-				SetEvent( T->mP2pSession->hWaitEvent );
-			}
+			SetEvent( T->hWaitEvent );
 			return;
 		}
 		MSN_DebugLog( "There's no registered file transfers for incoming port #%d, connection closed", localPort );
@@ -308,7 +303,6 @@ static void sttInviteMessage( ThreadData* info, const char* msgBody, char* email
 	if ( Appname != NULL && Appfile != NULL && Appfilesize != NULL ) { // receive first
 		filetransfer* ft = info->mMsnFtp = new filetransfer();
 
-		ft->mThreadId = info->mUniqueID;
 		ft->std.hContact = MSN_HContactFromEmail( email, nick, 1, 1 );
 		replaceStr( ft->std.currentFile, Appfile );
 		Utf8Decode( ft->std.currentFile, &ft->wszFileName );
@@ -824,18 +818,10 @@ int MSN_HandleCommands( ThreadData* info, char* cmdString )
 	}
 	MSN_DebugLog("%S", cmdString);
 
-	if ( info->mType == SERVER_NOTIFICATION )
-		msnPingTimeout = msnPingTimeoutCurrent;
-
 	switch(( *( PDWORD )cmdString & 0x00FFFFFF ) | 0x20000000 )
 	{
 		case ' KCA':    //********* ACK: section 8.7 Instant Messages
-			if ( info->mP2PInitTrid == trid ) {
-				info->mP2PInitTrid = 0;
-				p2p_sendFeedStart( info->mP2pSession, info );
-				info->mP2pSession = NULL;
-			}
-			else if ( info->mJoinedCount > 0 && MyOptions.SlowSend )
+			if ( info->mJoinedCount > 0 && MyOptions.SlowSend )
 				MSN_SendBroadcast( info->mJoinedContacts[0], ACKTYPE_MESSAGE, ACKRESULT_SUCCESS, ( HANDLE )trid, 0 );
 			break;
 
@@ -916,7 +902,6 @@ LBL_InvalidCommand:
 
 						if ( E.ft != NULL ) {
 							info->mMsnFtp = E.ft;
-							info->mMsnFtp->mOwnsThread = true;
 						}
 					}
 					while (MsgQueue_GetNext( hContact, E ) != 0 );
@@ -985,6 +970,8 @@ LBL_InvalidCommand:
 			if ( MSN_GetByte( "EnableSessionPopup", 0 ))
 				MSN_ShowPopup( data.userEmail, MSN_Translate( "Contact left channel" ), 0 );
 
+			HANDLE hContact = MSN_HContactFromEmail( data.userEmail, NULL, 0, 0 );
+
 			// modified for chat
 			if ( msnHaveChatDll ) {
 				GCDEST gcd = {0};
@@ -995,7 +982,7 @@ LBL_InvalidCommand:
 				GCEVENT gce = {0};
 				gce.cbSize = sizeof( GCEVENT );
 				gce.pDest = &gcd;
-				gce.pszNick = MSN_GetContactName( MSN_HContactFromEmail( data.userEmail, NULL, 1, 1 ));
+				gce.pszNick = MSN_GetContactName( hContact );
 				gce.pszUID = data.userEmail;
 				gce.time = time( NULL );
 				gce.bIsMe = FALSE;
@@ -1005,7 +992,7 @@ LBL_InvalidCommand:
 
 			// in here, the first contact is the chat ID, starting from the second will be actual contact
 			// if only 1 person left in conversation
-			int personleft = MSN_ContactLeft( info, MSN_HContactFromEmail( data.userEmail, NULL, 0, 0 ));
+			int personleft = MSN_ContactLeft( info, hContact );
 			// see if the session is quit due to idleness
 			if ( personleft == 1 && !lstrcmpA( data.isIdle, "1" ) ) {
 				GCDEST gcd = {0};
@@ -1026,21 +1013,12 @@ LBL_InvalidCommand:
 			}
 			else if ( personleft == 2 && lstrcmpA( data.isIdle, "1" ) ) {
 				if ( MessageBoxA( NULL, Translate( "There is only 1 person left in the chat, do you want to switch back to standard message window?"), Translate("MSN Chat"), MB_YESNO|MB_ICONQUESTION) == IDYES) {
-					// kill chat dlg and open srmm dialog
-					GCEVENT gce = {0};
-					GCDEST gcd = {0};
-					gce.cbSize = sizeof( GCEVENT );
-					gce.pDest = &gcd;
-
 					// a flag to let the kill function know what to do
 					// if the value is 1, then it'll open up the srmm window
 					info->mJoinedCount--;
 
-					gcd.pszModule = msnProtocolName;
-					gcd.pszID = info->mChatID;
-					gcd.iType = GC_EVENT_CONTROL;
-					MSN_CallService( MS_GC_EVENT, WINDOW_OFFLINE, ( LPARAM )&gce );
-					MSN_CallService( MS_GC_EVENT, WINDOW_TERMINATE, ( LPARAM )&gce );
+					// kill chat dlg and open srmm dialog
+					MSN_KillChatSession(info->mChatID); 
 			}	}
 			// this is not in chat session, quit the session when everyone left
 			else if ( personleft == 0 )
@@ -1214,14 +1192,14 @@ LBL_InvalidCommand:
 				else
 					MSN_SetString( hContact, "MirVer", "MSN 4.x-5.x" );
 
-				if ( data.cmdstring[0] ) {
+				if (( dwValue & 0x70000000 ) && data.cmdstring[0] ) {
 					int temp_status = MSN_GetWord(hContact, "Status", ID_STATUS_OFFLINE);
 					if (temp_status == (WORD)ID_STATUS_OFFLINE)
 						MSN_SetWord( hContact, "Status", (WORD)ID_STATUS_INVISIBLE);
 					MSN_SetString( hContact, "PictContext", data.cmdstring );
 					if ( hContact != NULL ) {
 						char szSavedContext[ 256 ];
-						int result = MSN_GetStaticString( "PictSavedContext", hContact, szSavedContext, sizeof szSavedContext );
+						int result = MSN_GetStaticString( "PictSavedContext", hContact, szSavedContext, sizeof( szSavedContext ));
 						if ( result || strcmp( szSavedContext, data.cmdstring ))
 							MSN_SendBroadcast( hContact, ACKTYPE_AVATAR, ACKRESULT_STATUS, NULL, NULL );
 				}	}
@@ -1262,10 +1240,8 @@ LBL_InvalidCommand:
 			}
 
 			// only start the chat session after all the IRO messages has been recieved
-			if ( msnHaveChatDll && info->mJoinedCount > 1 && !lstrcmpA(data.strThisContact, data.totalContacts) ) {
-				if ( info->mChatID[0] == 0 )
-					MSN_ChatStart(info);
-			}
+			if ( msnHaveChatDll && info->mJoinedCount > 1 && !lstrcmpA(data.strThisContact, data.totalContacts) )
+				MSN_ChatStart(info);
 
 			break;
 		}
@@ -1286,7 +1262,6 @@ LBL_InvalidCommand:
 			MSN_DebugLog( "New contact in channel %s %s", data.userEmail, data.userNick );
 
 			info->mInitialContact = NULL;
-			info->mMessageCount = 0;
 
 			if ( MSN_ContactJoined( info, hContact ) == 1 ) {
 				MsgQueueEntry E;
@@ -1302,7 +1277,6 @@ LBL_InvalidCommand:
 
 						if ( E.ft != NULL ) {
 							info->mMsnFtp = E.ft;
-							info->mMsnFtp->mOwnsThread = true;
 						}
 					}
 					while (MsgQueue_GetNext( hContact, E ) != 0 );
@@ -1311,7 +1285,9 @@ LBL_InvalidCommand:
 						MSN_ShowPopup( MSN_GetContactName( hContact ), MSN_Translate( "First message delivered" ), 0 );
 			}	}
 			else {
-				char* tContactName = MSN_GetContactName( info->mJoinedContacts[0] );
+				bool chatCreated = info->mChatID[0] != 0;
+
+				char* tContactName = MSN_GetContactName( info->mJoinedContacts[chatCreated] );
 
 				char multichatmsg[ 256 ];
 				mir_snprintf(
@@ -1322,22 +1298,26 @@ LBL_InvalidCommand:
 				MSN_ShowPopup( tContactName, multichatmsg, MSN_ALLOW_MSGBOX );
 
 				if ( msnHaveChatDll ) {
-					GCDEST gcd = {0};
-					GCEVENT gce = {0};
+					if ( chatCreated ) {
+						GCDEST gcd = {0};
+						GCEVENT gce = {0};
 
-					gcd.pszModule = msnProtocolName;
-					gcd.pszID = info->mChatID;
-					gcd.iType = GC_EVENT_JOIN;
+						gcd.pszModule = msnProtocolName;
+						gcd.pszID = info->mChatID;
+						gcd.iType = GC_EVENT_JOIN;
 
-					gce.cbSize = sizeof(GCEVENT);
-					gce.pDest = &gcd;
-					gce.pszNick = MSN_GetContactName( MSN_HContactFromEmail( data.userEmail, NULL, 1, 1 ));
-					gce.pszUID = data.userEmail;
-					gce.pszStatus = Translate( "Others" );
-					gce.time = time(NULL);
-					gce.bIsMe = FALSE;
-					gce.bAddToLog = TRUE;
-					MSN_CallService( MS_GC_EVENT, NULL, ( LPARAM )&gce );
+						gce.cbSize = sizeof(GCEVENT);
+						gce.pDest = &gcd;
+						gce.pszNick = MSN_GetContactName( hContact );
+						gce.pszUID = data.userEmail;
+						gce.pszStatus = Translate( "Others" );
+						gce.time = time(NULL);
+						gce.bIsMe = FALSE;
+						gce.bAddToLog = TRUE;
+						MSN_CallService( MS_GC_EVENT, NULL, ( LPARAM )&gce );
+					}
+					else
+						MSN_ChatStart(info);
 			}	}
 			return 0;
 		}
@@ -1498,7 +1478,10 @@ LBL_InvalidCommand:
 			break;
 
 		case ' GNQ':	//********* QNG: reply to PNG
-			msnPingTimeoutCurrent = msnPingTimeout = trid;
+			msnPingTimeout = trid;
+			if ( info->mType == SERVER_NOTIFICATION && hKeepAliveThreadEvt != NULL )
+					SetEvent( hKeepAliveThreadEvt );
+
 			if ( msnGetInfoContact != NULL ) {
 				MSN_SendBroadcast( msnGetInfoContact, ACKTYPE_GETINFO, ACKRESULT_SUCCESS, ( HANDLE )1, 0 );
 				msnGetInfoContact = NULL;
@@ -1720,6 +1703,8 @@ LBL_InvalidCommand:
 				else if ( !strcmp( data.security, "OK" )) {
 					UrlDecode( tWords[1] ); UrlDecode( tWords[2] );
 
+					sl = time(NULL); //for hotmail
+
 					if ( MSN_GetByte( "NeverUpdateNickname", 0 )) {
 						DBVARIANT dbv;
 						if ( !DBGetContactSettingTString( NULL, msnProtocolName, "Nick", &dbv )) {
@@ -1836,6 +1821,5 @@ LBL_InvalidCommand:
 			break;
 	}
 
-	info->mMessageCount++;
 	return 0;
 }

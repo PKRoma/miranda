@@ -297,12 +297,6 @@ static BOOL CALLBACK DlgProcMsnConnOpts(HWND hwndDlg, UINT msg, WPARAM wParam, L
 		CheckDlgButton( hwndDlg, IDC_USEMSNP11,   MSN_GetByte( "UseMSNP11",   0 ));
 		CheckDlgButton( hwndDlg, IDC_USEOPENSSL, MSN_GetByte( "UseOpenSSL", 0 ));
 
-		{
-			DWORD ptype = MSN_GetByte( "NLProxyType", 0 );
-			BOOL httpproxy = MyOptions.UseProxy && (ptype == PROXYTYPE_HTTP || ptype == PROXYTYPE_HTTPS);
-			EnableWindow( GetDlgItem( hwndDlg, IDC_USEGATEWAY ), !httpproxy);
-		}
-
 		if ( !DBGetContactSetting( NULL, msnProtocolName, "YourHost", &dbv )) {
 			if ( !MSN_GetByte( "AutoGetHost", 1 ))
 				SetDlgItemTextA( hwndDlg, IDC_YOURHOST, dbv.pszVal );
@@ -779,15 +773,6 @@ void __stdcall LoadOptions()
 	MyOptions.UseProxy = MSN_GetByte( "NLUseProxy", FALSE );
 	MyOptions.UseGateway = MSN_GetByte( "UseGateway", FALSE );
 	MyOptions.UseWinColors = MSN_GetByte( "UseWinColors", FALSE );
-
-	DWORD ptype = MSN_GetByte( "NLProxyType", 0 );
-	BOOL httpproxy = MyOptions.UseProxy && (ptype == PROXYTYPE_HTTP || ptype == PROXYTYPE_HTTPS);
-	if ( httpproxy && !MyOptions.UseGateway)
-	{
-		MyOptions.UseGateway = TRUE;
-		MSN_SetByte( "UseGateway", TRUE );
-	}
-
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////
@@ -850,8 +835,7 @@ LRESULT CALLBACK NullWindowProc( HWND hWnd, UINT message, WPARAM wParam, LPARAM 
 		case WM_COMMAND: {
 			void* tData = PUGetPluginData( hWnd );
 			if ( tData != NULL ) {
-				DWORD tThreadID;
-				CreateThread( NULL, 0, MsnShowMailThread, hWnd, 0, &tThreadID );
+				MsnShowMailThread( NULL );
 				PUDeletePopUp( hWnd );
 			}
 			break;

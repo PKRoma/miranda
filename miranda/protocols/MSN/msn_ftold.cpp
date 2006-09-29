@@ -25,7 +25,6 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 #include <io.h>
 
-int MSN_HandleCommands(ThreadData *info,char *cmdString);
 int MSN_HandleErrors(ThreadData *info,char *cmdString);
 
 void msnftp_sendAcceptReject( filetransfer *ft, bool acc )
@@ -233,7 +232,7 @@ static void __cdecl sttSendFileThread( ThreadData* info )
 
 	filetransfer* ft = info->mMsnFtp;
 
-	switch( WaitForSingleObject( ft->hWaitEvent, 60000 )) {
+	switch( WaitForSingleObject( info->hWaitEvent, 60000 )) {
 	case WAIT_TIMEOUT:
 	case WAIT_FAILED:
 		MSN_DebugLog( "Incoming connection timed out, closing file transfer" );
@@ -300,21 +299,21 @@ void ft_startFileSend( ThreadData* info, const char* Invcommand, const char* Inv
 	bool bHasError = false;
 	NETLIBBIND nlb = {0};
 	char ipaddr[256];
+	HANDLE sb;
 
 	filetransfer* ft = info->mMsnFtp; info->mMsnFtp = NULL;
 	if ( ft != NULL ) {
 		if ( MSN_GetMyHostAsString( ipaddr, sizeof ipaddr ))
 			bHasError = true;
 		else {
-			nlb.cbSize = sizeof nlb;
+			nlb.cbSize = sizeof( nlb );
 			nlb.pfnNewConnectionV2 = MSN_ConnectionProc;
 			nlb.wPort = 0;	// Use user-specified incoming port ranges, if available
-			if (( ft->mIncomingBoundPort = ( HANDLE )MSN_CallService( MS_NETLIB_BINDPORT, ( WPARAM )hNetlibUser, ( LPARAM )&nlb)) == NULL ) {
+			sb = ( HANDLE )MSN_CallService( MS_NETLIB_BINDPORT, ( WPARAM )hNetlibUser, ( LPARAM )&nlb);
+			if ( sb == NULL ) {
 				MSN_DebugLog( "Unable to bind the port for incoming transfers" );
 				bHasError = true;
-			}
-			else ft->mIncomingPort = nlb.wPort;
-	}	}
+	}	}	}
 	else bHasError = true;
 
 	char command[ 1024 ];
@@ -336,12 +335,12 @@ void ft_startFileSend( ThreadData* info, const char* Invcommand, const char* Inv
 		delete ft;
 		return;
 	}
-
-	ft->hWaitEvent = CreateEvent( NULL, FALSE, FALSE, NULL );
-
+	
 	ThreadData* newThread = new ThreadData;
 	newThread->mType = SERVER_FILETRANS;
 	newThread->mCaller = 2;
 	newThread->mMsnFtp = ft;
+	newThread->mIncomingBoundPort = sb;
+	newThread->mIncomingPort = nlb.wPort;
 	newThread->startThread(( pThreadFunc )sttSendFileThread );
 }
