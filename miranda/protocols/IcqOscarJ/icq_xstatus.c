@@ -1118,7 +1118,7 @@ int IcqGetXStatusEx(WPARAM wParam, LPARAM lParam)
       {
         char *text = (char*)nameXStatus[status -1];
 
-        MultiByteToWideChar(CP_ACP, 0, text, strlennull(text), pData->pwszName, MAX_PATH);
+        MultiByteToWideChar(CP_ACP, MB_PRECOMPOSED, text, -1, pData->pwszName, MAX_PATH);
       }
       else
         strcpy(pData->pszName, nameXStatus[status - 1]);
