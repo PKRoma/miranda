@@ -382,7 +382,7 @@ static void ActivatePrevChild(ParentWindowData *dat, HWND child)
 
 static void SetupStatusBar(ParentWindowData *dat)
 {
-	int statusIconNum = 1;//GetStatusIconsCount();
+	int statusIconNum = GetStatusIconsCount();
 	int statwidths[4];
 	RECT rc;
 	GetClientRect(dat->hwnd, &rc);
