@@ -1220,10 +1220,19 @@ void ext_yahoo_send_http_request(int id, const char *method, const char *url, co
 	char path[255];
 	char z[1024];
 	
+	LOG(("[ext_yahoo_send_http_request] method: %s, url: %s, cookies: %s, content length: %ld",
+		method, url, cookies, content_length));
+	
 	if(!url_to_host_port_path(url, host, &port, path))
 		return;
 
 	fd = ext_yahoo_connect(host, port, YAHOO_CONNECTION_FT);
+	
+	if (fd < 1) {
+		LOG(("[ext_yahoo_send_http_request] Can't connect?? Exiting..."));
+		return;
+	}
+	
 	nlhr.cbSize=sizeof(nlhr);
 	nlhr.requestType=(lstrcmpi(method, "GET") == 0) ? REQUEST_GET : REQUEST_POST;
 	nlhr.flags=NLHRF_DUMPASTEXT|NLHRF_GENERATEHOST|NLHRF_SMARTREMOVEHOST|NLHRF_SMARTAUTHHEADER|NLHRF_HTTP11;
