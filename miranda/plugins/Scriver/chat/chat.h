@@ -118,8 +118,8 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #define GC_REDRAWLOG2			(WM_USER+140)
 #define GC_REDRAWLOG3			(WM_USER+141)
 
-#define EM_SUBCLASSED			(WM_USER+200)
-#define EM_UNSUBCLASSED			(WM_USER+201)
+//#define EM_SUBCLASSED			(WM_USER+200)
+//#define EM_UNSUBCLASSED			(WM_USER+201)
 #define EM_ACTIVATE				(WM_USER+202)
 
 #define GCW_TABROOM				10
@@ -288,13 +288,14 @@ typedef struct {
 	SESSION_INFO * si;
 } LOGSTREAMDATA;
 
-
+/*
 struct CREOleCallback {
 	IRichEditOleCallbackVtbl *lpVtbl;
 	unsigned refCount;
 	IStorage *pictStg;
 	int nextStgId;
 };
+*/
 /*
 typedef struct  {
 	BOOL		bFilterEnabled;

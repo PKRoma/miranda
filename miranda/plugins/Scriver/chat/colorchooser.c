@@ -213,7 +213,7 @@ BOOL CALLBACK DlgProcColorToolWindow(HWND hwndDlg, UINT msg, WPARAM wParam, LPAR
 		PAINTSTRUCT ps;
 		HDC hdc;
 		RECT rc;
-		int i = 0;
+		int i;
 		int iThisRow = 1;
 		int iThisColumn = 0;
 
@@ -226,7 +226,7 @@ BOOL CALLBACK DlgProcColorToolWindow(HWND hwndDlg, UINT msg, WPARAM wParam, LPAR
 		// fill background
 		FillRect(hdc, &rc, GetSysColorBrush(COLOR_WINDOW));
 
-		for (i; i < pCC->pModule->nColorCount; i++)
+		for (i=0; i < pCC->pModule->nColorCount; i++)
 		{
 			HBRUSH hbr;
 

@@ -981,7 +981,6 @@ SESSION_INFO *	SM_FindSessionByIndex(char * pszModule, int iItem)
 char * SM_GetUsers(SESSION_INFO * si)
 {
 	SESSION_INFO *pTemp = m_WndList;
-	int count = 0;
 
 	while (pTemp != NULL)
 	{
