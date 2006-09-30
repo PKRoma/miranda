@@ -22,6 +22,7 @@ along with this program; if not, write to the Free Software
 Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 */
 #include "commonheaders.h"
+#include "statusicon.h"
 
 extern int Chat_ModulesLoaded(WPARAM wParam, LPARAM lParam);
 
@@ -467,6 +468,7 @@ static int SplitmsgModulesLoaded(WPARAM wParam, LPARAM lParam)
 int PreshutdownSendRecv(WPARAM wParam, LPARAM lParam)
 {
    WindowList_BroadcastAsync(g_dat->hMessageWindowList, WM_CLOSE, 0, 0);
+	DeinitStatusIcons();
    return 0;
 }
 
@@ -555,6 +557,7 @@ int LoadSendRecvMessageModule(void)
    if (hCurHyperlinkHand == NULL)
       hCurHyperlinkHand = LoadCursor(g_hInst, MAKEINTRESOURCE(IDC_HYPERLINKHAND));
    hDragCursor = LoadCursor(g_hInst,  MAKEINTRESOURCE(IDC_DRAGCURSOR));
+   InitStatusIcons();
    return 0;
 }
 

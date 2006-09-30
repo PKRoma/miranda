@@ -6,11 +6,11 @@ struct StatusIconListNode {
 	struct StatusIconListNode *next;
 };
 
-HANDLE hHookIconPressedEvt;
-struct StatusIconListNode *status_icon_list = 0;
-int status_icon_list_size = 0;
+static HANDLE hHookIconPressedEvt;
+static struct StatusIconListNode *status_icon_list = 0;
+static int status_icon_list_size = 0;
 
-int AddStatusIcon(WPARAM wParam, LPARAM lParam) {
+static int AddStatusIcon(WPARAM wParam, LPARAM lParam) {
 	StatusIconData *sid = (StatusIconData *)lParam;
 	struct StatusIconListNode *siln = (struct StatusIconListNode *)malloc(sizeof(struct StatusIconListNode));
 
@@ -27,11 +27,11 @@ int AddStatusIcon(WPARAM wParam, LPARAM lParam) {
 	status_icon_list = siln;
 	status_icon_list_size++;
 
-	WindowList_Broadcast(g_dat->hMessageWindowList, DM_STATUSICONCHANGE, 0, 0);
+	WindowList_Broadcast(g_dat->hParentWindowList, DM_STATUSICONCHANGE, 0, 0);
 	return 0;
 }
 
-int RemoveStatusIcon(WPARAM wParam, LPARAM lParam) {
+static int RemoveStatusIcon(WPARAM wParam, LPARAM lParam) {
 	StatusIconData *sid = (StatusIconData *)lParam;
 	struct StatusIconListNode *current = status_icon_list, *prev = 0;
 
@@ -47,7 +47,7 @@ int RemoveStatusIcon(WPARAM wParam, LPARAM lParam) {
 			if(current->sid.hIconDisabled) DestroyIcon(current->sid.hIconDisabled);
 			if(current->sid.szTooltip) free(current->sid.szTooltip);
 			free(current);
-			WindowList_Broadcast(g_dat->hMessageWindowList, DM_STATUSICONCHANGE, 0, 0);
+			WindowList_Broadcast(g_dat->hParentWindowList, DM_STATUSICONCHANGE, 0, 0);
 			return 0;
 		}
 
@@ -58,7 +58,7 @@ int RemoveStatusIcon(WPARAM wParam, LPARAM lParam) {
 	return 1;
 }
 
-void RemoveAllStatusIcons(void) {
+static void RemoveAllStatusIcons(void) {
 	struct StatusIconListNode *current;
 
 	while(status_icon_list) {
@@ -73,10 +73,10 @@ void RemoveAllStatusIcons(void) {
 		free(current);
 	}
 
-	WindowList_Broadcast(g_dat->hMessageWindowList, DM_STATUSICONCHANGE, 0, 0);
+	WindowList_Broadcast(g_dat->hParentWindowList, DM_STATUSICONCHANGE, 0, 0);
 }
 
-int ModifyStatusIcon(WPARAM wParam, LPARAM lParam) {
+static int ModifyStatusIcon(WPARAM wParam, LPARAM lParam) {
 	HANDLE hContact = (HANDLE)wParam;
 
 	StatusIconData *sid = (StatusIconData *)lParam;
@@ -99,14 +99,14 @@ int ModifyStatusIcon(WPARAM wParam, LPARAM lParam) {
 					current->sid.szTooltip = _strdup(sid->szTooltip);
 				}
 
-				WindowList_Broadcast(g_dat->hMessageWindowList, DM_STATUSICONCHANGE, 0, 0);
+				WindowList_Broadcast(g_dat->hParentWindowList, DM_STATUSICONCHANGE, 0, 0);
 			} else {
 				char buff[256];
 				HWND hwnd;
 				sprintf(buff, "SRMMStatusIconFlags%d", sid->dwId);
 				DBWriteContactSettingByte(hContact, sid->szModule, buff, sid->flags);
 				if (hwnd = WindowList_Find(g_dat->hMessageWindowList, hContact)) {
-					PostMessage(hwnd, DM_STATUSICONCHANGE, 0, 0);
+					PostMessage(GetParent(hwnd), DM_STATUSICONCHANGE, 0, 0);
 				}
 			}
 			return 0;
@@ -138,17 +138,11 @@ void DrawStatusIcons(HANDLE hContact, HDC hDC, RECT r, int gap) {
 	}
 }
 
-void CheckIconClick(HANDLE hContact, HWND hwndFrom, POINT pt, int gap) {
+void CheckStatusIconClick(HANDLE hContact, HWND hwndFrom, POINT pt, RECT r, int gap) {
 	StatusIconClickData sicd;
 	struct StatusIconListNode *current = status_icon_list;
-	unsigned int iconNum = pt.x / (GetSystemMetrics(SM_CYSMICON) + gap);
+	unsigned int iconNum = (pt.x - r.left) / (GetSystemMetrics(SM_CXSMICON) + gap);
 	unsigned int i;
-
-	//SendMessage(((LPNMHDR) lParam)->hwndFrom, SB_GETRECT, nPanel, (LPARAM) & rc);
-	//pt.x = rc.left;
-	//pt.y = rc.top;
-	//ClientToScreen(((LPNMHDR) lParam)->hwndFrom, &pt);
-	ClientToScreen(hwndFrom, &pt);
 
 	for(i = 0; current && i < iconNum; i++) current = current->next;
 
@@ -161,6 +155,7 @@ void CheckIconClick(HANDLE hContact, HWND hwndFrom, POINT pt, int gap) {
 		NotifyEventHooks(hHookIconPressedEvt, (WPARAM)hContact, (LPARAM)&sicd);
 	}
 }
+
 
 HANDLE hServiceIcon[3];
 int InitStatusIcons() {
@@ -176,5 +171,10 @@ int DeinitStatusIcons() {
 	int i;
 	DestroyHookableEvent(hHookIconPressedEvt);
 	for(i = 0; i < 3; i++) DestroyServiceFunction(hServiceIcon[i]);
+	RemoveAllStatusIcons();
 	return 0;
+}
+
+int GetStatusIconsCount() {
+	return status_icon_list_size;
 }

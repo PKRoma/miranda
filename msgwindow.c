@@ -23,6 +23,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 */
 
 #include "commonheaders.h"
+#include "statusicon.h"
 
 /*
 #ifdef _MSC_VER
@@ -188,6 +189,10 @@ TCHAR* GetTabName(HANDLE *hContact)
 	return result;
 }
 
+static int GetChildCount(ParentWindowData *dat) {
+	return TabCtrl_GetItemCount(dat->hwndTabs);
+}
+
 static void GetChildWindowRect(ParentWindowData *dat, RECT *rcChild)
 {
 	RECT rc, rcStatus, rcTabs;
@@ -346,10 +351,6 @@ static void RemoveChild(ParentWindowData *dat, HWND child)
 	}
 }
 
-static int GetChildCount(ParentWindowData *dat) {
-	return TabCtrl_GetItemCount(dat->hwndTabs);
-}
-
 static void CloseOtherChilden(ParentWindowData *dat, HWND child)
 {
 	int i;
@@ -360,6 +361,7 @@ static void CloseOtherChilden(ParentWindowData *dat, HWND child)
 			SendMessage(mwtd->hwnd, WM_CLOSE, 0, 0);
 		}
 	}
+	ActivateChild(dat, child);
 }
 
 static void ActivateNextChild(ParentWindowData *dat, HWND child)
@@ -378,6 +380,19 @@ static void ActivatePrevChild(ParentWindowData *dat, HWND child)
 	ActivateChild(dat, GetChildFromTab(dat->hwndTabs, i)->hwnd);
 }
 
+static void SetupStatusBar(ParentWindowData *dat)
+{
+	int statusIconNum = 1;//GetStatusIconsCount();
+	int statwidths[4];
+	RECT rc;
+	GetClientRect(dat->hwnd, &rc);
+	statwidths[0] = rc.right - rc.left - SB_CHAR_WIDTH - SB_UNICODE_WIDTH - 2 * (statusIconNum > 0) - statusIconNum * (GetSystemMetrics(SM_CXSMICON) + 2);
+	statwidths[1] = rc.right - rc.left - SB_UNICODE_WIDTH - 2 * (statusIconNum > 0) - statusIconNum * (GetSystemMetrics(SM_CXSMICON) + 2);
+	statwidths[2] = rc.right - rc.left - SB_UNICODE_WIDTH ;
+	statwidths[3] = -1;
+	SendMessage(dat->hwndStatus, SB_SETPARTS, 4, (LPARAM) statwidths);
+	SendMessage(dat->hwndStatus, SB_SETTEXT, (WPARAM)(SBT_OWNERDRAW) | 2, (LPARAM)0);
+}
 
 BOOL CALLBACK DlgProcParentWindow(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam)
 {
@@ -405,25 +420,8 @@ BOOL CALLBACK DlgProcParentWindow(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM 
 			dat->bMinimized = 0;
 			dat->bVMaximized = 0;
 			dat->hwndStatus = CreateWindowEx(0, STATUSCLASSNAME, NULL, WS_CHILD | WS_VISIBLE | SBARS_SIZEGRIP, 0, 0, 0, 0, hwndDlg, NULL, g_hInst, NULL);
-			{
-				int statusIconNum = 1;
-				int statwidths[4];
-				RECT rc;
-				SendMessage(dat->hwndStatus, SB_SETMINHEIGHT, GetSystemMetrics(SM_CYSMICON), 0);
-				GetWindowRect(dat->hwndStatus, &rc);
-				/*
-				statwidths[0] = rc.right - rc.left - SB_CHAR_WIDTH - SB_TYPING_WIDTH - SB_SENDING_WIDTH;
-				statwidths[1] = rc.right - rc.left - SB_TYPING_WIDTH - SB_SENDING_WIDTH; //rc.right - rc.left - SB_CHAR_WIDTH;
-				statwidths[2] = rc.right - rc.left - SB_TYPING_WIDTH; //rc.right - rc.left - SB_CHAR_WIDTH;
-				statwidths[3] = -1;
-				SendMessage(dat->hwndStatus, SB_SETPARTS, 4, (LPARAM) statwidths);
-				*/
-				statwidths[0] = rc.right - rc.left - SB_CHAR_WIDTH - SB_UNICODE_WIDTH - statusIconNum * (GetSystemMetrics(SM_CXSMICON) + 2);
-				statwidths[1] = rc.right - rc.left - SB_UNICODE_WIDTH - statusIconNum * (GetSystemMetrics(SM_CXSMICON) + 2);
-				statwidths[2] = rc.right - rc.left - SB_UNICODE_WIDTH ;
-				statwidths[3] = -1;
-				SendMessage(dat->hwndStatus, SB_SETPARTS, 4, (LPARAM) statwidths);
-			}
+			SendMessage(dat->hwndStatus, SB_SETMINHEIGHT, GetSystemMetrics(SM_CYSMICON), 0);
+			//SetupStatusBar(dat);
 			dat->hwndTabs = GetDlgItem(hwndDlg, IDC_TABS);
 			dat->hwndActive = NULL;
 			SetWindowLong(hwndDlg, GWL_USERDATA, (LONG) dat);
@@ -526,7 +524,6 @@ BOOL CALLBACK DlgProcParentWindow(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM 
 		} else {
 //		}
 //		if (!IsIconic(hwndDlg)) {
-			int statusIconNum = 1;
 			RECT rc, rcStatus, rcChild, rcWindow;
 			SIZE size;
 			dat->bMinimized = 0;
@@ -534,14 +531,8 @@ BOOL CALLBACK DlgProcParentWindow(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM 
 			GetWindowRect(hwndDlg, &rcWindow);
 			rcStatus.top = rcStatus.bottom = 0;
 			if (dat->flags & SMF_SHOWSTATUSBAR) {
-				int statwidths[4];
 				GetWindowRect(dat->hwndStatus, &rcStatus);
-				statwidths[0] = rc.right - rc.left - SB_CHAR_WIDTH - SB_UNICODE_WIDTH - statusIconNum * (GetSystemMetrics(SM_CXSMICON) + 2);
-				statwidths[1] = rc.right - rc.left - SB_UNICODE_WIDTH - statusIconNum * (GetSystemMetrics(SM_CXSMICON) + 2);
-				statwidths[2] = rc.right - rc.left - SB_UNICODE_WIDTH ;
-				statwidths[3] = -1;
-				SendMessage(dat->hwndStatus, SB_SETPARTS, 4, (LPARAM) statwidths);
-				SendMessage(dat->hwndStatus, WM_SIZE, 0, 0);
+				SetupStatusBar(dat);
 			}
 			MoveWindow(dat->hwndTabs, 0, 2, (rc.right - rc.left), (rc.bottom - rc.top) - (rcStatus.bottom - rcStatus.top) - 2,	FALSE);
 			RedrawWindow(dat->hwndTabs, NULL, NULL, RDW_INVALIDATE | RDW_FRAME | RDW_ERASE);
@@ -560,6 +551,7 @@ BOOL CALLBACK DlgProcParentWindow(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM 
 			MoveWindow(dat->hwndActive, rcChild.left, rcChild.top, rcChild.right-rcChild.left, rcChild.bottom - rcChild.top, TRUE);
 			RedrawWindow(GetDlgItem(dat->hwndActive, IDC_LOG), NULL, NULL, RDW_INVALIDATE);
 			if (dat->flags & SMF_SHOWSTATUSBAR) {
+				SendMessage(dat->hwndStatus, WM_SIZE, 0, 0);
 				RedrawWindow(dat->hwndStatus, NULL, NULL, RDW_INVALIDATE | RDW_UPDATENOW | RDW_ERASE);
 			}
 		}
@@ -575,7 +567,17 @@ BOOL CALLBACK DlgProcParentWindow(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM 
 	case WM_MEASUREITEM:
 		return CallService(MS_CLIST_MENUMEASUREITEM, wParam, lParam);
 	case WM_DRAWITEM:
-		return CallService(MS_CLIST_MENUDRAWITEM, wParam, lParam);
+		{
+			LPDRAWITEMSTRUCT dis = (LPDRAWITEMSTRUCT) lParam;
+			if (dat && dat->hwndActive && dis->hwndItem == dat->hwndStatus) {
+				MessageWindowTabData *mwtd = GetChildFromHWND(dat, dat->hwndActive);
+				if (mwtd != NULL) {
+					DrawStatusIcons(mwtd->hContact, dis->hDC, dis->rcItem, 2);
+				}
+				return TRUE;
+			}
+			return CallService(MS_CLIST_MENUDRAWITEM, wParam, lParam);
+		}
 	case WM_COMMAND:
 		if (CallService(MS_CLIST_MENUPROCESSCOMMAND, MAKEWPARAM(LOWORD(wParam), MPCF_CONTACTMENU), (LPARAM) dat->hContact)) {
 			break;
@@ -621,7 +623,7 @@ BOOL CALLBACK DlgProcParentWindow(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM 
 							hUserMenu = (HMENU) SendMessage(mwtd->hwnd, DM_GETCONTEXTMENU, 0, 0);
 							if (hUserMenu != NULL) {
 								InsertMenu(hSubMenu, 0, MF_POPUP | MF_BYPOSITION, hUserMenu, TranslateT("User Menu"));
-								InsertMenu(hSubMenu, 1, MF_SEPARATOR | MF_BYPOSITION, 0, 0);
+								InsertMenu(hSubMenu, 1, MF_SEPARATOR | MF_BYPOSITION, NULL, 0);
 							}
 							menuResult = TrackPopupMenu(hSubMenu, TPM_RETURNCMD, x, y, 0, hwndDlg, NULL);
 							switch (menuResult) {
@@ -648,9 +650,16 @@ BOOL CALLBACK DlgProcParentWindow(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM 
 					{
 						NMMOUSE *nm=(NMMOUSE*)lParam;
 						RECT rc;
-						SendMessage(dat->hwndStatus, SB_GETRECT, SendMessage(dat->hwndStatus, SB_GETPARTS, 0, 0) - 1, (LPARAM)&rc);
-						if (nm->pt.x >= rc.left)
+//						SendMessage(dat->hwndStatus, SB_GETRECT, SendMessage(dat->hwndStatus, SB_GETPARTS, 0, 0) - 1, (LPARAM)&rc);
+						SendMessage(dat->hwndStatus, SB_GETRECT, SendMessage(dat->hwndStatus, SB_GETPARTS, 0, 0) - 2, (LPARAM)&rc);
+						if (nm->pt.x >= rc.left && nm->pt.x <= rc.right) {
+							MessageWindowTabData *mwtd = GetChildFromHWND(dat, dat->hwndActive);
+							if (mwtd != NULL) {
+								CheckStatusIconClick(mwtd->hContact, dat->hwndStatus, nm->pt, rc, 2);
+							}
+						} else if (nm->pt.x >= rc.left) {
 							SendMessage(dat->hwndActive, DM_SWITCHUNICODE, 0, 0);
+						}
 					}
 				}
 				break;
@@ -978,6 +987,9 @@ BOOL CALLBACK DlgProcParentWindow(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM 
 			}
 			break;
 		}
+	case DM_STATUSICONCHANGE:
+		SendMessage(dat->hwndStatus, SB_SETTEXT, (WPARAM)(SBT_OWNERDRAW) | 2, (LPARAM)0);
+		return 0;
 	case CM_UPDATETABCONTROL:
 		{
 			TabControlData *tcd = (TabControlData *) wParam;
