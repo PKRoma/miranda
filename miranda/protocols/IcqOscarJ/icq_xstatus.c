@@ -1103,7 +1103,7 @@ int IcqGetXStatusEx(WPARAM wParam, LPARAM lParam)
 
   if (pData->flags & CSSF_MASK_STATUS)
   { // fill status member
-    *pData->status = ICQGetContactSettingByte(NULL, DBSETTING_XSTATUSID, 0);
+    *pData->status = ICQGetContactSettingByte(hContact, DBSETTING_XSTATUSID, 0);
   }
 
   if (pData->flags & CSSF_MASK_NAME)
@@ -1118,7 +1118,7 @@ int IcqGetXStatusEx(WPARAM wParam, LPARAM lParam)
       {
         char *text = (char*)nameXStatus[status -1];
 
-        MultiByteToWideChar(CP_ACP, MB_PRECOMPOSED, text, strlennull(text), pData->pwszName, MAX_PATH);
+        MultiByteToWideChar(CP_ACP, 0, text, strlennull(text), pData->pwszName, MAX_PATH);
       }
       else
         strcpy(pData->pszName, nameXStatus[status - 1]);
