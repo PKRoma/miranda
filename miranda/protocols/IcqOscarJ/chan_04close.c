@@ -38,7 +38,6 @@
 
 
 extern HANDLE hServerConn;
-extern HANDLE hServerPacketRecver;
 
 static void handleMigration(serverthread_info *info);
 static int connectNewServer(serverthread_info *info);
@@ -177,7 +176,7 @@ static int connectNewServer(serverthread_info *info)
   if (!gbGatewayMode)
   {
     { /* Time to release packet receiver, connection already closed */
-      NetLib_SafeCloseHandle(&hServerPacketRecver, FALSE);
+      NetLib_SafeCloseHandle(&info->hPacketRecver, FALSE);
 
       NetLog_Server("Closed connection to login server");
     }
@@ -185,8 +184,8 @@ static int connectNewServer(serverthread_info *info)
     hServerConn = NetLib_OpenConnection(ghServerNetlibUser, NULL, &nloc);
     if (hServerConn)
     { /* Time to recreate the packet receiver */
-      hServerPacketRecver = (HANDLE)CallService(MS_NETLIB_CREATEPACKETRECVER, (WPARAM)hServerConn, 8192);
-      if (!hServerPacketRecver)
+      info->hPacketRecver = (HANDLE)CallService(MS_NETLIB_CREATEPACKETRECVER, (WPARAM)hServerConn, 8192);
+      if (!info->hPacketRecver)
       {
         NetLog_Server("Error: Failed to create packet receiver.");
       }

@@ -23,7 +23,7 @@
 //
 // -----------------------------------------------------------------------------
 //
-// File name      : $Source: /cvsroot/miranda/miranda/protocols/IcqOscarJ/fam_01service.c,v $
+// File name      : $Url: /cvsroot/miranda/miranda/protocols/IcqOscarJ/fam_01service.c,v $
 // Revision       : $Revision$
 // Last change on : $Date$
 // Last change by : $Author$
@@ -39,9 +39,7 @@
 
 extern int gbIdleAllow;
 extern int icqGoingOnlineStatus;
-extern BYTE gbOverRate;
 extern int pendingAvatarsStart;
-extern DWORD dwLocalInternalIP;
 extern WORD wListenPort;
 extern DWORD dwLocalDirectConnCookie;
 extern CRITICAL_SECTION modeMsgsMutex;
@@ -103,7 +101,9 @@ void handleServiceFam(unsigned char* pBuffer, WORD wBufferLength, snac_header* p
     NetLog_Server("Server sent Rate Info");
     NetLog_Server("Sending Rate Info Ack");
 #endif
-    /* Don't really care about this now, just send the ack */
+    /* init rates management */
+    gRates = ratesCreate(pBuffer, wBufferLength);
+    /* ack rate levels */
     serverPacketInit(&packet, 20);
     packFNACHeader(&packet, ICQ_SERVICE_FAMILY, ICQ_CLIENT_RATE_ACK);
     packDWord(&packet, 0x00010002);
@@ -332,23 +332,30 @@ void handleServiceFam(unsigned char* pBuffer, WORD wBufferLength, snac_header* p
     {
       WORD wStatus;
       WORD wClass;
-      // This is a horrible simplification, but the only
-      // area where we have rate control is in the user info
-      // auto request part.
+      DWORD dwLevel;
+      // We now have global rate management, although controlled are only some
+      // areas. This should not arrive in most cases. If it does, update our
+      // local rate levels & issue broadcast.
       unpackWord(&pBuffer, &wStatus);
       unpackWord(&pBuffer, &wClass);
+      pBuffer += 20;
+      unpackDWord(&pBuffer, &dwLevel);
+      EnterCriticalSection(&ratesMutex);
+      ratesUpdateLevel(gRates, wClass, dwLevel);
+      LeaveCriticalSection(&ratesMutex);
 
       if (wStatus == 2 || wStatus == 3)
       { // this is only the simplest solution, needs rate management to every section
         ICQBroadcastAck(NULL, ICQACKTYPE_RATEWARNING, ACKRESULT_STATUS, (HANDLE)wClass, wStatus);
-        gbOverRate = 1; // block user requests (user info, status messages, etc.)
-        icq_PauseUserLookup(); // pause auto-info update thread
+        if (wStatus == 2)
+          NetLog_Server("Rates #%u: Alert", wClass);
+        else
+          NetLog_Server("Rates #%u: Limit", wClass);
       }
       else if (wStatus == 4)
       {
         ICQBroadcastAck(NULL, ICQACKTYPE_RATEWARNING, ACKRESULT_STATUS, (HANDLE)wClass, wStatus);
-        gbOverRate = 0; // enable user requests
-        icq_EnableUserLookup(TRUE);
+        NetLog_Server("Rates #%u: Clear", wClass);
       }
     }
 
@@ -993,6 +1000,9 @@ void handleServUINSettings(int nPort, serverthread_info *info)
   // login sequence is complete enter logged-in mode
   info->bLoggedIn = 1;
 
+  // enable auto info-update routine
+  icq_EnableUserLookup(TRUE);
+
   if (!info->isMigrating)
   { /* Get Offline Messages Reqeust */
     serverPacketInit(&packet, 24);
@@ -1011,7 +1021,7 @@ void handleServUINSettings(int nPort, serverthread_info *info)
     icq_RescanInfoUpdate();
 
     // Start sending Keep-Alive packets
-    StartKeepAlive();
+    StartKeepAlive(info);
   
     if (gbAvatarsEnabled)
     { // Send SNAC 1,4 - request avatar family 0x10 connection

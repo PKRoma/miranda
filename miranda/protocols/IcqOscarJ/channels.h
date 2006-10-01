@@ -46,7 +46,7 @@ void handleCloseChannel(unsigned char *buf, WORD datalen, serverthread_info *inf
 
 void LogFamilyError(WORD wFamily, WORD wError);
 
-void StartKeepAlive();
-void StopKeepAlive();
+void StartKeepAlive(serverthread_info* info);
+void StopKeepAlive(serverthread_info* info);
 
 #endif /* __CHANNELS_H */

@@ -39,6 +39,7 @@ __________
 0.3.9
   Manage server-list dialog now groups requests - much faster
   Full support for sub-groups in Manage server-list dialog
+  Simple sub-groups support (optional)
   Real Level 1 rate management (will solve multi-recipient message problems)
   
 
@@ -55,6 +56,7 @@ _______
 
 Bugfixes:
   Fixed HTTP/HTTPS proxy support (removed useless gateway option), long messages are now sent properly
+  Fixed peer-to-peer session cookie checking (was working only due to coincidence)
 
 New Features:
   TODO: Oscar File Transfers - like icq5 (including transfer thru server)
@@ -62,6 +64,7 @@ New Features:
 Improvements:
   Added avatar validity checking
   Client detection improvements
+  Level 1 Rate management (global) - should solve problems with many contacts in list
 
 
 0.3.7.2

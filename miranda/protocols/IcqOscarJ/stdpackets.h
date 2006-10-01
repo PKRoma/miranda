@@ -53,7 +53,7 @@ void icq_requestnewfamily(WORD wFamily, void (*familyhandler)(HANDLE hConn, char
 
 void icq_setidle(int bAllow);
 void icq_setstatus(WORD wStatus);
-DWORD icq_sendGetInfoServ(DWORD, int);
+DWORD icq_sendGetInfoServ(DWORD, int, int);
 DWORD icq_sendGetAimProfileServ(HANDLE hContact, char *szUid);
 DWORD icq_sendGetAwayMsgServ(DWORD, int, WORD);
 DWORD icq_sendGetAimAwayMsgServ(char *szUID, int type);

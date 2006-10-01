@@ -531,14 +531,14 @@
 
 
 // Internal Constants
-#define ICQ_PLUG_VERSION            0x80030802
+#define ICQ_PLUG_VERSION            0x80030803
 #define ICQ_VERSION                 8
 #define DC_TYPE                     DC_NORMAL // Used for DC settings
 #define MAX_NICK_SIZE               32
 #define MAX_CONTACTSSEND            15
 #define MAX_MESSAGESNACSIZE         8000
 #define CLIENTRATELIMIT             0
-#define UPDATE_THRESHOLD            1209600 // Two weeks
+#define UPDATE_THRESHOLD            14      // Two weeks
 #define COOKIE_TIMEOUT              3600    // One hour
 #define WEBFRONTPORT                0x50
 #define CLIENTFEATURES              0x3

@@ -522,16 +522,27 @@ void sendUserInfoAutoRequest(DWORD dwUin)
 
 
 
-DWORD icq_sendGetInfoServ(DWORD dwUin, int bMinimal)
+DWORD icq_sendGetInfoServ(DWORD dwUin, int bMinimal, int bManual)
 {
   icq_packet packet;
   DWORD dwCookie;
   fam15_cookie_data *pCookieData = NULL;
+  WORD wGroup;
+  int nLimitLevel;
 
-  // we request if we can or 10sec after last request
-  if (gbOverRate && (GetTickCount()-gtLastRequest)<10000) return 0;
-  gbOverRate = 0;
-  gtLastRequest = GetTickCount();
+  EnterCriticalSection(&ratesMutex);
+  wGroup = ratesGroupFromSNAC(gRates, ICQ_EXTENSIONS_FAMILY, ICQ_META_CLI_REQ);
+  if (bManual)
+    nLimitLevel = ratesGetLimitLevel(gRates, wGroup, RML_IDLE_10);
+  else
+    nLimitLevel = ratesGetLimitLevel(gRates, wGroup, RML_IDLE_50);
+
+  if (ratesNextRateLevel(gRates, wGroup) < nLimitLevel)
+  {
+    LeaveCriticalSection(&ratesMutex);
+    return 0;
+  }
+  LeaveCriticalSection(&ratesMutex);
 
   pCookieData = SAFE_MALLOC(sizeof(fam15_cookie_data));
   dwCookie = AllocateCookie(CKT_FAMILYSPECIAL, 0, dwUin, (void*)pCookieData);
@@ -562,6 +573,16 @@ DWORD icq_sendGetAimProfileServ(HANDLE hContact, char* szUid)
   DWORD dwCookie;
   fam15_cookie_data *pCookieData = NULL;
   BYTE bUIDlen = strlennull(szUid);
+  WORD wGroup;
+
+  EnterCriticalSection(&ratesMutex);
+  wGroup = ratesGroupFromSNAC(gRates, ICQ_LOCATION_FAMILY, ICQ_LOCATION_REQ_USER_INFO);
+  if (ratesNextRateLevel(gRates, wGroup) < ratesGetLimitLevel(gRates, wGroup, RML_IDLE_10))
+  {
+    LeaveCriticalSection(&ratesMutex);
+    return 0;
+  }
+  LeaveCriticalSection(&ratesMutex);
 
   pCookieData = SAFE_MALLOC(sizeof(fam15_cookie_data));
   dwCookie = AllocateCookie(CKT_FAMILYSPECIAL, ICQ_LOCATION_REQ_USER_INFO, 0, (void*)pCookieData);
@@ -586,11 +607,16 @@ DWORD icq_sendGetAwayMsgServ(DWORD dwUin, int type, WORD wVersion)
   icq_packet packet;
   DWORD dwCookie;
   message_cookie_data *pCookieData = NULL;
+  WORD wGroup;
 
-  // we request if we can or 10sec after last request
-  if (gbOverRate && (GetTickCount()-gtLastRequest)<10000) return 0;
-  gbOverRate = 0;
-  gtLastRequest = GetTickCount();
+  EnterCriticalSection(&ratesMutex);
+  wGroup = ratesGroupFromSNAC(gRates, ICQ_MSG_FAMILY, ICQ_MSG_SRV_SEND);
+  if (ratesNextRateLevel(gRates, wGroup) < ratesGetLimitLevel(gRates, wGroup, RML_IDLE_30))
+  {
+    LeaveCriticalSection(&ratesMutex);
+    return 0;
+  }
+  LeaveCriticalSection(&ratesMutex);
 
   pCookieData = CreateMessageCookie(MTYPE_AUTOAWAY, (BYTE)type);
   dwCookie = AllocateCookie(CKT_MESSAGE, 0, dwUin, (void*)pCookieData);

@@ -86,8 +86,11 @@ static DWORD requestXStatusDetails(HANDLE hContact, BOOL bAllowDelay)
 
   rr.hContact = hContact;
   rr.bType = RIT_XSTATUS_REQUEST;
-  rr.rate_group = 0x101; // request
+  rr.nRequestType = 0x101; // request
   rr.nMinDelay = 1000;    // delay at least 1s
+  EnterCriticalSection(&ratesMutex);
+  rr.wGroup = ratesGroupFromSNAC(gRates, ICQ_MSG_FAMILY, ICQ_MSG_SRV_SEND);
+  LeaveCriticalSection(&ratesMutex);
 
   if (!handleRateItem(&rr, bAllowDelay))
     return sendXStatusDetailsRequest(hContact, !bAllowDelay);
@@ -1103,7 +1106,7 @@ int IcqGetXStatusEx(WPARAM wParam, LPARAM lParam)
 
   if (pData->flags & CSSF_MASK_STATUS)
   { // fill status member
-    *pData->status = ICQGetContactSettingByte(NULL, DBSETTING_XSTATUSID, 0);
+    *pData->status = ICQGetContactSettingByte(hContact, DBSETTING_XSTATUSID, 0);
   }
 
   if (pData->flags & CSSF_MASK_NAME)
@@ -1118,7 +1121,7 @@ int IcqGetXStatusEx(WPARAM wParam, LPARAM lParam)
       {
         char *text = (char*)nameXStatus[status -1];
 
-        MultiByteToWideChar(CP_ACP, MB_PRECOMPOSED, text, strlennull(text), pData->pwszName, MAX_PATH);
+        MultiByteToWideChar(CP_ACP, MB_PRECOMPOSED, text, -1, pData->pwszName, MAX_PATH);
       }
       else
         strcpy(pData->pszName, nameXStatus[status - 1]);

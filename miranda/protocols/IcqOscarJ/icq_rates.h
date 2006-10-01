@@ -37,6 +37,51 @@
 #ifndef __ICQ_RATES_H
 #define __ICQ_RATES_H
 
+extern CRITICAL_SECTION ratesMutex;
+
+typedef struct rates_group_s
+{
+  DWORD dwWindowSize;
+  DWORD dwClearLevel;
+  DWORD dwAlertLevel;
+  DWORD dwMaxLevel;
+  // current level
+  int rCurrentLevel;
+  int tCurrentLevel;
+  // links
+  WORD* pPairs;
+  int nPairs;
+} rates_group;
+
+typedef struct rates_s
+{
+  int nGroups;
+  rates_group groups[];
+} rates;
+
+rates* gRates;
+
+rates* ratesCreate(BYTE* pBuffer, WORD wLen);
+void ratesRelease(rates** pRates);
+
+WORD ratesGroupFromSNAC(rates* pRates, WORD wFamily, WORD wCommand);
+WORD ratesGroupFromPacket(rates* pRates, icq_packet* pPacket);
+
+int ratesNextRateLevel(rates* pRates, WORD wGroup);
+int ratesDelayToLevel(rates* pRates, WORD wGroup, int nLevel);
+void ratesPacketSent(rates* pRates, icq_packet* pPacket);
+void ratesUpdateLevel(rates* pRates, WORD wGroup, int nLevel);
+
+#define RML_CLEAR   1
+#define RML_ALERT   2
+#define RML_IDLE_10 0x10
+#define RML_IDLE_30 0x11
+#define RML_IDLE_50 0x12
+#define RML_IDLE_70 0x13
+
+int ratesGetLimitLevel(rates* pRates, WORD wGroup, int nLevel);
+
+// Rates - Level 2
 
 #define RIT_AWAYMSG_RESPONSE 0x01   // response to status msg request
 
@@ -46,7 +91,8 @@
 typedef struct rate_record_s
 {
   BYTE bType;         // type of request
-  int rate_group;
+  WORD wGroup;
+  int nRequestType;
   int nMinDelay;
   HANDLE hContact;
   DWORD dwUin;

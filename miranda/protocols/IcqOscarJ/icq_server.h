@@ -54,8 +54,13 @@ typedef struct serverthread_info_s {
   int cookieDataLen;
   int newServerReady;
   int isMigrating;
+  HANDLE hPacketRecver;
   int bReinitRecver;
   int bMyAvatarInited;
+  //
+  HANDLE hDirectBoundPort;
+  //
+  HANDLE hKeepAliveEvent;
 } serverthread_info;
 
 /*---------* Functions *---------------*/

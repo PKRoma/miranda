@@ -64,6 +64,8 @@ void __fastcall write_flap(icq_packet* pPacket, BYTE byFlapChannel)
 {
   init_generic_packet(pPacket, 6);
 
+  pPacket->nChannel = byFlapChannel;
+
   packByte(pPacket, FLAP_MARKER);
   packByte(pPacket, byFlapChannel);
   packWord(pPacket, 0);                 // This is the sequence ID, it is filled in during the actual sending

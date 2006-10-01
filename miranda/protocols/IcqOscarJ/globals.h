@@ -58,8 +58,6 @@ BYTE gbTempVisListEnabled;
 BYTE gbSsiEnabled;
 BYTE gbAvatarsEnabled;
 BYTE gbXStatusEnabled;
-BYTE gbOverRate;
-DWORD gtLastRequest;
 DWORD MIRANDA_VERSION;
 
 // from icqosc_svcs.c

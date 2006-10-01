@@ -5,7 +5,7 @@
 // Copyright © 2000,2001 Richard Hughes, Roland Rabien, Tristan Van de Vreede
 // Copyright © 2001,2002 Jon Keating, Richard Hughes
 // Copyright © 2002,2003,2004 Martin Öberg, Sam Kothari, Robert Rainwater
-// Copyright © 2004,2005 Joe Kucera
+// Copyright © 2004,2005,2006 Joe Kucera
 // 
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License
@@ -39,7 +39,6 @@
 
 
 extern HANDLE hServerConn;
-static HANDLE hKeepAliveEvent = NULL;
 
 
 void handlePingChannel(unsigned char* buf, WORD datalen)
@@ -49,17 +48,18 @@ void handlePingChannel(unsigned char* buf, WORD datalen)
 
 
 
-static void __cdecl icq_keepAliveThread(void* fa)
+static void __cdecl icq_keepAliveThread(void* arg)
 {
+  serverthread_info* info = (serverthread_info*)arg;
   icq_packet packet;
 
   NetLog_Server("Keep alive thread starting.");
 
-  hKeepAliveEvent = CreateEvent(NULL, FALSE, FALSE, NULL);
+  info->hKeepAliveEvent = CreateEvent(NULL, FALSE, FALSE, NULL);
 
   for(;;)
   {
-    DWORD dwWait = WaitForSingleObjectEx(hKeepAliveEvent, 57000, TRUE);
+    DWORD dwWait = WaitForSingleObjectEx(info->hKeepAliveEvent, 57000, TRUE);
 
     if (dwWait == WAIT_OBJECT_0) break; // we should end
     else if (dwWait == WAIT_TIMEOUT)
@@ -79,27 +79,27 @@ static void __cdecl icq_keepAliveThread(void* fa)
 
   NetLog_Server("Keep alive thread shutting down.");
 
-  CloseHandle(hKeepAliveEvent);
-  hKeepAliveEvent = NULL;
+  CloseHandle(info->hKeepAliveEvent);
+  info->hKeepAliveEvent = NULL;
 
   return;
 }
 
 
 
-void StartKeepAlive()
+void StartKeepAlive(serverthread_info* info)
 {
-  if (hKeepAliveEvent) // start only once
+  if (info->hKeepAliveEvent) // start only once
     return;
 
   if (ICQGetContactSettingByte(NULL, "KeepAlive", 0))
-    forkthread(icq_keepAliveThread, 0, NULL);
+    forkthread(icq_keepAliveThread, 0, info);
 }
 
 
 
-void StopKeepAlive()
+void StopKeepAlive(serverthread_info* info)
 { // finish keep alive thread
-  if (hKeepAliveEvent)
-    SetEvent(hKeepAliveEvent);
+  if (info->hKeepAliveEvent)
+    SetEvent(info->hKeepAliveEvent);
 }

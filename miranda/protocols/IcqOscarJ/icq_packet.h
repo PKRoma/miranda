@@ -47,7 +47,6 @@ typedef struct icq_packet_s
 {
   WORD wPlace;
   BYTE nChannel;
-  WORD wSequence;
   WORD wLen;
   BYTE *pData;
 } icq_packet;

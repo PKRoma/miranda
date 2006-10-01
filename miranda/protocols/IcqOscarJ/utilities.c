@@ -63,8 +63,6 @@ static int cacheCount = 0;
 static int cacheListSize = 0;
 static CRITICAL_SECTION cacheMutex;
 
-extern BYTE gbOverRate;
-extern DWORD gtLastRequest;
 extern BOOL bIsSyncingCL;
 
 
@@ -978,9 +976,6 @@ void ResetSettingsOnListReload()
 void ResetSettingsOnConnect()
 {
   HANDLE hContact;
-
-  gbOverRate = 0; // init
-  gtLastRequest = 0;
 
   // Reset a bunch of session specific settings
   ICQWriteContactSettingByte(NULL, "SrvVisibility", 0);

@@ -1024,37 +1024,29 @@ int IcqChangeInfoEx(WPARAM wParam, LPARAM lParam)
 
 
 
-static int messageRate = 0;
-static DWORD lastMessageTick = 0;
 int IcqGetInfo(WPARAM wParam, LPARAM lParam)
 {
   if (lParam && icqOnline)
-  { // TODO: add checking for SGIF_ONOPEN, otherwise max one per 10sec
+  {
     CCSDATA* ccs = (CCSDATA*)lParam;
     DWORD dwUin;
     uid_str szUid;
+    DWORD dwCookie;
 
     if (ICQGetContactSettingUID(ccs->hContact, &dwUin, &szUid))
     {
-      return 0; // Invalid contact
+      return 1; // Invalid contact
     }
 
-    messageRate -= (GetTickCount() - lastMessageTick)/10;
-    if (messageRate<0) // TODO: this is bad, needs centralising
-      messageRate = 0;
-    lastMessageTick = GetTickCount();
-    messageRate += 67; // max 1.5 msgs/sec when rate is high
+    if (dwUin)
+      dwCookie = icq_sendGetInfoServ(dwUin, (ccs->wParam & SGIF_MINIMAL) != 0, (ccs->wParam & SGIF_ONOPEN) != 0);
+    else // TODO: this needs something better
+      dwCookie = icq_sendGetAimProfileServ(ccs->hContact, szUid);
 
-    // server kicks if 100 msgs sent instantly, so send max 50 instantly
-    if (messageRate < 67*50)
-    {
-      if (dwUin)
-        icq_sendGetInfoServ(dwUin, (ccs->wParam & SGIF_MINIMAL) != 0);
-      else
-        icq_sendGetAimProfileServ(ccs->hContact, szUid);
-
+    if (dwCookie)
       return 0; // Success
-    }
+    else
+      return 1; // Failure
   }
 
   return 1; // Failure

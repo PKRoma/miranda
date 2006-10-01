@@ -53,7 +53,10 @@ typedef struct avatarthreadstartinfo_t
   HANDLE runContact[4];
   DWORD runTime[4];
   int runCount;
+  //
+  rates* rates;
 } avatarthreadstartinfo;
+
 
 typedef struct avatarrequest_t
 {
@@ -69,6 +72,7 @@ typedef struct avatarrequest_t
   WORD wRef;
   void *pNext; // invalid, but reused - spare realloc
 } avatarrequest;
+
 
 avatarthreadstartinfo* currentAvatarThread; 
 int pendingAvatarsStart = 1;
@@ -614,7 +618,7 @@ int GetAvatarData(HANDLE hContact, DWORD dwUin, char* szUid, char* hash, unsigne
 
   if (!AvatarsReady && !pendingAvatarsStart)
   {
-    icq_requestnewfamily(0x10, StartAvatarThread);
+    icq_requestnewfamily(ICQ_AVATAR_FAMILY, StartAvatarThread);
     pendingAvatarsStart = 1;
   }
 
@@ -811,7 +815,10 @@ static DWORD __stdcall icq_avatarThread(avatarthreadstartinfo *atsi)
     NetLib_SafeCloseHandle(&atsi->hAvatarPacketRecver, FALSE); // Close the packet receiver 
   }
   NetLib_SafeCloseHandle(&atsi->hConnection, FALSE); // Close the connection
-  
+
+  // release rates
+  ratesRelease(&atsi->rates);
+
   DeleteCriticalSection(&atsi->localSeqMutex);
 
   SAFE_FREE(&atsi->pCookie);
@@ -922,6 +929,13 @@ static int sendAvatarPacket(icq_packet* pPacket, avatarthreadstartinfo* atsi)
     else
     {
       lResult = 1; // packet sent successfully
+
+      if (atsi->rates)
+      {
+        EnterCriticalSection(&ratesMutex); // TODO: we should have our own mutex
+        ratesPacketSent(atsi->rates, pPacket);
+        LeaveCriticalSection(&ratesMutex);
+      }
     }
   }
   else
@@ -1036,8 +1050,10 @@ void handleAvatarServiceFam(unsigned char* pBuffer, WORD wBufferLength, snac_hea
     NetLog_Server("Server sent Rate Info");
     NetLog_Server("Sending Rate Info Ack");
 #endif
-    /* Don't really care about this now, just send the ack */
-    serverPacketInit(&packet, 20); // TODO: add rate management to request queue (0.5+)
+    /* init rates management */
+    atsi->rates = ratesCreate(pBuffer, wBufferLength);
+    /* ack rate levels */
+    serverPacketInit(&packet, 20); 
     packFNACHeader(&packet, ICQ_SERVICE_FAMILY, ICQ_CLIENT_RATE_ACK);
     packDWord(&packet, 0x00010002);
     packDWord(&packet, 0x00030004);

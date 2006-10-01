@@ -128,7 +128,10 @@ void handleXtrazNotify(DWORD dwUin, DWORD dwMID, DWORD dwMID2, WORD wCookie, cha
                 rr.wCookie = wCookie;
                 rr.szData = szResponse;
                 rr.bThruDC = bThruDC;
-                rr.rate_group = 0x102;
+                rr.nRequestType = 0x102;
+                EnterCriticalSection(&ratesMutex);
+                rr.wGroup = ratesGroupFromSNAC(gRates, ICQ_MSG_FAMILY, ICQ_MSG_RESPONSE);
+                LeaveCriticalSection(&ratesMutex);
                 if (bThruDC || !handleRateItem(&rr, TRUE))
                   SendXtrazNotifyResponse(dwUin, dwMID, dwMID2, wCookie, szResponse, nResponseLen, bThruDC);
               }

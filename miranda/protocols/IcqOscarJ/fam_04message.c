@@ -1727,7 +1727,11 @@ void handleMessageTypes(DWORD dwUin, DWORD dwTimestamp, DWORD dwMsgID, DWORD dwM
         rr.wCookie = wCookie;
         rr.wVersion = wVersion;
         rr.msgType = type;
-        rr.rate_group = 0x102;
+        rr.nRequestType = 0x102;
+        EnterCriticalSection(&ratesMutex);
+        rr.wGroup = ratesGroupFromSNAC(gRates, ICQ_MSG_FAMILY, ICQ_MSG_RESPONSE);
+        LeaveCriticalSection(&ratesMutex);
+
         if (!handleRateItem(&rr, TRUE))
           icq_sendAwayMsgReplyServ(dwUin, dwMsgID, dwMsgID2, wCookie, wVersion, (BYTE)type, szMsg);
       }
