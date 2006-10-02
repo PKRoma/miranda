@@ -50,6 +50,8 @@ typedef struct
 #define CLUIFRAMESSETALIGNALBOTTOM				"CLUIFramesSetAlignalBottom"
 
 #define CLUIFRAMESMOVEUPDOWN			"CLUIFramesMoveUpDown"
+#define CLUIFRAMESMOVEUP			"CLUIFramesMoveUp"
+#define CLUIFRAMESMOVEDOWN			"CLUIFramesMoveDown"
 typedef struct tagMenuHandles
 {
 	HANDLE MainMenuItem;

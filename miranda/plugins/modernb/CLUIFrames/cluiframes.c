@@ -1059,18 +1059,17 @@ HMENU CLUIFramesCreateMenuForFrame(int frameid,int root,int popuppos,char *addse
     mi.position=popuppos++;
     mi.pszName=Translate("&Up");
     mi.flags=CMIF_CHILDPOPUP;
-    mi.pszService=CLUIFRAMESMOVEUPDOWN;
+    mi.pszService=CLUIFRAMESMOVEUP;
     mi.pszContactOwner=(char *)1;
     menuid=(HANDLE)CallService(addservice,0,(LPARAM)&mi);
     if(frameid==-1) contMIPosUp=menuid;
     else Frames[framepos].MenuHandles.MIPosUp=menuid;
 
-    mi.pszPopupName=(char *)menuid;
     mi.popupPosition=frameid;
     mi.position=popuppos++;
     mi.pszName=Translate("&Down");
     mi.flags=CMIF_CHILDPOPUP;
-    mi.pszService=CLUIFRAMESMOVEUPDOWN;
+    mi.pszService=CLUIFRAMESMOVEDOWN;
     mi.pszContactOwner=(char *)-1;
     menuid=(HANDLE)CallService(addservice,0,(LPARAM)&mi);	
     if(frameid==-1) contMIPosDown=menuid;
@@ -1532,6 +1531,7 @@ int CLUIFramesShowHideFrameTitleBar(WPARAM wParam,LPARAM lParam)
 
   return 0;
 }
+
 //wparam=frameid
 //lparam=-1 up ,1 down
 int CLUIFramesMoveUpDown(WPARAM wParam,LPARAM lParam)
@@ -1557,8 +1557,10 @@ int CLUIFramesMoveUpDown(WPARAM wParam,LPARAM lParam)
       v++;
     };
     if (v==0){CLUIFrames_UnLockFrame();return(0);};
-    qsort(sd,v,sizeof(SortData),sortfunc);	
+    qsort(sd,v,sizeof(SortData),sortfunc);
     for (i=0;i<v;i++)
+      Frames[sd[i].realpos].order=i+1; //to be sure that order is incremental
+    for (i=0;i<v;i++)   
     {
       if (sd[i].realpos==pos)
       {
@@ -1594,6 +1596,14 @@ int CLUIFramesMoveUpDown(WPARAM wParam,LPARAM lParam)
 
 
 
+int CLUIFramesMoveUp(WPARAM wParam,LPARAM lParam)
+{
+    return CLUIFramesMoveUpDown(wParam,(LPARAM)+1);
+}
+int CLUIFramesMoveDown(WPARAM wParam,LPARAM lParam)
+{
+    return CLUIFramesMoveUpDown(wParam,(LPARAM)-1);
+}
 //wparam=frameid
 //lparam=alignment
 int CLUIFramesSetAlign(WPARAM wParam,LPARAM lParam)
@@ -4404,6 +4414,8 @@ int LoadCLUIFramesModule(void)
 
   CreateServiceFunction(CLUIFRAMESSETALIGN,CLUIFramesSetAlign);
   CreateServiceFunction(CLUIFRAMESMOVEUPDOWN,CLUIFramesMoveUpDown);
+  CreateServiceFunction(CLUIFRAMESMOVEUP,CLUIFramesMoveUp);
+  CreateServiceFunction(CLUIFRAMESMOVEDOWN,CLUIFramesMoveDown);
 
 
   CreateServiceFunction(CLUIFRAMESSETALIGNALTOP,CLUIFramesSetAlignalTop);

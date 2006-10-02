@@ -1297,7 +1297,7 @@ case WM_LBUTTONDOWN:
             dat->ptDragStart.y=(short)HIWORD(lParam);
             dat->szQuickSearch[0]=0;
             hit=cliHitTest(hwnd,dat,(short)LOWORD(lParam),(short)HIWORD(lParam),&contact,&group,&hitFlags);
-            if(hit!=-1) {
+            if(hit!=-1 && !(hitFlags&CLCHT_NOWHERE)) {
                 if(hit==dat->selection && hitFlags&CLCHT_ONITEMLABEL && dat->exStyle&CLS_EX_EDITLABELS) {
                     SetCapture(hwnd);
                     dat->iDragItem=dat->selection;
@@ -1306,7 +1306,7 @@ case WM_LBUTTONDOWN:
                     return TRUE;
                 }
             }
-            if(hit!=-1 && contact->type==CLCIT_CONTACT && contact->SubAllocated && !contact->isSubcontact)
+            if(hit!=-1 && !(hitFlags&CLCHT_NOWHERE) && contact->type==CLCIT_CONTACT && contact->SubAllocated && !contact->isSubcontact)
                 if(hitFlags&CLCHT_ONITEMICON && dat->expandMeta) {
                     BYTE doubleClickExpand=DBGetContactSettingByte(NULL,"CLC","MetaDoubleClick",0);
 
@@ -1326,7 +1326,7 @@ case WM_LBUTTONDOWN:
                 }
                 else
                     hitcontact=NULL;
-            if(hit!=-1 && contact->type==CLCIT_GROUP)
+            if(hit!=-1 && !(hitFlags&CLCHT_NOWHERE) && contact->type==CLCIT_GROUP)
                 if(hitFlags&CLCHT_ONITEMICON) {
                     struct ClcGroup *selgroup;
                     struct ClcContact *selcontact;
@@ -1340,7 +1340,7 @@ case WM_LBUTTONDOWN:
                     UpdateWindow(hwnd);
                     return TRUE;
                 }
-                if(hit!=-1 && hitFlags&CLCHT_ONITEMCHECK) {
+            if(hit!=-1 && !(hitFlags&CLCHT_NOWHERE) && hitFlags&CLCHT_ONITEMCHECK) {
                     NMCLISTCONTROL nm;
                     contact->flags^=CONTACTF_CHECKED;
                     if(contact->type==CLCIT_GROUP) pcli->pfnSetGroupChildCheckboxes(contact->group,contact->flags&CONTACTF_CHECKED);
@@ -1353,24 +1353,25 @@ case WM_LBUTTONDOWN:
                     nm.hItem=ContactToItemHandle(contact,&nm.flags);
                     SendMessage(GetParent(hwnd),WM_NOTIFY,0,(LPARAM)&nm);
                 }
-                if(!(hitFlags&(CLCHT_ONITEMICON|CLCHT_ONITEMLABEL|CLCHT_ONITEMCHECK))) {
+            if(!(hitFlags&(CLCHT_ONITEMICON|CLCHT_ONITEMLABEL|CLCHT_ONITEMCHECK))) 
+            {
                     NMCLISTCONTROL nm;
                     nm.hdr.code=NM_CLICK;
                     nm.hdr.hwndFrom=hwnd;
                     nm.hdr.idFrom=GetDlgCtrlID(hwnd);
                     nm.flags=0;
-                    if(hit==-1) nm.hItem=NULL;
+                    if(hit==-1 || hitFlags&CLCHT_NOWHERE) nm.hItem=NULL;
                     else nm.hItem=ContactToItemHandle(contact,&nm.flags);
                     nm.iColumn=hitFlags&CLCHT_ONITEMEXTRA?HIBYTE(HIWORD(hitFlags)):-1;
                     nm.pt=dat->ptDragStart;
                     SendMessage(GetParent(hwnd),WM_NOTIFY,0,(LPARAM)&nm);
                 }
                 if(hitFlags&(CLCHT_ONITEMCHECK|CLCHT_ONITEMEXTRA)) return 0;
-                dat->selection=hit;
+                dat->selection=(hitFlags&CLCHT_NOWHERE)?-1:hit;
                 CLUI__cliInvalidateRect(hwnd,NULL,FALSE);
                 if(dat->selection!=-1) pcli->pfnEnsureVisible(hwnd,dat,hit,0);
                 UpdateWindow(hwnd);
-                if(dat->selection!=-1 && (contact->type==CLCIT_CONTACT || contact->type==CLCIT_GROUP) && !(hitFlags&(CLCHT_ONITEMEXTRA|CLCHT_ONITEMCHECK))) {
+                if(dat->selection!=-1 && (contact->type==CLCIT_CONTACT || contact->type==CLCIT_GROUP) && !(hitFlags&(CLCHT_ONITEMEXTRA|CLCHT_ONITEMCHECK|CLCHT_NOWHERE))) {
                     SetCapture(hwnd);
                     dat->iDragItem=dat->selection;
                     dat->dragStage=DRAGSTAGE_NOTMOVED;
@@ -1445,10 +1446,12 @@ case WM_MOUSEMOVE:
 
         if(dat->iDragItem==-1) 
         {
+            DWORD flag=0;
             int iOldHotTrack=dat->iHotTrack;
             if(dat->hwndRenameEdit!=NULL) return 0;;
             if(GetKeyState(VK_MENU)&0x8000 || GetKeyState(VK_F10)&0x8000) return 0;
-            dat->iHotTrack=isOutside?-1:cliHitTest(hwnd,dat,(short)LOWORD(lParam),(short)HIWORD(lParam),NULL,NULL,NULL);
+            dat->iHotTrack=isOutside?-1:cliHitTest(hwnd,dat,(short)LOWORD(lParam),(short)HIWORD(lParam),NULL,NULL,&flag);
+            if (flag&CLCHT_NOWHERE) dat->iHotTrack=-1;
             if(iOldHotTrack!=dat->iHotTrack || isOutside) {
                 if(iOldHotTrack==-1 && !isOutside) 
                     SetCapture(hwnd);
@@ -1617,7 +1620,8 @@ case WM_LBUTTONUP:
         SetCursor((HCURSOR)GetClassLong(hwnd,GCL_HCURSOR));
         if(dat->exStyle&CLS_EX_TRACKSELECT) 
         {
-            dat->iHotTrack=cliHitTest(hwnd,dat,(short)LOWORD(lParam),(short)HIWORD(lParam),NULL,NULL,NULL);
+            DWORD flags;
+            dat->iHotTrack=cliHitTest(hwnd,dat,(short)LOWORD(lParam),(short)HIWORD(lParam),NULL,NULL,&flags);
             if(dat->iHotTrack==-1) 
                 ReleaseCapture();
         }

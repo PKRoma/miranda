@@ -169,7 +169,7 @@ int PaintWorker(HWND hwnd, HDC whdc)
     AddParam(&Request,mod_CalcHash("ID"),bct->ID,0);
     AddParam(&Request,mod_CalcHash("Down"),bct->down?"1":"0",0);
     AddParam(&Request,mod_CalcHash("Focused"),bct->focus?"1":"0",0);
-    AddParam(&Request,mod_CalcHash("Hovered"),bct->hover?"1":0,0);
+    AddParam(&Request,mod_CalcHash("Hovered"),bct->hover?"1":"0",0);
     if (Value)
     {
       AddParam(&Request,mod_CalcHash("Value"),Value,0);
