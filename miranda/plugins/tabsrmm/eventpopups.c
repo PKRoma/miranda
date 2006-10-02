@@ -1591,6 +1591,12 @@ void DeletePopupsForContact(HANDLE hContact, DWORD dwMask)
     if(!(dwMask & nen_options.dwRemoveMask) || nen_options.iDisable || !myGlobals.g_PopupAvail)
         return;
         
+    _DebugTraceA("removing popups for: %d", hContact);
+    /*
+    for(i = 0; i < 20; i++) {
+        if(PopUpList[i] != NULL && PopUpList[i]->hContact == hContact && PopUpList[i]->hWnd != 0 && IsWindow(PopUpList[i]->hWnd))
+            PUDeletePopUp(PopUpList[i]->hWnd);
+    }*/
     while((i = NumberPopupData(hContact)) != -1) {
         if(PopUpList[i]->hWnd != 0 && IsWindow(PopUpList[i]->hWnd))
             PUDeletePopUp(PopUpList[i]->hWnd);

@@ -36,6 +36,8 @@ License: GPL
 #include "msgdlgutils.h"
 #include "m_smileyadd.h"
 
+#include "m_MathModule.h"
+
 #define MWF_LOG_TEXTFORMAT 0x2000000
 #define MSGDLGFONTCOUNT 22
 
@@ -48,8 +50,9 @@ extern "C" int MY_CallService(const char *svc, WPARAM wParam, LPARAM lParam);
 extern "C" int MY_ServiceExists(const char *svc);
 extern "C" void RTF_ColorAdd(const TCHAR *tszColname, size_t length);
 
-static int iHaveSmileyadd = -1;
+static int iHaveSmileyadd = -1, iHaveMathMod = -1;
 extern "C" unsigned int g_ctable_size;
+TCHAR  tszMathDelimiter[100];
 
 #if defined(UNICODE)
 
@@ -111,6 +114,27 @@ extern "C" const WCHAR *FormatRaw(DWORD dwFlags, const WCHAR *msg, int flags, co
     if(iHaveSmileyadd == -1)
         iHaveSmileyadd = MY_ServiceExists(MS_SMILEYADD_BATCHPARSE);
 
+    if(iHaveMathMod == -1) {
+        iHaveMathMod = MY_ServiceExists(MATH_RTF_REPLACE_FORMULAE);
+        if(iHaveMathMod) {
+            char *szDelim = (char *)MY_CallService(MATH_GET_STARTDELIMITER, 0, 0);
+            if(szDelim) {
+                MultiByteToWideChar(CP_ACP, 0, szDelim, -1, tszMathDelimiter, safe_sizeof(tszMathDelimiter));
+                tszMathDelimiter[99] = 0;
+                MY_CallService(MTH_FREE_MATH_BUFFER, 0, (LPARAM)szDelim);
+            }
+        }
+    }
+    if(iHaveMathMod) {
+        unsigned mark = 0;
+        int      nrDelims = 0;
+        while((mark = message.find(tszMathDelimiter, mark)) != message.npos) {
+            nrDelims++;
+            mark += lstrlen(tszMathDelimiter);
+        }
+        if(nrDelims > 0 && (nrDelims % 2) != 0)
+            message.append(tszMathDelimiter);
+    }
     beginmark = 0;
     while(TRUE) {
         for(i = 0; i < NR_CODES; i++) {
@@ -303,6 +327,28 @@ extern "C" const char *FormatRaw(DWORD dwFlags, const char *msg, int flags, cons
 
     if(iHaveSmileyadd == -1)
         iHaveSmileyadd = MY_ServiceExists(MS_SMILEYADD_BATCHPARSE);
+
+    if(iHaveMathMod == -1) {
+        iHaveMathMod = MY_ServiceExists(MATH_RTF_REPLACE_FORMULAE);
+        if(iHaveMathMod) {
+            char *szDelim = (char *)MY_CallService(MATH_GET_STARTDELIMITER, 0, 0);
+            if(szDelim) {
+                strncpy(tszMathDelimiter, szDelim, sizeof(tszMathDelimiter));
+                tszMathDelimiter[sizeof(tszMathDelimiter) - 1] = 0;
+                MY_CallService(MTH_FREE_MATH_BUFFER, 0, (LPARAM)szDelim);
+            }
+        }
+    }
+    if(iHaveMathMod) {
+        unsigned mark = 0;
+        int      nrDelims = 0;
+        while((mark = message.find(tszMathDelimiter, mark)) != message.npos) {
+            nrDelims++;
+            mark += lstrlen(tszMathDelimiter);
+        }
+        if(nrDelims > 0 && (nrDelims % 2) != 0)
+            message.append(tszMathDelimiter);
+    }
 
     while(TRUE) {
         for(i = 0; i < NR_CODES; i++) {
