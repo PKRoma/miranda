@@ -112,18 +112,24 @@ rates* ratesCreate(BYTE* pBuffer, WORD wLen)
 
 void ratesRelease(rates** pRates)
 {
-  rates* rates = *pRates;
-  int i;
-
-  EnterCriticalSection(&ratesMutex);
-
-  for (i = 0; i < rates->nGroups; i++)
+  if (pRates)
   {
-    SAFE_FREE(&rates->groups[i].pPairs);
-  }
-  SAFE_FREE(pRates);
+    rates* rates = *pRates;
 
-  LeaveCriticalSection(&ratesMutex);
+    EnterCriticalSection(&ratesMutex);
+
+    if (rates)
+    {
+      int i;
+
+      for (i = 0; i < rates->nGroups; i++)
+      {
+        SAFE_FREE(&rates->groups[i].pPairs);
+      }
+      SAFE_FREE(pRates);
+    }
+    LeaveCriticalSection(&ratesMutex);
+  }
 }
 
 
