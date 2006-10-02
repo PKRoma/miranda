@@ -1381,7 +1381,7 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
 	case DM_GETCONTEXTMENU:
 		{
 			HMENU hMenu = (HMENU) CallService(MS_CLIST_MENUBUILDCONTACT, (WPARAM) dat->hContact, 0);
-			SetWindowLong(hwndDlg, DWL_MSGRESULT, hMenu);
+			SetWindowLong(hwndDlg, DWL_MSGRESULT, (LONG)hMenu);
 			return TRUE;
 		}
 	case WM_CONTEXTMENU:

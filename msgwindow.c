@@ -622,8 +622,8 @@ BOOL CALLBACK DlgProcParentWindow(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM 
 							hSubMenu = GetSubMenu(hMenu, 3);
 							hUserMenu = (HMENU) SendMessage(mwtd->hwnd, DM_GETCONTEXTMENU, 0, 0);
 							if (hUserMenu != NULL) {
-								InsertMenu(hSubMenu, 0, MF_POPUP | MF_BYPOSITION, hUserMenu, TranslateT("User Menu"));
-								InsertMenu(hSubMenu, 1, MF_SEPARATOR | MF_BYPOSITION, NULL, 0);
+								InsertMenu(hSubMenu, 0, MF_POPUP | MF_BYPOSITION, (UINT)hUserMenu, TranslateT("User Menu"));
+								InsertMenu(hSubMenu, 1, MF_SEPARATOR | MF_BYPOSITION, 0, 0);
 							}
 							menuResult = TrackPopupMenu(hSubMenu, TPM_RETURNCMD, x, y, 0, hwndDlg, NULL);
 							switch (menuResult) {
