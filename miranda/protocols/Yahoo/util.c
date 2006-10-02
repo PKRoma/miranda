@@ -143,10 +143,11 @@ static int CALLBACK PopupWindowProc( HWND hWnd, UINT message, WPARAM wParam, LPA
 
 		case UM_FREEPLUGINDATA: {
 				YAHOO_DebugLog("[PopupWindowProc] UM_FREEPLUGINDATA");
-				
-				char *szURL = (char *)PUGetPluginData( hWnd );
-				if ( szURL != NULL ) 
-					free(szURL);
+				{
+					char *szURL = (char *)PUGetPluginData( hWnd );
+					if ( szURL != NULL ) 
+						free(szURL);
+				}
 					
 				return TRUE;
 			}
