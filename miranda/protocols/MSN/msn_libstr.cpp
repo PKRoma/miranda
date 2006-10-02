@@ -44,6 +44,19 @@ char* rtrim( char *string )
    return string;
 }
 
+TCHAR* rtrim( TCHAR* string )
+{
+   TCHAR* p = string + lstrlen( string ) - 1;
+
+   while ( p >= string )
+   {  if ( *p != ' ' && *p != '\t' && *p != '\n' && *p != '\r' )
+         break;
+
+		*p-- = 0;
+   }
+   return string;
+}
+
 void strdel( char* parBuffer, int len )
 {
 	char *p;
@@ -52,3 +65,16 @@ void strdel( char* parBuffer, int len )
 
 	p[ -len ] = '\0';
 }
+
+TCHAR* a2t( const char* str )
+{
+	if ( str == NULL )
+		return NULL;
+
+	#if defined( _UNICODE )
+		return (TCHAR*)CallService( MS_LANGPACK_PCHARTOTCHAR, 0, (LPARAM)str);
+	#else
+		return mir_strdup( str );
+	#endif
+}
+

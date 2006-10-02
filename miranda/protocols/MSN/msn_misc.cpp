@@ -116,7 +116,18 @@ int __stdcall MSN_AddUser( HANDLE hContact, const char* email, int flags )
 			if ( !MSN_GetStaticString( "ID", hContact, id, sizeof id ))
 				msgid = msnNsThread->sendPacket( "REM", "%s %s", listName, id );
 		}
-		else msgid = msnNsThread->sendPacket( "ADC", "%s N=%s F=%s", listName, email, email );
+		else {
+			char urlNick[388];
+			strcpy( urlNick, email );
+
+			if ( !strcmp( email, MyOptions.szEmail )) {
+				DBVARIANT dbv;
+				if ( !DBGetContactSettingStringUtf( NULL, msnProtocolName, "Nick", &dbv )) {
+					UrlEncode( dbv.pszVal, urlNick, sizeof( urlNick ));
+					MSN_FreeVariant( &dbv );
+			}	}
+			msgid = msnNsThread->sendPacket( "ADC", "%s N=%s F=%s", listName, email, urlNick );
+		}
 	}
 	else {
 		if ( flags & LIST_REMOVE )
@@ -402,7 +413,7 @@ void __stdcall MSN_SendStatusMessage( const char* msg, struct MSN_CurrentMedia *
 
 	char* msgEnc = HtmlEncode(( msg == NULL ) ? "" : msg );
 	char *cmArtistEnc = NULL, *cmAlbumEnc = NULL, *cmSongEnc = NULL, *cmFormatEnc = NULL;
-	char  szMsg[ 1024 ], szEmail[ MSN_MAX_EMAIL_LEN ];
+	char  szMsg[ 1024 ];
 
 	if ( (cm == NULL) || ( (cm->szAlbum == NULL) && (cm->szArtist == NULL) && (cm->szSong == NULL) ) ) {
 	mir_snprintf( szMsg, sizeof szMsg, "<Data><PSM>%s</PSM><CurrentMedia></CurrentMedia></Data>", UTF8(msgEnc));
@@ -424,8 +435,7 @@ void __stdcall MSN_SendStatusMessage( const char* msg, struct MSN_CurrentMedia *
 		return;
 
 	replaceStr( msnPreviousUUX, szMsg );
-	if ( !MSN_GetStaticString( "e-mail", NULL, szEmail, sizeof szEmail ))
-		msnNsThread->sendPacket( "UUX", "%d\r\n%s", strlen( szMsg ), szMsg );
+	msnNsThread->sendPacket( "UUX", "%d\r\n%s", strlen( szMsg ), szMsg );
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////
@@ -435,9 +445,6 @@ LONG ThreadData::sendPacket( const char* cmd, const char* fmt,...)
 {
 	if ( this == NULL )  // :)
 		return 0;
-
-//	if ( !strcmp( cmd, "CAL" ) && mIsCalSent )
-//		return 0;
 
 	va_list vararg;
 	va_start( vararg, fmt );
@@ -457,9 +464,6 @@ LONG ThreadData::sendPacket( const char* cmd, const char* fmt,...)
 
 	if ( strcmp( cmd, "MSG" ) && strcmp( cmd, "QRY" ) && strcmp( cmd, "UUX" ))
 		strcat( str,"\r\n" );
-
-	if ( !strcmp( cmd, "CAL" ))
-		mIsCalSent = true;
 
 	int result = send( str, strlen( str ));
 	free( str );
@@ -1072,18 +1076,18 @@ static LONG WINAPI MyInterlockedIncrementInit(PLONG pVal)
 
 // Process a string, and double all % characters, according to chat.dll's restrictions
 // Returns a pointer to the new string (old one is not freed)
-char* EscapeChatTags(char* pszText)
+TCHAR* EscapeChatTags(TCHAR* pszText)
 {
 	int nChars = 0;
-	for ( char* p = pszText; ( p = strchr( p, '%' )) != NULL; p++ )
+	for ( TCHAR* p = pszText; ( p = _tcschr( p, '%' )) != NULL; p++ )
 		nChars++;
 
 	if ( nChars == 0 )
-		return _strdup( pszText );
+		return mir_tstrdup( pszText );
 
-	char* pszNewText = (char*)malloc( strlen( pszText ) + 1 + nChars ), *s, *d;
+	TCHAR* pszNewText = (TCHAR*)malloc( sizeof(TCHAR)*(lstrlen( pszText ) + 1 + nChars)), *s, *d;
 	if ( pszNewText == NULL )
-		return _strdup( pszText );
+		return mir_tstrdup( pszText );
 
 	for ( s = pszText, d = pszNewText; *s; s++ ) {
 		if ( *s == '%' )
@@ -1094,9 +1098,9 @@ char* EscapeChatTags(char* pszText)
 	return pszNewText;
 }
 
-char* UnEscapeChatTags(char* str_in)
+TCHAR* UnEscapeChatTags(TCHAR* str_in)
 {
-	char* s = str_in, *d = str_in;
+	TCHAR *s = str_in, *d = str_in;
 	while ( *s ) {
 		if (( *s == '%' && s[1] == '%' ) || ( *s == '\n' && s[1] == '\n' ))
 			s++;

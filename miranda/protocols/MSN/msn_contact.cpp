@@ -54,6 +54,25 @@ HANDLE __stdcall MSN_HContactFromEmail( const char* msnEmail, const char* msnNic
 	return NULL;
 }
 
+HANDLE __stdcall MSN_HContactFromEmailT( const TCHAR* msnEmail )
+{
+	HANDLE hContact = ( HANDLE )MSN_CallService( MS_DB_CONTACT_FINDFIRST, 0, 0 );
+	while ( hContact != NULL )
+	{
+		char* szProto = ( char* )MSN_CallService( MS_PROTO_GETCONTACTBASEPROTO,( WPARAM )hContact, 0 );
+		if ( szProto != NULL && !strcmp( msnProtocolName, szProto )) {
+			DBVARIANT dbv;
+			if ( !MSN_GetStringT( "e-mail", hContact, &dbv ))
+				if ( !lstrcmpi( msnEmail, dbv.ptszVal ))
+					return hContact;
+		}
+
+		hContact = ( HANDLE )MSN_CallService( MS_DB_CONTACT_FINDNEXT, ( WPARAM )hContact, 0 );
+	}
+
+	return NULL;
+}
+
 HANDLE __stdcall MSN_HContactById( const char* szGuid )
 {
 	HANDLE hContact = ( HANDLE )MSN_CallService( MS_DB_CONTACT_FINDFIRST, 0, 0 );

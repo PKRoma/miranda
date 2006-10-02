@@ -41,7 +41,7 @@ int MSN_GetPassportAuth( char* authChallengeInfo, char*& parResult );
 void mmdecode(char *trg, char *str);
 
 void MSN_ChatStart(ThreadData* info);
-void MSN_KillChatSession(char* id);
+void MSN_KillChatSession(TCHAR* id);
 
  int tridUrlInbox = -1, tridUrlEdit = -1;
 
@@ -533,31 +533,36 @@ void MSN_ReceiveMessage( ThreadData* info, char* cmdString, char* params )
 			MultiByteToWideChar( CP_ACP, 0, tPrefix, tPrefixLen, ( wchar_t* )p, tPrefixLen );
 			p += tPrefixLen*sizeof( wchar_t );
 		}
-		if ( tRealBodyLen != 0 ) {
-			memcpy( p, tRealBody, sizeof( wchar_t )*( tRealBodyLen+1 ));
-			free( tRealBody );
-		}
 
 		if ( info->mChatID[0] ) {
-			GCDEST gcd = {0};
-			GCEVENT gce = {0};
+			GCDEST gcd = { msnProtocolName, NULL, GC_EVENT_MESSAGE };
+			gcd.ptszID = info->mChatID;
 
-			gcd.pszModule = msnProtocolName;
-			gcd.pszID = info->mChatID;
-			gcd.iType = GC_EVENT_MESSAGE;
+			GCEVENT gce = {0};
 			gce.cbSize = sizeof(GCEVENT);
+			gce.dwFlags = GC_TCHAR | GCEF_ADDTOLOG;
 			gce.pDest = &gcd;
-			gce.pszUID = data.fromEmail;
-			gce.pszNick = MSN_GetContactName(MSN_HContactFromEmail(data.fromEmail, NULL, 1, 1));
-			gce.time = time(NULL);
+			gce.ptszUID = a2t(data.fromEmail);
+			gce.ptszNick = MSN_GetContactNameT( MSN_HContactFromEmail( data.fromEmail, NULL, 1, 1 ));
+			gce.time = time( NULL );
 			gce.bIsMe = FALSE;
-			gce.pszText = (char*)EscapeChatTags(tMsgBuf);
-			//gce.pszText = tMsgBuf;
-			gce.bAddToLog = TRUE;
+			#if defined( _UNICODE )
+				gce.ptszText = EscapeChatTags( tRealBody );
+			#else
+				gce.ptszText = EscapeChatTags( tMsgBuf );
+			#endif
 			MSN_CallService(MS_GC_EVENT, NULL, (LPARAM)&gce);
-			free(( void* )gce.pszText);
+			mir_free(( void* )gce.pszText);
+			mir_free(( void* )gce.ptszUID );
+			if ( tRealBodyLen != 0 )
+				free( tRealBody );
 		}
 		else {
+			if ( tRealBodyLen != 0 ) {
+				memcpy( p, tRealBody, sizeof( wchar_t )*( tRealBodyLen+1 ));
+				free( tRealBody );
+			}
+
 			PROTORECVEVENT pre;
 			pre.szMessage = ( char* )tMsgBuf;
 			pre.flags = PREF_UNICODE + (( isRtl ) ? PREF_RTL : 0);
@@ -974,20 +979,19 @@ LBL_InvalidCommand:
 
 			// modified for chat
 			if ( msnHaveChatDll ) {
-				GCDEST gcd = {0};
-				gcd.pszModule = msnProtocolName;
-				gcd.pszID = info->mChatID;
-				gcd.iType = GC_EVENT_QUIT;
+				GCDEST gcd = { msnProtocolName, NULL, GC_EVENT_QUIT };
+				gcd.ptszID = info->mChatID;
 
 				GCEVENT gce = {0};
 				gce.cbSize = sizeof( GCEVENT );
+				gce.dwFlags = GC_TCHAR | GCEF_ADDTOLOG;
 				gce.pDest = &gcd;
-				gce.pszNick = MSN_GetContactName( hContact );
-				gce.pszUID = data.userEmail;
+				gce.ptszNick = MSN_GetContactNameT( hContact );
+				gce.ptszUID = a2t(data.userEmail);
 				gce.time = time( NULL );
 				gce.bIsMe = FALSE;
-				gce.bAddToLog = TRUE;
 				MSN_CallService( MS_GC_EVENT, NULL, ( LPARAM )&gce );
+				mir_free(( void* )gce.pszUID );
 			}
 
 			// in here, the first contact is the chat ID, starting from the second will be actual contact
@@ -995,20 +999,18 @@ LBL_InvalidCommand:
 			int personleft = MSN_ContactLeft( info, hContact );
 			// see if the session is quit due to idleness
 			if ( personleft == 1 && !lstrcmpA( data.isIdle, "1" ) ) {
-				GCDEST gcd = {0};
-				gcd.pszModule = msnProtocolName;
-				gcd.pszID = info->mChatID;
-				gcd.iType = GC_EVENT_INFORMATION;
+				GCDEST gcd = { msnProtocolName, NULL, GC_EVENT_INFORMATION };
+				gcd.ptszID = info->mChatID;
 
 				GCEVENT gce = {0};
 				gce.cbSize = sizeof( GCEVENT );
+				gce.dwFlags = GC_TCHAR | GCEF_ADDTOLOG;
 				gce.pDest = &gcd;
 				gce.bIsMe = FALSE;
 				gce.time = time(NULL);
-				gce.bAddToLog = TRUE;
-				gce.pszText = Translate("This conversation has been inactive, participants will be removed.");
+				gce.ptszText = TranslateT("This conversation has been inactive, participants will be removed.");
 				MSN_CallService( MS_GC_EVENT, NULL, ( LPARAM )&gce );
-				gce.pszText = Translate("To resume the conversation, please quit this session and start a new chat session.");
+				gce.ptszText = TranslateT("To resume the conversation, please quit this session and start a new chat session.");
 				MSN_CallService( MS_GC_EVENT, NULL, ( LPARAM )&gce );
 			}
 			else if ( personleft == 2 && lstrcmpA( data.isIdle, "1" ) ) {
@@ -1095,9 +1097,7 @@ LBL_InvalidCommand:
 		}
 		case ' RVC':    //********* CVR: MSNP8
 		{
-			char tEmail[ MSN_MAX_EMAIL_LEN ];
-			MSN_GetStaticString( "e-mail", NULL, tEmail, sizeof( tEmail ));
-			info->sendPacket( "USR", "TWN I %s", tEmail );
+			info->sendPacket( "USR", "TWN I %s", MyOptions.szEmail );
 			break;
 		}
 		case ' NLF':    //********* FLN: section 7.9 Notification Messages
@@ -1121,13 +1121,8 @@ LBL_InvalidCommand:
 				goto LBL_InvalidCommand;
 
 			//SEND USR I packet, section 7.3 Authentication
-			if ( !strcmp( security1, "MD5" )) {
-				char tEmail[ MSN_MAX_EMAIL_LEN ];
-				if ( !MSN_GetStaticString( "e-mail", NULL, tEmail, sizeof( tEmail )))
-					info->sendPacket( "USR", "MD5 I %s", tEmail );
-				else
-					info->sendPacket( "USR", "MD5 I " );   //this will fail, of course
-			}
+			if ( !strcmp( security1, "MD5" ))
+				info->sendPacket( "USR", "MD5 I %s", MyOptions.szEmail );
 			else {
 				MSN_DebugLog( "Unknown security package '%s'", security1 );
 				if ( info->mType == SERVER_NOTIFICATION || info->mType == SERVER_DISPATCH ) {
@@ -1154,12 +1149,6 @@ LBL_InvalidCommand:
 
 			HANDLE hContact = MSN_HContactFromEmail( data.userEmail, NULL, 0, 0 );
 			if ( hContact != NULL) {
-				// is there an uninitialized switchboard for this contact?
-				ThreadData* T = MSN_GetUnconnectedThread( hContact );
-				if ( T != NULL )
-					if ( hContact == T->mInitialContact )
-						T->sendPacket( "CAL", "%s", data.userEmail );
-
 				MSN_SetStringUtf( hContact, "Nick", data.userNick );
 				MSN_SetWord( hContact, "Status", ( WORD )MSNStatusToMiranda( data.userStatus ));
 //				DBDeleteContactSetting( hContact, "CList", "StatusMsg" );
@@ -1299,25 +1288,22 @@ LBL_InvalidCommand:
 
 				if ( msnHaveChatDll ) {
 					if ( chatCreated ) {
-						GCDEST gcd = {0};
+						GCDEST gcd = { msnProtocolName, NULL, GC_EVENT_JOIN };
+						gcd.ptszID = info->mChatID;
+
 						GCEVENT gce = {0};
-
-						gcd.pszModule = msnProtocolName;
-						gcd.pszID = info->mChatID;
-						gcd.iType = GC_EVENT_JOIN;
-
 						gce.cbSize = sizeof(GCEVENT);
+						gce.dwFlags = GC_TCHAR | GCEF_ADDTOLOG;
 						gce.pDest = &gcd;
-						gce.pszNick = MSN_GetContactName( hContact );
-						gce.pszUID = data.userEmail;
-						gce.pszStatus = Translate( "Others" );
+						gce.ptszNick = MSN_GetContactNameT( hContact );
+						gce.ptszUID = a2t(data.userEmail);
+						gce.ptszStatus = TranslateT( "Others" );
 						gce.time = time(NULL);
 						gce.bIsMe = FALSE;
-						gce.bAddToLog = TRUE;
 						MSN_CallService( MS_GC_EVENT, NULL, ( LPARAM )&gce );
+						mir_free(( void* )gce.ptszUID );
 					}
-					else
-						MSN_ChatStart(info);
+					else MSN_ChatStart( info );
 			}	}
 			return 0;
 		}
@@ -1707,7 +1693,7 @@ LBL_InvalidCommand:
 
 					if ( MSN_GetByte( "NeverUpdateNickname", 0 )) {
 						DBVARIANT dbv;
-						if ( !DBGetContactSettingTString( NULL, msnProtocolName, "Nick", &dbv )) {
+						if ( !MSN_GetStringT( "Nick", NULL, &dbv )) {
 							MSN_SendNicknameT( dbv.ptszVal );
 							MSN_FreeVariant( &dbv );
 						}
@@ -1739,19 +1725,18 @@ LBL_InvalidCommand:
 			if ( sscanf( params, "%6s", protocol1 ) < 1 )
 				goto LBL_InvalidCommand;
 
-			char tEmail[ MSN_MAX_EMAIL_LEN ];
-			if ( MSN_GetStaticString( "e-mail", NULL, tEmail, sizeof( tEmail ))) {
+			if ( MyOptions.szEmail[0] == 0 ) {
 				MSN_ShowError( "You must specify your e-mail in Options/Network/MSN" );
 				return 1;
 			}
 
 			if ( !strcmp( protocol1, "MSNP10" )) {
-				info->sendPacket( "CVR","0x0409 winnt 5.1 i386 MSNMSGR 6.2.0205 MSMSGS %s", tEmail );
+				info->sendPacket( "CVR","0x0409 winnt 5.1 i386 MSNMSGR 6.2.0205 MSMSGS %s", MyOptions.szEmail );
 				msnProtChallenge = "Q1P7W2E4J9R8U3S5";
 				msnProductID = "msmsgs@msnmsgr.com";
 			}
          else if ( !strcmp( protocol1, "MSNP11" )) {
-				info->sendPacket( "CVR","0x0409 winnt 5.1 i386 MSNMSGR 7.5.0311 MSMSGS %s", tEmail );
+				info->sendPacket( "CVR","0x0409 winnt 5.1 i386 MSNMSGR 7.5.0311 MSMSGS %s", MyOptions.szEmail );
 				msnProtChallenge = "YMM8C_H7KCQ2S_KL";
 				msnProductID = "PROD0090YUAUV{2B";
 			}

@@ -333,7 +333,7 @@ void __stdcall p2p_sendRedirect( ThreadData* info, filetransfer* ft )
 	tHdr->mAckDataSize = ft->std.currentFileProgress;
 
 	if ( info == NULL ) {
-//		if ( MsgQueue_CheckContact( ft->std.hContact ) == NULL )
+		if ( MSN_GetUnconnectedThread( ft->std.hContact ) == NULL )
 			msnNsThread->sendPacket( "XFR", "SB" );
 		MsgQueue_Add( ft->std.hContact, 'D', buf, int( p - buf ), NULL );
 	}
@@ -362,9 +362,6 @@ void __stdcall p2p_sendSlp(
 		return;
 	}
 
-	char szMyEmail[ MSN_MAX_EMAIL_LEN ];
-	MSN_GetStaticString( "e-mail", NULL, szMyEmail, sizeof( szMyEmail ));
-
 	char* buf = ( char* )alloca( 1000 + szContLen + pHeaders.getLength());
 	char* p = buf;
 
@@ -389,7 +386,7 @@ void __stdcall p2p_sendSlp(
 	p += sprintf( p,
 		"\r\nTo: <msnmsgr:%s>\r\n"
 		"From: <msnmsgr:%s>\r\n"
-		"Via: MSNSLP/1.0/TLP ;branch=%s\r\n", ft->p2p_dest, szMyEmail, ft->p2p_branch );
+		"Via: MSNSLP/1.0/TLP ;branch=%s\r\n", ft->p2p_dest, MyOptions.szEmail, ft->p2p_branch );
 
 	p = pHeaders.writeToBuffer( p );
 
@@ -406,7 +403,7 @@ void __stdcall p2p_sendSlp(
 	*( DWORD* )p = 0; p += sizeof( DWORD );
 
 	if ( info == NULL ) {
-//		if ( MsgQueue_CheckContact( ft->std.hContact ) == NULL )
+		if ( MSN_GetUnconnectedThread( ft->std.hContact ) == NULL )
 			msnNsThread->sendPacket( "XFR", "SB" );
 		MsgQueue_Add( ft->std.hContact, 'D', buf, int( p - buf ), NULL );
 	}
@@ -674,8 +671,7 @@ void __cdecl p2p_sendFeedThread( ThreadData* info )
 
 	filetransfer *ft = info->mP2pSession;
 
-	if ( p2p_sessionRegistered( ft ) &&
-		 WaitForSingleObject( ft->hLockHandle, 2000 ) == WAIT_OBJECT_0)
+	if ( p2p_sessionRegistered( ft ) && WaitForSingleObject( ft->hLockHandle, 2000 ) == WAIT_OBJECT_0)
 	{
 		hLockHandle = ft->hLockHandle;
 
@@ -683,7 +679,8 @@ void __cdecl p2p_sendFeedThread( ThreadData* info )
 			ft->p2p_sendmsgid = ++ft->p2p_msgid;
 
 		ThreadData* T = MSN_GetP2PThreadByContact( ft->std.hContact );
-		ft->tType = T->mType;
+		if ( T != NULL )
+			ft->tType = T->mType;
 
 		ReleaseMutex( hLockHandle );
 	}

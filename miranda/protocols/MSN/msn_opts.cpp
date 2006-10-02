@@ -65,10 +65,9 @@ static BOOL CALLBACK DlgProcMsnOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARA
 	case WM_INITDIALOG: {
 		TranslateDialogDefault( hwndDlg );
 
-		char tBuffer[ MAX_PATH ];
-		if ( !MSN_GetStaticString( "e-mail", NULL, tBuffer, sizeof( tBuffer )))
-			SetDlgItemTextA( hwndDlg, IDC_HANDLE, tBuffer );
+		SetDlgItemTextA( hwndDlg, IDC_HANDLE, MyOptions.szEmail );
 
+		char tBuffer[ MAX_PATH ];
 		if ( !MSN_GetStaticString( "Password", NULL, tBuffer, sizeof( tBuffer ))) {
 			MSN_CallService( MS_DB_CRYPT_DECODESTRING, strlen( tBuffer )+1, ( LPARAM )tBuffer );
 			tBuffer[ 16 ] = 0;
@@ -78,7 +77,7 @@ static BOOL CALLBACK DlgProcMsnOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARA
 
 		HWND wnd = GetDlgItem( hwndDlg, IDC_HANDLE2 );
 		DBVARIANT dbv;
-		if ( !DBGetContactSettingTString( NULL, msnProtocolName, "Nick", &dbv )) {
+		if ( !MSN_GetStringT( "Nick", NULL, &dbv )) {
 			SetWindowText( wnd, dbv.ptszVal );
 			MSN_FreeVariant( &dbv );
 		}
@@ -205,29 +204,30 @@ LBL_Continue:
 	case WM_NOTIFY:
 		if (((LPNMHDR)lParam)->code == PSN_APPLY ) {
 			bool reconnectRequired = false, restartRequired = false;
-			TCHAR screenStr[ MAX_PATH ], dbStr[ MAX_PATH ];
-			char  password[ 100 ];
+			TCHAR screenStr[ MAX_PATH ];
+			char  password[ 100 ], szEmail[MSN_MAX_EMAIL_LEN];
 			DBVARIANT dbv;
 
-			GetDlgItemText( hwndDlg, IDC_HANDLE, screenStr, sizeof( screenStr ));
-			if ( DBGetContactSettingTString( (char *)"e-mail", msnProtocolName, NULL, &dbv ))
-				dbv.ptszVal = NULL;
-			if ( lstrcmp( screenStr, dbStr ))
+			GetDlgItemTextA( hwndDlg, IDC_HANDLE, szEmail, sizeof( szEmail ));
+			if ( strcmp( szEmail, MyOptions.szEmail )) {
 				reconnectRequired = true;
-			MSN_SetStringT( NULL, "e-mail", screenStr );
-			MSN_FreeVariant( &dbv );
+				strcpy( MyOptions.szEmail, szEmail );
+				MSN_SetString( NULL, "e-mail", szEmail );
+			}
 
 			GetDlgItemTextA( hwndDlg, IDC_PASSWORD, password, sizeof( password ));
 			MSN_CallService( MS_DB_CRYPT_ENCODESTRING, sizeof( password ),( LPARAM )password );
 			if ( DBGetContactSetting( (char *)"Password", msnProtocolName, NULL, &dbv ))
 				dbv.pszVal = NULL;
-			if ( lstrcmp( screenStr, dbStr ))
+			if ( lstrcmpA( password, dbv.pszVal )) {
 				reconnectRequired = true;
-			MSN_SetString( NULL, "Password", password );
-			MSN_FreeVariant( &dbv );
+				MSN_SetString( NULL, "Password", password );
+			}
+			if ( dbv.pszVal != NULL )
+				MSN_FreeVariant( &dbv );
 
 			GetDlgItemText( hwndDlg, IDC_HANDLE2, screenStr, sizeof( screenStr ));
-			if	( !DBGetContactSettingTString( NULL, msnProtocolName, "Nick", &dbv )) {
+			if	( !MSN_GetStringT( "Nick", NULL, &dbv )) {
 				if ( lstrcmp( dbv.ptszVal, screenStr ))
 					MSN_SendNicknameT( screenStr );
 				MSN_FreeVariant( &dbv );
@@ -637,6 +637,8 @@ void __stdcall LoadOptions()
 	MyOptions.UseProxy = MSN_GetByte( "NLUseProxy", FALSE );
 	MyOptions.UseGateway = MSN_GetByte( "UseGateway", FALSE );
 	MyOptions.UseWinColors = MSN_GetByte( "UseWinColors", FALSE );
+	if ( MSN_GetStaticString( "e-mail", NULL, MyOptions.szEmail, sizeof( MyOptions.szEmail )))
+		MyOptions.szEmail[0] = 0;
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////
@@ -646,12 +648,12 @@ DWORD WINAPI MsnShowMailThread( LPVOID )
 {
 	DBVARIANT dbv;
 
-	DBGetContactSetting( NULL, msnProtocolName, "e-mail", &dbv );
-	char* email = ( char* )alloca( strlen( dbv.pszVal )*3 );
-	UrlEncode( dbv.pszVal, email, strlen( dbv.pszVal )*3 );
-	MSN_FreeVariant( &dbv );
+	char* email = ( char* )alloca( strlen( MyOptions.szEmail )*3 );
+	UrlEncode( MyOptions.szEmail, email, strlen( MyOptions.szEmail )*3 );
 
-	DBGetContactSetting( NULL, msnProtocolName, "Password", &dbv );
+	if ( DBGetContactSetting( NULL, msnProtocolName, "Password", &dbv ))
+		return 0;
+
 	MSN_CallService( MS_DB_CRYPT_DECODESTRING, strlen( dbv.pszVal )+1, ( LPARAM )dbv.pszVal );
 	char* passwd = ( char* )alloca( strlen( dbv.pszVal )*3 );
 	UrlEncode( dbv.pszVal, passwd, strlen( dbv.pszVal )*3 );

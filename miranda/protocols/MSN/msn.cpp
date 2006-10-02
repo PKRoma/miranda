@@ -29,7 +29,8 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 HINSTANCE hInst;
 PLUGINLINK *pluginLink;
 
-struct MM_INTERFACE memoryManagerInterface;
+MM_INTERFACE memoryManagerInterface;
+LIST_INTERFACE li = { 0 };
 
 /////////////////////////////////////////////////////////////////////////////////////////
 // Initialization routines
@@ -58,7 +59,7 @@ HANDLE   msnMainThread;
 int      msnOtherContactsBlocked = 0;
 HANDLE   hHookOnUserInfoInit = NULL;
 HANDLE   hGroupAddEvent = NULL;
-HANDLE	 hMSNNudge = NULL;
+HANDLE   hMSNNudge = NULL;
 bool		msnHaveChatDll = false;
 
 MYOPTIONS MyOptions;
@@ -269,6 +270,13 @@ extern "C" int __declspec(dllexport) Load( PLUGINLINK* link )
 	memset(&memoryManagerInterface, 0, sizeof(memoryManagerInterface));
 	memoryManagerInterface.cbSize = sizeof(memoryManagerInterface);
 	CallService(MS_SYSTEM_GET_MMI, 0, (LPARAM) &memoryManagerInterface);
+
+	// set the lists manager;
+	li.cbSize = sizeof( li );
+	if ( CallService(MS_SYSTEM_GET_LI,0,(LPARAM)&li) == CALLSERVICE_NOTFOUND ) {
+		MessageBoxA( NULL, "This plugin requires Miranda IM 0.6 bld. 8 or later", "Fatal error", MB_OK );
+		return 1;
+	}
 
 	char path[MAX_PATH];
 	char* protocolname;

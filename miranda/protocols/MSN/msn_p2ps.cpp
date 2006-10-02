@@ -115,22 +115,6 @@ filetransfer* __stdcall p2p_getSessionByMsgID( unsigned id )
 	return ft;
 }
 
-filetransfer* __stdcall p2p_getAnotherContactSession( filetransfer* ft )
-{
-   filetransfer* result = NULL;
-	EnterCriticalSection( &sessionLock );
-
-	for ( int i=0; i < sessionCount; i++ ) {
-		filetransfer* FT = sessionList[i];
-		if ( FT->std.hContact == ft->std.hContact && FT != ft ) {
-			result = FT;
-			break;
-	}	}
-
-	LeaveCriticalSection( &sessionLock );
-	return result;
-}
-
 BOOL __stdcall p2p_sessionRegistered( filetransfer* ft )
 {
     BOOL result = FALSE;

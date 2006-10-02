@@ -28,8 +28,6 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 struct SSL_Base
 {
-				char* m_szEmail;
-
 	virtual	~SSL_Base() {}
 
 	virtual  int init() = 0;
@@ -574,9 +572,9 @@ int MSN_GetPassportAuth( char* authChallengeInfo, char*& parResult )
 		return 2;
 	}
 
-	char szEmail[ MSN_MAX_EMAIL_LEN ];
-	MSN_GetStaticString( "e-mail", NULL, szEmail, MSN_MAX_EMAIL_LEN );
-	char* p = strchr( szEmail, '@' );
+	char tEmail[ MSN_MAX_EMAIL_LEN ];
+	strcpy( tEmail, MyOptions.szEmail );
+	char* p = strchr( tEmail, '@' );
 	if ( p != NULL ) {
 		memmove( p+3, p+1, strlen( p ));
 		memcpy( p, "%40", 3 );
@@ -590,7 +588,7 @@ int MSN_GetPassportAuth( char* authChallengeInfo, char*& parResult )
 	char* szAuthInfo = ( char* )alloca( 1024 );
 	int nBytes = mir_snprintf( szAuthInfo, 1024,
 		"Authorization: Passport1.4 OrgVerb=GET,OrgURL=http%%3A%%2F%%2Fmessenger%%2Emsn%%2Ecom,sign-in=%s,pwd=",
-		szEmail );
+		tEmail );
 	UrlEncode( szPassword, szAuthInfo+nBytes, 1024-nBytes );
 	strcat( szAuthInfo+nBytes, "," );
 	strcat( szAuthInfo+nBytes, authChallengeInfo );

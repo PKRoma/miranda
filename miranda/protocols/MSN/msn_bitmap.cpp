@@ -140,10 +140,8 @@ int __stdcall MSN_SaveBitmapAsAvatar( HBITMAP hBitmap, const char* szFileName )
 	_splitpath(szFileName, drive, dir, fname, ext );
 	SHA1Reset( &sha1ctx );
 
-	char szEmail[ MSN_MAX_EMAIL_LEN ];
-	MSN_GetStaticString( "e-mail", NULL, szEmail, sizeof( szEmail ));
 	SHA1Input( &sha1ctx, ( PBYTE )"Creator", 7 );
-	SHA1Input( &sha1ctx, ( PBYTE )szEmail, strlen( szEmail ));
+	SHA1Input( &sha1ctx, ( PBYTE )MyOptions.szEmail, strlen( MyOptions.szEmail ));
 
 	char szFileSize[ 20 ];
 	ltoa( dwPngSize, szFileSize, 10 );
@@ -169,7 +167,7 @@ int __stdcall MSN_SaveBitmapAsAvatar( HBITMAP hBitmap, const char* szFileName )
 		char* szBuffer = ( char* )alloca( 1000 );
 		mir_snprintf( szBuffer, 1000,
 			"<msnobj Creator=\"%s\" Size=\"%ld\" Type=\"3\" Location=\"%s\" Friendly=\"AAA=\" SHA1D=\"%s\" SHA1C=\"%s\"/>",
-			szEmail, dwPngSize,fname, szSha1d, szSha1c );
+			MyOptions.szEmail, dwPngSize,fname, szSha1d, szSha1c );
 
 		char* szEncodedBuffer = ( char* )alloca( 1000 );
 		UrlEncode( szBuffer, szEncodedBuffer, 1000 );
