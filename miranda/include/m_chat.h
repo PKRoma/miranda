@@ -75,7 +75,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 		szProto = (char *) CallService(MS_PROTO_GETCONTACTBASEPROTO, (WPARAM) hContact, 0);
 		if (szProto != NULL && !lstrcmpi(szProto, PROTONAME))
 		{
-			if(DBGetContactSettingByte(hContact, PROTONAME, "ChatRoom", 0) == 0)
+			if (DBGetContactSettingByte(hContact, PROTONAME, "ChatRoom", 0) == 0)
 			{
 				... do something with the hContact here;
 			}
@@ -135,36 +135,38 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #define GC_ACKMSG          0x0020		//the protocol must acknowlege messages sent
 #define GC_TYPNOTIF        0x0040		//NOT SUPPORTED YET! Enable typing notifications.
 #define GC_CHANMGR         0x0080		//enable the 'channel settings' button
-#define GC_UNICODE         0x0100		//NOT SUPPORTED YET! Enable unicode (if chat supports it),
-										//Pass UNICODE instead of ASCII. Note that
-										//registration will fail if the unicode version	of chat is not installed									//isn't installed. Check what MS_GC_REGISTER returns.
+
+#define GC_UNICODE        0x01000		//NOT SUPPORTED YET! Enable unicode (if chat supports it),
+													//Pass UNICODE instead of ASCII. Note that
+													//registration will fail if the unicode version	of chat is not installed									
+#if defined( _UNICODE )
+	#define GC_TCHAR   GC_UNICODE
+#else
+	#define GC_TCHAR   0
+#endif
+
 // Error messages
 #define GC_REGISTER_WRONGVER	1		//You appear to be using the wrong version of this API. Registration failed.
 #define GC_REGISTER_ERROR		2		//An internal error occurred. Registration failed.
 #define GC_REGISTER_NOUNICODE	3		//MS_GC_REGISTER returns this error if the Unicode version of chat
-										//is not installed and GC_UNICODE is set. Registration failed
+                                    //is not installed and GC_UNICODE is set. Registration failed
 
 // GCREGISTER struct
 typedef struct {
-	int			cbSize;				//Set to sizeof(GCREGISTER);
-	DWORD		dwFlags;			//Use GC_* flags above to indicate features supported
-	const char* pszModule;			//This MUST be the protocol name as registered with Miranda IM
-	const char* pszModuleDispName;	//This is the protocol's real name as it will be displayed to the user
-	int			iMaxText;			//Max message length the protocol supports. Will limit the typing area input. 0 = no limit
-	int			nColors;			//Number of colors in the colorchooser menu for the color buttons. Max = 100
-	COLORREF*	pColors;			//pointer to the first item in a static COLORREF array containing the colors
-									//that should be showed in the colorchooser menu.
-									//ie:	COLORREF crCols[nColors];
-									//		pColors = &crCols[0];
- } GCREGISTER;
+	int         cbSize;            //Set to sizeof(GCREGISTER);
+	DWORD       dwFlags;           //Use GC_* flags above to indicate features supported
+	const char* pszModule;         //This MUST be the protocol name as registered with Miranda IM
+	const char* pszModuleDispName; //This is the protocol's real name as it will be displayed to the user
+	int         iMaxText;          //Max message length the protocol supports. Will limit the typing area input. 0 = no limit
+	int         nColors;           //Number of colors in the colorchooser menu for the color buttons. Max = 100
+	COLORREF*   pColors;           //pointer to the first item in a static COLORREF array containing the colors
+	                               //that should be showed in the colorchooser menu.
+	                               //ie:	COLORREF crCols[nColors];
+	                               //		pColors = &crCols[0];
+}
+	GCREGISTER;
 
 #define MS_GC_REGISTER  "GChat/Register"
-
-
-
-
-
-
 
 /*
 	Step 2. -- CREATE a new SESSION --
@@ -199,10 +201,19 @@ typedef struct {
 	int			cbSize;				//Set to sizeof(GCSESSION);
 	int			iType;				//Use one of the GCW_* flags above to set the type of session
 	const char *pszModule;			//The name of the protocol owning the session (the same as pszModule when you register)
-	const char *pszName;			//The name of the session as it will be displayed to the user
-	const char *pszID;				//The unique identifier for the session.
-	const char *pszStatusbarText;	//Optional text to set in the statusbar of the chat room window, or NULL.
-	BOOL		bDisableNickList;	//SUPPORT REMOVED in Chat 0.3+ but still included to not break existing implementations.
+	union {
+		const char* pszName;			//The name of the session as it will be displayed to the user
+		const TCHAR* ptszName;
+	};
+	union {
+		const char* pszID;				//The unique identifier for the session.
+		const TCHAR* ptszID;
+	};
+	union {
+		const char* pszStatusbarText;	//Optional text to set in the statusbar of the chat room window, or NULL.
+		const TCHAR* ptszStatusbarText;
+	};
+	DWORD    dwFlags;	
 	DWORD		dwItemData;			//Set user defined data for this session. Retrieve it by using the GC_EVENT_GETITEMDATA event
  } GCSESSION;
 #define MS_GC_NEWSESSION  "GChat/NewChat"
@@ -437,48 +448,63 @@ typedef struct {
 
 #define GC_EVENT_CONTROL		0x1005
 
-
-
 // Error messages
 #define GC_EVENT_WRONGVER		1		//You appear to be using the wrong version of this API.
 #define GC_EVENT_ERROR			2		//An internal error occurred.
 
-
-
 // The GCDEST structure. It is passed to Chat inside GCEVENT.
 typedef struct {
-	char		*pszModule;			//Name of the protocol (same as you registered with)
-	char		*pszID;				//Unique identifier of the session, or NULL to broadcast to all sessions as specified above
-	int			iType;				//Use GC_EVENT_* as defined above. Only one event per service call.
+	char* pszModule;		//Name of the protocol (same as you registered with)
+	union {
+		char* pszID;		//Unique identifier of the session, or NULL to broadcast to all sessions as specified above
+		TCHAR* ptszID;
+	};
+	int iType;				//Use GC_EVENT_* as defined above. Only one event per service call.
 } GCDEST;
 
 
 // The GCEVENT structure
 typedef struct {
-	int			cbSize;				// Set to sizeof(GCEVENT);
-	GCDEST*		pDest;				// pointer to a GCDEST structure which specifies the session to receive the event
-	const char *pszText;			// usage depends on type of event, max 2048 characters
-	const char *pszNick;			// usage depends on type of event
-	const char *pszUID;				// usage depends on type of event, Do NOT use spaces for unique user identifiers.
-	const char *pszStatus;			// usage depends on type of event
-	const char *pszUserInfo;		// Additional user information that is displayed after the nickname.
-									// IRC use it to display a hostmask for JOIN, PART (and more) events.
-	BOOL		bIsMe;				// Is this event from the Miranda user?
-	BOOL		bAddToLog;			// Display in the message log? There is no need to set this to
-									// FALSE any other time than when initializing the window (before sending SESSION_INITDONE)
-	DWORD		dwItemData;			// User specified data.
-	time_t		time;				// Timestamp of the event
- } GCEVENT;
+	int			cbSize;           // Set to sizeof(GCEVENT);
+	GCDEST*		pDest;            // pointer to a GCDEST structure which specifies the session to receive the event
+	union {
+		const char  *pszText;      // usage depends on type of event, max 2048 characters
+		const TCHAR *ptszText;
+	};
+	union {
+		const char*  pszNick;      // usage depends on type of event
+		const TCHAR* ptszNick;
+	};
+	union {
+		const char*  pszUID;       // usage depends on type of event, Do NOT use spaces for unique user identifiers.
+		const TCHAR* ptszUID;
+	};
+	union {
+		const char*  pszStatus;     // usage depends on type of event
+		const TCHAR* ptszStatus;
+	};
+	union {
+		const char*  pszUserInfo;   // Additional user information that is displayed after the nickname.
+		const TCHAR* ptszUserInfo;
+	};
+                                 // IRC use it to display a hostmask for JOIN, PART (and more) events.
+	BOOL  bIsMe;                  // Is this event from the Miranda user?
+	union {
+		BOOL  bAddToLog;           // Display in the message log? There is no need to set this to
+		DWORD dwFlags;             // event flags
+	};
+                                 // FALSE any other time than when initializing the window (before sending SESSION_INITDONE)
+	DWORD		dwItemData;          // User specified data.
+	time_t   time;                // Timestamp of the event
+}
+	GCEVENT;
 
 #define MS_GC_EVENT  "GChat/NewEvent"
 
-
-
+#define GCEF_ADDTOLOG   0x0001
 
 // OK! That was about everything that you need to know about for operating Chat in a basic way.
 // There are however some more things you will need to know about. Some you may use and some you may not need,
-
-
 
 /*
 	 -- GETTING info about a SESSION or session data --
@@ -489,10 +515,8 @@ typedef struct {
 
 	* returns -1 on failure and the sessioncount on success
 */
+
 #define MS_GC_GETSESSIONCOUNT  "GChat/GetCount"
-
-
-
 
 /*
 	 -- GETTING info about a SESSION or session data --
@@ -519,22 +543,20 @@ typedef struct {
 // The GC_INFO structure
 typedef struct {
 	DWORD		Flags;				// use a combination of the above flags
-	int			iItem;				// session type (GCW_*)
-	int			iType;				// session type (GCW_*)
-	char *		pszModule;			// the module name as registered in MS_GC_REGISTER
-	char *		pszID;				// unique ID of the session
-	char *		pszName;			// display name of the session
-	DWORD		dwItemData;			// user specified data.
-	int			iCount;				// count of users in the nicklist
-	char *		pszUsers;			// space separated string containing the UID's of the users in the user list.
+	int		iItem;				// session type (GCW_*)
+	int		iType;				// session type (GCW_*)
+	char*		pszModule;			// the module name as registered in MS_GC_REGISTER
+	TCHAR*	pszID;				// unique ID of the session
+	TCHAR*	pszName;			// display name of the session
+	DWORD    dwItemData;			// user specified data.
+	int		iCount;				// count of users in the nicklist
+	char*		pszUsers;			// space separated string containing the UID's of the users in the user list.
 									// NOTE. Use Mirandas mmi_free() on the returned string.
-	HANDLE		hContact;			// hContact for the session (can be NULL)
- } GC_INFO;
+	HANDLE	hContact;			// hContact for the session (can be NULL)
+}
+	GC_INFO;
+
 #define MS_GC_GETINFO  "GChat/GetInfo"
-
-
-
-
 
 //------------------------- HOOKS ------------------------
 /*
@@ -561,12 +583,18 @@ typedef struct {
 #define ME_GC_EVENT  "GChat/OutgoingEvent"
 
 typedef struct {
-	GCDEST*		pDest;				// pointer to a GCDEST structure which specifies from which session the hook was triggered
-	char *		pszText;			// usage depends on type of event
-	char *		pszUID;				// unique identifier, usage depends on type of event
-	DWORD		dwData;				// user defined data, usage depends on type of event
- } GCHOOK;
-
+	GCDEST* pDest;     // pointer to a GCDEST structure which specifies from which session the hook was triggered
+	union {
+		char*   pszText;  // usage depends on type of event
+		TCHAR*  ptszText;
+	};
+	union {
+		char*   pszUID;   // unique identifier, usage depends on type of event
+		TCHAR*  ptszUID;
+	};
+	DWORD   dwData;    // user defined data, usage depends on type of event
+}
+	GCHOOK;
 
 /*
 	-- Build the pop up menus --
@@ -595,29 +623,31 @@ typedef struct {
 
 // contains info on a menuitem to be added
 struct gc_item {
-	char *			pszDesc;		// Textual description of the menu item to add
+	TCHAR*		pszDesc;		// Textual description of the menu item to add
 	DWORD			dwID;			// when/if the user selects this menu item this
 									// value will be returned via the above hook, GC_USER_LOGMENU
 									// or GC_USER_NICKLISTMENU. Must not be 0 and must be unique.
-	int				uType;			// What kind of menu item is it? Use MENU_* flags above
+	int			uType;			// What kind of menu item is it? Use MENU_* flags above
 	BOOL			bDisabled;		// should the menu item be shown as disabled
- };
+};
 
 typedef struct {
 	char *			pszModule;		// Contains the protocol name, do NOT change.
-	char *			pszID;			// The unique identifier of the session that triggered the hook, do NOT change.
-	char *			pszUID;			// Contains the unique identifier if Type = MENU_ON_NICKLIST. do NOT change.
+	TCHAR*			pszID;			// The unique identifier of the session that triggered the hook, do NOT change.
+	TCHAR*			pszUID;			// Contains the unique identifier if Type = MENU_ON_NICKLIST. do NOT change.
 	int				Type;			// Type of menu. MENU_ON_* flags used. do NOT change.
 	int				nItems;			// Set this to the number of menu items you want to add
 	struct gc_item*	Item;			// pointer to the first in the array of gc_item's
- } GCMENUITEMS;
+}
+	GCMENUITEMS;
+
 #define ME_GC_BUILDMENU  "GChat/BuildMenu"
 
 /*
 	* Example of how to add 2 items to the popup menu for the userlist *
 
 	GCMENUITEMS *gcmi= (GCMENUITEMS*) lParam;
-  	if(gcmi->Type == MENU_ON_NICKLIST)
+  	if (gcmi->Type == MENU_ON_NICKLIST)
 	{
 		static struct gc_item Item[] = {
 				{Translate("User &details"), 1, MENU_ITEM, FALSE},

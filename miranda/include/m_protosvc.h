@@ -580,6 +580,12 @@ typedef struct {
 #define PREF_RTL          4     // 0.5+ addition: support for right-to-left messages
 #define PSR_MESSAGE   "/RecvMessage"
 
+#if defined( _UNICODE )
+	#define PREF_TCHAR PREF_UNICODE
+#else
+	#define PREF_TCHAR 0
+#endif
+
 //An URL has been received
 //wParam=0
 //lParam=(LPARAM)(PROTORECVEVENT*)&pre
