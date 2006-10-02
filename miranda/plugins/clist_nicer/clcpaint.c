@@ -1043,7 +1043,7 @@ bgskipped:
 				rightIcons++;
 			}*/
 			contact->extraIconRightBegin = 0;
-			if(cEntry && cEntry != g_ExtraCache && cEntry->iExtraValid) {
+            if(cEntry && (contact->extraCacheEntry >= 0 && contact->extraCacheEntry < g_nextExtraCacheEntry && cEntry->iExtraValid)) {
 				int i;
 				for(i = 9; i >= 0; i--) {
 					if(cEntry->iExtraImage[i] != 0xff && ((1 << i) & g_CluiData.dwExtraImageMask)) {
