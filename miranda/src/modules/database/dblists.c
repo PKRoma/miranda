@@ -119,7 +119,7 @@ int List_Insert( SortedList* p_list, void* p_value, int p_index)
 
 int List_InsertPtr( SortedList* list, void* p )
 {
-	int idx;
+	int idx = list->realCount;
 	List_GetIndex( list, p, &idx );
 	return List_Insert( list, p, idx );
 }
