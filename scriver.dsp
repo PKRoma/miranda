@@ -137,7 +137,7 @@ LINK32=link.exe
 # ADD BASE LINK32 comctl32.lib kernel32.lib user32.lib gdi32.lib shell32.lib ole32.lib comdlg32.lib /nologo /dll /debug /machine:I386 /out:"../../bin/debug/Plugins/scriver.dll" /pdbtype:sept
 # ADD LINK32 comctl32.lib kernel32.lib user32.lib gdi32.lib shell32.lib ole32.lib comdlg32.lib shlwapi.lib Version.lib /nologo /dll /debug /machine:I386 /out:"scriver_unicode.dll" /pdbtype:sept
 
-!ENDIF 
+!ENDIF
 
 # Begin Target
 
