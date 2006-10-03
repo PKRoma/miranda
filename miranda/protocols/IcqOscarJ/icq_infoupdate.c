@@ -298,6 +298,8 @@ unsigned __stdcall icq_InfoUpdateThread(void* arg)
                 break;
               }
               LeaveCriticalSection(&ratesMutex);
+
+              if (!userList[i].hContact) continue; // user was dequeued during our sleep
 #ifdef _DEBUG
               NetLog_Server("Request info for user %u", userList[i].dwUin);
 #endif
