@@ -295,6 +295,10 @@ static int MsnDbSettingChanged(WPARAM wParam,LPARAM lParam)
 	}
 
 	if ( !strcmp( cws->szSetting, "ApparentMode" )) {
+		char* szProto = ( char* )MSN_CallService( MS_PROTO_GETCONTACTBASEPROTO, ( WPARAM ) hContact, 0 );
+		if ( szProto == NULL || strcmp( szProto, msnProtocolName ))
+			return 0;
+
 		char tEmail[ MSN_MAX_EMAIL_LEN ];
 		if ( !MSN_GetStaticString( "e-mail", hContact, tEmail, sizeof( tEmail ))) {
 			int isBlocked = Lists_IsInList( LIST_BL, tEmail );

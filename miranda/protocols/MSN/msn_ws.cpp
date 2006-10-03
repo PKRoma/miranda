@@ -144,7 +144,7 @@ LBL_RecvAgain:
 				}
 
 				WaitForSingleObject( hQueueMutex, INFINITE );
-				for ( unsigned i=0; i<np && mFirstQueueItem != NULL; ++i ) {
+				for ( unsigned j=0; j<np && mFirstQueueItem != NULL; ++j ) {
 					QI = mFirstQueueItem;
 					mFirstQueueItem = QI->next;
 					free( QI );

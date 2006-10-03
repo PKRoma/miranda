@@ -874,7 +874,7 @@ static void sttInitFileTransfer(
 		bool pictmatch = !DBGetContactSetting( NULL, msnProtocolName, "PictObject", &dbv );
 		if ( pictmatch ) {
 			UrlDecode(dbv.pszVal);
-			pictmatch = szContext != NULL && strcmp(dbv.pszVal, szContext) == 0;
+			pictmatch = szContext != NULL && strncmp(dbv.pszVal, szContext, strlen( dbv.pszVal )) == 0;
 			MSN_FreeVariant( &dbv );
 		}
 		if ( !pictmatch ) {

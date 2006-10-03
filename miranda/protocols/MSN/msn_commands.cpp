@@ -677,6 +677,17 @@ void MSN_ReceiveMessage( ThreadData* info, char* cmdString, char* params )
 		return;
 	}
 
+	if ( !strnicmp( tContentType, "text/x-clientcaps", 17 )) {
+		MimeHeaders tFileInfo;
+		tFileInfo.readFromBuffer( msgBody );
+
+		HANDLE hContact = MSN_HContactFromEmail( data.fromEmail, data.fromNick, 0, 0 );
+		const char* mirver = tFileInfo[ "Client-Name" ];
+		if ( hContact != NULL && mirver != NULL )
+			MSN_SetString( hContact, "MirVer", mirver );
+	}
+	
+
 	if ( !strnicmp( tContentType,"text/x-msmsgsemailnotification", 30 ))
 		sttNotificationMessage( msgBody, false );
 	else if ( !strnicmp( tContentType, "text/x-msmsgsinitialemailnotification", 37 ))
@@ -801,6 +812,43 @@ static void sttSwapInt64( LONGLONG* parValue )
 		p[i] = p[7-i];
 		p[7-i] = temp;
 }	}
+
+
+static void sttProcessStatusMessage( BYTE* buf, unsigned len, HANDLE hContact )
+{
+	char* dataBuf = ( char* )alloca( len+1 );
+	if ( buf != NULL ) {
+		memcpy( dataBuf, buf, len );
+		dataBuf[ len ] = 0;
+	}
+	else dataBuf[0] = 0;
+
+	char* p = strstr( dataBuf, "<PSM>" );
+	if ( p ) {
+		p += 5;
+		char* p1 = strstr( p, "</PSM>" );
+		if ( p1 ) {
+			*p1 = 0;
+			if ( *p != 0 ) {
+				HtmlDecode( p );
+				DBWriteContactSettingStringUtf( hContact, "CList", "StatusMsg", p );
+			}
+			else
+				DBDeleteContactSetting( hContact, "CList", "StatusMsg" );
+}	}	}
+
+
+static void sttProcessNotificationMessage( BYTE* buf, unsigned len )
+{
+	char* dataBuf = ( char* )alloca( len+1 );
+	if ( buf != NULL ) {
+		memcpy( dataBuf, buf, len );
+		dataBuf[ len ] = 0;
+	}
+	else dataBuf[0] = 0;
+	
+	MSN_DebugLog( "Notification message: %s", dataBuf );
+}
 
 int MSN_HandleCommands( ThreadData* info, char* cmdString )
 {
@@ -1181,7 +1229,7 @@ LBL_InvalidCommand:
 				else
 					MSN_SetString( hContact, "MirVer", "MSN 4.x-5.x" );
 
-				if (( dwValue & 0x70000000 ) && data.cmdstring[0] ) {
+				if (( dwValue & 0x70000000 ) && data.cmdstring[0] && strcmp( data.cmdstring, "0" )) {
 					int temp_status = MSN_GetWord(hContact, "Status", ID_STATUS_OFFLINE);
 					if (temp_status == (WORD)ID_STATUS_OFFLINE)
 						MSN_SetWord( hContact, "Status", (WORD)ID_STATUS_INVISIBLE);
@@ -1420,18 +1468,9 @@ LBL_InvalidCommand:
 			break;
 
 		case ' TON':   //********* NOT: notification message
-		{
-			char* buffer = ( char* )alloca( trid+1 );
-			BYTE* p = HReadBuffer( info ).surelyRead( trid );
-			if ( p != NULL ) {
-				memcpy( buffer, p, trid );
-				buffer[ trid ] = 0;
-			}
-			else buffer[0] = 0;
-			
-			MSN_DebugLog( "Notification message: %s", buffer );
+			sttProcessNotificationMessage( HReadBuffer( info, 0 ).surelyRead( trid ), trid );
 			break;
-		}
+
 		case ' TUO':   //********* OUT: sections 7.10 Connection Close, 8.6 Leaving a Switchboard Session
 			if ( !stricmp( params, "OTH" )) {
 				MSN_SendBroadcast( NULL, ACKTYPE_LOGIN, ACKRESULT_FAILED, NULL, LOGINERR_OTHERLOCATION );
@@ -1587,26 +1626,7 @@ LBL_InvalidCommand:
 			if ( len < 0 || len > 4000 )
 				goto LBL_InvalidCommand;
 
-			char* dataBuf = ( char* )alloca( len+1 ), *p = dataBuf;
-			BYTE* buff = HReadBuffer( info, 0 ).surelyRead( len );
-			if ( buff != NULL ) {
-				memcpy( dataBuf, buff, len );
-				dataBuf[ len ] = 0;
-			}
-			else dataBuf[0] = 0;
-
-         p = strstr( dataBuf, "<PSM>" );
-			if ( p ) {
-				p += 5;
-				char* p1 = strstr( p, "</PSM>" );
-				if ( p1 ) {
-					*p1 = 0;
-					if ( *p != 0 ) {
-						HtmlDecode( p );
-						DBWriteContactSettingStringUtf( hContact, "CList", "StatusMsg", p );
-					}
-					else DBDeleteContactSetting( hContact, "CList", "StatusMsg" );
-			}	}
+			sttProcessStatusMessage( HReadBuffer( info, 0 ).surelyRead( len ), len, hContact );
 			break;
 		}
 		case ' LRU':

@@ -44,6 +44,7 @@ char* rtrim( char *string )
    return string;
 }
 
+#if defined( _UNICODE )
 TCHAR* rtrim( TCHAR* string )
 {
    TCHAR* p = string + lstrlen( string ) - 1;
@@ -56,6 +57,7 @@ TCHAR* rtrim( TCHAR* string )
    }
    return string;
 }
+#endif
 
 void strdel( char* parBuffer, int len )
 {
@@ -77,4 +79,3 @@ TCHAR* a2t( const char* str )
 		return mir_strdup( str );
 	#endif
 }
-
