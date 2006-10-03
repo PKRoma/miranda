@@ -67,7 +67,6 @@ static int expectedFileRecvCount = 0;
 static filetransfer** expectedFileRecv = NULL;
 
 extern WORD wListenPort;
-extern DWORD dwLocalDirectConnCookie;
 
 static void handleDirectPacket(directconnect* dc, PBYTE buf, WORD wLen);
 static DWORD __stdcall icq_directThread(directthreadstartinfo* dtsi);
@@ -447,7 +446,7 @@ static DWORD __stdcall icq_directThread(directthreadstartinfo *dtsi)
     dc.dwRemoteInternalIP = ICQGetContactSettingDword(dtsi->hContact, "RealIP", 0);
     dc.dwRemotePort = ICQGetContactSettingWord(dtsi->hContact, "UserPort", 0);
     dc.dwRemoteUin = ICQGetContactSettingUIN(dtsi->hContact);
-    dc.dwRemoteConnCookie = ICQGetContactSettingDword(dtsi->hContact, "DirectCookie", 0);
+    dc.dwConnectionCookie = ICQGetContactSettingDword(dtsi->hContact, "DirectCookie", 0);
     dc.wVersion = ICQGetContactSettingWord(dtsi->hContact, "Version", 0);
 
     if (!dc.dwRemoteExternalIP && !dc.dwRemoteInternalIP)
@@ -829,7 +828,7 @@ static void handleDirectPacket(directconnect* dc, PBYTE buf, WORD wLen)
 
           if (dc->incoming)
           { // this is the first PEER_INIT with our cookie
-            if (dwCookie != dwLocalDirectConnCookie)
+            if (dwCookie != ICQGetContactSettingDword(hContact, "DirectCookie", 0))
             {
               NetLog_Direct("Error: Received PEER_INIT with broken cookie");
               CloseDirectConnection(dc);
@@ -838,7 +837,7 @@ static void handleDirectPacket(directconnect* dc, PBYTE buf, WORD wLen)
           }
           else
           { // this is the second PEER_INIT with peer cookie
-            if (dwCookie != dc->dwRemoteConnCookie)
+            if (dwCookie != dc->dwConnectionCookie)
             {
               NetLog_Direct("Error: Received PEER_INIT with broken cookie");
               CloseDirectConnection(dc);
@@ -874,7 +873,7 @@ static void handleDirectPacket(directconnect* dc, PBYTE buf, WORD wLen)
         if (dc->incoming)
         { // store good IP info
           dc->hContact = hContact;
-          dc->dwRemoteConnCookie = dwCookie;
+          dc->dwConnectionCookie = dwCookie;
           ICQWriteContactSettingDword(dc->hContact, "IP", dc->dwRemoteExternalIP); 
           ICQWriteContactSettingDword(dc->hContact, "RealIP", dc->dwRemoteInternalIP);
           sendPeerInit_v78(dc); // reply with our PEER_INIT
@@ -1225,7 +1224,7 @@ static void sendPeerInit_v78(directconnect* dc)
   packDWord(&packet, dc->dwLocalInternalIP); // Our internal IP
   packByte(&packet, DC_TYPE);                // TCP connection flags
   packLEDWord(&packet, wListenPort);         // Our port
-  packLEDWord(&packet, dc->dwRemoteConnCookie); // DC cookie
+  packLEDWord(&packet, dc->dwConnectionCookie); // DC cookie
   packLEDWord(&packet, WEBFRONTPORT);        // Unknown
   packLEDWord(&packet, CLIENTFEATURES);      // Unknown
   if (dc->type == DIRECTCONN_REVERSE)

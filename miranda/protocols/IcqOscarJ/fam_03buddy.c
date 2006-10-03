@@ -41,8 +41,6 @@ static void handleUserOnline(BYTE* buf, WORD wPackLen, serverthread_info* info);
 static void handleReplyBuddy(BYTE* buf, WORD wPackLen);
 static void handleNotifyRejected(BYTE* buf, WORD wPackLen);
 
-extern DWORD dwLocalDirectConnCookie;
-
 extern const capstr capAimIcon;
 extern const char* cliSpamBot;
 extern char* detectUserClient(HANDLE hContact, DWORD dwUin, WORD wVersion, DWORD dwFT1, DWORD dwFT2, DWORD dwFT3, DWORD dwOnlineSince, DWORD dwDirectCookie, DWORD dwWebPort, BYTE* caps, WORD wLen, BYTE* bClientId, char* szClientBuf);
@@ -407,10 +405,6 @@ static void handleUserOnline(BYTE* buf, WORD wLen, serverthread_info* info)
       if ((time(NULL) - ICQGetContactSettingDword(hContact, "InfoTS", 0)) > dwUpdateThreshold)
         icq_QueueUser(hContact);
     }
-  }
-  else
-  {
-    dwLocalDirectConnCookie = dwDirectConnCookie;
   }
 
   // And a small log notice...

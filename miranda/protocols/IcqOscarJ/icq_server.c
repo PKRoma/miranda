@@ -46,7 +46,6 @@ extern CRITICAL_SECTION localSeqMutex;
 HANDLE hServerConn;
 WORD wListenPort;
 WORD wLocalSequence;
-DWORD dwLocalDirectConnCookie;
 static pthread_t serverThreadId;
 
 static int handleServerPackets(unsigned char* buf, int len, serverthread_info* info);
@@ -63,8 +62,6 @@ static DWORD __stdcall icq_serverThread(serverthread_start_info* infoParam)
   info.wServerPort = infoParam->nloc.wPort;
 
   srand(time(NULL));
-
-  dwLocalDirectConnCookie = rand() ^ (rand() << 16);
 
   ResetSettingsOnConnect();
 

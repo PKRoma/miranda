@@ -41,7 +41,6 @@ extern int gbIdleAllow;
 extern int icqGoingOnlineStatus;
 extern int pendingAvatarsStart;
 extern WORD wListenPort;
-extern DWORD dwLocalDirectConnCookie;
 extern CRITICAL_SECTION modeMsgsMutex;
 
 extern const capstr capXStatus[];
@@ -284,6 +283,9 @@ void handleServiceFam(unsigned char* pBuffer, WORD wBufferLength, snac_header* p
       BYTE bUinLen;
       oscar_tlv_chain *chain;
 
+#ifdef _DEBUG
+      NetLog_Server("Received self info");
+#endif
       unpackByte(&pBuffer, &bUinLen);
       pBuffer += bUinLen;
       pBuffer += 4;      /* warning level & user class */
@@ -931,6 +933,8 @@ void handleServUINSettings(int nPort, serverthread_info *info)
   // SNAC 1,1E: Set status
   {
     WORD wStatus;
+    DWORD dwDirectCookie = rand() ^ (rand() << 16);
+
 
     // Get status
     wStatus = MirandaStatusToIcq(icqGoingOnlineStatus);
@@ -946,7 +950,7 @@ void handleServUINSettings(int nPort, serverthread_info *info)
     packDWord(&packet, nPort);
     packByte(&packet, DC_TYPE);                 // TCP/FLAG firewall settings
     packWord(&packet, ICQ_VERSION);
-    packDWord(&packet, dwLocalDirectConnCookie);// DC Cookie
+    packDWord(&packet, dwDirectCookie);         // DC Cookie
     packDWord(&packet, WEBFRONTPORT);           // Web front port
     packDWord(&packet, CLIENTFEATURES);         // Client features
     packDWord(&packet, 0xffffffff);             // Abused timestamp

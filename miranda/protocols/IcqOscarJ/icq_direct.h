@@ -77,6 +77,7 @@ typedef struct {
 typedef struct {
   HANDLE hContact;
   HANDLE hConnection;
+  DWORD dwConnectionCookie;
   int type;
   WORD wVersion;
   int incoming;
@@ -84,7 +85,6 @@ typedef struct {
   int packetPending;
   DWORD dwRemotePort;
   DWORD dwRemoteUin;
-  DWORD dwRemoteConnCookie;
   DWORD dwRemoteExternalIP;
   DWORD dwRemoteInternalIP;
   DWORD dwLocalExternalIP;
