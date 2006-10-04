@@ -626,7 +626,7 @@ static LRESULT CALLBACK MessageSubclassProc(HWND hwnd, UINT msg, WPARAM wParam, 
 					&& wParam != VK_DELETE )
 				{
 					if (g_Settings.AddColonToAutoComplete && start == 0)
-						SendMessageA(hwnd, EM_REPLACESEL, FALSE, (LPARAM) ": ");
+						SendMessage(hwnd, EM_REPLACESEL, FALSE, (LPARAM) _T(": "));
 				}
 				dat->szTabSave[0] = '\0';
 			}
@@ -1525,31 +1525,27 @@ BOOL CALLBACK RoomWndProc(HWND hwndDlg,UINT uMsg,WPARAM wParam,LPARAM lParam)
 		break;
 
 	case GC_UPDATESTATUSBAR:
-		{
-			char *pszDispName = NULL;
-			int x = 12;
-			char szFinalStatusBarText[512];
+		if (dat->pContainer->hwndActive != hwndDlg || dat->pContainer->hwndStatus == 0 || g_sessionshutdown)
+			break;
 
-			if (dat->pContainer->hwndActive != hwndDlg || dat->pContainer->hwndStatus == 0 || g_sessionshutdown)
-				break;
+		if (si->pszModule != NULL) {
+			TCHAR* ptszDispName = a2t( MM_FindModule(si->pszModule)->pszModDispName );
+			TCHAR  szFinalStatusBarText[512];
+			int    x = 12;
+			
+			x += GetTextPixelSize( ptszDispName, (HFONT)SendMessage(dat->pContainer->hwndStatus, WM_GETFONT, 0, 0), TRUE);
+			x += GetSystemMetrics( SM_CXSMICON );
 
-			if (si->pszModule == NULL)
-				break;
-
-			pszDispName = MM_FindModule(si->pszModule)->pszModDispName;
-
-			x += GetTextPixelSize((TCHAR*)pszDispName, (HFONT)SendMessage(dat->pContainer->hwndStatus, WM_GETFONT, 0, 0), TRUE);
-			x += GetSystemMetrics(SM_CXSMICON);
-
-			if (si->ptszStatusbarText)
-				mir_snprintf(szFinalStatusBarText, 512, "%s %s", pszDispName, si->ptszStatusbarText);
+			if ( si->ptszStatusbarText )
+				mir_sntprintf(szFinalStatusBarText, SIZEOF(szFinalStatusBarText), _T("%s %s"), ptszDispName, si->ptszStatusbarText);
 			else
-				mir_snprintf(szFinalStatusBarText, 512, "%s", pszDispName);
+				lstrcpyn(szFinalStatusBarText, ptszDispName, SIZEOF(szFinalStatusBarText));
 
-			SendMessageA(dat->pContainer->hwndStatus, SB_SETTEXTA, 0, (LPARAM)szFinalStatusBarText);
+			SendMessage(dat->pContainer->hwndStatus, SB_SETTEXT, 0, (LPARAM)szFinalStatusBarText);
 			SendMessage(dat->pContainer->hwndStatus, SB_SETICON, 0, (LPARAM)(nen_options.bFloaterInWin ? myGlobals.g_buttonBarIcons[16] : 0));
-			SendMessageA(dat->pContainer->hwndStatus, SB_SETTIPTEXTA, 0, (LPARAM)szFinalStatusBarText);
+			SendMessage(dat->pContainer->hwndStatus, SB_SETTIPTEXT, 0, (LPARAM)szFinalStatusBarText);
 			UpdateStatusBar(hwndDlg, dat);
+			mir_free( ptszDispName );
 			return TRUE;
 		}
 		break;

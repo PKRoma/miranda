@@ -390,6 +390,7 @@ __forceinline WCHAR* mir_wstrdup(const WCHAR *src)
 	#define mir_tstrdup mir_strdup
 #endif
 
+TCHAR* a2t( const char* str );
 char*  t2a( const TCHAR* str );
 TCHAR* a2tf( const TCHAR* str, int flags );
 TCHAR* replaceStr( TCHAR** dest, const TCHAR* src );

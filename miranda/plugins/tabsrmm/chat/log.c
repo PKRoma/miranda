@@ -45,7 +45,7 @@ void GetIconSize(HICON hIcon, int* sizeX, int* sizeY);
 
 static int EventToIndex(LOGINFO * lin)
 {
-	switch(lin->iType) {
+	switch (lin->iType) {
 		case GC_EVENT_MESSAGE: 
 			{
 				if (lin->bIsMe) 
@@ -70,39 +70,25 @@ static int EventToIndex(LOGINFO * lin)
 
 static BYTE EventToSymbol(LOGINFO *lin)
 {
-	switch(lin->iType) {
-		  case GC_EVENT_MESSAGE:
-			  if(lin->bIsMe)
-				  return 0x37;
-			  else
-				  return 0x38;
-		  case GC_EVENT_JOIN:
-			  return 0x34;
-		  case GC_EVENT_PART:
-			  return 0x33;
-		  case GC_EVENT_QUIT:
-			  return 0x39;
-		  case GC_EVENT_NICK:
-			  return 0x71;
-		  case GC_EVENT_KICK:
-			  return 0x72;
-		  case GC_EVENT_NOTICE:
-			  return 0x28;
-		  case GC_EVENT_INFORMATION:
-			  return 0x69;
-		  case GC_EVENT_ADDSTATUS:
-			  return 0x35;
-		  case GC_EVENT_REMOVESTATUS:
-			  return 0x36;
-		  case GC_EVENT_ACTION:
-			  return 0x60;
+	switch (lin->iType) {
+		case GC_EVENT_MESSAGE:        return (lin->bIsMe) ? 0x37 : 0x38;
+		case GC_EVENT_JOIN:           return 0x34;
+		case GC_EVENT_PART:           return 0x33;
+		case GC_EVENT_QUIT:           return 0x39;
+		case GC_EVENT_NICK:           return 0x71;
+		case GC_EVENT_KICK:           return 0x72;
+		case GC_EVENT_NOTICE:         return 0x28;
+		case GC_EVENT_INFORMATION:    return 0x69;
+		case GC_EVENT_ADDSTATUS:      return 0x35;
+		case GC_EVENT_REMOVESTATUS:   return 0x36;
+		case GC_EVENT_ACTION:         return 0x60;
 	}
 	return 0x73;
 }
 
 static int EventToIcon(LOGINFO * lin)
 {
-	switch(lin->iType) {
+	switch (lin->iType) {
 		case GC_EVENT_MESSAGE: 
 			{
 				if (lin->bIsMe) 
@@ -131,11 +117,6 @@ static char *Log_SetStyle(int style, int fontindex)
 		return CHAT_rtffonts + (style * RTFCACHELINESIZE);
 
 	return "";
-	/*
-	static char szStyle[128];
-	mir_snprintf(szStyle, sizeof(szStyle), "\\f%u\\cf%u\\ul0\\highlight0\\b%d\\i%d\\fs%u", style, style+1, aFonts[fontindex].lf.lfWeight >= FW_BOLD ? 1 : 0, aFonts[fontindex].lf.lfItalic, 2 * abs(aFonts[fontindex].lf.lfHeight) * 74 / logPixelSY);
-	return szStyle;
-	*/
 }
 
 static void Log_Append(char **buffer, int *cbBufferEnd, int *cbBufferAlloced, const char *fmt, ...)
@@ -306,7 +287,7 @@ static void AddEventToBuffer(char **buffer, int *bufferEnd, int *bufferAlloced, 
 	}
 
 	if ( streamData && streamData->lin ) {
-		switch( streamData->lin->iType ) {
+		switch ( streamData->lin->iType ) {
 		case GC_EVENT_MESSAGE:
 			if ( streamData->lin->ptszText )
 				Log_AppendRTF( streamData, buffer, bufferEnd, bufferAlloced, _T("%s"), streamData->lin->ptszText );
@@ -397,18 +378,18 @@ static char* Log_CreateRTF(LOGSTREAMDATA *streamData)
 
 
 	// ### RTF BODY (one iteration per event that should be streamed in)
-	while(lin)
+	while (lin)
 	{
 		// filter
 		if (streamData->si->iType != GCW_CHATROOM || !streamData->si->bFilterEnabled || (streamData->si->iLogFilterFlags&lin->iType) != 0)
 		{
-			if(streamData->dat->dwFlags & MWF_DIVIDERWANTED || lin->dwFlags & MWF_DIVIDERWANTED) {
+			if (streamData->dat->dwFlags & MWF_DIVIDERWANTED || lin->dwFlags & MWF_DIVIDERWANTED) {
 				static char szStyle_div[128] = "\0";
-				if(szStyle_div[0] == 0)
+				if (szStyle_div[0] == 0)
 					mir_snprintf(szStyle_div, 128, "\\f%u\\cf%u\\ul0\\b%d\\i%d\\fs%u", 17, 18, 0, 0, 5);
 
 				lin->dwFlags |= MWF_DIVIDERWANTED;
-				if(lin->prev || !streamData->bRedraw)
+				if (lin->prev || !streamData->bRedraw)
 					Log_Append(&buffer, &bufferEnd, &bufferAlloced, "\\par\\qc\\sl-1\\highlight%d %s ---------------------------------------------------------------------------------------\\par ", 18, szStyle_div);
 				streamData->dat->dwFlags &= ~MWF_DIVIDERWANTED;
 			}
@@ -476,14 +457,14 @@ static char* Log_CreateRTF(LOGSTREAMDATA *streamData)
 				char pszIndicator[2] = "\0\0";
 				int  crNickIndex = 0;
 
-				if(g_Settings.ClassicIndicators || g_Settings.ColorizeNicks) {
+				if (g_Settings.ClassicIndicators || g_Settings.ColorizeNicks) {
 					USERINFO *ui = streamData->si->pUsers;
 					while ( ui ) {
 						if ( !lstrcmp(ui->pszNick, lin->ptszNick)) {
 							ti = TM_FindStatus(streamData->si->pStatuses, TM_WordToString(streamData->si->pStatuses, ui->Status));
 							if (ti && (int)ti->hIcon < streamData->si->iStatusCount) {
 								int id = streamData->si->iStatusCount - (int)ti->hIcon - 1;
-								switch(id) {
+								switch (id) {
 								case 1:
 									pszIndicator[0] = '+';
 									crNickIndex = 2;
@@ -514,7 +495,7 @@ static char* Log_CreateRTF(LOGSTREAMDATA *streamData)
 				
 				Log_Append(&buffer, &bufferEnd, &bufferAlloced, "%s ", Log_SetStyle(lin->bIsMe ? 2 : 1, lin->bIsMe ? 2 : 1));
 
-				if(g_Settings.ClassicIndicators)
+				if (g_Settings.ClassicIndicators)
 					Log_Append(&buffer, &bufferEnd, &bufferAlloced, "%s", pszIndicator);
 
 				lstrcpyn(pszTemp, lin->bIsMe ? g_Settings.pszOutgoingNick : g_Settings.pszIncomingNick, 299);
@@ -522,10 +503,10 @@ static char* Log_CreateRTF(LOGSTREAMDATA *streamData)
 				if (p1)
 					p1[1] = 's';
 
-				if(!lin->bIsMe) {
-					if(g_Settings.ClickableNicks)
+				if (!lin->bIsMe) {
+					if (g_Settings.ClickableNicks)
 						Log_Append(&buffer, &bufferEnd, &bufferAlloced, "~~++#");
-					if(g_Settings.ColorizeNicks && pszIndicator[0])
+					if (g_Settings.ColorizeNicks && pszIndicator[0])
 						Log_Append(&buffer, &bufferEnd, &bufferAlloced, "\\cf%u ", OPTIONS_FONTCOUNT + streamData->crCount + crNickIndex + 1);
 				}
 
@@ -546,7 +527,7 @@ static char* Log_CreateRTF(LOGSTREAMDATA *streamData)
 	}
 
 	// ### RTF END
-	if(streamData->bRedraw)
+	if (streamData->bRedraw)
 		Log_Append(&buffer, &bufferEnd, &bufferAlloced, "\\par}");
 	else
 		Log_Append(&buffer, &bufferEnd, &bufferAlloced, "}");
@@ -660,8 +641,7 @@ void Log_StreamInEvent(HWND hwndDlg,  LOGINFO* lin, SESSION_INFO* si, BOOL bRedr
 			&& lin->iType != GC_EVENT_JOIN
 			&& lin->iType != GC_EVENT_NICK
 			&& lin->iType != GC_EVENT_ADDSTATUS
-			&& lin->iType != GC_EVENT_REMOVESTATUS
-			)))
+			&& lin->iType != GC_EVENT_REMOVESTATUS )))
 		{
 			SMADD_RICHEDIT3 sm = {0};
 
@@ -678,24 +658,23 @@ void Log_StreamInEvent(HWND hwndDlg,  LOGINFO* lin, SESSION_INFO* si, BOOL bRedr
 			CallService(MS_SMILEYADD_REPLACESMILEYS, 0, (LPARAM)&sm);
 		}
 
-		if(g_Settings.ClickableNicks) {
+		if (g_Settings.ClickableNicks) {
 			CHARFORMAT2 cf2 = {0};
-			FINDTEXTEXA fi2;
-			FINDTEXTEXA fi;
+			FINDTEXTEX fi, fi2;
 
-			fi2.lpstrText = " ";
+			fi2.lpstrText = _T(" ");
 			fi.chrg.cpMin = bRedraw ? 0 : sel.cpMin;
 			fi.chrg.cpMax = -1;
-			fi.lpstrText = "~~++#";
+			fi.lpstrText = _T("~~++#");
 			cf2.cbSize = sizeof(cf2);
 
-			while(SendMessageA(hwndRich, EM_FINDTEXTEX, FR_DOWN, (LPARAM)&fi) > -1) {
+			while (SendMessage(hwndRich, EM_FINDTEXTEX, FR_DOWN, (LPARAM)&fi) > -1) {
 				SendMessage(hwndRich, EM_EXSETSEL, 0, (LPARAM)&fi.chrgText);
 				SendMessage(hwndRich, EM_REPLACESEL, TRUE, (LPARAM)_T(""));
 				fi2.chrg.cpMin = fi.chrgText.cpMin;
 				fi2.chrg.cpMax = -1;
 
-				if(SendMessageA(hwndRich, EM_FINDTEXTEX, FR_DOWN, (LPARAM)&fi2) > -1) {
+				if (SendMessage(hwndRich, EM_FINDTEXTEX, FR_DOWN, (LPARAM)&fi2) > -1) {
 					fi2.chrgText.cpMin = fi.chrgText.cpMin;
 					fi2.chrgText.cpMax--;
 					SendMessage(hwndRich, EM_EXSETSEL, 0, (LPARAM)&fi2.chrgText);
@@ -704,23 +683,22 @@ void Log_StreamInEvent(HWND hwndDlg,  LOGINFO* lin, SESSION_INFO* si, BOOL bRedr
 					SendMessage(hwndRich, EM_SETCHARFORMAT, SCF_SELECTION, (LPARAM)&cf2);
 				}
 				fi.chrg.cpMin = fi.chrgText.cpMax;
-			}
-		}
+		}	}
 
-		if(si->wasTrimmed) {
-			char szPattern[50];
-			FINDTEXTEXA fi;
+		if (si->wasTrimmed) {
+			TCHAR szPattern[50];
+			FINDTEXTEX fi;
 
-			_snprintf(szPattern, 40, "~-+%d+-~", si->pLogEnd);
+			mir_sntprintf(szPattern, SIZEOF(szPattern), _T("~-+%d+-~"), si->pLogEnd);
 			fi.lpstrText = szPattern;
 			fi.chrg.cpMin = 0;
 			fi.chrg.cpMax = -1;
-			if(SendMessageA(hwndRich, EM_FINDTEXTEX, FR_DOWN, (LPARAM)&fi) != 0) {
+			if ( SendMessage(hwndRich, EM_FINDTEXTEX, FR_DOWN, (LPARAM)&fi) != 0) {
 				CHARRANGE sel;
 				sel.cpMin = 0;
 				sel.cpMax = 20;
 				SendMessage(hwndRich, EM_SETSEL, 0, fi.chrgText.cpMax + 1);
-				SendMessageA(hwndRich, EM_REPLACESEL, TRUE, (LPARAM)"");
+				SendMessage(hwndRich, EM_REPLACESEL, TRUE, (LPARAM)_T(""));
 			}
 			si->wasTrimmed = FALSE;
 		}
@@ -811,7 +789,7 @@ char * Log_CreateRtfHeader(MODULEINFO * mi)
 			DeleteObject(hFont);
 			iIndent += (iText * 1440)/logPixelSX;
 			Log_Append(&buffer, &bufferEnd, &bufferAlloced, "\\tx%u", iIndent);
-		} else if(g_Settings.dwIconFlags) {
+		} else if (g_Settings.dwIconFlags) {
 			iIndent += ((g_Settings.ScaleIcons ? 14 : 20) * 1440)/logPixelSX;
 			Log_Append(&buffer, &bufferEnd, &bufferAlloced, "\\tx%u", iIndent);
 		}
@@ -843,12 +821,12 @@ void LoadMsgLogBitmaps(void)
 	int iIconSize;
 	int sizeX = 0, sizeY = 0;
 
-	if(hIcons[0])
+	if (hIcons[0])
 		GetIconSize(hIcons[0], &sizeX, &sizeY);
 	else
 		sizeX = 16;
 
-	if(sizeX >= 12)
+	if (sizeX >= 12)
 		iIconSize = g_Settings.ScaleIcons ? 12 : 16;
 	else
 		iIconSize = sizeX;
@@ -897,7 +875,7 @@ void LoadMsgLogBitmaps(void)
 	/* cache RTF font headers */
 
 	//get the number of pixels per logical inch
-	if(logPixelSY == 0) {
+	if (logPixelSY == 0) {
 		HDC hdc;
 		hdc = GetDC(NULL);
 		logPixelSY = GetDeviceCaps(hdc, LOGPIXELSY);
