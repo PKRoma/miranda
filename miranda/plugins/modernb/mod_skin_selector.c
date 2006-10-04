@@ -2,8 +2,8 @@
 
 Miranda IM: the free IM client for Microsoft* Windows*
 
-Copyright 2000-2006 Miranda ICQ/IM project, 
-all portions of this codebase are copyrighted to the people 
+Copyright 2000-2006 Miranda ICQ/IM project,
+all portions of this codebase are copyrighted to the people
 listed in contributors.txt.
 
 This program is free software; you can redistribute it and/or
@@ -26,7 +26,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 //#include "windows.h"
 #include "commonheaders.h"
 #include "mod_skin_selector.h"
-#include "SkinEngine.h"  
+#include "SkinEngine.h"
 #include "m_skin_eng.h"
 extern LPSKINOBJECTDESCRIPTOR SkinEngine_FindObjectByName(const char * szName, BYTE objType, SKINOBJECTSLIST* Skin);
 extern int AddButton(HWND parent,char * ID,char * CommandService,char * StateDefService,char * HandeService,             int Left, int Top, int Right, int Bottom, DWORD AlignedTo,TCHAR * Hint,char * DBkey,char * TypeDef,int MinWidth, int MinHeight);
@@ -64,7 +64,7 @@ int DeleteMask(MODERNMASK * mm)
   return 1;
 }
 
-#define _qtoupper(_c) (((_c)>='a' && (_c)<='z')?((_c)-('a'+'A')):(_c)) 
+#define _qtoupper(_c) (((_c)>='a' && (_c)<='z')?((_c)-('a'+'A')):(_c))
 BOOL wildcmpi(char * name, char * mask)
 {
   char * last='\0';
@@ -75,9 +75,9 @@ BOOL wildcmpi(char * name, char * mask)
   }
   if(*mask != '*') return FALSE;
   for(;; mask++, name++)
-  {      
+  {
     while(*mask == '*')
-    {    
+    {
       last = mask++;
       if(*mask == '\0') return ((BOOL)!*mask);   /* true */
     }
@@ -96,9 +96,9 @@ BOOL _inline wildcmp(char * name, char * mask, BYTE option)
          }
          if(*mask != '*') return FALSE;
          for(;; mask++, name++)
-         {      
+         {
                  while(*mask == '*')
-                 {    
+                 {
                          last = mask++;
                          if(*mask == '\0') return ((BOOL)!*mask);   /* true */
                  }
@@ -123,7 +123,7 @@ BOOL MatchMask(char * name, char * mask)
             temp=(char*)malloc(e-s+1);
             memcpy(temp,mask+s,e-s);
             temp[e-s]='\0';
-            if (wildcmpi(name,temp)) 
+            if (wildcmpi(name,temp))
             {
                 free(temp);
                 return TRUE;
@@ -140,7 +140,7 @@ BOOL MatchMask(char * name, char * mask)
 #define NOINLINEASM
 #endif
 
-_inline DWORD mod_CalcHash(const char *szStr)
+DWORD mod_CalcHash(const char *szStr)
 {
 #if defined _M_IX86 && !defined _NUMEGA_BC_FINALCHECK && !defined NOINLINEASM
     __asm {		   //this breaks if szStr is empty
@@ -290,7 +290,7 @@ int ParseToModernMask(MODERNMASK * mm, char * szText)
         while (currentPos<textLen)
         {
             //find next single ','
-            while (currentPos<textLen) 
+            while (currentPos<textLen)
             {
                 if (szText[currentPos]==',')
                     if  (currentPos<textLen-1)
@@ -299,9 +299,9 @@ int ParseToModernMask(MODERNMASK * mm, char * szText)
                 currentPos++;
             }
             //parse chars between startPos and currentPos
-            {   
+            {
                 //Get param name
-                if (startPos!=0) 
+                if (startPos!=0)
                 {
                     //search '=' sign or '^'
                     UINT keyPos=startPos;
@@ -348,7 +348,7 @@ int ParseToModernMask(MODERNMASK * mm, char * szText)
                   if (curParam>=mm->dwParamCnt)
                   {
 					mm->pl_Params=realloc(mm->pl_Params,(mm->dwParamCnt+1)*sizeof(MASKPARAM));
-					mm->dwParamCnt++;                    
+					mm->dwParamCnt++;
                   }
                   memmove(&(mm->pl_Params[curParam]),&param,sizeof(MASKPARAM));
                   curParam++;
@@ -366,23 +366,23 @@ BOOL CompareModernMask(MODERNMASK * mmValue,MODERNMASK * mmTemplate)
     BOOL res=TRUE;
     BOOL exit=FALSE;
     BYTE pVal=0, pTemp=0;
-    while (pTemp<mmTemplate->dwParamCnt && pVal<mmValue->dwParamCnt && !exit) 
+    while (pTemp<mmTemplate->dwParamCnt && pVal<mmValue->dwParamCnt && !exit)
     {
       // find pTemp parameter in mValue
       DWORD vh, ph;
       BOOL finded=0;
       MASKPARAM p=mmTemplate->pl_Params[pTemp];
-      ph=p.dwId;      
+      ph=p.dwId;
       vh=p.dwValueHash;
       pVal=0;
-      if (p.bFlag&4)  //compare by hash     
+      if (p.bFlag&4)  //compare by hash
           while (pVal<mmValue->dwParamCnt && mmValue->pl_Params[pVal].bFlag !=0)
           {
              if (mmValue->pl_Params[pVal].dwId==ph)
              {
                  if (mmValue->pl_Params[pVal].dwValueHash==vh){finded=1; break;}
                  else {finded=0; break;}
-             }   
+             }
             pVal++;
           }
       else
@@ -422,7 +422,7 @@ int AddStrModernMaskToList(DWORD maskID, char * szStr, char * objectName,  LISTM
     if (ParseToModernMask(&mm,szStr)) return -1;
     mm.pObject=(void*) SkinEngine_FindObjectByName(objectName, OT_ANY, (SKINOBJECTSLIST*) pObjectList);
         mm.dwMaskId=maskID;
-    return AddModernMaskToList(&mm,mmTemplateList);    
+    return AddModernMaskToList(&mm,mmTemplateList);
 }
 
 
@@ -442,7 +442,7 @@ SKINOBJECTDESCRIPTOR *  skin_FindObjectByMask (MODERNMASK * mm,LISTMODERNMASK * 
     {
         if (CompareModernMask(mm,&(mmTemplateList->pl_Masks[i])))
         {
-            res=(SKINOBJECTDESCRIPTOR*) mmTemplateList->pl_Masks[i].pObject; 
+            res=(SKINOBJECTDESCRIPTOR*) mmTemplateList->pl_Masks[i].pObject;
             return res;
         }
         i++;
@@ -454,7 +454,7 @@ SKINOBJECTDESCRIPTOR *  skin_FindObjectByRequest(char * szValue,LISTMODERNMASK *
 {
     MODERNMASK mm={0};
     SKINOBJECTDESCRIPTOR * res=NULL;
-    if (!mmTemplateList)    
+    if (!mmTemplateList)
         if (g_SkinObjectList.pMaskList)
             mmTemplateList=g_SkinObjectList.pMaskList;
 		else return NULL;
@@ -491,7 +491,7 @@ char * GetParamN(char * string, char * buf, int buflen, BYTE paramN, char Delim,
         {
             if (CurentCount==paramN) break;
             start=i+1;
-            CurentCount++;     
+            CurentCount++;
         }
         i++;
     }
@@ -525,7 +525,7 @@ int RegisterButtonByParce(char * ObjectName, char * Params)
         char pStatusServiceName[255]={0};
         int Left, Top,Right,Bottom;
         int MinWidth, MinHeight;
-        char TL[9]={0};         
+        char TL[9]={0};
         TCHAR Hint[250]={0};
         char Section[250]={0};
         char Type[250]={0};
@@ -539,7 +539,7 @@ int RegisterButtonByParce(char * ObjectName, char * Params)
         Top=atoi(GetParamN(Params,buf2, sizeof(buf2),a+3,',',0));
         Right=atoi(GetParamN(Params,buf2, sizeof(buf2),a+4,',',0));
         Bottom=atoi(GetParamN(Params,buf2, sizeof(buf2),a+5,',',0));
-        GetParamN(Params,TL, sizeof(TL),a+6,',',0);  
+        GetParamN(Params,TL, sizeof(TL),a+6,',',0);
 
         MinWidth=atoi(GetParamN(Params,buf2, sizeof(buf2),a+7,',',0));
         MinHeight=atoi(GetParamN(Params,buf2, sizeof(buf2),a+8,',',0));
@@ -604,7 +604,7 @@ int RegisterObjectByParce(char * ObjectName, char * Params)
              {
                  //Image
 				         gl.Style=ST_IMAGE;
-                 gl.szFileName=mir_strdup(GetParamN(Params,buf, sizeof(buf),2,',',0));                
+                 gl.szFileName=mir_strdup(GetParamN(Params,buf, sizeof(buf),2,',',0));
                  gl.dwLeft=atoi(GetParamN(Params,buf, sizeof(buf),4,',',0));
                  gl.dwTop=atoi(GetParamN(Params,buf, sizeof(buf),5,',',0));
                  gl.dwRight=atoi(GetParamN(Params,buf, sizeof(buf),6,',',0));
@@ -614,14 +614,14 @@ int RegisterObjectByParce(char * ObjectName, char * Params)
                  if (mir_bool_strcmpi(buf,"TileBoth")) gl.FitMode=FM_TILE_BOTH;
                  else if (mir_bool_strcmpi(buf,"TileVert")) gl.FitMode=FM_TILE_VERT;
                  else if (mir_bool_strcmpi(buf,"TileHorz")) gl.FitMode=FM_TILE_HORZ;
-                 else gl.FitMode=0;                
+                 else gl.FitMode=0;
              }
              else if (mir_bool_strcmpi(buf,"Fragment"))
              {
                  //Image
 				         gl.Style=ST_FRAGMENT;
                  gl.szFileName=mir_strdup(GetParamN(Params,buf, sizeof(buf),2,',',0));
-                 
+
                  gl.clipArea.x=atoi(GetParamN(Params,buf, sizeof(buf),3,',',0));
                  gl.clipArea.y=atoi(GetParamN(Params,buf, sizeof(buf),4,',',0));
                  gl.szclipArea.cx=atoi(GetParamN(Params,buf, sizeof(buf),5,',',0));
@@ -636,9 +636,9 @@ int RegisterObjectByParce(char * ObjectName, char * Params)
                  if (mir_bool_strcmpi(buf,"TileBoth")) gl.FitMode=FM_TILE_BOTH;
                  else if (mir_bool_strcmpi(buf,"TileVert")) gl.FitMode=FM_TILE_VERT;
                  else if (mir_bool_strcmpi(buf,"TileHorz")) gl.FitMode=FM_TILE_HORZ;
-                 else gl.FitMode=0;                
+                 else gl.FitMode=0;
              }
-             else 
+             else
              {
                  //None
                  gl.Style=ST_SKIP;

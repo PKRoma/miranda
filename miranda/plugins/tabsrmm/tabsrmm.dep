@@ -3,6 +3,7 @@
 .\chat\clist.c : \
 	"..\..\include\m_addcontact.h"\
 	"..\..\include\m_button.h"\
+	"..\..\include\m_chat.h"\
 	"..\..\include\m_clc.h"\
 	"..\..\include\m_clist.h"\
 	"..\..\include\m_clui.h"\
@@ -26,7 +27,6 @@
 	"..\..\include\win2k.h"\
 	".\chat\chat.h"\
 	".\chat\chatprototypes.h"\
-	".\chat\m_chat.h"\
 	".\commonheaders.h"\
 	".\functions.h"\
 	".\generic_msghandlers.h"\
@@ -52,6 +52,7 @@
 .\chat\colorchooser.c : \
 	"..\..\include\m_addcontact.h"\
 	"..\..\include\m_button.h"\
+	"..\..\include\m_chat.h"\
 	"..\..\include\m_clc.h"\
 	"..\..\include\m_clist.h"\
 	"..\..\include\m_clui.h"\
@@ -75,7 +76,6 @@
 	"..\..\include\win2k.h"\
 	".\chat\chat.h"\
 	".\chat\chatprototypes.h"\
-	".\chat\m_chat.h"\
 	".\commonheaders.h"\
 	".\functions.h"\
 	".\generic_msghandlers.h"\
@@ -101,6 +101,7 @@
 .\chat\log.c : \
 	"..\..\include\m_addcontact.h"\
 	"..\..\include\m_button.h"\
+	"..\..\include\m_chat.h"\
 	"..\..\include\m_clc.h"\
 	"..\..\include\m_clist.h"\
 	"..\..\include\m_clui.h"\
@@ -124,7 +125,6 @@
 	"..\..\include\win2k.h"\
 	".\chat\chat.h"\
 	".\chat\chatprototypes.h"\
-	".\chat\m_chat.h"\
 	".\commonheaders.h"\
 	".\functions.h"\
 	".\generic_msghandlers.h"\
@@ -150,6 +150,7 @@
 .\chat\main.c : \
 	"..\..\include\m_addcontact.h"\
 	"..\..\include\m_button.h"\
+	"..\..\include\m_chat.h"\
 	"..\..\include\m_clc.h"\
 	"..\..\include\m_clist.h"\
 	"..\..\include\m_clui.h"\
@@ -173,7 +174,6 @@
 	"..\..\include\win2k.h"\
 	".\chat\chat.h"\
 	".\chat\chatprototypes.h"\
-	".\chat\m_chat.h"\
 	".\commonheaders.h"\
 	".\functions.h"\
 	".\generic_msghandlers.h"\
@@ -199,6 +199,7 @@
 .\chat\manager.c : \
 	"..\..\include\m_addcontact.h"\
 	"..\..\include\m_button.h"\
+	"..\..\include\m_chat.h"\
 	"..\..\include\m_clc.h"\
 	"..\..\include\m_clist.h"\
 	"..\..\include\m_clui.h"\
@@ -222,7 +223,6 @@
 	"..\..\include\win2k.h"\
 	".\chat\chat.h"\
 	".\chat\chatprototypes.h"\
-	".\chat\m_chat.h"\
 	".\commonheaders.h"\
 	".\functions.h"\
 	".\generic_msghandlers.h"\
@@ -248,6 +248,7 @@
 .\chat\message.c : \
 	"..\..\include\m_addcontact.h"\
 	"..\..\include\m_button.h"\
+	"..\..\include\m_chat.h"\
 	"..\..\include\m_clc.h"\
 	"..\..\include\m_clist.h"\
 	"..\..\include\m_clui.h"\
@@ -271,7 +272,6 @@
 	"..\..\include\win2k.h"\
 	".\chat\chat.h"\
 	".\chat\chatprototypes.h"\
-	".\chat\m_chat.h"\
 	".\commonheaders.h"\
 	".\functions.h"\
 	".\generic_msghandlers.h"\
@@ -297,6 +297,7 @@
 .\chat\options.c : \
 	"..\..\include\m_addcontact.h"\
 	"..\..\include\m_button.h"\
+	"..\..\include\m_chat.h"\
 	"..\..\include\m_clc.h"\
 	"..\..\include\m_clist.h"\
 	"..\..\include\m_clui.h"\
@@ -320,7 +321,6 @@
 	"..\..\include\win2k.h"\
 	".\chat\chat.h"\
 	".\chat\chatprototypes.h"\
-	".\chat\m_chat.h"\
 	".\commonheaders.h"\
 	".\functions.h"\
 	".\generic_msghandlers.h"\
@@ -346,6 +346,7 @@
 .\chat\services.c : \
 	"..\..\include\m_addcontact.h"\
 	"..\..\include\m_button.h"\
+	"..\..\include\m_chat.h"\
 	"..\..\include\m_clc.h"\
 	"..\..\include\m_clist.h"\
 	"..\..\include\m_clui.h"\
@@ -369,7 +370,6 @@
 	"..\..\include\win2k.h"\
 	".\chat\chat.h"\
 	".\chat\chatprototypes.h"\
-	".\chat\m_chat.h"\
 	".\commonheaders.h"\
 	".\functions.h"\
 	".\generic_msghandlers.h"\
@@ -395,6 +395,7 @@
 .\chat\tools.c : \
 	"..\..\include\m_addcontact.h"\
 	"..\..\include\m_button.h"\
+	"..\..\include\m_chat.h"\
 	"..\..\include\m_clc.h"\
 	"..\..\include\m_clist.h"\
 	"..\..\include\m_clui.h"\
@@ -418,7 +419,6 @@
 	"..\..\include\win2k.h"\
 	".\chat\chat.h"\
 	".\chat\chatprototypes.h"\
-	".\chat\m_chat.h"\
 	".\commonheaders.h"\
 	".\functions.h"\
 	".\generic_msghandlers.h"\
@@ -444,6 +444,7 @@
 .\chat\window.c : \
 	"..\..\include\m_addcontact.h"\
 	"..\..\include\m_button.h"\
+	"..\..\include\m_chat.h"\
 	"..\..\include\m_clc.h"\
 	"..\..\include\m_clist.h"\
 	"..\..\include\m_clui.h"\
@@ -467,7 +468,6 @@
 	"..\..\include\win2k.h"\
 	".\chat\chat.h"\
 	".\chat\chatprototypes.h"\
-	".\chat\m_chat.h"\
 	".\commonheaders.h"\
 	".\functions.h"\
 	".\generic_msghandlers.h"\
@@ -493,6 +493,7 @@
 .\container.c : \
 	"..\..\include\m_addcontact.h"\
 	"..\..\include\m_button.h"\
+	"..\..\include\m_chat.h"\
 	"..\..\include\m_clc.h"\
 	"..\..\include\m_clist.h"\
 	"..\..\include\m_clui.h"\
@@ -516,7 +517,6 @@
 	"..\..\include\win2k.h"\
 	".\chat\chat.h"\
 	".\chat\chatprototypes.h"\
-	".\chat\m_chat.h"\
 	".\commonheaders.h"\
 	".\functions.h"\
 	".\generic_msghandlers.h"\
@@ -543,6 +543,7 @@
 .\containeroptions.c : \
 	"..\..\include\m_addcontact.h"\
 	"..\..\include\m_button.h"\
+	"..\..\include\m_chat.h"\
 	"..\..\include\m_clc.h"\
 	"..\..\include\m_clist.h"\
 	"..\..\include\m_clui.h"\
@@ -566,7 +567,6 @@
 	"..\..\include\win2k.h"\
 	".\chat\chat.h"\
 	".\chat\chatprototypes.h"\
-	".\chat\m_chat.h"\
 	".\commonheaders.h"\
 	".\functions.h"\
 	".\generic_msghandlers.h"\
@@ -592,6 +592,7 @@
 eventpopups.c : \
 	"..\..\include\m_addcontact.h"\
 	"..\..\include\m_button.h"\
+	"..\..\include\m_chat.h"\
 	"..\..\include\m_clc.h"\
 	"..\..\include\m_clist.h"\
 	"..\..\include\m_clui.h"\
@@ -616,7 +617,6 @@ eventpopups.c : \
 	"..\..\include\win2k.h"\
 	".\chat\chat.h"\
 	".\chat\chatprototypes.h"\
-	".\chat\m_chat.h"\
 	".\commonheaders.h"\
 	".\functions.h"\
 	".\generic_msghandlers.h"\
@@ -642,6 +642,7 @@ eventpopups.c : \
 .\formatting.cpp : \
 	"..\..\include\m_addcontact.h"\
 	"..\..\include\m_button.h"\
+	"..\..\include\m_chat.h"\
 	"..\..\include\m_clc.h"\
 	"..\..\include\m_clist.h"\
 	"..\..\include\m_clui.h"\
@@ -665,7 +666,6 @@ eventpopups.c : \
 	"..\..\include\win2k.h"\
 	".\chat\chat.h"\
 	".\chat\chatprototypes.h"\
-	".\chat\m_chat.h"\
 	".\commonheaders.h"\
 	".\functions.h"\
 	".\generic_msghandlers.h"\
@@ -675,6 +675,7 @@ eventpopups.c : \
 	".\m_fingerprint.h"\
 	".\m_flash.h"\
 	".\m_ieview.h"\
+	".\m_MathModule.h"\
 	".\m_metacontacts.h"\
 	".\m_nudge.h"\
 	".\m_popup.h"\
@@ -691,6 +692,7 @@ eventpopups.c : \
 .\generic_msghandlers.c : \
 	"..\..\include\m_addcontact.h"\
 	"..\..\include\m_button.h"\
+	"..\..\include\m_chat.h"\
 	"..\..\include\m_clc.h"\
 	"..\..\include\m_clist.h"\
 	"..\..\include\m_clui.h"\
@@ -714,7 +716,6 @@ eventpopups.c : \
 	"..\..\include\win2k.h"\
 	".\chat\chat.h"\
 	".\chat\chatprototypes.h"\
-	".\chat\m_chat.h"\
 	".\commonheaders.h"\
 	".\functions.h"\
 	".\generic_msghandlers.h"\
@@ -740,6 +741,7 @@ eventpopups.c : \
 .\hotkeyhandler.c : \
 	"..\..\include\m_addcontact.h"\
 	"..\..\include\m_button.h"\
+	"..\..\include\m_chat.h"\
 	"..\..\include\m_clc.h"\
 	"..\..\include\m_clist.h"\
 	"..\..\include\m_clui.h"\
@@ -763,7 +765,6 @@ eventpopups.c : \
 	"..\..\include\win2k.h"\
 	".\chat\chat.h"\
 	".\chat\chatprototypes.h"\
-	".\chat\m_chat.h"\
 	".\commonheaders.h"\
 	".\functions.h"\
 	".\generic_msghandlers.h"\
@@ -790,6 +791,7 @@ eventpopups.c : \
 ImageDataObject.cpp : \
 	"..\..\include\m_addcontact.h"\
 	"..\..\include\m_button.h"\
+	"..\..\include\m_chat.h"\
 	"..\..\include\m_clc.h"\
 	"..\..\include\m_clist.h"\
 	"..\..\include\m_clui.h"\
@@ -813,7 +815,6 @@ ImageDataObject.cpp : \
 	"..\..\include\win2k.h"\
 	".\chat\chat.h"\
 	".\chat\chatprototypes.h"\
-	".\chat\m_chat.h"\
 	".\commonheaders.h"\
 	".\functions.h"\
 	".\generic_msghandlers.h"\
@@ -840,6 +841,7 @@ ImageDataObject.cpp : \
 msgdialog.c : \
 	"..\..\include\m_addcontact.h"\
 	"..\..\include\m_button.h"\
+	"..\..\include\m_chat.h"\
 	"..\..\include\m_clc.h"\
 	"..\..\include\m_clist.h"\
 	"..\..\include\m_clui.h"\
@@ -863,7 +865,6 @@ msgdialog.c : \
 	"..\..\include\win2k.h"\
 	".\chat\chat.h"\
 	".\chat\chatprototypes.h"\
-	".\chat\m_chat.h"\
 	".\commonheaders.h"\
 	".\functions.h"\
 	".\generic_msghandlers.h"\
@@ -891,6 +892,7 @@ msgdialog.c : \
 msgdlgutils.c : \
 	"..\..\include\m_addcontact.h"\
 	"..\..\include\m_button.h"\
+	"..\..\include\m_chat.h"\
 	"..\..\include\m_clc.h"\
 	"..\..\include\m_clist.h"\
 	"..\..\include\m_clui.h"\
@@ -914,7 +916,6 @@ msgdlgutils.c : \
 	"..\..\include\win2k.h"\
 	".\chat\chat.h"\
 	".\chat\chatprototypes.h"\
-	".\chat\m_chat.h"\
 	".\commonheaders.h"\
 	".\functions.h"\
 	".\generic_msghandlers.h"\
@@ -940,6 +941,7 @@ msgdlgutils.c : \
 msglog.c : \
 	"..\..\include\m_addcontact.h"\
 	"..\..\include\m_button.h"\
+	"..\..\include\m_chat.h"\
 	"..\..\include\m_clc.h"\
 	"..\..\include\m_clist.h"\
 	"..\..\include\m_clui.h"\
@@ -963,7 +965,6 @@ msglog.c : \
 	"..\..\include\win2k.h"\
 	".\chat\chat.h"\
 	".\chat\chatprototypes.h"\
-	".\chat\m_chat.h"\
 	".\commonheaders.h"\
 	".\functions.h"\
 	".\generic_msghandlers.h"\
@@ -990,6 +991,7 @@ msglog.c : \
 msgoptions.c : \
 	"..\..\include\m_addcontact.h"\
 	"..\..\include\m_button.h"\
+	"..\..\include\m_chat.h"\
 	"..\..\include\m_clc.h"\
 	"..\..\include\m_clist.h"\
 	"..\..\include\m_clui.h"\
@@ -1013,7 +1015,6 @@ msgoptions.c : \
 	"..\..\include\win2k.h"\
 	".\chat\chat.h"\
 	".\chat\chatprototypes.h"\
-	".\chat\m_chat.h"\
 	".\commonheaders.h"\
 	".\functions.h"\
 	".\generic_msghandlers.h"\
@@ -1040,6 +1041,7 @@ msgoptions.c : \
 msgs.c : \
 	"..\..\include\m_addcontact.h"\
 	"..\..\include\m_button.h"\
+	"..\..\include\m_chat.h"\
 	"..\..\include\m_clc.h"\
 	"..\..\include\m_clist.h"\
 	"..\..\include\m_clui.h"\
@@ -1063,7 +1065,6 @@ msgs.c : \
 	"..\..\include\win2k.h"\
 	".\chat\chat.h"\
 	".\chat\chatprototypes.h"\
-	".\chat\m_chat.h"\
 	".\commonheaders.h"\
 	".\functions.h"\
 	".\generic_msghandlers.h"\
@@ -1092,6 +1093,7 @@ msgs.c : \
 .\selectcontainer.c : \
 	"..\..\include\m_addcontact.h"\
 	"..\..\include\m_button.h"\
+	"..\..\include\m_chat.h"\
 	"..\..\include\m_clc.h"\
 	"..\..\include\m_clist.h"\
 	"..\..\include\m_clui.h"\
@@ -1115,7 +1117,6 @@ msgs.c : \
 	"..\..\include\win2k.h"\
 	".\chat\chat.h"\
 	".\chat\chatprototypes.h"\
-	".\chat\m_chat.h"\
 	".\commonheaders.h"\
 	".\functions.h"\
 	".\generic_msghandlers.h"\
@@ -1141,6 +1142,7 @@ msgs.c : \
 sendqueue.c : \
 	"..\..\include\m_addcontact.h"\
 	"..\..\include\m_button.h"\
+	"..\..\include\m_chat.h"\
 	"..\..\include\m_clc.h"\
 	"..\..\include\m_clist.h"\
 	"..\..\include\m_clui.h"\
@@ -1164,7 +1166,6 @@ sendqueue.c : \
 	"..\..\include\win2k.h"\
 	".\chat\chat.h"\
 	".\chat\chatprototypes.h"\
-	".\chat\m_chat.h"\
 	".\commonheaders.h"\
 	".\functions.h"\
 	".\generic_msghandlers.h"\
@@ -1191,6 +1192,7 @@ sendqueue.c : \
 srmm.c : \
 	"..\..\include\m_addcontact.h"\
 	"..\..\include\m_button.h"\
+	"..\..\include\m_chat.h"\
 	"..\..\include\m_clc.h"\
 	"..\..\include\m_clist.h"\
 	"..\..\include\m_clui.h"\
@@ -1214,7 +1216,6 @@ srmm.c : \
 	"..\..\include\win2k.h"\
 	".\chat\chat.h"\
 	".\chat\chatprototypes.h"\
-	".\chat\m_chat.h"\
 	".\commonheaders.h"\
 	".\functions.h"\
 	".\generic_msghandlers.h"\
@@ -1240,6 +1241,7 @@ srmm.c : \
 .\tabctrl.c : \
 	"..\..\include\m_addcontact.h"\
 	"..\..\include\m_button.h"\
+	"..\..\include\m_chat.h"\
 	"..\..\include\m_clc.h"\
 	"..\..\include\m_clist.h"\
 	"..\..\include\m_clui.h"\
@@ -1263,7 +1265,6 @@ srmm.c : \
 	"..\..\include\win2k.h"\
 	".\chat\chat.h"\
 	".\chat\chatprototypes.h"\
-	".\chat\m_chat.h"\
 	".\commonheaders.h"\
 	".\functions.h"\
 	".\generic_msghandlers.h"\
@@ -1289,6 +1290,7 @@ srmm.c : \
 templates.c : \
 	"..\..\include\m_addcontact.h"\
 	"..\..\include\m_button.h"\
+	"..\..\include\m_chat.h"\
 	"..\..\include\m_clc.h"\
 	"..\..\include\m_clist.h"\
 	"..\..\include\m_clui.h"\
@@ -1312,7 +1314,6 @@ templates.c : \
 	"..\..\include\win2k.h"\
 	".\chat\chat.h"\
 	".\chat\chatprototypes.h"\
-	".\chat\m_chat.h"\
 	".\commonheaders.h"\
 	".\functions.h"\
 	".\generic_msghandlers.h"\
@@ -1338,6 +1339,7 @@ templates.c : \
 .\themes.c : \
 	"..\..\include\m_addcontact.h"\
 	"..\..\include\m_button.h"\
+	"..\..\include\m_chat.h"\
 	"..\..\include\m_clc.h"\
 	"..\..\include\m_clist.h"\
 	"..\..\include\m_clui.h"\
@@ -1361,7 +1363,6 @@ templates.c : \
 	"..\..\include\win2k.h"\
 	".\chat\chat.h"\
 	".\chat\chatprototypes.h"\
-	".\chat\m_chat.h"\
 	".\commonheaders.h"\
 	".\functions.h"\
 	".\generic_msghandlers.h"\
@@ -1387,6 +1388,7 @@ templates.c : \
 trayicon.c : \
 	"..\..\include\m_addcontact.h"\
 	"..\..\include\m_button.h"\
+	"..\..\include\m_chat.h"\
 	"..\..\include\m_clc.h"\
 	"..\..\include\m_clist.h"\
 	"..\..\include\m_clui.h"\
@@ -1410,7 +1412,6 @@ trayicon.c : \
 	"..\..\include\win2k.h"\
 	".\chat\chat.h"\
 	".\chat\chatprototypes.h"\
-	".\chat\m_chat.h"\
 	".\commonheaders.h"\
 	".\functions.h"\
 	".\generic_msghandlers.h"\
@@ -1437,6 +1438,7 @@ trayicon.c : \
 TSButton.c : \
 	"..\..\include\m_addcontact.h"\
 	"..\..\include\m_button.h"\
+	"..\..\include\m_chat.h"\
 	"..\..\include\m_clc.h"\
 	"..\..\include\m_clist.h"\
 	"..\..\include\m_clui.h"\
@@ -1460,7 +1462,6 @@ TSButton.c : \
 	"..\..\include\win2k.h"\
 	".\chat\chat.h"\
 	".\chat\chatprototypes.h"\
-	".\chat\m_chat.h"\
 	".\commonheaders.h"\
 	".\functions.h"\
 	".\generic_msghandlers.h"\
@@ -1486,6 +1487,7 @@ TSButton.c : \
 userprefs.c : \
 	"..\..\include\m_addcontact.h"\
 	"..\..\include\m_button.h"\
+	"..\..\include\m_chat.h"\
 	"..\..\include\m_clc.h"\
 	"..\..\include\m_clist.h"\
 	"..\..\include\m_clui.h"\
@@ -1509,7 +1511,6 @@ userprefs.c : \
 	"..\..\include\win2k.h"\
 	".\chat\chat.h"\
 	".\chat\chatprototypes.h"\
-	".\chat\m_chat.h"\
 	".\commonheaders.h"\
 	".\functions.h"\
 	".\generic_msghandlers.h"\

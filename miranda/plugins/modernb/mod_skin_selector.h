@@ -2,8 +2,8 @@
 
 Miranda IM: the free IM client for Microsoft* Windows*
 
-Copyright 2000-2006 Miranda ICQ/IM project, 
-all portions of this codebase are copyrighted to the people 
+Copyright 2000-2006 Miranda ICQ/IM project,
+all portions of this codebase are copyrighted to the people
 listed in contributors.txt.
 
 This program is free software; you can redistribute it and/or
@@ -29,7 +29,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 #define MAXVALUE 20
 
-typedef struct tagMASKPARAM 
+typedef struct tagMASKPARAM
 {
     DWORD	dwId;
     BYTE	bFlag;
@@ -39,18 +39,18 @@ typedef struct tagMASKPARAM
 } MASKPARAM;
 
 
-typedef struct tagMODERNMASK 
+typedef struct tagMODERNMASK
 {
   MASKPARAM*	    pl_Params;
   DWORD				dwParamCnt;
-  void*				pObject; 
+  void*				pObject;
   DWORD				dwMaskId;
 } MODERNMASK;
 
-typedef struct tagLISTMODERNMASK 
+typedef struct tagLISTMODERNMASK
 {
   MODERNMASK*	pl_Masks;
-  DWORD			dwMaskCnt;  
+  DWORD			dwMaskCnt;
 } LISTMODERNMASK;
 
 /// PROTOTYPES
@@ -66,7 +66,7 @@ int ParseToModernMask(MODERNMASK * mm, char * szText);
 BOOL CompareModernMask(MODERNMASK * mmValue,MODERNMASK * mmTemplate);
 BOOL CompareStrWithModernMask(char * szValue,MODERNMASK * mmTemplate);
 MODERNMASK *  FindMaskByStr(char * szValue,LISTMODERNMASK * mmTemplateList);
-_inline DWORD mod_CalcHash(const char * a);
+DWORD mod_CalcHash(const char * a);
 char * ModernMaskToString(MODERNMASK * mm, char * buf, UINT bufsize);
 BOOL _inline wildcmp(char * name, char * mask, BYTE option);
 int RegisterObjectByParce(char * ObjectName, char * Params);

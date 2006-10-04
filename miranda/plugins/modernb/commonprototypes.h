@@ -8,7 +8,7 @@
 extern BOOL gl_b_GDIPlusFail;
 extern BOOL g_mutex_bOnEdgeSizing;
 
-extern HANDLE g_hSkinLoadedEvent;         
+extern HANDLE g_hSkinLoadedEvent;
 
 
 extern wndFrame *Frames;
@@ -25,7 +25,7 @@ extern ClcProtoStatus *clcProto;
 extern HIMAGELIST himlCListClc;
 extern HIMAGELIST hCListImages;
 
-//External functions 
+//External functions
 
 int SkinEngine_BltBackImage (HWND destHWND, HDC destDC, RECT * BltClientRect);
 BOOL CLUI__cliInvalidateRect(HWND hWnd, CONST RECT* lpRect,BOOL bErase );
@@ -95,7 +95,7 @@ BOOL SkinEngine_SetRectOpaque(HDC memdc,RECT *fr);
 int DrawTitleBar(HDC hdcMem2,RECT rect,int Frameid);
 int SkinEngine_Service_UpdateFrameImage(WPARAM wParam, LPARAM lParam);
 int CLUI_OnSkinLoad(WPARAM wParam, LPARAM lParam);
-_inline DWORD mod_CalcHash(const char * a);
+DWORD mod_CalcHash(const char * a);
 int  QueueAllFramesUpdating (BYTE);
 int  SetAlpha(BYTE);
 int  DeleteButtons();
@@ -177,11 +177,10 @@ HICON CLUI_LoadIconFromExternalFile(char *filename,int i,boolean UseLibrary,bool
 int GetTransportProtoIDFromHCONTACT(HANDLE hContact, char * protocol);
 #ifndef _COMMONPROTOTYPES
 #define _COMMONPROTOTYPES
-typedef struct _TabItemOptionConf 
-{ 
+typedef struct _TabItemOptionConf
+{
 	TCHAR *name;			// Tab name
 	int id;					// Dialog id
 	DLGPROC wnd_proc;		// Dialog function
 } TabItemOptionConf;
 #endif
-

@@ -167,7 +167,7 @@ static int Log_AppendRTF(LOGSTREAMDATA* streamData, char **buffer, int *cbBuffer
 					szTemp3[2] = '\0';
 					line += 2;
 
-					col = _tstoi(szTemp3);
+					col = _ttoi(szTemp3);
 					col += 18;
 					mir_snprintf(szTemp, SIZEOF(szTemp), (*line == 'c') ? "\\cf%u " : "\\highlight%u ", col);
 				}
