@@ -18,8 +18,6 @@ along with this program; if not, write to the Free Software
 Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 */
 
-
-
 #include "../commonheaders.h"
 #include <math.h>
 
@@ -147,7 +145,7 @@ TCHAR* Chat_DoRtfToTags( char* pszText, SESSION_INFO* si)
 				int i=0;
 				p = p1 + 2;
 				bTextHasStarted = TRUE;
-				bJustRemovedRTF = TRUE;
+				bJustRemovedRTF = FALSE;
 				iRemoveChars = 2;
 				while ( i < 10 && *p != ' ' && *p != '\\' ) {
 					temp[i++] = *p++;
