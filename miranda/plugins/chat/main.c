@@ -30,11 +30,11 @@ struct MM_INTERFACE memoryManagerInterface;
 
 FONTINFO    aFonts[OPTIONS_FONTCOUNT];
 HICON       hIcons[30];
-BOOL        SmileyAddInstalled = FALSE;
 BOOL        IEviewInstalled = FALSE;
+HBRUSH      hListBkgBrush = NULL;
+BOOL        SmileyAddInstalled = FALSE;
 BOOL        PopUpInstalled = FALSE;
 HBRUSH      hEditBkgBrush = NULL;
-HBRUSH      hListBkgBrush = NULL;
 
 HIMAGELIST  hImageList = NULL;
 
@@ -142,7 +142,6 @@ int __declspec(dllexport) Unload(void)
 
 	CList_SetAllOffline(TRUE);
 
-	//	RichUtil_Unload();
 	mir_free( pszActiveWndID );
 	mir_free( pszActiveWndModule );
 
@@ -215,6 +214,7 @@ void LoadLogIcons(void)
 
 	return;
 }
+
 void LoadIcons(void)
 {
 	int i;

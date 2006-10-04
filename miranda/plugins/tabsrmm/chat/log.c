@@ -46,11 +46,11 @@ void GetIconSize(HICON hIcon, int* sizeX, int* sizeY);
 static int EventToIndex(LOGINFO * lin)
 {
 	switch (lin->iType) {
-		case GC_EVENT_MESSAGE: 
+		case GC_EVENT_MESSAGE:
 			{
-				if (lin->bIsMe) 
+				if (lin->bIsMe)
 					return 10;
-				else 
+				else
 					return 9;
 			}
 		case GC_EVENT_JOIN: return 3;
@@ -89,11 +89,11 @@ static BYTE EventToSymbol(LOGINFO *lin)
 static int EventToIcon(LOGINFO * lin)
 {
 	switch (lin->iType) {
-		case GC_EVENT_MESSAGE: 
+		case GC_EVENT_MESSAGE:
 			{
-				if (lin->bIsMe) 
+				if (lin->bIsMe)
 					return ICON_MESSAGEOUT;
-				else 
+				else
 					return ICON_MESSAGE;
 			}
 		case GC_EVENT_JOIN: return ICON_JOIN;
@@ -193,7 +193,7 @@ static int Log_AppendRTF(LOGSTREAMDATA* streamData, char **buffer, int *cbBuffer
 					szTemp3[2] = '\0';
 					line += 2;
 
-					col = _tstoi(szTemp3);
+					col = _ttoi(szTemp3);
 					col += 18;
 					mir_snprintf(szTemp, SIZEOF(szTemp), (*line == 'c') ? "\\cf%u " : "\\highlight%u ", col);
 				}
@@ -492,7 +492,7 @@ static char* Log_CreateRTF(LOGSTREAMDATA *streamData)
 						}
 						ui = ui->next;
 				}	}
-				
+
 				Log_Append(&buffer, &bufferEnd, &bufferAlloced, "%s ", Log_SetStyle(lin->bIsMe ? 2 : 1, lin->bIsMe ? 2 : 1));
 
 				if (g_Settings.ClassicIndicators)
@@ -541,7 +541,7 @@ static DWORD CALLBACK Log_StreamCallback(DWORD dwCookie, LPBYTE pbBuff, LONG cb,
 	if (lstrdat)
 	{
 		// create the RTF
-		if (lstrdat->buffer == NULL) 
+		if (lstrdat->buffer == NULL)
 		{
 			lstrdat->bufferOffset = 0;
 			lstrdat->buffer = Log_CreateRTF(lstrdat);
@@ -554,7 +554,7 @@ static DWORD CALLBACK Log_StreamCallback(DWORD dwCookie, LPBYTE pbBuff, LONG cb,
 		lstrdat->bufferOffset += *pcb;
 
 		// free stuff if the streaming operation is complete
-		if (lstrdat->bufferOffset == lstrdat->bufferLen) 
+		if (lstrdat->bufferOffset == lstrdat->bufferLen)
 		{
 			mir_free(lstrdat->buffer);
 			lstrdat->buffer = NULL;
@@ -610,7 +610,7 @@ void Log_StreamInEvent(HWND hwndDlg,  LOGINFO* lin, SESSION_INFO* si, BOOL bRedr
 		SendMessage(hwndRich, EM_EXSETSEL, 0, (LPARAM) & sel);
 
 		// fix for the indent... must be a M$ bug
-		if (sel.cpMax == 0) 
+		if (sel.cpMax == 0)
 			bRedraw = TRUE;
 
 		// should the event(s) be appended to the current log
@@ -636,8 +636,8 @@ void Log_StreamInEvent(HWND hwndDlg,  LOGINFO* lin, SESSION_INFO* si, BOOL bRedr
 
 		// do smileys
 		SendMessage(hwndRich, EM_EXGETSEL, (WPARAM)0, (LPARAM)&newsel);
-		if (myGlobals.g_SmileyAddAvail && (bRedraw 
-			|| (lin->ptszText 
+		if (myGlobals.g_SmileyAddAvail && (bRedraw
+			|| (lin->ptszText
 			&& lin->iType != GC_EVENT_JOIN
 			&& lin->iType != GC_EVENT_NICK
 			&& lin->iType != GC_EVENT_ADDSTATUS
@@ -705,10 +705,10 @@ void Log_StreamInEvent(HWND hwndDlg,  LOGINFO* lin, SESSION_INFO* si, BOOL bRedr
 
 		// scroll log to bottom if the log was previously scrolled to bottom, else restore old position
 		if (bRedraw ||  (UINT)scroll.nPos >= (UINT)scroll.nMax-scroll.nPage-5 || scroll.nMax-scroll.nMin-scroll.nPage < 50)
-		{ 
+		{
 			SendMessage(GetParent(hwndRich), GC_SCROLLTOBOTTOM, 0, 0);
 		}
-		else 
+		else
 			SendMessage(hwndRich, EM_SETSCROLLPOS, 0, (LPARAM) &point);
 
 		// do we need to restore the selection
@@ -772,7 +772,7 @@ char * Log_CreateRtfHeader(MODULEINFO * mi)
 	Log_Append(&buffer, &bufferEnd, &bufferAlloced, "}\\pard\\sl%d", 1000);
 
 	// set tabs and indents
-	{ 
+	{
 		int iIndent = 0;
 
 		if (g_Settings.LogSymbols) {

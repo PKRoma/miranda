@@ -85,7 +85,7 @@ END_GROUPLOOP:
 	DBWriteContactSettingTString( hContact, pszModule, "ChatRoomID", pszRoom );
 	DBWriteContactSettingByte( hContact, pszModule, "ChatRoom", (BYTE)iType );
 	DBWriteContactSettingWord( hContact, pszModule, "Status", ID_STATUS_OFFLINE );
-//		if (iType == GCW_SERVER)
+//	if (iType == GCW_SERVER)
 		DBWriteContactSettingByte(hContact, "CList", "Hidden", 1);
 	return hContact;
 }

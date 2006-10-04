@@ -30,6 +30,8 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #define WIN32_LEAN_AND_MEAN	
 #define _WIN32_WINNT 0x0501
 
+#define _USE_32BIT_TIME_T
+
 //#include "AggressiveOptimize.h"
 #include <tchar.h>
 #include <windows.h>
@@ -63,7 +65,6 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include "m_ieview.h"
 #include "m_smileyadd.h"
 #include "IcoLib.h"
-//#include "richutil.h"
 
 #ifndef NDEBUG
 #include <crtdbg.h>
@@ -210,7 +211,8 @@ typedef struct LOG_INFO_TYPE
 }
 	LOGINFO;
 
-typedef struct STATUSINFO_TYPE{
+typedef struct STATUSINFO_TYPE
+{
 	TCHAR*  pszGroup;
 	HICON   hIcon;
 	WORD    Status;
@@ -330,14 +332,14 @@ struct GlobalLogSettings_t {
 	DWORD       dwPopupFlags;
 	int         LogTextIndent;
 	int         LoggingLimit;
-	int        	iEventLimit;
-	int        	iPopupStyle;
-	int        	iPopupTimeout;
-	int        	iSplitterX;
-	int        	iSplitterY;
-	int        	iX;
-	int        	iY;
-	int        	iWidth;
+	int         iEventLimit;
+	int         iPopupStyle;
+	int         iPopupTimeout;
+	int         iSplitterX;
+	int         iSplitterY;
+	int         iX;
+	int         iY;
+	int         iWidth;
 	int         iHeight;
 	TCHAR*      pszTimeStamp;
 	TCHAR*      pszTimeStampLog;
@@ -365,7 +367,8 @@ typedef struct{
 	HWND          hWndTarget;
 	BOOL          bForeground;
 	SESSION_INFO* si;
-}COLORCHOOSER;
+}
+	COLORCHOOSER;
 
 //main.c
 void LoadIcons(void);
@@ -541,6 +544,7 @@ __forceinline WCHAR* mir_wstrdup(const WCHAR *src)
 	#define mir_tstrdup mir_strdup
 #endif
 
+TCHAR* a2t( const char* str );
 char*  t2a( const TCHAR* str );
 TCHAR* a2tf( const TCHAR* str, int flags );
 TCHAR* replaceStr( TCHAR** dest, const TCHAR* src );

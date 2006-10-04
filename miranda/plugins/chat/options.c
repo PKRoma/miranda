@@ -51,23 +51,23 @@ struct FontOptionsList
 //remeber to put these in the Translate( ) template file too
 static fontOptionsList[] = {
 	{_T("Timestamp"), RGB(50, 50, 240), _T("Terminal"), DEFAULT_CHARSET, 0, -8},
-	{_T("Others nicknames"), RGB(0, 0, 0), _T("Verdana"), DEFAULT_CHARSET, FONTF_BOLD, -13},
-	{_T("Your nickname"), RGB(0, 0, 0), _T("Verdana"), DEFAULT_CHARSET, FONTF_BOLD, -13},
-	{_T("User has joined"), RGB(90, 160, 90), _T("Verdana"), DEFAULT_CHARSET, 0, -13},
-	{_T("User has left"), RGB(160, 160, 90), _T("Verdana"), DEFAULT_CHARSET, 0, -13},
-	{_T("User has disconnected"), RGB(160, 90, 90), _T("Verdana"), DEFAULT_CHARSET, 0, -13},
-	{_T("User kicked ..."), RGB(100, 100, 100), _T("Verdana"), DEFAULT_CHARSET, 0, -13},
-	{_T("User is now known as ..."), RGB(90, 90, 160), _T("Verdana"), DEFAULT_CHARSET, 0, -13},
-	{_T("Notice from user"), RGB(160, 130, 60), _T("Verdana"), DEFAULT_CHARSET, 0, -13},
-	{_T("Incoming message"), RGB(90, 90, 90), _T("Verdana"), DEFAULT_CHARSET, 0, -13},
-	{_T("Outgoing message"), RGB(90, 90, 90), _T("Verdana"), DEFAULT_CHARSET, 0, -13},
-	{_T("The topic is ..."), RGB(70, 70, 160), _T("Verdana"), DEFAULT_CHARSET, 0, -13},
-	{_T("Information messages"), RGB(130, 130, 195), _T("Verdana"), DEFAULT_CHARSET, 0, -13},
-	{_T("User enables status for ..."), RGB(70, 150, 70), _T("Verdana"), DEFAULT_CHARSET, 0, -13},
-	{_T("User disables status for ..."), RGB(150, 70, 70), _T("Verdana"), DEFAULT_CHARSET, 0, -13},
-	{_T("Action message"), RGB(160, 90, 160), _T("Verdana"), DEFAULT_CHARSET, 0, -13},
-	{_T("Highlighted message"), RGB(180, 150, 80), _T("Verdana"), DEFAULT_CHARSET, 0, -13},
-	{_T("Message typing area"), RGB(0, 0, 40), _T("Verdana"), DEFAULT_CHARSET, 0, -14},
+	{_T("Others nicknames"), RGB(0, 0, 0), _T("Verdana"), DEFAULT_CHARSET, FONTF_BOLD, -12},
+	{_T("Your nickname"), RGB(0, 0, 0), _T("Verdana"), DEFAULT_CHARSET, FONTF_BOLD, -12},
+	{_T("User has joined"), RGB(90, 160, 90), _T("Verdana"), DEFAULT_CHARSET, 0, -12},
+	{_T("User has left"), RGB(160, 160, 90), _T("Verdana"), DEFAULT_CHARSET, 0, -12},
+	{_T("User has disconnected"), RGB(160, 90, 90), _T("Verdana"), DEFAULT_CHARSET, 0, -12},
+	{_T("User kicked ..."), RGB(100, 100, 100), _T("Verdana"), DEFAULT_CHARSET, 0, -12},
+	{_T("User is now known as ..."), RGB(90, 90, 160), _T("Verdana"), DEFAULT_CHARSET, 0, -12},
+	{_T("Notice from user"), RGB(160, 130, 60), _T("Verdana"), DEFAULT_CHARSET, 0, -12},
+	{_T("Incoming message"), RGB(90, 90, 90), _T("Verdana"), DEFAULT_CHARSET, 0, -12},
+	{_T("Outgoing message"), RGB(90, 90, 90), _T("Verdana"), DEFAULT_CHARSET, 0, -12},
+	{_T("The topic is ..."), RGB(70, 70, 160), _T("Verdana"), DEFAULT_CHARSET, 0, -12},
+	{_T("Information messages"), RGB(130, 130, 195), _T("Verdana"), DEFAULT_CHARSET, 0, -12},
+	{_T("User enables status for ..."), RGB(70, 150, 70), _T("Verdana"), DEFAULT_CHARSET, 0, -12},
+	{_T("User disables status for ..."), RGB(150, 70, 70), _T("Verdana"), DEFAULT_CHARSET, 0, -12},
+	{_T("Action message"), RGB(160, 90, 160), _T("Verdana"), DEFAULT_CHARSET, 0, -12},
+	{_T("Highlighted message"), RGB(180, 150, 80), _T("Verdana"), DEFAULT_CHARSET, 0, -12},
+	{_T("Message typing area"), RGB(0, 0, 40), _T("Verdana"), DEFAULT_CHARSET, 0, -12},
 	{_T("User list members (Online)"), RGB(0,0, 0), _T("Verdana"), DEFAULT_CHARSET, 0, -12},
 	{_T("User list members (away)"), RGB(170, 170, 170), _T("Verdana"), DEFAULT_CHARSET, 0, -12},
 };
@@ -188,8 +188,8 @@ static HTREEITEM InsertBranch(HWND hwndTree, TCHAR* pszDescr, BOOL bExpanded)
 	tvis.hInsertAfter=TVI_LAST;
 	tvis.item.mask=TVIF_TEXT|TVIF_STATE;
 	tvis.item.pszText=TranslateTS(pszDescr);
-	tvis.item.stateMask=bExpanded?TVIS_STATEIMAGEMASK|TVIS_EXPANDED:TVIS_STATEIMAGEMASK;
-	tvis.item.state=bExpanded?INDEXTOSTATEIMAGEMASK(1)|TVIS_EXPANDED:INDEXTOSTATEIMAGEMASK(1);
+	tvis.item.stateMask=(bExpanded?TVIS_STATEIMAGEMASK|TVIS_EXPANDED:TVIS_STATEIMAGEMASK) | TVIS_BOLD;
+	tvis.item.state=(bExpanded?INDEXTOSTATEIMAGEMASK(1)|TVIS_EXPANDED:INDEXTOSTATEIMAGEMASK(1)) | TVIS_BOLD;
 	return TreeView_InsertItem(hwndTree, &tvis);
 }
 
@@ -227,8 +227,8 @@ static void SaveBranch(HWND hwndTree, struct branch_t *branch, int nValues)
 	for(i=0;i<nValues;i++) {
 		tvi.hItem = branch[i].hItem;
 		TreeView_GetItem(hwndTree,&tvi);
-		bChecked = ((tvi.state&TVIS_STATEIMAGEMASK)>>12==1)?0:1;
-		if (branch[i].iMode)
+		bChecked = ((tvi.state&TVIS_STATEIMAGEMASK)>>12==2)?0:1;
+		if(branch[i].iMode)
 		{
 			if (bChecked)
 				iState |= branch[i].iMode;
@@ -237,7 +237,7 @@ static void SaveBranch(HWND hwndTree, struct branch_t *branch, int nValues)
 			DBWriteContactSettingDword(NULL, "Chat", branch[i].szDBName, (DWORD)iState);
 		}
 		else DBWriteContactSettingByte(NULL, "Chat", branch[i].szDBName, bChecked);
-	}	}
+}	}
 
 static void CheckHeading(HWND hwndTree, HTREEITEM hHeading)
 {
@@ -253,13 +253,13 @@ static void CheckHeading(HWND hwndTree, HTREEITEM hHeading)
 		if (tvi.hItem != branch1[0].hItem && tvi.hItem != branch1[1].hItem )
 		{
 			TreeView_GetItem(hwndTree,&tvi);
-			if (((tvi.state&TVIS_STATEIMAGEMASK)>>12==1)) 
+			if (((tvi.state&TVIS_STATEIMAGEMASK)>>12==2)) 
 				bChecked = FALSE;
 		}
 		tvi.hItem=TreeView_GetNextSibling(hwndTree,tvi.hItem);
 	}
 	tvi.stateMask = TVIS_STATEIMAGEMASK;
-	tvi.state=INDEXTOSTATEIMAGEMASK(bChecked?2:1);
+	tvi.state = INDEXTOSTATEIMAGEMASK(bChecked?2:1);
 	tvi.hItem = hHeading;
 	TreeView_SetItem(hwndTree,&tvi);
 }
@@ -274,12 +274,15 @@ static void CheckBranches(HWND hwndTree, HTREEITEM hHeading)
 	tvi.mask=TVIF_HANDLE|TVIF_STATE;
 	tvi.hItem = hHeading;
 	TreeView_GetItem(hwndTree,&tvi);
-	if (((tvi.state&TVIS_STATEIMAGEMASK)>>12==2)) 
+	if (((tvi.state&TVIS_STATEIMAGEMASK)>>12==3) || ((tvi.state&TVIS_STATEIMAGEMASK)>>12==1))
 		bChecked = FALSE;
-	tvi.hItem=TreeView_GetNextItem(hwndTree, hHeading, TVGN_CHILD);
+
 	tvi.stateMask = TVIS_STATEIMAGEMASK;
+	tvi.state = INDEXTOSTATEIMAGEMASK(bChecked?2:1);
+	TreeView_SetItem(hwndTree,&tvi);		
+	tvi.hItem = TreeView_GetNextItem(hwndTree, hHeading, TVGN_CHILD);
 	while(tvi.hItem) {
-		tvi.state=INDEXTOSTATEIMAGEMASK(bChecked?2:1);
+		tvi.state=INDEXTOSTATEIMAGEMASK(bChecked?3:2);
 		if (tvi.hItem != branch1[0].hItem && tvi.hItem != branch1[1].hItem )
 			TreeView_SetItem(hwndTree,&tvi);		
 		tvi.hItem=TreeView_GetNextSibling(hwndTree,tvi.hItem);
@@ -290,13 +293,13 @@ static INT CALLBACK BrowseCallbackProc(HWND hwnd, UINT uMsg, LPARAM lp, LPARAM p
 {
 	char szDir[MAX_PATH];
 	switch(uMsg) {
-case BFFM_INITIALIZED:
-	SendMessage(hwnd, BFFM_SETSELECTION, TRUE, pData);
-	break;
-case BFFM_SELCHANGED:
-	if (SHGetPathFromIDListA((LPITEMIDLIST) lp ,szDir))
-		SendMessage(hwnd,BFFM_SETSTATUSTEXT,0,(LPARAM)szDir);
-	break;
+	case BFFM_INITIALIZED:
+		SendMessage(hwnd, BFFM_SETSELECTION, TRUE, pData);
+		break;
+	case BFFM_SELCHANGED:
+		if (SHGetPathFromIDListA((LPITEMIDLIST) lp ,szDir))
+			SendMessage(hwnd,BFFM_SETSTATUSTEXT,0,(LPARAM)szDir);
+		break;
 	}
 	return 0;
 }
@@ -578,8 +581,7 @@ static BOOL CALLBACK DlgProcOptions1(HWND hwndDlg,UINT uMsg,WPARAM wParam,LPARAM
 	static HTREEITEM hListHeading5= 0;
 	static HTREEITEM hListHeading6= 0;
 	static HTREEITEM hListHeading0= 0;
-	switch (uMsg)
-	{
+	switch (uMsg) 	{
 	case WM_INITDIALOG:
 		TranslateDialogDefault(hwndDlg);
 		SetWindowLong(GetDlgItem(hwndDlg,IDC_CHECKBOXES),GWL_STYLE,GetWindowLong(GetDlgItem(hwndDlg,IDC_CHECKBOXES),GWL_STYLE)|TVS_NOHSCROLL|TVS_CHECKBOXES);
@@ -757,7 +759,7 @@ static BOOL CALLBACK DlgProcOptions2(HWND hwndDlg,UINT uMsg,WPARAM wParam,LPARAM
 	static HBRUSH hListColourBrush;
 	static HBRUSH hMessageColourBrush;
 	switch (uMsg) {
-case WM_INITDIALOG:
+	case WM_INITDIALOG:
 	{
 		char szTemp[MAX_PATH];
 
@@ -1123,39 +1125,37 @@ case WM_NOTIFY:
 	}
 	break;
 
-case WM_DESTROY:
-	DeleteObject(hBkgColourBrush);
-	DeleteObject(hListColourBrush);
-	DeleteObject(hMessageColourBrush);
-	break;
+	case WM_DESTROY:
+		DeleteObject(hBkgColourBrush);
+		DeleteObject(hListColourBrush);
+		DeleteObject(hMessageColourBrush);
+		break;
 	}
 	return FALSE;
 }
 
 static BOOL CALLBACK DlgProcOptionsPopup(HWND hwndDlg,UINT uMsg,WPARAM wParam,LPARAM lParam)
 {
-	switch (uMsg)
-	{
+	switch (uMsg) {
 	case WM_INITDIALOG:
-		{
-			TranslateDialogDefault(hwndDlg);
+		TranslateDialogDefault(hwndDlg);
 
-			SendDlgItemMessage(hwndDlg, IDC_BKG, CPM_SETCOLOUR,0,g_Settings.crPUBkgColour);
-			SendDlgItemMessage(hwndDlg, IDC_TEXT, CPM_SETCOLOUR,0,g_Settings.crPUTextColour);
+		SendDlgItemMessage(hwndDlg, IDC_BKG, CPM_SETCOLOUR,0,g_Settings.crPUBkgColour);
+		SendDlgItemMessage(hwndDlg, IDC_TEXT, CPM_SETCOLOUR,0,g_Settings.crPUTextColour);
 
-			if (g_Settings.iPopupStyle ==2)
-				CheckDlgButton(hwndDlg, IDC_RADIO2, BST_CHECKED);
-			else if (g_Settings.iPopupStyle ==3)
-				CheckDlgButton(hwndDlg, IDC_RADIO3, BST_CHECKED);
-			else
-				CheckDlgButton(hwndDlg, IDC_RADIO1, BST_CHECKED);
+		if (g_Settings.iPopupStyle ==2)
+			CheckDlgButton(hwndDlg, IDC_RADIO2, BST_CHECKED);
+		else if (g_Settings.iPopupStyle ==3)
+			CheckDlgButton(hwndDlg, IDC_RADIO3, BST_CHECKED);
+		else
+			CheckDlgButton(hwndDlg, IDC_RADIO1, BST_CHECKED);
 
-			EnableWindow(GetDlgItem(hwndDlg, IDC_BKG), IsDlgButtonChecked(hwndDlg, IDC_RADIO3) ==BST_CHECKED?TRUE:FALSE);
-			EnableWindow(GetDlgItem(hwndDlg, IDC_TEXT), IsDlgButtonChecked(hwndDlg, IDC_RADIO3) ==BST_CHECKED?TRUE:FALSE);
+		EnableWindow(GetDlgItem(hwndDlg, IDC_BKG), IsDlgButtonChecked(hwndDlg, IDC_RADIO3) ==BST_CHECKED?TRUE:FALSE);
+		EnableWindow(GetDlgItem(hwndDlg, IDC_TEXT), IsDlgButtonChecked(hwndDlg, IDC_RADIO3) ==BST_CHECKED?TRUE:FALSE);
 
-			SendDlgItemMessage(hwndDlg,IDC_SPIN1,UDM_SETRANGE,0,MAKELONG(100,-1));
-			SendDlgItemMessage(hwndDlg,IDC_SPIN1,UDM_SETPOS,0,MAKELONG(g_Settings.iPopupTimeout,0));
-		}break;
+		SendDlgItemMessage(hwndDlg,IDC_SPIN1,UDM_SETRANGE,0,MAKELONG(100,-1));
+		SendDlgItemMessage(hwndDlg,IDC_SPIN1,UDM_SETPOS,0,MAKELONG(g_Settings.iPopupTimeout,0));
+		break;
 
 	case WM_COMMAND:
 		if (	(LOWORD(wParam)		  == IDC_TIMEOUT)
@@ -1165,17 +1165,15 @@ static BOOL CALLBACK DlgProcOptionsPopup(HWND hwndDlg,UINT uMsg,WPARAM wParam,LP
 			SendMessage(GetParent(hwndDlg), PSM_CHANGED, 0, 0);
 		switch (LOWORD(wParam)) {
 
-	case IDC_RADIO1:
-	case IDC_RADIO2:
-	case IDC_RADIO3:
-		EnableWindow(GetDlgItem(hwndDlg, IDC_BKG), IsDlgButtonChecked(hwndDlg, IDC_RADIO3) ==BST_CHECKED?TRUE:FALSE);
-		EnableWindow(GetDlgItem(hwndDlg, IDC_TEXT), IsDlgButtonChecked(hwndDlg, IDC_RADIO3) ==BST_CHECKED?TRUE:FALSE);
-		break;
-
-	default:break;
+		case IDC_RADIO1:
+		case IDC_RADIO2:
+		case IDC_RADIO3:
+			EnableWindow(GetDlgItem(hwndDlg, IDC_BKG), IsDlgButtonChecked(hwndDlg, IDC_RADIO3) ==BST_CHECKED?TRUE:FALSE);
+			EnableWindow(GetDlgItem(hwndDlg, IDC_TEXT), IsDlgButtonChecked(hwndDlg, IDC_RADIO3) ==BST_CHECKED?TRUE:FALSE);
+			break;
 		}
-
 		break;
+
 	case WM_NOTIFY:
 		{
 			switch(((LPNMHDR)lParam)->idFrom) 

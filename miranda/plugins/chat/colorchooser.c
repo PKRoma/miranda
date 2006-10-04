@@ -24,9 +24,6 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include "chat.h"
 #include <math.h>
 
-//globals, defined int main.cpp
-extern HINSTANCE g_hInst;
-
 static int CalculateCoordinatesToButton(COLORCHOOSER * pCC, POINT pt)
 {
 	int iSquareRoot = (int)sqrt(pCC->pModule->nColorCount);

@@ -185,6 +185,7 @@ SESSION_INFO* SM_FindSession(const TCHAR* pszID, const char* pszModule)
 	}
 	return NULL;
 }
+
 BOOL SM_SetOffline(const TCHAR* pszID, const char* pszModule)
 {
 	SESSION_INFO* pTemp = m_WndList, *pLast = NULL;
@@ -632,6 +633,7 @@ SESSION_INFO* SM_GetPrevWindow(SESSION_INFO* si)
 	}
 	return NULL;
 }
+
 SESSION_INFO* SM_GetNextWindow(SESSION_INFO* si)
 {
 	SESSION_INFO* pTemp = m_WndList, *pLast = NULL;
@@ -841,7 +843,7 @@ char* SM_GetNextCommand(const TCHAR* pszID, const char* pszModule) // get next c
 	return(NULL);
 }
 
-int	SM_GetCount(const char* pszModule)
+int SM_GetCount(const char* pszModule)
 {
 	SESSION_INFO* pTemp = m_WndList;
 	int count = 0;
@@ -855,7 +857,8 @@ int	SM_GetCount(const char* pszModule)
 	}
 	return count;
 }
-SESSION_INFO*	SM_FindSessionByIndex(const char* pszModule, int iItem)
+
+SESSION_INFO* SM_FindSessionByIndex(const char* pszModule, int iItem)
 {
 	SESSION_INFO* pTemp = m_WndList;
 	int count = 0;

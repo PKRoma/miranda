@@ -97,7 +97,7 @@ static int CALLBACK PopupDlgProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM 
 {
 	switch(message) {
 	case WM_COMMAND:
-		if (HIWORD(wParam) == STN_CLICKED) { 
+		if (HIWORD(wParam) == STN_CLICKED) {
 			SESSION_INFO* si = (SESSION_INFO*)CallService(MS_POPUP_GETPLUGINDATA, (WPARAM)hWnd,(LPARAM)0);;
 
 			CallFunctionAsync(ShowRoomFromPopup, si);
@@ -136,10 +136,10 @@ static int ShowPopup (HANDLE hContact, SESSION_INFO* si, HICON hIcon,  char* psz
 	_vstprintf(szBuf, fmt, marker);
 	va_end(marker);
 
-	pd.lchContact = hContact;	
+	pd.lchContact = hContact;
 
 	if ( hIcon )
-		pd.lchIcon = hIcon ;	
+		pd.lchIcon = hIcon ;
 	else
 		pd.lchIcon = LoadIconEx(IDI_CHANMGR, "window", 0, 0 );
 
@@ -154,11 +154,11 @@ static int ShowPopup (HANDLE hContact, SESSION_INFO* si, HICON hIcon,  char* psz
 		pd.colorText = 0;
 	}
 	else if (g_Settings.iPopupStyle == 3) {
-		pd.colorBack = g_Settings.crPUBkgColour;									
+		pd.colorBack = g_Settings.crPUBkgColour;
 		pd.colorText = g_Settings.crPUTextColour;
 	}
 	else {
-		pd.colorBack = g_Settings.crLogBackground;									
+		pd.colorBack = g_Settings.crLogBackground;
 		pd.colorText = crBkg;
 	}
 
@@ -175,43 +175,43 @@ static BOOL DoTrayIcon(SESSION_INFO* si, GCEVENT * gce)
 		switch ( iEvent ) {
 		case GC_EVENT_MESSAGE|GC_EVENT_HIGHLIGHT :
 		case GC_EVENT_ACTION|GC_EVENT_HIGHLIGHT :
-			CList_AddEvent(si->hContact, LoadSkinnedIcon(SKINICON_EVENT_MESSAGE), "chaticon", 0, TranslateT("%s wants your attention in %s"), gce->ptszNick, si->ptszName); 
+			CList_AddEvent(si->hContact, LoadSkinnedIcon(SKINICON_EVENT_MESSAGE), "chaticon", 0, TranslateT("%s wants your attention in %s"), gce->ptszNick, si->ptszName);
 			break;
 		case GC_EVENT_MESSAGE :
-			CList_AddEvent(si->hContact, hIcons[ICON_MESSAGE], "chaticon", CLEF_ONLYAFEW, TranslateT("%s speaks in %s"), gce->ptszNick, si->ptszName); 
+			CList_AddEvent(si->hContact, hIcons[ICON_MESSAGE], "chaticon", CLEF_ONLYAFEW, TranslateT("%s speaks in %s"), gce->ptszNick, si->ptszName);
 			break;
 		case GC_EVENT_ACTION:
-			CList_AddEvent(si->hContact, hIcons[ICON_ACTION], "chaticon", CLEF_ONLYAFEW, TranslateT("%s speaks in %s"), gce->ptszNick, si->ptszName); 
+			CList_AddEvent(si->hContact, hIcons[ICON_ACTION], "chaticon", CLEF_ONLYAFEW, TranslateT("%s speaks in %s"), gce->ptszNick, si->ptszName);
 			break;
 		case GC_EVENT_JOIN:
-			CList_AddEvent(si->hContact, hIcons[ICON_JOIN], "chaticon", CLEF_ONLYAFEW, TranslateT("%s has joined %s"), gce->ptszNick, si->ptszName); 
+			CList_AddEvent(si->hContact, hIcons[ICON_JOIN], "chaticon", CLEF_ONLYAFEW, TranslateT("%s has joined %s"), gce->ptszNick, si->ptszName);
 			break;
 		case GC_EVENT_PART:
-			CList_AddEvent(si->hContact, hIcons[ICON_PART], "chaticon", CLEF_ONLYAFEW, TranslateT("%s has left %s"), gce->ptszNick, si->ptszName); 
+			CList_AddEvent(si->hContact, hIcons[ICON_PART], "chaticon", CLEF_ONLYAFEW, TranslateT("%s has left %s"), gce->ptszNick, si->ptszName);
 			break;
 		case GC_EVENT_QUIT:
-			CList_AddEvent(si->hContact, hIcons[ICON_QUIT], "chaticon", CLEF_ONLYAFEW, TranslateT("%s has disconnected"), gce->ptszNick); 
+			CList_AddEvent(si->hContact, hIcons[ICON_QUIT], "chaticon", CLEF_ONLYAFEW, TranslateT("%s has disconnected"), gce->ptszNick);
 			break;
 		case GC_EVENT_NICK:
-			CList_AddEvent(si->hContact, hIcons[ICON_NICK], "chaticon", CLEF_ONLYAFEW, TranslateT("%s is now known as %s"), gce->ptszNick, gce->pszText); 
+			CList_AddEvent(si->hContact, hIcons[ICON_NICK], "chaticon", CLEF_ONLYAFEW, TranslateT("%s is now known as %s"), gce->ptszNick, gce->pszText);
 			break;
 		case GC_EVENT_KICK:
-			CList_AddEvent(si->hContact, hIcons[ICON_KICK], "chaticon", CLEF_ONLYAFEW, TranslateT("%s kicked %s from %s"), gce->pszStatus, gce->ptszNick, si->ptszName); 
+			CList_AddEvent(si->hContact, hIcons[ICON_KICK], "chaticon", CLEF_ONLYAFEW, TranslateT("%s kicked %s from %s"), gce->pszStatus, gce->ptszNick, si->ptszName);
 			break;
 		case GC_EVENT_NOTICE:
-			CList_AddEvent(si->hContact, hIcons[ICON_NOTICE], "chaticon", CLEF_ONLYAFEW, TranslateT("Notice from %s"), gce->ptszNick); 
+			CList_AddEvent(si->hContact, hIcons[ICON_NOTICE], "chaticon", CLEF_ONLYAFEW, TranslateT("Notice from %s"), gce->ptszNick);
 			break;
 		case GC_EVENT_TOPIC:
-			CList_AddEvent(si->hContact, hIcons[ICON_TOPIC], "chaticon", CLEF_ONLYAFEW, TranslateT("Topic change in %s"), si->ptszName); 
+			CList_AddEvent(si->hContact, hIcons[ICON_TOPIC], "chaticon", CLEF_ONLYAFEW, TranslateT("Topic change in %s"), si->ptszName);
 			break;
 		case GC_EVENT_INFORMATION:
-			CList_AddEvent(si->hContact, hIcons[ICON_INFO], "chaticon", CLEF_ONLYAFEW, TranslateT("Information in %s"), si->ptszName); 
+			CList_AddEvent(si->hContact, hIcons[ICON_INFO], "chaticon", CLEF_ONLYAFEW, TranslateT("Information in %s"), si->ptszName);
 			break;
 		case GC_EVENT_ADDSTATUS:
-			CList_AddEvent(si->hContact, hIcons[ICON_ADDSTATUS], "chaticon", CLEF_ONLYAFEW, TranslateT("%s enables \'%s\' status for %s in %s"), gce->pszText, gce->pszStatus, gce->ptszNick, si->ptszName); 
+			CList_AddEvent(si->hContact, hIcons[ICON_ADDSTATUS], "chaticon", CLEF_ONLYAFEW, TranslateT("%s enables \'%s\' status for %s in %s"), gce->pszText, gce->pszStatus, gce->ptszNick, si->ptszName);
 			break;
 		case GC_EVENT_REMOVESTATUS:
-			CList_AddEvent(si->hContact, hIcons[ICON_REMSTATUS], "chaticon", CLEF_ONLYAFEW, TranslateT("%s disables \'%s\' status for %s in %s"), gce->pszText, gce->pszStatus, gce->ptszNick, si->ptszName); 
+			CList_AddEvent(si->hContact, hIcons[ICON_REMSTATUS], "chaticon", CLEF_ONLYAFEW, TranslateT("%s disables \'%s\' status for %s in %s"), gce->pszText, gce->pszStatus, gce->ptszNick, si->ptszName);
 			break;
 	}	}
 
@@ -223,60 +223,60 @@ static BOOL DoPopup(SESSION_INFO* si, GCEVENT * gce)
 	int iEvent = gce->pDest->iType;
 
 	if ( iEvent&g_Settings.dwPopupFlags ) {
-		switch (iEvent) {			
+		switch (iEvent) {
 		case GC_EVENT_MESSAGE|GC_EVENT_HIGHLIGHT :
-			ShowPopup(si->hContact, si, LoadSkinnedIcon(SKINICON_EVENT_MESSAGE), si->pszModule, si->ptszName, aFonts[16].color, TranslateT("%s says: %s"), gce->ptszNick, RemoveFormatting( gce->ptszText )); 
+			ShowPopup(si->hContact, si, LoadSkinnedIcon(SKINICON_EVENT_MESSAGE), si->pszModule, si->ptszName, aFonts[16].color, TranslateT("%s says: %s"), gce->ptszNick, RemoveFormatting( gce->ptszText ));
 			break;
 		case GC_EVENT_ACTION|GC_EVENT_HIGHLIGHT :
-			ShowPopup(si->hContact, si, LoadSkinnedIcon(SKINICON_EVENT_MESSAGE), si->pszModule, si->ptszName, aFonts[16].color, _T("%s %s"), gce->ptszNick, RemoveFormatting(gce->ptszText)); 
+			ShowPopup(si->hContact, si, LoadSkinnedIcon(SKINICON_EVENT_MESSAGE), si->pszModule, si->ptszName, aFonts[16].color, _T("%s %s"), gce->ptszNick, RemoveFormatting(gce->ptszText));
 			break;
 		case GC_EVENT_MESSAGE :
-			ShowPopup(si->hContact, si, hIcons[ICON_MESSAGE], si->pszModule, si->ptszName, aFonts[9].color, TranslateT("%s says: %s"), gce->ptszNick, RemoveFormatting( gce->ptszText)); 
+			ShowPopup(si->hContact, si, hIcons[ICON_MESSAGE], si->pszModule, si->ptszName, aFonts[9].color, TranslateT("%s says: %s"), gce->ptszNick, RemoveFormatting( gce->ptszText));
 			break;
 		case GC_EVENT_ACTION:
-			ShowPopup(si->hContact, si, hIcons[ICON_ACTION], si->pszModule, si->ptszName, aFonts[15].color, _T("%s %s"), gce->ptszNick, RemoveFormatting(gce->ptszText)); 
+			ShowPopup(si->hContact, si, hIcons[ICON_ACTION], si->pszModule, si->ptszName, aFonts[15].color, _T("%s %s"), gce->ptszNick, RemoveFormatting(gce->ptszText));
 			break;
 		case GC_EVENT_JOIN:
-			ShowPopup(si->hContact, si, hIcons[ICON_JOIN], si->pszModule, si->ptszName, aFonts[3].color, TranslateT("%s has joined"), gce->ptszNick); 
+			ShowPopup(si->hContact, si, hIcons[ICON_JOIN], si->pszModule, si->ptszName, aFonts[3].color, TranslateT("%s has joined"), gce->ptszNick);
 			break;
 		case GC_EVENT_PART:
 			if (!gce->pszText)
-				ShowPopup(si->hContact, si, hIcons[ICON_PART], si->pszModule, si->ptszName, aFonts[4].color, TranslateT("%s has left"), gce->ptszNick); 
-			else					
-				ShowPopup(si->hContact, si, hIcons[ICON_PART], si->pszModule, si->ptszName, aFonts[4].color, TranslateT("%s has left (%s)"), gce->ptszNick, RemoveFormatting(gce->ptszText)); 
+				ShowPopup(si->hContact, si, hIcons[ICON_PART], si->pszModule, si->ptszName, aFonts[4].color, TranslateT("%s has left"), gce->ptszNick);
+			else
+				ShowPopup(si->hContact, si, hIcons[ICON_PART], si->pszModule, si->ptszName, aFonts[4].color, TranslateT("%s has left (%s)"), gce->ptszNick, RemoveFormatting(gce->ptszText));
 				break;
 		case GC_EVENT_QUIT:
 			if (!gce->pszText)
-				ShowPopup(si->hContact, si, hIcons[ICON_QUIT], si->pszModule, si->ptszName, aFonts[5].color, TranslateT("%s has disconnected"), gce->ptszNick); 
+				ShowPopup(si->hContact, si, hIcons[ICON_QUIT], si->pszModule, si->ptszName, aFonts[5].color, TranslateT("%s has disconnected"), gce->ptszNick);
 			else
-				ShowPopup(si->hContact, si, hIcons[ICON_QUIT], si->pszModule, si->ptszName, aFonts[5].color, TranslateT("%s has disconnected (%s)"), gce->ptszNick,RemoveFormatting(gce->ptszText)); 
+				ShowPopup(si->hContact, si, hIcons[ICON_QUIT], si->pszModule, si->ptszName, aFonts[5].color, TranslateT("%s has disconnected (%s)"), gce->ptszNick,RemoveFormatting(gce->ptszText));
 				break;
 		case GC_EVENT_NICK:
-			ShowPopup(si->hContact, si, hIcons[ICON_NICK], si->pszModule, si->ptszName, aFonts[7].color, TranslateT("%s is now known as %s"), gce->ptszNick, gce->ptszText); 
+			ShowPopup(si->hContact, si, hIcons[ICON_NICK], si->pszModule, si->ptszName, aFonts[7].color, TranslateT("%s is now known as %s"), gce->ptszNick, gce->ptszText);
 			break;
 		case GC_EVENT_KICK:
 			if (!gce->pszText)
-				ShowPopup(si->hContact, si, hIcons[ICON_KICK], si->pszModule, si->ptszName, aFonts[6].color, TranslateT("%s kicked %s"), (char *)gce->pszStatus, gce->ptszNick); 
+				ShowPopup(si->hContact, si, hIcons[ICON_KICK], si->pszModule, si->ptszName, aFonts[6].color, TranslateT("%s kicked %s"), (char *)gce->pszStatus, gce->ptszNick);
 			else
-				ShowPopup(si->hContact, si, hIcons[ICON_KICK], si->pszModule, si->ptszName, aFonts[6].color, TranslateT("%s kicked %s (%s)"), (char *)gce->pszStatus, gce->ptszNick, RemoveFormatting(gce->ptszText)); 
+				ShowPopup(si->hContact, si, hIcons[ICON_KICK], si->pszModule, si->ptszName, aFonts[6].color, TranslateT("%s kicked %s (%s)"), (char *)gce->pszStatus, gce->ptszNick, RemoveFormatting(gce->ptszText));
 			break;
 		case GC_EVENT_NOTICE:
-			ShowPopup(si->hContact, si, hIcons[ICON_NOTICE], si->pszModule, si->ptszName, aFonts[8].color, TranslateT("Notice from %s: %s"), gce->ptszNick, RemoveFormatting(gce->ptszText)); 
+			ShowPopup(si->hContact, si, hIcons[ICON_NOTICE], si->pszModule, si->ptszName, aFonts[8].color, TranslateT("Notice from %s: %s"), gce->ptszNick, RemoveFormatting(gce->ptszText));
 			break;
 		case GC_EVENT_TOPIC:
 			if (!gce->ptszNick)
-				ShowPopup(si->hContact, si, hIcons[ICON_TOPIC], si->pszModule, si->ptszName, aFonts[11].color, TranslateT("The topic is \'%s\'"), RemoveFormatting(gce->ptszText)); 
+				ShowPopup(si->hContact, si, hIcons[ICON_TOPIC], si->pszModule, si->ptszName, aFonts[11].color, TranslateT("The topic is \'%s\'"), RemoveFormatting(gce->ptszText));
 			else
-				ShowPopup(si->hContact, si, hIcons[ICON_TOPIC], si->pszModule, si->ptszName, aFonts[11].color, TranslateT("The topic is \'%s\' (set by %s)"), RemoveFormatting(gce->ptszText), gce->ptszNick); 
+				ShowPopup(si->hContact, si, hIcons[ICON_TOPIC], si->pszModule, si->ptszName, aFonts[11].color, TranslateT("The topic is \'%s\' (set by %s)"), RemoveFormatting(gce->ptszText), gce->ptszNick);
 			break;
 		case GC_EVENT_INFORMATION:
-			ShowPopup(si->hContact, si, hIcons[ICON_INFO], si->pszModule, si->ptszName, aFonts[12].color, _T("%s"), RemoveFormatting(gce->ptszText)); 
+			ShowPopup(si->hContact, si, hIcons[ICON_INFO], si->pszModule, si->ptszName, aFonts[12].color, _T("%s"), RemoveFormatting(gce->ptszText));
 			break;
 		case GC_EVENT_ADDSTATUS:
-			ShowPopup(si->hContact, si, hIcons[ICON_ADDSTATUS], si->pszModule, si->ptszName, aFonts[13].color, TranslateT("%s enables \'%s\' status for %s"), gce->ptszText, (char *)gce->pszStatus, gce->ptszNick); 
+			ShowPopup(si->hContact, si, hIcons[ICON_ADDSTATUS], si->pszModule, si->ptszName, aFonts[13].color, TranslateT("%s enables \'%s\' status for %s"), gce->ptszText, (char *)gce->pszStatus, gce->ptszNick);
 			break;
 		case GC_EVENT_REMOVESTATUS:
-			ShowPopup(si->hContact, si, hIcons[ICON_REMSTATUS], si->pszModule, si->ptszName, aFonts[14].color, TranslateT("%s disables \'%s\' status for %s"), gce->ptszText, (char *)gce->pszStatus, gce->ptszNick); 
+			ShowPopup(si->hContact, si, hIcons[ICON_REMSTATUS], si->pszModule, si->ptszName, aFonts[14].color, TranslateT("%s disables \'%s\' status for %s"), gce->ptszText, (char *)gce->pszStatus, gce->ptszNick);
 			break;
 	}	}
 
@@ -419,16 +419,16 @@ void CheckColorsInModule(const char* pszModule)
 				pMod->crColors[i]++;
 }	}	}
 
-TCHAR* my_strstri( const TCHAR* s1, const TCHAR* s2) 
-{ 
-	int i,j,k; 
-	for(i=0;s1[i];i++) 
-		for(j=i,k=0; tolower(s1[j]) == tolower(s2[k]);j++,k++) 
-			if (!s2[k+1]) 
-				return (TCHAR*)(s1+i); 
+TCHAR* my_strstri( const TCHAR* s1, const TCHAR* s2)
+{
+	int i,j,k;
+	for(i=0;s1[i];i++)
+		for(j=i,k=0; tolower(s1[j]) == tolower(s2[k]);j++,k++)
+			if (!s2[k+1])
+				return (TCHAR*)(s1+i);
 
-	return NULL; 
-} 
+	return NULL;
+}
 
 BOOL IsHighlighted(SESSION_INFO* si, const TCHAR* pszText)
 {
@@ -439,25 +439,25 @@ BOOL IsHighlighted(SESSION_INFO* si, const TCHAR* pszText)
 		static TCHAR szWord1[1000];
 		static TCHAR szWord2[1000];
 		static TCHAR szTrimString[] = _T(":,.!?;\'>)");
-		
+
 		// compare word for word
 		while (*p1 != '\0') {
 			// find the next/first word in the highlight word string
 			// skip 'spaces' be4 the word
-			while(*p1 == ' ' && *p1 != '\0') 
+			while(*p1 == ' ' && *p1 != '\0')
 				p1 += 1;
-			
+
 			//find the end of the word
-			p2 = _tcschr(p1, ' '); 
+			p2 = _tcschr(p1, ' ');
 			if (!p2)
 				p2 = _tcschr(p1, '\0');
 			if (p1 == p2)
 				return FALSE;
 
 			// copy the word into szWord1
-			lstrcpyn(szWord1, p1, p2-p1>998?999:p2-p1+1); 
+			lstrcpyn(szWord1, p1, p2-p1>998?999:p2-p1+1);
 			p1 = p2;
-			
+
 			// replace %m with the users nickname
 			p2 = _tcschr(szWord1, '%');
 			if (p2 && p2[1] == 'm') {
@@ -469,12 +469,12 @@ BOOL IsHighlighted(SESSION_INFO* si, const TCHAR* pszText)
 			}
 
 			// time to get the next/first word in the incoming text string
-			while(*p3 != '\0') 
+			while(*p3 != '\0')
 			{
 				// skip 'spaces' be4 the word
 				while(*p3 == ' ' && *p3 != '\0')
 					p3 += 1;
-				
+
 				//find the end of the word
 				p2 = _tcschr(p3, ' ');
 				if (!p2)
@@ -487,7 +487,7 @@ BOOL IsHighlighted(SESSION_INFO* si, const TCHAR* pszText)
 						p2 -= 1;
 
 					// copy the word into szWord2 and remove formatting
-					lstrcpyn(szWord2, p3, p2-p3>998?999:p2-p3+1); 
+					lstrcpyn(szWord2, p3, p2-p3>998?999:p2-p3+1);
 
 					// reset the pointer if it was touched because of an ending character
 					if (*p2 != '\0' && *p2 != ' ')
@@ -496,7 +496,7 @@ BOOL IsHighlighted(SESSION_INFO* si, const TCHAR* pszText)
 
 					CharLower(szWord1);
 					CharLower(szWord2);
-					
+
 					// compare the words, using wildcards
 					if (WCCmp(szWord1, RemoveFormatting(szWord2)))
 						return TRUE;
@@ -538,7 +538,7 @@ BOOL LogToFile(SESSION_INFO* si, GCEVENT * gce)
 	mir_snprintf(szName, MAX_PATH,"%s.log",si->ptszID);
 	ValidateFilename(szName);
 
-	mir_snprintf(szFile, MAX_PATH,"%s\\%s", szFolder, szName ); 
+	mir_snprintf(szFile, MAX_PATH,"%s\\%s", szFolder, szName );
 	lstrcpyn(szTime, MakeTimeStamp(g_Settings.pszTimeStampLog, gce->time), 99);
 
 	hFile = fopen(szFile,"at+");
@@ -560,73 +560,73 @@ BOOL LogToFile(SESSION_INFO* si, GCEVENT * gce)
 			pszNick = szTemp;
 		}
 		switch (gce->pDest->iType)
-		{			
+		{
 		case GC_EVENT_MESSAGE:
 		case GC_EVENT_MESSAGE|GC_EVENT_HIGHLIGHT:
 			p = '*';
-			mir_sntprintf(szBuffer, SIZEOF(szBuffer), _T("%s * %s"), gce->ptszNick, RemoveFormatting(gce->ptszText)); 
+			mir_sntprintf(szBuffer, SIZEOF(szBuffer), _T("%s * %s"), gce->ptszNick, RemoveFormatting(gce->ptszText));
 			break;
 		case GC_EVENT_ACTION:
 			p = '*';
-			mir_sntprintf(szBuffer, SIZEOF(szBuffer), _T("%s %s"), gce->ptszNick, RemoveFormatting(gce->ptszText)); 
+			mir_sntprintf(szBuffer, SIZEOF(szBuffer), _T("%s %s"), gce->ptszNick, RemoveFormatting(gce->ptszText));
 			break;
 		case GC_EVENT_JOIN:
 			p = '>';
-			mir_sntprintf(szBuffer, SIZEOF(szBuffer), TranslateT("%s has joined"), (char *)pszNick); 
+			mir_sntprintf(szBuffer, SIZEOF(szBuffer), TranslateT("%s has joined"), (char *)pszNick);
 			break;
 		case GC_EVENT_PART:
 			p = '<';
 			if (!gce->pszText)
-				mir_sntprintf(szBuffer, SIZEOF(szBuffer), TranslateT("%s has left"), (char *)pszNick); 
-			else					
-				mir_sntprintf(szBuffer, SIZEOF(szBuffer), TranslateT("%s has left (%s)"), (char *)pszNick, RemoveFormatting(gce->ptszText)); 
+				mir_sntprintf(szBuffer, SIZEOF(szBuffer), TranslateT("%s has left"), (char *)pszNick);
+			else
+				mir_sntprintf(szBuffer, SIZEOF(szBuffer), TranslateT("%s has left (%s)"), (char *)pszNick, RemoveFormatting(gce->ptszText));
 				break;
 		case GC_EVENT_QUIT:
 			p = '<';
 			if (!gce->pszText)
-				mir_sntprintf(szBuffer, SIZEOF(szBuffer), TranslateT("%s has disconnected"), (char *)pszNick); 
+				mir_sntprintf(szBuffer, SIZEOF(szBuffer), TranslateT("%s has disconnected"), (char *)pszNick);
 			else
-				mir_sntprintf(szBuffer, SIZEOF(szBuffer), TranslateT("%s has disconnected (%s)"), (char *)pszNick,RemoveFormatting(gce->ptszText)); 
+				mir_sntprintf(szBuffer, SIZEOF(szBuffer), TranslateT("%s has disconnected (%s)"), (char *)pszNick,RemoveFormatting(gce->ptszText));
 				break;
 		case GC_EVENT_NICK:
 			p = '^';
-			mir_sntprintf(szBuffer, SIZEOF(szBuffer), TranslateT("%s is now known as %s"), gce->ptszNick, gce->ptszText); 
+			mir_sntprintf(szBuffer, SIZEOF(szBuffer), TranslateT("%s is now known as %s"), gce->ptszNick, gce->ptszText);
 			break;
 		case GC_EVENT_KICK:
 			p = '~';
 			if (!gce->pszText)
-				mir_sntprintf(szBuffer, SIZEOF(szBuffer), TranslateT("%s kicked %s"), (char *)gce->pszStatus, gce->ptszNick); 
+				mir_sntprintf(szBuffer, SIZEOF(szBuffer), TranslateT("%s kicked %s"), (char *)gce->pszStatus, gce->ptszNick);
 			else
-				mir_sntprintf(szBuffer, SIZEOF(szBuffer), TranslateT("%s kicked %s (%s)"), (char *)gce->pszStatus, gce->ptszNick, RemoveFormatting(gce->ptszText)); 
+				mir_sntprintf(szBuffer, SIZEOF(szBuffer), TranslateT("%s kicked %s (%s)"), (char *)gce->pszStatus, gce->ptszNick, RemoveFormatting(gce->ptszText));
 			break;
 		case GC_EVENT_NOTICE:
 			p = '¤';
-			mir_sntprintf(szBuffer, SIZEOF(szBuffer), TranslateT("Notice from %s: %s"), gce->ptszNick, RemoveFormatting(gce->ptszText)); 
+			mir_sntprintf(szBuffer, SIZEOF(szBuffer), TranslateT("Notice from %s: %s"), gce->ptszNick, RemoveFormatting(gce->ptszText));
 			break;
 		case GC_EVENT_TOPIC:
 			p = '#';
 			if (!gce->pszNick)
-				mir_sntprintf(szBuffer, SIZEOF(szBuffer), TranslateT("The topic is \'%s\'"), RemoveFormatting(gce->ptszText)); 
+				mir_sntprintf(szBuffer, SIZEOF(szBuffer), TranslateT("The topic is \'%s\'"), RemoveFormatting(gce->ptszText));
 			else
-				mir_sntprintf(szBuffer, SIZEOF(szBuffer), TranslateT("The topic is \'%s\' (set by %s)"), RemoveFormatting(gce->ptszText), gce->ptszNick); 
+				mir_sntprintf(szBuffer, SIZEOF(szBuffer), TranslateT("The topic is \'%s\' (set by %s)"), RemoveFormatting(gce->ptszText), gce->ptszNick);
 			break;
 		case GC_EVENT_INFORMATION:
 			p = '!';
-			mir_sntprintf(szBuffer, SIZEOF(szBuffer), _T("%s"), RemoveFormatting(gce->ptszText)); 
+			mir_sntprintf(szBuffer, SIZEOF(szBuffer), _T("%s"), RemoveFormatting(gce->ptszText));
 			break;
 		case GC_EVENT_ADDSTATUS:
 			p = '+';
-			mir_sntprintf(szBuffer, SIZEOF(szBuffer), TranslateT("%s enables \'%s\' status for %s"), gce->ptszText, (char *)gce->pszStatus, gce->ptszNick); 
+			mir_sntprintf(szBuffer, SIZEOF(szBuffer), TranslateT("%s enables \'%s\' status for %s"), gce->ptszText, (char *)gce->pszStatus, gce->ptszNick);
 			break;
 		case GC_EVENT_REMOVESTATUS:
 			p = '-';
-			mir_sntprintf(szBuffer, SIZEOF(szBuffer), TranslateT("%s disables \'%s\' status for %s"), gce->ptszText, (char *)gce->pszStatus, gce->ptszNick); 
+			mir_sntprintf(szBuffer, SIZEOF(szBuffer), TranslateT("%s disables \'%s\' status for %s"), gce->ptszText, (char *)gce->pszStatus, gce->ptszNick);
 			break;
 		}
 		if (p)
-			mir_sntprintf(szLine, SIZEOF(szLine), TranslateT("%s %c %s\n"), szTime, p, szBuffer); 
+			mir_sntprintf(szLine, SIZEOF(szLine), TranslateT("%s %c %s\n"), szTime, p, szBuffer);
 		else
-			mir_sntprintf(szLine, SIZEOF(szLine), TranslateT("%s %s\n"), szTime, szBuffer); 
+			mir_sntprintf(szLine, SIZEOF(szLine), TranslateT("%s %s\n"), szTime, szBuffer);
 
 		if ( szLine[0] ) {
 			_fputts(szLine, hFile);
@@ -647,7 +647,7 @@ BOOL LogToFile(SESSION_INFO* si, GCEVENT * gce)
 					pBuffer[g_Settings.LoggingLimit*1024] = '\0';
 					fseek(hFile,-g_Settings.LoggingLimit*1024,SEEK_END);
 					read = fread(pBuffer, 1, g_Settings.LoggingLimit*1024, hFile);
-					fclose(hFile); 
+					fclose(hFile);
 					hFile = NULL;
 
 					// trim to whole lines, should help with broken log files I hope.
@@ -706,7 +706,7 @@ UINT CreateGCMenu(HWND hwndDlg, HMENU *hMenu, int iIndex, POINT pt, SESSION_INFO
 			mir_sntprintf( szMenuText, 4096, _T("Look up \'%s\':"), pszWordText );
 			ModifyMenu( *hMenu, 4, MF_STRING|MF_BYPOSITION, 4, szMenuText );
 		}
-		else ModifyMenu( *hMenu, 4, MF_STRING|MF_GRAYED|MF_BYPOSITION, 4, TranslateT( "No word to look up" )); 
+		else ModifyMenu( *hMenu, 4, MF_STRING|MF_GRAYED|MF_BYPOSITION, 4, TranslateT( "No word to look up" ));
 		gcmi.Type = MENU_ON_LOG;
 	}
 	else if (iIndex == 0)
@@ -755,7 +755,7 @@ void DestroyGCMenu(HMENU *hMenu, int iIndex)
 	MENUITEMINFO mi;
 	mi.cbSize = sizeof(mi);
 	mi.fMask = MIIM_SUBMENU;
-	while(GetMenuItemInfo(*hMenu, iIndex, TRUE, &mi)) 
+	while(GetMenuItemInfo(*hMenu, iIndex, TRUE, &mi))
 	{
 		if (mi.hSubMenu != NULL)
 			DestroyMenu(mi.hSubMenu);
@@ -766,8 +766,8 @@ void DestroyGCMenu(HMENU *hMenu, int iIndex)
 BOOL DoEventHookAsync(HWND hwnd, const TCHAR* pszID, const char* pszModule, int iType, TCHAR* pszUID, TCHAR* pszText, DWORD dwItem)
 {
 	SESSION_INFO* si;
-	GCHOOK* gch = (GCHOOK*)mir_alloc( sizeof( GCHOOK )); 
-	GCDEST* gcd = (GCDEST*)mir_alloc( sizeof( GCDEST )); 
+	GCHOOK* gch = (GCHOOK*)mir_alloc( sizeof( GCHOOK ));
+	GCDEST* gcd = (GCDEST*)mir_alloc( sizeof( GCDEST ));
 
 	memset( gch, 0, sizeof( GCHOOK ));
 	memset( gcd, 0, sizeof( GCDEST ));
@@ -849,6 +849,18 @@ static char* u2a( const wchar_t* src )
 	WideCharToMultiByte( codepage, 0, src, -1, result, cbLen, NULL, NULL );
 	result[ cbLen ] = 0;
 	return result;
+}
+
+TCHAR* a2t( const char* str )
+{
+	if ( str == NULL )
+		return NULL;
+
+	#if defined( _UNICODE )
+		return (TCHAR*)CallService( MS_LANGPACK_PCHARTOTCHAR, 0, (LPARAM)str);
+	#else
+		return mir_strdup( str );
+	#endif
 }
 
 char* t2a( const TCHAR* src )

@@ -27,15 +27,15 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 // The code for streaming the text is to a large extent copied from
 // the srmm module and then modified to fit the chat module.
 
-extern FONTINFO aFonts[OPTIONS_FONTCOUNT];
-extern HICON	hIcons[30];
-extern BOOL		SmileyAddInstalled;
+extern FONTINFO  aFonts[OPTIONS_FONTCOUNT];
+extern HICON     hIcons[30];
+extern BOOL      SmileyAddInstalled;
 
 static PBYTE pLogIconBmpBits[14];
 static int logIconBmpSize[ SIZEOF(pLogIconBmpBits) ];
 
-static int logPixelSY;
-static int logPixelSX;
+static int logPixelSY = 0;
+static int logPixelSX = 0;
 
 static int EventToIndex(LOGINFO * lin)
 {
@@ -550,9 +550,8 @@ void Log_StreamInEvent(HWND hwndDlg,  LOGINFO* lin, SESSION_INFO* si, BOOL bRedr
 			&& lin->iType != GC_EVENT_REMOVESTATUS
 			)))
 		{
-			SMADD_RICHEDIT2 sm;
+			SMADD_RICHEDIT2 sm = {0};
 
-			//			newsel.cpMin = newsel.cpMax - lstrlenA(lin->ptszText) - 10;
 			newsel.cpMin = sel.cpMin;
 			if (newsel.cpMin < 0)
 				newsel.cpMin = 0;
@@ -562,7 +561,6 @@ void Log_StreamInEvent(HWND hwndDlg,  LOGINFO* lin, SESSION_INFO* si, BOOL bRedr
 			sm.Protocolname = si->pszModule;
 			sm.rangeToReplace = bRedraw?NULL:&newsel;
 			sm.disableRedraw = TRUE;
-			sm.useSounds = FALSE;
 			CallService(MS_SMILEYADD_REPLACESMILEYS, 0, (LPARAM)&sm);
 		}
 
@@ -617,20 +615,16 @@ char * Log_CreateRtfHeader(MODULEINFO * mi)
 	// font table
 	Log_Append(&buffer, &bufferEnd, &bufferAlloced, "{\\rtf1\\ansi\\deff0{\\fonttbl");
 	for (i = 0; i < 17 ; i++)
-	{
 		Log_Append(&buffer, &bufferEnd, &bufferAlloced, "{\\f%u\\fnil\\fcharset%u%s;}", i, aFonts[i].lf.lfCharSet, aFonts[i].lf.lfFaceName);
-	}
 
 	// colour table
 	Log_Append(&buffer, &bufferEnd, &bufferAlloced, "}{\\colortbl ;");
-	for (i = 0; i < 17; i++)
-	{
+
+	for (i = 0; i < OPTIONS_FONTCOUNT; i++)
 		Log_Append(&buffer, &bufferEnd, &bufferAlloced, "\\red%u\\green%u\\blue%u;", GetRValue(aFonts[i].color), GetGValue(aFonts[i].color), GetBValue(aFonts[i].color));
-	}
+
 	for(i = 0; i < mi->nColorCount; i++)
-	{
 		Log_Append(&buffer, &bufferEnd, &bufferAlloced, "\\red%u\\green%u\\blue%u;", GetRValue(mi->crColors[i]), GetGValue(mi->crColors[i]), GetBValue(mi->crColors[i]));
-	}
 
 	// new paragraph
 	Log_Append(&buffer, &bufferEnd, &bufferAlloced, "}\\pard");
