@@ -308,49 +308,43 @@ void Threads_Uninit( void )
 
 ThreadData* __stdcall MSN_GetThreadByContact( HANDLE hContact, TInfoType type )
 {
+	ThreadData* result = NULL;
 	EnterCriticalSection( &sttLock );
 
-	ThreadData* T = NULL;
-
-	for ( int i=0; i < sttThreads.getCount(); i++ )
-	{
-		T = sttThreads[ i ];
-
+	for ( int i=0; i < sttThreads.getCount(); i++ ) {
+		ThreadData* T = sttThreads[ i ];
 		if ( T->mJoinedCount == 0 || T->mJoinedContacts == NULL || T->s == NULL || T->mType != type )
 			continue;
 
-		if ( T->mJoinedContacts[0] == hContact )
+		if ( T->mJoinedContacts[0] == hContact ) {
+			result = T;
 			break;
-	}
-	if ( i >= sttThreads.getCount() ) T = NULL;
+	}	}
 
 	LeaveCriticalSection( &sttLock );
-	return T;
+	return result;
 }
 
 ThreadData* __stdcall MSN_GetP2PThreadByContact( HANDLE hContact )
 {
 	ThreadData *p2pT = NULL, *sbT = NULL;
-
 	EnterCriticalSection( &sttLock );
 
-	for ( int i=0; p2pT == NULL && i < sttThreads.getCount(); i++ )
-	{
+	for ( int i=0; p2pT == NULL && i < sttThreads.getCount(); i++ ) {
 		ThreadData* T = sttThreads[ i ];
-
 		if ( T->mJoinedCount == 0 || T->mJoinedContacts == NULL )
 			continue;
 
 		if ( T->mJoinedContacts[0] == hContact ) {
 			switch ( T->mType ) {
-				case SERVER_SWITCHBOARD:
-					sbT = T;
-					break;
+			case SERVER_SWITCHBOARD:
+				sbT = T;
+				break;
 
-				case SERVER_P2P_DIRECT:
-					if ( T->s != NULL && T->mAuthComplete)
-						p2pT = T;
-					break;
+			case SERVER_P2P_DIRECT:
+				if ( T->s != NULL && T->mAuthComplete)
+					p2pT = T;
+				break;
 	}	}	}
 
 	LeaveCriticalSection( &sttLock );
@@ -363,16 +357,14 @@ void __stdcall MSN_StartP2PTransferByContact( HANDLE hContact )
 {
 	EnterCriticalSection( &sttLock );
 
-	for ( int i=0; i < sttThreads.getCount(); i++ )
-	{
+	for ( int i=0; i < sttThreads.getCount(); i++ ) {
 		ThreadData* T = sttThreads[ i ];
-
 		if ( T->mJoinedCount == 0 || T->mJoinedContacts == NULL )
 			continue;
 
-		if ( T->mJoinedContacts[0] == hContact && T->mType == SERVER_FILETRANS &&
-			T->hWaitEvent != INVALID_HANDLE_VALUE )
-				SetEvent( T->hWaitEvent );
+		if ( T->mJoinedContacts[0] == hContact && T->mType == SERVER_FILETRANS 
+			  && T->hWaitEvent != INVALID_HANDLE_VALUE )
+			SetEvent( T->hWaitEvent );
 	}
 
 	LeaveCriticalSection( &sttLock );
@@ -381,43 +373,37 @@ void __stdcall MSN_StartP2PTransferByContact( HANDLE hContact )
 
 ThreadData* __stdcall MSN_GetOtherContactThread( ThreadData* thread )
 {
+	ThreadData* result = NULL;
 	EnterCriticalSection( &sttLock );
 
-	ThreadData* T = NULL;
-
-	for ( int i=0; i < sttThreads.getCount(); i++ )
-	{
-		T = sttThreads[ i ];
-
+	for ( int i=0; i < sttThreads.getCount(); i++ ) {
+		ThreadData* T = sttThreads[ i ];
 		if ( T->mJoinedCount == 0 || T->mJoinedContacts == NULL || T->s == NULL )
 			continue;
 
-		if ( T != thread && T->mJoinedContacts[0] == thread->mJoinedContacts[0] )
+		if ( T != thread && T->mJoinedContacts[0] == thread->mJoinedContacts[0] ) {
+			result = T;
 			break;
-	}
-	if ( i >= sttThreads.getCount() ) T = NULL;
+	}	}
 
 	LeaveCriticalSection( &sttLock );
-	return T;
+	return result;
 }
 
 ThreadData* __stdcall MSN_GetUnconnectedThread( HANDLE hContact )
 {
+	ThreadData* result = NULL;
 	EnterCriticalSection( &sttLock );
 
-	ThreadData* T = NULL;
-
-	for ( int i=0; i < sttThreads.getCount(); i++ )
-	{
-		T = sttThreads[ i ];
-
-		if ( T->mInitialContact == hContact )
+	for ( int i=0; i < sttThreads.getCount(); i++ ) {
+		ThreadData* T = sttThreads[ i ];
+		if ( T->mInitialContact == hContact ) {
+			result = T;
 			break;
-	}
-	if ( i >= sttThreads.getCount() ) T = NULL;
+	}	}
 
 	LeaveCriticalSection( &sttLock );
-	return T;
+	return result;
 }
 
 int __stdcall MSN_GetActiveThreads( ThreadData** parResult )
@@ -425,10 +411,8 @@ int __stdcall MSN_GetActiveThreads( ThreadData** parResult )
 	int tCount = 0;
 	EnterCriticalSection( &sttLock );
 
-	for ( int i=0; i < sttThreads.getCount(); i++ )
-	{
+	for ( int i=0; i < sttThreads.getCount(); i++ ) {
 		ThreadData* T = sttThreads[ i ];
-
 		if ( T->mType == SERVER_SWITCHBOARD && T->mJoinedCount != 0 && T->mJoinedContacts != NULL )
 			parResult[ tCount++ ] = T;
 	}
@@ -440,15 +424,12 @@ int __stdcall MSN_GetActiveThreads( ThreadData** parResult )
 ThreadData* __stdcall MSN_GetThreadByConnection( HANDLE s )
 {
 	ThreadData* tResult = NULL;
-
 	EnterCriticalSection( &sttLock );
 
-	for ( int i=0; i < sttThreads.getCount(); i++ )
-	{
+	for ( int i=0; i < sttThreads.getCount(); i++ ) {
 		ThreadData* T = sttThreads[ i ];
-
-		if ( T->s == s )
-		{	tResult = T;
+		if ( T->s == s ) {
+			tResult = T;
 			break;
 	}	}
 
@@ -458,21 +439,18 @@ ThreadData* __stdcall MSN_GetThreadByConnection( HANDLE s )
 
 ThreadData* __stdcall MSN_GetThreadByPort( WORD wPort )
 {
-	ThreadData* tResult = NULL;
-
+	ThreadData* result = NULL;
 	EnterCriticalSection( &sttLock );
 
-	for ( int i=0; i < sttThreads.getCount(); i++ )
-	{
+	for ( int i=0; i < sttThreads.getCount(); i++ ) {
 		ThreadData* T = sttThreads[ i ];
-
 		if ( T->mIncomingPort == wPort ) {
-			tResult = T;
+			result = T;
 			break;
 	}	}
 
 	LeaveCriticalSection( &sttLock );
-	return tResult;
+	return result;
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////
