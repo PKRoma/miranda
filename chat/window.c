@@ -1142,10 +1142,10 @@ BOOL CALLBACK RoomWndProc(HWND hwndDlg,UINT uMsg,WPARAM wParam,LPARAM lParam)
 		{
 			StatusBarData sbd;
 			HICON hIcon;
-			TCHAR *ptszDispName = a2t(MM_FindModule(si->pszModule)->pszModDispName, -1);
+			TCHAR *ptszDispName = a2t(MM_FindModule(si->pszModule)->pszModDispName);
 			TCHAR szTemp[512];
 			hIcon = si->wStatus==ID_STATUS_ONLINE?MM_FindModule(si->pszModule)->hOnlineIcon:MM_FindModule(si->pszModule)->hOfflineIcon;
-			mir_sntprintf(szTemp, SIZEOF(szTemp), _T("%s : %s"), ptszDispName, si->ptszStatusbarText?si->ptszStatusbarText:"");
+			mir_sntprintf(szTemp, SIZEOF(szTemp), _T("%s : %s"), ptszDispName, si->ptszStatusbarText ? si->ptszStatusbarText : _T(""));
 			sbd.iItem = 0;
 			sbd.iFlags = SBDF_TEXT | SBDF_ICON;
 			sbd.hIcon = hIcon;
