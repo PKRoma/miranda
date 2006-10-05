@@ -2175,8 +2175,19 @@ static void ICQAddRecvEvent(HANDLE hContact, WORD wType, PROTORECVEVENT* pre, DW
 {
   DWORD flags = (pre->flags & PREF_CREATEREAD) ? DBEF_READ : 0;
 
-  if (hContact)
+  if (hContact && DBGetContactSettingByte(hContact, "CList", "Hidden", 0))
+  {
+    DWORD dwUin;
+    uid_str szUid;
+
     SetContactHidden(hContact, 0);
+    // if the contact was hidden, add to client-list if not in server-list authed
+    if (!ICQGetContactSettingWord(hContact, "ServerId", 0) || ICQGetContactSettingByte(hContact, "Auth", 0))
+    {
+      ICQGetContactSettingUID(hContact, &dwUin, &szUid);
+      icq_sendNewContact(dwUin, szUid);
+    }
+  }
 
   ICQAddEvent(hContact, wType, pre->timestamp, flags, cbBlob, pBlob);
 }
