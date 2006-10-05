@@ -76,12 +76,12 @@ TCHAR* GetWindowTitle(HANDLE *hContact, const char *szProto)
 	if (hContact && szProto) {
 		szContactName = GetNickname(hContact, szProto);
 		contactNameLen = lstrlen(szContactName);
-		szStatus = a2t((char *) CallService(MS_CLIST_GETSTATUSMODEDESCRIPTION, szProto == NULL ? ID_STATUS_OFFLINE : DBGetContactSettingWord(hContact, szProto, "Status", ID_STATUS_OFFLINE), 0), -1);
+		szStatus = a2t((char *) CallService(MS_CLIST_GETSTATUSMODEDESCRIPTION, szProto == NULL ? ID_STATUS_OFFLINE : DBGetContactSettingWord(hContact, szProto, "Status", ID_STATUS_OFFLINE), 0));
 		statusLen = lstrlen(szStatus);
 		if (!DBGetContactSetting(hContact, "CList", "StatusMsg",&dbv)) {
 			if (strlen(dbv.pszVal) > 0) {
 				int i, j;
-       			szStatusMsg = a2t(dbv.pszVal, -1);
+       			szStatusMsg = a2t(dbv.pszVal);
 				statusMsgLen = lstrlen(szStatusMsg);
 				for (i = j = 0; i < statusMsgLen; i++) {
 					if (szStatusMsg[i] == '\r') {
@@ -100,7 +100,7 @@ TCHAR* GetWindowTitle(HANDLE *hContact, const char *szProto)
 
 		if (!DBGetContactSetting(NULL, SRMMMOD, SRMSGSET_WINDOWTITLE, &dbv)) {
 			isTemplate = 1;
-			tmplt = a2t(dbv.pszVal, -1);
+			tmplt = a2t(dbv.pszVal);
 			DBFreeVariant(&dbv);
 		} else {
 			int statusIcon = DBGetContactSettingByte(NULL, SRMMMOD, SRMSGSET_STATUSICON, SRMSGDEFSET_STATUSICON);

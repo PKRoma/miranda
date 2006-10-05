@@ -2535,7 +2535,7 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
 						}
 					}
 					if (buffer == NULL) {
-						buffer = a2t((char *) dbei.pBlob, aLen);
+						buffer = a2tl((char *) dbei.pBlob, aLen);
 						free(dbei.pBlob);
 						dbei.pBlob = (char *)buffer;
 					}

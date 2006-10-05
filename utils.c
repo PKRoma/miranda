@@ -35,9 +35,11 @@ int safe_wcslen(wchar_t *msg, int maxLen) {
 	return 0;
 }
 
-TCHAR *a2tcp(const char *text, int textlen, int cp) {
+TCHAR *a2tlcp(const char *text, int textlen, int cp) {
+	wchar_t *wtext;
+	if ( text == NULL )
+		return NULL;
 	#if defined ( _UNICODE )
-		wchar_t *wtext;
 		if (textlen == -1) {
 			textlen = strlen(text) + 1;
 		}
@@ -49,15 +51,19 @@ TCHAR *a2tcp(const char *text, int textlen, int cp) {
 	#endif
 }
 
-TCHAR *a2t(const char *text, int textlen) {
+TCHAR *a2tl(const char *text, int textlen) {
 	if ( text == NULL )
 		return NULL;
 
-#if defined ( _UNICODE )
-		return a2tcp(text, textlen, CallService( MS_LANGPACK_GETCODEPAGE, 0, 0 ));
+	#if defined ( _UNICODE )
+		return a2tlcp(text, textlen, CallService( MS_LANGPACK_GETCODEPAGE, 0, 0 ));
 	#else
-		return a2tcp(text, textlen, CP_ACP);
+		return a2tlcp(text, textlen, CP_ACP);
 	#endif
+}
+
+TCHAR *a2t(const char *text) {
+	return a2tl(text, -1);
 }
 
 static int mimFlags = 0;

@@ -282,12 +282,13 @@ static void AddEventToBuffer(char **buffer, int *bufferEnd, int *bufferAlloced, 
 				Log_AppendRTF(streamData, buffer, bufferEnd, bufferAlloced, TranslateT("%s %s"), streamData->lin->ptszNick, streamData->lin->ptszText);
 			break;
 		case GC_EVENT_JOIN:
-			if (pszNick)
+			if (pszNick) {
 				if (!streamData->lin->bIsMe)
 					Log_AppendRTF(streamData, buffer, bufferEnd, bufferAlloced, TranslateT("%s has joined"), pszNick);
 				else
 					Log_AppendRTF(streamData, buffer, bufferEnd, bufferAlloced, TranslateT("You have joined %s"), streamData->si->ptszName);
-				break;
+			}
+			break;
 		case GC_EVENT_PART:
 			if(pszNick)
 				Log_AppendRTF(streamData, buffer, bufferEnd, bufferAlloced, TranslateT("%s has left"), pszNick);
@@ -301,12 +302,13 @@ static void AddEventToBuffer(char **buffer, int *bufferEnd, int *bufferAlloced, 
 				Log_AppendRTF(streamData, buffer, bufferEnd, bufferAlloced, _T(": %s"), streamData->lin->ptszText);
 				break;
 		case GC_EVENT_NICK:
-			if (pszNick && streamData->lin->ptszText)
+			if (pszNick && streamData->lin->ptszText) {
 				if (!streamData->lin->bIsMe)
 					Log_AppendRTF(streamData, buffer, bufferEnd, bufferAlloced, TranslateT("%s is now known as %s"), pszNick, streamData->lin->ptszText);
 				else
 					Log_AppendRTF(streamData, buffer, bufferEnd, bufferAlloced, TranslateT("You are now known as %s"), streamData->lin->ptszText);
-				break;
+			}
+			break;
 		case GC_EVENT_KICK:
 			if (streamData->lin->ptszNick && streamData->lin->ptszStatus)
 				Log_AppendRTF(streamData, buffer, bufferEnd, bufferAlloced, TranslateT("%s kicked %s"), streamData->lin->ptszStatus, streamData->lin->ptszNick);
@@ -347,7 +349,7 @@ TCHAR* MakeTimeStamp( TCHAR* pszStamp, time_t time)
 static char* Log_CreateRTF(LOGSTREAMDATA *streamData)
 {
  	char *buffer, *header;
-	int bufferAlloced, bufferEnd, i, me = 0;
+	int bufferAlloced, bufferEnd, i;
 	LOGINFO * lin = streamData->lin;
 
 	// guesstimate amount of memory for the RTF
