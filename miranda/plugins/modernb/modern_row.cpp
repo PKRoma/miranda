@@ -31,11 +31,9 @@ Created by Anton Senko aka ZORG , tweaked by Artem Shpynov aka FYR
 #include <tchar.h>
 
 #ifdef _DEBUG
-#ifndef _DEBUG
-#	define _CRTDBG_MAP_ALLOC
-#	include <stdlib.h>
-#	include <crtdbg.h>
-#endif
+    #define _CRTDBG_MAP_ALLOC
+    #include <stdlib.h>
+    #include <crtdbg.h>
 #endif
 
 #define _WIN32_WINNT 0x0501

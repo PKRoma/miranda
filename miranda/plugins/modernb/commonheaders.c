@@ -71,7 +71,7 @@ int __cdecl mir_strcmp (const char *a, const char *b)
 	return (strcmp(a,b));
 };
 
-_inline int mir_strlen (const char *a)	
+__inline int mir_strlen (const char *a)	
 {	
 	if (a==NULL) return 0;	
 	return (strlen(a));	
@@ -122,7 +122,7 @@ __inline char * mir_strdup(const char * src)
 }
 
 //copy len symbols from string - do not check is it null terminated or len is more then actual 
-_inline char * mir_strdupn(const char * src, int len)
+__inline char * mir_strdupn(const char * src, int len)
 {
     char * p;
     if (src==NULL) return NULL;
@@ -248,7 +248,7 @@ BOOL DebugDeleteObject(HGDIOBJ a)
 	return res;
 }
 
-_inline BOOL mod_DeleteDC(HDC hdc)
+__inline BOOL mod_DeleteDC(HDC hdc)
 {
 //  SkinEngine_ResetTextEffect(hdc);
   return DeleteDC(hdc);

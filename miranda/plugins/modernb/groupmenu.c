@@ -476,7 +476,7 @@ static int RemoveSubGroupMenuItem(WPARAM wParam,LPARAM lParam)
 	return 0;
 }
 
-extern _inline BOOL IsShowOfflineGroup(struct ClcGroup* group);
+extern __inline BOOL IsShowOfflineGroup(struct ClcGroup* group);
 static int OnBuildSubGroupMenu(WPARAM wParam,LPARAM lParam)
 {
 	CLISTMENUITEM mi;

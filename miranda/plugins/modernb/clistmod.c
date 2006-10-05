@@ -314,7 +314,7 @@ Begin of Hrk's code for bug
 #define GWVS_PARTIALLY_COVERED 4
 
 int GetWindowVisibleState(HWND, int, int);
-_inline DWORD GetDIBPixelColor(int X, int Y, int Width, int Height, int ByteWidth, BYTE * ptr)
+__inline DWORD GetDIBPixelColor(int X, int Y, int Width, int Height, int ByteWidth, BYTE * ptr)
 {
 	DWORD res=0;
 	if (X>=0 && X<Width && Y>=0 && Y<Height && ptr)

@@ -92,8 +92,8 @@ int ModernButton_UnloadModule(WPARAM wParam, LPARAM lParam)
   DeleteCriticalSection(&csTips);
   return 0;
 }
-int DeleteMask(MODERNMASK * mm);
-void AddParam(MODERNMASK * mpModernMask, DWORD dwParamHash, char *szValue, DWORD dwValueHash);
+int SkinSelector_DeleteMask(MODERNMASK * mm);
+void CLCPaint_AddParam(MODERNMASK * mpModernMask, DWORD dwParamHash, char *szValue, DWORD dwValueHash);
 
 int PaintWorker(HWND hwnd, HDC whdc)
 {
@@ -165,18 +165,18 @@ int PaintWorker(HWND hwnd, HDC whdc)
       }  
 
     }
-    AddParam(&Request,mod_CalcHash("Module"),"MButton",0);
-    AddParam(&Request,mod_CalcHash("ID"),bct->ID,0);
-    AddParam(&Request,mod_CalcHash("Down"),bct->down?"1":"0",0);
-    AddParam(&Request,mod_CalcHash("Focused"),bct->focus?"1":"0",0);
-    AddParam(&Request,mod_CalcHash("Hovered"),bct->hover?"1":"0",0);
+    CLCPaint_AddParam(&Request,mod_CalcHash("Module"),"MButton",0);
+    CLCPaint_AddParam(&Request,mod_CalcHash("ID"),bct->ID,0);
+    CLCPaint_AddParam(&Request,mod_CalcHash("Down"),bct->down?"1":"0",0);
+    CLCPaint_AddParam(&Request,mod_CalcHash("Focused"),bct->focus?"1":"0",0);
+    CLCPaint_AddParam(&Request,mod_CalcHash("Hovered"),bct->hover?"1":"0",0);
     if (Value)
     {
-      AddParam(&Request,mod_CalcHash("Value"),Value,0);
+      CLCPaint_AddParam(&Request,mod_CalcHash("Value"),Value,0);
       mir_free(Value);
     }    
     SkinDrawGlyphMask(hdc,&rc,&rc,&Request);
-    DeleteMask(&Request);
+    SkinSelector_DeleteMask(&Request);
     // DeleteObject(br);
   }
 

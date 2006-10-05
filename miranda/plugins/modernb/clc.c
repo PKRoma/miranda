@@ -61,13 +61,9 @@ HICON listening_to_icon = NULL;
 
 HIMAGELIST hAvatarOverlays=NULL;
 
-struct AvatarOverlayIconConfig 
-{
-    char *name;
-    char *description;
-    int id;
-    int listID;
-} avatar_overlay_icons[ID_STATUS_OUTTOLUNCH - ID_STATUS_OFFLINE + 1] = 
+
+
+OVERLAYICONINFO g_pAvatarOverlayIcons[ID_STATUS_OUTTOLUNCH - ID_STATUS_OFFLINE + 1] = 
 {
     { "AVATAR_OVERLAY_OFFLINE", "Offline", IDI_AVATAR_OVERLAY_OFFLINE, -1},
     { "AVATAR_OVERLAY_ONLINE", "Online", IDI_AVATAR_OVERLAY_ONLINE, -1},
@@ -80,7 +76,7 @@ struct AvatarOverlayIconConfig
     { "AVATAR_OVERLAY_PHONE", "On the phone", IDI_AVATAR_OVERLAY_PHONE, -1},
     { "AVATAR_OVERLAY_LUNCH", "Out to lunch", IDI_AVATAR_OVERLAY_LUNCH, -1}
 };
-struct AvatarOverlayIconConfig status_overlay_icons[ID_STATUS_OUTTOLUNCH - ID_STATUS_OFFLINE + 1] = 
+OVERLAYICONINFO g_pStatusOverlayIcons[ID_STATUS_OUTTOLUNCH - ID_STATUS_OFFLINE + 1] = 
 {
     { "STATUS_OVERLAY_OFFLINE", "Offline", IDI_STATUS_OVERLAY_OFFLINE, -1},
     { "STATUS_OVERLAY_ONLINE", "Online", IDI_STATUS_OVERLAY_ONLINE, -1},
@@ -97,10 +93,10 @@ struct AvatarOverlayIconConfig status_overlay_icons[ID_STATUS_OUTTOLUNCH - ID_ST
 void UnloadAvatarOverlayIcon()
 {
     int i;
-    for (i = 0 ; i < MAX_REGS(avatar_overlay_icons) ; i++)
+    for (i = 0 ; i < MAX_REGS(g_pAvatarOverlayIcons) ; i++)
     {
-        avatar_overlay_icons[i].listID=-1;
-        status_overlay_icons[i].listID=-1;
+        g_pAvatarOverlayIcons[i].listID=-1;
+        g_pStatusOverlayIcons[i].listID=-1;
     }
     ImageList_Destroy(hAvatarOverlays);
     hAvatarOverlays=NULL;
@@ -234,20 +230,20 @@ static int ReloadAvatarOverlayIcons(WPARAM wParam, LPARAM lParam)
 {
     int i;
     if (MirandaExiting()) return 0;
-    for (i = 0 ; i < MAX_REGS(avatar_overlay_icons) ; i++)
+    for (i = 0 ; i < MAX_REGS(g_pAvatarOverlayIcons) ; i++)
     {
-        avatar_overlay_icons[i].listID=-1;
-        status_overlay_icons[i].listID=-1;
+        g_pAvatarOverlayIcons[i].listID=-1;
+        g_pStatusOverlayIcons[i].listID=-1;
     }
     if (hAvatarOverlays) ImageList_Destroy(hAvatarOverlays);
-    hAvatarOverlays=ImageList_Create(16,16,ILC_MASK|ILC_COLOR32,MAX_REGS(avatar_overlay_icons)*2,1);
-    for (i = 0 ; i < MAX_REGS(avatar_overlay_icons) ; i++)
+    hAvatarOverlays=ImageList_Create(16,16,ILC_MASK|ILC_COLOR32,MAX_REGS(g_pAvatarOverlayIcons)*2,1);
+    for (i = 0 ; i < MAX_REGS(g_pAvatarOverlayIcons) ; i++)
     {
-        HICON hIcon=(HICON)CallService(MS_SKIN2_GETICON, 0, (LPARAM)avatar_overlay_icons[i].name);
-        avatar_overlay_icons[i].listID = ImageList_AddIcon(hAvatarOverlays,hIcon);
+        HICON hIcon=(HICON)CallService(MS_SKIN2_GETICON, 0, (LPARAM)g_pAvatarOverlayIcons[i].name);
+        g_pAvatarOverlayIcons[i].listID = ImageList_AddIcon(hAvatarOverlays,hIcon);
         //destroy icon
-        hIcon=(HICON)CallService(MS_SKIN2_GETICON, 0, (LPARAM)status_overlay_icons[i].name);    
-        status_overlay_icons[i].listID = ImageList_AddIcon(hAvatarOverlays,hIcon);            
+        hIcon=(HICON)CallService(MS_SKIN2_GETICON, 0, (LPARAM)g_pStatusOverlayIcons[i].name);    
+        g_pStatusOverlayIcons[i].listID = ImageList_AddIcon(hAvatarOverlays,hIcon);            
         //destroy icon
     }
 
@@ -296,20 +292,20 @@ static int ClcModulesLoaded(WPARAM wParam,LPARAM lParam) {
 
         sid.pszSection = Translate("Contact List/Avatar Overlay");
 
-        for (i = 0 ; i < MAX_REGS(avatar_overlay_icons) ; i++)
+        for (i = 0 ; i < MAX_REGS(g_pAvatarOverlayIcons) ; i++)
         {
-            sid.pszDescription = Translate(avatar_overlay_icons[i].description);
-            sid.pszName = avatar_overlay_icons[i].name;
-            sid.iDefaultIndex = - avatar_overlay_icons[i].id;
+            sid.pszDescription = Translate(g_pAvatarOverlayIcons[i].description);
+            sid.pszName = g_pAvatarOverlayIcons[i].name;
+            sid.iDefaultIndex = - g_pAvatarOverlayIcons[i].id;
             CallService(MS_SKIN2_ADDICON, 0, (LPARAM)&sid);
         }
         sid.pszSection = Translate("Contact List/Status Overlay");
 
-        for (i = 0 ; i < MAX_REGS(status_overlay_icons) ; i++)
+        for (i = 0 ; i < MAX_REGS(g_pStatusOverlayIcons) ; i++)
         {
-            sid.pszDescription = Translate(status_overlay_icons[i].description);
-            sid.pszName = status_overlay_icons[i].name;
-            sid.iDefaultIndex = - status_overlay_icons[i].id;
+            sid.pszDescription = Translate(g_pStatusOverlayIcons[i].description);
+            sid.pszName = g_pStatusOverlayIcons[i].name;
+            sid.iDefaultIndex = - g_pStatusOverlayIcons[i].id;
             CallService(MS_SKIN2_ADDICON, 0, (LPARAM)&sid);
         }
 
@@ -322,14 +318,14 @@ static int ClcModulesLoaded(WPARAM wParam,LPARAM lParam) {
     else 
     {
         if (hAvatarOverlays) ImageList_Destroy(hAvatarOverlays);
-        hAvatarOverlays=ImageList_Create(16,16,ILC_MASK|ILC_COLOR32,MAX_REGS(avatar_overlay_icons)*2,1);
-        for (i = 0 ; i < MAX_REGS(avatar_overlay_icons) ; i++)
+        hAvatarOverlays=ImageList_Create(16,16,ILC_MASK|ILC_COLOR32,MAX_REGS(g_pAvatarOverlayIcons)*2,1);
+        for (i = 0 ; i < MAX_REGS(g_pAvatarOverlayIcons) ; i++)
         {
-            HICON hIcon=LoadSmallIcon(g_hInst, MAKEINTRESOURCE(avatar_overlay_icons[i].id));
-            avatar_overlay_icons[i].listID = ImageList_AddIcon(hAvatarOverlays,hIcon);
+            HICON hIcon=LoadSmallIcon(g_hInst, MAKEINTRESOURCE(g_pAvatarOverlayIcons[i].id));
+            g_pAvatarOverlayIcons[i].listID = ImageList_AddIcon(hAvatarOverlays,hIcon);
             DestroyIcon_protect(hIcon);
-            hIcon=LoadSmallIcon(g_hInst, MAKEINTRESOURCE(status_overlay_icons[i].id));
-            status_overlay_icons[i].listID = ImageList_AddIcon(hAvatarOverlays,hIcon);            
+            hIcon=LoadSmallIcon(g_hInst, MAKEINTRESOURCE(g_pStatusOverlayIcons[i].id));
+            g_pStatusOverlayIcons[i].listID = ImageList_AddIcon(hAvatarOverlays,hIcon);            
             DestroyIcon_protect(hIcon);
         }	
         listening_to_icon = (HICON)LoadImage(g_hInst, MAKEINTRESOURCE(IDI_LISTENING_TO), IMAGE_ICON, 16, 16, 0);
@@ -360,7 +356,7 @@ static int ClcModulesLoaded(WPARAM wParam,LPARAM lParam) {
 
 HICON GetMainStatusOverlay(int STATUS)
 {
-    return ImageList_GetIcon(hAvatarOverlays,status_overlay_icons[STATUS-ID_STATUS_OFFLINE].listID,ILD_NORMAL);
+    return ImageList_GetIcon(hAvatarOverlays,g_pStatusOverlayIcons[STATUS-ID_STATUS_OFFLINE].listID,ILD_NORMAL);
 }
 /*
 *	Proto ack hook
@@ -583,7 +579,7 @@ extern int sortBy[3], sortNoOfflineBottom;
 
 //TODO possible redefine
 #define GROUPF_SHOWOFFLINE 0x80   
-extern _inline BOOL IsShowOfflineGroup(struct ClcGroup* group);
+extern __inline BOOL IsShowOfflineGroup(struct ClcGroup* group);
 
 int CLC_GetShortData(struct ClcData* pData, struct SHORTDATA *pShortData)
 {
@@ -1011,7 +1007,7 @@ case WM_PAINT:
             if (h!=pcli->hwndContactList || !g_bLayered)
             {       
                 hdc=BeginPaint(hwnd,&ps);
-                cliPaintClc(hwnd,dat,ps.hdc,&ps.rcPaint);
+                CLCPaint_cliPaintClc(hwnd,dat,ps.hdc,&ps.rcPaint);
                 EndPaint(hwnd,&ps);
             }
             else SkinEngine_Service_InvalidateFrameImage((WPARAM)hwnd,0);

@@ -70,9 +70,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 #define HCONTACT_ISGROUP    0x80000000
 #define HCONTACT_ISINFO     0xFFFF0000
-#define IsHContactGroup(h)  (((unsigned)(h)^HCONTACT_ISGROUP)<(HCONTACT_ISGROUP^HCONTACT_ISINFO))
-#define IsHContactInfo(h)   (((unsigned)(h)&HCONTACT_ISINFO)==HCONTACT_ISINFO)
-#define IsHContactContact(h) (((unsigned)(h)&HCONTACT_ISGROUP)==0)
+
 #define MAXEXTRACOLUMNS     16
 #define MAXSTATUSMSGLEN		256
 
@@ -157,13 +155,18 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #define FONTID_CLOSEDGROUPCOUNTS 20
 #define FONTID_STATUSBAR_PROTONAME 21
 #define FONTID_EVENTAREA 22
-
-
 #define FONTID_MODERN_MAX 22
 
-struct ClcGroup;
+#define DROPTARGET_OUTSIDE    0
+#define DROPTARGET_ONSELF     1
+#define DROPTARGET_ONNOTHING  2
+#define DROPTARGET_ONGROUP    3
+#define DROPTARGET_ONCONTACT  4
+#define DROPTARGET_INSERTION  5
+#define DROPTARGET_ONMETACONTACT  6
+#define DROPTARGET_ONSUBCONTACT  7
 
-extern HICON listening_to_icon;
+struct ClcGroup;
 
 #define CONTACTF_ONLINE    1
 #define CONTACTF_INVISTO   2
@@ -177,7 +180,45 @@ extern HICON listening_to_icon;
 
 #define TEXT_PIECE_TYPE_TEXT   0
 #define TEXT_PIECE_TYPE_SMILEY 1
-typedef struct
+
+#define DRAGSTAGE_NOTMOVED  0
+#define DRAGSTAGE_ACTIVE    1
+#define DRAGSTAGEM_STAGE    0x00FF
+#define DRAGSTAGEF_MAYBERENAME  0x8000
+#define DRAGSTAGEF_OUTSIDE      0x4000
+
+#define ITEM_AVATAR 0
+#define ITEM_ICON 1
+#define ITEM_TEXT 2
+#define ITEM_EXTRA_ICONS 3
+#define ITEM_CONTACT_TIME 4
+#define NUM_ITEM_TYPE 5
+
+#define TEXT_EMPTY -1
+#define TEXT_STATUS 0
+#define TEXT_NICKNAME 1
+#define TEXT_STATUS_MESSAGE 2
+#define TEXT_TEXT 3
+#define TEXT_CONTACT_TIME 4
+#define TEXT_LISTENING_TO 5
+
+#define TEXT_TEXT_MAX_LENGTH 1024
+
+#define CLUI_SetDrawerService "CLUI/SETDRAWERSERVICE"
+#define CLUI_EXT_FUNC_PAINTCLC	1
+
+//add a new hotkey so it has a default and can be changed in the options dialog
+//wParam=0
+//lParam=(LPARAM)(SKINHOTKEYDESC*)ssd;
+//returns 0 on success, nonzero otherwise
+#define MS_SKIN_ADDHOTKEY      "Skin/HotKeys/AddNew"
+#define MS_SKIN_PLAYHOTKEY		"Skin/HotKeys/Run"
+
+#define IsHContactGroup(h)  (((unsigned)(h)^HCONTACT_ISGROUP)<(HCONTACT_ISGROUP^HCONTACT_ISINFO))
+#define IsHContactInfo(h)   (((unsigned)(h)&HCONTACT_ISINFO)==HCONTACT_ISINFO)
+#define IsHContactContact(h) (((unsigned)(h)&HCONTACT_ISGROUP)==0)
+
+typedef struct tagClcContactTextPiece
 {
 	int type;
 	int len;
@@ -249,28 +290,7 @@ struct ClcContact {
     DWORD lastPaintCounter;
 };
 
-#define DRAGSTAGE_NOTMOVED  0
-#define DRAGSTAGE_ACTIVE    1
-#define DRAGSTAGEM_STAGE    0x00FF
-#define DRAGSTAGEF_MAYBERENAME  0x8000
-#define DRAGSTAGEF_OUTSIDE      0x4000
 
-#define ITEM_AVATAR 0
-#define ITEM_ICON 1
-#define ITEM_TEXT 2
-#define ITEM_EXTRA_ICONS 3
-#define ITEM_CONTACT_TIME 4
-#define NUM_ITEM_TYPE 5
-
-#define TEXT_EMPTY -1
-#define TEXT_STATUS 0
-#define TEXT_NICKNAME 1
-#define TEXT_STATUS_MESSAGE 2
-#define TEXT_TEXT 3
-#define TEXT_CONTACT_TIME 4
-#define TEXT_LISTENING_TO 5
-
-#define TEXT_TEXT_MAX_LENGTH 1024
 
 struct ClcModernFontInfo {
 	HFONT hFont;
@@ -454,75 +474,15 @@ struct SHORTDATA
 	BOOL    third_line_use_name_and_message_for_xstatus;
 };
 
-//clc.c
-void ClcOptionsChanged(void);
 
-//clcidents.c
-int cliGetRowsPriorTo(struct ClcGroup *group,struct ClcGroup *subgroup,int contactIndex);
-int FindItem(HWND hwnd,struct ClcData *dat,HANDLE hItem,struct ClcContact **contact,struct ClcGroup **subgroup,int *isVisible, BOOL isIgnoreSubcontacts );
-int cliGetRowByIndex(struct ClcData *dat,int testindex,struct ClcContact **contact,struct ClcGroup **subgroup);
-HANDLE ContactToHItem(struct ClcContact *contact);
-HANDLE ContactToItemHandle(struct ClcContact *contact,DWORD *nmFlags);
-void ClearRowByIndexCache();
+typedef struct tagOVERLAYICONINFO 
+{
+    char *name;
+    char *description;
+    int id;
+    int listID;
+} OVERLAYICONINFO;
 
-//clcitems.c
-struct ClcGroup *cli_AddGroup(HWND hwnd,struct ClcData *dat,const TCHAR *szName,DWORD flags,int groupId,int calcTotalMembers);
-void cli_FreeGroup(struct ClcGroup *group);
-int cli_AddInfoItemToGroup(struct ClcGroup *group,int flags,const TCHAR *pszText);
-void cliRebuildEntireList(HWND hwnd,struct ClcData *dat);
-void cli_DeleteItemFromTree(HWND hwnd,HANDLE hItem);
-void cli_AddContactToTree(HWND hwnd,struct ClcData *dat,HANDLE hContact,int updateTotalCount,int checkHideOffline);
-void cli_SortCLC(HWND hwnd,struct ClcData *dat,int useInsertionSort);
-int GetNewSelection(struct ClcGroup *group,int selection, int direction);
-
-//clcmsgs.c
-LRESULT cli_ProcessExternalMessages(HWND hwnd,struct ClcData *dat,UINT msg,WPARAM wParam,LPARAM lParam);
-
-//clcutils.c
-void cliRecalcScrollBar(HWND hwnd,struct ClcData *dat);
-void cliBeginRenameSelection(HWND hwnd,struct ClcData *dat);
-int cliHitTest(HWND hwnd,struct ClcData *dat,int testx,int testy,struct ClcContact **contact,struct ClcGroup **group,DWORD *flags);
-void cliScrollTo(HWND hwnd,struct ClcData *dat,int desty,int noSmooth);
-#define DROPTARGET_OUTSIDE    0
-#define DROPTARGET_ONSELF     1
-#define DROPTARGET_ONNOTHING  2
-#define DROPTARGET_ONGROUP    3
-#define DROPTARGET_ONCONTACT  4
-#define DROPTARGET_INSERTION  5
-#define DROPTARGET_ONMETACONTACT  6
-#define DROPTARGET_ONSUBCONTACT  7
-
-
-int GetDropTargetInformation(HWND hwnd,struct ClcData *dat,POINT pt);
-void LoadCLCOptions(HWND hwnd,struct ClcData *dat);
-
-//clcpaint.c
-void cliPaintClc(HWND hwnd,struct ClcData *dat,HDC hdc,RECT *rcPaint);
-
-//clcopts.c
-int ClcOptInit(WPARAM wParam,LPARAM lParam);
-DWORD GetDefaultExStyle(void);
-void GetFontSetting(int i,LOGFONTA *lf,COLORREF *colour,BYTE *effect, COLORREF *eColour1,COLORREF *eColour2);
-
-//clistsettings.c
-TCHAR* GetContactDisplayNameW( HANDLE hContact, int mode );
-char* u2a( wchar_t* src );
-wchar_t* a2u( char* src );
-
-//clcfiledrop.c
-void InitFileDropping(void);
-void FreeFileDropping(void);
-void RegisterFileDropping(HWND hwnd);
-void UnregisterFileDropping(HWND hwnd);
-
-//groups.c
-TCHAR* GetGroupNameTS( int idx, DWORD* pdwFlags );
-int RenameGroupT(WPARAM groupID, LPARAM newName);
-
-int GetContactCachedStatus(HANDLE hContact);
-char *GetContactCachedProtocol(HANDLE hContact);
-
-#define CLUI_SetDrawerService "CLUI/SETDRAWERSERVICE"
 typedef struct {
 	int cbSize;
 	char *PluginName;
@@ -531,20 +491,11 @@ typedef struct {
 
 } DrawerServiceStruct,*pDrawerServiceStruct ;
 
-#define CLUI_EXT_FUNC_PAINTCLC	1
-
 typedef struct {
 	int cbSize;
 	void (*PaintClc)(HWND,struct ClcData *,HDC,RECT *,int ,ClcProtoStatus *,HIMAGELIST);
 
 } ExternDrawer,*pExternDrawer ;
-
-ExternDrawer SED;
-
-//add a new hotkey so it has a default and can be changed in the options dialog
-//wParam=0
-//lParam=(LPARAM)(SKINHOTKEYDESC*)ssd;
-//returns 0 on success, nonzero otherwise
 
 typedef struct {
 	int cbSize;
@@ -557,9 +508,62 @@ typedef struct {
 	int DefHotKey; //default hot key for action
 } SKINHOTKEYDESCEX;
 
-#define MS_SKIN_ADDHOTKEY      "Skin/HotKeys/AddNew"
-#define MS_SKIN_PLAYHOTKEY		"Skin/HotKeys/Run"
+//clc.c
+void    ClcOptionsChanged(void);
 
+//clcidents.c
+int     cliGetRowsPriorTo(struct ClcGroup *group,struct ClcGroup *subgroup,int contactIndex);
+int     FindItem(HWND hwnd,struct ClcData *dat,HANDLE hItem,struct ClcContact **contact,struct ClcGroup **subgroup,int *isVisible, BOOL isIgnoreSubcontacts );
+int     cliGetRowByIndex(struct ClcData *dat,int testindex,struct ClcContact **contact,struct ClcGroup **subgroup);
+HANDLE  ContactToHItem(struct ClcContact *contact);
+HANDLE  ContactToItemHandle(struct ClcContact *contact,DWORD *nmFlags);
+void    ClearRowByIndexCache();
+
+//clcitems.c
+struct ClcGroup *cli_AddGroup(HWND hwnd,struct ClcData *dat,const TCHAR *szName,DWORD flags,int groupId,int calcTotalMembers);
+void    cli_FreeGroup(struct ClcGroup *group);
+int     cli_AddInfoItemToGroup(struct ClcGroup *group,int flags,const TCHAR *pszText);
+void    cliRebuildEntireList(HWND hwnd,struct ClcData *dat);
+void    cli_DeleteItemFromTree(HWND hwnd,HANDLE hItem);
+void    cli_AddContactToTree(HWND hwnd,struct ClcData *dat,HANDLE hContact,int updateTotalCount,int checkHideOffline);
+void    cli_SortCLC(HWND hwnd,struct ClcData *dat,int useInsertionSort);
+int     GetNewSelection(struct ClcGroup *group,int selection, int direction);
+
+//clcmsgs.c
+LRESULT cli_ProcessExternalMessages(HWND hwnd,struct ClcData *dat,UINT msg,WPARAM wParam,LPARAM lParam);
+
+//clcutils.c
+void    cliRecalcScrollBar(HWND hwnd,struct ClcData *dat);
+void    cliBeginRenameSelection(HWND hwnd,struct ClcData *dat);
+int     cliHitTest(HWND hwnd,struct ClcData *dat,int testx,int testy,struct ClcContact **contact,struct ClcGroup **group,DWORD *flags);
+void    cliScrollTo(HWND hwnd,struct ClcData *dat,int desty,int noSmooth);
+int     GetDropTargetInformation(HWND hwnd,struct ClcData *dat,POINT pt);
+void    LoadCLCOptions(HWND hwnd,struct ClcData *dat);
+
+
+//clcpaint.c
+void    CLCPaint_cliPaintClc(HWND hwnd,struct ClcData *dat,HDC hdc,RECT *rcPaint);
+
+//clcopts.c
+int     ClcOptInit(WPARAM wParam,LPARAM lParam);
+DWORD   GetDefaultExStyle(void);
+void    GetFontSetting(int i,LOGFONTA *lf,COLORREF *colour,BYTE *effect, COLORREF *eColour1,COLORREF *eColour2);
+
+//clistsettings.c
+TCHAR * GetContactDisplayNameW( HANDLE hContact, int mode );
+char*   u2a( wchar_t* src );
+wchar_t* a2u( char* src );
+
+
+//groups.c
+TCHAR*  GetGroupNameTS( int idx, DWORD* pdwFlags );
+int     RenameGroupT(WPARAM groupID, LPARAM newName);
+
+int     GetContactCachedStatus(HANDLE hContact);
+char   *GetContactCachedProtocol(HANDLE hContact);
+
+ExternDrawer SED;
 extern void (*saveSortCLC) (HWND hwnd, struct ClcData *dat, int useInsertionSort );
+extern HICON listening_to_icon;
 
 #endif _CLC_H_

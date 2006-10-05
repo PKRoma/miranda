@@ -18,7 +18,7 @@ extern RECT g_rcEdgeSizingRect;
 extern int g_nBehindEdgeState;
 extern int g_nBehindEdgeSettings;
 extern int sortBy[3];
-extern tPaintCallbackProc CLC_PaintCallbackProc(HWND hWnd, HDC hDC, RECT * rcPaint, HRGN rgn, DWORD dFlags, void * CallBackData);
+extern tPaintCallbackProc CLCPaint_PaintCallbackProc(HWND hWnd, HDC hDC, RECT * rcPaint, HRGN rgn, DWORD dFlags, void * CallBackData);
 extern CLIST_INTERFACE * pcli;
 extern BOOL g_mutex_bLockImageUpdating;
 extern ClcProtoStatus *clcProto;
@@ -43,7 +43,7 @@ void DrawAvatarImageWithGDIp(HDC hDestDC,int x, int y, DWORD width, DWORD height
 void TextOutWithGDIp(HDC hDestDC, int x, int y, LPCTSTR lpString, int nCount);
 void InitGdiPlus(void);
 void ShutdownGdiPlus(void);
-BOOL _inline wildcmp(char * name, char * mask, BYTE option);
+BOOL __inline wildcmp(char * name, char * mask, BYTE option);
 BOOL wildcmpi(char * name, char * mask);
 
 /* Global procedures */

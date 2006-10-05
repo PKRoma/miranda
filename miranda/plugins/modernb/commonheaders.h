@@ -327,4 +327,4 @@ extern BYTE gl_TrimText;
 
 extern struct CluiData g_CluiData;
 extern void UnLoadContactListModule();
-extern _inline char * mir_strdupn(const char * src, int len);
+extern __inline char * mir_strdupn(const char * src, int len);

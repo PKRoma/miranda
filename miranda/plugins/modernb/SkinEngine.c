@@ -2252,7 +2252,7 @@ static int SkinEngine_Service_AlphaTextOut(WPARAM wParam,LPARAM lParam)
     }
 }
 
-static _inline void SkinEngine_SetMatrix( sbyte * matrix,
+static __inline void SkinEngine_SetMatrix( sbyte * matrix,
                                          sbyte a, sbyte b, sbyte c, 
                                          sbyte d, sbyte e, sbyte f, 
                                          sbyte g, sbyte h, sbyte i)

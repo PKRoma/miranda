@@ -258,7 +258,7 @@ int __declspec(dllexport) CListInitialise(PLUGINLINK * link)
 	pcli->pfnHotKeysProcess		= cliHotKeysProcess;
 	pcli->pfnHotKeysRegister	= cliHotKeysRegister;
 	pcli->pfnHotKeysUnregister	= cliHotKeysUnregister;
-	pcli->pfnPaintClc			= cliPaintClc;
+	pcli->pfnPaintClc			= CLCPaint_cliPaintClc;
 	pcli->pfnRebuildEntireList	= cliRebuildEntireList;
 	pcli->pfnRecalcScrollBar	= cliRecalcScrollBar;
 	pcli->pfnRowHitTest			= cliRowHitTest;

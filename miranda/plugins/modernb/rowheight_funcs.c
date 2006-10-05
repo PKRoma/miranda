@@ -27,8 +27,8 @@ Created by Pescuma, modified by Artem Shpynov
 #include "rowheight_funcs.h"
 
 
-extern int GetRealStatus(struct ClcContact * contact, int status);
-extern int GetBasicFontID(struct ClcContact * contact);
+extern int CLCPaint_GetRealStatus(struct ClcContact * contact, int status);
+extern int CLCPaint_GetBasicFontID(struct ClcContact * contact);
 
 int g_mutex_nCalcRowHeightLock=0;
 int mod_CalcRowHeight_worker(struct ClcData *dat, HWND hwnd, struct ClcContact *contact, int item);
@@ -47,7 +47,7 @@ void FreeRowCell ()
 	if (gl_RowRoot) 
 		cppDeleteTree(gl_RowRoot);
 }
-extern void GetTextSize(SIZE *text_size, HDC hdcMem, RECT free_row_rc, TCHAR *szText, SortedList *plText, UINT uTextFormat, int smiley_height);
+extern void CLCPaint_GetTextSize(SIZE *text_size, HDC hdcMem, RECT free_row_rc, TCHAR *szText, SortedList *plText, UINT uTextFormat, int smiley_height);
 extern HFONT CLCPaint_ChangeToFont(HDC hdc,struct ClcData *dat,int id,int *fontHeight);
 
 void RowHeight_InitModernRow()
@@ -68,7 +68,7 @@ SIZE GetAvatarSize(int imageWidth, int imageHeight, int maxWidth, int maxHeight)
   return sz;
 }
 
-int mod_CalcRowHeight(struct ClcData *dat, HWND hwnd, struct ClcContact *contact, int item)
+int RowHeight_CalcRowHeight(struct ClcData *dat, HWND hwnd, struct ClcContact *contact, int item)
 {
     int res;
     if (MirandaExiting()) return 0;
@@ -94,7 +94,7 @@ int mod_CalcRowHeight_worker(struct ClcData *dat, HWND hwnd, struct ClcContact *
   if (dat->hWnd!=pcli->hwndContactTree || !gl_RowRoot || contact->type == CLCIT_GROUP) 
   {
     int tmp=0;
-    tmp = dat->fontModernInfo[GetBasicFontID(contact)].fontHeight;
+    tmp = dat->fontModernInfo[CLCPaint_GetBasicFontID(contact)].fontHeight;
     if (dat->text_replace_smileys && dat->first_line_draw_smileys && !dat->text_resize_smileys)
       tmp = max(tmp, contact->iTextMaxSmileyHeight);
     if (contact->type == CLCIT_GROUP)
@@ -127,7 +127,7 @@ int mod_CalcRowHeight_worker(struct ClcData *dat, HWND hwnd, struct ClcContact *
       case TC_TEXT1:
         {
           int tmp=0;
-          tmp = dat->fontModernInfo[GetBasicFontID(contact)].fontHeight;
+          tmp = dat->fontModernInfo[CLCPaint_GetBasicFontID(contact)].fontHeight;
           if (dat->text_replace_smileys && dat->first_line_draw_smileys && !dat->text_resize_smileys)
             tmp = max(tmp, contact->iTextMaxSmileyHeight);
           if (item==-1)
@@ -136,8 +136,8 @@ int mod_CalcRowHeight_worker(struct ClcData *dat, HWND hwnd, struct ClcContact *
             SIZE size={0};
             RECT dummyRect={0,0,1024,tmp};
             HDC hdc=CreateCompatibleDC(NULL);
-            CLCPaint_ChangeToFont(hdc,dat,GetBasicFontID(contact),NULL);
-            GetTextSize(&size,hdc,dummyRect,contact->szText,contact->plText,0, dat->text_resize_smileys ? 0 : contact->iTextMaxSmileyHeight);
+            CLCPaint_ChangeToFont(hdc,dat,CLCPaint_GetBasicFontID(contact),NULL);
+            CLCPaint_GetTextSize(&size,hdc,dummyRect,contact->szText,contact->plText,0, dat->text_resize_smileys ? 0 : contact->iTextMaxSmileyHeight);
             if (contact->type==CLCIT_GROUP)
             {
               char * szCounts = pcli->pfnGetGroupCountsText(dat, contact);
@@ -180,7 +180,7 @@ int mod_CalcRowHeight_worker(struct ClcData *dat, HWND hwnd, struct ClcContact *
               RECT dummyRect={0,0,1024,tmp};
               HDC hdc=CreateCompatibleDC(NULL);
               CLCPaint_ChangeToFont(hdc,dat,FONTID_SECONDLINE,NULL);
-              GetTextSize(&size,hdc,dummyRect,pdnce->szSecondLineText,pdnce->plSecondLineText,0, dat->text_resize_smileys ? 0 : pdnce->iSecondLineMaxSmileyHeight);
+              CLCPaint_GetTextSize(&size,hdc,dummyRect,pdnce->szSecondLineText,pdnce->plSecondLineText,0, dat->text_resize_smileys ? 0 : pdnce->iSecondLineMaxSmileyHeight);
               gl_RowTabAccess[i]->w=size.cx;
               SelectObject(hdc,GetStockObject(DEFAULT_GUI_FONT));
 			  mod_DeleteDC(hdc);
@@ -205,7 +205,7 @@ int mod_CalcRowHeight_worker(struct ClcData *dat, HWND hwnd, struct ClcContact *
               RECT dummyRect={0,0,1024,tmp};
               HDC hdc=CreateCompatibleDC(NULL);
               CLCPaint_ChangeToFont(hdc,dat,FONTID_THIRDLINE,NULL);
-              GetTextSize(&size,hdc,dummyRect,pdnce->szThirdLineText,pdnce->plThirdLineText,0, dat->text_resize_smileys ? 0 : pdnce->iThirdLineMaxSmileyHeight);
+              CLCPaint_GetTextSize(&size,hdc,dummyRect,pdnce->szThirdLineText,pdnce->plThirdLineText,0, dat->text_resize_smileys ? 0 : pdnce->iThirdLineMaxSmileyHeight);
               gl_RowTabAccess[i]->w=size.cx;
               SelectObject(hdc,GetStockObject(DEFAULT_GUI_FONT));
 			  mod_DeleteDC(hdc);
@@ -582,7 +582,7 @@ void RowHeights_CalcRowHeights_Worker(struct ClcData *dat, HWND hwnd)
 
     // Calc row height
     if (!gl_RowRoot) RowHeights_GetRowHeight(dat, hwnd, Drawing, line_num);
-    else mod_CalcRowHeight(dat, hwnd, Drawing, line_num);
+    else RowHeight_CalcRowHeight(dat, hwnd, Drawing, line_num);
 
     //increment by subcontacts
     if (group->cl.items[group->scanIndex]->subcontacts!=NULL && group->cl.items[group->scanIndex]->type!=CLCIT_GROUP)
@@ -633,7 +633,7 @@ int RowHeights_GetRowHeight_worker(struct ClcData *dat, HWND hwnd, struct ClcCon
   int height = 0;
   if (MirandaExiting()) return 0;
   if (gl_RowRoot)
-    return mod_CalcRowHeight(dat, hwnd, contact, item);
+    return RowHeight_CalcRowHeight(dat, hwnd, contact, item);
   else
   {
 	displayNameCacheEntry *pdnce=(displayNameCacheEntry *)pcli->pfnGetCacheEntry(contact->hContact);
@@ -648,7 +648,7 @@ int RowHeights_GetRowHeight_worker(struct ClcData *dat, HWND hwnd, struct ClcCon
       if (!dat->text_ignore_size_for_row_height)
       {
 		HANDLE hContact=pdnce->hContact;	 
-        tmp = dat->fontModernInfo[GetBasicFontID(contact)].fontHeight;
+        tmp = dat->fontModernInfo[CLCPaint_GetBasicFontID(contact)].fontHeight;
         if (dat->text_replace_smileys && dat->first_line_draw_smileys && !dat->text_resize_smileys)
         {
           tmp = max(tmp, contact->iTextMaxSmileyHeight);

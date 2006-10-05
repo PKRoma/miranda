@@ -51,7 +51,7 @@ char * ModernMaskToString(MODERNMASK * mm, char * buf, UINT bufsize)
     }
     return buf;
 }
-int DeleteMask(MODERNMASK * mm)
+int SkinSelector_DeleteMask(MODERNMASK * mm)
 {
   int i;
   if (!mm->pl_Params) return 0;
@@ -86,7 +86,7 @@ BOOL wildcmpi(char * name, char * mask)
   }
 }
 
-BOOL _inline wildcmp(char * name, char * mask, BYTE option)
+BOOL __inline wildcmp(char * name, char * mask, BYTE option)
     {
          char * last='\0';
          for(;; mask++, name++)
@@ -207,7 +207,7 @@ int ClearMaskList(LISTMODERNMASK * mmTemplateList)
     if (!mmTemplateList) return -1;
     if (!mmTemplateList->pl_Masks) return -1;
     for(i=0; i<(int)mmTemplateList->dwMaskCnt; i++)
-        DeleteMask(&(mmTemplateList->pl_Masks[i]));
+        SkinSelector_DeleteMask(&(mmTemplateList->pl_Masks[i]));
 	mir_free(mmTemplateList->pl_Masks);
     mmTemplateList->pl_Masks=NULL;
     mmTemplateList->dwMaskCnt=0;
@@ -219,7 +219,7 @@ int DeleteMaskByItID(DWORD mID,LISTMODERNMASK * mmTemplateList)
     if (mID<0|| mID>=mmTemplateList->dwMaskCnt) return -1;
     if (mmTemplateList->dwMaskCnt==1)
     {
-       DeleteMask(&(mmTemplateList->pl_Masks[0]));
+       SkinSelector_DeleteMask(&(mmTemplateList->pl_Masks[0]));
        mir_free(mmTemplateList->pl_Masks);
        mmTemplateList->pl_Masks=NULL;
        mmTemplateList->dwMaskCnt;
@@ -228,7 +228,7 @@ int DeleteMaskByItID(DWORD mID,LISTMODERNMASK * mmTemplateList)
     {
       MODERNMASK * newAlocation;
       DWORD i;
-      DeleteMask(&(mmTemplateList->pl_Masks[mID]));
+      SkinSelector_DeleteMask(&(mmTemplateList->pl_Masks[mID]));
 	  newAlocation=mir_alloc(sizeof(MODERNMASK)*mmTemplateList->dwMaskCnt-1);
       memmove(newAlocation,mmTemplateList->pl_Masks,sizeof(MODERNMASK)*(mID+1));
       for (i=mID; i<mmTemplateList->dwMaskCnt-1; i++)
@@ -409,7 +409,7 @@ BOOL CompareStrWithModernMask(char * szValue,MODERNMASK * mmTemplate)
   if (!ParseToModernMask(&mmValue, szValue))
   {
        res=CompareModernMask(&mmValue,mmTemplate);
-       DeleteMask(&mmValue);
+       SkinSelector_DeleteMask(&mmValue);
        return res;
   }
   else return 0;
@@ -461,7 +461,7 @@ SKINOBJECTDESCRIPTOR *  skin_FindObjectByRequest(char * szValue,LISTMODERNMASK *
     if (!mmTemplateList) return NULL;
     ParseToModernMask(&mm,szValue);
     res=skin_FindObjectByMask(&mm,mmTemplateList);
-    DeleteMask(&mm);
+    SkinSelector_DeleteMask(&mm);
     return res;
 }
 

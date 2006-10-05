@@ -280,7 +280,7 @@ void * AddTempGroup(HWND hwnd,struct ClcData *dat,const TCHAR *szName,DWORD flag
 	}
 	return NULL;
 }
-extern _inline BOOL IsShowOfflineGroup(struct ClcGroup* group);
+extern __inline BOOL IsShowOfflineGroup(struct ClcGroup* group);
 void cli_AddContactToTree(HWND hwnd,struct ClcData *dat,HANDLE hContact,int updateTotalCount,int checkHideOffline)
 {
 	struct ClcGroup *group;
@@ -324,7 +324,7 @@ void cli_DeleteItemFromTree(HWND hwnd,HANDLE hItem)
 
 //TODO move next line to m_clist.h
 #define GROUPF_SHOWOFFLINE 0x80   
-_inline BOOL IsShowOfflineGroup(struct ClcGroup* group)
+__inline BOOL IsShowOfflineGroup(struct ClcGroup* group)
 {
 	DWORD groupFlags=0;
 	if (!group) return FALSE;
