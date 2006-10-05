@@ -20,13 +20,13 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include "chat.h"
 #include <shlwapi.h>
 
-extern HICON		hIcons[30];
-extern BOOL			PopUpInstalled;
-extern HINSTANCE	g_hInst;
-extern FONTINFO		aFonts[OPTIONS_FONTCOUNT];
-extern HMENU		g_hMenu;
-extern HANDLE		hBuildMenuEvent ;
-extern HANDLE		hSendEvent;
+extern HICON        hIcons[30];
+extern BOOL         PopUpInstalled;
+extern HINSTANCE    g_hInst;
+extern FONTINFO     aFonts[OPTIONS_FONTCOUNT];
+extern HMENU        g_hMenu;
+extern HANDLE       hBuildMenuEvent ;
+extern HANDLE       hSendEvent;
 extern SESSION_INFO g_TabSession;
 
 int GetRichTextLength(HWND hwnd)
@@ -125,7 +125,7 @@ static int CALLBACK PopupDlgProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM 
 
 static int ShowPopup (HANDLE hContact, SESSION_INFO* si, HICON hIcon,  char* pszProtoName,  TCHAR* pszRoomName, COLORREF crBkg, const TCHAR* fmt, ...)
 {
-	POPUPDATAEX pd = {0};
+	POPUPDATAT pd = {0};
 	va_list marker;
 	static TCHAR szBuf[4*1024];
 
@@ -143,10 +143,9 @@ static int ShowPopup (HANDLE hContact, SESSION_INFO* si, HICON hIcon,  char* psz
 	else
 		pd.lchIcon = LoadIconEx(IDI_CHANMGR, "window", 0, 0 );
 
-	mir_snprintf(pd.lpzContactName, MAX_CONTACTNAME-1, "%s - %s", pszProtoName, (char*)CallService(MS_CLIST_GETCONTACTDISPLAYNAME,(WPARAM)hContact,0));
-
-	lstrcpynA(pd.lpzText, Translate(szBuf), MAX_SECONDLINE-1);
-
+	mir_sntprintf(pd.lptzContactName, MAX_CONTACTNAME-1, _T(TCHAR_STR_PARAM) _T(" - %s"), 
+		pszProtoName, CallService(MS_CLIST_GETCONTACTDISPLAYNAME, (WPARAM)hContact, GCDNF_TCHAR ));
+	lstrcpyn( pd.lptzText, TranslateTS(szBuf), MAX_SECONDLINE-1);
 	pd.iSeconds = g_Settings.iPopupTimeout;
 
 	if (g_Settings.iPopupStyle == 2) {
@@ -164,7 +163,7 @@ static int ShowPopup (HANDLE hContact, SESSION_INFO* si, HICON hIcon,  char* psz
 
 	pd.PluginWindowProc = PopupDlgProc;
 	pd.PluginData = si;
-	return PUAddPopUpEx (&pd);
+	return PUAddPopUpT(&pd);
 }
 
 static BOOL DoTrayIcon(SESSION_INFO* si, GCEVENT * gce)
@@ -222,7 +221,7 @@ static BOOL DoPopup(SESSION_INFO* si, GCEVENT * gce)
 {
 	int iEvent = gce->pDest->iType;
 
-	if ( iEvent&g_Settings.dwPopupFlags ) {
+	if ( iEvent & g_Settings.dwPopupFlags ) {
 		switch (iEvent) {
 		case GC_EVENT_MESSAGE|GC_EVENT_HIGHLIGHT :
 			ShowPopup(si->hContact, si, LoadSkinnedIcon(SKINICON_EVENT_MESSAGE), si->pszModule, si->ptszName, aFonts[16].color, TranslateT("%s says: %s"), gce->ptszNick, RemoveFormatting( gce->ptszText ));
@@ -351,6 +350,7 @@ BOOL DoSoundsFlashPopupTrayStuff(SESSION_INFO* si, GCEVENT * gce, BOOL bHighligh
 				SkinPlaySound("ChatMessage");
 			if (!g_Settings.TabsEnable && bInactive && g_Settings.FlashWindow && si->hWnd)
 				SetTimer(si->hWnd, TIMERID_FLASHWND, 900, NULL);
+				
 			if (bInactive && !( si->wState & STATE_TALK )) {
 				si->wState |= STATE_TALK;
 				DBWriteContactSettingWord(si->hContact, si->pszModule,"ApparentMode",(LPARAM)(WORD) 40071);

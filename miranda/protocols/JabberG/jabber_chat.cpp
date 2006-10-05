@@ -157,7 +157,7 @@ void JabberGcLogUpdateMemberStatus( JABBER_LIST_ITEM* item, TCHAR* nick, int act
 	gce.dwFlags = GC_TCHAR;
 	gce.pDest = &gcd;
 	if ( item->bChatActive == 2 ) {
-		gce.bAddToLog = TRUE;
+		gce.dwFlags |= GCEF_ADDTOLOG;
 		gce.time = time(0);
 	}
 
