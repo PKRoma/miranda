@@ -80,6 +80,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include "msgs.h"
 #include "richutil.h"
 #include "msgwindow.h"
+#include "utils.h"
 
 #include "IcoLib.h"
 #include "m_smileyadd.h"
@@ -87,4 +88,8 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include "m_ieview.h"
 #include "m_avatars.h"
 #include "m_fontservice.h"
+
+#define mir_alloc(n) memoryManagerInterface.mmi_malloc(n)
+#define mir_free(ptr) memoryManagerInterface.mmi_free(ptr)
+#define mir_realloc(ptr,size) memoryManagerInterface.mmi_realloc(ptr,size)
 

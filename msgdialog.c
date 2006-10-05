@@ -97,7 +97,7 @@ static TCHAR *GetRichEditSelection(HWND hwndDlg) {
 #if defined( _UNICODE )
 		dwFlags = SF_TEXT|SF_UNICODE|SFF_SELECTION;
 #else
-        dwFlags = SF_TEXT|SFF_SELECTION;
+		dwFlags = SF_TEXT|SFF_SELECTION;
 #endif
 		msi.sendBuffer = NULL;
 		msi.sendBufferSize = 0;
@@ -854,7 +854,7 @@ static void UpdateReadChars(HWND hwndDlg, struct MessageWindowData * dat)
 		sbd.iFlags = SBDF_TEXT | SBDF_ICON;
 		sbd.hIcon = NULL;
 		sbd.pszText = szText;
-		_sntprintf(szText, sizeof(szText), _T("%d"), len);
+		mir_sntprintf(szText, SIZEOF(szText), _T("%d"), len);
 		SendMessage(dat->hwndParent, CM_UPDATESTATUSBAR, (WPARAM)&sbd, (LPARAM)hwndDlg);
 	}
 }
@@ -1800,14 +1800,14 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
 						TCHAR *szNewStatus = _tcsdup((TCHAR *) CallService(MS_CLIST_GETSTATUSMODEDESCRIPTION, (WPARAM) dat->wStatus, GCMDF_TCHAR));
 
 						if (dat->wStatus == ID_STATUS_OFFLINE) {
-							iLen = mir_sntprintf(buffer, sizeof(buffer)/sizeof(TCHAR), TranslateT("signed off (was %s)"), szOldStatus);
+							iLen = mir_sntprintf(buffer, SIZEOF(buffer), TranslateT("signed off (was %s)"), szOldStatus);
 							SendMessage(hwndDlg, DM_TYPING, 0, 0);
 						}
 						else if (dat->wOldStatus == ID_STATUS_OFFLINE) {
-							iLen = mir_sntprintf(buffer, sizeof(buffer)/sizeof(TCHAR), TranslateT("signed on (%s)"), szNewStatus);
+							iLen = mir_sntprintf(buffer, SIZEOF(buffer), TranslateT("signed on (%s)"), szNewStatus);
 						}
 						else {
-							iLen = mir_sntprintf(buffer, sizeof(buffer)/sizeof(TCHAR), TranslateT("is now %s (was %s)"), szNewStatus, szOldStatus);
+							iLen = mir_sntprintf(buffer, SIZEOF(buffer), TranslateT("is now %s (was %s)"), szNewStatus, szOldStatus);
 						}
 					#if defined( _UNICODE )
 						{
@@ -2535,7 +2535,7 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
 						}
 					}
 					if (buffer == NULL) {
-						buffer = charToTchar((char *) dbei.pBlob, aLen, CP_ACP);
+						buffer = a2t((char *) dbei.pBlob, aLen);
 						free(dbei.pBlob);
 						dbei.pBlob = (char *)buffer;
 					}
