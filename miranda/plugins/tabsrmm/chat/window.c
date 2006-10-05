@@ -77,17 +77,17 @@ static struct _tagbtns { int id; TCHAR *szTip;} _btns[] = {
 		-1, NULL
 };
 
-static BOOL IsStringValidLink(char *pszText)
+static BOOL IsStringValidLink( TCHAR* pszText )
 {
 	if (pszText == NULL)
 		return FALSE;
-	if (lstrlenA(pszText) < 5)
+	if (lstrlen(pszText) < 5)
 		return FALSE;
 
-	if (tolower(pszText[0]) == 'w' && tolower(pszText[1]) == 'w' && tolower(pszText[2]) == 'w' && pszText[3] == '.' && isalnum(pszText[4]))
+	if (_totlower(pszText[0]) == 'w' && _totlower(pszText[1]) == 'w' && _totlower(pszText[2]) == 'w' && pszText[3] == '.' && _istalnum(pszText[4]))
 		return TRUE;
 
-	return(strstr(pszText, "://") == NULL ? FALSE : TRUE);
+	return( _tcsstr(pszText, _T("://")) == NULL ? FALSE : TRUE);
 }
 
 static void Chat_UpdateWindowState(HWND hwndDlg, struct MessageWindowData *dat, UINT msg)
@@ -2057,7 +2057,7 @@ LABEL_SHOWWINDOW:
 					case WM_LBUTTONUP:
 					case WM_LBUTTONDBLCLK:
 						{
-							TEXTRANGEA tr;
+							TEXTRANGE tr;
 							CHARRANGE sel;
 							BOOL isLink = FALSE;
 
@@ -2065,12 +2065,13 @@ LABEL_SHOWWINDOW:
 							if (sel.cpMin != sel.cpMax)
 								break;
 							tr.chrg = ((ENLINK *) lParam)->chrg;
-
+							tr.lpstrText = mir_alloc(sizeof(TCHAR)*(tr.chrg.cpMax - tr.chrg.cpMin + 1));
 							SendMessage(pNmhdr->hwndFrom, EM_GETTEXTRANGE, 0, (LPARAM) & tr);
 
 							isLink = g_Settings.ClickableNicks ? IsStringValidLink(tr.lpstrText) : TRUE;
 
 							if (isLink) {
+								char* pszUrl = t2a(tr.lpstrText);
 								if (((ENLINK *) lParam)->msg == WM_RBUTTONDOWN) {
 									HMENU hSubMenu;
 									POINT pt;
@@ -2082,10 +2083,10 @@ LABEL_SHOWWINDOW:
 									ClientToScreen(((NMHDR *) lParam)->hwndFrom, &pt);
 									switch (TrackPopupMenu(hSubMenu, TPM_RETURNCMD, pt.x, pt.y, 0, hwndDlg, NULL)) {
 									case ID_NEW:
-										CallService(MS_UTILS_OPENURL, 1, (LPARAM) tr.lpstrText);
+										CallService(MS_UTILS_OPENURL, 1, (LPARAM) pszUrl);
 										break;
 									case ID_CURR:
-										CallService(MS_UTILS_OPENURL, 0, (LPARAM) tr.lpstrText);
+										CallService(MS_UTILS_OPENURL, 0, (LPARAM) pszUrl);
 										break;
 									case ID_COPY:
 										{
@@ -2093,21 +2094,28 @@ LABEL_SHOWWINDOW:
 											if (!OpenClipboard(hwndDlg))
 												break;
 											EmptyClipboard();
-											hData = GlobalAlloc(GMEM_MOVEABLE, lstrlenA(tr.lpstrText) + 1);
-											lstrcpyA((char *) GlobalLock(hData), tr.lpstrText);
+											hData = GlobalAlloc(GMEM_MOVEABLE, sizeof(TCHAR)*(lstrlen(tr.lpstrText) + 1));
+											lstrcpy(( TCHAR* )GlobalLock(hData), tr.lpstrText);
 											GlobalUnlock(hData);
-											SetClipboardData(CF_TEXT, hData);
-											CloseClipboard();
-											SetFocus(GetDlgItem(hwndDlg, IDC_CHAT_MESSAGE));
-											break;
-										}	}
+											#if defined( _UNICODE )
+												SetClipboardData(CF_UNICODETEXT, hData);
+											#else
+												SetClipboardData(CF_TEXT, hData);
+											#endif
+										}
+										CloseClipboard();
+										SetFocus(GetDlgItem(hwndDlg, IDC_CHAT_MESSAGE));
+										break;
+									}	
 									mir_free(tr.lpstrText);
+									mir_free(pszUrl);
 									return TRUE;
 								}
 								else if (((ENLINK *) lParam)->msg == WM_LBUTTONUP) {
 									CallService(MS_UTILS_OPENURL, 1, (LPARAM) tr.lpstrText);
 									SetFocus(GetDlgItem(hwndDlg, IDC_CHAT_MESSAGE));
 								}
+								mir_free(pszUrl);
 							}
 							else {                      // clicked a nick name
 								USERINFO *ui = si->pUsers;
@@ -2116,7 +2124,7 @@ LABEL_SHOWWINDOW:
 								while(ui) {
 									int iLen = lstrlen(ui->pszNick), i;
 									found = TRUE;
-									for(i = 0; i < iLen && ui->pszNick[i] && tr.lpstrText[i]; i++) {
+									for (i = 0; i < iLen && ui->pszNick[i] && tr.lpstrText[i]; i++) {
 										if (ui->pszNick[i] != tr.lpstrText[i]) {
 											found = FALSE;
 											break;
@@ -2127,10 +2135,10 @@ LABEL_SHOWWINDOW:
 									ui = ui->next;
 								}
 								if (found)
-									SendDlgItemMessageA(hwndDlg, IDC_CHAT_MESSAGE, EM_REPLACESEL,  FALSE, (LPARAM)tr.lpstrText);
+									SendDlgItemMessage(hwndDlg, IDC_CHAT_MESSAGE, EM_REPLACESEL,  FALSE, (LPARAM)tr.lpstrText);
 							}
 							SetFocus(GetDlgItem(hwndDlg, IDC_CHAT_MESSAGE));
-							free(tr.lpstrText);
+							mir_free(tr.lpstrText);
 							break;
 					}	}
 					break;
@@ -2243,9 +2251,9 @@ LABEL_SHOWWINDOW:
 
 				DoEventHookAsync(hwndDlg, si->ptszID, si->pszModule, GC_USER_MESSAGE, NULL, ptszText, (LPARAM)NULL);
 				mir_free(pszRtf);
-	#if defined( _UNICODE )
-				mir_free(ptszText);
-	#endif
+				#if defined( _UNICODE )
+					mir_free(ptszText);
+				#endif
 				SetFocus(GetDlgItem(hwndDlg, IDC_CHAT_MESSAGE));
 			}
 			break;
@@ -2458,7 +2466,7 @@ LABEL_SHOWWINDOW:
 			GetClientRect(hwndDlg, &rcClient);
 			SkinDrawBG(hwndDlg, dat->pContainer->hwnd, dat->pContainer, &rcClient, hdc);
 
-			for(i = 0; i < 3; i++) {
+			for (i = 0; i < 3; i++) {
 				item = &StatusItems[item_ids[i]];
 				if (!item->IGNORED) {
 

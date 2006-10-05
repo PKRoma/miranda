@@ -36,25 +36,28 @@ int safe_wcslen(wchar_t *msg, int maxLen) {
 }
 
 TCHAR *a2tcp(const char *text, int textlen, int cp) {
-#if defined ( _UNICODE )
-	wchar_t *wtext;
-	if (textlen == -1) {
-		textlen = strlen(text) + 1;
-	}
-	wtext = (wchar_t *) malloc(sizeof(wchar_t) * textlen);
-	MultiByteToWideChar(cp, 0, text, -1, wtext, textlen);
-	return wtext;
-#else
-	return _tcsdup(text);
-#endif
+	#if defined ( _UNICODE )
+		wchar_t *wtext;
+		if (textlen == -1) {
+			textlen = strlen(text) + 1;
+		}
+		wtext = (wchar_t *) malloc(sizeof(wchar_t) * textlen);
+		MultiByteToWideChar(cp, 0, text, -1, wtext, textlen);
+		return wtext;
+	#else
+		return _tcsdup(text);
+	#endif
 }
 
 TCHAR *a2t(const char *text, int textlen) {
+	if ( text == NULL )
+		return NULL;
+
 #if defined ( _UNICODE )
-	return a2tcp(text, textlen, CallService( MS_LANGPACK_GETCODEPAGE, 0, 0 ));
-#else
-	return a2tcp(text, textlen, CP_ACP);
-#endif
+		return a2tcp(text, textlen, CallService( MS_LANGPACK_GETCODEPAGE, 0, 0 ));
+	#else
+		return a2tcp(text, textlen, CP_ACP);
+	#endif
 }
 
 static int mimFlags = 0;

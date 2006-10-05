@@ -678,7 +678,6 @@ BOOL CALLBACK DlgProcOptions1(HWND hwndDlg,UINT uMsg,WPARAM wParam,LPARAM lParam
 					{
 						int iLen;
 						char * pszText = NULL;
-						BYTE b;
 
 						iLen = GetWindowTextLength(GetDlgItem(hwndDlg, IDC_CHAT_GROUP));
 						if(iLen > 0)
@@ -761,11 +760,11 @@ BOOL CALLBACK DlgProcOptions2(HWND hwndDlg,UINT uMsg,WPARAM wParam,LPARAM lParam
 		SendDlgItemMessage(hwndDlg,IDC_CHAT_SPIN3,UDM_SETPOS,0,MAKELONG(DBGetContactSettingWord(NULL,"Chat","LoggingLimit",100),0));
 		CallService(MS_UTILS_PATHTORELATIVE, (WPARAM)g_Settings.pszLogDir, (LPARAM)szTemp );
 		SetDlgItemTextA(hwndDlg, IDC_CHAT_LOGDIRECTORY, szTemp);
-		SetDlgItemTextA(hwndDlg, IDC_CHAT_HIGHLIGHTWORDS, g_Settings.pszHighlightWords);
-		SetDlgItemTextA(hwndDlg, IDC_CHAT_LOGTIMESTAMP, g_Settings.pszTimeStampLog);
-		SetDlgItemTextA(hwndDlg, IDC_CHAT_TIMESTAMP, g_Settings.pszTimeStamp);
-		SetDlgItemTextA(hwndDlg, IDC_CHAT_OUTSTAMP, g_Settings.pszOutgoingNick);
-		SetDlgItemTextA(hwndDlg, IDC_CHAT_INSTAMP, g_Settings.pszIncomingNick);
+		SetDlgItemText(hwndDlg, IDC_CHAT_HIGHLIGHTWORDS, g_Settings.pszHighlightWords);
+		SetDlgItemText(hwndDlg, IDC_CHAT_LOGTIMESTAMP, g_Settings.pszTimeStampLog);
+		SetDlgItemText(hwndDlg, IDC_CHAT_TIMESTAMP, g_Settings.pszTimeStamp);
+		SetDlgItemText(hwndDlg, IDC_CHAT_OUTSTAMP, g_Settings.pszOutgoingNick);
+		SetDlgItemText(hwndDlg, IDC_CHAT_INSTAMP, g_Settings.pszIncomingNick);
 		SendDlgItemMessage(hwndDlg, IDC_CHAT_LOGBKG, CPM_SETCOLOUR,0,g_Settings.crLogBackground);
 		SendDlgItemMessage(hwndDlg, IDC_CHAT_MESSAGEBKG, CPM_SETCOLOUR,0,DBGetContactSettingDword(NULL, "Chat", "ColorMessageBG", GetSysColor(COLOR_WINDOW)));
 		SendDlgItemMessage(hwndDlg, IDC_CHAT_NICKLISTBKG, CPM_SETCOLOUR,0,DBGetContactSettingDword(NULL, "Chat", "ColorNicklistBG", GetSysColor(COLOR_WINDOW)));

@@ -848,18 +848,6 @@ static char* u2a( const wchar_t* src )
 	return result;
 }
 
-TCHAR* a2t( const char* str )
-{
-	if ( str == NULL )
-		return NULL;
-
-	#if defined( _UNICODE )
-		return (TCHAR*)CallService( MS_LANGPACK_PCHARTOTCHAR, 0, (LPARAM)str);
-	#else
-		return mir_strdup( str );
-	#endif
-}
-
 char* t2a( const TCHAR* src )
 {
 	#if defined( _UNICODE )

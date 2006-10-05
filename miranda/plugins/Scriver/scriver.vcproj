@@ -588,6 +588,9 @@
 			<File
 				RelativePath=".\statusicon.c">
 			</File>
+			<File
+				RelativePath=".\utils.c">
+			</File>
 			<Filter
 				Name="Chat"
 				Filter="">
@@ -677,9 +680,6 @@
 							Name="VCCLCompilerTool"
 							UsePrecompiledHeader="0"/>
 					</FileConfiguration>
-				</File>
-				<File
-					RelativePath=".\chat\m_chat.h">
 				</File>
 				<File
 					RelativePath=".\chat\m_ieview.h">
@@ -911,18 +911,21 @@
 			<File
 				RelativePath=".\statusicon.h">
 			</File>
+			<File
+				RelativePath=".\utils.h">
+			</File>
 		</Filter>
 		<Filter
 			Name="Resource Files"
 			Filter="ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe">
 			<File
-				RelativePath="..\..\Miranda-IM\res\addcontact.ico">
-			</File>
-			<File
 				RelativePath="res\addcontact.ico">
 			</File>
 			<File
 				RelativePath="..\..\src\res\addcontact.ico">
+			</File>
+			<File
+				RelativePath="..\..\Miranda-IM\res\addcontact.ico">
 			</File>
 			<File
 				RelativePath="res\Clock32.ico">
@@ -931,10 +934,10 @@
 				RelativePath="res\Clock8.ico">
 			</File>
 			<File
-				RelativePath="res\delete.ico">
+				RelativePath="..\..\src\res\delete.ico">
 			</File>
 			<File
-				RelativePath="..\..\src\res\delete.ico">
+				RelativePath="res\delete.ico">
 			</File>
 			<File
 				RelativePath="res\Details32.ico">
@@ -952,10 +955,10 @@
 				RelativePath="res\Downarrow8.ico">
 			</File>
 			<File
-				RelativePath="res\dragcopy.cur">
+				RelativePath="..\..\src\res\dragcopy.cur">
 			</File>
 			<File
-				RelativePath="..\..\src\res\dragcopy.cur">
+				RelativePath="res\dragcopy.cur">
 			</File>
 			<File
 				RelativePath="res\emptyblo.ico">

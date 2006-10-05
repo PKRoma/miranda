@@ -1032,7 +1032,7 @@ static LRESULT CALLBACK NicklistSubclassProc(HWND hwnd, UINT msg, WPARAM wParam,
 			int item;
 			int height;
 			USERINFO * ui;
-			SESSION_INFO*parentdat =(SESSION_INFO*)GetWindowLong(GetParent(hwnd),GWL_USERDATA);
+			SESSION_INFO* parentdat =(SESSION_INFO*)GetWindowLong(GetParent(hwnd),GWL_USERDATA);
 
 
 			hti.pt.x = (short) LOWORD(lParam);
@@ -1048,7 +1048,7 @@ static LRESULT CALLBACK NicklistSubclassProc(HWND hwnd, UINT msg, WPARAM wParam,
 
 			item = LOWORD(SendMessage(GetDlgItem(GetParent(hwnd), IDC_LIST), LB_ITEMFROMPOINT, 0, MAKELPARAM(hti.pt.x, hti.pt.y)));
 			ui = SM_GetUserFromIndex(parentdat->ptszID, parentdat->pszModule, item);
-			//			ui = (USERINFO *)SendMessage(GetDlgItem(GetParent(hwnd), IDC_LIST), LB_GETITEMDATA, item, 0);
+			// ui = (USERINFO *)SendMessage(GetDlgItem(GetParent(hwnd), IDC_LIST), LB_GETITEMDATA, item, 0);
 			if (ui) {
 				HMENU hMenu = 0;
 				UINT uID;
@@ -1810,8 +1810,8 @@ END_REMOVETAB:
 	case WM_MEASUREITEM:
 		{
 			MEASUREITEMSTRUCT *mis = (MEASUREITEMSTRUCT *) lParam;
-			int ih = GetTextPixelSize( _T("AQGglö"), g_Settings.UserListFont,FALSE);
-			int ih2 = GetTextPixelSize( _T("AQGglö"), g_Settings.UserListHeadingsFont,FALSE);
+			int ih = GetTextPixelSize( _T("AQGgl'"), g_Settings.UserListFont,FALSE);
+			int ih2 = GetTextPixelSize( _T("AQGg'"), g_Settings.UserListHeadingsFont,FALSE);
 			int font = ih > ih2?ih:ih2;
 			int height = DBGetContactSettingByte(NULL, "Chat", "NicklistRowDist", 12);
 
@@ -2274,15 +2274,17 @@ LABEL_SHOWWINDOW:
 					switch (((ENLINK *) lParam)->msg) {
 					case WM_RBUTTONDOWN:
 					case WM_LBUTTONUP:
+					case WM_LBUTTONDBLCLK:
 						{
-							TEXTRANGEA tr;
+							TEXTRANGE tr;
 							CHARRANGE sel;
+							char* pszUrl;
 
 							SendMessage(pNmhdr->hwndFrom, EM_EXGETSEL, 0, (LPARAM) & sel);
 							if (sel.cpMin != sel.cpMax)
 								break;
 							tr.chrg = ((ENLINK *) lParam)->chrg;
-							tr.lpstrText = mir_alloc(tr.chrg.cpMax - tr.chrg.cpMin + 1);
+							tr.lpstrText = mir_alloc(sizeof(TCHAR)*(tr.chrg.cpMax - tr.chrg.cpMin + 1));
 							SendMessage(pNmhdr->hwndFrom, EM_GETTEXTRANGE, 0, (LPARAM) & tr);
 
 							if (((ENLINK *) lParam)->msg == WM_RBUTTONDOWN) {
@@ -2309,10 +2311,14 @@ LABEL_SHOWWINDOW:
 										if (!OpenClipboard(hwndDlg))
 											break;
 										EmptyClipboard();
-										hData = GlobalAlloc(GMEM_MOVEABLE, lstrlenA(tr.lpstrText) + 1);
-										lstrcpyA((char *) GlobalLock(hData), tr.lpstrText);
+										hData = GlobalAlloc(GMEM_MOVEABLE, sizeof(TCHAR)*(lstrlen(tr.lpstrText) + 1));
+										lstrcpy(( TCHAR* )GlobalLock(hData), tr.lpstrText);
 										GlobalUnlock(hData);
-										SetClipboardData(CF_TEXT, hData);
+										#if defined( _UNICODE )
+											SetClipboardData(CF_UNICODETEXT, hData);
+										#else
+											SetClipboardData(CF_TEXT, hData);
+										#endif
 										CloseClipboard();
 										SetFocus(GetDlgItem(hwndDlg, IDC_MESSAGE));
 										break;
@@ -2321,9 +2327,11 @@ LABEL_SHOWWINDOW:
 								return TRUE;
 							}
 
-							CallService(MS_UTILS_OPENURL, 1, (LPARAM) tr.lpstrText);
+							pszUrl = t2a( tr.lpstrText );
+							CallService(MS_UTILS_OPENURL, 1, (LPARAM) pszUrl);
 							SetFocus(GetDlgItem(hwndDlg, IDC_MESSAGE));
 							mir_free(tr.lpstrText);
+							mir_free(pszUrl);
 							break;
 				}	}	}
 				break;
