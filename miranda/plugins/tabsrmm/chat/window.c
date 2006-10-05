@@ -2112,7 +2112,7 @@ LABEL_SHOWWINDOW:
 									return TRUE;
 								}
 								else if (((ENLINK *) lParam)->msg == WM_LBUTTONUP) {
-									CallService(MS_UTILS_OPENURL, 1, (LPARAM) tr.lpstrText);
+									CallService(MS_UTILS_OPENURL, 1, (LPARAM) pszUrl);
 									SetFocus(GetDlgItem(hwndDlg, IDC_CHAT_MESSAGE));
 								}
 								mir_free(pszUrl);
