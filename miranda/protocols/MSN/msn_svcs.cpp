@@ -329,15 +329,14 @@ static int MsnDbSettingChanged(WPARAM wParam,LPARAM lParam)
 		if ( !strcmp( cws->szSetting, "MyHandle" )) {
 			char szContactID[ 100 ], szNewNick[ 387 ];
 			if ( !MSN_GetStaticString( "ID", hContact, szContactID, sizeof( szContactID ))) {
-				if ( cws->value.type != DBVT_DELETED ) {
-					if ( cws->value.type == DBVT_UTF8 )
-						UrlEncode( cws->value.pszVal, szNewNick, sizeof( szNewNick ));
-					else
-						UrlEncode( UTF8(cws->value.pszVal), szNewNick, sizeof( szNewNick ));
-					msnNsThread->sendPacket( "SBP", "%s MFN %s", szContactID, szNewNick );
-				}
-				else {
-					MSN_GetStaticString( "e-mail", hContact, szNewNick, sizeof( szNewNick ));
+				MSN_GetStaticString( "e-mail", hContact, szNewNick, sizeof( szNewNick ));
+				if ( strcmp( szNewNick, MyOptions.szEmail )) {
+					if ( cws->value.type != DBVT_DELETED ) {
+						if ( cws->value.type == DBVT_UTF8 )
+							UrlEncode( cws->value.pszVal, szNewNick, sizeof( szNewNick ));
+						else
+							UrlEncode( UTF8(cws->value.pszVal), szNewNick, sizeof( szNewNick ));
+					}
 					msnNsThread->sendPacket( "SBP", "%s MFN %s", szContactID, szNewNick );
 				}
 				return 0;
