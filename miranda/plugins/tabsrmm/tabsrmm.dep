@@ -38,8 +38,6 @@
 	".\m_ieview.h"\
 	".\m_metacontacts.h"\
 	".\m_nudge.h"\
-	".\m_popup.h"\
-	".\m_popupw.h"\
 	".\m_smileyadd.h"\
 	".\m_Snapping_windows.h"\
 	".\m_tabsrmm.h"\
@@ -87,8 +85,6 @@
 	".\m_ieview.h"\
 	".\m_metacontacts.h"\
 	".\m_nudge.h"\
-	".\m_popup.h"\
-	".\m_popupw.h"\
 	".\m_smileyadd.h"\
 	".\m_Snapping_windows.h"\
 	".\m_tabsrmm.h"\
@@ -136,8 +132,6 @@
 	".\m_ieview.h"\
 	".\m_metacontacts.h"\
 	".\m_nudge.h"\
-	".\m_popup.h"\
-	".\m_popupw.h"\
 	".\m_smileyadd.h"\
 	".\m_Snapping_windows.h"\
 	".\m_tabsrmm.h"\
@@ -185,8 +179,6 @@
 	".\m_ieview.h"\
 	".\m_metacontacts.h"\
 	".\m_nudge.h"\
-	".\m_popup.h"\
-	".\m_popupw.h"\
 	".\m_smileyadd.h"\
 	".\m_Snapping_windows.h"\
 	".\m_tabsrmm.h"\
@@ -234,8 +226,6 @@
 	".\m_ieview.h"\
 	".\m_metacontacts.h"\
 	".\m_nudge.h"\
-	".\m_popup.h"\
-	".\m_popupw.h"\
 	".\m_smileyadd.h"\
 	".\m_Snapping_windows.h"\
 	".\m_tabsrmm.h"\
@@ -283,8 +273,6 @@
 	".\m_ieview.h"\
 	".\m_metacontacts.h"\
 	".\m_nudge.h"\
-	".\m_popup.h"\
-	".\m_popupw.h"\
 	".\m_smileyadd.h"\
 	".\m_Snapping_windows.h"\
 	".\m_tabsrmm.h"\
@@ -332,8 +320,6 @@
 	".\m_ieview.h"\
 	".\m_metacontacts.h"\
 	".\m_nudge.h"\
-	".\m_popup.h"\
-	".\m_popupw.h"\
 	".\m_smileyadd.h"\
 	".\m_Snapping_windows.h"\
 	".\m_tabsrmm.h"\
@@ -381,8 +367,6 @@
 	".\m_ieview.h"\
 	".\m_metacontacts.h"\
 	".\m_nudge.h"\
-	".\m_popup.h"\
-	".\m_popupw.h"\
 	".\m_smileyadd.h"\
 	".\m_Snapping_windows.h"\
 	".\m_tabsrmm.h"\
@@ -430,8 +414,6 @@
 	".\m_ieview.h"\
 	".\m_metacontacts.h"\
 	".\m_nudge.h"\
-	".\m_popup.h"\
-	".\m_popupw.h"\
 	".\m_smileyadd.h"\
 	".\m_Snapping_windows.h"\
 	".\m_tabsrmm.h"\
@@ -479,8 +461,6 @@
 	".\m_ieview.h"\
 	".\m_metacontacts.h"\
 	".\m_nudge.h"\
-	".\m_popup.h"\
-	".\m_popupw.h"\
 	".\m_smileyadd.h"\
 	".\m_Snapping_windows.h"\
 	".\m_tabsrmm.h"\
@@ -529,8 +509,6 @@
 	".\m_MathModule.h"\
 	".\m_metacontacts.h"\
 	".\m_nudge.h"\
-	".\m_popup.h"\
-	".\m_popupw.h"\
 	".\m_smileyadd.h"\
 	".\m_Snapping_windows.h"\
 	".\m_tabsrmm.h"\
@@ -578,8 +556,6 @@
 	".\m_ieview.h"\
 	".\m_metacontacts.h"\
 	".\m_nudge.h"\
-	".\m_popup.h"\
-	".\m_popupw.h"\
 	".\m_smileyadd.h"\
 	".\m_Snapping_windows.h"\
 	".\m_tabsrmm.h"\
@@ -628,8 +604,6 @@ eventpopups.c : \
 	".\m_ieview.h"\
 	".\m_metacontacts.h"\
 	".\m_nudge.h"\
-	".\m_popup.h"\
-	".\m_popupw.h"\
 	".\m_smileyadd.h"\
 	".\m_Snapping_windows.h"\
 	".\m_tabsrmm.h"\
@@ -678,8 +652,6 @@ eventpopups.c : \
 	".\m_MathModule.h"\
 	".\m_metacontacts.h"\
 	".\m_nudge.h"\
-	".\m_popup.h"\
-	".\m_popupw.h"\
 	".\m_smileyadd.h"\
 	".\m_Snapping_windows.h"\
 	".\m_tabsrmm.h"\
@@ -727,8 +699,6 @@ eventpopups.c : \
 	".\m_ieview.h"\
 	".\m_metacontacts.h"\
 	".\m_nudge.h"\
-	".\m_popup.h"\
-	".\m_popupw.h"\
 	".\m_smileyadd.h"\
 	".\m_Snapping_windows.h"\
 	".\m_tabsrmm.h"\
@@ -776,8 +746,6 @@ eventpopups.c : \
 	".\m_ieview.h"\
 	".\m_metacontacts.h"\
 	".\m_nudge.h"\
-	".\m_popup.h"\
-	".\m_popupw.h"\
 	".\m_smileyadd.h"\
 	".\m_Snapping_windows.h"\
 	".\m_tabsrmm.h"\
@@ -827,8 +795,6 @@ ImageDataObject.cpp : \
 	".\m_ieview.h"\
 	".\m_metacontacts.h"\
 	".\m_nudge.h"\
-	".\m_popup.h"\
-	".\m_popupw.h"\
 	".\m_smileyadd.h"\
 	".\m_Snapping_windows.h"\
 	".\m_tabsrmm.h"\
@@ -877,8 +843,6 @@ msgdialog.c : \
 	".\m_MathModule.h"\
 	".\m_metacontacts.h"\
 	".\m_nudge.h"\
-	".\m_popup.h"\
-	".\m_popupw.h"\
 	".\m_smileyadd.h"\
 	".\m_Snapping_windows.h"\
 	".\m_tabsrmm.h"\
@@ -927,8 +891,6 @@ msgdlgutils.c : \
 	".\m_ieview.h"\
 	".\m_metacontacts.h"\
 	".\m_nudge.h"\
-	".\m_popup.h"\
-	".\m_popupw.h"\
 	".\m_smileyadd.h"\
 	".\m_Snapping_windows.h"\
 	".\m_tabsrmm.h"\
@@ -977,8 +939,6 @@ msglog.c : \
 	".\m_MathModule.h"\
 	".\m_metacontacts.h"\
 	".\m_nudge.h"\
-	".\m_popup.h"\
-	".\m_popupw.h"\
 	".\m_smileyadd.h"\
 	".\m_Snapping_windows.h"\
 	".\m_tabsrmm.h"\
@@ -1027,8 +987,6 @@ msgoptions.c : \
 	".\m_MathModule.h"\
 	".\m_metacontacts.h"\
 	".\m_nudge.h"\
-	".\m_popup.h"\
-	".\m_popupw.h"\
 	".\m_smileyadd.h"\
 	".\m_Snapping_windows.h"\
 	".\m_tabsrmm.h"\
@@ -1077,8 +1035,6 @@ msgs.c : \
 	".\m_MathModule.h"\
 	".\m_metacontacts.h"\
 	".\m_nudge.h"\
-	".\m_popup.h"\
-	".\m_popupw.h"\
 	".\m_smileyadd.h"\
 	".\m_Snapping_windows.h"\
 	".\m_tabsrmm.h"\
@@ -1128,8 +1084,6 @@ msgs.c : \
 	".\m_ieview.h"\
 	".\m_metacontacts.h"\
 	".\m_nudge.h"\
-	".\m_popup.h"\
-	".\m_popupw.h"\
 	".\m_smileyadd.h"\
 	".\m_Snapping_windows.h"\
 	".\m_tabsrmm.h"\
@@ -1177,8 +1131,6 @@ sendqueue.c : \
 	".\m_ieview.h"\
 	".\m_metacontacts.h"\
 	".\m_nudge.h"\
-	".\m_popup.h"\
-	".\m_popupw.h"\
 	".\m_smileyadd.h"\
 	".\m_Snapping_windows.h"\
 	".\m_tabsrmm.h"\
@@ -1227,8 +1179,6 @@ srmm.c : \
 	".\m_ieview.h"\
 	".\m_metacontacts.h"\
 	".\m_nudge.h"\
-	".\m_popup.h"\
-	".\m_popupw.h"\
 	".\m_smileyadd.h"\
 	".\m_Snapping_windows.h"\
 	".\m_tabsrmm.h"\
@@ -1276,8 +1226,6 @@ srmm.c : \
 	".\m_ieview.h"\
 	".\m_metacontacts.h"\
 	".\m_nudge.h"\
-	".\m_popup.h"\
-	".\m_popupw.h"\
 	".\m_smileyadd.h"\
 	".\m_Snapping_windows.h"\
 	".\m_tabsrmm.h"\
@@ -1325,8 +1273,6 @@ templates.c : \
 	".\m_ieview.h"\
 	".\m_metacontacts.h"\
 	".\m_nudge.h"\
-	".\m_popup.h"\
-	".\m_popupw.h"\
 	".\m_smileyadd.h"\
 	".\m_Snapping_windows.h"\
 	".\m_tabsrmm.h"\
@@ -1374,8 +1320,6 @@ templates.c : \
 	".\m_ieview.h"\
 	".\m_metacontacts.h"\
 	".\m_nudge.h"\
-	".\m_popup.h"\
-	".\m_popupw.h"\
 	".\m_smileyadd.h"\
 	".\m_Snapping_windows.h"\
 	".\m_tabsrmm.h"\
@@ -1423,8 +1367,6 @@ trayicon.c : \
 	".\m_ieview.h"\
 	".\m_metacontacts.h"\
 	".\m_nudge.h"\
-	".\m_popup.h"\
-	".\m_popupw.h"\
 	".\m_smileyadd.h"\
 	".\m_Snapping_windows.h"\
 	".\m_tabsrmm.h"\
@@ -1473,8 +1415,6 @@ TSButton.c : \
 	".\m_ieview.h"\
 	".\m_metacontacts.h"\
 	".\m_nudge.h"\
-	".\m_popup.h"\
-	".\m_popupw.h"\
 	".\m_smileyadd.h"\
 	".\m_Snapping_windows.h"\
 	".\m_tabsrmm.h"\
@@ -1522,8 +1462,6 @@ userprefs.c : \
 	".\m_ieview.h"\
 	".\m_metacontacts.h"\
 	".\m_nudge.h"\
-	".\m_popup.h"\
-	".\m_popupw.h"\
 	".\m_smileyadd.h"\
 	".\m_Snapping_windows.h"\
 	".\m_tabsrmm.h"\

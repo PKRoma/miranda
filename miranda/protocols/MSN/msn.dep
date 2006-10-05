@@ -1,6 +1,11 @@
 # Microsoft Developer Studio Generated Dependency File, included by msn.mak
 
+.\mmdecsjis.cpp : \
+	"..\..\include\m_system.h"\
+	
+
 .\msn.cpp : \
+	"..\..\include\m_chat.h"\
 	"..\..\include\m_clc.h"\
 	"..\..\include\m_clist.h"\
 	"..\..\include\m_clui.h"\
@@ -10,6 +15,7 @@
 	"..\..\include\m_netlib.h"\
 	"..\..\include\m_options.h"\
 	"..\..\include\m_plugins.h"\
+	"..\..\include\m_png.h"\
 	"..\..\include\m_popup.h"\
 	"..\..\include\m_protocols.h"\
 	"..\..\include\m_protomod.h"\
@@ -22,32 +28,111 @@
 	"..\..\include\statusmodes.h"\
 	"..\..\include\win2k.h"\
 	".\msn_global.h"\
-	".\sdk\m_chat.h"\
 	".\version.h"\
 	
 
 .\msn_bitmap.cpp : \
+	"..\..\include\m_system.h"\
 	".\sha1.h"\
 	
 
 .\msn_chat.cpp : \
 	"..\..\include\m_history.h"\
+	"..\..\include\m_system.h"\
 	
 
 .\msn_commands.cpp : \
+	"..\..\include\m_system.h"\
 	".\msn_md5.h"\
+	
+
+.\msn_contact.cpp : \
+	"..\..\include\m_system.h"\
+	
+
+.\msn_errors.cpp : \
+	"..\..\include\m_system.h"\
+	
+
+.\msn_ftold.cpp : \
+	"..\..\include\m_system.h"\
+	
+
+.\msn_http.cpp : \
+	"..\..\include\m_system.h"\
+	
+
+.\msn_libstr.cpp : \
+	"..\..\include\m_system.h"\
+	
+
+.\msn_lists.cpp : \
+	"..\..\include\m_system.h"\
 	
 
 .\msn_md5c.cpp : \
+	"..\..\include\m_system.h"\
 	".\msn_md5.h"\
+	
+
+.\msn_mime.cpp : \
+	"..\..\include\m_system.h"\
 	
 
 .\msn_misc.cpp : \
+	"..\..\include\m_system.h"\
 	".\msn_md5.h"\
 	
 
+.\msn_msgqueue.cpp : \
+	"..\..\include\m_system.h"\
+	
+
 .\msn_opts.cpp : \
+	"..\..\include\m_system.h"\
 	".\msn_md5.h"\
+	
+
+.\msn_p2p.cpp : \
+	"..\..\include\m_system.h"\
+	".\sha1.h"\
+	
+
+.\msn_p2ps.cpp : \
+	"..\..\include\m_system.h"\
+	
+
+.\msn_srv.cpp : \
+	"..\..\include\m_system.h"\
+	
+
+.\msn_ssl.cpp : \
+	"..\..\include\m_system.h"\
+	
+
+.\msn_std.cpp : \
+	"..\..\include\m_system.h"\
+	
+
+.\msn_svcs.cpp : \
+	"..\..\include\m_system.h"\
+	
+
+.\msn_switchboard.cpp : \
+	"..\..\include\m_system.h"\
+	
+
+.\msn_threads.cpp : \
+	"..\..\include\m_system.h"\
+	"..\..\include\m_system_cpp.h"\
+	
+
+.\msn_useropts.cpp : \
+	"..\..\include\m_system.h"\
+	
+
+.\msn_ws.cpp : \
+	"..\..\include\m_system.h"\
 	
 
 .\sha1.c : \
@@ -65,6 +150,7 @@
 	".\Icos\msn.ico"\
 	".\Icos\msnblock.ico"\
 	".\Icos\netmeeting.ico"\
+	".\Icos\nudge.ico"\
 	".\Icos\profile.ico"\
 	".\Icos\services.ico"\
 	".\msn.rc"\
