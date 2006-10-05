@@ -553,12 +553,12 @@ extern struct MM_INTERFACE memoryManagerInterface;
 	#define TCHAR_STR_PARAM "%s"
 #endif
 
-static inline char * mir_strdup(const char *src)
+static __inline char * mir_strdup(const char *src)
 {
 	return (src == NULL) ? NULL : strcpy(( char* )mir_alloc( strlen(src)+1 ), src );
 }
 
-static inline WCHAR* mir_wstrdup(const WCHAR *src)
+static __inline WCHAR* mir_wstrdup(const WCHAR *src)
 {
 	return (src == NULL) ? NULL : wcscpy(( WCHAR* )mir_alloc(( wcslen(src)+1 )*sizeof( WCHAR )), src );
 }
@@ -569,6 +569,7 @@ static inline WCHAR* mir_wstrdup(const WCHAR *src)
 	#define mir_tstrdup mir_strdup
 #endif
 
+TCHAR* a2t( const char* str );
 char*  t2a( const TCHAR* str );
 TCHAR* a2tf( const TCHAR* str, int flags );
 TCHAR* replaceStr( TCHAR** dest, const TCHAR* src );
