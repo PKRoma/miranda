@@ -47,10 +47,8 @@
 # include "config.h"
 #endif
 
-#ifndef _MSC_VER
-#ifndef __GNUC__
+#ifndef _WIN32
 # include <unistd.h>
-#endif
 #endif
 
 #include <errno.h>
@@ -215,8 +213,7 @@ enum yahoo_service { /* these are easier to see in hex */
 	YAHOO_SERVICE_YAB_UPDATE = 0xc4,
 	YAHOO_SERVICE_Y6_VISIBLE_TOGGLE = 0xc5, /* YMSG13, key 13: 2 = invisible, 1 = visible */
 	YAHOO_SERVICE_Y6_STATUS_UPDATE = 0xc6,  /* YMSG13 */
-	/* Kopete Calls YAHOO_SERVICE_AVATAR_UPDATE = ServicePictureStatus ? */
-	YAHOO_SERVICE_AVATAR_UPDATE = 0xc7,			/* YMSG13, key 213: 0 = none, 1 = avatar, 2 = picture */
+	YAHOO_SERVICE_PICTURE_STATUS = 0xc7,	/* YMSG13, key 213: 0 = none, 1 = avatar, 2 = picture */
 	YAHOO_SERVICE_VERIFY_ID_EXISTS = 0xc8,
 	YAHOO_SERVICE_AUDIBLE = 0xd0,
 	YAHOO_SERVICE_Y7_PHOTO_SHARING = 0xd2,
@@ -226,7 +223,10 @@ enum yahoo_service { /* these are easier to see in hex */
 	YAHOO_SERVICE_Y7_FILETRANSFER = 0xdc,	/* YMSG13 */
 	YAHOO_SERVICE_Y7_FILETRANSFERINFO,	/* YMSG13 */
 	YAHOO_SERVICE_Y7_FILETRANSFERACCEPT,	/* YMSG13 */
+	YAHOO_SERVICE_Y7_MINGLE = 0xe1, /* YMSG13 */
 	YAHOO_SERVICE_Y7_CHANGE_GROUP = 0xe7, /* YMSG13 */
+	YAHOO_SERVICE_STATUS_15 = 0xf0,			/* YMSG15 */
+	YAHOO_SERVICE_LIST_15 = 0Xf1,			/* YMSG15 */
 	YAHOO_SERVICE_WEBLOGIN = 0x0226,
 	YAHOO_SERVICE_SMS_MSG = 0x02ea
 };
@@ -255,8 +255,9 @@ static const value_string ymsg_service_vals[] = {
 	{YAHOO_SERVICE_ADDIDENT, "Add Identity"},
 	{YAHOO_SERVICE_ADDIGNORE, "Add Ignore"},
 	{YAHOO_SERVICE_PING, "Ping"},
-	{YAHOO_SERVICE_GOTGROUPRENAME, "YAHOO_SERVICE_GOTGROUPRENAME"},
+	{YAHOO_SERVICE_GOTGROUPRENAME, "Got Group Rename"},
 	{YAHOO_SERVICE_SYSMESSAGE, "System Message"},
+	{YAHOO_SERVICE_SKINNAME, "YAHOO_SERVICE_SKINNAME"},
 	{YAHOO_SERVICE_PASSTHROUGH2, "Passthrough 2"},
 	{YAHOO_SERVICE_CONFINVITE, "Conference Invitation"},
 	{YAHOO_SERVICE_CONFLOGON, "Conference Logon"},
@@ -272,69 +273,64 @@ static const value_string ymsg_service_vals[] = {
 	{YAHOO_SERVICE_GAMEMSG, "Game Message"},
 	{YAHOO_SERVICE_FILETRANSFER, "File Transfer"},
 	{YAHOO_SERVICE_VOICECHAT, "Voice Chat"},
-	{YAHOO_SERVICE_NOTIFY, "YAHOO_SERVICE_NOTIFY"},
-	{YAHOO_SERVICE_VERIFY, "YAHOO_SERVICE_VERIFY"},
-	{YAHOO_SERVICE_P2PFILEXFER, "YAHOO_SERVICE_P2PFILEXFER"}, 
-	{YAHOO_SERVICE_PEERTOPEER, "YAHOO_SERVICE_PEERTOPEER"},
-	{YAHOO_SERVICE_AUTHRESP, "YAHOO_SERVICE_AUTHRESP"},
-	{YAHOO_SERVICE_LIST, "YAHOO_SERVICE_LIST"},
-	{YAHOO_SERVICE_AUTH, "YAHOO_SERVICE_AUTH"},
-	{YAHOO_SERVICE_ADDBUDDY, "YAHOO_SERVICE_ADDBUDDY"},
-	{YAHOO_SERVICE_REMBUDDY, "YAHOO_SERVICE_REMBUDDY"},
-	{YAHOO_SERVICE_IGNORECONTACT, "YAHOO_SERVICE_IGNORECONTACT"},
-	{YAHOO_SERVICE_REJECTCONTACT, "YAHOO_SERVICE_REJECTCONTACT"},
-	{YAHOO_SERVICE_GROUPRENAME, "Group Renamed"},
-	{YAHOO_SERVICE_CHATONLINE, "YAHOO_SERVICE_CHATONLINE"},
-	{YAHOO_SERVICE_CHATGOTO, "YAHOO_SERVICE_CHATGOTO"},
-	{YAHOO_SERVICE_CHATJOIN, "YAHOO_SERVICE_CHATJOIN"},
-	{YAHOO_SERVICE_CHATLEAVE, "YAHOO_SERVICE_CHATLEAVE"},
-	{YAHOO_SERVICE_CHATEXIT, "YAHOO_SERVICE_CHATEXIT"},
-	{YAHOO_SERVICE_CHATLOGOUT, "YAHOO_SERVICE_CHATLOGOUT"},
-	{YAHOO_SERVICE_CHATPING, "YAHOO_SERVICE_CHATPING"},
-	{YAHOO_SERVICE_COMMENT, "YAHOO_SERVICE_COMMENT"},
-	{YAHOO_SERVICE_GAME_INVITE,"YAHOO_SERVICE_GAME_INVITE "},
-	{YAHOO_SERVICE_STEALTH_PERM, "YAHOO_SERVICE_STEALTH_PERM"},
-	{YAHOO_SERVICE_STEALTH_SESSION, "YAHOO_SERVICE_STEALTH_SESSION"},
-	{YAHOO_SERVICE_AVATAR,"YAHOO_SERVICE_AVATAR"},
-	{YAHOO_SERVICE_PICTURE_CHECKSUM,"YAHOO_SERVICE_PICTURE_CHECKSUM"},
-	{YAHOO_SERVICE_PICTURE,"YAHOO_SERVICE_PICTURE"},
-	{YAHOO_SERVICE_YAB_UPDATE,"YAHOO_SERVICE_YAB_UPDATE"},
-	{YAHOO_SERVICE_PICTURE_UPDATE,"YAHOO_SERVICE_PICTURE_UPDATE"},
-	{YAHOO_SERVICE_PICTURE_UPLOAD,"YAHOO_SERVICE_PICTURE_UPLOAD"},
-	{YAHOO_SERVICE_Y6_VISIBLE_TOGGLE, "YAHOO_SERVICE_Y6_VISIBLE_TOGGLE"},
-	{YAHOO_SERVICE_Y6_STATUS_UPDATE,"YAHOO_SERVICE_Y6_STATUS_UPDATE"},
-	{YAHOO_SERVICE_AVATAR_UPDATE,"YAHOO_SERVICE_AVATAR_UPDATE"},
-	{YAHOO_SERVICE_AUDIBLE,"YAHOO_SERVICE_AUDIBLE"},
-	{YAHOO_SERVICE_Y7_CONTACT_DETAILS,"YAHOO_SERVICE_Y7_CONTACT_DETAILS"},
-	{YAHOO_SERVICE_Y7_CHAT_SESSION,	"YAHOO_SERVICE_Y7_CHAT_SESSION"},
-	{YAHOO_SERVICE_Y7_AUTHORIZATION,"YAHOO_SERVICE_Y7_AUTHORIZATION"},
-	{YAHOO_SERVICE_Y7_FILETRANSFER,"YAHOO_SERVICE_Y7_FILETRANSFER"},
-	{YAHOO_SERVICE_Y7_FILETRANSFERINFO,"YAHOO_SERVICE_Y7_FILETRANSFERINFO"},
-	{YAHOO_SERVICE_Y7_FILETRANSFERACCEPT,"YAHOO_SERVICE_Y7_FILETRANSFERACCEPT"},
-	{YAHOO_SERVICE_Y7_CHANGE_GROUP, "YAHOO_SERVICE_Y7_CHANGE_GROUP"},
-	{YAHOO_SERVICE_WEBLOGIN,"YAHOO_SERVICE_WEBLOGIN"},
-	{YAHOO_SERVICE_SMS_MSG,"YAHOO_SERVICE_SMS_MSG"},
+	{YAHOO_SERVICE_NOTIFY, "Notify"},
+	{YAHOO_SERVICE_VERIFY, "Verify"},
+	{YAHOO_SERVICE_P2PFILEXFER, "P2P File Transfer"}, 
+	{YAHOO_SERVICE_PEERTOPEER, "Peer To Peer"},
+	{YAHOO_SERVICE_WEBCAM, "WebCam"},
+	{YAHOO_SERVICE_AUTHRESP, "Authentication Response"},
+	{YAHOO_SERVICE_LIST, "List"},
+	{YAHOO_SERVICE_AUTH, "Authentication"},
+	{YAHOO_SERVICE_ADDBUDDY, "Add Buddy"},
+	{YAHOO_SERVICE_REMBUDDY, "Remove Buddy"},
+	{YAHOO_SERVICE_IGNORECONTACT, "Ignore Contact"},
+	{YAHOO_SERVICE_REJECTCONTACT, "Reject Contact"},
+	{YAHOO_SERVICE_GROUPRENAME, "Group Rename"},
+	{YAHOO_SERVICE_CHATONLINE, "Chat Online"},
+	{YAHOO_SERVICE_CHATGOTO, "Chat Goto"},
+	{YAHOO_SERVICE_CHATJOIN, "Chat Join"},
+	{YAHOO_SERVICE_CHATLEAVE, "Chat Leave"},
+	{YAHOO_SERVICE_CHATEXIT, "Chat Exit"},
+	{YAHOO_SERVICE_CHATADDINVITE, "Chat Invite"},
+	{YAHOO_SERVICE_CHATLOGOUT, "Chat Logout"},
+	{YAHOO_SERVICE_CHATPING, "Chat Ping"},
+	{YAHOO_SERVICE_COMMENT, "Comment"},
+	{YAHOO_SERVICE_GAME_INVITE,"Game Invite"},
+	{YAHOO_SERVICE_STEALTH_PERM, "Stealth Permanent"},
+	{YAHOO_SERVICE_STEALTH_SESSION, "Stealth Session"},
+	{YAHOO_SERVICE_AVATAR,"Avatar"},
+	{YAHOO_SERVICE_PICTURE_CHECKSUM,"Picture Checksum"},
+	{YAHOO_SERVICE_PICTURE,"Picture"},
+	{YAHOO_SERVICE_PICTURE_UPDATE,"Picture Update"},
+	{YAHOO_SERVICE_PICTURE_UPLOAD,"Picture Upload"},
+	{YAHOO_SERVICE_YAB_UPDATE,"Yahoo Address Book Update"},
+	{YAHOO_SERVICE_Y6_VISIBLE_TOGGLE, "Y6 Visibility Toggle"},
+	{YAHOO_SERVICE_Y6_STATUS_UPDATE, "Y6 Status Update"},
+	{YAHOO_SERVICE_PICTURE_STATUS, "Picture Sharing Status"},
+	{YAHOO_SERVICE_VERIFY_ID_EXISTS, "Verify ID Exists"},
+	{YAHOO_SERVICE_AUDIBLE, "Audible"},
+	{YAHOO_SERVICE_Y7_CONTACT_DETAILS,"Y7 Contact Details"},
+	{YAHOO_SERVICE_Y7_CHAT_SESSION,	"Y7 Chat Session"},
+	{YAHOO_SERVICE_Y7_AUTHORIZATION,"Y7 Buddy Authorization"},
+	{YAHOO_SERVICE_Y7_FILETRANSFER,"Y7 File Transfer"},
+	{YAHOO_SERVICE_Y7_FILETRANSFERINFO,"Y7 File Transfer Information"},
+	{YAHOO_SERVICE_Y7_FILETRANSFERACCEPT,"Y7 File Transfer Accept"},
+	{YAHOO_SERVICE_Y7_CHANGE_GROUP, "Y7 Change Group"},
+	{YAHOO_SERVICE_WEBLOGIN,"WebLogin"},
+	{YAHOO_SERVICE_SMS_MSG,"SMS Message"},
 	{0, NULL}
 };
 
 static const value_string ymsg_status_vals[] = {
-	{YAHOO_STATUS_DISCONNECTED, "YAHOO_STATUS_DISCONNECTED"},
-	{YAHOO_STATUS_AVAILABLE, "YAHOO_STATUS_AVAILABLE"},
-	{YAHOO_STATUS_BRB, "YAHOO_STATUS_BRB"},
-	{YAHOO_STATUS_BUSY, "YAHOO_STATUS_BUSY"},
-	{YAHOO_STATUS_NOTATHOME, "YAHOO_STATUS_NOTATHOME"},
-	{YAHOO_STATUS_NOTATDESK, "YAHOO_STATUS_NOTATDESK"},
-	{YAHOO_STATUS_NOTINOFFICE, "YAHOO_STATUS_NOTINOFFICE"},
-	{YAHOO_STATUS_ONPHONE, "YAHOO_STATUS_ONPHONE"},
-	{YAHOO_STATUS_ONVACATION, "YAHOO_STATUS_ONVACATION"},
-	{YAHOO_STATUS_OUTTOLUNCH, "YAHOO_STATUS_OUTTOLUNCH"},
-	{YAHOO_STATUS_STEPPEDOUT, "YAHOO_STATUS_STEPPEDOUT"},
-	{YAHOO_STATUS_INVISIBLE, "YAHOO_STATUS_INVISIBLE"},
-	{YAHOO_STATUS_CUSTOM, "YAHOO_STATUS_CUSTOM"},
-	{YAHOO_STATUS_IDLE, "YAHOO_STATUS_IDLE"},
-	{YAHOO_STATUS_OFFLINE, "YAHOO_STATUS_OFFLINE"},
-	{YAHOO_STATUS_NOTIFY, "YAHOO_STATUS_NOTIFY"},
-	{YAHOO_STATUS_WEBLOGIN, "YAHOO_STATUS_WEBLOGIN"},
+	{YPACKET_STATUS_DISCONNECTED,"Disconnected"},
+	{YPACKET_STATUS_DEFAULT,""},
+	{YPACKET_STATUS_SERVERACK,"Server Ack"},
+	{YPACKET_STATUS_GAME,"Playing Game"},
+	{YPACKET_STATUS_AWAY, "Away"},
+	{YPACKET_STATUS_CONTINUED,"More Packets??"},
+	{YPACKET_STATUS_NOTIFY, "Notify"},
+	{YPACKET_STATUS_WEBLOGIN,"Web Login"},
+	{YPACKET_STATUS_OFFLINE,"Offline"},
 	{0, NULL}
 };
 
@@ -846,7 +842,9 @@ static void yahoo_packet_read(struct yahoo_packet *pkt, unsigned char *data, int
 {
 	int pos = 0;
 
-	DEBUG_MSG(("[Reading packet] len: %d", len));
+	DEBUG_MSG1(("[Reading packet] Yahoo Service: %s (0x%02x) Status: %s (%d) Length: %d", dbg_service(pkt->service), pkt->service,
+				dbg_status(pkt->status),pkt->status, len));
+
 	while (pos + 1 < len) {
 		char *key, *value = NULL;
 		int accept;
@@ -891,7 +889,7 @@ static void yahoo_packet_read(struct yahoo_packet *pkt, unsigned char *data, int
 		}
 	}
 	
-	DEBUG_MSG(("[Reading packet done]"));
+	DEBUG_MSG1(("[Reading packet done]"));
 }
 
 static void yahoo_packet_write(struct yahoo_packet *pkt, unsigned char *data)
@@ -1037,9 +1035,7 @@ static void yahoo_send_packet(struct yahoo_input_data *yid, struct yahoo_packet 
 	yahoo_packet_write(pkt, data + pos);
 
 	//yahoo_packet_dump(data, len);
-	DEBUG_MSG(("Sending Packet:"));
-	DEBUG_MSG(("Yahoo Service: %s (0x%02x) Status: %s (%d)", dbg_service(pkt->service), pkt->service,
-				dbg_status(pkt->status),pkt->status));
+	DEBUG_MSG1(("Sending Packet:"));
 
 	yahoo_packet_read(pkt, data + pos, len - pos);	
 	
@@ -1773,7 +1769,7 @@ static void yahoo_process_status(struct yahoo_input_data *yid, struct yahoo_pack
 	int mobile = 0;
 	char *msg = NULL;
 	
-	if (pkt->service == YAHOO_SERVICE_LOGOFF && pkt->status == YAHOO_STATUS_DISCONNECTED) {
+	if (pkt->service == YAHOO_SERVICE_LOGOFF && pkt->status == YPACKET_STATUS_DISCONNECTED) {
 		YAHOO_CALLBACK(ext_yahoo_login_response)(yd->client_id, YAHOO_LOGIN_DUPL, NULL);
 		return;
 	}
@@ -3050,7 +3046,7 @@ void yahoo_send_picture_checksum(int id, const char *who, int cksum)
 	/* weird YIM7 sends another packet! See avatar_update below*/
 }
 
-void yahoo_send_avatar_update(int id, int buddy_icon)
+void yahoo_send_picture_status(int id, int buddy_icon)
 {
 	struct yahoo_input_data *yid = find_input_by_id_and_type(id, YAHOO_CONNECTION_PAGER);
 	struct yahoo_data *yd;
@@ -3061,7 +3057,7 @@ void yahoo_send_avatar_update(int id, int buddy_icon)
 		return;
 
 	yd = yid->yd;
-	pkt = yahoo_packet_new(YAHOO_SERVICE_AVATAR_UPDATE, YAHOO_STATUS_AVAILABLE, yd->session_id);
+	pkt = yahoo_packet_new(YAHOO_SERVICE_PICTURE_STATUS, YAHOO_STATUS_AVAILABLE, yd->session_id);
 	yahoo_packet_hash(pkt, 3, yd->user);
 	snprintf(buf, sizeof(buf), "%d", buddy_icon);
 	yahoo_packet_hash(pkt, 213, buf);
@@ -3139,7 +3135,7 @@ static void yahoo_process_picture_upload(struct yahoo_input_data *yid, struct ya
 	YAHOO_CALLBACK(ext_yahoo_got_picture_upload)(yid->yd->client_id, me, url, ts);
 }
 
-static void yahoo_process_avatar_update(struct yahoo_input_data *yid, struct yahoo_packet *pkt)
+static void yahoo_process_picture_status(struct yahoo_input_data *yid, struct yahoo_packet *pkt)
 {
 	char *who = NULL;
 	char *me = NULL;
@@ -3162,7 +3158,7 @@ static void yahoo_process_avatar_update(struct yahoo_input_data *yid, struct yah
 	}
 	NOTICE(("got picture_upload packet"));
 	if (who) // sometimes we just get a confirmation without the WHO.(ack on our avt update)
-		YAHOO_CALLBACK(ext_yahoo_got_avatar_update)(yid->yd->client_id, me, who, buddy_icon);
+		YAHOO_CALLBACK(ext_yahoo_got_picture_status)(yid->yd->client_id, me, who, buddy_icon);
 }
 
 static void yahoo_process_audible(struct yahoo_input_data *yid, struct yahoo_packet *pkt)
@@ -3496,8 +3492,8 @@ static void yahoo_packet_process(struct yahoo_input_data *yid, struct yahoo_pack
 	case YAHOO_SERVICE_YAB_UPDATE:
 		yahoo_process_yab_update(yid, pkt);
 		break;
-	case YAHOO_SERVICE_AVATAR_UPDATE:
-		yahoo_process_avatar_update(yid, pkt);
+	case YAHOO_SERVICE_PICTURE_STATUS:
+		yahoo_process_picture_status(yid, pkt);
 		break;
 	case YAHOO_SERVICE_AUDIBLE:
 		yahoo_process_audible(yid, pkt);
@@ -3569,15 +3565,13 @@ static struct yahoo_packet * yahoo_getdata(struct yahoo_input_data * yid)
 		return NULL;
 	}
 
-	LOG(("reading packet"));
+	//LOG(("reading packet"));
 	//yahoo_packet_dump(yid->rxqueue, YAHOO_PACKET_HDRLEN + pktlen);
 
 	pkt = yahoo_packet_new(0, 0, 0);
 
 	pkt->service = yahoo_get16(yid->rxqueue + pos); pos += 2;
 	pkt->status = yahoo_get32(yid->rxqueue + pos); pos += 4;
-	DEBUG_MSG(("Yahoo Service: %s (0x%02x) Status: %s (%d)", dbg_service(pkt->service), pkt->service,
-				dbg_status(pkt->status),pkt->status));
 	pkt->id = yahoo_get32(yid->rxqueue + pos); pos += 4;
 
 	yd->session_id = pkt->id;
@@ -4541,7 +4535,7 @@ void yahoo_send_typing(int id, const char *from, const char *who, int typ)
 		return;
 
 	yd = yid->yd;
-	pkt = yahoo_packet_new(YAHOO_SERVICE_NOTIFY, YAHOO_STATUS_NOTIFY, yd->session_id);
+	pkt = yahoo_packet_new(YAHOO_SERVICE_NOTIFY, YPACKET_STATUS_NOTIFY, yd->session_id);
 
 	yahoo_packet_hash(pkt, 49, "TYPING");
 	yahoo_packet_hash(pkt, 1, from?from:yd->user);
@@ -5402,7 +5396,7 @@ void yahoo_webcam_invite(int id, const char *who)
 	if(!yid)
 		return;
 
-	pkt = yahoo_packet_new(YAHOO_SERVICE_NOTIFY, YAHOO_STATUS_NOTIFY, yid->yd->session_id);
+	pkt = yahoo_packet_new(YAHOO_SERVICE_NOTIFY, YPACKET_STATUS_NOTIFY, yid->yd->session_id);
 
 	yahoo_packet_hash(pkt, 49, "WEBCAMINVITE");
 	yahoo_packet_hash(pkt, 14, " ");
@@ -5604,7 +5598,6 @@ void yahoo_send_file(int id, const char *who, const char *msg,
 			//_yahoo_send_file_connected, sfd);
 	YAHOO_CALLBACK(ext_yahoo_send_http_request)(yid->yd->client_id, "POST", url, buff, content_length+4+size,
 			_yahoo_send_file_connected, sfd);
-	
 }
 
 void yahoo_send_avatar(int id, const char *name, unsigned long size, 
