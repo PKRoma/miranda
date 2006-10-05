@@ -35,7 +35,6 @@
 // -----------------------------------------------------------------------------
 
 #include "icqoscar.h"
-//#include "m_popupw.h"
 
 static BOOL bPopUpService = FALSE;
 
