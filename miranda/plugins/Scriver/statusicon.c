@@ -80,7 +80,7 @@ static int ModifyStatusIcon(WPARAM wParam, LPARAM lParam) {
 	HANDLE hContact = (HANDLE)wParam;
 
 	StatusIconData *sid = (StatusIconData *)lParam;
-	struct StatusIconListNode *current = status_icon_list, *prev = 0;
+	struct StatusIconListNode *current = status_icon_list;
 
 	while(current) {
 		if(strcmp(current->sid.szModule, sid->szModule) == 0 && current->sid.dwId == sid->dwId) {
@@ -103,9 +103,9 @@ static int ModifyStatusIcon(WPARAM wParam, LPARAM lParam) {
 			} else {
 				char buff[256];
 				HWND hwnd;
-				sprintf(buff, "SRMMStatusIconFlags%d", sid->dwId);
+				sprintf(buff, "SRMMStatusIconFlags%d", (int)sid->dwId);
 				DBWriteContactSettingByte(hContact, sid->szModule, buff, sid->flags);
-				if (hwnd = WindowList_Find(g_dat->hMessageWindowList, hContact)) {
+				if ((hwnd = WindowList_Find(g_dat->hMessageWindowList, hContact))) {
 					PostMessage(GetParent(hwnd), DM_STATUSICONCHANGE, 0, 0);
 				}
 			}
@@ -125,7 +125,7 @@ void DrawStatusIcons(HANDLE hContact, HDC hDC, RECT r, int gap) {
 	int flags;
 	int x = r.left;
 	while(current) {
-		sprintf(buff, "SRMMStatusIconFlags%d", current->sid.dwId);
+		sprintf(buff, "SRMMStatusIconFlags%d", (int)current->sid.dwId);
 		flags = DBGetContactSettingByte(hContact, current->sid.szModule, buff, current->sid.flags);
 		if((flags & MBF_DISABLED) && current->sid.hIconDisabled) hIcon = current->sid.hIconDisabled;
 		else hIcon = current->sid.hIcon;

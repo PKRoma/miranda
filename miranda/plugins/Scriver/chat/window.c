@@ -201,14 +201,14 @@ static int RoomWndResize(HWND hwndDlg,LPARAM lParam,UTILRESIZECONTROL *urc)
 		urc->rcItem.top = urc->dlgNewSize.cy - si->iSplitterY+23;
 		urc->rcItem.bottom = urc->dlgNewSize.cy -1;
 		return RD_ANCHORX_RIGHT|RD_ANCHORY_CUSTOM;
-		
+
 	case IDC_CHAT_LOG:
 		urc->rcItem.top = 0;
 		urc->rcItem.left = 0;
 		urc->rcItem.right = bNick?urc->dlgNewSize.cx - si->iSplitterX:urc->dlgNewSize.cx;
 		urc->rcItem.bottom = bToolbar?(urc->dlgNewSize.cy - si->iSplitterY):(urc->dlgNewSize.cy - si->iSplitterY+20);
 		return RD_ANCHORX_CUSTOM|RD_ANCHORY_CUSTOM;
-	
+
 	case IDC_CHAT_LIST:
 		urc->rcItem.top = 0;
 		urc->rcItem.right = urc->dlgNewSize.cx ;
@@ -1141,7 +1141,7 @@ BOOL CALLBACK RoomWndProc(HWND hwndDlg,UINT uMsg,WPARAM wParam,LPARAM lParam)
 		{
 			StatusBarData sbd;
 			HICON hIcon;
-			TCHAR* ptszDispName = a2t(MM_FindModule(si->pszModule)->pszModDispName, -1);
+			TCHAR* ptszDispName = a2t(MM_FindModule(si->pszModule)->pszModDispName);
 			TCHAR szTemp[512];
 			hIcon = si->wStatus==ID_STATUS_ONLINE?MM_FindModule(si->pszModule)->hOnlineIcon:MM_FindModule(si->pszModule)->hOfflineIcon;
 			mir_sntprintf(szTemp, SIZEOF(szTemp), _T("%s : %s"), ptszDispName, si->ptszStatusbarText ? si->ptszStatusbarText : _T(""));
@@ -1156,7 +1156,7 @@ BOOL CALLBACK RoomWndProc(HWND hwndDlg,UINT uMsg,WPARAM wParam,LPARAM lParam)
 			SendMessage(GetParent(hwndDlg), CM_UPDATESTATUSBAR, (WPARAM) &sbd, (LPARAM) hwndDlg);
 			sbd.iItem = 2;
 			SendMessage(GetParent(hwndDlg), CM_UPDATESTATUSBAR, (WPARAM) &sbd, (LPARAM) hwndDlg);
-			mir_free( ptszDispName );
+			free( ptszDispName );
 		//	SendMessage(hwndDlg, GC_FIXTABICONS, 0, (LPARAM)si);
 		}
 		break;
@@ -1257,7 +1257,7 @@ BOOL CALLBACK RoomWndProc(HWND hwndDlg,UINT uMsg,WPARAM wParam,LPARAM lParam)
 			SendMessage(GetParent(hwndDlg), CM_UPDATETABCONTROL, (WPARAM) &tcd, (LPARAM) hwndDlg);
 		}
 		break;
-		
+
 		case GC_SETMESSAGEHIGHLIGHT:
 		{
 			si->wState |= GC_EVENT_HIGHLIGHT;
@@ -1861,7 +1861,7 @@ LABEL_SHOWWINDOW:
 					CallService(MS_SMILEYADD_SHOWSELECTION, 0, (LPARAM) &smaddInfo);
 			}
 			break;
-			
+
 		case IDC_CHAT_HISTORY:
 			{
 				char szFile[MAX_PATH];
@@ -1929,7 +1929,7 @@ LABEL_SHOWWINDOW:
 					SendDlgItemMessage(hwndDlg, IDC_CHAT_MESSAGE, EM_SETCHARFORMAT, SCF_SELECTION, (LPARAM)&cf);
 			}	}
 			break;
-			
+
 		case IDC_CHAT_COLOR:
 			{
 				CHARFORMAT2 cf;

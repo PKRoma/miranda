@@ -24,13 +24,20 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #ifndef UTILS_H
 #define UTILS_H
 
+#if defined( _UNICODE )
+	#define mir_tstrdup mir_wstrdup
+#else
+	#define mir_tstrdup mir_strdup
+#endif
+
 extern struct MM_INTERFACE memoryManagerInterface;
 #define mir_alloc(n) memoryManagerInterface.mmi_malloc(n)
 #define mir_free(ptr) memoryManagerInterface.mmi_free(ptr)
 #define mir_realloc(ptr,size) memoryManagerInterface.mmi_realloc(ptr,size)
 extern int IsUnicodeMIM();
 extern int safe_wcslen(wchar_t *msg, int maxLen) ;
-extern TCHAR *a2t(const char *text, int textlen);
-extern TCHAR *a2tcp(const char *text, int textlen, int cp);
+extern TCHAR *a2t(const char *text);
+extern TCHAR *a2tl(const char *text, int textlen);
+extern TCHAR *a2tlcp(const char *text, int textlen, int cp);
 
 #endif

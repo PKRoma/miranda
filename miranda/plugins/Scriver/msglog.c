@@ -96,13 +96,13 @@ TCHAR *GetNickname(HANDLE hContact, const char* szProto) {
 					if(!_tcscmp((TCHAR *)ci.pszVal, TranslateW(_T("'(Unknown Contact)'")))) {
 						ci.dwFlag &= ~CNF_UNICODE;
 						if (!CallService(MS_CONTACT_GETCONTACTINFO, 0, (LPARAM) & ci)) {
-							szName = a2t((char *)ci.pszVal, -1);
+							szName = a2t((char *)ci.pszVal);
 						}
 					} else {
 						szName = _tcsdup((TCHAR *)ci.pszVal);
 					}
 				} else {
-					szName = a2t((char *)ci.pszVal, -1);
+					szName = a2t((char *)ci.pszVal);
 				}
 #else
 				szName = _tcsdup((TCHAR *)ci.pszVal);
@@ -185,7 +185,7 @@ struct EventData *getEventFromDB(struct MessageWindowData *dat, HANDLE hContact,
 	}
 	if (event->eventType == EVENTTYPE_FILE) {
 		int msglen = strlen(((char *) dbei.pBlob) + sizeof(DWORD)) + 1;
-		event->pszTextW = a2t(((char *) dbei.pBlob) + sizeof(DWORD), msglen);//dat->codePage);
+		event->pszTextW = a2tl(((char *) dbei.pBlob) + sizeof(DWORD), msglen);//dat->codePage);
 	} else { //if (event->eventType == EVENTTYPE_MESSAGE) {
 		int msglen = strlen((char *) dbei.pBlob) + 1;
 		if (msglen != (int) dbei.cbBlob && !(dat->flags & SMF_DISABLE_UNICODE)) {
@@ -194,10 +194,10 @@ struct EventData *getEventFromDB(struct MessageWindowData *dat, HANDLE hContact,
 			if (wlen > 0 && wlen < msglen) {
 				event->pszTextW = wcsdup((wchar_t*) &dbei.pBlob[msglen]);
 			} else {
-				event->pszTextW = a2tcp((char *) dbei.pBlob, msglen, dat->codePage);
+				event->pszTextW = a2tlcp((char *) dbei.pBlob, msglen, dat->codePage);
 			}
 		} else {
-			event->pszTextW = a2tcp((char *) dbei.pBlob, msglen, dat->codePage);
+			event->pszTextW = a2tlcp((char *) dbei.pBlob, msglen, dat->codePage);
 		}
 	}
 #else
