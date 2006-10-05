@@ -52,7 +52,6 @@ PSLWA pSetLayeredWindowAttributes;
 static WNDPROC OldTabCtrlProc;
 BOOL CALLBACK TabCtrlProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam);
 
-extern TCHAR *charToTchar(const char *text, int textlen, int cp);
 extern TCHAR *GetNickname(HANDLE hContact, const char* szProto);
 extern void NotifyLocalWinEvent(HANDLE hContact, HWND hwnd, unsigned int type);
 
@@ -77,12 +76,12 @@ TCHAR* GetWindowTitle(HANDLE *hContact, const char *szProto)
 	if (hContact && szProto) {
 		szContactName = GetNickname(hContact, szProto);
 		contactNameLen = lstrlen(szContactName);
-		szStatus = charToTchar((char *) CallService(MS_CLIST_GETSTATUSMODEDESCRIPTION, szProto == NULL ? ID_STATUS_OFFLINE : DBGetContactSettingWord(hContact, szProto, "Status", ID_STATUS_OFFLINE), 0), -1, CP_ACP);
+		szStatus = a2t((char *) CallService(MS_CLIST_GETSTATUSMODEDESCRIPTION, szProto == NULL ? ID_STATUS_OFFLINE : DBGetContactSettingWord(hContact, szProto, "Status", ID_STATUS_OFFLINE), 0), -1);
 		statusLen = lstrlen(szStatus);
 		if (!DBGetContactSetting(hContact, "CList", "StatusMsg",&dbv)) {
 			if (strlen(dbv.pszVal) > 0) {
 				int i, j;
-       			szStatusMsg = charToTchar(dbv.pszVal, -1, CP_ACP);
+       			szStatusMsg = a2t(dbv.pszVal, -1);
 				statusMsgLen = lstrlen(szStatusMsg);
 				for (i = j = 0; i < statusMsgLen; i++) {
 					if (szStatusMsg[i] == '\r') {
@@ -101,7 +100,7 @@ TCHAR* GetWindowTitle(HANDLE *hContact, const char *szProto)
 
 		if (!DBGetContactSetting(NULL, SRMMMOD, SRMSGSET_WINDOWTITLE, &dbv)) {
 			isTemplate = 1;
-			tmplt = charToTchar(dbv.pszVal, -1, CP_ACP);
+			tmplt = a2t(dbv.pszVal, -1);
 			DBFreeVariant(&dbv);
 		} else {
 			int statusIcon = DBGetContactSettingByte(NULL, SRMMMOD, SRMSGSET_STATUSICON, SRMSGDEFSET_STATUSICON);

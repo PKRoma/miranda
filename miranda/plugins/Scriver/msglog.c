@@ -74,49 +74,6 @@ struct EventData {
 	HANDLE	hContact;
 };
 
-int safe_wcslen(wchar_t *msg, int maxLen) {
-    int i;
-	for (i = 0; i < maxLen; i++) {
-		if (msg[i] == (wchar_t)0)
-			return i;
-	}
-	return 0;
-}
-
-
-static int mimFlags = 0;
-
-enum MIMFLAGS {
-	MIM_CHECKED = 1,
-	MIM_UNICODE = 2
-};
-
-TCHAR *charToTchar(const char *text, int textlen, int cp) {
-#if defined ( _UNICODE )
-	wchar_t *wtext;
-	if (textlen == -1) {
-		textlen = strlen(text) + 1;
-	}
-	wtext = (wchar_t *) malloc(sizeof(wchar_t) * textlen);
-	MultiByteToWideChar(cp, 0, text, -1, wtext, textlen);
-	return wtext;
-#else
-	return _tcsdup(text);
-#endif
-}
-
-static int IsUnicodeMIM() {
-	if (!(mimFlags & MIM_CHECKED)) {
-		char str[512];
-		mimFlags = MIM_CHECKED;
-		CallService(MS_SYSTEM_GETVERSIONTEXT, (WPARAM)500, (LPARAM)(char*)str);
-		if(strstr(str, "Unicode")) {
-			mimFlags |= MIM_UNICODE;
-		}
-	}
-	return (mimFlags & MIM_UNICODE) != 0;
-}
-
 TCHAR *GetNickname(HANDLE hContact, const char* szProto) {
 	char * szBaseNick;
 	TCHAR *szName = NULL;
@@ -139,13 +96,13 @@ TCHAR *GetNickname(HANDLE hContact, const char* szProto) {
 					if(!_tcscmp((TCHAR *)ci.pszVal, TranslateW(_T("'(Unknown Contact)'")))) {
 						ci.dwFlag &= ~CNF_UNICODE;
 						if (!CallService(MS_CONTACT_GETCONTACTINFO, 0, (LPARAM) & ci)) {
-			        	    szName = charToTchar((char *)ci.pszVal, -1, CP_ACP);
+							szName = a2t((char *)ci.pszVal, -1);
 						}
 					} else {
 						szName = _tcsdup((TCHAR *)ci.pszVal);
 					}
 				} else {
-					szName = charToTchar((char *)ci.pszVal, -1, CP_ACP);
+					szName = a2t((char *)ci.pszVal, -1);
 				}
 #else
 				szName = _tcsdup((TCHAR *)ci.pszVal);
@@ -228,7 +185,7 @@ struct EventData *getEventFromDB(struct MessageWindowData *dat, HANDLE hContact,
 	}
 	if (event->eventType == EVENTTYPE_FILE) {
 		int msglen = strlen(((char *) dbei.pBlob) + sizeof(DWORD)) + 1;
-		event->pszTextW = charToTchar(((char *) dbei.pBlob) + sizeof(DWORD), msglen, CP_ACP);//dat->codePage);
+		event->pszTextW = a2t(((char *) dbei.pBlob) + sizeof(DWORD), msglen);//dat->codePage);
 	} else { //if (event->eventType == EVENTTYPE_MESSAGE) {
 		int msglen = strlen((char *) dbei.pBlob) + 1;
 		if (msglen != (int) dbei.cbBlob && !(dat->flags & SMF_DISABLE_UNICODE)) {
@@ -237,10 +194,10 @@ struct EventData *getEventFromDB(struct MessageWindowData *dat, HANDLE hContact,
 			if (wlen > 0 && wlen < msglen) {
 				event->pszTextW = wcsdup((wchar_t*) &dbei.pBlob[msglen]);
 			} else {
-				event->pszTextW = charToTchar((char *) dbei.pBlob, msglen, dat->codePage);
+				event->pszTextW = a2tcp((char *) dbei.pBlob, msglen, dat->codePage);
 			}
 		} else {
-			event->pszTextW = charToTchar((char *) dbei.pBlob, msglen, dat->codePage);
+			event->pszTextW = a2tcp((char *) dbei.pBlob, msglen, dat->codePage);
 		}
 	}
 #else
