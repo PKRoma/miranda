@@ -22,11 +22,12 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 extern struct GlobalMessageData *g_dat;
 //globals
-struct MM_INTERFACE	mmi = {0};					// structure which keeps pointers to mirandas alloc, free and realloc
 HINSTANCE   g_hInst;
 PLUGINLINK  *pluginLink;
 HANDLE      g_hWindowList;
 HMENU       g_hMenu = NULL;
+
+struct MM_INTERFACE memoryManagerInterface;
 
 FONTINFO    aFonts[OPTIONS_FONTCOUNT];
 HICON       hIcons[30];
@@ -38,14 +39,14 @@ HBRUSH      hListBkgBrush = NULL;
 
 HIMAGELIST  hImageList = NULL;
 
-struct GlobalLogSettings_t g_Settings;
-
 HIMAGELIST  hIconsList = NULL;
 int         eventMessageIcon = 0;
 int			overlayIcon = 0;
 
-char*       pszActiveWndID = 0;
+TCHAR*      pszActiveWndID = 0;
 char*       pszActiveWndModule = 0;
+
+struct GlobalLogSettings_t g_Settings;
 
 static void InitREOleCallback(void);
 
@@ -95,42 +96,38 @@ int Chat_Load(PLUGINLINK *link)
 
 	pluginLink = link;
 
-	hDll = LoadLibraryA("riched20.dll");
+	// set the memory manager
+	memoryManagerInterface.cbSize = sizeof(struct MM_INTERFACE);
+	CallService(MS_SYSTEM_GET_MMI,0,(LPARAM)&memoryManagerInterface);
 
-	if(hDll)
-	{
+	hDll = LoadLibraryA("riched20.dll");
+	if ( hDll ) {
 		char modulePath[MAX_PATH];
-		if (GetModuleFileNameA(hDll, modulePath, MAX_PATH))
-		{
+		if (GetModuleFileNameA(hDll, modulePath, MAX_PATH)) {
 			DWORD dummy;
 			VS_FIXEDFILEINFO* vsInfo;
 			UINT vsInfoSize;
 			DWORD size = GetFileVersionInfoSizeA(modulePath, &dummy);
-			BYTE* buffer = (BYTE*) malloc(size);
+			BYTE* buffer = (BYTE*) mir_alloc(size);
 
 			GetFileVersionInfoA(modulePath, 0, size, buffer);
 			VerQueryValueA(buffer, "\\", (LPVOID*) &vsInfo, &vsInfoSize);
 			if(LOWORD(vsInfo->dwFileVersionMS) != 0)
 				bFlag= TRUE;
 
-			free(buffer);
-		}
-
+			mir_free(buffer);
+		}	
 	}
 
-	if (!bFlag)
-	{
+	if ( !bFlag ) {
 		if(IDYES == MessageBoxA(0,Translate("Miranda could not load the Chat plugin because Microsoft Rich Edit v 3 is missing.\nIf you are using Windows 95/98/NT or WINE please upgrade your Rich Edit control.\n\nDo you want to download an update now?."),Translate("Information"),MB_YESNO|MB_ICONINFORMATION))
 			CallService(MS_UTILS_OPENURL, 1, (LPARAM) "http://members.chello.se/matrix/re3/richupd.exe");
 		FreeLibrary(GetModuleHandleA("riched20.dll"));
 		return 1;
 	}
 
-//	RichUtil_Load();
 	UpgradeCheck();
 
-	mmi.cbSize = sizeof(mmi);
-	CallService(MS_SYSTEM_GET_MMI, 0, (LPARAM) &mmi);
 	g_hMenu = LoadMenu(g_hInst, MAKEINTRESOURCE(IDR_MENU));
     OleInitialize(NULL);
     InitREOleCallback();
@@ -139,27 +136,6 @@ int Chat_Load(PLUGINLINK *link)
 	CreateHookableEvents();
 	OptionsInit();
 	TabsInit();
-
-
-	/*
-	{ // check sizes of structures in m_chat.h
-		int iSize;
-		char szTemp[10];
-
-		iSize = sizeof(GCREGISTER);
-		mir_snprintf(szTemp, sizeof(szTemp), "%u", iSize);
-		MessageBoxA(NULL, szTemp, "GCREGISTER", MB_OK);
-
-		iSize = sizeof(GCSESSION);
-		mir_snprintf(szTemp, sizeof(szTemp), "%u", iSize);
-		MessageBoxA(NULL, szTemp, "GCWINDOW", MB_OK);
-
-		iSize = sizeof(GCEVENT);
-		mir_snprintf(szTemp, sizeof(szTemp), "%u", iSize);
-		MessageBoxA(NULL, szTemp, "GCEVENT", MB_OK);
-
-	}
-	*/
 	return 0;
 }
 
@@ -176,10 +152,8 @@ int Chat_Unload(void)
 	CList_SetAllOffline(TRUE);
 
 //	RichUtil_Unload();
-	if(pszActiveWndID)
-		free(pszActiveWndID);
-	if(pszActiveWndModule)
-		free(pszActiveWndModule);
+	mir_free( pszActiveWndID );
+	mir_free( pszActiveWndModule );
 
 	DestroyMenu(g_hMenu);
 	DestroyServiceFunctions();
@@ -346,7 +320,7 @@ static STDMETHODIMP_(HRESULT) CREOleCallback_GetNewStorage(struct CREOleCallback
     WCHAR szwName[64];
     char szName[64];
     wsprintfA(szName, "s%u", lpThis->nextStgId);
-    MultiByteToWideChar(CP_ACP, 0, szName, -1, szwName, sizeof(szwName) / sizeof(szwName[0]));
+	MultiByteToWideChar(CP_ACP, 0, szName, -1, szwName, SIZEOF(szwName));
     if (lpThis->pictStg == NULL)
         return STG_E_MEDIUMFULL;
     return lpThis->pictStg->lpVtbl->CreateStorage(lpThis->pictStg, szwName, STGM_READWRITE | STGM_SHARE_EXCLUSIVE | STGM_CREATE, 0, 0, lplpstg);
@@ -378,8 +352,7 @@ static void InitREOleCallback(void)
     reOleCallback.lpVtbl->GetClipboardData = (HRESULT(__stdcall *) (IRichEditOleCallback *, CHARRANGE *, DWORD, LPDATAOBJECT *)) CREOleCallback_GetClipboardData;
     reOleCallback.lpVtbl->GetContextMenu = (HRESULT(__stdcall *) (IRichEditOleCallback *, WORD, LPOLEOBJECT, CHARRANGE *, HMENU *)) CREOleCallback_GetContextMenu;
     reOleCallback.lpVtbl->GetDragDropEffect = (HRESULT(__stdcall *) (IRichEditOleCallback *, BOOL, DWORD, LPDWORD)) CREOleCallback_GetDragDropEffect;
-    reOleCallback.lpVtbl->GetInPlaceContext = (HRESULT(__stdcall *) (IRichEditOleCallback *, LPOLEINPLACEFRAME *, LPOLEINPLACEUIWINDOW *, LPOLEINPLACEFRAMEINFO))
-        CREOleCallback_GetInPlaceContext;
+	reOleCallback.lpVtbl->GetInPlaceContext = (HRESULT(__stdcall *) (IRichEditOleCallback *, LPOLEINPLACEFRAME *, LPOLEINPLACEUIWINDOW *, LPOLEINPLACEFRAMEINFO))CREOleCallback_GetInPlaceContext;
     reOleCallback.lpVtbl->GetNewStorage = (HRESULT(__stdcall *) (IRichEditOleCallback *, LPSTORAGE *)) CREOleCallback_GetNewStorage;
     reOleCallback.lpVtbl->QueryAcceptData = (HRESULT(__stdcall *) (IRichEditOleCallback *, LPDATAOBJECT, CLIPFORMAT *, DWORD, BOOL, HGLOBAL)) CREOleCallback_QueryAcceptData;
     reOleCallback.lpVtbl->QueryInsertObject = (HRESULT(__stdcall *) (IRichEditOleCallback *, LPCLSID, LPSTORAGE, LONG)) CREOleCallback_QueryInsertObject;

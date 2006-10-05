@@ -71,6 +71,7 @@ static fontOptionsList[] = {
 	{_T("User list members (Online)"), RGB(0,0, 0), _T("Verdana"), DEFAULT_CHARSET, 0, -12},
 	{_T("User list members (away)"), RGB(170, 170, 170), _T("Verdana"), DEFAULT_CHARSET, 0, -12},
 };
+
 static const int msgDlgFontCount = SIZEOF(fontOptionsList);
 
 struct branch_t
@@ -81,12 +82,14 @@ struct branch_t
 	BYTE      bDefault;
 	HTREEITEM hItem;
 };
+
 static struct branch_t branch0[] = {
 	{_T("Use a tabbed interface"), "Tabs", 0, 1, NULL},
 	{_T("Use common tabbed window"), "Tabs", 0, 1, NULL},
 	{_T("Restore previously open tabs when showing the window"), "TabRestore", 0, 0, NULL},
 
 };
+
 static struct branch_t branch1[] = {
 	{_T("Send message by pressing the Enter key"), "SendOnEnter", 0, 1, NULL},
 	{_T("Send message by pressing the Enter key twice"), "SendOnDblEnter", 0,0, NULL},
@@ -142,6 +145,7 @@ static struct branch_t branch4[] = {
 	{_T("Show icon for information messages"), "IconFlags", GC_EVENT_INFORMATION, 0, NULL},
 	{_T("Show icon for status changes"), "IconFlags", GC_EVENT_ADDSTATUS, 0, NULL},
 };
+
 static struct branch_t branch5[] = {
 	{_T("Show icons in tray only when the chat room is not active"), "TrayIconInactiveOnly", 0, 1, NULL},
 	{_T("Show icon in tray for topic changes"), "TrayIconFlags", GC_EVENT_TOPIC, 0, NULL},
@@ -231,12 +235,9 @@ static void SaveBranch(HWND hwndTree, struct branch_t *branch, int nValues)
 				iState |= GC_EVENT_REMOVESTATUS;
 			DBWriteContactSettingDword(NULL, "Chat", branch[i].szDBName, (DWORD)iState);
 		}
-		else
-		{
-			DBWriteContactSettingByte(NULL, "Chat", branch[i].szDBName, bChecked);
-		}
-	}
-}
+		else DBWriteContactSettingByte(NULL, "Chat", branch[i].szDBName, bChecked);
+	}	}
+
 static void CheckHeading(HWND hwndTree, HTREEITEM hHeading)
 {
 	BOOL bChecked = TRUE;
@@ -339,7 +340,7 @@ void Chat_LoadMsgDlgFont(int i, LOGFONT* lf, COLORREF* colour)
         if (DBGetContactSettingTString(NULL, "ChatFonts", str, &dbv))
             lstrcpy(lf->lfFaceName, fontOptionsList[i].szDefFace);
         else {
-            lstrcpyn(lf->lfFaceName, dbv.ptszVal, sizeof(lf->lfFaceName));
+			lstrcpyn(lf->lfFaceName, dbv.ptszVal, SIZEOF(lf->lfFaceName));
             DBFreeVariant(&dbv);
         }
     }
@@ -549,31 +550,23 @@ HICON LoadIconEx(int iIndex, char * pszIcoLibName, int iX, int iY)
 	if(ServiceExists(MS_SKIN2_ADDICON))
 	{
 		char szTemp[256];
-		mir_snprintf(szTemp, sizeof(szTemp), "chat_%s", pszIcoLibName);
+		mir_snprintf(szTemp, SIZEOF(szTemp), "chat_%s", pszIcoLibName);
 		return (HICON) CallService(MS_SKIN2_GETICON, 0, (LPARAM)szTemp);
 	}
-	else
+
 		return (HICON)LoadImage(g_hInst,MAKEINTRESOURCE(iIndex),IMAGE_ICON,iX,iY,LR_SHARED);
-	return 0;
 }
 
-static void InitSetting(char ** ppPointer, char * pszSetting, char*pszDefault)
+static void InitSetting(TCHAR** ppPointer, char* pszSetting, TCHAR* pszDefault)
 {
 	DBVARIANT dbv;
-	if (!DBGetContactSetting(NULL, "Chat", pszSetting, &dbv) && dbv.type == DBVT_ASCIIZ)
-	{
-		*ppPointer = realloc(*ppPointer, lstrlenA(dbv.pszVal)+1);
-		lstrcpyA(*ppPointer, dbv.pszVal);
+	if ( !DBGetContactSettingTString(NULL, "Chat", pszSetting, &dbv )) {
+		replaceStr( ppPointer, dbv.ptszVal );
 		DBFreeVariant(&dbv);
 	}
-	else
-	{
-		*ppPointer = realloc(*ppPointer, lstrlenA(pszDefault)+1);
-		lstrcpyA(*ppPointer, pszDefault);
+	else replaceStr( ppPointer, pszDefault );
 	}
-	return;
 
-}
 #define OPT_FIXHEADINGS (WM_USER+1)
 BOOL CALLBACK DlgProcOptions1(HWND hwndDlg,UINT uMsg,WPARAM wParam,LPARAM lParam)
 {
@@ -587,9 +580,6 @@ BOOL CALLBACK DlgProcOptions1(HWND hwndDlg,UINT uMsg,WPARAM wParam,LPARAM lParam
 	switch (uMsg)
 	{
 	case WM_INITDIALOG:
-		{
-		char * pszGroup = NULL;
-
 		TranslateDialogDefault(hwndDlg);
 		SetWindowLong(GetDlgItem(hwndDlg,IDC_CHAT_CHECKBOXES),GWL_STYLE,GetWindowLong(GetDlgItem(hwndDlg,IDC_CHAT_CHECKBOXES),GWL_STYLE)|TVS_NOHSCROLL|TVS_CHECKBOXES);
 		SendDlgItemMessage(hwndDlg,IDC_CHAT_SPIN2,UDM_SETRANGE,0,MAKELONG(255,10));
@@ -610,10 +600,13 @@ BOOL CALLBACK DlgProcOptions1(HWND hwndDlg,UINT uMsg,WPARAM wParam,LPARAM lParam
 		FillBranch(GetDlgItem(hwndDlg, IDC_CHAT_CHECKBOXES), hListHeading5, branch5, SIZEOF(branch5), 0x1000);
 		FillBranch(GetDlgItem(hwndDlg, IDC_CHAT_CHECKBOXES), hListHeading6, branch6, SIZEOF(branch6), 0x0000);
 		SendMessage(hwndDlg, OPT_FIXHEADINGS, 0, 0);
-		InitSetting(&pszGroup, "AddToGroup", "Chat rooms");
-		SetWindowTextA(GetDlgItem(hwndDlg, IDC_CHAT_GROUP), pszGroup);
-		free(pszGroup);
-		}break;
+		{
+			TCHAR* pszGroup = NULL;
+			InitSetting(&pszGroup, "AddToGroup", _T("Chat rooms"));
+			SetWindowText(GetDlgItem(hwndDlg, IDC_CHAT_GROUP), pszGroup);
+			mir_free(pszGroup);
+		}
+		break;
 
 	case OPT_FIXHEADINGS:
 		CheckHeading(GetDlgItem(hwndDlg, IDC_CHAT_CHECKBOXES), hListHeading1);
@@ -623,14 +616,16 @@ BOOL CALLBACK DlgProcOptions1(HWND hwndDlg,UINT uMsg,WPARAM wParam,LPARAM lParam
 		CheckHeading(GetDlgItem(hwndDlg, IDC_CHAT_CHECKBOXES), hListHeading5);
 		CheckHeading(GetDlgItem(hwndDlg, IDC_CHAT_CHECKBOXES), hListHeading6);
 		break;
+
 	case WM_COMMAND:
-		if(	(LOWORD(wParam) == IDC_CHAT_NICKROW
-				|| LOWORD(wParam) == IDC_CHAT_GROUP)
+		if (	(LOWORD(wParam) == IDC_CHAT_NICKROW
+			|| LOWORD(wParam) == IDC_CHAT_GROUP)
 				&& (HIWORD(wParam)!=EN_CHANGE || (HWND)lParam!=GetFocus()))	return 0;
 
 		if(lParam != (LPARAM)NULL)
 			SendMessage(GetParent(hwndDlg), PSM_CHANGED, 0, 0);
 		break;
+
 	case WM_NOTIFY:
 	{
 		switch(((LPNMHDR)lParam)->idFrom)
@@ -683,17 +678,17 @@ BOOL CALLBACK DlgProcOptions1(HWND hwndDlg,UINT uMsg,WPARAM wParam,LPARAM lParam
 					{
 						int iLen;
 						char * pszText = NULL;
+						BYTE b;
+
 						iLen = GetWindowTextLength(GetDlgItem(hwndDlg, IDC_CHAT_GROUP));
 						if(iLen > 0)
 						{
-							pszText = realloc(pszText, iLen+1);
+							pszText = mir_realloc(pszText, iLen+1);
 							GetDlgItemTextA(hwndDlg, IDC_CHAT_GROUP, pszText,iLen+1);
 							DBWriteContactSettingString(NULL, "Chat", "AddToGroup", pszText);
 						}
-						else
-							DBWriteContactSettingString(NULL, "Chat", "AddToGroup", "");
-						if(pszText)
-							free(pszText);
+						else DBWriteContactSettingString(NULL, "Chat", "AddToGroup", "");
+						mir_free(pszText);
 
 						iLen = SendDlgItemMessage(hwndDlg,IDC_CHAT_SPIN2,UDM_GETPOS,0,0);
 						if(iLen > 0)
@@ -923,7 +918,7 @@ BOOL CALLBACK DlgProcOptions2(HWND hwndDlg,UINT uMsg,WPARAM wParam,LPARAM lParam
 			cf.lpLogFont = &lf;
 			cf.Flags = CF_FORCEFONTEXIST | CF_INITTOLOGFONTSTRUCT | CF_SCREENFONTS;
 			if (ChooseFont(&cf)) {
-				int selItems[sizeof(fontOptionsList) / sizeof(fontOptionsList[0])];
+			int selItems[ SIZEOF(fontOptionsList) ];
 				int sel, selCount;
 
 				selCount = SendDlgItemMessage(hwndDlg, IDC_CHAT_FONTLIST, LB_GETSELITEMS, sizeof(fontOptionsList) / sizeof(fontOptionsList[0]), (LPARAM) selItems);
@@ -977,7 +972,7 @@ BOOL CALLBACK DlgProcOptions2(HWND hwndDlg,UINT uMsg,WPARAM wParam,LPARAM lParam
 		}
 		case IDC_CHAT_FONTCOLOR:
 		{
-			int selItems[sizeof(fontOptionsList) / sizeof(fontOptionsList[0])];
+		int selItems[ SIZEOF(fontOptionsList) ];
 			int sel, selCount, i;
 
 			selCount = SendDlgItemMessage(hwndDlg, IDC_CHAT_FONTLIST, LB_GETSELITEMS, sizeof(fontOptionsList) / sizeof(fontOptionsList[0]), (LPARAM) selItems);
@@ -1004,7 +999,7 @@ BOOL CALLBACK DlgProcOptions2(HWND hwndDlg,UINT uMsg,WPARAM wParam,LPARAM lParam
 
 			iLen = GetWindowTextLength(GetDlgItem(hwndDlg, IDC_CHAT_HIGHLIGHTWORDS));
 			if ( iLen > 0 ) {
-				pszText = realloc(pszText, iLen+1);
+			pszText = mir_realloc(pszText, iLen+1);
 				GetDlgItemTextA(hwndDlg, IDC_CHAT_HIGHLIGHTWORDS, pszText,iLen+1);
 				p2 = strchr(pszText, ',');
 				while ( p2 ) {
@@ -1018,7 +1013,7 @@ BOOL CALLBACK DlgProcOptions2(HWND hwndDlg,UINT uMsg,WPARAM wParam,LPARAM lParam
 
 			iLen = GetWindowTextLength(GetDlgItem(hwndDlg, IDC_CHAT_LOGDIRECTORY));
 			if ( iLen > 0 ) {
-				pszText = realloc(pszText, iLen+1);
+			pszText = mir_realloc(pszText, iLen+1);
 				GetDlgItemTextA(hwndDlg, IDC_CHAT_LOGDIRECTORY, pszText,iLen+1);
 				DBWriteContactSettingString(NULL, "Chat", "LogDirectory", pszText);
 			}
@@ -1028,7 +1023,7 @@ BOOL CALLBACK DlgProcOptions2(HWND hwndDlg,UINT uMsg,WPARAM wParam,LPARAM lParam
 
 			iLen = GetWindowTextLength(GetDlgItem(hwndDlg, IDC_CHAT_LOGTIMESTAMP));
 			if ( iLen > 0 ) {
-				pszText = realloc(pszText, iLen+1);
+			pszText = mir_realloc(pszText, iLen+1);
 				GetDlgItemTextA(hwndDlg, IDC_CHAT_LOGTIMESTAMP, pszText,iLen+1);
 				DBWriteContactSettingString(NULL, "Chat", "LogTimestamp", pszText);
 			}
@@ -1036,7 +1031,7 @@ BOOL CALLBACK DlgProcOptions2(HWND hwndDlg,UINT uMsg,WPARAM wParam,LPARAM lParam
 
 			iLen = GetWindowTextLength(GetDlgItem(hwndDlg, IDC_CHAT_TIMESTAMP));
 			if( iLen > 0 ) {
-				pszText = realloc(pszText, iLen+1);
+			pszText = mir_realloc(pszText, iLen+1);
 				GetDlgItemTextA(hwndDlg, IDC_CHAT_TIMESTAMP, pszText,iLen+1);
 				DBWriteContactSettingString(NULL, "Chat", "HeaderTime", pszText);
 			}
@@ -1044,7 +1039,7 @@ BOOL CALLBACK DlgProcOptions2(HWND hwndDlg,UINT uMsg,WPARAM wParam,LPARAM lParam
 
 			iLen = GetWindowTextLength(GetDlgItem(hwndDlg, IDC_CHAT_INSTAMP));
 			if ( iLen > 0 ) {
-				pszText = realloc(pszText, iLen+1);
+			pszText = mir_realloc(pszText, iLen+1);
 				GetDlgItemTextA(hwndDlg, IDC_CHAT_INSTAMP, pszText,iLen+1);
 				DBWriteContactSettingString(NULL, "Chat", "HeaderIncoming", pszText);
 			}
@@ -1052,7 +1047,7 @@ BOOL CALLBACK DlgProcOptions2(HWND hwndDlg,UINT uMsg,WPARAM wParam,LPARAM lParam
 
 			iLen = GetWindowTextLength(GetDlgItem(hwndDlg, IDC_CHAT_OUTSTAMP));
 			if( iLen > 0 ) {
-				pszText = realloc(pszText, iLen+1);
+			pszText = mir_realloc(pszText, iLen+1);
 				GetDlgItemTextA(hwndDlg, IDC_CHAT_OUTSTAMP, pszText,iLen+1);
 				DBWriteContactSettingString(NULL, "Chat", "HeaderOutgoing", pszText);
 			}
@@ -1075,8 +1070,7 @@ BOOL CALLBACK DlgProcOptions2(HWND hwndDlg,UINT uMsg,WPARAM wParam,LPARAM lParam
 			DBWriteContactSettingDword(NULL, "Chat", "ColorLogBG", (DWORD)SendDlgItemMessage(hwndDlg,IDC_CHAT_LOGBKG,CPM_GETCOLOUR,0,0));
 			DBWriteContactSettingDword(NULL, "Chat", "ColorMessageBG", (DWORD)SendDlgItemMessage(hwndDlg,IDC_CHAT_MESSAGEBKG,CPM_GETCOLOUR,0,0));
 			DBWriteContactSettingDword(NULL, "Chat", "ColorNicklistBG", (DWORD)SendDlgItemMessage(hwndDlg,IDC_CHAT_NICKLISTBKG,CPM_GETCOLOUR,0,0));
-			if(pszText != NULL)
-				free(pszText);
+		mir_free(pszText);
 			if(hEditBkgBrush)
 				DeleteObject(hEditBkgBrush);
 			if(hListBkgBrush)
@@ -1086,7 +1080,7 @@ BOOL CALLBACK DlgProcOptions2(HWND hwndDlg,UINT uMsg,WPARAM wParam,LPARAM lParam
 
 			{	int i;
 				char str[32];
-				for (i = 0; i < sizeof(fontOptionsList) / sizeof(fontOptionsList[0]); i++) {
+			for (i = 0; i < SIZEOF(fontOptionsList); i++) {
 					wsprintfA(str, "Font%d", i);
 					DBWriteContactSettingTString(NULL, "ChatFonts", str, fontOptionsList[i].szFace);
 					wsprintfA(str, "Font%dSize", i);
@@ -1288,25 +1282,23 @@ void LoadGlobalSettings(void)
 	g_Settings.crPUBkgColour = DBGetContactSettingDword(NULL, "Chat", "PopupColorBG", GetSysColor(COLOR_WINDOW));
 	g_Settings.crPUTextColour = DBGetContactSettingDword(NULL, "Chat", "PopupColorText", 0);
 
-	InitSetting(&g_Settings.pszTimeStamp, "HeaderTime", "[%H:%M]");
-	InitSetting(&g_Settings.pszTimeStampLog, "LogTimestamp", "[%d %b %y %H:%M]");
-	InitSetting(&g_Settings.pszIncomingNick, "HeaderIncoming", "%n:");
-	InitSetting(&g_Settings.pszOutgoingNick, "HeaderOutgoing", "%n:");
-	InitSetting(&g_Settings.pszHighlightWords, "HighlightWords", "%m");
+	InitSetting( &g_Settings.pszTimeStamp, "HeaderTime", _T("[%H:%M]"));
+	InitSetting( &g_Settings.pszTimeStampLog, "LogTimestamp", _T("[%d %b %y %H:%M]"));
+	InitSetting( &g_Settings.pszIncomingNick, "HeaderIncoming", _T("%n:"));
+	InitSetting( &g_Settings.pszOutgoingNick, "HeaderOutgoing", _T("%n:"));
+	InitSetting( &g_Settings.pszHighlightWords, "HighlightWords", _T("%m"));
 
 	{
 		char pszTemp[MAX_PATH];
 		DBVARIANT dbv;
-		g_Settings.pszLogDir = (char *)realloc(g_Settings.pszLogDir, MAX_PATH);
+		g_Settings.pszLogDir = (char *)mir_realloc(g_Settings.pszLogDir, MAX_PATH);
 		if (!DBGetContactSetting(NULL, "Chat", "LogDirectory", &dbv) && dbv.type == DBVT_ASCIIZ)
 		{
 			lstrcpynA(pszTemp, dbv.pszVal, MAX_PATH);
 			DBFreeVariant(&dbv);
 		}
-		else
-		{
-			lstrcpynA(pszTemp, "Logs\\", MAX_PATH);
-		}
+		else lstrcpynA(pszTemp, "Logs\\", MAX_PATH);
+
 		CallService(MS_UTILS_PATHTOABSOLUTE, (WPARAM)pszTemp, (LPARAM)g_Settings.pszLogDir);
 	}
 
@@ -1326,18 +1318,16 @@ void LoadGlobalSettings(void)
 		DeleteObject(g_Settings.UserListHeadingsFont);
 	Chat_LoadMsgDlgFont(19, &lf, NULL);
 	g_Settings.UserListHeadingsFont = CreateFontIndirect(&lf);
-
-
-
 }
+
 static void FreeGlobalSettings(void)
 {
-	free(g_Settings.pszTimeStamp);
-	free(g_Settings.pszTimeStampLog);
-	free(g_Settings.pszIncomingNick);
-	free(g_Settings.pszOutgoingNick);
-	free(g_Settings.pszHighlightWords);
-	free(g_Settings.pszLogDir);
+	mir_free(g_Settings.pszTimeStamp);
+	mir_free(g_Settings.pszTimeStampLog);
+	mir_free(g_Settings.pszIncomingNick);
+	mir_free(g_Settings.pszOutgoingNick);
+	mir_free(g_Settings.pszHighlightWords);
+	mir_free(g_Settings.pszLogDir);
 	if(g_Settings.MessageBoxFont)
 		DeleteObject(g_Settings.MessageBoxFont);
 	if(g_Settings.UserListFont)
@@ -1386,10 +1376,8 @@ int OptionsInit(void)
 	SkinAddNewSoundEx("ChatTopic", "Chat", Translate("The topic has been changed"));
 
 	if(g_Settings.LoggingEnabled)
-	{
 		if(!PathIsDirectoryA(g_Settings.pszLogDir))
 			CreateDirectoryA(g_Settings.pszLogDir, NULL);
-	}
 	{
 		LOGFONT lf;
 		HFONT hFont;
