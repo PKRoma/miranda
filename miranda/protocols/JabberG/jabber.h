@@ -33,12 +33,6 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #define NEWSTR_ALLOCA(A) (A==NULL)?NULL:strcpy((char*)alloca(strlen(A)+1),A)
 #define NEWTSTR_ALLOCA(A) (A==NULL)?NULL:_tcscpy((TCHAR*)alloca(sizeof(TCHAR)*(_tcslen(A)+1)),A)
 
-#if defined( _UNICODE )
-	#define TCHAR_STR_PARAM "%S"
-#else
-	#define TCHAR_STR_PARAM "%s"
-#endif
-
 #include <malloc.h>
 
 #ifdef _DEBUG
@@ -235,7 +229,7 @@ struct filetransfer
 
 	void close();
 	void complete();
-	int  create();	
+	int  create();
 
 	PROTOFILETRANSFERSTATUS std;
 
@@ -280,13 +274,13 @@ struct JABBER_GCLOG_FONT
 	COLORREF color;
 };
 
-struct JABBER_FIELD_MAP 
+struct JABBER_FIELD_MAP
 {
 	int id;
 	char* name;
 };
 
-enum JABBER_MUC_JIDLIST_TYPE 
+enum JABBER_MUC_JIDLIST_TYPE
 {
 	MUC_VOICELIST,
 	MUC_MEMBERLIST,
@@ -412,7 +406,7 @@ void JabberGroupchatProcessInvite( TCHAR* roomJid, TCHAR* from, TCHAR* reason, T
 
 void   JabberCheckAllContactsAreTransported( void );
 BOOL   JabberDBCheckIsTransportedContact(const TCHAR* jid, HANDLE hContact);
-int    ReloadIconsEventHook(WPARAM wParam, LPARAM lParam);   
+int    ReloadIconsEventHook(WPARAM wParam, LPARAM lParam);
 int    JGetAdvancedStatusIcon(WPARAM wParam, LPARAM lParam);
 
 //---- jabber_libstr.c ----------------------------------------------
@@ -533,32 +527,6 @@ void          JabberWsUninit( void );
 JABBER_SOCKET JabberWsConnect( char* host, WORD port );
 int           JabberWsSend( JABBER_SOCKET s, char* data, int datalen );
 int           JabberWsRecv( JABBER_SOCKET s, char* data, long datalen );
-
-///////////////////////////////////////////////////////////////////////////////
-// memory interface
-
-extern MM_INTERFACE memoryManagerInterface;
-#define mir_alloc(n) memoryManagerInterface.mmi_malloc(n)
-#define mir_free(ptr) memoryManagerInterface.mmi_free(ptr)
-#define mir_realloc(ptr,size) memoryManagerInterface.mmi_realloc(ptr,size)
-
-__forceinline char * mir_strdup(const char *src)
-{
-	return (src == NULL) ? NULL : strcpy(( char* )mir_alloc( strlen(src)+1 ), src );
-}
-
-__forceinline WCHAR* mir_wstrdup(const WCHAR *src)
-{
-	return (src == NULL) ? NULL : wcscpy(( WCHAR* )mir_alloc(( wcslen(src)+1 )*sizeof( WCHAR )), src );
-}
-
-#if defined( _UNICODE )
-	#define mir_tstrdup mir_wstrdup
-#else
-	#define mir_tstrdup mir_strdup
-#endif
-
-extern LIST_INTERFACE li;
 
 ///////////////////////////////////////////////////////////////////////////////
 // TXT encode helper

@@ -174,17 +174,10 @@ extern struct MM_INTERFACE memoryManagerInterface;
 
 #define MAX_REGS(_A_) (sizeof(_A_)/sizeof(_A_[0]))
 
-
-#define mir_alloc(n) memoryManagerInterface.mmi_malloc(n)
-#define mir_free(ptr) { mir_free_proxy(ptr); ptr=NULL; }
-#define mir_realloc(ptr,size) memoryManagerInterface.mmi_realloc(ptr,size)
-
 #ifndef CS_DROPSHADOW
 #define CS_DROPSHADOW 0x00020000
 #endif
 
-extern int mir_realloc_proxy(void *ptr,int size);
-extern int mir_free_proxy(void *ptr);
 extern BOOL __cdecl strstri(const char *a, const char *b);
 extern BOOL __cdecl mir_bool_strcmpi(const char *a, const char *b);
 extern int __cdecl mir_strcmp (const char *a, const char *b);
@@ -192,14 +185,6 @@ extern int __cdecl mir_strlen (const char *a);
 extern int __cdecl mir_strcmpi(const char *a, const char *b);
 extern int __cdecl mir_tstrcmpi(const TCHAR *a, const TCHAR *b);
 extern __inline void *mir_calloc( size_t num, size_t size );
-extern __inline char * mir_strdup(const char * src);
-extern __inline wchar_t * mir_strdupW(const wchar_t * src);
-#ifdef UNICODE
-	#define mir_tstrdup(a) mir_strdupW(a)
-#else
-	#define mir_tstrdup(a) mir_strdup(a)
-#endif
-
 
 char *DBGetStringA(HANDLE hContact,const char *szModule,const char *szSetting);
 extern wchar_t *DBGetStringW(HANDLE hContact,const char *szModule,const char *szSetting);

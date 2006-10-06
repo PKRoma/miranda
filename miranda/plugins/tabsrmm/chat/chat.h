@@ -357,27 +357,6 @@ typedef struct{
 
 //////////////////////////////////////////////////////////////////////////////////
 
-extern struct MM_INTERFACE memoryManagerInterface;
-#define mir_alloc(n) memoryManagerInterface.mmi_malloc(n)
-#define mir_free(ptr) memoryManagerInterface.mmi_free(ptr)
-#define mir_realloc(ptr,size) memoryManagerInterface.mmi_realloc(ptr,size)
-
-#if defined( _UNICODE )
-	#define TCHAR_STR_PARAM "%S"
-#else
-	#define TCHAR_STR_PARAM "%s"
-#endif
-
-__forceinline char * mir_strdup(const char *src)
-{
-	return (src == NULL) ? NULL : strcpy(( char* )mir_alloc( strlen(src)+1 ), src );
-}
-
-__forceinline WCHAR* mir_wstrdup(const WCHAR *src)
-{
-	return (src == NULL) ? NULL : wcscpy(( WCHAR* )mir_alloc(( wcslen(src)+1 )*sizeof( WCHAR )), src );
-}
-
 #include "chatprototypes.h"
 #include "../msgs.h"
 #include "../nen.h"

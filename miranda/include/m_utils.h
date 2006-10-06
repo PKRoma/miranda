@@ -2,8 +2,8 @@
 
 Miranda IM: the free IM client for Microsoft* Windows*
 
-Copyright 2000-2006 Miranda ICQ/IM project, 
-all portions of this codebase are copyrighted to the people 
+Copyright 2000-2006 Miranda ICQ/IM project,
+all portions of this codebase are copyrighted to the people
 listed in contributors.txt.
 
 This program is free software; you can redistribute it and/or
@@ -166,7 +166,7 @@ __inline static int WindowList_Broadcast(HANDLE hList,UINT message,WPARAM wParam
 	lParam=(LPARAM)(MSG*)&msg
 
 	Returns 0 on success, nonzero on failure, this service does not fail, even if PostMessage() fails for whatever reason
-	
+
 */
 #define MS_UTILS_BROADCASTTOWINDOWLIST_ASYNC "Utils/BroadcastToWindowListAsync"
 
@@ -272,7 +272,7 @@ __inline static int Utils_RestoreWindowPositionNoMove(HWND hwnd,HANDLE hContact,
 #define MS_UTILS_GETBITMAPFILTERSTRINGS  "Utils/GetBitmapFilterStrings"
 
 //Saves a path to a relative path (from the miranda directory)
-//Only saves as a relative path if the file is in the miranda directory (or 
+//Only saves as a relative path if the file is in the miranda directory (or
 //sub directory)
 //wParam=(WPARAM)(char*)pszPath
 //lParam=(LPARAM)(char*)pszNewPath
@@ -321,5 +321,12 @@ static __inline int mir_vsnprintf(char *buffer, size_t count, const char* fmt, v
 	buffer[count-1] = 0;
 	return len;
 }
+
+// allows to include TCHAR* strings into mir_snprintf and NetLib_Logf calls
+#if defined( _UNICODE )
+	#define TCHAR_STR_PARAM "%S"
+#else
+	#define TCHAR_STR_PARAM "%s"
+#endif
 
 #endif // M_UTILS_H__

@@ -2,19 +2,6 @@
 
 BYTE gl_TrimText=1;
 
-int mir_realloc_proxy(void *ptr,int size)
-{
-	memoryManagerInterface.mmi_realloc(ptr,size);
-	return 0;
-}
-
-
-int mir_free_proxy(void *ptr)
-{
-	if (ptr==NULL)	return 0;
-    memoryManagerInterface.mmi_free(ptr);
-	return 0;
-}
 BOOL __cdecl strstri(const char *a, const char *b)
 {
     char * x, *y;
@@ -79,8 +66,6 @@ __inline int mir_strlen (const char *a)
  	 	
 #define strlen(a) mir_strlen(a)
 #define strcmp(a,b) mir_strcmp(a,b)
-
-
  	 	
 __inline void *mir_calloc( size_t num, size_t size )
 {
@@ -97,27 +82,6 @@ extern __inline wchar_t * mir_strdupW(const wchar_t * src)
 	p=(wchar_t *) mir_alloc((lstrlenW(src)+1)*sizeof(wchar_t));
 	if (!p) return 0;
 	lstrcpyW(p, src);
-	return p;
-}
-
-//__inline TCHAR * mir_tstrdup(const TCHAR * src)
-//{
-//	TCHAR * p;
-//	if (src==NULL) return NULL;
-//    p= mir_alloc((lstrlen(src)+1)*sizeof(TCHAR));
-//    if (!p) return 0;
-//	lstrcpy(p, src);
-//	return p;
-//}
-//
-
-__inline char * mir_strdup(const char * src)
-{
-	char * p;
-	if (src==NULL) return NULL;
-    p= mir_alloc( strlen(src)+1 );
-    if (!p) return 0;
-	strcpy(p, src);
 	return p;
 }
 

@@ -95,23 +95,11 @@ extern HINSTANCE g_hInst;
 */
 
 extern struct LIST_INTERFACE li;
-extern struct MM_INTERFACE memoryManagerInterface;
-
-#define alloc(n) mir_alloc(n)
-//#define free(ptr) mir_free(ptr)
-//#define realloc(ptr,size) mir_realloc(ptr,size)
-
-
-#define mir_alloc(n) memoryManagerInterface.mmi_malloc(n)
-#define mir_free(ptr) mir_free_proxy(ptr)
-#define mir_realloc(ptr,size) memoryManagerInterface.mmi_realloc(ptr,size)
 
 #ifndef CS_DROPSHADOW
 #define CS_DROPSHADOW 0x00020000
 #endif
 
-extern int mir_realloc_proxy(void *ptr,int size);
-extern int mir_free_proxy(void *ptr);
 extern BOOL __cdecl strstri(const char *a, const char *b);
 extern BOOL __cdecl boolstrcmpi(const char *a, const char *b);
 extern int __cdecl MyStrCmp (const char *a, const char *b);
@@ -119,14 +107,6 @@ extern int __cdecl MyStrLen (const char *a);
 extern int __cdecl MyStrCmpi(const char *a, const char *b);
 extern int __cdecl MyStrCmpiT(const TCHAR *a, const TCHAR *b);
 extern __inline void *mir_calloc( size_t num, size_t size );
-extern __inline char * mir_strdup(const char * src);
-extern __inline wchar_t * mir_strdupW(const wchar_t * src);
-
-#ifdef UNICODE
-	#define mir_tstrdup(a) mir_strdupW(a)
-#else
-	#define mir_tstrdup(a) mir_strdup(a)
-#endif
 
 extern void *mir_calloc( size_t num, size_t size );
 extern char * mir_strdup(const char * src);
