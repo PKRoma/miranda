@@ -755,7 +755,7 @@ char * Log_CreateRtfHeader(MODULEINFO * mi)
 
 	// font table
 	Log_Append(&buffer, &bufferEnd, &bufferAlloced, "{\\rtf1\\ansi\\deff0{\\fonttbl");
-	for (i = 0; i < 17 ; i++) {
+	for (i = 0; i < OPTIONS_FONTCOUNT ; i++) {
 #if defined(_UNICODE)
         mir_sntprintf(tszTemp, SIZEOF(tszTemp), _T("{\\f%u\\fnil\\fcharset%u%s;}"), i, aFonts[i].lf.lfCharSet, aFonts[i].lf.lfFaceName);
         WideCharToMultiByte(CP_ACP, 0, tszTemp, -1, szTemp, 256, NULL, NULL);

@@ -257,8 +257,8 @@ static int RoomWndResize(HWND hwndDlg,LPARAM lParam,UTILRESIZECONTROL *urc)
 		urc->rcItem.left = 0;
 		urc->rcItem.right = bNick?urc->dlgNewSize.cx - si->iSplitterX:urc->dlgNewSize.cx;
 		urc->rcItem.bottom = bToolbar?(urc->dlgNewSize.cy - si->iSplitterY - 23):(urc->dlgNewSize.cy - si->iSplitterY - 2);
-		if (!splitterEdges)
-			urc->rcItem.bottom += 2;
+		//if (!splitterEdges)
+		//	urc->rcItem.bottom += 2;
 		if (dat->pContainer->bSkinned) {
 			StatusItems_t *item = &StatusItems[ID_EXTBKHISTORY];
 			if (!item->IGNORED) {
@@ -274,8 +274,8 @@ static int RoomWndResize(HWND hwndDlg,LPARAM lParam,UTILRESIZECONTROL *urc)
 		urc->rcItem.right = urc->dlgNewSize.cx ;
 		urc->rcItem.left = urc->dlgNewSize.cx - si->iSplitterX + 2;
 		urc->rcItem.bottom = bToolbar?(urc->dlgNewSize.cy - si->iSplitterY - 23):(urc->dlgNewSize.cy - si->iSplitterY - 2);
-		if (!splitterEdges)
-			urc->rcItem.bottom += 2;
+		//if (!splitterEdges)
+		//	urc->rcItem.bottom += 2;
 		if (dat->pContainer->bSkinned) {
 			StatusItems_t *item = &StatusItems[ID_EXTBKUSERLIST];
 			if (!item->IGNORED) {
@@ -338,8 +338,8 @@ static int RoomWndResize(HWND hwndDlg,LPARAM lParam,UTILRESIZECONTROL *urc)
 		urc->rcItem.top = urc->dlgNewSize.cy - si->iSplitterY - 22;
 		urc->rcItem.bottom = urc->dlgNewSize.cy - si->iSplitterY - 1;
 		urc->rcItem.bottom++; urc->rcItem.right++;
-		if (!splitterEdges)
-			OffsetRect(&urc->rcItem, 0, 2);
+		//if (!splitterEdges)
+		//	OffsetRect(&urc->rcItem, 0, 2);
 		return RD_ANCHORX_LEFT|RD_ANCHORY_CUSTOM;
 
 	case IDC_CHAT_HISTORY:
@@ -353,8 +353,8 @@ static int RoomWndResize(HWND hwndDlg,LPARAM lParam,UTILRESIZECONTROL *urc)
 		urc->rcItem.bottom++;
 		if (urc->wId != IDOK)
 			urc->rcItem.right++;
-		if (!splitterEdges)
-			OffsetRect(&urc->rcItem, 0, 2);
+		//if (!splitterEdges)
+		//	OffsetRect(&urc->rcItem, 0, 2);
 		return RD_ANCHORX_RIGHT|RD_ANCHORY_CUSTOM;
 	}
 
