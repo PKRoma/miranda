@@ -4,10 +4,10 @@
 	Version="7.10"
 	Name="miranda32"
 	RootNamespace="miranda32"
-	SccProjectName="SAK"
-	SccAuxPath="SAK"
-	SccLocalPath="SAK"
-	SccProvider="SAK">
+	SccProjectName="&quot;$/Miranda/miranda&quot;, SHIAAAAA"
+	SccAuxPath=""
+	SccLocalPath=".."
+	SccProvider="MSSCCI:Microsoft Visual SourceSafe">
 	<Platforms>
 		<Platform
 			Name="Win32"/>
@@ -102,8 +102,7 @@
 				PreprocessorDefinitions="_DEBUG;WIN32;_WINDOWS;_NOSDK;_STATIC"
 				ExceptionHandling="FALSE"
 				BasicRuntimeChecks="3"
-				RuntimeLibrary="2"
-				BufferSecurityCheck="TRUE"
+				RuntimeLibrary="3"
 				UsePrecompiledHeader="3"
 				PrecompiledHeaderThrough="commonheaders.h"
 				BrowseInformation="1"
