@@ -35,6 +35,10 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 # define MIRANDA_VER    0x0400
 #endif
 
+#ifndef _MSC_VER
+#define __forceinline __inline
+#endif
+
 //miranda/system/modulesloaded
 //called after all modules have been successfully initialised
 //wParam=lParam=0
