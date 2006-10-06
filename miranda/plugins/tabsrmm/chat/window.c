@@ -1363,7 +1363,7 @@ BOOL CALLBACK RoomWndProc(HWND hwndDlg,UINT uMsg,WPARAM wParam,LPARAM lParam)
 			mask = (int)SendDlgItemMessage(hwndDlg, IDC_CHAT_MESSAGE, EM_GETEVENTMASK, 0, 0);
 			SendDlgItemMessage(hwndDlg, IDC_CHAT_MESSAGE, EM_SETEVENTMASK, 0, mask | ENM_CHANGE);
 
-			SendDlgItemMessage(hwndDlg, IDC_CHAT_LOG, EM_LIMITTEXT, (WPARAM)sizeof(TCHAR)*0x7FFFFFFF, 0);
+			SendDlgItemMessage(hwndDlg, IDC_CHAT_LOG, EM_LIMITTEXT, (WPARAM)0x7FFFFFFF, 0);
 			SendDlgItemMessage(hwndDlg, IDC_CHAT_MESSAGE, EM_SETMARGINS, EC_LEFTMARGIN | EC_RIGHTMARGIN, MAKELONG(3,3));
 			SendDlgItemMessage(hwndDlg, IDC_CHAT_LOG, EM_SETMARGINS, EC_LEFTMARGIN | EC_RIGHTMARGIN, MAKELONG(3,3));
 
@@ -2060,13 +2060,14 @@ LABEL_SHOWWINDOW:
 							TEXTRANGE tr;
 							CHARRANGE sel;
 							BOOL isLink = FALSE;
+                            tr.lpstrText = NULL;
 
 							SendMessage(pNmhdr->hwndFrom, EM_EXGETSEL, 0, (LPARAM) & sel);
 							if (sel.cpMin != sel.cpMax)
 								break;
 							tr.chrg = ((ENLINK *) lParam)->chrg;
 							tr.lpstrText = mir_alloc(sizeof(TCHAR)*(tr.chrg.cpMax - tr.chrg.cpMin + 1));
-							SendMessage(pNmhdr->hwndFrom, EM_GETTEXTRANGE, 0, (LPARAM) & tr);
+                            SendMessage(pNmhdr->hwndFrom, EM_GETTEXTRANGE, 0, (LPARAM) & tr);
 
 							isLink = g_Settings.ClickableNicks ? IsStringValidLink(tr.lpstrText) : TRUE;
 
@@ -2114,6 +2115,8 @@ LABEL_SHOWWINDOW:
 								else if (((ENLINK *) lParam)->msg == WM_LBUTTONUP) {
 									CallService(MS_UTILS_OPENURL, 1, (LPARAM) pszUrl);
 									SetFocus(GetDlgItem(hwndDlg, IDC_CHAT_MESSAGE));
+                                    mir_free(tr.lpstrText);
+                                    return TRUE;
 								}
 								mir_free(pszUrl);
 							}

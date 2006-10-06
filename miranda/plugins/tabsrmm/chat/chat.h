@@ -170,7 +170,7 @@ typedef struct COMMAND_INFO_TYPE
 
 typedef struct
 {
-	LOGFONT	lf;
+	LOGFONT  lf;
 	COLORREF color;
 }
 	FONTINFO;

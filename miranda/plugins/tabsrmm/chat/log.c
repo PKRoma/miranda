@@ -732,6 +732,8 @@ char * Log_CreateRtfHeader(MODULEINFO * mi)
 {
 	char *buffer;
 	int bufferAlloced, bufferEnd, i = 0;
+    TCHAR tszTemp[256];
+	char  szTemp[256];
 
 	// guesstimate amount of memory for the RTF header
 	bufferEnd = 0;
@@ -753,8 +755,16 @@ char * Log_CreateRtfHeader(MODULEINFO * mi)
 
 	// font table
 	Log_Append(&buffer, &bufferEnd, &bufferAlloced, "{\\rtf1\\ansi\\deff0{\\fonttbl");
-	for (i = 0; i < 17 ; i++)
-		Log_Append(&buffer, &bufferEnd, &bufferAlloced, "{\\f%u\\fnil\\fcharset%u%s;}", i, aFonts[i].lf.lfCharSet, aFonts[i].lf.lfFaceName);
+	for (i = 0; i < 17 ; i++) {
+#if defined(_UNICODE)
+        mir_sntprintf(tszTemp, SIZEOF(tszTemp), _T("{\\f%u\\fnil\\fcharset%u%s;}"), i, aFonts[i].lf.lfCharSet, aFonts[i].lf.lfFaceName);
+        WideCharToMultiByte(CP_ACP, 0, tszTemp, -1, szTemp, 256, NULL, NULL);
+        szTemp[255] = 0;
+        Log_Append(&buffer, &bufferEnd, &bufferAlloced, szTemp);
+#else
+        Log_Append(&buffer, &bufferEnd, &bufferAlloced, "{\\f%u\\fnil\\fcharset%u%s;}", i, aFonts[i].lf.lfCharSet, aFonts[i].lf.lfFaceName);
+#endif
+    }
 
 	// colour table
 	Log_Append(&buffer, &bufferEnd, &bufferAlloced, "}{\\colortbl ;");
