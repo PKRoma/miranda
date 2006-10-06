@@ -23,11 +23,9 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 extern struct GlobalMessageData *g_dat;
 //globals
 HINSTANCE   g_hInst;
-PLUGINLINK  *pluginLink;
 HANDLE      g_hWindowList;
 HMENU       g_hMenu = NULL;
 
-struct MM_INTERFACE memoryManagerInterface;
 
 FONTINFO    aFonts[OPTIONS_FONTCOUNT];
 HICON       hIcons[30];
@@ -68,21 +66,6 @@ static PLUGININFO pluginInfo = {
 	0
 };
 
-/*
-BOOL WINAPI DllMain(HINSTANCE hinstDLL,DWORD fdwReason,LPVOID lpvReserved)
-{
-	g_hInst = hinstDLL;
-	return TRUE;
-}
-
-
-__declspec(dllexport) PLUGININFO* MirandaPluginInfo(DWORD mirandaVersion)
-{
-	if(mirandaVersion < PLUGIN_MAKE_VERSION(0,4,0,0)) return NULL;
-	return &pluginInfo;
-}
-*/
-
 int Chat_Load(PLUGINLINK *link)
 {
 	BOOL bFlag = FALSE;
@@ -93,8 +76,6 @@ int Chat_Load(PLUGINLINK *link)
 	flag |= _CRTDBG_LEAK_CHECK_DF; // Turn on leak-checking bit
 	_CrtSetDbgFlag(flag); // Set flag to the new value
 	#endif
-
-	pluginLink = link;
 
 	// set the memory manager
 	memoryManagerInterface.cbSize = sizeof(struct MM_INTERFACE);
@@ -116,7 +97,7 @@ int Chat_Load(PLUGINLINK *link)
 				bFlag= TRUE;
 
 			mir_free(buffer);
-		}	
+		}
 	}
 
 	if ( !bFlag ) {
