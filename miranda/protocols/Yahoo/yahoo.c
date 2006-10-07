@@ -938,7 +938,8 @@ void ext_yahoo_system_message(int id, const char *me, const char *who, const cha
 {
 	LOG(("Yahoo System Message to: %s from: %s msg: %s", me, who, msg));
 	
-	if (strncmp(msg, "A user on Windows Live", lstrlen("A user on Windows Live")) != 0)
+	if (strncmp(msg, "A user on Windows Live", lstrlen("A user on Windows Live")) != 0
+		&& strncmp(msg, "Your contact is using Windows Live", lstrlen("Your contact is using Windows Live")) != 0)
 		YAHOO_ShowPopup( (who != NULL) ? who : "Yahoo System Message", msg, NULL);
 }
 

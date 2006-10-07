@@ -847,9 +847,17 @@ static int yahoo_packet_length(struct yahoo_packet *pkt)
 static void yahoo_packet_read(struct yahoo_packet *pkt, unsigned char *data, int len)
 {
 	int pos = 0;
+	char z[100];
+	
+	snprintf(z, sizeof(z), "[Reading packet] %s (0x%02x)", dbg_service(pkt->service), pkt->service);
+	
+	if (pkt->status != 0)
+		snprintf(z, sizeof(z), "%s, %s (%d)", z, dbg_status(pkt->status),pkt->status);
 
-	DEBUG_MSG1(("[Reading packet] Yahoo Service: %s (0x%02x) Status: %s (%d) Length: %d", dbg_service(pkt->service), pkt->service,
-				dbg_status(pkt->status),pkt->status, len));
+	if (len != 0)
+		snprintf(z, sizeof(z), "%s Length: %d", z, len);
+	
+	DEBUG_MSG1((z));
 
 	while (pos + 1 < len) {
 		char *key, *value = NULL;
@@ -889,7 +897,7 @@ static void yahoo_packet_read(struct yahoo_packet *pkt, unsigned char *data, int
 			FREE(value);
 			pkt->hash = y_list_append(pkt->hash, pair);
 			
-			DEBUG_MSG1(("Key: %s (%d)  \tValue: '%s'", dbg_key(pair->key), pair->key, pair->value));
+			DEBUG_MSG1(("Key: (%5d) %-25s Value: '%s'", pair->key, dbg_key(pair->key), pair->value));
 		} else {
 			FREE(pair);
 		}
