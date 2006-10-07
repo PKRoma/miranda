@@ -23,7 +23,6 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 */
 #include "commonheaders.h"
 #include <ctype.h>
-#include <malloc.h>
 #include <mbstring.h>
 
 int safe_wcslen(wchar_t *msg, int maxLen) {
@@ -43,11 +42,11 @@ TCHAR *a2tlcp(const char *text, int textlen, int cp) {
 		if (textlen == -1) {
 			textlen = strlen(text) + 1;
 		}
-		wtext = (wchar_t *) malloc(sizeof(wchar_t) * textlen);
+		wtext = (wchar_t *) mir_alloc(sizeof(wchar_t) * textlen);
 		MultiByteToWideChar(cp, 0, text, -1, wtext, textlen);
 		return wtext;
 	#else
-		return _tcsdup(text);
+		return mir_strdup(text);
 	#endif
 }
 

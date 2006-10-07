@@ -449,7 +449,7 @@ static int SplitmsgModulesLoaded(WPARAM wParam, LPARAM lParam)
          continue;
       if (CallProtoService(protocol[i]->szName, PS_GETCAPS, PFLAGNUM_1, 0) & PF1_IMSEND) {
          mi.pszContactOwner = protocol[i]->szName;
-         hMsgMenuItem = realloc(hMsgMenuItem, (hMsgMenuItemCount + 1) * sizeof(HANDLE));
+         hMsgMenuItem = mir_realloc(hMsgMenuItem, (hMsgMenuItemCount + 1) * sizeof(HANDLE));
          hMsgMenuItem[hMsgMenuItemCount++] = (HANDLE) CallService(MS_CLIST_ADDCONTACTMENUITEM, 0, (LPARAM) & mi);
       }
    }

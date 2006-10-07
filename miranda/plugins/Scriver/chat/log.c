@@ -23,7 +23,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include <mbstring.h>
 #include <shlwapi.h>
 
-#ifdef __MINGW32__
+#ifndef _tstoi
 	#if defined( _UNICODE )
 		#define _tstoi(a) _wtoi(a)
 	#else
