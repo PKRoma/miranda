@@ -118,13 +118,11 @@ LRESULT CALLBACK PopupWindowProc( HWND hWnd, UINT message, WPARAM wParam, LPARAM
 {
 	switch( message ) {
 		case WM_COMMAND:
-				YAHOO_DebugLog("[MS_POPUP_ADDPOPUPEX] WM_COMMAND");
+				YAHOO_DebugLog("[PopupWindowProc] WM_COMMAND");
 				if ( HIWORD( wParam ) == STN_CLICKED) {
 					char *szURL = (char *)PUGetPluginData( hWnd );
-					if ( szURL != NULL ) {
+					if ( szURL != NULL ) 
 						YahooOpenURL(szURL, 1);
-						FREE(szURL);
-					}
 					
 					PUDeletePopUp( hWnd );
 					return 0;
@@ -132,10 +130,19 @@ LRESULT CALLBACK PopupWindowProc( HWND hWnd, UINT message, WPARAM wParam, LPARAM
 				break;
 				
 		case WM_CONTEXTMENU:
-			YAHOO_DebugLog("[MS_POPUP_ADDPOPUPEX] WM_CONTEXTMENU");
+			YAHOO_DebugLog("[PopupWindowProc] WM_CONTEXTMENU");
 			PUDeletePopUp( hWnd ); 
-			break;
+			return TRUE;
 
+		case UM_FREEPLUGINDATA: {
+				YAHOO_DebugLog("[PopupWindowProc] UM_FREEPLUGINDATA");
+
+				char *szURL = (char *)PUGetPluginData( hWnd );
+				if ( szURL != NULL ) 
+					free(szURL);
+					
+				return TRUE;
+			}
 	}
 
 	return DefWindowProc(hWnd, message, wParam, lParam);

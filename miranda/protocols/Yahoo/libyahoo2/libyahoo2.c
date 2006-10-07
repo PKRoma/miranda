@@ -2732,14 +2732,20 @@ static void yahoo_process_buddyadd(struct yahoo_input_data *yid, struct yahoo_pa
 	YList *l;
 	for (l = pkt->hash; l; l = l->next) {
 		struct yahoo_pair *pair = l->data;
-		if (pair->key == 1)
+		
+		switch (pair->key){ 
+		case 1:
 			me = pair->value;
-		if (pair->key == 7)
+			break;
+		case 7:
 			who = pair->value;
-		if (pair->key == 65)
+			break;
+		case 65:
 			where = pair->value;
-		if (pair->key == 66)
+			break;
+		case 66:
 			status = strtol(pair->value, NULL, 10);
+		}
 	}
 
 	//yahoo_dump_unhandled(pkt);
@@ -3051,7 +3057,7 @@ void yahoo_send_picture_checksum(int id, const char *who, int cksum)
 
 	yahoo_packet_free(pkt);
 	
-	/* weird YIM7 sends another packet! See avatar_update below*/
+	/* weird YIM7 sends another packet! See picture_status below*/
 }
 
 void yahoo_send_picture_status(int id, int buddy_icon)
