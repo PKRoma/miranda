@@ -1156,7 +1156,7 @@ BOOL CALLBACK RoomWndProc(HWND hwndDlg,UINT uMsg,WPARAM wParam,LPARAM lParam)
 			SendMessage(GetParent(hwndDlg), CM_UPDATESTATUSBAR, (WPARAM) &sbd, (LPARAM) hwndDlg);
 			sbd.iItem = 2;
 			SendMessage(GetParent(hwndDlg), CM_UPDATESTATUSBAR, (WPARAM) &sbd, (LPARAM) hwndDlg);
-			free( ptszDispName );
+			mir_free( ptszDispName );
 		//	SendMessage(hwndDlg, GC_FIXTABICONS, 0, (LPARAM)si);
 		}
 		break;

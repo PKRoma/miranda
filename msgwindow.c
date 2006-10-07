@@ -71,7 +71,7 @@ TCHAR* GetWindowTitle(HANDLE *hContact, const char *szProto)
 	int isTemplate;
 	int len, contactNameLen = 0, statusLen = 0, statusMsgLen = 0, protocolLen = 0;
 	TCHAR *p, *tmplt, *szContactName = NULL, *szStatus = NULL, *szStatusMsg = NULL, *szProtocol = NULL, *title;
-	TCHAR *pszNewTitleEnd = _tcsdup(TranslateT("Message Session"));
+	TCHAR *pszNewTitleEnd = mir_tstrdup(TranslateT("Message Session"));
 	isTemplate = 0;
 	if (hContact && szProto) {
 		szContactName = GetNickname(hContact, szProto);
@@ -134,7 +134,7 @@ TCHAR* GetWindowTitle(HANDLE *hContact, const char *szProto)
 	if (!isTemplate) {
 		len += lstrlen(pszNewTitleEnd);
 	}
-	title = (TCHAR *)malloc(sizeof(TCHAR) * (len + 1));
+	title = (TCHAR *)mir_alloc(sizeof(TCHAR) * (len + 1));
 	for (len = 0, p = tmplt; *p; p++) {
 		if (*p == '%') {
 			if (!_tcsncmp(p, _T("%name%"), 6)) {
@@ -162,13 +162,13 @@ TCHAR* GetWindowTitle(HANDLE *hContact, const char *szProto)
 	}
 	title[len] = '\0';
 	if (isTemplate) {
-		free(tmplt);
+		mir_free(tmplt);
 	}
-	free(szContactName);
-	free(szStatus);
-	free(pszNewTitleEnd);
+	mir_free(szContactName);
+	mir_free(szStatus);
+	mir_free(pszNewTitleEnd);
 	if (szStatusMsg)
-		free(szStatusMsg);
+		mir_free(szStatusMsg);
 	return title;
 }
 
@@ -314,7 +314,7 @@ static void AddChild(ParentWindowData *dat, HWND hwnd, HANDLE hContact)
 	TCHAR *contactName;
 	TCITEM tci;
 	int tabId;
-	MessageWindowTabData *mwtd = (MessageWindowTabData *) malloc(sizeof(MessageWindowTabData));
+	MessageWindowTabData *mwtd = (MessageWindowTabData *) mir_alloc(sizeof(MessageWindowTabData));
 	mwtd->hwnd = hwnd;
 	mwtd->hContact = hContact;
 	mwtd->szProto = (char *) CallService(MS_PROTO_GETCONTACTBASEPROTO, (WPARAM) hContact, 0);
@@ -325,7 +325,7 @@ static void AddChild(ParentWindowData *dat, HWND hwnd, HANDLE hContact)
 	tci.pszText = contactName;
 	tci.lParam = (LPARAM) mwtd;
 	tabId = TabCtrl_InsertItem(dat->hwndTabs, dat->childrenCount-1, &tci);
-	free(contactName);
+	mir_free(contactName);
 //	ActivateChild(dat, mdat->hwnd);
 	SetWindowPos(mwtd->hwnd, HWND_TOP, dat->childRect.left, dat->childRect.top, dat->childRect.right-dat->childRect.left, dat->childRect.bottom - dat->childRect.top, SWP_HIDEWINDOW);
 	SendMessage(dat->hwnd, WM_SIZE, 0, 0);
@@ -338,7 +338,7 @@ static void RemoveChild(ParentWindowData *dat, HWND child)
 		TCITEM tci;
 		tci.mask = TCIF_PARAM;
 		TabCtrl_GetItem(dat->hwndTabs, tab, &tci);
-		free((MessageWindowTabData *) tci.lParam);
+		mir_free((MessageWindowTabData *) tci.lParam);
 		TabCtrl_DeleteItem(dat->hwndTabs, tab);
 		dat->childrenCount--;
 		if (child == dat->hwndActive) {
@@ -406,7 +406,7 @@ BOOL CALLBACK DlgProcParentWindow(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM 
 			HANDLE hSContact;
 			int savePerContact = DBGetContactSettingByte(NULL, SRMMMOD, SRMSGSET_SAVEPERCONTACT, SRMSGDEFSET_SAVEPERCONTACT);
 			struct NewMessageWindowLParam *newData = (struct NewMessageWindowLParam *) lParam;
-			dat = (ParentWindowData *) malloc(sizeof(ParentWindowData));
+			dat = (ParentWindowData *) mir_alloc(sizeof(ParentWindowData));
 			dat->foregroundWindow = GetForegroundWindow();
 			dat->hContact = newData->hContact;
 			dat->nFlash = 0;
@@ -862,7 +862,7 @@ BOOL CALLBACK DlgProcParentWindow(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM 
 				dat->next->prev = dat->prev;
 			}
 			UnsubclassTabCtrl(dat->hwndTabs);
-			free(dat);
+			mir_free(dat);
 		}
 		break;
 	case DM_DEACTIVATE:
@@ -1072,7 +1072,7 @@ BOOL CALLBACK TabCtrlProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 	dat = (TabCtrlData *) GetWindowLong(hwnd, GWL_USERDATA);
     switch(msg) {
     	case EM_SUBCLASSED:
-			dat = (TabCtrlData *) malloc(sizeof(TabCtrlData));
+			dat = (TabCtrlData *) mir_alloc(sizeof(TabCtrlData));
 			SetWindowLong(hwnd, GWL_USERDATA, (LONG) dat);
 			dat->bDragging = FALSE;
 	        return 0;
@@ -1292,7 +1292,7 @@ BOOL CALLBACK TabCtrlProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 			}
 			break;
        	case EM_UNSUBCLASSED:
-			free(dat);
+			mir_free(dat);
 			return 0;
 	}
 	return CallWindowProc(OldTabCtrlProc, hwnd, msg, wParam, lParam);
