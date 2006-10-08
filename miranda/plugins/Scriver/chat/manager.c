@@ -21,7 +21,6 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 extern TCHAR* pszActiveWndID ;
 extern char*	pszActiveWndModule ;
-extern SESSION_INFO	g_TabSession;
 extern HICON	hIcons[30];
 extern HIMAGELIST hIconsList;
 extern int eventMessageIcon;
@@ -106,9 +105,6 @@ int SM_RemoveSession( const TCHAR* pszID, const char* pszModule)
 
 			if(pTemp->hWnd )
 				SendMessage(pTemp->hWnd, GC_EVENT_CONTROL+WM_USER+500, SESSION_TERMINATE, 0);
-
-			if(pTemp->hWnd)
-				g_TabSession.nUsersInNicklist = 0;
 
 			if (pLast == NULL)
 				m_WndList = pTemp->next;
@@ -195,8 +191,6 @@ BOOL SM_SetOffline(const TCHAR* pszID, const char* pszModule)
 		{
 			UM_RemoveAll(&pTemp->pUsers);
 			pTemp->nUsersInNicklist = 0;
-			if(pTemp->hWnd)
-				g_TabSession.nUsersInNicklist = 0;
 			if(pTemp->iType != GCW_SERVER)
 				pTemp->bInitDone = FALSE;
 
@@ -271,13 +265,9 @@ BOOL SM_AddEventToAllMatchingUID(GCEVENT * gce)
 			if ( UM_FindUser( pTemp->pUsers, gce->ptszUID )) {
 				if ( pTemp->bInitDone ) {
 					if ( SM_AddEvent(pTemp->ptszID, pTemp->pszModule, gce, FALSE ) && pTemp->hWnd && pTemp->bInitDone) {
-						g_TabSession.pLog = pTemp->pLog;
-						g_TabSession.pLogEnd = pTemp->pLogEnd;
 						SendMessage(pTemp->hWnd, GC_ADDLOG, 0, 0);
 					}
 					else if (pTemp->hWnd && pTemp->bInitDone) {
-						g_TabSession.pLog = pTemp->pLog;
-						g_TabSession.pLogEnd = pTemp->pLogEnd;
 						SendMessage(pTemp->hWnd, GC_REDRAWLOG2, 0, 0);
 					}
 					DoSoundsFlashPopupTrayStuff(pTemp, gce, FALSE, bManyFix);
@@ -339,8 +329,6 @@ USERINFO * SM_AddUser( const TCHAR* pszID, const char* pszModule, const TCHAR* p
 		if ( !lstrcmpi( pTemp->ptszID, pszID ) && !lstrcmpiA( pTemp->pszModule, pszModule )) {
 			USERINFO * p = UM_AddUser(pTemp->pStatuses, &pTemp->pUsers, pszUID, pszNick, wStatus);
 			pTemp->nUsersInNicklist++;
-			if(pTemp->hWnd)
-				g_TabSession.nUsersInNicklist ++;
 			return p;
 		}
 		pLast = pTemp;
@@ -381,10 +369,6 @@ BOOL SM_RemoveUser(const TCHAR* pszID, const char* pszModule, const TCHAR* pszUI
 			USERINFO * ui = UM_FindUser(pTemp->pUsers, pszUID);
 			if ( ui ) {
 				pTemp->nUsersInNicklist--;
-				if (pTemp->hWnd) {
-					g_TabSession.pUsers = pTemp->pUsers;
-					g_TabSession.nUsersInNicklist --;
-				}
 
 				dw = UM_RemoveUser(&pTemp->pUsers, pszUID);
 

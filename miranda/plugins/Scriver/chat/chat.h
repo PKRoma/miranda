@@ -348,7 +348,8 @@ struct GlobalLogSettings_t {
 	BOOL		PopUpInactiveOnly;
 	BOOL		TrayIconInactiveOnly;
 	BOOL		AddColonToAutoComplete;
-	BOOL		TabRestore;
+	BOOL		Tabs;
+	BOOL		CommonTabs;
 	BOOL		LogLimitNames;
 	BOOL		TimeStampEventColour;
 	DWORD		dwIconFlags;
@@ -428,7 +429,6 @@ void				UnhookEvents(void);
 void				CreateServiceFunctions(void);
 void           DestroyServiceFunctions(void);
 void				CreateHookableEvents(void);
-void				TabsInit(void);
 int					Chat_ModulesLoaded(WPARAM wParam,LPARAM lParam);
 int					SmileyOptionsChanged(WPARAM wParam,LPARAM lParam);
 int					PreShutdown(WPARAM wParam,LPARAM lParam);

@@ -116,7 +116,6 @@ int Chat_Load(PLUGINLINK *link)
 	CreateServiceFunctions();
 	CreateHookableEvents();
 	OptionsInit();
-	TabsInit();
 	return 0;
 }
 

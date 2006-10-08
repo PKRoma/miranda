@@ -27,7 +27,6 @@ extern FONTINFO     aFonts[OPTIONS_FONTCOUNT];
 extern HMENU        g_hMenu;
 extern HANDLE       hBuildMenuEvent ;
 extern HANDLE       hSendEvent;
-extern SESSION_INFO g_TabSession;
 
 int GetRichTextLength(HWND hwnd)
 {

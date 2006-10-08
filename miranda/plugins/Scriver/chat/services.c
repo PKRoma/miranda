@@ -37,7 +37,6 @@ HANDLE				g_hHookContactDblClick;
 HANDLE				g_hIconsChanged;
 HANDLE				g_hSmileyOptionsChanged = NULL;
 HANDLE				g_hIconsChanged2;
-SESSION_INFO		g_TabSession;
 CRITICAL_SECTION	cs;
 
 static HANDLE     hServiceRegister = NULL,
@@ -103,21 +102,6 @@ void CreateHookableEvents(void)
 	hBuildMenuEvent = CreateHookableEvent(ME_GC_BUILDMENU);
 }
 
-void TabsInit(void)
-{
-	ZeroMemory(&g_TabSession, sizeof(SESSION_INFO));
-
-	g_TabSession.iType = GCW_TABROOM;
-	g_TabSession.iSplitterX = g_Settings.iSplitterX;
-	g_TabSession.iSplitterY = g_Settings.iSplitterY;
-	g_TabSession.iLogFilterFlags = (int)DBGetContactSettingDword(NULL, "Chat", "FilterFlags", 0x03E0);
-	g_TabSession.bFilterEnabled = DBGetContactSettingByte(NULL, "Chat", "FilterEnabled", 0);
-	g_TabSession.bNicklistEnabled = DBGetContactSettingByte(NULL, "Chat", "ShowNicklist", 1);
-	g_TabSession.iFG = 4;
-	g_TabSession.bFGSet = TRUE;
-	g_TabSession.iBG = 2;
-	g_TabSession.bBGSet = TRUE;
-}
 
 int Chat_ModulesLoaded(WPARAM wParam,LPARAM lParam)
 {
@@ -342,8 +326,6 @@ int Service_NewChat(WPARAM wParam, LPARAM lParam)
 		else {
 			SESSION_INFO* si2 = SM_FindSession( ptszID, gcw->pszModule );
 			if ( si2 ) {
-				if(si2->hWnd)
-					g_TabSession.nUsersInNicklist = 0;
 
 				UM_RemoveAll(&si2->pUsers);
 				TM_RemoveAll(&si2->pStatuses);
@@ -409,10 +391,6 @@ static int DoControl(GCEVENT * gce, WPARAM wp)
 			SESSION_INFO* si = SM_FindSession(gce->pDest->ptszID, gce->pDest->pszModule);
 			if ( si ) {
 				LM_RemoveAll(&si->pLog, &si->pLogEnd);
-				if ( si->hWnd ) {
-					g_TabSession.pLog = si->pLog;
-					g_TabSession.pLogEnd = si->pLogEnd;
-				}
 				si->iEventCount = 0;
 				si->LastTime = 0;
 			}
@@ -465,7 +443,6 @@ static int DoControl(GCEVENT * gce, WPARAM wp)
 				DBWriteContactSettingString(si->hContact, si->pszModule, "StatusBar", "");
 			if(si->hWnd)
 			{
-				g_TabSession.ptszStatusbarText = si->ptszStatusbarText;
 				SendMessage(si->hWnd, DM_UPDATESTATUSBAR, 0, 0);
 			}
 		}
@@ -504,7 +481,6 @@ static void AddUser(GCEVENT * gce)
 			ui->Status |= si->pStatuses->Status;
 
 			if (si->hWnd) {
-				g_TabSession.pUsers = si->pUsers;
 				SendMessage(si->hWnd, GC_UPDATENICKLIST, (WPARAM)0, (LPARAM)0);
 			}
 		}
@@ -596,8 +572,6 @@ int Service_AddEvent(WPARAM wParam, LPARAM lParam)
 		if ( si ) {
 			if ( gce->pszText ) {
 				replaceStr( &si->ptszTopic, gce->ptszText);
-				if (si->hWnd)
-					g_TabSession.ptszTopic = si->ptszTopic;
 				DBWriteContactSettingTString( si->hContact, si->pszModule , "Topic", RemoveFormatting( si->ptszTopic ));
 				if(DBGetContactSettingByte(NULL, "Chat", "TopicOnClist", 0))
 					DBWriteContactSettingTString( si->hContact, "CList" , "StatusMsg", RemoveFormatting( si->ptszTopic ));
@@ -678,13 +652,9 @@ int Service_AddEvent(WPARAM wParam, LPARAM lParam)
 
 		if (si && (si->bInitDone || gce->pDest->iType == GC_EVENT_TOPIC || (gce->pDest->iType == GC_EVENT_JOIN && gce->bIsMe))) {
 			if (SM_AddEvent(pWnd, pMod, gce, bIsHighlighted) && si->hWnd) {
-				g_TabSession.pLog = si->pLog;
-				g_TabSession.pLogEnd = si->pLogEnd;
 				SendMessage(si->hWnd, GC_ADDLOG, 0, 0);
 			}
 			else if (si->hWnd) {
-				g_TabSession.pLog = si->pLog;
-				g_TabSession.pLogEnd = si->pLogEnd;
 				SendMessage(si->hWnd, GC_REDRAWLOG2, 0, 0);
 			}
 			DoSoundsFlashPopupTrayStuff(si, gce, bIsHighlighted, 0);
