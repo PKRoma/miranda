@@ -1843,12 +1843,12 @@ LABEL_SHOWWINDOW:
 
 		case IDC_CHAT_SMILEY:
 			{
-				SMADD_SHOWSEL smaddInfo;
+				SMADD_SHOWSEL3 smaddInfo;
 				RECT rc;
 
 				GetWindowRect(GetDlgItem(hwndDlg, IDC_CHAT_SMILEY), &rc);
 
-				smaddInfo.cbSize = sizeof(SMADD_SHOWSEL);
+				smaddInfo.cbSize = sizeof(SMADD_SHOWSEL3);
 				smaddInfo.hwndTarget = GetDlgItem(hwndDlg, IDC_CHAT_MESSAGE);
 				smaddInfo.targetMessage = EM_REPLACESEL;
 				smaddInfo.targetWParam = TRUE;
@@ -1856,6 +1856,7 @@ LABEL_SHOWWINDOW:
 				smaddInfo.Direction = 3;
 				smaddInfo.xPosition = rc.left+3;
 				smaddInfo.yPosition = rc.top-1;
+				smaddInfo.hContact = si->hContact;
 
 				if (SmileyAddInstalled)
 					CallService(MS_SMILEYADD_SHOWSELECTION, 0, (LPARAM) &smaddInfo);
