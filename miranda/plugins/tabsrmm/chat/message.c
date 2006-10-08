@@ -248,7 +248,8 @@ BOOL Chat_DoRtfToTags(char * pszText, SESSION_INFO * si)
 				{
 					int j = 1;
 					bJustRemovedRTF = TRUE;
-					while(p1[j] != ' ' && p1[j] != '\\' && p1[j] != '\0')
+                    while(!strchr(" !$%()#*\"'", p1[j]) && p1[j] != '§' && p1[j] != '\\' && p1[j] != '\0')
+					//while(p1[j] != ' ' && p1[j] != '\\' && p1[j] != '\0')
 						j++;
 					iRemoveChars = j;
 				}

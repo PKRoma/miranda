@@ -462,11 +462,15 @@ static char* Log_CreateRTF(LOGSTREAMDATA *streamData)
                 
                 lin->dwFlags |= MWF_DIVIDERWANTED;
                 if(lin->prev || !streamData->bRedraw)
-                    Log_Append(&buffer, &bufferEnd, &bufferAlloced, "\\par\\qc\\sl-1\\highlight%d %s ---------------------------------------------------------------------------------------", 18, szStyle_div);
+                    Log_Append(&buffer, &bufferEnd, &bufferAlloced, "\\par\\qc\\sl-1\\highlight%d %s ---------------------------------------------------------------------------------------\\par ", 18, szStyle_div);
                 streamData->dat->dwFlags &= ~MWF_DIVIDERWANTED;
             }
             // create new line, and set font and color
-			Log_Append(&buffer, &bufferEnd, &bufferAlloced, "\\par\\ql\\sl0%s ", Log_SetStyle(0, 0));
+            /*
+            if(!lin->prev)
+                Log_Append(&buffer, &bufferEnd, &bufferAlloced, "\\par\\ql\\sl0%s ", Log_SetStyle(0, 0));
+            else*/
+                Log_Append(&buffer, &bufferEnd, &bufferAlloced, "\\ql\\sl0%s ", Log_SetStyle(0, 0));
 
             Log_Append(&buffer, &bufferEnd, &bufferAlloced, "\\v~-+%d+-~\\v0 ", lin);
             //_DebugTraceA("log stats: begin %d, end %d, cur %d", streamData->si->pLog, streamData->si->pLogEnd, lin);
@@ -507,8 +511,8 @@ static char* Log_CreateRTF(LOGSTREAMDATA *streamData)
 			else
 				Log_Append(&buffer, &bufferEnd, &bufferAlloced, "%s ", Log_SetStyle(0, 0 ));
 			// insert a TAB if necessary to put the timestamp in the right position
-			if (g_Settings.dwIconFlags)
-				Log_Append(&buffer, &bufferEnd, &bufferAlloced, "\\tab ");
+			//if (g_Settings.dwIconFlags)
+			//	Log_Append(&buffer, &bufferEnd, &bufferAlloced, "\\tab ");
 
 			//insert timestamp
 			if(g_Settings.ShowTime)
@@ -601,12 +605,15 @@ static char* Log_CreateRTF(LOGSTREAMDATA *streamData)
 				streamData->lin = lin;
 				AddEventToBuffer(&buffer, &bufferEnd, &bufferAlloced, streamData);
 			}
-
+            Log_Append(&buffer, &bufferEnd, &bufferAlloced, "\\par ");
 		}
 		lin = lin->prev;
 	}
 	// ### RTF END
-	Log_Append(&buffer, &bufferEnd, &bufferAlloced, "}");
+    if(streamData->bRedraw)
+        Log_Append(&buffer, &bufferEnd, &bufferAlloced, "\\par}");
+    else
+        Log_Append(&buffer, &bufferEnd, &bufferAlloced, "}");
 	return buffer;
 }
 
@@ -728,7 +735,6 @@ void Log_StreamInEvent(HWND hwndDlg,  LOGINFO* lin, SESSION_INFO* si, BOOL bRedr
 			if(newsel.cpMin < 0)
 				newsel.cpMin = 0;
 
-
 			ZeroMemory(&sm, sizeof(sm));
 			sm.cbSize = sizeof(sm);
 			sm.hwndRichEditControl = hwndRich;
@@ -740,35 +746,35 @@ void Log_StreamInEvent(HWND hwndDlg,  LOGINFO* lin, SESSION_INFO* si, BOOL bRedr
 
 		}
 
-		if(g_Settings.ClickableNicks) {
-			CHARFORMAT2 cf2 = {0};
-			FINDTEXTEXA fi2;
+        if(g_Settings.ClickableNicks) {
+            CHARFORMAT2 cf2 = {0};
+            FINDTEXTEXA fi2;
             FINDTEXTEXA fi;
-			
-			fi2.lpstrText = " ";
-			fi.chrg.cpMin = bRedraw ? 0 : sel.cpMin;
-			fi.chrg.cpMax = -1;
-			fi.lpstrText = "~~++#";
-			cf2.cbSize = sizeof(cf2);
-			
-			while(SendMessageA(hwndRich, EM_FINDTEXTEX, FR_DOWN, (LPARAM)&fi) > -1) {
-				SendMessage(hwndRich, EM_EXSETSEL, 0, (LPARAM)&fi.chrgText);
-				SendMessage(hwndRich, EM_REPLACESEL, TRUE, (LPARAM)_T(""));
-				fi2.chrg.cpMin = fi.chrgText.cpMin;
-				fi2.chrg.cpMax = -1;
-				
-				if(SendMessageA(hwndRich, EM_FINDTEXTEX, FR_DOWN, (LPARAM)&fi2) > -1) {
-					fi2.chrgText.cpMin = fi.chrgText.cpMin;
-					fi2.chrgText.cpMax--;
-					SendMessage(hwndRich, EM_EXSETSEL, 0, (LPARAM)&fi2.chrgText);
-					cf2.dwMask = CFM_LINK;
-					cf2.dwEffects = CFE_LINK;
-					SendMessage(hwndRich, EM_SETCHARFORMAT, SCF_SELECTION, (LPARAM)&cf2);
-				}
-				fi.chrg.cpMin = fi.chrgText.cpMax;
-			}
-		}
-            
+
+            fi2.lpstrText = " ";
+            fi.chrg.cpMin = bRedraw ? 0 : sel.cpMin;
+            fi.chrg.cpMax = -1;
+            fi.lpstrText = "~~++#";
+            cf2.cbSize = sizeof(cf2);
+
+            while(SendMessageA(hwndRich, EM_FINDTEXTEX, FR_DOWN, (LPARAM)&fi) > -1) {
+                SendMessage(hwndRich, EM_EXSETSEL, 0, (LPARAM)&fi.chrgText);
+                SendMessage(hwndRich, EM_REPLACESEL, TRUE, (LPARAM)_T(""));
+                fi2.chrg.cpMin = fi.chrgText.cpMin;
+                fi2.chrg.cpMax = -1;
+
+                if(SendMessageA(hwndRich, EM_FINDTEXTEX, FR_DOWN, (LPARAM)&fi2) > -1) {
+                    fi2.chrgText.cpMin = fi.chrgText.cpMin;
+                    fi2.chrgText.cpMax--;
+                    SendMessage(hwndRich, EM_EXSETSEL, 0, (LPARAM)&fi2.chrgText);
+                    cf2.dwMask = CFM_LINK;
+                    cf2.dwEffects = CFE_LINK;
+                    SendMessage(hwndRich, EM_SETCHARFORMAT, SCF_SELECTION, (LPARAM)&cf2);
+                }
+                fi.chrg.cpMin = fi.chrgText.cpMax;
+            }
+        }
+
         if(si->wasTrimmed) {
             char szPattern[50];
             FINDTEXTEXA fi;
