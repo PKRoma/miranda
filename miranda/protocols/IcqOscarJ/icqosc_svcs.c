@@ -320,11 +320,11 @@ int IcqSetMyAvatar(WPARAM wParam, LPARAM lParam)
   }
   else
   { // delete user avatar
-    BYTE bEmptyAvatar[9] = {0x00, 0x01, 0x00,0x05,0x02,0x01,0xD2,0x04,0x72};
+    BYTE bEmptyAvatar[4] = {0x00, 0x01, 0x01,0x00};
 
     ICQDeleteContactSetting(NULL, "AvatarFile");
     ICQDeleteContactSetting(NULL, "AvatarHash");
-    updateServAvatarHash(bEmptyAvatar, 9); // clear hash on server
+    updateServAvatarHash(bEmptyAvatar, 4); // clear hash on server
     iRet = 0;
   }
 

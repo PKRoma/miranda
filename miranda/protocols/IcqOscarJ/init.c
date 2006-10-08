@@ -61,7 +61,7 @@ extern int bHideXStatusUI;
 PLUGININFO pluginInfo = {
   sizeof(PLUGININFO),
   NULL,
-  PLUGIN_MAKE_VERSION(0,3,8,3),
+  PLUGIN_MAKE_VERSION(0,3,8,4),
   "Support for ICQ network, enhanced.",
   "Joe Kucera, Bio, Martin Öberg, Richard Hughes, Jon Keating, etc",
   "jokusoftware@miranda-im.org",
@@ -521,11 +521,7 @@ static int icq_PrebuildContactMenu(WPARAM wParam, LPARAM lParam)
   CListShowMenuItem(hUserMenuXStatus, (BYTE)(bHideXStatusUI ? 0 : bXStatus));
   if (bXStatus && !bHideXStatusUI)
   {
-    HICON iXStatus = GetXStatusIcon(bXStatus);
-    CListSetMenuItemIcon(hUserMenuXStatus, iXStatus);
-
-    if (iXStatus && !IconLibInstalled())
-      DestroyIcon(iXStatus); // release icon
+    CListSetMenuItemIcon(hUserMenuXStatus, GetXStatusIcon(bXStatus, LR_SHARED));
   }
 
   return 0;

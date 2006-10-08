@@ -955,7 +955,10 @@ void handleServUINSettings(int nPort, serverthread_info *info)
     packDWord(&packet, CLIENTFEATURES);         // Client features
     packDWord(&packet, 0xffffffff);             // Abused timestamp
     packDWord(&packet, ICQ_PLUG_VERSION);       // Abused timestamp
-    packDWord(&packet, 0x00000000);             // Timestamp
+    if (ServiceExists("SecureIM/IsContactSecured"))
+      packDWord(&packet, 0x5AFEC0DE);           // SecureIM Abuse
+    else
+      packDWord(&packet, 0x00000000);           // Timestamp
     packWord(&packet, 0x0000);                  // Unknown
     packTLVWord(&packet, 0x001F, 0x0000);
 

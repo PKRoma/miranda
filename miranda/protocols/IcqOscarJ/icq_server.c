@@ -173,6 +173,9 @@ static DWORD __stdcall icq_serverThread(serverthread_start_info* infoParam)
   // Close all open DC connections
   CloseContactDirectConns(NULL);
 
+  // Close avatar connection if any
+  StopAvatarThread();
+
   // Offline all contacts
   {
     HANDLE hContact;

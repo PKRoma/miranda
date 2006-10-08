@@ -147,26 +147,32 @@ static char* InitXStatusIconLibrary(char* buf)
 
 
 
-HICON LoadDefaultXStatusIcon(int bStatus)
+HICON LoadDefaultXStatusIcon(int bStatus, UINT flags)
 {
   if (hXStatusIconsDLL)
-    return LoadImage(hXStatusIconsDLL, MAKEINTRESOURCE(IDI_XSTATUS1 + bStatus - 1), IMAGE_ICON, 0, 0, 0);
+    return LoadImage(hXStatusIconsDLL, MAKEINTRESOURCE(IDI_XSTATUS1 + bStatus - 1), IMAGE_ICON, 0, 0, flags & LR_SHARED);
   else
     return NULL;
 }
 
 
 
-HICON GetXStatusIcon(int bStatus)
+HICON GetXStatusIcon(int bStatus, UINT flags)
 {
-  char szTemp[64];
-
-  null_snprintf(szTemp, sizeof(szTemp), "xstatus%d", bStatus - 1);
-
   if (IconLibInstalled())
-    return IconLibProcess(NULL, szTemp);
+  {
+    char szTemp[64];
+    HICON icon;
 
-  return LoadDefaultXStatusIcon(bStatus);
+    null_snprintf(szTemp, sizeof(szTemp), "xstatus%d", bStatus - 1);
+    icon = IconLibProcess(NULL, szTemp);
+
+    if (flags & LR_SHARED)
+      return icon;
+    else
+      return CopyIcon(icon);
+  }
+  return LoadDefaultXStatusIcon(bStatus, flags);
 }
 
 
@@ -193,12 +199,7 @@ static int CListMW_ExtraIconsRebuild(WPARAM wParam, LPARAM lParam)
   {
     for (i = 0; i < 32; i++) 
     {
-      HICON hXIcon = LoadDefaultXStatusIcon(i + 1);
-      char szTemp[64];
-
-      null_snprintf(szTemp, sizeof(szTemp), "xstatus%d", i);
-      hXStatusIcons[i] = (HANDLE)CallService(MS_CLIST_EXTRA_ADD_ICON, (WPARAM)IconLibProcess(hXIcon, szTemp), 0);
-      DestroyIcon(hXIcon);
+      hXStatusIcons[i] = (HANDLE)CallService(MS_CLIST_EXTRA_ADD_ICON, (WPARAM)GetXStatusIcon(i + 1, LR_SHARED), 0);
     }
   }
 
@@ -430,7 +431,6 @@ typedef struct SetXStatusData_s {
   DWORD iEvent;
   int countdown;
   char *okButtonFormat;
-  HICON hDlgIcon;
 } SetXStatusData;
 
 typedef struct InitXStatusData_s {
@@ -538,11 +538,8 @@ static BOOL CALLBACK SetXStatusDlgProc(HWND hwndDlg,UINT message,WPARAM wParam,L
 
       if (dat->bXStatus)
       {
-        HICON iXStatus = GetXStatusIcon(dat->bXStatus);
-
-        dat->hDlgIcon = iXStatus;
+        SendMessage(hwndDlg, WM_SETICON, ICON_BIG, (LPARAM)GetXStatusIcon(dat->bXStatus, LR_SHARED));
       }
-      SendMessage(hwndDlg, WM_SETICON, ICON_BIG, (LPARAM)dat->hDlgIcon);
 
       {  
         char *format;
@@ -609,8 +606,6 @@ static BOOL CALLBACK SetXStatusDlgProc(HWND hwndDlg,UINT message,WPARAM wParam,L
       }
       if (dat->hEvent) UnhookEvent(dat->hEvent);
       SAFE_FREE(&dat->okButtonFormat);
-      if (dat->hDlgIcon && !IconLibInstalled())
-        DestroyIcon(dat->hDlgIcon); // release dialog icon
       SAFE_FREE(&dat);
       break;
 
@@ -870,13 +865,9 @@ void InitXStatusItems(BOOL bAllowStatus)
 
   for(i = 0; i <= 32; i++) 
   {
-    char szTemp[64];
-    HICON hIIcon = (i > 0) ? LoadDefaultXStatusIcon(i) : NULL;
-
     null_snprintf(srvFce, sizeof(srvFce), "%s/menuXStatus%d", gpszICQProtoName, i);
 
-    null_snprintf(szTemp, sizeof(szTemp), "xstatus%d", i-1);
-    mi.hIcon = IconLibProcess(hIIcon, szTemp);
+    mi.hIcon = i ? GetXStatusIcon(i, LR_SHARED) : NULL;
     mi.position++;
 
     if (!bXStatusMenuBuilt)
@@ -928,7 +919,6 @@ void InitXStatusItems(BOOL bAllowStatus)
       hXStatusItems[i] = (HANDLE)CallService(MS_CLIST_ADDSTATUSMENUITEM, (WPARAM)&hXStatusRoot, (LPARAM)&mi);
     else
       hXStatusItems[i] = (HANDLE)CallService(MS_CLIST_ADDMAINMENUITEM, 0, (LPARAM)&mi);
-    if (i) DestroyIcon(hIIcon);
   }
 
   bXStatusMenuBuilt = 1;
@@ -972,11 +962,7 @@ void ChangedIconsXStatus()
 
   for (i = 1; i < 33; i++)
   {
-    HICON hIcon = GetXStatusIcon(i);
-
-    CListSetMenuItemIcon(hXStatusItems[i], hIcon);
-    if (!IconLibInstalled())
-      DestroyIcon(hIcon); // if not IconLib resource release
+    CListSetMenuItemIcon(hXStatusItems[i], GetXStatusIcon(i, LR_SHARED));
   }
 }
 
@@ -1221,12 +1207,10 @@ int IcqGetXStatusIcon(WPARAM wParam, LPARAM lParam)
 
   if (wParam >= 1 && wParam <= 32)
   {
-    HICON icon = GetXStatusIcon((BYTE)wParam);
-
-    if (IconLibInstalled())
-      icon = CopyIcon(icon);
-
-    return (int)icon;
+    if (lParam == LR_SHARED)
+      return (int)GetXStatusIcon((BYTE)wParam, lParam);
+    else
+      return (int)GetXStatusIcon((BYTE)wParam, 0);
   }
   return 0;
 }
