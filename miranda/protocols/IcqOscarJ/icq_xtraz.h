@@ -53,7 +53,7 @@ void UninitXStatusEvents();
 
 void InitXStatusIcons();
 void ChangedIconsXStatus();
-HICON GetXStatusIcon(int bStatus);
+HICON GetXStatusIcon(int bStatus, UINT flags);
 
 void handleXStatusCaps(HANDLE hContact, char* caps, int capsize);
 

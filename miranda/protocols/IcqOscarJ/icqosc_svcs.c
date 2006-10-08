@@ -288,7 +288,7 @@ int IcqSetMyAvatar(WPARAM wParam, LPARAM lParam)
       DeleteObject(avt);
     }
     GetFullAvatarFileName(0, NULL, dwPaFormat, szMyFile, MAX_PATH);
-    if (!CopyFile(szFile, szMyFile, FALSE))
+    if (stricmp(szFile, szMyFile) && !CopyFile(szFile, szMyFile, FALSE))
     {
       NetLog_Server("Failed to copy our avatar to local storage.");
       return iRet;
@@ -319,11 +319,11 @@ int IcqSetMyAvatar(WPARAM wParam, LPARAM lParam)
   }
   else
   { // delete user avatar
-    BYTE bEmptyAvatar[9] = {0x00, 0x01, 0x00,0x05,0x02,0x01,0xD2,0x04,0x72};
+    BYTE bEmptyAvatar[4] = {0x00, 0x01, 0x01,0x00};
 
     ICQDeleteContactSetting(NULL, "AvatarFile");
     ICQDeleteContactSetting(NULL, "AvatarHash");
-    updateServAvatarHash(bEmptyAvatar, 9); // clear hash on server
+    updateServAvatarHash(bEmptyAvatar, 4); // clear hash on server
     iRet = 0;
   }
 

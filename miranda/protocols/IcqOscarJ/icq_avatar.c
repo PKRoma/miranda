@@ -67,8 +67,13 @@ typedef struct avatarrequest_t
   char *pData;
   unsigned int cbData;
   WORD wRef;
+  DWORD timeOut;
   void *pNext; // invalid, but reused - spare realloc
 } avatarrequest;
+
+#define ART_GET     1
+#define ART_UPLOAD  2
+#define ART_BLOCK   4
 
 avatarthreadstartinfo* currentAvatarThread; 
 int pendingAvatarsStart = 1;
@@ -272,7 +277,7 @@ void StartAvatarThread(HANDLE hConn, char* cookie, WORD cookieLen) // called fro
       ar = pendingRequests;
       while (ar)
       {
-        if (ar->type == 2)
+        if (ar->type == ART_UPLOAD)
         { // we found it, return error
           void *tmp;
 
@@ -350,7 +355,7 @@ static void NetLog_Hash(const char* pszIdent, unsigned char* pHash)
 void handleAvatarContactHash(DWORD dwUIN, char* szUID, HANDLE hContact, unsigned char* pHash, unsigned int nHashLen, WORD wOldStatus)
 {
   DBVARIANT dbv;
-  BOOL bJob = FALSE;
+  int bJob = FALSE;
   char szAvatar[MAX_PATH];
   int dwPaFormat;
 
@@ -421,7 +426,7 @@ void handleAvatarContactHash(DWORD dwUIN, char* szUID, HANDLE hContact, unsigned
             dwPaFormat = ICQGetContactSettingByte(hContact, "AvatarType", PA_FORMAT_UNKNOWN);
             if (dwPaFormat == PA_FORMAT_UNKNOWN)
             { // we do not know the format, get avatar again
-              bJob = TRUE;
+              bJob = 2;
             }
             else
             {
@@ -434,7 +439,7 @@ void handleAvatarContactHash(DWORD dwUIN, char* szUID, HANDLE hContact, unsigned
                 }
               }
               else // the file was lost, get it again
-                bJob = TRUE;
+                bJob = 2;
             }
           }
           else
@@ -443,7 +448,7 @@ void handleAvatarContactHash(DWORD dwUIN, char* szUID, HANDLE hContact, unsigned
             { // the hash is different, unlink contactphoto
               LinkContactPhotoToFile(hContact, NULL);
             }
-            bJob = TRUE;
+            bJob = 2;
           }
         }
         ICQFreeVariant(&dbv);
@@ -451,8 +456,13 @@ void handleAvatarContactHash(DWORD dwUIN, char* szUID, HANDLE hContact, unsigned
 
       if (bJob)
       {
-        NetLog_Hash("New", pHash);
-        NetLog_Server("User has Avatar, new hash stored.");
+        if (bJob == TRUE)
+        {
+          NetLog_Hash("New", pHash);
+          NetLog_Server("User has Avatar, new hash stored.");
+        }
+        else
+          NetLog_Server("User has Avatar, file is missing.");
 
         ICQWriteContactSettingBlob(hContact, "AvatarHash", pHash, 0x14);
 
@@ -579,6 +589,14 @@ int GetAvatarData(HANDLE hContact, DWORD dwUin, char* szUid, char* hash, unsigne
     {
       if (ar->hContact == hContact)
       { // we found it, return error
+        if (ar->type == ART_BLOCK && GetTickCount() > ar->timeOut)
+        { // remove timeouted block
+          void *tmp = ar;
+
+          ar = ar->pNext;
+          SAFE_FREE(&tmp);
+          continue;
+        }
         LeaveCriticalSection(&cookieMutex);
         NetLog_Server("Ignoring duplicate get %d avatar request.", dwUin);
 
@@ -592,7 +610,7 @@ int GetAvatarData(HANDLE hContact, DWORD dwUin, char* szUid, char* hash, unsigne
       ar = ar->pNext;
     }
     // add request to queue, processed after successful login
-    ar = CreateAvatarRequest(1); // get avatar
+    ar = CreateAvatarRequest(ART_GET); // get avatar
     if (!ar)
     { // out of memory, go away
       LeaveCriticalSection(&cookieMutex);
@@ -614,7 +632,7 @@ int GetAvatarData(HANDLE hContact, DWORD dwUin, char* szUid, char* hash, unsigne
 
   if (!AvatarsReady && !pendingAvatarsStart)
   {
-    icq_requestnewfamily(0x10, StartAvatarThread);
+    icq_requestnewfamily(ICQ_AVATAR_FAMILY, StartAvatarThread);
     pendingAvatarsStart = 1;
   }
 
@@ -664,14 +682,14 @@ int SetAvatarData(HANDLE hContact, WORD wRef, char* data, unsigned int datalen)
     ar = pendingRequests;
     while (ar)
     {
-      if (ar->hContact == hContact)
+      if (ar->hContact == hContact && ar->type == ART_UPLOAD)
       { // we found it, return error
         LeaveCriticalSection(&cookieMutex);
         NetLog_Server("Ignoring duplicate upload avatar request.");
 
         if (!AvatarsReady && !pendingAvatarsStart)
         {
-          icq_requestnewfamily(0x10, StartAvatarThread);
+          icq_requestnewfamily(ICQ_AVATAR_FAMILY, StartAvatarThread);
           pendingAvatarsStart = 1;
         }
         return 0;
@@ -679,7 +697,7 @@ int SetAvatarData(HANDLE hContact, WORD wRef, char* data, unsigned int datalen)
       ar = ar->pNext;
     }
     // add request to queue, processed after successful login
-    ar = CreateAvatarRequest(2); // upload avatar
+    ar = CreateAvatarRequest(ART_UPLOAD); // upload avatar
     if (!ar)
     { // out of memory, go away
       LeaveCriticalSection(&cookieMutex);
@@ -706,7 +724,7 @@ int SetAvatarData(HANDLE hContact, WORD wRef, char* data, unsigned int datalen)
   if (!AvatarsReady && !pendingAvatarsStart)
   {
     pendingAvatarsStart = 1;
-    icq_requestnewfamily(0x10, StartAvatarThread);
+    icq_requestnewfamily(ICQ_AVATAR_FAMILY, StartAvatarThread);
   }
 
   return -1; // we added to queue
@@ -789,20 +807,35 @@ static DWORD __stdcall icq_avatarThread(avatarthreadstartinfo *atsi)
 #endif
           switch (reqdata->type)
           {
-          case 1: // get avatar
+          case ART_GET: // get avatar
             GetAvatarData(reqdata->hContact, reqdata->dwUin, reqdata->szUid, reqdata->hash, reqdata->hashlen, reqdata->szFile);
 
             SAFE_FREE(&reqdata->szUid);
             SAFE_FREE(&reqdata->szFile);
             SAFE_FREE(&reqdata->hash); // as soon as it will be copied
             break;
-          case 2: // set avatar
+          case ART_UPLOAD: // set avatar
             SetAvatarData(reqdata->hContact, reqdata->wRef, reqdata->pData, reqdata->cbData);
 
             SAFE_FREE(&reqdata->pData);
             break;
+          case ART_BLOCK: // block contact processing
+            if (GetTickCount() < reqdata->timeOut)
+            { // it is not time, keep request in queue
+              if (pendingRequests)
+              { // the queue contains items, jump the queue
+                reqdata->pNext = pendingRequests->pNext;
+                pendingRequests->pNext = reqdata;
+              }
+              else
+                pendingRequests = reqdata;
+              reqdata = NULL;
+            }
+            break;
           }
           SAFE_FREE(&reqdata);
+
+          if (pendingRequests && pendingRequests->type == ART_BLOCK) break; // leave the loop 
         }
 
         LeaveCriticalSection(&cookieMutex);
@@ -1200,6 +1233,27 @@ void handleAvatarFam(unsigned char *pBuffer, WORD wBufferLength, snac_header* pS
           { // avatar is broken
             NetLog_Server("Error: Avatar data does not match avatar hash, ignoring.");
 
+            if (ac->hContact)
+            {
+              avatarrequest *ar = CreateAvatarRequest(ART_BLOCK);
+
+              EnterCriticalSection(&cookieMutex);
+              if (ar)
+              {
+                avatarrequest *last = pendingRequests;
+
+                ar->hContact = ac->hContact;
+                ar->timeOut = GetTickCount() + 3600000; // do not allow re-request one hour
+
+                // add it to the end of queue, i.e. do not block other requests
+                while (last && last->pNext) last = last->pNext;
+                if (last)
+                  last->pNext = ar;
+                else
+                  pendingRequests = ar;
+              }
+              LeaveCriticalSection(&cookieMutex);
+            }
             ICQBroadcastAck(ac->hContact, ACKTYPE_AVATAR, ACKRESULT_FAILED, (HANDLE)&ai, 0);
           }
         }

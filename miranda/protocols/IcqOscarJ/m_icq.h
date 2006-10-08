@@ -270,8 +270,8 @@ typedef struct {
 
 // Retrieves specified custom status icon
 //wParam = (int)N  // custom status id (1-32), 0 = my current custom status
-//lParam = 0
-//return = HICON   // custom status icon (use DestroyIcon to release resources)
+//lParam = flags   // use LR_SHARED for shared HICON
+//return = HICON   // custom status icon (use DestroyIcon to release resources if not LR_SHARED)
 #define PS_ICQ_GETCUSTOMSTATUSICON "/GetXStatusIcon"
 
 // Get Custom status DB field names & current owner custom status (obsolete)

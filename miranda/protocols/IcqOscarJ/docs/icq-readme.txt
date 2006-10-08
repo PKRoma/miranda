@@ -30,6 +30,9 @@ ______________
   Manage server list contacts added contacts should never receive auth requests, but
   if you have an old account they can receive added notification.
 
+- When owner avatar is deleted it is removed from server, but contacts are not 
+  notified immediately. They get notified when they reconnect or when icq is reconnected.
+
 - Some wicked firewall software can cause HTML tags (e.g. <font> </font>) to be added to
   incoming messages.
 
@@ -50,6 +53,18 @@ __________
 
 Changes
 _______
+
+0.3.7.4
+
+Bugfixes:
+  Some small fixes to Custom Status API
+  Fixed possible buffer overrun problem in status change packet handling
+  Some avatar related fixes
+
+
+Improvements:
+  Added avatar validity checking
+
 
 0.3.7.3
 
