@@ -28,7 +28,6 @@ extern HBRUSH 			hListBkgBrush;
 extern HICON			hIcons[30];
 extern FONTINFO			aFonts[OPTIONS_FONTCOUNT];
 extern BOOL				PopUpInstalled;
-extern SESSION_INFO		g_TabSession;
 
 
 HANDLE			g_hOptions = NULL;
@@ -85,9 +84,7 @@ struct branch_t
 
 static struct branch_t branch0[] = {
 	{_T("Use a tabbed interface"), "Tabs", 0, 1, NULL},
-	{_T("Use common tabbed window"), "Tabs", 0, 1, NULL},
-	{_T("Restore previously open tabs when showing the window"), "TabRestore", 0, 0, NULL},
-
+	{_T("Use common tabbed window"), "CommonTabs", 0, 1, NULL},
 };
 
 static struct branch_t branch1[] = {
@@ -1256,7 +1253,8 @@ void LoadGlobalSettings(void)
 
 	g_Settings.LogLimitNames = DBGetContactSettingByte(NULL, "Chat", "LogLimitNames", 1);
 	g_Settings.ShowTime = DBGetContactSettingByte(NULL, "Chat", "ShowTimeStamp", 1);
-	g_Settings.TabRestore = DBGetContactSettingByte(NULL, "Chat", "TabRestore", 0);
+	g_Settings.Tabs = DBGetContactSettingByte(NULL, "Chat", "Tabs", 0);
+	g_Settings.CommonTabs  = DBGetContactSettingByte(NULL, "Chat", "CommonTab", 0);
 	g_Settings.SoundsFocus = DBGetContactSettingByte(NULL, "Chat", "SoundsFocus", 0);
 	g_Settings.ShowTimeIfChanged = (BOOL)DBGetContactSettingByte(NULL, "Chat", "ShowTimeStampIfChanged", 0);
 	g_Settings.TimeStampEventColour = (BOOL)DBGetContactSettingByte(NULL, "Chat", "TimeStampEventColour", 0);
