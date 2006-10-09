@@ -109,15 +109,18 @@ int WorkModuleChain(int firstTime)
 	return ERROR_SUCCESS;
 }
 
-static int i = 0;
-
 DWORD ConvertModuleNameOfs(DWORD ofsOld)
 {
-	if (modChain[i].ofsOld==ofsOld) return modChain[i].ofsNew;
+	static int i = 0;
+
+	if (modChain[i].ofsOld==ofsOld)
+		return modChain[i].ofsNew;
 
 	for(i=0;i<modChainCount;i++)
 		if(modChain[i].ofsOld==ofsOld)
 			return modChain[i].ofsNew;
+
+	i = 0;
 	AddToStatus(STATUS_ERROR,"Invalid module name offset, skipping data");
 	return 0;
 }
