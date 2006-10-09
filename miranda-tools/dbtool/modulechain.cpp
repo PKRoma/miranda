@@ -17,15 +17,16 @@ along with this program; if not, write to the Free Software
 Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 */
 #include "dbtool.h"
-#include <stddef.h>
 
 struct ModChainEntry {
 	DWORD ofsOld,ofsNew;
 	int size;
+	char name[257];
 } static *modChain=NULL;
 static int modChainCount;
 static DWORD ofsCurrent;
 static int phase,iCurrentModName;
+static DWORD ofsLast;
 
 int WorkModuleChain(int firstTime)
 {
@@ -34,10 +35,8 @@ int WorkModuleChain(int firstTime)
 	if(firstTime) {
 		AddToStatus(STATUS_MESSAGE,"Processing module name chain");
 		modChainCount=0;
-		if(modChain!=NULL) {
-			free(modChain);
-			modChain=NULL;
-		}
+		if(modChain!=NULL) free(modChain);
+		modChain = (ModChainEntry*)malloc(sizeof(ModChainEntry));
 		phase=0;
 		ofsCurrent=dbhdr.ofsFirstModuleName;
 	}
@@ -60,40 +59,73 @@ int WorkModuleChain(int firstTime)
 				AddToStatus(STATUS_WARNING,"Unreasonably long module name, skipping");
 			else {
 				modChain=(ModChainEntry*)realloc(modChain,sizeof(ModChainEntry)*++modChainCount);
+
 				modChain[modChainCount-1].ofsOld=ofsCurrent;
 				modChain[modChainCount-1].size=offsetof(DBModuleName,name)+moduleName.cbName;
+				modChain[modChainCount-1].ofsNew=0;
+
+				if (moduleName.cbName)
+					PeekSegment(ofsCurrent+offsetof(DBModuleName,name),&modChain[modChainCount-1].name,moduleName.cbName);
+				modChain[modChainCount-1].name[moduleName.cbName]=0;
 			}
 			ofsCurrent=moduleName.ofsNext;
 			break;
 		case 1:
+			ofsLast = 0;
 			iCurrentModName=0;
 			dbhdr.ofsFirstModuleName=0;
 			phase++;
 		case 2:
-			if(iCurrentModName>=modChainCount)
+			if(iCurrentModName>=modChainCount) {
+				DWORD dw = 0;
+				if(ofsLast)	WriteSegment(ofsLast+offsetof(DBModuleName,ofsNext),&dw,sizeof(DWORD));
 				return ERROR_NO_MORE_ITEMS;
-			newModName=(DBModuleName*)malloc(modChain[iCurrentModName].size);
-			if(ReadSegment(modChain[iCurrentModName].ofsOld,newModName,modChain[iCurrentModName].size)!=ERROR_SUCCESS)
-				return ERROR_NO_MORE_ITEMS;
-			if((modChain[iCurrentModName].ofsNew=WriteSegment(WSOFS_END,newModName,modChain[iCurrentModName].size))==WS_ERROR)
-				return ERROR_HANDLE_DISK_FULL;
-			if(iCurrentModName==0) dbhdr.ofsFirstModuleName=modChain[iCurrentModName].ofsNew;
-			else
-				if(WriteSegment(modChain[iCurrentModName-1].ofsNew+offsetof(DBModuleName,ofsNext),&modChain[iCurrentModName].ofsNew,sizeof(DWORD))==WS_ERROR)
+			}
+			if(modChain[iCurrentModName].ofsNew==0) {
+				newModName=(DBModuleName*)_alloca(modChain[iCurrentModName].size);
+				if(ReadSegment(modChain[iCurrentModName].ofsOld,newModName,modChain[iCurrentModName].size)!=ERROR_SUCCESS)
+					return ERROR_NO_MORE_ITEMS;
+				if((modChain[iCurrentModName].ofsNew=WriteSegment(WSOFS_END,newModName,modChain[iCurrentModName].size))==WS_ERROR)
 					return ERROR_HANDLE_DISK_FULL;
-			free(newModName);
+				{ // check duplicated modulenames
+					int i, n=0;
+					for(i=iCurrentModName+1;i<modChainCount;i++)
+						if(!strcmp(modChain[i].name, modChain[iCurrentModName].name)) {
+							modChain[i].ofsNew = modChain[iCurrentModName].ofsNew;
+							n++;
+						}
+						if (n) AddToStatus(STATUS_WARNING,"Module name '%s' is not unique: %d duplicates found)", modChain[iCurrentModName].name,n);
+				}
+				if(iCurrentModName==0)
+					dbhdr.ofsFirstModuleName=modChain[iCurrentModName].ofsNew;
+				else
+					if(WriteSegment(ofsLast+offsetof(DBModuleName,ofsNext),&modChain[iCurrentModName].ofsNew,sizeof(DWORD))==WS_ERROR)
+						return ERROR_HANDLE_DISK_FULL;
+				ofsLast = modChain[iCurrentModName].ofsNew;
+			}
 			iCurrentModName++;
 			break;
 	}
 	return ERROR_SUCCESS;
 }
 
+static int i = 0;
+
 DWORD ConvertModuleNameOfs(DWORD ofsOld)
 {
-	int i;
+	if (modChain[i].ofsOld==ofsOld) return modChain[i].ofsNew;
 
 	for(i=0;i<modChainCount;i++)
-		if(modChain[i].ofsOld==ofsOld) return modChain[i].ofsNew;
+		if(modChain[i].ofsOld==ofsOld)
+			return modChain[i].ofsNew;
 	AddToStatus(STATUS_ERROR,"Invalid module name offset, skipping data");
 	return 0;
+}
+
+void FreeModuleChain()
+{
+	if(modChain!=NULL) {
+		free(modChain);
+		modChain = NULL;
+	}
 }

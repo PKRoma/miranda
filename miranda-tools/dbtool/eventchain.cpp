@@ -17,12 +17,13 @@ along with this program; if not, write to the Free Software
 Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 */
 #include "dbtool.h"
-#include <stddef.h>
 
 static DWORD ofsThisEvent,ofsPrevEvent;
 static DWORD ofsDestPrevEvent;
 static DWORD eventCount;
 static DWORD ofsFirstUnread,timestampFirstUnread;
+static DWORD memsize = 0;
+static DBEvent* memblock = NULL;
 
 static void WriteOfsNextToPrevious(DWORD ofsPrev,DBContact *dbc,DWORD ofsNext)
 {
@@ -46,6 +47,11 @@ static void FinishUp(DWORD ofsLast,DBContact *dbc)
 	else {
 		dbc->ofsFirstUnreadEvent=ofsFirstUnread;
 		dbc->timestampFirstUnread=timestampFirstUnread;
+	}
+	if (memsize && memblock) {
+		free(memblock);
+		memsize = 0;
+		memblock = NULL;
 	}
 }
 
@@ -118,9 +124,12 @@ int WorkEventChain(DWORD ofsContact,DBContact *dbc,int firstTime)
 	if(!firstTime && dbeOld.ofsPrev!=ofsPrevEvent)
 		AddToStatus(STATUS_WARNING,"Event not backlinked correctly: fixing");
 	dbeOld.ofsPrev=ofsDestPrevEvent;
-	dbeNew=(DBEvent*)malloc(offsetof(DBEvent,blob)+dbeOld.cbBlob);
+	if (offsetof(DBEvent,blob)+dbeOld.cbBlob > memsize) {
+		memsize = offsetof(DBEvent,blob)+dbeOld.cbBlob;
+		memblock = (DBEvent*)realloc(memblock, memsize);
+	}
+	dbeNew=memblock;
 	if(ReadSegment(ofsThisEvent,dbeNew,offsetof(DBEvent,blob)+dbeOld.cbBlob)!=ERROR_SUCCESS) {
-		free(dbeNew);
 		FinishUp(ofsDestPrevEvent,dbc);
 		return ERROR_NO_MORE_ITEMS;
 	}
@@ -129,10 +138,11 @@ int WorkEventChain(DWORD ofsContact,DBContact *dbc,int firstTime)
 	dbeNew->ofsPrev=dbeOld.ofsPrev;
 	dbeNew->ofsNext=0;
 	if((ofsDestThis=WriteSegment(WSOFS_END,dbeNew,offsetof(DBEvent,blob)+dbeNew->cbBlob))==WS_ERROR) {
-		free(dbeNew);
+		free(memblock);
+		memblock = NULL;
+		memsize=0;
 		return ERROR_HANDLE_DISK_FULL;
 	}
-	free(dbeNew);
 	if(isUnread) {
 		ofsFirstUnread=ofsDestThis;
 		timestampFirstUnread=dbeOld.timestamp;

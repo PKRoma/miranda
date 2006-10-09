@@ -17,8 +17,6 @@ along with this program; if not, write to the Free Software
 Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 */
 #include "dbtool.h"
-#include <stdio.h>
-#include <direct.h>
 
 BOOL CALLBACK WelcomeDlgProc(HWND hdlg,UINT message,WPARAM wParam,LPARAM lParam);
 BOOL CALLBACK OpenErrorDlgProc(HWND hdlg,UINT message,WPARAM wParam,LPARAM lParam);
@@ -46,7 +44,7 @@ static int AddDatabaseToList(HWND hwndList,char *filename)
 	HANDLE hDbFile;
 	DBHeader dbhdr;
 	DWORD bytesRead;
-	int totalSize,wasted;
+	DWORD totalSize,wasted;
 	lvi.mask=LVIF_PARAM;
 	lvi.iSubItem=0;
 	for(lvi.iItem=ListView_GetItemCount(hwndList)-1;lvi.iItem>=0;lvi.iItem--) {
@@ -59,15 +57,18 @@ static int AddDatabaseToList(HWND hwndList,char *filename)
 	ReadFile(hDbFile,&dbhdr,sizeof(dbhdr),&bytesRead,NULL);
 	totalSize=GetFileSize(hDbFile,NULL);
 	if(bytesRead<sizeof(dbhdr)) wasted=0;
-	else wasted=dbhdr.slackSpace;
+	else {
+		wasted=dbhdr.slackSpace;
+		if (totalSize>dbhdr.ofsFileEnd) wasted+=totalSize-dbhdr.ofsFileEnd;
+	}
 	CloseHandle(hDbFile);
 
 	lvi.iItem=0;
 	lvi.mask=LVIF_TEXT|LVIF_PARAM|LVIF_IMAGE;
 	lvi.iSubItem=0;
 	lvi.lParam=(LPARAM)_strdup(filename);
-	if(wasted<1024*50) lvi.iImage=0;
-	else if(wasted<1024*200) lvi.iImage=1;
+	if(wasted<1024*128) lvi.iImage=0;
+	else if(wasted<1024*256+(DWORD)(totalSize>2*1024*1024)?256*1024:0) lvi.iImage=1;
 	else lvi.iImage=2;
 	pName=strrchr(filename,'\\');
 	if(pName==NULL) pName=filename;
@@ -81,7 +82,7 @@ static int AddDatabaseToList(HWND hwndList,char *filename)
 	ListView_SetItemText(hwndList,iNewItem,1,szSize);
 	sprintf(szSize,"%.2lf MB",wasted/1048576.0);
 	ListView_SetItemText(hwndList,iNewItem,2,szSize);
-	
+
 	return iNewItem;
 }
 
@@ -217,7 +218,7 @@ BOOL CALLBACK SelectDbDlgProc(HWND hdlg,UINT message,WPARAM wParam,LPARAM lParam
 				lvi.mask=LVIF_PARAM;
 				for(lvi.iItem=ListView_GetItemCount(GetDlgItem(hdlg,IDC_DBLIST))-1;lvi.iItem>=0;lvi.iItem--) {
 					ListView_GetItem(GetDlgItem(hdlg,IDC_DBLIST),&lvi);
-					delete[] (char*)lvi.lParam;
+					free((char*)lvi.lParam);
 				}
 			}
 			break;

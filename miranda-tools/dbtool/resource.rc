@@ -46,18 +46,18 @@ LANGUAGE LANG_ENGLISH, SUBLANG_ENGLISH_UK
 // TEXTINCLUDE
 //
 
-1 TEXTINCLUDE DISCARDABLE 
+1 TEXTINCLUDE DISCARDABLE
 BEGIN
     "resource.h\0"
 END
 
-2 TEXTINCLUDE DISCARDABLE 
+2 TEXTINCLUDE DISCARDABLE
 BEGIN
     "#include <windows.h>\r\n"
     "\0"
 END
 
-3 TEXTINCLUDE DISCARDABLE 
+3 TEXTINCLUDE DISCARDABLE
 BEGIN
     "\r\n"
     "\0"
@@ -88,7 +88,7 @@ BEGIN
 END
 
 IDD_WIZARD DIALOGEX 0, 0, 262, 174
-STYLE DS_MODALFRAME | DS_SETFOREGROUND | DS_3DLOOK | DS_CENTER | 
+STYLE DS_MODALFRAME | DS_SETFOREGROUND | DS_3DLOOK | DS_CENTER |
     WS_MINIMIZEBOX | WS_CAPTION | WS_SYSMENU
 EXSTYLE WS_EX_CONTROLPARENT
 CAPTION "Miranda Database Tool"
@@ -113,9 +113,9 @@ BEGIN
     LTEXT           "Select the &profile database from the list below. If the database you wish to use is not listed here then click Other to browse your computer.",
                     IDC_STATIC,23,38,226,16
     CONTROL         "",IDC_STATIC,"Static",SS_ETCHEDHORZ,-1,32,264,1
-    CONTROL         "List1",IDC_DBLIST,"SysListView32",LVS_REPORT | 
-                    LVS_SINGLESEL | LVS_SHOWSELALWAYS | LVS_SORTASCENDING | 
-                    LVS_AUTOARRANGE | LVS_NOSORTHEADER | WS_BORDER | 
+    CONTROL         "List1",IDC_DBLIST,"SysListView32",LVS_REPORT |
+                    LVS_SINGLESEL | LVS_SHOWSELALWAYS | LVS_SORTASCENDING |
+                    LVS_AUTOARRANGE | LVS_NOSORTHEADER | WS_BORDER |
                     WS_TABSTOP,23,56,226,62
     RTEXT           "&File:",IDC_STATIC,23,123,20,8
     EDITTEXT        IDC_FILE,46,121,165,12,ES_AUTOHSCROLL
@@ -152,7 +152,7 @@ BEGIN
     LTEXT           "You can select low level options to determine how the database is processed.",
                     IDC_STATIC,20,14,197,16
     CONTROL         "",IDC_STATIC,"Static",SS_ETCHEDHORZ,-1,32,264,1
-    CONTROL         "Create backup",IDC_BACKUP,"Button",BS_AUTOCHECKBOX | 
+    CONTROL         "Create backup",IDC_BACKUP,"Button",BS_AUTOCHECKBOX |
                     WS_TABSTOP,23,69,226,10,WS_EX_CLIENTEDGE
     LTEXT           "Creates a backup copy of the database before any of the requested changes are made.",
                     IDC_STBACKUP,37,80,212,16
@@ -202,11 +202,11 @@ BEGIN
     LTEXT           "Please wait while the requested operations are being performed.",
                     -1,20,14,197,16
     CONTROL         "",-1,"Static",SS_ETCHEDHORZ,-1,32,264,1
-    CONTROL         "Progress1",IDC_PROGRESS,"msctls_progress32",PBS_SMOOTH | 
+    CONTROL         "Progress1",IDC_PROGRESS,"msctls_progress32",PBS_SMOOTH |
                     WS_BORDER,20,38,222,11
-    LISTBOX         IDC_STATUS,20,52,222,84,NOT LBS_NOTIFY | 
-                    LBS_OWNERDRAWFIXED | LBS_HASSTRINGS | 
-                    LBS_DISABLENOSCROLL | LBS_NOSEL | WS_VSCROLL | 
+    LISTBOX         IDC_STATUS,20,52,222,84,NOT LBS_NOTIFY |
+                    LBS_OWNERDRAWFIXED | LBS_HASSTRINGS |
+                    LBS_DISABLENOSCROLL | LBS_NOSEL | WS_VSCROLL |
                     WS_TABSTOP
 END
 
@@ -239,7 +239,7 @@ END
 //
 
 #ifdef APSTUDIO_INVOKED
-GUIDELINES DESIGNINFO DISCARDABLE 
+GUIDELINES DESIGNINFO DISCARDABLE
 BEGIN
     IDD_WELCOME, DIALOG
     BEGIN
@@ -339,8 +339,8 @@ IDI_PROFILERED          ICON    DISCARDABLE     "res\\profiler.ico"
 //
 
 VS_VERSION_INFO VERSIONINFO
- FILEVERSION 0,3,4,0
- PRODUCTVERSION 0,3,4,0
+ FILEVERSION 0,4,0,0
+ PRODUCTVERSION 0,4,0,0
  FILEFLAGSMASK 0x3fL
 #ifdef _DEBUG
  FILEFLAGS 0x1L
@@ -358,14 +358,14 @@ BEGIN
             VALUE "Comments", "\0"
             VALUE "CompanyName", " \0"
             VALUE "FileDescription", "Miranda IM Database Tool\0"
-            VALUE "FileVersion", "0.3.4\0"
+            VALUE "FileVersion", "0.4.0\0"
             VALUE "InternalName", "dbtool\0"
-            VALUE "LegalCopyright", "Copyright © 2001-2005 Richard Hughes\0"
+            VALUE "LegalCopyright", "Copyright © 2001-2006 Richard Hughes\0"
             VALUE "LegalTrademarks", "\0"
             VALUE "OriginalFilename", "dbtool.exe\0"
             VALUE "PrivateBuild", "\0"
             VALUE "ProductName", "Miranda Database Tool\0"
-            VALUE "ProductVersion", "0.3.4\0"
+            VALUE "ProductVersion", "0.4.0\0"
             VALUE "SpecialBuild", "\0"
         END
     END
@@ -391,4 +391,3 @@ END
 
 /////////////////////////////////////////////////////////////////////////////
 #endif    // not APSTUDIO_INVOKED
-

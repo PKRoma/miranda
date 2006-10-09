@@ -37,13 +37,17 @@ static int (*Workers[6])(int)=
 void __cdecl WorkerThread(void *unused)
 {
 	int task,ret,firstTime;
+	DWORD sp=0;
 
 	AddToStatus(STATUS_MESSAGE,"Database worker thread activated");
 	SetFilePointer(opts.hFile,0,NULL,FILE_BEGIN);
 	spaceUsed=1; spaceProcessed=0;
 	firstTime=0;
 	for(task=0;;) {
-		SetProgressBar(1000*spaceProcessed/spaceUsed);
+		if (spaceProcessed/(spaceUsed/1000+1) > sp) {
+			sp = spaceProcessed/(spaceUsed/1000+1);
+			SetProgressBar(sp);
+		}
 		WaitForSingleObject(hEventRun,INFINITE);
 		if(WaitForSingleObject(hEventAbort,0)==WAIT_OBJECT_0) {
 			AddToStatus(STATUS_FATAL,"Processing aborted by user");
