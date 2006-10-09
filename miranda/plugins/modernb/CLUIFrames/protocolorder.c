@@ -103,11 +103,11 @@ int ProtocolOrder_CheckOrder()
 				if (CallService(MS_PROTO_ISPROTOCOLLOADED,0,(LPARAM)curproto)==0)
         {
           protochanged=TRUE;
-          if (curproto!=NULL){ mir_free(curproto);}
+          if (curproto!=NULL){ mir_free_and_nill(curproto);}
           break;
         };		
 				
-				if (curproto!=NULL){ mir_free(curproto);};
+				if (curproto!=NULL){ mir_free_and_nill(curproto);};
 			};
 	};		
 	if (protochanged)
@@ -202,7 +202,7 @@ int FillTree(HWND hwnd)
 				tvis.item.iImage=tvis.item.iSelectedImage=PD->show;
 				TreeView_InsertItem(hwnd,&tvis);
 #ifdef UNICODE
-				if (buf2) mir_free(buf2);
+				if (buf2) mir_free_and_nill(buf2);
 #endif
 				//tvis.item.iImage=tvis.item.iSelectedImage=PD->show;
 				//TreeView_InsertItem(GetDlgItem(hwndDlg,IDC_PROTOCOLVISIBILITY),&tvis);

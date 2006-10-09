@@ -80,7 +80,7 @@ typedef HRESULT (CALLBACK* DLLGETVERSIONPROC)(DLLVERSIONINFO *);
 
 void mir_strset(TCHAR ** dest, TCHAR *source)
 {
-	if (*dest) mir_free(*dest);
+	if (*dest) mir_free_and_nill(*dest);
 	if (source) *dest=mir_tstrdup(source);
 }
 
@@ -214,7 +214,7 @@ static TCHAR* TrayIconMakeTooltip(const TCHAR *szPrefix, const char *szProto)
 								{
 									if (dbv.ptszVal[0]!=(TCHAR)0)
 										ProtoXStatus=mir_tstrdup(dbv.ptszVal);
-									//mir_free(dbv.ptszVal);
+									//mir_free_and_nill(dbv.ptszVal);
 									DBFreeVariant(&dbv);
 								}
 							}
@@ -231,7 +231,7 @@ static TCHAR* TrayIconMakeTooltip(const TCHAR *szPrefix, const char *szProto)
 						#if defined( _UNICODE )
 						{	TCHAR* p = a2u( szProtoName );
 							mir_sntprintf(tipline, 256, _T("<b>%-12.12s</b>\t%s"), p, szStatus);
-							mir_free( p );
+							mir_free_and_nill( p );
 						}
 						#else
 							mir_sntprintf(tipline, 256, _T("<b>%-12.12s</b>\t%s"), szProtoName, szStatus);
@@ -246,7 +246,7 @@ static TCHAR* TrayIconMakeTooltip(const TCHAR *szPrefix, const char *szProto)
 							if (szTip[0])
 								_tcsncat(szTip, szSeparator, tipSize - 1 - _tcslen(szTip));
 							_tcsncat(szTip, tipline, tipSize - 1 - _tcslen(szTip));
-							mir_free(ProtoXStatus);
+							mir_free_and_nill(ProtoXStatus);
 						}
 					}
 					else {
@@ -256,7 +256,7 @@ static TCHAR* TrayIconMakeTooltip(const TCHAR *szPrefix, const char *szProto)
 						{	
 							TCHAR* p = a2u( szProtoName );
 							_tcsncat(szTip, p, SIZEOF(szTip) - 1 - _tcslen(szTip));
-							mir_free( p );
+							mir_free_and_nill( p );
 						}
 						#else
 							_tcsncat(szTip, szProtoName, SIZEOF(szTip) - 1 - _tcslen(szTip));
@@ -294,7 +294,7 @@ static TCHAR* TrayIconMakeTooltip(const TCHAR *szPrefix, const char *szProto)
 								{
 									if (dbv.ptszVal[0]!=(TCHAR)0)
 										ProtoXStatus=mir_tstrdup(dbv.ptszVal);
-									//mir_free(dbv.ptszVal);
+									//mir_free_and_nill(dbv.ptszVal);
 									DBFreeVariant(&dbv);
 								}
 							}
@@ -325,9 +325,9 @@ static TCHAR* TrayIconMakeTooltip(const TCHAR *szPrefix, const char *szProto)
 			else
 				mir_sntprintf(szTip, tipSize, _T("%s %s"), sztProto, szStatus);
 		}
-		if (ProtoXStatus) mir_free(ProtoXStatus);
+		if (ProtoXStatus) mir_free_and_nill(ProtoXStatus);
 		#if defined( _UNICODE )
-			mir_free(sztProto);
+			mir_free_and_nill(sztProto);
 		#endif
 	}
 	return szTip;
@@ -387,7 +387,7 @@ static void TrayIconRemove(HWND hwnd,const char *szProto)
 		Shell_NotifyIcon(NIM_DELETE, &nid);
 
 		DestroyIcon_protect(trayIcon[i].hBaseIcon);
-		if (trayIcon[i].iconTip) mir_free(trayIcon[i].iconTip);
+		if (trayIcon[i].iconTip) mir_free_and_nill(trayIcon[i].iconTip);
 		trayIcon[i].id=0;
 		break;
 	}
@@ -472,9 +472,9 @@ void CListTray_TrayIconDestroy(HWND hwnd)
 		nid.uID = trayIcon[i].id;
 		Shell_NotifyIcon(NIM_DELETE, &nid);
 		DestroyIcon_protect(trayIcon[i].hBaseIcon);
-		if (trayIcon[i].iconTip) mir_free(trayIcon[i].iconTip);
+		if (trayIcon[i].iconTip) mir_free_and_nill(trayIcon[i].iconTip);
 	}
-	if (trayIcon) mir_free(trayIcon);
+	if (trayIcon) mir_free_and_nill(trayIcon);
 	trayIcon=NULL;
 	trayIconCount=0;
 }
@@ -658,7 +658,7 @@ void cliTrayIconUpdateBase(char *szChangedProto)
 					if(DBGetContactSetting(NULL,"CList","PrimaryStatus",&dbv)) szProto=NULL;
 					else szProto=dbv.pszVal;
 					changed=TrayIconSetBaseInfo(GetIconFromStatusMode(NULL,szProto,averageMode),NULL);
-					if (szProto) mir_free(szProto);
+					if (szProto) mir_free_and_nill(szProto);
 				}
 				else
 					changed=TrayIconSetBaseInfo(GetIconFromStatusMode(NULL,NULL,averageMode),NULL);
@@ -913,7 +913,7 @@ static void CALLBACK TrayToolTipTimerProc(HWND hwnd, UINT msg, UINT_PTR id, DWOR
 			#if defined( _UNICODE )
 			{	char* p = u2a( szTipCur );
 	        	CallService("mToolTip/ShowTip", (WPARAM)p, (LPARAM)&ti);
-				mir_free( p );			
+				mir_free_and_nill( p );			
 			}
 			#else
 	        	CallService("mToolTip/ShowTip", (WPARAM)szTipCur, (LPARAM)&ti);

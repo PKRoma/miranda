@@ -160,7 +160,7 @@ void GetFontSetting(int i,LOGFONTA *lf,COLORREF *colour,BYTE *effect, COLORREF *
   mir_snprintf(idstr,sizeof(idstr),"Font%dName",i);
   if(!DBGetContactSetting(NULL,"CLC",idstr,&dbv)) {
     strcpy(lf->lfFaceName,dbv.pszVal);
-    //mir_free(dbv.pszVal);
+    //mir_free_and_nill(dbv.pszVal);
 	DBFreeVariant(&dbv);
   }
   mir_snprintf(idstr,sizeof(idstr),"Font%dCol",i);
@@ -615,7 +615,7 @@ struct CheckBoxToStyleEx_t {
                 SetDlgItemTextA(hwndDlg,IDC_FILENAME,szPath);
             }
             else 
-              //mir_free(dbv.pszVal);
+              //mir_free_and_nill(dbv.pszVal);
             DBFreeVariant(&dbv);
           }
           }
@@ -762,7 +762,7 @@ struct CheckBoxToStyleEx_t {
                 SetDlgItemTextA(hwndDlg,IDC_FILENAME,szPath);
             }
             else 
-              //mir_free(dbv.pszVal);
+              //mir_free_and_nill(dbv.pszVal);
             DBFreeVariant(&dbv);
           }
           }

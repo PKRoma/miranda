@@ -688,7 +688,7 @@ void LoadCLCOptions(HWND hwnd, struct ClcData *dat)
 		/*if(DBGetContactSettingByte(NULL,"CLC","UseBitmap",CLCDEFAULT_USEBITMAP)) {
 			if(!DBGetContactSetting(NULL,"CLC","BkBitmap",&dbv)) {
 				dat->hBmpBackground=(HBITMAP)CallService(MS_UTILS_LOADBITMAP,0,(LPARAM)dbv.pszVal);
-				mir_free(dbv.pszVal);
+				mir_free_and_nill(dbv.pszVal);
 				DBFreeVariant(&dbv);
 			}
 		}*/
@@ -704,7 +704,7 @@ void LoadCLCOptions(HWND hwnd, struct ClcData *dat)
 		if(DBGetContactSettingByte(NULL,"Menu","UseBitmap",CLCDEFAULT_USEBITMAP)) {
 			if(!DBGetContactSetting(NULL,"Menu","BkBitmap",&dbv)) {
 				dat->hMenuBackground=(HBITMAP)CallService(MS_UTILS_LOADBITMAP,0,(LPARAM)dbv.pszVal);
-				//mir_free(dbv.pszVal);
+				//mir_free_and_nill(dbv.pszVal);
 				DBFreeVariant(&dbv);
 			}
 		}

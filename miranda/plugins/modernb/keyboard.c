@@ -655,10 +655,10 @@ void UninitSkinHotKeys(void)
 	int i;
     if (!HotKeyList) return;
 	for(i=0;i<HotKeyCount;i++) {
-		mir_free(HotKeyList[i].name);
-		mir_free(HotKeyList[i].section);
-		mir_free(HotKeyList[i].description);
-		mir_free(HotKeyList[i].pszService);
+		mir_free_and_nill(HotKeyList[i].name);
+		mir_free_and_nill(HotKeyList[i].section);
+		mir_free_and_nill(HotKeyList[i].description);
+		mir_free_and_nill(HotKeyList[i].pszService);
 
 		//		if (HotKeyList[i].tempFile) free(HotKeyList[i].tempFile);
 	}

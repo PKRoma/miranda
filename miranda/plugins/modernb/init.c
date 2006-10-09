@@ -440,8 +440,8 @@ int mod_UnhookEvent(HANDLE hHook)
 			pluginLink->UnhookEvent(hHook);
 			hooksrec[i].hHook=NULL;
 #ifdef _DEBUG
-			if (hooksrec[i].HookStr) mir_free(hooksrec[i].HookStr);
-            if (hooksrec[i]._debug_file) mir_free(hooksrec[i]._debug_file);
+			if (hooksrec[i].HookStr) mir_free_and_nill(hooksrec[i].HookStr);
+            if (hooksrec[i]._debug_file) mir_free_and_nill(hooksrec[i]._debug_file);
 #endif
 			return 1;
 		}
@@ -462,12 +462,12 @@ int UnhookAll()
 			hooksrec[i].hHook=NULL;
 #ifdef _DEBUG
             log3("Unhook:%s (hooked at %s Ln %d)",hooksrec[i].HookStr,hooksrec[i]._debug_file,hooksrec[i]._debug_line);
-    		mir_free(hooksrec[i].HookStr);
-            mir_free(hooksrec[i]._debug_file);
+    		mir_free_and_nill(hooksrec[i].HookStr);
+            mir_free_and_nill(hooksrec[i]._debug_file);
 #endif
 		}
 	}
-	mir_free(hooksrec);
+	mir_free_and_nill(hooksrec);
 	hooksRecAlloced=0;
 	return 1;
 }

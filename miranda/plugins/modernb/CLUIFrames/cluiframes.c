@@ -805,10 +805,10 @@ int LocateStorePosition(int Frameid,int maxstored)
     if(frmname==NULL) continue;
     if(_strcmpi(frmname,Frames[Frameid].name)==0) {
       storpos=i;
-      mir_free(frmname);
+      mir_free_and_nill(frmname);
       break;
     }
-    mir_free(frmname);
+    mir_free_and_nill(frmname);
   }
   return storpos;
 }
@@ -1985,9 +1985,9 @@ int CLUIFramesAddFrame(WPARAM wParam,LPARAM lParam)
     Frames[nFramescount].TitleBar.TextColour=(COLORREF)DBGetContactSettingDword(NULL,"CUSTOM_CLUI_FRAMES",AS(buff,"CustomTextColor_",clfrm->name),GetSysColor(COLOR_WINDOWTEXT));
     if (CustomName)
     {
-      if (clfrm->name) mir_free(clfrm->name);
+      if (clfrm->name) mir_free_and_nill(clfrm->name);
       clfrm->name=_strdup(CustomName);
-      mir_free(CustomName);
+      mir_free_and_nill(CustomName);
     }
   }
   Frames[nFramescount].id=NextFrameId++;
@@ -3070,7 +3070,7 @@ int OnFrameTitleBarBackgroundChange(WPARAM wParam,LPARAM lParam)
     if(DBGetContactSettingByte(NULL,"FrameTitleBar","UseBitmap",CLCDEFAULT_USEBITMAP)) {
       if(!DBGetContactSetting(NULL,"FrameTitleBar","BkBitmap",&dbv)) {
         hBmpBackground=(HBITMAP)CallService(MS_UTILS_LOADBITMAP,0,(LPARAM)dbv.pszVal);
-        //mir_free(dbv.pszVal);
+        //mir_free_and_nill(dbv.pszVal);
         DBFreeVariant(&dbv);
       }
     }

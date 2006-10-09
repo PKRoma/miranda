@@ -100,7 +100,7 @@ void AddSubcontacts(struct ClcData *dat, struct ClcContact * cont, BOOL showOffl
 		}	}
 
 	cont->SubAllocated=i;
-	if (!i && cont->subcontacts != NULL) mir_free(cont->subcontacts);
+	if (!i && cont->subcontacts != NULL) mir_free_and_nill(cont->subcontacts);
 }
 
 int cli_AddItemToGroup(struct ClcGroup *group,int iAboveItem)
@@ -135,28 +135,13 @@ void cli_FreeContact(struct ClcContact *p)
 			int i;
 			for ( i = 0 ; i < p->SubAllocated ; i++ ) {
 				Cache_DestroySmileyList(p->subcontacts[i].plText);
-//				Cache_DestroySmileyList(p->subcontacts[i].plSecondLineText);
-//				Cache_DestroySmileyList(p->subcontacts[i].plThirdLineText);
-//				if (p->subcontacts[i].szSecondLineText)
-//					mir_free(p->subcontacts[i].szSecondLineText);
-//				if (p->subcontacts[i].szThirdLineText)
-//					mir_free(p->subcontacts[i].szThirdLineText);
 			}
 
-			mir_free(p->subcontacts);
+			mir_free_and_nill(p->subcontacts);
 		}	}
 
 	Cache_DestroySmileyList(p->plText);
 	p->plText=NULL;
-//	Cache_DestroySmileyList(p->plSecondLineText);
-//	p->plSecondLineText=NULL;
-//	Cache_DestroySmileyList(p->plThirdLineText);
-//	p->plThirdLineText=NULL;
-//	if (p->szSecondLineText)
-//		mir_free(p->szSecondLineText);
-//	if (p->szThirdLineText)
-//		mir_free(p->szThirdLineText);
-
 	saveFreeContact( p );
 }
 
@@ -255,10 +240,10 @@ void * AddTempGroup(HWND hwnd,struct ClcData *dat,const TCHAR *szName,DWORD flag
 #endif
 	if (wildcmp(mbuf,"-@-HIDDEN-GROUP-@-",0))
 	{
-		mir_free(mbuf);
+		mir_free_and_nill(mbuf);
 		return NULL;
 	} 
-	mir_free(mbuf);
+	mir_free_and_nill(mbuf);
 	for(i=1;;i++) 
 	{
 		szGroupName = pcli->pfnGetGroupName(i,&groupFlags);
@@ -628,9 +613,9 @@ void cli_SaveStateAndRebuildList(HWND hwnd, struct ClcData *dat)
 		group->scanIndex++;
 	}
 	if (savedGroup)
-		mir_free(savedGroup);
+		mir_free_and_nill(savedGroup);
 	if (savedContact)
-		mir_free(savedContact);
+		mir_free_and_nill(savedContact);
 	for (i = 0; i < savedInfoCount; i++) {
 		if (savedInfo[i].parentId == -1)
 			group = &dat->list;
@@ -643,7 +628,7 @@ void cli_SaveStateAndRebuildList(HWND hwnd, struct ClcData *dat)
 		*group->cl.items[j] = savedInfo[i].contact;
 	}
 	if (savedInfo)
-		mir_free(savedInfo);
+		mir_free_and_nill(savedInfo);
 	RestoreAllContactData(dat);
 	LOCK_RECALC_SCROLLBAR=FALSE;
 	pcli->pfnRecalculateGroupCheckboxes(hwnd, dat);

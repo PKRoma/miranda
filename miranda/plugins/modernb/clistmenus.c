@@ -126,7 +126,7 @@ static int RemoveMainMenuItem(WPARAM wParam,LPARAM lParam)
 
   if (mmep!=NULL){
   FreeAndNil(&mmep->szServiceName);
-  mir_free(mmep);
+  mir_free_and_nill(mmep);
   }
   */
   CallService(MO_REMOVEMENUITEM,wParam,0);
@@ -601,7 +601,7 @@ int StatusMenuCheckService(WPARAM wParam, LPARAM lParam)
 #ifdef UNICODE
 					char *prn=u2a(timi->mi.ptszName);
 					prot=GetUniqueProtoName(prn);
-					if (prn) mir_free(prn);
+					if (prn) mir_free_and_nill(prn);
 #else
 					prot=GetUniqueProtoName(timi->mi.ptszName);
 #endif
@@ -657,13 +657,13 @@ int StatusMenuExecService(WPARAM wParam,LPARAM lParam)
         {
           char buf[256];
           pimi->mi.flags|=CMIF_CHECKED;
-          if(pimi->mi.pszName) mir_free(pimi->mi.pszName);
+          if(pimi->mi.pszName) mir_free_and_nill(pimi->mi.pszName);
 		  _snprintf(buf,SIZEOF(buf),Translate("%s (locked)"),smep->proto);
           pimi->mi.ptszName=(TCHAR*)CallService( MS_LANGPACK_PCHARTOTCHAR,0,(LPARAM)buf);
         }
         else 
         {
-          if(pimi->mi.pszName) mir_free(pimi->mi.pszName);
+          if(pimi->mi.pszName) mir_free_and_nill(pimi->mi.pszName);
           pimi->mi.ptszName=(TCHAR*)CallService( MS_LANGPACK_PCHARTOTCHAR,0,(LPARAM)smep->proto);
           pimi->mi.flags&=~CMIF_CHECKED;
         }
@@ -810,10 +810,10 @@ int GetProtoIndexByPos(PROTOCOLDESCRIPTOR ** proto, int protoCnt, int Pos)
     for (p=0; p<protoCnt; p++)
       if (mir_strcmp(proto[p]->szName,b2)==0)
       {   
-        mir_free(b2);
+        mir_free_and_nill(b2);
         return p;
       }
-      mir_free(b2);
+      mir_free_and_nill(b2);
   }
   return -1;
 }
@@ -849,10 +849,10 @@ int MenuModulesLoaded(WPARAM wParam,LPARAM lParam)
   if (hStatusMenuObject!=0) {
     CallService(MO_REMOVEMENUOBJECT,hStatusMenuObject,0);
     if (hStatusMainMenuHandles!=NULL) {
-      mir_free(hStatusMainMenuHandles);
+      mir_free_and_nill(hStatusMainMenuHandles);
     };
     if (hStatusMenuHandles!=NULL) {
-      mir_free(hStatusMenuHandles);
+      mir_free_and_nill(hStatusMenuHandles);
     };
   };
   memset(&tmp,0,sizeof(tmp));
@@ -897,8 +897,8 @@ int MenuModulesLoaded(WPARAM wParam,LPARAM lParam)
   {
     int i;
     for (i=0; i<AllocedProtos;i++)
-      if (menusProto[i].szProto) mir_free (menusProto[i].szProto);
-    mir_free(menusProto);
+      if (menusProto[i].szProto) mir_free_and_nill (menusProto[i].szProto);
+    mir_free_and_nill(menusProto);
     menusProto=NULL;
     AllocedProtos=0;
   } 
@@ -969,7 +969,7 @@ int MenuModulesLoaded(WPARAM wParam,LPARAM lParam)
       CallService(MO_MODIFYMENUITEM,(WPARAM)op.Handle,(LPARAM)&tmi);
 	  if (tmi.flags&CMIF_CHECKED) 
 	  {
-		  mir_free(tmi.pszName);
+		  mir_free_and_nill(tmi.pszName);
 	  }
       {
         if (menusProto)
@@ -1098,7 +1098,7 @@ int MenuModulesLoaded(WPARAM wParam,LPARAM lParam)
   
   BuildStatusMenu(0,0);
   pos=300000;
-  //mir_free(menusProto);
+  //mir_free_and_nill(menusProto);
   return 0;
 }
 int statustopos(int status)
@@ -1373,16 +1373,16 @@ void UninitCustomMenus(void)
   if (!menusProto) return;
   for (i=0; i<AllocedProtos; i++)
         if (menusProto[i].szProto) 
-			mir_free(menusProto[i].szProto);
-  if (menusProto) mir_free(menusProto);
+			mir_free_and_nill(menusProto[i].szProto);
+  if (menusProto) mir_free_and_nill(menusProto);
 
   if (hStatusMainMenuHandles!=NULL) {
-    mir_free(hStatusMainMenuHandles);
+    mir_free_and_nill(hStatusMainMenuHandles);
   };
   hStatusMainMenuHandles=NULL;
 
   if (hStatusMenuHandles!=NULL) {
-    mir_free(hStatusMenuHandles);
+    mir_free_and_nill(hStatusMenuHandles);
   };
   hStatusMenuHandles=NULL;
   UnitGenMenu();
@@ -1461,7 +1461,7 @@ static int AddStatusMenuItem(WPARAM wParam,LPARAM lParam)
 		while(buf[i]!='\0' && buf[i]!='/') i++;
 		buf[i]='\0';
 		smep->proto=mir_strdup(buf);
-		mir_free(buf);
+		mir_free_and_nill(buf);
 	}
     tmi.ownerdata=smep;
   }; 

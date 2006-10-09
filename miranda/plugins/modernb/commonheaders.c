@@ -114,7 +114,7 @@ char *DBGetStringA(HANDLE hContact,const char *szModule,const char *szSetting)
 	if(dbv.type==DBVT_ASCIIZ)
     {
         str=mir_strdup(dbv.pszVal);
-        //mir_free(dbv.pszVal);
+        //mir_free_and_nill(dbv.pszVal);
     }
     DBFreeVariant(&dbv);
 	return str;
@@ -127,7 +127,7 @@ wchar_t *DBGetStringW(HANDLE hContact,const char *szModule,const char *szSetting
 	if(dbv.type==DBVT_WCHAR)
 	{
 		str=mir_strdupW(dbv.pwszVal);
-		//mir_free(dbv.pwszVal);
+		//mir_free_and_nill(dbv.pwszVal);
 	}
 	//else  TODO if no unicode string (only ansi)
 	//

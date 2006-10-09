@@ -92,11 +92,11 @@ void FreeDisplayNameCache()
 		int i;
 		for ( i = 0; i < clistCache->realCount; i++) {
 			pcli->pfnFreeCacheItem(( ClcCacheEntryBase* )clistCache->items[i] );
-			mir_free( clistCache->items[i] );
+			mir_free_and_nill( clistCache->items[i] );
 		}
 
 		li.List_Destroy( clistCache ); 
-		mir_free(clistCache);
+		mir_free_and_nill(clistCache);
 		clistCache = NULL;
 	}	
 }
@@ -124,13 +124,13 @@ void Cache_DestroySmileyList( SortedList *p_list );
 void CListSettings_FreeCacheItemData(pdisplayNameCacheEntry pDst)
 {
     if (!pDst) return;
-    if (pDst->name) mir_free(pDst->name);
+    if (pDst->name) mir_free_and_nill(pDst->name);
     #if defined( _UNICODE )
-        if (pDst->szName) mir_free(pDst->szName);
+        if (pDst->szName) mir_free_and_nill(pDst->szName);
 	#endif
-    if (pDst->szGroup) mir_free(pDst->szGroup);
-    if (pDst->szSecondLineText) mir_free(pDst->szSecondLineText);
-    if (pDst->szThirdLineText)  mir_free(pDst->szThirdLineText);
+    if (pDst->szGroup) mir_free_and_nill(pDst->szGroup);
+    if (pDst->szSecondLineText) mir_free_and_nill(pDst->szSecondLineText);
+    if (pDst->szThirdLineText)  mir_free_and_nill(pDst->szThirdLineText);
     if (pDst->plSecondLineText) {Cache_DestroySmileyList(pDst->plSecondLineText); pDst->plSecondLineText=NULL;}
     if (pDst->plThirdLineText) {Cache_DestroySmileyList(pDst->plThirdLineText); pDst->plThirdLineText=NULL;}
 }
@@ -198,14 +198,14 @@ void cliFreeCacheItem( pdisplayNameCacheEntry p )
 {
 	HANDLE hContact=p->hContact;
     TRACEVAR("cliFreeCacheItem hContact=%d",hContact);
-	if ( !p->isUnknown && p->name && p->name!=UnknownConctactTranslatedName) mir_free(p->name);
+	if ( !p->isUnknown && p->name && p->name!=UnknownConctactTranslatedName) mir_free_and_nill(p->name);
 	p->name = NULL; 
 	#if defined( _UNICODE )
-		if ( p->szName) { mir_free(p->szName); p->szName = NULL; }
+		if ( p->szName) { mir_free_and_nill(p->szName); p->szName = NULL; }
 	#endif
-	if ( p->szGroup) { mir_free(p->szGroup); p->szGroup = NULL; }
-	if ( p->szSecondLineText) mir_free(p->szSecondLineText);
-	if ( p->szThirdLineText) mir_free(p->szThirdLineText);
+	if ( p->szGroup) { mir_free_and_nill(p->szGroup); p->szGroup = NULL; }
+	if ( p->szSecondLineText) mir_free_and_nill(p->szSecondLineText);
+	if ( p->szThirdLineText) mir_free_and_nill(p->szThirdLineText);
 	if ( p->plSecondLineText) {Cache_DestroySmileyList(p->plSecondLineText);p->plSecondLineText=NULL;}
 	if ( p->plThirdLineText)  {Cache_DestroySmileyList(p->plThirdLineText);p->plThirdLineText=NULL;}
 }
@@ -217,7 +217,7 @@ void FreeDisplayNameCache(SortedList *list)
 	int i;
 		for( i=0; i < list->realCount; i++) {
 			FreeDisplayNameCacheItem(( pdisplayNameCacheEntry )list->items[i] );
-			mir_free(list->items[i]);
+			mir_free_and_nill(list->items[i]);
 		}
 	li.List_Destroy(list);
 
@@ -242,7 +242,7 @@ void cliCheckCacheItem(pdisplayNameCacheEntry pdnce)
 				{
 					if(pdnce->szProto&&pdnce->name) 
 					{
-						if (!pdnce->isUnknown && pdnce->name!=UnknownConctactTranslatedName) mir_free(pdnce->name);
+						if (!pdnce->isUnknown && pdnce->name!=UnknownConctactTranslatedName) mir_free_and_nill(pdnce->name);
 						pdnce->name=NULL;
 					}
 				}
@@ -258,7 +258,7 @@ void cliCheckCacheItem(pdisplayNameCacheEntry pdnce)
 			}
 			else
 			{
-                if (!pdnce->isUnknown && pdnce->name &&pdnce->name!=UnknownConctactTranslatedName) mir_free (pdnce->name);
+                if (!pdnce->isUnknown && pdnce->name &&pdnce->name!=UnknownConctactTranslatedName) mir_free_and_nill (pdnce->name);
 				if (g_flag_bOnModulesLoadedCalled)
 					pdnce->name = GetNameForContact(pdnce->hContact,0,&pdnce->isUnknown); //TODO UNICODE
 				else
@@ -273,7 +273,7 @@ void cliCheckCacheItem(pdisplayNameCacheEntry pdnce)
 				{
 					pdnce->protoNotExists=FALSE;						
 
-					//mir_free(pdnce->name);
+					//mir_free_and_nill(pdnce->name);
 					pdnce->name= GetNameForContact(pdnce->hContact,0,&pdnce->isUnknown); //TODO UNICODE
 				}
 			}
@@ -290,7 +290,7 @@ void cliCheckCacheItem(pdisplayNameCacheEntry pdnce)
 			if (!DBGetContactSettingTString(pdnce->hContact,"CList","Group",&dbv))
 			{
 				pdnce->szGroup=mir_tstrdup(dbv.ptszVal);
-				//mir_free(dbv.ptszVal);
+				//mir_free_and_nill(dbv.ptszVal);
 				DBFreeVariant(&dbv);
 			}else
 			{
@@ -366,7 +366,7 @@ void InvalidateDNCEbyPointer(HANDLE hContact,pdisplayNameCacheEntry pdnce,int Se
 					Cache_DestroySmileyList(pdnce->plSecondLineText);
 					pdnce->plSecondLineText=NULL;
 				}
-				mir_free(pdnce->szSecondLineText);
+				mir_free_and_nill(pdnce->szSecondLineText);
 			}
 			if (pdnce->szThirdLineText) 
 			{
@@ -375,7 +375,7 @@ void InvalidateDNCEbyPointer(HANDLE hContact,pdisplayNameCacheEntry pdnce,int Se
 					Cache_DestroySmileyList(pdnce->plThirdLineText);
 					pdnce->plThirdLineText=NULL;
 				}
-				mir_free(pdnce->szThirdLineText);
+				mir_free_and_nill(pdnce->szThirdLineText);
 			}
 			pdnce->iSecondLineMaxSmileyHeight=0;
 			pdnce->iThirdLineMaxSmileyHeight=0;
@@ -387,10 +387,10 @@ void InvalidateDNCEbyPointer(HANDLE hContact,pdisplayNameCacheEntry pdnce,int Se
 
 		if (SettingType==-1||SettingType==DBVT_DELETED)
 		{	
-			if (pdnce->name && !pdnce->isUnknown) mir_free(pdnce->name);
+			if (pdnce->name && !pdnce->isUnknown) mir_free_and_nill(pdnce->name);
 			pdnce->name=NULL;
-			if (pdnce->szGroup) mir_free(pdnce->szGroup);
-			// if (pdnce->szProto) mir_free(pdnce->szProto);   //free proto
+			if (pdnce->szGroup) mir_free_and_nill(pdnce->szGroup);
+			// if (pdnce->szProto) mir_free_and_nill(pdnce->szProto);   //free proto
 			pdnce->szGroup=NULL;
 
 			pdnce->Hidden=-1;
@@ -408,9 +408,9 @@ void InvalidateDNCEbyPointer(HANDLE hContact,pdisplayNameCacheEntry pdnce,int Se
 		}
 		if (SettingType==DBVT_ASCIIZ||SettingType==DBVT_BLOB)
 		{
-			if (pdnce->name && !pdnce->isUnknown) mir_free(pdnce->name);
-			if (pdnce->szGroup) mir_free(pdnce->szGroup);
-			//if (pdnce->szProto) mir_free(pdnce->szProto);
+			if (pdnce->name && !pdnce->isUnknown) mir_free_and_nill(pdnce->name);
+			if (pdnce->szGroup) mir_free_and_nill(pdnce->szGroup);
+			//if (pdnce->szProto) mir_free_and_nill(pdnce->szProto);
 			pdnce->name=NULL;			
 			pdnce->szGroup=NULL;
 			pdnce->szProto=NULL;
@@ -516,7 +516,7 @@ int ContactSettingChanged(WPARAM wParam,LPARAM lParam)
 	if (pdnce==NULL)
 	{
 		TRACE("!!! Very bad pdnce not found.");
-		//if (dbv.pszVal) mir_free(dbv.pszVal);
+		//if (dbv.pszVal) mir_free_and_nill(dbv.pszVal);
 		return 0;
 	}
 	if (pdnce->protoNotExists==FALSE && pdnce->szProto)
@@ -624,7 +624,7 @@ int ContactSettingChanged(WPARAM wParam,LPARAM lParam)
 		// Clean up
 		DBFreeVariant(&dbv);
 		//if (dbv.pszVal)
-		//	mir_free(dbv.pszVal);
+		//	mir_free_and_nill(dbv.pszVal);
 	} 
 	
 	return 0;

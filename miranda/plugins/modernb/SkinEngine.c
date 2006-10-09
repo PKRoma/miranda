@@ -240,11 +240,11 @@ int SkinEngine_UnloadModule()
     ModernButton_UnloadModule(0,0);
     SkinEngine_UnloadSkin(&g_SkinObjectList);
     if (g_SkinObjectList.pObjects) 
-        mir_free(g_SkinObjectList.pObjects);
+        mir_free_and_nill(g_SkinObjectList.pObjects);
     if (g_SkinObjectList.pMaskList) 
-        mir_free(g_SkinObjectList.pMaskList);
+        mir_free_and_nill(g_SkinObjectList.pMaskList);
     if (MainModernMaskList)
-        mir_free(MainModernMaskList);
+        mir_free_and_nill(MainModernMaskList);
     if (pEffectStack)
     {
         int i;
@@ -252,10 +252,10 @@ int SkinEngine_UnloadModule()
             if (pEffectStack->items[i])
             {
                 EFFECTSSTACKITEM * effect=(EFFECTSSTACKITEM*)(pEffectStack->items[i]);
-                mir_free(effect);
+                mir_free_and_nill(effect);
             }
             li.List_Destroy(pEffectStack);
-            mir_free(pEffectStack);
+            mir_free_and_nill(pEffectStack);
     }
     if (g_pCachedWindow)
     {
@@ -266,7 +266,7 @@ int SkinEngine_UnloadModule()
         mod_DeleteDC(g_pCachedWindow->hBackDC);
         mod_DeleteDC(g_pCachedWindow->hImageDC);
         ReleaseDC(NULL,g_pCachedWindow->hScreenDC);
-        mir_free(g_pCachedWindow);
+        mir_free_and_nill(g_pCachedWindow);
         g_pCachedWindow=NULL;
     }
     DeleteCriticalSection(&cs_SkinChanging);
@@ -295,7 +295,7 @@ BOOL SkinEngine_SetRgnOpaque(HDC memdc,HRGN hrgn)
     {
         SkinEngine_SetRectOpaque(memdc,&rect[d]);
     }
-    mir_free(rdata);
+    mir_free_and_nill(rdata);
     return TRUE;
 }
 
@@ -1132,7 +1132,7 @@ int SkinEngine_AddDescriptorToSkinObjectList (LPSKINOBJECTDESCRIPTOR lpDescr, SK
                     if (gl->szFileName!=NULL)                    
                     {
                         obdat->szFileName=mir_strdup(gl->szFileName);
-                        mir_free(gl->szFileName);
+                        mir_free_and_nill(gl->szFileName);
                     }
                     else
                         obdat->szFileName=NULL;
@@ -1295,7 +1295,7 @@ int SkinEngine_GetFullFilename(char * buf, char *file, char * skinfolder,BOOL ma
     else
         memcpy(buf,b2,MAX_PATH);
 
-    if(SkinPlace) mir_free(SkinPlace);
+    if(SkinPlace) mir_free_and_nill(SkinPlace);
     return 0;
 }
 
@@ -1642,14 +1642,14 @@ int SkinEngine_UnloadGlyphImage(HBITMAP hbmp)
             if (pLoadedImages[i].dwLoadedTimes==0)
             {
                 LPGLYPHIMAGE gl=&(pLoadedImages[i]);
-                if (gl->szFileName) mir_free(gl->szFileName);
+                if (gl->szFileName) mir_free_and_nill(gl->szFileName);
                 memmove(&(pLoadedImages[i]),&(pLoadedImages[i+1]),sizeof(GLYPHIMAGE)*(dwLoadedImagesCount-i-1));
                 dwLoadedImagesCount--;
                 DeleteObject(hbmp);
                 if (pLoadedImages && dwLoadedImagesCount==0) 
                 {
                     dwLoadedImagesAlocated=0;
-                    mir_free(pLoadedImages);
+                    mir_free_and_nill(pLoadedImages);
                 }
             }
             return 0;
@@ -1675,7 +1675,7 @@ int SkinEngine_UnloadSkin(SKINOBJECTSLIST * Skin)
                 SKINFONT * sf=gl_plSkinFonts->items[i];
                 if (sf)
                 {
-                    if (sf->szFontID) mir_free(sf->szFontID);
+                    if (sf->szFontID) mir_free_and_nill(sf->szFontID);
                     DeleteObject(sf->hFont);
                 }
             }
@@ -1684,7 +1684,7 @@ int SkinEngine_UnloadSkin(SKINOBJECTSLIST * Skin)
         }
     }
 
-    if (Skin->szSkinPlace) mir_free(Skin->szSkinPlace);
+    if (Skin->szSkinPlace) mir_free_and_nill(Skin->szSkinPlace);
     DeleteButtons();
     if (Skin->dwObjLPAlocated==0) { SkinEngine_UnlockSkin(); return 0;}
     for (i=0; i<Skin->dwObjLPAlocated; i++)
@@ -1698,7 +1698,7 @@ int SkinEngine_UnloadSkin(SKINOBJECTSLIST * Skin)
                 if (dt->hGlyph && dt->hGlyph!=(HBITMAP)-1) 
                     SkinEngine_UnloadGlyphImage(dt->hGlyph);
                 dt->hGlyph=NULL;
-                if (dt->szFileName) mir_free(dt->szFileName);
+                if (dt->szFileName) mir_free_and_nill(dt->szFileName);
                 {// delete texts
                     int i;
                     if (dt->plTextList && dt->plTextList->realCount>0)
@@ -1708,24 +1708,24 @@ int SkinEngine_UnloadSkin(SKINOBJECTSLIST * Skin)
                             GLYPHTEXT * gt=dt->plTextList->items[i];
                             if (gt)
                             {
-                                if (gt->stText)       mir_free(gt->stText);
-                                if (gt->stValueText)  mir_free(gt->stValueText);
-                                if (gt->szFontID)     mir_free(gt->szFontID);
-                                if (gt->szGlyphTextID)mir_free(gt->szGlyphTextID);
+                                if (gt->stText)       mir_free_and_nill(gt->stText);
+                                if (gt->stValueText)  mir_free_and_nill(gt->stValueText);
+                                if (gt->szFontID)     mir_free_and_nill(gt->szFontID);
+                                if (gt->szGlyphTextID)mir_free_and_nill(gt->szGlyphTextID);
                             }
                         }
                         li.List_Destroy(dt->plTextList);
                         dt->plTextList=NULL;
                     }
                 }
-                mir_free(dt);
+                mir_free_and_nill(dt);
             }
             break;
         } 
-        if (Skin->pObjects[i].szObjectID) mir_free(Skin->pObjects[i].szObjectID); 
+        if (Skin->pObjects[i].szObjectID) mir_free_and_nill(Skin->pObjects[i].szObjectID); 
 
     }
-    mir_free(Skin->pObjects);
+    mir_free_and_nill(Skin->pObjects);
     Skin->dwObjLPAlocated=0;
     Skin->dwObjLPReserved=0;
     SkinEngine_UnlockSkin();
@@ -1739,14 +1739,14 @@ static int SkinEngine_enumdb_SkinObjectsProc (const char *szSetting,LPARAM lPara
         char * value;
         value=DBGetStringA(NULL,SKIN,szSetting);
         RegisterObjectByParce((char *)szSetting,value);
-        mir_free(value);
+        mir_free_and_nill(value);
     }
     else if (wildcmp((char *)szSetting,"#*",0))
     {
         char * value;
         value=DBGetStringA(NULL,SKIN,szSetting);
         RegisterButtonByParce((char *)szSetting,value);
-        mir_free(value);
+        mir_free_and_nill(value);
     }
     return 0;
 }
@@ -1770,9 +1770,9 @@ static int SkinEngine_enumdb_SkinMasksProc(const char *szSetting,LPARAM lParam)
                 strncpy(Obj,value,i);
                 Obj[i]='\0';
                 res=AddStrModernMaskToList(ID,Mask,Obj,pCurrentSkin->pMaskList,pCurrentSkin);
-                mir_free(Obj);
+                mir_free_and_nill(Obj);
             }
-            mir_free(value);
+            mir_free_and_nill(value);
         }
 
     }
@@ -1781,14 +1781,14 @@ static int SkinEngine_enumdb_SkinMasksProc(const char *szSetting,LPARAM lParam)
         char * value;
         value=DBGetStringA(NULL,SKIN,szSetting);
         SkinEngine_AddParseTextGlyphObject((char*)szSetting,value,pCurrentSkin);
-        mir_free(value);
+        mir_free_and_nill(value);
     }
     else if (wildcmp((char *)szSetting,"f*",0) && pCurrentSkin)
     {
         char * value;
         value=DBGetStringA(NULL,SKIN,szSetting);
         SkinEngine_AddParseSkinFont((char*)szSetting,value,pCurrentSkin);
-        mir_free(value);
+        mir_free_and_nill(value);
     }
     return 0;
 }
@@ -1858,7 +1858,7 @@ int SkinEngine_GetSkinFolder(char * szFileName, char * t2)
         if (mir_strlen(cus)>0)
             _snprintf(t2,MAX_PATH,"%s\\%s",custom_folder,cus);
     }   	
-    mir_free(b2);
+    mir_free_and_nill(b2);
     CallService(MS_UTILS_PATHTORELATIVE, (WPARAM)t2, (LPARAM)t2);
     return 0;
 }
@@ -1930,7 +1930,7 @@ static BOOL SkinEngine_ParseLineOfIniFile(char * Line)
         return FALSE; // start of comment is found
     case '[':
         //New section start here
-        if (iniCurrentSection) mir_free(iniCurrentSection);
+        if (iniCurrentSection) mir_free_and_nill(iniCurrentSection);
         {
             char *tbuf=Line+i+1;		
             DWORD len2=strlen(tbuf);
@@ -2214,7 +2214,7 @@ BOOL SkinEngine_TextOutA(HDC hdc, int x, int y, char * lpString, int nCount)
     BOOL res;
     MultiByteToWideChar(CallService( MS_LANGPACK_GETCODEPAGE, 0, 0 ), 0, lpString, -1, buf, (2+nCount)*sizeof(TCHAR)); 
     res=SkinEngine_TextOut(hdc,x,y,buf,nCount);
-    mir_free(buf);
+    mir_free_and_nill(buf);
     return res;
 #else
     return SkinEngine_TextOut(hdc,x,y,lpString,nCount);
@@ -2283,7 +2283,7 @@ BOOL SkinEngine_ResetTextEffect(HDC hdc)
         if (pEffectStack->items[i] && ((EFFECTSSTACKITEM*)(pEffectStack->items[i]))->hdc==hdc)
         {
             EFFECTSSTACKITEM * effect=(EFFECTSSTACKITEM*)(pEffectStack->items[i]);
-            mir_free(effect);
+            mir_free_and_nill(effect);
             li.List_Remove(pEffectStack,i);
             return TRUE;
         }
@@ -2575,7 +2575,7 @@ static int SkinEngine_AlphaTextOut (HDC hDC, LPCTSTR lpstring, int nCount, RECT 
             memcpy((void*)((TCHAR*)tem+number),_T("..."),3*sizeof(TCHAR));
             //tem[number+3]=(TCHAR)'\0';
             nCount=number+3;
-            mir_free(lpString);
+            mir_free_and_nill(lpString);
             lpString=tem;
 
         }
@@ -2740,7 +2740,7 @@ static int SkinEngine_AlphaTextOut (HDC hDC, LPCTSTR lpstring, int nCount, RECT 
     SelectObject(memdc,holdfnt);
     mod_DeleteDC(memdc); 
     if (noDIB) free(destBits);
-    mir_free(lpString);
+    mir_free_and_nill(lpString);
     return 0;
 }
 
@@ -2750,7 +2750,7 @@ BOOL SkinEngine_DrawTextA(HDC hdc, char * lpString, int nCount, RECT * lpRect, U
     TCHAR *buf=a2u(lpString);
     BOOL res;
     res=SkinEngine_DrawText(hdc,buf,nCount,lpRect,format);
-    mir_free(buf);
+    mir_free_and_nill(buf);
     return res;
 #else
     return SkinEngine_DrawText(hdc,lpString,nCount,lpRect,format);
@@ -3094,8 +3094,8 @@ BOOL SkinEngine_DrawIconEx(HDC hdcDst,int xLeft,int yTop,HICON hIcon,int cxWidth
     if (!res)
     res=res;
 
-    if(cbit) mir_free(cbit);
-    if(mbit) mir_free(mbit);
+    if(cbit) mir_free_and_nill(cbit);
+    if(mbit) mir_free_and_nill(mbit);
     }*/
 
     return 1;// DrawIconExS(hdc,xLeft,yTop,hIcon,cxWidth,cyWidth,istepIfAniCur,hbrFlickerFreeDraw,diFlags);
@@ -3787,7 +3787,7 @@ static TCHAR *SkinEngine_ReAppend(TCHAR *lfirst, TCHAR * lsecond, int len)
     TCHAR *buf=mir_alloc(size);
     if (lfirst) memmove(buf,lfirst,l1);
     memmove(((BYTE*)buf)+l1,lsecond,l2+sizeof(TCHAR));
-    if (lfirst) mir_free(lfirst);
+    if (lfirst) mir_free_and_nill(lfirst);
     if (len) buf[(l1+l2+1)/sizeof(TCHAR)]=(TCHAR)'\0';
     return buf;
 }
@@ -3804,7 +3804,7 @@ TCHAR* SkinEngine_ReplaceVar(TCHAR *var)
             while (buf[i]!='.' && i>0) i--;
             buf[i]='\0';
         }
-        mir_free(var);
+        mir_free_and_nill(var);
 #ifdef UNICODE
         return a2u(buf);
 #else
@@ -3812,7 +3812,7 @@ TCHAR* SkinEngine_ReplaceVar(TCHAR *var)
 #endif
     } 
 
-    mir_free(var);
+    mir_free_and_nill(var);
     return mir_tstrdup(_T(""));
 }
 TCHAR *SkinEngine_ParseText(TCHAR *stzText)
@@ -3843,7 +3843,7 @@ TCHAR *SkinEngine_ParseText(TCHAR *stzText)
                     var[curpos-stpos]=(TCHAR)'\0';
                     var=SkinEngine_ReplaceVar(var);
                     result=SkinEngine_ReAppend(result,var,0);
-                    mir_free(var);
+                    mir_free_and_nill(var);
                 }
                 else
                     result=SkinEngine_ReAppend(result,_T("%"),0);

@@ -184,10 +184,10 @@ void FreeTreeData( HWND hwndDlg )
 		tvi.hItem = hItem;
 		TreeView_GetItem(GetDlgItem(hwndDlg,IDC_MENUITEMS), &tvi);
 		{	MenuItemOptData* O = (MenuItemOptData *)tvi.lParam;
-			if ( O->name ) mir_free( O->name );
-			if ( O->defname ) mir_free( O->defname );
-			if ( O->uniqname ) mir_free( O->uniqname );
-			mir_free( O );
+			if ( O->name ) mir_free_and_nill( O->name );
+			if ( O->defname ) mir_free_and_nill( O->defname );
+			if ( O->uniqname ) mir_free_and_nill( O->uniqname );
+			mir_free_and_nill( O );
 		}
 
 		tvi.lParam = 0;
@@ -255,7 +255,7 @@ int BuildTree(HWND hwndDlg,int MenuObjectId)
 
 			if ( !DBGetContactSettingTString(NULL, MenuNameItems, buf, &dbv)) {
 				PD->name = mir_tstrdup(dbv.ptszVal);            
-				//mir_free(dbv.pszVal);
+				//mir_free_and_nill(dbv.pszVal);
 				DBFreeVariant(&dbv);
 			}
 			else PD->name = mir_tstrdup(pimo->MenuItems[i].mi.ptszName);
@@ -315,7 +315,7 @@ int BuildTree(HWND hwndDlg,int MenuObjectId)
 	}
 
 	SendDlgItemMessage(hwndDlg, IDC_MENUITEMS, WM_SETREDRAW, TRUE, 0);
-			mir_free(PDar);
+			mir_free_and_nill(PDar);
 	ShowWindow(GetDlgItem(hwndDlg,IDC_NOTSUPPORTWARNING),(pimo->bUseUserDefinedItems)?SW_HIDE:SW_SHOW);
 			EnableWindow(GetDlgItem(hwndDlg,IDC_MENUITEMS),(pimo->bUseUserDefinedItems));
 			EnableWindow(GetDlgItem(hwndDlg,IDC_INSERTSEPARATOR),(pimo->bUseUserDefinedItems));
@@ -443,7 +443,7 @@ static BOOL CALLBACK GenMenuOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM l
 								ZeroMemory(buf,256);
 								GetDlgItemTextA(hwndDlg,IDC_GENMENU_CUSTOMNAME,buf,256);
 					if (((MenuItemOptData *)tvi.lParam)->name) {
-						mir_free(((MenuItemOptData *)tvi.lParam)->name);
+						mir_free_and_nill(((MenuItemOptData *)tvi.lParam)->name);
 					}
 								
 					((MenuItemOptData *)tvi.lParam)->name = mir_tstrdup( ((MenuItemOptData *)tvi.lParam)->defname );
@@ -472,7 +472,7 @@ static BOOL CALLBACK GenMenuOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM l
 					ZeroMemory(buf,sizeof( buf ));
 					GetDlgItemText( hwndDlg, IDC_GENMENU_CUSTOMNAME, buf, SIZEOF( buf ));
 					if (((MenuItemOptData *)tvi.lParam)->name)
-						mir_free(((MenuItemOptData *)tvi.lParam)->name);
+						mir_free_and_nill(((MenuItemOptData *)tvi.lParam)->name);
 
 					((MenuItemOptData *)tvi.lParam)->name = mir_tstrdup(buf);
 								
@@ -679,7 +679,7 @@ static BOOL CALLBACK GenMenuOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM l
 			{
 		struct OrderData* dat = (struct OrderData*)GetWindowLong( GetDlgItem(hwndDlg,IDC_MENUITEMS), GWL_USERDATA );
 		if ( dat )
-			mir_free( dat );
+			mir_free_and_nill( dat );
 //				OptionsOpened=FALSE;
 		FreeTreeData( hwndDlg );
 		break;

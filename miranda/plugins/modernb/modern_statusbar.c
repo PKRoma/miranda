@@ -143,11 +143,11 @@ int ModernDrawStatusBarWorker(HWND hWnd, HDC hDC)
 
       for (k=0; k<allocedItemData; k++)
       {
-		if(ProtosData[k].ProtoXStatus) mir_free (ProtosData[k].ProtoXStatus);
-        if(ProtosData[k].ProtoName) mir_free (ProtosData[k].ProtoName);
-        if(ProtosData[k].ProtoStatusText) mir_free (ProtosData[k].ProtoStatusText);
+		if(ProtosData[k].ProtoXStatus) mir_free_and_nill (ProtosData[k].ProtoXStatus);
+        if(ProtosData[k].ProtoName) mir_free_and_nill (ProtosData[k].ProtoName);
+        if(ProtosData[k].ProtoStatusText) mir_free_and_nill (ProtosData[k].ProtoStatusText);
       }
-      mir_free(ProtosData);
+      mir_free_and_nill(ProtosData);
       ProtosData=NULL;
       allocedItemData=0;
     }
@@ -193,7 +193,7 @@ int ModernDrawStatusBarWorker(HWND hWnd, HDC hDC)
 	  rectwidth=rc.right-rc.left-g_StatusBarData.rectBorders.left-g_StatusBarData.rectBorders.right;
 	  if (visProtoCount>1) sw=(rectwidth-(g_StatusBarData.extraspace*(visProtoCount-1)))/visProtoCount;
 	  else sw=rectwidth;
-      if (ProtoWidth) mir_free(ProtoWidth);
+      if (ProtoWidth) mir_free_and_nill(ProtoWidth);
       ProtoWidth=mir_alloc(sizeof(DWORD)*visProtoCount);
       for (i=0; i<visProtoCount; i++)
       {
@@ -216,7 +216,7 @@ int ModernDrawStatusBarWorker(HWND hWnd, HDC hDC)
 						if (!DBGetContactSettingTString(NULL,ProtosData[i].ProtoName,dbTitle,&dbv))
 						{
 							ProtosData[i].ProtoXStatus=mir_tstrdup(dbv.ptszVal);
-							//mir_free(dbv.ptszVal);
+							//mir_free_and_nill(dbv.ptszVal);
 							DBFreeVariant(&dbv);
 						}
 					}
@@ -430,7 +430,7 @@ int ModernDrawStatusBarWorker(HWND hWnd, HDC hDC)
 
       }
     }
-    if (ProtoWidth) mir_free(ProtoWidth);
+    if (ProtoWidth) mir_free_and_nill(ProtoWidth);
   }
 
   SelectObject(hDC,hOldFont);
@@ -454,10 +454,10 @@ LRESULT CALLBACK ModernStatusProc(HWND hwnd,UINT msg,WPARAM wParam,LPARAM lParam
 
       for (k=0; k<allocedItemData; k++)
       {
-        if(ProtosData[k].ProtoName) mir_free (ProtosData[k].ProtoName);
-        if(ProtosData[k].ProtoStatusText) mir_free (ProtosData[k].ProtoStatusText);
+        if(ProtosData[k].ProtoName) mir_free_and_nill (ProtosData[k].ProtoName);
+        if(ProtosData[k].ProtoStatusText) mir_free_and_nill (ProtosData[k].ProtoStatusText);
       }
-      mir_free(ProtosData);
+      mir_free_and_nill(ProtosData);
       ProtosData=NULL;
       allocedItemData=0;
     }

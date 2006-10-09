@@ -35,7 +35,7 @@ void FreeAndNil(void **p)
     {
       if (!p)
       {
-        mir_free(*p);
+        mir_free_and_nill(*p);
 	  }
       *p=NULL;
 		}
@@ -692,7 +692,7 @@ int MO_AddOldNewMenuItem(WPARAM wParam,LPARAM lParam)
 				oldroot = getGlobalId( MenuObjects[objidx].id, p->id );
         break;
 		}	}
-		mir_free( tszRoot );
+		mir_free_and_nill( tszRoot );
     if(oldroot==-1)
     {
       //not found,creating root
@@ -915,7 +915,7 @@ void GetMenuItemName( PMO_IntMenuItem pMenuItem, char* pszDest, size_t cbDestSiz
 		#if defined( _UNICODE )
 			char* name = u2a(pMenuItem->mi.ptszName);
 			mir_snprintf( pszDest, cbDestSize, "{%s}", name );
-			mir_free(name);
+			mir_free_and_nill(name);
 		#else
 			mir_snprintf( pszDest, cbDestSize, "{%s}", pMenuItem->mi.pszName );
 		#endif
@@ -1001,10 +1001,10 @@ HMENU BuildRecursiveMenu(HMENU hMenu,ListParam *param)
 			wsprintfA(DBString, "%s_name", menuItemName);
 			if (!DBGetContactSettingTString(NULL, MenuNameItems, DBString, &dbv)) {
 				if (_tcslen(dbv.ptszVal)>0) {
-          if (MenuItems[j].CustomName) mir_free(MenuItems[j].CustomName);
+          if (MenuItems[j].CustomName) mir_free_and_nill(MenuItems[j].CustomName);
 					MenuItems[j].CustomName=mir_tstrdup(dbv.ptszVal);
 				}
-				//if (dbv.ptszVal)	mir_free(dbv.ptszVal);
+				//if (dbv.ptszVal)	mir_free_and_nill(dbv.ptszVal);
 				DBFreeVariant(&dbv);
 			}
 
@@ -1220,9 +1220,9 @@ int OnIconLibChanges(WPARAM wParam,LPARAM lParam)
 		if (deficon) DestroyIcon_protect(deficon);
       }	
 	  #ifdef UNICODE
-	   if (descr) mir_free(descr);
+	   if (descr) mir_free_and_nill(descr);
 	  #endif
-	  if (uname) mir_free(uname);
+	  if (uname) mir_free_and_nill(uname);
     };
   }
 
@@ -1264,8 +1264,8 @@ int RegisterOneIcon(int mo,int mi)
 
 #ifdef UNICODE
   if (!MenuObjects[mo].MenuItems[mi].UniqName)
-		if (uname) mir_free(uname);
-  if (desc) mir_free(desc);
+		if (uname) mir_free_and_nill(uname);
+  if (desc) mir_free_and_nill(desc);
 #endif
   return 0;
 }

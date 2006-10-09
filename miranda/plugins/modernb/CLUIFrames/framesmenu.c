@@ -53,7 +53,7 @@ static int RemoveContextFrameMenuItem(WPARAM wParam,LPARAM lParam)
 	fmep=(lpFrameMenuExecParam)CallService(MO_MENUITEMGETOWNERDATA,wParam,lParam);
 	if (fmep!=NULL){
 		if (fmep->szServiceName!=NULL){
-			mir_free(fmep->szServiceName);
+			mir_free_and_nill(fmep->szServiceName);
 			fmep->szServiceName=NULL;
 		};
 		free(fmep);

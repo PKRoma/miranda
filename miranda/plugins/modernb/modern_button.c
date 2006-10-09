@@ -161,7 +161,7 @@ int PaintWorker(HWND hwnd, HDC whdc)
             Value=mir_strdup(_ltoa(defval,buf,sizeof(buf)));
             break;
         }
-        mir_free(section);
+        mir_free_and_nill(section);
       }  
 
     }
@@ -173,7 +173,7 @@ int PaintWorker(HWND hwnd, HDC whdc)
     if (Value)
     {
       CLCPaint_AddParam(&Request,mod_CalcHash("Value"),Value,0);
-      mir_free(Value);
+      mir_free_and_nill(Value);
     }    
     SkinDrawGlyphMask(hdc,&rc,&rc,&Request);
     SkinSelector_DeleteMask(&Request);
@@ -249,7 +249,7 @@ static int ToggleDBValue(char * ValueDBSection,char *ValueTypeDef)
             else 
               Value=mir_strdup(val2);
             DBWriteContactSettingString(NULL,section,key,Value);
-            mir_free(Value);
+            mir_free_and_nill(Value);
             break;
           }         
         case 'd':
@@ -268,8 +268,8 @@ static int ToggleDBValue(char * ValueDBSection,char *ValueTypeDef)
             DBWriteContactSettingByte(NULL,section,key,(BYTE)curval);            
             break;
         }       
-        mir_free(section);
-        mir_free(val);
+        mir_free_and_nill(section);
+        mir_free_and_nill(val);
       }  
 return 0;
 }
@@ -319,15 +319,15 @@ static LRESULT CALLBACK ModernButtonWndProc(HWND hwndDlg, UINT msg,  WPARAM wPar
             }
         }
         LeaveCriticalSection(&csTips);
-        if (bct->ID) mir_free(bct->ID);
-        if (bct->CommandService) mir_free(bct->CommandService);
-        if (bct->StateService) mir_free (bct->StateService); 
-        if (bct->HandleService) mir_free(bct->HandleService);               
-        if (bct->Hint) mir_free(bct->Hint);  
-        if (bct->ValueDBSection) mir_free(bct->ValueDBSection);
-        if (bct->ValueTypeDef) mir_free(bct->ValueTypeDef);
+        if (bct->ID) mir_free_and_nill(bct->ID);
+        if (bct->CommandService) mir_free_and_nill(bct->CommandService);
+        if (bct->StateService) mir_free_and_nill (bct->StateService); 
+        if (bct->HandleService) mir_free_and_nill(bct->HandleService);               
+        if (bct->Hint) mir_free_and_nill(bct->Hint);  
+        if (bct->ValueDBSection) mir_free_and_nill(bct->ValueDBSection);
+        if (bct->ValueTypeDef) mir_free_and_nill(bct->ValueTypeDef);
 
-        mir_free(bct);
+        mir_free_and_nill(bct);
         }
         SetWindowLong(hwndDlg, GWL_USERDATA,(long)NULL);
         break;	// DONT! fall thru
@@ -592,7 +592,7 @@ HWND CreateButtonWindow(ModernButtonCtrl * bct, HWND parent)
     TCHAR *UnicodeID;
     UnicodeID=a2u(bct->ID);
     hwnd=CreateWindow(_T(MODERNBUTTONCLASS),UnicodeID,WS_VISIBLE|WS_CHILD,bct->Left,bct->Top,bct->Right-bct->Left,bct->Bottom-bct->Top,parent,NULL,g_hInst,NULL);       
-    mir_free(UnicodeID);
+    mir_free_and_nill(UnicodeID);
   }
 #else
     hwnd=CreateWindow(_T(MODERNBUTTONCLASS),bct->ID,WS_VISIBLE|WS_CHILD,bct->Left,bct->Top,bct->Right-bct->Left,bct->Bottom-bct->Top,parent,NULL,g_hInst,NULL);         
@@ -625,7 +625,7 @@ int DeleteButtons()
   if (!ModernButtonModuleIsLoaded) return 0;
   for(i=0; i<ButtonsCount; i++)
     if (Buttons[i].hwnd) DestroyWindow(Buttons[i].hwnd);
-  if (Buttons) mir_free(Buttons);
+  if (Buttons) mir_free_and_nill(Buttons);
   ButtonsCount=0;
   return 0;
 }

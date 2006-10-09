@@ -632,28 +632,28 @@ BOOL CALLBACK DlgProcCluiOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPar
 			s=mir_tstrdup(_T(MIRANDANAME));
 		//dbv.pszVal=s;
 		SetDlgItemText(hwndDlg,IDC_TITLETEXT,s);
-		if (s) mir_free(s);
+		if (s) mir_free_and_nill(s);
 		DBFreeVariant(&dbv);
-		//if (s) mir_free(s);
+		//if (s) mir_free_and_nill(s);
 		SendDlgItemMessage(hwndDlg,IDC_TITLETEXT,CB_ADDSTRING,0,(LPARAM)MIRANDANAME);
 		sprintf(szUin,"%u",DBGetContactSettingDword(NULL,"ICQ","UIN",0));
 		SendDlgItemMessage(hwndDlg,IDC_TITLETEXT,CB_ADDSTRING,0,(LPARAM)szUin);
 
 		if(!DBGetContactSetting(NULL,"ICQ","Nick",&dbv)) {
 			SendDlgItemMessage(hwndDlg,IDC_TITLETEXT,CB_ADDSTRING,0,(LPARAM)dbv.pszVal);
-			//mir_free(dbv.pszVal);
+			//mir_free_and_nill(dbv.pszVal);
 			DBFreeVariant(&dbv);
 			dbv.pszVal=NULL;
 		}
 		if(!DBGetContactSetting(NULL,"ICQ","FirstName",&dbv)) {
 			SendDlgItemMessage(hwndDlg,IDC_TITLETEXT,CB_ADDSTRING,0,(LPARAM)dbv.pszVal);
-			//mir_free(dbv.pszVal);
+			//mir_free_and_nill(dbv.pszVal);
 			DBFreeVariant(&dbv);
 			dbv.pszVal=NULL;
 		}
 		if(!DBGetContactSetting(NULL,"ICQ","e-mail",&dbv)) {
 			SendDlgItemMessage(hwndDlg,IDC_TITLETEXT,CB_ADDSTRING,0,(LPARAM)dbv.pszVal);
-			//mir_free(dbv.pszVal);
+			//mir_free_and_nill(dbv.pszVal);
 			DBFreeVariant(&dbv);
 			dbv.pszVal=NULL;
 		}

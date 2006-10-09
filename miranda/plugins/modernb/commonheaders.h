@@ -117,18 +117,10 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include "m_avatars.h"
 #include "m_smileyadd.h"
 
+//macros to free data and set it pointer to NULL
+#define mir_free_and_nill(x) {mir_free(x); x=NULL;}
 // shared vars
 extern HINSTANCE g_hInst;
-
-/* most free()'s are invalid when the code is executed from a dll, so this changes
- all the bad free()'s to good ones, however it's still incorrect code. The reasons for not
- changing them include:
-
-  * DBFreeVariant has a CallService() lookup
-  * free() is executed in some large loops to do with clist creation of group data
-  * easy search and replace
-
-*/
 
 #define UM_CALLSYNCRONIZED          (WM_USER+100)  // message will be sent to call procedure in mail thread context
 
@@ -263,8 +255,8 @@ extern void Utf8Decode( char* str, wchar_t** ucs2 );
 #define DeleteObject(a) DebugDeleteObject(a)
 #endif 
 
-#define strsetA(a,b) {if (a) mir_free(a); a=mir_strdup(b);}
-#define strsetT(a,b) {if (a) mir_free(a); a=mir_tstrdup(b);}
+#define strsetA(a,b) {if (a) mir_free_and_nill(a); a=mir_strdup(b);}
+#define strsetT(a,b) {if (a) mir_free_and_nill(a); a=mir_tstrdup(b);}
 
 extern void TRACE_ERROR();
 extern BOOL DebugDeleteObject(HGDIOBJ a);

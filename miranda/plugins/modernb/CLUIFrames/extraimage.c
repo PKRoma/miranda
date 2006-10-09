@@ -350,7 +350,7 @@ void ExtraImage_SetAllExtraIcons(HWND hwndList,HANDLE hContact)
 					if (homepage!=NULL)
 					{											
 						showweb=TRUE;				
-						mir_free(homepage);
+						mir_free_and_nill(homepage);
 					}
 				}
 				SendMessage(hwndList,CLM_SETEXTRAIMAGE,(WPARAM)hItem,MAKELPARAM(ExtraImage_ExtraIDToColumnNum(EXTRA_ICON_WEB),(showweb)?2:0xFF));	

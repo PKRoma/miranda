@@ -125,7 +125,7 @@ int TreeAddObject(HWND hwndDlg, int ID, OPT_OBJECT_DATA * data)
 		tvis.item.lParam=(LPARAM)data;
 		TreeView_InsertItemA(GetDlgItem(hwndDlg,ID),&tvis);
 	}
-	mir_free(path);
+	mir_free_and_nill(path);
 	return 0;
 }
 
@@ -151,10 +151,10 @@ int enumDB_SkinObjectsForEditorProc(const char *szSetting,LPARAM lParam)
 		}
 		else
 		{
-			if (value) mir_free(value);
-			if (desc) mir_free(desc);
+			if (value) mir_free_and_nill(value);
+			if (desc) mir_free_and_nill(desc);
 		}
-		mir_free(descKey);		
+		mir_free_and_nill(descKey);		
 	}	
 	return 0;
 }
@@ -357,7 +357,7 @@ int GetShortFileName(char * FullFile)
 	if (mir_bool_strcmpi(buf,FullFile))
 	{
 		_snprintf(FullFile,MAX_PATH,"%s",file);
-		mir_free(file);
+		mir_free_and_nill(file);
 		return 1; //skin folder relative
 	}
 	else
@@ -368,7 +368,7 @@ int GetShortFileName(char * FullFile)
 		else
 			_snprintf(FullFile,MAX_PATH,"%s",buf);
 	}
-	mir_free(file);
+	mir_free_and_nill(file);
 	return 2; //mirand folder relative
 }
 
@@ -465,12 +465,12 @@ void UpdateInfo(HWND hwndDlg)
 			sd=(OPT_OBJECT_DATA*)(tvi.lParam);
 			if (sd)
 			{
-				if (sd->szValue) mir_free(sd->szValue);
+				if (sd->szValue) mir_free_and_nill(sd->szValue);
 				sd->szValue=mir_strdup(b);
 			}
 		}
 	}
-	mir_free(b);
+	mir_free_and_nill(b);
 	glSkinWasModified=1;
 }
 
@@ -538,7 +538,7 @@ BOOL CALLBACK DlgSkinEditorOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lP
 	{
 	case WM_DESTROY: 
 		{
-			if (object_clipboard) mir_free(object_clipboard);
+			if (object_clipboard) mir_free_and_nill(object_clipboard);
 			break;
 		}
 	case WM_WINDOWPOSCHANGED:
@@ -616,7 +616,7 @@ BOOL CALLBACK DlgSkinEditorOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lP
 			{
 				if (HIWORD(wParam)==BN_CLICKED)
 				{
-					if (object_clipboard) mir_free(object_clipboard);
+					if (object_clipboard) mir_free_and_nill(object_clipboard);
 					object_clipboard=NULL;
 					{
 							OPT_OBJECT_DATA *sd=NULL;  
@@ -763,7 +763,7 @@ BOOL CALLBACK DlgSkinEditorOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lP
 								OPT_OBJECT_DATA * dataOld=(OPT_OBJECT_DATA*)nmtv->itemOld.lParam;
 								if (dataOld->szValue)								
 								{
-									mir_free(dataOld->szValue);
+									mir_free_and_nill(dataOld->szValue);
 									dataOld->szValue=MadeString(hwndDlg);
 								}
 						}
@@ -793,10 +793,10 @@ BOOL CALLBACK DlgSkinEditorOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lP
 						OPT_OBJECT_DATA * dataOld=(OPT_OBJECT_DATA*)nmtv->itemOld.lParam;
 						if (dataOld)
 						{
-							if (dataOld->szName) mir_free(dataOld->szName);
-							if (dataOld->szPath) mir_free(dataOld->szPath);
-							if (dataOld->szTempValue) mir_free(dataOld->szTempValue);
-							if (dataOld->szValue) mir_free(dataOld->szValue);
+							if (dataOld->szName) mir_free_and_nill(dataOld->szName);
+							if (dataOld->szPath) mir_free_and_nill(dataOld->szPath);
+							if (dataOld->szTempValue) mir_free_and_nill(dataOld->szTempValue);
+							if (dataOld->szValue) mir_free_and_nill(dataOld->szValue);
 						}
 					}
 					return 0;

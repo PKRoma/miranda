@@ -208,7 +208,7 @@ int ClearMaskList(LISTMODERNMASK * mmTemplateList)
     if (!mmTemplateList->pl_Masks) return -1;
     for(i=0; i<(int)mmTemplateList->dwMaskCnt; i++)
         SkinSelector_DeleteMask(&(mmTemplateList->pl_Masks[i]));
-	mir_free(mmTemplateList->pl_Masks);
+	mir_free_and_nill(mmTemplateList->pl_Masks);
     mmTemplateList->pl_Masks=NULL;
     mmTemplateList->dwMaskCnt=0;
     return 0;
@@ -220,7 +220,7 @@ int DeleteMaskByItID(DWORD mID,LISTMODERNMASK * mmTemplateList)
     if (mmTemplateList->dwMaskCnt==1)
     {
        SkinSelector_DeleteMask(&(mmTemplateList->pl_Masks[0]));
-       mir_free(mmTemplateList->pl_Masks);
+       mir_free_and_nill(mmTemplateList->pl_Masks);
        mmTemplateList->pl_Masks=NULL;
        mmTemplateList->dwMaskCnt;
     }
@@ -236,7 +236,7 @@ int DeleteMaskByItID(DWORD mID,LISTMODERNMASK * mmTemplateList)
           newAlocation[i]=mmTemplateList->pl_Masks[i+1];
           newAlocation[i].dwMaskId=i;
       }
-	  mir_free(mmTemplateList->pl_Masks);
+	  mir_free_and_nill(mmTemplateList->pl_Masks);
       mmTemplateList->pl_Masks=newAlocation;
       mmTemplateList->dwMaskCnt--;
     }
@@ -471,7 +471,7 @@ TCHAR * GetParamNT(char * string, TCHAR * buf, int buflen, BYTE paramN, char Del
 	char *ansibuf=mir_alloc(buflen/sizeof(TCHAR));
 	GetParamN(string, ansibuf, buflen/sizeof(TCHAR), paramN, Delim, SkipSpaces);
 	MultiByteToWideChar(CP_UTF8,0,ansibuf,-1,buf,buflen);
-	mir_free(ansibuf);
+	mir_free_and_nill(ansibuf);
 	return buf;
 #else
 	return GetParamN(string, buf, buflen, paramN, Delim, SkipSpaces);
@@ -645,8 +645,8 @@ int RegisterObjectByParce(char * ObjectName, char * Params)
              }
              obj.Data=&gl;
              res=SkinEngine_AddDescriptorToSkinObjectList(&obj,NULL);
-             mir_free(obj.szObjectID);
-             if (gl.szFileName) mir_free(gl.szFileName);
+             mir_free_and_nill(obj.szObjectID);
+             if (gl.szFileName) mir_free_and_nill(gl.szFileName);
              return res;
          }
          break;

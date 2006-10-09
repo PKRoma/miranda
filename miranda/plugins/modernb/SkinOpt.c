@@ -419,7 +419,7 @@ static BOOL CALLBACK DlgSkinOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM l
 		else if (nmtv->hdr.code==TVN_SELCHANGEDA || nmtv->hdr.code==TVN_SELCHANGEDW)
 		{
 			if (nmtv->itemOld.lParam)
-				mir_free((void*)(nmtv->itemOld.lParam));
+				mir_free_and_nill((void*)(nmtv->itemOld.lParam));
 			return 0;
 		}
 		break;
@@ -547,7 +547,7 @@ int FillAvailableSkinList(HWND hwndDlg)
 			CallService(MS_UTILS_PATHTOABSOLUTE, (WPARAM)skinfile, (LPARAM)skinfull);
 			res=AddSkinToListFullName(hwndDlg,skinfull);
 
-			mir_free(skinfile);
+			mir_free_and_nill(skinfile);
 		}
 	}
 	return res;
@@ -906,7 +906,7 @@ static BOOL CALLBACK DlgProcSkinTabbedOpts(HWND hwndDlg, UINT msg, WPARAM wParam
 				DestroyWindow(data->items[i].hwnd); 
 			}
 
-			mir_free(data); 
+			mir_free_and_nill(data); 
 			break;
 		}
 	case PSM_CHANGED:

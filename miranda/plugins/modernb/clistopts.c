@@ -1313,7 +1313,7 @@ static BOOL CALLBACK DlgProcItemsOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPA
 				DestroyWindow(data->items[i].hwnd); 
 			}
 
-			mir_free(data); 
+			mir_free_and_nill(data); 
 			break;
 		}
 	}

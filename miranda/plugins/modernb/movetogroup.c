@@ -65,7 +65,7 @@ static int OnContactMenuBuild(WPARAM wParam,LPARAM lParam)
 		if (grpname[0]==0) {break; };
 		AddGroupItem((int)menuid,&(grpname[1]),grpid++,i+1,wParam);
 		i++;
-		mir_free(grpname);
+		mir_free_and_nill(grpname);
 	};
 	return 0;
 };
@@ -92,7 +92,7 @@ static int MTG_DOMOVE(WPARAM wParam,LPARAM lParam)
 	{
 		correctgrpname=&(grpname[1]);
 		DBWriteContactSettingTString((HANDLE)wParam,"CList","Group",correctgrpname);
-		mir_free(grpname);
+		mir_free_and_nill(grpname);
 	};
 
 	free (intname);

@@ -161,10 +161,10 @@ int GetProtoIndex(char * szName)
         {
             if (!mir_strcmp(name,szName))
             {
-                mir_free(name);
+                mir_free_and_nill(name);
                 return i;
             }
-            mir_free(name);
+            mir_free_and_nill(name);
         }
     }
     return -1;

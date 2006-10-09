@@ -749,7 +749,7 @@ static __inline MODERNMASK * CLCPaint_GetCLCContactRowBackModernMask(struct ClcG
 #else
         CLCPaint_AddParam(mpModernMask,dwQuickHash[hi_Name],b2,0);
 #endif
-        mir_free(b2);
+        mir_free_and_nill(b2);
     }
     if (group->parent)
     {
@@ -767,7 +767,7 @@ static __inline MODERNMASK * CLCPaint_GetCLCContactRowBackModernMask(struct ClcG
 #else
         CLCPaint_AddParam(mpModernMask,dwQuickHash[hi_Group],b2,0);
 #endif
-        mir_free(b2);		
+        mir_free_and_nill(b2);		
     }
     return mpModernMask;  
 }
@@ -1312,7 +1312,7 @@ static void CLCPaint_ModernInternalPaintRowItems(HWND hwnd, HDC hdcMem, struct C
                             time_t contact_time;
                             TCHAR buf[70]={0};
                             contact_time = time(NULL) - pdnce->timediff;
-                            if (pdnce->szSecondLineText) mir_free(pdnce->szSecondLineText);
+                            if (pdnce->szSecondLineText) mir_free_and_nill(pdnce->szSecondLineText);
                             pdnce->szSecondLineText=NULL;
 
                             dbtts.szDest = buf;
@@ -1351,7 +1351,7 @@ static void CLCPaint_ModernInternalPaintRowItems(HWND hwnd, HDC hdcMem, struct C
                             time_t contact_time;
                             TCHAR buf[70]={0};
                             contact_time = time(NULL) - pdnce->timediff;
-                            if (pdnce->szThirdLineText) mir_free(pdnce->szThirdLineText);
+                            if (pdnce->szThirdLineText) mir_free_and_nill(pdnce->szThirdLineText);
                             pdnce->szThirdLineText= NULL;
 
                             dbtts.szDest = buf;
@@ -2536,7 +2536,7 @@ static void CLCPaint_InternalPaintRowItems(HWND hwnd, HDC hdcMem, struct ClcData
                     time_t contact_time;
                     TCHAR buf[70]={0};
                     contact_time = time(NULL) - pdnce->timediff;
-                    if (pdnce->szSecondLineText) mir_free(pdnce->szSecondLineText);
+                    if (pdnce->szSecondLineText) mir_free_and_nill(pdnce->szSecondLineText);
                     pdnce->szSecondLineText=NULL;
 
                     dbtts.szDest = buf;
@@ -2583,7 +2583,7 @@ static void CLCPaint_InternalPaintRowItems(HWND hwnd, HDC hdcMem, struct ClcData
                     time_t contact_time;
                     TCHAR buf[70]={0};
                     contact_time = time(NULL) - pdnce->timediff;
-                    if (pdnce->szThirdLineText) mir_free(pdnce->szThirdLineText);
+                    if (pdnce->szThirdLineText) mir_free_and_nill(pdnce->szThirdLineText);
                     pdnce->szThirdLineText= NULL;
 
                     dbtts.szDest = buf;
@@ -3016,7 +3016,7 @@ static void CLCPaint_InternalPaintClc(HWND hwnd,struct ClcData *dat,HDC hdc,RECT
                 if (mpRequest) 
                 {
                     SkinSelector_DeleteMask(mpRequest);
-                    mir_free(mpRequest);
+                    mir_free_and_nill(mpRequest);
                 }
 
                 // Something to draw?
@@ -3174,7 +3174,7 @@ static void CLCPaint_InternalPaintClc(HWND hwnd,struct ClcData *dat,HDC hdc,RECT
                             SkinDrawGlyphMask(hdcMem,&mrc,rcPaint,mpRequest);
                         }
                         SkinSelector_DeleteMask(mpRequest);
-                        mir_free(mpRequest);
+                        mir_free_and_nill(mpRequest);
                         mpRequest=NULL;
                     }
                 }

@@ -411,7 +411,7 @@ static int CLUI_FillAlphaChannel(HWND hwnd, HDC hdc, RECT * ParentRect, BYTE alp
         SkinEngine_SetRectOpaque(hdc,&rect[d]);
     }
 
-    mir_free(rdata);
+    mir_free_and_nill(rdata);
     DeleteObject(hrgn);
     return 1;
 }
@@ -1949,7 +1949,7 @@ LRESULT CALLBACK CLUI__cli_ContactListWndProc(HWND hwnd, UINT msg, WPARAM wParam
                     if (email)
                     {
                         sprintf(buf,"mailto:%s",email);
-                        mir_free(email);
+                        mir_free_and_nill(email);
                         ShellExecuteA(hwnd,"open",buf,NULL,NULL,SW_SHOW);
                     }											
                 };	
@@ -1961,7 +1961,7 @@ LRESULT CALLBACK CLUI__cli_ContactListWndProc(HWND hwnd, UINT msg, WPARAM wParam
                     if (homepage!=NULL)
                     {											
                         ShellExecuteA(hwnd,"open",homepage,NULL,NULL,SW_SHOW);
-                        mir_free(homepage);
+                        mir_free_and_nill(homepage);
                     }
                 }
             }
@@ -2106,7 +2106,7 @@ LRESULT CALLBACK CLUI__cli_ContactListWndProc(HWND hwnd, UINT msg, WPARAM wParam
             {
                 int i=0;
                 for(i=0; i<64; i++)
-                    if(CycleStartTick[i].szProto) mir_free(CycleStartTick[i].szProto);
+                    if(CycleStartTick[i].szProto) mir_free_and_nill(CycleStartTick[i].szProto);
             }
 
             if (state==SETTING_STATE_NORMAL){CLUI_ShowWindowMod(hwnd,SW_HIDE);};

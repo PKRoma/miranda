@@ -400,7 +400,7 @@ int ClcProtoAck(WPARAM wParam,LPARAM lParam)
                         DBWriteContactSettingString(ack->hContact,"CList","StatusMsg",(const char *)ack->lParam);
                     else
                         Cache_RenewText(ack->hContact);
-                    mir_free(val);
+                    mir_free_and_nill(val);
                 }
                 else 
                     DBWriteContactSettingString(ack->hContact,"CList","StatusMsg",(const char *)ack->lParam);
@@ -426,7 +426,7 @@ int ClcProtoAck(WPARAM wParam,LPARAM lParam)
                         DBWriteContactSettingString(ack->hContact,"CList","StatusMsg","");
                     else
                         Cache_RenewText(ack->hContact);
-                    mir_free(val);
+                    mir_free_and_nill(val);
                 }
             }
             //pcli->pfnClcBroadcast( INTM_STATUSMSGCHANGED,(WPARAM)ack->hContact,&a);              
@@ -454,7 +454,7 @@ static int ClcShutdown(WPARAM wParam,LPARAM lParam)
 {
     UnhookEvent(hAckHook);
     UnhookEvent(hSettingChanged1);
-    if(clcProto) mir_free(clcProto);
+    if(clcProto) mir_free_and_nill(clcProto);
     return 0;
 }
 
@@ -522,13 +522,13 @@ int GetProtocolVisibility(char * ProtoName)
         {
             if (mir_strcmp(ProtoName,dbv.pszVal)==0)
             {
-                //mir_free(dbv.pszVal);
+                //mir_free_and_nill(dbv.pszVal);
                 DBFreeVariant(&dbv);
                 _itoa(i+400,buf2,10);
                 res= DBGetContactSettingDword(NULL,"Protocols",buf2,0);
                 return res;
             }
-            //mir_free(dbv.pszVal);
+            //mir_free_and_nill(dbv.pszVal);
             DBFreeVariant(&dbv);
         }
     }
@@ -1829,8 +1829,8 @@ case WM_LBUTTONUP:
 							else
 								_sntprintf(newName,SIZEOF(newName),_T("%s"),shortGroup);
 						}
-						if (groupName) mir_free(groupName);
-						if (sourceGrName) mir_free(sourceGrName);
+						if (groupName) mir_free_and_nill(groupName);
+						if (sourceGrName) mir_free_and_nill(sourceGrName);
 					}
 					newIndex=CallService(MS_CLIST_GROUPMOVEBEFORE, contact->groupId, (destcontact&&i!=-1)?destcontact->groupId:0);							
 					newIndex=newIndex?newIndex:contact->groupId;

@@ -103,7 +103,7 @@ ROWCELL *cppInitModernRow(ROWCELL	** tabAccess)
   if (tmplbuf) 
   {
       rowParse(RowRoot, RowRoot, tmplbuf, i, seq,tabAccess);
-      mir_free(tmplbuf);
+      mir_free_and_nill(tmplbuf);
       return RowRoot;
   }
   if (hFile = fopen("template.txt", "rb"))

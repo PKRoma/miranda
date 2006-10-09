@@ -134,7 +134,7 @@ static HANDLE cache_AskAwayMsg_GetCurrentChain()
     {
         res=mpAskAwayMsgFirstChain->ContactRequest;
         workChain=mpAskAwayMsgFirstChain->Next;
-        mir_free(mpAskAwayMsgFirstChain);
+        mir_free_and_nill(mpAskAwayMsgFirstChain);
         mpAskAwayMsgFirstChain=(ASK_AWAYMSG_CHAIN *)workChain;
     }
     b_aam_LockChainAdd=FALSE;
@@ -284,7 +284,7 @@ BOOL GetCacheChain(CacheAskChain * mpChain)
         *mpChain=*ch;
         FirstCacheChain=(CacheAskChain *)ch->Next;
         if (!FirstCacheChain) LastCacheChain=NULL;
-        mir_free(ch);
+        mir_free_and_nill(ch);
         return TRUE;
     }
     return FALSE;
@@ -413,7 +413,7 @@ void Cache_DestroySmileyList( SortedList* p_list )
     if ( p_list == NULL )
         return;
 
-    if ( p_list->items != NULL )
+    if ( p_list->realCount != 0 )
     {
         int i;
         for ( i = 0 ; i < p_list->realCount ; i++ )
@@ -426,13 +426,13 @@ void Cache_DestroySmileyList( SortedList* p_list )
                 {
                     if (piece->type==TEXT_PIECE_TYPE_SMILEY && piece->smiley != listening_to_icon)
                         DestroyIcon_protect(piece->smiley);
-                    mir_free(piece);
+                    mir_free_and_nill(piece);
                 }
             }
         }
         li.List_Destroy( p_list );
     }
-    mir_free(p_list);
+    mir_free_and_nill(p_list);
 
 }
 
@@ -455,7 +455,7 @@ void Cache_AddListeningToIcon(struct SHORTDATA *dat, PDNCE pdnce, TCHAR *text, i
         *plText = NULL;
     }
 
-    *plText = li.List_Create( 0, 2 );
+    *plText = li.List_Create( 0, 1 );
 
     // Add Icon
     {
@@ -790,7 +790,7 @@ int Cache_GetLineText(PDNCE pdnce, int type, LPTSTR text, int text_size, TCHAR *
                     {
                         TCHAR *tmp = mir_tstrdup(text);
                         mir_sntprintf(text, text_size, TEXT("%s: %s"), tmp, dbv.pszVal);
-                        mir_free(tmp);
+                        mir_free_and_nill(tmp);
                     }
                     DBFreeVariant(&dbv);
                 }
@@ -825,7 +825,7 @@ int Cache_GetLineText(PDNCE pdnce, int type, LPTSTR text, int text_size, TCHAR *
                     {
                         TCHAR *tmp = mir_tstrdup(text);
                         mir_sntprintf(text, text_size, TEXT("%s: %s"), dbv.pszVal, tmp);
-                        mir_free(tmp);
+                        mir_free_and_nill(tmp);
                     }
                     DBFreeVariant(&dbv);
                 }
@@ -952,7 +952,7 @@ void Cache_GetSecondLineText(struct SHORTDATA *dat, PDNCE pdnce)
         dat->second_line_use_name_and_message_for_xstatus, dat->contact_time_show_only_if_different);
 
     //LockCacheItem(hContact, __FILE__,__LINE__);
-    if (pdnce->szSecondLineText) mir_free(pdnce->szSecondLineText);
+    if (pdnce->szSecondLineText) mir_free_and_nill(pdnce->szSecondLineText);
     if (dat->second_line_show)// Text[0]!='\0')
         pdnce->szSecondLineText=mir_tstrdup((TCHAR*)Text);
     else
@@ -988,7 +988,7 @@ void Cache_GetThirdLineText(struct SHORTDATA *dat, PDNCE pdnce)
         dat->third_line_use_name_and_message_for_xstatus, dat->contact_time_show_only_if_different);
 
     // LockCacheItem(hContact, __FILE__,__LINE__);
-    if (pdnce->szThirdLineText) mir_free(pdnce->szThirdLineText);
+    if (pdnce->szThirdLineText) mir_free_and_nill(pdnce->szThirdLineText);
     if (dat->third_line_show)//Text[0]!='\0')
         pdnce->szThirdLineText=mir_tstrdup((TCHAR*)Text);
     else
@@ -1147,12 +1147,12 @@ BOOL RestoreOneContactData(struct ClcContact *contact, BOOL subcontact, void *pa
             if (!pdnce->szSecondLineText)
             pdnce->szSecondLineText=data.szSecondLineText;
             else 
-            mir_free(data.szSecondLineText);
+            mir_free_and_nill(data.szSecondLineText);
             if (data.szThirdLineText)
             if (!pdnce->szThirdLineText)
             pdnce->szThirdLineText=data.szThirdLineText;
             else 
-            mir_free(data.szThirdLineText);
+            mir_free_and_nill(data.szThirdLineText);
             if (data.plSecondLineText)
             if (!contact->plSecondLineText)
             contact->plSecondLineText=data.plSecondLineText;
@@ -1186,15 +1186,15 @@ int RestoreAllContactData(struct ClcData *dat)
     for (i=0; i<ContactsStoredCount; i++)
     {
         if (StoredContactsList[i].szSecondLineText)
-            mir_free(StoredContactsList[i].szSecondLineText);
+            mir_free_and_nill(StoredContactsList[i].szSecondLineText);
         if (StoredContactsList[i].szThirdLineText)
-            mir_free(StoredContactsList[i].szThirdLineText);
+            mir_free_and_nill(StoredContactsList[i].szThirdLineText);
         if (StoredContactsList[i].plSecondLineText)
             Cache_DestroySmileyList(StoredContactsList[i].plSecondLineText);
         if (StoredContactsList[i].plThirdLineText)
             Cache_DestroySmileyList(StoredContactsList[i].plThirdLineText);
     }
-    if (StoredContactsList) mir_free(StoredContactsList);
+    if (StoredContactsList) mir_free_and_nill(StoredContactsList);
     StoredContactsList=NULL;
     ContactsStoredCount=0;
     return 1;
