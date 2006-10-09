@@ -2286,6 +2286,7 @@ LABEL_SHOWWINDOW:
 							tr.chrg = ((ENLINK *) lParam)->chrg;
 							tr.lpstrText = mir_alloc(sizeof(TCHAR)*(tr.chrg.cpMax - tr.chrg.cpMin + 1));
 							SendMessage(pNmhdr->hwndFrom, EM_GETTEXTRANGE, 0, (LPARAM) & tr);
+							pszUrl = t2a( tr.lpstrText );
 
 							if (((ENLINK *) lParam)->msg == WM_RBUTTONDOWN) {
 								HMENU hSubMenu;
@@ -2298,11 +2299,11 @@ LABEL_SHOWWINDOW:
 								ClientToScreen(((NMHDR *) lParam)->hwndFrom, &pt);
 								switch (TrackPopupMenu(hSubMenu, TPM_RETURNCMD, pt.x, pt.y, 0, hwndDlg, NULL)) {
 								case ID_NEW:
-									CallService(MS_UTILS_OPENURL, 1, (LPARAM) tr.lpstrText);
+									CallService(MS_UTILS_OPENURL, 1, (LPARAM) pszUrl);
 									break;
 
 								case ID_CURR:
-									CallService(MS_UTILS_OPENURL, 0, (LPARAM) tr.lpstrText);
+									CallService(MS_UTILS_OPENURL, 0, (LPARAM) pszUrl);
 									break;
 
 								case ID_COPY:
@@ -2324,10 +2325,10 @@ LABEL_SHOWWINDOW:
 										break;
 								}	}
 								mir_free(tr.lpstrText);
+								mir_free(pszUrl);
 								return TRUE;
 							}
 
-							pszUrl = t2a( tr.lpstrText );
 							CallService(MS_UTILS_OPENURL, 1, (LPARAM) pszUrl);
 							SetFocus(GetDlgItem(hwndDlg, IDC_MESSAGE));
 							mir_free(tr.lpstrText);
