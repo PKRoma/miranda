@@ -25,7 +25,7 @@ static int RTFColorToIndex(int *pIndex, int iCol, SESSION_INFO* si)
 {
 	int i;
 	MODULEINFO * pMod = MM_FindModule(si->pszModule);
-	
+
 	for (i = 0; i < pMod->nColorCount ; i++)
 		if ( pIndex[i] == iCol )
 			return i;
@@ -122,7 +122,7 @@ TCHAR* DoRtfToTags( char* pszText, SESSION_INFO* si)
 				int iCol = atoi(p1 + 10);
 				int iInd = RTFColorToIndex(pIndex, iCol, si);
 				bJustRemovedRTF = TRUE;
-				
+
 				_itot(iCol, szTemp, 10);
 				iRemoveChars = 10 + lstrlen(szTemp);
 				if (bTextHasStarted || iInd >= 0)
@@ -207,12 +207,12 @@ TCHAR* DoRtfToTags( char* pszText, SESSION_INFO* si)
 						MultiByteToWideChar( cp, 0, InsertThis, 1, pwszLine, 2 );
 						*d++ = pwszLine[0];
 						InsertThis[0] = 0;
-					}						
+					}
 					#else
 						InsertThis[1] = 0;
 					#endif
 				}
-				else iRemoveChars = 2; 
+				else iRemoveChars = 2;
 			}
 			else { // remove unknown RTF command
 				int j = 1;
@@ -261,8 +261,8 @@ TCHAR* DoRtfToTags( char* pszText, SESSION_INFO* si)
 			#if defined( _UNICODE )
 				*d++ = ( BYTE )*p1++;
 			#else
-				p++;
-			#endif 
+				p1++;
+			#endif
 	}	}
 
 	mir_free(pIndex);

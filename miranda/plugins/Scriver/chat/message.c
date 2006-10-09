@@ -276,7 +276,7 @@ TCHAR* DoRtfToTags( char* pszText, SESSION_INFO* si)
 			#if defined( _UNICODE )
 				*d++ = ( BYTE )*p1++;
 			#else
-				p++;
+				p1++;
 			#endif
 	}	}
 
