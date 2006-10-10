@@ -349,14 +349,15 @@ struct filetransfer
 	unsigned    p2p_sessionid;	// session id
 	unsigned    p2p_msgid;		// message id
 	unsigned    p2p_acksessid;	// acknowledged session id
-	unsigned    p2p_sendmsgid;  // send message id
-	unsigned    p2p_byemsgid;   // bye message id
+	unsigned    p2p_sendmsgid; // send message id
+	unsigned    p2p_byemsgid;  // bye message id
 	unsigned    p2p_ackID;		// number of ack's state
 	unsigned    p2p_appID;		// application id: 1 = avatar, 2 = file transfer
-	int         p2p_Type;		// application id: 1 = avatar, 2 = file transfer, 3 = custom emoticon
+	int         p2p_type;		// application id: 1 = avatar, 2 = file transfer, 3 = custom emoticon
 	char*       p2p_branch;		// header Branch: field
 	char*       p2p_callID;		// header Call-ID: field
 	char*       p2p_dest;		// destination e-mail address
+	char*       p2p_object;    // MSN object for a transfer
 
 	//---- receiving a file
 	wchar_t*    wszFileName;	// file name in Unicode, for receiving

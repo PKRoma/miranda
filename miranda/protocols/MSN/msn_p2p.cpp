@@ -155,9 +155,9 @@ static void sttSavePicture2disk( filetransfer* ft )
 	if ( ft->inmemTransfer == NULL )
 		return;
 
-	if ( ft->p2p_Type == MSN_APPID_CUSTOMSMILEY || ft->p2p_Type == MSN_APPID_CUSTOMANIMATEDSMILEY ) {
+	if ( ft->p2p_type == MSN_APPID_CUSTOMSMILEY || ft->p2p_type == MSN_APPID_CUSTOMANIMATEDSMILEY ) {
 		char fileName[ MAX_PATH ];
-		MSN_GetCustomSmileyFileName( ft->std.hContact, fileName, sizeof fileName, ft->std.currentFile, ft->p2p_Type);
+		MSN_GetCustomSmileyFileName( ft->std.hContact, fileName, sizeof fileName, ft->std.currentFile, ft->p2p_type);
 
 		FILE* out = fopen( fileName, "wb" );
 		if ( out != NULL ) {
@@ -1473,9 +1473,9 @@ void __stdcall p2p_invite( HANDLE hContact, int iAppID, filetransfer* ft )
 		ft->std.hContact = hContact;
 	}
 	ft->p2p_appID = iAppID;
-    ft->p2p_Type = iAppID;
+	ft->p2p_type = iAppID;
 
-	if(iAppID == MSN_APPID_CUSTOMSMILEY || iAppID == MSN_APPID_CUSTOMANIMATEDSMILEY)
+	if ( iAppID == MSN_APPID_CUSTOMSMILEY || iAppID == MSN_APPID_CUSTOMANIMATEDSMILEY )
 		ft->p2p_appID = MSN_APPID_AVATAR;
 
 	ft->p2p_msgid = rand();
@@ -1493,7 +1493,7 @@ void __stdcall p2p_invite( HANDLE hContact, int iAppID, filetransfer* ft )
 	BYTE* pContext;
 	int   cbContext;
 	char* p;
-	char tBuffer[ 256 ] = "";
+	char tBuffer[ 256 ]; tBuffer[0] = 0;
 
 	switch ( iAppID ) {
 	case MSN_APPID_AVATAR:
@@ -1521,6 +1521,12 @@ void __stdcall p2p_invite( HANDLE hContact, int iAppID, filetransfer* ft )
 		ft->inmemTransfer = true;
 		ft->fileBuffer = NULL;
 		ft->std.sending = false;
+
+		strncpy( tBuffer, ft->p2p_object, sizeof( tBuffer ));
+		tBuffer[ sizeof( tBuffer )-1 ] = 0;
+		
+		if (( p = strstr( tBuffer, "Size=\"" )) != NULL )
+			ft->std.totalBytes = ft->std.currentFileSize = atol( p + 6 );
 
 		if ( ft->create() == -1 ) {
 			MSN_DebugLog( "Custom Smiley creation failed for MSNCTX=\'%s\'", tBuffer );

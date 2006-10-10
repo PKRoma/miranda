@@ -457,14 +457,11 @@ static void sttCustomSmiley( const char* msgBody, char* email, char* nick, int i
 
 				filetransfer* ft = new filetransfer();
 				ft->std.hContact = hContact;
-				ft->p2p_dest = mir_strdup( email );
-				ft->std.currentFile = mir_strdup( tCode );
+				ft->p2p_dest = strdup( email );
+				ft->p2p_object = strdup( tObject );
+				ft->std.currentFile = strdup( tCode );
 
-				char* p = strstr( tObject, "Size=\"" );
-				if ( p != NULL )
-					ft->std.totalBytes = ft->std.currentFileSize = atol( p + 6 );
-
-				for ( p = ft->std.currentFile; *p; p++ ) {
+				for ( char* p = ft->std.currentFile; *p; p++ ) {
 					switch( *p ) {
 					case '|':	case '<':	case '>':	case ':':	case '/':
 					case '\\':	case '*':	case '?':	case '\"':
