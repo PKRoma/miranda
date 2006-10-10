@@ -475,9 +475,9 @@ static void sttCustomSmiley( const char* msgBody, char* email, char* nick, int i
 	}	}
 
 	if ( iSmileyType == MSN_APPID_CUSTOMSMILEY ) 
-		mir_snprintf( popupMessage, sizeof( popupMessage ), MSN_Translate( "%s sent you %d custom smiley(s):\n" ), szContactName, iCount, smileyList );
+		mir_snprintf( popupMessage, sizeof( popupMessage ), MSN_Translate( "%s sent you %d custom smiley(s):\n%s" ), szContactName, iCount, smileyList );
 	else
-		mir_snprintf( popupMessage, sizeof( popupMessage ), MSN_Translate( "%s sent you %d custom animated smiley(s):\n" ), szContactName, iCount, smileyList );
+		mir_snprintf( popupMessage, sizeof( popupMessage ), MSN_Translate( "%s sent you %d custom animated smiley(s):\n%s" ), szContactName, iCount, smileyList );
 
 	MSN_ShowPopup( szContactName, popupMessage, 0 );
 }
