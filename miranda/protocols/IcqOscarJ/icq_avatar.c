@@ -551,7 +551,7 @@ int GetAvatarData(HANDLE hContact, DWORD dwUin, char* szUid, char* hash, unsigne
       { // rate management
         WORD wGroup = ratesGroupFromSNAC(atsi->rates, ICQ_AVATAR_FAMILY, ICQ_AVATAR_GET_REQUEST);
         
-        if (ratesNextRateLevel(atsi->rates, wGroup) >= ratesGetLimitLevel(atsi->rates, wGroup, RML_ALERT))
+        if (ratesNextRateLevel(atsi->rates, wGroup) < ratesGetLimitLevel(atsi->rates, wGroup, RML_ALERT))
         { // we will be over quota if we send the request now, add to queue instead
           bSendNow = FALSE;
 #ifdef _DEBUG
@@ -829,7 +829,7 @@ static DWORD __stdcall icq_avatarThread(avatarthreadstartinfo *atsi)
           { // rate management
             WORD wGroup = ratesGroupFromSNAC(atsi->rates, ICQ_AVATAR_FAMILY, (WORD)(reqdata->type == ART_UPLOAD ? ICQ_AVATAR_GET_REQUEST : ICQ_AVATAR_UPLOAD_REQUEST));
 
-            if (ratesNextRateLevel(atsi->rates, wGroup) >= ratesGetLimitLevel(atsi->rates, wGroup, RML_ALERT))
+            if (ratesNextRateLevel(atsi->rates, wGroup) < ratesGetLimitLevel(atsi->rates, wGroup, RML_ALERT))
             { // we are over rate, leave queue and wait
 #ifdef _DEBUG
               NetLog_Server("Rates: Leaving avatar queue processing");

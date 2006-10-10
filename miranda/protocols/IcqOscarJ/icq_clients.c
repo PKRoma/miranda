@@ -298,11 +298,11 @@ char* detectUserClient(HANDLE hContact, DWORD dwUin, WORD wVersion, DWORD dwFT1,
 
         if (MatchCap(caps, wLen, &capIcqJs7, 0x10))
         { // detect mod
-          strcat(szClient, "(s7 & sss)");
+          strcat(szClient, " (s7 & sss)");
         }
         else if (MatchCap(caps, wLen, &capIcqJs7sec, 0x10))
         {
-          strcat(szClient, "(s7 & sss)");
+          strcat(szClient, " (s7 & sss)");
           strcat(szClient, " + SecureIM");
         }
         else if (dwFT1 == 0xFFFFFFFF && dwFT3 == 0x5AFEC0DE)
