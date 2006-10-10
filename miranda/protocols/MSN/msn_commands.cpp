@@ -430,6 +430,65 @@ static void sttInviteMessage( ThreadData* info, const char* msgBody, char* email
 }	}
 
 /////////////////////////////////////////////////////////////////////////////////////////
+// Processes custom smiley messages
+
+static void sttCustomSmiley( const char* msgBody, char* email, char* nick, int iSmileyType )
+{
+	HANDLE hContact = MSN_HContactFromEmail( email, nick, 1, 1 );
+	char smileyList[500], popupMessage[500];
+	char *tCode = NULL, *tObject = NULL, *szBody = NEWSTR_ALLOCA( msgBody );
+	char *szContactName = ( char* )CallService( MS_CLIST_GETCONTACTDISPLAYNAME, (WPARAM)hContact, 0 );
+	int reset = 0, iCount = 0;
+
+	smileyList[ 0 ] = 0;
+	for ( char* pStart = szBody; ; szBody++ ) {
+		if ( *szBody == '\t' || *szBody == 0 ) {
+			reset++;
+			*szBody = 0;
+			if ( reset == 1 ) { // this is the custom smiley code
+				tCode = pStart;
+				strcat( smileyList, tCode );
+				strcat( smileyList, "\n");
+			}
+			else { // this is the custom smiley msn object
+				reset = 0;
+				iCount++; // this is the custom smiley count
+				tObject = pStart;
+
+				filetransfer* ft = new filetransfer();
+				ft->std.hContact = hContact;
+				ft->p2p_dest = mir_strdup( email );
+				ft->std.currentFile = mir_strdup( tCode );
+
+				char* p = strstr( tObject, "Size=\"" );
+				if ( p != NULL )
+					ft->std.totalBytes = ft->std.currentFileSize = atol( p + 6 );
+
+				for ( p = ft->std.currentFile; *p; p++ ) {
+					switch( *p ) {
+					case '|':	case '<':	case '>':	case ':':	case '/':
+					case '\\':	case '*':	case '?':	case '\"':
+						*p = ' ';
+				}	}
+
+				MSN_DebugLog( "Custom Smiley p2p invite for object : %s", tObject );
+				p2p_invite( hContact, iSmileyType, ft );
+
+				if ( *szBody == 0 )
+					break;
+			}
+			pStart = szBody+1;
+	}	}
+
+	if ( iSmileyType == MSN_APPID_CUSTOMSMILEY ) 
+		mir_snprintf( popupMessage, sizeof( popupMessage ), MSN_Translate( "%s sent you %d custom smiley(s):\n" ), szContactName, iCount, smileyList );
+	else
+		mir_snprintf( popupMessage, sizeof( popupMessage ), MSN_Translate( "%s sent you %d custom animated smiley(s):\n" ), szContactName, iCount, smileyList );
+
+	MSN_ShowPopup( szContactName, popupMessage, 0 );
+}
+
+/////////////////////////////////////////////////////////////////////////////////////////
 // Processes any received MSG
 
 void MSN_ReceiveMessage( ThreadData* info, char* cmdString, char* params )
@@ -614,7 +673,6 @@ void MSN_ReceiveMessage( ThreadData* info, char* cmdString, char* params )
 			if ( MSN_GetByte( "DisplayTyping", 0 ))
 				MSN_ShowPopup( userNick, MSN_Translate( "typing..." ), 0 );
 		}
-
 		return;
 	}
 
@@ -686,7 +744,6 @@ void MSN_ReceiveMessage( ThreadData* info, char* cmdString, char* params )
 		if ( hContact != NULL && mirver != NULL )
 			MSN_SetString( hContact, "MirVer", mirver );
 	}
-	
 
 	if ( !strnicmp( tContentType,"text/x-msmsgsemailnotification", 30 ))
 		sttNotificationMessage( msgBody, false );
@@ -698,6 +755,10 @@ void MSN_ReceiveMessage( ThreadData* info, char* cmdString, char* params )
 		sttInviteMessage( info, msgBody, data.fromEmail, data.fromNick );
 	else if ( !strnicmp( tContentType, "application/x-msnmsgrp2p", 24 ))
 		p2p_processMsg( info, msgBody );
+	else if ( !strnicmp( tContentType, "text/x-mms-emoticon", 19 ))
+		sttCustomSmiley( msgBody, data.fromEmail, data.fromNick, MSN_APPID_CUSTOMSMILEY );
+	else if ( !strnicmp( tContentType, "text/x-mms-animemoticon", 23 ))
+		sttCustomSmiley( msgBody, data.fromEmail, data.fromNick, MSN_APPID_CUSTOMANIMATEDSMILEY );
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////
@@ -1794,6 +1855,7 @@ LBL_InvalidCommand:
 
 				MSN_DebugLog( "Switching to notification server '%s'...", data.newServer );
 				newThread->startThread(( pThreadFunc )MSNServerThread );
+				//sl = time(NULL); //for hotmail
 				return 1;  //kill the old thread
 			}
 

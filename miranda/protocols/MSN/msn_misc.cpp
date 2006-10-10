@@ -263,6 +263,34 @@ void __stdcall MSN_GetAvatarFileName( HANDLE hContact, char* pszDest, int cbLen 
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////
+// MSN_GetCustomSmileyFileName - gets a file name for an contact's custom smiley
+
+void __stdcall MSN_GetCustomSmileyFileName( HANDLE hContact, char* pszDest, int cbLen, char* SmileyName, int type )
+{
+	MSN_CallService( MS_DB_GETPROFILEPATH, cbLen, LPARAM( pszDest ));
+
+	int tPathLen = strlen( pszDest );
+
+	if ( hContact != NULL ) {
+		char szEmail[ MSN_MAX_EMAIL_LEN ];
+		if ( MSN_GetStaticString( "e-mail", hContact, szEmail, sizeof( szEmail )))
+			ltoa(( long )hContact, szEmail, 10 );
+		
+		tPathLen += mir_snprintf( pszDest + tPathLen, MAX_PATH - tPathLen, "\\MSN\\CustomSmiley\\");
+		CreateDirectoryA( pszDest, NULL );
+		tPathLen += mir_snprintf( pszDest + tPathLen, MAX_PATH - tPathLen, "%s\\",szEmail );
+	}
+	else tPathLen += mir_snprintf( pszDest + tPathLen, MAX_PATH - tPathLen, "\\MSN\\CustomSmiley\\%s\\",msnProtocolName );
+		
+	CreateDirectoryA( pszDest, NULL );
+
+	if ( type == MSN_APPID_CUSTOMSMILEY )
+		mir_snprintf( pszDest + tPathLen, MAX_PATH - tPathLen, "%s.png", SmileyName );
+	else
+		mir_snprintf( pszDest + tPathLen, MAX_PATH - tPathLen, "%s.gif", SmileyName );
+}
+
+/////////////////////////////////////////////////////////////////////////////////////////
 // MSN_GoOffline - performs several actions when a server goes offline
 
 void __stdcall	MSN_GoOffline()

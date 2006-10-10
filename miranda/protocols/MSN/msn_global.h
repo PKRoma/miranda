@@ -185,6 +185,7 @@ int		__stdcall	MSN_GetMyHostAsString( char* parBuf, int parBufSize );
 void		__cdecl     MSN_ConnectionProc( HANDLE hNewConnection, DWORD dwRemoteIP, void* );
 void		__stdcall	MSN_GoOffline( void );
 void		__stdcall	MSN_GetAvatarFileName( HANDLE hContact, char* pszDest, int cbLen );
+void		__stdcall	MSN_GetCustomSmileyFileName( HANDLE hContact, char* pszDest, int cbLen, char* SmileyName, int Type);
 LPTSTR	__stdcall   MSN_GetErrorText( DWORD parErrorCode );
 void     __stdcall   MSN_SendStatusMessage( const char* msg, struct MSN_CurrentMedia *cm );
 void		__stdcall	MSN_SetServerStatus( int newStatus );
@@ -352,6 +353,7 @@ struct filetransfer
 	unsigned    p2p_byemsgid;   // bye message id
 	unsigned    p2p_ackID;		// number of ack's state
 	unsigned    p2p_appID;		// application id: 1 = avatar, 2 = file transfer
+	int         p2p_Type;		// application id: 1 = avatar, 2 = file transfer, 3 = custom emoticon
 	char*       p2p_branch;		// header Branch: field
 	char*       p2p_callID;		// header Call-ID: field
 	char*       p2p_dest;		// destination e-mail address
@@ -455,9 +457,11 @@ void        __stdcall MSN_StartThread( pThreadFunc parFunc, void* arg );
 /////////////////////////////////////////////////////////////////////////////////////////
 // MSN P2P session support
 
-#define MSN_APPID_AVATAR 1
-#define MSN_APPID_AVATAR2 12
-#define MSN_APPID_FILE   2
+#define MSN_APPID_AVATAR		1
+#define MSN_APPID_AVATAR2   	12
+#define MSN_APPID_FILE			2
+#define MSN_APPID_CUSTOMSMILEY  3
+#define MSN_APPID_CUSTOMANIMATEDSMILEY  4
 
 void __stdcall p2p_clearDormantSessions( void );
 void __stdcall p2p_cancelAllSessions( void );
