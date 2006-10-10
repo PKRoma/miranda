@@ -441,8 +441,8 @@ static void sttCustomSmiley( const char* msgBody, char* email, char* nick, int i
 	int reset = 0, iCount = 0;
 
 	smileyList[ 0 ] = 0;
-	for ( char* pStart = szBody; ; szBody++ ) {
-		if ( *szBody == '\t' || *szBody == 0 ) {
+	for ( char* pStart = szBody; *szBody; szBody++ ) {
+		if ( *szBody == '\t' ) {
 			reset++;
 			*szBody = 0;
 			if ( reset == 1 ) { // this is the custom smiley code
@@ -470,9 +470,6 @@ static void sttCustomSmiley( const char* msgBody, char* email, char* nick, int i
 
 				MSN_DebugLog( "Custom Smiley p2p invite for object : %s", tObject );
 				p2p_invite( hContact, iSmileyType, ft );
-
-				if ( *szBody == 0 )
-					break;
 			}
 			pStart = szBody+1;
 	}	}
