@@ -246,7 +246,11 @@ static int Log_AppendRTF(LOGSTREAMDATA* streamData, char **buffer, int *cbBuffer
 		else if (*line > 0 && *line < 128) {
 			*d++ = (char) *line;
         }
-		else d += sprintf(d, "\\u%d ?", (WORD)*line);
+		#if defined( _UNICODE )
+			else d += sprintf(d, "\\u%d ?", (WORD)*line);
+		#else
+			else d += sprintf(d, "\\'%02x", (BYTE)*line);
+		#endif
     }
 
 	*cbBufferEnd = (int) (d - *buffer);
