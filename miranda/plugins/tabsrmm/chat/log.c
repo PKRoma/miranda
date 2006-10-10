@@ -338,7 +338,7 @@ static void AddEventToBuffer(char **buffer, int *bufferEnd, int *bufferAlloced, 
 			break;
 		case GC_EVENT_TOPIC:
 			if (streamData->lin->ptszText)
-				Log_AppendRTF(streamData, buffer, bufferEnd, bufferAlloced, TranslateT("The topic is \'%s%s\'"), streamData->lin->ptszText, "%r");
+				Log_AppendRTF(streamData, buffer, bufferEnd, bufferAlloced, TranslateT("The topic is \'%s%s\'"), streamData->lin->ptszText, _T("%r"));
 			if (streamData->lin->ptszNick)
 				Log_AppendRTF(streamData, buffer, bufferEnd, bufferAlloced, TranslateT(" (set by %s)"), streamData->lin->ptszNick);
 			break;
