@@ -219,12 +219,12 @@ TCHAR* Chat_DoRtfToTags( char* pszText, SESSION_INFO* si)
 						MultiByteToWideChar( cp, 0, InsertThis, 1, pwszLine, 2 );
 						*d++ = pwszLine[0];
 						InsertThis[0] = 0;
-					}						
+					}
 					#else
 						InsertThis[1] = 0;
 					#endif
 				}
-				else iRemoveChars = 2; 
+				else iRemoveChars = 2;
 			}
 			else // remove unknown RTF command
 			{
@@ -275,7 +275,7 @@ TCHAR* Chat_DoRtfToTags( char* pszText, SESSION_INFO* si)
 				*d++ = ( BYTE )*p1++;
 			#else
 				p1++;
-			#endif 
+			#endif
 	}	}
 
 	mir_free(pIndex);
@@ -291,7 +291,7 @@ TCHAR* Chat_DoRtfToTags( char* pszText, SESSION_INFO* si)
 static DWORD CALLBACK Message_StreamCallback(DWORD dwCookie, LPBYTE pbBuff, LONG cb, LONG * pcb)
 {
 	static DWORD dwRead;
-    char ** ppText = (char **) dwCookie;
+	char ** ppText = (char **) dwCookie;
 
 	if (*ppText == NULL) 
 	{
@@ -312,8 +312,8 @@ static DWORD CALLBACK Message_StreamCallback(DWORD dwCookie, LPBYTE pbBuff, LONG
 		*pcb = cb;
 		dwRead += cb;
 	}
-	
-    return 0;
+
+	return 0;
 }
 
 char* Chat_Message_GetFromStream(HWND hwndDlg, SESSION_INFO* si)

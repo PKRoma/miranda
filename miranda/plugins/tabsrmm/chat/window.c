@@ -631,7 +631,7 @@ static LRESULT CALLBACK MessageSubclassProc(HWND hwnd, UINT msg, WPARAM wParam, 
 				dat->szTabSave[0] = '\0';
 			}
 
-			if (wParam == VK_F4 && isCtrl && !isAlt) { // ctrl-F4 (close tab) 
+			if (wParam == VK_F4 && isCtrl && !isAlt) { // ctrl-F4 (close tab)
 				SendMessage(hwndParent, WM_COMMAND, MAKEWPARAM(IDC_CHAT_CLOSE, BN_CLICKED), 0);
 				return TRUE;
 			}
@@ -1077,7 +1077,7 @@ static LRESULT CALLBACK LogSubclassProc(HWND hwnd, UINT msg, WPARAM wParam, LPAR
 		break;
 
 	case WM_KEYDOWN:
-		if (wParam == 0x57 && GetKeyState(VK_CONTROL) & 0x8000) { // ctrl-w (close window) 
+		if (wParam == 0x57 && GetKeyState(VK_CONTROL) & 0x8000) { // ctrl-w (close window)
 			PostMessage(hwndParent, WM_CLOSE, 0, 1);
 			return TRUE;
 		}
@@ -1529,10 +1529,10 @@ BOOL CALLBACK RoomWndProc(HWND hwndDlg,UINT uMsg,WPARAM wParam,LPARAM lParam)
 			break;
 
 		if (si->pszModule != NULL) {
-			TCHAR* ptszDispName = a2t( MM_FindModule(si->pszModule)->pszModDispName );
+			TCHAR* ptszDispName = a2tf(( TCHAR* )MM_FindModule(si->pszModule)->pszModDispName, 0);
 			TCHAR  szFinalStatusBarText[512];
 			int    x = 12;
-			
+
 			x += GetTextPixelSize( ptszDispName, (HFONT)SendMessage(dat->pContainer->hwndStatus, WM_GETFONT, 0, 0), TRUE);
 			x += GetSystemMetrics( SM_CXSMICON );
 
@@ -2107,7 +2107,7 @@ LABEL_SHOWWINDOW:
 										CloseClipboard();
 										SetFocus(GetDlgItem(hwndDlg, IDC_CHAT_MESSAGE));
 										break;
-									}	
+									}
 									mir_free(tr.lpstrText);
 									mir_free(pszUrl);
 									return TRUE;

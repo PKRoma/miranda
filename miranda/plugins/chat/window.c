@@ -1323,7 +1323,7 @@ BOOL CALLBACK RoomWndProc(HWND hwndDlg,UINT uMsg,WPARAM wParam,LPARAM lParam)
 		{
 			HICON hIcon;
 			int iStatusbarParts[2];
-			TCHAR* ptszDispName = a2t(MM_FindModule(si->pszModule)->pszModDispName);
+			TCHAR* ptszDispName = a2tf((TCHAR*)MM_FindModule(si->pszModule)->pszModDispName, 0);
 			int x = 12;
 
 			x += GetTextPixelSize(ptszDispName, (HFONT)SendMessage(si->hwndStatus,WM_GETFONT,0,0), TRUE);
