@@ -147,7 +147,7 @@ TCHAR* DoRtfToTags( char* pszText, SESSION_INFO* si)
 				int i=0;
 				p = p1 + 2;
 				bTextHasStarted = TRUE;
-				bJustRemovedRTF = TRUE;
+				bJustRemovedRTF = FALSE;
 				iRemoveChars = 2;
 				while ( i < 10 && *p != ' ' && *p != '\\' ) {
 					temp[i++] = *p++;

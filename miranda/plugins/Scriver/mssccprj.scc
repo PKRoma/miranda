@@ -15,3 +15,15 @@ SCC_Project_Name = "$/Miranda/miranda/plugins/Scriver", KCWAAAAA
 [srmm.sln]
 SCC_Aux_Path = "D:\VC\Common\VSS"
 SCC_Project_Name = "$/Miranda/miranda/plugins/Scriver", KCWAAAAA
+
+[scriver.dsp]
+SCC_Aux_Path = "D:\VC\Common\VSS"
+SCC_Project_Name = "$/Miranda/miranda/plugins/Scriver", KCWAAAAA
+
+[scriver.dsw]
+SCC_Aux_Path = "D:\VC\Common\VSS"
+SCC_Project_Name = "$/Miranda/miranda/plugins/Scriver", KCWAAAAA
+
+[scriver_8.vcproj]
+SCC_Aux_Path = "D:\VC\Common\VSS"
+SCC_Project_Name = "$/Miranda/miranda/plugins/Scriver", KCWAAAAA

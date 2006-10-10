@@ -575,7 +575,7 @@ static LRESULT CALLBACK MessageSubclassProc(HWND hwnd, UINT msg, WPARAM wParam, 
 				gtl.flags = GTL_PRECISE;
 				gtl.codepage = CP_ACP;
 				iLen = SendMessage(hwnd, EM_GETTEXTLENGTHEX, (WPARAM)&gtl, (LPARAM)NULL);
-				if (iLen >0) {
+				if ( iLen > 0 ) {
 					TCHAR *pszName = NULL;
 					TCHAR *pszSelName = NULL;
 					pszText = mir_alloc(sizeof(TCHAR)*(iLen+100));
