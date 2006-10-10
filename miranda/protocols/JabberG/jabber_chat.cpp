@@ -173,7 +173,7 @@ void JabberGcLogUpdateMemberStatus( JABBER_LIST_ITEM* item, TCHAR* nick, int act
 					case 0:
 						gcd.iType = GC_EVENT_ADDSTATUS;
 					case GC_EVENT_REMOVESTATUS:
-						gce.bAddToLog = false;
+						gce.dwFlags &= ~GCEF_ADDTOLOG;
 					}
 					gce.ptszText = TranslateT( "Moderator" );
 				}
