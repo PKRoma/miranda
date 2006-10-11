@@ -96,6 +96,24 @@ void handleAvatarServiceFam(unsigned char* pBuffer, WORD wBufferLength, snac_hea
 void handleAvatarFam(unsigned char *pBuffer, WORD wBufferLength, snac_header* pSnacHeader, avatarthreadstartinfo *atsi);
 
 
+static void RemoveAvatarRequestFromQueue(avatarrequest* request)
+{
+  void** par = &pendingRequests;
+  avatarrequest* ar = pendingRequests;
+          
+  while (ar)
+  {
+    if (ar == request)
+    { // found it, remove
+      *par = ar->pNext;
+      break;
+    }
+    par = &ar->pNext;
+    ar = ar->pNext;
+  }
+}
+
+
 char* loadMyAvatarFileName()
 {
   DBVARIANT dbvFile = {0};
@@ -274,10 +292,9 @@ void StartAvatarThread(HANDLE hConn, char* cookie, WORD cookieLen) // called fro
 
     EnterCriticalSection(&cookieMutex); // wait for ready queue, reused cs
     { // check if any upload request is not in the queue
-      avatarrequest* ar;
-      void** par = &pendingRequests;
+      avatarrequest* ar = pendingRequests;
       int bYet = 0;
-      ar = pendingRequests;
+
       while (ar)
       {
         if (ar->type == ART_UPLOAD)
@@ -290,13 +307,12 @@ void StartAvatarThread(HANDLE hConn, char* cookie, WORD cookieLen) // called fro
           }
           bYet = 1;
           SAFE_FREE(&ar->pData); // remove upload request from queue
+          RemoveAvatarRequestFromQueue(ar);
           tmp = ar;
           ar = ar->pNext;
-          *par = ar;
           SAFE_FREE(&tmp);
           continue;
         }
-        par = &ar->pNext;
         ar = ar->pNext;
       }
     }
@@ -467,18 +483,16 @@ void handleAvatarContactHash(DWORD dwUIN, char* szUID, HANDLE hContact, unsigned
           // Remove possible block - hash changed, try again.
           EnterCriticalSection(&cookieMutex);
           {
-            void** par = &pendingRequests;
             avatarrequest* ar = pendingRequests;
           
             while (ar)
             {
               if (ar->hContact == hContact && ar->type == ART_BLOCK)
               { // found one, remove
-                *par = ar->pNext;
+                RemoveAvatarRequestFromQueue(ar);
                 SAFE_FREE(&ar);
                 break;
               }
-              par = &ar->pNext;
               ar = ar->pNext;
             }
           }
@@ -626,9 +640,9 @@ int GetAvatarData(HANDLE hContact, DWORD dwUin, char* szUid, char* hash, unsigne
   // we failed to send request, or avatar thread not ready
   EnterCriticalSection(&cookieMutex); // wait for ready queue, reused cs
   { // check if any request for this user is not already in the queue
-    avatarrequest* ar;
+    avatarrequest* ar = pendingRequests;
     int bYet = 0;
-    ar = pendingRequests;
+
     while (ar)
     {
       if (ar->hContact == hContact)
@@ -637,9 +651,8 @@ int GetAvatarData(HANDLE hContact, DWORD dwUin, char* szUid, char* hash, unsigne
         { // remove timeouted block
           void *tmp = ar;
 
+          RemoveAvatarRequestFromQueue(ar);
           ar = ar->pNext;
-          if (tmp == pendingRequests)
-            pendingRequests = ar; // do not break variable
           SAFE_FREE(&tmp);
           continue;
         }
