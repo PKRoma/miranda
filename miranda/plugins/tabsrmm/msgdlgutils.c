@@ -1606,6 +1606,7 @@ void GetContactUIN(HWND hwndDlg, struct MessageWindowData *dat)
 }
 
 static int g_IEViewAvail = -1;
+static int g_HPPAvail = -1;
 
 unsigned int GetIEViewMode(HWND hwndDlg, struct MessageWindowData *dat)
 {
@@ -1614,7 +1615,12 @@ unsigned int GetIEViewMode(HWND hwndDlg, struct MessageWindowData *dat)
     if(g_IEViewAvail == -1)
         g_IEViewAvail = ServiceExists(MS_IEVIEW_WINDOW);
 
+    if(g_HPPAvail == -1)
+        g_HPPAvail = ServiceExists("History++/ExtGrid/NewWindow");
+
     myGlobals.g_WantIEView = g_IEViewAvail && DBGetContactSettingByte(NULL, SRMSGMOD_T, "default_ieview", 1);
+    myGlobals.g_WantHPP = g_HPPAvail && DBGetContactSettingByte(NULL, SRMSGMOD_T, "default_hpp", 1);
+
     iWantIEView = (myGlobals.g_WantIEView) || (DBGetContactSettingByte(dat->hContact, SRMSGMOD_T, "ieview", 0) == 1 && g_IEViewAvail);
     iWantIEView = (DBGetContactSettingByte(dat->hContact, SRMSGMOD_T, "ieview", 0) == (BYTE)-1) ? 0 : iWantIEView;
 

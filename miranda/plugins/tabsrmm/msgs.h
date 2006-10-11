@@ -492,7 +492,7 @@ typedef struct _globals {
     HICON       g_iconIn, g_iconOut, g_iconErr, g_iconContainer, g_iconStatus;
     HCURSOR     hCurSplitNS, hCurSplitWE, hCurHyperlinkHand;
     HBITMAP     g_hbmUnknown;
-    int         g_MetaContactsAvail, g_SmileyAddAvail, g_SecureIMAvail, g_WantIEView, g_PopupAvail, g_PopupWAvail;
+    int         g_MetaContactsAvail, g_SmileyAddAvail, g_SecureIMAvail, g_WantIEView, g_PopupAvail, g_PopupWAvail, g_WantHPP;
     int         g_FlashAvatarAvail;
     HIMAGELIST  g_hImageList;
     HICON       g_IconMsgEvent, g_IconTypingEvent, g_IconFileEvent, g_IconUrlEvent, g_IconSend;

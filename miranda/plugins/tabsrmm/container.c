@@ -193,7 +193,7 @@ struct ContainerWindowData *CreateContainer(const TCHAR *name, int iTemp, HANDLE
     char *szKey = "TAB_Containers";
 #endif
     int i, iFirstFree = -1, iFound = FALSE;
-                             
+
     struct ContainerWindowData *pContainer = (struct ContainerWindowData *)malloc(sizeof(struct ContainerWindowData));
     if (pContainer) {
         ZeroMemory((void *)pContainer, sizeof(struct ContainerWindowData));
@@ -339,7 +339,7 @@ LRESULT CALLBACK StatusBarSubclassProc(HWND hWnd, UINT msg, WPARAM wParam, LPARA
                 StatusItems_t *item = &StatusItems[ID_EXTBKSTATUSBARPANEL];
 
                 GetClientRect(hWnd, &rcClient);
-                
+
                 hbm = CreateCompatibleBitmap(hdc, rcClient.right, rcClient.bottom);
                 hbmOld = SelectObject(hdcMem, hbm);
 				SetBkMode(hdcMem, TRANSPARENT);
@@ -383,7 +383,7 @@ LRESULT CALLBACK StatusBarSubclassProc(HWND hWnd, UINT msg, WPARAM wParam, LPARA
                 DeleteObject(hbm);
                 SelectObject(hdcMem, hFontOld);
                 DeleteDC(hdcMem);
-                
+
 				EndPaint(hWnd, &ps);
                 return 0;
 			}
@@ -403,18 +403,18 @@ LRESULT CALLBACK StatusBarSubclassProc(HWND hWnd, UINT msg, WPARAM wParam, LPARA
         case WM_SETCURSOR:
         {
             POINT pt;
-    
+
             if(pContainer && pContainer->bSkinned) {
-                GetCursorPos(&pt);  
+                GetCursorPos(&pt);
                 SendMessage(GetParent(hWnd), msg, wParam, lParam);
                 if (pt.x == ptMouse.x && pt.y == ptMouse.y) {
                     return 1;
                 }
                 ptMouse = pt;
                 if(tooltip_active){
-                    KillTimer(hWnd, TIMERID_HOVER);				
+                    KillTimer(hWnd, TIMERID_HOVER);
                     CallService("mToolTip/HideTip", 0, 0);
-                    tooltip_active = FALSE;		
+                    tooltip_active = FALSE;
                 }
                 KillTimer(hWnd, TIMERID_HOVER);
                 SetTimer(hWnd, TIMERID_HOVER, 450, 0);
@@ -424,16 +424,16 @@ LRESULT CALLBACK StatusBarSubclassProc(HWND hWnd, UINT msg, WPARAM wParam, LPARA
 
         case WM_LBUTTONDOWN:
         case WM_RBUTTONDOWN:
-            KillTimer(hWnd, TIMERID_HOVER);				
+            KillTimer(hWnd, TIMERID_HOVER);
             CallService("mToolTip/HideTip", 0, 0);
-            tooltip_active = FALSE;		
+            tooltip_active = FALSE;
             break;
 
         case WM_TIMER:
             if(wParam == TIMERID_HOVER) {
                 POINT pt;
                 KillTimer(hWnd, TIMERID_HOVER);
-    
+
                 GetCursorPos(&pt);
                 if (pt.x == ptMouse.x && pt.y == ptMouse.y) {
                     int i,nParts;
@@ -763,7 +763,7 @@ static BOOL CALLBACK ContainerWndProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPA
 
                     pContainer->rcClose.top = pContainer->rcMin.top = pContainer->rcMax.top = g_titleButtonTopOff;
 					pContainer->rcClose.bottom = pContainer->rcMin.bottom = pContainer->rcMax.bottom = g_titleButtonTopOff + g_titleBarButtonSize.cy;
-					
+
 					pContainer->rcClose.right = rcWindow.right - 10;
 					pContainer->rcClose.left = pContainer->rcClose.right - g_titleBarButtonSize.cx;
 
@@ -993,7 +993,7 @@ static BOOL CALLBACK DlgProcContainer(HWND hwndDlg, UINT msg, WPARAM wParam, LPA
                     SetWindowLong(hwndTab, GWL_STYLE, GetWindowLong(hwndTab, GWL_STYLE) | TCS_BUTTONS);
                 pContainer = (struct ContainerWindowData *) lParam;
                 SetWindowLong(hwndDlg, GWL_USERDATA, (LONG) pContainer);
-                
+
 				pContainer->hwnd = hwndDlg;
                 dwCreateFlags = pContainer->dwFlags;
 
@@ -1617,7 +1617,7 @@ buttons_done:
 #ifdef __MATHMOD_SUPPORT
     			if(myGlobals.m_MathModAvail) {
                     TMathWindowInfo mathWndInfo;
-    
+
                     RECT windRect;
                     GetWindowRect(hwndDlg,&windRect);
                     mathWndInfo.top=windRect.top;
@@ -1636,7 +1636,7 @@ buttons_done:
 
 
 					if(myGlobals.bRoundedCorner)
-						rgn = CreateRoundRectRgn(clip, clip, (rcWindow.right - rcWindow.left) - clip + 1, 
+						rgn = CreateRoundRectRgn(clip, clip, (rcWindow.right - rcWindow.left) - clip + 1,
 												 (rcWindow.bottom - rcWindow.top) - clip + 1, myGlobals.bRoundedCorner + clip, myGlobals.bRoundedCorner + clip);
 					else
 						rgn = CreateRectRgn(clip, clip, (rcWindow.right - rcWindow.left) - clip, (rcWindow.bottom - rcWindow.top) - clip);
@@ -1644,7 +1644,7 @@ buttons_done:
 				}
                 else if(g_framelessSkinmode)
                     SetWindowRgn(hwndDlg, NULL, TRUE);
-                
+
 				break;
             }
             case DM_UPDATETITLE:
@@ -1960,7 +1960,7 @@ panel_found:
                             int iSelection, iItem;
                             TCITEM item = {0};
                             struct MessageWindowData *dat = 0;
-                            
+
                             GetCursorPos(&pt);
                             pt1 = pt;
                             subMenu = GetSubMenu(pContainer->hMenuContext, 0);
@@ -2043,7 +2043,7 @@ panel_found:
                 }
                 break;
             }
-        case WM_LBUTTONDOWN: 
+        case WM_LBUTTONDOWN:
             {
                 POINT pt;
 
@@ -2377,11 +2377,11 @@ panel_found:
 
             ws = wsold = GetWindowLong(hwndDlg, GWL_STYLE);
             if(!g_framelessSkinmode) {
-                ws = (pContainer->dwFlags & CNT_NOTITLE) ? 
-                    ((IsWindowVisible(hwndDlg) ? WS_VISIBLE : 0) | WS_MINIMIZEBOX | WS_MAXIMIZEBOX | WS_CLIPCHILDREN | WS_THICKFRAME | (g_framelessSkinmode ? WS_SYSMENU : WS_SYSMENU | WS_SIZEBOX)) : 
+                ws = (pContainer->dwFlags & CNT_NOTITLE) ?
+                    ((IsWindowVisible(hwndDlg) ? WS_VISIBLE : 0) | WS_MINIMIZEBOX | WS_MAXIMIZEBOX | WS_CLIPCHILDREN | WS_THICKFRAME | (g_framelessSkinmode ? WS_SYSMENU : WS_SYSMENU | WS_SIZEBOX)) :
                     ws | WS_CAPTION | WS_OVERLAPPEDWINDOW | WS_CLIPCHILDREN;
             }
-            
+
 			SetWindowLong(hwndDlg, GWL_STYLE, ws);
 
             pContainer->tBorder = DBGetContactSettingByte(NULL, SRMSGMOD_T, "tborder", 2);
@@ -2950,9 +2950,9 @@ int GetTabIndexFromHWND(HWND hwndTab, HWND hwnd)
     TCITEM item;
     int i = 0;
     int iItems;
-    
+
     iItems = TabCtrl_GetItemCount(hwndTab);
-    
+
     ZeroMemory((void *)&item, sizeof(item));
     item.mask = TCIF_PARAM;
 

@@ -398,9 +398,10 @@ static struct LISTOPTIONSITEM lvItems[] = {
     0, _T("Log status changes"), 0, LOI_TYPE_SETTING, (UINT_PTR)"logstatus", 2,
     0, _T("Automatically copy selected text"), 0, LOI_TYPE_SETTING, (UINT_PTR)"autocopy", 2,
     0, _T("Use multiple background colors"), IDC_AUTOSELECTCOPY, LOI_TYPE_FLAG, (UINT_PTR)MWF_LOG_INDIVIDUALBKG, 0,
-    0, _T("Enable IEView as default message log"), 1, LOI_TYPE_SETTING, (UINT_PTR)"default_ieview", 1,
     0, NULL, 0, 0, 0, 0
 };
+
+static int have_ieview = 0, have_hpp = 0;
 
 static BOOL CALLBACK DlgProcLogOptions(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam)
 {
@@ -491,7 +492,26 @@ static BOOL CALLBACK DlgProcLogOptions(HWND hwndDlg, UINT msg, WPARAM wParam, LP
 			EnableWindow(GetDlgItem(hwndDlg, IDC_TRIMSPIN), maxhist != 0);
 			EnableWindow(GetDlgItem(hwndDlg, IDC_TRIM), maxhist != 0);
 			CheckDlgButton(hwndDlg, IDC_ALWAYSTRIM, maxhist != 0);
-			return TRUE;
+
+            have_ieview = ServiceExists(MS_IEVIEW_WINDOW);
+            have_hpp = ServiceExists("History++/ExtGrid/NewWindow");
+
+            SendDlgItemMessage(hwndDlg, IDC_MSGLOGDIDSPLAY, CB_INSERTSTRING, -1, (LPARAM)_T("Default"));
+            SendDlgItemMessage(hwndDlg, IDC_MSGLOGDIDSPLAY, CB_SETCURSEL, 0, 0);
+
+            if(have_ieview) {
+                SendDlgItemMessage(hwndDlg, IDC_MSGLOGDIDSPLAY, CB_INSERTSTRING, -1, (LPARAM)_T("IEView plugin"));
+                if(DBGetContactSettingByte(NULL, SRMSGMOD_T, "default_ieview", 0))
+                    SendDlgItemMessage(hwndDlg, IDC_MSGLOGDIDSPLAY, CB_SETCURSEL, 1, 0);
+            }
+            if(have_hpp) {
+                SendDlgItemMessage(hwndDlg, IDC_MSGLOGDIDSPLAY, CB_INSERTSTRING, -1, (LPARAM)_T("History++ plugin"));
+                if(DBGetContactSettingByte(NULL, SRMSGMOD_T, "default_ieview", 0))
+                    SendDlgItemMessage(hwndDlg, IDC_MSGLOGDIDSPLAY, CB_SETCURSEL, 1, 0);
+                else if(DBGetContactSettingByte(NULL, SRMSGMOD_T, "default_hpp", 0))
+                SendDlgItemMessage(hwndDlg, IDC_MSGLOGDIDSPLAY, CB_SETCURSEL, 2, 0);
+            }
+            return TRUE;
 		}
 	case WM_COMMAND:
 		switch (LOWORD(wParam)) {
@@ -572,6 +592,8 @@ static BOOL CALLBACK DlgProcLogOptions(HWND hwndDlg, UINT msg, WPARAM wParam, LP
 				{
 					int i = 0;
 					TVITEM item = {0};
+                    LRESULT msglogmode = SendDlgItemMessage(hwndDlg, IDC_MSGLOGDIDSPLAY, CB_GETCURSEL, 0, 0);
+
 					dwFlags &= ~(MWF_LOG_INDIVIDUALBKG | MWF_LOG_TEXTFORMAT | MWF_LOG_GRID | MWF_LOG_INDENT | MWF_LOG_SHOWICONS | MWF_LOG_SYMBOLS | MWF_LOG_INOUTICONS | MWF_LOG_GROUPMODE);
 
 					if (IsDlgButtonChecked(hwndDlg, IDC_LOADCOUNT))
@@ -585,6 +607,18 @@ static BOOL CALLBACK DlgProcLogOptions(HWND hwndDlg, UINT msg, WPARAM wParam, LP
 
 					DBWriteContactSettingDword(NULL, SRMSGMOD_T, "IndentAmount", (DWORD) GetDlgItemInt(hwndDlg, IDC_INDENTAMOUNT, &translated, FALSE));
 					DBWriteContactSettingDword(NULL, SRMSGMOD_T, "RightIndent", (DWORD) GetDlgItemInt(hwndDlg, IDC_RIGHTINDENT, &translated, FALSE));
+
+                    DBWriteContactSettingByte(NULL, SRMSGMOD_T, "default_ieview", 0);
+                    DBWriteContactSettingByte(NULL, SRMSGMOD_T, "default_hpp", 0);
+
+                    if(msglogmode == 1) {
+                        if(have_ieview)
+                            DBWriteContactSettingByte(NULL, SRMSGMOD_T, "default_ieview", 1);
+                        else
+                            DBWriteContactSettingByte(NULL, SRMSGMOD_T, "default_hpp", 1);
+                    }
+                    else if(msglogmode == 2)
+                        DBWriteContactSettingByte(NULL, SRMSGMOD_T, "default_hpp", 1);
 
 					/*
 					* scan the tree view and obtain the options...
