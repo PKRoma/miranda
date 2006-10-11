@@ -24,10 +24,6 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #ifndef _CHAT_H_
 #define _CHAT_H_
 
-
-#pragma warning( disable : 4786 ) // limitation in MSVC's debugger.
-#pragma warning( disable : 4996 ) // limitation in MSVC's debugger.
-
 #define WIN32_LEAN_AND_MEAN
 #define _WIN32_WINNT 0x0501
 #define _WIN32_IE 0x0501
@@ -58,6 +54,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include <m_addcontact.h>
 #include <m_clist.h>
 #include <m_clui.h>
+#include <m_message.h>
 #include <m_popup.h>
 #include "../resource.h"
 #include "m_chat.h"

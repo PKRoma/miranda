@@ -49,8 +49,6 @@ static WNDPROC OldNicklistProc;
 static WNDPROC OldFilterButtonProc;
 static WNDPROC OldLogProc;
 
-extern HWND GetParentWindow(HANDLE hContact, BOOL bChat);
-
 
 typedef struct
 {
@@ -1033,6 +1031,8 @@ BOOL CALLBACK RoomWndProc(HWND hwndDlg,UINT uMsg,WPARAM wParam,LPARAM lParam)
 			SESSION_INFO* psi = (SESSION_INFO*)lParam;
 			int mask;
 
+			NotifyLocalWinEvent(psi->hContact, hwndDlg, MSG_WINDOW_EVT_OPENING);
+
 			TranslateDialogDefault(hwndDlg);
 			SetWindowLong(hwndDlg,GWL_USERDATA,(LONG)psi);
 			OldSplitterProc=(WNDPROC)SetWindowLong(GetDlgItem(hwndDlg,IDC_CHAT_SPLITTERX),GWL_WNDPROC,(LONG)SplitterSubclassProc);
@@ -1063,6 +1063,8 @@ BOOL CALLBACK RoomWndProc(HWND hwndDlg,UINT uMsg,WPARAM wParam,LPARAM lParam)
 			SendMessage(hwndDlg, DM_UPDATETITLEBAR, 0, 0);
 
 			SendMessage(GetParent(hwndDlg), CM_ADDCHILD, (WPARAM) hwndDlg, (LPARAM) psi->hContact);
+
+			NotifyLocalWinEvent(psi->hContact, hwndDlg, MSG_WINDOW_EVT_OPEN);
 		}
 		break;
 
@@ -2019,6 +2021,8 @@ LABEL_SHOWWINDOW:
 
 	case WM_DESTROY:
 
+		NotifyLocalWinEvent(si->hContact, hwndDlg, MSG_WINDOW_EVT_CLOSING);
+
 		si->hWnd = NULL;
 
 		SetWindowLong(hwndDlg,GWL_USERDATA,0);
@@ -2033,6 +2037,8 @@ LABEL_SHOWWINDOW:
 		SetWindowLong(GetDlgItem(hwndDlg,IDC_CHAT_BKGCOLOR),GWL_WNDPROC,(LONG)OldFilterButtonProc);
 
 		SendMessage(GetParent(hwndDlg), CM_REMOVECHILD, 0, (LPARAM) hwndDlg);
+
+		NotifyLocalWinEvent(si->hContact, hwndDlg, MSG_WINDOW_EVT_CLOSE);
 		break;
 	}
 	return(FALSE);
