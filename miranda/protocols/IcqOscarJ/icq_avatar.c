@@ -618,7 +618,8 @@ int GetAvatarData(HANDLE hContact, DWORD dwUin, char* szUid, char* hash, unsigne
           void *tmp = ar;
 
           ar = ar->pNext;
-          pendingRequests = ar; // do not break variable
+          if (tmp == pendingRequests)
+            pendingRequests = ar; // do not break variable
           SAFE_FREE(&tmp);
           continue;
         }
