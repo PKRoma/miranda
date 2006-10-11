@@ -463,6 +463,26 @@ void handleAvatarContactHash(DWORD dwUIN, char* szUID, HANDLE hContact, unsigned
         {
           NetLog_Hash("New", pHash);
           NetLog_Server("User has Avatar, new hash stored.");
+
+          // Remove possible block - hash changed, try again.
+          EnterCriticalSection(&cookieMutex);
+          {
+            void** par = &pendingRequests;
+            avatarrequest* ar = pendingRequests;
+          
+            while (ar)
+            {
+              if (ar->hContact == hContact && ar->type == ART_BLOCK)
+              { // found one, remove
+                *par = ar->pNext;
+                SAFE_FREE(&ar);
+                break;
+              }
+              par = &ar->pNext;
+              ar = ar->pNext;
+            }
+          }
+          LeaveCriticalSection(&cookieMutex);
         }
         else
           NetLog_Server("User has Avatar, file is missing.");
