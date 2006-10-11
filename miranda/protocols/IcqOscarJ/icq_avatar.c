@@ -1232,7 +1232,7 @@ void handleAvatarFam(unsigned char *pBuffer, WORD wBufferLength, snac_header* pS
         pBuffer += len;
         pBuffer += ac->hashlen;
         unpackByte(&pBuffer, &bResult);
-        pBuffer += ac->hashlen + 1;
+        pBuffer += ac->hashlen;
         unpackWord(&pBuffer, &datalen);
 
         wBufferLength -= 4 + len + (ac->hashlen<<1);
