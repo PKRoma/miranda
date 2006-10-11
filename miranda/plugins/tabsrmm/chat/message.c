@@ -25,7 +25,7 @@ static int RTFColorToIndex(int *pIndex, int iCol, SESSION_INFO* si)
 {
 	int i;
 	MODULEINFO * pMod = MM_FindModule(si->pszModule);
-	
+
 	for (i = 0; i < pMod->nColorCount ; i++)
 	{
 		if ( pIndex[i] == iCol )
@@ -126,7 +126,7 @@ TCHAR* Chat_DoRtfToTags( char* pszText, SESSION_INFO* si)
 				int iCol = atoi(p1 + 10);
 				int iInd = RTFColorToIndex(pIndex, iCol, si);
 				bJustRemovedRTF = TRUE;
-				
+
 				_itot(iCol, szTemp, 10);
 				iRemoveChars = 10 + lstrlen(szTemp);
 				if (bTextHasStarted || iInd >= 0)
@@ -138,26 +138,6 @@ TCHAR* Chat_DoRtfToTags( char* pszText, SESSION_INFO* si)
 				bJustRemovedRTF = TRUE;
 				iRemoveChars = 4;
 				strcpy(InsertThis, "\n" );
-			}
-			else if ( !memcmp(p1, "\\u", 2 ) && p1[2] != 'c' ) // unicode char
-			{
-				char temp[10];
-				int i=0;
-				p = p1 + 2;
-				bTextHasStarted = TRUE;
-				bJustRemovedRTF = FALSE;
-				iRemoveChars = 2;
-				while ( i < 10 && *p != ' ' && *p != '\\' ) {
-					temp[i++] = *p++;
-					iRemoveChars++;
-				}
-				temp[i] = 0;
-
-				#if defined( _UNICODE )
-					*d++ = atoi( temp );
-					if ( *p == '\\' && p[1] == '\'' )
-						iRemoveChars += 4;
-				#endif
 			}
 			else if ( !memcmp(p1, "\\b", 2 )) //bold
 			{
@@ -184,6 +164,26 @@ TCHAR* Chat_DoRtfToTags( char* pszText, SESSION_INFO* si)
 				else
 					iRemoveChars = 3;
 				mir_snprintf(InsertThis, SIZEOF(InsertThis), (p1[3] != '0' && p1[3] != 'n') ? "%%u" : "%%U" );
+			}
+			else if ( !memcmp(p1, "\\u", 2 ) && isdigit( p1[1] )) // unicode char
+			{
+				char temp[10];
+				int i=0;
+				p = p1 + 2;
+				bTextHasStarted = TRUE;
+				bJustRemovedRTF = FALSE;
+				iRemoveChars = 2;
+				while ( i < 10 && *p != ' ' && *p != '\\' ) {
+					temp[i++] = *p++;
+					iRemoveChars++;
+				}
+				temp[i] = 0;
+
+				#if defined( _UNICODE )
+					*d++ = atoi( temp );
+					if ( *p == '\\' && p[1] == '\'' )
+						iRemoveChars += 4;
+				#endif
 			}
 			else if ( !memcmp(p1, "\\tab", 4 )) // tab
 			{
@@ -293,7 +293,7 @@ static DWORD CALLBACK Message_StreamCallback(DWORD dwCookie, LPBYTE pbBuff, LONG
 	static DWORD dwRead;
 	char ** ppText = (char **) dwCookie;
 
-	if (*ppText == NULL) 
+	if (*ppText == NULL)
 	{
 		*ppText = mir_alloc(cb + 1);
 		memcpy(*ppText, pbBuff, cb);
@@ -333,7 +333,7 @@ char* Chat_Message_GetFromStream(HWND hwndDlg, SESSION_INFO* si)
 	#if defined( _UNICODE )
 		dwFlags |= SF_UNICODE;
 	#endif
-		
+
 	SendMessage(GetDlgItem(hwndDlg, IDC_CHAT_MESSAGE), EM_STREAMOUT, dwFlags, (LPARAM) & stream);
 	return pszText; // pszText contains the text
 }

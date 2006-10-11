@@ -141,26 +141,6 @@ TCHAR* DoRtfToTags( char* pszText, SESSION_INFO* si)
 					iRemoveChars = 4;
 				strcpy(InsertThis, "\n" );
 				}
-			else if ( !memcmp(p1, "\\u", 2 ) && p1[2] != 'c' ) // unicode char
-			{
-				char temp[10];
-				int i=0;
-				p = p1 + 2;
-				bTextHasStarted = TRUE;
-				bJustRemovedRTF = FALSE;
-				iRemoveChars = 2;
-				while ( i < 10 && *p != ' ' && *p != '\\' ) {
-					temp[i++] = *p++;
-					iRemoveChars++;
-				}
-				temp[i] = 0;
-
-				#if defined( _UNICODE )
-					*d++ = atoi( temp );
-					if ( *p == '\\' && p[1] == '\'' )
-						iRemoveChars += 4;
-				#endif
-			}
 			else if ( !memcmp(p1, "\\b", 2 )) //bold
 				{
 					bTextHasStarted = TRUE;
@@ -187,6 +167,26 @@ TCHAR* DoRtfToTags( char* pszText, SESSION_INFO* si)
 						iRemoveChars = 3;
 				mir_snprintf(InsertThis, SIZEOF(InsertThis), (p1[3] != '0' && p1[3] != 'n') ? "%%u" : "%%U" );
 				}
+			else if ( !memcmp(p1, "\\u", 2 ) && isdigit( p1[1] )) // unicode char
+			{
+				char temp[10];
+				int i=0;
+				p = p1 + 2;
+				bTextHasStarted = TRUE;
+				bJustRemovedRTF = FALSE;
+				iRemoveChars = 2;
+				while ( i < 10 && *p != ' ' && *p != '\\' ) {
+					temp[i++] = *p++;
+					iRemoveChars++;
+				}
+				temp[i] = 0;
+
+				#if defined( _UNICODE )
+					*d++ = atoi( temp );
+					if ( *p == '\\' && p[1] == '\'' )
+						iRemoveChars += 4;
+				#endif
+			}
 			else if ( !memcmp(p1, "\\tab", 4 )) // tab
 				{
 					bTextHasStarted = TRUE;

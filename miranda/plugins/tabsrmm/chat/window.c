@@ -1197,6 +1197,10 @@ static LRESULT CALLBACK NicklistSubclassProc(HWND hwnd, UINT msg, WPARAM wParam,
 				case ID_MESS:
 					DoEventHookAsync(GetParent(hwnd), parentdat->ptszID, parentdat->pszModule, GC_USER_PRIVMESS, ui->pszUID, NULL, (LPARAM)NULL);
 					break;
+
+				default:
+					DoEventHookAsync(hwndParent, parentdat->ptszID, parentdat->pszModule, GC_USER_NICKLISTMENU, ui->pszUID, NULL, (LPARAM)uID);
+					break;
 				}
 				DestroyGCMenu(&hMenu, 1);
 				return TRUE;
