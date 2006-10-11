@@ -41,12 +41,11 @@ static int EventToIndex(LOGINFO * lin)
 {
 	switch(lin->iType) {
 		case GC_EVENT_MESSAGE:
-			{
-				if (lin->bIsMe)
-					return 10;
-				else
-					return 9;
-			}
+			if (lin->bIsMe)
+				return 10;
+			else
+				return 9;
+
 		case GC_EVENT_JOIN: return 3;
 		case GC_EVENT_PART: return 4;
 		case GC_EVENT_QUIT: return 5;
@@ -61,16 +60,16 @@ static int EventToIndex(LOGINFO * lin)
 	}
 	return 0;
 }
+
 static int EventToIcon(LOGINFO * lin)
 {
 	switch(lin->iType) {
 		case GC_EVENT_MESSAGE:
-			{
-				if (lin->bIsMe)
-					return ICON_MESSAGEOUT;
-				else
-					return ICON_MESSAGE;
-			}
+			if (lin->bIsMe)
+				return ICON_MESSAGEOUT;
+			else
+				return ICON_MESSAGE;
+
 		case GC_EVENT_JOIN: return ICON_JOIN;
 		case GC_EVENT_PART: return ICON_PART;
 		case GC_EVENT_QUIT: return ICON_QUIT;
@@ -144,7 +143,6 @@ static int Log_AppendRTF(LOGSTREAMDATA* streamData, char **buffer, int *cbBuffer
 		}
 		else if (*line == '%' ) {
 			char szTemp[200];
-			int iOldCount = 0;
 
 			szTemp[0] = '\0';
 			switch ( *++line ) {
@@ -171,7 +169,6 @@ static int Log_AppendRTF(LOGSTREAMDATA* streamData, char **buffer, int *cbBuffer
 					col += 18;
 					mir_snprintf(szTemp, SIZEOF(szTemp), (*line == 'c') ? "\\cf%u " : "\\highlight%u ", col);
 				}
-				iOldCount = 4;
 				break;
 			case 'C':
 			case 'F':
@@ -185,40 +182,32 @@ static int Log_AppendRTF(LOGSTREAMDATA* streamData, char **buffer, int *cbBuffer
 					else
 						mir_snprintf(szTemp, SIZEOF(szTemp), "\\highlight0 ");
 				}
-				iOldCount = 2;
 				break;
 			case 'b':
 			case 'u':
 			case 'i':
-				if (streamData->bStripFormat)
-					szTemp[0] = '\0';
-				else
+				if ( !streamData->bStripFormat ) 
 					mir_snprintf(szTemp, SIZEOF(szTemp), (*line == 'u') ? "\\%cl " : "\\%c ", *line );
-
-				iOldCount = 2;
 				break;
+
 			case 'B':
 			case 'U':
 			case 'I':
-				if (streamData->bStripFormat)
-					szTemp[0] = '\0';
-				else
-					mir_snprintf(szTemp, SIZEOF(szTemp), (*line == 'U') ? "\\%cl0 " : "\\%c0 ", CharLower(line));
-
-				iOldCount = 2;
+				if ( !streamData->bStripFormat ) {
+					mir_snprintf( szTemp, SIZEOF(szTemp), (*line == 'U') ? "\\%cl0 " : "\\%c0 ", *line );
+					CharLowerA( szTemp );
+				}
 				break;
+
 			case 'r':
-				if (streamData->bStripFormat)
-					szTemp[0] = '\0';
-				else {
+				if ( !streamData->bStripFormat ) {
 					int index = EventToIndex(streamData->lin);
 					mir_snprintf(szTemp, SIZEOF(szTemp), "%s ", Log_SetStyle(index, index));
 				}
-				iOldCount = 2;
 				break;
 			}
 
-			if ( iOldCount ) {
+			if ( szTemp[0] ) {
 				int iLen = lstrlenA(szTemp);
 				memcpy( d, szTemp, iLen );
 				d += iLen;
@@ -265,7 +254,7 @@ static void AddEventToBuffer(char **buffer, int *bufferEnd, int *bufferAlloced, 
 	}
 
 	if ( streamData && streamData->lin ) {
-		switch( streamData->lin->iType ) {
+		switch ( streamData->lin->iType ) {
 		case GC_EVENT_MESSAGE:
 			if ( streamData->lin->ptszText )
 				Log_AppendRTF( streamData, buffer, bufferEnd, bufferAlloced, _T("%s"), streamData->lin->ptszText );
@@ -275,11 +264,12 @@ static void AddEventToBuffer(char **buffer, int *bufferEnd, int *bufferAlloced, 
 				Log_AppendRTF(streamData, buffer, bufferEnd, bufferAlloced, TranslateT("%s %s"), streamData->lin->ptszNick, streamData->lin->ptszText);
 			break;
 		case GC_EVENT_JOIN:
-			if (pszNick)
+			if (pszNick) {
 				if (!streamData->lin->bIsMe)
 					Log_AppendRTF(streamData, buffer, bufferEnd, bufferAlloced, TranslateT("%s has joined"), pszNick);
 				else
 					Log_AppendRTF(streamData, buffer, bufferEnd, bufferAlloced, TranslateT("You have joined %s"), streamData->si->ptszName);
+			}
 			break;
 		case GC_EVENT_PART:
 			if (pszNick)
@@ -294,11 +284,12 @@ static void AddEventToBuffer(char **buffer, int *bufferEnd, int *bufferAlloced, 
 				Log_AppendRTF(streamData, buffer, bufferEnd, bufferAlloced, _T(": %s"), streamData->lin->ptszText);
 			break;
 		case GC_EVENT_NICK:
-			if (pszNick && streamData->lin->ptszText)
+			if (pszNick && streamData->lin->ptszText) {
 				if (!streamData->lin->bIsMe)
 					Log_AppendRTF(streamData, buffer, bufferEnd, bufferAlloced, TranslateT("%s is now known as %s"), pszNick, streamData->lin->ptszText);
 				else
 					Log_AppendRTF(streamData, buffer, bufferEnd, bufferAlloced, TranslateT("You are now known as %s"), streamData->lin->ptszText);
+			}
 			break;
 		case GC_EVENT_KICK:
 			if (streamData->lin->ptszNick && streamData->lin->ptszStatus)
@@ -356,7 +347,7 @@ static char* Log_CreateRTF(LOGSTREAMDATA *streamData)
 
 
 	// ### RTF BODY (one iteration per event that should be streamed in)
-	while(lin)
+	while ( lin )
 	{
 		// filter
 		if (streamData->si->iType != GCW_CHATROOM || !streamData->si->bFilterEnabled || (streamData->si->iLogFilterFlags&lin->iType) != 0)

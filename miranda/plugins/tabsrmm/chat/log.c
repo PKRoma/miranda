@@ -170,7 +170,6 @@ static int Log_AppendRTF(LOGSTREAMDATA* streamData, char **buffer, int *cbBuffer
 		}
 		else if (*line == '%' ) {
 			char szTemp[200];
-			int iOldCount = 0;
 
 			szTemp[0] = '\0';
 			switch ( *++line ) {
@@ -197,7 +196,6 @@ static int Log_AppendRTF(LOGSTREAMDATA* streamData, char **buffer, int *cbBuffer
 					col += 18;
 					mir_snprintf(szTemp, SIZEOF(szTemp), (*line == 'c') ? "\\cf%u " : "\\highlight%u ", col);
 				}
-				iOldCount = 4;
 				break;
 			case 'C':
 			case 'F':
@@ -211,40 +209,32 @@ static int Log_AppendRTF(LOGSTREAMDATA* streamData, char **buffer, int *cbBuffer
 					else
 						mir_snprintf(szTemp, SIZEOF(szTemp), "\\highlight0 ");
 				}
-				iOldCount = 2;
 				break;
 			case 'b':
 			case 'u':
 			case 'i':
-				if (streamData->bStripFormat)
-					szTemp[0] = '\0';
-				else
+				if ( !streamData->bStripFormat ) 
 					mir_snprintf(szTemp, SIZEOF(szTemp), (*line == 'u') ? "\\%cl " : "\\%c ", *line );
-
-				iOldCount = 2;
 				break;
+
 			case 'B':
 			case 'U':
 			case 'I':
-				if (streamData->bStripFormat)
-					szTemp[0] = '\0';
-				else
-					mir_snprintf(szTemp, SIZEOF(szTemp), (*line == 'U') ? "\\%cl0 " : "\\%c0 ", CharLower(line));
-
-				iOldCount = 2;
+				if ( !streamData->bStripFormat ) {
+					mir_snprintf( szTemp, SIZEOF(szTemp), (*line == 'U') ? "\\%cl0 " : "\\%c0 ", *line );
+					CharLowerA( szTemp );
+				}
 				break;
+
 			case 'r':
-				if (streamData->bStripFormat)
-					szTemp[0] = '\0';
-				else {
+				if ( !streamData->bStripFormat ) {
 					int index = EventToIndex(streamData->lin);
 					mir_snprintf(szTemp, SIZEOF(szTemp), "%s ", Log_SetStyle(index, index));
 				}
-				iOldCount = 2;
 				break;
 			}
 
-			if ( iOldCount ) {
+			if ( szTemp[0] ) {
 				int iLen = lstrlenA(szTemp);
 				memcpy( d, szTemp, iLen );
 				d += iLen;
@@ -382,7 +372,7 @@ static char* Log_CreateRTF(LOGSTREAMDATA *streamData)
 
 
 	// ### RTF BODY (one iteration per event that should be streamed in)
-	while (lin)
+	while ( lin )
 	{
 		// filter
 		if (streamData->si->iType != GCW_CHATROOM || !streamData->si->bFilterEnabled || (streamData->si->iLogFilterFlags&lin->iType) != 0)
