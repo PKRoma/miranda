@@ -732,7 +732,7 @@ BOOL LogToFile(SESSION_INFO* si, GCEVENT * gce)
 	if (!PathIsDirectoryA(szFolder))
 		CreateDirectoryA(szFolder, NULL);
 
-	mir_snprintf(szName, MAX_PATH,"%s.log",si->ptszID);
+	mir_snprintf(szName, MAX_PATH,TCHAR_STR_PARAM ".log",si->ptszID);
 	ValidateFilename(szName);
 
 	mir_snprintf(szFile, MAX_PATH,"%s\\%s", szFolder, szName );
@@ -756,8 +756,7 @@ BOOL LogToFile(SESSION_INFO* si, GCEVENT * gce)
 				mir_sntprintf(szTemp, SIZEOF(szTemp), _T("%s"), szTemp2);
 			pszNick = szTemp;
 		}
-		switch (gce->pDest->iType)
-		{
+		switch (gce->pDest->iType) {
 		case GC_EVENT_MESSAGE:
 		case GC_EVENT_MESSAGE|GC_EVENT_HIGHLIGHT:
 			p = '*';
@@ -826,7 +825,10 @@ BOOL LogToFile(SESSION_INFO* si, GCEVENT * gce)
 			mir_sntprintf(szLine, SIZEOF(szLine), TranslateT("%s %s\n"), szTime, szBuffer);
 
 		if ( szLine[0] ) {
-			_fputts(szLine, hFile);
+			char* p = t2a( szLine );
+			fputs(p, hFile);
+			mir_free( p );
+
 			if ( g_Settings.LoggingLimit > 0 ) {
 				DWORD dwSize;
 				DWORD trimlimit;

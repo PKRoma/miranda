@@ -625,7 +625,10 @@ BOOL LogToFile(SESSION_INFO* si, GCEVENT * gce)
 			mir_sntprintf(szLine, SIZEOF(szLine), TranslateT("%s %s\n"), szTime, szBuffer);
 
 		if ( szLine[0] ) {
-			_fputts(szLine, hFile);
+			char* p = t2a( szLine );
+			fputs(p, hFile);
+			mir_free( p );
+
 			if ( g_Settings.LoggingLimit > 0 ) {
 				DWORD dwSize;
 				DWORD trimlimit;

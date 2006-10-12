@@ -213,7 +213,7 @@ static int Log_AppendRTF(LOGSTREAMDATA* streamData, char **buffer, int *cbBuffer
 			case 'b':
 			case 'u':
 			case 'i':
-				if ( !streamData->bStripFormat ) 
+				if ( !streamData->bStripFormat )
 					mir_snprintf(szTemp, SIZEOF(szTemp), (*line == 'u') ? "\\%cl " : "\\%c ", *line );
 				break;
 
@@ -749,16 +749,8 @@ char * Log_CreateRtfHeader(MODULEINFO * mi)
 
 	// font table
 	Log_Append(&buffer, &bufferEnd, &bufferAlloced, "{\\rtf1\\ansi\\deff0{\\fonttbl");
-	for (i = 0; i < OPTIONS_FONTCOUNT ; i++) {
-#if defined(_UNICODE)
-        mir_sntprintf(tszTemp, SIZEOF(tszTemp), _T("{\\f%u\\fnil\\fcharset%u%s;}"), i, aFonts[i].lf.lfCharSet, aFonts[i].lf.lfFaceName);
-        WideCharToMultiByte(CP_ACP, 0, tszTemp, -1, szTemp, 256, NULL, NULL);
-        szTemp[255] = 0;
-        Log_Append(&buffer, &bufferEnd, &bufferAlloced, szTemp);
-#else
-        Log_Append(&buffer, &bufferEnd, &bufferAlloced, "{\\f%u\\fnil\\fcharset%u%s;}", i, aFonts[i].lf.lfCharSet, aFonts[i].lf.lfFaceName);
-#endif
-    }
+	for (i = 0; i < OPTIONS_FONTCOUNT ; i++)
+		Log_Append(&buffer, &bufferEnd, &bufferAlloced, "{\\f%u\\fnil\\fcharset%u" TCHAR_STR_PARAM ";}", i, aFonts[i].lf.lfCharSet, aFonts[i].lf.lfFaceName);
 
 	// colour table
 	Log_Append(&buffer, &bufferEnd, &bufferAlloced, "}{\\colortbl ;");
@@ -766,10 +758,10 @@ char * Log_CreateRtfHeader(MODULEINFO * mi)
 	for (i = 0; i < OPTIONS_FONTCOUNT; i++)
 		Log_Append(&buffer, &bufferEnd, &bufferAlloced, "\\red%u\\green%u\\blue%u;", GetRValue(aFonts[i].color), GetGValue(aFonts[i].color), GetBValue(aFonts[i].color));
 
-	for(i = 0; i < mi->nColorCount; i++)
+	for (i = 0; i < mi->nColorCount; i++)
 		Log_Append(&buffer, &bufferEnd, &bufferAlloced, "\\red%u\\green%u\\blue%u;", GetRValue(mi->crColors[i]), GetGValue(mi->crColors[i]), GetBValue(mi->crColors[i]));
 
-	for(i = 0; i < 5; i++)
+	for (i = 0; i < 5; i++)
 		Log_Append(&buffer, &bufferEnd, &bufferAlloced, "\\red%u\\green%u\\blue%u;", GetRValue(g_Settings.nickColors[i]), GetGValue(g_Settings.nickColors[i]), GetBValue(g_Settings.nickColors[i]));
 
 	// new paragraph

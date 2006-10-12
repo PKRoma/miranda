@@ -189,7 +189,7 @@ static int Log_AppendRTF(LOGSTREAMDATA* streamData, char **buffer, int *cbBuffer
 			case 'b':
 			case 'u':
 			case 'i':
-				if ( !streamData->bStripFormat ) 
+				if ( !streamData->bStripFormat )
 					mir_snprintf(szTemp, SIZEOF(szTemp), (*line == 'u') ? "\\%cl " : "\\%c ", *line );
 				break;
 
@@ -614,8 +614,8 @@ char * Log_CreateRtfHeader(MODULEINFO * mi)
 
 	// font table
 	Log_Append(&buffer, &bufferEnd, &bufferAlloced, "{\\rtf1\\ansi\\deff0{\\fonttbl");
-	for (i = 0; i < 17 ; i++)
-		Log_Append(&buffer, &bufferEnd, &bufferAlloced, "{\\f%u\\fnil\\fcharset%u%s;}", i, aFonts[i].lf.lfCharSet, aFonts[i].lf.lfFaceName);
+	for (i = 0; i < OPTIONS_FONTCOUNT; i++)
+		Log_Append(&buffer, &bufferEnd, &bufferAlloced, "{\\f%u\\fnil\\fcharset%u" TCHAR_STR_PARAM ";}", i, aFonts[i].lf.lfCharSet, aFonts[i].lf.lfFaceName);
 
 	// colour table
 	Log_Append(&buffer, &bufferEnd, &bufferAlloced, "}{\\colortbl ;");

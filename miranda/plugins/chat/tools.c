@@ -143,7 +143,7 @@ static int ShowPopup (HANDLE hContact, SESSION_INFO* si, HICON hIcon,  char* psz
 	else
 		pd.lchIcon = LoadIconEx(IDI_CHANMGR, "window", 0, 0 );
 
-	mir_sntprintf(pd.lptzContactName, MAX_CONTACTNAME-1, _T(TCHAR_STR_PARAM) _T(" - %s"), 
+	mir_sntprintf(pd.lptzContactName, MAX_CONTACTNAME-1, _T(TCHAR_STR_PARAM) _T(" - %s"),
 		pszProtoName, CallService(MS_CLIST_GETCONTACTDISPLAYNAME, (WPARAM)hContact, GCDNF_TCHAR ));
 	lstrcpyn( pd.lptzText, TranslateTS(szBuf), MAX_SECONDLINE-1);
 	pd.iSeconds = g_Settings.iPopupTimeout;
@@ -350,7 +350,7 @@ BOOL DoSoundsFlashPopupTrayStuff(SESSION_INFO* si, GCEVENT * gce, BOOL bHighligh
 				SkinPlaySound("ChatMessage");
 			if (!g_Settings.TabsEnable && bInactive && g_Settings.FlashWindow && si->hWnd)
 				SetTimer(si->hWnd, TIMERID_FLASHWND, 900, NULL);
-				
+
 			if (bInactive && !( si->wState & STATE_TALK )) {
 				si->wState |= STATE_TALK;
 				DBWriteContactSettingWord(si->hContact, si->pszModule,"ApparentMode",(LPARAM)(WORD) 40071);
@@ -629,7 +629,10 @@ BOOL LogToFile(SESSION_INFO* si, GCEVENT * gce)
 			mir_sntprintf(szLine, SIZEOF(szLine), TranslateT("%s %s\n"), szTime, szBuffer);
 
 		if ( szLine[0] ) {
-			_fputts(szLine, hFile);
+			char* p = t2a( szLine );
+			fputs(p, hFile);
+			mir_free( p );
+
 			if ( g_Settings.LoggingLimit > 0 ) {
 				DWORD dwSize;
 				DWORD trimlimit;
