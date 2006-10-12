@@ -716,7 +716,7 @@ int Service_AddEvent(WPARAM wParam, LPARAM lParam)
 		SESSION_INFO* si = SM_FindSession(pWnd, pMod);
 
 		// fix for IRC's old stuyle mode notifications. Should not affect any other protocol
-		if ((gce->pDest->iType == GC_EVENT_ADDSTATUS || gce->pDest->iType == GC_EVENT_REMOVESTATUS) && !gce->bAddToLog) {
+		if ((gce->pDest->iType == GC_EVENT_ADDSTATUS || gce->pDest->iType == GC_EVENT_REMOVESTATUS) && !( gce->dwFlags & GCEF_ADDTOLOG )) {
 			iRetVal = 0;
 			goto LBL_Exit;
 		}
@@ -738,7 +738,7 @@ int Service_AddEvent(WPARAM wParam, LPARAM lParam)
 				SendMessage(si->hWnd, GC_REDRAWLOG2, 0, 0);
 			}
 			DoSoundsFlashPopupTrayStuff(si, gce, bIsHighlighted, 0);
-			if (gce->bAddToLog && g_Settings.LoggingEnabled)
+			if ((gce->dwFlags & GCEF_ADDTOLOG) && g_Settings.LoggingEnabled)
 				LogToFile(si, gce);
 		}
 

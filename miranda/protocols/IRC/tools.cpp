@@ -500,7 +500,7 @@ int CallChatEvent(WPARAM wParam, LPARAM lParam)
 		gcetemp = (GCEVENT *)mmi.mmi_malloc(sizeof(GCEVENT));
 		gcetemp->pDest = (GCDEST *)mmi.mmi_malloc(sizeof(GCDEST));
 		gcetemp->pDest->iType = gcevent->pDest->iType;
-		gcetemp->bAddToLog = gcevent->bAddToLog;
+		gcetemp->dwFlags = gcevent->dwFlags;
 		gcetemp->bIsMe = gcevent->bIsMe;
 		gcetemp->cbSize = sizeof(GCEVENT);
 		gcetemp->dwItemData = gcevent->dwItemData;
@@ -634,7 +634,7 @@ int DoEvent(int iEvent, const char* pszWindow, const char * pszNick,
 	gce.cbSize = sizeof(GCEVENT);
 	gce.pDest = &gcd;
 	gce.pszStatus = (char *)pszStatus;
-	gce.bAddToLog = bAddToLog;
+	gce.dwFlags =  (bAddToLog) ? 0 : GCEF_ADDTOLOG;
 	gce.pszNick = (char *)pszNick;
 	gce.pszUID = (char *)pszNick;
 	gce.pszUserInfo = prefs->ShowAddresses?(char *)pszUserInfo:NULL;

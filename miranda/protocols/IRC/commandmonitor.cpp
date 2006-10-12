@@ -1636,7 +1636,7 @@ bool CMyMonitor::OnIrc_ENDNAMES(const CIrcMessage* pmsg)
 					gce.pszNick = sTemp.c_str();
 					gce.pszStatus = sStat.c_str();
 					BOOL bIsMe = (lstrcmpi(gce.pszNick, m_session.GetInfo().sNick.c_str()) == 0)?TRUE:FALSE;
-					gce.bAddToLog = false;
+					gce.dwFlags = 0;
 					gce.bIsMe = bIsMe;
 					gce.time = bIsMe?time(0):0;
 
@@ -1682,7 +1682,7 @@ bool CMyMonitor::OnIrc_ENDNAMES(const CIrcMessage* pmsg)
 				gcd.pszID = (char*)sID.c_str();
 				gcd.iType = GC_EVENT_CONTROL;
 				gce.cbSize = sizeof(GCEVENT);
-				gce.bAddToLog = false;
+				gce.dwFlags = 0;
 				gce.bIsMe = false;
 				gce.dwItemData = false;
 				gce.pszNick = NULL;

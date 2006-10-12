@@ -292,7 +292,7 @@ BOOL SM_AddEventToAllMatchingUID(GCEVENT * gce)
 					}
 					DoSoundsFlashPopupTrayStuff(pTemp, gce, FALSE, bManyFix);
 					bManyFix ++;
-					if (gce->bAddToLog && g_Settings.LoggingEnabled)
+					if ((gce->dwFlags & GCEF_ADDTOLOG) && g_Settings.LoggingEnabled)
 						LogToFile(pTemp, gce);
 		}	}	}
 

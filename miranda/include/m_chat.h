@@ -489,10 +489,8 @@ typedef struct {
 	};
                                  // IRC use it to display a hostmask for JOIN, PART (and more) events.
 	BOOL  bIsMe;                  // Is this event from the Miranda user?
-	union {
-		BOOL  bAddToLog;           // Display in the message log? There is no need to set this to
-		DWORD dwFlags;             // event flags
-	};
+	DWORD dwFlags;						// event flags: GCEF_ADDTOLOG, GC_UNICODE
+
                                  // FALSE any other time than when initializing the window (before sending SESSION_INITDONE)
 	DWORD		dwItemData;          // User specified data.
 	time_t   time;                // Timestamp of the event
