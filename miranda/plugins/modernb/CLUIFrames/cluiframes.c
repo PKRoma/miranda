@@ -3989,7 +3989,7 @@ LRESULT CALLBACK CLUIFrameSubContainerProc(HWND hwnd, UINT msg, WPARAM wParam, L
 static HWND CreateSubContainerWindow(HWND parent,int x,int y,int width,int height)
 {
   HWND hwnd;
-  hwnd=CreateWindowEx(g_proc_SetLayeredWindowAttributesNew?WS_EX_LAYERED:0,TEXT(CLUIFrameSubContainerClassName),TEXT("aaaa"),WS_POPUP|!g_bLayered?WS_BORDER:0/*|WS_THICKFRAME*/,x,y,width,height,parent,0,g_hInst,0);
+  hwnd=CreateWindowEx(g_proc_SetLayeredWindowAttributesNew?WS_EX_LAYERED:0,TEXT(CLUIFrameSubContainerClassName),TEXT("SubContainerWindow"),WS_POPUP|!g_bLayered?WS_BORDER:0/*|WS_THICKFRAME*/,x,y,width,height,parent,0,g_hInst,0);
   SetWindowLong(hwnd,GWL_STYLE,GetWindowLong(hwnd,GWL_STYLE)&~(WS_CAPTION|WS_BORDER));
   if (g_bOnDesktop)
   {
@@ -4161,7 +4161,7 @@ LRESULT CALLBACK CLUIFrameContainerWndProc(HWND hwnd, UINT msg, WPARAM wParam, L
 };
 static HWND CreateContainerWindow(HWND parent,int x,int y,int width,int height)
 {
-  return(CreateWindow(TEXT("FramesContainer"),TEXT("aaaa"),WS_POPUP|WS_THICKFRAME,x,y,width,height,parent,0,g_hInst,0));
+  return(CreateWindow(TEXT("FramesContainer"),TEXT("FramesContainer"),WS_POPUP|WS_THICKFRAME,x,y,width,height,parent,0,g_hInst,0));
 };
 
 

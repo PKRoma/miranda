@@ -676,7 +676,8 @@ int ModernButton_ReposButtons(HWND parent, BOOL draw, RECT * r)
     r=(AlignedTo&16)?rc.right+Buttons[i].OrR:((AlignedTo&32)?((rc.left+rc.right)>>1)+Buttons[i].OrR:rc.left+Buttons[i].OrR);
     b=(AlignedTo&64)?rc.bottom+Buttons[i].OrB:((AlignedTo&128)?((rc.top+rc.bottom)>>1)+Buttons[i].OrB:rc.top+Buttons[i].OrB);
     SetWindowPos(Buttons[i].hwnd,HWND_TOP,l,t,r-l,b-t,0);
-    if (rc.right-rc.left<Buttons[i].minW || rc.bottom-rc.top<Buttons[i].minH)
+    if (  (rc.right-rc.left<Buttons[i].minW /*&& Buttons[i].minW!=0*/) 
+        ||(rc.bottom-rc.top<Buttons[i].minH /*&& Buttons[i].minH!=0*/) )
       CLUI_ShowWindowMod(Buttons[i].hwnd,SW_HIDE);
     else 
       CLUI_ShowWindowMod(Buttons[i].hwnd,SW_SHOW);
