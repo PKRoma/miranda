@@ -112,7 +112,7 @@ rem ---------------------------------------------------------------------------
 
 cd ..\..\bin\Release
 
-dir /B /S *.dll | rebase
+dir /B /S *.dll | rebaser /NOCRC
 
 for /F "tokens=1,2 delims= " %%i in (..\build.no) do call :Pack %%i %%j
 goto :eof
