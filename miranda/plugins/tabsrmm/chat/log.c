@@ -727,8 +727,6 @@ char * Log_CreateRtfHeader(MODULEINFO * mi)
 {
 	char *buffer;
 	int bufferAlloced, bufferEnd, i = 0;
-    TCHAR tszTemp[256];
-	char  szTemp[256];
 
 	// guesstimate amount of memory for the RTF header
 	bufferEnd = 0;

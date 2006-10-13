@@ -158,7 +158,7 @@ static int Log_AppendRTF(LOGSTREAMDATA* streamData, char **buffer, int *cbBuffer
 
 				else if ( line[1] != '\0' && line[2] != '\0')
 				{
-					TCHAR szTemp3[3];
+					TCHAR szTemp3[3], c = *line;
 					int col;
 					szTemp3[0] = line[1];
 					szTemp3[1] = line[2];
@@ -167,7 +167,7 @@ static int Log_AppendRTF(LOGSTREAMDATA* streamData, char **buffer, int *cbBuffer
 
 					col = _ttoi(szTemp3);
 					col += 18;
-					mir_snprintf(szTemp, SIZEOF(szTemp), (*line == 'c') ? "\\cf%u " : "\\highlight%u ", col);
+					mir_snprintf(szTemp, SIZEOF(szTemp), ( c == 'c' ) ? "\\cf%u " : "\\highlight%u ", col);
 				}
 				break;
 			case 'C':
