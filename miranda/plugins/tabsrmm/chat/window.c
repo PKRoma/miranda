@@ -546,6 +546,7 @@ static LRESULT CALLBACK MessageSubclassProc(HWND hwnd, UINT msg, WPARAM wParam, 
 
 				break;
 			}
+
 			if (wParam == VK_TAB && isShift && !isCtrl) { // SHIFT-TAB (go to nick list)
 				SetFocus(GetDlgItem(hwndParent, IDC_LIST));
 				return TRUE;

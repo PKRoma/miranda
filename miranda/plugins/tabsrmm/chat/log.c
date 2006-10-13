@@ -359,6 +359,7 @@ static char* Log_CreateRTF(LOGSTREAMDATA *streamData)
 	char *buffer, *header;
 	int bufferAlloced, bufferEnd, i, me = 0;
 	LOGINFO * lin = streamData->lin;
+	MODULEINFO *mi = MM_FindModule(streamData->si->pszModule);
 
 	// guesstimate amount of memory for the RTF
 	bufferEnd = 0;
@@ -367,7 +368,9 @@ static char* Log_CreateRTF(LOGSTREAMDATA *streamData)
 	buffer[0] = '\0';
 
 	// ### RTF HEADER
-	header = MM_FindModule(streamData->si->pszModule)->pszHeader;
+	header = mi->pszHeader;
+	streamData->crCount = mi->nColorCount;
+
 	if (header)
 		Log_Append(&buffer, &bufferEnd, &bufferAlloced, header);
 
