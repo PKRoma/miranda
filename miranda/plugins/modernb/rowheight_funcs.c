@@ -798,8 +798,7 @@ int cliRowHitTest(struct ClcData *dat, int pos_y)
 
 int cliGetRowHeight(struct ClcData *dat, int item)
 {	
-  if ( item >= dat->row_heights_size)
+  if ( item >= dat->row_heights_size || item <0 )
     return dat->max_row_height;
-
   return dat->row_heights[ item ];
 }
