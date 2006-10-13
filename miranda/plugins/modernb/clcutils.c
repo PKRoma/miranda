@@ -76,7 +76,8 @@ int cliHitTest(HWND hwnd,struct ClcData *dat,int testx,int testy,struct ClcConta
 	if(group) *group=hitgroup;
 	/////////
 
-	if (testx<hitcontact->pos_indent) 
+	if ( ((testx<hitcontact->pos_indent) && !dat->text_rtl) ||
+         ((testx>clRect.right-hitcontact->pos_indent) && dat->text_rtl) ) 
 	{
 		if(flags) *flags|=CLCHT_ONITEMINDENT;
 		return hit;

@@ -1,6 +1,6 @@
-// 0, 4, 3, 57
-#define BUILD_NUM 57
-#define BUILD_NUM_STR  "57"
+// 0, 4, 3, 58
+#define BUILD_NUM 58
+#define BUILD_NUM_STR  "58"
 
 #define FILE_VERSION	0, 4, 3, BUILD_NUM
 #define PRODUCT_VERSION	0, 4, 3, BUILD_NUM
