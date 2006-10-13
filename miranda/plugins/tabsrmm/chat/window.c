@@ -28,6 +28,7 @@ extern LRESULT CALLBACK SplitterSubclassProc(HWND hwnd, UINT msg, WPARAM wParam,
 extern NEN_OPTIONS nen_options;
 extern HRESULT  (WINAPI *MyCloseThemeData)(HANDLE);
 extern BOOL g_framelessSkinmode;
+extern SESSION_INFO g_TabSession;
 
 extern MYGLOBALS	myGlobals;
 extern HBRUSH		hListBkgBrush;
@@ -997,11 +998,13 @@ static BOOL CALLBACK FilterWndProc(HWND hwndDlg,UINT uMsg,WPARAM wParam,LPARAM l
 				iFlags |= GC_EVENT_REMOVESTATUS;
 
 			if ( si ) {
-				if (iFlags == 0) {
+                int iGlobalFlags = DBGetContactSettingDword(0, "Chat", "FilterFlags", 0x03E0);
+				if (iFlags == 0 || iFlags == iGlobalFlags) {
 					DBDeleteContactSetting(si->hContact, "Chat", "FilterFlags");
-					iFlags = DBGetContactSettingDword(0, "Chat", "FilterFlags", 0x03E0);
+                    iFlags = (iFlags == 0 ? 0 : iGlobalFlags);
 				}
-				else DBWriteContactSettingDword(si->hContact, "Chat", "FilterFlags", iFlags);
+				else 
+                    DBWriteContactSettingDword(si->hContact, "Chat", "FilterFlags", iFlags);
 
 				SendMessage(si->hWnd, GC_CHANGEFILTERFLAG, 0, (LPARAM)iFlags);
 				if (si->bFilterEnabled)
@@ -1464,6 +1467,12 @@ BOOL CALLBACK RoomWndProc(HWND hwndDlg,UINT uMsg,WPARAM wParam,LPARAM lParam)
 				SendMessage(GetDlgItem(hwndDlg, IDC_LIST), LB_SETITEMHEIGHT, 0, (LPARAM)height > font ? height : font);
 				InvalidateRect(GetDlgItem(hwndDlg, IDC_LIST), NULL, TRUE);
 			}
+            si->iLogFilterFlags = DBGetContactSettingDword(si->hContact, "Chat", "FilterFlags", DBGetContactSettingDword(NULL, "Chat", "FilterFlags", 0x03E0));
+
+            if(si->iLogFilterFlags == 0)
+                si->bFilterEnabled = 0;
+
+            SendDlgItemMessage(hwndDlg,IDC_FILTER,BM_SETIMAGE,IMAGE_ICON,(LPARAM)LoadIconEx(si->bFilterEnabled?IDI_FILTER:IDI_FILTER2, si->bFilterEnabled?"filter":"filter2", 0, 0 ));
 			SendMessage(hwndDlg, WM_SIZE, 0, 0);
 			SendMessage(hwndDlg, GC_REDRAWLOG2, 0, 0);
 		}
@@ -1490,8 +1499,8 @@ BOOL CALLBACK RoomWndProc(HWND hwndDlg,UINT uMsg,WPARAM wParam,LPARAM lParam)
 				hIcon = dat->wStatus <= ID_STATUS_OFFLINE ? LoadSkinnedProtoIcon(si->pszModule, ID_STATUS_OFFLINE) : LoadSkinnedProtoIcon(si->pszModule, dat->wStatus);
 				fNoCopy = FALSE;
 				mir_sntprintf(szTemp, SIZEOF(szTemp),
-					(si->nUsersInNicklist ==1) ? TranslateT("%s: Chat Room (%u user)") : TranslateT("%s: Chat Room (%u users)"),
-					si->ptszName, si->nUsersInNicklist);
+					(si->nUsersInNicklist ==1) ? TranslateT("%s: Chat Room (%u user%s") : TranslateT("%s: Chat Room (%u users%s)"),
+					si->ptszName, si->nUsersInNicklist, si->bFilterEnabled ? TranslateT(", event filter active)") : TranslateT(")"));
 				break;
 			case GCW_PRIVMESS:
 				mir_sntprintf(szTemp, SIZEOF(szTemp),
@@ -1869,6 +1878,8 @@ LABEL_SHOWWINDOW:
 
 	case GC_CHANGEFILTERFLAG:
 		si->iLogFilterFlags = lParam;
+        if(si->iLogFilterFlags == 0 && si->bFilterEnabled)
+            SendMessage(hwndDlg, WM_COMMAND, IDC_FILTER, 0);
 		break;
 
 	case GC_SHOWFILTERMENU:
@@ -2357,13 +2368,20 @@ LABEL_SHOWWINDOW:
 			if (!IsWindowEnabled(GetDlgItem(hwndDlg,IDC_FILTER)))
 				break;
 
-			si->bFilterEnabled = !si->bFilterEnabled;
+            if(si->iLogFilterFlags == 0 && !si->bFilterEnabled) {
+                MessageBox(0, TranslateT("The filter canoot be enabled, because there are no event types selected either global or for this chat room"), TranslateT("Event filter error"), MB_OK);
+                si->bFilterEnabled = 0;
+            }
+            else
+                si->bFilterEnabled = !si->bFilterEnabled;
 			SendDlgItemMessage(hwndDlg,IDC_FILTER,BM_SETIMAGE,IMAGE_ICON,(LPARAM)LoadIconEx(si->bFilterEnabled?IDI_FILTER:IDI_FILTER2, si->bFilterEnabled?"filter":"filter2", 0, 0 ));
 			if (si->bFilterEnabled && DBGetContactSettingByte(NULL, "Chat", "RightClickFilter", 0) == 0) {
 				SendMessage(hwndDlg, GC_SHOWFILTERMENU, 0, 0);
 				break;
 			}
 			SendMessage(hwndDlg, GC_REDRAWLOG, 0, 0);
+            SendMessage(hwndDlg, GC_UPDATETITLE, 0, 0);
+            DBWriteContactSettingByte(si->hContact, "Chat", "FilterEnabled", si->bFilterEnabled);
 			break;
 
 		case IDC_BKGCOLOR:

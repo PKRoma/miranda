@@ -262,7 +262,7 @@ int Service_NewChat(WPARAM wParam, LPARAM lParam)
 			si->ptszStatusbarText = a2tf( gcw->ptszStatusbarText, gcw->dwFlags );
 			si->iSplitterX = g_Settings.iSplitterX;
 			si->iSplitterY = g_Settings.iSplitterY;
-			si->bFilterEnabled = DBGetContactSettingByte(NULL, "Chat", "FilterEnabled", 0);
+			si->bFilterEnabled = DBGetContactSettingByte(si->hContact, "Chat", "FilterEnabled", DBGetContactSettingByte(NULL, "Chat", "FilterEnabled", 0));
 			si->bNicklistEnabled = DBGetContactSettingByte(NULL, "Chat", "ShowNicklist", 1);
 			if ( mi->bColor ) {
 				si->iFG = 4;

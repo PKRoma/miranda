@@ -430,8 +430,8 @@ static char* Log_CreateRTF(LOGSTREAMDATA *streamData)
 			else
 				Log_Append(&buffer, &bufferEnd, &bufferAlloced, "%s ", Log_SetStyle(0, 0 ));
 			// insert a TAB if necessary to put the timestamp in the right position
-			//if (g_Settings.dwIconFlags)
-			//	Log_Append(&buffer, &bufferEnd, &bufferAlloced, "\\tab ");
+			if (g_Settings.dwIconFlags)
+				Log_Append(&buffer, &bufferEnd, &bufferAlloced, "\\tab ");
 
 			//insert timestamp
 			if (g_Settings.ShowTime)

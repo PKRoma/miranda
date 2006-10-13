@@ -36,8 +36,9 @@ $Id$
 
 static char *relnotes[] = {
     "{\\rtf1\\ansi\\deff0\\pard\\li%u\\fi-%u\\ri%u\\tx%u}",
-    "\\par\t\\b\\ul1 Release notes for version 1.1.0.10\\b0\\ul0\\par ",
+    "\\par\t\\b\\ul1 Release notes for version 1.1.0.11\\b0\\ul0\\par ",
     "*\tChat part is now partially UNICODE safe (patch by ghazan, huge changes, EXPECT SOME PROBLEMS WITH GROUP CHATS).\\par",
+    "*\tThe chat room event filter now allows to set filter flags per channel. Filter status is also saved per channel and has been made sticky, so you don't need to always re-enable the filter for a given channel.\\par",
     NULL
 };
 
