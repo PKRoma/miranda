@@ -434,29 +434,81 @@ int __stdcall MSN_SendNicknameW( WCHAR* nickname)
 /////////////////////////////////////////////////////////////////////////////////////////
 // MSN_SendStatusMessage - notify a server about the status message change
 
-void __stdcall MSN_SendStatusMessage( const char* msg, struct MSN_CurrentMedia *cm )
+// Helper to process texts
+static char * HtmlEncodeUTF8T( const TCHAR *src )
+{
+	if (src == NULL)
+		return strdup("");
+
+	TCHAR *tmp = HtmlEncodeT(src);
+#if defined( _UNICODE )
+	char *ret = Utf8EncodeUcs2(tmp);
+#else
+	char *ret = Utf8Encode(tmp);
+#endif
+	free(tmp);
+	return ret;
+}
+
+void __stdcall MSN_SendStatusMessage( const char* msg )
 {
 	if ( !msnLoggedIn || !MyOptions.UseMSNP11 )
 		return;
 
 	char* msgEnc = HtmlEncode(( msg == NULL ) ? "" : msg );
-	char *cmArtistEnc = NULL, *cmAlbumEnc = NULL, *cmSongEnc = NULL, *cmFormatEnc = NULL;
 	char  szMsg[ 1024 ];
 
-	if ( (cm == NULL) || ( (cm->szAlbum == NULL) && (cm->szArtist == NULL) && (cm->szSong == NULL) ) ) {
-	mir_snprintf( szMsg, sizeof szMsg, "<Data><PSM>%s</PSM><CurrentMedia></CurrentMedia></Data>", UTF8(msgEnc));
-	free( msgEnc );
+	if ( msnCurrentMedia.cbSize == 0 ) 
+	{
+		mir_snprintf( szMsg, sizeof szMsg, "<Data><PSM>%s</PSM></Data>", UTF8(msgEnc));
+		free( msgEnc );
 	}
-	else {
-		cmAlbumEnc = HtmlEncode(( cm->szAlbum == NULL ) ? "" : cm->szAlbum );
-		cmArtistEnc = HtmlEncode(( cm->szArtist == NULL ) ? "" : cm->szArtist );
-		cmSongEnc = HtmlEncode(( cm->szSong == NULL ) ? "" : cm->szSong );
-		cmFormatEnc = HtmlEncode(( cm->szFormat == NULL ) ? "{0} - {1}" : cm->szFormat );
-		mir_snprintf( szMsg, sizeof szMsg, "<Data><PSM>%s</PSM><CurrentMedia>\\0Music\\01\\0%s\\0%s\\0%s\\0%s\\0\\0</CurrentMedia></Data>", UTF8(msgEnc), UTF8(cmFormatEnc), UTF8(cmSongEnc), UTF8(cmArtistEnc), UTF8(cmAlbumEnc));
-		free(cmFormatEnc);
-		free(cmAlbumEnc);
-		free(cmArtistEnc);
-		free(cmSongEnc);
+	else 
+	{
+		char *szFormatEnc;
+		if (ServiceExists(MS_LISTENINGTO_GETPARSEDTEXT)) {
+			LISTENINGTOINFO lti = {0};
+			lti.cbSize = sizeof(lti);
+			if (msnCurrentMedia.szTitle != NULL) lti.szTitle = _T("{0}");
+			if (msnCurrentMedia.szArtist != NULL) lti.szArtist = _T("{1}");
+			if (msnCurrentMedia.szAlbum != NULL) lti.szAlbum = _T("{2}");
+			if (msnCurrentMedia.szTrack != NULL) lti.szTrack = _T("{3}");
+			if (msnCurrentMedia.szYear != NULL) lti.szYear = _T("{4}");
+			if (msnCurrentMedia.szGenre != NULL) lti.szGenre = _T("{5}");
+			if (msnCurrentMedia.szLength != NULL) lti.szLength = _T("{6}");
+			if (msnCurrentMedia.szPlayer != NULL) lti.szPlayer = _T("{7}");
+			if (msnCurrentMedia.szType != NULL) lti.szType = _T("{8}");
+
+			TCHAR *tmp = (TCHAR *)CallService(MS_LISTENINGTO_GETPARSEDTEXT, (WPARAM) _T("%title% - %artist%"), (LPARAM) &lti );
+			szFormatEnc = HtmlEncodeUTF8T(tmp);
+			mir_free(tmp);
+		} else {
+			szFormatEnc = HtmlEncodeUTF8T(_T("{0} - {1}"));
+		}
+
+		char *szArtist = HtmlEncodeUTF8T( msnCurrentMedia.szArtist );
+		char *szAlbum = HtmlEncodeUTF8T( msnCurrentMedia.szAlbum );
+		char *szTitle = HtmlEncodeUTF8T( msnCurrentMedia.szTitle );
+		char *szTrack = HtmlEncodeUTF8T( msnCurrentMedia.szTrack );
+		char *szYear = HtmlEncodeUTF8T( msnCurrentMedia.szYear );
+		char *szGenre = HtmlEncodeUTF8T( msnCurrentMedia.szGenre );
+		char *szLength = HtmlEncodeUTF8T( msnCurrentMedia.szLength );
+		char *szPlayer = HtmlEncodeUTF8T( msnCurrentMedia.szPlayer );
+		char *szType = HtmlEncodeUTF8T( msnCurrentMedia.szType );
+
+		mir_snprintf( szMsg, sizeof szMsg, 
+			"<Data><PSM>%s</PSM><CurrentMedia>%s\\0%s\\01\\0%s\\0%s\\0%s\\0%s\\0%s\\0%s\\0%s\\0%s\\0%s\\0%s\\0\\0</CurrentMedia></Data>", 
+			UTF8(msgEnc), szPlayer, szType, szFormatEnc, szTitle, szArtist, szAlbum, szTrack, szYear, szGenre, szLength, szPlayer, szType);
+
+		free( szArtist );
+		free( szAlbum );
+		free( szTitle );
+		free( szTrack );
+		free( szYear );
+		free( szGenre );
+		free( szLength );
+		free( szPlayer );
+		free( szType );
 	}
 
 	if ( !lstrcmpA( msnPreviousUUX, szMsg ))
@@ -521,7 +573,7 @@ void __stdcall MSN_SetServerStatus( int newStatus )
 		if ( MyOptions.UseMSNP11 ) {
 			for ( int i=0; i < MSN_NUM_MODES; i++ ) { 
 				if ( msnModeMsgs[ i ].m_mode == newStatus ) {
-					MSN_SendStatusMessage( msnModeMsgs[ i ].m_msg, &msnCurrentMedia );
+					MSN_SendStatusMessage( msnModeMsgs[ i ].m_msg );
 					break;
 		}	}	}
 	}
@@ -671,6 +723,41 @@ void __stdcall HtmlDecode( char* str )
 
 /////////////////////////////////////////////////////////////////////////////////////////
 // HtmlEncode - replaces special HTML chars
+
+WCHAR* __stdcall HtmlEncodeW( const WCHAR* str )
+{
+	WCHAR* s, *p, *q;
+	int c;
+
+	if ( str == NULL )
+		return NULL;
+
+	for ( c=0,p=( WCHAR* )str; *p!=L'\0'; p++ ) {
+		switch ( *p ) {
+		case L'&': c += 5; break;
+		case L'\'': c += 6; break;
+		case L'>': c += 4; break;
+		case L'<': c += 4; break;
+		case L'"': c += 6; break;
+		default: c++; break;
+		}
+	}
+	if (( s=( WCHAR* )malloc( (c+1) * sizeof(WCHAR) )) != NULL ) {
+		for ( p=( WCHAR* )str,q=s; *p!=L'\0'; p++ ) {
+			switch ( *p ) {
+			case L'&': wcscpy( q, L"&amp;" ); q += 5; break;
+			case L'\'': wcscpy( q, L"&apos;" ); q += 6; break;
+			case L'>': wcscpy( q, L"&gt;" ); q += 4; break;
+			case L'<': wcscpy( q, L"&lt;" ); q += 4; break;
+			case L'"': wcscpy( q, L"&quot;" ); q += 6; break;
+			default: *q = *p; q++; break;
+			}
+		}
+		*q = L'\0';
+	}
+
+	return s;
+}
 
 char* __stdcall HtmlEncode( const char* str )
 {

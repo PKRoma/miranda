@@ -878,6 +878,7 @@ static void sttProcessStatusMessage( BYTE* buf, unsigned len, HANDLE hContact )
 	}
 	else dataBuf[0] = 0;
 
+	// Process status message info
 	char* p = strstr( dataBuf, "<PSM>" );
 	if ( p ) {
 		p += 5;
@@ -890,7 +891,128 @@ static void sttProcessStatusMessage( BYTE* buf, unsigned len, HANDLE hContact )
 			}
 			else
 				DBDeleteContactSetting( hContact, "CList", "StatusMsg" );
-}	}	}
+	}	}
+
+	// Process current media info
+	if ( buf != NULL ) {
+		memcpy( dataBuf, buf, len );
+		dataBuf[ len ] = 0;
+	}
+
+	p = strstr( dataBuf, "<CurrentMedia>" );
+	if ( !p ) {
+		DBDeleteContactSetting( hContact, msnProtocolName, "ListeningTo" );
+		return;
+	}
+
+	p += 14;
+	char* p1 = strstr( p, "</CurrentMedia>" );
+	if ( !p1 ) {
+		DBDeleteContactSetting( hContact, msnProtocolName, "ListeningTo" );
+		return;
+	}
+
+	*p1 = 0;
+	if ( *p == 0 ) {
+		DBDeleteContactSetting( hContact, msnProtocolName, "ListeningTo" );
+		return;
+	}
+
+	HtmlDecode( p );
+
+	// Get parts separeted by "\\0"
+	size_t cmLen = p1 - p;
+	char *parts[16];
+	int pCount = 0;
+	p1 = strstr(p, "\\0");
+	do {
+		*p1 = '\0';
+		parts[pCount] = p;
+		pCount ++;
+		p = p1 + 2;
+		p1 = strstr(p, "\\0");
+	} while( p1 != NULL && pCount < 16 );
+
+	// Now let's mount the final string
+	if ( pCount <= 4 )  {
+		DBDeleteContactSetting( hContact, msnProtocolName, "ListeningTo" );
+		return;
+	}
+
+	if (!ServiceExists(MS_LISTENINGTO_GETPARSEDTEXT) ||
+		!ServiceExists(MS_LISTENINGTO_OVERRIDECONTACTOPTION) ||
+		!CallService(MS_LISTENINGTO_OVERRIDECONTACTOPTION, 0, (LPARAM) hContact))
+	{
+		// User contact options
+		char *format = strdup( parts[3] );
+
+		for (int i = 4; i < pCount; i++) {
+			char part[16];
+			mir_snprintf(part, sizeof(part), "{%d}", i - 4);
+			size_t lenPart = strlen(part);
+			size_t lenPartsI = strlen(parts[i]);
+			for (p = strstr(format, part); p; p = strstr(p + lenPartsI, part)) {
+				if (lenPart < lenPartsI) {
+					int loc = p - format;
+					format = (char *)realloc(format, strlen(format) + (lenPartsI - lenPart) + 1);
+					p = format + loc;
+				}
+				memmove(p + lenPartsI, p + lenPart, strlen(p + lenPart) + 1);
+				memmove(p, parts[i], lenPartsI);
+		}	}
+
+		MSN_SetStringUtf( hContact, "ListeningTo", format );
+		free(format);
+	}
+	else 
+	{
+		// Use user options
+		LISTENINGTOINFO lti = {0};
+		lti.cbSize = sizeof(LISTENINGTOINFO);
+
+		#if defined( _UNICODE )
+			Utf8Decode( parts[4], &lti.szTitle );
+			if ( pCount > 5 ) Utf8Decode( parts[5], &lti.szArtist );
+			if ( pCount > 6 ) Utf8Decode( parts[6], &lti.szAlbum );
+			if ( pCount > 7 ) Utf8Decode( parts[7], &lti.szTrack );
+			if ( pCount > 8 ) Utf8Decode( parts[8], &lti.szYear );
+			if ( pCount > 9 ) Utf8Decode( parts[9], &lti.szGenre );
+			if ( pCount > 10 ) Utf8Decode( parts[10], &lti.szLength );
+			if ( pCount > 11 ) Utf8Decode( parts[11], &lti.szPlayer );
+			else Utf8Decode( parts[0], &lti.szPlayer );
+			if ( pCount > 12 ) Utf8Decode( parts[12], &lti.szType );
+			else Utf8Decode( parts[1], &lti.szType );
+		#else
+			lti.szTitle = parts[4];
+			if ( pCount > 5 ) lti.szArtist = parts[5];
+			if ( pCount > 6 ) lti.szAlbum = parts[6];
+			if ( pCount > 7 ) lti.szTrack = parts[7];
+			if ( pCount > 8 ) lti.szYear = parts[8];
+			if ( pCount > 9 ) lti.szGenre = parts[9];
+			if ( pCount > 10 ) lti.szLength = parts[10];
+			if ( pCount > 11 ) lti.szPlayer = parts[11];
+			else lti.szPlayer = parts[0];
+			if ( pCount > 12 ) lti.szType = parts[12];
+			else lti.szType = parts[1];
+		#endif
+
+		TCHAR *cm = (TCHAR *) CallService(MS_LISTENINGTO_GETPARSEDTEXT, (WPARAM) _T("%title% - %artist%"), (LPARAM) &lti);
+		MSN_SetStringT( hContact, "ListeningTo", cm );
+
+		mir_free( cm );
+		#if defined( _UNICODE )
+			if ( lti.szArtist ) free( lti.szArtist );
+			if ( lti.szAlbum ) free( lti.szAlbum );
+			if ( lti.szTitle ) free( lti.szTitle );
+			if ( lti.szTrack ) free( lti.szTrack );
+			if ( lti.szYear ) free( lti.szYear );
+			if ( lti.szGenre ) free( lti.szGenre );
+			if ( lti.szLength ) free( lti.szLength );
+			if ( lti.szPlayer ) free( lti.szPlayer );
+			if ( lti.szType ) free( lti.szType );
+		#endif
+	}
+}
 
 
 static void sttProcessNotificationMessage( BYTE* buf, unsigned len )

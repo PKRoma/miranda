@@ -31,6 +31,20 @@ void replaceStr( char*& dest, const char* src )
 		dest = strdup( src );
 }	}
 
+void overrideStr( TCHAR*& dest, const TCHAR* src, const TCHAR* def )
+{
+	if ( dest != NULL ) 
+	{
+		free( dest );
+		dest = NULL;
+	}
+
+	if ( src != NULL )
+		dest = _tcsdup( src );
+	else if ( def != NULL )
+		dest = _tcsdup( def );
+}
+
 char* rtrim( char *string )
 {
    char* p = string + strlen( string ) - 1;

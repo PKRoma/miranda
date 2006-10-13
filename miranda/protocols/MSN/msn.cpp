@@ -73,7 +73,7 @@ MSN_StatusMessage msnModeMsgs[ MSN_NUM_MODES ] = {
 	{ ID_STATUS_ONTHEPHONE, NULL },
 	{ ID_STATUS_OUTTOLUNCH, NULL } };
 
-struct MSN_CurrentMedia msnCurrentMedia;
+LISTENINGTOINFO msnCurrentMedia;
 
 char* msnProtocolName = NULL;
 char* msnProtChallenge = NULL;
@@ -337,7 +337,7 @@ extern "C" int __declspec(dllexport) Load( PLUGINLINK* link )
 	SkinAddNewSound( mailsoundtemp, mailsoundtemp, "hotmail.wav" );
 
 	msnStatusMode = msnDesiredStatus = ID_STATUS_OFFLINE;
-	ZeroMemory(&msnCurrentMedia, sizeof(struct MSN_CurrentMedia));
+	ZeroMemory(&msnCurrentMedia, sizeof(msnCurrentMedia));
 	msnLoggedIn = false;
 	LoadMsnServices();
 	Lists_Init();

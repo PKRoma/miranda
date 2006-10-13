@@ -1136,7 +1136,7 @@ static int MsnSetAwayMsg(WPARAM wParam,LPARAM lParam)
 	replaceStr( msnModeMsgs[i].m_msg, ( char* )lParam );
 
 	if ( (int)wParam == msnDesiredStatus )
-		MSN_SendStatusMessage(( char* )lParam, &msnCurrentMedia );
+		MSN_SendStatusMessage(( char* )lParam );
 
 	return 0;
 }
@@ -1150,51 +1150,88 @@ static int MsnSetNickName( WPARAM wParam, LPARAM lParam )
 	return 0;
 }
 
-static int MsnSetCurrentMedia(WPARAM wParam, LPARAM lParam) {
+/////////////////////////////////////////////////////////////////////////////////////////
+//	GetCurrentMedia - get current media
 
+static int MsnGetCurrentMedia(WPARAM wParam, LPARAM lParam) 
+{
+	LISTENINGTOINFO *cm = (LISTENINGTOINFO *)lParam;
+
+	if (cm == NULL || cm->cbSize != sizeof(LISTENINGTOINFO))
+		return -1;
+
+	cm->szArtist = mir_tstrdup( msnCurrentMedia.szArtist );
+	cm->szAlbum = mir_tstrdup( msnCurrentMedia.szAlbum );
+	cm->szTitle = mir_tstrdup( msnCurrentMedia.szTitle );
+	cm->szTrack = mir_tstrdup( msnCurrentMedia.szTrack );
+	cm->szYear = mir_tstrdup( msnCurrentMedia.szYear );
+	cm->szGenre = mir_tstrdup( msnCurrentMedia.szGenre );
+	cm->szLength = mir_tstrdup( msnCurrentMedia.szLength );
+	cm->szPlayer = mir_tstrdup( msnCurrentMedia.szPlayer );
+	cm->szType = mir_tstrdup( msnCurrentMedia.szType );
+
+	return 0;
+}
+
+/////////////////////////////////////////////////////////////////////////////////////////
+//	SetCurrentMedia - set current media
+
+static int MsnSetCurrentMedia(WPARAM wParam, LPARAM lParam) 
+{
+	// Clear old info
+	if ( msnCurrentMedia.szArtist ) free( msnCurrentMedia.szArtist );
+	if ( msnCurrentMedia.szAlbum ) free( msnCurrentMedia.szAlbum );
+	if ( msnCurrentMedia.szTitle ) free( msnCurrentMedia.szTitle );
+	if ( msnCurrentMedia.szTrack ) free( msnCurrentMedia.szTrack );
+	if ( msnCurrentMedia.szYear ) free( msnCurrentMedia.szYear );
+	if ( msnCurrentMedia.szGenre ) free( msnCurrentMedia.szGenre );
+	if ( msnCurrentMedia.szLength ) free( msnCurrentMedia.szLength );
+	if ( msnCurrentMedia.szPlayer ) free( msnCurrentMedia.szPlayer );
+	if ( msnCurrentMedia.szType ) free( msnCurrentMedia.szType );
+	ZeroMemory(&msnCurrentMedia, sizeof(msnCurrentMedia));
+
+	// Copy new info
+	LISTENINGTOINFO *cm = (LISTENINGTOINFO *)lParam;
+	if (cm != NULL && cm->cbSize == sizeof(LISTENINGTOINFO) && (cm->szArtist != NULL || cm->szTitle != NULL)) 
+	{
+		msnCurrentMedia.cbSize = sizeof(msnCurrentMedia);	// Marks that there is info set
+
+		overrideStr( msnCurrentMedia.szType, cm->szType, _T("Music") );
+		overrideStr( msnCurrentMedia.szArtist, cm->szArtist );
+		overrideStr( msnCurrentMedia.szAlbum, cm->szAlbum );
+		overrideStr( msnCurrentMedia.szTitle, cm->szTitle, _T("No Title") );
+		overrideStr( msnCurrentMedia.szTrack, cm->szTrack );
+		overrideStr( msnCurrentMedia.szYear, cm->szYear );
+		overrideStr( msnCurrentMedia.szGenre, cm->szGenre );
+		overrideStr( msnCurrentMedia.szLength, cm->szLength );
+		overrideStr( msnCurrentMedia.szPlayer, cm->szPlayer );
+	}
+
+	// Set user text
+	if (msnCurrentMedia.cbSize == 0)
+		DBDeleteContactSetting( NULL, msnProtocolName, "ListeningTo" );
+	else 
+	{
+		TCHAR *text;
+		if (ServiceExists(MS_LISTENINGTO_GETPARSEDTEXT)) 
+			text = (TCHAR *) CallService(MS_LISTENINGTO_GETPARSEDTEXT, (WPARAM) _T("%title% - %artist%"), (LPARAM) &msnCurrentMedia );
+		else 
+		{
+			text = (TCHAR *) mir_alloc( 128 * sizeof(TCHAR) );
+			mir_sntprintf( text, 128, _T("%s - %s"), ( msnCurrentMedia.szTitle ? msnCurrentMedia.szTitle : _T("") ), 
+													 ( msnCurrentMedia.szArtist ? msnCurrentMedia.szArtist : _T("") ) );
+		}
+		MSN_SetStringT(NULL, "ListeningTo", text);
+		mir_free(text);
+	}
+
+	// Send it
 	int i;
-	struct MSN_CurrentMedia *cm;
-
-	cm = (struct MSN_CurrentMedia *)lParam;
-	if (msnCurrentMedia.szFormat != NULL) {
-		free(msnCurrentMedia.szFormat);
-		msnCurrentMedia.szFormat = NULL;
-	}
-	if (msnCurrentMedia.szAlbum != NULL) {
-		free(msnCurrentMedia.szAlbum);
-		msnCurrentMedia.szAlbum = NULL;
-	}
-	if (msnCurrentMedia.szArtist != NULL) {
-		free(msnCurrentMedia.szArtist);
-		msnCurrentMedia.szArtist = NULL;
-	}
-	if (msnCurrentMedia.szSong != NULL) {
-		free(msnCurrentMedia.szSong);
-		msnCurrentMedia.szSong = NULL;
-	}
-	if (cm == NULL) {
-		ZeroMemory(&msnCurrentMedia, sizeof(struct MSN_CurrentMedia));
-	}
-	else {
-		if (cm->szFormat != NULL) {
-			replaceStr(msnCurrentMedia.szFormat, cm->szFormat);
-		}
-		if (cm->szAlbum != NULL) {
-			replaceStr(msnCurrentMedia.szAlbum, cm->szAlbum);
-		}
-		if (cm->szArtist != NULL) {
-			replaceStr(msnCurrentMedia.szArtist, cm->szArtist);
-		}
-		if (cm->szSong != NULL) {
-			replaceStr(msnCurrentMedia.szSong, cm->szSong);
-		}
-	}
 	for ( i=0; i < MSN_NUM_MODES; i++ ) {
 		if ( msnModeMsgs[i].m_mode == msnDesiredStatus ) {
-			MSN_SendStatusMessage( msnModeMsgs[i].m_msg, &msnCurrentMedia );
+			MSN_SendStatusMessage( msnModeMsgs[i].m_msg );
 			break;
-		}
-	}
+	}	}
 
 	return 0;
 }
@@ -1507,12 +1544,13 @@ int LoadMsnServices( void )
 
 	hServiceHandle[34] = MSN_CreateProtoServiceFunction( MSN_ISAVATARFORMATSUPPORTED, MsnGetAvatarFormatSupported );
 	hServiceHandle[35] = MSN_CreateProtoServiceFunction( MSN_GETMYAVATARMAXSIZE, MsnGetAvatarMaxSize );
-	hServiceHandle[36] = MSN_CreateProtoServiceFunction( MSN_SET_CURRENTMEDIA,   MsnSetCurrentMedia );
-	hServiceHandle[37] = MSN_CreateProtoServiceFunction( MSN_GETMYAVATAR,      MsnGetAvatar );
-	hServiceHandle[38] = MSN_CreateProtoServiceFunction( MSN_SETMYAVATAR,      MsnSetAvatar );
+	hServiceHandle[36] = MSN_CreateProtoServiceFunction( PS_SET_LISTENINGTO,   MsnSetCurrentMedia );
+	hServiceHandle[37] = MSN_CreateProtoServiceFunction( PS_GET_LISTENINGTO,   MsnGetCurrentMedia );
+	hServiceHandle[38] = MSN_CreateProtoServiceFunction( MSN_GETMYAVATAR,      MsnGetAvatar );
+	hServiceHandle[39] = MSN_CreateProtoServiceFunction( MSN_SETMYAVATAR,      MsnSetAvatar );
 
-	hServiceHandle[39] = MSN_CreateProtoServiceFunction( MSN_SET_NICKNAME,     MsnSetNickName );
-	hServiceHandle[40] = MSN_CreateProtoServiceFunction( MSN_SEND_NUDGE,       MsnSendNudge );
+	hServiceHandle[40] = MSN_CreateProtoServiceFunction( MSN_SET_NICKNAME,     MsnSetNickName );
+	hServiceHandle[41] = MSN_CreateProtoServiceFunction( MSN_SEND_NUDGE,       MsnSendNudge );
 	return 0;
 }
 

@@ -59,6 +59,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include <m_system.h>
 #include <m_userinfo.h>
 #include <m_utils.h>
+#include <m_proto_listeningto.h>
 #include <win2k.h>
 
 #include <m_database.h>
@@ -137,15 +138,6 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #define MSN_SETMYAVATAR             "/SetMyAvatar"
 #define MSN_SET_NICKNAME            "/SetNickname"
 
-struct MSN_CurrentMedia {
-	int cbSize;
-	char *szFormat; // default is "{0} - {1}" 0=song 1=artist 2=album
-	char *szSong;
-	char *szArtist;
-	char *szAlbum;
-};
-#define MSN_SET_CURRENTMEDIA	"/SetCurrentMedia"
-
 /////////////////////////////////////////////////////////////////////////////////////////
 //	MSN plugin functions
 
@@ -163,6 +155,13 @@ char*		__stdcall	MirandaStatusToMSN( int status );
 int		__stdcall	MSNStatusToMiranda( const char* status );
 void     __stdcall   HtmlDecode( char* str );
 char*    __stdcall   HtmlEncode( const char* str );
+WCHAR*   __stdcall   HtmlEncodeW( const WCHAR* str );
+#if defined( _UNICODE )
+	#define  HtmlEncodeT HtmlEncodeW
+#else
+	#define  HtmlEncodeT HtmlEncode
+#endif
+
 void		__stdcall	UrlDecode( char*str );
 void		__stdcall	UrlEncode( const char* src, char* dest, int cbDest );
 void		__stdcall	Utf8Decode( char* str, wchar_t** = NULL );
@@ -187,7 +186,7 @@ void		__stdcall	MSN_GoOffline( void );
 void		__stdcall	MSN_GetAvatarFileName( HANDLE hContact, char* pszDest, int cbLen );
 void		__stdcall	MSN_GetCustomSmileyFileName( HANDLE hContact, char* pszDest, int cbLen, char* SmileyName, int Type);
 LPTSTR	__stdcall   MSN_GetErrorText( DWORD parErrorCode );
-void     __stdcall   MSN_SendStatusMessage( const char* msg, struct MSN_CurrentMedia *cm );
+void     __stdcall   MSN_SendStatusMessage( const char* msg );
 void		__stdcall	MSN_SetServerStatus( int newStatus );
 char*		__stdcall	MSN_StoreLen( char* dest, char* last );
 void		__stdcall	LoadOptions( void );
@@ -240,6 +239,7 @@ DWORD		WINAPI	MsnShowMailThread( LPVOID );
 int IsWinver( void );
 
 void   replaceStr( char*& dest, const char* src );
+void   overrideStr( TCHAR*& dest, const TCHAR* src, const TCHAR* def = NULL );
 char*  rtrim( char* string );
 TCHAR* rtrim( TCHAR* string );
 void   strdel( char* parBuffer, int len );
@@ -608,7 +608,7 @@ struct MSN_StatusMessage
 
 extern   MSN_StatusMessage    msnModeMsgs[ MSN_NUM_MODES ];
 
-extern   MSN_CurrentMedia     msnCurrentMedia;
+extern   LISTENINGTOINFO      msnCurrentMedia;
 
 extern	ThreadData*	volatile msnNsThread;
 extern	bool			volatile msnLoggedIn;
