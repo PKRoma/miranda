@@ -971,17 +971,17 @@ static void sttProcessStatusMessage( BYTE* buf, unsigned len, HANDLE hContact )
 		lti.cbSize = sizeof(LISTENINGTOINFO);
 
 		#if defined( _UNICODE )
-			Utf8Decode( parts[4], &lti.szTitle );
-			if ( pCount > 5 ) Utf8Decode( parts[5], &lti.szArtist );
-			if ( pCount > 6 ) Utf8Decode( parts[6], &lti.szAlbum );
-			if ( pCount > 7 ) Utf8Decode( parts[7], &lti.szTrack );
-			if ( pCount > 8 ) Utf8Decode( parts[8], &lti.szYear );
-			if ( pCount > 9 ) Utf8Decode( parts[9], &lti.szGenre );
-			if ( pCount > 10 ) Utf8Decode( parts[10], &lti.szLength );
-			if ( pCount > 11 ) Utf8Decode( parts[11], &lti.szPlayer );
-			else Utf8Decode( parts[0], &lti.szPlayer );
-			if ( pCount > 12 ) Utf8Decode( parts[12], &lti.szType );
-			else Utf8Decode( parts[1], &lti.szType );
+			Utf8Decode( parts[4], &lti.ptszTitle );
+			if ( pCount > 5 ) Utf8Decode( parts[5], &lti.ptszArtist );
+			if ( pCount > 6 ) Utf8Decode( parts[6], &lti.ptszAlbum );
+			if ( pCount > 7 ) Utf8Decode( parts[7], &lti.ptszTrack );
+			if ( pCount > 8 ) Utf8Decode( parts[8], &lti.ptszYear );
+			if ( pCount > 9 ) Utf8Decode( parts[9], &lti.ptszGenre );
+			if ( pCount > 10 ) Utf8Decode( parts[10], &lti.ptszLength );
+			if ( pCount > 11 ) Utf8Decode( parts[11], &lti.ptszPlayer );
+			else Utf8Decode( parts[0], &lti.ptszPlayer );
+			if ( pCount > 12 ) Utf8Decode( parts[12], &lti.ptszType );
+			else Utf8Decode( parts[1], &lti.ptszType );
 		#else
 			lti.szTitle = parts[4];
 			if ( pCount > 5 ) lti.szArtist = parts[5];
@@ -1001,15 +1001,15 @@ static void sttProcessStatusMessage( BYTE* buf, unsigned len, HANDLE hContact )
 
 		mir_free( cm );
 		#if defined( _UNICODE )
-			if ( lti.szArtist ) free( lti.szArtist );
-			if ( lti.szAlbum ) free( lti.szAlbum );
-			if ( lti.szTitle ) free( lti.szTitle );
-			if ( lti.szTrack ) free( lti.szTrack );
-			if ( lti.szYear ) free( lti.szYear );
-			if ( lti.szGenre ) free( lti.szGenre );
-			if ( lti.szLength ) free( lti.szLength );
-			if ( lti.szPlayer ) free( lti.szPlayer );
-			if ( lti.szType ) free( lti.szType );
+			if ( lti.ptszArtist ) free( lti.ptszArtist );
+			if ( lti.ptszAlbum ) free( lti.ptszAlbum );
+			if ( lti.ptszTitle ) free( lti.ptszTitle );
+			if ( lti.ptszTrack ) free( lti.ptszTrack );
+			if ( lti.ptszYear ) free( lti.ptszYear );
+			if ( lti.ptszGenre ) free( lti.ptszGenre );
+			if ( lti.ptszLength ) free( lti.ptszLength );
+			if ( lti.ptszPlayer ) free( lti.ptszPlayer );
+			if ( lti.ptszType ) free( lti.ptszType );
 		#endif
 	}
 }

@@ -31,7 +31,7 @@ void replaceStr( char*& dest, const char* src )
 		dest = strdup( src );
 }	}
 
-void overrideStr( TCHAR*& dest, const TCHAR* src, const TCHAR* def )
+void overrideStr( TCHAR*& dest, const TCHAR* src, BOOL unicode, const TCHAR* def )
 {
 	if ( dest != NULL ) 
 	{
@@ -40,9 +40,9 @@ void overrideStr( TCHAR*& dest, const TCHAR* src, const TCHAR* def )
 	}
 
 	if ( src != NULL )
-		dest = _tcsdup( src );
+		dest = a2tf( src, unicode );
 	else if ( def != NULL )
-		dest = _tcsdup( def );
+		dest = mir_tstrdup( def );
 }
 
 char* rtrim( char *string )
@@ -93,3 +93,29 @@ TCHAR* a2t( const char* str )
 		return mir_strdup( str );
 	#endif
 }
+
+TCHAR* a2tf( const TCHAR* str, BOOL unicode )
+{
+	if ( str == NULL )
+		return NULL;
+
+	#if defined( _UNICODE )
+		if ( unicode )
+			return mir_tstrdup( str );
+		else {
+			int codepage = CallService( MS_LANGPACK_GETCODEPAGE, 0, 0 );
+
+			int cbLen = MultiByteToWideChar( codepage, 0, (char*)str, -1, 0, 0 );
+			TCHAR* result = ( TCHAR* )mir_alloc( sizeof(TCHAR)*( cbLen+1 ));
+			if ( result == NULL )
+				return NULL;
+
+			MultiByteToWideChar( codepage, 0, (char*)str, -1, result, cbLen );
+			result[ cbLen ] = 0;
+			return result;
+		}
+	#else
+		return mir_strdup( str );
+	#endif
+}
+

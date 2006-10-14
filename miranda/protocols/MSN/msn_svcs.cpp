@@ -1160,15 +1160,16 @@ static int MsnGetCurrentMedia(WPARAM wParam, LPARAM lParam)
 	if (cm == NULL || cm->cbSize != sizeof(LISTENINGTOINFO))
 		return -1;
 
-	cm->szArtist = mir_tstrdup( msnCurrentMedia.szArtist );
-	cm->szAlbum = mir_tstrdup( msnCurrentMedia.szAlbum );
-	cm->szTitle = mir_tstrdup( msnCurrentMedia.szTitle );
-	cm->szTrack = mir_tstrdup( msnCurrentMedia.szTrack );
-	cm->szYear = mir_tstrdup( msnCurrentMedia.szYear );
-	cm->szGenre = mir_tstrdup( msnCurrentMedia.szGenre );
-	cm->szLength = mir_tstrdup( msnCurrentMedia.szLength );
-	cm->szPlayer = mir_tstrdup( msnCurrentMedia.szPlayer );
-	cm->szType = mir_tstrdup( msnCurrentMedia.szType );
+	cm->ptszArtist = mir_tstrdup( msnCurrentMedia.ptszArtist );
+	cm->ptszAlbum = mir_tstrdup( msnCurrentMedia.ptszAlbum );
+	cm->ptszTitle = mir_tstrdup( msnCurrentMedia.ptszTitle );
+	cm->ptszTrack = mir_tstrdup( msnCurrentMedia.ptszTrack );
+	cm->ptszYear = mir_tstrdup( msnCurrentMedia.ptszYear );
+	cm->ptszGenre = mir_tstrdup( msnCurrentMedia.ptszGenre );
+	cm->ptszLength = mir_tstrdup( msnCurrentMedia.ptszLength );
+	cm->ptszPlayer = mir_tstrdup( msnCurrentMedia.ptszPlayer );
+	cm->ptszType = mir_tstrdup( msnCurrentMedia.ptszType );
+	cm->dwFlags = msnCurrentMedia.dwFlags;
 
 	return 0;
 }
@@ -1179,32 +1180,35 @@ static int MsnGetCurrentMedia(WPARAM wParam, LPARAM lParam)
 static int MsnSetCurrentMedia(WPARAM wParam, LPARAM lParam) 
 {
 	// Clear old info
-	if ( msnCurrentMedia.szArtist ) free( msnCurrentMedia.szArtist );
-	if ( msnCurrentMedia.szAlbum ) free( msnCurrentMedia.szAlbum );
-	if ( msnCurrentMedia.szTitle ) free( msnCurrentMedia.szTitle );
-	if ( msnCurrentMedia.szTrack ) free( msnCurrentMedia.szTrack );
-	if ( msnCurrentMedia.szYear ) free( msnCurrentMedia.szYear );
-	if ( msnCurrentMedia.szGenre ) free( msnCurrentMedia.szGenre );
-	if ( msnCurrentMedia.szLength ) free( msnCurrentMedia.szLength );
-	if ( msnCurrentMedia.szPlayer ) free( msnCurrentMedia.szPlayer );
-	if ( msnCurrentMedia.szType ) free( msnCurrentMedia.szType );
+	if ( msnCurrentMedia.ptszArtist ) mir_free( msnCurrentMedia.ptszArtist );
+	if ( msnCurrentMedia.ptszAlbum ) mir_free( msnCurrentMedia.ptszAlbum );
+	if ( msnCurrentMedia.ptszTitle ) mir_free( msnCurrentMedia.ptszTitle );
+	if ( msnCurrentMedia.ptszTrack ) mir_free( msnCurrentMedia.ptszTrack );
+	if ( msnCurrentMedia.ptszYear ) mir_free( msnCurrentMedia.ptszYear );
+	if ( msnCurrentMedia.ptszGenre ) mir_free( msnCurrentMedia.ptszGenre );
+	if ( msnCurrentMedia.ptszLength ) mir_free( msnCurrentMedia.ptszLength );
+	if ( msnCurrentMedia.ptszPlayer ) mir_free( msnCurrentMedia.ptszPlayer );
+	if ( msnCurrentMedia.ptszType ) mir_free( msnCurrentMedia.ptszType );
 	ZeroMemory(&msnCurrentMedia, sizeof(msnCurrentMedia));
 
 	// Copy new info
 	LISTENINGTOINFO *cm = (LISTENINGTOINFO *)lParam;
-	if (cm != NULL && cm->cbSize == sizeof(LISTENINGTOINFO) && (cm->szArtist != NULL || cm->szTitle != NULL)) 
+	if (cm != NULL && cm->cbSize == sizeof(LISTENINGTOINFO) && (cm->ptszArtist != NULL || cm->ptszTitle != NULL)) 
 	{
-		msnCurrentMedia.cbSize = sizeof(msnCurrentMedia);	// Marks that there is info set
+		BOOL unicode = cm->dwFlags & LTI_UNICODE;
 
-		overrideStr( msnCurrentMedia.szType, cm->szType, _T("Music") );
-		overrideStr( msnCurrentMedia.szArtist, cm->szArtist );
-		overrideStr( msnCurrentMedia.szAlbum, cm->szAlbum );
-		overrideStr( msnCurrentMedia.szTitle, cm->szTitle, _T("No Title") );
-		overrideStr( msnCurrentMedia.szTrack, cm->szTrack );
-		overrideStr( msnCurrentMedia.szYear, cm->szYear );
-		overrideStr( msnCurrentMedia.szGenre, cm->szGenre );
-		overrideStr( msnCurrentMedia.szLength, cm->szLength );
-		overrideStr( msnCurrentMedia.szPlayer, cm->szPlayer );
+		msnCurrentMedia.cbSize = sizeof(msnCurrentMedia);	// Marks that there is info set
+		msnCurrentMedia.dwFlags = LTI_TCHAR;
+
+		overrideStr( msnCurrentMedia.ptszType, cm->ptszType, unicode, _T("Music") );
+		overrideStr( msnCurrentMedia.ptszArtist, cm->ptszArtist, unicode );
+		overrideStr( msnCurrentMedia.ptszAlbum, cm->ptszAlbum, unicode );
+		overrideStr( msnCurrentMedia.ptszTitle, cm->ptszTitle, unicode, _T("No Title") );
+		overrideStr( msnCurrentMedia.ptszTrack, cm->ptszTrack, unicode );
+		overrideStr( msnCurrentMedia.ptszYear, cm->ptszYear, unicode );
+		overrideStr( msnCurrentMedia.ptszGenre, cm->ptszGenre, unicode );
+		overrideStr( msnCurrentMedia.ptszLength, cm->ptszLength, unicode );
+		overrideStr( msnCurrentMedia.ptszPlayer, cm->ptszPlayer, unicode );
 	}
 
 	// Set user text
@@ -1218,8 +1222,8 @@ static int MsnSetCurrentMedia(WPARAM wParam, LPARAM lParam)
 		else 
 		{
 			text = (TCHAR *) mir_alloc( 128 * sizeof(TCHAR) );
-			mir_sntprintf( text, 128, _T("%s - %s"), ( msnCurrentMedia.szTitle ? msnCurrentMedia.szTitle : _T("") ), 
-													 ( msnCurrentMedia.szArtist ? msnCurrentMedia.szArtist : _T("") ) );
+			mir_sntprintf( text, 128, _T("%s - %s"), ( msnCurrentMedia.ptszTitle ? msnCurrentMedia.ptszTitle : _T("") ), 
+													 ( msnCurrentMedia.ptszArtist ? msnCurrentMedia.ptszArtist : _T("") ) );
 		}
 		MSN_SetStringT(NULL, "ListeningTo", text);
 		mir_free(text);

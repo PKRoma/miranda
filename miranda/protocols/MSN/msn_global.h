@@ -239,8 +239,9 @@ DWORD		WINAPI	MsnShowMailThread( LPVOID );
 
 int IsWinver( void );
 
+TCHAR* a2tf( const TCHAR* str, BOOL unicode );
+void   overrideStr( TCHAR*& dest, const TCHAR* src, BOOL unicode, const TCHAR* def = NULL );
 void   replaceStr( char*& dest, const char* src );
-void   overrideStr( TCHAR*& dest, const TCHAR* src, const TCHAR* def = NULL );
 char*  rtrim( char* string );
 TCHAR* rtrim( TCHAR* string );
 void   strdel( char* parBuffer, int len );

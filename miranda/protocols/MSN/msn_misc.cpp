@@ -469,15 +469,15 @@ void __stdcall MSN_SendStatusMessage( const char* msg )
 		if (ServiceExists(MS_LISTENINGTO_GETPARSEDTEXT)) {
 			LISTENINGTOINFO lti = {0};
 			lti.cbSize = sizeof(lti);
-			if (msnCurrentMedia.szTitle != NULL) lti.szTitle = _T("{0}");
-			if (msnCurrentMedia.szArtist != NULL) lti.szArtist = _T("{1}");
-			if (msnCurrentMedia.szAlbum != NULL) lti.szAlbum = _T("{2}");
-			if (msnCurrentMedia.szTrack != NULL) lti.szTrack = _T("{3}");
-			if (msnCurrentMedia.szYear != NULL) lti.szYear = _T("{4}");
-			if (msnCurrentMedia.szGenre != NULL) lti.szGenre = _T("{5}");
-			if (msnCurrentMedia.szLength != NULL) lti.szLength = _T("{6}");
-			if (msnCurrentMedia.szPlayer != NULL) lti.szPlayer = _T("{7}");
-			if (msnCurrentMedia.szType != NULL) lti.szType = _T("{8}");
+			if (msnCurrentMedia.ptszTitle != NULL) lti.ptszTitle = _T("{0}");
+			if (msnCurrentMedia.ptszArtist != NULL) lti.ptszArtist = _T("{1}");
+			if (msnCurrentMedia.ptszAlbum != NULL) lti.ptszAlbum = _T("{2}");
+			if (msnCurrentMedia.ptszTrack != NULL) lti.ptszTrack = _T("{3}");
+			if (msnCurrentMedia.ptszYear != NULL) lti.ptszYear = _T("{4}");
+			if (msnCurrentMedia.ptszGenre != NULL) lti.ptszGenre = _T("{5}");
+			if (msnCurrentMedia.ptszLength != NULL) lti.ptszLength = _T("{6}");
+			if (msnCurrentMedia.ptszPlayer != NULL) lti.ptszPlayer = _T("{7}");
+			if (msnCurrentMedia.ptszType != NULL) lti.ptszType = _T("{8}");
 
 			TCHAR *tmp = (TCHAR *)CallService(MS_LISTENINGTO_GETPARSEDTEXT, (WPARAM) _T("%title% - %artist%"), (LPARAM) &lti );
 			szFormatEnc = HtmlEncodeUTF8T(tmp);
@@ -486,15 +486,15 @@ void __stdcall MSN_SendStatusMessage( const char* msg )
 			szFormatEnc = HtmlEncodeUTF8T(_T("{0} - {1}"));
 		}
 
-		char *szArtist = HtmlEncodeUTF8T( msnCurrentMedia.szArtist );
-		char *szAlbum = HtmlEncodeUTF8T( msnCurrentMedia.szAlbum );
-		char *szTitle = HtmlEncodeUTF8T( msnCurrentMedia.szTitle );
-		char *szTrack = HtmlEncodeUTF8T( msnCurrentMedia.szTrack );
-		char *szYear = HtmlEncodeUTF8T( msnCurrentMedia.szYear );
-		char *szGenre = HtmlEncodeUTF8T( msnCurrentMedia.szGenre );
-		char *szLength = HtmlEncodeUTF8T( msnCurrentMedia.szLength );
-		char *szPlayer = HtmlEncodeUTF8T( msnCurrentMedia.szPlayer );
-		char *szType = HtmlEncodeUTF8T( msnCurrentMedia.szType );
+		char *szArtist = HtmlEncodeUTF8T( msnCurrentMedia.ptszArtist );
+		char *szAlbum = HtmlEncodeUTF8T( msnCurrentMedia.ptszAlbum );
+		char *szTitle = HtmlEncodeUTF8T( msnCurrentMedia.ptszTitle );
+		char *szTrack = HtmlEncodeUTF8T( msnCurrentMedia.ptszTrack );
+		char *szYear = HtmlEncodeUTF8T( msnCurrentMedia.ptszYear );
+		char *szGenre = HtmlEncodeUTF8T( msnCurrentMedia.ptszGenre );
+		char *szLength = HtmlEncodeUTF8T( msnCurrentMedia.ptszLength );
+		char *szPlayer = HtmlEncodeUTF8T( msnCurrentMedia.ptszPlayer );
+		char *szType = HtmlEncodeUTF8T( msnCurrentMedia.ptszType );
 
 		mir_snprintf( szMsg, sizeof szMsg, 
 			"<Data><PSM>%s</PSM><CurrentMedia>%s\\0%s\\01\\0%s\\0%s\\0%s\\0%s\\0%s\\0%s\\0%s\\0%s\\0%s\\0%s\\0\\0</CurrentMedia></Data>", 
