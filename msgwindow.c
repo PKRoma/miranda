@@ -24,6 +24,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 #include "commonheaders.h"
 #include "statusicon.h"
+#include "chat/chat.h"
 
 /*
 #ifdef _MSC_VER
@@ -1340,11 +1341,21 @@ int ScriverRestoreWindowPosition(HWND hwnd,HANDLE hContact,const char *szModule,
 }
 
 HWND GetParentWindow(HANDLE hContact, BOOL bChat) {
-	if (g_dat->lastParent == NULL || !(g_dat->flags & SMF_USETABS)) {
-		struct NewMessageWindowLParam newData = { 0 };
-		newData.hContact = hContact;
-		return CreateDialogParam(g_hInst, MAKEINTRESOURCE(IDD_MSGWIN), NULL, DlgProcParentWindow, (LPARAM) & newData);
+	if (!bChat) {
+		if (g_dat->lastParent == NULL || !(g_dat->flags & SMF_USETABS)) {
+			struct NewMessageWindowLParam newData = { 0 };
+			newData.hContact = hContact;
+			return CreateDialogParam(g_hInst, MAKEINTRESOURCE(IDD_MSGWIN), NULL, DlgProcParentWindow, (LPARAM) & newData);
+		}
+		return g_dat->lastParent->hwnd;
+	} else {
+		if (g_dat->lastParent == NULL || !g_Settings.Tabs) {
+			struct NewMessageWindowLParam newData = { 0 };
+			newData.hContact = hContact;
+			return CreateDialogParam(g_hInst, MAKEINTRESOURCE(IDD_MSGWIN), NULL, DlgProcParentWindow, (LPARAM) & newData);
+		} else if (g_Settings.CommonTabs) {
+		}
+		return g_dat->lastParent->hwnd;
 	}
-	return g_dat->lastParent->hwnd;
 }
 
