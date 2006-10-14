@@ -27,7 +27,6 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 extern int IsUnicodeMIM();
 extern int safe_wcslen(wchar_t *msg, int maxLen) ;
 extern TCHAR *a2t(const char *text);
-extern TCHAR *a2tl(const char *text, int textlen);
-extern TCHAR *a2tlcp(const char *text, int textlen, int cp);
+extern TCHAR *a2tcp(const char *text, int cp);
 
 #endif

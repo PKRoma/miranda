@@ -17,52 +17,18 @@ You should have received a copy of the GNU General Public License
 along with this program; if not, write to the Free Software
 Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 */
-#if defined(UNICODE) && !defined(_UNICODE)
-#define _UNICODE
-#endif
+//#if defined(UNICODE) && !defined(_UNICODE)
+//#define _UNICODE
+//#endif
 
 #ifndef _CHAT_H_
 #define _CHAT_H_
 
-#define WIN32_LEAN_AND_MEAN
-#define _WIN32_WINNT 0x0501
-#define _WIN32_IE 0x0501
-
-#include <tchar.h>
-#include <windows.h>
-#include <commctrl.h>
-#include <richedit.h>
-#include <process.h>
-#include <ole2.h>
-#include <richole.h>
+#include "../commonheaders.h"
 #include <malloc.h>
-#include <commdlg.h>
-#include <time.h>
-#include <stdio.h>
-#include <shellapi.h>
-#include <win2k.h>
-#include <newpluginapi.h>
-#include <m_system.h>
-#include <m_options.h>
-#include <m_database.h>
-#include <m_utils.h>
-#include <m_langpack.h>
-#include <m_skin.h>
-#include <m_button.h>
 #include <m_protomod.h>
-#include <m_protosvc.h>
-#include <m_addcontact.h>
-#include <m_clist.h>
-#include <m_clui.h>
-#include <m_message.h>
 #include <m_popup.h>
-#include "../resource.h"
 #include "m_chat.h"
-#include "../m_ieview.h"
-#include "../m_smileyadd.h"
-#include "../IcoLib.h"
-#include "../globals.h"
-#include "../msgwindow.h"
 
 #ifndef TVM_GETITEMSTATE
 #define TVM_GETITEMSTATE        (TV_FIRST + 39)

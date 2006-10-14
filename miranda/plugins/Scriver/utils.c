@@ -34,35 +34,31 @@ int safe_wcslen(wchar_t *msg, int maxLen) {
 	return 0;
 }
 
-TCHAR *a2tlcp(const char *text, int textlen, int cp) {
-	wchar_t *wtext;
-	if ( text == NULL )
-		return NULL;
+TCHAR *a2tcp(const char *text, int cp) {
+	if ( text != NULL ) {
 	#if defined ( _UNICODE )
-		if (textlen == -1) {
-			textlen = strlen(text) + 1;
-		}
-		wtext = (wchar_t *) mir_alloc(sizeof(wchar_t) * textlen);
-		MultiByteToWideChar(cp, 0, text, -1, wtext, textlen);
-		return wtext;
+		int cbLen = MultiByteToWideChar( cp, 0, text, -1, 0, 0 );
+		TCHAR* result = ( TCHAR* )mir_alloc( sizeof(TCHAR)*( cbLen+1 ));
+		if ( result == NULL )
+			return NULL;
+		MultiByteToWideChar(cp, 0, text, -1, result, cbLen);
+		return result;
 	#else
 		return mir_strdup(text);
 	#endif
+	}
+	return NULL;
 }
 
-TCHAR *a2tl(const char *text, int textlen) {
+TCHAR *a2t(const char *text) {
 	if ( text == NULL )
 		return NULL;
 
 	#if defined ( _UNICODE )
-		return a2tlcp(text, textlen, CallService( MS_LANGPACK_GETCODEPAGE, 0, 0 ));
+		return a2tcp(text, CallService( MS_LANGPACK_GETCODEPAGE, 0, 0 ));
 	#else
-		return a2tlcp(text, textlen, CP_ACP);
+		return a2tcp(text, CP_ACP);
 	#endif
-}
-
-TCHAR *a2t(const char *text) {
-	return a2tl(text, -1);
 }
 
 static int mimFlags = 0;
