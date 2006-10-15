@@ -77,6 +77,7 @@ typedef struct ParentWindowDataStruct
 	int		bTopmost;
 	int		windowWasCascaded;
 	TabCtrlData *tabCtrlDat;
+	BOOL	isChat;
 }ParentWindowData;
 
 typedef struct MessageWindowTabDataStruct
@@ -89,13 +90,14 @@ typedef struct MessageWindowTabDataStruct
 
 #define NMWLP_INCOMING 1
 
-struct NewMessageWindowLParam
+typedef struct NewMessageWindowLParamStruct
 {
 	HANDLE	hContact;
+	BOOL	isChat;
 	int		isWchar;
 	const char *szInitialText;
 	int		flags;
-};
+} NewMessageWindowLParam;
 
 struct MessageSendInfo
 {

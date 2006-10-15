@@ -499,8 +499,6 @@ BOOL				LogToFile(SESSION_INFO * si, GCEVENT * gce);
 char *				Message_GetFromStream(HWND hwndDlg, SESSION_INFO* si);
 TCHAR*        DoRtfToTags( char* pszRtfText, SESSION_INFO* si);
 
-#pragma comment(lib,"comctl32.lib")
-
 //////////////////////////////////////////////////////////////////////////////////
 
 #if defined( _UNICODE )

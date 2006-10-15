@@ -290,7 +290,7 @@ static void GetMinimunWindowSize(ParentWindowData *dat, SIZE *size)
 static void ActivateChild(ParentWindowData *dat, HWND child) {
 	int i;
 	RECT rcChild;
-
+	MessageWindowTabData *mwtd;
 	GetChildWindowRect(dat, &rcChild);
 	SetWindowPos(child, HWND_TOP, rcChild.left, rcChild.top, rcChild.right-rcChild.left, rcChild.bottom - rcChild.top, SWP_NOSIZE);
 	if(child != dat->hwndActive) {
@@ -308,6 +308,8 @@ static void ActivateChild(ParentWindowData *dat, HWND child) {
 	i = GetTabFromHWND(dat, child);
 	TabCtrl_SetCurSel(dat->hwndTabs, i);
 	SendMessage(dat->hwndActive, DM_ACTIVATE, WA_ACTIVE, 0);
+	mwtd = GetChildFromTab(dat->hwndTabs, i);
+	dat->hContact = mwtd->hContact;
 }
 
 static void AddChild(ParentWindowData *dat, HWND hwnd, HANDLE hContact)
@@ -339,8 +341,8 @@ static void RemoveChild(ParentWindowData *dat, HWND child)
 		TCITEM tci;
 		tci.mask = TCIF_PARAM;
 		TabCtrl_GetItem(dat->hwndTabs, tab, &tci);
-		mir_free((MessageWindowTabData *) tci.lParam);
 		TabCtrl_DeleteItem(dat->hwndTabs, tab);
+		mir_free((MessageWindowTabData *) tci.lParam);
 		dat->childrenCount--;
 		if (child == dat->hwndActive) {
 			if (tab == TabCtrl_GetItemCount(dat->hwndTabs)) tab--;
@@ -406,7 +408,7 @@ BOOL CALLBACK DlgProcParentWindow(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM 
 			HMENU hMenu;
 			HANDLE hSContact;
 			int savePerContact = DBGetContactSettingByte(NULL, SRMMMOD, SRMSGSET_SAVEPERCONTACT, SRMSGDEFSET_SAVEPERCONTACT);
-			struct NewMessageWindowLParam *newData = (struct NewMessageWindowLParam *) lParam;
+			NewMessageWindowLParam *newData = (NewMessageWindowLParam *) lParam;
 			dat = (ParentWindowData *) mir_alloc(sizeof(ParentWindowData));
 			dat->foregroundWindow = GetForegroundWindow();
 			dat->hContact = newData->hContact;
@@ -428,9 +430,14 @@ BOOL CALLBACK DlgProcParentWindow(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM 
 			if (g_dat->hTabIconList != NULL) {
 				TabCtrl_SetImageList(dat->hwndTabs, g_dat->hTabIconList);
 			}
-			dat->prev = g_dat->lastParent;
 			dat->next = NULL;
-			g_dat->lastParent = dat;
+			if (!newData->isChat) {
+				dat->prev = g_dat->lastParent;
+				g_dat->lastParent = dat;
+			} else {
+				dat->prev = g_dat->lastChatParent;
+				g_dat->lastChatParent = dat;
+			}
 			if (dat->prev != NULL) {
 				dat->prev->next = dat;
 			}
@@ -856,6 +863,9 @@ BOOL CALLBACK DlgProcParentWindow(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM 
 			if (g_dat->lastParent == dat) {
 				g_dat->lastParent = dat->prev;
 			}
+			if (g_dat->lastChatParent == dat) {
+				g_dat->lastChatParent = dat->prev;
+			}
 			if (dat->prev != NULL) {
 				dat->prev->next = dat->next;
 			}
@@ -1182,11 +1192,13 @@ BOOL CALLBACK TabCtrlProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 						MessageWindowTabData *mwtd;
 						TCITEM tci;
 						POINT pt;
-						struct NewMessageWindowLParam newData = { 0 };
+						NewMessageWindowLParam newData = { 0 };
 						tci.mask = TCIF_PARAM;
 						TabCtrl_GetItem(hwnd, dat->srcTab, &tci);
 						mwtd = (MessageWindowTabData *) tci.lParam;
 						if (mwtd != NULL) {
+							HWND hChild = mwtd->hwnd;
+							HANDLE hContact = mwtd->hContact;
 							HWND hParent;
 							GetCursorPos(&pt);
 							hParent = WindowFromPoint(pt);
@@ -1199,6 +1211,7 @@ BOOL CALLBACK TabCtrlProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 									MONITORINFO mi;
 									HMONITOR hMonitor;
 									RECT rc, rcDesktop;
+									newData.hContact = hContact;
 									hParent = (HWND)CreateDialogParam(g_hInst, MAKEINTRESOURCE(IDD_MSGWIN), NULL, DlgProcParentWindow, (LPARAM) & newData);
 									GetWindowRect(hParent, &rc);
 									rc.right = (rc.right - rc.left);
@@ -1218,15 +1231,15 @@ BOOL CALLBACK TabCtrlProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 									MoveWindow(hParent, rc.left, rc.top, rc.right, rc.bottom, FALSE);
 
 								}
-								SetParent(mwtd->hwnd, hParent);
-								SendMessage(GetParent(hwnd), CM_REMOVECHILD, 0, (LPARAM) mwtd->hwnd);
-								SendMessage(mwtd->hwnd, DM_SETPARENT, 0, (LPARAM) hParent);
-								SendMessage(hParent, CM_ADDCHILD, (WPARAM)mwtd->hwnd, (LPARAM) mwtd->hContact);
-								SendMessage(hParent, CM_ACTIVATECHILD, 0, (LPARAM) mwtd->hwnd);
-								NotifyLocalWinEvent(mwtd->hContact, mwtd->hwnd, MSG_WINDOW_EVT_CLOSING);
-								NotifyLocalWinEvent(mwtd->hContact, mwtd->hwnd, MSG_WINDOW_EVT_CLOSE);
-								NotifyLocalWinEvent(mwtd->hContact, mwtd->hwnd, MSG_WINDOW_EVT_OPENING);
-								NotifyLocalWinEvent(mwtd->hContact, mwtd->hwnd, MSG_WINDOW_EVT_OPEN);
+								SetParent(hChild, hParent);
+								SendMessage(GetParent(hwnd), CM_REMOVECHILD, 0, (LPARAM) hChild);
+								SendMessage(hChild, DM_SETPARENT, 0, (LPARAM) hParent);
+								SendMessage(hParent, CM_ADDCHILD, (WPARAM)hChild, (LPARAM) hContact);
+								SendMessage(hParent, CM_ACTIVATECHILD, 0, (LPARAM) hChild);
+								NotifyLocalWinEvent(hContact, hChild, MSG_WINDOW_EVT_CLOSING);
+								NotifyLocalWinEvent(hContact, hChild, MSG_WINDOW_EVT_CLOSE);
+								NotifyLocalWinEvent(hContact, hChild, MSG_WINDOW_EVT_OPENING);
+								NotifyLocalWinEvent(hContact, hChild, MSG_WINDOW_EVT_OPEN);
 								ShowWindow(hParent, SW_SHOWNA);
 							}
 						}
@@ -1341,21 +1354,24 @@ int ScriverRestoreWindowPosition(HWND hwnd,HANDLE hContact,const char *szModule,
 }
 
 HWND GetParentWindow(HANDLE hContact, BOOL bChat) {
+	NewMessageWindowLParam newData = { 0 };
+	newData.hContact = hContact;
+	newData.isChat = bChat;
 	if (!bChat) {
 		if (g_dat->lastParent == NULL || !(g_dat->flags & SMF_USETABS)) {
-			struct NewMessageWindowLParam newData = { 0 };
-			newData.hContact = hContact;
 			return CreateDialogParam(g_hInst, MAKEINTRESOURCE(IDD_MSGWIN), NULL, DlgProcParentWindow, (LPARAM) & newData);
 		}
 		return g_dat->lastParent->hwnd;
 	} else {
-		if (g_dat->lastParent == NULL || !g_Settings.Tabs) {
-			struct NewMessageWindowLParam newData = { 0 };
-			newData.hContact = hContact;
+		if (g_Settings.Tabs && g_Settings.CommonTabs) {
+			if (g_dat->lastParent == NULL) {
+				newData.isChat =FALSE;
+				return CreateDialogParam(g_hInst, MAKEINTRESOURCE(IDD_MSGWIN), NULL, DlgProcParentWindow, (LPARAM) & newData);
+			}
+			return g_dat->lastParent->hwnd;
+		} else if (g_dat->lastChatParent == NULL || !g_Settings.Tabs) {
 			return CreateDialogParam(g_hInst, MAKEINTRESOURCE(IDD_MSGWIN), NULL, DlgProcParentWindow, (LPARAM) & newData);
-		} else if (g_Settings.CommonTabs) {
 		}
-		return g_dat->lastParent->hwnd;
+		return g_dat->lastChatParent->hwnd;
 	}
 }
-

@@ -75,7 +75,7 @@ static int SRMMStatusToPf2(int status)
 
 static int ReadMessageCommand(WPARAM wParam, LPARAM lParam)
 {
-   struct NewMessageWindowLParam newData = { 0 };
+   NewMessageWindowLParam newData = { 0 };
    HWND hwndExisting;
    HWND hParent;
 
@@ -120,7 +120,7 @@ static int MessageEventAdded(WPARAM wParam, LPARAM lParam)
       char *szProto = (char *) CallService(MS_PROTO_GETCONTACTBASEPROTO, (WPARAM) wParam, 0);
       if (szProto && (g_dat->openFlags & SRMMStatusToPf2(CallProtoService(szProto, PS_GETSTATUS, 0, 0)))) {
          HWND hParent;
-         struct NewMessageWindowLParam newData = { 0 };
+         NewMessageWindowLParam newData = { 0 };
          newData.hContact = (HANDLE) wParam;
  		 hParent = GetParentWindow(newData.hContact, FALSE);
          newData.flags = NMWLP_INCOMING;
@@ -145,7 +145,7 @@ static int MessageEventAdded(WPARAM wParam, LPARAM lParam)
 static int SendMessageCommandW(WPARAM wParam, LPARAM lParam)
 {
    HWND hwnd;
-   struct NewMessageWindowLParam newData = { 0 };
+   NewMessageWindowLParam newData = { 0 };
 
    {
       /* does the HCONTACT's protocol support IM messages? */
@@ -185,11 +185,7 @@ static int SendMessageCommandW(WPARAM wParam, LPARAM lParam)
       newData.hContact = (HANDLE) wParam;
       newData.szInitialText = (const char *) lParam;
       newData.isWchar = 1;
-      if (g_dat->lastParent == NULL || !(g_dat->flags & SMF_USETABS)) {
-		hParent = GetParentWindow(newData.hContact, FALSE);
-      } else {
-         hParent = g_dat->lastParent->hwnd;
-      }
+      hParent = GetParentWindow(newData.hContact, FALSE);
       CreateDialogParam(g_hInst, MAKEINTRESOURCE(IDD_MSG), hParent, DlgProcMessage, (LPARAM) & newData);
    }
    return 0;
@@ -199,7 +195,7 @@ static int SendMessageCommandW(WPARAM wParam, LPARAM lParam)
 static int SendMessageCommand(WPARAM wParam, LPARAM lParam)
 {
    HWND hwnd;
-   struct NewMessageWindowLParam newData = { 0 };
+   NewMessageWindowLParam newData = { 0 };
 
    {
       /* does the HCONTACT's protocol support IM messages? */
@@ -239,11 +235,7 @@ static int SendMessageCommand(WPARAM wParam, LPARAM lParam)
       newData.hContact = (HANDLE) wParam;
       newData.szInitialText = (const char *) lParam;
       newData.isWchar = 0;
-      if (g_dat->lastParent == NULL || !(g_dat->flags & SMF_USETABS)) {
-         hParent = CreateDialogParam(g_hInst, MAKEINTRESOURCE(IDD_MSGWIN), NULL, DlgProcParentWindow, (LPARAM) & newData);
-      } else {
-         hParent = g_dat->lastParent->hwnd;
-      }
+      hParent = GetParentWindow(newData.hContact, FALSE);
       CreateDialogParam(g_hInst, MAKEINTRESOURCE(IDD_MSG), hParent, DlgProcMessage, (LPARAM) & newData);
    }
    return 0;
@@ -357,7 +349,7 @@ static void RestoreUnreadMessageAlerts(void)
             }
             if (autoPopup && !windowAlreadyExists) {
                HWND hParent;
-               struct NewMessageWindowLParam newData = { 0 };
+               NewMessageWindowLParam newData = { 0 };
                newData.hContact = hContact;
                newData.flags = NMWLP_INCOMING;
 			   hParent = GetParentWindow(newData.hContact, FALSE);
