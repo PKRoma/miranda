@@ -171,12 +171,24 @@ int Service_GetInfo(WPARAM wParam,LPARAM lParam)
 
 	if ( si ) {
 		if ( gci->Flags & DATA )     gci->dwItemData = si->dwItemData;
-		if ( gci->Flags & ID )       gci->pszID = si->ptszID;
-		if ( gci->Flags & NAME )     gci->pszName = si->ptszName;
 		if ( gci->Flags & HCONTACT ) gci->hContact = si->hContact;
 		if ( gci->Flags & TYPE )     gci->iType = si->iType;
 		if ( gci->Flags & COUNT )    gci->iCount = si->nUsersInNicklist;
 		if ( gci->Flags & USERS )    gci->pszUsers = SM_GetUsers(si);
+
+		#if defined( _UNICODE )
+			if ( si->dwFlags & GC_UNICODE ) {
+				if ( gci->Flags & ID )    gci->pszID = si->ptszID;
+				if ( gci->Flags & NAME )  gci->pszName = si->ptszName;
+			}
+			else {
+				if ( gci->Flags & ID )    gci->pszID = ( TCHAR* )si->pszID;
+				if ( gci->Flags & NAME )  gci->pszName = ( TCHAR* )si->pszName;
+			}
+		#else
+			if ( gci->Flags & ID )    gci->pszID = si->ptszID;
+			if ( gci->Flags & NAME )  gci->pszName = si->ptszName;
+		#endif
 
 		LeaveCriticalSection(&cs);
 		return 0;
@@ -264,6 +276,13 @@ int Service_NewChat(WPARAM wParam, LPARAM lParam)
 			si->iSplitterY = g_Settings.iSplitterY;
 			si->bFilterEnabled = DBGetContactSettingByte(si->hContact, "Chat", "FilterEnabled", DBGetContactSettingByte(NULL, "Chat", "FilterEnabled", 0));
 			si->bNicklistEnabled = DBGetContactSettingByte(NULL, "Chat", "ShowNicklist", 1);
+			#if defined( _UNICODE )
+				if ( !( gcw->dwFlags & GC_UNICODE )) {
+					si->pszID = mir_strdup( gcw->pszID );
+					si->pszName = mir_strdup( gcw->pszName );
+				}
+			#endif
+
 			if ( mi->bColor ) {
 				si->iFG = 4;
 				si->bFGSet = TRUE;
@@ -629,7 +648,7 @@ int Service_AddEvent(WPARAM wParam, LPARAM lParam)
 
 	if ( gce == NULL )
 		return GC_EVENT_ERROR;
-		
+
 	gcd = gce->pDest;
 	if ( gcd == NULL )
 		return GC_EVENT_ERROR;
@@ -688,7 +707,7 @@ int Service_AddEvent(WPARAM wParam, LPARAM lParam)
 					DBWriteContactSettingTString( si->hContact, "CList" , "StatusMsg", RemoveFormatting( si->ptszTopic ));
 		}	}
 		break;
-			}
+	}
 	case GC_EVENT_ADDSTATUS:
 		SM_GiveStatus( gce->pDest->ptszID, gce->pDest->pszModule, gce->ptszUID, gce->ptszStatus );
 		break;
@@ -786,7 +805,7 @@ int Service_AddEvent(WPARAM wParam, LPARAM lParam)
 		iRetVal = ( SM_RemoveUser( gce->pDest->ptszID, gce->pDest->pszModule, gce->ptszUID ) == 0 ) ? 1 : 0;
 
 LBL_Exit:
-			LeaveCriticalSection(&cs);
+	LeaveCriticalSection(&cs);
 
 	#if defined( _UNICODE )
 		if ( !( gce->dwFlags & GC_UNICODE )) {
@@ -801,7 +820,7 @@ LBL_Exit:
 		}
 	#endif
 
-		return iRetVal;
+	return iRetVal;
 }
 
 int Service_GetAddEventPtr(WPARAM wParam, LPARAM lParam)

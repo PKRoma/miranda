@@ -199,12 +199,24 @@ int Service_GetInfo(WPARAM wParam,LPARAM lParam)
 
 	if ( si ) {
 		if ( gci->Flags & DATA )     gci->dwItemData = si->dwItemData;
-		if ( gci->Flags & ID )       gci->pszID = si->ptszID;
-		if ( gci->Flags & NAME )     gci->pszName = si->ptszName;
 		if ( gci->Flags & HCONTACT ) gci->hContact = si->hContact;
 		if ( gci->Flags & TYPE )     gci->iType = si->iType;
 		if ( gci->Flags & COUNT )    gci->iCount = si->nUsersInNicklist;
 		if ( gci->Flags & USERS )    gci->pszUsers = SM_GetUsers(si);
+
+		#if defined( _UNICODE )
+			if ( si->dwFlags & GC_UNICODE ) {
+				if ( gci->Flags & ID )    gci->pszID = si->ptszID;
+				if ( gci->Flags & NAME )  gci->pszName = si->ptszName;
+			}
+			else {
+				if ( gci->Flags & ID )    gci->pszID = ( TCHAR* )si->pszID;
+				if ( gci->Flags & NAME )  gci->pszName = ( TCHAR* )si->pszName;
+			}
+		#else
+			if ( gci->Flags & ID )    gci->pszID = si->ptszID;
+			if ( gci->Flags & NAME )  gci->pszName = si->ptszName;
+		#endif
 
 		LeaveCriticalSection(&cs);
 		return 0;
@@ -278,10 +290,10 @@ int Service_NewChat(WPARAM wParam, LPARAM lParam)
 {
 	MODULEINFO* mi;
 	GCSESSION *gcw =(GCSESSION *)lParam;
-	if ( gcw == NULL)
+	if (gcw== NULL)
 		return GC_NEWSESSION_ERROR;
 
-	if ( gcw->cbSize != SIZEOF_STRUCT_GCWINDOW_V1 )
+	if (gcw->cbSize != SIZEOF_STRUCT_GCWINDOW_V1)
 		return GC_NEWSESSION_WRONGVER;
 
 	EnterCriticalSection(&cs);
@@ -306,6 +318,13 @@ int Service_NewChat(WPARAM wParam, LPARAM lParam)
 			si->iLogFilterFlags = (int)DBGetContactSettingDword(NULL, "Chat", "FilterFlags", 0x03E0);
 			si->bFilterEnabled = DBGetContactSettingByte(NULL, "Chat", "FilterEnabled", 0);
 			si->bNicklistEnabled = DBGetContactSettingByte(NULL, "Chat", "ShowNicklist", 1);
+			#if defined( _UNICODE )
+				if ( !( gcw->dwFlags & GC_UNICODE )) {
+					si->pszID = mir_strdup( gcw->pszID );
+					si->pszName = mir_strdup( gcw->pszName );
+				}
+			#endif
+
 			if ( mi->bColor ) {
 				si->iFG = 4;
 				si->bFGSet = TRUE;
@@ -624,7 +643,7 @@ int Service_AddEvent(WPARAM wParam, LPARAM lParam)
 			STATUSINFO* si = SM_AddStatus( gce->pDest->ptszID, gce->pDest->pszModule, gce->ptszStatus);
 			if ( si && gce->dwItemData)
 				si->hIcon = CopyIcon((HICON)gce->dwItemData);
-		}		
+		}
 		iRetVal = 0;
 		goto LBL_Exit;
 

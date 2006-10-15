@@ -157,7 +157,7 @@ TCHAR* DoRtfToTags( char* pszText, SESSION_INFO* si)
 					iRemoveChars = 3;
 				mir_snprintf(InsertThis, SIZEOF(InsertThis), (p1[3] != '0' && p1[3] != 'n') ? "%%u" : "%%U" );
 			}
-			else if ( !memcmp(p1, "\\u", 2 ) && isdigit( p1[1] )) { // unicode char
+			else if ( !memcmp(p1, "\\u", 2 ) && isdigit( p1[2] )) { // unicode char
 				char temp[10];
 				int i=0;
 				p = p1 + 2;

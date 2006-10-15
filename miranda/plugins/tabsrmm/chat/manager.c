@@ -131,6 +131,10 @@ int SM_RemoveSession( const TCHAR* pszID, const char* pszModule)
 			mir_free( pTemp->ptszName );
 			mir_free( pTemp->ptszStatusbarText );
 			mir_free( pTemp->ptszTopic );
+			#if defined( _UNICODE )
+				mir_free( pTemp->pszID );
+				mir_free( pTemp->pszName );
+			#endif
 
 			// delete commands
 			pCurComm = pTemp->lpCommands;

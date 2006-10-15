@@ -32,7 +32,6 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 #define _USE_32BIT_TIME_T
 
-//#include "AggressiveOptimize.h"
 #include <tchar.h>
 #include <windows.h>
 #include <commctrl.h>
@@ -189,8 +188,9 @@ typedef struct COMMAND_INFO_TYPE
 }
 	COMMAND_INFO;
 
-typedef struct {
-	LOGFONT	lf;
+typedef struct
+{
+	LOGFONT  lf;
 	COLORREF color;
 }
 	FONTINFO;
@@ -199,7 +199,7 @@ typedef struct LOG_INFO_TYPE
 {
 	TCHAR*  ptszText;
 	TCHAR*  ptszNick;
-	TCHAR*  ptszUID;	
+	TCHAR*  ptszUID;
 	TCHAR*  ptszStatus;
 	TCHAR*  ptszUserInfo;
 	BOOL    bIsMe;
@@ -224,7 +224,7 @@ typedef struct  USERINFO_TYPE
 {
 	TCHAR* pszNick;
 	TCHAR* pszUID;
-	WORD   Status;	
+	WORD   Status;
 	int    iStatusEx;
 	struct USERINFO_TYPE *next;
 }
@@ -248,11 +248,17 @@ typedef struct SESSION_INFO_TYPE
 	BOOL        bNicklistEnabled;
 	BOOL        bInitDone;
 
-	TCHAR*      ptszID;
 	char*       pszModule;
+	TCHAR*      ptszID;
 	TCHAR*      ptszName;
 	TCHAR*      ptszStatusbarText;
 	TCHAR*      ptszTopic;
+
+	// I hate m3x, Unicode, IRC, chats etc...
+	#if defined( _UNICODE )
+		char*    pszID;		// ugly fix for returning static ANSI strings in GC_INFO
+		char*    pszName;   // just to fix a bug quickly, should die after porting IRC to Unicode
+	#endif
 
 	int         iType;
 	int         iFG;
@@ -392,34 +398,34 @@ BOOL CALLBACK RoomWndProc(HWND hwndDlg,UINT uMsg,WPARAM wParam,LPARAM lParam);
 int GetTextPixelSize( TCHAR* pszText, HFONT hFont, BOOL bWidth);
 
 //options.c
-int   OptionsInit(void);
-int   OptionsUnInit(void);
-void  LoadMsgDlgFont(int i, LOGFONT * lf, COLORREF * colour);
-void  LoadGlobalSettings(void);
-void  AddIcons(void);
-HICON LoadIconEx(int iIndex, char * pszIcoLibName, int iX, int iY);
+int    OptionsInit(void);
+int    OptionsUnInit(void);
+void   LoadMsgDlgFont(int i, LOGFONT * lf, COLORREF * colour);
+void   LoadGlobalSettings(void);
+void   AddIcons(void);
+HICON  LoadIconEx(int iIndex, char * pszIcoLibName, int iX, int iY);
 
 //services.c
-void HookEvents(void);
-void UnhookEvents(void);
-void CreateServiceFunctions(void);
-void DestroyServiceFunctions(void);
-void CreateHookableEvents(void);
-void TabsInit(void);
-int  ModulesLoaded(WPARAM wParam,LPARAM lParam);
-int  SmileyOptionsChanged(WPARAM wParam,LPARAM lParam);
-int  PreShutdown(WPARAM wParam,LPARAM lParam);
-int  IconsChanged(WPARAM wParam,LPARAM lParam);
-void ShowRoom(SESSION_INFO* si, WPARAM wp, BOOL bSetForeground);
-int  Service_Register(WPARAM wParam, LPARAM lParam);
-int  Service_AddEvent(WPARAM wParam, LPARAM lParam);
-int  Service_GetAddEventPtr(WPARAM wParam, LPARAM lParam);
-int  Service_NewChat(WPARAM wParam, LPARAM lParam);
-int  Service_ItemData(WPARAM wParam, LPARAM lParam);
-int  Service_SetSBText(WPARAM wParam, LPARAM lParam);
-int  Service_SetVisibility(WPARAM wParam, LPARAM lParam);
-int  Service_GetCount(WPARAM wParam,LPARAM lParam);
-int  Service_GetInfo(WPARAM wParam,LPARAM lParam);
+void   HookEvents(void);
+void   UnhookEvents(void);
+void   CreateServiceFunctions(void);
+void   DestroyServiceFunctions(void);
+void   CreateHookableEvents(void);
+void   TabsInit(void);
+int    ModulesLoaded(WPARAM wParam,LPARAM lParam);
+int    SmileyOptionsChanged(WPARAM wParam,LPARAM lParam);
+int    PreShutdown(WPARAM wParam,LPARAM lParam);
+int    IconsChanged(WPARAM wParam,LPARAM lParam);
+void   ShowRoom(SESSION_INFO* si, WPARAM wp, BOOL bSetForeground);
+int    Service_Register(WPARAM wParam, LPARAM lParam);
+int    Service_AddEvent(WPARAM wParam, LPARAM lParam);
+int    Service_GetAddEventPtr(WPARAM wParam, LPARAM lParam);
+int    Service_NewChat(WPARAM wParam, LPARAM lParam);
+int    Service_ItemData(WPARAM wParam, LPARAM lParam);
+int    Service_SetSBText(WPARAM wParam, LPARAM lParam);
+int    Service_SetVisibility(WPARAM wParam, LPARAM lParam);
+int    Service_GetCount(WPARAM wParam,LPARAM lParam);
+int    Service_GetInfo(WPARAM wParam,LPARAM lParam);
 
 //manager.c
 void          SetActiveSession(const TCHAR* pszID, const char* pszModule);

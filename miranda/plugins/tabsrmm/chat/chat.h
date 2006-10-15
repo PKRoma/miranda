@@ -229,11 +229,16 @@ typedef struct SESSION_INFO_TYPE
 	BOOL        bNicklistEnabled;
 	BOOL        bInitDone;
 
-	TCHAR*      ptszID;
 	char*       pszModule;
+	TCHAR*      ptszID;
 	TCHAR*      ptszName;
 	TCHAR*      ptszStatusbarText;
 	TCHAR*      ptszTopic;
+
+	#if defined( _UNICODE )
+		char*    pszID;		// ugly fix for returning static ANSI strings in GC_INFO
+		char*    pszName;   // just to fix a bug quickly, should die after porting IRC to Unicode
+	#endif
 
 	int         iType;
 	int         iFG;
