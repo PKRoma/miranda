@@ -1036,7 +1036,7 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
 		{
 			int len;
 			int notifyUnread = 0;
-			struct NewMessageWindowLParam *newData = (struct NewMessageWindowLParam *) lParam;
+			NewMessageWindowLParam *newData = (NewMessageWindowLParam *) lParam;
 			//TranslateDialogDefault(hwndDlg);
 			dat = (struct MessageWindowData *) mir_alloc(sizeof(struct MessageWindowData));
 			SetWindowLong(hwndDlg, GWL_USERDATA, (LONG) dat);

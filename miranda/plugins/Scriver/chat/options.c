@@ -1254,7 +1254,7 @@ void LoadGlobalSettings(void)
 	g_Settings.LogLimitNames = DBGetContactSettingByte(NULL, "Chat", "LogLimitNames", 1);
 	g_Settings.ShowTime = DBGetContactSettingByte(NULL, "Chat", "ShowTimeStamp", 1);
 	g_Settings.Tabs = DBGetContactSettingByte(NULL, "Chat", "Tabs", 0);
-	g_Settings.CommonTabs  = DBGetContactSettingByte(NULL, "Chat", "CommonTab", 0);
+	g_Settings.CommonTabs  = DBGetContactSettingByte(NULL, "Chat", "CommonTabs", 0);
 	g_Settings.SoundsFocus = DBGetContactSettingByte(NULL, "Chat", "SoundsFocus", 0);
 	g_Settings.ShowTimeIfChanged = (BOOL)DBGetContactSettingByte(NULL, "Chat", "ShowTimeStampIfChanged", 0);
 	g_Settings.TimeStampEventColour = (BOOL)DBGetContactSettingByte(NULL, "Chat", "TimeStampEventColour", 0);
