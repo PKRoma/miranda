@@ -474,7 +474,7 @@ static void sttCustomSmiley( const char* msgBody, char* email, char* nick, int i
 			pStart = szBody+1;
 	}	}
 
-	if ( iSmileyType == MSN_APPID_CUSTOMSMILEY ) 
+	if ( iSmileyType == MSN_APPID_CUSTOMSMILEY )
 		mir_snprintf( popupMessage, sizeof( popupMessage ), MSN_Translate( "%s sent you %d custom smiley(s):\n%s" ), szContactName, iCount, smileyList );
 	else
 		mir_snprintf( popupMessage, sizeof( popupMessage ), MSN_Translate( "%s sent you %d custom animated smiley(s):\n%s" ), szContactName, iCount, smileyList );
@@ -964,7 +964,7 @@ static void sttProcessStatusMessage( BYTE* buf, unsigned len, HANDLE hContact )
 		MSN_SetStringUtf( hContact, "ListeningTo", format );
 		free(format);
 	}
-	else 
+	else
 	{
 		// Use user options
 		LISTENINGTOINFO lti = {0};
@@ -983,17 +983,17 @@ static void sttProcessStatusMessage( BYTE* buf, unsigned len, HANDLE hContact )
 			if ( pCount > 12 ) Utf8Decode( parts[12], &lti.ptszType );
 			else Utf8Decode( parts[1], &lti.ptszType );
 		#else
-			lti.szTitle = parts[4];
-			if ( pCount > 5 ) lti.szArtist = parts[5];
-			if ( pCount > 6 ) lti.szAlbum = parts[6];
-			if ( pCount > 7 ) lti.szTrack = parts[7];
-			if ( pCount > 8 ) lti.szYear = parts[8];
-			if ( pCount > 9 ) lti.szGenre = parts[9];
-			if ( pCount > 10 ) lti.szLength = parts[10];
-			if ( pCount > 11 ) lti.szPlayer = parts[11];
-			else lti.szPlayer = parts[0];
-			if ( pCount > 12 ) lti.szType = parts[12];
-			else lti.szType = parts[1];
+			lti.ptszTitle = parts[4];
+			if ( pCount > 5 ) lti.ptszArtist = parts[5];
+			if ( pCount > 6 ) lti.ptszAlbum = parts[6];
+			if ( pCount > 7 ) lti.ptszTrack = parts[7];
+			if ( pCount > 8 ) lti.ptszYear = parts[8];
+			if ( pCount > 9 ) lti.ptszGenre = parts[9];
+			if ( pCount > 10 ) lti.ptszLength = parts[10];
+			if ( pCount > 11 ) lti.ptszPlayer = parts[11];
+			else lti.ptszPlayer = parts[0];
+			if ( pCount > 12 ) lti.ptszType = parts[12];
+			else lti.ptszType = parts[1];
 		#endif
 
 		TCHAR *cm = (TCHAR *) CallService(MS_LISTENINGTO_GETPARSEDTEXT, (WPARAM) _T("%title% - %artist%"), (LPARAM) &lti);
@@ -1023,7 +1023,7 @@ static void sttProcessNotificationMessage( BYTE* buf, unsigned len )
 		dataBuf[ len ] = 0;
 	}
 	else dataBuf[0] = 0;
-	
+
 	MSN_DebugLog( "Notification message: %s", dataBuf );
 }
 
@@ -1245,7 +1245,7 @@ LBL_InvalidCommand:
 					info->mJoinedCount--;
 
 					// kill chat dlg and open srmm dialog
-					MSN_KillChatSession(info->mChatID); 
+					MSN_KillChatSession(info->mChatID);
 			}	}
 			// this is not in chat session, quit the session when everyone left
 			else if ( personleft == 0 )
@@ -1824,7 +1824,7 @@ LBL_InvalidCommand:
 			else if ( trid == tridUrlEdit ) {
 				replaceStr( profileURL, data.rru );
 				tridUrlEdit = -1;
-			}				
+			}
 			break;
 		}
 		case ' RSU':	//********* USR: sections 7.3 Authentication, 8.2 Switchboard Connections and Authentication
