@@ -54,11 +54,11 @@ PLUGININFO pluginInfo = {
 	#else
 		"Chat",
 	#endif
-	PLUGIN_MAKE_VERSION(0,6,0,1),
+	PLUGIN_MAKE_VERSION(0,6,1,1),
 	"Provides chat rooms for protocols supporting it",
-	"MatriX",
+	"Miranda team",
 	"project-info@miranda-im.org",
-	"© 2003 - 2005 Jörgen Persson",
+	"© 2003-2006 Miranda team",
 	"http://miranda-im.org/",
 	0,
 	0
