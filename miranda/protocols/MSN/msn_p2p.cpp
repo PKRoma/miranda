@@ -705,17 +705,18 @@ void __cdecl p2p_sendFeedThread( ThreadData* info )
 			ft->std.currentFileProgress < ft->std.currentFileSize )
 	{
 		ThreadData* T = MSN_GetThreadByContact( ft->std.hContact, ft->tType );
-		if ( T == NULL || p2p_sendPortion( ft, T ) == 0 ) {
+		bool cfault = (T == NULL || p2p_sendPortion( ft, T ) == 0);
+		
+		if ( cfault ) {
 			if ( fault ) {
 				MSN_DebugLog( "File send failed" );
 				break;
 			}
-			else {
-				fault = true;
+			else
 				SleepEx( 3000, TRUE );  // Allow 3 sec for redirect request
-			}
 		}
-		fault = false;
+		fault = cfault;
+
 		ReleaseMutex( hLockHandle );
 
 		i = (i + 1) % 5;
@@ -1137,7 +1138,7 @@ LBL_Close:
 	if ( szOldContentType == NULL )
 		goto LBL_Close;
 
-	bool bAllowIncoming = ( MSN_GetByte( "NLSpecifyIncomingPorts", 0 ) != 0 );
+	bool bAllowIncoming = ( !( MyOptions.UseGateway || MyOptions.UseProxy ) || !MSN_GetByte( "AutoGetHost", 1 ));
 
 	MimeHeaders tResult(20);
 	tResult.addString( "CSeq", "0 " );
@@ -1156,11 +1157,14 @@ LBL_Close:
 		if ( MyOptions.UseGateway )
 			return;
 
+		char ipaddr[256] = "";
+		MSN_GetMyHostAsString( ipaddr, sizeof( ipaddr ));
+
 		tResult.addString( "Content-Type", "application/x-msnmsgr-transreqbody" );
 		cbBody = mir_snprintf( szBody, 1024,
-			"Bridges: TCPv1\r\nNetID: 0\r\nConn-Type: %s\r\nUPnPNat: false\r\nICF: false\r\n\r\n%c",
+			"Bridges: TCPv1\r\nNetID: %u\r\nConn-Type: %s\r\nUPnPNat: false\r\nICF: false\r\n\r\n%c",
 //            "Nonce: %s\r\nSessionID: %lu\r\nSChannelState: 0\r\n\r\n%c",
-			( bAllowIncoming ) ? "Direct-Connect" : "Unknown-Connect", 0 );
+			inet_addr(ipaddr), ( bAllowIncoming ) ? "Direct-Connect" : "Unknown-Connect", 0 );
 	}
 	else if ( !strcmp( szOldContentType, "application/x-msnmsgr-transrespbody" )) {
 		const char	*szListening       = tFileInfo2[ "Listening" ],

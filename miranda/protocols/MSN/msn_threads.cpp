@@ -141,7 +141,7 @@ void __cdecl MSNServerThread( ThreadData* info )
 
 	if ( info->mType == SERVER_DISPATCH || info->mType == SERVER_NOTIFICATION ) {
 		if ( MyOptions.UseMSNP11 )
-			info->sendPacket( "VER", "MSNP11 MSNP10 CVR0" );
+			info->sendPacket( "VER", "MSNP12 MSNP11 MSNP10 CVR0" );
 		else
 			info->sendPacket( "VER", "MSNP10 MSNP9 CVR0" );
 	}

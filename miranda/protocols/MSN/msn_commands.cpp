@@ -1428,22 +1428,30 @@ LBL_InvalidCommand:
 		case ' ORI':    //********* IRO: section 8.4 Getting Invited to a Switchboard Session
 		{
 			union {
-				char* tWords[ 4 ];
-				struct { char *strThisContact, *totalContacts, *userEmail, *userNick; } data;
+				char* tWords[ 5 ];
+				struct { char *strThisContact, *totalContacts, *userEmail, *userNick, *flags; } data;
 			};
 
-			if ( sttDivideWords( params, 4, tWords ) != 4 )
+			int tNumTokens = sttDivideWords( params, 5, tWords );
+			if ( tNumTokens < 4 )
 				goto LBL_InvalidCommand;
 
 			UrlDecode( data.userEmail );
 			UrlDecode( data.userNick );
 
-			MSN_ContactJoined( info, MSN_HContactFromEmail( data.userEmail, data.userNick, 1, 1 ));
+			HANDLE hContact = MSN_HContactFromEmail( data.userEmail, data.userNick, 1, 1 );
+			if ( tNumTokens == 5 )
+				MSN_SetDword( hContact, "FlagBits", atol( data.flags ));
+
+			MSN_ContactJoined( info, hContact );
+
+			if ( tNumTokens == 3 )
+				MSN_SetDword( hContact, "FlagBits", atol( data.flags ));
 
 			int thisContact = atol( data.strThisContact );
 			if ( thisContact != 1 ) {
-				char* tContactName = MSN_GetContactName( info->mJoinedContacts[0] );
-				 Utf8Decode( data.userNick );
+				char* tContactName = MSN_GetContactName( hContact );
+				Utf8Decode( data.userNick );
 
 				char multichatmsg[256];
 				mir_snprintf( multichatmsg, sizeof( multichatmsg ),
@@ -1462,15 +1470,19 @@ LBL_InvalidCommand:
 		case ' IOJ':    //********* JOI: section 8.5 Session Participant Changes
 		{
 			union {
-				char* tWords[ 2 ];
-				struct { char *userEmail, *userNick; } data;
+				char* tWords[ 3 ];
+				struct { char *userEmail, *userNick, *flags; } data;
 			};
 
-			if ( sttDivideWords( params, 2, tWords ) != 2 )
+			int tNumTokens = sttDivideWords( params, 3, tWords );
+			if ( tNumTokens < 2 )
 				goto LBL_InvalidCommand;
 
 			UrlDecode( data.userEmail ); UrlDecode( data.userNick );
 			HANDLE hContact = MSN_HContactFromEmail( data.userEmail, data.userNick, 1, 1 );
+			if ( tNumTokens == 3 )
+				MSN_SetDword( hContact, "FlagBits", atol( data.flags ));
+
 
 			Utf8Decode( data.userNick );
 			MSN_DebugLog( "New contact in channel %s %s", data.userEmail, data.userNick );
@@ -1932,8 +1944,8 @@ LBL_InvalidCommand:
 				msnProtChallenge = "Q1P7W2E4J9R8U3S5";
 				msnProductID = "msmsgs@msnmsgr.com";
 			}
-         else if ( !strcmp( protocol1, "MSNP11" )) {
-				info->sendPacket( "CVR","0x0409 winnt 5.1 i386 MSNMSGR 7.5.0311 MSMSGS %s", MyOptions.szEmail );
+         else if ( !strcmp( protocol1, "MSNP12" )) {
+				info->sendPacket( "CVR","0x0409 winnt 5.1 i386 MSNMSGR 7.5.0324 msmsgs %s", MyOptions.szEmail );
 				msnProtChallenge = "YMM8C_H7KCQ2S_KL";
 				msnProductID = "PROD0090YUAUV{2B";
 			}
