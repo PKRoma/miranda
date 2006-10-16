@@ -334,6 +334,6 @@ char* Message_GetFromStream(HWND hwndDlg, SESSION_INFO* si)
 		dwFlags |= SF_UNICODE;
 	#endif
 
-	SendMessage(GetDlgItem(hwndDlg, IDC_MESSAGE), EM_STREAMOUT, dwFlags, (LPARAM) & stream);
+	SendMessage(GetDlgItem(hwndDlg, IDC_CHAT_MESSAGE), EM_STREAMOUT, dwFlags, (LPARAM) & stream);
 	return pszText; // pszText contains the text
 }
