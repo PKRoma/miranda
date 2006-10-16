@@ -47,12 +47,11 @@ static int EventToIndex(LOGINFO * lin)
 {
 	switch (lin->iType) {
 		case GC_EVENT_MESSAGE:
-			{
-				if (lin->bIsMe)
-					return 10;
-				else
-					return 9;
-			}
+			if (lin->bIsMe)
+				return 10;
+			else
+				return 9;
+
 		case GC_EVENT_JOIN: return 3;
 		case GC_EVENT_PART: return 4;
 		case GC_EVENT_QUIT: return 5;
@@ -90,12 +89,11 @@ static int EventToIcon(LOGINFO * lin)
 {
 	switch (lin->iType) {
 		case GC_EVENT_MESSAGE:
-			{
-				if (lin->bIsMe)
-					return ICON_MESSAGEOUT;
-				else
-					return ICON_MESSAGE;
-			}
+			if (lin->bIsMe)
+				return ICON_MESSAGEOUT;
+			else
+				return ICON_MESSAGE;
+
 		case GC_EVENT_JOIN: return ICON_JOIN;
 		case GC_EVENT_PART: return ICON_PART;
 		case GC_EVENT_QUIT: return ICON_QUIT;
@@ -181,29 +179,24 @@ static int Log_AppendRTF(LOGSTREAMDATA* streamData, char **buffer, int *cbBuffer
 			case 'c':
 			case 'f':
 				if (g_Settings.StripFormat || streamData->bStripFormat)
-					szTemp[0] = '\0';
+					line += 2;
 
-				else if ( line[1] != '\0' && line[2] != '\0')
-				{
-					TCHAR szTemp3[3], code;
+				else if ( line[1] != '\0' && line[2] != '\0') {
+					TCHAR szTemp3[3], c = *line;
 					int col;
 					szTemp3[0] = line[1];
 					szTemp3[1] = line[2];
 					szTemp3[2] = '\0';
-                    code = line[0];
 					line += 2;
 
 					col = _ttoi(szTemp3);
 					col += (OPTIONS_FONTCOUNT + 1);
-					mir_snprintf(szTemp, SIZEOF(szTemp), (code == (TCHAR)'c') ? "\\cf%u " : "\\highlight%u ", col);
+					mir_snprintf(szTemp, SIZEOF(szTemp), ( c == 'c' ) ? "\\cf%u " : "\\highlight%u ", col);
 				}
 				break;
 			case 'C':
 			case 'F':
-				if (g_Settings.StripFormat || streamData->bStripFormat)
-					szTemp[0] = '\0';
-				else
-				{
+				if ( !g_Settings.StripFormat && !streamData->bStripFormat) {
 					int j = streamData->lin->bIsHighlighted ? 16 : EventToIndex(streamData->lin);
 					if ( *line == 'C' )
 						mir_snprintf(szTemp, SIZEOF(szTemp), "\\cf%u ", j+1);
@@ -253,7 +246,7 @@ static int Log_AppendRTF(LOGSTREAMDATA* streamData, char **buffer, int *cbBuffer
 			*d++ = (char) *line;
 		}
 		#if defined( _UNICODE )
-			else d += sprintf(d, "\\u%d ?", (WORD)*line);
+			else d += sprintf(d, "\\u%u ?", (WORD)*line);
 		#else
 			else d += sprintf(d, "\\'%02x", (BYTE)*line);
 		#endif
@@ -292,11 +285,12 @@ static void AddEventToBuffer(char **buffer, int *bufferEnd, int *bufferAlloced, 
 				Log_AppendRTF(streamData, buffer, bufferEnd, bufferAlloced, TranslateT("%s %s"), streamData->lin->ptszNick, streamData->lin->ptszText);
 			break;
 		case GC_EVENT_JOIN:
-			if (pszNick)
+			if (pszNick) {
 				if (!streamData->lin->bIsMe)
 					Log_AppendRTF(streamData, buffer, bufferEnd, bufferAlloced, TranslateT("%s has joined"), pszNick);
 				else
 					Log_AppendRTF(streamData, buffer, bufferEnd, bufferAlloced, TranslateT("You have joined %s"), streamData->si->ptszName);
+			}
 			break;
 		case GC_EVENT_PART:
 			if (pszNick)
@@ -311,11 +305,12 @@ static void AddEventToBuffer(char **buffer, int *bufferEnd, int *bufferAlloced, 
 				Log_AppendRTF(streamData, buffer, bufferEnd, bufferAlloced, _T(": %s"), streamData->lin->ptszText);
 			break;
 		case GC_EVENT_NICK:
-			if (pszNick && streamData->lin->ptszText)
+			if (pszNick && streamData->lin->ptszText) {
 				if (!streamData->lin->bIsMe)
 					Log_AppendRTF(streamData, buffer, bufferEnd, bufferAlloced, TranslateT("%s is now known as %s"), pszNick, streamData->lin->ptszText);
 				else
 					Log_AppendRTF(streamData, buffer, bufferEnd, bufferAlloced, TranslateT("You are now known as %s"), streamData->lin->ptszText);
+			}
 			break;
 		case GC_EVENT_KICK:
 			if (streamData->lin->ptszNick && streamData->lin->ptszStatus)
