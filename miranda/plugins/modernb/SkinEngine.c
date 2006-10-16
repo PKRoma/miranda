@@ -4179,24 +4179,28 @@ HICON SkinEngine_CreateJoinedIcon(HICON hBottom, HICON hTop, BYTE alpha)
         if (bmp_bottom_mask.bmBits)
         {
             BottomMaskBuffer=(BYTE*)bmp_bottom_mask.bmBits;
-            bmb=BottomMaskBuffer+vstep_bm*(bmp_bottom_mask.bmHeight-1);
-            vstep_bm=-vstep_bm;
+            bmb=BottomMaskBuffer;         
         }
         else
         {
-            bmb=BottomMaskBuffer=(BYTE*)malloc(bmp_bottom_mask.bmHeight*bmp_bottom_mask.bmWidthBytes);
-            GetBitmapBits(iciBottom.hbmMask,bmp_bottom_mask.bmHeight*bmp_bottom_mask.bmWidthBytes,BottomMaskBuffer);
+            BottomMaskBuffer=(BYTE*)malloc(bmp_bottom_mask.bmHeight*bmp_bottom_mask.bmWidthBytes);            
+			GetBitmapBits(iciBottom.hbmMask,bmp_bottom_mask.bmHeight*bmp_bottom_mask.bmWidthBytes,BottomMaskBuffer);
+			bmb=BottomMaskBuffer+vstep_bm*(bmp_bottom_mask.bmHeight-1);
+			vstep_bm=-vstep_bm;
+
         }
         if (bmp_top_mask.bmBits)
         {
             TopMaskBuffer=(BYTE*)bmp_top_mask.bmBits;
-            tmb=TopMaskBuffer+vstep_tm*(bmp_top_mask.bmHeight-1);
-            vstep_tm=-vstep_tm;
+            tmb=TopMaskBuffer;
+            
         }
         else
         {
-            tmb=TopMaskBuffer=(BYTE*)malloc(bmp_top_mask.bmHeight*bmp_top_mask.bmWidthBytes);
+            TopMaskBuffer=(BYTE*)malloc(bmp_top_mask.bmHeight*bmp_top_mask.bmWidthBytes);
             GetBitmapBits(iciTop.hbmMask,bmp_top_mask.bmHeight*bmp_top_mask.bmWidthBytes,TopMaskBuffer);
+			tmb=TopMaskBuffer+vstep_tm*(bmp_top_mask.bmHeight-1);
+			vstep_tm=-vstep_tm;
         }
         {
             int x=0; int y=0;

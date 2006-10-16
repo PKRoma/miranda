@@ -767,7 +767,7 @@ case INTM_ICONCHANGED:
             status = ID_STATUS_OFFLINE;
         else
             status = DBGetContactSettingWord((HANDLE) wParam, szProto, "Status", ID_STATUS_OFFLINE);
-        image_is_special=(contacticon != lParam);
+        image_is_special=((contacticon&0xFFFF) != (lParam&0xFFFF)); //check only base icons
         
         /*
         if (image_is_special) //check if going to set status icon

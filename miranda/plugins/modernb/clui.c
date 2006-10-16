@@ -2160,6 +2160,8 @@ int CLUI_IconsChanged(WPARAM wParam,LPARAM lParam)
     DrawMenuBar(pcli->hwndContactList);
     ExtraImage_ReloadExtraIcons();
     ExtraImage_SetAllExtraIcons(pcli->hwndContactTree,0);
+	// need to update tray cause it use combined icons
+	pcli->pfnTrayIconIconsChanged();  //TODO: remove as soon as core will include icolib
     SkinEngine_RedrawCompleteWindow();
     //	pcli->pfnClcBroadcast( INTM_INVALIDATE,0,0);
     return 0;
