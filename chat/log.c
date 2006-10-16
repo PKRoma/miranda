@@ -42,7 +42,7 @@ static int logPixelSX = 0;
 
 static int EventToIndex(LOGINFO * lin)
 {
-	switch(lin->iType) {
+	switch (lin->iType) {
 		case GC_EVENT_MESSAGE:
 			if (lin->bIsMe)
 				return 10;
@@ -66,7 +66,7 @@ static int EventToIndex(LOGINFO * lin)
 
 static int EventToIcon(LOGINFO * lin)
 {
-	switch(lin->iType) {
+	switch (lin->iType) {
 		case GC_EVENT_MESSAGE:
 			if (lin->bIsMe)
 				return ICON_MESSAGEOUT;
@@ -157,10 +157,9 @@ static int Log_AppendRTF(LOGSTREAMDATA* streamData, char **buffer, int *cbBuffer
 			case 'c':
 			case 'f':
 				if (g_Settings.StripFormat || streamData->bStripFormat)
-					szTemp[0] = '\0';
+					line += 2;
 
-				else if ( line[1] != '\0' && line[2] != '\0')
-				{
+				else if ( line[1] != '\0' && line[2] != '\0') {
 					TCHAR szTemp3[3], c = *line;
 					int col;
 					szTemp3[0] = line[1];
@@ -169,16 +168,13 @@ static int Log_AppendRTF(LOGSTREAMDATA* streamData, char **buffer, int *cbBuffer
 					line += 2;
 
 					col = _ttoi(szTemp3);
-					col += 18;
-					mir_snprintf(szTemp, SIZEOF(szTemp), ( c == 'c') ? "\\cf%u " : "\\highlight%u ", col);
+					col += (OPTIONS_FONTCOUNT + 1);
+					mir_snprintf(szTemp, SIZEOF(szTemp), ( c == 'c' ) ? "\\cf%u " : "\\highlight%u ", col);
 				}
 				break;
 			case 'C':
 			case 'F':
-				if (g_Settings.StripFormat || streamData->bStripFormat)
-					szTemp[0] = '\0';
-				else
-				{
+				if ( !g_Settings.StripFormat && !streamData->bStripFormat) {
 					int j = streamData->lin->bIsHighlighted ? 16 : EventToIndex(streamData->lin);
 					if ( *line == 'C' )
 						mir_snprintf(szTemp, SIZEOF(szTemp), "\\cf%u ", j+1);
@@ -228,7 +224,7 @@ static int Log_AppendRTF(LOGSTREAMDATA* streamData, char **buffer, int *cbBuffer
 			*d++ = (char) *line;
 		}
 		#if defined( _UNICODE )
-			else d += sprintf(d, "\\u%d ?", (WORD)*line);
+			else d += sprintf(d, "\\u%u ?", (WORD)*line);
 		#else
 			else d += sprintf(d, "\\'%02x", (BYTE)*line);
 		#endif
@@ -336,6 +332,7 @@ static char* Log_CreateRTF(LOGSTREAMDATA *streamData)
 	char *buffer, *header;
 	int bufferAlloced, bufferEnd, i;
 	LOGINFO * lin = streamData->lin;
+	MODULEINFO *mi = MM_FindModule(streamData->si->pszModule);
 
 	// guesstimate amount of memory for the RTF
 	bufferEnd = 0;
@@ -344,7 +341,8 @@ static char* Log_CreateRTF(LOGSTREAMDATA *streamData)
 	buffer[0] = '\0';
 
 	// ### RTF HEADER
-	header = MM_FindModule(streamData->si->pszModule)->pszHeader;
+	header = mi->pszHeader;
+
 	if (header)
 		Log_Append(&buffer, &bufferEnd, &bufferAlloced, header);
 
@@ -545,8 +543,7 @@ void Log_StreamInEvent(HWND hwndDlg,  LOGINFO* lin, SESSION_INFO* si, BOOL bRedr
 			&& lin->iType != GC_EVENT_JOIN
 			&& lin->iType != GC_EVENT_NICK
 			&& lin->iType != GC_EVENT_ADDSTATUS
-			&& lin->iType != GC_EVENT_REMOVESTATUS
-			)))
+			&& lin->iType != GC_EVENT_REMOVESTATUS )))
 		{
 			SMADD_RICHEDIT3 sm;
 
@@ -658,6 +655,7 @@ char * Log_CreateRtfHeader(MODULEINFO * mi)
 	}
 	return buffer;
 }
+
 #define RTFPICTHEADERMAXSIZE   78
 void LoadMsgLogBitmaps(void)
 {
