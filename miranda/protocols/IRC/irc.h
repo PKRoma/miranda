@@ -70,19 +70,28 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #define new new(_NORMAL_BLOCK, __FILE__, __LINE__)
 #endif
 
-#define	IRC_UPDATELIST				(WM_USER+1)
-#define	IRC_QUESTIONAPPLY			(WM_USER+2)
-#define	IRC_QUESTIONCLOSE			(WM_USER+3)
-#define	IRC_ACTIVATE				(WM_USER+4)
-#define	IRC_INITMANAGER				(WM_USER+5)
-#define	IRC_REBUILDIGNORELIST		(WM_USER+6)
-#define	IRC_UPDATEIGNORELIST		(WM_USER+7)
-#define IRC_FIXIGNOREBUTTONS		(WM_USER+8)
+#define IRC_UPDATELIST        (WM_USER+1)
+#define IRC_QUESTIONAPPLY     (WM_USER+2)
+#define IRC_QUESTIONCLOSE     (WM_USER+3)
+#define IRC_ACTIVATE          (WM_USER+4)
+#define IRC_INITMANAGER       (WM_USER+5)
+#define IRC_REBUILDIGNORELIST (WM_USER+6)
+#define IRC_UPDATEIGNORELIST  (WM_USER+7)
+#define IRC_FIXIGNOREBUTTONS  (WM_USER+8)
 
-#define STR_QUITMESSAGE				"\002Miranda IM!\002 Smaller, Faster, Easier. http://miranda-im.org"
-#define STR_USERINFO				"I'm a happy Miranda IM user! Get it here: http://miranda-im.org"
-#define STR_AWAYMESSAGE				"I'm away from the computer." // Default away
-#define DCCSTRING					" (DCC)"
+#define IRC_QUICKCONNECT      "/QuickConnectMenu"
+#define IRC_JOINCHANNEL       "/JoinChannelMenu"
+#define IRC_CHANGENICK        "/ChangeNickMenu"
+#define IRC_SHOWLIST          "/ShowListMenu"
+#define IRC_SHOWSERVER        "/ShowServerMenu"
+#define IRC_MENU1CHANNEL      "/Menu1ChannelMenu"
+#define IRC_MENU2CHANNEL      "/Menu2ChannelMenu"
+#define IRC_MENU3CHANNEL      "/Menu3ChannelMenu"
+
+#define STR_QUITMESSAGE  "\002Miranda IM!\002 Smaller, Faster, Easier. http://miranda-im.org"
+#define STR_USERINFO     "I'm a happy Miranda IM user! Get it here: http://miranda-im.org"
+#define STR_AWAYMESSAGE  "I'm away from the computer." // Default away
+#define DCCSTRING        " (DCC)"
 
 #define DCC_CHAT		1
 #define DCC_SEND		2

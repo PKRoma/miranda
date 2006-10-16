@@ -634,7 +634,7 @@ int DoEvent(int iEvent, const char* pszWindow, const char * pszNick,
 	gce.cbSize = sizeof(GCEVENT);
 	gce.pDest = &gcd;
 	gce.pszStatus = (char *)pszStatus;
-	gce.dwFlags =  (bAddToLog) ? 0 : GCEF_ADDTOLOG;
+	gce.dwFlags =  (bAddToLog) ? GCEF_ADDTOLOG : 0;
 	gce.pszNick = (char *)pszNick;
 	gce.pszUID = (char *)pszNick;
 	gce.pszUserInfo = prefs->ShowAddresses?(char *)pszUserInfo:NULL;
