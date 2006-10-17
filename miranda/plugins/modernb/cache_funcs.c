@@ -571,7 +571,7 @@ void Cache_ReplaceSmileys(struct SHORTDATA *dat, PDNCE pdnce, TCHAR *text, int t
                 piece->type = TEXT_PIECE_TYPE_TEXT;
                 piece->start_pos = last_pos ;//sp.str - text;
                 piece->len = sp.startChar-last_pos;
-                li.List_Insert(*plText, piece, plText[0]->realCount);
+                li.List_Insert(*plText, piece, (*plText)->realCount);
             }
 
             // Add smiley
@@ -601,7 +601,7 @@ void Cache_ReplaceSmileys(struct SHORTDATA *dat, PDNCE pdnce, TCHAR *text, int t
                 dat->text_smiley_height = max(piece->smiley_height, dat->text_smiley_height);
                 *max_smiley_height = max(piece->smiley_height, *max_smiley_height);
 
-                li.List_Insert(*plText, piece, plText[0]->realCount);
+                li.List_Insert(*plText, piece, (*plText)->realCount);
             }
         }
         /*
@@ -632,7 +632,7 @@ void Cache_ReplaceSmileys(struct SHORTDATA *dat, PDNCE pdnce, TCHAR *text, int t
         piece->start_pos = last_pos;
         piece->len = text_size-last_pos;
 
-        li.List_Insert(*plText, piece, plText[0]->realCount);
+        li.List_Insert(*plText, piece, (*plText)->realCount);
     }
 }
 
@@ -824,7 +824,8 @@ int Cache_GetLineText(PDNCE pdnce, int type, LPTSTR text, int text_size, TCHAR *
                     if (dbv.pszVal != NULL && dbv.pszVal[0] != 0)
                     {
                         TCHAR *tmp = mir_tstrdup(text);
-                        mir_sntprintf(text, text_size, TEXT("%s: %s"), dbv.pszVal, tmp);
+                        
+                        mir_sntprintf(text, text_size, TEXT("%s: %s"), dbv.pszVal, tmp);                        
                         mir_free_and_nill(tmp);
                     }
                     DBFreeVariant(&dbv);
@@ -946,18 +947,21 @@ void Cache_GetSecondLineText(struct SHORTDATA *dat, PDNCE pdnce)
     HANDLE hContact=pdnce->hContact;
     TCHAR Text[120-MAXEXTRACOLUMNS]={0};
     int type = TEXT_EMPTY;
+   
     if (dat->second_line_show)	
         type = Cache_GetLineText(pdnce, dat->second_line_type, (TCHAR*)Text, SIZEOF(Text), dat->second_line_text,
         dat->second_line_xstatus_has_priority,dat->second_line_show_status_if_no_away,dat->second_line_show_listening_if_no_away,
         dat->second_line_use_name_and_message_for_xstatus, dat->contact_time_show_only_if_different);
-
+    Text[SIZEOF(Text)-1]=_T('\0'); //to be sure that it is null terminated string
     //LockCacheItem(hContact, __FILE__,__LINE__);
-    if (pdnce->szSecondLineText) mir_free_and_nill(pdnce->szSecondLineText);
+    
+    if (pdnce->szSecondLineText) mir_free(pdnce->szSecondLineText);
+    
     if (dat->second_line_show)// Text[0]!='\0')
         pdnce->szSecondLineText=mir_tstrdup((TCHAR*)Text);
     else
         pdnce->szSecondLineText=NULL;
-    Text[120-MAXEXTRACOLUMNS-1]='\0';
+   
     if (pdnce->szSecondLineText) 
     {
         if (type == TEXT_LISTENING_TO && pdnce->szSecondLineText[0] != _T('\0'))
@@ -988,12 +992,15 @@ void Cache_GetThirdLineText(struct SHORTDATA *dat, PDNCE pdnce)
         dat->third_line_use_name_and_message_for_xstatus, dat->contact_time_show_only_if_different);
 
     // LockCacheItem(hContact, __FILE__,__LINE__);
-    if (pdnce->szThirdLineText) mir_free_and_nill(pdnce->szThirdLineText);
+    Text[SIZEOF(Text)-1]=_T('\0'); //to be sure that it is null terminated string
+    
+    if (pdnce->szThirdLineText) mir_free(pdnce->szThirdLineText);
+    
     if (dat->third_line_show)//Text[0]!='\0')
         pdnce->szThirdLineText=mir_tstrdup((TCHAR*)Text);
     else
         pdnce->szThirdLineText=NULL;
-    Text[120-MAXEXTRACOLUMNS-1]='\0';
+    
     if (pdnce->szThirdLineText) 
     {
         if (type == TEXT_LISTENING_TO && pdnce->szThirdLineText[0] != _T('\0'))

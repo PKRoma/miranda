@@ -37,7 +37,7 @@ SortedList *clistCache = NULL;
 TCHAR* GetNameForContact(HANDLE hContact,int flag,boolean *isUnknown);
 char *GetProtoForContact(HANDLE hContact);
 int GetStatusForContact(HANDLE hContact,char *szProto);
-TCHAR *UnknownConctactTranslatedName;
+TCHAR *UnknownConctactTranslatedName=NULL;
 extern boolean g_flag_bOnModulesLoadedCalled;
 void InvalidateDNCEbyPointer(HANDLE hContact,pdisplayNameCacheEntry pdnce,int SettingType);
 
@@ -124,7 +124,11 @@ void Cache_DestroySmileyList( SortedList *p_list );
 void CListSettings_FreeCacheItemData(pdisplayNameCacheEntry pDst)
 {
     if (!pDst) return;
-    if (pDst->name) mir_free_and_nill(pDst->name);
+    if (pDst->name) 
+    {
+        if (!pDst->isUnknown && pDst->name!=UnknownConctactTranslatedName) mir_free_and_nill(pDst->name);
+
+    }
     #if defined( _UNICODE )
         if (pDst->szName) mir_free_and_nill(pDst->szName);
 	#endif
