@@ -1445,9 +1445,6 @@ LBL_InvalidCommand:
 
 			MSN_ContactJoined( info, hContact );
 
-			if ( tNumTokens == 3 )
-				MSN_SetDword( hContact, "FlagBits", atol( data.flags ));
-
 			int thisContact = atol( data.strThisContact );
 			if ( thisContact != 1 ) {
 				char* tContactName = MSN_GetContactName( hContact );
