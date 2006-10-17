@@ -995,8 +995,10 @@ static void JabberProcessMessage( XmlNode *node, void *userdata )
 			else if ( !_tcscmp( p, _T("jabber:x:oob")) && isRss) {
 				XmlNode* rssUrlNode;
 				if ( (rssUrlNode = JabberXmlGetNthChild( xNode, "url", 1 )) != NULL) {
-					p = ( TCHAR* )alloca( sizeof(TCHAR)*( _tcslen( subjectNode->text ) + _tcslen( bodyNode->text ) + _tcslen( rssUrlNode->text ) + 14 ));
-					wsprintf( p, _T("Subject: %s\r\n%s\r\n%s"), subjectNode->text, rssUrlNode->text, bodyNode->text );
+					TCHAR* ptszBody = (bodyNode) ? bodyNode->text : _T("");
+					TCHAR* ptszSubject = (subjectNode) ? subjectNode->text : _T("");
+					p = ( TCHAR* )alloca( sizeof(TCHAR)*( lstrlen( ptszBody ) + lstrlen( ptszSubject ) + lstrlen( rssUrlNode->text ) + 14 ));
+					wsprintf( p, _T("Subject: %s\r\n%s\r\n%s"), ptszSubject, rssUrlNode->text, ptszBody );
 					szMessage = p;
 				}
 			}
