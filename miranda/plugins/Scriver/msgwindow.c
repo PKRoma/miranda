@@ -1363,13 +1363,13 @@ HWND GetParentWindow(HANDLE hContact, BOOL bChat) {
 		}
 		return g_dat->lastParent->hwnd;
 	} else {
-		if (g_Settings.Tabs && g_Settings.CommonTabs) {
+		if ((g_dat->flags & SMF_USETABS) && g_Settings.CommonTabs) {
 			if (g_dat->lastParent == NULL) {
 				newData.isChat =FALSE;
 				return CreateDialogParam(g_hInst, MAKEINTRESOURCE(IDD_MSGWIN), NULL, DlgProcParentWindow, (LPARAM) & newData);
 			}
 			return g_dat->lastParent->hwnd;
-		} else if (g_dat->lastChatParent == NULL || !g_Settings.Tabs) {
+		} else if (g_dat->lastChatParent == NULL || !(g_dat->flags & SMF_USETABS)) {
 			return CreateDialogParam(g_hInst, MAKEINTRESOURCE(IDD_MSGWIN), NULL, DlgProcParentWindow, (LPARAM) & newData);
 		}
 		return g_dat->lastChatParent->hwnd;
