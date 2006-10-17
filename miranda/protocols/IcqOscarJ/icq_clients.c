@@ -282,6 +282,10 @@ char* detectUserClient(HANDLE hContact, DWORD dwUin, WORD wVersion, DWORD dwFT1,
   {
     szClient = cliSpamBot;
   }
+  else if (dwFT1 == 0x44F523B0 && dwFT2 == 0x44F523A6 && dwFT3 == 0x44F523A6 && wVersion == 8)
+  {
+    szClient = "Virus";
+  }
 
   { // capabilities based detection
     capstr* capId;
