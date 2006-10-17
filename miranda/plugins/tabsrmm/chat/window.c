@@ -2224,6 +2224,7 @@ LABEL_SHOWWINDOW:
 
 						SendMessage( GetDlgItem(hwndDlg, IDC_CHAT_MESSAGE), EM_REPLACESEL, FALSE, (LPARAM) pszName );
 						PostMessage( hwndDlg, WM_MOUSEACTIVATE, 0, 0 );
+						SetFocus(GetDlgItem(hwndDlg, IDC_CHAT_MESSAGE));
 					}
 					else DoEventHookAsync(hwndDlg, si->ptszID, si->pszModule, GC_USER_PRIVMESS, ui->pszUID, NULL, (LPARAM)NULL);
 				}
@@ -2381,7 +2382,7 @@ LABEL_SHOWWINDOW:
 			}
 			SendMessage(hwndDlg, GC_REDRAWLOG, 0, 0);
             SendMessage(hwndDlg, GC_UPDATETITLE, 0, 0);
-            DBWriteContactSettingByte(si->hContact, "Chat", "FilterEnabled", si->bFilterEnabled);
+            DBWriteContactSettingByte(si->hContact, "Chat", "FilterEnabled", (BYTE)si->bFilterEnabled);
 			break;
 
 		case IDC_BKGCOLOR:

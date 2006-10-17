@@ -204,7 +204,7 @@ TCHAR* Chat_DoRtfToTags( char* pszText, SESSION_INFO* si)
 				mir_snprintf(InsertThis, SIZEOF(InsertThis), "%c", p1[1]);
 			}
 			else if ( p1[1] == '\'' ) { // special character
-				char tmp[4], *p3 = tmp;
+                char tmp[4], *p3 = tmp;
 				bTextHasStarted = TRUE;
 				bJustRemovedRTF = FALSE;
 				if (p1[2] != ' ' && p1[2] != '\\') {
@@ -227,11 +227,13 @@ TCHAR* Chat_DoRtfToTags( char* pszText, SESSION_INFO* si)
 						InsertThis[1] = 0;
 					#endif
 				}
-				else iRemoveChars = 2;
+				else 
+                    iRemoveChars = 2;
 			}
 			else if ( bJustRemovedRTF ) { // remove unknown RTF command
 				int j = 1;
 				bJustRemovedRTF = TRUE;
+                //while(!strchr(" !$%()#*\"'", p1[j]) && p1[j] != '§' && p1[j] != '\\' && p1[j] != '\0')
 				while(p1[j] != ' ' && p1[j] != '\\' && p1[j] != '\0')
 					j++;
 				iRemoveChars = j;

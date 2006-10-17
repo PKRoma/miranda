@@ -383,7 +383,7 @@ static char* Log_CreateRTF(LOGSTREAMDATA *streamData)
 
 				lin->dwFlags |= MWF_DIVIDERWANTED;
 				if (lin->prev || !streamData->bRedraw)
-					Log_Append(&buffer, &bufferEnd, &bufferAlloced, "\\par\\qc\\sl-1\\highlight%d %s ---------------------------------------------------------------------------------------\\par ", 18, szStyle_div);
+					Log_Append(&buffer, &bufferEnd, &bufferAlloced, "\\qc\\sl-1\\highlight%d %s ---------------------------------------------------------------------------------------\\par ", 18, szStyle_div);
 				streamData->dat->dwFlags &= ~MWF_DIVIDERWANTED;
 			}
 			// create new line, and set font and color

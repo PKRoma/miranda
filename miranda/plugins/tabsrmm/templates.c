@@ -471,7 +471,7 @@ static char *var_helptxt[] = {
     "%cX:\tuse one of the predefined colors for the following text output (X is a number from 0 to 4, referring to the color index). Only useful together with the & modifier (see below) and maybe the %fX variable.",
     "\\line\\ul\\b About modifiers:\\ul0\\b0\\line\\line Currently, there are 3 different modifiers which can be used to alter the \\b behaviour\\b0  of most variables. Modifiers have to follow the % character immediately, however, their order is not important. Multiple modifiers are possible, but please note that some combinations don't make much sense.\
 \\line\\line The ? character means that the variable will be skipped when the message log is switched to \\b Simple Templates.\\b0 \
-\\line\\line The \\ character means that the variable will be skipped when the message log is using the normal template variable set. \
+\\line\\line The backslash character means that the variable will be skipped when the message log is using the normal template variable set. \
 \\line\\line The # character means that the variable does only apply to \\b old\\b0  events and will be ignored for new (unread events).\\line Contrary, the $ character does the opposite - the variable will only show up in new events. You can use these modifiers to get different message formatting for old and new events.\
 \\line\\line The & modifier means \\b skip font\\b0  . If being used, the variable will be printed without setting the font for the variables context. Effectively, the font which is currently selected remains valid.",
     "\\line \\ul\\b Some examples:\\ul0\\b0\\line\\par \\b %&N\\b0 -\tprints the nickname, but does not use the font which is configured for nicknames.\\par\

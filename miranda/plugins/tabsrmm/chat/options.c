@@ -551,7 +551,7 @@ BOOL CALLBACK DlgProcOptions1(HWND hwndDlg,UINT uMsg,WPARAM wParam,LPARAM lParam
 		break;
     case WM_COMMAND:
         if (LOWORD(wParam) == IDC_CHAT_ENABLE) {
-            DBWriteContactSettingByte(NULL, "PluginDisable", "chat.dll", IsDlgButtonChecked(hwndDlg, IDC_CHAT_ENABLE) ? 1 : 0);
+            DBWriteContactSettingByte(NULL, "PluginDisable", "chat.dll", (BYTE)(IsDlgButtonChecked(hwndDlg, IDC_CHAT_ENABLE) ? 1 : 0));
             MessageBox(0, TranslateT("You should now immediatly restart Miranda to make this change take effect."), TranslateT("tabSRMM Message"), MB_OK);
         }
 		if (	(LOWORD(wParam) == IDC_NICKROW
