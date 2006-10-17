@@ -8,7 +8,8 @@
 #define IDD_CONFIRM_SENDALL             103
 #define IDD_OPT_MAIN					110
 #define IDD_OPT_MSGDLG                  111
-#define IDD_OPT_MSGLOG                  113
+#define IDD_OPT_MSGLOG                  112
+#define IDD_OPT_CONTAINER				113
 #define IDD_OPT_MSGTYPE                 114
 #define IDI_ADDCONTACT                  120
 #define IDI_USERDETAILS                 121

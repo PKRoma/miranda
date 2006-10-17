@@ -24,8 +24,8 @@ EXSTYLE WS_EX_CONTROLPARENT
 FONT 8, "MS Shell Dlg", 0, 0, 0x1
 BEGIN
 	CONTROL         "Tab1",IDC_TABS,"SysTabControl32",
-                    TCS_FIXEDWIDTH | 0x8,0,0,310,248
-// TCS
+                    0x8,0,0,310,248
+// TCS TCS_FIXEDWIDTH | 
 END
 
 IDD_OPT_MSGDLG DIALOGEX 4, 0, 302, 230
@@ -39,16 +39,15 @@ BEGIN
                     155,10
 	CONTROL         "Tree1",IDC_POPLIST,"SysTreeView32",TVS_DISABLEDRAGDROP |
                     TVS_NOTOOLTIPS | TVS_NONEVENHEIGHT | WS_BORDER |
-                    WS_TABSTOP,163,5,98,23
+                    WS_TABSTOP,163,8,98,40
     CONTROL         "Stay minimized",IDC_STAYMINIMIZED,"Button",
                     BS_AUTOCHECKBOX | WS_TABSTOP,20,19,141,10
+					
     CONTROL         "Close the message window on send",IDC_AUTOCLOSE,"Button",
-                    BS_AUTOCHECKBOX | WS_TABSTOP,8,30,140,10
+                    BS_AUTOCHECKBOX | WS_TABSTOP,8,55,140,10
     CONTROL         "Minimize the message window on send",IDC_AUTOMIN,"Button",
-                    BS_AUTOCHECKBOX | WS_TABSTOP,148,30,152,10
-    CONTROL         "Use the contact's status icon as the window icon",
-                    IDC_STATUSWIN,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,8,41,
-                    292,10
+                    BS_AUTOCHECKBOX | WS_TABSTOP,8,66,152,10
+	/*
     CONTROL         "Use tabbed mode",IDC_USETABS,"Button",BS_AUTOCHECKBOX |
                     WS_TABSTOP,8,52,140,10
     CONTROL         "Hide tab bar if there is only one tab",IDC_HIDEONETAB,
@@ -64,36 +63,48 @@ BEGIN
     CONTROL         "Save size and location for each contact",
                     IDC_SAVEPERCONTACT,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,
                     148,85,152,10
+	*/
     CONTROL         "Save the splitter position individually for each contact",
                     IDC_SAVESPLITTERPERCONTACT,"Button",BS_AUTOCHECKBOX |
-                    WS_TABSTOP,8,96,292,10
+                    WS_TABSTOP,8,77,292,10
     CONTROL         "Support control up/down in message area to show previously sent messages",
                     IDC_CTRLSUPPORT,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,8,
-                    107,292,10
+                    88,292,10
     CONTROL         "Save message draft on close",
                     IDC_SAVEDRAFTS,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,8,
-                    118,292,10
+                    99,292,10
     CONTROL         "Delete temporary contacts when closing message window",
-                    IDC_DELTEMP,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,8,129,
+                    IDC_DELTEMP,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,8,110,
                     292,10
+	/*
     CONTROL         "Show title bar",IDC_SHOWTITLEBAR,"Button",
                     BS_AUTOCHECKBOX | WS_TABSTOP,8,140,140,10
     CONTROL         "Show status bar",IDC_SHOWSTATUSBAR,"Button",
                     BS_AUTOCHECKBOX | WS_TABSTOP,148,140,138,10
-    CONTROL         "Show tool bar ",IDC_SHOWBUTTONLINE,"Button",
-                    BS_AUTOCHECKBOX | WS_TABSTOP,8,151,140,10
+	*/
+    CONTROL         "Send message on 'Enter'",IDC_SENDONENTER,"Button",
+                    BS_AUTOCHECKBOX | WS_TABSTOP,8,124,140,10
+    CONTROL         "Send message on double 'Enter'",IDC_SENDONDBLENTER,
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,8,135,138,10
+
+	CONTROL         "Show tool bar ",IDC_SHOWBUTTONLINE,"Button",
+                    BS_AUTOCHECKBOX | WS_TABSTOP,8,149,140,10
+    CONTROL         "Use the contact's status icon as the window icon",
+                    IDC_STATUSWIN,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,8,160,
+                    292,10
     CONTROL         "Show 'sending in progress' indicator",IDC_SHOWPROGRESS,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,148,151,138,10
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,8,171,138,10
     CONTROL         "Enable avatar support in the message window",
                     IDC_AVATARSUPPORT,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,
-                    8,162,292,10
+                    8,182,292,10
     CONTROL         "Limit avatar height to min.",IDC_LIMITAVATARH,"Button",
-                    BS_AUTOCHECKBOX | WS_TABSTOP,20,173,106,10
-    EDITTEXT        IDC_AVATARHEIGHTMIN,148,171,28,13,ES_AUTOHSCROLL
-    LTEXT           "and max.",IDC_AVATARTEXT1,188,173,35,8
-    EDITTEXT        IDC_AVATARHEIGHT,230,171,28,13,ES_AUTOHSCROLL
-    LTEXT           "pixels.",IDC_AVATARTEXT2,263,173,35,8
-    CONTROL         "Enable transparency",IDC_TRANSPARENCY,"Button",
+                    BS_AUTOCHECKBOX | WS_TABSTOP,20,195,106,10
+    EDITTEXT        IDC_AVATARHEIGHTMIN,148,193,28,13,ES_AUTOHSCROLL
+    LTEXT           "and max.",IDC_AVATARTEXT1,188,195,35,8
+    EDITTEXT        IDC_AVATARHEIGHT,230,193,28,13,ES_AUTOHSCROLL
+    LTEXT           "pixels.",IDC_AVATARTEXT2,263,195,35,8
+	/*
+	CONTROL         "Enable transparency",IDC_TRANSPARENCY,"Button",
                     BS_AUTOCHECKBOX | WS_TABSTOP,8,189,140,10
     LTEXT           "active",IDC_TRANSPARENCYTEXT1,148,185,40,8
     CONTROL         "Slider1",IDC_ATRANSPARENCYVALUE,"msctls_trackbar32",
@@ -103,10 +114,7 @@ BEGIN
     CONTROL         "Slider1",IDC_ITRANSPARENCYVALUE,"msctls_trackbar32",
                     TBS_BOTH | TBS_NOTICKS | WS_TABSTOP,194,196,70,11
     LTEXT           "100%",IDC_ITRANSPARENCYPERC,264,196,22,8
-    CONTROL         "Send message on 'Enter'",IDC_SENDONENTER,"Button",
-                    BS_AUTOCHECKBOX | WS_TABSTOP,8,207,140,10
-    CONTROL         "Send message on double 'Enter'",IDC_SENDONDBLENTER,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,148,207,138,10
+	*/
     LTEXT           "Show warning when message has not been received after",
                     IDC_STATIC,8,220,211,8
     EDITTEXT        IDC_SECONDS,223,218,25,12,ES_AUTOHSCROLL
@@ -185,6 +193,42 @@ BEGIN
                     UDS_ARROWKEYS | UDS_NOTHOUSANDS | UDS_HOTTRACK |
                     WS_DISABLED,170,215,10,14
     LTEXT           "minutes old",IDC_STMINSOLD,185,217,90,8,WS_DISABLED
+END
+
+IDD_OPT_CONTAINER DIALOGEX 4, 0, 302, 230
+STYLE DS_FIXEDSYS | WS_CHILD | WS_VISIBLE
+EXSTYLE WS_EX_CONTROLPARENT
+FONT 8, "MS Shell Dlg", 0, 0, 0x1
+BEGIN
+    CONTROL         "Use tabbed mode",IDC_USETABS,"Button",BS_AUTOCHECKBOX |
+                    WS_TABSTOP,8,52,140,10
+    CONTROL         "Hide tab bar if there is only one tab",IDC_HIDEONETAB,
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,20,63,152,10
+    CONTROL         "Tabs at bottom",IDC_TABSATBOTTOM,"Button",
+                    BS_AUTOCHECKBOX | WS_TABSTOP,20,74,126,10
+    CONTROL         "Limit names on tabs to 20 characters",IDC_LIMITNAMES,
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,20,85,152,10
+    CONTROL         "Automatically switch to active tab",IDC_SWITCHTOACTIVE,
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,20,96,152,10
+    CONTROL         "Cascade new windows",IDC_CASCADE,"Button",
+                    BS_AUTOCHECKBOX | WS_TABSTOP,8,107,140,10
+    CONTROL         "Save size and location for each contact",
+                    IDC_SAVEPERCONTACT,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,
+                    8,118,152,10
+    CONTROL         "Show title bar",IDC_SHOWTITLEBAR,"Button",
+                    BS_AUTOCHECKBOX | WS_TABSTOP,8,140,140,10
+    CONTROL         "Show status bar",IDC_SHOWSTATUSBAR,"Button",
+                    BS_AUTOCHECKBOX | WS_TABSTOP,8,151,138,10
+    CONTROL         "Enable transparency",IDC_TRANSPARENCY,"Button",
+                    BS_AUTOCHECKBOX | WS_TABSTOP,8,189,140,10
+    LTEXT           "active",IDC_TRANSPARENCYTEXT1,148,185,40,8
+    CONTROL         "Slider1",IDC_ATRANSPARENCYVALUE,"msctls_trackbar32",
+                    TBS_BOTH | TBS_NOTICKS | WS_TABSTOP,194,185,70,11
+    LTEXT           "100%",IDC_ATRANSPARENCYPERC,264,185,22,8
+    LTEXT           "inactive",IDC_TRANSPARENCYTEXT2,148,196,40,8
+    CONTROL         "Slider1",IDC_ITRANSPARENCYVALUE,"msctls_trackbar32",
+                    TBS_BOTH | TBS_NOTICKS | WS_TABSTOP,194,196,70,11
+    LTEXT           "100%",IDC_ITRANSPARENCYPERC,264,196,22,8
 END
 
 IDD_OPT_MSGTYPE DIALOGEX 0, 0, 283, 252
