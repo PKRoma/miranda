@@ -494,7 +494,7 @@ static LRESULT CALLBACK MessageSubclassProc(HWND hwnd, UINT msg, WPARAM wParam, 
 			return TRUE;
 		}
 
-		if ((wParam == 45 && GetKeyState(VK_SHIFT) & 0x8000 || wParam == 0x56 && GetKeyState(VK_CONTROL) & 0x8000 )&& !(GetKeyState(VK_MENU) & 0x8000)) { // ctrl-v (paste clean text)
+		if (((wParam == 45 && GetKeyState(VK_SHIFT) & 0x8000) || (wParam == 0x56 && GetKeyState(VK_CONTROL) & 0x8000) )&& !(GetKeyState(VK_MENU) & 0x8000)) { // ctrl-v (paste clean text)
 			SendMessage(hwnd, EM_PASTESPECIAL, CF_TEXT, 0);
 			return TRUE;
 		}
@@ -901,7 +901,7 @@ static LRESULT CALLBACK NicklistSubclassProc(HWND hwnd, UINT msg, WPARAM wParam,
 		{
 			TVHITTESTINFO hti;
 			int item;
-			int height;
+			int height=0;
 			USERINFO * ui;
 			SESSION_INFO* parentdat =(SESSION_INFO*)GetWindowLong(GetParent(hwnd),GWL_USERDATA);
 

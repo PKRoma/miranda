@@ -98,7 +98,7 @@ int SM_RemoveSession( const TCHAR* pszID, const char* pszModule)
 
 	while (pTemp != NULL)
 	{
-		if ((!pszID && pTemp->iType != GCW_SERVER || !lstrcmpi(pTemp->ptszID,pszID)) && !lstrcmpiA(pTemp->pszModule,pszModule)) // match
+		if (((!pszID && pTemp->iType != GCW_SERVER) || !lstrcmpi(pTemp->ptszID,pszID)) && !lstrcmpiA(pTemp->pszModule,pszModule)) // match
 		{
 			COMMAND_INFO *pCurComm;
 			DWORD dw = pTemp->dwItemData;
@@ -859,8 +859,7 @@ SESSION_INFO* SM_FindSessionByIndex(const char* pszModule, int iItem)
 char* SM_GetUsers(SESSION_INFO* si)
 {
 	SESSION_INFO* pTemp = m_WndList;
-	USERINFO* utemp;
-	int count = 0;
+	USERINFO* utemp = NULL;
 	char* p = NULL;
 	int alloced = 0;
 

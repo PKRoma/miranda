@@ -116,7 +116,7 @@ static int MessageEventAdded(WPARAM wParam, LPARAM lParam)
    }
    /* new message */
    SkinPlaySound("AlertMsg");
-   if (g_dat->flags2 & SMF2_AUTOPOPUP) {
+   if (g_dat->flags & SMF_AUTOPOPUP) {
       char *szProto = (char *) CallService(MS_PROTO_GETCONTACTBASEPROTO, (WPARAM) wParam, 0);
       if (szProto && (g_dat->openFlags & SRMMStatusToPf2(CallProtoService(szProto, PS_GETSTATUS, 0, 0)))) {
          HWND hParent;
@@ -256,17 +256,17 @@ static int TypingMessage(WPARAM wParam, LPARAM lParam)
    HWND hwnd;
    int foundWin = 0;
 
-   if (!(g_dat->flags&SMF_SHOWTYPING))
+   if (!(g_dat->flags2&SMF2_SHOWTYPING))
       return 0;
    if ((hwnd = WindowList_Find(g_dat->hMessageWindowList, (HANDLE) wParam))) {
       SendMessage(hwnd, DM_TYPING, 0, lParam);
       foundWin = 1;
    }
-   if ((int) lParam && !foundWin && (g_dat->flags&SMF_SHOWTYPINGTRAY)) {
+   if ((int) lParam && !foundWin && (g_dat->flags2&SMF2_SHOWTYPINGTRAY)) {
       char szTip[256];
 
       mir_snprintf(szTip, sizeof(szTip), Translate("%s is typing a message"), (char *) CallService(MS_CLIST_GETCONTACTDISPLAYNAME, wParam, 0));
-      if (ServiceExists(MS_CLIST_SYSTRAY_NOTIFY) && !(g_dat->flags&SMF_SHOWTYPINGCLIST)) {
+      if (ServiceExists(MS_CLIST_SYSTRAY_NOTIFY) && !(g_dat->flags2&SMF2_SHOWTYPINGCLIST)) {
          MIRANDASYSTRAYNOTIFY tn;
          tn.szProto = NULL;
          tn.cbSize = sizeof(tn);
@@ -341,7 +341,7 @@ static void RestoreUnreadMessageAlerts(void)
             if (windowAlreadyExists)
                continue;
 
-            if (g_dat->flags2 & SMF2_AUTOPOPUP) {
+            if (g_dat->flags & SMF_AUTOPOPUP) {
                char *szProto = (char *) CallService(MS_PROTO_GETCONTACTBASEPROTO, (WPARAM) hContact, 0);
                if (szProto && (g_dat->openFlags & SRMMStatusToPf2(CallProtoService(szProto, PS_GETSTATUS, 0, 0)))) {
                   autoPopup = 1;

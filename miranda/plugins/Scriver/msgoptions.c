@@ -314,12 +314,13 @@ static BOOL CALLBACK DlgProcContainerOptions(HWND hwndDlg, UINT msg, WPARAM wPar
 		case WM_INITDIALOG:
 		{
 			int bChecked;
+			char str[10];
 			DWORD msgTimeout, avatarHeight;
 			TranslateDialogDefault(hwndDlg);
 			SetWindowLong(GetDlgItem(hwndDlg, IDC_POPLIST), GWL_STYLE, (GetWindowLong(GetDlgItem(hwndDlg, IDC_POPLIST), GWL_STYLE) & ~WS_BORDER) | TVS_NOHSCROLL | TVS_CHECKBOXES);
 			FillCheckBoxTree(GetDlgItem(hwndDlg, IDC_POPLIST), statusValues, sizeof(statusValues) / sizeof(statusValues[0]),
                              DBGetContactSettingDword(NULL, SRMMMOD, SRMSGSET_POPFLAGS, SRMSGDEFSET_POPFLAGS));
-			CheckDlgButton(hwndDlg, IDC_SHOWBUTTONLINE, g_dat->flags&SMF_SHOWBTNS);
+			CheckDlgButton(hwndDlg, IDC_SHOWBUTTONLINE, g_dat->flags2&SMF2_SHOWTOOLBAR);
 			CheckDlgButton(hwndDlg, IDC_AUTOPOPUP, DBGetContactSettingByte(NULL, SRMMMOD, SRMSGSET_AUTOPOPUP, SRMSGDEFSET_AUTOPOPUP));
 			CheckDlgButton(hwndDlg, IDC_STAYMINIMIZED, DBGetContactSettingByte(NULL, SRMMMOD, SRMSGSET_STAYMINIMIZED, SRMSGDEFSET_STAYMINIMIZED));
 			CheckDlgButton(hwndDlg, IDC_AUTOMIN, DBGetContactSettingByte(NULL, SRMMMOD, SRMSGSET_AUTOMIN, SRMSGDEFSET_AUTOMIN));
@@ -344,12 +345,10 @@ static BOOL CALLBACK DlgProcContainerOptions(HWND hwndDlg, UINT msg, WPARAM wPar
 			SendDlgItemMessage(hwndDlg,IDC_ATRANSPARENCYVALUE,TBM_SETPOS, TRUE, DBGetContactSettingDword(NULL, SRMMMOD, SRMSGSET_ACTIVEALPHA, SRMSGDEFSET_ACTIVEALPHA));
 			SendDlgItemMessage(hwndDlg,IDC_ITRANSPARENCYVALUE,TBM_SETRANGE, FALSE, MAKELONG(0,255));
 			SendDlgItemMessage(hwndDlg,IDC_ITRANSPARENCYVALUE,TBM_SETPOS, TRUE, DBGetContactSettingDword(NULL, SRMMMOD, SRMSGSET_INACTIVEALPHA, SRMSGDEFSET_INACTIVEALPHA));
-			{	char str[10];
-				sprintf(str,"%d%%",(int)(100*SendDlgItemMessage(hwndDlg,IDC_ATRANSPARENCYVALUE,TBM_GETPOS,0,0)/255));
-				SetDlgItemTextA(hwndDlg, IDC_ATRANSPARENCYPERC, str);
-				sprintf(str,"%d%%",(int)(100*SendDlgItemMessage(hwndDlg,IDC_ITRANSPARENCYVALUE,TBM_GETPOS,0,0)/255));
-				SetDlgItemTextA(hwndDlg, IDC_ITRANSPARENCYPERC, str);
-			}
+			sprintf(str,"%d%%",(int)(100*SendDlgItemMessage(hwndDlg,IDC_ATRANSPARENCYVALUE,TBM_GETPOS,0,0)/255));
+			SetDlgItemTextA(hwndDlg, IDC_ATRANSPARENCYPERC, str);
+			sprintf(str,"%d%%",(int)(100*SendDlgItemMessage(hwndDlg,IDC_ITRANSPARENCYVALUE,TBM_GETPOS,0,0)/255));
+			SetDlgItemTextA(hwndDlg, IDC_ITRANSPARENCYPERC, str);
 
 			if (pSetLayeredWindowAttributes == NULL) {
 				EnableWindow(GetDlgItem(hwndDlg, IDC_TRANSPARENCY), FALSE);
@@ -404,6 +403,7 @@ static BOOL CALLBACK DlgProcContainerOptions(HWND hwndDlg, UINT msg, WPARAM wPar
 			EnableWindow(GetDlgItem(hwndDlg, IDC_TABSATBOTTOM), bChecked );
 			EnableWindow(GetDlgItem(hwndDlg, IDC_LIMITNAMES), bChecked );
 			EnableWindow(GetDlgItem(hwndDlg, IDC_HIDEONETAB), bChecked );
+			EnableWindow(GetDlgItem(hwndDlg, IDC_CHATSCOMMONCONTAINERS), bChecked );
 			EnableWindow(GetDlgItem(hwndDlg, IDC_CASCADE), !bChecked  );//&& !IsDlgButtonChecked(hwndDlg, IDC_SAVEPERCONTACT));
 			EnableWindow(GetDlgItem(hwndDlg, IDC_SAVEPERCONTACT), !bChecked );
 			return TRUE;
@@ -425,6 +425,7 @@ static BOOL CALLBACK DlgProcContainerOptions(HWND hwndDlg, UINT msg, WPARAM wPar
 						EnableWindow(GetDlgItem(hwndDlg, IDC_TABSATBOTTOM), bChecked);
 						EnableWindow(GetDlgItem(hwndDlg, IDC_LIMITNAMES), bChecked);
 						EnableWindow(GetDlgItem(hwndDlg, IDC_HIDEONETAB), bChecked);
+						EnableWindow(GetDlgItem(hwndDlg, IDC_CHATSCOMMONCONTAINERS), bChecked );
 						EnableWindow(GetDlgItem(hwndDlg, IDC_CASCADE), !bChecked );//&& !IsDlgButtonChecked(hwndDlg, IDC_SAVEPERCONTACT));
 						EnableWindow(GetDlgItem(hwndDlg, IDC_SAVEPERCONTACT), !bChecked);
 					}
@@ -564,7 +565,7 @@ static BOOL CALLBACK DlgProcOptions(HWND hwndDlg, UINT msg, WPARAM wParam, LPARA
 			SetWindowLong(GetDlgItem(hwndDlg, IDC_POPLIST), GWL_STYLE, (GetWindowLong(GetDlgItem(hwndDlg, IDC_POPLIST), GWL_STYLE) & ~WS_BORDER) | TVS_NOHSCROLL | TVS_CHECKBOXES);
 			FillCheckBoxTree(GetDlgItem(hwndDlg, IDC_POPLIST), statusValues, sizeof(statusValues) / sizeof(statusValues[0]),
                              DBGetContactSettingDword(NULL, SRMMMOD, SRMSGSET_POPFLAGS, SRMSGDEFSET_POPFLAGS));
-			CheckDlgButton(hwndDlg, IDC_SHOWBUTTONLINE, g_dat->flags&SMF_SHOWBTNS);
+			CheckDlgButton(hwndDlg, IDC_SHOWBUTTONLINE, g_dat->flags2&SMF2_SHOWTOOLBAR);
 			CheckDlgButton(hwndDlg, IDC_AUTOPOPUP, DBGetContactSettingByte(NULL, SRMMMOD, SRMSGSET_AUTOPOPUP, SRMSGDEFSET_AUTOPOPUP));
 			CheckDlgButton(hwndDlg, IDC_STAYMINIMIZED, DBGetContactSettingByte(NULL, SRMMMOD, SRMSGSET_STAYMINIMIZED, SRMSGDEFSET_STAYMINIMIZED));
 			CheckDlgButton(hwndDlg, IDC_AUTOMIN, DBGetContactSettingByte(NULL, SRMMMOD, SRMSGSET_AUTOMIN, SRMSGDEFSET_AUTOMIN));

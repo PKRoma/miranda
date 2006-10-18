@@ -344,7 +344,7 @@ static void SetDialogToType(HWND hwndDlg)
 	dat = (struct MessageWindowData *) GetWindowLong(hwndDlg, GWL_USERDATA);
 	pdat = (ParentWindowData *) GetWindowLong(GetParent(hwndDlg), GWL_USERDATA);
 	if (dat->hContact) {
-		ShowMultipleControls(hwndDlg, buttonLineControls, sizeof(buttonLineControls) / sizeof(buttonLineControls[0]), (pdat->flags&SMF_SHOWBTNS) ? SW_SHOW : SW_HIDE);
+		ShowMultipleControls(hwndDlg, buttonLineControls, sizeof(buttonLineControls) / sizeof(buttonLineControls[0]), (pdat->flags2&SMF2_SHOWTOOLBAR) ? SW_SHOW : SW_HIDE);
 		if (!DBGetContactSettingByte(dat->hContact, "CList", "NotOnList", 0)) {
 			ShowWindow(GetDlgItem(hwndDlg, IDC_ADD), SW_HIDE);
 		}
@@ -560,7 +560,7 @@ static LRESULT CALLBACK MessageEditSubclassProc(HWND hwnd, UINT msg, WPARAM wPar
 			SaveKeyboardMessage(dat, msg, wParam, lParam);
 			return 0;
 		}
-		if (wParam == VK_UP && (GetKeyState(VK_CONTROL) & 0x8000) && DBGetContactSettingByte(NULL, SRMMMOD, SRMSGSET_CTRLSUPPORT, SRMSGDEFSET_CTRLSUPPORT) && !DBGetContactSettingByte(NULL, SRMMMOD, SRMSGSET_AUTOCLOSE, SRMSGDEFSET_AUTOCLOSE)) {
+		if (wParam == VK_UP && (GetKeyState(VK_CONTROL) & 0x8000) && (g_dat->flags & SMF_CTRLSUPPORT) && !DBGetContactSettingByte(NULL, SRMMMOD, SRMSGSET_AUTOCLOSE, SRMSGDEFSET_AUTOCLOSE)) {
 			if (pdat->cmdList) {
 				if (!pdat->cmdListCurrent) {
 					saveDraftMessage(pdat);
@@ -587,7 +587,7 @@ static LRESULT CALLBACK MessageEditSubclassProc(HWND hwnd, UINT msg, WPARAM wPar
 			UpdateReadChars(GetParent(hwnd), pdat);
 			return 0;
 		}
-		else if (wParam == VK_DOWN && (GetKeyState(VK_CONTROL) & 0x8000) && DBGetContactSettingByte(NULL, SRMMMOD, SRMSGSET_CTRLSUPPORT, SRMSGDEFSET_CTRLSUPPORT) && !DBGetContactSettingByte(NULL, SRMMMOD, SRMSGSET_AUTOCLOSE, SRMSGDEFSET_AUTOCLOSE)) {
+		else if (wParam == VK_DOWN && (GetKeyState(VK_CONTROL) & 0x8000) && (g_dat->flags & SMF_CTRLSUPPORT) && !DBGetContactSettingByte(NULL, SRMMMOD, SRMSGSET_AUTOCLOSE, SRMSGDEFSET_AUTOCLOSE)) {
 			if (pdat->cmdList) {
 				if (pdat->cmdListCurrent) {
 					pdat->cmdListCurrent = pdat->cmdListNew = pdat->cmdListCurrent->next;
@@ -656,11 +656,11 @@ static LRESULT CALLBACK MessageEditSubclassProc(HWND hwnd, UINT msg, WPARAM wPar
 				PostMessage(GetParent(hwnd), WM_COMMAND, IDC_SENDALL, 0);
 				return 0;
 			}
-			if (((GetKeyState(VK_CONTROL) & 0x8000) != 0) ^ (0 != DBGetContactSettingByte(NULL, SRMMMOD, SRMSGSET_SENDONENTER, SRMSGDEFSET_SENDONENTER))) {
+			if (((GetKeyState(VK_CONTROL) & 0x8000) != 0) ^ (0 != (g_dat->flags & SMF_SENDONENTER))) {
 				PostMessage(GetParent(hwnd), WM_COMMAND, IDOK, 0);
 				return 0;
 			}
-			if (DBGetContactSettingByte(NULL, SRMMMOD, SRMSGSET_SENDONDBLENTER, SRMSGDEFSET_SENDONDBLENTER)) {
+			if (g_dat->flags & SMF_SENDONDBLENTER) {
 				if (dat->lastEnterTime + ENTERCLICKTIME < GetTickCount())
 					dat->lastEnterTime = GetTickCount();
 				else {
@@ -776,7 +776,7 @@ static void MessageDialogResize(HWND hwndDlg, struct MessageWindowData *dat, int
 	HDWP hdwp;
 	ParentWindowData *pdat = dat->parent;
 	int i, lPos, rPos, vPos;
-	int vSplitterPos = 0, hSplitterPos = dat->splitterPos, toolbarHeight = pdat->flags&SMF_SHOWBTNS ? dat->toolbarSize.cy : 0;
+	int vSplitterPos = 0, hSplitterPos = dat->splitterPos, toolbarHeight = pdat->flags2&SMF2_SHOWTOOLBAR ? dat->toolbarSize.cy : 0;
 	int hSplitterMinTop = toolbarHeight + dat->minLogBoxHeight, hSplitterMinBottom = dat->minEditBoxHeight;
 
 	if (h-hSplitterPos < hSplitterMinTop) {
@@ -1314,10 +1314,7 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
 					}
 				}
 			}
-			{
-				int saveSplitterPerContact = DBGetContactSettingByte(NULL, SRMMMOD, SRMSGSET_SAVESPLITTERPERCONTACT, SRMSGDEFSET_SAVESPLITTERPERCONTACT);
-				dat->splitterPos = (int) DBGetContactSettingDword(saveSplitterPerContact ? dat->hContact : NULL, SRMMMOD, "splitterPos", (DWORD) - 1);
-			}
+			dat->splitterPos = (int) DBGetContactSettingDword((g_dat->flags & SMF_SAVESPLITTERPERCONTACT) ? dat->hContact : NULL, SRMMMOD, "splitterPos", (DWORD) - 1);
 			SendMessage(dat->hwndParent, CM_ADDCHILD, (WPARAM) hwndDlg, (LPARAM) dat->hContact);
 			SendMessage(hwndDlg, DM_OPTIONSAPPLIED, 0, 0);
 //			SendMessage(hwndDlg, DM_AVATARCALCSIZE, 0, 0);
@@ -1342,14 +1339,14 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
 				}
 			}
 			if (newData->flags & NMWLP_INCOMING) {
-				if (dat->parent->childrenCount == 1 && g_dat->flags2 & SMF2_STAYMINIMIZED) {
+				if (dat->parent->childrenCount == 1 && g_dat->flags & SMF_STAYMINIMIZED) {
 					SendMessage(dat->hwndParent, CM_ACTIVATECHILD, 0, (LPARAM) hwndDlg);
 					SendMessage(dat->hwndParent, DM_DEACTIVATE, 0, 0);
 					ShowWindow(dat->hwndParent, SW_SHOWMINNOACTIVE);
 				} else {
 					ShowWindow(dat->hwndParent, SW_SHOWNA);
 					if (dat->parent->childrenCount == 1 ||
-						((g_dat->flags & SMF_SWITCHTOACTIVE) && (IsIconic(dat->hwndParent) || GetForegroundWindow() != dat->hwndParent))) {
+						((g_dat->flags2 & SMF2_SWITCHTOACTIVE) && (IsIconic(dat->hwndParent) || GetForegroundWindow() != dat->hwndParent))) {
 						SendMessage(dat->hwndParent, CM_ACTIVATECHILD, 0, (LPARAM) hwndDlg);
 						if (dat->parent->childrenCount == 1) {
 							SetForegroundWindow(dat->hwndParent);
@@ -1498,7 +1495,7 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
 			return 0;
 		}
 		GetObject(dat->avatarPic, sizeof(bminfo), &bminfo);
-		dat->avatarHeight = avatarH = dat->splitterPos + ((pdat->flags&SMF_SHOWBTNS) ? dat->toolbarSize.cy : 0);//- 3;
+		dat->avatarHeight = avatarH = dat->splitterPos + ((pdat->flags2&SMF2_SHOWTOOLBAR) ? dat->toolbarSize.cy : 0);//- 3;
 		if (g_dat->flags & SMF_LIMITAVATARH) {
 			if (avatarH < g_dat->limitAvatarMinH) {
 				avatarH = g_dat->limitAvatarMinH;
@@ -1611,8 +1608,8 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
 				}
 				dat->wStatus = DBGetContactSettingWord(hContact, szProto, "Status", ID_STATUS_OFFLINE);
 				SendDlgItemMessage(hwndDlg, IDC_USERMENU, BM_SETIMAGE, IMAGE_ICON, (LPARAM) LoadSkinnedProtoIcon(szProto, dat->wStatus));
-				if (DBGetContactSettingByte(NULL, SRMMMOD, SRMSGSET_STATUSICON, SRMSGDEFSET_STATUSICON)) {
-					if (dat->showTyping && (g_dat->flags&SMF_SHOWTYPINGWIN)) {
+				if (g_dat->flags & SMF_STATUSICON) {
+					if (dat->showTyping && (g_dat->flags2&SMF2_SHOWTYPINGWIN)) {
 						hIcon = g_dat->hIcons[SMF_ICON_TYPING];
 					} else if (dat->showUnread && (GetActiveWindow() != dat->hwndParent || GetForegroundWindow() != dat->hwndParent)) {
 						hIcon = LoadSkinnedIcon(SKINICON_EVENT_MESSAGE);
@@ -2074,7 +2071,7 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
 					if (GetForegroundWindow()==dat->hwndParent && dat->parent->hwndActive == hwndDlg)
 						SkinPlaySound("RecvMsgActive");
 					else SkinPlaySound("RecvMsgInactive");
-					if ((g_dat->flags & SMF_SWITCHTOACTIVE) && (IsIconic(dat->hwndParent) || GetActiveWindow() != dat->hwndParent)) {
+					if ((g_dat->flags2 & SMF2_SWITCHTOACTIVE) && (IsIconic(dat->hwndParent) || GetActiveWindow() != dat->hwndParent)) {
 						SendMessage(dat->hwndParent, CM_ACTIVATECHILD, 0, (LPARAM) hwndDlg);
 					}
 				}
@@ -2863,18 +2860,11 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
 		DBWriteContactSettingByte(dat->hContact, SRMMMOD, "UseRTL", (BYTE) ((dat->flags & SMF_RTL) ? 1 : 0));
 		DBWriteContactSettingByte(dat->hContact, SRMMMOD, "DisableUnicode", (BYTE) ((dat->flags & SMF_DISABLE_UNICODE) ? 1 : 0));
 		DBWriteContactSettingWord(dat->hContact, SRMMMOD, "CodePage", (WORD) dat->codePage);
-		{
-			HANDLE hContact;
-			if (DBGetContactSettingByte(NULL, SRMMMOD, SRMSGSET_SAVESPLITTERPERCONTACT, SRMSGDEFSET_SAVESPLITTERPERCONTACT))
-				hContact = dat->hContact;
-			else
-				hContact = NULL;
-			DBWriteContactSettingDword(hContact, SRMMMOD, "splitterPos", dat->splitterPos);
-		}
+		DBWriteContactSettingDword((g_dat->flags & SMF_SAVESPLITTERPERCONTACT) ? dat->hContact : NULL, SRMMMOD, "splitterPos", dat->splitterPos);
 		if (dat->avatarPic && !g_dat->avatarServiceExists)
 			DeleteObject(dat->avatarPic);
 		NotifyLocalWinEvent(dat->hContact, hwndDlg, MSG_WINDOW_EVT_CLOSE);
-		if (dat->hContact&&DBGetContactSettingByte(NULL, SRMMMOD, SRMSGSET_DELTEMP, SRMSGDEFSET_DELTEMP)) {
+		if (dat->hContact && (g_dat->flags & SMF_DELTEMP)) {
 			if (DBGetContactSettingByte(dat->hContact, "CList", "NotOnList", 0)) {
 				CallService(MS_DB_CONTACT_DELETE, (WPARAM)dat->hContact, 0);
 			}
