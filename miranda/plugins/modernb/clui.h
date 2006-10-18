@@ -58,7 +58,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #define ANIMATION_STEP              40
 
 /* Declaration of prototypes in other modules */
-
+int CLC_GetShortData(struct ClcData* pData, struct SHORTDATA *pShortData);
 int  CLC_EnterDragToScroll(HWND hwnd, int Y);
 
 HFONT CLCPaint_ChangeToFont(HDC hdc,struct ClcData *dat,int id,int *fontHeight);
@@ -117,7 +117,6 @@ BOOL SkinEngine_SetRectOpaque(HDC memdc,RECT *fr);
 int SkinEngine_UpdateWindowImage();
 int SkinEngine_ValidateFrameImageProc(RECT * r);
 
-
 int StatusBar_Create(HWND parent);
 
 void RowHeight_InitModernRow();
@@ -167,11 +166,11 @@ HANDLE  g_hSkinLoadedEvent;
 
 HANDLE  g_hMainThread=NULL;
 
-DWORD   g_hMainThreadID=0,
-        g_hAskAwayMsgThreadID=0,
-        g_hGetTextThreadID=0,
-        g_hSmoothAnimationThreadID=0,
-        g_hFillFontListThreadID=0;
+DWORD   g_dwMainThreadID=0,
+        g_dwAskAwayMsgThreadID=0,
+        g_dwGetTextThreadID=0,
+        g_dwSmoothAnimationThreadID=0,
+        g_dwFillFontListThreadID=0;
         
 HMENU   g_hMenuMain;
 BOOL    g_bTransparentFlag=FALSE;

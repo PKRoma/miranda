@@ -961,7 +961,7 @@ struct CheckBoxToStyleEx_t {
         lf.lfPitchAndFamily=0;
         EnumFontFamiliesExA(hdc,&lf,(FONTENUMPROCA)EnumFontsProc,(LPARAM)GetDlgItem(hwndDlg,IDC_TYPEFACE),0);
         ReleaseDC(hwndDlg,hdc);
-        g_hFillFontListThreadID=0;
+        g_dwFillFontListThreadID=0;
         return;
       }
 
@@ -1028,7 +1028,7 @@ struct CheckBoxToStyleEx_t {
 
           if(!SendMessage(GetParent(hwndDlg),PSM_ISEXPERT,0,0))
             SwitchTextDlgToMode(hwndDlg,0);
-          g_hFillFontListThreadID=(DWORD)forkthread(FillFontListThread,0,hwndDlg);				
+          g_dwFillFontListThreadID=(DWORD)forkthread(FillFontListThread,0,hwndDlg);				
           {	int i,itemId,fontId;
           LOGFONTA lf={0};
           COLORREF colour;

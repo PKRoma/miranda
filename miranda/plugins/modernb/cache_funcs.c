@@ -39,6 +39,7 @@ typedef BOOL (* ExecuteOnAllContactsFuncPtr) (struct ClcContact *contact, BOOL s
 
 int CALLBACK CLUI_SyncGetPDNCE(WPARAM wParam, LPARAM lParam);
 int CALLBACK CLUI_SyncSetPDNCE(WPARAM wParam, LPARAM lParam);
+int CALLBACK CLUI_SyncGetShortData(WPARAM wParam, LPARAM lParam);
 /***********************************/
 /**   Module static declarations  **/
 /***********************************/
@@ -92,20 +93,25 @@ static void CALLBACK SyncCallerUserAPCProc(DWORD dwParam)
     item->nResult = item->pfnProc(item->wParam, item->lParam);
     SetEvent(item->hDoneEvent);
 }
-static int cache_CallProcSync(PSYNCCALLBACKPROC pfnProc, WPARAM wParam, LPARAM lParam)
+int cache_CallProcSync(PSYNCCALLBACKPROC pfnProc, WPARAM wParam, LPARAM lParam)
 {  
     SYNCCALLITEM item={0};
     int res=0;
     if (g_hMainThread==NULL || pfnProc==NULL) return 0;   
-    item.wParam = wParam;
-    item.lParam = lParam;
-    item.pfnProc = pfnProc;
-    item.hDoneEvent = CreateEvent(NULL, FALSE, FALSE, NULL);
-    QueueUserAPC(SyncCallerUserAPCProc, g_hMainThread, (DWORD) &item);
-    PostMessage(pcli->hwndContactList,WM_NULL,0,0); // let this get processed in its own time
-    WaitForSingleObject(item.hDoneEvent, INFINITE);
-    CloseHandle(item.hDoneEvent);
-    return item.nResult;
+    if (GetCurrentThreadId()!=g_dwMainThreadID)
+    {
+        item.wParam = wParam;
+        item.lParam = lParam;
+        item.pfnProc = pfnProc;
+        item.hDoneEvent = CreateEvent(NULL, FALSE, FALSE, NULL);
+        QueueUserAPC(SyncCallerUserAPCProc, g_hMainThread, (DWORD) &item);
+        PostMessage(pcli->hwndContactList,WM_NULL,0,0); // let this get processed in its own time
+        WaitForSingleObject(item.hDoneEvent, INFINITE);
+        CloseHandle(item.hDoneEvent);
+        return item.nResult;
+    }
+    else 
+        return pfnProc(wParam, lParam);
 }
 
 
@@ -238,7 +244,7 @@ static int Cache_AskAwayMsgThreadProc(HWND hwnd)
     }
     __finally
     {
-        g_hAskAwayMsgThreadID=0;
+        g_dwAskAwayMsgThreadID=0;
     }
     return 1;
 }
@@ -261,8 +267,8 @@ void Cache_ReAskAwayMsg(HANDLE wParam)
         else return;
     }
     res=cache_AskAwayMsg_AddHandleToChain(wParam); 
-    if ( res && !g_hAskAwayMsgThreadID) 
-        g_hAskAwayMsgThreadID=(DWORD)forkthread(Cache_AskAwayMsgThreadProc,0,0);
+    if ( res && !g_dwAskAwayMsgThreadID) 
+        g_dwAskAwayMsgThreadID=(DWORD)forkthread(Cache_AskAwayMsgThreadProc,0,0);
 
     return;
 }
@@ -336,7 +342,7 @@ int Cache_GetTextThreadProc(void * lpParam)
         HWND hwnd=(HWND)CallService(MS_CLUI_GETHWND,0,0);
         struct SHORTDATA data={0};
         struct SHORTDATA * dat;
-        SendMessage(pcli->hwndContactTree,UM_CALLSYNCRONIZED,(WPARAM)SYNC_GETSHORTDATA,(LPARAM)&data);
+        cache_CallProcSync(CLUI_SyncGetShortData,(WPARAM)pcli->hwndContactTree,(LPARAM)&data);       
         do
         {
             if (!MirandaExiting()) 
@@ -349,8 +355,8 @@ int Cache_GetTextThreadProc(void * lpParam)
                 if (!GetCacheChain(&mpChain)) break;
                 if (mpChain.dat==NULL || mpChain.dat->hWnd==data.hWnd) dat=&data;
                 else
-                {                
-                    SendMessage(mpChain.dat->hWnd,UM_CALLSYNCRONIZED,(WPARAM)SYNC_GETSHORTDATA,(LPARAM)&dat2);
+                {        
+                    cache_CallProcSync(CLUI_SyncGetShortData,(WPARAM)mpChain.dat->hWnd,(LPARAM)&dat2);       
                     dat=&dat2;
                 }
                 if (!MirandaExiting())
@@ -377,7 +383,7 @@ int Cache_GetTextThreadProc(void * lpParam)
     }
     __finally
     {
-        g_hGetTextThreadID=0;
+        g_dwGetTextThreadID=0;
     }    
     return 1;
 }
@@ -404,10 +410,10 @@ int AddToCacheChain(struct ClcData *dat,struct ClcContact *contact,HANDLE Contac
         {
             FirstCacheChain=mpChain;
             LastCacheChain=mpChain;
-            if ( !g_hGetTextThreadID)
+            if ( !g_dwGetTextThreadID)
             {
                 //StartThreadHere();
-                g_hGetTextThreadID=(DWORD)forkthread(Cache_GetTextThreadProc,0,0);
+                g_dwGetTextThreadID=(DWORD)forkthread(Cache_GetTextThreadProc,0,0);
             }
         }
     }
@@ -972,7 +978,7 @@ void Cache_GetFirstLineText(struct ClcData *dat, struct ClcContact *contact)
     }
     {
         struct SHORTDATA data={0};
-        SendMessage(pcli->hwndContactTree,UM_CALLSYNCRONIZED,(WPARAM)SYNC_GETSHORTDATA,(LPARAM)&data);
+        cache_CallProcSync(CLUI_SyncGetShortData,(WPARAM)pcli->hwndContactTree,(LPARAM)&data);       
         Cache_ReplaceSmileys(&data, pdnce, contact->szText, lstrlen(contact->szText)+1, &(contact->plText),
             &contact->iTextMaxSmileyHeight,dat->first_line_draw_smileys);
     }

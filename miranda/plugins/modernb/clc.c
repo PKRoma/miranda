@@ -620,17 +620,6 @@ LRESULT CALLBACK cli_ContactListControlWndProc(HWND hwnd, UINT msg, WPARAM wPara
     struct ClcData *dat;
 
     dat=(struct ClcData*)GetWindowLong(hwnd,0);
-
-    if (msg==UM_CALLSYNCRONIZED)
-    {
-        switch (wParam)
-        {
-        case SYNC_GETSHORTDATA:
-            return CLC_GetShortData(dat,(struct SHORTDATA *)lParam);
-        }
-        return 0;
-    }
-
     if(msg>=CLM_FIRST && msg<CLM_LAST) return cli_ProcessExternalMessages(hwnd,dat,msg,wParam,lParam);
     switch (msg) {
 case WM_CREATE:

@@ -96,19 +96,19 @@ static BOOL CLUI_WaitThreadsCompletion(HWND hwnd)
     if (bEntersCount<bcMAX_AWAITING_RETRY
         &&( g_mutex_nCalcRowHeightLock ||
           g_mutex_nPaintLock || 
-          g_hAskAwayMsgThreadID || 
-          g_hGetTextThreadID || 
-          g_hSmoothAnimationThreadID || 
-          g_hFillFontListThreadID) 
+          g_dwAskAwayMsgThreadID || 
+          g_dwGetTextThreadID || 
+          g_dwSmoothAnimationThreadID || 
+          g_dwFillFontListThreadID) 
          &&!Miranda_Terminated())
     {
         TRACE("Waiting threads");
         TRACEVAR("g_mutex_nCalcRowHeightLock: %x",g_mutex_nCalcRowHeightLock);
         TRACEVAR("g_mutex_nPaintLock: %x",g_mutex_nPaintLock);
-        TRACEVAR("g_hAskAwayMsgThreadID: %x",g_hAskAwayMsgThreadID);
-        TRACEVAR("g_hGetTextThreadID: %x",g_hGetTextThreadID);
-        TRACEVAR("g_hSmoothAnimationThreadID: %x",g_hSmoothAnimationThreadID);
-        TRACEVAR("g_hFillFontListThreadID: %x",g_hFillFontListThreadID);
+        TRACEVAR("g_dwAskAwayMsgThreadID: %x",g_dwAskAwayMsgThreadID);
+        TRACEVAR("g_dwGetTextThreadID: %x",g_dwGetTextThreadID);
+        TRACEVAR("g_dwSmoothAnimationThreadID: %x",g_dwSmoothAnimationThreadID);
+        TRACEVAR("g_dwFillFontListThreadID: %x",g_dwFillFontListThreadID);
         bEntersCount++;
         PostMessage(hwnd,WM_DESTROY,0,0);
         SleepEx(10,TRUE);
@@ -117,10 +117,10 @@ static BOOL CLUI_WaitThreadsCompletion(HWND hwnd)
 
     if (bEntersCount==bcMAX_AWAITING_RETRY)
     {   //force to terminate threads after max times repeating of awaiting
-        if (g_hAskAwayMsgThreadID)      TerminateThread((HANDLE)g_hAskAwayMsgThreadID,0);
-        if (g_hGetTextThreadID)         TerminateThread((HANDLE)g_hGetTextThreadID,0);
-        if (g_hSmoothAnimationThreadID) TerminateThread((HANDLE)g_hSmoothAnimationThreadID,0);
-        if (g_hFillFontListThreadID)    TerminateThread((HANDLE)g_hFillFontListThreadID,0);
+        if (g_dwAskAwayMsgThreadID)      TerminateThread((HANDLE)g_dwAskAwayMsgThreadID,0);
+        if (g_dwGetTextThreadID)         TerminateThread((HANDLE)g_dwGetTextThreadID,0);
+        if (g_dwSmoothAnimationThreadID) TerminateThread((HANDLE)g_dwSmoothAnimationThreadID,0);
+        if (g_dwFillFontListThreadID)    TerminateThread((HANDLE)g_dwFillFontListThreadID,0);
     }
     return FALSE;
 }
@@ -815,7 +815,7 @@ void CLUI_DisconnectAll()
 
 static int CLUI_PreCreateCLC(HWND parent)
 {
-    g_hMainThreadID=GetCurrentThreadId();
+    g_dwMainThreadID=GetCurrentThreadId();
   	DuplicateHandle(GetCurrentProcess(),GetCurrentThread(),GetCurrentProcess(),&g_hMainThread,THREAD_SET_CONTEXT,FALSE,0);
     pcli->hwndContactTree=CreateWindow(CLISTCONTROL_CLASS,TEXT(""),
         WS_CHILD|WS_CLIPCHILDREN|CLS_CONTACTLIST
@@ -1066,6 +1066,19 @@ int CALLBACK CLUI_SyncSetPDNCE(WPARAM wParam, LPARAM lParam)
  return CListSettings_SetToCache((pdisplayNameCacheEntry)lParam);
 }
 
+int CALLBACK CLUI_SyncGetShortData(WPARAM wParam, LPARAM lParam)
+{
+    HWND hwnd=(HWND) wParam;
+    struct ClcData * dat=(struct ClcData * )GetWindowLong(hwnd,0);
+    return CLC_GetShortData(dat,(struct SHORTDATA *)lParam);
+}
+
+int CALLBACK CLUI_SyncSmoothAnimation(WPARAM wParam, LPARAM lParam)
+{
+    return CLUI_SmoothAlphaThreadTransition((HWND)lParam);
+}
+
+
 LRESULT CALLBACK CLUI__cli_ContactListWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 {    
     /*
@@ -1077,19 +1090,6 @@ LRESULT CALLBACK CLUI__cli_ContactListWndProc(HWND hwnd, UINT msg, WPARAM wParam
     */
     if (g_bSTATE==STATE_EXITING && msg!=WM_DESTROY) 
         return 0;
-    if (msg==UM_CALLSYNCRONIZED)
-    {
-        switch (wParam)
-        {
-        case SYNC_SMOOTHANIMATION:
-            return CLUI_SmoothAlphaThreadTransition((HWND)lParam);
-        case SYNC_GETPDNCE:
-            return CLUI_SyncGetPDNCE(0,lParam);
-        case SYNC_SETPDNCE:
-            return CLUI_SyncSetPDNCE(0,lParam);
-        }
-        return 0;
-    }
     if (msg==uMsgGetProfile && wParam != 0) { /* got IPC message */
         HANDLE hMap;
         char szName[MAX_PATH];
@@ -2471,13 +2471,16 @@ int CLUI_SizingOnBorder(POINT pt, int PerformSize)
     }
     return 0;
 }
+typedef int (CALLBACK *PSYNCCALLBACKPROC)(WPARAM,LPARAM);
+int CALLBACK CLUI_SyncSmoothAnimation(WPARAM wParam, LPARAM lParam);
+int cache_CallProcSync(PSYNCCALLBACKPROC pfnProc, WPARAM wParam, LPARAM lParam);
 
 static void CLUI_SmoothAnimationThreadProc(HWND hwnd)
 {
     //  return;
     if (!mutex_bAnimationInProgress) 
     {
-        g_hSmoothAnimationThreadID=0;
+        g_dwSmoothAnimationThreadID=0;
         return;  /// Should be some locked to avoid painting against contact deletion.
     }
     do
@@ -2485,18 +2488,18 @@ static void CLUI_SmoothAnimationThreadProc(HWND hwnd)
         if (!g_mutex_bLockUpdating)
         {
 			if (!MirandaExiting())
-				SendMessage(hwnd,UM_CALLSYNCRONIZED, (WPARAM)SYNC_SMOOTHANIMATION,(LPARAM) hwnd);       
+                cache_CallProcSync(CLUI_SyncSmoothAnimation,0,(LPARAM)hwnd);
             SleepEx(20,TRUE);
             if (MirandaExiting()) 
             {
-                g_hSmoothAnimationThreadID=0;
+                g_dwSmoothAnimationThreadID=0;
                 return;
             }
         }
         else SleepEx(0,TRUE);
 
     } while (mutex_bAnimationInProgress);
-    g_hSmoothAnimationThreadID=0;
+    g_dwSmoothAnimationThreadID=0;
     return;
 }
 
@@ -2587,11 +2590,11 @@ int CLUI_SmoothAlphaTransition(HWND hwnd, BYTE GoalAlpha, BOOL wParam)
                 g_bCurrentAlpha=1;
                 SkinEngine_UpdateWindowImage();
             }
-            if (IsWindowVisible(hwnd) && !g_hSmoothAnimationThreadID)
+            if (IsWindowVisible(hwnd) && !g_dwSmoothAnimationThreadID)
             {
                 mutex_bAnimationInProgress=1;
                 if (g_bSmoothAnimation)
-                    g_hSmoothAnimationThreadID=(DWORD)forkthread(CLUI_SmoothAnimationThreadProc,0,pcli->hwndContactList);	
+                    g_dwSmoothAnimationThreadID=(DWORD)forkthread(CLUI_SmoothAnimationThreadProc,0,pcli->hwndContactList);	
 
             }
         }
