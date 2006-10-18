@@ -215,10 +215,12 @@ int GetContactIcon(WPARAM wParam,LPARAM lParam)
     if (lParam==0 && res!=-1) res&=0xFFFF;
     return res;
 }
-
+void UninitTrayMenu();
 void UnLoadContactListModule()  //unhooks noncritical events
 {
-
+    UninitTrayMenu();
+   // UnloadMainMenu();
+   // UnloadStatusMenu();
     UnhookEvent(hookOptInitialise_CList);
     UnhookEvent(hookOptInitialise_Skin);
     UnhookEvent(hookOptInitialise_SkinEditor);

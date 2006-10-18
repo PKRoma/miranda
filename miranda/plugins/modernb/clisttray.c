@@ -1420,6 +1420,13 @@ void InitTrayMenus(void)
 	};
 }
 
+
+void UninitTrayMenu()
+{
+    if (hTrayMenuObject && ServiceExists(MO_REMOVEMENUOBJECT))
+        CallService(MO_REMOVEMENUOBJECT,(WPARAM)hTrayMenuObject,0);
+    hTrayMenuObject=NULL;
+}
 //////////////////////////////END TRAY MENU/////////////////////////
 void cliTrayIconIconsChanged(void)
 {

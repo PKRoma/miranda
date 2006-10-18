@@ -33,7 +33,7 @@ static int AddContextFrameMenuItem(WPARAM wParam,LPARAM lParam)
 	if(mi->flags&CMIF_ROOTPOPUP||mi->flags&CMIF_CHILDPOPUP)	tmi.root=(int)mi->pszPopupName;
 	{
 		lpFrameMenuExecParam fmep;
-		fmep=(lpFrameMenuExecParam)malloc(sizeof(FrameMenuExecParam));
+		fmep=(lpFrameMenuExecParam)mir_alloc(sizeof(FrameMenuExecParam));
 		if (fmep==NULL){return(0);};
 		memset(fmep,0,sizeof(FrameMenuExecParam));
 		fmep->szServiceName=mir_strdup(mi->pszService);
@@ -54,14 +54,13 @@ static int RemoveContextFrameMenuItem(WPARAM wParam,LPARAM lParam)
 	if (fmep!=NULL){
 		if (fmep->szServiceName!=NULL){
 			mir_free_and_nill(fmep->szServiceName);
-			fmep->szServiceName=NULL;
 		};
-		free(fmep);
-		fmep=NULL;
+		mir_free_and_nill(fmep);
 	}
 
 	if (lParam!=1)
 		CallService(MO_REMOVEMENUITEM,wParam,0);
+
 	return 0;
 }
 

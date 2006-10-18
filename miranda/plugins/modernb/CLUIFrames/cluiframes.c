@@ -2148,10 +2148,10 @@ static int CLUIFramesRemoveFrame(WPARAM wParam,LPARAM lParam)
   if (Frames[pos].name!=NULL) free(Frames[pos].name);
   if (Frames[pos].TitleBar.tbname!=NULL) free(Frames[pos].TitleBar.tbname);
   if (Frames[pos].TitleBar.tooltip!=NULL) free(Frames[pos].TitleBar.tooltip);
-  /*
+ 
   {
   CallService(MS_CLIST_REMOVECONTEXTFRAMEMENUITEM,(WPARAM)Frames[pos].MenuHandles.MainMenuItem,0);
-  CallService(MS_CLIST_REMOVECONTEXTFRAMEMENUITEM,(WPARAM)Frames[pos].TitleBar..MenuHandles.MIAlignBottom,0);
+  CallService(MS_CLIST_REMOVECONTEXTFRAMEMENUITEM,(WPARAM)Frames[pos].MenuHandles.MIAlignBottom,0);
   CallService(MS_CLIST_REMOVECONTEXTFRAMEMENUITEM,(WPARAM)Frames[pos].MenuHandles.MIAlignClient,0);
   CallService(MS_CLIST_REMOVECONTEXTFRAMEMENUITEM,(WPARAM)Frames[pos].MenuHandles.MIAlignRoot,0);
   CallService(MS_CLIST_REMOVECONTEXTFRAMEMENUITEM,(WPARAM)Frames[pos].MenuHandles.MIAlignTop,0);
@@ -2163,7 +2163,7 @@ static int CLUIFramesRemoveFrame(WPARAM wParam,LPARAM lParam)
   CallService(MS_CLIST_REMOVECONTEXTFRAMEMENUITEM,(WPARAM)Frames[pos].MenuHandles.MITitle,0);
   CallService(MS_CLIST_REMOVECONTEXTFRAMEMENUITEM,(WPARAM)Frames[pos].MenuHandles.MIVisible,0);
   }
-  */	
+	
   DestroyWindow(Frames[pos].hWnd);
   Frames[pos].hWnd=(HWND)-1;
   DestroyWindow(Frames[pos].TitleBar.hwnd);
@@ -4440,13 +4440,15 @@ int UnLoadCLUIFramesModule(void)
   if(hBmpBackground) {DeleteObject(hBmpBackground); hBmpBackground=NULL;}
   CLUIFramesOnClistResize((WPARAM)pcli->hwndContactList,0);
   CLUIFramesStoreAllFrames();
-  UnloadMainMenu();
+
   lockfrm();
-  //UnitFramesMenu();
-  for (i=0;i<nFramescount;i++) {
-    //		RemoveContextFrameMenuItem((WPARAM)Frames[i].,(LPARAM)0)
+  UnitFramesMenu();
+  UnloadMainMenu();
+  for (i=0;i<nFramescount;i++) 
+  {
 	  if (Frames[i].hWnd!=pcli->hwndContactTree)
 		DestroyWindow(Frames[i].hWnd);	
+   
     Frames[i].hWnd=(HWND)-1;
     DestroyWindow(Frames[i].TitleBar.hwnd);
     Frames[i].TitleBar.hwnd=(HWND)-1;
@@ -4467,7 +4469,7 @@ int UnLoadCLUIFramesModule(void)
   DeleteObject(TitleBarFont);
   CLUIFrames_UnLockFrame();
   DeleteCriticalSection(&csFrameHook);
-  UnitFramesMenu();
+
   return 0;
 }
 

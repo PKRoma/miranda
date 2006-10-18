@@ -1378,6 +1378,8 @@ void UninitCustomMenus(void)
     mir_free_and_nill(hStatusMenuHandles);
   };
   hStatusMenuHandles=NULL;
+  if (hMainMenuObject) CallService(MO_REMOVEMENUOBJECT,hMainMenuObject,0);
+  if (hStatusMenuObject) CallService(MO_REMOVEMENUOBJECT,hMainMenuObject,0);  
   UnitGenMenu();
 }
 static int AddStatusMenuItem(WPARAM wParam,LPARAM lParam)
