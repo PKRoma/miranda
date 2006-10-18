@@ -290,45 +290,53 @@ static LRESULT CALLBACK MessageSubclassProc(HWND hwnd, UINT msg, WPARAM wParam, 
 		break;
 
 	case WM_CHAR:
-		if (GetWindowLong(hwnd, GWL_STYLE) & ES_READONLY)
-			break;
+		{
+			BOOL isShift = GetKeyState(VK_SHIFT) & 0x8000;
+			BOOL isCtrl = GetKeyState(VK_CONTROL) & 0x8000;
+			BOOL isAlt = GetKeyState(VK_MENU) & 0x8000;
 
-		if (wParam == 9 && GetKeyState(VK_CONTROL) & 0x8000 && !(GetKeyState(VK_MENU) & 0x8000)) // ctrl-i (italics)
-			return TRUE;
+			if (GetWindowLong(hwnd, GWL_STYLE) & ES_READONLY)
+				break;
 
-		if (wParam == VK_SPACE && GetKeyState(VK_CONTROL) & 0x8000 && !(GetKeyState(VK_MENU) & 0x8000)) // ctrl-space (paste clean text)
-			return TRUE;
+			if (wParam == 9 && isCtrl && !isAlt) // ctrl-i (italics)
+				return TRUE;
 
-		if (wParam == '\n' || wParam == '\r') {
-			if (((GetKeyState(VK_CONTROL) & 0x8000) != 0) ^ (0 != DBGetContactSettingByte(NULL, "Chat", "SendOnEnter", 1))) {
-				PostMessage(GetParent(hwnd), WM_COMMAND, IDOK, 0);
-				return 0;
-			}
+			if (wParam == VK_SPACE && isCtrl && !isAlt) // ctrl-space (paste clean text)
+				return TRUE;
 
-			if (DBGetContactSettingByte(NULL, "Chat", "SendOnDblEnter", 0)) {
-				if (dat->lastEnterTime + 2 < time(NULL))
-					dat->lastEnterTime = time(NULL);
-				else {
-					SendMessage(hwnd, WM_KEYDOWN, VK_BACK, 0);
-					SendMessage(hwnd, WM_KEYUP, VK_BACK, 0);
+			if (wParam == '\n' || wParam == '\r') {
+				if (( isShift != 0 ) ^ (0 != DBGetContactSettingByte(NULL, "Chat", "SendOnEnter", 1))) {
 					PostMessage(GetParent(hwnd), WM_COMMAND, IDOK, 0);
 					return 0;
-			}	}
-		}
-		else dat->lastEnterTime = 0;
+				}
 
-		if (wParam == 1 && GetKeyState(VK_CONTROL) & 0x8000 && !(GetKeyState(VK_MENU) & 0x8000)) {      //ctrl-a
-			SendMessage(hwnd, EM_SETSEL, 0, -1);
-			return 0;
-		}
+				if (DBGetContactSettingByte(NULL, "Chat", "SendOnDblEnter", 0)) {
+					if (dat->lastEnterTime + 2 < time(NULL))
+						dat->lastEnterTime = time(NULL);
+					else {
+						SendMessage(hwnd, WM_KEYDOWN, VK_BACK, 0);
+						SendMessage(hwnd, WM_KEYUP, VK_BACK, 0);
+						PostMessage(GetParent(hwnd), WM_COMMAND, IDOK, 0);
+						return 0;
+				}	}
+			}
+			else dat->lastEnterTime = 0;
+
+			if (wParam == 1 && isCtrl && !isAlt) {      //ctrl-a
+				SendMessage(hwnd, EM_SETSEL, 0, -1);
+				return 0;
+		}	}
 		break;
 
 	case WM_KEYDOWN:
 		{
 			static int start, end;
+			BOOL isShift = GetKeyState(VK_SHIFT) & 0x8000;
+			BOOL isCtrl = GetKeyState(VK_CONTROL) & 0x8000;
+			BOOL isAlt = GetKeyState(VK_MENU) & 0x8000;
 			if (wParam == VK_RETURN) {
 				dat->szTabSave[0] = '\0';
-				if (((GetKeyState(VK_CONTROL) & 0x8000) != 0) ^ (0 != DBGetContactSettingByte(NULL, "Chat", "SendOnEnter", 1)))
+				if ((isCtrl != 0) ^ (0 != DBGetContactSettingByte(NULL, "Chat", "SendOnEnter", 1)))
 					return 0;
 
 				if (DBGetContactSettingByte(NULL, "Chat", "SendOnDblEnter", 0))
@@ -338,17 +346,17 @@ static LRESULT CALLBACK MessageSubclassProc(HWND hwnd, UINT msg, WPARAM wParam, 
 				break;
 			}
 
-			if (wParam == VK_TAB && GetKeyState(VK_SHIFT) & 0x8000 && !(GetKeyState(VK_CONTROL) & 0x8000)) { // SHIFT-TAB (go to nick list)
+			if (wParam == VK_TAB && isShift && !isCtrl) { // SHIFT-TAB (go to nick list)
 				SetFocus(GetDlgItem(GetParent(hwnd), IDC_CHAT_LIST));
 				return TRUE;
 			}
 
-			if (wParam == VK_TAB && GetKeyState(VK_CONTROL) & 0x8000 && !(GetKeyState(VK_SHIFT) & 0x8000)) { // CTRL-TAB (switch tab/window)
+			if (wParam == VK_TAB && isCtrl && !isShift) { // CTRL-TAB (switch tab/window)
 				SendMessage(GetParent(GetParent(hwnd)), CM_ACTIVATENEXT, 0, (LPARAM)GetParent(hwnd));
 				return TRUE;
 			}
 
-			if (wParam == VK_TAB && GetKeyState(VK_CONTROL) & 0x8000 && GetKeyState(VK_SHIFT) & 0x8000) { // CTRL_SHIFT-TAB (switch tab/window)
+			if (wParam == VK_TAB && isCtrl && isShift) { // CTRL_SHIFT-TAB (switch tab/window)
 				SendMessage(GetParent(GetParent(hwnd)), CM_ACTIVATEPREV, 0, (LPARAM)GetParent(hwnd));
 				return TRUE;
 			}
@@ -420,153 +428,154 @@ static LRESULT CALLBACK MessageSubclassProc(HWND hwnd, UINT msg, WPARAM wParam, 
 					SendMessageA(hwnd, EM_REPLACESEL, FALSE, (LPARAM) ": ");
 
 				dat->szTabSave[0] = '\0';
-		}	}
+			}
 
-		if (wParam == VK_F4 && GetKeyState(VK_CONTROL) & 0x8000 && !(GetKeyState(VK_MENU) & 0x8000)) { // ctrl-F4 (close tab)
-			SendMessage(GetParent(hwnd), WM_COMMAND, MAKEWPARAM(IDC_CHAT_CLOSE, BN_CLICKED), 0);
-			return TRUE;
+			if (wParam == VK_F4 && isCtrl && !isAlt) { // ctrl-F4 (close tab)
+				SendMessage(GetParent(hwnd), WM_COMMAND, MAKEWPARAM(IDC_CHAT_CLOSE, BN_CLICKED), 0);
+				return TRUE;
+			}
+
+			if (wParam == 0x49 && isCtrl && !isAlt) { // ctrl-i (italics)
+				CheckDlgButton(GetParent(hwnd), IDC_CHAT_ITALICS, IsDlgButtonChecked(GetParent(hwnd), IDC_CHAT_ITALICS) == BST_UNCHECKED?BST_CHECKED:BST_UNCHECKED);
+				SendMessage(GetParent(hwnd), WM_COMMAND, MAKEWPARAM(IDC_CHAT_ITALICS, 0), 0);
+				return TRUE;
+			}
+
+			if (wParam == 0x42 && isCtrl && !isAlt) { // ctrl-b (bold)
+				CheckDlgButton(GetParent(hwnd), IDC_CHAT_BOLD, IsDlgButtonChecked(GetParent(hwnd), IDC_CHAT_BOLD) == BST_UNCHECKED?BST_CHECKED:BST_UNCHECKED);
+				SendMessage(GetParent(hwnd), WM_COMMAND, MAKEWPARAM(IDC_CHAT_BOLD, 0), 0);
+				return TRUE;
+			}
+
+			if (wParam == 0x55 && isCtrl && !isAlt) { // ctrl-u (paste clean text)
+				CheckDlgButton(GetParent(hwnd), IDC_CHAT_UNDERLINE, IsDlgButtonChecked(GetParent(hwnd), IDC_CHAT_UNDERLINE) == BST_UNCHECKED?BST_CHECKED:BST_UNCHECKED);
+				SendMessage(GetParent(hwnd), WM_COMMAND, MAKEWPARAM(IDC_CHAT_UNDERLINE, 0), 0);
+				return TRUE;
+			}
+
+			if (wParam == 0x4b && GetKeyState(VK_CONTROL) & 0x8000 && !(GetKeyState(VK_MENU) & 0x8000)) { // ctrl-k (paste clean text)
+				CheckDlgButton(GetParent(hwnd), IDC_CHAT_COLOR, IsDlgButtonChecked(GetParent(hwnd), IDC_CHAT_COLOR) == BST_UNCHECKED?BST_CHECKED:BST_UNCHECKED);
+				SendMessage(GetParent(hwnd), WM_COMMAND, MAKEWPARAM(IDC_CHAT_COLOR, 0), 0);
+				return TRUE;
+			}
+
+			if (wParam == VK_SPACE && isCtrl && !isAlt) { // ctrl-space (paste clean text)
+				CheckDlgButton(GetParent(hwnd), IDC_CHAT_BKGCOLOR, BST_UNCHECKED);
+				CheckDlgButton(GetParent(hwnd), IDC_CHAT_COLOR, BST_UNCHECKED);
+				CheckDlgButton(GetParent(hwnd), IDC_CHAT_BOLD, BST_UNCHECKED);
+				CheckDlgButton(GetParent(hwnd), IDC_CHAT_UNDERLINE, BST_UNCHECKED);
+				CheckDlgButton(GetParent(hwnd), IDC_CHAT_ITALICS, BST_UNCHECKED);
+				SendMessage(GetParent(hwnd), WM_COMMAND, MAKEWPARAM(IDC_CHAT_BKGCOLOR, 0), 0);
+				SendMessage(GetParent(hwnd), WM_COMMAND, MAKEWPARAM(IDC_CHAT_COLOR, 0), 0);
+				SendMessage(GetParent(hwnd), WM_COMMAND, MAKEWPARAM(IDC_CHAT_BOLD, 0), 0);
+				SendMessage(GetParent(hwnd), WM_COMMAND, MAKEWPARAM(IDC_CHAT_UNDERLINE, 0), 0);
+				SendMessage(GetParent(hwnd), WM_COMMAND, MAKEWPARAM(IDC_CHAT_ITALICS, 0), 0);
+				return TRUE;
+			}
+
+			if (wParam == 0x4c && isCtrl && !isAlt) { // ctrl-l (paste clean text)
+				CheckDlgButton(GetParent(hwnd), IDC_CHAT_BKGCOLOR, IsDlgButtonChecked(GetParent(hwnd), IDC_CHAT_BKGCOLOR) == BST_UNCHECKED?BST_CHECKED:BST_UNCHECKED);
+				SendMessage(GetParent(hwnd), WM_COMMAND, MAKEWPARAM(IDC_CHAT_BKGCOLOR, 0), 0);
+				return TRUE;
+			}
+
+			if (wParam == 0x46 && isCtrl && !isAlt) { // ctrl-f (paste clean text)
+				if (IsWindowEnabled(GetDlgItem(GetParent(hwnd), IDC_CHAT_FILTER)))
+					SendMessage(GetParent(hwnd), WM_COMMAND, MAKEWPARAM(IDC_CHAT_FILTER, 0), 0);
+				return TRUE;
+			}
+
+			if (wParam == 0x4e && isCtrl && !isAlt) { // ctrl-n (nicklist)
+				if (IsWindowEnabled(GetDlgItem(GetParent(hwnd), IDC_CHAT_SHOWNICKLIST)))
+					SendMessage(GetParent(hwnd), WM_COMMAND, MAKEWPARAM(IDC_CHAT_SHOWNICKLIST, 0), 0);
+				return TRUE;
+			}
+
+			if (wParam == 0x48 && isCtrl && !isAlt) { // ctrl-h (history)
+				SendMessage(GetParent(hwnd), WM_COMMAND, MAKEWPARAM(IDC_CHAT_HISTORY, 0), 0);
+				return TRUE;
+			}
+
+			if (wParam == 0x4f && isCtrl && !isAlt) { // ctrl-o (options)
+				if (IsWindowEnabled(GetDlgItem(GetParent(hwnd), IDC_CHAT_CHANMGR)))
+					SendMessage(GetParent(hwnd), WM_COMMAND, MAKEWPARAM(IDC_CHAT_CHANMGR, 0), 0);
+				return TRUE;
+			}
+
+			if (((wParam == 45 && isShift) || (wParam == 0x56 && isCtrl)) && !isAlt) { // ctrl-v (paste clean text)
+				SendMessage(hwnd, EM_PASTESPECIAL, CF_TEXT, 0);
+				return TRUE;
+			}
+
+			if (wParam == 0x57 && isCtrl && !isAlt) { // ctrl-w (close window)
+				PostMessage(GetParent(hwnd), WM_CLOSE, 0, 0);
+				return TRUE;
+			}
+
+			if (wParam == VK_NEXT || wParam == VK_PRIOR) {
+				HWND htemp = GetParent(hwnd);
+				SendDlgItemMessage(htemp, IDC_CHAT_LOG, msg, wParam, lParam);
+				dat->lastEnterTime = 0;
+				return TRUE;
+			}
+
+			if (wParam == VK_UP && isCtrl && !isAlt) {
+				int iLen;
+				GETTEXTLENGTHEX gtl = {0};
+				SETTEXTEX ste;
+				LOGFONT lf;
+				char* lpPrevCmd = SM_GetPrevCommand(Parentsi->ptszID, Parentsi->pszModule);
+
+				SendMessage(hwnd, WM_SETREDRAW, FALSE, 0);
+
+				Chat_LoadMsgDlgFont(17, &lf, NULL);
+				ste.flags = ST_DEFAULT;
+				ste.codepage = CP_ACP;
+				if (lpPrevCmd)
+					SendMessage(hwnd, EM_SETTEXTEX, (WPARAM)&ste, (LPARAM)lpPrevCmd);
+				else
+					SetWindowText(hwnd, _T(""));
+
+				gtl.flags = GTL_PRECISE;
+				gtl.codepage = CP_ACP;
+				iLen = SendMessage(hwnd, EM_GETTEXTLENGTHEX, (WPARAM)&gtl, (LPARAM)NULL);
+				SendMessage(hwnd, EM_SCROLLCARET, 0,0);
+				SendMessage(hwnd, WM_SETREDRAW, TRUE, 0);
+				RedrawWindow(hwnd, NULL, NULL, RDW_INVALIDATE);
+				SendMessage(hwnd, EM_SETSEL,iLen,iLen);
+				dat->lastEnterTime = 0;
+				return TRUE;
+			}
+
+			if (wParam == VK_DOWN && isCtrl && !isAlt) {
+				int iLen;
+				GETTEXTLENGTHEX gtl = {0};
+				SETTEXTEX ste;
+
+				char* lpPrevCmd = SM_GetNextCommand(Parentsi->ptszID, Parentsi->pszModule);
+				SendMessage(hwnd, WM_SETREDRAW, FALSE, 0);
+
+				ste.flags = ST_DEFAULT;
+				ste.codepage = CP_ACP;
+				if (lpPrevCmd)
+					SendMessage(hwnd, EM_SETTEXTEX, (WPARAM)&ste, (LPARAM) lpPrevCmd);
+				else
+					SetWindowText(hwnd, _T(""));
+
+				gtl.flags = GTL_PRECISE;
+				gtl.codepage = CP_ACP;
+				iLen = SendMessage(hwnd, EM_GETTEXTLENGTHEX, (WPARAM)&gtl, (LPARAM)NULL);
+				SendMessage(hwnd, EM_SCROLLCARET, 0,0);
+				SendMessage(hwnd, WM_SETREDRAW, TRUE, 0);
+				RedrawWindow(hwnd, NULL, NULL, RDW_INVALIDATE);
+				SendMessage(hwnd, EM_SETSEL,iLen,iLen);
+				dat->lastEnterTime = 0;
+				return TRUE;
+			}
+
+			if (wParam == VK_RETURN)
+				break;
 		}
-
-		if (wParam == 0x49 && GetKeyState(VK_CONTROL) & 0x8000 && !(GetKeyState(VK_MENU) & 0x8000)) { // ctrl-i (italics)
-			CheckDlgButton(GetParent(hwnd), IDC_CHAT_ITALICS, IsDlgButtonChecked(GetParent(hwnd), IDC_CHAT_ITALICS) == BST_UNCHECKED?BST_CHECKED:BST_UNCHECKED);
-			SendMessage(GetParent(hwnd), WM_COMMAND, MAKEWPARAM(IDC_CHAT_ITALICS, 0), 0);
-			return TRUE;
-		}
-
-		if (wParam == 0x42 && GetKeyState(VK_CONTROL) & 0x8000 && !(GetKeyState(VK_MENU) & 0x8000) ) { // ctrl-b (bold)
-			CheckDlgButton(GetParent(hwnd), IDC_CHAT_BOLD, IsDlgButtonChecked(GetParent(hwnd), IDC_CHAT_BOLD) == BST_UNCHECKED?BST_CHECKED:BST_UNCHECKED);
-			SendMessage(GetParent(hwnd), WM_COMMAND, MAKEWPARAM(IDC_CHAT_BOLD, 0), 0);
-			return TRUE;
-		}
-
-		if (wParam == 0x55 && GetKeyState(VK_CONTROL) & 0x8000 && !(GetKeyState(VK_MENU) & 0x8000)) { // ctrl-u (paste clean text)
-			CheckDlgButton(GetParent(hwnd), IDC_CHAT_UNDERLINE, IsDlgButtonChecked(GetParent(hwnd), IDC_CHAT_UNDERLINE) == BST_UNCHECKED?BST_CHECKED:BST_UNCHECKED);
-			SendMessage(GetParent(hwnd), WM_COMMAND, MAKEWPARAM(IDC_CHAT_UNDERLINE, 0), 0);
-			return TRUE;
-		}
-
-		if (wParam == 0x4b && GetKeyState(VK_CONTROL) & 0x8000 && !(GetKeyState(VK_MENU) & 0x8000)) { // ctrl-k (paste clean text)
-			CheckDlgButton(GetParent(hwnd), IDC_CHAT_COLOR, IsDlgButtonChecked(GetParent(hwnd), IDC_CHAT_COLOR) == BST_UNCHECKED?BST_CHECKED:BST_UNCHECKED);
-			SendMessage(GetParent(hwnd), WM_COMMAND, MAKEWPARAM(IDC_CHAT_COLOR, 0), 0);
-			return TRUE;
-		}
-
-		if (wParam == VK_SPACE && GetKeyState(VK_CONTROL) & 0x8000 && !(GetKeyState(VK_MENU) & 0x8000)) { // ctrl-space (paste clean text)
-			CheckDlgButton(GetParent(hwnd), IDC_CHAT_BKGCOLOR, BST_UNCHECKED);
-			CheckDlgButton(GetParent(hwnd), IDC_CHAT_COLOR, BST_UNCHECKED);
-			CheckDlgButton(GetParent(hwnd), IDC_CHAT_BOLD, BST_UNCHECKED);
-			CheckDlgButton(GetParent(hwnd), IDC_CHAT_UNDERLINE, BST_UNCHECKED);
-			CheckDlgButton(GetParent(hwnd), IDC_CHAT_ITALICS, BST_UNCHECKED);
-			SendMessage(GetParent(hwnd), WM_COMMAND, MAKEWPARAM(IDC_CHAT_BKGCOLOR, 0), 0);
-			SendMessage(GetParent(hwnd), WM_COMMAND, MAKEWPARAM(IDC_CHAT_COLOR, 0), 0);
-			SendMessage(GetParent(hwnd), WM_COMMAND, MAKEWPARAM(IDC_CHAT_BOLD, 0), 0);
-			SendMessage(GetParent(hwnd), WM_COMMAND, MAKEWPARAM(IDC_CHAT_UNDERLINE, 0), 0);
-			SendMessage(GetParent(hwnd), WM_COMMAND, MAKEWPARAM(IDC_CHAT_ITALICS, 0), 0);
-			return TRUE;
-		}
-
-		if (wParam == 0x4c && GetKeyState(VK_CONTROL) & 0x8000 && !(GetKeyState(VK_MENU) & 0x8000)) { // ctrl-l (paste clean text)
-			CheckDlgButton(GetParent(hwnd), IDC_CHAT_BKGCOLOR, IsDlgButtonChecked(GetParent(hwnd), IDC_CHAT_BKGCOLOR) == BST_UNCHECKED?BST_CHECKED:BST_UNCHECKED);
-			SendMessage(GetParent(hwnd), WM_COMMAND, MAKEWPARAM(IDC_CHAT_BKGCOLOR, 0), 0);
-			return TRUE;
-		}
-
-		if (wParam == 0x46 && GetKeyState(VK_CONTROL) & 0x8000 && !(GetKeyState(VK_MENU) & 0x8000)) { // ctrl-f (paste clean text)
-			if (IsWindowEnabled(GetDlgItem(GetParent(hwnd), IDC_CHAT_FILTER)))
-				SendMessage(GetParent(hwnd), WM_COMMAND, MAKEWPARAM(IDC_CHAT_FILTER, 0), 0);
-			return TRUE;
-		}
-
-		if (wParam == 0x4e && GetKeyState(VK_CONTROL) & 0x8000 && !(GetKeyState(VK_MENU) & 0x8000)) { // ctrl-n (nicklist)
-			if (IsWindowEnabled(GetDlgItem(GetParent(hwnd), IDC_CHAT_SHOWNICKLIST)))
-				SendMessage(GetParent(hwnd), WM_COMMAND, MAKEWPARAM(IDC_CHAT_SHOWNICKLIST, 0), 0);
-			return TRUE;
-		}
-
-		if (wParam == 0x48 && GetKeyState(VK_CONTROL) & 0x8000 && !(GetKeyState(VK_MENU) & 0x8000)) { // ctrl-h (history)
-			SendMessage(GetParent(hwnd), WM_COMMAND, MAKEWPARAM(IDC_CHAT_HISTORY, 0), 0);
-			return TRUE;
-		}
-
-		if (wParam == 0x4f && GetKeyState(VK_CONTROL) & 0x8000 && !(GetKeyState(VK_MENU) & 0x8000)) { // ctrl-o (options)
-			if (IsWindowEnabled(GetDlgItem(GetParent(hwnd), IDC_CHAT_CHANMGR)))
-				SendMessage(GetParent(hwnd), WM_COMMAND, MAKEWPARAM(IDC_CHAT_CHANMGR, 0), 0);
-			return TRUE;
-		}
-
-		if (((wParam == 45 && GetKeyState(VK_SHIFT) & 0x8000) || (wParam == 0x56 && GetKeyState(VK_CONTROL) & 0x8000) )&& !(GetKeyState(VK_MENU) & 0x8000)) { // ctrl-v (paste clean text)
-			SendMessage(hwnd, EM_PASTESPECIAL, CF_TEXT, 0);
-			return TRUE;
-		}
-
-		if (wParam == 0x57 && GetKeyState(VK_CONTROL) & 0x8000 && !(GetKeyState(VK_MENU) & 0x8000)) { // ctrl-w (close window)
-			PostMessage(GetParent(hwnd), WM_CLOSE, 0, 0);
-			return TRUE;
-		}
-
-		if (wParam == VK_NEXT || wParam == VK_PRIOR) {
-			HWND htemp = GetParent(hwnd);
-			SendDlgItemMessage(htemp, IDC_CHAT_LOG, msg, wParam, lParam);
-			dat->lastEnterTime = 0;
-			return TRUE;
-		}
-
-		if (wParam == VK_UP && (GetKeyState(VK_CONTROL) & 0x8000) && !(GetKeyState(VK_MENU) & 0x8000)) {
-			int iLen;
-			GETTEXTLENGTHEX gtl = {0};
-			SETTEXTEX ste;
-			LOGFONT lf;
-			char* lpPrevCmd = SM_GetPrevCommand(Parentsi->ptszID, Parentsi->pszModule);
-
-			SendMessage(hwnd, WM_SETREDRAW, FALSE, 0);
-
-			Chat_LoadMsgDlgFont(17, &lf, NULL);
-			ste.flags = ST_DEFAULT;
-			ste.codepage = CP_ACP;
-			if (lpPrevCmd)
-				SendMessage(hwnd, EM_SETTEXTEX, (WPARAM)&ste, (LPARAM)lpPrevCmd);
-			else
-				SetWindowText(hwnd, _T(""));
-
-			gtl.flags = GTL_PRECISE;
-			gtl.codepage = CP_ACP;
-			iLen = SendMessage(hwnd, EM_GETTEXTLENGTHEX, (WPARAM)&gtl, (LPARAM)NULL);
-			SendMessage(hwnd, EM_SCROLLCARET, 0,0);
-			SendMessage(hwnd, WM_SETREDRAW, TRUE, 0);
-			RedrawWindow(hwnd, NULL, NULL, RDW_INVALIDATE);
-			SendMessage(hwnd, EM_SETSEL,iLen,iLen);
-			dat->lastEnterTime = 0;
-			return TRUE;
-		}
-
-		if (wParam == VK_DOWN && (GetKeyState(VK_CONTROL) & 0x8000) && !(GetKeyState(VK_MENU) & 0x8000)) {
-			int iLen;
-			GETTEXTLENGTHEX gtl = {0};
-			SETTEXTEX ste;
-
-			char* lpPrevCmd = SM_GetNextCommand(Parentsi->ptszID, Parentsi->pszModule);
-			SendMessage(hwnd, WM_SETREDRAW, FALSE, 0);
-
-			ste.flags = ST_DEFAULT;
-			ste.codepage = CP_ACP;
-			if (lpPrevCmd)
-				SendMessage(hwnd, EM_SETTEXTEX, (WPARAM)&ste, (LPARAM) lpPrevCmd);
-			else
-				SetWindowText(hwnd, _T(""));
-
-			gtl.flags = GTL_PRECISE;
-			gtl.codepage = CP_ACP;
-			iLen = SendMessage(hwnd, EM_GETTEXTLENGTHEX, (WPARAM)&gtl, (LPARAM)NULL);
-			SendMessage(hwnd, EM_SCROLLCARET, 0,0);
-			SendMessage(hwnd, WM_SETREDRAW, TRUE, 0);
-			RedrawWindow(hwnd, NULL, NULL, RDW_INVALIDATE);
-			SendMessage(hwnd, EM_SETSEL,iLen,iLen);
-			dat->lastEnterTime = 0;
-			return TRUE;
-		}
-
-		if (wParam == VK_RETURN)
-			break;
 		//fall through
 
 	case WM_LBUTTONDOWN:
@@ -1476,7 +1485,7 @@ LABEL_SHOWWINDOW:
 
 	case GC_FIREHOOK:
 		if (lParam) {
-			GCHOOK * gch = (GCHOOK *) lParam;
+			GCHOOK* gch = (GCHOOK *) lParam;
 			NotifyEventHooks(hSendEvent,0,(WPARAM)gch);
 			if ( gch->pDest ) {
 				mir_free( gch->pDest->pszID );
@@ -1876,7 +1885,7 @@ LABEL_SHOWWINDOW:
 					break;
 
 				if ( pInfo ) {
-					mir_snprintf(szName, MAX_PATH,"%s",pInfo->pszModDispName?pInfo->pszModDispName:si->pszModule);
+					mir_snprintf(szName, MAX_PATH, "%s", pInfo->pszModDispName ? pInfo->pszModDispName : si->pszModule);
 					ValidateFilename(szName);
 					mir_snprintf(szFolder, MAX_PATH,"%s\\%s", g_Settings.pszLogDir, szName );
 
