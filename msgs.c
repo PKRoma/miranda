@@ -495,7 +495,7 @@ int SplitmsgShutdown(void)
    FreeLibrary(GetModuleHandleA("riched20"));
    OleUninitialize();
    if (hMsgMenuItem) {
-      free(hMsgMenuItem);
+      mir_free(hMsgMenuItem);
       hMsgMenuItem = NULL;
       hMsgMenuItemCount = 0;
    }
