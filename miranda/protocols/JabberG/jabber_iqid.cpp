@@ -253,7 +253,7 @@ void CALLBACK sttCreateRoom( ULONG dwParam )
 	gcw.ptszID = ( TCHAR* )dwParam;
 	gcw.ptszName = NEWTSTR_ALLOCA(( TCHAR* )dwParam );
 
-	TCHAR* p = _tcschr( gcw.ptszName, '@' );
+	TCHAR* p = (TCHAR*)_tcschr( gcw.ptszName, '@' );
 	if ( p ) *p = 0;
 
 	CallService( MS_GC_NEWSESSION, 0, ( LPARAM )&gcw );
