@@ -66,7 +66,7 @@ typedef struct ParentWindowDataStruct
 	HWND	hwndStatus;
 	HWND	hwndTabs;
 	HWND	foregroundWindow;
-	DWORD	flags;
+	DWORD	flags2;
 	RECT	childRect;
 	POINT	mouseLBDownPos;
 	int		mouseLBDown;
@@ -241,20 +241,26 @@ extern const int msgDlgFontCount;
 
 #define SRMMMOD                    "SRMM"
 
-#define SRMSGSET_SHOWTITLEBAR	   "ShowTitleBar"
-#define SRMSGDEFSET_SHOWTITLEBAR   1
-#define SRMSGSET_SHOWSTATUSBAR	   "ShowStatusBar"
-#define SRMSGDEFSET_SHOWSTATUSBAR  1
-#define SRMSGSET_TOPMOST		   "Topmost"
-#define SRMSGDEFSET_TOPMOST		   0
 #define SRMSGSET_USETABS		   "UseTabs"
 #define SRMSGDEFSET_USETABS		   1
 #define SRMSGSET_TABSATBOTTOM	   "TabsPosition"
 #define SRMSGDEFSET_TABSATBOTTOM   0
 #define SRMSGSET_LIMITNAMES		   "LimitNamesOnTabs"
 #define SRMSGDEFSET_LIMITNAMES	   1
+#define SRMSGSET_LIMITNAMESLEN	   "LimitNamesLength"
+#define SRMSGDEFSET_LIMITNAMESLEN  20
 #define SRMSGSET_HIDEONETAB		   "HideOneTab"
 #define SRMSGDEFSET_HIDEONETAB	   1
+#define SRMSGSET_SAVEPERCONTACT    "SavePerContact"
+#define SRMSGDEFSET_SAVEPERCONTACT 0
+
+#define SRMSGSET_SHOWTITLEBAR	   "ShowTitleBar"
+#define SRMSGDEFSET_SHOWTITLEBAR   1
+#define SRMSGSET_SHOWSTATUSBAR	   "ShowStatusBar"
+#define SRMSGDEFSET_SHOWSTATUSBAR  1
+
+#define SRMSGSET_TOPMOST		   "Topmost"
+#define SRMSGDEFSET_TOPMOST		   0
 #define SRMSGSET_POPFLAGS          "PopupFlags"
 #define SRMSGDEFSET_POPFLAGS       0
 #define SRMSGSET_SHOWBUTTONLINE    "ShowButtonLine"
@@ -273,8 +279,6 @@ extern const int msgDlgFontCount;
 #define SRMSGDEFSET_AUTOMIN        0
 #define SRMSGSET_AUTOCLOSE         "AutoClose"
 #define SRMSGDEFSET_AUTOCLOSE      0
-#define SRMSGSET_SAVEPERCONTACT    "SavePerContact"
-#define SRMSGDEFSET_SAVEPERCONTACT 0
 #define SRMSGSET_SAVESPLITTERPERCONTACT "SaveSplitterPerContact"
 #define SRMSGDEFSET_SAVESPLITTERPERCONTACT 0
 #define SRMSGSET_CASCADE           "Cascade"
