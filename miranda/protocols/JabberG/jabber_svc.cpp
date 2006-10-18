@@ -758,10 +758,11 @@ static void __cdecl JabberGetAwayMsgThread( HANDLE hContact )
 int JabberGetAwayMsg( WPARAM wParam, LPARAM lParam )
 {
 	CCSDATA *ccs = ( CCSDATA * ) lParam;
-	if ( ccs != NULL ) {
-		JabberLog( "GetAwayMsg called, wParam=%d lParam=%d", wParam, lParam );
-		JabberForkThread( JabberGetAwayMsgThread, 0, ( void * ) ccs->hContact );
-	}
+	if ( ccs == NULL )
+		return 0;
+		
+	JabberLog( "GetAwayMsg called, wParam=%d lParam=%d", wParam, lParam );
+	JabberForkThread( JabberGetAwayMsgThread, 0, ( void * ) ccs->hContact );
 	return 1;
 }
 

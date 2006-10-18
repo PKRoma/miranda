@@ -603,8 +603,10 @@ static void __cdecl MsnGetAwayMsgThread( HANDLE hContact )
 static int MsnGetAwayMsg(WPARAM wParam,LPARAM lParam)
 {
 	CCSDATA* ccs = ( CCSDATA* )lParam;
-	if ( ccs != NULL )
-		MSN_StartThread( MsnGetAwayMsgThread, ccs->hContact );
+	if ( ccs == NULL )
+		return 0;
+
+	MSN_StartThread( MsnGetAwayMsgThread, ccs->hContact );
 	return 1;
 }
 
