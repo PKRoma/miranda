@@ -37,8 +37,8 @@ BOOL RectHitTest(RECT *rc, int testx, int testy)
 
 int cliHitTest(HWND hwnd,struct ClcData *dat,int testx,int testy,struct ClcContact **contact,struct ClcGroup **group,DWORD *flags)
 {
-	struct ClcContact *hitcontact;
-	struct ClcGroup *hitgroup;
+	struct ClcContact *hitcontact=NULL;
+	struct ClcGroup *hitgroup=NULL;
 	int hit=-1;
 	RECT clRect;
  if (CLUI_TestCursorOnBorders()!=0)

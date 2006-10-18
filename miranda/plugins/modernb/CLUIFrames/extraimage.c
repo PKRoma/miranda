@@ -101,8 +101,6 @@ int colsum(int from,int to)
 
 int ExtraImage_ExtraIDToColumnNum(int extra)
 {
-	int cnt=EnabledColumnCount;
-	int extracnt=EXTRACOLUMNCOUNT-1;
 	int ord=ExtraOrder[extra-1];
     if (!visar[ord]) return -1;
 	return (colsum(0,ord)-1);
@@ -291,7 +289,6 @@ void ExtraImage_SetAllExtraIcons(HWND hwndList,HANDLE hContact)
 	pdisplayNameCacheEntry pdnce;
 	int em,pr,sms,a1,a2,w1,c1;
 	int tick=0;
-	int inphcont=(int)hContact;
 	g_mutex_bSetAllExtraIconsCycle=1;
 	hcontgiven=(hContact!=0);
 

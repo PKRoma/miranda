@@ -186,7 +186,6 @@ struct CListEvent* cli_AddEvent(CLISTEVENT *cle)
 int cli_RemoveEvent(HANDLE hContact, HANDLE hDbEvent)
 {
 	int i;
-	BOOL bUnstick = TRUE;
     int res=0;
 
 	// Find the event that should be removed
@@ -281,7 +280,6 @@ static int EventArea_DrawWorker(HWND hWnd, HDC hDC)
     hOldFont=CLCPaint_ChangeToFont(hDC,NULL,FONTID_EVENTAREA,NULL);
     //SkinEngine_DrawText(hDC,_T("DEBUG"),lstrlen(_T("DEBUG")),&rc,0);
     {
-        struct ClcData *dat = (struct ClcData *) GetWindowLong(pcli->hwndContactTree, 0);
 	    int iCount = GetMenuItemCount(g_CluiData.hMenuNotify);
         rc.left += 26; 
         if (g_CluiData.hUpdateContact != 0) 

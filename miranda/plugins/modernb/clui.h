@@ -165,6 +165,8 @@ struct CluiData g_CluiData={0};
 BYTE    g_bSTATE=STATE_NORMAL;
 HANDLE  g_hSkinLoadedEvent;
 
+HANDLE  g_hMainThread=NULL;
+
 DWORD   g_hMainThreadID=0,
         g_hAskAwayMsgThreadID=0,
         g_hGetTextThreadID=0,

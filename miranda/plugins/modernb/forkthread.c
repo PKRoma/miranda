@@ -68,7 +68,7 @@ unsigned long __stdcall forkthreadex_r(struct FORK_ARG *fa)
 {
 	unsigned (__stdcall * threadcode) (void *)=fa->threadcodeex;
 	void *arg=fa->arg;
-	unsigned long rc;
+	unsigned long rc=0;
 	
 	CallService(MS_SYSTEM_THREAD_PUSH,0,0);
 	SetEvent(fa->hEvent);

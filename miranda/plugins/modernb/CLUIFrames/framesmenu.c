@@ -105,7 +105,6 @@ static int ContextFrameMenuNotify(WPARAM wParam,LPARAM lParam)
 
 static int BuildContextFrameMenu(WPARAM wParam,LPARAM lParam)
 {
-	CLISTMENUITEM *mi=(CLISTMENUITEM*)lParam;
 	HMENU hMenu;
 	ListParam param;
 

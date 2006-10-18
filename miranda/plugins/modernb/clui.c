@@ -422,29 +422,6 @@ static BOOL CALLBACK CLUI_enum_SubChildWindowsProc(HWND hwnd,LPARAM lParam)
     CLUI_FillAlphaChannel(hwnd,r->hDC,&(r->rcRect),255);
     return 1;
 }
-static BOOL CALLBACK CLUI_enum_ChildWindowsProc(HWND hwnd,LPARAM lParam)
-{
-    int ret;
-    CHECKFILLING * r=(CHECKFILLING *)lParam;
-    if (GetParent(hwnd)!=pcli->hwndContactList) return 1;
-    ret=SendMessage(hwnd,WM_USER+100,0,0);
-    switch (ret)
-    {
-    case 0:  //not respond full rect should be alpha=255
-        {
-
-            CLUI_FillAlphaChannel(hwnd,r->hDC,&(r->rcRect),255);
-            break;
-        }
-    case 1:
-        EnumChildWindows(hwnd,CLUI_enum_SubChildWindowsProc,(LPARAM)r);
-        break;
-    case 2:
-        break;
-    }
-    return 1;
-}
-
 
 int CLUI_IsInMainWindow(HWND hwnd)
 {
@@ -839,6 +816,7 @@ void CLUI_DisconnectAll()
 static int CLUI_PreCreateCLC(HWND parent)
 {
     g_hMainThreadID=GetCurrentThreadId();
+  	DuplicateHandle(GetCurrentProcess(),GetCurrentThread(),GetCurrentProcess(),&g_hMainThread,THREAD_SET_CONTEXT,FALSE,0);
     pcli->hwndContactTree=CreateWindow(CLISTCONTROL_CLASS,TEXT(""),
         WS_CHILD|WS_CLIPCHILDREN|CLS_CONTACTLIST
         |(DBGetContactSettingByte(NULL,"CList","UseGroups",SETTING_USEGROUPS_DEFAULT)?CLS_USEGROUPS:0)
@@ -883,12 +861,6 @@ static int CLUI_CreateCLC(HWND parent)
         {
             CallService(MS_CLIST_SETHIDEOFFLINE,(WPARAM)bOldHideOffline,0);
         }
-
-        {	int state=DBGetContactSettingByte(NULL,"CList","State",SETTING_STATE_NORMAL);
-        //--if(state==SETTING_STATE_NORMAL) CLUI_ShowWindowMod(pcli->hwndContactList, SW_SHOW);
-        //--else if(state==SETTING_STATE_MINIMIZED) CLUI_ShowWindowMod(pcli->hwndContactList, SW_SHOWMINIMIZED);
-        }
-
 
         nLastRequiredHeight=0;
         mutex_bDisableAutoUpdate=0;
@@ -1084,6 +1056,16 @@ static void CLUI_SnappingToEdge(HWND hwnd, WINDOWPOS * wp) //by ZORG
     }
 }
 
+int CALLBACK CLUI_SyncGetPDNCE(WPARAM wParam, LPARAM lParam)
+{
+    return CListSettings_GetCopyFromCache((pdisplayNameCacheEntry)lParam);
+}
+
+int CALLBACK CLUI_SyncSetPDNCE(WPARAM wParam, LPARAM lParam)
+{
+ return CListSettings_SetToCache((pdisplayNameCacheEntry)lParam);
+}
+
 LRESULT CALLBACK CLUI__cli_ContactListWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 {    
     /*
@@ -1102,9 +1084,9 @@ LRESULT CALLBACK CLUI__cli_ContactListWndProc(HWND hwnd, UINT msg, WPARAM wParam
         case SYNC_SMOOTHANIMATION:
             return CLUI_SmoothAlphaThreadTransition((HWND)lParam);
         case SYNC_GETPDNCE:
-            return CListSettings_GetCopyFromCache((pdisplayNameCacheEntry)lParam);
+            return CLUI_SyncGetPDNCE(0,lParam);
         case SYNC_SETPDNCE:
-            return CListSettings_SetToCache((pdisplayNameCacheEntry)lParam);
+            return CLUI_SyncSetPDNCE(0,lParam);
         }
         return 0;
     }
@@ -1132,7 +1114,6 @@ LRESULT CALLBACK CLUI__cli_ContactListWndProc(HWND hwnd, UINT msg, WPARAM wParam
 
     if (g_bLayered)
     {
-        LRESULT res=0;
         if (msg==WM_SIZING)
         {
             static a=0;

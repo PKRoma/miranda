@@ -153,7 +153,6 @@ int cli_IconFromStatusMode(const char *szProto,int nStatus, HANDLE hContact)
        char * szActProto=(char*)szProto;
        char AdvancedService[255]={0};
        int  nActStatus=nStatus;
-       int  basicIcon=-1;
        HANDLE hActContact=hContact;
        if (!DBGetContactSettingByte(NULL,"CLC","Meta",0) && !mir_strcmp(szActProto,"MetaContacts"))
        {
@@ -231,6 +230,8 @@ int CListMod_ContactListShutdownProc(WPARAM wParam,LPARAM lParam)
     UnhookEvent(hookSystemShutdown_CListMod);	
 	UninitCustomMenus();
     FreeDisplayNameCache();
+    if(g_hMainThread) CloseHandle(g_hMainThread);
+    g_hMainThread=NULL;
 	return 0;
 }
 extern int ToggleHideOffline(WPARAM wParam,LPARAM lParam);
@@ -278,6 +279,7 @@ int CLUIGetCapsService(WPARAM wParam,LPARAM lParam)
 int LoadContactListModule(void)
 {
 	CreateServiceFunction(MS_CLUI_GETCAPS,CLUIGetCapsService);
+
 	InitDisplayNameCache();
 	hookSystemShutdown_CListMod  = HookEvent(ME_SYSTEM_SHUTDOWN,CListMod_ContactListShutdownProc);
 	hookOptInitialise_CList      = HookEvent(ME_OPT_INITIALISE,CListOptInit);
@@ -325,11 +327,13 @@ extern BYTE g_bCurrentAlpha;
 int GetWindowVisibleState(HWND hWnd, int iStepX, int iStepY) {
 	RECT rc = { 0 };
 	POINT pt = { 0 };
-	HRGN rgn=NULL;
-	register int i = 0, j = 0, width = 0, height = 0, iCountedDots = 0, iNotCoveredDots = 0;
-	BOOL bPartiallyCovered = FALSE;
+	register int    i = 0, 
+                    j = 0, 
+                    width = 0, 
+                    height = 0, 
+                    iCountedDots = 0, 
+                    iNotCoveredDots = 0;
 	HWND hAux = 0;
-	int res=0;
 
 	if (hWnd == NULL) {
 		SetLastError(0x00000006); //Wrong handle
@@ -498,7 +502,6 @@ int cliShowHide(WPARAM wParam,LPARAM lParam)
 			return 0;
 	}
 	if(bShow == TRUE || lParam) {
-		WINDOWPLACEMENT pl={0};
 		HMONITOR (WINAPI *MyMonitorFromWindow)(HWND,DWORD);
 		RECT rcScreen,rcWindow;
 		int offScreen=0;

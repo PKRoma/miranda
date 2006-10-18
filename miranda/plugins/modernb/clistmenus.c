@@ -507,7 +507,6 @@ int StatusMenuCheckService(WPARAM wParam, LPARAM lParam)
 				if (timiParent)
 				{
 						CLISTMENUITEM mi2={0};
-						HIMAGELIST CSImages=NULL;
 						reset=FALSE;
 						mi2.cbSize = sizeof(mi2);
 						mi2.flags=CMIM_NAME;
@@ -735,10 +734,6 @@ static int MenuIconsChanged(WPARAM wParam,LPARAM lParam)
   return 0;
 }
 
-static void GiveExistingItemAnIcon(UINT id,HICON hIcon)
-{
-}
-
 static int MeasureMenuItem(WPARAM wParam,LPARAM lParam)
 {
   //	LPMEASUREITEMSTRUCT mis=(LPMEASUREITEMSTRUCT)lParam;
@@ -757,7 +752,6 @@ int RecurciveDeleteMenu(HMENU hMenu)
 	int i=GetMenuItemCount(hMenu);	
 	while (i>0)
 	{
-		BOOL res=FALSE;
 		HMENU submenu=GetSubMenu(hMenu,0);
 		if (submenu)
 		{
@@ -798,7 +792,6 @@ static int MenuGetStatus(WPARAM wParam,LPARAM lParam)
 
 int GetProtoIndexByPos(PROTOCOLDESCRIPTOR ** proto, int protoCnt, int Pos)
 {
-  int res=0;
   int p;
   char buf[10];
   char * b2=NULL;

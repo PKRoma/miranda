@@ -339,8 +339,7 @@ static int TrayIconAddEventsToTooltip(const char *szProto)
 static int TrayIconAdd(HWND hwnd,const char *szProto,const char *szIconProto,int status)
 {
 	NOTIFYICONDATA nid={0};
-	int i, iIcon = 0;
-	HICON hIcon = 0;
+	int i;
 
 	for (i = 0; i < trayIconCount; i++) {
 		if (trayIcon[i].id == 0)
@@ -1302,11 +1301,6 @@ int TrayMenuExecService(WPARAM wParam,LPARAM lParam) {
 			//bug in help.c,it used wparam as parent window handle without reason.
 			mmep->Param1=0;
 		};
-		//if (!MyStrCmp(mmep->szServiceName,"CloseAction"))
-		//{
-		//	PostMessage((HWND)CallService(MS_CLUI_GETHWND,0,0),WM_COMMAND,MAKEWPARAM(ID_TRAY_EXIT,255),0);
-		//	return 1;
-		//}
 		CallService(mmep->szServiceName,mmep->Param1,lParam);	
 	};
 	return(1);

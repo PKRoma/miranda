@@ -336,7 +336,6 @@ void __inline CLUIFrames_UnLockFrame()
 
 wndFrame* FindFrameByWnd( HWND hwnd )
 {
-  BOOL		bFound	= FALSE;
   int i;
 
   if ( hwnd == NULL ) return( NULL );
@@ -1391,7 +1390,6 @@ int CLUIFramesSetFrameOptions(WPARAM wParam,LPARAM lParam)
 	TRACEVAR("FO_HEIGHT: %d\n",lParam);
     if (Frames[pos].collapsed)
     {
-	  int oldHeight=Frames[pos].height;
       retval=Frames[pos].height;
       Frames[pos].height=lParam;
       if(!CLUIFramesFitInSize()) Frames[pos].height=retval;
@@ -1817,10 +1815,6 @@ int CLUIFramesCollapseUnCollapseFrame(WPARAM wParam,LPARAM lParam)
   }
   else
     return -1;
-
-  CLUIFrames_UnLockFrame();
-
-  return 0;
 }
 
 static int CLUIFramesLoadMainMenu()
@@ -2924,7 +2918,6 @@ int CheckFramesPos(RECT *wr)
       if (!(Frames[i].OwnerWindow && (int)(Frames[i].OwnerWindow)!=-2))
       {
         RECT r;
-        BOOL NeedRepsition=0;
         GetWindowRect(Frames[i].hWnd,&r);
         if (r.top-wr->top!=Frames[i].wndSize.top ||r.left-wr->left!=Frames[i].wndSize.left)
           SetWindowPos(Frames[i].hWnd,NULL,Frames[i].wndSize.left, Frames[i].wndSize.top,0,0,SWP_NOSIZE|SWP_NOZORDER|SWP_NOACTIVATE); 
@@ -2932,7 +2925,6 @@ int CheckFramesPos(RECT *wr)
       if (Frames[i].TitleBar.ShowTitleBar)  
       {
         RECT r;
-        BOOL NeedRepsition=0;
         GetWindowRect(Frames[i].TitleBar.hwnd,&r);
         if (r.top-wr->top!=Frames[i].wndSize.top-g_nTitleBarHeight-g_nGapBetweenTitlebar || r.left-wr->left!=Frames[i].wndSize.left)
         {
@@ -3137,7 +3129,7 @@ int DrawTitleBar(HDC hdcMem2,RECT rect,int Frameid)
   HFONT hoTTBFont;
   RECT rc=rect;
   HBRUSH hBack,hoBrush; 
-  HBITMAP b1,b2;
+  HBITMAP b1=NULL,b2=NULL;
   hdcMem=CreateCompatibleDC(hdcMem2);
 
 

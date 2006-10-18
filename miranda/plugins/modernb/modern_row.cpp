@@ -617,9 +617,6 @@ void rowPositioning(pROWCELL cell, int &dist)
 	int h = cell->r.bottom;
 	int w = dist;
 
-	int valign = 0;
-	int halign = 0;
-
 	int r = 0;
 	int size = 0;
 	int cw = 0;

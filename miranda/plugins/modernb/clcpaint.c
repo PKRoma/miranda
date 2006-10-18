@@ -1476,7 +1476,7 @@ static void CLCPaint_ModernInternalPaintRowItems(HWND hwnd, HDC hdcMem, struct C
                     }
                     else
                     {
-                        HRGN rgn;
+                        HRGN rgn=NULL;
                         HRGN oldrgn;
                         int round_radius=0;
                         int width=p_rect.right-p_rect.left;
@@ -1726,7 +1726,6 @@ static void CLCPaint_ModernInternalPaintRowItems(HWND hwnd, HDC hdcMem, struct C
                                 int mode=0;
                                 int BlendedInActiveState = DBGetContactSettingByte(NULL,"CLC","BlendInActiveState",0);
                                 int BlendValue = DBGetContactSettingByte(NULL,"CLC","Blend25%",1) ? ILD_BLEND25 : ILD_BLEND50;
-                                int iImage=Drawing->iExtraImage[eNum];
                                 if (mode2!=-1) mode=mode2;
                                 else
                                 {
@@ -1820,10 +1819,11 @@ static void CLCPaint_DrawStatusIcon(struct ClcContact * Drawing, struct ClcData 
 
 static void CLCPaint_InternalPaintRowItems(HWND hwnd, HDC hdcMem, struct ClcData *dat, struct ClcContact *Drawing,RECT row_rc, RECT free_row_rc, int left_pos, int right_pos, int selected,int hottrack, RECT *rcPaint)
 {
-    int item, item_iterator, item_text;
+    int item=0,
+        item_iterator=0, 
+        item_text=0;
     BOOL left = TRUE;
     int text_left_pos = free_row_rc.right + 1;
-    HANDLE hContact=(dat->hWnd==pcli->hwndContactTree)?Drawing->hContact:0;
     if (gl_RowRoot || (dat->hWnd!=pcli->hwndContactTree))
     {
 
@@ -2889,11 +2889,12 @@ static void CLCPaint_InternalPaintRowItems(HWND hwnd, HDC hdcMem, struct ClcData
 /************************************************************************/
 static void CLCPaint_InternalPaintClc(HWND hwnd,struct ClcData *dat,HDC hdc,RECT *rcPaint)
 {
-    HDC hdcMem=NULL;
-    HDC hdcMem2=NULL;
-    HBITMAP oldbmp,oldbmp2;
-    HBITMAP hBmpOsb=NULL;
-    HBITMAP hBmpOsb2=NULL;
+    HDC hdcMem=NULL,
+        hdcMem2=NULL;
+    HBITMAP oldbmp=NULL,
+            oldbmp2=NULL,
+            hBmpOsb=NULL,
+            hBmpOsb2=NULL;
     RECT clRect;
     HFONT hdcMemOldFont;
     int y,indent,subident, subindex, line_num;

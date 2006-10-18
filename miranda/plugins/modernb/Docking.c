@@ -269,8 +269,6 @@ int Docking_ProcessWindowMessage(WPARAM wParam,LPARAM lParam)
 			*((LRESULT*)lParam)=TRUE;
             */
 			RECT rc;
-			int dx=0, dy=0;
-			int  d=0; 
       if (g_bDocked) ModernButton_ReposButtons(msg->hwnd,0,NULL);
       return FALSE;
 			rc=*(RECT*)(msg->lParam);

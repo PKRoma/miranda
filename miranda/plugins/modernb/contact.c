@@ -235,23 +235,6 @@ int cliCompareContacts(const struct ClcContact *contact1,const struct ClcContact
 
 #undef SAFESTRING
 
-static int resortTimerId=0;
-static VOID CALLBACK SortContactsTimer(HWND hwnd,UINT message,UINT idEvent,DWORD dwTime)
-{
-	KillTimer(NULL,resortTimerId);
-	resortTimerId=0;
-    if (hwnd!=NULL)
-    {    
-        KillTimer(hwnd,TIMERID_DELAYEDRESORTCLC);
-        SetTimer(hwnd,TIMERID_DELAYEDRESORTCLC,DBGetContactSettingByte(NULL,"CLUI","DELAYEDTIMER",10),NULL);
-    }
-    else 
-	{
-	    CallService(MS_CLUI_SORTLIST,0,0);
-
-	}
-}
-
 int ContactChangeGroup(WPARAM wParam,LPARAM lParam)
 {
 	CallService(MS_CLUI_CONTACTDELETED,wParam,0);

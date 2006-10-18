@@ -37,6 +37,8 @@ Modified by FYR
 
 typedef BOOL (* ExecuteOnAllContactsFuncPtr) (struct ClcContact *contact, BOOL subcontact, void *param);
 
+int CALLBACK CLUI_SyncGetPDNCE(WPARAM wParam, LPARAM lParam);
+int CALLBACK CLUI_SyncSetPDNCE(WPARAM wParam, LPARAM lParam);
 /***********************************/
 /**   Module static declarations  **/
 /***********************************/
@@ -71,6 +73,42 @@ DWORD dwRequestTick		= 0;
 const DWORD const_AskPeriod = 3000;
 
 SortedList *CopySmileyString(SortedList *plInput);
+
+
+typedef int (CALLBACK *PSYNCCALLBACKPROC)(WPARAM,LPARAM);
+
+typedef struct tagSYNCCALLITEM
+{
+    WPARAM  wParam;
+    LPARAM  lParam;
+    int     nResult;
+    HANDLE  hDoneEvent;
+    PSYNCCALLBACKPROC pfnProc;    
+} SYNCCALLITEM;
+
+static void CALLBACK SyncCallerUserAPCProc(DWORD dwParam)
+{
+    SYNCCALLITEM* item = (SYNCCALLITEM*) dwParam;
+    item->nResult = item->pfnProc(item->wParam, item->lParam);
+    SetEvent(item->hDoneEvent);
+}
+static int cache_CallProcSync(PSYNCCALLBACKPROC pfnProc, WPARAM wParam, LPARAM lParam)
+{  
+    SYNCCALLITEM item={0};
+    int res=0;
+    if (g_hMainThread==NULL || pfnProc==NULL) return 0;   
+    item.wParam = wParam;
+    item.lParam = lParam;
+    item.pfnProc = pfnProc;
+    item.hDoneEvent = CreateEvent(NULL, FALSE, FALSE, NULL);
+    QueueUserAPC(SyncCallerUserAPCProc, g_hMainThread, (DWORD) &item);
+    PostMessage(pcli->hwndContactList,WM_NULL,0,0); // let this get processed in its own time
+    WaitForSingleObject(item.hDoneEvent, INFINITE);
+    CloseHandle(item.hDoneEvent);
+    return item.nResult;
+}
+
+
 /*
 *  Add contact handle to requests queue
 */
@@ -165,7 +203,7 @@ static int Cache_AskAwayMsgThreadProc(HWND hwnd)
             }
             CListSettings_FreeCacheItemData(&dnce);
             dnce.hContact=(HANDLE)hContact;
-            SendMessage(hwnd,UM_CALLSYNCRONIZED,SYNC_GETPDNCE,(LPARAM)&dnce);
+            cache_CallProcSync(CLUI_SyncGetPDNCE,0,(LPARAM)&dnce);            
             if (dnce.ApparentMode!=ID_STATUS_OFFLINE) //don't ask if contact is always invisible (should be done with protocol)
                 ACK=(HANDLE)CallContactService(hContact,PSS_GETAWAYMSG,0,0);		
             if (!ACK)
@@ -295,7 +333,6 @@ int Cache_GetTextThreadProc(void * lpParam)
     __try
     {
         BOOL exit=FALSE;
-        BOOL err=FALSE;
         HWND hwnd=(HWND)CallService(MS_CLUI_GETHWND,0,0);
         struct SHORTDATA data={0};
         struct SHORTDATA * dat;
@@ -320,14 +357,14 @@ int Cache_GetTextThreadProc(void * lpParam)
                 {
                     displayNameCacheEntry cacheEntry={0};
                     cacheEntry.hContact=mpChain.ContactRequest;
-                    if (!SendMessage(hwnd,UM_CALLSYNCRONIZED,SYNC_GETPDNCE,(LPARAM)&cacheEntry))
+                    if (!cache_CallProcSync(CLUI_SyncGetPDNCE,0,(LPARAM)&cacheEntry))
                     {
                         if (!MirandaExiting()) 
                             Cache_GetSecondLineText(dat, &cacheEntry);
                         if (!MirandaExiting()) 
                             Cache_GetThirdLineText(dat, &cacheEntry);
                         if (!MirandaExiting()) 
-                            SendMessage(hwnd,UM_CALLSYNCRONIZED,(WPARAM)SYNC_SETPDNCE,(LPARAM)&cacheEntry);
+                            cache_CallProcSync(CLUI_SyncSetPDNCE,0,(LPARAM)&cacheEntry);  
                         CListSettings_FreeCacheItemData(&cacheEntry);
                     }
                 }
@@ -504,7 +541,7 @@ void Cache_AddListeningToIcon(struct SHORTDATA *dat, PDNCE pdnce, TCHAR *text, i
 void Cache_ReplaceSmileys(struct SHORTDATA *dat, PDNCE pdnce, TCHAR *text, int text_size, SortedList **plText, 
                           int *max_smiley_height, BOOL replace_smileys)
 {
-    SMADD_PARSET sp;
+    SMADD_PARSET sp={0};
     int last_pos=0;
     *max_smiley_height = 0;
 
@@ -791,6 +828,7 @@ int Cache_GetLineText(PDNCE pdnce, int type, LPTSTR text, int text_size, TCHAR *
                         TCHAR *tmp = mir_tstrdup(text);
                         mir_sntprintf(text, text_size, TEXT("%s: %s"), tmp, dbv.pszVal);
                         mir_free_and_nill(tmp);
+                        CopySkipUnprintableChars(text, text, text_size-1);
                     }
                     DBFreeVariant(&dbv);
                 }
@@ -807,6 +845,7 @@ int Cache_GetLineText(PDNCE pdnce, int type, LPTSTR text, int text_size, TCHAR *
                 {
                     lstrcpyn(text, dbv.ptszVal, text_size);
                     DBFreeVariant(&dbv);
+                    CopySkipUnprintableChars(text, text, text_size-1);
                 }
             }
 
@@ -828,6 +867,7 @@ int Cache_GetLineText(PDNCE pdnce, int type, LPTSTR text, int text_size, TCHAR *
                         mir_sntprintf(text, text_size, TEXT("%s: %s"), dbv.pszVal, tmp);                        
                         mir_free_and_nill(tmp);
                     }
+                    CopySkipUnprintableChars(text, text, text_size-1);
                     DBFreeVariant(&dbv);
                 }
             }
@@ -839,6 +879,7 @@ int Cache_GetLineText(PDNCE pdnce, int type, LPTSTR text, int text_size, TCHAR *
                 {
                     if (dbv.pszVal != NULL && dbv.pszVal[0] != 0)
                         mir_sntprintf(text, text_size, TEXT("%s"), dbv.pszVal);
+                    CopySkipUnprintableChars(text, text, text_size-1);
                     DBFreeVariant(&dbv);
                 }
             }
@@ -870,6 +911,7 @@ int Cache_GetLineText(PDNCE pdnce, int type, LPTSTR text, int text_size, TCHAR *
             TCHAR *tmp = variables_parsedup(variable_text, pdnce->name, pdnce->hContact);
             lstrcpyn(text, tmp, text_size);
             if (tmp) free(tmp);
+            CopySkipUnprintableChars(text, text, text_size-1);
 
             return TEXT_TEXT;
         }
@@ -944,7 +986,6 @@ void Cache_GetFirstLineText(struct ClcData *dat, struct ClcContact *contact)
 
 void Cache_GetSecondLineText(struct SHORTDATA *dat, PDNCE pdnce)
 {
-    HANDLE hContact=pdnce->hContact;
     TCHAR Text[120-MAXEXTRACOLUMNS]={0};
     int type = TEXT_EMPTY;
    
@@ -984,7 +1025,6 @@ void Cache_GetSecondLineText(struct SHORTDATA *dat, PDNCE pdnce)
 void Cache_GetThirdLineText(struct SHORTDATA *dat, PDNCE pdnce)
 {
     TCHAR Text[120-MAXEXTRACOLUMNS]={0};
-    HANDLE hContact=pdnce->hContact;
     int type = TEXT_EMPTY;
     if (dat->third_line_show)
         type = Cache_GetLineText(pdnce, dat->third_line_type,(TCHAR*)Text, SIZEOF(Text), dat->third_line_text,
@@ -1145,33 +1185,8 @@ BOOL RestoreOneContactData(struct ClcContact *contact, BOOL subcontact, void *pa
     {
         if (StoredContactsList[i].hContact==contact->hContact)
         {
-            //			CONTACTDATASTORED data=StoredContactsList[i];
             memmove(StoredContactsList+i,StoredContactsList+i+1,sizeof(CONTACTDATASTORED)*(ContactsStoredCount-i-1));
             ContactsStoredCount--;
-            /*	
-            {
-            if (data.szSecondLineText)
-            if (!pdnce->szSecondLineText)
-            pdnce->szSecondLineText=data.szSecondLineText;
-            else 
-            mir_free_and_nill(data.szSecondLineText);
-            if (data.szThirdLineText)
-            if (!pdnce->szThirdLineText)
-            pdnce->szThirdLineText=data.szThirdLineText;
-            else 
-            mir_free_and_nill(data.szThirdLineText);
-            if (data.plSecondLineText)
-            if (!contact->plSecondLineText)
-            contact->plSecondLineText=data.plSecondLineText;
-            else
-            Cache_DestroySmileyList(data.plSecondLineText);
-            if (data.plThirdLineText)
-            if (!contact->plThirdLineText)
-            contact->plThirdLineText=data.plThirdLineText;
-            else
-            Cache_DestroySmileyList(data.plThirdLineText);
-            }
-            */
             break;
         }
     }
@@ -1180,15 +1195,16 @@ BOOL RestoreOneContactData(struct ClcContact *contact, BOOL subcontact, void *pa
 
 int StoreAllContactData(struct ClcData *dat)
 {
-    return 0;
+    /*
     ExecuteOnAllContacts(dat,StoreOneContactData,NULL);
+    */
     return 1;
 }
 
 int RestoreAllContactData(struct ClcData *dat)
 {
+    /*
     int i;
-    return 0;
     ExecuteOnAllContacts(dat,RestoreOneContactData,NULL);
     for (i=0; i<ContactsStoredCount; i++)
     {
@@ -1204,6 +1220,7 @@ int RestoreAllContactData(struct ClcData *dat)
     if (StoredContactsList) mir_free_and_nill(StoredContactsList);
     StoredContactsList=NULL;
     ContactsStoredCount=0;
+    */
     return 1;
 }
 

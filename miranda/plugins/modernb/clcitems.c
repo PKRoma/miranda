@@ -34,7 +34,6 @@ void AddSubcontacts(struct ClcData *dat, struct ClcContact * cont, BOOL showOffl
 	int subcount,i,j;
 	HANDLE hsub;
 	pdisplayNameCacheEntry cacheEntry;
-	DWORD style=GetWindowLong(dat->hWnd,GWL_STYLE);
 	cacheEntry=(pdisplayNameCacheEntry)pcli->pfnGetCacheEntry(cont->hContact);
 	cont->SubExpanded=(DBGetContactSettingByte(cont->hContact,"CList","Expanded",0) && (DBGetContactSettingByte(NULL,"CLC","MetaExpanding",1)));
 	subcount=(int)CallService(MS_MC_GETNUMCONTACTS,(WPARAM)cont->hContact,0);
@@ -83,7 +82,6 @@ void AddSubcontacts(struct ClcData *dat, struct ClcContact * cont, BOOL showOffl
 				int apparentMode;
 				char *szProto;  
 				int idleMode;
-                int trID=0;
 				szProto=cacheEntry->szProto;
 				if(szProto!=NULL&&!pcli->pfnIsHiddenMode(dat,cacheEntry->status))
 					cont->subcontacts[i].flags|=CONTACTF_ONLINE;
@@ -325,10 +323,9 @@ void cliRebuildEntireList(HWND hwnd,struct ClcData *dat)
 	HANDLE hContact;
 	struct ClcContact * cont;
 	struct ClcGroup *group;
-  static int rebuildCounter=0;
-	BOOL GroupShowOfflineHere=FALSE;
-	int tick=GetTickCount();
-	BOOL PlaceOfflineToRoot=DBGetContactSettingByte(NULL,"CList","PlaceOfflineToRoot",0);
+    static int rebuildCounter=0;
+
+    BOOL PlaceOfflineToRoot=DBGetContactSettingByte(NULL,"CList","PlaceOfflineToRoot",0);
 	KillTimer(hwnd,TIMERID_REBUILDAFTER);
 	
 	ClearRowByIndexCache();
@@ -436,7 +433,7 @@ void cli_SortCLC( HWND hwnd, struct ClcData *dat, int useInsertionSort )
 {
 	HANDLE hSelItem;
 	struct ClcContact *selcontact;
-	struct ClcGroup *group = &dat->list, *selgroup;
+	struct ClcGroup *selgroup;
 	
 	if ( 1 ) {
 		if (pcli->pfnGetRowByIndex(dat, dat->selection, &selcontact, NULL) == -1)
@@ -463,7 +460,6 @@ void cli_SortCLC( HWND hwnd, struct ClcData *dat, int useInsertionSort )
 int GetNewSelection(struct ClcGroup *group, int selection, int direction)
 {
 	int lastcount=0, count=0;//group->cl.count;
-	struct ClcGroup *topgroup=group;
 	if (selection<0) {
 		return 0;
 	}

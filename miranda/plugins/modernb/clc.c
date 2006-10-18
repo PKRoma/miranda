@@ -372,8 +372,8 @@ int ClcProtoAck(WPARAM wParam,LPARAM lParam)
     { int i;
     if (ack->result == ACKRESULT_SUCCESS) {
         for (i = 0; i < pcli->hClcProtoCount; i++) {
-            if (!lstrcmpA(pcli->clcProto[i].szProto, ack->szModule)) {
-                DWORD newStatus=(DWORD)((WORD) ack->lParam); 
+            if (!lstrcmpA(pcli->clcProto[i].szProto, ack->szModule)) 
+            {
                 pcli->clcProto[i].dwStatus = (WORD) ack->lParam;
                 if (pcli->clcProto[i].dwStatus>=ID_STATUS_OFFLINE)
                     pcli->pfnTrayIconUpdateBase(pcli->clcProto[i].szProto);
@@ -954,7 +954,6 @@ case INTM_STATUSCHANGED:
             if (pdnce && pdnce->szProto)
             {
                 struct ClcContact *contact=NULL;
-                int *isv=NULL;
                 pdnce->status = GetStatusForContact(pdnce->hContact,pdnce->szProto);
                 if (!dat->force_in_dialog && (
                     (dat->second_line_show)// && dat->second_line_type==TEXT_STATUS)
@@ -1119,7 +1118,6 @@ default:
                                 int i=0;
                                 struct ClcContact *contact2;
                                 struct ClcGroup *group2;
-                                int k=sizeof(struct ClcContact);
                                 if(FindItem(hwnd,dat,contact->hContact,&contact2,&group2,NULL,FALSE))
                                 {
                                     i=cliGetRowsPriorTo(&dat->list,group2,GetContactIndex(group2,contact2));
@@ -1222,7 +1220,6 @@ case WM_TIMER:
                 int i=0;
                 struct ClcContact *contact;
                 struct ClcGroup *group;
-                int k=sizeof(struct ClcContact);
                 if(FindItem(hwnd,dat,hitcontact->hContact,&contact,&group,NULL,FALSE))
                 {
                     i=cliGetRowsPriorTo(&dat->list,group,GetContactIndex(group,contact));          
