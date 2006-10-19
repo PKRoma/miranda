@@ -78,13 +78,15 @@ static int ReadInteger( const char* p, int* result )
 
 TCHAR* Chat_DoRtfToTags( char* pszText, SESSION_INFO* si)
 {
-	char *p, *p1;
+	char *p1;
 	int*  pIndex;
 	int i, iRemoveChars, cp = CP_ACP;
 	char InsertThis[50];
 	BOOL bJustRemovedRTF = TRUE;
 	BOOL bTextHasStarted = FALSE;
-	TCHAR *ptszResult, *d;
+#if defined(_UNICODE)
+	TCHAR *ptszResult; //, *d;
+#endif
 	int iUcMode = 0;
 
 	if ( !pszText )
@@ -110,9 +112,9 @@ TCHAR* Chat_DoRtfToTags( char* pszText, SESSION_INFO* si)
 	MoveMemory( pszText, p1, lstrlenA( p1 ) + 1 );
 	p1 = pszText;
 
-	#if defined( _UNICODE )
-		ptszResult = d = mir_alloc( strlen( p1 ) * sizeof( TCHAR ));
-	#endif
+	//#if defined( _UNICODE )
+	//	ptszResult = d = mir_alloc( strlen( p1 ) * sizeof( TCHAR ));
+	//#endif
 
 	// iterate through all characters, if rtf control character found then take action
 	while ( *p1 != '\0' ) {
@@ -148,6 +150,11 @@ TCHAR* Chat_DoRtfToTags( char* pszText, SESSION_INFO* si)
 				iRemoveChars = 4;
 				strcpy(InsertThis, "\n" );
 			}
+            else if ( !memcmp(p1, "\\line", 5 )) { // newline
+                bTextHasStarted = bJustRemovedRTF = TRUE;
+                iRemoveChars = 5;
+                strcpy(InsertThis, "\n" );
+            }
 			else if ( !memcmp(p1, "\\b", 2 )) { //bold
 				bTextHasStarted = bJustRemovedRTF = TRUE;
 				iRemoveChars = (p1[2] != '0')?2:3;
@@ -173,7 +180,8 @@ TCHAR* Chat_DoRtfToTags( char* pszText, SESSION_INFO* si)
 					iRemoveChars = 3;
 				mir_snprintf(InsertThis, SIZEOF(InsertThis), (p1[3] != '0' && p1[3] != 'n') ? "%%u" : "%%U" );
 			}
-			else if ( p1[1] == 'u' && isdigit( p1[2] )) { // unicode char
+            /*
+            else if ( p1[1] == 'u' && isdigit( p1[2] )) { // unicode char
 				int wChar;
 				bTextHasStarted = TRUE;
 				bJustRemovedRTF = FALSE;
@@ -187,6 +195,7 @@ TCHAR* Chat_DoRtfToTags( char* pszText, SESSION_INFO* si)
 							iRemoveChars += 4;
 				#endif
 			}
+            */
 			else if ( p1[1] == 'f' && isdigit( p1[2] )) { // unicode char
 				bTextHasStarted = bJustRemovedRTF = TRUE;
 				iRemoveChars = 2 + ReadInteger( p1+2, NULL );
@@ -197,7 +206,7 @@ TCHAR* Chat_DoRtfToTags( char* pszText, SESSION_INFO* si)
 				iRemoveChars = 4;
 				strcpy(InsertThis, " " );
 			}
-			else if ( p1[1] == '{' || p1[1] == '}' ) { // escaped characters
+			else if ( p1[1] == '\\' ||  p1[1] == '{' || p1[1] == '}' ) { // escaped characters
 				bTextHasStarted = TRUE;
 				bJustRemovedRTF = FALSE;
 				iRemoveChars = 2;
@@ -217,6 +226,7 @@ TCHAR* Chat_DoRtfToTags( char* pszText, SESSION_INFO* si)
 					*p3 = 0;
 					sscanf( tmp, "%x", InsertThis );
 
+                    /*
 					#if defined( _UNICODE )
 					{	TCHAR pwszLine[2];
 						MultiByteToWideChar( cp, 0, InsertThis, 1, pwszLine, 2 );
@@ -224,8 +234,9 @@ TCHAR* Chat_DoRtfToTags( char* pszText, SESSION_INFO* si)
 						InsertThis[0] = 0;
 					}
 					#else
+                    */
 						InsertThis[1] = 0;
-					#endif
+					//#endif
 				}
 				else 
                     iRemoveChars = 2;
@@ -266,20 +277,23 @@ TCHAR* Chat_DoRtfToTags( char* pszText, SESSION_INFO* si)
 
 		// move the memory and paste in new commands instead of the old RTF
 		if ( InsertThis[0] || iRemoveChars ) {
+            /*
 			#if defined( _UNICODE )
 				for ( p = InsertThis; *p; p++, d++ )
 					*d = ( BYTE )*p;
 			#endif
+            */
 			MoveMemory(p1 + lstrlenA(InsertThis) , p1 + iRemoveChars, lstrlenA(p1) - iRemoveChars +1 );
 			CopyMemory(p1, InsertThis, lstrlenA(InsertThis));
 			p1 += lstrlenA(InsertThis);
 		}
 		else {
+            /*
 			#if defined( _UNICODE )
 				*d++ = ( BYTE )*p1++;
-			#else
+			#else*/
 				p1++;
-			#endif
+			//#endif
 	}	}
 
 	mir_free(pIndex);
@@ -287,7 +301,8 @@ TCHAR* Chat_DoRtfToTags( char* pszText, SESSION_INFO* si)
 	#if !defined( _UNICODE )
 		return pszText;
 	#else
-		*d = 0;
+		//*d = 0;
+        ptszResult = Utf8_Decode(pszText);
 		return ptszResult;
 	#endif
 }
@@ -331,11 +346,15 @@ char* Chat_Message_GetFromStream(HWND hwndDlg, SESSION_INFO* si)
 	stream.pfnCallback = Message_StreamCallback;
 	stream.dwCookie = (DWORD) &pszText; // pass pointer to pointer
 
-	dwFlags = SF_RTFNOOBJS | SF_NCRFORNONASCII | SFF_PLAINRTF;
-	#if defined( _UNICODE )
-		dwFlags |= SF_UNICODE;
-	#endif
-
+	//dwFlags = SF_RTFNOOBJS | SF_NCRFORNONASCII | SFF_PLAINRTF;
+	//#if defined( _UNICODE )
+	//	dwFlags |= SF_UNICODE;
+	//#endif
+#if defined(_UNICODE)
+    dwFlags = SF_RTFNOOBJS | SFF_PLAINRTF | SF_USECODEPAGE | (CP_UTF8 << 16);
+#else
+    dwFlags = SF_RTFNOOBJS | SFF_PLAINRTF;
+#endif
 	SendMessage(GetDlgItem(hwndDlg, IDC_CHAT_MESSAGE), EM_STREAMOUT, dwFlags, (LPARAM) & stream);
 	return pszText; // pszText contains the text
 }

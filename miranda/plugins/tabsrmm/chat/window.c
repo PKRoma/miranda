@@ -2272,7 +2272,7 @@ LABEL_SHOWWINDOW:
 				DoEventHookAsync(hwndDlg, si->ptszID, si->pszModule, GC_USER_MESSAGE, NULL, ptszText, (LPARAM)NULL);
 				mir_free(pszRtf);
 				#if defined( _UNICODE )
-					mir_free(ptszText);
+					/*mir_*/free(ptszText);
 				#endif
 				SetFocus(GetDlgItem(hwndDlg, IDC_CHAT_MESSAGE));
 			}

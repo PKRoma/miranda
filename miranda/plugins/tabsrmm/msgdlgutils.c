@@ -1251,7 +1251,6 @@ BOOL DoRtfToTags(TCHAR * pszText, struct MessageWindowData *dat)
 	for(i = 0; i < MM_FindModule(dat->pszModule)->nColorCount ; i++)
 		pIndex[i] = -1;*/
 	CreateColorMap(pszText);
-    
 	// scan the file for rtf commands and remove or parse them
     inColor = 0;
 	p1 = _tcsstr(pszText, _T("\\pard"));
