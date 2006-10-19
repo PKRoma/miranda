@@ -421,7 +421,7 @@ int __stdcall MSN_SendNickname(char *nickname)
 
 int __stdcall MSN_SendNicknameW( WCHAR* nickname)
 {
-	char* nickutf = Utf8EncodeUcs2( nickname );
+	char* nickutf = mir_utf8encodeW( nickname );
 
 	char urlNick[ 387 ];
 	UrlEncode( nickutf, urlNick,  sizeof( urlNick ));
@@ -442,9 +442,9 @@ static char * HtmlEncodeUTF8T( const TCHAR *src )
 
 	TCHAR *tmp = HtmlEncodeT(src);
 #if defined( _UNICODE )
-	char *ret = Utf8EncodeUcs2(tmp);
+	char *ret = mir_utf8encodeW(tmp);
 #else
-	char *ret = Utf8Encode(tmp);
+	char *ret = mir_utf8encode(tmp);
 #endif
 	free(tmp);
 	return ret;
@@ -823,140 +823,6 @@ void __stdcall UrlEncode( const char* src,char* dest, int cbDest )
 	}	}
 
 	*d = '\0';
-}
-
-/////////////////////////////////////////////////////////////////////////////////////////
-// Utf8Decode - converts UTF8-encoded string to the UCS2/MBCS format
-
-void __stdcall Utf8Decode( char* str, wchar_t** ucs2 )
-{
-	if ( str == NULL )
-		return;
-
-	int len = strlen( str );
-	if ( len < 2 ) {
-		if ( ucs2 != NULL ) {
-			*ucs2 = ( wchar_t* )malloc(( len+1 )*sizeof( wchar_t ));
-			MultiByteToWideChar( CP_ACP, 0, str, len, *ucs2, len );
-			( *ucs2 )[ len ] = 0;
-		}
-		return;
-	}
-
-	wchar_t* tempBuf = ( wchar_t* )alloca(( len+1 )*sizeof( wchar_t ));
-	{
-		wchar_t* d = tempBuf;
-		BYTE* s = ( BYTE* )str;
-
-		while( *s )
-		{
-			if (( *s & 0x80 ) == 0 ) {
-				*d++ = *s++;
-				continue;
-			}
-
-			if (( s[0] & 0xE0 ) == 0xE0 && ( s[1] & 0xC0 ) == 0x80 && ( s[2] & 0xC0 ) == 0x80 ) {
-				*d++ = (( WORD )( s[0] & 0x0F) << 12 ) + ( WORD )(( s[1] & 0x3F ) << 6 ) + ( WORD )( s[2] & 0x3F );
-				s += 3;
-				continue;
-			}
-
-			if (( s[0] & 0xE0 ) == 0xC0 && ( s[1] & 0xC0 ) == 0x80 ) {
-				*d++ = ( WORD )(( s[0] & 0x1F ) << 6 ) + ( WORD )( s[1] & 0x3F );
-				s += 2;
-				continue;
-			}
-
-			*d++ = *s++;
-		}
-
-		*d = 0;
-	}
-
-	if ( ucs2 != NULL ) {
-		int fullLen = ( len+1 )*sizeof( wchar_t );
-		*ucs2 = ( wchar_t* )malloc( fullLen );
-		memcpy( *ucs2, tempBuf, fullLen );
-	}
-
-   WideCharToMultiByte( CP_ACP, 0, tempBuf, -1, str, len, NULL, NULL );
-}
-
-/////////////////////////////////////////////////////////////////////////////////////////
-// Utf8Encode - converts MBCS string to the UTF8-encoded format
-
-char* __stdcall Utf8Encode( const char* src )
-{
-	if ( src == NULL )
-		return NULL;
-
-	int len = strlen( src );
-	char* result = ( char* )malloc( len*3 + 1 );
-	if ( result == NULL )
-		return NULL;
-
-	wchar_t* tempBuf = ( wchar_t* )alloca(( len+1 )*sizeof( wchar_t ));
-	MultiByteToWideChar( CP_ACP, 0, src, -1, tempBuf, len );
-	tempBuf[ len ] = 0;
-	{
-		wchar_t* s = tempBuf;
-		BYTE*		d = ( BYTE* )result;
-
-		while( *s ) {
-			int U = *s++;
-
-			if ( U < 0x80 ) {
-				*d++ = ( BYTE )U;
-			}
-			else if ( U < 0x800 ) {
-				*d++ = 0xC0 + (( U >> 6 ) & 0x3F );
-				*d++ = 0x80 + ( U & 0x003F );
-			}
-			else {
-				*d++ = 0xE0 + ( U >> 12 );
-				*d++ = 0x80 + (( U >> 6 ) & 0x3F );
-				*d++ = 0x80 + ( U & 0x3F );
-		}	}
-
-		*d = 0;
-	}
-
-	return result;
-}
-
-/////////////////////////////////////////////////////////////////////////////////////////
-// Utf8Encode - converts UCS2 string to the UTF8-encoded format
-
-char* __stdcall Utf8EncodeUcs2( const wchar_t* src )
-{
-	int len = wcslen( src );
-	char* result = ( char* )malloc( len*3 + 1 );
-	if ( result == NULL )
-		return NULL;
-
-	{	const wchar_t* s = src;
-		BYTE*	d = ( BYTE* )result;
-
-		while( *s ) {
-			int U = *s++;
-
-			if ( U < 0x80 ) {
-				*d++ = ( BYTE )U;
-			}
-			else if ( U < 0x800 ) {
-				*d++ = 0xC0 + (( U >> 6 ) & 0x3F );
-				*d++ = 0x80 + ( U & 0x003F );
-			}
-			else {
-				*d++ = 0xE0 + ( U >> 12 );
-				*d++ = 0x80 + (( U >> 6 ) & 0x3F );
-				*d++ = 0x80 + ( U & 0x3F );
-		}	}
-
-		*d = 0;
-	}
-
-	return result;
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////

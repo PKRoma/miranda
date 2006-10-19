@@ -30,15 +30,15 @@ void   mir_free( void* ptr );
 char*  mir_strdup( const char* str );
 WCHAR* mir_wstrdup( const WCHAR* str );
 
-#if defined( _UNICODE )
-	#define mir_tstrdup mir_wstrdup
-#else
-	#define mir_tstrdup mir_strdup
-#endif
-
 /**** utf.c ****************************************************************************/
 
-void Utf8Decode( char* str, wchar_t** ucs2 );
+char* Utf8Decode( char* str, wchar_t** ucs2 );
+char* Utf8DecodeCP( char* str, int codepage, wchar_t** ucs2 );
+
+char* Utf8Encode( const char* str );
+char* Utf8EncodeCP( const char* src, int codepage );
+
+char* Utf8EncodeUcs2( const wchar_t* str );
 
 /**** langpack.c ***********************************************************************/
 

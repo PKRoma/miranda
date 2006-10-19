@@ -339,11 +339,11 @@ static TCHAR* sttSettingToTchar( DBCONTACTWRITESETTING* cws )
 	case DBVT_UTF8:
 		#if defined( _UNICODE )
 		{	TCHAR* result;
-			JabberUtf8Decode( NEWSTR_ALLOCA(cws->value.pszVal), &result );
+			mir_utf8decode( NEWSTR_ALLOCA(cws->value.pszVal), &result );
 			return result;
 		}
 		#else
-			return mir_strdup( JabberUtf8Decode( NEWSTR_ALLOCA(cws->value.pszVal), NULL ));
+			return mir_strdup( mir_utf8decode( NEWSTR_ALLOCA(cws->value.pszVal), NULL ));
 		#endif
 	}
 	return NULL;

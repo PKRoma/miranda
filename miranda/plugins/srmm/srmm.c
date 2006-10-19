@@ -28,6 +28,8 @@ int SplitmsgShutdown(void);
 PLUGINLINK *pluginLink;
 HINSTANCE g_hInst;
 
+struct MM_INTERFACE mmi;
+
 PLUGININFO pluginInfo = {
 	sizeof(PLUGININFO),
 #ifdef _UNICODE
@@ -62,6 +64,7 @@ __declspec(dllexport)
 int __declspec(dllexport) Load(PLUGINLINK * link)
 {
 	pluginLink = link;
+	mir_getMMI( &mmi );
 	return LoadSendRecvMessageModule();
 }
 

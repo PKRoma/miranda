@@ -964,9 +964,9 @@ static int MsnSendMessage( WPARAM wParam, LPARAM lParam )
 
 	if ( ccs->wParam & PREF_UNICODE ) {
 		char* p = ( char* )ccs->lParam;
-		msg = Utf8EncodeUcs2(( wchar_t* )&p[ strlen(p)+1 ] );
+		msg = mir_utf8encodeW(( wchar_t* )&p[ strlen(p)+1 ] );
 	}
-	else msg = Utf8Encode(( char* )ccs->lParam );
+	else msg = mir_utf8encode(( char* )ccs->lParam );
 
 	if ( strlen( msg ) > 1202 ) {
 		errMsg = MSN_Translate( "Message is too long: MSN messages are limited by 1202 UTF8 chars" );

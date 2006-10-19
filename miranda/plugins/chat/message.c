@@ -78,13 +78,15 @@ static int ReadInteger( const char* p, int* result )
 
 TCHAR* DoRtfToTags( char* pszText, SESSION_INFO* si)
 {
-	char *p, *p1;
+	char *p1;
 	int*  pIndex;
 	int i, iRemoveChars, cp = CP_ACP;
 	char InsertThis[50];
 	BOOL bJustRemovedRTF = TRUE;
 	BOOL bTextHasStarted = FALSE;
-	TCHAR *ptszResult, *d;
+	#if defined(_UNICODE)
+		TCHAR *ptszResult;
+	#endif
 	int iUcMode = 0;
 
 	if ( !pszText )
@@ -109,10 +111,6 @@ TCHAR* DoRtfToTags( char* pszText, SESSION_INFO* si)
 
 	MoveMemory( pszText, p1, lstrlenA( p1 ) + 1 );
 	p1 = pszText;
-
-	#if defined( _UNICODE )
-		ptszResult = d = mir_alloc( strlen( p1 ) * sizeof( TCHAR ));
-	#endif
 
 	// iterate through all characters, if rtf control character found then take action
 	while ( *p1 != '\0' ) {
@@ -148,6 +146,11 @@ TCHAR* DoRtfToTags( char* pszText, SESSION_INFO* si)
 				iRemoveChars = 4;
 				strcpy(InsertThis, "\n" );
 			}
+			else if ( !memcmp(p1, "\\line", 5 )) { // newline
+				bTextHasStarted = bJustRemovedRTF = TRUE;
+				iRemoveChars = 5;
+				strcpy(InsertThis, "\n" );
+			}
 			else if ( !memcmp(p1, "\\b", 2 )) { //bold
 				bTextHasStarted = bJustRemovedRTF = TRUE;
 				iRemoveChars = (p1[2] != '0')?2:3;
@@ -173,20 +176,6 @@ TCHAR* DoRtfToTags( char* pszText, SESSION_INFO* si)
 					iRemoveChars = 3;
 				mir_snprintf(InsertThis, SIZEOF(InsertThis), (p1[3] != '0' && p1[3] != 'n') ? "%%u" : "%%U" );
 			}
-			else if ( p1[1] == 'u' && isdigit( p1[2] )) { // unicode char
-				int wChar;
-				bTextHasStarted = TRUE;
-				bJustRemovedRTF = FALSE;
-				iRemoveChars = 2 + ReadInteger( p1+2, &wChar );
-
-				#if defined( _UNICODE )
-					*d++ = wChar;
-					p = p1 + iRemoveChars;
-					for ( i=0; i < iUcMode; i++, p += 4 )
-						if ( *p == '\\' && p[1] == '\'' ) 
-							iRemoveChars += 4;
-				#endif
-			}
 			else if ( p1[1] == 'f' && isdigit( p1[2] )) { // unicode char
 				bTextHasStarted = bJustRemovedRTF = TRUE;
 				iRemoveChars = 2 + ReadInteger( p1+2, NULL );
@@ -197,7 +186,7 @@ TCHAR* DoRtfToTags( char* pszText, SESSION_INFO* si)
 				iRemoveChars = 4;
 				strcpy(InsertThis, " " );
 			}
-			else if ( p1[1] == '{' || p1[1] == '}' ) { // escaped characters
+			else if ( p1[1] == '\\' ||  p1[1] == '{' || p1[1] == '}' ) { // escaped characters
 				bTextHasStarted = TRUE;
 				bJustRemovedRTF = FALSE;
 				iRemoveChars = 2;
@@ -217,15 +206,7 @@ TCHAR* DoRtfToTags( char* pszText, SESSION_INFO* si)
 					*p3 = 0;
 					sscanf( tmp, "%x", InsertThis );
 
-					#if defined( _UNICODE )
-					{	TCHAR pwszLine[2];
-						MultiByteToWideChar( cp, 0, InsertThis, 1, pwszLine, 2 );
-						*d++ = pwszLine[0];
-						InsertThis[0] = 0;
-					}
-					#else
-						InsertThis[1] = 0;
-					#endif
+					InsertThis[1] = 0;
 				}
 				else iRemoveChars = 2;
 			}
@@ -264,28 +245,19 @@ TCHAR* DoRtfToTags( char* pszText, SESSION_INFO* si)
 
 		// move the memory and paste in new commands instead of the old RTF
 		if ( InsertThis[0] || iRemoveChars ) {
-			#if defined( _UNICODE )
-				for ( p = InsertThis; *p; p++, d++ )
-					*d = ( BYTE )*p;
-			#endif
 			MoveMemory(p1 + lstrlenA(InsertThis) , p1 + iRemoveChars, lstrlenA(p1) - iRemoveChars +1 );
 			CopyMemory(p1, InsertThis, lstrlenA(InsertThis));
 			p1 += lstrlenA(InsertThis);
 		}
-		else {
-			#if defined( _UNICODE )
-				*d++ = ( BYTE )*p1++;
-			#else
-				p1++;
-			#endif
-	}	}
+		else p1++;
+	}
 
 	mir_free(pIndex);
 
 	#if !defined( _UNICODE )
 		return pszText;
 	#else
-		*d = 0;
+		mir_utf8decode(pszText, &ptszResult);
 		return ptszResult;
 	#endif
 }
@@ -329,11 +301,11 @@ char* Message_GetFromStream(HWND hwndDlg, SESSION_INFO* si)
 	stream.pfnCallback = Message_StreamCallback;
 	stream.dwCookie = (DWORD) &pszText; // pass pointer to pointer
 
-	dwFlags = SF_RTFNOOBJS | SF_NCRFORNONASCII | SFF_PLAINRTF;
-	#if defined( _UNICODE )
-		dwFlags |= SF_UNICODE;
+	#if defined(_UNICODE)
+		dwFlags = SF_RTFNOOBJS | SFF_PLAINRTF | SF_USECODEPAGE | (CP_UTF8 << 16);
+	#else
+		dwFlags = SF_RTFNOOBJS | SFF_PLAINRTF;
 	#endif
-
 	SendMessage(GetDlgItem(hwndDlg, IDC_MESSAGE), EM_STREAMOUT, dwFlags, (LPARAM) & stream);
 	return pszText; // pszText contains the text
 }

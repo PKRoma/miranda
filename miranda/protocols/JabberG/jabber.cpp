@@ -52,8 +52,9 @@ PLUGININFO pluginInfo = {
 	0
 };
 
-MM_INTERFACE memoryManagerInterface;
-LIST_INTERFACE li = { 0 };
+MM_INTERFACE   mmi;
+LIST_INTERFACE li;
+UTF8_INTERFACE utfi;
 
 HANDLE hMainThread = NULL;
 DWORD jabberMainThreadId;
@@ -132,8 +133,8 @@ extern "C" BOOL WINAPI DllMain( HINSTANCE hModule, DWORD dwReason, LPVOID lpvRes
 
 extern "C" __declspec( dllexport ) PLUGININFO *MirandaPluginInfo( DWORD mirandaVersion )
 {
-	if ( mirandaVersion < PLUGIN_MAKE_VERSION( 0,5,0,0 )) {
-		MessageBoxA( NULL, "The Jabber protocol plugin cannot be loaded. It requires Miranda IM 0.5 or later.", "Jabber Protocol Plugin", MB_OK|MB_ICONWARNING|MB_SETFOREGROUND|MB_TOPMOST );
+	if ( mirandaVersion < PLUGIN_MAKE_VERSION( 0,6,0,15 )) {
+		MessageBoxA( NULL, "The Jabber protocol plugin cannot be loaded. It requires Miranda IM 0.6.0.15 or later.", "Jabber Protocol Plugin", MB_OK|MB_ICONWARNING|MB_SETFOREGROUND|MB_TOPMOST );
 		return NULL;
 	}
 
@@ -239,27 +240,12 @@ extern "C" int __declspec( dllexport ) Load( PLUGINLINK *link )
 {
 	pluginLink = link;
 
-	// set the memory manager
-	memoryManagerInterface.cbSize = sizeof(MM_INTERFACE);
-	JCallService(MS_SYSTEM_GET_MMI,0,(LPARAM)&memoryManagerInterface);
+	// set the memory, lists & utf8 managers
+	mir_getMMI( &mmi );
+	mir_getLI( &li );
+	mir_getUTFI( &utfi );
 
-	// set the lists manager;
-	li.cbSize = sizeof( li );
-	if ( CallService(MS_SYSTEM_GET_LI,0,(LPARAM)&li) == CALLSERVICE_NOTFOUND ) {
-LBL_Ver:
-		MessageBoxA( NULL, "This plugin requires Miranda IM 0.6 bld. 8 or later", "Fatal error", MB_OK );
-		return 1;
-	}
-
-	// this check is important because of the error in Miranda's core...
-	if ( li.List_InsertPtr == NULL )
-		goto LBL_Ver;
-
-	if ( !ServiceExists( MS_DB_CONTACT_GETSETTING_STR )) {
-		MessageBoxA( NULL, "This plugin requires db3x plugin version 0.5.1.0 or later", "Jabber", MB_OK );
-		return 1;
-	}
-
+	// creating the plugins name
 	char text[_MAX_PATH];
 	char* p, *q;
 

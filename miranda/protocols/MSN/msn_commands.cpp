@@ -305,7 +305,7 @@ static void sttInviteMessage( ThreadData* info, const char* msgBody, char* email
 
 		ft->std.hContact = MSN_HContactFromEmail( email, nick, 1, 1 );
 		replaceStr( ft->std.currentFile, Appfile );
-		Utf8Decode( ft->std.currentFile, &ft->wszFileName );
+		mir_utf8decode( ft->std.currentFile, &ft->wszFileName );
 		ft->fileId = -1;
 		ft->std.currentFileSize = atol( Appfilesize );
 		ft->std.totalBytes = atol( Appfilesize );
@@ -545,7 +545,7 @@ void MSN_ReceiveMessage( ThreadData* info, char* cmdString, char* params )
 		wchar_t* tRealBody = NULL;
 		int      tRealBodyLen = 0;
 		if ( strstr( tContentType, "charset=UTF-8" ))
-		{	Utf8Decode(( char* )msgBody, &tRealBody );
+		{	mir_utf8decode(( char* )msgBody, &tRealBody );
 			tRealBodyLen = wcslen( tRealBody );
 		}
 		int tMsgBodyLen = strlen( msgBody );
@@ -678,7 +678,7 @@ void MSN_ReceiveMessage( ThreadData* info, char* cmdString, char* params )
 		wchar_t* tRealBody = NULL;
 		int      tRealBodyLen = 0;
 		if ( strstr( tContentType, "charset=UTF-8" ))
-		{	Utf8Decode(( char* )msgBody, &tRealBody );
+		{	mir_utf8decode(( char* )msgBody, &tRealBody );
 			tRealBodyLen = wcslen( tRealBody );
 		}
 		int tMsgBodyLen = strlen( msgBody );
@@ -780,7 +780,7 @@ HANDLE sttProcessAdd( int trid, int listId, char* userEmail, char* userNick )
 		return NULL;
 
 	HANDLE hContact = MSN_HContactFromEmail( userEmail, userNick, 1, 1 );
-	Utf8Decode( userNick );
+	mir_utf8decode( userNick, NULL );
 	int mask = Lists_Add( listId, userEmail, userNick );
 
 	if ( listId == LIST_RL && ( mask & ( LIST_FL+LIST_AL+LIST_BL )) == 0 )
@@ -971,17 +971,17 @@ static void sttProcessStatusMessage( BYTE* buf, unsigned len, HANDLE hContact )
 		lti.cbSize = sizeof(LISTENINGTOINFO);
 
 		#if defined( _UNICODE )
-			Utf8Decode( parts[4], &lti.ptszTitle );
-			if ( pCount > 5 ) Utf8Decode( parts[5], &lti.ptszArtist );
-			if ( pCount > 6 ) Utf8Decode( parts[6], &lti.ptszAlbum );
-			if ( pCount > 7 ) Utf8Decode( parts[7], &lti.ptszTrack );
-			if ( pCount > 8 ) Utf8Decode( parts[8], &lti.ptszYear );
-			if ( pCount > 9 ) Utf8Decode( parts[9], &lti.ptszGenre );
-			if ( pCount > 10 ) Utf8Decode( parts[10], &lti.ptszLength );
-			if ( pCount > 11 ) Utf8Decode( parts[11], &lti.ptszPlayer );
-			else Utf8Decode( parts[0], &lti.ptszPlayer );
-			if ( pCount > 12 ) Utf8Decode( parts[12], &lti.ptszType );
-			else Utf8Decode( parts[1], &lti.ptszType );
+			mir_utf8decode( parts[4], &lti.ptszTitle );
+			if ( pCount > 5 ) mir_utf8decode( parts[5], &lti.ptszArtist );
+			if ( pCount > 6 ) mir_utf8decode( parts[6], &lti.ptszAlbum );
+			if ( pCount > 7 ) mir_utf8decode( parts[7], &lti.ptszTrack );
+			if ( pCount > 8 ) mir_utf8decode( parts[8], &lti.ptszYear );
+			if ( pCount > 9 ) mir_utf8decode( parts[9], &lti.ptszGenre );
+			if ( pCount > 10 ) mir_utf8decode( parts[10], &lti.ptszLength );
+			if ( pCount > 11 ) mir_utf8decode( parts[11], &lti.ptszPlayer );
+			else mir_utf8decode( parts[0], &lti.ptszPlayer );
+			if ( pCount > 12 ) mir_utf8decode( parts[12], &lti.ptszType );
+			else mir_utf8decode( parts[1], &lti.ptszType );
 		#else
 			lti.ptszTitle = parts[4];
 			if ( pCount > 5 ) lti.ptszArtist = parts[5];
@@ -1448,7 +1448,7 @@ LBL_InvalidCommand:
 			int thisContact = atol( data.strThisContact );
 			if ( thisContact != 1 ) {
 				char* tContactName = MSN_GetContactName( hContact );
-				Utf8Decode( data.userNick );
+				mir_utf8decode( data.userNick, NULL );
 
 				char multichatmsg[256];
 				mir_snprintf( multichatmsg, sizeof( multichatmsg ),
@@ -1481,7 +1481,7 @@ LBL_InvalidCommand:
 				MSN_SetDword( hContact, "FlagBits", atol( data.flags ));
 
 
-			Utf8Decode( data.userNick );
+			mir_utf8decode( data.userNick, NULL );
 			MSN_DebugLog( "New contact in channel %s %s", data.userEmail, data.userNick );
 
 			info->mInitialContact = NULL;
@@ -1592,7 +1592,7 @@ LBL_InvalidCommand:
 			sttProcessListedContactMask();
 			sttListedContact = MSN_HContactFromEmail( userEmail, userNick, 1, 0 );
 
-			Utf8Decode( userNick );
+			mir_utf8decode( userNick, NULL );
 			Lists_Add( listId, userEmail, userNick );
 
 			if (( listId & ( LIST_AL +  LIST_BL + LIST_FL )) == LIST_BL ) {
@@ -1758,7 +1758,7 @@ LBL_InvalidCommand:
 				goto LBL_InvalidCommand;
 
 			UrlDecode( data.newServer ); UrlDecode( data.callerEmail );
-			UrlDecode( data.callerNick ); Utf8Decode( data.callerNick );
+			UrlDecode( data.callerNick ); mir_utf8decode( data.callerNick, NULL );
 
 			if ( strcmp( data.security, "CKI" )) {
 				MSN_DebugLog( "Unknown security package in RNG command: %s", data.security );
@@ -1847,7 +1847,7 @@ LBL_InvalidCommand:
 					goto LBL_InvalidCommand;
 
 				UrlDecode( data.userHandle ); UrlDecode( data.friendlyName );
-				Utf8Decode( data.friendlyName );
+				mir_utf8decode( data.friendlyName, NULL );
 
 				if ( strcmp( data.status, "OK" )) {
 					MSN_DebugLog( "Unknown status to USR command (SB): '%s'", data.status );

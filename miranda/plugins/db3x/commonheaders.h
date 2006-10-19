@@ -52,12 +52,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 extern PLUGINLINK *pluginLink;
 
-extern struct MM_INTERFACE memoryManagerInterface;
 extern struct LIST_INTERFACE li;
-
-#define mir_alloc(n) memoryManagerInterface.mmi_malloc(n)
-#define mir_free(ptr) memoryManagerInterface.mmi_free(ptr)
-#define mir_realloc(ptr,size) memoryManagerInterface.mmi_realloc(ptr,size)
 
 #ifdef __GNUC__
 #define mir_i64(x) (x##LL)

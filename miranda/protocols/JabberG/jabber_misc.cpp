@@ -168,7 +168,6 @@ void JabberDBAddAuthRequest( TCHAR* jid, TCHAR* nick )
 
 ///////////////////////////////////////////////////////////////////////////////
 // JabberDBCreateContact()
-// jid & nick are passed in TXT
 
 HANDLE JabberDBCreateContact( TCHAR* jid, TCHAR* nick, BOOL temporary, BOOL stripResource )
 {

@@ -155,8 +155,8 @@ static void xmlStreamInitializeNow(struct ThreadData* info){
 	JabberXmlSetCallback( &xmlState, 1, ELEM_OPEN, JabberProcessStreamOpening, info );
 	JabberXmlSetCallback( &xmlState, 1, ELEM_CLOSE, JabberProcessStreamClosing, info );
 	JabberXmlSetCallback( &xmlState, 2, ELEM_CLOSE, JabberProcessProtocol, info );
-	//JabberSend( info->s, "<?xml version=\"1.0\" encoding=\"UTF-8\"?><stream:stream to=\"%s\" xmlns=\"jabber:client\" xmlns:stream=\"http://etherx.jabber.org/streams\" version=\"1.0\">", TXT(info->server) );
-	{	XmlNode stream( "stream:stream" );
+	{	
+		XmlNode stream( "stream:stream" );
 		stream.props = "<?xml version='1.0' encoding='UTF-8'?>";
 		stream.addAttr( "to", info->server );
 		stream.addAttr( "xmlns", "jabber:client" );

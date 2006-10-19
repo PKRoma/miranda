@@ -67,7 +67,7 @@ void JabberIqResultGetAuth( XmlNode *iqNode, void *userdata )
 		XmlNode* query = iq.addQuery( "jabber:iq:auth" );
 		query->addChild( "username", info->username );
 		if ( JabberXmlGetChild( queryNode, "digest" )!=NULL && streamId ) {
-			char* str = JabberUtf8Encode( info->password );
+			char* str = mir_utf8encode( info->password );
 			char text[200];
 			mir_snprintf( text, SIZEOF(text), "%s%s", streamId, str );
 			mir_free( str );

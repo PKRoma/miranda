@@ -165,9 +165,6 @@ WCHAR*   __stdcall   HtmlEncodeW( const WCHAR* str );
 
 void		__stdcall	UrlDecode( char*str );
 void		__stdcall	UrlEncode( const char* src, char* dest, int cbDest );
-void		__stdcall	Utf8Decode( char* str, wchar_t** = NULL );
-char*		__stdcall	Utf8Encode( const char* src );
-char*    __stdcall	Utf8EncodeUcs2( const wchar_t* src );
 
 HANDLE   __stdcall   MSN_HContactFromEmail( const char* msnEmail, const char* msnNick, int addIfNeeded, int temporary );
 HANDLE   __stdcall   MSN_HContactFromEmailT( const TCHAR* msnEmail );
@@ -309,7 +306,6 @@ struct HReadBuffer
 	int			totalDataSize;
 	int			startOffset;
 };
-
 
 enum TInfoType
 {
@@ -650,7 +646,7 @@ class UTFEncoder {
 
 public:
 	__forceinline UTFEncoder( const char* pSrc ) :
-		m_body( Utf8Encode( pSrc ))
+		m_body( mir_utf8encode( pSrc ))
 		{}
 
 	__forceinline ~UTFEncoder()

@@ -329,9 +329,6 @@
 			<File
 				RelativePath=".\init.c">
 			</File>
-			<File
-				RelativePath=".\utf.c">
-			</File>
 		</Filter>
 		<Filter
 			Name="Header Files"

@@ -27,6 +27,7 @@ HANDLE      g_hWindowList;
 HMENU       g_hMenu = NULL;
 
 struct MM_INTERFACE memoryManagerInterface;
+struct UTF8_INTERFACE utfi;
 
 FONTINFO    aFonts[OPTIONS_FONTCOUNT];
 HICON       hIcons[30];
@@ -54,7 +55,7 @@ PLUGININFO pluginInfo = {
 	#else
 		"Chat",
 	#endif
-	PLUGIN_MAKE_VERSION(0,6,1,1),
+	PLUGIN_MAKE_VERSION(0,6,1,2),
 	"Provides chat rooms for protocols supporting it",
 	"Miranda team",
 	"project-info@miranda-im.org",
@@ -72,7 +73,7 @@ BOOL WINAPI DllMain(HINSTANCE hinstDLL,DWORD fdwReason,LPVOID lpvReserved)
 
 __declspec(dllexport) PLUGININFO* MirandaPluginInfo(DWORD mirandaVersion)
 {
-	if (mirandaVersion < PLUGIN_MAKE_VERSION(0,4,0,0)) return NULL;
+	if (mirandaVersion < PLUGIN_MAKE_VERSION(0,6,0,14)) return NULL;
 	return &pluginInfo;
 }
 
@@ -89,9 +90,10 @@ int __declspec(dllexport) Load(PLUGINLINK *link)
 
 	pluginLink = link;
 
-	// set the memory manager
-	memoryManagerInterface.cbSize = sizeof(struct MM_INTERFACE);
-	CallService(MS_SYSTEM_GET_MMI,0,(LPARAM)&memoryManagerInterface);
+	// set the memory & utf8 managers
+	mir_getMMI( &memoryManagerInterface );
+	if ( mir_getUTFI( &utfi ) == CALLSERVICE_NOTFOUND )
+		return 1;
 
 	hDll = LoadLibraryA("riched20.dll");
 	if ( hDll ) {

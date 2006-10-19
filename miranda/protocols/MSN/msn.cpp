@@ -29,8 +29,9 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 HINSTANCE hInst;
 PLUGINLINK *pluginLink;
 
-MM_INTERFACE memoryManagerInterface;
-LIST_INTERFACE li = { 0 };
+MM_INTERFACE   mmi;
+LIST_INTERFACE li;
+UTF8_INTERFACE utfi;
 
 /////////////////////////////////////////////////////////////////////////////////////////
 // Initialization routines
@@ -267,16 +268,9 @@ extern "C" int __declspec(dllexport) Load( PLUGINLINK* link )
 	DuplicateHandle( GetCurrentProcess(), GetCurrentThread(), GetCurrentProcess(), &msnMainThread, THREAD_SET_CONTEXT, FALSE, 0 );
 
 	// get the internal malloc/free()
-	memset(&memoryManagerInterface, 0, sizeof(memoryManagerInterface));
-	memoryManagerInterface.cbSize = sizeof(memoryManagerInterface);
-	CallService(MS_SYSTEM_GET_MMI, 0, (LPARAM) &memoryManagerInterface);
-
-	// set the lists manager;
-	li.cbSize = sizeof( li );
-	if ( CallService(MS_SYSTEM_GET_LI,0,(LPARAM)&li) == CALLSERVICE_NOTFOUND ) {
-		MessageBoxA( NULL, "This plugin requires Miranda IM 0.6 bld. 8 or later", "Fatal error", MB_OK );
-		return 1;
-	}
+	mir_getLI( &li );
+	mir_getMMI( &mmi );
+	mir_getUTFI( &utfi );
 
 	char path[MAX_PATH];
 	char* protocolname;
@@ -410,8 +404,8 @@ extern "C" int __declspec( dllexport ) Unload( void )
 
 extern "C" __declspec(dllexport) PLUGININFO* MirandaPluginInfo(DWORD mirandaVersion)
 {
-	if ( mirandaVersion < PLUGIN_MAKE_VERSION( 0, 6, 0, 0 )) {
-		MessageBox( NULL, _T("The MSN protocol plugin cannot be loaded. It requires Miranda IM 0.6.0 or later."), _T("MSN Protocol Plugin"), MB_OK|MB_ICONWARNING|MB_SETFOREGROUND|MB_TOPMOST );
+	if ( mirandaVersion < PLUGIN_MAKE_VERSION( 0, 6, 0, 15 )) {
+		MessageBox( NULL, _T("The MSN protocol plugin cannot be loaded. It requires Miranda IM 0.6.0.15 or later."), _T("MSN Protocol Plugin"), MB_OK|MB_ICONWARNING|MB_SETFOREGROUND|MB_TOPMOST );
 		return NULL;
 	}
 

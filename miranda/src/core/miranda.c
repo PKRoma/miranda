@@ -25,6 +25,8 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include "commonheaders.h"
 #include "../modules/database/dblists.h"
 
+#define MMI_SIZE_V1 (4*sizeof(void*))
+
 int InitialiseModularEngine(void);
 void DestroyingModularEngine(void);
 void DestroyModularEngine(void);
@@ -515,7 +517,17 @@ int GetMemoryManagerInterface(WPARAM wParam, LPARAM lParam)
 	mmi->mmi_realloc = mir_realloc;
 	mmi->mmi_free = mir_free;
 
-	if ( mmi->cbSize != sizeof(struct MM_INTERFACE)) {
+	switch( mmi->cbSize ) {
+	case sizeof(struct MM_INTERFACE):
+		mmi->mmi_calloc = mir_calloc;
+		mmi->mmi_strdup = mir_strdup;
+		mmi->mmi_wstrdup = mir_wstrdup;
+		// fall through
+
+	case MMI_SIZE_V1:
+		break;
+
+	default:
 		#if defined( _DEBUG )
 			DebugBreak();
 		#endif
@@ -549,6 +561,22 @@ int GetListInterface(WPARAM wParam, LPARAM lParam)
 	return 1;
 }
 
+int GetUtfInterface(WPARAM wParam, LPARAM lParam)
+{
+	struct UTF8_INTERFACE *utfi = (struct UTF8_INTERFACE*) lParam;
+	if ( utfi == NULL )
+		return 1;
+	if ( utfi->cbSize != sizeof( struct UTF8_INTERFACE ))
+		return 1;
+
+	utfi->utf8_decode   = Utf8Decode;
+	utfi->utf8_decodecp = Utf8DecodeCP;
+	utfi->utf8_encode   = Utf8Encode;
+	utfi->utf8_encodecp = Utf8EncodeCP;
+	utfi->utf8_encodeW  = Utf8EncodeUcs2;
+	return 0;
+}
+
 int LoadSystemModule(void)
 {
 	InitCommonControls();
@@ -576,5 +604,6 @@ int LoadSystemModule(void)
 	CreateServiceFunction(MS_SYSTEM_REMOVEWAIT,RemoveWait);
 	CreateServiceFunction(MS_SYSTEM_GET_LI,GetListInterface);
 	CreateServiceFunction(MS_SYSTEM_GET_MMI,GetMemoryManagerInterface);
+	CreateServiceFunction(MS_SYSTEM_GET_UTFI,GetUtfInterface);
 	return 0;
 }

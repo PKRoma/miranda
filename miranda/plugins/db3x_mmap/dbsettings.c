@@ -382,7 +382,7 @@ static int GetContactSetting(WPARAM wParam,LPARAM lParam)
 		return 1;
 
 	if ( dgs->pValue->type == DBVT_UTF8 ) {
-		Utf8Decode( dgs->pValue->pszVal, NULL );
+		mir_utf8decode( dgs->pValue->pszVal, NULL );
 		dgs->pValue->type = DBVT_ASCIIZ;
 	}
 
@@ -417,12 +417,12 @@ static int GetContactSettingStr(WPARAM wParam,LPARAM lParam)
 		}
 		else {
 			char* savePtr = dgs->pValue->pszVal;
-			Utf8Decode( dgs->pValue->pszVal, &dgs->pValue->pwszVal );
+			mir_utf8decode( dgs->pValue->pszVal, &dgs->pValue->pwszVal );
 			mir_free( savePtr );
 		}
 	}
 	else if ( iSaveType == DBVT_UTF8 ) {
-		char* tmpBuf = Utf8Encode( dgs->pValue->pszVal );
+		char* tmpBuf = mir_utf8encode( dgs->pValue->pszVal );
 		if ( tmpBuf == NULL )
 			return 1;
 
@@ -430,7 +430,7 @@ static int GetContactSettingStr(WPARAM wParam,LPARAM lParam)
 		dgs->pValue->pszVal = tmpBuf;
 	}
 	else if ( iSaveType == DBVT_ASCIIZ )
-		Utf8Decode( dgs->pValue->pszVal, NULL );
+		mir_utf8decode( dgs->pValue->pszVal, NULL );
 
 	dgs->pValue->type = iSaveType;
 	return 0;
@@ -443,7 +443,7 @@ static int GetContactSettingStatic(WPARAM wParam,LPARAM lParam)
 		return 1;
 
 	if ( dgs->pValue->type == DBVT_UTF8 ) {
-		Utf8Decode( dgs->pValue->pszVal, NULL );
+		mir_utf8decode( dgs->pValue->pszVal, NULL );
 		dgs->pValue->type = DBVT_ASCIIZ;
 	}
 
@@ -513,7 +513,7 @@ static int WriteContactSetting(WPARAM wParam,LPARAM lParam)
 
 	if (dbcws->value.type == DBVT_WCHAR) {
 		if (dbcws->value.pszVal != NULL) {
-			char* val = Utf8EncodeUcs2(dbcws->value.pwszVal);
+			char* val = mir_utf8encodeW(dbcws->value.pwszVal);
 			if ( val == NULL )
 				return 1;
 
