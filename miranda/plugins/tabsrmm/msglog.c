@@ -1533,6 +1533,36 @@ void StreamInEvents(HWND hwndDlg, HANDLE hDbEventFirst, int count, int fAppend, 
         DM_ScrollToBottom(hwndDlg, dat, 0, 0);
         return;
     }
+    if(dat->hwndHPP != 0) {
+        IEVIEWEVENT event;
+
+        event.cbSize = sizeof(IEVIEWEVENT);
+        event.hwnd = dat->hwndHPP;
+        event.hContact = dat->hContact;
+#if defined(_UNICODE)
+        event.dwFlags = (dat->dwFlags & MWF_LOG_RTL) ? IEEF_RTL : 0;
+        if(dat->sendMode & SMODE_FORCEANSI) {
+            event.dwFlags |= IEEF_NO_UNICODE;
+            event.codepage = dat->codePage;
+        }
+        else
+            event.codepage = 0;
+#else
+        event.dwFlags = ((dat->dwFlags & MWF_LOG_RTL) ? IEEF_RTL : 0) | IEEF_NO_UNICODE;
+        event.codepage = 0;
+#endif        
+        if (!fAppend) {
+            event.iType = IEE_CLEAR_LOG;
+            CallService(MS_HPP_EG_EVENT, 0, (LPARAM)&event);
+        }
+        event.iType = IEE_LOG_EVENTS;
+        event.hDbEventFirst = hDbEventFirst;
+        event.count = count;
+        CallService(MS_HPP_EG_EVENT, 0, (LPARAM)&event);
+        //SendMessage(hwndDlg, DM_FORCESCROLL, (WPARAM)&pt, (LPARAM)&si);
+        DM_ScrollToBottom(hwndDlg, dat, 0, 0);
+        return;
+    }
 
     // separator strings used for grid lines, message separation and so on...
 

@@ -136,6 +136,7 @@ static void ResizeIeView(HWND hwndDlg, struct MessageWindowData *dat, DWORD px, 
     RECT rcRichEdit, rcIeView;
     POINT pt;
     IEVIEWWINDOW ieWindow;
+    int iMode = dat->hwndIEView ? 1 : 2;
 
 	GetWindowRect(GetDlgItem(hwndDlg, IDC_LOG), &rcRichEdit);
     pt.x = rcRichEdit.left;
@@ -144,7 +145,7 @@ static void ResizeIeView(HWND hwndDlg, struct MessageWindowData *dat, DWORD px, 
     ieWindow.cbSize = sizeof(IEVIEWWINDOW);
     ieWindow.iType = IEW_SETPOS;
     ieWindow.parent = hwndDlg;
-    ieWindow.hwnd = dat->hwndIEView;
+    ieWindow.hwnd = iMode == 1 ? dat->hwndIEView : dat->hwndHPP;
     if(cx != 0 || cy != 0) {
         ieWindow.x = px;
         ieWindow.y = py;
@@ -157,9 +158,9 @@ static void ResizeIeView(HWND hwndDlg, struct MessageWindowData *dat, DWORD px, 
         ieWindow.cx = rcRichEdit.right - rcRichEdit.left;
         ieWindow.cy = rcRichEdit.bottom - rcRichEdit.top;
     }
-    GetWindowRect(dat->hwndIEView, &rcIeView);
+    GetWindowRect(iMode == 1 ? dat->hwndIEView : dat->hwndHPP, &rcIeView);
     if(ieWindow.cx != 0 && ieWindow.cy != 0) {
-        CallService(MS_IEVIEW_WINDOW, 0, (LPARAM)&ieWindow);
+        CallService(iMode == 1 ? MS_IEVIEW_WINDOW : MS_HPP_EG_WINDOW, 0, (LPARAM)&ieWindow);
     }
 }
 
@@ -311,18 +312,20 @@ static void MsgWindowUpdateState(HWND hwndDlg, struct MessageWindowData *dat, UI
             PostMessage(hwnd, WM_VSCROLL, MAKEWPARAM(SB_PAGEDOWN, 0), 0);
         }
         DM_SetDBButtonStates(hwndDlg, dat);
-        if(dat->hwndIEView) {
+        if(dat->hwndIEView || dat->hwndHPP) {
             RECT rcRTF;
             POINT pt;
 
             GetWindowRect(GetDlgItem(hwndDlg, IDC_LOG), &rcRTF);
             rcRTF.left += 20; rcRTF.top += 20;
             pt.x = rcRTF.left; pt.y = rcRTF.top;
-            if(DBGetContactSettingByte(NULL, SRMSGMOD_T, "subclassIEView", 0) && dat->oldIEViewProc == 0) {
-                WNDPROC wndProc = (WNDPROC)SetWindowLong(dat->hwndIEView, GWL_WNDPROC, (LONG)IEViewSubclassProc);
-                if(OldIEViewProc == 0)
-                    OldIEViewProc = wndProc;
-                dat->oldIEViewProc = wndProc;
+            if(dat->hwndIEView) {
+                if(DBGetContactSettingByte(NULL, SRMSGMOD_T, "subclassIEView", 0) && dat->oldIEViewProc == 0) {
+                    WNDPROC wndProc = (WNDPROC)SetWindowLong(dat->hwndIEView, GWL_WNDPROC, (LONG)IEViewSubclassProc);
+                    if(OldIEViewProc == 0)
+                        OldIEViewProc = wndProc;
+                    dat->oldIEViewProc = wndProc;
+                }
             }
             dat->hwndIWebBrowserControl = WindowFromPoint(pt);
         }
@@ -440,7 +443,7 @@ void SetDialogToType(HWND hwndDlg)
     
     EnableWindow(GetDlgItem(hwndDlg, IDC_TIME), TRUE);
     
-	if (dat->hwndIEView) {
+	if (dat->hwndIEView || dat->hwndHPP) {
 		ShowWindow (GetDlgItem(hwndDlg, IDC_LOG), SW_HIDE);
         EnableWindow(GetDlgItem(hwndDlg, IDC_LOG), FALSE);
 		ShowWindow (GetDlgItem(hwndDlg, IDC_MESSAGE), SW_SHOW);
@@ -872,7 +875,7 @@ static LRESULT CALLBACK MessageEditSubclassProc(HWND hwnd, UINT msg, WPARAM wPar
                         } else if (wParam == VK_DOWN)
                             wp = MAKEWPARAM(SB_LINEDOWN, 0);
 
-                        if(mwdat->hwndIEView == 0)
+                        if(mwdat->hwndIEView == 0 && mwdat->hwndHPP == 0)
                             SendMessage(GetDlgItem(hwndParent, IDC_LOG), WM_VSCROLL, wp, 0);
                         else
                             SendMessage(mwdat->hwndIWebBrowserControl, WM_VSCROLL, wp, 0);
@@ -2650,7 +2653,7 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                     MoveWindow(GetDlgItem(hwndDlg, IDC_CLIST), rc.left, rc.top, rc.right - rc.left, rcLog.bottom - rcLog.top, FALSE);
                 }
                 
-                if (dat->hwndIEView != 0)
+                if (dat->hwndIEView || dat->hwndHPP)
                     ResizeIeView(hwndDlg, dat, 0, 0, 0, 0);
                 if(dat->dwFlagsEx & MWF_SHOW_INFOPANEL) {
                     InvalidateRect(GetDlgItem(hwndDlg, IDC_PANELUIN), NULL, FALSE);
@@ -2807,8 +2810,14 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
 
                 iew.cbSize = sizeof(IEVIEWWINDOW);
                 iew.iType = IEW_SCROLLBOTTOM;
-                iew.hwnd = dat->hwndIEView;
-                CallService(MS_IEVIEW_WINDOW, 0, (LPARAM)&iew);
+                if(dat->hwndIEView) {
+                    iew.hwnd = dat->hwndIEView;
+                    CallService(MS_IEVIEW_WINDOW, 0, (LPARAM)&iew);
+                }
+                else if(dat->hwndHPP) {
+                    iew.hwnd = dat->hwndHPP;
+                    CallService(MS_HPP_EG_WINDOW, 0, (LPARAM)&iew);
+                }
                 return 0;
             }
         case DM_DELAYEDSCROLL:
@@ -2824,7 +2833,7 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                 if(wParam == 0 && lParam == 0)
                     return(DM_ScrollToBottom(hwndDlg, dat, 0, 1));
 
-                if(dat->hwndIEView == 0) {
+                if(dat->hwndIEView == 0 && dat->hwndHPP == 0) {
                     len = GetWindowTextLengthA(GetDlgItem(hwndDlg, IDC_LOG));
                     SendDlgItemMessage(hwndDlg, IDC_LOG, EM_SETSEL, len - 1, len - 1);
                     //SendDlgItemMessage(hwndDlg, IDC_LOG, EM_SETSEL, -1, -1);
@@ -2836,7 +2845,7 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                 if ((UINT)psi->nPos >= (UINT)psi->nMax-psi->nPage-5 || psi->nMax-psi->nMin-psi->nPage < 50)
                     DM_ScrollToBottom(hwndDlg, dat, 0, 0);
                 else
-                    SendMessage(dat->hwndIEView ? dat->hwndIEView : hwnd, EM_SETSCROLLPOS, 0, (LPARAM)ppt);
+                    SendMessage((dat->hwndIEView || dat->hwndHPP) ? (dat->hwndIEView ? dat->hwndIEView : dat->hwndHPP) : hwnd, EM_SETSCROLLPOS, 0, (LPARAM)ppt);
                 
                 return 0;
             }
@@ -3933,12 +3942,12 @@ quote_from_last:
                     CallService(MS_HISTORY_SHOWCONTACTHISTORY, (WPARAM) dat->hContact, 0);
                     break;
                 case IDC_SMILEYBTN:
-                    if(dat->doSmileys && (myGlobals.g_SmileyAddAvail || dat->hwndIEView != 0)) {
+                    if(dat->doSmileys && myGlobals.g_SmileyAddAvail) {
                         HICON hButtonIcon = 0;
                         RECT rc;
                         HANDLE hContact = dat->bIsMeta ? dat->hSubContact : dat->hContact;
                         
-                        if(CheckValidSmileyPack(dat->bIsMeta ? dat->szMetaProto : dat->szProto, hContact, &hButtonIcon) != 0 || dat->hwndIEView != 0) {
+                        if(CheckValidSmileyPack(dat->bIsMeta ? dat->szMetaProto : dat->szProto, hContact, &hButtonIcon) != 0) {
                             SMADD_SHOWSEL3 smaddInfo = {0};
 
                             if(lParam == 0)
@@ -4012,11 +4021,12 @@ quote_from_last:
 
                         EnableMenuItem(submenu, 0, MF_BYPOSITION | (ServiceExists(MS_IEVIEW_WINDOW) ? MF_ENABLED : MF_GRAYED));
                         
-                        CheckMenuItem(submenu, ID_IEVIEWSETTING_USEGLOBAL, MF_BYCOMMAND | (DBGetContactSettingByte(dat->hContact, SRMSGMOD_T, "ieview", 0) == 0 ? MF_CHECKED : MF_UNCHECKED));
+                        CheckMenuItem(submenu, ID_IEVIEWSETTING_USEGLOBAL, MF_BYCOMMAND | ((DBGetContactSettingByte(dat->hContact, SRMSGMOD_T, "ieview", 0) == 0 && DBGetContactSettingByte(dat->hContact, SRMSGMOD_T, "hpplog", 0) == 0) ? MF_CHECKED : MF_UNCHECKED));
                         CheckMenuItem(submenu, ID_IEVIEWSETTING_FORCEIEVIEW, MF_BYCOMMAND | (DBGetContactSettingByte(dat->hContact, SRMSGMOD_T, "ieview", 0) == 1 ? MF_CHECKED : MF_UNCHECKED));
-                        CheckMenuItem(submenu, ID_IEVIEWSETTING_FORCEDEFAULTMESSAGELOG, MF_BYCOMMAND | (DBGetContactSettingByte(dat->hContact, SRMSGMOD_T, "ieview", 0) == (BYTE)-1 ? MF_CHECKED : MF_UNCHECKED));
-                        CheckMenuItem(submenu, ID_SPLITTER_AUTOSAVEONCLOSE, MF_BYCOMMAND | (myGlobals.m_SplitterSaveOnClose ? MF_CHECKED : MF_UNCHECKED));
+                        CheckMenuItem(submenu, ID_MESSAGELOGDISPLAY_USEHISTORY, MF_BYCOMMAND | (DBGetContactSettingByte(dat->hContact, SRMSGMOD_T, "hpplog", 0) == 1 ? MF_CHECKED : MF_UNCHECKED));
+                        CheckMenuItem(submenu, ID_IEVIEWSETTING_FORCEDEFAULTMESSAGELOG, MF_BYCOMMAND | ((DBGetContactSettingByte(dat->hContact, SRMSGMOD_T, "ieview", 0) == (BYTE)-1 && DBGetContactSettingByte(dat->hContact, SRMSGMOD_T, "hpplog", 0) == (BYTE)-1) ? MF_CHECKED : MF_UNCHECKED));
 
+                        CheckMenuItem(submenu, ID_SPLITTER_AUTOSAVEONCLOSE, MF_BYCOMMAND | (myGlobals.m_SplitterSaveOnClose ? MF_CHECKED : MF_UNCHECKED));
                         CheckMenuItem(submenu, ID_MODE_GLOBAL, MF_BYCOMMAND | (!(dat->dwFlagsEx & MWF_SHOW_SPLITTEROVERRIDE) ? MF_CHECKED : MF_UNCHECKED));
                         CheckMenuItem(submenu, ID_MODE_PRIVATE, MF_BYCOMMAND | (dat->dwFlagsEx & MWF_SHOW_SPLITTEROVERRIDE ? MF_CHECKED : MF_UNCHECKED));
 
@@ -4038,12 +4048,19 @@ quote_from_last:
                         switch(iSelection) {
                             case ID_IEVIEWSETTING_USEGLOBAL:
                                 DBWriteContactSettingByte(dat->hContact, SRMSGMOD_T, "ieview", 0);
+                                DBWriteContactSettingByte(dat->hContact, SRMSGMOD_T, "hpplog", 0);
                                 break;
                             case ID_IEVIEWSETTING_FORCEDEFAULTMESSAGELOG:
                                 DBWriteContactSettingByte(dat->hContact, SRMSGMOD_T, "ieview", -1);
+                                DBWriteContactSettingByte(dat->hContact, SRMSGMOD_T, "hpplog", -1);
                                 break;
                             case ID_IEVIEWSETTING_FORCEIEVIEW:
                                 DBWriteContactSettingByte(dat->hContact, SRMSGMOD_T, "ieview", 1);
+                                DBWriteContactSettingByte(dat->hContact, SRMSGMOD_T, "hpplog", -1);
+                                break;
+                            case ID_MESSAGELOGDISPLAY_USEHISTORY:
+                                DBWriteContactSettingByte(dat->hContact, SRMSGMOD_T, "ieview", -1);
+                                DBWriteContactSettingByte(dat->hContact, SRMSGMOD_T, "hpplog", 1);
                                 break;
                             case ID_SPLITTER_AUTOSAVEONCLOSE:
                                 myGlobals.m_SplitterSaveOnClose ^= 1;
@@ -4327,13 +4344,19 @@ quote_from_last:
                     }
                     break;
                 case IDM_CLEAR:
-                    if (dat->hwndIEView != 0) {
+                    if (dat->hwndIEView || dat->hwndHPP) {
                         IEVIEWEVENT event;
                         event.cbSize = sizeof(IEVIEWEVENT);
                         event.iType = IEE_CLEAR_LOG;
-                        event.hwnd = dat->hwndIEView;
                         event.hContact = dat->hContact;
-                        CallService(MS_IEVIEW_EVENT, 0, (LPARAM)&event);
+                        if(dat->hwndIEView) {
+                            event.hwnd = dat->hwndIEView;
+                            CallService(MS_IEVIEW_EVENT, 0, (LPARAM)&event);
+                        }
+                        else {
+                            event.hwnd = dat->hwndHPP;
+                            CallService(MS_HPP_EG_EVENT, 0, (LPARAM)&event);
+                        }
                     }
                     SetDlgItemText(hwndDlg, IDC_LOG, _T(""));
                     dat->hDbEventFirst = NULL;
@@ -5713,7 +5736,6 @@ verify:
             if(dat->hContact == myGlobals.hLastOpenedContact)
                 myGlobals.hLastOpenedContact = 0;
 
-            // IEVIew MOD Begin
             if (dat->hwndIEView != 0) {
                 IEVIEWWINDOW ieWindow;
                 ieWindow.cbSize = sizeof(IEVIEWWINDOW);
@@ -5725,7 +5747,13 @@ verify:
                 }
                 CallService(MS_IEVIEW_WINDOW, 0, (LPARAM)&ieWindow);
             }
-            // IEVIew MOD End
+            if (dat->hwndHPP) {
+                IEVIEWWINDOW ieWindow;
+                ieWindow.cbSize = sizeof(IEVIEWWINDOW);
+                ieWindow.iType = IEW_DESTROY;
+                ieWindow.hwnd = dat->hwndHPP;
+                CallService(MS_HPP_EG_WINDOW, 0, (LPARAM)&ieWindow);
+            }
             break;
         case WM_NCDESTROY:
             if (dat)

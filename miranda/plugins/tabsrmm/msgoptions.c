@@ -509,7 +509,7 @@ static BOOL CALLBACK DlgProcLogOptions(HWND hwndDlg, UINT msg, WPARAM wParam, LP
                 if(DBGetContactSettingByte(NULL, SRMSGMOD_T, "default_ieview", 0))
                     SendDlgItemMessage(hwndDlg, IDC_MSGLOGDIDSPLAY, CB_SETCURSEL, 1, 0);
                 else if(DBGetContactSettingByte(NULL, SRMSGMOD_T, "default_hpp", 0))
-                SendDlgItemMessage(hwndDlg, IDC_MSGLOGDIDSPLAY, CB_SETCURSEL, 2, 0);
+                    SendDlgItemMessage(hwndDlg, IDC_MSGLOGDIDSPLAY, CB_SETCURSEL, have_ieview ? 2 : 1, 0);
             }
             return TRUE;
 		}

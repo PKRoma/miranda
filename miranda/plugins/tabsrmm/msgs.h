@@ -327,7 +327,7 @@ struct MessageWindowData {
 	BYTE    bType;
     BYTE    bWasDeleted;
 	HANDLE  hContact, hSubContact;
-	HWND    hwndIEView, hwndFlash, hwndIWebBrowserControl;
+	HWND    hwndIEView, hwndFlash, hwndIWebBrowserControl, hwndHPP;
     HWND    hwnd;
 	HANDLE  hDbEventFirst,hDbEventLast, hDbEventLastFeed;
 	int     sendMode;
@@ -1067,4 +1067,11 @@ static __inline int mir_snprintfW(wchar_t *buffer, size_t count, const wchar_t* 
 
 #endif
 
+/* temporary HPP API for emulating message log */
+
+#define MS_HPP_EG_WINDOW "History++/ExtGrid/NewWindow"
+#define MS_HPP_EG_EVENT  "History++/ExtGrid/Event"
+#define MS_HPP_EG_UTILS  "History++/ExtGrid/Utils"
+#define MS_HPP_EG_OPTIONSCHANGED "History++/ExtGrid/OptionsChanged"
+#define MS_HPP_EG_NOTIFICATION   "History++/ExtGrid/Notification"
 

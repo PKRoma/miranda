@@ -255,7 +255,7 @@ LRESULT DM_ScrollToBottom(HWND hwndDlg, struct MessageWindowData *dat, WPARAM wP
         if(IsIconic(dat->pContainer->hwnd))
             dat->dwFlags |= MWF_DEFERREDSCROLL;
 
-        if(dat->hwndIEView) {
+        if(dat->hwndIEView || dat->hwndHPP) {
             PostMessage(hwndDlg, DM_SCROLLIEVIEW, 0, 0);
             return 0;
         }
@@ -523,10 +523,12 @@ LRESULT DM_MouseWheelHandler(HWND hwnd, HWND hwndParent, struct MessageWindowDat
     }
     if(mwdat->hwndIEView)
         GetWindowRect(mwdat->hwndIEView, &rc);
+    else if(mwdat->hwndHPP)
+        GetWindowRect(mwdat->hwndHPP, &rc);
     else
         GetWindowRect(GetDlgItem(hwndParent, uID), &rc);
     if(PtInRect(&rc, pt)) {
-        HWND hwnd = mwdat->hwndIEView ? mwdat->hwndIWebBrowserControl : GetDlgItem(hwndParent, uID);
+        HWND hwnd = (mwdat->hwndIEView || mwdat->hwndHPP) ? mwdat->hwndIWebBrowserControl : GetDlgItem(hwndParent, uID);
         short wDirection = (short)HIWORD(wParam);
 
         if(hwnd == 0)

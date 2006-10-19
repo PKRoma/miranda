@@ -1607,9 +1607,12 @@ void GetContactUIN(HWND hwndDlg, struct MessageWindowData *dat)
 static int g_IEViewAvail = -1;
 static int g_HPPAvail = -1;
 
+#define WANT_IEVIEW_LOG 1
+#define WANT_HPP_LOG 2
+
 unsigned int GetIEViewMode(HWND hwndDlg, struct MessageWindowData *dat)
 {
-    int iWantIEView = 0;
+    int iWantIEView = 0, iWantHPP = 0;
 
     if(g_IEViewAvail == -1)
         g_IEViewAvail = ServiceExists(MS_IEVIEW_WINDOW);
@@ -1617,13 +1620,16 @@ unsigned int GetIEViewMode(HWND hwndDlg, struct MessageWindowData *dat)
     if(g_HPPAvail == -1)
         g_HPPAvail = ServiceExists("History++/ExtGrid/NewWindow");
 
-    myGlobals.g_WantIEView = g_IEViewAvail && DBGetContactSettingByte(NULL, SRMSGMOD_T, "default_ieview", 1);
-    myGlobals.g_WantHPP = g_HPPAvail && DBGetContactSettingByte(NULL, SRMSGMOD_T, "default_hpp", 1);
+    myGlobals.g_WantIEView = g_IEViewAvail && DBGetContactSettingByte(NULL, SRMSGMOD_T, "default_ieview", 0);
+    myGlobals.g_WantHPP = g_HPPAvail && DBGetContactSettingByte(NULL, SRMSGMOD_T, "default_hpp", 0);
 
     iWantIEView = (myGlobals.g_WantIEView) || (DBGetContactSettingByte(dat->hContact, SRMSGMOD_T, "ieview", 0) == 1 && g_IEViewAvail);
     iWantIEView = (DBGetContactSettingByte(dat->hContact, SRMSGMOD_T, "ieview", 0) == (BYTE)-1) ? 0 : iWantIEView;
 
-    return iWantIEView;
+    iWantHPP = (myGlobals.g_WantHPP) || (DBGetContactSettingByte(dat->hContact, SRMSGMOD_T, "hpplog", 0) == 1 && g_HPPAvail);
+    iWantHPP = (DBGetContactSettingByte(dat->hContact, SRMSGMOD_T, "hpplog", 0) == (BYTE)-1) ? 0 : iWantHPP;
+
+    return iWantHPP ? WANT_HPP_LOG : (iWantIEView ? WANT_IEVIEW_LOG : 0);
 }
 
 void GetRealIEViewWindow(HWND hwndDlg, struct MessageWindowData *dat)
@@ -1631,15 +1637,47 @@ void GetRealIEViewWindow(HWND hwndDlg, struct MessageWindowData *dat)
     POINT pt;
 
     pt.x = 10; pt.y = dat->panelHeight + 10;
-    dat->hwndIWebBrowserControl = ChildWindowFromPointEx(dat->hwndIEView, pt, CWP_SKIPDISABLED);
+    if(dat->hwndIEView)
+        dat->hwndIWebBrowserControl = ChildWindowFromPointEx(dat->hwndIEView, pt, CWP_SKIPDISABLED);
+    else if(dat->hwndHPP)
+        dat->hwndIWebBrowserControl = ChildWindowFromPointEx(dat->hwndHPP, pt, CWP_SKIPDISABLED);
+}
+
+static void CheckAndDestroyHPP(struct MessageWindowData *dat)
+{
+    if(dat->hwndHPP) {
+        IEVIEWWINDOW ieWindow;
+        ieWindow.cbSize = sizeof(IEVIEWWINDOW);
+        ieWindow.iType = IEW_DESTROY;
+        ieWindow.hwnd = dat->hwndHPP;
+        CallService(MS_HPP_EG_WINDOW, 0, (LPARAM)&ieWindow);
+        dat->hwndHPP = 0;
+    }
+}
+
+static void CheckAndDestroyIEView(struct MessageWindowData *dat)
+{
+    if(dat->hwndIEView) {
+        IEVIEWWINDOW ieWindow;
+        ieWindow.cbSize = sizeof(IEVIEWWINDOW);
+        ieWindow.iType = IEW_DESTROY;
+        ieWindow.hwnd = dat->hwndIEView;
+        if(dat->oldIEViewProc)
+            SetWindowLong(dat->hwndIEView, GWL_WNDPROC, (LONG)dat->oldIEViewProc);
+        CallService(MS_IEVIEW_WINDOW, 0, (LPARAM)&ieWindow);
+        dat->oldIEViewProc = 0;
+        dat->hwndIEView = 0;
+    }
 }
 
 void SetMessageLog(HWND hwndDlg, struct MessageWindowData *dat)
 {
-    unsigned int iWantIEView = GetIEViewMode(hwndDlg, dat);
+    unsigned int iLogMode = GetIEViewMode(hwndDlg, dat);
 
-    if (iWantIEView && dat->hwndIEView == 0) {
+    if (iLogMode == WANT_IEVIEW_LOG && dat->hwndIEView == 0) {
         IEVIEWWINDOW ieWindow;
+
+        CheckAndDestroyHPP(dat);
         ieWindow.cbSize = sizeof(IEVIEWWINDOW);
         ieWindow.iType = IEW_CREATE;
         ieWindow.dwFlags = 0;
@@ -1653,36 +1691,49 @@ void SetMessageLog(HWND hwndDlg, struct MessageWindowData *dat)
         dat->hwndIEView = ieWindow.hwnd;
         ShowWindow(GetDlgItem(hwndDlg, IDC_LOG), SW_HIDE);
         EnableWindow(GetDlgItem(hwndDlg, IDC_LOG), FALSE);
-        //GetRealIEViewWindow(hwndDlg, dat);
     }
-    else if(!iWantIEView) {
-        if(dat->hwndIEView) {
-            IEVIEWWINDOW ieWindow;
-            ieWindow.cbSize = sizeof(IEVIEWWINDOW);
-            ieWindow.iType = IEW_DESTROY;
-            ieWindow.hwnd = dat->hwndIEView;
-            if(dat->oldIEViewProc)
-                SetWindowLong(dat->hwndIEView, GWL_WNDPROC, (LONG)dat->oldIEViewProc);
-            CallService(MS_IEVIEW_WINDOW, 0, (LPARAM)&ieWindow);
-            dat->oldIEViewProc = 0;
-        }
+    else if(iLogMode == WANT_HPP_LOG && dat->hwndHPP == 0) {
+        IEVIEWWINDOW ieWindow;
+
+        CheckAndDestroyIEView(dat);
+        ieWindow.cbSize = sizeof(IEVIEWWINDOW);
+        ieWindow.iType = IEW_CREATE;
+        ieWindow.dwFlags = 0;
+        ieWindow.dwMode = IEWM_TABSRMM;
+        ieWindow.parent = hwndDlg;
+        ieWindow.x = 0;
+        ieWindow.y = 0;
+        ieWindow.cx = 10;
+        ieWindow.cy = 10;
+        CallService(MS_HPP_EG_WINDOW, 0, (LPARAM)&ieWindow);
+        dat->hwndHPP = ieWindow.hwnd;
+        ShowWindow(GetDlgItem(hwndDlg, IDC_LOG), SW_HIDE);
+        EnableWindow(GetDlgItem(hwndDlg, IDC_LOG), FALSE);
+    }
+    else {
+        if(iLogMode != WANT_IEVIEW_LOG)
+            CheckAndDestroyIEView(dat);
+        if(iLogMode != WANT_HPP_LOG)
+            CheckAndDestroyHPP(dat);
         ShowWindow(GetDlgItem(hwndDlg, IDC_LOG), SW_SHOW);
         EnableWindow(GetDlgItem(hwndDlg, IDC_LOG), TRUE);
         dat->hwndIEView = 0;
         dat->hwndIWebBrowserControl = 0;
+        dat->hwndHPP = 0;
     }
 }
 
 void SwitchMessageLog(HWND hwndDlg, struct MessageWindowData *dat, int iMode)
 {
-    if(iMode) {            // switch from rtf to IEview
+    if(iMode) {            // switch from rtf to IEview or hpp
         SetDlgItemText(hwndDlg, IDC_LOG, _T(""));
         EnableWindow(GetDlgItem(hwndDlg, IDC_LOG), FALSE);
         ShowWindow(GetDlgItem(hwndDlg, IDC_LOG), SW_HIDE);
         SetMessageLog(hwndDlg, dat);
     }
-    else                      // switch from IEView to rtf
+    else                      // switch from IEView or hpp to rtf
         SetMessageLog(hwndDlg, dat);
+
     SetDialogToType(hwndDlg);
     SendMessage(hwndDlg, DM_REMAKELOG, 0, 0);
     SendMessage(hwndDlg, WM_SIZE, 0, 0);

@@ -691,11 +691,12 @@ BEGIN
     END
     POPUP "Protomenu"
     BEGIN
-        POPUP "IEView Setting"
+        POPUP "Message Log Display"
         BEGIN
-            MENUITEM "Use global setting",          ID_IEVIEWSETTING_USEGLOBAL
-            MENUITEM "Force IEView",                ID_IEVIEWSETTING_FORCEIEVIEW
-            MENUITEM "Force Default Message Log",   ID_IEVIEWSETTING_FORCEDEFAULTMESSAGELOG
+            MENUITEM "Use global Setting for this Contact", ID_IEVIEWSETTING_USEGLOBAL
+            MENUITEM "Use IEView Plugin",           ID_IEVIEWSETTING_FORCEIEVIEW
+            MENUITEM "Use History++ Plugin",        ID_MESSAGELOGDISPLAY_USEHISTORY
+            MENUITEM "Use Default Message Log",     ID_IEVIEWSETTING_FORCEDEFAULTMESSAGELOG
         END
         MENUITEM SEPARATOR
         POPUP "Splitter"
