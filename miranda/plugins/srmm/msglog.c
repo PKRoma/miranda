@@ -309,7 +309,7 @@ static char *CreateRTFFromDbEvent(struct MessageWindowData *dat, HANDLE hContact
 		AppendToBufferWithRTF(&buffer, &bufferEnd, &bufferAlloced, szName);
 		showColon = 1;
 		if (ci.pszVal)
-			miranda_sys_free(ci.pszVal);
+			mir_free(ci.pszVal);
 	}
 
 	if (showColon)
@@ -373,7 +373,7 @@ static char *CreateRTFFromDbEvent(struct MessageWindowData *dat, HANDLE hContact
 			#endif
 			AppendToBufferWithRTF(&buffer, &bufferEnd, &bufferAlloced, msg);
 			if (ci.pszVal)
-				miranda_sys_free(ci.pszVal);
+				mir_free(ci.pszVal);
 			break;
 		}
 	}

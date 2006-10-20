@@ -161,7 +161,8 @@ static void SetDialogToType(HWND hwndDlg)
 	}
 	ShowMultipleControls(hwndDlg, sendControls, SIZEOF(sendControls), SW_SHOW);
 	if (!dat->hwndStatus) {
-		dat->hwndStatus = CreateWindowEx(0, STATUSCLASSNAME, NULL, WS_CHILD | WS_VISIBLE | SBARS_SIZEGRIP, 0, 0, 0, 0, hwndDlg, NULL, g_hInst, NULL);
+		int grip = (GetWindowLong(hwndDlg, GWL_STYLE) & WS_THICKFRAME) ? SBARS_SIZEGRIP : 0;
+		dat->hwndStatus = CreateWindowEx(0, STATUSCLASSNAME, NULL, WS_CHILD | WS_VISIBLE | grip, 0, 0, 0, 0, hwndDlg, NULL, g_hInst, NULL);
 		SendMessage(dat->hwndStatus, SB_SETMINHEIGHT, GetSystemMetrics(SM_CYSMICON), 0);
 	}
 	if (DBGetContactSettingByte(NULL, SRMMMOD, SRMSGSET_CHARCOUNT, SRMSGDEFSET_CHARCOUNT)) {
@@ -1009,7 +1010,7 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
 					switch (ci.type) {
 						case CNFT_ASCIIZ:
 							mir_snprintf(buf, SIZEOF(buf), "%s", ci.pszVal);
-							miranda_sys_free(ci.pszVal);
+							mir_free(ci.pszVal);
 							break;
 						case CNFT_DWORD:
 							mir_snprintf(buf, SIZEOF(buf), "%u", ci.dVal);
@@ -1126,7 +1127,7 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
 						switch (ci.type) {
 						case CNFT_ASCIIZ:
 							mir_snprintf(buf, SIZEOF(buf), "%s", ci.pszVal);
-							miranda_sys_free(ci.pszVal);
+							mir_free(ci.pszVal);
 							break;
 						case CNFT_DWORD:
 							mir_snprintf(buf, SIZEOF(buf), "%u", ci.dVal);
@@ -1250,7 +1251,7 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
 		break;
 	case WM_GETMINMAXINFO:
 		{
-			MINMAXINFO *mmi = (MINMAXINFO *) lParam;
+			MINMAXINFO* mmi = (MINMAXINFO *) lParam;
 			RECT rcWindow, rcLog;
 			GetWindowRect(hwndDlg, &rcWindow);
 			GetWindowRect(GetDlgItem(hwndDlg, IDC_LOG), &rcLog);

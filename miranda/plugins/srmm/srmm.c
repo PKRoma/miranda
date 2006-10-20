@@ -25,8 +25,8 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 int LoadSendRecvMessageModule(void);
 int SplitmsgShutdown(void);
 
-PLUGINLINK *pluginLink;
-HINSTANCE g_hInst;
+PLUGINLINK* pluginLink;
+HINSTANCE   g_hInst;
 
 struct MM_INTERFACE mmi;
 
@@ -53,8 +53,7 @@ BOOL WINAPI DllMain(HINSTANCE hinstDLL, DWORD fdwReason, LPVOID lpvReserved)
 	return TRUE;
 }
 
-__declspec(dllexport)
-	 PLUGININFO *MirandaPluginInfo(DWORD mirandaVersion)
+__declspec(dllexport) PLUGININFO *MirandaPluginInfo(DWORD mirandaVersion)
 {
 	if (mirandaVersion < PLUGIN_MAKE_VERSION(0, 4, 0, 0))
 		return NULL;
