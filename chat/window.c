@@ -1587,7 +1587,7 @@ LABEL_SHOWWINDOW:
 			pNmhdr = (LPNMHDR)lParam;
 			switch (pNmhdr->code) {
 			case EN_MSGFILTER:
-				if (pNmhdr->idFrom = IDC_CHAT_LOG && ((MSGFILTER *) lParam)->msg == WM_RBUTTONUP){
+				if (pNmhdr->idFrom == IDC_CHAT_LOG && ((MSGFILTER *) lParam)->msg == WM_RBUTTONUP){
 					CHARRANGE sel, all = { 0, -1 };
 					POINT pt;
 					UINT uID = 0;
@@ -1696,7 +1696,7 @@ LABEL_SHOWWINDOW:
 				break;
 
 			case EN_LINK:
-				if (pNmhdr->idFrom = IDC_CHAT_LOG) {
+				if (pNmhdr->idFrom == IDC_CHAT_LOG) {
 					switch (((ENLINK *) lParam)->msg) {
 					case WM_RBUTTONDOWN:
 					case WM_LBUTTONUP:
