@@ -908,7 +908,7 @@ BOOL CALLBACK UserDetailsDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM l
 				SetDlgItemText(hwndDlg, IDC_HOST, dbv.pszVal);
 				DBFreeVariant(&dbv);
 			}
-			forkthread(AckUserInfoSearch, 0, hContact);
+			mir_forkthread(AckUserInfoSearch, hContact);
 
         }break;
 		case WM_COMMAND:

@@ -434,7 +434,7 @@ bool CMyMonitor::OnIrc_WELCOME(const CIrcMessage* pmsg)
 					IPRESOLVE * ipr = new IPRESOLVE;
 					ipr->iType = IP_AUTO;
 					ipr->pszAdr = p1;
-					forkthread(ResolveIPThread, NULL, ipr);
+					mir_forkthread(ResolveIPThread, ipr);
 				}
 
 			}
@@ -2461,7 +2461,7 @@ bool CMyMonitor::OnIrc_WHO_REPLY(const CIrcMessage* pmsg)
 			IPRESOLVE * ipr = new IPRESOLVE;
 			ipr->iType = IP_AUTO;
 			ipr->pszAdr = host;
-			forkthread(ResolveIPThread, NULL, ipr);
+			mir_forkthread(ResolveIPThread, ipr);
 		}
 	}
 	if (command[0] == 'U')
@@ -2933,7 +2933,7 @@ int DoPerform(char * event)
 		if(!my_strstri(DoThis, "/away"))
 			PostIrcMessageWnd(NULL, NULL, (char *)DoThis);
 		else
-			forkthread(AwayWarningThread, NULL, NULL  );
+			mir_forkthread(AwayWarningThread, NULL  );
 		delete [] DoThis;
 		delete [] search;
 		return 1;

@@ -422,7 +422,7 @@ LBL_Exit:
 				jabberSendKeepAlive = TRUE;
 			else
 				jabberSendKeepAlive = FALSE;
-			JabberForkThread( JabberKeepAliveThread, 0, info->s );
+			mir_forkthread( JabberKeepAliveThread, info->s );
 		}
 
 		xmlStreamInitializeNow( info );
@@ -717,7 +717,7 @@ static void __cdecl JabberWaitAndReconnectThread( int unused )
 	ThreadData* thread = ( ThreadData* ) mir_alloc( sizeof( struct ThreadData ));
 	ZeroMemory( thread, sizeof( struct ThreadData ));
 	thread->type = JABBER_SESSION_NORMAL;
-	thread->hThread = ( HANDLE ) JabberForkThread(( JABBER_THREAD_FUNC )JabberServerThread, 0, thread );
+	thread->hThread = ( HANDLE ) mir_forkthread(( pThreadFunc )JabberServerThread, thread );
 }
 
 

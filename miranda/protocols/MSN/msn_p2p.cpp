@@ -74,7 +74,7 @@ static char* getNewUuid()
 	UuidCreate( &id );
 	UuidToStringA( &id, &p );
 	int len = strlen(( const char* )p );
-	char* result = ( char* )malloc( len+3 );
+	char* result = ( char* )mir_alloc( len+3 );
 	result[0]='{';
 	memcpy( result+1, p, len );
 	result[ len+1 ] = '}';
@@ -142,7 +142,7 @@ static int sttCreateListener(
 		ipaddr, nlb.wExPort,
 		hostname, nlb.wPort,
 		ft->p2p_sessionid, 0 );
-	free( szUuid );
+	mir_free( szUuid );
 
 	return cbBodyLen;
 }
@@ -877,7 +877,7 @@ static void sttInitFileTransfer(
 	ft->p2p_ackID = ft->p2p_appID * 1000;
 	replaceStr( ft->p2p_callID, szCallID );
 	replaceStr( ft->p2p_branch, szBranch );
-	ft->p2p_dest = strdup( szContactEmail );
+	ft->p2p_dest = mir_strdup( szContactEmail );
 	ft->std.hContact = info->mJoinedContacts[0];
 
 	p2p_sendAck( ft, info, hdrdata );
@@ -1490,7 +1490,7 @@ void __stdcall p2p_invite( HANDLE hContact, int iAppID, filetransfer* ft )
 
 	if ( !p2p_sessionRegistered( ft )) {
 		ft->p2p_msgid = rand();
-		ft->p2p_dest = strdup( szEmail );
+		ft->p2p_dest = mir_strdup( szEmail );
 		p2p_registerSession( ft );
 	}
 

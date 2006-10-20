@@ -238,8 +238,6 @@ HICON						LoadIconEx(int iIndex, char * pszIcoLibName, int iX, int iY);
 int							WCCmp(char* wild, char *string);
 char *						IrcLoadFile(char * szPath);
 void						AddToJTemp(String sCommand);
-void __cdecl				forkthread_r(void *param);
-unsigned long				forkthread (	void (__cdecl *threadcode)(void*),unsigned long stacksize,void *arg);
 String						GetWord(const char * text, int index);
 String						ReplaceString (String text, char * replaceme, char * newword);
 bool						IsChannel(String sName); 

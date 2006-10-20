@@ -56,10 +56,13 @@ int WaitingThreadsCount=0;
 
 struct FORK_ARG {
 	HANDLE hEvent;
-	void (__cdecl *threadcode)(void*);
-	unsigned (__stdcall *threadcodeex)(void*);
+	pThreadFunc threadcode;
+	pThreadFuncEx threadcodeex;
 	void *arg;
 };
+
+/////////////////////////////////////////////////////////////////////////////////////////
+// forkthread - starts a new thread
 
 void __cdecl forkthread_r(void * arg)
 {
@@ -71,6 +74,7 @@ void __cdecl forkthread_r(void * arg)
 	__try {
 		callercode(cookie);
 	} __finally {
+		SetThreadPriority(GetCurrentThread(), THREAD_PRIORITY_TIME_CRITICAL);
 		CallService(MS_SYSTEM_THREAD_POP,0,0);
 	}
 	return;
@@ -88,12 +92,20 @@ unsigned long forkthread (
 	fa.threadcode=threadcode;
 	fa.arg=arg;
 	rc=_beginthread(forkthread_r,stacksize,&fa);
-	if ((unsigned long)-1L != rc) {
+	if ((unsigned long)-1L != rc)
 		WaitForSingleObject(fa.hEvent,INFINITE);
-	} //if
+
 	CloseHandle(fa.hEvent);
 	return rc;
 }
+
+static int ForkThreadService(WPARAM wParam, LPARAM lParam)
+{
+	return (int)forkthread(( pThreadFunc )wParam, 0, ( void* )lParam );
+}
+
+/////////////////////////////////////////////////////////////////////////////////////////
+// forkthreadex - starts a new thread with the extended info and returns the thread id
 
 unsigned __stdcall forkthreadex_r(void * arg)
 {
@@ -107,6 +119,7 @@ unsigned __stdcall forkthreadex_r(void * arg)
 	__try {
 		rc=threadcode(cookie);
 	} __finally {
+		SetThreadPriority(GetCurrentThread(), THREAD_PRIORITY_TIME_CRITICAL);
 		CallService(MS_SYSTEM_THREAD_POP,0,0);
 	}
 	return rc;
@@ -127,12 +140,24 @@ unsigned long forkthreadex(
 	fa.arg=arg;
 	fa.hEvent=CreateEvent(NULL,FALSE,FALSE,NULL);
 	rc=_beginthreadex(sec,stacksize,forkthreadex_r,(void *)&fa,0,thraddr);
-	if (rc) {
+	if (rc)
 		WaitForSingleObject(fa.hEvent,INFINITE);
-	}
+
 	CloseHandle(fa.hEvent);
 	return rc;
 }
+
+static int ForkThreadServiceEx(WPARAM wParam, LPARAM lParam)
+{
+	FORK_THREADEX_PARAMS* params = (FORK_THREADEX_PARAMS*)lParam;
+	if ( params == NULL )
+		return 0;
+
+	return forkthreadex( NULL, params->iStackSize, params->pFunc, params->arg, 0, params->threadID );
+}
+
+/////////////////////////////////////////////////////////////////////////////////////////
+// APC and mutex functions
 
 static void __stdcall DummyAPCFunc(DWORD dwArg)
 {
@@ -594,6 +619,8 @@ int LoadSystemModule(void)
 
 	HookEvent(ME_SYSTEM_SHUTDOWN,SystemShutdownProc);
 
+	CreateServiceFunction(MS_SYSTEM_FORK_THREAD,ForkThreadService);
+	CreateServiceFunction(MS_SYSTEM_FORK_THREAD_EX,ForkThreadServiceEx);
 	CreateServiceFunction(MS_SYSTEM_THREAD_PUSH,UnwindThreadPush);
 	CreateServiceFunction(MS_SYSTEM_THREAD_POP,UnwindThreadPop);
 	CreateServiceFunction(MS_SYSTEM_TERMINATED,MirandaIsTerminated);

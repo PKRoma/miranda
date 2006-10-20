@@ -27,15 +27,15 @@ void replaceStr( char*& dest, const char* src )
 {
 	if ( src != NULL ) {
 		if ( dest != NULL )
-			free( dest );
-		dest = strdup( src );
+			mir_free( dest );
+		dest = mir_strdup( src );
 }	}
 
 void overrideStr( TCHAR*& dest, const TCHAR* src, BOOL unicode, const TCHAR* def )
 {
 	if ( dest != NULL ) 
 	{
-		free( dest );
+		mir_free( dest );
 		dest = NULL;
 	}
 
@@ -90,7 +90,7 @@ TCHAR* a2t( const char* str )
 	#if defined( _UNICODE )
 		return (TCHAR*)CallService( MS_LANGPACK_PCHARTOTCHAR, 0, (LPARAM)str);
 	#else
-		return mir_strdup( str );
+		return mir_mir_strdup( str );
 	#endif
 }
 
@@ -115,7 +115,7 @@ TCHAR* a2tf( const TCHAR* str, BOOL unicode )
 			return result;
 		}
 	#else
-		return mir_strdup( str );
+		return mir_mir_strdup( str );
 	#endif
 }
 

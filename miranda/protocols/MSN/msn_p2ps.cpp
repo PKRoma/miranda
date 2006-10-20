@@ -41,7 +41,7 @@ void __stdcall p2p_registerSession( filetransfer* ft )
 			break;
 	}	}
 
-	sessionList = ( filetransfer** )realloc( sessionList, sizeof( void* ) * ( sessionCount+1 ));
+	sessionList = ( filetransfer** )mir_realloc( sessionList, sizeof( void* ) * ( sessionCount+1 ));
 	sessionList[ sessionCount++ ] = ft;
 
 	LeaveCriticalSection( &sessionLock );
@@ -230,7 +230,7 @@ void P2pSessions_Uninit()
 	for ( int i=0; i < sessionCount; i++ )
 		delete sessionList[i];
 	if ( sessionList != NULL )
-		free( sessionList );
+		mir_free( sessionList );
 
 	LeaveCriticalSection( &sessionLock );
 	DeleteCriticalSection( &sessionLock );

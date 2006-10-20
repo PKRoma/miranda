@@ -48,7 +48,7 @@ void MsgQueue_Uninit( void )
 int __stdcall MsgQueue_Add( HANDLE hContact, int msgType, const char* msg, int msgSize, filetransfer* ft, int flags )
 {
 	EnterCriticalSection( &csMsgQueue );
-	msgQueue = ( MsgQueueEntry* )realloc( msgQueue, sizeof( MsgQueueEntry )*( msgQueueCount+1 ));
+	msgQueue = ( MsgQueueEntry* )mir_realloc( msgQueue, sizeof( MsgQueueEntry )*( msgQueueCount+1 ));
 
 	int seq = msgQueueSeq++;
 
@@ -57,9 +57,9 @@ int __stdcall MsgQueue_Add( HANDLE hContact, int msgType, const char* msg, int m
 	E.msgSize = msgSize;
 	E.msgType = msgType;
 	if ( msgSize <= 0 )
-		E.message = strdup( msg );
+		E.message = mir_strdup( msg );
 	else
-		memcpy( E.message = ( char* )malloc( msgSize ), msg, msgSize );
+		memcpy( E.message = ( char* )mir_alloc( msgSize ), msg, msgSize );
 	E.ft = ft;
 	E.seq = seq;
 	E.flags = flags;
@@ -112,7 +112,7 @@ HANDLE __stdcall MsgQueue_GetNextRecipient(void)
 	return ret;
 }
 
-//deletes from list. Must free() return value
+//deletes from list. Must mir_free() return value
 int __stdcall MsgQueue_GetNext( HANDLE hContact, MsgQueueEntry& retVal )
 {
 	int i;
@@ -131,7 +131,7 @@ int __stdcall MsgQueue_GetNext( HANDLE hContact, MsgQueueEntry& retVal )
 
 	msgQueueCount--;
 	memmove( msgQueue+i, msgQueue+i+1, sizeof( MsgQueueEntry )*( msgQueueCount-i ));
-	msgQueue = ( MsgQueueEntry* )realloc( msgQueue, sizeof( MsgQueueEntry )*msgQueueCount );
+	msgQueue = ( MsgQueueEntry* )mir_realloc( msgQueue, sizeof( MsgQueueEntry )*msgQueueCount );
 	LeaveCriticalSection( &csMsgQueue );
 	return i+1;
 }
@@ -145,8 +145,8 @@ void __stdcall MsgQueue_Clear( HANDLE hContact )
 		EnterCriticalSection( &csMsgQueue );
 
 		for( i=0; i < msgQueueCount; i++ )
-			free ( msgQueue[ i ].message );
-		free( msgQueue );
+			mir_free( msgQueue[ i ].message );
+		mir_free( msgQueue );
 
 		msgQueueCount = 0;
 		msgQueue = NULL;
@@ -157,6 +157,6 @@ void __stdcall MsgQueue_Clear( HANDLE hContact )
 	{
 		MsgQueueEntry E;
 		while (MsgQueue_GetNext(hContact, E) != 0)
-			free( E.message );
+			mir_free( E.message );
 	}
 }

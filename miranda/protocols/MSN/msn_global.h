@@ -384,6 +384,7 @@ struct ThreadData
 	~ThreadData();
 
 	TInfoType      mType;            // thread type
+	pThreadFunc    mFunc;            // thread entry point
 	char           mServer[80];      // server name
 
 	HANDLE         s;	               // NetLib connection for the thread
@@ -451,7 +452,6 @@ void        __stdcall MSN_StartP2PTransferByContact( HANDLE hContact );
 ThreadData*	__stdcall MSN_GetThreadByPort( WORD wPort );
 ThreadData* __stdcall MSN_GetUnconnectedThread( HANDLE hContact );
 ThreadData* __stdcall MSN_GetOtherContactThread( ThreadData* thread );
-void        __stdcall MSN_StartThread( pThreadFunc parFunc, void* arg );
 
 /////////////////////////////////////////////////////////////////////////////////////////
 // MSN P2P session support
@@ -650,7 +650,7 @@ public:
 		{}
 
 	__forceinline ~UTFEncoder()
-		{  free( m_body );
+		{  mir_free( m_body );
 		}
 
 	__forceinline const char* str() const { return m_body; }

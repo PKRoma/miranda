@@ -310,12 +310,12 @@ static void sttInviteMessage( ThreadData* info, const char* msgBody, char* email
 		ft->std.currentFileSize = atol( Appfilesize );
 		ft->std.totalBytes = atol( Appfilesize );
 		ft->std.totalFiles = 1;
-		ft->szInvcookie = strdup( Invcookie );
+		ft->szInvcookie = mir_strdup( Invcookie );
 
 		int tFileNameLen = strlen( ft->std.currentFile );
 		char tComment[ 40 ];
 		int tCommentLen = mir_snprintf( tComment, sizeof( tComment ), "%lu bytes", ft->std.currentFileSize );
-		char* szBlob = ( char* )malloc( sizeof( DWORD ) + tFileNameLen + tCommentLen + 2 );
+		char* szBlob = ( char* )mir_alloc( sizeof( DWORD ) + tFileNameLen + tCommentLen + 2 );
 		*( PDWORD )szBlob = ( DWORD )ft;
 		strcpy( szBlob + sizeof( DWORD ), ft->std.currentFile );
 		strcpy( szBlob + sizeof( DWORD ) + tFileNameLen + 1, tComment );
@@ -457,9 +457,9 @@ static void sttCustomSmiley( const char* msgBody, char* email, char* nick, int i
 
 				filetransfer* ft = new filetransfer();
 				ft->std.hContact = hContact;
-				ft->p2p_dest = strdup( email );
-				ft->p2p_object = strdup( tObject );
-				ft->std.currentFile = strdup( tCode );
+				ft->p2p_dest = mir_strdup( email );
+				ft->p2p_object = mir_strdup( tObject );
+				ft->std.currentFile = mir_strdup( tCode );
 
 				for ( char* p = ft->std.currentFile; *p; p++ ) {
 					switch( *p ) {
@@ -608,12 +608,12 @@ void MSN_ReceiveMessage( ThreadData* info, char* cmdString, char* params )
 			mir_free(( void* )gce.pszText);
 			mir_free(( void* )gce.ptszUID );
 			if ( tRealBodyLen != 0 )
-				free( tRealBody );
+				mir_free( tRealBody );
 		}
 		else {
 			if ( tRealBodyLen != 0 ) {
 				memcpy( p, tRealBody, sizeof( wchar_t )*( tRealBodyLen+1 ));
-				free( tRealBody );
+				mir_free( tRealBody );
 			}
 
 			PROTORECVEVENT pre;
@@ -721,7 +721,7 @@ void MSN_ReceiveMessage( ThreadData* info, char* cmdString, char* params )
 		}
 		if ( tRealBodyLen != 0 ) {
 			memcpy( p, tRealBody, sizeof( wchar_t )*( tRealBodyLen+1 ));
-			free( tRealBody );
+			mir_free( tRealBody );
 		}
 
 		if( !strnicmp(tMsgBuf,"ID: 1",5))
@@ -944,7 +944,7 @@ static void sttProcessStatusMessage( BYTE* buf, unsigned len, HANDLE hContact )
 		!CallService(MS_LISTENINGTO_OVERRIDECONTACTOPTION, 0, (LPARAM) hContact))
 	{
 		// User contact options
-		char *format = strdup( parts[3] );
+		char *format = mir_strdup( parts[3] );
 
 		for (int i = 4; i < pCount; i++) {
 			char part[16];
@@ -954,7 +954,7 @@ static void sttProcessStatusMessage( BYTE* buf, unsigned len, HANDLE hContact )
 			for (p = strstr(format, part); p; p = strstr(p + lenPartsI, part)) {
 				if (lenPart < lenPartsI) {
 					int loc = p - format;
-					format = (char *)realloc(format, strlen(format) + (lenPartsI - lenPart) + 1);
+					format = (char *)mir_realloc(format, strlen(format) + (lenPartsI - lenPart) + 1);
 					p = format + loc;
 				}
 				memmove(p + lenPartsI, p + lenPart, strlen(p + lenPart) + 1);
@@ -962,7 +962,7 @@ static void sttProcessStatusMessage( BYTE* buf, unsigned len, HANDLE hContact )
 		}	}
 
 		MSN_SetStringUtf( hContact, "ListeningTo", format );
-		free(format);
+		mir_free(format);
 	}
 	else
 	{
@@ -1001,15 +1001,15 @@ static void sttProcessStatusMessage( BYTE* buf, unsigned len, HANDLE hContact )
 
 		mir_free( cm );
 		#if defined( _UNICODE )
-			if ( lti.ptszArtist ) free( lti.ptszArtist );
-			if ( lti.ptszAlbum ) free( lti.ptszAlbum );
-			if ( lti.ptszTitle ) free( lti.ptszTitle );
-			if ( lti.ptszTrack ) free( lti.ptszTrack );
-			if ( lti.ptszYear ) free( lti.ptszYear );
-			if ( lti.ptszGenre ) free( lti.ptszGenre );
-			if ( lti.ptszLength ) free( lti.ptszLength );
-			if ( lti.ptszPlayer ) free( lti.ptszPlayer );
-			if ( lti.ptszType ) free( lti.ptszType );
+			if ( lti.ptszArtist ) mir_free( lti.ptszArtist );
+			if ( lti.ptszAlbum ) mir_free( lti.ptszAlbum );
+			if ( lti.ptszTitle ) mir_free( lti.ptszTitle );
+			if ( lti.ptszTrack ) mir_free( lti.ptszTrack );
+			if ( lti.ptszYear ) mir_free( lti.ptszYear );
+			if ( lti.ptszGenre ) mir_free( lti.ptszGenre );
+			if ( lti.ptszLength ) mir_free( lti.ptszLength );
+			if ( lti.ptszPlayer ) mir_free( lti.ptszPlayer );
+			if ( lti.ptszType ) mir_free( lti.ptszType );
 		#endif
 	}
 }
@@ -1128,7 +1128,7 @@ LBL_InvalidCommand:
 						}
 						else info->sendRawMessage( E.msgType, E.message, E.msgSize );
 
-						free( E.message );
+						mir_free( E.message );
 
 						if ( E.ft != NULL ) {
 							info->mMsnFtp = E.ft;
@@ -1496,7 +1496,7 @@ LBL_InvalidCommand:
 						}
 						else info->sendRawMessage( E.msgType, E.message, E.msgSize );
 
-						free( E.message );
+						mir_free( E.message );
 
 						if ( E.ft != NULL ) {
 							info->mMsnFtp = E.ft;
@@ -1890,7 +1890,7 @@ LBL_InvalidCommand:
 					}
 
 					info->sendPacket( "USR", "TWN S %s", tAuth );
-					free( tAuth );
+					mir_free( tAuth );
 				}
 				else if ( !strcmp( data.security, "OK" )) {
 					UrlDecode( tWords[1] ); UrlDecode( tWords[2] );

@@ -267,7 +267,7 @@ extern "C" int __declspec(dllexport) Load( PLUGINLINK* link )
 	pluginLink = link;
 	DuplicateHandle( GetCurrentProcess(), GetCurrentThread(), GetCurrentProcess(), &msnMainThread, THREAD_SET_CONTEXT, FALSE, 0 );
 
-	// get the internal malloc/free()
+	// get the internal malloc/mir_free()
 	mir_getLI( &li );
 	mir_getMMI( &mmi );
 	mir_getUTFI( &utfi );
@@ -283,10 +283,10 @@ extern "C" int __declspec(dllexport) Load( PLUGINLINK* link )
 	fend = strrchr(path,'.');
 	*fend = '\0';
 	CharUpperA( protocolname );
-	msnProtocolName = strdup( protocolname );
+	msnProtocolName = mir_strdup( protocolname );
 
 	mir_snprintf( path, sizeof( path ), "%s:HotmailNotify", protocolname );
-	ModuleName = strdup( path );
+	ModuleName = mir_strdup( path );
 
 	mir_snprintf( path, sizeof( path ), "%s/Status", protocolname );
 	MSN_CallService( MS_DB_SETSETTINGRESIDENT, TRUE, ( LPARAM )path );
@@ -327,7 +327,7 @@ extern "C" int __declspec(dllexport) Load( PLUGINLINK* link )
 	strcpy( mailsoundtemp, protocolname );
 	strcat( mailsoundtemp, ": " );
 	strcat( mailsoundtemp,  MSN_Translate( "Hotmail" ));
-	mailsoundname = strdup( mailsoundtemp );
+	mailsoundname = mir_strdup( mailsoundtemp );
 	SkinAddNewSound( mailsoundtemp, mailsoundtemp, "hotmail.wav" );
 
 	msnStatusMode = msnDesiredStatus = ID_STATUS_OFFLINE;
@@ -377,25 +377,25 @@ extern "C" int __declspec( dllexport ) Unload( void )
 	P2pSessions_Uninit();
 	Netlib_CloseHandle( hNetlibUser );
 
-	free( mailsoundname );
-	free( msnProtocolName );
-	free( ModuleName );
+	mir_free( mailsoundname );
+	mir_free( msnProtocolName );
+	mir_free( ModuleName );
 
 	CloseHandle( msnMainThread );
 
 	for ( int i=0; i < MSN_NUM_MODES; i++ )
 		if ( msnModeMsgs[ i ].m_msg )
-			free( msnModeMsgs[ i ].m_msg );
+			mir_free( msnModeMsgs[ i ].m_msg );
 
-	if ( kv ) free( kv );
-	if ( sid ) free( sid );
-	if ( passport ) free( passport );
-	if ( MSPAuth ) free( MSPAuth );
-	if ( rru ) free( rru );
-	if ( profileURL ) free( profileURL );
+	if ( kv ) mir_free( kv );
+	if ( sid ) mir_free( sid );
+	if ( passport ) mir_free( passport );
+	if ( MSPAuth ) mir_free( MSPAuth );
+	if ( rru ) mir_free( rru );
+	if ( profileURL ) mir_free( profileURL );
 
-	if ( msnPreviousUUX ) free( msnPreviousUUX );
-	if ( msnExternalIP ) free( msnExternalIP );
+	if ( msnPreviousUUX ) mir_free( msnPreviousUUX );
+	if ( msnExternalIP ) mir_free( msnExternalIP );
 	return 0;
 }
 

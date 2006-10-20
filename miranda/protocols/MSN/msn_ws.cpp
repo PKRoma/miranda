@@ -48,7 +48,7 @@ int ThreadData::send( char* data, int datalen )
 		mGatewayTimeout = 2;
 
 		if ( !MyOptions.UseProxy ) {
-			TQueueItem* tNewItem = ( TQueueItem* )malloc( datalen + sizeof( void* ) + sizeof( int ) + 1 );
+			TQueueItem* tNewItem = ( TQueueItem* )mir_alloc( datalen + sizeof( void* ) + sizeof( int ) + 1 );
 			tNewItem->datalen = datalen;
 			memcpy( tNewItem->data, data, datalen );
 			tNewItem->data[datalen] = 0;
@@ -88,7 +88,7 @@ int ThreadData::recv_dg( char* data, long datalen )
 		memcpy( data, mReadAheadBuffer, tBytesToCopy );
 		mEhoughData -= tBytesToCopy;
 		if ( mEhoughData == 0 ) {
-			free( mReadAheadBuffer );
+			mir_free( mReadAheadBuffer );
 			mReadAheadBuffer = NULL;
 		}
 		else memmove( mReadAheadBuffer, mReadAheadBuffer + tBytesToCopy, mEhoughData );
@@ -147,7 +147,7 @@ LBL_RecvAgain:
 				for ( unsigned j=0; j<np && mFirstQueueItem != NULL; ++j ) {
 					QI = mFirstQueueItem;
 					mFirstQueueItem = QI->next;
-					free( QI );
+					mir_free( QI );
 					--numQueueItems;
 				}
 
@@ -263,7 +263,7 @@ LBL_RecvAgain:
 	if ( tContentLength > ret ) {
 		tContentLength -= ret;
 
-		mReadAheadBuffer = ( char* )calloc( tContentLength+1, 1 );
+		mReadAheadBuffer = ( char* )mir_calloc( tContentLength+1 );
 		mReadAheadBuffer[ tContentLength ] = 0;
 		mEhoughData = tContentLength;
 		nlb.buf = mReadAheadBuffer;
@@ -272,7 +272,7 @@ LBL_RecvAgain:
 			nlb.len = tContentLength;
 			int ret2 = MSN_CallService( MS_NETLIB_RECV, ( WPARAM )s, ( LPARAM )&nlb );
 			if ( ret2 <= 0 )
-			{	free( mReadAheadBuffer );
+			{	mir_free( mReadAheadBuffer );
 				mReadAheadBuffer = NULL;
 				return ret2;
 			}

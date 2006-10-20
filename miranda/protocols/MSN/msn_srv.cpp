@@ -44,8 +44,8 @@ bool MSN_AddGroup( const char* pName, const char* pId )
 		return false;
 
 	p->number = -1;
-	p->id = strdup( pId );
-	p->name = strdup( pName );
+	p->id = mir_strdup( pId );
+	p->name = mir_strdup( pName );
 	p->next = sttFirst;
 	sttFirst = p;
 	return true;
@@ -62,8 +62,8 @@ void MSN_DeleteGroup( const char* pId )
 		if ( !strcmp( p->id, pId )) {
 			if ( prev == NULL ) sttFirst = p->next;
 			else                prev->next = p->next;
-			free( p->id );
-			free( p->name );
+			mir_free( p->id );
+			mir_free( p->name );
 			delete p;
 			return;
 		}
@@ -81,8 +81,8 @@ void MSN_FreeGroups()
 	for ( ServerGroupItem* p = sttFirst; p != NULL; p = p1 ) {
 		p1 = p->next;
 
-		free( p->id );
-		free( p->name );
+		mir_free( p->id );
+		mir_free( p->name );
 		delete p;
 	}
 
@@ -167,8 +167,8 @@ void MSN_SetGroupName( const char* pId, const char* pNewName )
 {
 	for ( ServerGroupItem* p = sttFirst; p != NULL; p = p->next ) {
 		if ( strcmp( p->id, pId ) == 0 ) {
-			free( p->name );
-			p->name = strdup( pNewName );
+			mir_free( p->name );
+			p->name = mir_strdup( pNewName );
 			return;
 }	}	}
 

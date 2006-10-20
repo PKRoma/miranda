@@ -300,7 +300,6 @@ struct JABBER_MUC_JIDLIST_INFO
 };
 
 typedef void ( *JABBER_FORM_SUBMIT_FUNC )( XmlNode* values, void *userdata );
-typedef void ( __cdecl *JABBER_THREAD_FUNC )( void * );
 
 #include "jabber_list.h"
 
@@ -426,7 +425,6 @@ int    JabberCompareJids( const TCHAR* jid1, const TCHAR* jid2 );
 void   JabberContactListCreateGroup( TCHAR* groupName );
 void   JabberDBAddAuthRequest( TCHAR* jid, TCHAR* nick );
 HANDLE JabberDBCreateContact( TCHAR* jid, TCHAR* nick, BOOL temporary, BOOL stripResource );
-ULONG  JabberForkThread( void ( __cdecl *threadcode )( void* ), unsigned long stacksize, void *arg );
 void   JabberGetAvatarFileName( HANDLE hContact, char* pszDest, int cbLen );
 void   JabberSetServerStatus( int iNewStatus );
 TCHAR* EscapeChatTags(TCHAR* pszText);

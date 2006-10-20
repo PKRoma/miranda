@@ -284,7 +284,7 @@ int JabberBasicSearch( WPARAM wParam, LPARAM lParam )
 	}
 	else strncpy( jsb->jid, szJid, SIZEOF(jsb->jid));
 
-	JabberForkThread(( JABBER_THREAD_FUNC )JabberBasicSearchThread, 0, jsb );
+	mir_forkthread(( pThreadFunc )JabberBasicSearchThread, jsb );
 	return jsb->hSearch;
 }
 
@@ -500,7 +500,7 @@ int JabberFileAllow( WPARAM wParam, LPARAM lParam )
 
 	switch ( ft->type ) {
 	case FT_OOB:
-		JabberForkThread(( JABBER_THREAD_FUNC )JabberFileReceiveThread, 0, ft );
+		mir_forkthread(( pThreadFunc )JabberFileReceiveThread, ft );
 		break;
 	case FT_BYTESTREAM:
 		JabberFtAcceptSiRequest( ft );
@@ -762,7 +762,7 @@ int JabberGetAwayMsg( WPARAM wParam, LPARAM lParam )
 		return 0;
 		
 	JabberLog( "GetAwayMsg called, wParam=%d lParam=%d", wParam, lParam );
-	JabberForkThread( JabberGetAwayMsgThread, 0, ( void * ) ccs->hContact );
+	mir_forkthread( JabberGetAwayMsgThread, ccs->hContact );
 	return 1;
 }
 
@@ -1028,7 +1028,7 @@ int JabberSendFile( WPARAM wParam, LPARAM lParam )
 		// Use the new standard file transfer
 		JabberFtInitiate( item->jid, ft );
 	else // Use the jabber:iq:oob file transfer
-		JabberForkThread(( JABBER_THREAD_FUNC )JabberFileServerThread, 0, ft );
+		mir_forkthread(( pThreadFunc )JabberFileServerThread, ft );
 
 	return ( int )( HANDLE ) ft;
 }
@@ -1112,7 +1112,7 @@ int JabberSendMessage( WPARAM wParam, LPARAM lParam )
 			}
 
 			JabberSend( jabberThreadInfo->s, m );
-			JabberForkThread( JabberSendMessageAckThread, 0, ( void* )ccs->hContact );
+			mir_forkthread( JabberSendMessageAckThread, ccs->hContact );
 		}
 		else {
 			id = JabberSerialNext();
@@ -1288,7 +1288,7 @@ int JabberSetStatus( WPARAM wParam, LPARAM lParam )
 		int oldStatus = jabberStatus;
 		jabberStatus = ID_STATUS_CONNECTING;
 		JSendBroadcast( NULL, ACKTYPE_STATUS, ACKRESULT_SUCCESS, ( HANDLE ) oldStatus, jabberStatus );
-		thread->hThread = ( HANDLE ) JabberForkThread(( JABBER_THREAD_FUNC )JabberServerThread, 0, thread );
+		thread->hThread = ( HANDLE ) mir_forkthread(( pThreadFunc )JabberServerThread, thread );
 	}
 	else JabberSetServerStatus( desiredStatus );
 

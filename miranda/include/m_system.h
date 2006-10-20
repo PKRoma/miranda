@@ -366,6 +366,55 @@ extern struct UTF8_INTERFACE utfi;
 
 */
 
+/* 0.5.2+
+wParam=function address
+lParam=function parameter
+
+registers a thread in the core and forks it 
+
+*/
+
+typedef void (__cdecl *pThreadFunc)(void*);
+
+#define MS_SYSTEM_FORK_THREAD    "Miranda/Thread/Fork"
+
+__forceinline int mir_forkthread( pThreadFunc aFunc, void* arg )
+{
+	return CallService( MS_SYSTEM_FORK_THREAD, (WPARAM)aFunc, (LPARAM)arg );
+}
+
+/* 0.5.2+
+wParam=0
+lParam=FORK_THREADEX_PARAMS*
+
+registers a thread in the core and forks it
+passes the extended parameters info and returns the thread id
+
+*/
+
+typedef unsigned (__stdcall *pThreadFuncEx)(void*);
+
+typedef struct
+{
+	pThreadFuncEx pFunc;
+	int           iStackSize;
+	void*         arg;
+	unsigned*     threadID;
+}
+	FORK_THREADEX_PARAMS;
+
+#define MS_SYSTEM_FORK_THREAD_EX    "Miranda/Thread/ForkEx"
+
+static __inline int mir_forkthreadex( pThreadFuncEx aFunc, void* arg, int stackSize, unsigned* pThreadID )
+{
+	FORK_THREADEX_PARAMS params;
+	params.pFunc      = aFunc;
+	params.arg        = arg;
+	params.iStackSize = stackSize;
+	params.threadID   = pThreadID;
+	return CallService( MS_SYSTEM_FORK_THREAD, 0, (LPARAM)&params );
+}
+
 /*
 wParam=0
 lParam=0

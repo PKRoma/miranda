@@ -272,45 +272,6 @@ void JabberGetAvatarFileName( HANDLE hContact, char* pszDest, int cbLen )
 }
 
 ///////////////////////////////////////////////////////////////////////////////
-// JabberForkThread()
-
-struct FORK_ARG {
-	HANDLE hEvent;
-	void ( __cdecl *threadcode )( void* );
-	void *arg;
-};
-
-static void __cdecl forkthread_r( struct FORK_ARG *fa )
-{
-	void ( *callercode )( void* ) = fa->threadcode;
-	void *arg = fa->arg;
-	JabberLog( "Thread started: %08X %d", callercode, GetCurrentThreadId());
-	JCallService( MS_SYSTEM_THREAD_PUSH, 0, 0 );
-	SetEvent( fa->hEvent );
-	__try {
-		callercode( arg );
-	} __finally {
-		JCallService( MS_SYSTEM_THREAD_POP, 0, 0 );
-	}
-	return;
-}
-
-ULONG JabberForkThread( void ( __cdecl *threadcode )( void* ), unsigned long stacksize, void *arg )
-{
-	struct FORK_ARG fa;
-	fa.hEvent = CreateEvent( NULL, FALSE, FALSE, NULL );
-	fa.threadcode = threadcode;
-	fa.arg = arg;
-
-	ULONG rc = _beginthread(( JABBER_THREAD_FUNC )forkthread_r, stacksize, &fa );
-	if (( unsigned long ) -1L != rc )
-		WaitForSingleObject( fa.hEvent, INFINITE );
-
-	CloseHandle( fa.hEvent );
-	return rc;
-}
-
-///////////////////////////////////////////////////////////////////////////////
 // JabberSetServerStatus()
 
 void JabberSetServerStatus( int iNewStatus )

@@ -33,7 +33,7 @@ int MSN_ChatInit( WPARAM wParam, LPARAM lParam )
 	InterlockedIncrement( &sttChatID );
 	_ltot( sttChatID, info->mChatID, 10 );
 
-	info->mJoinedContacts = ( HANDLE* )realloc(info->mJoinedContacts, sizeof(HANDLE)*(++info->mJoinedCount));
+	info->mJoinedContacts = ( HANDLE* )mir_realloc(info->mJoinedContacts, sizeof(HANDLE)*(++info->mJoinedCount));
 	info->mJoinedContacts[info->mJoinedCount - 1] = info->mJoinedContacts[0];
 	info->mJoinedContacts[0] = ( HANDLE )-sttChatID;
 
@@ -188,7 +188,7 @@ int MSN_GCEventHook(WPARAM wParam,LPARAM lParam) {
 				if ( thread->mJoinedCount == 1 ) {
 					// switch back to normal session
 					thread->mJoinedContacts[0] = thread->mJoinedContacts[1];
-					thread->mJoinedContacts = ( HANDLE* )realloc( thread->mJoinedContacts, sizeof( HANDLE ) );
+					thread->mJoinedContacts = ( HANDLE* )mir_realloc( thread->mJoinedContacts, sizeof( HANDLE ) );
 					MSN_CallService(MS_MSG_SENDMESSAGE, (WPARAM)thread->mJoinedContacts[0], 0);
 					thread->mChatID[0] = 0;
 				}

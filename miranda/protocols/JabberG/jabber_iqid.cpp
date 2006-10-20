@@ -1328,7 +1328,7 @@ void JabberIqResultDiscoClientInfo( XmlNode *iqNode, void *userdata )
 		if (( item->cap & CLIENT_CAP_FILE ) && ( item->cap & CLIENT_CAP_BYTESTREAM ))
 			JabberFtInitiate( item->jid, ft );
 		else
-			JabberForkThread(( JABBER_THREAD_FUNC )JabberFileServerThread, 0, ft );
+			mir_forkthread(( pThreadFunc )JabberFileServerThread, ft );
 }	}
 
 void JabberIqResultGetAvatar( XmlNode *iqNode, void *userdata )

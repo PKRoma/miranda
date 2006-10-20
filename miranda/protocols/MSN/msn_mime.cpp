@@ -35,7 +35,7 @@ MimeHeaders::MimeHeaders() :
 MimeHeaders::MimeHeaders( int iInitCount ) :
 	mCount( 0 )
 {
-	mVals = ( MimeHeader* )malloc( iInitCount * sizeof( MimeHeader ));
+	mVals = ( MimeHeader* )mir_alloc( iInitCount * sizeof( MimeHeader ));
 }
 
 MimeHeaders::~MimeHeaders()
@@ -45,11 +45,11 @@ MimeHeaders::~MimeHeaders()
 
 	for ( int i=0; i < mCount; i++ ) {
 		MimeHeader& H = mVals[ i ];
-		free( H.name );
-		free( H.value );
+		mir_free( H.name );
+		mir_free( H.value );
 	}
 
-	free( mVals );
+	mir_free( mVals );
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////
@@ -58,18 +58,18 @@ MimeHeaders::~MimeHeaders()
 void MimeHeaders::addString( const char* name, const char* szValue )
 {
 	MimeHeader& H = mVals[ mCount++ ];
-	H.name = strdup( name );
-	H.value = strdup( szValue );
+	H.name = mir_strdup( name );
+	H.value = mir_strdup( szValue );
 }
 
 void MimeHeaders::addLong( const char* name, long lValue )
 {
 	MimeHeader& H = mVals[ mCount++ ];
-	H.name = strdup( name );
+	H.name = mir_strdup( name );
 
 	char szBuffer[ 20 ];
 	ltoa( lValue, szBuffer, 10 );
-	H.value = strdup( szBuffer );
+	H.value = mir_strdup( szBuffer );
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////
@@ -138,13 +138,13 @@ const char* MimeHeaders::readFromBuffer( const char* parString )
 			delim++;
 
 		MimeHeader& H = headers[ headerCount ];
-		H.name = strdup( line );
-		H.value = strdup( delim );
+		H.name = mir_strdup( line );
+		H.value = mir_strdup( delim );
 		headerCount++;
 	}
 
 	if (( mCount = headerCount ) != 0 ) {
-		mVals = ( MimeHeader* )malloc( sizeof( MimeHeader )*headerCount );
+		mVals = ( MimeHeader* )mir_alloc( sizeof( MimeHeader )*headerCount );
 		memcpy( mVals, headers, sizeof( MimeHeader )*headerCount );
 	}
 	return parString;

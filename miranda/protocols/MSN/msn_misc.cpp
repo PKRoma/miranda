@@ -154,7 +154,7 @@ void __stdcall MSN_AddAuthRequest( HANDLE hContact, const char *email, const cha
 	dbei.eventType = EVENTTYPE_AUTHREQUEST;
 	dbei.cbBlob    = sizeof(DWORD)*2+strlen(nick)+strlen(email)+5;
 
-	PBYTE pCurBlob = dbei.pBlob = ( PBYTE )malloc( dbei.cbBlob );
+	PBYTE pCurBlob = dbei.pBlob = ( PBYTE )mir_alloc( dbei.cbBlob );
 	*( PDWORD )pCurBlob = 0; pCurBlob+=sizeof( DWORD );
 	*( PDWORD )pCurBlob = ( DWORD )hContact; pCurBlob+=sizeof( DWORD );
 	strcpy(( char* )pCurBlob, nick); pCurBlob += strlen( nick )+1;
@@ -300,7 +300,7 @@ void __stdcall	MSN_GoOffline()
 
 	msnLoggedIn = false;
 
-	free(msnPreviousUUX);
+	mir_free(msnPreviousUUX);
 	msnPreviousUUX = NULL;
 
 	if ( !Miranda_Terminated() )
@@ -427,7 +427,7 @@ int __stdcall MSN_SendNicknameW( WCHAR* nickname)
 	UrlEncode( nickutf, urlNick,  sizeof( urlNick ));
 	msnNsThread->sendPacket( "PRP", "MFN %s", urlNick );
 
-	free( nickutf );
+	mir_free( nickutf );
 	return 0;
 }
 
@@ -438,7 +438,7 @@ int __stdcall MSN_SendNicknameW( WCHAR* nickname)
 static char * HtmlEncodeUTF8T( const TCHAR *src )
 {
 	if (src == NULL)
-		return strdup("");
+		return mir_strdup("");
 
 	TCHAR *tmp = HtmlEncodeT(src);
 #if defined( _UNICODE )
@@ -446,7 +446,7 @@ static char * HtmlEncodeUTF8T( const TCHAR *src )
 #else
 	char *ret = mir_utf8encode(tmp);
 #endif
-	free(tmp);
+	mir_free(tmp);
 	return ret;
 }
 
@@ -461,7 +461,7 @@ void __stdcall MSN_SendStatusMessage( const char* msg )
 	if ( msnCurrentMedia.cbSize == 0 ) 
 	{
 		mir_snprintf( szMsg, sizeof szMsg, "<Data><PSM>%s</PSM></Data>", UTF8(msgEnc));
-		free( msgEnc );
+		mir_free( msgEnc );
 	}
 	else 
 	{
@@ -500,15 +500,15 @@ void __stdcall MSN_SendStatusMessage( const char* msg )
 			"<Data><PSM>%s</PSM><CurrentMedia>%s\\0%s\\01\\0%s\\0%s\\0%s\\0%s\\0%s\\0%s\\0%s\\0%s\\0%s\\0%s\\0\\0</CurrentMedia></Data>", 
 			UTF8(msgEnc), szPlayer, szType, szFormatEnc, szTitle, szArtist, szAlbum, szTrack, szYear, szGenre, szLength, szPlayer, szType);
 
-		free( szArtist );
-		free( szAlbum );
-		free( szTitle );
-		free( szTrack );
-		free( szYear );
-		free( szGenre );
-		free( szLength );
-		free( szPlayer );
-		free( szType );
+		mir_free( szArtist );
+		mir_free( szAlbum );
+		mir_free( szTitle );
+		mir_free( szTrack );
+		mir_free( szYear );
+		mir_free( szGenre );
+		mir_free( szLength );
+		mir_free( szPlayer );
+		mir_free( szType );
 	}
 
 	if ( !lstrcmpA( msnPreviousUUX, szMsg ))
@@ -530,7 +530,7 @@ LONG ThreadData::sendPacket( const char* cmd, const char* fmt,...)
 	va_start( vararg, fmt );
 
 	int strsize = 512;
-	char* str = ( char* )malloc( strsize );
+	char* str = ( char* )mir_alloc( strsize );
 
 	LONG thisTrid = MyInterlockedIncrement( &mTrid );
 
@@ -539,14 +539,14 @@ LONG ThreadData::sendPacket( const char* cmd, const char* fmt,...)
 	else  {
 		int paramStart = sprintf( str, "%s %d ", cmd, thisTrid );
 		while ( _vsnprintf( str+paramStart, strsize-paramStart-2, fmt, vararg ) == -1 )
-			str = (char*)realloc( str, strsize += 512 );
+			str = (char*)mir_realloc( str, strsize += 512 );
 	}
 
 	if ( strcmp( cmd, "MSG" ) && strcmp( cmd, "QRY" ) && strcmp( cmd, "UUX" ))
 		strcat( str,"\r\n" );
 
 	int result = send( str, strlen( str ));
-	free( str );
+	mir_free( str );
 	return ( result > 0 ) ? thisTrid : -1;
 }
 
@@ -610,7 +610,7 @@ void CALLBACK sttMainThreadCallback( ULONG dwParam )
 	else
 		MSN_CallService( MS_POPUP_ADDPOPUP, ( WPARAM )ppd, 0 );
 
-	free( ppd );
+	mir_free( ppd );
 }
 
 void __stdcall	MSN_ShowPopup( const char* nickname, const char* msg, int flags )
@@ -624,7 +624,7 @@ void __stdcall	MSN_ShowPopup( const char* nickname, const char* msg, int flags )
 		return;
 	}
 
-	POPUPDATAEX* ppd = ( POPUPDATAEX* )calloc( sizeof( POPUPDATAEX ), 1 );
+	POPUPDATAEX* ppd = ( POPUPDATAEX* )mir_calloc( sizeof( POPUPDATAEX ));
 
 	ppd->lchContact = NULL;
 	ppd->lchIcon = LoadIcon( hInst, MAKEINTRESOURCE( IDI_MSN ));
@@ -742,7 +742,7 @@ WCHAR* __stdcall HtmlEncodeW( const WCHAR* str )
 		default: c++; break;
 		}
 	}
-	if (( s=( WCHAR* )malloc( (c+1) * sizeof(WCHAR) )) != NULL ) {
+	if (( s=( WCHAR* )mir_alloc( (c+1) * sizeof(WCHAR) )) != NULL ) {
 		for ( p=( WCHAR* )str,q=s; *p!=L'\0'; p++ ) {
 			switch ( *p ) {
 			case L'&': wcscpy( q, L"&amp;" ); q += 5; break;
@@ -777,7 +777,7 @@ char* __stdcall HtmlEncode( const char* str )
 		default: c++; break;
 		}
 	}
-	if (( s=( char* )malloc( c+1 )) != NULL ) {
+	if (( s=( char* )mir_alloc( c+1 )) != NULL ) {
 		for ( p=( char* )str,q=s; *p!='\0'; p++ ) {
 			switch ( *p ) {
 			case '&': strcpy( q, "&amp;" ); q += 5; break;
@@ -857,20 +857,20 @@ filetransfer::~filetransfer( void )
 	else if ( fileId != -1 )
 		_close( fileId );
 
-	if ( p2p_branch != NULL ) free( p2p_branch );
-	if ( p2p_callID != NULL ) free( p2p_callID );
-	if ( p2p_dest   != NULL ) free( p2p_dest );
+	if ( p2p_branch != NULL ) mir_free( p2p_branch );
+	if ( p2p_callID != NULL ) mir_free( p2p_callID );
+	if ( p2p_dest   != NULL ) mir_free( p2p_dest );
 
-	if ( std.currentFile != NULL ) free( std.currentFile );
-	if ( std.workingDir != NULL ) free( std.workingDir );
+	if ( std.currentFile != NULL ) mir_free( std.currentFile );
+	if ( std.workingDir != NULL ) mir_free( std.workingDir );
 	if ( std.files != NULL ) {
 		for ( int i=0; i < std.totalFiles; i++ )
 			mir_free( std.files[ i ] );
 		mir_free( std.files );
 	}
 
-	if ( wszFileName != NULL ) free( wszFileName );
-	if ( szInvcookie != NULL ) free( szInvcookie );
+	if ( wszFileName != NULL ) mir_free(  wszFileName );
+	if ( szInvcookie != NULL ) mir_free( szInvcookie );
 }
 
 void filetransfer::close( void )
@@ -915,7 +915,7 @@ int filetransfer::create( void )
 				WIN32_FIND_DATAW data;
 				HANDLE hFind = FindFirstFileW( wszFileName, &data );
 				if ( hFind != INVALID_HANDLE_VALUE ) {
-					free( std.currentFile );
+					mir_free( std.currentFile );
 
 					char tShortName[ 20 ];
 					WideCharToMultiByte( CP_ACP, 0, 
@@ -923,7 +923,7 @@ int filetransfer::create( void )
 						-1, tShortName, sizeof tShortName, 0, 0 );
 					char filefull[ MAX_PATH ];
 					mir_snprintf( filefull, sizeof( filefull ), "%s\\%s", std.workingDir, tShortName );
-					std.currentFile = strdup( filefull );
+					std.currentFile = mir_strdup( filefull );
 					FindClose( hFind );
 			}	}
 		}
@@ -959,8 +959,8 @@ int filetransfer::openNext( void )
 			p2p_byemsgid = 0;
 			tType = SERVER_DISPATCH;
 
-			free( p2p_branch ); p2p_branch = NULL;
-			free( p2p_callID ); p2p_callID = NULL;
+			mir_free( p2p_branch ); p2p_branch = NULL;
+			mir_free( p2p_callID ); p2p_callID = NULL;
 		}
 		else
 			MSN_DebugLog( "Unable to open file '%s', error %d", std.currentFile, errno );
@@ -1061,7 +1061,7 @@ TCHAR* EscapeChatTags(TCHAR* pszText)
 	if ( nChars == 0 )
 		return mir_tstrdup( pszText );
 
-	TCHAR* pszNewText = (TCHAR*)malloc( sizeof(TCHAR)*(lstrlen( pszText ) + 1 + nChars)), *s, *d;
+	TCHAR* pszNewText = (TCHAR*)mir_alloc( sizeof(TCHAR)*(lstrlen( pszText ) + 1 + nChars)), *s, *d;
 	if ( pszNewText == NULL )
 		return mir_tstrdup( pszText );
 

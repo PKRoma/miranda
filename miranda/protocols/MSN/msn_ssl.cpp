@@ -263,7 +263,7 @@ LBL_Restart:
 					tBufSize = SSL_BUF_SIZE;
 					f_HttpQueryInfo( tRequest, HTTP_QUERY_RAW_HEADERS_CRLF, tBuffer, &tBufSize, NULL );
 					MSN_DebugLog( "SSL response: '%s'", tBuffer );
-					tSslAnswer = dwCode == HTTP_STATUS_OK ? strdup( tBuffer ) : NULL;
+					tSslAnswer = dwCode == HTTP_STATUS_OK ? mir_strdup( tBuffer ) : NULL;
 					break;
 
 				case ERROR_INTERNET_HTTP_TO_HTTPS_ON_REDIR:
@@ -485,7 +485,7 @@ char* SSL_OpenSsl::getSslResult( char* parUrl, char* parAuthInfo )
 
 				nBytes = pfn_SSL_read( ssl, buf, SSL_BUF_SIZE );
 				if ( nBytes > 0 ) {
-					result = ( char* )malloc( nBytes+1 );
+					result = ( char* )mir_alloc( nBytes+1 );
 					memcpy( result, buf, nBytes+1 );
 					result[ nBytes ] = 0;
 
@@ -535,7 +535,7 @@ LBL_Exit:
 
 	char* p = strstr( msnLoginHost, "DALogin=" );
 	if ( p == NULL ) {
-		free( msnLoginHost ); msnLoginHost = NULL;
+		mir_free( msnLoginHost ); msnLoginHost = NULL;
 		retVal = 2;
 		goto LBL_Exit;
 	}
@@ -547,7 +547,7 @@ LBL_Exit:
 
 	MSN_SetString( NULL, "MsnPassportHost", msnLoginHost );
 	MSN_DebugLog( "MSN Passport login host is set to '%s'", msnLoginHost );
-	free( msnLoginHost );
+	mir_free( msnLoginHost );
 	goto LBL_Exit;
 }
 
@@ -617,7 +617,7 @@ LBL_Exit:
 		if ( status == 302 ) // Handle redirect
 		{
 			if (( p = strstr( tResult, "Location:" )) == NULL )	{
-				free( tResult );
+				mir_free( tResult );
 				retVal = 7;
 				goto LBL_Exit;
 			}
@@ -626,19 +626,19 @@ LBL_Exit:
 				*p = 0;
 			strcpy(szPassportHost, tResult);
 			MSN_DebugLog( "Redirected to '%s'", tResult );
-			free( tResult );
+			mir_free( tResult );
 		}
 		else if (status != 200) 
 		{
 			retVal = 6;
-			free( tResult );
+			mir_free( tResult );
 			goto LBL_Exit;
 		}
 		else break;
 	}
 
 	if (( p = strstr( tResult, "from-PP=" )) == NULL )	{
-		free( tResult );
+		mir_free( tResult );
 		retVal = 5;
 		goto LBL_Exit;
 	}

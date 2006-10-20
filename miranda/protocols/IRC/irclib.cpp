@@ -346,7 +346,7 @@ bool CIrcSession::Connect(const CIrcSessionInfo& info)
 		m_info = info;
 
 		// start receiving messages from host
-		forkthread(ThreadProc, 0, this  );
+		mir_forkthread(ThreadProc, this  );
 		Sleep(100);
 		if( info.sPassword.length() )
 			NLSend("PASS %s\r\n", info.sPassword.c_str());
@@ -1178,7 +1178,7 @@ int CDccSession::Connect() {
 	if(!di->bSender || di->bReverse)
 	{
 		if(!con)
-			forkthread(ConnectProc, 0, this  ); // spawn a new thread for time consuming activities, ie when connecting to a remote computer
+			mir_forkthread(ConnectProc, this  ); // spawn a new thread for time consuming activities, ie when connecting to a remote computer
 		return true;
 	}
 	else
@@ -1399,7 +1399,7 @@ int CDccSession::SetupConnection() {
 			DBWriteContactSettingWord(di->hContact, IRCPROTONAME, "Status", ID_STATUS_ONLINE);
 
 		// spawn a new thread to handle receiving/sending of data for the new chat/filetransfer connection to the remote computer
-		forkthread(ThreadProc, 0, this  );
+		mir_forkthread(ThreadProc, this  );
 		
 	} catch( const char* ){
 		Disconnect();
@@ -1427,7 +1427,7 @@ int CDccSession::IncomingConnection(HANDLE hConnection, DWORD dwIP)
 		DBWriteContactSettingWord(di->hContact, IRCPROTONAME, "Status", ID_STATUS_ONLINE); // set chat to online
 
 	// same as above, spawn a new thread to handle receiving/sending of data for the new incoming chat/filetransfer connection  
-	forkthread(ThreadProc, 0, this  );
+	mir_forkthread(ThreadProc, this  );
 	return true;
 
 

@@ -1169,7 +1169,7 @@ static int Service_BasicSearch(WPARAM wParam,LPARAM lParam)
 	if (lParam) {
 		lstrcpyn(buf, (const char *)lParam, 50);
 		if (OldStatus != ID_STATUS_OFFLINE && OldStatus != ID_STATUS_CONNECTING && lstrlen(buf) >0 && !IsChannel(buf)) {
-			forkthread(AckBasicSearch, 0, &buf );
+			mir_forkthread(AckBasicSearch, &buf );
 			return 1;
 	}	}
 
@@ -1229,7 +1229,7 @@ static void __cdecl ConnectServerThread(LPVOID di)
 				IPRESOLVE * ipr = new IPRESOLVE;
 				ipr->iType = IP_MANUAL;
 				ipr->pszAdr = prefs->MySpecifiedHost;
-				forkthread(ResolveIPThread, NULL, ipr);
+				mir_forkthread(ResolveIPThread, ipr);
 			}
 		}
 		else {
@@ -1286,7 +1286,7 @@ void ConnectToServer(void)
 	sChannelModes = "btnimklps";
 
 	if (!bConnectThreadRunning)
-		forkthread(ConnectServerThread, 0, NULL  );
+		mir_forkthread(ConnectServerThread, NULL );
 	else if (bConnectRequested < 1)
 		InterlockedIncrement((volatile long *) &bConnectRequested);
 
@@ -1310,7 +1310,7 @@ void DisconnectFromServer(void)
 	gce.pDest = &gcd;
 
 	CallChatEvent( SESSION_TERMINATE, (LPARAM)&gce);
-	forkthread(DisconnectServerThread, 0, NULL  );
+	mir_forkthread(DisconnectServerThread, NULL );
 }
 
 static int Service_SetStatus(WPARAM wParam,LPARAM lParam)
@@ -1456,13 +1456,13 @@ static int Service_GetMessFromSRMM(WPARAM wParam, LPARAM lParam)
 	WORD wStatus = DBGetContactSettingWord(ccs->hContact, IRCPROTONAME, "Status", ID_STATUS_OFFLINE) ;
 	if (OldStatus !=ID_STATUS_OFFLINE && OldStatus !=ID_STATUS_CONNECTING && !bDcc || bDcc && wStatus == ID_STATUS_ONLINE) {
 		PostIrcMessageWnd(NULL, ccs->hContact, (char *) ccs->lParam);
-		forkthread(AckMessageSuccess, 0, ccs->hContact);
+		mir_forkthread(AckMessageSuccess, ccs->hContact);
 	}
 	else {
 		if (bDcc)
-			forkthread(AckMessageFailDcc, 0, ccs->hContact);
+			mir_forkthread(AckMessageFailDcc, ccs->hContact);
 		else
-			forkthread(AckMessageFail, 0, ccs->hContact);
+			mir_forkthread(AckMessageFail, ccs->hContact);
 	}
 
 	return 1; 
@@ -1751,7 +1751,7 @@ VOID CALLBACK RetryTimerProc(HWND hwnd,UINT uMsg,UINT idEvent,DWORD dwTime)
 		DoEvent(GC_EVENT_INFORMATION, "Network log", NULL, szTemp, NULL, NULL, NULL, true, false); 
 
 		if (!bConnectThreadRunning)
-			forkthread(ConnectServerThread, 0, NULL  );
+			mir_forkthread(ConnectServerThread, NULL  );
 		else
 			bConnectRequested = true;
 

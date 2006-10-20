@@ -91,7 +91,7 @@ void __cdecl MSNServerThread( ThreadData* info )
 {
 	if ( !sttRedirectorWasChecked ) {
 		sttRedirectorWasChecked = true;
-		MSN_StartThread(( pThreadFunc )msn_RedirectorThread, NULL );
+		mir_forkthread(( pThreadFunc )msn_RedirectorThread, NULL );
 	}
 
 	NETLIBOPENCONNECTION tConn = { 0 };
@@ -158,7 +158,7 @@ void __cdecl MSNServerThread( ThreadData* info )
 	}
 
 	if ( info->mType == SERVER_NOTIFICATION )
-		MSN_StartThread(( pThreadFunc )msn_keepAliveThread, NULL );
+		mir_forkthread(( pThreadFunc )msn_keepAliveThread, NULL );
 
 	MSN_DebugLog( "Entering main recv loop" );
 	info->mBytesInData = 0;
@@ -246,7 +246,12 @@ LBL_Exit:
 //  Added by George B. Hazan (ghazan@postman.ru)
 //  The following code is required to abortively stop all started threads upon exit
 
-static LIST<ThreadData> sttThreads( 10 ); // up to MAX_THREAD_COUNT threads
+static int CompareThreads( const ThreadData* p1, const ThreadData* p2 )
+{
+	return int( p1 - p2 );
+}
+
+static LIST<ThreadData> sttThreads( 10, CompareThreads ); // up to MAX_THREAD_COUNT threads
 static CRITICAL_SECTION	sttLock;
 
 void __stdcall MSN_InitThreads()
@@ -488,13 +493,13 @@ ThreadData::~ThreadData()
 
 	p2p_clearDormantSessions();
 
-	free( mJoinedContacts );
+	mir_free( mJoinedContacts );
 
 	if ( hQueueMutex ) WaitForSingleObject( hQueueMutex, INFINITE );
 	while (mFirstQueueItem != NULL) {
 		TQueueItem* QI = mFirstQueueItem;
 		mFirstQueueItem = mFirstQueueItem->next;
-		free(QI);
+		mir_free(QI);
 		--numQueueItems;
 	}
 	if ( hQueueMutex )  {
@@ -574,87 +579,32 @@ static void sttRegisterThread( ThreadData* s )
 static void sttUnregisterThread( ThreadData* s )
 {
 	EnterCriticalSection( &sttLock );
-
-	for ( int i=0; i < sttThreads.getCount(); i++ )
-		if ( sttThreads[ i ] == s ) {
-			sttThreads.remove( i );
-			break;
-		}
-
+	sttThreads.remove( s );
 	LeaveCriticalSection( &sttLock );
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////
 
-struct FORK_ARG {
-	HANDLE hEvent;
-	pThreadFunc threadcode;
-	ThreadData* arg;
-};
-
-static void __cdecl forkthread_r(struct FORK_ARG *fa)
+static void __cdecl MSN_ThreadStub( ThreadData* info )
 {
-	pThreadFunc callercode = fa->threadcode;
-	ThreadData* arg = fa->arg;
-	MSN_CallService(MS_SYSTEM_THREAD_PUSH, 0, 0);
-	sttRegisterThread( arg );
-	MSN_DebugLog( "Starting thread %08X (%08X)", GetCurrentThreadId(), callercode );
-	SetEvent(fa->hEvent);
-	__try {
-		callercode(arg);
-	} __finally {
-		MSN_DebugLog( "Leaving thread %08X (%08X)", GetCurrentThreadId(), callercode );
-		sttUnregisterThread( arg );
-		delete arg;
+	sttRegisterThread( info );
+	MSN_DebugLog( "Starting thread %08X (%08X)", GetCurrentThreadId(), info->mFunc );
 
-		SetThreadPriority(GetCurrentThread(), THREAD_PRIORITY_TIME_CRITICAL);
-		MSN_CallService(MS_SYSTEM_THREAD_POP, 0, 0);
+	__try
+	{
+		info->mFunc( info );
 	}
-	return;
-}
+	__finally
+	{
+		MSN_DebugLog( "Leaving thread %08X (%08X)", GetCurrentThreadId(), info->mFunc );
+		sttUnregisterThread( info );
+		delete info;
+}	}
 
 void ThreadData::startThread( pThreadFunc parFunc )
 {
-	FORK_ARG fa = { CreateEvent(NULL, FALSE, FALSE, NULL), parFunc, this };
-	unsigned long rc = _beginthread(( pThreadFunc )forkthread_r, 0, &fa );
-	if ((unsigned long) -1L != rc)
-		WaitForSingleObject(fa.hEvent, INFINITE);
-	CloseHandle(fa.hEvent);
-}
-
-/////////////////////////////////////////////////////////////////////////////////////////
-
-struct FORK_ARG2 {
-	HANDLE hEvent;
-	pThreadFunc threadcode;
-	void* arg;
-};
-
-static void __cdecl forkthread_r2(struct FORK_ARG2 *fa)
-{
-	pThreadFunc callercode = fa->threadcode;
-	void* arg = fa->arg;
-	MSN_CallService(MS_SYSTEM_THREAD_PUSH, 0, 0);
-	MSN_DebugLog( "Starting thread %08X (%08X)", GetCurrentThreadId(), callercode );
-	SetEvent(fa->hEvent);
-
-	__try {
-		callercode(arg);
-	} __finally {
-		MSN_DebugLog( "Leaving thread %08X (%08X)", GetCurrentThreadId(), callercode );
-		SetThreadPriority(GetCurrentThread(), THREAD_PRIORITY_TIME_CRITICAL);
-		MSN_CallService(MS_SYSTEM_THREAD_POP, 0, 0);
-	}
-	return;
-}
-
-void __stdcall MSN_StartThread( pThreadFunc parFunc, void* arg )
-{
-	FORK_ARG2 fa = { CreateEvent(NULL, FALSE, FALSE, NULL), parFunc, arg };
-	unsigned long rc = _beginthread(( pThreadFunc )forkthread_r2, 0, &fa );
-	if ((unsigned long) -1L != rc)
-		WaitForSingleObject(fa.hEvent, INFINITE);
-	CloseHandle(fa.hEvent);
+	mFunc = parFunc;
+	mir_forkthread(( pThreadFunc )MSN_ThreadStub, this );
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////

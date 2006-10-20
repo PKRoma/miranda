@@ -372,7 +372,7 @@ static void __cdecl MsnFileAckThread( void* arg )
 			return;
 
 		if ( ft->wszFileName != NULL ) {
-			free( ft->wszFileName );
+			mir_free( ft->wszFileName );
 			ft->wszFileName = NULL;
 	}	}
 
@@ -397,10 +397,10 @@ int MsnFileAllow(WPARAM wParam, LPARAM lParam)
 	CCSDATA* ccs = ( CCSDATA* )lParam;
 	filetransfer* ft = ( filetransfer* )ccs->wParam;
 
-	if (( ft->std.workingDir = strdup(( char* )ccs->lParam )) == NULL ) {
+	if (( ft->std.workingDir = mir_strdup(( char* )ccs->lParam )) == NULL ) {
 		char szCurrDir[ MAX_PATH ];
 		GetCurrentDirectoryA( sizeof( szCurrDir ), szCurrDir );
-		ft->std.workingDir = strdup( szCurrDir );
+		ft->std.workingDir = mir_strdup( szCurrDir );
 	}
 	else {
 		int len = strlen( ft->std.workingDir )-1;
@@ -408,7 +408,7 @@ int MsnFileAllow(WPARAM wParam, LPARAM lParam)
 			ft->std.workingDir[ len ] = 0;
 	}
 
-	MSN_StartThread( MsnFileAckThread, ft );
+	mir_forkthread( MsnFileAckThread, ft );
 
 	return int( ft );
 }
@@ -493,7 +493,7 @@ int MsnFileResume( WPARAM wParam, LPARAM lParam )
 
 		case FILERESUME_RENAME:
 			if ( ft->wszFileName != NULL ) {
-				free( ft->wszFileName );
+				mir_free( ft->wszFileName );
 				ft->wszFileName = NULL;
 			}
 			replaceStr( ft->std.currentFile, pfr->szFilename );
@@ -606,7 +606,7 @@ static int MsnGetAwayMsg(WPARAM wParam,LPARAM lParam)
 	if ( ccs == NULL )
 		return 0;
 
-	MSN_StartThread( MsnGetAwayMsgThread, ccs->hContact );
+	mir_forkthread( MsnGetAwayMsgThread, ccs->hContact );
 	return 1;
 }
 
@@ -958,7 +958,7 @@ static int MsnSendMessage( WPARAM wParam, LPARAM lParam )
 	char tEmail[ MSN_MAX_EMAIL_LEN ];
 	if ( !MSN_GetStaticString( "e-mail", ccs->hContact, tEmail, sizeof( tEmail )) && !strcmp( tEmail, MyOptions.szEmail )) {
 		errMsg = MSN_Translate( "You cannot send message to yourself" );
-		MSN_StartThread( sttFakeAck, new TFakeAckParams( ccs->hContact, 999999, errMsg ));
+		mir_forkthread( sttFakeAck, new TFakeAckParams( ccs->hContact, 999999, errMsg ));
 		return 999999;
 	}
 
@@ -971,9 +971,9 @@ static int MsnSendMessage( WPARAM wParam, LPARAM lParam )
 	if ( strlen( msg ) > 1202 ) {
 		errMsg = MSN_Translate( "Message is too long: MSN messages are limited by 1202 UTF8 chars" );
 LBL_Error:
-		free( msg );
+		mir_free( msg );
 
-		MSN_StartThread( sttFakeAck, new TFakeAckParams( ccs->hContact, 999999, errMsg ));
+		mir_forkthread( sttFakeAck, new TFakeAckParams( ccs->hContact, 999999, errMsg ));
 		return 999999;
 	}
 
@@ -1002,10 +1002,10 @@ LBL_Error:
 			msnNsThread->sendPacket( "XFR", "SB" );
 		}
 		else if ( !MyOptions.SlowSend )
-			MSN_StartThread( sttFakeAck, new TFakeAckParams( ccs->hContact, seq, 0 ));
+			mir_forkthread( sttFakeAck, new TFakeAckParams( ccs->hContact, seq, 0 ));
 	}
 
-	free( msg );
+	mir_free( msg );
 	return seq;
 }
 
