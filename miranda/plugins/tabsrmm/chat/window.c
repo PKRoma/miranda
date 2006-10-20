@@ -1499,8 +1499,8 @@ BOOL CALLBACK RoomWndProc(HWND hwndDlg,UINT uMsg,WPARAM wParam,LPARAM lParam)
 				hIcon = dat->wStatus <= ID_STATUS_OFFLINE ? LoadSkinnedProtoIcon(si->pszModule, ID_STATUS_OFFLINE) : LoadSkinnedProtoIcon(si->pszModule, dat->wStatus);
 				fNoCopy = FALSE;
 				mir_sntprintf(szTemp, SIZEOF(szTemp),
-					(si->nUsersInNicklist ==1) ? TranslateT("%s: Chat Room (%u user%s") : TranslateT("%s: Chat Room (%u users%s)"),
-					si->ptszName, si->nUsersInNicklist, si->bFilterEnabled ? TranslateT(", event filter active)") : TranslateT(")"));
+					(si->nUsersInNicklist ==1) ? TranslateT("%s: Chat Room (%u user%s)") : TranslateT("%s: Chat Room (%u users%s)"),
+					si->ptszName, si->nUsersInNicklist, si->bFilterEnabled ? TranslateT(", event filter active") : _T(""));
 				break;
 			case GCW_PRIVMESS:
 				mir_sntprintf(szTemp, SIZEOF(szTemp),

@@ -255,8 +255,12 @@ LRESULT DM_ScrollToBottom(HWND hwndDlg, struct MessageWindowData *dat, WPARAM wP
         if(IsIconic(dat->pContainer->hwnd))
             dat->dwFlags |= MWF_DEFERREDSCROLL;
 
-        if(dat->hwndIEView || dat->hwndHPP) {
+        if(dat->hwndIEView) {
             PostMessage(hwndDlg, DM_SCROLLIEVIEW, 0, 0);
+            return 0;
+        }
+        else if(dat->hwndHPP) {
+            SendMessage(hwndDlg, DM_SCROLLIEVIEW, 0, 0);
             return 0;
         }
         else {

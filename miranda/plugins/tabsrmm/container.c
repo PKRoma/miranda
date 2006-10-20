@@ -3522,6 +3522,8 @@ void UpdateContainerMenu(HWND hwndDlg, struct MessageWindowData *dat)
                 IEViewMode = DBGetContactSettingByte(NULL, "IEVIEW", "_default_.SRMMMode", 0);
             fDisable = (IEViewMode == 2);
         }
+        else if(dat->hwndHPP)
+            fDisable = TRUE;
     }
     if(dat->pContainer->hMenu) {
         EnableMenuItem(dat->pContainer->hMenu, 3, MF_BYPOSITION | (fDisable ? MF_GRAYED | MF_DISABLED : MF_ENABLED));

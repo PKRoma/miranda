@@ -301,7 +301,7 @@ static void MsgWindowUpdateState(HWND hwndDlg, struct MessageWindowData *dat, UI
             InvalidateRect(GetDlgItem(hwndDlg, IDC_PANELUIN), NULL, FALSE);
             InvalidateRect(GetDlgItem(hwndDlg, IDC_PANELSTATUS), NULL, FALSE);
         }
-        if(dat->dwFlags & MWF_DEFERREDSCROLL && dat->hwndIEView == 0) {
+        if(dat->dwFlags & MWF_DEFERREDSCROLL && dat->hwndIEView == 0 && dat->hwndHPP == 0) {
             HWND hwnd = GetDlgItem(hwndDlg, IDC_LOG);
 
             SendMessage(hwnd, WM_SETREDRAW, FALSE, 0);

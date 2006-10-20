@@ -1359,10 +1359,9 @@ BOOL DoRtfToTags(TCHAR * pszText, struct MessageWindowData *dat)
 				else if(p1[1] == (TCHAR)'\\' || p1[1] == (TCHAR)'{' || p1[1] == (TCHAR)'}' ) // escaped characters
 				{
 					bTextHasStarted = TRUE;
-					bJustRemovedRTF = TRUE;
+					//bJustRemovedRTF = TRUE;
 					iRemoveChars = 2;
 					_sntprintf(InsertThis, safe_sizeof(InsertThis), _T("%c"), p1[1]);
-
 				}
 				else if(p1[1] == (TCHAR)'\'' ) // special character
 				{
@@ -1435,15 +1434,7 @@ BOOL DoRtfToTags(TCHAR * pszText, struct MessageWindowData *dat)
 				iRemoveChars = 1;
 				break;
 
-            /*
-			case (TCHAR)'%': // escape chat -> protocol control character
-				bTextHasStarted = TRUE;
-				bJustRemovedRTF = FALSE;
-				iRemoveChars = 1;
-				_sntprintf(InsertThis, sizeof(InsertThis), _T("%%%%"));
-				break;
-            */
-			case (TCHAR)' ': // remove spaces following a RTF command
+            case (TCHAR)' ': // remove spaces following a RTF command
 				if(bJustRemovedRTF)
 					iRemoveChars = 1;
 				bJustRemovedRTF = FALSE;
@@ -3140,5 +3131,4 @@ HICON MY_GetContactIcon(HANDLE hContact, char * proto, int status)
     }
     return CopyIcon(LoadSkinnedProtoIcon(proto,status));
 }
-
 
