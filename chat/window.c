@@ -1189,6 +1189,7 @@ BOOL CALLBACK RoomWndProc(HWND hwndDlg,UINT uMsg,WPARAM wParam,LPARAM lParam)
 			urd.pfnResizer=RoomWndResize;
 			CallService(MS_UTILS_RESIZEDIALOG,0,(LPARAM)&urd);
 
+			RedrawWindow(GetDlgItem(hwndDlg,IDC_CHAT_LIST), NULL, NULL, RDW_INVALIDATE);
 			RedrawWindow(GetDlgItem(hwndDlg,IDC_CHAT_MESSAGE), NULL, NULL, RDW_INVALIDATE);
 			RedrawWindow(GetDlgItem(hwndDlg,IDOK), NULL, NULL, RDW_INVALIDATE);
 		}
@@ -1398,12 +1399,6 @@ BOOL CALLBACK RoomWndProc(HWND hwndDlg,UINT uMsg,WPARAM wParam,LPARAM lParam)
 				return TRUE;
 
 			case SESSION_TERMINATE:
-				if (DBGetContactSettingByte(NULL, "Chat", "SavePosition", 0)) {
-					DBWriteContactSettingDword(si->hContact, "Chat", "roomx", si->iX);
-					DBWriteContactSettingDword(si->hContact, "Chat", "roomy", si->iY);
-					DBWriteContactSettingDword(si->hContact, "Chat", "roomwidth" , si->iWidth);
-					DBWriteContactSettingDword(si->hContact, "Chat", "roomheight", si->iHeight);
-				}
 				if (CallService(MS_CLIST_GETEVENT, (WPARAM)si->hContact, (LPARAM)0))
 					CallService(MS_CLIST_REMOVEEVENT, (WPARAM)si->hContact, (LPARAM)"chaticon");
 				si->wState &= ~STATE_TALK;
@@ -1559,15 +1554,6 @@ LABEL_SHOWWINDOW:
 		//fall through
 	case WM_MOUSEACTIVATE:
 		{
-			WINDOWPLACEMENT wp = { 0 };
-
-			wp.length = sizeof(wp);
-			GetWindowPlacement(hwndDlg, &wp);
-			g_Settings.iX = wp.rcNormalPosition.left;
-			g_Settings.iY = wp.rcNormalPosition.top;
-			g_Settings.iWidth = wp.rcNormalPosition.right - wp.rcNormalPosition.left;
-			g_Settings.iHeight = wp.rcNormalPosition.bottom - wp.rcNormalPosition.top;
-
 			if (uMsg != WM_ACTIVATE)
 				SetFocus(GetDlgItem(hwndDlg,IDC_CHAT_MESSAGE));
 

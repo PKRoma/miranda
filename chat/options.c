@@ -1336,10 +1336,6 @@ int OptionsInit(void)
 	g_Settings.MessageBoxFont = NULL;
 	g_Settings.iSplitterX = DBGetContactSettingWord(NULL, "Chat", "SplitterX", 105);
 	g_Settings.iSplitterY = DBGetContactSettingWord(NULL, "Chat", "SplitterY", 90);
-	g_Settings.iX = DBGetContactSettingDword(NULL, "Chat", "roomx", -1);
-	g_Settings.iY = DBGetContactSettingDword(NULL, "Chat", "roomy", -1);
-	g_Settings.iWidth = DBGetContactSettingDword(NULL, "Chat", "roomwidth", -1);
-	g_Settings.iHeight = DBGetContactSettingDword(NULL, "Chat", "roomheight", -1);
 	LoadGlobalSettings();
 
 	hEditBkgBrush = CreateSolidBrush(DBGetContactSettingDword(NULL, "Chat", "ColorMessageBG", GetSysColor(COLOR_WINDOW)));

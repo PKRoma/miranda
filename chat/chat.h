@@ -229,10 +229,6 @@ typedef struct SESSION_INFO_TYPE
 	int         iLogFilterFlags;
 	int         nUsersInNicklist;
 	int         iEventCount;
-	int         iX;
-	int         iY;
-	int         iWidth;
-	int         iHeight;
 	int         iStatusCount;
 
 	WORD        wStatus;
@@ -244,7 +240,7 @@ typedef struct SESSION_INFO_TYPE
 	HWND        hwndStatus;
 	time_t      LastTime;
 
-	COMMAND_INFO*  lpCommands; 
+	COMMAND_INFO*  lpCommands;
 	COMMAND_INFO*  lpCurrentCommand;
 	LOGINFO*       pLog;
 	LOGINFO*       pLogEnd;
@@ -292,10 +288,6 @@ struct GlobalLogSettings_t {
 	int         iPopupTimeout;
 	int         iSplitterX;
 	int         iSplitterY;
-	int         iX;
-	int         iY;
-	int         iWidth;
-	int         iHeight;
 	TCHAR*      pszTimeStamp;
 	TCHAR*      pszTimeStampLog;
 	TCHAR*      pszIncomingNick;
