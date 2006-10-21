@@ -120,6 +120,8 @@
 #define IDC_LINECOLOUR					1630
 #define IDC_SAVEDRAFTS					1631
 #define IDC_POPLIST						1632
+#define IDC_LIMITNAMESLEN	            1633
+#define IDC_CHARS						1634
 #define IDM_CUT                         40000
 #define IDM_COPY                        40001
 #define IDM_PASTE                       40002

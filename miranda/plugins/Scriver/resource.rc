@@ -25,7 +25,7 @@ FONT 8, "MS Shell Dlg", 0, 0, 0x1
 BEGIN
 	CONTROL         "Tab1",IDC_TABS,"SysTabControl32",
                     0x8,0,0,310,248
-// TCS TCS_FIXEDWIDTH | 
+// TCS TCS_FIXEDWIDTH |
 END
 
 IDD_OPT_MSGDLG DIALOGEX 4, 0, 302, 230
@@ -42,7 +42,7 @@ BEGIN
                     WS_TABSTOP,163,12,98,33
     CONTROL         "Stay minimized",IDC_STAYMINIMIZED,"Button",
                     BS_AUTOCHECKBOX | WS_TABSTOP,20,23,141,10
-					
+
     CONTROL         "Close the message window on send",IDC_AUTOCLOSE,"Button",
                     BS_AUTOCHECKBOX | WS_TABSTOP,8,48,140,10
     CONTROL         "Minimize the message window on send",IDC_AUTOMIN,"Button",
@@ -210,10 +210,10 @@ BEGIN
                     "Button",BS_AUTOCHECKBOX | WS_TABSTOP,20,23,252,10
     CONTROL         "Tabs at bottom",IDC_TABSATBOTTOM,"Button",
                     BS_AUTOCHECKBOX | WS_TABSTOP,20,34,252,10
-    CONTROL         "Limit names on tabs to 20 characters",IDC_LIMITNAMES,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,20,45,252,10
-//    EDITTEXT        IDC_AVATARHEIGHTMIN,148,43,28,13,ES_AUTOHSCROLL
-//    LTEXT           "characters",IDC_STMINSOLD,185,217,90,8,WS_DISABLED
+    CONTROL         "Limit names on tabs to",IDC_LIMITNAMES,
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,20,45,126,10
+    EDITTEXT        IDC_LIMITNAMESLEN,148,43,20,13,ES_RIGHT | ES_NUMBER
+    LTEXT           "characters",IDC_CHARS,172,45,90,8,WS_DISABLED
 	CONTROL         "Automatically switch to active tab",IDC_SWITCHTOACTIVE,
                     "Button",BS_AUTOCHECKBOX | WS_TABSTOP,20,56,252,10
 	CONTROL         "Use common containers for chats",IDC_CHATSCOMMONCONTAINERS,
@@ -223,7 +223,7 @@ BEGIN
     CONTROL         "Save size and location for each contact",
                     IDC_SAVEPERCONTACT,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,
                     8,89,260,10
-					
+
     GROUPBOX        "Look And Feel",IDC_STATIC,0,128,304,60
 	CONTROL         "Show title bar",IDC_SHOWTITLEBAR,"Button",
                     BS_AUTOCHECKBOX | WS_TABSTOP,8,140,140,10

@@ -104,6 +104,7 @@ struct GlobalMessageData
 	ParentWindowData *lastChatParent;
 	int		protoNum;
 	char **	protoNames;
+	int		limitNamesLength;
 	int		limitAvatarMaxH;
 	int		limitAvatarMinH;
 	int		activeAlpha;

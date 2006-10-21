@@ -124,10 +124,6 @@ int Chat_Unload(void)
 {
 	DBWriteContactSettingWord(NULL, "Chat", "SplitterX", (WORD)g_Settings.iSplitterX);
 	DBWriteContactSettingWord(NULL, "Chat", "SplitterY", (WORD)g_Settings.iSplitterY);
-	DBWriteContactSettingDword(NULL, "Chat", "roomx", g_Settings.iX);
-	DBWriteContactSettingDword(NULL, "Chat", "roomy", g_Settings.iY);
-	DBWriteContactSettingDword(NULL, "Chat", "roomwidth" , g_Settings.iWidth);
-	DBWriteContactSettingDword(NULL, "Chat", "roomheight", g_Settings.iHeight);
 
 	CList_SetAllOffline(TRUE);
 

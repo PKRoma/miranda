@@ -339,7 +339,6 @@ static void SetDialogToType(HWND hwndDlg)
 {
 	struct MessageWindowData *dat;
 	ParentWindowData *pdat;
-	WINDOWPLACEMENT pl = { 0 };
 
 	dat = (struct MessageWindowData *) GetWindowLong(hwndDlg, GWL_USERDATA);
 	pdat = (ParentWindowData *) GetWindowLong(GetParent(hwndDlg), GWL_USERDATA);
@@ -355,23 +354,16 @@ static void SetDialogToType(HWND hwndDlg)
 		ShowMultipleControls(hwndDlg, buttonLineControls, sizeof(buttonLineControls) / sizeof(buttonLineControls[0]), SW_HIDE);
 	}
 	ShowWindow(GetDlgItem(hwndDlg, IDC_MESSAGE), SW_SHOW);
-// IEVIew MOD Begin
 	if (dat->hwndLog != NULL) {
 		ShowWindow (GetDlgItem(hwndDlg, IDC_LOG), SW_HIDE);
 	} else {
 		ShowWindow (GetDlgItem(hwndDlg, IDC_LOG), SW_SHOW);
 	}
-// IEVIew MOD End
 	UpdateReadChars(hwndDlg, dat);
 	ShowWindow(GetDlgItem(hwndDlg, IDC_SPLITTER), SW_SHOW);
 	EnableWindow(GetDlgItem(hwndDlg, IDOK), GetWindowTextLength(GetDlgItem(hwndDlg, IDC_MESSAGE))?TRUE:FALSE);
 	SendMessage(hwndDlg, DM_UPDATETITLEBAR, 0, 0);
 	SendMessage(hwndDlg, WM_SIZE, 0, 0);
-	pl.length = sizeof(pl);
-	GetWindowPlacement(hwndDlg, &pl);
-	if (!IsWindowVisible(hwndDlg))
-		pl.showCmd = SW_HIDE;
-	SetWindowPlacement(hwndDlg, &pl);   //in case size is smaller than new minimum
 }
 
 struct SavedMessageData
@@ -1678,10 +1670,12 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
 		}
 	case DM_OPTIONSAPPLIED:
 		{
+			CHARFORMAT2A cf2 = {0};
+			LOGFONTA lf;
+			COLORREF colour;
 			dat->flags &= ~SMF_USEIEVIEW;
 			dat->flags |= ServiceExists(MS_IEVIEW_WINDOW) ? g_dat->flags & SMF_USEIEVIEW : 0;
 			if (dat->flags & SMF_USEIEVIEW && dat->hwndLog == NULL) {
-	// IEVIew MOD Begin
 				IEVIEWWINDOW ieWindow;
 				ieWindow.cbSize = sizeof(IEVIEWWINDOW);
 				ieWindow.iType = IEW_CREATE;
@@ -1697,10 +1691,7 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
 				if (dat->hwndLog == NULL) {
 					dat->flags ^= SMF_USEIEVIEW;
 				}
-	// IEVIew MOD End
-
 			} else if (!(dat->flags & SMF_USEIEVIEW) && dat->hwndLog != NULL) {
-		// IEVIew MOD Begin
 				if (dat->hwndLog != NULL) {
 					IEVIEWWINDOW ieWindow;
 					ieWindow.cbSize = sizeof(IEVIEWWINDOW);
@@ -1708,36 +1699,19 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
 					ieWindow.hwnd = dat->hwndLog;
 					CallService(MS_IEVIEW_WINDOW, 0, (LPARAM)&ieWindow);
 				}
-		// IEVIew MOD End
 				dat->hwndLog = NULL;
 			}
-
-			// avatar stuff
-//			dat->avatarPic = 0;
-//			dat->limitAvatarMaxH = 0;
-//			dat->limitAvatarMaxH = 0;
-//			if (CallProtoService(dat->szProto, PS_GETCAPS, PFLAGNUM_4, 0)&PF4_AVATARS) {
-//			dat->limitAvatarMinH = DBGetContactSettingDword(NULL, SRMMMOD, SRMSGSET_AVHEIGHTMIN, SRMSGDEFSET_AVHEIGHTMIN);
-//			dat->limitAvatarMaxH = DBGetContactSettingDword(NULL, SRMMMOD, SRMSGSET_AVHEIGHT, SRMSGDEFSET_AVHEIGHT);
-//			}
 			if(g_dat->avatarServiceExists) {
 				dat->ace = (struct avatarCacheEntry *)CallService(MS_AV_GETAVATARBITMAP, (WPARAM)dat->hContact, 0);
 			}
 			SendMessage(hwndDlg, DM_GETAVATAR, 0, 0);
-		}
-		SetDialogToType(hwndDlg);
-		{
-			COLORREF colour = DBGetContactSettingDword(NULL, SRMMMOD, SRMSGSET_BKGCOLOUR, SRMSGDEFSET_BKGCOLOUR);
+			SetDialogToType(hwndDlg);
+
+			colour = DBGetContactSettingDword(NULL, SRMMMOD, SRMSGSET_BKGCOLOUR, SRMSGDEFSET_BKGCOLOUR);
 			SendDlgItemMessage(hwndDlg, IDC_LOG, EM_SETBKGNDCOLOR, 0, colour);
 			colour = DBGetContactSettingDword(NULL, SRMMMOD, SRMSGSET_INPUTBKGCOLOUR, SRMSGDEFSET_INPUTBKGCOLOUR);
 			SendDlgItemMessage(hwndDlg, IDC_MESSAGE, EM_SETBKGNDCOLOR, 0, colour);
-
-		}
-		InvalidateRect(GetDlgItem(hwndDlg, IDC_MESSAGE), NULL, FALSE);
-		{
-			COLORREF colour;
-			CHARFORMAT2A cf2 = {0};
-			LOGFONTA lf;
+			InvalidateRect(GetDlgItem(hwndDlg, IDC_MESSAGE), NULL, FALSE);
 			LoadMsgDlgFont(MSGFONTID_MESSAGEAREA, &lf, &colour);
 			cf2.dwMask = CFM_COLOR | CFM_FACE | CFM_CHARSET | CFM_SIZE | CFM_WEIGHT | CFM_BOLD | CFM_ITALIC;
 			cf2.cbSize = sizeof(cf2);
@@ -1749,10 +1723,11 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
 			cf2.bPitchAndFamily = lf.lfPitchAndFamily;
 			cf2.yHeight = abs(lf.lfHeight) * 15;
 			SendDlgItemMessageA(hwndDlg, IDC_MESSAGE, EM_SETCHARFORMAT, 0, (LPARAM)&cf2);
+
+			SendMessage(hwndDlg, DM_REMAKELOG, 0, 0);
+			SendMessage(hwndDlg, DM_UPDATEICON, 0, 0);
+			break;
 		}
-		SendMessage(hwndDlg, DM_REMAKELOG, 0, 0);
-		SendMessage(hwndDlg, DM_UPDATEICON, 0, 0);
-		break;
 	case DM_UPDATETITLEBAR:
 		{
 			DBCONTACTWRITESETTING *cws = (DBCONTACTWRITESETTING *) wParam;

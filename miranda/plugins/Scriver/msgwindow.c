@@ -180,8 +180,8 @@ TCHAR* GetTabName(HANDLE *hContact)
 		result = GetNickname(hContact, NULL);
 		len = lstrlen(result);
 		if (g_dat->flags2 & SMF2_LIMITNAMES) {
-			if (len > 20 ) {
-				result[20] = '\0';
+			if (len > g_dat->limitNamesLength ) {
+				result[g_dat->limitNamesLength] = '\0';
 			}
 		}
 	}
@@ -1356,12 +1356,12 @@ HWND GetParentWindow(HANDLE hContact, BOOL bChat) {
 	newData.hContact = hContact;
 	newData.isChat = bChat;
 	if (!bChat) {
-		if (g_dat->lastParent == NULL || !(g_dat->flags & SMF2_USETABS)) {
+		if (g_dat->lastParent == NULL || !(g_dat->flags2 & SMF2_USETABS)) {
 			return CreateDialogParam(g_hInst, MAKEINTRESOURCE(IDD_MSGWIN), NULL, DlgProcParentWindow, (LPARAM) & newData);
 		}
 		return g_dat->lastParent->hwnd;
 	} else {
-		if ((g_dat->flags2 & SMF2_USETABS) && g_dat->flags2 & SMF2_CHATSCOMMONCONTAINERS) {
+		if (g_dat->flags2 & SMF2_USETABS && g_dat->flags2 & SMF2_CHATSCOMMONCONTAINERS) {
 			if (g_dat->lastParent == NULL) {
 				newData.isChat =FALSE;
 				return CreateDialogParam(g_hInst, MAKEINTRESOURCE(IDD_MSGWIN), NULL, DlgProcParentWindow, (LPARAM) & newData);
