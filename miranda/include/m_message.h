@@ -100,22 +100,26 @@ typedef struct {
 
 // status icons - HICONs will be automatically destroyed when removed or when miranda exits
 
-#define MBF_DISABLED		0x01
+#define MBF_DISABLED			0x01
+#define MBF_HIDDEN			0x02
 
 typedef struct {
 	int cbSize;
 	char *szModule;						// used in combo with the dwId below to create a unique identifier
 	DWORD dwId;
 	HICON hIcon, hIconDisabled;		// hIconDisabled is optional - if null, will use hIcon in the disabled state
-	int flags;								// one of MBF_* above
+	int flags;								// bitwize OR of MBF_* flags above
 	char *szTooltip;
 } StatusIconData;
+
+#define MBCF_RIGHTBUTTON	0x01		// if this flag is specified, the click was a right button - otherwize it was a left click
 
 typedef struct {
 	int cbSize;
 	POINT clickLocation;					// click location, in screen coordinates
 	char *szModule;
 	DWORD dwId;
+	int flags;								// bitwize OR of MBCF_* flags above
 } StatusIconClickData;
 
 #define MS_MSG_ADDICON			"MessageAPI/AddIcon"
