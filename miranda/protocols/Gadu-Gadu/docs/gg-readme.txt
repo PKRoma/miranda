@@ -59,6 +59,9 @@ Note: For secure connections this plugin requires OpenSSL DLL
 
 5. History
 ----------
+0.0.4.0: 2006-10-23
+ - Fix: Messages always have NOW timestamps unless they are OFFLINE.
+   Online messages won't be shifted in the order even user has clockskew.
 0.0.3.9: 2006-07-29
  - Configuration was put into tabs
  - Fix: Some of the configuration items were not triggering [Apply] properly.

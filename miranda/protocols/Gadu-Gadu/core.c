@@ -800,8 +800,8 @@ start:
                             gcevent.pszUID = id;
                             gcevent.pszText = e->event.msg.message;
                             gcevent.pszNick = (char *) CallService(MS_CLIST_GETCONTACTDISPLAYNAME, (WPARAM) gg_getcontact(e->event.msg.sender, 1, 0, NULL), 0);
-                            gcevent.time = e->event.msg.time > (t - timeDeviation) ? t : e->event.msg.time;
-                            gcevent.bAddToLog = 1;
+                            gcevent.time = (!(e->event.msg.msgclass & GG_CLASS_OFFLINE) || e->event.msg.time > (t - timeDeviation)) ? t : e->event.msg.time;
+                            gcevent.dwFlags = GCEF_ADDTOLOG;
 #ifdef DEBUGMODE
                             gg_netlog("gg_mainthread(%x): Conference message to room %s & id %s.", thread, chat, id);
 #endif
@@ -817,7 +817,7 @@ start:
                         ccs.wParam = 0;
                         ccs.lParam = (LPARAM) & pre;
                         pre.flags = 0;
-                        pre.timestamp = e->event.msg.time > (t - timeDeviation) ? t : e->event.msg.time;
+                        pre.timestamp = (!(e->event.msg.msgclass & GG_CLASS_OFFLINE) || e->event.msg.time > (t - timeDeviation)) ? t : e->event.msg.time;
                         pre.szMessage = e->event.msg.message;
                         pre.lParam = 0;
                         CallService(MS_PROTO_CHAINRECV, 0, (LPARAM) &ccs);

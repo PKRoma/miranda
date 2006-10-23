@@ -212,7 +212,7 @@ int gg_gc_event(WPARAM wParam, LPARAM lParam)
         while(lc >= 0 && (gch->pszText[lc] == '\n' || gch->pszText[lc] == '\r')) gch->pszText[lc --] = 0;
         gcevent.time = time(NULL);
         gcevent.bIsMe = 1;
-        gcevent.bAddToLog = 1;
+        gcevent.dwFlags = GCEF_ADDTOLOG;
 #ifdef DEBUGMODE
         gg_netlog("gg_gc_event(): Sending conference message to room %s, \"%s\".", gch->pDest->pszID, gch->pszText);
 #endif
@@ -373,7 +373,7 @@ int gg_gc_egetchat(WPARAM wParam, LPARAM lParam)
 	gcwindow.pszName	= sender ? senderName : Translate("Conference");
 	gcwindow.pszID		= chat->id;
 	gcwindow.pszStatusbarText = status;
-	gcwindow.bDisableNickList = FALSE;
+	gcwindow.dwFlags = 0;
 	gcwindow.dwItemData = (DWORD)chat;
 
     // Here we put nice new hash sign
@@ -394,7 +394,7 @@ int gg_gc_egetchat(WPARAM wParam, LPARAM lParam)
 
 	gcdest.pszID = chat->id;
     gcevent.pszUID = id;
-    gcevent.bAddToLog = FALSE;
+    gcevent.dwFlags = GCEF_ADDTOLOG;
     gcevent.time = 0;
 
     // Add normal group
