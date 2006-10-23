@@ -699,30 +699,6 @@ int MsgWindowMenuHandler(HWND hwndDlg, struct MessageWindowData *dat, int select
     return 0;
 }
 
-/*
- * sets tooltips for the visible status bar icons
- * 1) secure im icon
- * 2) Sound toggle icon
- * 3) mtn status icon
- */
-
-void UpdateStatusBarTooltips(HWND hwndDlg, struct MessageWindowData *dat, int iSecIMStatus)
-{
-    time_t now = time(NULL);
-    now = now - dat->stats.started;
-
-    if(dat->pContainer->hwndStatus && dat->pContainer->hwndActive == hwndDlg) {
-        TCHAR szTipText[256];
-        
-        if(myGlobals.g_SecureIMAvail && iSecIMStatus >= 0) {
-            mir_sntprintf(szTipText, safe_sizeof(szTipText), TranslateT("Secure IM is %s"), iSecIMStatus ? TranslateT("enabled") : TranslateT("disabled"));
-            SendMessage(dat->pContainer->hwndStatus, SB_SETTIPTEXT, 2, (LPARAM)szTipText);
-        }
-        mir_sntprintf(szTipText, safe_sizeof(szTipText), TranslateT("Sounds are %s (click to toggle, SHIFT-click to apply for all containers)"), dat->pContainer->dwFlags & CNT_NOSOUND ? TranslateT("off") : TranslateT("on"));
-        SendMessage(dat->pContainer->hwndStatus, SB_SETTIPTEXT, myGlobals.g_SecureIMAvail ? 3 : 2, (LPARAM)szTipText);
-    }
-}
-
 void UpdateReadChars(HWND hwndDlg, struct MessageWindowData *dat)
 {
     if (dat->pContainer->hwndStatus && SendMessage(dat->pContainer->hwndStatus, SB_GETPARTS, 0, 0) >= 3) {
@@ -749,31 +725,10 @@ void UpdateReadChars(HWND hwndDlg, struct MessageWindowData *dat)
 void UpdateStatusBar(HWND hwndDlg, struct MessageWindowData *dat)
 {
     if(dat && dat->pContainer->hwndStatus && dat->pContainer->hwndActive == hwndDlg) {
-        int iSecIMStatus = 0;
-        
-        if(dat->bType == SESSIONTYPE_IM) {
-            SetSelftypingIcon(hwndDlg, dat, DBGetContactSettingByte(dat->hContact, SRMSGMOD, SRMSGSET_TYPING, DBGetContactSettingByte(NULL, SRMSGMOD, SRMSGSET_TYPINGNEW, SRMSGDEFSET_TYPINGNEW)));
+        if(dat->bType == SESSIONTYPE_IM)
             DM_UpdateLastMessage(hwndDlg, dat);
-            if(myGlobals.g_SecureIMAvail) {
-                SendMessage(dat->pContainer->hwndStatus, SB_SETTEXTA, 2, (LPARAM)"");
-                if((iSecIMStatus = CallService("SecureIM/IsContactSecured", (WPARAM)dat->hContact, 0)) != 0)
-                    SendMessage(dat->pContainer->hwndStatus, SB_SETICON, 2, (LPARAM)myGlobals.g_buttonBarIcons[14]);
-                else
-                    SendMessage(dat->pContainer->hwndStatus, SB_SETICON, 2, (LPARAM)myGlobals.g_buttonBarIcons[15]);
-            }
-        }
-        else {
-            if(myGlobals.g_SecureIMAvail)
-                SendMessage(dat->pContainer->hwndStatus, SB_SETICON, 2, (LPARAM)myGlobals.g_buttonBarIcons[14]);
-            SetSelftypingIcon(hwndDlg, dat, -1);
-            if(myGlobals.g_SecureIMAvail)
-                SendMessage(dat->pContainer->hwndStatus, SB_SETICON, 2, 0);
-        }
-        
-		SendMessage(dat->pContainer->hwndStatus, SB_SETTEXTA, (myGlobals.g_SecureIMAvail ? 3 : 2), (LPARAM)"");
-        SendMessage(dat->pContainer->hwndStatus, SB_SETICON, (myGlobals.g_SecureIMAvail ? 3 : 2), (LPARAM)(dat->pContainer->dwFlags & CNT_NOSOUND ? myGlobals.g_buttonBarIcons[23] : myGlobals.g_buttonBarIcons[22]));
         UpdateReadChars(hwndDlg, dat);
-        UpdateStatusBarTooltips(hwndDlg, dat, iSecIMStatus);
+        InvalidateRect(dat->pContainer->hwndStatus, NULL, TRUE);
     }
 }
 
@@ -877,26 +832,6 @@ int GetAvatarVisibility(HWND hwndDlg, struct MessageWindowData *dat)
             dat->showPic = hideOverride == 1 ? 1 : dat->showPic;
 	}
     return dat->showPic;
-}
-
-void SetSelftypingIcon(HWND dlg, struct MessageWindowData *dat, int iMode)
-{
-    if(dat->pContainer->hwndStatus && dat->pContainer->hwndActive == dlg) {
-        TCHAR szTipText[64];
-        int nParts = SendMessage(dat->pContainer->hwndStatus, SB_GETPARTS, 0, 0);
-
-        SendMessage(dat->pContainer->hwndStatus, SB_SETTEXTA, (nParts - 1), (LPARAM)"");
-		if(iMode > 0)
-            SendMessage(dat->pContainer->hwndStatus, SB_SETICON, (nParts - 1), (LPARAM)myGlobals.g_buttonBarIcons[12]);
-        else if(iMode == 0)
-            SendMessage(dat->pContainer->hwndStatus, SB_SETICON, (nParts - 1), (LPARAM)myGlobals.g_buttonBarIcons[13]);
-        else
-            SendMessage(dat->pContainer->hwndStatus, SB_SETICON, (nParts - 1), 0);
-        
-        mir_sntprintf(szTipText, safe_sizeof(szTipText), TranslateT("Sending typing notifications is: %s"), iMode ? TranslateT("Enabled") : TranslateT("Disabled"));
-        SendMessage(dat->pContainer->hwndStatus, SB_SETTIPTEXT, myGlobals.g_SecureIMAvail ? 4 : 3, (LPARAM)szTipText);
-        InvalidateRect(dat->pContainer->hwndStatus, NULL, TRUE);
-    }
 }
 
 /*

@@ -492,7 +492,7 @@ typedef struct _globals {
     HICON       g_iconIn, g_iconOut, g_iconErr, g_iconContainer, g_iconStatus;
     HCURSOR     hCurSplitNS, hCurSplitWE, hCurHyperlinkHand;
     HBITMAP     g_hbmUnknown;
-    int         g_MetaContactsAvail, g_SmileyAddAvail, g_SecureIMAvail, g_WantIEView, g_PopupAvail, g_PopupWAvail, g_WantHPP;
+    int         g_MetaContactsAvail, g_SmileyAddAvail, g_WantIEView, g_PopupAvail, g_PopupWAvail, g_WantHPP;
     int         g_FlashAvatarAvail;
     HIMAGELIST  g_hImageList;
     HICON       g_IconMsgEvent, g_IconTypingEvent, g_IconFileEvent, g_IconUrlEvent, g_IconSend;
@@ -721,7 +721,7 @@ struct ProtocolData {
 
 #define DM_SELECTTAB		 (WM_USER+23)
 #define DM_CLOSETABATMOUSE   (WM_USER+24)
-//#define DM_SAVELOCALE        (WM_USER+25) *free*
+#define DM_STATUSICONCHANGE  (WM_USER+25)
 #define DM_SETLOCALE         (WM_USER+26)
 #define DM_SESSIONLIST       (WM_USER+27)
 #define DM_QUERYLASTUNREAD   (WM_USER+28)
@@ -766,7 +766,7 @@ struct ProtocolData {
 #define DM_UPDATEMETACONTACTINFO (WM_USER+67)
 #define DM_SETICON           (WM_USER+68)
 #define DM_MULTISENDTHREADCOMPLETE (WM_USER+69)
-#define DM_SECURE_CHANGED    (WM_USER+70)
+//#define DM_SECURE_CHANGED    (WM_USER+70) **free**
 #define DM_QUERYSTATUS       (WM_USER+71)
 #define DM_SETPARENTDIALOG   (WM_USER+72)
 #define DM_HANDLECLISTEVENT  (WM_USER+73)
@@ -1074,4 +1074,18 @@ static __inline int mir_snprintfW(wchar_t *buffer, size_t count, const wchar_t* 
 #define MS_HPP_EG_UTILS  "History++/ExtGrid/Utils"
 #define MS_HPP_EG_OPTIONSCHANGED "History++/ExtGrid/OptionsChanged"
 #define MS_HPP_EG_NOTIFICATION   "History++/ExtGrid/Notification"
+
+/*
+ * encryption status bar indicator
+ */
+
+extern HANDLE hHookIconPressedEvt;
+extern int status_icon_list_size;
+
+int SI_InitStatusIcons();
+int SI_DeinitStatusIcons();
+
+int  GetStatusIconsCount();
+void DrawStatusIcons(struct MessageWindowData *dat, HDC hdc, RECT r, int gap);
+void SI_CheckStatusIconClick(struct MessageWindowData *dat, HWND hwndFrom, POINT pt, RECT rc, int gap);
 

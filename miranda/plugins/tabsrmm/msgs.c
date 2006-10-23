@@ -39,6 +39,8 @@ static char *relnotes[] = {
     "\\par\t\\b\\ul1 Release notes for version 1.1.0.11\\b0\\ul0\\par ",
     "*\tChat part is now partially UNICODE safe (patch by ghazan, huge changes, EXPECT SOME PROBLEMS WITH GROUP CHATS).\\par",
     "*\tThe chat room event filter now allows to set filter flags per channel. Filter status is also saved per channel and has been made sticky, so you don't need to always re-enable the filter for a given channel.\\par",
+    "*\tAdded History++ integration for the message log.\\par",
+    "*\tAdded sje's API for status bar icons used by encryption plugins.\\par",
     NULL
 };
 
@@ -119,6 +121,7 @@ static int SmileyAddOptionsChanged(WPARAM wParam, LPARAM lParam)
     return 0;
 }
 
+/*
 static int ContactSecureChanged(WPARAM wParam, LPARAM lParam)
 {
     HWND hwnd;
@@ -129,7 +132,7 @@ static int ContactSecureChanged(WPARAM wParam, LPARAM lParam)
     }
     return 0;
 }
-
+*/
 /*
  * Message API 0.0.0.3 services
  */
@@ -1035,9 +1038,6 @@ static int SplitmsgModulesLoaded(WPARAM wParam, LPARAM lParam)
     if(ServiceExists(MS_MC_GETDEFAULTCONTACT))
         myGlobals.g_MetaContactsAvail = 1;
 
-    if(ServiceExists("SecureIM/IsContactSecured"))
-        myGlobals.g_SecureIMAvail = 1;
-
     if(ServiceExists(MS_POPUP_ADDPOPUPEX))
         myGlobals.g_PopupAvail = 1;
 
@@ -1155,6 +1155,7 @@ static int PreshutdownSendRecv(WPARAM wParam, LPARAM lParam)
     DestroyServiceFunction(hSVC[H_MS_TABMSG_TRAYSUPPORT]);
     DestroyServiceFunction(hSVC[H_MSG_MOD_GETWINDOWFLAGS]);
 
+    SI_DeinitStatusIcons();
     /*
      * the event API
      */
@@ -1379,8 +1380,8 @@ tzdone:
     HookEvent(ME_SYSTEM_PRESHUTDOWN, PreshutdownSendRecv);
     HookEvent(ME_SYSTEM_OKTOEXIT, OkToExit);
 
-	HookEvent("SecureIM/Established",ContactSecureChanged);
-	HookEvent("SecureIM/Disabled",ContactSecureChanged);
+	//HookEvent("SecureIM/Established",ContactSecureChanged);
+	//HookEvent("SecureIM/Disabled",ContactSecureChanged);
     InitAPI();
     
     SkinAddNewSoundEx("RecvMsgActive", Translate("Messages"), Translate("Incoming (Focused Window)"));
@@ -1819,6 +1820,8 @@ static void InitAPI()
     hSVC[H_MS_TABMSG_SETUSERPREFS] = CreateServiceFunction(MS_TABMSG_SETUSERPREFS, SetUserPrefs);
     hSVC[H_MS_TABMSG_TRAYSUPPORT] =  CreateServiceFunction(MS_TABMSG_TRAYSUPPORT, Service_OpenTrayMenu);
     hSVC[H_MSG_MOD_GETWINDOWFLAGS] =  CreateServiceFunction(MS_MSG_MOD_GETWINDOWFLAGS,GetMessageWindowFlags); 
+
+    SI_InitStatusIcons();
 
     /*
      * the event API

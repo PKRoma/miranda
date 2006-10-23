@@ -68,6 +68,8 @@ extern BOOL (WINAPI *pfnIsThemeActive)();
 extern HBRUSH g_MenuBGBrush;
 extern int SIDEBARWIDTH;
 extern ButtonSet g_ButtonSet;
+extern int status_icon_list_size;
+extern struct StatusIconListNode *status_icon_list;
 
 extern BOOL CALLBACK SelectContainerDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam);
 extern BOOL CALLBACK DlgProcContainerOptions(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam);
@@ -363,19 +365,27 @@ LRESULT CALLBACK StatusBarSubclassProc(HWND hWnd, UINT msg, WPARAM wParam, LPARA
 					hIcon = (HICON)SendMessage(hWnd, SB_GETICON, i, 0);
 					szText[0] = 0;
 					result = SendMessage(hWnd, SB_GETTEXT, i, (LPARAM)szText);
-					if(hIcon) {
-						if(LOWORD(result) > 1) {				// we have a text
-							DrawIconEx(hdcMem, itemRect.left + 3, (height / 2 - 8) + itemRect.top, hIcon, 16, 16, 0, 0, DI_NORMAL);
-							itemRect.left += 20;
-							DrawText(hdcMem, szText, -1, &itemRect, DT_VCENTER | DT_END_ELLIPSIS | DT_SINGLELINE);
-						}
-						else
-							DrawIconEx(hdcMem, itemRect.left + ((width - 16) / 2), (height / 2 - 8) + itemRect.top, hIcon, 16, 16, 0, 0, DI_NORMAL);
-					}
-					else {
-                        itemRect.left +=2;
-                        itemRect.right -= 2;
-                        DrawText(hdcMem, szText, -1, &itemRect, DT_VCENTER | DT_SINGLELINE | DT_END_ELLIPSIS);
+                    if(i == 2 && pContainer) {
+                        struct MessageWindowData *dat = (struct MessageWindowData *)GetWindowLong(pContainer->hwndActive, GWL_USERDATA);
+
+                        if(dat)
+                            DrawStatusIcons(dat, hdcMem, itemRect, 2);
+                    }
+                    else {
+                        if(hIcon) {
+                            if(LOWORD(result) > 1) {				// we have a text
+                                DrawIconEx(hdcMem, itemRect.left + 3, (height / 2 - 8) + itemRect.top, hIcon, 16, 16, 0, 0, DI_NORMAL);
+                                itemRect.left += 20;
+                                DrawText(hdcMem, szText, -1, &itemRect, DT_VCENTER | DT_END_ELLIPSIS | DT_SINGLELINE | DT_NOPREFIX);
+                            }
+                            else
+                                DrawIconEx(hdcMem, itemRect.left + ((width - 16) / 2), (height / 2 - 8) + itemRect.top, hIcon, 16, 16, 0, 0, DI_NORMAL);
+                        }
+                        else {
+                            itemRect.left +=2;
+                            itemRect.right -= 2;
+                            DrawText(hdcMem, szText, -1, &itemRect, DT_VCENTER | DT_SINGLELINE | DT_END_ELLIPSIS | DT_NOPREFIX);
+                        }
                     }
 				}
                 BitBlt(hdc, 0, 0, rcClient.right, rcClient.bottom, hdcMem, 0, 0, SRCCOPY);
@@ -404,21 +414,19 @@ LRESULT CALLBACK StatusBarSubclassProc(HWND hWnd, UINT msg, WPARAM wParam, LPARA
         {
             POINT pt;
 
-            if(pContainer && pContainer->bSkinned) {
-                GetCursorPos(&pt);
-                SendMessage(GetParent(hWnd), msg, wParam, lParam);
-                if (pt.x == ptMouse.x && pt.y == ptMouse.y) {
-                    return 1;
-                }
-                ptMouse = pt;
-                if(tooltip_active){
-                    KillTimer(hWnd, TIMERID_HOVER);
-                    CallService("mToolTip/HideTip", 0, 0);
-                    tooltip_active = FALSE;
-                }
-                KillTimer(hWnd, TIMERID_HOVER);
-                SetTimer(hWnd, TIMERID_HOVER, 450, 0);
+            GetCursorPos(&pt);
+            SendMessage(GetParent(hWnd), msg, wParam, lParam);
+            if (pt.x == ptMouse.x && pt.y == ptMouse.y) {
+                return 1;
             }
+            ptMouse = pt;
+            if(tooltip_active){
+                KillTimer(hWnd, TIMERID_HOVER);
+                CallService("mToolTip/HideTip", 0, 0);
+                tooltip_active = FALSE;
+            }
+            KillTimer(hWnd, TIMERID_HOVER);
+            SetTimer(hWnd, TIMERID_HOVER, 450, 0);
             break;
         }
 
@@ -436,27 +444,71 @@ LRESULT CALLBACK StatusBarSubclassProc(HWND hWnd, UINT msg, WPARAM wParam, LPARA
 
                 GetCursorPos(&pt);
                 if (pt.x == ptMouse.x && pt.y == ptMouse.y) {
-                    int i,nParts;
+                    unsigned i;
                     RECT rc;
-                    char szTip[501];
 
                     ScreenToClient(hWnd, &pt);
-                    nParts = SendMessage(hWnd, SB_GETPARTS, 0, 0);
-                    for(i = 0; i < nParts; i++) {
-                        SendMessage(hWnd, SB_GETRECT, i, (LPARAM)&rc);
-                        if(PtInRect(&rc,pt)) {
-                            CLCINFOTIP ti = {0};
+                    SendMessage(hWnd, SB_GETRECT, 2, (LPARAM)&rc);
+                    if(PtInRect(&rc,pt)) {
+                        CLCINFOTIP ti = {0};
+                        int gap = 2;
+                        struct StatusIconListNode *current = status_icon_list;
+						struct MessageWindowData *dat = (struct MessageWindowData *)GetWindowLong(pContainer->hwndActive, GWL_USERDATA);
+                        unsigned int iconNum = (pt.x - (rc.left + ((dat &&dat->bType != SESSIONTYPE_IM) ? myGlobals.m_smcxicon + gap : 0))) / (myGlobals.m_smcxicon + gap);
 
-                            ti.cbSize = sizeof(ti);
-                            szTip[0] = 0;
-                            SendMessage(hWnd, SB_GETTIPTEXTA, MAKEWPARAM(i, 500), (LPARAM)szTip);
-                            szTip[500] = 0;
-                            if(szTip[0]) {
-                                CallService("mToolTip/ShowTip", (WPARAM)szTip, (LPARAM)&ti);
+                        ti.cbSize = sizeof(ti);
+                        if((int)iconNum == status_icon_list_size && pContainer) {
+#if defined(_UNICODE)
+							if(ServiceExists("mToolTip/ShowTipW")) {
+								wchar_t wBuf[512];
+
+								mir_sntprintf(wBuf, safe_sizeof(wBuf), TranslateT("Sounds are %s. Click to toggle status, hold SHIFT and click to set for all open containers"), pContainer->dwFlags & CNT_NOSOUND ? TranslateT("disabled") : TranslateT("enabled"));
+		                        CallService("mToolTip/ShowTipW", (WPARAM)wBuf, (LPARAM)&ti);
+							}
+							else {
+								char buf[512];
+
+								mir_snprintf(buf, sizeof(buf), Translate("Sounds are %s. Click to toggle status, hold SHIFT and click to set for all open containers"), pContainer->dwFlags & CNT_NOSOUND ? Translate("disabled") : Translate("enabled"));
+			                    CallService("mToolTip/ShowTip", (WPARAM)buf, (LPARAM)&ti);
+							}
+#else
+							char buf[512];
+							mir_snprintf(buf, sizeof(buf), Translate("Sounds are %s. Click to toggle status, hold SHIFT and click to set for all open containers"), pContainer->dwFlags & CNT_NOSOUND ? Translate("disabled") : Translate("enabled"));
+                            CallService("mToolTip/ShowTip", (WPARAM)buf, (LPARAM)&ti);
+#endif
+                        }
+                        else if((int)iconNum == status_icon_list_size + 1 && dat) {
+                            int mtnStatus = (int)DBGetContactSettingByte(dat->hContact, SRMSGMOD, SRMSGSET_TYPING, DBGetContactSettingByte(NULL, SRMSGMOD, SRMSGSET_TYPINGNEW, SRMSGDEFSET_TYPINGNEW));
+#if defined(_UNICODE)
+
+                            if(ServiceExists("mToolTip/ShowTipW")) {
+								wchar_t wBuf[512];
+
+								mir_sntprintf(wBuf, safe_sizeof(wBuf), TranslateT("Sending typing notifications is %s."), mtnStatus ? TranslateT("enabled") : TranslateT("disabled"));
+		                        CallService("mToolTip/ShowTipW", (WPARAM)wBuf, (LPARAM)&ti);
+							}
+							else {
+								char buf[512];
+
+                                mir_snprintf(buf, sizeof(buf), Translate("Sending typing notifications is %s."), mtnStatus ? Translate("enabled") : Translate("disabled"));
+			                    CallService("mToolTip/ShowTip", (WPARAM)buf, (LPARAM)&ti);
+							}
+#else
+							char buf[512];
+                            mir_snprintf(buf, sizeof(buf), Translate("Sending typing notifications is %s."), mtnStatus ? Translate("enabled") : Translate("disabled"));
+                            CallService("mToolTip/ShowTip", (WPARAM)buf, (LPARAM)&ti);
+#endif
+                        }
+                        else {
+                            for(i = 0; current && i < iconNum; i++) 
+                                current = current->next;
+
+                            if(current) {
+                                CallService("mToolTip/ShowTip", (WPARAM)current->sid.szTooltip, (LPARAM)&ti);
                                 tooltip_active = TRUE;
                             }
-                            break;
                         }
+                        break;
                     }
                 }
             }
@@ -1559,15 +1611,25 @@ buttons_done:
 
                     SendMessage(pContainer->hwndStatus, WM_SIZE, 0, 0);
                     GetWindowRect(pContainer->hwndStatus, &rcs);
-                    statwidths[0] = (rcs.right - rcs.left) - (2 * SB_CHAR_WIDTH) - 24 - (myGlobals.g_SecureIMAvail ? 24 : 0);
-                    statwidths[1] = (rcs.right - rcs.left) - (SB_CHAR_WIDTH) - 8 - (myGlobals.g_SecureIMAvail ? 24 : 0);
-                    statwidths[2] = (rcs.right - rcs.left) - (myGlobals.g_SecureIMAvail ? (30 + 24) : 30);
+                    /*
+                    statwidths[0] = (rcs.right - rcs.left) - (2 * SB_CHAR_WIDTH) - 24 - (myGlobals.g_SecureIMAvail ? 24 + ((status_icon_list_size - 1) * myGlobals.m_smcxicon) : 0);
+                    statwidths[1] = (rcs.right - rcs.left) - (SB_CHAR_WIDTH) - 8 - (myGlobals.g_SecureIMAvail ? 24 + ((status_icon_list_size - 1) * myGlobals.m_smcxicon) : 0);
+                    statwidths[2] = (rcs.right - rcs.left) - (myGlobals.g_SecureIMAvail ? (30 + 24 + ((status_icon_list_size - 1) * myGlobals.m_smcxicon)) : 30);
                     statwidths[3] = myGlobals.g_SecureIMAvail ? (rcs.right - rcs.left) - 30 : -1;
                     statwidths[4] = -1;
                     SendMessage(pContainer->hwndStatus, SB_SETPARTS, myGlobals.g_SecureIMAvail ? 5 : 4, (LPARAM) statwidths);
                     pContainer->statusBarHeight = (rcs.bottom - rcs.top) + 1;
+                    */
+                    statwidths[0] = (rcs.right - rcs.left) - (2 * SB_CHAR_WIDTH) - (35 + ((status_icon_list_size) * (myGlobals.m_smcxicon + 2)));
+                    statwidths[1] = (rcs.right - rcs.left) - (45 + ((status_icon_list_size) * (myGlobals.m_smcxicon + 2)));
+                    statwidths[2] = -1;
+                    SendMessage(pContainer->hwndStatus, SB_SETPARTS, 3, (LPARAM) statwidths);
+                    pContainer->statusBarHeight = (rcs.bottom - rcs.top) + 1;
                     if(pContainer->hwndSlist)
                         MoveWindow(pContainer->hwndSlist, bSkinned ? 4 : 2, (rcs.bottom - rcs.top) / 2 - 7, 16, 16, FALSE);
+                    //if(myGlobals.g_SecureIMAvail)
+                    SendMessage(pContainer->hwndStatus, SB_SETTEXT, (WPARAM)(SBT_OWNERDRAW) | 2, (LPARAM)0);
+
                 }
                 else
                     pContainer->statusBarHeight = 0;
@@ -1837,35 +1899,21 @@ buttons_done:
 
                             nParts = SendMessage(pContainer->hwndStatus, SB_GETPARTS, 0, 0);
                             if (nm->dwItemSpec == 0xFFFFFFFE) {
-                                nPanel = nParts -2;
+                                nPanel = 2;
                                 SendMessage(pContainer->hwndStatus, SB_GETRECT, nPanel, (LPARAM)&rc);
                                 if (nm->pt.x > rc.left && nm->pt.x < rc.right)
                                     goto panel_found;
-                                else {
-                                    nPanel = nParts -1;
-                                    SendMessage(pContainer->hwndStatus, SB_GETRECT, nPanel, (LPARAM)&rc);
-                                    if (nm->pt.x < rc.left)
-                                        return FALSE;
-                                }
+                                else
+                                    return FALSE;
                             }
-                            else {
+                            else
                                 nPanel = nm->dwItemSpec;
-                            }
 panel_found:
-                            if(nPanel == nParts - 1)
-                                SendMessage(pContainer->hwndActive, WM_COMMAND, IDC_SELFTYPING, 0);
-                            else if(nPanel == nParts - 2) {
-                                if(GetKeyState(VK_SHIFT) & 0x8000) {
-                                    struct ContainerWindowData *piContainer = pFirstContainer;
-                                    while(piContainer) {
-                                        piContainer->dwFlags = ((pContainer->dwFlags & CNT_NOSOUND) ? piContainer->dwFlags | CNT_NOSOUND : piContainer->dwFlags & ~CNT_NOSOUND);
-                                        SendMessage(piContainer->hwndActive, DM_STATUSBARCHANGED, 0, 0);
-                                        piContainer = piContainer->pNextContainer;
-                                    }
-                                    break;
-                                }
-                                pContainer->dwFlags ^= CNT_NOSOUND;
-                                SendMessage(pContainer->hwndActive, DM_STATUSBARCHANGED, 0, 0);
+                            if(nPanel == 2) {
+                                struct MessageWindowData *dat = (struct MessageWindowData *)GetWindowLong(pContainer->hwndActive, GWL_USERDATA);
+                                SendMessage(pContainer->hwndStatus, SB_GETRECT, nPanel, (LPARAM)&rc);
+                                if(dat)
+                                    SI_CheckStatusIconClick(dat, pContainer->hwndStatus, nm->pt, rc, 2);
                             }
                         }
                     }
@@ -2625,6 +2673,12 @@ panel_found:
             DRAWITEMSTRUCT *dis = (DRAWITEMSTRUCT *)lParam;
             int id = LOWORD(dis->itemID);
 
+			if (dis->hwndItem == pContainer->hwndStatus) {
+				struct MessageWindowData *dat = (struct MessageWindowData *)GetWindowLong(pContainer->hwndActive, GWL_USERDATA);
+				if (dat)
+					DrawStatusIcons(dat, dis->hDC, dis->rcItem, 2);
+				return TRUE;
+			}
             if(dis->CtlType == ODT_MENU && (HIWORD(dis->itemID) == 0xffff || dis->itemData == 0xf0f0f0f0) && id >= 0x5000 && id <= 0x5005) {
                 SIZE sz;
                 HFONT hOldFont;

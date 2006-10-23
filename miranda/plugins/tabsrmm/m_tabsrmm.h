@@ -145,4 +145,47 @@ typedef struct {
 // 
 #define MS_TABMSG_TRAYSUPPORT "SRMsg_MOD/Show_TrayMenu"
 
+#define MBF_DISABLED		0x01
+
+typedef struct {
+	int cbSize;
+	char *szModule;						// used in combo with the dwId below to create a unique identifier
+	DWORD dwId;
+	HICON hIcon, hIconDisabled;		// hIconDisabled is optional - if null, will use hIcon in the disabled state
+	int flags;								// one of MBF_* above
+	char *szTooltip;
+} StatusIconData;
+
+struct StatusIconListNode {
+	StatusIconData sid;
+	struct StatusIconListNode *next;
+};
+
+typedef struct {
+	int cbSize;
+	POINT clickLocation;					// click location, in screen coordinates
+	char *szModule;
+	DWORD dwId;
+} StatusIconClickData;
+
+#define MS_MSG_ADDICON			"MessageAPI/AddIcon"
+// lParam = (StatusIconData *)&StatusIconData
+
+#define MS_MSG_REMOVEICON		"MessageAPI/RemoveIcon"
+// lParam = (StatusIconData *)&StatusIconData
+// only szModule and szId are used
+
+#define MS_MSG_MODIFYICON		"MessageAPI/ModifyIcon"
+// wParam = (HANDLE)hContact
+// lParam = (StatusIconData *)&StatusIconData
+// if hContact is null, icon is modified for all contacts
+// otherwise, only the flags field is valid
+// if either hIcon, hIconDisabled or szTooltip is null, they will not be modified
+
+#define ME_MSG_ICONPRESSED		"MessageAPI/IconPressed"
+// wParam = (HANDLE)hContact;
+// lParam = (StatusIconClickData *)&StatusIconClickData;
+// catch to show a popup menu, etc.
+
+
 #endif

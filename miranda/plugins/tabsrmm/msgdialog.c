@@ -2263,8 +2263,8 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
             if (!lParam)
                 SendMessage(hwndDlg, DM_REMAKELOG, 0, 0);
             
-            if(m_pContainer->hwndStatus && dat->hContact)
-                SetSelftypingIcon(hwndDlg, dat, DBGetContactSettingByte(dat->hContact, SRMSGMOD, SRMSGSET_TYPING, DBGetContactSettingByte(NULL, SRMSGMOD, SRMSGSET_TYPINGNEW, SRMSGDEFSET_TYPINGNEW)));
+            //if(m_pContainer->hwndStatus && dat->hContact)
+            //    SetSelftypingIcon(hwndDlg, dat, DBGetContactSettingByte(dat->hContact, SRMSGMOD, SRMSGSET_TYPING, DBGetContactSettingByte(NULL, SRMSGMOD, SRMSGSET_TYPINGNEW, SRMSGDEFSET_TYPINGNEW)));
             
             SendMessage(hwndDlg, DM_UPDATEWINICON, 0, 0);
 
@@ -4379,12 +4379,12 @@ quote_from_last:
                         int iCurrentTypingMode = DBGetContactSettingByte(dat->hContact, SRMSGMOD, SRMSGSET_TYPING, DBGetContactSettingByte(NULL, SRMSGMOD, SRMSGSET_TYPINGNEW, SRMSGDEFSET_TYPINGNEW));
                         
                         DBWriteContactSettingByte(dat->hContact, SRMSGMOD, SRMSGSET_TYPING, (BYTE)!iCurrentTypingMode);
-                        if(m_pContainer->hwndStatus) {
+                        /*if(m_pContainer->hwndStatus) {
                             if(iCurrentTypingMode)
                                 SetSelftypingIcon(hwndDlg, dat, FALSE);
                             else
                                 SetSelftypingIcon(hwndDlg, dat, TRUE);
-                        }
+                        }*/
                     }
                     break;
                 case IDC_MESSAGE:
@@ -5343,14 +5343,14 @@ verify:
             }
             szProto = GetCurrentMetaContactProto(hwndDlg, dat);
 
-            if(m_pContainer->hwndActive == hwndDlg && m_pContainer->hwndStatus != 0)
-                UpdateStatusBarTooltips(hwndDlg, dat, -1);
             SendMessage(hwndDlg, DM_UPDATEWINICON, 0, 0);
             break;
         }
+        /*
         case DM_SECURE_CHANGED:
             UpdateStatusBar(hwndDlg, dat);
             break;
+        */
 		case DM_IEVIEWOPTIONSCHANGED:
 			if(dat->hwndIEView)
 				SendMessage(hwndDlg, DM_REMAKELOG, 0, 0);
@@ -5424,6 +5424,12 @@ verify:
             dat->iTabID = GetTabIndexFromHWND(GetParent(hwndDlg), hwndDlg);
             if(dat->iTabID == -1)
                 _DebugPopup(dat->hContact, "WARNING: new tabindex: %d", dat->iTabID);
+            return 0;
+        case DM_STATUSICONCHANGE:
+            if(m_pContainer->hwndStatus) {
+                SendMessage(m_pContainer->hwndStatus, SB_SETTEXT, (WPARAM)(SBT_OWNERDRAW) | 2, (LPARAM)0);
+                InvalidateRect(m_pContainer->hwndStatus, NULL, TRUE);
+            }
             return 0;
         case WM_DROPFILES:
         {   
