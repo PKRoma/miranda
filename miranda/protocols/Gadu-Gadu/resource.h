@@ -44,7 +44,7 @@
 #define IDI_SAVE           		264
 #define IDI_CONFERENCE     		265
 
-#define IDD_OPT_GG				301
+#define IDD_OPT_GG_MAIN			301
 #define IDD_INFO_GG             302
 #define IDD_INFO_OWNER          303
 #define IDD_CHPASS              304
@@ -56,9 +56,11 @@
 #define IDD_OPT_GG_ADVANCED		310
 #define IDD_TOKEN				311
 #define IDD_CONFERENCE			312
+#define IDD_OPT_GG_GENERAL		313
+#define IDD_OPT_GG_CONFERENCE	314
+#define IDD_IMAGE_RECV          315
+#define IDD_IMAGE_SEND          316
 
-#define IDD_IMAGE_RECV          314
-#define IDD_IMAGE_SEND          315
 #define IDC_UIN 				401
 #define IDC_PASSWORD			402
 #define IDC_LOSTPASS			403
@@ -124,6 +126,8 @@
 #define IDC_GC_POLICY_DEFAULT   468
 #define IDC_GC_COUNT_TOTAL      469
 #define IDC_GC_COUNT_UNKNOWN    470
+
+#define IDC_OPTIONSTAB			471
 
 #define IDC_IMG_DELETE          1010
 #define IDC_IMG_SEND            1011

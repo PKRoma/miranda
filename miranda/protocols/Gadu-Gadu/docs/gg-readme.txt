@@ -59,6 +59,9 @@ Note: For secure connections this plugin requires OpenSSL DLL
 
 5. History
 ----------
+0.0.3.9: 2006-07-29
+ - Configuration was put into tabs
+ - Fix: Some of the configuration items were not triggering [Apply] properly.
 0.0.3.8: 2006-06-26
  - Fix: It seems that GG servers now properly handle initial status for GG.
    This should fix issue of being detected by Inwigilator when connecting with

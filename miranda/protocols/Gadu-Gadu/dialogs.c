@@ -20,7 +20,9 @@
 
 #include "gg.h"
 
-static BOOL CALLBACK gg_optsdlgproc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam);
+static BOOL CALLBACK gg_mainoptsdlgproc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam);
+static BOOL CALLBACK gg_genoptsdlgproc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam);
+static BOOL CALLBACK gg_confoptsdlgproc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam);
 static BOOL CALLBACK gg_advoptsdlgproc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam);
 extern BOOL CALLBACK gg_userutildlgproc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam);
 
@@ -179,32 +181,38 @@ static void SetValue(HWND hwndDlg,int idCtrl,HANDLE hContact,char *szModule,char
 
 ////////////////////////////////////////////////////////////////////////////////
 // Options Page : Init
+
+#ifndef ETDT_ENABLETAB
+#define ETDT_DISABLE        0x00000001
+#define ETDT_ENABLE         0x00000002
+#define ETDT_USETABTEXTURE  0x00000004
+#define ETDT_ENABLETAB      (ETDT_ENABLE  | ETDT_USETABTEXTURE)
+#endif
+
+static HWND hwndGeneral = NULL, hwndConference = NULL, hwndAdvanced = NULL; 
+static BOOL (WINAPI *pfnEnableThemeDialogTexture)(HANDLE, DWORD) = NULL;
+
 int gg_options_init(WPARAM wParam, LPARAM lParam)
 {
 	char title[64];
     OPTIONSDIALOGPAGE odp = { 0 };
+	HMODULE	hUxTheme = NULL;
 	strncpy(title, GG_PROTONAME, sizeof(title));
 
-    odp.cbSize = sizeof(odp);
-    odp.position = 1003000;
-    odp.hInstance = hInstance;
-    odp.pszTemplate = MAKEINTRESOURCE(IDD_OPT_GG);
-    odp.pszGroup = Translate("Network");
-    odp.pszTitle = title;
-    odp.pfnDlgProc = gg_optsdlgproc;
-    odp.flags = ODPF_BOLDGROUPS;
-    CallService(MS_OPT_ADDPAGE, wParam, (LPARAM) & odp);
+	if(IsWinVerXPPlus()) 
+	{
+		if(hUxTheme = GetModuleHandle("uxtheme.dll"))
+			pfnEnableThemeDialogTexture = (BOOL (WINAPI *)(HANDLE, DWORD))GetProcAddress(hUxTheme, "EnableThemeDialogTexture");
+	}
 
-	strncat(title, " ", sizeof(title) - strlen(title));
-	strncat(title, Translate("Advanced"), sizeof(title) - strlen(title));
     odp.cbSize = sizeof(odp);
     odp.position = 1003000;
     odp.hInstance = hInstance;
-    odp.pszTemplate = MAKEINTRESOURCE(IDD_OPT_GG_ADVANCED);
+    odp.pszTemplate = MAKEINTRESOURCE(IDD_OPT_GG_MAIN);
     odp.pszGroup = Translate("Network");
     odp.pszTitle = title;
-    odp.pfnDlgProc = gg_advoptsdlgproc;
-    odp.flags = ODPF_BOLDGROUPS | ODPF_EXPERTONLY;
+    odp.pfnDlgProc = gg_mainoptsdlgproc;
+    odp.flags = ODPF_BOLDGROUPS;
     CallService(MS_OPT_ADDPAGE, wParam, (LPARAM) & odp);
 
     return 0;
@@ -237,7 +245,145 @@ static void gg_optsdlgcheck(HWND hwndDlg)
 		ShowWindow(GetDlgItem(hwndDlg, IDC_CREATEACCOUNT), SW_SHOW);
 	}
 }
-static BOOL CALLBACK gg_optsdlgproc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam)
+
+////////////////////////////////////////////////////////////////////////////////////////////
+// Proc: Tabs generator function
+
+static void gg_setoptionsdlgtotype(HWND hwnd, int iExpert)
+{
+	TCITEM tci;
+	RECT rcClient;
+	HWND hwndTab = GetDlgItem(hwnd, IDC_OPTIONSTAB);
+	int iPages = 0;
+
+	tci.mask = TCIF_PARAM | TCIF_TEXT;
+
+	GetClientRect(hwnd, &rcClient);
+	TabCtrl_DeleteAllItems(hwndTab);
+
+	if(!hwndGeneral)
+		hwndGeneral = CreateDialog(hInstance, MAKEINTRESOURCE(IDD_OPT_GG_GENERAL), hwnd, gg_genoptsdlgproc);
+
+	tci.lParam = (LPARAM)hwndGeneral;
+	tci.pszText = Translate("General");
+	TabCtrl_InsertItem(hwndTab, iPages++, &tci);
+	MoveWindow((HWND)tci.lParam, 5, 26, rcClient.right - 8,rcClient.bottom - 29, 1);
+
+	if(!hwndConference)
+		hwndConference = CreateDialog(hInstance, MAKEINTRESOURCE(IDD_OPT_GG_CONFERENCE), hwnd, gg_confoptsdlgproc);
+
+	tci.lParam = (LPARAM)hwndConference;
+	tci.pszText = Translate("Conference");
+	TabCtrl_InsertItem(hwndTab, iPages++, &tci);
+	MoveWindow((HWND)tci.lParam, 5, 26, rcClient.right - 8, rcClient.bottom - 29, 1);
+
+	if(!hwndAdvanced)
+		hwndAdvanced = CreateDialog(hInstance, MAKEINTRESOURCE(IDD_OPT_GG_ADVANCED), hwnd, gg_advoptsdlgproc);
+
+	if(iExpert) 
+	{
+		tci.lParam = (LPARAM)hwndAdvanced;
+		tci.pszText = Translate("Advanced");
+		TabCtrl_InsertItem(hwndTab, iPages++, &tci);
+		MoveWindow((HWND)tci.lParam, 5, 26, rcClient.right - 8, rcClient.bottom - 29, 1);
+	}
+
+	if(pfnEnableThemeDialogTexture) 
+	{
+		if(hwndGeneral)
+			pfnEnableThemeDialogTexture(hwndGeneral, ETDT_ENABLETAB);
+		if(hwndConference)
+			pfnEnableThemeDialogTexture(hwndConference, ETDT_ENABLETAB);
+		if(hwndAdvanced)
+			pfnEnableThemeDialogTexture(hwndAdvanced, ETDT_ENABLETAB);
+    }
+	
+	ShowWindow(hwndAdvanced, SW_HIDE);
+	ShowWindow(hwndConference, SW_HIDE);
+	ShowWindow(hwndGeneral, SW_SHOW);
+
+	TabCtrl_SetCurSel(hwndTab, 0);
+}
+
+////////////////////////////////////////////////////////////////////////////////////////////
+// Proc: Main options dialog
+static BOOL CALLBACK gg_mainoptsdlgproc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
+{
+	static int iInit = TRUE;
+   
+	switch(msg) 
+	{
+		case WM_INITDIALOG:
+		{
+			int iExpert = SendMessage(GetParent(hwnd), PSM_ISEXPERT, 0, 0);
+			iInit = TRUE;
+			gg_setoptionsdlgtotype(hwnd, iExpert);
+			iInit = FALSE;
+			return FALSE;
+		}
+		case WM_DESTROY:
+			hwndGeneral = hwndConference = hwndAdvanced = NULL;
+			break;
+		case PSM_CHANGED: // used so tabs dont have to call SendMessage(GetParent(GetParent(hwnd)), PSM_CHANGED, 0, 0);
+			if(!iInit)
+				SendMessage(GetParent(hwnd), PSM_CHANGED, 0, 0);
+			break;
+		case WM_NOTIFY:
+			switch(((LPNMHDR)lParam)->idFrom) 
+			{
+				case 0:
+					switch(((LPNMHDR)lParam)->code) 
+					{
+						case PSN_APPLY:
+						{
+							TCITEM tci;
+							int i,count = TabCtrl_GetItemCount(GetDlgItem(hwnd,IDC_OPTIONSTAB));
+							tci.mask = TCIF_PARAM;
+							for (i=0;i<count;i++)
+							{
+								TabCtrl_GetItem(GetDlgItem(hwnd,IDC_OPTIONSTAB),i,&tci);
+								SendMessage((HWND)tci.lParam,WM_NOTIFY,0,lParam);
+							}	
+							break;
+						}
+						case PSN_EXPERTCHANGED:
+						{
+							int iExpert = SendMessage(GetParent(hwnd), PSM_ISEXPERT, 0, 0);
+							gg_setoptionsdlgtotype(hwnd, iExpert);
+							break;
+						}	
+					}
+					break;
+				case IDC_OPTIONSTAB:
+					switch (((LPNMHDR)lParam)->code) 
+					{
+						case TCN_SELCHANGING:
+						{
+							TCITEM tci;
+							tci.mask = TCIF_PARAM;
+							TabCtrl_GetItem(GetDlgItem(hwnd,IDC_OPTIONSTAB),TabCtrl_GetCurSel(GetDlgItem(hwnd,IDC_OPTIONSTAB)),&tci);
+							ShowWindow((HWND)tci.lParam,SW_HIDE);                     
+							break;
+						}
+						case TCN_SELCHANGE:
+						{
+							TCITEM tci;
+							tci.mask = TCIF_PARAM;
+							TabCtrl_GetItem(GetDlgItem(hwnd,IDC_OPTIONSTAB),TabCtrl_GetCurSel(GetDlgItem(hwnd,IDC_OPTIONSTAB)),&tci);
+							ShowWindow((HWND)tci.lParam,SW_SHOW);                     
+							break;
+						}	
+					}
+					break;
+			}
+			break;
+	}
+	return FALSE;
+}
+
+////////////////////////////////////////////////////////////////////////////////////////////
+// Proc: General options dialog
+static BOOL CALLBACK gg_genoptsdlgproc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam)
 {
     switch (msg) {
         case WM_INITDIALOG:
@@ -310,35 +456,11 @@ static BOOL CALLBACK gg_optsdlgproc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARA
             SendDlgItemMessage(hwndDlg, IDC_IMGMETHOD, CB_ADDSTRING, 0, (LPARAM)Translate("Popup window"));
             SendDlgItemMessage(hwndDlg, IDC_IMGMETHOD, CB_SETCURSEL, 
 				DBGetContactSettingByte(NULL, GG_PROTO, GG_KEY_IMGMETHOD, GG_KEYDEF_IMGMETHOD), 0);
-
-            SendDlgItemMessage(hwndDlg, IDC_GC_POLICY_TOTAL, CB_ADDSTRING, 0, (LPARAM)Translate("Allow"));
-            SendDlgItemMessage(hwndDlg, IDC_GC_POLICY_TOTAL, CB_ADDSTRING, 0, (LPARAM)Translate("Ask"));
-            SendDlgItemMessage(hwndDlg, IDC_GC_POLICY_TOTAL, CB_ADDSTRING, 0, (LPARAM)Translate("Ignore"));
-            SendDlgItemMessage(hwndDlg, IDC_GC_POLICY_TOTAL, CB_SETCURSEL,
-                DBGetContactSettingWord(NULL, GG_PROTO, GG_KEY_GC_POLICY_TOTAL, GG_KEYDEF_GC_POLICY_TOTAL), 0);
-
-            if (num = DBGetContactSettingWord(NULL, GG_PROTO, GG_KEY_GC_COUNT_TOTAL, GG_KEYDEF_GC_COUNT_TOTAL))
-                SetDlgItemText(hwndDlg, IDC_GC_COUNT_TOTAL, ditoa(num));
-
-            SendDlgItemMessage(hwndDlg, IDC_GC_POLICY_UNKNOWN, CB_ADDSTRING, 0, (LPARAM)Translate("Allow"));
-            SendDlgItemMessage(hwndDlg, IDC_GC_POLICY_UNKNOWN, CB_ADDSTRING, 0, (LPARAM)Translate("Ask"));
-            SendDlgItemMessage(hwndDlg, IDC_GC_POLICY_UNKNOWN, CB_ADDSTRING, 0, (LPARAM)Translate("Ignore"));
-            SendDlgItemMessage(hwndDlg, IDC_GC_POLICY_UNKNOWN, CB_SETCURSEL,
-                DBGetContactSettingWord(NULL, GG_PROTO, GG_KEY_GC_POLICY_UNKNOWN, GG_KEYDEF_GC_POLICY_UNKNOWN), 0);
-
-            if (num = DBGetContactSettingWord(NULL, GG_PROTO, GG_KEY_GC_COUNT_UNKNOWN, GG_KEYDEF_GC_COUNT_UNKNOWN))
-                SetDlgItemText(hwndDlg, IDC_GC_COUNT_UNKNOWN, ditoa(num));
-
-            SendDlgItemMessage(hwndDlg, IDC_GC_POLICY_DEFAULT, CB_ADDSTRING, 0, (LPARAM)Translate("Allow"));
-            SendDlgItemMessage(hwndDlg, IDC_GC_POLICY_DEFAULT, CB_ADDSTRING, 0, (LPARAM)Translate("Ask"));
-            SendDlgItemMessage(hwndDlg, IDC_GC_POLICY_DEFAULT, CB_ADDSTRING, 0, (LPARAM)Translate("Ignore"));
-            SendDlgItemMessage(hwndDlg, IDC_GC_POLICY_DEFAULT, CB_SETCURSEL,
-                DBGetContactSettingWord(NULL, GG_PROTO, GG_KEY_GC_POLICY_DEFAULT, GG_KEYDEF_GC_POLICY_DEFAULT), 0);
             break;
         }
         case WM_COMMAND:
         {
-            if ((LOWORD(wParam) == IDC_UIN || LOWORD(wParam) == IDC_PASSWORD)
+            if ((LOWORD(wParam) == IDC_UIN || LOWORD(wParam) == IDC_PASSWORD || LOWORD(wParam) == IDC_EMAIL)
                 && (HIWORD(wParam) != EN_CHANGE || (HWND) lParam != GetFocus()))
                 return 0;
             switch (LOWORD(wParam)) {
@@ -346,17 +468,17 @@ static BOOL CALLBACK gg_optsdlgproc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARA
 				case IDC_UIN:
 				{
 					gg_optsdlgcheck(hwndDlg);
-					return FALSE;
+					break;
 				}
                 case IDC_LEAVESTATUSMSG:
                 {
                     EnableWindow(GetDlgItem(hwndDlg, IDC_LEAVESTATUS), IsDlgButtonChecked(hwndDlg, IDC_LEAVESTATUSMSG));
-                    return FALSE;
+                    break;
                 }
                 case IDC_IMGRECEIVE:
                 {
                     EnableWindow(GetDlgItem(hwndDlg, IDC_IMGMETHOD), IsDlgButtonChecked(hwndDlg, IDC_IMGRECEIVE));
-                    return FALSE;
+                    break;
                 }
                 case IDC_LOSTPASS:
                 {
@@ -526,6 +648,64 @@ static BOOL CALLBACK gg_optsdlgproc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARA
                         default:
                             DBWriteContactSettingWord(NULL, GG_PROTO, GG_KEY_LEAVESTATUS, GG_KEYDEF_LEAVESTATUS);
                     }
+                    break;
+                }
+            }
+            break;
+        }
+    }
+    return FALSE;
+}
+
+////////////////////////////////////////////////////////////////////////////////////////////
+// Proc: General options dialog
+static BOOL CALLBACK gg_confoptsdlgproc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam)
+{
+    switch (msg) {
+        case WM_INITDIALOG:
+        {
+            DWORD num;
+
+            TranslateDialogDefault(hwndDlg);
+            SendDlgItemMessage(hwndDlg, IDC_GC_POLICY_TOTAL, CB_ADDSTRING, 0, (LPARAM)Translate("Allow"));
+            SendDlgItemMessage(hwndDlg, IDC_GC_POLICY_TOTAL, CB_ADDSTRING, 0, (LPARAM)Translate("Ask"));
+            SendDlgItemMessage(hwndDlg, IDC_GC_POLICY_TOTAL, CB_ADDSTRING, 0, (LPARAM)Translate("Ignore"));
+            SendDlgItemMessage(hwndDlg, IDC_GC_POLICY_TOTAL, CB_SETCURSEL,
+                DBGetContactSettingWord(NULL, GG_PROTO, GG_KEY_GC_POLICY_TOTAL, GG_KEYDEF_GC_POLICY_TOTAL), 0);
+
+            if (num = DBGetContactSettingWord(NULL, GG_PROTO, GG_KEY_GC_COUNT_TOTAL, GG_KEYDEF_GC_COUNT_TOTAL))
+                SetDlgItemText(hwndDlg, IDC_GC_COUNT_TOTAL, ditoa(num));
+
+            SendDlgItemMessage(hwndDlg, IDC_GC_POLICY_UNKNOWN, CB_ADDSTRING, 0, (LPARAM)Translate("Allow"));
+            SendDlgItemMessage(hwndDlg, IDC_GC_POLICY_UNKNOWN, CB_ADDSTRING, 0, (LPARAM)Translate("Ask"));
+            SendDlgItemMessage(hwndDlg, IDC_GC_POLICY_UNKNOWN, CB_ADDSTRING, 0, (LPARAM)Translate("Ignore"));
+            SendDlgItemMessage(hwndDlg, IDC_GC_POLICY_UNKNOWN, CB_SETCURSEL,
+                DBGetContactSettingWord(NULL, GG_PROTO, GG_KEY_GC_POLICY_UNKNOWN, GG_KEYDEF_GC_POLICY_UNKNOWN), 0);
+
+            if (num = DBGetContactSettingWord(NULL, GG_PROTO, GG_KEY_GC_COUNT_UNKNOWN, GG_KEYDEF_GC_COUNT_UNKNOWN))
+                SetDlgItemText(hwndDlg, IDC_GC_COUNT_UNKNOWN, ditoa(num));
+
+            SendDlgItemMessage(hwndDlg, IDC_GC_POLICY_DEFAULT, CB_ADDSTRING, 0, (LPARAM)Translate("Allow"));
+            SendDlgItemMessage(hwndDlg, IDC_GC_POLICY_DEFAULT, CB_ADDSTRING, 0, (LPARAM)Translate("Ask"));
+            SendDlgItemMessage(hwndDlg, IDC_GC_POLICY_DEFAULT, CB_ADDSTRING, 0, (LPARAM)Translate("Ignore"));
+            SendDlgItemMessage(hwndDlg, IDC_GC_POLICY_DEFAULT, CB_SETCURSEL,
+                DBGetContactSettingWord(NULL, GG_PROTO, GG_KEY_GC_POLICY_DEFAULT, GG_KEYDEF_GC_POLICY_DEFAULT), 0);
+            break;
+        }
+        case WM_COMMAND:
+        {
+            if ((LOWORD(wParam) == IDC_GC_COUNT_TOTAL || LOWORD(wParam) == IDC_GC_COUNT_UNKNOWN)
+                && (HIWORD(wParam) != EN_CHANGE || (HWND) lParam != GetFocus()))
+                return 0;
+            SendMessage(GetParent(hwndDlg), PSM_CHANGED, 0, 0);
+            break;
+        }
+        case WM_NOTIFY:
+        {
+            switch (((LPNMHDR) lParam)->code) {
+                case PSN_APPLY:
+                {
+                    char str[128];
 
                     // Write groupchat policy
                     DBWriteContactSettingWord(NULL, GG_PROTO, GG_KEY_GC_POLICY_TOTAL,
@@ -548,6 +728,7 @@ static BOOL CALLBACK gg_optsdlgproc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARA
     }
     return FALSE;
 }
+
 ////////////////////////////////////////////////////////////////////////////////////////////
 // Proc: Advanced options dialog
 static BOOL CALLBACK gg_advoptsdlgproc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam)
@@ -601,7 +782,7 @@ static BOOL CALLBACK gg_advoptsdlgproc(HWND hwndDlg, UINT msg, WPARAM wParam, LP
         }
         case WM_COMMAND:
         {
-            if ((LOWORD(wParam) == IDC_UIN || LOWORD(wParam) == IDC_PASSWORD)
+            if ((LOWORD(wParam) == IDC_DIRECTPORT || LOWORD(wParam) == IDC_FORWARDHOST || LOWORD(wParam) == IDC_FORWARDPORT)
                 && (HIWORD(wParam) != EN_CHANGE || (HWND) lParam != GetFocus()))
                 return 0;
             switch (LOWORD(wParam)) {
@@ -610,7 +791,7 @@ static BOOL CALLBACK gg_advoptsdlgproc(HWND hwndDlg, UINT msg, WPARAM wParam, LP
                     EnableWindow(GetDlgItem(hwndDlg, IDC_HOST), IsDlgButtonChecked(hwndDlg, IDC_MANUALHOST));
                     EnableWindow(GetDlgItem(hwndDlg, IDC_PORT), IsDlgButtonChecked(hwndDlg, IDC_MANUALHOST));
                     ShowWindow(GetDlgItem(hwndDlg, IDC_RELOADREQD), SW_SHOW);
-                    return TRUE;
+                    break;
                 }
                 case IDC_DIRECTCONNS:
                 case IDC_FORWARDING:
@@ -620,7 +801,7 @@ static BOOL CALLBACK gg_advoptsdlgproc(HWND hwndDlg, UINT msg, WPARAM wParam, LP
 					EnableWindow(GetDlgItem(hwndDlg, IDC_FORWARDPORT), IsDlgButtonChecked(hwndDlg, IDC_FORWARDING) && IsDlgButtonChecked(hwndDlg, IDC_DIRECTCONNS));
 					EnableWindow(GetDlgItem(hwndDlg, IDC_FORWARDHOST), IsDlgButtonChecked(hwndDlg, IDC_FORWARDING) && IsDlgButtonChecked(hwndDlg, IDC_DIRECTCONNS));
                     ShowWindow(GetDlgItem(hwndDlg, IDC_RELOADREQD), SW_SHOW);
-                    return TRUE;
+                    break;
 				}
             }
             SendMessage(GetParent(hwndDlg), PSM_CHANGED, 0, 0);
@@ -859,16 +1040,16 @@ int gg_details_init(WPARAM wParam, LPARAM lParam)
 
     // Here goes init
     {
-            OPTIONSDIALOGPAGE odp;
+        OPTIONSDIALOGPAGE odp;
 
-            odp.cbSize = sizeof(odp);
-            odp.hIcon = NULL;
-            odp.hInstance = hInstance;
-            odp.pfnDlgProc = gg_detailsdlgproc;
-            odp.position = -1900000000;
-            odp.pszTemplate = ((HANDLE)lParam != NULL) ? MAKEINTRESOURCE(IDD_INFO_GG) : MAKEINTRESOURCE(IDD_CHINFO_GG);
-            odp.pszTitle = GG_PROTONAME;
-            CallService(MS_USERINFO_ADDPAGE, wParam, (LPARAM)&odp);
+        odp.cbSize = sizeof(odp);
+        odp.hIcon = NULL;
+        odp.hInstance = hInstance;
+        odp.pfnDlgProc = gg_detailsdlgproc;
+        odp.position = -1900000000;
+        odp.pszTemplate = ((HANDLE)lParam != NULL) ? MAKEINTRESOURCE(IDD_INFO_GG) : MAKEINTRESOURCE(IDD_CHINFO_GG);
+        odp.pszTitle = GG_PROTONAME;
+        CallService(MS_USERINFO_ADDPAGE, wParam, (LPARAM)&odp);
     }
 
     // Start search for my data
