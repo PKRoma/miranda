@@ -900,8 +900,9 @@ static void JabberProcessMessage( XmlNode *node, void *userdata )
 	if ( bodyNode != NULL ) {
 		TCHAR* ptszBody = (bodyNode) ? bodyNode->text : _T("");
 		if (( subjectNode=JabberXmlGetChild( node, "subject" ))!=NULL && subjectNode->text!=NULL && subjectNode->text[0]!='\0' && !isRss ) {
-			TCHAR* p = ( TCHAR* )alloca( sizeof( TCHAR )*( _tcslen( subjectNode->text ) + _tcslen( bodyNode->text ) + 12 ));
-			wsprintf( p, _T("Subject: %s\r\n%s"), subjectNode->text, ptszBody );
+			int cbLen = _tcslen( subjectNode->text ) + _tcslen( bodyNode->text ) + 24;
+			TCHAR* p = ( TCHAR* )alloca( sizeof( TCHAR ) * cbLen );
+			mir_sntprintf( p, cbLen, _T("Subject: %s\r\n%s"), subjectNode->text, ptszBody );
 			szMessage = p;
 		}
 		else szMessage = ptszBody;
@@ -1002,8 +1003,9 @@ static void JabberProcessMessage( XmlNode *node, void *userdata )
 			if ( (rssUrlNode = JabberXmlGetNthChild( xNode, "url", 1 )) != NULL) {
 				TCHAR* ptszBody = (bodyNode) ? bodyNode->text : _T("");
 				TCHAR* ptszSubject = (subjectNode) ? subjectNode->text : _T("");
-				szMessage = ( TCHAR* )alloca( sizeof(TCHAR)*( lstrlen( ptszBody ) + lstrlen( ptszSubject ) + lstrlen( rssUrlNode->text ) + 14 ));
-				wsprintf( szMessage, _T("Subject: %s\r\n"), ptszSubject );
+				int cbLen = lstrlen( ptszBody ) + lstrlen( ptszSubject ) + lstrlen( rssUrlNode->text ) + 32;
+				szMessage = ( TCHAR* )alloca( sizeof(TCHAR) * cbLen );
+				mir_sntprintf( szMessage, cbLen, _T("Subject: %s\r\n"), ptszSubject );
 				if ( rssUrlNode->text ) {
 					_tcscat( szMessage, rssUrlNode->text );
 					_tcscat( szMessage, _T("\r\n" ));
