@@ -174,18 +174,10 @@ TCHAR* GetWindowTitle(HANDLE *hContact, const char *szProto)
 
 TCHAR* GetTabName(HANDLE *hContact)
 {
-	int len;
-	TCHAR *result = NULL;
 	if (hContact) {
-		result = GetNickname(hContact, NULL);
-		len = lstrlen(result);
-		if (g_dat->flags2 & SMF2_LIMITNAMES) {
-			if (len > g_dat->limitNamesLength ) {
-				result[g_dat->limitNamesLength] = '\0';
-			}
-		}
+		return GetNickname(hContact, NULL);
 	}
-	return result;
+	return NULL;
 }
 
 static int GetChildCount(ParentWindowData *dat) {
@@ -313,7 +305,6 @@ static void ActivateChild(ParentWindowData *dat, HWND child) {
 
 static void AddChild(ParentWindowData *dat, HWND hwnd, HANDLE hContact)
 {
-	TCHAR *contactName;
 	TCITEM tci;
 	int tabId;
 	MessageWindowTabData *mwtd = (MessageWindowTabData *) mir_alloc(sizeof(MessageWindowTabData));
@@ -322,12 +313,9 @@ static void AddChild(ParentWindowData *dat, HWND hwnd, HANDLE hContact)
 	mwtd->szProto = (char *) CallService(MS_PROTO_GETCONTACTBASEPROTO, (WPARAM) hContact, 0);
 	mwtd->parent = dat;
 	dat->childrenCount++;
-	contactName = GetTabName(hContact);
-	tci.mask = TCIF_TEXT | TCIF_PARAM;
-	tci.pszText = contactName;
+	tci.mask = TCIF_PARAM;
 	tci.lParam = (LPARAM) mwtd;
 	tabId = TabCtrl_InsertItem(dat->hwndTabs, dat->childrenCount-1, &tci);
-	mir_free(contactName);
 //	ActivateChild(dat, mdat->hwnd);
 	SetWindowPos(mwtd->hwnd, HWND_TOP, dat->childRect.left, dat->childRect.top, dat->childRect.right-dat->childRect.left, dat->childRect.bottom - dat->childRect.top, SWP_HIDEWINDOW);
 	SendMessage(dat->hwnd, WM_SIZE, 0, 0);
@@ -653,6 +641,7 @@ BOOL CALLBACK DlgProcParentWindow(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM 
 			} else if (pNMHDR->hwndFrom == dat->hwndStatus)  {
 				switch (pNMHDR->code) {
 				case NM_CLICK:
+				case NM_RCLICK:
 					{
 						NMMOUSE *nm=(NMMOUSE*)lParam;
 						RECT rc;
@@ -661,14 +650,14 @@ BOOL CALLBACK DlgProcParentWindow(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM 
 						if (nm->pt.x >= rc.left && nm->pt.x <= rc.right) {
 							MessageWindowTabData *mwtd = GetChildFromHWND(dat, dat->hwndActive);
 							if (mwtd != NULL) {
-								CheckStatusIconClick(mwtd->hContact, dat->hwndStatus, nm->pt, rc, 2);
+								CheckStatusIconClick(mwtd->hContact, dat->hwndStatus, nm->pt, rc, 2, (pNMHDR->code == NM_RCLICK ? MBCF_RIGHTBUTTON : 0));
 							}
-						} else if (nm->pt.x >= rc.left) {
+						} else if (nm->pt.x >= rc.left && pNMHDR->code == NM_CLICK) {
 							SendMessage(dat->hwndActive, DM_SWITCHUNICODE, 0, 0);
-						}
+ 						}
+ 						return TRUE;
 					}
 				}
-				break;
 			}
 		}
 		break;
@@ -687,7 +676,6 @@ BOOL CALLBACK DlgProcParentWindow(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM 
 		}
 		break;
 	case WM_CONTEXTMENU:
-	{
 		if (dat->hwndStatus && dat->hwndStatus == (HWND) wParam) {
 			RECT rc;
 			POINT pt, pt2;
@@ -695,6 +683,11 @@ BOOL CALLBACK DlgProcParentWindow(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM 
 			pt2.x = pt.x;
 			pt2.y = pt.y;
 			ScreenToClient(dat->hwndStatus, &pt);
+
+			// no popup menu for status icons - this is handled via NM_RCLICK notification and the plugins that added the icons
+			SendMessage(dat->hwndStatus, SB_GETRECT, SendMessage(dat->hwndStatus, SB_GETPARTS, 0, 0) - 2, (LPARAM)&rc);
+			if(pt.x >= rc.left && pt.x <= rc.right) break;
+
 			SendMessage(dat->hwndStatus, SB_GETRECT, SendMessage(dat->hwndStatus, SB_GETPARTS, 0, 0) - 1, (LPARAM)&rc);
 			if (pt.x >= rc.left && dat->hwndActive != NULL) {
 				int codePage = (int) SendMessage(dat->hwndActive, DM_GETCODEPAGE, 0, 0);
@@ -717,7 +710,6 @@ BOOL CALLBACK DlgProcParentWindow(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM 
 				SendMessage(dat->hwndActive, WM_CONTEXTMENU, (WPARAM)hwndDlg, 0);
 		}
 		break;
-	}
 
 	case WM_ACTIVATE:
 		if (LOWORD(wParam) == WA_INACTIVE) {
@@ -994,6 +986,7 @@ BOOL CALLBACK DlgProcParentWindow(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM 
 					SendMessage(dat->hwndStatus, SB_SETICON, iItem, (LPARAM) sbd->hIcon);
 				}
 			}
+			RedrawWindow(dat->hwndStatus, NULL, NULL, RDW_INVALIDATE | RDW_UPDATENOW | RDW_ERASE);
 			break;
 		}
 	case DM_STATUSICONCHANGE:
@@ -1001,6 +994,7 @@ BOOL CALLBACK DlgProcParentWindow(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM 
 		return 0;
 	case CM_UPDATETABCONTROL:
 		{
+			TCHAR *ptszTemp = NULL;
 			TabControlData *tcd = (TabControlData *) wParam;
 			int tabId = GetTabFromHWND(dat, (HWND) lParam);
 			if (tabId >= 0 && tcd != NULL) {
@@ -1009,6 +1003,15 @@ BOOL CALLBACK DlgProcParentWindow(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM 
 				if (tcd->iFlags & TCDF_TEXT) {
 					tci.mask |= TCIF_TEXT;
 					tci.pszText = tcd->pszText;
+					if (g_dat->flags2 & SMF2_LIMITNAMES) {
+						int len = lstrlen(tcd->pszText);
+						if (len > g_dat->limitNamesLength ) {
+							ptszTemp = mir_alloc(sizeof(TCHAR) * (len + 4));
+							lstrcpyn(ptszTemp, tcd->pszText, g_dat->limitNamesLength + 1);
+							lstrcpyn(ptszTemp + g_dat->limitNamesLength, _T("..."), 4);
+							tci.pszText = ptszTemp;
+						}
+					}
 				}
 				if (tcd->iFlags & TCDF_ICON) {
 					tci.mask |= TCIF_IMAGE;
@@ -1016,6 +1019,7 @@ BOOL CALLBACK DlgProcParentWindow(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM 
 				}
 				TabCtrl_SetItem(dat->hwndTabs, tabId, &tci);
 			}
+			mir_free(ptszTemp);
 			break;
 		}
 	case DM_SWITCHSTATUSBAR:

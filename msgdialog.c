@@ -1582,58 +1582,56 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
 			break;
 		}
 	case DM_UPDATEICON:
-		{
-			if (dat->szProto) {
-				TitleBarData tbd;
-				TabControlData tcd;
-				HICON hIcon = NULL;
-				int i, icoIdx = 0;
-				char *szProto = dat->szProto;
-				HANDLE hContact = dat->hContact;
-				if (strcmp(dat->szProto, "MetaContacts") == 0 && DBGetContactSettingByte(NULL,"CLC","Meta",0) == 0) {
-					hContact = (HANDLE)CallService(MS_MC_GETMOSTONLINECONTACT,(UINT)dat->hContact, 0);
-					if (hContact != NULL) {
-						szProto = (char*)CallService(MS_PROTO_GETCONTACTBASEPROTO,(UINT)hContact,0);
-					} else {
-						hContact = dat->hContact;
-					}
-				}
-				dat->wStatus = DBGetContactSettingWord(hContact, szProto, "Status", ID_STATUS_OFFLINE);
-				SendDlgItemMessage(hwndDlg, IDC_USERMENU, BM_SETIMAGE, IMAGE_ICON, (LPARAM) LoadSkinnedProtoIcon(szProto, dat->wStatus));
-				if (g_dat->flags & SMF_STATUSICON) {
-					if (dat->showTyping && (g_dat->flags2&SMF2_SHOWTYPINGWIN)) {
-						hIcon = g_dat->hIcons[SMF_ICON_TYPING];
-					} else if (dat->showUnread && (GetActiveWindow() != dat->hwndParent || GetForegroundWindow() != dat->hwndParent)) {
-						hIcon = LoadSkinnedIcon(SKINICON_EVENT_MESSAGE);
-					} else {
-						hIcon = LoadSkinnedProtoIcon(szProto, dat->wStatus);
-					}
+		if (dat->szProto) {
+			TitleBarData tbd;
+			TabControlData tcd;
+			HICON hIcon = NULL;
+			int i, icoIdx = 0;
+			char *szProto = dat->szProto;
+			HANDLE hContact = dat->hContact;
+			if (strcmp(dat->szProto, "MetaContacts") == 0 && DBGetContactSettingByte(NULL,"CLC","Meta",0) == 0) {
+				hContact = (HANDLE)CallService(MS_MC_GETMOSTONLINECONTACT,(UINT)dat->hContact, 0);
+				if (hContact != NULL) {
+					szProto = (char*)CallService(MS_PROTO_GETCONTACTBASEPROTO,(UINT)hContact,0);
 				} else {
-					hIcon = LoadSkinnedIcon(SKINICON_EVENT_MESSAGE);
+					hContact = dat->hContact;
 				}
-				icoIdx = 0;
-				for (i = 0; i < g_dat->protoNum; i++) {
-					if (!strcmp(g_dat->protoNames[i], szProto)) {
-						icoIdx = dat->wStatus - ID_STATUS_OFFLINE + (ID_STATUS_OUTTOLUNCH - ID_STATUS_OFFLINE + 1) * (i +1) + 2;
-						break;
-					}
-				}
-				if (hwndDlg != dat->parent->hwndActive) {
-					if (dat->showTyping) {
-						icoIdx = 1;
-					} else if (dat->showUnread & 1) {
-						icoIdx = 0;
-					}
-				}
-				tbd.iFlags = TBDF_ICON;
-				tbd.hIcon = hIcon;
-				SendMessage(dat->hwndParent, CM_UPDATETITLEBAR, (WPARAM)&tbd, (LPARAM)hwndDlg);
-				tcd.iFlags = TCDF_ICON;
-				tcd.iconIdx = icoIdx;
-				SendMessage(dat->hwndParent, CM_UPDATETABCONTROL, (WPARAM)&tcd, (LPARAM)hwndDlg);
 			}
-			break;
+			dat->wStatus = DBGetContactSettingWord(hContact, szProto, "Status", ID_STATUS_OFFLINE);
+			SendDlgItemMessage(hwndDlg, IDC_USERMENU, BM_SETIMAGE, IMAGE_ICON, (LPARAM) LoadSkinnedProtoIcon(szProto, dat->wStatus));
+			if (g_dat->flags & SMF_STATUSICON) {
+				if (dat->showTyping && (g_dat->flags2&SMF2_SHOWTYPINGWIN)) {
+					hIcon = g_dat->hIcons[SMF_ICON_TYPING];
+				} else if (dat->showUnread && (GetActiveWindow() != dat->hwndParent || GetForegroundWindow() != dat->hwndParent)) {
+					hIcon = LoadSkinnedIcon(SKINICON_EVENT_MESSAGE);
+				} else {
+					hIcon = LoadSkinnedProtoIcon(szProto, dat->wStatus);
+				}
+			} else {
+				hIcon = LoadSkinnedIcon(SKINICON_EVENT_MESSAGE);
+			}
+			icoIdx = 0;
+			for (i = 0; i < g_dat->protoNum; i++) {
+				if (!strcmp(g_dat->protoNames[i], szProto)) {
+					icoIdx = dat->wStatus - ID_STATUS_OFFLINE + (ID_STATUS_OUTTOLUNCH - ID_STATUS_OFFLINE + 1) * (i +1) + 2;
+					break;
+				}
+			}
+			if (hwndDlg != dat->parent->hwndActive) {
+				if (dat->showTyping) {
+					icoIdx = 1;
+				} else if (dat->showUnread & 1) {
+					icoIdx = 0;
+				}
+			}
+			tbd.iFlags = TBDF_ICON;
+			tbd.hIcon = hIcon;
+			SendMessage(dat->hwndParent, CM_UPDATETITLEBAR, (WPARAM)&tbd, (LPARAM)hwndDlg);
+			tcd.iFlags = TCDF_ICON;
+			tcd.iconIdx = icoIdx;
+			SendMessage(dat->hwndParent, CM_UPDATETABCONTROL, (WPARAM)&tcd, (LPARAM)hwndDlg);
 		}
+		break;
     case DM_USERNAMETOCLIP:
 		{
 			CONTACTINFO ci;
@@ -1846,7 +1844,6 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
 			sbd.hIcon = g_dat->hIcons[(dat->flags & SMF_DISABLE_UNICODE) ? SMF_ICON_UNICODEOFF : SMF_ICON_UNICODEON];
 			sbd.pszText = _T("");
 			SendMessage(dat->hwndParent, CM_UPDATESTATUSBAR, (WPARAM)&sbd, (LPARAM)hwndDlg);
-//			RedrawWindow(dat->parent->hwndStatus, NULL, NULL, RDW_INVALIDATE | RDW_UPDATENOW | RDW_ERASE);
 			SendMessage(hwndDlg, DM_REMAKELOG, 0, 0);
 		}
 		break;

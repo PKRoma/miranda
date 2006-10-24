@@ -177,7 +177,6 @@ struct MessageWindowData
 #define HM_AVATARACK         (WM_USER+28)
 #define HM_ACKEVENT          (WM_USER+29)
 
-#define DM_UPDATETITLE		 (WM_USER+30)
 #define DM_UPDATEICON		 (WM_USER+31)
 
 #define DM_CLEARLOG			 (WM_USER+46)

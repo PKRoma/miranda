@@ -127,30 +127,39 @@ void DrawStatusIcons(HANDLE hContact, HDC hDC, RECT r, int gap) {
 	while(current) {
 		sprintf(buff, "SRMMStatusIconFlags%d", (int)current->sid.dwId);
 		flags = DBGetContactSettingByte(hContact, current->sid.szModule, buff, current->sid.flags);
-		if((flags & MBF_DISABLED) && current->sid.hIconDisabled) hIcon = current->sid.hIconDisabled;
-		else hIcon = current->sid.hIcon;
+		if(!(flags & MBF_HIDDEN)) {
+			if((flags & MBF_DISABLED) && current->sid.hIconDisabled) hIcon = current->sid.hIconDisabled;
+			else hIcon = current->sid.hIcon;
 
-		SetBkMode(hDC, TRANSPARENT);
-		DrawIconEx(hDC, x, (r.top + r.bottom - GetSystemMetrics(SM_CYSMICON)) >> 1, hIcon, GetSystemMetrics(SM_CXSMICON), GetSystemMetrics(SM_CYSMICON), 0, NULL, DI_NORMAL);
+			SetBkMode(hDC, TRANSPARENT);
+			DrawIconEx(hDC, x, (r.top + r.bottom - GetSystemMetrics(SM_CYSMICON)) >> 1, hIcon, GetSystemMetrics(SM_CXSMICON), GetSystemMetrics(SM_CYSMICON), 0, NULL, DI_NORMAL);
 
-		x += GetSystemMetrics(SM_CYSMICON) + gap;
+			x += GetSystemMetrics(SM_CYSMICON) + gap;
+		}
 		current = current->next;
 	}
 }
 
-void CheckStatusIconClick(HANDLE hContact, HWND hwndFrom, POINT pt, RECT r, int gap) {
+void CheckStatusIconClick(HANDLE hContact, HWND hwndFrom, POINT pt, RECT r, int gap, int click_flags) {
 	StatusIconClickData sicd;
 	struct StatusIconListNode *current = status_icon_list;
 	unsigned int iconNum = (pt.x - r.left) / (GetSystemMetrics(SM_CXSMICON) + gap);
-	unsigned int i;
+	int flags;
+	char buff[256];
 
-	for(i = 0; current && i < iconNum; i++) current = current->next;
+	while(current && iconNum > 0) {
+		sprintf(buff, "SRMMStatusIconFlags%d", (int)current->sid.dwId);
+		flags = DBGetContactSettingByte(hContact, current->sid.szModule, buff, current->sid.flags);
+		if(!(flags & MBF_HIDDEN)) iconNum--;
+		current = current->next;
+	}
 
 	if(current) {
 		sicd.cbSize = sizeof(StatusIconClickData);
 		sicd.clickLocation = pt;
 		sicd.dwId = current->sid.dwId;
 		sicd.szModule = current->sid.szModule;
+		sicd.flags = click_flags;
 
 		NotifyEventHooks(hHookIconPressedEvt, (WPARAM)hContact, (LPARAM)&sicd);
 	}
