@@ -90,7 +90,7 @@ TCHAR* a2t( const char* str )
 	#if defined( _UNICODE )
 		return (TCHAR*)CallService( MS_LANGPACK_PCHARTOTCHAR, 0, (LPARAM)str);
 	#else
-		return mir_mir_strdup( str );
+		return mir_strdup( str );
 	#endif
 }
 
@@ -115,7 +115,7 @@ TCHAR* a2tf( const TCHAR* str, BOOL unicode )
 			return result;
 		}
 	#else
-		return mir_mir_strdup( str );
+		return mir_strdup( str );
 	#endif
 }
 

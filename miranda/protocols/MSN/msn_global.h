@@ -313,8 +313,7 @@ enum TInfoType
 	SERVER_NOTIFICATION,
 	SERVER_SWITCHBOARD,
 	SERVER_FILETRANS,
-	SERVER_P2P_DIRECT,
-	SERVER_KEEPALIVE
+	SERVER_P2P_DIRECT
 };
 
 
@@ -417,7 +416,6 @@ struct ThreadData
 	//----| for file transfers only |-----------------------------------------------------
 	filetransfer*  mMsnFtp;          // file transfer block
 	filetransfer*  mP2pSession;		// new styled transfer
-	bool           mAuthComplete;    // P2P authentication complete 
 
 	//----| internal data buffer |--------------------------------------------------------
 	int            mBytesInData;     // bytes available in data buffer
@@ -480,7 +478,7 @@ void __stdcall p2p_registerSession( filetransfer* ft );
 void __stdcall p2p_unregisterSession( filetransfer* ft );
 void __stdcall p2p_sessionComplete( filetransfer* ft );
 
-filetransfer* __stdcall p2p_getFirstSession( HANDLE hContact );
+filetransfer* __stdcall p2p_getThreadSession( HANDLE hContact, TInfoType mType );
 filetransfer* __stdcall p2p_getSessionByID( unsigned id );
 filetransfer* __stdcall p2p_getSessionByMsgID( unsigned id );
 filetransfer* __stdcall p2p_getSessionByCallID( const char* CallID );

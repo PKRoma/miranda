@@ -304,7 +304,9 @@ LBL_RecvAgain:
 				break;
 		}
 
-		if ( mWaitPeriod < 0 && ( mJoinedCount <= 1 || mChatID[0] == 0 )) {
+		if ( mWaitPeriod < 0 && (( mJoinedCount <= 1 || mChatID[0] == 0 ) && 
+			p2p_getThreadSession( mJoinedContacts[0], mType ) == NULL )) 
+		{
 			MSN_DebugLog( "Dropping the idle switchboard due to the 60 sec timeout" );
 			return 0;
 	}	}

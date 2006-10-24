@@ -35,8 +35,6 @@ extern unsigned long sl;
 
 HANDLE hKeepAliveThreadEvt = NULL;
 
-bool DoingNudge = false;
-
 /////////////////////////////////////////////////////////////////////////////////////////
 //	Keep-alive thread for the main connection
 
@@ -167,12 +165,12 @@ void __cdecl MSNServerThread( ThreadData* info )
 
 		int recvResult = info->recv( info->mData + info->mBytesInData, sizeof( info->mData ) - info->mBytesInData );
 		if ( recvResult == SOCKET_ERROR ) {
-			MSN_DebugLog( "Connection %08p [%d] was abortively closed", info->s, GetCurrentThreadId());
+			MSN_DebugLog( "Connection %08p [%08X] was abortively closed", info->s, GetCurrentThreadId());
 			break;
 		}
 
 		if ( !recvResult ) {
-			MSN_DebugLog( "Connection %08p [%d] was gracefully closed", info->s, GetCurrentThreadId());
+			MSN_DebugLog( "Connection %08p [%08X] was gracefully closed", info->s, GetCurrentThreadId());
 			break;
 		}
 
@@ -251,7 +249,7 @@ static int CompareThreads( const ThreadData* p1, const ThreadData* p2 )
 	return int( p1 - p2 );
 }
 
-static LIST<ThreadData> sttThreads( 10, CompareThreads ); // up to MAX_THREAD_COUNT threads
+static LIST<ThreadData> sttThreads( 10, CompareThreads );
 static CRITICAL_SECTION	sttLock;
 
 void __stdcall MSN_InitThreads()
@@ -321,7 +319,7 @@ ThreadData* __stdcall MSN_GetThreadByContact( HANDLE hContact, TInfoType type )
 		if ( T->mJoinedCount == 0 || T->mJoinedContacts == NULL || T->s == NULL || T->mType != type )
 			continue;
 
-		if ( T->mJoinedContacts[0] == hContact ) {
+		if ( T->mJoinedContacts[0] == hContact && T->mInitialContact == NULL ) {
 			result = T;
 			break;
 	}	}
@@ -340,15 +338,14 @@ ThreadData* __stdcall MSN_GetP2PThreadByContact( HANDLE hContact )
 		if ( T->mJoinedCount == 0 || T->mJoinedContacts == NULL )
 			continue;
 
-		if ( T->mJoinedContacts[0] == hContact ) {
+		if ( T->mJoinedContacts[0] == hContact && T->mInitialContact == NULL ) {
 			switch ( T->mType ) {
 			case SERVER_SWITCHBOARD:
 				sbT = T;
 				break;
 
 			case SERVER_P2P_DIRECT:
-				if ( T->s != NULL && T->mAuthComplete)
-					p2pT = T;
+				p2pT = T;
 				break;
 	}	}	}
 
@@ -402,7 +399,7 @@ ThreadData* __stdcall MSN_GetUnconnectedThread( HANDLE hContact )
 
 	for ( int i=0; i < sttThreads.getCount(); i++ ) {
 		ThreadData* T = sttThreads[ i ];
-		if ( T->mInitialContact == hContact ) {
+		if ( T->mInitialContact == hContact && T->mType == SERVER_SWITCHBOARD ) {
 			result = T;
 			break;
 	}	}
@@ -513,7 +510,7 @@ void ThreadData::applyGatewayData( HANDLE hConn, bool isPoll )
 	char szHttpPostUrl[300];
 	getGatewayUrl( szHttpPostUrl, sizeof( szHttpPostUrl ), isPoll );
 
-	MSN_DebugLog( "applying '%s' to %08X [%d]", szHttpPostUrl, this, GetCurrentThreadId() );
+	MSN_DebugLog( "applying '%s' to %08X [%08X]", szHttpPostUrl, this, GetCurrentThreadId() );
 
 	NETLIBHTTPPROXYINFO nlhpi = {0};
 	nlhpi.cbSize = sizeof(nlhpi);
