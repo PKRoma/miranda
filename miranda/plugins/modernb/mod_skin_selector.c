@@ -313,7 +313,7 @@ int ParseToModernMask(MODERNMASK * mm, char * szText)
                         DWORD k;
                         k=keyPos-startPos;
                         if (k>MAXVALUE-1) k=MAXVALUE-1;
-                        param.szName=mir_strdupn(szText+startPos,k);
+                        param.szName=strdupn(szText+startPos,k);
                         param.dwId=mod_CalcHash(param.szName);
 
                         startPos=keyPos+1;
@@ -323,7 +323,7 @@ int ParseToModernMask(MODERNMASK * mm, char * szText)
                 {
                     param.bFlag=1;
                     param.dwId=mod_CalcHash("Module");
-                    param.szName=mir_strdupn("Module",6);
+                    param.szName=strdupn("Module",6);
                 }
                 //szText[currentPos]='/0';
                 {
@@ -332,7 +332,7 @@ int ParseToModernMask(MODERNMASK * mm, char * szText)
                   k=currentPos-startPos;
                   if (k>MAXVALUE-1) k=MAXVALUE-1;
 				  m=min((UINT)k,textLen-startPos+1);
-                  param.szValue=mir_strdupn(szText+startPos,k);
+                  param.szValue=strdupn(szText+startPos,k);
                 }
                 param.dwValueHash=mod_CalcHash(param.szValue);
                 {   // if Value don't contain '*' or '?' count add flag

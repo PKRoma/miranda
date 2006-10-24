@@ -86,7 +86,7 @@ extern __inline wchar_t * mir_strdupW(const wchar_t * src)
 }
 
 //copy len symbols from string - do not check is it null terminated or len is more then actual 
-__inline char * mir_strdupn(const char * src, int len)
+__inline char * strdupn(const char * src, int len)
 {
     char * p;
     if (src==NULL) return NULL;

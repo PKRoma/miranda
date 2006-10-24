@@ -609,7 +609,7 @@ static void CLCPaint_FillParam(MASKPARAM * lpParam, DWORD dwParamHash, char *szV
     lpParam->dwId=dwParamHash;
     if (!dwValueHash && szValue) lpParam->dwValueHash=mod_CalcHash(szValue);
     else lpParam->dwValueHash=dwValueHash;
-    if (szValue) lpParam->szValue=mir_strdupn(szValue,strlen(szValue));
+    if (szValue) lpParam->szValue=strdupn(szValue,strlen(szValue));
     else lpParam->szValue=NULL;
 }
 
@@ -3162,7 +3162,7 @@ static void CLCPaint_InternalPaintClc(HWND hwnd,struct ClcData *dat,HDC hdc,RECT
                     {
                         if (mpRequest->pl_Params[1].szValue)
                             free(mpRequest->pl_Params[1].szValue);
-                        mpRequest->pl_Params[1].szValue=mir_strdupn("Ovl",3);
+                        mpRequest->pl_Params[1].szValue=strdupn("Ovl",3);
                         mpRequest->pl_Params[1].dwValueHash=mod_CalcHash("Ovl");
                         {
                             RECT mrc=row_rc;
