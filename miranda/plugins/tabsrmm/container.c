@@ -440,26 +440,29 @@ LRESULT CALLBACK StatusBarSubclassProc(HWND hWnd, UINT msg, WPARAM wParam, LPARA
         case WM_TIMER:
             if(wParam == TIMERID_HOVER) {
                 POINT pt;
-                KillTimer(hWnd, TIMERID_HOVER);
+                BOOL  fHaveUCTip = ServiceExists("mToolTip/ShowTipW");
+                CLCINFOTIP ti = {0};
+                ti.cbSize = sizeof(ti);
 
+                KillTimer(hWnd, TIMERID_HOVER);
                 GetCursorPos(&pt);
                 if (pt.x == ptMouse.x && pt.y == ptMouse.y) {
                     unsigned i;
                     RECT rc;
+                    struct MessageWindowData *dat = (struct MessageWindowData *)GetWindowLong(pContainer->hwndActive, GWL_USERDATA);
 
                     ScreenToClient(hWnd, &pt);
                     SendMessage(hWnd, SB_GETRECT, 2, (LPARAM)&rc);
-                    if(PtInRect(&rc,pt)) {
+                    if(dat && PtInRect(&rc,pt)) {
                         CLCINFOTIP ti = {0};
                         int gap = 2;
                         struct StatusIconListNode *current = status_icon_list;
 						struct MessageWindowData *dat = (struct MessageWindowData *)GetWindowLong(pContainer->hwndActive, GWL_USERDATA);
                         unsigned int iconNum = (pt.x - (rc.left + ((dat &&dat->bType != SESSIONTYPE_IM) ? myGlobals.m_smcxicon + gap : 0))) / (myGlobals.m_smcxicon + gap);
 
-                        ti.cbSize = sizeof(ti);
                         if((int)iconNum == status_icon_list_size && pContainer) {
 #if defined(_UNICODE)
-							if(ServiceExists("mToolTip/ShowTipW")) {
+							if(fHaveUCTip) {
 								wchar_t wBuf[512];
 
 								mir_sntprintf(wBuf, safe_sizeof(wBuf), TranslateT("Sounds are %s. Click to toggle status, hold SHIFT and click to set for all open containers"), pContainer->dwFlags & CNT_NOSOUND ? TranslateT("disabled") : TranslateT("enabled"));
@@ -476,12 +479,13 @@ LRESULT CALLBACK StatusBarSubclassProc(HWND hWnd, UINT msg, WPARAM wParam, LPARA
 							mir_snprintf(buf, sizeof(buf), Translate("Sounds are %s. Click to toggle status, hold SHIFT and click to set for all open containers"), pContainer->dwFlags & CNT_NOSOUND ? Translate("disabled") : Translate("enabled"));
                             CallService("mToolTip/ShowTip", (WPARAM)buf, (LPARAM)&ti);
 #endif
+							tooltip_active = TRUE;
                         }
                         else if((int)iconNum == status_icon_list_size + 1 && dat) {
                             int mtnStatus = (int)DBGetContactSettingByte(dat->hContact, SRMSGMOD, SRMSGSET_TYPING, DBGetContactSettingByte(NULL, SRMSGMOD, SRMSGSET_TYPINGNEW, SRMSGDEFSET_TYPINGNEW));
 #if defined(_UNICODE)
 
-                            if(ServiceExists("mToolTip/ShowTipW")) {
+                            if(fHaveUCTip) {
 								wchar_t wBuf[512];
 
 								mir_sntprintf(wBuf, safe_sizeof(wBuf), TranslateT("Sending typing notifications is %s."), mtnStatus ? TranslateT("enabled") : TranslateT("disabled"));
@@ -498,6 +502,7 @@ LRESULT CALLBACK StatusBarSubclassProc(HWND hWnd, UINT msg, WPARAM wParam, LPARA
                             mir_snprintf(buf, sizeof(buf), Translate("Sending typing notifications is %s."), mtnStatus ? Translate("enabled") : Translate("disabled"));
                             CallService("mToolTip/ShowTip", (WPARAM)buf, (LPARAM)&ti);
 #endif
+							tooltip_active = TRUE;
                         }
                         else {
                             for(i = 0; current && i < iconNum; i++) 
@@ -508,7 +513,37 @@ LRESULT CALLBACK StatusBarSubclassProc(HWND hWnd, UINT msg, WPARAM wParam, LPARA
                                 tooltip_active = TRUE;
                             }
                         }
-                        break;
+                    }
+                    SendMessage(hWnd, SB_GETRECT, 1, (LPARAM)&rc);
+                    if(dat && PtInRect(&rc,pt)) {
+	                    int iLength = 0;
+#if defined(_UNICODE)
+                        GETTEXTLENGTHEX gtxl = {0};
+
+                        gtxl.codepage = CP_UTF8;
+                        gtxl.flags = GTL_DEFAULT | GTL_PRECISE | GTL_NUMBYTES;
+                        iLength = SendDlgItemMessage(dat->hwnd, dat->bType == SESSIONTYPE_IM ? IDC_MESSAGE : IDC_CHAT_MESSAGE, EM_GETTEXTLENGTHEX, (WPARAM)&gtxl, 0);
+                        tooltip_active = TRUE;
+                        if(fHaveUCTip) {
+                            wchar_t wBuf[512];
+                            wchar_t *szFormat = _T("There are %d pending send jobs. Message length: %d bytes, message length limit: %d bytes");
+
+                            mir_sntprintf(wBuf, safe_sizeof(wBuf), TranslateTS(szFormat), dat->iOpenJobs, iLength, dat->nMax ? dat->nMax : 20000);
+                            CallService("mToolTip/ShowTipW", (WPARAM)wBuf, (LPARAM)&ti);
+                        }
+                        else {
+                            char buf[512];
+                            char *szFormat = "There are %d pending send jobs. Message length: %d bytes, message length limit: %d bytes";
+
+                            mir_snprintf(buf, sizeof(buf), Translate(szFormat), dat->iOpenJobs, iLength, dat->nMax ? dat->nMax : 20000);
+                            CallService("mToolTip/ShowTip", (WPARAM)buf, (LPARAM)&ti);
+                        }
+#else
+						char buf[512];
+                        iLength = GetWindowTextLength(GetDlgItem(dat->hwnd, dat->bType == SESSIONTYPE_IM ? IDC_MESSAGE : IDC_CHAT_MESSAGE));
+                        mir_snprintf(buf, sizeof(buf), Translate(szFormat), dat->iOpenJobs, iLength, dat->nMax ? dat->nMax : 20000);
+                        CallService("mToolTip/ShowTip", (WPARAM)buf, (LPARAM)&ti);
+#endif
                     }
                 }
             }
