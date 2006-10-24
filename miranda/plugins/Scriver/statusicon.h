@@ -11,6 +11,6 @@ int DeinitStatusIcons();
 
 int  GetStatusIconsCount();
 void DrawStatusIcons(HANDLE hContact, HDC hdc, RECT r, int gap);
-void CheckStatusIconClick(HANDLE hContact, HWND hwndFrom, POINT pt, RECT rc, int gap);
+void CheckStatusIconClick(HANDLE hContact, HWND hwndFrom, POINT pt, RECT rc, int gap, int flags);
 
 #endif

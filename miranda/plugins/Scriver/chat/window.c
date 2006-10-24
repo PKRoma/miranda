@@ -1244,12 +1244,8 @@ BOOL CALLBACK RoomWndProc(HWND hwndDlg,UINT uMsg,WPARAM wParam,LPARAM lParam)
 	case DM_UPDATETABCONTROL:
 		{
 			TabControlData tcd;
-			TCHAR szTemp [30];
-			lstrcpyn(szTemp, si->ptszName, 21);
-			if (lstrlen(si->ptszName) >20)
-				lstrcpyn(szTemp+20, _T("..."), 4);
 			tcd.iFlags = TCDF_TEXT;
-			tcd.pszText = szTemp;
+			tcd.pszText = si->ptszName;
 			SendMessage(GetParent(hwndDlg), CM_UPDATETABCONTROL, (WPARAM) &tcd, (LPARAM) hwndDlg);
 
 		}
