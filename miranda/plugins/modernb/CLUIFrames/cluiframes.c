@@ -798,8 +798,9 @@ int LocateStorePosition(int Frameid,int maxstored)
   char *frmname,settingname[255];
 
   storpos=-1;
-  for(i=0;i<maxstored;i++) {
-		mir_snprintf(settingname,sizeof(settingname),"%s%d","Name",i);
+  for(i=0;i<maxstored;i++) 
+  {
+	mir_snprintf(settingname,sizeof(settingname),"%s%d","Name",i);
     frmname=DBGetStringA(0,CLUIFrameModule,settingname);
     if(frmname==NULL) continue;
     if(_strcmpi(frmname,Frames[Frameid].name)==0) {
@@ -2149,7 +2150,8 @@ static int CLUIFramesRemoveFrame(WPARAM wParam,LPARAM lParam)
   if (Frames[pos].TitleBar.tbname!=NULL) free(Frames[pos].TitleBar.tbname);
   if (Frames[pos].TitleBar.tooltip!=NULL) free(Frames[pos].TitleBar.tooltip);
  
-  {
+ /*
+ {
   CallService(MS_CLIST_REMOVECONTEXTFRAMEMENUITEM,(WPARAM)Frames[pos].MenuHandles.MainMenuItem,0);
   CallService(MS_CLIST_REMOVECONTEXTFRAMEMENUITEM,(WPARAM)Frames[pos].MenuHandles.MIAlignBottom,0);
   CallService(MS_CLIST_REMOVECONTEXTFRAMEMENUITEM,(WPARAM)Frames[pos].MenuHandles.MIAlignClient,0);
@@ -2163,7 +2165,7 @@ static int CLUIFramesRemoveFrame(WPARAM wParam,LPARAM lParam)
   CallService(MS_CLIST_REMOVECONTEXTFRAMEMENUITEM,(WPARAM)Frames[pos].MenuHandles.MITitle,0);
   CallService(MS_CLIST_REMOVECONTEXTFRAMEMENUITEM,(WPARAM)Frames[pos].MenuHandles.MIVisible,0);
   }
-	
+*/	
   DestroyWindow(Frames[pos].hWnd);
   Frames[pos].hWnd=(HWND)-1;
   DestroyWindow(Frames[pos].TitleBar.hwnd);

@@ -44,7 +44,7 @@ void __cdecl forkthread_r(struct FORK_ARG *fa)
 	return;
 }
 
-unsigned long forkthread (
+unsigned long mir_forkthread (
 	void (__cdecl *threadcode)(void*),
 	unsigned long stacksize,
 	void *arg

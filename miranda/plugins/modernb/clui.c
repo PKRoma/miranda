@@ -1058,23 +1058,27 @@ static void CLUI_SnappingToEdge(HWND hwnd, WINDOWPOS * wp) //by ZORG
 
 int CALLBACK CLUI_SyncGetPDNCE(WPARAM wParam, LPARAM lParam)
 {
+    //log0("CLUI_SyncGetPDNCE");
     return CListSettings_GetCopyFromCache((pdisplayNameCacheEntry)lParam);
 }
 
 int CALLBACK CLUI_SyncSetPDNCE(WPARAM wParam, LPARAM lParam)
 {
- return CListSettings_SetToCache((pdisplayNameCacheEntry)lParam);
+    //log0("CLUI_SyncSetPDNCE");
+    return CListSettings_SetToCache((pdisplayNameCacheEntry)lParam);
 }
 
 int CALLBACK CLUI_SyncGetShortData(WPARAM wParam, LPARAM lParam)
 {
     HWND hwnd=(HWND) wParam;
     struct ClcData * dat=(struct ClcData * )GetWindowLong(hwnd,0);
+    //log0("CLUI_SyncGetShortData");
     return CLC_GetShortData(dat,(struct SHORTDATA *)lParam);
 }
 
 int CALLBACK CLUI_SyncSmoothAnimation(WPARAM wParam, LPARAM lParam)
 {
+    //log0("CLUI_SyncSmoothAnimation");
     return CLUI_SmoothAlphaThreadTransition((HWND)lParam);
 }
 
@@ -2594,7 +2598,7 @@ int CLUI_SmoothAlphaTransition(HWND hwnd, BYTE GoalAlpha, BOOL wParam)
             {
                 mutex_bAnimationInProgress=1;
                 if (g_bSmoothAnimation)
-                    g_dwSmoothAnimationThreadID=(DWORD)forkthread(CLUI_SmoothAnimationThreadProc,0,pcli->hwndContactList);	
+                    g_dwSmoothAnimationThreadID=(DWORD)mir_forkthread(CLUI_SmoothAnimationThreadProc,pcli->hwndContactList);	
 
             }
         }

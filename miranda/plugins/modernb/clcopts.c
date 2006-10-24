@@ -1028,7 +1028,7 @@ struct CheckBoxToStyleEx_t {
 
           if(!SendMessage(GetParent(hwndDlg),PSM_ISEXPERT,0,0))
             SwitchTextDlgToMode(hwndDlg,0);
-          g_dwFillFontListThreadID=(DWORD)forkthread(FillFontListThread,0,hwndDlg);				
+          g_dwFillFontListThreadID=(DWORD)mir_forkthread(FillFontListThread,hwndDlg);				
           {	int i,itemId,fontId;
           LOGFONTA lf={0};
           COLORREF colour;

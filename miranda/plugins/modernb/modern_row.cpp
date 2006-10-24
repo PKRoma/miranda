@@ -58,7 +58,7 @@ extern "C"
   #include "m_database.h"
   #include "m_system.h"  
   char * DBGetStringA(HANDLE, const char*, const char*);
-	#include "forkthread.h"
+	#include "mir_forkthread.h"
 	#include "win2k.h"
   */
   #include "commonheaders.h"

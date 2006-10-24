@@ -80,14 +80,21 @@ static int handleCompare( void* c1, void* c2 )
 //		i++;
 //}	}
 
+extern CRITICAL_SECTION LockCacheChain;
+extern CRITICAL_SECTION AAMLockChain;
+
 void InitDisplayNameCache(void)
 {
 	int i=0;
+    InitializeCriticalSection(&LockCacheChain);
+    InitializeCriticalSection(&AAMLockChain);
 	clistCache = li.List_Create( 0, 50 );
 	clistCache->sortFunc = handleCompare;
 }
 void FreeDisplayNameCache()
 {
+    DeleteCriticalSection(&LockCacheChain);
+    DeleteCriticalSection(&AAMLockChain);
 	if ( clistCache != NULL ) {
 		int i;
 		for ( i = 0; i < clistCache->realCount; i++) {

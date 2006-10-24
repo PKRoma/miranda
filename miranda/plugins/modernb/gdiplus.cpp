@@ -22,7 +22,7 @@
 #include <direct.h>
 #include <math.h>
 #include "resource.h"
-#include "forkthread.h"
+//#include "mir_forkthread.h"
 #include <win2k.h>
 //#include <newpluginapi.h>
 //#include <m_clist.h>

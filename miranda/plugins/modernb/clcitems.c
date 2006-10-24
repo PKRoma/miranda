@@ -647,7 +647,6 @@ struct ClcContact* cliCreateClcContact( void )
 ClcCacheEntryBase* cliCreateCacheItem( HANDLE hContact )
 {
 	pdisplayNameCacheEntry p = (pdisplayNameCacheEntry)mir_calloc( 1, sizeof( displayNameCacheEntry ));
-	TRACEVAR("cliCreateCacheItem, hContact=%d",hContact);
 	if ( p )
 	{
 		memset(p,0,sizeof( displayNameCacheEntry ));
@@ -666,7 +665,6 @@ ClcCacheEntryBase* cliCreateCacheItem( HANDLE hContact )
 void cliInvalidateDisplayNameCacheEntry(HANDLE hContact)
 {	
 	pdisplayNameCacheEntry p;
-    TRACEVAR("cliInvalidateDisplayNameCacheEntry, hContact=%d",hContact);
 	p = (pdisplayNameCacheEntry) pcli->pfnGetCacheEntry(hContact);
 	if (p) InvalidateDNCEbyPointer(hContact,p,0);
 	return;

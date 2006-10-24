@@ -571,23 +571,6 @@
 				</FileConfiguration>
 			</File>
 			<File
-				RelativePath=".\forkthread.c">
-				<FileConfiguration
-					Name="Release|Win32">
-					<Tool
-						Name="VCCLCompilerTool"
-						UsePrecompiledHeader="3"
-						PrecompiledHeaderThrough="commonheaders.h"/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Release Unicode|Win32">
-					<Tool
-						Name="VCCLCompilerTool"
-						UsePrecompiledHeader="3"
-						PrecompiledHeaderThrough="commonheaders.h"/>
-				</FileConfiguration>
-			</File>
-			<File
 				RelativePath=".\genmenu.c">
 			</File>
 			<File
@@ -934,9 +917,6 @@
 			</File>
 			<File
 				RelativePath=".\commonprototypes.h">
-			</File>
-			<File
-				RelativePath=".\forkthread.h">
 			</File>
 			<File
 				RelativePath=".\genmenu.h">

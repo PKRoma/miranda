@@ -66,8 +66,8 @@ typedef struct _ASK_AWAYMSG_CHAIN {
 ASK_AWAYMSG_CHAIN * mpAskAwayMsgFirstChain = NULL;
 ASK_AWAYMSG_CHAIN * mpAskAwayMsgLastChain  = NULL;
 
-BOOL b_aam_LockChainAdd		= FALSE;
-BOOL b_aam_LockChainDel	    = FALSE;
+CRITICAL_SECTION AAMLockChain;
+
 
 DWORD dwRequestTick		= 0;
 
@@ -121,12 +121,7 @@ int cache_CallProcSync(PSYNCCALLBACKPROC pfnProc, WPARAM wParam, LPARAM lParam)
 static int cache_AskAwayMsg_AddHandleToChain(HANDLE hContact)
 {
     ASK_AWAYMSG_CHAIN * workChain;
-    while (b_aam_LockChainAdd) 
-    {
-        SleepEx(0,TRUE);
-        if (MirandaExiting()) return 0;
-    }
-    b_aam_LockChainDel=1;
+    EnterCriticalSection(&AAMLockChain);
     {
         //check that handle is present
         ASK_AWAYMSG_CHAIN * wChain;
@@ -136,7 +131,7 @@ static int cache_AskAwayMsg_AddHandleToChain(HANDLE hContact)
             do {
                 if (wChain->ContactRequest==hContact)
                 {
-                    b_aam_LockChainDel=0;
+                    LeaveCriticalSection(&AAMLockChain);
                     return 0;
                 }
             } while(wChain=(ASK_AWAYMSG_CHAIN *)wChain->Next);
@@ -156,7 +151,7 @@ static int cache_AskAwayMsg_AddHandleToChain(HANDLE hContact)
     mpAskAwayMsgLastChain=workChain;
     workChain->Next=NULL;
     workChain->ContactRequest=hContact;
-    b_aam_LockChainDel=0;
+    LeaveCriticalSection(&AAMLockChain);
     return 1;
 }
 
@@ -168,12 +163,7 @@ static HANDLE cache_AskAwayMsg_GetCurrentChain()
 {
     struct ASK_AWAYMSG_CHAIN * workChain;
     HANDLE res=NULL;
-    while (b_aam_LockChainDel)   
-    {
-        SleepEx(0,TRUE);
-        if (MirandaExiting()) return 0;
-    }
-    b_aam_LockChainAdd=TRUE;
+    EnterCriticalSection(&AAMLockChain);
     if (mpAskAwayMsgFirstChain)
     {
         res=mpAskAwayMsgFirstChain->ContactRequest;
@@ -181,7 +171,7 @@ static HANDLE cache_AskAwayMsg_GetCurrentChain()
         mir_free_and_nill(mpAskAwayMsgFirstChain);
         mpAskAwayMsgFirstChain=(ASK_AWAYMSG_CHAIN *)workChain;
     }
-    b_aam_LockChainAdd=FALSE;
+    LeaveCriticalSection(&AAMLockChain);
     return res;
 }
 
@@ -268,7 +258,7 @@ void Cache_ReAskAwayMsg(HANDLE wParam)
     }
     res=cache_AskAwayMsg_AddHandleToChain(wParam); 
     if ( res && !g_dwAskAwayMsgThreadID) 
-        g_dwAskAwayMsgThreadID=(DWORD)forkthread(Cache_AskAwayMsgThreadProc,0,0);
+        g_dwAskAwayMsgThreadID=(DWORD)mir_forkthread(Cache_AskAwayMsgThreadProc,0);
 
     return;
 }
@@ -311,16 +301,17 @@ typedef struct _CacheAskChain {
 
 CacheAskChain * FirstCacheChain=NULL;
 CacheAskChain * LastCacheChain=NULL;
-BOOL LockCacheChain=0;
+CRITICAL_SECTION LockCacheChain;
+
 
 BOOL GetCacheChain(CacheAskChain * mpChain)
 {
-    while (LockCacheChain) 
+    EnterCriticalSection(&LockCacheChain);
+    if (!FirstCacheChain)
     {
-        SleepEx(0,TRUE);
-        if (MirandaExiting()) return FALSE;
+        LeaveCriticalSection(&LockCacheChain);
+        return FALSE;
     }
-    if (!FirstCacheChain) return FALSE;
     else if (mpChain)
     {
         CacheAskChain * ch;
@@ -329,8 +320,10 @@ BOOL GetCacheChain(CacheAskChain * mpChain)
         FirstCacheChain=(CacheAskChain *)ch->Next;
         if (!FirstCacheChain) LastCacheChain=NULL;
         mir_free_and_nill(ch);
+        LeaveCriticalSection(&LockCacheChain);
         return TRUE;
     }
+    LeaveCriticalSection(&LockCacheChain);
     return FALSE;
 }
 
@@ -389,17 +382,11 @@ int Cache_GetTextThreadProc(void * lpParam)
 }
 int AddToCacheChain(struct ClcData *dat,struct ClcContact *contact,HANDLE ContactRequest)
 {
-    while (LockCacheChain) 
-    {
-        SleepEx(0,TRUE);
-        if (MirandaExiting()) return 0;
-    }
-    LockCacheChain=TRUE;
+    EnterCriticalSection(&LockCacheChain);    
     {
         CacheAskChain * mpChain=(CacheAskChain *)mir_alloc(sizeof(CacheAskChain));
         mpChain->ContactRequest=ContactRequest;
         mpChain->dat=dat;
-        //		mpChain->contact=contact;
         mpChain->Next=NULL;
         if (LastCacheChain) 
         {
@@ -413,11 +400,11 @@ int AddToCacheChain(struct ClcData *dat,struct ClcContact *contact,HANDLE Contac
             if ( !g_dwGetTextThreadID)
             {
                 //StartThreadHere();
-                g_dwGetTextThreadID=(DWORD)forkthread(Cache_GetTextThreadProc,0,0);
+                g_dwGetTextThreadID=(DWORD)mir_forkthread(Cache_GetTextThreadProc,0);
             }
         }
     }
-    LockCacheChain=FALSE;
+    LeaveCriticalSection(&LockCacheChain);
     return FALSE;
 }
 

@@ -816,6 +816,8 @@ static void CLCPaint_ModernInternalPaintRowItems(HWND hwnd, HDC hdcMem, struct C
     BOOL InClistWindow=(dat->hWnd==pcli->hwndContactTree);
     PDNCE pdnce=NULL;
     int height=RowHeight_CalcRowHeight(dat, hwnd, Drawing, -1);
+
+
     if (Drawing->type == CLCIT_CONTACT)
         pdnce=(PDNCE)pcli->pfnGetCacheEntry(Drawing->hContact);
 
@@ -2889,12 +2891,14 @@ static void CLCPaint_InternalPaintRowItems(HWND hwnd, HDC hdcMem, struct ClcData
 /************************************************************************/
 static void CLCPaint_InternalPaintClc(HWND hwnd,struct ClcData *dat,HDC hdc,RECT *rcPaint)
 {
-    HDC hdcMem=NULL,
-        hdcMem2=NULL;
+    HDC     hdcMem=NULL,
+            hdcMem2=NULL;
+    
     HBITMAP oldbmp=NULL,
             oldbmp2=NULL,
             hBmpOsb=NULL,
             hBmpOsb2=NULL;
+
     RECT clRect;
     HFONT hdcMemOldFont;
     int y,indent,subident, subindex, line_num;
@@ -2911,6 +2915,7 @@ static void CLCPaint_InternalPaintClc(HWND hwnd,struct ClcData *dat,HDC hdc,RECT
     COLORREF tmpbkcolour = style&CLS_CONTACTLIST ? ( /*dat->useWindowsColours ? GetSysColor(COLOR_3DFACE) :*/ dat->bkColour ) : dat->bkColour;
     DWORD currentCounter;
 
+    //log0("+++ CLCPaint_InternalPaintClc +++");
     if (!IsWindowVisible(hwnd)) return;
     if(dat->greyoutFlags&pcli->pfnClcStatusToPf2(status) || style&WS_DISABLED) grey=1;
     else if(GetFocus()!=hwnd && dat->greyoutFlags&GREYF_UNFOCUS) grey=1;
