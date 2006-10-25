@@ -33,9 +33,9 @@ typedef DWORD (WINAPI *PSLWA)(HWND, DWORD, BYTE, DWORD);
 
 typedef struct ErrorWindowDataStruct
 {
-	char *	szName;
-	char *	szDescription;
-	char *	szText;
+	TCHAR*	szName;
+	TCHAR*	szDescription;
+	char*	szText;
 	int		textSize;
 	int		flags;
 	HWND	hwndParent;

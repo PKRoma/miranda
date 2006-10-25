@@ -108,7 +108,6 @@ static TCHAR *GetRichEditSelection(HWND hwndDlg) {
 }
 
 static TCHAR *GetIEViewSelection(struct MessageWindowData *dat) {
-	TCHAR *buffer;
 	IEVIEWEVENT event;
 	ZeroMemory(&event, sizeof(event));
 	event.cbSize = sizeof(event);
@@ -121,8 +120,7 @@ static TCHAR *GetIEViewSelection(struct MessageWindowData *dat) {
 	event.hwnd = dat->hwndLog;
 	event.hContact = dat->hContact;
 	event.iType = IEE_GET_SELECTION;
-	buffer = (TCHAR *)CallService(MS_IEVIEW_EVENT, 0, (LPARAM)&event);
-	return buffer;
+	return mir_tstrdup((TCHAR *)CallService(MS_IEVIEW_EVENT, 0, (LPARAM)&event));
 }
 
 static TCHAR *GetQuotedTextW(TCHAR * text) {
@@ -2142,12 +2140,12 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
 						dat->sendInfo[i].timeout+=1000;
 						if (dat->sendInfo[i].timeout >= timeout) {
 							ErrorWindowData *ewd = (ErrorWindowData *) mir_alloc(sizeof(ErrorWindowData));
-							ewd->szName = _strdup ((char *) CallService(MS_CLIST_GETCONTACTDISPLAYNAME, (WPARAM) dat->hContact, 0));
-							ewd->szDescription = _strdup(Translate("The message send timed out."));
+							ewd->szName = GetNickname(dat->hContact, dat->szProto);
+							ewd->szDescription = mir_tstrdup(TranslateT("The message send timed out."));
 							ewd->textSize = dat->sendInfo[i].sendBufferSize;
 							ewd->szText = (char *)mir_alloc(dat->sendInfo[i].sendBufferSize);
-							ewd->flags = dat->sendInfo[i].flags;
 							memcpy(ewd->szText, dat->sendInfo[i].sendBuffer, dat->sendInfo[i].sendBufferSize);
+							ewd->flags = dat->sendInfo[i].flags;
 							ewd->hwndParent = hwndDlg;
 							if (dat->messagesInProgress>0) {
 								dat->messagesInProgress--;
@@ -2439,6 +2437,7 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
 			{
 				DBEVENTINFO dbei = { 0 };
 				SETTEXTEX  st;
+				TCHAR *buffer = NULL;
 				st.flags = ST_SELECTION;
 #ifdef _UNICODE
 				st.codepage = 1200;
@@ -2448,24 +2447,16 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
 				if (dat->hDbEventLast==NULL) break;
 				if (dat->hwndLog != NULL) {
 					TCHAR *buffer = GetIEViewSelection(dat);
-					if (buffer!=NULL) {
-						TCHAR *quotedBuffer = GetQuotedTextW(buffer);
-						SendMessage(GetDlgItem(hwndDlg, IDC_MESSAGE), EM_SETTEXTEX, (WPARAM) &st, (LPARAM)quotedBuffer);
-						free (quotedBuffer);
-						SetFocus(GetDlgItem(hwndDlg, IDC_MESSAGE));
-						break;
-					}
 				} else {
 					TCHAR *buffer = GetRichEditSelection(hwndDlg);
-					if (buffer!=NULL) {
-						TCHAR *quotedBuffer = GetQuotedTextW(buffer);
-						SendMessage(GetDlgItem(hwndDlg, IDC_MESSAGE), EM_SETTEXTEX, (WPARAM) &st, (LPARAM)quotedBuffer);
-						free (quotedBuffer);
-						mir_free(buffer);
-						SetFocus(GetDlgItem(hwndDlg, IDC_MESSAGE));
-						break;
-					}
-
+				}
+				if (buffer!=NULL) {
+					TCHAR *quotedBuffer = GetQuotedTextW(buffer);
+					SendMessage(GetDlgItem(hwndDlg, IDC_MESSAGE), EM_SETTEXTEX, (WPARAM) &st, (LPARAM)quotedBuffer);
+					mir_free(quotedBuffer);
+					mir_free(buffer);
+					SetFocus(GetDlgItem(hwndDlg, IDC_MESSAGE));
+					break;
 				}
 				dbei.cbSize = sizeof(dbei);
 				dbei.cbBlob = CallService(MS_DB_EVENT_GETBLOBSIZE, (WPARAM) dat->hDbEventLast, 0);
@@ -2495,7 +2486,7 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
 					if (buffer!=NULL) {
 						TCHAR *quotedBuffer = GetQuotedTextW(buffer);
 						SendMessage(GetDlgItem(hwndDlg, IDC_MESSAGE), EM_SETTEXTEX, (WPARAM) &st, (LPARAM)quotedBuffer);
-						free (quotedBuffer);
+						mir_free(quotedBuffer);
 					}
 				}
 				mir_free(dbei.pBlob);
@@ -2763,12 +2754,12 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
 				}
 				if (i < dat->sendCount) {
 					ErrorWindowData *ewd = (ErrorWindowData *) mir_alloc(sizeof(ErrorWindowData));
-					ewd->szName = _strdup ((char *) CallService(MS_CLIST_GETCONTACTDISPLAYNAME, (WPARAM) dat->hContact, 0));
-					ewd->szDescription = _strdup((char *) ack->lParam);
+					ewd->szName = GetNickname(dat->hContact, dat->szProto);
+					ewd->szDescription = a2t((char *) ack->lParam);
 					ewd->textSize = dat->sendInfo[i].sendBufferSize;
 					ewd->szText = (char *)mir_alloc(dat->sendInfo[i].sendBufferSize);
-					ewd->flags = dat->sendInfo[i].flags;
 					memcpy(ewd->szText, dat->sendInfo[i].sendBuffer, dat->sendInfo[i].sendBufferSize);
+					ewd->flags = dat->sendInfo[i].flags;
 					ewd->hwndParent = hwndDlg;
 					CreateDialogParam(g_hInst, MAKEINTRESOURCE(IDD_MSGSENDERROR), hwndDlg, ErrorDlgProc, (LPARAM) ewd);//hwndDlg
 					RemoveSendBuffer(dat, i);

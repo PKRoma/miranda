@@ -521,10 +521,12 @@ int LoadSendRecvMessageModule(void)
    RichUtil_Load();
    OleInitialize(NULL);
    InitREOleCallback();
+   InitStatusIcons();
    hEventOptInitialise = HookEvent(ME_OPT_INITIALISE, OptInitialise);
    hEventDbEventAdded = HookEvent(ME_DB_EVENT_ADDED, MessageEventAdded);
    hEventDbSettingChange = HookEvent(ME_DB_CONTACT_SETTINGCHANGED, MessageSettingChanged);
    hEventContactDeleted = HookEvent(ME_DB_CONTACT_DELETED, ContactDeleted);
+   //ME_MSG_ICONPRESSED
    HookEvent(ME_SYSTEM_MODULESLOADED, SplitmsgModulesLoaded);
    HookEvent(ME_SKIN_ICONSCHANGED, IconsChanged);
    HookEvent(ME_PROTO_CONTACTISTYPING, TypingMessage);
@@ -549,7 +551,6 @@ int LoadSendRecvMessageModule(void)
    if (hCurHyperlinkHand == NULL)
       hCurHyperlinkHand = LoadCursor(g_hInst, MAKEINTRESOURCE(IDC_HYPERLINKHAND));
    hDragCursor = LoadCursor(g_hInst,  MAKEINTRESOURCE(IDC_DRAGCURSOR));
-   InitStatusIcons();
    return 0;
 }
 
