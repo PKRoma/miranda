@@ -90,6 +90,7 @@ struct MessageWindowData
 #define HM_AVATARACK         (WM_USER+28)
 #define HM_ACKEVENT          (WM_USER+29)
 #define DM_GETWINDOWSTATE    (WM_USER+30)
+#define DM_STATUSICONCHANGE  (WM_USER+31)
 
 #define EVENTTYPE_STATUSCHANGE 25368
 

@@ -551,6 +551,9 @@
 						BrowseInformation="1"/>
 				</FileConfiguration>
 			</File>
+			<File
+				RelativePath=".\statusicon.c">
+			</File>
 		</Filter>
 		<Filter
 			Name="Header Files"
@@ -572,6 +575,9 @@
 			</File>
 			<File
 				RelativePath=".\richutil.h">
+			</File>
+			<File
+				RelativePath=".\statusicon.h">
 			</File>
 		</Filter>
 		<Filter

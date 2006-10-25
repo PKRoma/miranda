@@ -160,6 +160,7 @@ CLEAN :
 	-@erase "$(INTDIR)\msgtimedout.obj"
 	-@erase "$(INTDIR)\resource.res"
 	-@erase "$(INTDIR)\richutil.obj"
+	-@erase "$(INTDIR)\statusicon.obj"
 	-@erase "$(INTDIR)\srmm.obj"
 	-@erase "$(INTDIR)\vc60.idb"
 	-@erase "$(INTDIR)\vc60.pdb"
@@ -189,6 +190,7 @@ LINK32_OBJS= \
 	"$(INTDIR)\msgs.obj" \
 	"$(INTDIR)\msgtimedout.obj" \
 	"$(INTDIR)\richutil.obj" \
+	"$(INTDIR)\statusicon.obj" \
 	"$(INTDIR)\srmm.obj" \
 	"$(INTDIR)\resource.res"
 
@@ -244,6 +246,7 @@ LINK32_OBJS= \
 	"$(INTDIR)\msgs.obj" \
 	"$(INTDIR)\msgtimedout.obj" \
 	"$(INTDIR)\richutil.obj" \
+	"$(INTDIR)\statusicon.obj" \
 	"$(INTDIR)\srmm.obj" \
 	"$(INTDIR)\resource.res"
 
@@ -321,6 +324,11 @@ SOURCE=.\msgoptions.c
 
 
 SOURCE=.\msgs.c
+
+"$(INTDIR)\msgs.obj" : $(SOURCE) "$(INTDIR)"
+
+
+SOURCE=.\statusicon.c
 
 "$(INTDIR)\msgs.obj" : $(SOURCE) "$(INTDIR)"
 

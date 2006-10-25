@@ -23,6 +23,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #define _USE_32BIT_TIME_T
 
 #include "commonheaders.h"
+#include "statusicon.h"
 #pragma hdrstop
 
 #include <malloc.h>
@@ -32,7 +33,8 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #define TIMERID_TYPE         2
 #define TIMEOUT_FLASHWND     900
 #define TIMEOUT_TYPEOFF      10000      //send type off after 10 seconds of inactivity
-#define SB_CHAR_WIDTH        45;
+#define SB_CHAR_WIDTH        45
+#define SB_GRIP_WIDTH        20         // pixels - buffer used to prevent sizegrip from overwriting statusbar icons
 #define VALID_AVATAR(x)      (x==PA_FORMAT_PNG||x==PA_FORMAT_JPEG||x==PA_FORMAT_ICON||x==PA_FORMAT_BMP||x==PA_FORMAT_GIF)
 
 #if defined(_UNICODE)
@@ -144,6 +146,8 @@ static void SetDialogToType(HWND hwndDlg)
 {
 	struct MessageWindowData *dat;
 	WINDOWPLACEMENT pl = { 0 };
+	int icons_width;
+	RECT rc;
 
 	dat = (struct MessageWindowData *) GetWindowLong(hwndDlg, GWL_USERDATA);
 	if (dat->hContact) {
@@ -165,19 +169,23 @@ static void SetDialogToType(HWND hwndDlg)
 		dat->hwndStatus = CreateWindowEx(0, STATUSCLASSNAME, NULL, WS_CHILD | WS_VISIBLE | grip, 0, 0, 0, 0, hwndDlg, NULL, g_hInst, NULL);
 		SendMessage(dat->hwndStatus, SB_SETMINHEIGHT, GetSystemMetrics(SM_CYSMICON), 0);
 	}
-	if (DBGetContactSettingByte(NULL, SRMMMOD, SRMSGSET_CHARCOUNT, SRMSGDEFSET_CHARCOUNT)) {
-		RECT rc;
-		int statwidths[2];
 
-		GetWindowRect(dat->hwndStatus, &rc);
-		statwidths[0] = rc.right - rc.left - SB_CHAR_WIDTH;
-		statwidths[1] = -1;
-		SendMessage(dat->hwndStatus, SB_SETPARTS, 2, (LPARAM) statwidths);
+	icons_width = status_icon_list_size * (GetSystemMetrics(SM_CXSMICON) + 2) + SB_GRIP_WIDTH; 
+	GetWindowRect(dat->hwndStatus, &rc);
+	if (DBGetContactSettingByte(NULL, SRMMMOD, SRMSGSET_CHARCOUNT, SRMSGDEFSET_CHARCOUNT)) {
+		int statwidths[3];
+
+		statwidths[0] = (rc.right - rc.left - SB_CHAR_WIDTH - icons_width);
+		statwidths[1] = (rc.right - rc.left - icons_width);
+		statwidths[2] = -1;
+		SendMessage(dat->hwndStatus, SB_SETPARTS, 3, (LPARAM) statwidths);
 	}
 	else {
-		int statwidths[] = { -1 };
+		int statwidths[2];
+		statwidths[0] = (rc.right - rc.left - icons_width);
+		statwidths[1] = -1;
 
-		SendMessage(dat->hwndStatus, SB_SETPARTS, 1, (LPARAM) statwidths);
+		SendMessage(dat->hwndStatus, SB_SETPARTS, 2, (LPARAM) statwidths);
 	}
 	UpdateReadChars(hwndDlg, dat->hwndStatus);
 	ShowWindow(GetDlgItem(hwndDlg, IDCANCEL), SW_HIDE);
@@ -545,7 +553,7 @@ static int MessageDialogResize(HWND hwndDlg, LPARAM lParam, UTILRESIZECONTROL * 
 
 static void UpdateReadChars(HWND hwndDlg, HWND hwndStatus)
 {
-	if (hwndStatus && SendMessage(hwndStatus, SB_GETPARTS, 0, 0) == 2) {
+	if (hwndStatus && SendMessage(hwndStatus, SB_GETPARTS, 0, 0) == 3) {
 		TCHAR buf[128];
 		int len = GetWindowTextLength(GetDlgItem(hwndDlg, IDC_MESSAGE));
 
@@ -729,6 +737,7 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
 					SendDlgItemMessage(hwndDlg, IDC_LOG, EM_LIMITTEXT, (WPARAM) sizeof(TCHAR) * 0x7FFFFFFF, 0);
 				}
 			}
+
 			OldMessageEditProc = (WNDPROC) SetWindowLong(GetDlgItem(hwndDlg, IDC_MESSAGE), GWL_WNDPROC, (LONG) MessageEditSubclassProc);
 			SendDlgItemMessage(hwndDlg, IDC_MESSAGE, EM_SUBCLASSED, 0, 0);
 			OldSplitterProc = (WNDPROC) SetWindowLong(GetDlgItem(hwndDlg, IDC_SPLITTER), GWL_WNDPROC, (LONG) SplitterSubclassProc);
@@ -766,7 +775,7 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
 
 						dbei.cbSize = sizeof(dbei);
 						if (dat->hDbEventFirst == NULL)
-							dbei.timestamp = time(NULL);
+							dbei.timestamp = (DWORD)time(NULL);
 						else
 							CallService(MS_DB_EVENT_GET, (WPARAM) dat->hDbEventFirst, (LPARAM) & dbei);
 						firstTime = dbei.timestamp - 60 * DBGetContactSettingWord(NULL, SRMMMOD, SRMSGSET_LOADTIME, SRMSGDEFSET_LOADTIME);
@@ -830,11 +839,21 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
 	case WM_CONTEXTMENU:
 	{
 		if (dat->hwndStatus && dat->hwndStatus == (HWND) wParam) {
-			POINT pt;
-			HMENU hMenu = (HMENU) CallService(MS_CLIST_MENUBUILDCONTACT, (WPARAM) dat->hContact, 0);
+			POINT pt, pt2;
+			HMENU hMenu;
+			RECT rc;
 
 			GetCursorPos(&pt);
-			TrackPopupMenu(hMenu, 0, pt.x, pt.y, 0, hwndDlg, NULL);
+			pt2.x = pt.x; pt2.y = pt.y;
+			ScreenToClient(dat->hwndStatus, &pt);
+
+			// no popup menu for status icons - this is handled via NM_RCLICK notification and the plugins that added the icons
+			SendMessage(dat->hwndStatus, SB_GETRECT, SendMessage(dat->hwndStatus, SB_GETPARTS, 0, 0) - 1, (LPARAM)&rc);
+			if (pt.x >= rc.left) break;
+
+			hMenu = (HMENU) CallService(MS_CLIST_MENUBUILDCONTACT, (WPARAM) dat->hContact, 0);
+
+			TrackPopupMenu(hMenu, 0, pt2.x, pt2.y, 0, hwndDlg, NULL);
 			DestroyMenu(hMenu);
 		}
 		break;
@@ -919,12 +938,10 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
 	{
 		dat->minEditBoxSize.cx = dat->minEditInit.right - dat->minEditInit.left;
 		dat->minEditBoxSize.cy = dat->minEditInit.bottom - dat->minEditInit.top;
-		if (g_dat->flags&SMF_AVATAR) {
+		if(g_dat->flags&SMF_AVATAR) {
 			SendMessage(hwndDlg, DM_AVATARCALCSIZE, 0, 0);
-			if(dat->avatarPic) {
-				if (dat->minEditBoxSize.cy<=dat->avatarHeight)
-					dat->minEditBoxSize.cy = dat->avatarHeight;
-			}
+			if(dat->avatarPic && dat->minEditBoxSize.cy<=dat->avatarHeight)
+				dat->minEditBoxSize.cy = dat->avatarHeight;
 		}
 		break;
 	}
@@ -1188,7 +1205,7 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
 								dbei.pBlob = (PBYTE) blob;
 								dbei.eventType = EVENTTYPE_STATUSCHANGE;
 								dbei.flags = 0;
-								dbei.timestamp = time(NULL);
+								dbei.timestamp = (DWORD)time(NULL);
 								dbei.szModule = dat->szProto;
 								hNewEvent = (HANDLE) CallService(MS_DB_EVENT_ADD, (WPARAM) dat->hContact, (LPARAM) & dbei);
 								if (dat->hDbEventFirst == NULL) {
@@ -1265,13 +1282,19 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
 			if (IsIconic(hwndDlg))
 				break;
 			if (dat->hwndStatus) {
+				int icons_width = (GetSystemMetrics(SM_CXSMICON) + 2) * status_icon_list_size + SB_GRIP_WIDTH;
+				RECT rc;
 				SendMessage(dat->hwndStatus, WM_SIZE, 0, 0);
-				if (SendMessage(dat->hwndStatus, SB_GETPARTS, 0, 0) == 2) {
+				GetWindowRect(dat->hwndStatus, &rc);
+				if (SendMessage(dat->hwndStatus, SB_GETPARTS, 0, 0) == 3) {
+					int statwidths[3];
+					statwidths[0] = (rc.right - rc.left - SB_CHAR_WIDTH - icons_width);
+					statwidths[1] = (rc.right - rc.left - icons_width);
+					statwidths[2] = -1;
+					SendMessage(dat->hwndStatus, SB_SETPARTS, 3, (LPARAM) statwidths);
+				} else {
 					int statwidths[2];
-					RECT rc;
-
-					GetWindowRect(dat->hwndStatus, &rc);
-					statwidths[0] = rc.right - rc.left - SB_CHAR_WIDTH;
+					statwidths[0] = (rc.right - rc.left - icons_width);
 					statwidths[1] = -1;
 					SendMessage(dat->hwndStatus, SB_SETPARTS, 2, (LPARAM) statwidths);
 				}
@@ -1455,7 +1478,11 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
 		case WM_DRAWITEM:
 			{
 				LPDRAWITEMSTRUCT dis = (LPDRAWITEMSTRUCT) lParam;
-				if (dis->hwndItem == GetDlgItem(hwndDlg, IDC_PROTOCOL)) {
+				if (dis->hwndItem == dat->hwndStatus) {
+					DrawStatusIcons(dat->hContact, dis->hDC, dis->rcItem, 2);
+					return 0;
+				}
+				else if (dis->hwndItem == GetDlgItem(hwndDlg, IDC_PROTOCOL)) {
 					if (dat->szProto) {
 						HICON hIcon;
 						int dwStatus;
@@ -1614,6 +1641,18 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
 				}
 				break;
 			case WM_NOTIFY:
+ 				if(dat && ((NMHDR *) lParam)->hwndFrom == dat->hwndStatus) {
+ 					if (((LPNMHDR) lParam)->code == NM_CLICK || ((LPNMHDR) lParam)->code == NM_RCLICK) {
+ 						NMMOUSE *nm = (NMMOUSE *) lParam;
+ 						RECT rc;
+		 
+						SendMessage(dat->hwndStatus, SB_GETRECT, SendMessage(dat->hwndStatus, SB_GETPARTS, 0, 0) - 1, (LPARAM)&rc);
+						if (nm->pt.x >= rc.left) {
+							CheckIconClick(dat->hContact, dat->hwndStatus, nm->pt, rc, 2, ((LPNMHDR) lParam)->code == NM_RCLICK ? MBCF_RIGHTBUTTON : 0);
+						}
+ 						return TRUE;
+ 					}	
+ 				}
 				switch (((NMHDR *) lParam)->idFrom) {
 			case IDC_LOG:
 				switch (((NMHDR *) lParam)->code) {
@@ -1771,7 +1810,7 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
 			dbei.flags = DBEF_SENT + (( dat->bIsRtl ) ? DBEF_RTL : 0 );
 
 			dbei.szModule = (char *) CallService(MS_PROTO_GETCONTACTBASEPROTO, (WPARAM) dat->hContact, 0);
-			dbei.timestamp = time(NULL);
+			dbei.timestamp = (DWORD)time(NULL);
 			dbei.cbBlob = lstrlenA(dat->sendBuffer) + 1;
 	#if defined( _UNICODE )
 			dbei.cbBlob *= sizeof(TCHAR) + 1;
@@ -1804,6 +1843,10 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
 			}
 			break;
 		}
+
+	case DM_STATUSICONCHANGE:
+		SendMessage(dat->hwndStatus, SB_SETTEXT, (WPARAM)(SBT_OWNERDRAW | (SendMessage(dat->hwndStatus, SB_GETPARTS, 0, 0) - 1)), (LPARAM)0);
+		return 0;
 	case WM_DESTROY:
 		NotifyLocalWinEvent(dat->hContact, hwndDlg, MSG_WINDOW_EVT_CLOSING);
 		if (dat->nTypeMode == PROTOTYPE_SELFTYPING_ON) {
