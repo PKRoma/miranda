@@ -1117,28 +1117,30 @@ LBL_InvalidCommand:
 			break;
 
 		case ' SNA':    //********* ANS: section 8.4 Getting Invited to a Switchboard Session
-			if ( info->mJoinedCount == 1 ) {
-				MsgQueueEntry E;
-				HANDLE hContact = info->mJoinedContacts[0];
-				if ( MsgQueue_GetNext( hContact, E ) != 0 ) {
-					do {
-						if ( E.msgSize == 0 ) {
-							info->sendMessage( E.msgType, E.message, E.flags );
-							MSN_SendBroadcast( hContact, ACKTYPE_MESSAGE, ACKRESULT_SUCCESS, ( HANDLE )E.seq, 0 );
+			if ( strcmp( params, "OK" ) == 0 ) {
+				info->mInitialContact = NULL;
+				if ( info->mJoinedCount == 1 ) {
+					MsgQueueEntry E;
+					HANDLE hContact = info->mJoinedContacts[0];
+					if ( MsgQueue_GetNext( hContact, E ) != 0 ) {
+						do {
+							if ( E.msgSize == 0 ) {
+								info->sendMessage( E.msgType, E.message, E.flags );
+								MSN_SendBroadcast( hContact, ACKTYPE_MESSAGE, ACKRESULT_SUCCESS, ( HANDLE )E.seq, 0 );
+							}
+							else info->sendRawMessage( E.msgType, E.message, E.msgSize );
+
+							mir_free( E.message );
+
+							if ( E.ft != NULL ) {
+								info->mMsnFtp = E.ft;
+							}
 						}
-						else info->sendRawMessage( E.msgType, E.message, E.msgSize );
+							while (MsgQueue_GetNext( hContact, E ) != 0 );
 
-						mir_free( E.message );
-
-						if ( E.ft != NULL ) {
-							info->mMsnFtp = E.ft;
-						}
-					}
-					while (MsgQueue_GetNext( hContact, E ) != 0 );
-
-					if ( MSN_GetByte( "EnableDeliveryPopup", 1 ))
-						MSN_ShowPopup( MSN_GetContactName( hContact ), MSN_Translate( "First message delivered" ), 0 );
-			}	}
+						if ( MSN_GetByte( "EnableDeliveryPopup", 1 ))
+							MSN_ShowPopup( MSN_GetContactName( hContact ), MSN_Translate( "First message delivered" ), 0 );
+			}	}	}
 
 			break;
 
@@ -1410,6 +1412,7 @@ LBL_InvalidCommand:
 					int temp_status = MSN_GetWord(hContact, "Status", ID_STATUS_OFFLINE);
 					if (temp_status == (WORD)ID_STATUS_OFFLINE)
 						MSN_SetWord( hContact, "Status", (WORD)ID_STATUS_INVISIBLE);
+
 					MSN_SetString( hContact, "PictContext", data.cmdstring );
 					if ( hContact != NULL ) {
 						char szSavedContext[ 256 ];
@@ -1768,7 +1771,7 @@ LBL_InvalidCommand:
 			ThreadData* newThread = new ThreadData;
 			strcpy( newThread->mServer, data.newServer );
 			newThread->mType = SERVER_SWITCHBOARD;
-			MSN_ContactJoined( newThread, MSN_HContactFromEmail( data.callerEmail, data.callerNick, false, true ));
+			newThread->mInitialContact = MSN_HContactFromEmail( data.callerEmail, data.callerNick, false, true );
 			mir_snprintf( newThread->mCookie, sizeof( newThread->mCookie ), "%s %d", data.authChallengeInfo, trid );
 
 			MSN_DebugLog( "Opening caller's switchboard server '%s'...", data.newServer );
