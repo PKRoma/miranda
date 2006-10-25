@@ -4,7 +4,7 @@
 //
 // Copyright © 2000,2001 Richard Hughes, Roland Rabien, Tristan Van de Vreede
 // Copyright © 2001,2002 Jon Keating, Richard Hughes
-// Copyright © 2002,2003,2004 Martin  berg, Sam Kothari, Robert Rainwater
+// Copyright © 2002,2003,2004 Martin Öberg, Sam Kothari, Robert Rainwater
 // Copyright © 2004,2005,2006 Joe Kucera
 //
 // This program is free software; you can redistribute it and/or
@@ -563,7 +563,7 @@ void handleServiceFam(unsigned char* pBuffer, WORD wBufferLength, snac_header* p
           SAFE_FREE(&file);
           break;
         default:
-          NetLog_Server("Reiceived UNKNOWN Avatar Status.");
+          NetLog_Server("Received UNKNOWN Avatar Status.");
         }
       }
     }
@@ -915,7 +915,10 @@ void handleServUINSettings(int nPort, serverthread_info *info)
     packDWord(&packet, CLIENTFEATURES);         // Client features
     packDWord(&packet, 0xffffffff);             // Abused timestamp
     packDWord(&packet, ICQ_PLUG_VERSION);       // Abused timestamp
-    packDWord(&packet, 0x00000000);             // Timestamp
+    if (ServiceExists("SecureIM/IsContactSecured"))
+      packDWord(&packet, 0x5AFEC0DE);           // SecureIM Abuse
+    else
+      packDWord(&packet, 0x00000000);           // Timestamp
     packWord(&packet, 0x0000);                  // Unknown
     packTLVWord(&packet, 0x001F, 0x0000);
 

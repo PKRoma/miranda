@@ -54,13 +54,20 @@ __________
 Changes
 _______
 
+0.3.7.5
+
+Bugfixes:
+  Fixed possible crash in avatar queue
+  Fixed special character conversion in Custom Status messages
+  Minor changes to client detection
+
+
 0.3.7.4
 
 Bugfixes:
   Some small fixes to Custom Status API
   Fixed possible buffer overrun problem in status change packet handling
   Some avatar related fixes
-
 
 Improvements:
   Added avatar validity checking

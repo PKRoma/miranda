@@ -150,6 +150,7 @@ const capstr capNetvigator= {0x4C, 0x6B, 0x90, 0xA3, 0x3D, 0x2D, 0x48, 0x0E, 0x8
 const capstr captZers     = {0xb2, 0xec, 0x8f, 0x16, 0x7c, 0x6f, 0x45, 0x1b, 0xbd, 0x79, 0xdc, 0x58, 0x49, 0x78, 0x88, 0xb9}; // CAP_TZERS
 const capstr capSimpLite  = {0x53, 0x49, 0x4D, 0x50, 0x53, 0x49, 0x4D, 0x50, 0x53, 0x49, 0x4D, 0x50, 0x53, 0x49, 0x4D, 0x50};
 const capstr capSimpPro   = {0x53, 0x49, 0x4D, 0x50, 0x5F, 0x50, 0x52, 0x4F, 0x53, 0x49, 0x4D, 0x50, 0x5F, 0x50, 0x52, 0x4F};
+const capstr capIMsecure  = {'I', 'M', 's', 'e', 'c', 'u', 'r', 'e', 'C', 'p', 'h', 'r', 0x00, 0x00, 0x06, 0x01}; // ZoneLabs
 
 
 static BOOL hasRichText, hasRichChecked;
@@ -292,6 +293,10 @@ char* detectUserClient(HANDLE hContact, DWORD dwUin, WORD wVersion, DWORD dwFT1,
   {
     szClient = cliSpamBot;
   }
+  else if (dwFT1 == 0x44F523B0 && dwFT2 == 0x44F523A6 && dwFT3 == 0x44F523A6 && wVersion == 8)
+  {
+    szClient = "Virus";
+  }
 
   { // capabilities based detection
     capstr* capId;
@@ -305,6 +310,11 @@ char* detectUserClient(HANDLE hContact, DWORD dwUin, WORD wVersion, DWORD dwFT1,
         DWORD mver = (*capId)[0x8] << 0x18 | (*capId)[0x9] << 0x10 | (*capId)[0xA] << 8 | (*capId)[0xB];
 
         szClient = MirandaVersionToString(szClientBuf, iver, mver);
+
+        if (dwFT1 == 0xFFFFFFFF && dwFT3 == 0x5AFEC0DE)
+        {
+          strcat(szClient, " + SecureIM");
+        }
 
         *bClientId = 2;
       }
@@ -665,6 +675,8 @@ char* detectUserClient(HANDLE hContact, DWORD dwUin, WORD wVersion, DWORD dwFT1,
       szExtra = " + SimpLite";
     else if (MatchCap(caps, wLen, &capSimpPro, 0x10))
       szExtra = " + SimpPro";
+    else if (MatchCap(caps, wLen, &capIMsecure, 0x10))
+      szExtra = " + IMsecure";
 
     if (szExtra)
     {
