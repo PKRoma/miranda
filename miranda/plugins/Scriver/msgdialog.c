@@ -2362,7 +2362,7 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
 				} else {
 					SendMessage(hwndDlg, DM_SENDMESSAGE, 0, (LPARAM) &msi);
 				}
-				free (msi.sendBuffer);
+				mir_free (msi.sendBuffer);
 			}
 			return TRUE;
 		case IDCANCEL:
