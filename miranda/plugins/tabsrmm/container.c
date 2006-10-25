@@ -540,9 +540,10 @@ LRESULT CALLBACK StatusBarSubclassProc(HWND hWnd, UINT msg, WPARAM wParam, LPARA
                         }
 #else
 						char buf[512];
-                        iLength = GetWindowTextLength(GetDlgItem(dat->hwnd, dat->bType == SESSIONTYPE_IM ? IDC_MESSAGE : IDC_CHAT_MESSAGE));
-                        mir_snprintf(buf, sizeof(buf), Translate(szFormat), dat->iOpenJobs, iLength, dat->nMax ? dat->nMax : 20000);
-                        CallService("mToolTip/ShowTip", (WPARAM)buf, (LPARAM)&ti);
+						char *szFormat = "There are %d pending send jobs. Message length: %d bytes, message length limit: %d bytes";
+						iLength = GetWindowTextLength(GetDlgItem(dat->hwnd, dat->bType == SESSIONTYPE_IM ? IDC_MESSAGE : IDC_CHAT_MESSAGE));
+						mir_snprintf(buf, sizeof(buf), Translate(szFormat), dat->iOpenJobs, iLength, dat->nMax ? dat->nMax : 20000);
+						CallService("mToolTip/ShowTip", (WPARAM)buf, (LPARAM)&ti);
 #endif
                     }
                 }
