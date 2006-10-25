@@ -934,13 +934,11 @@ void __stdcall JabberSendPresence( int status )
 	JabberSendVisibleInvisiblePresence( status == ID_STATUS_INVISIBLE );
 
 	// Also update status in all chatrooms
-	/*
 	for ( int i = 0; ( i=JabberListFindNext( LIST_CHATROOM, i )) >= 0; i++ ) {
 		JABBER_LIST_ITEM *item = JabberListGetItemPtrFromIndex( i );
 		if ( item != NULL )
 			JabberSendPresenceTo( status, item->jid, NULL );
-	}*/
-}
+}	}
 
 void __stdcall JabberStringAppend( char* *str, int *sizeAlloced, const char* fmt, ... )
 {
