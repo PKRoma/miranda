@@ -832,6 +832,10 @@ static void MessageDialogResize(HWND hwndDlg, struct MessageWindowData *dat, int
 	} else {
 		RedrawWindow(GetDlgItem(hwndDlg, IDC_LOG), NULL, NULL, RDW_INVALIDATE);
 	}
+	RedrawWindow(GetDlgItem(hwndDlg, IDC_MESSAGE), NULL, NULL, RDW_INVALIDATE);
+	if (g_dat->flags&SMF_AVATAR && IsWindowVisible(GetDlgItem(hwndDlg, IDC_AVATAR))) {
+		RedrawWindow(GetDlgItem(hwndDlg, IDC_AVATAR), NULL, NULL, RDW_INVALIDATE);
+	}
 }
 
 static void UpdateReadChars(HWND hwndDlg, struct MessageWindowData * dat)
@@ -1307,7 +1311,6 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
 			dat->splitterPos = (int) DBGetContactSettingDword((g_dat->flags & SMF_SAVESPLITTERPERCONTACT) ? dat->hContact : NULL, SRMMMOD, "splitterPos", (DWORD) - 1);
 			SendMessage(dat->hwndParent, CM_ADDCHILD, (WPARAM) hwndDlg, (LPARAM) dat->hContact);
 			SendMessage(hwndDlg, DM_OPTIONSAPPLIED, 0, 0);
-//			SendMessage(hwndDlg, DM_AVATARCALCSIZE, 0, 0);
 			{
 				DBEVENTINFO dbei = { 0 };
 				HANDLE hdbEvent;
@@ -1507,6 +1510,13 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
 				if (dat->avatarWidth < 0) dat->avatarWidth = 0;
 				aspect = (double)dat->avatarWidth / (double)bminfo.bmWidth;
 				dat->avatarHeight = (int)(bminfo.bmHeight * aspect);
+
+			}
+			if (rc.bottom - dat->avatarHeight < dat->minLogBoxHeight) {
+				dat->avatarHeight = rc.bottom - dat->minLogBoxHeight;
+				if (dat->avatarHeight < 0) dat->avatarHeight = 0;
+				aspect = (double)dat->avatarHeight / (double)bminfo.bmHeight;
+				dat->avatarWidth = (int)(bminfo.bmWidth * aspect);
 
 			}
 		}
@@ -1951,9 +1961,6 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
 					dlgHeight = rc.bottom - rc.top;
 				}
 				MessageDialogResize(hwndDlg, dat, dlgWidth, dlgHeight);
-				if (g_dat->flags&SMF_AVATAR && IsWindowVisible(GetDlgItem(hwndDlg, IDC_AVATAR))) {
-					RedrawWindow(GetDlgItem(hwndDlg, IDC_AVATAR), NULL, NULL, RDW_INVALIDATE);
-				}
 			}
 			return TRUE;
 		}
