@@ -24,19 +24,22 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #define M_SYSTEM_H__ 1
 
 #ifndef MIRANDANAME
-# define MIRANDANAME		"Miranda IM"
+	#define MIRANDANAME		"Miranda IM"
 #endif
 #ifndef MIRANDACLASS
-# define MIRANDACLASS	"Miranda"
+	#define MIRANDACLASS	"Miranda"
 #endif
 
 // set the default compatibility lever for Miranda 0.4.x
 #ifndef MIRANDA_VER
-# define MIRANDA_VER    0x0400
+	#define MIRANDA_VER    0x0400
 #endif
 
 #ifndef _MSC_VER
-#define __forceinline static FORCEINLINE
+	#ifndef FORCEINLINE
+		#define FORCEINLINE __inline
+	#endif
+	#define __forceinline static FORCEINLINE
 #endif
 
 //miranda/system/modulesloaded
@@ -370,7 +373,7 @@ extern struct UTF8_INTERFACE utfi;
 wParam=function address
 lParam=function parameter
 
-registers a thread in the core and forks it 
+registers a thread in the core and forks it
 
 */
 
