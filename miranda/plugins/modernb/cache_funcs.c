@@ -1131,7 +1131,7 @@ static int ContactsStoredCount=0;
 
 SortedList *CopySmileyString(SortedList *plInput)
 {
-    SortedList * plText;
+    SortedList * plText=NULL;
     int i;
     if (!plInput || plInput->realCount==0) return NULL;
     plText=li.List_Create( 0,1 );
