@@ -861,13 +861,8 @@ static void parseTLV2711(DWORD dwUin, HANDLE hContact, DWORD dwID1, DWORD dwID2,
 
 void parseServerGreeting(BYTE* pDataBuf, WORD wLen, WORD wMsgLen, DWORD dwUin, BYTE bFlags, WORD wStatus, WORD wCookie, WORD wAckType, DWORD dwID1, DWORD dwID2, WORD wVersion)
 {
-  WORD wInfoLen;
-  DWORD dwPluginNameLen;
   DWORD dwLengthToEnd;
   DWORD dwDataLen;
-  DWORD q1,q2,q3,q4;
-  WORD qt;
-  char* szPluginName;
   int typeId;
 
   NetLog_Server("Parsing Greeting message through server");
@@ -875,34 +870,8 @@ void parseServerGreeting(BYTE* pDataBuf, WORD wLen, WORD wMsgLen, DWORD dwUin, B
   pDataBuf += wMsgLen;   // Message
   wLen -= wMsgLen;
 
-  //
-  unpackLEWord(&pDataBuf, &wInfoLen);
-
-  unpackDWord(&pDataBuf, &q1); // get data GUID & function id
-  unpackDWord(&pDataBuf, &q2);
-  unpackDWord(&pDataBuf, &q3);
-  unpackDWord(&pDataBuf, &q4);
-  unpackLEWord(&pDataBuf, &qt);
-  wLen -= 20;
-
-  unpackLEDWord(&pDataBuf, &dwPluginNameLen);
-  wLen -= 4;
-
-  if (dwPluginNameLen > wLen)
-  { // check for malformed plugin name
-    dwPluginNameLen = wLen;
-    NetLog_Server("Warning: malformed size of plugin name.");
-  }
-  szPluginName = (char *)_alloca(dwPluginNameLen + 1);
-  memcpy(szPluginName, pDataBuf, dwPluginNameLen);
-  szPluginName[dwPluginNameLen] = '\0';
-  wLen -= (WORD)dwPluginNameLen;
-
-  pDataBuf += dwPluginNameLen + 15;
-
-  typeId = TypeGUIDToTypeId(q1, q2, q3, q4, qt);
-  if (!typeId)
-    NetLog_Server("Error: Unknown type {%08x-%08x-%08x-%08x:%04x}: %s", q1,q2,q3,q4,qt, szPluginName);
+  // Message plugin identification
+  if (!unpackPluginTypeId(&pDataBuf, &wLen, &typeId, NULL, FALSE)) return;
 
   if (wLen > 8)
   {
@@ -964,7 +933,7 @@ void parseServerGreeting(BYTE* pDataBuf, WORD wLen, WORD wMsgLen, DWORD dwUin, B
     }
     else
     {
-      NetLog_Server("Unsupported plugin message type '%s'", szPluginName);
+      NetLog_Server("Unsupported plugin message type %d", typeId);
     }
   }
 }
@@ -1010,10 +979,42 @@ static void handleRecvServMsgType4(unsigned char *buf, WORD wLen, DWORD dwUin, c
         NetLog_Server("User %u probably checks his ignore state.", dwUin);
       }
       else
-      { // FIX ME: here MTYPE_PLUGIN need to be processed as well - tZers added this
-        handleMessageTypes(dwUin, time(NULL), dwTS1, dwTS2, 0, 0, bMsgType, bFlags, 0, wTLVLen - 8, wMsgLen, pmsg, FALSE);
+      { 
+        if (bMsgType == MTYPE_PLUGIN)
+        {
+          WORD wLen = wTLVLen - 8;
+          int typeId;
 
-        NetLog_Server("TYPE4 message thru server from %d, message type %d", dwUin, bMsgType);
+          NetLog_Server("Parsing Greeting message through server");
+
+          pmsg += wMsgLen;
+          wLen -= wMsgLen;
+
+          if (unpackPluginTypeId(&pmsg, &wLen, &typeId, NULL, FALSE) && wLen > 8)
+          {
+            DWORD dwLengthToEnd;
+            DWORD dwDataLen;
+
+            // Length of remaining data
+            unpackLEDWord(&pmsg, &dwLengthToEnd);
+
+            // Length of message
+            unpackLEDWord(&pmsg, &dwDataLen);
+            wLen -= 8;
+
+            if (dwDataLen > wLen)
+              dwDataLen = wLen;
+
+            if (typeId)
+              handleMessageTypes(dwUin, time(NULL), dwTS1, dwTS2, 0, 0, typeId, bFlags, 0, dwLengthToEnd, (WORD)dwDataLen, pmsg, FALSE);
+            else
+            {
+              NetLog_Server("Unsupported plugin message type %d", typeId);
+            }
+          }
+        }
+        else
+          handleMessageTypes(dwUin, time(NULL), dwTS1, dwTS2, 0, 0, bMsgType, bFlags, 0, wTLVLen - 8, wMsgLen, pmsg, FALSE);
       }
     }
     else
@@ -1035,7 +1036,7 @@ static void handleRecvServMsgType4(unsigned char *buf, WORD wLen, DWORD dwUin, c
 // Helper functions
 //
 
-int TypeGUIDToTypeId(DWORD dwGuid1, DWORD dwGuid2, DWORD dwGuid3, DWORD dwGuid4, WORD wType)
+static int TypeGUIDToTypeId(DWORD dwGuid1, DWORD dwGuid2, DWORD dwGuid3, DWORD dwGuid4, WORD wType)
 {
   int nTypeID = MTYPE_UNKNOWN;
 
@@ -1069,6 +1070,10 @@ int TypeGUIDToTypeId(DWORD dwGuid1, DWORD dwGuid2, DWORD dwGuid3, DWORD dwGuid4,
     {
       nTypeID = MTYPE_MESSAGE;
     }
+    else if (CompareGUIDs(dwGuid1, dwGuid2, dwGuid3, dwGuid4, MGTYPE_SMS_MESSAGE))
+    {
+      nTypeID = MTYPE_SMS_MESSAGE;
+    }
   }
   else if (wType==MGTYPE_CONTACTS_REQUEST)
   {
@@ -1094,6 +1099,71 @@ int TypeGUIDToTypeId(DWORD dwGuid1, DWORD dwGuid2, DWORD dwGuid3, DWORD dwGuid4,
   }
 
   return nTypeID;
+}
+
+
+
+int unpackPluginTypeId(BYTE** pBuffer, WORD* pwLen, int *pTypeId, WORD *pFunctionId, BOOL bThruDC)
+{
+  WORD wLen = *pwLen;
+  WORD wInfoLen;
+  DWORD dwPluginNameLen;
+  DWORD q1,q2,q3,q4;
+  WORD qt;
+  char* szPluginName;
+  int typeId;
+
+  if (wLen < 24) 
+    return 0; // Failure
+
+  unpackLEWord(pBuffer, &wInfoLen);
+
+  unpackDWord(pBuffer, &q1); // get data GUID & function id
+  unpackDWord(pBuffer, &q2);
+  unpackDWord(pBuffer, &q3);
+  unpackDWord(pBuffer, &q4);
+  unpackLEWord(pBuffer, &qt);
+  wLen -= 20;
+
+  if (pFunctionId) *pFunctionId = qt;
+
+  unpackLEDWord(pBuffer, &dwPluginNameLen);
+  wLen -= 4;
+
+  if (dwPluginNameLen > wLen)
+  { // check for malformed plugin name
+    dwPluginNameLen = wLen;
+    NetLog_Uni(bThruDC, "Warning: malformed size of plugin name.");
+  }
+  szPluginName = (char *)_alloca(dwPluginNameLen + 1);
+  memcpy(szPluginName, *pBuffer, dwPluginNameLen);
+  szPluginName[dwPluginNameLen] = '\0';
+  wLen -= (WORD)dwPluginNameLen;
+
+  *pBuffer += dwPluginNameLen;
+
+  typeId = TypeGUIDToTypeId(q1, q2, q3, q4, qt);
+  if (!typeId)
+    NetLog_Uni(bThruDC, "Error: Unknown type {%08x-%08x-%08x-%08x:%04x}: %s", q1,q2,q3,q4,qt, szPluginName);
+
+  if (wLen)
+  {
+    if (typeId == MTYPE_SMS_MESSAGE) // FIXME: wInfoLen should be used here, is it really safe ??
+    {
+      *pBuffer += 3;
+      wLen -= 3;
+    }
+    else
+    {
+      *pBuffer += 15;
+      wLen -= 15;
+    }
+  }
+
+  *pwLen = wLen;
+  *pTypeId = typeId;
+
+  return 1; // Success
 }
 
 
@@ -1154,61 +1224,6 @@ void packPluginTypeId(icq_packet *packet, int nTypeID)
   default:
     return;
   }
-}
-
-
-
-static void handleSmsReceipt(unsigned char *buf, DWORD dwDataLen)
-{
-  DWORD dwLen;
-  DWORD dwTextLen;
-  char* szInfo;
-
-
-  if (dwDataLen < 36)
-    return;
-
-  buf += 20;  // Unknown byte sequence
-  dwDataLen -= 20;
-
-  unpackLEDWord(&buf, &dwLen); // Length of message description
-  dwDataLen -= 4;
-  if (dwLen > dwDataLen)
-  {
-    NetLog_Server("SMS failed syntax check %d (%d, %d)", 1, dwDataLen, dwLen);
-    return;
-  }
-  buf += dwLen; // Skip message description (usually "ICQSMS\0")
-  dwDataLen -= dwLen;
-
-  // Unknown (0,0,0)
-  buf += 3;
-  dwDataLen -= 3;
-
-  // Remaining bytes
-  unpackLEDWord(&buf, &dwLen);
-  dwDataLen -= 4;
-  if (dwLen > dwDataLen)
-  {
-    NetLog_Server("SMS failed syntax check %d (%d, %d)", 2, dwDataLen, dwLen);
-    return;
-  }
-
-  // Length of message
-  unpackLEDWord(&buf, &dwTextLen);
-  dwDataLen -= 4;
-  if ((dwTextLen > dwDataLen) || (dwTextLen+4 != dwLen))
-  {
-    NetLog_Server("SMS failed syntax check %d (%d, %d, %d)", 3, dwDataLen, dwLen, dwTextLen);
-    return;
-  }
-
-  // Unpack message
-  szInfo = (char *)_alloca(dwTextLen + 1);
-  memcpy(szInfo, buf, dwTextLen);
-  szInfo[dwTextLen] = 0;
-
-  ICQBroadcastAck(NULL, ICQACKTYPE_SMS, ACKRESULT_SUCCESS, NULL, (LPARAM)szInfo);
 }
 
 
@@ -1620,18 +1635,30 @@ void handleMessageTypes(DWORD dwUin, DWORD dwTimestamp, DWORD dwMsgID, DWORD dwM
     }
     break;
 
-  case MTYPE_PLUGIN:
+  case MTYPE_PLUGIN: // FIXME: this should be removed - it is never called
     hContact = NULL;
 
     switch(dwUin)
     {
       case 1002:    /* SMS receipt */
-        handleSmsReceipt(pMsg, dwDataLen);
+//        handleSmsReceipt(pMsg, dwDataLen); // now handled properly by plugin-id
         break;
 
       case 1111:    /* icqmail 'you've got mail' - not processed */
         break;
     }
+    break;
+
+  case MTYPE_SMS_MESSAGE:
+    /* it's a SMS message from a mobile - broadcast to SMS plugin */
+    if (dwUin != 1002)
+    {
+      NetLog_Uni(bThruDC, "Malformed '%s' message", "SMS Mobile");
+      break;
+    }
+    NetLog_Server("Received SMS Mobile message");
+
+    ICQBroadcastAck(NULL, ICQACKTYPE_SMS, ACKRESULT_SUCCESS, NULL, (LPARAM)szMsg);
     break;
 
   case MTYPE_WWP:
@@ -1902,14 +1929,10 @@ static void handleRecvMsgResponse(unsigned char *buf, WORD wLen, WORD wFlags, DW
 
     case MTYPE_PLUGIN:
       {
+        WORD wMsgLen;
         DWORD dwLengthToEnd;
         DWORD dwDataLen;
-        DWORD dwPluginNameLen;
         int typeId;
-        WORD wInfoLen;
-        char* szPluginName;
-        DWORD q1,q2,q3,q4;
-        WORD qt;
 
         if (wLength != 0x1B)
         {
@@ -1922,43 +1945,15 @@ static void handleRecvMsgResponse(unsigned char *buf, WORD wLen, WORD wFlags, DW
         NetLog_Server("Parsing Greeting %s", "message response");
 
         // Message
-        unpackLEWord(&buf, &wInfoLen);
+        unpackLEWord(&buf, &wMsgLen);
         wLen -= 2;
-        buf += wInfoLen;
-        wLen -= wInfoLen;
+        buf += wMsgLen;
+        wLen -= wMsgLen;
 
         // This packet is malformed. Possibly a file accept from Miranda IM 0.1.2.1
         if (wLen < 20) return;
 
-        unpackLEWord(&buf, &wInfoLen);
-
-        unpackDWord(&buf, &q1); // get data GUID & function id
-        unpackDWord(&buf, &q2);
-        unpackDWord(&buf, &q3);
-        unpackDWord(&buf, &q4);
-        unpackLEWord(&buf, &qt);
-        wLen -= 20;
-
-        unpackLEDWord(&buf, &dwPluginNameLen);
-        wLen -= 4;
-        if (dwPluginNameLen > wLen)
-        { // check for malformed plugin name
-          dwPluginNameLen = wLen;
-          NetLog_Server("Warning: malformed size of plugin name.");
-        }
-        szPluginName = (char *)_alloca(dwPluginNameLen + 1);
-        memcpy(szPluginName, buf, dwPluginNameLen);
-        szPluginName[dwPluginNameLen] = '\0';
-
-        buf += dwPluginNameLen + 15;
-        if (dwPluginNameLen == wLen)
-          wLen = 0;
-        else
-          wLen -= ((WORD)dwPluginNameLen + 15);
-
-        typeId = TypeGUIDToTypeId(q1, q2, q3, q4, qt);
-        if (!typeId)
-          NetLog_Server("Error: Unknown type {%04x%04x%04x%04x-%02x}: %s", q1,q2,q3,q4,qt,szPluginName);
+        if (!unpackPluginTypeId(&buf, &wLen, &typeId, NULL, FALSE)) return;
 
         if (wLen < 4)
         {
@@ -2023,7 +2018,7 @@ static void handleRecvMsgResponse(unsigned char *buf, WORD wLen, WORD wFlags, DW
           return;
 
         default:
-          NetLog_Server("Error: Unknown greeting %s, type \"%s\".", "message response", szPluginName);
+          NetLog_Server("Error: Unknown plugin message response, type %d.", typeId);
           return;
         }
       }
@@ -2376,7 +2371,7 @@ static void handleMissedMsg(unsigned char *buf, WORD wLen, WORD wFlags, DWORD dw
   unpackWord(&buf, &wError);
   wLen -= 2;
 
-  switch (wError)
+  switch (wError) // FIXME: this needs unicode support
   {
 
   case 0:

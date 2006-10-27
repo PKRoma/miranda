@@ -798,12 +798,13 @@ static DWORD __stdcall icq_avatarThread(avatarthreadstartinfo *atsi)
     int recvResult;
     NETLIBPACKETRECVER packetRecv = {0};
     DWORD wLastKeepAlive = 0; // we send keep-alive at most one per 30secs
+    DWORD dwKeepAliveInterval = ICQGetContactSettingDword(NULL, "KeepAliveInterval", KEEPALIVE_INTERVAL);
 
     InitializeCriticalSection(&atsi->localSeqMutex);
 
     atsi->hAvatarPacketRecver = (HANDLE)CallService(MS_NETLIB_CREATEPACKETRECVER, (WPARAM)atsi->hConnection, 8192);
     packetRecv.cbSize = sizeof(packetRecv);
-    packetRecv.dwTimeout = 60000; // timeout every minute - for stopThread to work
+    packetRecv.dwTimeout = dwKeepAliveInterval < KEEPALIVE_INTERVAL ? dwKeepAliveInterval: KEEPALIVE_INTERVAL; // timeout - for stopThread to work
     while(!atsi->stopThread)
     {
       recvResult = CallService(MS_NETLIB_GETMOREPACKETS,(WPARAM)atsi->hAvatarPacketRecver, (LPARAM)&packetRecv);
@@ -834,7 +835,7 @@ static DWORD __stdcall icq_avatarThread(avatarthreadstartinfo *atsi)
               write_flap(&packet, ICQ_PING_CHAN);
               sendAvatarPacket(&packet, atsi);
             }
-            wLastKeepAlive = GetTickCount() + 57000;
+            wLastKeepAlive = GetTickCount() + dwKeepAliveInterval;
           }
           else
           { // this is bad, the system does not handle select() properly

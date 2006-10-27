@@ -61,6 +61,7 @@ typedef struct serverthread_info_s {
   HANDLE hDirectBoundPort;
   //
   HANDLE hKeepAliveEvent;
+  HANDLE hKeepAliveThread;
 } serverthread_info;
 
 /*---------* Functions *---------------*/

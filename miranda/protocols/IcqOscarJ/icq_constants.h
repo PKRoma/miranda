@@ -200,6 +200,7 @@
 #define MTYPE_REQUESTCONTACTS       0x102 // Request for Contacts
 #define MTYPE_MESSAGE               0x103 // Message+
 #define MTYPE_STATUSMSGEXT          0x104 // StatusMsgExt (2003b)
+#define MTYPE_SMS_MESSAGE           0x110 // SMS message from Mobile
 #define MTYPE_SCRIPT_INVITATION     0x201 // Xtraz Invitation
 #define MTYPE_SCRIPT_DATA           0x202 // Xtraz Message
 #define MTYPE_SCRIPT_NOTIFY         0x208 // Xtraz Response
@@ -213,6 +214,7 @@
 #define MGTYPE_CONTACTS_s           0x2A0E7D46, 0x7676D411, 0xBCE60004, 0xAC961EA6 
 #define MGTYPE_GREETING_CARD_s      0x01E53B48, 0x2AE4D111, 0xB6790060, 0x97E1E294
 #define MGTYPE_CHAT_s               0xBFF720B2, 0x378ED411, 0xBD280004, 0xAC96D905
+#define MGTYPE_SMS_MESSAGE_s        0x0e28f600, 0x11e7d311, 0xbcf30004, 0xac969dc2
 #define MGTYPE_XTRAZ_SCRIPT_s       0x3b60b3ef, 0xd82a6c45, 0xa4e09c5a, 0x5e67e865
 
 // Message Plugin Sub-Type IDs
@@ -531,7 +533,7 @@
 
 
 // Internal Constants
-#define ICQ_PLUG_VERSION            0x80030804
+#define ICQ_PLUG_VERSION            0x80030805
 #define ICQ_VERSION                 8
 #define DC_TYPE                     DC_NORMAL // Used for DC settings
 #define MAX_NICK_SIZE               32
@@ -540,6 +542,7 @@
 #define CLIENTRATELIMIT             0
 #define UPDATE_THRESHOLD            14      // Two weeks
 #define COOKIE_TIMEOUT              3600    // One hour
+#define KEEPALIVE_INTERVAL          57000   // One minute
 #define WEBFRONTPORT                0x50
 #define CLIENTFEATURES              0x3
 #define URL_FORGOT_PASSWORD         "https://www.icq.com/password/"

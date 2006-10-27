@@ -48,10 +48,11 @@ void handlePingChannel(unsigned char* buf, WORD datalen)
 
 
 
-static void __cdecl icq_keepAliveThread(void* arg)
+static DWORD __stdcall icq_keepAliveThread(void* arg)
 {
   serverthread_info* info = (serverthread_info*)arg;
   icq_packet packet;
+  DWORD dwInterval = ICQGetContactSettingDword(NULL, "KeepAliveInterval", KEEPALIVE_INTERVAL);
 
   NetLog_Server("Keep alive thread starting.");
 
@@ -59,7 +60,7 @@ static void __cdecl icq_keepAliveThread(void* arg)
 
   for(;;)
   {
-    DWORD dwWait = WaitForSingleObjectEx(info->hKeepAliveEvent, 57000, TRUE);
+    DWORD dwWait = WaitForSingleObjectEx(info->hKeepAliveEvent, dwInterval, TRUE);
 
     if (dwWait == WAIT_OBJECT_0) break; // we should end
     else if (dwWait == WAIT_TIMEOUT)
@@ -82,7 +83,7 @@ static void __cdecl icq_keepAliveThread(void* arg)
   CloseHandle(info->hKeepAliveEvent);
   info->hKeepAliveEvent = NULL;
 
-  return;
+  return 0;
 }
 
 
@@ -93,7 +94,11 @@ void StartKeepAlive(serverthread_info* info)
     return;
 
   if (ICQGetContactSettingByte(NULL, "KeepAlive", 0))
-    forkthread(icq_keepAliveThread, 0, info);
+  {
+    DWORD dwThreadId;
+
+    info->hKeepAliveThread = (HANDLE)forkthreadex(NULL, 0, icq_keepAliveThread, info, 0, &dwThreadId);
+  }
 }
 
 
@@ -101,5 +106,12 @@ void StartKeepAlive(serverthread_info* info)
 void StopKeepAlive(serverthread_info* info)
 { // finish keep alive thread
   if (info->hKeepAliveEvent)
+  {
     SetEvent(info->hKeepAliveEvent);
+
+    // wait for the thread to finish
+    WaitForSingleObjectEx(info->hKeepAliveThread, INFINITE, TRUE);
+    CloseHandle(info->hKeepAliveThread);
+    info->hKeepAliveThread = NULL;
+  }
 }

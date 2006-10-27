@@ -90,15 +90,19 @@ void handleXtrazNotify(DWORD dwUin, DWORD dwMID, DWORD dwMID2, WORD wCookie, cha
           {
             char *szResponse;
             int nResponseLen;
-            char *szXName, *szXMsg;
+            char *szXName, *szXMsg, *tmp;
             BYTE dwXId = ICQGetContactSettingByte(NULL, DBSETTING_XSTATUSID, 0);
 
             if (dwXId && validateStatusMessageRequest(hContact, MTYPE_SCRIPT_NOTIFY))
             { // apply privacy rules
               NotifyEventHooks(hsmsgrequest, (WPARAM)MTYPE_SCRIPT_NOTIFY, (LPARAM)dwUin);
 
-              szXName = ICQGetContactSettingUtf(NULL, DBSETTING_XSTATUSNAME, "");
-              szXMsg = ICQGetContactSettingUtf(NULL, DBSETTING_XSTATUSMSG, "");
+              tmp = ICQGetContactSettingUtf(NULL, DBSETTING_XSTATUSNAME, "");
+              szXName = MangleXml(tmp, strlennull(tmp));
+              SAFE_FREE(&tmp);
+              tmp = ICQGetContactSettingUtf(NULL, DBSETTING_XSTATUSMSG, "");
+              szXMsg = MangleXml(tmp, strlennull(tmp));
+              SAFE_FREE(&tmp);
               
               nResponseLen = 212 + strlennull(szXName) + strlennull(szXMsg) + UINMAXLEN + 2;
               szResponse = (char*)_alloca(nResponseLen + 1);
@@ -232,9 +236,13 @@ NextVal:
 
             if (szNode && szEnd)
             { // we got XStatus title, save it
+              char *szXName;
+
               szNode += 7;
               *szEnd = '\0';
-              ICQWriteContactSettingUtf(hContact, DBSETTING_XSTATUSNAME, szNode);
+              szXName = DemangleXml(szNode, strlennull(szNode));
+              ICQWriteContactSettingUtf(hContact, DBSETTING_XSTATUSNAME, szXName);
+              SAFE_FREE(&szXName);
               *szEnd = ' ';
             }
             szNode = strstr(szWork, "<desc>");
@@ -242,9 +250,13 @@ NextVal:
 
             if (szNode && szEnd)
             { // we got XStatus mode msg, save it
+              char *szXMsg;
+
               szNode += 6;
               *szEnd = '\0';
-              ICQWriteContactSettingUtf(hContact, DBSETTING_XSTATUSMSG, szNode);
+              szXMsg = DemangleXml(szNode, strlennull(szNode));
+              ICQWriteContactSettingUtf(hContact, DBSETTING_XSTATUSMSG, szXMsg);
+              SAFE_FREE(&szXMsg);
             }
             ICQBroadcastAck(hContact, ICQACKTYPE_XSTATUS_RESPONSE, ACKRESULT_SUCCESS, (HANDLE)wCookie, 0);
           }

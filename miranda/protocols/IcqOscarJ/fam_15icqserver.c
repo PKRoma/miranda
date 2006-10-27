@@ -349,48 +349,16 @@ static void parseOfflineMessage(unsigned char *databuf, WORD wPacketLen)
 
 static void parseOfflineGreeting(BYTE* pDataBuf, WORD wLen, WORD wMsgLen, DWORD dwUin, DWORD dwTimestamp, BYTE bFlags)
 {
-  WORD wInfoLen;
-  DWORD dwPluginNameLen;
   DWORD dwLengthToEnd;
   DWORD dwDataLen;
-  DWORD q1,q2,q3,q4;
-  WORD qt;
-  char* szPluginName;
   int typeId;
 
-  NetLog_Server("Parsing Greeting message through server");
+  NetLog_Server("Parsing Greeting message from offline server");
 
   pDataBuf += wMsgLen;   // Message
   wLen -= wMsgLen;
 
-  //
-  unpackLEWord(&pDataBuf, &wInfoLen);
-
-  unpackDWord(&pDataBuf, &q1); // get data GUID & function id
-  unpackDWord(&pDataBuf, &q2);
-  unpackDWord(&pDataBuf, &q3);
-  unpackDWord(&pDataBuf, &q4);
-  unpackLEWord(&pDataBuf, &qt);
-  wLen -= 20;
-
-  unpackLEDWord(&pDataBuf, &dwPluginNameLen);
-  wLen -= 4;
-
-  if (dwPluginNameLen > wLen)
-  { // check for malformed plugin name
-    dwPluginNameLen = wLen;
-    NetLog_Server("Warning: malformed size of plugin name.");
-  }
-  szPluginName = (char *)_alloca(dwPluginNameLen + 1);
-  memcpy(szPluginName, pDataBuf, dwPluginNameLen);
-  szPluginName[dwPluginNameLen] = '\0';
-  wLen -= (WORD)dwPluginNameLen;
-
-  pDataBuf += dwPluginNameLen + 15;
-
-  typeId = TypeGUIDToTypeId(q1, q2, q3, q4, qt);
-  if (!typeId)
-    NetLog_Server("Error: Unknown type {%08x-%08x-%08x-%08x:%04x}: %s", q1,q2,q3,q4,qt, szPluginName);
+  if (!unpackPluginTypeId(&pDataBuf, &wLen, &typeId, NULL, FALSE)) return;
 
   if (wLen > 8)
   {
@@ -407,7 +375,7 @@ static void parseOfflineGreeting(BYTE* pDataBuf, WORD wLen, WORD wMsgLen, DWORD 
     if (typeId)
       handleMessageTypes(dwUin, dwTimestamp, 0, 0, 0, 0, typeId, bFlags, 0, dwLengthToEnd, (WORD)dwDataLen, pDataBuf, FALSE);
     else
-      NetLog_Server("Unsupported plugin message type '%s'", szPluginName);
+      NetLog_Server("Unsupported plugin message type %d", typeId);
   }
 }
 

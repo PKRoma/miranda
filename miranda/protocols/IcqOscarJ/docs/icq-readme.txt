@@ -46,25 +46,51 @@ __________
 0.5
   Account management (together with Miranda core changes)
   Multi-user chat (Xtraz based)
+  Mid-NetLib module for HTTP gateway (for avatars to work) [icq_net]
 
 
 
 Changes
 _______
 
-0.3.8.0 Devel builds
+0.3.8 Devel builds
 
 Bugfixes:
-  Fixed HTTP/HTTPS proxy support (removed useless gateway option), long messages are now sent properly
   Fixed peer-to-peer session cookie checking (was working only due to coincidence)
+  Fixed SMS message handling, made message parsing more consistent
 
 New Features:
   TODO: Oscar File Transfers - like icq5 (including transfer thru server)
 
 Improvements:
-  Added avatar validity checking
   Client detection improvements
   Level 1 Rate management (global) - should solve problems with many contacts in list
+
+
+0.3.7.5
+
+Bugfixes:
+  Fixed possible crash in avatar queue
+  Fixed special character conversion in Custom Status messages
+  Minor changes to client detection
+
+
+0.3.7.4
+
+Bugfixes:
+  Some small fixes to Custom Status API
+  Fixed possible buffer overrun problem in status change packet handling
+  Some avatar related fixes
+
+Improvements:
+  Added avatar validity checking
+
+
+0.3.7.3
+
+Bugfixes:
+  Fixed HTTP/HTTPS proxy support (removed useless gateway option), long messages are now sent properly
+  Improved status change handling (can handle broken packets)
 
 
 0.3.7.2
@@ -349,6 +375,8 @@ Database items (usually at Contact\ICQ):
 
 Database items for Main Contact (usually at Settings\ICQ):
 (BYTE)InfoUpdate - Threshold in DAYS for updating user info (restart is needed) - default is 14 days
+
+(DWORD)KeepAliveInterval - Period in which Keep-Alive packets are send if enabled - default is one minute
 
 (BYTE)PrivacyItems = 1 - adds more privacy tools to contact menu (e.g. Revoke Authorization)
 

@@ -239,61 +239,19 @@ void handleDirectMessage(directconnect* dc, PBYTE buf, WORD wLen)
 
 void handleDirectGreetingMessage(directconnect* dc, PBYTE buf, WORD wLen, WORD wCommand, WORD wCookie, BYTE bMsgType, BYTE bMsgFlags, WORD wStatus, WORD wFlags, char* pszText)
 {
-  DWORD dwMsgTypeLen;
   DWORD dwLengthToEnd;
   DWORD dwDataLength;
-  char* szMsgType = NULL;
   char* pszFileName = NULL;
   int typeId;
-  WORD wPacketCommand;
-  DWORD q1,q2,q3,q4;
   WORD qt;
 
 #ifdef _DEBUG
   NetLog_Direct("Handling PEER_MSG_GREETING, command %u, cookie %u, messagetype %u, messageflags %u, status %u, flags %u", wCommand, wCookie, bMsgType, bMsgFlags, wStatus, wFlags);
 #endif
 
-  // The command in this packet.
-  unpackLEWord(&buf, &wPacketCommand); // TODO: this is most probably length...
-  wLen -= 2;
-  
-  // Data type GUID
-  unpackDWord(&buf, &q1);
-  unpackDWord(&buf, &q2);
-  unpackDWord(&buf, &q3);
-  unpackDWord(&buf, &q4);
-  wLen -= 16;
+  NetLog_Direct("Parsing Greeting message through direct");
 
-  // Data type function id
-  unpackLEWord(&buf, &qt);
-  wLen -= 2;
-
-  // A text string
-  // "ICQ Chat" for chat request, "File" for file request,
-  // "File Transfer" for file request grant/refusal. This text is
-  // displayed in the requester opened by Windows.
-  unpackLEDWord(&buf, &dwMsgTypeLen);
-  wLen -= 4;
-  if (dwMsgTypeLen == 0 || dwMsgTypeLen>256)
-  {
-    NetLog_Direct("Error: Sanity checking failed (%d) in handleDirectGreetingMessage, len is %u", 1, dwMsgTypeLen);
-    return;
-  }
-  szMsgType = (char *)_alloca(dwMsgTypeLen + 1);
-  memcpy(szMsgType, buf, dwMsgTypeLen);
-  szMsgType[dwMsgTypeLen] = '\0';
-  typeId = TypeGUIDToTypeId(q1,q2,q3,q4,qt);
-  if (!typeId)
-    NetLog_Direct("Error: Unknown type {%04x%04x%04x%04x-%02x}: %s", q1,q2,q3,q4,qt,szMsgType);
-
-  buf += dwMsgTypeLen;
-  wLen -= (WORD)dwMsgTypeLen;
-
-  NetLog_Direct("PEER_MSG_GREETING, command: %u, type: %s, typeID: %u", typeId, szMsgType, typeId);
-
-  // Unknown
-  buf += 15;
-  wLen -= 15;
+  if (!unpackPluginTypeId(&buf, &wLen, &typeId, &qt, TRUE)) return;
   
   // Length of remaining data
   unpackLEDWord(&buf, &dwLengthToEnd);
@@ -413,6 +371,6 @@ void handleDirectGreetingMessage(directconnect* dc, PBYTE buf, WORD wLen, WORD w
   }
   else
   {
-    NetLog_Direct("Unsupported plugin message type '%s'", szMsgType);
+    NetLog_Direct("Unsupported plugin message type %s", typeId);
   }
 }
