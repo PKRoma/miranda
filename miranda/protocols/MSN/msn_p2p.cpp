@@ -97,6 +97,22 @@ static int sttCreateListener(
 		return 0;
 	}
 
+	bool bAllowIncoming = true;
+
+	SOCKET s = MSN_CallService( MS_NETLIB_GETSOCKET, ( WPARAM )info->s, 0 );
+	if ( s != INVALID_SOCKET) {
+		SOCKADDR_IN saddr;
+		int len = sizeof( saddr );
+		if ( getsockname( s, ( SOCKADDR* )&saddr, &len ) != SOCKET_ERROR )
+			bAllowIncoming = strcmp( ipaddr, inet_ntoa( saddr.sin_addr )) == 0 ||
+				nlb.dwExternalIP != nlb.dwInternalIP || MSN_GetByte( "NLSpecifyIncomingPorts", 0 ) != 0 ;
+	}
+
+	if ( !bAllowIncoming ) {
+		Netlib_CloseHandle( sb );
+		return 0;
+	}
+
 	char* szUuid = getNewUuid();
 
 	ThreadData* newThread = new ThreadData;
@@ -515,7 +531,7 @@ bool p2p_connectTo( ThreadData* info )
 		}
 
 		if ( pSpace == NULL ) {
-			MSN_StartP2PTransferByContact( info->mJoinedContacts[0] );
+			MSN_StartP2PTransferByContact( info->mInitialContact );
 			return false;
 		}
 
@@ -1025,25 +1041,17 @@ static void sttInitDirectTransfer(
 
 	MSN_SendBroadcast( ft->std.hContact, ACKTYPE_FILE, ACKRESULT_INITIALISING, ft, 0);
 
-	bool bUseDirect = false, bActAsServer = false;
+	bool bUseDirect = true, bActAsServer = false;
 	if ( atol( szNetID ) == 0 ) {
-		if ( !strcmp( szConnType, "Direct-Connect" ) || !strcmp( szConnType, "Firewall" ))
-			bUseDirect = true;
+		bUseDirect = !strcmp( szConnType, "Direct-Connect" ) || !strcmp( szConnType, "Firewall" );
 	}
 
-	if (( !( MyOptions.UseGateway || MyOptions.UseProxy ) || !MSN_GetByte( "AutoGetHost", 1 ))) {
-		MSN_DebugLog( "My machine can accept incoming connections" );
-		bUseDirect = bActAsServer = true;
-	}
+	bActAsServer = !( MyOptions.UseGateway || MyOptions.UseProxy ) || !MSN_GetByte( "AutoGetHost", 1 );
 
 	MimeHeaders tResult(20);
 	tResult.addString( "CSeq", "1 " );
 	tResult.addString( "Call-ID", ft->p2p_callID );
 	tResult.addLong( "Max-Forwards", 0 );
-	if ( bUseDirect )
-		tResult.addString( "Content-Type", "application/x-msnmsgr-transrespbody" );
-	else
-		tResult.addString( "Content-Type", "application/x-msnmsgr-transreqbody" );
 
 	char szBody[ 512 ];
 	int  cbBodyLen = 0;
@@ -1055,6 +1063,11 @@ static void sttInitDirectTransfer(
 			"Bridge: TCPv1\r\n"
 			"Listening: false\r\n"
 			"Nonce: %s\r\n\r\n%c", sttVoidNonce, 0 );
+
+	if ( !bUseDirect || bActAsServer )
+		tResult.addString( "Content-Type", "application/x-msnmsgr-transrespbody" );
+	else
+		tResult.addString( "Content-Type", "application/x-msnmsgr-transreqbody" );
 
 	ft->p2p_msgid -= 2;
 	p2p_sendSlp( info, ft, tResult, 200, szBody, cbBodyLen );
@@ -1154,14 +1167,25 @@ LBL_Close:
 		if ( MyOptions.UseGateway )
 			return;
 
+		char *conn = bAllowIncoming ? "Direct-Connect" : "Unknown-Connect";
+
 		char ipaddr[256] = "";
 		MSN_GetMyHostAsString( ipaddr, sizeof( ipaddr ));
-
+/*
+		SOCKET s = MSN_CallService( MS_NETLIB_GETSOCKET, ( WPARAM )info->s, 0 );
+		if ( s != INVALID_SOCKET) {
+			SOCKADDR_IN saddr;
+			int len = sizeof( saddr );
+			if ( getsockname( s, ( SOCKADDR* )&saddr, &len ) != SOCKET_ERROR )
+				if ( strcmp( ipaddr, inet_ntoa( saddr.sin_addr )) && bAllowIncoming )
+					conn = "IP-Restrict-NAT";
+		}
+*/
 		tResult.addString( "Content-Type", "application/x-msnmsgr-transreqbody" );
 		cbBody = mir_snprintf( szBody, 1024,
 			"Bridges: TCPv1\r\nNetID: %u\r\nConn-Type: %s\r\nUPnPNat: false\r\nICF: false\r\n\r\n%c",
-//            "Nonce: %s\r\nSessionID: %lu\r\nSChannelState: 0\r\n\r\n%c",
-			inet_addr(ipaddr), ( bAllowIncoming ) ? "Direct-Connect" : "Unknown-Connect", 0 );
+//            "Hashed-Nonce: %s\r\n\r\n%c",
+			bAllowIncoming ? inet_addr(ipaddr) : 0, conn, 0 );
 	}
 	else if ( !strcmp( szOldContentType, "application/x-msnmsgr-transrespbody" )) {
 		const char	*szListening       = tFileInfo2[ "Listening" ],
