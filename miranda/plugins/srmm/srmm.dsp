@@ -189,6 +189,10 @@ SOURCE=.\richutil.c
 
 SOURCE=.\srmm.c
 # End Source File
+# Begin Source File
+
+SOURCE=.\statusicon.c
+# End Source File
 # End Group
 # Begin Group "Header Files"
 
@@ -216,6 +220,10 @@ SOURCE=.\resource.h
 # Begin Source File
 
 SOURCE=.\richutil.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\statusicon.h
 # End Source File
 # End Group
 # Begin Group "Resource Files"
