@@ -70,7 +70,7 @@ BEGIN
     CONTROL         "Support control up/down in message area to show previously sent messages",
                     IDC_CTRLSUPPORT,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,8,
                     81,292,10
-    CONTROL         "Save message draft on close",
+    CONTROL         "Save message draft when closing message window",
                     IDC_SAVEDRAFTS,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,8,
                     92,292,10
     CONTROL         "Delete temporary contacts when closing message window",
@@ -203,7 +203,7 @@ STYLE DS_FIXEDSYS | WS_CHILD | WS_VISIBLE
 EXSTYLE WS_EX_CONTROLPARENT
 FONT 8, "MS Shell Dlg", 0, 0, 0x1
 BEGIN
-    GROUPBOX        "Tabs",IDC_STATIC,0,0,304,105
+    GROUPBOX        "Tabs",IDC_STATIC,0,0,304,116
     CONTROL         "Use tabbed mode",IDC_USETABS,"Button",BS_AUTOCHECKBOX |
                     WS_TABSTOP,8,12,260,10
     CONTROL         "Hide tab bar if there is only one tab",IDC_HIDEONETAB,
@@ -214,15 +214,17 @@ BEGIN
                     "Button",BS_AUTOCHECKBOX | WS_TABSTOP,20,45,126,10
     EDITTEXT        IDC_LIMITNAMESLEN,148,43,20,13,ES_RIGHT | ES_NUMBER
     LTEXT           "characters",IDC_CHARS,172,45,90,8,WS_DISABLED
-	CONTROL         "Automatically switch to active tab",IDC_SWITCHTOACTIVE,
+	CONTROL         "Show close button on each tab ",IDC_TABCLOSEBUTTON,
                     "Button",BS_AUTOCHECKBOX | WS_TABSTOP,20,56,252,10
-	CONTROL         "Use common containers for chats",IDC_CHATSCOMMONCONTAINERS,
+	CONTROL         "Automatically switch to active tab",IDC_SWITCHTOACTIVE,
                     "Button",BS_AUTOCHECKBOX | WS_TABSTOP,20,67,252,10
+	CONTROL         "Use common containers for chats",IDC_CHATSCOMMONCONTAINERS,
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,20,78,252,10
 	CONTROL         "Cascade new windows",IDC_CASCADE,"Button",
-                    BS_AUTOCHECKBOX | WS_TABSTOP,8,78,260,10
+                    BS_AUTOCHECKBOX | WS_TABSTOP,8,89,260,10
     CONTROL         "Save size and location for each contact",
                     IDC_SAVEPERCONTACT,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,
-                    8,89,260,10
+                    8,100,260,10
 
     GROUPBOX        "Look And Feel",IDC_STATIC,0,128,304,60
 	CONTROL         "Show title bar",IDC_SHOWTITLEBAR,"Button",
@@ -449,6 +451,7 @@ IDI_QUOTE               ICON    DISCARDABLE     "res/quote.ico"
 IDI_INCOMING            ICON    DISCARDABLE     "res/incoming.ico"
 IDI_OUTGOING            ICON    DISCARDABLE     "res/outgoing.ico"
 IDI_NOTICE              ICON    DISCARDABLE     "res/notice.ico"
+IDI_CLOSEX              ICON    DISCARDABLE     "res/closex.ico"
 
 /////////////////////////////////////////////////////////////////////////////
 //

@@ -65,6 +65,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #define SMF2_LIMITNAMES				0x00000008
 #define SMF2_SWITCHTOACTIVE  		0x00000010
 #define SMF2_CHATSCOMMONCONTAINERS 	0x00000020
+#define SMF2_TABCLOSEBUTTON  		0x00000040
 
 #define SMF2_SHOWSTATUSBAR			0x00010000
 #define SMF2_SHOWTITLEBAR			0x00020000
@@ -92,6 +93,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #define SMF_ICON_OUTGOING	 12
 #define SMF_ICON_NOTICE		 13
 
+#define SMF_ICON_CLOSEX		 14
 struct GlobalMessageData
 {
 	unsigned int flags;

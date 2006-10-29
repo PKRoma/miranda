@@ -25,6 +25,7 @@
 #define IDI_INCOMING                    132
 #define IDI_OUTGOING                    133
 #define IDI_NOTICE                      134
+#define IDI_CLOSEX                      135
 #define IDR_CONTEXT                     180
 #define IDC_HYPERLINKHAND               214
 #define IDC_DRAGCURSOR					215
@@ -37,6 +38,7 @@
 #define IDC_STAYMINIMIZED				1006
 #define IDC_SWITCHTOACTIVE				1007
 #define IDC_CHATSCOMMONCONTAINERS		1008
+#define IDC_TABCLOSEBUTTON				1009
 #define IDC_SPLITTER                    1017
 #define IDC_SHOWNAMES                   1020
 #define IDC_SHOWSENDBTN                 1021
@@ -181,7 +183,6 @@
 #define IDI_STATUS1                     456
 #define IDI_STATUS0                     457
 #define IDI_STATUS5                     458
-#define IDI_CLOSE                       459
 #define IDI_OVERLAY                     460
 #define IDI_NICKLIST2                   461
 #define IDI_FILTER2                     462

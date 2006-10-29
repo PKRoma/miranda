@@ -192,6 +192,11 @@ void RegisterIcoLibIcons() {
 		sid.pszDescription = Translate("Quote button");
 		CallService(MS_SKIN2_ADDICON, 0, (LPARAM)&sid);
 
+		sid.pszName = (char *) "scriver_CLOSEX";
+		sid.iDefaultIndex = -IDI_CLOSEX;
+		sid.pszDescription = Translate("Close button");
+		CallService(MS_SKIN2_ADDICON, 0, (LPARAM)&sid);
+
 		sid.pszName = (char *) "scriver_INCOMING";
 		sid.iDefaultIndex = 7;//IDI_INCOMING;
 		sid.pszDescription = Translate("Incoming message");
@@ -207,7 +212,7 @@ void RegisterIcoLibIcons() {
 	}
 }
 
-static int buttonIcons[] = {-1, SMF_ICON_USERDETAILS, SMF_ICON_SMILEY, SMF_ICON_ADD, SMF_ICON_HISTORY, SMF_ICON_QUOTE, SMF_ICON_CANCEL, SMF_ICON_SEND};
+static int buttonIcons[] = {SMF_ICON_CLOSEX, -1, SMF_ICON_USERDETAILS, SMF_ICON_SMILEY, SMF_ICON_ADD, SMF_ICON_HISTORY, SMF_ICON_QUOTE, SMF_ICON_CANCEL, SMF_ICON_SEND};
 
 void LoadGlobalIcons() {
 	int i;
@@ -227,6 +232,8 @@ void LoadGlobalIcons() {
 		g_dat->hIcons[SMF_ICON_INCOMING] = (HICON) LoadIcon(g_hInst, MAKEINTRESOURCE(IDI_INCOMING));
 		g_dat->hIcons[SMF_ICON_OUTGOING] = (HICON) LoadIcon(g_hInst, MAKEINTRESOURCE(IDI_OUTGOING));
 		g_dat->hIcons[SMF_ICON_NOTICE] = (HICON) LoadIcon(g_hInst, MAKEINTRESOURCE(IDI_NOTICE));
+
+		g_dat->hIcons[SMF_ICON_CLOSEX] = (HICON) CallService(MS_SKIN2_GETICON, 0, (LPARAM)"scriver_CLOSEX");
 	} else {
 		g_dat->hIcons[SMF_ICON_ADD] = (HICON) LoadImage(g_hInst, MAKEINTRESOURCE(IDI_ADDCONTACT), IMAGE_ICON, GetSystemMetrics(SM_CXSMICON), GetSystemMetrics(SM_CYSMICON), 0);
 		g_dat->hIcons[SMF_ICON_USERDETAILS] = (HICON) LoadImage(g_hInst, MAKEINTRESOURCE(IDI_USERDETAILS), IMAGE_ICON, GetSystemMetrics(SM_CXSMICON), GetSystemMetrics(SM_CYSMICON), 0);
@@ -243,6 +250,8 @@ void LoadGlobalIcons() {
 		g_dat->hIcons[SMF_ICON_INCOMING] = (HICON) LoadIcon(g_hInst, MAKEINTRESOURCE(IDI_INCOMING));
 		g_dat->hIcons[SMF_ICON_OUTGOING] = (HICON) LoadIcon(g_hInst, MAKEINTRESOURCE(IDI_OUTGOING));
 		g_dat->hIcons[SMF_ICON_NOTICE] = (HICON) LoadIcon(g_hInst, MAKEINTRESOURCE(IDI_NOTICE));
+
+		g_dat->hIcons[SMF_ICON_CLOSEX] = (HICON) LoadIcon(g_hInst, MAKEINTRESOURCE(IDI_CLOSEX));
 	}
 	if (g_dat->hButtonIconList == NULL) {
 		g_dat->hButtonIconList = ImageList_Create(16, 16, IsWinVerXPPlus() ? ILC_COLOR32 | ILC_MASK : ILC_COLOR8 | ILC_MASK, (g_dat->protoNum + 1) * 12 + 8, 0);
@@ -405,6 +414,8 @@ void ReloadGlobals() {
 		g_dat->flags2 |= SMF2_HIDEONETAB;
 	if (DBGetContactSettingByte(NULL, SRMMMOD, SRMSGSET_CHATSCOMMONCONTAINERS, SRMSGDEFSET_CHATSCOMMONCONTAINERS))
 		g_dat->flags2 |= SMF2_CHATSCOMMONCONTAINERS;
+	if (DBGetContactSettingByte(NULL, SRMMMOD, SRMSGSET_TABCLOSEBUTTON, SRMSGDEFSET_TABCLOSEBUTTON))
+		g_dat->flags2 |= SMF2_TABCLOSEBUTTON;
 
 	if (DBGetContactSettingByte(NULL, SRMMMOD, SRMSGSET_SHOWSTATUSBAR, SRMSGDEFSET_SHOWSTATUSBAR))
 		g_dat->flags2 |= SMF2_SHOWSTATUSBAR;

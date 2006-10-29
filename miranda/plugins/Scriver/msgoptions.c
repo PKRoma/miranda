@@ -25,7 +25,6 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include <uxtheme.h>
 
 extern HINSTANCE g_hInst;
-extern PSLWA pSetLayeredWindowAttributes;
 extern HANDLE hEventOptInitialise, hEventSkin2IconsChanged;
 
 static BOOL CALLBACK DlgProcOptions(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam);
@@ -34,7 +33,6 @@ static BOOL CALLBACK DlgProcLogOptions(HWND hwndDlg, UINT msg, WPARAM wParam, LP
 BOOL CALLBACK DlgProcOptions1(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam);
 BOOL CALLBACK DlgProcOptions2(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam);
 
-static BOOL (WINAPI *pfnEnableThemeDialogTexture)(HANDLE, DWORD) = 0;
 typedef struct TabDefStruct {
 	HWND hwnd;
 	DLGPROC dlgProc;
@@ -344,6 +342,7 @@ static BOOL CALLBACK DlgProcContainerOptions(HWND hwndDlg, UINT msg, WPARAM wPar
 			SetDlgItemInt(hwndDlg, IDC_LIMITNAMESLEN, limitLength >= SRMSGSET_LIMITNAMESLEN_MIN ? limitLength : SRMSGDEFSET_LIMITNAMESLEN, FALSE);
 
 			CheckDlgButton(hwndDlg, IDC_HIDEONETAB, DBGetContactSettingByte(NULL, SRMMMOD, SRMSGSET_HIDEONETAB, SRMSGDEFSET_HIDEONETAB));
+			CheckDlgButton(hwndDlg, IDC_TABCLOSEBUTTON, DBGetContactSettingByte(NULL, SRMMMOD, SRMSGSET_TABCLOSEBUTTON, SRMSGDEFSET_TABCLOSEBUTTON));
 			CheckDlgButton(hwndDlg, IDC_CHATSCOMMONCONTAINERS, DBGetContactSettingByte(NULL, SRMMMOD, SRMSGSET_CHATSCOMMONCONTAINERS, SRMSGDEFSET_CHATSCOMMONCONTAINERS));
 			CheckDlgButton(hwndDlg, IDC_TRANSPARENCY, DBGetContactSettingByte(NULL, SRMMMOD, SRMSGSET_USETRANSPARENCY, SRMSGDEFSET_USETRANSPARENCY));
 			SendDlgItemMessage(hwndDlg,IDC_ATRANSPARENCYVALUE,TBM_SETRANGE, FALSE, MAKELONG(0,255));
@@ -408,6 +407,7 @@ static BOOL CALLBACK DlgProcContainerOptions(HWND hwndDlg, UINT msg, WPARAM wPar
 			EnableWindow(GetDlgItem(hwndDlg, IDC_TABSATBOTTOM), bChecked );
 			EnableWindow(GetDlgItem(hwndDlg, IDC_LIMITNAMES), bChecked );
 			EnableWindow(GetDlgItem(hwndDlg, IDC_HIDEONETAB), bChecked );
+			EnableWindow(GetDlgItem(hwndDlg, IDC_TABCLOSEBUTTON), bChecked );
 			EnableWindow(GetDlgItem(hwndDlg, IDC_CHATSCOMMONCONTAINERS), bChecked );
 			EnableWindow(GetDlgItem(hwndDlg, IDC_CASCADE), !bChecked  );//&& !IsDlgButtonChecked(hwndDlg, IDC_SAVEPERCONTACT));
 			EnableWindow(GetDlgItem(hwndDlg, IDC_SAVEPERCONTACT), !bChecked );
@@ -433,6 +433,7 @@ static BOOL CALLBACK DlgProcContainerOptions(HWND hwndDlg, UINT msg, WPARAM wPar
 						EnableWindow(GetDlgItem(hwndDlg, IDC_TABSATBOTTOM), bChecked);
 						EnableWindow(GetDlgItem(hwndDlg, IDC_LIMITNAMES), bChecked);
 						EnableWindow(GetDlgItem(hwndDlg, IDC_HIDEONETAB), bChecked);
+						EnableWindow(GetDlgItem(hwndDlg, IDC_TABCLOSEBUTTON), bChecked );
 						EnableWindow(GetDlgItem(hwndDlg, IDC_CHATSCOMMONCONTAINERS), bChecked );
 						EnableWindow(GetDlgItem(hwndDlg, IDC_CASCADE), !bChecked );//&& !IsDlgButtonChecked(hwndDlg, IDC_SAVEPERCONTACT));
 						EnableWindow(GetDlgItem(hwndDlg, IDC_SAVEPERCONTACT), !bChecked);
@@ -554,6 +555,7 @@ static BOOL CALLBACK DlgProcContainerOptions(HWND hwndDlg, UINT msg, WPARAM wPar
 
 							DBWriteContactSettingByte(NULL, SRMMMOD, SRMSGSET_HIDEONETAB, (BYTE) IsDlgButtonChecked(hwndDlg, IDC_HIDEONETAB));
 							DBWriteContactSettingByte(NULL, SRMMMOD, SRMSGSET_SWITCHTOACTIVE, (BYTE) IsDlgButtonChecked(hwndDlg, IDC_SWITCHTOACTIVE));
+							DBWriteContactSettingByte(NULL, SRMMMOD, SRMSGSET_TABCLOSEBUTTON, (BYTE) IsDlgButtonChecked(hwndDlg, IDC_TABCLOSEBUTTON));
 							DBWriteContactSettingByte(NULL, SRMMMOD, SRMSGSET_CHATSCOMMONCONTAINERS, (BYTE) IsDlgButtonChecked(hwndDlg, IDC_CHATSCOMMONCONTAINERS));
 
 							DBWriteContactSettingByte(NULL, SRMMMOD, SRMSGSET_USETRANSPARENCY, (BYTE) IsDlgButtonChecked(hwndDlg, IDC_TRANSPARENCY));
@@ -1340,15 +1342,6 @@ static BOOL CALLBACK DlgProcTypeOptions(HWND hwndDlg, UINT msg, WPARAM wParam, L
 int OptInitialise(WPARAM wParam, LPARAM lParam)
 {
 	OPTIONSDIALOGPAGE odp = { 0 };
-	if (!initialized) {
-		HMODULE	hUxTheme = 0;
-		if(IsWinVerXPPlus()) {
-			hUxTheme = GetModuleHandle(_T("uxtheme.dll"));
-			if(hUxTheme)
-				pfnEnableThemeDialogTexture = (BOOL (WINAPI *)(HANDLE, DWORD))GetProcAddress(hUxTheme, "EnableThemeDialogTexture");
-		}
-		initialized = 1;
-	}
 	odp.cbSize = sizeof(odp);
 	odp.position = 910000000;
 	odp.hInstance = g_hInst;

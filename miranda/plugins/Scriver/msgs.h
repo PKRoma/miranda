@@ -30,6 +30,9 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #define MSGERROR_RETRY	    1
 
 typedef DWORD (WINAPI *PSLWA)(HWND, DWORD, BYTE, DWORD);
+extern PSLWA pSetLayeredWindowAttributes;
+extern BOOL (WINAPI *pfnEnableThemeDialogTexture)(HANDLE, DWORD);
+extern BOOL (WINAPI *pfnIsAppThemed)(VOID);
 
 typedef struct ErrorWindowDataStruct
 {
@@ -244,6 +247,8 @@ extern const int msgDlgFontCount;
 #define SRMSGDEFSET_USETABS		   1
 #define SRMSGSET_TABSATBOTTOM	   "TabsPosition"
 #define SRMSGDEFSET_TABSATBOTTOM   0
+#define SRMSGSET_TABCLOSEBUTTON	   "TabCloseButton"
+#define SRMSGDEFSET_TABCLOSEBUTTON 0
 #define SRMSGSET_LIMITNAMES		   "LimitNamesOnTabs"
 #define SRMSGDEFSET_LIMITNAMES	   1
 #define SRMSGSET_LIMITNAMESLEN	   "LimitNamesLength"
