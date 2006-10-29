@@ -953,9 +953,9 @@ static int DrawMenuItem(WPARAM wParam, LPARAM lParam)
 			rc.top = y;
 			rc.bottom = rc.top + GetSystemMetrics(SM_CYSMICON) + 2;
 			FillRect(dis->hDC, &rc, GetSysColorBrush(COLOR_HIGHLIGHT));
-			ImageList_DrawEx(g_dat->hButtonIconList, dis->itemID - 1, dis->hDC, 2, y, 0, 0, CLR_NONE, CLR_DEFAULT, ILD_SELECTED);
+			ImageList_DrawEx(g_dat->hButtonIconList, dis->itemID, dis->hDC, 2, y, 0, 0, CLR_NONE, CLR_DEFAULT, ILD_SELECTED);
 		} else
-			ImageList_DrawEx(g_dat->hButtonIconList, dis->itemID - 1, dis->hDC, 2, y, 0, 0, CLR_NONE, CLR_DEFAULT, ILD_FOCUS);
+			ImageList_DrawEx(g_dat->hButtonIconList, dis->itemID, dis->hDC, 2, y, 0, 0, CLR_NONE, CLR_DEFAULT, ILD_FOCUS);
 	} else {
 		if (dis->itemState & ODS_CHECKED) {
 			HBRUSH hBrush;
@@ -975,9 +975,9 @@ static int DrawMenuItem(WPARAM wParam, LPARAM lParam)
 				(GetBValue(menuCol) + GetBValue(hiliteCol)) / 2));
 			FillRect(dis->hDC, &rc, hBrush);
 			DeleteObject(hBrush);
-			ImageList_DrawEx(g_dat->hButtonIconList, dis->itemID - 1, dis->hDC, 2, y, 0, 0, CLR_NONE, GetSysColor(COLOR_MENU), ILD_BLEND25);
+			ImageList_DrawEx(g_dat->hButtonIconList, dis->itemID, dis->hDC, 2, y, 0, 0, CLR_NONE, GetSysColor(COLOR_MENU), ILD_BLEND25);
 		} else
-			ImageList_DrawEx(g_dat->hButtonIconList, dis->itemID - 1, dis->hDC, 2, y, 0, 0, CLR_NONE, CLR_NONE, ILD_NORMAL);
+			ImageList_DrawEx(g_dat->hButtonIconList, dis->itemID, dis->hDC, 2, y, 0, 0, CLR_NONE, CLR_NONE, ILD_NORMAL);
 	}
 	return TRUE;
 }

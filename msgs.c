@@ -40,11 +40,13 @@ static HANDLE hSvcSendMessageCommand, hSvcSendMessageCommandW, hSvcGetWindowAPI,
 
 HANDLE *hMsgMenuItem = NULL, hHookWinEvt=NULL;
 int hMsgMenuItemCount = 0;
-static HMODULE hDLL;
 
-extern PSLWA pSetLayeredWindowAttributes;
 extern HINSTANCE g_hInst;
 extern HWND GetParentWindow(HANDLE hContact, BOOL bChat);
+
+PSLWA pSetLayeredWindowAttributes;
+BOOL (WINAPI *pfnEnableThemeDialogTexture)(HANDLE, DWORD) = 0;
+BOOL (WINAPI *pfnIsAppThemed)(VOID) = 0;
 
 static int SRMMStatusToPf2(int status)
 {
@@ -504,19 +506,26 @@ int SplitmsgShutdown(void)
    return 0;
 }
 
-int LoadSendRecvMessageModule(void)
-{
-   if (LoadLibraryA("riched20.dll") == NULL) {
-      if (IDYES !=
-         MessageBox(0,
-                  TranslateT
-                  ("Miranda could not load the built-in message module, riched20.dll is missing. If you are using Windows 95 or WINE please make sure you have riched20.dll installed. Press 'Yes' to continue loading Miranda."),
-                  TranslateT("Information"), MB_YESNO | MB_ICONINFORMATION))
-         return 1;
-      return 0;
-   }
-   hDLL = LoadLibraryA("user32");
-   pSetLayeredWindowAttributes = (PSLWA) GetProcAddress(hDLL,"SetLayeredWindowAttributes");
+int LoadSendRecvMessageModule(void) {
+	HMODULE	hDLL = 0;
+	if (LoadLibraryA("riched20.dll") == NULL) {
+		if (IDYES !=
+			MessageBox(0,
+					TranslateT
+					("Miranda could not load the built-in message module, riched20.dll is missing. If you are using Windows 95 or WINE please make sure you have riched20.dll installed. Press 'Yes' to continue loading Miranda."),
+					TranslateT("Information"), MB_YESNO | MB_ICONINFORMATION))
+			return 1;
+		return 0;
+	}
+	hDLL = GetModuleHandle(_T("user32"));
+	pSetLayeredWindowAttributes = (PSLWA) GetProcAddress(hDLL,"SetLayeredWindowAttributes");
+	if (IsWinVerXPPlus()) {
+		hDLL = GetModuleHandle(_T("uxtheme.dll"));
+		if (hDLL) {
+			pfnEnableThemeDialogTexture = (BOOL (WINAPI *)(HANDLE, DWORD))GetProcAddress(hDLL, "EnableThemeDialogTexture");
+			pfnIsAppThemed = (BOOL (WINAPI *)(VOID))GetProcAddress(hDLL, "IsAppThemed");
+		}
+	}
    InitGlobals();
    RichUtil_Load();
    OleInitialize(NULL);

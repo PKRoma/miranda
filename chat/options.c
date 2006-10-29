@@ -425,11 +425,6 @@ void AddIcons(void)
 		sid.iDefaultIndex = -IDI_OVERLAY;
 		CallService(MS_SKIN2_ADDICON, 0, (LPARAM)&sid);
 
-		sid.pszDescription = Translate("Close");
-		sid.pszName = "chat_close";
-		sid.iDefaultIndex = -IDI_CLOSE;
-		CallService(MS_SKIN2_ADDICON, 0, (LPARAM)&sid);
-
 		sid.cx = sid.cy = 10;
 		sid.pszDescription = Translate("Status 1 (10x10)");
 		sid.pszName = "chat_status0";
