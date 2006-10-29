@@ -38,8 +38,8 @@
 #define __ICQ_DIRECT_H
 
 typedef struct {
-  BYTE ft_magic;
   message_cookie_data pMessage;
+  BYTE ft_magic;
   int status;
   int sending;
   int iCurrentFile;

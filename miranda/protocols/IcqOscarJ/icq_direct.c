@@ -518,10 +518,9 @@ static DWORD __stdcall icq_directThread(directthreadstartinfo *dtsi)
         NetLog_Direct("connect() failed (%d), trying reverse.", GetLastError());
 
         if (pCookie)
-        { // ini cookie
+        { // init cookie
+          InitMessageCookie(&pCookie->pMessage);
           pCookie->pMessage.bMessageType = MTYPE_REVERSE_REQUEST;
-          pCookie->pMessage.dwMsgID1 = time(NULL);
-          pCookie->pMessage.dwMsgID2 = RandRange(0, 0x00FF);
           pCookie->hContact = dc.hContact;
           pCookie->dwUin = dc.dwRemoteUin;
           pCookie->type = dc.type;

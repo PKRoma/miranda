@@ -1926,13 +1926,18 @@ int IcqSendFile(WPARAM wParam, LPARAM lParam)
       char** files = (char**)ccs->lParam;
       char* pszDesc = (char*)ccs->wParam;
       DWORD dwUin;
+      uid_str szUid;
 
-      if (ICQGetContactSettingUID(hContact, &dwUin, NULL))
+      if (ICQGetContactSettingUID(hContact, &dwUin, &szUid))
         return 0; // Invalid contact
 
-      if (dwUin)
+      if (ICQGetContactStatus(hContact) != ID_STATUS_OFFLINE)
       {
-        if (ICQGetContactStatus(hContact) != ID_STATUS_OFFLINE)
+        if (CheckContactCapabilities(hContact, CAPF_AIM_FILE))
+        {
+          return oftInitTransfer(hContact, dwUin, szUid, files, pszDesc);
+        }
+        else if (dwUin)
         {
           WORD wClientVersion;
 

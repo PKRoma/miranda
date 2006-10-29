@@ -1591,6 +1591,66 @@ void icq_sendReverseFailed(directconnect* dc, DWORD dwMsgID1, DWORD dwMsgID2, DW
 
 // OSCAR file-transfer packets starts here
 //
+void oft_sendFileRequest(DWORD dwUin, char *szUid, oscar_filetransfer* ft, char* pszFiles, DWORD dwLocalInternalIP)
+{
+  icq_packet packet;
+  char *szCoolStr;
+  WORD wDataLen;
+
+  szCoolStr = (char*)_alloca(strlennull(ft->szDescription)+strlennull(pszFiles) + 160);
+  sprintf(szCoolStr, "<ICQ_COOL_FT><FS>%s</FS><S>%d</S><SID>1</SID><DESC>%s</DESC></ICQ_COOL_FT>", pszFiles, ft->dwTotalSize, ft->szDescription);
+  szCoolStr = MangleXml(szCoolStr, strlennull(szCoolStr));
+
+  wDataLen = 81 + strlennull(szCoolStr) + strlennull(pszFiles);
+  if (ft->bUseProxy) wDataLen += 4;
+
+  packServMsgSendHeader(&packet, ft->dwCookie, ft->pMessage.dwMsgID1, ft->pMessage.dwMsgID2, dwUin, szUid, 2, (WORD)(wDataLen + 0x1E));
+  packServTLV5HeaderBasic(&packet, wDataLen, ft->pMessage.dwMsgID1, ft->pMessage.dwMsgID2, 0, MCAP_OSCAR_FT);
+
+  packTLVWord(&packet, 0x0A, ++ft->wReqNum);        // Request sequence
+  packDWord(&packet, 0x000F0000);                   // Unknown
+  packTLV(&packet, 0x0D, 5, "utf-8");               // Charset
+  packTLV(&packet, 0x0C, (WORD)strlennull(szCoolStr), szCoolStr); // User message (CoolData XML)
+  SAFE_FREE(&szCoolStr);
+  if (ft->bUseProxy)
+  {
+    packTLVDWord(&packet, 0x02, ft->dwProxyIP);     // Proxy IP
+    packTLVDWord(&packet, 0x16, ft->dwProxyIP ^ 0x0FFFFFFFF);    // Proxy IP check
+  }
+  else
+  {
+    packTLVDWord(&packet, 0x02, dwLocalInternalIP);
+    packTLVDWord(&packet, 0x16, dwLocalInternalIP ^ 0x0FFFFFFFF);
+  }
+  packTLVDWord(&packet, 0x03, dwLocalInternalIP);   // Client IP
+  if (ft->bUseProxy)
+  {
+    packTLVWord(&packet, 0x05, ft->wRemotePort);
+    packTLVWord(&packet, 0x17, (WORD)(ft->wRemotePort ^ 0x0FFFF));
+    packDWord(&packet, 0x00100000);                 // Proxy flag
+  }
+  else
+  {
+    oscar_listener *pListener = (oscar_listener*)ft->listener;
+
+    packTLVWord(&packet, 0x05, pListener->wPort);
+    packTLVWord(&packet, 0x15, (WORD)((pListener->wPort) ^ 0x0FFFF));
+  }
+  { // TLV(0x2711)
+    packWord(&packet, 0x2711);
+    packWord(&packet, (WORD)(9 + strlennull(pszFiles)));
+    packWord(&packet, (WORD)(ft->wFilesCount == 1 ? 1 : 2));
+    packWord(&packet, ft->wFilesCount);
+    packDWord(&packet, ft->dwTotalSize);
+    packBuffer(&packet, pszFiles, (WORD)(strlennull(pszFiles) + 1));
+  }
+  packTLV(&packet, 0x2712, 5, "utf-8");
+
+  sendServPacket(&packet);                          // Send the monster
+}
+
+
+
 static void oft_sendFileReply(DWORD dwUin, char *szUid, oscar_filetransfer* ft, WORD wResult)
 {
   icq_packet packet;
@@ -1624,7 +1684,7 @@ void oft_sendFileRedirect(DWORD dwUin, char *szUid, oscar_filetransfer* ft, DWOR
   packServMsgSendHeader(&packet, 0, ft->pMessage.dwMsgID1, ft->pMessage.dwMsgID2, dwUin, szUid, 2, (WORD)(bProxy ? 0x4a : 0x4e));
   packServTLV5HeaderBasic(&packet, (WORD)(bProxy ? 0x2C : 0x30), ft->pMessage.dwMsgID1, ft->pMessage.dwMsgID2, 0, MCAP_OSCAR_FT);
   // Connection point data
-  packTLVWord(&packet, 0x0A, (WORD)(bProxy ? 0x03 : 0x02)); // Ack Type
+  packTLVWord(&packet, 0x0A, ++ft->wReqNum);                // Ack Type
   packTLVWord(&packet, 0x14, 0x0A);                         // Unknown ?
   packTLVDWord(&packet, 0x02, dwIP);                        // Internal IP / Proxy IP
   packTLVDWord(&packet, 0x16, dwIP ^ 0x0FFFFFFFF);          // IP Check ?

@@ -45,14 +45,16 @@ void UninitOscarFileTransfer();
 #define FT_MAGIC_ICQ    0x00
 #define FT_MAGIC_OSCAR  0x4F
 
+#define OFT_BUFFER_SIZE 8192
+
 typedef struct {
-  BYTE ft_magic;
   message_cookie_data pMessage;
+  BYTE ft_magic;
 } basic_filetransfer;
 
 typedef struct {
-  BYTE ft_magic;
   message_cookie_data pMessage;
+  BYTE ft_magic;
   HANDLE hContact;
   int initalized;
   int sending;
@@ -69,6 +71,9 @@ typedef struct {
   char *szFilename;
   char *szThisFile; 
   char *szThisSubdir;
+  // Request sequence
+  DWORD dwCookie;
+  WORD wReqNum;
   // OFT2 header data
   WORD wEncrypt, wCompress;
   WORD wFilesCount,wFilesLeft;
@@ -143,10 +148,15 @@ typedef struct {
 oscar_listener* CreateOscarListener(oscar_filetransfer *ft, NETLIBNEWCONNECTIONPROC_V2 handler);
 void ReleaseOscarListener(oscar_listener **pListener);
 
+int IsValidOscarTransfer(void *ft);
+
 void OpenOscarConnection(HANDLE hContact, oscar_filetransfer *ft, int type);
 void CloseOscarConnection(oscar_connection *oc);
 
 void handleRecvServMsgOFT(unsigned char *buf, WORD wLen, DWORD dwUin, char *szUID, DWORD dwID1, DWORD dwID2, WORD wCommand);
+void handleRecvServResponseOFT(unsigned char *buf, WORD wLen, DWORD dwUin, char *szUID, void* ft);
+
+int oftInitTransfer(HANDLE hContact, DWORD dwUin, char *szUid, char** files, char* pszDesc);
 
 DWORD oftFileAllow(HANDLE hContact, WPARAM wParam, LPARAM lParam);
 DWORD oftFileDeny(HANDLE hContact, WPARAM wParam, LPARAM lParam);

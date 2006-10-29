@@ -68,7 +68,7 @@ void handleFileAck(PBYTE buf, WORD wLen, DWORD dwUin, DWORD dwCookie, WORD wStat
   // If status != 0, a request has been denied
   if (wStatus != 0)
   {
-    NetLog_Direct("File transfer denied by %u,", dwUin);
+    NetLog_Direct("File transfer denied by %u.", dwUin);
     ICQBroadcastAck(ft->hContact, ACKTYPE_FILE, ACKRESULT_DENIED, (HANDLE)ft, 0);
 
     FreeCookie(dwCookie);
@@ -119,8 +119,7 @@ filetransfer *CreateFileTransfer(HANDLE hContact, DWORD dwUin, int nVersion)
     ft->hContact = hContact;
     ft->nVersion = nVersion;
     ft->pMessage.bMessageType = MTYPE_FILEREQ;
-    ft->pMessage.dwMsgID1 = time(NULL);
-    ft->pMessage.dwMsgID2 = RandRange(0, 0x00FF);
+    InitMessageCookie(&ft->pMessage);
   }
   return ft;
 }

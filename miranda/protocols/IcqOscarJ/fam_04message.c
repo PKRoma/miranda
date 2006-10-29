@@ -1781,6 +1781,7 @@ void handleMessageTypes(DWORD dwUin, DWORD dwTimestamp, DWORD dwMsgID, DWORD dwM
 static void handleRecvMsgResponse(unsigned char *buf, WORD wLen, WORD wFlags, DWORD dwRef)
 {
   DWORD dwUin;
+  uid_str szUid;
   DWORD dwCookie;
   WORD wMessageFormat;
   WORD wStatus;
@@ -1806,9 +1807,9 @@ static void handleRecvMsgResponse(unsigned char *buf, WORD wLen, WORD wFlags, DW
     return;
   }
 
-  if (!unpackUID(&buf, &wLen, &dwUin, NULL)) return;
+  if (!unpackUID(&buf, &wLen, &dwUin, &szUid)) return;
 
-  hContact = HContactFromUIN(dwUin, NULL);
+  hContact = HContactFromUID(dwUin, szUid, NULL);
 
   buf += 2;   // 3. unknown
   wLen -= 2;
@@ -1816,6 +1817,18 @@ static void handleRecvMsgResponse(unsigned char *buf, WORD wLen, WORD wFlags, DW
   if (!FindMessageCookie(dwMsgID1, dwMsgID2, &dwCookie, &dwCookieUin, &pCookieData))
   {
     NetLog_Server("SNAC(4.B) Received an ack that I did not ask for from (%u)", dwUin);
+    return;
+  }
+
+  if (IsValidOscarTransfer(pCookieData))
+  { // it is OFT response
+    handleRecvServResponseOFT(buf, wLen, dwUin, szUid, pCookieData);
+    return;
+  }
+
+  if (!dwUin)
+  { // AIM cannot send this - just sanity
+    NetLog_Server("Error: Invalid UID in message response.");
     return;
   }
 

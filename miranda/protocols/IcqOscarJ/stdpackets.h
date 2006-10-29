@@ -104,6 +104,7 @@ DWORD SearchByEmail(char *pszEmail);
 
 DWORD icq_searchAimByEmail(char* pszEmail, DWORD dwSearchId);
 
+void oft_sendFileRequest(DWORD dwUin, char *szUid, oscar_filetransfer* ft, char* pszFiles, DWORD dwLocalInternalIP);
 void oft_sendFileAccept(DWORD dwUin, char *szUid, oscar_filetransfer* ft);
 void oft_sendFileDeny(DWORD dwUin, char *szUid, oscar_filetransfer* ft);
 void oft_sendFileRedirect(DWORD dwUin, char *szUid, oscar_filetransfer* ft, DWORD dwIP, WORD wPort, int bProxy);

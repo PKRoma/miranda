@@ -135,6 +135,7 @@ int FindCookie(DWORD wCookie, DWORD *pdwUin, void **ppvExtra);
 int FindCookieByData(void *pvExtra, DWORD *pdwCookie, DWORD *pdwUin);
 int FindMessageCookie(DWORD dwMsgID1, DWORD dwMsgID2, DWORD *pdwCookie, DWORD *pdwUin, message_cookie_data **ppvExtra);
 
+void InitMessageCookie(message_cookie_data *pCookie);
 message_cookie_data *CreateMessageCookie(WORD bMsgType, BYTE bAckType);
 
 #endif /* __COOKIES_H */
