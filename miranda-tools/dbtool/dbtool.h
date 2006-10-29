@@ -16,9 +16,20 @@ You should have received a copy of the GNU General Public License
 along with this program; if not, write to the Free Software
 Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 */
+
 #include <windows.h>
+#include <stdio.h>
+#include <stddef.h>
+#include <io.h>
+#include <stdarg.h>
+#include <process.h>
+#include <direct.h>
+#include <malloc.h>
 #include <commctrl.h>
-#include "../../miranda/include/newpluginapi.h" // Only needed to keep m_database.h happy
+
+//#include <newpluginapi.h> // Only needed to keep m_database.h happy
+#define CallService(a,b,c) 1
+
 #include "../../miranda/include/m_database.h"
 #include "database.h" // Note: This is a copy of database.h from the Miranda IM v0.3 tree.
                       //       Remember to update this when releasing new dbtool versions.
@@ -62,3 +73,4 @@ int ReadSegment(DWORD ofs,PVOID buf,int cbBytes);
 DWORD WriteSegment(DWORD ofs,PVOID buf,int cbBytes);
 int SignatureValid(DWORD ofs,DWORD signature);
 DWORD ConvertModuleNameOfs(DWORD ofsOld);
+void FreeModuleChain();

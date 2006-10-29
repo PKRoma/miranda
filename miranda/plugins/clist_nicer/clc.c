@@ -41,7 +41,7 @@ extern ButtonItem *g_ButtonItems;
 
 extern pfnDrawAlpha pDrawAlpha;
 extern BOOL (WINAPI *MySetLayeredWindowAttributes)(HWND, COLORREF, BYTE, DWORD);
-extern int during_sizing, g_isConnecting;
+extern int during_sizing;
 extern StatusItems_t *StatusItems;
 extern int g_shutDown;
 extern int g_nextExtraCacheEntry, g_maxExtraCacheEntry;
@@ -97,7 +97,6 @@ HMENU BuildGroupPopupMenu( struct ClcGroup* group )
 
 int AvatarChanged(WPARAM wParam, LPARAM lParam)
 {
-	struct avatarCacheEntry *cEntry = (struct avatarCacheEntry *)lParam;
 	pcli->pfnClcBroadcast(INTM_AVATARCHANGED, wParam, lParam);
 	return 0;
 }
@@ -131,13 +130,13 @@ static int ClcEventAdded(WPARAM wParam, LPARAM lParam)
             new_freq = count ? (dbei.timestamp - firstTime) / count : 0x7fffffff;
             DBWriteContactSettingDword((HANDLE)wParam, "CList", "mf_freq", new_freq);
             DBWriteContactSettingDword((HANDLE)wParam, "CList", "mf_count", count);
-        }
-        iEntry = GetExtraCache((HANDLE)wParam, NULL);
-        if(iEntry >= 0 && iEntry <= g_nextExtraCacheEntry) {
-            g_ExtraCache[iEntry].dwLastMsgTime = dbei.timestamp;
-            if(new_freq)
-                g_ExtraCache[iEntry].msgFrequency = new_freq;
-            pcli->pfnClcBroadcast(INTM_FORCESORT, 0, 1);
+            iEntry = GetExtraCache((HANDLE)wParam, NULL);
+            if(iEntry >= 0 && iEntry < g_nextExtraCacheEntry) {
+                g_ExtraCache[iEntry].dwLastMsgTime = dbei.timestamp;
+                if(new_freq)
+                    g_ExtraCache[iEntry].msgFrequency = new_freq;
+                pcli->pfnClcBroadcast(INTM_FORCESORT, 0, 1);
+            }
         }
 	}
 	return 0;
@@ -265,6 +264,8 @@ int ClcShutdown(WPARAM wParam, LPARAM lParam)
 	if (g_CluiData.hIconChatactive)
 		DestroyIcon(g_CluiData.hIconChatactive);
 
+	DeleteObject(g_CluiData.hPen3DBright);
+	DeleteObject(g_CluiData.hPen3DDark);
 	DeleteObject(g_CluiData.hBrushColorKey);
 	DeleteObject(g_CluiData.hBrushCLCBk);
 	DeleteObject(g_CluiData.hBrushAvatarBorder);
@@ -525,22 +526,14 @@ LBL_Def:
 			if(wParam == 0) {
 				//RemoveFromImgCache(0, cEntry);
 				g_CluiData.bForceRefetchOnPaint = TRUE;
-				InvalidateRect(hwnd, NULL, FALSE);
-				UpdateWindow(hwnd);
+                RedrawWindow(hwnd, NULL, NULL, RDW_ERASE | RDW_INVALIDATE | RDW_UPDATENOW);
 				g_CluiData.bForceRefetchOnPaint = FALSE;
 				goto LBL_Def;
 			}
 
 			if(!FindItem(hwnd, dat, (HANDLE)wParam, &contact, NULL, NULL))
 				return 0;
-			/*
-			if(contact->ace) {
-			if(!(contact->ace->dwFlags & AVS_PROTOPIC))
-			RemoveFromImgCache(contact->hContact, contact->ace);
-			}*/
-			//contact->gdipObject = NULL;
 			contact->ace = cEntry;
-			// XXX InvalidateRect(hwnd, NULL, FALSE);
 			PostMessage(hwnd, INTM_INVALIDATE, 0, (LPARAM)contact->hContact);
 			goto LBL_Def;
 		}

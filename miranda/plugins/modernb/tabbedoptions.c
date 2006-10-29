@@ -24,7 +24,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include "m_clui.h"
 #include "clist.h"
 #include "m_clc.h"
-#include "SkinEngine.h"
+//#include "SkinEngine.h"
 #include "io.h"
 #include "commonprototypes.h"
 
@@ -86,44 +86,26 @@ static void TabChangeTab(HWND hwndDlg, TabWndItemsData *data, int sel)
 	HWND hwndTab;
 	RECT rc_tab;
 	RECT rc_item;
-	int top;
 
 	hwndTab = GetDlgItem(hwndDlg, IDC_SKIN_TAB);
 
 	// Get avaible space
 	GetWindowRect(hwndTab, &rc_tab);
-	ScreenToClientRect(hwndDlg, &rc_tab);
-	top = rc_tab.top;
-
-	GetWindowRect(hwndTab, &rc_tab);
 	ScreenToClientRect(hwndTab, &rc_tab);
 	TabCtrl_AdjustRect(hwndTab, FALSE, &rc_tab); 
-
 
 	// Get item size
 	GetClientRect(data->items[sel].hwnd, &rc_item);
 
 	// Fix rc_item
 	rc_item.right -= rc_item.left;	// width
-	rc_item.left = 0;
+	rc_item.left = rc_tab.left + (rc_tab.right - rc_tab.left - rc_item.right) / 2;
+
 	rc_item.bottom -= rc_item.top;	// height
-	rc_item.top = 0;
-
-	//OffsetRect(&rc_item,30,0);
-
-	if (rc_item.right < rc_tab.right - rc_tab.left)
-		rc_item.left = rc_tab.left + (rc_tab.right - rc_tab.left - rc_item.right) / 2;
-	else
-		rc_item.left = rc_tab.left;
-
-	if (rc_item.bottom < rc_tab.bottom - rc_tab.top)
-		rc_item.top = top + rc_tab.top + (rc_tab.bottom - rc_tab.top - rc_item.bottom) / 2;
-	else
-		rc_item.top = top + rc_tab.top;
+	rc_item.top = rc_tab.top; // + (rc_tab.bottom - rc_tab.top - rc_item.bottom) / 2;
 
 	// Set pos
-	//SetParent(data->items[sel].hwnd,hwndTab);
-	SetWindowPos(data->items[sel].hwnd, HWND_TOP/*data->hwndDisplay*/, rc_item.left, rc_item.top, rc_item.right,
+	SetWindowPos(data->items[sel].hwnd, HWND_TOP, rc_item.left, rc_item.top, rc_item.right,
 		rc_item.bottom, SWP_SHOWWINDOW);
 
 	data->selected_item = sel;
@@ -140,7 +122,6 @@ BOOL CALLBACK DlgProcTabbedOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lP
 			TabWndItemsData *data;
 			int i;
 			TCITEM tie={0}; 
-			RECT rc_tab;
 
 			TranslateDialogDefault(hwndDlg);
 			tab_opt_items_count=wParam;
@@ -166,23 +147,15 @@ BOOL CALLBACK DlgProcTabbedOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lP
 				data->items[i].hwnd = CreateDialogIndirectA(g_hInst, templ, hwndDlg, 
 					data->items[i].conf->wnd_proc); 
 				TranslateDialogDefault(data->items[i].hwnd);
-				ShowWindowNew(data->items[i].hwnd, SW_HIDE);
+				CLUI_ShowWindowMod(data->items[i].hwnd, SW_HIDE);
+
+				if (pfEnableThemeDialogTexture != NULL)
+					pfEnableThemeDialogTexture(data->items[i].hwnd, ETDT_ENABLETAB);
 
 				tie.pszText = TranslateTS(data->items[i].conf->name); 
 				TabCtrl_InsertItem(hwndTab, i, &tie);
 			}
 
-			// Get avaible space
-			GetWindowRect(hwndTab, &rc_tab);
-			ScreenToClientRect(hwndTab, &rc_tab);
-			TabCtrl_AdjustRect(hwndTab, FALSE, &rc_tab); 
-			rc_tab.left+=1;
-			rc_tab.right-=1;
-			// Create big display
-			data->hwndDisplay = CreateWindow(TEXT("STATIC"), TEXT(""), WS_CHILD|WS_VISIBLE, 
-				rc_tab.left, rc_tab.top, 
-				rc_tab.right-rc_tab.left, rc_tab.bottom-rc_tab.top, 
-				hwndTab, NULL, g_hInst, NULL); 
 			// Show first item
 			TabChangeTab(hwndDlg, data, 0);
 			return TRUE;
@@ -195,7 +168,7 @@ BOOL CALLBACK DlgProcTabbedOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lP
 			case TCN_SELCHANGING:
 				{
 					TabWndItemsData *data = (TabWndItemsData *) GetWindowLong(hwndDlg, GWL_USERDATA);
-					ShowWindowNew(data->items[data->selected_item].hwnd, SW_HIDE);
+					CLUI_ShowWindowMod(data->items[data->selected_item].hwnd, SW_HIDE);
 					break;
 				}
 			case TCN_SELCHANGE: 
@@ -238,9 +211,10 @@ BOOL CALLBACK DlgProcTabbedOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lP
 			for (i = 0 ; i < data->allocedItems ; i++)
 			{
 				DestroyWindow(data->items[i].hwnd); 
+				
 			}
-			mir_free(data->items); 
-			mir_free(data); 
+			mir_free_and_nill(data->items); 
+			mir_free_and_nill(data); 
 			break;
 		}
 	case PSM_CHANGED:

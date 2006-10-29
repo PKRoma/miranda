@@ -327,6 +327,50 @@ static int RestoreWindowPosition(WPARAM wParam,LPARAM lParam)
 	if(wParam&RWPF_NOACTIVATE)
 		wp.showCmd = SW_SHOWNOACTIVATE;
 
+	// Make sure it is inside screen
+	if (IsWinVer98Plus()) {
+		static BOOL loaded = FALSE;
+		static HMONITOR (WINAPI *MyMonitorFromRect)(LPCRECT,DWORD) = NULL;
+		static BOOL (WINAPI *MyGetMonitorInfo)(HMONITOR,LPMONITORINFO) = NULL;
+
+		if (!loaded) {
+			HMODULE hUser32 = GetModuleHandleA("user32");
+			if (hUser32) {
+				MyMonitorFromRect = (HMONITOR(WINAPI*)(LPCRECT,DWORD))GetProcAddress(hUser32,"MonitorFromRect");
+				MyGetMonitorInfo = (BOOL(WINAPI*)(HMONITOR,LPMONITORINFO))GetProcAddress(hUser32,"GetMonitorInfoA");
+				if (MyGetMonitorInfo == NULL)
+					MyGetMonitorInfo = (BOOL(WINAPI*)(HMONITOR,LPMONITORINFO))GetProcAddress(hUser32,"GetMonitorInfo");
+			}
+			loaded = TRUE;
+		}
+
+		if (MyMonitorFromRect != NULL && MyGetMonitorInfo != NULL) {
+			HMONITOR hMonitor;
+			MONITORINFO mi;
+
+			hMonitor = MyMonitorFromRect(&wp.rcNormalPosition, MONITOR_DEFAULTTONEAREST);
+			mi.cbSize = sizeof(mi);
+			MyGetMonitorInfo(hMonitor, &mi);
+
+			if (wp.rcNormalPosition.bottom > mi.rcWork.bottom)
+				OffsetRect(&wp.rcNormalPosition, 0, mi.rcWork.bottom - wp.rcNormalPosition.bottom);
+			if (wp.rcNormalPosition.bottom < mi.rcWork.top)
+				OffsetRect(&wp.rcNormalPosition, 0, mi.rcWork.top - wp.rcNormalPosition.top);
+			if (wp.rcNormalPosition.top > mi.rcWork.bottom)
+				OffsetRect(&wp.rcNormalPosition, 0, mi.rcWork.bottom - wp.rcNormalPosition.bottom);
+			if (wp.rcNormalPosition.top < mi.rcWork.top)
+				OffsetRect(&wp.rcNormalPosition, 0, mi.rcWork.top - wp.rcNormalPosition.top);
+			if (wp.rcNormalPosition.right > mi.rcWork.right)
+				OffsetRect(&wp.rcNormalPosition, mi.rcWork.right - wp.rcNormalPosition.right, 0);
+			if (wp.rcNormalPosition.right < mi.rcWork.left)
+				OffsetRect(&wp.rcNormalPosition, mi.rcWork.left - wp.rcNormalPosition.left, 0);
+			if (wp.rcNormalPosition.left > mi.rcWork.right)
+				OffsetRect(&wp.rcNormalPosition, mi.rcWork.right - wp.rcNormalPosition.right, 0);
+			if (wp.rcNormalPosition.left < mi.rcWork.left)
+				OffsetRect(&wp.rcNormalPosition, mi.rcWork.left - wp.rcNormalPosition.left, 0);
+		}
+	}
+
 	SetWindowPlacement(swp->hwnd,&wp);
 	return 0;
 }

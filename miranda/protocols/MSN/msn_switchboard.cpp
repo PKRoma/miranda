@@ -30,7 +30,7 @@ int __stdcall MSN_ContactJoined( ThreadData* parInfo, HANDLE hContact )
 			return i+1;
 
 	int ret = ++parInfo->mJoinedCount;
-	parInfo->mJoinedContacts = ( HANDLE* )realloc( parInfo->mJoinedContacts, sizeof( HANDLE )*ret );
+	parInfo->mJoinedContacts = ( HANDLE* )mir_realloc( parInfo->mJoinedContacts, sizeof( HANDLE )*ret );
 	parInfo->mJoinedContacts[ ret-1 ] = hContact;
 	return ret;
 }
@@ -48,6 +48,6 @@ int __stdcall MSN_ContactLeft( ThreadData* parInfo, HANDLE hContact )
 
 	int ret = --parInfo->mJoinedCount;
 	memmove( parInfo->mJoinedContacts + i, parInfo->mJoinedContacts+i+1, sizeof( HANDLE )*( ret-i ));
-	parInfo->mJoinedContacts = ( HANDLE* )realloc( parInfo->mJoinedContacts, sizeof( HANDLE )*ret );
+	parInfo->mJoinedContacts = ( HANDLE* )mir_realloc( parInfo->mJoinedContacts, sizeof( HANDLE )*ret );
 	return ret;
 }

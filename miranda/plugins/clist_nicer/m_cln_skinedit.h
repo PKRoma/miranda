@@ -10,39 +10,41 @@
  */
 
 typedef struct _tagImageItem {
-    char szName[40];
+    char    szName[40];
     HBITMAP hbm;
-    BYTE bLeft, bRight, bTop, bBottom;      // sizing margins
-    BYTE alpha;
-    DWORD dwFlags;
-    HDC hdc;
+    BYTE    bLeft, bRight, bTop, bBottom;      // sizing margins
+    BYTE    alpha;
+    DWORD   dwFlags;
+    HDC     hdc;
     HBITMAP hbmOld;
-    LONG inner_height, inner_width;
-    LONG width, height;
+    LONG    inner_height, inner_width;
+    LONG    width, height;
     BLENDFUNCTION bf;
-    BYTE bStretch;
-    HBRUSH fillBrush;
-    LONG   glyphMetrics[4];
-    struct _tagImageItem *nextItem;
+    BYTE    bStretch;
+    HBRUSH  fillBrush;
+    LONG    glyphMetrics[4];
+    struct  _tagImageItem *nextItem;
 } ImageItem;
 
 typedef struct _tagButtonItem {
-    char szName[40];
-    HWND hWnd;
-    LONG xOff, yOff;
-    LONG width, height;
+    char    szName[40];
+    HWND    hWnd;
+    LONG    xOff, yOff;
+    LONG    width, height;
     ImageItem *imgNormal, *imgPressed, *imgHover;
-    LONG normalGlyphMetrics[4];
-    LONG hoverGlyphMetrics[4];
-    LONG pressedGlyphMetrics[4];
-    DWORD dwFlags;
-    DWORD uId;
-    TCHAR szTip[256];
-    char  szService[256];
-    char  szModule[256], szSetting[256];
-    BYTE  bValuePush[256], bValueRelease[256];
-    DWORD type;
-    struct _tagButtonItem *nextItem;
+    LONG    normalGlyphMetrics[4];
+    LONG    hoverGlyphMetrics[4];
+    LONG    pressedGlyphMetrics[4];
+    DWORD   dwFlags;
+    DWORD   uId;
+    TCHAR   szTip[256];
+    char    szService[256];
+    char    szModule[256], szSetting[256];
+    BYTE    bValuePush[256], bValueRelease[256];
+    DWORD   type;
+    void    (*pfnAction)(struct _tagButtonItem *item, HWND hwndDlg, struct MessageWindowData *dat, HWND hwndItem);
+    void    (*pfnCallback)(struct _tagButtonItem *item, HWND hwndDlg, struct MessageWindowData *dat, HWND hwndItem);
+    struct  _tagButtonItem *nextItem;
 } ButtonItem;
 
 typedef struct {
@@ -95,11 +97,15 @@ typedef struct _tagSkinDescription {
     char            szModule[100];
     HWND            hWndParent, hWndTab;
     HWND            hwndCLUI;
-    void            (*pfnSaveCompleteStruct)(void);
-    void            (*pfnClcOptionsChanged )(void);
     HWND            hwndSkinEdit;                       /* out param */
     HWND            hwndImageEdit;                      /* out param */
     HMENU           hMenuItems;
+    void            (*pfnSaveCompleteStruct)(void);
+    void            (*pfnClcOptionsChanged )(void);
+    void*           (*pfnMalloc)(unsigned int);
+    void            (*pfnFree)(void);
+    void*           (*pfnRealloc)(void *, unsigned int);
+    void*           reserved[20];
 } SKINDESCRIPTION;
 
 // defines
@@ -137,6 +143,10 @@ typedef struct _tagSkinDescription {
 #define BUTTON_ISDBACTION    64
 #define BUTTON_ISCONTACTDBACTION 128
 #define BUTTON_DBACTIONONCONTACT 256
+#define BUTTON_ISSIDEBAR 512
+#define BUTTON_NORMALGLYPHISICON 1024
+#define BUTTON_PRESSEDGLYPHISICON 2048
+#define BUTTON_HOVERGLYPHISICON 4096
 
 #define CLCDEFAULT_GRADIENT 0
 #define CLCDEFAULT_CORNER 0

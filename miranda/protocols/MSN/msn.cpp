@@ -29,7 +29,9 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 HINSTANCE hInst;
 PLUGINLINK *pluginLink;
 
-struct MM_INTERFACE memoryManagerInterface;
+MM_INTERFACE   mmi;
+LIST_INTERFACE li;
+UTF8_INTERFACE utfi;
 
 /////////////////////////////////////////////////////////////////////////////////////////
 // Initialization routines
@@ -58,7 +60,7 @@ HANDLE   msnMainThread;
 int      msnOtherContactsBlocked = 0;
 HANDLE   hHookOnUserInfoInit = NULL;
 HANDLE   hGroupAddEvent = NULL;
-HANDLE	 hMSNNudge = NULL;
+HANDLE   hMSNNudge = NULL;
 bool		msnHaveChatDll = false;
 
 MYOPTIONS MyOptions;
@@ -72,7 +74,7 @@ MSN_StatusMessage msnModeMsgs[ MSN_NUM_MODES ] = {
 	{ ID_STATUS_ONTHEPHONE, NULL },
 	{ ID_STATUS_OUTTOLUNCH, NULL } };
 
-struct MSN_CurrentMedia msnCurrentMedia;
+LISTENINGTOINFO msnCurrentMedia;
 
 char* msnProtocolName = NULL;
 char* msnProtChallenge = NULL;
@@ -265,10 +267,10 @@ extern "C" int __declspec(dllexport) Load( PLUGINLINK* link )
 	pluginLink = link;
 	DuplicateHandle( GetCurrentProcess(), GetCurrentThread(), GetCurrentProcess(), &msnMainThread, THREAD_SET_CONTEXT, FALSE, 0 );
 
-	// get the internal malloc/free()
-	memset(&memoryManagerInterface, 0, sizeof(memoryManagerInterface));
-	memoryManagerInterface.cbSize = sizeof(memoryManagerInterface);
-	CallService(MS_SYSTEM_GET_MMI, 0, (LPARAM) &memoryManagerInterface);
+	// get the internal malloc/mir_free()
+	mir_getLI( &li );
+	mir_getMMI( &mmi );
+	mir_getUTFI( &utfi );
 
 	char path[MAX_PATH];
 	char* protocolname;
@@ -281,10 +283,10 @@ extern "C" int __declspec(dllexport) Load( PLUGINLINK* link )
 	fend = strrchr(path,'.');
 	*fend = '\0';
 	CharUpperA( protocolname );
-	msnProtocolName = strdup( protocolname );
+	msnProtocolName = mir_strdup( protocolname );
 
 	mir_snprintf( path, sizeof( path ), "%s:HotmailNotify", protocolname );
-	ModuleName = strdup( path );
+	ModuleName = mir_strdup( path );
 
 //	Uninstalling purposes
 //	if (ServiceExists("PluginSweeper/Add"))
@@ -322,11 +324,11 @@ extern "C" int __declspec(dllexport) Load( PLUGINLINK* link )
 	strcpy( mailsoundtemp, protocolname );
 	strcat( mailsoundtemp, ": " );
 	strcat( mailsoundtemp,  MSN_Translate( "Hotmail" ));
-	mailsoundname = strdup( mailsoundtemp );
+	mailsoundname = mir_strdup( mailsoundtemp );
 	SkinAddNewSound( mailsoundtemp, mailsoundtemp, "hotmail.wav" );
 
 	msnStatusMode = msnDesiredStatus = ID_STATUS_OFFLINE;
-	ZeroMemory(&msnCurrentMedia, sizeof(struct MSN_CurrentMedia));
+	ZeroMemory(&msnCurrentMedia, sizeof(msnCurrentMedia));
 	msnLoggedIn = false;
 	LoadMsnServices();
 	Lists_Init();
@@ -372,25 +374,25 @@ extern "C" int __declspec( dllexport ) Unload( void )
 	P2pSessions_Uninit();
 	Netlib_CloseHandle( hNetlibUser );
 
-	free( mailsoundname );
-	free( msnProtocolName );
-	free( ModuleName );
+	mir_free( mailsoundname );
+	mir_free( msnProtocolName );
+	mir_free( ModuleName );
 
 	CloseHandle( msnMainThread );
 
 	for ( int i=0; i < MSN_NUM_MODES; i++ )
 		if ( msnModeMsgs[ i ].m_msg )
-			free( msnModeMsgs[ i ].m_msg );
+			mir_free( msnModeMsgs[ i ].m_msg );
 
-	if ( kv ) free( kv );
-	if ( sid ) free( sid );
-	if ( passport ) free( passport );
-	if ( MSPAuth ) free( MSPAuth );
-	if ( rru ) free( rru );
-	if ( profileURL ) free( profileURL );
+	if ( kv ) mir_free( kv );
+	if ( sid ) mir_free( sid );
+	if ( passport ) mir_free( passport );
+	if ( MSPAuth ) mir_free( MSPAuth );
+	if ( rru ) mir_free( rru );
+	if ( profileURL ) mir_free( profileURL );
 
-	if ( msnPreviousUUX ) free( msnPreviousUUX );
-	if ( msnExternalIP ) free( msnExternalIP );
+	if ( msnPreviousUUX ) mir_free( msnPreviousUUX );
+	if ( msnExternalIP ) mir_free( msnExternalIP );
 	return 0;
 }
 
@@ -399,8 +401,8 @@ extern "C" int __declspec( dllexport ) Unload( void )
 
 extern "C" __declspec(dllexport) PLUGININFO* MirandaPluginInfo(DWORD mirandaVersion)
 {
-	if ( mirandaVersion < PLUGIN_MAKE_VERSION( 0, 5, 0, 0 )) {
-		MessageBox( NULL, _T("The MSN protocol plugin cannot be loaded. It requires Miranda IM 0.5.0 or later."), _T("MSN Protocol Plugin"), MB_OK|MB_ICONWARNING|MB_SETFOREGROUND|MB_TOPMOST );
+	if ( mirandaVersion < PLUGIN_MAKE_VERSION( 0, 6, 0, 15 )) {
+		MessageBox( NULL, _T("The MSN protocol plugin cannot be loaded. It requires Miranda IM 0.6.0.15 or later."), _T("MSN Protocol Plugin"), MB_OK|MB_ICONWARNING|MB_SETFOREGROUND|MB_TOPMOST );
 		return NULL;
 	}
 

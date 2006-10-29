@@ -698,12 +698,8 @@ void JabberGroupchatProcessMessage( XmlNode *node, void *userdata )
 	if ( !lstrcmp( type, _T("error")))
 		return;
 
-	#if defined( _UNICODE )
-		char* jid = u2a( item->jid );
-	#else
-		char* jid = item->jid;
-	#endif
-	GCDEST gcd = { jabberProtoName, jid, 0 };
+	GCDEST gcd = { jabberProtoName, NULL, 0 };
+	gcd.ptszID = item->jid;
 
 	if (( n = JabberXmlGetChild( node, "subject" )) != NULL ) {
 		if ( n->text == NULL || n->text[0] == '\0' )
@@ -755,38 +751,25 @@ void JabberGroupchatProcessMessage( XmlNode *node, void *userdata )
 	if ( msgTime == 0 || msgTime > now )
 		msgTime = now;
 
-	#if defined( _UNICODE )
-		char* dispNick = u2a( nick );
-		char* dispMsg  = u2a( msgText );
-	#else
-		char* dispNick = nick;
-		char* dispMsg  = msgText;
-	#endif
-
 	GCEVENT gce = {0};
 	gce.cbSize = sizeof(GCEVENT);
 	gce.pDest = &gcd;
-	gce.pszUID = dispNick;
-	gce.pszNick = dispNick;
-	gce.bAddToLog = TRUE;
+	gce.ptszUID = nick;
+	gce.ptszNick = nick;
 	gce.time = msgTime;
-	gce.pszText = EscapeChatTags( dispMsg );
+	gce.ptszText = EscapeChatTags( msgText );
 	gce.bIsMe = lstrcmp( nick, item->nick ) == 0;
+	gce.dwFlags = GC_TCHAR | GCEF_ADDTOLOG;
 	JCallService(MS_GC_EVENT, NULL, (LPARAM)&gce);
 
 	item->bChatActive = 2;
 
 	if ( gcd.iType == GC_EVENT_TOPIC ) {
-		gce.bAddToLog = FALSE;
+		gce.dwFlags &= ~GCEF_ADDTOLOG;
 		gcd.iType = GC_EVENT_SETSBTEXT;
 		JCallService(MS_GC_EVENT, NULL, (LPARAM)&gce);
 	}
 
-	#if defined( _UNICODE )
-		mir_free( dispNick );
-		mir_free( dispMsg );
-		mir_free( jid );
-	#endif
 	mir_free( (void*)gce.pszText ); // Since we processed msgText and created a new string
 }
 
@@ -877,7 +860,7 @@ void JabberGroupchatProcessInvite( TCHAR* roomJid, TCHAR* from, TCHAR* reason, T
 		inviteInfo->from     = mir_tstrdup( from );
 		inviteInfo->reason   = mir_tstrdup( reason );
 		inviteInfo->password = mir_tstrdup( password );
-		JabberForkThread(( JABBER_THREAD_FUNC )JabberGroupchatInviteAcceptThread, 0, ( void* )inviteInfo );
+		mir_forkthread(( pThreadFunc )JabberGroupchatInviteAcceptThread, inviteInfo );
 	}
 	else {
 		TCHAR* myNick = JabberNickFromJID( jabberJID );

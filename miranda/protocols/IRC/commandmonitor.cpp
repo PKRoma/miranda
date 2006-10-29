@@ -434,7 +434,7 @@ bool CMyMonitor::OnIrc_WELCOME(const CIrcMessage* pmsg)
 					IPRESOLVE * ipr = new IPRESOLVE;
 					ipr->iType = IP_AUTO;
 					ipr->pszAdr = p1;
-					forkthread(ResolveIPThread, NULL, ipr);
+					mir_forkthread(ResolveIPThread, ipr);
 				}
 
 			}
@@ -1030,7 +1030,7 @@ bool CMyMonitor::IsCTCP(const CIrcMessage* pmsg)
 			// incoming VERSION
 			else if (pmsg->m_bIncoming && command == "version")
 			{
-				PostIrcMessage("/NOTICE %s \001VERSION Miranda IRC v %s, (c) J Persson 2003 - 2005\001", pmsg->prefix.sNick.c_str(), "%version");
+				PostIrcMessage("/NOTICE %s \001VERSION Miranda IM %s (IRC v %s), (c) J Persson 2003 - 2005\001", pmsg->prefix.sNick.c_str(), "%mirver", "%version");
 				char temp[300];
 				mir_snprintf(temp, sizeof(temp), Translate("CTCP VERSION requested by %s"), pmsg->prefix.sNick.c_str());
 				DoEvent(GC_EVENT_INFORMATION, "Network log", NULL, temp, NULL, NULL, NULL, true, false); 
@@ -1636,7 +1636,7 @@ bool CMyMonitor::OnIrc_ENDNAMES(const CIrcMessage* pmsg)
 					gce.pszNick = sTemp.c_str();
 					gce.pszStatus = sStat.c_str();
 					BOOL bIsMe = (lstrcmpi(gce.pszNick, m_session.GetInfo().sNick.c_str()) == 0)?TRUE:FALSE;
-					gce.bAddToLog = false;
+					gce.dwFlags = 0;
 					gce.bIsMe = bIsMe;
 					gce.time = bIsMe?time(0):0;
 
@@ -1682,7 +1682,7 @@ bool CMyMonitor::OnIrc_ENDNAMES(const CIrcMessage* pmsg)
 				gcd.pszID = (char*)sID.c_str();
 				gcd.iType = GC_EVENT_CONTROL;
 				gce.cbSize = sizeof(GCEVENT);
-				gce.bAddToLog = false;
+				gce.dwFlags = 0;
 				gce.bIsMe = false;
 				gce.dwItemData = false;
 				gce.pszNick = NULL;
@@ -2294,7 +2294,7 @@ bool CMyMonitor::OnIrc_WHO_END(const CIrcMessage* pmsg)
 					if(GetWord(WhoReply.c_str(), 3)[0] == 'G')
 					{
 						S += User;
-						S += " ";
+						S += "\t";
 					}
 					SS = GetWordAddress(WhoReply.c_str(), 4);
 					if(SS.empty())
@@ -2302,7 +2302,7 @@ bool CMyMonitor::OnIrc_WHO_END(const CIrcMessage* pmsg)
 					WhoReply = SS;
 					User = GetWord(WhoReply.c_str(), 0);
 				}
-				DoEvent(GC_EVENT_SETSTATUSEX, pmsg->parameters[1].c_str(), NULL, S == ""?NULL:S.c_str(), NULL, NULL, NULL, FALSE, FALSE); 
+				DoEvent(GC_EVENT_SETSTATUSEX, pmsg->parameters[1].c_str(), NULL, S == ""?NULL:S.c_str(), NULL, NULL, GC_SSE_TABDELIMITED, FALSE, FALSE); 
 
 				return true;
 			}
@@ -2461,7 +2461,7 @@ bool CMyMonitor::OnIrc_WHO_REPLY(const CIrcMessage* pmsg)
 			IPRESOLVE * ipr = new IPRESOLVE;
 			ipr->iType = IP_AUTO;
 			ipr->pszAdr = host;
-			forkthread(ResolveIPThread, NULL, ipr);
+			mir_forkthread(ResolveIPThread, ipr);
 		}
 	}
 	if (command[0] == 'U')
@@ -2933,7 +2933,7 @@ int DoPerform(char * event)
 		if(!my_strstri(DoThis, "/away"))
 			PostIrcMessageWnd(NULL, NULL, (char *)DoThis);
 		else
-			forkthread(AwayWarningThread, NULL, NULL  );
+			mir_forkthread(AwayWarningThread, NULL  );
 		delete [] DoThis;
 		delete [] search;
 		return 1;

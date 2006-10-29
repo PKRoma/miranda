@@ -37,7 +37,7 @@ BOOL CALLBACK DlgProcAbout(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam)
 		{	int h;
 			LOGFONT lf;
 			HFONT hFont = (HFONT)SendDlgItemMessage(hwndDlg,IDC_MIRANDA,WM_GETFONT,0,0);
-			int iState=0;
+			iState=0;
 			GetObject(hFont,sizeof(lf),&lf);
 			h=lf.lfHeight;
 			lf.lfHeight=(int)(lf.lfHeight*1.5);

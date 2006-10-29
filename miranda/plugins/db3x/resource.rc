@@ -54,14 +54,14 @@ FONT 8, "MS Shell Dlg", 0, 0, 0x1
 BEGIN
     LTEXT           "Database settings are being imported from",IDC_STATIC,5,
                     5,177,8
-    CONTROL         "",IDC_ININAME,"Static",SS_SIMPLE | SS_NOPREFIX | 
+    CONTROL         "",IDC_ININAME,"Static",SS_SIMPLE | SS_NOPREFIX |
                     WS_GROUP,5,13,177,8
     LTEXT           "This file wishes to change the setting",IDC_STATIC,5,24,
                     177,8
-    CONTROL         "",IDC_SETTINGNAME,"Static",SS_SIMPLE | SS_NOPREFIX | 
+    CONTROL         "",IDC_SETTINGNAME,"Static",SS_SIMPLE | SS_NOPREFIX |
                     WS_GROUP,12,33,170,8
     LTEXT           "to the value",IDC_STATIC,5,42,177,8
-    CONTROL         "",IDC_NEWVALUE,"Static",SS_SIMPLE | SS_NOPREFIX | 
+    CONTROL         "",IDC_NEWVALUE,"Static",SS_SIMPLE | SS_NOPREFIX |
                     WS_GROUP,12,51,170,8
     LTEXT           "",IDC_SECURITYINFO,5,60,177,8
     LTEXT           "Do you want to allow this change?",IDC_STATIC,5,71,177,
@@ -82,7 +82,7 @@ CAPTION "Database Import Complete"
 FONT 8, "MS Shell Dlg", 0, 0, 0x1
 BEGIN
     LTEXT           "The import has completed from",IDC_STATIC,5,5,176,8
-    CONTROL         "",IDC_ININAME,"Static",SS_SIMPLE | SS_NOPREFIX | 
+    CONTROL         "",IDC_ININAME,"Static",SS_SIMPLE | SS_NOPREFIX |
                     WS_GROUP,5,13,176,8
     LTEXT           "What do you want to do with the file now?",IDC_STATIC,5,
                     24,176,8
@@ -167,4 +167,3 @@ END
 
 /////////////////////////////////////////////////////////////////////////////
 #endif    // not APSTUDIO_INVOKED
-

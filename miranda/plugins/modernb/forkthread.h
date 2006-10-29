@@ -47,7 +47,7 @@ Cavets:
 	creation depends on CRT which can not be shared.
 
 */
-unsigned long forkthread (
+unsigned long mir_forkthread (
 	void (__cdecl *threadcode)(void*),
 	unsigned long stacksize,
 	void *arg

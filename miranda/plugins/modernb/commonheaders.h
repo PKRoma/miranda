@@ -43,13 +43,13 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #endif
 
 #if defined (_DEBUG)
-  #define TRACE(str)  OutputDebugStringA(str)
+#define TRACE(str)  { log0(str); }
 #else
-  #define TRACE(str)
+  #define TRACE(str)  
 #endif
 
 #if defined (_DEBUG)
-  #define TRACEVAR(str,n) {char buf[255]; _snprintf(buf,sizeof(buf),str,n); OutputDebugStringA(buf);}
+  #define TRACEVAR(str,n) { log1(str,n); }
 #else
   #define TRACEVAR(str,n)
 #endif
@@ -75,7 +75,6 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include <string.h>
 #include <direct.h>
 #include "resource.h"
-#include "forkthread.h"
 #include <win2k.h>
 
 #include <newpluginapi.h>
@@ -117,24 +116,40 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include "m_avatars.h"
 #include "m_smileyadd.h"
 
+//macros to free data and set it pointer to NULL
+#define mir_free_and_nill(x) {mir_free(x); x=NULL;}
 // shared vars
 extern HINSTANCE g_hInst;
 
-/* most free()'s are invalid when the code is executed from a dll, so this changes
- all the bad free()'s to good ones, however it's still incorrect code. The reasons for not
- changing them include:
-
-  * DBFreeVariant has a CallService() lookup
-  * free() is executed in some large loops to do with clist creation of group data
-  * easy search and replace
-
-*/
 typedef  struct _menuProto 
 {
   char *szProto;
   HANDLE menuID;
   HANDLE hasAdded;
 } MenuProto;
+
+#define CLUI_FRAME_AUTOHIDENOTIFY  512
+#define CLUI_FRAME_SHOWALWAYS      1024
+
+struct CluiData
+{
+	/************************************ 
+	 **         Global variables       **
+	 ************************************/
+
+	/*         NotifyArea menu          */
+	HANDLE		hMenuNotify;             
+	WORD		wNextMenuID;	
+	int			iIconNotify;
+	BOOL		bEventAreaEnabled;
+	BOOL		bNotifyActive;
+    DWORD       dwFlags;
+    TCHAR *     szNoEvents;
+    int         hIconNotify;
+    HANDLE      hUpdateContact;
+};
+
+
 
 extern struct LIST_INTERFACE li;
 extern struct MM_INTERFACE memoryManagerInterface;
@@ -143,17 +158,10 @@ extern struct MM_INTERFACE memoryManagerInterface;
 
 #define MAX_REGS(_A_) (sizeof(_A_)/sizeof(_A_[0]))
 
-
-#define mir_alloc(n) memoryManagerInterface.mmi_malloc(n)
-#define mir_free(ptr) { mir_free_proxy(ptr); ptr=NULL; }
-#define mir_realloc(ptr,size) memoryManagerInterface.mmi_realloc(ptr,size)
-
 #ifndef CS_DROPSHADOW
 #define CS_DROPSHADOW 0x00020000
 #endif
 
-extern int mir_realloc_proxy(void *ptr,int size);
-extern int mir_free_proxy(void *ptr);
 extern BOOL __cdecl strstri(const char *a, const char *b);
 extern BOOL __cdecl mir_bool_strcmpi(const char *a, const char *b);
 extern int __cdecl mir_strcmp (const char *a, const char *b);
@@ -161,14 +169,6 @@ extern int __cdecl mir_strlen (const char *a);
 extern int __cdecl mir_strcmpi(const char *a, const char *b);
 extern int __cdecl mir_tstrcmpi(const TCHAR *a, const TCHAR *b);
 extern __inline void *mir_calloc( size_t num, size_t size );
-extern __inline char * mir_strdup(const char * src);
-extern __inline wchar_t * mir_strdupW(const wchar_t * src);
-#ifdef UNICODE
-	#define mir_tstrdup(a) mir_strdupW(a)
-#else
-	#define mir_tstrdup(a) mir_strdup(a)
-#endif
-
 
 char *DBGetStringA(HANDLE hContact,const char *szModule,const char *szSetting);
 extern wchar_t *DBGetStringW(HANDLE hContact,const char *szModule,const char *szSetting);
@@ -178,10 +178,21 @@ extern DWORD exceptFunction(LPEXCEPTION_POINTERS EP);
 #undef HookEvent
 #undef UnhookEvent
 
+#ifdef _DEBUG
+#define HookEvent(a,b)  mod_HookEvent(a,b,__FILE__,__LINE__)
+#else /* _DEBUG */
 #define HookEvent(a,b)  mod_HookEvent(a,b)
+#endif /* _DEBUG */
+
 #define UnhookEvent(a)  mod_UnhookEvent(a)
 
-extern HANDLE mod_HookEvent(char *EventID,MIRANDAHOOK HookProc);
+extern HANDLE mod_HookEvent(char *EventID, MIRANDAHOOK HookProc
+               #ifdef _DEBUG
+                            , char * file, int line);
+                #else
+                            );
+                #endif                  
+
 extern int mod_UnhookEvent(HANDLE hHook);
 extern int UnhookAll();
 
@@ -209,10 +220,10 @@ extern int UnhookAll();
 
 
 
-HBITMAP CreateBitmap32(int cx, int cy);
+HBITMAP SkinEngine_CreateDIB32(int cx, int cy);
 extern void InitDisplayNameCache(void);
 extern void FreeDisplayNameCache();
-extern int ShowWindowNew(HWND hwnd, int cmd);
+extern int CLUI_ShowWindowMod(HWND hwnd, int cmd);
 
 #ifdef UNICODE
 	#define GCMDF_TCHAR_MY GCMDF_TCHAR|CNF_UNICODE
@@ -236,30 +247,53 @@ extern void Utf8Decode( char* str, wchar_t** ucs2 );
 #define DeleteObject(a) DebugDeleteObject(a)
 #endif 
 
-#define lockdat
-//EnterCriticalSection(&(dat->lockitemCS))
-#define ulockdat
-//LeaveCriticalSection(&(dat->lockitemCS))
-
-#define strsetA(a,b) {if (a) mir_free(a); a=mir_strdup(b);}
-#define strsetT(a,b) {if (a) mir_free(a); a=mir_tstrdup(b);}
+#define strsetA(a,b) {if (a) mir_free_and_nill(a); a=mir_strdup(b);}
+#define strsetT(a,b) {if (a) mir_free_and_nill(a); a=mir_tstrdup(b);}
 
 extern void TRACE_ERROR();
 extern BOOL DebugDeleteObject(HGDIOBJ a);
 extern BOOL mod_DeleteDC(HDC hdc);
-extern BOOL ResetEffect(HDC hdc);
-extern BOOL SelectEffect(HDC hdc, BYTE EffectID, DWORD FirstColor, DWORD SecondColor);
+extern BOOL SkinEngine_ResetTextEffect(HDC hdc);
+extern BOOL SkinEngine_SelectTextEffect(HDC hdc, BYTE EffectID, DWORD FirstColor, DWORD SecondColor);
 #define GLOBAL_PROTO_NAME "global_connect"
 extern void IvalidateDisplayNameCache(DWORD mode);
-CRITICAL_SECTION cacheSection;
+
 extern SortedList *clistCache;
-//#define lockcache {if(clistCache) EnterCriticalSection(&cacheSection); if (cacheSection.RecursionCount>20) DebugBreak();}
-//#define ulockcache if(clistCache) LeaveCriticalSection(&cacheSection)
-extern void LockCacheItem(HANDLE hContact, char*, int);
-extern void UnlockCacheItem(HANDLE hContact);
+
+HICON LoadSmallIconShared(HINSTANCE hInstance, LPCTSTR lpIconName);
+HICON LoadSmallIcon(HINSTANCE hInstance, LPCTSTR lpIconName);
+BOOL DestroyIcon_protect(HICON icon);
+extern BOOL (WINAPI *pfEnableThemeDialogTexture)(HANDLE, DWORD);
+
+#ifndef ETDT_ENABLETAB
+#define ETDT_DISABLE        0x00000001
+#define ETDT_ENABLE         0x00000002
+#define ETDT_USETABTEXTURE  0x00000004
+#define ETDT_ENABLETAB      (ETDT_ENABLE  | ETDT_USETABTEXTURE)
+#endif
+
+
 
 #define TreeView_InsertItemA(hwnd, lpis) \
 	(HTREEITEM)SendMessageA((hwnd), TVM_INSERTITEMA, 0, (LPARAM)(LPTV_INSERTSTRUCTA)(lpis))
 
 #define TreeView_GetItemA(hwnd, pitem) \
 	(BOOL)SendMessageA((hwnd), TVM_GETITEMA, 0, (LPARAM)(TV_ITEM *)(pitem))
+
+extern DWORD g_dwAskAwayMsgThreadID;
+extern DWORD g_dwGetTextThreadID;
+extern DWORD g_dwSmoothAnimationThreadID;
+extern DWORD g_dwFillFontListThreadID;
+
+extern HANDLE hSmileyAddOptionsChangedHook,hAvatarChanged,hIconChangedHook;
+
+#define STATE_NORMAL 0
+#define STATE_PREPEARETOEXIT 1
+#define STATE_EXITING 2
+extern BYTE g_bSTATE;
+#define MirandaExiting() ((g_bSTATE>STATE_NORMAL))
+extern BYTE gl_TrimText;
+
+extern struct CluiData g_CluiData;
+extern void UnLoadContactListModule();
+extern __inline char * strdupn(const char * src, int len);

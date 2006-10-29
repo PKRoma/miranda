@@ -61,7 +61,7 @@ typedef struct  {
     int iSecondLineMaxSmileyHeight;
 	DWORD timezone;
     DWORD timediff;
-
 } displayNameCacheEntry,*pdisplayNameCacheEntry, *PDNCE;
+
 
 #endif

@@ -1,41 +1,10 @@
 #include "commonheaders.h"
 
+BYTE gl_TrimText=1;
 
-#define SAFE_PTR(a) a?(IsBadReadPtr(a,1)?a=NULL:a):a
-#define SAFE_STR(a) a?a:""
-
-
-
-int mir_realloc_proxy(void *ptr,int size)
-{
-	/*	if (IsBadCodePtr((FARPROC)ptr))
-		{
-			char buf[256];
-			mir_snprintf(buf,sizeof(buf),"Bad code ptr in mir_realloc_proxy ptr: %x\r\n",ptr);
-			//ASSERT("Bad code ptr");		
-			TRACE(buf);
-			DebugBreak();
-			return 0;
-		}
-		*/
-	memoryManagerInterface.mmi_realloc(ptr,size);
-	return 0;
-
-}
-
-
-int mir_free_proxy(void *ptr)
-{
-	if (ptr==NULL) //||IsBadCodePtr((FARPROC)ptr))
-		return 0;
-    memoryManagerInterface.mmi_free(ptr);
-	return 0;
-}
 BOOL __cdecl strstri(const char *a, const char *b)
 {
     char * x, *y;
-	SAFE_PTR(a);
-	SAFE_PTR(b);
     if (!a || !b) return FALSE;
     x=_strdup(a);
     y=_strdup(b);
@@ -43,21 +12,16 @@ BOOL __cdecl strstri(const char *a, const char *b)
     y=_strupr(y);
     if (strstr(x,y))
     {
-        
         free(x);
-        //if (x!=y) 
-            free(y);
+        free(y);
         return TRUE;
     }
     free(x);
-   // if (x!=y) 
-        free(y);
+    free(y);
     return FALSE;
 }
 int __cdecl mir_strcmpi(const char *a, const char *b)
 {
-	SAFE_PTR(a);
-	SAFE_PTR(b);
 	if (a==NULL && b==NULL) return 0;
 	if (a==NULL || b==NULL) return _stricmp(a?a:"",b?b:"");
     return _stricmp(a,b);
@@ -65,16 +29,12 @@ int __cdecl mir_strcmpi(const char *a, const char *b)
 
 int __cdecl mir_tstrcmpi(const TCHAR *a, const TCHAR *b)
 {
-	SAFE_PTR(a);
-	SAFE_PTR(b);
 	if (a==NULL && b==NULL) return 0;
 	if (a==NULL || b==NULL) return _tcsicmp(a?a:TEXT(""),b?b:TEXT(""));
 	return _tcsicmp(a,b);
 }
 BOOL __cdecl mir_bool_strcmpi(const char *a, const char *b)
 {
-	SAFE_PTR(a);
-	SAFE_PTR(b);
 	if (a==NULL && b==NULL) return 1;
 	if (a==NULL || b==NULL) return _stricmp(a?a:"",b?b:"")==0;
     return _stricmp(a,b)==0;
@@ -82,8 +42,6 @@ BOOL __cdecl mir_bool_strcmpi(const char *a, const char *b)
 
 BOOL __cdecl mir_bool_tstrcmpi(const TCHAR *a, const TCHAR *b)
 {
-	SAFE_PTR(a);
-	SAFE_PTR(b);
 	if (a==NULL && b==NULL) return 1;
 	if (a==NULL || b==NULL) return _tcsicmp(a?a:TEXT(""),b?b:TEXT(""))==0;
 	return _tcsicmp(a,b)==0;
@@ -96,24 +54,18 @@ BOOL __cdecl mir_bool_tstrcmpi(const TCHAR *a, const TCHAR *b)
 
 int __cdecl mir_strcmp (const char *a, const char *b)
 {
-	SAFE_PTR(a);
-	SAFE_PTR(b);
 	if (!(a&&b)) return a!=b;
 	return (strcmp(a,b));
 };
 
-_inline int mir_strlen (const char *a)	
+__inline int mir_strlen (const char *a)	
 {	
-
-	SAFE_PTR(a);
 	if (a==NULL) return 0;	
 	return (strlen(a));	
 };	
  	 	
 #define strlen(a) mir_strlen(a)
 #define strcmp(a,b) mir_strcmp(a,b)
-
-
  	 	
 __inline void *mir_calloc( size_t num, size_t size )
 {
@@ -127,34 +79,23 @@ extern __inline wchar_t * mir_strdupW(const wchar_t * src)
 {
 	wchar_t * p;
 	if (src==NULL) return NULL;
-	if (IsBadStringPtrW(src,255)) return NULL;
 	p=(wchar_t *) mir_alloc((lstrlenW(src)+1)*sizeof(wchar_t));
 	if (!p) return 0;
 	lstrcpyW(p, src);
 	return p;
 }
 
-//__inline TCHAR * mir_tstrdup(const TCHAR * src)
-//{
-//	TCHAR * p;
-//	if (src==NULL) return NULL;
-//    p= mir_alloc((lstrlen(src)+1)*sizeof(TCHAR));
-//    if (!p) return 0;
-//	lstrcpy(p, src);
-//	return p;
-//}
-//
-
-__inline char * mir_strdup(const char * src)
+//copy len symbols from string - do not check is it null terminated or len is more then actual 
+__inline char * strdupn(const char * src, int len)
 {
-	char * p;
-	if (src==NULL) return NULL;
-    p= mir_alloc( strlen(src)+1 );
+    char * p;
+    if (src==NULL) return NULL;
+    p= malloc(len+1);
     if (!p) return 0;
-	strcpy(p, src);
-	return p;
+    memcpy(p,src,len);
+    p[len]='\0';
+    return p;
 }
-
 
 TCHAR *DBGetStringT(HANDLE hContact,const char *szModule,const char *szSetting)
 {
@@ -173,7 +114,7 @@ char *DBGetStringA(HANDLE hContact,const char *szModule,const char *szSetting)
 	if(dbv.type==DBVT_ASCIIZ)
     {
         str=mir_strdup(dbv.pszVal);
-        //mir_free(dbv.pszVal);
+        //mir_free_and_nill(dbv.pszVal);
     }
     DBFreeVariant(&dbv);
 	return str;
@@ -186,7 +127,7 @@ wchar_t *DBGetStringW(HANDLE hContact,const char *szModule,const char *szSetting
 	if(dbv.type==DBVT_WCHAR)
 	{
 		str=mir_strdupW(dbv.pwszVal);
-		//mir_free(dbv.pwszVal);
+		//mir_free_and_nill(dbv.pwszVal);
 	}
 	//else  TODO if no unicode string (only ansi)
 	//
@@ -271,12 +212,35 @@ BOOL DebugDeleteObject(HGDIOBJ a)
 	return res;
 }
 
-BOOL mod_DeleteDC(HDC hdc)
+__inline BOOL mod_DeleteDC(HDC hdc)
 {
-  ResetEffect(hdc);
+//  SkinEngine_ResetTextEffect(hdc);
   return DeleteDC(hdc);
 }
 #ifdef _DEBUG
 #define DeleteObject(a) DebugDeleteObject(a)
 #endif 
+
+HICON LoadSmallIconShared(HINSTANCE hInstance, LPCTSTR lpIconName)
+{
+		int cx=GetSystemMetrics(SM_CXSMICON);
+		return LoadImage(hInstance,lpIconName, IMAGE_ICON,cx,cx, LR_DEFAULTCOLOR|LR_SHARED);
+}
+
+HICON LoadSmallIcon(HINSTANCE hInstance, LPCTSTR lpIconName)
+{
+	HICON hIcon=NULL;				  // icon handle 
+	int index=-(int)lpIconName;
+	TCHAR filename[MAX_PATH]={0};
+	GetModuleFileName(hInstance,filename,MAX_PATH);
+ 	ExtractIconEx(filename,index,NULL,&hIcon,1);
+	return hIcon;
+}
+
+BOOL DestroyIcon_protect(HICON icon)
+{
+	if (icon) return DestroyIcon(icon);
+	return FALSE;
+}
+
 

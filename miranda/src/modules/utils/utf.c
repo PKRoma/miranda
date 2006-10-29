@@ -26,13 +26,13 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 /////////////////////////////////////////////////////////////////////////////////////////
 // Utf8Decode - converts UTF8-encoded string to the UCS2/MBCS format
 
-void Utf8Decode( char* str, wchar_t** ucs2 )
+char* Utf8DecodeCP( char* str, int codepage, wchar_t** ucs2 )
 {
 	int len;
 	wchar_t* tempBuf;
 
 	if ( str == NULL )
-		return;
+		return NULL;
 
 	len = strlen( str );
 	if ( len < 2 ) {
@@ -41,7 +41,7 @@ void Utf8Decode( char* str, wchar_t** ucs2 )
 			MultiByteToWideChar( CP_ACP, 0, str, len, *ucs2, len );
 			( *ucs2 )[ len ] = 0;
 		}
-		return;
+		return str;
 	}
 
 	tempBuf = ( wchar_t* )alloca(( len+1 )*sizeof( wchar_t ));
@@ -81,12 +81,18 @@ void Utf8Decode( char* str, wchar_t** ucs2 )
 	}
 
    WideCharToMultiByte( CP_ACP, 0, tempBuf, -1, str, len, NULL, NULL );
+	return str;
+}
+
+char* Utf8Decode( char* str, wchar_t** ucs2 )
+{
+	return Utf8DecodeCP( str, LangPackGetDefaultCodePage(), ucs2 );
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////
 // Utf8Encode - converts MBCS string to the UTF8-encoded format
 
-char* Utf8Encode( const char* src )
+char* Utf8EncodeCP( const char* src, int codepage )
 {
 	int len;
 	char* result;
@@ -101,7 +107,7 @@ char* Utf8Encode( const char* src )
 		return NULL;
 
 	tempBuf = ( wchar_t* )alloca(( len+1 )*sizeof( wchar_t ));
-	MultiByteToWideChar( CP_ACP, 0, src, -1, tempBuf, len );
+	MultiByteToWideChar( codepage, 0, src, -1, tempBuf, len );
 	tempBuf[ len ] = 0;
 	{
 		wchar_t* s = tempBuf;
@@ -127,6 +133,11 @@ char* Utf8Encode( const char* src )
 	}
 
 	return result;
+}
+
+char* Utf8Encode( const char* src )
+{
+	return Utf8EncodeCP( src, LangPackGetDefaultCodePage());
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////

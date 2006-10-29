@@ -17,7 +17,6 @@ along with this program; if not, write to the Free Software
 Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 */
 #include "dbtool.h"
-#include <stddef.h>
 
 static DWORD ofsThisSettings,ofsDestPrevSettings;
 
@@ -45,31 +44,26 @@ int WorkSettingsChain(DWORD ofsContact,DBContact *dbc,int firstTime)
 		ofsThisSettings=dbcsOld.ofsNext;
 		return ERROR_SUCCESS;
 	}
-	dbcsNew=(DBContactSettings*)malloc(offsetof(DBContactSettings,blob)+dbcsOld.cbBlob);
+	dbcsNew=(DBContactSettings*)_alloca(offsetof(DBContactSettings,blob)+dbcsOld.cbBlob);
 	if((ret=ReadSegment(ofsThisSettings,dbcsNew,offsetof(DBContactSettings,blob)+dbcsOld.cbBlob))!=ERROR_SUCCESS) {
 		if(ret!=ERROR_HANDLE_EOF) {   //eof is OK because blank space at the end doesn't matter
-			free(dbcsNew);
 			return ERROR_NO_MORE_ITEMS;
 		}
 	}
 	if((dbcsNew->ofsModuleName=ConvertModuleNameOfs(dbcsOld.ofsModuleName))==0) {
-		free(dbcsNew);
 		ofsThisSettings=dbcsOld.ofsNext;
 		return ERROR_SUCCESS;
 	}
 	if(dbcsNew->blob[0]==0) {
 		AddToStatus(STATUS_MESSAGE,"Empty settings group at %08X: deleting",ofsThisSettings);
-		free(dbcsNew);
 		ofsThisSettings=dbcsOld.ofsNext;
 		return ERROR_SUCCESS;
 	}
 	dbcsNew->ofsNext=0;
 	//TODO? validate all settings in blob/compact if necessary
 	if((ofsDestThis=WriteSegment(WSOFS_END,dbcsNew,offsetof(DBContactSettings,blob)+dbcsNew->cbBlob))==WS_ERROR) {
-		free(dbcsNew);
 		return ERROR_HANDLE_DISK_FULL;
 	}
-	free(dbcsNew);
 	if(ofsDestPrevSettings) WriteSegment(ofsDestPrevSettings+offsetof(DBContactSettings,ofsNext),&ofsDestThis,sizeof(DWORD));
 	else dbc->ofsFirstSettings=ofsDestThis;
 	ofsDestPrevSettings=ofsDestThis;

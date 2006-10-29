@@ -1,6 +1,6 @@
 /*
 Plugin of Miranda IM for reading/writing PNG images.
-Copyright (c) 2004-5 George Hazan (ghazan@postman.ru)
+Copyright (c) 2004-6 George Hazan (ghazan@postman.ru)
 
 Portions of this code are gotten from the libpng codebase.
 Copyright 2000, Willem van Schaik.  For conditions of distribution and
@@ -360,8 +360,8 @@ PLUGININFO pluginInfo = {
 	"png2dib plugin for Miranda IM ( "__DATE__" )",
 	"George Hazan",
 	"ghazan@miranda-im.org",
-	"(c) 2004-05 George Hazan",
-	"http://miranda-im.org/download/details.php?action=viewfile&id=437",
+	"(c) 2004-06 George Hazan",
+	"http://addons.miranda-im.org/details.php?action=viewfile&id=1420",
 	0,
 	0
 };

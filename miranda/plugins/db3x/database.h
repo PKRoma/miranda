@@ -140,26 +140,35 @@ struct DBEvent {
 };
 #include <poppack.h>
 
+typedef struct
+{
+	BYTE bIsResident;
+	char name[1];
+}
+	DBCachedSettingName;
 
 typedef struct
 {
 	char* name;
 	DBVARIANT value;
-} DBCachedGlobalValue;
+}
+	DBCachedGlobalValue;
 
 typedef struct DBCachedContactValue_tag
 {
 	char* name;
 	DBVARIANT value;
 	struct DBCachedContactValue_tag* next;
-} DBCachedContactValue;
+}
+	DBCachedContactValue;
 
 typedef struct
 {
 	HANDLE hContact;
 	HANDLE hNext;
 	DBCachedContactValue* first;
-} DBCachedContactValueList;
+}
+	DBCachedContactValueList;
 
 
 //databasecorruption: called if any signatures are broken. very very fatal
@@ -177,10 +186,6 @@ int CheckDbHeaders(struct DBHeader * hdr);
 int CreateDbHeaders(HANDLE hFile);
 int LoadDatabaseModule(void);
 void UnloadDatabaseModule(void);
-
-void Utf8Decode( char* str, wchar_t** ucs2 );
-char* Utf8Encode( const char* src );
-char* Utf8EncodeUcs2( const wchar_t* src );
 
 #ifdef _DEBUG
 #define MAXCACHEDREADSIZE     512

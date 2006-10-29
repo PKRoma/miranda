@@ -99,6 +99,11 @@ int __stdcall MSN_GetStaticString( const char* valueName, HANDLE hContact, char*
 	return ( dbv.type != DBVT_ASCIIZ );
 }
 
+int __stdcall MSN_GetStringT( const char* valueName, HANDLE hContact, DBVARIANT* dbv )
+{
+	return DBGetContactSettingTString( hContact, msnProtocolName, valueName, dbv );
+}
+
 WORD __stdcall MSN_GetWord( HANDLE hContact, const char* valueName, int parDefltValue )
 {
 	return DBGetContactSettingWord( hContact, msnProtocolName, valueName, parDefltValue );

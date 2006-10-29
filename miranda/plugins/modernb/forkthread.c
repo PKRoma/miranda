@@ -2,8 +2,8 @@
 
 Miranda IM: the free IM client for Microsoft* Windows*
 
-Copyright 2000-2006 Miranda ICQ/IM project, 
-all portions of this codebase are copyrighted to the people 
+Copyright 2000-2006 Miranda ICQ/IM project,
+all portions of this codebase are copyrighted to the people
 listed in contributors.txt.
 
 This program is free software; you can redistribute it and/or
@@ -31,7 +31,7 @@ struct FORK_ARG {
 };
 
 void __cdecl forkthread_r(struct FORK_ARG *fa)
-{	
+{
 	void (*callercode)(void*)=fa->threadcode;
 	void *arg=fa->arg;
 	CallService(MS_SYSTEM_THREAD_PUSH,0,0);
@@ -40,7 +40,7 @@ void __cdecl forkthread_r(struct FORK_ARG *fa)
 		callercode(arg);
 	} __finally {
 		CallService(MS_SYSTEM_THREAD_POP,0,0);
-	} 
+	}
 	return;
 }
 
@@ -52,6 +52,7 @@ unsigned long forkthread (
 {
 	unsigned long rc;
 	struct FORK_ARG fa;
+    if (g_bSTATE!=STATE_NORMAL) return 0; //not start the new thead if exiting
 	fa.hEvent=CreateEvent(NULL,FALSE,FALSE,NULL);
 	fa.threadcode=threadcode;
 	fa.arg=arg;
@@ -67,8 +68,8 @@ unsigned long __stdcall forkthreadex_r(struct FORK_ARG *fa)
 {
 	unsigned (__stdcall * threadcode) (void *)=fa->threadcodeex;
 	void *arg=fa->arg;
-	unsigned long rc;
-	
+	unsigned long rc=0;
+
 	CallService(MS_SYSTEM_THREAD_PUSH,0,0);
 	SetEvent(fa->hEvent);
 	__try {
@@ -96,7 +97,7 @@ unsigned long forkthreadex(
 	rc=_beginthreadex(sec,stacksize,forkthreadex_r,&fa,0,thraddr);
 	if (rc) {
 		WaitForSingleObject(fa.hEvent,INFINITE);
-	} 
+	}
 	CloseHandle(fa.hEvent);
 	return rc;
 }

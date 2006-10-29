@@ -135,14 +135,15 @@ LRESULT CALLBACK PopupWindowProc( HWND hWnd, UINT message, WPARAM wParam, LPARAM
 			return TRUE;
 
 		case UM_FREEPLUGINDATA: {
-				YAHOO_DebugLog("[PopupWindowProc] UM_FREEPLUGINDATA");
+			char *szURL;
+			YAHOO_DebugLog("[PopupWindowProc] UM_FREEPLUGINDATA");
 
-				char *szURL = (char *)PUGetPluginData( hWnd );
-				if ( szURL != NULL ) 
-					free(szURL);
+			szURL = (char *)PUGetPluginData( hWnd );
+			if ( szURL != NULL ) 
+				free(szURL);
 					
-				return TRUE;
-			}
+			return TRUE;
+		}
 	}
 
 	return DefWindowProc(hWnd, message, wParam, lParam);

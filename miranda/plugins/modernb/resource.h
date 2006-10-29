@@ -127,7 +127,6 @@
 #define IDC_CURSOR1                     296
 #define IDC_REGROUP                     296
 #define IDI_MIRANDA2                    307
-#define IDD_OPT_CLCBKG2                 308
 #define IDI_CLIENTICQL5                 315
 #define IDI_AVATAR_OVERLAY_NA           357
 #define IDI_AVATAR_OVERLAY_OCCUPIED     358
@@ -180,6 +179,9 @@
 #define IDI_ALWAYSVIS                   453
 #define IDI_ICON6                       454
 #define IDI_NEVERVIS                    454
+#define IDI_ICON5                       455
+#define IDI_CHAT                        455
+#define IDI_LISTENING_TO                456
 #define IDC_RESETPROTOCOLDATA           1000
 #define IDC_SAVE                        1001
 #define IDC_DEFBKCOLOR                  1001
@@ -239,6 +241,7 @@
 #define IDC_ONTOP                       1074
 #define IDC_SHOWMAINMENU                1075
 #define IDC_CLIENTDRAG                  1076
+#define IDC_EVENTAREA                   1077
 #define IDC_EDIT                        1078
 #define IDC_LIST                        1079
 #define IDC_HISTORY                     1080
@@ -725,6 +728,8 @@
 #define IDC_CHECK_ALPHA                 1764
 #define IDC_AVATAR_DRAW_BORDER          1764
 #define IDC_OFFSETICON2                 1764
+#define IDC_SHOW_STATUS_IF_NOAWAY2      1764
+#define IDC_SHOW_LISTENING_IF_NOAWAY    1764
 #define IDC_COMBO1                      1765
 #define IDC_SUBINDENTSPIN               1765
 #define IDC_HIDEMETHOD                  1765
@@ -805,10 +810,12 @@
 #define IDC_CHECK5                      1810
 #define IDC_RADIO1                      1811
 #define IDC_AVATAR_OVERLAY_ICON_NORMAL  1811
+#define IDC_EVENTAREA_NONE              1811
 #define IDC_RADIO2                      1812
 #define IDC_AVATAR_OVERLAY_ICON_PROTOCOL 1812
 #define IDC_RADIO3                      1813
 #define IDC_OVERLAY_ICON3               1813
+#define IDC_EVENTAREA_ALWAYS            1813
 #define IDC_RADIO4                      1814
 #define IDC_RADIO5                      1815
 #define IDC_CHECK7                      1816
@@ -833,14 +840,15 @@
 #define IDC_DRAW_SMILEYS_ON_FIRST_LINE2 1828
 #define IDC_APPEND_NICK                 1828
 #define IDC_DRAW_SMILEYS                1829
+#define IDC_TRIM_TEXT                   1829
 #define IDC_EMPTY                       1830
 #define IDC_NICKNAME                    1831
 #define IDC_STATUS_MESSAGE              1832
 #define IDC_VARIABLE_TEXT               1833
 #define IDC_DRAW_SMILEYS2               1834
 #define IDC_SHOW                        1834
-#define IDC_STATUS_MESSAGE2             1835
 #define IDC_CONTACT_TIME                1835
+#define IDC_LISTENING_TO                1836
 #define IDC_STATIC_PIXELS               1837
 #define IDC_STATIC_TEXT                 1838
 #define IDC_AVATAR_BORDER_COLOR_L       1839
@@ -964,7 +972,7 @@
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
-#define _APS_NEXT_RESOURCE_VALUE        455
+#define _APS_NEXT_RESOURCE_VALUE        456
 #define _APS_NEXT_COMMAND_VALUE         40020
 #define _APS_NEXT_CONTROL_VALUE         2000
 #define _APS_NEXT_SYMED_VALUE           101

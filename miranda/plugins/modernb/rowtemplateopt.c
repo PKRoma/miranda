@@ -24,7 +24,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include "m_clui.h"
 #include "clist.h"
 #include "m_clc.h"
-#include "SkinEngine.h"
+//#include "SkinEngine.h"
 #include "io.h"
 #include "commonprototypes.h"
 #include "modern_row.h"
@@ -387,9 +387,9 @@ BOOL CALLBACK DlgTmplEditorOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lP
 			{	
 				//HIMAGELIST himlTreeIcons;
 				//himlTreeIcons=ImageList_Create(GetSystemMetrics(SM_CXSMICON),GetSystemMetrics(SM_CYSMICON),ILC_COLOR32|ILC_MASK,3,2);
-				//ImageList_AddIcon(himlTreeIcons,LoadIcon(g_hInst,MAKEINTRESOURCE(IDI_ROWCONT1)));
-				//ImageList_AddIcon(himlTreeIcons,LoadIcon(g_hInst,MAKEINTRESOURCE(IDI_ROWCONT2)));
-				//ImageList_AddIcon(himlTreeIcons,LoadIcon(g_hInst,MAKEINTRESOURCE(IDI_ROWCONT3)));
+				//ImageList_AddIcon(himlTreeIcons,LoadSmallIconShared(g_hInst,MAKEINTRESOURCE(IDI_ROWCONT1)));
+				//ImageList_AddIcon(himlTreeIcons,LoadSmallIconShared(g_hInst,MAKEINTRESOURCE(IDI_ROWCONT2)));
+				//ImageList_AddIcon(himlTreeIcons,LoadSmallIconShared(g_hInst,MAKEINTRESOURCE(IDI_ROWCONT3)));
 				//TreeView_SetImageList(htree,himlTreeIcons,TVSIL_NORMAL);
 			}
 

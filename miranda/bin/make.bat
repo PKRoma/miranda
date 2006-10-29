@@ -100,7 +100,7 @@ rem ---------------------------------------------------------------------------
 
 cd ..\..\bin\Release
 
-dir /B /S *.dll | rebase
+dir /B /S *.dll | rebaser /NOCRC
 
 for /F "tokens=1,2 delims= " %%i in (..\build.no) do call :Pack %%i %%j
 goto :eof
@@ -189,7 +189,7 @@ goto :eof
 
 :Pack
 del %Temp%\miranda-v%1a%2.zip
-7za.exe a -tzip -r -mx=9 %Temp%\miranda-v%1a%2.zip ./* ..\ChangeLog.txt
+7z.exe a -tzip -r -mx=9 %Temp%\miranda-v%1a%2.zip ./* ..\ChangeLog.txt
 
 rd /Q /S %Temp%\pdba >nul
 md %Temp%\pdba
@@ -217,7 +217,7 @@ copy ..\..\plugins\png2dib\Release\png2dib.pdb         %Temp%\pdba\plugins
 copy ..\..\plugins\srmm\Release\srmm.pdb               %Temp%\pdba\plugins
 copy ..\..\plugins\tabSRMM\Release\tabSRMM.pdb         %Temp%\pdba\plugins
 
-7za.exe a -tzip -r -mx=9 %Temp%\miranda-pdb-v%1a%2.zip %Temp%\pdba/*
+7z.exe a -tzip -r -mx=9 %Temp%\miranda-pdb-v%1a%2.zip %Temp%\pdba/*
 rd /Q /S %Temp%\pdba
 goto :eof
 

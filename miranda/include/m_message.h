@@ -2,8 +2,8 @@
 
 Miranda IM: the free IM client for Microsoft* Windows*
 
-Copyright 2000-2003 Miranda ICQ/IM project, 
-all portions of this codebase are copyrighted to the people 
+Copyright 2000-2006 Miranda ICQ/IM project,
+all portions of this codebase are copyrighted to the people
 listed in contributors.txt.
 
 This program is free software; you can redistribute it and/or
@@ -64,8 +64,8 @@ typedef struct {
 #define MS_MSG_GETWINDOWAPI "MessageAPI/WindowAPI"
 //wparam=0
 //lparam=0
-//Returns a dword with the current message api version 
-//Current version is 0,0,0,3
+//Returns a dword with the current message api version
+//Current version is 0,0,0,4
 
 #define MS_MSG_GETWINDOWCLASS "MessageAPI/WindowClass"
 //wparam=(char*)szBuf
@@ -96,5 +96,49 @@ typedef struct {
 //wparam=(MessageWindowInputData*)
 //lparam=(MessageWindowData*)
 //returns 0 on success and returns non-zero (1) on error or if no window data exists for that hcontact
-#endif // M_MESSAGE_H__
 
+
+// status icons - HICONs will be automatically destroyed when removed or when miranda exits
+
+#define MBF_DISABLED       0x01
+#define MBF_HIDDEN         0x02
+
+typedef struct {
+	int cbSize;
+	char *szModule;						// used in combo with the dwId below to create a unique identifier
+	DWORD dwId;
+	HICON hIcon, hIconDisabled;		// hIconDisabled is optional - if null, will use hIcon in the disabled state
+	int flags;								// bitwize OR of MBF_* flags above
+	char *szTooltip;
+} StatusIconData;
+
+#define MBCF_RIGHTBUTTON   0x01		// if this flag is specified, the click was a right button - otherwize it was a left click
+
+typedef struct {
+	int cbSize;
+	POINT clickLocation;					// click location, in screen coordinates
+	char *szModule;
+	DWORD dwId;
+	int flags;								// bitwize OR of MBCF_* flags above
+} StatusIconClickData;
+
+#define MS_MSG_ADDICON			"MessageAPI/AddIcon"
+// lParam = (StatusIconData *)&StatusIconData
+
+#define MS_MSG_REMOVEICON		"MessageAPI/RemoveIcon"
+// lParam = (StatusIconData *)&StatusIconData
+// only szModule and szId are used
+
+#define MS_MSG_MODIFYICON		"MessageAPI/ModifyIcon"
+// wParam = (HANDLE)hContact
+// lParam = (StatusIconData *)&StatusIconData
+// if hContact is null, icon is modified for all contacts
+// otherwise, only the flags field is valid
+// if either hIcon, hIconDisabled or szTooltip is null, they will not be modified
+
+#define ME_MSG_ICONPRESSED		"MessageAPI/IconPressed"
+// wParam = (HANDLE)hContact;
+// lParam = (StatusIconClickData *)&StatusIconClickData;
+// catch to show a popup menu, etc.
+
+#endif // M_MESSAGE_H__

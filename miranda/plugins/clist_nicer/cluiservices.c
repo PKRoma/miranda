@@ -34,8 +34,7 @@ extern HANDLE hStatusModeChangeEvent;
 extern int currentDesiredStatusMode;
 
 extern protoMenu *protoMenus;
-
-int g_isConnecting = 0;
+extern ButtonItem *g_ButtonItems;
 
 static int GetClistVersion(WPARAM wParam, LPARAM lParam)
 {
@@ -301,7 +300,7 @@ void CluiProtocolStatusChanged( int parStatus, const char* szProto )
 	* and uses timer based sort and redraw handling. This can improve performance
 	* when connecting multiple protocols significantly.
 	*/
-	g_isConnecting = (wStatus >= ID_STATUS_CONNECTING && wStatus < ID_STATUS_OFFLINE);
+	//g_isConnecting = (wStatus >= ID_STATUS_CONNECTING && wStatus < ID_STATUS_OFFLINE);
 	szStatus = (char *)CallService(MS_CLIST_GETSTATUSMODEDESCRIPTION, (WPARAM) wStatus, 0);
 
 	/*
@@ -314,11 +313,13 @@ void CluiProtocolStatusChanged( int parStatus, const char* szProto )
 			SendMessageA(GetDlgItem(pcli->hwndContactList, IDC_TBGLOBALSTATUS), WM_SETTEXT, 0, (LPARAM) szStatus);
 			if(!hIcon) {
 				SendMessage(GetDlgItem(pcli->hwndContactList, IDC_TBGLOBALSTATUS), BM_SETIMLICON, (WPARAM) hCListImages, (LPARAM) iIcon);
-				SendMessage(GetDlgItem(pcli->hwndContactList, IDC_TBTOPSTATUS), BM_SETIMLICON, (WPARAM) hCListImages, (LPARAM) iIcon);
+                if(g_ButtonItems == NULL)
+                    SendMessage(GetDlgItem(pcli->hwndContactList, IDC_TBTOPSTATUS), BM_SETIMLICON, (WPARAM) hCListImages, (LPARAM) iIcon);
 			}
 			else {
 				SendMessage(GetDlgItem(pcli->hwndContactList, IDC_TBGLOBALSTATUS), BM_SETIMAGE, IMAGE_ICON, (LPARAM) hIcon);
-				SendMessage(GetDlgItem(pcli->hwndContactList, IDC_TBTOPSTATUS), BM_SETIMAGE, IMAGE_ICON, (LPARAM) hIcon);
+                if(g_ButtonItems == NULL)
+                    SendMessage(GetDlgItem(pcli->hwndContactList, IDC_TBTOPSTATUS), BM_SETIMAGE, IMAGE_ICON, (LPARAM) hIcon);
 			}
 			InvalidateRect(GetDlgItem(pcli->hwndContactList, IDC_TBGLOBALSTATUS), NULL, TRUE);
 			InvalidateRect(GetDlgItem(pcli->hwndContactList, IDC_TBTOPSTATUS), NULL, TRUE);

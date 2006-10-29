@@ -33,9 +33,9 @@ void FreeAndNil(void **p)
   {
     if (*p!=NULL)
     {
-      if (!IsBadCodePtr(*p))
+      if (!p)
       {
-        mir_free(*p);
+        mir_free_and_nill(*p);
 	  }
       *p=NULL;
 		}
@@ -426,8 +426,9 @@ int MO_ProcessCommand(WPARAM wParam,LPARAM lParam)
   srvname=MenuObjects[objidx].ExecService;
   ownerdata=MenuObjects[objidx].MenuItems[menuitemidx].mi.ownerdata;
   unlockmo();
-  return CallService(srvname,(WPARAM)ownerdata,lParam);
-};
+  CallService(srvname,(WPARAM)ownerdata,lParam);
+  return(1);
+}
 
 
 int setcnt=0;
@@ -529,7 +530,7 @@ int MO_CreateNewMenuObject(WPARAM wParam,LPARAM lParam)
 
 	//if (IsWinVerXPPlus())		//need 32-bit icons on XP for alpha channels
   MenuObjects[MenuObjectsCount].hMenuIcons=ImageList_Create(GetSystemMetrics(SM_CXSMICON),GetSystemMetrics(SM_CYSMICON),ILC_COLOR32|ILC_MASK,15,100);
-	//else	  //Win2k won't blend icons with imagelist_drawex when color-depth>16-bit. Don't know about WinME, but it certainly doesn't support alpha channels
+	//else	  //Win2k won't SkinEngine_Blend icons with imagelist_drawex when color-depth>16-bit. Don't know about WinME, but it certainly doesn't support alpha channels
 	//  MenuObjects[MenuObjectsCount].hMenuIcons=ImageList_Create(GetSystemMetrics(SM_CXSMICON),GetSystemMetrics(SM_CYSMICON),ILC_COLOR16|ILC_MASK,15,100);
 
   result=MenuObjects[MenuObjectsCount].id;
@@ -691,7 +692,7 @@ int MO_AddOldNewMenuItem(WPARAM wParam,LPARAM lParam)
 				oldroot = getGlobalId( MenuObjects[objidx].id, p->id );
         break;
 		}	}
-		mir_free( tszRoot );
+		mir_free_and_nill( tszRoot );
     if(oldroot==-1)
     {
       //not found,creating root
@@ -914,7 +915,7 @@ void GetMenuItemName( PMO_IntMenuItem pMenuItem, char* pszDest, size_t cbDestSiz
 		#if defined( _UNICODE )
 			char* name = u2a(pMenuItem->mi.ptszName);
 			mir_snprintf( pszDest, cbDestSize, "{%s}", name );
-			mir_free(name);
+			mir_free_and_nill(name);
 		#else
 			mir_snprintf( pszDest, cbDestSize, "{%s}", pMenuItem->mi.pszName );
 		#endif
@@ -1000,10 +1001,10 @@ HMENU BuildRecursiveMenu(HMENU hMenu,ListParam *param)
 			wsprintfA(DBString, "%s_name", menuItemName);
 			if (!DBGetContactSettingTString(NULL, MenuNameItems, DBString, &dbv)) {
 				if (_tcslen(dbv.ptszVal)>0) {
-          if (MenuItems[j].CustomName) mir_free(MenuItems[j].CustomName);
+          if (MenuItems[j].CustomName) mir_free_and_nill(MenuItems[j].CustomName);
 					MenuItems[j].CustomName=mir_tstrdup(dbv.ptszVal);
 				}
-				//if (dbv.ptszVal)	mir_free(dbv.ptszVal);
+				//if (dbv.ptszVal)	mir_free_and_nill(dbv.ptszVal);
 				DBFreeVariant(&dbv);
 			}
 
@@ -1185,6 +1186,7 @@ int OnIconLibChanges(WPARAM wParam,LPARAM lParam)
 {
   int mo,mi;
   HICON newIcon;
+  if (MirandaExiting()) return 0;
   lockmo();
   for (mo=0;mo<MenuObjectsCount;mo++)
   {
@@ -1206,7 +1208,7 @@ int OnIconLibChanges(WPARAM wParam,LPARAM lParam)
       //&&MenuObjects[mo].MenuItems[mi].iconId!=-1	
       if (MenuObjects[mo].MenuItems[mi].IconRegistred&&uname!=NULL)
       {	
-		  HICON deficon=mod_ImageList_GetIcon(MenuObjects[mo].hMenuIcons,MenuObjects[mo].MenuItems[mi].iconId,0);
+		  HICON deficon=SkinEngine_ImageList_GetIcon(MenuObjects[mo].hMenuIcons,MenuObjects[mo].MenuItems[mi].iconId,0);
           newIcon=LoadIconFromLibrary(	MenuObjects[mo].Name,
 										uname,
 										descr,
@@ -1215,12 +1217,12 @@ int OnIconLibChanges(WPARAM wParam,LPARAM lParam)
         {
           ImageList_ReplaceIcon(MenuObjects[mo].hMenuIcons,MenuObjects[mo].MenuItems[mi].iconId,newIcon);
         }
-		if (deficon) DestroyIcon(deficon);
+		if (deficon) DestroyIcon_protect(deficon);
       }	
 	  #ifdef UNICODE
-	   if (descr) mir_free(descr);
+	   if (descr) mir_free_and_nill(descr);
 	  #endif
-	  if (uname) mir_free(uname);
+	  if (uname) mir_free_and_nill(uname);
     };
   }
 
@@ -1249,7 +1251,7 @@ int RegisterOneIcon(int mo,int mi)
     char mn[255];
 	HICON defic=0;
     sprintf(mn,Translate("Menu icons/%s"),MenuObjects[mo].Name);
-	defic=mod_ImageList_GetIcon(MenuObjects[mo].hMenuIcons,MenuObjects[mo].MenuItems[mi].iconId,0);
+	defic=SkinEngine_ImageList_GetIcon(MenuObjects[mo].hMenuIcons,MenuObjects[mo].MenuItems[mi].iconId,0);
     newIcon=LoadIconFromLibrary(
       mn,
       uname,
@@ -1257,13 +1259,13 @@ int RegisterOneIcon(int mo,int mi)
       defic,
       TRUE,&MenuObjects[mo].MenuItems[mi].IconRegistred);	
     if (newIcon) ImageList_ReplaceIcon(MenuObjects[mo].hMenuIcons,MenuObjects[mo].MenuItems[mi].iconId,newIcon);
-	if (defic) DestroyIcon(defic);
+	if (defic) DestroyIcon_protect(defic);
   };
 
 #ifdef UNICODE
   if (!MenuObjects[mo].MenuItems[mi].UniqName)
-		if (uname) mir_free(uname);
-  if (desc) mir_free(desc);
+		if (uname) mir_free_and_nill(uname);
+  if (desc) mir_free_and_nill(desc);
 #endif
   return 0;
 }

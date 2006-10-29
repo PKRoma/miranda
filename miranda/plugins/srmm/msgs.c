@@ -20,6 +20,7 @@ along with this program; if not, write to the Free Software
 Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 */
 #include "commonheaders.h"
+#include "statusicon.h"
 #pragma hdrstop
 
 static void InitREOleCallback(void);
@@ -355,6 +356,7 @@ static int SplitmsgModulesLoaded(WPARAM wParam, LPARAM lParam)
 int PreshutdownSendRecv(WPARAM wParam, LPARAM lParam)
 {
 	WindowList_BroadcastAsync(g_dat->hMessageWindowList, WM_CLOSE, 0, 0);
+	DeinitStatusIcons();
 	return 0;
 }
 
@@ -403,7 +405,7 @@ static int IconsChanged(WPARAM wParam, LPARAM lParam)
 
 static int GetWindowAPI(WPARAM wParam, LPARAM lParam)
 {
-	return PLUGIN_MAKE_VERSION(0,0,0,3);
+	return PLUGIN_MAKE_VERSION(0,0,0,4);
 }
 
 static int GetWindowClass(WPARAM wParam, LPARAM lParam)
@@ -474,6 +476,8 @@ int LoadSendRecvMessageModule(void)
 	hCurHyperlinkHand = LoadCursor(NULL, IDC_HAND);
 	if (hCurHyperlinkHand == NULL)
 		hCurHyperlinkHand = LoadCursor(g_hInst, MAKEINTRESOURCE(IDC_HYPERLINKHAND));
+
+	InitStatusIcons();
 	return 0;
 }
 

@@ -156,23 +156,17 @@ LBL_InvalidCommand:
 					return 1;
 			}	}
 
-			{	DBVARIANT dbv;
-				if ( !DBGetContactSetting( NULL, msnProtocolName, "e-mail", &dbv ))
-				{
-					if ( info->mCaller == 0 )  //receive
-					{
-						char tCommand[ MSN_MAX_EMAIL_LEN + 50 ];
-						mir_snprintf( tCommand, sizeof( tCommand ), "USR %s %s\r\n", dbv.pszVal, info->mCookie );
-						info->send( tCommand, strlen( tCommand ));
-					}
-					else if ( info->mCaller == 2 )  //send
-					{
-						static char sttCommand[] = "VER MSNFTP\r\n";
-						info->send( sttCommand, strlen( sttCommand ));
-					}
-
-					MSN_FreeVariant( &dbv );
-			}	}
+			if ( info->mCaller == 0 )  //receive
+			{
+				char tCommand[ MSN_MAX_EMAIL_LEN + 50 ];
+				mir_snprintf( tCommand, sizeof( tCommand ), "USR %s %s\r\n", MyOptions.szEmail, info->mCookie );
+				info->send( tCommand, strlen( tCommand ));
+			}
+			else if ( info->mCaller == 2 )  //send
+			{
+				static char sttCommand[] = "VER MSNFTP\r\n";
+				info->send( sttCommand, strlen( sttCommand ));
+			}
 			break;
 		}
 		default:		// receiving file

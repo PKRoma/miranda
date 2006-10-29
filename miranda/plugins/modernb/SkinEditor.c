@@ -24,13 +24,13 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include "m_clui.h"
 #include "clist.h"
 #include "m_clc.h"
-#include "SkinEngine.h"
+//#include "SkinEngine.h"
 #include "io.h"
 #include "commonprototypes.h"
 
 
-extern void LoadSkinFromDB(void);
-extern int RedrawCompleteWindow();
+extern void SkinEngine_LoadSkinFromDB(void);
+extern int SkinEngine_RedrawCompleteWindow();
 typedef struct _OPT_OBJECT_DATA
 {
 	char * szName;
@@ -125,13 +125,13 @@ int TreeAddObject(HWND hwndDlg, int ID, OPT_OBJECT_DATA * data)
 		tvis.item.lParam=(LPARAM)data;
 		TreeView_InsertItemA(GetDlgItem(hwndDlg,ID),&tvis);
 	}
-	mir_free(path);
+	mir_free_and_nill(path);
 	return 0;
 }
 
 int enumDB_SkinObjectsForEditorProc(const char *szSetting,LPARAM lParam)
 {
-	if (WildCompare((char *)szSetting,gl_Mask,0)||WildCompare((char *)szSetting,"$*",0))
+	if (wildcmp((char *)szSetting,gl_Mask,0)||wildcmp((char *)szSetting,"$*",0))
 	{
 		char * value;
 		char *desc;
@@ -140,7 +140,7 @@ int enumDB_SkinObjectsForEditorProc(const char *szSetting,LPARAM lParam)
 		descKey[0]='%';
 		value=DBGetStringA(NULL,SKIN,szSetting);
 		desc=DBGetStringA(NULL,SKIN,descKey);
-		if (WildCompare(value,"?lyph*",0))
+		if (wildcmp(value,"?lyph*",0))
 		{
 			OPT_OBJECT_DATA * a=mir_alloc(sizeof(OPT_OBJECT_DATA));
 			a->szPath=desc;
@@ -151,10 +151,10 @@ int enumDB_SkinObjectsForEditorProc(const char *szSetting,LPARAM lParam)
 		}
 		else
 		{
-			if (value) mir_free(value);
-			if (desc) mir_free(desc);
+			if (value) mir_free_and_nill(value);
+			if (desc) mir_free_and_nill(desc);
 		}
-		mir_free(descKey);		
+		mir_free_and_nill(descKey);		
 	}	
 	return 0;
 }
@@ -346,18 +346,18 @@ void SetControls(HWND hwndDlg, char * str)
 }
 
 
-extern int GetFullFilename(char * buf, char *file, char * skinfolder,BOOL madeAbsolute);
+extern int SkinEngine_GetFullFilename(char * buf, char *file, char * skinfolder,BOOL madeAbsolute);
 int GetShortFileName(char * FullFile)
 {
 	char buf[MAX_PATH]={0};
 	char * f=strrchr(FullFile,'\\');
 	char * file=f?mir_strdup(f+1):0;
 	if (!file) return 0;
-	GetFullFilename(buf,file,0,TRUE);
+	SkinEngine_GetFullFilename(buf,file,0,TRUE);
 	if (mir_bool_strcmpi(buf,FullFile))
 	{
 		_snprintf(FullFile,MAX_PATH,"%s",file);
-		mir_free(file);
+		mir_free_and_nill(file);
 		return 1; //skin folder relative
 	}
 	else
@@ -368,7 +368,7 @@ int GetShortFileName(char * FullFile)
 		else
 			_snprintf(FullFile,MAX_PATH,"%s",buf);
 	}
-	mir_free(file);
+	mir_free_and_nill(file);
 	return 2; //mirand folder relative
 }
 
@@ -465,12 +465,12 @@ void UpdateInfo(HWND hwndDlg)
 			sd=(OPT_OBJECT_DATA*)(tvi.lParam);
 			if (sd)
 			{
-				if (sd->szValue) mir_free(sd->szValue);
+				if (sd->szValue) mir_free_and_nill(sd->szValue);
 				sd->szValue=mir_strdup(b);
 			}
 		}
 	}
-	mir_free(b);
+	mir_free_and_nill(b);
 	glSkinWasModified=1;
 }
 
@@ -516,16 +516,16 @@ int GetFileSizes(HWND hwndDlg)
 	char buf[MAX_PATH];
 	SIZE sz={0};
 	SendDlgItemMessageA(hwndDlg,IDC_FILE,WM_GETTEXT,(WPARAM)MAX_PATH,(LPARAM)buf);
-	GetFullFilename(buf,buf,0,TRUE);
+	SkinEngine_GetFullFilename(buf,buf,0,TRUE);
 	{
-		HBITMAP hbmp=LoadGlyphImage(buf);
+		HBITMAP hbmp=SkinEngine_LoadGlyphImage(buf);
 		if (hbmp)
 		{
 			BITMAP bm={0};
 			GetObject(hbmp,sizeof(BITMAP),&bm);
 			sz.cx=bm.bmWidth;
 			sz.cy=bm.bmHeight;
-			UnloadGlyphImage(hbmp);
+			SkinEngine_UnloadGlyphImage(hbmp);
 		}
 	}
 	_snprintf(buf, MAX_PATH, "%s %d x %d %s",Translate("Image size is"),sz.cx, sz.cy, Translate("pixels")); 
@@ -538,7 +538,7 @@ BOOL CALLBACK DlgSkinEditorOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lP
 	{
 	case WM_DESTROY: 
 		{
-			if (object_clipboard) mir_free(object_clipboard);
+			if (object_clipboard) mir_free_and_nill(object_clipboard);
 			break;
 		}
 	case WM_WINDOWPOSCHANGED:
@@ -616,7 +616,7 @@ BOOL CALLBACK DlgSkinEditorOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lP
 			{
 				if (HIWORD(wParam)==BN_CLICKED)
 				{
-					if (object_clipboard) mir_free(object_clipboard);
+					if (object_clipboard) mir_free_and_nill(object_clipboard);
 					object_clipboard=NULL;
 					{
 							OPT_OBJECT_DATA *sd=NULL;  
@@ -675,7 +675,7 @@ BOOL CALLBACK DlgSkinEditorOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lP
 						}
 						else
 						{
-							GetFullFilename(str,str,(char*)0,TRUE);
+							SkinEngine_GetFullFilename(str,str,(char*)0,TRUE);
 						}
 						ofn.lpstrFile = str;
 						
@@ -763,7 +763,7 @@ BOOL CALLBACK DlgSkinEditorOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lP
 								OPT_OBJECT_DATA * dataOld=(OPT_OBJECT_DATA*)nmtv->itemOld.lParam;
 								if (dataOld->szValue)								
 								{
-									mir_free(dataOld->szValue);
+									mir_free_and_nill(dataOld->szValue);
 									dataOld->szValue=MadeString(hwndDlg);
 								}
 						}
@@ -793,10 +793,10 @@ BOOL CALLBACK DlgSkinEditorOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lP
 						OPT_OBJECT_DATA * dataOld=(OPT_OBJECT_DATA*)nmtv->itemOld.lParam;
 						if (dataOld)
 						{
-							if (dataOld->szName) mir_free(dataOld->szName);
-							if (dataOld->szPath) mir_free(dataOld->szPath);
-							if (dataOld->szTempValue) mir_free(dataOld->szTempValue);
-							if (dataOld->szValue) mir_free(dataOld->szValue);
+							if (dataOld->szName) mir_free_and_nill(dataOld->szName);
+							if (dataOld->szPath) mir_free_and_nill(dataOld->szPath);
+							if (dataOld->szTempValue) mir_free_and_nill(dataOld->szTempValue);
+							if (dataOld->szValue) mir_free_and_nill(dataOld->szValue);
 						}
 					}
 					return 0;
@@ -810,16 +810,16 @@ BOOL CALLBACK DlgSkinEditorOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lP
 				{
 					StoreTreeToDB(GetDlgItem(hwndDlg,IDC_OBJECT_TREE),SKIN);
 					//ReloadSkin
-					LoadSkinFromDB();	
+					SkinEngine_LoadSkinFromDB();	
 					pcli->pfnClcBroadcast( INTM_RELOADOPTIONS,0,0);
-					CLUIFramesOnClistResize2(0,0,0);
-					RedrawCompleteWindow();        
-					CLUIFramesOnClistResize2(0,0,0);
+					CLUIFrames_OnClistResize_mod(0,0,0);
+					SkinEngine_RedrawCompleteWindow();        
+					CLUIFrames_OnClistResize_mod(0,0,0);
 					{
 						HWND hwnd=(HWND)CallService(MS_CLUI_GETHWND,0,0);
 						RECT rc={0};
 						GetWindowRect(hwnd, &rc);
-						OnMoving(hwnd,&rc);
+						CLUIFrames_OnMoving(hwnd,&rc);
 					}
 					return TRUE;
 				}

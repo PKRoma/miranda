@@ -196,16 +196,16 @@ DWORD __forceinline INTSORT_GetLastMsgTime(HANDLE hContact)
 	HANDLE hDbEvent;
 	DBEVENTINFO dbei = {0};
 
-	if(g_CluiData.sortOrder[0] == SORTBY_LASTMSG || g_CluiData.sortOrder[1] == SORTBY_LASTMSG || g_CluiData.sortOrder[2] == SORTBY_LASTMSG) {
-		hDbEvent = (HANDLE)CallService(MS_DB_EVENT_FINDLAST, (WPARAM)hContact, 0);
-
-		dbei.cbSize = sizeof(dbei);
-		dbei.pBlob = 0;
-		dbei.cbBlob = 0;
-		CallService(MS_DB_EVENT_GET, (WPARAM)hDbEvent, (LPARAM)&dbei);
-		
-		return dbei.timestamp;
-	}
+	hDbEvent = (HANDLE)CallService(MS_DB_EVENT_FINDLAST, (WPARAM)hContact, 0);
+    while(hDbEvent) {
+        dbei.cbSize = sizeof(dbei);
+        dbei.pBlob = 0;
+        dbei.cbBlob = 0;
+        CallService(MS_DB_EVENT_GET, (WPARAM)hDbEvent, (LPARAM)&dbei);
+        if(dbei.eventType == EVENTTYPE_MESSAGE && !(dbei.flags & DBEF_SENT))
+            return dbei.timestamp;
+        hDbEvent = (HANDLE)CallService(MS_DB_EVENT_FINDPREV, (WPARAM)hDbEvent, 0);
+    }
 	return 0;
 }
 

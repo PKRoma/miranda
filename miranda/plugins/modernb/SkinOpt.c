@@ -24,7 +24,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include "m_clui.h"
 #include "clist.h"
 #include "m_clc.h"
-#include "SkinEngine.h"
+//#include "SkinEngine.h"
 #include "io.h"
 #include "commonprototypes.h"
 
@@ -43,9 +43,9 @@ typedef struct _SkinListData
 HBITMAP hPreviewBitmap=NULL;
 extern HWND hCLUIwnd;
 static int AddItemToTree(HWND hTree, char * folder, char * itemName, void * data);
-extern int LoadSkinFromIniFile(char*);
-extern int RedrawCompleteWindow();
-extern int LoadSkinFromDB(void);
+extern int SkinEngine_LoadSkinFromIniFile(char*);
+extern int SkinEngine_RedrawCompleteWindow();
+extern int SkinEngine_LoadSkinFromDB(void);
 int AddSkinToListFullName(HWND hwndDlg,char * fullName);
 int AddSkinToList(HWND hwndDlg,char * path, char* file);
 int FillAvailableSkinList(HWND hwndDlg);
@@ -81,7 +81,7 @@ int SkinOptInit(WPARAM wParam,LPARAM lParam)
 	odp.pszTitle=Translate("Skin");
 	odp.flags=ODPF_BOLDGROUPS;
 	CallService(MS_OPT_ADDPAGE,wParam,(LPARAM)&odp);
-
+   
 	return 0;
 }
 
@@ -192,18 +192,18 @@ static BOOL CALLBACK DlgSkinOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM l
 							res=MessageBoxA(hwndDlg,Translate("Current skin was not saved to file.\n\nAll changes will be lost.\n\n Continue to load new skin?"),Translate("Warning!"),MB_OKCANCEL|MB_ICONWARNING|MB_DEFBUTTON2|MB_TOPMOST);
 						if (res!=IDOK) return 0;
 					}
-					LoadSkinFromIniFile(sd->File);
-					LoadSkinFromDB();	
+					SkinEngine_LoadSkinFromIniFile(sd->File);
+					SkinEngine_LoadSkinFromDB();	
 					glOtherSkinWasLoaded=TRUE;
 					pcli->pfnClcBroadcast( INTM_RELOADOPTIONS,0,0);
-					CLUIFramesOnClistResize2(0,0,0);
-					RedrawCompleteWindow();        
-					CLUIFramesOnClistResize2(0,0,0);
+					CLUIFrames_OnClistResize_mod(0,0,0);
+					SkinEngine_RedrawCompleteWindow();        
+					CLUIFrames_OnClistResize_mod(0,0,0);
 					{
 						HWND hwnd=(HWND)CallService(MS_CLUI_GETHWND,0,0);
 						RECT rc={0};
 						GetWindowRect(hwnd, &rc);
-						OnMoving(hwnd,&rc);
+						CLUIFrames_OnMoving(hwnd,&rc);
 					}
 					if (hCLUIwnd)
 					{
@@ -272,7 +272,7 @@ static BOOL CALLBACK DlgSkinOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM l
 			mWidth=dis->rcItem.right-dis->rcItem.left;
 			mHeight=dis->rcItem.bottom-dis->rcItem.top;
 			memDC=CreateCompatibleDC(dis->hDC);
-			hbmp=CreateBitmap32(mWidth,mHeight);
+			hbmp=SkinEngine_CreateDIB32(mWidth,mHeight);
 			holdbmp=SelectObject(memDC,hbmp);
 			workRect=dis->rcItem;
 			OffsetRect(&workRect,-workRect.left,-workRect.top);
@@ -309,7 +309,7 @@ static BOOL CALLBACK DlgSkinOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM l
 					BLENDFUNCTION bf={AC_SRC_OVER, 0, 255, AC_SRC_ALPHA };
 					imgDC=CreateCompatibleDC(dis->hDC);
 					imgOldbmp=SelectObject(imgDC,hPreviewBitmap);                 
-					mod_AlphaBlend(memDC,imgPos.x,imgPos.y,dWidth,dHeight,imgDC,0,0,bmp.bmWidth,bmp.bmHeight,bf);
+					SkinEngine_AlphaBlend(memDC,imgPos.x,imgPos.y,dWidth,dHeight,imgDC,0,0,bmp.bmWidth,bmp.bmHeight,bf);
 					SelectObject(imgDC,imgOldbmp);
 					mod_DeleteDC(imgDC);
 				}
@@ -352,10 +352,10 @@ static BOOL CALLBACK DlgSkinOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM l
 							char imfn[MAX_PATH]={0};
 							char skinfolder[MAX_PATH]={0};
 							GetPrivateProfileStringA("Skin_Description_Section","Preview","",imfn,sizeof(imfn),sd->File);
-							GetSkinFolder(sd->File,skinfolder);
+							SkinEngine_GetSkinFolder(sd->File,skinfolder);
 							_snprintf(prfn,sizeof(prfn),"%s\\%s",skinfolder,imfn);
 							CallService(MS_UTILS_PATHTOABSOLUTE,(WPARAM)prfn,(LPARAM) imfn);
-							hPreviewBitmap=skin_LoadGlyphImage(imfn);
+							hPreviewBitmap=SkinEngine_LoadGlyphImage(imfn);
 						}
 						EnableWindow(GetDlgItem(hwndDlg,IDC_BUTTON_APPLY_SKIN),TRUE);
 						EnableWindow(GetDlgItem(hwndDlg,IDC_BUTTON_INFO),TRUE);
@@ -419,7 +419,7 @@ static BOOL CALLBACK DlgSkinOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM l
 		else if (nmtv->hdr.code==TVN_SELCHANGEDA || nmtv->hdr.code==TVN_SELCHANGEDW)
 		{
 			if (nmtv->itemOld.lParam)
-				mir_free((void*)(nmtv->itemOld.lParam));
+				mir_free_and_nill((void*)(nmtv->itemOld.lParam));
 			return 0;
 		}
 		break;
@@ -495,9 +495,12 @@ int FillAvailableSkinList(HWND hwndDlg)
 	//long hFile; 
 	int res=-1;
 	char path[MAX_PATH];//,mask[MAX_PATH];
+	int attrib;
 	CallService(MS_UTILS_PATHTOABSOLUTE, (WPARAM)"Skins", (LPARAM)path);
 	AddSkinToList(hwndDlg,Translate("Default Skin"),"%Default Skin%");
-	SearchSkinFiles(hwndDlg,path);
+	attrib = GetFileAttributesA(path);
+	if (attrib != INVALID_FILE_ATTRIBUTES && (attrib & FILE_ATTRIBUTE_DIRECTORY))
+		SearchSkinFiles(hwndDlg,path);
 	/*_snprintf(mask,sizeof(mask),"%s\\*.msf",path); 
 	//fd.attrib=_A_SUBDIR;
 	hFile=_findfirst(mask,&fd);
@@ -544,7 +547,7 @@ int FillAvailableSkinList(HWND hwndDlg)
 			CallService(MS_UTILS_PATHTOABSOLUTE, (WPARAM)skinfile, (LPARAM)skinfull);
 			res=AddSkinToListFullName(hwndDlg,skinfull);
 
-			mir_free(skinfile);
+			mir_free_and_nill(skinfile);
 		}
 	}
 	return res;
@@ -653,7 +656,7 @@ static HTREEITEM FindChild(HWND hTree, HTREEITEM Parent, char * Caption, void * 
 				TreeView_GetItem(hTree,&tvi);
 				sd=(SkinListData*)(tvi.lParam);
 				if (sd)
-					if (!strcmpi(sd->File,((SkinListData*)data)->File))
+					if (!_strcmpi(sd->File,((SkinListData*)data)->File))
 						return tmp;
 			}
 			else
@@ -778,44 +781,26 @@ static void SkinChangeTab(HWND hwndDlg, WndItemsData *data, int sel)
 	HWND hwndTab;
 	RECT rc_tab;
 	RECT rc_item;
-	int top;
 
 	hwndTab = GetDlgItem(hwndDlg, IDC_SKIN_TAB);
 
 	// Get avaible space
 	GetWindowRect(hwndTab, &rc_tab);
-	ScreenToClientRect(hwndDlg, &rc_tab);
-	top = rc_tab.top;
-
-	GetWindowRect(hwndTab, &rc_tab);
 	ScreenToClientRect(hwndTab, &rc_tab);
 	TabCtrl_AdjustRect(hwndTab, FALSE, &rc_tab); 
-
 
 	// Get item size
 	GetClientRect(data->items[sel].hwnd, &rc_item);
 
 	// Fix rc_item
 	rc_item.right -= rc_item.left;	// width
-	rc_item.left = 0;
+	rc_item.left = rc_tab.left + (rc_tab.right - rc_tab.left - rc_item.right) / 2;
+
 	rc_item.bottom -= rc_item.top;	// height
-	rc_item.top = 0;
-
-	//OffsetRect(&rc_item,30,0);
-
-	if (rc_item.right < rc_tab.right - rc_tab.left)
-		rc_item.left = rc_tab.left + (rc_tab.right - rc_tab.left - rc_item.right) / 2;
-	else
-		rc_item.left = rc_tab.left;
-
-	if (rc_item.bottom < rc_tab.bottom - rc_tab.top)
-		rc_item.top = top + rc_tab.top + (rc_tab.bottom - rc_tab.top - rc_item.bottom) / 2;
-	else
-		rc_item.top = top + rc_tab.top;
+	rc_item.top = rc_tab.top; // + (rc_tab.bottom - rc_tab.top - rc_item.bottom) / 2;
 
 	// Set pos
-	//SetParent(data->items[sel].hwnd,hwndTab);
-	SetWindowPos(data->items[sel].hwnd, HWND_TOP/*data->hwndDisplay*/, rc_item.left, rc_item.top, rc_item.right,
+	SetWindowPos(data->items[sel].hwnd, HWND_TOP, rc_item.left, rc_item.top, rc_item.right,
 		rc_item.bottom, SWP_SHOWWINDOW);
 
 	data->selected_item = sel;
@@ -832,7 +817,6 @@ static BOOL CALLBACK DlgProcSkinTabbedOpts(HWND hwndDlg, UINT msg, WPARAM wParam
 			WndItemsData *data;
 			int i;
 			TCITEM tie={0}; 
-			RECT rc_tab;
 
 			TranslateDialogDefault(hwndDlg);
 
@@ -855,23 +839,14 @@ static BOOL CALLBACK DlgProcSkinTabbedOpts(HWND hwndDlg, UINT msg, WPARAM wParam
 				data->items[i].hwnd = CreateDialogIndirectA(g_hInst, templ, hwndDlg, 
 					data->items[i].conf->wnd_proc); 
 				TranslateDialogDefault(data->items[i].hwnd);
-				ShowWindowNew(data->items[i].hwnd, SW_HIDE);
+				CLUI_ShowWindowMod(data->items[i].hwnd, SW_HIDE);
+
+				if (pfEnableThemeDialogTexture != NULL)
+					pfEnableThemeDialogTexture(data->items[i].hwnd, ETDT_ENABLETAB);
 
 				tie.pszText = TranslateTS(data->items[i].conf->name); 
 				TabCtrl_InsertItem(hwndTab, i, &tie);
 			}
-
-			// Get avaible space
-			GetWindowRect(hwndTab, &rc_tab);
-			ScreenToClientRect(hwndTab, &rc_tab);
-			TabCtrl_AdjustRect(hwndTab, FALSE, &rc_tab); 
-			rc_tab.left+=1;
-			rc_tab.right-=1;
-			// Create big display
-			data->hwndDisplay = CreateWindow(TEXT("STATIC"), TEXT(""), WS_CHILD|WS_VISIBLE, 
-				rc_tab.left, rc_tab.top, 
-				rc_tab.right-rc_tab.left, rc_tab.bottom-rc_tab.top, 
-				hwndTab, NULL, g_hInst, NULL); 
 
 			// Show first item
 			SkinChangeTab(hwndDlg, data, 0);
@@ -886,7 +861,7 @@ static BOOL CALLBACK DlgProcSkinTabbedOpts(HWND hwndDlg, UINT msg, WPARAM wParam
 			case TCN_SELCHANGING:
 				{
 					WndItemsData *data = (WndItemsData *) GetWindowLong(hwndDlg, GWL_USERDATA);
-					ShowWindowNew(data->items[data->selected_item].hwnd, SW_HIDE);
+					CLUI_ShowWindowMod(data->items[data->selected_item].hwnd, SW_HIDE);
 					break;
 				}
 			case TCN_SELCHANGE: 
@@ -931,7 +906,7 @@ static BOOL CALLBACK DlgProcSkinTabbedOpts(HWND hwndDlg, UINT msg, WPARAM wParam
 				DestroyWindow(data->items[i].hwnd); 
 			}
 
-			mir_free(data); 
+			mir_free_and_nill(data); 
 			break;
 		}
 	case PSM_CHANGED:

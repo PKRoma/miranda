@@ -59,12 +59,22 @@ static int GetContactStatus(HANDLE hContact)
 extern void ( *saveChangeContactIcon)(HANDLE hContact,int iIcon,int add);
 void cli_ChangeContactIcon(HANDLE hContact,int iIcon,int add)
 {
-	pdisplayNameCacheEntry cacheEntry;
+	/*pdisplayNameCacheEntry cacheEntry;
 	HANDLE hMostMeta=NULL;
 	cacheEntry=(pdisplayNameCacheEntry)pcli->pfnGetCacheEntry((HANDLE)hContact);
 	if (iIcon)
-		if (cacheEntry)
-			if (!mir_strcmp(cacheEntry->szProto,"MetaContacts"))
+        if (cacheEntry)
+        {
+            BOOL isMeta=!mir_strcmp(cacheEntry->szProto,"MetaContacts");
+            if (cacheEntry->isTransport>0 && !isMeta)
+            {
+                int statusicon=pcli->pfnIconFromStatusMode(cacheEntry->szProto,cacheEntry->status,NULL);
+                if (statusicon==iIcon) //going to set status icon but has transport;
+                {
+                    iIcon=GetTrasportStatusIconIndex(cacheEntry->isTransport-1,cacheEntry->status);
+                }
+            }
+			if (isMeta)
 				if (!DBGetContactSettingByte(NULL,"CLC","Meta",0))
 				{
 					int iMetaStatusIcon;
@@ -78,18 +88,22 @@ void cli_ChangeContactIcon(HANDLE hContact,int iIcon,int add)
 							hMostMeta=(HANDLE)CallService(MS_MC_GETMOSTONLINECONTACT,(UINT)hContact,0);
 							if (hMostMeta!=0)            
 							{   
-							char * szRealProto;
-							int RealStatus;					
-						
-							szRealProto=(char*)CallService(MS_PROTO_GETCONTACTBASEPROTO,(UINT)hMostMeta,0);
-							RealStatus=DBGetContactSettingWord(hMostMeta,szRealProto,"Status",ID_STATUS_OFFLINE);
-							iIcon=pcli->pfnIconFromStatusMode(szRealProto,RealStatus,NULL);
-
-						}
+            				    cacheEntry=(pdisplayNameCacheEntry)pcli->pfnGetCacheEntry((HANDLE)hMostMeta);
+                                if (cacheEntry)
+                                {
+                                    if (cacheEntry->isTransport>0)
+                                        iIcon=GetTrasportStatusIconIndex(cacheEntry->isTransport-1,cacheEntry->status);
+                                    else
+    							        iIcon=pcli->pfnIconFromStatusMode(cacheEntry->szProto,cacheEntry->status,NULL);
+                                }
+    						}
 					}
 				}
+        }
 	//clui MS_CLUI_CONTACTADDED MS_CLUI_CONTACTSETICON this methods is null
+    */
 	saveChangeContactIcon((HANDLE) hContact,(int) iIcon,(int) add);
+    
 	//CallService(add?MS_CLUI_CONTACTADDED:MS_CLUI_CONTACTSETICON,(WPARAM)hContact,iIcon);
 }
 
@@ -147,10 +161,10 @@ int GetProtoIndex(char * szName)
         {
             if (!mir_strcmp(name,szName))
             {
-                mir_free(name);
+                mir_free_and_nill(name);
                 return i;
             }
-            mir_free(name);
+            mir_free_and_nill(name);
         }
     }
     return -1;
@@ -220,23 +234,6 @@ int cliCompareContacts(const struct ClcContact *contact1,const struct ClcContact
 }
 
 #undef SAFESTRING
-
-static int resortTimerId=0;
-static VOID CALLBACK SortContactsTimer(HWND hwnd,UINT message,UINT idEvent,DWORD dwTime)
-{
-	KillTimer(NULL,resortTimerId);
-	resortTimerId=0;
-    if (hwnd!=NULL)
-    {    
-        KillTimer(hwnd,TIMERID_DELAYEDRESORTCLC);
-        SetTimer(hwnd,TIMERID_DELAYEDRESORTCLC,DBGetContactSettingByte(NULL,"CLUI","DELAYEDTIMER",10),NULL);
-    }
-    else 
-	{
-	    CallService(MS_CLUI_SORTLIST,0,0);
-
-	}
-}
 
 int ContactChangeGroup(WPARAM wParam,LPARAM lParam)
 {

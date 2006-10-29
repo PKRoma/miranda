@@ -50,7 +50,6 @@ CLEAN :
 	-@erase "$(INTDIR)\encrypt.obj"
 	-@erase "$(INTDIR)\init.obj"
 	-@erase "$(INTDIR)\resource.res"
-	-@erase "$(INTDIR)\utf.obj"
 	-@erase "$(INTDIR)\vc60.idb"
 	-@erase "$(INTDIR)\vc60.pdb"
 	-@erase "$(OUTDIR)\dbx_3x.exp"
@@ -82,7 +81,6 @@ LINK32_OBJS= \
 	"$(INTDIR)\dbsettings.obj" \
 	"$(INTDIR)\encrypt.obj" \
 	"$(INTDIR)\init.obj" \
-	"$(INTDIR)\utf.obj" \
 	"$(INTDIR)\resource.res"
 
 "..\..\bin\release\plugins\dbx_3x.dll" : "$(OUTDIR)" $(DEF_FILE) $(LINK32_OBJS)
@@ -124,8 +122,6 @@ CLEAN :
 	-@erase "$(INTDIR)\init.obj"
 	-@erase "$(INTDIR)\init.sbr"
 	-@erase "$(INTDIR)\resource.res"
-	-@erase "$(INTDIR)\utf.obj"
-	-@erase "$(INTDIR)\utf.sbr"
 	-@erase "$(INTDIR)\vc60.idb"
 	-@erase "$(INTDIR)\vc60.pdb"
 	-@erase "$(OUTDIR)\db3x.bsc"
@@ -154,8 +150,7 @@ BSC32_SBRS= \
 	"$(INTDIR)\dbmodulechain.sbr" \
 	"$(INTDIR)\dbsettings.sbr" \
 	"$(INTDIR)\encrypt.sbr" \
-	"$(INTDIR)\init.sbr" \
-	"$(INTDIR)\utf.sbr"
+	"$(INTDIR)\init.sbr"
 
 "$(OUTDIR)\db3x.bsc" : "$(OUTDIR)" $(BSC32_SBRS)
     $(BSC32) @<<
@@ -175,7 +170,6 @@ LINK32_OBJS= \
 	"$(INTDIR)\dbsettings.obj" \
 	"$(INTDIR)\encrypt.obj" \
 	"$(INTDIR)\init.obj" \
-	"$(INTDIR)\utf.obj" \
 	"$(INTDIR)\resource.res"
 
 "..\..\bin\debug\plugins\dbx_3x.dll" : "$(OUTDIR)" $(DEF_FILE) $(LINK32_OBJS)
@@ -462,22 +456,6 @@ CPP_SWITCHES=/nologo /MDd /W3 /Gm /ZI /Od /I "../../include" /D "WIN32" /D "_DEB
 	$(CPP) @<<
   $(CPP_SWITCHES) $(SOURCE)
 <<
-
-
-!ENDIF 
-
-SOURCE=.\utf.c
-
-!IF  "$(CFG)" == "db3x - Win32 Release"
-
-
-"$(INTDIR)\utf.obj" : $(SOURCE) "$(INTDIR)" "$(INTDIR)\db3x.pch"
-
-
-!ELSEIF  "$(CFG)" == "db3x - Win32 Debug"
-
-
-"$(INTDIR)\utf.obj"	"$(INTDIR)\utf.sbr" : $(SOURCE) "$(INTDIR)" "$(INTDIR)\db3x.pch"
 
 
 !ENDIF 

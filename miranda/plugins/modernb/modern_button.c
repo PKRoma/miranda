@@ -30,9 +30,11 @@ This file contains code related to new modern free positioned skinned buttons
 #define MODERNBUTTONCLASS "MirandaModernButtonClass"
 BOOL ModernButtonModuleIsLoaded=FALSE;
 
+static HANDLE hookSystemShutdown_ModernButton=NULL;
+
 static LRESULT CALLBACK ModernButtonWndProc(HWND hwndDlg, UINT msg,  WPARAM wParam, LPARAM lParam);
-int UnloadModernButtonModule(WPARAM wParam, LPARAM lParam);
-extern int SkinDrawImageAt(HDC hdc, RECT *rc);
+int ModernButton_UnloadModule(WPARAM wParam, LPARAM lParam);
+extern int SkinEngine_DrawImageAt(HDC hdc, RECT *rc);
 int SetToolTip(HWND hwnd, TCHAR * tip);
 typedef struct _ModernButtonCtrl
 {
@@ -50,19 +52,7 @@ typedef struct _ModernButtonCtrl
   char    * ValueDBSection;
   char    * ValueTypeDef;
   int     Left, Top, Bottom, Right;
-  //   BYTE    ConstrainPositionFrom;  //(0000BRTL)  L=0 - from left, L=1 from right, 
 
-  //HFONT   hFont;   // font
-  //HICON   arrow;   // uses down arrow
-  //int     defbutton; // default button
-  //HICON   hIcon;
-  //HBITMAP hBitmap;
-  //int     pushBtn;
-  //int     pbState;
-  //HANDLE  hThemeButton;
-  //HANDLE  hThemeToolbar;
-  //char	cHot;
-  //int     flatBtn;
 } ModernButtonCtrl;
 typedef struct _HandleServiceParams
 {
@@ -78,29 +68,32 @@ static HWND hwndToolTips = NULL;
 
 
 
-int LoadModernButtonModule() 
+int ModernButton_LoadModule() 
 {
-  WNDCLASSEXA wc;	
+  WNDCLASSEX wc;	
   ZeroMemory(&wc, sizeof(wc));
   wc.cbSize         = sizeof(wc);
-  wc.lpszClassName  = MODERNBUTTONCLASS;
+  wc.lpszClassName  = _T(MODERNBUTTONCLASS);
   wc.lpfnWndProc    = ModernButtonWndProc;
   wc.hCursor        = LoadCursor(NULL, IDC_ARROW);
   wc.cbWndExtra     = sizeof(ModernButtonCtrl*);
   wc.hbrBackground  = 0;
   wc.style          = CS_GLOBALCLASS;
-  RegisterClassExA(&wc);
+  RegisterClassEx(&wc);
   InitializeCriticalSection(&csTips);
-  HookEvent(ME_SYSTEM_SHUTDOWN, UnloadModernButtonModule);
+  hookSystemShutdown_ModernButton=HookEvent(ME_SYSTEM_SHUTDOWN, ModernButton_UnloadModule);
   ModernButtonModuleIsLoaded=TRUE;
   return 0;
 }
 
-int UnloadModernButtonModule(WPARAM wParam, LPARAM lParam)
+int ModernButton_UnloadModule(WPARAM wParam, LPARAM lParam)
 {
+  UnhookEvent(hookSystemShutdown_ModernButton);
   DeleteCriticalSection(&csTips);
   return 0;
 }
+int SkinSelector_DeleteMask(MODERNMASK * mm);
+void CLCPaint_AddParam(MODERNMASK * mpModernMask, DWORD dwParamHash, char *szValue, DWORD dwValueHash);
 
 int PaintWorker(HWND hwnd, HDC whdc)
 {
@@ -108,24 +101,24 @@ int PaintWorker(HWND hwnd, HDC whdc)
   HBITMAP bmp,oldbmp;
   RECT rc;
   HDC sdc=NULL;
-  ModernButtonCtrl* bct =  (ModernButtonCtrl *)GetWindowLong(hwnd, 0);
+  ModernButtonCtrl* bct =  (ModernButtonCtrl *)GetWindowLong(hwnd, GWL_USERDATA);
   if (!bct) return 0;
   if (!IsWindowVisible(hwnd)) return 0;
-  if (!whdc && !LayeredFlag) InvalidateRect(hwnd,NULL,FALSE);
+  if (!whdc && !g_bLayered) InvalidateRect(hwnd,NULL,FALSE);
 
-  if (whdc && LayeredFlag) hdc=whdc;
+  if (whdc && g_bLayered) hdc=whdc;
   else 
   {
     //sdc=GetWindowDC(GetParent(hwnd));
     hdc=CreateCompatibleDC(NULL);
   }
   GetClientRect(hwnd,&rc);
-  bmp=CreateBitmap32(rc.right,rc.bottom);
+  bmp=SkinEngine_CreateDIB32(rc.right,rc.bottom);
   oldbmp=SelectObject(hdc,bmp);
-  if (!LayeredFlag)
-	BltBackImage(bct->hwnd,hdc,NULL);
+  if (!g_bLayered)
+	SkinEngine_BltBackImage(bct->hwnd,hdc,NULL);
   {
-    char Request[250];
+    MODERNMASK Request={0};
     //   int res;
     //HBRUSH br=CreateSolidBrush(RGB(255,255,255));
     char * Value=NULL;
@@ -168,30 +161,33 @@ int PaintWorker(HWND hwnd, HDC whdc)
             Value=mir_strdup(_ltoa(defval,buf,sizeof(buf)));
             break;
         }
-        mir_free(section);
+        mir_free_and_nill(section);
       }  
 
     }
+    CLCPaint_AddParam(&Request,mod_CalcHash("Module"),"MButton",0);
+    CLCPaint_AddParam(&Request,mod_CalcHash("ID"),bct->ID,0);
+    CLCPaint_AddParam(&Request,mod_CalcHash("Down"),bct->down?"1":"0",0);
+    CLCPaint_AddParam(&Request,mod_CalcHash("Focused"),bct->focus?"1":"0",0);
+    CLCPaint_AddParam(&Request,mod_CalcHash("Hovered"),bct->hover?"1":"0",0);
     if (Value)
     {
-      _snprintf(Request,sizeof(Request),"MButton,ID=%s,Down=%d,Focused=%d,Hovered=%d,Value=%s",bct->ID,bct->down, bct->focus,bct->hover,Value);
-      mir_free(Value);
-    }
-    else
-      _snprintf(Request,sizeof(Request),"MButton,ID=%s,Down=%d,Focused=%d,Hovered=%d",bct->ID,bct->down, bct->focus,bct->hover);
-
-    SkinDrawGlyph(hdc,&rc,&rc,Request);
+      CLCPaint_AddParam(&Request,mod_CalcHash("Value"),Value,0);
+      mir_free_and_nill(Value);
+    }    
+    SkinDrawGlyphMask(hdc,&rc,&rc,&Request);
+    SkinSelector_DeleteMask(&Request);
     // DeleteObject(br);
   }
 
-  if (!whdc && LayeredFlag) 
+  if (!whdc && g_bLayered) 
   {
     RECT r;
     SetRect(&r,bct->Left,bct->Top,bct->Right,bct->Bottom);
-    SkinDrawImageAt(hdc,&r);
+    SkinEngine_DrawImageAt(hdc,&r);
     //CallingService to immeadeately update window with new image.
   }
-  if (whdc && !LayeredFlag)
+  if (whdc && !g_bLayered)
   {
 	  RECT r={0};
 	  GetClientRect(bct->hwnd,&r);
@@ -199,7 +195,7 @@ int PaintWorker(HWND hwnd, HDC whdc)
   }
   SelectObject(hdc,oldbmp);
   DeleteObject(bmp);
-  if (!whdc || !LayeredFlag) 
+  if (!whdc || !g_bLayered) 
   {	
 	  SelectObject(hdc, GetStockObject(DEFAULT_GUI_FONT));
 	  mod_DeleteDC(hdc);
@@ -253,7 +249,7 @@ static int ToggleDBValue(char * ValueDBSection,char *ValueTypeDef)
             else 
               Value=mir_strdup(val2);
             DBWriteContactSettingString(NULL,section,key,Value);
-            mir_free(Value);
+            mir_free_and_nill(Value);
             break;
           }         
         case 'd':
@@ -272,189 +268,180 @@ static int ToggleDBValue(char * ValueDBSection,char *ValueTypeDef)
             DBWriteContactSettingByte(NULL,section,key,(BYTE)curval);            
             break;
         }       
-        mir_free(section);
-        mir_free(val);
+        mir_free_and_nill(section);
+        mir_free_and_nill(val);
       }  
 return 0;
 }
 
 static LRESULT CALLBACK ModernButtonWndProc(HWND hwndDlg, UINT msg,  WPARAM wParam, LPARAM lParam)
 {
-  ModernButtonCtrl* bct =  (ModernButtonCtrl *)GetWindowLong(hwndDlg, 0);
-  if (bct)
-    if (bct->HandleService)
-      if (ServiceExists(bct->HandleService))
-      {
-        int t;
-        HandleServiceParams MSG={0};
-        MSG.hwnd=hwndDlg;
-        MSG.msg=msg;
-        MSG.wParam=wParam;
-        MSG.lParam=lParam;
-        t=CallService(bct->HandleService,(WPARAM)&MSG,0);
-        if (MSG.handled) return t;
-      }
-      switch(msg) 
-      {
-      case WM_NCCREATE:
+    ModernButtonCtrl* bct =  (msg!=WM_NCCREATE)?(ModernButtonCtrl *)GetWindowLong(hwndDlg, GWL_USERDATA):0;
+    if (bct)
+      if (bct->HandleService)
+        if (ServiceExists(bct->HandleService))
         {
-          SetWindowLong(hwndDlg, GWL_STYLE, GetWindowLong(hwndDlg, GWL_STYLE)|BS_OWNERDRAW);
-          //			bct = mir_alloc(sizeof(ModernButtonCtrl));
-          //			if (bct==NULL) return FALSE;
-          //            memset(bct,0,sizeof(ModernButtonCtrl));
-          //			bct->hwnd = hwndDlg;
-
-          //			bct->focus = 0;
-          //			//bct->hFont = GetStockObject(DEFAULT_GUI_FONT);
-          //		    bct->HandleService=NULL;
-          //            bct->ID=NULL;
-          //			SetWindowLong(hwndDlg, 0, (long)bct);
-          if (((CREATESTRUCTA *)lParam)->lpszName) SetWindowTextA(hwndDlg, ((CREATESTRUCTA *)lParam)->lpszName);  
-          return TRUE;
+            int t;
+            HandleServiceParams MSG={0};
+            MSG.hwnd=hwndDlg;
+            MSG.msg=msg;
+            MSG.wParam=wParam;
+            MSG.lParam=lParam;
+            t=CallService(bct->HandleService,(WPARAM)&MSG,0);
+            if (MSG.handled) return t;
         }
-      case WM_DESTROY:
-        {
-          if (bct) {
-            EnterCriticalSection(&csTips);
-            if (hwndToolTips) {
-              TOOLINFO ti;
-              ZeroMemory(&ti, sizeof(ti));
-              ti.cbSize = sizeof(ti);
-              ti.uFlags = TTF_IDISHWND;
-              ti.hwnd = bct->hwnd;
-              ti.uId = (UINT)bct->hwnd;
-              if (SendMessage(hwndToolTips, TTM_GETTOOLINFO, 0, (LPARAM)&ti)) {
-                SendMessage(hwndToolTips, TTM_DELTOOL, 0, (LPARAM)&ti);
-              }
-              if (SendMessage(hwndToolTips, TTM_GETTOOLCOUNT, 0, (LPARAM)&ti)==0) {
-                DestroyWindow(hwndToolTips);
-                hwndToolTips = NULL;
-              }
+    switch(msg) 
+    {
+    case WM_NCCREATE:
+    {
+        SetWindowLong(hwndDlg, GWL_STYLE, GetWindowLong(hwndDlg, GWL_STYLE)|BS_OWNERDRAW);
+        SetWindowLong(hwndDlg, GWL_USERDATA, (long)0);
+        if (((CREATESTRUCT *)lParam)->lpszName) SetWindowText(hwndDlg, ((CREATESTRUCT *)lParam)->lpszName);  
+        return TRUE;
+    }
+    case WM_DESTROY:
+    {
+        if (bct) {
+        EnterCriticalSection(&csTips);
+        if (hwndToolTips) {
+            TOOLINFO ti;
+            ZeroMemory(&ti, sizeof(ti));
+            ti.cbSize = sizeof(ti);
+            ti.uFlags = TTF_IDISHWND;
+            ti.hwnd = bct->hwnd;
+            ti.uId = (UINT)bct->hwnd;
+            if (SendMessage(hwndToolTips, TTM_GETTOOLINFO, 0, (LPARAM)&ti)) {
+            SendMessage(hwndToolTips, TTM_DELTOOL, 0, (LPARAM)&ti);
             }
-            LeaveCriticalSection(&csTips);
-            if (bct->ID) mir_free(bct->ID);
-            if (bct->CommandService) mir_free(bct->CommandService);
-            if (bct->StateService) mir_free (bct->StateService); 
-            if (bct->HandleService) mir_free(bct->HandleService);               
-            if (bct->Hint) mir_free(bct->Hint);  
-            if (bct->ValueDBSection) mir_free(bct->ValueDBSection);
-            if (bct->ValueTypeDef) mir_free(bct->ValueTypeDef);
+            if (SendMessage(hwndToolTips, TTM_GETTOOLCOUNT, 0, (LPARAM)&ti)==0) {
+            DestroyWindow(hwndToolTips);
+            hwndToolTips = NULL;
+            }
+        }
+        LeaveCriticalSection(&csTips);
+        if (bct->ID) mir_free_and_nill(bct->ID);
+        if (bct->CommandService) mir_free_and_nill(bct->CommandService);
+        if (bct->StateService) mir_free_and_nill (bct->StateService); 
+        if (bct->HandleService) mir_free_and_nill(bct->HandleService);               
+        if (bct->Hint) mir_free_and_nill(bct->Hint);  
+        if (bct->ValueDBSection) mir_free_and_nill(bct->ValueDBSection);
+        if (bct->ValueTypeDef) mir_free_and_nill(bct->ValueTypeDef);
 
-            mir_free(bct);
-          }
-          SetWindowLong(hwndDlg,0,(long)NULL);
-          break;	// DONT! fall thru
+        mir_free_and_nill(bct);
         }
-      case WM_SETCURSOR:
+        SetWindowLong(hwndDlg, GWL_USERDATA,(long)NULL);
+        break;	// DONT! fall thru
+    }
+    case WM_SETCURSOR:
+    {
+        HCURSOR hCurs1;
+        hCurs1 = LoadCursor(NULL, IDC_ARROW);
+        if (hCurs1) SetCursor(hCurs1);
+        SetToolTip(hwndDlg, bct->Hint);
+        return 1;			
+    }
+    case WM_PRINT:
+    {
+        if (IsWindowVisible(hwndDlg))
+        PaintWorker(hwndDlg,(HDC)wParam);
+        break;
+    }
+    case WM_PAINT:
+	    {
+		    if (IsWindowVisible(hwndDlg) && !g_bLayered)
+		    {
+			    PAINTSTRUCT ps={0};
+			    BeginPaint(hwndDlg,&ps);
+			    PaintWorker(hwndDlg,(HDC)ps.hdc);
+			    EndPaint(hwndDlg,&ps);
+		    }
+		    return DefWindowProc(hwndDlg, msg, wParam, lParam); 
+	    }
+    case WM_CAPTURECHANGED:
+    {                
+        bct->hover=0;
+        bct->down=0;
+        PaintWorker(bct->hwnd,0);
+        //	KillTimer(bct->hwnd,1234);
+        break;
+    }
+    //case WM_TIMER:
+    //	{
+    //		    POINT t;
+    //                  GetCursorPos(&t);
+    //                  if (bct->hover && WindowFromPoint(t)!=bct->hwnd)
+    //			{
+    //				KillTimer(bct->hwnd,1234);
+    //				bct->hover=0;
+    //				ReleaseCapture();
+    //				PaintWorker(bct->hwnd,0);
+    //			}
+    //			return 0;
+    //	}
+    case WM_MOUSEMOVE:
+    {
+        if (!bct->hover) 
         {
-          HCURSOR hCurs1;
-          hCurs1 = LoadCursor(NULL, IDC_ARROW);
-          if (hCurs1) SetCursor(hCurs1);
-          SetToolTip(hwndDlg, bct->Hint);
-          return 1;			
+        SetCapture(bct->hwnd);
+        bct->hover=1;
+        //KillTimer(bct->hwnd,1234);
+        //SetTimer(bct->hwnd,1234,100,NULL);
+        PaintWorker(bct->hwnd,0);
+        return 0;
         }
-      case WM_PRINT:
+        else
         {
-          if (IsWindowVisible(hwndDlg))
-            PaintWorker(hwndDlg,(HDC)wParam);
-          break;
+        POINT t;
+        t.x=LOWORD(lParam);
+        t.y=HIWORD(lParam);
+        ClientToScreen(bct->hwnd,&t);
+        if (WindowFromPoint(t)!=bct->hwnd)
+            ReleaseCapture();
+        return 0;
         }
-	  case WM_PAINT:
-		  {
-			  if (IsWindowVisible(hwndDlg) && !LayeredFlag)
-			  {
-				  PAINTSTRUCT ps={0};
-				  BeginPaint(hwndDlg,&ps);
-				  PaintWorker(hwndDlg,(HDC)ps.hdc);
-				  EndPaint(hwndDlg,&ps);
-			  }
-			  return DefWindowProc(hwndDlg, msg, wParam, lParam); 
-		  }
-      case WM_CAPTURECHANGED:
-        {                
-          bct->hover=0;
-          bct->down=0;
-          PaintWorker(bct->hwnd,0);
-          //	KillTimer(bct->hwnd,1234);
-          break;
-        }
-        //case WM_TIMER:
-        //	{
-        //		    POINT t;
-        //                  GetCursorPos(&t);
-        //                  if (bct->hover && WindowFromPoint(t)!=bct->hwnd)
-        //			{
-        //				KillTimer(bct->hwnd,1234);
-        //				bct->hover=0;
-        //				ReleaseCapture();
-        //				PaintWorker(bct->hwnd,0);
-        //			}
-        //			return 0;
-        //	}
-      case WM_MOUSEMOVE:
-        {
-          if (!bct->hover) 
-          {
-            SetCapture(bct->hwnd);
-            bct->hover=1;
-            //KillTimer(bct->hwnd,1234);
-            //SetTimer(bct->hwnd,1234,100,NULL);
-            PaintWorker(bct->hwnd,0);
-            return 0;
-          }
-          else
-          {
-            POINT t;
-            t.x=LOWORD(lParam);
-            t.y=HIWORD(lParam);
-            ClientToScreen(bct->hwnd,&t);
-            if (WindowFromPoint(t)!=bct->hwnd)
-              ReleaseCapture();
-            return 0;
-          }
 
 
-        }
-      case WM_LBUTTONDOWN:
+    }
+    case WM_LBUTTONDOWN:
+    {
+        //KillTimer(bct->hwnd,1234);
+        //SetTimer(bct->hwnd,1234,100,NULL);
+        bct->down=1;
+	    SetForegroundWindow(GetParent(bct->hwnd));
+        PaintWorker(bct->hwnd,0);
+        if (bct->Imm)
         {
-          //KillTimer(bct->hwnd,1234);
-          //SetTimer(bct->hwnd,1234,100,NULL);
-          bct->down=1;
-		  SetForegroundWindow(GetParent(bct->hwnd));
-          PaintWorker(bct->hwnd,0);
-          if (bct->Imm)
-          {
-            if (bct->CommandService)
-              if (ServiceExists(bct->CommandService))
-                CallService(bct->CommandService,0,0);
-              else if (bct->ValueDBSection && bct->ValueTypeDef)          
-                ToggleDBValue(bct->ValueDBSection,bct->ValueTypeDef);                      
-            bct->down=0;
-
-            PaintWorker(bct->hwnd,0);
-          }
-
-          return 0;
-        }
-      case WM_LBUTTONUP:
-        if (bct->down)
-        {
-          //KillTimer(bct->hwnd,1234);
-          //SetTimer(bct->hwnd,1234,100,NULL);
-          ReleaseCapture();
-          bct->hover=0;
-          bct->down=0;
-          PaintWorker(bct->hwnd,0);
-          if (bct->CommandService)
+        if (bct->CommandService)
             if (ServiceExists(bct->CommandService))
-              CallService(bct->CommandService,0,0);
+            CallService(bct->CommandService,0,0);
             else if (bct->ValueDBSection && bct->ValueTypeDef)          
-              ToggleDBValue(bct->ValueDBSection,bct->ValueTypeDef); 
+            ToggleDBValue(bct->ValueDBSection,bct->ValueTypeDef);                      
+        bct->down=0;
+
+        PaintWorker(bct->hwnd,0);
         }
 
+        return 0;
+    }
+    case WM_LBUTTONUP:
+    if (bct->down)
+    {
+        //KillTimer(bct->hwnd,1234);
+        //SetTimer(bct->hwnd,1234,100,NULL);
+        ReleaseCapture();
+        bct->hover=0;
+        bct->down=0;
+        PaintWorker(bct->hwnd,0);
+        if (bct->CommandService)
+        if (ServiceExists(bct->CommandService))
+            CallService(bct->CommandService,0,0);
+        else if (bct->ValueDBSection && bct->ValueTypeDef)          
+            ToggleDBValue(bct->ValueDBSection,bct->ValueTypeDef); 
+    }
 
-      }
-      return DefWindowProc(hwndDlg, msg, wParam, lParam);
+
+    }
+    return DefWindowProc(hwndDlg, msg, wParam, lParam);
 }
 
 
@@ -562,19 +549,20 @@ int AddButton(HWND parent,
     Buttons[ButtonsCount].minH=MinHeight;
     Buttons[ButtonsCount].minW=MinWidth;
     ButtonsCount++;
-    //  ShowWindowNew(hwnd,SW_SHOW);
+    //  CLUI_ShowWindowMod(hwnd,SW_SHOW);
   }
   return 0;
 }
 
-extern sCurrentWindowImageData * cachedWindow;
+extern CURRWNDIMAGEDATA * g_pCachedWindow;
+
 int EraseButton(int l,int t,int r, int b)
 {
   DWORD i;
   if (!ModernButtonModuleIsLoaded) return 0;
-  if (!LayeredFlag) return 0;
-  if (!cachedWindow) return 0;
-  if (!cachedWindow->hImageDC ||!cachedWindow->hBackDC) return 0;
+  if (!g_bLayered) return 0;
+  if (!g_pCachedWindow) return 0;
+  if (!g_pCachedWindow->hImageDC ||!g_pCachedWindow->hBackDC) return 0;
   if (!(l||r||t||b))
   {
     for(i=0; i<ButtonsCount; i++)
@@ -582,14 +570,14 @@ int EraseButton(int l,int t,int r, int b)
       if (pcli->hwndContactList && Buttons[i].hwnd!=NULL)      
       {
         //TODO: Erase button
-        BitBlt(cachedWindow->hImageDC,Buttons[i].bct->Left,Buttons[i].bct->Top,Buttons[i].bct->Right-Buttons[i].bct->Left,Buttons[i].bct->Bottom-Buttons[i].bct->Top,
-              cachedWindow->hBackDC,Buttons[i].bct->Left,Buttons[i].bct->Top,SRCCOPY);
+        BitBlt(g_pCachedWindow->hImageDC,Buttons[i].bct->Left,Buttons[i].bct->Top,Buttons[i].bct->Right-Buttons[i].bct->Left,Buttons[i].bct->Bottom-Buttons[i].bct->Top,
+              g_pCachedWindow->hBackDC,Buttons[i].bct->Left,Buttons[i].bct->Top,SRCCOPY);
       }
     }
   }
   else
   {
-    BitBlt(cachedWindow->hImageDC,l,t,r-l,b-t, cachedWindow->hBackDC,l,t,SRCCOPY);
+    BitBlt(g_pCachedWindow->hImageDC,l,t,r-l,b-t, g_pCachedWindow->hBackDC,l,t,SRCCOPY);
   }
   return 0;
 }
@@ -597,25 +585,38 @@ int EraseButton(int l,int t,int r, int b)
 HWND CreateButtonWindow(ModernButtonCtrl * bct, HWND parent)
 {
   HWND hwnd;
+  
   if (bct==NULL) return FALSE;
-  hwnd=CreateWindowA(MODERNBUTTONCLASS,bct->ID,WS_VISIBLE|WS_CHILD,bct->Left,bct->Top,bct->Right-bct->Left,bct->Bottom-bct->Top,parent,NULL,g_hInst,NULL);       
+#ifdef _UNICODE
+  {
+    TCHAR *UnicodeID;
+    UnicodeID=a2u(bct->ID);
+    hwnd=CreateWindow(_T(MODERNBUTTONCLASS),UnicodeID,WS_VISIBLE|WS_CHILD,bct->Left,bct->Top,bct->Right-bct->Left,bct->Bottom-bct->Top,parent,NULL,g_hInst,NULL);       
+    mir_free_and_nill(UnicodeID);
+  }
+#else
+    hwnd=CreateWindow(_T(MODERNBUTTONCLASS),bct->ID,WS_VISIBLE|WS_CHILD,bct->Left,bct->Top,bct->Right-bct->Left,bct->Bottom-bct->Top,parent,NULL,g_hInst,NULL);         
+#endif
+
   bct->hwnd = hwnd;	
   bct->focus = 0;
-  SetWindowLong(hwnd, 0, (long)bct);
+  SetWindowLong(hwnd, GWL_USERDATA, (long)bct);
   return hwnd;
 }
 
-
+extern BOOL g_mutex_bLockUpdating;
 int RedrawButtons(HDC hdc)
 {
   DWORD i;
   if (!ModernButtonModuleIsLoaded) return 0;
+  g_mutex_bLockUpdating++;
   for(i=0; i<ButtonsCount; i++)
   {
     if (pcli->hwndContactList && Buttons[i].hwnd==NULL)
       Buttons[i].hwnd=CreateButtonWindow(Buttons[i].bct,pcli->hwndContactList);
     PaintWorker(Buttons[i].hwnd,0); 
   }
+  g_mutex_bLockUpdating--;
   return 0;
 }
 int DeleteButtons()
@@ -624,14 +625,14 @@ int DeleteButtons()
   if (!ModernButtonModuleIsLoaded) return 0;
   for(i=0; i<ButtonsCount; i++)
     if (Buttons[i].hwnd) DestroyWindow(Buttons[i].hwnd);
-  if (Buttons) mir_free(Buttons);
+  if (Buttons) mir_free_and_nill(Buttons);
   ButtonsCount=0;
   return 0;
 }
 
 SIZE oldWndSize={0};
 
-int ReposButtons(HWND parent, BOOL draw, RECT * r)
+int ModernButton_ReposButtons(HWND parent, BOOL draw, RECT * r)
 {
   DWORD i;
   RECT rc;
@@ -645,7 +646,7 @@ int ReposButtons(HWND parent, BOOL draw, RECT * r)
     GetWindowRect(parent,&rc);  
   else
 	  rc=*r;
-  if (LayeredFlag && draw&2)
+  if (g_bLayered && draw&2)
   {
     int sx,sy;
     sx=rd.right-rd.left;
@@ -675,10 +676,11 @@ int ReposButtons(HWND parent, BOOL draw, RECT * r)
     r=(AlignedTo&16)?rc.right+Buttons[i].OrR:((AlignedTo&32)?((rc.left+rc.right)>>1)+Buttons[i].OrR:rc.left+Buttons[i].OrR);
     b=(AlignedTo&64)?rc.bottom+Buttons[i].OrB:((AlignedTo&128)?((rc.top+rc.bottom)>>1)+Buttons[i].OrB:rc.top+Buttons[i].OrB);
     SetWindowPos(Buttons[i].hwnd,HWND_TOP,l,t,r-l,b-t,0);
-    if (rc.right-rc.left<Buttons[i].minW || rc.bottom-rc.top<Buttons[i].minH)
-      ShowWindowNew(Buttons[i].hwnd,SW_HIDE);
+    if (  (rc.right-rc.left<Buttons[i].minW /*&& Buttons[i].minW!=0*/) 
+        ||(rc.bottom-rc.top<Buttons[i].minH /*&& Buttons[i].minH!=0*/) )
+      CLUI_ShowWindowMod(Buttons[i].hwnd,SW_HIDE);
     else 
-      ShowWindowNew(Buttons[i].hwnd,SW_SHOW);
+      CLUI_ShowWindowMod(Buttons[i].hwnd,SW_SHOW);
     if ((1 || altDraw)&&
         (Buttons[i].bct->Left!=l ||
           Buttons[i].bct->Top!=t  ||

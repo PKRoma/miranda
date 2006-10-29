@@ -81,7 +81,7 @@ void ShowPopup(const char *title, const char *description, int type)
 	}
 	else // if (type == POPUP_TYPE_ERROR)
 	{
-		ppd.colorBack = POPUP_USE_SKINNED_BG;
+		ppd.colorBack = -1;
 		ppd.colorText = RGB(255,255,255);
 	}
 
@@ -94,8 +94,6 @@ void ShowPopup(const char *title, const char *description, int type)
 	else // if (type == POPUP_TYPE_ERROR)
 	{
 		ppd.iSeconds = 0;
-		ppd.lpzClass = TEXT(POPUP_CLASS_WARNING);
-		ppd.skinBack = RGB(255,0,0);
 	}
 
 	// Now that every field has been filled, we want to see the popup.

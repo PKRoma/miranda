@@ -2,7 +2,7 @@
 
 Miranda IM: the free IM client for Microsoft* Windows*
 
-Copyright 2000-2003 Miranda ICQ/IM project, 
+Copyright 2000-2006 Miranda ICQ/IM project, 
 all portions of this codebase are copyrighted to the people 
 listed in contributors.txt.
 
@@ -243,6 +243,7 @@ __inline static int Netlib_CloseHandle(HANDLE h) {return CallService(MS_NETLIB_C
 it shouldnt matter */
 
 #define NETLIBBIND_SIZEOF_V1 16 // sizeof(NETLIBBIND) prior to 0.3.4+ (2004/08/05)
+#define NETLIBBIND_SIZEOF_V2 20 // sizeof(NETLIBBIND) prior to 0.6+ (2006/07/03)
 
 typedef void (*NETLIBNEWCONNECTIONPROC_V2)(HANDLE hNewConnection,DWORD dwRemoteIP, void * pExtra);
 typedef void (*NETLIBNEWCONNECTIONPROC)(HANDLE hNewConnection,DWORD dwRemoteIP);
@@ -272,6 +273,8 @@ typedef struct {
 	DWORD dwInternalIP;   //set on return, host byte order
 	WORD wPort;			  //set on return, host byte order
 	void * pExtra;		  //argument is sent to callback, added during 0.3.4+
+	DWORD dwExternalIP;   //set on return, host byte order
+	WORD wExPort;		  //set on return, host byte order
 } NETLIBBIND;
 #define MS_NETLIB_BINDPORT     "Netlib/BindPort"
 
@@ -337,6 +340,7 @@ struct NETLIBOPENCONNECTION_tag {
 #define NLHPIF_USEGETSEQUENCE      0x0001   //append sequence numbers to GET requests
 #define NLHPIF_USEPOSTSEQUENCE     0x0002   //append sequence numbers to POST requests
 #define NLHPIF_GETPOSTSAMESEQUENCE 0x0004	//GET and POST use the same sequence
+#define NLHPIF_HTTP11              0x0008	//HTTP 1.1 proxy
 typedef struct {
 	int cbSize;
 	DWORD flags;
@@ -425,6 +429,7 @@ typedef struct {
 #define NLHRF_REMOVEHOST      0x00000002   //remove any host and/or protocol portion of szUrl before sending it
 #define NLHRF_SMARTREMOVEHOST 0x00000004   //removes host and/or protocol from szUrl unless the connection was opened through an HTTP or HTTPS proxy.
 #define NLHRF_SMARTAUTHHEADER 0x00000008   //if the connection was opened through an HTTP or HTTPS proxy then send a Proxy-Authorization header if required.
+#define NLHRF_HTTP11          0x00000010   //use HTTP 1.1
 #define NLHRF_NODUMP          0x00010000   //never dump this to the log
 #define NLHRF_NODUMPHEADERS   0x00020000   //don't dump http headers (only useful for POSTs and MS_NETLIB_HTTPTRANSACTION)
 #define NLHRF_DUMPPROXY       0x00040000   //this transaction is a proxy communication. For dump filtering only.

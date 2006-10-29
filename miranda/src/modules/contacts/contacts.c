@@ -236,10 +236,15 @@ static int GetContactInfo(WPARAM wParam, LPARAM lParam) {
 									ci->type = CNFT_ASCIIZ;
 									return 0;
 								}
-								if (dbv.type==DBVT_ASCIIZ) {
+								if (dbv.type == DBVT_ASCIIZ && !(ci->dwFlag & CNF_UNICODE)) {
 									ci->type = CNFT_ASCIIZ;
 									ci->pszVal = dbv.ptszVal;
 									return 0;
+								}
+								if (dbv.type == DBVT_WCHAR && (ci->dwFlag & CNF_UNICODE)) {
+								  ci->type = CNFT_ASCIIZ;
+								  ci->pszVal = dbv.ptszVal;
+								  return 0;
 						}	}	}
 						break;
 					}

@@ -2,8 +2,8 @@
 
 Miranda IM: the free IM client for Microsoft* Windows*
 
-Copyright 2000-2006 Miranda ICQ/IM project, 
-all portions of this codebase are copyrighted to the people 
+Copyright 2000-2006 Miranda ICQ/IM project,
+all portions of this codebase are copyrighted to the people
 listed in contributors.txt.
 
 This program is free software; you can redistribute it and/or
@@ -34,17 +34,17 @@ struct OptionsPageInit {
 	OPTIONSDIALOGPAGE *odp;
 };
 
-struct DlgTemplateExBegin {  
-    WORD   dlgVer; 
-    WORD   signature; 
-    DWORD  helpID; 
-    DWORD  exStyle; 
-    DWORD  style; 
-    WORD   cDlgItems; 
-    short  x; 
-    short  y; 
-    short  cx; 
-    short  cy; 
+struct DlgTemplateExBegin {
+    WORD   dlgVer;
+    WORD   signature;
+    DWORD  helpID;
+    DWORD  exStyle;
+    DWORD  style;
+    WORD   cDlgItems;
+    short  x;
+    short  y;
+    short  cx;
+    short  cy;
 };
 
 struct OptionsPageData {
@@ -128,7 +128,7 @@ static BOOL CALLBACK OptionsDlgProc(HWND hdlg,UINT message,WPARAM wParam,LPARAM 
 	switch ( message ) {
 	case WM_INITDIALOG:
 	{	HRSRC hrsrc;
-		HGLOBAL hglb;			
+		HGLOBAL hglb;
 		PROPSHEETHEADER *psh=(PROPSHEETHEADER*)lParam;
 		OPENOPTIONSDIALOG *ood=(OPENOPTIONSDIALOG*)psh->pStartPage;
 		OPTIONSDIALOGPAGE *odp;
@@ -175,7 +175,7 @@ static BOOL CALLBACK OptionsDlgProc(HWND hdlg,UINT message,WPARAM wParam,LPARAM 
 		else lastGroup = LangPackPcharToTchar( ood->pszGroup );
 
 		for ( i=0; i < dat->pageCount; i++ ) {
-			DWORD resSize;				
+			DWORD resSize;
 			hrsrc=FindResourceA(odp[i].hInstance,odp[i].pszTemplate,MAKEINTRESOURCEA(5));
 			hglb=LoadResource(odp[i].hInstance,hrsrc);
 			resSize=SizeofResource(odp[i].hInstance,hrsrc);
@@ -253,7 +253,7 @@ static BOOL CALLBACK OptionsDlgProc(HWND hdlg,UINT message,WPARAM wParam,LPARAM 
 		char str[128],buf[130];
 
 		TreeView_SelectItem(GetDlgItem(hdlg,IDC_PAGETREE),NULL);
-		if ( dat->currentPage != (-1)) 
+		if ( dat->currentPage != (-1))
 			ShowWindow(dat->opd[dat->currentPage].hwnd,SW_HIDE);
 		ShowWindow(GetDlgItem(hdlg,IDC_PAGETREE),SW_HIDE);	 //deleteall is annoyingly visible
 		TreeView_DeleteAllItems(GetDlgItem(hdlg,IDC_PAGETREE));
@@ -508,7 +508,7 @@ static BOOL CALLBACK OptionsDlgProc(HWND hdlg,UINT message,WPARAM wParam,LPARAM 
 	case WM_DESTROY:
 		SaveOptionsTreeState( hdlg );
 		if ( dat->currentPage != -1 ) {
-			if ( dat->opd[dat->currentPage].pszGroup ) 
+			if ( dat->opd[dat->currentPage].pszGroup )
 				DBWriteContactSettingTString( NULL, "Options", "LastGroup", dat->opd[dat->currentPage].pszGroup );
 			else DBDeleteContactSetting( NULL, "Options", "LastGroup" );
 			DBWriteContactSettingTString( NULL, "Options", "LastPage", dat->opd[dat->currentPage].pszTitle );
@@ -560,7 +560,7 @@ static void OpenOptionsNow(const char *pszGroup,const char *pszPage)
 	ood.pszGroup=pszGroup;
 	ood.pszPage=pszPage;
 	psh.pStartPage = (LPCTSTR)&ood;	  //more structure misuse
-	psh.pszCaption = TranslateT("Miranda IM Options");	
+	psh.pszCaption = TranslateT("Miranda IM Options");
 	psh.ppsp = (PROPSHEETPAGE*)opi.odp;		  //blatent misuse of the structure, but what the hell
 	hwndOptions=CreateDialogParam(GetModuleHandle(NULL),MAKEINTRESOURCE(IDD_OPTIONS),NULL,OptionsDlgProc,(LPARAM)&psh);
 	for(i=0;i<opi.pageCount;i++) {
@@ -588,7 +588,7 @@ static int OpenOptionsDialog(WPARAM wParam,LPARAM lParam)
 static int AddOptionsPage(WPARAM wParam,LPARAM lParam)
 {	OPTIONSDIALOGPAGE *odp=(OPTIONSDIALOGPAGE*)lParam, *dst;
 	struct OptionsPageInit *opi=(struct OptionsPageInit*)wParam;
-	
+
 	if(odp==NULL||opi==NULL) return 1;
 	if(odp->cbSize!=sizeof(OPTIONSDIALOGPAGE) && odp->cbSize != OPTIONPAGE_OLD_SIZE) return 1;
 	opi->odp=(OPTIONSDIALOGPAGE*)mir_realloc(opi->odp,sizeof(OPTIONSDIALOGPAGE)*(opi->pageCount+1));

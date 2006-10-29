@@ -47,22 +47,23 @@ typedef std::string String;
 
 
 typedef struct {
-	DWORD	dwAdr;
-	DWORD	dwSize;
-	DWORD	iType;
-	String	sToken;
-	int		iPort;
-	BOOL	bTurbo;
-	BOOL	bSSL;
-	BOOL	bSender;
-	BOOL	bReverse;
-	String	sPath;
-	String	sFile;
-	String	sFileAndPath;
-	String	sContactName;
-	String	sHostmask;
-	HANDLE	hContact;
-} DCCINFO;
+	DWORD   dwAdr;
+	DWORD   dwSize;
+	DWORD   iType;
+	String  sToken;
+	int     iPort;
+	BOOL    bTurbo;
+	BOOL    bSSL;
+	BOOL    bSender;
+	BOOL    bReverse;
+	String  sPath;
+	String  sFile;
+	String  sFileAndPath;
+	String  sContactName;
+	String  sHostmask;
+	HANDLE  hContact;
+}
+	DCCINFO;
 
 //#ifdef IRC_SSL
 // OpenSSL stuff
@@ -113,7 +114,9 @@ public :
 	struct Prefix
 	{
 		String sNick, sUser, sHost;
-	} prefix;
+	}
+		prefix;
+
 	String sCommand;
 	std::vector<String> parameters;
 	bool m_bIncoming;

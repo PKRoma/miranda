@@ -23,7 +23,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include "commonheaders.h"
 #include "m_clc.h"
 #include "clc.h"
-extern BOOL cliInvalidateRect(HWND hWnd, CONST RECT* lpRect,BOOL bErase );
+extern BOOL CLUI__cliInvalidateRect(HWND hWnd, CONST RECT* lpRect,BOOL bErase );
 extern ON_SETALLEXTRAICON_CYCLE;
 extern BOOL CLM_AUTOREBUILD_WAS_POSTED;
 
@@ -50,19 +50,19 @@ LRESULT cli_ProcessExternalMessages(HWND hwnd,struct ClcData *dat,UINT msg,WPARA
 
 	case CLM_SETEXTRACOLUMNSSPACE:
 		dat->extraColumnSpacing=(int)wParam;
-		cliInvalidateRect(hwnd,NULL,FALSE);
+		CLUI__cliInvalidateRect(hwnd,NULL,FALSE);
 		return 0;
 
 	case CLM_SETFONT:
 		if(HIWORD(lParam)<0 || HIWORD(lParam)>FONTID_MODERN_MAX) return 0;
-		lockdat;
+		
 		dat->fontModernInfo[HIWORD(lParam)].hFont=(HFONT)wParam;
 		dat->fontModernInfo[HIWORD(lParam)].changed=1;
-		ulockdat;
+		
 		RowHeights_GetMaxRowHeight(dat, hwnd);
 
 		if(LOWORD(lParam))
-			cliInvalidateRect(hwnd,NULL,FALSE);
+			CLUI__cliInvalidateRect(hwnd,NULL,FALSE);
 		return 0;
 
 
@@ -80,14 +80,14 @@ LRESULT cli_ProcessExternalMessages(HWND hwnd,struct ClcData *dat,UINT msg,WPARA
 
 	case CLM_SETTEXTCOLOR:
 		if(wParam<0 || wParam>FONTID_MODERN_MAX) break;
-		lockdat;
+		
 		dat->fontModernInfo[wParam].colour=lParam;
 		dat->force_in_dialog=TRUE;
 		if (wParam==FONTID_CONTACTS) {
 			dat->fontModernInfo[FONTID_SECONDLINE].colour=lParam;
 			dat->fontModernInfo[FONTID_THIRDLINE].colour=lParam;
 		}
-		ulockdat;
+		
 
 		return 0;
 	}

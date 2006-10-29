@@ -74,5 +74,5 @@ MODERNEFFECTMATRIX ModernEffectsEnum[]={
   #define MAXPREDEFINEDEFFECTS sizeof(_ModernEffectNames)/sizeof(_ModernEffectNames[0])
   extern TCHAR * ModernEffectNames[];
 #endif
-extern BOOL ResetEffect(HDC);
-extern BOOL SelectEffect(HDC hdc, BYTE EffectID, DWORD FirstColor, DWORD SecondColor);
+extern BOOL SkinEngine_ResetTextEffect(HDC);
+extern BOOL SkinEngine_SelectTextEffect(HDC hdc, BYTE EffectID, DWORD FirstColor, DWORD SecondColor);

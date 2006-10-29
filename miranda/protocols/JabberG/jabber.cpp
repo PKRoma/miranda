@@ -30,6 +30,7 @@ Last change by : $Author$
 #include "jabber_iq.h"
 #include "resource.h"
 #include "version.h"
+#include "sdk/m_icolib.h"
 
 HINSTANCE hInst;
 PLUGINLINK *pluginLink;
@@ -51,8 +52,9 @@ PLUGININFO pluginInfo = {
 	0
 };
 
-MM_INTERFACE memoryManagerInterface;
+MM_INTERFACE   mmi;
 LIST_INTERFACE li;
+UTF8_INTERFACE utfi;
 
 HANDLE hMainThread = NULL;
 DWORD jabberMainThreadId;
@@ -107,6 +109,12 @@ HWND hwndJabberChangePassword = NULL;
 HANDLE heventRawXMLIn;
 HANDLE heventRawXMLOut;
 
+static int compareTransports( const TCHAR* p1, const TCHAR* p2 )
+{	return _tcsicmp( p1, p2 );
+}
+
+LIST<TCHAR> jabberTransports( 50, compareTransports );
+
 int JabberOptInit( WPARAM wParam, LPARAM lParam );
 int JabberUserInfoInit( WPARAM wParam, LPARAM lParam );
 int JabberMsgUserTyping( WPARAM wParam, LPARAM lParam );
@@ -125,8 +133,8 @@ extern "C" BOOL WINAPI DllMain( HINSTANCE hModule, DWORD dwReason, LPVOID lpvRes
 
 extern "C" __declspec( dllexport ) PLUGININFO *MirandaPluginInfo( DWORD mirandaVersion )
 {
-	if ( mirandaVersion < PLUGIN_MAKE_VERSION( 0,5,0,0 )) {
-		MessageBoxA( NULL, "The Jabber protocol plugin cannot be loaded. It requires Miranda IM 0.5 or later.", "Jabber Protocol Plugin", MB_OK|MB_ICONWARNING|MB_SETFOREGROUND|MB_TOPMOST );
+	if ( mirandaVersion < PLUGIN_MAKE_VERSION( 0,6,0,15 )) {
+		MessageBoxA( NULL, "The Jabber protocol plugin cannot be loaded. It requires Miranda IM 0.6.0.15 or later.", "Jabber Protocol Plugin", MB_OK|MB_ICONWARNING|MB_SETFOREGROUND|MB_TOPMOST );
 		return NULL;
 	}
 
@@ -181,6 +189,7 @@ int JabberGcInit( WPARAM, LPARAM );
 static COLORREF crCols[16] = {0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15};
 HANDLE hChatEvent = NULL,
        hChatMenu = NULL,
+		 hReloadIcons = NULL,
 		 hChatMess = NULL,
 		 hInitChat = NULL,
 		 hEvInitChat = NULL,
@@ -211,12 +220,16 @@ static int OnModulesLoaded( WPARAM wParam, LPARAM lParam )
 		hChatEvent = HookEvent( ME_GC_EVENT, JabberGcEventHook );
 		hChatMenu = HookEvent( ME_GC_BUILDMENU, JabberGcMenuHook );
 
+		JCreateServiceFunction( JS_GETADVANCEDSTATUSICON, JGetAdvancedStatusIcon );
+		hReloadIcons = HookEvent(ME_SKIN2_ICONSCHANGED,ReloadIconsEventHook);
+
 		char szEvent[ 200 ];
 		mir_snprintf( szEvent, sizeof szEvent, "%s\\ChatInit", jabberProtoName );
 		hInitChat = CreateHookableEvent( szEvent );
 		hEvInitChat = HookEvent( szEvent, JabberGcInit );
 	}
 
+	JabberCheckAllContactsAreTransported();
 	return 0;
 }
 
@@ -227,22 +240,12 @@ extern "C" int __declspec( dllexport ) Load( PLUGINLINK *link )
 {
 	pluginLink = link;
 
-	// set the memory manager
-	memoryManagerInterface.cbSize = sizeof(MM_INTERFACE);
-	JCallService(MS_SYSTEM_GET_MMI,0,(LPARAM)&memoryManagerInterface);
+	// set the memory, lists & utf8 managers
+	mir_getMMI( &mmi );
+	mir_getLI( &li );
+	mir_getUTFI( &utfi );
 
-	// set the lists manager;
-	li.cbSize = sizeof( li );
-	if ( CallService(MS_SYSTEM_GET_LI,0,(LPARAM)&li) == CALLSERVICE_NOTFOUND ) {
-		MessageBoxA( NULL, "This plugin requires Miranda IM 0.5 or later", "Fatal error", MB_OK );
-		return 1;
-	}
-
-	if ( !ServiceExists( MS_DB_CONTACT_GETSETTING_STR )) {
-		MessageBoxA( NULL, "This plugin requires db3x plugin version 0.5.1.0 or later", "Jabber", MB_OK );
-		return 1;
-	}
-
+	// creating the plugins name
 	char text[_MAX_PATH];
 	char* p, *q;
 
@@ -279,9 +282,16 @@ extern "C" int __declspec( dllexport ) Load( PLUGINLINK *link )
 	HANDLE hContact = ( HANDLE ) JCallService( MS_DB_CONTACT_FINDFIRST, 0, 0 );
 	while ( hContact != NULL ) {
 		char* szProto = ( char* )JCallService( MS_PROTO_GETCONTACTBASEPROTO, ( WPARAM ) hContact, 0 );
-		if ( szProto != NULL && !strcmp( szProto, jabberProtoName ))
+		if ( szProto != NULL && !strcmp( szProto, jabberProtoName )) {
 			if ( JGetWord( hContact, "Status", ID_STATUS_OFFLINE ) != ID_STATUS_OFFLINE )
 				JSetWord( hContact, "Status", ID_STATUS_OFFLINE );
+
+			if ( JGetByte( hContact, "IsTransport", 0 )) {
+				DBVARIANT dbv;
+				if ( !JGetStringT( hContact, "jid", &dbv )) {
+					jabberTransports.insert( _tcsdup( dbv.ptszVal ));
+					JFreeVariant( &dbv );
+		}	}	}
 
 		hContact = ( HANDLE ) JCallService( MS_DB_CONTACT_FINDNEXT, ( WPARAM ) hContact, 0 );
 	}
@@ -309,6 +319,7 @@ extern "C" int __declspec( dllexport ) Unload( void )
 	if ( hChatEvent  )      UnhookEvent( hChatEvent );
 	if ( hChatMenu   )      UnhookEvent( hChatMenu );
 	if ( hChatMess   )      UnhookEvent( hChatMess );
+	if ( hReloadIcons )     UnhookEvent( hReloadIcons );
 	if ( hEvInitChat )      UnhookEvent( hEvInitChat );
 	if ( hEvModulesLoaded ) UnhookEvent( hEvModulesLoaded );
 	if ( hEvOptInit  )      UnhookEvent( hEvOptInit );
@@ -339,6 +350,10 @@ extern "C" int __declspec( dllexport ) Unload( void )
 	}
 	if ( jabberVcardPhotoType ) mir_free( jabberVcardPhotoType );
 	if ( streamId ) mir_free( streamId );
+
+	for ( int i=0; i < jabberTransports.getCount(); i++ )
+		free( jabberTransports[i] );
+	jabberTransports.destroy();
 
 	if ( hMainThread ) CloseHandle( hMainThread );
 	return 0;

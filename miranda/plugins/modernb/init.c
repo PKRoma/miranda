@@ -28,13 +28,13 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include "commonheaders.h"
 #include "commonprototypes.h"
 #include <time.h>
-#include "skinEngine.h"
+//#include "skinEngine.h"
 #include "version.h"
 
 //current module prototypes
 void  UninitSkinHotKeys();
 void  GetDefaultFontSetting(int i,LOGFONT *lf,COLORREF *colour);
-int   OnSkinLoad(WPARAM wParam, LPARAM lParam);
+int   CLUI_OnSkinLoad(WPARAM wParam, LPARAM lParam);
 int	  LoadContactListModule(void);
 int   LoadCLCModule(void);
 
@@ -46,9 +46,11 @@ int		cliHotKeysProcess(HWND hwnd,WPARAM wParam,LPARAM lParam);
 int		cliHotkeysProcessMessage(WPARAM wParam,LPARAM lParam);
 int		cliHotKeysRegister(HWND hwnd);
 int		cliHotKeysUnregister(HWND hwnd);
-void	cliOnCreateClc(void);
+void	CLUI_cliOnCreateClc(void);
 int		cli_AddItemToGroup(struct ClcGroup *group, int iAboveItem);
 int		cli_AddInfoItemToGroup(struct ClcGroup *group,int flags,const TCHAR *pszText);
+int     cliGetGroupContentsCount(struct ClcGroup *group, int visibleOnly);
+struct CListEvent* cliCreateEvent( void );
 
 int cliGetRowsPriorTo(struct ClcGroup *group,struct ClcGroup *subgroup,int contactIndex);
 
@@ -60,7 +62,7 @@ struct MM_INTERFACE memoryManagerInterface;
 struct LIST_INTERFACE li;
 
 //current module private variables
-static HANDLE hCListShutdown = 0;
+HANDLE hCListShutdown = 0;
 
 //stored core interfaces
 
@@ -70,11 +72,20 @@ void (*saveSortCLC) (HWND hwnd, struct ClcData *dat, int useInsertionSort );
 int  (*saveAddItemToGroup)( struct ClcGroup *group, int iAboveItem );
 int  (*saveAddInfoItemToGroup)(struct ClcGroup *group,int flags,const TCHAR *pszText);
 
+int  (*saveIconFromStatusMode)(const char *szProto,int nStatus, HANDLE hContact);
+int  cli_IconFromStatusMode(const char *szProto,int nStatus, HANDLE hContact);
+
+struct CListEvent* cli_AddEvent(CLISTEVENT *cle);
+struct CListEvent* (*saveAddEvent) (CLISTEVENT *cle);
+
+int (* saveRemoveEvent) (HANDLE hContact, HANDLE hDbEvent);
+int cli_RemoveEvent(HANDLE hContact, HANDLE hDbEvent);
+
 LRESULT (CALLBACK *saveContactListControlWndProc )( HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam );
 LRESULT CALLBACK cli_ContactListControlWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam);
 
 LRESULT ( CALLBACK *saveContactListWndProc )(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam);
-LRESULT CALLBACK cli_ContactListWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam);
+LRESULT CALLBACK CLUI__cli_ContactListWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam);
 
 int (* saveTrayIconProcessMessage) ( WPARAM wParam, LPARAM lParam );
 
@@ -98,11 +109,18 @@ char* cli_GetGroupCountsText(struct ClcData *dat, struct ClcContact *contact);
 char* (*saveGetGroupCountsText)(struct ClcData *dat, struct ClcContact *contact);
 
 
+
+
 void ( *saveChangeContactIcon)(HANDLE hContact,int iIcon,int add);
 void cli_ChangeContactIcon(HANDLE hContact,int iIcon,int add);
 
 LRESULT ( *saveProcessExternalMessages )(HWND hwnd,struct ClcData *dat,UINT msg,WPARAM wParam,LPARAM lParam);
 LRESULT cli_ProcessExternalMessages(HWND hwnd,struct ClcData *dat,UINT msg,WPARAM wParam,LPARAM lParam);
+
+// WinXP tabbed pane stuff
+HMODULE hUxTheme = NULL;
+typedef BOOL (WINAPI *fEnableThemeDialogTexture)(HANDLE, DWORD);
+fEnableThemeDialogTexture pfEnableThemeDialogTexture = NULL;
 
 
 PLUGININFO pluginInfo = {
@@ -111,22 +129,26 @@ PLUGININFO pluginInfo = {
 	#ifdef UNICODE
 		"Modern Contact List (UNICODE)",
 	#else
-		"Modern Contact List",
+		"Modern Contact List (ANSI)",
 	#endif
 
 #else
 	#ifdef UNICODE
 			"Debug of Modern Contact List (UNICODE)",
 	#else
-			"Debug of Modern Contact List",
+			"Debug of Modern Contact List (ANSI)",
 	#endif
 #endif
 	0,                              //will initiate later in MirandaPluginInfo
 	"Display contacts, event notifications, protocol status with advantage visual modifications. Supported MW modifications, enchanced metacontact cooperation.",
-	"Artem Shpynov, Anton Senko and Ricardo Pescuma Domenecci, based on clist_mw by Bethoven",
-	"shpynov@nm.ru" ,
+	"Artem Shpynov, Ricardo Pescuma Domenecci and Anton Senko based on clist_mw by Bethoven",
+	"ashpynov@gmail.com" ,
 	"Copyright 2000-2006 Miranda-IM project ["__DATE__" "__TIME__"]",
+#ifdef UNICODE
 	"http://miranda-im.org/download/details.php?action=viewfile&id=2103",
+#else
+    "http://miranda-im.org/download/details.php?action=viewfile&id=2996",
+#endif
 	UNICODE_AWARE,
 	DEFMOD_CLISTALL
 };
@@ -153,7 +175,20 @@ __declspec(dllexport) PLUGININFO* MirandaPluginInfo(DWORD mirandaVersion)
 	return &pluginInfo;
 }
 
+void InitUxTheme()
+{
+	hUxTheme = LoadLibraryA("uxtheme.dll");
+    if(hUxTheme == NULL)
+        return;
 
+    pfEnableThemeDialogTexture = (fEnableThemeDialogTexture) GetProcAddress(hUxTheme, "EnableThemeDialogTexture");
+}
+
+void FreeUxTheme()
+{
+    if(hUxTheme != NULL)
+        FreeLibrary(hUxTheme);
+}
 
 int SetDrawer(WPARAM wParam,LPARAM lParam)
 {
@@ -177,6 +212,8 @@ int __declspec(dllexport) CListInitialise(PLUGINLINK * link)
 	memset(&memoryManagerInterface,0,sizeof(memoryManagerInterface));
 	memoryManagerInterface.cbSize = sizeof(memoryManagerInterface);
 	CallService(MS_SYSTEM_GET_MMI, 0, (LPARAM)&memoryManagerInterface);
+
+	InitUxTheme();
 
 	// get the lists manager interface
 	li.cbSize = sizeof(li);
@@ -215,13 +252,13 @@ int __declspec(dllexport) CListInitialise(PLUGINLINK * link)
 	pcli->pfnGetRowHeight		= cliGetRowHeight;
 	pcli->pfnGetRowTopY			= cliGetRowTopY;
 	pcli->pfnGetRowTotalHeight	= cliGetRowTotalHeight;
-	pcli->pfnInvalidateRect		= cliInvalidateRect;
+	pcli->pfnInvalidateRect		= CLUI__cliInvalidateRect;
 	pcli->pfnGetCacheEntry		= cliGetCacheEntry;
-	pcli->pfnOnCreateClc		= cliOnCreateClc;
+	pcli->pfnOnCreateClc		= CLUI_cliOnCreateClc;
 	pcli->pfnHotKeysProcess		= cliHotKeysProcess;
 	pcli->pfnHotKeysRegister	= cliHotKeysRegister;
 	pcli->pfnHotKeysUnregister	= cliHotKeysUnregister;
-	pcli->pfnPaintClc			= cliPaintClc;
+	pcli->pfnPaintClc			= CLCPaint_cliPaintClc;
 	pcli->pfnRebuildEntireList	= cliRebuildEntireList;
 	pcli->pfnRecalcScrollBar	= cliRecalcScrollBar;
 	pcli->pfnRowHitTest			= cliRowHitTest;
@@ -234,10 +271,15 @@ int __declspec(dllexport) CListInitialise(PLUGINLINK * link)
 	pcli->pfnFindItem			= cliFindItem;
 	pcli->pfnGetRowByIndex		= cliGetRowByIndex;
 	pcli->pfnGetRowsPriorTo		= cliGetRowsPriorTo;
+    pcli->pfnGetGroupContentsCount =cliGetGroupContentsCount;
+    pcli->pfnCreateEvent        = cliCreateEvent;
 
 	//partialy overloaded - call default handlers from inside
+    saveIconFromStatusMode      = pcli->pfnIconFromStatusMode;
+    pcli->pfnIconFromStatusMode = cli_IconFromStatusMode;
+
 	saveLoadCluiGlobalOpts		= pcli->pfnLoadCluiGlobalOpts;
-	pcli->pfnLoadCluiGlobalOpts = cli_LoadCluiGlobalOpts;
+	pcli->pfnLoadCluiGlobalOpts = CLUI_cli_LoadCluiGlobalOpts;
 
 	saveSortCLC					= pcli->pfnSortCLC;	
 	pcli->pfnSortCLC			= cli_SortCLC;
@@ -258,7 +300,7 @@ int __declspec(dllexport) CListInitialise(PLUGINLINK * link)
 	pcli->pfnAddItemToGroup		= cli_AddItemToGroup;
 
 	saveContactListWndProc		= pcli->pfnContactListWndProc; 
-	pcli->pfnContactListWndProc = cli_ContactListWndProc;
+	pcli->pfnContactListWndProc = CLUI__cli_ContactListWndProc;
 
 	saveDeleteItemFromTree		= pcli->pfnDeleteItemFromTree; 
 	pcli->pfnDeleteItemFromTree = cli_DeleteItemFromTree;
@@ -271,7 +313,7 @@ int __declspec(dllexport) CListInitialise(PLUGINLINK * link)
 	
 	saveChangeContactIcon		= pcli->pfnChangeContactIcon;
 	pcli->pfnChangeContactIcon	= cli_ChangeContactIcon;
-	
+    
 	saveTrayIconProcessMessage		= pcli->pfnTrayIconProcessMessage; 
 	pcli->pfnTrayIconProcessMessage	= cli_TrayIconProcessMessage;
 	
@@ -284,12 +326,18 @@ int __declspec(dllexport) CListInitialise(PLUGINLINK * link)
 	saveProcessExternalMessages			= pcli->pfnProcessExternalMessages; 
 	pcli->pfnProcessExternalMessages	= cli_ProcessExternalMessages;	
 
+	saveAddEvent			= pcli->pfnAddEvent;
+	pcli->pfnAddEvent		= cli_AddEvent;
+
+	saveRemoveEvent			= pcli->pfnRemoveEvent; 
+	pcli->pfnRemoveEvent	= cli_RemoveEvent;
+
 	memset(&SED,0,sizeof(SED));
 	CreateServiceFunction(CLUI_SetDrawerService,SetDrawer);
 
 	///test///
-	LoadModernButtonModule();
-	LoadSkinModule();
+	ModernButton_LoadModule();
+	SkinEngine_LoadModule();
 	rc=LoadContactListModule();
 	if (rc==0) rc=LoadCLCModule();
 	LoadMoveToGroup();
@@ -312,12 +360,13 @@ int __declspec(dllexport) Unload(void)
 	UninitCustomMenus();
 	UnloadAvatarOverlayIcon();
 	UninitSkinHotKeys();
-	UnhookEvent(gl_event_hSkinLoaded);
+	UnhookEvent(g_hSkinLoadedEvent);
 	UnhookAll();
-	UnloadSkinModule();
+	SkinEngine_UnloadModule();
 	FreeRowCell();
 	pcli->hwndContactList=0;
 	UnhookAll();
+	FreeUxTheme();
 	TRACE("Unloading ClistMW COMPLETE\r\n");
 	return 0;
 }
@@ -325,7 +374,11 @@ int __declspec(dllexport) Unload(void)
 typedef struct _HookRec
 {
   HANDLE hHook;
+#ifdef _DEBUG
   char * HookStr;
+  char *    _debug_file;
+  int       _debug_line;
+#endif
 } HookRec;
 //UnhookAll();
 
@@ -335,7 +388,12 @@ DWORD hooksRecAlloced=0;
 #undef HookEvent
 #undef UnhookEvent
 
-HANDLE mod_HookEvent(char *EventID,MIRANDAHOOK HookProc)
+HANDLE mod_HookEvent(char *EventID, MIRANDAHOOK HookProc
+                            #ifdef _DEBUG
+                                , char * file, int line)
+                            #else
+                                                         )
+                            #endif                     
 {
 	HookRec * hr=NULL;
 	DWORD i;
@@ -355,13 +413,18 @@ HANDLE mod_HookEvent(char *EventID,MIRANDAHOOK HookProc)
 		hr=&(hooksrec[hooksRecAlloced]);
 		hooksRecAlloced++;
 	}
-	//3. Hook and rec
+	
 	hr->hHook=pluginLink->HookEvent(EventID,HookProc);
-	hr->HookStr=NULL;
 #ifdef _DEBUG
-	if (hr->hHook) hr->HookStr=mir_strdup(EventID);
+    //3. Hook and rec
+    hr->HookStr=NULL;
+	if (hr->hHook)
+    {
+        hr->HookStr=mir_strdup(EventID);
+        hr->_debug_file=mir_strdup(file);
+        hr->_debug_line=line;
+    }
 #endif
-	//3. Hook and rec
 	return hr->hHook;
 }
 
@@ -376,7 +439,10 @@ int mod_UnhookEvent(HANDLE hHook)
 		{
 			pluginLink->UnhookEvent(hHook);
 			hooksrec[i].hHook=NULL;
-			if (hooksrec[i].HookStr) mir_free(hooksrec[i].HookStr);
+#ifdef _DEBUG
+			if (hooksrec[i].HookStr) mir_free_and_nill(hooksrec[i].HookStr);
+            if (hooksrec[i]._debug_file) mir_free_and_nill(hooksrec[i]._debug_file);
+#endif
 			return 1;
 		}
 	}
@@ -394,18 +460,23 @@ int UnhookAll()
 		{
 			pluginLink->UnhookEvent(hooksrec[i].hHook);
 			hooksrec[i].hHook=NULL;
-			if (hooksrec[i].HookStr)
-			{
-				TRACE(hooksrec[i].HookStr);
-				TRACE("\n");
-				mir_free(hooksrec[i].HookStr);
-			}
+#ifdef _DEBUG
+            log3("Unhook:%s (hooked at %s Ln %d)",hooksrec[i].HookStr,hooksrec[i]._debug_file,hooksrec[i]._debug_line);
+    		mir_free_and_nill(hooksrec[i].HookStr);
+            mir_free_and_nill(hooksrec[i]._debug_file);
+#endif
 		}
 	}
-	mir_free(hooksrec);
+	mir_free_and_nill(hooksrec);
 	hooksRecAlloced=0;
 	return 1;
 }
 
-#define HookEvent(a,b)  mod_HookEvent(a,b)
+
+#ifdef _DEBUG
+#define HookEvent(a,b)  mod_HookEvent(a,b,__FILE__,__LINE__);
+#else /* _DEBUG */
+#define HookEvent(a,b)  mod_HookEvent(a,b);
+#endif /* _DEBUG */
+
 #define UnhookEvent(a)  mod_UnhookEvent(a)

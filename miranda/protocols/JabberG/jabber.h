@@ -23,20 +23,17 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #ifndef _JABBER_H_
 #define _JABBER_H_
 
+// this plugin is for Miranda 0.5.2 only
+#define MIRANDA_VER 0x0520
+
 #if defined(UNICODE) && !defined(_UNICODE)
 	#define _UNICODE
 #endif
 
-#include <malloc.h>
-
 #define NEWSTR_ALLOCA(A) (A==NULL)?NULL:strcpy((char*)alloca(strlen(A)+1),A)
 #define NEWTSTR_ALLOCA(A) (A==NULL)?NULL:_tcscpy((TCHAR*)alloca(sizeof(TCHAR)*(_tcslen(A)+1)),A)
 
-#if defined( _UNICODE )
-	#define TCHAR_STR_PARAM "%S"
-#else
-	#define TCHAR_STR_PARAM "%s"
-#endif
+#include <malloc.h>
 
 #ifdef _DEBUG
 #define _CRTDBG_MAP_ALLOC
@@ -56,6 +53,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include <limits.h>
 #include <newpluginapi.h>
 #include <m_system.h>
+#include <m_system_cpp.h>
 #include <m_netlib.h>
 #include <m_png.h>
 #include <m_protomod.h>
@@ -169,6 +167,7 @@ enum {
 #define JS_GETMYAVATARMAXSIZE      "/GetMyAvatarMaxSize"
 #define JS_SETMYAVATAR             "/SetMyAvatar"
 #define JS_GETMYAVATAR             "/GetMyAvatar"
+#define JS_GETADVANCEDSTATUSICON   "/GetAdvancedStatusIcon"
 
 /*******************************************************************
  * Global data structures and data type definitions
@@ -230,7 +229,7 @@ struct filetransfer
 
 	void close();
 	void complete();
-	int  create();	
+	int  create();
 
 	PROTOFILETRANSFERSTATUS std;
 
@@ -275,13 +274,13 @@ struct JABBER_GCLOG_FONT
 	COLORREF color;
 };
 
-struct JABBER_FIELD_MAP 
+struct JABBER_FIELD_MAP
 {
 	int id;
 	char* name;
 };
 
-enum JABBER_MUC_JIDLIST_TYPE 
+enum JABBER_MUC_JIDLIST_TYPE
 {
 	MUC_VOICELIST,
 	MUC_MEMBERLIST,
@@ -301,7 +300,6 @@ struct JABBER_MUC_JIDLIST_INFO
 };
 
 typedef void ( *JABBER_FORM_SUBMIT_FUNC )( XmlNode* values, void *userdata );
-typedef void ( __cdecl *JABBER_THREAD_FUNC )( void * );
 
 #include "jabber_list.h"
 
@@ -356,6 +354,9 @@ extern const char xmlnsOwner[], xmlnsAdmin[];
 extern HANDLE heventRawXMLIn;
 extern HANDLE heventRawXMLOut;
 
+// Transports list
+extern LIST<TCHAR> jabberTransports;
+
 /*******************************************************************
  * Function declarations
  *******************************************************************/
@@ -400,6 +401,13 @@ void JabberGroupchatProcessPresence( XmlNode *node, void *userdata );
 void JabberGroupchatProcessMessage( XmlNode *node, void *userdata );
 void JabberGroupchatProcessInvite( TCHAR* roomJid, TCHAR* from, TCHAR* reason, TCHAR* password );
 
+//---- jabber_icolib.c ----------------------------------------------
+
+void   JabberCheckAllContactsAreTransported( void );
+BOOL   JabberDBCheckIsTransportedContact(const TCHAR* jid, HANDLE hContact);
+int    ReloadIconsEventHook(WPARAM wParam, LPARAM lParam);
+int    JGetAdvancedStatusIcon(WPARAM wParam, LPARAM lParam);
+
 //---- jabber_libstr.c ----------------------------------------------
 
 void  __stdcall replaceStr( char*& dest, const char* src );
@@ -417,10 +425,9 @@ int    JabberCompareJids( const TCHAR* jid1, const TCHAR* jid2 );
 void   JabberContactListCreateGroup( TCHAR* groupName );
 void   JabberDBAddAuthRequest( TCHAR* jid, TCHAR* nick );
 HANDLE JabberDBCreateContact( TCHAR* jid, TCHAR* nick, BOOL temporary, BOOL stripResource );
-ULONG  JabberForkThread( void ( __cdecl *threadcode )( void* ), unsigned long stacksize, void *arg );
 void   JabberGetAvatarFileName( HANDLE hContact, char* pszDest, int cbLen );
 void   JabberSetServerStatus( int iNewStatus );
-char*  EscapeChatTags(char* pszText);
+TCHAR* EscapeChatTags(TCHAR* pszText);
 char*  UnEscapeChatTags(char* str_in);
 
 //---- jabber_svc.c -------------------------------------------------
@@ -474,8 +481,6 @@ TCHAR*        __stdcall JabberNickFromJID( const TCHAR* jid );
 char*         __stdcall JabberUrlDecode( char* str );
 void          __stdcall JabberUrlDecodeW( WCHAR* str );
 char*         __stdcall JabberUrlEncode( const char* str );
-char*         __stdcall JabberUtf8Decode( char*,WCHAR** );
-char*         __stdcall JabberUtf8Encode( const char* str );
 char*         __stdcall JabberSha1( char* str );
 char*         __stdcall JabberUnixToDos( const char* str );
 WCHAR*        __stdcall JabberUnixToDosW( const WCHAR* str );
@@ -495,7 +500,7 @@ char*         __stdcall JabberGetVersionText();
 time_t        __stdcall JabberIsoToUnixTime( TCHAR* stamp );
 int           __stdcall JabberCountryNameToId( TCHAR* ctry );
 void          __stdcall JabberSendPresenceTo( int status, TCHAR* to, XmlNode* extra );
-void          __stdcall JabberSendPresence( int );
+void          __stdcall JabberSendPresence( int iStatus, bool bSendToAll );
 void          __stdcall JabberStringAppend( char* *str, int *sizeAlloced, const char* fmt, ... );
 TCHAR*        __stdcall JabberGetClientJID( const TCHAR* jid, TCHAR*, size_t );
 TCHAR*        __stdcall JabberStripJid( const TCHAR* jid, TCHAR* dest, size_t destLen );
@@ -520,70 +525,7 @@ int           JabberWsSend( JABBER_SOCKET s, char* data, int datalen );
 int           JabberWsRecv( JABBER_SOCKET s, char* data, long datalen );
 
 ///////////////////////////////////////////////////////////////////////////////
-// memory interface
-
-extern MM_INTERFACE memoryManagerInterface;
-#define mir_alloc(n) memoryManagerInterface.mmi_malloc(n)
-#define mir_free(ptr) memoryManagerInterface.mmi_free(ptr)
-#define mir_realloc(ptr,size) memoryManagerInterface.mmi_realloc(ptr,size)
-
-__forceinline char * mir_strdup(const char *src)
-{
-	return (src == NULL) ? NULL : strcpy(( char* )mir_alloc( strlen(src)+1 ), src );
-}
-
-__forceinline WCHAR* mir_wstrdup(const WCHAR *src)
-{
-	return (src == NULL) ? NULL : wcscpy(( WCHAR* )mir_alloc(( wcslen(src)+1 )*sizeof( WCHAR )), src );
-}
-
-#if defined( _UNICODE )
-	#define mir_tstrdup mir_wstrdup
-#else
-	#define mir_tstrdup mir_strdup
-#endif
-
-extern LIST_INTERFACE li;
-
-///////////////////////////////////////////////////////////////////////////////
-// TXT encode helper
-
-class TextEncoder {
-	char* m_body;
-
-public:
-	__forceinline TextEncoder( const char* pSrc ) :
-		m_body( JabberTextEncode( pSrc ))
-		{}
-
-	__forceinline ~TextEncoder()
-		{  mir_free( m_body );
-		}
-
-	__forceinline const char* str() const { return m_body; }
-};
-
-#define TXT(A) TextEncoder(A).str()
-
-///////////////////////////////////////////////////////////////////////////////
 // UTF encode helper
-
-class Utf8Encoder {
-	char* m_body;
-
-public:
-	__forceinline Utf8Encoder( const char* pSrc ) :
-		m_body( JabberUtf8Encode( pSrc ))
-		{}
-
-	__forceinline ~Utf8Encoder()
-		{  mir_free( m_body );
-		}
-
-	__forceinline const char* str() const { return m_body; }
-};
-
-#define UTF8(A) Utf8Encoder(A).str()
 
 char* t2a( const TCHAR* src );
 char* u2a( const wchar_t* src );

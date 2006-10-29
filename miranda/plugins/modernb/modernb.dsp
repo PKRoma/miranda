@@ -315,6 +315,10 @@ SOURCE=.\clcutils.c
 # End Source File
 # Begin Source File
 
+SOURCE=.\clistevents.c
+# End Source File
+# Begin Source File
+
 SOURCE=.\clistmenus.c
 
 !IF  "$(CFG)" == "modernb - Win32 Release"
@@ -883,14 +887,6 @@ SOURCE=.\res\multisend.ico
 # Begin Source File
 
 SOURCE=.\res\na2.ico
-# End Source File
-# Begin Source File
-
-SOURCE=.\res\notick.ico
-# End Source File
-# Begin Source File
-
-SOURCE=.\res\notick1.ico
 # End Source File
 # Begin Source File
 

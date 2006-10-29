@@ -721,7 +721,7 @@ BOOL CALLBACK CtcpPrefsProc(HWND hwndDlg,UINT uMsg,WPARAM wParam,LPARAM lParam)
 							IPRESOLVE * ipr = new IPRESOLVE;
 							ipr->iType = IP_MANUAL;
 							ipr->pszAdr = prefs->MySpecifiedHost;
-							forkthread(ResolveIPThread, NULL, ipr);
+							mir_forkthread(ResolveIPThread, ipr);
 					}	}
 
 					if(IsDlgButtonChecked(hwndDlg, IDC_RADIO1) == BST_CHECKED)

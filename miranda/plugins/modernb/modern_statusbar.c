@@ -10,32 +10,17 @@ POINT lastpnt;
 #define TM_STATUSBAR 23435234
 #define TM_STATUSBARHIDE 23435235
 
-extern int BehindEdgeSettings;
+extern int g_nBehindEdgeSettings;
 HWND hModernStatusBar=NULL;
 HANDLE hFramehModernStatusBar=NULL;
 
-
+int FindFrameID(HWND FrameHwnd);
 
 #define DBFONTF_BOLD       1
 #define DBFONTF_ITALIC     2
 #define DBFONTF_UNDERLINE  4
 
-typedef struct
-{
-  BOOL sameWidth;
-  RECT rectBorders;
-  BYTE extraspace;
-  BYTE Align;
-  BYTE showProtoName;
-  BYTE showStatusName;
-  HFONT BarFont;
-  DWORD fontColor;
-  BYTE connectingIcon;
-  BYTE TextEffectID;
-  DWORD TextEffectColor1;
-  DWORD TextEffectColor2;
-  BYTE xStatusMode;     // 0-only main, 1-xStatus, 2-main as overlay
-}StatusBarData;
+//_StatusbarData STATUSBARDATA={0};
 
 typedef struct
 {
@@ -55,7 +40,7 @@ typedef struct
 
 ProtoItemData *ProtosData=NULL;
 int allocedItemData=0;
-StatusBarData sbdat={0};
+STATUSBARDATA g_StatusBarData={0};
 
 
 char * ApendSubSetting(char * buf, int size, char *first, char *second)
@@ -64,67 +49,19 @@ char * ApendSubSetting(char * buf, int size, char *first, char *second)
   return buf;
 }
 
-//LOGFONTA LoadLogFontFromDB(char * section, char * id, DWORD * color);
-
-/*HFONT LoadFontFromDB(char * section, char * id, DWORD * color)
-{
-  LOGFONTA logfont=LoadLogFontFromDB(section, id, color);
-  HFONT hfont=NULL;
-  hfont=CreateFontIndirectA(&logfont);
-  return hfont;
-}
-
-LOGFONTA LoadLogFontFromDB(char * section, char * id, DWORD * color)
-{
-  char * facename;
-  char buf[255];
-  LOGFONTA logfont;
-  facename=DBGetStringA(NULL,section,ApendSubSetting(buf,sizeof(buf),id,"Name"));
-  if (!facename) facename=mir_strdup("MS Shell Dlg");
-  {
-
-    BYTE style;
-	BYTE len=min(MyStrLen(facename)+1,sizeof(logfont.lfFaceName));
-    memset(&logfont,0,sizeof(logfont));
-
-    memmove(logfont.lfFaceName,facename,len);
-    style=(BYTE)DBGetContactSettingByte(NULL,section,ApendSubSetting(buf,sizeof(buf),id,"Sty"),0);
-    logfont.lfWeight=style&DBFONTF_BOLD?FW_BOLD:FW_NORMAL;
-    logfont.lfItalic=(style&DBFONTF_ITALIC)!=0;
-    logfont.lfUnderline=(style&DBFONTF_UNDERLINE)!=0;
-    logfont.lfCharSet=DBGetContactSettingByte(NULL,section,ApendSubSetting(buf,sizeof(buf),id,"Set"),DEFAULT_CHARSET);
-    logfont.lfOutPrecision=OUT_DEFAULT_PRECIS;
-    logfont.lfClipPrecision=CLIP_DEFAULT_PRECIS;
-    logfont.lfQuality=DEFAULT_QUALITY;
-    logfont.lfPitchAndFamily=DEFAULT_PITCH|FF_DONTCARE;
-    {
-      HDC hdc=CreateCompatibleDC(NULL);
-      int h=(int)(BYTE)DBGetContactSettingByte(NULL,section,ApendSubSetting(buf,sizeof(buf),id,"Size"),10);
-      logfont.lfHeight=(long)-MulDiv(h, GetDeviceCaps(hdc, LOGPIXELSY), 72);
-      ModernDeleteDC(hdc);
-    }
-    *color=DBGetContactSettingDword(NULL,section,ApendSubSetting(buf,sizeof(buf),id,"Col"),0);
-    mir_free(facename);
-  }
-  return logfont;
-}
-*/
-
-extern int FindFrameID(HWND FrameHwnd);
-
 int LoadStatusBarData()
 {
-  sbdat.showStatusName=DBGetContactSettingByte(NULL,"CLUI","SBarShow",7)&4;
-  sbdat.showProtoName=DBGetContactSettingByte(NULL,"CLUI","SBarShow",7)&2;
-  sbdat.rectBorders.left=DBGetContactSettingDword(NULL,"CLUI","LeftOffset",0);
-  sbdat.rectBorders.right=DBGetContactSettingDword(NULL,"CLUI","RightOffset",0);
-  sbdat.extraspace=(BYTE)DBGetContactSettingDword(NULL,"CLUI","SpaceBetween",0);
-  sbdat.xStatusMode=(BYTE)(DBGetContactSettingByte(NULL,"CLUI","ShowXStatus",6));
-  sbdat.Align=DBGetContactSettingByte(NULL,"CLUI","Align",0);
-  sbdat.sameWidth=DBGetContactSettingByte(NULL,"CLUI","EqualSections",0);
-  sbdat.connectingIcon=DBGetContactSettingByte(NULL,"CLUI","UseConnectingIcon",1);
-  if (sbdat.BarFont) DeleteObject(sbdat.BarFont);
-  sbdat.BarFont=NULL;//LoadFontFromDB("ModernData","StatusBar",&sbdat.fontColor);
+  g_StatusBarData.showStatusName=DBGetContactSettingByte(NULL,"CLUI","SBarShow",7)&4;
+  g_StatusBarData.showProtoName=DBGetContactSettingByte(NULL,"CLUI","SBarShow",7)&2;
+  g_StatusBarData.rectBorders.left=DBGetContactSettingDword(NULL,"CLUI","LeftOffset",0);
+  g_StatusBarData.rectBorders.right=DBGetContactSettingDword(NULL,"CLUI","RightOffset",0);
+  g_StatusBarData.extraspace=(BYTE)DBGetContactSettingDword(NULL,"CLUI","SpaceBetween",0);
+  g_StatusBarData.xStatusMode=(BYTE)(DBGetContactSettingByte(NULL,"CLUI","ShowXStatus",6));
+  g_StatusBarData.Align=DBGetContactSettingByte(NULL,"CLUI","Align",0);
+  g_StatusBarData.sameWidth=DBGetContactSettingByte(NULL,"CLUI","EqualSections",0);
+  g_StatusBarData.connectingIcon=DBGetContactSettingByte(NULL,"CLUI","UseConnectingIcon",1);
+  if (g_StatusBarData.BarFont) DeleteObject(g_StatusBarData.BarFont);
+  g_StatusBarData.BarFont=NULL;//LoadFontFromDB("ModernData","StatusBar",&g_StatusBarData.fontColor);
   {
     int vis=DBGetContactSettingByte(NULL,"CLUI","ShowSBar",1);
     int frameopt;
@@ -142,9 +79,9 @@ int LoadStatusBarData()
     };
     CallService(MS_CLIST_FRAMES_SETFRAMEOPTIONS,MAKEWPARAM(FO_FLAGS,frameID),frameopt);
   }
-  sbdat.TextEffectID=DBGetContactSettingByte(NULL,"StatusBar","TextEffectID",0xFF);
-  sbdat.TextEffectColor1=DBGetContactSettingDword(NULL,"StatusBar","TextEffectColor1",0);
-  sbdat.TextEffectColor2=DBGetContactSettingDword(NULL,"StatusBar","TextEffectColor2",0);
+  g_StatusBarData.TextEffectID=DBGetContactSettingByte(NULL,"StatusBar","TextEffectID",0xFF);
+  g_StatusBarData.TextEffectColor1=DBGetContactSettingDword(NULL,"StatusBar","TextEffectColor1",0);
+  g_StatusBarData.TextEffectColor2=DBGetContactSettingDword(NULL,"StatusBar","TextEffectColor2",0);
   SendMessage(pcli->hwndContactList,WM_SIZE,0,0);
   return 1;
 }
@@ -162,11 +99,11 @@ int ModernDrawStatusBar(HWND hwnd, HDC hDC)
   if (GetParent(hwnd)==pcli->hwndContactList)
     return ModernDrawStatusBarWorker(hwnd,hDC);
   else
-    cliInvalidateRect(hwnd,NULL,FALSE);
+    CLUI__cliInvalidateRect(hwnd,NULL,FALSE);
   return 0;
 }
 extern HICON GetMainStatusOverlay(int STATUS);
-extern HFONT ChangeToFont(HDC hdc,struct ClcData *dat,int id,int *fontHeight);
+extern HFONT CLCPaint_ChangeToFont(HDC hdc,struct ClcData *dat,int id,int *fontHeight);
 int ModernDrawStatusBarWorker(HWND hWnd, HDC hDC)
 {
   RECT rc;
@@ -177,9 +114,9 @@ int ModernDrawStatusBarWorker(HWND hWnd, HDC hDC)
   int xstatus=0;
   GetClientRect(hWnd,&rc);
   SkinDrawGlyph(hDC,&rc,&rc,"Main,ID=StatusBar"); //TBD
-  hOldFont=ChangeToFont(hDC,NULL,FONTID_STATUSBAR_PROTONAME,NULL);
-//  hOldFont=SelectObject(hDC,sbdat.BarFont);
-//  SetTextColor(hDC,sbdat.fontColor);
+  hOldFont=CLCPaint_ChangeToFont(hDC,NULL,FONTID_STATUSBAR_PROTONAME,NULL);
+//  hOldFont=SelectObject(hDC,g_StatusBarData.BarFont);
+//  SetTextColor(hDC,g_StatusBarData.fontColor);
   {
 	  SIZE textSize={0};
     GetTextExtentPoint32A(hDC," ",1,&textSize);
@@ -206,11 +143,11 @@ int ModernDrawStatusBarWorker(HWND hWnd, HDC hDC)
 
       for (k=0; k<allocedItemData; k++)
       {
-		if(ProtosData[k].ProtoXStatus) mir_free (ProtosData[k].ProtoXStatus);
-        if(ProtosData[k].ProtoName) mir_free (ProtosData[k].ProtoName);
-        if(ProtosData[k].ProtoStatusText) mir_free (ProtosData[k].ProtoStatusText);
+		if(ProtosData[k].ProtoXStatus) mir_free_and_nill (ProtosData[k].ProtoXStatus);
+        if(ProtosData[k].ProtoName) mir_free_and_nill (ProtosData[k].ProtoName);
+        if(ProtosData[k].ProtoStatusText) mir_free_and_nill (ProtosData[k].ProtoStatusText);
       }
-      mir_free(ProtosData);
+      mir_free_and_nill(ProtosData);
       ProtosData=NULL;
       allocedItemData=0;
     }
@@ -253,17 +190,17 @@ int ModernDrawStatusBarWorker(HWND hWnd, HDC hDC)
     // Calculate rects
     {
 	  DWORD sw;
-	  rectwidth=rc.right-rc.left-sbdat.rectBorders.left-sbdat.rectBorders.right;
-	  if (visProtoCount>1) sw=(rectwidth-(sbdat.extraspace*(visProtoCount-1)))/visProtoCount;
+	  rectwidth=rc.right-rc.left-g_StatusBarData.rectBorders.left-g_StatusBarData.rectBorders.right;
+	  if (visProtoCount>1) sw=(rectwidth-(g_StatusBarData.extraspace*(visProtoCount-1)))/visProtoCount;
 	  else sw=rectwidth;
-      if (ProtoWidth) mir_free(ProtoWidth);
+      if (ProtoWidth) mir_free_and_nill(ProtoWidth);
       ProtoWidth=mir_alloc(sizeof(DWORD)*visProtoCount);
       for (i=0; i<visProtoCount; i++)
       {
         SIZE textSize;
         DWORD w=GetSystemMetrics(SM_CXSMICON)+1;
 		ProtosData[i].extraIcon=NULL;
-		if ((sbdat.xStatusMode&8) && ProtosData[i].ProtoStatus>ID_STATUS_OFFLINE)	
+		if ((g_StatusBarData.xStatusMode&8) && ProtosData[i].ProtoStatus>ID_STATUS_OFFLINE)	
 		{
 				char str[MAXMODULELABELLENGTH];
 				strcpy(str,ProtosData[i].ProtoName);
@@ -279,13 +216,13 @@ int ModernDrawStatusBarWorker(HWND hWnd, HDC hDC)
 						if (!DBGetContactSettingTString(NULL,ProtosData[i].ProtoName,dbTitle,&dbv))
 						{
 							ProtosData[i].ProtoXStatus=mir_tstrdup(dbv.ptszVal);
-							//mir_free(dbv.ptszVal);
+							//mir_free_and_nill(dbv.ptszVal);
 							DBFreeVariant(&dbv);
 						}
 					}
 				}
 		}
-		if ((sbdat.xStatusMode&3))
+		if ((g_StatusBarData.xStatusMode&3))
 		{
 			if (ProtosData[i].ProtoStatus>ID_STATUS_OFFLINE)
 			{
@@ -294,29 +231,29 @@ int ModernDrawStatusBarWorker(HWND hWnd, HDC hDC)
 				strcat(str,"/GetXStatusIcon");
 				if (ServiceExists(str))
 					ProtosData[i].extraIcon=(HICON)CallService(str,0,0);
-				if (ProtosData[i].extraIcon && (sbdat.xStatusMode&3)==3)
+				if (ProtosData[i].extraIcon && (g_StatusBarData.xStatusMode&3)==3)
 					w+=GetSystemMetrics(SM_CXSMICON)+1;
 
 			}
 		}
-		if (sbdat.showProtoName)
+		if (g_StatusBarData.showProtoName)
 		{
 			GetTextExtentPoint32A(hDC,ProtosData[i].ProtoName,lstrlenA(ProtosData[i].ProtoName),&textSize);
 			w+=textSize.cx+3+spaceWidth;
 		}
-		if (sbdat.showStatusName)
+		if (g_StatusBarData.showStatusName)
 		{
 			GetTextExtentPoint32A(hDC,ProtosData[i].ProtoStatusText,lstrlenA(ProtosData[i].ProtoStatusText),&textSize);
 			w+=textSize.cx+spaceWidth+3;
 			
 		}
-		if ((sbdat.xStatusMode&8) && ProtosData[i].ProtoXStatus)
+		if ((g_StatusBarData.xStatusMode&8) && ProtosData[i].ProtoXStatus)
 		{
 			GetTextExtentPoint32(hDC,ProtosData[i].ProtoXStatus,lstrlen(ProtosData[i].ProtoXStatus),&textSize);
 			w+=textSize.cx+spaceWidth+3;
 		}
 		ProtosData[i].fullWidth=w;
-		if (sbdat.sameWidth)
+		if (g_StatusBarData.sameWidth)
 		{
 			ProtoWidth[i]=sw;
 			SumWidth+=w;
@@ -331,13 +268,13 @@ int ModernDrawStatusBarWorker(HWND hWnd, HDC hDC)
       for(i=0; i<visProtoCount; i++)
         if (ProtoWidth[i]>maxwidth) maxwidth=ProtoWidth[i];
 
-      if (sbdat.sameWidth)
+      if (g_StatusBarData.sameWidth)
       {
         for (i=0; i<visProtoCount; i++)
           ProtoWidth[i]=maxwidth;
         SumWidth=maxwidth*visProtoCount;
       }
-      SumWidth+=(visProtoCount-1)*(sbdat.extraspace+1);
+      SumWidth+=(visProtoCount-1)*(g_StatusBarData.extraspace+1);
 
 
       if (SumWidth>rectwidth)
@@ -351,20 +288,20 @@ int ModernDrawStatusBarWorker(HWND hWnd, HDC hDC)
           ProtoWidth[i]=(int)((float)ProtoWidth[i]*f);
 		      SumWidth+=ProtoWidth[i];
 		}
-    SumWidth+=(visProtoCount-1)*(sbdat.extraspace+1);
+    SumWidth+=(visProtoCount-1)*(g_StatusBarData.extraspace+1);
       }
     }
-    if (sbdat.Align==1) //center
+    if (g_StatusBarData.Align==1) //center
       aligndx=(rectwidth-SumWidth)>>1;
-    else if (sbdat.Align==2) //right
+    else if (g_StatusBarData.Align==2) //right
       aligndx=(rectwidth-SumWidth);
     // Draw in rects
-  	//SelectEffect(hDC,sbdat.TextEffectID,sbdat.TextEffectColor1,sbdat.TextEffectColor2);
+  	//SkinEngine_SelectTextEffect(hDC,g_StatusBarData.TextEffectID,g_StatusBarData.TextEffectColor1,g_StatusBarData.TextEffectColor2);
     {
       RECT r=rc;
-      r.top+=sbdat.rectBorders.top;
-      r.bottom-=sbdat.rectBorders.bottom;
-      r.left+=sbdat.rectBorders.left+aligndx;
+      r.top+=g_StatusBarData.rectBorders.top;
+      r.bottom-=g_StatusBarData.rectBorders.bottom;
+      r.left+=g_StatusBarData.rectBorders.left+aligndx;
       for (i=0; i< visProtoCount; i++)
       {
 
@@ -373,7 +310,7 @@ int ModernDrawStatusBarWorker(HWND hWnd, HDC hDC)
         HICON hIcon=NULL;
 		HICON hxIcon=NULL;
         BOOL NeedDestroy=FALSE;
-		if (ProtosData[i].ProtoStatus>ID_STATUS_OFFLINE && ((sbdat.xStatusMode)&3)>0)
+		if (ProtosData[i].ProtoStatus>ID_STATUS_OFFLINE && ((g_StatusBarData.xStatusMode)&3)>0)
 		{
 			char str[MAXMODULELABELLENGTH];
 			strcpy(str,ProtosData[i].ProtoName);
@@ -383,11 +320,12 @@ int ModernDrawStatusBarWorker(HWND hWnd, HDC hDC)
 				hxIcon=ProtosData[i].extraIcon;
 				if (hxIcon)
 				{
-					if (((sbdat.xStatusMode)&3)==2)
+					if (((g_StatusBarData.xStatusMode)&3)==2)
 					{
 						hIcon=GetMainStatusOverlay(ProtosData[i].ProtoStatus);
+                        NeedDestroy=TRUE;
 					}
-					else if (((sbdat.xStatusMode)&3)==1)
+					else if (((g_StatusBarData.xStatusMode)&3)==1)
 					{
 						hIcon=hxIcon;
 						NeedDestroy=TRUE;
@@ -397,11 +335,11 @@ int ModernDrawStatusBarWorker(HWND hWnd, HDC hDC)
 				}
 			}
 		}
-		if (hIcon==NULL && (hxIcon==NULL || (((sbdat.xStatusMode)&3)==3)))
+		if (hIcon==NULL && (hxIcon==NULL || (((g_StatusBarData.xStatusMode)&3)==3)))
 		{
-			if (hIcon==NULL && (sbdat.connectingIcon==1) && ProtosData[i].ProtoStatus>=ID_STATUS_CONNECTING&&ProtosData[i].ProtoStatus<=ID_STATUS_CONNECTING+MAX_CONNECT_RETRIES)
+			if (hIcon==NULL && (g_StatusBarData.connectingIcon==1) && ProtosData[i].ProtoStatus>=ID_STATUS_CONNECTING&&ProtosData[i].ProtoStatus<=ID_STATUS_CONNECTING+MAX_CONNECT_RETRIES)
 			{
-				hIcon=(HICON)GetConnectingIconService((WPARAM)ProtosData[i].ProtoName,0);
+				hIcon=(HICON)CLUI_GetConnectingIconService((WPARAM)ProtosData[i].ProtoName,0);
 				if (hIcon) NeedDestroy=TRUE;
 				else LoadSkinnedProtoIcon(ProtosData[i].ProtoName,ProtosData[i].ProtoStatus);
 			}
@@ -412,15 +350,15 @@ int ModernDrawStatusBarWorker(HWND hWnd, HDC hDC)
         rgn=CreateRectRgn(r.left,r.top,r.right,r.bottom);
 		//
 		{
-			if (sbdat.sameWidth)
+			if (g_StatusBarData.sameWidth)
 			{
 				int fw=ProtosData[i].fullWidth;
 				int rw=r.right-r.left;
-				if (sbdat.Align==1)
+				if (g_StatusBarData.Align==1)
 				{
 					x=r.left+((rw-fw)/2);
 				}
-				else if (sbdat.Align==2)
+				else if (g_StatusBarData.Align==2)
 				{
 					x=r.left+((rw-fw));
 				}
@@ -431,7 +369,7 @@ int ModernDrawStatusBarWorker(HWND hWnd, HDC hDC)
         ProtosData[i].protoRect=r;
         SelectClipRgn(hDC,rgn);
 		ProtosData[i].DoubleIcons=FALSE;
-		if ((sbdat.xStatusMode&3)==3)
+		if ((g_StatusBarData.xStatusMode&3)==3)
 		{
 			if (hIcon) mod_DrawIconEx_helper(hDC,x,iconY,hIcon,GetSystemMetrics(SM_CXSMICON),GetSystemMetrics(SM_CYSMICON),0,NULL,DI_NORMAL);
 			if (hxIcon) 
@@ -444,55 +382,55 @@ int ModernDrawStatusBarWorker(HWND hWnd, HDC hDC)
 		else
 		{
 			if (hxIcon) mod_DrawIconEx_helper(hDC,x,iconY,hxIcon,GetSystemMetrics(SM_CXSMICON),GetSystemMetrics(SM_CYSMICON),0,NULL,DI_NORMAL);
-			if (hIcon) mod_DrawIconEx_helper(hDC,x,iconY,hIcon,GetSystemMetrics(SM_CXSMICON),GetSystemMetrics(SM_CYSMICON),0,NULL,DI_NORMAL|((hxIcon&&(sbdat.xStatusMode&4))?(192<<24):0));
+			if (hIcon) mod_DrawIconEx_helper(hDC,x,iconY,hIcon,GetSystemMetrics(SM_CXSMICON),GetSystemMetrics(SM_CYSMICON),0,NULL,DI_NORMAL|((hxIcon&&(g_StatusBarData.xStatusMode&4))?(192<<24):0));
 		}
-		if (hxIcon) DestroyIcon(hxIcon);
-        if (NeedDestroy) DestroyIcon(hIcon);
+		if (hxIcon) DestroyIcon_protect(hxIcon);
+        if (NeedDestroy) DestroyIcon_protect(hIcon);
         x+=GetSystemMetrics(SM_CXSMICON)+1;
-        if (sbdat.showProtoName)
+        if (g_StatusBarData.showProtoName)
         {
           SIZE textSize;
 		  RECT rt=r;
 		  rt.left=x+(spaceWidth>>1);
 		  rt.top=textY;
-		  mod_DrawTextA(hDC,ProtosData[i].ProtoName,lstrlenA(ProtosData[i].ProtoName),&rt,0);
+		  SkinEngine_DrawTextA(hDC,ProtosData[i].ProtoName,lstrlenA(ProtosData[i].ProtoName),&rt,0);
           //TextOutS(hDC,x,textY,ProtosData[i].ProtoName,lstrlenA(ProtosData[i].ProtoName));
-          if (sbdat.showStatusName || ((sbdat.xStatusMode&8) && ProtosData[i].ProtoXStatus))
+          if (g_StatusBarData.showStatusName || ((g_StatusBarData.xStatusMode&8) && ProtosData[i].ProtoXStatus))
           {
             GetTextExtentPoint32A(hDC,ProtosData[i].ProtoName,lstrlenA(ProtosData[i].ProtoName),&textSize);
             x+=textSize.cx+3;
           }
 		}
-		if (sbdat.showStatusName)
+		if (g_StatusBarData.showStatusName)
 		{
 			SIZE textSize;
 			RECT rt=r;
 			rt.left=x+(spaceWidth>>1);
 			rt.top=textY;
-			mod_DrawTextA(hDC,ProtosData[i].ProtoStatusText,lstrlenA(ProtosData[i].ProtoStatusText),&rt,0);
-			if ((sbdat.xStatusMode&8) && ProtosData[i].ProtoXStatus)
+			SkinEngine_DrawTextA(hDC,ProtosData[i].ProtoStatusText,lstrlenA(ProtosData[i].ProtoStatusText),&rt,0);
+			if ((g_StatusBarData.xStatusMode&8) && ProtosData[i].ProtoXStatus)
 			{
 				GetTextExtentPoint32A(hDC,ProtosData[i].ProtoStatusText,lstrlenA(ProtosData[i].ProtoStatusText),&textSize);
 				x+=textSize.cx+3;
 			}
 			//TextOutS(hDC,x,textY,ProtosData[i].ProtoStatusText,lstrlenA(ProtosData[i].ProtoStatusText));
 		}
-		if ((sbdat.xStatusMode&8) && ProtosData[i].ProtoXStatus)
+		if ((g_StatusBarData.xStatusMode&8) && ProtosData[i].ProtoXStatus)
 		{
 			RECT rt=r;
 			rt.left=x+(spaceWidth>>1);
 			rt.top=textY;
-			mod_DrawText(hDC,ProtosData[i].ProtoXStatus,lstrlen(ProtosData[i].ProtoXStatus),&rt,0);
+			SkinEngine_DrawText(hDC,ProtosData[i].ProtoXStatus,lstrlen(ProtosData[i].ProtoXStatus),&rt,0);
 			//TextOutS(hDC,x,textY,ProtosData[i].ProtoStatusText,lstrlenA(ProtosData[i].ProtoStatusText));
 		}
 
-        r.left=r.right+sbdat.extraspace;
+        r.left=r.right+g_StatusBarData.extraspace;
         //SelectClipRgn(hDC,NULL);
         DeleteObject(rgn);
 
       }
     }
-    if (ProtoWidth) mir_free(ProtoWidth);
+    if (ProtoWidth) mir_free_and_nill(ProtoWidth);
   }
 
   SelectObject(hDC,hOldFont);
@@ -503,8 +441,10 @@ int ModernDrawStatusBarWorker(HWND hWnd, HDC hDC)
 extern TMO_IntMenuItem * GetMenuItemByGlobalID(int globalMenuID);
 extern MenuProto * menusProto;
 extern int AllocedProtos;
+#define TOOLTIP_TOLERANCE 5
 LRESULT CALLBACK ModernStatusProc(HWND hwnd,UINT msg,WPARAM wParam,LPARAM lParam)
 {
+  static POINT ptToolTipShow={0};
   switch (msg)
   {
   case WM_DESTROY:
@@ -514,24 +454,24 @@ LRESULT CALLBACK ModernStatusProc(HWND hwnd,UINT msg,WPARAM wParam,LPARAM lParam
 
       for (k=0; k<allocedItemData; k++)
       {
-        if(ProtosData[k].ProtoName) mir_free (ProtosData[k].ProtoName);
-        if(ProtosData[k].ProtoStatusText) mir_free (ProtosData[k].ProtoStatusText);
+        if(ProtosData[k].ProtoName) mir_free_and_nill (ProtosData[k].ProtoName);
+        if(ProtosData[k].ProtoStatusText) mir_free_and_nill (ProtosData[k].ProtoStatusText);
       }
-      mir_free(ProtosData);
+      mir_free_and_nill(ProtosData);
       ProtosData=NULL;
       allocedItemData=0;
     }
     break;
   case WM_SIZE:
-	  if (!LayeredFlag)
+	  if (!g_bLayered)
 		  InvalidateRect(hwnd,NULL,FALSE);
 	  return DefWindowProc(hwnd, msg, wParam, lParam);
   case WM_ERASEBKGND:
 	  return 0;
   case WM_PAINT:
-    if (GetParent(hwnd)==pcli->hwndContactList && LayeredFlag)
-      InvalidateFrameImage((WPARAM)hwnd,0);
-    else if (GetParent(hwnd)==pcli->hwndContactList && !LayeredFlag)
+    if (GetParent(hwnd)==pcli->hwndContactList && g_bLayered)
+      SkinEngine_Service_InvalidateFrameImage((WPARAM)hwnd,0);
+    else if (GetParent(hwnd)==pcli->hwndContactList && !g_bLayered)
 	{
 		HDC hdc, hdc2;
 		HBITMAP hbmp,hbmpo;
@@ -541,9 +481,9 @@ LRESULT CALLBACK ModernStatusProc(HWND hwnd,UINT msg,WPARAM wParam,LPARAM lParam
 		rc.bottom++;
 		hdc = GetDC(hwnd);
 		hdc2=CreateCompatibleDC(hdc);
-		hbmp=CreateBitmap32(rc.right,rc.bottom);
-		hbmpo=SelectObject(hdc2,hbmp);
-		BltBackImage(hwnd,hdc2,&rc);
+		hbmp=SkinEngine_CreateDIB32(rc.right,rc.bottom);
+		hbmpo=SelectObject(hdc2,hbmp);		
+		SkinEngine_BltBackImage(hwnd,hdc2,&rc);
 		ModernDrawStatusBarWorker(hwnd,hdc2);
 		BitBlt(hdc,rc.left,rc.top,rc.right-rc.left,rc.bottom-rc.top,
 			hdc2,rc.left,rc.top,SRCCOPY);
@@ -567,7 +507,7 @@ LRESULT CALLBACK ModernStatusProc(HWND hwnd,UINT msg,WPARAM wParam,LPARAM lParam
       GetClientRect(hwnd,&rc);
       hdc=BeginPaint(hwnd,&ps);
       hdc2=CreateCompatibleDC(hdc);
-      hbmp=CreateBitmap32(rc.right,rc.bottom);
+      hbmp=SkinEngine_CreateDIB32(rc.right,rc.bottom);
       hbmpo=SelectObject(hdc2,hbmp);
       FillRect(hdc2,&ps.rcPaint,br);
       ModernDrawStatusBarWorker(hwnd,hdc2);
@@ -619,6 +559,7 @@ LRESULT CALLBACK ModernStatusProc(HWND hwnd,UINT msg,WPARAM wParam,LPARAM lParam
         {
           NotifyEventHooks(hStatusBarHideToolTipEvent,0,0);
           tooltipshoing=FALSE;
+          ReleaseCapture();
         };
       }
       else if (wParam==TM_STATUSBAR)
@@ -639,6 +580,9 @@ LRESULT CALLBACK ModernStatusProc(HWND hwnd,UINT msg,WPARAM wParam,LPARAM lParam
               NotifyEventHooks(hStatusBarShowToolTipEvent,(WPARAM)ProtosData[i].ProtoName,0);
               SetTimer(hwnd,TM_STATUSBARHIDE,DBGetContactSettingWord(NULL,"CLUIFrames","HideToolTipTime",5000),0);
               tooltipshoing=TRUE;
+			  ClientToScreen(hwnd,&pt);
+			  ptToolTipShow=pt;
+			  SetCapture(hwnd);
               return 0;
             }
           }
@@ -647,27 +591,44 @@ LRESULT CALLBACK ModernStatusProc(HWND hwnd,UINT msg,WPARAM wParam,LPARAM lParam
       }
       return 0;
     };
+  case WM_MOUSEMOVE:
+	  if (tooltipshoing)
+	  {
+		  POINT pt;
+		  GetCursorPos(&pt);
+		  if (abs(pt.x-ptToolTipShow.x)>TOOLTIP_TOLERANCE || abs(pt.y-ptToolTipShow.y)>TOOLTIP_TOLERANCE)
+		  {
+              KillTimer(hwnd,TM_STATUSBARHIDE);
+              NotifyEventHooks(hStatusBarHideToolTipEvent,0,0);
+              tooltipshoing=FALSE;
+		      ReleaseCapture();
+          }
+	  }
+	  break;
   case WM_SETCURSOR:
     {
-      if (BehindEdgeSettings) UpdateTimer(0);
+      if (g_nBehindEdgeSettings) CLUI_UpdateTimer(0);
       {
         POINT pt;
         GetCursorPos(&pt);
         SendMessage(GetParent(hwnd),msg,wParam,lParam);
         if (pt.x==lastpnt.x&&pt.y==lastpnt.y)
         {
-          return(TestCursorOnBorders());
+          return(CLUI_TestCursorOnBorders());
         };
         lastpnt=pt;
-        if (tooltipshoing){
+        if (tooltipshoing)
+			if	(abs(pt.x-ptToolTipShow.x)>TOOLTIP_TOLERANCE || abs(pt.y-ptToolTipShow.y)>TOOLTIP_TOLERANCE)
+		{
           KillTimer(hwnd,TM_STATUSBARHIDE);
           NotifyEventHooks(hStatusBarHideToolTipEvent,0,0);
           tooltipshoing=FALSE;
+		  ReleaseCapture();
         };
         KillTimer(hwnd,TM_STATUSBAR);
         SetTimer(hwnd,TM_STATUSBAR,DBGetContactSettingWord(NULL,"CLC","InfoTipHoverTime",750),0);
 
-        return(TestCursorOnBorders());
+        return(CLUI_TestCursorOnBorders());
       };
 
     };
@@ -682,6 +643,7 @@ LRESULT CALLBACK ModernStatusProc(HWND hwnd,UINT msg,WPARAM wParam,LPARAM lParam
       pt.x=(short)LOWORD(lParam);
       pt.y=(short)HIWORD(lParam);
       KillTimer(hwnd,TM_STATUSBARHIDE);
+	  KillTimer(hwnd,TM_STATUSBAR);
 
       if (tooltipshoing){
         NotifyEventHooks(hStatusBarHideToolTipEvent,0,0);
@@ -750,7 +712,7 @@ LRESULT CALLBACK ModernStatusProc(HWND hwnd,UINT msg,WPARAM wParam,LPARAM lParam
   return DefWindowProc(hwnd, msg, wParam, lParam);
 }
 
-int CreateModernStatusBar(HWND parent)
+int StatusBar_Create(HWND parent)
 {
 
   WNDCLASS wndclass={0};
@@ -790,7 +752,7 @@ int CreateModernStatusBar(HWND parent)
   LoadStatusBarData();
   hStatusBarShowToolTipEvent=CreateHookableEvent(ME_CLIST_FRAMES_SB_SHOW_TOOLTIP);
   hStatusBarHideToolTipEvent=CreateHookableEvent(ME_CLIST_FRAMES_SB_HIDE_TOOLTIP);
-  CluiProtocolStatusChanged(0,0);
+  CLUIServices_ProtocolStatusChanged(0,0);
   CallService(MS_CLIST_FRAMES_UPDATEFRAME,-1,0);
   return (int)hModernStatusBar;
 

@@ -310,7 +310,7 @@ int NetlibHttpSendRequest(WPARAM wParam,LPARAM lParam)
 		else pszUrl=nlhr->szUrl;
 	}
 	else pszUrl=nlhr->szUrl;
-	AppendToCharBuffer(&httpRequest,"%s %s HTTP/1.0\r\n",pszRequest,pszUrl);
+	AppendToCharBuffer(&httpRequest, "%s %s HTTP/1.%d\r\n", pszRequest, pszUrl, (nlhr->flags & NLHRF_HTTP11) != 0);
 
 	//if (nlhr->dataLength > 0)
 	//	AppendToCharBuffer(&httpRequest,"Content-Length: %d\r\n",nlhr->dataLength);

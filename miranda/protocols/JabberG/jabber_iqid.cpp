@@ -67,7 +67,7 @@ void JabberIqResultGetAuth( XmlNode *iqNode, void *userdata )
 		XmlNode* query = iq.addQuery( "jabber:iq:auth" );
 		query->addChild( "username", info->username );
 		if ( JabberXmlGetChild( queryNode, "digest" )!=NULL && streamId ) {
-			char* str = JabberUtf8Encode( info->password );
+			char* str = mir_utf8encode( info->password );
 			char text[200];
 			mir_snprintf( text, SIZEOF(text), "%s%s", streamId, str );
 			mir_free( str );
@@ -245,18 +245,18 @@ void sttGroupchatJoinByHContact( HANDLE hContact )
 
 void CALLBACK sttCreateRoom( ULONG dwParam )
 {
-	char* jid = t2a(( TCHAR* )dwParam), *p;
-
 	GCSESSION gcw = {0};
 	gcw.cbSize = sizeof(GCSESSION);
 	gcw.iType = GCW_CHATROOM;
-	gcw.pszID = jid;
 	gcw.pszModule = jabberProtoName;
-	gcw.pszName = strcpy(( char* )alloca( strlen(jid)+1 ), jid );
-	if (( p = (char*)strchr( gcw.pszName, '@' )) != NULL )
-		*p = 0;
+	gcw.dwFlags = GC_TCHAR;
+	gcw.ptszID = ( TCHAR* )dwParam;
+	gcw.ptszName = NEWTSTR_ALLOCA(( TCHAR* )dwParam );
+
+	TCHAR* p = (TCHAR*)_tcschr( gcw.ptszName, '@' );
+	if ( p ) *p = 0;
+
 	CallService( MS_GC_NEWSESSION, 0, ( LPARAM )&gcw );
-	mir_free(jid);
 }
 
 void JabberIqResultGetRoster( XmlNode* iqNode, void* )
@@ -1328,7 +1328,7 @@ void JabberIqResultDiscoClientInfo( XmlNode *iqNode, void *userdata )
 		if (( item->cap & CLIENT_CAP_FILE ) && ( item->cap & CLIENT_CAP_BYTESTREAM ))
 			JabberFtInitiate( item->jid, ft );
 		else
-			JabberForkThread(( JABBER_THREAD_FUNC )JabberFileServerThread, 0, ft );
+			mir_forkthread(( pThreadFunc )JabberFileServerThread, ft );
 }	}
 
 void JabberIqResultGetAvatar( XmlNode *iqNode, void *userdata )

@@ -20,7 +20,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 File name      : $Source: /cvsroot/miranda/miranda/protocols/JabberG/jabber_misc.cpp,v $
 Revision       : $Revision$
-Last change on : $Date$
+Last change on : $Date: 2006-07-13 16:11:29 +0400 
 Last change by : $Author$
 
 */
@@ -168,7 +168,6 @@ void JabberDBAddAuthRequest( TCHAR* jid, TCHAR* nick )
 
 ///////////////////////////////////////////////////////////////////////////////
 // JabberDBCreateContact()
-// jid & nick are passed in TXT
 
 HANDLE JabberDBCreateContact( TCHAR* jid, TCHAR* nick, BOOL temporary, BOOL stripResource )
 {
@@ -216,6 +215,7 @@ HANDLE JabberDBCreateContact( TCHAR* jid, TCHAR* nick, BOOL temporary, BOOL stri
 		if ( temporary )
 			DBWriteContactSettingByte( hContact, "CList", "NotOnList", 1 );
 		JabberLog( "Create Jabber contact jid=" TCHAR_STR_PARAM ", nick=" TCHAR_STR_PARAM, s, nick );
+        JabberDBCheckIsTransportedContact(s,hContact);
 	}
 
 	mir_free( s );
@@ -272,45 +272,6 @@ void JabberGetAvatarFileName( HANDLE hContact, char* pszDest, int cbLen )
 }
 
 ///////////////////////////////////////////////////////////////////////////////
-// JabberForkThread()
-
-struct FORK_ARG {
-	HANDLE hEvent;
-	void ( __cdecl *threadcode )( void* );
-	void *arg;
-};
-
-static void __cdecl forkthread_r( struct FORK_ARG *fa )
-{
-	void ( *callercode )( void* ) = fa->threadcode;
-	void *arg = fa->arg;
-	JabberLog( "Thread started: %08X %d", callercode, GetCurrentThreadId());
-	JCallService( MS_SYSTEM_THREAD_PUSH, 0, 0 );
-	SetEvent( fa->hEvent );
-	__try {
-		callercode( arg );
-	} __finally {
-		JCallService( MS_SYSTEM_THREAD_POP, 0, 0 );
-	}
-	return;
-}
-
-ULONG JabberForkThread( void ( __cdecl *threadcode )( void* ), unsigned long stacksize, void *arg )
-{
-	struct FORK_ARG fa;
-	fa.hEvent = CreateEvent( NULL, FALSE, FALSE, NULL );
-	fa.threadcode = threadcode;
-	fa.arg = arg;
-
-	ULONG rc = _beginthread(( JABBER_THREAD_FUNC )forkthread_r, stacksize, &fa );
-	if (( unsigned long ) -1L != rc )
-		WaitForSingleObject( fa.hEvent, INFINITE );
-
-	CloseHandle( fa.hEvent );
-	return rc;
-}
-
-///////////////////////////////////////////////////////////////////////////////
 // JabberSetServerStatus()
 
 void JabberSetServerStatus( int iNewStatus )
@@ -341,24 +302,24 @@ void JabberSetServerStatus( int iNewStatus )
 	}
 
 	// send presence update
-	JabberSendPresence( jabberStatus );
+	JabberSendPresence( jabberStatus, true );
 	JSendBroadcast( NULL, ACKTYPE_STATUS, ACKRESULT_SUCCESS, ( HANDLE ) oldStatus, jabberStatus );
 }
 
 // Process a string, and double all % characters, according to chat.dll's restrictions
 // Returns a pointer to the new string (old one is not freed)
-char* EscapeChatTags(char* pszText)
+TCHAR* EscapeChatTags(TCHAR* pszText)
 {
 	int nChars = 0;
-	for ( char* p = pszText; ( p = strchr( p, '%' )) != NULL; p++ )
+	for ( TCHAR* p = pszText; ( p = _tcschr( p, '%' )) != NULL; p++ )
 		nChars++;
 
 	if ( nChars == 0 )
-		return mir_strdup( pszText );
+		return mir_tstrdup( pszText );
 
-	char* pszNewText = (char*)mir_alloc( strlen( pszText ) + 1 + nChars ), *s, *d;
+	TCHAR* pszNewText = (TCHAR*)mir_alloc( sizeof(TCHAR)*(_tcslen( pszText ) + 1 + nChars )), *s, *d;
 	if ( pszNewText == NULL )
-		return mir_strdup( pszText );
+		return mir_tstrdup( pszText );
 
 	for ( s = pszText, d = pszNewText; *s; s++ ) {
 		if ( *s == '%' )

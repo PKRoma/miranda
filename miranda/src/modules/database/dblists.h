@@ -31,3 +31,6 @@ int	List_GetIndex( SortedList*, void*, int* );
 int   List_Insert( SortedList*, void*, int );
 int   List_Remove( SortedList*, int );
 int   List_IndexOf( SortedList*, void* );
+
+int   List_InsertPtr( SortedList* list, void* p );
+int   List_RemovePtr( SortedList* list, void* p );

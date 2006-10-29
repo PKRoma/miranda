@@ -25,8 +25,10 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 int LoadSendRecvMessageModule(void);
 int SplitmsgShutdown(void);
 
-PLUGINLINK *pluginLink;
-HINSTANCE g_hInst;
+PLUGINLINK* pluginLink;
+HINSTANCE   g_hInst;
+
+struct MM_INTERFACE mmi;
 
 PLUGININFO pluginInfo = {
 	sizeof(PLUGININFO),
@@ -35,7 +37,7 @@ PLUGININFO pluginInfo = {
 #else
 	"Send/Receive Messages",
 #endif
-	PLUGIN_MAKE_VERSION(2, 6, 0, 0),
+	PLUGIN_MAKE_VERSION(3, 0, 0, 0),
 	"Send and receive instant messages",
 	"Miranda IM Development Team",
 	"rainwater@miranda-im.org",
@@ -51,8 +53,7 @@ BOOL WINAPI DllMain(HINSTANCE hinstDLL, DWORD fdwReason, LPVOID lpvReserved)
 	return TRUE;
 }
 
-__declspec(dllexport)
-	 PLUGININFO *MirandaPluginInfo(DWORD mirandaVersion)
+__declspec(dllexport) PLUGININFO *MirandaPluginInfo(DWORD mirandaVersion)
 {
 	if (mirandaVersion < PLUGIN_MAKE_VERSION(0, 4, 0, 0))
 		return NULL;
@@ -62,6 +63,7 @@ __declspec(dllexport)
 int __declspec(dllexport) Load(PLUGINLINK * link)
 {
 	pluginLink = link;
+	mir_getMMI( &mmi );
 	return LoadSendRecvMessageModule();
 }
 

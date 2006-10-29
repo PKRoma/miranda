@@ -31,11 +31,9 @@ Created by Anton Senko aka ZORG , tweaked by Artem Shpynov aka FYR
 #include <tchar.h>
 
 #ifdef _DEBUG
-#ifndef _DEBUG
-#	define _CRTDBG_MAP_ALLOC
-#	include <stdlib.h>
-#	include <crtdbg.h>
-#endif
+    #define _CRTDBG_MAP_ALLOC
+    #include <stdlib.h>
+    #include <crtdbg.h>
 #endif
 
 #define _WIN32_WINNT 0x0501
@@ -60,7 +58,7 @@ extern "C"
   #include "m_database.h"
   #include "m_system.h"  
   char * DBGetStringA(HANDLE, const char*, const char*);
-	#include "forkthread.h"
+	#include "mir_forkthread.h"
 	#include "win2k.h"
   */
   #include "commonheaders.h"
@@ -88,21 +86,6 @@ extern "C" void rowDeleteTree(ROWCELL* cell);
 
 char *tmplbuf;		// Буфер для хранения шаблона в текстовом виде
 
-/*
-#define mir_free(ptr) { mir_free_proxy(ptr); ptr=NULL; }
-
-int mir_free_proxy(void *ptr)
-{
-	if (ptr==NULL||IsBadCodePtr((FARPROC)ptr))
-	{
-		DebugBreak();
-		return 0;
-	}
-    memoryManagerInterface.mmi_free(ptr);
-	return 0;
-
-}
-*/
 #ifndef TEST_SOURCE
 	extern "C" 
 #endif
@@ -120,7 +103,7 @@ ROWCELL *cppInitModernRow(ROWCELL	** tabAccess)
   if (tmplbuf) 
   {
       rowParse(RowRoot, RowRoot, tmplbuf, i, seq,tabAccess);
-      mir_free(tmplbuf);
+      mir_free_and_nill(tmplbuf);
       return RowRoot;
   }
   if (hFile = fopen("template.txt", "rb"))
@@ -634,9 +617,6 @@ void rowPositioning(pROWCELL cell, int &dist)
 	int h = cell->r.bottom;
 	int w = dist;
 
-	int valign = 0;
-	int halign = 0;
-
 	int r = 0;
 	int size = 0;
 	int cw = 0;
@@ -900,12 +880,12 @@ ATOM MyRegisterClass(HINSTANCE hInstance)
 	wcex.cbClsExtra		= 0;
 	wcex.cbWndExtra		= 0;
 	wcex.hInstance		= hInstance;
-	wcex.hIcon			= LoadIcon(hInstance, (LPCTSTR)IDI_PARSER);
+	wcex.hIcon			= LoadSmallIconShared(hInstance, (LPCTSTR)IDI_PARSER);
 	wcex.hCursor		= LoadCursor(NULL, IDC_ARROW);
 	wcex.hbrBackground	= (HBRUSH)(COLOR_WINDOW);
 	wcex.lpszMenuName	= (LPCTSTR)IDC_PARSER;
 	wcex.lpszClassName	= szWindowClass;
-	wcex.hIconSm		= LoadIcon(wcex.hInstance, (LPCTSTR)IDI_SMALL);
+	wcex.hIconSm		= LoadSmallIconShared(wcex.hInstance, (LPCTSTR)IDI_SMALL);
 
 	return RegisterClassEx(&wcex);
 }

@@ -38,7 +38,7 @@ void Utf8Decode( char* str, wchar_t** ucs2 )
 	if ( len < 2 ) {
 		if ( ucs2 != NULL ) {
 			*ucs2 = ( wchar_t* )malloc(( len+1 )*sizeof( wchar_t ));
-			MultiByteToWideChar( CP_ACP, 0, str, len, *ucs2, len );
+			MultiByteToWideChar(CallService( MS_LANGPACK_GETCODEPAGE, 0, 0 ), 0, str, len, *ucs2, len );
 			( *ucs2 )[ len ] = 0;
 		}
 		return;
@@ -80,7 +80,7 @@ void Utf8Decode( char* str, wchar_t** ucs2 )
 		memmove( *ucs2, tempBuf, fullLen );
 	}
 
-   WideCharToMultiByte( CP_ACP, 0, tempBuf, -1, str, len, NULL, NULL );
+   WideCharToMultiByte(CallService( MS_LANGPACK_GETCODEPAGE, 0, 0 ), 0, tempBuf, -1, str, len, NULL, NULL );
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////
@@ -101,7 +101,7 @@ char* Utf8Encode( const char* src )
 		return NULL;
 
 	tempBuf = ( wchar_t* )_alloca(( len+1 )*sizeof( wchar_t ));
-	MultiByteToWideChar( CP_ACP, 0, src, -1, tempBuf, len );
+	MultiByteToWideChar( CallService( MS_LANGPACK_GETCODEPAGE, 0, 0 ), 0, src, -1, tempBuf, len );
 	tempBuf[ len ] = 0;
 	{
 		wchar_t* s = tempBuf;

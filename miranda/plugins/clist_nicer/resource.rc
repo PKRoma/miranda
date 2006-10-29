@@ -271,14 +271,14 @@ BEGIN
                     "Button",BS_AUTOCHECKBOX | WS_TABSTOP,14,213,164,10
     CONTROL         "Draw sunken edge",IDC_CLISTSUNKEN,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,14,225,164,10
     GROUPBOX        "Event area",IDC_STATIC,195,192,112,52
-    CONTROL         "Enabled",IDC_EVENTAREAENABLED,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,202,202,100,10
-    CONTROL         "Auto - hide",IDC_EVENTAREAAUTOHIDE,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,202,214,100,10
-    CONTROL         "Draw sunken edge",IDC_EVENTAREASUNKEN,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,202,226,100,10
+    CONTROL         "Auto mode",IDC_EVENTAREAAUTOHIDE,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,202,223,100,10
+    CONTROL         "Draw sunken edge",IDC_EVENTAREASUNKEN,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,202,233,100,10
     CONTROL         "Show contacts local time",IDC_SHOWLOCALTIME,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,166,66,127,10
     CONTROL         "Only when timezone differs",IDC_SHOWLOCALTIMEONLYWHENDIFFERENT,
                     "Button",BS_AUTOCHECKBOX | WS_TABSTOP,178,77,120,10
     COMBOBOX        IDC_CLISTALIGN,90,8,71,56,CBS_DROPDOWNLIST | CBS_SORT | WS_VSCROLL | WS_TABSTOP
     LTEXT           "Right align contacts",IDC_STATIC,14,10,72,10
+    LTEXT           "Set base visiblity on the frames menu",IDC_STATIC,201,203,102,19
 END
 
 IDD_OPT_CLUI DIALOGEX 0, 0, 313, 251
@@ -866,12 +866,6 @@ BEGIN
         MENUITEM "Auto-Hide Status Floater",    POPUP_FLOATER_AUTOHIDE
         MENUITEM "Show Event Area in Floater",  POPUP_FLOATER_EVENTS
     END
-    POPUP "Event Area"
-    BEGIN
-        MENUITEM "Enabled",                     ID_EVENTAREA_ENABLED
-        MENUITEM "Autohide",                    ID_EVENTAREA_AUTOHIDE
-        MENUITEM "Sunken frame",                ID_EVENTAREA_SUNKENFRAME
-    END
 END
 
 
@@ -880,9 +874,10 @@ END
 // Version
 //
 
+#ifndef APSTUDIO_INVOKED
 VS_VERSION_INFO VERSIONINFO
- FILEVERSION 0,7,0,1
- PRODUCTVERSION 0,7,0,1
+ FILEVERSION 0,7,0,5
+ PRODUCTVERSION 0,7,0,5
  FILEFLAGSMASK 0x3fL
 #ifdef _DEBUG
  FILEFLAGS 0x21L
@@ -894,26 +889,45 @@ VS_VERSION_INFO VERSIONINFO
  FILESUBTYPE 0x0L
 BEGIN
     BLOCK "StringFileInfo"
+#if defined(UNICODE)    
     BEGIN
         BLOCK "000004b0"
         BEGIN
             VALUE "Comments", "Licensed under the terms of the GNU General Public License"
             VALUE "CompanyName", "Copyright © 2000-2004 Richard Hughes, Roland Rabien, Tristan Van de Vreede, Martin Öberg, Robert Rainwater, Sam Kothari and Lyon Lim and others."
-            VALUE "FileDescription", "Miranda IM Contact List"
-            VALUE "FileVersion", "0.7.0.1"
-            VALUE "InternalName", "clist_nicer+"
+            VALUE "FileDescription", "Clist Nicer+ (UNICODE)"
+            VALUE "FileVersion", "0.7.0.5"
+            VALUE "InternalName", "clist_nicer+ (UNICODE)"
             VALUE "LegalCopyright", "Copyright © 2000-2006 The Miranda IM project members."
             VALUE "OriginalFilename", "clist_nicer.dll"
             VALUE "ProductName", "Miranda IM Contact List"
-            VALUE "ProductVersion", "0.7.0.1"
-            VALUE "SpecialBuild", "60"
+            VALUE "ProductVersion", "0.7.0.5"
+            VALUE "SpecialBuild", "11"
         END
     END
+#else
+    BEGIN
+        BLOCK "000004b0"
+        BEGIN
+            VALUE "Comments", "Licensed under the terms of the GNU General Public License"
+            VALUE "CompanyName", "Copyright © 2000-2004 Richard Hughes, Roland Rabien, Tristan Van de Vreede, Martin Öberg, Robert Rainwater, Sam Kothari and Lyon Lim and others."
+            VALUE "FileDescription", "Clist Nicer+ (ANSI)"
+            VALUE "FileVersion", "0.7.0.5"
+            VALUE "InternalName", "clist_nicer+ (ANSI)"
+            VALUE "LegalCopyright", "Copyright © 2000-2006 The Miranda IM project members."
+            VALUE "OriginalFilename", "clist_nicer.dll"
+            VALUE "ProductName", "Miranda IM Contact List"
+            VALUE "ProductVersion", "0.7.0.5"
+            VALUE "SpecialBuild", "11"
+        END
+    END
+#endif    
     BLOCK "VarFileInfo"
     BEGIN
         VALUE "Translation", 0x0, 1200
     END
 END
+#endif
 
 #endif    // English (U.S.) resources
 /////////////////////////////////////////////////////////////////////////////

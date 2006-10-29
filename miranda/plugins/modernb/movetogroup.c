@@ -16,7 +16,7 @@ static int AddGroupItem(int rootid,TCHAR *name,int pos,int poppos,WPARAM wParam)
 {
 	CLISTMENUITEM mi={0};
 	mi.cbSize=sizeof(mi);
-	mi.hIcon=NULL;//LoadIcon(hInst,MAKEINTRESOURCEA(IDI_MIRANDA));
+	mi.hIcon=NULL;//LoadSmallIconShared(hInst,MAKEINTRESOURCEA(IDI_MIRANDA));
 	mi.pszPopupName=(char *)rootid;
 	mi.popupPosition=poppos;
 	mi.position=pos;
@@ -37,13 +37,13 @@ static int OnContactMenuBuild(WPARAM wParam,LPARAM lParam)
 	boolean grpexists;
 	TCHAR *grpname;
 	char intname[20];
-
+    if (MirandaExiting()) return 0;
 	if (prevmenu!=0){
 		CallService(MS_CLIST_REMOVECONTACTMENUITEM,(WPARAM)prevmenu,(LPARAM)0);
 	};
 	ZeroMemory(&mi,sizeof(mi));
 	mi.cbSize=sizeof(mi);
-	mi.hIcon=NULL;//LoadIcon(hInst,MAKEINTRESOURCEA(IDI_MIRANDA));
+	mi.hIcon=NULL;//LoadSmallIconShared(hInst,MAKEINTRESOURCEA(IDI_MIRANDA));
 	mi.pszPopupName=(char *)-1;
 	mi.position=100000;
 	mi.ptszName=TranslateT("&Move to Group");
@@ -65,7 +65,7 @@ static int OnContactMenuBuild(WPARAM wParam,LPARAM lParam)
 		if (grpname[0]==0) {break; };
 		AddGroupItem((int)menuid,&(grpname[1]),grpid++,i+1,wParam);
 		i++;
-		mir_free(grpname);
+		mir_free_and_nill(grpname);
 	};
 	return 0;
 };
@@ -92,7 +92,7 @@ static int MTG_DOMOVE(WPARAM wParam,LPARAM lParam)
 	{
 		correctgrpname=&(grpname[1]);
 		DBWriteContactSettingTString((HANDLE)wParam,"CList","Group",correctgrpname);
-		mir_free(grpname);
+		mir_free_and_nill(grpname);
 	};
 
 	free (intname);
@@ -105,7 +105,7 @@ static int OnmodulesLoad(WPARAM wParam,LPARAM lParam)
 		MessageBoxA(0,"New menu system not found - plugin disabled.","MoveToGroup",0);
 		return(0);
 	};
-	hOnCntMenuBuild=HookEvent(ME_CLIST_PREBUILDCONTACTMENU,OnContactMenuBuild);	
+	hOnCntMenuBuild=(HANDLE)HookEvent(ME_CLIST_PREBUILDCONTACTMENU,OnContactMenuBuild);	
 	CreateServiceFunction(MTG_MOVE,MTG_DOMOVE);
 	return(0);
 };
@@ -113,7 +113,7 @@ static int OnmodulesLoad(WPARAM wParam,LPARAM lParam)
 
 int LoadMoveToGroup()
 {
-	hModulesLoaded=HookEvent(ME_SYSTEM_MODULESLOADED,OnmodulesLoad);	
+	hModulesLoaded=(HANDLE)HookEvent(ME_SYSTEM_MODULESLOADED,OnmodulesLoad);	
 	return 0;
 }
 

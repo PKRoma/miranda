@@ -155,8 +155,8 @@ static void xmlStreamInitializeNow(struct ThreadData* info){
 	JabberXmlSetCallback( &xmlState, 1, ELEM_OPEN, JabberProcessStreamOpening, info );
 	JabberXmlSetCallback( &xmlState, 1, ELEM_CLOSE, JabberProcessStreamClosing, info );
 	JabberXmlSetCallback( &xmlState, 2, ELEM_CLOSE, JabberProcessProtocol, info );
-	//JabberSend( info->s, "<?xml version=\"1.0\" encoding=\"UTF-8\"?><stream:stream to=\"%s\" xmlns=\"jabber:client\" xmlns:stream=\"http://etherx.jabber.org/streams\" version=\"1.0\">", TXT(info->server) );
-	{	XmlNode stream( "stream:stream" );
+	{	
+		XmlNode stream( "stream:stream" );
 		stream.props = "<?xml version='1.0' encoding='UTF-8'?>";
 		stream.addAttr( "to", info->server );
 		stream.addAttr( "xmlns", "jabber:client" );
@@ -422,7 +422,7 @@ LBL_Exit:
 				jabberSendKeepAlive = TRUE;
 			else
 				jabberSendKeepAlive = FALSE;
-			JabberForkThread( JabberKeepAliveThread, 0, info->s );
+			mir_forkthread( JabberKeepAliveThread, info->s );
 		}
 
 		xmlStreamInitializeNow( info );
@@ -717,7 +717,7 @@ static void __cdecl JabberWaitAndReconnectThread( int unused )
 	ThreadData* thread = ( ThreadData* ) mir_alloc( sizeof( struct ThreadData ));
 	ZeroMemory( thread, sizeof( struct ThreadData ));
 	thread->type = JABBER_SESSION_NORMAL;
-	thread->hThread = ( HANDLE ) JabberForkThread(( JABBER_THREAD_FUNC )JabberServerThread, 0, thread );
+	thread->hThread = ( HANDLE ) mir_forkthread(( pThreadFunc )JabberServerThread, thread );
 }
 
 
@@ -857,7 +857,7 @@ static void JabberProcessMessage( XmlNode *node, void *userdata )
 {
 	struct ThreadData* info;
 	XmlNode *subjectNode, *xNode, *inviteNode, *idNode, *n;
-	TCHAR* from, *type, *nick, *p, *idStr, *fromResource;
+	TCHAR* from, *type, *nick, *idStr, *fromResource;
 	int id;
 	HANDLE hContact;
 
@@ -898,12 +898,14 @@ static void JabberProcessMessage( XmlNode *node, void *userdata )
 	TCHAR* szMessage = NULL;
 	XmlNode* bodyNode = JabberXmlGetChild( node, "body" );
 	if ( bodyNode != NULL ) {
+		TCHAR* ptszBody = (bodyNode) ? bodyNode->text : _T("");
 		if (( subjectNode=JabberXmlGetChild( node, "subject" ))!=NULL && subjectNode->text!=NULL && subjectNode->text[0]!='\0' && !isRss ) {
-			p = ( TCHAR* )alloca( sizeof( TCHAR )*( _tcslen( subjectNode->text ) + _tcslen( bodyNode->text ) + 12 ));
-			wsprintf( p, _T("Subject: %s\r\n%s"), subjectNode->text, bodyNode->text );
+			int cbLen = _tcslen( subjectNode->text ) + _tcslen( bodyNode->text ) + 24;
+			TCHAR* p = ( TCHAR* )alloca( sizeof( TCHAR ) * cbLen );
+			mir_sntprintf( p, cbLen, _T("Subject: %s\r\n%s"), subjectNode->text, ptszBody );
 			szMessage = p;
 		}
-		else szMessage = bodyNode->text;
+		else szMessage = ptszBody;
 	}
 
 	time_t msgTime = 0;
@@ -933,89 +935,100 @@ static void JabberProcessMessage( XmlNode *node, void *userdata )
 			JCallService( MS_PROTO_CONTACTISTYPING, ( WPARAM ) hContact, PROTOTYPE_CONTACTTYPING_OFF );
 
 	for ( int i = 1; ( xNode = JabberXmlGetNthChild( node, "x", i )) != NULL; i++ ) {
-		if (( p=JabberXmlGetAttrValue( xNode, "xmlns" )) != NULL ) {
-			if ( !_tcscmp( p, _T("jabber:x:encrypted" ))) {
-				if ( xNode->text == NULL )
-					return;
+		TCHAR* ptszXmlns = JabberXmlGetAttrValue( xNode, "xmlns" );
+		if ( ptszXmlns == NULL )
+			continue;
 
-				TCHAR* prolog = _T("-----BEGIN PGP MESSAGE-----\r\n\r\n");
-				TCHAR* epilog = _T("\r\n-----END PGP MESSAGE-----\r\n");
-				TCHAR* tempstring = ( TCHAR* )alloca( sizeof( TCHAR )*( _tcslen( prolog ) + _tcslen( xNode->text ) + _tcslen( epilog )));
-				_tcsncpy( tempstring, prolog, _tcslen( prolog )+1 );
-				_tcsncpy(tempstring + _tcslen( prolog ), xNode->text, _tcslen( xNode->text )+1);
-				_tcsncpy(tempstring + _tcslen( prolog )+_tcslen(xNode->text ), epilog, _tcslen( epilog )+1);
-				szMessage = tempstring;
-         }
-			else if ( !_tcscmp( p, _T("jabber:x:delay")) && msgTime == 0 ) {
-				if (( p=JabberXmlGetAttrValue( xNode, "stamp" )) != NULL )
-					msgTime = JabberIsoToUnixTime( p );
-			}
-			else if ( !_tcscmp( p, _T("jabber:x:event"))) {
-				if ( bodyNode == NULL ) {
-					idNode = JabberXmlGetChild( xNode, "id" );
-					if ( JabberXmlGetChild( xNode, "delivered" )!=NULL || JabberXmlGetChild( xNode, "offline" )!=NULL ) {
-						id = -1;
-						if ( idNode!=NULL && idNode->text!=NULL )
-							if ( !_tcsncmp( idNode->text, _T(JABBER_IQID), strlen( JABBER_IQID )) )
-								id = _ttoi(( idNode->text )+strlen( JABBER_IQID ));
+		if ( !_tcscmp( ptszXmlns, _T("jabber:x:encrypted" ))) {
+			if ( xNode->text == NULL )
+				return;
 
-						if ( item != NULL )
-							if ( id == item->idMsgAckPending )
-								JSendBroadcast( JabberHContactFromJID( from ), ACKTYPE_MESSAGE, ACKRESULT_SUCCESS, ( HANDLE ) 1, 0 );
-					}
+			TCHAR* prolog = _T("-----BEGIN PGP MESSAGE-----\r\n\r\n");
+			TCHAR* epilog = _T("\r\n-----END PGP MESSAGE-----\r\n");
+			TCHAR* tempstring = ( TCHAR* )alloca( sizeof( TCHAR )*( _tcslen( prolog ) + _tcslen( xNode->text ) + _tcslen( epilog )));
+			_tcsncpy( tempstring, prolog, _tcslen( prolog )+1 );
+			_tcsncpy(tempstring + _tcslen( prolog ), xNode->text, _tcslen( xNode->text )+1);
+			_tcsncpy(tempstring + _tcslen( prolog )+_tcslen(xNode->text ), epilog, _tcslen( epilog )+1);
+			szMessage = tempstring;
+      }
+		else if ( !_tcscmp( ptszXmlns, _T("jabber:x:delay")) && msgTime == 0 ) {
+			TCHAR* ptszTimeStamp = JabberXmlGetAttrValue( xNode, "stamp" );
+			if ( ptszTimeStamp != NULL )
+				msgTime = JabberIsoToUnixTime( ptszTimeStamp );
+		}
+		else if ( !_tcscmp( ptszXmlns, _T("jabber:x:event"))) {
+			if ( bodyNode == NULL ) {
+				idNode = JabberXmlGetChild( xNode, "id" );
+				if ( JabberXmlGetChild( xNode, "delivered" )!=NULL || JabberXmlGetChild( xNode, "offline" )!=NULL ) {
+					id = -1;
+					if ( idNode!=NULL && idNode->text!=NULL )
+						if ( !_tcsncmp( idNode->text, _T(JABBER_IQID), strlen( JABBER_IQID )) )
+							id = _ttoi(( idNode->text )+strlen( JABBER_IQID ));
 
-					if ( JabberXmlGetChild( xNode, "composing" ) != NULL )
-						if (( hContact = JabberHContactFromJID( from )) != NULL )
- 							JCallService( MS_PROTO_CONTACTISTYPING, ( WPARAM ) hContact, 60 );
-
-					if ( xNode->numChild==0 || ( xNode->numChild==1 && idNode != NULL ))
-						// Maybe a cancel to the previous composing
-						if (( hContact = JabberHContactFromJID( from )) != NULL )
-							JCallService( MS_PROTO_CONTACTISTYPING, ( WPARAM ) hContact, PROTOTYPE_CONTACTTYPING_OFF );
-				}
-				else {
-					// Check whether any event is requested
-					if ( !delivered && ( n=JabberXmlGetChild( xNode, "delivered" )) != NULL ) {
-						delivered = TRUE;
-						idStr = JabberXmlGetAttrValue( node, "id" );
-
-						XmlNode m( "message" ); m.addAttr( "to", from );
-						XmlNode* x = m.addChild( "x" ); x->addAttr( "xmlns", "jabber:x:event" ); x->addChild( "delivered" );
-						x->addChild( "id", ( idStr != NULL ) ? idStr : NULL );
-						JabberSend( info->s, m );
-					}
-					if ( item!=NULL && JabberXmlGetChild( xNode, "composing" ) != NULL ) {
-						composing = TRUE;
-						if ( item->messageEventIdStr )
-							mir_free( item->messageEventIdStr );
-						idStr = JabberXmlGetAttrValue( node, "id" );
-						item->messageEventIdStr = ( idStr==NULL )?NULL:mir_tstrdup( idStr );
-				}	}
-			}
-			else if ( !_tcscmp( p, _T("jabber:x:oob")) && isRss) {
-				XmlNode* rssUrlNode;
-				if ( (rssUrlNode = JabberXmlGetNthChild( xNode, "url", 1 )) != NULL) {
-					p = ( TCHAR* )alloca( sizeof(TCHAR)*( _tcslen( subjectNode->text ) + _tcslen( bodyNode->text ) + _tcslen( rssUrlNode->text ) + 14 ));
-					wsprintf( p, _T("Subject: %s\r\n%s\r\n%s"), subjectNode->text, rssUrlNode->text, bodyNode->text );
-					szMessage = p;
-				}
-			}
-			else if ( !_tcscmp( p, _T("http://jabber.org/protocol/muc#user"))) {
-				if (( inviteNode=JabberXmlGetChild( xNode, "invite" )) != NULL ) {
-					inviteFromJid = JabberXmlGetAttrValue( inviteNode, "from" );
-					if (( n=JabberXmlGetChild( inviteNode, "reason" )) != NULL )
-						inviteReason = n->text;
+					if ( item != NULL )
+						if ( id == item->idMsgAckPending )
+							JSendBroadcast( JabberHContactFromJID( from ), ACKTYPE_MESSAGE, ACKRESULT_SUCCESS, ( HANDLE ) 1, 0 );
 				}
 
-				if (( n=JabberXmlGetChild( xNode, "password" )) != NULL )
-					invitePassword = n->text;
+				if ( JabberXmlGetChild( xNode, "composing" ) != NULL )
+					if (( hContact = JabberHContactFromJID( from )) != NULL )
+ 						JCallService( MS_PROTO_CONTACTISTYPING, ( WPARAM ) hContact, 60 );
+
+				if ( xNode->numChild==0 || ( xNode->numChild==1 && idNode != NULL ))
+					// Maybe a cancel to the previous composing
+					if (( hContact = JabberHContactFromJID( from )) != NULL )
+						JCallService( MS_PROTO_CONTACTISTYPING, ( WPARAM ) hContact, PROTOTYPE_CONTACTTYPING_OFF );
 			}
-			else if ( !_tcscmp( p, _T("jabber:x:conference"))) {
-				inviteRoomJid = JabberXmlGetAttrValue( xNode, "jid" );
-				if ( inviteReason == NULL )
-					inviteReason = xNode->text;
-				isChatRoomInvitation = TRUE;
-	}	}	}
+			else {
+				// Check whether any event is requested
+				if ( !delivered && ( n=JabberXmlGetChild( xNode, "delivered" )) != NULL ) {
+					delivered = TRUE;
+					idStr = JabberXmlGetAttrValue( node, "id" );
+
+					XmlNode m( "message" ); m.addAttr( "to", from );
+					XmlNode* x = m.addChild( "x" ); x->addAttr( "xmlns", "jabber:x:event" ); x->addChild( "delivered" );
+					x->addChild( "id", ( idStr != NULL ) ? idStr : NULL );
+					JabberSend( info->s, m );
+				}
+				if ( item != NULL && JabberXmlGetChild( xNode, "composing" ) != NULL ) {
+					composing = TRUE;
+					if ( item->messageEventIdStr )
+						mir_free( item->messageEventIdStr );
+					idStr = JabberXmlGetAttrValue( node, "id" );
+					item->messageEventIdStr = ( idStr==NULL )?NULL:mir_tstrdup( idStr );
+			}	}
+		}
+		else if ( !_tcscmp( ptszXmlns, _T("jabber:x:oob")) && isRss) {
+			XmlNode* rssUrlNode;
+			if ( (rssUrlNode = JabberXmlGetNthChild( xNode, "url", 1 )) != NULL) {
+				TCHAR* ptszBody = (bodyNode) ? bodyNode->text : _T("");
+				TCHAR* ptszSubject = (subjectNode) ? subjectNode->text : _T("");
+				int cbLen = lstrlen( ptszBody ) + lstrlen( ptszSubject ) + lstrlen( rssUrlNode->text ) + 32;
+				szMessage = ( TCHAR* )alloca( sizeof(TCHAR) * cbLen );
+				mir_sntprintf( szMessage, cbLen, _T("Subject: %s\r\n"), ptszSubject );
+				if ( rssUrlNode->text ) {
+					_tcscat( szMessage, rssUrlNode->text );
+					_tcscat( szMessage, _T("\r\n" ));
+				}
+				_tcscat( szMessage, ptszBody );
+			}
+		}
+		else if ( !_tcscmp( ptszXmlns, _T("http://jabber.org/protocol/muc#user"))) {
+			if (( inviteNode=JabberXmlGetChild( xNode, "invite" )) != NULL ) {
+				inviteFromJid = JabberXmlGetAttrValue( inviteNode, "from" );
+				if (( n=JabberXmlGetChild( inviteNode, "reason" )) != NULL )
+					inviteReason = n->text;
+			}
+
+			if (( n=JabberXmlGetChild( xNode, "password" )) != NULL )
+				invitePassword = n->text;
+		}
+		else if ( !_tcscmp( ptszXmlns, _T("jabber:x:conference"))) {
+			inviteRoomJid = JabberXmlGetAttrValue( xNode, "jid" );
+			if ( inviteReason == NULL )
+				inviteReason = xNode->text;
+			isChatRoomInvitation = TRUE;
+	}	}
 
 	if ( isChatRoomInvitation ) {
 		if ( inviteRoomJid != NULL )
@@ -1071,7 +1084,8 @@ static void JabberProcessMessage( XmlNode *node, void *userdata )
 		if ( hContact == NULL ) {
 			// Create a temporary contact
 			if ( isChatRoomJid ) {
-				if (( p = _tcschr( from, '/' ))!=NULL && p[1]!='\0' )
+				TCHAR* p = _tcschr( from, '/' );
+				if ( p != NULL && p[1] != '\0' )
 					p++;
 				else
 					p = from;
@@ -1145,6 +1159,7 @@ static void JabberProcessPresence( XmlNode *node, void *userdata )
 			JabberLog("Receive presence online from "TCHAR_STR_PARAM" ( who is not in my roster )", from );
 			JabberListAdd( LIST_ROSTER, from );
 		}
+		JabberDBCheckIsTransportedContact(from,hContact);
 		int status = ID_STATUS_ONLINE;
 		if (( showNode = JabberXmlGetChild( node, "show" )) != NULL ) {
 			if (( show = showNode->text ) != NULL ) {
@@ -1266,6 +1281,7 @@ static void JabberProcessPresence( XmlNode *node, void *userdata )
 		}
 		if ( _tcschr( from, '@' )==NULL && hwndJabberAgents )
 			SendMessage( hwndJabberAgents, WM_JABBER_TRANSPORT_REFRESH, 0, 0 );
+		JabberDBCheckIsTransportedContact(from, hContact);
 		return;
 	}
 

@@ -28,8 +28,6 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 struct SSL_Base
 {
-				char* m_szEmail;
-
 	virtual	~SSL_Base() {}
 
 	virtual  int init() = 0;
@@ -265,7 +263,7 @@ LBL_Restart:
 					tBufSize = SSL_BUF_SIZE;
 					f_HttpQueryInfo( tRequest, HTTP_QUERY_RAW_HEADERS_CRLF, tBuffer, &tBufSize, NULL );
 					MSN_DebugLog( "SSL response: '%s'", tBuffer );
-					tSslAnswer = dwCode == HTTP_STATUS_OK ? strdup( tBuffer ) : NULL;
+					tSslAnswer = dwCode == HTTP_STATUS_OK ? mir_strdup( tBuffer ) : NULL;
 					break;
 
 				case ERROR_INTERNET_HTTP_TO_HTTPS_ON_REDIR:
@@ -487,7 +485,7 @@ char* SSL_OpenSsl::getSslResult( char* parUrl, char* parAuthInfo )
 
 				nBytes = pfn_SSL_read( ssl, buf, SSL_BUF_SIZE );
 				if ( nBytes > 0 ) {
-					result = ( char* )malloc( nBytes+1 );
+					result = ( char* )mir_alloc( nBytes+1 );
 					memcpy( result, buf, nBytes+1 );
 					result[ nBytes ] = 0;
 
@@ -537,7 +535,7 @@ LBL_Exit:
 
 	char* p = strstr( msnLoginHost, "DALogin=" );
 	if ( p == NULL ) {
-		free( msnLoginHost ); msnLoginHost = NULL;
+		mir_free( msnLoginHost ); msnLoginHost = NULL;
 		retVal = 2;
 		goto LBL_Exit;
 	}
@@ -549,7 +547,7 @@ LBL_Exit:
 
 	MSN_SetString( NULL, "MsnPassportHost", msnLoginHost );
 	MSN_DebugLog( "MSN Passport login host is set to '%s'", msnLoginHost );
-	free( msnLoginHost );
+	mir_free( msnLoginHost );
 	goto LBL_Exit;
 }
 
@@ -574,9 +572,9 @@ int MSN_GetPassportAuth( char* authChallengeInfo, char*& parResult )
 		return 2;
 	}
 
-	char szEmail[ MSN_MAX_EMAIL_LEN ];
-	MSN_GetStaticString( "e-mail", NULL, szEmail, MSN_MAX_EMAIL_LEN );
-	char* p = strchr( szEmail, '@' );
+	char tEmail[ MSN_MAX_EMAIL_LEN ];
+	strcpy( tEmail, MyOptions.szEmail );
+	char* p = strchr( tEmail, '@' );
 	if ( p != NULL ) {
 		memmove( p+3, p+1, strlen( p ));
 		memcpy( p, "%40", 3 );
@@ -590,7 +588,7 @@ int MSN_GetPassportAuth( char* authChallengeInfo, char*& parResult )
 	char* szAuthInfo = ( char* )alloca( 1024 );
 	int nBytes = mir_snprintf( szAuthInfo, 1024,
 		"Authorization: Passport1.4 OrgVerb=GET,OrgURL=http%%3A%%2F%%2Fmessenger%%2Emsn%%2Ecom,sign-in=%s,pwd=",
-		szEmail );
+		tEmail );
 	UrlEncode( szPassword, szAuthInfo+nBytes, 1024-nBytes );
 	strcat( szAuthInfo+nBytes, "," );
 	strcat( szAuthInfo+nBytes, authChallengeInfo );
@@ -619,7 +617,7 @@ LBL_Exit:
 		if ( status == 302 ) // Handle redirect
 		{
 			if (( p = strstr( tResult, "Location:" )) == NULL )	{
-				free( tResult );
+				mir_free( tResult );
 				retVal = 7;
 				goto LBL_Exit;
 			}
@@ -628,19 +626,19 @@ LBL_Exit:
 				*p = 0;
 			strcpy(szPassportHost, tResult);
 			MSN_DebugLog( "Redirected to '%s'", tResult );
-			free( tResult );
+			mir_free( tResult );
 		}
 		else if (status != 200) 
 		{
 			retVal = 6;
-			free( tResult );
+			mir_free( tResult );
 			goto LBL_Exit;
 		}
 		else break;
 	}
 
 	if (( p = strstr( tResult, "from-PP=" )) == NULL )	{
-		free( tResult );
+		mir_free( tResult );
 		retVal = 5;
 		goto LBL_Exit;
 	}

@@ -47,12 +47,12 @@ void Lists_Init(void)
 void Lists_Uninit(void)
 {
 	for ( int i=0; i < count; i++ ) {
-		free( lists[i].email );
-		free( lists[i].nick );
+		mir_free( lists[i].email );
+		mir_free( lists[i].nick );
 	}
 
 	if ( lists != NULL )
-		free( lists );
+		mir_free( lists );
 
 	DeleteCriticalSection( &csLists );
 }
@@ -77,12 +77,12 @@ void __stdcall Lists_Wipe( void )
 {
 	EnterCriticalSection( &csLists );
 	for ( int i=0; i < count; i++ ) {
-		free( lists[i].email );
-		free( lists[i].nick );
+		mir_free( lists[i].email );
+		mir_free( lists[i].nick );
 	}
 
 	if ( lists != NULL ) {
-		free( lists );
+		mir_free( lists );
 		lists = NULL;
 	}
 
@@ -128,11 +128,11 @@ int __stdcall Lists_Add( int list, const char* email, const char* nick )
 	int idx = Lists_IsInList( -1, email );
 	if ( idx == 0 )
 	{
-		lists = ( MsnContact* )realloc( lists, sizeof( MsnContact )*( count+1 ));
+		lists = ( MsnContact* )mir_realloc( lists, sizeof( MsnContact )*( count+1 ));
 		C = &lists[ count++ ];
 		C->list = 0;
-		C->email = strdup( email );
-		C->nick  = ( char* )strdup( nick );
+		C->email = mir_strdup( email );
+		C->nick  = ( char* )mir_strdup( nick );
 	}
 	else C = &lists[ idx-1 ];
 
@@ -150,11 +150,11 @@ void __stdcall Lists_Remove( int list, const char* email )
 
 		C->list &= ~list;
 		if ( C->list == 0 ) {
-			free( C->email );
-			free( C->nick );
+			mir_free( C->email );
+			mir_free( C->nick );
 			count--;
 			memmove( lists+i, lists+i+1, sizeof( MsnContact )*( count-i ));
-			lists = ( MsnContact* )realloc( lists, sizeof( MsnContact )*count );
+			lists = ( MsnContact* )mir_realloc( lists, sizeof( MsnContact )*count );
 	}	}
 
 	LeaveCriticalSection( &csLists );

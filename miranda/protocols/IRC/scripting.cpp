@@ -135,7 +135,7 @@ int Scripting_InsertGuiOut(WPARAM wParam,LPARAM lParam)
 			gchook->pDest->pszModule = strdup(gch->pDest->pszModule);
 		else gchook->pDest->pszModule = NULL;
 
-		forkthread(GuiOutThread, NULL, gchook);
+		mir_forkthread(GuiOutThread, gchook);
 
 		return 0;
 	}

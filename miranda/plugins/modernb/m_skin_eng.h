@@ -64,7 +64,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #define ADT_BOTTOM                   0x00000008
 //#define ADT_ECLIPSE 64
 
-extern BOOL LayeredFlag;  
+extern BOOL g_bLayered;  
 
 /*SERVICES*/
 
@@ -112,7 +112,7 @@ typedef struct s_SKINDRAWREQUEST
 } SKINDRAWREQUEST,*LPSKINDRAWREQUEST;
 
 /* SKINOBJECTDESCRIPTOR opbject descriptor structure */
-typedef struct s_SKINOBJECTDESCRIPTOR  
+typedef struct tagSKINOBJECTDESCRIPTOR  
 {
   BYTE    bType;              // One of OT_* values.
   char*   szObjectID;         // Unic Object ID (path) [255] max
@@ -129,9 +129,12 @@ typedef struct s_GLYPHOBJECT
   DWORD dwColor;                             // Fill color
   BYTE dwAlpha;                              // Constant alpha-transparency level
   BYTE FitMode;                              // One of FM_* values
-  POINT clipArea;                             // Object image rect on full image
-  SIZE szclipArea;                             // Object image rect on full image
+  POINT clipArea;                            // Object image rect on full image
+  SIZE szclipArea;                           // Object image rect on full image
   SortedList * plTextList;                   // List of GLYPHTEXT
+  LONG bmWidth;
+  LONG bmHeight;
+  BYTE bmBitsPixel;
 } GLYPHOBJECT,*LPGLYPHOBJECT;
 
 /* SKINTEXTDESCRIPTOR opbject descriptor structure */
@@ -167,6 +170,7 @@ extern int __inline CreateGlyphedObjectDefStyle(char * ObjID,BYTE defStyle);
 extern int __inline CreateGlyphedObjectDefColor(char * ObjID,DWORD defColor);
 //Register default object
 extern int __inline CreateGlyphedObject(char * ObjID);
+
 
 
 //// Creating and registering objects
@@ -222,6 +226,7 @@ static BOOL __inline ScreenToClientRect(HWND hWnd, LPRECT lpRect)
 //    prm.szObjectID=ObjID;
 //    return CallService(MS_SKIN_REGISTERDEFOBJECT,(WPARAM)&prm,0);
 //}  
+extern int SkinEngine_Service_DrawGlyph(WPARAM wParam,LPARAM lParam);
 int __inline SkinDrawGlyph(HDC hdc, RECT * rcSize, RECT * rcClip, char * objectID)
 {
   SKINDRAWREQUEST rq;
@@ -230,8 +235,20 @@ int __inline SkinDrawGlyph(HDC hdc, RECT * rcSize, RECT * rcClip, char * objectI
   rq.rcDestRect=*rcSize;
   rq.rcClipRect=*rcClip;  
   strncpy(rq.szObjectID,objectID,sizeof(rq.szObjectID));
-  //Skin_DrawGlyph((WPARAM)&rq,0); //$$$
-  return CallService(MS_SKIN_DRAWGLYPH,(WPARAM)&rq,0);
+  return SkinEngine_Service_DrawGlyph((WPARAM)&rq,0);
+  //return CallService(MS_SKIN_DRAWGLYPH,(WPARAM)&rq,0);
+}
+#include "mod_skin_selector.h"
+
+int __inline SkinDrawGlyphMask(HDC hdc, RECT * rcSize, RECT * rcClip, MODERNMASK * ModernMask)
+{
+    SKINDRAWREQUEST rq;
+    if (!ModernMask) return 0;
+    rq.hDC=hdc;
+    rq.rcDestRect=*rcSize;
+    rq.rcClipRect=*rcClip;  
+    strncpy(rq.szObjectID,"Masked draw",sizeof("Masked draw"));
+    return SkinEngine_Service_DrawGlyph((WPARAM)&rq,(LPARAM)ModernMask);
 }
 
 
@@ -253,7 +270,7 @@ int __inline SkinDrawWindowBack(HWND hwndIn, HDC hdc, RECT * rcClip, char * obje
   rq.rcDestRect=rc;
   rq.rcClipRect=*rcClip;
   strncpy(rq.szObjectID,objectID,sizeof(rq.szObjectID));
-  ///Skin_DrawGlyph((WPARAM)&rq,0);    //$$$
+  ///SkinEngine_Service_DrawGlyph((WPARAM)&rq,0);    //$$$
   return CallService(MS_SKIN_DRAWGLYPH,(WPARAM)&rq,0);
 }
 
@@ -280,18 +297,18 @@ typedef struct sPAINT_REQUEST
 // wParam = hWnd of called frame
 // lParam = pointer to tPaintCallBackProc    (or NULL to remove)
 // return 1 - succes, 0 - failure
-#define MS_SKINENG_REGISTERPAINTSUB "SkinEngine/RegisterPaintSub"
+#define MS_SKINENG_REGISTERPAINTSUB "SkinEngine/SkinEngine_Service_RegisterFramePaintCallbackProcedure"
 
 // Request to repaint frame or change/drop callback data immeadeately
 // wParam = hWnd of called frame
 // lParam = pointer to sPaintRequest (or NULL to redraw all)
-#define MS_SKINENG_UPTATEFRAMEIMAGE "SkinEngine/UpdateFrameImage"
+#define MS_SKINENG_UPTATEFRAMEIMAGE "SkinEngine/SkinEngine_Service_UpdateFrameImage"
 
 // Request to repaint frame or change/drop callback data
 // wParam = hWnd of called frame
 // lParam = pointer to sPaintRequest (or NULL to redraw all)
 // return 2 - already queued, data updated, 1-have been queued, 0 - failure
-#define MS_SKINENG_INVALIDATEFRAMEIMAGE "SkinEngine/InvalidateFrameImage"
+#define MS_SKINENG_INVALIDATEFRAMEIMAGE "SkinEngine/SkinEngine_Service_InvalidateFrameImage"
 
 // Callback proc type
 typedef int (/*__stdcall*/ *tPaintCallbackProc)(HWND hWnd, HDC hDC, RECT * rcPaint, HRGN rgnUpdate, DWORD dFlags, void * CallBackData);
@@ -321,7 +338,7 @@ int __inline SkinEngUpdateImageFrame(HWND hwnd, RECT * rcUpdate, DWORD dwFlags, 
 int __inline SkinEngInvalidateImageFrame(HWND hwnd, CONST RECT * rcUpdate, DWORD dwFlags, void * CallBackData)
 {
   sPaintRequest sr={0};
-  if (!LayeredFlag && hwnd) return InvalidateRect(hwnd,rcUpdate,dwFlags);
+  if (!g_bLayered && hwnd) return InvalidateRect(hwnd,rcUpdate,dwFlags);
   sr.dStructSize=sizeof(sPaintRequest);
   sr.hWnd=hwnd;
   if (rcUpdate)
@@ -337,7 +354,7 @@ int __inline SkinEngInvalidateImageFrame(HWND hwnd, CONST RECT * rcUpdate, DWORD
 // 
 // Paints text with correct alpha channel
 // wParam - pointer to AlphaTextOutParams
-#define MS_SKINENG_ALPHATEXTOUT "SkinEngine/AlphaTextOut"
+#define MS_SKINENG_ALPHATEXTOUT "SkinEngine/SkinEngine_AlphaTextOut"
 typedef struct _AlphaTextOutParams
 {
   HDC hDC;
@@ -419,5 +436,5 @@ int __inline mod_DrawIconEx_helper(HDC hdc,int xLeft,int yTop,HICON hIcon,int cx
   p.diFlags=diFlags;
   return CallService(MS_SKINENG_DRAWICONEXFIX,(WPARAM)&p,0);
 }
-extern HICON CreateJoinedIcon(HICON hBottom, HICON hTop,BYTE alpha);
+extern HICON SkinEngine_CreateJoinedIcon(HICON hBottom, HICON hTop,BYTE alpha);
 #endif

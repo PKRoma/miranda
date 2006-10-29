@@ -34,7 +34,6 @@ void AddSubcontacts(struct ClcData *dat, struct ClcContact * cont, BOOL showOffl
 	int subcount,i,j;
 	HANDLE hsub;
 	pdisplayNameCacheEntry cacheEntry;
-	DWORD style=GetWindowLong(dat->hWnd,GWL_STYLE);
 	cacheEntry=(pdisplayNameCacheEntry)pcli->pfnGetCacheEntry(cont->hContact);
 	cont->SubExpanded=(DBGetContactSettingByte(cont->hContact,"CList","Expanded",0) && (DBGetContactSettingByte(NULL,"CLC","MetaExpanding",1)));
 	subcount=(int)CallService(MS_MC_GETNUMCONTACTS,(WPARAM)cont->hContact,0);
@@ -66,12 +65,13 @@ void AddSubcontacts(struct ClcData *dat, struct ClcContact * cont, BOOL showOffl
 			cont->subcontacts[i].avatar_pos = AVATAR_POS_DONT_HAVE;
 			Cache_GetAvatar(dat, &cont->subcontacts[i]);
 
-			cont->subcontacts[i].iImage=CallService(MS_CLIST_GETCONTACTICON,(WPARAM)cacheEntry->hContact,0);
+			cont->subcontacts[i].iImage=CallService(MS_CLIST_GETCONTACTICON,(WPARAM)cacheEntry->hContact,1);
 			memset(cont->subcontacts[i].iExtraImage,0xFF,sizeof(cont->subcontacts[i].iExtraImage));
 			cont->subcontacts[i].proto=cacheEntry->szProto;		
 			cont->subcontacts[i].type=CLCIT_CONTACT;
 			cont->subcontacts[i].flags=0;//CONTACTF_ONLINE;
 			cont->subcontacts[i].isSubcontact=i+1;
+            cont->subcontacts[i].lastPaintCounter=0;
 			cont->subcontacts[i].subcontacts=cont;
 			cont->subcontacts[i].image_is_special=FALSE;
 			//cont->subcontacts[i].status=cacheEntry->status;
@@ -93,12 +93,12 @@ void AddSubcontacts(struct ClcData *dat, struct ClcContact * cont, BOOL showOffl
 				if(cacheEntry->NotOnList) cont->subcontacts[i].flags|=CONTACTF_NOTONLIST;
 				idleMode=szProto!=NULL?cacheEntry->IdleTS:0;
 				if (idleMode) cont->subcontacts[i].flags|=CONTACTF_IDLE;
-			}
+            }
 			i++;
 		}	}
 
 	cont->SubAllocated=i;
-	if (!i && cont->subcontacts != NULL) mir_free(cont->subcontacts);
+	if (!i && cont->subcontacts != NULL) mir_free_and_nill(cont->subcontacts);
 }
 
 int cli_AddItemToGroup(struct ClcGroup *group,int iAboveItem)
@@ -133,28 +133,13 @@ void cli_FreeContact(struct ClcContact *p)
 			int i;
 			for ( i = 0 ; i < p->SubAllocated ; i++ ) {
 				Cache_DestroySmileyList(p->subcontacts[i].plText);
-//				Cache_DestroySmileyList(p->subcontacts[i].plSecondLineText);
-//				Cache_DestroySmileyList(p->subcontacts[i].plThirdLineText);
-//				if (p->subcontacts[i].szSecondLineText)
-//					mir_free(p->subcontacts[i].szSecondLineText);
-//				if (p->subcontacts[i].szThirdLineText)
-//					mir_free(p->subcontacts[i].szThirdLineText);
 			}
 
-			mir_free(p->subcontacts);
+			mir_free_and_nill(p->subcontacts);
 		}	}
 
 	Cache_DestroySmileyList(p->plText);
 	p->plText=NULL;
-//	Cache_DestroySmileyList(p->plSecondLineText);
-//	p->plSecondLineText=NULL;
-//	Cache_DestroySmileyList(p->plThirdLineText);
-//	p->plThirdLineText=NULL;
-//	if (p->szSecondLineText)
-//		mir_free(p->szSecondLineText);
-//	if (p->szThirdLineText)
-//		mir_free(p->szThirdLineText);
-
 	saveFreeContact( p );
 }
 
@@ -193,12 +178,13 @@ static struct ClcContact * AddContactToGroup(struct ClcData *dat,struct ClcGroup
 	group->cl.items[i]->isSubcontact=0;
 	group->cl.items[i]->subcontacts=NULL;
 	group->cl.items[i]->szText[0]=0;
+    group->cl.items[i]->lastPaintCounter=0;
 //	group->cl.items[i]->szSecondLineText=NULL;
 //	group->cl.items[i]->szThirdLineText=NULL;
 	group->cl.items[i]->image_is_special=FALSE;
 //	group->cl.items[i]->status=cacheEntry->status;
 
-	group->cl.items[i]->iImage=CallService(MS_CLIST_GETCONTACTICON,(WPARAM)hContact,0);
+	group->cl.items[i]->iImage=CallService(MS_CLIST_GETCONTACTICON,(WPARAM)hContact,1);
 	cacheEntry=(pdisplayNameCacheEntry)pcli->pfnGetCacheEntry(hContact);
 	group->cl.items[i]->hContact=hContact;
 
@@ -217,7 +203,6 @@ static struct ClcContact * AddContactToGroup(struct ClcData *dat,struct ClcGroup
 	if (idleMode) 
 		group->cl.items[i]->flags|=CONTACTF_IDLE;
 	group->cl.items[i]->proto = szProto;
-
 //	group->cl.items[i]->timezone = (DWORD)DBGetContactSettingByte(hContact,"UserInfo","Timezone", DBGetContactSettingByte(hContact, szProto,"Timezone",-1));
 /*
 if (group->cl.items[i]->timezone != -1)
@@ -232,6 +217,7 @@ if (group->cl.items[i]->timezone != -1)
 			group->cl.items[i]->timediff = (int)dat->local_gmt_diff_dst - contact_gmt_diff;
 	}
 */
+                //transports
 	pcli->pfnInvalidateDisplayNameCacheEntry(hContact);	
 	Cache_GetTimezone(dat, group->cl.items[i]->hContact);
 	Cache_GetText(dat, group->cl.items[i],1);
@@ -250,12 +236,12 @@ void * AddTempGroup(HWND hwnd,struct ClcData *dat,const TCHAR *szName,DWORD flag
 #else
 	char *mbuf=mir_strdup((char *)szName);
 #endif
-	if (WildCompare(mbuf,"-@-HIDDEN-GROUP-@-",0))
+	if (wildcmp(mbuf,"-@-HIDDEN-GROUP-@-",0))
 	{
-		mir_free(mbuf);
+		mir_free_and_nill(mbuf);
 		return NULL;
 	} 
-	mir_free(mbuf);
+	mir_free_and_nill(mbuf);
 	for(i=1;;i++) 
 	{
 		szGroupName = pcli->pfnGetGroupName(i,&groupFlags);
@@ -277,7 +263,7 @@ void * AddTempGroup(HWND hwnd,struct ClcData *dat,const TCHAR *szName,DWORD flag
 	}
 	return NULL;
 }
-extern _inline BOOL IsShowOfflineGroup(struct ClcGroup* group);
+extern __inline BOOL IsShowOfflineGroup(struct ClcGroup* group);
 void cli_AddContactToTree(HWND hwnd,struct ClcData *dat,HANDLE hContact,int updateTotalCount,int checkHideOffline)
 {
 	struct ClcGroup *group;
@@ -297,6 +283,7 @@ void cli_AddContactToTree(HWND hwnd,struct ClcData *dat,HANDLE hContact,int upda
 				if (mir_strcmp(cont->proto,"MetaContacts")==0) 
 					AddSubcontacts(dat,cont,IsShowOfflineGroup(group));
 			}
+            cont->lastPaintCounter=0;
 			cont->avatar_pos=AVATAR_POS_DONT_HAVE;
 			Cache_GetAvatar(dat,cont);
 			Cache_GetText(dat,cont,1);
@@ -320,7 +307,7 @@ void cli_DeleteItemFromTree(HWND hwnd,HANDLE hItem)
 
 //TODO move next line to m_clist.h
 #define GROUPF_SHOWOFFLINE 0x80   
-_inline BOOL IsShowOfflineGroup(struct ClcGroup* group)
+__inline BOOL IsShowOfflineGroup(struct ClcGroup* group)
 {
 	DWORD groupFlags=0;
 	if (!group) return FALSE;
@@ -336,16 +323,16 @@ void cliRebuildEntireList(HWND hwnd,struct ClcData *dat)
 	HANDLE hContact;
 	struct ClcContact * cont;
 	struct ClcGroup *group;
-  static int rebuildCounter=0;
-	BOOL GroupShowOfflineHere=FALSE;
-	int tick=GetTickCount();
+    static int rebuildCounter=0;
+
+    BOOL PlaceOfflineToRoot=DBGetContactSettingByte(NULL,"CList","PlaceOfflineToRoot",0);
 	KillTimer(hwnd,TIMERID_REBUILDAFTER);
-	lockdat;
+	
 	ClearRowByIndexCache();
 	ImageArray_Clear(&dat->avatar_cache);
 	RowHeights_Clear(dat);
 	RowHeights_GetMaxRowHeight(dat, hwnd);
-  TRACEVAR("Rebuild Entire List %d times\n",++rebuildCounter);
+    TRACEVAR("Rebuild Entire List %d times\n",++rebuildCounter);
   
 	dat->list.expanded=1;
 	dat->list.hideOffline=DBGetContactSettingByte(NULL,"CLC","HideOfflineRoot",0);
@@ -389,7 +376,7 @@ void cliRebuildEntireList(HWND hwnd,struct ClcData *dat)
 			if(group!=NULL) 
 			{
 				if (cacheEntry->status==ID_STATUS_OFFLINE)
-					if (DBGetContactSettingByte(NULL,"CList","PlaceOfflineToRoot",0))
+					if (PlaceOfflineToRoot)
 						group=&dat->list;
 				group->totalMembers++;
 
@@ -436,7 +423,7 @@ void cliRebuildEntireList(HWND hwnd,struct ClcData *dat)
 			group->scanIndex++;
 		}
 	}
-	ulockdat;
+	
 
 	pcli->pfnSortCLC(hwnd,dat,0);
 
@@ -446,8 +433,8 @@ void cli_SortCLC( HWND hwnd, struct ClcData *dat, int useInsertionSort )
 {
 	HANDLE hSelItem;
 	struct ClcContact *selcontact;
-	struct ClcGroup *group = &dat->list, *selgroup;
-	lockdat;
+	struct ClcGroup *selgroup;
+	
 	if ( 1 ) {
 		if (pcli->pfnGetRowByIndex(dat, dat->selection, &selcontact, NULL) == -1)
 			hSelItem = NULL;
@@ -467,13 +454,12 @@ void cli_SortCLC( HWND hwnd, struct ClcData *dat, int useInsertionSort )
 				if (dat->selection!=-1) dat->selection+=i;
 			}
 		}
-	ulockdat;
+	
 }
 
 int GetNewSelection(struct ClcGroup *group, int selection, int direction)
 {
 	int lastcount=0, count=0;//group->cl.count;
-	struct ClcGroup *topgroup=group;
 	if (selection<0) {
 		return 0;
 	}
@@ -523,7 +509,7 @@ extern int RestoreAllContactData(struct ClcData *dat);
 void cli_SaveStateAndRebuildList(HWND hwnd, struct ClcData *dat)
 {
 	
-	lockdat;
+	
 	LOCK_RECALC_SCROLLBAR=TRUE;
 	//saveSaveStateAndRebuildList(hwnd,dat);
 {
@@ -623,9 +609,9 @@ void cli_SaveStateAndRebuildList(HWND hwnd, struct ClcData *dat)
 		group->scanIndex++;
 	}
 	if (savedGroup)
-		mir_free(savedGroup);
+		mir_free_and_nill(savedGroup);
 	if (savedContact)
-		mir_free(savedContact);
+		mir_free_and_nill(savedContact);
 	for (i = 0; i < savedInfoCount; i++) {
 		if (savedInfo[i].parentId == -1)
 			group = &dat->list;
@@ -638,7 +624,7 @@ void cli_SaveStateAndRebuildList(HWND hwnd, struct ClcData *dat)
 		*group->cl.items[j] = savedInfo[i].contact;
 	}
 	if (savedInfo)
-		mir_free(savedInfo);
+		mir_free_and_nill(savedInfo);
 	RestoreAllContactData(dat);
 	LOCK_RECALC_SCROLLBAR=FALSE;
 	pcli->pfnRecalculateGroupCheckboxes(hwnd, dat);
@@ -649,7 +635,7 @@ void cli_SaveStateAndRebuildList(HWND hwnd, struct ClcData *dat)
 	nm.hdr.idFrom = GetDlgCtrlID(hwnd);
 	SendMessage(GetParent(hwnd), WM_NOTIFY, 0, (LPARAM) & nm);
 	}
-	ulockdat;
+	
 }
 
 
@@ -661,7 +647,6 @@ struct ClcContact* cliCreateClcContact( void )
 ClcCacheEntryBase* cliCreateCacheItem( HANDLE hContact )
 {
 	pdisplayNameCacheEntry p = (pdisplayNameCacheEntry)mir_calloc( 1, sizeof( displayNameCacheEntry ));
-	
 	if ( p )
 	{
 		memset(p,0,sizeof( displayNameCacheEntry ));
@@ -680,20 +665,45 @@ ClcCacheEntryBase* cliCreateCacheItem( HANDLE hContact )
 void cliInvalidateDisplayNameCacheEntry(HANDLE hContact)
 {	
 	pdisplayNameCacheEntry p;
-	//if (IsBadWritePtr((void*)hContact,sizeof(displayNameCacheEntry)))
-		p = (pdisplayNameCacheEntry) pcli->pfnGetCacheEntry(hContact);
-	//else 
-	//	p=(pdisplayNameCacheEntry)hContact; //handle give us incorrect hContact on GetCacheEntry;
-	if (p)
-		InvalidateDNCEbyPointer(hContact,p,0);
+	p = (pdisplayNameCacheEntry) pcli->pfnGetCacheEntry(hContact);
+	if (p) InvalidateDNCEbyPointer(hContact,p,0);
 	return;
 }
 
 char* cli_GetGroupCountsText(struct ClcData *dat, struct ClcContact *contact)
 {
 	char * res;
-	lockdat;
+	
 	res=saveGetGroupCountsText(dat, contact);
-	ulockdat;
+	
 	return res;
+}
+
+int cliGetGroupContentsCount(struct ClcGroup *group, int visibleOnly)
+{
+	int count = group->cl.count;
+	struct ClcGroup *topgroup = group;
+
+	group->scanIndex = 0;
+	for (;;) {
+		if (group->scanIndex == group->cl.count) {
+			if (group == topgroup)
+				break;
+			group = group->parent;
+		}
+		else if (group->cl.items[group->scanIndex]->type == CLCIT_GROUP && (!(visibleOnly&0x01) || group->cl.items[group->scanIndex]->group->expanded)) {
+			group = group->cl.items[group->scanIndex]->group;
+			group->scanIndex = 0;
+			count += group->cl.count;
+			continue;
+		}
+        else if ((group->cl.items[group->scanIndex]->type == CLCIT_CONTACT) && 
+                 (group->cl.items[group->scanIndex]->subcontacts !=NULL)  && 
+                 ((group->cl.items[group->scanIndex]->SubExpanded || (!visibleOnly))))
+        {
+            count+=group->cl.items[group->scanIndex]->SubAllocated;
+        }
+		group->scanIndex++;
+	}
+	return count;
 }

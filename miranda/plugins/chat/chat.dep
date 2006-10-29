@@ -3,6 +3,7 @@
 .\clist.c : \
 	"..\..\include\m_addcontact.h"\
 	"..\..\include\m_button.h"\
+	"..\..\include\m_chat.h"\
 	"..\..\include\m_clist.h"\
 	"..\..\include\m_clui.h"\
 	"..\..\include\m_database.h"\
@@ -21,7 +22,6 @@
 	"..\..\include\win2k.h"\
 	".\chat.h"\
 	".\IcoLib.h"\
-	".\m_chat.h"\
 	".\m_ieview.h"\
 	".\m_smileyadd.h"\
 	
@@ -29,6 +29,7 @@
 .\colorchooser.c : \
 	"..\..\include\m_addcontact.h"\
 	"..\..\include\m_button.h"\
+	"..\..\include\m_chat.h"\
 	"..\..\include\m_clist.h"\
 	"..\..\include\m_clui.h"\
 	"..\..\include\m_database.h"\
@@ -47,7 +48,6 @@
 	"..\..\include\win2k.h"\
 	".\chat.h"\
 	".\IcoLib.h"\
-	".\m_chat.h"\
 	".\m_ieview.h"\
 	".\m_smileyadd.h"\
 	
@@ -55,6 +55,7 @@
 .\log.c : \
 	"..\..\include\m_addcontact.h"\
 	"..\..\include\m_button.h"\
+	"..\..\include\m_chat.h"\
 	"..\..\include\m_clist.h"\
 	"..\..\include\m_clui.h"\
 	"..\..\include\m_database.h"\
@@ -73,7 +74,6 @@
 	"..\..\include\win2k.h"\
 	".\chat.h"\
 	".\IcoLib.h"\
-	".\m_chat.h"\
 	".\m_ieview.h"\
 	".\m_smileyadd.h"\
 	
@@ -81,6 +81,7 @@
 .\main.c : \
 	"..\..\include\m_addcontact.h"\
 	"..\..\include\m_button.h"\
+	"..\..\include\m_chat.h"\
 	"..\..\include\m_clist.h"\
 	"..\..\include\m_clui.h"\
 	"..\..\include\m_database.h"\
@@ -99,7 +100,6 @@
 	"..\..\include\win2k.h"\
 	".\chat.h"\
 	".\IcoLib.h"\
-	".\m_chat.h"\
 	".\m_ieview.h"\
 	".\m_smileyadd.h"\
 	
@@ -107,6 +107,7 @@
 .\manager.c : \
 	"..\..\include\m_addcontact.h"\
 	"..\..\include\m_button.h"\
+	"..\..\include\m_chat.h"\
 	"..\..\include\m_clist.h"\
 	"..\..\include\m_clui.h"\
 	"..\..\include\m_database.h"\
@@ -125,7 +126,6 @@
 	"..\..\include\win2k.h"\
 	".\chat.h"\
 	".\IcoLib.h"\
-	".\m_chat.h"\
 	".\m_ieview.h"\
 	".\m_smileyadd.h"\
 	
@@ -133,6 +133,7 @@
 .\message.c : \
 	"..\..\include\m_addcontact.h"\
 	"..\..\include\m_button.h"\
+	"..\..\include\m_chat.h"\
 	"..\..\include\m_clist.h"\
 	"..\..\include\m_clui.h"\
 	"..\..\include\m_database.h"\
@@ -151,7 +152,6 @@
 	"..\..\include\win2k.h"\
 	".\chat.h"\
 	".\IcoLib.h"\
-	".\m_chat.h"\
 	".\m_ieview.h"\
 	".\m_smileyadd.h"\
 	
@@ -159,6 +159,7 @@
 .\options.c : \
 	"..\..\include\m_addcontact.h"\
 	"..\..\include\m_button.h"\
+	"..\..\include\m_chat.h"\
 	"..\..\include\m_clist.h"\
 	"..\..\include\m_clui.h"\
 	"..\..\include\m_database.h"\
@@ -177,7 +178,6 @@
 	"..\..\include\win2k.h"\
 	".\chat.h"\
 	".\IcoLib.h"\
-	".\m_chat.h"\
 	".\m_ieview.h"\
 	".\m_smileyadd.h"\
 	
@@ -189,6 +189,7 @@
 .\services.c : \
 	"..\..\include\m_addcontact.h"\
 	"..\..\include\m_button.h"\
+	"..\..\include\m_chat.h"\
 	"..\..\include\m_clist.h"\
 	"..\..\include\m_clui.h"\
 	"..\..\include\m_database.h"\
@@ -207,7 +208,6 @@
 	"..\..\include\win2k.h"\
 	".\chat.h"\
 	".\IcoLib.h"\
-	".\m_chat.h"\
 	".\m_ieview.h"\
 	".\m_smileyadd.h"\
 	
@@ -215,6 +215,7 @@
 .\tools.c : \
 	"..\..\include\m_addcontact.h"\
 	"..\..\include\m_button.h"\
+	"..\..\include\m_chat.h"\
 	"..\..\include\m_clist.h"\
 	"..\..\include\m_clui.h"\
 	"..\..\include\m_database.h"\
@@ -233,7 +234,6 @@
 	"..\..\include\win2k.h"\
 	".\chat.h"\
 	".\IcoLib.h"\
-	".\m_chat.h"\
 	".\m_ieview.h"\
 	".\m_smileyadd.h"\
 	
@@ -241,6 +241,7 @@
 .\window.c : \
 	"..\..\include\m_addcontact.h"\
 	"..\..\include\m_button.h"\
+	"..\..\include\m_chat.h"\
 	"..\..\include\m_clist.h"\
 	"..\..\include\m_clui.h"\
 	"..\..\include\m_database.h"\
@@ -259,7 +260,6 @@
 	"..\..\include\win2k.h"\
 	".\chat.h"\
 	".\IcoLib.h"\
-	".\m_chat.h"\
 	".\m_ieview.h"\
 	".\m_smileyadd.h"\
 	

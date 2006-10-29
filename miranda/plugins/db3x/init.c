@@ -2,8 +2,8 @@
 
 Miranda IM: the free IM client for Microsoft* Windows*
 
-Copyright 2000-2003 Miranda ICQ/IM project, 
-all portions of this codebase are copyrighted to the people 
+Copyright 2000-2003 Miranda ICQ/IM project,
+all portions of this codebase are copyrighted to the people
 listed in contributors.txt.
 
 This program is free software; you can redistribute it and/or
@@ -25,8 +25,10 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include "database.h"
 #include <m_plugins.h>
 
-struct MM_INTERFACE memoryManagerInterface;
+struct MM_INTERFACE   mmi;
 struct LIST_INTERFACE li;
+struct UTF8_INTERFACE utfi;
+
 extern char szDbPath[MAX_PATH];
 
 HINSTANCE g_hInst=NULL;
@@ -38,7 +40,7 @@ static int getCapability( int flag )
 }
 
 // returns 0 if the profile is created, EMKPRF*
-static int makeDatabase(char * profile, int * error) 
+static int makeDatabase(char * profile, int * error)
 {
 	HANDLE hFile=CreateFile(profile, GENERIC_READ|GENERIC_WRITE, 0, NULL, CREATE_ALWAYS, 0, NULL);
 	if ( hFile != INVALID_HANDLE_VALUE ) {
@@ -57,10 +59,10 @@ static int grokHeader( char * profile, int * error )
 	int chk=0;
 	struct DBHeader hdr;
 	HANDLE hFile = INVALID_HANDLE_VALUE;
-	DWORD dummy=0;	
+	DWORD dummy=0;
 
 	hFile = CreateFile(profile, GENERIC_READ, FILE_SHARE_READ, NULL, OPEN_EXISTING, 0, NULL);
-	if ( hFile == INVALID_HANDLE_VALUE ) { 		
+	if ( hFile == INVALID_HANDLE_VALUE ) {
 		if ( error != NULL ) *error=EGROKPRF_CANTREAD;
 		return 1;
 	}
@@ -78,7 +80,7 @@ static int grokHeader( char * profile, int * error )
 	} else {
 		// didn't pass at all, or some did.
 		switch ( chk ) {
-			case 1: 
+			case 1:
 			{
 				// "Miranda ICQ DB" wasn't present
 				if ( error != NULL ) *error = EGROKPRF_UNKHEADER;
@@ -108,20 +110,17 @@ static int LoadDatabase( char * profile, void * plink )
 	PLUGINLINK *link = plink;
 #ifdef _DEBUG
 	_CrtSetDbgFlag( _CRTDBG_ALLOC_MEM_DF | _CRTDBG_LEAK_CHECK_DF);
-#endif	
+#endif
 	// don't need thread notifications
 	strncpy(szDbPath, profile, sizeof(szDbPath));
+
 	// this is like Load()'s pluginLink
 	pluginLink=link;
-	// set the memory manager
-	memoryManagerInterface.cbSize=sizeof(struct MM_INTERFACE);
-	CallService(MS_SYSTEM_GET_MMI,0,(LPARAM)&memoryManagerInterface);
-	// set the lists manager;
-	li.cbSize = sizeof( li );
-	if ( CallService(MS_SYSTEM_GET_LI,0,(LPARAM)&li) == CALLSERVICE_NOTFOUND ) {
-		MessageBoxA( NULL, "This version of plugin requires Miranda IM 0.5 or later", "Fatal error", MB_OK );
-		return 1;
-	}
+
+	// set the memory, lists & UTF8 manager
+	mir_getLI( &li );
+	mir_getMMI( &mmi );
+	mir_getUTFI( &utfi );
 
 	// inject all APIs and hooks into the core
 	return LoadDatabaseModule();
@@ -148,13 +147,13 @@ static DATABASELINK dblink = {
 	makeDatabase,
 	grokHeader,
 	LoadDatabase,
-	UnloadDatabase,	
+	UnloadDatabase,
 };
 
 static PLUGININFO pluginInfo = {
 	sizeof(PLUGININFO),
 	"Miranda database driver",
-	PLUGIN_MAKE_VERSION(0,5,2,0),
+	PLUGIN_MAKE_VERSION(0,6,0,1),
 	"Provides Miranda database support: global settings, contacts, history, settings per contact.",
 	"Miranda-IM project",
 	"ghazan@miranda-im.org",
@@ -167,7 +166,7 @@ static PLUGININFO pluginInfo = {
 
 BOOL WINAPI DllMain(HINSTANCE hInstDLL, DWORD dwReason, LPVOID reserved)
 {
-	g_hInst=hInstDLL;
+	g_hInst = hInstDLL;
 	return TRUE;
 }
 
@@ -178,7 +177,10 @@ __declspec(dllexport) DATABASELINK* DatabasePluginInfo(void * reserved)
 
 __declspec(dllexport) PLUGININFO * MirandaPluginInfo(DWORD mirandaVersion)
 {
-	if ( mirandaVersion < PLUGIN_MAKE_VERSION(0,4,0,0) ) return NULL;
+	if ( mirandaVersion < PLUGIN_MAKE_VERSION(0,6,0,15)) {
+		MessageBox( NULL, _T("The db3x plugin cannot be loaded. It requires Miranda IM 0.6.0.15 or later."), _T("db3x Plugin"), MB_OK|MB_ICONWARNING|MB_SETFOREGROUND|MB_TOPMOST );
+		return NULL;
+	}
 	return &pluginInfo;
 }
 

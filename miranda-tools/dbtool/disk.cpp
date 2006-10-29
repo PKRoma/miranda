@@ -58,7 +58,7 @@ int PeekSegment(DWORD ofs,PVOID buf,int cbBytes)
 int ReadSegment(DWORD ofs,PVOID buf,int cbBytes)
 {
 	int ret;
-	
+
 	ret=PeekSegment(ofs,buf,cbBytes);
 	if(ret!=ERROR_SUCCESS && ret!=ERROR_HANDLE_EOF) return ret;
 	if(opts.bAggressive) {

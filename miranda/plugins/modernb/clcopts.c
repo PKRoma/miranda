@@ -37,10 +37,10 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #define SAMEASF_EFFECT 128
 
 static WORD fontSameAsDefault[]={0x00FF,0x8B00,0x8F00,0x8700,0x8B00,0x8104,0x8D00,0x8B02,0x8900,0x8D00,
-0x8F00,0x8F00,0x8F00,0x8F00,0x8F00,0x8F00,0x8F00,0x8F00,0x8F00,0x8104,0x8D00,0x00FF};
+0x8F00,0x8F00,0x8F00,0x8F00,0x8F00,0x8F00,0x8F00,0x8F00,0x8F00,0x8104,0x8D00,0x00FF,0x8F00};
 static TCHAR *fontSizes[]={_T("6"),_T("7"),_T("8"),_T("9"),_T("10"),_T("12"),_T("14"),_T("16"),_T("18"),_T("20"),_T("24"),_T("28")};
 static int fontListOrder[]={FONTID_CONTACTS,FONTID_INVIS,FONTID_OFFLINE,FONTID_OFFINVIS,FONTID_NOTONLIST,FONTID_OPENGROUPS,FONTID_OPENGROUPCOUNTS,FONTID_CLOSEDGROUPS,FONTID_CLOSEDGROUPCOUNTS,FONTID_DIVIDERS,FONTID_SECONDLINE,FONTID_THIRDLINE,
-FONTID_AWAY,FONTID_DND,FONTID_NA,FONTID_OCCUPIED,FONTID_CHAT,FONTID_INVISIBLE,FONTID_PHONE,FONTID_LUNCH,FONTID_CONTACT_TIME,FONTID_STATUSBAR_PROTONAME};
+FONTID_AWAY,FONTID_DND,FONTID_NA,FONTID_OCCUPIED,FONTID_CHAT,FONTID_INVISIBLE,FONTID_PHONE,FONTID_LUNCH,FONTID_CONTACT_TIME,FONTID_STATUSBAR_PROTONAME,FONTID_EVENTAREA};
 
 static BOOL CALLBACK DlgProcClcMainOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam);
 static BOOL CALLBACK DlgProcClcMetaOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam);
@@ -48,7 +48,7 @@ static BOOL CALLBACK DlgProcClcBkgOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LP
 static BOOL CALLBACK DlgProcClcTextOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam);
 static BOOL CALLBACK DlgProcStatusBarBkgOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam);
 //extern void OnStatusBarBackgroundChange();
-extern int CluiProtocolStatusChanged(WPARAM,LPARAM);
+extern int CLUIServices_ProtocolStatusChanged(WPARAM,LPARAM);
 //extern int ImageList_AddIcon_FixAlpha(HIMAGELIST,HICON);
 
 DWORD GetDefaultExStyle(void)
@@ -160,7 +160,7 @@ void GetFontSetting(int i,LOGFONTA *lf,COLORREF *colour,BYTE *effect, COLORREF *
   mir_snprintf(idstr,sizeof(idstr),"Font%dName",i);
   if(!DBGetContactSetting(NULL,"CLC",idstr,&dbv)) {
     strcpy(lf->lfFaceName,dbv.pszVal);
-    //mir_free(dbv.pszVal);
+    //mir_free_and_nill(dbv.pszVal);
 	DBFreeVariant(&dbv);
   }
   mir_snprintf(idstr,sizeof(idstr),"Font%dCol",i);
@@ -195,6 +195,7 @@ void GetFontSetting(int i,LOGFONTA *lf,COLORREF *colour,BYTE *effect, COLORREF *
 
 int BgMenuChange(WPARAM wParam,LPARAM lParam)
 {
+  if (MirandaExiting()) return 0;
   ClcOptionsChanged();
   return 0;
 }
@@ -207,6 +208,7 @@ int BgClcChange(WPARAM wParam,LPARAM lParam)
 
 int BgStatusBarChange(WPARAM wParam,LPARAM lParam)
 {
+  if (MirandaExiting()) return 0;
   ClcOptionsChanged();
   //OnStatusBarBackgroundChange();
   return 0;
@@ -242,6 +244,7 @@ BOOL CALLBACK DlgProcClcTabbedOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM
 int ClcOptInit(WPARAM wParam,LPARAM lParam)
 {
    OPTIONSDIALOGPAGE odp;
+   if (MirandaExiting()) return 0;
    ZeroMemory(&odp,sizeof(odp));
    odp.cbSize=sizeof(odp);
    odp.position=0;
@@ -381,16 +384,16 @@ struct CheckBoxToStyleEx_t {
           {
             BYTE t;
             t=ServiceExists(MS_MC_GETMOSTONLINECONTACT);
-            ShowWindowNew(GetDlgItem(hwndDlg,IDC_META),t);
-            ShowWindowNew(GetDlgItem(hwndDlg,IDC_METADBLCLK),t);
-            ShowWindowNew(GetDlgItem(hwndDlg,IDC_METASUB_HIDEOFFLINE),t);
-            ShowWindowNew(GetDlgItem(hwndDlg,IDC_METAEXPAND),t);
-            ShowWindowNew(GetDlgItem(hwndDlg,IDC_METASUBEXTRA),t);
-            ShowWindowNew(GetDlgItem(hwndDlg,IDC_FRAME_META),t);
-            ShowWindowNew(GetDlgItem(hwndDlg,IDC_FRAME_META_CAPT),!t); 
-            ShowWindowNew(GetDlgItem(hwndDlg,IDC_SUBINDENTSPIN),t);
-            ShowWindowNew(GetDlgItem(hwndDlg,IDC_SUBINDENT),t);
-            ShowWindowNew(GetDlgItem(hwndDlg,IDC_SUBIDENTCAPT),t);
+            CLUI_ShowWindowMod(GetDlgItem(hwndDlg,IDC_META),t);
+            CLUI_ShowWindowMod(GetDlgItem(hwndDlg,IDC_METADBLCLK),t);
+            CLUI_ShowWindowMod(GetDlgItem(hwndDlg,IDC_METASUB_HIDEOFFLINE),t);
+            CLUI_ShowWindowMod(GetDlgItem(hwndDlg,IDC_METAEXPAND),t);
+            CLUI_ShowWindowMod(GetDlgItem(hwndDlg,IDC_METASUBEXTRA),t);
+            CLUI_ShowWindowMod(GetDlgItem(hwndDlg,IDC_FRAME_META),t);
+            CLUI_ShowWindowMod(GetDlgItem(hwndDlg,IDC_FRAME_META_CAPT),!t); 
+            CLUI_ShowWindowMod(GetDlgItem(hwndDlg,IDC_SUBINDENTSPIN),t);
+            CLUI_ShowWindowMod(GetDlgItem(hwndDlg,IDC_SUBINDENT),t);
+            CLUI_ShowWindowMod(GetDlgItem(hwndDlg,IDC_SUBIDENTCAPT),t);
           }
           return TRUE;
         case WM_COMMAND:
@@ -455,8 +458,8 @@ struct CheckBoxToStyleEx_t {
           {
             HIMAGELIST himlCheckBoxes;
             himlCheckBoxes=ImageList_Create(GetSystemMetrics(SM_CXSMICON),GetSystemMetrics(SM_CYSMICON),ILC_COLOR32|ILC_MASK,2,2);
-            ImageList_AddIcon(himlCheckBoxes,LoadIcon(GetModuleHandle(NULL),MAKEINTRESOURCE(IDI_NOTICK)));
-            ImageList_AddIcon(himlCheckBoxes,LoadIcon(GetModuleHandle(NULL),MAKEINTRESOURCE(IDI_TICK)));
+            ImageList_AddIcon(himlCheckBoxes,LoadSmallIconShared(GetModuleHandle(NULL),MAKEINTRESOURCE(IDI_NOTICK)));
+            ImageList_AddIcon(himlCheckBoxes,LoadSmallIconShared(GetModuleHandle(NULL),MAKEINTRESOURCE(IDI_TICK)));
             TreeView_SetImageList(GetDlgItem(hwndDlg,IDC_GREYOUTOPTS),himlCheckBoxes,TVSIL_NORMAL);
             TreeView_SetImageList(GetDlgItem(hwndDlg,IDC_HIDEOFFLINEOPTS),himlCheckBoxes,TVSIL_NORMAL);
           }			
@@ -541,7 +544,7 @@ struct CheckBoxToStyleEx_t {
               SendMessage(GetParent(hwndDlg), PSM_CHANGED, (WPARAM)hwndDlg, 0);
 
               //all changes take effect in runtime
-              //ShowWindowNew(GetDlgItem(hwndDlg,IDC_PROTOCOLORDERWARNING),SW_SHOW);
+              //CLUI_ShowWindowMod(GetDlgItem(hwndDlg,IDC_PROTOCOLORDERWARNING),SW_SHOW);
               }
               */
           }
@@ -612,7 +615,7 @@ struct CheckBoxToStyleEx_t {
                 SetDlgItemTextA(hwndDlg,IDC_FILENAME,szPath);
             }
             else 
-              //mir_free(dbv.pszVal);
+              //mir_free_and_nill(dbv.pszVal);
             DBFreeVariant(&dbv);
           }
           }
@@ -759,7 +762,7 @@ struct CheckBoxToStyleEx_t {
                 SetDlgItemTextA(hwndDlg,IDC_FILENAME,szPath);
             }
             else 
-              //mir_free(dbv.pszVal);
+              //mir_free_and_nill(dbv.pszVal);
             DBFreeVariant(&dbv);
           }
           }
@@ -873,11 +876,11 @@ struct CheckBoxToStyleEx_t {
             }
             */
             ClcOptionsChanged();
-            CluiProtocolStatusChanged(0,0);
+            CLUIServices_ProtocolStatusChanged(0,0);
             if (IsWindowVisible(pcli->hwndContactList))
             {
-              ShowWindowNew(pcli->hwndContactList,SW_HIDE);
-              ShowWindowNew(pcli->hwndContactList,SW_SHOW);
+              CLUI_ShowWindowMod(pcli->hwndContactList,SW_HIDE);
+              CLUI_ShowWindowMod(pcli->hwndContactList,SW_SHOW);
             }
 
             return TRUE;
@@ -911,7 +914,8 @@ struct CheckBoxToStyleEx_t {
       _T("Contact time"),
       _T("Closed groups"),
       _T("Closed group member counts"),
-      _T("Status bar text")
+      _T("Status bar text"),
+      _T("Event area text")
       };
 
 #include <pshpack1.h>
@@ -957,6 +961,7 @@ struct CheckBoxToStyleEx_t {
         lf.lfPitchAndFamily=0;
         EnumFontFamiliesExA(hdc,&lf,(FONTENUMPROCA)EnumFontsProc,(LPARAM)GetDlgItem(hwndDlg,IDC_TYPEFACE),0);
         ReleaseDC(hwndDlg,hdc);
+        g_dwFillFontListThreadID=0;
         return;
       }
 
@@ -976,15 +981,15 @@ struct CheckBoxToStyleEx_t {
 
       static void SwitchTextDlgToMode(HWND hwndDlg,int expert)
       {
-        ShowWindowNew(GetDlgItem(hwndDlg,IDC_GAMMACORRECT),expert?SW_SHOW:SW_HIDE);
-        ShowWindowNew(GetDlgItem(hwndDlg,IDC_STSAMETEXT),expert?SW_SHOW:SW_HIDE);
-        ShowWindowNew(GetDlgItem(hwndDlg,IDC_SAMETYPE),expert?SW_SHOW:SW_HIDE);
-        ShowWindowNew(GetDlgItem(hwndDlg,IDC_SAMESIZE),expert?SW_SHOW:SW_HIDE);
-        ShowWindowNew(GetDlgItem(hwndDlg,IDC_SAMESTYLE),expert?SW_SHOW:SW_HIDE);
-        ShowWindowNew(GetDlgItem(hwndDlg,IDC_SAMECOLOUR),expert?SW_SHOW:SW_HIDE);
-		ShowWindowNew(GetDlgItem(hwndDlg,IDC_SAMEEFFECT),expert?SW_SHOW:SW_HIDE);
-        ShowWindowNew(GetDlgItem(hwndDlg,IDC_STSIZETEXT),expert?SW_HIDE:SW_SHOW);
-        ShowWindowNew(GetDlgItem(hwndDlg,IDC_STCOLOURTEXT),expert?SW_HIDE:SW_SHOW);
+        CLUI_ShowWindowMod(GetDlgItem(hwndDlg,IDC_GAMMACORRECT),expert?SW_SHOW:SW_HIDE);
+        CLUI_ShowWindowMod(GetDlgItem(hwndDlg,IDC_STSAMETEXT),expert?SW_SHOW:SW_HIDE);
+        CLUI_ShowWindowMod(GetDlgItem(hwndDlg,IDC_SAMETYPE),expert?SW_SHOW:SW_HIDE);
+        CLUI_ShowWindowMod(GetDlgItem(hwndDlg,IDC_SAMESIZE),expert?SW_SHOW:SW_HIDE);
+        CLUI_ShowWindowMod(GetDlgItem(hwndDlg,IDC_SAMESTYLE),expert?SW_SHOW:SW_HIDE);
+        CLUI_ShowWindowMod(GetDlgItem(hwndDlg,IDC_SAMECOLOUR),expert?SW_SHOW:SW_HIDE);
+		CLUI_ShowWindowMod(GetDlgItem(hwndDlg,IDC_SAMEEFFECT),expert?SW_SHOW:SW_HIDE);
+        CLUI_ShowWindowMod(GetDlgItem(hwndDlg,IDC_STSIZETEXT),expert?SW_HIDE:SW_SHOW);
+        CLUI_ShowWindowMod(GetDlgItem(hwndDlg,IDC_STCOLOURTEXT),expert?SW_HIDE:SW_SHOW);
         SetDlgItemTextA(hwndDlg,IDC_STASTEXT,Translate(expert?"as:":"based on:"));
         {	UTILRESIZEDIALOG urd={0};
         urd.cbSize=sizeof(urd);
@@ -1023,7 +1028,7 @@ struct CheckBoxToStyleEx_t {
 
           if(!SendMessage(GetParent(hwndDlg),PSM_ISEXPERT,0,0))
             SwitchTextDlgToMode(hwndDlg,0);
-          forkthread(FillFontListThread,0,hwndDlg);				
+          g_dwFillFontListThreadID=(DWORD)mir_forkthread(FillFontListThread,hwndDlg);				
           {	int i,itemId,fontId;
           LOGFONTA lf={0};
           COLORREF colour;
@@ -1366,7 +1371,7 @@ struct CheckBoxToStyleEx_t {
           CheckDlgButton(hwndDlg,IDC_BOLD,fontSettings[wParam].style&DBFONTF_BOLD?BST_CHECKED:BST_UNCHECKED);
           CheckDlgButton(hwndDlg,IDC_ITALIC,fontSettings[wParam].style&DBFONTF_ITALIC?BST_CHECKED:BST_UNCHECKED);
           CheckDlgButton(hwndDlg,IDC_UNDERLINE,fontSettings[wParam].style&DBFONTF_UNDERLINE?BST_CHECKED:BST_UNCHECKED);
-          if (fontSettings[wParam].Effect && !(fontSettings[wParam].sameAsFlags&SAMEASF_EFFECT && fontSettings[wParam].sameAs!=0xFF))
+          if (fontSettings[wParam].Effect)// && !(fontSettings[wParam].sameAsFlags&SAMEASF_EFFECT && fontSettings[wParam].sameAs!=0xFF))
           {
             int i=0;
             int cnt=SendDlgItemMessage(hwndDlg,IDC_EFFECT_NAME,CB_GETCOUNT,0,0);
@@ -1519,17 +1524,17 @@ struct CheckBoxToStyleEx_t {
             LPDRAWITEMSTRUCT dis = (LPDRAWITEMSTRUCT) lParam;
             HBRUSH hBrush=CreateSolidBrush(GetSysColor(COLOR_3DFACE));
             HDC hdc=CreateCompatibleDC(dis->hDC);
-            HBITMAP hbmp=CreateBitmap32(dis->rcItem.right-dis->rcItem.left,dis->rcItem.bottom-dis->rcItem.top);
+            HBITMAP hbmp=SkinEngine_CreateDIB32(dis->rcItem.right-dis->rcItem.left,dis->rcItem.bottom-dis->rcItem.top);
             HBITMAP obmp=SelectObject(hdc,hbmp);
             HFONT oldFnt=SelectObject(hdc,hFontSample);
             RECT rc={0};
             rc.right=dis->rcItem.right-dis->rcItem.left;
             rc.bottom=dis->rcItem.bottom-dis->rcItem.top;
             FillRect(hdc,&rc,hBrush);
-            SetRectAlpha_255(hdc,&rc);
+            SkinEngine_SetRectOpaque(hdc,&rc);
             SetTextColor(hdc,ColorSample);
-              SelectEffect(hdc,EffectSample-1,Color1Sample,Color2Sample);
-              mod_DrawText(hdc,TranslateT("Sample"),lstrlen(TranslateT("Sample")),&rc,DT_CENTER|DT_VCENTER);
+              SkinEngine_SelectTextEffect(hdc,EffectSample-1,Color1Sample,Color2Sample);
+              SkinEngine_DrawText(hdc,TranslateT("Sample"),lstrlen(TranslateT("Sample")),&rc,DT_CENTER|DT_VCENTER);
               BitBlt(dis->hDC,dis->rcItem.left,dis->rcItem.top,rc.right,rc.bottom,hdc,0,0,SRCCOPY);
             SelectObject(hdc,obmp);
             SelectObject(hdc,oldFnt);

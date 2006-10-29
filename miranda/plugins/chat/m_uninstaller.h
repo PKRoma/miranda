@@ -145,7 +145,7 @@
    //PUIRemoveFilesInPath(ppup->pszPluginsPath, apszFiles);
 
    // Delete Settings
-   //if(ppup->bDoDeleteSettings == TRUE) 
+   //if (ppup->bDoDeleteSettings == TRUE) 
    //{
       //if (ppup->bIsMirandaRunning == TRUE) // Check if it is possible to access services
       //{
@@ -348,8 +348,8 @@ static BOOL __inline PUIRemoveFilesInDirectory(char* pszPath, const char* apszFi
 
    while (apszFiles[iFile] != NULL)
    {
-      strncpy(szFile, pszPath, sizeof(szFile));
-      strncat(szFile, apszFiles[iFile], sizeof(szFile)-strlen(szFile));
+      strncpy(szFile, pszPath, SIZEOF(szFile));
+      strncat(szFile, apszFiles[iFile], SIZEOF(szFile)-strlen(szFile));
 
       if ((BOOL)DeleteFile(szFile) == TRUE) bReturn = TRUE;
 	  iFile++;

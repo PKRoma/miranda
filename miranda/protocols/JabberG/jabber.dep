@@ -10,11 +10,13 @@
 	"..\..\include\m_netlib.h"\
 	"..\..\include\m_options.h"\
 	"..\..\include\m_plugins.h"\
+	"..\..\include\m_png.h"\
 	"..\..\include\m_protocols.h"\
 	"..\..\include\m_protomod.h"\
 	"..\..\include\m_protosvc.h"\
 	"..\..\include\m_skin.h"\
 	"..\..\include\m_system.h"\
+	"..\..\include\m_system_cpp.h"\
 	"..\..\include\m_userinfo.h"\
 	"..\..\include\m_utils.h"\
 	"..\..\include\newpluginapi.h"\
@@ -26,6 +28,7 @@
 	".\jabber_list.h"\
 	".\jabber_ssl.h"\
 	".\jabber_xml.h"\
+	".\sdk\m_icolib.h"\
 	".\version.h"\
 	
 
@@ -37,29 +40,10 @@
 	
 
 .\jabber_bitmap.cpp : \
-	"..\..\include\m_chat.h"\
-	"..\..\include\m_clist.h"\
-	"..\..\include\m_clui.h"\
-	"..\..\include\m_database.h"\
-	"..\..\include\m_langpack.h"\
-	"..\..\include\m_message.h"\
-	"..\..\include\m_netlib.h"\
-	"..\..\include\m_options.h"\
-	"..\..\include\m_plugins.h"\
-	"..\..\include\m_protocols.h"\
-	"..\..\include\m_protomod.h"\
-	"..\..\include\m_protosvc.h"\
-	"..\..\include\m_skin.h"\
-	"..\..\include\m_system.h"\
-	"..\..\include\m_userinfo.h"\
-	"..\..\include\m_utils.h"\
-	"..\..\include\newpluginapi.h"\
-	"..\..\include\statusmodes.h"\
-	"..\..\include\win2k.h"\
-	".\jabber.h"\
 	".\jabber_byte.h"\
 	".\jabber_list.h"\
 	".\jabber_xml.h"\
+	".\sha1.h"\
 	
 
 .\jabber_byte.cpp : \
@@ -70,26 +54,6 @@
 	
 
 .\jabber_chat.cpp : \
-	"..\..\include\m_chat.h"\
-	"..\..\include\m_clist.h"\
-	"..\..\include\m_clui.h"\
-	"..\..\include\m_database.h"\
-	"..\..\include\m_langpack.h"\
-	"..\..\include\m_message.h"\
-	"..\..\include\m_netlib.h"\
-	"..\..\include\m_options.h"\
-	"..\..\include\m_plugins.h"\
-	"..\..\include\m_protocols.h"\
-	"..\..\include\m_protomod.h"\
-	"..\..\include\m_protosvc.h"\
-	"..\..\include\m_skin.h"\
-	"..\..\include\m_system.h"\
-	"..\..\include\m_userinfo.h"\
-	"..\..\include\m_utils.h"\
-	"..\..\include\newpluginapi.h"\
-	"..\..\include\statusmodes.h"\
-	"..\..\include\win2k.h"\
-	".\jabber.h"\
 	".\jabber_byte.h"\
 	".\jabber_iq.h"\
 	".\jabber_list.h"\
@@ -122,6 +86,13 @@
 	".\jabber_xml.h"\
 	
 
+.\jabber_icolib.cpp : \
+	".\jabber_byte.h"\
+	".\jabber_list.h"\
+	".\jabber_xml.h"\
+	".\sdk\m_icolib.h"\
+	
+
 .\jabber_iq.cpp : \
 	".\jabber_byte.h"\
 	".\jabber_iq.h"\
@@ -146,26 +117,6 @@
 	
 
 .\jabber_libstr.cpp : \
-	"..\..\include\m_chat.h"\
-	"..\..\include\m_clist.h"\
-	"..\..\include\m_clui.h"\
-	"..\..\include\m_database.h"\
-	"..\..\include\m_langpack.h"\
-	"..\..\include\m_message.h"\
-	"..\..\include\m_netlib.h"\
-	"..\..\include\m_options.h"\
-	"..\..\include\m_plugins.h"\
-	"..\..\include\m_protocols.h"\
-	"..\..\include\m_protomod.h"\
-	"..\..\include\m_protosvc.h"\
-	"..\..\include\m_skin.h"\
-	"..\..\include\m_system.h"\
-	"..\..\include\m_userinfo.h"\
-	"..\..\include\m_utils.h"\
-	"..\..\include\newpluginapi.h"\
-	"..\..\include\statusmodes.h"\
-	"..\..\include\win2k.h"\
-	".\jabber.h"\
 	".\jabber_byte.h"\
 	".\jabber_list.h"\
 	".\jabber_xml.h"\
@@ -216,26 +167,6 @@
 	
 
 .\jabber_std.cpp : \
-	"..\..\include\m_chat.h"\
-	"..\..\include\m_clist.h"\
-	"..\..\include\m_clui.h"\
-	"..\..\include\m_database.h"\
-	"..\..\include\m_langpack.h"\
-	"..\..\include\m_message.h"\
-	"..\..\include\m_netlib.h"\
-	"..\..\include\m_options.h"\
-	"..\..\include\m_plugins.h"\
-	"..\..\include\m_protocols.h"\
-	"..\..\include\m_protomod.h"\
-	"..\..\include\m_protosvc.h"\
-	"..\..\include\m_skin.h"\
-	"..\..\include\m_system.h"\
-	"..\..\include\m_userinfo.h"\
-	"..\..\include\m_utils.h"\
-	"..\..\include\newpluginapi.h"\
-	"..\..\include\statusmodes.h"\
-	"..\..\include\win2k.h"\
-	".\jabber.h"\
 	".\jabber_byte.h"\
 	".\jabber_list.h"\
 	".\jabber_xml.h"\
@@ -309,6 +240,7 @@
 	".\icos\group.ico"\
 	".\icos\jabber.ico"\
 	".\icos\key.ico"\
+	".\icos\login.ico"\
 	".\icos\open.ico"\
 	".\icos\pages.ico"\
 	".\icos\rename.ico"\

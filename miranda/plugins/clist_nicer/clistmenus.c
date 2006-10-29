@@ -113,6 +113,7 @@ typedef struct {
 
 	BOOL custom;
 	char *svc;
+    int hMenuItem;
 }StatusMenuExecParam,*lpStatusMenuExecParam;
 
 //////////////////////////////MAIN MENU/////////////////////////
@@ -484,7 +485,7 @@ int StatusMenuExecService(WPARAM wParam,LPARAM lParam)
 	if (smep != NULL && !IsBadReadPtr(smep, sizeof(StatusMenuExecParam))) {
 		if (smep->custom) {
 			if (smep->svc && *smep->svc)
-				CallService(smep->svc, 0, 0);
+				CallService(smep->svc, 0, (LPARAM)smep->hMenuItem);
 		} else {
 			PROTOCOLDESCRIPTOR **proto;
 			int protoCount;
@@ -1050,6 +1051,7 @@ no_custom_status_item:
 	tmi.ownerdata=smep;
 
 	op.Handle=(int)CallService(MO_ADDNEWMENUITEM,(WPARAM)hStatusMenuObject,(LPARAM)&tmi);  
+    ((lpStatusMenuExecParam)(tmi.ownerdata))->hMenuItem=op.Handle;
 	op.Setting=OPT_MENUITEMSETUNIQNAME;
 
 	{

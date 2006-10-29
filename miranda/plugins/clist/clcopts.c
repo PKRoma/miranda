@@ -496,7 +496,7 @@ static BOOL CALLBACK DlgProcClcTextOpts(HWND hwndDlg, UINT msg, WPARAM wParam, L
 		TranslateDialogDefault(hwndDlg);
 		if (!SendMessage(GetParent(hwndDlg), PSM_ISEXPERT, 0, 0))
 			SwitchTextDlgToMode(hwndDlg, 0);
-		forkthread(FillFontListThread, 0, hwndDlg);
+		mir_forkthread(FillFontListThread, hwndDlg);
 		{
 			int i, itemId, fontId;
 			LOGFONT lf;

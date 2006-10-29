@@ -101,7 +101,7 @@ int FindItem(HWND hwnd,struct ClcData *dat,HANDLE hItem,struct ClcContact **cont
 	int index=0, i;
 	int nowVisible=1;
 	struct ClcGroup *group;
-	lockdat;
+	
 	group=&dat->list;
 
 	group->scanIndex=0;
@@ -145,7 +145,7 @@ int FindItem(HWND hwnd,struct ClcData *dat,HANDLE hItem,struct ClcContact **cont
 			}
 			if(contact) *contact=group->cl.items[group->scanIndex];
 			if(subgroup) *subgroup=group;
-			ulockdat;
+			
 			return 1;
 		}
 		if (!isIgnoreSubcontacts && 
@@ -162,13 +162,13 @@ int FindItem(HWND hwnd,struct ClcData *dat,HANDLE hItem,struct ClcContact **cont
 					{
 						log1("FindIltem->IsBadWritePtr | 2o  [%08x]", &group->cl.items[group->scanIndex]->subcontacts[i]);
 						PostMessage(hwnd,CLM_AUTOREBUILD,0,0);
-						ulockdat;
+						
 						return 0;
 					}
 #endif
 					if(contact) *contact=&group->cl.items[group->scanIndex]->subcontacts[i];
 					if(subgroup) *subgroup=group;
-					ulockdat;
+					
 					return 1;
 				}
 			}
@@ -182,7 +182,7 @@ int FindItem(HWND hwnd,struct ClcData *dat,HANDLE hItem,struct ClcContact **cont
 		}
 		group->scanIndex++;
 	}
-	ulockdat;
+	
 	return 0;
 }
 

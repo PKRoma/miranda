@@ -45,7 +45,6 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include <string.h>
 #include <direct.h>
 #include "resource.h"
-#include "forkthread.h"
 #include <win2k.h>
 #include <newpluginapi.h>
 #include <m_clist.h>
@@ -79,18 +78,3 @@ extern HINSTANCE g_hInst;
   * easy search and replace
 
 */
-
-extern struct MM_INTERFACE memoryManagerInterface;
-
-#define mir_alloc(n) memoryManagerInterface.mmi_malloc(n)
-#define mir_free(ptr) memoryManagerInterface.mmi_free(ptr)
-#define mir_realloc(ptr,size) memoryManagerInterface.mmi_realloc(ptr,size)
-
-static __inline char * mir_strdup(const char * src)
-{
-	char * p = 0;
-	if ( src == NULL ) return NULL;
-	p=mir_alloc( strlen(src)+1 );
-	strcpy(p, src);
-	return p;
-}

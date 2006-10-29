@@ -116,7 +116,18 @@ int __stdcall MSN_AddUser( HANDLE hContact, const char* email, int flags )
 			if ( !MSN_GetStaticString( "ID", hContact, id, sizeof id ))
 				msgid = msnNsThread->sendPacket( "REM", "%s %s", listName, id );
 		}
-		else msgid = msnNsThread->sendPacket( "ADC", "%s N=%s F=%s", listName, email, email );
+		else {
+			char urlNick[388];
+			strcpy( urlNick, email );
+
+			if ( !strcmp( email, MyOptions.szEmail )) {
+				DBVARIANT dbv;
+				if ( !DBGetContactSettingStringUtf( NULL, msnProtocolName, "Nick", &dbv )) {
+					UrlEncode( dbv.pszVal, urlNick, sizeof( urlNick ));
+					MSN_FreeVariant( &dbv );
+			}	}
+			msgid = msnNsThread->sendPacket( "ADC", "%s N=%s F=%s", listName, email, urlNick );
+		}
 	}
 	else {
 		if ( flags & LIST_REMOVE )
@@ -143,7 +154,7 @@ void __stdcall MSN_AddAuthRequest( HANDLE hContact, const char *email, const cha
 	dbei.eventType = EVENTTYPE_AUTHREQUEST;
 	dbei.cbBlob    = sizeof(DWORD)*2+strlen(nick)+strlen(email)+5;
 
-	PBYTE pCurBlob = dbei.pBlob = ( PBYTE )malloc( dbei.cbBlob );
+	PBYTE pCurBlob = dbei.pBlob = ( PBYTE )mir_alloc( dbei.cbBlob );
 	*( PDWORD )pCurBlob = 0; pCurBlob+=sizeof( DWORD );
 	*( PDWORD )pCurBlob = ( DWORD )hContact; pCurBlob+=sizeof( DWORD );
 	strcpy(( char* )pCurBlob, nick); pCurBlob += strlen( nick )+1;
@@ -252,6 +263,34 @@ void __stdcall MSN_GetAvatarFileName( HANDLE hContact, char* pszDest, int cbLen 
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////
+// MSN_GetCustomSmileyFileName - gets a file name for an contact's custom smiley
+
+void __stdcall MSN_GetCustomSmileyFileName( HANDLE hContact, char* pszDest, int cbLen, char* SmileyName, int type )
+{
+	MSN_CallService( MS_DB_GETPROFILEPATH, cbLen, LPARAM( pszDest ));
+
+	int tPathLen = strlen( pszDest );
+
+	if ( hContact != NULL ) {
+		char szEmail[ MSN_MAX_EMAIL_LEN ];
+		if ( MSN_GetStaticString( "e-mail", hContact, szEmail, sizeof( szEmail )))
+			ltoa(( long )hContact, szEmail, 10 );
+		
+		tPathLen += mir_snprintf( pszDest + tPathLen, MAX_PATH - tPathLen, "\\MSN\\CustomSmiley\\");
+		CreateDirectoryA( pszDest, NULL );
+		tPathLen += mir_snprintf( pszDest + tPathLen, MAX_PATH - tPathLen, "%s\\",szEmail );
+	}
+	else tPathLen += mir_snprintf( pszDest + tPathLen, MAX_PATH - tPathLen, "\\MSN\\CustomSmiley\\%s\\",msnProtocolName );
+		
+	CreateDirectoryA( pszDest, NULL );
+
+	if ( type == MSN_APPID_CUSTOMSMILEY )
+		mir_snprintf( pszDest + tPathLen, MAX_PATH - tPathLen, "%s.png", SmileyName );
+	else
+		mir_snprintf( pszDest + tPathLen, MAX_PATH - tPathLen, "%s.gif", SmileyName );
+}
+
+/////////////////////////////////////////////////////////////////////////////////////////
 // MSN_GoOffline - performs several actions when a server goes offline
 
 void __stdcall	MSN_GoOffline()
@@ -261,7 +300,7 @@ void __stdcall	MSN_GoOffline()
 
 	msnLoggedIn = false;
 
-	free(msnPreviousUUX);
+	mir_free(msnPreviousUUX);
 	msnPreviousUUX = NULL;
 
 	if ( !Miranda_Terminated() )
@@ -382,50 +421,101 @@ int __stdcall MSN_SendNickname(char *nickname)
 
 int __stdcall MSN_SendNicknameW( WCHAR* nickname)
 {
-	char* nickutf = Utf8EncodeUcs2( nickname );
+	char* nickutf = mir_utf8encodeW( nickname );
 
 	char urlNick[ 387 ];
 	UrlEncode( nickutf, urlNick,  sizeof( urlNick ));
 	msnNsThread->sendPacket( "PRP", "MFN %s", urlNick );
 
-	free( nickutf );
+	mir_free( nickutf );
 	return 0;
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////
 // MSN_SendStatusMessage - notify a server about the status message change
 
-void __stdcall MSN_SendStatusMessage( const char* msg, struct MSN_CurrentMedia *cm )
+// Helper to process texts
+static char * HtmlEncodeUTF8T( const TCHAR *src )
+{
+	if (src == NULL)
+		return mir_strdup("");
+
+	TCHAR *tmp = HtmlEncodeT(src);
+#if defined( _UNICODE )
+	char *ret = mir_utf8encodeW(tmp);
+#else
+	char *ret = mir_utf8encode(tmp);
+#endif
+	mir_free(tmp);
+	return ret;
+}
+
+void __stdcall MSN_SendStatusMessage( const char* msg )
 {
 	if ( !msnLoggedIn || !MyOptions.UseMSNP11 )
 		return;
 
 	char* msgEnc = HtmlEncode(( msg == NULL ) ? "" : msg );
-	char *cmArtistEnc = NULL, *cmAlbumEnc = NULL, *cmSongEnc = NULL, *cmFormatEnc = NULL;
-	char  szMsg[ 1024 ], szEmail[ MSN_MAX_EMAIL_LEN ];
+	char  szMsg[ 1024 ];
 
-	if ( (cm == NULL) || ( (cm->szAlbum == NULL) && (cm->szArtist == NULL) && (cm->szSong == NULL) ) ) {
-	mir_snprintf( szMsg, sizeof szMsg, "<Data><PSM>%s</PSM><CurrentMedia></CurrentMedia></Data>", UTF8(msgEnc));
-	free( msgEnc );
+	if ( msnCurrentMedia.cbSize == 0 ) 
+	{
+		mir_snprintf( szMsg, sizeof szMsg, "<Data><PSM>%s</PSM></Data>", UTF8(msgEnc));
+		mir_free( msgEnc );
 	}
-	else {
-		cmAlbumEnc = HtmlEncode(( cm->szAlbum == NULL ) ? "" : cm->szAlbum );
-		cmArtistEnc = HtmlEncode(( cm->szArtist == NULL ) ? "" : cm->szArtist );
-		cmSongEnc = HtmlEncode(( cm->szSong == NULL ) ? "" : cm->szSong );
-		cmFormatEnc = HtmlEncode(( cm->szFormat == NULL ) ? "{0} - {1}" : cm->szFormat );
-		mir_snprintf( szMsg, sizeof szMsg, "<Data><PSM>%s</PSM><CurrentMedia>\\0Music\\01\\0%s\\0%s\\0%s\\0%s\\0\\0</CurrentMedia></Data>", UTF8(msgEnc), UTF8(cmFormatEnc), UTF8(cmSongEnc), UTF8(cmArtistEnc), UTF8(cmAlbumEnc));
-		free(cmFormatEnc);
-		free(cmAlbumEnc);
-		free(cmArtistEnc);
-		free(cmSongEnc);
+	else 
+	{
+		char *szFormatEnc;
+		if (ServiceExists(MS_LISTENINGTO_GETPARSEDTEXT)) {
+			LISTENINGTOINFO lti = {0};
+			lti.cbSize = sizeof(lti);
+			if (msnCurrentMedia.ptszTitle != NULL) lti.ptszTitle = _T("{0}");
+			if (msnCurrentMedia.ptszArtist != NULL) lti.ptszArtist = _T("{1}");
+			if (msnCurrentMedia.ptszAlbum != NULL) lti.ptszAlbum = _T("{2}");
+			if (msnCurrentMedia.ptszTrack != NULL) lti.ptszTrack = _T("{3}");
+			if (msnCurrentMedia.ptszYear != NULL) lti.ptszYear = _T("{4}");
+			if (msnCurrentMedia.ptszGenre != NULL) lti.ptszGenre = _T("{5}");
+			if (msnCurrentMedia.ptszLength != NULL) lti.ptszLength = _T("{6}");
+			if (msnCurrentMedia.ptszPlayer != NULL) lti.ptszPlayer = _T("{7}");
+			if (msnCurrentMedia.ptszType != NULL) lti.ptszType = _T("{8}");
+
+			TCHAR *tmp = (TCHAR *)CallService(MS_LISTENINGTO_GETPARSEDTEXT, (WPARAM) _T("%title% - %artist%"), (LPARAM) &lti );
+			szFormatEnc = HtmlEncodeUTF8T(tmp);
+			mir_free(tmp);
+		} else {
+			szFormatEnc = HtmlEncodeUTF8T(_T("{0} - {1}"));
+		}
+
+		char *szArtist = HtmlEncodeUTF8T( msnCurrentMedia.ptszArtist );
+		char *szAlbum = HtmlEncodeUTF8T( msnCurrentMedia.ptszAlbum );
+		char *szTitle = HtmlEncodeUTF8T( msnCurrentMedia.ptszTitle );
+		char *szTrack = HtmlEncodeUTF8T( msnCurrentMedia.ptszTrack );
+		char *szYear = HtmlEncodeUTF8T( msnCurrentMedia.ptszYear );
+		char *szGenre = HtmlEncodeUTF8T( msnCurrentMedia.ptszGenre );
+		char *szLength = HtmlEncodeUTF8T( msnCurrentMedia.ptszLength );
+		char *szPlayer = HtmlEncodeUTF8T( msnCurrentMedia.ptszPlayer );
+		char *szType = HtmlEncodeUTF8T( msnCurrentMedia.ptszType );
+
+		mir_snprintf( szMsg, sizeof szMsg, 
+			"<Data><PSM>%s</PSM><CurrentMedia>%s\\0%s\\01\\0%s\\0%s\\0%s\\0%s\\0%s\\0%s\\0%s\\0%s\\0%s\\0%s\\0\\0</CurrentMedia></Data>", 
+			UTF8(msgEnc), szPlayer, szType, szFormatEnc, szTitle, szArtist, szAlbum, szTrack, szYear, szGenre, szLength, szPlayer, szType);
+
+		mir_free( szArtist );
+		mir_free( szAlbum );
+		mir_free( szTitle );
+		mir_free( szTrack );
+		mir_free( szYear );
+		mir_free( szGenre );
+		mir_free( szLength );
+		mir_free( szPlayer );
+		mir_free( szType );
 	}
 
 	if ( !lstrcmpA( msnPreviousUUX, szMsg ))
 		return;
 
 	replaceStr( msnPreviousUUX, szMsg );
-	if ( !MSN_GetStaticString( "e-mail", NULL, szEmail, sizeof szEmail ))
-		msnNsThread->sendPacket( "UUX", "%d\r\n%s", strlen( szMsg ), szMsg );
+	msnNsThread->sendPacket( "UUX", "%d\r\n%s", strlen( szMsg ), szMsg );
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////
@@ -436,14 +526,11 @@ LONG ThreadData::sendPacket( const char* cmd, const char* fmt,...)
 	if ( this == NULL )  // :)
 		return 0;
 
-//	if ( !strcmp( cmd, "CAL" ) && mIsCalSent )
-//		return 0;
-
 	va_list vararg;
 	va_start( vararg, fmt );
 
 	int strsize = 512;
-	char* str = ( char* )malloc( strsize );
+	char* str = ( char* )mir_alloc( strsize );
 
 	LONG thisTrid = MyInterlockedIncrement( &mTrid );
 
@@ -452,17 +539,14 @@ LONG ThreadData::sendPacket( const char* cmd, const char* fmt,...)
 	else  {
 		int paramStart = sprintf( str, "%s %d ", cmd, thisTrid );
 		while ( _vsnprintf( str+paramStart, strsize-paramStart-2, fmt, vararg ) == -1 )
-			str = (char*)realloc( str, strsize += 512 );
+			str = (char*)mir_realloc( str, strsize += 512 );
 	}
 
 	if ( strcmp( cmd, "MSG" ) && strcmp( cmd, "QRY" ) && strcmp( cmd, "UUX" ))
 		strcat( str,"\r\n" );
 
-	if ( !strcmp( cmd, "CAL" ))
-		mIsCalSent = true;
-
 	int result = send( str, strlen( str ));
-	free( str );
+	mir_free( str );
 	return ( result > 0 ) ? thisTrid : -1;
 }
 
@@ -489,7 +573,7 @@ void __stdcall MSN_SetServerStatus( int newStatus )
 		if ( MyOptions.UseMSNP11 ) {
 			for ( int i=0; i < MSN_NUM_MODES; i++ ) { 
 				if ( msnModeMsgs[ i ].m_mode == newStatus ) {
-					MSN_SendStatusMessage( msnModeMsgs[ i ].m_msg, &msnCurrentMedia );
+					MSN_SendStatusMessage( msnModeMsgs[ i ].m_msg );
 					break;
 		}	}	}
 	}
@@ -526,7 +610,7 @@ void CALLBACK sttMainThreadCallback( ULONG dwParam )
 	else
 		MSN_CallService( MS_POPUP_ADDPOPUP, ( WPARAM )ppd, 0 );
 
-	free( ppd );
+	mir_free( ppd );
 }
 
 void __stdcall	MSN_ShowPopup( const char* nickname, const char* msg, int flags )
@@ -540,7 +624,7 @@ void __stdcall	MSN_ShowPopup( const char* nickname, const char* msg, int flags )
 		return;
 	}
 
-	POPUPDATAEX* ppd = ( POPUPDATAEX* )calloc( sizeof( POPUPDATAEX ), 1 );
+	POPUPDATAEX* ppd = ( POPUPDATAEX* )mir_calloc( sizeof( POPUPDATAEX ));
 
 	ppd->lchContact = NULL;
 	ppd->lchIcon = LoadIcon( hInst, MAKEINTRESOURCE( IDI_MSN ));
@@ -548,14 +632,9 @@ void __stdcall	MSN_ShowPopup( const char* nickname, const char* msg, int flags )
 	strcpy( ppd->lpzText, msg );
 
 	if ( flags & MSN_SHOW_ERROR ) {
-		ppd->lchIcon   = LoadIcon( NULL, IDI_WARNING );
-		if ( ServiceExists( MS_POPUP_ADDCLASS ))
-			ppd->lpzClass  = _T(POPUP_CLASS_WARNING);
-		else {
-			ppd->colorBack = RGB(191,0,0); //Red
-			ppd->colorText = RGB(255,245,225); //Yellow
-		}
-
+		ppd->lchIcon = LoadIcon( NULL, IDI_WARNING );
+		ppd->colorBack = RGB(191,0,0); //Red
+		ppd->colorText = RGB(255,245,225); //Yellow
 		ppd->iSeconds  = 60;
 	}
 	else {
@@ -645,6 +724,41 @@ void __stdcall HtmlDecode( char* str )
 /////////////////////////////////////////////////////////////////////////////////////////
 // HtmlEncode - replaces special HTML chars
 
+WCHAR* __stdcall HtmlEncodeW( const WCHAR* str )
+{
+	WCHAR* s, *p, *q;
+	int c;
+
+	if ( str == NULL )
+		return NULL;
+
+	for ( c=0,p=( WCHAR* )str; *p!=L'\0'; p++ ) {
+		switch ( *p ) {
+		case L'&': c += 5; break;
+		case L'\'': c += 6; break;
+		case L'>': c += 4; break;
+		case L'<': c += 4; break;
+		case L'"': c += 6; break;
+		default: c++; break;
+		}
+	}
+	if (( s=( WCHAR* )mir_alloc( (c+1) * sizeof(WCHAR) )) != NULL ) {
+		for ( p=( WCHAR* )str,q=s; *p!=L'\0'; p++ ) {
+			switch ( *p ) {
+			case L'&': wcscpy( q, L"&amp;" ); q += 5; break;
+			case L'\'': wcscpy( q, L"&apos;" ); q += 6; break;
+			case L'>': wcscpy( q, L"&gt;" ); q += 4; break;
+			case L'<': wcscpy( q, L"&lt;" ); q += 4; break;
+			case L'"': wcscpy( q, L"&quot;" ); q += 6; break;
+			default: *q = *p; q++; break;
+			}
+		}
+		*q = L'\0';
+	}
+
+	return s;
+}
+
 char* __stdcall HtmlEncode( const char* str )
 {
 	char* s, *p, *q;
@@ -663,7 +777,7 @@ char* __stdcall HtmlEncode( const char* str )
 		default: c++; break;
 		}
 	}
-	if (( s=( char* )malloc( c+1 )) != NULL ) {
+	if (( s=( char* )mir_alloc( c+1 )) != NULL ) {
 		for ( p=( char* )str,q=s; *p!='\0'; p++ ) {
 			switch ( *p ) {
 			case '&': strcpy( q, "&amp;" ); q += 5; break;
@@ -712,140 +826,6 @@ void __stdcall UrlEncode( const char* src,char* dest, int cbDest )
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////
-// Utf8Decode - converts UTF8-encoded string to the UCS2/MBCS format
-
-void __stdcall Utf8Decode( char* str, wchar_t** ucs2 )
-{
-	if ( str == NULL )
-		return;
-
-	int len = strlen( str );
-	if ( len < 2 ) {
-		if ( ucs2 != NULL ) {
-			*ucs2 = ( wchar_t* )malloc(( len+1 )*sizeof( wchar_t ));
-			MultiByteToWideChar( CP_ACP, 0, str, len, *ucs2, len );
-			( *ucs2 )[ len ] = 0;
-		}
-		return;
-	}
-
-	wchar_t* tempBuf = ( wchar_t* )alloca(( len+1 )*sizeof( wchar_t ));
-	{
-		wchar_t* d = tempBuf;
-		BYTE* s = ( BYTE* )str;
-
-		while( *s )
-		{
-			if (( *s & 0x80 ) == 0 ) {
-				*d++ = *s++;
-				continue;
-			}
-
-			if (( s[0] & 0xE0 ) == 0xE0 && ( s[1] & 0xC0 ) == 0x80 && ( s[2] & 0xC0 ) == 0x80 ) {
-				*d++ = (( WORD )( s[0] & 0x0F) << 12 ) + ( WORD )(( s[1] & 0x3F ) << 6 ) + ( WORD )( s[2] & 0x3F );
-				s += 3;
-				continue;
-			}
-
-			if (( s[0] & 0xE0 ) == 0xC0 && ( s[1] & 0xC0 ) == 0x80 ) {
-				*d++ = ( WORD )(( s[0] & 0x1F ) << 6 ) + ( WORD )( s[1] & 0x3F );
-				s += 2;
-				continue;
-			}
-
-			*d++ = *s++;
-		}
-
-		*d = 0;
-	}
-
-	if ( ucs2 != NULL ) {
-		int fullLen = ( len+1 )*sizeof( wchar_t );
-		*ucs2 = ( wchar_t* )malloc( fullLen );
-		memcpy( *ucs2, tempBuf, fullLen );
-	}
-
-   WideCharToMultiByte( CP_ACP, 0, tempBuf, -1, str, len, NULL, NULL );
-}
-
-/////////////////////////////////////////////////////////////////////////////////////////
-// Utf8Encode - converts MBCS string to the UTF8-encoded format
-
-char* __stdcall Utf8Encode( const char* src )
-{
-	if ( src == NULL )
-		return NULL;
-
-	int len = strlen( src );
-	char* result = ( char* )malloc( len*3 + 1 );
-	if ( result == NULL )
-		return NULL;
-
-	wchar_t* tempBuf = ( wchar_t* )alloca(( len+1 )*sizeof( wchar_t ));
-	MultiByteToWideChar( CP_ACP, 0, src, -1, tempBuf, len );
-	tempBuf[ len ] = 0;
-	{
-		wchar_t* s = tempBuf;
-		BYTE*		d = ( BYTE* )result;
-
-		while( *s ) {
-			int U = *s++;
-
-			if ( U < 0x80 ) {
-				*d++ = ( BYTE )U;
-			}
-			else if ( U < 0x800 ) {
-				*d++ = 0xC0 + (( U >> 6 ) & 0x3F );
-				*d++ = 0x80 + ( U & 0x003F );
-			}
-			else {
-				*d++ = 0xE0 + ( U >> 12 );
-				*d++ = 0x80 + (( U >> 6 ) & 0x3F );
-				*d++ = 0x80 + ( U & 0x3F );
-		}	}
-
-		*d = 0;
-	}
-
-	return result;
-}
-
-/////////////////////////////////////////////////////////////////////////////////////////
-// Utf8Encode - converts UCS2 string to the UTF8-encoded format
-
-char* __stdcall Utf8EncodeUcs2( const wchar_t* src )
-{
-	int len = wcslen( src );
-	char* result = ( char* )malloc( len*3 + 1 );
-	if ( result == NULL )
-		return NULL;
-
-	{	const wchar_t* s = src;
-		BYTE*	d = ( BYTE* )result;
-
-		while( *s ) {
-			int U = *s++;
-
-			if ( U < 0x80 ) {
-				*d++ = ( BYTE )U;
-			}
-			else if ( U < 0x800 ) {
-				*d++ = 0xC0 + (( U >> 6 ) & 0x3F );
-				*d++ = 0x80 + ( U & 0x003F );
-			}
-			else {
-				*d++ = 0xE0 + ( U >> 12 );
-				*d++ = 0x80 + (( U >> 6 ) & 0x3F );
-				*d++ = 0x80 + ( U & 0x3F );
-		}	}
-
-		*d = 0;
-	}
-
-	return result;
-}
-
-/////////////////////////////////////////////////////////////////////////////////////////
 // filetransfer class members
 
 filetransfer::filetransfer()
@@ -877,20 +857,20 @@ filetransfer::~filetransfer( void )
 	else if ( fileId != -1 )
 		_close( fileId );
 
-	if ( p2p_branch != NULL ) free( p2p_branch );
-	if ( p2p_callID != NULL ) free( p2p_callID );
-	if ( p2p_dest   != NULL ) free( p2p_dest );
+	if ( p2p_branch != NULL ) mir_free( p2p_branch );
+	if ( p2p_callID != NULL ) mir_free( p2p_callID );
+	if ( p2p_dest   != NULL ) mir_free( p2p_dest );
 
-	if ( std.currentFile != NULL ) free( std.currentFile );
-	if ( std.workingDir != NULL ) free( std.workingDir );
+	if ( std.currentFile != NULL ) mir_free( std.currentFile );
+	if ( std.workingDir != NULL ) mir_free( std.workingDir );
 	if ( std.files != NULL ) {
 		for ( int i=0; i < std.totalFiles; i++ )
 			mir_free( std.files[ i ] );
 		mir_free( std.files );
 	}
 
-	if ( wszFileName != NULL ) free( wszFileName );
-	if ( szInvcookie != NULL ) free( szInvcookie );
+	if ( wszFileName != NULL ) mir_free(  wszFileName );
+	if ( szInvcookie != NULL ) mir_free( szInvcookie );
 }
 
 void filetransfer::close( void )
@@ -935,7 +915,7 @@ int filetransfer::create( void )
 				WIN32_FIND_DATAW data;
 				HANDLE hFind = FindFirstFileW( wszFileName, &data );
 				if ( hFind != INVALID_HANDLE_VALUE ) {
-					free( std.currentFile );
+					mir_free( std.currentFile );
 
 					char tShortName[ 20 ];
 					WideCharToMultiByte( CP_ACP, 0, 
@@ -943,7 +923,7 @@ int filetransfer::create( void )
 						-1, tShortName, sizeof tShortName, 0, 0 );
 					char filefull[ MAX_PATH ];
 					mir_snprintf( filefull, sizeof( filefull ), "%s\\%s", std.workingDir, tShortName );
-					std.currentFile = strdup( filefull );
+					std.currentFile = mir_strdup( filefull );
 					FindClose( hFind );
 			}	}
 		}
@@ -979,8 +959,8 @@ int filetransfer::openNext( void )
 			p2p_byemsgid = 0;
 			tType = SERVER_DISPATCH;
 
-			free( p2p_branch ); p2p_branch = NULL;
-			free( p2p_callID ); p2p_callID = NULL;
+			mir_free( p2p_branch ); p2p_branch = NULL;
+			mir_free( p2p_callID ); p2p_callID = NULL;
 		}
 		else
 			MSN_DebugLog( "Unable to open file '%s', error %d", std.currentFile, errno );
@@ -1072,18 +1052,18 @@ static LONG WINAPI MyInterlockedIncrementInit(PLONG pVal)
 
 // Process a string, and double all % characters, according to chat.dll's restrictions
 // Returns a pointer to the new string (old one is not freed)
-char* EscapeChatTags(char* pszText)
+TCHAR* EscapeChatTags(TCHAR* pszText)
 {
 	int nChars = 0;
-	for ( char* p = pszText; ( p = strchr( p, '%' )) != NULL; p++ )
+	for ( TCHAR* p = pszText; ( p = _tcschr( p, '%' )) != NULL; p++ )
 		nChars++;
 
 	if ( nChars == 0 )
-		return _strdup( pszText );
+		return mir_tstrdup( pszText );
 
-	char* pszNewText = (char*)malloc( strlen( pszText ) + 1 + nChars ), *s, *d;
+	TCHAR* pszNewText = (TCHAR*)mir_alloc( sizeof(TCHAR)*(lstrlen( pszText ) + 1 + nChars)), *s, *d;
 	if ( pszNewText == NULL )
-		return _strdup( pszText );
+		return mir_tstrdup( pszText );
 
 	for ( s = pszText, d = pszNewText; *s; s++ ) {
 		if ( *s == '%' )
@@ -1094,9 +1074,9 @@ char* EscapeChatTags(char* pszText)
 	return pszNewText;
 }
 
-char* UnEscapeChatTags(char* str_in)
+TCHAR* UnEscapeChatTags(TCHAR* str_in)
 {
-	char* s = str_in, *d = str_in;
+	TCHAR *s = str_in, *d = str_in;
 	while ( *s ) {
 		if (( *s == '%' && s[1] == '%' ) || ( *s == '\n' && s[1] == '\n' ))
 			s++;
