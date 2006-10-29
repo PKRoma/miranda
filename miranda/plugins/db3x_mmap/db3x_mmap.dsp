@@ -133,10 +133,6 @@ SOURCE=.\encrypt.c
 
 SOURCE=.\init.c
 # End Source File
-# Begin Source File
-
-SOURCE=.\utf.c
-# End Source File
 # End Group
 # Begin Group "Header Files"
 

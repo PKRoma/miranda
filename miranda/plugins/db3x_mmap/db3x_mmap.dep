@@ -9,54 +9,12 @@
 	"..\..\include\newpluginapi.h"\
 	"..\..\include\win2k.h"\
 	".\commonheaders.h"\
+	".\database.h"\
+	".\version.h"\
 	
 
-.\database.c : \
-	"..\..\include\m_plugins.h"\
-	".\database.h"\
-	
-
-.\dbcache.c : \
-	"..\..\include\m_plugins.h"\
-	".\database.h"\
-	
-
-.\dbcontacts.c : \
-	"..\..\include\m_plugins.h"\
-	".\database.h"\
-	
-
-.\dbevents.c : \
-	"..\..\include\m_plugins.h"\
-	".\database.h"\
-	
-
-.\dbheaders.c : \
-	"..\..\include\m_plugins.h"\
-	".\database.h"\
-	
-
-.\dbmodulechain.c : \
-	"..\..\include\m_plugins.h"\
-	".\database.h"\
-	
-
-.\dbsettings.c : \
-	"..\..\include\m_plugins.h"\
-	".\database.h"\
-	
-
-.\encrypt.c : \
-	"..\..\include\m_plugins.h"\
-	".\database.h"\
-	
-
-.\init.c : \
-	"..\..\include\m_plugins.h"\
-	".\database.h"\
-	
-
-.\utf.c : \
-	"..\..\include\m_plugins.h"\
-	".\database.h"\
+.\resource.rc : \
+	".\db3x_mmap.rc"\
+	".\version.h"\
+	".\version.rc"\
 	
