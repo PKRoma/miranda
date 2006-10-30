@@ -302,7 +302,7 @@ void JabberSetServerStatus( int iNewStatus )
 	}
 
 	// send presence update
-	JabberSendPresence( jabberStatus );
+	JabberSendPresence( jabberStatus, true );
 	JSendBroadcast( NULL, ACKTYPE_STATUS, ACKRESULT_SUCCESS, ( HANDLE ) oldStatus, jabberStatus );
 }
 

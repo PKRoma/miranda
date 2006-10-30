@@ -1191,7 +1191,7 @@ static int JabberSetAvatar( WPARAM wParam, LPARAM lParam )
 	DeleteObject( hBitmap );
 
 	if ( jabberConnected )
-		JabberSendPresence( jabberDesiredStatus );
+		JabberSendPresence( jabberDesiredStatus, true );
 	return 0;
 }
 
@@ -1244,7 +1244,7 @@ int JabberSetAwayMsg( WPARAM wParam, LPARAM lParam )
 		*szMsg = newModeMsg;
 		// Send a presence update if needed
 		if ( desiredStatus == jabberStatus ) {
-			JabberSendPresence( jabberStatus );
+			JabberSendPresence( jabberStatus, false );
 	}	}
 
 	LeaveCriticalSection( &modeMsgMutex );
