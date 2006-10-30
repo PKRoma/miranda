@@ -4742,10 +4742,14 @@ int yahoo_read_ready(int id, int fd, void *data)
 		DEBUG_MSG(("len == %d (<= 0)", len));
 
 		if(yid->type == YAHOO_CONNECTION_PAGER) {
-			yss = yid->yd->server_settings;
 			
-			if (yss->web_messenger && len == 0)
-				return 1; // try again later.. just nothing here yet
+			if (yid->yd) {
+				// need this to handle live connection with web_messenger set
+				yss = yid->yd->server_settings;
+				
+				if (yss && yss->web_messenger && len == 0)
+					return 1; // try again later.. just nothing here yet
+			}
 			
 			YAHOO_CALLBACK(ext_yahoo_error)(yid->yd->client_id, "Connection closed by server", 1, E_CONNECTION);
 		}
