@@ -1050,11 +1050,7 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
 			} else if (g_dat->flags & SMF_SAVEDRAFTS) {
 				TCmdList *draft = tcmdlist_get2(g_dat->draftList, dat->hContact);
 				if (draft != NULL) {
-	#if defined(_UNICODE)
-				SetDlgItemText(hwndDlg, IDC_MESSAGE, (TCHAR *)draft->szCmd);
-	#else
-				SetDlgItemTextA(hwndDlg, IDC_MESSAGE, draft->szCmd);
-	#endif
+				SetDlgItemText(hwndDlg, IDC_MESSAGE, draft->szCmd);
 			}
 			len = GetWindowTextLength(GetDlgItem(hwndDlg, IDC_MESSAGE));
 			PostMessage(GetDlgItem(hwndDlg, IDC_MESSAGE), EM_SETSEL, len, len);
@@ -1237,10 +1233,10 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
 					nMax = CallProtoService(dat->szProto, PS_GETCAPS, PFLAG_MAXLENOFMESSAGE, (LPARAM) dat->hContact);
 					if (nMax)
 						SendDlgItemMessage(hwndDlg, IDC_MESSAGE, EM_LIMITTEXT, (WPARAM) nMax, 0);
-					/* get around a lame bug in the Windows template resource code where richedits are limited to 0x7FFF */
-					SendDlgItemMessage(hwndDlg, IDC_LOG, EM_LIMITTEXT, (WPARAM) sizeof(TCHAR) * 0x7FFFFFFF, 0);
 				}
 			}
+			/* get around a lame bug in the Windows template resource code where richedits are limited to 0x7FFF */
+			SendDlgItemMessage(hwndDlg, IDC_LOG, EM_LIMITTEXT, (WPARAM) sizeof(TCHAR) * 0x7FFFFFFF, 0);
 			SubclassLogEdit(GetDlgItem(hwndDlg, IDC_LOG));
 			SubclassMessageEdit(GetDlgItem(hwndDlg, IDC_MESSAGE));
 			OldSplitterProc = (WNDPROC) SetWindowLong(GetDlgItem(hwndDlg, IDC_SPLITTER), GWL_WNDPROC, (LONG) SplitterSubclassProc);
