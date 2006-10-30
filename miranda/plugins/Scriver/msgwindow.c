@@ -1181,17 +1181,15 @@ BOOL CALLBACK TabCtrlProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 		}
 		break;
 		case WM_LBUTTONDOWN:
-		{
-			TCHITTESTINFO thinfo;
-			int clickedTab;
-			thinfo.pt.x = (lParam<<16)>>16;
-			thinfo.pt.y = lParam>>16;
-			clickedTab = TabCtrl_HitTest(hwnd, &thinfo);
-			dat->lastClickTab = clickedTab;
 			if (!dat->bDragging) {
+				TCHITTESTINFO thinfo;
+				int clickedTab;
 				FILETIME ft;
+				thinfo.pt.x = (lParam<<16)>>16;
+				thinfo.pt.y = lParam>>16;
+				clickedTab = TabCtrl_HitTest(hwnd, &thinfo);
 				GetSystemTimeAsFileTime(&ft);
-				dat->srcTab = dat->destTab = clickedTab;
+				dat->lastClickTab = dat->srcTab = dat->destTab = clickedTab;
 				if (dat->srcTab >=0 ) {
 					dat->bDragging = TRUE;
 					dat->bDragged = FALSE;
@@ -1204,8 +1202,7 @@ BOOL CALLBACK TabCtrlProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 				}
 				return 0;
 			}
-		}
-		break;
+			break;
 		case WM_CAPTURECHANGED:
 		case WM_LBUTTONUP:
 			if (dat->bDragging) {
@@ -1306,11 +1303,13 @@ BOOL CALLBACK TabCtrlProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 					IMAGEINFO info;
 					POINT pt;
 					RECT rect;
+					int rm;
 					TabCtrl_GetItemRect(hwnd, dat->lastClickTab, &rect);
 					pt.x = (lParam<<16)>>16;
 					pt.y = lParam>>16;
 					ImageList_GetImageInfo(g_dat->hButtonIconList, 0, &info);
-					if (pt.x > rect.right - GetSystemMetrics(SM_CXEDGE) - (dat->lastClickTab == TabCtrl_GetCurSel(hwnd) ? 4 : 0) - (info.rcImage.right - info.rcImage.left)) {
+					rm = rect.right - GetSystemMetrics(SM_CXEDGE) - (dat->lastClickTab == TabCtrl_GetCurSel(hwnd) ? 6 : 2);
+					if (pt.x > rm - (info.rcImage.right - info.rcImage.left) + 1 && pt.x < rm - 1) {
 						SendMessage(GetChildFromTab(hwnd, dat->lastClickTab)->hwnd, WM_CLOSE, 0, 0);
 					} else {
 						SendMessage(hwnd, WM_LBUTTONDOWN, dat->clickWParam, dat->clickLParam);

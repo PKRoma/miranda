@@ -501,7 +501,6 @@ int SplitmsgShutdown(void)
       hMsgMenuItem = NULL;
       hMsgMenuItemCount = 0;
    }
-   RichUtil_Unload();
    FreeGlobals();
    return 0;
 }
@@ -527,7 +526,6 @@ int LoadSendRecvMessageModule(void) {
 		}
 	}
    InitGlobals();
-   RichUtil_Load();
    OleInitialize(NULL);
    InitREOleCallback();
    InitStatusIcons();
