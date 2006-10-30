@@ -204,7 +204,7 @@ int SetStatus(WPARAM wParam,LPARAM lParam)
 		yahoo_util_broadcaststatus(ID_STATUS_CONNECTING);
 		
 		status = (status == ID_STATUS_INVISIBLE) ? YAHOO_STATUS_INVISIBLE: YAHOO_STATUS_AVAILABLE;
-        pthread_create(yahoo_server_main,  (void *) status );
+        mir_forkthread(yahoo_server_main,  (void *) status );
 
 		//start_timer();
     } else if (status == ID_STATUS_INVISIBLE){ /* other normal away statuses are set via setaway */
@@ -625,7 +625,7 @@ int YahooGetAwayMessage(WPARAM wParam,LPARAM lParam)
    				
    			DBFreeVariant( &dbv );
 
-            pthread_create(yahoo_get_statusthread, ccs->hContact);
+            mir_forkthread(yahoo_get_statusthread, ccs->hContact);
             return 1; //Success		
 		
 	}
@@ -709,7 +709,7 @@ static void __cdecl yahoo_get_infothread(HANDLE hContact)
 int YahooGetInfo(WPARAM wParam,LPARAM lParam)
 {
 	CCSDATA *ccs = (CCSDATA *) lParam;
-	pthread_create(yahoo_get_infothread, ccs->hContact);
+	mir_forkthread(yahoo_get_infothread, ccs->hContact);
 	return 0;
 }
 

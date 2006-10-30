@@ -22,6 +22,7 @@
 #include <m_options.h>
 #include <m_userinfo.h>
 #include <m_png.h>
+#include <m_system.h>
 
 #include "avatar.h"
 #include "file_transfer.h"
@@ -477,7 +478,7 @@ void YAHOO_SendAvatar(const char *szFile)
 	
 	YAHOO_DebugLog("[Uploading avatar] filename: %s size: %ld", sf->filename, sf->fsize);
 
-	pthread_create(yahoo_send_avt_thread, sf);
+	mir_forkthread(yahoo_send_avt_thread, sf);
 }
 
 struct avatar_info{
@@ -604,7 +605,7 @@ void YAHOO_get_avatar(const char *who, const char *pic_url, long cksum)
 	avt->pic_url = _strdup(pic_url);
 	avt->cksum = cksum;
 	
-	pthread_create(yahoo_recv_avatarthread, (void *) avt);
+	mir_forkthread(yahoo_recv_avatarthread, (void *) avt);
 }
 
 void ext_yahoo_got_picture(int id, const char *me, const char *who, const char *pic_url, int cksum, int type)

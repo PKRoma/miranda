@@ -23,6 +23,7 @@
 #include <m_skin.h>
 #include <m_popup.h>
 #include <m_message.h>
+#include <m_system.h>
 
 #include "avatar.h"
 #include "chat.h"
@@ -1043,7 +1044,7 @@ void ext_yahoo_got_cookies(int id)
 		if (yahooStatus != ID_STATUS_OFFLINE)
 			//yahoo_get_yab(id);
 			check_for_update();
-			pthread_create(yahoo_get_yab_thread, (void *)id);
+			mir_forkthread(yahoo_get_yab_thread, (void *)id);
 	}*/
 }
 
@@ -1090,7 +1091,7 @@ void ext_yahoo_login_response(int id, int succ, const char *url)
 		if (YAHOO_GetByte( "UseYAB", 1 )) {
 			LOG(("GET YAB [Before final check] "));
 			if (yahooStatus != ID_STATUS_OFFLINE)
-				pthread_create(yahoo_get_yab_thread, (void *)id);
+				mir_forkthread(yahoo_get_yab_thread, (void *)id);
 		}
 
 		return;

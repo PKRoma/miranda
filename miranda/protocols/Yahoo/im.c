@@ -18,6 +18,7 @@
 
 #include <m_langpack.h>
 #include <m_protosvc.h>
+#include <m_system.h>
 
 #include "avatar.h"
 #include "im.h"
@@ -218,12 +219,12 @@ int YahooSendMessage(WPARAM wParam, LPARAM lParam)
     char *msg = (char *) ccs->lParam;
     
     if (!yahooLoggedIn) {/* don't send message if we not connected! */
-        pthread_create(yahoo_im_sendackfail, ccs->hContact);
+        mir_forkthread(yahoo_im_sendackfail, ccs->hContact);
         return 1;
     }
         
     if (lstrlen(msg) > 800) {
-        pthread_create(	yahoo_im_sendackfail_longmsg, ccs->hContact);
+        mir_forkthread(	yahoo_im_sendackfail_longmsg, ccs->hContact);
         return 1;
     }
 
@@ -231,7 +232,7 @@ int YahooSendMessage(WPARAM wParam, LPARAM lParam)
 		if (YAHOO_GetByte( "DisableUTF8", 0 )){
 			// don't send UTF8, because settings say so
 			yahoo_send_msg(dbv.pszVal, msg, 0);
-			pthread_create(yahoo_im_sendacksuccess, ccs->hContact);
+			mir_forkthread(yahoo_im_sendacksuccess, ccs->hContact);
 		} else {
 		
 			msg = Utf8EncodeANSI((char *) ccs->lParam );
@@ -239,9 +240,9 @@ int YahooSendMessage(WPARAM wParam, LPARAM lParam)
 			if (msg) {
 				yahoo_send_msg(dbv.pszVal, msg, 1);
 				free(msg);
-				pthread_create(yahoo_im_sendacksuccess, ccs->hContact);
+				mir_forkthread(yahoo_im_sendacksuccess, ccs->hContact);
 			} else
-				pthread_create(yahoo_im_sendackfail, ccs->hContact);
+				mir_forkthread(yahoo_im_sendackfail, ccs->hContact);
 		}
 		
         DBFreeVariant(&dbv);
@@ -259,7 +260,7 @@ int YahooSendMessageW(WPARAM wParam, LPARAM lParam)
 	YAHOO_DebugLog("[YahooSendMessageW]");	
 	
     if (!yahooLoggedIn) {/* don't send message if we not connected! */
-        pthread_create(yahoo_im_sendackfail, ccs->hContact);
+        mir_forkthread(yahoo_im_sendackfail, ccs->hContact);
         return 1;
     }
 
@@ -278,10 +279,10 @@ int YahooSendMessageW(WPARAM wParam, LPARAM lParam)
 		}
 
 		if (lstrlen(msg) > 800) {/* we don't support very long messages */
-			pthread_create(yahoo_im_sendackfail_longmsg, ccs->hContact);
+			mir_forkthread(yahoo_im_sendackfail_longmsg, ccs->hContact);
 		} else {
 			yahoo_send_msg(dbv.pszVal, msg, (bANSI) ? 0:1);
-		    pthread_create(yahoo_im_sendacksuccess, ccs->hContact);
+		    mir_forkthread(yahoo_im_sendacksuccess, ccs->hContact);
 		}
 
         DBFreeVariant(&dbv);
@@ -340,7 +341,7 @@ int YahooSendNudge(WPARAM wParam, LPARAM lParam)
 	YAHOO_DebugLog("[YAHOO_SENDNUDGE]");
 	
     if (!yahooLoggedIn) {/* don't send nudge if we not connected! */
-        pthread_create(yahoo_im_sendackfail, hContact);
+        mir_forkthread(yahoo_im_sendackfail, hContact);
         return 1;
     }
 
@@ -348,7 +349,7 @@ int YahooSendNudge(WPARAM wParam, LPARAM lParam)
         yahoo_send_msg(dbv.pszVal, "<ding>", 0);
         DBFreeVariant(&dbv);
 
-        pthread_create(yahoo_im_sendacksuccess, hContact);
+        mir_forkthread(yahoo_im_sendacksuccess, hContact);
     
         return 1;
     }

@@ -18,11 +18,7 @@
 /* 
  * Yahoo Services
  */
-#include "pthread.h"
-
-//#include "libyahoo2/config.h"
 #define USE_STRUCT_CALLBACKS
-
 #include "libyahoo2/yahoo2.h"
 #include "libyahoo2/yahoo2_callbacks.h"
 #include "libyahoo2/yahoo_util.h"
@@ -95,21 +91,17 @@ struct _conn {
 //=======================================================
 //	Defines
 //=======================================================
-//General
 extern HANDLE			hNetlibUser;
 extern HINSTANCE		hinstance;
 extern int				yahooStatus;
 extern char				yahooProtocolName[MAX_PATH];
 extern BOOL             yahooLoggedIn;
-
 extern HANDLE           YahooMenuItems[ MENU_ITEMS_COUNT ];
-extern pthread_mutex_t connectionHandleMutex;
+
 
 #ifdef HTTP_GATEWAY
 extern int 				iHTTPGateway;
 #endif
-
-//int ext_yahoo_log(char *fmt,...);
 
 HANDLE __stdcall YAHOO_CreateProtoServiceFunction( 
 	const char* szService,

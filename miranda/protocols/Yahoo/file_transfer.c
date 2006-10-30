@@ -15,6 +15,7 @@
 
 #include "yahoo.h"
 #include <m_protosvc.h>
+#include <m_system.h>
 #include "file_transfer.h"
 
 extern yahoo_local_account * ylad;
@@ -506,7 +507,7 @@ void ext_yahoo_got_file7info(int id, const char *me, const char *who, const char
 		LOG(("ERROR: No Reply???"));
 	}
 	
-	pthread_create(yahoo_recv_filethread, (void *) ft);
+	mir_forkthread(yahoo_recv_filethread, (void *) ft);
 }
 
 /**************** Receive File ********************/
@@ -533,7 +534,7 @@ int YahooFileAllow(WPARAM wParam,LPARAM lParam)
 		return ccs->wParam;
 	}
 	
-    pthread_create(yahoo_recv_filethread, (void *) ft);
+    mir_forkthread(yahoo_recv_filethread, (void *) ft);
 	
     return ccs->wParam;
 }
@@ -674,7 +675,7 @@ int YahooSendFile(WPARAM wParam,LPARAM lParam)
 		}
 
 		YAHOO_DebugLog("who: %s, msg: %s, filename: %s", sf->who, sf->msg, sf->filename);
-		pthread_create(yahoo_send_filethread, sf);
+		mir_forkthread(yahoo_send_filethread, sf);
 		
 		DBFreeVariant(&dbv);
 		YAHOO_DebugLog("Exiting SendRequest...");
