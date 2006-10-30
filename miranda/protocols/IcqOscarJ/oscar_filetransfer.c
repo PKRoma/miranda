@@ -392,9 +392,13 @@ void handleRecvServMsgOFT(unsigned char *buf, WORD wLen, DWORD dwUin, char *szUI
                 szEnc[charset->wLen] = '\0';
                 str = ApplyEncoding(pszDescription, szEnc);
               }
+              // eliminate HTML tags
+              pszDescription = EliminateHtml(str, strlennull(str));
+              if (charset) SAFE_FREE(&str);
+              str = pszDescription;
               // decode XML tags
               pszDescription = DemangleXml(str, strlennull(str));
-              if (charset) SAFE_FREE(&str);
+              SAFE_FREE(&str);
 
               bTag = strstr(pszDescription, "<DESC>");
               if (bTag)
@@ -452,8 +456,8 @@ void handleRecvServMsgOFT(unsigned char *buf, WORD wLen, DWORD dwUin, char *szUI
               szEnc[charset->wLen] = '\0';
               pszFileName = ApplyEncoding(pszFileName, szEnc);
             }
-            else // needs to be alloced
-              pszFileName = null_strdup(pszFileName);
+            else // needs to be alloced & utf-8
+              pszFileName = ansi_to_utf8(pszFileName);
           }
         }
         {
@@ -472,7 +476,7 @@ void handleRecvServMsgOFT(unsigned char *buf, WORD wLen, DWORD dwUin, char *szUI
           szBlob = (char*)_alloca(sizeof(DWORD) + strlennull(pszFileName) + strlennull(pszDescription) + 2);
           *(PDWORD)szBlob = (DWORD)ft;
           strcpy(szBlob + sizeof(DWORD), pszFileName);
-          strcpy(szBlob + sizeof(DWORD) + strlennull(pszFileName) + 1, pszDescription);
+          strcpy(szBlob + sizeof(DWORD) + strlennull(pszFileName) + 1, pszDescription); // FIXME: DB event is ansi only!
           ccs.szProtoService = PSR_FILE;
           ccs.hContact = hContact;
           ccs.wParam = 0;
@@ -607,7 +611,7 @@ int oftInitTransfer(HANDLE hContact, DWORD dwUin, char* szUid, char** files, cha
 {
   oscar_filetransfer *ft;
   int i;
-  struct _stat statbuf;
+  struct _stati64 statbuf;
 
   // Initialize filetransfer struct
   ft = CreateOscarTransfer();
@@ -622,12 +626,12 @@ int oftInitTransfer(HANDLE hContact, DWORD dwUin, char* szUid, char** files, cha
   {
     ft->files[i] = null_strdup(files[i]);
 
-    if (_stat(files[i], &statbuf))
+    if (FileStatUtf(files[i], &statbuf))
       NetLog_Server("IcqSendFile() was passed invalid filename(s)");
     else
-      ft->dwTotalSize += statbuf.st_size;
+      ft->dwTotalSize += statbuf.st_size; // FIXME: add check for 4GB limit
   }
-  ft->szDescription = null_strdup(pszDesc);
+  ft->szDescription = ansi_to_utf8(pszDesc);
   ft->sending = 1;
   ft->fileId = -1;
   ft->iCurrentFile = 0;
@@ -676,7 +680,10 @@ int oftInitTransfer(HANDLE hContact, DWORD dwUin, char* szUid, char** files, cha
     // Send packet
     if (ft->listener)
     {
-      oft_sendFileRequest(dwUin, szUid, ft, pszFiles, ICQGetContactSettingDword(NULL, "RealIP", 0));
+      char* pszUserMsg = ansi_to_utf8(pszFiles);
+
+      oft_sendFileRequest(dwUin, szUid, ft, pszUserMsg, ICQGetContactSettingDword(NULL, "RealIP", 0));
+      SAFE_FREE(&pszUserMsg);
     }
     else
     {
@@ -783,8 +790,7 @@ void oftFileResume(oscar_filetransfer *ft, int action, const char *szFilename)
       break;
   }
 
-  // TODO: unicode support
-  ft->fileId = _open(ft->szThisFile, openFlags, _S_IREAD | _S_IWRITE);
+  ft->fileId = OpenFileUtf(ft->szThisFile, openFlags, _S_IREAD | _S_IWRITE);
   if (ft->fileId == -1)
   {
     icq_LogMessage(LOG_ERROR, "Your file receive has been aborted because Miranda could not open the destination file in order to write to it. You may be trying to save to a read-only folder.");
@@ -830,7 +836,7 @@ static void oft_buildProtoFileTransferStatus(oscar_filetransfer* ft, PROTOFILETR
   pfts->totalBytes = ft->dwTotalSize;
   pfts->totalProgress = ft->dwBytesDone;
   pfts->workingDir = ft->szSavePath;
-  pfts->currentFile = ft->szThisFile;
+  utf8_decode(ft->szThisFile, &pfts->currentFile); 
   pfts->currentFileSize = ft->dwThisFileSize;
   pfts->currentFileTime = ft->dwThisFileDate;
   pfts->currentFileProgress = ft->dwFileBytesDone;
@@ -937,7 +943,7 @@ static DWORD __stdcall oft_connectionThread(oscarthreadstartinfo *otsi)
   oc.dwLocalInternalIP = ICQGetContactSettingDword(NULL, "RealIP", 0);
 
   if (!oc.incoming)
-  { // FIX ME: this needs more work for proxy & sending
+  { // create outgoing connection
     if (oc.type == OCT_NORMAL || oc.type == OCT_REVERSE)
     { // create outgoing connection to peer
       NETLIBOPENCONNECTION nloc = {0};
@@ -1103,8 +1109,7 @@ static DWORD __stdcall oft_connectionThread(oscarthreadstartinfo *otsi)
       if (GetLastError() == ERROR_TIMEOUT)
       { // TODO: this will not work on some systems
         if (oc.wantIdleTime)
-        {
-          // here we should want to send file data packets
+        { // here we want to send file data packets
           oft_sendFileData(&oc);
         }
         else
@@ -1268,7 +1273,7 @@ static int oft_handleProxyData(oscar_connection *oc, unsigned char *buf, int len
       if (oc->type == OCT_PROXY_RECV)
         oft_sendFileAccept(oc->dwUin, oc->szUid, ft);
       NetLog_Server("Proxy Tunnel established");
-      if (ft->sending)
+      if (ft->sending) // FIXME: this needs change for stage 1
         oft_sendPeerInit(oc); // only if sending file...
       break;
 
@@ -1440,18 +1445,19 @@ static void handleOFT2FramePacket(oscar_connection *oc, WORD datatype, BYTE *pBu
       unpackString(&pBuffer, ft->rawFileName, ft->cbRawFileName);
       // Prepare file
       if (ft->wEncoding == 2)
-      { // FIX ME: this is bad
+      { // UCS-2 encoding
         ft->szThisFile = ApplyEncoding(ft->rawFileName, "unicode-2-0");
-        // FIX ME: need to convert dir markings
       }
       else
       {
+        ft->szThisFile = ansi_to_utf8(ft->rawFileName);
+      }
+
+      { // convert dir markings to normal backslashes
         DWORD i;
 
-        ft->szThisFile = null_strdup(ft->rawFileName);
-
         for (i = 0; i < strlennull(ft->szThisFile); i++)
-        { // convert dir markings to normal backslashes
+        {
           if (ft->szThisFile[i] == 0x01) ft->szThisFile[i] = '\\';
         }
       }
@@ -1483,7 +1489,7 @@ static void handleOFT2FramePacket(oscar_connection *oc, WORD datatype, BYTE *pBu
           strcpy(szNewDir, ft->szSavePath);
           NormalizeBackslash(szNewDir);
           strcat(szNewDir, ft->szThisSubdir);
-          _mkdir(szNewDir); // FIX ME: this will fail for multi sub-sub-sub-dirs at once
+          MakeDirUtf(szNewDir); // create directory
         }
         else
           ft->szThisSubdir = null_strdup("");
@@ -1502,7 +1508,7 @@ static void handleOFT2FramePacket(oscar_connection *oc, WORD datatype, BYTE *pBu
       NormalizeBackslash(szFullPath);
       strcat(szFullPath, ft->szThisSubdir);
       NormalizeBackslash(szFullPath);
-      _chdir(szFullPath); // set current dir - not very useful
+//      _chdir(szFullPath); // set current dir - not very useful // FIXME: unicode needed
       strcat(szFullPath, ft->szThisFile);
       // we joined the full path to dest file
       SAFE_FREE(&ft->szThisFile);
@@ -1518,8 +1524,7 @@ static void handleOFT2FramePacket(oscar_connection *oc, WORD datatype, BYTE *pBu
         if (ICQBroadcastAck(ft->hContact, ACKTYPE_FILE, ACKRESULT_FILERESUME, ft, (LPARAM)&pfts))
           break; /* UI supports resume: it will call PS_FILERESUME */
 
-        // TODO: Unicode support
-        ft->fileId = _open(ft->szThisFile, _O_BINARY | _O_CREAT | _O_TRUNC | _O_WRONLY, _S_IREAD | _S_IWRITE);
+        ft->fileId = OpenFileUtf(ft->szThisFile, _O_BINARY | _O_CREAT | _O_TRUNC | _O_WRONLY, _S_IREAD | _S_IWRITE);
         if (ft->fileId == -1)
         { // FIX ME: this needs some UI interaction
           icq_LogMessage(LOG_ERROR, "Your file receive has been aborted because Miranda could not open the destination file in order to write to it. You may be trying to save to a read-only folder.");
@@ -1563,6 +1568,7 @@ static void handleOFT2FramePacket(oscar_connection *oc, WORD datatype, BYTE *pBu
       _close(ft->fileId);
       ft->fileId = -1;
       ft->iCurrentFile++;
+      // continue with next file
       oft_sendPeerInit(oc);
     }
     break;
@@ -1641,13 +1647,16 @@ static void oft_sendFileData(oscar_connection *oc)
     return;
 
   if (!bytesRead)
-  {
+  { //
     oc->wantIdleTime = 0;
     return;
   }
 
   if ((DWORD)bytesRead > (ft->dwThisFileSize - ft->dwFileBytesDone))
-    bytesRead = ft->dwThisFileSize - ft->dwFileBytesDone;    // do not send more than expected
+  { // do not send more than expected, limit to known size
+    bytesRead = ft->dwThisFileSize - ft->dwFileBytesDone;
+    oc->wantIdleTime = 0;
+  }
   packet.wLen = bytesRead;
   init_generic_packet(&packet, 0);
   packBuffer(&packet, buf, (WORD)bytesRead); // we are sending raw data
@@ -1656,7 +1665,7 @@ static void oft_sendFileData(oscar_connection *oc)
   ft->dwBytesDone += bytesRead;
   ft->dwFileBytesDone += bytesRead;
 
-  if (GetTickCount() > ft->dwLastNotify + 500 || bytesRead == 0)
+  if (GetTickCount() > ft->dwLastNotify + 700 || bytesRead == 0)
   {
     PROTOFILETRANSFERSTATUS pfts;
 
@@ -1671,7 +1680,7 @@ static void oft_sendFileData(oscar_connection *oc)
 static void oft_sendPeerInit(oscar_connection *oc)
 {
   oscar_filetransfer *ft = oc->ft;
-  struct _stat statbuf;
+  struct _stati64 statbuf;
   char *pszThisFileName;
   char szThisSubDir[MAX_PATH];
 
@@ -1684,7 +1693,7 @@ static void oft_sendPeerInit(oscar_connection *oc)
   }
 
   ft->szThisFile = null_strdup(ft->files[ft->iCurrentFile]);
-  if (_stat(ft->szThisFile, &statbuf))
+  if (FileStatUtf(ft->szThisFile, &statbuf))
   {
     icq_LogMessage(LOG_ERROR, "Your file transfer has been aborted because one of the files that you selected to send is no longer readable from the disk. You may have deleted or moved it.");
     CloseOscarConnection(oc);
@@ -1739,7 +1748,7 @@ static void oft_sendPeerInit(oscar_connection *oc)
   }
   else
   {
-    ft->fileId = _open(ft->szThisFile, _O_BINARY | _O_RDONLY);
+    ft->fileId = OpenFileUtf(ft->szThisFile, _O_BINARY | _O_RDONLY, 0);
     if (ft->fileId == -1)
     {
       icq_LogMessage(LOG_ERROR, "Your file transfer has been aborted because one of the files that you selected to send is no longer readable from the disk. You may have deleted or moved it.");

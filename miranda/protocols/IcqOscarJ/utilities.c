@@ -1644,6 +1644,78 @@ WORD GetMyStatusFlags()
 
 
 
+int FileStatUtf(const char *path, struct _stati64 *buffer)
+{
+  int wRes = -1;
+
+  if (gbUnicodeAPI)
+  {
+    wchar_t* usPath = make_unicode_string(path);
+
+    wRes = _wstati64(usPath, buffer);
+    SAFE_FREE(&usPath);
+  }
+  else
+  {
+    int size = strlennull(path)+2;
+    char* szAnsiPath = (char*)_alloca(size);
+
+    if (utf8_decode_static(path, szAnsiPath, size))
+      wRes = _stati64(szAnsiPath, buffer);
+  }
+  return wRes;
+}
+
+
+
+int MakeDirUtf(const char *dir)
+{
+  int wRes = -1;
+
+  if (gbUnicodeAPI)
+  {
+    wchar_t* usDir = make_unicode_string(dir);
+
+    wRes = _wmkdir(usDir);
+    SAFE_FREE(&usDir);
+  }
+  else
+  {
+    int size = strlennull(dir)+2;
+    char* szAnsiDir = (char*)_alloca(size);
+
+    if (utf8_decode_static(dir, szAnsiDir, size))
+      wRes = _mkdir(szAnsiDir); // FIXME: according to MSDN this fails for multiple dirs at one!!!!!
+  }
+  return wRes;
+}
+
+
+
+int OpenFileUtf(const char *filename, int oflag, int pmode)
+{
+  int hFile = -1;
+
+  if (gbUnicodeAPI)
+  {
+    wchar_t* usFile = make_unicode_string(filename);
+
+    hFile = _wopen(usFile, oflag, pmode);
+    SAFE_FREE(&usFile);
+  }
+  else
+  {
+    int size = strlennull(filename)+2;
+    char* szAnsiFile = (char*)_alloca(size);
+
+    if (utf8_decode_static(filename, szAnsiFile, size))
+      hFile = _open(szAnsiFile, oflag, pmode); 
+  }
+  return hFile;
+}
+
+
+
 wchar_t *GetWindowTextUcs(HWND hWnd)
 {
   wchar_t *utext;

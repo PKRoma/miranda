@@ -137,6 +137,12 @@ char* __fastcall ICQTranslateUtfStatic(const char* src, char* buf);
 char* GetUserPassword(BOOL bAlways);
 WORD GetMyStatusFlags();
 
+/* Unicode FS utility functions */
+
+int FileStatUtf(const char *path, struct _stati64 *buffer);
+int MakeDirUtf(const char *dir);
+int OpenFileUtf(const char *filename, int oflag, int pmode);
+
 /* Unicode UI utility functions */
 wchar_t* GetWindowTextUcs(HWND hWnd);
 void SetWindowTextUcs(HWND hWnd, wchar_t *text);
