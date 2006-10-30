@@ -7,7 +7,7 @@
 
 extern HINSTANCE g_hInst;
 extern char *DBGetStringA(HANDLE hContact,const char *szModule,const char *szSetting);
-extern int CluiProtocolStatusChanged(WPARAM wParam,LPARAM lParam);
+extern int CLUIServices_ProtocolStatusChanged(WPARAM wParam,LPARAM lParam);
 extern int MenuModulesLoaded(WPARAM wParam,LPARAM lParam);
 extern void ClcOptionsChanged(void);
 //extern int ImageList_AddIcon_FixAlpha(HIMAGELIST himl,HICON hicon);
@@ -21,7 +21,7 @@ struct ProtocolOrderData {
 
 #define PrVer 3
 
-char **settingname;
+char **pszSettingName;
 int arrlen;
 
 int enumDB_ProtoProc (const char *szSetting,LPARAM lParam)
@@ -29,8 +29,8 @@ int enumDB_ProtoProc (const char *szSetting,LPARAM lParam)
 	
 	if (szSetting==NULL){return(0);};
 	arrlen++;
-	settingname=(char **)realloc(settingname,arrlen*sizeof(char *));
-	settingname[arrlen-1]=_strdup(szSetting);
+	pszSettingName=(char **)realloc(pszSettingName,arrlen*sizeof(char *));
+	pszSettingName[arrlen-1]=_strdup(szSetting);
 	return(0);
 };
 
@@ -52,17 +52,17 @@ if (arrlen==0){return(0);};
 	int i;
 	for (i=0;i<arrlen;i++)
 	{
-	  DBDeleteContactSetting(0,"Protocols",settingname[i]);
-	  free(settingname[i]);
+	  DBDeleteContactSetting(0,"Protocols",pszSettingName[i]);
+	  free(pszSettingName[i]);
 	};
-	free(settingname);
-	settingname=NULL;
+	free(pszSettingName);
+	pszSettingName=NULL;
 };
 return(0);
 };
 
 
-int CheckProtocolOrder()
+int ProtocolOrder_CheckOrder()
 {
 	boolean protochanged=FALSE;
 	int StoredProtoCount;
@@ -103,11 +103,11 @@ int CheckProtocolOrder()
 				if (CallService(MS_PROTO_ISPROTOCOLLOADED,0,(LPARAM)curproto)==0)
         {
           protochanged=TRUE;
-          if (curproto!=NULL){ mir_free(curproto);}
+          if (curproto!=NULL){ mir_free_and_nill(curproto);}
           break;
         };		
 				
-				if (curproto!=NULL){ mir_free(curproto);};
+				if (curproto!=NULL){ mir_free_and_nill(curproto);};
 			};
 	};		
 	if (protochanged)
@@ -164,7 +164,7 @@ int FillTree(HWND hwnd)
 			tvis.hInsertAfter=TVI_LAST;
 			tvis.item.mask=TVIF_PARAM|TVIF_TEXT|TVIF_IMAGE|TVIF_SELECTEDIMAGE;	
 			
-//			CheckProtocolOrder();
+//			ProtocolOrder_CheckOrder();
 			TreeView_DeleteAllItems(hwnd);
 			count=DBGetContactSettingDword(0,"Protocols","ProtoCount",-1);
 			if (count==-1){return(FALSE);};
@@ -202,7 +202,7 @@ int FillTree(HWND hwnd)
 				tvis.item.iImage=tvis.item.iSelectedImage=PD->show;
 				TreeView_InsertItem(hwnd,&tvis);
 #ifdef UNICODE
-				if (buf2) mir_free(buf2);
+				if (buf2) mir_free_and_nill(buf2);
 #endif
 				//tvis.item.iImage=tvis.item.iSelectedImage=PD->show;
 				//TreeView_InsertItem(GetDlgItem(hwndDlg,IDC_PROTOCOLVISIBILITY),&tvis);
@@ -231,12 +231,12 @@ BOOL CALLBACK ProtocolOrderOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lP
 
 			{	HIMAGELIST himlCheckBoxes;
 				himlCheckBoxes=ImageList_Create(GetSystemMetrics(SM_CXSMICON),GetSystemMetrics(SM_CYSMICON),ILC_COLOR32|ILC_MASK,2,2);
-				ImageList_AddIcon(himlCheckBoxes,LoadIcon(GetModuleHandle(NULL),MAKEINTRESOURCE(IDI_NOTICK)));
-				ImageList_AddIcon(himlCheckBoxes,LoadIcon(GetModuleHandle(NULL),MAKEINTRESOURCE(IDI_TICK)));
+				ImageList_AddIcon(himlCheckBoxes,LoadSmallIconShared(GetModuleHandle(NULL),MAKEINTRESOURCE(IDI_NOTICK)));
+				ImageList_AddIcon(himlCheckBoxes,LoadSmallIconShared(GetModuleHandle(NULL),MAKEINTRESOURCE(IDI_TICK)));
 				TreeView_SetImageList(GetDlgItem(hwndDlg,IDC_PROTOCOLORDER),himlCheckBoxes,TVSIL_NORMAL);
 			}
 
-			CheckProtocolOrder();
+			ProtocolOrder_CheckOrder();
 			FillTree(GetDlgItem(hwndDlg,IDC_PROTOCOLORDER));
 
 			return TRUE;
@@ -249,9 +249,9 @@ BOOL CALLBACK ProtocolOrderOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lP
 				if (lParam==(LPARAM)GetDlgItem(hwndDlg,IDC_RESETPROTOCOLDATA))	
 				{
 							DBWriteContactSettingDword(0,"Protocols","ProtoCount",-1);
-							CheckProtocolOrder();
+							ProtocolOrder_CheckOrder();
 							FillTree(GetDlgItem(hwndDlg,IDC_PROTOCOLORDER));
-							CluiProtocolStatusChanged(0,0);
+							CLUIServices_ProtocolStatusChanged(0,0);
 							SendMessage(GetParent(hwndDlg), PSM_CHANGED, (WPARAM)hwndDlg, 0);
 							//BuildStatusMenu(0,0);
 				return(0);			
@@ -296,7 +296,7 @@ BOOL CALLBACK ProtocolOrderOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lP
 								
 								count++;
 							}
-							CluiProtocolStatusChanged(0,0);
+							CLUIServices_ProtocolStatusChanged(0,0);
 							MenuModulesLoaded(0,0);
 							pcli->pfnTrayIconIconsChanged();
 							ClcOptionsChanged();
@@ -320,7 +320,7 @@ BOOL CALLBACK ProtocolOrderOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lP
 								((ProtocolData *)tvi.lParam)->show=tvi.iImage;
 								TreeView_SetItem(((LPNMHDR)lParam)->hwndFrom,&tvi);
 								SendMessage(GetParent(hwndDlg), PSM_CHANGED, (WPARAM)hwndDlg, 0);
-								ShowWindowNew(GetDlgItem(hwndDlg,IDC_PROTOCOLORDERWARNING),SW_SHOW);
+								CLUI_ShowWindowMod(GetDlgItem(hwndDlg,IDC_PROTOCOLORDERWARNING),SW_SHOW);
 							}
 					}
 					break;
@@ -332,7 +332,7 @@ BOOL CALLBACK ProtocolOrderOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lP
 							dat->dragging=1;
 							dat->hDragItem=((LPNMTREEVIEW)lParam)->itemNew.hItem;
 							TreeView_SelectItem(GetDlgItem(hwndDlg,IDC_PROTOCOLORDER),dat->hDragItem);
-							//ShowWindowNew(GetDlgItem(hwndDlg,IDC_PROTOCOLORDERWARNING),SW_SHOW);
+							//CLUI_ShowWindowMod(GetDlgItem(hwndDlg,IDC_PROTOCOLORDERWARNING),SW_SHOW);
 							break;
 						case NM_CLICK:
 							{
@@ -353,7 +353,7 @@ BOOL CALLBACK ProtocolOrderOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lP
 								SendMessage(GetParent(hwndDlg), PSM_CHANGED, (WPARAM)hwndDlg, 0);
 								
 								//all changes take effect in runtime
-								//ShowWindowNew(GetDlgItem(hwndDlg,IDC_PROTOCOLORDERWARNING),SW_SHOW);
+								//CLUI_ShowWindowMod(GetDlgItem(hwndDlg,IDC_PROTOCOLORDERWARNING),SW_SHOW);
 							}
 							
 							
@@ -428,7 +428,7 @@ BOOL CALLBACK ProtocolOrderOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lP
 
 static int ProtocolOrderInit(WPARAM wParam,LPARAM lParam) {
 	OPTIONSDIALOGPAGE odp;
-
+    if (MirandaExiting()) return 0;
 	ZeroMemory(&odp,sizeof(odp));
 	odp.cbSize=sizeof(odp);
 	odp.position=-10000000;
@@ -444,7 +444,7 @@ static int ProtocolOrderInit(WPARAM wParam,LPARAM lParam) {
 	return 0;
 }
 
-int LoadProtocolOrderModule(void) {
+int ProtocolOrder_LoadModule(void) {
 	HookEvent(ME_OPT_INITIALISE,ProtocolOrderInit);
 	return 0;
 }

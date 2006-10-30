@@ -4,10 +4,10 @@
 	Version="7.10"
 	Name="miranda32"
 	RootNamespace="miranda32"
-	SccProjectName="&quot;$/Miranda/miranda&quot;, SHIAAAAA"
+	SccProjectName=""
 	SccAuxPath=""
-	SccLocalPath=".."
-	SccProvider="MSSCCI:Microsoft Visual SourceSafe">
+	SccLocalPath=""
+	SccProvider="">
 	<Platforms>
 		<Platform
 			Name="Win32"/>
@@ -28,7 +28,7 @@
 				InlineFunctionExpansion="1"
 				FavorSizeOrSpeed="2"
 				AdditionalIncludeDirectories="../include"
-				PreprocessorDefinitions="NDEBUG;WIN32;_WINDOWS;_NOSDK"
+				PreprocessorDefinitions="NDEBUG;WIN32;_WINDOWS;_NOSDK;_STATIC"
 				StringPooling="TRUE"
 				ExceptionHandling="FALSE"
 				RuntimeLibrary="2"
@@ -99,7 +99,7 @@
 				Name="VCCLCompilerTool"
 				Optimization="0"
 				AdditionalIncludeDirectories="../include"
-				PreprocessorDefinitions="_DEBUG;WIN32;_WINDOWS;_NOSDK"
+				PreprocessorDefinitions="_DEBUG;WIN32;_WINDOWS;_NOSDK;_STATIC"
 				ExceptionHandling="FALSE"
 				RuntimeLibrary="3"
 				UsePrecompiledHeader="3"
@@ -166,7 +166,7 @@
 				FavorSizeOrSpeed="2"
 				OmitFramePointers="FALSE"
 				AdditionalIncludeDirectories="../include"
-				PreprocessorDefinitions="NDEBUG;WIN32;_WINDOWS;_NOSDK"
+				PreprocessorDefinitions="NDEBUG;WIN32;_WINDOWS;_NOSDK;_STATIC"
 				StringPooling="TRUE"
 				ExceptionHandling="FALSE"
 				RuntimeLibrary="2"
@@ -237,7 +237,7 @@
 				Name="VCCLCompilerTool"
 				Optimization="0"
 				AdditionalIncludeDirectories="../include"
-				PreprocessorDefinitions="_DEBUG;WIN32;_WINDOWS;_NOSDK"
+				PreprocessorDefinitions="_DEBUG;WIN32;_WINDOWS;_NOSDK;_STATIC"
 				ExceptionHandling="FALSE"
 				RuntimeLibrary="3"
 				UsePrecompiledHeader="3"
@@ -1582,6 +1582,9 @@
 							PreprocessorDefinitions=""
 							BrowseInformation="1"/>
 					</FileConfiguration>
+				</File>
+				<File
+					RelativePath=".\modules\netlib\netlibupnp.c">
 				</File>
 			</Filter>
 			<Filter
