@@ -231,10 +231,6 @@
 				>
 			</File>
 			<File
-				RelativePath=".\pthread.c"
-				>
-			</File>
-			<File
 				RelativePath=".\search.c"
 				>
 			</File>
@@ -345,10 +341,6 @@
 			>
 			<File
 				RelativePath=".\http_gateway.h"
-				>
-			</File>
-			<File
-				RelativePath=".\pthread.h"
 				>
 			</File>
 			<File

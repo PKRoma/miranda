@@ -48,8 +48,6 @@ HANDLE   hHookContactDeleted;
 HANDLE   hHookIdle;
 HANDLE   hYahooNudge = NULL;
 
-pthread_mutex_t connectionHandleMutex;
-
 PLUGININFO pluginInfo={
 		sizeof(PLUGININFO),
 #ifdef YAHOO_CVSBUILD
@@ -134,7 +132,6 @@ int __declspec(dllexport) Unload(void)
 		yahoo_logout();
 
 	YAHOO_DebugLog("Logged out");
-	pthread_mutex_destroy(&connectionHandleMutex);
 
 	LocalEventUnhook(hHookContactDeleted);
 	LocalEventUnhook(hHookIdle);
@@ -299,8 +296,6 @@ int __declspec(dllexport)Load(PLUGINLINK *link)
 	SkinAddNewSoundEx(Translate( "mail" ), yahooProtocolName, "New E-mail available in Inbox" );
 
 	LoadYahooServices();
-
-	pthread_mutex_init(&connectionHandleMutex);	
-    return 0;
+	return 0;
 }
 

@@ -4,10 +4,10 @@
 	Version="7.10"
 	Name="Yahoo"
 	ProjectGUID="{E42870DB-9FED-44E7-9C93-4E64D0C87F51}"
-	SccProjectName="SAK"
-	SccAuxPath="SAK"
-	SccLocalPath="SAK"
-	SccProvider="SAK">
+	SccProjectName="&quot;$/Miranda/miranda/protocols/Yahoo&quot;, NODAAAAA"
+	SccAuxPath=""
+	SccLocalPath="."
+	SccProvider="MSSCCI:Microsoft Visual SourceSafe">
 	<Platforms>
 		<Platform
 			Name="Win32"/>
@@ -289,9 +289,6 @@
 			</File>
 			<File
 				RelativePath=".\options.c">
-			</File>
-			<File
-				RelativePath=".\pthread.c">
 			</File>
 			<File
 				RelativePath=".\search.c">
