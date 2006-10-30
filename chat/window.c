@@ -1058,10 +1058,6 @@ BOOL CALLBACK RoomWndProc(HWND hwndDlg,UINT uMsg,WPARAM wParam,LPARAM lParam)
 			SendDlgItemMessage(hwndDlg, IDC_CHAT_LOG, EM_LIMITTEXT, (WPARAM)sizeof(TCHAR)*0x7FFFFFFF, 0);
 			SendDlgItemMessage(hwndDlg, IDC_CHAT_LOG, EM_SETOLECALLBACK, 0, (LPARAM) & reOleCallback);
 
-//			RichUtil_SubClass(GetDlgItem(hwndDlg, IDC_CHAT_MESSAGE));
-//			RichUtil_SubClass(GetDlgItem(hwndDlg, IDC_CHAT_LOG));
-
-
 			EnableWindow(GetDlgItem(hwndDlg, IDC_CHAT_SMILEY), TRUE);
 
 			SendMessage(GetDlgItem(hwndDlg, IDC_CHAT_LOG), EM_HIDESELECTION, TRUE, 0);

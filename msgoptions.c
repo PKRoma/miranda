@@ -215,13 +215,13 @@ static void SetOptionsDlgToType(HWND hwnd, int iExpert)
 	rc.top = rc.bottom = rc.left = rc.right = 0;
 	TabCtrl_DeleteAllItems(tc);
 	tci.mask = TCIF_TEXT;
-	for (i=0; i < sizeof(tabPages)/sizeof(tabPages[0]) - (iExpert ? 0 : 0); i++) {
+	for (i=0; i < SIZEOF(tabPages) - (iExpert ? 0 : 0); i++) {
 		tci.pszText = TranslateTS(tabPages[i].tabName);
 		TabCtrl_InsertItem(tc, i, &tci);
 	}
 	GetClientRect(tc, &rc);
 	TabCtrl_AdjustRect(tc, FALSE, &rc);
-	for (i=0; i < sizeof(tabPages)/sizeof(tabPages[0]) - (iExpert ? 0 : 0); i++) {
+	for (i=0; i < SIZEOF(tabPages) - (iExpert ? 0 : 0); i++) {
 		SetWindowPos(tabPages[i].hwnd, HWND_TOP, rc.left, rc.top, rc.right - rc.left, rc.bottom - rc.top, SWP_HIDEWINDOW);
 	}
 	hwndCurrentTab = tabPages[0].hwnd;

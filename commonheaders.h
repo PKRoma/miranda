@@ -71,7 +71,6 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include <m_file.h>
 #include "globals.h"
 #include "msgs.h"
-#include "richutil.h"
 #include "msgwindow.h"
 #include "utils.h"
 

@@ -36,11 +36,6 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
    (UINT)SNDMSG((hwndTV), TVM_GETITEMSTATE, (WPARAM)(hti), (LPARAM)(mask))
 #endif
 
-#ifndef NDEBUG
-#include <crtdbg.h>
-#define new new(_NORMAL_BLOCK, __FILE__, __LINE__)
-#endif
-
 #ifndef CFM_BACKCOLOR
 #define CFM_BACKCOLOR		0x04000000
 #endif
