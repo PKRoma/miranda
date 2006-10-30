@@ -312,7 +312,7 @@ static void MsgWindowUpdateState(HWND hwndDlg, struct MessageWindowData *dat, UI
             PostMessage(hwnd, WM_VSCROLL, MAKEWPARAM(SB_PAGEDOWN, 0), 0);
         }
         DM_SetDBButtonStates(hwndDlg, dat);
-        if(dat->hwndIEView || dat->hwndHPP) {
+        if(dat->hwndIEView) {
             RECT rcRTF;
             POINT pt;
 
@@ -329,6 +329,9 @@ static void MsgWindowUpdateState(HWND hwndDlg, struct MessageWindowData *dat, UI
             }
             dat->hwndIWebBrowserControl = WindowFromPoint(pt);
         }
+        else if(dat->hwndHPP)
+            dat->hwndIWebBrowserControl = dat->hwndHPP;
+
         if(dat->dwFlagsEx & MWF_EX_DELAYEDSPLITTER) {
             dat->dwFlagsEx &= ~MWF_EX_DELAYEDSPLITTER;
             ShowWindow(dat->pContainer->hwnd, SW_RESTORE);
@@ -3722,19 +3725,26 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                         unsigned int iSize = 0;
                         SETTEXTEX stx = {ST_SELECTION, 1200};
 #endif                        
-                        if(dat->hwndIEView != 0) {                 // IEView quoting support..
+                        if(dat->hwndIEView || dat->hwndHPP) {                 // IEView quoting support..
                             TCHAR *selected = 0, *szQuoted = 0;
                             IEVIEWEVENT event;
                             ZeroMemory((void *)&event, sizeof(event));
                             event.cbSize = sizeof(IEVIEWEVENT);
-                            event.hwnd = dat->hwndIEView;
                             event.hContact = dat->hContact;
                             event.dwFlags = 0;
 #if !defined(_UNICODE)
                             event.dwFlags |= IEEF_NO_UNICODE;
 #endif                            
                             event.iType = IEE_GET_SELECTION;
-                            selected = (TCHAR *)CallService(MS_IEVIEW_EVENT, 0, (LPARAM)&event);
+                            if(dat->hwndIEView) {
+                                event.hwnd = dat->hwndIEView;
+                                selected = (TCHAR *)CallService(MS_IEVIEW_EVENT, 0, (LPARAM)&event);
+                            }
+                            else {
+                                event.hwnd = dat->hwndHPP;
+                                selected = (TCHAR *)CallService(MS_HPP_EG_EVENT, 0, (LPARAM)&event);
+                            }
+
                             if(selected != NULL) {
                                 szQuoted = QuoteText(selected, 64, 0);
 #if defined(_UNICODE)

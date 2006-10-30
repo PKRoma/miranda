@@ -1531,6 +1531,10 @@ void StreamInEvents(HWND hwndDlg, HANDLE hDbEventFirst, int count, int fAppend, 
         CallService(MS_IEVIEW_EVENT, 0, (LPARAM)&event);
         //SendMessage(hwndDlg, DM_FORCESCROLL, (WPARAM)&pt, (LPARAM)&si);
         DM_ScrollToBottom(hwndDlg, dat, 0, 0);
+        if(fAppend)
+            dat->hDbEventLast = hDbEventFirst;
+        else
+            dat->hDbEventLast = (HANDLE)CallService(MS_DB_EVENT_FINDLAST, (WPARAM)dat->hContact, 0);
         return;
     }
     if(dat->hwndHPP != 0) {
@@ -1561,6 +1565,10 @@ void StreamInEvents(HWND hwndDlg, HANDLE hDbEventFirst, int count, int fAppend, 
         CallService(MS_HPP_EG_EVENT, 0, (LPARAM)&event);
         //SendMessage(hwndDlg, DM_FORCESCROLL, (WPARAM)&pt, (LPARAM)&si);
         DM_ScrollToBottom(hwndDlg, dat, 0, 0);
+        if(fAppend)
+            dat->hDbEventLast = hDbEventFirst;
+        else
+            dat->hDbEventLast = (HANDLE)CallService(MS_DB_EVENT_FINDLAST, (WPARAM)dat->hContact, 0);
         return;
     }
 
