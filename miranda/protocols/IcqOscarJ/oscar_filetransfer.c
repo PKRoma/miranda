@@ -641,7 +641,7 @@ int oftInitTransfer(HANDLE hContact, DWORD dwUin, char* szUid, char** files, cha
   ft->dwTotalSize = 0;
   for (i = 0; i < (int)ft->wFilesCount; i++)
   {
-    ft->files[i] = null_strdup(files[i]);
+    ft->files[i] = ansi_to_utf8(files[i]);
 
     if (FileStatUtf(files[i], &statbuf))
       NetLog_Server("IcqSendFile() was passed invalid filename(s)");
