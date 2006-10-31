@@ -1391,8 +1391,8 @@ static void handleOFT2FramePacket(oscar_connection *oc, WORD datatype, BYTE *pBu
   DWORD dwID1;
   DWORD dwID2;
 
-  if (wLen < 248)
-  {
+  if (wLen < 232)
+  { // allow shorter packets, but at least with filename
     NetLog_Direct("Error: Malformed OFT2 Frame, ignoring.");
     return;
   }
@@ -1467,7 +1467,7 @@ static void handleOFT2FramePacket(oscar_connection *oc, WORD datatype, BYTE *pBu
         pBuffer += 85;
       unpackWord(&pBuffer, &ft->wEncoding);
       unpackWord(&pBuffer, &ft->wSubEncoding);
-      ft->cbRawFileName = wLen - 184;
+      ft->cbRawFileName = wLen - 176;
       SAFE_FREE(&ft->rawFileName); // release previous buffers
       SAFE_FREE(&ft->szThisFile);
       ft->rawFileName = (char*)SAFE_MALLOC(ft->cbRawFileName);
