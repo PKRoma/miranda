@@ -555,17 +555,34 @@ void handleRecvServMsgOFT(unsigned char *buf, WORD wLen, DWORD dwUin, char *szUI
   { // transfer canceled/aborted
     oscar_filetransfer *ft = FindOscarTransfer(hContact, dwID1, dwID2);
 
-    NetLog_Server("OFT: File transfer denied by %s", strUID(dwUin, szUID));
+    if (ft)
+    {
+      NetLog_Server("OFT: File transfer denied by %s", strUID(dwUin, szUID));
 
-    ICQBroadcastAck(ft->hContact, ACKTYPE_FILE, ACKRESULT_DENIED, (HANDLE)ft, 0);
-    if (ft->connection)
-      CloseOscarConnection(ft->connection);
-    FreeCookie(ft->dwCookie);
-    SafeReleaseFileTransfer(&ft);
+      ICQBroadcastAck(ft->hContact, ACKTYPE_FILE, ACKRESULT_DENIED, (HANDLE)ft, 0);
+      if (ft->connection)
+        CloseOscarConnection(ft->connection);
+      FreeCookie(ft->dwCookie);
+      SafeReleaseFileTransfer(&ft);
+    }
+    else
+      NetLog_Server("Error: Invalid request, no such transfer");
   }
   else if (wCommand == 2)
   { // transfer accepted - connection established
-    // TODO: should we do something here or ignore quietly ?
+    oscar_filetransfer *ft = FindOscarTransfer(hContact, dwID1, dwID2);
+
+    if (ft)
+    {
+      NetLog_Server("OFT: Session established.");
+      // Init connection
+      if (ft->sending && ft->connection)
+        oft_sendPeerInit((oscar_connection*)ft->connection);
+      else
+        NetLog_Server("Warning: Received invalid rendezvous accept");
+    }
+    else
+      NetLog_Server("Error: Invalid request, no such transfer");
   }
   else
   {
@@ -785,7 +802,7 @@ void oftFileResume(oscar_filetransfer *ft, int action, const char *szFilename)
     case FILERESUME_RENAME:
       openFlags = _O_BINARY | _O_CREAT | _O_TRUNC | _O_WRONLY;
       SAFE_FREE(&ft->szThisFile);
-      ft->szThisFile = null_strdup(szFilename);
+      ft->szThisFile = ansi_to_utf8(szFilename);
       ft->dwFileBytesDone = 0;
       break;
   }
@@ -806,13 +823,19 @@ void oftFileResume(oscar_filetransfer *ft, int action, const char *szFilename)
 
   ft->dwBytesDone += ft->dwFileBytesDone;
 
-  // Send "we are ready"
-  oc->status = OCS_DATA;
+  if (action == FILERESUME_SKIP)
+  { // we are skiping the file, send "we are done"
+    oc->status = OCS_NEGOTIATION;
+  }
+  else
+  { // Send "we are ready"
+    oc->status = OCS_DATA;
 
-  sendOFT2FramePacket(oc, OFT_TYPE_READY);
+    sendOFT2FramePacket(oc, OFT_TYPE_READY);
+  }
   ICQBroadcastAck(ft->hContact, ACKTYPE_FILE, ACKRESULT_NEXTFILE, ft, 0);
 
-  if (!ft->dwThisFileSize)
+  if (!ft->dwThisFileSize || action == FILERESUME_SKIP)
   { // if the file is empty we will not receive any data
     BYTE buf;
     oft_handleFileData(oc, &buf, 0);
@@ -873,6 +896,29 @@ void OpenOscarConnection(HANDLE hContact, oscar_filetransfer *ft, int type)
 
   tid.hThread = (HANDLE)forkthreadex(NULL, 0, oft_connectionThread, otsi, 0, &tid.dwThreadId);
   CloseHandle(tid.hThread);
+}
+
+
+
+static int CreateOscarProxyConnection(oscar_connection *oc)
+{
+  NETLIBOPENCONNECTION nloc = {0};
+
+  nloc.cbSize = sizeof(nloc);
+  nloc.szHost = OSCAR_PROXY_HOST;
+  nloc.wPort = OSCAR_PROXY_PORT;
+  oc->hConnection = NetLib_OpenConnection(ghServerNetlibUser, "Proxy ", &nloc);
+  if (!oc->hConnection)
+  { // proxy connection failed
+    return 0;
+  }
+  oc->type = OCT_PROXY;
+  oc->status = OCS_PROXY;
+  oc->ft->connection = oc;
+  // init proxy
+  proxy_sendInitTunnel(oc);
+
+  return 1; // Success
 }
 
 
@@ -972,22 +1018,14 @@ static DWORD __stdcall oft_connectionThread(oscarthreadstartinfo *otsi)
 
           return 0;
         }
-        nloc.szHost = OSCAR_PROXY_HOST;
-        nloc.wPort = OSCAR_PROXY_PORT;
-        oc.hConnection = NetLib_OpenConnection(ghServerNetlibUser, "Proxy ", &nloc);
-        if (!oc.hConnection)
+        if (!CreateOscarProxyConnection(&oc))
         { // proxy connection failed, we are out of possibilities
           ICQBroadcastAck(oc.ft->hContact, ACKTYPE_FILE, ACKRESULT_FAILED, oc.ft, 0);
 
           return 0;
         }
-        oc.type = OCT_PROXY;
-        oc.status = OCS_PROXY;
-        oc.ft->connection = &oc;
-        // init proxy
-        proxy_sendInitTunnel(&oc);
       }
-      else if (addr.S_un.S_addr)
+      else if (addr.S_un.S_addr && oc.ft->wRemotePort)
       {
         nloc.szHost = inet_ntoa(addr);
         nloc.wPort = oc.ft->wRemotePort;
@@ -1008,30 +1046,30 @@ static DWORD __stdcall oft_connectionThread(oscarthreadstartinfo *otsi)
               return 0;
             }
           }
-          nloc.szHost = OSCAR_PROXY_HOST;
-          nloc.wPort = OSCAR_PROXY_PORT;
-          oc.hConnection = NetLib_OpenConnection(ghServerNetlibUser, "Proxy ", &nloc);
-          if (!oc.hConnection)
+          if (!CreateOscarProxyConnection(&oc))
           { // proxy connection failed, we are out of possibilities
             ICQBroadcastAck(oc.ft->hContact, ACKTYPE_FILE, ACKRESULT_FAILED, oc.ft, 0);
 
             return 0;
           }
-          oc.type = OCT_PROXY;
-          oc.status = OCS_PROXY;
-          oc.ft->connection = &oc;
-          // init proxy
-          proxy_sendInitTunnel(&oc);
         }
         else
         { // ack normal connection
           oc.ft->connection = &oc;
           // acknowledge OFT - connection is ready
           oft_sendFileAccept(oc.dwUin, oc.szUid, oc.ft);
+          // signal UI
+          ICQBroadcastAck(oc.ft->hContact, ACKTYPE_FILE, ACKRESULT_CONNECTED, oc.ft, 0);
         }
       }
       else
-      { // FIXME: try proxy (sending)
+      { // try proxy, stage 3 (sending)
+        if (!CreateOscarProxyConnection(&oc))
+        { // proxy connection failed, we are out of possibilities
+          ICQBroadcastAck(oc.ft->hContact, ACKTYPE_FILE, ACKRESULT_FAILED, oc.ft, 0);
+
+          return 0;
+        }
       }
     }
     else if (oc.type == OCT_PROXY_RECV)
@@ -1057,22 +1095,12 @@ static DWORD __stdcall oft_connectionThread(oscarthreadstartinfo *otsi)
     }
     else if (oc.type == OCT_PROXY)
     {
-      NETLIBOPENCONNECTION nloc = {0};
-
-      nloc.cbSize = sizeof(nloc);
-      nloc.szHost = OSCAR_PROXY_HOST;
-      nloc.wPort = OSCAR_PROXY_PORT;
-      oc.hConnection = NetLib_OpenConnection(ghServerNetlibUser, "Proxy ", &nloc);
-      if (!oc.hConnection)
+      if (!CreateOscarProxyConnection(&oc))
       { // proxy connection failed, we are out of possibilities
         ICQBroadcastAck(oc.ft->hContact, ACKTYPE_FILE, ACKRESULT_FAILED, oc.ft, 0);
         // FIX ME: here probably should be notified the other side, that we failed
         return 0;
       }
-      oc.status = OCS_PROXY;
-      oc.ft->connection = &oc;
-      // init proxy
-      proxy_sendInitTunnel(&oc);
     }
   }
   if (!oc.hConnection)
@@ -1080,12 +1108,10 @@ static DWORD __stdcall oft_connectionThread(oscarthreadstartinfo *otsi)
     NetLog_Direct("Error: No OFT connection.");
     return 0;
   }
-  // Connected, notify FT UI
-  ICQBroadcastAck(oc.ft->hContact, ACKTYPE_FILE, ACKRESULT_INITIALISING, oc.ft, 0);
-  // Init connection
-  if (oc.ft->sending && oc.status != OCS_PROXY)
-    oft_sendPeerInit(&oc); // only if sending file...
-
+  if (oc.status != OCS_PROXY)
+  { // Connected, notify FT UI
+    ICQBroadcastAck(oc.ft->hContact, ACKTYPE_FILE, ACKRESULT_INITIALISING, oc.ft, 0);
+  }
   hPacketRecver = (HANDLE)CallService(MS_NETLIB_CREATEPACKETRECVER, (WPARAM)oc.hConnection, 8192);
   packetRecv.cbSize = sizeof(packetRecv);
 
@@ -1249,7 +1275,9 @@ static int oft_handleProxyData(oscar_connection *oc, unsigned char *buf, int len
         WORD wError;
 
         unpackWord(&pBuf, &wError);
-        NetLog_Server("Proxy Error %x", wError);
+        NetLog_Server("Proxy Error 0x%x", wError);
+        // Notify UI
+        ICQBroadcastAck(oc->hContact, ACKTYPE_FILE, ACKRESULT_FAILED, oc->ft, 0);
         // FIX ME: this needs to be handled properly
       }
       break;
@@ -1269,12 +1297,13 @@ static int oft_handleProxyData(oscar_connection *oc, unsigned char *buf, int len
 
     case 0x05: // Connection ready
       oc->status = OCS_CONNECTED; // connection ready to send packets
+      // Notify UI
+      ICQBroadcastAck(oc->hContact, ACKTYPE_FILE, ACKRESULT_CONNECTED, oc->ft, 0);
       // signal we are ready
       if (oc->type == OCT_PROXY_RECV)
         oft_sendFileAccept(oc->dwUin, oc->szUid, ft);
+
       NetLog_Server("Proxy Tunnel established");
-      if (ft->sending) // FIXME: this needs change for stage 1
-        oft_sendPeerInit(oc); // only if sending file...
       break;
 
     default:
@@ -1565,7 +1594,7 @@ static void handleOFT2FramePacket(oscar_connection *oc, WORD datatype, BYTE *pBu
 
       NetLog_Direct("OFT: File sent successfully.");
 
-      _close(ft->fileId);
+      _close(ft->fileId); // FIXME: this needs fix for "skip file" feature
       ft->fileId = -1;
       ft->iCurrentFile++;
       // continue with next file
