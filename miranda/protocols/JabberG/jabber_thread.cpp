@@ -591,9 +591,11 @@ static void JabberProcessStreamOpening( XmlNode *node, void *userdata )
 	struct ThreadData* info = ( struct ThreadData* ) userdata;
 	if ( info->type == JABBER_SESSION_NORMAL ) {
 		TCHAR* sid = JabberXmlGetAttrValue( node, "id" );
-		if ( sid != NULL )
-			replaceStr( streamId, t2a( sid ));
-	}
+		if ( sid != NULL ) {
+			char* pszSid = t2a( sid );
+			replaceStr( streamId, pszSid );
+			mir_free( pszSid );
+	}	}
 
 	// old server - disable SASL then
 	if ( JabberXmlGetAttrValue( node, "version" ) == NULL )
