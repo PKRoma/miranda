@@ -2217,7 +2217,7 @@ int CLUIFramesResize(const RECT newsize)
     GapBetweenFrames=g_CluiData.gapBetweenFrames;
     sepw=GapBetweenFrames;
 
-    if (nFramescount<1) 
+    if (nFramescount<1 || g_shutDown) 
         return 0;
 
     newheight=newsize.bottom-newsize.top;
@@ -2460,7 +2460,7 @@ int CLUIFramesOnClistResize(WPARAM wParam,LPARAM lParam)
     int tick;
     GapBetweenFrames = g_CluiData.gapBetweenFrames;
 
-    if (FramesSysNotStarted)
+    if (FramesSysNotStarted || g_shutDown)
         return -1;
     
 	lockfrm();
