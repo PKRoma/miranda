@@ -4,10 +4,10 @@
 	Version="7.10"
 	Name="IRC"
 	ProjectGUID="{3A12F777-56A8-42EC-BD17-8F325524241E}"
-	SccProjectName="SAK"
-	SccAuxPath="SAK"
-	SccLocalPath="SAK"
-	SccProvider="SAK">
+	SccProjectName="&quot;$/Miranda/miranda/protocols/IRC&quot;, JNWAAAAA"
+	SccAuxPath=""
+	SccLocalPath="."
+	SccProvider="MSSCCI:Microsoft Visual SourceSafe">
 	<Platforms>
 		<Platform
 			Name="Win32"/>
@@ -671,10 +671,10 @@
 				RelativePath="Icons\hide.ico">
 			</File>
 			<File
-				RelativePath="Icons\Icons\irc.ico">
+				RelativePath="Icons\irc.ico">
 			</File>
 			<File
-				RelativePath="Icons\irc.ico">
+				RelativePath="Icons\Icons\irc.ico">
 			</File>
 			<File
 				RelativePath="IRC.rc">

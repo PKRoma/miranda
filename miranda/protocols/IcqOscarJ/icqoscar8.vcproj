@@ -4,10 +4,10 @@
 	Version="7.10"
 	Name="icqoscar8"
 	ProjectGUID="{01DDCB36-4DE2-405D-BC36-2C8BDEB86659}"
-	SccProjectName="SAK"
-	SccAuxPath="SAK"
-	SccLocalPath="SAK"
-	SccProvider="SAK">
+	SccProjectName="&quot;$/Miranda/miranda/protocols/IcqOscarJ&quot;, QLIAAAAA"
+	SccAuxPath=""
+	SccLocalPath="."
+	SccProvider="MSSCCI:Microsoft Visual SourceSafe">
 	<Platforms>
 		<Platform
 			Name="Win32"/>

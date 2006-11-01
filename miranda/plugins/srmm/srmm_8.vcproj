@@ -705,6 +705,10 @@
 					/>
 				</FileConfiguration>
 			</File>
+			<File
+				RelativePath=".\statusicon.c"
+				>
+			</File>
 		</Filter>
 		<Filter
 			Name="Header Files"
@@ -738,17 +742,21 @@
 				RelativePath=".\richutil.h"
 				>
 			</File>
+			<File
+				RelativePath=".\statusicon.h"
+				>
+			</File>
 		</Filter>
 		<Filter
 			Name="Resource Files"
 			Filter="ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe"
 			>
 			<File
-				RelativePath="..\..\src\res\addcontact.ico"
+				RelativePath="..\..\Miranda-IM\res\addcontact.ico"
 				>
 			</File>
 			<File
-				RelativePath="..\..\Miranda-IM\res\addcontact.ico"
+				RelativePath="..\..\src\res\addcontact.ico"
 				>
 			</File>
 			<File
@@ -780,19 +788,19 @@
 				>
 			</File>
 			<File
-				RelativePath="..\..\src\res\dragcopy.cur"
-				>
-			</File>
-			<File
 				RelativePath="..\..\Miranda-IM\res\dragcopy.cur"
 				>
 			</File>
 			<File
-				RelativePath="..\..\src\res\dropuser.cur"
+				RelativePath="..\..\src\res\dragcopy.cur"
 				>
 			</File>
 			<File
 				RelativePath="..\..\Miranda-IM\res\dropuser.cur"
+				>
+			</File>
+			<File
+				RelativePath="..\..\src\res\dropuser.cur"
 				>
 			</File>
 			<File
@@ -808,11 +816,11 @@
 				>
 			</File>
 			<File
-				RelativePath="..\..\src\res\hyperlin.cur"
+				RelativePath="..\..\Miranda-IM\res\hyperlin.cur"
 				>
 			</File>
 			<File
-				RelativePath="..\..\Miranda-IM\res\hyperlin.cur"
+				RelativePath="..\..\src\res\hyperlin.cur"
 				>
 			</File>
 			<File

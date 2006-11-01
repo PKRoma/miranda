@@ -340,18 +340,6 @@
 					/>
 				</FileConfiguration>
 			</File>
-			<File
-				RelativePath=".\utf.c"
-				>
-				<FileConfiguration
-					Name="Debug|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						BrowseInformation="0"
-					/>
-				</FileConfiguration>
-			</File>
 		</Filter>
 		<Filter
 			Name="Header Files"

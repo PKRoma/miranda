@@ -186,14 +186,6 @@ SOURCE=.\options.c
 # End Source File
 # Begin Source File
 
-SOURCE=.\pthread.c
-# End Source File
-# Begin Source File
-
-SOURCE=.\pthread.h
-# End Source File
-# Begin Source File
-
 SOURCE=.\resource.h
 # End Source File
 # Begin Source File

@@ -651,16 +651,16 @@ static int MsnGetCaps(WPARAM wParam,LPARAM lParam)
 /////////////////////////////////////////////////////////////////////////////////////////
 // MsnGetInfo - nothing to do, cause we cannot obtain information from the server
 
-HANDLE msnGetInfoContact = NULL;
-
-static int MsnGetInfo(WPARAM wParam,LPARAM lParam)
+static void sttInfoAck( HANDLE hContact )
 {
-	if ( !msnLoggedIn )
-		return 0;
+	Sleep( 100 );
+	MSN_SendBroadcast( hContact, ACKTYPE_GETINFO, ACKRESULT_SUCCESS, ( HANDLE )1, 0 );
+}
 
-	CCSDATA *ccs=(CCSDATA*)lParam;
-	msnGetInfoContact = ccs->hContact;
-	msnNsThread->send( "PNG\r\n", 5 );
+static int MsnGetInfo( WPARAM wParam, LPARAM lParam )
+{
+	CCSDATA *ccs = ( CCSDATA* )lParam;
+	mir_forkthread( sttInfoAck, ccs->hContact );
 	return 1;
 }
 

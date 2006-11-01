@@ -2,8 +2,8 @@
 
 Miranda IM: the free IM client for Microsoft* Windows*
 
-Copyright 2000-2006 Miranda ICQ/IM project, 
-all portions of this codebase are copyrighted to the people 
+Copyright 2000-2006 Miranda ICQ/IM project,
+all portions of this codebase are copyrighted to the people
 listed in contributors.txt.
 
 This program is free software; you can redistribute it and/or
@@ -64,7 +64,7 @@ typedef struct {
 #define MS_MSG_GETWINDOWAPI "MessageAPI/WindowAPI"
 //wparam=0
 //lparam=0
-//Returns a dword with the current message api version 
+//Returns a dword with the current message api version
 //Current version is 0,0,0,4
 
 #define MS_MSG_GETWINDOWCLASS "MessageAPI/WindowClass"
@@ -100,8 +100,8 @@ typedef struct {
 
 // status icons - HICONs will be automatically destroyed when removed or when miranda exits
 
-#define MBF_DISABLED			0x01
-#define MBF_HIDDEN			0x02
+#define MBF_DISABLED       0x01
+#define MBF_HIDDEN         0x02
 
 typedef struct {
 	int cbSize;
@@ -112,7 +112,7 @@ typedef struct {
 	char *szTooltip;
 } StatusIconData;
 
-#define MBCF_RIGHTBUTTON	0x01		// if this flag is specified, the click was a right button - otherwize it was a left click
+#define MBCF_RIGHTBUTTON   0x01		// if this flag is specified, the click was a right button - otherwize it was a left click
 
 typedef struct {
 	int cbSize;

@@ -138,7 +138,7 @@ struct MM_INTERFACE
 	void* (*mmi_realloc) (void*, size_t);
 	void  (*mmi_free) (void*);
 
-	#if MIRANDA_VER >= 0x0600
+	#if MIRANDA_VER >= 0x0520
 		void*    (*mmi_calloc) (size_t);
 		char*    (*mmi_strdup) (const char *src);
 		wchar_t* (*mmi_wstrdup) (const wchar_t *src);
@@ -159,7 +159,7 @@ __forceinline int mir_getMMI( struct MM_INTERFACE* dest )
 	#define mir_free(ptr) mmi.mmi_free(ptr)
 	#define mir_realloc(ptr,size) mmi.mmi_realloc(ptr,size)
 
-	#if MIRANDA_VER >= 0x0600
+	#if MIRANDA_VER >= 0x0520
 		#define mir_calloc(n) mmi.mmi_calloc(n)
 		#define mir_strdup(str) mmi.mmi_strdup(str)
 		#define mir_wstrdup(str) mmi.mmi_wstrdup(str)
@@ -218,7 +218,7 @@ struct LIST_INTERFACE
 	int   ( *List_Remove )( SortedList*, int );
 	int   ( *List_IndexOf )( SortedList*, void* );
 
-	#if MIRANDA_VER >= 0x0600
+	#if MIRANDA_VER >= 0x0520
 	int   ( *List_InsertPtr)( SortedList* list, void* p );
 	int   ( *List_RemovePtr)( SortedList* list, void* p );
 	#endif

@@ -430,7 +430,7 @@ static BOOL CALLBACK OptionsDlgProc(HWND hdlg,UINT message,WPARAM wParam,LPARAM 
 					SetWindowLong(hdlg,DWL_MSGRESULT,FALSE);
 					return TRUE;
 				case TCN_SELCHANGING:
-   				case TVN_SELCHANGING:
+				case TVN_SELCHANGING:
 				{	PSHNOTIFY pshn;
 					if(dat->currentPage==-1 || dat->opd[dat->currentPage].hwnd==NULL) break;
 					pshn.hdr.code=PSN_KILLACTIVE;
