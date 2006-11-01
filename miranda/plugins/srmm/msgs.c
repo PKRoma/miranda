@@ -1,8 +1,8 @@
 /*
 SRMM
 
-Copyright 2000-2005 Miranda ICQ/IM project, 
-all portions of this codebase are copyrighted to the people 
+Copyright 2000-2005 Miranda ICQ/IM project,
+all portions of this codebase are copyrighted to the people
 listed in contributors.txt.
 
 This program is free software; you can redistribute it and/or
@@ -548,7 +548,7 @@ static STDMETHODIMP_(HRESULT) CREOleCallback_GetNewStorage(struct CREOleCallback
 {
 	WCHAR szwName[64];
 	char szName[64];
-	wsprintfA(szName, "s%u", lpThis->nextStgId);
+	wsprintfA(szName, "s%u", lpThis->nextStgId++);
 	MultiByteToWideChar(CP_ACP, 0, szName, -1, szwName, SIZEOF(szwName));
 	if (lpThis->pictStg == NULL)
 		return STG_E_MEDIUMFULL;
