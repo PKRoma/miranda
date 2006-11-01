@@ -46,7 +46,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 extern HCURSOR hCurSplitNS, hCurSplitWE, hCurHyperlinkHand, hDragCursor;
 extern HANDLE hHookWinEvt;
-extern struct CREOleCallback reOleCallback;
+extern struct CREOleCallback reOleCallback, reOleCallback2;
 extern HINSTANCE g_hInst;
 
 
@@ -558,7 +558,6 @@ static LRESULT CALLBACK MessageEditSubclassProc(HWND hwnd, UINT msg, WPARAM wPar
 					pdat->cmdListCurrent = pdat->cmdListNew = tcmdlist_last(pdat->cmdList);
 				//	SendMessage(hwnd, WM_SETREDRAW, FALSE, 0);
 					SendMessage(hwnd, EM_SETTEXTEX, (WPARAM) &st, (LPARAM)pdat->cmdListCurrent->szCmd);
-//					SetWindowText(hwnd, pdat->cmdListCurrent->szCmd);
 					SendMessage(hwnd, EM_SCROLLCARET, 0,0);
 				//	SendMessage(hwnd, WM_SETREDRAW, TRUE, 0);
 					//SendMessage(hwnd, EM_SETSEL, 0, -1);
@@ -567,7 +566,6 @@ static LRESULT CALLBACK MessageEditSubclassProc(HWND hwnd, UINT msg, WPARAM wPar
 					pdat->cmdListCurrent = pdat->cmdListNew = pdat->cmdListCurrent->prev;
 				//	SendMessage(hwnd, WM_SETREDRAW, FALSE, 0);
 					SendMessage(hwnd, EM_SETTEXTEX, (WPARAM) &st, (LPARAM)pdat->cmdListCurrent->szCmd);
-//					SetWindowText(hwnd, pdat->cmdListCurrent->szCmd);
 					SendMessage(hwnd, EM_SCROLLCARET, 0,0);
 				//	SendMessage(hwnd, WM_SETREDRAW, TRUE, 0);
 					//SendMessage(hwnd, EM_SETSEL, 0, -1);
@@ -587,13 +585,12 @@ static LRESULT CALLBACK MessageEditSubclassProc(HWND hwnd, UINT msg, WPARAM wPar
 					if (pdat->cmdListCurrent) {
 						//SendMessage(hwnd, WM_SETREDRAW, FALSE, 0);
 						SendMessage(hwnd, EM_SETTEXTEX, (WPARAM) &st, (LPARAM)pdat->cmdListCurrent->szCmd);
-		//					SetWindowText(hwnd, pdat->cmdListCurrent->szCmd);
 						SendMessage(hwnd, EM_SCROLLCARET, 0,0);
 						//SendMessage(hwnd, WM_SETREDRAW, TRUE, 0);
 						//SendMessage(hwnd, EM_SETSEL, 0, -1);
 					} else {
 						pdat->cmdListCurrent = 0;
-						SetWindowTextA(hwnd, "");
+						SetWindowText(hwnd, _T(""));
 					}
 				}
 			}
@@ -601,10 +598,11 @@ static LRESULT CALLBACK MessageEditSubclassProc(HWND hwnd, UINT msg, WPARAM wPar
 			UpdateReadChars(GetParent(hwnd), pdat);
 			return 0;
 		}
+		/*
 		if(wParam == VK_INSERT && (GetKeyState(VK_SHIFT) & 0x8000)) {
 			SendMessage(hwnd, EM_PASTESPECIAL, CF_TEXT, 0); // shift insert
 			return 0;
-		}
+		}*/
 		if ((GetKeyState(VK_CONTROL) & 0x8000) && (GetKeyState(VK_SHIFT) & 0x8000)) {
 			if (wParam == VK_TAB) {	// ctrl-shift tab
 				SendMessage(GetParent(GetParent(hwnd)), CM_ACTIVATEPREV, 0, (LPARAM)GetParent(hwnd));
@@ -612,10 +610,12 @@ static LRESULT CALLBACK MessageEditSubclassProc(HWND hwnd, UINT msg, WPARAM wPar
 			}
 		}
 		if ((GetKeyState(VK_CONTROL) & 0x8000) && !(GetKeyState(VK_MENU) & 0x8000)) {
+/*
 			if (wParam == 'V') {    // ctrl v
 				SendMessage(hwnd, EM_PASTESPECIAL, CF_TEXT, 0);
 				return 0;
 			}
+			*/
 			if (wParam == VK_TAB) { // ctrl tab
 				SendMessage(GetParent(GetParent(hwnd)), CM_ACTIVATENEXT, 0, (LPARAM)GetParent(hwnd));
 				return 0;
@@ -1036,7 +1036,7 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
 			SetWindowLong(hwndDlg, GWL_USERDATA, (LONG) dat);
 			dat->hContact = newData->hContact;
 			NotifyLocalWinEvent(dat->hContact, hwndDlg, MSG_WINDOW_EVT_OPENING);
-			SendDlgItemMessage(hwndDlg, IDC_MESSAGE, EM_SETTEXTMODE, TM_PLAINTEXT, 0);
+//			SendDlgItemMessage(hwndDlg, IDC_MESSAGE, EM_SETTEXTMODE, TM_PLAINTEXT, 0);
 
 			if (newData->szInitialText) {
 	#if defined(_UNICODE)
@@ -1050,51 +1050,17 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
 			} else if (g_dat->flags & SMF_SAVEDRAFTS) {
 				TCmdList *draft = tcmdlist_get2(g_dat->draftList, dat->hContact);
 				if (draft != NULL) {
-				SetDlgItemText(hwndDlg, IDC_MESSAGE, draft->szCmd);
-			}
-			len = GetWindowTextLength(GetDlgItem(hwndDlg, IDC_MESSAGE));
-			PostMessage(GetDlgItem(hwndDlg, IDC_MESSAGE), EM_SETSEL, len, len);
-/*
-			{
-				SETTEXTEX  st;
-				const void * initText = NULL;
-				st.flags = ST_DEFAULT;
-#ifdef _UNICODE
-				st.codepage = 1200;
-#else
-				st.codepage = CP_ACP;
-#endif
-				if (newData->szInitialText) {
-					if (newData->isWchar) {
-						st.codepage = 1200;
-					} else {
-						st.codepage = CP_ACP;
-					}
-					initText = (const void *) newData->szInitialText;
-				} else if (g_dat->flags & SMF_SAVEDRAFTS) {
-					TCmdList *draft = tcmdlist_get2(g_dat->draftList, dat->hContact);
-					if (draft != NULL) {
-						initText = (const void *) draft->szCmd;
-					}
+					SetDlgItemText(hwndDlg, IDC_MESSAGE, draft->szCmd);
 				}
-				if (initText != NULL) {
-					SendMessage(GetDlgItem(hwndDlg, IDC_MESSAGE), EM_SETTEXTEX, (WPARAM) &st, (LPARAM)initText);
-					SendMessage(GetDlgItem(hwndDlg, IDC_MESSAGE), EM_SCROLLCARET, 0,0);
-					SendMessage(GetDlgItem(hwndDlg, IDC_MESSAGE), EM_SETSEL, (WPARAM)-1, (LPARAM)-1);
-				}
-			*/
+				len = GetWindowTextLength(GetDlgItem(hwndDlg, IDC_MESSAGE));
+				PostMessage(GetDlgItem(hwndDlg, IDC_MESSAGE), EM_SETSEL, len, len);
 			}
 			dat->hwnd = hwndDlg;
 			dat->hwndParent = GetParent(hwndDlg);
 			dat->parent = (ParentWindowData *) GetWindowLong(dat->hwndParent, GWL_USERDATA);
 			dat->hwndLog = NULL;
 			dat->szProto = (char *) CallService(MS_PROTO_GETCONTACTBASEPROTO, (WPARAM) dat->hContact, 0);
-	//		RichUtil_SubClass(GetDlgItem(hwndDlg, IDC_LOG));
-			{ // avatar stuff
-				dat->avatarPic = 0;
-//				dat->limitAvatarMaxH = DBGetContactSettingDword(NULL, SRMMMOD, SRMSGSET_AVHEIGHT, SRMSGDEFSET_AVHEIGHT);
-//				dat->limitAvatarMinH = DBGetContactSettingDword(NULL, SRMMMOD, SRMSGSET_AVHEIGHTMIN, SRMSGDEFSET_AVHEIGHTMIN);
-			}
+			dat->avatarPic = 0;
 			if (dat->hContact && dat->szProto != NULL)
 				dat->wStatus = DBGetContactSettingWord(dat->hContact, dat->szProto, "Status", ID_STATUS_OFFLINE);
 			else
@@ -1203,6 +1169,7 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
 			SendDlgItemMessage(hwndDlg, IDC_LOG, EM_SETEVENTMASK, 0, ENM_MOUSEEVENTS | ENM_LINK);
 			SendDlgItemMessage(hwndDlg, IDC_LOG, EM_SETEDITSTYLE, SES_EXTENDBACKCOLOR, SES_EXTENDBACKCOLOR);
 			SendDlgItemMessage(hwndDlg, IDC_MESSAGE, EM_SETLANGOPTIONS, 0, (LPARAM) SendDlgItemMessage(hwndDlg, IDC_MESSAGE, EM_GETLANGOPTIONS, 0, 0) & ~IMF_AUTOKEYBOARD);
+			SendDlgItemMessage(hwndDlg, IDC_MESSAGE, EM_SETOLECALLBACK, 0, (LPARAM) & reOleCallback2);
 			SendDlgItemMessage(hwndDlg, IDC_LOG, EM_SETLANGOPTIONS, 0, (LPARAM) SendDlgItemMessage(hwndDlg, IDC_LOG, EM_GETLANGOPTIONS, 0, 0) & ~(IMF_AUTOKEYBOARD | IMF_AUTOFONTSIZEADJUST));
 			SendDlgItemMessage(hwndDlg, IDC_LOG, EM_SETMARGINS, EC_LEFTMARGIN | EC_RIGHTMARGIN, MAKELONG(0,0));
 			SendDlgItemMessage(hwndDlg, IDC_MESSAGE, EM_SETEVENTMASK, 0, ENM_MOUSEEVENTS | ENM_KEYEVENTS | ENM_CHANGE);
