@@ -26,7 +26,7 @@ cd ..\..\miranda\protocols\IcqOscarJ
 nmake /f IcqOscar8.mak CFG="icqoscar8 - Win32 Release"
 if errorlevel 1 goto :Error
 
-cd icons_pack
+cd icon_pack
 nmake /f ICONS.mak CFG="ICONS - Win32 Release"
 if errorlevel 1 goto :Error
 
@@ -152,7 +152,7 @@ echo             VALUE "CompanyName", " \0"                                     
 echo             VALUE "FileDescription", "Miranda IM\0"                           >>..\src\version.rc
 echo             VALUE "FileVersion", "0.%1.%2 alpha build #%3\0"                  >>..\src\version.rc
 echo             VALUE "InternalName", "miranda32\0"                               >>..\src\version.rc
-echo             VALUE "LegalCopyright", "Copyright © 2000-2006 Miranda Team\0"    >>..\src\version.rc
+echo             VALUE "LegalCopyright", "Copyright c 2000-2006 Miranda IM Project. This software is released under the terms of the GNU General Public License.\0"    >>..\src\version.rc
 echo             VALUE "LegalTrademarks", "\0"                                     >>..\src\version.rc
 echo             VALUE "OriginalFilename", "miranda32.exe\0"                       >>..\src\version.rc
 echo             VALUE "PrivateBuild", "\0"                                        >>..\src\version.rc
