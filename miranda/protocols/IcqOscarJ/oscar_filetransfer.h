@@ -66,11 +66,11 @@ typedef struct {
   DWORD dwRemoteInternalIP;
   DWORD dwRemoteExternalIP;
   WORD wRemotePort;
-  char *szSavePath;
+  char *szPath;
   char *szDescription;
   char *szFilename;
   char *szThisFile; 
-  char *szThisSubdir;
+  char *szThisPath;
   // Request sequence
   DWORD dwCookie;
   WORD wReqNum;

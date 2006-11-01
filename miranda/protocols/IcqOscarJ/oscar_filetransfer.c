@@ -200,7 +200,7 @@ void SafeReleaseFileTransfer(void **ft)
       if (oft->listener)
         ReleaseOscarListener((oscar_listener**)&oft->listener);
       SAFE_FREE(&oft->rawFileName);
-      SAFE_FREE(&oft->szSavePath);
+      SAFE_FREE(&oft->szPath);
       SAFE_FREE(&oft->szThisFile);
       if (oft->files)
       {
@@ -392,13 +392,10 @@ void handleRecvServMsgOFT(unsigned char *buf, WORD wLen, DWORD dwUin, char *szUI
                 szEnc[charset->wLen] = '\0';
                 str = ApplyEncoding(pszDescription, szEnc);
               }
+              else 
+                str = null_strdup(str);
               // eliminate HTML tags
               pszDescription = EliminateHtml(str, strlennull(str));
-              if (charset) SAFE_FREE(&str);
-              str = pszDescription;
-              // decode XML tags
-              pszDescription = DemangleXml(str, strlennull(str));
-              SAFE_FREE(&str);
 
               bTag = strstr(pszDescription, "<DESC>");
               if (bTag)
@@ -407,7 +404,7 @@ void handleRecvServMsgOFT(unsigned char *buf, WORD wLen, DWORD dwUin, char *szUI
                 if (eTag)
                 {
                   *eTag = '\0';
-                  str = null_strdup(bTag + 4);
+                  str = null_strdup(bTag + 6);
                   SAFE_FREE(&pszDescription);
                   pszDescription = str;
                 }
@@ -466,17 +463,21 @@ void handleRecvServMsgOFT(unsigned char *buf, WORD wLen, DWORD dwUin, char *szUI
           char* szBlob;
           int bAdded;
           HANDLE hContact = HContactFromUID(dwUin, szUID, &bAdded);
+          char* szAnsi;
 
           ft->hContact = hContact;
           ft->szFilename = pszFileName;
           ft->szDescription = pszDescription;
           ft->fileId = -1;
+          
+          szAnsi = (char*)_alloca(strlennull(pszDescription)+2);
+          utf8_decode_static(pszDescription, szAnsi, strlennull(pszDescription));
 
           // Send chain event
-          szBlob = (char*)_alloca(sizeof(DWORD) + strlennull(pszFileName) + strlennull(pszDescription) + 2);
+          szBlob = (char*)_alloca(sizeof(DWORD) + strlennull(pszFileName) + strlennull(szAnsi) + 2);
           *(PDWORD)szBlob = (DWORD)ft;
           strcpy(szBlob + sizeof(DWORD), pszFileName);
-          strcpy(szBlob + sizeof(DWORD) + strlennull(pszFileName) + 1, pszDescription); // FIXME: DB event is ansi only!
+          strcpy(szBlob + sizeof(DWORD) + strlennull(pszFileName) + 1, szAnsi); // DB event is ansi only!
           ccs.szProtoService = PSR_FILE;
           ccs.hContact = hContact;
           ccs.wParam = 0;
@@ -574,7 +575,7 @@ void handleRecvServMsgOFT(unsigned char *buf, WORD wLen, DWORD dwUin, char *szUI
 
     if (ft)
     {
-      NetLog_Server("OFT: Session established.");
+      NetLog_Direct("OFT: Session established.");
       // Init connection
       if (ft->sending && ft->connection)
         oft_sendPeerInit((oscar_connection*)ft->connection);
@@ -627,7 +628,8 @@ void handleRecvServResponseOFT(unsigned char *buf, WORD wLen, DWORD dwUin, char 
 int oftInitTransfer(HANDLE hContact, DWORD dwUin, char* szUid, char** files, char* pszDesc)
 {
   oscar_filetransfer *ft;
-  int i;
+  int i, filesCount;
+  char* szMasterDir = NULL;
   struct _stati64 statbuf;
 
   // Initialize filetransfer struct
@@ -636,18 +638,49 @@ int oftInitTransfer(HANDLE hContact, DWORD dwUin, char* szUid, char** files, cha
   ft->pMessage.bMessageType = MTYPE_FILEREQ;
   InitMessageCookie(&ft->pMessage);
 
-  for (ft->wFilesCount = 0; files[ft->wFilesCount]; ft->wFilesCount++);
-  ft->files = (char **)SAFE_MALLOC(sizeof(char *) * ft->wFilesCount);
+  for (filesCount = 0; files[filesCount]; filesCount++);
+  ft->files = (char **)SAFE_MALLOC(sizeof(char *) * filesCount);
   ft->dwTotalSize = 0;
-  for (i = 0; i < (int)ft->wFilesCount; i++)
+  for (i = 0; i < filesCount; i++)
   {
-    ft->files[i] = ansi_to_utf8(files[i]);
-
-    if (FileStatUtf(files[i], &statbuf))
+    if (_stati64(files[i], &statbuf))
       NetLog_Server("IcqSendFile() was passed invalid filename(s)");
     else
-      ft->dwTotalSize += statbuf.st_size; // FIXME: add check for 4GB limit
+    {
+      if (!(statbuf.st_mode&_S_IFDIR))
+      { // take only files
+        if (!szMasterDir)
+        {
+          char* szBack;
+
+          szMasterDir = (char*)_alloca(strlennull(files[i]));
+          strcpy(szMasterDir, files[i]);
+          szBack = strrchr(szMasterDir, '\\');
+          if (!szBack) szBack = strrchr(szMasterDir, '/');
+          if (szBack) szBack[1] = '\0'; else szMasterDir[0] = '\0'; // keep only directory
+        }
+        else
+        {
+          while (strncmp(szMasterDir, files[i], strlennull(szMasterDir)))
+          { // cut one sub-dir
+            char* szBack;
+
+            szMasterDir[strlennull(szMasterDir)-1] = '\0'; // kill trailing backslash
+            szBack = strrchr(szMasterDir, '\\');
+            if (!szBack) szBack = strrchr(szMasterDir, '/');
+            if (szBack) szBack[1] = '\0'; else szMasterDir[0] = '\0';
+          }
+        }
+        ft->files[ft->wFilesCount] = ansi_to_utf8(files[i]);
+
+        ft->wFilesCount++;
+        ft->dwTotalSize += statbuf.st_size; // FIXME: add check for 4GB limit
+      }
+    }
   }
+  ft->szPath = ansi_to_utf8(szMasterDir);
+  NetLog_Server("OFT: %d files in '%s'", ft->wFilesCount, szMasterDir);
+
   ft->szDescription = ansi_to_utf8(pszDesc);
   ft->sending = 1;
   ft->fileId = -1;
@@ -658,6 +691,7 @@ int oftInitTransfer(HANDLE hContact, DWORD dwUin, char* szUid, char** files, cha
   {
     ft->wEncrypt = 0;
     ft->wCompress = 0;
+    ft->wEncoding = 2; // ucs-2 encoded filename
     ft->wPartsCount = 1;
     ft->wPartsLeft = 1;
     strcpy(ft->rawIDString, "Cool FileXfer");
@@ -718,7 +752,7 @@ DWORD oftFileAllow(HANDLE hContact, WPARAM wParam, LPARAM lParam)
 {
   oscar_filetransfer* ft = (oscar_filetransfer*)wParam;
 
-  ft->szSavePath = null_strdup((char *)lParam);
+  ft->szPath = null_strdup((char *)lParam);
 
   OpenOscarConnection(hContact, ft, ft->bUseProxy ? OCT_PROXY_RECV: OCT_NORMAL);
 
@@ -858,7 +892,7 @@ static void oft_buildProtoFileTransferStatus(oscar_filetransfer* ft, PROTOFILETR
   pfts->currentFileNumber = ft->iCurrentFile;
   pfts->totalBytes = ft->dwTotalSize;
   pfts->totalProgress = ft->dwBytesDone;
-  pfts->workingDir = ft->szSavePath;
+  pfts->workingDir = ft->szPath;
   utf8_decode(ft->szThisFile, &pfts->currentFile); 
   pfts->currentFileSize = ft->dwThisFileSize;
   pfts->currentFileTime = ft->dwThisFileDate;
@@ -1348,6 +1382,7 @@ static int oft_handleFileData(oscar_connection *oc, unsigned char *buf, int len)
 
     oft_buildProtoFileTransferStatus(ft, &pfts);
     ICQBroadcastAck(ft->hContact, ACKTYPE_FILE, ACKRESULT_DATA, ft, (LPARAM)&pfts);
+    SAFE_FREE(&pfts.currentFile);
     oc->ft->dwLastNotify = GetTickCount();
   }
   if (ft->dwFileBytesDone == ft->dwThisFileSize)
@@ -1498,30 +1533,30 @@ static void handleOFT2FramePacket(oscar_connection *oc, WORD datatype, BYTE *pBu
       { // Prepare Path Information
         char* szFile = strrchr(ft->szThisFile, '\\');
 
-        SAFE_FREE(&ft->szThisSubdir); // release previous path
+        SAFE_FREE(&ft->szThisPath); // release previous path
         if (szFile)
         {
           char *szNewDir;
 
-          ft->szThisSubdir = ft->szThisFile;
+          ft->szThisPath = ft->szThisFile;
           szFile[0] = '\0'; // split that strings
           ft->szThisFile = null_strdup(szFile + 1);
           // no cheating with paths
-          if (strstr(ft->szThisSubdir, "..\\") || strstr(ft->szThisSubdir, "../") ||
-              strstr(ft->szThisSubdir, ":\\") || strstr(ft->szThisSubdir, ":/") ||
-              ft->szThisSubdir[0] == '\\' || ft->szThisSubdir[0] == '/')
+          if (strstr(ft->szThisPath, "..\\") || strstr(ft->szThisPath, "../") ||
+              strstr(ft->szThisPath, ":\\") || strstr(ft->szThisPath, ":/") ||
+              ft->szThisPath[0] == '\\' || ft->szThisPath[0] == '/')
           {
             NetLog_Direct("Invalid path information");
             break;
           }
-          szNewDir = (char*)_alloca(strlennull(ft->szSavePath)+strlennull(ft->szThisSubdir)+2);
-          strcpy(szNewDir, ft->szSavePath);
+          szNewDir = (char*)_alloca(strlennull(ft->szPath)+strlennull(ft->szThisPath)+2);
+          strcpy(szNewDir, ft->szPath);
           NormalizeBackslash(szNewDir);
-          strcat(szNewDir, ft->szThisSubdir);
+          strcat(szNewDir, ft->szThisPath);
           MakeDirUtf(szNewDir); // create directory
         }
         else
-          ft->szThisSubdir = null_strdup("");
+          ft->szThisPath = null_strdup("");
       }
 
       /* no cheating with paths */
@@ -1532,10 +1567,10 @@ static void handleOFT2FramePacket(oscar_connection *oc, WORD datatype, BYTE *pBu
         NetLog_Direct("Invalid path information");
         break;
       }
-      szFullPath = (char*)SAFE_MALLOC(strlennull(ft->szSavePath)+strlennull(ft->szThisSubdir)+strlennull(ft->szThisFile)+3);
-      strcpy(szFullPath, ft->szSavePath);
+      szFullPath = (char*)SAFE_MALLOC(strlennull(ft->szPath)+strlennull(ft->szThisPath)+strlennull(ft->szThisFile)+3);
+      strcpy(szFullPath, ft->szPath);
       NormalizeBackslash(szFullPath);
-      strcat(szFullPath, ft->szThisSubdir);
+      strcat(szFullPath, ft->szThisPath);
       NormalizeBackslash(szFullPath);
 //      _chdir(szFullPath); // set current dir - not very useful // FIXME: unicode needed
       strcat(szFullPath, ft->szThisFile);
@@ -1547,11 +1582,15 @@ static void handleOFT2FramePacket(oscar_connection *oc, WORD datatype, BYTE *pBu
 
       {
         /* file resume */
-        PROTOFILETRANSFERSTATUS pfts = {0};
+        PROTOFILETRANSFERSTATUS pfts;
 
         oft_buildProtoFileTransferStatus(ft, &pfts);
         if (ICQBroadcastAck(ft->hContact, ACKTYPE_FILE, ACKRESULT_FILERESUME, ft, (LPARAM)&pfts))
+        {
+          SAFE_FREE(&pfts.currentFile);
           break; /* UI supports resume: it will call PS_FILERESUME */
+        }
+        SAFE_FREE(&pfts.currentFile);
 
         ft->fileId = OpenFileUtf(ft->szThisFile, _O_BINARY | _O_CREAT | _O_TRUNC | _O_WRONLY, _S_IREAD | _S_IWRITE);
         if (ft->fileId == -1)
@@ -1700,6 +1739,7 @@ static void oft_sendFileData(oscar_connection *oc)
 
     oft_buildProtoFileTransferStatus(ft, &pfts);
     ICQBroadcastAck(ft->hContact, ACKTYPE_FILE, ACKRESULT_DATA, ft, (LPARAM)&pfts);
+    SAFE_FREE(&pfts.currentFile);
     ft->dwLastNotify = GetTickCount();
   }
 }
@@ -1711,7 +1751,7 @@ static void oft_sendPeerInit(oscar_connection *oc)
   oscar_filetransfer *ft = oc->ft;
   struct _stati64 statbuf;
   char *pszThisFileName;
-  char szThisSubDir[MAX_PATH];
+  wchar_t *pwsThisFile;
 
   // prepare init frame
   if (ft->iCurrentFile >= (int)ft->wFilesCount)
@@ -1721,6 +1761,7 @@ static void oft_sendPeerInit(oscar_connection *oc)
     return;
   }
 
+  SAFE_FREE(&ft->szThisFile);
   ft->szThisFile = null_strdup(ft->files[ft->iCurrentFile]);
   if (FileStatUtf(ft->szThisFile, &statbuf))
   {
@@ -1729,73 +1770,50 @@ static void oft_sendPeerInit(oscar_connection *oc)
     return;
   }
 
-  szThisSubDir[0] = '\0';
+  pszThisFileName = null_strdup(ft->szThisFile + strlennull(ft->szPath));
+  { // convert backslashes to dir markings
+    DWORD i;
 
-  if (((pszThisFileName = strrchr(ft->szThisFile, '\\')) == NULL) &&
-    ((pszThisFileName = strrchr(ft->szThisFile, '/')) == NULL))
-  {
-    pszThisFileName = ft->szThisFile;
-  }
-  else
-  {
-    int i;
-    int len;
-
-    /* find an earlier subdirectory to be used as a container */
-    for (i = ft->iCurrentFile - 1; i >= 0; i--)
+    for (i = 0; i < strlennull(pszThisFileName); i++)
     {
-      len = strlennull(ft->files[i]);
-      if (!_strnicmp(ft->files[i], ft->szThisFile, len) &&
-        (ft->szThisFile[len] == '\\' || ft->szThisFile[len] == '/'))
-      {
-        char* pszLastBackslash;
-
-        if (((pszLastBackslash = strrchr(ft->files[i], '\\')) == NULL) &&
-          ((pszLastBackslash = strrchr(ft->files[i], '/')) == NULL))
-        {
-          strcpy(szThisSubDir, ft->files[i]);
-        }
-        else
-        {
-          len = pszLastBackslash - ft->files[i] + 1;
-          strncpy(szThisSubDir, ft->szThisFile + len,
-            pszThisFileName - ft->szThisFile - len);
-          szThisSubDir[pszThisFileName - ft->szThisFile - len] = '\0';
-        }
-      }
+      if (pszThisFileName[i] == '\\' || pszThisFileName[i] == '/') pszThisFileName[i] = 0x01;
     }
-    pszThisFileName++; // skip backslash
   }
+  pwsThisFile = make_unicode_string(pszThisFileName);
+  SAFE_FREE(&pszThisFileName);
 
   ICQBroadcastAck(ft->hContact, ACKTYPE_FILE, ACKRESULT_NEXTFILE, ft, 0);
 
-  if (statbuf.st_mode&_S_IFDIR)
+  ft->fileId = OpenFileUtf(ft->szThisFile, _O_BINARY | _O_RDONLY, 0);
+  if (ft->fileId == -1)
   {
-    icq_LogMessage(LOG_FATAL, "NOT IMPLEMENTED"); // FIXME:
-      CloseOscarConnection(oc);
-      return;
+    icq_LogMessage(LOG_ERROR, "Your file transfer has been aborted because one of the files that you selected to send is no longer readable from the disk. You may have deleted or moved it.");
+    CloseOscarConnection(oc);
+    return;
   }
-  else
-  {
-    ft->fileId = OpenFileUtf(ft->szThisFile, _O_BINARY | _O_RDONLY, 0);
-    if (ft->fileId == -1)
-    {
-      icq_LogMessage(LOG_ERROR, "Your file transfer has been aborted because one of the files that you selected to send is no longer readable from the disk. You may have deleted or moved it.");
-      CloseOscarConnection(oc);
-      return;
-    }
 
-  }
   ft->dwThisFileSize = statbuf.st_size;
   ft->dwThisFileDate = statbuf.st_mtime;
   ft->dwThisFileCreation = statbuf.st_ctime;
   ft->dwThisFileCheck = oft_calc_file_checksum(ft->fileId);
   ft->dwFileBytesDone = 0;
   SAFE_FREE(&ft->rawFileName);
-  ft->cbRawFileName = strlennull(pszThisFileName) + 1; /// FIXME: this needs to include path - for multi-file transfer
+  ft->cbRawFileName = wcslen(pwsThisFile) * sizeof(wchar_t) + 2;
   if (ft->cbRawFileName < 64) ft->cbRawFileName = 64;
   ft->rawFileName = (char*)SAFE_MALLOC(ft->cbRawFileName);
-  strcpy(ft->rawFileName, pszThisFileName);
+  {
+    WORD mc = 1;
+    wchar_t *target = (wchar_t*)ft->rawFileName;
+    char *source = (char*)pwsThisFile;
+
+    while (mc) // FIXME: this is ugly!!
+    {
+      unpackWord(&source, &mc);
+      *target = mc;
+      target++;
+    }
+  }
+  SAFE_FREE(&pwsThisFile);
   ft->wFilesLeft = (WORD)(ft->wFilesCount - ft->iCurrentFile);
 
   sendOFT2FramePacket(oc, OFT_TYPE_REQUEST);
