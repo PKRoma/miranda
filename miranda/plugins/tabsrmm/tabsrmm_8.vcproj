@@ -1178,6 +1178,10 @@
 				>
 			</File>
 			<File
+				RelativePath=".\m_spellchecker.h"
+				>
+			</File>
+			<File
 				RelativePath="m_tabsrmm.h"
 				>
 			</File>

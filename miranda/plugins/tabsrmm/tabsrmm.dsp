@@ -196,7 +196,6 @@ DEP_CPP_CLIST=\
 	"..\..\include\win2k.h"\
 	".\chat\chat.h"\
 	".\chat\chatprototypes.h"\
-	".\chat\m_chat.h"\
 	".\commonheaders.h"\
 	".\functions.h"\
 	".\generic_msghandlers.h"\
@@ -208,8 +207,6 @@ DEP_CPP_CLIST=\
 	".\m_ieview.h"\
 	".\m_metacontacts.h"\
 	".\m_nudge.h"\
-	".\m_popup.h"\
-	".\m_popupw.h"\
 	".\m_smileyadd.h"\
 	".\m_Snapping_windows.h"\
 	".\m_tabsrmm.h"\
@@ -217,6 +214,11 @@ DEP_CPP_CLIST=\
 	".\msgs.h"\
 	".\nen.h"\
 	".\templates.h"\
+	
+NODEP_CPP_CLIST=\
+	".\chat\m_chat.h"\
+	".\m_popup.h"\
+	".\m_popupw.h"\
 	
 # ADD CPP /Yu"../commonheaders.h"
 # End Source File
@@ -249,7 +251,6 @@ DEP_CPP_COLOR=\
 	"..\..\include\win2k.h"\
 	".\chat\chat.h"\
 	".\chat\chatprototypes.h"\
-	".\chat\m_chat.h"\
 	".\commonheaders.h"\
 	".\functions.h"\
 	".\generic_msghandlers.h"\
@@ -261,8 +262,6 @@ DEP_CPP_COLOR=\
 	".\m_ieview.h"\
 	".\m_metacontacts.h"\
 	".\m_nudge.h"\
-	".\m_popup.h"\
-	".\m_popupw.h"\
 	".\m_smileyadd.h"\
 	".\m_Snapping_windows.h"\
 	".\m_tabsrmm.h"\
@@ -270,6 +269,11 @@ DEP_CPP_COLOR=\
 	".\msgs.h"\
 	".\nen.h"\
 	".\templates.h"\
+	
+NODEP_CPP_COLOR=\
+	".\chat\m_chat.h"\
+	".\m_popup.h"\
+	".\m_popupw.h"\
 	
 # ADD CPP /Yu"../commonheaders.h"
 # End Source File
@@ -302,7 +306,6 @@ DEP_CPP_LOG_C=\
 	"..\..\include\win2k.h"\
 	".\chat\chat.h"\
 	".\chat\chatprototypes.h"\
-	".\chat\m_chat.h"\
 	".\commonheaders.h"\
 	".\functions.h"\
 	".\generic_msghandlers.h"\
@@ -314,8 +317,6 @@ DEP_CPP_LOG_C=\
 	".\m_ieview.h"\
 	".\m_metacontacts.h"\
 	".\m_nudge.h"\
-	".\m_popup.h"\
-	".\m_popupw.h"\
 	".\m_smileyadd.h"\
 	".\m_Snapping_windows.h"\
 	".\m_tabsrmm.h"\
@@ -323,6 +324,11 @@ DEP_CPP_LOG_C=\
 	".\msgs.h"\
 	".\nen.h"\
 	".\templates.h"\
+	
+NODEP_CPP_LOG_C=\
+	".\chat\m_chat.h"\
+	".\m_popup.h"\
+	".\m_popupw.h"\
 	
 # ADD CPP /Yu"../commonheaders.h"
 # End Source File
@@ -359,7 +365,6 @@ DEP_CPP_MAIN_=\
 	"..\..\include\win2k.h"\
 	".\chat\chat.h"\
 	".\chat\chatprototypes.h"\
-	".\chat\m_chat.h"\
 	".\commonheaders.h"\
 	".\functions.h"\
 	".\generic_msghandlers.h"\
@@ -371,8 +376,6 @@ DEP_CPP_MAIN_=\
 	".\m_ieview.h"\
 	".\m_metacontacts.h"\
 	".\m_nudge.h"\
-	".\m_popup.h"\
-	".\m_popupw.h"\
 	".\m_smileyadd.h"\
 	".\m_Snapping_windows.h"\
 	".\m_tabsrmm.h"\
@@ -380,6 +383,11 @@ DEP_CPP_MAIN_=\
 	".\msgs.h"\
 	".\nen.h"\
 	".\templates.h"\
+	
+NODEP_CPP_MAIN_=\
+	".\chat\m_chat.h"\
+	".\m_popup.h"\
+	".\m_popupw.h"\
 	
 # ADD CPP /Yu"../commonheaders.h"
 # End Source File
@@ -412,7 +420,6 @@ DEP_CPP_MANAG=\
 	"..\..\include\win2k.h"\
 	".\chat\chat.h"\
 	".\chat\chatprototypes.h"\
-	".\chat\m_chat.h"\
 	".\commonheaders.h"\
 	".\functions.h"\
 	".\generic_msghandlers.h"\
@@ -424,8 +431,6 @@ DEP_CPP_MANAG=\
 	".\m_ieview.h"\
 	".\m_metacontacts.h"\
 	".\m_nudge.h"\
-	".\m_popup.h"\
-	".\m_popupw.h"\
 	".\m_smileyadd.h"\
 	".\m_Snapping_windows.h"\
 	".\m_tabsrmm.h"\
@@ -433,6 +438,11 @@ DEP_CPP_MANAG=\
 	".\msgs.h"\
 	".\nen.h"\
 	".\templates.h"\
+	
+NODEP_CPP_MANAG=\
+	".\chat\m_chat.h"\
+	".\m_popup.h"\
+	".\m_popupw.h"\
 	
 # ADD CPP /Yu"../commonheaders.h"
 # End Source File
@@ -465,7 +475,6 @@ DEP_CPP_MESSA=\
 	"..\..\include\win2k.h"\
 	".\chat\chat.h"\
 	".\chat\chatprototypes.h"\
-	".\chat\m_chat.h"\
 	".\commonheaders.h"\
 	".\functions.h"\
 	".\generic_msghandlers.h"\
@@ -477,8 +486,6 @@ DEP_CPP_MESSA=\
 	".\m_ieview.h"\
 	".\m_metacontacts.h"\
 	".\m_nudge.h"\
-	".\m_popup.h"\
-	".\m_popupw.h"\
 	".\m_smileyadd.h"\
 	".\m_Snapping_windows.h"\
 	".\m_tabsrmm.h"\
@@ -486,6 +493,11 @@ DEP_CPP_MESSA=\
 	".\msgs.h"\
 	".\nen.h"\
 	".\templates.h"\
+	
+NODEP_CPP_MESSA=\
+	".\chat\m_chat.h"\
+	".\m_popup.h"\
+	".\m_popupw.h"\
 	
 # ADD CPP /Yu"../commonheaders.h"
 # End Source File
@@ -518,7 +530,6 @@ DEP_CPP_OPTIO=\
 	"..\..\include\win2k.h"\
 	".\chat\chat.h"\
 	".\chat\chatprototypes.h"\
-	".\chat\m_chat.h"\
 	".\commonheaders.h"\
 	".\functions.h"\
 	".\generic_msghandlers.h"\
@@ -530,8 +541,6 @@ DEP_CPP_OPTIO=\
 	".\m_ieview.h"\
 	".\m_metacontacts.h"\
 	".\m_nudge.h"\
-	".\m_popup.h"\
-	".\m_popupw.h"\
 	".\m_smileyadd.h"\
 	".\m_Snapping_windows.h"\
 	".\m_tabsrmm.h"\
@@ -539,6 +548,11 @@ DEP_CPP_OPTIO=\
 	".\msgs.h"\
 	".\nen.h"\
 	".\templates.h"\
+	
+NODEP_CPP_OPTIO=\
+	".\chat\m_chat.h"\
+	".\m_popup.h"\
+	".\m_popupw.h"\
 	
 # ADD CPP /Yu"../commonheaders.h"
 # End Source File
@@ -571,7 +585,6 @@ DEP_CPP_SERVI=\
 	"..\..\include\win2k.h"\
 	".\chat\chat.h"\
 	".\chat\chatprototypes.h"\
-	".\chat\m_chat.h"\
 	".\commonheaders.h"\
 	".\functions.h"\
 	".\generic_msghandlers.h"\
@@ -583,8 +596,6 @@ DEP_CPP_SERVI=\
 	".\m_ieview.h"\
 	".\m_metacontacts.h"\
 	".\m_nudge.h"\
-	".\m_popup.h"\
-	".\m_popupw.h"\
 	".\m_smileyadd.h"\
 	".\m_Snapping_windows.h"\
 	".\m_tabsrmm.h"\
@@ -592,6 +603,11 @@ DEP_CPP_SERVI=\
 	".\msgs.h"\
 	".\nen.h"\
 	".\templates.h"\
+	
+NODEP_CPP_SERVI=\
+	".\chat\m_chat.h"\
+	".\m_popup.h"\
+	".\m_popupw.h"\
 	
 # ADD CPP /Yu"../commonheaders.h"
 # End Source File
@@ -624,7 +640,6 @@ DEP_CPP_TOOLS=\
 	"..\..\include\win2k.h"\
 	".\chat\chat.h"\
 	".\chat\chatprototypes.h"\
-	".\chat\m_chat.h"\
 	".\commonheaders.h"\
 	".\functions.h"\
 	".\generic_msghandlers.h"\
@@ -636,8 +651,6 @@ DEP_CPP_TOOLS=\
 	".\m_ieview.h"\
 	".\m_metacontacts.h"\
 	".\m_nudge.h"\
-	".\m_popup.h"\
-	".\m_popupw.h"\
 	".\m_smileyadd.h"\
 	".\m_Snapping_windows.h"\
 	".\m_tabsrmm.h"\
@@ -645,6 +658,11 @@ DEP_CPP_TOOLS=\
 	".\msgs.h"\
 	".\nen.h"\
 	".\templates.h"\
+	
+NODEP_CPP_TOOLS=\
+	".\chat\m_chat.h"\
+	".\m_popup.h"\
+	".\m_popupw.h"\
 	
 # ADD CPP /Yu"../commonheaders.h"
 # End Source File
@@ -677,7 +695,6 @@ DEP_CPP_WINDO=\
 	"..\..\include\win2k.h"\
 	".\chat\chat.h"\
 	".\chat\chatprototypes.h"\
-	".\chat\m_chat.h"\
 	".\commonheaders.h"\
 	".\functions.h"\
 	".\generic_msghandlers.h"\
@@ -689,8 +706,6 @@ DEP_CPP_WINDO=\
 	".\m_ieview.h"\
 	".\m_metacontacts.h"\
 	".\m_nudge.h"\
-	".\m_popup.h"\
-	".\m_popupw.h"\
 	".\m_smileyadd.h"\
 	".\m_Snapping_windows.h"\
 	".\m_tabsrmm.h"\
@@ -698,6 +713,11 @@ DEP_CPP_WINDO=\
 	".\msgs.h"\
 	".\nen.h"\
 	".\templates.h"\
+	
+NODEP_CPP_WINDO=\
+	".\chat\m_chat.h"\
+	".\m_popup.h"\
+	".\m_popupw.h"\
 	
 # ADD CPP /Yu"../commonheaders.h"
 # End Source File
@@ -731,7 +751,6 @@ DEP_CPP_CONTA=\
 	"..\..\include\win2k.h"\
 	".\chat\chat.h"\
 	".\chat\chatprototypes.h"\
-	".\chat\m_chat.h"\
 	".\commonheaders.h"\
 	".\functions.h"\
 	".\generic_msghandlers.h"\
@@ -744,8 +763,6 @@ DEP_CPP_CONTA=\
 	".\m_MathModule.h"\
 	".\m_metacontacts.h"\
 	".\m_nudge.h"\
-	".\m_popup.h"\
-	".\m_popupw.h"\
 	".\m_smileyadd.h"\
 	".\m_Snapping_windows.h"\
 	".\m_tabsrmm.h"\
@@ -753,6 +770,11 @@ DEP_CPP_CONTA=\
 	".\msgs.h"\
 	".\nen.h"\
 	".\templates.h"\
+	
+NODEP_CPP_CONTA=\
+	".\chat\m_chat.h"\
+	".\m_popup.h"\
+	".\m_popupw.h"\
 	
 
 !IF  "$(CFG)" == "tabSRMM - Win32 Debug"
@@ -797,7 +819,6 @@ DEP_CPP_CONTAI=\
 	"..\..\include\win2k.h"\
 	".\chat\chat.h"\
 	".\chat\chatprototypes.h"\
-	".\chat\m_chat.h"\
 	".\commonheaders.h"\
 	".\functions.h"\
 	".\generic_msghandlers.h"\
@@ -809,8 +830,6 @@ DEP_CPP_CONTAI=\
 	".\m_ieview.h"\
 	".\m_metacontacts.h"\
 	".\m_nudge.h"\
-	".\m_popup.h"\
-	".\m_popupw.h"\
 	".\m_smileyadd.h"\
 	".\m_Snapping_windows.h"\
 	".\m_tabsrmm.h"\
@@ -818,6 +837,11 @@ DEP_CPP_CONTAI=\
 	".\msgs.h"\
 	".\nen.h"\
 	".\templates.h"\
+	
+NODEP_CPP_CONTAI=\
+	".\chat\m_chat.h"\
+	".\m_popup.h"\
+	".\m_popupw.h"\
 	
 
 !IF  "$(CFG)" == "tabSRMM - Win32 Debug"
@@ -863,7 +887,6 @@ DEP_CPP_EVENT=\
 	"..\..\include\win2k.h"\
 	".\chat\chat.h"\
 	".\chat\chatprototypes.h"\
-	".\chat\m_chat.h"\
 	".\commonheaders.h"\
 	".\functions.h"\
 	".\generic_msghandlers.h"\
@@ -875,8 +898,6 @@ DEP_CPP_EVENT=\
 	".\m_ieview.h"\
 	".\m_metacontacts.h"\
 	".\m_nudge.h"\
-	".\m_popup.h"\
-	".\m_popupw.h"\
 	".\m_smileyadd.h"\
 	".\m_Snapping_windows.h"\
 	".\m_tabsrmm.h"\
@@ -884,6 +905,11 @@ DEP_CPP_EVENT=\
 	".\msgs.h"\
 	".\nen.h"\
 	".\templates.h"\
+	
+NODEP_CPP_EVENT=\
+	".\chat\m_chat.h"\
+	".\m_popup.h"\
+	".\m_popupw.h"\
 	
 
 !IF  "$(CFG)" == "tabSRMM - Win32 Debug"
@@ -928,7 +954,6 @@ DEP_CPP_FORMA=\
 	"..\..\include\win2k.h"\
 	".\chat\chat.h"\
 	".\chat\chatprototypes.h"\
-	".\chat\m_chat.h"\
 	".\commonheaders.h"\
 	".\functions.h"\
 	".\generic_msghandlers.h"\
@@ -940,8 +965,6 @@ DEP_CPP_FORMA=\
 	".\m_ieview.h"\
 	".\m_metacontacts.h"\
 	".\m_nudge.h"\
-	".\m_popup.h"\
-	".\m_popupw.h"\
 	".\m_smileyadd.h"\
 	".\m_Snapping_windows.h"\
 	".\m_tabsrmm.h"\
@@ -949,6 +972,11 @@ DEP_CPP_FORMA=\
 	".\msgs.h"\
 	".\nen.h"\
 	".\templates.h"\
+	
+NODEP_CPP_FORMA=\
+	".\chat\m_chat.h"\
+	".\m_popup.h"\
+	".\m_popupw.h"\
 	
 
 !IF  "$(CFG)" == "tabSRMM - Win32 Debug"
@@ -1001,7 +1029,6 @@ DEP_CPP_GENER=\
 	"..\..\include\win2k.h"\
 	".\chat\chat.h"\
 	".\chat\chatprototypes.h"\
-	".\chat\m_chat.h"\
 	".\commonheaders.h"\
 	".\functions.h"\
 	".\generic_msghandlers.h"\
@@ -1013,8 +1040,6 @@ DEP_CPP_GENER=\
 	".\m_ieview.h"\
 	".\m_metacontacts.h"\
 	".\m_nudge.h"\
-	".\m_popup.h"\
-	".\m_popupw.h"\
 	".\m_smileyadd.h"\
 	".\m_Snapping_windows.h"\
 	".\m_tabsrmm.h"\
@@ -1022,6 +1047,11 @@ DEP_CPP_GENER=\
 	".\msgs.h"\
 	".\nen.h"\
 	".\templates.h"\
+	
+NODEP_CPP_GENER=\
+	".\chat\m_chat.h"\
+	".\m_popup.h"\
+	".\m_popupw.h"\
 	
 
 !IF  "$(CFG)" == "tabSRMM - Win32 Debug"
@@ -1066,7 +1096,6 @@ DEP_CPP_HOTKE=\
 	"..\..\include\win2k.h"\
 	".\chat\chat.h"\
 	".\chat\chatprototypes.h"\
-	".\chat\m_chat.h"\
 	".\commonheaders.h"\
 	".\functions.h"\
 	".\generic_msghandlers.h"\
@@ -1078,8 +1107,6 @@ DEP_CPP_HOTKE=\
 	".\m_ieview.h"\
 	".\m_metacontacts.h"\
 	".\m_nudge.h"\
-	".\m_popup.h"\
-	".\m_popupw.h"\
 	".\m_smileyadd.h"\
 	".\m_Snapping_windows.h"\
 	".\m_tabsrmm.h"\
@@ -1088,6 +1115,11 @@ DEP_CPP_HOTKE=\
 	".\nen.h"\
 	".\sendqueue.h"\
 	".\templates.h"\
+	
+NODEP_CPP_HOTKE=\
+	".\chat\m_chat.h"\
+	".\m_popup.h"\
+	".\m_popupw.h"\
 	
 
 !IF  "$(CFG)" == "tabSRMM - Win32 Debug"
@@ -1132,7 +1164,6 @@ DEP_CPP_IMAGE=\
 	"..\..\include\win2k.h"\
 	".\chat\chat.h"\
 	".\chat\chatprototypes.h"\
-	".\chat\m_chat.h"\
 	".\commonheaders.h"\
 	".\functions.h"\
 	".\generic_msghandlers.h"\
@@ -1145,8 +1176,6 @@ DEP_CPP_IMAGE=\
 	".\m_ieview.h"\
 	".\m_metacontacts.h"\
 	".\m_nudge.h"\
-	".\m_popup.h"\
-	".\m_popupw.h"\
 	".\m_smileyadd.h"\
 	".\m_Snapping_windows.h"\
 	".\m_tabsrmm.h"\
@@ -1154,6 +1183,11 @@ DEP_CPP_IMAGE=\
 	".\msgs.h"\
 	".\nen.h"\
 	".\templates.h"\
+	
+NODEP_CPP_IMAGE=\
+	".\chat\m_chat.h"\
+	".\m_popup.h"\
+	".\m_popupw.h"\
 	
 
 !IF  "$(CFG)" == "tabSRMM - Win32 Debug"
@@ -1205,7 +1239,6 @@ DEP_CPP_MSGDI=\
 	"..\..\include\win2k.h"\
 	".\chat\chat.h"\
 	".\chat\chatprototypes.h"\
-	".\chat\m_chat.h"\
 	".\commonheaders.h"\
 	".\functions.h"\
 	".\generic_msghandlers.h"\
@@ -1218,8 +1251,6 @@ DEP_CPP_MSGDI=\
 	".\m_MathModule.h"\
 	".\m_metacontacts.h"\
 	".\m_nudge.h"\
-	".\m_popup.h"\
-	".\m_popupw.h"\
 	".\m_smileyadd.h"\
 	".\m_Snapping_windows.h"\
 	".\m_tabsrmm.h"\
@@ -1228,7 +1259,12 @@ DEP_CPP_MSGDI=\
 	".\nen.h"\
 	".\sendqueue.h"\
 	".\templates.h"\
-	{$(INCLUDE)}"uxtheme.h"\
+	
+NODEP_CPP_MSGDI=\
+	".\chat\m_chat.h"\
+	".\m_popup.h"\
+	".\m_popupw.h"\
+	".\xtheme.h"\
 	
 
 !IF  "$(CFG)" == "tabSRMM - Win32 Debug"
@@ -1279,7 +1315,6 @@ DEP_CPP_MSGDL=\
 	"..\..\include\win2k.h"\
 	".\chat\chat.h"\
 	".\chat\chatprototypes.h"\
-	".\chat\m_chat.h"\
 	".\commonheaders.h"\
 	".\functions.h"\
 	".\generic_msghandlers.h"\
@@ -1291,8 +1326,6 @@ DEP_CPP_MSGDL=\
 	".\m_ieview.h"\
 	".\m_metacontacts.h"\
 	".\m_nudge.h"\
-	".\m_popup.h"\
-	".\m_popupw.h"\
 	".\m_smileyadd.h"\
 	".\m_Snapping_windows.h"\
 	".\m_tabsrmm.h"\
@@ -1300,6 +1333,11 @@ DEP_CPP_MSGDL=\
 	".\msgs.h"\
 	".\nen.h"\
 	".\templates.h"\
+	
+NODEP_CPP_MSGDL=\
+	".\chat\m_chat.h"\
+	".\m_popup.h"\
+	".\m_popupw.h"\
 	
 
 !IF  "$(CFG)" == "tabSRMM - Win32 Debug"
@@ -1344,7 +1382,6 @@ DEP_CPP_MSGLO=\
 	"..\..\include\win2k.h"\
 	".\chat\chat.h"\
 	".\chat\chatprototypes.h"\
-	".\chat\m_chat.h"\
 	".\commonheaders.h"\
 	".\functions.h"\
 	".\generic_msghandlers.h"\
@@ -1357,8 +1394,6 @@ DEP_CPP_MSGLO=\
 	".\m_MathModule.h"\
 	".\m_metacontacts.h"\
 	".\m_nudge.h"\
-	".\m_popup.h"\
-	".\m_popupw.h"\
 	".\m_smileyadd.h"\
 	".\m_Snapping_windows.h"\
 	".\m_tabsrmm.h"\
@@ -1366,6 +1401,11 @@ DEP_CPP_MSGLO=\
 	".\msgs.h"\
 	".\nen.h"\
 	".\templates.h"\
+	
+NODEP_CPP_MSGLO=\
+	".\chat\m_chat.h"\
+	".\m_popup.h"\
+	".\m_popupw.h"\
 	
 
 !IF  "$(CFG)" == "tabSRMM - Win32 Debug"
@@ -1416,7 +1456,6 @@ DEP_CPP_MSGOP=\
 	"..\..\include\win2k.h"\
 	".\chat\chat.h"\
 	".\chat\chatprototypes.h"\
-	".\chat\m_chat.h"\
 	".\commonheaders.h"\
 	".\functions.h"\
 	".\generic_msghandlers.h"\
@@ -1429,8 +1468,6 @@ DEP_CPP_MSGOP=\
 	".\m_MathModule.h"\
 	".\m_metacontacts.h"\
 	".\m_nudge.h"\
-	".\m_popup.h"\
-	".\m_popupw.h"\
 	".\m_smileyadd.h"\
 	".\m_Snapping_windows.h"\
 	".\m_tabsrmm.h"\
@@ -1438,7 +1475,12 @@ DEP_CPP_MSGOP=\
 	".\msgs.h"\
 	".\nen.h"\
 	".\templates.h"\
-	{$(INCLUDE)}"uxtheme.h"\
+	
+NODEP_CPP_MSGOP=\
+	".\chat\m_chat.h"\
+	".\m_popup.h"\
+	".\m_popupw.h"\
+	".\xtheme.h"\
 	
 
 !IF  "$(CFG)" == "tabSRMM - Win32 Debug"
@@ -1489,7 +1531,6 @@ DEP_CPP_MSGS_=\
 	"..\..\include\win2k.h"\
 	".\chat\chat.h"\
 	".\chat\chatprototypes.h"\
-	".\chat\m_chat.h"\
 	".\commonheaders.h"\
 	".\functions.h"\
 	".\generic_msghandlers.h"\
@@ -1502,8 +1543,6 @@ DEP_CPP_MSGS_=\
 	".\m_MathModule.h"\
 	".\m_metacontacts.h"\
 	".\m_nudge.h"\
-	".\m_popup.h"\
-	".\m_popupw.h"\
 	".\m_smileyadd.h"\
 	".\m_Snapping_windows.h"\
 	".\m_tabsrmm.h"\
@@ -1513,6 +1552,11 @@ DEP_CPP_MSGS_=\
 	".\msgs.h"\
 	".\nen.h"\
 	".\templates.h"\
+	
+NODEP_CPP_MSGS_=\
+	".\chat\m_chat.h"\
+	".\m_popup.h"\
+	".\m_popupw.h"\
 	
 
 !IF  "$(CFG)" == "tabSRMM - Win32 Debug"
@@ -1563,7 +1607,6 @@ DEP_CPP_SELEC=\
 	"..\..\include\win2k.h"\
 	".\chat\chat.h"\
 	".\chat\chatprototypes.h"\
-	".\chat\m_chat.h"\
 	".\commonheaders.h"\
 	".\functions.h"\
 	".\generic_msghandlers.h"\
@@ -1575,8 +1618,6 @@ DEP_CPP_SELEC=\
 	".\m_ieview.h"\
 	".\m_metacontacts.h"\
 	".\m_nudge.h"\
-	".\m_popup.h"\
-	".\m_popupw.h"\
 	".\m_smileyadd.h"\
 	".\m_Snapping_windows.h"\
 	".\m_tabsrmm.h"\
@@ -1584,6 +1625,11 @@ DEP_CPP_SELEC=\
 	".\msgs.h"\
 	".\nen.h"\
 	".\templates.h"\
+	
+NODEP_CPP_SELEC=\
+	".\chat\m_chat.h"\
+	".\m_popup.h"\
+	".\m_popupw.h"\
 	
 
 !IF  "$(CFG)" == "tabSRMM - Win32 Debug"
@@ -1628,7 +1674,6 @@ DEP_CPP_SENDQ=\
 	"..\..\include\win2k.h"\
 	".\chat\chat.h"\
 	".\chat\chatprototypes.h"\
-	".\chat\m_chat.h"\
 	".\commonheaders.h"\
 	".\functions.h"\
 	".\generic_msghandlers.h"\
@@ -1640,8 +1685,6 @@ DEP_CPP_SENDQ=\
 	".\m_ieview.h"\
 	".\m_metacontacts.h"\
 	".\m_nudge.h"\
-	".\m_popup.h"\
-	".\m_popupw.h"\
 	".\m_smileyadd.h"\
 	".\m_Snapping_windows.h"\
 	".\m_tabsrmm.h"\
@@ -1650,6 +1693,11 @@ DEP_CPP_SENDQ=\
 	".\nen.h"\
 	".\sendqueue.h"\
 	".\templates.h"\
+	
+NODEP_CPP_SENDQ=\
+	".\chat\m_chat.h"\
+	".\m_popup.h"\
+	".\m_popupw.h"\
 	
 
 !IF  "$(CFG)" == "tabSRMM - Win32 Debug"
@@ -1694,7 +1742,6 @@ DEP_CPP_SRMM_=\
 	"..\..\include\win2k.h"\
 	".\chat\chat.h"\
 	".\chat\chatprototypes.h"\
-	".\chat\m_chat.h"\
 	".\commonheaders.h"\
 	".\functions.h"\
 	".\generic_msghandlers.h"\
@@ -1706,8 +1753,6 @@ DEP_CPP_SRMM_=\
 	".\m_ieview.h"\
 	".\m_metacontacts.h"\
 	".\m_nudge.h"\
-	".\m_popup.h"\
-	".\m_popupw.h"\
 	".\m_smileyadd.h"\
 	".\m_Snapping_windows.h"\
 	".\m_tabsrmm.h"\
@@ -1715,6 +1760,11 @@ DEP_CPP_SRMM_=\
 	".\msgs.h"\
 	".\nen.h"\
 	".\templates.h"\
+	
+NODEP_CPP_SRMM_=\
+	".\chat\m_chat.h"\
+	".\m_popup.h"\
+	".\m_popupw.h"\
 	
 
 !IF  "$(CFG)" == "tabSRMM - Win32 Debug"
@@ -1765,7 +1815,6 @@ DEP_CPP_TABCT=\
 	"..\..\include\win2k.h"\
 	".\chat\chat.h"\
 	".\chat\chatprototypes.h"\
-	".\chat\m_chat.h"\
 	".\commonheaders.h"\
 	".\functions.h"\
 	".\generic_msghandlers.h"\
@@ -1777,8 +1826,6 @@ DEP_CPP_TABCT=\
 	".\m_ieview.h"\
 	".\m_metacontacts.h"\
 	".\m_nudge.h"\
-	".\m_popup.h"\
-	".\m_popupw.h"\
 	".\m_smileyadd.h"\
 	".\m_Snapping_windows.h"\
 	".\m_tabsrmm.h"\
@@ -1786,7 +1833,12 @@ DEP_CPP_TABCT=\
 	".\msgs.h"\
 	".\nen.h"\
 	".\templates.h"\
-	{$(INCLUDE)}"uxtheme.h"\
+	
+NODEP_CPP_TABCT=\
+	".\chat\m_chat.h"\
+	".\m_popup.h"\
+	".\m_popupw.h"\
+	".\xtheme.h"\
 	
 
 !IF  "$(CFG)" == "tabSRMM - Win32 Debug"
@@ -1831,7 +1883,6 @@ DEP_CPP_TEMPL=\
 	"..\..\include\win2k.h"\
 	".\chat\chat.h"\
 	".\chat\chatprototypes.h"\
-	".\chat\m_chat.h"\
 	".\commonheaders.h"\
 	".\functions.h"\
 	".\generic_msghandlers.h"\
@@ -1843,8 +1894,6 @@ DEP_CPP_TEMPL=\
 	".\m_ieview.h"\
 	".\m_metacontacts.h"\
 	".\m_nudge.h"\
-	".\m_popup.h"\
-	".\m_popupw.h"\
 	".\m_smileyadd.h"\
 	".\m_Snapping_windows.h"\
 	".\m_tabsrmm.h"\
@@ -1852,6 +1901,11 @@ DEP_CPP_TEMPL=\
 	".\msgs.h"\
 	".\nen.h"\
 	".\templates.h"\
+	
+NODEP_CPP_TEMPL=\
+	".\chat\m_chat.h"\
+	".\m_popup.h"\
+	".\m_popupw.h"\
 	
 
 !IF  "$(CFG)" == "tabSRMM - Win32 Debug"
@@ -1896,7 +1950,6 @@ DEP_CPP_THEME=\
 	"..\..\include\win2k.h"\
 	".\chat\chat.h"\
 	".\chat\chatprototypes.h"\
-	".\chat\m_chat.h"\
 	".\commonheaders.h"\
 	".\functions.h"\
 	".\generic_msghandlers.h"\
@@ -1908,8 +1961,6 @@ DEP_CPP_THEME=\
 	".\m_ieview.h"\
 	".\m_metacontacts.h"\
 	".\m_nudge.h"\
-	".\m_popup.h"\
-	".\m_popupw.h"\
 	".\m_smileyadd.h"\
 	".\m_Snapping_windows.h"\
 	".\m_tabsrmm.h"\
@@ -1917,6 +1968,11 @@ DEP_CPP_THEME=\
 	".\msgs.h"\
 	".\nen.h"\
 	".\templates.h"\
+	
+NODEP_CPP_THEME=\
+	".\chat\m_chat.h"\
+	".\m_popup.h"\
+	".\m_popupw.h"\
 	
 
 !IF  "$(CFG)" == "tabSRMM - Win32 Debug"
@@ -1961,7 +2017,6 @@ DEP_CPP_TRAYI=\
 	"..\..\include\win2k.h"\
 	".\chat\chat.h"\
 	".\chat\chatprototypes.h"\
-	".\chat\m_chat.h"\
 	".\commonheaders.h"\
 	".\functions.h"\
 	".\generic_msghandlers.h"\
@@ -1973,8 +2028,6 @@ DEP_CPP_TRAYI=\
 	".\m_ieview.h"\
 	".\m_metacontacts.h"\
 	".\m_nudge.h"\
-	".\m_popup.h"\
-	".\m_popupw.h"\
 	".\m_smileyadd.h"\
 	".\m_Snapping_windows.h"\
 	".\m_tabsrmm.h"\
@@ -1983,6 +2036,11 @@ DEP_CPP_TRAYI=\
 	".\msgs.h"\
 	".\nen.h"\
 	".\templates.h"\
+	
+NODEP_CPP_TRAYI=\
+	".\chat\m_chat.h"\
+	".\m_popup.h"\
+	".\m_popupw.h"\
 	
 
 !IF  "$(CFG)" == "tabSRMM - Win32 Debug"
@@ -2027,7 +2085,6 @@ DEP_CPP_TSBUT=\
 	"..\..\include\win2k.h"\
 	".\chat\chat.h"\
 	".\chat\chatprototypes.h"\
-	".\chat\m_chat.h"\
 	".\commonheaders.h"\
 	".\functions.h"\
 	".\generic_msghandlers.h"\
@@ -2039,8 +2096,6 @@ DEP_CPP_TSBUT=\
 	".\m_ieview.h"\
 	".\m_metacontacts.h"\
 	".\m_nudge.h"\
-	".\m_popup.h"\
-	".\m_popupw.h"\
 	".\m_smileyadd.h"\
 	".\m_Snapping_windows.h"\
 	".\m_tabsrmm.h"\
@@ -2048,6 +2103,11 @@ DEP_CPP_TSBUT=\
 	".\msgs.h"\
 	".\nen.h"\
 	".\templates.h"\
+	
+NODEP_CPP_TSBUT=\
+	".\chat\m_chat.h"\
+	".\m_popup.h"\
+	".\m_popupw.h"\
 	
 
 !IF  "$(CFG)" == "tabSRMM - Win32 Debug"
@@ -2092,7 +2152,6 @@ DEP_CPP_USERP=\
 	"..\..\include\win2k.h"\
 	".\chat\chat.h"\
 	".\chat\chatprototypes.h"\
-	".\chat\m_chat.h"\
 	".\commonheaders.h"\
 	".\functions.h"\
 	".\generic_msghandlers.h"\
@@ -2104,8 +2163,6 @@ DEP_CPP_USERP=\
 	".\m_ieview.h"\
 	".\m_metacontacts.h"\
 	".\m_nudge.h"\
-	".\m_popup.h"\
-	".\m_popupw.h"\
 	".\m_smileyadd.h"\
 	".\m_Snapping_windows.h"\
 	".\m_tabsrmm.h"\
@@ -2113,6 +2170,11 @@ DEP_CPP_USERP=\
 	".\msgs.h"\
 	".\nen.h"\
 	".\templates.h"\
+	
+NODEP_CPP_USERP=\
+	".\chat\m_chat.h"\
+	".\m_popup.h"\
+	".\m_popupw.h"\
 	
 
 !IF  "$(CFG)" == "tabSRMM - Win32 Debug"
@@ -2183,6 +2245,10 @@ SOURCE=m_smileyadd.h
 # Begin Source File
 
 SOURCE=m_Snapping_windows.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\m_spellchecker.h
 # End Source File
 # Begin Source File
 

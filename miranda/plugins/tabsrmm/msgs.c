@@ -1837,6 +1837,25 @@ int TABSRMM_FireEvent(HANDLE hContact, HWND hwnd, unsigned int type, unsigned in
     
     if (hContact == NULL || hwnd == NULL) 
         return 0;
+
+
+	// Spell checker support
+	if (type == MSG_WINDOW_EVT_OPEN) {
+		if (ServiceExists(MS_SPELLCHECKER_ADD_RICHEDIT)) {
+			SPELLCHECKER_ITEM sci;
+			sci.cbSize = sizeof(SPELLCHECKER_ITEM);
+			sci.hContact = hContact;
+			sci.hwnd = GetDlgItem(hwnd, IDC_MESSAGE);
+			sci.window_name = "tabSRMM";
+			CallService(MS_SPELLCHECKER_ADD_RICHEDIT, (WPARAM) &sci, 0); 
+		}
+	}
+	else if (type == MSG_WINDOW_EVT_CLOSING) {
+		if (ServiceExists(MS_SPELLCHECKER_REMOVE_RICHEDIT)) {
+			CallService(MS_SPELLCHECKER_REMOVE_RICHEDIT, (WPARAM) GetDlgItem(hwnd, IDC_MESSAGE), 0); 
+		}
+	}
+
     if (!DBGetContactSettingByte(NULL, SRMSGMOD_T, "eventapi", 1))
         return 0;
     mwe.cbSize = sizeof(mwe);

@@ -4732,8 +4732,20 @@ quote_from_last:
                                             CheckMenuItem(hSubMenu, ID_LOG_FREEZELOG, MF_BYCOMMAND | (dat->dwFlagsEx & MWF_SHOW_SCROLLINGDISABLED ? MF_CHECKED : MF_UNCHECKED));
                                                 
                                         }
-#endif                                        
-                                        iSelection = TrackPopupMenu(hSubMenu, TPM_RETURNCMD, pt.x, pt.y, 0, hwndDlg, NULL);
+#endif                                   
+										// Spell checker support
+										if (idFrom != IDC_LOG && ServiceExists(MS_SPELLCHECKER_SHOW_POPUP_MENU)) {
+											SPELLCHECKER_POPUPMENU scp;
+											scp.cbSize = sizeof(scp);
+											scp.hwnd = GetDlgItem(hwndDlg, IDC_MESSAGE);
+											scp.hMenu = hSubMenu;
+											scp.pt = pt;
+
+											iSelection = CallService(MS_SPELLCHECKER_SHOW_POPUP_MENU, (WPARAM) &scp, 0); 
+										} 
+										else
+											iSelection = TrackPopupMenu(hSubMenu, TPM_RETURNCMD, pt.x, pt.y, 0, hwndDlg, NULL);
+
                                         if(iSelection > 800 && iSelection < 1400 && ((NMHDR *)lParam)->idFrom == IDC_LOG) {
                                             dat->codePage = iSelection;
                                             DBWriteContactSettingDword(dat->hContact, SRMSGMOD_T, "ANSIcodepage", dat->codePage);
