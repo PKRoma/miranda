@@ -1,6 +1,10 @@
 @echo off
 
-for /F "tokens=1,2 delims= " %%i in (build.no) do call :WriteVer %%i %%j
+for /F "tokens=1,2,3 delims= " %%i in (build.no) do call :WriteVer %%i %%j %%k
+
+md Release
+md "Release/Icons"
+md "Release/Plugins"
 
 rem ---------------------------------------------------------------------------
 rem Main modules
@@ -22,7 +26,11 @@ cd ..\..\miranda\protocols\IcqOscarJ
 nmake /f IcqOscar8.mak CFG="icqoscar8 - Win32 Release"
 if errorlevel 1 goto :Error
 
-cd ..\MSN
+cd icon_pack
+nmake /f ICONS.mak CFG="ICONS - Win32 Release"
+if errorlevel 1 goto :Error
+
+cd ..\..\MSN
 nmake /f MSN.mak CFG="msn - Win32 Release"
 if errorlevel 1 goto :Error
 
@@ -102,10 +110,16 @@ cd ..\..\bin\Release
 
 dir /B /S *.dll | rebaser /NOCRC
 
-for /F "tokens=1,2 delims= " %%i in (..\build.no) do call :Pack %%i %%j
+for /F "tokens=1,2,3 delims= " %%i in (..\build.no) do call :Pack %%i %%j %%k
 goto :eof
 
 :WriteVer
+set /A Version = %1
+set /A SubVersion = %2
+call :WriteVer2 %Version% %SubVersion% %3
+goto :eof
+
+:WriteVer2
 echo #ifndef _MAC >..\src\version.rc
 echo ///////////////////////////////////////////////////////////////////////////// >>..\src\version.rc
 echo //                                                                            >>..\src\version.rc
@@ -113,8 +127,8 @@ echo // Version                                                                 
 echo //                                                                            >>..\src\version.rc
 echo.                                                                              >>..\src\version.rc
 echo VS_VERSION_INFO VERSIONINFO                                                   >>..\src\version.rc
-echo  FILEVERSION 0,5,0,%2                                                         >>..\src\version.rc
-echo  PRODUCTVERSION 0,5,0,%2                                                      >>..\src\version.rc
+echo  FILEVERSION 0,%1,%2,%3                                                       >>..\src\version.rc
+echo  PRODUCTVERSION 0,%1,%2,%3                                                    >>..\src\version.rc
 echo  FILEFLAGSMASK 0x3fL                                                          >>..\src\version.rc
 echo #ifdef _DEBUG                                                                 >>..\src\version.rc
 echo  FILEFLAGS 0x1L                                                               >>..\src\version.rc
@@ -132,14 +146,14 @@ echo         BEGIN                                                              
 echo             VALUE "Comments", "Licensed under the terms of the GNU General Public License\0" >>..\src\version.rc
 echo             VALUE "CompanyName", " \0"                                        >>..\src\version.rc
 echo             VALUE "FileDescription", "Miranda IM\0"                           >>..\src\version.rc
-echo             VALUE "FileVersion", "0.5 alpha build #%2\0"                    >>..\src\version.rc
+echo             VALUE "FileVersion", "0.%1.%2 alpha build #%3\0"                  >>..\src\version.rc
 echo             VALUE "InternalName", "miranda32\0"                               >>..\src\version.rc
-echo             VALUE "LegalCopyright", "Copyright © 2000-2005 Richard Hughes, Roland Rabien, Tristan Van de Vreede, Martin Öberg, Robert Rainwater, Sam Kothari and Lyon Lim\0" >>..\src\version.rc
+echo             VALUE "LegalCopyright", "Copyright © 2000-2006 Miranda Team\0"    >>..\src\version.rc
 echo             VALUE "LegalTrademarks", "\0"                                     >>..\src\version.rc
 echo             VALUE "OriginalFilename", "miranda32.exe\0"                       >>..\src\version.rc
 echo             VALUE "PrivateBuild", "\0"                                        >>..\src\version.rc
 echo             VALUE "ProductName", "Miranda IM\0"                               >>..\src\version.rc
-echo             VALUE "ProductVersion", "0.5 alpha build #%2\0"                 >>..\src\version.rc
+echo             VALUE "ProductVersion", "0.%1.%2 alpha build #%3\0"               >>..\src\version.rc
 echo             VALUE "SpecialBuild", "\0"                                        >>..\src\version.rc
 echo         END                                                                   >>..\src\version.rc
 echo     END                                                                       >>..\src\version.rc
@@ -163,10 +177,10 @@ echo           ^<link^>http://files.miranda-im.org/builds/^</link^>             
 echo           ^<language^>en-us^</language^>                                      >>%temp%\index.xml
 echo           ^<lastBuildDate^>%yy%-%mm%-%dd% %hh%:%mn%^</lastBuildDate^>         >>%temp%\index.xml
 echo           ^<item^>                                                            >>%temp%\index.xml
-echo                ^<title^>Miranda 0.5.0.0 alpha %2^</title^>                    >>%temp%\index.xml
+echo                ^<title^>Miranda 0.%1.%2 alpha %3^</title^>                    >>%temp%\index.xml
 echo 			   ^<link^>http://files.miranda-im.org/builds/?%yy%%mm%%dd%%hh%%mn%^</link^> >>%temp%\index.xml
 echo                ^<description^>                                                >>%temp%\index.xml
-echo                     Miranda 0.5.0.0 alpha %2 is now available at http://files.miranda-im.org/builds/miranda-v%1a%2.zip >>%temp%\index.xml
+echo                     Miranda 0.%1.%2 alpha %3 is now available at http://files.miranda-im.org/builds/miranda-v%1a%3.zip >>%temp%\index.xml
 echo                ^</description^>                                               >>%temp%\index.xml
 echo                ^<pubDate^>%yy%-%mm%-%dd% %hh%:%mn%^</pubDate^>                 >>%temp%\index.xml
 echo                ^<category^>Nightly Builds</category^>                         >>%temp%\index.xml
@@ -188,8 +202,14 @@ set mn=%2
 goto :eof
 
 :Pack
-del %Temp%\miranda-v%1a%2.zip
-7z.exe a -tzip -r -mx=9 %Temp%\miranda-v%1a%2.zip ./* ..\ChangeLog.txt
+if %2 == 00 (
+   set FileVer=v%1a%3.zip
+) else (
+   set FileVer=v%1%2a%3.zip
+)
+
+del "%Temp%\miranda-%FileVer%"
+7z.exe a -tzip -r -mx=9 "%Temp%\miranda-%FileVer%" ./* ..\ChangeLog.txt
 
 rd /Q /S %Temp%\pdba >nul
 md %Temp%\pdba
@@ -217,10 +237,11 @@ copy ..\..\plugins\png2dib\Release\png2dib.pdb         %Temp%\pdba\plugins
 copy ..\..\plugins\srmm\Release\srmm.pdb               %Temp%\pdba\plugins
 copy ..\..\plugins\tabSRMM\Release\tabSRMM.pdb         %Temp%\pdba\plugins
 
-7z.exe a -tzip -r -mx=9 %Temp%\miranda-pdb-v%1a%2.zip %Temp%\pdba/*
+del "%Temp%\miranda-pdb-%FileVer%"
+7z.exe a -tzip -r -mx=9 "%Temp%\miranda-pdb-%FileVer%" %Temp%\pdba/*
 rd /Q /S %Temp%\pdba
 goto :eof
 
 :Error
-echo Make failed
+echo Make failed
 goto :eof

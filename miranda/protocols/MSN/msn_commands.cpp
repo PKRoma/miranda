@@ -1695,11 +1695,6 @@ LBL_InvalidCommand:
 			msnPingTimeout = trid;
 			if ( info->mType == SERVER_NOTIFICATION && hKeepAliveThreadEvt != NULL )
 					SetEvent( hKeepAliveThreadEvt );
-
-			if ( msnGetInfoContact != NULL ) {
-				MSN_SendBroadcast( msnGetInfoContact, ACKTYPE_GETINFO, ACKRESULT_SUCCESS, ( HANDLE )1, 0 );
-				msnGetInfoContact = NULL;
-			}
 			break;
 
 		case ' GER':   //********* REG: rename group

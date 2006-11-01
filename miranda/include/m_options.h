@@ -2,8 +2,8 @@
 
 Miranda IM: the free IM client for Microsoft* Windows*
 
-Copyright 2000-2003 Miranda ICQ/IM project, 
-all portions of this codebase are copyrighted to the people 
+Copyright 2000-2006 Miranda ICQ/IM project,
+all portions of this codebase are copyrighted to the people
 listed in contributors.txt.
 
 This program is free software; you can redistribute it and/or
@@ -71,7 +71,19 @@ typedef struct {
 	int nIDRightSimpleControl;  //v0.1.2.1+  if in simple mode the dlg will be cut off after this control, 0 to disable
 	UINT *expertOnlyControls;
 	int nExpertOnlyControls;    //v0.1.2.1+  these controls will be hidden in simple mode. Array must remain valid for duration of dlg.
-} OPTIONSDIALOGPAGE;
+
+	#if MIRANDA_VER >= 0x0600
+   	union {
+			char* pszTab;		 //v0.6.0.0+
+			TCHAR* ptszTab;		 //v0.6.0.0+
+		};
+	#endif
+}
+	OPTIONSDIALOGPAGE;
+
+#define OPTIONPAGE_OLD_SIZE  40
+#define OPTIONPAGE_OLD_SIZE2 60
+
 #define ODPF_SIMPLEONLY   1	// page is only shown when in simple mode
 #define ODPF_EXPERTONLY   2	//         "                 expert mode
 #define ODPF_BOLDGROUPS   4   // give group box titles a bold font
@@ -99,10 +111,11 @@ typedef struct {
 	const char *pszGroup;	 //set to NULL if it's a root item
 	const char *pszPage;	 //set to NULL to just open the options at no
 	                         //specific page
+	const char *pszTab;		 //set to NULL to just open the options at no
+	                         //specific tab
 } OPENOPTIONSDIALOG;
 #define MS_OPT_OPENOPTIONS  "Opt/OpenOptions"
 
 #define SETTING_SHOWEXPERT_DEFAULT  1
 
 #endif  //M_OPTIONS_H__
-

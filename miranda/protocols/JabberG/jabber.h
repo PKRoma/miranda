@@ -23,8 +23,8 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #ifndef _JABBER_H_
 #define _JABBER_H_
 
-// this plugin is for Miranda 0.5.2 only
-#define MIRANDA_VER 0x0520
+// this plugin is for Miranda 0.6.0 only
+#define MIRANDA_VER 0x0600
 
 #if defined(UNICODE) && !defined(_UNICODE)
 	#define _UNICODE

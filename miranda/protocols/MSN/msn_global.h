@@ -25,7 +25,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 	#define _UNICODE
 #endif
 
-#define MIRANDA_VER 0x0520
+#define MIRANDA_VER 0x0600
 
 #include <malloc.h>
 
@@ -338,7 +338,7 @@ struct filetransfer
 	};
 
 	HANDLE		hLockHandle;
-    
+
 	TInfoType	tType;
 	time_t		ts;
 
@@ -386,7 +386,7 @@ struct ThreadData
 	char           mServer[80];      // server name
 
 	HANDLE         s;	               // NetLib connection for the thread
-	HANDLE		   mIncomingBoundPort; // Netlib listen for the thread	
+	HANDLE		   mIncomingBoundPort; // Netlib listen for the thread
 	HANDLE         hWaitEvent;
 	WORD           mIncomingPort;
 	TCHAR          mChatID[10];
@@ -401,7 +401,7 @@ struct ThreadData
 	int            mEhoughData;
 
 	TQueueItem*		mFirstQueueItem;
-	unsigned       numQueueItems; 
+	unsigned       numQueueItems;
 	HANDLE			hQueueMutex;
 
 	//----| for switchboard servers only |------------------------------------------------
@@ -620,7 +620,6 @@ extern	char*       msnProductID;
 
 extern	char*			ModuleName;
 extern	char*	      mailsoundname;
-extern	HANDLE      msnGetInfoContact;
 
 extern	char*       sid;
 extern	char*       kv;
