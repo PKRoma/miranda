@@ -196,6 +196,12 @@ VOID CALLBACK KillAllThreads(HWND hwnd, UINT uMsg, UINT_PTR idEvent, DWORD dwTim
 			TerminateThread( WaitingThreads[j].hThread, 9999 );
 		}
 
+		if ( WaitingThreadsCount ) {
+			mir_free(WaitingThreads);
+			WaitingThreads=NULL;
+			WaitingThreadsCount=0;
+		}
+
 		ReleaseMutex(hStackMutex);
 		SetEvent(hThreadQueueEmpty);
 }	}
