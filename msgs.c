@@ -563,6 +563,8 @@ int LoadSendRecvMessageModule(void) {
 
 static IRichEditOleCallbackVtbl reOleCallbackVtbl;
 struct CREOleCallback reOleCallback;
+static IRichEditOleCallbackVtbl reOleCallbackVtbl2;
+struct CREOleCallback reOleCallback2;
 
 static STDMETHODIMP_(ULONG) CREOleCallback_QueryInterface(struct CREOleCallback *lpThis, REFIID riid, LPVOID * ppvObj)
 {
@@ -650,6 +652,16 @@ static STDMETHODIMP_(HRESULT) CREOleCallback_ShowContainerUI(struct CREOleCallba
    return S_OK;
 }
 
+static STDMETHODIMP_(HRESULT) CREOleCallback_QueryAcceptData2(struct CREOleCallback *lpThis, LPDATAOBJECT lpdataobj, CLIPFORMAT * lpcfFormat, DWORD reco, BOOL fReally, HGLOBAL hMetaPict)
+{
+	char str[1024];
+	sprintf(str, "QueryAcceptData2 = %d", *lpcfFormat );
+	//MessageBoxA(NULL, str, "QAD2", MB_OK);
+	*lpcfFormat = CF_TEXT;
+   return S_OK;
+}
+
+
 static void InitREOleCallback(void)
 {
    reOleCallback.lpVtbl = &reOleCallbackVtbl;
@@ -668,5 +680,23 @@ static void InitREOleCallback(void)
    reOleCallback.lpVtbl->QueryInsertObject = (HRESULT(__stdcall *) (IRichEditOleCallback *, LPCLSID, LPSTORAGE, LONG)) CREOleCallback_QueryInsertObject;
    reOleCallback.lpVtbl->ShowContainerUI = (HRESULT(__stdcall *) (IRichEditOleCallback *, BOOL)) CREOleCallback_ShowContainerUI;
    reOleCallback.refCount = 0;
+
+   reOleCallback2.lpVtbl = &reOleCallbackVtbl2;
+   reOleCallback2.lpVtbl->AddRef = (ULONG(__stdcall *) (IRichEditOleCallback *)) CREOleCallback_AddRef;
+   reOleCallback2.lpVtbl->Release = (ULONG(__stdcall *) (IRichEditOleCallback *)) CREOleCallback_Release;
+   reOleCallback2.lpVtbl->QueryInterface = (HRESULT(__stdcall *) (IRichEditOleCallback *, REFIID, PVOID *)) CREOleCallback_QueryInterface;
+   reOleCallback2.lpVtbl->ContextSensitiveHelp = (HRESULT(__stdcall *) (IRichEditOleCallback *, BOOL)) CREOleCallback_ContextSensitiveHelp;
+   reOleCallback2.lpVtbl->DeleteObject = (HRESULT(__stdcall *) (IRichEditOleCallback *, LPOLEOBJECT)) CREOleCallback_DeleteObject;
+   reOleCallback2.lpVtbl->GetClipboardData = (HRESULT(__stdcall *) (IRichEditOleCallback *, CHARRANGE *, DWORD, LPDATAOBJECT *)) CREOleCallback_GetClipboardData;
+   reOleCallback2.lpVtbl->GetContextMenu = (HRESULT(__stdcall *) (IRichEditOleCallback *, WORD, LPOLEOBJECT, CHARRANGE *, HMENU *)) CREOleCallback_GetContextMenu;
+   reOleCallback2.lpVtbl->GetDragDropEffect = (HRESULT(__stdcall *) (IRichEditOleCallback *, BOOL, DWORD, LPDWORD)) CREOleCallback_GetDragDropEffect;
+   reOleCallback2.lpVtbl->GetInPlaceContext = (HRESULT(__stdcall *) (IRichEditOleCallback *, LPOLEINPLACEFRAME *, LPOLEINPLACEUIWINDOW *, LPOLEINPLACEFRAMEINFO))
+      CREOleCallback_GetInPlaceContext;
+   reOleCallback2.lpVtbl->GetNewStorage = (HRESULT(__stdcall *) (IRichEditOleCallback *, LPSTORAGE *)) CREOleCallback_GetNewStorage;
+   reOleCallback2.lpVtbl->QueryAcceptData = (HRESULT(__stdcall *) (IRichEditOleCallback *, LPDATAOBJECT, CLIPFORMAT *, DWORD, BOOL, HGLOBAL)) CREOleCallback_QueryAcceptData2;
+   reOleCallback2.lpVtbl->QueryInsertObject = (HRESULT(__stdcall *) (IRichEditOleCallback *, LPCLSID, LPSTORAGE, LONG)) CREOleCallback_QueryInsertObject;
+   reOleCallback2.lpVtbl->ShowContainerUI = (HRESULT(__stdcall *) (IRichEditOleCallback *, BOOL)) CREOleCallback_ShowContainerUI;
+   reOleCallback2.refCount = 0;
+
 }
 
