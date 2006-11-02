@@ -80,7 +80,7 @@ HICON       GetXStatusIcon(struct MessageWindowData *dat);
 void        FlashTab(struct MessageWindowData *dat, HWND hwndTab, int iTabindex, BOOL *bState, BOOL mode, HICON origImage);
 void        GetClientIcon(struct MessageWindowData *dat, HWND hwndDlg);
 void        GetMaxMessageLength(HWND hwndDlg, struct MessageWindowData *dat);
-void        RearrangeTab(HWND hwndDlg, struct MessageWindowData *dat, int iMode);
+void        RearrangeTab(HWND hwndDlg, struct MessageWindowData *dat, int iMode, BOOL fSavePos);
 void        GetCachedStatusMsg(HWND hwndDlg, struct MessageWindowData *dat);
 int         MY_pathToRelative(const char *pSrc, char *pOut);
 int         MY_pathToAbsolute(const char *pSrc, char *pOut);

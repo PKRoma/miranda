@@ -1221,6 +1221,7 @@ static LRESULT CALLBACK TabControlSubclassProc(HWND hwnd, UINT msg, WPARAM wPara
                             tabdat->iBeginIndex = i;
                             tabdat->hwndDrag = (HWND)tc.lParam;
                             tabdat->dragDat = dat;
+                            tabdat->fSavePos = TRUE;
                             tabdat->himlDrag = ImageList_Create(16, 16, ILC_MASK | (IsWinVerXPPlus() ? ILC_COLOR32 : ILC_COLOR16), 1, 0);
                             ImageList_AddIcon(tabdat->himlDrag, dat->hTabIcon);
                             ImageList_BeginDrag(tabdat->himlDrag, 0, 8, 8);
@@ -1231,6 +1232,39 @@ static LRESULT CALLBACK TabControlSubclassProc(HWND hwnd, UINT msg, WPARAM wPara
                     }
                 }
             }
+
+           if(GetKeyState(VK_MENU) & 0x8000) {
+               tci.pt.x=(short)LOWORD(GetMessagePos());
+               tci.pt.y=(short)HIWORD(GetMessagePos());
+               if(DragDetect(hwnd, tci.pt) && TabCtrl_GetItemCount(hwnd) >1 ) {
+                   int i; 
+                   tci.flags = TCHT_ONITEM;
+
+                   ScreenToClient(hwnd, &tci.pt);
+                   i= TabCtrl_HitTest(hwnd, &tci);
+                   if(i != -1) {
+                       TCITEM tc;
+                       struct MessageWindowData *dat = NULL;
+
+                       tc.mask = TCIF_PARAM;
+                       TabCtrl_GetItem(hwnd, i, &tc);
+                       dat = (struct MessageWindowData *)GetWindowLong((HWND)tc.lParam, GWL_USERDATA);
+                       if(dat)	{
+                           tabdat->bDragging = TRUE;
+                           tabdat->iBeginIndex = i;
+                           tabdat->hwndDrag = (HWND)tc.lParam;
+                           tabdat->dragDat = dat;
+                           tabdat->himlDrag = ImageList_Create(16, 16, ILC_MASK | (IsWinVerXPPlus() ? ILC_COLOR32 : ILC_COLOR16), 1, 0);
+                           tabdat->fSavePos = FALSE;
+                           ImageList_AddIcon(tabdat->himlDrag, dat->hTabIcon);
+                           ImageList_BeginDrag(tabdat->himlDrag, 0, 8, 8);
+                           ImageList_DragEnter(hwnd, tci.pt.x, tci.pt.y);
+                           SetCapture(hwnd);
+                       }
+                       return TRUE;
+                   }
+               }
+           }
 		}
         break;
 
@@ -1275,7 +1309,7 @@ static LRESULT CALLBACK TabControlSubclassProc(HWND hwnd, UINT msg, WPARAM wPara
                 ScreenToClient(hwnd, &tci.pt);
                 i= TabCtrl_HitTest(hwnd, &tci);
                 if(i != -1 && i != tabdat->iBeginIndex)
-                    RearrangeTab(tabdat->hwndDrag, tabdat->dragDat, MAKELONG(i, 0xffff));
+                    RearrangeTab(tabdat->hwndDrag, tabdat->dragDat, MAKELONG(i, 0xffff), tabdat->fSavePos);
                 tabdat->hwndDrag = (HWND)-1;
                 tabdat->dragDat = NULL;
                 if(tabdat->himlDrag) {

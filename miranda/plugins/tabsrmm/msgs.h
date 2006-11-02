@@ -457,6 +457,7 @@ struct TabControlData {
     struct  MessageWindowData *dragDat;
     HIMAGELIST himlDrag;
     BOOL    bRefreshWithoutClip;
+    BOOL    fSavePos;
 };
 
 /*

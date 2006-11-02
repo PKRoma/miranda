@@ -119,7 +119,7 @@ void RTF_ColorAdd(const TCHAR *tszColname, size_t length)
     //_DebugTraceA("adding color: %s (%d)", rtf_ctable[g_ctable_size - 1].szName, length);
 }
 
-void RearrangeTab(HWND hwndDlg, struct MessageWindowData *dat, int iMode)
+void RearrangeTab(HWND hwndDlg, struct MessageWindowData *dat, int iMode, BOOL fSavePos)
 {
     TCITEM item = {0};
     HWND hwndTab = GetParent(hwndDlg);
@@ -141,7 +141,8 @@ void RearrangeTab(HWND hwndDlg, struct MessageWindowData *dat, int iMode)
         TabCtrl_InsertItem(hwndTab, newIndex, &item);
         BroadCastContainer(dat->pContainer, DM_REFRESHTABINDEX, 0, 0);
         ActivateTabFromHWND(hwndTab, hwndDlg);
-        DBWriteContactSettingDword(dat->hContact, SRMSGMOD_T, "tabindex", newIndex * 100);
+        if(fSavePos)
+            DBWriteContactSettingDword(dat->hContact, SRMSGMOD_T, "tabindex", newIndex * 100);
     }
 }
 /*                                                              
