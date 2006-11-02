@@ -1671,12 +1671,27 @@ int FileStatUtf(const char *path, struct _stati64 *buffer)
 int MakeDirUtf(const char *dir)
 {
   int wRes = -1;
+  char *szLast;
 
   if (gbUnicodeAPI)
   {
     wchar_t* usDir = make_unicode_string(dir);
 
     wRes = _wmkdir(usDir);
+    if (wRes)
+    {
+      szLast = strrchr(dir, '\\');
+      if (!szLast) szLast = strrchr(dir, '/');
+      if (szLast)
+      {
+        char cOld = *szLast;
+
+        *szLast = '\0';
+        if (!MakeDirUtf(dir))
+          wRes = _wmkdir(usDir);
+        *szLast = cOld;
+      }
+    }
     SAFE_FREE(&usDir);
   }
   else
@@ -1685,7 +1700,23 @@ int MakeDirUtf(const char *dir)
     char* szAnsiDir = (char*)_alloca(size);
 
     if (utf8_decode_static(dir, szAnsiDir, size))
-      wRes = _mkdir(szAnsiDir); // FIXME: according to MSDN this fails for multiple dirs at one!!!!!
+    { // _mkdir can created only one dir at once
+      wRes = _mkdir(szAnsiDir);
+      if (wRes)
+      { // failed, try one directory less first
+        szLast = strrchr(dir, '\\');
+        if (!szLast) szLast = strrchr(dir, '/');
+        if (szLast)
+        {
+          char cOld = *szLast;
+
+          *szLast = '\0';
+          if (!MakeDirUtf(dir))
+            wRes = _mkdir(szAnsiDir);
+          *szLast = cOld;
+        }
+      }
+    }
   }
   return wRes;
 }

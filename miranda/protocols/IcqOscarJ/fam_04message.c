@@ -481,13 +481,6 @@ static void handleRecvServMsgType2(unsigned char *buf, WORD wLen, DWORD dwUin, c
     NetLog_Server("Command is %u", wCommand); //         0x0002 - Acknowledge request
 #endif
 
-    if (wCommand == 1)
-    {
-      NetLog_Server("Cannot handle abort messages yet... :(");
-      SAFE_FREE(&pBuf);
-      return;
-    }
-
     // Some stuff we don't use
     pDataBuf += 8;  // dwID1 and dwID2 again
     wTLVLen -= 8;
@@ -500,6 +493,13 @@ static void handleRecvServMsgType2(unsigned char *buf, WORD wLen, DWORD dwUin, c
     if (CompareGUIDs(q1,q2,q3,q4, MCAP_TLV2711_FMT))
     { // we surely have at least 4 bytes for TLV chain
       HANDLE hContact = HContactFromUIN(dwUin, NULL);
+
+      if (wCommand == 1)
+      {
+        NetLog_Server("Cannot handle abort messages yet... :(");
+        SAFE_FREE(&pBuf);
+        return;
+      }
 
       if (wTLVLen < 4)
       { // just check if at least one tlv is there
@@ -553,6 +553,12 @@ static void handleRecvServMsgType2(unsigned char *buf, WORD wLen, DWORD dwUin, c
     }
     else if (CompareGUIDs(q1,q2,q3,q4,MCAP_REVERSE_REQ))
     { // Handle reverse DC request
+      if (wCommand == 1)
+      {
+        NetLog_Server("Cannot handle abort messages yet... :(");
+        SAFE_FREE(&pBuf);
+        return;
+      }
       if (wTLVLen < 4)
       { // just check if at least one tlv is there
         NetLog_Server("Message (format %u) - Ignoring empty message", 2);
