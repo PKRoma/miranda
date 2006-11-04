@@ -630,7 +630,7 @@ static STDMETHODIMP_(HRESULT) CREOleCallback_GetNewStorage(struct CREOleCallback
 {
    WCHAR szwName[64];
    char szName[64];
-   wsprintfA(szName, "s%u", lpThis->nextStgId);
+   wsprintfA(szName, "s%u", lpThis->nextStgId++);
    MultiByteToWideChar(CP_ACP, 0, szName, -1, szwName, sizeof(szwName) / sizeof(szwName[0]));
    if (lpThis->pictStg == NULL)
       return STG_E_MEDIUMFULL;
@@ -654,9 +654,6 @@ static STDMETHODIMP_(HRESULT) CREOleCallback_ShowContainerUI(struct CREOleCallba
 
 static STDMETHODIMP_(HRESULT) CREOleCallback_QueryAcceptData2(struct CREOleCallback *lpThis, LPDATAOBJECT lpdataobj, CLIPFORMAT * lpcfFormat, DWORD reco, BOOL fReally, HGLOBAL hMetaPict)
 {
-	char str[1024];
-	sprintf(str, "QueryAcceptData2 = %d", *lpcfFormat );
-	//MessageBoxA(NULL, str, "QAD2", MB_OK);
 	*lpcfFormat = CF_TEXT;
    return S_OK;
 }
