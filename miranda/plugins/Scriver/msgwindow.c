@@ -1083,7 +1083,7 @@ static void DrawTab(HWND hwnd, WPARAM wParam, LPARAM lParam)
 		tci.dwStateMask = TCIS_HIGHLIGHTED;
 		if (TabCtrl_GetItem(hwnd, iTabIndex, &tci)) {
 			IMAGEINFO info;
-			RECT rIcon;
+			RECT rIcon = lpDIS->rcItem;
 			RECT rect = lpDIS->rcItem;
 			int bSelected = lpDIS->itemState & ODS_SELECTED;
 			int	iOldBkMode = SetBkMode(lpDIS->hDC, TRANSPARENT);
@@ -1104,7 +1104,6 @@ static void DrawTab(HWND hwnd, WPARAM wParam, LPARAM lParam)
 					ImageList_DrawEx(g_dat->hTabIconList, tci.iImage, lpDIS->hDC, rIcon.left, rIcon.top, 0, 0, CLR_NONE, CLR_NONE, ILD_NORMAL);
 					rect.left = rIcon.left + (info.rcImage.right - info.rcImage.left);
 				}
-
 				ImageList_GetImageInfo(g_dat->hButtonIconList, 0, &info);
 				rIcon.left = rect.right - GetSystemMetrics(SM_CXEDGE) - (bSelected ? 6 : 2) - (info.rcImage.right - info.rcImage.left);
 				ImageList_DrawEx(g_dat->hButtonIconList, 0, lpDIS->hDC, rIcon.left, rIcon.top, 0, 0, CLR_NONE, CLR_NONE, ILD_NORMAL);
@@ -1303,14 +1302,39 @@ BOOL CALLBACK TabCtrlProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 					IMAGEINFO info;
 					POINT pt;
 					RECT rect;
-					int rm;
+					int atTop = (GetWindowLong(hwnd, GWL_STYLE) & TCS_BOTTOM) == 0;
 					TabCtrl_GetItemRect(hwnd, dat->lastClickTab, &rect);
 					pt.x = (lParam<<16)>>16;
 					pt.y = lParam>>16;
 					ImageList_GetImageInfo(g_dat->hButtonIconList, 0, &info);
-					rm = rect.right - GetSystemMetrics(SM_CXEDGE) - (dat->lastClickTab == TabCtrl_GetCurSel(hwnd) ? 6 : 2);
-					if (pt.x > rm - (info.rcImage.right - info.rcImage.left) + 1 && pt.x < rm - 1) {
-						SendMessage(GetChildFromTab(hwnd, dat->lastClickTab)->hwnd, WM_CLOSE, 0, 0);
+					rect.left = rect.right - (info.rcImage.right - info.rcImage.left) - 6;
+					if (atTop) {
+						rect.top += GetSystemMetrics(SM_CYEDGE);
+					} else {
+						rect.top = rect.bottom - (info.rcImage.bottom - info.rcImage.top) - GetSystemMetrics(SM_CYEDGE);
+					}
+					if (pt.x >= rect.left && pt.x < rect.left + (info.rcImage.right - info.rcImage.left) && pt.y >= rect.top && pt.y < rect.top + (info.rcImage.bottom - info.rcImage.top)) {
+						HBITMAP hOldBitmap, hBmp;
+						COLORREF color1, color2;
+						HDC hdc = GetDC(NULL);
+						HDC hdcMem = CreateCompatibleDC(hdc);
+						pt.x -= rect.left;
+						pt.y -= rect.top;
+						hBmp = CreateCompatibleBitmap(hdc, info.rcImage.right - info.rcImage.left + 1, info.rcImage.bottom - info.rcImage.top + 1);
+						hOldBitmap = SelectObject(hdcMem, hBmp);
+						SetPixel(hdcMem, pt.x, pt.y, 0x000000);
+						ImageList_DrawEx(g_dat->hButtonIconList, 0, hdcMem, 0, 0, 0, 0, CLR_NONE, CLR_NONE, ILD_NORMAL);
+						color1 = GetPixel(hdcMem, pt.x, pt.y);
+						SetPixel(hdcMem, pt.x, pt.y, 0xFFFFFF);
+						ImageList_DrawEx(g_dat->hButtonIconList, 0, hdcMem, 0, 0, 0, 0, CLR_NONE, CLR_NONE, ILD_NORMAL);
+						color2 = GetPixel(hdcMem, pt.x, pt.y);
+						SelectObject(hdcMem, hOldBitmap);
+						DeleteDC(hdcMem);
+						DeleteObject(hBmp);
+						ReleaseDC(NULL, hdc);
+						if (color1 != 0x000000 || color2 != 0xFFFFFF) {
+							SendMessage(GetChildFromTab(hwnd, dat->lastClickTab)->hwnd, WM_CLOSE, 0, 0);
+						}
 					} else {
 						SendMessage(hwnd, WM_LBUTTONDOWN, dat->clickWParam, dat->clickLParam);
 					}
