@@ -116,7 +116,6 @@ extern "C" int __declspec(dllexport) Load( PLUGINLINK *link )
 	}
 
 	GetModuleName();
-	UpgradeCheck();
 
 	mmi.cbSize = sizeof(mmi);
 	CallService(MS_SYSTEM_GET_MMI, 0, (LPARAM) &mmi);
@@ -161,31 +160,4 @@ extern "C" int __declspec(dllexport) Unload(void)
 	delete [] ALTIRCPROTONAME;
 	delete monitor;
 	return 0;
-}
-
-void UpgradeCheck(void)
-{
-	DWORD dwVersion = DBGetContactSettingDword(NULL, IRCPROTONAME, "OldVersion", PLUGIN_MAKE_VERSION(0,6,0,0));
-	if (pluginInfo.version > dwVersion) {
-		if (dwVersion < PLUGIN_MAKE_VERSION(0,6,1,0)) {
-			DBDeleteContactSetting(NULL, IRCPROTONAME, "OnlineNotificationTime");
-			DBDeleteContactSetting(NULL, IRCPROTONAME, "AutoOnlineNotifTempAlso");
-		}
-
-		if (dwVersion < PLUGIN_MAKE_VERSION(0,6,3,7)) {
-			DBVARIANT dbv;
-			char pw[600] = {0};
-			if (!DBGetContactSetting(NULL, IRCPROTONAME, "Password", &dbv) && dbv.type==DBVT_ASCIIZ) {
-				lstrcpyn(pw, dbv.pszVal, 599);
-				DBFreeVariant(&dbv);
-			}
-
-			if (lstrlenA(pw) > 0) {
-				CallService(MS_DB_CRYPT_ENCODESTRING, 499, (LPARAM)pw);
-				DBWriteContactSettingString(NULL, IRCPROTONAME, "Password", pw);
-				MessageBoxA(NULL, Translate("To increase security the saved password for your\n default network is now encrypted."), IRCPROTONAME, MB_OK|MB_ICONINFORMATION);			
-	}	}	}
-
-	DBWriteContactSettingDword(NULL, IRCPROTONAME, "OldVersion", pluginInfo.version);
-	return;
 }

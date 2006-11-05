@@ -1043,7 +1043,6 @@ static LRESULT CALLBACK NicklistSubclassProc(HWND hwnd, UINT msg, WPARAM wParam,
 			USERINFO * ui;
 			SESSION_INFO* parentdat =(SESSION_INFO*)GetWindowLong(GetParent(hwnd),GWL_USERDATA);
 
-
 			hti.pt.x = (short) LOWORD(lParam);
 			hti.pt.y = (short) HIWORD(lParam);
 			if (hti.pt.x == -1 && hti.pt.y == -1) {
@@ -1083,6 +1082,46 @@ static LRESULT CALLBACK NicklistSubclassProc(HWND hwnd, UINT msg, WPARAM wParam,
 				}
 				DestroyGCMenu(&hMenu, 1);
 				return TRUE;
+		}	}
+		break;
+
+	case WM_MOUSEMOVE:
+		{
+			SESSION_INFO* parentdat =(SESSION_INFO*)GetWindowLong(GetParent(hwnd),GWL_USERDATA);
+			if ( parentdat ) {
+				POINT p;
+				GetCursorPos(&p);
+				SendMessage( parentdat->hwndTooltip,TTM_TRACKPOSITION,0,(LPARAM)MAKELPARAM(p.x + 15,p.y + 15));
+//				SendMessage( parentdat->hwndTooltip, TTM_ACTIVATE, TRUE, 0 );
+		}	}
+		break;
+
+	case WM_NOTIFY:
+		{
+			LPNMHDR pNmhdr = (LPNMHDR)lParam;
+			if ( pNmhdr->code = TTN_NEEDTEXT ) {
+				LPNMTTDISPINFO lpttd = (LPNMTTDISPINFO)lParam;
+				POINT p;
+				int item;
+				USERINFO * ui;
+				SESSION_INFO* parentdat =(SESSION_INFO*)GetWindowLong(GetParent(hwnd),GWL_USERDATA);
+
+				GetCursorPos( &p );
+				ScreenToClient( hwnd, &p );
+				item = LOWORD(SendMessage(GetDlgItem(GetParent(hwnd), IDC_LIST), LB_ITEMFROMPOINT, 0, MAKELPARAM(p.x, p.y)));
+				if ( item != parentdat->iOldItemID ) {
+					parentdat->iOldItemID = item;
+
+					ui = SM_GetUserFromIndex(parentdat->ptszID, parentdat->pszModule, item);
+					if ( ui != NULL ) {
+						static TCHAR ptszBuf[ 1024 ];
+						mir_sntprintf( ptszBuf, SIZEOF(ptszBuf), _T("%s: %s\r\n%s: %s\r\n%s: %s"),
+							TranslateT( "Nick name" ), ui->pszNick, 
+							TranslateT( "Unique id" ), ui->pszUID,
+							TranslateT( "Status" ), TM_WordToString( parentdat->pStatuses, ui->Status ));
+						lpttd->lpszText = ptszBuf;
+				}	}
+				return 0;
 		}	}
 		break;
 	}
@@ -1160,12 +1199,13 @@ BOOL CALLBACK RoomWndProc(HWND hwndDlg,UINT uMsg,WPARAM wParam,LPARAM lParam)
 		{
 			SESSION_INFO* psi = (SESSION_INFO*)lParam;
 			int mask;
+			HWND hNickList = GetDlgItem(hwndDlg,IDC_LIST);
 
 			TranslateDialogDefault(hwndDlg);
 			SetWindowLong(hwndDlg,GWL_USERDATA,(LONG)psi);
 			OldSplitterProc=(WNDPROC)SetWindowLong(GetDlgItem(hwndDlg,IDC_SPLITTERX),GWL_WNDPROC,(LONG)SplitterSubclassProc);
 			SetWindowLong(GetDlgItem(hwndDlg,IDC_SPLITTERY),GWL_WNDPROC,(LONG)SplitterSubclassProc);
-			OldNicklistProc=(WNDPROC)SetWindowLong(GetDlgItem(hwndDlg,IDC_LIST),GWL_WNDPROC,(LONG)NicklistSubclassProc);
+			OldNicklistProc=(WNDPROC)SetWindowLong(hNickList,GWL_WNDPROC,(LONG)NicklistSubclassProc);
 			OldTabProc=(WNDPROC)SetWindowLong(GetDlgItem(hwndDlg,IDC_TAB),GWL_WNDPROC,(LONG)TabSubclassProc);
 			OldLogProc=(WNDPROC)SetWindowLong(GetDlgItem(hwndDlg,IDC_LOG),GWL_WNDPROC,(LONG)LogSubclassProc);
 			OldFilterButtonProc=(WNDPROC)SetWindowLong(GetDlgItem(hwndDlg,IDC_FILTER),GWL_WNDPROC,(LONG)ButtonSubclassProc);
@@ -1186,6 +1226,24 @@ BOOL CALLBACK RoomWndProc(HWND hwndDlg,UINT uMsg,WPARAM wParam,LPARAM lParam)
 			SendMessage(psi->hwndStatus,SB_SETMINHEIGHT,GetSystemMetrics(SM_CYSMICON),0);
 			TabCtrl_SetMinTabWidth(GetDlgItem(hwndDlg, IDC_TAB), 80);
 			TabCtrl_SetImageList(GetDlgItem(hwndDlg, IDC_TAB), hIconsList);
+
+			// enable tooltips
+			psi->iOldItemID = -1;
+			psi->hwndTooltip = CreateWindow(TOOLTIPS_CLASS,NULL,TTS_ALWAYSTIP,CW_USEDEFAULT,CW_USEDEFAULT,CW_USEDEFAULT,CW_USEDEFAULT,hNickList,(HMENU)NULL,g_hInst,NULL);
+			SetWindowPos(psi->hwndTooltip, HWND_TOPMOST,0, 0, 0, 0,SWP_NOMOVE | SWP_NOSIZE | SWP_NOACTIVATE);
+			{
+				TOOLINFO ti = {0};
+				ti.cbSize = sizeof(TOOLINFO);
+				ti.uFlags = TTF_IDISHWND | TTF_SUBCLASS;
+				ti.hwnd   = hNickList;
+				ti.hinst  = g_hInst;
+				ti.uId    = (UINT)hNickList;
+				ti.lpszText  = LPSTR_TEXTCALLBACK;
+				GetClientRect( hNickList, &ti.rect );
+				SendMessage( psi->hwndTooltip, TTM_ADDTOOL, 0, ( LPARAM )&ti );
+
+				//SendMessage( psi->hwndTooltip, TTM_TRACKACTIVATE, TRUE, ( LPARAM )&ti );
+			}
 
 			// restore previous tabs
 			if (g_Settings.TabsEnable && DBGetContactSettingByte(NULL, "Chat", "TabRestore", 0)) {
@@ -2601,6 +2659,17 @@ LABEL_SHOWWINDOW:
 		si->hWnd = NULL;
 		DestroyWindow(si->hwndStatus);
 		si->hwndStatus = NULL;
+
+		if (si->hwndTooltip != NULL) {
+			HWND hNickList = GetDlgItem(hwndDlg,IDC_LIST);
+			TOOLINFO ti = { 0 };
+			ti.cbSize = sizeof(TOOLINFO);
+			ti.uId = (UINT)hNickList;
+			ti.hwnd = hNickList;
+			SendMessage( si->hwndTooltip, TTM_DELTOOL, 0, (LPARAM)(LPTOOLINFO)&ti );
+		}
+		DestroyWindow( si->hwndTooltip );
+		si->hwndTooltip = NULL;
 
 		SetWindowLong(hwndDlg,GWL_USERDATA,0);
 		SetWindowLong(GetDlgItem(hwndDlg,IDC_SPLITTERX),GWL_WNDPROC,(LONG)OldSplitterProc);

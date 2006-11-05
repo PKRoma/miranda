@@ -18,9 +18,10 @@ along with this program; if not, write to the Free Software
 Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 */
 
-
 #ifndef _IRCWIN_H_
 #define _IRCWIN_H_
+
+#define MIRANDA_VER 0x0600
 
 // disable a lot of warnings. It should comppile on VS 6 also
 #pragma warning( disable : 4076 ) 

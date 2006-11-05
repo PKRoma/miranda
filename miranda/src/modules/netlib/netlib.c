@@ -2,8 +2,8 @@
 
 Miranda IM: the free IM client for Microsoft* Windows*
 
-Copyright 2000-2006 Miranda ICQ/IM project, 
-all portions of this codebase are copyrighted to the people 
+Copyright 2000-2006 Miranda ICQ/IM project,
+all portions of this codebase are copyrighted to the people
 listed in contributors.txt.
 
 This program is free software; you can redistribute it and/or
@@ -145,7 +145,7 @@ static int NetlibRegisterUser(WPARAM wParam,LPARAM lParam)
 		SetLastError(ERROR_OUTOFMEMORY);
 		return (int)(HANDLE)NULL;
 	}
-	if (nlu->szHttpGatewayHello) 
+	if (nlu->szHttpGatewayHello)
 		thisUser->user.szHttpGatewayHello=mir_strdup(nlu->szHttpGatewayHello);
 	else
 		thisUser->user.szHttpGatewayHello=NULL;
@@ -200,7 +200,6 @@ static int NetlibSetUserSettings(WPARAM wParam,LPARAM lParam)
 		SetLastError(ERROR_INVALID_PARAMETER);
 		return 0;
 	}
-	NetlibFreeUserSettingsStruct(&nlu->settings);
 	NetlibSaveUserSettingsStruct(nlu->user.szSettingsModule,nlus);
 	return 1;
 }
@@ -447,7 +446,7 @@ int NetlibBase64Decode(WPARAM wParam,LPARAM lParam)
 static int NetlibShutdown(WPARAM wParam,LPARAM lParam)
 {
 	int i;
-	
+
 	NetlibUPnPDestroy();
 	NetlibLogShutdown();
 	for(i=netlibUserCount;i>0;i--)
@@ -499,7 +498,7 @@ int LoadNetlibModule(void)
 	CreateServiceFunction(MS_NETLIB_SELECTEX,NetlibSelectEx);
 	CreateServiceFunction(MS_NETLIB_CREATEPACKETRECVER,NetlibPacketRecverCreate);
 	CreateServiceFunction(MS_NETLIB_GETMOREPACKETS,NetlibPacketRecverGetMore);
-	CreateServiceFunction(MS_NETLIB_SETPOLLINGTIMEOUT,NetlibHttpSetPollingTimeout);	
+	CreateServiceFunction(MS_NETLIB_SETPOLLINGTIMEOUT,NetlibHttpSetPollingTimeout);
 
 	NetlibUPnPInit();
 	return 0;

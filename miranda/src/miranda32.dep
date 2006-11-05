@@ -204,6 +204,12 @@
 	".\modules\netlib\netlib.h"\
 	
 
+.\modules\netlib\netlibupnp.c : \
+	"..\include\m_plugins.h"\
+	"..\include\m_protomod.h"\
+	".\modules\netlib\netlib.h"\
+	
+
 .\modules\options\options.c : \
 	"..\include\m_plugins.h"\
 	"..\include\m_protomod.h"\
@@ -212,6 +218,7 @@
 .\modules\plugins\newplugins.c : \
 	"..\include\m_plugins.h"\
 	"..\include\m_protomod.h"\
+	".\modules\database\dblists.h"\
 	
 
 .\modules\protocols\protochains.c : \
