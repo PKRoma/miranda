@@ -561,8 +561,7 @@ BOOL LogToFile(SESSION_INFO* si, GCEVENT * gce)
 				mir_sntprintf(szTemp, SIZEOF(szTemp), _T("%s"), szTemp2);
 			pszNick = szTemp;
 		}
-		switch (gce->pDest->iType)
-		{
+		switch (gce->pDest->iType) {
 		case GC_EVENT_MESSAGE:
 		case GC_EVENT_MESSAGE|GC_EVENT_HIGHLIGHT:
 			p = '*';

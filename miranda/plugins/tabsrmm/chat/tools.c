@@ -715,7 +715,7 @@ BOOL LogToFile(SESSION_INFO* si, GCEVENT * gce)
 	char szFile[MAX_PATH];
 	char szName[MAX_PATH];
 	char szFolder[MAX_PATH];
-	char p = '\0';
+	char p = '\0', *pszSessionName;
 	szBuffer[0] = '\0';
 
 	if (!si || !gce)
@@ -732,8 +732,10 @@ BOOL LogToFile(SESSION_INFO* si, GCEVENT * gce)
 	if (!PathIsDirectoryA(szFolder))
 		CreateDirectoryA(szFolder, NULL);
 
-	mir_snprintf(szName, MAX_PATH,TCHAR_STR_PARAM ".log",si->ptszID);
+	pszSessionName = t2a( si->ptszID );
+	mir_snprintf( szName, MAX_PATH,"%s.log", pszSessionName );
 	ValidateFilename(szName);
+	mir_free( pszSessionName );
 
 	mir_snprintf(szFile, MAX_PATH,"%s\\%s", szFolder, szName );
 	lstrcpyn(szTime, MakeTimeStamp(g_Settings.pszTimeStampLog, gce->time), 99);
@@ -998,17 +1000,37 @@ BOOL DoEventHookAsync(HWND hwnd, const TCHAR* pszID, const char* pszModule, int 
 
 BOOL DoEventHook(const TCHAR* pszID, const char* pszModule, int iType, const TCHAR* pszUID, const TCHAR* pszText, DWORD dwItem)
 {
+	SESSION_INFO* si;
 	GCHOOK gch = {0};
 	GCDEST gcd = {0};
 
-	gcd.pszID = (char*)pszID;
 	gcd.pszModule = (char*)pszModule;
+	#if defined( _UNICODE )
+		if (( si = SM_FindSession(pszID, pszModule)) == NULL )
+			return FALSE;
+
+		if ( !( si->dwFlags & GC_UNICODE )) {
+			gcd.pszID = t2a( pszID );
+			gch.pszUID = t2a( pszUID );
+			gch.pszText = t2a( pszText );
+		}
+		else {
+	#endif
+			gcd.ptszID = mir_tstrdup( pszID );
+			gch.ptszUID = mir_tstrdup( pszUID );
+			gch.ptszText = mir_tstrdup( pszText );
+	#if defined( _UNICODE )
+		}
+	#endif
+
 	gcd.iType = iType;
-	gch.pDest = &gcd;
-	gch.ptszText = (TCHAR*)pszText;
-	gch.ptszUID = (TCHAR*)pszUID;
 	gch.dwData = dwItem;
+	gch.pDest = &gcd;
 	NotifyEventHooks(hSendEvent,0,(WPARAM)&gch);
+	
+	mir_free( gcd.pszID );
+	mir_free( gch.ptszUID );
+	mir_free( gch.ptszText );
 	return TRUE;
 }
 
