@@ -29,6 +29,7 @@ extern NEN_OPTIONS nen_options;
 extern HRESULT  (WINAPI *MyCloseThemeData)(HANDLE);
 extern BOOL g_framelessSkinmode;
 extern SESSION_INFO g_TabSession;
+extern HANDLE g_hEvent_MsgPopup;
 
 extern MYGLOBALS	myGlobals;
 extern HBRUSH		hListBkgBrush;
@@ -387,6 +388,78 @@ static LRESULT CALLBACK MessageSubclassProc(HWND hwnd, UINT msg, WPARAM wParam, 
 		dat->szTabSave[0] = '\0';
 		dat->lastEnterTime = 0;
 		return 0;
+
+    case WM_CONTEXTMENU:
+        {
+            HMENU hMenu, hSubMenu;
+            CHARRANGE sel, all = { 0, -1};
+            int iSelection;
+            int iPrivateBG = DBGetContactSettingByte(mwdat->hContact, SRMSGMOD_T, "private_bg", 0);
+            MessageWindowPopupData mwpd;
+            POINT pt;
+            int idFrom = IDC_CHAT_MESSAGE;
+
+            GetCursorPos(&pt);
+            hMenu = LoadMenu(g_hInst, MAKEINTRESOURCE(IDR_CONTEXT));
+            hSubMenu = GetSubMenu(hMenu, 2);
+            RemoveMenu(hSubMenu, 9, MF_BYPOSITION);
+            RemoveMenu(hSubMenu, 8, MF_BYPOSITION);
+            RemoveMenu(hSubMenu, 4, MF_BYPOSITION);
+            EnableMenuItem(hSubMenu, IDM_PASTEFORMATTED, MF_BYCOMMAND | (mwdat->SendFormat != 0 ? MF_ENABLED : MF_GRAYED));
+            CallService(MS_LANGPACK_TRANSLATEMENU, (WPARAM) hSubMenu, 0);
+
+            SendMessage(hwnd, EM_EXGETSEL, 0, (LPARAM) & sel);
+            if (sel.cpMin == sel.cpMax) {
+                EnableMenuItem(hSubMenu, IDM_COPY, MF_BYCOMMAND | MF_GRAYED);
+                if(idFrom == IDC_CHAT_MESSAGE)
+                    EnableMenuItem(hSubMenu, IDM_CUT, MF_BYCOMMAND | MF_GRAYED);
+            }
+            if (idFrom == IDC_CHAT_MESSAGE) {
+                // First notification
+                mwpd.cbSize = sizeof(mwpd);
+                mwpd.uType = MSG_WINDOWPOPUP_SHOWING;
+                mwpd.uFlags = (idFrom == IDC_LOG ? MSG_WINDOWPOPUP_LOG : MSG_WINDOWPOPUP_INPUT);
+                mwpd.hContact = mwdat->hContact;
+                mwpd.hwnd = hwnd;
+                mwpd.hMenu = hSubMenu;
+                mwpd.selection = 0;
+                mwpd.pt = pt;
+                NotifyEventHooks(g_hEvent_MsgPopup, 0, (LPARAM)&mwpd);
+            }
+
+            iSelection = TrackPopupMenu(hSubMenu, TPM_RETURNCMD, pt.x, pt.y, 0, hwnd, NULL);
+
+            if (idFrom == IDC_CHAT_MESSAGE) {
+                // Second notification
+                mwpd.selection = iSelection;
+                mwpd.uType = MSG_WINDOWPOPUP_SELECTED;
+                NotifyEventHooks(g_hEvent_MsgPopup, 0, (LPARAM)&mwpd);
+            }
+
+            switch (iSelection) {
+                case IDM_COPY:
+                    SendMessage(hwnd, WM_COPY, 0, 0);
+                    break;
+                case IDM_CUT:
+                    SendMessage(hwnd, WM_CUT, 0, 0);
+                    break;
+                case IDM_PASTE:
+                case IDM_PASTEFORMATTED:
+                    if(idFrom == IDC_MESSAGE)
+                        SendMessage(hwnd, EM_PASTESPECIAL, (iSelection == IDM_PASTE) ? CF_TEXT : 0, 0);
+                    break;
+                case IDM_COPYALL:
+                    SendMessage(hwnd, EM_EXSETSEL, 0, (LPARAM) & all);
+                    SendMessage(hwnd, WM_COPY, 0, 0);
+                    SendMessage(hwnd, EM_EXSETSEL, 0, (LPARAM) & sel);
+                    break;
+                case IDM_SELECTALL:
+                    SendMessage(hwnd, EM_EXSETSEL, 0, (LPARAM) & all);
+                    break;
+            }
+            DestroyMenu(hMenu);
+            return TRUE;
+        }
 
 	case WM_MOUSEWHEEL:
 		{
@@ -787,7 +860,8 @@ static LRESULT CALLBACK MessageSubclassProc(HWND hwnd, UINT msg, WPARAM wParam, 
 		dat->lastEnterTime = 0;
 		break;
 
-	case WM_RBUTTONDOWN:
+    /*
+    case WM_RBUTTONDOWN:
 		{
 			CHARRANGE sel, all = { 0, -1 };
 			POINT pt;
@@ -845,7 +919,7 @@ static LRESULT CALLBACK MessageSubclassProc(HWND hwnd, UINT msg, WPARAM wParam, 
 			PostMessage(hwnd, WM_KEYUP, 0, 0 );
 		}
 		break;
-
+    */
 	case WM_KEYUP:
 	case WM_LBUTTONUP:
 	case WM_RBUTTONUP:
@@ -2293,7 +2367,8 @@ LABEL_SHOWWINDOW:
 			PostMessage(hwndDlg, GC_SCROLLTOBOTTOM, 0, 0);
 			break;
 
-		case IDC_CHAT_MESSAGE:
+        case IDC_CHAT_MESSAGE:
+            //MessageBoxA(0, "command from message", "foo", MB_OK);
 			if (HIWORD(wParam) == EN_CHANGE) {
 				if (dat->pContainer->hwndActive == hwndDlg)
 					UpdateReadChars(hwndDlg, dat);

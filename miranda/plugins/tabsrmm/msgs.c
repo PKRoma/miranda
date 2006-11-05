@@ -1835,25 +1835,29 @@ int TABSRMM_FireEvent(HANDLE hContact, HWND hwnd, unsigned int type, unsigned in
 {
     MessageWindowEventData mwe = { 0 };
     struct TABSRMM_SessionInfo se = { 0 };
+    struct MessageWindowData *dat = (struct MessageWindowData *)GetWindowLong(hwnd, GWL_USERDATA);
     
     if (hContact == NULL || hwnd == NULL) 
         return 0;
 
-
 	// Spell checker support
 	if (type == MSG_WINDOW_EVT_OPEN) {
 		if (ServiceExists(MS_SPELLCHECKER_ADD_RICHEDIT)) {
+            BYTE bType = dat ? dat->bType : SESSIONTYPE_IM;
 			SPELLCHECKER_ITEM sci;
+
 			sci.cbSize = sizeof(SPELLCHECKER_ITEM);
 			sci.hContact = hContact;
-			sci.hwnd = GetDlgItem(hwnd, IDC_MESSAGE);
+			sci.hwnd = GetDlgItem(hwnd, bType == SESSIONTYPE_IM ? IDC_MESSAGE : IDC_CHAT_MESSAGE);
 			sci.window_name = "tabSRMM";
 			CallService(MS_SPELLCHECKER_ADD_RICHEDIT, (WPARAM) &sci, 0); 
 		}
 	}
 	else if (type == MSG_WINDOW_EVT_CLOSING) {
 		if (ServiceExists(MS_SPELLCHECKER_REMOVE_RICHEDIT)) {
-			CallService(MS_SPELLCHECKER_REMOVE_RICHEDIT, (WPARAM) GetDlgItem(hwnd, IDC_MESSAGE), 0); 
+            BYTE bType = dat ? dat->bType : SESSIONTYPE_IM;
+
+            CallService(MS_SPELLCHECKER_REMOVE_RICHEDIT, (WPARAM) GetDlgItem(hwnd, bType == SESSIONTYPE_IM ? IDC_MESSAGE : IDC_CHAT_MESSAGE), 0); 
 		}
 	}
 
@@ -1872,8 +1876,6 @@ int TABSRMM_FireEvent(HANDLE hContact, HWND hwnd, unsigned int type, unsigned in
 	mwe.hwndLog = GetDlgItem(hwnd, IDC_LOG);
 
     if(type == MSG_WINDOW_EVT_CUSTOM) {
-        struct MessageWindowData *dat = (struct MessageWindowData *)GetWindowLong(hwnd, GWL_USERDATA);
-
         se.cbSize = sizeof(se);
         se.evtCode = HIWORD(subType);
         se.hwnd = hwnd;
