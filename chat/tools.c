@@ -798,17 +798,37 @@ BOOL DoEventHookAsync(HWND hwnd, const TCHAR* pszID, const char* pszModule, int 
 
 BOOL DoEventHook(const TCHAR* pszID, const char* pszModule, int iType, const TCHAR* pszUID, const TCHAR* pszText, DWORD dwItem)
 {
+	SESSION_INFO* si;
 	GCHOOK gch = {0};
 	GCDEST gcd = {0};
 
-	gcd.pszID = (char*)pszID;
 	gcd.pszModule = (char*)pszModule;
+	#if defined( _UNICODE )
+		if (( si = SM_FindSession(pszID, pszModule)) == NULL )
+			return FALSE;
+
+		if ( !( si->dwFlags & GC_UNICODE )) {
+			gcd.pszID = t2a( pszID );
+			gch.pszUID = t2a( pszUID );
+			gch.pszText = t2a( pszText );
+		}
+		else {
+	#endif
+			gcd.ptszID = mir_tstrdup( pszID );
+			gch.ptszUID = mir_tstrdup( pszUID );
+			gch.ptszText = mir_tstrdup( pszText );
+	#if defined( _UNICODE )
+		}
+	#endif
+
 	gcd.iType = iType;
-	gch.pDest = &gcd;
-	gch.ptszText = (TCHAR*)pszText;
-	gch.ptszUID = (TCHAR*)pszUID;
 	gch.dwData = dwItem;
+	gch.pDest = &gcd;
 	NotifyEventHooks(hSendEvent,0,(WPARAM)&gch);
+	
+	mir_free( gcd.pszID );
+	mir_free( gch.ptszUID );
+	mir_free( gch.ptszText );
 	return TRUE;
 }
 
