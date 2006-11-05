@@ -860,66 +860,6 @@ static LRESULT CALLBACK MessageSubclassProc(HWND hwnd, UINT msg, WPARAM wParam, 
 		dat->lastEnterTime = 0;
 		break;
 
-    /*
-    case WM_RBUTTONDOWN:
-		{
-			CHARRANGE sel, all = { 0, -1 };
-			POINT pt;
-			UINT uID = 0;
-			HMENU hSubMenu;
-
-			hSubMenu = GetSubMenu(g_hMenu, 4);
-			CallService(MS_LANGPACK_TRANSLATEMENU, (WPARAM) hSubMenu, 0);
-			SendMessage(hwnd, EM_EXGETSEL, 0, (LPARAM) & sel);
-
-			EnableMenuItem(hSubMenu, ID_MESSAGE_UNDO, SendMessage(hwnd, EM_CANUNDO, 0,0)?MF_ENABLED:MF_GRAYED);
-			EnableMenuItem(hSubMenu, ID_MESSAGE_REDO, SendMessage(hwnd, EM_CANREDO, 0,0)?MF_ENABLED:MF_GRAYED);
-			EnableMenuItem(hSubMenu, ID_MESSAGE_COPY, sel.cpMax!=sel.cpMin?MF_ENABLED:MF_GRAYED);
-			EnableMenuItem(hSubMenu, ID_MESSAGE_CUT, sel.cpMax!=sel.cpMin?MF_ENABLED:MF_GRAYED);
-
-			dat->lastEnterTime = 0;
-
-			pt.x = (short) LOWORD(lParam);
-			pt.y = (short) HIWORD(lParam);
-			ClientToScreen(hwnd, &pt);
-
-			uID = TrackPopupMenu(hSubMenu, TPM_RETURNCMD, pt.x, pt.y, 0, hwnd, NULL);
-			switch (uID) {
-			case 0:
-				break;
-
-			case ID_MESSAGE_UNDO:
-				SendMessage(hwnd, EM_UNDO, 0, 0);
-				break;
-
-			case ID_MESSAGE_REDO:
-				SendMessage(hwnd, EM_REDO, 0, 0);
-				break;
-
-			case ID_MESSAGE_COPY:
-				SendMessage(hwnd, WM_COPY, 0, 0);
-				break;
-
-			case ID_MESSAGE_CUT:
-				SendMessage(hwnd, WM_CUT, 0, 0);
-				break;
-
-			case ID_MESSAGE_PASTE:
-				SendMessage(hwnd, EM_PASTESPECIAL, CF_TEXT, 0);
-				break;
-
-			case ID_MESSAGE_SELECTALL:
-				SendMessage(hwnd, EM_EXSETSEL, 0, (LPARAM) & all);
-				break;
-
-			case ID_MESSAGE_CLEAR:
-				SetWindowText(hwnd, _T( "" ));
-				break;
-			}
-			PostMessage(hwnd, WM_KEYUP, 0, 0 );
-		}
-		break;
-    */
 	case WM_KEYUP:
 	case WM_LBUTTONUP:
 	case WM_RBUTTONUP:
