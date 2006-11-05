@@ -82,6 +82,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #define ERR_LIST_FULL                    210
 #define ERR_ALREADY_THERE                215
 #define ERR_NOT_ON_LIST                  216
+#define ERR_NOT_ONLINE                   217
 #define ERR_ALREADY_IN_THE_MODE          218
 #define ERR_ALREADY_IN_OPPOSITE_LIST     219
 #define ERR_SWITCHBOARD_FAILED           280
@@ -98,6 +99,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #define ERR_DB_CONNECT                   603
 #define ERR_SERVER_GOING_DOWN            604
 #define ERR_CREATE_CONNECTION            707
+#define ERR_INVALID_LOCALE               710
 #define ERR_BLOCKING_WRITE               711
 #define ERR_SESSION_OVERLOAD             712
 #define ERR_USER_TOO_ACTIVE              713
