@@ -51,6 +51,7 @@ extern COLORREF g_ContainerColorKey;
 extern StatusItems_t StatusItems[];
 extern struct GlobalLogSettings_t g_Settings;
 extern BOOL g_framelessSkinmode;
+extern HANDLE g_hEvent_MsgPopup;
 
 extern PITA pfnIsThemeActive;
 extern POTD pfnOpenThemeData;
@@ -130,6 +131,130 @@ static struct _buttonicons { int id; HICON *pIcon; } buttonicons[] = {
 
 struct SendJob *sendJobs = NULL;
 static int splitterEdges = -1;
+
+// pt in screen coords
+static void ShowPopupMenu(HWND hwndDlg, struct MessageWindowData *dat, int idFrom, HWND hwndFrom, POINT pt)
+{
+    HMENU hMenu, hSubMenu;
+    CHARRANGE sel, all = { 0, -1};
+    int iSelection;
+    unsigned int oldCodepage = dat->codePage;
+    int iPrivateBG = DBGetContactSettingByte(dat->hContact, SRMSGMOD_T, "private_bg", 0);
+	MessageWindowPopupData mwpd;
+    
+    hMenu = LoadMenu(g_hInst, MAKEINTRESOURCE(IDR_CONTEXT));
+    if(idFrom == IDC_LOG)
+        hSubMenu = GetSubMenu(hMenu, 0);
+    else {
+        hSubMenu = GetSubMenu(hMenu, 2);
+        EnableMenuItem(hSubMenu, IDM_PASTEFORMATTED, MF_BYCOMMAND | (dat->SendFormat != 0 ? MF_ENABLED : MF_GRAYED));
+        EnableMenuItem(hSubMenu, ID_EDITOR_PASTEANDSENDIMMEDIATELY, MF_BYCOMMAND | (myGlobals.m_PasteAndSend ? MF_ENABLED : MF_GRAYED));
+        CheckMenuItem(hSubMenu, ID_EDITOR_SHOWMESSAGELENGTHINDICATOR, MF_BYCOMMAND | (myGlobals.m_visualMessageSizeIndicator ? MF_CHECKED : MF_UNCHECKED));
+    }
+    CallService(MS_LANGPACK_TRANSLATEMENU, (WPARAM) hSubMenu, 0);
+    SendMessage(hwndFrom, EM_EXGETSEL, 0, (LPARAM) & sel);
+    if (sel.cpMin == sel.cpMax) {
+        EnableMenuItem(hSubMenu, IDM_COPY, MF_BYCOMMAND | MF_GRAYED);
+        if(idFrom == IDC_MESSAGE)
+            EnableMenuItem(hSubMenu, IDM_CUT, MF_BYCOMMAND | MF_GRAYED);
+    }
+#if defined(_UNICODE)
+    if(idFrom == IDC_LOG)  {
+        int i;
+        InsertMenuA(hSubMenu, 5, MF_BYPOSITION | MF_SEPARATOR, 0, 0);
+        InsertMenu(hSubMenu, 6, MF_BYPOSITION | MF_POPUP, (UINT_PTR) myGlobals.g_hMenuEncoding, TranslateT("ANSI Encoding"));
+        for(i = 0; i < GetMenuItemCount(myGlobals.g_hMenuEncoding); i++)
+            CheckMenuItem(myGlobals.g_hMenuEncoding, i, MF_BYPOSITION | MF_UNCHECKED);
+        if(dat->codePage == CP_ACP)
+            CheckMenuItem(myGlobals.g_hMenuEncoding, 0, MF_BYPOSITION | MF_CHECKED);
+        else
+            CheckMenuItem(myGlobals.g_hMenuEncoding, dat->codePage, MF_BYCOMMAND | MF_CHECKED);
+        CheckMenuItem(hSubMenu, ID_LOG_FREEZELOG, MF_BYCOMMAND | (dat->dwFlagsEx & MWF_SHOW_SCROLLINGDISABLED ? MF_CHECKED : MF_UNCHECKED));
+    }
+#endif                                   
+
+	if (idFrom == IDC_LOG || idFrom == IDC_MESSAGE) {
+		// First notification
+		mwpd.cbSize = sizeof(mwpd);
+		mwpd.uType = MSG_WINDOWPOPUP_SHOWING;
+		mwpd.uFlags = (idFrom == IDC_LOG ? MSG_WINDOWPOPUP_LOG : MSG_WINDOWPOPUP_INPUT);
+		mwpd.hContact = dat->hContact;
+		mwpd.hwnd = hwndFrom;
+		mwpd.hMenu = hSubMenu;
+		mwpd.selection = 0;
+		mwpd.pt = pt;
+		NotifyEventHooks(g_hEvent_MsgPopup, 0, (LPARAM)&mwpd);
+	}
+
+	iSelection = TrackPopupMenu(hSubMenu, TPM_RETURNCMD, pt.x, pt.y, 0, hwndDlg, NULL);
+
+	if (idFrom == IDC_LOG || idFrom == IDC_MESSAGE) {
+		// Second notification
+		mwpd.selection = iSelection;
+		mwpd.uType = MSG_WINDOWPOPUP_SELECTED;
+		NotifyEventHooks(g_hEvent_MsgPopup, 0, (LPARAM)&mwpd);
+	}
+
+    if(iSelection > 800 && iSelection < 1400 && idFrom == IDC_LOG) {
+        dat->codePage = iSelection;
+        DBWriteContactSettingDword(dat->hContact, SRMSGMOD_T, "ANSIcodepage", dat->codePage);
+    }
+    else if(iSelection == 500 && idFrom == IDC_LOG) {
+        dat->codePage = CP_ACP;
+        DBDeleteContactSetting(dat->hContact, SRMSGMOD_T, "ANSIcodepage");
+    }
+    else {
+        switch (iSelection) {
+            case IDM_COPY:
+                SendMessage(hwndFrom, WM_COPY, 0, 0);
+                break;
+            case IDM_CUT:
+                SendMessage(hwndFrom, WM_CUT, 0, 0);
+                break;
+            case IDM_PASTE:
+            case IDM_PASTEFORMATTED:
+                if(idFrom == IDC_MESSAGE)
+                    SendMessage(hwndFrom, EM_PASTESPECIAL, (iSelection == IDM_PASTE) ? CF_TEXT : 0, 0);
+                break;
+            case IDM_COPYALL:
+                SendMessage(hwndFrom, EM_EXSETSEL, 0, (LPARAM) & all);
+                SendMessage(hwndFrom, WM_COPY, 0, 0);
+                SendMessage(hwndFrom, EM_EXSETSEL, 0, (LPARAM) & sel);
+                break;
+            case IDM_SELECTALL:
+                SendMessage(hwndFrom, EM_EXSETSEL, 0, (LPARAM) & all);
+                break;
+            case IDM_CLEAR:
+                SetDlgItemText(hwndDlg, IDC_LOG, _T(""));
+                dat->hDbEventFirst = NULL;
+                break;
+            case ID_LOG_FREEZELOG:
+                SendMessage(GetDlgItem(hwndDlg, IDC_LOG), WM_KEYDOWN, VK_F12, 0);
+                break;
+            case ID_EDITOR_SHOWMESSAGELENGTHINDICATOR:
+                myGlobals.m_visualMessageSizeIndicator = !myGlobals.m_visualMessageSizeIndicator;
+                DBWriteContactSettingByte(NULL, SRMSGMOD_T, "msgsizebar", (BYTE)myGlobals.m_visualMessageSizeIndicator);
+                WindowList_Broadcast(hMessageWindowList, DM_CONFIGURETOOLBAR, 0, 0);
+                SendMessage(hwndDlg, WM_SIZE, 0, 0);
+                //SetWindowPos(GetDlgItem(hwndDlg, IDC_SPLITTER), 0, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE | SWP_FRAMECHANGED);
+                //RedrawWindow(GetDlgItem(hwndDlg, IDC_SPLITTER), NULL, NULL, RDW_ERASE | RDW_UPDATENOW | RDW_INVALIDATE | RDW_FRAME);
+                break;
+            case ID_EDITOR_PASTEANDSENDIMMEDIATELY:
+                HandlePasteAndSend(hwndDlg, dat);
+                break;
+        }
+    }
+#if defined(_UNICODE)
+    if(idFrom == IDC_LOG)
+        RemoveMenu(hSubMenu, 6, MF_BYPOSITION);
+#endif                                        
+    DestroyMenu(hMenu);
+    if(dat->codePage != oldCodepage) {
+        SendMessage(hwndDlg, DM_REMAKELOG, 0, 0);
+        dat->iOldHash = 0;
+        SendMessage(hwndDlg, DM_UPDATETITLE, 0, 0);
+    }
+}
 
 static void ResizeIeView(HWND hwndDlg, struct MessageWindowData *dat, DWORD px, DWORD py, DWORD cx, DWORD cy)
 {
@@ -635,7 +760,8 @@ UINT DrawRichEditFrame(HWND hwnd, struct MessageWindowData *mwdat, UINT skinID, 
 
 static LRESULT CALLBACK MessageLogSubclassProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 {
-	struct MessageWindowData *mwdat = (struct MessageWindowData *)GetWindowLong(GetParent(hwnd), GWL_USERDATA);
+	HWND hwndParent = GetParent(hwnd);
+	struct MessageWindowData *mwdat = (struct MessageWindowData *)GetWindowLong(hwndParent, GWL_USERDATA);
 
     switch(msg) {
         case WM_KILLFOCUS:
@@ -660,6 +786,24 @@ static LRESULT CALLBACK MessageLogSubclassProc(HWND hwnd, UINT msg, WPARAM wPara
             return(NcCalcRichEditFrame(hwnd, mwdat, ID_EXTBKHISTORY, msg, wParam, lParam, OldMessageLogProc));
 		case WM_NCPAINT:
 			return(DrawRichEditFrame(hwnd, mwdat, ID_EXTBKHISTORY, msg, wParam, lParam, OldMessageLogProc));
+		case WM_CONTEXTMENU:
+			{
+				POINT pt;
+
+				if (lParam == 0xFFFFFFFF) {
+					CHARRANGE sel;
+					SendMessage(hwnd, EM_EXGETSEL, 0, (LPARAM) & sel);
+					SendMessage(hwnd, EM_POSFROMCHAR, (WPARAM) & pt, (LPARAM) sel.cpMax);
+					ClientToScreen(hwnd, &pt);
+				}
+				else {
+					pt.x = (short) LOWORD(lParam);
+					pt.y = (short) HIWORD(lParam);
+				}
+
+				ShowPopupMenu(hwndParent, mwdat, IDC_LOG, hwnd, pt);
+				return TRUE;
+			}
 	}
 	return CallWindowProc(OldMessageLogProc, hwnd, msg, wParam, lParam);
 }
@@ -1034,6 +1178,25 @@ static LRESULT CALLBACK MessageEditSubclassProc(HWND hwnd, UINT msg, WPARAM wPar
         case WM_USER + 100:
             SetFocus(hwnd);
             break;
+		case WM_CONTEXTMENU:
+			{
+				POINT pt;
+
+				if (lParam == 0xFFFFFFFF) {
+					CHARRANGE sel;
+					SendMessage(hwnd, EM_EXGETSEL, 0, (LPARAM) & sel);
+					SendMessage(hwnd, EM_POSFROMCHAR, (WPARAM) & pt, (LPARAM) sel.cpMax);
+					ClientToScreen(hwnd, &pt);
+				}
+				else {
+					pt.x = (short) LOWORD(lParam);
+					pt.y = (short) HIWORD(lParam);
+				}
+
+				ShowPopupMenu(hwndParent, mwdat, IDC_MESSAGE, hwnd, pt);
+				return TRUE;
+            }
+	
     }
     return CallWindowProc(OldMessageEditProc, hwnd, msg, wParam, lParam);
 }
@@ -4688,125 +4851,6 @@ quote_from_last:
                                             SetCursor(LoadCursor(NULL, IDC_ARROW));
                                         
                                         break;
-                                    }
-                                case WM_RBUTTONUP:
-                                    {
-                                        HMENU hMenu, hSubMenu;
-                                        POINT pt;
-                                        CHARRANGE sel, all = { 0, -1};
-                                        int iSelection;
-                                        unsigned int oldCodepage = dat->codePage;
-                                        int idFrom = ((NMHDR *)lParam)->idFrom;
-                                        int iPrivateBG = DBGetContactSettingByte(dat->hContact, SRMSGMOD_T, "private_bg", 0);
-                                        
-                                        hMenu = LoadMenu(g_hInst, MAKEINTRESOURCE(IDR_CONTEXT));
-                                        if(idFrom == IDC_LOG)
-                                            hSubMenu = GetSubMenu(hMenu, 0);
-                                        else {
-                                            hSubMenu = GetSubMenu(hMenu, 2);
-                                            EnableMenuItem(hSubMenu, IDM_PASTEFORMATTED, MF_BYCOMMAND | (dat->SendFormat != 0 ? MF_ENABLED : MF_GRAYED));
-                                            EnableMenuItem(hSubMenu, ID_EDITOR_PASTEANDSENDIMMEDIATELY, MF_BYCOMMAND | (myGlobals.m_PasteAndSend ? MF_ENABLED : MF_GRAYED));
-                                            CheckMenuItem(hSubMenu, ID_EDITOR_SHOWMESSAGELENGTHINDICATOR, MF_BYCOMMAND | (myGlobals.m_visualMessageSizeIndicator ? MF_CHECKED : MF_UNCHECKED));
-                                        }
-                                        CallService(MS_LANGPACK_TRANSLATEMENU, (WPARAM) hSubMenu, 0);
-                                        SendMessage(((NMHDR *) lParam)->hwndFrom, EM_EXGETSEL, 0, (LPARAM) & sel);
-                                        if (sel.cpMin == sel.cpMax) {
-                                            EnableMenuItem(hSubMenu, IDM_COPY, MF_BYCOMMAND | MF_GRAYED);
-                                            if(idFrom == IDC_MESSAGE)
-                                                EnableMenuItem(hSubMenu, IDM_CUT, MF_BYCOMMAND | MF_GRAYED);
-                                        }
-                                        pt.x = (short) LOWORD(((ENLINK *) lParam)->lParam);
-                                        pt.y = (short) HIWORD(((ENLINK *) lParam)->lParam);
-                                        ClientToScreen(((NMHDR *) lParam)->hwndFrom, &pt);
-#if defined(_UNICODE)
-                                        if(idFrom == IDC_LOG)  {
-                                            int i;
-                                            InsertMenuA(hSubMenu, 5, MF_BYPOSITION | MF_SEPARATOR, 0, 0);
-                                            InsertMenu(hSubMenu, 6, MF_BYPOSITION | MF_POPUP, (UINT_PTR) myGlobals.g_hMenuEncoding, TranslateT("ANSI Encoding"));
-                                            for(i = 0; i < GetMenuItemCount(myGlobals.g_hMenuEncoding); i++)
-                                                CheckMenuItem(myGlobals.g_hMenuEncoding, i, MF_BYPOSITION | MF_UNCHECKED);
-                                            if(dat->codePage == CP_ACP)
-                                                CheckMenuItem(myGlobals.g_hMenuEncoding, 0, MF_BYPOSITION | MF_CHECKED);
-                                            else
-                                                CheckMenuItem(myGlobals.g_hMenuEncoding, dat->codePage, MF_BYCOMMAND | MF_CHECKED);
-                                            CheckMenuItem(hSubMenu, ID_LOG_FREEZELOG, MF_BYCOMMAND | (dat->dwFlagsEx & MWF_SHOW_SCROLLINGDISABLED ? MF_CHECKED : MF_UNCHECKED));
-                                                
-                                        }
-#endif                                   
-										// Spell checker support
-										if (idFrom != IDC_LOG && ServiceExists(MS_SPELLCHECKER_SHOW_POPUP_MENU)) {
-											SPELLCHECKER_POPUPMENU scp;
-											scp.cbSize = sizeof(scp);
-											scp.hwnd = GetDlgItem(hwndDlg, IDC_MESSAGE);
-											scp.hMenu = hSubMenu;
-											scp.pt = pt;
-
-											iSelection = CallService(MS_SPELLCHECKER_SHOW_POPUP_MENU, (WPARAM) &scp, 0); 
-										} 
-										else
-											iSelection = TrackPopupMenu(hSubMenu, TPM_RETURNCMD, pt.x, pt.y, 0, hwndDlg, NULL);
-
-                                        if(iSelection > 800 && iSelection < 1400 && ((NMHDR *)lParam)->idFrom == IDC_LOG) {
-                                            dat->codePage = iSelection;
-                                            DBWriteContactSettingDword(dat->hContact, SRMSGMOD_T, "ANSIcodepage", dat->codePage);
-                                        }
-                                        else if(iSelection == 500 && ((NMHDR *)lParam)->idFrom == IDC_LOG) {
-                                            dat->codePage = CP_ACP;
-                                            DBDeleteContactSetting(dat->hContact, SRMSGMOD_T, "ANSIcodepage");
-                                        }
-                                        else {
-                                            switch (iSelection) {
-                                                case IDM_COPY:
-                                                    SendMessage(((NMHDR *) lParam)->hwndFrom, WM_COPY, 0, 0);
-                                                    break;
-                                                case IDM_CUT:
-                                                    SendMessage(((NMHDR *) lParam)->hwndFrom, WM_CUT, 0, 0);
-                                                    break;
-                                                case IDM_PASTE:
-                                                case IDM_PASTEFORMATTED:
-                                                    if(idFrom == IDC_MESSAGE)
-                                                        SendMessage(((NMHDR *) lParam)->hwndFrom, EM_PASTESPECIAL, (iSelection == IDM_PASTE) ? CF_TEXT : 0, 0);
-                                                    break;
-                                                case IDM_COPYALL:
-                                                    SendMessage(((NMHDR *) lParam)->hwndFrom, EM_EXSETSEL, 0, (LPARAM) & all);
-                                                    SendMessage(((NMHDR *) lParam)->hwndFrom, WM_COPY, 0, 0);
-                                                    SendMessage(((NMHDR *) lParam)->hwndFrom, EM_EXSETSEL, 0, (LPARAM) & sel);
-                                                    break;
-                                                case IDM_SELECTALL:
-                                                    SendMessage(((NMHDR *) lParam)->hwndFrom, EM_EXSETSEL, 0, (LPARAM) & all);
-                                                    break;
-                                                case IDM_CLEAR:
-                                                    SetDlgItemText(hwndDlg, IDC_LOG, _T(""));
-                                                    dat->hDbEventFirst = NULL;
-                                                    break;
-                                                case ID_LOG_FREEZELOG:
-                                                    SendMessage(GetDlgItem(hwndDlg, IDC_LOG), WM_KEYDOWN, VK_F12, 0);
-                                                    break;
-                                                case ID_EDITOR_SHOWMESSAGELENGTHINDICATOR:
-                                                    myGlobals.m_visualMessageSizeIndicator = !myGlobals.m_visualMessageSizeIndicator;
-                                                    DBWriteContactSettingByte(NULL, SRMSGMOD_T, "msgsizebar", (BYTE)myGlobals.m_visualMessageSizeIndicator);
-                                                    WindowList_Broadcast(hMessageWindowList, DM_CONFIGURETOOLBAR, 0, 0);
-                                                    SendMessage(hwndDlg, WM_SIZE, 0, 0);
-                                                    //SetWindowPos(GetDlgItem(hwndDlg, IDC_SPLITTER), 0, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE | SWP_FRAMECHANGED);
-                                                    //RedrawWindow(GetDlgItem(hwndDlg, IDC_SPLITTER), NULL, NULL, RDW_ERASE | RDW_UPDATENOW | RDW_INVALIDATE | RDW_FRAME);
-                                                    break;
-                                                case ID_EDITOR_PASTEANDSENDIMMEDIATELY:
-                                                    HandlePasteAndSend(hwndDlg, dat);
-                                                    break;
-                                            }
-                                        }
-#if defined(_UNICODE)
-                                        if(idFrom == IDC_LOG)
-                                            RemoveMenu(hSubMenu, 6, MF_BYPOSITION);
-#endif                                        
-                                        DestroyMenu(hMenu);
-                                        if(dat->codePage != oldCodepage) {
-                                            SendMessage(hwndDlg, DM_REMAKELOG, 0, 0);
-                                            dat->iOldHash = 0;
-                                            SendMessage(hwndDlg, DM_UPDATETITLE, 0, 0);
-                                        }
-                                        SetWindowLong(hwndDlg, DWL_MSGRESULT, TRUE);
-                                        return TRUE;
                                     }
                             }
                             break;

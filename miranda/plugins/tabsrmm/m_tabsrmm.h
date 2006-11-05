@@ -65,7 +65,32 @@ typedef struct {
    unsigned int uType; // see event types above
    unsigned int uFlags; // might be needed for some event types
    void         *local; // used to store pointer to custom data
+   HWND         hwndInput; // input area window for the contact (or NULL if there is none)
+   HWND         hwndLog; // log area window for the contact (or NULL if there is none)                        // 
 } MessageWindowEventData;
+
+#define ME_MSG_WINDOWPOPUP		"MessageAPI/WindowPopupRequested"
+// wParam = 0
+// lParam = (MessageWindowPopupData *)&MessageWindowPopupData;
+// Fired to allow plugins to add itens to the msg window popup menu
+// Always fired twice: once with MSG_WINDOWPOPUP_SHOWING and once with MSG_WINDOWPOPUP_SELECTED.
+// This is done to allow cleaning of resources.
+#define MSG_WINDOWPOPUP_SHOWING  1
+#define MSG_WINDOWPOPUP_SELECTED 2
+
+#define MSG_WINDOWPOPUP_INPUT    1
+#define MSG_WINDOWPOPUP_LOG      2
+
+typedef struct {
+   int cbSize;
+   unsigned int uType; // see popup types above
+   unsigned int uFlags; // used to indicate in which window the popup was requested
+   HANDLE hContact;
+   HWND hwnd; // window where the popup was requested
+   HMENU hMenu;	// The handle to the menu
+   POINT pt; // The point, in screen coords
+   int selection; // The menu control id or 0 if no one was selected
+} MessageWindowPopupData;
 
 #define TEMPLATES_MODULE "tabSRMM_Templates"
 #define RTLTEMPLATES_MODULE "tabSRMM_RTLTemplates"

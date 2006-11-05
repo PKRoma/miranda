@@ -96,6 +96,7 @@ extern      int g_nrSkinIcons;
 extern      struct RTFColorTable *rtf_ctable;
 
 HANDLE g_hEvent_MsgWin;
+HANDLE g_hEvent_MsgPopup;
 
 static struct MsgLogIcon ttb_Slist = {0}, ttb_Traymenu = {0};
 
@@ -1159,6 +1160,7 @@ static int PreshutdownSendRecv(WPARAM wParam, LPARAM lParam)
      */
 
 	DestroyHookableEvent(g_hEvent_MsgWin);
+    DestroyHookableEvent(g_hEvent_MsgPopup);
 
 	NEN_WriteOptions(&nen_options);
     DestroyWindow(myGlobals.g_hwndHotkeyHandler);
@@ -1826,6 +1828,7 @@ static void InitAPI()
      */
 
     g_hEvent_MsgWin = CreateHookableEvent(ME_MSG_WINDOWEVENT);
+    g_hEvent_MsgPopup = CreateHookableEvent(ME_MSG_WINDOWPOPUP);
 }
 
 int TABSRMM_FireEvent(HANDLE hContact, HWND hwnd, unsigned int type, unsigned int subType)
@@ -1865,7 +1868,10 @@ int TABSRMM_FireEvent(HANDLE hContact, HWND hwnd, unsigned int type, unsigned in
     mwe.szModule = "tabSRMsg";
 #endif    
     mwe.uType = type;
-    if(type = MSG_WINDOW_EVT_CUSTOM) {
+	mwe.hwndInput = GetDlgItem(hwnd, IDC_MESSAGE);
+	mwe.hwndLog = GetDlgItem(hwnd, IDC_LOG);
+
+    if(type == MSG_WINDOW_EVT_CUSTOM) {
         struct MessageWindowData *dat = (struct MessageWindowData *)GetWindowLong(hwnd, GWL_USERDATA);
 
         se.cbSize = sizeof(se);
