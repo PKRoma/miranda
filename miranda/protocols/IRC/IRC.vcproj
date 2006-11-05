@@ -4,10 +4,10 @@
 	Version="7.10"
 	Name="IRC"
 	ProjectGUID="{3A12F777-56A8-42EC-BD17-8F325524241E}"
-	SccProjectName="&quot;$/Miranda/miranda/protocols/IRC&quot;, JNWAAAAA"
-	SccAuxPath=""
-	SccLocalPath="."
-	SccProvider="MSSCCI:Microsoft Visual SourceSafe">
+	SccProjectName="SAK"
+	SccAuxPath="SAK"
+	SccLocalPath="SAK"
+	SccProvider="SAK">
 	<Platforms>
 		<Platform
 			Name="Win32"/>

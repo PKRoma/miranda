@@ -24,6 +24,8 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #ifndef _CHAT_H_
 #define _CHAT_H_
 
+#define MIRANDA_VER 0x0600
+
 #pragma warning( disable : 4786 ) // limitation in MSVC's debugger.
 #pragma warning( disable : 4996 ) // limitation in MSVC's debugger.
 
@@ -290,6 +292,9 @@ typedef struct SESSION_INFO_TYPE
 	USERINFO*      pUsers;
 	USERINFO*      pMe;
 	STATUSINFO*    pStatuses;
+
+	HWND        hwndTooltip;
+	int         iOldItemID;
 
 	struct SESSION_INFO_TYPE *next;
 }
