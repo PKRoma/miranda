@@ -1298,7 +1298,7 @@ BOOL CALLBACK TabCtrlProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 							}
 						}
 					}
-				} else if (dat->lastClickTab >= 0) {
+				} else if (dat->lastClickTab >= 0 && g_dat->flags2 & SMF2_TABCLOSEBUTTON) {
 					IMAGEINFO info;
 					POINT pt;
 					RECT rect;

@@ -23,6 +23,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 */
 #include "commonheaders.h"
 #include "m_metacontacts.h"
+#include "m_spellchecker.h"
 #include <commctrl.h>
 
 #define TIMERID_MSGSEND      0
@@ -1173,7 +1174,6 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
 			SendDlgItemMessage(hwndDlg, IDC_LOG, EM_SETLANGOPTIONS, 0, (LPARAM) SendDlgItemMessage(hwndDlg, IDC_LOG, EM_GETLANGOPTIONS, 0, 0) & ~(IMF_AUTOKEYBOARD | IMF_AUTOFONTSIZEADJUST));
 			SendDlgItemMessage(hwndDlg, IDC_LOG, EM_SETMARGINS, EC_LEFTMARGIN | EC_RIGHTMARGIN, MAKELONG(0,0));
 			SendDlgItemMessage(hwndDlg, IDC_MESSAGE, EM_SETEVENTMASK, 0, ENM_MOUSEEVENTS | ENM_KEYEVENTS | ENM_CHANGE);
-// IEVIew MOD Begin
 			if (dat->flags & SMF_USEIEVIEW) {
 				IEVIEWWINDOW ieWindow;
 				ieWindow.cbSize = sizeof(IEVIEWWINDOW);
@@ -1191,7 +1191,6 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
 					dat->flags ^= SMF_USEIEVIEW;
 				}
 			}
-// IEVIew MOD End
 			/* duh, how come we didnt use this from the start? */
 			SendDlgItemMessage(hwndDlg, IDC_LOG, EM_AUTOURLDETECT, (WPARAM) TRUE, 0);
 			if (dat->hContact) {
@@ -1206,6 +1205,14 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
 			SendDlgItemMessage(hwndDlg, IDC_LOG, EM_LIMITTEXT, (WPARAM) sizeof(TCHAR) * 0x7FFFFFFF, 0);
 			SubclassLogEdit(GetDlgItem(hwndDlg, IDC_LOG));
 			SubclassMessageEdit(GetDlgItem(hwndDlg, IDC_MESSAGE));
+			{
+				SPELLCHECKER_ITEM scitem;
+				scitem.cbSize = sizeof(scitem);
+				scitem.hContact = dat->hContact;
+				scitem.hwnd = GetDlgItem(hwndDlg, IDC_MESSAGE);
+				scitem.window_name = "Scriver window";
+				CallService(MS_SPELLCHECKER_ADD_RICHEDIT, (WPARAM)&scitem, (LPARAM) NULL);
+			}
 			OldSplitterProc = (WNDPROC) SetWindowLong(GetDlgItem(hwndDlg, IDC_SPLITTER), GWL_WNDPROC, (LONG) SplitterSubclassProc);
 			if (dat->hContact) {
 				int historyMode = DBGetContactSettingByte(NULL, SRMMMOD, SRMSGSET_LOADHISTORY, SRMSGDEFSET_LOADHISTORY);
@@ -2526,6 +2533,7 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
 				case WM_RBUTTONUP:
 					{
 						HMENU hMenu, hSubMenu;
+						int selection;
 						POINT pt;
 						CHARRANGE sel, all = { 0, -1 };
 
@@ -2636,6 +2644,7 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
 				case WM_RBUTTONUP:
 					{
 						HMENU hMenu, hSubMenu;
+						int selection;
 						POINT pt;
 						CHARRANGE sel, all = { 0, -1 };
 
@@ -2660,7 +2669,17 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
 						pt.x = (short) LOWORD(((ENLINK *) lParam)->lParam);
 						pt.y = (short) HIWORD(((ENLINK *) lParam)->lParam);
 						ClientToScreen(((NMHDR *) lParam)->hwndFrom, &pt);
-						switch (TrackPopupMenu(hSubMenu, TPM_RETURNCMD, pt.x, pt.y, 0, hwndDlg, NULL)) {
+						if (ServiceExists(MS_SPELLCHECKER_SHOW_POPUP_MENU)) {
+							SPELLCHECKER_POPUPMENU scpopup;
+							scpopup.cbSize = sizeof(scpopup);
+							scpopup.hwnd = GetDlgItem(hwndDlg, IDC_MESSAGE);
+							scpopup.hMenu = hSubMenu;
+							scpopup.pt = pt;
+							selection = CallService(MS_SPELLCHECKER_SHOW_POPUP_MENU, (WPARAM) &scpopup, 0);
+						} else {
+							selection = TrackPopupMenu(hSubMenu, TPM_RETURNCMD, pt.x, pt.y, 0, hwndDlg, NULL);
+						}
+						switch (selection) {
 						case IDM_UNDO:
 							SendMessage(((NMHDR *) lParam)->hwndFrom, WM_UNDO, 0, 0);
 							break;
@@ -2802,8 +2821,6 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
 				CallService(MS_DB_CONTACT_DELETE, (WPARAM)dat->hContact, 0);
 			}
 		}
-
-// IEVIew MOD Begin
 		if (dat->hwndLog != NULL) {
 			IEVIEWWINDOW ieWindow;
 			ieWindow.cbSize = sizeof(IEVIEWWINDOW);
@@ -2811,7 +2828,7 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
 			ieWindow.hwnd = dat->hwndLog;
 			CallService(MS_IEVIEW_WINDOW, 0, (LPARAM)&ieWindow);
 		}
-// IEVIew MOD End
+		CallService(MS_SPELLCHECKER_REMOVE_RICHEDIT, (WPARAM)GetDlgItem(hwndDlg, IDC_MESSAGE), (LPARAM) NULL);
 		SetWindowLong(hwndDlg, GWL_USERDATA, 0);
 		SendMessage(dat->hwndParent, CM_REMOVECHILD, 0, (LPARAM) hwndDlg);
 		mir_free(dat);
