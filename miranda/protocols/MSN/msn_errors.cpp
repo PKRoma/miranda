@@ -61,6 +61,10 @@ int MSN_HandleErrors( ThreadData* info, char* cmdString )
 		MSN_ShowError( "User is already in your contact list" );
 		return 0;
 
+	case ERR_NOT_ONLINE:
+		MSN_ShowError( "User not online" );
+		return 1;
+
 	case ERR_NOT_EXPECTED:
 		MSN_ShowError( "Your MSN account e-mail is unverified. Goto http://www.passport.com and verify the primary e-mail first" );
 		return 0;
@@ -72,7 +76,7 @@ int MSN_HandleErrors( ThreadData* info, char* cmdString )
 		}
 		return 1;
 
-	case 710:
+	case ERR_INVALID_LOCALE:
 		if ( packetID == tridUrlInbox ) {
 			tridUrlInbox = -1;
 			return 0;
