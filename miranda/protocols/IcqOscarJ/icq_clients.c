@@ -605,8 +605,10 @@ char* detectUserClient(HANDLE hContact, DWORD dwUin, WORD wVersion, DWORD dwFT1,
               szClient = "libgaim"; // Gaim 1.5.1 most probably
             else if (MatchCap(caps, wLen, &capAimChat, 0x10) && CheckContactCapabilities(hContact, CAPF_AIM_FILE) && wLen == 0x20)
               szClient = "Easy Message";
-            else if (MatchCap(caps, wLen, &capAimIcon, 0x10) && CheckContactCapabilities(hContact, CAPF_UTF) && wLen == 0x20)
+            else if (MatchCap(caps, wLen, &capAimIcon, 0x10) && MatchCap(caps, wLen, &capAimChat, 0x10) && CheckContactCapabilities(hContact, CAPF_UTF) && wLen == 0x30)
               szClient = "Meebo";
+            else if (MatchCap(caps, wLen, &capAimIcon, 0x10) && CheckContactCapabilities(hContact, CAPF_UTF) && wLen == 0x20)
+              szClient = "PyICQ-t Jabber Transport";
             else if (MatchCap(caps, wLen, &capAimIcon, 0x10) && MatchCap(caps, wLen, &capIcqLite, 0x10) && CheckContactCapabilities(hContact, CAPF_UTF | CAPF_XTRAZ))
               szClient = "PyICQ-t Jabber Transport";
             else if (MatchCap(caps, wLen, &capIsIcq, 0x10) && CheckContactCapabilities(hContact, CAPF_UTF | CAPF_SRV_RELAY | CAPF_TYPING) && wLen == 0x40)
