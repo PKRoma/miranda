@@ -62,7 +62,8 @@ int MSN_HandleErrors( ThreadData* info, char* cmdString )
 		return 0;
 
 	case ERR_NOT_ONLINE:
-		MSN_ShowError( "User not online" );
+		MSN_SendBroadcast( info->mInitialContact, ACKTYPE_MESSAGE, ACKRESULT_FAILED, 
+			( HANDLE )999999, ( LPARAM )Translate("User not online"));
 		return 1;
 
 	case ERR_NOT_EXPECTED:
@@ -83,7 +84,7 @@ int MSN_HandleErrors( ThreadData* info, char* cmdString )
 		}
 
 		if ( packetID == tridUrlEdit ) {
-			tridUrlEdit = -1;
+			tridUrlEdit  = msnNsThread->sendPacket( "URL", "PROFILE 0x0409" );
 			return 0;
 		}
 		// fall through
