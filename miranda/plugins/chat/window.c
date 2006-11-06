@@ -1109,18 +1109,15 @@ static LRESULT CALLBACK NicklistSubclassProc(HWND hwnd, UINT msg, WPARAM wParam,
 				GetCursorPos( &p );
 				ScreenToClient( hwnd, &p );
 				item = LOWORD(SendMessage(GetDlgItem(GetParent(hwnd), IDC_LIST), LB_ITEMFROMPOINT, 0, MAKELPARAM(p.x, p.y)));
-				if ( item != parentdat->iOldItemID ) {
-					parentdat->iOldItemID = item;
-
-					ui = SM_GetUserFromIndex(parentdat->ptszID, parentdat->pszModule, item);
-					if ( ui != NULL ) {
-						static TCHAR ptszBuf[ 1024 ];
-						mir_sntprintf( ptszBuf, SIZEOF(ptszBuf), _T("%s: %s\r\n%s: %s\r\n%s: %s"),
-							TranslateT( "Nick name" ), ui->pszNick, 
-							TranslateT( "Unique id" ), ui->pszUID,
-							TranslateT( "Status" ), TM_WordToString( parentdat->pStatuses, ui->Status ));
-						lpttd->lpszText = ptszBuf;
-				}	}
+				ui = SM_GetUserFromIndex(parentdat->ptszID, parentdat->pszModule, item);
+				if ( ui != NULL ) {
+					static TCHAR ptszBuf[ 1024 ];
+					mir_sntprintf( ptszBuf, SIZEOF(ptszBuf), _T("%s: %s\r\n%s: %s\r\n%s: %s"),
+						TranslateT( "Nick name" ), ui->pszNick, 
+						TranslateT( "Unique id" ), ui->pszUID,
+						TranslateT( "Status" ), TM_WordToString( parentdat->pStatuses, ui->Status ));
+					lpttd->lpszText = ptszBuf;
+				}
 				return 0;
 		}	}
 		break;
@@ -1234,13 +1231,14 @@ BOOL CALLBACK RoomWndProc(HWND hwndDlg,UINT uMsg,WPARAM wParam,LPARAM lParam)
 			{
 				TOOLINFO ti = {0};
 				ti.cbSize = sizeof(TOOLINFO);
-				ti.uFlags = TTF_IDISHWND | TTF_SUBCLASS;
-				ti.hwnd   = hNickList;
+				ti.uFlags = TTF_TRANSPARENT | TTF_IDISHWND | TTF_SUBCLASS;
+				ti.hwnd   = hwndDlg;
 				ti.hinst  = g_hInst;
 				ti.uId    = (UINT)hNickList;
 				ti.lpszText  = LPSTR_TEXTCALLBACK;
 				GetClientRect( hNickList, &ti.rect );
 				SendMessage( psi->hwndTooltip, TTM_ADDTOOL, 0, ( LPARAM )&ti );
+				SendMessage( psi->hwndTooltip, TTM_SETDELAYTIME, TTDT_AUTOPOP, 20000 );
 
 				//SendMessage( psi->hwndTooltip, TTM_TRACKACTIVATE, TRUE, ( LPARAM )&ti );
 			}
@@ -2368,6 +2366,29 @@ LABEL_SHOWWINDOW:
 							mir_free(pszUrl);
 							break;
 				}	}	}
+				break;
+
+			case TTN_NEEDTEXT:
+				if (pNmhdr->idFrom == IDC_LIST) 
+				{
+					LPNMTTDISPINFO lpttd = (LPNMTTDISPINFO)lParam;
+					POINT p;
+					int item;
+					USERINFO * ui;
+					SESSION_INFO* parentdat =(SESSION_INFO*)GetWindowLong(hwndDlg,GWL_USERDATA);
+
+					GetCursorPos( &p );
+					ScreenToClient( hwndDlg, &p );
+					item = LOWORD(SendMessage(GetDlgItem(hwndDlg, IDC_LIST), LB_ITEMFROMPOINT, 0, MAKELPARAM(p.x, p.y)));
+					ui = SM_GetUserFromIndex(parentdat->ptszID, parentdat->pszModule, item);
+					if ( ui != NULL ) {
+						static TCHAR ptszBuf[ 1024 ];
+						mir_sntprintf( ptszBuf, SIZEOF(ptszBuf), _T("%s: %s\r\n%s: %s\r\n%s: %s"),
+							TranslateT( "Nick name" ), ui->pszNick, 
+							TranslateT( "Unique id" ), ui->pszUID,
+							TranslateT( "Status" ), TM_WordToString( parentdat->pStatuses, ui->Status ));
+						lpttd->lpszText = ptszBuf;
+				}	}
 				break;
 		}	}
 		break;

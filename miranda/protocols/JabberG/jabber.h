@@ -23,7 +23,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #ifndef _JABBER_H_
 #define _JABBER_H_
 
-// this plugin is for Miranda 0.6.0 only
+// this plugin is for Miranda 0.6 only
 #define MIRANDA_VER 0x0600
 
 #if defined(UNICODE) && !defined(_UNICODE)
@@ -198,6 +198,7 @@ struct ThreadData {
 
 	HWND reg_hwndDlg;
 	BOOL reg_done, bIsSessionAvailable;
+	class TJabberAuth* auth;
 };
 
 struct JABBER_MODEMSGS
@@ -469,6 +470,22 @@ char*  __stdcall  JTranslate( const char* str );
 void __cdecl JabberServerThread( struct ThreadData *info );
 
 //---- jabber_util.c ----------------------------------------------
+
+struct TStringPairsElem
+{
+	const char *name, *value; 
+};
+
+struct TStringPairs
+{
+	TStringPairs( char* );
+	~TStringPairs();
+
+	const char* operator[]( const char* name ) const;
+
+	int numElems;
+	TStringPairsElem* elems;
+};
 
 void          __stdcall JabberSerialInit( void );
 void          __stdcall JabberSerialUninit( void );

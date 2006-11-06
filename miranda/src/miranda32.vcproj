@@ -1549,6 +1549,9 @@
 					</FileConfiguration>
 				</File>
 				<File
+					RelativePath=".\modules\netlib\netlibsecurity.c">
+				</File>
+				<File
 					RelativePath="modules\netlib\netlibsock.c">
 					<FileConfiguration
 						Name="Release|Win32">

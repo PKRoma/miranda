@@ -61,7 +61,7 @@ struct NetlibConnection {
 	HANDLE hOkToCloseEvent;
 	LONG dontCloseNow;
 	struct NetlibNestedCriticalSection ncsSend,ncsRecv;
-	HINSTANCE hInstSecurityDll;
+	HANDLE hNtlmSecurity;
 	struct NetlibHTTPProxyPacketQueue * pHttpProxyPacketQueue;
 	int pollingTimeout;
 };
@@ -107,6 +107,7 @@ int NetlibHttpRecvHeaders(WPARAM wParam,LPARAM lParam);
 int NetlibHttpFreeRequestStruct(WPARAM wParam,LPARAM lParam);
 int NetlibHttpTransaction(WPARAM wParam,LPARAM lParam);
 void NetlibHttpSetLastErrorUsingHttpResult(int result);
+NETLIBHTTPREQUEST* NetlibHttpRecv(HANDLE hConnection, DWORD hflags, DWORD dflags);
 
 //netlibhttpproxy.c
 int NetlibInitHttpConnection(struct NetlibConnection *nlc,struct NetlibUser *nlu,NETLIBOPENCONNECTION *nloc);
@@ -147,6 +148,14 @@ BOOL NetlibUPnPAddPortMapping(WORD intport, char *proto,
 void NetlibUPnPDeletePortMapping(WORD extport, char* proto);
 void NetlibUPnPInit(void);
 void NetlibUPnPDestroy(void);
+
+//netlibsecurity.c
+void   NetlibSecurityInit(void);
+void   NetlibSecurityDestroy(void);
+void   NetlibDestroySecurityProvider(char* provider, HANDLE hSecurity);
+HANDLE NetlibInitSecurityProvider(char* provider);
+char*  NtlmCreateResponseFromChallenge(HANDLE hSecurity, char *szChallenge);
+
 
 static __inline int NLSend(struct NetlibConnection *nlc,const char *buf,int len,int flags) {
 	NETLIBBUFFER nlb={(char*)buf,len,flags};

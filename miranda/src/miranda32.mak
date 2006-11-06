@@ -162,6 +162,8 @@ CLEAN :
 	-@erase "$(INTDIR)\netlibopts.sbr"
 	-@erase "$(INTDIR)\netlibpktrecver.obj"
 	-@erase "$(INTDIR)\netlibpktrecver.sbr"
+	-@erase "$(INTDIR)\netlibsecurity.obj"
+	-@erase "$(INTDIR)\netlibsecurity.sbr"
 	-@erase "$(INTDIR)\netlibsock.obj"
 	-@erase "$(INTDIR)\netlibsock.sbr"
 	-@erase "$(INTDIR)\netlibupnp.obj"
@@ -312,7 +314,8 @@ BSC32_SBRS= \
 	"$(INTDIR)\contact.sbr" \
 	"$(INTDIR)\Docking.sbr" \
 	"$(INTDIR)\groups.sbr" \
-	"$(INTDIR)\keyboard.sbr"
+	"$(INTDIR)\keyboard.sbr" \
+	"$(INTDIR)\netlibsecurity.sbr"
 
 "$(OUTDIR)\miranda32.bsc" : "$(OUTDIR)" $(BSC32_SBRS)
     $(BSC32) @<<
@@ -406,7 +409,8 @@ LINK32_OBJS= \
 	"$(INTDIR)\Docking.obj" \
 	"$(INTDIR)\groups.obj" \
 	"$(INTDIR)\keyboard.obj" \
-	"$(INTDIR)\resource.res"
+	"$(INTDIR)\resource.res" \
+	"$(INTDIR)\netlibsecurity.obj"
 
 "..\bin\release\miranda32.exe" : "$(OUTDIR)" $(DEF_FILE) $(LINK32_OBJS)
     $(LINK32) @<<
@@ -544,6 +548,8 @@ CLEAN :
 	-@erase "$(INTDIR)\netlibopts.sbr"
 	-@erase "$(INTDIR)\netlibpktrecver.obj"
 	-@erase "$(INTDIR)\netlibpktrecver.sbr"
+	-@erase "$(INTDIR)\netlibsecurity.obj"
+	-@erase "$(INTDIR)\netlibsecurity.sbr"
 	-@erase "$(INTDIR)\netlibsock.obj"
 	-@erase "$(INTDIR)\netlibsock.sbr"
 	-@erase "$(INTDIR)\netlibupnp.obj"
@@ -695,7 +701,8 @@ BSC32_SBRS= \
 	"$(INTDIR)\contact.sbr" \
 	"$(INTDIR)\Docking.sbr" \
 	"$(INTDIR)\groups.sbr" \
-	"$(INTDIR)\keyboard.sbr"
+	"$(INTDIR)\keyboard.sbr" \
+	"$(INTDIR)\netlibsecurity.sbr"
 
 "$(OUTDIR)\miranda32.bsc" : "$(OUTDIR)" $(BSC32_SBRS)
     $(BSC32) @<<
@@ -789,7 +796,8 @@ LINK32_OBJS= \
 	"$(INTDIR)\Docking.obj" \
 	"$(INTDIR)\groups.obj" \
 	"$(INTDIR)\keyboard.obj" \
-	"$(INTDIR)\resource.res"
+	"$(INTDIR)\resource.res" \
+	"$(INTDIR)\netlibsecurity.obj"
 
 "..\bin\debug\miranda32.exe" : "$(OUTDIR)" $(DEF_FILE) $(LINK32_OBJS)
     $(LINK32) @<<
@@ -865,6 +873,7 @@ CLEAN :
 	-@erase "$(INTDIR)\netlibopenconn.obj"
 	-@erase "$(INTDIR)\netlibopts.obj"
 	-@erase "$(INTDIR)\netlibpktrecver.obj"
+	-@erase "$(INTDIR)\netlibsecurity.obj"
 	-@erase "$(INTDIR)\netlibsock.obj"
 	-@erase "$(INTDIR)\netlibupnp.obj"
 	-@erase "$(INTDIR)\newplugins.obj"
@@ -994,7 +1003,8 @@ LINK32_OBJS= \
 	"$(INTDIR)\Docking.obj" \
 	"$(INTDIR)\groups.obj" \
 	"$(INTDIR)\keyboard.obj" \
-	"$(INTDIR)\resource.res"
+	"$(INTDIR)\resource.res" \
+	"$(INTDIR)\netlibsecurity.obj"
 
 "..\bin\Release Unicode\miranda32.exe" : "$(OUTDIR)" $(DEF_FILE) $(LINK32_OBJS)
     $(LINK32) @<<
@@ -1132,6 +1142,8 @@ CLEAN :
 	-@erase "$(INTDIR)\netlibopts.sbr"
 	-@erase "$(INTDIR)\netlibpktrecver.obj"
 	-@erase "$(INTDIR)\netlibpktrecver.sbr"
+	-@erase "$(INTDIR)\netlibsecurity.obj"
+	-@erase "$(INTDIR)\netlibsecurity.sbr"
 	-@erase "$(INTDIR)\netlibsock.obj"
 	-@erase "$(INTDIR)\netlibsock.sbr"
 	-@erase "$(INTDIR)\netlibupnp.obj"
@@ -1283,7 +1295,8 @@ BSC32_SBRS= \
 	"$(INTDIR)\contact.sbr" \
 	"$(INTDIR)\Docking.sbr" \
 	"$(INTDIR)\groups.sbr" \
-	"$(INTDIR)\keyboard.sbr"
+	"$(INTDIR)\keyboard.sbr" \
+	"$(INTDIR)\netlibsecurity.sbr"
 
 "$(OUTDIR)\miranda32.bsc" : "$(OUTDIR)" $(BSC32_SBRS)
     $(BSC32) @<<
@@ -1377,7 +1390,8 @@ LINK32_OBJS= \
 	"$(INTDIR)\Docking.obj" \
 	"$(INTDIR)\groups.obj" \
 	"$(INTDIR)\keyboard.obj" \
-	"$(INTDIR)\resource.res"
+	"$(INTDIR)\resource.res" \
+	"$(INTDIR)\netlibsecurity.obj"
 
 "..\bin\Debug Unicode\miranda32.exe" : "$(OUTDIR)" $(DEF_FILE) $(LINK32_OBJS)
     $(LINK32) @<<
@@ -2442,6 +2456,38 @@ SOURCE=.\modules\netlib\netlibpktrecver.c
 
 
 "$(INTDIR)\netlibpktrecver.obj"	"$(INTDIR)\netlibpktrecver.sbr" : $(SOURCE) "$(INTDIR)" "$(INTDIR)\miranda32.pch"
+	$(CPP) $(CPP_PROJ) $(SOURCE)
+
+
+!ENDIF 
+
+SOURCE=.\modules\netlib\netlibsecurity.c
+
+!IF  "$(CFG)" == "miranda32 - Win32 Release"
+
+
+"$(INTDIR)\netlibsecurity.obj"	"$(INTDIR)\netlibsecurity.sbr" : $(SOURCE) "$(INTDIR)" "$(INTDIR)\miranda32.pch"
+	$(CPP) $(CPP_PROJ) $(SOURCE)
+
+
+!ELSEIF  "$(CFG)" == "miranda32 - Win32 Debug"
+
+
+"$(INTDIR)\netlibsecurity.obj"	"$(INTDIR)\netlibsecurity.sbr" : $(SOURCE) "$(INTDIR)" "$(INTDIR)\miranda32.pch"
+	$(CPP) $(CPP_PROJ) $(SOURCE)
+
+
+!ELSEIF  "$(CFG)" == "miranda32 - Win32 Release Unicode"
+
+
+"$(INTDIR)\netlibsecurity.obj" : $(SOURCE) "$(INTDIR)" "$(INTDIR)\miranda32.pch"
+	$(CPP) $(CPP_PROJ) $(SOURCE)
+
+
+!ELSEIF  "$(CFG)" == "miranda32 - Win32 Debug Unicode"
+
+
+"$(INTDIR)\netlibsecurity.obj"	"$(INTDIR)\netlibsecurity.sbr" : $(SOURCE) "$(INTDIR)" "$(INTDIR)\miranda32.pch"
 	$(CPP) $(CPP_PROJ) $(SOURCE)
 
 
