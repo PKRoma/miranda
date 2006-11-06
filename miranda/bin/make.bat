@@ -26,7 +26,7 @@ cd ..\..\miranda\protocols\IcqOscarJ
 nmake /f IcqOscar8.mak CFG="icqoscar8 - Win32 Release"
 if errorlevel 1 goto :Error
 
-cd icon_pack
+cd icons_pack
 nmake /f ICONS.mak CFG="ICONS - Win32 Release"
 if errorlevel 1 goto :Error
 

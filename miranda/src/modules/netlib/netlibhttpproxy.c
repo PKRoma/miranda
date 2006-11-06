@@ -145,7 +145,7 @@ int NetlibHttpGatewayOLDPost(struct NetlibConnection *nlc,const char *buf,int le
 
 	nlcSend.handleType=NLH_CONNECTION;
 	nlcSend.nlu=nlc->nlu;
-	nlcSend.hInstSecurityDll=nlc->hInstSecurityDll;
+	nlcSend.hNtlmSecurity=nlc->hNtlmSecurity;
 	nlcSend.s=socket(AF_INET,SOCK_STREAM,0);
 	if(nlcSend.s==INVALID_SOCKET) {
 		Netlib_Logf(nlc->nlu,"%s %d: %s() failed (%u)",__FILE__,__LINE__,"socket",WSAGetLastError());
@@ -274,9 +274,6 @@ int NetlibHttpGatewayRecv(struct NetlibConnection *nlc,char *buf,int len,int fla
 	DWORD dwTimeNow;
 	int timedout;
 	NETLIBHTTPREQUEST *nlhrReply;
-	PBYTE dataBuffer;
-	int contentLength,i,bytesRecved;
-	int recvResult;
 	int retryCount;
 
 	/*
@@ -312,7 +309,7 @@ int NetlibHttpGatewayRecv(struct NetlibConnection *nlc,char *buf,int len,int fla
 	/********************/
 	if(nlc->dataBuffer) {
 		if(nlc->dataBufferLen<=len) {
-			contentLength=nlc->dataBufferLen;
+			int contentLength=nlc->dataBufferLen;
 			CopyMemory(buf,nlc->dataBuffer,nlc->dataBufferLen);
 			if(!(flags&MSG_PEEK)) {
 				mir_free(nlc->dataBuffer);
@@ -344,8 +341,9 @@ int NetlibHttpGatewayRecv(struct NetlibConnection *nlc,char *buf,int len,int fla
 			retryCount = 0;
 			continue;
 		}
-		nlhrReply=(NETLIBHTTPREQUEST*)NetlibHttpRecvHeaders((WPARAM)nlc,flags|MSG_RAW|MSG_DUMPPROXY);
-		if(nlhrReply==NULL) return SOCKET_ERROR;
+		
+		nlhrReply=(NETLIBHTTPREQUEST*)NetlibHttpRecv(nlc, flags|MSG_RAW|MSG_DUMPPROXY, MSG_RAW|MSG_DUMPPROXY);
+		if (nlhrReply==NULL) return SOCKET_ERROR;
         // ignore 1xx result codes
         if (nlhrReply->resultCode < 200)
 		{
@@ -369,77 +367,13 @@ int NetlibHttpGatewayRecv(struct NetlibConnection *nlc,char *buf,int len,int fla
 					continue;
 				SetLastError(ERROR_GEN_FAILURE);
 				return SOCKET_ERROR;
-			}
-        }
+		}	}
 		retryCount = 0;
-		contentLength=-1;
-		for(i=0;i<nlhrReply->headersCount;i++)
-		{
-			if(!lstrcmpiA(nlhrReply->headers[i].szName,"Content-Length")) {
-				contentLength=atoi(nlhrReply->headers[i].szValue);
-				break;
-			}
-		}
 
-		/*
-		if(contentLength<0) {
-			NetlibHttpFreeRequestStruct(0,(LPARAM)nlhrReply);
-			SetLastError(ERROR_INVALID_DATA);
-			return SOCKET_ERROR;
-		}*/
-		if(contentLength==0 && nlc->nlu->user.szHttpGatewayHello != NULL)
+		if(nlhrReply->dataLength==0 && nlc->nlu->user.szHttpGatewayHello != NULL)
 		{
 			NetlibHttpFreeRequestStruct(0,(LPARAM)nlhrReply);
 			continue;
-		}
-
-
-		if (contentLength < 0) {
-			/* create initial buffer */
-			contentLength = 2048;
-
-			dataBuffer=(PBYTE)mir_alloc(contentLength);
-
-			/* error and exit */
-			if(dataBuffer==NULL) {
-				NetlibHttpFreeRequestStruct(0,(LPARAM)nlhrReply);
-				SetLastError(ERROR_NOT_ENOUGH_MEMORY);
-				return SOCKET_ERROR;
-			}
-
-			/* now we need to get the bytes and add them to our buffer */
-			bytesRecved = 0;
-
-			do {
-				recvResult=NLRecv(nlc,dataBuffer+bytesRecved,contentLength-bytesRecved,MSG_RAW|MSG_DUMPPROXY);
-				if(recvResult==SOCKET_ERROR) {
-					mir_free(dataBuffer);
-					NetlibHttpFreeRequestStruct(0,(LPARAM)nlhrReply);
-					if(recvResult==0) SetLastError(ERROR_HANDLE_EOF);
-					return SOCKET_ERROR;
-				}
-				bytesRecved+=recvResult;
-			} while (recvResult > 0);
-			 contentLength = bytesRecved;
-		} else {
-			if(contentLength > 0) {
-				dataBuffer=(PBYTE)mir_alloc(contentLength);
-				if(dataBuffer==NULL) {
-					NetlibHttpFreeRequestStruct(0,(LPARAM)nlhrReply);
-					SetLastError(ERROR_NOT_ENOUGH_MEMORY);
-					return SOCKET_ERROR;
-				}
-				for(bytesRecved=0;bytesRecved<contentLength;) {
-					recvResult=NLRecv(nlc,dataBuffer+bytesRecved,contentLength-bytesRecved,MSG_RAW|MSG_DUMPPROXY);
-					if(recvResult==0 || recvResult==SOCKET_ERROR) {
-						mir_free(dataBuffer);
-						NetlibHttpFreeRequestStruct(0,(LPARAM)nlhrReply);
-						if(recvResult==0) SetLastError(ERROR_HANDLE_EOF);
-						return SOCKET_ERROR;
-					}
-					bytesRecved+=recvResult;
-			}	}
-			else dataBuffer = NULL;
 		}
 
 		closesocket(nlc->s);
@@ -453,46 +387,51 @@ int NetlibHttpGatewayRecv(struct NetlibConnection *nlc,char *buf,int len,int fla
 		if (nlc->nlhpi.szHttpGetUrl != NULL)  {
 			Netlib_Logf(nlc->nlu,"%s %d: Doing GET, Again????",__FILE__,__LINE__);
 
-		if(!HttpGatewaySendGet(nlc)) {
-			mir_free(dataBuffer);
-			NetlibHttpFreeRequestStruct(0,(LPARAM)nlhrReply);
-			return SOCKET_ERROR;
-		}
+			if(!HttpGatewaySendGet(nlc)) {
+				NetlibHttpFreeRequestStruct(0,(LPARAM)nlhrReply);
+				return SOCKET_ERROR;
+			}
 		}
 
 		if(nlc->nlu->user.pfnHttpGatewayUnwrapRecv && !(flags&MSG_NOHTTPGATEWAYWRAP)) {
 			PBYTE newBuffer;
-			newBuffer=nlc->nlu->user.pfnHttpGatewayUnwrapRecv(nlhrReply,dataBuffer,contentLength,&contentLength,mir_realloc);
+			newBuffer=nlc->nlu->user.pfnHttpGatewayUnwrapRecv(nlhrReply,nlhrReply->pData,nlhrReply->dataLength,&nlhrReply->dataLength,mir_realloc);
 			if(newBuffer==NULL) {
-				mir_free(dataBuffer);
 				NetlibHttpFreeRequestStruct(0,(LPARAM)nlhrReply);
 				return SOCKET_ERROR;
 			}
-			dataBuffer=newBuffer;
+			nlhrReply->pData=newBuffer;
+		}
+		if(nlhrReply->dataLength>0) break;
+		if((nlhrReply->dataLength==0)&&(nlc->nlhpi.szHttpGetUrl==NULL))
+			break;
+		NetlibHttpFreeRequestStruct(0,(LPARAM)nlhrReply);
+	}
+	if(nlhrReply->dataLength<=len) {
+		int contentLength = nlhrReply->dataLength;
+
+		CopyMemory(buf,nlhrReply->pData,nlhrReply->dataLength);
+		if(flags&MSG_PEEK) {
+			nlc->dataBuffer=nlhrReply->pData;
+			nlc->dataBufferLen=nlhrReply->dataLength;
+			nlhrReply->pData = NULL;
+			nlhrReply->dataLength = 0;
 		}
 		NetlibHttpFreeRequestStruct(0,(LPARAM)nlhrReply);
-		if(contentLength>0) break;
-		if((contentLength==0)&&(nlc->nlhpi.szHttpGetUrl==NULL))
-			break;
-		mir_free(dataBuffer);
-	}
-	if(contentLength<=len) {
-		if(flags&MSG_PEEK) {
-			nlc->dataBuffer=dataBuffer;
-			nlc->dataBufferLen=contentLength;
-		}
-		CopyMemory(buf,dataBuffer,contentLength);
-		if(!(flags&MSG_PEEK)) mir_free(dataBuffer);
 		return contentLength;
 	}
-	CopyMemory(buf,dataBuffer,len);
+	CopyMemory(buf,nlhrReply->pData,len);
 	if(!(flags&MSG_PEEK)) {
-		MoveMemory(dataBuffer,dataBuffer+len,contentLength-len);
-		dataBuffer=(PBYTE)mir_realloc(dataBuffer,contentLength-len);
-		nlc->dataBufferLen=contentLength-len;
+		MoveMemory(nlhrReply->pData,nlhrReply->pData+len,nlhrReply->dataLength-len);
+		nlhrReply->pData=(PBYTE)mir_realloc(nlhrReply->pData,nlhrReply->dataLength-len);
+		nlc->dataBufferLen=nlhrReply->dataLength-len;
 	}
-	else nlc->dataBufferLen=contentLength;
-	nlc->dataBuffer=dataBuffer;
+	else nlc->dataBufferLen=nlhrReply->dataLength;
+	nlc->dataBuffer=nlhrReply->pData;
+
+	nlhrReply->pData = NULL;
+	nlhrReply->dataLength = 0;
+	NetlibHttpFreeRequestStruct(0,(LPARAM)nlhrReply);
 
 	Netlib_Logf(nlc->nlu,"%s %d: NetlibHTTPGatewayRecv EXIT!",__FILE__,__LINE__);
 	return len;

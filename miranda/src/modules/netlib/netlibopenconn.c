@@ -314,7 +314,7 @@ static void FreePartiallyInitedConnection(struct NetlibConnection *nlc)
 	if(nlc->s!=INVALID_SOCKET) closesocket(nlc->s);
 	if(nlc->nlhpi.szHttpPostUrl) mir_free(nlc->nlhpi.szHttpPostUrl);
 	if(nlc->nlhpi.szHttpGetUrl) mir_free(nlc->nlhpi.szHttpGetUrl);
-	if(nlc->hInstSecurityDll) FreeLibrary(nlc->hInstSecurityDll);
+	NetlibDestroySecurityProvider("NTLM", nlc->hNtlmSecurity);
 	NetlibDeleteNestedCS(&nlc->ncsSend);
 	NetlibDeleteNestedCS(&nlc->ncsRecv);
 	CloseHandle(nlc->hOkToCloseEvent);
@@ -478,7 +478,7 @@ int NetlibOpenConnection(WPARAM wParam,LPARAM lParam)
 	NetlibInitializeNestedCS(&nlc->ncsSend);
 	NetlibInitializeNestedCS(&nlc->ncsRecv);
 	if(nlu->settings.useProxy && (nlu->settings.proxyType==PROXYTYPE_HTTP || nlu->settings.proxyType==PROXYTYPE_HTTPS) && nlu->settings.useProxyAuth && nlu->settings.useProxyAuthNtlm)
-		nlc->hInstSecurityDll=LoadLibraryA("security.dll");
+		nlc->hNtlmSecurity = NetlibInitSecurityProvider("NTLM");
 
 	nlc->sinProxy.sin_family=AF_INET;
 	if(nlu->settings.useProxy) {

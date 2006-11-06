@@ -21,15 +21,7 @@ along with this program; if not, write to the Free Software
 Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 */
 #include "commonheaders.h"
-#define SECURITY_WIN32
-#include <security.h>
 #include "netlib.h"
-
-// Old versions of ssapi.h defines "FreeCredentialHandle()", but the
-// function has since then been redefined to "FreeCredentialsHandle()"
-#ifndef FreeCredentialsHandle
-#define FreeCredentialsHandle FreeCredentialHandle
-#endif
 
 #define HTTPRECVHEADERSTIMEOUT   60000  //in ms
 
@@ -56,110 +48,6 @@ static void AppendToCharBuffer(struct ResizableCharBuffer *rcb,const char *fmt,.
 	}
 	va_end(va);
 	rcb->iEnd+=charsDone;
-}
-
-
-static PSecurityFunctionTableA pSecurityFunctions=NULL;
-static PSecPkgInfoA ntlmSecurityPackageInfo=NULL;
-static CtxtHandle hNtlmClientContext;
-static CredHandle hNtlmClientCredential;
-//mir_free() the return value
-static void NtlmDestroy(void)
-{
-	if (pSecurityFunctions)
-	{
-		pSecurityFunctions->DeleteSecurityContext(&hNtlmClientContext);
-		pSecurityFunctions->FreeCredentialsHandle(&hNtlmClientCredential);
-	} //if
-	if(ntlmSecurityPackageInfo) pSecurityFunctions->FreeContextBuffer(ntlmSecurityPackageInfo);
-	ntlmSecurityPackageInfo=NULL;
-}
-
-static char *NtlmInitialiseAndGetDomainPacket(HINSTANCE hInstSecurityDll)
-{
-	PSecurityFunctionTableA (*MyInitSecurityInterface)(VOID);
-	SECURITY_STATUS securityStatus;
-	SecBufferDesc outputBufferDescriptor;
-	SecBuffer outputSecurityToken;
-	TimeStamp tokenExpiration;
-	ULONG contextAttributes;
-	NETLIBBASE64 nlb64;
-
-	MyInitSecurityInterface=(PSecurityFunctionTableA (*)(VOID))GetProcAddress(hInstSecurityDll,"InitSecurityInterfaceA");
-	if(MyInitSecurityInterface==NULL) {NtlmDestroy(); return NULL;}
-	pSecurityFunctions=MyInitSecurityInterface();
-	if(pSecurityFunctions==NULL) {NtlmDestroy(); return NULL;}
-
-	securityStatus=pSecurityFunctions->QuerySecurityPackageInfoA("NTLM",&ntlmSecurityPackageInfo);
-	if(securityStatus!=SEC_E_OK) {NtlmDestroy(); return NULL;}
-	securityStatus=pSecurityFunctions->AcquireCredentialsHandleA(NULL,"NTLM",SECPKG_CRED_OUTBOUND,NULL,NULL,NULL,NULL,&hNtlmClientCredential,&tokenExpiration);
-	if(securityStatus!=SEC_E_OK) {NtlmDestroy(); return NULL;}
-
-	outputBufferDescriptor.cBuffers=1;
-	outputBufferDescriptor.pBuffers=&outputSecurityToken;
-	outputBufferDescriptor.ulVersion=SECBUFFER_VERSION;
-	outputSecurityToken.BufferType=SECBUFFER_TOKEN;
-	outputSecurityToken.cbBuffer=ntlmSecurityPackageInfo->cbMaxToken;
-	outputSecurityToken.pvBuffer=mir_alloc(outputSecurityToken.cbBuffer);
-	if(outputSecurityToken.pvBuffer==NULL) {NtlmDestroy(); SetLastError(ERROR_OUTOFMEMORY); return NULL;}
-	securityStatus=pSecurityFunctions->InitializeSecurityContextA(&hNtlmClientCredential,NULL,NULL,0,0,SECURITY_NATIVE_DREP,NULL,0,&hNtlmClientContext,&outputBufferDescriptor,&contextAttributes,&tokenExpiration);
-	if(securityStatus!=SEC_I_CONTINUE_NEEDED) {mir_free(outputSecurityToken.pvBuffer); NtlmDestroy(); return NULL;}
-
-	nlb64.cbDecoded=outputSecurityToken.cbBuffer;
-	nlb64.pbDecoded=outputSecurityToken.pvBuffer;
-	nlb64.cchEncoded=Netlib_GetBase64EncodedBufferSize(nlb64.cbDecoded);
-	nlb64.pszEncoded=(char*)mir_alloc(nlb64.cchEncoded);
-	if(nlb64.pszEncoded==NULL) {mir_free(outputSecurityToken.pvBuffer); NtlmDestroy(); SetLastError(ERROR_OUTOFMEMORY); return NULL;}
-	if(!NetlibBase64Encode(0,(LPARAM)&nlb64))
-		{mir_free(nlb64.pszEncoded); mir_free(outputSecurityToken.pvBuffer); NtlmDestroy(); return NULL;}
-	mir_free(outputSecurityToken.pvBuffer);
-	return nlb64.pszEncoded;
-}
-
-//mir_free() the result value
-static char *NtlmCreateResponseFromChallenge(char *szChallenge)
-{
-	SECURITY_STATUS securityStatus;
-	SecBufferDesc outputBufferDescriptor,inputBufferDescriptor;
-	SecBuffer outputSecurityToken,inputSecurityToken;
-	TimeStamp tokenExpiration;
-	ULONG contextAttributes;
-	NETLIBBASE64 nlb64;
-
-	nlb64.cchEncoded=lstrlenA(szChallenge);
-	nlb64.pszEncoded=szChallenge;
-	nlb64.cbDecoded=Netlib_GetBase64DecodedBufferSize(nlb64.cchEncoded);
-	nlb64.pbDecoded=(PBYTE)mir_alloc(nlb64.cbDecoded);
-	if(nlb64.pbDecoded==NULL) {SetLastError(ERROR_OUTOFMEMORY); return NULL;}
-	if(!NetlibBase64Decode(0,(LPARAM)&nlb64))
-		{mir_free(nlb64.pbDecoded); return NULL;}
-
-	inputBufferDescriptor.cBuffers=1;
-	inputBufferDescriptor.pBuffers=&inputSecurityToken;
-	inputBufferDescriptor.ulVersion=SECBUFFER_VERSION;
-	inputSecurityToken.BufferType=SECBUFFER_TOKEN;
-	inputSecurityToken.cbBuffer=nlb64.cbDecoded;
-	inputSecurityToken.pvBuffer=nlb64.pbDecoded;
-	outputBufferDescriptor.cBuffers=1;
-	outputBufferDescriptor.pBuffers=&outputSecurityToken;
-	outputBufferDescriptor.ulVersion=SECBUFFER_VERSION;
-	outputSecurityToken.BufferType=SECBUFFER_TOKEN;
-	outputSecurityToken.cbBuffer=ntlmSecurityPackageInfo->cbMaxToken;
-	outputSecurityToken.pvBuffer=mir_alloc(outputSecurityToken.cbBuffer);
-	if(outputSecurityToken.pvBuffer==NULL) {mir_free(nlb64.pbDecoded); SetLastError(ERROR_OUTOFMEMORY); return NULL;}
-	securityStatus=pSecurityFunctions->InitializeSecurityContextA(&hNtlmClientCredential,&hNtlmClientContext,NULL,0,0,SECURITY_NATIVE_DREP,&inputBufferDescriptor,0,&hNtlmClientContext,&outputBufferDescriptor,&contextAttributes,&tokenExpiration);
-	mir_free(nlb64.pbDecoded);
-	if(securityStatus!=SEC_E_OK) {mir_free(outputSecurityToken.pvBuffer); return NULL;}
-
-	nlb64.cbDecoded=outputSecurityToken.cbBuffer;
-	nlb64.pbDecoded=outputSecurityToken.pvBuffer;
-	nlb64.cchEncoded=Netlib_GetBase64EncodedBufferSize(nlb64.cbDecoded);
-	nlb64.pszEncoded=(char*)mir_alloc(nlb64.cchEncoded);
-	if(nlb64.pszEncoded==NULL) {mir_free(outputSecurityToken.pvBuffer); SetLastError(ERROR_OUTOFMEMORY); return NULL;}
-	if(!NetlibBase64Encode(0,(LPARAM)&nlb64))
-		{mir_free(nlb64.pszEncoded); mir_free(outputSecurityToken.pvBuffer); return NULL;}
-	mir_free(outputSecurityToken.pvBuffer);
-	return nlb64.pszEncoded;
 }
 
 static int RecvWithTimeoutTime(struct NetlibConnection *nlc,DWORD dwTimeoutTime,char *buf,int len,int flags)
@@ -321,7 +209,7 @@ int NetlibHttpSendRequest(WPARAM wParam,LPARAM lParam)
 	if(useProxyHttpAuth) {
 		if(nlc->nlu->settings.useProxyAuthNtlm) {
 			char *pszNtlmAuth;
-			pszNtlmAuth=NtlmInitialiseAndGetDomainPacket(nlc->hInstSecurityDll);
+			pszNtlmAuth=NtlmCreateResponseFromChallenge(nlc->hNtlmSecurity, "");
 			if(pszNtlmAuth==NULL) {useProxyHttpAuth=0; pszProxyAuthorizationHeader=NULL;}
 			else {
 				pszProxyAuthorizationHeader=(char*)mir_alloc(lstrlenA(pszNtlmAuth)+6);
@@ -373,7 +261,6 @@ int NetlibHttpSendRequest(WPARAM wParam,LPARAM lParam)
 	//send it
 	bytesSent=SendHttpRequestAndData(nlc,&httpRequest,nlhr,!doneContentLengthHeader);
 	if(bytesSent==SOCKET_ERROR) {
-		if(usingNtlmAuthentication) NtlmDestroy();
 		if(szHost) mir_free(szHost);
 		NetlibLeaveNestedCS(&nlc->ncsSend);
 		return SOCKET_ERROR;
@@ -385,7 +272,6 @@ int NetlibHttpSendRequest(WPARAM wParam,LPARAM lParam)
 
 		if(!HttpPeekFirstResponseLine(nlc,GetTickCount()+5000,MSG_PEEK|MSG_DUMPASTEXT|(nlhr->flags&(NLHRF_NODUMP|NLHRF_NODUMPHEADERS)?MSG_NODUMP:(nlhr->flags&NLHRF_DUMPPROXY?MSG_DUMPPROXY:0)),&resultCode,NULL,NULL)
 		   || ((resultCode<200 || resultCode>=300) && resultCode!=407)) {
-			NtlmDestroy();
 			if(szHost) mir_free(szHost);
 			NetlibLeaveNestedCS(&nlc->ncsSend);
 			if(resultCode) NetlibHttpSetLastErrorUsingHttpResult(resultCode);
@@ -393,11 +279,17 @@ int NetlibHttpSendRequest(WPARAM wParam,LPARAM lParam)
 		}
 		if(resultCode==407) {	//proxy auth required
 			NETLIBHTTPREQUEST *nlhrReply;
-			int i,error,contentLength=0;
+			int i,error;
 
-			nlhrReply=(NETLIBHTTPREQUEST*)NetlibHttpRecvHeaders((WPARAM)nlc,nlhr->flags&(NLHRF_NODUMP|NLHRF_NODUMPHEADERS)?MSG_NODUMP:(nlhr->flags&NLHRF_DUMPPROXY?MSG_DUMPPROXY:0));
+			DWORD hflags = nlhr->flags&(NLHRF_NODUMP|NLHRF_NODUMPHEADERS)?MSG_NODUMP:(nlhr->flags&NLHRF_DUMPPROXY?MSG_DUMPPROXY:0);
+			DWORD dflags = nlhr->flags&NLHRF_NODUMP?MSG_NODUMP:MSG_DUMPASTEXT|MSG_DUMPPROXY;
+
+			if (nlhr->requestType == REQUEST_HEAD)
+				nlhrReply = (NETLIBHTTPREQUEST*)NetlibHttpRecvHeaders((WPARAM)nlc, hflags);
+			else
+				nlhrReply = NetlibHttpRecv(nlc, hflags, dflags);
+
 			if(nlhrReply==NULL) {
-				NtlmDestroy();
 				if(szHost) mir_free(szHost);
 				NetlibLeaveNestedCS(&nlc->ncsSend);
 				if(resultCode) NetlibHttpSetLastErrorUsingHttpResult(resultCode);
@@ -408,14 +300,11 @@ int NetlibHttpSendRequest(WPARAM wParam,LPARAM lParam)
 			for(i=0;i<nlhrReply->headersCount;i++) {
 				if(!lstrcmpiA(nlhrReply->headers[i].szName,"Proxy-Authenticate")) {
 					if(!_strnicmp(nlhrReply->headers[i].szValue,"NTLM ",5))
-						pszProxyAuthorizationHeader=NtlmCreateResponseFromChallenge(nlhrReply->headers[i].szValue+5);
+						pszProxyAuthorizationHeader=NtlmCreateResponseFromChallenge(nlc->hNtlmSecurity, nlhrReply->headers[i].szValue+5);
 					else error=ERROR_ACCESS_DENIED;
 				}
-				else if(!lstrcmpiA(nlhrReply->headers[i].szName,"Content-Length"))
-					contentLength=atoi(nlhrReply->headers[i].szValue);
 			}
 			NetlibHttpFreeRequestStruct(0,(LPARAM)nlhrReply);
-			NtlmDestroy();
 			if(pszProxyAuthorizationHeader==NULL) {
 				if(error!=ERROR_SUCCESS) SetLastError(error);
 				if(szHost) mir_free(szHost);
@@ -423,25 +312,9 @@ int NetlibHttpSendRequest(WPARAM wParam,LPARAM lParam)
 				return SOCKET_ERROR;
 			}
 
-			//receive content and throw away
-			{	BYTE trashBuf[512];
-				int recvResult;
-
-				while(contentLength) {
-					recvResult=NLRecv(nlc,trashBuf,SIZEOF(trashBuf),nlhr->flags&NLHRF_NODUMP?MSG_NODUMP:MSG_DUMPASTEXT|MSG_DUMPPROXY);
-					if(recvResult==0 || recvResult==SOCKET_ERROR) {
-						if(recvResult==0) SetLastError(ERROR_HANDLE_EOF);
-						if(szHost) mir_free(szHost);
-						NetlibLeaveNestedCS(&nlc->ncsSend);
-						return SOCKET_ERROR;
-					}
-					contentLength-=recvResult;
-				}
-			}
-
 			httpRequest.cbAlloced=httpRequest.iEnd=0;
 			httpRequest.sz=NULL;
-			AppendToCharBuffer(&httpRequest,"%s %s HTTP/1.0\r\n",pszRequest,pszUrl);
+			AppendToCharBuffer(&httpRequest,"%s %s HTTP/1.%d\r\n",pszRequest,pszUrl,(nlhr->flags & NLHRF_HTTP11) != 0);
 
 			//HTTP headers
 			doneHostHeader=doneContentLengthHeader=0;
@@ -456,6 +329,7 @@ int NetlibHttpSendRequest(WPARAM wParam,LPARAM lParam)
 				mir_free(szHost); szHost=NULL;
 			}
 			AppendToCharBuffer(&httpRequest,"%s: NTLM %s\r\n","Proxy-Authorization",pszProxyAuthorizationHeader);
+			mir_free(pszProxyAuthorizationHeader);
 
 			//send it
 			bytesSent=SendHttpRequestAndData(nlc,&httpRequest,nlhr,!doneContentLengthHeader);
@@ -464,7 +338,6 @@ int NetlibHttpSendRequest(WPARAM wParam,LPARAM lParam)
 				return SOCKET_ERROR;
 			}
 		}
-		else NtlmDestroy();
 	}
 
 	//clean up
@@ -603,6 +476,7 @@ int NetlibHttpTransaction(WPARAM wParam,LPARAM lParam)
 	struct NetlibUser *nlu=(struct NetlibUser*)wParam;
 	NETLIBHTTPREQUEST *nlhr=(NETLIBHTTPREQUEST*)lParam,*nlhrReply;
 	HANDLE hConnection;
+	DWORD dflags;
 
 	if(GetNetlibHandleType(nlu)!=NLH_USER || !(nlu->user.flags&NUF_OUTGOING) || nlhr==NULL || nlhr->cbSize!=sizeof(NETLIBHTTPREQUEST) || nlhr->szUrl==NULL || nlhr->szUrl[0]=='\0') {
 		SetLastError(ERROR_INVALID_PARAMETER);
@@ -669,40 +543,14 @@ int NetlibHttpTransaction(WPARAM wParam,LPARAM lParam)
 		if(!doneUserAgentHeader) mir_free(nlhrSend.headers);
 	}
 
-	{
-		nlhrReply=(NETLIBHTTPREQUEST*)NetlibHttpRecvHeaders((WPARAM)hConnection,0);
-		if(nlhrReply==NULL) {
-			NetlibCloseHandle((WPARAM)hConnection,0);
-			return (int)(HANDLE)NULL;
-	}	}
+	dflags = (nlhr->flags&NLHRF_DUMPASTEXT?MSG_DUMPASTEXT:0) |
+		(nlhr->flags&NLHRF_NODUMP?MSG_NODUMP:(nlhr->flags&NLHRF_DUMPPROXY?MSG_DUMPPROXY:0));
 
-	if (nlhr->requestType != REQUEST_HEAD){
-		int recvResult;
-		int dataBufferAlloced=0;
+	if (nlhr->requestType == REQUEST_HEAD)
+		nlhrReply = (NETLIBHTTPREQUEST*)NetlibHttpRecvHeaders((WPARAM)hConnection, 0);
+	else
+		nlhrReply = NetlibHttpRecv(hConnection, 0, dflags);
 
-		for(;;) {
-			if(dataBufferAlloced-nlhrReply->dataLength<1024) {
-				dataBufferAlloced+=2048;
-				nlhrReply->pData=(PBYTE)mir_realloc(nlhrReply->pData,dataBufferAlloced);
-				if(nlhrReply->pData==NULL) {
-					SetLastError(ERROR_OUTOFMEMORY);
-					NetlibHttpFreeRequestStruct(0,(LPARAM)nlhrReply);
-					NetlibCloseHandle((WPARAM)hConnection,0);
-					return (int)(HANDLE)NULL;
-				}
-			}
-			recvResult=NLRecv((struct NetlibConnection*)hConnection,nlhrReply->pData+nlhrReply->dataLength,dataBufferAlloced-nlhrReply->dataLength-1,(nlhr->flags&NLHRF_DUMPASTEXT?MSG_DUMPASTEXT:0)|(nlhr->flags&NLHRF_NODUMP?MSG_NODUMP:(nlhr->flags&NLHRF_DUMPPROXY?MSG_DUMPPROXY:0)));
-			if(recvResult==0) break;
-			if(recvResult==SOCKET_ERROR) {
-				NetlibHttpFreeRequestStruct(0,(LPARAM)nlhrReply);
-				NetlibCloseHandle((WPARAM)hConnection,0);
-				return (int)(HANDLE)NULL;
-			}
-			nlhrReply->dataLength+=recvResult;
-			//TODO: Keep-alive replies are measured by content-length, not by when the connection closes
-		}
-		nlhrReply->pData[nlhrReply->dataLength]='\0';
-	}
 
 	NetlibCloseHandle((WPARAM)hConnection,0);
 	return (int)nlhrReply;
@@ -726,4 +574,57 @@ void NetlibHttpSetLastErrorUsingHttpResult(int result)
 		case 408: SetLastError(ERROR_TIMEOUT); break;
 		default: SetLastError(ERROR_GEN_FAILURE); break;
 	}
+}
+
+NETLIBHTTPREQUEST* NetlibHttpRecv(HANDLE hConnection, DWORD hflags, DWORD dflags)
+{
+	int dataLen = -1, i;
+
+	NETLIBHTTPREQUEST *nlhrReply = (NETLIBHTTPREQUEST*)NetlibHttpRecvHeaders((WPARAM)hConnection, hflags);
+	if (nlhrReply==NULL) 
+		return (int)(HANDLE)NULL;
+
+	for(i=0;i<nlhrReply->headersCount;i++) 
+	{
+		if(!lstrcmpiA(nlhrReply->headers[i].szName,"Content-Length")) 
+		{
+			dataLen = atoi(nlhrReply->headers[i].szValue);
+			break;
+		}	
+	}
+
+	if (nlhrReply->resultCode >= 200 && dataLen != 0)
+	{
+		int recvResult;
+		int dataBufferAlloced = dataLen + 1;
+
+		nlhrReply->pData=(PBYTE)mir_realloc(nlhrReply->pData,dataBufferAlloced);
+
+		for(;;) {
+			if(dataBufferAlloced-nlhrReply->dataLength<1024 && dataLen == -1) {
+				dataBufferAlloced+=2048;
+				nlhrReply->pData=(PBYTE)mir_realloc(nlhrReply->pData,dataBufferAlloced);
+				if(nlhrReply->pData==NULL) {
+					SetLastError(ERROR_OUTOFMEMORY);
+					NetlibHttpFreeRequestStruct(0,(LPARAM)nlhrReply);
+					return NULL;
+				}
+			}
+			recvResult=NLRecv((struct NetlibConnection*)hConnection,nlhrReply->pData+nlhrReply->dataLength,
+				dataBufferAlloced-nlhrReply->dataLength-1, dflags);
+
+			if(recvResult==0) break;
+			if(recvResult==SOCKET_ERROR) {
+				NetlibHttpFreeRequestStruct(0,(LPARAM)nlhrReply);
+				return NULL;
+			}
+			nlhrReply->dataLength+=recvResult;
+			
+			if (dataLen != -1 && nlhrReply->dataLength >= dataLen)
+				break;
+		}
+		nlhrReply->pData[nlhrReply->dataLength]='\0';
+	}
+
+	return nlhrReply;
 }

@@ -551,6 +551,10 @@ SOURCE=.\modules\netlib\netlibpktrecver.c
 # End Source File
 # Begin Source File
 
+SOURCE=.\modules\netlib\netlibsecurity.c
+# End Source File
+# Begin Source File
+
 SOURCE=.\modules\netlib\netlibsock.c
 # End Source File
 # Begin Source File

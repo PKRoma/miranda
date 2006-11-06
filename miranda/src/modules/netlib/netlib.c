@@ -270,7 +270,7 @@ int NetlibCloseHandle(WPARAM wParam,LPARAM lParam)
 			if(nlc->nlhpi.szHttpPostUrl) mir_free(nlc->nlhpi.szHttpPostUrl);
 			if(nlc->nlhpi.szHttpGetUrl) mir_free(nlc->nlhpi.szHttpGetUrl);
 			if(nlc->dataBuffer) mir_free(nlc->dataBuffer);
-			if(nlc->hInstSecurityDll) FreeLibrary(nlc->hInstSecurityDll);
+			NetlibDestroySecurityProvider("NTLM", nlc->hNtlmSecurity);
 			NetlibDeleteNestedCS(&nlc->ncsRecv);
 			NetlibDeleteNestedCS(&nlc->ncsSend);
 			CloseHandle(nlc->hOkToCloseEvent);
@@ -447,6 +447,7 @@ static int NetlibShutdown(WPARAM wParam,LPARAM lParam)
 {
 	int i;
 
+	NetlibSecurityDestroy();
 	NetlibUPnPDestroy();
 	NetlibLogShutdown();
 	for(i=netlibUserCount;i>0;i--)
@@ -501,5 +502,6 @@ int LoadNetlibModule(void)
 	CreateServiceFunction(MS_NETLIB_SETPOLLINGTIMEOUT,NetlibHttpSetPollingTimeout);
 
 	NetlibUPnPInit();
+	NetlibSecurityInit();
 	return 0;
 }

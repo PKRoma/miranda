@@ -668,81 +668,34 @@ static __inline int Netlib_Logf(HANDLE hUser,const char *fmt,...)
 }
 #endif //defined va_start
 
-/* Notes on being backwards compatible with 0.1.2.1
-One way to do back compatibility is to create your own mini netlib that only
-supports a minimal set of features. Here's some sample code:
+/////////////////////////////////////////////////////////////////////////////////////////
+// Security providers (0.6+)
 
-//This function is called during the ME_SYSTEM_MODULESLOADED hook
-int MyPluginModulesLoaded(WPARAM wParam,LPARAM lParam)
+// Inits a required security provider. Right now only NTLM is supported
+// Returns HANDLE = NULL on error or non-null value on success
+#define MS_NETLIB_INITSECURITYPROVIDER "Netlib/InitSecurityProvider"
+
+__inline HANDLE Netlib_InitSecurityProvider( char* szProviderName )
 {
-	//if this is executed on a version of Miranda with netlib then all
-	//these calls will fail and the proper netlib will be used.
-	CreateServiceFunction(MS_NETLIB_CLOSEHANDLE,MiniNetlibCloseHandle);
-	CreateServiceFunction(MS_NETLIB_OPENCONNECTION,MiniNetlibOpenConnection);
-	CreateServiceFunction(MS_NETLIB_SEND,MiniNetlibSend);
-	CreateServiceFunction(MS_NETLIB_RECV,MiniNetlibRecv);
-	CreateServiceFunction(MS_NETLIB_SELECT,MiniNetlibSelect);
-	return 0;
+	return (HANDLE)CallService( MS_NETLIB_INITSECURITYPROVIDER, 0, (LPARAM)szProviderName );
 }
 
-int MiniNetlibCloseHandle(WPARAM wParam,LPARAM lParam)
+// Destroys a security provider's handle, provided by Netlib_InitSecurityProvider.
+// Right now only NTLM is supported
+#define MS_NETLIB_DESTROYSECURITYPROVIDER "Netlib/DestroySecurityProvider"
+
+__inline void Netlib_DestroySecurityProvider( char* szProviderName, HANDLE hProvider )
 {
-	closesocket((SOCKET)wParam);
-	return 1;
+	CallService( MS_NETLIB_DESTROYSECURITYPROVIDER, (WPARAM)szProviderName, (LPARAM)hProvider );
 }
 
-int MiniNetlibOpenConnection(WPARAM wParam,LPARAM lParam)
+// Returns the NTLM response string. The result value should be freed using mir_free
+#define MS_NETLIB_NTLMCREATERESPONSE "Netlib/NtlmCreateResponse"
+
+__inline char* Netlib_NtlmCreateResponse( HANDLE hProvider, char* szChallenge )
 {
-	NETLIBOPENCONNECTION *nloc=(NETLIBOPENCONNECTION*)lParam;
-	SOCKADDR_IN sin;
-	SOCKET s;
-
-	sin.s_addr=inet_addr(szHost);
-	if(sin.sin_addr.S_un.S_addr==INADDR_NONE) {
-		HOSTENT *host=gethostbyname(szHost);
-		if(host) sin.sin_addr.S_un.S_addr=*(u_long *)host->h_addr_list[0];
-		else return (int)INVALID_SOCKET;
-	}
-	s=socket(AF_INET,SOCK_STREAM,0);
-	sin.sin_family=AF_INET;
-	sin.sin_port=(short)htons(nloc->wPort);
-	if(connect(s,(SOCKADDR*)sin,sizeof(sin))==SOCKET_ERROR) {
-		closesocket(s);
-		return (int)INVALID_SOCKET;
-	}
-	return (int)s;
+	return (char*)CallService( MS_NETLIB_NTLMCREATERESPONSE, (WPARAM)hProvider, (LPARAM)szChallenge );
 }
-
-int MiniNetlibSend(WPARAM wParam,LPARAM lParam)
-{
-	NETLIBBUFFER *nlb=(NETLIBBUFFER*)lParam;
-	return send((SOCKET)wParam,nlb->buf,nlb->len,nlb->flags);
-}
-
-int MiniNetlibRecv(WPARAM wParam,LPARAM lParam)
-{
-	NETLIBBUFFER *nlb=(NETLIBBUFFER*)lParam;
-	return recv((SOCKET)wParam,nlb->buf,nlb->len,nlb->flags);
-}
-
-int MiniNetlibSelect(WPARAM wParam,LPARAM lParam)
-{
-	NETLIBSELECT *nls=(NETLIBSELECT*)lParam;
-	fd_set readfd,writefd,exceptfd;
-	TIMEVAL tv;
-	int i;
-
-	tv.tv_sec=nls->dwTimeout/1000;
-	tv.tv_usec=(nls->dwTimeout%1000)*1000;
-	FD_ZERO(&readfd); for(i=0;nls->hReadConns[i];i++) FD_SET((SOCKET)nls->hReadConns[i],&readfd);
-	FD_ZERO(&writefd); for(i=0;nls->hWriteConns[i];i++) FD_SET((SOCKET)nls->hWriteConns[i],&writefd);
-	FD_ZERO(&exceptfd); for(i=0;nls->hExceptConns[i];i++) FD_SET((SOCKET)nls->hExceptConns[i],&exceptfd);
-	return select(0,&readfd,&writefd,&exceptfd,nls->dwTimeout==INFINITE?NULL:&tv);
-}
-
-///
-NB: I haven't actually tested that this even compiles.
-*/
 
 #endif // M_NETLIB_H__
 
