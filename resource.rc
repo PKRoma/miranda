@@ -5,6 +5,14 @@
 	#define _WIN32_IE 0x500
 #endif
 #include <windows.h>
+
+#undef RICHEDIT_CLASS
+#if defined ( UNICODE )
+#define RICHEDIT_CLASS "RichEdit20W"
+#else
+#define RICHEDIT_CLASS "RichEdit20A"
+#endif
+
 #ifndef IDC_STATIC
 #define IDC_STATIC (-1)
 #endif
@@ -302,9 +310,9 @@ STYLE DS_FIXEDSYS | DS_CONTROL | WS_CHILD | WS_CLIPCHILDREN
 EXSTYLE WS_EX_ACCEPTFILES
 FONT 8, "MS Shell Dlg", 0, 0, 0x1
 BEGIN
-    CONTROL         "",IDC_LOG,"RichEdit20A",WS_CLIPSIBLINGS | WS_VSCROLL |
+    CONTROL         "",IDC_LOG,RICHEDIT_CLASS,WS_CLIPSIBLINGS | WS_VSCROLL |
                     WS_TABSTOP | 0x844,1,1,181,28,WS_EX_STATICEDGE
-    CONTROL         "",IDC_MESSAGE,"RichEdit20A",WS_VSCROLL | WS_TABSTOP |
+    CONTROL         "",IDC_MESSAGE,RICHEDIT_CLASS,WS_VSCROLL | WS_TABSTOP |
                     0x1144,0,47,181,13,WS_EX_ACCEPTFILES | WS_EX_STATICEDGE
     CONTROL         "&U",IDC_USERMENU,"MButtonClass",0x0,1,31,16,14,
                     0x18000000L

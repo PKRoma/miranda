@@ -38,7 +38,7 @@ static HANDLE hEventOptInitialise, hEventSkin2IconsChanged, hEventFontServiceFon
 
 static HANDLE hSvcSendMessageCommand, hSvcSendMessageCommandW, hSvcGetWindowAPI, hSvcGetWindowClass, hSvcGetWindowData, hSvcReadMessageCommand, hSvcTypingMessageCommand;
 
-HANDLE *hMsgMenuItem = NULL, hHookWinEvt=NULL;
+HANDLE *hMsgMenuItem = NULL, hHookWinEvt=NULL, hHookWinPopup=NULL;;
 int hMsgMenuItemCount = 0;
 
 extern HINSTANCE g_hInst;
@@ -484,6 +484,7 @@ int SplitmsgShutdown(void)
    UnhookEvent(hEventSkin2IconsChanged);
    UnhookEvent(hEventFontServiceFontsChanged);
    DestroyHookableEvent(hHookWinEvt);
+   DestroyHookableEvent(hHookWinPopup);
    DestroyServiceFunction(hSvcSendMessageCommand);
 #if defined(_UNICODE)
    DestroyServiceFunction(hSvcSendMessageCommandW);
@@ -548,6 +549,7 @@ int LoadSendRecvMessageModule(void) {
    hSvcReadMessageCommand = CreateServiceFunction("SRMsg/ReadMessage", ReadMessageCommand);
    hSvcTypingMessageCommand = CreateServiceFunction("SRMsg/TypingMessage", TypingMessageCommand);
    hHookWinEvt = CreateHookableEvent(ME_MSG_WINDOWEVENT);
+   hHookWinPopup = CreateHookableEvent(ME_MSG_WINDOWPOPUP);
    SkinAddNewSoundEx("RecvMsgActive", Translate("Messages"), Translate("Incoming (Focused Window)"));
    SkinAddNewSoundEx("RecvMsgInactive", Translate("Messages"), Translate("Incoming (Unfocused Window)"));
    SkinAddNewSoundEx("AlertMsg", Translate("Messages"), Translate("Incoming (New Session)"));
