@@ -167,21 +167,27 @@ static void packServChannel2Header(icq_packet *p, DWORD dwUin, WORD wLen, DWORD 
 
 
 
+static void packServAdvancedReply(icq_packet *p, DWORD dwUin, char* szUid, DWORD dwID1, DWORD dwID2, WORD wCookie, WORD wLen)
+{
+  unsigned char nUidLen = getUIDLen(dwUin, szUid);
+
+  serverPacketInit(p, (WORD)(nUidLen + 23 + wLen));
+  packFNACHeaderFull(p, ICQ_MSG_FAMILY, ICQ_MSG_RESPONSE, 0, ICQ_MSG_RESPONSE<<0x10 | (wCookie & 0x7FFF));
+  packLEDWord(p, dwID1);        // Msg ID part 1
+  packLEDWord(p, dwID2);        // Msg ID part 2
+  packWord(p, 0x02);            // Channel
+  packUIN(p, dwUin);            // Contact UID
+  packWord(p, 0x03);            // Msg specific formating
+}
+
+
+
 static void packServAdvancedMsgReply(icq_packet *p, DWORD dwUin, DWORD dwTimestamp, DWORD dwTimestamp2, WORD wCookie, BYTE bMsgType, BYTE bMsgFlags, WORD wLen)
 {
-  unsigned char nUinLen;
+  packServAdvancedReply(p, dwUin, NULL, dwTimestamp, dwTimestamp2, wCookie, (WORD)(wLen + 51));
 
-  nUinLen = getUINLen(dwUin);
-
-  serverPacketInit(p, (WORD)(nUinLen + 74 + wLen));
-  packFNACHeaderFull(p, ICQ_MSG_FAMILY, ICQ_MSG_RESPONSE, 0, ICQ_MSG_RESPONSE<<0x10 | (wCookie & 0x7FFF));
-  packLEDWord(p, dwTimestamp);   // Msg ID part 1
-  packLEDWord(p, dwTimestamp2);  // Msg ID part 2
-  packWord(p, 0x02);             // Channel
-  packUIN(p, dwUin);             // Your UIN
-  packWord(p, 0x03);             // Unknown
-  packLEWord(p, 0x1B);           // Unknown
-  packByte(p, ICQ_VERSION);      // Protocol version
+  packLEWord(p, 0x1B);          // Unknown
+  packByte(p, ICQ_VERSION);     // Protocol version
   packGUID(p, PSIG_MESSAGE);
   packDWord(p, CLIENTFEATURES);
   packDWord(p, DC_TYPE);
@@ -1672,7 +1678,18 @@ void oft_sendFileAccept(DWORD dwUin, char *szUid, oscar_filetransfer* ft)
 
 void oft_sendFileDeny(DWORD dwUin, char *szUid, oscar_filetransfer* ft)
 {
-  oft_sendFileReply(dwUin, szUid, ft, 0x01);
+  if (dwUin)
+  { // ICQ clients uses special deny packet
+    icq_packet packet;
+
+    packServAdvancedReply(&packet, dwUin, szUid, ft->pMessage.dwMsgID1, ft->pMessage.dwMsgID2, 0, 4);
+    packWord(&packet, 0x02);    // Length of following data
+    packWord(&packet, 0x01);    // FT denied
+
+    sendServPacket(&packet);
+  }
+  else
+    oft_sendFileReply(dwUin, szUid, ft, 0x01);
 }
 
 

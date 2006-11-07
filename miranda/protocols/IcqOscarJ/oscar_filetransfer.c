@@ -376,9 +376,10 @@ void handleRecvServMsgOFT(unsigned char *buf, WORD wLen, DWORD dwUin, char *szUI
           { // parse User Message
             BYTE* tBuf = tlv->pData;
 
-            pszDescription = (char*)_alloca(tlv->wLen + 1);
+            pszDescription = (char*)_alloca(tlv->wLen + 2);
             unpackString(&tBuf, pszDescription, tlv->wLen);
             pszDescription[tlv->wLen] = '\0';
+            pszDescription[tlv->wLen+1] = '\0';
             { // apply User Message encoding
               oscar_tlv *charset = getTLV(chain, 0x0D, 1);
               char *str = pszDescription;
@@ -471,7 +472,7 @@ void handleRecvServMsgOFT(unsigned char *buf, WORD wLen, DWORD dwUin, char *szUI
           ft->fileId = -1;
           
           szAnsi = (char*)_alloca(strlennull(pszDescription)+2);
-          utf8_decode_static(pszDescription, szAnsi, strlennull(pszDescription));
+          utf8_decode_static(pszDescription, szAnsi, strlennull(pszDescription)+1);
 
           // Send chain event
           szBlob = (char*)_alloca(sizeof(DWORD) + strlennull(pszFileName) + strlennull(szAnsi) + 2);
