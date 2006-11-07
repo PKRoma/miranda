@@ -1,7 +1,3 @@
-//{{NO_DEPENDENCIES}}
-// Microsoft Developer Studio generated include file.
-// Used by resource.rc
-//
 #define IDD_MSGWIN                      100
 #define IDD_MSG                         101
 #define IDD_MSGSENDERROR                102

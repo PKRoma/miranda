@@ -28,5 +28,5 @@ extern int IsUnicodeMIM();
 extern int safe_wcslen(wchar_t *msg, int maxLen) ;
 extern TCHAR *a2t(const char *text);
 extern TCHAR *a2tcp(const char *text, int cp);
-
+extern char* t2a(const TCHAR* src);
 #endif

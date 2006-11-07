@@ -54,7 +54,7 @@ static void DrawTab(HWND hwnd, WPARAM wParam, LPARAM lParam);
 BOOL CALLBACK TabCtrlProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam);
 
 extern TCHAR *GetNickname(HANDLE hContact, const char* szProto);
-extern void NotifyLocalWinEvent(HANDLE hContact, HWND hwnd, unsigned int type);
+
 
 void SubclassTabCtrl(HWND hwnd) {
 	OldTabCtrlProc = (WNDPROC) SetWindowLong(hwnd, GWL_WNDPROC, (LONG) TabCtrlProc);

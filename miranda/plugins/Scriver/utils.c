@@ -50,6 +50,20 @@ TCHAR *a2tcp(const char *text, int cp) {
 	return NULL;
 }
 
+static char* u2a( const wchar_t* src )
+{
+	int codepage = CallService( MS_LANGPACK_GETCODEPAGE, 0, 0 );
+
+	int cbLen = WideCharToMultiByte( codepage, 0, src, -1, NULL, 0, NULL, NULL );
+	char* result = ( char* )mir_alloc( cbLen+1 );
+	if ( result == NULL )
+		return NULL;
+
+	WideCharToMultiByte( codepage, 0, src, -1, result, cbLen, NULL, NULL );
+	result[ cbLen ] = 0;
+	return result;
+}
+
 TCHAR *a2t(const char *text) {
 	if ( text == NULL )
 		return NULL;
@@ -58,6 +72,14 @@ TCHAR *a2t(const char *text) {
 		return a2tcp(text, CallService( MS_LANGPACK_GETCODEPAGE, 0, 0 ));
 	#else
 		return a2tcp(text, CP_ACP);
+	#endif
+}
+
+char* t2a( const TCHAR* src ) {
+	#if defined( _UNICODE )
+		return u2a( src );
+	#else
+		return mir_strdup( src );
 	#endif
 }
 
