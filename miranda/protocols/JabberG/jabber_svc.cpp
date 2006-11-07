@@ -1099,7 +1099,7 @@ int JabberSendMessage( WPARAM wParam, LPARAM lParam )
 
 		XmlNode* active = m.addChild( "active" ); active->addAttr( "xmlns", _T("http://jabber.org/protocol/chatstates"));
 
-		if ( !strcmp( msgType, "groupchat" ) || JGetByte( "MsgAck", FALSE ) == FALSE ) {
+		if ( !strcmp( msgType, "groupchat" ) || !JGetByte( "MsgAck", FALSE ) || !JGetByte( ccs->hContact, "MsgAck", TRUE )) {
 			if ( !strcmp( msgType, "groupchat" ))
 				m.addAttr( "to", dbv.ptszVal );
 			else {
