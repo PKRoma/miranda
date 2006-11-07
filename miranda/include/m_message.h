@@ -59,6 +59,8 @@ typedef struct {
    unsigned int uType; // see event types above
    unsigned int uFlags; // used to indicate message direction for all event types except custom
    void *local; // used to store pointer to custom data
+   HWND hwndInput; // input area window for the contact (or NULL if there is none)
+   HWND hwndLog; // log area window for the contact (or NULL if there is none)
 } MessageWindowEventData;
 
 #define MS_MSG_GETWINDOWAPI "MessageAPI/WindowAPI"
@@ -97,6 +99,29 @@ typedef struct {
 //lparam=(MessageWindowData*)
 //returns 0 on success and returns non-zero (1) on error or if no window data exists for that hcontact
 
+
+#define ME_MSG_WINDOWPOPUP		"MessageAPI/WindowPopupRequested"
+// wParam = 0
+// lParam = (MessageWindowPopupData *)&MessageWindowPopupData;
+// Fired to allow plugins to add itens to the msg window popup menu
+// Always fired twice: once with MSG_WINDOWPOPUP_SHOWING and once with MSG_WINDOWPOPUP_SELECTED.
+// This is done to allow cleaning of resources.
+#define MSG_WINDOWPOPUP_SHOWING  1
+#define MSG_WINDOWPOPUP_SELECTED 2
+
+#define MSG_WINDOWPOPUP_INPUT    1
+#define MSG_WINDOWPOPUP_LOG      2
+
+typedef struct {
+   int cbSize;
+   unsigned int uType; // see popup types above
+   unsigned int uFlags; // used to indicate in which window the popup was requested
+   HANDLE hContact;
+   HWND hwnd; // window where the popup was requested
+   HMENU hMenu;	// The handle to the menu
+   POINT pt; // The point, in screen coords
+   int selection; // The menu control id or 0 if no one was selected
+} MessageWindowPopupData;
 
 // status icons - HICONs will be automatically destroyed when removed or when miranda exits
 
