@@ -244,8 +244,10 @@ typedef struct SESSION_INFO_TYPE
 	STATUSINFO*    pStatuses;
 
 	struct SESSION_INFO_TYPE *next;
-}
-	SESSION_INFO;
+
+	HWND        hwndTooltip;
+	int         iOldItemID;	
+}SESSION_INFO;
 
 typedef struct
 {
@@ -456,7 +458,6 @@ TCHAR*        DoRtfToTags( char* pszRtfText, SESSION_INFO* si);
 
 //////////////////////////////////////////////////////////////////////////////////
 
-char*  t2a( const TCHAR* str );
 TCHAR* a2tf( const TCHAR* str, int flags );
 TCHAR* replaceStr( TCHAR** dest, const TCHAR* src );
 char*  replaceStrA( char** dest, const char* src );
