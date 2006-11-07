@@ -2222,7 +2222,7 @@ LABEL_SHOWWINDOW:
 						if (end - start > 0) {
 							TEXTRANGE tr;
 							CHARRANGE cr;
-							static char szTrimString[] = ":;,.!?\'\"><()[]- \r\n";
+							static TCHAR szTrimString[] = _T(":;,.!?\'\"><()[]- \r\n");
 							ZeroMemory(&tr, sizeof(TEXTRANGE));
 
 							cr.cpMin = start;
@@ -2233,8 +2233,8 @@ LABEL_SHOWWINDOW:
 
 							if (iRes > 0) {
 								int iLen = lstrlen(pszWord)-1;
-								while(iLen >= 0 && strchr(szTrimString, pszWord[iLen])) {
-									pszWord[iLen] = '\0';
+								while(iLen >= 0 && _tcschr(szTrimString, pszWord[iLen])) {
+									pszWord[iLen] = _T('\0');
 									iLen--;
 					}	}	}	}
 
