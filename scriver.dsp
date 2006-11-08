@@ -214,10 +214,6 @@ SOURCE=.\chat\IcoLib.h
 # End Source File
 # Begin Source File
 
-SOURCE=.\chat\m_chat.h
-# End Source File
-# Begin Source File
-
 SOURCE=.\chat\m_ieview.h
 # End Source File
 # Begin Source File
