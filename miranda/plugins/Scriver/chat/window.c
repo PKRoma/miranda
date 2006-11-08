@@ -1131,13 +1131,13 @@ BOOL CALLBACK RoomWndProc(HWND hwndDlg,UINT uMsg,WPARAM wParam,LPARAM lParam)
 				TOOLINFO ti = {0};
 				ti.cbSize = sizeof(TOOLINFO);
 				ti.uFlags = TTF_IDISHWND | TTF_SUBCLASS;
-				ti.hwnd   = hNickList;
+				ti.hwnd   = hwndDlg;
 				ti.hinst  = g_hInst;
 				ti.uId    = (UINT)hNickList;
 				ti.lpszText  = LPSTR_TEXTCALLBACK;
 				GetClientRect( hNickList, &ti.rect );
 				SendMessage( psi->hwndTooltip, TTM_ADDTOOL, 0, ( LPARAM )&ti );
-
+				SendMessage( psi->hwndTooltip, TTM_SETDELAYTIME, TTDT_AUTOPOP, 20000 );
 				//SendMessage( psi->hwndTooltip, TTM_TRACKACTIVATE, TRUE, ( LPARAM )&ti );
 			}
 
@@ -2112,25 +2112,36 @@ LABEL_SHOWWINDOW:
 
    case WM_DESTROY:
 
-      NotifyLocalWinEvent(si->hContact, hwndDlg, MSG_WINDOW_EVT_CLOSING);
+		NotifyLocalWinEvent(si->hContact, hwndDlg, MSG_WINDOW_EVT_CLOSING);
 
-      si->hWnd = NULL;
+		si->hWnd = NULL;
 
-      SetWindowLong(hwndDlg,GWL_USERDATA,0);
-      SetWindowLong(GetDlgItem(hwndDlg,IDC_CHAT_SPLITTERX),GWL_WNDPROC,(LONG)OldSplitterProc);
-      SetWindowLong(GetDlgItem(hwndDlg,IDC_CHAT_SPLITTERY),GWL_WNDPROC,(LONG)OldSplitterProc);
-      SetWindowLong(GetDlgItem(hwndDlg,IDC_CHAT_LIST),GWL_WNDPROC,(LONG)OldNicklistProc);
-      SendDlgItemMessage(hwndDlg, IDC_CHAT_MESSAGE, EM_UNSUBCLASSED, 0, 0);
-      SetWindowLong(GetDlgItem(hwndDlg,IDC_CHAT_MESSAGE),GWL_WNDPROC,(LONG)OldMessageProc);
-      SetWindowLong(GetDlgItem(hwndDlg,IDC_CHAT_LOG),GWL_WNDPROC,(LONG)OldLogProc);
-      SetWindowLong(GetDlgItem(hwndDlg,IDC_CHAT_FILTER),GWL_WNDPROC,(LONG)OldFilterButtonProc);
-      SetWindowLong(GetDlgItem(hwndDlg,IDC_CHAT_COLOR),GWL_WNDPROC,(LONG)OldFilterButtonProc);
-      SetWindowLong(GetDlgItem(hwndDlg,IDC_CHAT_BKGCOLOR),GWL_WNDPROC,(LONG)OldFilterButtonProc);
+		if (si->hwndTooltip != NULL) {
+			HWND hNickList = GetDlgItem(hwndDlg,IDC_CHAT_LIST);
+			TOOLINFO ti = { 0 };
+			ti.cbSize = sizeof(TOOLINFO);
+			ti.uId = (UINT)hNickList;
+			ti.hwnd = hNickList;
+			SendMessage( si->hwndTooltip, TTM_DELTOOL, 0, (LPARAM)(LPTOOLINFO)&ti );
+		}
+		DestroyWindow( si->hwndTooltip );
+		si->hwndTooltip = NULL;
 
-      SendMessage(GetParent(hwndDlg), CM_REMOVECHILD, 0, (LPARAM) hwndDlg);
+		SetWindowLong(hwndDlg,GWL_USERDATA,0);
+		SetWindowLong(GetDlgItem(hwndDlg,IDC_CHAT_SPLITTERX),GWL_WNDPROC,(LONG)OldSplitterProc);
+		SetWindowLong(GetDlgItem(hwndDlg,IDC_CHAT_SPLITTERY),GWL_WNDPROC,(LONG)OldSplitterProc);
+		SetWindowLong(GetDlgItem(hwndDlg,IDC_CHAT_LIST),GWL_WNDPROC,(LONG)OldNicklistProc);
+		SendDlgItemMessage(hwndDlg, IDC_CHAT_MESSAGE, EM_UNSUBCLASSED, 0, 0);
+		SetWindowLong(GetDlgItem(hwndDlg,IDC_CHAT_MESSAGE),GWL_WNDPROC,(LONG)OldMessageProc);
+		SetWindowLong(GetDlgItem(hwndDlg,IDC_CHAT_LOG),GWL_WNDPROC,(LONG)OldLogProc);
+		SetWindowLong(GetDlgItem(hwndDlg,IDC_CHAT_FILTER),GWL_WNDPROC,(LONG)OldFilterButtonProc);
+		SetWindowLong(GetDlgItem(hwndDlg,IDC_CHAT_COLOR),GWL_WNDPROC,(LONG)OldFilterButtonProc);
+		SetWindowLong(GetDlgItem(hwndDlg,IDC_CHAT_BKGCOLOR),GWL_WNDPROC,(LONG)OldFilterButtonProc);
 
-      NotifyLocalWinEvent(si->hContact, hwndDlg, MSG_WINDOW_EVT_CLOSE);
-      break;
+		SendMessage(GetParent(hwndDlg), CM_REMOVECHILD, 0, (LPARAM) hwndDlg);
+
+		NotifyLocalWinEvent(si->hContact, hwndDlg, MSG_WINDOW_EVT_CLOSE);
+		break;
    }
    return(FALSE);
 }
