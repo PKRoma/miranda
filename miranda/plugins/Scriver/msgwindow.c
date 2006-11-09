@@ -1308,10 +1308,8 @@ BOOL CALLBACK TabCtrlProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 					pt.y = lParam>>16;
 					ImageList_GetImageInfo(g_dat->hButtonIconList, 0, &info);
 					rect.left = rect.right - (info.rcImage.right - info.rcImage.left) - 6;
-					if (atTop) {
-						rect.top += GetSystemMetrics(SM_CYEDGE);
-					} else {
-						rect.top = rect.bottom - (info.rcImage.bottom - info.rcImage.top) - GetSystemMetrics(SM_CYEDGE);
+					if (!atTop) {
+						rect.top = rect.bottom - (info.rcImage.bottom - info.rcImage.top);
 					}
 					if (pt.x >= rect.left && pt.x < rect.left + (info.rcImage.right - info.rcImage.left) && pt.y >= rect.top && pt.y < rect.top + (info.rcImage.bottom - info.rcImage.top)) {
 						HBITMAP hOldBitmap, hBmp;

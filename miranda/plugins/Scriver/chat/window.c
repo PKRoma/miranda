@@ -991,35 +991,6 @@ static LRESULT CALLBACK NicklistSubclassProc(HWND hwnd, UINT msg, WPARAM wParam,
 //				SendMessage( parentdat->hwndTooltip, TTM_ACTIVATE, TRUE, 0 );
 		}	}
 		break;
-
-	case WM_NOTIFY:
-		{
-			LPNMHDR pNmhdr = (LPNMHDR)lParam;
-			if ( pNmhdr->code = TTN_NEEDTEXT ) {
-				LPNMTTDISPINFO lpttd = (LPNMTTDISPINFO)lParam;
-				POINT p;
-				int item;
-				USERINFO * ui;
-				SESSION_INFO* parentdat =(SESSION_INFO*)GetWindowLong(GetParent(hwnd),GWL_USERDATA);
-
-				GetCursorPos( &p );
-				ScreenToClient( hwnd, &p );
-				item = LOWORD(SendMessage(GetDlgItem(GetParent(hwnd), IDC_CHAT_LIST), LB_ITEMFROMPOINT, 0, MAKELPARAM(p.x, p.y)));
-				if ( item != parentdat->iOldItemID ) {
-					parentdat->iOldItemID = item;
-
-					ui = SM_GetUserFromIndex(parentdat->ptszID, parentdat->pszModule, item);
-					if ( ui != NULL ) {
-						static TCHAR ptszBuf[ 1024 ];
-						mir_sntprintf( ptszBuf, SIZEOF(ptszBuf), _T("%s: %s\r\n%s: %s\r\n%s: %s"),
-							TranslateT( "Nick name" ), ui->pszNick, 
-							TranslateT( "Unique id" ), ui->pszUID,
-							TranslateT( "Status" ), TM_WordToString( parentdat->pStatuses, ui->Status ));
-						lpttd->lpszText = ptszBuf;
-				}	}
-				return 0;
-		}	}
-		break;
 	}
 
    return CallWindowProc(OldNicklistProc, hwnd, msg, wParam, lParam);
@@ -1130,14 +1101,17 @@ BOOL CALLBACK RoomWndProc(HWND hwndDlg,UINT uMsg,WPARAM wParam,LPARAM lParam)
 			{
 				TOOLINFO ti = {0};
 				ti.cbSize = sizeof(TOOLINFO);
-				ti.uFlags = TTF_IDISHWND | TTF_SUBCLASS;
+				ti.uFlags = TTF_IDISHWND | TTF_SUBCLASS | TTF_TRANSPARENT;
 				ti.hwnd   = hwndDlg;
 				ti.hinst  = g_hInst;
 				ti.uId    = (UINT)hNickList;
 				ti.lpszText  = LPSTR_TEXTCALLBACK;
-				GetClientRect( hNickList, &ti.rect );
+//				GetClientRect( hNickList, &ti.rect );
 				SendMessage( psi->hwndTooltip, TTM_ADDTOOL, 0, ( LPARAM )&ti );
 				SendMessage( psi->hwndTooltip, TTM_SETDELAYTIME, TTDT_AUTOPOP, 20000 );
+				SendMessage( psi->hwndTooltip, TTM_SETMAXTIPWIDTH, 0, 300);
+
+
 				//SendMessage( psi->hwndTooltip, TTM_TRACKACTIVATE, TRUE, ( LPARAM )&ti );
 			}
 
@@ -1822,7 +1796,7 @@ LABEL_SHOWWINDOW:
 			}	}	}
 			break;
 			case TTN_NEEDTEXT:
-				if (pNmhdr->idFrom == IDC_CHAT_LIST) 
+				if (pNmhdr->idFrom == (UINT)GetDlgItem(hwndDlg,IDC_CHAT_LIST))
 				{
 					LPNMTTDISPINFO lpttd = (LPNMTTDISPINFO)lParam;
 					POINT p;

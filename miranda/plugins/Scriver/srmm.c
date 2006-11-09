@@ -40,7 +40,7 @@ PLUGININFO pluginInfo = {
 #else
 	"Scriver",
 #endif
-	PLUGIN_MAKE_VERSION(2, 5, 9, 4),
+	PLUGIN_MAKE_VERSION(2, 5, 9, 5),
 #ifdef _UNICODE
 	"Scriver - send and receive instant messages (Unicode)",
 #else
