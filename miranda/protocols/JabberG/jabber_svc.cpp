@@ -480,7 +480,7 @@ int JabberDbSettingChanged( WPARAM wParam, LPARAM lParam )
 		sttRenameContact( cws, hContact );
 	else if ( !strcmp( cws->szSetting, "NotOnList" ))
 		sttAddContactForever( cws, hContact );
-		
+
 	return 0;
 }
 
@@ -609,7 +609,7 @@ int JabberGetAvatar(WPARAM wParam, LPARAM lParam)
 
 	JabberGetAvatarFileName( NULL, buf, size );
 	return 0;
-}	
+}
 
 /////////////////////////////////////////////////////////////////////////////////////////
 // JabberGetAvatarFormatSupported - Jabber supports avatars of virtually all formats
@@ -735,7 +735,7 @@ static void __cdecl JabberGetAwayMsgThread( HANDLE hContact )
 				#endif
 				return;
 			}
-			
+
 			if ( item->statusMessage != NULL ) {
 				#if defined( _UNICODE )
 					char* msg = u2a(item->statusMessage);
@@ -760,7 +760,7 @@ int JabberGetAwayMsg( WPARAM wParam, LPARAM lParam )
 	CCSDATA *ccs = ( CCSDATA * ) lParam;
 	if ( ccs == NULL )
 		return 0;
-		
+
 	JabberLog( "GetAwayMsg called, wParam=%d lParam=%d", wParam, lParam );
 	mir_forkthread( JabberGetAwayMsgThread, ccs->hContact );
 	return 1;
@@ -852,7 +852,7 @@ int JabberRecvFile( WPARAM wParam, LPARAM lParam )
 	dbei.cbSize = sizeof( dbei );
 	dbei.szModule = jabberProtoName;
 	dbei.timestamp = pre->timestamp;
-	dbei.flags = pre->flags & ( PREF_CREATEREAD ? DBEF_READ : 0 );
+	dbei.flags = ( pre->flags & PREF_CREATEREAD ) ? DBEF_READ : 0;
 	dbei.eventType = EVENTTYPE_FILE;
 	dbei.cbBlob = sizeof( DWORD )+ strlen( szFile ) + strlen( szDesc ) + 2;
 	dbei.pBlob = ( PBYTE ) pre->szMessage;
