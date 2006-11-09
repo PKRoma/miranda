@@ -151,13 +151,13 @@ static int JabberFileReceiveParse( filetransfer* ft, char* buffer, int datalen )
 								break;
 							}
 							ft->state = FT_RECEIVING;
-							ft->std.currentFileSize = 0;
+							ft->std.currentFileProgress = 0;
 							JabberLog( "Change to FT_RECEIVING" );
 						}
 						else if (( s=strchr( str, ':' )) != NULL ) {
 							*s = '\0';
 							if ( !strcmp( str, "Content-Length" ))
-								ft->std.totalBytes = strtol( s+1, NULL, 10 );
+								ft->std.totalBytes = ft->std.currentFileSize = strtol( s+1, NULL, 10 );
 					}	}
 
 					mir_free( str );
