@@ -318,7 +318,7 @@ int YahooRecvMessage(WPARAM wParam, LPARAM lParam)
     dbei.cbSize = sizeof(dbei);
     dbei.szModule = yahooProtocolName;
     dbei.timestamp = pre->timestamp;
-    dbei.flags = pre->flags & (PREF_CREATEREAD ? DBEF_READ : 0);
+    dbei.flags = (pre->flags & PREF_CREATEREAD) ? DBEF_READ : 0;
     dbei.eventType = EVENTTYPE_MESSAGE;
     dbei.cbBlob = (!lstrcmp(pre->szMessage, "<ding>"))? lstrlen("BUZZ!!!")+1:lstrlen(pre->szMessage) + 1;
 	if ( pre->flags & PREF_UNICODE )
