@@ -1837,30 +1837,10 @@ int TABSRMM_FireEvent(HANDLE hContact, HWND hwnd, unsigned int type, unsigned in
     MessageWindowEventData mwe = { 0 };
     struct TABSRMM_SessionInfo se = { 0 };
     struct MessageWindowData *dat = (struct MessageWindowData *)GetWindowLong(hwnd, GWL_USERDATA);
+    BYTE bType = dat ? dat->bType : SESSIONTYPE_IM;
     
     if (hContact == NULL || hwnd == NULL) 
         return 0;
-
-	// Spell checker support
-	if (type == MSG_WINDOW_EVT_OPEN) {
-		if (ServiceExists(MS_SPELLCHECKER_ADD_RICHEDIT)) {
-            BYTE bType = dat ? dat->bType : SESSIONTYPE_IM;
-			SPELLCHECKER_ITEM sci;
-
-			sci.cbSize = sizeof(SPELLCHECKER_ITEM);
-			sci.hContact = hContact;
-			sci.hwnd = GetDlgItem(hwnd, bType == SESSIONTYPE_IM ? IDC_MESSAGE : IDC_CHAT_MESSAGE);
-			sci.window_name = "tabSRMM";
-			CallService(MS_SPELLCHECKER_ADD_RICHEDIT, (WPARAM) &sci, 0); 
-		}
-	}
-	else if (type == MSG_WINDOW_EVT_CLOSING) {
-		if (ServiceExists(MS_SPELLCHECKER_REMOVE_RICHEDIT)) {
-            BYTE bType = dat ? dat->bType : SESSIONTYPE_IM;
-
-            CallService(MS_SPELLCHECKER_REMOVE_RICHEDIT, (WPARAM) GetDlgItem(hwnd, bType == SESSIONTYPE_IM ? IDC_MESSAGE : IDC_CHAT_MESSAGE), 0); 
-		}
-	}
 
     if (!DBGetContactSettingByte(NULL, SRMSGMOD_T, "eventapi", 1))
         return 0;
@@ -1873,14 +1853,13 @@ int TABSRMM_FireEvent(HANDLE hContact, HWND hwnd, unsigned int type, unsigned in
     mwe.szModule = "tabSRMsg";
 #endif    
     mwe.uType = type;
-	mwe.hwndInput = GetDlgItem(hwnd, IDC_MESSAGE);
-	mwe.hwndLog = GetDlgItem(hwnd, IDC_LOG);
+	mwe.hwndInput = GetDlgItem(hwnd, bType == SESSIONTYPE_IM ? IDC_MESSAGE : IDC_CHAT_MESSAGE);
+	mwe.hwndLog = GetDlgItem(hwnd, bType == SESSIONTYPE_IM ? IDC_LOG : IDC_CHAT_LOG);
 
     if(type == MSG_WINDOW_EVT_CUSTOM) {
         se.cbSize = sizeof(se);
         se.evtCode = HIWORD(subType);
         se.hwnd = hwnd;
-        se.hwndInput = GetDlgItem(hwnd, IDC_MESSAGE);
         se.extraFlags = (unsigned int)(LOWORD(subType));
         se.local = (void *)dat->sendBuffer;
         mwe.local = (void *)&se;

@@ -4766,7 +4766,7 @@ quote_from_last:
                                 int bUnder = IsDlgButtonChecked(hwndDlg, IDC_FONTUNDERLINE);
                                 
                                 cf2.cbSize = sizeof(CHARFORMAT2);
-                                cf2.dwMask = CFM_BOLD|CFM_ITALIC|CFM_UNDERLINE;
+                                cf2.dwMask = CFM_BOLD|CFM_ITALIC|CFM_UNDERLINE|CFM_UNDERLINETYPE;
                                 cf2.dwEffects = 0;
                                 SendDlgItemMessage(hwndDlg, IDC_MESSAGE, EM_GETCHARFORMAT, SCF_SELECTION, (LPARAM)&cf2);
                                 if(cf2.dwEffects & CFE_BOLD) {
@@ -4787,7 +4787,7 @@ quote_from_last:
                                         CheckDlgButton(hwndDlg, IDC_FONTITALIC, BST_UNCHECKED);
                                 }
                                 
-                                if(cf2.dwEffects & CFE_UNDERLINE) {
+                                if(cf2.dwEffects & CFE_UNDERLINE && (cf2.bUnderlineType & CFU_UNDERLINE || cf2.bUnderlineType & CFU_UNDERLINEWORD)) {
                                     if(bUnder == BST_UNCHECKED)
                                         CheckDlgButton(hwndDlg, IDC_FONTUNDERLINE, BST_CHECKED);
                                 }
