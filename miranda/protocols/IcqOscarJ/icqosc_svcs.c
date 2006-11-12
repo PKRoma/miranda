@@ -1077,7 +1077,7 @@ int IcqFileAllow(WPARAM wParam, LPARAM lParam)
         AddExpectedFileRecv(ft);
 
         // Was request received thru DC and have we a open DC, send through that
-        if (ft->bDC && IsDirectConnectionOpen(ccs->hContact, DIRECTCONN_STANDARD))
+        if (ft->bDC && IsDirectConnectionOpen(ccs->hContact, DIRECTCONN_STANDARD, 0))
           icq_sendFileAcceptDirect(ccs->hContact, ft);
         else
           icq_sendFileAcceptServ(dwUin, ft, 0);
@@ -1117,7 +1117,7 @@ int IcqFileDeny(WPARAM wParam, LPARAM lParam)
       { // deny old fashioned file transfer
         filetransfer *ft = (filetransfer*)ccs->wParam;
         // Was request received thru DC and have we a open DC, send through that
-        if (ft->bDC && IsDirectConnectionOpen(ccs->hContact, DIRECTCONN_STANDARD))
+        if (ft->bDC && IsDirectConnectionOpen(ccs->hContact, DIRECTCONN_STANDARD, 0))
           icq_sendFileDenyDirect(ccs->hContact, ft, (char*)ccs->lParam);
         else
           icq_sendFileDenyServ(dwUin, ft, (char*)ccs->lParam, 0);
@@ -1300,7 +1300,7 @@ int IcqGetAwayMsg(WPARAM wParam,LPARAM lParam)
 
       if (wMessageType)
       {
-        if (gbDCMsgEnabled && IsDirectConnectionOpen(ccs->hContact, DIRECTCONN_STANDARD))
+        if (gbDCMsgEnabled && IsDirectConnectionOpen(ccs->hContact, DIRECTCONN_STANDARD, 0))
         {
           int iRes = icq_sendGetAwayMsgDirect(ccs->hContact, wMessageType);
           if (iRes) return iRes; // we succeded, return
@@ -1427,7 +1427,7 @@ int IcqSendMessage(WPARAM wParam, LPARAM lParam)
         NetLog_Server("Send message - Message cap is %u", CheckContactCapabilities(ccs->hContact, CAPF_SRV_RELAY));
         NetLog_Server("Send message - Contact status is %u", wRecipientStatus);
 #endif
-        if (dwUin && gbDCMsgEnabled && IsDirectConnectionOpen(ccs->hContact, DIRECTCONN_STANDARD))
+        if (dwUin && gbDCMsgEnabled && IsDirectConnectionOpen(ccs->hContact, DIRECTCONN_STANDARD, 0))
         {
           int iRes = icq_SendDirectMessage(dwUin, ccs->hContact, pszText, strlennull(pszText), 1, pCookieData, NULL);
           if (iRes) return iRes; // we succeded, return
@@ -1566,7 +1566,7 @@ int IcqSendMessageW(WPARAM wParam, LPARAM lParam)
         NetLog_Server("Send unicode message - Message cap is %u", CheckContactCapabilities(ccs->hContact, CAPF_SRV_RELAY));
         NetLog_Server("Send unicode message - Contact status is %u", wRecipientStatus);
 #endif
-        if (dwUin && gbDCMsgEnabled && IsDirectConnectionOpen(ccs->hContact, DIRECTCONN_STANDARD))
+        if (dwUin && gbDCMsgEnabled && IsDirectConnectionOpen(ccs->hContact, DIRECTCONN_STANDARD, 0))
         {
           char* utf8msg = make_utf8_string(pszText);
           int iRes;
@@ -1689,7 +1689,7 @@ int IcqSendUrl(WPARAM wParam, LPARAM lParam)
         strcpy(szBody + nDescLen + 1, szUrl);
 
 
-        if (gbDCMsgEnabled && IsDirectConnectionOpen(ccs->hContact, DIRECTCONN_STANDARD))
+        if (gbDCMsgEnabled && IsDirectConnectionOpen(ccs->hContact, DIRECTCONN_STANDARD, 0))
         {
           int iRes = icq_SendDirectMessage(dwUin, ccs->hContact, szBody, nBodyLen, 1, pCookieData, NULL);
           if (iRes) return iRes; // we succeded, return
@@ -1835,7 +1835,7 @@ int IcqSendContacts(WPARAM wParam, LPARAM lParam)
             // Set up the ack type
             pCookieData = CreateMsgCookieData(MTYPE_CONTACTS, ccs->hContact, dwUin);
 
-            if (gbDCMsgEnabled && IsDirectConnectionOpen(ccs->hContact, DIRECTCONN_STANDARD))
+            if (gbDCMsgEnabled && IsDirectConnectionOpen(ccs->hContact, DIRECTCONN_STANDARD, 0))
             {
               int iRes = icq_SendDirectMessage(dwUin, ccs->hContact, pBody, nBodyLength, 1, pCookieData, NULL);
 
@@ -2001,7 +2001,7 @@ int IcqSendFile(WPARAM wParam, LPARAM lParam)
               {
                 if (ft->nVersion == 7)
                 {
-                  if (gbDCMsgEnabled && IsDirectConnectionOpen(hContact, DIRECTCONN_STANDARD))
+                  if (gbDCMsgEnabled && IsDirectConnectionOpen(hContact, DIRECTCONN_STANDARD, 0))
                   {
                     int iRes = icq_sendFileSendDirectv7(ft, pszFiles); 
                     if (iRes) return (int)(HANDLE)ft; // Success
@@ -2011,7 +2011,7 @@ int IcqSendFile(WPARAM wParam, LPARAM lParam)
                 }
                 else
                 {
-                  if (gbDCMsgEnabled && IsDirectConnectionOpen(hContact, DIRECTCONN_STANDARD))
+                  if (gbDCMsgEnabled && IsDirectConnectionOpen(hContact, DIRECTCONN_STANDARD, 0))
                   {
                     int iRes = icq_sendFileSendDirectv8(ft, pszFiles); 
                     if (iRes) return (int)(HANDLE)ft; // Success

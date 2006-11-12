@@ -165,7 +165,7 @@ HICON GetXStatusIcon(int bStatus, UINT flags)
     HICON icon;
 
     null_snprintf(szTemp, sizeof(szTemp), "xstatus%d", bStatus - 1);
-    icon = IconLibProcess(NULL, szTemp);
+    icon = IconLibGetIcon(szTemp);
 
     if (flags & LR_SHARED)
       return icon;

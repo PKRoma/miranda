@@ -56,7 +56,7 @@ typedef struct {
   message_cookie_data pMessage;
   BYTE ft_magic;
   HANDLE hContact;
-  int initalized;
+  int initialized;
   int sending;
   char **files; // sending only 
   int iCurrentFile;
@@ -68,7 +68,6 @@ typedef struct {
   WORD wRemotePort;
   char *szPath;
   char *szDescription;
-  char *szFilename;
   char *szThisFile; 
   char *szThisPath;
   // Request sequence

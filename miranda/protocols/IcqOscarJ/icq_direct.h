@@ -97,7 +97,7 @@ typedef struct {
 } directconnect;
 
 void OpenDirectConnection(HANDLE hContact, int type, void *pvExtra);
-int IsDirectConnectionOpen(HANDLE hContact, int type);
+int IsDirectConnectionOpen(HANDLE hContact, int type, int bPassive);
 void CloseDirectConnection(directconnect *dc);
 void CloseContactDirectConns(HANDLE hContact);
 int SendDirectMessage(HANDLE hContact, icq_packet *pkt);

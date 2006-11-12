@@ -555,7 +555,7 @@ static void SetValue(HWND hwndDlg, int idCtrl, HANDLE hContact, char* szModule, 
           null_snprintf(str, 250, "%d", dbv.wVal);
           pstr = str;
 
-          if (hContact && IsDirectConnectionOpen(hContact, DIRECTCONN_STANDARD))
+          if (hContact && IsDirectConnectionOpen(hContact, DIRECTCONN_STANDARD, 1))
           {
             ICQTranslateUtfStatic(" (DC Established)", szExtra);
             strcat(str, szExtra);

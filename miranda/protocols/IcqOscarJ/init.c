@@ -61,7 +61,7 @@ extern int bHideXStatusUI;
 PLUGININFO pluginInfo = {
   sizeof(PLUGININFO),
   NULL,
-  PLUGIN_MAKE_VERSION(0,3,8,5),
+  PLUGIN_MAKE_VERSION(0,3,8,6),
   "Support for ICQ network, enhanced.",
   "Joe Kucera, Bio, Martin Öberg, Richard Hughes, Jon Keating, etc",
   "jokusoftware@miranda-im.org",
@@ -390,6 +390,8 @@ static int OnSystemModulesLoaded(WPARAM wParam,LPARAM lParam)
   hHookUserMenu = HookEvent(ME_CLIST_PREBUILDCONTACTMENU, icq_PrebuildContactMenu);
   hHookIdleEvent = HookEvent(ME_IDLE_CHANGED, IcqIdleChanged);
 
+  InitAvatars();
+
   // Init extra optional modules
   InitPopUps();
   InitIconLib();
@@ -397,13 +399,15 @@ static int OnSystemModulesLoaded(WPARAM wParam,LPARAM lParam)
   hHookIconsChanged = IconLibHookIconsChanged(IconLibIconsChanged);
 
   {
-    char str[MAX_PATH], proto[MAX_PATH];
+    char str[MAX_PATH], proto[MAX_PATH], lib[MAX_PATH];
     
     ICQTranslateUtfStatic(gpszICQProtoName, proto);
 
-    IconLibDefine(ICQTranslateUtfStatic("Request authorization", str), proto, "req_auth", LoadImage(hInst,MAKEINTRESOURCE(IDI_AUTH_ASK),IMAGE_ICON,0,0,LR_SHARED), NULL, 0);
-    IconLibDefine(ICQTranslateUtfStatic("Grant authorization", str), proto, "grant_auth", LoadImage(hInst,MAKEINTRESOURCE(IDI_AUTH_GRANT),IMAGE_ICON,0,0,LR_SHARED), NULL, 0);
-    IconLibDefine(ICQTranslateUtfStatic("Revoke authorization", str), proto, "revoke_auth", LoadImage(hInst,MAKEINTRESOURCE(IDI_AUTH_REVOKE),IMAGE_ICON,0,0,LR_SHARED), NULL, 0);
+    GetModuleFileName(hInst, lib, MAX_PATH);
+
+    IconLibDefine(ICQTranslateUtfStatic("Request authorization", str), proto, "req_auth", NULL, lib, -IDI_AUTH_ASK);
+    IconLibDefine(ICQTranslateUtfStatic("Grant authorization", str), proto, "grant_auth", NULL, lib, -IDI_AUTH_GRANT);
+    IconLibDefine(ICQTranslateUtfStatic("Revoke authorization", str), proto, "revoke_auth", NULL, lib, -IDI_AUTH_REVOKE);
   }
 
   // Initialize IconLib icons
@@ -422,27 +426,39 @@ static int OnSystemModulesLoaded(WPARAM wParam,LPARAM lParam)
     mi.cbSize = sizeof(mi);
     mi.position = 1000030000;
     mi.flags = 0;
-    mi.hIcon = IconLibProcess(LoadImage(hInst,MAKEINTRESOURCE(IDI_AUTH_ASK),IMAGE_ICON,0,0,LR_SHARED), "req_auth");
+    if (IconLibInstalled())
+      mi.hIcon = IconLibGetIcon("req_auth");
+    else
+      mi.hIcon = LoadImage(hInst,MAKEINTRESOURCE(IDI_AUTH_ASK),IMAGE_ICON,0,0,LR_SHARED);
     mi.pszContactOwner = gpszICQProtoName;
     mi.pszName = ICQTranslate("Request authorization");
     mi.pszService = pszServiceName;
     hUserMenuAuth = (HANDLE)CallService(MS_CLIST_ADDCONTACTMENUITEM, 0, (LPARAM)&mi);
+    IconLibReleaseIcon("req_auth");
 
     strcpy(pszServiceName, gpszICQProtoName);
     strcat(pszServiceName, MS_GRANT_AUTH);
 
     mi.position = 1000029999;
-    mi.hIcon = IconLibProcess(LoadImage(hInst,MAKEINTRESOURCE(IDI_AUTH_GRANT),IMAGE_ICON,0,0,LR_SHARED), "grant_auth");
+    if (IconLibInstalled())
+      mi.hIcon = IconLibGetIcon("grant_auth");
+    else
+      mi.hIcon = LoadImage(hInst,MAKEINTRESOURCE(IDI_AUTH_GRANT),IMAGE_ICON,0,0,LR_SHARED);
     mi.pszName = ICQTranslate("Grant authorization");
     hUserMenuGrant = (HANDLE)CallService(MS_CLIST_ADDCONTACTMENUITEM, 0, (LPARAM)&mi);
+    IconLibReleaseIcon("grant_auth");
 
     strcpy(pszServiceName, gpszICQProtoName);
     strcat(pszServiceName, MS_REVOKE_AUTH);
 
     mi.position = 1000029998;
-    mi.hIcon = IconLibProcess(LoadImage(hInst,MAKEINTRESOURCE(IDI_AUTH_REVOKE),IMAGE_ICON,0,0,LR_SHARED), "revoke_auth");
+    if (IconLibInstalled())
+      mi.hIcon = IconLibGetIcon("revoke_auth");
+    else
+      mi.hIcon = LoadImage(hInst,MAKEINTRESOURCE(IDI_AUTH_REVOKE),IMAGE_ICON,0,0,LR_SHARED);
     mi.pszName = ICQTranslate("Revoke authorization");
     hUserMenuRevoke = (HANDLE)CallService(MS_CLIST_ADDCONTACTMENUITEM, 0, (LPARAM)&mi);
+    IconLibReleaseIcon("revoke_auth");
 
     strcpy(pszServiceName, gpszICQProtoName);
     strcat(pszServiceName, MS_XSTATUS_SHOWDETAILS);
@@ -531,9 +547,12 @@ static int icq_PrebuildContactMenu(WPARAM wParam, LPARAM lParam)
 
 static int IconLibIconsChanged(WPARAM wParam, LPARAM lParam)
 {
-  CListSetMenuItemIcon(hUserMenuAuth, IconLibProcess(LoadImage(hInst,MAKEINTRESOURCE(IDI_AUTH_ASK),IMAGE_ICON,0,0,LR_SHARED), "req_auth"));
-  CListSetMenuItemIcon(hUserMenuGrant, IconLibProcess(LoadImage(hInst,MAKEINTRESOURCE(IDI_AUTH_GRANT),IMAGE_ICON,0,0,LR_SHARED), "grant_auth"));
-  CListSetMenuItemIcon(hUserMenuRevoke, IconLibProcess(LoadImage(hInst,MAKEINTRESOURCE(IDI_AUTH_REVOKE),IMAGE_ICON,0,0,LR_SHARED), "revoke_auth"));
+  CListSetMenuItemIcon(hUserMenuAuth, IconLibGetIcon("req_auth"));
+  IconLibReleaseIcon("req_auth");
+  CListSetMenuItemIcon(hUserMenuGrant, IconLibGetIcon("grant_auth"));
+  IconLibReleaseIcon("grant_auth");
+  CListSetMenuItemIcon(hUserMenuRevoke, IconLibGetIcon("revoke_auth"));
+  IconLibReleaseIcon("revoke_auth");
 
   ChangedIconsXStatus();
 
@@ -544,18 +563,21 @@ static int IconLibIconsChanged(WPARAM wParam, LPARAM lParam)
 
 void UpdateGlobalSettings()
 {
-  NETLIBUSERSETTINGS nlus = {0};
-
-  nlus.cbSize = sizeof(NETLIBUSERSETTINGS);
-  if (CallService(MS_NETLIB_GETUSERSETTINGS, (WPARAM)ghServerNetlibUser, (LPARAM)&nlus))
+  if (ghServerNetlibUser)
   {
-    if (nlus.useProxy && nlus.proxyType == PROXYTYPE_HTTP)
-      gbGatewayMode = 1;
+    NETLIBUSERSETTINGS nlus = {0};
+
+    nlus.cbSize = sizeof(NETLIBUSERSETTINGS);
+    if (CallService(MS_NETLIB_GETUSERSETTINGS, (WPARAM)ghServerNetlibUser, (LPARAM)&nlus))
+    {
+      if (nlus.useProxy && nlus.proxyType == PROXYTYPE_HTTP)
+        gbGatewayMode = 1;
+      else
+        gbGatewayMode = 0;
+    }
     else
       gbGatewayMode = 0;
   }
-  else
-    gbGatewayMode = 0;
 
   gbSecureLogin = ICQGetContactSettingByte(NULL, "SecureLogin", DEFAULT_SECURE_LOGIN);
   gbAimEnabled = ICQGetContactSettingByte(NULL, "AimEnabled", DEFAULT_AIM_ENABLED);

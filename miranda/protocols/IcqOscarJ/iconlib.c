@@ -99,7 +99,7 @@ void IconLibDefine(const char* desc, const char* section, const char* ident, HIC
 
 
 
-HICON IconLibProcess(HICON icon, const char* ident)
+HICON IconLibGetIcon(const char* ident)
 {
   if (bIcoReady)
   {
@@ -111,7 +111,20 @@ HICON IconLibProcess(HICON icon, const char* ident)
     if (hNew) return hNew;
   }
 
-  return icon;
+  return NULL;
+}
+
+
+
+void IconLibReleaseIcon(const char* ident)
+{
+  if (bIcoReady)
+  {
+		char szTemp[MAX_PATH + 128];
+
+		null_snprintf(szTemp, sizeof(szTemp), "%s_%s", gpszICQProtoName, ident);
+		CallService(MS_SKIN2_RELEASEICON, 0, (LPARAM)szTemp);
+  }
 }
 
 

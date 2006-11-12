@@ -60,11 +60,12 @@ Bugfixes:
   Fixed SMS message handling, made message parsing more consistent
 
 New Features:
-  TODO: Oscar File Transfers - like icq5 (including transfer thru server)
+  Oscar File Transfers - like icq5 (including transfer thru server)
 
 Improvements:
   Client detection improvements
   Level 1 Rate management (global) - should solve problems with many contacts in list
+  Support for Custom Profile Folders plug-in - configurable avatars cache folder
 
 
 0.3.7.5

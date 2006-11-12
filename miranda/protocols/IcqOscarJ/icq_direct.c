@@ -291,7 +291,7 @@ directthreadstartinfo* CreateDTSI(HANDLE hContact, HANDLE hConnection, int type)
 
 // Check if we have an open and initialized DC with type
 // 'type' to the specified contact
-BOOL IsDirectConnectionOpen(HANDLE hContact, int type)
+BOOL IsDirectConnectionOpen(HANDLE hContact, int type, int bPassive)
 {
   int i;
   BOOL bIsOpen = FALSE, bIsCreated = FALSE;
@@ -319,7 +319,7 @@ BOOL IsDirectConnectionOpen(HANDLE hContact, int type)
   
   LeaveCriticalSection(&directConnListMutex);
   
-  if (!bIsCreated && !bIsOpen && type == DIRECTCONN_STANDARD && gbDCMsgEnabled == 2)
+  if (!bPassive && !bIsCreated && !bIsOpen && type == DIRECTCONN_STANDARD && gbDCMsgEnabled == 2)
   { // do not try to open DC to offline contact
     if (ICQGetContactStatus(hContact) == ID_STATUS_OFFLINE) return FALSE;
 

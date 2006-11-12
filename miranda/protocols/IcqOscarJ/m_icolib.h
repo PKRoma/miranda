@@ -3,7 +3,7 @@
 //         __________________________________________________________
 //
 // Copyright © 2005 Denis Stanishevskiy // StDenis
-// Copyright © 2006 Joe Kucera
+// Copyright © 2006 Joe Kucera, Bio
 // 
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License
@@ -21,10 +21,10 @@
 //
 // -----------------------------------------------------------------------------
 
-#define SKINICONDESC_SIZE     sizeof(SKINICONDESC)
+#define SKINICONDESC_SIZE     sizeof(SKINICONDESC)  // v0.0.1.0+
 #define SKINICONDESC_SIZE_V1  0x18
-#define SKINICONDESC_SIZE_V2  0x1C
-#define SKINICONDESC_SIZE_V3  0x24
+#define SKINICONDESC_SIZE_V2  0x1C                  // v0.0.0.2+
+#define SKINICONDESC_SIZE_V3  0x24                  // v0.0.0.3+
 
 typedef struct {
   int cbSize;
@@ -43,9 +43,10 @@ typedef struct {
   int  iDefaultIndex;         // index of icon in default file
   HICON hDefaultIcon;         // handle to default icon
   int cx,cy;                  // dimensions of icon
-  int flags; 
+  int flags;                  // combination of SIDF_*
 } SKINICONDESC;
 
+#define SIDF_SORTED   0x1     // Icons in section are sorted by name
 #define SIDF_UNICODE  0x100   // Section and Description are in UCS-2
 
 #if defined(_UNICODE)
@@ -63,11 +64,27 @@ typedef struct {
 #define MS_SKIN2_ADDICON "Skin2/Icons/AddIcon"
 
 //
+//  Remove a icon from options UI
+//
+//  wParam = (WPARAM)0
+//  lParam = (LPARAM)(char*)pszName
+//  WARNING: This will invalidate all HICONs retrieved for specified pszName
+//
+#define MS_SKIN2_REMOVEICON "Skin2/Icons/RemoveIcon"
+
+//
 //  Retrieve HICON with name specified in lParam
 //  Returned HICON SHOULDN'T be destroyed, it is managed by IcoLib
 //
-
 #define MS_SKIN2_GETICON "Skin2/Icons/GetIcon"
+
+//
+//  Retrieved HICON is not needed anymore (this helps optimize GDI usage)
+//
+//  wParam = (WPARAM)HICON (optional)
+//  lParam = (LPARAM)(char*)pszName (optional)  // at least one needs to be specified
+//
+#define MS_SKIN2_RELEASEICON "Skin2/Icons/ReleaseIcon"
 
 //
 //  Icons change notification

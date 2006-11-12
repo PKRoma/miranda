@@ -35,6 +35,7 @@
 // -----------------------------------------------------------------------------
 
 #include "icqoscar.h"
+#include "m_folders.h"
 
 BOOL AvatarsReady = FALSE; // states if avatar connection established and ready for requests
 
@@ -82,6 +83,8 @@ avatarthreadstartinfo* currentAvatarThread;
 int pendingAvatarsStart = 1;
 static avatarrequest* pendingRequests = NULL;
 
+HANDLE hAvatarsFolder;
+
 extern CRITICAL_SECTION cookieMutex;
 
 static int sendAvatarPacket(icq_packet* pPacket, avatarthreadstartinfo* atsi /*= currentAvatarThread*/);
@@ -112,6 +115,18 @@ static void RemoveAvatarRequestFromQueue(avatarrequest* request)
     ar = ar->pNext;
   }
 }
+
+
+
+void InitAvatars()
+{
+  char szPath[MAX_PATH];
+
+  null_snprintf(szPath, MAX_PATH, "%s\\%s\\", PROFILE_PATH, gpszICQProtoName);
+
+  FoldersRegisterCustomPath(ICQTranslate(gpszICQProtoName), ICQTranslate("Avatars Cache"), szPath);
+}
+
 
 
 char* loadMyAvatarFileName()
@@ -152,12 +167,24 @@ void GetFullAvatarFileName(int dwUin, char* szUid, int dwFormat, char* pszDest, 
 void GetAvatarFileName(int dwUin, char* szUid, char* pszDest, int cbLen)
 {
   int tPathLen;
+  FOLDERSGETDATA fgd = {0};
 
-  CallService(MS_DB_GETPROFILEPATH, cbLen, (LPARAM)pszDest);
+  fgd.cbSize = sizeof(FOLDERSGETDATA);
+  fgd.nMaxPathSize = cbLen;
+  fgd.szPath = pszDest;
+  if (CallService(MS_FOLDERS_GET_PATH, (WPARAM)hAvatarsFolder, (LPARAM)&fgd))
+  {
+    CallService(MS_DB_GETPROFILEPATH, cbLen, (LPARAM)pszDest);
 
-  tPathLen = strlennull(pszDest);
-  tPathLen += null_snprintf(pszDest + tPathLen, MAX_PATH-tPathLen, "\\%s\\", gpszICQProtoName);
-  CreateDirectory(pszDest, NULL);
+    tPathLen = strlennull(pszDest);
+    tPathLen += null_snprintf(pszDest + tPathLen, cbLen-tPathLen, "\\%s\\", gpszICQProtoName);
+    CreateDirectory(pszDest, NULL);
+  }
+  else
+  {
+    strcat(pszDest, "\\");
+    tPathLen = strlennull(pszDest);
+  }
 
   if (dwUin != 0) 
   {
