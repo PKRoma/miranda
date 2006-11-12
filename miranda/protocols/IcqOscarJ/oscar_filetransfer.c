@@ -172,6 +172,8 @@ void SafeReleaseFileTransfer(void **ft)
 {
   basic_filetransfer **bft = (basic_filetransfer**)ft;
 
+  EnterCriticalSection(&oftMutex);
+
   if (*bft)
   {
     if ((*bft)->ft_magic == FT_MAGIC_ICQ)
@@ -213,6 +215,7 @@ void SafeReleaseFileTransfer(void **ft)
       SAFE_FREE(ft);
     }
   }
+  LeaveCriticalSection(&oftMutex);
 }
 
 
@@ -1194,7 +1197,7 @@ static DWORD __stdcall oft_connectionThread(oscarthreadstartinfo *otsi)
     ICQBroadcastAck(oc.ft->hContact, ACKTYPE_FILE, ACKRESULT_INITIALISING, oc.ft, 0);
 
     // send init OFT frame - just for different order of packets (just like Trillian)
-    if (oc.status == OCS_CONNECTED && oc.ft->initialized && oc.ft->sending)
+    if (oc.status == OCS_CONNECTED && oc.ft->sending && (oc.ft->initialized || oc.type == OCT_REVERSE))
       oft_sendPeerInit((oscar_connection*)oc.ft->connection);
   }
   hPacketRecver = (HANDLE)CallService(MS_NETLIB_CREATEPACKETRECVER, (WPARAM)oc.hConnection, 8192);
