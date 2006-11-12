@@ -4,7 +4,7 @@
 //
 // Copyright © 2000,2001 Richard Hughes, Roland Rabien, Tristan Van de Vreede
 // Copyright © 2001,2002 Jon Keating, Richard Hughes
-// Copyright © 2002,2003,2004 Martin  berg, Sam Kothari, Robert Rainwater
+// Copyright © 2002,2003,2004 Martin Öberg, Sam Kothari, Robert Rainwater
 // Copyright © 2004,2005,2006 Joe Kucera
 //
 // This program is free software; you can redistribute it and/or
@@ -1814,7 +1814,7 @@ static void handleRecvMsgResponse(unsigned char *buf, WORD wLen, WORD wFlags, DW
     { // use old reliable method
       NetLog_Server("Warning: Invalid cookie in %s from (%u)", "message response", dwUin);
     }
-    else if (bMsgType != MTYPE_PLUGIN && bMsgType != MTYPE_AUTOAWAY)
+    else if (bMsgType != MTYPE_PLUGIN && pCookieData->bMessageType != MTYPE_AUTOAWAY)
     { // just because some clients break it...
       dwCookie = wCookie;
 
@@ -1822,6 +1822,11 @@ static void handleRecvMsgResponse(unsigned char *buf, WORD wLen, WORD wFlags, DW
         NetLog_Server("Warning: Invalid message type in %s from (%u)", "message response", dwUin);
 
       bMsgType = pCookieData->bMessageType;
+    }
+    else if (pCookieData->bMessageType == MTYPE_AUTOAWAY)
+    {
+      if (bMsgType != pCookieData->nAckType)
+        NetLog_Server("Warning: Invalid message type in %s from (%u)", "message response", dwUin);
     }
   }
   else
