@@ -370,7 +370,7 @@ BOOL CALLBACK DlgProcFileTransfer(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM 
 				case ACKRESULT_CONNECTING: SetDlgItemText(hwndDlg,IDC_STATUS,TranslateT("Connecting...")); break;
 				case ACKRESULT_CONNECTPROXY: SetDlgItemText(hwndDlg,IDC_STATUS,TranslateT("Connecting to proxy...")); break;
 				case ACKRESULT_CONNECTED: SetDlgItemText(hwndDlg,IDC_STATUS,TranslateT("Connected")); break;
-				case ACKRESULT_LISTENING: SetDlgItemText(hwndDlg,IDC_STATUS,TranslateT("Waiting for connection..."); break;
+				case ACKRESULT_LISTENING: SetDlgItemText(hwndDlg,IDC_STATUS,TranslateT("Waiting for connection...")); break;
 				case ACKRESULT_INITIALISING: SetDlgItemText(hwndDlg,IDC_STATUS,TranslateT("Initialising...")); break;
 				case ACKRESULT_NEXTFILE:
 					SetDlgItemText(hwndDlg,IDC_STATUS,TranslateT("Moving to next file..."));
