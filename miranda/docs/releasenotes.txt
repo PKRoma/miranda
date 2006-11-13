@@ -1,7 +1,7 @@
                    Miranda Instant Messenger Release Notes
                    ---------------------------------------
 
-                             July 2006 (v0.6)
+                             November 2006 (v0.6)
 
                           http://www.miranda-im.org
 
@@ -31,10 +31,10 @@ http://files.miranda-im.org/builds/ChangeLog
 
 * New in 0.6
 Enhancements:
- -
+ - FIXME
 
 Bugfixes:
- -
+ - FIXME
 
 * New in 0.5.1
 Enhancements
