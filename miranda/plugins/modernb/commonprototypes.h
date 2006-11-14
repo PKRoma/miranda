@@ -18,7 +18,7 @@ extern CLIST_INTERFACE * pcli;
 
 //Global variables
 extern HANDLE g_hSkinLoadedEvent;
-extern ON_SETALLEXTRAICON_CYCLE;
+extern int ON_SETALLEXTRAICON_CYCLE;
 extern BOOL CLM_AUTOREBUILD_WAS_POSTED;
 extern wndFrame *Frames;
 extern int nFramescount;
