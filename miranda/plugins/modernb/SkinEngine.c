@@ -24,12 +24,12 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 //Include
 #include <assert.h>
 
-
+#include "commonheaders.h" 
 #include <stdio.h>
-#include <Wingdi.h>
+//#include <Wingdi.h>
 #include "m_skin_eng.h"
 #include "mod_skin_selector.h"
-#include "commonheaders.h" 
+//#include "commonheaders.h" 
 #include "CLUIFRAMES\cluiframes.h"
 
 #include <m_png.h>

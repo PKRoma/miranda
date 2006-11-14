@@ -39,7 +39,7 @@
 				EnableFunctionLevelLinking="FALSE"
 				EnableEnhancedInstructionSet="0"
 				DefaultCharIsUnsigned="TRUE"
-				UsePrecompiledHeader="3"
+				UsePrecompiledHeader="0"
 				PrecompiledHeaderThrough="commonheaders.h"
 				AssemblerOutput="2"
 				BrowseInformation="0"
