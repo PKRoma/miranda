@@ -52,15 +52,6 @@ Created by Anton Senko aka ZORG , tweaked by Artem Shpynov aka FYR
 
 extern "C"
 {
-  /*struct MM_INTERFACE memoryManagerInterface;
-  struct PLUGINLINK * pluginLink;
-  #include "newpluginapi.h"
-  #include "m_database.h"
-  #include "m_system.h"  
-  char * DBGetStringA(HANDLE, const char*, const char*);
-	#include "mir_forkthread.h"
-	#include "win2k.h"
-  */
   #include "commonheaders.h"
 }
 
@@ -78,13 +69,13 @@ extern "C" void rowDeleteTree(ROWCELL* cell);
 
 
 //extern ROWCELL * gl_RowRoot;	// Указатель на корневой тэг <contact> в шаблоне
-//ROWOBJECTS RowTA;	// Структура, через которую осуществляется доступ к элементам контакта.
-					// Формируется при выполнении фу-и RowParce. Неявный параметр фуи rowParserGetParam
+//ROWOBJECTS RowTA;				// Структура, через которую осуществляется доступ к элементам контакта.
+								// Формируется при выполнении фу-и RowParce. Неявный параметр фуи rowParserGetParam
 
 
-										// Формируется при выполнении фу-и RowParce. Неявный параметр фуи rowParserGetParam
+								// Формируется при выполнении фу-и RowParce. Неявный параметр фуи rowParserGetParam
 
-char *tmplbuf;		// Буфер для хранения шаблона в текстовом виде
+char *tmplbuf;					// Буфер для хранения шаблона в текстовом виде
 
 #ifndef TEST_SOURCE
 	extern "C" 

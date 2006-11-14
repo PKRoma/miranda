@@ -84,8 +84,6 @@ int CLUIFrames_SetParentForContainers(HWND parent);
 void __inline CLUIFrames_UnLockFrame();
 int CLUIFrames_UpdateFrame(WPARAM wParam,LPARAM lParam);
 
-int CLUIOpt_Init(WPARAM wParam,LPARAM lParam);
-
 int CLUIServices_LoadModule(void);
 int CLUIServices_SortList(WPARAM wParam,LPARAM lParam);
 int CLUIServices_ProtocolStatusChanged(WPARAM wParam,LPARAM lParam);
@@ -126,42 +124,10 @@ int UnhookAll();
 
 /* External variables */
 
-extern STATUSBARDATA g_StatusBarData;
-extern SKINOBJECTSLIST g_SkinObjectList;
-extern void (*saveLoadCluiGlobalOpts)(void);
-extern CURRWNDIMAGEDATA * g_pCachedWindow;
-            
-extern HWND g_hwndEventFrame;
-extern char * g_szConnectingProto;
-
-extern BOOL g_mutex_bLockImageUpdating;
-extern BOOL g_mutex_bLockUpdating;
-extern BOOL g_mutex_bSetAllExtraIconsCycle;
-
-extern int  g_mutex_uPreventDockMoving;
-extern int  g_mutex_nPaintLock;
-extern int  g_mutex_nCalcRowHeightLock;
-extern int  g_mutex_bOnTrayRightClick;
-
-extern BOOL g_flag_bPostWasCanceled;
-extern BOOL g_flag_bFullRepaint;   
-
-extern BOOL g_bLayered;
-extern BOOL g_bDocked;
-extern BOOL g_bMultiConnectionMode;
-
-extern BYTE g_bCalledFromShowHide;
-
-extern PLUGININFO pluginInfo;   
-
-extern tPaintCallbackProc CLCPaint_PaintCallbackProc(HWND hWnd, HDC hDC, RECT * rcPaint, HRGN rgn, DWORD dFlags, void * CallBackData);
-extern BOOL (WINAPI *g_proc_UpdateLayeredWindow)(HWND,HDC,POINT*,SIZE*,HDC,POINT*,COLORREF,BLENDFUNCTION*,DWORD);
-extern LRESULT ( CALLBACK *saveContactListWndProc )(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam);
 
 /* Global variables */
 
-struct CluiData g_CluiData={0};
-BYTE    g_bSTATE=STATE_NORMAL;
+
 HANDLE  g_hSkinLoadedEvent;
 
 HANDLE  g_hMainThread=NULL;
@@ -174,22 +140,13 @@ DWORD   g_dwMainThreadID=0,
         
 HMENU   g_hMenuMain;
 BOOL    g_bTransparentFlag=FALSE;
-int     g_nBehindEdgeState=FALSE;
-int     g_nBehindEdgeSettings;
-
-BOOL    g_bSmoothAnimation;
 
 BOOL    g_mutex_bChangingMode=FALSE,
-        g_mutex_bSizing=FALSE,
-        g_mutex_bOnEdgeSizing=FALSE;
+        g_mutex_bSizing=FALSE;        
         
 BOOL    g_flag_bOnModulesLoadedCalled=FALSE;
 
-
 RECT    g_rcEdgeSizingRect={0};
-BYTE    g_bStatusBarShowOptions;
-BYTE    g_bCurrentAlpha;
-BOOL    g_bOnDesktop=FALSE;
 
 BOOL (WINAPI *g_proc_SetLayeredWindowAttributes)(HWND,COLORREF,BYTE,DWORD);
 BOOL (WINAPI *g_proc_SetLayeredWindowAttributesNew)(HWND,COLORREF,BYTE,DWORD);

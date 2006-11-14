@@ -61,7 +61,29 @@ typedef struct  {
     int iSecondLineMaxSmileyHeight;
 	DWORD timezone;
     DWORD timediff;
+	DWORD dwLastMsgTime;
 } displayNameCacheEntry,*pdisplayNameCacheEntry, *PDNCE;
 
+#define CLVM_FILTER_PROTOS 1
+#define CLVM_FILTER_GROUPS 2
+#define CLVM_FILTER_STATUS 4
+#define CLVM_FILTER_VARIABLES 8
+#define CLVM_STICKY_CONTACTS 16
+#define CLVM_FILTER_STICKYSTATUS 32
+#define CLVM_FILTER_LASTMSG 64
+#define CLVM_FILTER_LASTMSG_OLDERTHAN 128
+#define CLVM_FILTER_LASTMSG_NEWERTHAN 256
+
+#define CLVM_PROTOGROUP_OP 1
+#define CLVM_GROUPSTATUS_OP 2
+#define CLVM_AUTOCLEAR 4
+#define CLVM_INCLUDED_UNGROUPED 8
+#define CLVM_USELASTMSG 16
+
+#if defined(_UNICODE)
+#define CLVM_MODULE "CLVM_W"
+#else
+#define CLVM_MODULE "CLVM"
+#endif
 
 #endif

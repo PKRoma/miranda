@@ -5,7 +5,7 @@
 #include "commonprototypes.h"
 
 #pragma hdrstop
-extern int RecurciveDeleteMenu(HMENU hMenu);
+
 //menu object array
 PIntMenuObject MenuObjects=NULL;
 int MenuObjectsCount=0;
@@ -15,6 +15,12 @@ boolean isGenMenuInited=FALSE;
 int RegisterOneIcon(int mo,int mi);
 
 static CRITICAL_SECTION csMenuHook;
+
+typedef struct _MenuItemHandles 
+{
+	HMENU OwnerMenu;
+	int position;
+} MenuItemData;
 
 
 static void __inline lockmo()
@@ -27,19 +33,15 @@ static void __inline unlockmo()
   LeaveCriticalSection(&csMenuHook);
 }
 
+
+
 void FreeAndNil(void **p)
 {
-  if (p!=NULL)
+  if (p!=NULL && *p!=NULL)
   {
-    if (*p!=NULL)
-    {
-      if (!p)
-      {
         mir_free_and_nill(*p);
-	  }
-      *p=NULL;
-		}
-	}
+	    *p=NULL;
+  }
 }
 
 int GetMenuObjbyId(const int id)
@@ -731,13 +733,6 @@ static int WhereToPlace(HMENU hMenu,PMO_MenuItem mi,MENUITEMINFO *mii,ListParam 
 	return i+1;
 }
 
-typedef struct _MenuItemHandles 
-{
-	HMENU OwnerMenu;
-	int position;
-} MenuItemData;
-
-extern BOOL FindMenuHanleByGlobalID(HMENU hMenu, int globalID, MenuItemData * dat);
 
 BOOL FindMenuHanleByGlobalID(HMENU hMenu, int globalID, MenuItemData * itdat)
 {

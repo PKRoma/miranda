@@ -23,6 +23,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include "commonheaders.h"
 #include "m_clui.h"
 #include "clist.h"
+#include "commonprototypes.h"
 
 #define TRAYICON_ID_BASE    100
 #define TIM_CALLBACK   (WM_USER+1857)
@@ -32,17 +33,9 @@ int cliShowHide(WPARAM wParam,LPARAM lParam);
 int g_mutex_bOnTrayRightClick=0;
 static VOID CALLBACK TrayCycleTimerProc(HWND hwnd,UINT message,UINT idEvent,DWORD dwTime);
 
-extern HICON GetIconFromStatusMode(HANDLE hContact, const char *szProto,int status);
-extern HIMAGELIST hCListImages;
-extern int currentStatusMenuItem,currentDesiredStatusMode;
-extern BOOL (WINAPI *MySetProcessWorkingSetSize)(HANDLE,SIZE_T,SIZE_T);
-extern int GetProtoIndexByPos(PROTOCOLDESCRIPTOR ** proto, int protoCnt, int Pos);
-extern int GetProtocolVisibility(char * ProtoName);
-extern int ProtocolOrder_CheckOrder();
-extern int CListMod_HideWindow(HWND hwndContactList, int mode);
-extern int (* saveTrayIconProcessMessage) ( WPARAM wParam, LPARAM lParam );
+
 #include "modern_statusbar.h"
-extern STATUSBARDATA g_StatusBarData;
+
 BOOL g_bMultiConnectionMode=FALSE;
 static UINT WM_TASKBARCREATED;
 static int cycleTimerId=0,cycleStep=0;
@@ -431,7 +424,7 @@ static int TrayIconInit(HWND hwnd)
 		trayIconCount=netProtoCount;
 	}
 	else trayIconCount=1;
-	trayIcon=(struct trayIconInfo_t*)mir_calloc(count, sizeof(struct trayIconInfo_t));
+	trayIcon=(struct trayIconInfo_t*)mir_calloc(count * sizeof(struct trayIconInfo_t));
 	memset(trayIcon,0,count*sizeof(struct trayIconInfo_t));
 	if(DBGetContactSettingByte(NULL,"CList","TrayIcon",SETTING_TRAYICON_DEFAULT)==SETTING_TRAYICON_MULTI &&
 		(averageMode<=0 || DBGetContactSettingByte(NULL,"CList","AlwaysMulti",SETTING_ALWAYSMULTI_DEFAULT))) {
@@ -829,7 +822,7 @@ void cliTrayIconSetToBase(char *szPreferredProto)
 }
 
 static int autoHideTimerId;
-extern BOOL CLUI_CheckOwnedByClui(HWND hwnd);
+
 #define TOOLTIP_TOLERANCE 5
 
 static VOID CALLBACK TrayIconAutoHideTimer(HWND hwnd,UINT message,UINT idEvent,DWORD dwTime)
@@ -865,7 +858,7 @@ int TrayIconPauseAutoHide(WPARAM wParam,LPARAM lParam)
 	return 0;
 }
 
-extern int ( *saveTrayIconProcessMessage )(WPARAM wParam, LPARAM lParam);
+
 static BYTE s_LastHoverIconID=0;
 
 static void CALLBACK TrayHideToolTipTimerProc(HWND hwnd, UINT msg, UINT_PTR id, DWORD elapsed)

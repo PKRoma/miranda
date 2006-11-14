@@ -28,8 +28,7 @@ Created by Pescuma
 
 #include "clc.h"
 #include "commonprototypes.h"
-extern HANDLE g_hMainThread;
-extern DWORD g_dwMainThreadID;
+
 void Cache_GetText(struct ClcData *dat, struct ClcContact *contact, BOOL forceRenew);
 void Cache_GetFirstLineText(struct ClcData *dat, struct ClcContact *contact);
 void Cache_GetSecondLineText(struct SHORTDATA *dat, PDNCE pdnce);

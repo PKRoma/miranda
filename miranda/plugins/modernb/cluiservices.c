@@ -25,7 +25,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include "m_clui.h"
 #include "commonprototypes.h"
 
-extern void cliTrayIconUpdateBase(char *szChangedProto);
+
 int CLUIServices_ProtocolStatusChanged(WPARAM wParam,LPARAM lParam)
 {
 	SkinEngine_Service_InvalidateFrameImage((WPARAM)pcli->hwndStatus,0);

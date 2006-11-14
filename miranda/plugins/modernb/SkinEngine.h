@@ -2,6 +2,7 @@
 #define SKINENGINE_H_INC
 
 #include "mod_skin_selector.h"
+#include "commonprototypes.h"
 
 /* Definitions */
 #define GetAValue(argb)((BYTE)((argb)>>24))
@@ -14,21 +15,6 @@
 #define MAXSN_BUFF_SIZE     255*1000
 
 /* External variables */
-
-extern struct LIST_INTERFACE li;
-extern BOOL (WINAPI *g_proc_SetLayeredWindowAttributesNew)(HWND,COLORREF,BYTE,DWORD);
-extern int  g_nTitleBarHeight;
-extern int  g_nGapBetweenTitlebar;
-extern BOOL g_bSmoothAnimation;
-extern BOOL g_bTransparentFlag;
-
-/* External procedures */
-
-BOOL    GDIPlus_AlphaBlend(HDC hdcDest,int nXOriginDest,int nYOriginDest,int nWidthDest,int nHeightDest,HDC hdcSrc,int nXOriginSrc,int nYOriginSrc,int nWidthSrc,int nHeightSrc, BLENDFUNCTION * blendFunction);
-HBITMAP GDIPlus_LoadGlyphImage(char *szFileName);
-int     ModernButton_UnloadModule(WPARAM,LPARAM);
-BOOL    wildcmp(char * name, char * mask, BYTE option);
-
 
 /* Structs */
 

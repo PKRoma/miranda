@@ -238,6 +238,72 @@ BEGIN
     CONTROL         "",IDC_TAB,"SysTabControl32",0x0,0,0,315,243
 END
 
+IDD_OPT_VIEWMODES DIALOGEX 0, 0, 309, 295
+STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | DS_CENTER | WS_CAPTION | 
+    WS_SYSMENU
+FONT 8, "MS Shell Dlg", 0, 0, 0x1
+BEGIN
+    CONTROL         "",IDC_TAB,"SysTabControl32",0x0,4,4,301,264
+    LTEXT           "",IDC_STATIC7,6,22,297,244
+    GROUPBOX        "Available view modes",IDC_STATIC1,9,20,158,85
+    LISTBOX         IDC_VIEWMODES,12,30,123,55,LBS_SORT | 
+                    LBS_NOINTEGRALHEIGHT | WS_VSCROLL | WS_TABSTOP,
+                    WS_EX_CLIENTEDGE
+    GROUPBOX        "Include protocols",IDC_STATIC2,171,20,130,85
+    CONTROL         "",IDC_PROTOCOLS,"SysListView32",LVS_REPORT | 
+                    LVS_SINGLESEL | LVS_SHOWSELALWAYS | LVS_AUTOARRANGE | 
+                    LVS_NOCOLUMNHEADER | LVS_NOSORTHEADER | WS_BORDER | 
+                    WS_TABSTOP,175,30,121,72
+    PUSHBUTTON      "+",IDC_ADDVIEWMODE,142,39,18,16
+    PUSHBUTTON      "-",IDC_DELETEVIEWMODE,142,60,18,16
+    LTEXT           "New",IDC_STATIC5,15,91,38,11,0,WS_EX_TRANSPARENT
+    EDITTEXT        IDC_NEWVIEMODE,59,88,76,13,ES_AUTOHSCROLL
+    GROUPBOX        "Include groups",IDC_STATIC3,8,105,159,89,0,
+                    WS_EX_TRANSPARENT
+    CONTROL         "",IDC_GROUPS,"SysListView32",LVS_REPORT | LVS_SINGLESEL | 
+                    LVS_SHOWSELALWAYS | LVS_AUTOARRANGE | LVS_NOCOLUMNHEADER | 
+                    LVS_NOSORTHEADER | WS_BORDER | WS_TABSTOP,12,116,122,73
+    GROUPBOX        "Include status modes",IDC_STATIC4,171,105,130,89,0,
+                    WS_EX_TRANSPARENT
+    CONTROL         "",IDC_STATUSMODES,"SysListView32",LVS_REPORT | 
+                    LVS_SINGLESEL | LVS_SHOWSELALWAYS | LVS_AUTOARRANGE | 
+                    LVS_NOCOLUMNHEADER | LVS_NOSORTHEADER | WS_BORDER | 
+                    WS_TABSTOP,175,116,121,73
+    PUSHBUTTON      "Ok",IDOK,106,275,62,16
+    PUSHBUTTON      "Cancel",IDCANCEL,172,275,62,16
+    PUSHBUTTON      "Apply",IDC_APPLY,242,275,62,16
+    CONTROL         "",IDC_CLIST,"CListControl",0x24a,12,31,286,199,
+                    WS_EX_CLIENTEDGE
+    GROUPBOX        "Sticky contacts",IDC_STATIC9,8,20,293,215
+    PUSHBUTTON      "Clear all",IDC_CLEARALL,13,241,92,14
+    LTEXT           "Using the contact list on the left side, you can select contacts which will be ""sticky"" for this view mode. These contacts will ignore the standard filter rules and only use the status mode filter below.",
+                    IDC_STATIC10,174,50,124,72,NOT WS_VISIBLE
+    LTEXT           "Protocol",IDC_STATIC12,31,206,49,12
+    COMBOBOX        IDC_PROTOGROUPOP,85,204,37,56,CBS_DROPDOWNLIST | 
+                    CBS_SORT | WS_VSCROLL | WS_TABSTOP
+    CTEXT           "Group",IDC_STATIC13,129,206,44,12
+    COMBOBOX        IDC_GROUPSTATUSOP,177,204,37,56,CBS_DROPDOWNLIST | 
+                    CBS_SORT | WS_VSCROLL | WS_TABSTOP
+    RTEXT           "Status mode",IDC_STATIC14,221,206,54,12
+    CONTROL         "Automatically clear this view mode after",IDC_AUTOCLEAR,
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,15,244,172,11
+    EDITTEXT        IDC_AUTOCLEARVAL,222,243,29,12,ES_AUTOHSCROLL
+    CONTROL         "",IDC_AUTOCLEARSPIN,"msctls_updown32",UDS_SETBUDDYINT | 
+                    UDS_ALIGNRIGHT | UDS_AUTOBUDDY | UDS_ARROWKEYS,245,243,8,
+                    13
+    LTEXT           "seconds",IDC_STATIC15,262,244,28,12
+    GROUPBOX        "View mode options",IDC_STATIC16,8,195,293,68
+    LTEXT           "Editing view mode",IDC_CURVIEWMODE2,119,245,178,14,NOT 
+                    WS_VISIBLE
+    CONTROL         "Last message ",IDC_LASTMSG,"Button",BS_AUTOCHECKBOX | 
+                    WS_TABSTOP,15,227,86,11
+    COMBOBOX        IDC_LASTMESSAGEOP,106,227,81,56,CBS_DROPDOWNLIST | 
+                    CBS_SORT | WS_VSCROLL | WS_TABSTOP
+    EDITTEXT        IDC_LASTMSGVALUE,193,227,31,13,ES_AUTOHSCROLL
+    COMBOBOX        IDC_LASTMESSAGEUNIT,229,227,68,56,CBS_DROPDOWNLIST | 
+                    CBS_SORT | WS_VSCROLL | WS_TABSTOP
+END
+
 IDD_SKIN_TAB DIALOGEX 0, 0, 315, 243
 STYLE DS_SETFONT | DS_FIXEDSYS | DS_CENTER | WS_CHILD
 EXSTYLE WS_EX_CONTROLPARENT
@@ -1115,7 +1181,7 @@ STYLE DS_SETFONT | DS_FIXEDSYS | DS_CENTER | WS_CHILD
 EXSTYLE WS_EX_CONTROLPARENT
 FONT 8, "MS Shell Dlg", 0, 0, 0x1
 BEGIN
-    GROUPBOX        "Appearance",IDC_STWINDOWGROUP,4,11,115,55
+    GROUPBOX        "Appearance",IDC_STWINDOWGROUP,4,11,115,37
     CONTROL         "Always on top",IDC_ONTOP,"Button",BS_AUTOCHECKBOX | 
                     WS_TABSTOP,13,21,102,8
     CONTROL         "Pin to desktop",IDC_ONDESKTOP,"Button",BS_AUTOCHECKBOX | 
@@ -1187,12 +1253,11 @@ BEGIN
     CONTROL         "",IDC_COLOUR_KEY,"ColourPicker",WS_TABSTOP,133,24,32,12
     CONTROL         "Key color for owned frames",IDC_CHECKKEYCOLOR,"Button",
                     BS_AUTOCHECKBOX | BS_MULTILINE | WS_TABSTOP,172,21,72,20
-    CONTROL         "Disable Layer Engine\n(restart required)",
-                    IDC_LAYERENGINE,"Button",BS_AUTOCHECKBOX | BS_MULTILINE | 
-                    WS_TABSTOP,13,44,102,17
+    CONTROL         "Use Non-Layered mode",IDC_LAYERENGINE,"Button",
+                    BS_AUTOCHECKBOX | BS_MULTILINE | WS_TABSTOP,13,64,102,11
     CONTROL         "Round corners",IDC_ROUNDCORNERS,"Button",
                     BS_AUTOCHECKBOX | WS_DISABLED | WS_TABSTOP,13,181,102,8
-    GROUPBOX        "Non-layered mode",IDC_STWINDOWGROUP3,4,68,115,130
+    GROUPBOX        "Non-layered mode",IDC_STWINDOWGROUP3,4,51,115,147
 END
 
 

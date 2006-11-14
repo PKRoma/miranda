@@ -3,14 +3,7 @@
 // written by daniel vijge
 // gpl license ect...
 #include "..\commonheaders.h"
-
-
-extern HINSTANCE g_hInst;
-extern char *DBGetStringA(HANDLE hContact,const char *szModule,const char *szSetting);
-extern int CLUIServices_ProtocolStatusChanged(WPARAM wParam,LPARAM lParam);
-extern int MenuModulesLoaded(WPARAM wParam,LPARAM lParam);
-extern void ClcOptionsChanged(void);
-//extern int ImageList_AddIcon_FixAlpha(HIMAGELIST himl,HICON hicon);
+#include "..\commonprototypes.h"
 
 
 struct ProtocolOrderData {

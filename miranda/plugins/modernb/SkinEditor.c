@@ -29,8 +29,6 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include "commonprototypes.h"
 
 
-extern void SkinEngine_LoadSkinFromDB(void);
-extern int SkinEngine_RedrawCompleteWindow();
 typedef struct _OPT_OBJECT_DATA
 {
 	char * szName;
@@ -346,7 +344,7 @@ void SetControls(HWND hwndDlg, char * str)
 }
 
 
-extern int SkinEngine_GetFullFilename(char * buf, char *file, char * skinfolder,BOOL madeAbsolute);
+
 int GetShortFileName(char * FullFile)
 {
 	char buf[MAX_PATH]={0};
@@ -830,29 +828,6 @@ BOOL CALLBACK DlgSkinEditorOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lP
 		}
 	}
 	return FALSE;
-}
-
-int SkinEditorOptInit(WPARAM wParam,LPARAM lParam)
-{
-	/*
-	OPTIONSDIALOGPAGE odp;
-
-	ZeroMemory(&odp,sizeof(odp));
-	odp.cbSize=sizeof(odp);
-	odp.position=-1000001000;
-	odp.hInstance=g_hInst;
-	odp.pszTemplate=MAKEINTRESOURCEA(IDD_OPT_SKINEDITOR);
-	odp.pszGroup=Translate("Customize");
-	odp.pszTitle=Translate("Skin - Modify objects");
-	odp.pfnDlgProc=DlgSkinEditorOpts;
-	odp.flags=ODPF_BOLDGROUPS;
-	//	odp.nIDBottomSimpleControl=IDC_STCLISTGROUP;
-	//	odp.expertOnlyControls=expertOnlyControls;
-	//	odp.nExpertOnlyControls=sizeof(expertOnlyControls)/sizeof(expertOnlyControls[0]);
-	CallService(MS_OPT_ADDPAGE,wParam,(LPARAM)&odp);
-	*/
-	return 0;
-	
 }
 
 int EnableGroup(HWND hwndDlg, HWND first, BOOL bEnable)

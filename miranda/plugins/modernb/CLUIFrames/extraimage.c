@@ -1,29 +1,23 @@
 #include "..\commonheaders.h"
+#include "..\commonprototypes.h"
 //#include "..\SkinEngine.h"
 
+
+
+#define EXTRACOLUMNCOUNT 10
+#define ExtraImageIconsIndexCount 6
+
+boolean visar[EXTRACOLUMNCOUNT];
+int ExtraImageIconsIndex[ExtraImageIconsIndexCount];
+int EnabledColumnCount=0;
 BOOL g_mutex_bSetAllExtraIconsCycle=0;
 
-//int ImageList_AddIcon_FixAlpha(HIMAGELIST himl,HICON hicon);
-extern int LoadPositionsFromDB(BYTE * OrderPos);
-#define EXTRACOLUMNCOUNT 10
-int EnabledColumnCount=0;
-boolean visar[EXTRACOLUMNCOUNT];
-#define ExtraImageIconsIndexCount 6
-int ExtraImageIconsIndex[ExtraImageIconsIndexCount];
-
 static HANDLE hExtraImageListRebuilding,hExtraImageApplying;
-
 static HIMAGELIST hExtraImageList;
-extern HINSTANCE g_hInst;
-extern HIMAGELIST hCListImages;
-
-extern int CLUI_IconsChanged(WPARAM,LPARAM);
-extern int ClcIconsChanged(WPARAM,LPARAM);
-extern BOOL CLUI__cliInvalidateRect(HWND hWnd, CONST RECT* lpRect,BOOL bErase);
 
 void ExtraImage_SetAllExtraIcons(HWND hwndList,HANDLE hContact);
 void ExtraImage_LoadModule();
-extern HICON CLUI_LoadIconFromExternalFile (char *filename,int i,boolean UseLibrary,boolean registerit,char *IconName,char *SectName,char *Description,int internalidx, BOOL * needFree);
+
 boolean ImageCreated=FALSE;
 void ExtraImage_ReloadExtraIcons();
 BYTE ExtraOrder[]=
@@ -178,6 +172,8 @@ int OnIconLibIconChanged(WPARAM wParam,LPARAM lParam)
 	CLUI_IconsChanged(wParam,lParam);
 	NotifyEventHooks(ME_SKIN_ICONSCHANGED,0,0);
 	pcli->pfnClcBroadcast( INTM_INVALIDATE,0,0);
+
+	SendMessage(g_hwndViewModeFrame, WM_USER+100, 0, 0);
   
 	return 0;
 };

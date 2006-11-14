@@ -34,6 +34,7 @@
 				AdditionalIncludeDirectories="../../include"
 				PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;_USRDLL;CLIST_EXPORTS"
 				StringPooling="TRUE"
+				ExceptionHandling="TRUE"
 				RuntimeLibrary="2"
 				EnableFunctionLevelLinking="FALSE"
 				EnableEnhancedInstructionSet="0"
@@ -107,6 +108,7 @@
 				AdditionalIncludeDirectories="../../include"
 				PreprocessorDefinitions="WIN32;_DEBUG;_WINDOWS;_USRDLL;CLIST_EXPORTS"
 				GeneratePreprocessedFile="0"
+				ExceptionHandling="TRUE"
 				BasicRuntimeChecks="3"
 				RuntimeLibrary="3"
 				DefaultCharIsUnsigned="TRUE"
@@ -174,6 +176,7 @@
 				AdditionalIncludeDirectories="../../include"
 				PreprocessorDefinitions="_DEBUG_LOG;WIN32;_DEBUG;_WINDOWS;_USRDLL;CLIST_EXPORTS"
 				GeneratePreprocessedFile="0"
+				ExceptionHandling="TRUE"
 				BasicRuntimeChecks="3"
 				RuntimeLibrary="3"
 				BufferSecurityCheck="TRUE"
@@ -246,6 +249,7 @@
 				AdditionalIncludeDirectories="../../include"
 				PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;_USRDLL;CLIST_EXPORTS"
 				StringPooling="TRUE"
+				ExceptionHandling="TRUE"
 				RuntimeLibrary="2"
 				BufferSecurityCheck="TRUE"
 				EnableEnhancedInstructionSet="0"
@@ -265,6 +269,7 @@
 				IgnoreImportLibrary="TRUE"
 				AdditionalOptions="/MACHINE:I386"
 				AdditionalDependencies="MSImg32.Lib comctl32.lib shlwapi.lib  gdiplus.lib Delayimp.lib"
+				OutputFile="c:\program files\miranda im\plugins\$(ProjectName).dll"
 				IgnoreAllDefaultLibraries="FALSE"
 				IgnoreDefaultLibraryNames=""
 				DelayLoadDLLs="gdiplus.dll"
@@ -311,6 +316,9 @@
 		<Filter
 			Name="Source Files"
 			Filter="cpp;c;cxx;rc;def;r;odl;idl;hpj;bat">
+			<File
+				RelativePath=".\button.c">
+			</File>
 			<File
 				RelativePath=".\cache_funcs.c">
 			</File>
@@ -653,9 +661,6 @@
 				RelativePath="movetogroup.c">
 			</File>
 			<File
-				RelativePath=".\popup.c">
-			</File>
-			<File
 				RelativePath=".\rowheight_funcs.c">
 			</File>
 			<File
@@ -665,10 +670,10 @@
 				RelativePath="SkinEngine.c">
 			</File>
 			<File
-				RelativePath=".\tabbedoptions.c">
+				RelativePath=".\utf.c">
 			</File>
 			<File
-				RelativePath=".\utf.c">
+				RelativePath=".\viewmodes.c">
 			</File>
 			<Filter
 				Name="CLUIFrames"
@@ -802,23 +807,6 @@
 					</FileConfiguration>
 				</File>
 				<File
-					RelativePath=".\cluiopts.c">
-					<FileConfiguration
-						Name="Release|Win32">
-						<Tool
-							Name="VCCLCompilerTool"
-							UsePrecompiledHeader="3"
-							PrecompiledHeaderThrough="commonheaders.h"/>
-					</FileConfiguration>
-					<FileConfiguration
-						Name="Release Unicode|Win32">
-						<Tool
-							Name="VCCLCompilerTool"
-							UsePrecompiledHeader="3"
-							PrecompiledHeaderThrough="commonheaders.h"/>
-					</FileConfiguration>
-				</File>
-				<File
 					RelativePath=".\genmenuopt.c">
 				</File>
 				<File
@@ -857,9 +845,6 @@
 				<File
 					RelativePath=".\SkinOpt.c">
 				</File>
-				<File
-					RelativePath=".\tabbedoptions.c">
-				</File>
 			</Filter>
 			<Filter
 				Name="CPP files"
@@ -895,6 +880,64 @@
 							CompileAs="2"/>
 					</FileConfiguration>
 				</File>
+				<File
+					RelativePath=".\skinpp.cpp">
+					<FileConfiguration
+						Name="Debug Unicode|Win32">
+						<Tool
+							Name="VCCLCompilerTool"
+							UsePrecompiledHeader="0"/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="Release Unicode|Win32"
+						ExcludedFromBuild="TRUE">
+						<Tool
+							Name="VCCLCompilerTool"/>
+					</FileConfiguration>
+				</File>
+			</Filter>
+			<Filter
+				Name="XMLParser"
+				Filter="">
+				<File
+					RelativePath=".\XMLParser\XMLDocument.cpp">
+					<FileConfiguration
+						Name="Debug Unicode|Win32">
+						<Tool
+							Name="VCCLCompilerTool"
+							UsePrecompiledHeader="0"/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="Release Unicode|Win32"
+						ExcludedFromBuild="TRUE">
+						<Tool
+							Name="VCCLCompilerTool"/>
+					</FileConfiguration>
+				</File>
+				<File
+					RelativePath=".\XMLParser\XMLDocument.h">
+				</File>
+				<File
+					RelativePath=".\XMLParser\XMLNode.cpp">
+					<FileConfiguration
+						Name="Debug Unicode|Win32">
+						<Tool
+							Name="VCCLCompilerTool"
+							UsePrecompiledHeader="0"/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="Release Unicode|Win32"
+						ExcludedFromBuild="TRUE">
+						<Tool
+							Name="VCCLCompilerTool"/>
+					</FileConfiguration>
+				</File>
+				<File
+					RelativePath=".\XMLParser\XMLNode.h">
+				</File>
+				<File
+					RelativePath=".\XMLParser\XMLParser.h">
+				</File>
 			</Filter>
 		</Filter>
 		<Filter
@@ -925,9 +968,6 @@
 				RelativePath=".\image_array.h">
 			</File>
 			<File
-				RelativePath="imgdecoder.h">
-			</File>
-			<File
 				RelativePath=".\log.h">
 			</File>
 			<File
@@ -949,16 +989,22 @@
 				RelativePath=".\m_skin_eng.h">
 			</File>
 			<File
+				RelativePath=".\m_skinbutton.h">
+			</File>
+			<File
+				RelativePath=".\menuSubsystem.h">
+			</File>
+			<File
 				RelativePath=".\mod_skin_selector.h">
+			</File>
+			<File
+				RelativePath=".\modern_global_structure.h">
 			</File>
 			<File
 				RelativePath=".\modern_row.h">
 			</File>
 			<File
 				RelativePath=".\modern_statusbar.h">
-			</File>
-			<File
-				RelativePath=".\popup.h">
 			</File>
 			<File
 				RelativePath=".\resource.h">
@@ -968,6 +1014,12 @@
 			</File>
 			<File
 				RelativePath="SkinEngine.h">
+			</File>
+			<File
+				RelativePath=".\skinpp.h">
+			</File>
+			<File
+				RelativePath=".\skinpp_private.h">
 			</File>
 			<File
 				RelativePath=".\statusmodes.h">

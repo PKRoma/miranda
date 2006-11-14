@@ -968,6 +968,35 @@
 #define IDC_FRAME_META                  40054
 #define IDC_FRAME_META2                 40055
 
+#define IDD_OPT_VIEWMODES               19100
+#define IDC_VIEWMODES					19102
+#define IDC_PROTOCOLS					19103
+#define IDC_ADDVIEWMODE					19104
+#define IDC_DELETEVIEWMODE				19105
+#define IDC_NEWVIEMODE					19106
+#define IDC_GROUPS						19107
+#define IDC_STATUSMODES					19108
+#define IDC_CLIST						19109
+#define	IDC_CLEARALL					19110
+#define	IDC_PROTOGROUPOP				19111
+#define	IDC_GROUPSTATUSOP				19112
+#define	IDC_STATIC14					19113
+#define	IDC_AUTOCLEAR					19114
+#define	IDC_AUTOCLEARVAL				19115
+#define	IDC_AUTOCLEARSPIN				19116
+#define	IDC_STATIC15					19117
+#define	IDC_STATIC16					19118
+#define	IDC_CURVIEWMODE2				19119
+#define	IDC_LASTMSG						19120
+#define	IDC_LASTMESSAGEOP				19121
+#define	IDC_LASTMSGVALUE				19122
+#define	IDC_LASTMESSAGEUNIT				19123
+#define IDC_STATIC1						19124
+//todo remove?
+#define IDC_RESETMODES					19125
+#define IDC_SELECTMODE					19126
+#define IDC_CONFIGUREMODES				19127
+
 // Next default values for new objects
 // 
 #ifdef APSTUDIO_INVOKED

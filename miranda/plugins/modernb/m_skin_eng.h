@@ -26,6 +26,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 #include "newpluginapi.h"
 #include "m_clui.h"
+#include "commonheaders.h"
 
 
 /*defaults*/
@@ -64,7 +65,6 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #define ADT_BOTTOM                   0x00000008
 //#define ADT_ECLIPSE 64
 
-extern BOOL g_bLayered;  
 
 /*SERVICES*/
 
@@ -162,14 +162,14 @@ typedef struct s_SKINFONT
 /* HELPER FUNCTIONS */
 
 //Paint  ObjectID as parent background for frame hwndIn
-extern int __inline SkinDrawWindowBack(HWND hwndIn, HDC hdc, RECT * rcClip, char * objectID);
+int __inline SkinDrawWindowBack(HWND hwndIn, HDC hdc, RECT * rcClip, char * objectID);
 //Paint  ObjectID
-extern int __inline SkinDrawGlyph(HDC hdc, RECT * rcSize, RECT * rcClip, char * objectID);
+int __inline SkinDrawGlyph(HDC hdc, RECT * rcSize, RECT * rcClip, char * objectID);
 //Register object with predefined style
-extern int __inline CreateGlyphedObjectDefStyle(char * ObjID,BYTE defStyle);
-extern int __inline CreateGlyphedObjectDefColor(char * ObjID,DWORD defColor);
+int __inline CreateGlyphedObjectDefStyle(char * ObjID,BYTE defStyle);
+int __inline CreateGlyphedObjectDefColor(char * ObjID,DWORD defColor);
 //Register default object
-extern int __inline CreateGlyphedObject(char * ObjID);
+int __inline CreateGlyphedObject(char * ObjID);
 
 
 
@@ -226,7 +226,7 @@ static BOOL __inline ScreenToClientRect(HWND hWnd, LPRECT lpRect)
 //    prm.szObjectID=ObjID;
 //    return CallService(MS_SKIN_REGISTERDEFOBJECT,(WPARAM)&prm,0);
 //}  
-extern int SkinEngine_Service_DrawGlyph(WPARAM wParam,LPARAM lParam);
+int SkinEngine_Service_DrawGlyph(WPARAM wParam,LPARAM lParam);
 int __inline SkinDrawGlyph(HDC hdc, RECT * rcSize, RECT * rcClip, char * objectID)
 {
   SKINDRAWREQUEST rq;
@@ -315,14 +315,7 @@ typedef int (/*__stdcall*/ *tPaintCallbackProc)(HWND hWnd, HDC hDC, RECT * rcPai
 //tPaintCallbackProc PaintCallbackProc;
 
 // HELPER TO UPDATEIMAGEFRAME
-extern int __inline SkinEngUpdateImageFrame(HWND hwnd, RECT * rcUpdate, DWORD dwFlags, void * CallBackData);
-extern int __inline SkinInvalidateFrame(HWND hWnd, CONST RECT* lpRect,BOOL bErase);
-extern int __inline SkinEngInvalidateImageFrame(HWND,CONST RECT *,DWORD,void*);
 
-int __inline SkinInvalidateFrame(HWND hWnd, CONST RECT* lpRect,BOOL bErase)
-{
-  return SkinEngInvalidateImageFrame(hWnd,lpRect,0,0);
-}
 int __inline SkinEngUpdateImageFrame(HWND hwnd, RECT * rcUpdate, DWORD dwFlags, void * CallBackData)
 {
   sPaintRequest sr={0};
@@ -338,7 +331,7 @@ int __inline SkinEngUpdateImageFrame(HWND hwnd, RECT * rcUpdate, DWORD dwFlags, 
 int __inline SkinEngInvalidateImageFrame(HWND hwnd, CONST RECT * rcUpdate, DWORD dwFlags, void * CallBackData)
 {
   sPaintRequest sr={0};
-  if (!g_bLayered && hwnd) return InvalidateRect(hwnd,rcUpdate,dwFlags);
+  if (!g_CluiData.fLayered && hwnd) return InvalidateRect(hwnd,rcUpdate,dwFlags);
   sr.dStructSize=sizeof(sPaintRequest);
   sr.hWnd=hwnd;
   if (rcUpdate)
@@ -349,6 +342,10 @@ int __inline SkinEngInvalidateImageFrame(HWND hwnd, CONST RECT * rcUpdate, DWORD
 }
 
 
+int __inline SkinInvalidateFrame(HWND hWnd, CONST RECT* lpRect,BOOL bErase)
+{
+	return SkinEngInvalidateImageFrame(hWnd,lpRect,0,0);
+}
 // Alpha channel GDI replacements/helpers
 
 // 
@@ -365,7 +362,7 @@ typedef struct _AlphaTextOutParams
   DWORD ARGBcolor;
   char reserv[16];
 }AlphaTextOutParams;
-extern int __inline AlphaText(HDC hDC, LPCTSTR lpString, int nCount, RECT * lpRect, UINT format, DWORD ARGBcolor);
+
 int __inline AlphaText(HDC hDC, LPCTSTR lpString, int nCount, RECT * lpRect, UINT format, DWORD ARGBcolor)
 {
   AlphaTextOutParams ap={0};
@@ -384,29 +381,7 @@ typedef struct _ImageListFixParam
   int index;
   HICON hicon;
 }ImageListFixParam;
-/// wParam - pointer to ImageListFixParam structure
-//#define MS_SKINENG_IL_REPLACEICONFIX "SkinEngine/ImageList_ReplaceIcon_FixAlphaServ"
-//#define MS_SKINENG_IL_ADDICONFIX "SkinEngine/ImageList_AddIcon_FixAlphaServ"
-//#define MS_SKINENG_IL_ALPHAFIX "SkinEngine/ImageList_FixAlphaServ"
 
-//extern int __inline ImageList_ReplaceIcon(HIMAGELIST himl, int i, HICON hicon);
-//extern int __inline ImageList_AddIcon_Fix(HIMAGELIST himl,HICON hicon);
-//int __inline ImageList_ReplaceIcon(HIMAGELIST himl, int i, HICON hicon)
-//{
-//  ImageListFixParam p={0};
-//  p.hicon=hicon;
-//  p.index=i;
-//  p.himl=himl;
-//  return CallService(MS_SKINENG_IL_REPLACEICONFIX,(WPARAM)&p,0);
-//}
-//int __inline ImageList_AddIcon_Fix(HIMAGELIST himl,HICON hicon)
-//{
-//  ImageListFixParam p={0};
-//  p.hicon=hicon;
-//  p.himl=himl;
-//  return CallService(MS_SKINENG_IL_ADDICONFIX,(WPARAM)&p,0);
-//}
-//
 typedef struct _DrawIconFixParam
 {
   HDC hdc;
@@ -421,7 +396,7 @@ typedef struct _DrawIconFixParam
 } DrawIconFixParam;
 //wParam - pointer to DrawIconFixParam
 #define MS_SKINENG_DRAWICONEXFIX "SkinEngine/DrawIconEx_Fix"
-extern int __inline mod_DrawIconEx_helper(HDC hdc,int xLeft,int yTop,HICON hIcon,int cxWidth,int cyWidth, UINT istepIfAniCur, HBRUSH hbrFlickerFreeDraw, UINT diFlags);
+
 int __inline mod_DrawIconEx_helper(HDC hdc,int xLeft,int yTop,HICON hIcon,int cxWidth,int cyWidth, UINT istepIfAniCur, HBRUSH hbrFlickerFreeDraw, UINT diFlags)
 {
   DrawIconFixParam p={0};
@@ -436,5 +411,4 @@ int __inline mod_DrawIconEx_helper(HDC hdc,int xLeft,int yTop,HICON hIcon,int cx
   p.diFlags=diFlags;
   return CallService(MS_SKINENG_DRAWICONEXFIX,(WPARAM)&p,0);
 }
-extern HICON SkinEngine_CreateJoinedIcon(HICON hBottom, HICON hTop,BYTE alpha);
 #endif

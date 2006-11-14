@@ -1,3 +1,6 @@
+#ifndef modern_statusbar_h__
+#define modern_statusbar_h__
+
 #include "commonprototypes.h"
 
 int ModernDrawStatusBar(HWND hwnd, HDC hDC);
@@ -20,3 +23,4 @@ typedef struct tagSTATUSBARDATA
   BYTE xStatusMode;     // 0-only main, 1-xStatus, 2-main as overlay
 } STATUSBARDATA;
 
+#endif // modern_statusbar_h__

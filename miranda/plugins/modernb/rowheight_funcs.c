@@ -25,10 +25,8 @@ Created by Pescuma, modified by Artem Shpynov
 */
 #include "commonheaders.h"
 #include "rowheight_funcs.h"
+#include "commonprototypes.h"
 
-
-extern int CLCPaint_GetRealStatus(struct ClcContact * contact, int status);
-extern int CLCPaint_GetBasicFontID(struct ClcContact * contact);
 
 int g_mutex_nCalcRowHeightLock=0;
 int mod_CalcRowHeight_worker(struct ClcData *dat, HWND hwnd, struct ClcContact *contact, int item);
@@ -47,8 +45,6 @@ void FreeRowCell ()
 	if (gl_RowRoot) 
 		cppDeleteTree(gl_RowRoot);
 }
-extern void CLCPaint_GetTextSize(SIZE *text_size, HDC hdcMem, RECT free_row_rc, TCHAR *szText, SortedList *plText, UINT uTextFormat, int smiley_height);
-extern HFONT CLCPaint_ChangeToFont(HDC hdc,struct ClcData *dat,int id,int *fontHeight);
 
 void RowHeight_InitModernRow()
 {

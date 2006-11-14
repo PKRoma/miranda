@@ -34,7 +34,7 @@ static HANDLE hookSystemShutdown_ModernButton=NULL;
 
 static LRESULT CALLBACK ModernButtonWndProc(HWND hwndDlg, UINT msg,  WPARAM wParam, LPARAM lParam);
 int ModernButton_UnloadModule(WPARAM wParam, LPARAM lParam);
-extern int SkinEngine_DrawImageAt(HDC hdc, RECT *rc);
+
 int SetToolTip(HWND hwnd, TCHAR * tip);
 typedef struct _ModernButtonCtrl
 {
@@ -52,6 +52,7 @@ typedef struct _ModernButtonCtrl
   char    * ValueDBSection;
   char    * ValueTypeDef;
   int     Left, Top, Bottom, Right;
+  HMENU   hMenu;
 
 } ModernButtonCtrl;
 typedef struct _HandleServiceParams
@@ -104,9 +105,9 @@ int PaintWorker(HWND hwnd, HDC whdc)
   ModernButtonCtrl* bct =  (ModernButtonCtrl *)GetWindowLong(hwnd, GWL_USERDATA);
   if (!bct) return 0;
   if (!IsWindowVisible(hwnd)) return 0;
-  if (!whdc && !g_bLayered) InvalidateRect(hwnd,NULL,FALSE);
+  if (!whdc && !g_CluiData.fLayered) InvalidateRect(hwnd,NULL,FALSE);
 
-  if (whdc && g_bLayered) hdc=whdc;
+  if (whdc && g_CluiData.fLayered) hdc=whdc;
   else 
   {
     //sdc=GetWindowDC(GetParent(hwnd));
@@ -115,7 +116,7 @@ int PaintWorker(HWND hwnd, HDC whdc)
   GetClientRect(hwnd,&rc);
   bmp=SkinEngine_CreateDIB32(rc.right,rc.bottom);
   oldbmp=SelectObject(hdc,bmp);
-  if (!g_bLayered)
+  if (!g_CluiData.fLayered)
 	SkinEngine_BltBackImage(bct->hwnd,hdc,NULL);
   {
     MODERNMASK Request={0};
@@ -180,14 +181,14 @@ int PaintWorker(HWND hwnd, HDC whdc)
     // DeleteObject(br);
   }
 
-  if (!whdc && g_bLayered) 
+  if (!whdc && g_CluiData.fLayered) 
   {
     RECT r;
     SetRect(&r,bct->Left,bct->Top,bct->Right,bct->Bottom);
     SkinEngine_DrawImageAt(hdc,&r);
     //CallingService to immeadeately update window with new image.
   }
-  if (whdc && !g_bLayered)
+  if (whdc && !g_CluiData.fLayered)
   {
 	  RECT r={0};
 	  GetClientRect(bct->hwnd,&r);
@@ -195,7 +196,7 @@ int PaintWorker(HWND hwnd, HDC whdc)
   }
   SelectObject(hdc,oldbmp);
   DeleteObject(bmp);
-  if (!whdc || !g_bLayered) 
+  if (!whdc || !g_CluiData.fLayered) 
   {	
 	  SelectObject(hdc, GetStockObject(DEFAULT_GUI_FONT));
 	  mod_DeleteDC(hdc);
@@ -337,7 +338,7 @@ static LRESULT CALLBACK ModernButtonWndProc(HWND hwndDlg, UINT msg,  WPARAM wPar
         HCURSOR hCurs1;
         hCurs1 = LoadCursor(NULL, IDC_ARROW);
         if (hCurs1) SetCursor(hCurs1);
-        SetToolTip(hwndDlg, bct->Hint);
+        if (bct) SetToolTip(hwndDlg, bct->Hint);
         return 1;			
     }
     case WM_PRINT:
@@ -348,7 +349,7 @@ static LRESULT CALLBACK ModernButtonWndProc(HWND hwndDlg, UINT msg,  WPARAM wPar
     }
     case WM_PAINT:
 	    {
-		    if (IsWindowVisible(hwndDlg) && !g_bLayered)
+		    if (IsWindowVisible(hwndDlg) && !g_CluiData.fLayered)
 		    {
 			    PAINTSTRUCT ps={0};
 			    BeginPaint(hwndDlg,&ps);
@@ -495,7 +496,7 @@ typedef struct _MButton
 MButton * Buttons=NULL;
 DWORD ButtonsCount=0;
 
-int AddButton(HWND parent,
+int ModernButton_AddButton(HWND parent,
               char * ID,
               char * CommandService,
               char * StateDefService,
@@ -554,13 +555,13 @@ int AddButton(HWND parent,
   return 0;
 }
 
-extern CURRWNDIMAGEDATA * g_pCachedWindow;
+
 
 int EraseButton(int l,int t,int r, int b)
 {
   DWORD i;
   if (!ModernButtonModuleIsLoaded) return 0;
-  if (!g_bLayered) return 0;
+  if (!g_CluiData.fLayered) return 0;
   if (!g_pCachedWindow) return 0;
   if (!g_pCachedWindow->hImageDC ||!g_pCachedWindow->hBackDC) return 0;
   if (!(l||r||t||b))
@@ -604,7 +605,6 @@ HWND CreateButtonWindow(ModernButtonCtrl * bct, HWND parent)
   return hwnd;
 }
 
-extern BOOL g_mutex_bLockUpdating;
 int RedrawButtons(HDC hdc)
 {
   DWORD i;
@@ -646,7 +646,7 @@ int ModernButton_ReposButtons(HWND parent, BOOL draw, RECT * r)
     GetWindowRect(parent,&rc);  
   else
 	  rc=*r;
-  if (g_bLayered && draw&2)
+  if (g_CluiData.fLayered && draw&2)
   {
     int sx,sy;
     sx=rd.right-rd.left;

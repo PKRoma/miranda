@@ -24,13 +24,11 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include "m_clui.h"
 #include "clist.h"
 #include "m_clc.h"
-//#include "SkinEngine.h"
 #include "io.h"
 #include "commonprototypes.h"
 
-extern BOOL glOtherSkinWasLoaded;
-extern BYTE glSkinWasModified;
-//#include "shlwapi.h"
+
+
 /*******************************/
 // Main skin selection routine //
 /*******************************/
@@ -41,50 +39,39 @@ typedef struct _SkinListData
 	char File[MAX_PATH];
 } SkinListData;
 HBITMAP hPreviewBitmap=NULL;
-extern HWND hCLUIwnd;
+
 static int AddItemToTree(HWND hTree, char * folder, char * itemName, void * data);
-extern int SkinEngine_LoadSkinFromIniFile(char*);
-extern int SkinEngine_RedrawCompleteWindow();
-extern int SkinEngine_LoadSkinFromDB(void);
+
 int AddSkinToListFullName(HWND hwndDlg,char * fullName);
 int AddSkinToList(HWND hwndDlg,char * path, char* file);
 int FillAvailableSkinList(HWND hwndDlg);
+
 static BOOL CALLBACK DlgSkinOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam);
-extern BOOL CALLBACK DlgSkinEditorOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam);
-static BOOL CALLBACK DlgProcSkinTabbedOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam);
+
 int SkinOptInit(WPARAM wParam,LPARAM lParam)
 {
 	OPTIONSDIALOGPAGE odp;
 
-/*	ZeroMemory(&odp,sizeof(odp));
-	odp.cbSize=sizeof(odp);
-	odp.position=-1000000000;
-	odp.hInstance=g_hInst;
-	odp.pszTemplate=MAKEINTRESOURCEA(IDD_OPT_SKIN);
-	odp.pszGroup=Translate("Customize");
-	odp.pszTitle=Translate("Skin - Load");
-	odp.pfnDlgProc=DlgSkinOpts;
-	odp.flags=ODPF_BOLDGROUPS;
-	//	odp.nIDBottomSimpleControl=IDC_STCLISTGROUP;
-	//	odp.expertOnlyControls=expertOnlyControls;
-	//	odp.nExpertOnlyControls=sizeof(expertOnlyControls)/sizeof(expertOnlyControls[0]);
-	CallService(MS_OPT_ADDPAGE,wParam,(LPARAM)&odp);
-*/
 	//Tabbed settings
 	ZeroMemory(&odp,sizeof(odp));
 	odp.cbSize=sizeof(odp);
 	odp.position=-200000000;
 	odp.hInstance=g_hInst;
-	odp.pfnDlgProc=DlgProcSkinTabbedOpts;
-	odp.pszTemplate=MAKEINTRESOURCEA(IDD_SKIN_TAB);
+	odp.pfnDlgProc=DlgSkinOpts;
+	odp.pszTemplate=MAKEINTRESOURCEA(IDD_OPT_SKIN);
 	odp.pszGroup=Translate("Customize");
 	odp.pszTitle=Translate("Skin");
 	odp.flags=ODPF_BOLDGROUPS;
+	odp.pszTab=Translate("Load/Save");
 	CallService(MS_OPT_ADDPAGE,wParam,(LPARAM)&odp);
-   
+
+	odp.pfnDlgProc=DlgSkinEditorOpts;
+	odp.pszTemplate=MAKEINTRESOURCEA(IDD_OPT_SKINEDITOR);
+	odp.pszTab=Translate("Object Editor");
+	CallService(MS_OPT_ADDPAGE,wParam,(LPARAM)&odp);
+
 	return 0;
 }
-
 static BOOL CALLBACK DlgSkinOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam)
 {
 	switch (msg)
@@ -205,12 +192,12 @@ static BOOL CALLBACK DlgSkinOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM l
 						GetWindowRect(hwnd, &rc);
 						CLUIFrames_OnMoving(hwnd,&rc);
 					}
-					if (hCLUIwnd)
+					if (g_hCLUIOptionsWnd)
 					{
-						SendDlgItemMessage(hCLUIwnd,IDC_LEFTMARGINSPIN,UDM_SETPOS,0,DBGetContactSettingByte(NULL,"CLUI","LeftClientMargin",0));
-						SendDlgItemMessage(hCLUIwnd,IDC_RIGHTMARGINSPIN,UDM_SETPOS,0,DBGetContactSettingByte(NULL,"CLUI","RightClientMargin",0));
-						SendDlgItemMessage(hCLUIwnd,IDC_TOPMARGINSPIN,UDM_SETPOS,0,DBGetContactSettingByte(NULL,"CLUI","TopClientMargin",0));
-						SendDlgItemMessage(hCLUIwnd,IDC_BOTTOMMARGINSPIN,UDM_SETPOS,0,DBGetContactSettingByte(NULL,"CLUI","BottomClientMargin",0));
+						SendDlgItemMessage(g_hCLUIOptionsWnd,IDC_LEFTMARGINSPIN,UDM_SETPOS,0,DBGetContactSettingByte(NULL,"CLUI","LeftClientMargin",0));
+						SendDlgItemMessage(g_hCLUIOptionsWnd,IDC_RIGHTMARGINSPIN,UDM_SETPOS,0,DBGetContactSettingByte(NULL,"CLUI","RightClientMargin",0));
+						SendDlgItemMessage(g_hCLUIOptionsWnd,IDC_TOPMARGINSPIN,UDM_SETPOS,0,DBGetContactSettingByte(NULL,"CLUI","TopClientMargin",0));
+						SendDlgItemMessage(g_hCLUIOptionsWnd,IDC_BOTTOMMARGINSPIN,UDM_SETPOS,0,DBGetContactSettingByte(NULL,"CLUI","BottomClientMargin",0));
 					}
 				}
 				break;
@@ -300,7 +287,7 @@ static BOOL CALLBACK DlgSkinOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM l
 				imgPos.x=workRect.left+((wWidth-dWidth)>>1);
 				imgPos.y=workRect.top+((wHeight-dHeight)>>1);     
 				//DrawImage
-				if (!gl_b_GDIPlusFail) //Use gdi+ engine
+				if (!g_CluiData.fGDIPlusFail) //Use gdi+ engine
 				{
 					DrawAvatarImageWithGDIp(memDC,imgPos.x,imgPos.y,dWidth,dHeight,hPreviewBitmap,0,0,bmp.bmWidth,bmp.bmHeight,8,255);
 				}   
@@ -733,185 +720,4 @@ static int AddItemToTree(HWND hTree, char * folder, char * itemName, void * data
 	return 0;
 }
 
-/* TABBED SKIN SETTINGS */
 
-#define NUM_SKIN_TAB_PAGES 2
-
-typedef struct _ItemOptionConf 
-{ 
-	TCHAR *name;			// Tab name
-	int id;					// Dialog id
-	DLGPROC wnd_proc;		// Dialog function
-} ItemOptionConf;
-
-typedef struct _ItemOptionData 
-{ 
-	ItemOptionConf *conf;
-	HWND hwnd;				// dialog handle
-} ItemOptionData; 
-
-typedef struct _WndItemsData 
-{ 
-	ItemOptionData items[NUM_SKIN_TAB_PAGES];
-	HWND hwndDisplay;
-	int selected_item;
-} WndItemsData; 
-
-static ItemOptionConf opt_items[] = { 
-	{ _T("Load/Save"), IDD_OPT_SKIN, DlgSkinOpts },
-	{ _T("Object Editor"), IDD_OPT_SKINEDITOR, DlgSkinEditorOpts }
-};
-
-
-
-
-// DoLockDlgRes - loads and locks a dialog template resource. 
-// Returns the address of the locked resource. 
-// lpszResName - name of the resource 
-
-static DLGTEMPLATE * DoLockDlgRes(LPSTR lpszResName) 
-{ 
-	HRSRC hrsrc = FindResourceA(g_hInst, lpszResName, MAKEINTRESOURCEA(5)); 
-	HGLOBAL hglb = LoadResource(g_hInst, hrsrc); 
-	return (DLGTEMPLATE *) LockResource(hglb); 
-} 
-
-static void SkinChangeTab(HWND hwndDlg, WndItemsData *data, int sel)
-{
-	HWND hwndTab;
-	RECT rc_tab;
-	RECT rc_item;
-
-	hwndTab = GetDlgItem(hwndDlg, IDC_SKIN_TAB);
-
-	// Get avaible space
-	GetWindowRect(hwndTab, &rc_tab);
-	ScreenToClientRect(hwndTab, &rc_tab);
-	TabCtrl_AdjustRect(hwndTab, FALSE, &rc_tab); 
-
-	// Get item size
-	GetClientRect(data->items[sel].hwnd, &rc_item);
-
-	// Fix rc_item
-	rc_item.right -= rc_item.left;	// width
-	rc_item.left = rc_tab.left + (rc_tab.right - rc_tab.left - rc_item.right) / 2;
-
-	rc_item.bottom -= rc_item.top;	// height
-	rc_item.top = rc_tab.top; // + (rc_tab.bottom - rc_tab.top - rc_item.bottom) / 2;
-
-	// Set pos
-	SetWindowPos(data->items[sel].hwnd, HWND_TOP, rc_item.left, rc_item.top, rc_item.right,
-		rc_item.bottom, SWP_SHOWWINDOW);
-
-	data->selected_item = sel;
-}
-
-
-static BOOL CALLBACK DlgProcSkinTabbedOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam)
-{
-	switch (msg)
-	{
-	case WM_INITDIALOG:
-		{
-			HWND hwndTab;
-			WndItemsData *data;
-			int i;
-			TCITEM tie={0}; 
-
-			TranslateDialogDefault(hwndDlg);
-
-			data = (WndItemsData *) mir_alloc(sizeof(WndItemsData));
-			data->selected_item = -1;
-			SetWindowLong(hwndDlg, GWL_USERDATA, (long) data); 
-
-			hwndTab = GetDlgItem(hwndDlg, IDC_SKIN_TAB);
-
-			// Add tabs
-			tie.mask = TCIF_TEXT | TCIF_IMAGE; 
-			tie.iImage = -1; 
-
-			for (i = 0 ; i < NUM_SKIN_TAB_PAGES ; i++)
-			{
-				DLGTEMPLATE *templ;
-
-				data->items[i].conf = &opt_items[i];
-				templ = DoLockDlgRes(MAKEINTRESOURCEA(data->items[i].conf->id));
-				data->items[i].hwnd = CreateDialogIndirectA(g_hInst, templ, hwndDlg, 
-					data->items[i].conf->wnd_proc); 
-				TranslateDialogDefault(data->items[i].hwnd);
-				CLUI_ShowWindowMod(data->items[i].hwnd, SW_HIDE);
-
-				if (pfEnableThemeDialogTexture != NULL)
-					pfEnableThemeDialogTexture(data->items[i].hwnd, ETDT_ENABLETAB);
-
-				tie.pszText = TranslateTS(data->items[i].conf->name); 
-				TabCtrl_InsertItem(hwndTab, i, &tie);
-			}
-
-			// Show first item
-			SkinChangeTab(hwndDlg, data, 0);
-
-			return TRUE;
-			break;
-		}
-	case WM_NOTIFY: 
-		{
-			switch (((LPNMHDR)lParam)->code) 
-			{
-			case TCN_SELCHANGING:
-				{
-					WndItemsData *data = (WndItemsData *) GetWindowLong(hwndDlg, GWL_USERDATA);
-					CLUI_ShowWindowMod(data->items[data->selected_item].hwnd, SW_HIDE);
-					break;
-				}
-			case TCN_SELCHANGE: 
-				{
-					SkinChangeTab(hwndDlg, 
-						(WndItemsData *)GetWindowLong(hwndDlg, GWL_USERDATA), 
-						TabCtrl_GetCurSel(GetDlgItem(hwndDlg, IDC_SKIN_TAB)));
-					break; 
-				}
-
-			case PSN_APPLY:
-				{
-					if (((LPNMHDR)lParam)->idFrom == 0)
-					{
-						WndItemsData *data = (WndItemsData *) GetWindowLong(hwndDlg, GWL_USERDATA);
-						int i;
-						for (i = 0 ; i < NUM_SKIN_TAB_PAGES ; i++)
-						{
-							SendMessage(data->items[i].hwnd, msg, wParam, lParam);
-						}
-
-						pcli->pfnLoadContactTree();
-						//ReLoadContactTree();/* this won't do job properly since it only really works when changes happen */
-						ClcOptionsChanged(); // Used to force loading avatar an list height related options
-						SendMessage(pcli->hwndContactTree,CLM_AUTOREBUILD,0,0); /* force reshuffle */
-						return TRUE;
-					}
-					break;
-				}
-			}
-			break;
-		} 
-	case WM_DESTROY: 
-		{
-			int i;
-			WndItemsData *data = (WndItemsData *) GetWindowLong(hwndDlg, GWL_USERDATA);
-
-			DestroyWindow(data->hwndDisplay); 
-
-			for (i = 0 ; i < NUM_SKIN_TAB_PAGES ; i++)
-			{
-				DestroyWindow(data->items[i].hwnd); 
-			}
-
-			mir_free_and_nill(data); 
-			break;
-		}
-	case PSM_CHANGED:
-		SendMessage(GetParent(hwndDlg), PSM_CHANGED, 0, 0);
-	}
-
-	return 0;
-}

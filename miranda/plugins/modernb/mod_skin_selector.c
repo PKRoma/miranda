@@ -28,10 +28,9 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include "mod_skin_selector.h"
 #include "SkinEngine.h"
 #include "m_skin_eng.h"
-extern LPSKINOBJECTDESCRIPTOR SkinEngine_FindObjectByName(const char * szName, BYTE objType, SKINOBJECTSLIST* Skin);
-extern int AddButton(HWND parent,char * ID,char * CommandService,char * StateDefService,char * HandeService,             int Left, int Top, int Right, int Bottom, DWORD AlignedTo,TCHAR * Hint,char * DBkey,char * TypeDef,int MinWidth, int MinHeight);
-struct LISTMODERNMASK * MainModernMaskList=NULL;
-extern SKINOBJECTSLIST g_SkinObjectList;
+#include "commonprototypes.h"
+LISTMODERNMASK * MainModernMaskList=NULL;
+
 
 /// IMPLEMENTATIONS
 char * ModernMaskToString(MODERNMASK * mm, char * buf, UINT bufsize)
@@ -558,8 +557,8 @@ int RegisterButtonByParce(char * ObjectName, char * Params)
              +64*(TL[3]=='B')
              +128*(TL[3]=='C')
              +256*(TL[4]=='I');
-        if (a) res=AddButton(pcli->hwndContactList,ObjectName+1,pServiceName,pStatusServiceName,"\0",Left,Top,Right,Bottom,alingnto,Hint,Section,Type,MinWidth,MinHeight);
-        else res=AddButton(pcli->hwndContactList,ObjectName+1,pServiceName,pStatusServiceName,"\0",Left,Top,Right,Bottom,alingnto,Hint,NULL,NULL,MinWidth,MinHeight);
+        if (a) res=ModernButton_AddButton(pcli->hwndContactList,ObjectName+1,pServiceName,pStatusServiceName,"\0",Left,Top,Right,Bottom,alingnto,Hint,Section,Type,MinWidth,MinHeight);
+        else res=ModernButton_AddButton(pcli->hwndContactList,ObjectName+1,pServiceName,pStatusServiceName,"\0",Left,Top,Right,Bottom,alingnto,Hint,NULL,NULL,MinWidth,MinHeight);
     }
 return res;
 }

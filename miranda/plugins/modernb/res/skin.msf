@@ -190,6 +190,45 @@
 ;#close=sPush,CLIST/HK/CloseMiranda,-29,12,-13,25,R-R--,0,0,Close Miranda
 ;----------------------------------------------------------------------
 
+; ToDo: View Mode Toolbar :
+; Use Selectors rules like:
+; For Background: "ViewMode,ID=Background"
+; For buttons:
+; "Button,ID=?,Hovered=?,Pressed=?,Focused=?"
+; IDs:	"ViewMode.Select", "ViewMode.Setup", and "ViewMode.Clear"
+; Overs are "True" or "False"
+; Selector buttons draw text centered with button margins - left - 18, right 2
+
+;ViewMode
+  $$ViewMode=sGlyph,Fragment,back%.tga,83,48,3,18,StretchBoth,1,2,1,1,250
+
+  $$ViewMode/CurrentMode     =sGlyph,Fragment,back%.tga,89,15,15,15,StretchBoth,12,2,2,2,50
+  $$ViewMode/CurrentMode/Hot =sGlyph,Fragment,back%.tga,89,15,15,15,StretchBoth,12,2,2,2,200
+  $$ViewMode/CurrentMode/Pressed =sGlyph,Fragment,back%.tga,89,15,15,15,StretchBoth,12,2,2,2,250
+  
+  $$ViewMode/SetupMode		 =sGlyph,Fragment,back%.tga,89,0,15,15,StretchBoth,4,4,4,4,50
+  $$ViewMode/SetupMode/Hot   =sGlyph,Fragment,back%.tga,89,0,15,15,StretchBoth,4,4,4,4,200
+  $$ViewMode/SetupMode/Pressed   =sGlyph,Fragment,back%.tga,89,0,15,15,StretchBoth,4,4,4,4,250
+  
+  $$ViewMode/ResetMode		 =sGlyph,Fragment,back%.tga,89,0,15,15,StretchBoth,4,4,4,4,50
+  $$ViewMode/ResetMode/Hot   =sGlyph,Fragment,back%.tga,89,0,15,15,StretchBoth,4,4,4,4,200
+  $$ViewMode/ResetMode/Pressed   =sGlyph,Fragment,back%.tga,89,0,15,15,StretchBoth,4,4,4,4,250
+  
+  @1137=s$$ViewMode:ViewMode,ID=Background
+   
+  @1510=s$$ViewMode/CurrentMode/Pressed:Button,ID=ViewMode.Select,Pressed=True
+  @1514=s$$ViewMode/CurrentMode/Hot:Button,ID=ViewMode.Select,Hovered=True
+  @1516=s$$ViewMode/CurrentMode:Button,ID=ViewMode.Select
+  
+  @1520=s$$ViewMode/SetupMode/Pressed:Button,ID=ViewMode.Setup,Pressed=True
+  @1524=s$$ViewMode/SetupMode/Hot:Button,ID=ViewMode.Setup,Hovered=True
+  @1526=s$$ViewMode/SetupMode:Button,ID=ViewMode.Setup
+ 
+  @1530=s$$ViewMode/ResetMode/Pressed:Button,ID=ViewMode.Clear,Pressed=True
+  @1534=s$$ViewMode/ResetMode/Hot:Button,ID=ViewMode.Clear,Hovered=True
+  @1536=s$$ViewMode/ResetMode:Button,ID=ViewMode.Clear
+   
+
 [CLUI]
 ;Another setting for CLUI section
   LeftClientMargin=b4
@@ -201,6 +240,8 @@
 [CLC]
   HiLightMode=b1
   GroupIndent=b0
+
+
 
 ;-----------
 ;-----------

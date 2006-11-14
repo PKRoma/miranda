@@ -154,8 +154,9 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #define FONTID_CLOSEDGROUPS 19
 #define FONTID_CLOSEDGROUPCOUNTS 20
 #define FONTID_STATUSBAR_PROTONAME 21
-#define FONTID_EVENTAREA 22
-#define FONTID_MODERN_MAX 22
+#define FONTID_EVENTAREA	22
+#define FONTID_VIEMODES		23
+#define FONTID_MODERN_MAX 23
 
 #define DROPTARGET_OUTSIDE    0
 #define DROPTARGET_ONSELF     1
@@ -563,7 +564,5 @@ int     GetContactCachedStatus(HANDLE hContact);
 char   *GetContactCachedProtocol(HANDLE hContact);
 
 ExternDrawer SED;
-extern void (*saveSortCLC) (HWND hwnd, struct ClcData *dat, int useInsertionSort );
-extern HICON listening_to_icon;
 
 #endif _CLC_H_

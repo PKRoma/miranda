@@ -42,9 +42,6 @@ HANDLE hNewSubGroupMenuItem;
 
 int NewGroupIconidx;
 
-extern HIMAGELIST hCListImages;
-extern HICON CLUI_LoadIconFromExternalFile (char *filename,int i,boolean UseLibrary,boolean registerit,char *IconName,char *SectName,char *Description,int internalidx, BOOL *needFree);
-
 void InitSubGroupMenus(void);
 
 //Groupmenu exec param(ownerdata)
@@ -115,7 +112,7 @@ static int AddGroupMenuItem(WPARAM wParam,LPARAM lParam)
 	
 	{
 		lpGroupMenuExecParam mmep;
-		mmep=(lpGroupMenuExecParam)mir_calloc(1,sizeof(GroupMenuExecParam));
+		mmep=(lpGroupMenuExecParam)mir_calloc(sizeof(GroupMenuExecParam));
 		if(mmep==NULL){return(0);};
 		
 		//we need just one parametr.
@@ -476,7 +473,7 @@ static int RemoveSubGroupMenuItem(WPARAM wParam,LPARAM lParam)
 	return 0;
 }
 
-extern __inline BOOL IsShowOfflineGroup(struct ClcGroup* group);
+
 static int OnBuildSubGroupMenu(WPARAM wParam,LPARAM lParam)
 {
 	CLISTMENUITEM mi;
@@ -493,11 +490,11 @@ static int OnBuildSubGroupMenu(WPARAM wParam,LPARAM lParam)
   ZeroMemory(&mi,sizeof(mi));
 	mi.cbSize = sizeof(mi);
 
-  showOfflineinGroup=IsShowOfflineGroup(group);
+  showOfflineinGroup=CLCItems_IsShowOfflineGroup(group);
   gray1=(showOfflineinGroup!=FALSE);
   gray2=(group->hideOffline!=FALSE);
 	
-  if (gray1&&gray2) gray1=FALSE;  //should not be cause IsShowOfflineGroup return false if group->hideOffline
+  if (gray1&&gray2) gray1=FALSE;  //should not be cause CLCItems_IsShowOfflineGroup return false if group->hideOffline
 	
   mi.flags = CMIM_FLAGS | ((group->hideOffline&&!gray1)?CMIF_CHECKED:0)| (gray1?CMIF_GRAYED:0);
 	CallService(MS_CLIST_MODIFYMENUITEM, (WPARAM)hHideOfflineUsersHereMenuItem, (LPARAM)&mi);	
@@ -563,7 +560,7 @@ static int AddSubGroupMenuItem(WPARAM wParam,LPARAM lParam)
 	
 	{
 		lpSubGroupMenuExecParam mmep;
-		mmep=(lpSubGroupMenuExecParam)mir_calloc(1,sizeof(SubGroupMenuExecParam));
+		mmep=(lpSubGroupMenuExecParam)mir_calloc(sizeof(SubGroupMenuExecParam));
 		if(mmep==NULL){return(0);};
 		
 		//we need just one parametr.

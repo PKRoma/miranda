@@ -66,7 +66,8 @@ __inline int mir_strlen (const char *a)
  	 	
 #define strlen(a) mir_strlen(a)
 #define strcmp(a,b) mir_strcmp(a,b)
- 	 	
+ 	
+/*
 __inline void *mir_calloc( size_t num, size_t size )
 {
  	void *p=mir_alloc(num*size);
@@ -74,7 +75,7 @@ __inline void *mir_calloc( size_t num, size_t size )
 	memset(p,0,num*size);
     return p;
 };
-
+*/
 extern __inline wchar_t * mir_strdupW(const wchar_t * src)
 {
 	wchar_t * p;

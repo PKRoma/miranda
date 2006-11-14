@@ -31,21 +31,16 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 static HANDLE hookSystemShutdown_CListMod=NULL;
 HANDLE  hookOptInitialise_CList=NULL,
         hookOptInitialise_Skin=NULL,
-        hookOptInitialise_SkinEditor=NULL,
         hookContactAdded_CListSettings=NULL;
 
-extern void Docking_GetMonitorRectFromWindow(HWND hWnd,RECT *rc);
-extern HICON GetMainStatusOverlay(int STATUS);
+
 int CListMod_HideWindow(HWND hwndContactList, int mode);
-extern int CLUI_SmoothAlphaTransition(HWND hwnd, BYTE GoalAlpha, BOOL wParam);
-extern void InitTray(void);
 
 void GroupMenus_Init(void);
 int AddMainMenuItem(WPARAM wParam,LPARAM lParam);
 int AddContactMenuItem(WPARAM wParam,LPARAM lParam);
 int InitCustomMenus(void);
 void UninitCustomMenus(void);
-int InitCListEvents(void);
 void UninitCListEvents(void);
 int ContactSettingChanged(WPARAM wParam,LPARAM lParam);
 int ContactAdded(WPARAM wParam,LPARAM lParam);
@@ -58,23 +53,14 @@ int TrayIconPauseAutoHide(WPARAM wParam,LPARAM lParam);
 int ContactChangeGroup(WPARAM wParam,LPARAM lParam);
 void InitTrayMenus(void);
 
-extern int CLUIFrames_ActivateSubContainers(BOOL active);
-extern int g_nBehindEdgeSettings;
 
 HANDLE hStatusModeChangeEvent,hContactIconChangedEvent;
 HIMAGELIST hCListImages=NULL;
-extern int currentDesiredStatusMode;
+
 BOOL (WINAPI *MySetProcessWorkingSetSize)(HANDLE,SIZE_T,SIZE_T);
-extern BYTE nameOrder[];
-extern SortedList lContactsCache;
-extern HBITMAP SkinEngine_GetCurrentWindowImage();
 
 
-extern int g_nBehindEdgeSettings;
 static HANDLE hSettingChanged;
-
-
-extern int SkinEditorOptInit(WPARAM wParam,LPARAM lParam);
 
 //returns normal icon or combined with status overlay. Needs to be destroyed.
 HICON GetIconFromStatusMode(HANDLE hContact, const char *szProto,int status)
@@ -223,7 +209,6 @@ void UnLoadContactListModule()  //unhooks noncritical events
    // UnloadStatusMenu();
     UnhookEvent(hookOptInitialise_CList);
     UnhookEvent(hookOptInitialise_Skin);
-    UnhookEvent(hookOptInitialise_SkinEditor);
     UnhookEvent(hSettingChanged);
     UnhookEvent(hookContactAdded_CListSettings);
 }
@@ -236,14 +221,13 @@ int CListMod_ContactListShutdownProc(WPARAM wParam,LPARAM lParam)
     g_hMainThread=NULL;
 	return 0;
 }
-extern int ToggleHideOffline(WPARAM wParam,LPARAM lParam);
-extern int MenuProcessCommand(WPARAM wParam,LPARAM lParam);
+
 static int SetStatusMode(WPARAM wParam, LPARAM lParam)
 {
 	MenuProcessCommand(MAKEWPARAM(LOWORD(wParam), MPCF_MAINMENU), 0);
 	return 0;
 }
-extern PLUGININFO pluginInfo;
+
 int CLUIGetCapsService(WPARAM wParam,LPARAM lParam)
 {
 	if (lParam)
@@ -286,7 +270,6 @@ int LoadContactListModule(void)
 	hookSystemShutdown_CListMod  = HookEvent(ME_SYSTEM_SHUTDOWN,CListMod_ContactListShutdownProc);
 	hookOptInitialise_CList      = HookEvent(ME_OPT_INITIALISE,CListOptInit);
 	hookOptInitialise_Skin       = HookEvent(ME_OPT_INITIALISE,SkinOptInit);
-	hookOptInitialise_SkinEditor = HookEvent(ME_OPT_INITIALISE,SkinEditorOptInit);
 
 	hSettingChanged              = HookEvent(ME_DB_CONTACT_SETTINGCHANGED,ContactSettingChanged);
 	hookContactAdded_CListSettings = HookEvent(ME_DB_CONTACT_ADDED,ContactAdded);
@@ -301,8 +284,6 @@ int LoadContactListModule(void)
 
 	MySetProcessWorkingSetSize=(BOOL (WINAPI*)(HANDLE,SIZE_T,SIZE_T))GetProcAddress(GetModuleHandle(TEXT("kernel32")),"SetProcessWorkingSetSize");
 	hCListImages = ImageList_Create(16, 16, ILC_MASK|ILC_COLOR32, 32, 0);
-
-	//InitCListEvents();
 	InitCustomMenus();
 	InitTray();
 
@@ -325,7 +306,7 @@ __inline DWORD GetDIBPixelColor(int X, int Y, int Width, int Height, int ByteWid
 		res=*((DWORD*)(ptr+ByteWidth*(Height-Y-1)+X*4));
 	return res;
 }
-extern BYTE g_bCurrentAlpha;
+
 int GetWindowVisibleState(HWND hWnd, int iStepX, int iStepY) {
 	RECT rc = { 0 };
 	POINT pt = { 0 };
@@ -357,8 +338,8 @@ int GetWindowVisibleState(HWND hWnd, int iStepX, int iStepY) {
 		int dx,dy;
 		BYTE *ptr=NULL;
 		HRGN rgn=NULL;
-		WindowImage=g_bLayered?SkinEngine_GetCurrentWindowImage():0;
-		if (WindowImage&&g_bLayered)
+		WindowImage=g_CluiData.fLayered?SkinEngine_GetCurrentWindowImage():0;
+		if (WindowImage&&g_CluiData.fLayered)
 		{
 			GetObject(WindowImage,sizeof(BITMAP),&bmp);
 			ptr=bmp.bmBits;
@@ -407,7 +388,7 @@ int GetWindowVisibleState(HWND hWnd, int iStepX, int iStepY) {
 				else
 				{
 					DWORD a=(GetDIBPixelColor(j+dx,i+dy,maxx,maxy,wx,ptr)&0xFF000000)>>24;
-					a=((a*g_bCurrentAlpha)>>8);
+					a=((a*g_CluiData.bCurrentAlpha)>>8);
 					po=(a>16);
 				}
 				if (po||(!rgn&&ptr==0))
@@ -483,10 +464,10 @@ int cliShowHide(WPARAM wParam,LPARAM lParam)
 
 	if (!method && DBGetContactSettingByte(NULL, "ModernData", "BehindEdge", 0)>0)
 	{
-		g_nBehindEdgeSettings=DBGetContactSettingByte(NULL, "ModernData", "BehindEdge", 0);
+		g_CluiData.bBehindEdgeSettings=DBGetContactSettingByte(NULL, "ModernData", "BehindEdge", 0);
 		CLUI_ShowFromBehindEdge();
-		g_nBehindEdgeSettings=0;
-		g_nBehindEdgeState=0;
+		g_CluiData.bBehindEdgeSettings=0;
+		g_CluiData.nBehindEdgeState=0;
 		DBDeleteContactSetting(NULL, "ModernData", "BehindEdge");
 	}
 

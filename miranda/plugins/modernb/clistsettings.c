@@ -38,7 +38,7 @@ TCHAR* GetNameForContact(HANDLE hContact,int flag,boolean *isUnknown);
 char *GetProtoForContact(HANDLE hContact);
 int GetStatusForContact(HANDLE hContact,char *szProto);
 TCHAR *UnknownConctactTranslatedName=NULL;
-extern boolean g_flag_bOnModulesLoadedCalled;
+
 void InvalidateDNCEbyPointer(HANDLE hContact,pdisplayNameCacheEntry pdnce,int SettingType);
 
 static int handleCompare( void* c1, void* c2 )
@@ -80,13 +80,13 @@ static int handleCompare( void* c1, void* c2 )
 //		i++;
 //}	}
 
-extern CRITICAL_SECTION LockCacheChain;
+extern CRITICAL_SECTION LockCacheChain;   //TODO move initialization to cache_func.c module
 extern CRITICAL_SECTION AAMLockChain;
 
 void InitDisplayNameCache(void)
 {
 	int i=0;
-    InitializeCriticalSection(&LockCacheChain);
+    InitializeCriticalSection(&LockCacheChain);  //TODO move initialization to cache_func.c module
     InitializeCriticalSection(&AAMLockChain);
 	clistCache = li.List_Create( 0, 50 );
 	clistCache->sortFunc = handleCompare;
@@ -341,6 +341,11 @@ void cliCheckCacheItem(pdisplayNameCacheEntry pdnce)
 		{
 			pdnce->IsExpanded=DBGetContactSettingByte(pdnce->hContact,"CList","Expanded",0);
 		}
+		if (pdnce->dwLastMsgTime==0)
+		{
+			pdnce->dwLastMsgTime=DBGetContactSettingDword(pdnce->hContact, "CList", "mf_lastmsg", 0);
+			if (pdnce->dwLastMsgTime==0) pdnce->dwLastMsgTime=CompareContacts2_getLMTime(pdnce->hContact);
+		}
 	}
 }
 
@@ -392,6 +397,7 @@ void InvalidateDNCEbyPointer(HANDLE hContact,pdisplayNameCacheEntry pdnce,int Se
 			pdnce->iThirdLineMaxSmileyHeight=0;
 			pdnce->timediff=0;
 			pdnce->timezone=-1;
+			pdnce->dwLastMsgTime=0;//CompareContacts2_getLMTime(pdnce->hContact);
 			Cache_GetTimezone(NULL,pdnce->hContact);
 			SettingType&=~16;
 		}
@@ -438,6 +444,7 @@ void InvalidateDNCEbyPointer(HANDLE hContact,pdisplayNameCacheEntry pdnce,int Se
 		pdnce->isUnknown=FALSE;
 		pdnce->noHiddenOffline=-1;
 		pdnce->IsExpanded=-1;
+		pdnce->dwLastMsgTime=0;//CompareContacts2_getLMTime(pdnce->hContact);
 	};
 };
 
@@ -457,12 +464,10 @@ char* GetProtoForContact(HANDLE hContact)
 
 int GetStatusForContact(HANDLE hContact,char *szProto)
 {
-	int status=ID_STATUS_OFFLINE;
 	if (szProto)
-	{
-		status=DBGetContactSettingWord((HANDLE)hContact,szProto,"Status",ID_STATUS_OFFLINE);
-	}
-	return (status);
+		return (int)(DBGetContactSettingWord((HANDLE)hContact,szProto,"Status",ID_STATUS_OFFLINE));
+	else 
+		return (ID_STATUS_OFFLINE);
 }
 
 TCHAR* GetNameForContact(HANDLE hContact,int flag,boolean *isUnknown)

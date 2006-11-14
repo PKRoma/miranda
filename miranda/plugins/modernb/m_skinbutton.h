@@ -1,0 +1,7 @@
+#include "m_button.h"
+
+#define BUTTONSETID				WM_USER+55
+#define BUTTONDRAWINPARENT		WM_USER+56
+#define BUTTONSETMARGINS		WM_USER+57
+
+#define BUTTONNEEDREDRAW		1256

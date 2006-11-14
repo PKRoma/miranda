@@ -1290,7 +1290,7 @@ BOOL ReduceAvatarPosition(struct ClcContact *contact, BOOL subcontact, void *par
 
 void Cache_GetAvatar(struct ClcData *dat, struct ClcContact *contact)
 {
-    if (g_bSTATE!=STATE_NORMAL
+    if (g_CluiData.bSTATE!=STATE_NORMAL
         || (dat->use_avatar_service && !ServiceExists(MS_AV_GETAVATARBITMAP)) ) // workaround for avatar service and other wich destroys service on OK_TOEXIT
     {
         contact->avatar_pos = AVATAR_POS_DONT_HAVE;

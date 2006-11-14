@@ -1,6 +1,7 @@
 #include "commonheaders.h"
 #include "modern_statusbar.h"
 #include "m_skin_eng.h"
+#include "commonprototypes.h"
 
 HANDLE  hStatusBarShowToolTipEvent;
 HANDLE  hStatusBarHideToolTipEvent;
@@ -10,7 +11,6 @@ POINT lastpnt;
 #define TM_STATUSBAR 23435234
 #define TM_STATUSBARHIDE 23435235
 
-extern int g_nBehindEdgeSettings;
 HWND hModernStatusBar=NULL;
 HANDLE hFramehModernStatusBar=NULL;
 
@@ -92,7 +92,7 @@ int NewStatusPaintCallbackProc(HWND hWnd, HDC hDC, RECT * rcPaint, HRGN rgn, DWO
 {
   return ModernDrawStatusBar(hWnd,hDC);
 }
-extern HFONT TitleBarFont;
+
 int ModernDrawStatusBar(HWND hwnd, HDC hDC)
 {
   if (hwnd==(HWND)-1) return 0;
@@ -102,8 +102,6 @@ int ModernDrawStatusBar(HWND hwnd, HDC hDC)
     CLUI__cliInvalidateRect(hwnd,NULL,FALSE);
   return 0;
 }
-extern HICON GetMainStatusOverlay(int STATUS);
-extern HFONT CLCPaint_ChangeToFont(HDC hdc,struct ClcData *dat,int id,int *fontHeight);
 int ModernDrawStatusBarWorker(HWND hWnd, HDC hDC)
 {
   RECT rc;
@@ -438,9 +436,7 @@ int ModernDrawStatusBarWorker(HWND hWnd, HDC hDC)
   return 0;
 }
 
-extern TMO_IntMenuItem * GetMenuItemByGlobalID(int globalMenuID);
-extern MenuProto * menusProto;
-extern int AllocedProtos;
+
 #define TOOLTIP_TOLERANCE 5
 LRESULT CALLBACK ModernStatusProc(HWND hwnd,UINT msg,WPARAM wParam,LPARAM lParam)
 {
@@ -463,15 +459,15 @@ LRESULT CALLBACK ModernStatusProc(HWND hwnd,UINT msg,WPARAM wParam,LPARAM lParam
     }
     break;
   case WM_SIZE:
-	  if (!g_bLayered)
+	  if (!g_CluiData.fLayered)
 		  InvalidateRect(hwnd,NULL,FALSE);
 	  return DefWindowProc(hwnd, msg, wParam, lParam);
   case WM_ERASEBKGND:
 	  return 0;
   case WM_PAINT:
-    if (GetParent(hwnd)==pcli->hwndContactList && g_bLayered)
+    if (GetParent(hwnd)==pcli->hwndContactList && g_CluiData.fLayered)
       SkinEngine_Service_InvalidateFrameImage((WPARAM)hwnd,0);
-    else if (GetParent(hwnd)==pcli->hwndContactList && !g_bLayered)
+    else if (GetParent(hwnd)==pcli->hwndContactList && !g_CluiData.fLayered)
 	{
 		HDC hdc, hdc2;
 		HBITMAP hbmp,hbmpo;
@@ -607,7 +603,7 @@ LRESULT CALLBACK ModernStatusProc(HWND hwnd,UINT msg,WPARAM wParam,LPARAM lParam
 	  break;
   case WM_SETCURSOR:
     {
-      if (g_nBehindEdgeSettings) CLUI_UpdateTimer(0);
+      if (g_CluiData.bBehindEdgeSettings) CLUI_UpdateTimer(0);
       {
         POINT pt;
         GetCursorPos(&pt);

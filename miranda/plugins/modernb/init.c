@@ -31,12 +31,15 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 //#include "skinEngine.h"
 #include "version.h"
 
+int LoadSkinButtonModule();
+
 //current module prototypes
 void  UninitSkinHotKeys();
 void  GetDefaultFontSetting(int i,LOGFONT *lf,COLORREF *colour);
 int   CLUI_OnSkinLoad(WPARAM wParam, LPARAM lParam);
 int	  LoadContactListModule(void);
 int   LoadCLCModule(void);
+
 
 void	cliCheckCacheItem(pdisplayNameCacheEntry pdnce);
 void	cliFreeCacheItem( pdisplayNameCacheEntry p );
@@ -96,7 +99,7 @@ void ( *saveDeleteItemFromTree )(HWND hwnd, HANDLE hItem);
 void cli_DeleteItemFromTree(HWND hwnd, HANDLE hItem);
 
 void ( *saveFreeContact )( struct ClcContact* );
-extern void cli_FreeContact( struct ClcContact* );
+void cli_FreeContact( struct ClcContact* );
 
 void ( *saveFreeGroup )( struct ClcGroup* );
 void cli_FreeGroup( struct ClcGroup* );
@@ -109,7 +112,7 @@ char* cli_GetGroupCountsText(struct ClcData *dat, struct ClcContact *contact);
 char* (*saveGetGroupCountsText)(struct ClcData *dat, struct ClcContact *contact);
 
 
-
+CluiData g_CluiData={0};
 
 void ( *saveChangeContactIcon)(HANDLE hContact,int iIcon,int add);
 void cli_ChangeContactIcon(HANDLE hContact,int iIcon,int add);
@@ -167,7 +170,7 @@ int MakeVer(a,b,c,d)
 
 __declspec(dllexport) PLUGININFO* MirandaPluginInfo(DWORD mirandaVersion)
 {
-	if ( mirandaVersion < PLUGIN_MAKE_VERSION(0,4,3,42) )
+	if ( mirandaVersion < PLUGIN_MAKE_VERSION(0,6,0,15) )
 	{
 		return NULL;
 	}
@@ -209,9 +212,18 @@ int __declspec(dllexport) CListInitialise(PLUGINLINK * link)
 {
 	int rc=0;
 	pluginLink=link;
+	//_CrtSetBreakAlloc(778);
 	memset(&memoryManagerInterface,0,sizeof(memoryManagerInterface));
 	memoryManagerInterface.cbSize = sizeof(memoryManagerInterface);
 	CallService(MS_SYSTEM_GET_MMI, 0, (LPARAM)&memoryManagerInterface);
+
+	/* Global data initialization */
+	{
+		g_CluiData.fOnDesktop=FALSE;
+		g_CluiData.fUseKeyColor=TRUE;
+		g_CluiData.dwKeyColor=RGB(255,0,255);
+		g_CluiData.bCurrentAlpha=255;
+	}
 
 	InitUxTheme();
 
@@ -336,6 +348,7 @@ int __declspec(dllexport) CListInitialise(PLUGINLINK * link)
 	CreateServiceFunction(CLUI_SetDrawerService,SetDrawer);
 
 	///test///
+	LoadSkinButtonModule();
 	ModernButton_LoadModule();
 	SkinEngine_LoadModule();
 	rc=LoadContactListModule();

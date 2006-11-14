@@ -1,8 +1,9 @@
 #include "commonheaders.h"
+#include "commonprototypes.h"
 
 HANDLE hModulesLoaded,hOnCntMenuBuild;
 HANDLE prevmenu=0;
-extern char *DBGetStringA(HANDLE hContact,const char *szModule,const char *szSetting);
+
 
 HWND hwndTopToolBar=0;
 

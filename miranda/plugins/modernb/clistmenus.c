@@ -25,6 +25,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include "genmenu.h"
 #include "m_genmenu.h"
 #include "m_clui.h"
+#include "commonprototypes.h"
 #pragma hdrstop
 
 
@@ -74,9 +75,7 @@ lpStatusMenuHandles hStatusMenuHandles;
 int hStatusMenuHandlesCnt;
 
 
-extern HANDLE hStatusModeChangeEvent;
-extern int GetProtocolVisibility(char * ProtoName);
-extern int 	ProtocolOrder_CheckOrder();
+
 //mainmenu exec param(ownerdata)
 typedef struct{
   char *szServiceName;
@@ -119,16 +118,16 @@ return 0 on success.
 */
 static int RemoveMainMenuItem(WPARAM wParam,LPARAM lParam)
 {
-  /*not need if used free service
-  lpMainMenuExecParam mmep;
+  //not need if used free service
+//  lpMainMenuExecParam mmep;
 
-  mmep=CallService(MO_MENUITEMGETOWNERDATA,wParam,lParam);
+//  mmep=CallService(MO_MENUITEMGETOWNERDATA,wParam,lParam);
 
-  if (mmep!=NULL){
-  FreeAndNil(&mmep->szServiceName);
-  mir_free_and_nill(mmep);
-  }
-  */
+  //if (mmep!=NULL){
+  //FreeAndNil(&mmep->szServiceName);
+  //mir_free_and_nill(mmep);
+  //}
+
   CallService(MO_REMOVEMENUITEM,wParam,0);
   return 0;
 }
@@ -456,15 +455,13 @@ char * GetUniqueProtoName(char * proto)
 	return NULL;
 }
 
-extern TMO_IntMenuItem * GetMenuItemByGlobalID(int globalMenuID);
-extern int GetAverageMode();
+
+
 typedef struct _MenuItemHandles 
 {
 	HMENU OwnerMenu;
 	int position;
 } MenuItemData;
-
-extern BOOL FindMenuHanleByGlobalID(HMENU hMenu, int globalID, MenuItemData * dat);
 
 
 int StatusMenuCheckService(WPARAM wParam, LPARAM lParam)
@@ -1204,11 +1201,11 @@ int MenuModulesShutdown(WPARAM wParam,LPARAM lParam)
   UnhookEvent(hAckHook);
   return 0;
 }
-extern void CLUI_DisconnectAll();
+
 int CloseAction(WPARAM wParam,LPARAM lParam)
 {
   int k;
-  g_bSTATE=STATE_PREPEARETOEXIT;  // workaround for avatar service and other wich destroys service on OK_TOEXIT
+  g_CluiData.bSTATE=STATE_PREPEARETOEXIT;  // workaround for avatar service and other wich destroys service on OK_TOEXIT
   do
   {
       k=CallService(MS_SYSTEM_OKTOEXIT,(WPARAM)0,(LPARAM)0);
@@ -1338,7 +1335,7 @@ int InitCustomMenus(void)
     mi.cbSize=sizeof(mi);
     mi.position=0x7fffffff;
     mi.pszService="CloseAction";
-    mi.pszName=Translate("E&xit");
+    mi.pszName="E&xit";
     AddMainMenuItem((WPARAM)0,(LPARAM)&mi);
   };
 

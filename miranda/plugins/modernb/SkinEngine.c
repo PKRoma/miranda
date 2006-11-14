@@ -44,22 +44,16 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include "shlwapi.h"
 #include "math.h"
 
-extern struct LISTMODERNMASK *MainModernMaskList;
+
 /* Global variables */
 
 SKINOBJECTSLIST g_SkinObjectList={0};
 CURRWNDIMAGEDATA * g_pCachedWindow=NULL;
 
-BOOL    g_bLayered=FALSE;
-BYTE    g_bUseKeyColor=TRUE;
-
-BYTE    g_bCurrentAlpha=255;
-DWORD   g_dwKeyColor=RGB(255,0,255);
-
 BOOL (WINAPI *g_proc_UpdateLayeredWindow)(HWND,HDC,POINT*,SIZE*,HDC,POINT*,COLORREF,BLENDFUNCTION*,DWORD);
 
 BOOL    g_flag_bPostWasCanceled =FALSE,
-g_flag_bFullRepaint     =FALSE;
+		g_flag_bFullRepaint     =FALSE;
 
 BOOL    g_mutex_bLockUpdating   =FALSE;
 
@@ -133,7 +127,7 @@ static MODERNEFFECT meCurrentEffect={-1,{0},0,0};
 
 BOOL SkinEngine_AlphaBlend(HDC hdcDest,int nXOriginDest,int nYOriginDest,int nWidthDest,int nHeightDest,HDC hdcSrc,int nXOriginSrc,int nYOriginSrc,int nWidthSrc,int nHeightSrc,BLENDFUNCTION blendFunction)
 {
-    if (!gl_b_GDIPlusFail && blendFunction.BlendFlags&128 ) //Use gdi+ engine
+    if (!g_CluiData.fGDIPlusFail && blendFunction.BlendFlags&128 ) //Use gdi+ engine
     {
         return GDIPlus_AlphaBlend( hdcDest,nXOriginDest,nYOriginDest,nWidthDest,nHeightDest,
             hdcSrc,nXOriginSrc,nYOriginSrc,nWidthSrc,nHeightSrc,
@@ -168,7 +162,7 @@ int SkinEngine_LoadModule()
     InitGdiPlus();
     //load decoder
     hImageDecoderModule=NULL;
-    if (gl_b_GDIPlusFail)
+    if (g_CluiData.fGDIPlusFail)
     {
         hImageDecoderModule = LoadLibrary(TEXT("ImgDecoder.dll"));
         if (hImageDecoderModule==NULL) 
@@ -1302,7 +1296,7 @@ int SkinEngine_GetFullFilename(char * buf, char *file, char * skinfolder,BOOL ma
 
 static HBITMAP SkinEngine_skinLoadGlyphImage(char * szFileName)
 {
-    if (!gl_b_GDIPlusFail && !wildcmpi(szFileName,"*.tga"))
+    if (!g_CluiData.fGDIPlusFail && !wildcmpi(szFileName,"*.tga"))
         return GDIPlus_LoadGlyphImage(szFileName);
     else 
         return SkinEngine_LoadGlyphImageByDecoders(szFileName);
@@ -1677,10 +1671,11 @@ int SkinEngine_UnloadSkin(SKINOBJECTSLIST * Skin)
                 {
                     if (sf->szFontID) mir_free_and_nill(sf->szFontID);
                     DeleteObject(sf->hFont);
+					mir_free_and_nill(sf);
                 }
             }
             li.List_Destroy(gl_plSkinFonts);
-            gl_plSkinFonts=NULL;
+			mir_free_and_nill(gl_plSkinFonts);
         }
     }
 
@@ -1712,10 +1707,11 @@ int SkinEngine_UnloadSkin(SKINOBJECTSLIST * Skin)
                                 if (gt->stValueText)  mir_free_and_nill(gt->stValueText);
                                 if (gt->szFontID)     mir_free_and_nill(gt->szFontID);
                                 if (gt->szGlyphTextID)mir_free_and_nill(gt->szGlyphTextID);
+								mir_free_and_nill(gt);
                             }
                         }
                         li.List_Destroy(dt->plTextList);
-                        dt->plTextList=NULL;
+						mir_free_and_nill(dt->plTextList);
                     }
                 }
                 mir_free_and_nill(dt);
@@ -1829,8 +1825,8 @@ static int SkinEngine_GetSkinFromDB(char * szSection, SKINOBJECTSLIST * Skin)
 void SkinEngine_LoadSkinFromDB(void) 
 { 
     SkinEngine_GetSkinFromDB(SKIN,&g_SkinObjectList); 
-    g_bUseKeyColor=DBGetContactSettingByte(NULL,"ModernSettings","g_bUseKeyColor",1);
-    g_dwKeyColor=DBGetContactSettingDword(NULL,"ModernSettings","g_dwKeyColor",(DWORD)RGB(255,0,255));
+    g_CluiData.fUseKeyColor=(BOOL)DBGetContactSettingByte(NULL,"ModernSettings","UseKeyColor",1);
+    g_CluiData.dwKeyColor=DBGetContactSettingDword(NULL,"ModernSettings","KeyColor",(DWORD)RGB(255,0,255));
 }
 
 
@@ -2226,7 +2222,7 @@ BOOL SkinEngine_TextOut(HDC hdc, int x, int y, LPCTSTR lpString, int nCount)
     int ta;
     SIZE sz;
     RECT rc={0};
-    if (!gl_b_GDIPlusFail &&0) ///text via gdi+
+    if (!g_CluiData.fGDIPlusFail &&0) ///text via gdi+
     {
         TextOutWithGDIp(hdc,x,y,lpString,nCount);
         return 0;
@@ -2766,7 +2762,7 @@ BOOL SkinEngine_DrawText(HDC hdc, LPCTSTR lpString, int nCount, RECT * lpRect, U
     if (format&DT_CALCRECT) return DrawText(hdc,lpString,nCount,lpRect,format);
     form=format;
     color=GetTextColor(hdc);
-    if (!gl_b_GDIPlusFail &&0) ///text via gdi+
+    if (!g_CluiData.fGDIPlusFail &&0) ///text via gdi+
     {
         TextOutWithGDIp(hdc,lpRect->left,lpRect->top,lpString,nCount);
         return 0;
@@ -2778,47 +2774,67 @@ HICON SkinEngine_ImageList_GetIcon(HIMAGELIST himl, int i, UINT fStyle)
 {
     IMAGEINFO imi={0};
     BITMAP bm={0};
-    ImageList_GetImageInfo(himl,i,&imi);
-    GetObject(imi.hbmImage,sizeof(bm),&bm);
-    if (bm.bmBitsPixel==32 && IsWinVerXPPlus()) //stupid bug of microsoft 0x7f in alpha and 0x80 in any color works incorrectly
-    {
-        BYTE * bits=NULL;	  
-        bits=bm.bmBits;
-        if (!bits)
-        {
-            bits=malloc(bm.bmWidthBytes*bm.bmHeight);
-            GetBitmapBits(imi.hbmImage,bm.bmWidthBytes*bm.bmHeight,bits);
-        } 
-        {
-            int iy;
-            BYTE *bcbits;
-            int wb=((imi.rcImage.right-imi.rcImage.left)*bm.bmBitsPixel>>3);
-            bcbits=bits+(bm.bmHeight-imi.rcImage.bottom)*bm.bmWidthBytes+(imi.rcImage.left*bm.bmBitsPixel>>3);
-            for (iy=0; iy<imi.rcImage.bottom-imi.rcImage.top; iy++)
-            {
-                int x;
-                // Dummy microsoft fix - alpha can be less than r,g or b
-                // Looks like color channels in icons should be non-premultiplied with alpha
-                // But AddIcon store it premultiplied (incorrectly cause can be Alpha==7F, but R,G or B==80
-                // So i check that alpha is 0x7F and set it to 0x80
-                DWORD *c=((DWORD*)bcbits);
-                for (x=0;x<imi.rcImage.right-imi.rcImage.left; x++)
-                {		  
-                    if (((*c)&0xFF000000)==0x7F000000) 
-                        (*c)=((*c)&0x00FFFFFF)|0x80000000;
-                    c++;
-                }
-                bcbits+=bm.bmWidthBytes;
-            }
-        }  
-        if (!bm.bmBits) 
-        { 
-            SetBitmapBits(imi.hbmImage,bm.bmWidthBytes*bm.bmHeight,bits);
-            free(bits);
-        }
-    }
+	if (IsWinVerXPPlus()  && i!=-1)
+	{
+		ImageList_GetImageInfo(himl,i,&imi);
+		GetObject(imi.hbmImage,sizeof(bm),&bm);
+		if (bm.bmBitsPixel==32) //stupid bug of Microsoft 
+								// Icons bitmaps are not premultiplied
+								// So Imagelist_AddIcon - premultiply alpha
+								// But incorrect - it is possible that alpha will
+								// be less than color and
+								// ImageList_GetIcon will return overflowed colors
+								// TODO: Direct draw Icon from imagelist without 
+								// extracting of icon
+		{
+			BYTE * bits=NULL;	
+			bits=bm.bmBits;
+			if (!bits)
+			{
+				bits=malloc(bm.bmWidthBytes*bm.bmHeight);
+				GetBitmapBits(imi.hbmImage,bm.bmWidthBytes*bm.bmHeight,bits);
+			} 
+			{
+				int iy;
+				BYTE *bcbits;
+				int wb=((imi.rcImage.right-imi.rcImage.left)*bm.bmBitsPixel>>3);
+				bcbits=bits+(bm.bmHeight-imi.rcImage.bottom)*bm.bmWidthBytes+(imi.rcImage.left*bm.bmBitsPixel>>3);
+				for (iy=0; iy<imi.rcImage.bottom-imi.rcImage.top; iy++)
+				{
+					int x;
+					// Dummy microsoft fix - alpha can be less than r,g or b
+					// Looks like color channels in icons should be non-premultiplied with alpha
+					// But AddIcon store it premultiplied (incorrectly cause can be Alpha==7F, but R,G or B==80
+					// So i check that alpha is 0x7F and set it to 0x80
+					DWORD *c=((DWORD*)bcbits);
+					for (x=0;x<imi.rcImage.right-imi.rcImage.left; x++)
+					{		  
+						DWORD val=*c;
+						BYTE a= (BYTE)((val)>>24);
+						BYTE r= (BYTE)((val&0xFF0000)>>16);
+						BYTE g= (BYTE)((val&0xFF00)>>8);
+						BYTE b= (BYTE)(val&0xFF);
+						if (a<r || a<g || a<b)
+						{
+							a=max(max(r,g),b);
+							val=a<<24|r<<16|g<<8|b;
+							*c=val;
+						}
+						c++;
+					}
+					bcbits+=bm.bmWidthBytes;
+				}
+			}  
+			if (!bm.bmBits) 
+			{ 
+				SetBitmapBits(imi.hbmImage,bm.bmWidthBytes*bm.bmHeight,bits);
+				free(bits);
+			}
+		}
+	}
     return ImageList_GetIcon(himl,i,ILD_TRANSPARENT);
 }
+
 
 BOOL SkinEngine_ImageList_DrawEx( HIMAGELIST himl,int i,HDC hdcDst,int x,int y,int dx,int dy,COLORREF rgbBk,COLORREF rgbFg,UINT fStyle)
 {
@@ -2836,8 +2852,6 @@ BOOL SkinEngine_ImageList_DrawEx( HIMAGELIST himl,int i,HDC hdcDst,int x,int y,i
     if (alpha==255) 
     {
         SkinEngine_DrawIconEx(hdcDst,x,y,ic,dx?dx:ddx,dy?dy:ddy,0,NULL,DI_NORMAL);
-        //DrawIconEx(hdcDst,x,y,ic,dx?dx:ddx,dy?dy:ddy,0,NULL,DI_NORMAL);
-
     }
     else
     {
@@ -3117,7 +3131,7 @@ static int SkinEngine_Service_RegisterFramePaintCallbackProcedure(WPARAM wParam,
 
 int SkinEngine_PrepeareImageButDontUpdateIt(RECT * r)
 {
-    if (g_bLayered)
+    if (g_CluiData.fLayered)
     {
         mutex_bLockUpdate=1;
         SkinEngine_DrawNonFramedObjects(TRUE,r);
@@ -3134,7 +3148,7 @@ int SkinEngine_PrepeareImageButDontUpdateIt(RECT * r)
 
 int SkinEngine_RedrawCompleteWindow()
 {   
-    if (g_bLayered)
+    if (g_CluiData.fLayered)
     { 
         SkinEngine_DrawNonFramedObjects(TRUE,0);
         SkinEngine_Service_InvalidateFrameImage(0,0);   
@@ -3156,11 +3170,11 @@ int SkinEngine_Service_UpdateFrameImage(WPARAM wParam, LPARAM lParam)           
     wndFrame *frm;
     BOOL NoCancelPost=0;
     BOOL IsAnyQueued=0;
-    if (!g_mutex_bOnEdgeSizing)
+    if (!g_CluiData.mutexOnEdgeSizing)
         GetWindowRect(pcli->hwndContactList,&wnd);
     else
         wnd=g_rcEdgeSizingRect;
-    if (!g_bLayered)
+    if (!g_CluiData.fLayered)
     {
         RedrawWindow((HWND)wParam,NULL,NULL,RDW_UPDATENOW|RDW_ERASE|RDW_INVALIDATE|RDW_FRAME);
         return 0;
@@ -3207,7 +3221,7 @@ int SkinEngine_Service_InvalidateFrameImage(WPARAM wParam, LPARAM lParam)       
     {
         wndFrame *frm=FindFrameByItsHWND((HWND)wParam);
         sPaintRequest * pr=(sPaintRequest*)lParam;
-        if (!g_bLayered || (frm && frm->floating)) return InvalidateRect((HWND)wParam,pr?(RECT*)&(pr->rcUpdate):NULL,FALSE);
+        if (!g_CluiData.fLayered || (frm && frm->floating)) return InvalidateRect((HWND)wParam,pr?(RECT*)&(pr->rcUpdate):NULL,FALSE);
         if (frm) 
         {
             if (frm->PaintCallbackProc!=NULL)
@@ -3268,7 +3282,7 @@ static int SkinEngine_ValidateSingleFrameImage(wndFrame * Frame, BOOL SkipBkgBli
         rcPaint=Frame->wndSize;
         {
             int dx,dy,bx,by;
-            if (g_mutex_bOnEdgeSizing)
+            if (g_CluiData.mutexOnEdgeSizing)
             {
                 dx=rcPaint.left-wnd.left;
                 dy=rcPaint.top-wnd.top;
@@ -3381,7 +3395,6 @@ static int SkinEngine_ValidateSingleFrameImage(wndFrame * Frame, BOOL SkipBkgBli
             //BLENDFUNCTION bf={AC_SRC_OVER, 0, 255, AC_SRC_ALPHA };
             //MyAlphaBlend(g_pCachedWindow->hImageDC,x+x1,y+y1,w1,h1,hdc,x1,y1,w1,h1,bf);  
         }
-        //StartGDIPlus();
         {
             if (GetWindowLong(Frame->hWnd,GWL_STYLE)&WS_VSCROLL)
             {
@@ -3428,10 +3441,6 @@ static int SkinEngine_ValidateSingleFrameImage(wndFrame * Frame, BOOL SkipBkgBli
             }
 
         }
-        //StartGDIPlus();
-        //CallTest(g_pCachedWindow->hImageDC, 0, 0, "Test case");
-        //TerminateGDIPlus();
-
         SelectObject(hdc,o);
         DeleteObject(n);
         mod_DeleteDC(hdc);
@@ -3526,7 +3535,7 @@ int SkinEngine_DrawNonFramedObjects(BOOL Erase,RECT *r)
     RECT w,wnd;
     if (r) w=*r;
     else CLUI_SizingGetWindowRect(pcli->hwndContactList,&w);
-    if (!g_bLayered) return SkinEngine_ReCreateBackImage(FALSE,0);
+    if (!g_CluiData.fLayered) return SkinEngine_ReCreateBackImage(FALSE,0);
     if (g_pCachedWindow==NULL)
         return SkinEngine_ValidateFrameImageProc(&w);
 
@@ -3642,7 +3651,7 @@ int SkinEngine_UpdateWindowImage()
 {
     if (MirandaExiting()) 
         return 0;
-    if (g_bLayered)
+    if (g_CluiData.fLayered)
     {
         RECT r;
         GetWindowRect(pcli->hwndContactList,&r);
@@ -3660,7 +3669,7 @@ int SkinEngine_UpdateWindowImageRect(RECT * r)                                  
     //if not validity -> ValidateImageProc
     //else Update using current alpha
     RECT wnd=*r;
-    if (!g_bLayered) return SkinEngine_ReCreateBackImage(FALSE,0);
+    if (!g_CluiData.fLayered) return SkinEngine_ReCreateBackImage(FALSE,0);
     if (g_pCachedWindow==NULL) return SkinEngine_ValidateFrameImageProc(&wnd); 
     if (g_pCachedWindow->Width!=wnd.right-wnd.left || g_pCachedWindow->Height!=wnd.bottom-wnd.top) return SkinEngine_ValidateFrameImageProc(&wnd);
     if (g_flag_bFullRepaint) 
@@ -3678,13 +3687,13 @@ void SkinEngine_ApplyTransluency()
     HWND hwnd=(HWND)CallService(MS_CLUI_GETHWND,0,0);
     BOOL layered=(GetWindowLong(hwnd, GWL_EXSTYLE) & WS_EX_LAYERED)?TRUE:FALSE;
 
-    IsTransparancy=g_bSmoothAnimation || g_bTransparentFlag;
-    if (!g_bTransparentFlag && !g_bSmoothAnimation && g_bCurrentAlpha!=0)
-        g_bCurrentAlpha=255;
-    if (!g_bLayered && (/*(g_bCurrentAlpha==255)||*/(g_proc_SetLayeredWindowAttributesNew && IsTransparancy)))
+    IsTransparancy=g_CluiData.fSmoothAnimation || g_bTransparentFlag;
+    if (!g_bTransparentFlag && !g_CluiData.fSmoothAnimation && g_CluiData.bCurrentAlpha!=0)
+        g_CluiData.bCurrentAlpha=255;
+    if (!g_CluiData.fLayered && (/*(g_CluiData.bCurrentAlpha==255)||*/(g_proc_SetLayeredWindowAttributesNew && IsTransparancy)))
     {
         if (!layered) SetWindowLong(hwnd, GWL_EXSTYLE, GetWindowLong(hwnd, GWL_EXSTYLE) | WS_EX_LAYERED);
-        if (g_proc_SetLayeredWindowAttributesNew) g_proc_SetLayeredWindowAttributesNew(hwnd, RGB(0,0,0), (BYTE)g_bCurrentAlpha, LWA_ALPHA);
+        if (g_proc_SetLayeredWindowAttributesNew) g_proc_SetLayeredWindowAttributesNew(hwnd, RGB(0,0,0), (BYTE)g_CluiData.bCurrentAlpha, LWA_ALPHA);
     }
     return;
 }
@@ -3692,7 +3701,7 @@ void SkinEngine_ApplyTransluency()
 int SkinEngine_JustUpdateWindowImage()
 {
     RECT r;
-    if (!g_bLayered)
+    if (!g_CluiData.fLayered)
     {
         SkinEngine_ApplyTransluency();
         return 0;
@@ -3703,7 +3712,7 @@ int SkinEngine_JustUpdateWindowImage()
 int SkinEngine_JustUpdateWindowImageRect(RECT * rty)
 //Update window image
 {
-    BLENDFUNCTION bf={AC_SRC_OVER, 0,g_bCurrentAlpha, AC_SRC_ALPHA };
+    BLENDFUNCTION bf={AC_SRC_OVER, 0,g_CluiData.bCurrentAlpha, AC_SRC_ALPHA };
     POINT dest={0}, src={0};
     int res;
     RECT wnd=*rty;
@@ -3711,7 +3720,7 @@ int SkinEngine_JustUpdateWindowImageRect(RECT * rty)
     RECT rect;
     SIZE sz={0};
 
-    if (!g_bLayered)
+    if (!g_CluiData.fLayered)
     {
         SkinEngine_ApplyTransluency();
         return 0;
@@ -3722,11 +3731,11 @@ int SkinEngine_JustUpdateWindowImageRect(RECT * rty)
     dest.y=rect.top;
     sz.cx=rect.right-rect.left;
     sz.cy=rect.bottom-rect.top;
-    if (g_proc_UpdateLayeredWindow && g_bLayered)
+    if (g_proc_UpdateLayeredWindow && g_CluiData.fLayered)
     {
         if (!(GetWindowLong(pcli->hwndContactList, GWL_EXSTYLE)&WS_EX_LAYERED))
             SetWindowLong(pcli->hwndContactList,GWL_EXSTYLE, GetWindowLong(pcli->hwndContactList, GWL_EXSTYLE) |WS_EX_LAYERED);
-        SetAlpha(g_bCurrentAlpha);
+        SetAlpha(g_CluiData.bCurrentAlpha);
 
         res=g_proc_UpdateLayeredWindow(pcli->hwndContactList,g_pCachedWindow->hScreenDC,&dest,&sz,g_pCachedWindow->hImageDC,&src,RGB(1,1,1),&bf,ULW_ALPHA);
     }
@@ -4094,6 +4103,7 @@ static DWORD SkinEngine_Blend(DWORD X1,DWORD X2, BYTE alpha)
 
     BYTE a_1=~a1;
     BYTE a_2=~a2;
+	WORD am=(WORD)a1*a_2;
 
     /*  it is possible to use >>8 instead of /255 but it is require additional
     *   checking of alphavalues
@@ -4109,10 +4119,11 @@ static DWORD SkinEngine_Blend(DWORD X1,DWORD X2, BYTE alpha)
 
     //else
     {
-        WORD rr=(((WORD)r1*a_2+(WORD)r2*a2))/255;
-        WORD gr=(((WORD)g1*a_2+(WORD)g2*a2))/255;
-        WORD br=(((WORD)b1*a_2+(WORD)b2*a2))/255;
-        return (ar<<24)|(rr<<16)|(gr<<8)|br;
+		WORD arm=ar*255;
+		WORD rr=(((WORD)r1*am+(WORD)r2*a2*255))/arm;
+		WORD gr=(((WORD)g1*am+(WORD)g2*a2*255))/arm;
+		WORD br=(((WORD)b1*am+(WORD)b2*a2*255))/arm;
+		return (ar<<24)|(rr<<16)|(gr<<8)|br;
     }
 
 }

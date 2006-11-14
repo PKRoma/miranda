@@ -26,7 +26,7 @@ Created by Pescuma
 #include "commonheaders.h"
 #include "image_array.h"
 #include "commonprototypes.h"
-//extern BYTE gdiPlusFail;
+
 // To use this code in other places, replace the body of this func by the body of SkinEngine_CreateDIB32
 static HBITMAP ImageArray_CreateBitmap(int cx, int cy)
 {
@@ -683,7 +683,7 @@ BOOL ImageArray_DrawImage(LP_IMAGE_ARRAY_DATA iad, int pos, HDC hdcDest, int nXD
 				w += iad->nodes[i].width;
 			}
 		}
-    if (!gl_b_GDIPlusFail) //Use gdi+ engine
+    if (!g_CluiData.fGDIPlusFail) //Use gdi+ engine
     {
 		  DrawAvatarImageWithGDIp(hdcDest, nXDest, nYDest, iad->nodes[pos].width, iad->nodes[pos].height, iad->img, w, h, iad->nodes[pos].width, iad->nodes[pos].height,0,255);
     }
