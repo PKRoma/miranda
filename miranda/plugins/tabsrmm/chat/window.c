@@ -445,7 +445,7 @@ static LRESULT CALLBACK MessageSubclassProc(HWND hwnd, UINT msg, WPARAM wParam, 
                     break;
                 case IDM_PASTE:
                 case IDM_PASTEFORMATTED:
-                    if(idFrom == IDC_MESSAGE)
+                    if(idFrom == IDC_CHAT_MESSAGE)
                         SendMessage(hwnd, EM_PASTESPECIAL, (iSelection == IDM_PASTE) ? CF_TEXT : 0, 0);
                     break;
                 case IDM_COPYALL:
