@@ -889,9 +889,10 @@ static void sttProcessStatusMessage( BYTE* buf, unsigned len, HANDLE hContact )
 				HtmlDecode( p );
 				DBWriteContactSettingStringUtf( hContact, "CList", "StatusMsg", p );
 			}
-			else
-				DBDeleteContactSetting( hContact, "CList", "StatusMsg" );
-	}	}
+			else DBDeleteContactSetting( hContact, "CList", "StatusMsg" );
+		}	
+	}
+	else DBDeleteContactSetting( hContact, "CList", "StatusMsg" );
 
 	// Process current media info
 	if ( buf != NULL ) {
@@ -1374,39 +1375,42 @@ LBL_InvalidCommand:
 
 			UrlDecode( data.userEmail ); UrlDecode( data.userNick );
 
+			WORD lastStatus = ID_STATUS_OFFLINE;
 			HANDLE hContact = MSN_HContactFromEmail( data.userEmail, NULL, 0, 0 );
 			if ( hContact != NULL) {
 				MSN_SetStringUtf( hContact, "Nick", data.userNick );
+				lastStatus = MSN_GetWord( hContact, "Status", ID_STATUS_OFFLINE);
 				MSN_SetWord( hContact, "Status", ( WORD )MSNStatusToMiranda( data.userStatus ));
-//				DBDeleteContactSetting( hContact, "CList", "StatusMsg" );
 			}
 
 			MSN_SetString( hContact, "MirVer", "" );
 
 			if ( tArgs > 3 && tArgs <= 5 ) {
 				UrlDecode( data.cmdstring );
-				DWORD dwValue = ( DWORD )atol( data.objid );
+				DWORD dwValue = strtoul( data.objid, NULL, 10 );
 				MSN_SetDword( hContact, "FlagBits", dwValue );
-				if ( dwValue & 0x200 )
-					MSN_SetString( hContact, "MirVer", "Webmessenger" );
-				else if ( dwValue == 1342177280 )
-					MSN_SetString( hContact, "MirVer", "Miranda IM 0.5.x" );
-				else if ( dwValue == 805306404 )
-					MSN_SetString( hContact, "MirVer", "Miranda IM 0.4.x" );
-				else if (( dwValue & 0x60000000 ) == 0x60000000 )
-					MSN_SetString( hContact, "MirVer", "MSN 8.x" );
-				else if (( dwValue & 0x50000000 ) == 0x50000000 )
-					MSN_SetString( hContact, "MirVer", "MSN 7.5" );
-				else if ( dwValue & 0x40000000 )
-					MSN_SetString( hContact, "MirVer", "MSN 7.0" );
-				else if (( dwValue & 0x30000000 ) == 0x30000000 )
-					MSN_SetString( hContact, "MirVer", "MSN 6.2" );
-				else if ( dwValue & 0x20000000 )
-					MSN_SetString( hContact, "MirVer", "MSN 6.1" );
-				else if ( dwValue & 0x10000000 )
-					MSN_SetString( hContact, "MirVer", "MSN 6.0" );
-				else
-					MSN_SetString( hContact, "MirVer", "MSN 4.x-5.x" );
+				if ( lastStatus == ID_STATUS_OFFLINE ) {
+					if ( dwValue & 0x200 )
+						MSN_SetString( hContact, "MirVer", "Webmessenger" );
+					else if ( dwValue == 1342177280 )
+						MSN_SetString( hContact, "MirVer", "Miranda IM 0.5.x" );
+					else if ( dwValue == 805306404 )
+						MSN_SetString( hContact, "MirVer", "Miranda IM 0.4.x" );
+					else if (( dwValue & 0x60000000 ) == 0x60000000 )
+						MSN_SetString( hContact, "MirVer", "MSN 8.x" );
+					else if (( dwValue & 0x50000000 ) == 0x50000000 )
+						MSN_SetString( hContact, "MirVer", "MSN 7.5" );
+					else if ( dwValue & 0x40000000 )
+						MSN_SetString( hContact, "MirVer", "MSN 7.0" );
+					else if (( dwValue & 0x30000000 ) == 0x30000000 )
+						MSN_SetString( hContact, "MirVer", "MSN 6.2" );
+					else if ( dwValue & 0x20000000 )
+						MSN_SetString( hContact, "MirVer", "MSN 6.1" );
+					else if ( dwValue & 0x10000000 )
+						MSN_SetString( hContact, "MirVer", "MSN 6.0" );
+					else
+						MSN_SetString( hContact, "MirVer", "MSN 4.x-5.x" );
+				}
 
 				if (( dwValue & 0x70000000 ) && data.cmdstring[0] && strcmp( data.cmdstring, "0" )) {
 					int temp_status = MSN_GetWord(hContact, "Status", ID_STATUS_OFFLINE);
