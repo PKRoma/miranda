@@ -123,7 +123,8 @@ void DrawStatusIcons(HANDLE hContact, HDC hDC, RECT r, int gap) {
 	HICON hIcon;
 	char buff[256];
 	int flags;
-	int x = r.left;
+	int x = r.right - GetSystemMetrics(SM_CYSMICON) - gap;
+//	int x = r.left;
 	while(current) {
 		sprintf(buff, "SRMMStatusIconFlags%d", (int)current->sid.dwId);
 		flags = DBGetContactSettingByte(hContact, current->sid.szModule, buff, current->sid.flags);
@@ -134,7 +135,7 @@ void DrawStatusIcons(HANDLE hContact, HDC hDC, RECT r, int gap) {
 			SetBkMode(hDC, TRANSPARENT);
 			DrawIconEx(hDC, x, (r.top + r.bottom - GetSystemMetrics(SM_CYSMICON)) >> 1, hIcon, GetSystemMetrics(SM_CXSMICON), GetSystemMetrics(SM_CYSMICON), 0, NULL, DI_NORMAL);
 
-			x += GetSystemMetrics(SM_CYSMICON) + gap;
+			x -= GetSystemMetrics(SM_CYSMICON) + gap;
 		}
 		current = current->next;
 	}
@@ -155,6 +156,7 @@ void CheckStatusIconClick(HANDLE hContact, HWND hwndFrom, POINT pt, RECT r, int 
 	}
 
 	if(current) {
+		ClientToScreen(hwndFrom, &pt);
 		sicd.cbSize = sizeof(StatusIconClickData);
 		sicd.clickLocation = pt;
 		sicd.dwId = current->sid.dwId;
