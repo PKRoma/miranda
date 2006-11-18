@@ -490,9 +490,11 @@ BOOL SM_TakeStatus(const TCHAR* pszID, const char* pszModule, const TCHAR* pszUI
 	while ( pTemp != NULL ) {
 		if ( !lstrcmpi( pTemp->ptszID, pszID ) && !lstrcmpiA( pTemp->pszModule, pszModule )) {
 			USERINFO* ui = UM_TakeStatus(pTemp->pUsers, pszUID, TM_StringToWord(pTemp->pStatuses, pszStatus));
-			SM_MoveUser(pTemp->ptszID, pTemp->pszModule, ui->pszUID);
-			if ( pTemp->hWnd )
-				SendMessage(pTemp->hWnd, GC_UPDATENICKLIST, (WPARAM)0, (LPARAM)0);
+			if ( ui ) {
+				SM_MoveUser(pTemp->ptszID, pTemp->pszModule, ui->pszUID);
+				if ( pTemp->hWnd )
+					SendMessage(pTemp->hWnd, GC_UPDATENICKLIST, (WPARAM)0, (LPARAM)0);
+			}
 			return TRUE;
 		}
 		pLast = pTemp;
@@ -676,7 +678,7 @@ BOOL SM_ChangeUID(const TCHAR* pszID, const char* pszModule, const TCHAR* pszUID
 
 	while ( pTemp != NULL ) {
 		if (( !pszID || !lstrcmpi( pTemp->ptszID, pszID )) && !lstrcmpiA( pTemp->pszModule, pszModule )) {
-			USERINFO * ui = UM_FindUser( pTemp->pUsers, pszUID );
+			USERINFO* ui = UM_FindUser( pTemp->pUsers, pszUID );
 			if ( ui )
 				replaceStr( &ui->pszUID, pszNewUID );
 
@@ -777,7 +779,7 @@ void SM_AddCommand(const TCHAR* pszID, const char* pszModule, const char* lpNewC
 {
 	SESSION_INFO* pTemp = m_WndList;
 	while ( pTemp != NULL ) {
-		if ( lstrcmpi( pTemp->ptszID, pszID ) == 0 && lstrcmpiA( pTemp->pszModule, pszModule ) == 0) { // match 
+		if ( lstrcmpi( pTemp->ptszID, pszID ) == 0 && lstrcmpiA( pTemp->pszModule, pszModule ) == 0) { // match
 			COMMAND_INFO *node = mir_alloc(sizeof(COMMAND_INFO));
 			node->lpCommand = mir_strdup( lpNewCommand );
 			node->last = NULL; // always added at beginning!
@@ -835,7 +837,7 @@ char* SM_GetNextCommand(const TCHAR* pszID, const char* pszModule) // get next c
 {
 	SESSION_INFO* pTemp = m_WndList;
 	while ( pTemp != NULL ) {
-		if ( lstrcmpi( pTemp->ptszID, pszID ) == 0 && lstrcmpiA( pTemp->pszModule, pszModule ) == 0) { // match 
+		if ( lstrcmpi( pTemp->ptszID, pszID ) == 0 && lstrcmpiA( pTemp->pszModule, pszModule ) == 0) { // match
 			COMMAND_INFO *pNextCmd = NULL;
 			if (pTemp->lpCurrentCommand != NULL)
 				pNextCmd = pTemp->lpCurrentCommand->last; // last command (newest at beginning)
