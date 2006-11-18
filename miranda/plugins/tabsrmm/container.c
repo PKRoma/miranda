@@ -1928,6 +1928,7 @@ buttons_done:
                 if(pContainer != NULL && pContainer->hwndStatus != 0 && ((LPNMHDR)lParam)->hwndFrom == pContainer->hwndStatus) {
                     switch (((LPNMHDR)lParam)->code) {
                         case NM_CLICK:
+                        case NM_RCLICK:
                         {
                             unsigned int nParts, nPanel;
                             NMMOUSE *nm=(NMMOUSE*)lParam;
@@ -1949,7 +1950,7 @@ panel_found:
                                 struct MessageWindowData *dat = (struct MessageWindowData *)GetWindowLong(pContainer->hwndActive, GWL_USERDATA);
                                 SendMessage(pContainer->hwndStatus, SB_GETRECT, nPanel, (LPARAM)&rc);
                                 if(dat)
-                                    SI_CheckStatusIconClick(dat, pContainer->hwndStatus, nm->pt, rc, 2);
+                                    SI_CheckStatusIconClick(dat, pContainer->hwndStatus, nm->pt, rc, 2, ((LPNMHDR)lParam)->code);
                             }
                         }
                     }

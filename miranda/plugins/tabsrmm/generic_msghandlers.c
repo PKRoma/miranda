@@ -732,13 +732,13 @@ void DrawStatusIcons(struct MessageWindowData *dat, HDC hDC, RECT r, int gap) {
         DrawIconEx(hDC, x, (r.top + r.bottom - myGlobals.m_smcxicon) >> 1, DBGetContactSettingByte(dat->hContact, SRMSGMOD, SRMSGSET_TYPING, DBGetContactSettingByte(NULL, SRMSGMOD, SRMSGSET_TYPINGNEW, SRMSGDEFSET_TYPINGNEW)) ? myGlobals.g_buttonBarIcons[12] : myGlobals.g_buttonBarIcons[13], myGlobals.m_smcxicon, myGlobals.m_smcyicon, 0, NULL, DI_NORMAL);
 }
 
-void SI_CheckStatusIconClick(struct MessageWindowData *dat, HWND hwndFrom, POINT pt, RECT r, int gap) {
+void SI_CheckStatusIconClick(struct MessageWindowData *dat, HWND hwndFrom, POINT pt, RECT r, int gap, int code) {
 	StatusIconClickData sicd;
 	struct StatusIconListNode *current = status_icon_list;
 	unsigned int iconNum = (pt.x - (r.left + (dat->bType != SESSIONTYPE_IM ? myGlobals.m_smcxicon + gap : 0))) / (myGlobals.m_smcxicon + gap);
 	unsigned int i;
 
-    if((int)iconNum == status_icon_list_size) {
+    if((int)iconNum == status_icon_list_size && code != NM_RCLICK) {
         if(GetKeyState(VK_SHIFT) & 0x8000) {
             struct ContainerWindowData *piContainer = pFirstContainer;
 
@@ -753,7 +753,7 @@ void SI_CheckStatusIconClick(struct MessageWindowData *dat, HWND hwndFrom, POINT
             InvalidateRect(dat->pContainer->hwndStatus, NULL, TRUE);
         }
     }
-    else if((int)iconNum == status_icon_list_size + 1) {
+    else if((int)iconNum == status_icon_list_size + 1 && code != NM_RCLICK) {
         SendMessage(dat->pContainer->hwndActive, WM_COMMAND, IDC_SELFTYPING, 0);
         InvalidateRect(dat->pContainer->hwndStatus, NULL, TRUE);
     }
@@ -765,6 +765,7 @@ void SI_CheckStatusIconClick(struct MessageWindowData *dat, HWND hwndFrom, POINT
             sicd.clickLocation = pt;
             sicd.dwId = current->sid.dwId;
             sicd.szModule = current->sid.szModule;
+            sicd.flags = (code == NM_RCLICK ? MBCF_RIGHTBUTTON : 0);
             NotifyEventHooks(hHookIconPressedEvt, (WPARAM)dat->hContact, (LPARAM)&sicd);
         }
     }

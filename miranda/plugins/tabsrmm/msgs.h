@@ -122,7 +122,7 @@ typedef struct _settextex {
 #include <richedit.h>
 #include <richole.h>
 #include "m_avatars.h"
-#include "m_tabsrmm.h"
+#include "m_message.h"
 
 #define MSGERROR_CANCEL	0
 #define MSGERROR_RETRY	    1
@@ -1066,7 +1066,74 @@ static __inline int mir_snprintfW(wchar_t *buffer, size_t count, const wchar_t* 
 
 #include "templates.h"
 
+struct StatusIconListNode {
+    struct StatusIconListNode *next;
+	StatusIconData sid;
+};
+
+struct TABSRMM_SessionInfo {
+    unsigned int cbSize;
+    unsigned short evtCode;
+    HWND hwnd;              // handle of the message dialog (tab)
+    HWND hwndContainer;     // handle of the parent container
+    HWND hwndInput;         // handle of the input area (rich edit)
+    UINT extraFlags;
+    UINT extraFlagsEX;
+    void *local;
+};
+
+typedef struct {
+	int cbSize;
+	HANDLE hContact;
+	int uFlags;  // should be same as input data unless 0, then it will be the actual type
+	HWND hwndWindow; //top level window for the contact or NULL if no window exists
+	int uState; // see window states
+	void *local; // used to store pointer to custom data
+} MessageWindowOutputData;
+
+
 #endif
+
+#define MS_MSG_FORWARDMESSAGE  "SRMsg/ForwardMessage"
+
+#define MS_MSG_GETWINDOWDATA "MessageAPI/GetWindowData"
+//wparam=(MessageWindowInputData*)
+//lparam=(MessageWindowData*)
+//returns 0 on success and returns non-zero (1) on error or if no window data exists for that hcontact
+
+// callback for the user menu entry
+
+#define MS_TABMSG_SETUSERPREFS "SRMsg_MOD/SetUserPrefs"
+
+// show one of the tray menus
+// wParam = 0 -> session list
+// wParam = 1 -> tray menu
+// lParam must be 0
+// 
+#define MS_TABMSG_TRAYSUPPORT "SRMsg_MOD/Show_TrayMenu"
+
+#define MBF_DISABLED		0x01
+
+#define TEMPLATES_MODULE "tabSRMM_Templates"
+#define RTLTEMPLATES_MODULE "tabSRMM_RTLTemplates"
+
+//Checks if there is a message window opened
+//wParam=(LPARAM)(HANDLE)hContact  - handle of the contact for which the window is searched. ignored if lParam
+//is not zero.
+//lParam=(LPARAM)(HWND)hwnd - a window handle - SET THIS TO 0 if you want to obtain the window handle
+//from the hContact.
+#define MS_MSG_MOD_MESSAGEDIALOGOPENED "SRMsg_MOD/MessageDialogOpened"
+
+//obtain the message window flags
+//wParam = hContact - ignored if lParam is given.
+//lParam = hwnd
+//returns struct MessageWindowData *dat, 0 if no window is found
+#define MS_MSG_MOD_GETWINDOWFLAGS "SRMsg_MOD/GetWindowFlags"
+
+// custom tabSRMM events
+
+#define tabMSG_WINDOW_EVT_CUSTOM_BEFORESEND 1
+
 
 /* temporary HPP API for emulating message log */
 
@@ -1088,5 +1155,6 @@ int SI_DeinitStatusIcons();
 
 int  GetStatusIconsCount();
 void DrawStatusIcons(struct MessageWindowData *dat, HDC hdc, RECT r, int gap);
-void SI_CheckStatusIconClick(struct MessageWindowData *dat, HWND hwndFrom, POINT pt, RECT rc, int gap);
+void SI_CheckStatusIconClick(struct MessageWindowData *dat, HWND hwndFrom, POINT pt, RECT rc, int gap, int code);
+
 
