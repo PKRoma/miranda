@@ -32,7 +32,7 @@ int AddStatusIcon(WPARAM wParam, LPARAM lParam) {
 }
 
 int RemoveStatusIcon(WPARAM wParam, LPARAM lParam) {
-	StatusIconData *sid = (StatusIconData *)lParam;	
+	StatusIconData *sid = (StatusIconData *)lParam;
 	struct StatusIconListNode *current = status_icon_list, *prev = 0;
 
 	while(current) {
@@ -78,8 +78,8 @@ void RemoveAllStatusIcons(void) {
 
 int ModifyStatusIcon(WPARAM wParam, LPARAM lParam) {
 	HANDLE hContact = (HANDLE)wParam;
-	
-	StatusIconData *sid = (StatusIconData *)lParam;	
+
+	StatusIconData *sid = (StatusIconData *)lParam;
 	struct StatusIconListNode *current = status_icon_list, *prev = 0;
 
 	while(current) {
@@ -156,6 +156,7 @@ void CheckIconClick(HANDLE hContact, HWND hwndFrom, POINT pt, RECT r, int gap, i
 
 	if(current) {
 		sicd.cbSize = sizeof(StatusIconClickData);
+		ClientToScreen(hwndFrom, &pt);
 		sicd.clickLocation = pt;
 		sicd.dwId = current->sid.dwId;
 		sicd.szModule = current->sid.szModule;
