@@ -1952,6 +1952,20 @@ panel_found:
                                 if(dat)
                                     SI_CheckStatusIconClick(dat, pContainer->hwndStatus, nm->pt, rc, 2, ((LPNMHDR)lParam)->code);
                             }
+                            else if(((LPNMHDR)lParam)->code == NM_RCLICK) {
+                                POINT pt;
+                                HANDLE hContact;
+                                HMENU hMenu;
+
+                                GetCursorPos(&pt);
+                                SendMessage(pContainer->hwndActive, DM_QUERYHCONTACT, 0, (LPARAM)&hContact);
+                                if(hContact) {
+                                    hMenu = (HMENU) CallService(MS_CLIST_MENUBUILDCONTACT, (WPARAM) hContact, 0);
+                                    TrackPopupMenu(hMenu, 0, pt.x, pt.y, 0, hwndDlg, NULL);
+                                    DestroyMenu(hMenu);
+                                }
+                            }
+                            return TRUE;
                         }
                     }
                     break;
@@ -2669,7 +2683,7 @@ panel_found:
             break;
         case WM_CONTEXTMENU:
             {
-                if (pContainer->hwndStatus && pContainer->hwndStatus == (HWND) wParam) {
+                /*if (pContainer->hwndStatus && pContainer->hwndStatus == (HWND) wParam) {
                     POINT pt;
                     HANDLE hContact;
                     HMENU hMenu;
@@ -2682,7 +2696,7 @@ panel_found:
                         DestroyMenu(hMenu);
                     }
                     return TRUE;
-                }
+                }*/
                 break;
             }
         case DM_SETICON:

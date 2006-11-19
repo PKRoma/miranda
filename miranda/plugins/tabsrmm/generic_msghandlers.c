@@ -762,11 +762,13 @@ void SI_CheckStatusIconClick(struct MessageWindowData *dat, HWND hwndFrom, POINT
 
         if(current) {
             sicd.cbSize = sizeof(StatusIconClickData);
-            sicd.clickLocation = pt;
+            GetCursorPos(&sicd.clickLocation);
+            //sicd.clickLocation = pt;
             sicd.dwId = current->sid.dwId;
             sicd.szModule = current->sid.szModule;
             sicd.flags = (code == NM_RCLICK ? MBCF_RIGHTBUTTON : 0);
             NotifyEventHooks(hHookIconPressedEvt, (WPARAM)dat->hContact, (LPARAM)&sicd);
+            InvalidateRect(dat->pContainer->hwndStatus, NULL, TRUE);
         }
     }
 }

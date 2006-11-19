@@ -427,7 +427,7 @@ static LRESULT CALLBACK MessageSubclassProc(HWND hwnd, UINT msg, WPARAM wParam, 
                 NotifyEventHooks(g_hEvent_MsgPopup, 0, (LPARAM)&mwpd);
             }
 
-            iSelection = TrackPopupMenu(hSubMenu, TPM_RETURNCMD, pt.x, pt.y, 0, hwnd, NULL);
+            iSelection = TrackPopupMenu(hSubMenu, TPM_RETURNCMD, pt.x, pt.y, 0, GetParent(hwnd), NULL);
 
             if (idFrom == IDC_CHAT_MESSAGE) {
                 // Second notification
