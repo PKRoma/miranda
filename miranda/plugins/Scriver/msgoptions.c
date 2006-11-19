@@ -494,10 +494,6 @@ static BOOL CALLBACK DlgProcContainerOptions(HWND hwndDlg, UINT msg, WPARAM wPar
 					CheckDlgButton(hwndDlg, IDC_CASCADE, BST_UNCHECKED);
 					//EnableWindow(GetDlgItem(hwndDlg, IDC_CASCADE), !IsDlgButtonChecked(hwndDlg, IDC_SAVEPERCONTACT));
 					break;
-				case IDC_SECONDS:
-					if (HIWORD(wParam) != EN_CHANGE || (HWND) lParam != GetFocus())
-						return 0;
-					break;
 				case IDC_AVATARSUPPORT:
 					EnableWindow(GetDlgItem(hwndDlg, IDC_LIMITAVATARH), IsDlgButtonChecked(hwndDlg, IDC_AVATARSUPPORT));
 					if (!IsDlgButtonChecked(hwndDlg, IDC_AVATARSUPPORT)) {
@@ -522,6 +518,9 @@ static BOOL CALLBACK DlgProcContainerOptions(HWND hwndDlg, UINT msg, WPARAM wPar
 						EnableWindow(GetDlgItem(hwndDlg, IDC_AVATARTEXT2), bChecked);
 					}
 					break;
+				case IDC_LIMITNAMESLEN:
+				case IDC_LIMITTABSNUM:
+				case IDC_LIMITCHATSTABSNUM:
 				case IDC_AVATARHEIGHT:
 				case IDC_AVATARHEIGHTMIN:
 					if (HIWORD(wParam) != EN_CHANGE || (HWND) lParam != GetFocus())

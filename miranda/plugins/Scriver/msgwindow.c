@@ -1468,10 +1468,7 @@ HWND GetParentWindow(HANDLE hContact, BOOL bChat) {
 			}
 		} else {
 			if (g_dat->lastChatParent != NULL) {
-				char str[1024];
 				DWORD tabsNum = (DWORD) SendMessage(g_dat->lastChatParent->hwnd, CM_GETCHILDCOUNT, 0, 0);
-				sprintf(str, "chats: %d  limit: %d", tabsNum , g_dat->limitChatsTabsNum);
-				MessageBoxA(NULL, str, "Count", MB_OK);
 				if (!(g_dat->flags2 & SMF2_LIMITCHATSTABS) || tabsNum < g_dat->limitChatsTabsNum) {
 					return g_dat->lastChatParent->hwnd;
 				}
