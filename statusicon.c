@@ -89,11 +89,11 @@ static int ModifyStatusIcon(WPARAM wParam, LPARAM lParam) {
 				current->sid.flags = sid->flags;
 				if(sid->hIcon) {
 					DestroyIcon(current->sid.hIcon);
-					current->sid.hIcon = sid->hIcon;
+					current->sid.hIcon = DuplicateIcon(NULL, sid->hIcon);
 				}
 				if(sid->hIconDisabled) {
 					DestroyIcon(current->sid.hIconDisabled);
-					current->sid.hIconDisabled = sid->hIconDisabled;
+					current->sid.hIconDisabled = DuplicateIcon(NULL, sid->hIconDisabled);
 				}
 				if(sid->szTooltip) {
 					if(current->sid.szTooltip) mir_free(current->sid.szTooltip);
