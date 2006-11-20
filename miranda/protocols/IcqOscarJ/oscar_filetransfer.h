@@ -135,8 +135,10 @@ typedef struct {
 #define OCS_READY       0
 #define OCS_CONNECTED   1
 #define OCS_NEGOTIATION 2
+#define OCS_RESUME      3
 #define OCS_DATA        4
 #define OCS_PROXY       8
+#define OCS_WAITING     10
 
 typedef struct {
   WORD wPort;

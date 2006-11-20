@@ -251,7 +251,7 @@ DWORD oft_calc_checksum(int offset, const BYTE *buffer, int len, DWORD dwChecksu
 
 
 
-DWORD oft_calc_file_checksum(int hFile)
+DWORD oft_calc_file_checksum(int hFile, int maxSize)
 {
   BYTE buf[OFT_BUFFER_SIZE];
   int bytesRead, offset = 0;
@@ -267,6 +267,7 @@ DWORD oft_calc_file_checksum(int hFile)
     dwCheck = oft_calc_checksum(offset, buf, bytesRead, dwCheck);
     offset += bytesRead;
     bytesRead = _read(hFile, buf, sizeof(buf));
+    if (bytesRead + offset > maxSize) bytesRead = maxSize - offset;
   }
   _lseek(hFile, 0, SEEK_SET); // back to beginning
 
@@ -461,6 +462,8 @@ void handleRecvServMsgOFT(unsigned char *buf, WORD wLen, DWORD dwUin, char *szUI
                 // DB event is ansi only!
                 szAnsi = (char*)_alloca(strlennull(pszFileName) + 2);
                 utf8_decode_static(pszFileName, szAnsi, strlennull(pszFileName) + 1);
+                SAFE_FREE(&pszFileName);
+                pszFileName = szAnsi;
               }
             }
           }
@@ -626,18 +629,26 @@ void handleRecvServResponseOFT(unsigned char *buf, WORD wLen, DWORD dwUin, char 
 
     unpackWord(&buf, &wStatus);
 
-    if (wStatus == 1)
-    { // FT denied (icq5)
-      NetLog_Server("OFT: File transfer denied by %s", strUID(dwUin, szUID));
+    switch (wStatus)
+    {
+      case 1:
+        { // FT denied (icq5)
+          NetLog_Server("OFT: File transfer denied by %s", strUID(dwUin, szUID));
 
-      ICQBroadcastAck(oft->hContact, ACKTYPE_FILE, ACKRESULT_DENIED, (HANDLE)oft, 0);
-      if (oft->connection)
-        CloseOscarConnection(oft->connection);
-      FreeCookie(oft->dwCookie);
-      SafeReleaseFileTransfer(&oft);
+          ICQBroadcastAck(oft->hContact, ACKTYPE_FILE, ACKRESULT_DENIED, (HANDLE)oft, 0);
+          if (oft->connection)
+            CloseOscarConnection(oft->connection);
+          FreeCookie(oft->dwCookie);
+          SafeReleaseFileTransfer(&oft);
+        }
+        break;
+
+      case 4: // Proxy error
+      case 5: // Invalid request
+      case 6: // Proxy Failed (IP = 0)
+      default:
+        NetLog_Server("OFT: Uknown request response code 0x%x", wStatus);
     }
-    else
-      NetLog_Server("OFT: Uknown request response code 0x%x", wStatus);
   }
 }
 
@@ -845,7 +856,7 @@ void oftFileResume(oscar_filetransfer *ft, int action, const char *szFilename)
   switch (action)
   {
     case FILERESUME_RESUME: // FIX ME: this needs to request resume!!!
-      openFlags = _O_BINARY | _O_WRONLY;
+      openFlags = _O_BINARY | _O_RDWR;
       break;
 
     case FILERESUME_OVERWRITE:
@@ -882,7 +893,18 @@ void oftFileResume(oscar_filetransfer *ft, int action, const char *szFilename)
 
   ft->dwBytesDone += ft->dwFileBytesDone;
 
-  if (action == FILERESUME_SKIP)
+  if (action == FILERESUME_RESUME)
+  {
+    // TODO: needs testing
+    oc->status = OCS_RESUME;
+    ft->dwRecvFileCheck = oft_calc_file_checksum(ft->fileId, ft->dwFileBytesDone);
+    _lseek(ft->fileId, 0, SEEK_END);
+
+    sendOFT2FramePacket(oc, OFT_TYPE_RESUMEREQUEST);
+
+    return;
+  }
+  else if (action == FILERESUME_SKIP)
   { // we are skiping the file, send "we are done"
     oc->status = OCS_NEGOTIATION;
   }
@@ -1085,9 +1107,11 @@ static DWORD __stdcall oft_connectionThread(oscarthreadstartinfo *otsi)
         if (!CreateOscarProxyConnection(&oc))
         { // proxy connection failed, we are out of possibilities
           ICQBroadcastAck(oc.ft->hContact, ACKTYPE_FILE, ACKRESULT_FAILED, oc.ft, 0);
+          // notify the other side that we failed
+          oft_sendFileRedirect(oc.dwUin, oc.szUid, oc.ft, 0, 0, FALSE);
           // Release structure
           SafeReleaseFileTransfer(&oc.ft);
-
+          // FIXME: we will receive one more failed response (ft is over, it will be ignored)
           return 0;
         }
       }
@@ -1116,9 +1140,11 @@ static DWORD __stdcall oft_connectionThread(oscarthreadstartinfo *otsi)
           if (!CreateOscarProxyConnection(&oc))
           { // proxy connection failed, we are out of possibilities
             ICQBroadcastAck(oc.ft->hContact, ACKTYPE_FILE, ACKRESULT_FAILED, oc.ft, 0);
+            // notify the other side that we failed
+            oft_sendFileRedirect(oc.dwUin, oc.szUid, oc.ft, 0, 0, FALSE);
             // Release structure
             SafeReleaseFileTransfer(&oc.ft);
-
+            // FIXME: we will receive one more failed response (ft is over, it will be ignored)
             return 0;
           }
         }
@@ -1138,51 +1164,64 @@ static DWORD __stdcall oft_connectionThread(oscarthreadstartinfo *otsi)
         if (!CreateOscarProxyConnection(&oc))
         { // proxy connection failed, we are out of possibilities
           ICQBroadcastAck(oc.ft->hContact, ACKTYPE_FILE, ACKRESULT_FAILED, oc.ft, 0);
+          // notify the other side that we failed
+          oft_sendFileRedirect(oc.dwUin, oc.szUid, oc.ft, 0, 0, FALSE);
           // Release structure
           SafeReleaseFileTransfer(&oc.ft);
-
+          // FIXME: we will receive one more failed response (ft is over, it will be ignored)
           return 0;
         }
       }
     }
     else if (oc.type == OCT_PROXY_RECV)
-    { // create proxy connection, join tunnel
-      NETLIBOPENCONNECTION nloc = {0};
-      IN_ADDR addr = {0};
+    { 
+      if (oc.ft->dwProxyIP && oc.ft->wRemotePort)
+      { // create proxy connection, join tunnel
+        NETLIBOPENCONNECTION nloc = {0};
+        IN_ADDR addr = {0};
 
-      // inform UI that we will connect to file proxy
-      ICQBroadcastAck(oc.ft->hContact, ACKTYPE_FILE, ACKRESULT_CONNECTPROXY, oc.ft, 0);
+        // inform UI that we will connect to file proxy
+        ICQBroadcastAck(oc.ft->hContact, ACKTYPE_FILE, ACKRESULT_CONNECTPROXY, oc.ft, 0);
 
-      nloc.cbSize = sizeof(nloc);
-      addr.S_un.S_addr = htonl(oc.ft->dwProxyIP);
-      nloc.szHost = inet_ntoa(addr);
-      nloc.wPort = OSCAR_PROXY_PORT;
-      oc.hConnection = NetLib_OpenConnection(ghServerNetlibUser, "Proxy ", &nloc);
-      if (!oc.hConnection)
-      { // proxy connection failed, we are out of possibilities
+        nloc.cbSize = sizeof(nloc);
+        addr.S_un.S_addr = htonl(oc.ft->dwProxyIP);
+        nloc.szHost = inet_ntoa(addr);
+        nloc.wPort = OSCAR_PROXY_PORT;
+        oc.hConnection = NetLib_OpenConnection(ghServerNetlibUser, "Proxy ", &nloc);
+        if (!oc.hConnection)
+        { // proxy connection failed, we are out of possibilities
+          ICQBroadcastAck(oc.ft->hContact, ACKTYPE_FILE, ACKRESULT_FAILED, oc.ft, 0);
+          // notify the other side, that we failed
+          oft_sendFileResponse(oc.dwUin, oc.szUid, oc.ft, 0x04);
+          // Release structure
+          SafeReleaseFileTransfer(&oc.ft);
+          // FIXME: we will receive one more failed response (ft is over, it will be ignored)
+          return 0;
+        }
+        oc.status = OCS_PROXY;
+        oc.ft->connection = &oc;
+        // Join proxy tunnel
+        proxy_sendJoinTunnel(&oc, oc.ft->wRemotePort);
+      }
+      else
+      { // proxy failed, just send response error 0x06 (mimic icq5)
+        oft_sendFileResponse(oc.dwUin, oc.szUid, oc.ft, 0x06);
+        // notify UI
         ICQBroadcastAck(oc.ft->hContact, ACKTYPE_FILE, ACKRESULT_FAILED, oc.ft, 0);
-        // FIX ME: here probably should be notified the other side, that we failed
-
         // Release structure
         SafeReleaseFileTransfer(&oc.ft);
-
-        return 0;
       }
-      oc.status = OCS_PROXY;
-      oc.ft->connection = &oc;
-      // Join proxy tunnel
-      proxy_sendJoinTunnel(&oc, oc.ft->wRemotePort);
     }
     else if (oc.type == OCT_PROXY)
     {
       if (!CreateOscarProxyConnection(&oc))
       { // proxy connection failed, we are out of possibilities
         ICQBroadcastAck(oc.ft->hContact, ACKTYPE_FILE, ACKRESULT_FAILED, oc.ft, 0);
-        // FIX ME: here probably should be notified the other side, that we failed
-
+        // notify the other side, that we failed
+        oft_sendFileRedirect(oc.dwUin, oc.szUid, oc.ft, 0, 0, FALSE);
         // Release structure
         SafeReleaseFileTransfer(&oc.ft);
-
+        // FIXME: we will receive one more failed response (ft is over, it will be ignored)
         return 0;
       }
     }
@@ -1226,7 +1265,7 @@ static DWORD __stdcall oft_connectionThread(oscarthreadstartinfo *otsi)
         { // here we want to send file data packets
           oft_sendFileData(&oc);
         }
-        else
+        else if (oc.status != OCS_WAITING)
         {
           NetLog_Direct("Connection timeouted, closing.");
           break;
@@ -1361,9 +1400,25 @@ static int oft_handleProxyData(oscar_connection *oc, unsigned char *buf, int len
     case 0x01: // Error
       {
         WORD wError;  // FIX ME: this needs to be handled properly
+        char* szError;
 
         unpackWord(&pBuf, &wError);
-        NetLog_Server("Proxy Error 0x%x", wError);
+        switch(wError)
+        {
+        case 0x0D:
+          szError = "Bad request";
+          break;
+        case 0x10:
+          szError = "Initial request timeout";
+          break;
+        case 0x1A:
+          szError = "Accept period timeout";
+          break;
+
+        default:
+          szError = "Unknown";
+        }
+        NetLog_Server("Proxy Error: %s (0x%x)", szError, wError);
         // Notify UI
         ICQBroadcastAck(oc->hContact, ACKTYPE_FILE, ACKRESULT_FAILED, oc->ft, 0);
         // Close proxy connection
@@ -1382,7 +1437,7 @@ static int oft_handleProxyData(oscar_connection *oc, unsigned char *buf, int len
         unpackDWord(&pBuf, &dwIP);
 
         NetLog_Server("Proxy Tunnel ready, notify peer.");
-        oft_sendFileRedirect(oc->dwUin, oc->szUid, ft, dwIP, wCode, TRUE);
+        oft_sendFileRedirect(oc->dwUin, oc->szUid, ft, dwIP, wCode, TRUE); 
       }
       break;
 
@@ -1552,7 +1607,7 @@ static void handleOFT2FramePacket(oscar_connection *oc, WORD datatype, BYTE *pBu
       unpackDWord(&pBuffer, &ft->dwThisForkSize);
       unpackDWord(&pBuffer, &ft->dwThisFileCreation);
       unpackDWord(&pBuffer, &ft->dwThisForkCheck);
-      unpackDWord(&pBuffer, &ft->dwBytesDone);
+      unpackDWord(&pBuffer, &ft->dwFileBytesDone);
       unpackDWord(&pBuffer, &ft->dwRecvFileCheck);
       if (!ft->initialized)
         unpackString(&pBuffer, ft->rawIDString, 32);
@@ -1655,6 +1710,8 @@ static void handleOFT2FramePacket(oscar_connection *oc, WORD datatype, BYTE *pBu
         oft_buildProtoFileTransferStatus(ft, &pfts);
         if (ICQBroadcastAck(ft->hContact, ACKTYPE_FILE, ACKRESULT_FILERESUME, ft, (LPARAM)&pfts))
         {
+          oc->status = OCS_WAITING;
+
           SAFE_FREE(&pfts.currentFile);
           break; /* UI supports resume: it will call PS_FILERESUME */
         }
@@ -1681,7 +1738,9 @@ static void handleOFT2FramePacket(oscar_connection *oc, WORD datatype, BYTE *pBu
       }
       return;
     }
+
   case OFT_TYPE_READY:
+  case OFT_TYPE_RESUMEACK:
     { // Receiver is ready
       oscar_filetransfer *ft = oc->ft;
 
@@ -1689,6 +1748,80 @@ static void handleOFT2FramePacket(oscar_connection *oc, WORD datatype, BYTE *pBu
       oc->wantIdleTime = 1;
 
       NetLog_Direct("OFT: Receiver ready.");
+    }
+    break;
+
+  case OFT_TYPE_RESUMEREQUEST:
+    { // Receiver wants to resume file transfer from point
+      oscar_filetransfer *ft = oc->ft;
+      DWORD dwResumeCheck, dwResumeOffset, dwFileCheck;
+
+      if (!ft->sending)
+      { // just sanity check - this is only for sending client
+        CloseOscarConnection(oc);
+        // FIX ME: notify UI, fail FT
+        return;
+      }
+      // Read Resume Frame data
+      pBuffer += 44;
+      unpackDWord(&pBuffer, &dwResumeOffset);
+      unpackDWord(&pBuffer, &dwResumeCheck);
+
+      dwFileCheck = oft_calc_file_checksum(ft->fileId, dwResumeOffset);
+      if (dwFileCheck == dwResumeCheck && dwResumeOffset <= ft->dwThisFileSize)
+      { // resume seems ok
+        ft->dwFileBytesDone = dwResumeOffset;
+        ft->dwBytesDone += dwResumeOffset;
+        lseek(ft->fileId, dwResumeOffset, SEEK_SET);
+
+        NetLog_Direct("OFT: Resume request, ready.");
+      }
+      else
+        NetLog_Direct("OFT: Resume request, restarting.");
+
+      // Ready for resume
+      sendOFT2FramePacket(oc, OFT_TYPE_RESUMEREADY);
+    }
+    break;
+
+  case OFT_TYPE_RESUMEREADY:
+    { // TODO: some basic sanity checks and send OFT_TYPE_RESUMEACK
+      oscar_filetransfer *ft = oc->ft;
+      DWORD dwResumeOffset, dwResumeCheck;
+
+      if (ft->sending)
+      { // just sanity check - this is only for receiving client
+        CloseOscarConnection(oc);
+        // FIX ME: notify UI, fail FT
+        return;
+      }
+      // Read Resume Reply data
+      pBuffer += 44;
+      unpackDWord(&pBuffer, &dwResumeOffset);
+      unpackDWord(&pBuffer, &dwResumeCheck);
+
+      if (ft->dwFileBytesDone != dwResumeOffset)
+      {
+        ft->dwBytesDone -= (ft->dwFileBytesDone - dwResumeOffset);
+        ft->dwFileBytesDone = dwResumeOffset;
+        ft->dwRecvFileCheck = dwResumeCheck;
+      }
+      lseek(ft->fileId, dwResumeOffset, SEEK_SET);
+
+      // Prepare to receive data
+      oc->status = OCS_DATA;
+
+      ICQBroadcastAck(ft->hContact, ACKTYPE_FILE, ACKRESULT_NEXTFILE, ft, 0);
+
+      // Ready for receive
+      sendOFT2FramePacket(oc, OFT_TYPE_RESUMEACK);
+
+      if (ft->dwThisFileSize == ft->dwFileBytesDone)
+      { // all data already processed
+        BYTE buf;
+
+        oft_handleFileData(oc, &buf, 0);
+      }
     }
     break;
 
@@ -1863,8 +1996,9 @@ static void oft_sendPeerInit(oscar_connection *oc)
   ft->dwThisFileSize = statbuf.st_size;
   ft->dwThisFileDate = statbuf.st_mtime;
   ft->dwThisFileCreation = statbuf.st_ctime;
-  ft->dwThisFileCheck = oft_calc_file_checksum(ft->fileId);
+  ft->dwThisFileCheck = oft_calc_file_checksum(ft->fileId, ft->dwThisFileSize);
   ft->dwFileBytesDone = 0;
+  ft->dwRecvFileCheck = 0xFFFF0000;
   SAFE_FREE(&ft->rawFileName);
   ft->cbRawFileName = wcslen(pwsThisFile) * sizeof(wchar_t) + 2;
   if (ft->cbRawFileName < 64) ft->cbRawFileName = 64;
@@ -1917,7 +2051,7 @@ static void sendOFT2FramePacket(oscar_connection *oc, WORD datatype)
   packDWord(&packet, ft->dwThisForkSize);
   packDWord(&packet, ft->dwThisFileCreation);
   packDWord(&packet, ft->dwThisForkCheck);
-  packDWord(&packet, ft->dwBytesDone);
+  packDWord(&packet, ft->dwFileBytesDone);
   packDWord(&packet, ft->dwRecvFileCheck);
   packBuffer(&packet, ft->rawIDString, 32);
   packByte(&packet, ft->bHeaderFlags);

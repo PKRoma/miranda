@@ -1676,17 +1676,24 @@ void oft_sendFileAccept(DWORD dwUin, char *szUid, oscar_filetransfer* ft)
 
 
 
+void oft_sendFileResponse(DWORD dwUin, char *szUid, oscar_filetransfer* ft, WORD wResponse)
+{
+  icq_packet packet;
+
+  packServAdvancedReply(&packet, dwUin, szUid, ft->pMessage.dwMsgID1, ft->pMessage.dwMsgID2, 0, 4);
+  packWord(&packet, 0x02);      // Length of following data
+  packWord(&packet, wResponse); // Response code
+
+  sendServPacket(&packet);
+}
+
+
+
 void oft_sendFileDeny(DWORD dwUin, char *szUid, oscar_filetransfer* ft)
 {
   if (dwUin)
-  { // ICQ clients uses special deny packet
-    icq_packet packet;
-
-    packServAdvancedReply(&packet, dwUin, szUid, ft->pMessage.dwMsgID1, ft->pMessage.dwMsgID2, 0, 4);
-    packWord(&packet, 0x02);    // Length of following data
-    packWord(&packet, 0x01);    // FT denied
-
-    sendServPacket(&packet);
+  { // ICQ clients uses special deny file transfer
+    oft_sendFileResponse(dwUin, szUid, ft, 0x01);
   }
   else
     oft_sendFileReply(dwUin, szUid, ft, 0x01);
