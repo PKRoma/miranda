@@ -24,7 +24,6 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include "commonheaders.h"
 #include "FontService.h"
 #include "../database/dblists.h"
-#include "resource.h"
 
 FontIdList   font_id_list_w2,   font_id_list_w3;
 ColourIdList colour_id_list_w2, colour_id_list_w3;

@@ -3082,13 +3082,7 @@
 					</FileConfiguration>
 				</File>
 				<File
-					RelativePath=".\modules\fonts\resource.h">
-				</File>
-				<File
 					RelativePath=".\modules\fonts\services.c">
-				</File>
-				<File
-					RelativePath=".\modules\fonts\services.h">
 				</File>
 			</Filter>
 		</Filter>
