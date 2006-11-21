@@ -362,8 +362,7 @@ static int MsnEditProfile( WPARAM, LPARAM )
 static void __cdecl MsnFileAckThread( void* arg )
 {
 	filetransfer* ft = (filetransfer*)arg;
-	if ( !ft->inmemTransfer ) 
-	{
+	if ( !ft->inmemTransfer ) {
 		char filefull[ MAX_PATH ];
 		mir_snprintf( filefull, sizeof filefull, "%s\\%s", ft->std.workingDir, ft->std.currentFile );
 		replaceStr( ft->std.currentFile, filefull );
@@ -422,19 +421,16 @@ int MsnFileCancel(WPARAM wParam, LPARAM lParam)
 	filetransfer* ft = ( filetransfer* )ccs->wParam;
 
 	ThreadData* thread = MSN_GetP2PThreadByContact( ft->std.hContact );
-	if (!ft->std.sending && ft->fileId == -1)
-	{
+	if  ( !ft->std.sending && ft->fileId == -1 ) {
 		if ( ft->p2p_appID != 0 )
 			p2p_sendStatus(ft, thread, 603);
 		else
 			msnftp_sendAcceptReject (ft, false);
 	}
-	else
-	{
+	else {
+		ft->bCanceled = true;
 		if ( ft->p2p_appID != 0 )
 			p2p_sendCancel( thread, ft );
-		else
-			ft->bCanceled = true;
 	}
 
 	ft->std.files = NULL;
@@ -454,15 +450,13 @@ int MsnFileDeny( WPARAM wParam, LPARAM lParam )
 	filetransfer* ft = ( filetransfer* )ccs->wParam;
 
 	ThreadData* thread = MSN_GetP2PThreadByContact( ft->std.hContact );
-	if (!ft->std.sending && ft->fileId == -1)
-	{
+	if ( !ft->std.sending && ft->fileId == -1 ) {
 		if ( ft->p2p_appID != 0 )
 			p2p_sendStatus(ft, thread, 603);
 		else
 			msnftp_sendAcceptReject (ft, false);
 	}
-	else
-	{
+	else {
 		if ( ft->p2p_appID != 0 )
 			p2p_sendCancel( thread, ft );
 		else
@@ -482,34 +476,33 @@ int MsnFileResume( WPARAM wParam, LPARAM lParam )
 		return 1;
 
 	PROTOFILERESUME *pfr = (PROTOFILERESUME*)lParam;
-	switch (pfr->action)
-	{
-		case FILERESUME_SKIP:
-			if ( ft->p2p_appID != 0 )
-				p2p_sendStatus( ft, MSN_GetP2PThreadByContact( ft->std.hContact ), 603 );
-			else 
-				msnftp_sendAcceptReject (ft, false);
-			break;
+	switch (pfr->action) {
+	case FILERESUME_SKIP:
+		if ( ft->p2p_appID != 0 )
+			p2p_sendStatus( ft, MSN_GetP2PThreadByContact( ft->std.hContact ), 603 );
+		else 
+			msnftp_sendAcceptReject (ft, false);
+		break;
 
-		case FILERESUME_RENAME:
-			if ( ft->wszFileName != NULL ) {
-				mir_free( ft->wszFileName );
-				ft->wszFileName = NULL;
-			}
-			replaceStr( ft->std.currentFile, pfr->szFilename );
-		
-		default:
-			bool fcrt = ft->create() != -1;
-			if ( ft->p2p_appID != 0 ) {
-				p2p_sendStatus( ft, MSN_GetP2PThreadByContact( ft->std.hContact ), fcrt ? 200 : 603 );
-				if ( fcrt )
-					p2p_sendFeedStart( ft );
-			}
-			else 
-				msnftp_sendAcceptReject (ft, fcrt);
+	case FILERESUME_RENAME:
+		if ( ft->wszFileName != NULL ) {
+			mir_free( ft->wszFileName );
+			ft->wszFileName = NULL;
+		}
+		replaceStr( ft->std.currentFile, pfr->szFilename );
+	
+	default:
+		bool fcrt = ft->create() != -1;
+		if ( ft->p2p_appID != 0 ) {
+			p2p_sendStatus( ft, MSN_GetP2PThreadByContact( ft->std.hContact ), fcrt ? 200 : 603 );
+			if ( fcrt )
+				p2p_sendFeedStart( ft );
+		}
+		else 
+			msnftp_sendAcceptReject (ft, fcrt);
 
-			MSN_SendBroadcast( ft->std.hContact, ACKTYPE_FILE, ACKRESULT_INITIALISING, ft, 0);
-			break;
+		MSN_SendBroadcast( ft->std.hContact, ACKTYPE_FILE, ACKRESULT_INITIALISING, ft, 0);
+		break;
 	}
 
 	return 0;
@@ -1572,8 +1565,7 @@ void UnloadMsnServices( void )
 	if ( hHookRebuildCMenu )
 		UnhookEvent( hHookRebuildCMenu );
 
-	for( int i=0; i<sizeof(hServiceHandle)/sizeof(HANDLE); i++ ) {
+	for( int i=0; i<sizeof(hServiceHandle)/sizeof(HANDLE); i++ )
 		if ( hServiceHandle[i] != NULL )
 			DestroyServiceFunction( hServiceHandle[i] );
-	}
 }
