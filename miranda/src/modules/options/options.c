@@ -667,6 +667,7 @@ static BOOL CALLBACK OptionsDlgProc(HWND hdlg,UINT message,WPARAM wParam,LPARAM 
 			{	int i;
 				PSHNOTIFY pshn;
 				EnableWindow(GetDlgItem(hdlg,IDC_APPLY),FALSE);
+				SetFocus(GetDlgItem(hdlg,IDC_PAGETREE));
 				if(dat->currentPage!=(-1)) {
 					pshn.hdr.idFrom=0;
 					pshn.lParam=0;
@@ -717,6 +718,7 @@ static BOOL CALLBACK OptionsDlgProc(HWND hdlg,UINT message,WPARAM wParam,LPARAM 
 			for(i=0;i<dat->pageCount;i++) {
 				if(dat->opd[i].hwnd!=NULL) DestroyWindow(dat->opd[i].hwnd);
 				if(dat->opd[i].pszGroup) mir_free(dat->opd[i].pszGroup);
+				if(dat->opd[i].pszTab) mir_free(dat->opd[i].pszTab);
 				if(dat->opd[i].pszTitle) mir_free(dat->opd[i].pszTitle);
 				if(dat->opd[i].pTemplate) mir_free(dat->opd[i].pTemplate);
 		}	}
