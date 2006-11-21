@@ -103,6 +103,7 @@ int LoadUtilsModule(void);		// ui: utils (has a few window classes, like HyperLi
 int LoadCLCModule(void);		// window class: CLC control
 int LoadButtonModule(void);		// window class: button class
 int LoadContactsModule(void);    // random: contact
+int LoadFontserviceModule(void); // ui: font manager
 
 static int LoadDefaultModules(void)
 {
@@ -126,6 +127,7 @@ static int LoadDefaultModules(void)
 	disableDefaultModule=(int*)CallService(MS_PLUGINS_GETDISABLEDEFAULTARRAY,0,0);
 	if(!disableDefaultModule[DEFMOD_PROTOCOLNETLIB]) if(LoadNetlibModule()) return 1;		
 	//order becomes less important below here	
+	if(!disableDefaultModule[DEFMOD_FONTSERVICE]) if(LoadFontserviceModule()) return 1;	
 	if(!disableDefaultModule[DEFMOD_UIFINDADD]) if(LoadFindAddModule()) return 1;
 	if(!disableDefaultModule[DEFMOD_UIUSERINFO]) if(LoadUserInfoModule()) return 1;	
 	if(!disableDefaultModule[DEFMOD_SRURL]) if(LoadSendRecvUrlModule()) return 1;

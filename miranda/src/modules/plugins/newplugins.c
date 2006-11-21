@@ -120,16 +120,23 @@ HINSTANCE GetInstByAddress( void* codePtr )
 #define CHECKAPI_NONE 	0
 #define CHECKAPI_DB 	1
 #define CHECKAPI_CLIST  2
+
+static char* modulesToSkip[] = { "autoloadavatars.dll", "multiwindow.dll", "fontservice.dll" };
+
 static int checkAPI(char * plugin, BASIC_PLUGIN_INFO * bpi, DWORD mirandaVersion, int checkTypeAPI, int * exports)
 {
 	HINSTANCE h = NULL;
 	// this is evil but these plugins are buggy/old and people are blaming Miranda
+	// fontservice plugin is built into the core now
 	{
 		char * p = strrchr(plugin,'\\');
 		if ( p != NULL && ++p ) {
-			if ( lstrcmpiA(p,"autoloadavatars.dll")==0 || lstrcmpiA(p,"multiwindow.dll")==0 ) return 0;
-		}
-	}
+			int i;
+			for ( i = 0; i < SIZEOF(modulesToSkip); i++ )
+				if ( lstrcmpiA( p, modulesToSkip[i] ) == 0 )
+					return 0;
+	}	}
+
 	h = LoadLibraryA(plugin);
 	if ( h == NULL ) return 0;
 	// loaded, check for exports

@@ -10,6 +10,8 @@
 #define IDI_SMS                         103
 #define IDI_ONLINE                      104
 #define IDI_OFFLINE                     105
+#define IDD_CUSTOM_FONT                 106
+#define IDD_OPT_FONTS                   107
 #define IDD_ADDED                       115
 #define IDD_URLSEND                     119
 #define IDD_URLRECV                     120
@@ -121,12 +123,22 @@
 #define IDC_URLS                        1037
 #define IDC_REPLY                       1039
 #define IDC_URL                         1041
+#define IDC_FONTGROUP                   1042
+#define IDC_COLOURLIST                  1043
+#define IDC_STAT_RESTART                1044
+#define IDC_BTN_RESET                   1045
 #define IDC_REASON                      1046
+#define IDC_BTN_UNDO                    1047
 #define IDC_EMAIL                       1048
 #define IDC_NAMENICK                    1049
 #define IDC_NAMEFIRST                   1050
 #define IDC_NAMELAST                    1051
+#define IDC_BTN_UNDO2                   1052
 #define IDC_NICK                        1053
+#define IDC_BTN_EXPORT                  1054
+#define IDC_TOOLTIP                     1055
+#define IDC_FONTLIST                    1056
+#define IDC_CHOOSEFONT                  1057
 #define IDC_GENDER                      1060
 #define IDC_CITY                        1061
 #define IDC_STATE                       1062
@@ -219,7 +231,28 @@
 #define IDC_PROTOLIST                   1245
 #define IDC_TODEFICON                   1246
 #define IDC_IMPORTMULTI                 1247
+#define IDC_FONTID                      1256
+#define IDC_SAMETYPE                    1257
+#define IDC_SAMESTYLE                   1258
+#define IDC_SAMECOLOUR                  1259
+#define IDC_SAMEAS                      1260
+#define IDC_TYPEFACE                    1261
+#define IDC_BOLD                        1262
+#define IDC_ITALIC                      1263
+#define IDC_COLOUR                      1264
+#define IDC_UNDERLINE                   1265
+#define IDC_SAMESIZE                    1268
+#define IDC_BKGCOLOUR                   1269
 #define IDC_FILENAME                    1271
+#define IDC_FONTCOLOUR                  1282
+#define IDC_SAMPLE                      1292
+#define IDC_FONTSIZE                    1293
+#define IDC_SCRIPT                      1300
+#define IDC_STSAMETEXT                  1302
+#define IDC_STASTEXT                    1303
+#define IDC_STSIZETEXT                  1304
+#define IDC_STCOLOURTEXT                1305
+#define IDC_STHORZBAR                   1306
 #define IDC_INTERESTS                   1305
 #define IDC_EMAILS                      1306
 #define IDC_PAST                        1307
@@ -382,7 +415,7 @@
 #define POPUP_DELETEGROUP               40053
 
 // Next default values for new objects
-// 
+//
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NEXT_RESOURCE_VALUE        274
