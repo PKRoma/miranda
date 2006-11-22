@@ -424,13 +424,16 @@ BOOL CALLBACK DlgProcFileTransfer(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM 
 					if (fts->totalProgress!=fts->totalBytes && GetTickCount() - dat->dwTicks < 650) break; // the last update was less than a second ago!
 					dat->dwTicks=GetTickCount();
 
-/* FIXME: There is a leak with this, and a major performance issue  with creating and freeing this list EVERY DAMN ACK! */
+/* FIXME: There is a major performance issue  with creating and freeing this list EVERY DAMN ACK! */
 					FreeProtoFileTransferStatus(&dat->transferStatus);
 					CopyProtoFileTransferStatus(&dat->transferStatus,fts);
-					if(dat->fileVirusScanned==NULL) dat->fileVirusScanned=(int*)mir_calloc(sizeof(int) * fts->totalFiles);
-					if(!dat->send) {
-						if(dat->files==NULL) dat->files=(char**)mir_calloc((fts->totalFiles+1)*sizeof(char*));
-						if(fts->currentFileNumber<fts->totalFiles) dat->files[fts->currentFileNumber]=mir_strdup(fts->currentFile);
+					if ( dat->fileVirusScanned==NULL )
+						dat->fileVirusScanned=(int*)mir_calloc(sizeof(int) * fts->totalFiles);
+					if ( !dat->send ) {
+						if ( dat->files == NULL )
+							dat->files = ( char** )mir_calloc(( fts->totalFiles+1 )*sizeof( char* ));
+						if ( fts->currentFileNumber < fts->totalFiles && dat->files[ fts->currentFileNumber ] == NULL )
+							dat->files[ fts->currentFileNumber ] = mir_strdup( fts->currentFile );
 					}
 /* FIXME: There is a performance issue of creating this list here if it does not exist */
 
