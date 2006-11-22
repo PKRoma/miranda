@@ -32,6 +32,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include <sys/stat.h>
 
 #include "msn_md5.h"
+#include "sha1.h"
 #include "resource.h"
 
 typedef LONG ( WINAPI pIncrementFunc )( PLONG );
@@ -969,6 +970,66 @@ int filetransfer::openNext( void )
 	return fileId;
 }
 
+directconnection::directconnection(filetransfer* ft)
+{
+	memset( this, 0, sizeof( directconnection ));
+
+	callId = mir_strdup( ft->p2p_callID );
+	mNonce = ( UUID* )mir_alloc( sizeof( UUID ));
+	UuidCreate( mNonce );
+	ts = time( NULL );
+}
+
+directconnection::~directconnection()
+{
+	mir_free( callId );
+	mir_free( mNonce );
+	mir_free( xNonce );
+}
+
+
+char* directconnection::calcHashedNonce(UUID* nonce)
+{
+	SHA1Context sha1ctx;
+	BYTE sha[ SHA1HashSize ];
+
+	SHA1Reset( &sha1ctx );
+	SHA1Input( &sha1ctx, ( BYTE* )nonce, sizeof( UUID ));
+	SHA1Result( &sha1ctx, sha );
+
+	char* p;
+	UuidToStringA(( UUID* )&sha, ( BYTE** )&p );
+	size_t len = strlen( p ) + 3;
+	char* result = ( char* )mir_alloc( len );
+	mir_snprintf(result, len, "{%s}", p );
+	strupr( result );
+	RpcStringFreeA(( BYTE** )&p );
+
+	return result;
+}
+
+char* directconnection::mNonceToText( void )
+{
+	char* p;
+	UuidToStringA( mNonce, ( BYTE** )&p );
+	size_t len = strlen( p ) + 3;
+	char* result = ( char* )mir_alloc( len );
+	mir_snprintf(result, len, "{%s}", p );
+	strupr( result );
+	RpcStringFreeA(( BYTE** )&p );
+
+	return result;
+}
+
+
+void directconnection::xNonceToBin( UUID* nonce )
+{
+	size_t len = strlen( xNonce );
+	char *p = ( char* )alloca( len );
+	strcpy( p, xNonce + 1 );
+	p[len-2] = 0;
+	UuidFromStringA(( BYTE* )p, nonce );
+}
 
 /////////////////////////////////////////////////////////////////////////////////////////
 // TWinErrorCode class

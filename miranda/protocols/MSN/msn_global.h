@@ -301,7 +301,7 @@ struct HReadBuffer
 	HReadBuffer( ThreadData* info, int iStart = 0 );
 	~HReadBuffer();
 
-	BYTE* surelyRead( int parBytes, bool timeout = false );
+	BYTE* surelyRead( int parBytes );
 
 	ThreadData* owner;
 	BYTE*			buffer;
@@ -350,6 +350,7 @@ struct filetransfer
 	unsigned    p2p_acksessid;	// acknowledged session id
 	unsigned    p2p_sendmsgid; // send message id
 	unsigned    p2p_byemsgid;  // bye message id
+	unsigned    p2p_waitack;    // invite message id
 	unsigned    p2p_ackID;		// number of ack's state
 	unsigned    p2p_appID;		// application id: 1 = avatar, 2 = file transfer
 	int         p2p_type;		// application id: 1 = avatar, 2 = file transfer, 3 = custom emoticon
@@ -361,6 +362,25 @@ struct filetransfer
 	//---- receiving a file
 	wchar_t*    wszFileName;	// file name in Unicode, for receiving
 	char*       szInvcookie;	// cookie for receiving
+};
+
+struct directconnection
+{
+	directconnection( filetransfer* ft );
+	~directconnection();
+
+	char* calcHashedNonce( UUID* nonce );
+	char* mNonceToText( void );
+	char* mNonceToHash( void ) { return calcHashedNonce( mNonce ); }
+	void  xNonceToBin( UUID* nonce );
+
+	UUID* mNonce;
+	char* xNonce;
+	char* callId;
+
+	time_t ts;
+
+	bool useHashedNonce;
 };
 
 /////////////////////////////////////////////////////////////////////////////////////////
@@ -417,7 +437,6 @@ struct ThreadData
 
 	//----| for file transfers only |-----------------------------------------------------
 	filetransfer*  mMsnFtp;          // file transfer block
-	filetransfer*  mP2pSession;		// new styled transfer
 
 	//----| internal data buffer |--------------------------------------------------------
 	int            mBytesInData;     // bytes available in data buffer
@@ -486,6 +505,10 @@ filetransfer* __stdcall p2p_getSessionByMsgID( unsigned id );
 filetransfer* __stdcall p2p_getSessionByCallID( const char* CallID );
 
 BOOL __stdcall p2p_sessionRegistered( filetransfer* ft );
+
+void __stdcall p2p_registerDC( directconnection* ft );
+void __stdcall p2p_unregisterDC( directconnection* dc );
+directconnection* __stdcall p2p_getDCByCallID( const char* CallID );
 
 void ft_startFileSend( ThreadData* info, const char* Invcommand, const char* Invcookie );
 
