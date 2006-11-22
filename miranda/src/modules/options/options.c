@@ -300,6 +300,7 @@ static BOOL CALLBACK OptionsDlgProc(HWND hdlg,UINT message,WPARAM wParam,LPARAM 
 		}
 		mir_free( lastGroup );
 		mir_free( lastPage );
+		mir_free( lastTab );
 
 		GetWindowRect(hdlg,&rcDlg);
 		pt.x=pt.y=0;
@@ -715,17 +716,18 @@ static BOOL CALLBACK OptionsDlgProc(HWND hdlg,UINT message,WPARAM wParam,LPARAM 
 		Utils_SaveWindowPosition(hdlg, NULL, "Options", "");
 		{
 			int i;
-			for(i=0;i<dat->pageCount;i++) {
-				if(dat->opd[i].hwnd!=NULL) DestroyWindow(dat->opd[i].hwnd);
-				if(dat->opd[i].pszGroup) mir_free(dat->opd[i].pszGroup);
-				if(dat->opd[i].pszTab) mir_free(dat->opd[i].pszTab);
-				if(dat->opd[i].pszTitle) mir_free(dat->opd[i].pszTitle);
-				if(dat->opd[i].pTemplate) mir_free(dat->opd[i].pTemplate);
+			for ( i=0; i < dat->pageCount; i++ ) {
+				if ( dat->opd[i].hwnd != NULL )
+					DestroyWindow(dat->opd[i].hwnd);
+				mir_free(dat->opd[i].pszGroup);
+				mir_free(dat->opd[i].pszTab);
+				mir_free(dat->opd[i].pszTitle);
+				mir_free(dat->opd[i].pTemplate);
 		}	}
-		mir_free(dat->opd);
-		DeleteObject(dat->hBoldFont);
-		mir_free(dat);
-		hwndOptions=NULL;
+		mir_free( dat->opd );
+		DeleteObject( dat->hBoldFont );
+		mir_free( dat );
+		hwndOptions = NULL;
 		break;
 	}
 	return FALSE;
@@ -760,11 +762,12 @@ static void OpenOptionsNow(const char *pszGroup,const char *pszPage,const char *
 	psh.pszCaption = TranslateT("Miranda IM Options");
 	psh.ppsp = (PROPSHEETPAGE*)opi.odp;		  //blatent misuse of the structure, but what the hell
 	hwndOptions=CreateDialogParam(GetModuleHandle(NULL),MAKEINTRESOURCE(IDD_OPTIONS),NULL,OptionsDlgProc,(LPARAM)&psh);
-	for(i=0;i<opi.pageCount;i++) {
-		mir_free((char*)opi.odp[i].pszTitle);
-		if(opi.odp[i].pszGroup!=NULL) mir_free(opi.odp[i].pszGroup);
-		if(opi.odp[i].pszTab!=NULL) mir_free(opi.odp[i].pszTab);
-		if((DWORD)opi.odp[i].pszTemplate&0xFFFF0000) mir_free((char*)opi.odp[i].pszTemplate);
+	for ( i=0; i < opi.pageCount; i++ ) {
+		mir_free(( char* )opi.odp[i].pszTitle );
+		mir_free( opi.odp[i].pszGroup );
+		mir_free( opi.odp[i].pszTab );
+		if (( DWORD )opi.odp[i].pszTemplate & 0xFFFF0000 )
+			mir_free((char*)opi.odp[i].pszTemplate);
 	}
 	mir_free(opi.odp);
 }
@@ -772,12 +775,13 @@ static void OpenOptionsNow(const char *pszGroup,const char *pszPage,const char *
 static int OpenOptions(WPARAM wParam,LPARAM lParam)
 {
 	OPENOPTIONSDIALOG *ood=(OPENOPTIONSDIALOG*)lParam;
-	if(ood==NULL)
+	if ( ood == NULL )
 		return 1;
-	else if (ood->cbSize == OPENOPTIONSDIALOG_OLD_SIZE)
-		OpenOptionsNow(ood->pszGroup,ood->pszPage,NULL);
+
+	if ( ood->cbSize == OPENOPTIONSDIALOG_OLD_SIZE )
+		OpenOptionsNow( ood->pszGroup, ood->pszPage, NULL );
 	else if (ood->cbSize == sizeof(OPENOPTIONSDIALOG))
-		OpenOptionsNow(ood->pszGroup,ood->pszPage,ood->pszTab);
+		OpenOptionsNow( ood->pszGroup, ood->pszPage, ood->pszTab );
 	else
 		return 1;
 
