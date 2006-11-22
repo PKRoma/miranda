@@ -187,6 +187,10 @@ SOURCE=.\CLUIFrames\protocolorder.c
 # End Group
 # Begin Source File
 
+SOURCE=.\button.c
+# End Source File
+# Begin Source File
+
 SOURCE=.\cache_funcs.c
 # End Source File
 # Begin Source File
@@ -439,26 +443,6 @@ SOURCE=.\clui.c
 # End Source File
 # Begin Source File
 
-SOURCE=.\cluiopts.c
-
-!IF  "$(CFG)" == "modernb - Win32 Release"
-
-# ADD CPP /Yu"commonheaders.h"
-
-!ELSEIF  "$(CFG)" == "modernb - Win32 Debug"
-
-!ELSEIF  "$(CFG)" == "modernb - Win32 Release Unicode"
-
-# ADD BASE CPP /Yu"commonheaders.h"
-# ADD CPP /Yu"commonheaders.h"
-
-!ELSEIF  "$(CFG)" == "modernb - Win32 Debug Unicode"
-
-!ENDIF 
-
-# End Source File
-# Begin Source File
-
 SOURCE=.\cluiservices.c
 
 !IF  "$(CFG)" == "modernb - Win32 Release"
@@ -505,26 +489,6 @@ SOURCE=.\contact.c
 # Begin Source File
 
 SOURCE=.\Docking.c
-# End Source File
-# Begin Source File
-
-SOURCE=.\forkthread.c
-
-!IF  "$(CFG)" == "modernb - Win32 Release"
-
-# ADD CPP /Yu"commonheaders.h"
-
-!ELSEIF  "$(CFG)" == "modernb - Win32 Debug"
-
-!ELSEIF  "$(CFG)" == "modernb - Win32 Release Unicode"
-
-# ADD BASE CPP /Yu"commonheaders.h"
-# ADD CPP /Yu"commonheaders.h"
-
-!ELSEIF  "$(CFG)" == "modernb - Win32 Debug Unicode"
-
-!ENDIF 
-
 # End Source File
 # Begin Source File
 
@@ -630,11 +594,11 @@ SOURCE=.\SkinOpt.c
 # End Source File
 # Begin Source File
 
-SOURCE=.\tabbedoptions.c
+SOURCE=.\utf.c
 # End Source File
 # Begin Source File
 
-SOURCE=.\utf.c
+SOURCE=.\viewmodes.c
 # End Source File
 # End Group
 # Begin Group "Header Files"
