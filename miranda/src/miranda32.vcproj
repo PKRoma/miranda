@@ -3043,6 +3043,9 @@
 				Name="fonts"
 				Filter="">
 				<File
+					RelativePath=".\modules\fonts\FontOptions.c">
+				</File>
+				<File
 					RelativePath=".\modules\fonts\FontService.c">
 				</File>
 				<File
@@ -3053,33 +3056,6 @@
 				</File>
 				<File
 					RelativePath=".\modules\fonts\module_fonts.h">
-				</File>
-				<File
-					RelativePath=".\modules\fonts\options.c">
-					<FileConfiguration
-						Name="Release|Win32">
-						<Tool
-							Name="VCCLCompilerTool"
-							ObjectFile="$(IntDir)/$(InputName)1.obj"/>
-					</FileConfiguration>
-					<FileConfiguration
-						Name="Debug|Win32">
-						<Tool
-							Name="VCCLCompilerTool"
-							ObjectFile="$(IntDir)/$(InputName)1.obj"/>
-					</FileConfiguration>
-					<FileConfiguration
-						Name="Release Unicode|Win32">
-						<Tool
-							Name="VCCLCompilerTool"
-							ObjectFile="$(IntDir)/$(InputName)1.obj"/>
-					</FileConfiguration>
-					<FileConfiguration
-						Name="Debug Unicode|Win32">
-						<Tool
-							Name="VCCLCompilerTool"
-							ObjectFile="$(IntDir)/$(InputName)1.obj"/>
-					</FileConfiguration>
 				</File>
 				<File
 					RelativePath=".\modules\fonts\services.c">

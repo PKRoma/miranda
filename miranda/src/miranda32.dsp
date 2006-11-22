@@ -838,6 +838,34 @@ SOURCE=.\modules\clist\groups.c
 SOURCE=.\modules\clist\keyboard.c
 # End Source File
 # End Group
+# Begin Group "fontservice"
+
+# PROP Default_Filter ""
+# Begin Source File
+
+SOURCE=.\modules\fonts\FontOptions.c
+# End Source File
+# Begin Source File
+
+SOURCE=.\modules\fonts\FontService.c
+# End Source File
+# Begin Source File
+
+SOURCE=.\modules\fonts\FontService.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\modules\fonts\module_fonts.c
+# End Source File
+# Begin Source File
+
+SOURCE=.\modules\fonts\module_fonts.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\modules\fonts\services.c
+# End Source File
+# End Group
 # End Group
 # Begin Group "Resources"
 
