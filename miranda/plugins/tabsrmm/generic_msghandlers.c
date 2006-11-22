@@ -718,12 +718,16 @@ void DrawStatusIcons(struct MessageWindowData *dat, HDC hDC, RECT r, int gap) {
 	while(current) {
 		sprintf(buff, "SRMMStatusIconFlags%d", (int)current->sid.dwId);
 		flags = DBGetContactSettingByte(dat->hContact, current->sid.szModule, buff, current->sid.flags);
-		if((flags & MBF_DISABLED) && current->sid.hIconDisabled) hIcon = current->sid.hIconDisabled;
-		else hIcon = current->sid.hIcon;
+   		if(!(flags & MBF_HIDDEN)) {
+            if((flags & MBF_DISABLED) && current->sid.hIconDisabled) 
+                hIcon = current->sid.hIconDisabled;
+            else 
+                hIcon = current->sid.hIcon;
 
-		DrawIconEx(hDC, x, (r.top + r.bottom - myGlobals.m_smcxicon) >> 1, hIcon, myGlobals.m_smcxicon, myGlobals.m_smcyicon, 0, NULL, DI_NORMAL);
+            DrawIconEx(hDC, x, (r.top + r.bottom - myGlobals.m_smcxicon) >> 1, hIcon, myGlobals.m_smcxicon, myGlobals.m_smcyicon, 0, NULL, DI_NORMAL);
 
-		x += myGlobals.m_smcxicon + gap;
+            x += myGlobals.m_smcxicon + gap;
+        }
 		current = current->next;
 	}
     DrawIconEx(hDC, x, (r.top + r.bottom - myGlobals.m_smcxicon) >> 1, dat->pContainer->dwFlags & CNT_NOSOUND ? myGlobals.g_buttonBarIcons[23] : myGlobals.g_buttonBarIcons[22], myGlobals.m_smcxicon, myGlobals.m_smcyicon, 0, NULL, DI_NORMAL);
@@ -758,8 +762,14 @@ void SI_CheckStatusIconClick(struct MessageWindowData *dat, HWND hwndFrom, POINT
         InvalidateRect(dat->pContainer->hwndStatus, NULL, TRUE);
     }
     else {
-        for(i = 0; current && i < iconNum; i++) current = current->next;
-
+		char buff[256];
+		DWORD flags;
+        while(current && iconNum > 0) {
+            sprintf(buff, "SRMMStatusIconFlags%d", (int)current->sid.dwId);
+            flags = DBGetContactSettingByte(dat->hContact, current->sid.szModule, buff, current->sid.flags);
+            if(!(flags & MBF_HIDDEN)) iconNum--;
+            current = current->next;
+        }
         if(current) {
             sicd.cbSize = sizeof(StatusIconClickData);
             GetCursorPos(&sicd.clickLocation);
