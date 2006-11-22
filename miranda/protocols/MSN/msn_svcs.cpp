@@ -390,11 +390,11 @@ static void __cdecl MsnFileAckThread( void* arg )
 
 int MsnFileAllow(WPARAM wParam, LPARAM lParam)
 {
-	if ( !msnLoggedIn )
-		return 0;
-
 	CCSDATA* ccs = ( CCSDATA* )lParam;
 	filetransfer* ft = ( filetransfer* )ccs->wParam;
+
+	if ( !msnLoggedIn || !p2p_sessionRegistered( ft ))
+		return 0;
 
 	if (( ft->std.workingDir = mir_strdup(( char* )ccs->lParam )) == NULL ) {
 		char szCurrDir[ MAX_PATH ];
@@ -420,6 +420,9 @@ int MsnFileCancel(WPARAM wParam, LPARAM lParam)
 	CCSDATA* ccs = ( CCSDATA* )lParam;
 	filetransfer* ft = ( filetransfer* )ccs->wParam;
 
+	if ( !msnLoggedIn || !p2p_sessionRegistered( ft ))
+		return 0;
+
 	ThreadData* thread = MSN_GetP2PThreadByContact( ft->std.hContact );
 	if  ( !ft->std.sending && ft->fileId == -1 ) {
 		if ( ft->p2p_appID != 0 )
@@ -443,11 +446,11 @@ int MsnFileCancel(WPARAM wParam, LPARAM lParam)
 
 int MsnFileDeny( WPARAM wParam, LPARAM lParam )
 {
-	if ( !msnLoggedIn )
-		return 1;
-
 	CCSDATA* ccs = ( CCSDATA* )lParam;
 	filetransfer* ft = ( filetransfer* )ccs->wParam;
+
+	if ( !msnLoggedIn || !p2p_sessionRegistered( ft ))
+		return 1;
 
 	ThreadData* thread = MSN_GetP2PThreadByContact( ft->std.hContact );
 	if ( !ft->std.sending && ft->fileId == -1 ) {
@@ -472,7 +475,8 @@ int MsnFileDeny( WPARAM wParam, LPARAM lParam )
 int MsnFileResume( WPARAM wParam, LPARAM lParam )
 {
 	filetransfer* ft = ( filetransfer* )wParam;
-	if ( !msnLoggedIn || ft == NULL )
+	
+	if ( !msnLoggedIn || !p2p_sessionRegistered( ft ))
 		return 1;
 
 	PROTOFILERESUME *pfr = (PROTOFILERESUME*)lParam;

@@ -364,7 +364,7 @@ void __stdcall MSN_StartP2PTransferByContact( HANDLE hContact )
 		if ( T->mJoinedCount == 0 || T->mJoinedContacts == NULL )
 			continue;
 
-		if ( T->mJoinedContacts[0] == hContact && T->mType == SERVER_FILETRANS 
+		if ( T->mJoinedContacts[0] == hContact && T->mType == SERVER_FILETRANS
 			  && T->hWaitEvent != INVALID_HANDLE_VALUE )
 			SetEvent( T->hWaitEvent );
 	}
@@ -521,19 +521,24 @@ void ThreadData::applyGatewayData( HANDLE hConn, bool isPoll )
 	MSN_CallService( MS_NETLIB_SETHTTPPROXYINFO, (WPARAM)hConn, (LPARAM)&nlhpi);
 }
 
-static char sttFormatString[] = "http://gateway.messenger.hotmail.com/gateway/gateway.dll?Action=open&Server=%s&IP=%s";
+static const char sttGatewayPrefix[] = "http://gateway.messenger.hotmail.com/gateway/gateway.dll?";
+static const char *gatewayPref = sttGatewayPrefix;
+
+static const char sttFormatString[] = "%sAction=open&Server=%s&IP=%s";
 
 void ThreadData::getGatewayUrl( char* dest, int destlen, bool isPoll )
 {
 	if ( mSessionID[0] == 0 ) {
-		if ( mType == SERVER_NOTIFICATION || mType == SERVER_DISPATCH )
-			mir_snprintf( dest, destlen, sttFormatString, "NS", "messenger.hotmail.com" );
-		else
-			mir_snprintf( dest, destlen, sttFormatString, "SB", mServer );
 		strcpy( mGatewayIP, MSN_DEFAULT_GATEWAY );
+		gatewayPref = sttGatewayPrefix + ( MyOptions.UseProxy ? 0 : 36 );
+
+		if ( mType == SERVER_NOTIFICATION || mType == SERVER_DISPATCH )
+			mir_snprintf( dest, destlen, sttFormatString, gatewayPref, "NS", "messenger.hotmail.com" );
+		else
+			mir_snprintf( dest, destlen, sttFormatString, gatewayPref, "SB", mServer );
 	}
-	else mir_snprintf( dest, destlen, "http://%s/gateway/gateway.dll?%sSessionID=%s",
-		mGatewayIP, ( isPoll ) ? "Action=poll&" : "", mSessionID );
+	else
+		mir_snprintf( dest, destlen, "%s%sSessionID=%s", gatewayPref, isPoll ? "Action=poll&" : "", mSessionID );
 }
 
 void ThreadData::processSessionData( const char* str )
@@ -622,7 +627,7 @@ HReadBuffer::~HReadBuffer()
 		memmove( owner->mData, owner->mData + startOffset, owner->mBytesInData );
 }
 
-BYTE* HReadBuffer::surelyRead( int parBytes, bool timeout )
+BYTE* HReadBuffer::surelyRead( int parBytes )
 {
 	if ( startOffset + parBytes > totalDataSize )
 	{
@@ -645,9 +650,6 @@ BYTE* HReadBuffer::surelyRead( int parBytes, bool timeout )
 	while( totalDataSize - startOffset < parBytes )
 	{
 		int recvResult = owner->recv(( char* )buffer + totalDataSize, bufferSize - totalDataSize );
-
-		if ( timeout && recvResult == 0 )
-			return (BYTE*)-1;
 
 		if ( recvResult <= 0 )
 			return NULL;

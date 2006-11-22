@@ -1383,7 +1383,8 @@ LBL_InvalidCommand:
 				MSN_SetWord( hContact, "Status", ( WORD )MSNStatusToMiranda( data.userStatus ));
 			}
 
-			MSN_SetString( hContact, "MirVer", "" );
+			if ( lastStatus == ID_STATUS_OFFLINE )
+				MSN_SetString( hContact, "MirVer", "" );
 
 			if ( tArgs > 3 && tArgs <= 5 ) {
 				UrlDecode( data.cmdstring );
