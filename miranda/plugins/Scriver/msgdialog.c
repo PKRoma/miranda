@@ -446,156 +446,163 @@ static LRESULT CALLBACK MessageEditSubclassProc(HWND hwnd, UINT msg, WPARAM wPar
 		return 0;
 
 	case WM_CHAR:
-		if (GetWindowLong(hwnd, GWL_STYLE) & ES_READONLY) {
-			break;
-		}
-		if (wParam == 1 && GetKeyState(VK_CONTROL) & 0x8000) {      //ctrl-a
-			SendMessage(hwnd, EM_SETSEL, 0, -1);
-			return 0;
-		}
-		if (wParam == 12 && GetKeyState(VK_CONTROL) & 0x8000) {     // ctrl-l
-			SendMessage(GetParent(hwnd), DM_CLEARLOG, 0, 0);
-			return 0;
-		}
-		if (wParam == 20 && GetKeyState(VK_CONTROL) & 0x8000 && GetKeyState(VK_SHIFT) & 0x8000) {     // ctrl-shift-t
-			SendMessage(GetParent(GetParent(hwnd)), DM_SWITCHTOOLBAR, 0, 0);
-			return 0;
-		}
-		if (wParam == 19 && GetKeyState(VK_CONTROL) & 0x8000 && GetKeyState(VK_SHIFT) & 0x8000) {     // ctrl-shift-s
-			SendMessage(GetParent(GetParent(hwnd)), DM_SWITCHSTATUSBAR, 0, 0);
-			return 0;
-		}
-		if (wParam == 18 && GetKeyState(VK_CONTROL) & 0x8000 && GetKeyState(VK_SHIFT) & 0x8000) {     // ctrl-shift-r
-			SendMessage(GetParent(hwnd), DM_SWITCHRTL, 0, 0);
-			return 0;
-		}
-		if (wParam == 13 && GetKeyState(VK_CONTROL) & 0x8000 && GetKeyState(VK_SHIFT) & 0x8000) {     // ctrl-shift-m
-			SendMessage(GetParent(GetParent(hwnd)), DM_SWITCHTITLEBAR, 0, 0);
-			return 0;
-		}
-		if (wParam == 23 && GetKeyState(VK_CONTROL) & 0x8000) {     // ctrl-w
-			SendMessage(GetParent(hwnd), WM_CLOSE, 0, 0);
-			return 0;
+		{
+			BOOL isShift = GetKeyState(VK_SHIFT) & 0x8000;
+			BOOL isCtrl = GetKeyState(VK_CONTROL) & 0x8000;
+			BOOL isAlt = GetKeyState(VK_MENU) & 0x8000;
+			if (GetWindowLong(hwnd, GWL_STYLE) & ES_READONLY) {
+				break;
+			}
+			if (wParam == 1 && isCtrl) {      //ctrl-a; select all
+				SendMessage(hwnd, EM_SETSEL, 0, -1);
+				return 0;
+			}
+			if (wParam == 12 && isCtrl) {     // ctrl-l; clear log
+				SendMessage(GetParent(hwnd), DM_CLEARLOG, 0, 0);
+				return 0;
+			}
+			if (wParam == 23 && isCtrl) {     // ctrl-w; close
+				SendMessage(GetParent(hwnd), WM_CLOSE, 0, 0);
+				return 0;
+			}
+			if (wParam == 20 && isCtrl && isShift) {     // ctrl-shift-t
+				SendMessage(GetParent(GetParent(hwnd)), DM_SWITCHTOOLBAR, 0, 0);
+				return 0;
+			}
+			if (wParam == 18 && isCtrl && isShift) {     // ctrl-shift-r
+				SendMessage(GetParent(hwnd), DM_SWITCHRTL, 0, 0);
+				return 0;
+			}
+			if (wParam == 19 && isCtrl && isShift) {     // ctrl-shift-s
+				SendMessage(GetParent(GetParent(hwnd)), DM_SWITCHSTATUSBAR, 0, 0);
+				return 0;
+			}
+			if (wParam == 13 && isCtrl && isShift) {     // ctrl-shift-m
+				SendMessage(GetParent(GetParent(hwnd)), DM_SWITCHTITLEBAR, 0, 0);
+				return 0;
+			}
 		}
 		break;
 	case WM_KEYUP:
 		break;
 	case WM_KEYDOWN:
-		if (wParam == VK_UP && (GetKeyState(VK_CONTROL) & 0x8000) && (g_dat->flags & SMF_CTRLSUPPORT) && !DBGetContactSettingByte(NULL, SRMMMOD, SRMSGSET_AUTOCLOSE, SRMSGDEFSET_AUTOCLOSE)) {
-			if (pdat->cmdList) {
-				if (!pdat->cmdListCurrent) {
-					saveDraftMessage(pdat);
-//					g_dat->draftList = tcmdlist_append2(g_dat->draftList, pdat->hContact, (TCHAR *) textBuffer);
-					pdat->cmdListCurrent = pdat->cmdListNew = tcmdlist_last(pdat->cmdList);
-				//	SendMessage(hwnd, WM_SETREDRAW, FALSE, 0);
-					SendMessage(hwnd, EM_SETTEXTEX, (WPARAM) &st, (LPARAM)pdat->cmdListCurrent->szCmd);
-					SendMessage(hwnd, EM_SCROLLCARET, 0,0);
-				//	SendMessage(hwnd, WM_SETREDRAW, TRUE, 0);
-					//SendMessage(hwnd, EM_SETSEL, 0, -1);
-				}
-				else if (pdat->cmdListCurrent->prev) {
-					pdat->cmdListCurrent = pdat->cmdListNew = pdat->cmdListCurrent->prev;
-				//	SendMessage(hwnd, WM_SETREDRAW, FALSE, 0);
-					SendMessage(hwnd, EM_SETTEXTEX, (WPARAM) &st, (LPARAM)pdat->cmdListCurrent->szCmd);
-					SendMessage(hwnd, EM_SCROLLCARET, 0,0);
-				//	SendMessage(hwnd, WM_SETREDRAW, TRUE, 0);
-					//SendMessage(hwnd, EM_SETSEL, 0, -1);
-				}
-			}
-			EnableWindow(GetDlgItem(GetParent(hwnd), IDOK), GetWindowTextLength(GetDlgItem(GetParent(hwnd), IDC_MESSAGE)) != 0);
-			UpdateReadChars(GetParent(hwnd), pdat);
-			return 0;
-		}
-		else if (wParam == VK_DOWN && (GetKeyState(VK_CONTROL) & 0x8000) && (g_dat->flags & SMF_CTRLSUPPORT) && !DBGetContactSettingByte(NULL, SRMMMOD, SRMSGSET_AUTOCLOSE, SRMSGDEFSET_AUTOCLOSE)) {
-			if (pdat->cmdList) {
-				if (pdat->cmdListCurrent) {
-					pdat->cmdListCurrent = pdat->cmdListNew = pdat->cmdListCurrent->next;
+		{
+			BOOL isShift = GetKeyState(VK_SHIFT) & 0x8000;
+			BOOL isCtrl = GetKeyState(VK_CONTROL) & 0x8000;
+			BOOL isAlt = GetKeyState(VK_MENU) & 0x8000;
+			if (wParam == VK_UP && (isCtrl && (g_dat->flags & SMF_CTRLSUPPORT) && !DBGetContactSettingByte(NULL, SRMMMOD, SRMSGSET_AUTOCLOSE, SRMSGDEFSET_AUTOCLOSE)) {
+				if (pdat->cmdList) {
 					if (!pdat->cmdListCurrent) {
-						pdat->cmdListCurrent = tcmdlist_get2(g_dat->draftList, pdat->hContact);
-					}
-					if (pdat->cmdListCurrent) {
-						//SendMessage(hwnd, WM_SETREDRAW, FALSE, 0);
+						saveDraftMessage(pdat);
+						pdat->cmdListCurrent = pdat->cmdListNew = tcmdlist_last(pdat->cmdList);
+					//	SendMessage(hwnd, WM_SETREDRAW, FALSE, 0);
 						SendMessage(hwnd, EM_SETTEXTEX, (WPARAM) &st, (LPARAM)pdat->cmdListCurrent->szCmd);
 						SendMessage(hwnd, EM_SCROLLCARET, 0,0);
-						//SendMessage(hwnd, WM_SETREDRAW, TRUE, 0);
+					//	SendMessage(hwnd, WM_SETREDRAW, TRUE, 0);
 						//SendMessage(hwnd, EM_SETSEL, 0, -1);
-					} else {
-						pdat->cmdListCurrent = 0;
-						SetWindowText(hwnd, _T(""));
+					}
+					else if (pdat->cmdListCurrent->prev) {
+						pdat->cmdListCurrent = pdat->cmdListNew = pdat->cmdListCurrent->prev;
+					//	SendMessage(hwnd, WM_SETREDRAW, FALSE, 0);
+						SendMessage(hwnd, EM_SETTEXTEX, (WPARAM) &st, (LPARAM)pdat->cmdListCurrent->szCmd);
+						SendMessage(hwnd, EM_SCROLLCARET, 0,0);
+					//	SendMessage(hwnd, WM_SETREDRAW, TRUE, 0);
+						//SendMessage(hwnd, EM_SETSEL, 0, -1);
 					}
 				}
+				EnableWindow(GetDlgItem(GetParent(hwnd), IDOK), GetWindowTextLength(GetDlgItem(GetParent(hwnd), IDC_MESSAGE)) != 0);
+				UpdateReadChars(GetParent(hwnd), pdat);
+				return 0;
 			}
-			EnableWindow(GetDlgItem(GetParent(hwnd), IDOK), GetWindowTextLength(GetDlgItem(GetParent(hwnd), IDC_MESSAGE)) != 0);
-			UpdateReadChars(GetParent(hwnd), pdat);
-			return 0;
-		}
-		/*
-		if(wParam == VK_INSERT && (GetKeyState(VK_SHIFT) & 0x8000)) {
-			SendMessage(hwnd, EM_PASTESPECIAL, CF_TEXT, 0); // shift insert
-			return 0;
-		}*/
-		if ((GetKeyState(VK_CONTROL) & 0x8000) && (GetKeyState(VK_SHIFT) & 0x8000)) {
-			if (wParam == VK_TAB) {	// ctrl-shift tab
+			else if (wParam == VK_DOWN && (isCtrl && (g_dat->flags & SMF_CTRLSUPPORT) && !DBGetContactSettingByte(NULL, SRMMMOD, SRMSGSET_AUTOCLOSE, SRMSGDEFSET_AUTOCLOSE)) {
+				if (pdat->cmdList) {
+					if (pdat->cmdListCurrent) {
+						pdat->cmdListCurrent = pdat->cmdListNew = pdat->cmdListCurrent->next;
+						if (!pdat->cmdListCurrent) {
+							pdat->cmdListCurrent = tcmdlist_get2(g_dat->draftList, pdat->hContact);
+						}
+						if (pdat->cmdListCurrent) {
+							//SendMessage(hwnd, WM_SETREDRAW, FALSE, 0);
+							SendMessage(hwnd, EM_SETTEXTEX, (WPARAM) &st, (LPARAM)pdat->cmdListCurrent->szCmd);
+							SendMessage(hwnd, EM_SCROLLCARET, 0,0);
+							//SendMessage(hwnd, WM_SETREDRAW, TRUE, 0);
+							//SendMessage(hwnd, EM_SETSEL, 0, -1);
+						} else {
+							pdat->cmdListCurrent = 0;
+							SetWindowText(hwnd, _T(""));
+						}
+					}
+				}
+				EnableWindow(GetDlgItem(GetParent(hwnd), IDOK), GetWindowTextLength(GetDlgItem(GetParent(hwnd), IDC_MESSAGE)) != 0);
+				UpdateReadChars(GetParent(hwnd), pdat);
+				return 0;
+			}
+			/*
+			if(wParam == VK_INSERT && isShift) {
+				SendMessage(hwnd, EM_PASTESPECIAL, CF_TEXT, 0); // shift insert
+				return 0;
+			}*/
+			if (wParam == VK_TAB && isCtrl && isShift) { // ctrl-shift tab
 				SendMessage(GetParent(GetParent(hwnd)), CM_ACTIVATEPREV, 0, (LPARAM)GetParent(hwnd));
 				return 0;
 			}
-		}
-		if ((GetKeyState(VK_CONTROL) & 0x8000) && !(GetKeyState(VK_MENU) & 0x8000)) {
-/*
-			if (wParam == 'V') {    // ctrl v
-				SendMessage(hwnd, EM_PASTESPECIAL, CF_TEXT, 0);
-				return 0;
-			}
-			*/
-			if (wParam == VK_TAB) { // ctrl tab
-				SendMessage(GetParent(GetParent(hwnd)), CM_ACTIVATENEXT, 0, (LPARAM)GetParent(hwnd));
-				return 0;
-			}
-			if (wParam == VK_PRIOR) { // page up
-				SendMessage(GetParent(GetParent(hwnd)), CM_ACTIVATEPREV, 0, (LPARAM)GetParent(hwnd));
-				return 0;
-			}
-			if (wParam == VK_NEXT) { // page down
-				SendMessage(GetParent(GetParent(hwnd)), CM_ACTIVATENEXT, 0, (LPARAM)GetParent(hwnd));
-				return 0;
-			}
-		}
-		if (wParam == VK_TAB && !(GetKeyState(VK_CONTROL) & 0x8000) && !(GetKeyState(VK_SHIFT) & 0x8000)) {
-//			SendMessage(hwnd, EM_REPLACESEL, FALSE, (LPARAM) "\t");
-			return 0;
-		}
-		if (wParam == VK_F4 && (GetKeyState(VK_CONTROL) & 0x8000) && !(GetKeyState(VK_SHIFT) & 0x8000)) {
-			SendMessage(GetParent(hwnd), WM_CLOSE, 0, 0);
-			return 0;
-		}
-		if(wParam == VK_ESCAPE && (GetKeyState(VK_SHIFT) & 0x8000)) {
-			ShowWindow(GetParent(GetParent(hwnd)), SW_MINIMIZE);
-			return 0;
-		}
-		if (wParam == VK_RETURN) {
-			if (GetKeyState(VK_CONTROL) & 0x8000 && GetKeyState(VK_SHIFT) & 0x8000) {
-				PostMessage(GetParent(hwnd), WM_COMMAND, IDC_SENDALL, 0);
-				return 0;
-			}
-			if (((GetKeyState(VK_CONTROL) & 0x8000) != 0) ^ (0 != (g_dat->flags & SMF_SENDONENTER))) {
-				PostMessage(GetParent(hwnd), WM_COMMAND, IDOK, 0);
-				return 0;
-			}
-			if (g_dat->flags & SMF_SENDONDBLENTER) {
-				if (dat->lastEnterTime + ENTERCLICKTIME < GetTickCount())
-					dat->lastEnterTime = GetTickCount();
-				else {
-					SendMessage(hwnd, WM_KEYDOWN, VK_BACK, 0);
-					SendMessage(hwnd, WM_KEYUP, VK_BACK, 0);
-//					SendMessage(hwnd, WM_CHAR, '\b', 0);
-					PostMessage(GetParent(hwnd), WM_COMMAND, IDOK, 0);
+			if (isCtrl && !isAlt) {
+	/*
+				if (wParam == 'V') {    // ctrl v
+					SendMessage(hwnd, EM_PASTESPECIAL, CF_TEXT, 0);
+					return 0;
+				}
+				*/
+				if (wParam == VK_TAB) { // ctrl tab
+					SendMessage(GetParent(GetParent(hwnd)), CM_ACTIVATENEXT, 0, (LPARAM)GetParent(hwnd));
+					return 0;
+				}
+				if (wParam == VK_PRIOR) { // page up
+					SendMessage(GetParent(GetParent(hwnd)), CM_ACTIVATEPREV, 0, (LPARAM)GetParent(hwnd));
+					return 0;
+				}
+				if (wParam == VK_NEXT) { // page down
+					SendMessage(GetParent(GetParent(hwnd)), CM_ACTIVATENEXT, 0, (LPARAM)GetParent(hwnd));
 					return 0;
 				}
 			}
+			if (wParam == VK_TAB && !isCtrl && !isShift) {
+	//			SendMessage(hwnd, EM_REPLACESEL, FALSE, (LPARAM) "\t");
+				return 0;
+			}
+			if (wParam == VK_F4 && isCtrl && !isShift) {
+				SendMessage(GetParent(hwnd), WM_CLOSE, 0, 0);
+				return 0;
+			}
+			if(wParam == VK_ESCAPE && isShift) {
+				ShowWindow(GetParent(GetParent(hwnd)), SW_MINIMIZE);
+				return 0;
+			}
+			if (wParam == VK_RETURN) {
+				if (isCtrl && isShift) {
+					PostMessage(GetParent(hwnd), WM_COMMAND, IDC_SENDALL, 0);
+					return 0;
+				}
+				if ((isCtrl != 0) ^ (0 != (g_dat->flags & SMF_SENDONENTER))) {
+					PostMessage(GetParent(hwnd), WM_COMMAND, IDOK, 0);
+					return 0;
+				}
+				if (g_dat->flags & SMF_SENDONDBLENTER) {
+					if (dat->lastEnterTime + ENTERCLICKTIME < GetTickCount())
+						dat->lastEnterTime = GetTickCount();
+					else {
+						SendMessage(hwnd, WM_KEYDOWN, VK_BACK, 0);
+						SendMessage(hwnd, WM_KEYUP, VK_BACK, 0);
+	//					SendMessage(hwnd, WM_CHAR, '\b', 0);
+						PostMessage(GetParent(hwnd), WM_COMMAND, IDOK, 0);
+						return 0;
+					}
+				}
+			}
+			else
+				dat->lastEnterTime = 0;
 		}
-		else
-			dat->lastEnterTime = 0;
-			break;
+		break;
 		//fall through
 	case WM_MOUSEWHEEL:
 		SendMessage(GetDlgItem(GetParent(hwnd), IDC_LOG), WM_MOUSEWHEEL, wParam, lParam);
