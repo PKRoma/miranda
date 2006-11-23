@@ -31,6 +31,8 @@ typedef struct TFontSettings_tag
     BYTE     style;					// see the DBFONTF_* flags above
     BYTE     charset;
     TCHAR    szFace[LF_FACESIZE];
+	TCHAR 	 backgrounGroup[64];
+	TCHAR 	 backgroundName[64];
 }
 	TFontSettings;
 
