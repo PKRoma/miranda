@@ -183,3 +183,19 @@ int DeinitStatusIcons() {
 	RemoveAllStatusIcons();
 	return 0;
 }
+
+int GetStatusIconsCount(HANDLE hContact) {
+	char buff[256];
+	int count = 0;
+	int flags;
+	struct StatusIconListNode *current = status_icon_list;
+	while(current) {
+		sprintf(buff, "SRMMStatusIconFlags%d", (int)current->sid.dwId);
+		flags = DBGetContactSettingByte(hContact, current->sid.szModule, buff, current->sid.flags);
+		if(!(flags & MBF_HIDDEN)) {
+			count ++;
+		}
+		current = current->next;
+	}
+	return count;
+}

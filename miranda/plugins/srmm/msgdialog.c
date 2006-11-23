@@ -65,6 +65,8 @@ static void NotifyLocalWinEvent(HANDLE hContact, HWND hwnd, unsigned int type) {
 	mwe.szModule = SRMMMOD;
 	mwe.uType = type;
 	mwe.uFlags = MSG_WINDOW_UFLAG_MSG_BOTH;
+	mwe.hwndInput = GetDlgItem(hwnd, IDC_MESSAGE);
+	mwe.hwndLog = GetDlgItem(hwnd, IDC_LOG);
 	NotifyEventHooks(hHookWinEvt, 0, (LPARAM)&mwe);
 }
 
@@ -170,7 +172,7 @@ static void SetDialogToType(HWND hwndDlg)
 		SendMessage(dat->hwndStatus, SB_SETMINHEIGHT, GetSystemMetrics(SM_CYSMICON), 0);
 	}
 
-	icons_width = status_icon_list_size * (GetSystemMetrics(SM_CXSMICON) + 2) + SB_GRIP_WIDTH; 
+	icons_width = GetStatusIconsCount(dat->hContact) * (GetSystemMetrics(SM_CXSMICON) + 2) + SB_GRIP_WIDTH;
 	GetWindowRect(dat->hwndStatus, &rc);
 	if (DBGetContactSettingByte(NULL, SRMMMOD, SRMSGSET_CHARCOUNT, SRMSGDEFSET_CHARCOUNT)) {
 		int statwidths[3];
@@ -643,10 +645,10 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                     if(newData->isWchar)
     					SetDlgItemText(hwndDlg, IDC_MESSAGE, (TCHAR *)newData->szInitialText);
     				else
-    					SetDlgItemTextA(hwndDlg, IDC_MESSAGE, newData->szInitialText);                    
-#else					
+    					SetDlgItemTextA(hwndDlg, IDC_MESSAGE, newData->szInitialText);
+#else
 					SetDlgItemTextA(hwndDlg, IDC_MESSAGE, newData->szInitialText);
-#endif					
+#endif
 					len = GetWindowTextLength(GetDlgItem(hwndDlg, IDC_MESSAGE));
 					PostMessage(GetDlgItem(hwndDlg, IDC_MESSAGE), EM_SETSEL, len, len);
 				}
@@ -1545,7 +1547,7 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
 					dat->bIsRtl = 0;
 					GetDlgItemTextA(hwndDlg, IDC_MESSAGE, dat->sendBuffer, bufSize);
 					#if defined( _UNICODE )
-					// all that crap with temporary buffers is related to the bug #0001466 (empty messages 
+					// all that crap with temporary buffers is related to the bug #0001466 (empty messages
 					// on x64 machines). GetDlgItemTextW should use the 2-byte aligned buffer
 					{	WCHAR* temp = ( WCHAR* )alloca( bufSize * sizeof( TCHAR ));
 						GetDlgItemTextW(hwndDlg, IDC_MESSAGE, temp, bufSize);
@@ -1645,13 +1647,13 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
  					if (((LPNMHDR) lParam)->code == NM_CLICK || ((LPNMHDR) lParam)->code == NM_RCLICK) {
  						NMMOUSE *nm = (NMMOUSE *) lParam;
  						RECT rc;
-		 
+
 						SendMessage(dat->hwndStatus, SB_GETRECT, SendMessage(dat->hwndStatus, SB_GETPARTS, 0, 0) - 1, (LPARAM)&rc);
 						if (nm->pt.x >= rc.left) {
 							CheckIconClick(dat->hContact, dat->hwndStatus, nm->pt, rc, 2, ((LPNMHDR) lParam)->code == NM_RCLICK ? MBCF_RIGHTBUTTON : 0);
 						}
  						return TRUE;
- 					}	
+ 					}
  				}
 				switch (((NMHDR *) lParam)->idFrom) {
 			case IDC_LOG:
