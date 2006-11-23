@@ -566,10 +566,6 @@ static LRESULT CALLBACK MessageEditSubclassProc(HWND hwnd, UINT msg, WPARAM wPar
 					return 0;
 				}
 			}
-			if (wParam == VK_TAB && !isCtrl && !isShift) {
-	//			SendMessage(hwnd, EM_REPLACESEL, FALSE, (LPARAM) "\t");
-				return 0;
-			}
 			if (wParam == VK_F4 && isCtrl && !isShift) {
 				SendMessage(GetParent(hwnd), WM_CLOSE, 0, 0);
 				return 0;
@@ -593,7 +589,6 @@ static LRESULT CALLBACK MessageEditSubclassProc(HWND hwnd, UINT msg, WPARAM wPar
 					else {
 						SendMessage(hwnd, WM_KEYDOWN, VK_BACK, 0);
 						SendMessage(hwnd, WM_KEYUP, VK_BACK, 0);
-	//					SendMessage(hwnd, WM_CHAR, '\b', 0);
 						PostMessage(GetParent(hwnd), WM_COMMAND, IDOK, 0);
 						return 0;
 					}
@@ -633,10 +628,7 @@ static LRESULT CALLBACK MessageEditSubclassProc(HWND hwnd, UINT msg, WPARAM wPar
 	case WM_SYSCHAR:
 		dat->lastEnterTime = 0;
 		if ((wParam == 's' || wParam == 'S') && GetKeyState(VK_MENU) & 0x8000) {
-			if (GetWindowLong(hwnd, GWL_STYLE) & ES_READONLY)
-				SaveKeyboardMessage(dat, msg, wParam, lParam);
-			else
-				PostMessage(GetParent(hwnd), WM_COMMAND, IDOK, 0);
+			PostMessage(GetParent(hwnd), WM_COMMAND, IDOK, 0);
 			return 0;
 		}
 		break;

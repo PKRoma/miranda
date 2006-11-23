@@ -312,63 +312,61 @@ static LRESULT CALLBACK MessageSubclassProc(HWND hwnd, UINT msg, WPARAM wParam, 
 			SendMessage(GetParent(GetParent(hwnd)), DM_SWITCHTITLEBAR, 0, 0);
 			return 0;
 		}
-		 
-         if (wParam == '\n' || wParam == '\r') {
-            if (( isCtrl != 0 ) ^ (0 != DBGetContactSettingByte(NULL, "Chat", "SendOnEnter", 1))) {
-               PostMessage(GetParent(hwnd), WM_COMMAND, IDOK, 0);
-               return 0;
-            }
-
-            if (DBGetContactSettingByte(NULL, "Chat", "SendOnDblEnter", 0)) {
-               if (dat->lastEnterTime + 2 < time(NULL))
-                  dat->lastEnterTime = time(NULL);
-               else {
-                  SendMessage(hwnd, WM_KEYDOWN, VK_BACK, 0);
-                  SendMessage(hwnd, WM_KEYUP, VK_BACK, 0);
-                  PostMessage(GetParent(hwnd), WM_COMMAND, IDOK, 0);
-                  return 0;
-            }   }
-         }
-         else dat->lastEnterTime = 0;
-
          if (wParam == 1 && isCtrl && !isAlt) {      //ctrl-a
             SendMessage(hwnd, EM_SETSEL, 0, -1);
             return 0;
       }   }
       break;
 
-   case WM_KEYDOWN:
-      {
-         static int start, end;
-         BOOL isShift = GetKeyState(VK_SHIFT) & 0x8000;
-         BOOL isCtrl = GetKeyState(VK_CONTROL) & 0x8000;
-         BOOL isAlt = GetKeyState(VK_MENU) & 0x8000;
-         if (wParam == VK_RETURN) {
+	case WM_KEYDOWN:
+	{
+		static int start, end;
+        BOOL isShift = GetKeyState(VK_SHIFT) & 0x8000;
+        BOOL isCtrl = GetKeyState(VK_CONTROL) & 0x8000;
+        BOOL isAlt = GetKeyState(VK_MENU) & 0x8000;
+
+
+        if (wParam == VK_RETURN) {
             dat->szTabSave[0] = '\0';
-            if ((isCtrl != 0) ^ (0 != DBGetContactSettingByte(NULL, "Chat", "SendOnEnter", 1)))
-               return 0;
+			if (( isCtrl != 0 ) ^ (0 != DBGetContactSettingByte(NULL, "Chat", "SendOnEnter", 1))) {
+			   PostMessage(GetParent(hwnd), WM_COMMAND, IDOK, 0);
+			   return 0;
+			}
+			if (DBGetContactSettingByte(NULL, "Chat", "SendOnDblEnter", 0)) {
+			   if (dat->lastEnterTime + 2 < time(NULL))
+				  dat->lastEnterTime = time(NULL);
+			   else {
+				  SendMessage(hwnd, WM_KEYDOWN, VK_BACK, 0);
+				  SendMessage(hwnd, WM_KEYUP, VK_BACK, 0);
+				  PostMessage(GetParent(hwnd), WM_COMMAND, IDOK, 0);
+				  return 0;
+		}   }	}
 
-            if (DBGetContactSettingByte(NULL, "Chat", "SendOnDblEnter", 0))
-               if (dat->lastEnterTime + 2 >= time(NULL))
-                  return 0;
+        if (wParam == VK_TAB && isShift && !isCtrl) { // SHIFT-TAB (go to nick list)
+           SetFocus(GetDlgItem(GetParent(hwnd), IDC_CHAT_LIST));
+           return TRUE;
+        }
 
-            break;
-         }
+        if (wParam == VK_TAB && isCtrl && !isShift) { // CTRL-TAB (switch tab/window)
+           SendMessage(GetParent(GetParent(hwnd)), CM_ACTIVATENEXT, 0, (LPARAM)GetParent(hwnd));
+           return TRUE;
+        }
 
-         if (wParam == VK_TAB && isShift && !isCtrl) { // SHIFT-TAB (go to nick list)
-            SetFocus(GetDlgItem(GetParent(hwnd), IDC_CHAT_LIST));
-            return TRUE;
-         }
+        if (wParam == VK_TAB && isCtrl && isShift) { // CTRL_SHIFT-TAB (switch tab/window)
+           SendMessage(GetParent(GetParent(hwnd)), CM_ACTIVATEPREV, 0, (LPARAM)GetParent(hwnd));
+           return TRUE;
+        }
 
-         if (wParam == VK_TAB && isCtrl && !isShift) { // CTRL-TAB (switch tab/window)
-            SendMessage(GetParent(GetParent(hwnd)), CM_ACTIVATENEXT, 0, (LPARAM)GetParent(hwnd));
-            return TRUE;
-         }
-
-         if (wParam == VK_TAB && isCtrl && isShift) { // CTRL_SHIFT-TAB (switch tab/window)
-            SendMessage(GetParent(GetParent(hwnd)), CM_ACTIVATEPREV, 0, (LPARAM)GetParent(hwnd));
-            return TRUE;
-         }
+		if (isCtrl && !isAlt) {
+			if (wParam == VK_PRIOR) { // page up
+				SendMessage(GetParent(GetParent(hwnd)), CM_ACTIVATEPREV, 0, (LPARAM)GetParent(hwnd));
+				return 0;
+			}
+			if (wParam == VK_NEXT) { // page down
+				SendMessage(GetParent(GetParent(hwnd)), CM_ACTIVATENEXT, 0, (LPARAM)GetParent(hwnd));
+				return 0;
+			}
+		}
 
          if (wParam == VK_TAB && !(GetKeyState(VK_CONTROL) & 0x8000) && !(GetKeyState(VK_SHIFT) & 0x8000)) {    //tab-autocomplete
             TCHAR* pszText = NULL;
@@ -438,6 +436,11 @@ static LRESULT CALLBACK MessageSubclassProc(HWND hwnd, UINT msg, WPARAM wParam, 
 
             dat->szTabSave[0] = '\0';
          }
+
+		if(wParam == VK_ESCAPE && isShift) {
+			ShowWindow(GetParent(GetParent(hwnd)), SW_MINIMIZE);
+			return 0;
+		}
 
          if (wParam == VK_F4 && isCtrl && !isAlt) { // ctrl-F4 (close tab)
             SendMessage(GetParent(hwnd), WM_COMMAND, MAKEWPARAM(IDC_CHAT_CLOSE, BN_CLICKED), 0);
@@ -592,6 +595,25 @@ static LRESULT CALLBACK MessageSubclassProc(HWND hwnd, UINT msg, WPARAM wParam, 
    case WM_KILLFOCUS:
       dat->lastEnterTime = 0;
       break;
+
+	case WM_SYSKEYDOWN:
+		if ((wParam == VK_LEFT) && GetKeyState(VK_MENU) & 0x8000) {
+			SendMessage(GetParent(GetParent(hwnd)), CM_ACTIVATEPREV, 0, (LPARAM)GetParent(hwnd));
+			return TRUE;
+		}
+		if ((wParam == VK_RIGHT) && GetKeyState(VK_MENU) & 0x8000) {
+			SendMessage(GetParent(GetParent(hwnd)), CM_ACTIVATENEXT, 0, (LPARAM)GetParent(hwnd));
+			return TRUE;
+		}
+		break;
+	case WM_SYSKEYUP:
+		if ((wParam == VK_LEFT) && GetKeyState(VK_MENU) & 0x8000) {
+			return TRUE;
+		}
+		if ((wParam == VK_RIGHT) && GetKeyState(VK_MENU) & 0x8000) {
+			return TRUE;
+		}
+		break;
 
    case WM_CONTEXTMENU:
       {

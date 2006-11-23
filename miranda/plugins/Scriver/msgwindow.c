@@ -278,15 +278,33 @@ static void GetMinimunWindowSize(ParentWindowData *dat, SIZE *size)
 	}
 }
 
+static void SetupStatusBar(ParentWindowData *dat)
+{
+	int statusIconNum = GetStatusIconsCount(dat->hContact);
+	int statwidths[4];
+	RECT rc;
+	GetClientRect(dat->hwnd, &rc);
+	statwidths[0] = rc.right - rc.left - SB_CHAR_WIDTH - SB_UNICODE_WIDTH - 2 * (statusIconNum > 0) - statusIconNum * (GetSystemMetrics(SM_CXSMICON) + 2);
+	statwidths[1] = rc.right - rc.left - SB_UNICODE_WIDTH - 2 * (statusIconNum > 0) - statusIconNum * (GetSystemMetrics(SM_CXSMICON) + 2);
+	statwidths[2] = rc.right - rc.left - SB_UNICODE_WIDTH ;
+	statwidths[3] = -1;
+	SendMessage(dat->hwndStatus, SB_SETPARTS, 4, (LPARAM) statwidths);
+	SendMessage(dat->hwndStatus, SB_SETTEXT, (WPARAM)(SBT_OWNERDRAW) | 2, (LPARAM)0);
+}
+
 static void ActivateChild(ParentWindowData *dat, HWND child) {
 	int i;
 	RECT rcChild;
 	MessageWindowTabData *mwtd;
 	GetChildWindowRect(dat, &rcChild);
 	SetWindowPos(child, HWND_TOP, rcChild.left, rcChild.top, rcChild.right-rcChild.left, rcChild.bottom - rcChild.top, SWP_NOSIZE);
+	i = GetTabFromHWND(dat, child);
+	mwtd = GetChildFromTab(dat->hwndTabs, i);
+	dat->hContact = mwtd->hContact;
 	if(child != dat->hwndActive) {
 		HWND prev = dat->hwndActive;
 		dat->hwndActive = child;
+		SetupStatusBar(dat);
 		SendMessage(dat->hwndActive, DM_UPDATESTATUSBAR, 0, 0);
 		SendMessage(dat->hwndActive, DM_UPDATETITLEBAR, 0, 0);
 		SendMessage(dat->hwnd, WM_SIZE, 0, 0);
@@ -296,11 +314,8 @@ static void ActivateChild(ParentWindowData *dat, HWND child) {
 	} else {
 		SendMessage(dat->hwnd, WM_SIZE, 0, 0);
 	}
-	i = GetTabFromHWND(dat, child);
 	TabCtrl_SetCurSel(dat->hwndTabs, i);
 	SendMessage(dat->hwndActive, DM_ACTIVATE, WA_ACTIVE, 0);
-	mwtd = GetChildFromTab(dat->hwndTabs, i);
-	dat->hContact = mwtd->hContact;
 }
 
 static void AddChild(ParentWindowData *dat, HWND hwnd, HANDLE hContact)
@@ -369,19 +384,6 @@ static void ActivatePrevChild(ParentWindowData *dat, HWND child)
 	ActivateChild(dat, GetChildFromTab(dat->hwndTabs, i)->hwnd);
 }
 
-static void SetupStatusBar(ParentWindowData *dat)
-{
-	int statusIconNum = GetStatusIconsCount();
-	int statwidths[4];
-	RECT rc;
-	GetClientRect(dat->hwnd, &rc);
-	statwidths[0] = rc.right - rc.left - SB_CHAR_WIDTH - SB_UNICODE_WIDTH - 2 * (statusIconNum > 0) - statusIconNum * (GetSystemMetrics(SM_CXSMICON) + 2);
-	statwidths[1] = rc.right - rc.left - SB_UNICODE_WIDTH - 2 * (statusIconNum > 0) - statusIconNum * (GetSystemMetrics(SM_CXSMICON) + 2);
-	statwidths[2] = rc.right - rc.left - SB_UNICODE_WIDTH ;
-	statwidths[3] = -1;
-	SendMessage(dat->hwndStatus, SB_SETPARTS, 4, (LPARAM) statwidths);
-	SendMessage(dat->hwndStatus, SB_SETTEXT, (WPARAM)(SBT_OWNERDRAW) | 2, (LPARAM)0);
-}
 
 static void SetContainerWindowStyle(ParentWindowData *dat)
 {
