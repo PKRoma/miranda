@@ -304,8 +304,17 @@ static LRESULT CALLBACK MessageSubclassProc(HWND hwnd, UINT msg, WPARAM wParam, 
          if (wParam == VK_SPACE && isCtrl && !isAlt) // ctrl-space (paste clean text)
             return TRUE;
 
+		if (wParam == 19 && isCtrl && isShift) {     // ctrl-shift-s
+			SendMessage(GetParent(GetParent(hwnd)), DM_SWITCHSTATUSBAR, 0, 0);
+			return 0;
+		}
+		if (wParam == 13 && isCtrl && isShift) {     // ctrl-shift-m
+			SendMessage(GetParent(GetParent(hwnd)), DM_SWITCHTITLEBAR, 0, 0);
+			return 0;
+		}
+		 
          if (wParam == '\n' || wParam == '\r') {
-            if (( isShift != 0 ) ^ (0 != DBGetContactSettingByte(NULL, "Chat", "SendOnEnter", 1))) {
+            if (( isCtrl != 0 ) ^ (0 != DBGetContactSettingByte(NULL, "Chat", "SendOnEnter", 1))) {
                PostMessage(GetParent(hwnd), WM_COMMAND, IDOK, 0);
                return 0;
             }
