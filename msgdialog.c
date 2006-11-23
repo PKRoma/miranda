@@ -490,7 +490,7 @@ static LRESULT CALLBACK MessageEditSubclassProc(HWND hwnd, UINT msg, WPARAM wPar
 			BOOL isShift = GetKeyState(VK_SHIFT) & 0x8000;
 			BOOL isCtrl = GetKeyState(VK_CONTROL) & 0x8000;
 			BOOL isAlt = GetKeyState(VK_MENU) & 0x8000;
-			if (wParam == VK_UP && (isCtrl && (g_dat->flags & SMF_CTRLSUPPORT) && !DBGetContactSettingByte(NULL, SRMMMOD, SRMSGSET_AUTOCLOSE, SRMSGDEFSET_AUTOCLOSE)) {
+			if (wParam == VK_UP && isCtrl && (g_dat->flags & SMF_CTRLSUPPORT) && !DBGetContactSettingByte(NULL, SRMMMOD, SRMSGSET_AUTOCLOSE, SRMSGDEFSET_AUTOCLOSE)) {
 				if (pdat->cmdList) {
 					if (!pdat->cmdListCurrent) {
 						saveDraftMessage(pdat);
@@ -514,7 +514,7 @@ static LRESULT CALLBACK MessageEditSubclassProc(HWND hwnd, UINT msg, WPARAM wPar
 				UpdateReadChars(GetParent(hwnd), pdat);
 				return 0;
 			}
-			else if (wParam == VK_DOWN && (isCtrl && (g_dat->flags & SMF_CTRLSUPPORT) && !DBGetContactSettingByte(NULL, SRMMMOD, SRMSGSET_AUTOCLOSE, SRMSGDEFSET_AUTOCLOSE)) {
+			else if (wParam == VK_DOWN && isCtrl && (g_dat->flags & SMF_CTRLSUPPORT) && !DBGetContactSettingByte(NULL, SRMMMOD, SRMSGSET_AUTOCLOSE, SRMSGDEFSET_AUTOCLOSE)) {
 				if (pdat->cmdList) {
 					if (pdat->cmdListCurrent) {
 						pdat->cmdListCurrent = pdat->cmdListNew = pdat->cmdListCurrent->next;
