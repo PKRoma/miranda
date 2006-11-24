@@ -1,5 +1,5 @@
 //{{NO_DEPENDENCIES}}
-// Microsoft Developer Studio generated include file.
+// Microsoft Visual C++ generated include file.
 // Used by resource.rc
 //
 #define IDD_MSGSENDERROR                102
@@ -46,6 +46,7 @@
 #define IDC_LOADTIME                    1047
 #define IDC_CHOOSEFONT                  1049
 #define IDC_STMINSOLD                   1051
+#define IDC_STMINSOLD2                  1052
 #define IDC_DETAILS                     1069
 #define IDC_ADD                         1070
 #define IDC_USERMENU                    1071
@@ -79,7 +80,7 @@
 #define IDM_COPYLINK                    40016
 
 // Next default values for new objects
-//
+// 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NEXT_RESOURCE_VALUE        286
