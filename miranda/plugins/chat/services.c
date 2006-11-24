@@ -37,6 +37,8 @@ HANDLE				g_hIconsChanged2;
 SESSION_INFO		g_TabSession;
 CRITICAL_SECTION	cs;
 
+void RegisterFonts( void );
+
 static HANDLE     hServiceRegister = NULL,
                   hServiceNewChat = NULL,
                   hServiceAddEvent = NULL,
@@ -120,6 +122,7 @@ int ModulesLoaded(WPARAM wParam,LPARAM lParam)
 	char* mods[3] = { "Chat", "ChatFonts" };
 	CallService( "DBEditorpp/RegisterModule", (WPARAM)mods, 2 );
 
+	RegisterFonts();
 	AddIcons();
 	LoadIcons();
 

@@ -55,7 +55,7 @@ PLUGININFO pluginInfo = {
 	#else
 		"Chat",
 	#endif
-	PLUGIN_MAKE_VERSION(0,6,1,3),
+	PLUGIN_MAKE_VERSION(0,7,0,1),
 	"Provides chat rooms for protocols supporting it",
 	"Miranda team",
 	"project-info@miranda-im.org",
@@ -73,7 +73,7 @@ BOOL WINAPI DllMain(HINSTANCE hinstDLL,DWORD fdwReason,LPVOID lpvReserved)
 
 __declspec(dllexport) PLUGININFO* MirandaPluginInfo(DWORD mirandaVersion)
 {
-	if (mirandaVersion < PLUGIN_MAKE_VERSION(0,6,0,14)) return NULL;
+	if (mirandaVersion < PLUGIN_MAKE_VERSION(0,7,0,2)) return NULL;
 	return &pluginInfo;
 }
 

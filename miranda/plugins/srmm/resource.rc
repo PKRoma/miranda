@@ -1,4 +1,4 @@
-//Microsoft Developer Studio generated resource script.
+// Microsoft Visual C++ generated resource script.
 //
 #include "resource.h"
 
@@ -76,15 +76,15 @@ BEGIN
     EDITTEXT        IDC_AVATARHEIGHT,148,156,28,13,ES_AUTOHSCROLL
     LTEXT           "pixels.",IDC_STATIC,181,158,35,8
     CONTROL         "Tree1",IDC_POPLIST,"SysTreeView32",TVS_DISABLEDRAGDROP | 
-                    TVS_NOTOOLTIPS | TVS_NONEVENHEIGHT | WS_BORDER | 
-                    WS_TABSTOP,163,14,98,42
+                    TVS_NOTOOLTIPS | WS_BORDER | WS_TABSTOP | 0x4000,163,14,
+                    98,42
     LTEXT           "Automatically popup window when:",IDC_STATIC,10,15,141,
                     13
 END
 
 IDD_MSGSENDERROR DIALOGEX 0, 0, 187, 97
-STYLE DS_MODALFRAME | DS_SETFOREGROUND | DS_3DLOOK | DS_FIXEDSYS | WS_POPUP | 
-    WS_VISIBLE | WS_CAPTION | WS_SYSMENU | DS_SETFONT
+STYLE DS_SETFONT | DS_MODALFRAME | DS_SETFOREGROUND | DS_3DLOOK | 
+    DS_FIXEDSYS | WS_POPUP | WS_VISIBLE | WS_CAPTION | WS_SYSMENU
 EXSTYLE WS_EX_CONTROLPARENT
 CAPTION "Send Error"
 FONT 8, "MS Shell Dlg", 0, 0, 0x1
@@ -98,9 +98,9 @@ BEGIN
 END
 
 IDD_MSG DIALOGEX 0, 0, 184, 78
-STYLE DS_SETFOREGROUND | DS_3DLOOK | DS_FIXEDSYS | DS_CENTER | 
+STYLE DS_SETFONT | DS_SETFOREGROUND | DS_3DLOOK | DS_FIXEDSYS | DS_CENTER | 
     WS_MINIMIZEBOX | WS_MAXIMIZEBOX | WS_POPUP | WS_CLIPCHILDREN | 
-    WS_CAPTION | WS_SYSMENU | WS_THICKFRAME | DS_SETFONT
+    WS_CAPTION | WS_SYSMENU | WS_THICKFRAME
 EXSTYLE WS_EX_ACCEPTFILES
 CAPTION "Message Session"
 FONT 8, "MS Shell Dlg", 0, 0, 0x1
@@ -120,8 +120,9 @@ BEGIN
                     0x18000000L
     CONTROL         "&H",IDC_HISTORY,"MButtonClass",WS_TABSTOP,164,2,16,14,
                     0x18000000L
-    CONTROL         "",IDC_LOG,"RichEdit20A",WS_VSCROLL | WS_TABSTOP | 0x844,
-                    1,18,181,26,WS_EX_CLIENTEDGE
+    CONTROL         "",IDC_LOG,"RichEdit20A",ES_MULTILINE | ES_AUTOVSCROLL | 
+                    ES_READONLY | WS_VSCROLL | WS_TABSTOP,1,18,181,26,
+                    WS_EX_CLIENTEDGE
     CONTROL         "",IDC_SPLITTER,"Static",SS_ENHMETAFILE,0,45,183,2
     CONTROL         "",IDC_AVATAR,"Button",BS_OWNERDRAW | NOT WS_VISIBLE,1,
                     50,1,13
@@ -132,7 +133,7 @@ STYLE DS_SETFONT | DS_FIXEDSYS | WS_CHILD | WS_VISIBLE
 EXSTYLE WS_EX_CONTROLPARENT
 FONT 8, "MS Shell Dlg", 0, 0, 0x1
 BEGIN
-    GROUPBOX        "Message Window Event Log",IDC_STMSGLOGGROUP,0,0,158,158
+    GROUPBOX        "Message Window Event Log",IDC_STMSGLOGGROUP,0,0,300,158
     CONTROL         "Show icons",IDC_SHOWLOGICONS,"Button",BS_AUTOCHECKBOX | 
                     WS_TABSTOP,10,12,146,10
     CONTROL         "Show names",IDC_SHOWNAMES,"Button",BS_AUTOCHECKBOX | 
@@ -141,15 +142,6 @@ BEGIN
                     WS_TABSTOP,10,44,146,10
     CONTROL         "Show dates",IDC_SHOWDATES,"Button",BS_AUTOCHECKBOX | 
                     WS_TABSTOP,21,75,135,10
-    GROUPBOX        "Fonts",IDC_STATIC,163,0,143,158
-    LTEXT           "Background colour:",IDC_STATIC,169,16,81,8
-    CONTROL         "",IDC_BKGCOLOUR,"ColourPicker",WS_TABSTOP,261,14,39,12
-    LISTBOX         IDC_FONTLIST,169,31,131,82,LBS_OWNERDRAWVARIABLE | 
-                    LBS_NOINTEGRALHEIGHT | LBS_EXTENDEDSEL | WS_VSCROLL | 
-                    WS_TABSTOP
-    CONTROL         "",IDC_FONTCOLOUR,"ColourPicker",WS_TABSTOP,169,117,57,
-                    14
-    PUSHBUTTON      "Choose font...",IDC_CHOOSEFONT,243,117,57,14
     GROUPBOX        "Load History Events",IDC_STATIC,0,163,306,66
     CONTROL         "Load unread events only",IDC_LOADUNREAD,"Button",
                     BS_AUTORADIOBUTTON | WS_TABSTOP,10,177,138,10
@@ -210,7 +202,7 @@ END
 //
 
 #ifdef APSTUDIO_INVOKED
-GUIDELINES DESIGNINFO DISCARDABLE 
+GUIDELINES DESIGNINFO 
 BEGIN
     IDD_OPT_MSGDLG, DIALOG
     BEGIN
@@ -268,12 +260,12 @@ END
 // TEXTINCLUDE
 //
 
-1 TEXTINCLUDE DISCARDABLE 
+1 TEXTINCLUDE 
 BEGIN
     "resource.h\0"
 END
 
-2 TEXTINCLUDE DISCARDABLE 
+2 TEXTINCLUDE 
 BEGIN
     "#include <windows.h>\r\n"
     "#include <winres.h>\r\n"
@@ -281,7 +273,7 @@ BEGIN
     "\0"
 END
 
-3 TEXTINCLUDE DISCARDABLE 
+3 TEXTINCLUDE 
 BEGIN
     "\r\n"
     "\0"
@@ -297,30 +289,30 @@ END
 
 // Icon with lowest ID value placed first to ensure application icon
 // remains consistent on all systems.
-IDI_USERDETAILS         ICON    DISCARDABLE     "res/details.ico"
-IDI_ADDCONTACT          ICON    DISCARDABLE     "res/add.ico"
-IDI_HISTORY             ICON    DISCARDABLE     "res/history.ico"
-IDI_DOWNARROW           ICON    DISCARDABLE     "res/downarrow.ico"
-IDI_TYPING              ICON    DISCARDABLE     "res/typing.ico"
-IDI_OUTGOING            ICON    DISCARDABLE     "res/outgoing.ico"
-IDI_INCOMING            ICON    DISCARDABLE     "res/incoming.ico"
-IDI_NOTICE              ICON    DISCARDABLE     "res/notice.ico"
+IDI_USERDETAILS         ICON                    "res/details.ico"
+IDI_ADDCONTACT          ICON                    "res/add.ico"
+IDI_HISTORY             ICON                    "res/history.ico"
+IDI_DOWNARROW           ICON                    "res/downarrow.ico"
+IDI_TYPING              ICON                    "res/typing.ico"
+IDI_OUTGOING            ICON                    "res/outgoing.ico"
+IDI_INCOMING            ICON                    "res/incoming.ico"
+IDI_NOTICE              ICON                    "res/notice.ico"
 
 /////////////////////////////////////////////////////////////////////////////
 //
 // Cursor
 //
 
-IDC_HYPERLINKHAND       CURSOR  DISCARDABLE     "../../src/res/hyperlin.cur"
-IDC_DROP                CURSOR  DISCARDABLE     "../../src/res/dragcopy.cur"
-IDC_DROPUSER            CURSOR  DISCARDABLE     "../../src/res/dropuser.cur"
+IDC_HYPERLINKHAND       CURSOR                  "../../src/res/hyperlin.cur"
+IDC_DROP                CURSOR                  "../../src/res/dragcopy.cur"
+IDC_DROPUSER            CURSOR                  "../../src/res/dropuser.cur"
 
 /////////////////////////////////////////////////////////////////////////////
 //
 // Menu
 //
 
-IDR_CONTEXT MENU DISCARDABLE 
+IDR_CONTEXT MENU 
 BEGIN
     POPUP "Log"
     BEGIN

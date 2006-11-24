@@ -1,8 +1,8 @@
 /*
 SRMM
 
-Copyright 2000-2005 Miranda ICQ/IM project, 
-all portions of this codebase are copyrighted to the people 
+Copyright 2000-2005 Miranda ICQ/IM project,
+all portions of this codebase are copyrighted to the people
 listed in contributors.txt.
 
 This program is free software; you can redistribute it and/or
@@ -37,7 +37,7 @@ PLUGININFO pluginInfo = {
 #else
 	"Send/Receive Messages",
 #endif
-	PLUGIN_MAKE_VERSION(3, 0, 0, 0),
+	PLUGIN_MAKE_VERSION(0, 7, 0, 0),
 	"Send and receive instant messages",
 	"Miranda IM Development Team",
 	"rainwater@miranda-im.org",
@@ -55,7 +55,7 @@ BOOL WINAPI DllMain(HINSTANCE hinstDLL, DWORD fdwReason, LPVOID lpvReserved)
 
 __declspec(dllexport) PLUGININFO *MirandaPluginInfo(DWORD mirandaVersion)
 {
-	if (mirandaVersion < PLUGIN_MAKE_VERSION(0, 4, 0, 0))
+	if (mirandaVersion < PLUGIN_MAKE_VERSION(0, 7, 0, 2))
 		return NULL;
 	return &pluginInfo;
 }

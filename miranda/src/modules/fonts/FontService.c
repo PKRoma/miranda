@@ -70,11 +70,6 @@ static int ModulesLoaded(WPARAM wParam, LPARAM lParam)
 	if ( !GetModuleHandleA( "CLIST_MODERN" ))
 		RegisterCListFonts();
 
-	if ( GetModuleHandleA( "SRMM" ))
-		RegisterSRMMFonts();
-	if ( GetModuleHandleA( "CHAT" ))
-		RegisterChatFonts();
-
 	return 0;
 }
 

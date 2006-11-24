@@ -34,29 +34,19 @@ extern HINSTANCE g_hInst;
 
 static int SRMMStatusToPf2(int status)
 {
-    switch (status) {
-        case ID_STATUS_ONLINE:
-            return PF2_ONLINE;
-        case ID_STATUS_AWAY:
-            return PF2_SHORTAWAY;
-        case ID_STATUS_DND:
-            return PF2_HEAVYDND;
-        case ID_STATUS_NA:
-            return PF2_LONGAWAY;
-        case ID_STATUS_OCCUPIED:
-            return PF2_LIGHTDND;
-        case ID_STATUS_FREECHAT:
-            return PF2_FREECHAT;
-        case ID_STATUS_INVISIBLE:
-            return PF2_INVISIBLE;
-        case ID_STATUS_ONTHEPHONE:
-            return PF2_ONTHEPHONE;
-        case ID_STATUS_OUTTOLUNCH:
-            return PF2_OUTTOLUNCH;
-        case ID_STATUS_OFFLINE:
-            return MODEF_OFFLINE;
-    }
-    return 0;
+	switch (status) {
+		case ID_STATUS_ONLINE:     return PF2_ONLINE;
+		case ID_STATUS_AWAY:       return PF2_SHORTAWAY;
+		case ID_STATUS_DND:        return PF2_HEAVYDND;
+		case ID_STATUS_NA:         return PF2_LONGAWAY;
+		case ID_STATUS_OCCUPIED:   return PF2_LIGHTDND;
+		case ID_STATUS_FREECHAT:   return PF2_FREECHAT;
+		case ID_STATUS_INVISIBLE:  return PF2_INVISIBLE;
+		case ID_STATUS_ONTHEPHONE: return PF2_ONTHEPHONE;
+		case ID_STATUS_OUTTOLUNCH: return PF2_OUTTOLUNCH;
+		case ID_STATUS_OFFLINE:    return MODEF_OFFLINE;
+	}
+	return 0;
 }
 
 static int ReadMessageCommand(WPARAM wParam, LPARAM lParam)
@@ -267,10 +257,9 @@ static int MessageSettingChanged(WPARAM wParam, LPARAM lParam)
 static int ContactDeleted(WPARAM wParam, LPARAM lParam)
 {
 	HWND hwnd;
-
-	if (hwnd = WindowList_Find(g_dat->hMessageWindowList, (HANDLE) wParam)) {
+	if (hwnd = WindowList_Find(g_dat->hMessageWindowList, (HANDLE) wParam))
 		SendMessage(hwnd, WM_CLOSE, 0, 0);
-	}
+
 	return 0;
 }
 
@@ -324,13 +313,17 @@ static void RestoreUnreadMessageAlerts(void)
 	}
 }
 
+void RegisterSRMMFonts( void );
+
 static int SplitmsgModulesLoaded(WPARAM wParam, LPARAM lParam)
 {
 	CLISTMENUITEM mi;
 	PROTOCOLDESCRIPTOR **protocol;
 	int protoCount, i;
 
+	RegisterSRMMFonts();
 	LoadMsgLogIcons();
+
 	ZeroMemory(&mi, sizeof(mi));
 	mi.cbSize = sizeof(mi);
 	mi.position = -2000090000;
@@ -439,9 +432,9 @@ int LoadSendRecvMessageModule(void)
 	if (LoadLibraryA("riched20.dll") == NULL) {
 		if (IDYES !=
 			MessageBoxA(0,
-						Translate
-						("Miranda could not load the built-in message module, riched20.dll is missing. If you are using Windows 95 or WINE please make sure you have riched20.dll installed. Press 'Yes' to continue loading Miranda."),
-						Translate("Information"), MB_YESNO | MB_ICONINFORMATION))
+			Translate
+			("Miranda could not load the built-in message module, riched20.dll is missing. If you are using Windows 95 or WINE please make sure you have riched20.dll installed. Press 'Yes' to continue loading Miranda."),
+			Translate("Information"), MB_YESNO | MB_ICONINFORMATION))
 			return 1;
 		return 0;
 	}

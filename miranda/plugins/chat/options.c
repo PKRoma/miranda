@@ -22,6 +22,8 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include <shlobj.h>
 #include <shlwapi.h>
 
+#include "m_fontservice.h"
+
 extern HANDLE       g_hInst;
 extern HBRUSH       hEditBkgBrush;
 extern HBRUSH       hListBkgBrush;
@@ -340,6 +342,58 @@ void LoadMsgDlgFont(int i, LOGFONT* lf, COLORREF* colour)
 			lstrcpyn(lf->lfFaceName, dbv.ptszVal, SIZEOF(lf->lfFaceName));
 			DBFreeVariant(&dbv);
 }	}	}
+
+void RegisterFonts( void )
+{
+	FontIDT fontid = {0};
+	ColourIDT colourid;
+	char idstr[10];
+	int index = 0, i;
+
+	fontid.cbSize = sizeof(FontID);
+	fontid.flags = FIDF_ALLOWREREGISTER | FIDF_DEFAULTVALID | FIDF_NEEDRESTART;
+	for (i = 0; i < msgDlgFontCount; i++, index++) {
+		strncpy(fontid.dbSettingsGroup, "ChatFonts", sizeof(fontid.dbSettingsGroup));
+		_tcsncpy(fontid.group, TranslateT("Chat Module"), SIZEOF(fontid.group));
+		_tcsncpy(fontid.name, TranslateTS(fontOptionsList[i].szDescr), SIZEOF(fontid.name));
+		sprintf(idstr, "Font%d", index);
+		strncpy(fontid.prefix, idstr, sizeof(fontid.prefix));
+		fontid.order = index;
+
+		fontid.deffontsettings.charset = fontOptionsList[i].defCharset;
+		fontid.deffontsettings.colour = fontOptionsList[i].defColour;
+		fontid.deffontsettings.size = fontOptionsList[i].defSize;
+		fontid.deffontsettings.style = fontOptionsList[i].defStyle;
+		_tcsncpy(fontid.deffontsettings.szFace, fontOptionsList[i].szDefFace, SIZEOF(fontid.deffontsettings.szFace));
+
+		CallService(MS_FONT_REGISTERT, (WPARAM)&fontid, 0);
+	}
+
+	colourid.cbSize = sizeof(ColourID);
+	colourid.order = 0;
+	strncpy(colourid.dbSettingsGroup, "Chat", sizeof(colourid.dbSettingsGroup));
+
+	strncpy(colourid.setting, "ColorLogBG", SIZEOF(colourid.setting));
+	_tcsncpy(colourid.name, TranslateT("Background"), SIZEOF(colourid.name));
+	_tcsncpy(colourid.group, TranslateT("Chat Module"), SIZEOF(colourid.group));
+	colourid.defcolour = GetSysColor(COLOR_WINDOW);
+	CallService(MS_COLOUR_REGISTERT, (WPARAM)&colourid, 0);
+
+	strncpy(colourid.setting, "ColorMessageBG", SIZEOF(colourid.setting));
+	_tcsncpy(colourid.name, TranslateT("Message Background"), SIZEOF(colourid.name));
+	colourid.defcolour = GetSysColor(COLOR_WINDOW);
+	CallService(MS_COLOUR_REGISTERT, (WPARAM)&colourid, 0);
+
+	strncpy(colourid.setting, "ColorNicklistBG", SIZEOF(colourid.setting));
+	_tcsncpy(colourid.name, TranslateT("Userlist Background"), SIZEOF(colourid.name));
+	colourid.defcolour = GetSysColor(COLOR_WINDOW);
+	CallService(MS_COLOUR_REGISTERT, (WPARAM)&colourid, 0);
+
+	strncpy(colourid.setting, "ColorNicklistLines", SIZEOF(colourid.setting));
+	_tcsncpy(colourid.name, TranslateT("Userlist Lines"), SIZEOF(colourid.name));
+	colourid.defcolour = GetSysColor(COLOR_INACTIVEBORDER);
+	CallService(MS_COLOUR_REGISTERT, (WPARAM)&colourid, 0);
+}
 
 // add icons to the skinning module
 void AddIcons(void)
