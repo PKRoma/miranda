@@ -22,6 +22,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include "commonheaders.h"
 #include "statusicon.h"
 #pragma hdrstop
+#include "m_fontservice.h"
 
 static void InitREOleCallback(void);
 
@@ -315,6 +316,12 @@ static void RestoreUnreadMessageAlerts(void)
 
 void RegisterSRMMFonts( void );
 
+static int FontsChanged(WPARAM wParam,LPARAM lParam)
+{
+	WindowList_Broadcast(g_dat->hMessageWindowList, DM_OPTIONSAPPLIED, 0, 0);
+	return 0;
+}
+
 static int SplitmsgModulesLoaded(WPARAM wParam, LPARAM lParam)
 {
 	CLISTMENUITEM mi;
@@ -339,9 +346,11 @@ static int SplitmsgModulesLoaded(WPARAM wParam, LPARAM lParam)
 			mi.pszContactOwner = protocol[i]->szName;
 			hMsgMenuItem = realloc(hMsgMenuItem, (hMsgMenuItemCount + 1) * sizeof(HANDLE));
 			hMsgMenuItem[hMsgMenuItemCount++] = (HANDLE) CallService(MS_CLIST_ADDCONTACTMENUITEM, 0, (LPARAM) & mi);
-		}
-	}
+	}	}
+
+	HookEvent(ME_FONT_RELOAD, FontsChanged);
 	HookEvent(ME_CLIST_DOUBLECLICKED, SendMessageCommand);
+
 	RestoreUnreadMessageAlerts();
 	return 0;
 }
