@@ -818,6 +818,7 @@ case INTM_ICONCHANGED:
 		BOOL needRepaint=FALSE;
 		WORD status;
 		char *szProto;
+        int nHiddenStatus=0;
 		BOOL image_is_special=FALSE;
 		int contacticon=CallService(MS_CLIST_GETCONTACTICON, wParam, 1);
 
@@ -836,7 +837,8 @@ case INTM_ICONCHANGED:
 
 		}
 		*/
-		shouldShow = (GetWindowLong(hwnd, GWL_STYLE) & CLS_SHOWHIDDEN || !CLVM_GetContactHiddenStatus((HANDLE)wParam, szProto, dat))
+        nHiddenStatus=CLVM_GetContactHiddenStatus((HANDLE)wParam, szProto, dat);
+		shouldShow = ( ((GetWindowLong(hwnd, GWL_STYLE) & CLS_SHOWHIDDEN) && nHiddenStatus!=-1) || !nHiddenStatus)
 			&& ( (g_CluiData.bFilterEffective ? TRUE : !pcli->pfnIsHiddenMode(dat, status)) 
 			|| CallService(MS_CLIST_GETCONTACTICON, wParam, 0) != lParam );  // XXX CLVM changed - this means an offline msg is flashing, so the contact should be shown
 		if (!pcli->pfnFindItem(hwnd, dat, (HANDLE) wParam, &contact, &group, NULL)) 

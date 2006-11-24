@@ -64,6 +64,18 @@ typedef struct  {
 	DWORD dwLastMsgTime;
 } displayNameCacheEntry,*pdisplayNameCacheEntry, *PDNCE;
 
+typedef struct tagEXTRASLOTINFO
+{
+    union
+    {
+        TCHAR * ptszSlotName;   // one of this string should be given
+        char  * pszSlotName;
+    };
+    char * pszSlotID;
+    BOOL fUnicode;
+    BYTE iSlot;               // the slot 10-16 are available, do not use
+} EXTRASLOTINFO;
+
 #define CLVM_FILTER_PROTOS 1
 #define CLVM_FILTER_GROUPS 2
 #define CLVM_FILTER_STATUS 4

@@ -124,10 +124,13 @@ int SetIconForExtraColumn(WPARAM wParam,LPARAM lParam)
 //return hImage on success,-1 on failure
 int AddIconToExtraImageList(WPARAM wParam,LPARAM lParam)
 {
+    int res=-1;
 	if (hExtraImageList==0||wParam==0){return(-1);};
-	return((int)ImageList_AddIcon(hExtraImageList,(HICON)wParam));
-
+	res=((int)ImageList_AddIcon(hExtraImageList,(HICON)wParam));
+    if (res>254) return -1;
+    return res;
 };
+
 
 void SetNewExtraColumnCount()
 {

@@ -108,6 +108,7 @@ static BOOL CALLBACK DlgProcItemRowOpts(HWND hwndDlg, UINT msg, WPARAM wParam, L
 			int i;
 			HWND hwndList;
 
+            TranslateDialogDefault(hwndDlg);
 			SendDlgItemMessage(hwndDlg,IDC_MIN_ROW_HEIGHT_SPIN,UDM_SETBUDDY,(WPARAM)GetDlgItem(hwndDlg,IDC_MIN_ROW_HEIGHT),0);		// set buddy			
 			SendDlgItemMessage(hwndDlg,IDC_MIN_ROW_HEIGHT_SPIN,UDM_SETRANGE,0,MAKELONG(255,0));
 			SendDlgItemMessage(hwndDlg,IDC_MIN_ROW_HEIGHT_SPIN,UDM_SETPOS,0,MAKELONG(DBGetContactSettingWord(NULL,"CList","MinRowHeight",CLCDEFAULT_ROWHEIGHT),0));
@@ -364,6 +365,7 @@ static BOOL CALLBACK DlgProcItemAvatarOpts(HWND hwndDlg, UINT msg, WPARAM wParam
 	{
 	case WM_INITDIALOG:
 		{
+            TranslateDialogDefault(hwndDlg);
 			CheckDlgButton(hwndDlg, IDC_SHOW_AVATARS, DBGetContactSettingByte(NULL,"CList","AvatarsShow",0) == 1 ? BST_CHECKED : BST_UNCHECKED );
 			CheckDlgButton(hwndDlg, IDC_AVATAR_DRAW_BORDER, DBGetContactSettingByte(NULL,"CList","AvatarsDrawBorders",0) == 1 ? BST_CHECKED : BST_UNCHECKED );
 			CheckDlgButton(hwndDlg, IDC_AVATAR_ROUND_CORNERS, DBGetContactSettingByte(NULL,"CList","AvatarsRoundCorners",1) == 1 ? BST_CHECKED : BST_UNCHECKED );
@@ -567,6 +569,7 @@ static BOOL CALLBACK DlgProcItemIconOpts(HWND hwndDlg, UINT msg, WPARAM wParam, 
 	{
 	case WM_INITDIALOG:
 		{
+            TranslateDialogDefault(hwndDlg);
 			CheckDlgButton(hwndDlg, IDC_HIDE_ICON_ON_AVATAR, DBGetContactSettingByte(NULL,"CList","IconHideOnAvatar",0) == 1 ? BST_CHECKED : BST_UNCHECKED );
 			CheckDlgButton(hwndDlg, IDC_DRAW_ON_AVATAR_SPACE, DBGetContactSettingByte(NULL,"CList","IconDrawOnAvatarSpace",0) == 1 ? BST_CHECKED : BST_UNCHECKED );
 			CheckDlgButton(hwndDlg, IDC_ICONBLINK, DBGetContactSettingByte(NULL,"CList","NoIconBlink",0) == 1 ? BST_CHECKED : BST_UNCHECKED );
@@ -627,6 +630,7 @@ static BOOL CALLBACK DlgProcItemContactTimeOpts(HWND hwndDlg, UINT msg, WPARAM w
 	{
 	case WM_INITDIALOG:
 		{
+            TranslateDialogDefault(hwndDlg);
 			CheckDlgButton(hwndDlg, IDC_SHOW, DBGetContactSettingByte(NULL,"CList","ContactTimeShow",0) == 1 ? BST_CHECKED : BST_UNCHECKED );
 			CheckDlgButton(hwndDlg, IDC_SHOW_ONLY_IF_DIFFERENT, DBGetContactSettingByte(NULL,"CList","ContactTimeShowOnlyIfDifferent",1) == 1 ? BST_CHECKED : BST_UNCHECKED );
 
@@ -670,6 +674,7 @@ static BOOL CALLBACK DlgProcItemTextOpts(HWND hwndDlg, UINT msg, WPARAM wParam, 
 	{
 	case WM_INITDIALOG:
 		{
+            TranslateDialogDefault(hwndDlg);
 			CheckDlgButton(hwndDlg, IDC_RTL, DBGetContactSettingByte(NULL,"CList","TextRTL",0) == 1 ? BST_CHECKED : BST_UNCHECKED );
 			//TODO: init IDC_ALIGNGROUPCOMBO from DBGetContactSettingByte(NULL,"CList","AlignGroupCaptions",0);
 			{
@@ -757,7 +762,7 @@ static BOOL CALLBACK DlgProcItemSecondLineOpts(HWND hwndDlg, UINT msg, WPARAM wP
 	case WM_INITDIALOG:
 		{
 			int radio;
-
+            TranslateDialogDefault(hwndDlg);
 			CheckDlgButton(hwndDlg, IDC_SHOW, DBGetContactSettingByte(NULL,"CList","SecondLineShow",1) == 1 ? BST_CHECKED : BST_UNCHECKED );
 
 			SendDlgItemMessage(hwndDlg,IDC_TOP_SPACE_SPIN,UDM_SETBUDDY,(WPARAM)GetDlgItem(hwndDlg,IDC_TOP_SPACE),0);		// set buddy			
@@ -954,7 +959,7 @@ static BOOL CALLBACK DlgProcItemThirdLineOpts(HWND hwndDlg, UINT msg, WPARAM wPa
 	case WM_INITDIALOG:
 		{
 			int radio;
-
+            TranslateDialogDefault(hwndDlg);
 			CheckDlgButton(hwndDlg, IDC_SHOW, DBGetContactSettingByte(NULL,"CList","ThirdLineShow",0) == 1 ? BST_CHECKED : BST_UNCHECKED );
 
 			SendDlgItemMessage(hwndDlg,IDC_TOP_SPACE_SPIN,UDM_SETBUDDY,(WPARAM)GetDlgItem(hwndDlg,IDC_TOP_SPACE),0);		// set buddy			
@@ -1147,20 +1152,66 @@ typedef struct _OrderTreeData
 	BYTE	Position;
 	char *  KeyName;
 	BOOL	Visible;
+    BOOL    fReserved;
 } *pOrderTreeData, TOrderTreeData;
 
 static TOrderTreeData OrderTreeData[]=
 {
-	{EXTRA_ICON_VISMODE, _T("Visibility/Chat activity"), EXTRA_ICON_VISMODE,  "EXTRA_ICON_VISMODE", TRUE},
-	{EXTRA_ICON_EMAIL, _T("E-mail"), EXTRA_ICON_EMAIL, "EXTRA_ICON_EMAIL", TRUE},
-	{EXTRA_ICON_PROTO, _T("Protocol"), EXTRA_ICON_PROTO, "EXTRA_ICON_PROTO", TRUE},
-	{EXTRA_ICON_SMS, _T("Phone/SMS"), EXTRA_ICON_SMS,	 "EXTRA_ICON_SMS", TRUE},
-	{EXTRA_ICON_WEB, _T("Web page"), EXTRA_ICON_WEB,   "EXTRA_ICON_WEB", TRUE},
-	{EXTRA_ICON_CLIENT, _T("Client (fingerprint.dll is required)"), EXTRA_ICON_CLIENT,"EXTRA_ICON_CLIENT", TRUE},
-	{EXTRA_ICON_ADV1, _T("Advanced #1"), EXTRA_ICON_ADV1,  "EXTRA_ICON_ADV1", TRUE},
-	{EXTRA_ICON_ADV2, _T("Advanced #2"), EXTRA_ICON_ADV2,  "EXTRA_ICON_ADV2", TRUE},
-	{EXTRA_ICON_ADV3, _T("Advanced #3"), EXTRA_ICON_ADV3,  "EXTRA_ICON_ADV3", TRUE},
-	{EXTRA_ICON_ADV4, _T("Advanced #4"), EXTRA_ICON_ADV4,	"EXTRA_ICON_ADV4", TRUE}
+	{EXTRA_ICON_VISMODE, _T("Visibility/Chat activity"), EXTRA_ICON_VISMODE,  "EXTRA_ICON_VISMODE", TRUE,0},
+	{EXTRA_ICON_EMAIL, _T("E-mail"), EXTRA_ICON_EMAIL, "EXTRA_ICON_EMAIL", TRUE, 0},
+	{EXTRA_ICON_PROTO, _T("Protocol"), EXTRA_ICON_PROTO, "EXTRA_ICON_PROTO", TRUE, 0},
+	{EXTRA_ICON_SMS, _T("Phone/SMS"), EXTRA_ICON_SMS,	 "EXTRA_ICON_SMS", TRUE, 0},
+	{EXTRA_ICON_WEB, _T("Web page"), EXTRA_ICON_WEB,   "EXTRA_ICON_WEB", TRUE, 0},
+	{EXTRA_ICON_CLIENT, _T("Client (fingerprint.dll is required)"), EXTRA_ICON_CLIENT,"EXTRA_ICON_CLIENT", TRUE, 0},
+	{EXTRA_ICON_ADV1, _T("Advanced #1"), EXTRA_ICON_ADV1,  "EXTRA_ICON_ADV1", TRUE, 0},
+	{EXTRA_ICON_ADV2, _T("Advanced #2"), EXTRA_ICON_ADV2,  "EXTRA_ICON_ADV2", TRUE, 0},
+	{EXTRA_ICON_ADV3, _T("Advanced #3"), EXTRA_ICON_ADV3,  "EXTRA_ICON_ADV3", TRUE, 0},
+	{EXTRA_ICON_ADV4, _T("Advanced #4"), EXTRA_ICON_ADV4,	"EXTRA_ICON_ADV4", TRUE, 0}
+};
+
+
+
+int ReserveExtraSlot(WPARAM wParam,LPARAM lParam)
+{      
+    int iLastFree=-1;
+    EXTRASLOTINFO * pESINFO=(EXTRASLOTINFO *)wParam;
+    if (pESINFO->iSlot==0)
+    {
+        int i;
+        for (i=8;i<SIZEOF(OrderTreeData);i++)
+            if (OrderTreeData[i].fReserved==0)
+            {  iLastFree=i; break; }       
+    }
+    else if (pESINFO->iSlot<SIZEOF(OrderTreeData)) 
+            iLastFree=pESINFO->iSlot;
+    if (iLastFree>0)
+    {
+        if (!OrderTreeData[iLastFree].fReserved)
+        {
+            OrderTreeData[iLastFree].fReserved=TRUE;
+            OrderTreeData[iLastFree].KeyName=pESINFO->pszSlotID;
+#ifdef UNICODE
+            if (pESINFO->fUnicode)
+                OrderTreeData[iLastFree].Name=pESINFO->ptszSlotName;
+            else
+            {
+                OrderTreeData[iLastFree].Name=a2u(pESINFO->pszSlotName); //potential memory leak but should not be more than once
+                OrderTreeData[iLastFree].fReserved=(BOOL)2; //need to free KeyName
+            }
+#else
+            if (pESINFO->fUnicode)
+            {
+                OrderTreeData[iLastFree].Name=u2a(pESINFO->pszSlotName); //potential memory leak but should not be more than once
+                OrderTreeData[iLastFree].fReserved=(BOOL)2; //need to free KeyName
+            }
+            else
+                OrderTreeData[iLastFree].Name=pESINFO->pszSlotName; 
+#endif
+            ExtraImage_ReloadExtraIcons();
+        }
+        else return -1; // Already reserved
+    }
+    return iLastFree;
 };
 
 #define PrVer 4

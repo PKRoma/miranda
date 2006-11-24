@@ -356,8 +356,10 @@ void cliRebuildEntireList(HWND hwnd,struct ClcData *dat)
 	}
 
 	hContact=(HANDLE)CallService(MS_DB_CONTACT_FINDFIRST,0,0);
-	while(hContact) {
+	while(hContact) 
+    {
 		pdisplayNameCacheEntry cacheEntry=NULL;
+        int nHiddenStatus;
 		cont=NULL;
 		cacheEntry=(pdisplayNameCacheEntry)pcli->pfnGetCacheEntry(hContact);
 /*
@@ -369,7 +371,8 @@ void cliRebuildEntireList(HWND hwnd,struct ClcData *dat)
 			)
 		  )
 */		
-		if ( style&CLS_SHOWHIDDEN || !CLVM_GetContactHiddenStatus(hContact, NULL, dat))
+        nHiddenStatus=CLVM_GetContactHiddenStatus(hContact, NULL, dat);
+		if ( (style&CLS_SHOWHIDDEN && nHiddenStatus!=-1) || !nHiddenStatus)
 		{
 
 			if(lstrlen(cacheEntry->szGroup)==0)
@@ -728,7 +731,7 @@ int __fastcall CLVM_GetContactHiddenStatus(HANDLE hContact, char *szProto, struc
 	// always hide subcontacts (but show them on embedded contact lists)
 	
 	if(g_CluiData.bMetaAvail && dat != NULL && dat->IsMetaContactsEnabled && DBGetContactSettingByte(hContact, "MetaContacts", "IsSubcontact", 0))
-		return 1;
+		return -1; //subcontact
 
 	if(g_CluiData.bFilterEffective && !fEmbedded) 
 	{
