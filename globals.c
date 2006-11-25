@@ -86,7 +86,7 @@ void LoadProtocolIcons() {
 
 		for(i = j = 0; i < allProtoNum; i++) {
 			if (pProtos[i]->type != PROTOTYPE_PROTOCOL) continue;
-			g_dat->protoNames[j] = _strdup(pProtos[i]->szName);
+			g_dat->protoNames[j] = mir_strdup(pProtos[i]->szName);
 			for (k = ID_STATUS_OFFLINE; k <= ID_STATUS_OUTTOLUNCH; k++) {
 				hIcon = LoadSkinnedProtoIcon(pProtos[i]->szName, k);
 				if (hIcon != NULL) {
