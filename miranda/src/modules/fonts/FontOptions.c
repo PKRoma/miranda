@@ -340,8 +340,10 @@ static BOOL CALLBACK DlgProcLogOptions(HWND hwndDlg, UINT msg, WPARAM wParam, LP
 		{
 			DRAWITEMSTRUCT *dis = (DRAWITEMSTRUCT *) lParam;
 			if(dis->CtlID == IDC_FONTLIST && font_id_list_w2.count) {
+				HBRUSH hBrush = NULL;
 				HFONT hFont, hoFont;
 				TCHAR* pszText;
+				int i;
 				int iItem = dis->itemData;
 				CreateFromFontSettings(&font_id_list_w2.items[iItem]->value, &lf, font_id_list_w2.items[iItem]->flags);
 				hFont = CreateFontIndirect(&lf);
@@ -350,7 +352,18 @@ static BOOL CALLBACK DlgProcLogOptions(HWND hwndDlg, UINT msg, WPARAM wParam, LP
 				//					font_id_list2[iItem]->value.style & DBFONTF_ITALIC ? 1 : 0, 0, 0, font_id_list2[iItem]->value.charset, OUT_DEFAULT_PRECIS, CLIP_DEFAULT_PRECIS, DEFAULT_QUALITY, DEFAULT_PITCH | FF_DONTCARE, font_id_list2[iItem]->value.szFace);
 				hoFont = (HFONT) SelectObject(dis->hDC, hFont);
 				SetBkMode(dis->hDC, TRANSPARENT);
-				FillRect(dis->hDC, &dis->rcItem, hBkgColourBrush);
+				for ( i = 0; i < colour_id_list_w2.count; i++) {
+					TColourID* C = colour_id_list_w2.items[i];
+					if ( _tcsncmp( C->group, font_id_list_w2.items[iItem]->backgroundGroup, 64 ) == 0 ) {
+						if ( _tcsncmp( C->name, font_id_list_w2.items[iItem]->backgroundName, 64 ) == 0 ) {
+							hBrush = CreateSolidBrush( C->value );
+							FillRect(dis->hDC, &dis->rcItem, hBrush);
+							DeleteObject(hBrush);
+						}
+				}	}
+				if (!hBrush) {
+					FillRect(dis->hDC, &dis->rcItem, hBkgColourBrush);
+				}
 				if (dis->itemState & ODS_SELECTED)
 					FrameRect(dis->hDC, &dis->rcItem, GetSysColorBrush(COLOR_HIGHLIGHT));
 				SetTextColor(dis->hDC, font_id_list_w2.items[iItem]->value.colour);

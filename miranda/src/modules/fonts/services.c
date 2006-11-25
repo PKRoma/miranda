@@ -37,6 +37,7 @@ void ConvertFontSettings( FontSettings* fs, TFontSettings* fsw) {
 
 void ConvertFontID( FontID *fid, TFontID* fidw )
 {
+	memset(fidw, 0, sizeof(TFontID));
 	fidw->cbSize = sizeof(TFontID);
 	strcpy(fidw->dbSettingsGroup, fid->dbSettingsGroup);
 	strcpy(fidw->prefix, fid->prefix);
@@ -46,6 +47,10 @@ void ConvertFontID( FontID *fid, TFontID* fidw )
 
 	MultiByteToWideChar( code_page, 0, fid->group, -1, fidw->group, 64);
 	MultiByteToWideChar( code_page, 0, fid->name, -1, fidw->name, 64);
+	if (fid->cbSize == sizeof(FontID)) {
+		MultiByteToWideChar( code_page, 0, fid->backgroundGroup, -1, fidw->backgroundGroup, 64);
+		MultiByteToWideChar( code_page, 0, fid->backgroundName, -1, fidw->backgroundName, 64);
+	}
 }
 
 void ConvertColourID(ColourID *cid, TColourID* cidw) {
@@ -225,7 +230,8 @@ static int sttRegisterFontWorker( TFontID* font_id )
 	DBWriteContactSettingDword(0, font_id->dbSettingsGroup, idstr, font_id->flags);
 	{	
 		TFontID* newItem = mir_alloc( sizeof( TFontID ));
-		memcpy( newItem, font_id, sizeof( TFontID ));
+		memset( newItem, 0, sizeof( TFontID ));
+		memcpy( newItem, font_id, font_id->cbSize);
 		UpdateFontSettings( font_id, &newItem->value );
 		List_InsertPtr(( SortedList* )&font_id_list, newItem );
 	}

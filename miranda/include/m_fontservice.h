@@ -31,8 +31,6 @@ typedef struct FontSettings_tag
     BYTE  style;					// see the DBFONTF_* flags above
     BYTE  charset;
     char  szFace[LF_FACESIZE];
-	char  backgroundGroup[64];
-	char  backgroundName[64];
 }
 	FontSettings;
 
@@ -43,8 +41,6 @@ typedef struct FontSettingsW_tag
     BYTE style;					// see the DBFONTF_* flags above
     BYTE charset;
     wchar_t szFace[LF_FACESIZE];
-	wchar_t backgroundGroup[64];
-	wchar_t backgroundName[64];
 }
 	FontSettingsW;
 
@@ -65,6 +61,8 @@ typedef struct FontID_tag {
 	FontSettings deffontsettings; // defaults, valid if flags & FIDF_DEFAULTVALID
 	int   order;					// controls the order in the font group in which the fonts are listed in the UI (if order fields are equal,
 								// they will be ordered alphabetically by name)
+	char backgroundGroup[64];
+	char backgroundName[64];
 }
 	FontID;
 
@@ -78,6 +76,8 @@ typedef struct FontIDW_tag {
 	FontSettingsW deffontsettings; // defaults, valid if flags & FIDF_DEFAULTVALID
 	int order;					// controls the order in the font group in which the fonts are listed in the UI (if order fields are equal,
 								// they will be ordered alphabetically by name)
+	wchar_t backgroundGroup[64];
+	wchar_t backgroundName[64];
 }
 	FontIDW;
 

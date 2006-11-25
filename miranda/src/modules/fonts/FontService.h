@@ -23,6 +23,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 #include "m_fontservice.h"
 
+
 // settings to be used for the value of 'deffontsettings' in the FontID structure below - i.e. defaults
 typedef struct TFontSettings_tag
 {
@@ -31,8 +32,6 @@ typedef struct TFontSettings_tag
     BYTE     style;					// see the DBFONTF_* flags above
     BYTE     charset;
     TCHAR    szFace[LF_FACESIZE];
-	TCHAR 	 backgrounGroup[64];
-	TCHAR 	 backgroundName[64];
 }
 	TFontSettings;
 
@@ -47,6 +46,8 @@ typedef struct TFontID_tag {
 	TFontSettings deffontsettings; // defaults, valid if flags & FIDF_DEFAULTVALID
 	int   order;                   // controls the order in the font group in which the fonts are listed in the UI (if order fields are equal,
                                   // they will be ordered alphabetically by name)
+	TCHAR 	 backgroundGroup[64];
+	TCHAR 	 backgroundName[64];
 	TFontSettings value;
 }
 	TFontID;
