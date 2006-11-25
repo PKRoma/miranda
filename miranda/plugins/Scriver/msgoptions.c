@@ -56,29 +56,30 @@ static BOOL initialized = 0;
 #define FONTF_ITALIC 2
 struct FontOptionsList
 {
-	char *szDescr;
+	TCHAR *szDescr;
 	COLORREF defColour;
-	char *szDefFace;
+	TCHAR *szDefFace;
 	BYTE defCharset, defStyle;
 	char defSize;
 	COLORREF colour;
-	char szFace[LF_FACESIZE];
+	TCHAR szFace[LF_FACESIZE];
 	BYTE charset, style;
 	char size;
 }
 static fontOptionsList[] = {
-	{"Outgoing messages", RGB(106, 106, 106), "Arial", DEFAULT_CHARSET, 0, -12},
-	{"Incoming messages", RGB(0, 0, 0), "Arial", DEFAULT_CHARSET, 0, -12},
-	{"Outgoing name", RGB(89, 89, 89), "Arial", DEFAULT_CHARSET, FONTF_BOLD, -12},
-	{"Outgoing time", RGB(0, 0, 0), "Terminal", DEFAULT_CHARSET, FONTF_BOLD, -9},
-	{"Outgoing colon", RGB(89, 89, 89), "Arial", DEFAULT_CHARSET, 0, -11},
-	{"Incoming name", RGB(215, 0, 0), "Arial", DEFAULT_CHARSET, FONTF_BOLD, -12},
-	{"Incoming time", RGB(0, 0, 0), "Terminal", DEFAULT_CHARSET, FONTF_BOLD, -9},
-	{"Incoming colon", RGB(215, 0, 0), "Arial", DEFAULT_CHARSET, 0, -11},
-	{"Message area", RGB(0, 0, 0), "Arial", DEFAULT_CHARSET, 0, -12},
-	{"Notices", RGB(90, 90, 160), "Arial", DEFAULT_CHARSET, 0, -12},
+	{_T("Outgoing messages"), RGB(106, 106, 106), _T("Arial"), DEFAULT_CHARSET, 0, -12},
+	{_T("Incoming messages"), RGB(0, 0, 0), _T("Arial"), DEFAULT_CHARSET, 0, -12},
+	{_T("Outgoing name"), RGB(89, 89, 89), _T("Arial"), DEFAULT_CHARSET, FONTF_BOLD, -12},
+	{_T("Outgoing time"), RGB(0, 0, 0), _T("Terminal"), DEFAULT_CHARSET, FONTF_BOLD, -9},
+	{_T("Outgoing colon"), RGB(89, 89, 89), _T("Arial"), DEFAULT_CHARSET, 0, -11},
+	{_T("Incoming name"), RGB(215, 0, 0), _T("Arial"), DEFAULT_CHARSET, FONTF_BOLD, -12},
+	{_T("Incoming time"), RGB(0, 0, 0), _T("Terminal"), DEFAULT_CHARSET, FONTF_BOLD, -9},
+	{_T("Incoming colon"), RGB(215, 0, 0), _T("Arial"), DEFAULT_CHARSET, 0, -11},
+	{_T("Message area"), RGB(0, 0, 0), _T("Arial"), DEFAULT_CHARSET, 0, -12},
+	{_T("Notices"), RGB(90, 90, 160), _T("Arial"), DEFAULT_CHARSET, 0, -12},
 };
-const int msgDlgFontCount = sizeof(fontOptionsList) / sizeof(fontOptionsList[0]);
+
+int fontOptionsListSize = SIZEOF(fontOptionsList);
 
 int FontServiceFontsChanged(WPARAM wParam, LPARAM lParam)
 {
@@ -90,32 +91,79 @@ void RegisterFontServiceFonts() {
 	if (ServiceExists(MS_FONT_REGISTER)) {
 		int i;
 		char szTemp[100];
-		LOGFONTA lf;
-		FontID fid = {0};
+		LOGFONT lf;
+		FontIDT fid = {0};
+		ColourIDT cid = {0};
 		fid.cbSize = sizeof(fid);
-		strncpy(fid.group, "Scriver", sizeof(fid.group));
-		strncpy(fid.dbSettingsGroup, SRMMMOD, sizeof(fid.dbSettingsGroup));
+		
+		lstrcpyn(fid.group, _T("Scriver"), SIZEOF(fid.group));
+		strncpy(fid.dbSettingsGroup, (SRMMMOD), SIZEOF(fid.dbSettingsGroup));
 		fid.flags = FIDF_DEFAULTVALID;
-		for (i = 0; i < sizeof(fontOptionsList) / sizeof(fontOptionsList[0]); i++) {
+		for (i = 0; i < SIZEOF(fontOptionsList); i++) {
 			LoadMsgDlgFont(i, &lf, &fontOptionsList[i].colour);
-			fontOptionsList[i].size =
-			_snprintf(szTemp, sizeof(szTemp), "SRMFont%d", i);
-			strncpy(fid.prefix, szTemp, sizeof(fid.prefix));
+			mir_snprintf(szTemp, SIZEOF(szTemp), "SRMFont%d", i);
+			strncpy(fid.prefix, szTemp, SIZEOF(fid.prefix));
 			fid.order = i;
-			strncpy(fid.name, fontOptionsList[i].szDescr, sizeof(fid.name));
+			lstrcpyn(fid.name, fontOptionsList[i].szDescr, SIZEOF(fid.name));
 			fid.deffontsettings.colour = fontOptionsList[i].colour;
 			fid.deffontsettings.size = (char) lf.lfHeight;
-			//(BYTE)DBGetContactSettingByte(NULL, FONTMODULE, szTemp, fontOptionsList[0].defSize);
-			//fid.deffontsettings.size = -MulDiv(fid.deffontsettings.size, GetDeviceCaps(hdc, LOGPIXELSY), 72);
 			fid.deffontsettings.style = (lf.lfWeight >= FW_BOLD ? FONTF_BOLD : 0) | (lf.lfItalic ? FONTF_ITALIC : 0);
 			fid.deffontsettings.charset = lf.lfCharSet;
-			lstrcpynA(fid.deffontsettings.szFace, lf.lfFaceName, LF_FACESIZE);
-			CallService(MS_FONT_REGISTER, (WPARAM)&fid, 0);
+			lstrcpyn(fid.deffontsettings.szFace, lf.lfFaceName, LF_FACESIZE);
+			lstrcpyn(fid.backgroundGroup, _T("Scriver"), SIZEOF(fid.backgroundGroup));
+			switch (i) {
+			case 1:
+			case 5:
+			case 6:
+			case 7:
+			case 9:
+				lstrcpyn(fid.backgroundName, _T("Incoming background"), SIZEOF(fid.backgroundName));
+				break;
+			case 0:
+			case 2:
+			case 3:
+			case 4:
+				lstrcpyn(fid.backgroundName, _T("Outgoing background"), SIZEOF(fid.backgroundName));
+				break;
+			case 8:
+				lstrcpyn(fid.backgroundName, _T("Input area background"), SIZEOF(fid.backgroundName));
+				break;
+			}
+			CallService(MS_FONT_REGISTERT, (WPARAM)&fid, 0);
 		}
+		cid.cbSize = sizeof(fid);
+		lstrcpyn(cid.group, _T("Scriver"), SIZEOF(fid.group));
+		strncpy(cid.dbSettingsGroup, (SRMMMOD), SIZEOF(fid.dbSettingsGroup));
+		cid.flags = 0;
+		cid.order = 0;
+		lstrcpyn(cid.name, _T("Background"), SIZEOF(cid.name));
+		strncpy(cid.setting, (SRMSGSET_BKGCOLOUR), SIZEOF(cid.setting));
+		cid.defcolour = DBGetContactSettingDword(NULL, SRMMMOD, SRMSGSET_BKGCOLOUR, SRMSGDEFSET_BKGCOLOUR);
+		CallService(MS_COLOUR_REGISTERT, (WPARAM)&cid, 0);
+
+		cid.order = 1;
+		lstrcpyn(cid.name, _T("Input area background"), SIZEOF(cid.name));
+		strncpy(cid.setting, (SRMSGSET_INPUTBKGCOLOUR), SIZEOF(cid.setting));
+		cid.defcolour = DBGetContactSettingDword(NULL, SRMMMOD, SRMSGSET_INPUTBKGCOLOUR, SRMSGDEFSET_INPUTBKGCOLOUR);
+		CallService(MS_COLOUR_REGISTERT, (WPARAM)&cid, 0);
+
+		cid.order = 2;
+		lstrcpyn(cid.name, _T("Incoming background"), SIZEOF(cid.name));
+		strncpy(cid.setting, (SRMSGSET_INCOMINGBKGCOLOUR), SIZEOF(cid.setting));
+		cid.defcolour = DBGetContactSettingDword(NULL, SRMMMOD, SRMSGSET_INCOMINGBKGCOLOUR, SRMSGDEFSET_INCOMINGBKGCOLOUR);
+		CallService(MS_COLOUR_REGISTERT, (WPARAM)&cid, 0);
+
+		cid.order = 3;
+		lstrcpyn(cid.name, _T("Outgoing background"), SIZEOF(cid.name));
+		strncpy(cid.setting, (SRMSGSET_OUTGOINGBKGCOLOUR), SIZEOF(cid.setting));
+		cid.defcolour = DBGetContactSettingDword(NULL, SRMMMOD, SRMSGSET_OUTGOINGBKGCOLOUR, SRMSGDEFSET_OUTGOINGBKGCOLOUR);
+		CallService(MS_COLOUR_REGISTERT, (WPARAM)&cid, 0);
+
+
 	}
 }
 
-void LoadMsgDlgFont(int i, LOGFONTA * lf, COLORREF * colour)
+void LoadMsgDlgFont(int i, LOGFONT * lf, COLORREF * colour)
 {
 	char str[32];
 	int style;
@@ -144,10 +192,10 @@ void LoadMsgDlgFont(int i, LOGFONTA * lf, COLORREF * colour)
 		lf->lfQuality = DEFAULT_QUALITY;
 		lf->lfPitchAndFamily = DEFAULT_PITCH | FF_DONTCARE;
 		wsprintfA(str, "SRMFont%d", i);
-		if (DBGetContactSetting(NULL, SRMMMOD, str, &dbv))
-			lstrcpyA(lf->lfFaceName, fontOptionsList[i].szDefFace);
+		if (DBGetContactSettingTString(NULL, SRMMMOD, str, &dbv))
+			lstrcpy(lf->lfFaceName, fontOptionsList[i].szDefFace);
 		else {
-			lstrcpynA(lf->lfFaceName, dbv.pszVal, sizeof(lf->lfFaceName));
+			lstrcpyn(lf->lfFaceName, dbv.ptszVal, SIZEOF(lf->lfFaceName));
 			DBFreeVariant(&dbv);
 		}
 	}
@@ -967,10 +1015,10 @@ static BOOL CALLBACK DlgProcLogOptions(HWND hwndDlg, UINT msg, WPARAM wParam, LP
 
 			{
 				int i;
-				LOGFONTA lf;
-				for (i = 0; i < sizeof(fontOptionsList) / sizeof(fontOptionsList[0]); i++) {
+				LOGFONT lf;
+				for (i = 0; i < SIZEOF(fontOptionsList); i++) {
 					LoadMsgDlgFont(i, &lf, &fontOptionsList[i].colour);
-					lstrcpyA(fontOptionsList[i].szFace, lf.lfFaceName);
+					lstrcpy(fontOptionsList[i].szFace, lf.lfFaceName);
 					fontOptionsList[i].size = (char) lf.lfHeight;
 					fontOptionsList[i].style = (lf.lfWeight >= FW_BOLD ? FONTF_BOLD : 0) | (lf.lfItalic ? FONTF_ITALIC : 0);
 					fontOptionsList[i].charset = lf.lfCharSet;
@@ -992,12 +1040,12 @@ static BOOL CALLBACK DlgProcLogOptions(HWND hwndDlg, UINT msg, WPARAM wParam, LP
 			HDC hdc;
 			SIZE fontSize;
 			int iItem = mis->itemData - 1;
-			hFont = CreateFontA(fontOptionsList[iItem].size, 0, 0, 0,
+			hFont = CreateFont(fontOptionsList[iItem].size, 0, 0, 0,
 								fontOptionsList[iItem].style & FONTF_BOLD ? FW_BOLD : FW_NORMAL,
 								fontOptionsList[iItem].style & FONTF_ITALIC ? 1 : 0, 0, 0, fontOptionsList[iItem].charset, OUT_DEFAULT_PRECIS, CLIP_DEFAULT_PRECIS, DEFAULT_QUALITY, DEFAULT_PITCH | FF_DONTCARE, fontOptionsList[iItem].szFace);
 			hdc = GetDC(GetDlgItem(hwndDlg, mis->CtlID));
 			hoFont = (HFONT) SelectObject(hdc, hFont);
-			GetTextExtentPoint32A(hdc, fontOptionsList[iItem].szDescr, lstrlenA(fontOptionsList[iItem].szDescr), &fontSize);
+			GetTextExtentPoint32(hdc, fontOptionsList[iItem].szDescr, lstrlen(fontOptionsList[iItem].szDescr), &fontSize);
 			SelectObject(hdc, hoFont);
 			ReleaseDC(GetDlgItem(hwndDlg, mis->CtlID), hdc);
 			DeleteObject(hFont);
@@ -1010,7 +1058,7 @@ static BOOL CALLBACK DlgProcLogOptions(HWND hwndDlg, UINT msg, WPARAM wParam, LP
 			DRAWITEMSTRUCT *dis = (DRAWITEMSTRUCT *) lParam;
 			HFONT hFont, hoFont;
 			HBRUSH hBrush;
-			char *pszText;
+			TCHAR *pszText;
 			int iItem = dis->itemData - 1;
 			COLORREF color = (COLORREF) SendDlgItemMessage(hwndDlg, IDC_BKGCOLOUR, CPM_GETCOLOUR, 0, 0);
 			switch (iItem) {
@@ -1033,7 +1081,7 @@ static BOOL CALLBACK DlgProcLogOptions(HWND hwndDlg, UINT msg, WPARAM wParam, LP
 
 			}
 			hBrush = CreateSolidBrush(color);
-			hFont = CreateFontA(fontOptionsList[iItem].size, 0, 0, 0,
+			hFont = CreateFont(fontOptionsList[iItem].size, 0, 0, 0,
 								fontOptionsList[iItem].style & FONTF_BOLD ? FW_BOLD : FW_NORMAL,
 								fontOptionsList[iItem].style & FONTF_ITALIC ? 1 : 0, 0, 0, fontOptionsList[iItem].charset, OUT_DEFAULT_PRECIS, CLIP_DEFAULT_PRECIS, DEFAULT_QUALITY, DEFAULT_PITCH | FF_DONTCARE, fontOptionsList[iItem].szFace);
 			hoFont = (HFONT) SelectObject(dis->hDC, hFont);
@@ -1042,8 +1090,8 @@ static BOOL CALLBACK DlgProcLogOptions(HWND hwndDlg, UINT msg, WPARAM wParam, LP
 			if (dis->itemState & ODS_SELECTED)
 				FrameRect(dis->hDC, &dis->rcItem, GetSysColorBrush(COLOR_HIGHLIGHT));
 			SetTextColor(dis->hDC, fontOptionsList[iItem].colour);
-			pszText = Translate(fontOptionsList[iItem].szDescr);
-			TextOutA(dis->hDC, dis->rcItem.left, dis->rcItem.top, pszText, lstrlenA(pszText));
+			pszText = TranslateTS(fontOptionsList[iItem].szDescr);
+			TextOut(dis->hDC, dis->rcItem.left, dis->rcItem.top, pszText, lstrlen(pszText));
 			SelectObject(dis->hDC, hoFont);
 			DeleteObject(hFont);
 			DeleteObject(hBrush);
@@ -1099,8 +1147,8 @@ static BOOL CALLBACK DlgProcLogOptions(HWND hwndDlg, UINT msg, WPARAM wParam, LP
 					//fall through
 				case IDC_CHOOSEFONT:
 				{
-					CHOOSEFONTA cf = { 0 };
-					LOGFONTA lf = { 0 };
+					CHOOSEFONT cf = { 0 };
+					LOGFONT lf = { 0 };
 					int i = SendDlgItemMessage(hwndDlg, IDC_FONTLIST, LB_GETITEMDATA, SendDlgItemMessage(hwndDlg, IDC_FONTLIST, LB_GETCURSEL, 0, 0),
 											   0) - 1;
 					lf.lfHeight = fontOptionsList[i].size;
@@ -1111,22 +1159,22 @@ static BOOL CALLBACK DlgProcLogOptions(HWND hwndDlg, UINT msg, WPARAM wParam, LP
 					lf.lfClipPrecision = CLIP_DEFAULT_PRECIS;
 					lf.lfQuality = DEFAULT_QUALITY;
 					lf.lfPitchAndFamily = DEFAULT_PITCH | FF_DONTCARE;
-					lstrcpyA(lf.lfFaceName, fontOptionsList[i].szFace);
+					lstrcpy(lf.lfFaceName, fontOptionsList[i].szFace);
 					cf.lStructSize = sizeof(cf);
 					cf.hwndOwner = hwndDlg;
 					cf.lpLogFont = &lf;
 					cf.Flags = CF_FORCEFONTEXIST | CF_INITTOLOGFONTSTRUCT | CF_SCREENFONTS;
-					if (ChooseFontA(&cf)) {
-						int selItems[sizeof(fontOptionsList) / sizeof(fontOptionsList[0])];
+					if (ChooseFont(&cf)) {
+						int selItems[SIZEOF(fontOptionsList)];
 						int sel, selCount;
 
-						selCount = SendDlgItemMessage(hwndDlg, IDC_FONTLIST, LB_GETSELITEMS, sizeof(fontOptionsList) / sizeof(fontOptionsList[0]), (LPARAM) selItems);
+						selCount = SendDlgItemMessage(hwndDlg, IDC_FONTLIST, LB_GETSELITEMS, SIZEOF(fontOptionsList), (LPARAM) selItems);
 						for (sel = 0; sel < selCount; sel++) {
 							i = SendDlgItemMessage(hwndDlg, IDC_FONTLIST, LB_GETITEMDATA, selItems[sel], 0) - 1;
 							fontOptionsList[i].size = (char) lf.lfHeight;
 							fontOptionsList[i].style = (lf.lfWeight >= FW_BOLD ? FONTF_BOLD : 0) | (lf.lfItalic ? FONTF_ITALIC : 0);
 							fontOptionsList[i].charset = lf.lfCharSet;
-							lstrcpyA(fontOptionsList[i].szFace, lf.lfFaceName);
+							lstrcpy(fontOptionsList[i].szFace, lf.lfFaceName);
 							{
 								MEASUREITEMSTRUCT mis = { 0 };
 								mis.CtlID = IDC_FONTLIST;
@@ -1142,10 +1190,10 @@ static BOOL CALLBACK DlgProcLogOptions(HWND hwndDlg, UINT msg, WPARAM wParam, LP
 				}
 				case IDC_FONTCOLOUR:
 				{
-					int selItems[sizeof(fontOptionsList) / sizeof(fontOptionsList[0])];
+					int selItems[SIZEOF(fontOptionsList)];
 					int sel, selCount, i;
 
-					selCount = SendDlgItemMessage(hwndDlg, IDC_FONTLIST, LB_GETSELITEMS, sizeof(fontOptionsList) / sizeof(fontOptionsList[0]), (LPARAM) selItems);
+					selCount = SendDlgItemMessage(hwndDlg, IDC_FONTLIST, LB_GETSELITEMS, SIZEOF(fontOptionsList), (LPARAM) selItems);
 					for (sel = 0; sel < selCount; sel++) {
 						i = SendDlgItemMessage(hwndDlg, IDC_FONTLIST, LB_GETITEMDATA, selItems[sel], 0) - 1;
 						fontOptionsList[i].colour = SendDlgItemMessage(hwndDlg, IDC_FONTCOLOUR, CPM_GETCOLOUR, 0, 0);
@@ -1198,7 +1246,7 @@ static BOOL CALLBACK DlgProcLogOptions(HWND hwndDlg, UINT msg, WPARAM wParam, LP
 								char str[32];
 								for (i = 0; i < sizeof(fontOptionsList) / sizeof(fontOptionsList[0]); i++) {
 									wsprintfA(str, "SRMFont%d", i);
-									DBWriteContactSettingString(NULL, SRMMMOD, str, fontOptionsList[i].szFace);
+									DBWriteContactSettingTString(NULL, SRMMMOD, str, fontOptionsList[i].szFace);
 									wsprintfA(str, "SRMFont%dSize", i);
 									DBWriteContactSettingByte(NULL, SRMMMOD, str, fontOptionsList[i].size);
 									wsprintfA(str, "SRMFont%dSty", i);

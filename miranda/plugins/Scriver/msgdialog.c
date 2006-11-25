@@ -295,7 +295,7 @@ static int RTL_Detect(WCHAR *pszwText)
 static void AddToFileList(char ***pppFiles,int *totalCount,const char *szFilename) {
 	*pppFiles=(char**)mir_realloc(*pppFiles,(++*totalCount+1)*sizeof(char*));
 	(*pppFiles)[*totalCount]=NULL;
-	(*pppFiles)[*totalCount-1]=_strdup(szFilename);
+	(*pppFiles)[*totalCount-1]=mir_strdup(szFilename);
 	if(GetFileAttributesA(szFilename)&FILE_ATTRIBUTE_DIRECTORY) {
 		WIN32_FIND_DATAA fd;
 		HANDLE hFind;
@@ -1648,8 +1648,8 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
 		}
 	case DM_OPTIONSAPPLIED:
 		{
-			CHARFORMAT2A cf2 = {0};
-			LOGFONTA lf;
+			CHARFORMAT2 cf2 = {0};
+			LOGFONT lf;
 			COLORREF colour;
 			dat->flags &= ~SMF_USEIEVIEW;
 			dat->flags |= ServiceExists(MS_IEVIEW_WINDOW) ? g_dat->flags & SMF_USEIEVIEW : 0;
@@ -1695,7 +1695,7 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
 			cf2.cbSize = sizeof(cf2);
 			cf2.crTextColor = colour;
 			cf2.bCharSet = lf.lfCharSet;
-			strncpy(cf2.szFaceName, lf.lfFaceName, LF_FACESIZE);
+			lstrcpyn(cf2.szFaceName, lf.lfFaceName, LF_FACESIZE);
 			cf2.dwEffects = ((lf.lfWeight >= FW_BOLD) ? CFE_BOLD : 0) | (lf.lfItalic ? CFE_ITALIC : 0);
 			cf2.wWeight = (WORD)lf.lfWeight;
 			cf2.bPitchAndFamily = lf.lfPitchAndFamily;

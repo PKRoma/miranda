@@ -234,8 +234,8 @@ TCHAR *GetNickname(HANDLE hContact, const char* szProto);
 #define MSGFONTID_MESSAGEAREA 8
 #define MSGFONTID_NOTICE      9
 
-void LoadMsgDlgFont(int i, LOGFONTA * lf, COLORREF * colour);
-extern const int msgDlgFontCount;
+void LoadMsgDlgFont(int i, LOGFONT * lf, COLORREF * colour);
+extern int fontOptionsListSize;
 
 #define LOADHISTORY_UNREAD    0
 #define LOADHISTORY_COUNT     1

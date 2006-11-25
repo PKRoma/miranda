@@ -71,8 +71,6 @@ static fontOptionsList[] = {
 	{_T("User list members (away)"), RGB(170, 170, 170), _T("Verdana"), DEFAULT_CHARSET, 0, -12},
 };
 
-static const int msgDlgFontCount = SIZEOF(fontOptionsList);
-
 struct branch_t
 {
 	TCHAR*    szDescr;
