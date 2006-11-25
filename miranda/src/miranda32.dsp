@@ -866,6 +866,52 @@ SOURCE=.\modules\fonts\module_fonts.h
 SOURCE=.\modules\fonts\services.c
 # End Source File
 # End Group
+# Begin Group "icolib"
+
+# PROP Default_Filter ""
+# Begin Source File
+
+SOURCE=.\modules\icolib\extracticon.c
+
+!IF  "$(CFG)" == "miranda32 - Win32 Release"
+
+# SUBTRACT CPP /YX /Yc /Yu
+
+!ELSEIF  "$(CFG)" == "miranda32 - Win32 Debug"
+
+!ELSEIF  "$(CFG)" == "miranda32 - Win32 Release Unicode"
+
+# SUBTRACT CPP /YX /Yc /Yu
+
+!ELSEIF  "$(CFG)" == "miranda32 - Win32 Debug Unicode"
+
+!ENDIF 
+
+# End Source File
+# Begin Source File
+
+SOURCE=.\modules\icolib\IcoLib.c
+# End Source File
+# Begin Source File
+
+SOURCE=.\modules\icolib\IcoLib.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\modules\icolib\skin2icons.c
+
+!IF  "$(CFG)" == "miranda32 - Win32 Release"
+
+!ELSEIF  "$(CFG)" == "miranda32 - Win32 Debug"
+
+!ELSEIF  "$(CFG)" == "miranda32 - Win32 Release Unicode"
+
+!ELSEIF  "$(CFG)" == "miranda32 - Win32 Debug Unicode"
+
+!ENDIF 
+
+# End Source File
+# End Group
 # End Group
 # Begin Group "Resources"
 

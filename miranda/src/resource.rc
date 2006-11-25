@@ -1209,6 +1209,42 @@ BEGIN
     PUSHBUTTON      "&Help",1038,231,64,45,14,WS_GROUP
 END
 
+IDD_OPT_ICOLIB DIALOGEX 0, 0, 316, 251
+STYLE DS_SETFONT | DS_3DLOOK | DS_FIXEDSYS | WS_CHILD | WS_VISIBLE
+EXSTYLE WS_EX_CONTROLPARENT
+FONT 8, "MS Shell Dlg", 0, 0, 0x1
+BEGIN
+    GROUPBOX        "Icons",IDC_STICONSGROUP,0,0,315,250
+    CONTROL         "List1",IDC_PREVIEW,"SysListView32",LVS_AUTOARRANGE | 
+                    WS_BORDER | WS_TABSTOP,109,10,201,207
+    PUSHBUTTON      "&Load icon set...",IDC_LOADICONS,116,220,94,13
+    PUSHBUTTON      "&Import icons >>",IDC_IMPORT,215,220,89,13
+    CONTROL         "Download more icons",IDC_GETMORE,"Hyperlink",WS_TABSTOP | 
+                    0x1,109,237,201,8
+    CONTROL         "Tree1",IDC_CATEGORYLIST,"SysTreeView32",
+                    TVS_HASBUTTONS | TVS_HASLINES | TVS_LINESATROOT | 
+                    TVS_SHOWSELALWAYS | TVS_FULLROWSELECT | WS_BORDER | 
+                    WS_TABSTOP,4,10,102,235
+END
+
+IDD_ICOLIB_IMPORT DIALOGEX 0, 0, 217, 194
+STYLE DS_SETFONT | DS_3DLOOK | DS_FIXEDSYS | WS_POPUP | WS_VISIBLE | 
+    WS_CAPTION | WS_SYSMENU | WS_THICKFRAME
+EXSTYLE WS_EX_TOOLWINDOW | WS_EX_CONTROLPARENT
+CAPTION "Icon Index"
+FONT 8, "MS Shell Dlg", 0, 0, 0x1
+BEGIN
+    RTEXT           "Icon library:",IDC_STATIC,5,6,44,8
+    EDITTEXT        IDC_ICONSET,53,4,127,12,ES_AUTOHSCROLL
+    PUSHBUTTON      "...",IDC_BROWSE,186,5,14,10
+    LTEXT           "Drag icons to main list to assign them:",IDC_STATIC,4,
+                    18,207,8
+    CONTROL         "List1",IDC_PREVIEW,"SysListView32",LVS_SINGLESEL | 
+                    LVS_AUTOARRANGE | WS_BORDER | WS_TABSTOP,4,27,208,163
+END
+
+
+
 /////////////////////////////////////////////////////////////////////////////
 //
 // DESIGNINFO
@@ -1773,6 +1809,15 @@ BEGIN
     END
 END
 
+IDR_ICOLIB_CONTEXT MENU 
+BEGIN
+    POPUP "IconOptions"
+    BEGIN
+        MENUITEM "Cancel Change",               ID_CANCELCHANGE
+        MENUITEM "&Reset To Default",           ID_RESET
+    END
+END
+
 
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -1810,4 +1855,5 @@ IDB_SORTCOLDOWN         BITMAP  MOVEABLE PURE   "res/sortcold.bmp"
 
 /////////////////////////////////////////////////////////////////////////////
 #endif    // not APSTUDIO_INVOKED
+
 

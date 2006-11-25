@@ -12,6 +12,8 @@
 #define IDI_OFFLINE                     105
 #define IDD_CUSTOM_FONT                 106
 #define IDD_OPT_FONTS                   107
+#define IDD_OPT_ICOLIB                  110
+#define IDD_ICOLIB_IMPORT               111
 #define IDD_ADDED                       115
 #define IDD_URLSEND                     119
 #define IDD_URLRECV                     120
@@ -37,6 +39,7 @@
 #define IDI_HISTORY                     174
 #define IDI_DELETE                      175
 #define IDR_CONTEXT                     180
+#define IDR_ICOLIB_CONTEXT              181
 #define IDC_DROP                        183
 #define IDD_HISTORY_FIND                192
 #define IDI_SENDEMAIL                   193
@@ -408,6 +411,7 @@
 #define IDM_OPENEXISTING                40015
 #define IDM_COPYLINK                    40016
 #define POPUP_HIDEMIRANDA               40017
+#define ID_CANCELCHANGE                 40018
 #define ID_TRAY_HIDE                    40038
 #define ID_TRAY_EXIT                    40040
 #define POPUP_NEWGROUP                  40050

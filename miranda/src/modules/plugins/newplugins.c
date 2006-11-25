@@ -121,7 +121,7 @@ HINSTANCE GetInstByAddress( void* codePtr )
 #define CHECKAPI_DB 	1
 #define CHECKAPI_CLIST  2
 
-static char* modulesToSkip[] = { "autoloadavatars.dll", "multiwindow.dll", "fontservice.dll" };
+static char* modulesToSkip[] = { "autoloadavatars.dll", "multiwindow.dll", "fontservice.dll", "icolib.dll" };
 
 static int checkAPI(char * plugin, BASIC_PLUGIN_INFO * bpi, DWORD mirandaVersion, int checkTypeAPI, int * exports)
 {

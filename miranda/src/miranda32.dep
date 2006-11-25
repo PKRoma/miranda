@@ -540,6 +540,20 @@
 	".\modules\fonts\FontService.h"\
 	
 
+.\modules\icolib\IcoLib.c : \
+	"..\include\m_icolib.h"\
+	"..\include\m_plugins.h"\
+	"..\include\m_protomod.h"\
+	".\modules\icolib\IcoLib.h"\
+	
+
+.\modules\icolib\skin2icons.c : \
+	"..\include\m_icolib.h"\
+	"..\include\m_plugins.h"\
+	"..\include\m_protomod.h"\
+	".\modules\icolib\IcoLib.h"\
+	
+
 .\resource.rc : \
 	"..\docs\credits.txt"\
 	"..\include\statusmodes.h"\
