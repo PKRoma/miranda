@@ -866,6 +866,9 @@ static void sttInitFileTransfer(
 	MimeHeaders&	tFileInfo2,
 	const char*		msgbody )
 {
+	if ( info->mJoinedCount == 0 )
+		return;
+
 	char szContactEmail[ MSN_MAX_EMAIL_LEN ];
 	if ( MSN_GetStaticString( "e-mail", info->mJoinedContacts[0], szContactEmail, sizeof( szContactEmail )))
 		return;

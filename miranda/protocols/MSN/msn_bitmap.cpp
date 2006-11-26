@@ -200,7 +200,7 @@ int __stdcall MSN_EnterBitmapFileName( char* szDest )
 	ofn.lStructSize = sizeof( OPENFILENAME );
 	ofn.lpstrFilter = szFilter;
 	ofn.lpstrFile = szDest;
-	ofn.Flags = OFN_FILEMUSTEXIST | OFN_HIDEREADONLY;
+	ofn.Flags = OFN_FILEMUSTEXIST | OFN_HIDEREADONLY | OFN_NOCHANGEDIR;
 	ofn.nMaxFile = MAX_PATH;
 	ofn.nMaxFileTitle = MAX_PATH;
 	ofn.lpstrDefExt = "bmp";

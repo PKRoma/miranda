@@ -42,7 +42,7 @@ int ThreadData::send( char* data, int datalen )
 
 	NETLIBBUFFER nlb = { data, datalen, 0 };
 
-	mWaitPeriod = 60;
+	mWaitPeriod = mJoinedCount ? 60 : 15;
 
 	if ( MyOptions.UseGateway && !( mType == SERVER_FILETRANS || mType == SERVER_P2P_DIRECT )) {
 		mGatewayTimeout = 2;
@@ -76,6 +76,37 @@ int ThreadData::send( char* data, int datalen )
 
 	return TRUE;
 }
+
+bool ThreadData::isTimeout( void )
+{
+	bool res = false;
+
+	if ( --mWaitPeriod > 0 ) return false;
+
+	if ( !mIsMainThread && ( mJoinedCount <= 1 || mChatID[0] == 0 )) {
+		if ( mJoinedCount == 0 )
+			res = true;
+		else if ( p2p_getThreadSession( mJoinedContacts[0], mType ) != NULL )
+			res = false;
+		else if ( mType == SERVER_SWITCHBOARD ) {
+			MessageWindowInputData msgWinInData = { 
+				sizeof( MessageWindowInputData ), mJoinedContacts[0], MSG_WINDOW_UFLAG_MSG_BOTH 
+			};
+			MessageWindowData msgWinData;
+			msgWinData.cbSize = sizeof( MessageWindowData );
+
+			res = MSN_CallService( MS_MSG_GETWINDOWDATA, ( WPARAM )&msgWinInData, ( LPARAM )&msgWinData ) != 0;
+			res = res || msgWinData.hwndWindow == NULL;
+	}	}
+
+	if ( res ) 
+		MSN_DebugLog( "Dropping the idle switchboard due to inactivity" );
+	else
+		mWaitPeriod = 60;
+
+	return res;
+}
+
 
 //=======================================================================================
 // Receving data
@@ -163,12 +194,9 @@ LBL_RecvAgain:
 			ret = MSN_CallService( MS_NETLIB_SELECT, 0, ( LPARAM )&tSelect );
 			if ( ret != 0 )
 				break;
+			
 			// Timeout switchboard session if inactive
-			if ( !mIsMainThread && ( mJoinedCount <= 1 || mChatID[0] == 0 ) && --mWaitPeriod <= 0 ) 
-			{
-				MSN_DebugLog( "Dropping the idle switchboard due to the 60 sec timeout" );
-				return 0;
-			}
+			if ( isTimeout() ) return 0;
 		}	
 	}
 
@@ -247,7 +275,7 @@ LBL_RecvAgain:
 	else
 	{
 		mGatewayTimeout = 1;
-		mWaitPeriod = 60;
+		mWaitPeriod = mJoinedCount ? 60 : 15;
 	}
 
 	ret -= hdrLen;
@@ -294,21 +322,16 @@ int ThreadData::recv( char* data, long datalen )
 
 LBL_RecvAgain:
 	if ( !mIsMainThread && !MyOptions.UseGateway && !MyOptions.UseProxy ) {
-		mWaitPeriod = 60;
-		while ( --mWaitPeriod >= 0 ) {
+		mWaitPeriod = mJoinedCount ? 60 : 15;
+		for ( ;; ) {
 			NETLIBSELECT nls = { 0 };
 			nls.cbSize = sizeof( nls );
 			nls.dwTimeout = 1000;
 			nls.hReadConns[0] = s;
 			if ( MSN_CallService( MS_NETLIB_SELECT, 0, ( LPARAM )&nls ) != 0 )
 				break;
-		}
 
-		if ( mWaitPeriod < 0 && (( mJoinedCount <= 1 || mChatID[0] == 0 ) && 
-			( mJoinedCount == 0 || p2p_getThreadSession( mJoinedContacts[0], mType ) == NULL )))
-		{
-			MSN_DebugLog( "Dropping the idle switchboard due to the 60 sec timeout" );
-			return 0;
+			if ( isTimeout() ) return 0;
 	}	}
 
 	int ret = MSN_CallService( MS_NETLIB_RECV, ( WPARAM )s, ( LPARAM )&nlb );

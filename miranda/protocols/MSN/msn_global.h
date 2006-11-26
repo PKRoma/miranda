@@ -451,7 +451,9 @@ struct ThreadData
 	int				send( char* data, int datalen );
 	int				recv( char* data, long datalen );
 	int				recv_dg( char* data, long datalen );
+	bool				isTimeout( void );
 
+	void				sendCaps( void );
 	LONG				sendMessage( int msgType, const char* msg, int parFlags );
 	LONG				sendRawMessage( int msgType, const char* data, int datLen );
 	LONG				sendPacket( const char* cmd, const char* fmt, ... );

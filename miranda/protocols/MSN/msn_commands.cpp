@@ -1120,16 +1120,19 @@ LBL_InvalidCommand:
 		case ' SNA':    //********* ANS: section 8.4 Getting Invited to a Switchboard Session
 			if ( strcmp( params, "OK" ) == 0 ) {
 				info->mInitialContact = NULL;
+				info->sendCaps();
 				if ( info->mJoinedCount == 1 ) {
 					MsgQueueEntry E;
 					HANDLE hContact = info->mJoinedContacts[0];
 					if ( MsgQueue_GetNext( hContact, E ) != 0 ) {
 						do {
-							if ( E.msgSize == 0 ) {
-								info->sendMessage( E.msgType, E.message, E.flags );
-								MSN_SendBroadcast( hContact, ACKTYPE_MESSAGE, ACKRESULT_SUCCESS, ( HANDLE )E.seq, 0 );
+							if ( E.msgType != 'X' ) {
+								if ( E.msgSize == 0 ) {
+									info->sendMessage( E.msgType, E.message, E.flags );
+									MSN_SendBroadcast( hContact, ACKTYPE_MESSAGE, ACKRESULT_SUCCESS, ( HANDLE )E.seq, 0 );
+								}
+								else info->sendRawMessage( E.msgType, E.message, E.msgSize );
 							}
-							else info->sendRawMessage( E.msgType, E.message, E.msgSize );
 
 							mir_free( E.message );
 
@@ -1495,14 +1498,17 @@ LBL_InvalidCommand:
 			info->mInitialContact = NULL;
 
 			if ( MSN_ContactJoined( info, hContact ) == 1 ) {
+				info->sendCaps();
 				MsgQueueEntry E;
 				if ( MsgQueue_GetNext( hContact, E ) != 0 ) {
 					do {
-						if ( E.msgSize == 0 ) {
-							info->sendMessage( E.msgType, E.message, E.flags );
-							MSN_SendBroadcast( hContact, ACKTYPE_MESSAGE, ACKRESULT_SUCCESS, ( HANDLE )E.seq, 0 );
+						if ( E.msgType != 'X' ) {
+							if ( E.msgSize == 0 ) {
+								info->sendMessage( E.msgType, E.message, E.flags );
+								MSN_SendBroadcast( hContact, ACKTYPE_MESSAGE, ACKRESULT_SUCCESS, ( HANDLE )E.seq, 0 );
+							}
+							else info->sendRawMessage( E.msgType, E.message, E.msgSize );
 						}
-						else info->sendRawMessage( E.msgType, E.message, E.msgSize );
 
 						mir_free( E.message );
 
@@ -1519,6 +1525,8 @@ LBL_InvalidCommand:
 				bool chatCreated = info->mChatID[0] != 0;
 
 				char* tContactName = MSN_GetContactName( info->mJoinedContacts[chatCreated] );
+
+				info->sendCaps();
 
 				char multichatmsg[ 256 ];
 				mir_snprintf(
@@ -1605,6 +1613,11 @@ LBL_InvalidCommand:
 
 			if (( listId & ( LIST_AL +  LIST_BL + LIST_FL )) == LIST_BL ) {
 				DBDeleteContactSetting( sttListedContact, "CList", "NotOnList" );
+				DBWriteContactSettingByte( sttListedContact, "CList", "Hidden", 1 );
+			}
+
+			if ( listId == LIST_RL ) {
+				DBWriteContactSettingByte( sttListedContact, "CList", "NotOnList", 1 );
 				DBWriteContactSettingByte( sttListedContact, "CList", "Hidden", 1 );
 			}
 

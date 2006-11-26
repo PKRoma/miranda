@@ -184,7 +184,7 @@ LBL_Continue:
 				ofn.hwndOwner = hwndDlg;
 				ofn.nMaxFile = sizeof( szFile );
 				ofn.lpstrFile = szFile;
-				ofn.Flags = OFN_FILEMUSTEXIST;
+				ofn.Flags = OFN_FILEMUSTEXIST | OFN_NOCHANGEDIR;
 				if ( GetOpenFileNameA( &ofn ) != TRUE )
 					break;
 

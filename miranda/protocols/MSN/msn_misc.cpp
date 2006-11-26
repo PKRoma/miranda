@@ -35,6 +35,8 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include "sha1.h"
 #include "resource.h"
 
+#include "version.h"
+
 typedef LONG ( WINAPI pIncrementFunc )( PLONG );
 
 static pIncrementFunc  MyInterlockedIncrement95;
@@ -371,6 +373,16 @@ LONG ThreadData::sendMessage( int msgType, const char* parMsg, int parFlags )
 	}
 
 	return sendPacket( "MSG", "%c %d\r\n%s%s", msgType, strlen( parMsg )+strlen( tHeader ), tHeader, parMsg );
+}
+
+void ThreadData::sendCaps( void )
+{
+	static const char capMsg[] = 
+	"MIME-Version: 1.0\r\n"
+	"Content-Type: text/x-clientcaps\r\n\r\n"
+	"Client-Name: Miranda IM/" __VERSION_STRING "\r\n";
+
+	sendPacket( "MSG", "%c %d\r\n%s", 'N', strlen( capMsg ), capMsg );
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////

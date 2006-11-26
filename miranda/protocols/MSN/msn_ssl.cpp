@@ -158,8 +158,7 @@ char* SSL_WinInet::getSslResult( char* parUrl, char* parAuthInfo )
 	HINTERNET tNetHandle;
 	char* tBuffer = ( char* )alloca( SSL_BUF_SIZE );
 
-	int tUsesProxy = MSN_GetByte( "NLUseProxy", 0 );
-	if ( tUsesProxy ) {
+	if ( MyOptions.UseProxy ) {
 		DWORD ptype = MSN_GetByte( "NLProxyType", 0 );
 		if ( !MSN_GetByte( "UseIeProxy", 0 ) && ( ptype == PROXYTYPE_HTTP || ptype == PROXYTYPE_HTTPS )) {
 			char szProxy[ 100 ];
@@ -188,7 +187,7 @@ char* SSL_WinInet::getSslResult( char* parUrl, char* parAuthInfo )
 		return NULL;
 	}
 
-	MSN_DebugLog( "SSL request (%s): '%s'", ( tUsesProxy ) ? "using proxy": "direct connection", parUrl );
+	MSN_DebugLog( "SSL request (%s): '%s'", MyOptions.UseProxy ? "using proxy": "direct connection", parUrl );
 
 	char* urlStart = strstr( parUrl, "://" );
 	if ( urlStart == NULL )
@@ -227,7 +226,7 @@ char* SSL_WinInet::getSslResult( char* parUrl, char* parAuthInfo )
 			f_InternetSetOption( tRequest, INTERNET_OPTION_SEND_TIMEOUT, &tm, sizeof(tm));
 			f_InternetSetOption( tRequest, INTERNET_OPTION_RECEIVE_TIMEOUT, &tm, sizeof(tm));
 
-		if ( tUsesProxy && MSN_GetByte( "NLUseProxyAuth", 0  ))
+		if ( MyOptions.UseProxy && MSN_GetByte( "NLUseProxyAuth", 0  ))
 			applyProxy( tRequest );
 
 			char cclose[] =  "Connection: close";
