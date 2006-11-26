@@ -74,7 +74,7 @@ static DWORD CALLBACK StreamOut(DWORD_PTR dwCookie, LPBYTE pbBuff, LONG cb, LONG
 
 TCHAR *pszIDCSAVE_close = 0, *pszIDCSAVE_save = 0;
 
-static WNDPROC OldMessageEditProc, OldAvatarWndProc, OldMessageLogProc, OldIEViewProc = 0;;
+static WNDPROC OldMessageEditProc, OldAvatarWndProc, OldMessageLogProc, OldIEViewProc = 0, OldHppProc = 0;
 WNDPROC OldSplitterProc = 0;
 
 static const UINT infoLineControls[] = { IDC_PROTOCOL, /* IDC_PROTOMENU, */ IDC_NAME, /* IDC_INFOPANELMENU */};
@@ -333,17 +333,17 @@ static void updateMathWindow(HWND hwndDlg, struct MessageWindowData *dat)
 }
 #endif
 
-LRESULT CALLBACK IEViewSubclassProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
+static LRESULT CALLBACK IEViewSubclassProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 {
 	struct MessageWindowData *mwdat = (struct MessageWindowData *)GetWindowLong(GetParent(hwnd), GWL_USERDATA);
 
     switch(msg) {
         case WM_NCCALCSIZE:
-            return(NcCalcRichEditFrame(hwnd, mwdat, ID_EXTBKHISTORY, msg, wParam, lParam, OldIEViewProc));
+            return(NcCalcRichEditFrame(hwnd, mwdat, ID_EXTBKHISTORY, msg, wParam, lParam, mwdat->hwndIEView ?  OldIEViewProc : OldHppProc));
 		case WM_NCPAINT:
-			return(DrawRichEditFrame(hwnd, mwdat, ID_EXTBKHISTORY, msg, wParam, lParam, OldIEViewProc));
+			return(DrawRichEditFrame(hwnd, mwdat, ID_EXTBKHISTORY, msg, wParam, lParam, mwdat->hwndIEView ? OldIEViewProc : OldHppProc));
 	}
-	return CallWindowProc(OldIEViewProc, hwnd, msg, wParam, lParam);
+	return CallWindowProc(mwdat->hwndIEView ? OldIEViewProc : OldHppProc, hwnd, msg, wParam, lParam);
 }
 
 /*
@@ -454,8 +454,15 @@ static void MsgWindowUpdateState(HWND hwndDlg, struct MessageWindowData *dat, UI
             }
             dat->hwndIWebBrowserControl = WindowFromPoint(pt);
         }
-        else if(dat->hwndHPP)
+        else if(dat->hwndHPP) {
             dat->hwndIWebBrowserControl = dat->hwndHPP;
+            if(dat->oldIEViewProc == NULL &&  DBGetContactSettingByte(NULL, SRMSGMOD_T, "subclassIEView", 0)) {
+                if(OldHppProc == 0)
+                    OldHppProc = (WNDPROC)GetWindowLong(dat->hwndHPP, GWL_WNDPROC);
+                SetWindowLong(dat->hwndHPP, GWL_WNDPROC, (LONG)IEViewSubclassProc);
+                dat->oldIEViewProc = OldHppProc;
+            }
+        }
 
         if(dat->dwFlagsEx & MWF_EX_DELAYEDSPLITTER) {
             dat->dwFlagsEx &= ~MWF_EX_DELAYEDSPLITTER;
@@ -5824,6 +5831,10 @@ verify:
                 ieWindow.cbSize = sizeof(IEVIEWWINDOW);
                 ieWindow.iType = IEW_DESTROY;
                 ieWindow.hwnd = dat->hwndHPP;
+                if(dat->oldIEViewProc) {
+                    SetWindowLong(dat->hwndHPP, GWL_WNDPROC, (LONG)dat->oldIEViewProc);
+                    dat->oldIEViewProc = 0;
+                }
                 CallService(MS_HPP_EG_WINDOW, 0, (LPARAM)&ieWindow);
             }
             break;

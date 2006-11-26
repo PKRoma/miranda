@@ -40,7 +40,6 @@ extern      HMODULE g_hInst;
 extern      HANDLE hMessageWindowList;
 extern      StatusItems_t StatusItems[];
 extern      char *xStatusDescr[];
-extern      LRESULT CALLBACK IEViewSubclassProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam);
 
 void ShowMultipleControls(HWND hwndDlg, const UINT * controls, int cControls, int state);
 

@@ -131,7 +131,7 @@ LINK32=link.exe
 # ADD BASE MTL /nologo /D "_DEBUG" /mktyplib203 /win32
 # ADD MTL /nologo /D "_DEBUG" /mktyplib203 /win32
 # ADD BASE RSC /l 0x809 /d "_DEBUG"
-# ADD RSC /l 0x809 /d "_DEBUG"
+# ADD RSC /l 0x809 /d "_DEBUG" /d "UNICODE"
 BSC32=bscmake.exe
 # ADD BASE BSC32 /nologo
 # ADD BSC32 /nologo
@@ -1211,7 +1211,9 @@ DEP_CPP_MSGDI=\
 	".\nen.h"\
 	".\sendqueue.h"\
 	".\templates.h"\
-	{$(INCLUDE)}"uxtheme.h"\
+	
+NODEP_CPP_MSGDI=\
+	".\xtheme.h"\
 	
 
 !IF  "$(CFG)" == "tabSRMM - Win32 Debug"
@@ -1418,7 +1420,9 @@ DEP_CPP_MSGOP=\
 	".\msgs.h"\
 	".\nen.h"\
 	".\templates.h"\
-	{$(INCLUDE)}"uxtheme.h"\
+	
+NODEP_CPP_MSGOP=\
+	".\xtheme.h"\
 	
 
 !IF  "$(CFG)" == "tabSRMM - Win32 Debug"
@@ -1761,7 +1765,9 @@ DEP_CPP_TABCT=\
 	".\msgs.h"\
 	".\nen.h"\
 	".\templates.h"\
-	{$(INCLUDE)}"uxtheme.h"\
+	
+NODEP_CPP_TABCT=\
+	".\xtheme.h"\
 	
 
 !IF  "$(CFG)" == "tabSRMM - Win32 Debug"

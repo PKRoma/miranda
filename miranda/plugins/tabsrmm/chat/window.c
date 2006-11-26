@@ -2096,7 +2096,7 @@ LABEL_SHOWWINDOW:
 							if (sel.cpMin != sel.cpMax)
 								break;
 							tr.chrg = ((ENLINK *) lParam)->chrg;
-							tr.lpstrText = mir_alloc(sizeof(TCHAR)*(tr.chrg.cpMax - tr.chrg.cpMin + 1));
+							tr.lpstrText = mir_alloc(sizeof(TCHAR)*(tr.chrg.cpMax - tr.chrg.cpMin + 2));
                             SendMessage(pNmhdr->hwndFrom, EM_GETTEXTRANGE, 0, (LPARAM) & tr);
 
 							isLink = g_Settings.ClickableNicks ? IsStringValidLink(tr.lpstrText) : TRUE;
@@ -2151,24 +2151,68 @@ LABEL_SHOWWINDOW:
 								mir_free(pszUrl);
 							}
 							else {                      // clicked a nick name
-								USERINFO *ui = si->pUsers;
+								/* I think there is no reason to check for a real user,
+								   because ppl sometime want to click on a nick of a
+								   gone person and "nothing-is-happening" behaviour
+								   confuses them, so I commented the code */
+								/*USERINFO *ui = si->pUsers;
+ 								BOOL found = FALSE;
+ 
 								BOOL found = FALSE;
 
-								while(ui) {
+								while(!found && ui) {
 									int iLen = lstrlen(ui->pszNick), i;
-									found = TRUE;
-									for (i = 0; i < iLen && ui->pszNick[i] && tr.lpstrText[i]; i++) {
-										if (ui->pszNick[i] != tr.lpstrText[i]) {
-											found = FALSE;
-											break;
-									}	}
-
-									if (found)
-										break;
+									found = _tcscmp(ui->pszNick, tr.lpstrText) == 0;
 									ui = ui->next;
 								}
 								if (found)
 									SendDlgItemMessage(hwndDlg, IDC_CHAT_MESSAGE, EM_REPLACESEL,  FALSE, (LPARAM)tr.lpstrText);
+								/* put nick to the answer window */
+                                CHARRANGE chr;
+                                TEXTRANGE tr2;
+                                TCHAR tszAplTmpl[] = _T("%s,"), 
+                                    *tszAppeal, *tszTmp;
+                                size_t st;
+
+                                SendDlgItemMessage(hwndDlg, IDC_CHAT_MESSAGE,
+                                    EM_EXGETSEL, 0, (LPARAM) &chr);
+                                tszTmp = tszAppeal = (TCHAR *) malloc(
+                                    (_tcslen(tr.lpstrText) + 
+                                     _tcslen(tszAplTmpl) + 3) * sizeof(TCHAR));
+                                tr2.lpstrText = (LPTSTR) malloc(sizeof(TCHAR) * 2);
+                                if (chr.cpMin) {
+                                    /* prepend nick with space if needed */
+                                    tr2.chrg.cpMin = chr.cpMin-1;
+                                    tr2.chrg.cpMax = chr.cpMin;
+                                    SendDlgItemMessage(hwndDlg, IDC_CHAT_MESSAGE,
+                                        EM_GETTEXTRANGE, 0, (LPARAM) &tr2);
+                                    if (! _istspace(*tr2.lpstrText))
+                                        *tszTmp++ = _T(' ');
+                                    _tcscpy(tszTmp, tr.lpstrText);
+                                } else
+                                    /* in the beginning of the message window */
+                                    _stprintf(tszAppeal, tszAplTmpl, tr.lpstrText);
+                                st = _tcslen(tszAppeal);
+                                if (chr.cpMax != -1) {
+                                    tr2.chrg.cpMin = chr.cpMax;
+                                    tr2.chrg.cpMax = chr.cpMax + 1;
+                                    /* if there is no space after selection,
+                                       or there is nothing after selection at all... */
+                                    if (! SendDlgItemMessage(hwndDlg, 
+                                        IDC_CHAT_MESSAGE,
+                                        EM_GETTEXTRANGE, 0, (LPARAM) &tr2) ||
+                                        ! _istspace(*tr2.lpstrText)) {
+                                            tszAppeal[st++] = _T(' ');
+                                            tszAppeal[st++] = _T('\0');
+                                        }
+                                } else {
+                                    tszAppeal[st++] = _T(' ');
+                                    tszAppeal[st++] = _T('\0');
+                                }
+                                SendDlgItemMessage(hwndDlg, IDC_CHAT_MESSAGE, 
+                                    EM_REPLACESEL,  FALSE, (LPARAM)tszAppeal);
+                                free((void *) tr2.lpstrText);
+                                free((void *) tszAppeal);
 							}
 							SetFocus(GetDlgItem(hwndDlg, IDC_CHAT_MESSAGE));
 							mir_free(tr.lpstrText);
