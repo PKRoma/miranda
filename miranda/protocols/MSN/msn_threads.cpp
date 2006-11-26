@@ -46,15 +46,20 @@ void __cdecl msn_keepAliveThread( void* )
 
 	hKeepAliveThreadEvt = CreateEvent( NULL, FALSE, FALSE, NULL );
 
-	if ( msnPingTimeout < 0 ) msnPingTimeout *= -1;
+	msnPingTimeout = 45;
 
 	while ( keepFlag )
 	{
 		switch ( WaitForSingleObject( hKeepAliveThreadEvt, msnPingTimeout * 1000 ))
 		{
 			case WAIT_TIMEOUT:
-				msnPingTimeout = 45;
-				keepFlag = msnNsThread != NULL && msnNsThread->send( "PNG\r\n", 5 );
+				keepFlag = msnNsThread != NULL;
+				if ( MyOptions.UseGateway )
+					msnPingTimeout = 45;
+				else {
+					msnPingTimeout = 3;
+					keepFlag = keepFlag && msnNsThread->send( "PNG\r\n", 5 );
+				}
 				p2p_clearDormantSessions();
 				break;
 
@@ -155,7 +160,7 @@ void __cdecl MSNServerThread( ThreadData* info )
 		msnNsThread = info;
 	}
 
-	if ( info->mType == SERVER_NOTIFICATION )
+	if ( info->mType == SERVER_DISPATCH )
 		mir_forkthread(( pThreadFunc )msn_keepAliveThread, NULL );
 
 	MSN_DebugLog( "Entering main recv loop" );
@@ -464,7 +469,7 @@ ThreadData::ThreadData()
 {
 	memset( this, 0, sizeof( ThreadData ));
 	mGatewayTimeout = 2;
-	mWaitPeriod = 60;
+	mWaitPeriod = 15;
 	mIsMainThread = false;
 	hWaitEvent = CreateEvent( NULL, FALSE, FALSE, NULL );
 }
@@ -521,24 +526,28 @@ void ThreadData::applyGatewayData( HANDLE hConn, bool isPoll )
 	MSN_CallService( MS_NETLIB_SETHTTPPROXYINFO, (WPARAM)hConn, (LPARAM)&nlhpi);
 }
 
-static const char sttGatewayPrefix[] = "http://gateway.messenger.hotmail.com/gateway/gateway.dll?";
-static const char *gatewayPref = sttGatewayPrefix;
-
-static const char sttFormatString[] = "%sAction=open&Server=%s&IP=%s";
-
 void ThreadData::getGatewayUrl( char* dest, int destlen, bool isPoll )
 {
+	static const char openFmtStr[] = "http://%s/gateway/gateway.dll?Action=open&Server=%s&IP=%s";
+	static const char pollFmtStr[] = "http://%s/gateway/gateway.dll?Action=poll&SessionID=%s";
+	static const char cmdFmtStr[]  = "http://%s/gateway/gateway.dll?SessionID=%s";
+
 	if ( mSessionID[0] == 0 ) {
 		strcpy( mGatewayIP, MSN_DEFAULT_GATEWAY );
-		gatewayPref = sttGatewayPrefix + ( MyOptions.UseProxy ? 0 : 36 );
 
 		if ( mType == SERVER_NOTIFICATION || mType == SERVER_DISPATCH )
-			mir_snprintf( dest, destlen, sttFormatString, gatewayPref, "NS", "messenger.hotmail.com" );
+			mir_snprintf( dest, destlen, openFmtStr, mGatewayIP, "NS", "messenger.hotmail.com" );
 		else
-			mir_snprintf( dest, destlen, sttFormatString, gatewayPref, "SB", mServer );
+			mir_snprintf( dest, destlen, openFmtStr, mGatewayIP, "SB", mServer );
 	}
 	else
-		mir_snprintf( dest, destlen, "%s%sSessionID=%s", gatewayPref, isPoll ? "Action=poll&" : "", mSessionID );
+		mir_snprintf( dest, destlen, isPoll ? pollFmtStr : cmdFmtStr, mGatewayIP, mSessionID );
+
+	if ( !MyOptions.UseProxy ) {
+		char *slash = strchr(dest+7, '/');
+		int len = strlen(dest) - (slash - dest) + 1;
+		memmove(dest, slash, len);
+	}
 }
 
 void ThreadData::processSessionData( const char* str )

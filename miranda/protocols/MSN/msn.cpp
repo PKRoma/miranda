@@ -36,6 +36,7 @@ UTF8_INTERFACE utfi;
 /////////////////////////////////////////////////////////////////////////////////////////
 // Initialization routines
 int		MsnOnDetailsInit( WPARAM, LPARAM );
+int		MsnWindowEvent(WPARAM wParam, LPARAM lParam);
 
 int		LoadMsnServices( void );
 void     UnloadMsnServices( void );
@@ -58,7 +59,6 @@ char*    msnExternalIP = NULL;
 char*    msnPreviousUUX = NULL;
 HANDLE   msnMainThread;
 int      msnOtherContactsBlocked = 0;
-HANDLE   hHookOnUserInfoInit = NULL;
 HANDLE   hGroupAddEvent = NULL;
 HANDLE   hMSNNudge = NULL;
 bool		msnHaveChatDll = false;
@@ -107,11 +107,10 @@ int				msnStatusMode,
 					msnDesiredStatus;
 HANDLE			msnMenuItems[ MENU_ITEMS_COUNT ];
 HANDLE			hNetlibUser = NULL;
-HANDLE         hInitChat = NULL;
-HANDLE			hEvInitChat = NULL;
-HANDLE			hEvModLoaded = NULL;
-HANDLE			hEvOptInit = NULL;
-HANDLE			hEvShtd = NULL;
+HANDLE			hInitChat = NULL;
+
+static HANDLE hHookHandle[8] = { 0 }; 
+
 bool				msnUseExtendedPopups;
 
 int MsnOnDetailsInit( WPARAM wParam, LPARAM lParam );
@@ -138,8 +137,6 @@ int msn_httpGatewayWrapSend(HANDLE hConn,PBYTE buf,int len,int flags,MIRANDASERV
 PBYTE msn_httpGatewayUnwrapRecv(NETLIBHTTPREQUEST *nlhr,PBYTE buf,int len,int *outBufLen,void *(*NetlibRealloc)(void*,size_t));
 
 static COLORREF crCols[16] = {0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15};
-
-static HANDLE hChatEvent = NULL, hChatMenu = NULL;
 
 static int OnModulesLoaded( WPARAM wParam, LPARAM lParam )
 {
@@ -236,17 +233,18 @@ static int OnModulesLoaded( WPARAM wParam, LPARAM lParam )
 		gcr.pszModule = msnProtocolName;
 		MSN_CallService( MS_GC_REGISTER, NULL, ( LPARAM )&gcr );
 
-		hChatEvent = HookEvent( ME_GC_EVENT, MSN_GCEventHook );
-		hChatMenu = HookEvent( ME_GC_BUILDMENU, MSN_GCMenuHook );
+		hHookHandle[0] = HookEvent( ME_GC_EVENT, MSN_GCEventHook );
+		hHookHandle[1] = HookEvent( ME_GC_BUILDMENU, MSN_GCMenuHook );
 
 		char szEvent[ 200 ];
 		mir_snprintf( szEvent, sizeof szEvent, "%s\\ChatInit", msnProtocolName );
 		hInitChat = CreateHookableEvent( szEvent );
-		hEvInitChat = HookEvent( szEvent, MSN_ChatInit );
+		hHookHandle[2] = HookEvent( szEvent, MSN_ChatInit );
 	}
 
 	msnUseExtendedPopups = ServiceExists( MS_POPUP_ADDPOPUPEX ) != 0;
-	hHookOnUserInfoInit = HookEvent( ME_USERINFO_INITIALISE, MsnOnDetailsInit );
+	hHookHandle[3] = HookEvent( ME_USERINFO_INITIALISE, MsnOnDetailsInit );
+	hHookHandle[4] = HookEvent( ME_MSG_WINDOWEVENT, MsnWindowEvent );
 	return 0;
 }
 
@@ -295,13 +293,13 @@ extern "C" int __declspec(dllexport) Load( PLUGINLINK* link )
 //	if (ServiceExists("PluginSweeper/Add"))
 //		MSN_CallService("PluginSweeper/Add",(WPARAM)MSN_Translate(ModuleName),(LPARAM)ModuleName);
 
-	hEvModLoaded = HookEvent( ME_SYSTEM_MODULESLOADED, OnModulesLoaded );
+	hHookHandle[5] = HookEvent( ME_SYSTEM_MODULESLOADED, OnModulesLoaded );
 
 	srand(( unsigned int )time( NULL ));
 
 	LoadOptions();
-	hEvOptInit = HookEvent( ME_OPT_INITIALISE, MsnOptInit );
-	hEvShtd = HookEvent( ME_SYSTEM_PRESHUTDOWN, OnPreShutdown );
+	hHookHandle[6] = HookEvent( ME_OPT_INITIALISE, MsnOptInit );
+	hHookHandle[7] = HookEvent( ME_SYSTEM_PRESHUTDOWN, OnPreShutdown );
 
 	char evtname[250];
 	sprintf(evtname,"%s/Nudge",protocolname);
@@ -351,15 +349,10 @@ extern "C" int __declspec( dllexport ) Unload( void )
 	if ( msnLoggedIn )
 		msnNsThread->sendPacket( "OUT", NULL );
 
-	if ( hHookOnUserInfoInit )
-		UnhookEvent( hHookOnUserInfoInit );
-
-	if ( hChatEvent  ) UnhookEvent( hChatEvent );
-	if ( hChatMenu   ) UnhookEvent( hChatMenu );
-	if ( hEvInitChat ) UnhookEvent( hEvInitChat );
-	if ( hEvModLoaded ) UnhookEvent( hEvModLoaded );
-	if ( hEvOptInit ) UnhookEvent( hEvOptInit );
-	if ( hEvShtd ) UnhookEvent( hEvShtd );
+	for( int i=0; i<sizeof(hHookHandle)/sizeof(HANDLE); i++ ) {
+		if ( hHookHandle[i] != NULL )
+			UnhookEvent( hHookHandle[i] );
+	}
 
 	if ( hInitChat )
 		DestroyHookableEvent( hInitChat );
@@ -404,7 +397,7 @@ extern "C" int __declspec( dllexport ) Unload( void )
 
 extern "C" __declspec(dllexport) PLUGININFO* MirandaPluginInfo(DWORD mirandaVersion)
 {
-	if ( mirandaVersion < PLUGIN_MAKE_VERSION( 0, 6, 0, 15 )) {
+	if ( mirandaVersion < PLUGIN_MAKE_VERSION( 0, 6, 0, 0 )) {
 		MessageBox( NULL, _T("The MSN protocol plugin cannot be loaded. It requires Miranda IM 0.6.0.15 or later."), _T("MSN Protocol Plugin"), MB_OK|MB_ICONWARNING|MB_SETFOREGROUND|MB_TOPMOST );
 		return NULL;
 	}

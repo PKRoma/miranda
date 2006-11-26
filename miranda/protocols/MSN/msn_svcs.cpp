@@ -242,9 +242,6 @@ static int MsnContactDeleted( WPARAM wParam, LPARAM lParam )
 		MSN_AddUser( hContact, tEmail, LIST_FL | LIST_REMOVE );
 		MSN_AddUser( hContact, tEmail, LIST_AL | LIST_REMOVE );
 
-		MSN_AddUser( hContact, tEmail, LIST_BL | LIST_REMOVE );
-		Lists_Remove( 0xFF, tEmail );
-/*
 		if ( !Lists_IsInList( LIST_RL, tEmail )) {
 			MSN_AddUser( hContact, tEmail, LIST_BL | LIST_REMOVE );
 			Lists_Remove( 0xFF, tEmail );
@@ -253,7 +250,7 @@ static int MsnContactDeleted( WPARAM wParam, LPARAM lParam )
 			MSN_AddUser( hContact, tEmail, LIST_BL );
 			Lists_Remove( LIST_FL, tEmail );
 		}	
-*/	}
+	}
 
 	int type = DBGetContactSettingByte( hContact, msnProtocolName, "ChatRoom", 0 );
 	if ( type != 0 ) {
@@ -342,6 +339,45 @@ static int MsnDbSettingChanged(WPARAM wParam,LPARAM lParam)
 				return 0;
 	}	}	}
 
+	return 0;
+}
+
+/////////////////////////////////////////////////////////////////////////////////////////
+// MsnWindowEvent - goes to the Profile section at the Hotmail.com
+
+int MsnWindowEvent(WPARAM wParam, LPARAM lParam)
+{
+	MessageWindowEventData* msgEvData  = (MessageWindowEventData*)lParam;
+
+	char* szProto = ( char* )MSN_CallService( MS_PROTO_GETCONTACTBASEPROTO, ( WPARAM )msgEvData->hContact, 0 );
+	if ( lstrcmpA( msnProtocolName, szProto )) return 0;
+
+	switch( msgEvData->uType ) {
+		case MSG_WINDOW_EVT_OPENING:
+			if ( MSN_GetThreadByContact( msgEvData->hContact )   == NULL &&
+				 MSN_GetUnconnectedThread( msgEvData->hContact ) == NULL ) 
+			{
+				msnNsThread->sendPacket( "XFR", "SB" );
+				MsgQueue_Add( msgEvData->hContact, 'X', "None", 0, NULL );
+			}
+			break;
+/*
+		case MSG_WINDOW_EVT_CLOSING:
+			{
+				ThreadData* info = MSN_GetThreadByContact( msgEvData->hContact );
+				if ( info != NULL ) {
+					if ( p2p_getThreadSession( msgEvData->hContact, SERVER_SWITCHBOARD ) == NULL )
+						info->sendPacket( "OUT", NULL );
+				}
+				else {
+					info = MSN_GetUnconnectedThread( msgEvData->hContact );
+					if ( info != NULL ) 
+						info->sendPacket( "OUT", NULL );
+				}
+				break;
+			}
+*/
+	}
 	return 0;
 }
 
@@ -1307,6 +1343,8 @@ static int MsnSetStatus( WPARAM wParam, LPARAM lParam )
 	}
 	else if (!msnLoggedIn && !(msnStatusMode>=ID_STATUS_CONNECTING && msnStatusMode<ID_STATUS_CONNECTING+MAX_CONNECT_RETRIES))
 	{
+		MyOptions.UseProxy = MSN_GetByte( "NLUseProxy", FALSE );
+
 		ThreadData* newThread = new ThreadData;
 
 		WORD tServerPort = MSN_GetWord( NULL, "MSNMPort", 1863 );
@@ -1393,10 +1431,7 @@ static int MsnViewServiceStatus( WPARAM wParam, LPARAM lParam )
 /////////////////////////////////////////////////////////////////////////////////////////
 // Services initialization and destruction
 
-static HANDLE hHookSettingChanged = NULL;
-static HANDLE hHookContactDeleted = NULL;
-static HANDLE hHookRebuildCMenu = NULL;
-
+static HANDLE hHookHandle[3]; 
 static HANDLE hServiceHandle[50]; 
 
 int LoadMsnServices( void )
@@ -1511,9 +1546,9 @@ int LoadMsnServices( void )
 	//////////////////////////////////////////////////////////////////////////////////////
 	// Service creation
 
-	hHookContactDeleted = HookEvent( ME_DB_CONTACT_DELETED, MsnContactDeleted );
-	hHookSettingChanged = HookEvent( ME_DB_CONTACT_SETTINGCHANGED, MsnDbSettingChanged );
-	hHookRebuildCMenu   = HookEvent( ME_CLIST_PREBUILDCONTACTMENU, MsnRebuildContactMenu );
+	hHookHandle[0] = HookEvent( ME_DB_CONTACT_DELETED, MsnContactDeleted );
+	hHookHandle[1] = HookEvent( ME_DB_CONTACT_SETTINGCHANGED, MsnDbSettingChanged );
+	hHookHandle[2] = HookEvent( ME_CLIST_PREBUILDCONTACTMENU, MsnRebuildContactMenu );
 
 	hServiceHandle[9] = MSN_CreateProtoServiceFunction( PS_ADDTOLIST,			MsnAddToList );
 	hServiceHandle[10] = MSN_CreateProtoServiceFunction( PS_ADDTOLISTBYEVENT,	MsnAddToListByEvent );
@@ -1560,15 +1595,11 @@ int LoadMsnServices( void )
 
 void UnloadMsnServices( void )
 {
-	if ( hHookSettingChanged )
-		UnhookEvent( hHookSettingChanged );
-
-	if ( hHookContactDeleted )
-		UnhookEvent( hHookContactDeleted );
-
-	if ( hHookRebuildCMenu )
-		UnhookEvent( hHookRebuildCMenu );
-
+	for( int i=0; i<sizeof(hHookHandle)/sizeof(HANDLE); i++ ) {
+		if ( hHookHandle[i] != NULL )
+			UnhookEvent( hHookHandle[i] );
+	}
+	
 	for( int i=0; i<sizeof(hServiceHandle)/sizeof(HANDLE); i++ )
 		if ( hServiceHandle[i] != NULL )
 			DestroyServiceFunction( hServiceHandle[i] );
