@@ -1595,12 +1595,13 @@ int LoadMsnServices( void )
 
 void UnloadMsnServices( void )
 {
-	for( int i=0; i<sizeof(hHookHandle)/sizeof(HANDLE); i++ ) {
+	int i;
+
+	for ( i=0; i<sizeof(hHookHandle)/sizeof(HANDLE); i++ )
 		if ( hHookHandle[i] != NULL )
 			UnhookEvent( hHookHandle[i] );
-	}
 	
-	for( int i=0; i<sizeof(hServiceHandle)/sizeof(HANDLE); i++ )
+	for ( i=0; i<sizeof(hServiceHandle)/sizeof(HANDLE); i++ )
 		if ( hServiceHandle[i] != NULL )
 			DestroyServiceFunction( hServiceHandle[i] );
 }

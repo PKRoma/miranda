@@ -346,10 +346,12 @@ extern char* profileURL;
 
 extern "C" int __declspec( dllexport ) Unload( void )
 {
+	int i;
+
 	if ( msnLoggedIn )
 		msnNsThread->sendPacket( "OUT", NULL );
 
-	for( int i=0; i<sizeof(hHookHandle)/sizeof(HANDLE); i++ ) {
+	for ( i=0; i<sizeof(hHookHandle)/sizeof(HANDLE); i++ ) {
 		if ( hHookHandle[i] != NULL )
 			UnhookEvent( hHookHandle[i] );
 	}
@@ -376,7 +378,7 @@ extern "C" int __declspec( dllexport ) Unload( void )
 
 	CloseHandle( msnMainThread );
 
-	for ( int i=0; i < MSN_NUM_MODES; i++ )
+	for ( i=0; i < MSN_NUM_MODES; i++ )
 		if ( msnModeMsgs[ i ].m_msg )
 			mir_free( msnModeMsgs[ i ].m_msg );
 
