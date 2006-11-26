@@ -819,6 +819,7 @@ IDI_WRITE               ICON                    "icos\\write.ico"
 IDI_SAVE                ICON                    "icos\\save.ico"
 IDI_LOGIN               ICON                    "icos\\login.ico"
 IDI_AUTHREVOKE          ICON                    "icos\\auth_revoke.ico" 
+IDI_REFRESH             ICON                    "icos\\refresh.ico" 
 #endif    // English (U.S.) resources
 /////////////////////////////////////////////////////////////////////////////
 

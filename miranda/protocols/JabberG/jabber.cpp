@@ -63,7 +63,7 @@ char* jabberModuleName;	// "Jabber"
 CRITICAL_SECTION mutex;
 HANDLE hNetlibUser;
 // Main jabber server connection thread global variables
-struct ThreadData *jabberThreadInfo = NULL;
+ThreadData* jabberThreadInfo = NULL;
 BOOL   jabberConnected = FALSE;
 time_t jabberLoggedInTime = 0;
 BOOL   jabberOnline = FALSE;
@@ -133,7 +133,7 @@ extern "C" BOOL WINAPI DllMain( HINSTANCE hModule, DWORD dwReason, LPVOID lpvRes
 
 extern "C" __declspec( dllexport ) PLUGININFO *MirandaPluginInfo( DWORD mirandaVersion )
 {
-	if ( mirandaVersion < PLUGIN_MAKE_VERSION( 0,5,2,0 )) {
+	if ( mirandaVersion < PLUGIN_MAKE_VERSION( 0,6,0,0 )) {
 		MessageBoxA( NULL, "The Jabber protocol plugin cannot be loaded. It requires Miranda IM 0.5.2.0 or later.", "Jabber Protocol Plugin", MB_OK|MB_ICONWARNING|MB_SETFOREGROUND|MB_TOPMOST );
 		return NULL;
 	}
