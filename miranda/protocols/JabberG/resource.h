@@ -11,6 +11,7 @@
 #define IDD_FORM                        107
 #define IDI_ADDROSTER                   108
 #define IDI_USER2ROOM                   109
+#define IDI_REFRESH                     110
 #define IDD_PASSWORD                    111
 #define IDI_TLEN                        121
 #define IDI_ADDCONTACT                  122

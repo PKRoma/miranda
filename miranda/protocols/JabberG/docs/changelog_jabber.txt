@@ -4,6 +4,10 @@ Legend:
 [-] deleted
 [!] bug fixed
 
+Version 0.6.0.2
+===============
+[+] wish #0002532 fixed: Add command "Resolve Nicknames" in context menu for transports
+
 Version 0.5.0.3
 ===============
 [+] added separate icons for different transports
