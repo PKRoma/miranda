@@ -22,7 +22,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 CIrcSessionInfo si;
 
-HANDLE g_hModulesLoaded = NULL;	
+HANDLE g_hModulesLoaded = NULL;
 HANDLE g_hSystemPreShutdown = NULL;
 HANDLE g_hEventDblClick = NULL;
 HANDLE g_hContactDeleted = NULL;
@@ -35,21 +35,21 @@ HANDLE g_hOptionsInit = NULL;
 HANDLE hContactMenu1 = NULL;
 HANDLE hContactMenu2 = NULL;
 HANDLE hContactMenu3 = NULL;
-HANDLE hMenuQuick = NULL;			
-HANDLE hMenuJoin = NULL;			
-HANDLE hMenuNick = NULL;				
+HANDLE hMenuQuick = NULL;
+HANDLE hMenuJoin = NULL;
+HANDLE hMenuNick = NULL;
 HANDLE hMenuList = NULL;
-HANDLE hMenuServer = NULL;				
-HANDLE hNetlib = NULL;	
-HANDLE hNetlibDCC = NULL;	
+HANDLE hMenuServer = NULL;
+HANDLE hNetlib = NULL;
+HANDLE hNetlibDCC = NULL;
 
 HWND   join_hWnd = NULL;
-HWND   quickconn_hWnd = NULL;	
+HWND   quickconn_hWnd = NULL;
 
 volatile bool bChatInstalled = FALSE;
 
 bool      bMbotInstalled = FALSE;
-int       RetryCount = 0;				
+int       RetryCount = 0;
 int       PortCount = 0;
 DWORD     bConnectRequested = 0;
 DWORD     bConnectThreadRunning = 0;
@@ -59,8 +59,8 @@ int       GlobalStatus = ID_STATUS_OFFLINE;
 UINT_PTR  RetryTimer = 0;
 String    StatusMessage = "";
 
-extern HWND nick_hWnd;		
-extern HWND list_hWnd ;		
+extern HWND nick_hWnd;
+extern HWND list_hWnd ;
 extern bool bTempDisableCheck ;
 extern bool bTempForceCheck ;
 extern bool bPerformDone;
@@ -79,7 +79,7 @@ extern String			sUserModes;
 extern String			sUserModePrefixes;
 extern String			sChannelPrefixes;
 extern String			sChannelModes;
-extern String			WhoisAwayReply ;	
+extern String			WhoisAwayReply ;
 extern char				mirandapath[MAX_PATH];
 extern MM_INTERFACE		mmi;
 GETEVENTFUNC			pfnAddEvent = 0;
@@ -230,7 +230,7 @@ static int Service_FileSend(WPARAM wParam,LPARAM lParam)
 		ulAdr = ConvertIPToInteger(prefs->IPFromServer?prefs->MyHost:prefs->MyLocalHost);
 
 	if (!prefs->DCCPassive && !ulAdr) {
-		DoEvent(GC_EVENT_INFORMATION, 0, g_ircSession.GetInfo().sNick.c_str(), Translate("DCC ERROR: Unable to automatically resolve external IP"), NULL, NULL, NULL, true, false); 
+		DoEvent(GC_EVENT_INFORMATION, 0, g_ircSession.GetInfo().sNick.c_str(), Translate("DCC ERROR: Unable to automatically resolve external IP"), NULL, NULL, NULL, true, false);
 		return 0;
 	}
 
@@ -239,7 +239,7 @@ static int Service_FileSend(WPARAM wParam,LPARAM lParam)
 		//get file size
 		FILE * hFile = NULL;
 		while (files[index] && hFile == 0) {
-			hFile = fopen ( files[index] , "rb" ); 
+			hFile = fopen ( files[index] , "rb" );
 			if (hFile) {
 				fseek (hFile , 0 , SEEK_END);
 				size = ftell (hFile);
@@ -251,7 +251,7 @@ static int Service_FileSend(WPARAM wParam,LPARAM lParam)
 		}
 
 		if (size == 0) {
-			DoEvent(GC_EVENT_INFORMATION, 0, g_ircSession.GetInfo().sNick.c_str(), Translate("DCC ERROR: No valid files specified"), NULL, NULL, NULL, true, false); 
+			DoEvent(GC_EVENT_INFORMATION, 0, g_ircSession.GetInfo().sNick.c_str(), Translate("DCC ERROR: No valid files specified"), NULL, NULL, NULL, true, false);
 			return 0;
 		}
 
@@ -297,7 +297,7 @@ static int Service_FileSend(WPARAM wParam,LPARAM lParam)
 				PostIrcMessage("/CTCP %s DCC SEND %s 200 0 %u %u", dci->sContactName.c_str(), sFileWithQuotes.c_str(), dci->dwSize, dcc->iToken);
 
 				mir_snprintf(szTemp, sizeof(szTemp), Translate("DCC reversed file transfer request sent to %s [%s]"), dci->sContactName.c_str(), sFileCorrect.c_str());
-				DoEvent(GC_EVENT_INFORMATION, 0, g_ircSession.GetInfo().sNick.c_str(), szTemp, NULL, NULL, NULL, true, false); 
+				DoEvent(GC_EVENT_INFORMATION, 0, g_ircSession.GetInfo().sNick.c_str(), szTemp, NULL, NULL, NULL, true, false);
 
 				mir_snprintf(szTemp, sizeof(szTemp), "/NOTICE %s I am sending the file \'\002%s\002\' (%u kB) to you, please accept it. [Reverse transfer]", dci->sContactName.c_str(), sFileCorrect.c_str(), dci->dwSize/1024);
 				if (prefs->SendNotice)
@@ -312,14 +312,14 @@ static int Service_FileSend(WPARAM wParam,LPARAM lParam)
 					PostIrcMessage("/CTCP %s DCC SEND %s %u %u %u", dci->sContactName.c_str(), sFileWithQuotes.c_str(), ulAdr, iPort, dci->dwSize);
 
 					mir_snprintf(szTemp, sizeof(szTemp), Translate("DCC file transfer request sent to %s [%s]"), dci->sContactName.c_str(), sFileCorrect.c_str());
-					DoEvent(GC_EVENT_INFORMATION, 0, g_ircSession.GetInfo().sNick.c_str(), szTemp, NULL, NULL, NULL, true, false); 
+					DoEvent(GC_EVENT_INFORMATION, 0, g_ircSession.GetInfo().sNick.c_str(), szTemp, NULL, NULL, NULL, true, false);
 
 					mir_snprintf(szTemp, sizeof(szTemp), "/NOTICE %s I am sending the file \'\002%s\002\' (%u kB) to you, please accept it. [IP: %s]", dci->sContactName.c_str(), sFileCorrect.c_str(), dci->dwSize/1024, ConvertIntegerToIP(ulAdr));
 
 					if (prefs->SendNotice)
 						PostIrcMessage(szTemp);
 				}
-				else DoEvent(GC_EVENT_INFORMATION, 0, g_ircSession.GetInfo().sNick.c_str(), Translate("DCC ERROR: Unable to bind local port"), NULL, NULL, NULL, true, false); 
+				else DoEvent(GC_EVENT_INFORMATION, 0, g_ircSession.GetInfo().sNick.c_str(), Translate("DCC ERROR: Unable to bind local port"), NULL, NULL, NULL, true, false);
 			}
 
 			// fix for sending multiple files
@@ -332,7 +332,7 @@ static int Service_FileSend(WPARAM wParam,LPARAM lParam)
 					PostIrcMessage("/DCC SEND %s %s", dci->sContactName.c_str(), files[index]);
 				}
 				index++;
-			}	
+			}
 
 			DBFreeVariant(&dbv);
 	}	}
@@ -409,7 +409,7 @@ static int Service_FileResume(WPARAM wParam,LPARAM lParam)
 			return 0;
 		}
 
-		SetEvent(dcc->hEvent); 
+		SetEvent(dcc->hEvent);
 	}
 
 	return 0;
@@ -428,7 +428,7 @@ static int Service_EventDoubleclicked(WPARAM wParam,LPARAM lParam)
 		HWND hWnd = CreateDialogParam(g_hInstance,MAKEINTRESOURCE(IDD_MESSAGEBOX),NULL,MessageboxWndProc, (LPARAM)pdci);
 		mir_snprintf(szTemp, sizeof(szTemp), Translate("%s (%s) is requesting a client-to-client chat connection."), pdci->sContactName.c_str(), pdci->sHostmask.c_str() );
 		SetDlgItemText(hWnd,IDC_TEXT, szTemp);
-		ShowWindow(hWnd, SW_SHOW);	
+		ShowWindow(hWnd, SW_SHOW);
 		return 1;
 	}
 	return 0;
@@ -445,7 +445,7 @@ int Service_UserDeletedContact(WPARAM wp, LPARAM lp)
 	if (!DBGetContactSetting((HANDLE)wp, IRCPROTONAME, "Nick", &dbv) && dbv.type == DBVT_ASCIIZ ) {
 		int type = DBGetContactSettingByte(hContact, IRCPROTONAME, "ChatRoom", 0);
 		if ( type != 0) {
-			GCEVENT gce = {0}; 
+			GCEVENT gce = {0};
 			GCDEST gcd = {0};
 			String S = "";
 			if (type == GCW_CHATROOM)
@@ -485,7 +485,7 @@ static int Service_Menu1Command(WPARAM wp, LPARAM lp)
 	if (!DBGetContactSetting((HANDLE)wp, IRCPROTONAME, "Nick", &dbv) && dbv.type == DBVT_ASCIIZ ) {
 		int type = DBGetContactSettingByte((HANDLE)wp, IRCPROTONAME, "ChatRoom", 0);
 		if ( type != 0) {
-			GCEVENT gce = {0}; 
+			GCEVENT gce = {0};
 			GCDEST gcd = {0};
 			String S = "";
 			if (type == GCW_CHATROOM)
@@ -517,7 +517,7 @@ static int Service_Menu2Command(WPARAM wp, LPARAM lp)
 			if (type == GCW_CHATROOM)
 				PostIrcMessage( "/PART %s", dbv.pszVal);
 
-			GCEVENT gce = {0}; 
+			GCEVENT gce = {0};
 			GCDEST gcd = {0};
 			String S = "";
 			if (type == GCW_CHATROOM)
@@ -612,7 +612,7 @@ static int Service_ShowListMenuCommand(WPARAM wp, LPARAM lp)
 
 static int Service_ShowServerMenuCommand(WPARAM wp, LPARAM lp)
 {
-	GCEVENT gce = {0}; 
+	GCEVENT gce = {0};
 	GCDEST gcd = {0};
 	gcd.iType = GC_EVENT_CONTROL;
 	gcd.pszID = "Network log";
@@ -726,7 +726,7 @@ static void DoChatFormatting(char * pszText)
 			CopyMemory(p1, InsertThis, lstrlen(InsertThis));
 			if (iRemoveChars || lstrlen(InsertThis))
 				p1 += lstrlen(InsertThis);
-			else 
+			else
 				p1++;
 		}
 		else p1++;
@@ -784,7 +784,7 @@ int Service_GCEventHook(WPARAM wParam,LPARAM lParam)
 				if (	Scripting_TriggerMSPGuiOut(gchtemp) && gchtemp)
 					gch = gchtemp;
 				else
-					gch = NULL;	
+					gch = NULL;
 			}
 			else gch = gchook;
 
@@ -792,7 +792,7 @@ int Service_GCEventHook(WPARAM wParam,LPARAM lParam)
 				char * p1 = new char[lstrlen(gch->pDest->pszID)+1];
 				lstrcpy(p1, gch->pDest->pszID);
 				char * p2 = strstr(p1, " - ");
-				if (p2) 
+				if (p2)
 					*p2 = '\0';
 
 				switch (gch->pDest->iType) {
@@ -829,7 +829,7 @@ int Service_GCEventHook(WPARAM wParam,LPARAM lParam)
 
 					case 2:
 						PostIrcMessage( "/PART %s", p1);
-						{	GCEVENT gce = {0}; 
+						{	GCEVENT gce = {0};
 							GCDEST gcd = {0};
 							S = MakeWndID(p1);
 							gce.cbSize = sizeof(GCEVENT);
@@ -882,7 +882,7 @@ int Service_GCEventHook(WPARAM wParam,LPARAM lParam)
 						//						DoUserhostWithReason(1, "I", true, "%s", gch->pszUID);
 						//						break;
 						//					case 12:
-						//						DoUserhostWithReason(1, "J", true, "%s", gch->pszUID);					
+						//						DoUserhostWithReason(1, "J", true, "%s", gch->pszUID);
 						//						break;
 					case 13:
 						PostIrcMessage( "/DCC CHAT %s", gch->pszUID);
@@ -1010,7 +1010,7 @@ static int Service_SystemPreShutdown(WPARAM wParam,LPARAM lParam)
 {
 	EnterCriticalSection(&cs);
 
-	if (prefs->Perform && g_ircSession) 
+	if (prefs->Perform && g_ircSession)
 		if (DoPerform("Event: Disconnect"))
 			Sleep(200);
 
@@ -1046,20 +1046,20 @@ static int Service_MenuPreBuild(WPARAM wParam,LPARAM lParam)
 	szProto = (char *) CallService(MS_PROTO_GETCONTACTBASEPROTO, (WPARAM) wParam, 0);
 	if (szProto && !lstrcmpi(szProto, IRCPROTONAME)) {
 		if (DBGetContactSettingByte(hContact, IRCPROTONAME, "ChatRoom", 0) == GCW_CHATROOM) {
-			clmi.hIcon = LoadIconEx(IDI_PART,"part",GetSystemMetrics(SM_CXSMICON),GetSystemMetrics(SM_CYSMICON)); 
+			clmi.hIcon = LoadIconEx(IDI_PART,"part",GetSystemMetrics(SM_CXSMICON),GetSystemMetrics(SM_CYSMICON));
 			clmi.pszName = Translate("&Leave channel");
 			CallService( MS_CLIST_MODIFYMENUITEM, ( WPARAM )hContactMenu2, ( LPARAM )&clmi );
 
-			clmi.hIcon = LoadIconEx(IDI_MANAGER,"manager",GetSystemMetrics(SM_CXSMICON),GetSystemMetrics(SM_CYSMICON)); 
+			clmi.hIcon = LoadIconEx(IDI_MANAGER,"manager",GetSystemMetrics(SM_CXSMICON),GetSystemMetrics(SM_CYSMICON));
 			clmi.pszName = Translate("Channel &settings");
 			CallService( MS_CLIST_MODIFYMENUITEM, ( WPARAM )hContactMenu3, ( LPARAM )&clmi );
 
-			clmi.hIcon = LoadIconEx(IDI_SHOW,"show",GetSystemMetrics(SM_CXSMICON),GetSystemMetrics(SM_CYSMICON)); 
+			clmi.hIcon = LoadIconEx(IDI_SHOW,"show",GetSystemMetrics(SM_CXSMICON),GetSystemMetrics(SM_CYSMICON));
 			clmi.pszName = Translate("&Show channel");
 			CallService( MS_CLIST_MODIFYMENUITEM, ( WPARAM )hContactMenu1, ( LPARAM )&clmi );
 		}
 		else if (DBGetContactSettingByte(hContact, IRCPROTONAME, "ChatRoom", 0) == GCW_SERVER) {
-			clmi.hIcon = LoadIconEx(IDI_SERVER,"server",GetSystemMetrics(SM_CXSMICON),GetSystemMetrics(SM_CYSMICON)); 
+			clmi.hIcon = LoadIconEx(IDI_SERVER,"server",GetSystemMetrics(SM_CXSMICON),GetSystemMetrics(SM_CYSMICON));
 			clmi.pszName = Translate("&Show server");
 			CallService( MS_CLIST_MODIFYMENUITEM, ( WPARAM )hContactMenu1, ( LPARAM )&clmi );
 
@@ -1078,14 +1078,14 @@ static int Service_MenuPreBuild(WPARAM wParam,LPARAM lParam)
 			if (bDcc) {
 				if (DBGetContactSettingWord((void *)wParam, IRCPROTONAME, "Status", ID_STATUS_OFFLINE) == ID_STATUS_OFFLINE)
 					clmi.flags = CMIM_NAME|CMIM_ICON | CMIM_FLAGS |CMIF_HIDDEN;
-				clmi.hIcon = LoadIconEx(IDI_DELETE,"delete",GetSystemMetrics(SM_CXSMICON),GetSystemMetrics(SM_CYSMICON));  
+				clmi.hIcon = LoadIconEx(IDI_DELETE,"delete",GetSystemMetrics(SM_CXSMICON),GetSystemMetrics(SM_CYSMICON));
 				clmi.pszName = Translate("Di&sconnect");
 				CallService( MS_CLIST_MODIFYMENUITEM, ( WPARAM )hContactMenu2, ( LPARAM )&clmi );
 			}
 			else {
 				if (!g_ircSession)
 					clmi.flags = CMIM_NAME|CMIM_ICON | CMIM_FLAGS |CMIF_HIDDEN;
-				clmi.hIcon = LoadIconEx(IDI_WHOIS,"whois",GetSystemMetrics(SM_CXSMICON),GetSystemMetrics(SM_CYSMICON));  
+				clmi.hIcon = LoadIconEx(IDI_WHOIS,"whois",GetSystemMetrics(SM_CXSMICON),GetSystemMetrics(SM_CYSMICON));
 				clmi.pszName = Translate("&WhoIs info");
 				CallService( MS_CLIST_MODIFYMENUITEM, ( WPARAM )hContactMenu2, ( LPARAM )&clmi );
 			}
@@ -1095,10 +1095,10 @@ static int Service_MenuPreBuild(WPARAM wParam,LPARAM lParam)
 			else
 				clmi.flags = CMIM_NAME|CMIM_ICON | CMIM_FLAGS;
 
-			clmi.hIcon = LoadIconEx(IDI_BLOCK,"block",GetSystemMetrics(SM_CXSMICON),GetSystemMetrics(SM_CYSMICON)); 
+			clmi.hIcon = LoadIconEx(IDI_BLOCK,"block",GetSystemMetrics(SM_CXSMICON),GetSystemMetrics(SM_CYSMICON));
 			if (DBGetContactSettingWord((HANDLE)wParam, IRCPROTONAME, "Status", ID_STATUS_OFFLINE) != ID_STATUS_OFFLINE) {
 				char * host = NULL;
-				DBVARIANT dbv3;					
+				DBVARIANT dbv3;
 				if (!DBGetContactSetting((HANDLE) wParam, IRCPROTONAME, "Host", &dbv3) && dbv3.type == DBVT_ASCIIZ) host = dbv3.pszVal;
 
 				if (host)
@@ -1121,7 +1121,7 @@ static int Service_MenuPreBuild(WPARAM wParam,LPARAM lParam)
 static int Service_GetCaps(WPARAM wParam,LPARAM lParam)
 {
 	if (wParam==PFLAGNUM_1)
-		return PF1_BASICSEARCH | PF1_MODEMSG | PF1_FILE |PF1_CANRENAMEFILE | PF1_PEER2PEER | PF1_IM; 
+		return PF1_BASICSEARCH | PF1_MODEMSG | PF1_FILE |PF1_CANRENAMEFILE | PF1_PEER2PEER | PF1_IM;
 	if (wParam==PFLAGNUM_2)
 		return PF2_ONLINE|PF2_SHORTAWAY;
 	if (wParam==PFLAGNUM_3)
@@ -1146,9 +1146,9 @@ static int Service_GetName(WPARAM wParam,LPARAM lParam)
 static int Service_LoadIcon(WPARAM wParam,LPARAM lParam)
 {
 	switch(wParam&0xFFFF) {
-		case PLI_PROTOCOL: 
+		case PLI_PROTOCOL:
 			return (int)LoadImage(g_hInstance,MAKEINTRESOURCE(IDI_MAIN),IMAGE_ICON,16,16,LR_SHARED);
-		default: return (int)(HICON)NULL;	
+		default: return (int)(HICON)NULL;
 	}
 	return 0;
 }
@@ -1262,7 +1262,7 @@ void ConnectToServer(void)
 	si.sNick = prefs->Nick;
 	si.sUserID = prefs->UserID;
 	si.sFullName = prefs->Name;
-	si.sPassword = prefs->Password;					
+	si.sPassword = prefs->Password;
 	si.bIdentServer =  ((prefs->Ident) ? (true) : (false));
 	si.iIdentServerPort = StrToInt(prefs->IdentPort);
 	si.sIdentServerType = prefs->IdentSystem;
@@ -1292,12 +1292,12 @@ void ConnectToServer(void)
 
 	char szTemp[300];
 	mir_snprintf(szTemp, sizeof(szTemp), "\0033%s \002%s\002 (%s: %u)", Translate("Connecting to"), si.sNetwork.c_str(), si.sServer.c_str(), si.iPort);
-	DoEvent(GC_EVENT_INFORMATION, "Network log", NULL, szTemp, NULL, NULL, NULL, true, false); 
+	DoEvent(GC_EVENT_INFORMATION, "Network log", NULL, szTemp, NULL, NULL, NULL, true, false);
 }
 
 void DisconnectFromServer(void)
 {
-	GCEVENT gce = {0}; 
+	GCEVENT gce = {0};
 	GCDEST gcd = {0};
 
 	if (prefs->Perform && g_ircSession)
@@ -1314,7 +1314,7 @@ void DisconnectFromServer(void)
 }
 
 static int Service_SetStatus(WPARAM wParam,LPARAM lParam)
-{	
+{
 	if (!bChatInstalled) {
 		MIRANDASYSTRAYNOTIFY msn;
 		msn.cbSize = sizeof(MIRANDASYSTRAYNOTIFY);
@@ -1374,7 +1374,7 @@ static int Service_SetStatus(WPARAM wParam,LPARAM lParam)
 	else if (wParam == ID_STATUS_OFFLINE && g_ircSession) //go from online/away to offline
 		DisconnectFromServer();
 	else if (wParam == ID_STATUS_OFFLINE && !g_ircSession) //offline to offline
-	{	
+	{
 		KillChatTimer( RetryTimer);
 		return 0;
 	}
@@ -1395,7 +1395,7 @@ static int Service_GetStatus(WPARAM wParam,LPARAM lParam)
 		return ID_STATUS_ONLINE;
 	else if (g_ircSession && OldStatus == ID_STATUS_AWAY)
 		return ID_STATUS_AWAY;
-	else 
+	else
 		return ID_STATUS_OFFLINE;
 }
 
@@ -1405,7 +1405,7 @@ static int Service_SetAwayMsg(WPARAM wParam, LPARAM lParam)
 		if (StatusMessage == "" || lParam == NULL || StatusMessage != ReplaceString((char *)lParam, "\r\n", " " )) {
 			if (lParam == NULL ||  *(char*)lParam == '\0')
 				StatusMessage = STR_AWAYMESSAGE;
-			else 
+			else
 				StatusMessage =  ReplaceString((char *)lParam, "\r\n", " ");
 
 			PostIrcMessage( "/AWAY %s", (StatusMessage.substr(0,450)).c_str());
@@ -1465,13 +1465,13 @@ static int Service_GetMessFromSRMM(WPARAM wParam, LPARAM lParam)
 			mir_forkthread(AckMessageFail, ccs->hContact);
 	}
 
-	return 1; 
+	return 1;
 }
 
 static int Service_GetAwayMessage(WPARAM wParam, LPARAM lParam)
 {
 	CCSDATA *ccs = (CCSDATA *) lParam;
-	WhoisAwayReply = "";	
+	WhoisAwayReply = "";
 	DBVARIANT dbv;
 
 	// bypass chat contacts.
@@ -1480,7 +1480,7 @@ static int Service_GetAwayMessage(WPARAM wParam, LPARAM lParam)
 			int i = DBGetContactSettingWord(ccs->hContact,IRCPROTONAME, "Status", ID_STATUS_OFFLINE);
 			if ( i != ID_STATUS_AWAY) {
 				DBFreeVariant( &dbv);
-				return 0;	
+				return 0;
 			}
 			String S = "WHOIS " + (String)dbv.pszVal;
 			if (g_ircSession)
@@ -1514,7 +1514,7 @@ static int Service_InitUserInfo(WPARAM wParam, LPARAM lParam)
 		DBFreeVariant(&dbv);
 	}
 
-	OPTIONSDIALOGPAGE odp;
+	OPTIONSDIALOGPAGE odp = { 0 };
 	odp.cbSize = sizeof(odp);
 	odp.pszTitle = ALTIRCPROTONAME;
 	odp.hIcon = NULL;
@@ -1552,7 +1552,7 @@ static int Service_IconsChanged(WPARAM wParam, LPARAM lParam)
 	return 0;
 }
 
-static int Service_ModulesLoaded(WPARAM wParam,LPARAM lParam) 
+static int Service_ModulesLoaded(WPARAM wParam,LPARAM lParam)
 {
 	char szTemp[MAX_PATH];
 	char szTemp3[256];
@@ -1567,7 +1567,7 @@ static int Service_ModulesLoaded(WPARAM wParam,LPARAM lParam)
 	nlu.szSettingsModule = IRCPROTONAME;
 	wsprintf(szTemp, Translate("%s server connection"), ALTIRCPROTONAME);
 	nlu.szDescriptiveName = szTemp;
-	hNetlib=(HANDLE)CallService(MS_NETLIB_REGISTERUSER, 0, (LPARAM)&nlu);	
+	hNetlib=(HANDLE)CallService(MS_NETLIB_REGISTERUSER, 0, (LPARAM)&nlu);
 
 	char szTemp2[256];
 	nlu.flags = NUF_OUTGOING|NUF_INCOMING|NUF_HTTPCONNS;
@@ -1575,7 +1575,7 @@ static int Service_ModulesLoaded(WPARAM wParam,LPARAM lParam)
 	nlu.szSettingsModule = szTemp2;
 	wsprintf(szTemp, Translate("%s client-to-client connections"), ALTIRCPROTONAME);
 	nlu.szDescriptiveName = szTemp;
-	hNetlibDCC=(HANDLE)CallService(MS_NETLIB_REGISTERUSER, 0, (LPARAM)&nlu);	
+	hNetlibDCC=(HANDLE)CallService(MS_NETLIB_REGISTERUSER, 0, (LPARAM)&nlu);
 
 	//add as a known module in DB Editor ++
 	CallService("DBEditorpp/RegisterSingleModule",(WPARAM)IRCPROTONAME,0);
@@ -1625,7 +1625,7 @@ static int Service_ModulesLoaded(WPARAM wParam,LPARAM lParam)
 		gce.pDest = &gcd;
 		if (prefs->UseServer && !prefs->HideServerWindow)
 			CallChatEvent( WINDOW_VISIBLE, (LPARAM)&gce);
-		else 
+		else
 			CallChatEvent( WINDOW_HIDDEN, (LPARAM)&gce);
 		bChatInstalled = TRUE;
 	}
@@ -1638,7 +1638,7 @@ static int Service_ModulesLoaded(WPARAM wParam,LPARAM lParam)
 	pszServerFile = IrcLoadFile(szTemp);
 
 	mir_snprintf(szTemp, sizeof(szTemp), "%s\\%s_perform.ini", mirandapath, IRCPROTONAME);
-	pszPerformFile = IrcLoadFile(szTemp);	
+	pszPerformFile = IrcLoadFile(szTemp);
 
 	mir_snprintf(szTemp, sizeof(szTemp), "%s\\%s_ignore.ini", mirandapath, IRCPROTONAME);
 	pszIgnoreFile = IrcLoadFile(szTemp);
@@ -1655,13 +1655,13 @@ static int Service_ModulesLoaded(WPARAM wParam,LPARAM lParam)
 		if (lstrlen(prefs->AlternativeNick) == 0) {
 			mir_snprintf(szTemp, 30, "%s%u", prefs->Nick, rand()%9999);
 			DBWriteContactSettingString(NULL, IRCPROTONAME, "AlernativeNick", szTemp);
-			lstrcpyn(prefs->AlternativeNick, szTemp, 30);					
+			lstrcpyn(prefs->AlternativeNick, szTemp, 30);
 		}
 
 		if (lstrlen(prefs->Name) == 0) {
 			mir_snprintf(szTemp, 30, "Miranda%u", rand()%9999);
 			DBWriteContactSettingString(NULL, IRCPROTONAME, "Name", szTemp);
-			lstrcpyn(prefs->Name, szTemp, 200);					
+			lstrcpyn(prefs->Name, szTemp, 200);
 	}	}
 
 	return 0;
@@ -1671,8 +1671,8 @@ void HookEvents(void)
 {
 	g_hModulesLoaded =     HookEvent(ME_SYSTEM_MODULESLOADED, Service_ModulesLoaded);
 	g_hSystemPreShutdown = HookEvent(ME_SYSTEM_PRESHUTDOWN, Service_SystemPreShutdown);
-	g_hContactDeleted =    HookEvent(ME_DB_CONTACT_DELETED, Service_UserDeletedContact );	
-	g_hIconsChanged =      HookEvent(ME_SKIN2_ICONSCHANGED, Service_IconsChanged );	
+	g_hContactDeleted =    HookEvent(ME_DB_CONTACT_DELETED, Service_UserDeletedContact );
+	g_hIconsChanged =      HookEvent(ME_SKIN2_ICONSCHANGED, Service_IconsChanged );
 }
 
 void UnhookEvents(void)
@@ -1748,7 +1748,7 @@ VOID CALLBACK RetryTimerProc(HWND hwnd,UINT uMsg,UINT idEvent,DWORD dwTime)
 
 		mir_snprintf(szTemp, sizeof(szTemp), "\0033%s \002%s\002 (%s: %u, try %u)", Translate("Reconnecting to"), si.sNetwork.c_str(), si.sServer.c_str(), si.iPort, RetryCount);
 
-		DoEvent(GC_EVENT_INFORMATION, "Network log", NULL, szTemp, NULL, NULL, NULL, true, false); 
+		DoEvent(GC_EVENT_INFORMATION, "Network log", NULL, szTemp, NULL, NULL, NULL, true, false);
 
 		if (!bConnectThreadRunning)
 			mir_forkthread(ConnectServerThread, NULL  );
