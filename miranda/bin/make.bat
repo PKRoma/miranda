@@ -82,9 +82,9 @@ cd ..\loadavatars
 nmake /f avatars.mak CFG="loadavatars - Win32 Release"
 if errorlevel 1 goto :Error
 
-cd ..\modernb
-nmake /f modernb.mak CFG="modernb - Win32 Release"
-if errorlevel 1 goto :Error
+rem cd ..\modernb
+rem nmake /f modernb.mak CFG="modernb - Win32 Release"
+rem if errorlevel 1 goto :Error
 
 cd ..\mwclist
 nmake /f mwclist.mak CFG="mwclist - Win32 Release"
