@@ -173,48 +173,49 @@ STYLE DS_SETFONT | DS_FIXEDSYS | WS_POPUP | WS_VISIBLE
 EXSTYLE WS_EX_CONTROLPARENT
 FONT 8, "MS Shell Dlg", 0, 0, 0x1
 BEGIN
-    EDITTEXT        IDC_OUTSTAMP,10,79,35,14,ES_AUTOHSCROLL
-    EDITTEXT        IDC_INSTAMP,60,79,35,14,ES_AUTOHSCROLL
-    EDITTEXT        IDC_TIMESTAMP,118,79,81,14,ES_AUTOHSCROLL
-    EDITTEXT        IDC_LOGTIMESTAMP,205,79,81,14,ES_AUTOHSCROLL
+    GROUPBOX        "Log Options",IDC_STATIC,1,1,294,134
+    EDITTEXT        IDC_OUTSTAMP,10,19,35,14,ES_AUTOHSCROLL
+    EDITTEXT        IDC_INSTAMP,60,19,35,14,ES_AUTOHSCROLL
+    LTEXT           "Log timestamp",IDC_STATIC,205,11,81,8
+    EDITTEXT        IDC_LOGTIMESTAMP,205,19,81,14,ES_AUTOHSCROLL
+    LTEXT           "Timestamp",IDC_STATIC,119,11,78,8
+    EDITTEXT        IDC_TIMESTAMP,118,19,81,14,ES_AUTOHSCROLL
+    LTEXT           "Other name",IDC_STATIC,60,11,57,8
+    LTEXT           "Your name",IDC_STATIC,10,11,50,8
     CONTROL         "Enable highlighting",IDC_HIGHLIGHT,"Button",
-                    BS_AUTOCHECKBOX | WS_TABSTOP,10,106,118,10
-    EDITTEXT        IDC_LOGLIMIT,248,103,38,14,ES_RIGHT | ES_AUTOHSCROLL | 
+                    BS_AUTOCHECKBOX | WS_TABSTOP,10,46,118,10
+    LTEXT           "Limit log text to (events):",IDC_STATIC,144,46,101,8
+    LTEXT           "Trim to (kB)",IDC_STATIC,248,104,38,8
+    EDITTEXT        IDC_LOGLIMIT,248,44,38,14,ES_RIGHT | ES_AUTOHSCROLL | 
                     ES_NUMBER
     CONTROL         "Spin1",IDC_SPIN2,"msctls_updown32",UDS_SETBUDDYINT | 
                     UDS_ALIGNRIGHT | UDS_AUTOBUDDY | UDS_ARROWKEYS | 
-                    UDS_NOTHOUSANDS | UDS_HOTTRACK,286,103,11,14
-    EDITTEXT        IDC_HIGHLIGHTWORDS,10,127,276,14,ES_AUTOHSCROLL
-    EDITTEXT        IDC_LOGDIRECTORY,10,174,211,14,ES_AUTOHSCROLL | 
+                    UDS_NOTHOUSANDS | UDS_HOTTRACK,275,43,11,14
+    LTEXT           "Words to highlight (wildcards allowed)",IDC_STATIC,10,
+                    58,240,8
+    EDITTEXT        IDC_HIGHLIGHTWORDS,10,67,276,14,ES_AUTOHSCROLL
+    CONTROL         "",IDC_STATIC,"Static",SS_ETCHEDHORZ,10,86,275,1
+    CONTROL         "Enable logging to disk",IDC_LOGGING,"Button",
+                    BS_AUTOCHECKBOX | WS_TABSTOP,10,94,211,10
+    LTEXT           "Log directory",IDC_STATIC,10,106,211,8
+    EDITTEXT        IDC_LOGDIRECTORY,10,114,211,14,ES_AUTOHSCROLL | 
                     ES_READONLY
-    PUSHBUTTON      "...",IDC_FONTCHOOSE,221,174,19,14
-    EDITTEXT        IDC_LIMIT,248,174,38,14,ES_RIGHT | ES_AUTOHSCROLL | 
+    PUSHBUTTON      "...",IDC_FONTCHOOSE,221,114,19,14
+    EDITTEXT        IDC_LIMIT,248,114,38,14,ES_RIGHT | ES_AUTOHSCROLL | 
                     ES_NUMBER
     CONTROL         "Spin1",IDC_SPIN3,"msctls_updown32",UDS_SETBUDDYINT | 
                     UDS_ALIGNRIGHT | UDS_AUTOBUDDY | UDS_ARROWKEYS | 
-                    UDS_NOTHOUSANDS | UDS_HOTTRACK,281,174,11,14
-    GROUPBOX        "Log Options",IDC_STATIC,1,61,294,134
-    LTEXT           "Timestamp",IDC_STATIC,118,71,78,8
-    LTEXT           "Other name",IDC_STATIC,60,71,57,8
-    LTEXT           "Your name",IDC_STATIC,10,71,50,8
-    LTEXT           "Limit log text to (events):",IDC_STATIC,144,106,101,8
-    LTEXT           "Trim to (kB)",IDC_STATIC,248,166,38,8
-    CONTROL         "",IDC_STATIC,"Static",SS_ETCHEDHORZ,10,145,276,1
-    LTEXT           "Log timestamp",IDC_STATIC,205,71,81,8
-    LTEXT           "Words to highlight (wildcards allowed)",IDC_STATIC,10,
-                    118,240,8
-    LTEXT           "Log directory",IDC_STATIC,10,166,211,8
-    CONTROL         "Enable logging to disk",IDC_LOGGING,"Button",
-                    BS_AUTOCHECKBOX | WS_TABSTOP,10,153,211,10
-    EDITTEXT        IDC_NICKROW2,158,34,29,14,ES_RIGHT | ES_AUTOHSCROLL | 
+                    UDS_NOTHOUSANDS | UDS_HOTTRACK,275,112,11,14
+    GROUPBOX        "Other",IDC_STATIC,1,145,294,53
+    LTEXT           "Add new rooms to group:",IDC_STATIC,11,159,132,8
+    EDITTEXT        IDC_GROUP,158,158,49,14,ES_AUTOHSCROLL
+    LTEXT           "Userlist row distance (pixels):",IDC_STATIC,11,180,132,
+                    8
+    EDITTEXT        IDC_NICKROW2,158,178,29,14,ES_RIGHT | ES_AUTOHSCROLL | 
                     ES_NUMBER
     CONTROL         "",IDC_SPIN4,"msctls_updown32",UDS_SETBUDDYINT | 
                     UDS_ALIGNRIGHT | UDS_AUTOBUDDY | UDS_ARROWKEYS | 
-                    UDS_NOTHOUSANDS | UDS_HOTTRACK,183,34,11,14
-    GROUPBOX        "Other",IDC_STATIC,1,1,300,53
-    LTEXT           "Userlist row distance (pixels):",IDC_STATIC,11,36,132,8
-    EDITTEXT        IDC_GROUP,158,14,49,14,ES_AUTOHSCROLL
-    LTEXT           "Add new rooms to group:",IDC_STATIC,11,15,132,8
+                    UDS_NOTHOUSANDS | UDS_HOTTRACK,183,178,11,14
 END
 
 IDD_OPTIONSPOPUP DIALOGEX 0, 0, 277, 177

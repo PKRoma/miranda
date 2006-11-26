@@ -396,211 +396,81 @@ void RegisterFonts( void )
 }
 
 // add icons to the skinning module
+
+struct
+{
+	int	size;
+	char* szSection;
+	char* szDescr;
+	char* szName;
+	int   defIconID;
+}
+iconList[] = 
+{
+	{	16, "Chat windows", "Window Icon",           "chat_window",    IDI_CHANMGR    },
+	{	16, "Chat windows", "Text colour",           "chat_fgcol",     IDI_COLOR      },
+	{	16, "Chat windows", "Background colour",     "chat_bkgcol",    IDI_BKGCOLOR   },
+	{	16, "Chat windows", "Bold",                  "chat_bold",      IDI_BBOLD      },
+	{	16, "Chat windows", "Italics",               "chat_italics",   IDI_BITALICS   },
+	{	16, "Chat windows", "Underlined",            "chat_underline", IDI_BUNDERLINE },
+	{	16, "Chat windows", "Smiley button",         "chat_smiley",    IDI_BSMILEY    },
+	{	16, "Chat windows", "Room history",          "chat_history",   IDI_HISTORY    },
+   {	16, "Chat windows", "Room settings",         "chat_settings",  IDI_TOPICBUT   },
+	{	16, "Chat windows", "Event filter disabled", "chat_filter",    IDI_FILTER     },
+	{	16, "Chat windows", "Event filter enabled",  "chat_filter2",   IDI_FILTER2    },
+	{	16, "Chat windows", "Hide userlist",         "chat_nicklist",  IDI_NICKLIST   },
+	{	16, "Chat windows", "Show userlist",         "chat_nicklist2", IDI_NICKLIST2  },
+	{	16, "Chat windows", "Icon overlay",          "chat_overlay",   IDI_OVERLAY    },
+	{	16, "Chat windows", "Close",                 "chat_close",     IDI_CLOSE      },
+			 
+	{	10, "Chat windows", "Status 1 (10x10)",      "chat_status0",   IDI_STATUS0    },
+	{	10, "Chat windows", "Status 2 (10x10)",      "chat_status1",   IDI_STATUS1    },
+	{	10, "Chat windows", "Status 3 (10x10)",      "chat_status2",   IDI_STATUS2    },
+   {	10, "Chat windows", "Status 4 (10x10)",      "chat_status3",   IDI_STATUS3    },
+   {	10, "Chat windows", "Status 5 (10x10)",      "chat_status4",   IDI_STATUS4    },
+	{	10, "Chat windows", "Status 6 (10x10)",      "chat_status5",   IDI_STATUS5    },
+
+	{	10, "Chat log", "Message in (10x10)",    "chat_log_message_in",   IDI_MESSAGE    },
+	{	10, "Chat log", "Message out (10x10)",   "chat_log_message_out",  IDI_MESSAGEOUT },
+	{	10, "Chat log", "Action (10x10)",        "chat_log_action",       IDI_ACTION     },
+	{	10, "Chat log", "Add Status (10x10)",    "chat_log_addstatus",    IDI_ADDSTATUS  },
+	{	10, "Chat log", "Remove status (10x10)", "chat_log_removestatus", IDI_REMSTATUS  },
+	{	10, "Chat log", "Join (10x10)",          "chat_log_join",         IDI_JOIN       },
+	{	10, "Chat log", "Leave (10x10)",         "chat_log_part",         IDI_PART       },
+	{	10, "Chat log", "Quit (10x10)",          "chat_log_quit",         IDI_QUIT       },
+	{	10, "Chat log", "Kick (10x10)",          "chat_log_kick",         IDI_KICK       },
+	{	10, "Chat log", "Nickchange (10x10)",    "chat_log_nick",         IDI_NICK       },
+	{	10, "Chat log", "Notice (10x10)",        "chat_log_notice",       IDI_NOTICE     },
+	{	10, "Chat log", "Topic (10x10)",         "chat_log_topic",        IDI_TOPIC      },
+	{	10, "Chat log", "Highlight (10x10)",     "chat_log_highlight",    IDI_HIGHLIGHT  },
+	{	10, "Chat log", "Information (10x10)",   "chat_log_info",         IDI_INFO       }
+};
+
 void AddIcons(void)
 {
-	if (ServiceExists(MS_SKIN2_ADDICON)) {
-		SKINICONDESC3 sid = {0};
-		char szFile[MAX_PATH];
+	int i;
+	SKINICONDESC3 sid = {0};
+	char szFile[MAX_PATH];
+	GetModuleFileNameA(g_hInst, szFile, MAX_PATH);
 
-		// 16x16 icons
-		sid.cx = sid.cy = 16;
-		sid.cbSize = sizeof(SKINICONDESC3);
+	sid.cbSize = sizeof(SKINICONDESC3);
+	sid.pszDefaultFile = szFile;
 
-		sid.pszSection = Translate("Chat windows");
-		GetModuleFileNameA(g_hInst, szFile, MAX_PATH);
-		sid.pszDefaultFile = szFile;
-
-		// add them one by one
-		sid.pszDescription = Translate("Window Icon");
-		sid.pszName = "chat_window";
-		sid.iDefaultIndex = -IDI_CHANMGR;
+	for ( i = 0; i < SIZEOF(iconList); i++ ) {
+		sid.cx = sid.cy = iconList[i].size;
+		sid.pszSection = Translate( iconList[i].szSection );
+		sid.pszDescription = Translate( iconList[i].szDescr );
+		sid.pszName = iconList[i].szName;
+		sid.iDefaultIndex = -iconList[i].defIconID;
 		CallService(MS_SKIN2_ADDICON, 0, (LPARAM)&sid);
-
-		sid.pszDescription = Translate("Text colour");
-		sid.pszName = "chat_fgcol";
-		sid.iDefaultIndex = -IDI_COLOR;
-		CallService(MS_SKIN2_ADDICON, 0, (LPARAM)&sid);
-
-		sid.pszDescription = Translate("Background colour");
-		sid.pszName = "chat_bkgcol";
-		sid.iDefaultIndex = -IDI_BKGCOLOR;
-		CallService(MS_SKIN2_ADDICON, 0, (LPARAM)&sid);
-
-		sid.pszDescription = Translate("Bold");
-		sid.pszName = "chat_bold";
-		sid.iDefaultIndex = -IDI_BBOLD;
-		CallService(MS_SKIN2_ADDICON, 0, (LPARAM)&sid);
-
-		sid.pszDescription = Translate("Italics");
-		sid.pszName = "chat_italics";
-		sid.iDefaultIndex = -IDI_BITALICS;
-		CallService(MS_SKIN2_ADDICON, 0, (LPARAM)&sid);
-
-		sid.pszDescription = Translate("Underlined");
-		sid.pszName = "chat_underline";
-		sid.iDefaultIndex = -IDI_BUNDERLINE;
-		CallService(MS_SKIN2_ADDICON, 0, (LPARAM)&sid);
-
-		sid.pszDescription = Translate("Smiley button");
-		sid.pszName = "chat_smiley";
-		sid.iDefaultIndex = -IDI_BSMILEY;
-		CallService(MS_SKIN2_ADDICON, 0, (LPARAM)&sid);
-
-		sid.pszDescription = Translate("Room history");
-		sid.pszName = "chat_history";
-		sid.iDefaultIndex = -IDI_HISTORY;
-		CallService(MS_SKIN2_ADDICON, 0, (LPARAM)&sid);
-
-		sid.pszDescription = Translate("Room settings");
-		sid.pszName = "chat_settings";
-		sid.iDefaultIndex = -IDI_TOPICBUT;
-		CallService(MS_SKIN2_ADDICON, 0, (LPARAM)&sid);
-
-		sid.pszDescription = Translate("Event filter disabled");
-		sid.pszName = "chat_filter";
-		sid.iDefaultIndex = -IDI_FILTER;
-		CallService(MS_SKIN2_ADDICON, 0, (LPARAM)&sid);
-
-		sid.pszDescription = Translate("Event filter enabled");
-		sid.pszName = "chat_filter2";
-		sid.iDefaultIndex = -IDI_FILTER2;
-		CallService(MS_SKIN2_ADDICON, 0, (LPARAM)&sid);
-
-		sid.pszDescription = Translate("Hide userlist");
-		sid.pszName = "chat_nicklist";
-		sid.iDefaultIndex = -IDI_NICKLIST;
-		CallService(MS_SKIN2_ADDICON, 0, (LPARAM)&sid);
-
-		sid.pszDescription = Translate("Show userlist");
-		sid.pszName = "chat_nicklist2";
-		sid.iDefaultIndex = -IDI_NICKLIST2;
-		CallService(MS_SKIN2_ADDICON, 0, (LPARAM)&sid);
-
-		sid.pszDescription = Translate("Icon overlay");
-		sid.pszName = "chat_overlay";
-		sid.iDefaultIndex = -IDI_OVERLAY;
-		CallService(MS_SKIN2_ADDICON, 0, (LPARAM)&sid);
-
-		sid.pszDescription = Translate("Close");
-		sid.pszName = "chat_close";
-		sid.iDefaultIndex = -IDI_CLOSE;
-		CallService(MS_SKIN2_ADDICON, 0, (LPARAM)&sid);
-
-		sid.cx = sid.cy = 10;
-		sid.pszDescription = Translate("Status 1 (10x10)");
-		sid.pszName = "chat_status0";
-		sid.iDefaultIndex = -IDI_STATUS0;
-		CallService(MS_SKIN2_ADDICON, 0, (LPARAM)&sid);
-
-		sid.pszDescription = Translate("Status 2 (10x10)");
-		sid.pszName = "chat_status1";
-		sid.iDefaultIndex = -IDI_STATUS1;
-		CallService(MS_SKIN2_ADDICON, 0, (LPARAM)&sid);
-
-		sid.pszDescription = Translate("Status 3 (10x10)");
-		sid.pszName = "chat_status2";
-		sid.iDefaultIndex = -IDI_STATUS2;
-		CallService(MS_SKIN2_ADDICON, 0, (LPARAM)&sid);
-
-		sid.pszDescription = Translate("Status 4 (10x10)");
-		sid.pszName = "chat_status3";
-		sid.iDefaultIndex = -IDI_STATUS3;
-		CallService(MS_SKIN2_ADDICON, 0, (LPARAM)&sid);
-
-		sid.pszDescription = Translate("Status 5 (10x10)");
-		sid.pszName = "chat_status4";
-		sid.iDefaultIndex = -IDI_STATUS4;
-		CallService(MS_SKIN2_ADDICON, 0, (LPARAM)&sid);
-
-		sid.pszDescription = Translate("Status 6 (10x10)");
-		sid.pszName = "chat_status5";
-		sid.iDefaultIndex = -IDI_STATUS5;
-		CallService(MS_SKIN2_ADDICON, 0, (LPARAM)&sid);
-
-		sid.pszSection = Translate("Chat log");
-		sid.pszDescription = Translate("Message in (10x10)");
-		sid.pszName = "chat_log_message_in";
-		sid.iDefaultIndex = -IDI_MESSAGE;
-		CallService(MS_SKIN2_ADDICON, 0, (LPARAM)&sid);
-
-		sid.pszDescription = Translate("Message out (10x10)");
-		sid.pszName = "chat_log_message_out";
-		sid.iDefaultIndex = -IDI_MESSAGEOUT;
-		CallService(MS_SKIN2_ADDICON, 0, (LPARAM)&sid);
-
-		sid.pszDescription = Translate("Action (10x10)");
-		sid.pszName = "chat_log_action";
-		sid.iDefaultIndex = -IDI_ACTION;
-		CallService(MS_SKIN2_ADDICON, 0, (LPARAM)&sid);
-
-		sid.pszDescription = Translate("Add Status (10x10)");
-		sid.pszName = "chat_log_addstatus";
-		sid.iDefaultIndex = -IDI_ADDSTATUS;
-		CallService(MS_SKIN2_ADDICON, 0, (LPARAM)&sid);
-
-		sid.pszDescription = Translate("Remove status (10x10)");
-		sid.pszName = "chat_log_removestatus";
-		sid.iDefaultIndex = -IDI_REMSTATUS;
-		CallService(MS_SKIN2_ADDICON, 0, (LPARAM)&sid);
-
-		sid.pszDescription = Translate("Join (10x10)");
-		sid.pszName = "chat_log_join";
-		sid.iDefaultIndex = -IDI_JOIN;
-		CallService(MS_SKIN2_ADDICON, 0, (LPARAM)&sid);
-
-		sid.pszDescription = Translate("Leave (10x10)");
-		sid.pszName = "chat_log_part";
-		sid.iDefaultIndex = -IDI_PART;
-		CallService(MS_SKIN2_ADDICON, 0, (LPARAM)&sid);
-
-		sid.pszDescription = Translate("Quit (10x10)");
-		sid.pszName = "chat_log_quit";
-		sid.iDefaultIndex = -IDI_QUIT;
-		CallService(MS_SKIN2_ADDICON, 0, (LPARAM)&sid);
-
-		sid.pszDescription = Translate("Kick (10x10)");
-		sid.pszName = "chat_log_kick";
-		sid.iDefaultIndex = -IDI_KICK;
-		CallService(MS_SKIN2_ADDICON, 0, (LPARAM)&sid);
-
-		sid.pszDescription = Translate("Nickchange (10x10)");
-		sid.pszName = "chat_log_nick";
-		sid.iDefaultIndex = -IDI_NICK;
-		CallService(MS_SKIN2_ADDICON, 0, (LPARAM)&sid);
-
-		sid.pszDescription = Translate("Notice (10x10)");
-		sid.pszName = "chat_log_notice";
-		sid.iDefaultIndex = -IDI_NOTICE;
-		CallService(MS_SKIN2_ADDICON, 0, (LPARAM)&sid);
-
-		sid.pszDescription = Translate("Topic (10x10)");
-		sid.pszName = "chat_log_topic";
-		sid.iDefaultIndex = -IDI_TOPIC;
-		CallService(MS_SKIN2_ADDICON, 0, (LPARAM)&sid);
-
-		sid.pszDescription = Translate("Highlight (10x10)");
-		sid.pszName = "chat_log_highlight";
-		sid.iDefaultIndex = -IDI_HIGHLIGHT;
-		CallService(MS_SKIN2_ADDICON, 0, (LPARAM)&sid);
-
-		sid.pszDescription = Translate("Information (10x10)");
-		sid.pszName = "chat_log_info";
-		sid.iDefaultIndex = -IDI_INFO;
-		CallService(MS_SKIN2_ADDICON, 0, (LPARAM)&sid);
-	}
-	return;
-}
+}	}
 
 // load icons from the skinning module if available
-HICON LoadIconEx(int iIndex, char * pszIcoLibName, int iX, int iY)
+HICON LoadIconEx(char* pszIcoLibName, int iX, int iY)
 {
-	if (ServiceExists(MS_SKIN2_ADDICON)) {
-		char szTemp[256];
-		mir_snprintf(szTemp, SIZEOF(szTemp), "chat_%s", pszIcoLibName);
-		return (HICON) CallService(MS_SKIN2_GETICON, 0, (LPARAM)szTemp);
-	}
-
-	return (HICON)LoadImage(g_hInst,MAKEINTRESOURCE(iIndex),IMAGE_ICON,iX,iY,LR_SHARED);
+	char szTemp[256];
+	mir_snprintf(szTemp, SIZEOF(szTemp), "chat_%s", pszIcoLibName);
+	return (HICON) CallService(MS_SKIN2_GETICON, 0, (LPARAM)szTemp);
 }
 
 static void InitSetting(TCHAR** ppPointer, char* pszSetting, TCHAR* pszDefault)
@@ -631,8 +501,6 @@ static BOOL CALLBACK DlgProcOptions1(HWND hwndDlg,UINT uMsg,WPARAM wParam,LPARAM
 	case WM_INITDIALOG:
 		TranslateDialogDefault(hwndDlg);
 		SetWindowLong(GetDlgItem(hwndDlg,IDC_CHECKBOXES),GWL_STYLE,GetWindowLong(GetDlgItem(hwndDlg,IDC_CHECKBOXES),GWL_STYLE)|TVS_NOHSCROLL|TVS_CHECKBOXES);
-		SendDlgItemMessage(hwndDlg,IDC_SPIN2,UDM_SETRANGE,0,MAKELONG(255,10));
-		SendDlgItemMessage(hwndDlg,IDC_SPIN2,UDM_SETPOS,0,MAKELONG(DBGetContactSettingByte(NULL,"Chat","NicklistRowDist",12),0));
 		hListHeading0 = InsertBranch(GetDlgItem(hwndDlg, IDC_CHECKBOXES), TranslateT("Options for using a tabbed interface"), DBGetContactSettingByte(NULL, "Chat", "Branch0Exp", 0)?TRUE:FALSE);
 		hListHeading1 = InsertBranch(GetDlgItem(hwndDlg, IDC_CHECKBOXES), TranslateT("Appearance and functionality of chat room windows"), DBGetContactSettingByte(NULL, "Chat", "Branch1Exp", 0)?TRUE:FALSE);
 		hListHeading2 = InsertBranch(GetDlgItem(hwndDlg, IDC_CHECKBOXES), TranslateT("Appearance of the message log"), DBGetContactSettingByte(NULL, "Chat", "Branch2Exp", 0)?TRUE:FALSE);
@@ -649,12 +517,6 @@ static BOOL CALLBACK DlgProcOptions1(HWND hwndDlg,UINT uMsg,WPARAM wParam,LPARAM
 		FillBranch(GetDlgItem(hwndDlg, IDC_CHECKBOXES), hListHeading5, branch5, SIZEOF(branch5), 0x1000);
 		FillBranch(GetDlgItem(hwndDlg, IDC_CHECKBOXES), hListHeading6, branch6, SIZEOF(branch6), 0x0000);
 		SendMessage(hwndDlg, OPT_FIXHEADINGS, 0, 0);
-		{
-			TCHAR* pszGroup = NULL;
-			InitSetting(&pszGroup, "AddToGroup", _T("Chat rooms")); 
-			SetWindowText(GetDlgItem(hwndDlg, IDC_GROUP), pszGroup);
-			mir_free(pszGroup);
-		}
 		break;
 
 	case OPT_FIXHEADINGS:
@@ -667,11 +529,7 @@ static BOOL CALLBACK DlgProcOptions1(HWND hwndDlg,UINT uMsg,WPARAM wParam,LPARAM
 		break;
 
 	case WM_COMMAND:
-		if (	(LOWORD(wParam) == IDC_NICKROW
-			|| LOWORD(wParam) == IDC_GROUP)
-			&& (HIWORD(wParam)!=EN_CHANGE || (HWND)lParam!=GetFocus()))	return 0;
-
-		if (lParam != (LPARAM)NULL)
+		if (lParam != 0)
 			SendMessage(GetParent(hwndDlg), PSM_CHANGED, 0, 0);
 		break;
 
@@ -719,25 +577,7 @@ static BOOL CALLBACK DlgProcOptions1(HWND hwndDlg,UINT uMsg,WPARAM wParam,LPARAM
 				switch (((LPNMHDR)lParam)->code) {
 				case PSN_APPLY:
 					{
-						int iLen;
-						char * pszText = NULL;
-						BYTE b;
-
-						iLen = GetWindowTextLength(GetDlgItem(hwndDlg, IDC_GROUP));
-						if (iLen > 0) {
-							pszText = mir_realloc(pszText, iLen+1);
-							GetDlgItemTextA(hwndDlg, IDC_GROUP, pszText,iLen+1);
-							DBWriteContactSettingString(NULL, "Chat", "AddToGroup", pszText);
-						}
-						else DBWriteContactSettingString(NULL, "Chat", "AddToGroup", "");
-						mir_free(pszText);
-
-						iLen = SendDlgItemMessage(hwndDlg,IDC_SPIN2,UDM_GETPOS,0,0);
-						if (iLen > 0)
-							DBWriteContactSettingByte(NULL, "Chat", "NicklistRowDist", (BYTE)iLen);
-						else
-							DBDeleteContactSetting(NULL, "Chat", "NicklistRowDist");
-						b = DBGetContactSettingByte(NULL, "Chat", "Tabs", 1);
+						BYTE b = DBGetContactSettingByte(NULL, "Chat", "Tabs", 1);
 						SaveBranch(GetDlgItem(hwndDlg, IDC_CHECKBOXES), branch0, SIZEOF(branch0));
 						SaveBranch(GetDlgItem(hwndDlg, IDC_CHECKBOXES), branch1, SIZEOF(branch1));
 						SaveBranch(GetDlgItem(hwndDlg, IDC_CHECKBOXES), branch2, SIZEOF(branch2));
@@ -799,6 +639,14 @@ static BOOL CALLBACK DlgProcOptions2(HWND hwndDlg,UINT uMsg,WPARAM wParam,LPARAM
 		SendDlgItemMessage(hwndDlg,IDC_SPIN2,UDM_SETPOS,0,MAKELONG(DBGetContactSettingWord(NULL,"Chat","LogLimit",100),0));
 		SendDlgItemMessage(hwndDlg,IDC_SPIN3,UDM_SETRANGE,0,MAKELONG(10000,0));
 		SendDlgItemMessage(hwndDlg,IDC_SPIN3,UDM_SETPOS,0,MAKELONG(DBGetContactSettingWord(NULL,"Chat","LoggingLimit",100),0));
+		SendDlgItemMessage(hwndDlg,IDC_SPIN4,UDM_SETRANGE,0,MAKELONG(255,10));
+		SendDlgItemMessage(hwndDlg,IDC_SPIN4,UDM_SETPOS,0,MAKELONG(DBGetContactSettingByte(NULL,"Chat","NicklistRowDist",12),0));
+		{
+			TCHAR* pszGroup = NULL;
+			InitSetting(&pszGroup, "AddToGroup", _T("Chat rooms")); 
+			SetWindowText(GetDlgItem(hwndDlg, IDC_GROUP), pszGroup);
+			mir_free(pszGroup);
+		}
 		{
 			char szTemp[MAX_PATH];
 			CallService(MS_UTILS_PATHTORELATIVE, (WPARAM)g_Settings.pszLogDir, (LPARAM)szTemp );
@@ -824,6 +672,8 @@ static BOOL CALLBACK DlgProcOptions2(HWND hwndDlg,UINT uMsg,WPARAM wParam,LPARAM
 			|| LOWORD(wParam) == IDC_HIGHLIGHTWORDS
 			|| LOWORD(wParam) == IDC_LOGDIRECTORY
 			|| LOWORD(wParam) == IDC_LOGTIMESTAMP
+			|| LOWORD(wParam) == IDC_NICKROW2
+			|| LOWORD(wParam) == IDC_GROUP
 			|| LOWORD(wParam) == IDC_LIMIT)
 			&& (HIWORD(wParam)!=EN_CHANGE || (HWND)lParam!=GetFocus()))	return 0;
 
@@ -917,7 +767,21 @@ static BOOL CALLBACK DlgProcOptions2(HWND hwndDlg,UINT uMsg,WPARAM wParam,LPARAM
 			DBWriteContactSettingWord(NULL, "Chat", "LogLimit", (WORD)iLen);
 			iLen = SendDlgItemMessage(hwndDlg,IDC_SPIN3,UDM_GETPOS,0,0);
 			DBWriteContactSettingWord(NULL, "Chat", "LoggingLimit", (WORD)iLen);
+
+			iLen = GetWindowTextLength(GetDlgItem(hwndDlg, IDC_GROUP));
+			if (iLen > 0) {
+				pszText = mir_realloc(pszText, iLen+1);
+				GetDlgItemTextA(hwndDlg, IDC_GROUP, pszText,iLen+1);
+				DBWriteContactSettingString(NULL, "Chat", "AddToGroup", pszText);
+			}
+			else DBWriteContactSettingString(NULL, "Chat", "AddToGroup", "");
 			mir_free(pszText);
+
+			iLen = SendDlgItemMessage(hwndDlg,IDC_SPIN4,UDM_GETPOS,0,0);
+			if (iLen > 0)
+				DBWriteContactSettingByte(NULL, "Chat", "NicklistRowDist", (BYTE)iLen);
+			else
+				DBDeleteContactSetting(NULL, "Chat", "NicklistRowDist");
 
 			FreeMsgLogBitmaps();
 			LoadMsgLogBitmaps();
@@ -1118,7 +982,7 @@ static void FreeGlobalSettings(void)
 	if ( g_Settings.MessageBoxFont )
 		DeleteObject( g_Settings.MessageBoxFont );
 	if ( g_Settings.UserListFont )
-		DeleteObject(g_Settings.UserListFont );
+		DeleteObject( g_Settings.UserListFont );
 	if ( g_Settings.UserListHeadingsFont )
 		DeleteObject( g_Settings.UserListHeadingsFont );
 }

@@ -188,33 +188,30 @@ void UpgradeCheck(void)
 	}	}
 
 	DBWriteContactSettingDword(NULL, "Chat", "OldVersion", pluginInfo.version);
-	return;
 }
 
 void LoadLogIcons(void)
 {
-	hIcons[ICON_ACTION] = LoadIconEx(IDI_ACTION, "log_action", 10, 10); //LoadImage(g_hInst,MAKEINTRESOURCE(IDI_ACTION),IMAGE_ICON,0,0,0);
-	hIcons[ICON_ADDSTATUS] = LoadIconEx(IDI_ADDSTATUS, "log_addstatus", 10, 10); //LoadImage(g_hInst,MAKEINTRESOURCE(IDI_ADDSTATUS),IMAGE_ICON,0,0,0);
-	hIcons[ICON_HIGHLIGHT] = LoadIconEx(IDI_HIGHLIGHT, "log_highlight", 10, 10); //LoadImage(g_hInst,MAKEINTRESOURCE(IDI_HIGHLIGHT),IMAGE_ICON,0,0,0);
-	hIcons[ICON_INFO] = LoadIconEx(IDI_INFO, "log_info", 10, 10); //LoadImage(g_hInst,MAKEINTRESOURCE(IDI_INFO),IMAGE_ICON,0,0,0);
-	hIcons[ICON_JOIN] = LoadIconEx(IDI_JOIN, "log_join", 10, 10); //LoadImage(g_hInst,MAKEINTRESOURCE(IDI_JOIN),IMAGE_ICON,0,0,0);
-	hIcons[ICON_KICK] = LoadIconEx(IDI_KICK, "log_kick", 10, 10); //LoadImage(g_hInst,MAKEINTRESOURCE(IDI_KICK),IMAGE_ICON,0,0,0);
-	hIcons[ICON_MESSAGE] = LoadIconEx(IDI_MESSAGE, "log_message_in", 10, 10); //LoadImage(g_hInst,MAKEINTRESOURCE(IDI_MESSAGE),IMAGE_ICON,0,0,0);
-	hIcons[ICON_MESSAGEOUT] = LoadIconEx(IDI_MESSAGEOUT, "log_message_out", 10, 10); //LoadImage(g_hInst,MAKEINTRESOURCE(IDI_MESSAGEOUT),IMAGE_ICON,0,0,0);
-	hIcons[ICON_NICK] = LoadIconEx(IDI_NICK, "log_nick", 10, 10); //LoadImage(g_hInst,MAKEINTRESOURCE(IDI_NICK),IMAGE_ICON,0,0,0);
-	hIcons[ICON_NOTICE] = LoadIconEx(IDI_NOTICE, "log_notice", 10, 10); //LoadImage(g_hInst,MAKEINTRESOURCE(IDI_NOTICE),IMAGE_ICON,0,0,0);
-	hIcons[ICON_PART] = LoadIconEx(IDI_PART, "log_part", 10, 10); //LoadImage(g_hInst,MAKEINTRESOURCE(IDI_PART),IMAGE_ICON,0,0,0);
-	hIcons[ICON_QUIT] = LoadIconEx(IDI_QUIT, "log_quit", 10, 10); //LoadImage(g_hInst,MAKEINTRESOURCE(IDI_QUIT),IMAGE_ICON,0,0,0);
-	hIcons[ICON_REMSTATUS] = LoadIconEx(IDI_REMSTATUS, "log_removestatus", 10, 10); //LoadImage(g_hInst,MAKEINTRESOURCE(IDI_REMSTATUS),IMAGE_ICON,0,0,0);
-	hIcons[ICON_TOPIC] = LoadIconEx(IDI_TOPIC, "log_topic", 10, 10); //LoadImage(g_hInst,MAKEINTRESOURCE(IDI_TOPIC),IMAGE_ICON,0,0,0);
-	hIcons[ICON_STATUS1] = LoadIconEx(IDI_STATUS1, "status1", 10, 10); //LoadImage(g_hInst,MAKEINTRESOURCE(IDI_STATUS1),IMAGE_ICON,0,0,0);
-	hIcons[ICON_STATUS2] = LoadIconEx(IDI_STATUS2, "status2", 10, 10); //LoadImage(g_hInst,MAKEINTRESOURCE(IDI_STATUS2),IMAGE_ICON,0,0,0);
-	hIcons[ICON_STATUS3] = LoadIconEx(IDI_STATUS3, "status3", 10, 10); //LoadImage(g_hInst,MAKEINTRESOURCE(IDI_STATUS3),IMAGE_ICON,0,0,0);
-	hIcons[ICON_STATUS4] = LoadIconEx(IDI_STATUS4, "status4", 10, 10); //LoadImage(g_hInst,MAKEINTRESOURCE(IDI_STATUS4),IMAGE_ICON,0,0,0);
-	hIcons[ICON_STATUS0] = LoadIconEx(IDI_STATUS0, "status0", 10, 10); //LoadImage(g_hInst,MAKEINTRESOURCE(IDI_STATUS0),IMAGE_ICON,0,0,0);
-	hIcons[ICON_STATUS5] = LoadIconEx(IDI_STATUS5, "status5", 10, 10); //LoadImage(g_hInst,MAKEINTRESOURCE(IDI_STATUS5),IMAGE_ICON,0,0,0);
-
-	return;
+	hIcons[ICON_ACTION]     = LoadIconEx("log_action", 10, 10);
+	hIcons[ICON_ADDSTATUS]  = LoadIconEx("log_addstatus", 10, 10);
+	hIcons[ICON_HIGHLIGHT]  = LoadIconEx("log_highlight", 10, 10);
+	hIcons[ICON_INFO]       = LoadIconEx("log_info", 10, 10);
+	hIcons[ICON_JOIN]       = LoadIconEx("log_join", 10, 10);
+	hIcons[ICON_KICK]       = LoadIconEx("log_kick", 10, 10);
+	hIcons[ICON_MESSAGE]    = LoadIconEx("log_message_in", 10, 10);
+	hIcons[ICON_MESSAGEOUT] = LoadIconEx("log_message_out", 10, 10);
+	hIcons[ICON_NICK]       = LoadIconEx("log_nick", 10, 10);
+	hIcons[ICON_NOTICE]     = LoadIconEx("log_notice", 10, 10);
+	hIcons[ICON_PART]       = LoadIconEx("log_part", 10, 10);
+	hIcons[ICON_QUIT]       = LoadIconEx("log_quit", 10, 10);
+	hIcons[ICON_REMSTATUS]  = LoadIconEx("log_removestatus", 10, 10);
+	hIcons[ICON_TOPIC]      = LoadIconEx("log_topic", 10, 10);
+	hIcons[ICON_STATUS1]    = LoadIconEx("status1", 10, 10);
+	hIcons[ICON_STATUS2]    = LoadIconEx("status2", 10, 10);
+	hIcons[ICON_STATUS3]    = LoadIconEx("status3", 10, 10);
+	hIcons[ICON_STATUS4]    = LoadIconEx("status4", 10, 10);
+	hIcons[ICON_STATUS0]    = LoadIconEx("status0", 10, 10);
+	hIcons[ICON_STATUS5]    = LoadIconEx("status5", 10, 10);
 }
 
 void LoadIcons(void)
@@ -230,11 +227,10 @@ void LoadIcons(void)
 	hImageList = ImageList_Create(GetSystemMetrics(SM_CXSMICON),GetSystemMetrics(SM_CYSMICON),IsWinVerXPPlus()? ILC_COLOR32 | ILC_MASK : ILC_COLOR16 | ILC_MASK,0,3);
 	hIconsList = ImageList_Create(GetSystemMetrics(SM_CXSMICON),GetSystemMetrics(SM_CYSMICON),IsWinVerXPPlus()? ILC_COLOR32 | ILC_MASK : ILC_COLOR16 | ILC_MASK,0,100);
 	ImageList_AddIcon(hIconsList,LoadSkinnedIcon( SKINICON_EVENT_MESSAGE));
-	ImageList_AddIcon(hIconsList,LoadIconEx(IDI_OVERLAY, "overlay", 0, 0));
+	ImageList_AddIcon(hIconsList,LoadIconEx("overlay", 0, 0));
 	ImageList_SetOverlayImage(hIconsList, 1, 1);
 	ImageList_AddIcon(hImageList,LoadImage(g_hInst,MAKEINTRESOURCE(IDI_BLANK),IMAGE_ICON,0,0,0));
 	ImageList_AddIcon(hImageList,LoadImage(g_hInst,MAKEINTRESOURCE(IDI_BLANK),IMAGE_ICON,0,0,0));
-	return ;
 }
 
 void FreeIcons(void)
@@ -242,7 +238,6 @@ void FreeIcons(void)
 	FreeMsgLogBitmaps();
 	ImageList_Destroy(hImageList);
 	ImageList_Destroy(hIconsList);
-	return;
 }
 
 static IRichEditOleCallbackVtbl reOleCallbackVtbl;
