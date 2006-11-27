@@ -669,11 +669,12 @@ static struct yahoo_input_data * find_input_by_id_and_webcam_user(int id, const 
 static struct yahoo_input_data * find_input_by_id_and_type(int id, enum yahoo_connection_type type)
 {
 	YList *l;
-	LOG(("[find_input_by_id_and_type] id: %d, type: %d", id, type));
+	
+	//LOG(("[find_input_by_id_and_type] id: %d, type: %d", id, type));
 	for(l = inputs; l; l = y_list_next(l)) {
 		struct yahoo_input_data *yid = l->data;
 		if(yid->type == type && yid->yd->client_id == id) {
-			LOG(("[find_input_by_id_and_type] Got it!!!"));
+			//LOG(("[find_input_by_id_and_type] Got it!!!"));
 			return yid;
 		}
 	}
@@ -1187,7 +1188,7 @@ static YList * bud_str2list(char *rawlist)
 
 			l = y_list_append(l, newbud);
 
-			NOTICE(("Added buddy %s to group %s", newbud->id, newbud->group));
+			//NOTICE(("Added buddy %s to group %s", newbud->id, newbud->group));
 		}
 
 		y_strfreev(buddies);
@@ -3776,7 +3777,7 @@ static void yahoo_process_webcam_key(struct yahoo_input_data *yid, struct yahoo_
 
 static void yahoo_packet_process(struct yahoo_input_data *yid, struct yahoo_packet *pkt)
 {
-	DEBUG_MSG(("yahoo_packet_process: 0x%02x", pkt->service));
+	//DEBUG_MSG(("yahoo_packet_process: 0x%02x", pkt->service));
 	switch (pkt->service)
 	{
 	case YAHOO_SERVICE_LOGON:

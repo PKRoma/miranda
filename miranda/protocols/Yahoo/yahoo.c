@@ -422,11 +422,23 @@ void ext_yahoo_status_logon(int id, const char *who, int stat, const char *msg, 
 	} 
 	
 	switch (client_version) {
-		case 262651: s = "libyahoo2"; break;
-		case 262655: s = "< Yahoo 6.x (Yahoo 5.x?)"; break;
-		case 278527: s = "Yahoo 6.x"; break;
-		case 524223: s = "Yahoo 7.x"; break;
-		case 1572799: s = "Yahoo 8.x"; break;
+		case 262651: 
+				s = "libyahoo2"; 
+				break;
+		case 262655: 
+				s = "< Yahoo 6.x (Yahoo 5.x?)"; 
+				break;
+		case 278527: 
+				s = "Yahoo 6.x"; 
+				break;
+		case 524223: 
+				s = "Yahoo 7.x"; 
+				break;
+		case 822543:  /* ? "Yahoo Version 3.0 beta 1 (build 18274) OSX" */
+		case 1572799: /* 8.0.x ??  */ 
+		case 2097087: /* 8.1.0.195 */ 
+				s = "Yahoo 8.x"; 
+				break;
 	}
 	
 	if (s != NULL) 
@@ -1347,7 +1359,7 @@ void yahoo_callback(struct _conn *c, yahoo_input_condition cond)
 {
 	int ret=1;
 
-	LOG(("[yahoo_callback] id: %d, fd: %d tag: %d", c->id, c->fd, c->tag));
+	//LOG(("[yahoo_callback] id: %d, fd: %d tag: %d", c->id, c->fd, c->tag));
 	if(c->id < 0) {
 		connect_complete(c->data, c->fd, cond);
 	} else if (c->fd > 0) {
@@ -1363,7 +1375,7 @@ void yahoo_callback(struct _conn *c, yahoo_input_condition cond)
 			LOG(("Yahoo read error: Server closed socket"));
 	}
 	
-	LOG(("[yahoo_callback] id: %d exiting...", c->id));
+	//LOG(("[yahoo_callback] id: %d exiting...", c->id));
 }
 
 int ext_yahoo_connect_async(int id, const char *host, int port, int type, 
