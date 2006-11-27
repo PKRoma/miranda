@@ -882,6 +882,8 @@ UINT CreateGCMenu(HWND hwndDlg, HMENU *hMenu, int iIndex, POINT pt, SESSION_INFO
 	GCMENUITEMS gcmi = {0};
 	int i;
 	HMENU hSubMenu = 0;
+    DWORD codepage = DBGetContactSettingDword(si->hContact, SRMSGMOD_T, "ANSIcodepage", 0);
+    int pos;
 
 	*hMenu = GetSubMenu(g_hMenu, iIndex);
 	CallService(MS_LANGPACK_TRANSLATEMENU, (WPARAM) *hMenu, 0);
@@ -931,7 +933,7 @@ UINT CreateGCMenu(HWND hwndDlg, HMENU *hMenu, int iIndex, POINT pt, SESSION_INFO
 		AppendMenu(*hMenu, MF_SEPARATOR, 0, 0);
 
 	for (i = 0; i < gcmi.nItems; i++) {
-		TCHAR* ptszDescr = a2tf( gcmi.Item[i].pszDesc, si->dwFlags );
+		TCHAR* ptszDescr = a2tf( gcmi.Item[i].pszDesc, si->dwFlags, 0 );
 
 		if ( gcmi.Item[i].uType == MENU_NEWPOPUP ) {
 			hSubMenu = CreateMenu();
@@ -948,6 +950,20 @@ UINT CreateGCMenu(HWND hwndDlg, HMENU *hMenu, int iIndex, POINT pt, SESSION_INFO
 
 		mir_free( ptszDescr );
 	}
+
+    if(si->iType != GCW_SERVER) {
+        AppendMenu(*hMenu, MF_SEPARATOR, 0, 0);
+        pos = GetMenuItemCount(*hMenu);
+        InsertMenu(*hMenu, pos, MF_BYPOSITION | MF_POPUP, (UINT_PTR) myGlobals.g_hMenuEncoding, TranslateT("Character Encoding"));
+        for(i = 0; i < GetMenuItemCount(myGlobals.g_hMenuEncoding); i++)
+            CheckMenuItem(myGlobals.g_hMenuEncoding, i, MF_BYPOSITION | MF_UNCHECKED);
+        if(codepage == CP_ACP)
+            CheckMenuItem(myGlobals.g_hMenuEncoding, 0, MF_BYPOSITION | MF_CHECKED);
+        else
+            CheckMenuItem(myGlobals.g_hMenuEncoding, codepage, MF_BYCOMMAND | MF_CHECKED);
+
+    }
+
 	return TrackPopupMenu(*hMenu, TPM_RETURNCMD, pt.x, pt.y, 0, hwndDlg, NULL);
 }
 
@@ -1045,7 +1061,7 @@ void ValidateFilename (char * filename)
 		p1 +=1;
 }	}
 
-TCHAR* a2tf( const TCHAR* str, int flags )
+TCHAR* a2tf( const TCHAR* str, int flags, DWORD cp )
 {
 	if ( str == NULL )
 		return NULL;
@@ -1054,14 +1070,17 @@ TCHAR* a2tf( const TCHAR* str, int flags )
 		if ( flags & GC_UNICODE )
 			return mir_tstrdup( str );
 		else {
-			int codepage = CallService( MS_LANGPACK_GETCODEPAGE, 0, 0 );
+            int cbLen;
+			TCHAR *result;
 
-			int cbLen = MultiByteToWideChar( codepage, 0, (char*)str, -1, 0, 0 );
-			TCHAR* result = ( TCHAR* )mir_alloc( sizeof(TCHAR)*( cbLen+1 ));
+			if(cp == 0)
+                cp = myGlobals.m_LangPackCP; // CallService( MS_LANGPACK_GETCODEPAGE, 0, 0 );
+			cbLen = MultiByteToWideChar( cp, 0, (char*)str, -1, 0, 0 );
+			result = ( TCHAR* )mir_alloc( sizeof(TCHAR)*( cbLen+1 ));
 			if ( result == NULL )
 				return NULL;
 
-			MultiByteToWideChar( codepage, 0, (char*)str, -1, result, cbLen );
+			MultiByteToWideChar( cp, 0, (char*)str, -1, result, cbLen );
 			result[ cbLen ] = 0;
 			return result;
 		}

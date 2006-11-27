@@ -376,7 +376,7 @@ typedef struct{
 
 TCHAR* a2t( const char* str );
 char*  t2a( const TCHAR* str );
-TCHAR* a2tf( const TCHAR* str, int flags );
+TCHAR* a2tf( const TCHAR* str, int flags, DWORD cp );
 TCHAR* replaceStr( TCHAR** dest, const TCHAR* src );
 char*  replaceStrA( char** dest, const char* src );
 

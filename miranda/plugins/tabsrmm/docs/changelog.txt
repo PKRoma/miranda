@@ -19,6 +19,18 @@ the file listing the same day.
 Trunk is now using version numbers 1.1.0.x until the next major release. Bugfixes
 will be backported to stable branch, new features will only go into trunk.
 
+Version 1.1.0.13 - 2006/11/26
+
+        + group chat module has been converted to UNICODE (ghazan)
+        + Support for history++ as a message log viewer has been added.
+        + Support for the spell checker plugin by pescuma has been added to IM and
+          group chat sessions.
+        + codepage support for group chat windows added.
+        * various smaller enhancements and bugfixes (too many to list here).
+        + message window API support for status bar icons has been added.
+
+Version 1.1.0.10|11|12 - internal
+
 Version 1.1.0.9 - 2006/09/20
 
         ! fix: own avatar images are now rendered properly when they have transparency

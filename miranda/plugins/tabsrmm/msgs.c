@@ -36,10 +36,9 @@ $Id$
 
 static char *relnotes[] = {
     "{\\rtf1\\ansi\\deff0\\pard\\li%u\\fi-%u\\ri%u\\tx%u}",
-    "\\par\t\\b\\ul1 Release notes for version 1.1.0.12\\b0\\ul0\\par ",
-    "*\tAdded patch to allow dragging tab without saving positon (hold ALT).\\par",
-    "*\tAdded support for spellchecker plugin (pescuma).\\par",
-    "*\tSpellchecking support for group chat windows.\\par",
+    "\\par\t\\b\\ul1 Release notes for version 1.1.0.13\\b0\\ul0\\par ",
+    "*\tAdded codepage support to groupchat windows.\\par",
+    "*\tSmall changes to clickable nicks in groupchat windows.\\par",
     NULL
 };
 

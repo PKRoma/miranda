@@ -451,10 +451,10 @@ LRESULT CALLBACK StatusBarSubclassProc(HWND hWnd, UINT msg, WPARAM wParam, LPARA
                     RECT rc;
                     struct MessageWindowData *dat = (struct MessageWindowData *)GetWindowLong(pContainer->hwndActive, GWL_USERDATA);
 
+                    ti.ptCursor = pt;
                     ScreenToClient(hWnd, &pt);
                     SendMessage(hWnd, SB_GETRECT, 2, (LPARAM)&rc);
                     if(dat && PtInRect(&rc,pt)) {
-                        CLCINFOTIP ti = {0};
                         int gap = 2;
                         struct StatusIconListNode *current = status_icon_list;
 						struct MessageWindowData *dat = (struct MessageWindowData *)GetWindowLong(pContainer->hwndActive, GWL_USERDATA);

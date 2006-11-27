@@ -1557,7 +1557,7 @@ BOOL CALLBACK RoomWndProc(HWND hwndDlg,UINT uMsg,WPARAM wParam,LPARAM lParam)
 			break;
 
 		if (si->pszModule != NULL) {
-			TCHAR* ptszDispName = a2tf(( TCHAR* )MM_FindModule(si->pszModule)->pszModDispName, 0);
+			TCHAR* ptszDispName = a2tf(( TCHAR* )MM_FindModule(si->pszModule)->pszModDispName, 0, 0);
 			TCHAR  szFinalStatusBarText[512];
 			int    x = 12;
 
@@ -1978,7 +1978,8 @@ LABEL_SHOWWINDOW:
 					UINT uID = 0;
 					HMENU hMenu = 0;
 					TCHAR pszWord[4096];
-
+                    int pos;
+		
 					pt.x = (short) LOWORD(((ENLINK *) lParam)->lParam);
 					pt.y = (short) HIWORD(((ENLINK *) lParam)->lParam);
 					ClientToScreen(pNmhdr->hwndFrom, &pt);
@@ -2019,63 +2020,78 @@ LABEL_SHOWWINDOW:
 					}	}	}	}
 
 					uID = CreateGCMenu(hwndDlg, &hMenu, 1, pt, si, NULL, pszWord);
-					switch (uID) {
-					case 0:
-						PostMessage(hwndDlg, WM_MOUSEACTIVATE, 0, 0 );
-						break;
 
-					case ID_COPYALL:
-						SendMessage(pNmhdr->hwndFrom, EM_EXGETSEL, 0, (LPARAM) & sel);
-						SendMessage(pNmhdr->hwndFrom, EM_EXSETSEL, 0, (LPARAM) & all);
-						SendMessage(pNmhdr->hwndFrom, WM_COPY, 0, 0);
-						SendMessage(pNmhdr->hwndFrom, EM_EXSETSEL, 0, (LPARAM) & sel);
-						PostMessage(hwndDlg, WM_MOUSEACTIVATE, 0, 0 );
-						break;
+                    if(uID > 800 && uID < 1400) {
+                        dat->codePage = uID;
+                        DBWriteContactSettingDword(dat->hContact, SRMSGMOD_T, "ANSIcodepage", dat->codePage);
+                    }
+                    else if(uID == 500) {
+                        dat->codePage = CP_ACP;
+                        DBDeleteContactSetting(dat->hContact, SRMSGMOD_T, "ANSIcodepage");
+                    }
+                    else {
+                        switch (uID) {
+                        case 0:
+                            PostMessage(hwndDlg, WM_MOUSEACTIVATE, 0, 0 );
+                            break;
 
-					case ID_CLEARLOG:
-						{
-							SESSION_INFO* s = SM_FindSession(si->ptszID, si->pszModule);
-							if (s)
-							{
-								SetDlgItemText(hwndDlg, IDC_CHAT_LOG, _T(""));
-								LM_RemoveAll(&s->pLog, &s->pLogEnd);
-								s->iEventCount = 0;
-								s->LastTime = 0;
-								si->iEventCount = 0;
-								si->LastTime = 0;
-								si->pLog = s->pLog;
-								si->pLogEnd = s->pLogEnd;
-								PostMessage(hwndDlg, WM_MOUSEACTIVATE, 0, 0 );
-						}	}
-						break;
+                        case ID_COPYALL:
+                            SendMessage(pNmhdr->hwndFrom, EM_EXGETSEL, 0, (LPARAM) & sel);
+                            SendMessage(pNmhdr->hwndFrom, EM_EXSETSEL, 0, (LPARAM) & all);
+                            SendMessage(pNmhdr->hwndFrom, WM_COPY, 0, 0);
+                            SendMessage(pNmhdr->hwndFrom, EM_EXSETSEL, 0, (LPARAM) & sel);
+                            PostMessage(hwndDlg, WM_MOUSEACTIVATE, 0, 0 );
+                            break;
 
-					case ID_SEARCH_GOOGLE:
-						{
-							char szURL[4096];
-							if (pszWord[0]) {
-								mir_snprintf( szURL, sizeof( szURL ), "http://www.google.com/search?q=" TCHAR_STR_PARAM, pszWord );
-								CallService(MS_UTILS_OPENURL, 1, (LPARAM) szURL);
-							}
-							PostMessage(hwndDlg, WM_MOUSEACTIVATE, 0, 0 );
-						}
-						break;
+                        case ID_CLEARLOG:
+                            {
+                                SESSION_INFO* s = SM_FindSession(si->ptszID, si->pszModule);
+                                if (s)
+                                {
+                                    SetDlgItemText(hwndDlg, IDC_CHAT_LOG, _T(""));
+                                    LM_RemoveAll(&s->pLog, &s->pLogEnd);
+                                    s->iEventCount = 0;
+                                    s->LastTime = 0;
+                                    si->iEventCount = 0;
+                                    si->LastTime = 0;
+                                    si->pLog = s->pLog;
+                                    si->pLogEnd = s->pLogEnd;
+                                    PostMessage(hwndDlg, WM_MOUSEACTIVATE, 0, 0 );
+                            }	}
+                            break;
 
-					case ID_SEARCH_WIKIPEDIA:
-						{
-							char szURL[4096];
-							if (pszWord[0]) {
-								mir_snprintf( szURL, sizeof( szURL ), "http://en.wikipedia.org/wiki/" TCHAR_STR_PARAM, pszWord );
-								CallService(MS_UTILS_OPENURL, 1, (LPARAM) szURL);
-							}
-							PostMessage(hwndDlg, WM_MOUSEACTIVATE, 0, 0 );
-						}
-						break;
+                        case ID_SEARCH_GOOGLE:
+                            {
+                                char szURL[4096];
+                                if (pszWord[0]) {
+                                    mir_snprintf( szURL, sizeof( szURL ), "http://www.google.com/search?q=" TCHAR_STR_PARAM, pszWord );
+                                    CallService(MS_UTILS_OPENURL, 1, (LPARAM) szURL);
+                                }
+                                PostMessage(hwndDlg, WM_MOUSEACTIVATE, 0, 0 );
+                            }
+                            break;
 
-					default:
-						PostMessage(hwndDlg, WM_MOUSEACTIVATE, 0, 0 );
-						DoEventHookAsync(hwndDlg, si->ptszID, si->pszModule, GC_USER_LOGMENU, NULL, NULL, (LPARAM)uID);
-						break;
-					}
+                        case ID_SEARCH_WIKIPEDIA:
+                            {
+                                char szURL[4096];
+                                if (pszWord[0]) {
+                                    mir_snprintf( szURL, sizeof( szURL ), "http://en.wikipedia.org/wiki/" TCHAR_STR_PARAM, pszWord );
+                                    CallService(MS_UTILS_OPENURL, 1, (LPARAM) szURL);
+                                }
+                                PostMessage(hwndDlg, WM_MOUSEACTIVATE, 0, 0 );
+                            }
+                            break;
+
+                        default:
+                            PostMessage(hwndDlg, WM_MOUSEACTIVATE, 0, 0 );
+                            DoEventHookAsync(hwndDlg, si->ptszID, si->pszModule, GC_USER_LOGMENU, NULL, NULL, (LPARAM)uID);
+                            break;
+                        }
+                    }
+                    if(si->iType != GCW_SERVER) {
+                        pos = GetMenuItemCount(hMenu);
+                        RemoveMenu(hMenu, pos - 1, MF_BYPOSITION);
+                    }
 					DestroyGCMenu(&hMenu, 5);
 				}
 				break;

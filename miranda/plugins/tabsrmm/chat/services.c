@@ -258,7 +258,7 @@ int Service_NewChat(WPARAM wParam, LPARAM lParam)
 	EnterCriticalSection(&cs);
 
 	if (( mi = MM_FindModule( gcw->pszModule )) != NULL ) {
-		TCHAR* ptszID = a2tf( gcw->ptszID, gcw->dwFlags );
+		TCHAR* ptszID = a2tf( gcw->ptszID, gcw->dwFlags, 0 );
 		SESSION_INFO* si = SM_AddSession( ptszID, gcw->pszModule);
 
 		// create a new session and set the defaults
@@ -270,8 +270,8 @@ int Service_NewChat(WPARAM wParam, LPARAM lParam)
 				si->wStatus = ID_STATUS_ONLINE;
 			si->iType = gcw->iType;
 			si->dwFlags = gcw->dwFlags;
-			si->ptszName = a2tf( gcw->ptszName, gcw->dwFlags );
-			si->ptszStatusbarText = a2tf( gcw->ptszStatusbarText, gcw->dwFlags );
+			si->ptszName = a2tf( gcw->ptszName, gcw->dwFlags, 0 );
+			si->ptszStatusbarText = a2tf( gcw->ptszStatusbarText, gcw->dwFlags, 0 );
 			si->iSplitterX = g_Settings.iSplitterX;
 			si->iSplitterY = g_Settings.iSplitterY;
 			si->bFilterEnabled = DBGetContactSettingByte(si->hContact, "Chat", "FilterEnabled", DBGetContactSettingByte(NULL, "Chat", "FilterEnabled", 0));
@@ -642,6 +642,7 @@ int Service_AddEvent(WPARAM wParam, LPARAM lParam)
 	BOOL bIsHighlighted = FALSE;
 	BOOL bRemoveFlag = FALSE;
 	int iRetVal = GC_EVENT_ERROR;
+    SESSION_INFO *si = NULL;
 
 	if( g_sessionshutdown )
    	return 0;
@@ -662,12 +663,13 @@ int Service_AddEvent(WPARAM wParam, LPARAM lParam)
 		if ( !( gce->dwFlags & GC_UNICODE )) {
 			save_gce = *gce;
 			save_gcd = *gce->pDest;
-			gce->pDest->ptszID = a2tf( gce->pDest->ptszID, gce->dwFlags );
-			gce->ptszUID       = a2tf( gce->ptszUID,       gce->dwFlags );
-			gce->ptszNick      = a2tf( gce->ptszNick,      gce->dwFlags );
-			gce->ptszStatus    = a2tf( gce->ptszStatus,    gce->dwFlags );
-			gce->ptszText      = a2tf( gce->ptszText,      gce->dwFlags );
-			gce->ptszUserInfo  = a2tf( gce->ptszUserInfo,  gce->dwFlags );
+			gce->pDest->ptszID = a2tf( gce->pDest->ptszID, gce->dwFlags, 0 );
+			gce->ptszUID       = a2tf( gce->ptszUID,       gce->dwFlags, 0 );
+			gce->ptszNick      = a2tf( gce->ptszNick,      gce->dwFlags, 0 );
+			gce->ptszStatus    = a2tf( gce->ptszStatus,    gce->dwFlags, 0 );
+            if(gcd->iType != GC_EVENT_MESSAGE && gcd->iType != GC_EVENT_ACTION)
+                gce->ptszText      = a2tf( gce->ptszText,      gce->dwFlags, 0 );
+			gce->ptszUserInfo  = a2tf( gce->ptszUserInfo,  gce->dwFlags, 0 );
 		}
 	#endif
 
@@ -696,7 +698,7 @@ int Service_AddEvent(WPARAM wParam, LPARAM lParam)
 
 	case GC_EVENT_TOPIC:
 	{
-		SESSION_INFO* si = SM_FindSession(gce->pDest->ptszID, gce->pDest->pszModule);
+		si = SM_FindSession(gce->pDest->ptszID, gce->pDest->pszModule);
 		if ( si ) {
 			if ( gce->pszText ) {
 				replaceStr( &si->ptszTopic, gce->ptszText);
@@ -717,15 +719,24 @@ int Service_AddEvent(WPARAM wParam, LPARAM lParam)
 		break;
 
 	case GC_EVENT_MESSAGE:
-	case GC_EVENT_ACTION:
+    case GC_EVENT_ACTION:
+    {
+        si = SM_FindSession( gce->pDest->ptszID, gce->pDest->pszModule );
+#if defined(_UNICODE)
+        if(!(gce->dwFlags & GC_UNICODE)) {
+            if(si)
+                gce->ptszText = a2tf( gce->ptszText, gce->dwFlags, DBGetContactSettingDword(si->hContact, SRMSGMOD_T, "ANSIcodepage", 0) );
+            else
+                gce->ptszText = a2tf( gce->ptszText, gce->dwFlags, 0 );
+        }
+#endif
 		if ( !gce->bIsMe && gce->pDest->pszID && gce->pszText ) {
-			SESSION_INFO* si = SM_FindSession( gce->pDest->ptszID, gce->pDest->pszModule );
 			if ( si )
 				if ( IsHighlighted( si, gce->ptszText ))
 					bIsHighlighted = TRUE;
 		}
 		break;
-
+    }
 	case GC_EVENT_NICK:
 		SM_ChangeNick( gce->pDest->ptszID, gce->pDest->pszModule, gce);
 		break;
@@ -767,7 +778,8 @@ int Service_AddEvent(WPARAM wParam, LPARAM lParam)
 
 	// add to log
 	if ( pWnd ) {
-		SESSION_INFO* si = SM_FindSession(pWnd, pMod);
+        if(si == NULL)
+            si = SM_FindSession(pWnd, pMod);
 
 		// fix for IRC's old stuyle mode notifications. Should not affect any other protocol
 		if ((gce->pDest->iType == GC_EVENT_ADDSTATUS || gce->pDest->iType == GC_EVENT_REMOVESTATUS) && !(gce->dwFlags & GCEF_ADDTOLOG)) {
@@ -779,7 +791,6 @@ int Service_AddEvent(WPARAM wParam, LPARAM lParam)
 			iRetVal = 0;
 			goto LBL_Exit;
 		}
-
 		if (si && (si->bInitDone || gce->pDest->iType == GC_EVENT_TOPIC || (gce->pDest->iType == GC_EVENT_JOIN && gce->bIsMe))) {
 			if (SM_AddEvent(pWnd, pMod, gce, bIsHighlighted) && si->hWnd) {
 				g_TabSession.pLog = si->pLog;

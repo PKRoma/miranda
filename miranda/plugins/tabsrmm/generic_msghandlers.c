@@ -740,7 +740,6 @@ void SI_CheckStatusIconClick(struct MessageWindowData *dat, HWND hwndFrom, POINT
 	StatusIconClickData sicd;
 	struct StatusIconListNode *current = status_icon_list;
 	unsigned int iconNum = (pt.x - (r.left + (dat->bType != SESSIONTYPE_IM ? myGlobals.m_smcxicon + gap : 0))) / (myGlobals.m_smcxicon + gap);
-	unsigned int i;
 
     if((int)iconNum == status_icon_list_size && code != NM_RCLICK) {
         if(GetKeyState(VK_SHIFT) & 0x8000) {

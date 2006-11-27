@@ -162,7 +162,7 @@ static void ShowPopupMenu(HWND hwndDlg, struct MessageWindowData *dat, int idFro
     if(idFrom == IDC_LOG)  {
         int i;
         InsertMenuA(hSubMenu, 5, MF_BYPOSITION | MF_SEPARATOR, 0, 0);
-        InsertMenu(hSubMenu, 6, MF_BYPOSITION | MF_POPUP, (UINT_PTR) myGlobals.g_hMenuEncoding, TranslateT("ANSI Encoding"));
+        InsertMenu(hSubMenu, 6, MF_BYPOSITION | MF_POPUP, (UINT_PTR) myGlobals.g_hMenuEncoding, TranslateT("Character Encoding"));
         for(i = 0; i < GetMenuItemCount(myGlobals.g_hMenuEncoding); i++)
             CheckMenuItem(myGlobals.g_hMenuEncoding, i, MF_BYPOSITION | MF_UNCHECKED);
         if(dat->codePage == CP_ACP)
@@ -4199,8 +4199,10 @@ quote_from_last:
                         
                         GetWindowRect(GetDlgItem(hwndDlg, IDC_PROTOCOL), &rc);
 
-                        EnableMenuItem(submenu, 0, MF_BYPOSITION | (ServiceExists(MS_IEVIEW_WINDOW) ? MF_ENABLED : MF_GRAYED));
-                        
+                        EnableMenuItem(submenu, 0, MF_BYPOSITION | ((ServiceExists(MS_IEVIEW_WINDOW) || ServiceExists(MS_HPP_EG_EVENT)) ? MF_ENABLED : MF_GRAYED));
+                        EnableMenuItem(submenu, ID_IEVIEWSETTING_FORCEIEVIEW, MF_BYCOMMAND | (ServiceExists(MS_IEVIEW_WINDOW) ? MF_ENABLED : MF_GRAYED));
+                        EnableMenuItem(submenu, ID_MESSAGELOGDISPLAY_USEHISTORY, MF_BYCOMMAND | (ServiceExists(MS_HPP_EG_EVENT) ? MF_ENABLED : MF_GRAYED));
+
                         CheckMenuItem(submenu, ID_IEVIEWSETTING_USEGLOBAL, MF_BYCOMMAND | ((DBGetContactSettingByte(dat->hContact, SRMSGMOD_T, "ieview", 0) == 0 && DBGetContactSettingByte(dat->hContact, SRMSGMOD_T, "hpplog", 0) == 0) ? MF_CHECKED : MF_UNCHECKED));
                         CheckMenuItem(submenu, ID_IEVIEWSETTING_FORCEIEVIEW, MF_BYCOMMAND | (DBGetContactSettingByte(dat->hContact, SRMSGMOD_T, "ieview", 0) == 1 ? MF_CHECKED : MF_UNCHECKED));
                         CheckMenuItem(submenu, ID_MESSAGELOGDISPLAY_USEHISTORY, MF_BYCOMMAND | (DBGetContactSettingByte(dat->hContact, SRMSGMOD_T, "hpplog", 0) == 1 ? MF_CHECKED : MF_UNCHECKED));
