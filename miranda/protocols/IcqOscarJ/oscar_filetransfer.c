@@ -787,7 +787,7 @@ DWORD oftFileAllow(HANDLE hContact, WPARAM wParam, LPARAM lParam)
 {
   oscar_filetransfer* ft = (oscar_filetransfer*)wParam;
 
-  ft->szPath = null_strdup((char *)lParam);
+  ft->szPath = ansi_to_utf8((char *)lParam);
 
   OpenOscarConnection(hContact, ft, ft->bUseProxy ? OCT_PROXY_RECV: OCT_NORMAL);
 
@@ -939,7 +939,7 @@ static void oft_buildProtoFileTransferStatus(oscar_filetransfer* ft, PROTOFILETR
   pfts->currentFileNumber = ft->iCurrentFile;
   pfts->totalBytes = ft->dwTotalSize;
   pfts->totalProgress = ft->dwBytesDone;
-  pfts->workingDir = ft->szPath;
+  utf8_decode(ft->szPath, &pfts->workingDir);
   utf8_decode(ft->szThisFile, &pfts->currentFile); 
   pfts->currentFileSize = ft->dwThisFileSize;
   pfts->currentFileTime = ft->dwThisFileDate;
@@ -1498,6 +1498,7 @@ static int oft_handleFileData(oscar_connection *oc, unsigned char *buf, int len)
     oft_buildProtoFileTransferStatus(ft, &pfts);
     ICQBroadcastAck(ft->hContact, ACKTYPE_FILE, ACKRESULT_DATA, ft, (LPARAM)&pfts);
     SAFE_FREE(&pfts.currentFile);
+    SAFE_FREE(&pfts.workingDir);
     oc->ft->dwLastNotify = GetTickCount();
   }
   if (ft->dwFileBytesDone == ft->dwThisFileSize)
@@ -1716,6 +1717,7 @@ static void handleOFT2FramePacket(oscar_connection *oc, WORD datatype, BYTE *pBu
           break; /* UI supports resume: it will call PS_FILERESUME */
         }
         SAFE_FREE(&pfts.currentFile);
+        SAFE_FREE(&pfts.workingDir);
 
         ft->fileId = OpenFileUtf(ft->szThisFile, _O_BINARY | _O_CREAT | _O_TRUNC | _O_WRONLY, _S_IREAD | _S_IWRITE);
         if (ft->fileId == -1)
@@ -1941,6 +1943,7 @@ static void oft_sendFileData(oscar_connection *oc)
     oft_buildProtoFileTransferStatus(ft, &pfts);
     ICQBroadcastAck(ft->hContact, ACKTYPE_FILE, ACKRESULT_DATA, ft, (LPARAM)&pfts);
     SAFE_FREE(&pfts.currentFile);
+    SAFE_FREE(&pfts.workingDir);
     ft->dwLastNotify = GetTickCount();
   }
 }
