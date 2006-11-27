@@ -787,6 +787,7 @@ void StreamInEvents(HWND hwndDlg, HANDLE hDbEventFirst, int count, int fAppend)
 #else
         gtxl.codepage = CP_ACP;
 #endif
+        gtxl.codepage = 1200;
         gtxl.flags = GTL_DEFAULT | GTL_PRECISE | GTL_NUMCHARS;
         fi.chrg.cpMin = SendDlgItemMessage(hwndDlg, IDC_LOG, EM_GETTEXTLENGTHEX, (WPARAM)&gtxl, 0);
         sel.cpMin = sel.cpMax = GetWindowTextLength(GetDlgItem(hwndDlg, IDC_LOG));
@@ -821,7 +822,7 @@ void StreamInEvents(HWND hwndDlg, HANDLE hDbEventFirst, int count, int fAppend)
 		} else {
 			smre.rangeToReplace = NULL;
 		}
-		smre.rangeToReplace = NULL;
+		//smre.rangeToReplace = NULL;
 		smre.disableRedraw = TRUE;
 		smre.hContact = dat->hContact;
 		smre.flags = 0;
