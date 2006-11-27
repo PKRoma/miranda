@@ -675,7 +675,7 @@ static __inline int Netlib_Logf(HANDLE hUser,const char *fmt,...)
 // Returns HANDLE = NULL on error or non-null value on success
 #define MS_NETLIB_INITSECURITYPROVIDER "Netlib/InitSecurityProvider"
 
-__inline HANDLE Netlib_InitSecurityProvider( char* szProviderName )
+static __inline HANDLE Netlib_InitSecurityProvider( char* szProviderName )
 {
 	return (HANDLE)CallService( MS_NETLIB_INITSECURITYPROVIDER, 0, (LPARAM)szProviderName );
 }
@@ -684,7 +684,7 @@ __inline HANDLE Netlib_InitSecurityProvider( char* szProviderName )
 // Right now only NTLM is supported
 #define MS_NETLIB_DESTROYSECURITYPROVIDER "Netlib/DestroySecurityProvider"
 
-__inline void Netlib_DestroySecurityProvider( char* szProviderName, HANDLE hProvider )
+static __inline void Netlib_DestroySecurityProvider( char* szProviderName, HANDLE hProvider )
 {
 	CallService( MS_NETLIB_DESTROYSECURITYPROVIDER, (WPARAM)szProviderName, (LPARAM)hProvider );
 }
@@ -692,7 +692,7 @@ __inline void Netlib_DestroySecurityProvider( char* szProviderName, HANDLE hProv
 // Returns the NTLM response string. The result value should be freed using mir_free
 #define MS_NETLIB_NTLMCREATERESPONSE "Netlib/NtlmCreateResponse"
 
-__inline char* Netlib_NtlmCreateResponse( HANDLE hProvider, char* szChallenge )
+static __inline char* Netlib_NtlmCreateResponse( HANDLE hProvider, char* szChallenge )
 {
 	return (char*)CallService( MS_NETLIB_NTLMCREATERESPONSE, (WPARAM)hProvider, (LPARAM)szChallenge );
 }
