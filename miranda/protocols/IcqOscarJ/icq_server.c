@@ -43,6 +43,7 @@ extern void handleXStatusCaps(HANDLE hContact, char* caps, int capsize);
 extern CRITICAL_SECTION connectionHandleMutex;
 extern WORD wLocalSequence;
 extern CRITICAL_SECTION localSeqMutex;
+extern int icqGoingOnlineStatus;
 HANDLE hServerConn;
 WORD wListenPort;
 WORD wLocalSequence;
@@ -160,7 +161,7 @@ static DWORD __stdcall icq_serverThread(serverthread_start_info* infoParam)
 
   // Time to shutdown
   icq_serverDisconnect(FALSE);
-  if (gnCurrentStatus != ID_STATUS_OFFLINE)
+  if (gnCurrentStatus != ID_STATUS_OFFLINE && icqGoingOnlineStatus != ID_STATUS_OFFLINE)
   {
     if (!info.bLoggedIn)
     {

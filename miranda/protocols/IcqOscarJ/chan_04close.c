@@ -67,6 +67,8 @@ void handleCloseChannel(unsigned char *buf, WORD datalen, serverthread_info *inf
       else
         icq_LogUsingErrorCode(LOG_ERROR, GetLastError(), "Unable to connect to ICQ communication server");
 
+      SetCurrentStatus(ID_STATUS_OFFLINE);
+
       info->isMigrating = 0;
     }
     info->newServerReady = 0;
