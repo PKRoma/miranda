@@ -699,6 +699,13 @@ static void handleServerCListAck(servlistcookie* sc, WORD wError)
       }
       break;
     }
+  case SSA_CONTACT_FIX_AUTH:
+    {
+      if (wError)
+      { // FIXME: something failed, we should handle it properly
+      }
+      break;
+    }
   case SSA_GROUP_RENAME:
     {
       if (wError)

@@ -94,6 +94,12 @@ static BOOL CALLBACK AskAuthProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM l
           szReason = GetDlgItemTextUtf(hwndDlg, IDC_EDITAUTH);
           icq_sendAuthReqServ(dwUin, szUid, szReason);
           SAFE_FREE(&szReason);
+
+          if (gbSsiEnabled && dwUin)
+          { // auth bug fix (thx Bio)
+            resetServContactAuthState(hContact, dwUin);
+          }
+
           EndDialog(hwndDlg, 0);
 
           return TRUE;

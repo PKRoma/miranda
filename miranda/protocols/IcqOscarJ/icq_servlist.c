@@ -649,6 +649,9 @@ DWORD icq_sendServerContact(HANDLE hContact, DWORD dwCookie, WORD wAction, WORD 
   if (bAuth) // icq5 gives this as last TLV
     packDWord(&pBuffer, 0x00660000);  // "Still waiting for auth" TLV
 
+  SAFE_FREE(&szNick);
+  SAFE_FREE(&szNote);
+
   return icq_sendServerItem(dwCookie, wAction, wGroupId, wContactId, strUID(dwUin, szUid), pBuffer.pData, wTLVlen, SSI_ITEM_BUDDY);
 }
 
@@ -1714,6 +1717,37 @@ void renameServGroup(WORD wGroupId, char* szGroupName)
     SAFE_FREE(&groupData);
   }
 }
+
+
+
+void resetServContactAuthState(HANDLE hContact, DWORD dwUin)
+{
+  WORD wContactId = ICQGetContactSettingWord(hContact, "ServerId", 0);
+  WORD wGroupId = ICQGetContactSettingWord(hContact, "SrvGroupId", 0);
+
+  if (wContactId && wGroupId)
+  {
+    DWORD dwCookie;
+    servlistcookie* ack;
+
+    if (ack = (servlistcookie*)SAFE_MALLOC(sizeof(servlistcookie)))
+    { // we have cookie good, go on
+      ack->hContact = hContact;
+      ack->wContactId = wContactId;
+      ack->wGroupId = wGroupId;
+      ack->dwAction = SSA_CONTACT_FIX_AUTH;
+      ack->dwUin = dwUin;
+      dwCookie = AllocateCookie(CKT_SERVERLIST, 0, dwUin, ack);
+
+      sendAddStart(0);
+      icq_sendServerContact(hContact, dwCookie, ICQ_LISTS_REMOVEFROMLIST, wGroupId, wContactId);
+      ICQDeleteContactSetting(hContact, "ServerData");
+      icq_sendServerContact(hContact, dwCookie, ICQ_LISTS_ADDTOLIST, wGroupId, wContactId);
+      sendAddEnd();
+    }
+  }
+}
+
 
 
 /*****************************************
