@@ -197,4 +197,7 @@ char* __stdcall Utf8EncodeUcs2( const wchar_t* src );
 char* __stdcall Utf8EncodeANSI(const char *msg);
 int YahooGotoMailboxCommand( WPARAM wParam, LPARAM lParam );
 
+void YahooMenuInit( void );
+void YahooIconsInit( void );
+HICON LoadIconEx( const char* name );
 #endif

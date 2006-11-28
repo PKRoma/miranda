@@ -102,12 +102,12 @@ BOOL WINAPI DllMain(HINSTANCE hinst,DWORD fdwReason,LPVOID lpvReserved)
 __declspec(dllexport) PLUGININFO* MirandaPluginInfo(DWORD mirandaVersion)
 {
 	//
-    // We require Miranda 0.6
+    // We require Miranda 0.7.0.3
 	// This requires the latest trunk... experimental API used here
 	//
-    if (mirandaVersion < PLUGIN_MAKE_VERSION(0, 6, 0, 0)) {
+    if (mirandaVersion < PLUGIN_MAKE_VERSION(0, 7, 0, 3)) {
 		MessageBox( NULL, 
-				"Yahoo plugin cannot be loaded. It requires Miranda IM 0.6 or later.", 
+				"Yahoo plugin cannot be loaded. It requires Miranda IM 0.7.0.3 or later.", 
 				"Yahoo", 
 				MB_OK|MB_ICONWARNING|MB_SETFOREGROUND|MB_TOPMOST );
 
@@ -169,7 +169,10 @@ static int OnModulesLoaded( WPARAM wParam, LPARAM lParam )
 				MB_OK );
 		return 1;
 	}
-
+	
+	YahooIconsInit();
+	YahooMenuInit();
+	
 	CharUpper( lstrcpy( tModule, yahooProtocolName ));
 	wsprintf(tModuleDescr, "%s plugin connections", yahooProtocolName);
 	

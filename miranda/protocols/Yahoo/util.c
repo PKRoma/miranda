@@ -172,14 +172,14 @@ int __stdcall	YAHOO_ShowPopup( const char* nickname, const char* msg, const char
 
 	if (szURL != NULL) {
 		if (lstrcmpi(szURL, "http://mail.yahoo.com") == 0) {
-			ppd.lchIcon = LoadIcon( hinstance, MAKEINTRESOURCE( IDI_INBOX ));
+			ppd.lchIcon = LoadIconEx( "mail" );
 		} else {
-			ppd.lchIcon = LoadIcon( hinstance, MAKEINTRESOURCE( IDI_CALENDAR ));
+			ppd.lchIcon = LoadIconEx( "calendar" );
 		}
 		
 		ppd.PluginData =  (void *)strdup( szURL );
 	} else {
-		ppd.lchIcon = LoadIcon( hinstance, MAKEINTRESOURCE( IDI_MAIN ));
+		ppd.lchIcon = LoadIconEx( "yahoo" );
 	}
 	YAHOO_DebugLog("[MS_POPUP_ADDPOPUPEX] Generating a popup for %s", nickname);
 	YAHOO_CallService( MS_POPUP_ADDPOPUPEX, (WPARAM)&ppd, 0 );

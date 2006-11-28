@@ -102,6 +102,7 @@ extraResourceOptions=
 19=file_transfer.c
 20=im.c
 21=search.c
+22=icolib.c
 [Header]
 1=http_gateway.h
 2=resource.h
@@ -136,13 +137,6 @@ extraResourceOptions=
 6=libyahoo2\Docs\TODO
 7=libyahoo2\Docs\ymsg-9.txt
 [History]
-main.c,6011
+main.c,631
 util.c,765
-services.c,32594
-yahoo.h,3193
-libyahoo2\libyahoo2.c,123273
-yahoo.c,32156
-server.c,715
-file_transfer.h,485
-file_transfer.c,10423
-libyahoo2\yahoo_httplib.c,3639
+yahoo.c,477

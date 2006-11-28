@@ -114,7 +114,6 @@ END
 
 // Icon with lowest ID value placed first to ensure application icon
 // remains consistent on all systems.
-IDI_MAIN                ICON         "icos\\yahoo.ico"
 IDI_YAHOO               ICON         "icos\\yahoo.ico"
 IDI_INBOX               ICON         "icos\\inbox.ico"
 IDI_PROFILE             ICON         "icos\\profile.ico"
