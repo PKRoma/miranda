@@ -46,7 +46,7 @@ static BOOL CALLBACK JabberChangePasswordDlgProc( HWND hwndDlg, UINT msg, WPARAM
 {
 	switch ( msg ) {
 	case WM_INITDIALOG:
-		SendMessage( hwndDlg, WM_SETICON, ICON_BIG, ( LPARAM )LoadIconEx( "passw" ));
+		SendMessage( hwndDlg, WM_SETICON, ICON_BIG, ( LPARAM )LoadIconEx( "key" ));
 		TranslateDialogDefault( hwndDlg );
 		if ( jabberOnline && jabberThreadInfo!=NULL ) {
 			TCHAR text[128];

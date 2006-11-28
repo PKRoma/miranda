@@ -94,7 +94,7 @@ int JabberMenuPrebuildContactMenu( WPARAM wParam, LPARAM lParam )
 			JCallService( MS_CLIST_MODIFYMENUITEM, ( WPARAM )hMenuConvert, ( LPARAM )&clmi );
 	}	}
 
-	if (!jabberOnline) 
+	if (!jabberOnline)
 		return 0;
 
 	if ( bIsChatRoom ) {
@@ -313,7 +313,7 @@ void JabberMenuInit()
 	CreateServiceFunction( text, JabberMenuHandleRequestAuth );
 	mi.pszName = JTranslate( "Request authorization" );
 	mi.position = -2000001000;
-	mi.hIcon = LoadIconEx( "reqauth" );
+	mi.hIcon = LoadIconEx( "Request" );
 	mi.pszService = text;
 	mi.pszContactOwner = jabberProtoName;
 	hMenuRequestAuth = ( HANDLE ) JCallService( MS_CLIST_ADDCONTACTMENUITEM, 0, ( LPARAM )&mi );
@@ -323,7 +323,7 @@ void JabberMenuInit()
 	CreateServiceFunction( text, JabberMenuHandleGrantAuth );
 	mi.pszName = JTranslate( "Grant authorization" );
 	mi.position = -2000001001;
-	mi.hIcon = LoadIconEx( "gr_auth" );
+	mi.hIcon = LoadIconEx( "Grant" );
 	hMenuGrantAuth = ( HANDLE ) JCallService( MS_CLIST_ADDCONTACTMENUITEM, 0, ( LPARAM )&mi );
 
 	// Revoke auth
@@ -331,7 +331,7 @@ void JabberMenuInit()
 	CreateServiceFunction( text, JabberMenuRevokeAuth );
 	mi.pszName = JTranslate( "Revoke authorization" );
 	mi.position = -2000001002;
-	mi.hIcon = LoadIconEx( "revauth" );
+	mi.hIcon = LoadIconEx( "Revoke" );
 	hMenuRevokeAuth = ( HANDLE ) JCallService( MS_CLIST_ADDCONTACTMENUITEM, 0, ( LPARAM )&mi );
 
 	// "Grant authorization"
@@ -347,7 +347,7 @@ void JabberMenuInit()
 	CreateServiceFunction( text, JabberMenuConvertChatContact );
 	mi.pszName = JTranslate( "Convert" );
 	mi.position = -1999901004;
-	mi.hIcon = LoadIconEx( "c2room" );
+	mi.hIcon = LoadIconEx( "convert" );
 	hMenuConvert = ( HANDLE ) JCallService( MS_CLIST_ADDCONTACTMENUITEM, 0, ( LPARAM )&mi );
 
 	// "Add to roster"
@@ -355,7 +355,7 @@ void JabberMenuInit()
 	CreateServiceFunction( text, JabberMenuRosterAdd );
 	mi.pszName = JTranslate( "Add to roster" );
 	mi.position = -1999901005;
-	mi.hIcon = LoadIconEx( "add" );
+	mi.hIcon = LoadIconEx( "addroster" );
 	hMenuRosterAdd = ( HANDLE ) JCallService( MS_CLIST_ADDCONTACTMENUITEM, 0, ( LPARAM )&mi );
 
 	// Login/logout
@@ -363,7 +363,7 @@ void JabberMenuInit()
 	CreateServiceFunction( text, JabberMenuTransportLogin );
 	mi.pszName = JTranslate( "Login/logout" );
 	mi.position = -1999901006;
-	mi.hIcon = LoadIconEx( "login" );
+	mi.hIcon = LoadIconEx( "trlogonoff" );
 	hMenuLogin = ( HANDLE ) JCallService( MS_CLIST_ADDCONTACTMENUITEM, 0, ( LPARAM )&mi );
 
 	// Retrieve nicks
@@ -371,7 +371,7 @@ void JabberMenuInit()
 	CreateServiceFunction( text, JabberMenuTransportResolve );
 	mi.pszName = JTranslate( "Resolve nicks" );
 	mi.position = -1999901007;
-	mi.hIcon = LoadIconEx( "resolve" );
+	mi.hIcon = LoadIconEx( "trresolve" );
 	hMenuRefresh = ( HANDLE ) JCallService( MS_CLIST_ADDCONTACTMENUITEM, 0, ( LPARAM )&mi );
 
 	// Add Jabber menu to the main menu
@@ -389,7 +389,7 @@ void JabberMenuInit()
 		mi.popupPosition = 500090000;
 		mi.pszName = JTranslate( "Agents..." );
 		mi.position = 2000050000;
-		mi.hIcon = LoadIconEx( "agents" );
+		mi.hIcon = LoadIconEx( "Agents" );
 		mi.pszService = text;
 		hMenuAgent = ( HANDLE ) JCallService( MS_CLIST_ADDMAINMENUITEM, 0, ( LPARAM )&mi );
 		JCallService( MS_CLIST_MODIFYMENUITEM, ( WPARAM ) hMenuAgent, ( LPARAM )&clmi );
@@ -399,7 +399,7 @@ void JabberMenuInit()
 		CreateServiceFunction( text, JabberMenuHandleChangePassword );
 		mi.pszName = JTranslate( "Change Password..." );
 		mi.position = 2000050001;
-		mi.hIcon = LoadIconEx( "passw" );
+		mi.hIcon = LoadIconEx( "key" );
 		hMenuChangePassword = ( HANDLE ) JCallService( MS_CLIST_ADDMAINMENUITEM, 0, ( LPARAM )&mi );
 		JCallService( MS_CLIST_MODIFYMENUITEM, ( WPARAM ) hMenuChangePassword, ( LPARAM )&clmi );
 
@@ -408,7 +408,7 @@ void JabberMenuInit()
 		CreateServiceFunction( text, JabberMenuHandleGroupchat );
 		mi.pszName = JTranslate( "Multi-User Conference..." );
 		mi.position = 2000050002;
-		mi.hIcon = LoadIconEx( "gchat" );
+		mi.hIcon = LoadIconEx( "group" );
 		hMenuGroupchat = ( HANDLE ) JCallService( MS_CLIST_ADDMAINMENUITEM, 0, ( LPARAM )&mi );
 		JCallService( MS_CLIST_MODIFYMENUITEM, ( WPARAM ) hMenuGroupchat, ( LPARAM )&clmi );
 

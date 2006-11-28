@@ -47,7 +47,7 @@ int JabberMenuHandleAgents( WPARAM wParam, LPARAM lParam )
 
 static void JabberRegisterAgent( HWND hwndDlg, TCHAR* jid )
 {
-	CreateDialogParam( hInst, MAKEINTRESOURCE( IDD_FORM ), 
+	CreateDialogParam( hInst, MAKEINTRESOURCE( IDD_FORM ),
 		hwndDlg, JabberAgentRegInputDlgProc, ( LPARAM )jid );
 }
 
@@ -65,7 +65,7 @@ static BOOL CALLBACK JabberAgentsDlgProc( HWND hwndDlg, UINT msg, WPARAM wParam,
 	switch ( msg ) {
 	case WM_INITDIALOG:
 		hwndJabberAgents = hwndDlg;
-		SendMessage( hwndDlg, WM_SETICON, ICON_BIG, ( LPARAM )LoadIconEx( "agents" ));
+		SendMessage( hwndDlg, WM_SETICON, ICON_BIG, ( LPARAM )LoadIconEx( "Agents" ));
 		TranslateDialogDefault( hwndDlg );
 		// Add columns to the top list
 		lv = GetDlgItem( hwndDlg, IDC_AGENT_LIST );
@@ -501,7 +501,7 @@ static BOOL CALLBACK JabberAgentManualRegDlgProc( HWND hwndDlg, UINT msg, WPARAM
 	case WM_INITDIALOG:
 		EnableWindow( GetParent( hwndDlg ), FALSE );
 		dontEnableParent = FALSE;
-		SendMessage( hwndDlg, WM_SETICON, ICON_BIG, ( LPARAM )LoadIconEx( "agents" ));
+		SendMessage( hwndDlg, WM_SETICON, ICON_BIG, ( LPARAM )LoadIconEx( "Agents" ));
 		TranslateDialogDefault( hwndDlg );
 		return TRUE;
 	case WM_COMMAND:
