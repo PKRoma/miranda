@@ -114,7 +114,7 @@ static BOOL CALLBACK LogOptionsDlgProc(HWND hwndDlg,UINT message,WPARAM wParam,L
 			if(HIWORD(wParam)!=EN_CHANGE) break;
 			if((HWND)lParam==GetFocus()) {
 				CheckDlgButton(hwndDlg,IDC_TOFILE,BST_CHECKED);
-				logOptions.toFile=0;
+				logOptions.toFile = 1;
 			}
 			EnterCriticalSection(&logOptions.cs);
 			if(logOptions.szFile) mir_free(logOptions.szFile);
