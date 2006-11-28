@@ -58,6 +58,7 @@ _______
 Bugfixes:
   Fixed peer-to-peer session cookie checking (was working only due to coincidence)
   Fixed SMS message handling, made message parsing more consistent
+  Applied fix for re-requesting authorization (thx Bio)
 
 New Features:
   Oscar File Transfers - like icq5 (including transfer thru server)
