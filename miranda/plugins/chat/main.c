@@ -192,26 +192,26 @@ void UpgradeCheck(void)
 
 void LoadLogIcons(void)
 {
-	hIcons[ICON_ACTION]     = LoadIconEx("log_action", 10, 10);
-	hIcons[ICON_ADDSTATUS]  = LoadIconEx("log_addstatus", 10, 10);
-	hIcons[ICON_HIGHLIGHT]  = LoadIconEx("log_highlight", 10, 10);
-	hIcons[ICON_INFO]       = LoadIconEx("log_info", 10, 10);
-	hIcons[ICON_JOIN]       = LoadIconEx("log_join", 10, 10);
-	hIcons[ICON_KICK]       = LoadIconEx("log_kick", 10, 10);
-	hIcons[ICON_MESSAGE]    = LoadIconEx("log_message_in", 10, 10);
-	hIcons[ICON_MESSAGEOUT] = LoadIconEx("log_message_out", 10, 10);
-	hIcons[ICON_NICK]       = LoadIconEx("log_nick", 10, 10);
-	hIcons[ICON_NOTICE]     = LoadIconEx("log_notice", 10, 10);
-	hIcons[ICON_PART]       = LoadIconEx("log_part", 10, 10);
-	hIcons[ICON_QUIT]       = LoadIconEx("log_quit", 10, 10);
-	hIcons[ICON_REMSTATUS]  = LoadIconEx("log_removestatus", 10, 10);
-	hIcons[ICON_TOPIC]      = LoadIconEx("log_topic", 10, 10);
-	hIcons[ICON_STATUS1]    = LoadIconEx("status1", 10, 10);
-	hIcons[ICON_STATUS2]    = LoadIconEx("status2", 10, 10);
-	hIcons[ICON_STATUS3]    = LoadIconEx("status3", 10, 10);
-	hIcons[ICON_STATUS4]    = LoadIconEx("status4", 10, 10);
-	hIcons[ICON_STATUS0]    = LoadIconEx("status0", 10, 10);
-	hIcons[ICON_STATUS5]    = LoadIconEx("status5", 10, 10);
+	hIcons[ICON_ACTION]     = LoadIconEx( "log_action" );
+	hIcons[ICON_ADDSTATUS]  = LoadIconEx( "log_addstatus" );
+	hIcons[ICON_HIGHLIGHT]  = LoadIconEx( "log_highlight" );
+	hIcons[ICON_INFO]       = LoadIconEx( "log_info" );
+	hIcons[ICON_JOIN]       = LoadIconEx( "log_join" );
+	hIcons[ICON_KICK]       = LoadIconEx( "log_kick" );
+	hIcons[ICON_MESSAGE]    = LoadIconEx( "log_message_in" );
+	hIcons[ICON_MESSAGEOUT] = LoadIconEx( "log_message_out" );
+	hIcons[ICON_NICK]       = LoadIconEx( "log_nick" );
+	hIcons[ICON_NOTICE]     = LoadIconEx( "log_notice" );
+	hIcons[ICON_PART]       = LoadIconEx( "log_part" );
+	hIcons[ICON_QUIT]       = LoadIconEx( "log_quit" );
+	hIcons[ICON_REMSTATUS]  = LoadIconEx( "log_removestatus" );
+	hIcons[ICON_TOPIC]      = LoadIconEx( "log_topic" );
+	hIcons[ICON_STATUS1]    = LoadIconEx( "status1" );
+	hIcons[ICON_STATUS2]    = LoadIconEx( "status2" );
+	hIcons[ICON_STATUS3]    = LoadIconEx( "status3" );
+	hIcons[ICON_STATUS4]    = LoadIconEx( "status4" );
+	hIcons[ICON_STATUS0]    = LoadIconEx( "status0" );
+	hIcons[ICON_STATUS5]    = LoadIconEx( "status5" );
 }
 
 void LoadIcons(void)
@@ -227,7 +227,7 @@ void LoadIcons(void)
 	hImageList = ImageList_Create(GetSystemMetrics(SM_CXSMICON),GetSystemMetrics(SM_CYSMICON),IsWinVerXPPlus()? ILC_COLOR32 | ILC_MASK : ILC_COLOR16 | ILC_MASK,0,3);
 	hIconsList = ImageList_Create(GetSystemMetrics(SM_CXSMICON),GetSystemMetrics(SM_CYSMICON),IsWinVerXPPlus()? ILC_COLOR32 | ILC_MASK : ILC_COLOR16 | ILC_MASK,0,100);
 	ImageList_AddIcon(hIconsList,LoadSkinnedIcon( SKINICON_EVENT_MESSAGE));
-	ImageList_AddIcon(hIconsList,LoadIconEx("overlay", 0, 0));
+	ImageList_AddIcon(hIconsList,LoadIconEx( "overlay" ));
 	ImageList_SetOverlayImage(hIconsList, 1, 1);
 	ImageList_AddIcon(hImageList,LoadImage(g_hInst,MAKEINTRESOURCE(IDI_BLANK),IMAGE_ICON,0,0,0));
 	ImageList_AddIcon(hImageList,LoadImage(g_hInst,MAKEINTRESOURCE(IDI_BLANK),IMAGE_ICON,0,0,0));
