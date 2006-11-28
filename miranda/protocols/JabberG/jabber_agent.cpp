@@ -65,7 +65,7 @@ static BOOL CALLBACK JabberAgentsDlgProc( HWND hwndDlg, UINT msg, WPARAM wParam,
 	switch ( msg ) {
 	case WM_INITDIALOG:
 		hwndJabberAgents = hwndDlg;
-		SendMessage( hwndDlg, WM_SETICON, ICON_BIG, ( LPARAM )LoadIcon( hInst, MAKEINTRESOURCE( IDI_AGENTS )) );
+		SendMessage( hwndDlg, WM_SETICON, ICON_BIG, ( LPARAM )LoadIconEx( "agents" ));
 		TranslateDialogDefault( hwndDlg );
 		// Add columns to the top list
 		lv = GetDlgItem( hwndDlg, IDC_AGENT_LIST );
@@ -501,7 +501,7 @@ static BOOL CALLBACK JabberAgentManualRegDlgProc( HWND hwndDlg, UINT msg, WPARAM
 	case WM_INITDIALOG:
 		EnableWindow( GetParent( hwndDlg ), FALSE );
 		dontEnableParent = FALSE;
-		SendMessage( hwndDlg, WM_SETICON, ICON_BIG, ( LPARAM )LoadIcon( hInst, MAKEINTRESOURCE( IDI_AGENTS )) );
+		SendMessage( hwndDlg, WM_SETICON, ICON_BIG, ( LPARAM )LoadIconEx( "agents" ));
 		TranslateDialogDefault( hwndDlg );
 		return TRUE;
 	case WM_COMMAND:

@@ -998,7 +998,7 @@ static BOOL CALLBACK JabberVcardDlgProc( HWND hwndDlg, UINT msg, WPARAM wParam, 
 	switch ( msg ) {
 	case WM_INITDIALOG:
 	{
-		SendMessage( hwndDlg, WM_SETICON, ICON_BIG, ( LPARAM )LoadIcon( hInst, MAKEINTRESOURCE( IDI_VCARD )) );
+		SendMessage( hwndDlg, WM_SETICON, ICON_BIG, ( LPARAM )LoadIconEx( "vcard" ));
 		TranslateDialogDefault( hwndDlg );
 		EnableWindow( GetDlgItem( hwndDlg, IDC_UPDATE ), jabberOnline );
 

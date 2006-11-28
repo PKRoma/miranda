@@ -31,7 +31,9 @@ Last change by : $Author: rainwater $
 #include "jabber_list.h"
 
 #include <commctrl.h>
-#include "sdk/m_icolib.h"
+#include "m_icolib.h"
+
+#include "resource.h"
 
 #define IDI_ONLINE                      104
 #define IDI_OFFLINE                     105
@@ -62,6 +64,58 @@ static TransportProtoTable[] =
 
 static int skinIconStatusToResourceId[] = {IDI_OFFLINE,IDI_ONLINE,IDI_AWAY,IDI_DND,IDI_NA,IDI_NA,/*IDI_OCCUPIED,*/IDI_FREE4CHAT,IDI_INVISIBLE,IDI_ONTHEPHONE,IDI_OUTTOLUNCH};
 static int skinStatusToJabberStatus[] = {0,1,2,3,4,4,6,7,2,2};
+
+/////////////////////////////////////////////////////////////////////////////////////////
+// Icons init
+
+struct
+{
+	char* szDescr;
+	char* szName;
+	int   defIconID;
+}
+static iconList[] = 
+{
+	{	"Agents list",           "agents",   IDI_AGENTS     },
+	{	"Change password",       "passw",    IDI_KEYS       },
+	{	"Multi-User Conference", "gchat",    IDI_GROUP      },
+	{	"Personal vCard",        "vcard",    IDI_VCARD      },
+	{	"Request authorization", "reqauth",  IDI_REQUEST    },
+	{	"Grant authorization",   "gr_auth",  IDI_GRANT      },
+	{	"Revoke authorization",  "revauth",  IDI_AUTHREVOKE },
+	{	"Convert to room",       "c2room",   IDI_USER2ROOM  },
+	{	"Add to roster",         "add",      IDI_ADDROSTER  },
+	{	"Login/logout",          "login",    IDI_LOGIN      },
+	{	"Resolve nicks",         "resolve",  IDI_REFRESH    }
+};
+
+void JabberIconsInit( void )
+{
+	int i;
+	SKINICONDESC sid = {0};
+	char szFile[MAX_PATH];
+	GetModuleFileNameA(hInst, szFile, MAX_PATH);
+
+	sid.cbSize = sizeof(SKINICONDESC);
+	sid.pszDefaultFile = szFile;
+	sid.cx = sid.cy = 16;
+	sid.pszSection = Translate( jabberProtoName );
+
+	for ( i = 0; i < SIZEOF(iconList); i++ ) {
+		char szSettingName[100];
+		mir_snprintf( szSettingName, sizeof( szSettingName ), "%s_%s", jabberProtoName, iconList[i].szName );
+		sid.pszName = szSettingName;
+		sid.pszDescription = Translate( iconList[i].szDescr );
+		sid.iDefaultIndex = -iconList[i].defIconID;
+		CallService(MS_SKIN2_ADDICON, 0, (LPARAM)&sid);
+}	}
+
+HICON LoadIconEx( const char* name )
+{
+	char szSettingName[100];
+	mir_snprintf( szSettingName, sizeof( szSettingName ), "%s_%s", jabberProtoName, name );
+	return ( HICON )JCallService( MS_SKIN2_GETICON, 0, (LPARAM)szSettingName );
+}
 
 /////////////////////////////////////////////////////////////////////////////////////////
 // internal functions

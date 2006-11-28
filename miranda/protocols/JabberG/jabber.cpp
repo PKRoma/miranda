@@ -200,6 +200,8 @@ HANDLE hChatEvent = NULL,
 
 static int OnModulesLoaded( WPARAM wParam, LPARAM lParam )
 {
+	JabberIconsInit();
+	JabberMenuInit();
 	JabberWsInit();
 	JabberSslInit();
 	HookEvent( ME_USERINFO_INITIALISE, JabberUserInfoInit );
@@ -314,7 +316,6 @@ extern "C" int __declspec( dllexport ) Load( PLUGINLINK *link )
 	JabberIqInit();
 	JabberListInit();
 	JabberSvcInit();
-	JabberMenuInit();
 	return 0;
 }
 
