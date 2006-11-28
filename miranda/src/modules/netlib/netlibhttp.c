@@ -576,9 +576,31 @@ void NetlibHttpSetLastErrorUsingHttpResult(int result)
 	}
 }
 
+int NetlibHttpRecvChunkHeader(HANDLE hConnection, BOOL first)
+{
+	char data[32], *peol1;
+
+	int recvResult = NLRecv((struct NetlibConnection*)hConnection, data, 31, MSG_PEEK);
+	data[recvResult] = 0;
+
+	peol1 = strstr(data, "\r\n");
+	if (peol1 != NULL)
+	{
+		char *peol2 = first ? peol1 : strstr(peol1 + 2, "\r\n");
+		if (peol2 != NULL)
+		{
+			NLRecv((struct NetlibConnection*)hConnection, data, peol2 - data + 2, 0);
+			return strtol(first ? data : peol1+2, NULL, 16);
+		}
+	}
+
+	return SOCKET_ERROR;
+}
+
 NETLIBHTTPREQUEST* NetlibHttpRecv(HANDLE hConnection, DWORD hflags, DWORD dflags)
 {
-	int dataLen = -1, i;
+	int dataLen = -1, i, chunkhdr;
+	int chunked = FALSE;
 
 	NETLIBHTTPREQUEST *nlhrReply = (NETLIBHTTPREQUEST*)NetlibHttpRecvHeaders((WPARAM)hConnection, hflags);
 	if (nlhrReply==NULL) 
@@ -586,44 +608,86 @@ NETLIBHTTPREQUEST* NetlibHttpRecv(HANDLE hConnection, DWORD hflags, DWORD dflags
 
 	for(i=0;i<nlhrReply->headersCount;i++) 
 	{
-		if(!lstrcmpiA(nlhrReply->headers[i].szName,"Content-Length")) 
-		{
+		if(!lstrcmpiA(nlhrReply->headers[i].szName, "Content-Length")) 
 			dataLen = atoi(nlhrReply->headers[i].szValue);
+
+		if(!lstrcmpiA(nlhrReply->headers[i].szName, "Transfer-Encoding") && 
+			!lstrcmpiA(nlhrReply->headers[i].szValue, "chunked"))
+		{
+			chunked = TRUE;
+			chunkhdr = i;
 			break;
-		}	
+		}
 	}
 
 	if (nlhrReply->resultCode >= 200 && dataLen != 0)
 	{
-		int recvResult;
+		int recvResult, chunksz = 0;
 		int dataBufferAlloced = dataLen + 1;
 
-		nlhrReply->pData=(PBYTE)mir_realloc(nlhrReply->pData,dataBufferAlloced);
+		if (chunked)
+		{
+			chunksz = NetlibHttpRecvChunkHeader(hConnection, TRUE);
+			if (chunksz == SOCKET_ERROR) 
+			{
+				NetlibHttpFreeRequestStruct(0, (LPARAM)nlhrReply);
+				return NULL;
+			}
+			dataLen = dataBufferAlloced = chunksz;
+		}
 
-		for(;;) {
-			if(dataBufferAlloced-nlhrReply->dataLength<1024 && dataLen == -1) {
-				dataBufferAlloced+=2048;
-				nlhrReply->pData=(PBYTE)mir_realloc(nlhrReply->pData,dataBufferAlloced);
-				if(nlhrReply->pData==NULL) {
-					SetLastError(ERROR_OUTOFMEMORY);
+		nlhrReply->pData = (PBYTE)mir_realloc(nlhrReply->pData, dataBufferAlloced);
+
+		do {
+			for(;;) {
+				if(dataBufferAlloced-nlhrReply->dataLength<1024 && dataLen == -1) {
+					dataBufferAlloced+=2048;
+					nlhrReply->pData=(PBYTE)mir_realloc(nlhrReply->pData,dataBufferAlloced);
+					if(nlhrReply->pData==NULL) {
+						SetLastError(ERROR_OUTOFMEMORY);
+						NetlibHttpFreeRequestStruct(0,(LPARAM)nlhrReply);
+						return NULL;
+					}
+				}
+				recvResult=NLRecv((struct NetlibConnection*)hConnection,nlhrReply->pData+nlhrReply->dataLength,
+					dataBufferAlloced-nlhrReply->dataLength-1, dflags);
+
+				if(recvResult==0) break;
+				if(recvResult==SOCKET_ERROR) {
 					NetlibHttpFreeRequestStruct(0,(LPARAM)nlhrReply);
 					return NULL;
 				}
-			}
-			recvResult=NLRecv((struct NetlibConnection*)hConnection,nlhrReply->pData+nlhrReply->dataLength,
-				dataBufferAlloced-nlhrReply->dataLength-1, dflags);
+				nlhrReply->dataLength += recvResult;
 
-			if(recvResult==0) break;
-			if(recvResult==SOCKET_ERROR) {
-				NetlibHttpFreeRequestStruct(0,(LPARAM)nlhrReply);
-				return NULL;
+				if (dataLen > -1 && nlhrReply->dataLength >= dataLen)
+					break;
 			}
-			nlhrReply->dataLength+=recvResult;
-			
-			if (dataLen != -1 && nlhrReply->dataLength >= dataLen)
-				break;
-		}
+
+			if (chunked)
+			{
+				chunksz = NetlibHttpRecvChunkHeader(hConnection, FALSE);
+				if (chunksz == SOCKET_ERROR) 
+				{
+					NetlibHttpFreeRequestStruct(0, (LPARAM)nlhrReply);
+					return NULL;
+				}
+				dataLen += chunksz;
+				dataBufferAlloced += chunksz;
+
+				nlhrReply->pData = (PBYTE)mir_realloc(nlhrReply->pData, dataBufferAlloced);
+			}
+		} while (chunksz != 0);
+
 		nlhrReply->pData[nlhrReply->dataLength]='\0';
+	}
+
+	if (chunked)
+	{
+		mir_realloc(nlhrReply->headers[chunkhdr].szName, 16);
+		lstrcpyA(nlhrReply->headers[chunkhdr].szName, "Content-Length");
+
+		mir_realloc(nlhrReply->headers[chunkhdr].szValue, 16);
+		mir_snprintf(nlhrReply->headers[chunkhdr].szValue, 16, "%u", nlhrReply->dataLength);
 	}
 
 	return nlhrReply;

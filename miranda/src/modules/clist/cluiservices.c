@@ -182,7 +182,6 @@ int fnCluiProtocolStatusChanged(int parStatus, const char* szProto)
 		}
 	}
 	else {
-		char *modeDescr;
 		HDC hdc;
 		SIZE textSize;
 		BYTE showOpts = DBGetContactSettingByte(NULL, "CLUI", "SBarShow", 1);
@@ -206,8 +205,8 @@ int fnCluiProtocolStatusChanged(int parStatus, const char* szProto)
 				x += GetSystemMetrics(SM_CXBORDER) * 4; // The SB panel doesnt allocate enough room
 			}
 			if (showOpts & 4) {
-				modeDescr = (char *) CallService(MS_CLIST_GETSTATUSMODEDESCRIPTION, CallProtoService(proto[i]->szName, PS_GETSTATUS, 0, 0), 0);
-				GetTextExtentPoint32A(hdc, modeDescr, lstrlenA(modeDescr), &textSize);
+				TCHAR* modeDescr = ( TCHAR* )CallService(MS_CLIST_GETSTATUSMODEDESCRIPTION, CallProtoService( proto[i]->szName, PS_GETSTATUS, 0, 0), GCMDF_TCHAR );
+				GetTextExtentPoint32(hdc, modeDescr, lstrlen(modeDescr), &textSize);
 				x += textSize.cx;
 				x += GetSystemMetrics(SM_CXBORDER) * 4; // The SB panel doesnt allocate enough room
 			}
