@@ -21,8 +21,8 @@
 	".\libyahoo2\yahoo2.h"\
 	".\libyahoo2\yahoo2_callbacks.h"\
 	".\libyahoo2\yahoo2_types.h"\
+	".\libyahoo2\yahoo_auth.h"\
 	".\libyahoo2\yahoo_debug.h"\
-	".\libyahoo2\yahoo_fn.h"\
 	".\libyahoo2\yahoo_httplib.h"\
 	".\libyahoo2\yahoo_list.h"\
 	".\libyahoo2\yahoo_util.h"\
@@ -39,10 +39,6 @@
 
 .\libyahoo2\sha.c : \
 	".\libyahoo2\sha.h"\
-	
-
-.\libyahoo2\yahoo_fn.c : \
-	".\libyahoo2\yahoo_fn.h"\
 	
 
 .\libyahoo2\yahoo_httplib.c : \
@@ -83,6 +79,7 @@
 	"..\..\include\m_png.h"\
 	"..\..\include\m_protocols.h"\
 	"..\..\include\m_protomod.h"\
+	"..\..\include\m_system.h"\
 	"..\..\include\m_userinfo.h"\
 	"..\..\include\m_utils.h"\
 	"..\..\include\newpluginapi.h"\
@@ -131,6 +128,7 @@
 	"..\..\include\m_protocols.h"\
 	"..\..\include\m_protomod.h"\
 	"..\..\include\m_protosvc.h"\
+	"..\..\include\m_system.h"\
 	"..\..\include\m_utils.h"\
 	"..\..\include\newpluginapi.h"\
 	"..\..\include\statusmodes.h"\
@@ -145,6 +143,32 @@
 	".\yahoo.h"\
 	
 
+.\icolib.c : \
+	"..\..\include\m_clist.h"\
+	"..\..\include\m_database.h"\
+	"..\..\include\m_icolib.h"\
+	"..\..\include\m_langpack.h"\
+	"..\..\include\m_netlib.h"\
+	"..\..\include\m_plugins.h"\
+	"..\..\include\m_protocols.h"\
+	"..\..\include\m_protomod.h"\
+	"..\..\include\m_protosvc.h"\
+	"..\..\include\m_skin.h"\
+	"..\..\include\m_system.h"\
+	"..\..\include\m_utils.h"\
+	"..\..\include\newpluginapi.h"\
+	"..\..\include\statusmodes.h"\
+	".\libyahoo2\config.h"\
+	".\libyahoo2\yahoo2.h"\
+	".\libyahoo2\yahoo2_callbacks.h"\
+	".\libyahoo2\yahoo2_types.h"\
+	".\libyahoo2\yahoo_httplib.h"\
+	".\libyahoo2\yahoo_list.h"\
+	".\libyahoo2\yahoo_util.h"\
+	".\resource.h"\
+	".\yahoo.h"\
+	
+
 .\im.c : \
 	"..\..\include\m_clist.h"\
 	"..\..\include\m_database.h"\
@@ -154,6 +178,7 @@
 	"..\..\include\m_protocols.h"\
 	"..\..\include\m_protomod.h"\
 	"..\..\include\m_protosvc.h"\
+	"..\..\include\m_system.h"\
 	"..\..\include\m_utils.h"\
 	"..\..\include\newpluginapi.h"\
 	"..\..\include\statusmodes.h"\
@@ -223,7 +248,7 @@
 	".\options.h"\
 	".\resource.h"\
 	".\yahoo.h"\
-
+	
 
 .\search.c : \
 	"..\..\include\m_clist.h"\
@@ -235,6 +260,7 @@
 	"..\..\include\m_protocols.h"\
 	"..\..\include\m_protomod.h"\
 	"..\..\include\m_protosvc.h"\
+	"..\..\include\m_system.h"\
 	"..\..\include\m_utils.h"\
 	"..\..\include\newpluginapi.h"\
 	"..\..\include\statusmodes.h"\
@@ -363,6 +389,7 @@
 	"..\..\include\m_protomod.h"\
 	"..\..\include\m_protosvc.h"\
 	"..\..\include\m_skin.h"\
+	"..\..\include\m_system.h"\
 	"..\..\include\m_utils.h"\
 	"..\..\include\newpluginapi.h"\
 	"..\..\include\statusmodes.h"\

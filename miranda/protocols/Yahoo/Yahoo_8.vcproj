@@ -219,6 +219,10 @@
 				>
 			</File>
 			<File
+				RelativePath=".\icolib.c"
+				>
+			</File>
+			<File
 				RelativePath=".\im.c"
 				>
 			</File>
@@ -298,15 +302,15 @@
 					>
 				</File>
 				<File
+					RelativePath=".\libyahoo2\yahoo_auth.c"
+					>
+				</File>
+				<File
+					RelativePath=".\libyahoo2\yahoo_auth.h"
+					>
+				</File>
+				<File
 					RelativePath=".\libyahoo2\yahoo_debug.h"
-					>
-				</File>
-				<File
-					RelativePath=".\libyahoo2\yahoo_fn.c"
-					>
-				</File>
-				<File
-					RelativePath=".\libyahoo2\yahoo_fn.h"
 					>
 				</File>
 				<File
