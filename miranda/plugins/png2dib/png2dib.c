@@ -277,7 +277,7 @@ BOOL __declspec(dllexport) dib2mempng( BITMAPINFO* pbmi, png_byte* pDiData, BYTE
 	png_set_write_fn(png_ptr, (png_voidp)&sBuffer, png_write_data, png_flush);
 
 	png_set_IHDR(png_ptr, info_ptr, pbmi->bmiHeader.biWidth, pbmi->bmiHeader.biHeight, ciBitDepth,
-		PNG_COLOR_TYPE_RGB, PNG_INTERLACE_NONE, PNG_COMPRESSION_TYPE_BASE, PNG_FILTER_TYPE_BASE);
+		ciChannels==4?PNG_COLOR_TYPE_RGB_ALPHA:PNG_COLOR_TYPE_RGB, PNG_INTERLACE_NONE, PNG_COMPRESSION_TYPE_BASE, PNG_FILTER_TYPE_BASE);
 
 	// write the file header information
 	png_write_info(png_ptr, info_ptr);
@@ -287,7 +287,7 @@ BOOL __declspec(dllexport) dib2mempng( BITMAPINFO* pbmi, png_byte* pDiData, BYTE
 
 	// row_bytes is the width x number of channels
 	ulSrcRowBytes = ((( pbmi->bmiHeader.biWidth * ciChannels + 3 ) >> 2 ) << 2 );
-	ulDstRowBytes = ((( pbmi->bmiHeader.biWidth * 3 + 3 ) >> 2 ) << 2 );
+	ulDstRowBytes = ((( pbmi->bmiHeader.biWidth * (ciChannels==4?4:3) + 3 ) >> 2 ) << 2 );
 
 	ppbRowPointers = (png_bytepp)alloca( pbmi->bmiHeader.biHeight * sizeof(png_bytep));
 
@@ -313,6 +313,7 @@ BOOL __declspec(dllexport) dib2mempng( BITMAPINFO* pbmi, png_byte* pDiData, BYTE
 					*d++ = b;
 					*d++ = g;
 					*d++ = r;
+					if ( ciChannels == 4 ) *d++ = a;
 			}	}
 			else {
 				for ( j = 0; j < pbmi->bmiHeader.biWidth; j++ ) {
