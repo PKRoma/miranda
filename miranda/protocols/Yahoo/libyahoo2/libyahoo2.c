@@ -79,7 +79,7 @@ char *strchr (), *strrchr ();
 #include "yahoo2.h"
 #include "yahoo_httplib.h"
 #include "yahoo_util.h"
-#include "yahoo_fn.h"
+#include "yahoo_auth.h"
 
 #include "yahoo2_callbacks.h"
 #include "yahoo_debug.h"
@@ -129,107 +129,18 @@ int yahoo_set_log_level(enum yahoo_log_level level)
 }
 
 /* default values for servers */
-static char pager_host[] = "scs.msg.yahoo.com";
-static int pager_port = 5050;
-static int fallback_ports[]={23, 25, 80, 20, 119, 8001, 8002, 5050, 0};
-static char filetransfer_host[]="filetransfer.msg.yahoo.com";
-static int filetransfer_port=80;
-static char webcam_host[]="webcam.yahoo.com";
-static int webcam_port=5100;
-static char webcam_description[]="";
+static const char pager_host[] = "scs.msg.yahoo.com";
+static const int pager_port = 5050;
+static const int fallback_ports[]={23, 25, 80, 20, 119, 8001, 8002, 5050, 0};
+static const char filetransfer_host[]="filetransfer.msg.yahoo.com";
+static const int filetransfer_port=80;
+static const char webcam_host[]="webcam.yahoo.com";
+static const int webcam_port=5100;
+static const char webcam_description[]="";
 static char local_host[]="";
 static int conn_type=Y_WCM_DSL;
 
 static char profile_url[] = "http://profiles.yahoo.com/";
-
-enum yahoo_service { /* these are easier to see in hex */
-	YAHOO_SERVICE_LOGON = 1,
-	YAHOO_SERVICE_LOGOFF,
-	YAHOO_SERVICE_ISAWAY,
-	YAHOO_SERVICE_ISBACK,
-	YAHOO_SERVICE_IDLE, /* 5 (placemarker) */
-	YAHOO_SERVICE_MESSAGE,
-	YAHOO_SERVICE_IDACT,
-	YAHOO_SERVICE_IDDEACT,
-	YAHOO_SERVICE_MAILSTAT,
-	YAHOO_SERVICE_USERSTAT, /* 0xa */
-	YAHOO_SERVICE_NEWMAIL,
-	YAHOO_SERVICE_CHATINVITE,
-	YAHOO_SERVICE_CALENDAR,
-	YAHOO_SERVICE_NEWPERSONALMAIL,
-	YAHOO_SERVICE_NEWCONTACT,
-	YAHOO_SERVICE_ADDIDENT, /* 0x10 */
-	YAHOO_SERVICE_ADDIGNORE,
-	YAHOO_SERVICE_PING,
-	YAHOO_SERVICE_GOTGROUPRENAME, /* < 1, 36(old), 37(new) */
-	YAHOO_SERVICE_SYSMESSAGE = 0x14,
-	YAHOO_SERVICE_SKINNAME = 0x15,
-	YAHOO_SERVICE_PASSTHROUGH2 = 0x16,
-	YAHOO_SERVICE_CONFINVITE = 0x18,
-	YAHOO_SERVICE_CONFLOGON,
-	YAHOO_SERVICE_CONFDECLINE,
-	YAHOO_SERVICE_CONFLOGOFF,
-	YAHOO_SERVICE_CONFADDINVITE,
-	YAHOO_SERVICE_CONFMSG,
-	YAHOO_SERVICE_CHATLOGON,
-	YAHOO_SERVICE_CHATLOGOFF,
-	YAHOO_SERVICE_CHATMSG = 0x20,
-	YAHOO_SERVICE_GAMELOGON = 0x28,
-	YAHOO_SERVICE_GAMELOGOFF,
-	YAHOO_SERVICE_GAMEMSG = 0x2a,
-	YAHOO_SERVICE_FILETRANSFER = 0x46,
-	YAHOO_SERVICE_VOICECHAT = 0x4A,
-	YAHOO_SERVICE_NOTIFY,
-	YAHOO_SERVICE_VERIFY,
-	YAHOO_SERVICE_P2PFILEXFER,
-	YAHOO_SERVICE_PEERTOPEER = 0x4F,	/* Checks if P2P possible */
-	YAHOO_SERVICE_WEBCAM,
-	YAHOO_SERVICE_AUTHRESP = 0x54,
-	YAHOO_SERVICE_LIST,
-	YAHOO_SERVICE_AUTH = 0x57,
-	YAHOO_SERVICE_ADDBUDDY = 0x83,
-	YAHOO_SERVICE_REMBUDDY,
-	YAHOO_SERVICE_IGNORECONTACT,	/* > 1, 7, 13 < 1, 66, 13, 0*/
-	YAHOO_SERVICE_REJECTCONTACT,
-	YAHOO_SERVICE_GROUPRENAME = 0x89, /* > 1, 65(new), 66(0), 67(old) */
-	/* YAHOO_SERVICE_??? = 0x8A, ?? 0 - id and that's it?? */
-	YAHOO_SERVICE_CHATONLINE = 0x96, /* > 109(id), 1, 6(abcde) < 0,1*/
-	YAHOO_SERVICE_CHATGOTO,
-	YAHOO_SERVICE_CHATJOIN,	/* > 1 104-room 129-1600326591 62-2 */
-	YAHOO_SERVICE_CHATLEAVE,
-	YAHOO_SERVICE_CHATEXIT = 0x9b,
-	YAHOO_SERVICE_CHATADDINVITE = 0x9d,
-	YAHOO_SERVICE_CHATLOGOUT = 0xa0,
-	YAHOO_SERVICE_CHATPING,
-	YAHOO_SERVICE_COMMENT = 0xa8,
-	YAHOO_SERVICE_GAME_INVITE = 0xb7,
-	YAHOO_SERVICE_STEALTH_PERM = 0xb9,
-	YAHOO_SERVICE_STEALTH_SESSION = 0xba,
-	YAHOO_SERVICE_AVATAR = 0xbc,
-	YAHOO_SERVICE_PICTURE_CHECKSUM = 0xbd,
-	YAHOO_SERVICE_PICTURE = 0xbe,
-	YAHOO_SERVICE_PICTURE_UPDATE = 0xc1,
-	YAHOO_SERVICE_PICTURE_UPLOAD = 0xc2,
-	YAHOO_SERVICE_YAB_UPDATE = 0xc4,
-	YAHOO_SERVICE_Y6_VISIBLE_TOGGLE = 0xc5, /* YMSG13, key 13: 2 = invisible, 1 = visible */
-	YAHOO_SERVICE_Y6_STATUS_UPDATE = 0xc6,  /* YMSG13 */
-	YAHOO_SERVICE_PICTURE_STATUS = 0xc7,	/* YMSG13, key 213: 0 = none, 1 = avatar, 2 = picture */
-	YAHOO_SERVICE_VERIFY_ID_EXISTS = 0xc8,
-	YAHOO_SERVICE_AUDIBLE = 0xd0,
-	YAHOO_SERVICE_Y7_PHOTO_SHARING = 0xd2,
-	YAHOO_SERVICE_Y7_CONTACT_DETAILS = 0xd3,/* YMSG13 */
-	YAHOO_SERVICE_Y7_CHAT_SESSION = 0xd4,	
-	YAHOO_SERVICE_Y7_AUTHORIZATION = 0xd6,	/* YMSG13 */
-	YAHOO_SERVICE_Y7_FILETRANSFER = 0xdc,	/* YMSG13 */
-	YAHOO_SERVICE_Y7_FILETRANSFERINFO,	/* YMSG13 */
-	YAHOO_SERVICE_Y7_FILETRANSFERACCEPT,	/* YMSG13 */
-	YAHOO_SERVICE_Y7_MINGLE = 0xe1, /* YMSG13 */
-	YAHOO_SERVICE_Y7_CHANGE_GROUP = 0xe7, /* YMSG13 */
-	YAHOO_SERVICE_STATUS_15 = 0xf0,			/* YMSG15 */
-	YAHOO_SERVICE_LIST_15 = 0Xf1,			/* YMSG15 */
-	YAHOO_SERVICE_WEBLOGIN = 0x0226,
-	YAHOO_SERVICE_SMS_MSG = 0x02ea
-};
 
 typedef struct {
 	int key;
@@ -984,9 +895,10 @@ static void yahoo_packet_dump(unsigned char *data, int len)
 	}
 }
 
-static char base64digits[] = 	"ABCDEFGHIJKLMNOPQRSTUVWXYZ"
+static const char base64digits[] = 	"ABCDEFGHIJKLMNOPQRSTUVWXYZ"
 				"abcdefghijklmnopqrstuvwxyz"
 				"0123456789._";
+				
 static void to_y64(unsigned char *out, const unsigned char *in, int inlen)
 /* raw bytes in quasi-big-endian order to base 64 string (NUL-terminated) */
 {
@@ -2346,51 +2258,54 @@ static void yahoo_process_auth_pre_0x0b(struct yahoo_input_data *yid,
  */
 static void yahoo_process_auth_0x0b(struct yahoo_input_data *yid, const char *seed, const char *sn)
 {
-	struct yahoo_packet *pack = NULL;
-	struct yahoo_data *yd = yid->yd;
-	struct yahoo_server_settings *yss;
+	struct yahoo_packet 			*pack = NULL;
+	struct yahoo_data 				*yd = yid->yd;
+	struct yahoo_server_settings 	*yss;
 	
-	md5_byte_t         result[16];
-	md5_state_t        ctx;
+	md5_byte_t			result[16];
+	md5_state_t			ctx;
 
-	SHA_CTX            ctx1;
-	SHA_CTX            ctx2;
+	SHA_CTX				ctx1;
+	SHA_CTX				ctx2;
 
-	char *alphabet1 = "FBZDWAGHrJTLMNOPpRSKUVEXYChImkwQ";
-	char *alphabet2 = "F0E1D2C3B4A59687abcdefghijklmnop";
+	char 				*alphabet1 = "FBZDWAGHrJTLMNOPpRSKUVEXYChImkwQ";
+	char 				*alphabet2 = "F0E1D2C3B4A59687abcdefghijklmnop";
 
-	char *challenge_lookup = "qzec2tb3um1olpar8whx4dfgijknsvy5";
-	char *operand_lookup = "+|&%/*^-";
-	char *delimit_lookup = ",;";
+	char 				*challenge_lookup = "qzec2tb3um1olpar8whx4dfgijknsvy5";
+	char 				*operand_lookup = "+|&%/*^-";
+	char 				*delimit_lookup = ",;";
 
-	unsigned char *password_hash = malloc(25);
-	unsigned char *crypt_hash = malloc(25);
-	char *crypt_result = NULL;
-	unsigned char pass_hash_xor1[64];
-	unsigned char pass_hash_xor2[64];
-	unsigned char crypt_hash_xor1[64];
-	unsigned char crypt_hash_xor2[64];
-	unsigned char chal[7];
-	char resp_6[100];
-	char resp_96[100];
+	unsigned char 		*password_hash = malloc(25);
+	unsigned char 		*crypt_hash = malloc(25);
+	char 				*crypt_result = NULL;
+	unsigned char 		pass_hash_xor1[64];
+	unsigned char 		pass_hash_xor2[64];
+	unsigned char 		crypt_hash_xor1[64];
+	unsigned char 		crypt_hash_xor2[64];
 
-	unsigned char digest1[20];
-	unsigned char digest2[20];
-	unsigned char magic_key_char[4];
+	char 				resp_6[100];
+	char 				resp_96[100];
+
+	unsigned char 		digest1[20];
+	unsigned char 		digest2[20];
+	unsigned char 		magic_key_char[4];
 	const unsigned char *magic_ptr;
 
-	unsigned int  magic[64];
-	unsigned int  magic_work=0;
+	unsigned int  		magic[64];
+	unsigned int  		magic_work=0;
+	unsigned int  		magic_4 = 0;
 
-	char comparison_src[20];
-	char z[22];
+	char 				comparison_src[20];
+	char 				z[22];
 	
-	int x, j, i;
-	int cnt = 0;
-	int magic_cnt = 0;
-	int magic_len;
-	int depth =0, table =0;
+	int 				x;
+	int 				y;
+	int 				cnt = 0;
+	int 				magic_cnt = 0;
+	int 				magic_len;
 
+	memset(password_hash, 0, 25);
+	memset(crypt_hash, 0, 25);
 	memset(&pass_hash_xor1, 0, 64);
 	memset(&pass_hash_xor2, 0, 64);
 	memset(&crypt_hash_xor1, 0, 64);
@@ -2401,12 +2316,11 @@ static void yahoo_process_auth_0x0b(struct yahoo_input_data *yid, const char *se
 	memset(&resp_6, 0, 100);
 	memset(&resp_96, 0, 100);
 	memset(&magic_key_char, 0, 4);
-
+	memset(&comparison_src, 0, 20);
+	
 	/* 
-	 * Magic: Phase 1.  Generate what seems to be a 30 
-	 * byte value (could change if base64
-	 * ends up differently?  I don't remember and I'm 
-	 * tired, so use a 64 byte buffer.
+	 * Magic: Phase 1.  Generate what seems to be a 30 byte value (could change if base64
+	 * ends up differently?  I don't remember and I'm tired, so use a 64 byte buffer.
 	 */
 
 	magic_ptr = (unsigned char *)seed;
@@ -2421,18 +2335,15 @@ static void yahoo_process_auth_0x0b(struct yahoo_input_data *yid, const char *se
 			continue;
 		}
 
-		/* Characters and digits verify against 
-		   the challenge lookup.
-		*/
+		/* Characters and digits verify against the challenge lookup. */
 
 		if (isalpha(*magic_ptr) || isdigit(*magic_ptr)) {
 			loc = strchr(challenge_lookup, *magic_ptr);
 			if (!loc) {
-				/* This isn't good */
-				continue;
+				/* SME XXX Error - disconnect here */
 			}
 
-			/* Get offset into lookup table and lsh 3. */
+			/* Get offset into lookup table and shl 3. */
 
 			magic_work = loc - challenge_lookup;
 			magic_work <<= 3;
@@ -2444,8 +2355,7 @@ static void yahoo_process_auth_0x0b(struct yahoo_input_data *yid, const char *se
 
 			loc = strchr(operand_lookup, *magic_ptr);
 			if (!loc) {
-				/* Also not good. */
-				continue;
+				/* SME XXX Disconnect */
 			}
 
 			local_store = loc - operand_lookup;
@@ -2463,19 +2373,18 @@ static void yahoo_process_auth_0x0b(struct yahoo_input_data *yid, const char *se
 	magic_len = magic_cnt;
 	magic_cnt = 0;
 
-	/* Magic: Phase 2.  Take generated magic value and 
-	 * sprinkle fairy dust on the values. */
+	/* Magic: Phase 2.  Take generated magic value and sprinkle fairy dust 
+	 * on the values. 
+	 */
 
 	for (magic_cnt = magic_len-2; magic_cnt >= 0; magic_cnt--) {
 		unsigned char byte1;
 		unsigned char byte2;
 
-		/* Bad.  Abort.
-		 */
-		if (magic_cnt >= magic_len) {
-			WARNING(("magic_cnt(%d)  magic_len(%d)", magic_cnt, magic_len))
+		/* Bad.  Abort. */
+		
+		if ((magic_cnt + 1 > magic_len) || (magic_cnt > magic_len))
 			break;
-		}
 
 		byte1 = magic[magic_cnt];
 		byte2 = magic[magic_cnt+1];
@@ -2507,10 +2416,10 @@ static void yahoo_process_auth_0x0b(struct yahoo_input_data *yid, const char *se
 		if (cl > 0x7F) { 
 			if (cl < 0xe0)  
 				bl = cl = (cl & 0x1f) << 6;  
-		else {
+			else {
 			      bl = magic[magic_cnt++];  
-                              cl = (cl & 0x0f) << 6;  
-                              bl = ((bl & 0x3f) + cl) << 6;  
+                  cl = (cl & 0x0f) << 6;  
+                  bl = ((bl & 0x3f) + cl) << 6;  
 			}  
 			
 			cl = magic[magic_cnt++];  
@@ -2522,43 +2431,57 @@ static void yahoo_process_auth_0x0b(struct yahoo_input_data *yid, const char *se
 		comparison_src[x++] = bl & 0xff;  
 	} while (x < 20); 
 
-	/* Dump magic key into a char for SHA1 action. */
-	
-		
-	for(x = 0; x < 4; x++) 
-		magic_key_char[x] = comparison_src[x];
+	/* First four bytes are magic key. */
+	memcpy(&magic_key_char[0], comparison_src, 4);
+	magic_4 = magic_key_char[0] | (magic_key_char[1]<<8) | (magic_key_char[2]<<16) | (magic_key_char[3]<<24);
 
-	/* Compute values for recursive function table! */
-	memcpy( chal, magic_key_char, 4 );
-        x = 1;
-	for( i = 0; i < 0xFFFF && x; i++ )
-	{
-		for( j = 0; j < 5 && x; j++ )
-		{
-			chal[4] = i;
-			chal[5] = i >> 8;
-			chal[6] = j;
+
+	/*
+	 * Magic: Phase 4.  Determine what function to use later by getting outside/inside
+	 * loop values until we match our previous buffer.
+	 */
+	for (x = 0; x < 65535; x++) {
+		int			leave = 0;
+
+		for (y = 0; y < 5; y++) {
+			unsigned char	test[3];
+
+			/* Calculate buffer. */
+			test[0] = x;
+			test[1] = x >> 8;
+			test[2] = y;
+
 			md5_init( &ctx );
-			md5_append( &ctx, chal, 7 );
+			md5_append( &ctx, magic_key_char, 4 );
+			md5_append( &ctx, test, 3 );
 			md5_finish( &ctx, result );
-			if( memcmp( comparison_src + 4, result, 16 ) == 0 )
-			{
-				depth = i;
-				table = j;
-				x = 0;
+
+			if (!memcmp(result, comparison_src+4, 16)) {
+				leave = 1;
+				break;
 			}
 		}
+
+		if (leave == 1)
+			break;
 	}
 
-	/* Transform magic_key_char using transform table */
-	x = magic_key_char[3] << 24  | magic_key_char[2] << 16 
-		| magic_key_char[1] << 8 | magic_key_char[0];
-	x = yahoo_xfrm( table, depth, x );
-	x = yahoo_xfrm( table, depth, x );
-	magic_key_char[0] = x & 0xFF;
-	magic_key_char[1] = x >> 8 & 0xFF;
-	magic_key_char[2] = x >> 16 & 0xFF;
-	magic_key_char[3] = x >> 24 & 0xFF;
+	/* If y != 0, we need some help. */
+
+	if (y != 0) {
+		unsigned int	updated_key;
+
+		/* Update magic stuff.
+		 * Call it twice because Yahoo's encryption is super bad ass.
+		 */
+		updated_key = yahoo_auth_finalCountdown(magic_4, 0x60, y, x);
+		updated_key = yahoo_auth_finalCountdown(updated_key, 0x60, y, x);
+
+		magic_key_char[0] = updated_key & 0xff;
+		magic_key_char[1] = (updated_key >> 8) & 0xff;
+		magic_key_char[2] = (updated_key >> 16) & 0xff;
+		magic_key_char[3] = (updated_key >> 24) & 0xff;
+	}
 
 	/* Get password and crypt hashes as per usual. */
 	md5_init(&ctx);
@@ -2593,28 +2516,27 @@ static void yahoo_process_auth_0x0b(struct yahoo_input_data *yid, const char *se
 	shaInit(&ctx1);
 	shaInit(&ctx2);
 
-	/* The first context gets the password hash XORed 
-	 * with 0x36 plus a magic value
-	 * which we previously extrapolated from our 
-	 * challenge. */
+	/* The first context gets the password hash XORed with 0x36 plus a magic value
+	 * which we previously extrapolated from our challenge. 
+	 */
 
 	shaUpdate(&ctx1, pass_hash_xor1, 64);
-	if (j >= 3)
+	if (y >= 3)
   		ctx1.sizeLo = 0x1ff;
 	shaUpdate(&ctx1, magic_key_char, 4);
 	shaFinal(&ctx1, digest1);
 
-	 /* The second context gets the password hash XORed 
-	  * with 0x5c plus the SHA-1 digest
-	  * of the first context. */
+	/* The second context gets the password hash XORed with 0x5c plus the SHA-1 digest
+	 * of the first context. 
+	 */
 
 	shaUpdate(&ctx2, pass_hash_xor2, 64);
 	shaUpdate(&ctx2, digest1, 20);
 	shaFinal(&ctx2, digest2);
 
-	/* Now that we have digest2, use it to fetch 
-	 * characters from an alphabet to construct
-	 * our first authentication response. */
+	/* Now that we have digest2, use it to fetch characters from an alphabet to construct
+	 * our first authentication response. 
+	 */
 
 	for (x = 0; x < 20; x += 2) {
 		unsigned int    val = 0;
@@ -2623,9 +2545,7 @@ static void yahoo_process_auth_0x0b(struct yahoo_input_data *yid, const char *se
 
 		memset(&byte, 0, 6);
 
-		/* First two bytes of digest stuffed 
-		 *  together.
-		 */
+		/* First two bytes of digest stuffed together. */
 
 		val = digest2[x];
 		val <<= 8;
@@ -2660,8 +2580,7 @@ static void yahoo_process_auth_0x0b(struct yahoo_input_data *yid, const char *se
 		strcat(resp_6, byte);
 	}
 
-	/* Our second authentication response is based off 
-	 * of the crypto hash. */
+	/* Our second authentication response is based off of the crypto hash. */
 
 	cnt = 0;
 	memset(&digest1, 0, 20);
@@ -2684,13 +2603,12 @@ static void yahoo_process_auth_0x0b(struct yahoo_input_data *yid, const char *se
 	shaInit(&ctx1);
 	shaInit(&ctx2);
 
-	/* The first context gets the password hash XORed 
-	 * with 0x36 plus a magic value
-	 * which we previously extrapolated from our 
-	 * challenge. */
+	/* The first context gets the password hash XORed with 0x36 plus a magic value
+	 * which we previously extrapolated from our challenge. 
+	 */
 
 	shaUpdate(&ctx1, crypt_hash_xor1, 64);
-	if (j >= 3)
+	if (y >= 3)
   		ctx1.sizeLo = 0x1ff;
 	shaUpdate(&ctx1, magic_key_char, 4);
 	shaFinal(&ctx1, digest1);
@@ -2703,9 +2621,9 @@ static void yahoo_process_auth_0x0b(struct yahoo_input_data *yid, const char *se
 	shaUpdate(&ctx2, digest1, 20);
 	shaFinal(&ctx2, digest2);
 
-	/* Now that we have digest2, use it to fetch 
-	 * characters from an alphabet to construct
-	 * our first authentication response.  */
+	/* Now that we have digest2, use it to fetch characters from an alphabet to construct
+	 * our first authentication response.  
+	 */
 
 	for (x = 0; x < 20; x += 2) {
 		unsigned int val = 0;
