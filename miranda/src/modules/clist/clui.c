@@ -984,11 +984,11 @@ LRESULT CALLBACK fnContactListWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM
 					x += textSize.cx;
 				}
 				if (showOpts & 4) {
-					char *szStatus = (char *) CallService(MS_CLIST_GETSTATUSMODEDESCRIPTION, status, 0);
-					if (!szStatus)
-						szStatus = "";
-					GetTextExtentPoint32A(dis->hDC, szStatus, lstrlenA(szStatus), &textSize);
-					TextOutA(dis->hDC, x, (dis->rcItem.top + dis->rcItem.bottom - textSize.cy) >> 1, szStatus, lstrlenA(szStatus));
+					TCHAR* szStatus = ( TCHAR* )CallService( MS_CLIST_GETSTATUSMODEDESCRIPTION, status, GCMDF_TCHAR );
+					if ( !szStatus )
+						szStatus = _T("");
+					GetTextExtentPoint32( dis->hDC, szStatus, lstrlen(szStatus), &textSize );
+					TextOut( dis->hDC, x, (dis->rcItem.top + dis->rcItem.bottom - textSize.cy ) >> 1, szStatus, lstrlen( szStatus ));
 				}
 			}
 			else if (dis->CtlType == ODT_MENU) {

@@ -184,10 +184,10 @@ static BOOL CALLBACK SetAwayMsgDlgProc(HWND hwndDlg,UINT message,WPARAM wParam,L
 			mir_free(newdat);
 			SendDlgItemMessage(hwndDlg,IDC_MSG,EM_LIMITTEXT,1024,0);
 			OldMessageEditProc=(WNDPROC)SetWindowLong(GetDlgItem(hwndDlg,IDC_MSG),GWL_WNDPROC,(LONG)MessageEditSubclassProc);
-			{	char str[256],format[128];
-				GetWindowTextA(hwndDlg,format,SIZEOF(format));
-				mir_snprintf(str,SIZEOF(str),format,(char*)CallService(MS_CLIST_GETSTATUSMODEDESCRIPTION,dat->statusMode,0));
-				SetWindowTextA(hwndDlg,str);
+			{	TCHAR str[256],format[128];
+				GetWindowText( hwndDlg, format, SIZEOF( format ));
+				mir_sntprintf( str, SIZEOF(str), format, CallService( MS_CLIST_GETSTATUSMODEDESCRIPTION, dat->statusMode, GCMDF_TCHAR ));
+				SetWindowText( hwndDlg, str );
 			}
 			GetDlgItemTextA(hwndDlg,IDOK,dat->okButtonFormat,SIZEOF(dat->okButtonFormat));
 			{	char *msg=(char*)GetAwayMessage((WPARAM)dat->statusMode,0);
@@ -291,15 +291,16 @@ static BOOL CALLBACK DlgProcAwayMsgOpts(HWND hwndDlg, UINT msg, WPARAM wParam, L
 		{	int i,j;
 			DBVARIANT dbv;
 			TranslateDialogDefault(hwndDlg);
-			dat=(struct AwayMsgDlgData*)mir_alloc(sizeof(struct AwayMsgDlgData));
+			dat = (struct AwayMsgDlgData*)mir_alloc(sizeof(struct AwayMsgDlgData));
 			SetWindowLong(hwndDlg,GWL_USERDATA,(LONG)dat);
 			dat->oldPage=-1;
-			for( i=0; i < SIZEOF(statusModes); i++ ) {
-				if(!(protoModeMsgFlags&Proto_Status2Flag(statusModes[i]))) continue;
-				{	TCHAR* ptszDescr = LangPackPcharToTchar(( LPCSTR )CallService( MS_CLIST_GETSTATUSMODEDESCRIPTION, statusModes[i], 0 ));
-					j = SendDlgItemMessage( hwndDlg, IDC_STATUS, CB_ADDSTRING, 0, (LPARAM)ptszDescr );
-					mir_free( ptszDescr );
-				}
+			for ( i=0; i < SIZEOF(statusModes); i++ ) {
+				if ( !(protoModeMsgFlags & Proto_Status2Flag( statusModes[i] )))
+					continue;
+
+				j = SendDlgItemMessage( hwndDlg, IDC_STATUS, CB_ADDSTRING, 0, 
+					CallService( MS_CLIST_GETSTATUSMODEDESCRIPTION, statusModes[i], GCMDF_TCHAR ));
+
 				SendDlgItemMessage(hwndDlg,IDC_STATUS,CB_SETITEMDATA,j,statusModes[i]);
 				dat->info[j].ignore=DBGetContactSettingByte(NULL,"SRAway",StatusModeToDbSetting(statusModes[i],"Ignore"),0);
 				dat->info[j].noDialog=DBGetContactSettingByte(NULL,"SRAway",StatusModeToDbSetting(statusModes[i],"NoDlg"),0);

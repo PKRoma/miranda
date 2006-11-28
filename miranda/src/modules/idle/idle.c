@@ -294,11 +294,9 @@ static BOOL CALLBACK IdleOptsDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPAR
 		SendDlgItemMessage(hwndDlg, IDC_IDLE1STTIME, EM_LIMITTEXT, (WPARAM)2, 0);
 
       CheckDlgButton(hwndDlg, IDC_AASHORTIDLE, DBGetContactSettingByte(NULL, IDLEMOD, IDL_AAENABLE, 0) ? BST_CHECKED:BST_UNCHECKED);
-		for ( j = 0; j < SIZEOF(aa_Status); j++ ) {
-			TCHAR* szDesc = LangPackPcharToTchar(( LPCSTR )CallService(MS_CLIST_GETSTATUSMODEDESCRIPTION, (WPARAM)aa_Status[j], 0));
-			SendDlgItemMessage(hwndDlg, IDC_AASTATUS, CB_ADDSTRING, 0, (LPARAM)szDesc );
-			mir_free( szDesc );
-		}
+		for ( j = 0; j < SIZEOF(aa_Status); j++ )
+			SendDlgItemMessage(hwndDlg, IDC_AASTATUS, CB_ADDSTRING, 0, 
+				CallService( MS_CLIST_GETSTATUSMODEDESCRIPTION, (WPARAM)aa_Status[j], GCMDF_TCHAR ));
 
 		j = IdleGetStatusIndex((WORD)(DBGetContactSettingWord(NULL, IDLEMOD, IDL_AASTATUS, 0)));
 		SendDlgItemMessage(hwndDlg, IDC_AASTATUS, CB_SETCURSEL, j, 0);

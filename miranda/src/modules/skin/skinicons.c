@@ -51,11 +51,12 @@ struct IconPreview static mainIcons[] =
 	{ SKINICON_OTHER_GROUPOPEN,  "Group (Open)",   1 },
 	{ SKINICON_OTHER_GROUPSHUT,  "Group (Closed)", 1 },
 };
-static int skinIconStatusToIdStatus[]={ID_STATUS_OFFLINE,ID_STATUS_ONLINE,ID_STATUS_AWAY,ID_STATUS_NA,ID_STATUS_OCCUPIED,ID_STATUS_DND,ID_STATUS_FREECHAT,ID_STATUS_INVISIBLE,ID_STATUS_ONTHEPHONE,ID_STATUS_OUTTOLUNCH};
-static int skinIconStatusToPf2[]={0xFFFFFFFF,PF2_ONLINE,PF2_SHORTAWAY,PF2_LONGAWAY,PF2_LIGHTDND,PF2_HEAVYDND,PF2_FREECHAT,PF2_INVISIBLE,PF2_ONTHEPHONE,PF2_OUTTOLUNCH};
-static UINT skinIconStatusToResourceId[]={IDI_OFFLINE,IDI_ONLINE,IDI_AWAY,IDI_NA,IDI_OCCUPIED,IDI_DND,IDI_FREE4CHAT,IDI_INVISIBLE,IDI_ONTHEPHONE,IDI_OUTTOLUNCH};
-static UINT eventIconToResourceId[]={IDI_RECVMSG,IDI_URL,IDI_FILE};
-static UINT otherIconToResourceId[]={IDI_MIRANDA,IDI_MIRANDA,IDI_MIRANDA,IDI_GROUPOPEN,IDI_USERONLINE,IDI_GROUPSHUT};
+
+static int skinIconStatusToIdStatus[] = { ID_STATUS_OFFLINE, ID_STATUS_ONLINE, ID_STATUS_AWAY, ID_STATUS_NA, ID_STATUS_OCCUPIED, ID_STATUS_DND, ID_STATUS_FREECHAT, ID_STATUS_INVISIBLE, ID_STATUS_ONTHEPHONE, ID_STATUS_OUTTOLUNCH };
+static int skinIconStatusToPf2[] = { 0xFFFFFFFF, PF2_ONLINE, PF2_SHORTAWAY, PF2_LONGAWAY, PF2_LIGHTDND, PF2_HEAVYDND, PF2_FREECHAT, PF2_INVISIBLE, PF2_ONTHEPHONE, PF2_OUTTOLUNCH };
+static UINT skinIconStatusToResourceId[] = { IDI_OFFLINE, IDI_ONLINE, IDI_AWAY, IDI_NA, IDI_OCCUPIED, IDI_DND, IDI_FREE4CHAT, IDI_INVISIBLE, IDI_ONTHEPHONE, IDI_OUTTOLUNCH };
+static UINT eventIconToResourceId[] = { IDI_RECVMSG, IDI_URL, IDI_FILE };
+static UINT otherIconToResourceId[] = { IDI_MIRANDA, IDI_MIRANDA, IDI_MIRANDA, IDI_GROUPOPEN, IDI_USERONLINE, IDI_GROUPSHUT };
 
 struct ProtoIcons {
 	char *szProto;
@@ -68,8 +69,10 @@ static HICON hStatusIcons[ SIZEOF(skinIconStatusToIdStatus) ];
 static int IdStatusToSkinIconStatus(int idStatus)
 {
 	int i;
-	for( i=0; i < SIZEOF(skinIconStatusToIdStatus); i++ )
-		if(skinIconStatusToIdStatus[i]==idStatus) return i;
+	for ( i=0; i < SIZEOF(skinIconStatusToIdStatus); i++ )
+		if ( skinIconStatusToIdStatus[i] == idStatus )
+			return i;
+
 	return SKINICON_STATUS_OFFLINE;
 }
 
@@ -402,38 +405,40 @@ BOOL CALLBACK DlgProcIconsOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPa
 				}
 				else {
 					for( lvi.iItem=0; lvi.iItem < SIZEOF(skinIconStatusToIdStatus); lvi.iItem++ ) {
-						lvi.pszText = LangPackPcharToTchar(( LPCSTR )CallService( MS_CLIST_GETSTATUSMODEDESCRIPTION, skinIconStatusToIdStatus[lvi.iItem], 0 ));
+						lvi.pszText = ( TCHAR* )CallService( MS_CLIST_GETSTATUSMODEDESCRIPTION, skinIconStatusToIdStatus[lvi.iItem], GCMDF_TCHAR );
 						hIcon=ExtractIconFromPath(dat->mainStatusPath[lvi.iItem]);
 						if(hIcon==NULL) hIcon=LoadIcon(hMiranda,MAKEINTRESOURCE(skinIconStatusToResourceId[lvi.iItem]));
 						lvi.iImage=ImageList_AddIcon(hIml,hIcon);
 						ListView_InsertItem( GetDlgItem(hwndDlg,IDC_PREVIEW), &lvi );
-						mir_free( lvi.pszText );
 				}	}
 			}
 			else {
 				int i;
 				DWORD caps2=CallProtoService(proto->szName,PS_GETCAPS,PFLAGNUM_2,0);
 				lvi.mask|=LVIF_PARAM;
-				for(i=0;i<dat->protoCount;i++)
-					if(proto==dat->protoIcons[i].proto) break;
-				for(lvi.iItem=0; lvi.iItem < SIZEOF(skinIconStatusToIdStatus); lvi.iItem++) {
-					if(!(caps2&skinIconStatusToPf2[lvi.iItem])) continue;
-					lvi.pszText = LangPackPcharToTchar(( LPCSTR )CallService( MS_CLIST_GETSTATUSMODEDESCRIPTION, skinIconStatusToIdStatus[lvi.iItem], 0 ));
+				for ( i=0; i < dat->protoCount; i++ )
+					if ( proto == dat->protoIcons[i].proto )
+						break;
+
+				for ( lvi.iItem=0; lvi.iItem < SIZEOF(skinIconStatusToIdStatus); lvi.iItem++ ) {
+					if( !( caps2 & skinIconStatusToPf2[lvi.iItem] ))
+						continue;
+
+					lvi.pszText = ( TCHAR* )CallService( MS_CLIST_GETSTATUSMODEDESCRIPTION, skinIconStatusToIdStatus[lvi.iItem], GCMDF_TCHAR );
 					lvi.lParam  = lvi.iItem;
 					hIcon = ExtractIconFromPath(dat->protoIcons[i].iconPath[lvi.iItem]);
-					if(hIcon==NULL) {
+					if ( hIcon == NULL ) {
 						char szPath[MAX_PATH], szFullPath[MAX_PATH],*str;
-
 						GetModuleFileNameA(GetModuleHandle(NULL), szPath, MAX_PATH);
 						str=strrchr(szPath,'\\');
 						if(str!=NULL) *str=0;
 						mir_snprintf(szFullPath, SIZEOF(szFullPath), "%s\\Icons\\proto_%s.dll,%d", szPath, dat->protoIcons[i].proto->szName, -(int)skinIconStatusToResourceId[lvi.iItem]);
-						hIcon=ExtractIconFromPath(szFullPath);
+						hIcon = ExtractIconFromPath(szFullPath);
 					}
-					if(hIcon==NULL) hIcon=ExtractIconFromPath(dat->mainStatusPath[lvi.iItem]);
-					if(hIcon==NULL) hIcon=LoadIcon(hMiranda,MAKEINTRESOURCE(skinIconStatusToResourceId[lvi.iItem]));
-					lvi.iImage=ImageList_AddIcon(hIml,hIcon);
-						ListView_InsertItem( GetDlgItem(hwndDlg,IDC_PREVIEW), &lvi );
+					if(hIcon==NULL) hIcon = ExtractIconFromPath(dat->mainStatusPath[lvi.iItem]);
+					if(hIcon==NULL) hIcon = LoadIcon(hMiranda,MAKEINTRESOURCE(skinIconStatusToResourceId[lvi.iItem]));
+					lvi.iImage = ImageList_AddIcon(hIml,hIcon);
+					ListView_InsertItem( GetDlgItem(hwndDlg,IDC_PREVIEW), &lvi );
 			}	}
 
 			SetCursor(LoadCursor(NULL,IDC_ARROW));
@@ -648,7 +653,7 @@ BOOL CALLBACK DlgProcIconsOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPa
 			break;
 		case WM_NOTIFY:
 			switch(((LPNMHDR)lParam)->code) {
-				case PSN_APPLY:
+			case PSN_APPLY:
 				{	int i,j;
 					char szSetting[64];
 					DWORD flags;
@@ -675,8 +680,8 @@ BOOL CALLBACK DlgProcIconsOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPa
 								DBDeleteContactSetting(NULL,"Icons",szSetting);
 							else
 								DBWriteContactSettingString(NULL,"Icons",szSetting,dat->protoIcons[i].iconPath[j]);
-						}
-					}
+					}	}
+
 					szSetting[0]='p';
 					i=SendDlgItemMessage(hwndDlg,IDC_CATEGORYLIST,LB_GETCOUNT,0,0)-1;
 					_itoa(i,szSetting+1,10);
@@ -690,10 +695,9 @@ BOOL CALLBACK DlgProcIconsOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPa
 					LoadAllIcons();
 					NotifyEventHooks(hIconsChangedEvent,0,0);
 					return TRUE;
-				}
-				break;
-			}
+			}	}
 			break;
+
 		case WM_DESTROY:
 		{	int i,j;
 			DestroyWindow(dat->hwndIndex);
@@ -712,8 +716,8 @@ BOOL CALLBACK DlgProcIconsOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPa
 			mir_free(dat->protoIcons);
 			mir_free(dat);
 			break;
-		}
-	}
+	}	}
+
 	return FALSE;
 }
 
@@ -744,301 +748,299 @@ BOOL CALLBACK DlgProcIconIndex(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPa
 	static int dragItem,dropHiLite;
 	static int originalPreviewHeight;
 
-	switch (msg)
-	{
-		case WM_INITDIALOG:
-			hwndParent=(HWND)lParam;
-			dragging=dragItem=0;
-			TranslateDialogDefault(hwndDlg);
-			ListView_SetImageList(GetDlgItem(hwndDlg,IDC_PREVIEW),ImageList_Create(GetSystemMetrics(SM_CXSMICON),GetSystemMetrics(SM_CYSMICON),ILC_COLOR32|ILC_MASK,0,100),LVSIL_NORMAL);
-			ListView_SetIconSpacing(GetDlgItem(hwndDlg,IDC_PREVIEW),56,67);
-			{	RECT rcThis,rcParent;
-				GetWindowRect(hwndDlg,&rcThis);
-				GetWindowRect(hwndParent,&rcParent);
-				OffsetRect(&rcThis,rcParent.right-rcThis.left,0);
-				OffsetRect(&rcThis,0,rcParent.top-rcThis.top);
-				GetWindowRect(GetParent(hwndParent),&rcParent);
-				if(rcThis.right>GetSystemMetrics(SM_CXSCREEN)) {
-					OffsetRect(&rcParent,GetSystemMetrics(SM_CXSCREEN)-rcThis.right,0);
-					OffsetRect(&rcThis,GetSystemMetrics(SM_CXSCREEN)-rcThis.right,0);
-					MoveWindow(GetParent(hwndParent),rcParent.left,rcParent.top,rcParent.right-rcParent.left,rcParent.bottom-rcParent.top,TRUE);
-				}
-				MoveWindow(hwndDlg,rcThis.left,rcThis.top,rcThis.right-rcThis.left,rcThis.bottom-rcThis.top,FALSE);
+	switch (msg) {
+	case WM_INITDIALOG:
+		hwndParent=(HWND)lParam;
+		dragging=dragItem=0;
+		TranslateDialogDefault(hwndDlg);
+		ListView_SetImageList(GetDlgItem(hwndDlg,IDC_PREVIEW),ImageList_Create(GetSystemMetrics(SM_CXSMICON),GetSystemMetrics(SM_CYSMICON),ILC_COLOR32|ILC_MASK,0,100),LVSIL_NORMAL);
+		ListView_SetIconSpacing(GetDlgItem(hwndDlg,IDC_PREVIEW),56,67);
+		{	RECT rcThis,rcParent;
+			GetWindowRect(hwndDlg,&rcThis);
+			GetWindowRect(hwndParent,&rcParent);
+			OffsetRect(&rcThis,rcParent.right-rcThis.left,0);
+			OffsetRect(&rcThis,0,rcParent.top-rcThis.top);
+			GetWindowRect(GetParent(hwndParent),&rcParent);
+			if(rcThis.right>GetSystemMetrics(SM_CXSCREEN)) {
+				OffsetRect(&rcParent,GetSystemMetrics(SM_CXSCREEN)-rcThis.right,0);
+				OffsetRect(&rcThis,GetSystemMetrics(SM_CXSCREEN)-rcThis.right,0);
+				MoveWindow(GetParent(hwndParent),rcParent.left,rcParent.top,rcParent.right-rcParent.left,rcParent.bottom-rcParent.top,TRUE);
 			}
-			{	RECT rc;
-				GetWindowRect(GetDlgItem(hwndDlg,IDC_PREVIEW),&rc);
-				originalPreviewHeight=rc.bottom-rc.top;
+			MoveWindow(hwndDlg,rcThis.left,rcThis.top,rcThis.right-rcThis.left,rcThis.bottom-rcThis.top,FALSE);
+		}
+		{	RECT rc;
+			GetWindowRect(GetDlgItem(hwndDlg,IDC_PREVIEW),&rc);
+			originalPreviewHeight=rc.bottom-rc.top;
+		}
+		{	int i,item;
+			TCHAR text[128];
+			LPARAM lData;
+			for ( i = SendDlgItemMessage(hwndParent,IDC_CATEGORYLIST,LB_GETCOUNT,0,0)-1; i >= 2; i-- ) {
+				SendDlgItemMessage(hwndParent,IDC_CATEGORYLIST,LB_GETTEXT,i,(LPARAM)text);
+				lData=SendDlgItemMessage(hwndParent,IDC_CATEGORYLIST,LB_GETITEMDATA,i,0);
+				item = SendDlgItemMessage(hwndDlg,IDC_PROTOLIST,CB_ADDSTRING,0,(LPARAM)text);
+				SendDlgItemMessage(hwndDlg,IDC_PROTOLIST,CB_SETITEMDATA,item,lData);
 			}
-			{	int i,item;
-				TCHAR text[128];
-				LPARAM lData;
-				for ( i = SendDlgItemMessage(hwndParent,IDC_CATEGORYLIST,LB_GETCOUNT,0,0)-1; i >= 2; i-- ) {
-					SendDlgItemMessage(hwndParent,IDC_CATEGORYLIST,LB_GETTEXT,i,(LPARAM)text);
-					lData=SendDlgItemMessage(hwndParent,IDC_CATEGORYLIST,LB_GETITEMDATA,i,0);
-					item = SendDlgItemMessage(hwndDlg,IDC_PROTOLIST,CB_ADDSTRING,0,(LPARAM)text);
-					SendDlgItemMessage(hwndDlg,IDC_PROTOLIST,CB_SETITEMDATA,item,lData);
-				}
-				SendDlgItemMessage(hwndDlg,IDC_PROTOLIST,CB_SETCURSEL,0,0);
-			}
-			{	HRESULT (STDAPICALLTYPE *MySHAutoComplete)(HWND,DWORD);
-				MySHAutoComplete=(HRESULT (STDAPICALLTYPE*)(HWND,DWORD))GetProcAddress(GetModuleHandleA("shlwapi"),"SHAutoComplete");
-				if(MySHAutoComplete) MySHAutoComplete(GetDlgItem(hwndDlg,IDC_ICONSET),1);
-			}
-			SetDlgItemTextA(hwndDlg,IDC_ICONSET,"icons.dll");
-			return TRUE;
-		case DM_REBUILDICONSPREVIEW:
-		{	LVITEMA lvi;
-			char filename[MAX_PATH],caption[64];
-			HIMAGELIST hIml;
-			int count,isMiranda,i;
-			HICON hIcon;
+			SendDlgItemMessage(hwndDlg,IDC_PROTOLIST,CB_SETCURSEL,0,0);
+		}
+		{	HRESULT (STDAPICALLTYPE *MySHAutoComplete)(HWND,DWORD);
+			MySHAutoComplete=(HRESULT (STDAPICALLTYPE*)(HWND,DWORD))GetProcAddress(GetModuleHandleA("shlwapi"),"SHAutoComplete");
+			if(MySHAutoComplete) MySHAutoComplete(GetDlgItem(hwndDlg,IDC_ICONSET),1);
+		}
+		SetDlgItemTextA(hwndDlg,IDC_ICONSET,"icons.dll");
+		return TRUE;
+	case DM_REBUILDICONSPREVIEW:
+	{	LVITEMA lvi;
+		char filename[MAX_PATH],caption[64];
+		HIMAGELIST hIml;
+		int count,isMiranda,i;
+		HICON hIcon;
 
-			SetCursor(LoadCursor(NULL,IDC_WAIT));
-			ListView_DeleteAllItems(GetDlgItem(hwndDlg,IDC_PREVIEW));
-			hIml=ListView_GetImageList(GetDlgItem(hwndDlg,IDC_PREVIEW),LVSIL_NORMAL);
-			ImageList_RemoveAll(hIml);
-			GetDlgItemTextA(hwndDlg,IDC_ICONSET,filename,SIZEOF(filename));
+		SetCursor(LoadCursor(NULL,IDC_WAIT));
+		ListView_DeleteAllItems(GetDlgItem(hwndDlg,IDC_PREVIEW));
+		hIml=ListView_GetImageList(GetDlgItem(hwndDlg,IDC_PREVIEW),LVSIL_NORMAL);
+		ImageList_RemoveAll(hIml);
+		GetDlgItemTextA(hwndDlg,IDC_ICONSET,filename,SIZEOF(filename));
 
-			isMiranda=IsMirandaIconSet(filename);
-			ShowWindow(GetDlgItem(hwndDlg,IDC_IMPORTMULTI),isMiranda);
-			ShowWindow(GetDlgItem(hwndDlg,IDC_TOMAIN),isMiranda);
-			ShowWindow(GetDlgItem(hwndDlg,IDC_TODEFICON),isMiranda);
-			ShowWindow(GetDlgItem(hwndDlg,IDC_TOPROTO),isMiranda);
-			ShowWindow(GetDlgItem(hwndDlg,IDC_PROTOLIST),isMiranda);
-			ShowWindow(GetDlgItem(hwndDlg,IDC_IMPORT),isMiranda);
-			{	RECT rcPreview,rcGroup;
-				GetWindowRect(GetDlgItem(hwndDlg,IDC_PREVIEW),&rcPreview);
-				GetWindowRect(GetDlgItem(hwndDlg,IDC_IMPORTMULTI),&rcGroup);
-				SetWindowPos(GetDlgItem(hwndDlg,IDC_PREVIEW),0,0,0,rcPreview.right-rcPreview.left,isMiranda?originalPreviewHeight:rcGroup.bottom-rcPreview.top,SWP_NOZORDER|SWP_NOMOVE);
-			}
+		isMiranda=IsMirandaIconSet(filename);
+		ShowWindow(GetDlgItem(hwndDlg,IDC_IMPORTMULTI),isMiranda);
+		ShowWindow(GetDlgItem(hwndDlg,IDC_TOMAIN),isMiranda);
+		ShowWindow(GetDlgItem(hwndDlg,IDC_TODEFICON),isMiranda);
+		ShowWindow(GetDlgItem(hwndDlg,IDC_TOPROTO),isMiranda);
+		ShowWindow(GetDlgItem(hwndDlg,IDC_PROTOLIST),isMiranda);
+		ShowWindow(GetDlgItem(hwndDlg,IDC_IMPORT),isMiranda);
+		{	RECT rcPreview,rcGroup;
+			GetWindowRect(GetDlgItem(hwndDlg,IDC_PREVIEW),&rcPreview);
+			GetWindowRect(GetDlgItem(hwndDlg,IDC_IMPORTMULTI),&rcGroup);
+			SetWindowPos(GetDlgItem(hwndDlg,IDC_PREVIEW),0,0,0,rcPreview.right-rcPreview.left,isMiranda?originalPreviewHeight:rcGroup.bottom-rcPreview.top,SWP_NOZORDER|SWP_NOMOVE);
+		}
 
-			if(_access(filename,0)!=0) {
-				SetCursor(LoadCursor(NULL,IDC_ARROW));
-				break;
-			}
-
-			lvi.mask=LVIF_TEXT|LVIF_IMAGE|LVIF_PARAM;
-			lvi.iSubItem=0;
-			lvi.iItem=0;
-			if(isMiranda) {
-				for( i=0; i < SIZEOF(mainIcons); i++ ) {
-					hIcon=ExtractIconA(GetModuleHandle(NULL),filename,-(int)(mainIcons[i].id<SKINICON_OTHER_MIRANDA?eventIconToResourceId[mainIcons[i].id-SKINICON_EVENT_MESSAGE]:otherIconToResourceId[mainIcons[i].id-SKINICON_OTHER_MIRANDA]));
-					if(hIcon==NULL) continue;
-					lvi.iImage=ImageList_AddIcon(hIml,hIcon);
-					DestroyIcon(hIcon);
-					lvi.pszText=Translate(mainIcons[lvi.iItem].description);
-					lvi.lParam=-(int)(mainIcons[i].id<SKINICON_OTHER_MIRANDA?eventIconToResourceId[mainIcons[i].id-SKINICON_EVENT_MESSAGE]:otherIconToResourceId[mainIcons[i].id-SKINICON_OTHER_MIRANDA]);
-					SendMessageA( GetDlgItem(hwndDlg,IDC_PREVIEW), LVM_INSERTITEMA, 0, (LPARAM)&lvi );
-					lvi.iItem++;
-				}
-				for( i=0; i < SIZEOF(skinIconStatusToIdStatus); i++ ) {
-					hIcon=ExtractIconA(GetModuleHandle(NULL),filename,-(int)skinIconStatusToResourceId[i]);
-					if(hIcon==NULL) continue;
-					lvi.iImage=ImageList_AddIcon(hIml,hIcon);
-					DestroyIcon(hIcon);
-					lvi.pszText=(char*)CallService(MS_CLIST_GETSTATUSMODEDESCRIPTION,skinIconStatusToIdStatus[i],0);
-					lvi.lParam=-(int)skinIconStatusToResourceId[i];
-					SendMessageA( GetDlgItem(hwndDlg,IDC_PREVIEW), LVM_INSERTITEMA, 0, (LPARAM)&lvi );
-					lvi.iItem++;
-				}
-			}
-			count=(int)ExtractIconA(GetModuleHandle(NULL),filename,-1);
-			for(i=0;i<count;lvi.iItem++,i++) {
-				wsprintfA(caption,"%d",i+1);
-				lvi.pszText=caption;
-				hIcon=ExtractIconA(GetModuleHandle(NULL),filename,i);
-				lvi.iImage=ImageList_AddIcon(hIml,hIcon);
-				DestroyIcon(hIcon);
-				lvi.lParam=i;
-				SendMessageA( GetDlgItem(hwndDlg,IDC_PREVIEW), LVM_INSERTITEMA, 0, (LPARAM)&lvi );
-			}
+		if(_access(filename,0)!=0) {
 			SetCursor(LoadCursor(NULL,IDC_ARROW));
 			break;
 		}
-		case WM_COMMAND:
-			switch(LOWORD(wParam)) {
-				case IDC_BROWSE:
-				{	char str[MAX_PATH];
-					OPENFILENAMEA ofn;
-					char filter[512],*pfilter;
 
-					GetDlgItemTextA(hwndDlg,IDC_ICONSET,str,SIZEOF(str));
-					ZeroMemory(&ofn, sizeof(ofn));
-					ofn.lStructSize = OPENFILENAME_SIZE_VERSION_400;
-					ofn.hwndOwner = GetParent(hwndDlg);
-					ofn.hInstance = NULL;
-					strcpy(filter,Translate("Icon Sets"));
-					strcat(filter," (*.dll;*.icl;*.exe;*.ico)");
-					pfilter=filter+strlen(filter)+1;
-					strcpy(pfilter,"*.DLL;*.ICL;*.EXE;*.ICO");
-					pfilter=pfilter+strlen(pfilter)+1;
-					strcpy(pfilter,Translate("All Files"));
-					strcat(pfilter," (*)");
-					pfilter=pfilter+strlen(pfilter)+1;
-					strcpy(pfilter,"*");
-					pfilter=pfilter+strlen(pfilter)+1;
-					*pfilter='\0';
-					ofn.lpstrFilter = filter;
-					ofn.lpstrFile = str;
-					ofn.Flags = OFN_FILEMUSTEXIST | OFN_HIDEREADONLY;
-					ofn.nMaxFile = SIZEOF(str);
-					ofn.nMaxFileTitle = MAX_PATH;
-					ofn.lpstrDefExt = "dll";
-					if(!GetOpenFileNameA(&ofn)) break;
-					SetDlgItemTextA(hwndDlg,IDC_ICONSET,str);
-					break;
-				}
-				case IDC_GETMORE:
-				{	char szVer[64],szUrl[256];
-					CallService(MS_SYSTEM_GETVERSIONTEXT,SIZEOF(szVer),(LPARAM)szVer);
-					while(strchr(szVer,' ')) *strchr(szVer,' ')='_';
-					wsprintfA(szUrl,"http://www.miranda-im.org/download/index.php",szVer);
-					CallService(MS_UTILS_OPENURL,1,(LPARAM)szUrl);
-					break;
-				}
-				case IDC_ICONSET:
-					if(HIWORD(wParam)==EN_CHANGE)
-						SendMessage(hwndDlg,DM_REBUILDICONSPREVIEW,0,0);
-					break;
-				case IDC_TOMAIN:
-				case IDC_TODEFICON:
-				case IDC_TOPROTO:
-					EnableWindow(GetDlgItem(hwndDlg,IDC_IMPORT),IsDlgButtonChecked(hwndDlg,IDC_TOMAIN) || IsDlgButtonChecked(hwndDlg,IDC_TODEFICON) || IsDlgButtonChecked(hwndDlg,IDC_TOPROTO));
-					break;
-				case IDC_IMPORT:
-				{	char filetmp[MAX_PATH],filename[MAX_PATH],path[MAX_PATH];
-					int i;
-					struct IconPreview ico;
-					HICON hIcon;
+		lvi.mask=LVIF_TEXT|LVIF_IMAGE|LVIF_PARAM;
+		lvi.iSubItem=0;
+		lvi.iItem=0;
+		if(isMiranda) {
+			for( i=0; i < SIZEOF(mainIcons); i++ ) {
+				hIcon=ExtractIconA(GetModuleHandle(NULL),filename,-(int)(mainIcons[i].id<SKINICON_OTHER_MIRANDA?eventIconToResourceId[mainIcons[i].id-SKINICON_EVENT_MESSAGE]:otherIconToResourceId[mainIcons[i].id-SKINICON_OTHER_MIRANDA]));
+				if(hIcon==NULL) continue;
+				lvi.iImage=ImageList_AddIcon(hIml,hIcon);
+				DestroyIcon(hIcon);
+				lvi.pszText=Translate(mainIcons[lvi.iItem].description);
+				lvi.lParam=-(int)(mainIcons[i].id<SKINICON_OTHER_MIRANDA?eventIconToResourceId[mainIcons[i].id-SKINICON_EVENT_MESSAGE]:otherIconToResourceId[mainIcons[i].id-SKINICON_OTHER_MIRANDA]);
+				SendMessageA( GetDlgItem(hwndDlg,IDC_PREVIEW), LVM_INSERTITEMA, 0, (LPARAM)&lvi );
+				lvi.iItem++;
+			}
+			for( i=0; i < SIZEOF(skinIconStatusToIdStatus); i++ ) {
+				hIcon=ExtractIconA(GetModuleHandle(NULL),filename,-(int)skinIconStatusToResourceId[i]);
+				if(hIcon==NULL) continue;
+				lvi.iImage=ImageList_AddIcon(hIml,hIcon);
+				DestroyIcon(hIcon);
+				lvi.pszText=(char*)CallService(MS_CLIST_GETSTATUSMODEDESCRIPTION,skinIconStatusToIdStatus[i],0);
+				lvi.lParam=-(int)skinIconStatusToResourceId[i];
+				SendMessageA( GetDlgItem(hwndDlg,IDC_PREVIEW), LVM_INSERTITEMA, 0, (LPARAM)&lvi );
+				lvi.iItem++;
+			}
+		}
+		count=(int)ExtractIconA(GetModuleHandle(NULL),filename,-1);
+		for(i=0;i<count;lvi.iItem++,i++) {
+			wsprintfA(caption,"%d",i+1);
+			lvi.pszText=caption;
+			hIcon=ExtractIconA(GetModuleHandle(NULL),filename,i);
+			lvi.iImage=ImageList_AddIcon(hIml,hIcon);
+			DestroyIcon(hIcon);
+			lvi.lParam=i;
+			SendMessageA( GetDlgItem(hwndDlg,IDC_PREVIEW), LVM_INSERTITEMA, 0, (LPARAM)&lvi );
+		}
+		SetCursor(LoadCursor(NULL,IDC_ARROW));
+		break;
+	}
+	case WM_COMMAND:
+		switch(LOWORD(wParam)) {
+			case IDC_BROWSE:
+			{	char str[MAX_PATH];
+				OPENFILENAMEA ofn;
+				char filter[512],*pfilter;
 
-					GetDlgItemTextA(hwndDlg,IDC_ICONSET,filetmp,SIZEOF(filetmp));
-					CallService(MS_UTILS_PATHTORELATIVE, (WPARAM)filetmp, (LPARAM)filename);
-					ico.description=path;
-					if(IsDlgButtonChecked(hwndDlg,IDC_TOMAIN)) {
-						for( i=0; i < SIZEOF(mainIcons); i++ ) {
-							hIcon=ExtractIconA(GetModuleHandle(NULL),filename,-(int)(mainIcons[i].id<SKINICON_OTHER_MIRANDA?eventIconToResourceId[mainIcons[i].id-SKINICON_EVENT_MESSAGE]:otherIconToResourceId[mainIcons[i].id-SKINICON_OTHER_MIRANDA]));
-							if(hIcon==NULL) continue;
-							ico.id=mainIcons[i].id;
-							ico.main=1;
-							wsprintfA(path,"%s,%d",filename,-(int)(mainIcons[i].id<SKINICON_OTHER_MIRANDA?eventIconToResourceId[mainIcons[i].id-SKINICON_EVENT_MESSAGE]:otherIconToResourceId[mainIcons[i].id-SKINICON_OTHER_MIRANDA]));
-							SendMessage(hwndParent,DM_CHANGESPECIFICICON,(WPARAM)(PROTOCOLDESCRIPTOR*)NULL,(LPARAM)&ico);
-						}
-					}
-					if(IsDlgButtonChecked(hwndDlg,IDC_TODEFICON)) {
-						for( i=0; i < SIZEOF(skinIconStatusToIdStatus); i++ ) {
-							hIcon=ExtractIconA(GetModuleHandle(NULL),filename,-(int)skinIconStatusToResourceId[i]);
-							if(hIcon==NULL) continue;
-							ico.id=i;
-							ico.main=0;
-							wsprintfA(path,"%s,%d",filename,-(int)skinIconStatusToResourceId[i]);
-							SendMessage(hwndParent,DM_CHANGESPECIFICICON,(WPARAM)(PROTOCOLDESCRIPTOR**)NULL,(LPARAM)&ico);
-						}
-					}
-					if(IsDlgButtonChecked(hwndDlg,IDC_TOPROTO)) {
-						PROTOCOLDESCRIPTOR *proto;
-						proto=(PROTOCOLDESCRIPTOR*)SendDlgItemMessage(hwndDlg,IDC_PROTOLIST,CB_GETITEMDATA,SendDlgItemMessage(hwndDlg,IDC_PROTOLIST,CB_GETCURSEL,0,0),0);
-						for( i=0; i < SIZEOF(skinIconStatusToIdStatus); i++ ) {
-							hIcon=ExtractIconA(GetModuleHandle(NULL),filename,-(int)skinIconStatusToResourceId[i]);
-							if(hIcon==NULL) continue;
-							ico.id=i;
-							ico.main=0;
-							wsprintfA(path,"%s,%d",filename,-(int)skinIconStatusToResourceId[i]);
-							SendMessage(hwndParent,DM_CHANGESPECIFICICON,(WPARAM)proto,(LPARAM)&ico);
-						}
-					}
-					SendMessage(hwndParent,DM_REBUILDICONSPREVIEW,0,0);
-					break;
-				}
+				GetDlgItemTextA(hwndDlg,IDC_ICONSET,str,SIZEOF(str));
+				ZeroMemory(&ofn, sizeof(ofn));
+				ofn.lStructSize = OPENFILENAME_SIZE_VERSION_400;
+				ofn.hwndOwner = GetParent(hwndDlg);
+				ofn.hInstance = NULL;
+				strcpy(filter,Translate("Icon Sets"));
+				strcat(filter," (*.dll;*.icl;*.exe;*.ico)");
+				pfilter=filter+strlen(filter)+1;
+				strcpy(pfilter,"*.DLL;*.ICL;*.EXE;*.ICO");
+				pfilter=pfilter+strlen(pfilter)+1;
+				strcpy(pfilter,Translate("All Files"));
+				strcat(pfilter," (*)");
+				pfilter=pfilter+strlen(pfilter)+1;
+				strcpy(pfilter,"*");
+				pfilter=pfilter+strlen(pfilter)+1;
+				*pfilter='\0';
+				ofn.lpstrFilter = filter;
+				ofn.lpstrFile = str;
+				ofn.Flags = OFN_FILEMUSTEXIST | OFN_HIDEREADONLY;
+				ofn.nMaxFile = SIZEOF(str);
+				ofn.nMaxFileTitle = MAX_PATH;
+				ofn.lpstrDefExt = "dll";
+				if(!GetOpenFileNameA(&ofn)) break;
+				SetDlgItemTextA(hwndDlg,IDC_ICONSET,str);
+				break;
 			}
-			break;
-		case WM_MOUSEMOVE:
-			if(dragging) {
-				LVHITTESTINFO lvhti;
-				int onItem=0;
-				HWND hwndOver;
-				RECT rc;
-				POINT ptDrag;
+			case IDC_GETMORE:
+			{	char szVer[64],szUrl[256];
+				CallService(MS_SYSTEM_GETVERSIONTEXT,SIZEOF(szVer),(LPARAM)szVer);
+				while(strchr(szVer,' ')) *strchr(szVer,' ')='_';
+				wsprintfA(szUrl,"http://www.miranda-im.org/download/index.php",szVer);
+				CallService(MS_UTILS_OPENURL,1,(LPARAM)szUrl);
+				break;
+			}
+			case IDC_ICONSET:
+				if(HIWORD(wParam)==EN_CHANGE)
+					SendMessage(hwndDlg,DM_REBUILDICONSPREVIEW,0,0);
+				break;
+			case IDC_TOMAIN:
+			case IDC_TODEFICON:
+			case IDC_TOPROTO:
+				EnableWindow(GetDlgItem(hwndDlg,IDC_IMPORT),IsDlgButtonChecked(hwndDlg,IDC_TOMAIN) || IsDlgButtonChecked(hwndDlg,IDC_TODEFICON) || IsDlgButtonChecked(hwndDlg,IDC_TOPROTO));
+				break;
+			case IDC_IMPORT:
+			{	char filetmp[MAX_PATH],filename[MAX_PATH],path[MAX_PATH];
+				int i;
+				struct IconPreview ico;
+				HICON hIcon;
 
-				lvhti.pt.x=(short)LOWORD(lParam); lvhti.pt.y=(short)HIWORD(lParam);
-				ClientToScreen(hwndDlg,&lvhti.pt);
-				hwndOver=WindowFromPoint(lvhti.pt);
-				GetWindowRect(hwndOver,&rc);
-				ptDrag.x=lvhti.pt.x-rc.left; ptDrag.y=lvhti.pt.y-rc.top;
-				if(hwndOver!=hwndDragOver) {
-					ImageList_DragLeave(hwndDragOver);
-					hwndDragOver=hwndOver;
-					ImageList_DragEnter(hwndDragOver,ptDrag.x,ptDrag.y);
-				}
-				ImageList_DragMove(ptDrag.x,ptDrag.y);
-				if(hwndOver==GetDlgItem(hwndParent,IDC_PREVIEW)) {
-					ScreenToClient(GetDlgItem(hwndParent,IDC_PREVIEW),&lvhti.pt);
-					if(ListView_HitTest(GetDlgItem(hwndParent,IDC_PREVIEW),&lvhti)!=-1) {
-						if(lvhti.iItem!=dropHiLite) {
-							ImageList_DragLeave(hwndDragOver);
-							if(dropHiLite!=-1) ListView_SetItemState(GetDlgItem(hwndParent,IDC_PREVIEW),dropHiLite,0,LVIS_DROPHILITED);
-							dropHiLite=lvhti.iItem;
-							ListView_SetItemState(GetDlgItem(hwndParent,IDC_PREVIEW),dropHiLite,LVIS_DROPHILITED,LVIS_DROPHILITED);
-							UpdateWindow(GetDlgItem(hwndParent,IDC_PREVIEW));
-							ImageList_DragEnter(hwndDragOver,ptDrag.x,ptDrag.y);
-						}
-						onItem=1;
+				GetDlgItemTextA(hwndDlg,IDC_ICONSET,filetmp,SIZEOF(filetmp));
+				CallService(MS_UTILS_PATHTORELATIVE, (WPARAM)filetmp, (LPARAM)filename);
+				ico.description=path;
+				if(IsDlgButtonChecked(hwndDlg,IDC_TOMAIN)) {
+					for( i=0; i < SIZEOF(mainIcons); i++ ) {
+						hIcon=ExtractIconA(GetModuleHandle(NULL),filename,-(int)(mainIcons[i].id<SKINICON_OTHER_MIRANDA?eventIconToResourceId[mainIcons[i].id-SKINICON_EVENT_MESSAGE]:otherIconToResourceId[mainIcons[i].id-SKINICON_OTHER_MIRANDA]));
+						if(hIcon==NULL) continue;
+						ico.id=mainIcons[i].id;
+						ico.main=1;
+						wsprintfA(path,"%s,%d",filename,-(int)(mainIcons[i].id<SKINICON_OTHER_MIRANDA?eventIconToResourceId[mainIcons[i].id-SKINICON_EVENT_MESSAGE]:otherIconToResourceId[mainIcons[i].id-SKINICON_OTHER_MIRANDA]));
+						SendMessage(hwndParent,DM_CHANGESPECIFICICON,(WPARAM)(PROTOCOLDESCRIPTOR*)NULL,(LPARAM)&ico);
 					}
 				}
-				if(!onItem && dropHiLite!=-1) {
-					ImageList_DragLeave(hwndDragOver);
-					ListView_SetItemState(GetDlgItem(hwndParent,IDC_PREVIEW),dropHiLite,0,LVIS_DROPHILITED);
-					UpdateWindow(GetDlgItem(hwndParent,IDC_PREVIEW));
-					ImageList_DragEnter(hwndDragOver,ptDrag.x,ptDrag.y);
-					dropHiLite=-1;
-				}
-				SetCursor(LoadCursor(NULL,onItem?IDC_ARROW:IDC_NO));
-			}
-			break;
-		case WM_LBUTTONUP:
-			if(dragging) {
-				ReleaseCapture();
-				ImageList_EndDrag();
-				dragging=0;
-				if(dropHiLite!=-1) {
-					char path[MAX_PATH],fullPath[MAX_PATH],filename[MAX_PATH];
-					LVITEM lvi;
-					GetDlgItemTextA(hwndDlg,IDC_ICONSET,fullPath,SIZEOF(fullPath));
-					CallService(MS_UTILS_PATHTORELATIVE, (WPARAM)fullPath, (LPARAM)filename);
-					lvi.mask=LVIF_PARAM;
-					lvi.iItem=dragItem; lvi.iSubItem=0;
-					ListView_GetItem(GetDlgItem(hwndDlg,IDC_PREVIEW),&lvi);
-					wsprintfA(path,"%s,%d",filename,(int)lvi.lParam);
-					SendMessage(hwndParent,DM_CHANGEICON,dropHiLite,(LPARAM)path);
-					ListView_SetItemState(GetDlgItem(hwndParent,IDC_PREVIEW),dropHiLite,0,LVIS_DROPHILITED);
-				}
-			}
-			break;
-		case WM_NOTIFY:
-			switch(((LPNMHDR)lParam)->idFrom) {
-				case IDC_PREVIEW:
-					switch(((LPNMHDR)lParam)->code) {
-						case LVN_BEGINDRAG:
-							SetCapture(hwndDlg);
-							dragging=1;
-							dragItem=((LPNMLISTVIEW)lParam)->iItem;
-							dropHiLite=-1;
-							ImageList_BeginDrag(ListView_GetImageList(GetDlgItem(hwndDlg,IDC_PREVIEW),LVSIL_NORMAL),dragItem,GetSystemMetrics(SM_CXICON)/2,GetSystemMetrics(SM_CYICON)/2);
-							{	POINT pt;
-								RECT rc;
-								GetCursorPos(&pt);
-								GetWindowRect(hwndDlg,&rc);
-								ImageList_DragEnter(hwndDlg,pt.x-rc.left,pt.y-rc.top);
-								hwndDragOver=hwndDlg;
-							}
-							break;
+				if(IsDlgButtonChecked(hwndDlg,IDC_TODEFICON)) {
+					for( i=0; i < SIZEOF(skinIconStatusToIdStatus); i++ ) {
+						hIcon=ExtractIconA(GetModuleHandle(NULL),filename,-(int)skinIconStatusToResourceId[i]);
+						if(hIcon==NULL) continue;
+						ico.id=i;
+						ico.main=0;
+						wsprintfA(path,"%s,%d",filename,-(int)skinIconStatusToResourceId[i]);
+						SendMessage(hwndParent,DM_CHANGESPECIFICICON,(WPARAM)(PROTOCOLDESCRIPTOR**)NULL,(LPARAM)&ico);
 					}
-					break;
+				}
+				if(IsDlgButtonChecked(hwndDlg,IDC_TOPROTO)) {
+					PROTOCOLDESCRIPTOR *proto;
+					proto=(PROTOCOLDESCRIPTOR*)SendDlgItemMessage(hwndDlg,IDC_PROTOLIST,CB_GETITEMDATA,SendDlgItemMessage(hwndDlg,IDC_PROTOLIST,CB_GETCURSEL,0,0),0);
+					for( i=0; i < SIZEOF(skinIconStatusToIdStatus); i++ ) {
+						hIcon=ExtractIconA(GetModuleHandle(NULL),filename,-(int)skinIconStatusToResourceId[i]);
+						if(hIcon==NULL) continue;
+						ico.id=i;
+						ico.main=0;
+						wsprintfA(path,"%s,%d",filename,-(int)skinIconStatusToResourceId[i]);
+						SendMessage(hwndParent,DM_CHANGESPECIFICICON,(WPARAM)proto,(LPARAM)&ico);
+					}
+				}
+				SendMessage(hwndParent,DM_REBUILDICONSPREVIEW,0,0);
+				break;
+			}
+		}
+		break;
+	case WM_MOUSEMOVE:
+		if(dragging) {
+			LVHITTESTINFO lvhti;
+			int onItem=0;
+			HWND hwndOver;
+			RECT rc;
+			POINT ptDrag;
+
+			lvhti.pt.x=(short)LOWORD(lParam); lvhti.pt.y=(short)HIWORD(lParam);
+			ClientToScreen(hwndDlg,&lvhti.pt);
+			hwndOver=WindowFromPoint(lvhti.pt);
+			GetWindowRect(hwndOver,&rc);
+			ptDrag.x=lvhti.pt.x-rc.left; ptDrag.y=lvhti.pt.y-rc.top;
+			if(hwndOver!=hwndDragOver) {
+				ImageList_DragLeave(hwndDragOver);
+				hwndDragOver=hwndOver;
+				ImageList_DragEnter(hwndDragOver,ptDrag.x,ptDrag.y);
+			}
+			ImageList_DragMove(ptDrag.x,ptDrag.y);
+			if(hwndOver==GetDlgItem(hwndParent,IDC_PREVIEW)) {
+				ScreenToClient(GetDlgItem(hwndParent,IDC_PREVIEW),&lvhti.pt);
+				if(ListView_HitTest(GetDlgItem(hwndParent,IDC_PREVIEW),&lvhti)!=-1) {
+					if(lvhti.iItem!=dropHiLite) {
+						ImageList_DragLeave(hwndDragOver);
+						if(dropHiLite!=-1) ListView_SetItemState(GetDlgItem(hwndParent,IDC_PREVIEW),dropHiLite,0,LVIS_DROPHILITED);
+						dropHiLite=lvhti.iItem;
+						ListView_SetItemState(GetDlgItem(hwndParent,IDC_PREVIEW),dropHiLite,LVIS_DROPHILITED,LVIS_DROPHILITED);
+						UpdateWindow(GetDlgItem(hwndParent,IDC_PREVIEW));
+						ImageList_DragEnter(hwndDragOver,ptDrag.x,ptDrag.y);
+					}
+					onItem=1;
+				}
+			}
+			if(!onItem && dropHiLite!=-1) {
+				ImageList_DragLeave(hwndDragOver);
+				ListView_SetItemState(GetDlgItem(hwndParent,IDC_PREVIEW),dropHiLite,0,LVIS_DROPHILITED);
+				UpdateWindow(GetDlgItem(hwndParent,IDC_PREVIEW));
+				ImageList_DragEnter(hwndDragOver,ptDrag.x,ptDrag.y);
+				dropHiLite=-1;
+			}
+			SetCursor(LoadCursor(NULL,onItem?IDC_ARROW:IDC_NO));
+		}
+		break;
+	case WM_LBUTTONUP:
+		if(dragging) {
+			ReleaseCapture();
+			ImageList_EndDrag();
+			dragging=0;
+			if(dropHiLite!=-1) {
+				char path[MAX_PATH],fullPath[MAX_PATH],filename[MAX_PATH];
+				LVITEM lvi;
+				GetDlgItemTextA(hwndDlg,IDC_ICONSET,fullPath,SIZEOF(fullPath));
+				CallService(MS_UTILS_PATHTORELATIVE, (WPARAM)fullPath, (LPARAM)filename);
+				lvi.mask=LVIF_PARAM;
+				lvi.iItem=dragItem; lvi.iSubItem=0;
+				ListView_GetItem(GetDlgItem(hwndDlg,IDC_PREVIEW),&lvi);
+				wsprintfA(path,"%s,%d",filename,(int)lvi.lParam);
+				SendMessage(hwndParent,DM_CHANGEICON,dropHiLite,(LPARAM)path);
+				ListView_SetItemState(GetDlgItem(hwndParent,IDC_PREVIEW),dropHiLite,0,LVIS_DROPHILITED);
+		}	}
+		break;
+	case WM_NOTIFY:
+		switch(((LPNMHDR)lParam)->idFrom) {
+		case IDC_PREVIEW:
+			switch(((LPNMHDR)lParam)->code) {
+			case LVN_BEGINDRAG:
+				SetCapture(hwndDlg);
+				dragging=1;
+				dragItem=((LPNMLISTVIEW)lParam)->iItem;
+				dropHiLite=-1;
+				ImageList_BeginDrag(ListView_GetImageList(GetDlgItem(hwndDlg,IDC_PREVIEW),LVSIL_NORMAL),dragItem,GetSystemMetrics(SM_CXICON)/2,GetSystemMetrics(SM_CYICON)/2);
+				{	POINT pt;
+					RECT rc;
+					GetCursorPos(&pt);
+					GetWindowRect(hwndDlg,&rc);
+					ImageList_DragEnter(hwndDlg,pt.x-rc.left,pt.y-rc.top);
+					hwndDragOver=hwndDlg;
+				}
+				break;
 			}
 			break;
-		case WM_CLOSE:
-			DestroyWindow(hwndDlg);
-			EnableWindow(GetDlgItem(hwndParent,IDC_IMPORT),TRUE);
-			break;
+		}
+		break;
+	case WM_CLOSE:
+		DestroyWindow(hwndDlg);
+		EnableWindow(GetDlgItem(hwndParent,IDC_IMPORT),TRUE);
+		break;
 	}
 	return FALSE;
 }
