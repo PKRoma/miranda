@@ -759,6 +759,10 @@ BOOL SM_RemoveAll (void)
 		mir_free( m_WndList->ptszName );
 		mir_free( m_WndList->ptszStatusbarText );
 		mir_free( m_WndList->ptszTopic );
+		#if defined( _UNICODE )
+			mir_free( m_WndList->pszID );
+			mir_free( m_WndList->pszName );
+		#endif
 
 		while (m_WndList->lpCommands != NULL) {
 			COMMAND_INFO *pNext = m_WndList->lpCommands->next;
