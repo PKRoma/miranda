@@ -4963,6 +4963,7 @@ quote_from_last:
                         CallService(MS_MC_SETDEFAULTCONTACTNUM, (WPARAM)dat->hContact, (LPARAM)(iSelection - 1000));
                     }
                     DestroyMenu(hMC);
+                    InvalidateRect(GetParent(hwndDlg), NULL, FALSE);
                     return TRUE;
                 }
             }

@@ -951,7 +951,7 @@ UINT CreateGCMenu(HWND hwndDlg, HMENU *hMenu, int iIndex, POINT pt, SESSION_INFO
 		mir_free( ptszDescr );
 	}
 
-    if(si->iType != GCW_SERVER) {
+    if(iIndex == 1 && si->iType != GCW_SERVER && !(si->dwFlags && GC_UNICODE)) {
         AppendMenu(*hMenu, MF_SEPARATOR, 0, 0);
         InsertMenu(myGlobals.g_hMenuEncoding, 1, MF_BYPOSITION | MF_STRING, (UINT_PTR)CP_UTF8, TranslateT("UTF-8"));
         pos = GetMenuItemCount(*hMenu);
@@ -997,8 +997,8 @@ BOOL DoEventHookAsync(HWND hwnd, const TCHAR* pszID, const char* pszModule, int 
 
 		if ( !( si->dwFlags & GC_UNICODE )) {
             DWORD dwCP = DBGetContactSettingDword(si->hContact, SRMSGMOD_T, "ANSIcodepage", 0);
-			gcd->pszID = t2a( pszID, dwCP );
-			gch->pszUID = t2a( pszUID, dwCP );
+			gcd->pszID = t2a( pszID, 0 );
+			gch->pszUID = t2a( pszUID, 0 );
 			gch->pszText = t2a( pszText, dwCP );
 		}
 		else {
@@ -1029,8 +1029,8 @@ BOOL DoEventHook(const TCHAR* pszID, const char* pszModule, int iType, const TCH
 
 		if ( !( si->dwFlags & GC_UNICODE )) {
             DWORD dwCP = DBGetContactSettingDword(si->hContact, SRMSGMOD_T, "ANSIcodepage", 0);
-			gcd.pszID = t2a( pszID, dwCP );
-			gch.pszUID = t2a( pszUID, dwCP );
+			gcd.pszID = t2a( pszID, 0 );
+			gch.pszUID = t2a( pszUID, 0 );
 			gch.pszText = t2a( pszText, dwCP );
 		}
 		else {
@@ -1101,10 +1101,9 @@ static char* u2a( const wchar_t* src, DWORD cp )
 	char *result;
 
     if(cp == 0)
-        cp = CallService( MS_LANGPACK_GETCODEPAGE, 0, 0 );
-    else if(cp == CP_UTF8) {
+        cp = myGlobals.m_LangPackCP;
+    else if(cp == CP_UTF8)
         return(Utf8_Encode(src));
-    }
 
 	cbLen = WideCharToMultiByte( cp, 0, src, -1, NULL, 0, NULL, NULL );
 	result = ( char* )mir_alloc( cbLen+1 );

@@ -2088,7 +2088,7 @@ LABEL_SHOWWINDOW:
                             break;
                         }
                     }
-                    if(si->iType != GCW_SERVER) {
+                    if(si->iType != GCW_SERVER && !(si->dwFlags & GC_UNICODE)) {
                         pos = GetMenuItemCount(hMenu);
                         RemoveMenu(hMenu, pos - 1, MF_BYPOSITION);
                         RemoveMenu(myGlobals.g_hMenuEncoding, 1, MF_BYPOSITION);
