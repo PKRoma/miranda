@@ -289,6 +289,18 @@ __inline static int Utils_RestoreWindowPositionNoMove(HWND hwnd,HANDLE hContact,
 //Returns numbers of chars copied.
 #define MS_UTILS_PATHTOABSOLUTE "Utils/PathToAbsolute"
 
+//Unicode versions (0.7+)
+#ifdef _UNICODE
+  #define MS_UTILS_PATHTORELATIVEW "Utils/PathToRelativeW"
+  #define MS_UTILS_PATHTOABSOLUTEW "Utils/PathToAbsoluteW"
+
+  #define MS_UTILS_PATHTORELATIVET MS_UTILS_PATHTORELATIVEW
+  #define MS_UTILS_PATHTOABSOLUTET MS_UTILS_PATHTOABSOLUTEW
+#else
+  #define MS_UTILS_PATHTORELATIVET MS_UTILS_PATHTORELATIVE
+  #define MS_UTILS_PATHTOABSOLUTET MS_UTILS_PATHTOABSOLUTE
+#endif
+
 // Added in 0.4.0.1
 // Here are some string wrappers that are more safe than the win32 versions
 

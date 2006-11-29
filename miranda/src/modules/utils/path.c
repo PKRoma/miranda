@@ -70,6 +70,68 @@ static int pathToAbsolute(WPARAM wParam, LPARAM lParam) {
     }
 }
 
+#ifdef _UNICODE
+static TCHAR szMirandaPathW[MAX_PATH];
+
+static int pathIsAbsoluteW(TCHAR *path)
+{
+    if (!path||!lstrlen(path)>2) return 0;
+    if ((path[1]==':'&&path[2]=='\\')||(path[0]=='\\'&&path[1]=='\\')) return 1;
+    return 0;
+}
+
+static int pathToRelativeW(WPARAM wParam, LPARAM lParam)
+{
+    TCHAR *pSrc = (TCHAR*)wParam;
+    TCHAR *pOut = (TCHAR*)lParam;
+    if (!pSrc||!lstrlen(pSrc)||lstrlen(pSrc)>MAX_PATH) return 0;
+    if (!pathIsAbsoluteW(pSrc)) {
+        mir_sntprintf(pOut, MAX_PATH, _T("%s"), pSrc);
+        return lstrlen(pOut);
+    }
+    else {
+        TCHAR szTmp[MAX_PATH];
+
+        mir_sntprintf(szTmp, SIZEOF(szTmp), _T("%s"), pSrc);
+        _tcslwr(szTmp);
+        if (_tcsstr(szTmp, szMirandaPathW)) {
+            mir_sntprintf(pOut, MAX_PATH, _T("%s"), pSrc+lstrlen(szMirandaPathW));
+            return lstrlen(pOut);
+        }
+        else {
+            mir_sntprintf(pOut, MAX_PATH, _T("%s"), pSrc);
+            return lstrlen(pOut);
+        }
+    }
+}
+
+static int pathToAbsoluteW(WPARAM wParam, LPARAM lParam) {
+    TCHAR *pSrc = (TCHAR*)wParam;
+    TCHAR *pOut = (TCHAR*)lParam;
+    if (!pSrc||!lstrlen(pSrc)||lstrlen(pSrc)>MAX_PATH) return 0;
+    if (pathIsAbsoluteW(pSrc)||!isalnum(pSrc[0])) {
+        mir_sntprintf(pOut, MAX_PATH, _T("%s"), pSrc);
+        return lstrlen(pOut);
+    }
+    else {
+        mir_sntprintf(pOut, MAX_PATH, _T("%s%s"), szMirandaPathW, pSrc);
+        return lstrlen(pOut);
+    }
+}
+
+int InitPathUtilsW(void)
+{
+	TCHAR *p = 0;
+	GetModuleFileName(GetModuleHandle(NULL), szMirandaPathW, SIZEOF(szMirandaPathW));
+	p=_tcsrchr(szMirandaPathW,'\\');
+	if (p&&p+1) *(p+1)=0;
+    _tcslwr(szMirandaPathW);
+    CreateServiceFunction(MS_UTILS_PATHTORELATIVEW, pathToRelativeW);
+    CreateServiceFunction(MS_UTILS_PATHTOABSOLUTEW, pathToAbsoluteW);
+    return 0;
+}
+#endif
+
 int InitPathUtils(void)
 {
 	char *p = 0;
@@ -79,5 +141,9 @@ int InitPathUtils(void)
     _strlwr(szMirandaPath);
     CreateServiceFunction(MS_UTILS_PATHTORELATIVE, pathToRelative);
     CreateServiceFunction(MS_UTILS_PATHTOABSOLUTE, pathToAbsolute);
+#ifdef _UNICODE
+    return InitPathUtilsW();
+#else
     return 0;
+#endif
 }
