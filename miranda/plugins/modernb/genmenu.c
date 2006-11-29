@@ -1211,6 +1211,7 @@ int OnIconLibChanges(WPARAM wParam,LPARAM lParam)
         if (newIcon)
         {
           ImageList_ReplaceIcon(MenuObjects[mo].hMenuIcons,MenuObjects[mo].MenuItems[mi].iconId,newIcon);
+          CallService(MS_SKIN2_RELEASEICON, (WPARAM)newIcon, 0);
         }
 		if (deficon) DestroyIcon_protect(deficon);
       }	
@@ -1247,13 +1248,12 @@ int RegisterOneIcon(int mo,int mi)
 	HICON defic=0;
     sprintf(mn,Translate("Menu icons/%s"),MenuObjects[mo].Name);
 	defic=SkinEngine_ImageList_GetIcon(MenuObjects[mo].hMenuIcons,MenuObjects[mo].MenuItems[mi].iconId,0);
-    newIcon=LoadIconFromLibrary(
-      mn,
-      uname,
-      desc,
-      defic,
-      TRUE,&MenuObjects[mo].MenuItems[mi].IconRegistred);	
-    if (newIcon) ImageList_ReplaceIcon(MenuObjects[mo].hMenuIcons,MenuObjects[mo].MenuItems[mi].iconId,newIcon);
+    newIcon=LoadIconFromLibrary(mn,uname, desc, defic, TRUE,&MenuObjects[mo].MenuItems[mi].IconRegistred);	
+    if (newIcon)
+    {
+        ImageList_ReplaceIcon(MenuObjects[mo].hMenuIcons,MenuObjects[mo].MenuItems[mi].iconId,newIcon);
+        CallService(MS_SKIN2_RELEASEICON, (WPARAM)newIcon, 0);
+    }
 	if (defic) DestroyIcon_protect(defic);
   };
 

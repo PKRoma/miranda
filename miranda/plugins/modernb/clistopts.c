@@ -1207,7 +1207,7 @@ int ReserveExtraSlot(WPARAM wParam,LPARAM lParam)
             else
                 OrderTreeData[iLastFree].Name=pESINFO->pszSlotName; 
 #endif
-            ExtraImage_ReloadExtraIcons();
+            //ExtraImage_ReloadExtraIcons();
         }
         else return -1; // Already reserved
     }
