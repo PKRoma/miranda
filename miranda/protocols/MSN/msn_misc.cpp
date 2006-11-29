@@ -377,12 +377,16 @@ LONG ThreadData::sendMessage( int msgType, const char* parMsg, int parFlags )
 
 void ThreadData::sendCaps( void )
 {
-	static const char capMsg[] = 
-	"MIME-Version: 1.0\r\n"
-	"Content-Type: text/x-clientcaps\r\n\r\n"
-	"Client-Name: Miranda IM/" __VERSION_STRING "\r\n";
+	char mversion[100], capMsg[1000];
+	MSN_CallService( MS_SYSTEM_GETVERSIONTEXT, sizeof( mversion ), ( LPARAM )mversion );
 
-	sendPacket( "MSG", "%c %d\r\n%s", 'N', strlen( capMsg ), capMsg );
+	int nBytes = mir_snprintf( capMsg, sizeof( capMsg ),
+		"MIME-Version: 1.0\r\n"
+		"Content-Type: text/x-clientcaps\r\n\r\n"
+		"Client-Name: Miranda IM %s (MSN v.%s)\r\n",
+		mversion, __VERSION_STRING );
+
+	sendPacket( "MSG", "%c %d\r\n%s", 'N', nBytes, capMsg );
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////
