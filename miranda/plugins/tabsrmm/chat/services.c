@@ -643,6 +643,7 @@ int Service_AddEvent(WPARAM wParam, LPARAM lParam)
 	BOOL bRemoveFlag = FALSE;
 	int iRetVal = GC_EVENT_ERROR;
     SESSION_INFO *si = NULL;
+    BOOL fFreeText = FALSE;
 
 	if( g_sessionshutdown )
    	return 0;
@@ -667,8 +668,10 @@ int Service_AddEvent(WPARAM wParam, LPARAM lParam)
 			gce->ptszUID       = a2tf( gce->ptszUID,       gce->dwFlags, 0 );
 			gce->ptszNick      = a2tf( gce->ptszNick,      gce->dwFlags, 0 );
 			gce->ptszStatus    = a2tf( gce->ptszStatus,    gce->dwFlags, 0 );
-            if(gcd->iType != GC_EVENT_MESSAGE && gcd->iType != GC_EVENT_ACTION)
+            if(gcd->iType != GC_EVENT_MESSAGE && gcd->iType != GC_EVENT_ACTION) {
                 gce->ptszText      = a2tf( gce->ptszText,      gce->dwFlags, 0 );
+                fFreeText = TRUE;
+            }
 			gce->ptszUserInfo  = a2tf( gce->ptszUserInfo,  gce->dwFlags, 0 );
 		}
 	#endif
@@ -724,6 +727,7 @@ int Service_AddEvent(WPARAM wParam, LPARAM lParam)
         si = SM_FindSession( gce->pDest->ptszID, gce->pDest->pszModule );
 #if defined(_UNICODE)
         if(!(gce->dwFlags & GC_UNICODE)) {
+            fFreeText = TRUE;
             if(si)
                 gce->ptszText = a2tf( gce->ptszText, gce->dwFlags, DBGetContactSettingDword(si->hContact, SRMSGMOD_T, "ANSIcodepage", 0) );
             else
@@ -820,7 +824,8 @@ LBL_Exit:
 
 	#if defined( _UNICODE )
 		if ( !( gce->dwFlags & GC_UNICODE )) {
-			mir_free((void*)gce->ptszText );
+            if(fFreeText)
+                mir_free((void*)gce->ptszText );
 			mir_free((void*)gce->ptszNick );
 			mir_free((void*)gce->ptszUID );
 			mir_free((void*)gce->ptszStatus );

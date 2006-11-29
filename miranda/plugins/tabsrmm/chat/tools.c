@@ -732,7 +732,7 @@ BOOL LogToFile(SESSION_INFO* si, GCEVENT * gce)
 	if (!PathIsDirectoryA(szFolder))
 		CreateDirectoryA(szFolder, NULL);
 
-	pszSessionName = t2a( si->ptszID );
+	pszSessionName = t2a( si->ptszID, 0 );
 	mir_snprintf( szName, MAX_PATH,"%s.log", pszSessionName );
 	ValidateFilename(szName);
 	mir_free( pszSessionName );
@@ -827,7 +827,7 @@ BOOL LogToFile(SESSION_INFO* si, GCEVENT * gce)
 			mir_sntprintf(szLine, SIZEOF(szLine), TranslateT("%s %s\n"), szTime, szBuffer);
 
 		if ( szLine[0] ) {
-			char* p = t2a( szLine );
+			char* p = t2a( szLine, 0 );
 			fputs(p, hFile);
 			mir_free( p );
 
@@ -953,6 +953,7 @@ UINT CreateGCMenu(HWND hwndDlg, HMENU *hMenu, int iIndex, POINT pt, SESSION_INFO
 
     if(si->iType != GCW_SERVER) {
         AppendMenu(*hMenu, MF_SEPARATOR, 0, 0);
+        InsertMenu(myGlobals.g_hMenuEncoding, 1, MF_BYPOSITION | MF_STRING, (UINT_PTR)CP_UTF8, TranslateT("UTF-8"));
         pos = GetMenuItemCount(*hMenu);
         InsertMenu(*hMenu, pos, MF_BYPOSITION | MF_POPUP, (UINT_PTR) myGlobals.g_hMenuEncoding, TranslateT("Character Encoding"));
         for(i = 0; i < GetMenuItemCount(myGlobals.g_hMenuEncoding); i++)
@@ -995,9 +996,10 @@ BOOL DoEventHookAsync(HWND hwnd, const TCHAR* pszID, const char* pszModule, int 
 			return FALSE;
 
 		if ( !( si->dwFlags & GC_UNICODE )) {
-			gcd->pszID = t2a( pszID );
-			gch->pszUID = t2a( pszUID );
-			gch->pszText = t2a( pszText );
+            DWORD dwCP = DBGetContactSettingDword(si->hContact, SRMSGMOD_T, "ANSIcodepage", 0);
+			gcd->pszID = t2a( pszID, dwCP );
+			gch->pszUID = t2a( pszUID, dwCP );
+			gch->pszText = t2a( pszText, dwCP );
 		}
 		else {
 	#endif
@@ -1026,9 +1028,10 @@ BOOL DoEventHook(const TCHAR* pszID, const char* pszModule, int iType, const TCH
 			return FALSE;
 
 		if ( !( si->dwFlags & GC_UNICODE )) {
-			gcd.pszID = t2a( pszID );
-			gch.pszUID = t2a( pszUID );
-			gch.pszText = t2a( pszText );
+            DWORD dwCP = DBGetContactSettingDword(si->hContact, SRMSGMOD_T, "ANSIcodepage", 0);
+			gcd.pszID = t2a( pszID, dwCP );
+			gch.pszUID = t2a( pszUID, dwCP );
+			gch.pszText = t2a( pszText, dwCP );
 		}
 		else {
 	#endif
@@ -1073,7 +1076,10 @@ TCHAR* a2tf( const TCHAR* str, int flags, DWORD cp )
             int cbLen;
 			TCHAR *result;
 
-			if(cp == 0)
+            if(cp == CP_UTF8)
+                return(Utf8_Decode((char *)str));
+
+            if(cp == 0)
                 cp = myGlobals.m_LangPackCP; // CallService( MS_LANGPACK_GETCODEPAGE, 0, 0 );
 			cbLen = MultiByteToWideChar( cp, 0, (char*)str, -1, 0, 0 );
 			result = ( TCHAR* )mir_alloc( sizeof(TCHAR)*( cbLen+1 ));
@@ -1089,24 +1095,31 @@ TCHAR* a2tf( const TCHAR* str, int flags, DWORD cp )
 	#endif
 }
 
-static char* u2a( const wchar_t* src )
+static char* u2a( const wchar_t* src, DWORD cp )
 {
-	int codepage = CallService( MS_LANGPACK_GETCODEPAGE, 0, 0 );
+	int  cbLen;
+	char *result;
 
-	int cbLen = WideCharToMultiByte( codepage, 0, src, -1, NULL, 0, NULL, NULL );
-	char* result = ( char* )mir_alloc( cbLen+1 );
+    if(cp == 0)
+        cp = CallService( MS_LANGPACK_GETCODEPAGE, 0, 0 );
+    else if(cp == CP_UTF8) {
+        return(Utf8_Encode(src));
+    }
+
+	cbLen = WideCharToMultiByte( cp, 0, src, -1, NULL, 0, NULL, NULL );
+	result = ( char* )mir_alloc( cbLen+1 );
 	if ( result == NULL )
 		return NULL;
 
-	WideCharToMultiByte( codepage, 0, src, -1, result, cbLen, NULL, NULL );
+	WideCharToMultiByte( cp, 0, src, -1, result, cbLen, NULL, NULL );
 	result[ cbLen ] = 0;
 	return result;
 }
 
-char* t2a( const TCHAR* src )
+char* t2a( const TCHAR* src, DWORD cp )
 {
 	#if defined( _UNICODE )
-		return u2a( src );
+		return u2a( src, cp );
 	#else
 		return mir_strdup( src );
 	#endif

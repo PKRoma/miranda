@@ -2021,7 +2021,7 @@ LABEL_SHOWWINDOW:
 
 					uID = CreateGCMenu(hwndDlg, &hMenu, 1, pt, si, NULL, pszWord);
 
-                    if(uID > 800 && uID < 1400) {
+                    if((uID > 800 && uID < 1400) || uID == CP_UTF8) {
                         dat->codePage = uID;
                         DBWriteContactSettingDword(dat->hContact, SRMSGMOD_T, "ANSIcodepage", dat->codePage);
                     }
@@ -2091,6 +2091,7 @@ LABEL_SHOWWINDOW:
                     if(si->iType != GCW_SERVER) {
                         pos = GetMenuItemCount(hMenu);
                         RemoveMenu(hMenu, pos - 1, MF_BYPOSITION);
+                        RemoveMenu(myGlobals.g_hMenuEncoding, 1, MF_BYPOSITION);
                     }
 					DestroyGCMenu(&hMenu, 5);
 				}
@@ -2118,7 +2119,7 @@ LABEL_SHOWWINDOW:
 							isLink = g_Settings.ClickableNicks ? IsStringValidLink(tr.lpstrText) : TRUE;
 
 							if (isLink) {
-								char* pszUrl = t2a(tr.lpstrText);
+								char* pszUrl = t2a(tr.lpstrText, 0);
 								if (((ENLINK *) lParam)->msg == WM_RBUTTONDOWN) {
 									HMENU hSubMenu;
 									POINT pt;
