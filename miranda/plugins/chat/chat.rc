@@ -33,32 +33,22 @@ STYLE DS_SETFONT | DS_3DLOOK | DS_FIXEDSYS | DS_CENTER | WS_MINIMIZEBOX |
     WS_THICKFRAME
 FONT 8, "MS Shell Dlg", 0, 0, 0x1
 BEGIN
-    CONTROL         "",IDC_MESSAGE,"RichEdit20A",ES_MULTILINE | 
+    CONTROL         "",IDC_MESSAGE,RICHEDIT_CLASS,ES_MULTILINE | 
                     ES_AUTOVSCROLL | ES_NOHIDESEL | ES_WANTRETURN | 
                     ES_NUMBER | WS_VSCROLL | WS_TABSTOP,0,128,127,12,
                     WS_EX_STATICEDGE
     PUSHBUTTON      "&Send",IDOK,136,126,115,14,WS_DISABLED
-    CONTROL         "",IDC_SMILEY,"MButtonClass",WS_DISABLED | WS_TABSTOP,
-                    112,108,15,13,0x18000000L
-    CONTROL         "",IDC_BOLD,"MButtonClass",WS_DISABLED | WS_TABSTOP,8,
-                    108,15,13,0x18000000L
-    CONTROL         "",IDC_ITALICS,"MButtonClass",WS_DISABLED | WS_TABSTOP,
-                    24,108,15,13,0x18000000L
-    CONTROL         "",IDC_UNDERLINE,"MButtonClass",WS_DISABLED | WS_TABSTOP,
-                    40,108,15,13,0x18000000L
-    CONTROL         "",IDC_COLOR,"MButtonClass",WS_DISABLED | WS_TABSTOP,68,
-                    108,15,13,0x18000000L
-    CONTROL         "",IDC_BKGCOLOR,"MButtonClass",WS_DISABLED | WS_TABSTOP,
-                    84,108,15,13,0x18000000L
-    CONTROL         "",IDC_HISTORY,"MButtonClass",WS_TABSTOP,188,108,15,13,
-                    0x18000000L
-    CONTROL         "",IDC_FILTER,"MButtonClass",WS_TABSTOP,220,108,15,13,
-                    0x18000000L
-    CONTROL         "",IDC_CHANMGR,"MButtonClass",WS_DISABLED | WS_TABSTOP,
-                    204,108,15,13,0x18000000L
-    CONTROL         "",IDC_SHOWNICKLIST,"MButtonClass",WS_TABSTOP,236,108,15,
-                    13,0x18000000L
-    CONTROL         "",IDC_LOG,"RichEdit20A",ES_MULTILINE | ES_AUTOVSCROLL | 
+    CONTROL         "",IDC_SMILEY,"MButtonClass",WS_DISABLED | WS_TABSTOP,112,108,15,13,0x18000000L
+    CONTROL         "",IDC_BOLD,"MButtonClass",WS_DISABLED | WS_TABSTOP,8,108,15,13,0x18000000L
+    CONTROL         "",IDC_ITALICS,"MButtonClass",WS_DISABLED | WS_TABSTOP,24,108,15,13,0x18000000L
+    CONTROL         "",IDC_UNDERLINE,"MButtonClass",WS_DISABLED | WS_TABSTOP,40,108,15,13,0x18000000L
+    CONTROL         "",IDC_COLOR,"MButtonClass",WS_DISABLED | WS_TABSTOP,68,108,15,13,0x18000000L
+    CONTROL         "",IDC_BKGCOLOR,"MButtonClass",WS_DISABLED | WS_TABSTOP,84,108,15,13,0x18000000L
+    CONTROL         "",IDC_HISTORY,"MButtonClass",WS_TABSTOP,188,108,15,13,0x18000000L
+    CONTROL         "",IDC_FILTER,"MButtonClass",WS_TABSTOP,220,108,15,13,0x18000000L
+    CONTROL         "",IDC_CHANMGR,"MButtonClass",WS_DISABLED | WS_TABSTOP,204,108,15,13,0x18000000L
+    CONTROL         "",IDC_SHOWNICKLIST,"MButtonClass",WS_TABSTOP,236,108,15,13,0x18000000L
+    CONTROL         "",IDC_LOG,RICHEDIT_CLASS,ES_MULTILINE | ES_AUTOVSCROLL | 
                     ES_READONLY | ES_NUMBER | WS_VSCROLL | WS_TABSTOP,8,23,
                     164,73,WS_EX_STATICEDGE
     CONTROL         "",IDC_SPLITTERX,"Static",SS_ENHMETAFILE,172,23,10,73
@@ -66,10 +56,8 @@ BEGIN
     LISTBOX         IDC_LIST,182,23,69,73,LBS_OWNERDRAWFIXED | 
                     LBS_NOINTEGRALHEIGHT | LBS_NODATA | NOT WS_BORDER | 
                     WS_VSCROLL | WS_TABSTOP,WS_EX_STATICEDGE
-    CONTROL         "Tab1",IDC_TAB,"SysTabControl32",TCS_MULTILINE,0,0,231,
-                    102
-    CONTROL         "",IDC_CLOSE,"MButtonClass",WS_TABSTOP,236,2,15,13,
-                    0x18000000L
+    CONTROL         "Tab1",IDC_TAB,"SysTabControl32",TCS_MULTILINE,0,0,231,102
+    CONTROL         "",IDC_CLOSE,"MButtonClass",WS_TABSTOP,236,2,15,13,0x18000000L
 END
 
 IDD_FILTER DIALOGEX 0, 0, 83, 125
@@ -80,28 +68,17 @@ BEGIN
     CTEXT           "Show these events only:",IDC_TEXTO,0,0,83,13,
                     SS_CENTERIMAGE
     LTEXT           "",IDC_STATIC,0,13,83,112
-    CONTROL         "Actions",IDC_1,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,5,
-                    13,73,10
-    CONTROL         "Messages",IDC_2,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,5,
-                    23,73,10
-    CONTROL         "Nick changes",IDC_3,"Button",BS_AUTOCHECKBOX | 
-                    WS_TABSTOP,5,33,73,10
-    CONTROL         "Users joining",IDC_4,"Button",BS_AUTOCHECKBOX | 
-                    WS_TABSTOP,5,43,73,10
-    CONTROL         "Users leaving",IDC_5,"Button",BS_AUTOCHECKBOX | 
-                    WS_TABSTOP,5,53,73,10
-    CONTROL         "Topic changes",IDC_6,"Button",BS_AUTOCHECKBOX | 
-                    WS_TABSTOP,5,63,73,10
-    CONTROL         "Status changes",IDC_7,"Button",BS_AUTOCHECKBOX | 
-                    WS_TABSTOP,5,73,73,10
-    CONTROL         "Information",IDC_8,"Button",BS_AUTOCHECKBOX | 
-                    WS_TABSTOP,5,83,73,10
-    CONTROL         "Disconnects",IDC_9,"Button",BS_AUTOCHECKBOX | 
-                    WS_TABSTOP,5,93,73,10
-    CONTROL         "User kicks",IDC_10,"Button",BS_AUTOCHECKBOX | 
-                    WS_TABSTOP,5,103,73,10
-    CONTROL         "Notices",IDC_11,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,5,
-                    113,73,10
+    CONTROL         "Actions",IDC_1,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,5,13,73,10
+    CONTROL         "Messages",IDC_2,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,5,23,73,10
+    CONTROL         "Nick changes",IDC_3,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,5,33,73,10
+    CONTROL         "Users joining",IDC_4,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,5,43,73,10
+    CONTROL         "Users leaving",IDC_5,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,5,53,73,10
+    CONTROL         "Topic changes",IDC_6,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,5,63,73,10
+    CONTROL         "Status changes",IDC_7,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,5,73,73,10
+    CONTROL         "Information",IDC_8,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,5,83,73,10
+    CONTROL         "Disconnects",IDC_9,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,5,93,73,10
+    CONTROL         "User kicks",IDC_10,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,5,103,73,10
+    CONTROL         "Notices",IDC_11,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,5,113,73,10
 END
 
 
