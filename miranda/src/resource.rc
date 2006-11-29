@@ -1106,7 +1106,7 @@ BEGIN
     CONTROL         "Become idle if the computer is locked (2000/XP+ only)",
                     IDC_LOCKED,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,25,99,
                     249,9
-    CONTROL         "Become idle if a terminal session is idle",IDC_IDLETERMINAL,
+    CONTROL         "Become idle if a terminal session is disconnected",IDC_IDLETERMINAL,
                     "Button",BS_AUTOCHECKBOX | WS_TABSTOP,25,115,265,10
     CONTROL         "Do not let protocols report any idle information",
                     IDC_IDLEPRIVATE,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,25,
