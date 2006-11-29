@@ -72,6 +72,10 @@ created. CTRL key needs to be pressed only when a tab is being dropped.
 
 6. Change Log
 -------------
+2.5.9.9
++ new shortcuts in chats windows
++ improved FontService support
+* bugfixes
 2.5.9.8
 + full integration with chat.dll
 + status icons API
