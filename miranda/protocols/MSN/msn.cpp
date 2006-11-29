@@ -109,7 +109,7 @@ HANDLE			msnMenuItems[ MENU_ITEMS_COUNT ];
 HANDLE			hNetlibUser = NULL;
 HANDLE			hInitChat = NULL;
 
-static HANDLE hHookHandle[8] = { 0 }; 
+static HANDLE hHookHandle[8] = { 0 };
 
 bool				msnUseExtendedPopups;
 
@@ -286,9 +286,6 @@ extern "C" int __declspec(dllexport) Load( PLUGINLINK* link )
 	mir_snprintf( path, sizeof( path ), "%s:HotmailNotify", protocolname );
 	ModuleName = mir_strdup( path );
 
-	mir_snprintf( path, sizeof( path ), "%s/Status", protocolname );
-	MSN_CallService( MS_DB_SETSETTINGRESIDENT, TRUE, ( LPARAM )path );
-
 //	Uninstalling purposes
 //	if (ServiceExists("PluginSweeper/Add"))
 //		MSN_CallService("PluginSweeper/Add",(WPARAM)MSN_Translate(ModuleName),(LPARAM)ModuleName);
@@ -304,7 +301,7 @@ extern "C" int __declspec(dllexport) Load( PLUGINLINK* link )
 	char evtname[250];
 	sprintf(evtname,"%s/Nudge",protocolname);
 	hMSNNudge = CreateHookableEvent(evtname);
-	
+
 	MSN_InitThreads();
 
 	PROTOCOLDESCRIPTOR pd;
