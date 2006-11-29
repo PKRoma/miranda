@@ -381,16 +381,6 @@ struct MsgEditSubclassData
 	int	msgQueueCount;
 };
 
-static void SaveKeyboardMessage(struct MsgEditSubclassData *dat, UINT message, WPARAM wParam, LPARAM lParam)
-{
-	dat->keyboardMsgQueue = (struct SavedMessageData *) mir_realloc(dat->keyboardMsgQueue, sizeof(struct SavedMessageData) * (dat->msgQueueCount + 1));
-	dat->keyboardMsgQueue[dat->msgQueueCount].message = message;
-	dat->keyboardMsgQueue[dat->msgQueueCount].wParam = wParam;
-	dat->keyboardMsgQueue[dat->msgQueueCount].lParam = lParam;
-	dat->keyboardMsgQueue[dat->msgQueueCount].keyStates = (GetKeyState(VK_SHIFT) & 0x8000 ? MOD_SHIFT : 0) | (GetKeyState(VK_CONTROL) & 0x8000 ? MOD_CONTROL : 0) | (GetKeyState(VK_MENU) & 0x8000 ? MOD_ALT : 0);
-	dat->msgQueueCount++;
-}
-
 static LRESULT CALLBACK LogEditSubclassProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 {
 /*	switch (msg) {
@@ -1695,7 +1685,7 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
 			cf2.cbSize = sizeof(cf2);
 			cf2.crTextColor = colour;
 			cf2.bCharSet = lf.lfCharSet;
-			lstrcpyn(cf2.szFaceName, lf.lfFaceName, LF_FACESIZE);
+			_tcsncpy(cf2.szFaceName, lf.lfFaceName, LF_FACESIZE);
 			cf2.dwEffects = ((lf.lfWeight >= FW_BOLD) ? CFE_BOLD : 0) | (lf.lfItalic ? CFE_ITALIC : 0);
 			cf2.wWeight = (WORD)lf.lfWeight;
 			cf2.bPitchAndFamily = lf.lfPitchAndFamily;
