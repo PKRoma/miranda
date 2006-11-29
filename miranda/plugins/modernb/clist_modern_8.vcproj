@@ -435,6 +435,10 @@
 			Filter="cpp;c;cxx;rc;def;r;odl;idl;hpj;bat"
 			>
 			<File
+				RelativePath=".\button.c"
+				>
+			</File>
+			<File
 				RelativePath=".\cache_funcs.c"
 				>
 			</File>
@@ -791,28 +795,6 @@
 				</FileConfiguration>
 			</File>
 			<File
-				RelativePath=".\forkthread.c"
-				>
-				<FileConfiguration
-					Name="Release|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						UsePrecompiledHeader="2"
-						PrecompiledHeaderThrough="commonheaders.h"
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Release Unicode|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						UsePrecompiledHeader="2"
-						PrecompiledHeaderThrough="commonheaders.h"
-					/>
-				</FileConfiguration>
-			</File>
-			<File
 				RelativePath=".\genmenu.c"
 				>
 			</File>
@@ -898,6 +880,10 @@
 			</File>
 			<File
 				RelativePath=".\utf.c"
+				>
+			</File>
+			<File
+				RelativePath=".\viewmodes.c"
 				>
 			</File>
 			<Filter
@@ -1072,28 +1058,6 @@
 					</FileConfiguration>
 				</File>
 				<File
-					RelativePath=".\cluiopts.c"
-					>
-					<FileConfiguration
-						Name="Release|Win32"
-						>
-						<Tool
-							Name="VCCLCompilerTool"
-							UsePrecompiledHeader="2"
-							PrecompiledHeaderThrough="commonheaders.h"
-						/>
-					</FileConfiguration>
-					<FileConfiguration
-						Name="Release Unicode|Win32"
-						>
-						<Tool
-							Name="VCCLCompilerTool"
-							UsePrecompiledHeader="2"
-							PrecompiledHeaderThrough="commonheaders.h"
-						/>
-					</FileConfiguration>
-				</File>
-				<File
 					RelativePath=".\genmenuopt.c"
 					>
 				</File>
@@ -1147,10 +1111,6 @@
 				</File>
 				<File
 					RelativePath=".\SkinOpt.c"
-					>
-				</File>
-				<File
-					RelativePath=".\tabbedoptions.c"
 					>
 				</File>
 			</Filter>
