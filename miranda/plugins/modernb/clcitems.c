@@ -727,20 +727,24 @@ int __fastcall CLVM_GetContactHiddenStatus(HANDLE hContact, char *szProto, struc
 	char szTemp[64];
 	TCHAR szGroupMask[256];
 	DWORD dwLocalMask;
+    PDNCE pdnce=(PDNCE)pcli->pfnGetCacheEntry(hContact);
 	BOOL fEmbedded=dat->force_in_dialog;
 	// always hide subcontacts (but show them on embedded contact lists)
 	
 	if(g_CluiData.bMetaAvail && dat != NULL && dat->IsMetaContactsEnabled && DBGetContactSettingByte(hContact, "MetaContacts", "IsSubcontact", 0))
 		return -1; //subcontact
-
-	if(g_CluiData.bFilterEffective && !fEmbedded) 
+    if (pdnce && pdnce->isUnknown && !fEmbedded)    
+        return 1; //'Unknown Contact'
+	if(pdnce && g_CluiData.bFilterEffective && !fEmbedded) 
 	{
 		if(szProto == NULL)
 			szProto = (char *)CallService(MS_PROTO_GETCONTACTBASEPROTO, (WPARAM)hContact, 0);
 		// check stickies first (priority), only if we really have stickies defined (CLVM_STICKY_CONTACTS is set).
-		if(g_CluiData.bFilterEffective & CLVM_STICKY_CONTACTS) {
+		if(g_CluiData.bFilterEffective & CLVM_STICKY_CONTACTS) 
+        {
 			if((dwLocalMask = DBGetContactSettingDword(hContact, CLVM_MODULE, g_CluiData.current_viewmode, 0)) != 0) {
-				if(g_CluiData.bFilterEffective & CLVM_FILTER_STICKYSTATUS) {
+				if(g_CluiData.bFilterEffective & CLVM_FILTER_STICKYSTATUS) 
+                {
 					WORD wStatus = DBGetContactSettingWord(hContact, szProto, "Status", ID_STATUS_OFFLINE);
 					return !((1 << (wStatus - ID_STATUS_OFFLINE)) & HIWORD(dwLocalMask));
 				}

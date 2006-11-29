@@ -879,64 +879,162 @@
 							CompileAs="2"/>
 					</FileConfiguration>
 				</File>
-				<File
-					RelativePath=".\skinpp.cpp">
-					<FileConfiguration
-						Name="Debug Unicode|Win32">
-						<Tool
-							Name="VCCLCompilerTool"
-							UsePrecompiledHeader="0"/>
-					</FileConfiguration>
-					<FileConfiguration
-						Name="Release Unicode|Win32"
-						ExcludedFromBuild="TRUE">
-						<Tool
-							Name="VCCLCompilerTool"/>
-					</FileConfiguration>
-				</File>
 			</Filter>
 			<Filter
-				Name="XMLParser"
+				Name="SkinPPEngine"
 				Filter="">
-				<File
-					RelativePath=".\XMLParser\XMLDocument.cpp">
-					<FileConfiguration
-						Name="Debug Unicode|Win32">
-						<Tool
-							Name="VCCLCompilerTool"
-							UsePrecompiledHeader="0"/>
-					</FileConfiguration>
-					<FileConfiguration
-						Name="Release Unicode|Win32"
-						ExcludedFromBuild="TRUE">
-						<Tool
-							Name="VCCLCompilerTool"/>
-					</FileConfiguration>
-				</File>
-				<File
-					RelativePath=".\XMLParser\XMLDocument.h">
-				</File>
-				<File
-					RelativePath=".\XMLParser\XMLNode.cpp">
-					<FileConfiguration
-						Name="Debug Unicode|Win32">
-						<Tool
-							Name="VCCLCompilerTool"
-							UsePrecompiledHeader="0"/>
-					</FileConfiguration>
-					<FileConfiguration
-						Name="Release Unicode|Win32"
-						ExcludedFromBuild="TRUE">
-						<Tool
-							Name="VCCLCompilerTool"/>
-					</FileConfiguration>
-				</File>
-				<File
-					RelativePath=".\XMLParser\XMLNode.h">
-				</File>
-				<File
-					RelativePath=".\XMLParser\XMLParser.h">
-				</File>
+				<Filter
+					Name="Headers"
+					Filter="">
+					<File
+						RelativePath=".\skinpp.h">
+					</File>
+					<File
+						RelativePath=".\skinpp_object.h">
+					</File>
+					<File
+						RelativePath=".\skinpp_object_glyph.h">
+					</File>
+					<File
+						RelativePath=".\skinpp_private.h">
+					</File>
+				</Filter>
+				<Filter
+					Name="Sources"
+					Filter="">
+					<File
+						RelativePath=".\skinpp.cpp">
+						<FileConfiguration
+							Name="Release|Win32">
+							<Tool
+								Name="VCCLCompilerTool"
+								UsePrecompiledHeader="0"/>
+						</FileConfiguration>
+						<FileConfiguration
+							Name="Debug|Win32">
+							<Tool
+								Name="VCCLCompilerTool"
+								UsePrecompiledHeader="0"/>
+						</FileConfiguration>
+						<FileConfiguration
+							Name="Debug Unicode|Win32">
+							<Tool
+								Name="VCCLCompilerTool"
+								UsePrecompiledHeader="0"/>
+						</FileConfiguration>
+						<FileConfiguration
+							Name="Release Unicode|Win32"
+							ExcludedFromBuild="TRUE">
+							<Tool
+								Name="VCCLCompilerTool"
+								UsePrecompiledHeader="0"/>
+						</FileConfiguration>
+					</File>
+					<File
+						RelativePath=".\skinpp_object.cpp">
+						<FileConfiguration
+							Name="Release|Win32">
+							<Tool
+								Name="VCCLCompilerTool"
+								UsePrecompiledHeader="0"/>
+						</FileConfiguration>
+						<FileConfiguration
+							Name="Debug|Win32">
+							<Tool
+								Name="VCCLCompilerTool"
+								UsePrecompiledHeader="0"/>
+						</FileConfiguration>
+						<FileConfiguration
+							Name="Debug Unicode|Win32">
+							<Tool
+								Name="VCCLCompilerTool"
+								UsePrecompiledHeader="0"/>
+						</FileConfiguration>
+						<FileConfiguration
+							Name="Release Unicode|Win32">
+							<Tool
+								Name="VCCLCompilerTool"
+								UsePrecompiledHeader="0"/>
+						</FileConfiguration>
+					</File>
+					<File
+						RelativePath=".\skinpp_object_glyph.cpp">
+						<FileConfiguration
+							Name="Release|Win32">
+							<Tool
+								Name="VCCLCompilerTool"
+								UsePrecompiledHeader="0"/>
+						</FileConfiguration>
+						<FileConfiguration
+							Name="Debug|Win32">
+							<Tool
+								Name="VCCLCompilerTool"
+								UsePrecompiledHeader="0"/>
+						</FileConfiguration>
+						<FileConfiguration
+							Name="Debug Unicode|Win32">
+							<Tool
+								Name="VCCLCompilerTool"
+								UsePrecompiledHeader="0"/>
+						</FileConfiguration>
+						<FileConfiguration
+							Name="Release Unicode|Win32">
+							<Tool
+								Name="VCCLCompilerTool"
+								UsePrecompiledHeader="0"/>
+						</FileConfiguration>
+					</File>
+				</Filter>
+				<Filter
+					Name="Docs"
+					Filter="">
+					<File
+						RelativePath=".\skinpp.txt">
+					</File>
+				</Filter>
+				<Filter
+					Name="XMLParser"
+					Filter="">
+					<File
+						RelativePath=".\XMLParser\XMLDocument.cpp">
+						<FileConfiguration
+							Name="Debug Unicode|Win32">
+							<Tool
+								Name="VCCLCompilerTool"
+								UsePrecompiledHeader="0"/>
+						</FileConfiguration>
+						<FileConfiguration
+							Name="Release Unicode|Win32"
+							ExcludedFromBuild="TRUE">
+							<Tool
+								Name="VCCLCompilerTool"/>
+						</FileConfiguration>
+					</File>
+					<File
+						RelativePath=".\XMLParser\XMLDocument.h">
+					</File>
+					<File
+						RelativePath=".\XMLParser\XMLNode.cpp">
+						<FileConfiguration
+							Name="Debug Unicode|Win32">
+							<Tool
+								Name="VCCLCompilerTool"
+								UsePrecompiledHeader="0"/>
+						</FileConfiguration>
+						<FileConfiguration
+							Name="Release Unicode|Win32"
+							ExcludedFromBuild="TRUE">
+							<Tool
+								Name="VCCLCompilerTool"/>
+						</FileConfiguration>
+					</File>
+					<File
+						RelativePath=".\XMLParser\XMLNode.h">
+					</File>
+					<File
+						RelativePath=".\XMLParser\XMLParser.h">
+					</File>
+				</Filter>
 			</Filter>
 		</Filter>
 		<Filter
@@ -1013,12 +1111,6 @@
 			</File>
 			<File
 				RelativePath="SkinEngine.h">
-			</File>
-			<File
-				RelativePath=".\skinpp.h">
-			</File>
-			<File
-				RelativePath=".\skinpp_private.h">
 			</File>
 			<File
 				RelativePath=".\statusmodes.h">

@@ -1,0 +1,43 @@
+//////////////////////////////////////////////////////////////////////////
+//        This is brief description of skin engine xml format           //
+//////////////////////////////////////////////////////////////////////////
+
+
+/************************************************************************\
+				Glyph object description format:
+--------------------------------------------------------------------------
+
+...
+	<object.name opacity='255'>
+		<image file="filename.png" x='0' y='0' width='0' height='0' />
+		<resize top='0' left='0' bottom='0' right='0' mode='tile' />
+		<....>
+	</object.name>
+...
+
+The Glyph Object is described within <object.name> node. 
+ Attributes: 
+
+	opacity - object opacity, numeric, [0..255], default is 255.
+
+The image is described in <image> subnode. 
+ Attributes:
+
+	file -	image file name relative to skin root folder, 
+			default is empty - mean internal clist modern skin image.
+	x, y -	top left corner of fragment on image map - default are (0,0)
+	width, height - width and height of fragment image, default
+			are image size minus top-left corner coordinate.
+
+The second subnode is <resize> - describe how to fill requested area 
+if glyph image is too small:
+ Attributes:
+	
+	top, bottom, left, right- the constant margins on sides, default are 0
+	mode -	the how to fill mode, 
+			possible values: tile, vtile, htile, stretch - (tile both 
+			directions, tile vertical, tile horizontal, stretch 
+			both directions), default is 'tile'
+
+\************************************************************************/	
+	

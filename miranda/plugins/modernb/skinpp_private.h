@@ -26,6 +26,9 @@ File contains class definitions for skinpp system
 
 \**************************************************************************/
 
+#ifndef skinpp_private_h__
+#define skinpp_private_h__
+
 #ifdef UNICODE
 #define tstring wstring
 #else 
@@ -50,6 +53,8 @@ typedef OBJLIST::const_iterator OBJLIST_ITER;
 
 typedef list<class skinpp_SELECTOR* > SELECTORLIST;
 typedef SELECTORLIST::const_iterator SELECTORLIST_ITER;
+
+
 
 class skinpp_SKIN
 {
@@ -83,27 +88,7 @@ private:
 
 };
 
-class skinpp_SKINOBJECT
-{
-public:
-	//constructor and destructor
-	skinpp_SKINOBJECT();
-	~skinpp_SKINOBJECT();
-
-	virtual int GetObjectDataFromXMLNode(XMLNode * lpNode);	// gets data from node
-	virtual int PutObjectDataToXMLNode(XMLNode * lpNode);	// put data to node
-};
-
-class skinpp_GLYPH: public skinpp_SKINOBJECT
-{
-public:
-	//constructor and destructor
-	skinpp_GLYPH();
-	~skinpp_GLYPH();
-
-	virtual int GetObjectDataFromXMLNode(XMLNode * lpNode);	// gets data from node
-	virtual int PutObjectDataToXMLNode(XMLNode * lpNode);	// put data to node
-};
+#include "skinpp_object.h"
 
 class skinpp_SOLID: public skinpp_SKINOBJECT
 {
@@ -114,6 +99,10 @@ public:
 
 	virtual int GetObjectDataFromXMLNode(XMLNode * lpNode);	// gets data from node
 	virtual int PutObjectDataToXMLNode(XMLNode * lpNode);	// put data to node
+
+    // data of solid brush object
+    BYTE    m_bOpacity;     // Common brush opacity
+    DWORD   m_dwColor;      // Color of solid brush
 };
 
 class skinpp_GRADIENT: public skinpp_SKINOBJECT
@@ -125,6 +114,13 @@ public:
 
 	virtual int GetObjectDataFromXMLNode(XMLNode * lpNode);	// gets data from node
 	virtual int PutObjectDataToXMLNode(XMLNode * lpNode);	// put data to node
+
+    // data of gradient brush object
+    BYTE    m_bStartOpacity;     // start brush opacity
+    DWORD   m_dwStartColor;      // start color of gradient brush
+    BYTE    m_bEndOpacity;       // end brush opacity
+    DWORD   m_dwEndColor;        // end color of gradient brush
+    BYTE    m_bDirection;       
 };
 
 class skinpp_EMPTY: public skinpp_SKINOBJECT
@@ -143,3 +139,5 @@ class skinpp_SELECTOR
 public:
 	//constructor and destructor
 };
+
+#endif // skinpp_private_h__

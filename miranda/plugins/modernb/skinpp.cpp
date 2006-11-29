@@ -28,16 +28,6 @@ xml load from file etc
 \**************************************************************************/
 
 #include <windows.h>
-//#include <commctrl.h>
-//#include <stdio.h>
-//#include <time.h>
-//#include <stddef.h>
-//#include <process.h>
-//#include <io.h>
-//#include <string.h>
-//#include <direct.h>
-//#include "resource.h"
-
 #include <win2k.h>
 #include "newpluginapi.h"	//this is common header for miranda plugin api
 #include "m_system.h"
@@ -194,22 +184,3 @@ HRESULT skinpp_SKIN::PutDataToXMLDocument()
 //   skinpp_SKINOBJECT implementation
 //
 
-skinpp_SKINOBJECT::skinpp_SKINOBJECT()
-{
-
-}
-
-skinpp_SKINOBJECT::~skinpp_SKINOBJECT()
-{
-
-}
-
-int skinpp_SKINOBJECT::GetObjectDataFromXMLNode(XMLNode * lpNode)
-{
-	return 0;
-}
-
-int skinpp_SKINOBJECT::PutObjectDataToXMLNode(XMLNode * lpNode)
-{
-	return 0;
-}
