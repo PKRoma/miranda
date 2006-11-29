@@ -81,9 +81,12 @@ static fontOptionsList[] = {
 
 int fontOptionsListSize = SIZEOF(fontOptionsList);
 
+int Chat_FontsChanged(WPARAM wParam,LPARAM lParam);
+
 int FontServiceFontsChanged(WPARAM wParam, LPARAM lParam)
 {
 	WindowList_Broadcast(g_dat->hMessageWindowList, DM_OPTIONSAPPLIED, 0, 0);
+	Chat_FontsChanged(wParam, lParam);
 	return 0;
 }
 
@@ -95,8 +98,8 @@ void RegisterFontServiceFonts() {
 		FontIDT fid = {0};
 		ColourIDT cid = {0};
 		fid.cbSize = sizeof(fid);
-		
-		lstrcpyn(fid.group, _T("Scriver"), SIZEOF(fid.group));
+
+		_tcsncpy(fid.group, _T("Scriver"), SIZEOF(fid.group));
 		strncpy(fid.dbSettingsGroup, (SRMMMOD), SIZEOF(fid.dbSettingsGroup));
 		fid.flags = FIDF_DEFAULTVALID;
 		for (i = 0; i < SIZEOF(fontOptionsList); i++) {
@@ -104,62 +107,56 @@ void RegisterFontServiceFonts() {
 			mir_snprintf(szTemp, SIZEOF(szTemp), "SRMFont%d", i);
 			strncpy(fid.prefix, szTemp, SIZEOF(fid.prefix));
 			fid.order = i;
-			lstrcpyn(fid.name, fontOptionsList[i].szDescr, SIZEOF(fid.name));
+			_tcsncpy(fid.name, fontOptionsList[i].szDescr, SIZEOF(fid.name));
 			fid.deffontsettings.colour = fontOptionsList[i].colour;
 			fid.deffontsettings.size = (char) lf.lfHeight;
 			fid.deffontsettings.style = (lf.lfWeight >= FW_BOLD ? FONTF_BOLD : 0) | (lf.lfItalic ? FONTF_ITALIC : 0);
 			fid.deffontsettings.charset = lf.lfCharSet;
-			lstrcpyn(fid.deffontsettings.szFace, lf.lfFaceName, LF_FACESIZE);
-			lstrcpyn(fid.backgroundGroup, _T("Scriver"), SIZEOF(fid.backgroundGroup));
+			_tcsncpy(fid.deffontsettings.szFace, lf.lfFaceName, LF_FACESIZE);
+			_tcsncpy(fid.backgroundGroup, _T("Scriver"), SIZEOF(fid.backgroundGroup));
 			switch (i) {
-			case 1:
-			case 5:
-			case 6:
-			case 7:
-			case 9:
-				lstrcpyn(fid.backgroundName, _T("Incoming background"), SIZEOF(fid.backgroundName));
-				break;
 			case 0:
 			case 2:
 			case 3:
 			case 4:
-				lstrcpyn(fid.backgroundName, _T("Outgoing background"), SIZEOF(fid.backgroundName));
+				_tcsncpy(fid.backgroundName, _T("Outgoing background"), SIZEOF(fid.backgroundName));
 				break;
 			case 8:
-				lstrcpyn(fid.backgroundName, _T("Input area background"), SIZEOF(fid.backgroundName));
+				_tcsncpy(fid.backgroundName, _T("Input area background"), SIZEOF(fid.backgroundName));
+				break;
+			default:
+				_tcsncpy(fid.backgroundName, _T("Incoming background"), SIZEOF(fid.backgroundName));
 				break;
 			}
 			CallService(MS_FONT_REGISTERT, (WPARAM)&fid, 0);
 		}
 		cid.cbSize = sizeof(fid);
-		lstrcpyn(cid.group, _T("Scriver"), SIZEOF(fid.group));
+		_tcsncpy(cid.group, _T("Scriver"), SIZEOF(fid.group));
 		strncpy(cid.dbSettingsGroup, (SRMMMOD), SIZEOF(fid.dbSettingsGroup));
 		cid.flags = 0;
 		cid.order = 0;
-		lstrcpyn(cid.name, _T("Background"), SIZEOF(cid.name));
+		_tcsncpy(cid.name, _T("Background"), SIZEOF(cid.name));
 		strncpy(cid.setting, (SRMSGSET_BKGCOLOUR), SIZEOF(cid.setting));
 		cid.defcolour = DBGetContactSettingDword(NULL, SRMMMOD, SRMSGSET_BKGCOLOUR, SRMSGDEFSET_BKGCOLOUR);
 		CallService(MS_COLOUR_REGISTERT, (WPARAM)&cid, 0);
 
 		cid.order = 1;
-		lstrcpyn(cid.name, _T("Input area background"), SIZEOF(cid.name));
+		_tcsncpy(cid.name, _T("Input area background"), SIZEOF(cid.name));
 		strncpy(cid.setting, (SRMSGSET_INPUTBKGCOLOUR), SIZEOF(cid.setting));
 		cid.defcolour = DBGetContactSettingDword(NULL, SRMMMOD, SRMSGSET_INPUTBKGCOLOUR, SRMSGDEFSET_INPUTBKGCOLOUR);
 		CallService(MS_COLOUR_REGISTERT, (WPARAM)&cid, 0);
 
 		cid.order = 2;
-		lstrcpyn(cid.name, _T("Incoming background"), SIZEOF(cid.name));
+		_tcsncpy(cid.name, _T("Incoming background"), SIZEOF(cid.name));
 		strncpy(cid.setting, (SRMSGSET_INCOMINGBKGCOLOUR), SIZEOF(cid.setting));
 		cid.defcolour = DBGetContactSettingDword(NULL, SRMMMOD, SRMSGSET_INCOMINGBKGCOLOUR, SRMSGDEFSET_INCOMINGBKGCOLOUR);
 		CallService(MS_COLOUR_REGISTERT, (WPARAM)&cid, 0);
 
 		cid.order = 3;
-		lstrcpyn(cid.name, _T("Outgoing background"), SIZEOF(cid.name));
+		_tcsncpy(cid.name, _T("Outgoing background"), SIZEOF(cid.name));
 		strncpy(cid.setting, (SRMSGSET_OUTGOINGBKGCOLOUR), SIZEOF(cid.setting));
 		cid.defcolour = DBGetContactSettingDword(NULL, SRMMMOD, SRMSGSET_OUTGOINGBKGCOLOUR, SRMSGDEFSET_OUTGOINGBKGCOLOUR);
 		CallService(MS_COLOUR_REGISTERT, (WPARAM)&cid, 0);
-
-
 	}
 }
 
@@ -195,7 +192,7 @@ void LoadMsgDlgFont(int i, LOGFONT * lf, COLORREF * colour)
 		if (DBGetContactSettingTString(NULL, SRMMMOD, str, &dbv))
 			lstrcpy(lf->lfFaceName, fontOptionsList[i].szDefFace);
 		else {
-			lstrcpyn(lf->lfFaceName, dbv.ptszVal, SIZEOF(lf->lfFaceName));
+			_tcsncpy(lf->lfFaceName, dbv.ptszVal, SIZEOF(lf->lfFaceName));
 			DBFreeVariant(&dbv);
 		}
 	}

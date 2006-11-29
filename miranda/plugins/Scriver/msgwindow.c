@@ -1008,8 +1008,8 @@ BOOL CALLBACK DlgProcParentWindow(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM 
 						int len = lstrlen(tcd->pszText);
 						if (len > g_dat->limitNamesLength ) {
 							ptszTemp = mir_alloc(sizeof(TCHAR) * (len + 4));
-							lstrcpyn(ptszTemp, tcd->pszText, g_dat->limitNamesLength + 1);
-							lstrcpyn(ptszTemp + g_dat->limitNamesLength, _T("..."), 4);
+							_tcsncpy(ptszTemp, tcd->pszText, g_dat->limitNamesLength + 1);
+							_tcsncpy(ptszTemp + g_dat->limitNamesLength, _T("..."), 4);
 							tci.pszText = ptszTemp;
 						}
 					}
