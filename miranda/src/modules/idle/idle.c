@@ -55,7 +55,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 #define IdleObject_SetStatusLock(obj) (obj->state|=0x20)
 
-#define IdleObject_IdleCheckTerminal(obj) (obj->state|=0x40)
+#define IdleObject_IdleCheckTerminal(obj) (obj->state&0x40)
 #define IdleObject_SetTerminalCheck(obj) (obj->state|=0x40)
 
 //#include <Wtsapi32.h>
@@ -104,7 +104,7 @@ typedef enum _WTS_INFO_CLASS {
 VOID (WINAPI *_WTSFreeMemory)(PVOID);
 BOOL (WINAPI *_WTSQuerySessionInformation)(HANDLE, DWORD, WTS_INFO_CLASS, PVOID, DWORD*);
 
-BOOL WTSAPI = FALSE;
+BOOL bIsWTSApiPresent = FALSE;
 
 BOOL InitWTSAPI()
 {
@@ -128,21 +128,17 @@ BOOL IsTerminalDisconnected()
 	DWORD pBytesReturned = 0;
 	BOOL result = FALSE;
 
-	if (!WTSAPI) return FALSE;
+	if ( !bIsWTSApiPresent )
+		return FALSE;
 
-	if (_WTSQuerySessionInformation(
-		WTS_CURRENT_SERVER_HANDLE,
-		WTS_CURRENT_SESSION,
-		WTSConnectState,
-		&pBuffer,
-		&pBytesReturned)
-	) {
-
-		if (*(PDWORD)pBuffer == WTSDisconnected)
+	if ( _WTSQuerySessionInformation( WTS_CURRENT_SERVER_HANDLE, WTS_CURRENT_SESSION, WTSConnectState, &pBuffer, &pBytesReturned)) {
+		if ( *( PDWORD )pBuffer == WTSDisconnected)
 			result = TRUE;
-
-		_WTSFreeMemory(pBuffer);
 	}
+	else bIsWTSApiPresent = FALSE;
+
+	if ( pBuffer )
+		_WTSFreeMemory( pBuffer );
 	return result;
 }
 
@@ -235,14 +231,12 @@ static void IdleObject_Tick(IdleObject * obj)
 	if ( IdleObject_IsIdle(obj) && !idle ) {
 		IdleObject_ClearIdle(obj);
 		NotifyEventHooks(hIdleEvent, 0, flags);
-	}
-}
+}	}
 
 void CALLBACK IdleTimer(HWND hwnd, UINT umsg, UINT idEvent, DWORD dwTime)
 {
-	if ( gIdleObject.hTimer == idEvent ) {
-		IdleObject_Tick(&gIdleObject);
-	}
+	if ( gIdleObject.hTimer == idEvent )
+		IdleObject_Tick( &gIdleObject );
 }
 
 // delphi code here http://www.swissdelphicenter.ch/torry/printcode.php?id=2048
@@ -267,9 +261,10 @@ static BOOL IsScreenSaverRunning()
 int IdleGetStatusIndex(WORD status)
 {
     int j;
-    for (j = 0; j < SIZEOF(aa_Status); j++ ) {
-        if (aa_Status[j]==status) return j;
-    }
+    for (j = 0; j < SIZEOF(aa_Status); j++ )
+        if ( aa_Status[j] == status )
+			  return j;
+
     return 0;
 }
 
@@ -288,6 +283,10 @@ static BOOL CALLBACK IdleOptsDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPAR
 		CheckDlgButton(hwndDlg, IDC_LOCKED, DBGetContactSettingByte(NULL,IDLEMOD,IDL_IDLEONLOCK,0) ? BST_CHECKED : BST_UNCHECKED);
 		CheckDlgButton(hwndDlg, IDC_IDLEPRIVATE, DBGetContactSettingByte(NULL,IDLEMOD,IDL_IDLEPRIVATE,0) ? BST_CHECKED : BST_UNCHECKED);
 		CheckDlgButton(hwndDlg, IDC_IDLESTATUSLOCK, DBGetContactSettingByte(NULL,IDLEMOD,IDL_IDLESTATUSLOCK,0) ? BST_CHECKED : BST_UNCHECKED);
+		if ( !bIsWTSApiPresent )
+			EnableWindow( GetDlgItem( hwndDlg, IDC_IDLETERMINAL ), FALSE );
+		else
+			CheckDlgButton(hwndDlg, IDC_IDLETERMINAL, DBGetContactSettingByte(NULL,IDLEMOD,IDL_IDLEONTSDC,0) ? BST_CHECKED : BST_UNCHECKED);
 		SendDlgItemMessage(hwndDlg, IDC_IDLESPIN, UDM_SETBUDDY, (WPARAM)GetDlgItem(hwndDlg, IDC_IDLE1STTIME), 0);
 		SendDlgItemMessage(hwndDlg, IDC_IDLESPIN, UDM_SETRANGE32, 1, 60);
 		SendDlgItemMessage(hwndDlg, IDC_IDLESPIN, UDM_SETPOS, 0, MAKELONG((short) DBGetContactSettingByte(NULL,IDLEMOD,IDL_IDLETIME1ST, 10), 0));
@@ -324,6 +323,7 @@ static BOOL CALLBACK IdleOptsDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPAR
 			DBWriteContactSettingByte(NULL, IDLEMOD, IDL_IDLEMETHOD, (BYTE)(method ? 0 : 1));
 			DBWriteContactSettingByte(NULL, IDLEMOD, IDL_IDLEONSAVER, (BYTE)(IsDlgButtonChecked(hwndDlg, IDC_SCREENSAVER) == BST_CHECKED));
 			DBWriteContactSettingByte(NULL, IDLEMOD, IDL_IDLEONLOCK, (BYTE)(IsDlgButtonChecked(hwndDlg, IDC_LOCKED) == BST_CHECKED));
+			DBWriteContactSettingByte(NULL, IDLEMOD, IDL_IDLEONTSDC, (BYTE)(IsDlgButtonChecked(hwndDlg, IDC_IDLETERMINAL) == BST_CHECKED));
 			DBWriteContactSettingByte(NULL, IDLEMOD, IDL_IDLEPRIVATE, (BYTE)(IsDlgButtonChecked(hwndDlg, IDC_IDLEPRIVATE) == BST_CHECKED));
                DBWriteContactSettingByte(NULL, IDLEMOD, IDL_AAENABLE, (BYTE)(IsDlgButtonChecked(hwndDlg, IDC_AASHORTIDLE)==BST_CHECKED?1:0));
 			DBWriteContactSettingByte(NULL, IDLEMOD, IDL_IDLESTATUSLOCK, (BYTE)(IsDlgButtonChecked(hwndDlg, IDC_IDLESTATUSLOCK)==BST_CHECKED?1:0));
@@ -384,10 +384,10 @@ static int IdleGetInfo(WPARAM wParam, LPARAM lParam)
 {
 	MIRANDA_IDLE_INFO *mii = (MIRANDA_IDLE_INFO*)lParam;
 
-    if (!mii || mii->cbSize!=sizeof(MIRANDA_IDLE_INFO)) return 1;
+	if (!mii || mii->cbSize!=sizeof(MIRANDA_IDLE_INFO)) return 1;
 	mii->idleTime = gIdleObject.minutes;
-    mii->privacy = gIdleObject.state&0x10;
-    mii->aaStatus = gIdleObject.aastatus;
+	mii->privacy = gIdleObject.state&0x10;
+	mii->aaStatus = gIdleObject.aastatus;
 	mii->aaLock = gIdleObject.state&0x20;
 	return 0;
 }
@@ -402,7 +402,7 @@ static int UnloadIdleModule(WPARAM wParam, LPARAM lParam)
 
 int LoadIdleModule(void)
 {
-	WTSAPI = InitWTSAPI();
+	bIsWTSApiPresent = InitWTSAPI();
 	MyGetLastInputInfo=(BOOL (WINAPI *)(LASTINPUTINFO*))GetProcAddress(GetModuleHandleA("user32"), "GetLastInputInfo");
 	hIdleEvent=CreateHookableEvent(ME_IDLE_CHANGED);
 	IdleObject_Create(&gIdleObject);
