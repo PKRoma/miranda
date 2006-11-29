@@ -32,6 +32,7 @@ typedef struct
   HICON icon;
   int   cx, cy;
 
+  int default_icon_index;
   HICON default_icon;
   
   int ref_count;
@@ -47,9 +48,6 @@ typedef struct
   DWORD name_hash;
   int flags;
 } SectionItem;
-
-//#define PLUGIN_TITLE "IcoLib"
-//#define PLUGIN_VERSION PLUGIN_MAKE_VERSION(0,0,2,0)
 
 
 // extracticon.c

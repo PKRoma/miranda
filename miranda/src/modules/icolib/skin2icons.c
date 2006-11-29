@@ -35,6 +35,7 @@ static HICON hIconBlank = NULL;
 
 HANDLE hIcoLib_AddNewIcon, hIcoLib_RemoveIcon, hIcoLib_GetIcon, hIcoLib_ReleaseIcon;
 
+static HIMAGELIST hDefaultIconList;
 static IconItem *iconList;
 static int iconCount = 0;
 static int iconEventActive = 0;
@@ -70,7 +71,6 @@ static char* __fastcall UnicodeToAnsi(const wchar_t* src);
 static DWORD CalcNameHashT(const TCHAR *szStr);
 static DWORD CalcNameHashW(const wchar_t *szStr);
 static DWORD CalcNameHash(const char *szStr);
-
 
 
 
@@ -126,11 +126,7 @@ static HICON ExtractIconFromPath(const TCHAR *path, int cxIcon, int cyIcon)
     n=_ttoi(comma+1);
     *comma=0;
   }
-#ifndef _UNICODE
-  CallService(MS_UTILS_PATHTOABSOLUTE, (WPARAM)file, (LPARAM)fileFull);
-#else
-  lstrcpy(fileFull, file);
-#endif
+  CallService(MS_UTILS_PATHTOABSOLUTET, (WPARAM)file, (LPARAM)fileFull);
   hIcon = NULL;
 
   //SHOULD BE REPLACED WITH GOOD ENOUGH FUNCTION
@@ -270,7 +266,7 @@ static int IcoLib_AddNewIcon(WPARAM wParam,LPARAM lParam)
   }
   item->default_indx = sid->iDefaultIndex;
   if (sid->cbSize >= SKINICONDESC_SIZE_V2 && sid->hDefaultIcon)
-    item->default_icon = DuplicateIcon(NULL, sid->hDefaultIcon); // TODO: use imagelist for 16x16 icons
+    item->default_icon = DuplicateIcon(NULL, sid->hDefaultIcon);
 
   if (sid->cbSize >= SKINICONDESC_SIZE_V3)
   {
@@ -279,9 +275,18 @@ static int IcoLib_AddNewIcon(WPARAM wParam,LPARAM lParam)
   }
   else
   {
-    item->cx = 16;
-    item->cy = 16;
+    item->cx = GetSystemMetrics(SM_CXSMICON);
+    item->cy = GetSystemMetrics(SM_CYSMICON);
   }
+  if (item->cx == GetSystemMetrics(SM_CXSMICON) && item->cy == GetSystemMetrics(SM_CYSMICON) && item->default_icon)
+  {
+    item->default_icon_index = ImageList_AddIcon(hDefaultIconList, item->default_icon);
+    if (item->default_icon_index != -1)
+      SafeDestroyIcon(&item->default_icon);
+  }
+  else
+    item->default_icon_index = -1;
+
   if (sid->cbSize >= SKINICONDESC_SIZE)
   {
     sectionList[item->section].flags = sid->flags & SIDF_SORTED;
@@ -341,6 +346,9 @@ HICON IconItem_GetIcon(IconItem *item)
   if (!hIcon)
   {
     hIcon = item->default_icon;
+
+    if (!hIcon && item->default_icon_index != -1)
+      hIcon = ImageList_GetIcon(hDefaultIconList, item->default_icon_index, ILD_NORMAL);
 
     if (!hIcon && item->default_file)
       _ExtractIconEx(item->default_file,item->default_indx,item->cx,item->cy,&hIcon,LR_COLOR);
@@ -424,6 +432,8 @@ int InitSkin2Icons(void)
 {
   hIconBlank = LoadIcon(NULL, MAKEINTRESOURCE(IDI_BLANK));
 
+  hDefaultIconList = ImageList_Create(GetSystemMetrics(SM_CXSMICON),GetSystemMetrics(SM_CYSMICON),ILC_COLOR32|ILC_MASK,15,15);
+
   InitializeCriticalSection(&csIconList);
   hIcoLib_AddNewIcon = CreateServiceFunction(MS_SKIN2_ADDICON, IcoLib_AddNewIcon);
   hIcoLib_RemoveIcon = CreateServiceFunction(MS_SKIN2_REMOVEICON, IcoLib_RemoveIcon);
@@ -455,6 +465,8 @@ void UninitSkin2Icons(void)
   for (indx = 0; indx < sectionCount; indx++)
     SAFE_FREE(&sectionList[indx].name);
   SAFE_FREE(&sectionList);
+
+  ImageList_Destroy(hDefaultIconList);
 
   SafeDestroyIcon(&hIconBlank);
 }
@@ -911,11 +923,7 @@ BOOL CALLBACK DlgProcIcoLibOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lP
           HWND htv = GetDlgItem(hwndDlg, IDC_CATEGORYLIST);
           TCHAR filename[MAX_PATH];
 
-#ifndef _UNICODE
-          CallService(MS_UTILS_PATHTORELATIVE, (WPARAM)file, (LPARAM)filename);
-#else
-          lstrcpy(filename, file);
-#endif
+          CallService(MS_UTILS_PATHTORELATIVET, (WPARAM)file, (LPARAM)filename);
           SAFE_FREE(&file);
 
           MySetCursor(IDC_WAIT);
@@ -1283,11 +1291,7 @@ BOOL CALLBACK DlgProcIconImport(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lP
           LVITEM lvi;
 
           GetDlgItemText(hwndDlg, IDC_ICONSET, fullPath, sizeof(fullPath));
-#ifndef _UNICODE
-          CallService(MS_UTILS_PATHTORELATIVE, (WPARAM)fullPath, (LPARAM)filename);
-#else
-          lstrcpy(filename, fullPath);
-#endif
+          CallService(MS_UTILS_PATHTORELATIVET, (WPARAM)fullPath, (LPARAM)filename);
           lvi.mask=LVIF_PARAM;
           lvi.iItem = dragItem; lvi.iSubItem = 0;
           ListView_GetItem(hPreview, &lvi);
