@@ -1,5 +1,5 @@
 //{{NO_DEPENDENCIES}}
-// Microsoft Developer Studio generated include file.
+// Microsoft Visual C++ generated include file.
 // Used by resource.rc
 //
 #define IDC_AUTHICON                    1
@@ -255,8 +255,8 @@
 #define IDC_STASTEXT                    1303
 #define IDC_STSIZETEXT                  1304
 #define IDC_STCOLOURTEXT                1305
-#define IDC_STHORZBAR                   1306
 #define IDC_INTERESTS                   1305
+#define IDC_STHORZBAR                   1306
 #define IDC_EMAILS                      1306
 #define IDC_PAST                        1307
 #define IDC_PHONES                      1308
@@ -393,6 +393,7 @@
 #define IDC_IDLESTATUSLOCK              1691
 #define IDC_RESTART                     1692
 #define IDC_TAB                         1693
+#define IDC_IDLETERMINAL                1694
 #define IDI_SEARCHALL                   32548
 #define ID_ICQ_EXIT                     40001
 #define IDM_COPY                        40001
@@ -424,7 +425,7 @@
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NEXT_RESOURCE_VALUE        274
 #define _APS_NEXT_COMMAND_VALUE         40018
-#define _APS_NEXT_CONTROL_VALUE         1694
+#define _APS_NEXT_CONTROL_VALUE         1695
 #define _APS_NEXT_SYMED_VALUE           101
 #endif
 #endif
