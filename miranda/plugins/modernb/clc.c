@@ -239,10 +239,11 @@ static int ReloadAvatarOverlayIcons(WPARAM wParam, LPARAM lParam)
 	{
 		HICON hIcon=(HICON)CallService(MS_SKIN2_GETICON, 0, (LPARAM)g_pAvatarOverlayIcons[i].name);
 		g_pAvatarOverlayIcons[i].listID = ImageList_AddIcon(hAvatarOverlays,hIcon);
-		//destroy icon
+        CallService(MS_SKIN2_RELEASEICON, 0, (LPARAM)g_pAvatarOverlayIcons[i].name);
+
 		hIcon=(HICON)CallService(MS_SKIN2_GETICON, 0, (LPARAM)g_pStatusOverlayIcons[i].name);    
 		g_pStatusOverlayIcons[i].listID = ImageList_AddIcon(hAvatarOverlays,hIcon);            
-		//destroy icon
+        CallService(MS_SKIN2_RELEASEICON, 0, (LPARAM)g_pStatusOverlayIcons[i].name);
 	}
 
 	listening_to_icon = (HICON)CallService(MS_SKIN2_GETICON, 0, (LPARAM)"LISTENING_TO_ICON");
