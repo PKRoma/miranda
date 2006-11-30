@@ -216,6 +216,10 @@ SOURCE=.\msn_md5c.cpp
 # End Source File
 # Begin Source File
 
+SOURCE=.\msn_menu.cpp
+# End Source File
+# Begin Source File
+
 SOURCE=.\msn_mime.cpp
 # End Source File
 # Begin Source File

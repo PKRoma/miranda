@@ -61,7 +61,7 @@ static iconList[] =
 
 static bool bAreIconsInitialized = false;
 
-void MSN_IconsInit( void )
+void MsnInitIcons( void )
 {
 	if ( bAreIconsInitialized )
 		return;
@@ -91,6 +91,13 @@ HICON __stdcall LoadIconEx( const char* name )
 	char szSettingName[100];
 	mir_snprintf( szSettingName, sizeof( szSettingName ), "%s_%s", msnProtocolName, name );
 	return ( HICON )MSN_CallService( MS_SKIN2_GETICON, 0, (LPARAM)szSettingName );
+}
+
+void __stdcall ReleaseIconEx( const char* name )
+{
+	char szSettingName[100];
+	mir_snprintf( szSettingName, sizeof( szSettingName ), "%s_%s", msnProtocolName, name );
+	MSN_CallService( MS_SKIN2_RELEASEICON, 0, (LPARAM)szSettingName );
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////

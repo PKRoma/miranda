@@ -248,7 +248,8 @@ static int OnModulesLoaded( WPARAM wParam, LPARAM lParam )
 		arHooks.insert( HookEvent( szEvent, MSN_ChatInit ));
 	}
 
-	MSN_IconsInit();
+	MsnInitIcons();
+	MsnInitMenus();
 
 	msnUseExtendedPopups = ServiceExists( MS_POPUP_ADDPOPUPEX ) != 0;
 	arHooks.insert( HookEvent( ME_USERINFO_INITIALISE, MsnOnDetailsInit ));

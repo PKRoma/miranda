@@ -238,7 +238,9 @@ LRESULT	CALLBACK NullWindowProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM l
 DWORD		WINAPI	MsnShowMailThread( LPVOID );
 
 HICON    __stdcall   LoadIconEx( const char* );
-void     MSN_IconsInit( void );
+void     __stdcall   ReleaseIconEx( const char* );
+void     MsnInitIcons( void );
+void     MsnInitMenus( void );
 
 int IsWinver( void );
 
@@ -517,6 +519,9 @@ void __stdcall p2p_unregisterDC( directconnection* dc );
 directconnection* __stdcall p2p_getDCByCallID( const char* CallID );
 
 void ft_startFileSend( ThreadData* info, const char* Invcommand, const char* Invcookie );
+
+void MSN_ChatStart(ThreadData* info);
+void MSN_KillChatSession(TCHAR* id);
 
 /////////////////////////////////////////////////////////////////////////////////////////
 //	Message queue
