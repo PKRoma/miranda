@@ -553,7 +553,6 @@
 #define UNIQUEIDSETTING             "UIN"
 #define UINMAXLEN                   11 // DWORD string max len + 1
 #define OSCAR_PROXY_HOST            "ars.oscar.aol.com"
-#define OSCAR_PROXY_PORT            5190
 #define OSCAR_PROXY_VERSION         0x044A
 
 #endif /* __ICQ_CONSTANTS_H */

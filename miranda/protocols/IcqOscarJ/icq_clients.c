@@ -411,6 +411,14 @@ char* detectUserClient(HANDLE hContact, DWORD dwUin, WORD wVersion, DWORD dwFT1,
 
         szClient = szClientBuf;
       }
+      else if (MatchCap(caps, wLen, &capQipPDA, 0x10))
+      {
+        szClient = "QIP PDA (Windows)";
+      }
+      else if (MatchCap(caps, wLen, &capQipMobile, 0x10))
+      {
+        szClient = "QIP Mobile (Java)";
+      }
       else if (capId = MatchCap(caps, wLen, &capQip, 0xE))
       {
         char ver[10];
@@ -430,14 +438,6 @@ char* detectUserClient(HANDLE hContact, DWORD dwUin, WORD wVersion, DWORD dwFT1,
           strcat(szClientBuf, ver);
         }
         szClient = szClientBuf;
-      }
-      else if (MatchCap(caps, wLen, &capQipPDA, 0x10))
-      {
-        szClient = "QIP PDA (Windows)";
-      }
-      else if (MatchCap(caps, wLen, &capQipMobile, 0x10))
-      {
-        szClient = "QIP Mobile (Java)";
       }
       else if (capId = MatchCap(caps, wLen, &capmChat, 0xA))
       {

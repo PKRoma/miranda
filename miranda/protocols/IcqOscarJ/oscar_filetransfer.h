@@ -129,6 +129,7 @@ typedef struct {
 #define OCT_NORMAL      0
 #define OCT_REVERSE     1
 #define OCT_PROXY       2
+#define OCT_PROXY_INIT  3
 #define OCT_PROXY_RECV  4
 #define OCT_CLOSING     10
 
