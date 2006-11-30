@@ -198,6 +198,9 @@ void SafeReleaseFileTransfer(void **ft)
     else if ((*bft)->ft_magic == FT_MAGIC_OSCAR)
     { // release oscar filetransfer structure and its contents
       oscar_filetransfer *oft = (oscar_filetransfer*)(*bft);
+      // If connected, close connection
+      if (oft->connection)
+        CloseOscarConnection(oft->connection);
       // Release oscar listener
       if (oft->listener)
         ReleaseOscarListener((oscar_listener**)&oft->listener);
@@ -568,7 +571,7 @@ void handleRecvServMsgOFT(unsigned char *buf, WORD wLen, DWORD dwUin, char *szUI
             oft_sendFileResponse(dwUin, szUID, ft, 0x06);
 
             ICQBroadcastAck(ft->hContact, ACKTYPE_FILE, ACKRESULT_FAILED, (HANDLE)ft, 0);
-            FreeCookie(ft->dwCookie);
+            // Release transfer
             SafeReleaseFileTransfer(&ft);
           }
         }
@@ -590,9 +593,7 @@ void handleRecvServMsgOFT(unsigned char *buf, WORD wLen, DWORD dwUin, char *szUI
       NetLog_Server("OFT: File transfer cancelled by %s", strUID(dwUin, szUID));
 
       ICQBroadcastAck(ft->hContact, ACKTYPE_FILE, ACKRESULT_FAILED, (HANDLE)ft, 0);
-      if (ft->connection)
-        CloseOscarConnection(ft->connection);
-      FreeCookie(ft->dwCookie);
+      // Release transfer
       SafeReleaseFileTransfer(&ft);
     }
     else
@@ -649,9 +650,7 @@ void handleRecvServResponseOFT(unsigned char *buf, WORD wLen, DWORD dwUin, char 
           NetLog_Server("OFT: File transfer denied by %s", strUID(dwUin, szUID));
 
           ICQBroadcastAck(oft->hContact, ACKTYPE_FILE, ACKRESULT_DENIED, (HANDLE)oft, 0);
-          if (oft->connection)
-            CloseOscarConnection(oft->connection);
-          FreeCookie(oft->dwCookie);
+          // Release transfer
           SafeReleaseFileTransfer(&oft);
         }
         break;
@@ -661,9 +660,7 @@ void handleRecvServResponseOFT(unsigned char *buf, WORD wLen, DWORD dwUin, char 
           icq_LogMessage(LOG_ERROR, "The file transfer failed: Proxy error");
 
           ICQBroadcastAck(oft->hContact, ACKTYPE_FILE, ACKRESULT_FAILED, (HANDLE)oft, 0);
-          if (oft->connection)
-            CloseOscarConnection(oft->connection);
-          FreeCookie(oft->dwCookie);
+          // Release transfer
           SafeReleaseFileTransfer(&oft);
         }
         break;
@@ -673,9 +670,7 @@ void handleRecvServResponseOFT(unsigned char *buf, WORD wLen, DWORD dwUin, char 
           icq_LogMessage(LOG_ERROR, "The file transfer failed: Invalid request");
 
           ICQBroadcastAck(oft->hContact, ACKTYPE_FILE, ACKRESULT_FAILED, (HANDLE)oft, 0);
-          if (oft->connection)
-            CloseOscarConnection(oft->connection);
-          FreeCookie(oft->dwCookie);
+          // Release transfer
           SafeReleaseFileTransfer(&oft);
         }
         break;
@@ -685,9 +680,7 @@ void handleRecvServResponseOFT(unsigned char *buf, WORD wLen, DWORD dwUin, char 
           icq_LogMessage(LOG_ERROR, "The file transfer failed: Proxy unavailable");
 
           ICQBroadcastAck(oft->hContact, ACKTYPE_FILE, ACKRESULT_FAILED, (HANDLE)oft, 0);
-          if (oft->connection)
-            CloseOscarConnection(oft->connection);
-          FreeCookie(oft->dwCookie);
+          // Release transfer
           SafeReleaseFileTransfer(&oft);
         }
         break;
@@ -697,9 +690,7 @@ void handleRecvServResponseOFT(unsigned char *buf, WORD wLen, DWORD dwUin, char 
           NetLog_Server("OFT: Uknown request response code 0x%x", wStatus);
 
           ICQBroadcastAck(oft->hContact, ACKTYPE_FILE, ACKRESULT_FAILED, (HANDLE)oft, 0);
-          if (oft->connection)
-            CloseOscarConnection(oft->connection);
-          FreeCookie(oft->dwCookie);
+          // Release transfer
           SafeReleaseFileTransfer(&oft);
         }
     }
@@ -894,10 +885,6 @@ DWORD oftFileCancel(HANDLE hContact, WPARAM wParam, LPARAM lParam)
 
   ICQBroadcastAck(hContact, ACKTYPE_FILE, ACKRESULT_FAILED, ft, 0);
 
-  if (ft->connection)
-    CloseOscarConnection((oscar_connection*)ft->connection);
-  // Release cookie
-  FreeCookie(ft->dwCookie);
   // Release structure
   SafeReleaseFileTransfer(&ft);
 
@@ -945,7 +932,9 @@ void oftFileResume(oscar_filetransfer *ft, int action, const char *szFilename)
   {
     icq_LogMessage(LOG_ERROR, "Your file receive has been aborted because Miranda could not open the destination file in order to write to it. You may be trying to save to a read-only folder.");
 
-    CloseOscarConnection(oc);
+    ICQBroadcastAck(oc->ft->hContact, ACKTYPE_FILE, ACKRESULT_FAILED, oc->ft, 0);
+    // Release transfer
+    SafeReleaseFileTransfer(&oc->ft);
     return;
   }
 
@@ -1421,6 +1410,8 @@ static int oft_handlePackets(oscar_connection *oc, unsigned char *buf, int len)
     unpackDWord(&pBuf, &dwHead);
     if (dwHead != 0x4F465432)
     { // bad packet
+      NetLog_Direct("OFT: Received invalid packet (dwHead = 0x%x).", dwHead);
+
       CloseOscarConnection(oc);
       break;
     }
@@ -1499,10 +1490,6 @@ static int oft_handleProxyData(oscar_connection *oc, unsigned char *buf, int len
         NetLog_Server("Proxy Error: %s (0x%x)", szError, wError);
         // Notify UI
         ICQBroadcastAck(oc->hContact, ACKTYPE_FILE, ACKRESULT_FAILED, oc->ft, 0);
-        // Close proxy connection
-        CloseOscarConnection(oc);
-        // Release cookie
-        FreeCookie(oc->ft->dwCookie);
         // Release structure
         SafeReleaseFileTransfer(&oc->ft);
       }
@@ -1612,10 +1599,9 @@ static int oft_handleFileData(oscar_connection *oc, unsigned char *buf, int len)
       // ack received file
       sendOFT2FramePacket(oc, OFT_TYPE_DONE);
       oc->type = OCT_CLOSING;
-      CloseOscarConnection(oc); // close connection
       NetLog_Direct("File Transfer completed successfully.");
       ICQBroadcastAck(ft->hContact, ACKTYPE_FILE, ACKRESULT_SUCCESS, ft, 0);
-      // Release structure
+      // Release transfer
       SafeReleaseFileTransfer(&ft);
     }
     else
@@ -1813,9 +1799,12 @@ static void handleOFT2FramePacket(oscar_connection *oc, WORD datatype, BYTE *pBu
 
         ft->fileId = OpenFileUtf(ft->szThisFile, _O_BINARY | _O_CREAT | _O_TRUNC | _O_WRONLY, _S_IREAD | _S_IWRITE);
         if (ft->fileId == -1)
-        { // FIX ME: this needs some UI interaction
+        {
           icq_LogMessage(LOG_ERROR, "Your file receive has been aborted because Miranda could not open the destination file in order to write to it. You may be trying to save to a read-only folder.");
-          CloseOscarConnection(oc);
+
+          ICQBroadcastAck(ft->hContact, ACKTYPE_FILE, ACKRESULT_FAILED, ft, 0);
+          // Release transfer
+          SafeReleaseFileTransfer(&oc->ft);
           return;
         }
       }
@@ -2051,9 +2040,10 @@ static void oft_sendPeerInit(oscar_connection *oc)
 
   // prepare init frame
   if (ft->iCurrentFile >= (int)ft->wFilesCount)
-  {
+  { // All files done, great!
     ICQBroadcastAck(ft->hContact, ACKTYPE_FILE, ACKRESULT_SUCCESS, ft, 0);
-    CloseOscarConnection(oc);
+    // Release transfer
+    SafeReleaseFileTransfer(&oc->ft);
     return;
   }
 
@@ -2062,7 +2052,8 @@ static void oft_sendPeerInit(oscar_connection *oc)
   if (FileStatUtf(ft->szThisFile, &statbuf))
   {
     icq_LogMessage(LOG_ERROR, "Your file transfer has been aborted because one of the files that you selected to send is no longer readable from the disk. You may have deleted or moved it.");
-    CloseOscarConnection(oc);
+    // Release transfer
+    SafeReleaseFileTransfer(&oc->ft);
     return;
   }
 
@@ -2084,7 +2075,8 @@ static void oft_sendPeerInit(oscar_connection *oc)
   if (ft->fileId == -1)
   {
     icq_LogMessage(LOG_ERROR, "Your file transfer has been aborted because one of the files that you selected to send is no longer readable from the disk. You may have deleted or moved it.");
-    CloseOscarConnection(oc);
+    // Release transfer
+    SafeReleaseFileTransfer(&oc->ft);
     return;
   }
 
