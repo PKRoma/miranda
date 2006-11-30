@@ -50,6 +50,11 @@ int JabberMenuHandleVcard( WPARAM wParam, LPARAM lParam );
 int JabberMenuHandleRequestAuth( WPARAM wParam, LPARAM lParam );
 int JabberMenuHandleGrantAuth( WPARAM wParam, LPARAM lParam );
 
+static int sttCompareHandles( const void* p1, const void* p2 )
+{	return (long)p1 - (long)p2;
+}
+static LIST<void> arHooks( 20, sttCompareHandles ); 
+
 /////////////////////////////////////////////////////////////////////////////////////////
 // contact menu services
 

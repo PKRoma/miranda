@@ -76,6 +76,7 @@ struct
 }
 static iconList[] =
 {
+	{	"Protocol icon",         "main",       IDI_JABBER     },
 	{	"Agents list",           "Agents",     IDI_AGENTS     },
 	{	"Change password",       "key",        IDI_KEYS       },
 	{	"Multi-User Conference", "group",      IDI_GROUP      },
@@ -89,8 +90,15 @@ static iconList[] =
 	{	"Resolve nicks",         "trresolve",  IDI_REFRESH    }
 };
 
+static bool bAreIconsInitialized = false;
+
 void JabberIconsInit( void )
 {
+	if ( bAreIconsInitialized )
+		return;
+
+	bAreIconsInitialized = true;
+
 	int i;
 	SKINICONDESC sid = {0};
 	char szFile[MAX_PATH];

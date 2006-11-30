@@ -30,7 +30,68 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include "msn_md5.h"
 #include "uxtheme.h"
 
+#include "m_icolib.h"
+
 #define STYLE_DEFAULTBGCOLOUR     RGB(173,206,247)
+
+/////////////////////////////////////////////////////////////////////////////////////////
+// Icons init
+
+struct
+{
+	char* szDescr;
+	char* szName;
+	int   defIconID;
+}
+static iconList[] =
+{
+	{	"Protocol icon",          "main",        IDI_MSN        },
+	{	"Hotmail Inbox",          "inbox",       IDI_INBOX      },
+	{	"Profile",                "profile",     IDI_PROFILE    },
+	{	"MSN Services",           "services",    IDI_SERVICES   },
+	{	"Set Avatar",             "avatar",      IDI_AVATAR     },
+	{	"Block user",             "block",       IDI_MSNBLOCK   },
+	{	"Invite to chat",         "invite",      IDI_INVITE     },
+	{	"Start Netmeeting",       "netmeeting",  IDI_NETMEETING },
+	{	"Contact list",           "list_fl",     IDI_LIST_FL    },
+	{	"Allowed list",           "list_al",     IDI_LIST_AL    },
+	{	"Blocked list",           "list_bl",     IDI_LIST_BL    },
+	{	"Relative list",          "list_rl",     IDI_LIST_RL    }
+};
+
+static bool bAreIconsInitialized = false;
+
+void MSN_IconsInit( void )
+{
+	if ( bAreIconsInitialized )
+		return;
+
+	bAreIconsInitialized = true;
+
+	char szFile[MAX_PATH];
+	GetModuleFileNameA(hInst, szFile, MAX_PATH);
+
+	SKINICONDESC sid = {0};
+	sid.cbSize = sizeof(SKINICONDESC);
+	sid.pszDefaultFile = szFile;
+	sid.cx = sid.cy = 16;
+	sid.pszSection = Translate( msnProtocolName );
+
+	for ( int i = 0; i < SIZEOF(iconList); i++ ) {
+		char szSettingName[100];
+		mir_snprintf( szSettingName, sizeof( szSettingName ), "%s_%s", msnProtocolName, iconList[i].szName );
+		sid.pszName = szSettingName;
+		sid.pszDescription = Translate( iconList[i].szDescr );
+		sid.iDefaultIndex = -iconList[i].defIconID;
+		CallService(MS_SKIN2_ADDICON, 0, (LPARAM)&sid);
+}	}
+
+HICON __stdcall LoadIconEx( const char* name )
+{
+	char szSettingName[100];
+	mir_snprintf( szSettingName, sizeof( szSettingName ), "%s_%s", msnProtocolName, name );
+	return ( HICON )MSN_CallService( MS_SKIN2_GETICON, 0, (LPARAM)szSettingName );
+}
 
 /////////////////////////////////////////////////////////////////////////////////////////
 // External data declarations

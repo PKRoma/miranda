@@ -830,10 +830,12 @@ int JabberGetStatus( WPARAM wParam, LPARAM lParam )
 
 int JabberLoadIcon( WPARAM wParam, LPARAM lParam )
 {
-	if (( wParam&0xffff ) == PLI_PROTOCOL )
-		return ( int ) LoadImage( hInst, MAKEINTRESOURCE( IDI_JABBER ), IMAGE_ICON, GetSystemMetrics( wParam&PLIF_SMALL?SM_CXSMICON:SM_CXICON ), GetSystemMetrics( wParam&PLIF_SMALL?SM_CYSMICON:SM_CYICON ), 0 );
-	else
-		return ( int ) ( HICON ) NULL;
+	if (( wParam & 0xffff ) == PLI_PROTOCOL ) {
+		JabberIconsInit();
+		return ( int )LoadIconEx( "main" );
+	}
+
+	return ( int ) ( HICON ) NULL;
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////
@@ -1357,18 +1359,8 @@ int ServiceSendXML(WPARAM wParam, LPARAM lParam)
 /////////////////////////////////////////////////////////////////////////////////////////
 // Service initialization code
 
-static HANDLE hEventSettingChanged = NULL;
-static HANDLE hEventContactDeleted = NULL;
-static HANDLE hEventRebuildCMenu = NULL;
-
-int JabberMenuPrebuildContactMenu( WPARAM wParam, LPARAM lParam );
-
 int JabberSvcInit( void )
 {
-	hEventSettingChanged = HookEvent( ME_DB_CONTACT_SETTINGCHANGED, JabberDbSettingChanged );
-	hEventContactDeleted = HookEvent( ME_DB_CONTACT_DELETED, JabberContactDeleted );
-	hEventRebuildCMenu   = HookEvent( ME_CLIST_PREBUILDCONTACTMENU, JabberMenuPrebuildContactMenu );
-
 	JCreateServiceFunction( PS_GETCAPS, JabberGetCaps );
 	JCreateServiceFunction( PS_GETNAME, JabberGetName );
 	JCreateServiceFunction( PS_LOADICON, JabberLoadIcon );
@@ -1410,8 +1402,5 @@ int JabberSvcInit( void )
 
 int JabberSvcUninit()
 {
-	if ( hEventSettingChanged )   UnhookEvent( hEventSettingChanged );
-	if ( hEventContactDeleted )   UnhookEvent( hEventContactDeleted );
-	if ( hEventRebuildCMenu )     UnhookEvent( hEventRebuildCMenu );
 	return 0;
 }

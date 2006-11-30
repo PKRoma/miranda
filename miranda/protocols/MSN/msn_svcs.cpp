@@ -227,7 +227,7 @@ static int MsnBlockCommand( WPARAM wParam, LPARAM lParam )
 /////////////////////////////////////////////////////////////////////////////////////////
 // MsnContactDeleted - called when a contact is deleted from list
 
-static int MsnContactDeleted( WPARAM wParam, LPARAM lParam )
+int MsnContactDeleted( WPARAM wParam, LPARAM lParam )
 {
 	if ( !msnLoggedIn )  //should never happen for MSN contacts
 		return 0;
@@ -266,7 +266,7 @@ static int MsnContactDeleted( WPARAM wParam, LPARAM lParam )
 /////////////////////////////////////////////////////////////////////////////////////////
 // MsnDbSettingChanged - look for contact's settings changes
 
-static int MsnDbSettingChanged(WPARAM wParam,LPARAM lParam)
+int MsnDbSettingChanged(WPARAM wParam,LPARAM lParam)
 {
 	HANDLE hContact = ( HANDLE )wParam;
 	DBCONTACTWRITESETTING* cws = ( DBCONTACTWRITESETTING* )lParam;
@@ -793,23 +793,18 @@ static int MsnInviteCommand( WPARAM wParam, LPARAM lParam )
 
 static int MsnLoadIcon(WPARAM wParam,LPARAM lParam)
 {
-	UINT id;
-
-	switch(wParam&0xFFFF) {
-		case PLI_PROTOCOL: id=IDI_MSN; break;
-		default: return (int)(HICON)NULL;
+	if ( LOWORD( wParam ) == PLI_PROTOCOL ) { 
+		MSN_IconsInit();
+		return (int)LoadIconEx( "main" );
 	}
 
-	bool tIsSmall = ( wParam & PLIF_SMALL ) != 0;
-	return (int)LoadImage( hInst, MAKEINTRESOURCE(id), IMAGE_ICON,
-									GetSystemMetrics(tIsSmall ? SM_CXSMICON : SM_CXICON),
-									GetSystemMetrics(tIsSmall ? SM_CYSMICON : SM_CYICON), 0 );
+	return (int)(HICON)NULL;
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////
 // MsnRebuildContactMenu - gray or ungray the block menus according to contact's status
 
-static int MsnRebuildContactMenu( WPARAM wParam, LPARAM lParam )
+int MsnRebuildContactMenu( WPARAM wParam, LPARAM lParam )
 {
 	char szEmail[ MSN_MAX_EMAIL_LEN ];
 	if ( !MSN_GetStaticString( "e-mail", ( HANDLE )wParam, szEmail, sizeof( szEmail ))) {
@@ -1286,7 +1281,7 @@ static BOOL CALLBACK DlgProcSetNickname(HWND hwndDlg, UINT msg, WPARAM wParam, L
 		case WM_INITDIALOG:
 		{
 			TranslateDialogDefault( hwndDlg );
-			SendMessage( hwndDlg, WM_SETICON, ICON_BIG, (LPARAM)LoadIcon( hInst, MAKEINTRESOURCE( IDI_MSN )));
+			SendMessage( hwndDlg, WM_SETICON, ICON_BIG, (LPARAM)LoadIconEx( "main" ));
 			SendMessage( GetDlgItem( hwndDlg, IDC_NICKNAME ), EM_LIMITTEXT, 129, 0 );
 
 			DBVARIANT dbv;
@@ -1431,8 +1426,8 @@ static int MsnViewServiceStatus( WPARAM wParam, LPARAM lParam )
 /////////////////////////////////////////////////////////////////////////////////////////
 // Services initialization and destruction
 
-static HANDLE hHookHandle[3]; 
-static HANDLE hServiceHandle[50]; 
+int CompareHandles( const void* p1, const void* p2 );
+static LIST<void> arServices( 20, CompareHandles ); 
 
 int LoadMsnServices( void )
 {
@@ -1442,57 +1437,52 @@ int LoadMsnServices( void )
 	char servicefunction[ 100 ];
 	strcpy( servicefunction, msnProtocolName );
 	char* tDest = servicefunction + strlen( servicefunction );
-	CLISTMENUITEM mi;
+	CLISTMENUITEM mi = { 0 };
+	mi.cbSize = sizeof( mi );
+	mi.pszService = servicefunction;
+	mi.pszPopupName = msnProtocolName;
 
 	if ( !MSN_GetByte( "DisableSetNickname", 0 ))
 	{
 		strcpy( tDest, MS_SET_NICKNAME_UI );
-		hServiceHandle[0] = CreateServiceFunction( servicefunction, SetNicknameUI );
+		arServices.insert( CreateServiceFunction( servicefunction, SetNicknameUI ));
 
-		memset( &mi, 0, sizeof( mi ));
 		mi.popupPosition = 500085000;
-		mi.pszPopupName = msnProtocolName;
-		mi.cbSize = sizeof( mi );
 		mi.position = 2000060000;
-		mi.hIcon = LoadIcon( hInst, MAKEINTRESOURCE( IDI_MSN ));
+		mi.hIcon = LoadIconEx( "main" );
 		mi.pszName = MSN_Translate( "Set &Nickname" );
-		mi.pszService = servicefunction;
 		msnMenuItems[ 0 ] = ( HANDLE )MSN_CallService( MS_CLIST_ADDMAINMENUITEM, 0, (LPARAM)&mi );
 
 		strcpy( tDest, MS_GOTO_INBOX );
-		hServiceHandle[1] = CreateServiceFunction( servicefunction, MsnGotoInbox );
+		arServices.insert( CreateServiceFunction( servicefunction, MsnGotoInbox ));
 
 		mi.position = 2000060001;
-		mi.hIcon = LoadIcon( hInst, MAKEINTRESOURCE( IDI_INBOX ));
+		mi.hIcon = LoadIconEx( "inbox" );
 		mi.pszName = MSN_Translate( "Display Hotmail &Inbox" );
-		mi.pszService = servicefunction;
 		MSN_CallService( MS_CLIST_ADDMAINMENUITEM, 0, (LPARAM)&mi );
 
 		strcpy( tDest, MS_EDIT_PROFILE );
-		hServiceHandle[2] = CreateServiceFunction( servicefunction, MsnEditProfile );
+		arServices.insert( CreateServiceFunction( servicefunction, MsnEditProfile ));
 
 		mi.position = 2000060002;
-		mi.hIcon = LoadIcon( hInst, MAKEINTRESOURCE( IDI_PROFILE ));
+		mi.hIcon = LoadIconEx( "profile" );
 		mi.pszName = MSN_Translate( "Edit MSN &Profile" );
-		mi.pszService = servicefunction;
 		msnMenuItems[ 1 ] = ( HANDLE )MSN_CallService( MS_CLIST_ADDMAINMENUITEM, 0, (LPARAM)&mi );
 
 		strcpy( tDest, MS_VIEW_STATUS );
-		hServiceHandle[3] = CreateServiceFunction( servicefunction, MsnViewServiceStatus );
+		arServices.insert( CreateServiceFunction( servicefunction, MsnViewServiceStatus ));
 
 		mi.position = 2000060003;
-		mi.hIcon = LoadIcon( hInst, MAKEINTRESOURCE( IDI_SERVICES ));
+		mi.hIcon = LoadIconEx( "services" );
 		mi.pszName = MSN_Translate( "View MSN Services &Status" );
-		mi.pszService = servicefunction;
 		MSN_CallService( MS_CLIST_ADDMAINMENUITEM, 0, (LPARAM)&mi );
 
 		strcpy( tDest, MS_SET_AVATAR_UI );
-		hServiceHandle[4] = CreateServiceFunction( servicefunction, MsnSetAvatarUI );
+		arServices.insert( CreateServiceFunction( servicefunction, MsnSetAvatarUI ));
 
 		mi.position = 2000060004;
-		mi.hIcon = LoadIcon( hInst, MAKEINTRESOURCE( IDI_AVATAR ));
+		mi.hIcon = LoadIconEx( "avatar" );
 		mi.pszName = MSN_Translate( "Set &Avatar" );
-		mi.pszService = servicefunction;
 		MSN_CallService( MS_CLIST_ADDMAINMENUITEM, 0, (LPARAM)&mi );
 	}
 
@@ -1500,45 +1490,39 @@ int LoadMsnServices( void )
 	// Contact menu initialization
 
 	strcpy( tDest, MSN_BLOCK );
-	hServiceHandle[5] = CreateServiceFunction( servicefunction, MsnBlockCommand );
+	arServices.insert( CreateServiceFunction( servicefunction, MsnBlockCommand ));
 
-	memset( &mi, 0, sizeof( mi ));
-	mi.cbSize = sizeof( mi );
 	mi.position = -500050000;
-	mi.hIcon = LoadIcon( hInst, MAKEINTRESOURCE( IDI_MSNBLOCK ));
+	mi.hIcon = LoadIconEx( "block" );
 	mi.pszContactOwner = msnProtocolName;
 	mi.pszName = MSN_Translate( "&Block" );
-	mi.pszService = servicefunction;
 	msnBlockMenuItem = ( HANDLE )MSN_CallService( MS_CLIST_ADDCONTACTMENUITEM, 0, ( LPARAM )&mi );
 
 	strcpy( tDest, MSN_INVITE );
-	hServiceHandle[6] = CreateServiceFunction( servicefunction, MsnInviteCommand );
+	arServices.insert( CreateServiceFunction( servicefunction, MsnInviteCommand ));
 
 	mi.flags = CMIF_NOTOFFLINE;
 	mi.position = -500050001;
-	mi.hIcon = LoadIcon( hInst, MAKEINTRESOURCE( IDI_INVITE ));
+	mi.hIcon = LoadIconEx( "invite" );
 	mi.pszName = MSN_Translate( "&Invite to chat" );
-	mi.pszService = servicefunction;
 	MSN_CallService( MS_CLIST_ADDCONTACTMENUITEM, 0, ( LPARAM )&mi );
 
 	strcpy( tDest, MSN_NETMEETING );
-	hServiceHandle[7] = CreateServiceFunction( servicefunction, MsnSendNetMeeting );
+	arServices.insert( CreateServiceFunction( servicefunction, MsnSendNetMeeting ));
 
 	mi.flags = CMIF_NOTOFFLINE;
 	mi.position = -500050002;
-	mi.hIcon = LoadIcon( hInst, MAKEINTRESOURCE( IDI_NETMEETING ));
+	mi.hIcon = LoadIconEx( "netmeeting" );
 	mi.pszName = MSN_Translate( "&Start Netmeeting" );
-	mi.pszService = servicefunction;
 	MSN_CallService( MS_CLIST_ADDCONTACTMENUITEM, 0, ( LPARAM )&mi );
 
 	strcpy( tDest, MSN_VIEW_PROFILE );
-	hServiceHandle[8] = CreateServiceFunction( servicefunction, MsnViewProfile );
+	arServices.insert( CreateServiceFunction( servicefunction, MsnViewProfile ));
 
 	mi.flags = 0;
 	mi.position = -500050003;
-	mi.hIcon = LoadIcon( hInst, MAKEINTRESOURCE( IDI_PROFILE ));
+	mi.hIcon = LoadIconEx( "profile" );
 	mi.pszName = MSN_Translate( "&View Profile" );
-	mi.pszService = servicefunction;
 	MSN_CallService( MS_CLIST_ADDCONTACTMENUITEM, 0, ( LPARAM )&mi );
 
 	MSN_EnableMenuItems( FALSE );
@@ -1546,62 +1530,52 @@ int LoadMsnServices( void )
 	//////////////////////////////////////////////////////////////////////////////////////
 	// Service creation
 
-	hHookHandle[0] = HookEvent( ME_DB_CONTACT_DELETED, MsnContactDeleted );
-	hHookHandle[1] = HookEvent( ME_DB_CONTACT_SETTINGCHANGED, MsnDbSettingChanged );
-	hHookHandle[2] = HookEvent( ME_CLIST_PREBUILDCONTACTMENU, MsnRebuildContactMenu );
+	arServices.insert( MSN_CreateProtoServiceFunction( PS_ADDTOLIST,        MsnAddToList ));
+	arServices.insert( MSN_CreateProtoServiceFunction( PS_ADDTOLISTBYEVENT, MsnAddToListByEvent ));
+	arServices.insert( MSN_CreateProtoServiceFunction( PS_AUTHALLOW,        MsnAuthAllow ));
+	arServices.insert( MSN_CreateProtoServiceFunction( PS_AUTHDENY,         MsnAuthDeny ));
+	arServices.insert( MSN_CreateProtoServiceFunction( PS_BASICSEARCH,      MsnBasicSearch ));
+	arServices.insert( MSN_CreateProtoServiceFunction( PS_FILERESUME,       MsnFileResume ));
+	arServices.insert( MSN_CreateProtoServiceFunction( PS_GETAVATARINFO,    MsnGetAvatarInfo ));
+	arServices.insert( MSN_CreateProtoServiceFunction( PS_GETCAPS,          MsnGetCaps ));
+	arServices.insert( MSN_CreateProtoServiceFunction( PS_GETNAME,          MsnGetName ));
+	arServices.insert( MSN_CreateProtoServiceFunction( PS_GETSTATUS,        MsnGetStatus ));
+	arServices.insert( MSN_CreateProtoServiceFunction( PS_LOADICON,         MsnLoadIcon ));
+	arServices.insert( MSN_CreateProtoServiceFunction( PS_SEARCHBYEMAIL,    MsnBasicSearch ));
+	arServices.insert( MSN_CreateProtoServiceFunction( PS_SETSTATUS,        MsnSetStatus ));
 
-	hServiceHandle[9] = MSN_CreateProtoServiceFunction( PS_ADDTOLIST,			MsnAddToList );
-	hServiceHandle[10] = MSN_CreateProtoServiceFunction( PS_ADDTOLISTBYEVENT,	MsnAddToListByEvent );
-	hServiceHandle[11] = MSN_CreateProtoServiceFunction( PS_AUTHALLOW,			MsnAuthAllow );
-	hServiceHandle[12] = MSN_CreateProtoServiceFunction( PS_AUTHDENY,				MsnAuthDeny );
-	hServiceHandle[13] = MSN_CreateProtoServiceFunction( PS_BASICSEARCH,			MsnBasicSearch );
-	hServiceHandle[14] = MSN_CreateProtoServiceFunction( PS_FILERESUME,			MsnFileResume );
-	hServiceHandle[15] = MSN_CreateProtoServiceFunction( PS_GETAVATARINFO,		MsnGetAvatarInfo );
-	hServiceHandle[16] = MSN_CreateProtoServiceFunction( PS_GETCAPS,				MsnGetCaps );
-	hServiceHandle[17] = MSN_CreateProtoServiceFunction( PS_GETNAME,				MsnGetName );
-	hServiceHandle[18] = MSN_CreateProtoServiceFunction( PS_GETSTATUS,			MsnGetStatus );
-	hServiceHandle[19] = MSN_CreateProtoServiceFunction( PS_LOADICON,				MsnLoadIcon );
-	hServiceHandle[20] = MSN_CreateProtoServiceFunction( PS_SEARCHBYEMAIL,		MsnBasicSearch );
-	hServiceHandle[21] = MSN_CreateProtoServiceFunction( PS_SETSTATUS,			MsnSetStatus );
+	arServices.insert( MSN_CreateProtoServiceFunction( PSR_FILE,            MsnRecvFile ));
+	arServices.insert( MSN_CreateProtoServiceFunction( PSR_MESSAGE,         MsnRecvMessage ));
 
-	hServiceHandle[22] = MSN_CreateProtoServiceFunction( PSR_FILE,					MsnRecvFile );
-	hServiceHandle[23] = MSN_CreateProtoServiceFunction( PSR_MESSAGE,				MsnRecvMessage );
-
-	hServiceHandle[24] = MSN_CreateProtoServiceFunction( PSS_FILE,					MsnSendFile );
-	hServiceHandle[25] = MSN_CreateProtoServiceFunction( PSS_FILEALLOW,			MsnFileAllow );
-	hServiceHandle[26] = MSN_CreateProtoServiceFunction( PSS_FILECANCEL,			MsnFileCancel );
-	hServiceHandle[27] = MSN_CreateProtoServiceFunction( PSS_FILEDENY,			MsnFileDeny );
-	hServiceHandle[28] = MSN_CreateProtoServiceFunction( PSS_GETINFO,				MsnGetInfo );
-	hServiceHandle[29] = MSN_CreateProtoServiceFunction( PSS_MESSAGE,				MsnSendMessage );
-	hServiceHandle[30] = MSN_CreateProtoServiceFunction( PSS_SETAPPARENTMODE,  MsnSetApparentMode );
-	hServiceHandle[31] = MSN_CreateProtoServiceFunction( PSS_USERISTYPING,     MsnUserIsTyping );
+	arServices.insert( MSN_CreateProtoServiceFunction( PSS_FILE,            MsnSendFile ));
+	arServices.insert( MSN_CreateProtoServiceFunction( PSS_FILEALLOW,       MsnFileAllow ));
+	arServices.insert( MSN_CreateProtoServiceFunction( PSS_FILECANCEL,      MsnFileCancel ));
+	arServices.insert( MSN_CreateProtoServiceFunction( PSS_FILEDENY,        MsnFileDeny ));
+	arServices.insert( MSN_CreateProtoServiceFunction( PSS_GETINFO,         MsnGetInfo ));
+	arServices.insert( MSN_CreateProtoServiceFunction( PSS_MESSAGE,         MsnSendMessage ));
+	arServices.insert( MSN_CreateProtoServiceFunction( PSS_SETAPPARENTMODE, MsnSetApparentMode ));
+	arServices.insert( MSN_CreateProtoServiceFunction( PSS_USERISTYPING,    MsnUserIsTyping ));
 
 	if ( MyOptions.UseMSNP11 ) {
-		hServiceHandle[32] = MSN_CreateProtoServiceFunction( PSS_GETAWAYMSG,		MsnGetAwayMsg );
-		hServiceHandle[33] = MSN_CreateProtoServiceFunction( PS_SETAWAYMSG,		MsnSetAwayMsg );
+		arServices.insert( MSN_CreateProtoServiceFunction( PSS_GETAWAYMSG,   MsnGetAwayMsg ));
+		arServices.insert( MSN_CreateProtoServiceFunction( PS_SETAWAYMSG,    MsnSetAwayMsg ));
 	}
 
-	hServiceHandle[34] = MSN_CreateProtoServiceFunction( MSN_ISAVATARFORMATSUPPORTED, MsnGetAvatarFormatSupported );
-	hServiceHandle[35] = MSN_CreateProtoServiceFunction( MSN_GETMYAVATARMAXSIZE, MsnGetAvatarMaxSize );
-	hServiceHandle[36] = MSN_CreateProtoServiceFunction( PS_SET_LISTENINGTO,   MsnSetCurrentMedia );
-	hServiceHandle[37] = MSN_CreateProtoServiceFunction( PS_GET_LISTENINGTO,   MsnGetCurrentMedia );
-	hServiceHandle[38] = MSN_CreateProtoServiceFunction( MSN_GETMYAVATAR,      MsnGetAvatar );
-	hServiceHandle[39] = MSN_CreateProtoServiceFunction( MSN_SETMYAVATAR,      MsnSetAvatar );
+	arServices.insert( MSN_CreateProtoServiceFunction( MSN_ISAVATARFORMATSUPPORTED, MsnGetAvatarFormatSupported ));
+	arServices.insert( MSN_CreateProtoServiceFunction( MSN_GETMYAVATARMAXSIZE, MsnGetAvatarMaxSize ));
+	arServices.insert( MSN_CreateProtoServiceFunction( PS_SET_LISTENINGTO,   MsnSetCurrentMedia ));
+	arServices.insert( MSN_CreateProtoServiceFunction( PS_GET_LISTENINGTO,   MsnGetCurrentMedia ));
+	arServices.insert( MSN_CreateProtoServiceFunction( MSN_GETMYAVATAR,      MsnGetAvatar ));
+	arServices.insert( MSN_CreateProtoServiceFunction( MSN_SETMYAVATAR,      MsnSetAvatar ));
 
-	hServiceHandle[40] = MSN_CreateProtoServiceFunction( MSN_SET_NICKNAME,     MsnSetNickName );
-	hServiceHandle[41] = MSN_CreateProtoServiceFunction( MSN_SEND_NUDGE,       MsnSendNudge );
+	arServices.insert( MSN_CreateProtoServiceFunction( MSN_SET_NICKNAME,     MsnSetNickName ));
+	arServices.insert( MSN_CreateProtoServiceFunction( MSN_SEND_NUDGE,       MsnSendNudge ));
 	return 0;
 }
 
 void UnloadMsnServices( void )
 {
-	int i;
-
-	for ( i=0; i<sizeof(hHookHandle)/sizeof(HANDLE); i++ )
-		if ( hHookHandle[i] != NULL )
-			UnhookEvent( hHookHandle[i] );
-	
-	for ( i=0; i<sizeof(hServiceHandle)/sizeof(HANDLE); i++ )
-		if ( hServiceHandle[i] != NULL )
-			DestroyServiceFunction( hServiceHandle[i] );
+	for ( int i=0; i < arServices.getCount(); i++ )
+		DestroyServiceFunction( arServices[i] );
+	arServices.destroy();
 }

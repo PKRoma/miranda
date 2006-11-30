@@ -2,7 +2,7 @@
 // Microsoft Visual C++ generated include file.
 // Used by msn.rc
 //
-#define IDI_MSN                         1
+#define IDI_MSN                         101
 #define IDD_USEROPTS                    105
 #define IDD_OPT_MSN_CONN                106
 #define IDD_HOTMAIL_OPT_POPUP           107

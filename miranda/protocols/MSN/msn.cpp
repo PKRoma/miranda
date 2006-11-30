@@ -22,6 +22,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 */
 
 #include "msn_global.h"
+#include "m_icolib.h"
 #include "version.h"
 
 #pragma comment( lib, "shlwapi.lib" )
@@ -108,12 +109,17 @@ int				msnStatusMode,
 HANDLE			msnMenuItems[ MENU_ITEMS_COUNT ];
 HANDLE			hNetlibUser = NULL;
 HANDLE			hInitChat = NULL;
-
-static HANDLE hHookHandle[8] = { 0 }; 
-
 bool				msnUseExtendedPopups;
 
+int CompareHandles( const void* p1, const void* p2 )
+{	return (long)p1 - (long)p2;
+}
+static LIST<void> arHooks( 20, CompareHandles ); 
+
+int MsnContactDeleted( WPARAM wParam, LPARAM lParam );
+int MsnDbSettingChanged(WPARAM wParam,LPARAM lParam);
 int MsnOnDetailsInit( WPARAM wParam, LPARAM lParam );
+int MsnRebuildContactMenu( WPARAM wParam, LPARAM lParam );
 
 int MSN_GCEventHook( WPARAM wParam, LPARAM lParam );
 int MSN_GCMenuHook( WPARAM wParam, LPARAM lParam );
@@ -233,18 +239,24 @@ static int OnModulesLoaded( WPARAM wParam, LPARAM lParam )
 		gcr.pszModule = msnProtocolName;
 		MSN_CallService( MS_GC_REGISTER, NULL, ( LPARAM )&gcr );
 
-		hHookHandle[0] = HookEvent( ME_GC_EVENT, MSN_GCEventHook );
-		hHookHandle[1] = HookEvent( ME_GC_BUILDMENU, MSN_GCMenuHook );
+		arHooks.insert( HookEvent( ME_GC_EVENT, MSN_GCEventHook ));
+		arHooks.insert( HookEvent( ME_GC_BUILDMENU, MSN_GCMenuHook ));
 
 		char szEvent[ 200 ];
 		mir_snprintf( szEvent, sizeof szEvent, "%s\\ChatInit", msnProtocolName );
 		hInitChat = CreateHookableEvent( szEvent );
-		hHookHandle[2] = HookEvent( szEvent, MSN_ChatInit );
+		arHooks.insert( HookEvent( szEvent, MSN_ChatInit ));
 	}
 
+	MSN_IconsInit();
+
 	msnUseExtendedPopups = ServiceExists( MS_POPUP_ADDPOPUPEX ) != 0;
-	hHookHandle[3] = HookEvent( ME_USERINFO_INITIALISE, MsnOnDetailsInit );
-	hHookHandle[4] = HookEvent( ME_MSG_WINDOWEVENT, MsnWindowEvent );
+	arHooks.insert( HookEvent( ME_USERINFO_INITIALISE, MsnOnDetailsInit ));
+	arHooks.insert( HookEvent( ME_MSG_WINDOWEVENT, MsnWindowEvent ));
+	arHooks.insert( HookEvent( ME_SKIN2_ICONSCHANGED, MsnWindowEvent ));
+	arHooks.insert( HookEvent( ME_DB_CONTACT_DELETED, MsnContactDeleted ));
+	arHooks.insert( HookEvent( ME_DB_CONTACT_SETTINGCHANGED, MsnDbSettingChanged ));
+	arHooks.insert( HookEvent( ME_CLIST_PREBUILDCONTACTMENU, MsnRebuildContactMenu ));
 	return 0;
 }
 
@@ -293,13 +305,13 @@ extern "C" int __declspec(dllexport) Load( PLUGINLINK* link )
 //	if (ServiceExists("PluginSweeper/Add"))
 //		MSN_CallService("PluginSweeper/Add",(WPARAM)MSN_Translate(ModuleName),(LPARAM)ModuleName);
 
-	hHookHandle[5] = HookEvent( ME_SYSTEM_MODULESLOADED, OnModulesLoaded );
+	arHooks.insert( HookEvent( ME_SYSTEM_MODULESLOADED, OnModulesLoaded ));
 
 	srand(( unsigned int )time( NULL ));
 
 	LoadOptions();
-	hHookHandle[6] = HookEvent( ME_OPT_INITIALISE, MsnOptInit );
-	hHookHandle[7] = HookEvent( ME_SYSTEM_PRESHUTDOWN, OnPreShutdown );
+	arHooks.insert( HookEvent( ME_OPT_INITIALISE, MsnOptInit ));
+	arHooks.insert( HookEvent( ME_SYSTEM_PRESHUTDOWN, OnPreShutdown ));
 
 	char evtname[250];
 	sprintf(evtname,"%s/Nudge",protocolname);
@@ -351,10 +363,9 @@ extern "C" int __declspec( dllexport ) Unload( void )
 	if ( msnLoggedIn )
 		msnNsThread->sendPacket( "OUT", NULL );
 
-	for ( i=0; i<sizeof(hHookHandle)/sizeof(HANDLE); i++ ) {
-		if ( hHookHandle[i] != NULL )
-			UnhookEvent( hHookHandle[i] );
-	}
+	for ( i=0; i < arHooks.getCount(); i++ )
+		UnhookEvent( arHooks[i] );
+	arHooks.destroy();
 
 	if ( hInitChat )
 		DestroyHookableEvent( hInitChat );

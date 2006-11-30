@@ -57,6 +57,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include <m_protosvc.h>
 #include <m_skin.h>
 #include <m_system.h>
+#include <m_system_cpp.h>
 #include <m_userinfo.h>
 #include <m_utils.h>
 #include <win2k.h>
@@ -235,6 +236,9 @@ TCHAR* UnEscapeChatTags(TCHAR* str_in);
 VOID		CALLBACK MSNMainTimerProc( HWND hwnd, UINT uMsg, UINT idEvent, DWORD dwTime );
 LRESULT	CALLBACK NullWindowProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam);
 DWORD		WINAPI	MsnShowMailThread( LPVOID );
+
+HICON    __stdcall   LoadIconEx( const char* );
+void     MSN_IconsInit( void );
 
 int IsWinver( void );
 

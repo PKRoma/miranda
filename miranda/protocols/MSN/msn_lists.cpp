@@ -256,11 +256,11 @@ BOOL CALLBACK DlgProcMsnServLists(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM 
 			HIMAGELIST hIml = ImageList_Create(
 				GetSystemMetrics(SM_CXSMICON), GetSystemMetrics(SM_CYSMICON),
 				ILC_MASK | (IsWinVerXPPlus() ? ILC_COLOR32 : ILC_COLOR16 ), 5, 5 );
-			ImageList_AddIcon( hIml,LoadIcon(GetModuleHandle(NULL),MAKEINTRESOURCE(211)));
-			ImageList_AddIcon( hIml, LoadIcon( hInst, MAKEINTRESOURCE( IDI_LIST_FL )));
-			ImageList_AddIcon( hIml, LoadIcon( hInst, MAKEINTRESOURCE( IDI_LIST_AL )));
-			ImageList_AddIcon( hIml, LoadIcon( hInst, MAKEINTRESOURCE( IDI_LIST_BL )));
-			ImageList_AddIcon( hIml, LoadIcon( hInst, MAKEINTRESOURCE( IDI_LIST_RL )));
+			ImageList_AddIcon( hIml, LoadIcon(GetModuleHandle(NULL),MAKEINTRESOURCE(211)));
+			ImageList_AddIcon( hIml, LoadIconEx( "list_fl" ));
+			ImageList_AddIcon( hIml, LoadIconEx( "list_al" ));
+			ImageList_AddIcon( hIml, LoadIconEx( "list_bl" ));
+			ImageList_AddIcon( hIml, LoadIconEx( "list_rl" ));
 			SendDlgItemMessage( hwndDlg, IDC_LIST, CLM_SETEXTRAIMAGELIST, 0, (LPARAM)hIml );
 		}
 		ResetListOptions( GetDlgItem( hwndDlg, IDC_LIST ));

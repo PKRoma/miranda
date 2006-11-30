@@ -644,7 +644,7 @@ void __stdcall	MSN_ShowPopup( const char* nickname, const char* msg, int flags )
 	POPUPDATAEX* ppd = ( POPUPDATAEX* )mir_calloc( sizeof( POPUPDATAEX ));
 
 	ppd->lchContact = NULL;
-	ppd->lchIcon = LoadIcon( hInst, MAKEINTRESOURCE( IDI_MSN ));
+	ppd->lchIcon = LoadIconEx( "main" );
 	strcpy( ppd->lpzContactName, nickname );
 	strcpy( ppd->lpzText, msg );
 
