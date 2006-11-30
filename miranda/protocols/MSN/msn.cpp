@@ -254,7 +254,7 @@ static int OnModulesLoaded( WPARAM wParam, LPARAM lParam )
 	msnUseExtendedPopups = ServiceExists( MS_POPUP_ADDPOPUPEX ) != 0;
 	arHooks.insert( HookEvent( ME_USERINFO_INITIALISE, MsnOnDetailsInit ));
 	arHooks.insert( HookEvent( ME_MSG_WINDOWEVENT, MsnWindowEvent ));
-	arHooks.insert( HookEvent( ME_SKIN2_ICONSCHANGED, MsnWindowEvent ));
+	//arHooks.insert( HookEvent( ME_SKIN2_ICONSCHANGED, MsnWindowEvent ));
 	arHooks.insert( HookEvent( ME_DB_CONTACT_DELETED, MsnContactDeleted ));
 	arHooks.insert( HookEvent( ME_DB_CONTACT_SETTINGCHANGED, MsnDbSettingChanged ));
 	arHooks.insert( HookEvent( ME_CLIST_PREBUILDCONTACTMENU, MsnRebuildContactMenu ));
