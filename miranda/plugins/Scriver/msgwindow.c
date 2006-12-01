@@ -861,6 +861,14 @@ BOOL CALLBACK DlgProcParentWindow(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM 
 		{
 			WINDOWPLACEMENT wp = { 0 };
 			HANDLE hContact;
+			int i;
+			for (i=dat->childrenCount;--i>=0;) {
+				TCITEM tci;
+				tci.mask = TCIF_PARAM;
+				TabCtrl_GetItem(dat->hwndTabs, i, &tci);
+				TabCtrl_DeleteItem(dat->hwndTabs, i);
+				mir_free((MessageWindowTabData *) tci.lParam);
+			}
 			SetWindowLong(hwndDlg, GWL_USERDATA, 0);
 			WindowList_Remove(g_dat->hParentWindowList, hwndDlg);
 			if (DBGetContactSettingByte(NULL, SRMMMOD, SRMSGSET_SAVEPERCONTACT, SRMSGDEFSET_SAVEPERCONTACT))
