@@ -86,6 +86,8 @@ static oscar_filetransfer* CreateOscarTransfer()
 {
   oscar_filetransfer* ft = (oscar_filetransfer*)SAFE_MALLOC(sizeof(oscar_filetransfer));
 
+  ft->ft_magic = FT_MAGIC_OSCAR; // Setup signature
+
   EnterCriticalSection(&oftMutex);
 
   oftTransferList = (oscar_filetransfer**)realloc(oftTransferList, sizeof(oscar_filetransfer*)*(oftTransferCount + 1));
@@ -102,21 +104,20 @@ static void ReleaseOscarTransfer(oscar_filetransfer *ft)
 {
   int i;
 
-  EnterCriticalSection(&oftMutex);
+ // EnterCriticalSection(&oftMutex);
 
   for (i = 0; i < oftTransferCount; i++)
   {
     if (oftTransferList[i] == ft)
     {
       oftTransferCount--;
-      SafeReleaseFileTransfer(&oftTransferList[i]);
       oftTransferList[i] = oftTransferList[oftTransferCount];
       oftTransferList = (oscar_filetransfer**)realloc(oftTransferList, sizeof(oscar_filetransfer*)*oftTransferCount);
       break;
     }
   }
 
-  LeaveCriticalSection(&oftMutex);
+//  LeaveCriticalSection(&oftMutex);
 }
 
 
@@ -372,7 +373,6 @@ void handleRecvServMsgOFT(unsigned char *buf, WORD wLen, DWORD dwUin, char *szUI
         // TLV(2711): FT info
         // TLV(2712): Charset of file name
 
-        ft->ft_magic = FT_MAGIC_OSCAR;
         // init filetransfer structure
         ft->pMessage.dwMsgID1 = dwID1;
         ft->pMessage.dwMsgID2 = dwID2;
