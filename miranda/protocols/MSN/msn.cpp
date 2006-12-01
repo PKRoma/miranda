@@ -248,7 +248,6 @@ static int OnModulesLoaded( WPARAM wParam, LPARAM lParam )
 		arHooks.insert( HookEvent( szEvent, MSN_ChatInit ));
 	}
 
-	MsnInitIcons();
 	MsnInitMenus();
 
 	msnUseExtendedPopups = ServiceExists( MS_POPUP_ADDPOPUPEX ) != 0;
@@ -345,6 +344,7 @@ extern "C" int __declspec(dllexport) Load( PLUGINLINK* link )
 	ZeroMemory(&msnCurrentMedia, sizeof(msnCurrentMedia));
 	msnLoggedIn = false;
 	LoadMsnServices();
+	MsnInitIcons();
 	Lists_Init();
 	MsgQueue_Init();
 	P2pSessions_Init();
