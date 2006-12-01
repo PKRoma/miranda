@@ -3057,15 +3057,18 @@ int FindRTLLocale(struct MessageWindowData *dat)
     return result;
 }
 
-HICON MY_GetContactIcon(HANDLE hContact, char * proto, int status)
+HICON MY_GetContactIcon(struct MessageWindowData *dat)
 {
+    if(dat->bIsMeta)
+        return CopyIcon(LoadSkinnedProtoIcon(dat->szMetaProto, dat->wMetaStatus));
+
     if (ServiceExists(MS_CLIST_GETCONTACTICON) && ServiceExists(MS_CLIST_GETICONSIMAGELIST)) 
     {
         HIMAGELIST iml = (HIMAGELIST)CallService(MS_CLIST_GETICONSIMAGELIST,0,0);
-        int index = CallService(MS_CLIST_GETCONTACTICON,(WPARAM)hContact,0);
+        int index = CallService(MS_CLIST_GETCONTACTICON,(WPARAM)dat->hContact,0);
         if (iml && index>=0)
             return ImageList_GetIcon(iml,index,ILD_NORMAL);
     }
-    return CopyIcon(LoadSkinnedProtoIcon(proto,status));
+    return CopyIcon(LoadSkinnedProtoIcon(dat->szProto, dat->wStatus));
 }
 

@@ -2230,11 +2230,11 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
 
                 if (dat->hTabStatusIcon) {
                     DestroyIcon(dat->hTabStatusIcon);
-                    dat->hTabStatusIcon=0;
+                    dat->hTabStatusIcon = 0;
                 }
 
                 if (szProto) {
-                    dat->hTabIcon = dat->hTabStatusIcon = MY_GetContactIcon(dat->hContact,szProto, wStatus);
+                    dat->hTabIcon = dat->hTabStatusIcon = MY_GetContactIcon(dat);
                     //dat->hTabIcon = dat->hTabStatusIcon = LoadSkinnedProtoIcon(szProto, wStatus);
 					if(DBGetContactSettingByte(NULL, SRMSGMOD_T, "use_xicons", 0))
 						dat->hXStatusIcon = GetXStatusIcon(dat);
@@ -2952,15 +2952,15 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
             StreamInEvents(hwndDlg, dat->hDbEventFirst, -1, 0, NULL);
             return 0;
         case DM_APPENDTOLOG:
-            if((HANDLE)wParam != dat->hDbEventLastFeed) {
+            //if((HANDLE)wParam != dat->hDbEventLastFeed) {
                 dat->hDbEventLastFeed = (HANDLE)wParam;
                 StreamInEvents(hwndDlg, (HANDLE) wParam, 1, 1, NULL);
-            }
+            /*}
             else {
                 TCHAR szBuffer[256];
                 mir_sntprintf(szBuffer, safe_sizeof(szBuffer), TranslateT("Duplicate event handle detected"));
                 SendMessage(hwndDlg, DM_ACTIVATETOOLTIP, IDC_MESSAGE, (LPARAM)szBuffer);
-            }
+            }*/
             return 0;
             /*
              * replays queued events after the message log has been frozen for a while

@@ -88,7 +88,7 @@ void        GetRealIEViewWindow(HWND hwndDlg, struct MessageWindowData *dat);
 BOOL        IsStatusEvent(int eventType);
 void        GetMyNick(HWND hwndDlg, struct MessageWindowData *dat);
 int         FindRTLLocale(struct MessageWindowData *dat);
-HICON       MY_GetContactIcon(HANDLE hContact, char * proto, int status);
+HICON       MY_GetContactIcon(struct MessageWindowData *dat);
 
 extern BOOL CALLBACK SelectContainerDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam);
 extern BOOL CALLBACK DlgProcContainerOptions(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam);
