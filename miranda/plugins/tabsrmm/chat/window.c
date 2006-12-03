@@ -2107,8 +2107,9 @@ LABEL_SHOWWINDOW:
 							TEXTRANGE tr;
 							CHARRANGE sel;
 							BOOL isLink = FALSE;
-                            tr.lpstrText = NULL;
+                            UINT msg = ((ENLINK *) lParam)->msg;
 
+                            tr.lpstrText = NULL;
 							SendMessage(pNmhdr->hwndFrom, EM_EXGETSEL, 0, (LPARAM) & sel);
 							if (sel.cpMin != sel.cpMax)
 								break;
@@ -2163,80 +2164,102 @@ LABEL_SHOWWINDOW:
 									CallService(MS_UTILS_OPENURL, 1, (LPARAM) pszUrl);
 									SetFocus(GetDlgItem(hwndDlg, IDC_CHAT_MESSAGE));
                                     mir_free(tr.lpstrText);
+                                    mir_free(pszUrl);
                                     return TRUE;
 								}
-								mir_free(pszUrl);
 							}
 							else {                      // clicked a nick name
-								/* I think there is no reason to check for a real user,
-								   because ppl sometime want to click on a nick of a
-								   gone person and "nothing-is-happening" behaviour
-								   confuses them, so I commented the code */
-								/*USERINFO *ui = si->pUsers;
- 								BOOL found = FALSE;
- 
-								BOOL found = FALSE;
-
-								while(!found && ui) {
-									int iLen = lstrlen(ui->pszNick), i;
-									found = _tcscmp(ui->pszNick, tr.lpstrText) == 0;
-									ui = ui->next;
-								}
-								if (found)
-									SendDlgItemMessage(hwndDlg, IDC_CHAT_MESSAGE, EM_REPLACESEL,  FALSE, (LPARAM)tr.lpstrText);
-								/* put nick to the answer window */
                                 CHARRANGE chr;
                                 TEXTRANGE tr2;
                                 TCHAR tszAplTmpl[] = _T("%s,"), 
                                     *tszAppeal, *tszTmp;
                                 size_t st;
 
-                                SendDlgItemMessage(hwndDlg, IDC_CHAT_MESSAGE,
-                                    EM_EXGETSEL, 0, (LPARAM) &chr);
-                                tszTmp = tszAppeal = (TCHAR *) malloc(
-                                    (_tcslen(tr.lpstrText) + 
-                                     _tcslen(tszAplTmpl) + 3) * sizeof(TCHAR));
-                                tr2.lpstrText = (LPTSTR) malloc(sizeof(TCHAR) * 2);
-                                if (chr.cpMin) {
-                                    /* prepend nick with space if needed */
-                                    tr2.chrg.cpMin = chr.cpMin-1;
-                                    tr2.chrg.cpMax = chr.cpMin;
-                                    SendDlgItemMessage(hwndDlg, IDC_CHAT_MESSAGE,
-                                        EM_GETTEXTRANGE, 0, (LPARAM) &tr2);
-                                    if (! _istspace(*tr2.lpstrText))
-                                        *tszTmp++ = _T(' ');
-                                    _tcscpy(tszTmp, tr.lpstrText);
-                                } else
-                                    /* in the beginning of the message window */
-                                    _stprintf(tszAppeal, tszAplTmpl, tr.lpstrText);
-                                st = _tcslen(tszAppeal);
-                                if (chr.cpMax != -1) {
-                                    tr2.chrg.cpMin = chr.cpMax;
-                                    tr2.chrg.cpMax = chr.cpMax + 1;
-                                    /* if there is no space after selection,
-                                       or there is nothing after selection at all... */
-                                    if (! SendDlgItemMessage(hwndDlg, 
-                                        IDC_CHAT_MESSAGE,
-                                        EM_GETTEXTRANGE, 0, (LPARAM) &tr2) ||
-                                        ! _istspace(*tr2.lpstrText)) {
-                                            tszAppeal[st++] = _T(' ');
-                                            tszAppeal[st++] = _T('\0');
+                                if(msg == WM_RBUTTONDOWN) {
+                                    USERINFO *ui = si->pUsers;
+                                    HMENU     hMenu = 0;
+                                    USERINFO  uiNew;
+                                    while(ui) {
+                                        if(!lstrcmp(ui->pszNick, tr.lpstrText)) {
+                                            POINT pt;
+											UINT  uID;
+
+                                            pt.x = (short) LOWORD(((ENLINK *) lParam)->lParam);
+                                            pt.y = (short) HIWORD(((ENLINK *) lParam)->lParam);
+                                            ClientToScreen(((NMHDR *) lParam)->hwndFrom, &pt);
+                                            CopyMemory(&uiNew, ui, sizeof(USERINFO));
+                                            uID = CreateGCMenu(hwndDlg, &hMenu, 0, pt, si, uiNew.pszUID, NULL);
+                                            switch (uID) {
+                                            case 0:
+                                                break;
+
+                                            case ID_MESS:
+                                                DoEventHookAsync(hwndDlg, si->ptszID, si->pszModule, GC_USER_PRIVMESS, ui->pszUID, NULL, (LPARAM)NULL);
+                                                break;
+
+                                            default:
+                                                DoEventHookAsync(hwndDlg, si->ptszID, si->pszModule, GC_USER_NICKLISTMENU, ui->pszUID, NULL, (LPARAM)uID);
+                                                break;
+                                            }
+                                            DestroyGCMenu(&hMenu, 1);
+                                            return TRUE;
                                         }
-                                } else {
-                                    tszAppeal[st++] = _T(' ');
-                                    tszAppeal[st++] = _T('\0');
+                                        ui = ui->next;
+                                    }
+                                    return TRUE;
+								}
+                                else if(msg == WM_LBUTTONUP) {
+                                    SendDlgItemMessage(hwndDlg, IDC_CHAT_MESSAGE,
+                                        EM_EXGETSEL, 0, (LPARAM) &chr);
+                                    tszTmp = tszAppeal = (TCHAR *) malloc(
+                                        (_tcslen(tr.lpstrText) + 
+                                         _tcslen(tszAplTmpl) + 3) * sizeof(TCHAR));
+                                    tr2.lpstrText = (LPTSTR) malloc(sizeof(TCHAR) * 2);
+                                    if (chr.cpMin) {
+                                        /* prepend nick with space if needed */
+                                        tr2.chrg.cpMin = chr.cpMin-1;
+                                        tr2.chrg.cpMax = chr.cpMin;
+                                        SendDlgItemMessage(hwndDlg, IDC_CHAT_MESSAGE,
+                                            EM_GETTEXTRANGE, 0, (LPARAM) &tr2);
+                                        if (! _istspace(*tr2.lpstrText))
+                                            *tszTmp++ = _T(' ');
+                                        _tcscpy(tszTmp, tr.lpstrText);
+                                    } else
+                                        /* in the beginning of the message window */
+                                        _stprintf(tszAppeal, tszAplTmpl, tr.lpstrText);
+                                    st = _tcslen(tszAppeal);
+                                    if (chr.cpMax != -1) {
+                                        tr2.chrg.cpMin = chr.cpMax;
+                                        tr2.chrg.cpMax = chr.cpMax + 1;
+                                        /* if there is no space after selection,
+                                           or there is nothing after selection at all... */
+                                        if (! SendDlgItemMessage(hwndDlg, 
+                                            IDC_CHAT_MESSAGE,
+                                            EM_GETTEXTRANGE, 0, (LPARAM) &tr2) ||
+                                            ! _istspace(*tr2.lpstrText)) {
+                                                tszAppeal[st++] = _T(' ');
+                                                tszAppeal[st++] = _T('\0');
+                                            }
+                                    } else {
+                                        tszAppeal[st++] = _T(' ');
+                                        tszAppeal[st++] = _T('\0');
+                                    }
+                                    SendDlgItemMessage(hwndDlg, IDC_CHAT_MESSAGE, 
+                                        EM_REPLACESEL,  FALSE, (LPARAM)tszAppeal);
+                                    free((void *) tr2.lpstrText);
+                                    free((void *) tszAppeal);
                                 }
-                                SendDlgItemMessage(hwndDlg, IDC_CHAT_MESSAGE, 
-                                    EM_REPLACESEL,  FALSE, (LPARAM)tszAppeal);
-                                free((void *) tr2.lpstrText);
-                                free((void *) tszAppeal);
 							}
 							SetFocus(GetDlgItem(hwndDlg, IDC_CHAT_MESSAGE));
 							mir_free(tr.lpstrText);
-							break;
-					}	}
-					break;
-		}	}	}
+							return TRUE;
+                        }	
+                    }
+					return TRUE;
+                }
+                return TRUE;
+            }	
+        }
 		break;
 
 	case WM_LBUTTONDOWN:
