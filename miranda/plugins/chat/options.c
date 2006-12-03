@@ -27,7 +27,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 extern HANDLE       g_hInst;
 extern HBRUSH       hEditBkgBrush;
 extern HBRUSH       hListBkgBrush;
-extern HICON        hIcons[30];	
+extern HICON        hIcons[30];
 extern FONTINFO     aFonts[OPTIONS_FONTCOUNT];
 extern BOOL         PopUpInstalled;
 extern SESSION_INFO g_TabSession;
@@ -252,7 +252,7 @@ static void CheckHeading(HWND hwndTree, HTREEITEM hHeading)
 	while(tvi.hItem && bChecked) {
 		if (tvi.hItem != branch1[0].hItem && tvi.hItem != branch1[1].hItem ) {
 			TreeView_GetItem(hwndTree,&tvi);
-			if (((tvi.state & TVIS_STATEIMAGEMASK)>>12 == 1)) 
+			if (((tvi.state & TVIS_STATEIMAGEMASK)>>12 == 1))
 				bChecked = FALSE;
 		}
 		tvi.hItem=TreeView_GetNextSibling(hwndTree,tvi.hItem);
@@ -274,14 +274,14 @@ static void CheckBranches(HWND hwndTree, HTREEITEM hHeading)
 	tvi.mask=TVIF_HANDLE|TVIF_STATE;
 	tvi.hItem = hHeading;
 	TreeView_GetItem(hwndTree,&tvi);
-	if (((tvi.state&TVIS_STATEIMAGEMASK)>>12==2)) 
+	if (((tvi.state&TVIS_STATEIMAGEMASK)>>12==2))
 		bChecked = FALSE;
 	tvi.hItem=TreeView_GetNextItem(hwndTree, hHeading, TVGN_CHILD);
 	tvi.stateMask = TVIS_STATEIMAGEMASK;
 	while(tvi.hItem) {
 		tvi.state=INDEXTOSTATEIMAGEMASK(bChecked?2:1);
 		if (tvi.hItem != branch1[0].hItem && tvi.hItem != branch1[1].hItem )
-			TreeView_SetItem(hwndTree,&tvi);		
+			TreeView_SetItem(hwndTree,&tvi);
 		tvi.hItem=TreeView_GetNextSibling(hwndTree,tvi.hItem);
 }	}
 
@@ -351,7 +351,7 @@ void RegisterFonts( void )
 	char idstr[10];
 	int index = 0, i;
 
-	fontid.cbSize = sizeof(FontID);
+	fontid.cbSize = sizeof(FontIDT);
 	fontid.flags = FIDF_ALLOWREREGISTER | FIDF_DEFAULTVALID | FIDF_NEEDRESTART;
 	for (i = 0; i < msgDlgFontCount; i++, index++) {
 		strncpy(fontid.dbSettingsGroup, "ChatFonts", sizeof(fontid.dbSettingsGroup));
@@ -369,7 +369,7 @@ void RegisterFonts( void )
 		CallService(MS_FONT_REGISTERT, (WPARAM)&fontid, 0);
 	}
 
-	colourid.cbSize = sizeof(ColourID);
+	colourid.cbSize = sizeof(ColourIDT);
 	colourid.order = 0;
 	strncpy(colourid.dbSettingsGroup, "Chat", sizeof(colourid.dbSettingsGroup));
 
@@ -405,7 +405,7 @@ struct
 	char* szName;
 	int   defIconID;
 }
-iconList[] = 
+iconList[] =
 {
 	{	16, "Chat windows", "Window Icon",           "chat_window",    IDI_CHANMGR    },
 	{	16, "Chat windows", "Text colour",           "chat_fgcol",     IDI_COLOR      },
@@ -422,7 +422,7 @@ iconList[] =
 	{	16, "Chat windows", "Show userlist",         "chat_nicklist2", IDI_NICKLIST2  },
 	{	16, "Chat windows", "Icon overlay",          "chat_overlay",   IDI_OVERLAY    },
 	{	16, "Chat windows", "Close",                 "chat_close",     IDI_CLOSE      },
-			 
+
 	{	10, "Chat windows", "Status 1 (10x10)",      "chat_status0",   IDI_STATUS0    },
 	{	10, "Chat windows", "Status 2 (10x10)",      "chat_status1",   IDI_STATUS1    },
 	{	10, "Chat windows", "Status 3 (10x10)",      "chat_status2",   IDI_STATUS2    },
@@ -643,7 +643,7 @@ static BOOL CALLBACK DlgProcOptions2(HWND hwndDlg,UINT uMsg,WPARAM wParam,LPARAM
 		SendDlgItemMessage(hwndDlg,IDC_SPIN4,UDM_SETPOS,0,MAKELONG(DBGetContactSettingByte(NULL,"Chat","NicklistRowDist",12),0));
 		{
 			TCHAR* pszGroup = NULL;
-			InitSetting(&pszGroup, "AddToGroup", _T("Chat rooms")); 
+			InitSetting(&pszGroup, "AddToGroup", _T("Chat rooms"));
 			SetWindowText(GetDlgItem(hwndDlg, IDC_GROUP), pszGroup);
 			mir_free(pszGroup);
 		}
@@ -820,7 +820,7 @@ static BOOL CALLBACK DlgProcOptionsPopup(HWND hwndDlg,UINT uMsg,WPARAM wParam,LP
 		break;
 
 	case WM_COMMAND:
-		if ((LOWORD(wParam) == IDC_TIMEOUT) && (HIWORD(wParam)!=EN_CHANGE || (HWND)lParam != GetFocus()))	
+		if ((LOWORD(wParam) == IDC_TIMEOUT) && (HIWORD(wParam)!=EN_CHANGE || (HWND)lParam != GetFocus()))
 			return 0;
 
 		if (lParam != (LPARAM)NULL)
@@ -845,7 +845,7 @@ static BOOL CALLBACK DlgProcOptionsPopup(HWND hwndDlg,UINT uMsg,WPARAM wParam,LP
 				iLen = 2;
 			else if (IsDlgButtonChecked(hwndDlg, IDC_RADIO3) == BST_CHECKED)
 				iLen = 3;
-			else 
+			else
 				iLen = 1;
 
 			g_Settings.iPopupStyle = iLen;
@@ -934,10 +934,10 @@ void LoadGlobalSettings(void)
 	g_Settings.crPUBkgColour = DBGetContactSettingDword(NULL, "Chat", "PopupColorBG", GetSysColor(COLOR_WINDOW));
 	g_Settings.crPUTextColour = DBGetContactSettingDword(NULL, "Chat", "PopupColorText", 0);
 
-	InitSetting( &g_Settings.pszTimeStamp, "HeaderTime", _T("[%H:%M]")); 
-	InitSetting( &g_Settings.pszTimeStampLog, "LogTimestamp", _T("[%d %b %y %H:%M]")); 
+	InitSetting( &g_Settings.pszTimeStamp, "HeaderTime", _T("[%H:%M]"));
+	InitSetting( &g_Settings.pszTimeStampLog, "LogTimestamp", _T("[%d %b %y %H:%M]"));
 	InitSetting( &g_Settings.pszIncomingNick, "HeaderIncoming", _T("%n:"));
-	InitSetting( &g_Settings.pszOutgoingNick, "HeaderOutgoing", _T("%n:")); 
+	InitSetting( &g_Settings.pszOutgoingNick, "HeaderOutgoing", _T("%n:"));
 	InitSetting( &g_Settings.pszHighlightWords, "HighlightWords", _T("%m"));
 
 	{

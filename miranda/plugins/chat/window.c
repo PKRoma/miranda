@@ -1213,7 +1213,7 @@ BOOL CALLBACK RoomWndProc(HWND hwndDlg,UINT uMsg,WPARAM wParam,LPARAM lParam)
 				ti.lpszText  = LPSTR_TEXTCALLBACK;
 				//GetClientRect( hNickList, &ti.rect );
 				SendMessage( psi->hwndTooltip, TTM_ADDTOOL, 0, ( LPARAM )&ti );
-				SendMessage( psi->hwndTooltip, TTM_SETDELAYTIME, TTDT_AUTOPOP, 1000 );
+				SendMessage( psi->hwndTooltip, TTM_SETDELAYTIME, TTDT_AUTOPOP, 20000 );
 				SendMessage( psi->hwndTooltip, TTM_SETMAXTIPWIDTH, 0, 300);
 
 				//SendMessage( psi->hwndTooltip, TTM_TRACKACTIVATE, TRUE, ( LPARAM )&ti );
