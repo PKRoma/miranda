@@ -172,15 +172,21 @@ void DestroyingModularEngine(void)
 void DestroyModularEngine(void)
 {
 	int i;
-	for(i=0;i<hookCount;i++)
-		if (hook[i].subscriberCount) mir_free(hook[i].subscriber);
-	if (hookCount) mir_free(hook);
-	if (serviceCount) mir_free(service);
+	EnterCriticalSection(&csHooks);
+ 	for(i=0;i<hookCount;i++)
+ 		if(hook[i].subscriberCount) mir_free(hook[i].subscriber);
+ 	if(hookCount) mir_free(hook);
+	hookCount = 0;
+	LeaveCriticalSection(&csHooks);
 	DeleteCriticalSection(&csHooks);
-	DeleteCriticalSection(&csServices);
+	
+	EnterCriticalSection(&csServices);
+ 	if(serviceCount) mir_free(service);
+	serviceCount = 0;
+	LeaveCriticalSection(&csServices);
+ 	DeleteCriticalSection(&csServices);
 	CloseHandle(hMainThread);
 }
-
 
 #if __GNUC__
 #define NOINLINEASM
