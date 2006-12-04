@@ -286,7 +286,7 @@ BOOL CALLBACK HotkeyHandlerDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM
                             hIcon = dis->itemData & 0x10000000 ? hIcons[ICON_HIGHLIGHT] : myGlobals.g_IconMsgEvent;
                         else if(dat != NULL) {
                             //hIcon = LoadSkinnedProtoIcon(dat->bIsMeta ? dat->szMetaProto : dat->szProto, dat->bIsMeta ? dat->wMetaStatus : dat->wStatus);
-                            hIcon = MY_GetContactIcon(dat->hContact, dat->bIsMeta ? dat->szMetaProto : dat->szProto, dat->bIsMeta ? dat->wMetaStatus : dat->wStatus);
+                            hIcon = MY_GetContactIcon(dat);
                             fNeedFree=TRUE;
                             idle = dat->idle;
                         }

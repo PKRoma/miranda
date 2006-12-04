@@ -2438,8 +2438,17 @@ LABEL_SHOWWINDOW:
 				if (!IsWindowEnabled(GetDlgItem(hwndDlg,IDC_CHAT_HISTORY)))
 					break;
 
-				if (ServiceExists("MSP/HTMLlog/ViewLog") && strstr(si->pszModule, "IRC"))
+				if (ServiceExists("MSP/HTMLlog/ViewLog") && strstr(si->pszModule, "IRC")) {
+#if defined(_UNICODE)
+                    char szName[MAX_PATH];
+
+                    WideCharToMultiByte(CP_ACP, 0, si->ptszName, -1, szName, MAX_PATH, 0, 0);
+                    szName[MAX_PATH - 1] = 0;
+                    CallService ("MSP/HTMLlog/ViewLog",(WPARAM)si->pszModule,(LPARAM)szName);
+#else
 					CallService ("MSP/HTMLlog/ViewLog",(WPARAM)si->pszModule,(LPARAM)si->ptszName);
+#endif
+                }
 				else if ( pInfo ) {
 					mir_snprintf(szName, MAX_PATH,"%s",pInfo->pszModDispName?pInfo->pszModDispName:si->pszModule);
 					ValidateFilename(szName);
