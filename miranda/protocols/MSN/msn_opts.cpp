@@ -396,8 +396,14 @@ static BOOL CALLBACK DlgProcMsnConnOpts(HWND hwndDlg, UINT msg, WPARAM wParam, L
 	case WM_COMMAND:
 		switch ( LOWORD( wParam )) {
 		case IDC_RESETSERVER:
-			SetDlgItemTextA( hwndDlg, IDC_LOGINSERVER, MSN_DEFAULT_LOGIN_SERVER );
-			SetDlgItemInt(  hwndDlg, IDC_MSNPORT,  1863, FALSE );
+			if ( IsDlgButtonChecked( hwndDlg, IDC_USEGATEWAY )) {
+				SetDlgItemTextA( hwndDlg, IDC_LOGINSERVER, MSN_DEFAULT_GATEWAY );
+				SetDlgItemInt( hwndDlg, IDC_MSNPORT, 80, FALSE );
+			} 
+			else {
+				SetDlgItemTextA( hwndDlg, IDC_LOGINSERVER, MSN_DEFAULT_LOGIN_SERVER );
+				SetDlgItemInt(  hwndDlg, IDC_MSNPORT,  1863, FALSE );
+			}
 			goto LBL_Apply;
 		}
 

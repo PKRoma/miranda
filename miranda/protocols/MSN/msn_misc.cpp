@@ -381,12 +381,11 @@ void ThreadData::sendCaps( void )
 	MSN_CallService( MS_SYSTEM_GETVERSIONTEXT, sizeof( mversion ), ( LPARAM )mversion );
 
 	int nBytes = mir_snprintf( capMsg, sizeof( capMsg ),
-		"MIME-Version: 1.0\r\n"
 		"Content-Type: text/x-clientcaps\r\n\r\n"
 		"Client-Name: Miranda IM %s (MSN v.%s)\r\n",
 		mversion, __VERSION_STRING );
 
-	sendPacket( "MSG", "%c %d\r\n%s", 'N', nBytes, capMsg );
+	sendMessage( 'U', capMsg, MSG_DISABLE_HDR );
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////

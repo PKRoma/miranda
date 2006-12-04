@@ -330,34 +330,20 @@ int MsnWindowEvent(WPARAM wParam, LPARAM lParam)
 {
 	MessageWindowEventData* msgEvData  = (MessageWindowEventData*)lParam;
 
-	char* szProto = ( char* )MSN_CallService( MS_PROTO_GETCONTACTBASEPROTO, ( WPARAM )msgEvData->hContact, 0 );
-	if ( lstrcmpA( msnProtocolName, szProto )) return 0;
+	if ( msgEvData->uType == MSG_WINDOW_EVT_OPENING ) {
+		char* szProto = ( char* )MSN_CallService( MS_PROTO_GETCONTACTBASEPROTO, ( WPARAM )msgEvData->hContact, 0 );
+		if ( lstrcmpA( msnProtocolName, szProto )) return 0;
 
-	switch( msgEvData->uType ) {
-		case MSG_WINDOW_EVT_OPENING:
-			if ( MSN_GetThreadByContact( msgEvData->hContact )   == NULL &&
-				 MSN_GetUnconnectedThread( msgEvData->hContact ) == NULL ) 
-			{
-				msnNsThread->sendPacket( "XFR", "SB" );
-				MsgQueue_Add( msgEvData->hContact, 'X', "None", 0, NULL );
-			}
-			break;
-/*
-		case MSG_WINDOW_EVT_CLOSING:
-			{
-				ThreadData* info = MSN_GetThreadByContact( msgEvData->hContact );
-				if ( info != NULL ) {
-					if ( p2p_getThreadSession( msgEvData->hContact, SERVER_SWITCHBOARD ) == NULL )
-						info->sendPacket( "OUT", NULL );
-				}
-				else {
-					info = MSN_GetUnconnectedThread( msgEvData->hContact );
-					if ( info != NULL ) 
-						info->sendPacket( "OUT", NULL );
-				}
-				break;
-			}
-*/
+		char tEmail[ MSN_MAX_EMAIL_LEN ];
+		if ( !MSN_GetStaticString( "e-mail", msgEvData->hContact, tEmail, sizeof( tEmail )) && 
+			!strcmp( tEmail, MyOptions.szEmail )) return 0;
+
+		if ( MSN_GetThreadByContact( msgEvData->hContact )   == NULL &&
+				MSN_GetUnconnectedThread( msgEvData->hContact ) == NULL ) 
+		{
+			msnNsThread->sendPacket( "XFR", "SB" );
+			MsgQueue_Add( msgEvData->hContact, 'X', "None", 0, NULL );
+		}
 	}
 	return 0;
 }

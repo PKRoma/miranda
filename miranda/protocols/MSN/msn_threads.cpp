@@ -77,26 +77,10 @@ void __cdecl msn_keepAliveThread( void* )
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////
-//	MSN redirector detection thread - refreshes the information about the redirector
-
-static bool sttRedirectorWasChecked = false;
-
-void __cdecl msn_RedirectorThread( ThreadData* info )
-{
-	extern int MSN_CheckRedirector();
-	MSN_CheckRedirector();
-}
-
-/////////////////////////////////////////////////////////////////////////////////////////
 //	MSN server thread - read and process commands from a server
 
 void __cdecl MSNServerThread( ThreadData* info )
 {
-	if ( !sttRedirectorWasChecked ) {
-		sttRedirectorWasChecked = true;
-		mir_forkthread(( pThreadFunc )msn_RedirectorThread, NULL );
-	}
-
 	NETLIBOPENCONNECTION tConn = { 0 };
 	tConn.cbSize = sizeof( tConn );
 	tConn.flags = NLOCF_V2;

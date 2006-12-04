@@ -1397,9 +1397,9 @@ LBL_InvalidCommand:
 					if ( dwValue & 0x200 )
 						MSN_SetString( hContact, "MirVer", "Webmessenger" );
 					else if ( dwValue == 1342177280 )
-						MSN_SetString( hContact, "MirVer", "Miranda IM 0.5.x" );
+						MSN_SetString( hContact, "MirVer", "Miranda IM 0.5.x (MSN v.0.5.x)" );
 					else if ( dwValue == 805306404 )
-						MSN_SetString( hContact, "MirVer", "Miranda IM 0.4.x" );
+						MSN_SetString( hContact, "MirVer", "Miranda IM 0.4.x (MSN v.0.4.x)" );
 					else if (( dwValue & 0x60000000 ) == 0x60000000 )
 						MSN_SetString( hContact, "MirVer", "MSN 8.x" );
 					else if (( dwValue & 0x50000000 ) == 0x50000000 )
