@@ -1059,7 +1059,7 @@ LRESULT CALLBACK ViewModeFrameWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM
             SendMessage(hwndButton, BUTTONADDTOOLTIP, (WPARAM)TranslateT("Clear view mode and return to default display"), 0);
 			SendMessage(hwndButton, BUTTONSETID,0 ,(LPARAM) "ViewMode.Clear" );	
 			SendMessage(hwnd, WM_USER + 100, 0, 0);
-
+            
             return FALSE;
         }
         case WM_NCCALCSIZE:
@@ -1269,6 +1269,12 @@ LRESULT CALLBACK ViewModeFrameWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM
                 case IDC_RESETMODES:
 clvm_reset_command:
                     g_CluiData.bFilterEffective = 0;
+                    
+                    {   // remove last applied view mode
+                        char szSetting[256];
+                        mir_snprintf(szSetting, 256, "%c_LastMode", 245);
+                        DBDeleteContactSetting(NULL,CLVM_MODULE,szSetting);
+                    }
                     pcli->pfnClcBroadcast(CLM_AUTOREBUILD, 0, 0);
                     SetWindowText(GetDlgItem(hwnd, IDC_SELECTMODE), TranslateT("No view mode"));
                     CallService(MS_CLIST_SETHIDEOFFLINE, (WPARAM)g_CluiData.boldHideOffline, 0);
@@ -1329,17 +1335,32 @@ void CreateViewModeFrame()
     hCLVMFrame = (HWND)CallService(MS_CLIST_FRAMES_ADDFRAME,(WPARAM)&frame,(LPARAM)0);	
     CallService(MS_CLIST_FRAMES_UPDATEFRAME, (WPARAM)hCLVMFrame, FU_FMPOS);
 	CallService(MS_SKINENG_REGISTERPAINTSUB,(WPARAM)frame.hWnd,(LPARAM)ViewModePaintCallbackProc); //$$$$$ register sub for frame
+    ApplyViewMode(NULL); //Apply last selected view mode
 }
 
 const char *MakeVariablesString(const char *src, const char *UIN);
 
-void ApplyViewMode(const char *name)
+void ApplyViewMode(const char *Name)
 {
     char szSetting[256];
+    char * name=(char*)Name;
     DBVARIANT dbv = {0};
     
     g_CluiData.bFilterEffective = 0;
     
+    mir_snprintf(szSetting, 256, "%c_LastMode", 245);
+    
+    if (!name)  // Name is null - apply last stored view mode
+    {
+        if (!DBGetContactSetting(NULL, CLVM_MODULE, szSetting, &dbv))
+        {
+            name=(char*)_alloca(strlen(dbv.pszVal)+1);
+            strcpy(name,dbv.pszVal);
+            mir_free(dbv.pszVal);
+        }        
+        else return;
+    }
+
     mir_snprintf(szSetting, 256, "%c%s_PF", 246, name);
     if(!DBGetContactSetting(NULL, CLVM_MODULE, szSetting, &dbv)) {
         if(lstrlenA(dbv.pszVal) >= 2) 
@@ -1431,8 +1452,13 @@ void ApplyViewMode(const char *name)
         g_CluiData.old_viewmode[255] = 0;
         SetTimer(g_hwndViewModeFrame, TIMERID_VIEWMODEEXPIRE, timerexpire * 1000, NULL);
     }
+    else //store last selected view mode only if it is not autoclear
+    {
+        mir_snprintf(szSetting, 256, "%c_LastMode", 245);
+        DBWriteContactSettingString(NULL, CLVM_MODULE, szSetting, name);
+    }
     strncpy(g_CluiData.current_viewmode, name, 256);
-    g_CluiData.current_viewmode[255] = 0;
+    g_CluiData.current_viewmode[255] = 0;  
 
 	if(g_CluiData.filterFlags & CLVM_USELASTMSG) 
 	{
