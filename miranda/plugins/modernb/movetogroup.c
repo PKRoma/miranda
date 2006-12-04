@@ -1,9 +1,13 @@
 #include "commonheaders.h"
 #include "commonprototypes.h"
 
-HANDLE hModulesLoaded,hOnCntMenuBuild;
+HANDLE hModulesLoaded=0,hOnCntMenuBuild=0;
 HANDLE prevmenu=0;
+HANDLE hMoveToGroupItem=0;
+HANDLE *hGroupsItems = NULL;
+int nGroupsItems = 0, cbGroupsItems = 0;
 
+extern char *DBGetStringA(HANDLE hContact,const char *szModule,const char *szSetting);
 
 HWND hwndTopToolBar=0;
 
@@ -13,113 +17,173 @@ HWND hwndTopToolBar=0;
 
 #define MTG_MOVE								"MoveToGroup/Move"
 
-static int AddGroupItem(int rootid,TCHAR *name,int pos,int poppos,WPARAM wParam)
+static HANDLE AddGroupItem(HANDLE hRoot,char *name,int pos,int param,int checked)
 {
 	CLISTMENUITEM mi={0};
-	mi.cbSize=sizeof(mi);
-	mi.hIcon=NULL;//LoadSmallIconShared(hInst,MAKEINTRESOURCEA(IDI_MIRANDA));
-	mi.pszPopupName=(char *)rootid;
-	mi.popupPosition=poppos;
-	mi.position=pos;
-	mi.ptszName=name;
-	mi.flags=CMIF_CHILDPOPUP|CMIF_TCHAR;
-	mi.pszContactOwner=(char *)0;
-	mi.pszService=MTG_MOVE;
-	return(CallService(MS_CLIST_ADDCONTACTMENUITEM,wParam,(LPARAM)&mi));
 
+	mi.cbSize=sizeof(mi);
+  mi.pszPopupName=(char *)hRoot;
+  mi.popupPosition=param; // param to pszService - only with CMIF_CHILDPOPUP !!!!!!
+	mi.position=pos;
+  mi.pszName=name;
+  mi.flags=CMIF_CHILDPOPUP;
+  if (checked)
+    mi.flags |= CMIF_CHECKED;
+	mi.pszService=MTG_MOVE;
+  return (HANDLE)CallService(MS_CLIST_ADDCONTACTMENUITEM,0, (LPARAM)&mi);
+}
+
+static void ModifyGroupItem(HANDLE hItem,char *name,int checked)
+{
+  CLISTMENUITEM mi={0};
+
+  mi.cbSize=sizeof(mi);
+  mi.pszName=name;
+  mi.flags=CMIM_NAME | CMIM_FLAGS;
+  if (checked)
+    mi.flags |= CMIF_CHECKED;
+  CallService(MS_CLIST_MODIFYMENUITEM, (WPARAM)hItem, (LPARAM)&mi);
 }
 
 static int OnContactMenuBuild(WPARAM wParam,LPARAM lParam)
 {
+CLISTMENUITEM mi;
 
-	CLISTMENUITEM mi;
-	HANDLE menuid;
-	int i,grpid;
-	boolean grpexists;
-	TCHAR *grpname;
-	char intname[20];
-    if (MirandaExiting()) return 0;
-	if (prevmenu!=0){
-		CallService(MS_CLIST_REMOVECONTACTMENUITEM,(WPARAM)prevmenu,(LPARAM)0);
-	};
-	ZeroMemory(&mi,sizeof(mi));
-	mi.cbSize=sizeof(mi);
-	mi.hIcon=NULL;//LoadSmallIconShared(hInst,MAKEINTRESOURCEA(IDI_MIRANDA));
-	mi.pszPopupName=(char *)-1;
-	mi.position=100000;
-	mi.ptszName=TranslateT("&Move to Group");
-	mi.flags=CMIF_ROOTPOPUP|CMIF_TCHAR;
-	mi.pszContactOwner=(char *)0;
-	menuid=(HANDLE)CallService(MS_CLIST_ADDCONTACTMENUITEM,wParam,(LPARAM)&mi);
-	prevmenu=menuid;
-	grpexists=TRUE;
-	i=0;
-	grpid=1000;
-	AddGroupItem((int)menuid,TranslateT("Root Group"),grpid++,-1,wParam);
-	grpid+=100000;
-	while (TRUE) 
-	{
-		_itoa(i,intname,10);
-		grpname=DBGetStringT(0,"CListGroups",intname);
-		if (grpname==NULL ){break;};
-		if (lstrlen(grpname)==0) {break; };
-		if (grpname[0]==0) {break; };
-		AddGroupItem((int)menuid,&(grpname[1]),grpid++,i+1,wParam);
-		i++;
-		mir_free_and_nill(grpname);
-	};
+if (!hMoveToGroupItem)
+  {
+    memset(&mi,0,sizeof(mi));
+    mi.cbSize=sizeof(mi);
+    mi.hIcon=NULL;//LoadIcon(hInst,MAKEINTRESOURCE(IDI_MIRANDA));
+    mi.pszPopupName=(char *)-1;
+    mi.position=100000;
+    mi.pszName=Translate("&Move to Group");
+    mi.flags=CMIF_ROOTPOPUP;
+    hMoveToGroupItem=(HANDLE)CallService(MS_CLIST_ADDCONTACTMENUITEM, 0, (LPARAM)&mi);
+  }
+
+  {
+    int i,pos;
+    char *szGroupName,*szContactGroup;
+    char intname[20];
+
+    if (!cbGroupsItems)
+    {
+      cbGroupsItems = 0x10;
+      hGroupsItems = (HANDLE*)malloc(cbGroupsItems*sizeof(HANDLE));
+    }
+
+    szContactGroup = DBGetStringA((HANDLE)wParam, "CList", "Group");
+
+    i=1;
+    pos = 1000;
+    if (!nGroupsItems)
+    {
+      nGroupsItems++;
+      hGroupsItems[0] = AddGroupItem(hMoveToGroupItem,Translate("Root Group"),pos++, -1, !szContactGroup);
+    }
+    else
+      ModifyGroupItem(hGroupsItems[0],Translate("Root Group"), !szContactGroup);
+
+    pos += 100000; // Separator
+
+
+    while (TRUE)
+    {
+      int checked;
+
+      _itoa(i-1,intname,10);
+      szGroupName = DBGetStringA(0,"CListGroups",intname);
+
+      if (!szGroupName || !strlen(szGroupName) || !szGroupName[0]) break;
+
+      checked = 0;
+      if (szContactGroup && !strcmp(szContactGroup, szGroupName + 1))
+        checked = 1;
+
+      if (nGroupsItems > i)
+        ModifyGroupItem(hGroupsItems[i], szGroupName + 1, checked);
+      else
+      {
+        nGroupsItems++;
+        if (cbGroupsItems < nGroupsItems)
+        {
+          cbGroupsItems += 0x10;
+          hGroupsItems = (HANDLE*)realloc(hGroupsItems, cbGroupsItems*sizeof(HANDLE));
+        }
+        hGroupsItems[i] = AddGroupItem(hMoveToGroupItem,szGroupName + 1,pos++,i,checked);
+      }
+      i++;
+      mir_free(szGroupName);
+    }
+    mir_free(szContactGroup);
+
+    while (nGroupsItems > i)
+    {
+      nGroupsItems--;
+      CallService(MS_CLIST_REMOVECONTACTMENUITEM, (WPARAM)hGroupsItems[nGroupsItems], 0);
+      hGroupsItems[nGroupsItems] = NULL;
+    }
+  }
 	return 0;
-};
+}
+
 
 static int MTG_DOMOVE(WPARAM wParam,LPARAM lParam)
 {
-	TCHAR *grpname,*correctgrpname;
+  char *grpname;
 	char *intname;
-	if (lParam==0)
-	{
-		MessageBoxA(0,"Wrong version of New menu system - please update.","MoveToGroup",0);
-		return(0);
-	};
+
+
 	lParam--;
-	if (lParam==-2)//root level
-	{
-		DBWriteContactSettingString((HANDLE)wParam,"CList","Group","");
+
+  if (lParam == -2) 
+  { //root level
+    DBDeleteContactSetting((HANDLE)wParam, "CList", "Group");
+
 		return 0;
 	}
-	intname=(char *)malloc(20);
+
+  intname=(char *)_alloca(20);
 	_itoa(lParam,intname,10);
-	grpname=DBGetStringT(0,"CListGroups",intname);
-	if (grpname!=0)
+  grpname=DBGetStringA(0,"CListGroups",intname);
+  if (grpname)
 	{
-		correctgrpname=&(grpname[1]);
-		DBWriteContactSettingTString((HANDLE)wParam,"CList","Group",correctgrpname);
-		mir_free_and_nill(grpname);
+    DBWriteContactSettingString((HANDLE)wParam,"CList","Group",grpname + 1);
+    mir_free(grpname);
 	};
 
-	free (intname);
 	return 0;
-};
-static int OnmodulesLoad(WPARAM wParam,LPARAM lParam)
+}
+
+static int MTG_OnmodulesLoad(WPARAM wParam,LPARAM lParam)
 {
 	if (!ServiceExists(MS_CLIST_REMOVECONTACTMENUITEM))
 	{
 		MessageBoxA(0,"New menu system not found - plugin disabled.","MoveToGroup",0);
-		return(0);
-	};
-	hOnCntMenuBuild=(HANDLE)HookEvent(ME_CLIST_PREBUILDCONTACTMENU,OnContactMenuBuild);	
-	CreateServiceFunction(MTG_MOVE,MTG_DOMOVE);
-	return(0);
-};
+    return 0;
+  }
+  hOnCntMenuBuild=HookEvent(ME_CLIST_PREBUILDCONTACTMENU,OnContactMenuBuild); 
 
+	CreateServiceFunction(MTG_MOVE,MTG_DOMOVE);
+
+  return 0;
+}
 
 int LoadMoveToGroup()
 {
-	hModulesLoaded=(HANDLE)HookEvent(ME_SYSTEM_MODULESLOADED,OnmodulesLoad);	
+	hModulesLoaded=(HANDLE)HookEvent(ME_SYSTEM_MODULESLOADED,MTG_OnmodulesLoad);	
 	return 0;
 }
 
 int UnloadMoveToGroup(void)
 {
 	UnhookEvent(hModulesLoaded);
+  if (hOnCntMenuBuild)
+    UnhookEvent(hOnCntMenuBuild);
+
+  nGroupsItems = 0;
+  cbGroupsItems = 0;
+  free(hGroupsItems);
+
 	return 0;
 }	
