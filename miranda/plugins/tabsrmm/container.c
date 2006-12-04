@@ -458,7 +458,7 @@ LRESULT CALLBACK StatusBarSubclassProc(HWND hWnd, UINT msg, WPARAM wParam, LPARA
                         int gap = 2;
                         struct StatusIconListNode *current = status_icon_list;
 						struct MessageWindowData *dat = (struct MessageWindowData *)GetWindowLong(pContainer->hwndActive, GWL_USERDATA);
-                        unsigned int iconNum = (pt.x - (rc.left + ((dat &&dat->bType != SESSIONTYPE_IM) ? myGlobals.m_smcxicon + gap : 0))) / (myGlobals.m_smcxicon + gap);
+                        unsigned int iconNum = (pt.x - rc.left ) / (myGlobals.m_smcxicon + gap);
 
                         if((int)iconNum == status_icon_list_size && pContainer) {
 #if defined(_UNICODE)
@@ -481,7 +481,7 @@ LRESULT CALLBACK StatusBarSubclassProc(HWND hWnd, UINT msg, WPARAM wParam, LPARA
 #endif
 							tooltip_active = TRUE;
                         }
-                        else if((int)iconNum == status_icon_list_size + 1 && dat) {
+                        else if((int)iconNum == status_icon_list_size + 1 && dat && dat->bType == SESSIONTYPE_IM) {
                             int mtnStatus = (int)DBGetContactSettingByte(dat->hContact, SRMSGMOD, SRMSGSET_TYPING, DBGetContactSettingByte(NULL, SRMSGMOD, SRMSGSET_TYPINGNEW, SRMSGDEFSET_TYPINGNEW));
 #if defined(_UNICODE)
 
@@ -509,8 +509,15 @@ LRESULT CALLBACK StatusBarSubclassProc(HWND hWnd, UINT msg, WPARAM wParam, LPARA
                                 current = current->next;
 
                             if(current) {
-                                CallService("mToolTip/ShowTip", (WPARAM)current->sid.szTooltip, (LPARAM)&ti);
-                                tooltip_active = TRUE;
+                                char buff[256];
+								BYTE flags;
+
+                                mir_snprintf(buff, 256, "SRMMStatusIconFlags%d", (int)current->sid.dwId);
+                                flags = DBGetContactSettingByte(dat->hContact, current->sid.szModule, buff, current->sid.flags);
+                                if(!(flags & MBF_HIDDEN)) {
+                                    CallService("mToolTip/ShowTip", (WPARAM)current->sid.szTooltip, (LPARAM)&ti);
+                                    tooltip_active = TRUE;
+                                }
                             }
                         }
                     }

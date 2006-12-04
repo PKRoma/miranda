@@ -711,35 +711,40 @@ void DrawStatusIcons(struct MessageWindowData *dat, HDC hDC, RECT r, int gap) {
 	int flags;
 	int x = r.left;
 
-    if(dat->bType != SESSIONTYPE_IM)
-        x += myGlobals.m_smcxicon + gap;
+    //if(dat->bType != SESSIONTYPE_IM)
+    //    x += myGlobals.m_smcxicon + gap;
 
     SetBkMode(hDC, TRANSPARENT);
 	while(current) {
 		sprintf(buff, "SRMMStatusIconFlags%d", (int)current->sid.dwId);
 		flags = DBGetContactSettingByte(dat->hContact, current->sid.szModule, buff, current->sid.flags);
-   		if(!(flags & MBF_HIDDEN)) {
-            if((flags & MBF_DISABLED) && current->sid.hIconDisabled) 
-                hIcon = current->sid.hIconDisabled;
-            else 
-                hIcon = current->sid.hIcon;
+        if((flags & MBF_DISABLED) && current->sid.hIconDisabled) 
+            hIcon = current->sid.hIconDisabled;
+        else 
+            hIcon = current->sid.hIcon;
 
+        if(flags & MBF_HIDDEN)
+            DrawDimmedIcon(hDC, x, (r.top + r.bottom - myGlobals.m_smcxicon) >> 1, 16, 16, hIcon, 50);
+        else
             DrawIconEx(hDC, x, (r.top + r.bottom - myGlobals.m_smcxicon) >> 1, hIcon, myGlobals.m_smcxicon, myGlobals.m_smcyicon, 0, NULL, DI_NORMAL);
 
-            x += myGlobals.m_smcxicon + gap;
-        }
+        x += myGlobals.m_smcxicon + gap;
 		current = current->next;
 	}
     DrawIconEx(hDC, x, (r.top + r.bottom - myGlobals.m_smcxicon) >> 1, dat->pContainer->dwFlags & CNT_NOSOUND ? myGlobals.g_buttonBarIcons[23] : myGlobals.g_buttonBarIcons[22], myGlobals.m_smcxicon, myGlobals.m_smcyicon, 0, NULL, DI_NORMAL);
     x += myGlobals.m_smcxicon + gap;
     if(dat->bType == SESSIONTYPE_IM)
         DrawIconEx(hDC, x, (r.top + r.bottom - myGlobals.m_smcxicon) >> 1, DBGetContactSettingByte(dat->hContact, SRMSGMOD, SRMSGSET_TYPING, DBGetContactSettingByte(NULL, SRMSGMOD, SRMSGSET_TYPINGNEW, SRMSGDEFSET_TYPINGNEW)) ? myGlobals.g_buttonBarIcons[12] : myGlobals.g_buttonBarIcons[13], myGlobals.m_smcxicon, myGlobals.m_smcyicon, 0, NULL, DI_NORMAL);
+    else
+        DrawDimmedIcon(hDC, x, (r.top + r.bottom - myGlobals.m_smcxicon) >> 1, 16, 16, 
+                       DBGetContactSettingByte(dat->hContact, SRMSGMOD, SRMSGSET_TYPING, DBGetContactSettingByte(NULL, SRMSGMOD, SRMSGSET_TYPINGNEW, SRMSGDEFSET_TYPINGNEW)) ? myGlobals.g_buttonBarIcons[12] : myGlobals.g_buttonBarIcons[13], 50);
 }
 
 void SI_CheckStatusIconClick(struct MessageWindowData *dat, HWND hwndFrom, POINT pt, RECT r, int gap, int code) {
 	StatusIconClickData sicd;
 	struct StatusIconListNode *current = status_icon_list;
-	unsigned int iconNum = (pt.x - (r.left + (dat->bType != SESSIONTYPE_IM ? myGlobals.m_smcxicon + gap : 0))) / (myGlobals.m_smcxicon + gap);
+	//unsigned int iconNum = (pt.x - (r.left + (dat->bType != SESSIONTYPE_IM ? myGlobals.m_smcxicon + gap : 0))) / (myGlobals.m_smcxicon + gap);
+    unsigned int iconNum = (pt.x - (r.left + 0)) / (myGlobals.m_smcxicon + gap);
 
     if((int)iconNum == status_icon_list_size && code != NM_RCLICK) {
         if(GetKeyState(VK_SHIFT) & 0x8000) {
@@ -756,7 +761,7 @@ void SI_CheckStatusIconClick(struct MessageWindowData *dat, HWND hwndFrom, POINT
             InvalidateRect(dat->pContainer->hwndStatus, NULL, TRUE);
         }
     }
-    else if((int)iconNum == status_icon_list_size + 1 && code != NM_RCLICK) {
+    else if((int)iconNum == status_icon_list_size + 1 && code != NM_RCLICK && dat->bType == SESSIONTYPE_IM) {
         SendMessage(dat->pContainer->hwndActive, WM_COMMAND, IDC_SELFTYPING, 0);
         InvalidateRect(dat->pContainer->hwndStatus, NULL, TRUE);
     }
@@ -764,25 +769,30 @@ void SI_CheckStatusIconClick(struct MessageWindowData *dat, HWND hwndFrom, POINT
 		char buff[256];
 		DWORD flags;
         while(current && iconNum > 0) {
-            sprintf(buff, "SRMMStatusIconFlags%d", (int)current->sid.dwId);
-            flags = DBGetContactSettingByte(dat->hContact, current->sid.szModule, buff, current->sid.flags);
-            if(!(flags & MBF_HIDDEN)) iconNum--;
+            //sprintf(buff, "SRMMStatusIconFlags%d", (int)current->sid.dwId);
+            //flags = DBGetContactSettingByte(dat->hContact, current->sid.szModule, buff, current->sid.flags);
+            //if(!(flags & MBF_HIDDEN)) 
+            iconNum--;
             current = current->next;
         }
         if(current) {
-            sicd.cbSize = sizeof(StatusIconClickData);
-            GetCursorPos(&sicd.clickLocation);
-            //sicd.clickLocation = pt;
-            sicd.dwId = current->sid.dwId;
-            sicd.szModule = current->sid.szModule;
-            sicd.flags = (code == NM_RCLICK ? MBCF_RIGHTBUTTON : 0);
-            NotifyEventHooks(hHookIconPressedEvt, (WPARAM)dat->hContact, (LPARAM)&sicd);
-            InvalidateRect(dat->pContainer->hwndStatus, NULL, TRUE);
+            sprintf(buff, "SRMMStatusIconFlags%d", (int)current->sid.dwId);
+            flags = DBGetContactSettingByte(dat->hContact, current->sid.szModule, buff, current->sid.flags);
+            if(!(flags & MBF_HIDDEN)) {
+                sicd.cbSize = sizeof(StatusIconClickData);
+                GetCursorPos(&sicd.clickLocation);
+                //sicd.clickLocation = pt;
+                sicd.dwId = current->sid.dwId;
+                sicd.szModule = current->sid.szModule;
+                sicd.flags = (code == NM_RCLICK ? MBCF_RIGHTBUTTON : 0);
+                NotifyEventHooks(hHookIconPressedEvt, (WPARAM)dat->hContact, (LPARAM)&sicd);
+                InvalidateRect(dat->pContainer->hwndStatus, NULL, TRUE);
+            }
         }
     }
 }
 
-HANDLE SI_hServiceIcon[3];
+static HANDLE SI_hServiceIcon[3];
 
 int SI_InitStatusIcons() {
 	SI_hServiceIcon[0] = CreateServiceFunction(MS_MSG_ADDICON, SI_AddStatusIcon);
