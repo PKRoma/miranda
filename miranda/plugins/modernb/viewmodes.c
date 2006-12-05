@@ -1272,7 +1272,7 @@ clvm_reset_command:
                     
                     {   // remove last applied view mode
                         char szSetting[256];
-                        mir_snprintf(szSetting, 256, "%c_LastMode", 245);
+                        mir_snprintf(szSetting, 256, "%c_LastMode", 246);
                         DBDeleteContactSetting(NULL,CLVM_MODULE,szSetting);
                     }
                     pcli->pfnClcBroadcast(CLM_AUTOREBUILD, 0, 0);
@@ -1348,7 +1348,7 @@ void ApplyViewMode(const char *Name)
     
     g_CluiData.bFilterEffective = 0;
     
-    mir_snprintf(szSetting, 256, "%c_LastMode", 245);
+    mir_snprintf(szSetting, 256, "%c_LastMode", 246);
     
     if (!name)  // Name is null - apply last stored view mode
     {
@@ -1454,7 +1454,7 @@ void ApplyViewMode(const char *Name)
     }
     else //store last selected view mode only if it is not autoclear
     {
-        mir_snprintf(szSetting, 256, "%c_LastMode", 245);
+        mir_snprintf(szSetting, 256, "%c_LastMode", 246);
         DBWriteContactSettingString(NULL, CLVM_MODULE, szSetting, name);
     }
     strncpy(g_CluiData.current_viewmode, name, 256);
