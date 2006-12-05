@@ -394,7 +394,7 @@ void JabberMenuInit()
 		mi.popupPosition = 500090000;
 		mi.pszName = JTranslate( "Agents..." );
 		mi.position = 2000050000;
-		mi.hIcon = LoadIconEx( "Agents" );
+		mi.hIcon = LoadIconEx( "main" );
 		mi.pszService = text;
 		hMenuAgent = ( HANDLE ) JCallService( MS_CLIST_ADDMAINMENUITEM, 0, ( LPARAM )&mi );
 		JCallService( MS_CLIST_MODIFYMENUITEM, ( WPARAM ) hMenuAgent, ( LPARAM )&clmi );
