@@ -26,15 +26,16 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 extern int Chat_ModulesLoaded(WPARAM wParam, LPARAM lParam);
 
-int OptInitialise(WPARAM wParam, LPARAM lParam);
-int FontServiceFontsChanged(WPARAM wParam, LPARAM lParam);
+extern int OptInitialise(WPARAM wParam, LPARAM lParam);
+extern int FontServiceFontsChanged(WPARAM wParam, LPARAM lParam);
+int StatusIconPressed(WPARAM wParam, LPARAM lParam);
 
 static void InitREOleCallback(void);
 
 HCURSOR hCurSplitNS, hCurSplitWE, hCurHyperlinkHand, hDragCursor;
 static HANDLE hEventDbEventAdded, hEventDbSettingChange, hEventContactDeleted;
 static HANDLE hEventClistDoubleClicked, hEventSmileyAddOptionsChanged, hEventIEViewOptionsChanged, hEventMyAvatarChanged, hEventAvatarChanged;
-static HANDLE hEventOptInitialise, hEventSkin2IconsChanged, hEventFontServiceFontsChanged;
+static HANDLE hEventOptInitialise, hEventSkin2IconsChanged, hEventFontServiceFontsChanged, hEventIconPressed;
 
 static HANDLE hSvcSendMessageCommand, hSvcSendMessageCommandW, hSvcGetWindowAPI, hSvcGetWindowClass, hSvcGetWindowData, hSvcReadMessageCommand, hSvcTypingMessageCommand;
 
@@ -417,6 +418,23 @@ static int AvatarChanged(WPARAM wParam, LPARAM lParam) {
     return 0;
 }
 
+static void RegisterStatusIcons() {
+	StatusIconData sid;
+	sid.cbSize = sizeof(sid);
+	sid.szModule = SRMMMOD;
+	sid.dwId = 0;
+	sid.hIcon = g_dat->hIcons[SMF_ICON_UNICODEON];
+	sid.hIconDisabled = g_dat->hIcons[SMF_ICON_UNICODEOFF];
+	sid.flags = 0;
+	sid.szTooltip = NULL;
+//	CallService(MS_MSG_ADDICON, (WPARAM) 0, (LPARAM) &sid);
+}
+
+int StatusIconPressed(WPARAM wParam, LPARAM lParam) {
+
+	return 0;
+}
+
 
 static int SplitmsgModulesLoaded(WPARAM wParam, LPARAM lParam)
 {
@@ -454,16 +472,18 @@ static int SplitmsgModulesLoaded(WPARAM wParam, LPARAM lParam)
    hEventAvatarChanged = HookEvent(ME_AV_AVATARCHANGED, AvatarChanged);
    hEventSkin2IconsChanged = HookEvent(ME_SKIN2_ICONSCHANGED, IcoLibIconsChanged);
    hEventFontServiceFontsChanged = HookEvent(ME_FONT_RELOAD, FontServiceFontsChanged);
+   hEventIconPressed = HookEvent(ME_MSG_ICONPRESSED, StatusIconPressed);
    RestoreUnreadMessageAlerts();
    Chat_ModulesLoaded(wParam, lParam);
+   RegisterStatusIcons();
    return 0;
 }
 
 int PreshutdownSendRecv(WPARAM wParam, LPARAM lParam)
 {
-   WindowList_BroadcastAsync(g_dat->hMessageWindowList, WM_CLOSE, 0, 0);
+	WindowList_BroadcastAsync(g_dat->hMessageWindowList, WM_CLOSE, 0, 0);
 	DeinitStatusIcons();
-   return 0;
+	return 0;
 }
 
 int SplitmsgShutdown(void)
@@ -483,6 +503,7 @@ int SplitmsgShutdown(void)
    UnhookEvent(hEventOptInitialise);
    UnhookEvent(hEventSkin2IconsChanged);
    UnhookEvent(hEventFontServiceFontsChanged);
+   UnhookEvent(hEventIconPressed);
    DestroyHookableEvent(hHookWinEvt);
    DestroyHookableEvent(hHookWinPopup);
    DestroyServiceFunction(hSvcSendMessageCommand);

@@ -247,6 +247,7 @@ typedef struct SESSION_INFO_TYPE
 
 	HWND        hwndTooltip;
 	int         iOldItemID;
+	int			codePage;
 }SESSION_INFO;
 
 typedef struct

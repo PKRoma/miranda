@@ -1250,10 +1250,31 @@ BOOL CALLBACK RoomWndProc(HWND hwndDlg,UINT uMsg,WPARAM wParam,LPARAM lParam)
          SendMessage(GetParent(hwndDlg), CM_UPDATESTATUSBAR, (WPARAM) &sbd, (LPARAM) hwndDlg);
          sbd.iItem = 2;
          SendMessage(GetParent(hwndDlg), CM_UPDATESTATUSBAR, (WPARAM) &sbd, (LPARAM) hwndDlg);
+		 sbd.iItem = 3;
+		 sbd.iFlags = SBDF_TEXT | SBDF_ICON;
+   #if defined( _UNICODE )
+		 sbd.hIcon = g_dat->hIcons[SMF_ICON_UNICODEON];
+   #else
+		 sbd.hIcon = g_dat->hIcons[SMF_ICON_UNICODEOFF];
+   #endif
+		 sbd.pszText = _T("");
+         SendMessage(GetParent(hwndDlg), CM_UPDATESTATUSBAR, (WPARAM) &sbd, (LPARAM) hwndDlg);
          mir_free( ptszDispName );
       //   SendMessage(hwndDlg, GC_FIXTABICONS, 0, (LPARAM)si);
       }
       break;
+
+	case DM_GETCODEPAGE:
+#ifdef _UNICODE
+		SetWindowLong(hwndDlg, DWL_MSGRESULT, si->codePage);
+#else
+		SetWindowLong(hwndDlg, DWL_MSGRESULT, 1200);
+#endif
+		return TRUE;
+	case DM_SETCODEPAGE:
+		si->codePage = (int) lParam;
+        SendMessage(hwndDlg, GC_REDRAWLOG2, 0, 0);
+		break;
 
    case WM_SIZE:
       {

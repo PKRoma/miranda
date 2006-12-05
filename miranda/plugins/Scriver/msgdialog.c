@@ -1799,7 +1799,11 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
 //		SendMessage(dat->hwndParent, DM_SWITCHTOOLBAR, 0, 0);
 		break;
 	case DM_GETCODEPAGE:
+#ifdef _UNICODE
 		SetWindowLong(hwndDlg, DWL_MSGRESULT, dat->codePage);
+#else
+		SetWindowLong(hwndDlg, DWL_MSGRESULT, 1200);
+#endif
 		return TRUE;
 	case DM_SETCODEPAGE:
 		dat->codePage = (int) lParam;
@@ -1811,7 +1815,11 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
 			dat->flags ^= SMF_DISABLE_UNICODE;
 			sbd.iItem = 2;
 			sbd.iFlags = SBDF_TEXT | SBDF_ICON;
+#ifdef _UNICODE
 			sbd.hIcon = g_dat->hIcons[(dat->flags & SMF_DISABLE_UNICODE) ? SMF_ICON_UNICODEOFF : SMF_ICON_UNICODEON];
+#else
+			sbd.hIcon = g_dat->hIcons[SMF_ICON_UNICODEOFF];
+#endif
 			sbd.pszText = _T("");
 			SendMessage(dat->hwndParent, CM_UPDATESTATUSBAR, (WPARAM)&sbd, (LPARAM)hwndDlg);
 			SendMessage(hwndDlg, DM_REMAKELOG, 0, 0);

@@ -717,19 +717,21 @@ BOOL CALLBACK DlgProcParentWindow(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM 
 			SendMessage(dat->hwndStatus, SB_GETRECT, SendMessage(dat->hwndStatus, SB_GETPARTS, 0, 0) - 1, (LPARAM)&rc);
 			if (pt.x >= rc.left && dat->hwndActive != NULL) {
 				int codePage = (int) SendMessage(dat->hwndActive, DM_GETCODEPAGE, 0, 0);
-				int i, iSel;
-				for(i = 0; i < GetMenuItemCount(g_dat->hMenuANSIEncoding); i++) {
-					CheckMenuItem (g_dat->hMenuANSIEncoding, i, MF_BYPOSITION | MF_UNCHECKED);
-				}
-				if(codePage == CP_ACP) {
-					CheckMenuItem(g_dat->hMenuANSIEncoding, 0, MF_BYPOSITION | MF_CHECKED);
-				} else {
-					CheckMenuItem(g_dat->hMenuANSIEncoding, codePage, MF_BYCOMMAND | MF_CHECKED);
-				}
-				iSel = TrackPopupMenu(g_dat->hMenuANSIEncoding, TPM_RETURNCMD, pt2.x, pt2.y, 0, hwndDlg, NULL);
-				if (iSel >= 500) {
-					if (iSel == 500) iSel = CP_ACP;
-					SendMessage(dat->hwndActive, DM_SETCODEPAGE, 0, iSel);
+				if (codePage != 1200) {
+					int i, iSel;
+					for(i = 0; i < GetMenuItemCount(g_dat->hMenuANSIEncoding); i++) {
+						CheckMenuItem (g_dat->hMenuANSIEncoding, i, MF_BYPOSITION | MF_UNCHECKED);
+					}
+					if(codePage == CP_ACP) {
+						CheckMenuItem(g_dat->hMenuANSIEncoding, 0, MF_BYPOSITION | MF_CHECKED);
+					} else {
+						CheckMenuItem(g_dat->hMenuANSIEncoding, codePage, MF_BYCOMMAND | MF_CHECKED);
+					}
+					iSel = TrackPopupMenu(g_dat->hMenuANSIEncoding, TPM_RETURNCMD, pt2.x, pt2.y, 0, hwndDlg, NULL);
+					if (iSel >= 500) {
+						if (iSel == 500) iSel = CP_ACP;
+						SendMessage(dat->hwndActive, DM_SETCODEPAGE, 0, iSel);
+					}
 				}
 			}
 			else
