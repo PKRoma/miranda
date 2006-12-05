@@ -4,11 +4,56 @@
 
 
 /************************************************************************\
+				Common object description format:
+--------------------------------------------------------------------------
+
+...
+	<object.name type='glyph'>
+		<fonts>
+			<main effort='255' color='0x000000' alpha='255' effect='none' effect.color='0x000000' effect.alpha='255' />
+			<second effort='255' color='0x000000' alpha='255' effect='none' effect.color='0x000000' effect.alpha='255' />
+			<third effort='255' color='0x000000' alpha='255' effect='none' effect.color='0x000000' effect.alpha='255' />
+		</fonts>
+		<....>
+	</object.name>
+...
+
+Attributes:
+
+ type - the type of object: possible values are 'glyph', 'solid', 'gradient', 'none'
+		default is 'none'
+
+
+ The 'fonts' section describes modifiers of user font. if specific attribute is not 
+specified - means do not change user setted one. E.g if only 'color' attribute is 
+specified - this color will be used instead of user requested.
+
+ If several painting are occurs before text rendering - the settings will be accumulated. 
+ If several same settings are will be accumulated - the last one will be used as result.
+But 'effort' attribute is show the '255'-based effort of specified value (for color only) 
+to be combined the old color and new one like: 
+    result_color=(old_color*(255-effort)+newcolor*(effort))/255;
+the resultet color will be same like this opacity effect.
+
+Subsections:
+
+	main - info regarding main font: Nick for contacts or groupname for groups.
+	second - info about second font: Second row line for contacts or group counter
+	third - info about third font:	Third row line for contacts, top color of group divider
+	fourth - info about fourth font: Time for contacts or bottom color of group divider
+
+Attributes:
+ 
+
+
+
+
+/************************************************************************\
 				Glyph object description format:
 --------------------------------------------------------------------------
 
 ...
-	<object.name opacity='255'>
+	<object.name type='glyph' opacity='255'>
 		<image file="filename.png" x='0' y='0' width='0' height='0' />
 		<resize top='0' left='0' bottom='0' right='0' mode='tile' />
 		<....>
@@ -37,7 +82,7 @@ if glyph image is too small:
 	mode -	the how to fill mode, 
 			possible values: tile, vtile, htile, stretch - (tile both 
 			directions, tile vertical, tile horizontal, stretch 
-			both directions), default is 'tile'
+			both directions), default is 'stretch'
 
 \************************************************************************/	
 	

@@ -34,10 +34,10 @@ File contains implementation of skinpp_GLYPH class HEADER
 
 enum // Resizer fill mode Enumerations
 {
-    FM_TILE_BOTH=0,
+    FM_STRETCH_BOTH = 0,    
     FM_TILE_HORIZONTAL,
     FM_TILE_VERTICAL,
-    FM_STRETCH_BOTH
+    FM_TILE_BOTH
 };
 
 class skinpp_GLYPH: public skinpp_SKINOBJECT
@@ -61,7 +61,7 @@ public:
             m_nWidth,
             m_nHeigh;           // Position of fragment   
     HBITMAP m_hBitmap;          // Glyph image
-    char   *m_szImageFileName;  //TODO: UNICODE file names
+    char   *m_lpImageFileName;  //TODO: UNICODE file names
 
     //Resizer
     int     m_nLeft,

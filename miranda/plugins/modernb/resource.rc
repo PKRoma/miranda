@@ -1352,12 +1352,12 @@ BEGIN
     LTEXT           "pixels",IDC_STATIC,111,131,54,8
 END
 
-IDD_OPT_SBAR DIALOGEX 0, 0, 287, 197
+IDD_OPT_SBAR DIALOGEX 0, 0, 287, 222
 STYLE DS_SETFONT | DS_FIXEDSYS | DS_CENTER | WS_CHILD
 EXSTYLE WS_EX_CONTROLPARENT
 FONT 8, "MS Shell Dlg", 0, 0, 0x1
 BEGIN
-    GROUPBOX        "Status Bar",IDC_STATIC,4,24,279,161
+    GROUPBOX        "Status Bar",IDC_STATIC,4,24,279,194
     CONTROL         "Show protocol names",IDC_SHOWPROTO,"Button",
                     BS_AUTOCHECKBOX | WS_TABSTOP,22,53,134,10
     CONTROL         "Show status text",IDC_SHOWSTATUS,"Button",
@@ -1400,6 +1400,12 @@ BEGIN
                     WS_TABSTOP,12,37,144,10
     CONTROL         "Show xStatus Name",IDC_SHOWXSTATUSNAME,"Button",
                     BS_AUTOCHECKBOX | WS_TABSTOP,22,79,124,10
+    EDITTEXT        IDC_MULTI_COUNT,88,198,35,12,ES_NUMBER
+    CONTROL         "",IDC_MULTI_SPIN,"msctls_updown32",UDS_SETBUDDYINT | 
+                    UDS_ALIGNRIGHT | UDS_AUTOBUDDY | UDS_ARROWKEYS | 
+                    UDS_NOTHOUSANDS | UDS_HOTTRACK,124,198,11,12
+    RTEXT           "Protocols per line",IDC_MULTI_2,12,200,73,10
+    LTEXT           "Multiline status bar:",IDC_MULTI,13,189,133,8
 END
 
 IDD_OPT_ITEM_AVATAR DIALOGEX 0, 0, 260, 171
@@ -1661,7 +1667,7 @@ BEGIN
         VERTGUIDE, 156
         VERTGUIDE, 276
         TOPMARGIN, 4
-        BOTTOMMARGIN, 193
+        BOTTOMMARGIN, 218
         HORZGUIDE, 33
     END
 

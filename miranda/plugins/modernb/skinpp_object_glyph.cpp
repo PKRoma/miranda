@@ -46,20 +46,69 @@ skinpp_GLYPH::skinpp_GLYPH()
     m_bOpacity=0;
     m_nX = m_nY = m_nWidth =  m_nHeigh = 0;
     m_hBitmap = NULL;
-    m_szImageFileName = NULL;
+    m_lpImageFileName = NULL;
     m_nLeft = m_nTop = m_nRight = m_nBottom = 0; 
-    m_bFillMode = FM_TILE_BOTH;
+    m_bFillMode = FM_STRETCH_BOTH;
 };
 
 skinpp_GLYPH::~skinpp_GLYPH()
 {
     //if (m_hBitmap) skinpp_FreeBitmap(m_hBitmap);
-    if (m_szImageFileName) free(m_szImageFileName);
+    if (m_lpImageFileName) free(m_lpImageFileName);
 }
 
 int skinpp_GLYPH::GetObjectDataFromXMLNode(XMLNode * lpNode)
-{
-    return 0;
+{ 
+    // Early return if current object is empty (should not occur)
+    if (!this) return E_FAIL; 
+    
+    // call parent class to get common object data
+    if (FAILED(skinpp_SKINOBJECT::GetObjectDataFromXMLNode(lpNode))) return E_FAIL;
+    
+    // get opacity, default is '255'
+    m_bOpacity=(BYTE)lpNode->GetAttributeInt("opacity",255);
+   
+    // get image section
+    XMLNode * lpImageNode=lpNode->GetNode("image");
+    if (lpImageNode)
+    {
+        // file - get image filename - if empty - use internal image 
+        string file=lpImageNode->GetAttributeString("file");
+        if (m_lpImageFileName) free(m_lpImageFileName);
+        m_lpImageFileName=NULL;
+        if (strlen(file.c_str())) strdup(file.c_str());
+        // if old bitmap is exists - free it
+        //if (m_hBitmap) skinpp_FreeBitmap(m_hBitmap);
+        m_hBitmap=NULL;
+  
+        //x, y
+        m_nX=lpImageNode->GetAttributeInt("x");
+        m_nY=lpImageNode->GetAttributeInt("y");
+        
+        //width, height
+        m_nWidth=lpImageNode->GetAttributeInt("width");
+        m_nHeigh=lpImageNode->GetAttributeInt("height");
+    }
+
+    // get resize section
+    XMLNode * lpResizeNode=lpNode->GetNode("resize");
+    if (lpResizeNode)
+    {
+        // left, top, right, bottom
+        m_nLeft=lpResizeNode->GetAttributeInt("left");
+        m_nTop=lpResizeNode->GetAttributeInt("top");
+        m_nRight=lpResizeNode->GetAttributeInt("right");
+        m_nBottom=lpResizeNode->GetAttributeInt("bottom");
+
+        // mode default is 'stretch'
+        string mode=lpResizeNode->GetAttributeString("mode","stretch");        
+        char * szMode=(char*)mode.c_str();
+        if (strcmpi(szMode,"vtile"))        m_bFillMode=FM_TILE_VERTICAL;
+        else if (strcmpi(szMode,"htile"))   m_bFillMode=FM_TILE_HORIZONTAL;
+        else if (strcmpi(szMode,"tile"))    m_bFillMode=FM_TILE_BOTH;
+        else                                m_bFillMode=FM_STRETCH_BOTH;
+    }
+    return S_OK;
 }
 
 int skinpp_GLYPH::PutObjectDataToXMLNode(XMLNode * lpNode)
