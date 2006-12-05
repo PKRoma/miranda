@@ -4859,10 +4859,13 @@ void yahoo_send_im(int id, const char *from, const char *who, const char *what, 
 	yahoo_packet_hash(pkt, 63, "");	/* imvironment name; or ;0 (doodle;11)*/
 	yahoo_packet_hash(pkt, 64, "2"); 
 	
-	if (!yss->web_messenger) {
+	//if (!yss->web_messenger) {
 		//yahoo_packet_hash(pkt, 1002, "1"); /* YIM6+ */
-		yahoo_packet_hash(pkt, 10093, "4"); /* YIM7? */
-	}
+		/*
+		 * So yahoo swallows the packet if I sent this now?? WTF?? Taking it out
+		 */
+		//yahoo_packet_hash(pkt, 10093, "4"); /* YIM7? */
+	//}
 	snprintf(buf, sizeof(buf), "%d", buddy_icon);
 	yahoo_packet_hash(pkt, 206, buf); /* buddy_icon, 0 = none, 1=avatar?, 2=picture */
 	
@@ -4905,9 +4908,9 @@ void yahoo_send_typing(int id, const char *from, const char *who, int typ)
 			yahoo_packet_hash(pkt, 0, yd->user); 
 			wsprintf(z, "%d", yd->session_timestamp);
 			yahoo_packet_hash(pkt, 24, z);
-	} else {
+	//} else {
 		//yahoo_packet_hash(pkt, 1002, "1"); /* YIM6+ */
-		yahoo_packet_hash(pkt, 10093, "4"); /* YIM7+ */
+		//yahoo_packet_hash(pkt, 10093, "4"); /* YIM7+ */
 	}
 	
 	yahoo_send_packet(yid, pkt, 0);
