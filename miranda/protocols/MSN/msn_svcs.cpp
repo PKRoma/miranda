@@ -675,10 +675,8 @@ static int MsnGetStatus(WPARAM wParam,LPARAM lParam)
 
 static int MsnLoadIcon(WPARAM wParam,LPARAM lParam)
 {
-	if ( LOWORD( wParam ) == PLI_PROTOCOL ) { 
-		MsnInitIcons();
+	if ( LOWORD( wParam ) == PLI_PROTOCOL )
 		return (int)LoadIconEx( "main" );
-	}
 
 	return (int)(HICON)NULL;
 }

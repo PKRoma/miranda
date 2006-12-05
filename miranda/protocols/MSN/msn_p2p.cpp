@@ -408,6 +408,7 @@ void __stdcall p2p_sendSlp(
 
 	switch ( iKind ) {
 		case 200: p += sprintf( p, "MSNSLP/1.0 200 OK" );	break;
+		case 481: p += sprintf( p, "MSNSLP/1.0 481 No Such Call" ); break;
 		case 603: p += sprintf( p, "MSNSLP/1.0 603 DECLINE" ); break;
 		case -1:  p += sprintf( p, "BYE MSNMSGR:%s MSNSLP/1.0", ft->p2p_dest ); break;
 		case -2:  p += sprintf( p, "INVITE MSNMSGR:%s MSNSLP/1.0", ft->p2p_dest ); break;
@@ -941,8 +942,11 @@ static void sttInitFileTransfer(
 		DBVARIANT dbv;
 		bool pictmatch = !DBGetContactSetting( NULL, msnProtocolName, "PictObject", &dbv );
 		if ( pictmatch ) {
+			char szCtBuf[32], szPtBuf[32]; 
 			UrlDecode(dbv.pszVal);
-			pictmatch = szContext != NULL && strncmp(dbv.pszVal, szContext, strlen( dbv.pszVal )) == 0;
+			pictmatch &= txtParseParam( szContext,  "SHA1C=", "\"", "\"", szCtBuf, sizeof( szCtBuf ));
+			pictmatch &= txtParseParam( dbv.pszVal, "SHA1C=", "\"", "\"", szPtBuf, sizeof( szPtBuf ));
+			pictmatch = pictmatch && strcmp( szCtBuf, szPtBuf ) == 0;
 			MSN_FreeVariant( &dbv );
 		}
 		if ( !pictmatch ) {
@@ -1142,7 +1146,8 @@ static void sttInitDirectTransfer2(
 	MimeHeaders& tFileInfo,
 	MimeHeaders& tFileInfo2 )
 {
-	filetransfer* ft = p2p_getSessionByCallID( tFileInfo[ "Call-ID" ] );
+	const char	*szCallID = tFileInfo[ "Call-ID" ];
+	filetransfer* ft = p2p_getSessionByCallID( szCallID );
 	if ( ft == NULL )
 		return;
 
@@ -1151,22 +1156,33 @@ static void sttInitDirectTransfer2(
 				*szExternalAddress = tFileInfo2[ "IPv4External-Addrs" ],
 				*szExternalPort = tFileInfo2[ "IPv4External-Port" ],
 				*szNonce = tFileInfo2[ "Nonce" ],
+				*szHashedNonce = tFileInfo2[ "Hashed-Nonce" ],
 				*szListening = tFileInfo2[ "Listening" ];
 
-	if ( szNonce == NULL || szListening == NULL ) {
-		MSN_DebugLog( "Ignoring invalid invitation: Listening='%s', Nonce=%s", szNonce, szListening );
+	if (( szNonce == NULL && szHashedNonce == NULL ) || szListening == NULL ) {
+		MSN_DebugLog( "Ignoring invalid invitation: Listening='%s', Nonce=%s", szListening, szNonce );
 		return;
 	}
+
+	directconnection* dc = p2p_getDCByCallID( szCallID );
+	if ( dc == NULL ) {
+		dc = new directconnection( ft );
+		p2p_registerDC( dc );
+	}
+
+	dc->useHashedNonce = szHashedNonce != NULL;
+	mir_free( dc->xNonce );
+	dc->xNonce = mir_strdup( szHashedNonce ? szHashedNonce : szNonce ); 
 
 	MSN_SendBroadcast( ft->std.hContact, ACKTYPE_FILE, ACKRESULT_INITIALISING, ft, 0);
 	p2p_sendAck( ft, info, hdrdata );
 
-	if ( !strcmp( szListening, "true" ) && strcmp( szNonce, sttVoidNonce )) {
+	if ( !strcmp( szListening, "true" ) && strcmp( dc->xNonce, sttVoidNonce )) {
 		ThreadData* newThread = new ThreadData;
 		newThread->mType = SERVER_P2P_DIRECT;
 		newThread->mInitialContact = ft->std.hContact;
 
-		strncpy( newThread->mCookie, szNonce, sizeof( newThread->mCookie ));
+		strncpy( newThread->mCookie, dc->callId, sizeof( newThread->mCookie ));
 		mir_snprintf( newThread->mServer, sizeof( newThread->mServer ), "%s:%s", szInternalAddress, szInternalPort );
 		newThread->startThread(( pThreadFunc )p2p_fileActiveThread );
 	}
@@ -1376,6 +1392,8 @@ void __stdcall p2p_processMsg( ThreadData* info, const char* msgbody )
 			iMsgType = 3;
 		else if ( !memcmp( msgbody, "MSNSLP/1.0 603 ", 15 ))
 			iMsgType = 4;
+		else if ( !memcmp( msgbody, "MSNSLP/1.0 481 ", 15 ))
+			iMsgType = 4;
 		else if ( !memcmp( msgbody, "MSNSLP/1.0 500 ", 15 ))
 			iMsgType = 4;
 
@@ -1453,6 +1471,8 @@ void __stdcall p2p_processMsg( ThreadData* info, const char* msgbody )
 
 	//---- receiving ack -----------
 	if ( hdrdata->mFlags == 0x02 ) {
+		ft->p2p_waitack = false;
+
 		if ( hdrdata->mAckSessionID == ft->p2p_sendmsgid ) {
 			if ( ft->p2p_appID == 2 ) {
 				ft->bCompleted = true;
@@ -1469,8 +1489,6 @@ void __stdcall p2p_processMsg( ThreadData* info, const char* msgbody )
 			p2p_sessionComplete( ft );
 			return;
 		}
-
-		ft->p2p_waitack = false;
 
 		switch( ft->p2p_ackID ) {
 		case 1000:
@@ -1560,8 +1578,8 @@ void __stdcall p2p_processMsg( ThreadData* info, const char* msgbody )
 					p2p_sendBye( info, ft );
 	}	}	}
 
-//	if ( hdrdata->mFlags == 0x40 || hdrdata->mFlags == 0x80 )
-//		p2p_unregisterSession( ft );
+	if ( hdrdata->mFlags == 0x40 || hdrdata->mFlags == 0x80 )
+		p2p_unregisterSession( ft );
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////

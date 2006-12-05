@@ -165,6 +165,7 @@ WCHAR*   __stdcall   HtmlEncodeW( const WCHAR* str );
 #else
 	#define  HtmlEncodeT HtmlEncode
 #endif
+bool txtParseParam (char* szData, char* presearch, char* start, char* finish, char* param, int size);
 
 void		__stdcall	UrlDecode( char*str );
 void		__stdcall	UrlEncode( const char* src, char* dest, int cbDest );

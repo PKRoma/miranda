@@ -59,15 +59,8 @@ static iconList[] =
 	{	"Relative list",          "list_rl",     IDI_LIST_RL    }
 };
 
-static bool bAreIconsInitialized = false;
-
 void MsnInitIcons( void )
 {
-	if ( bAreIconsInitialized )
-		return;
-
-	bAreIconsInitialized = true;
-
 	char szFile[MAX_PATH];
 	GetModuleFileNameA(hInst, szFile, MAX_PATH);
 

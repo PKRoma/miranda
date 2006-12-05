@@ -100,7 +100,6 @@ typedef BOOL  ( WINAPI *ft_InternetCloseHandle )( HINTERNET );
 typedef DWORD ( WINAPI *ft_InternetErrorDlg )( HWND, HINTERNET, DWORD, DWORD, LPVOID* );
 typedef BOOL  ( WINAPI *ft_InternetSetOption )( HINTERNET, DWORD, LPVOID, DWORD );
 typedef BOOL  ( WINAPI *ft_InternetReadFile )( HINTERNET, LPVOID, DWORD, LPDWORD );
-typedef BOOL  ( WINAPI *ft_HttpAddRequestHeaders )( HINTERNET, LPCSTR, DWORD, DWORD );
 
 typedef HINTERNET ( WINAPI *ft_HttpOpenRequest )( HINTERNET, LPCSTR, LPCSTR, LPCSTR, LPCSTR, LPCSTR*, DWORD, DWORD );
 typedef HINTERNET ( WINAPI *ft_InternetConnect )( HINTERNET, LPCSTR, INTERNET_PORT, LPCSTR, LPCSTR, DWORD, DWORD, DWORD );
@@ -128,7 +127,6 @@ struct SSL_WinInet : public SSL_Base
 	ft_HttpOpenRequest     f_HttpOpenRequest;
 	ft_HttpQueryInfo       f_HttpQueryInfo;
 	ft_HttpSendRequest     f_HttpSendRequest;
-	ft_HttpAddRequestHeaders f_HttpAddRequestHeaders;
 };
 
 /////////////////////////////////////////////////////////////////////////////////////////
@@ -147,7 +145,6 @@ int SSL_WinInet::init()
 	f_HttpOpenRequest = (ft_HttpOpenRequest)GetProcAddress( m_dll, "HttpOpenRequestA" );
 	f_HttpQueryInfo = (ft_HttpQueryInfo)GetProcAddress( m_dll, "HttpQueryInfoA" );
 	f_HttpSendRequest = (ft_HttpSendRequest)GetProcAddress( m_dll, "HttpSendRequestA" );
-	f_HttpAddRequestHeaders = (ft_HttpAddRequestHeaders)GetProcAddress( m_dll, "HttpAddRequestHeadersA" );
 	return 0;
 }
 
@@ -279,11 +276,10 @@ char* SSL_WinInet::getSslResult( char* parUrl, char* parAuthInfo )
 		if ( MyOptions.UseProxy && MSN_GetByte( "NLUseProxyAuth", 0  ))
 			applyProxy( tRequest );
 
-			char cclose[] =  "Connection: close";
-			f_HttpAddRequestHeaders(tRequest, cclose, strlen(cclose), HTTP_ADDREQ_FLAG_ADD );
+		static const char headers[] =  "Accept: txt/*\r\nConnection: close\r\n";
 LBL_Restart:
 			MSN_DebugLog( "Sending request...\n%s", parAuthInfo );
-			DWORD tErrorCode = f_HttpSendRequest( tRequest, NULL, 0, parAuthInfo, strlen( parAuthInfo ));
+			DWORD tErrorCode = f_HttpSendRequest( tRequest, headers, strlen(headers), parAuthInfo, strlen( parAuthInfo ));
 			if ( tErrorCode == 0 ) {
 				TWinErrorCode errCode;
 				MSN_DebugLog( "HttpSendRequest() failed with error %ld", errCode.mErrorCode );
@@ -633,24 +629,15 @@ int MSN_GetPassportAuth( char* authChallengeInfo, char*& parResult )
 		sscanf( tResult, "HTTP/1.1 %d", &status );
 		if ( status == 302 ) // Handle redirect
 		{
-			if (( p = strstr( tResult, "Location:" )) == NULL )
-				break;
-			strdel( tResult, int( p-tResult )+10 );
-			if (( p = strchr( tResult, '\r' )) != NULL )
-				*p = 0;
-			strcpy(szPassportHost, tResult);
-			MSN_DebugLog( "Redirected to '%s'", tResult );
+			if (txtParseParam(tResult, NULL, "Location:", "\r", szPassportHost, sizeof(szPassportHost))) 
+				MSN_DebugLog( "Redirected to '%s'", szPassportHost );
+			else break;
 		}
 		else if (status == 200) 
 		{
-			if (( p = strstr( tResult, "<psf:redirectUrl>" )) == NULL )	
-				break;
-
-			strdel( tResult, int( p-tResult )+17 );
-			if (( p = strchr( tResult, '<' )) != NULL )
-				*p = 0;
-			strcpy(szPassportHost, tResult);
-			MSN_DebugLog( "Redirected to '%s'", tResult );
+			if (txtParseParam(tResult, NULL, "<psf:redirectUrl>", "<", szPassportHost, sizeof(szPassportHost))) 
+				MSN_DebugLog( "Redirected to '%s'", szPassportHost );
+			else break;
 		}
 		else
 		{
@@ -663,29 +650,26 @@ int MSN_GetPassportAuth( char* authChallengeInfo, char*& parResult )
 				break;
 	}	}	}
 
-	if ( retVal == 0 ) 	{ 
-		if (( p = strstr( tResult, "<wsse:BinarySecurityToken" )) == NULL )
-			retVal = strstr( tResult, "wsse:FailedAuthentication" ) ? 3 : 5;
-		else {
-			p = strchr( p, '>' ); 
-			strdel( tResult, ( p-tResult ) + 1);
-
-			if (( p = strchr( tResult, '<' )) != NULL )
-				*p = 0;
-
+	if ( retVal == 0 ) 	{
+		if ( txtParseParam( tResult, "<wsse:BinarySecurityToken", ">", "<", tResult, strlen( tResult ))) {
 			HtmlDecode( tResult );
-			parResult = tResult;
-
 			MSN_SetString( NULL, "MsnPassportHost", szPassportHost );
-	}	}
+			parResult = tResult;
+		}
+		else
+			retVal = strstr( tResult, "wsse:FailedAuthentication" ) ? 3 : 5;
+	}
+
 	if ( retVal != 0 ) {
 		mir_free( tResult );
 		MSN_ShowError( retVal == 3 ? "Your username or password is incorrect" : 
 			"Unable to contact MS Passport servers check proxy/firewall settings" );
 		MSN_SendBroadcast( NULL, ACKTYPE_LOGIN, ACKRESULT_FAILED, NULL, LOGINERR_WRONGPASSWORD );
 	}
-	delete pAgent;
+
 	MSN_DebugLog( "MSN_CheckRedirector exited with errorCode = %d", retVal );
+
+	delete pAgent;
 	return retVal;
 }
 

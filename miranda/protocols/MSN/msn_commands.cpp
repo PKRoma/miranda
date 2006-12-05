@@ -1567,11 +1567,7 @@ LBL_InvalidCommand:
 		{
 			int	listId;
 			char *userEmail = NULL, *userNick = NULL, *userId = NULL, *groupId = NULL;
-
-			union	{
-				char* tWords[ 10 ];
-				struct { char *userEmail, *userNick, *list, *groupid; } data;
-			};
+			char* tWords[ 10 ];
 
 			int tNumTokens = sttDivideWords( params, 10, tWords );
 
@@ -1589,7 +1585,7 @@ LBL_InvalidCommand:
 				else {
 					listId = atol( p );
 					if ( i < tNumTokens-1 )
-						groupId = tWords[i+1];
+						groupId = tWords[tNumTokens-1];
 					break;
 			}	}
 

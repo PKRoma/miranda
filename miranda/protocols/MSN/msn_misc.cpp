@@ -1161,3 +1161,34 @@ TCHAR* UnEscapeChatTags(TCHAR* str_in)
 	*d = 0;
 	return str_in;
 }
+
+bool txtParseParam (char* szData, char* presearch, char* start, char* finish, char* param, int size)
+{
+	char *cp, *cp1;
+	int len;
+	
+	if (szData == NULL) return false;
+
+	if (presearch != NULL)
+	{
+		cp1 = strstr(szData, presearch);
+		if (cp1 == NULL) return false;
+	}
+	else
+		cp1 = szData;
+
+	cp = strstr(cp1, start);
+	if (cp == NULL) return false;
+	cp += strlen(start);
+	while (*cp == ' ') ++cp;
+
+	cp1 = strstr(cp, finish);
+	if (cp1 == NULL) return FALSE;
+	while (*(cp1-1) == ' ' && cp1 > cp) --cp1;
+
+	len = min(cp1 - cp, size - 1);
+	memmove(param, cp, len);
+	param[len] = 0;
+
+	return true;
+} 
