@@ -29,6 +29,7 @@ typedef struct
   int iconIndex;
   char * ProtoName;
   int ProtoStatus;
+  char *ProtoHumanName;
   char * ProtoStatusText;
   TCHAR * ProtoXStatus;
   int ProtoPos;
@@ -149,7 +150,8 @@ int ModernDrawStatusBarWorker(HWND hWnd, HDC hDC)
       {
 		if(ProtosData[k].ProtoXStatus) mir_free_and_nill (ProtosData[k].ProtoXStatus);
         if(ProtosData[k].ProtoName) mir_free_and_nill (ProtosData[k].ProtoName);
-        if(ProtosData[k].ProtoStatusText) mir_free_and_nill (ProtosData[k].ProtoStatusText);
+        if(ProtosData[k].ProtoHumanName) mir_free_and_nill (ProtosData[k].ProtoName);
+        if(ProtosData[k].ProtoStatusText) mir_free_and_nill (ProtosData[k].ProtoStatusText);      
       }
       mir_free_and_nill(ProtosData);
       ProtosData=NULL;
@@ -161,6 +163,7 @@ int ModernDrawStatusBarWorker(HWND hWnd, HDC hDC)
 
 	for (j=0; j<protcnt; j++)
 	{
+        char buf[40];
 		int vis;
 		i=GetProtoIndexByPos(proto,protoCount,j);
 		if (i==-1) 
@@ -168,7 +171,11 @@ int ModernDrawStatusBarWorker(HWND hWnd, HDC hDC)
 		else
 			vis=GetProtocolVisibility(proto[i]->szName);
 		if (!vis) continue;
-	    ProtosData[visProtoCount].ProtoName=mir_strdup(proto[i]->szName);
+	    if(!CallProtoService(proto[i]->szName,PS_GETNAME,(WPARAM)SIZEOF(buf),(LPARAM)buf))
+            ProtosData[visProtoCount].ProtoHumanName=mir_strdup(buf);
+        else
+            ProtosData[visProtoCount].ProtoHumanName=mir_strdup(proto[i]->szName);
+        ProtosData[visProtoCount].ProtoName=mir_strdup(proto[i]->szName);
         ProtosData[visProtoCount].ProtoStatus=CallProtoService(proto[i]->szName,PS_GETSTATUS,0,0);
 		ProtosData[visProtoCount].ProtoStatusText=mir_strdup((char*)CallService(MS_CLIST_GETSTATUSMODEDESCRIPTION,(WPARAM)ProtosData[visProtoCount].ProtoStatus,0));
 	    ProtosData[visProtoCount].ProtoPos=visProtoCount;
@@ -266,7 +273,7 @@ int ModernDrawStatusBarWorker(HWND hWnd, HDC hDC)
                         }
                         if (g_StatusBarData.showProtoName)
                         {
-                            GetTextExtentPoint32A(hDC,ProtosData[i].ProtoName,lstrlenA(ProtosData[i].ProtoName),&textSize);
+                            GetTextExtentPoint32A(hDC,ProtosData[i].ProtoHumanName,lstrlenA(ProtosData[i].ProtoHumanName),&textSize);
                             w+=textSize.cx+3+spaceWidth;
                         }
                         if (g_StatusBarData.showStatusName)
@@ -421,11 +428,11 @@ int ModernDrawStatusBarWorker(HWND hWnd, HDC hDC)
                             RECT rt=r;
                             rt.left=x+(spaceWidth>>1);
                             rt.top=textY;
-                            SkinEngine_DrawTextA(hDC,ProtosData[i].ProtoName,lstrlenA(ProtosData[i].ProtoName),&rt,0);
+                            SkinEngine_DrawTextA(hDC,ProtosData[i].ProtoHumanName,lstrlenA(ProtosData[i].ProtoHumanName),&rt,0);
                             //TextOutS(hDC,x,textY,ProtosData[i].ProtoName,lstrlenA(ProtosData[i].ProtoName));
                             if (g_StatusBarData.showStatusName || ((g_StatusBarData.xStatusMode&8) && ProtosData[i].ProtoXStatus))
                             {
-                                GetTextExtentPoint32A(hDC,ProtosData[i].ProtoName,lstrlenA(ProtosData[i].ProtoName),&textSize);
+                                GetTextExtentPoint32A(hDC,ProtosData[i].ProtoHumanName,lstrlenA(ProtosData[i].ProtoHumanName),&textSize);
                                 x+=textSize.cx+3;
                             }
                         }
@@ -487,7 +494,9 @@ LRESULT CALLBACK ModernStatusProc(HWND hwnd,UINT msg,WPARAM wParam,LPARAM lParam
       for (k=0; k<allocedItemData; k++)
       {
         if(ProtosData[k].ProtoName) mir_free_and_nill (ProtosData[k].ProtoName);
+        if(ProtosData[k].ProtoHumanName) mir_free_and_nill (ProtosData[k].ProtoHumanName);
         if(ProtosData[k].ProtoStatusText) mir_free_and_nill (ProtosData[k].ProtoStatusText);
+        if(ProtosData[k].ProtoXStatus) mir_free_and_nill (ProtosData[k].ProtoXStatus);
       }
       mir_free_and_nill(ProtosData);
       ProtosData=NULL;
