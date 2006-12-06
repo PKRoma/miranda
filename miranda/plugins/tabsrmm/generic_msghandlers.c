@@ -711,9 +711,6 @@ void DrawStatusIcons(struct MessageWindowData *dat, HDC hDC, RECT r, int gap) {
 	int flags;
 	int x = r.left;
 
-    //if(dat->bType != SESSIONTYPE_IM)
-    //    x += myGlobals.m_smcxicon + gap;
-
     SetBkMode(hDC, TRANSPARENT);
 	while(current) {
 		sprintf(buff, "SRMMStatusIconFlags%d", (int)current->sid.dwId);
@@ -805,7 +802,8 @@ int SI_InitStatusIcons() {
 int SI_DeinitStatusIcons() {
 	int i;
 	DestroyHookableEvent(hHookIconPressedEvt);
-	for(i = 0; i < 3; i++) DestroyServiceFunction(SI_hServiceIcon[i]);
+	for(i = 0; i < 3; i++) 
+        DestroyServiceFunction(SI_hServiceIcon[i]);
 	SI_RemoveAllStatusIcons();
 	return 0;
 }

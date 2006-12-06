@@ -36,9 +36,9 @@ $Id$
 
 static char *relnotes[] = {
     "{\\rtf1\\ansi\\deff0\\pard\\li%u\\fi-%u\\ri%u\\tx%u}",
-    "\\par\t\\b\\ul1 Release notes for version 1.1.0.13\\b0\\ul0\\par ",
-    "*\tAdded codepage support to groupchat windows.\\par",
-    "*\tSmall changes to clickable nicks in groupchat windows.\\par",
+    "\\par\t\\b\\ul1 Release notes for version 1.1.0.14\\b0\\ul0\\par ",
+    "*\tMore work on clickable links in group chats.\\par",
+    "*\tInactive status bar icons are now painted with high tranparency to appear dimmed.\\par",
     NULL
 };
 
@@ -1022,7 +1022,7 @@ static int SplitmsgModulesLoaded(WPARAM wParam, LPARAM lParam)
 
     myGlobals.m_hwndClist = (HWND)CallService(MS_CLUI_GETHWND, 0, 0);
 #ifdef __MATHMOD_SUPPORT    		
-     myGlobals.m_MathModAvail = ServiceExists(MATH_RTF_REPLACE_FORMULAE) && DBGetContactSettingByte(NULL, SRMSGMOD_T, "wantmathmod", 0);
+     myGlobals.m_MathModAvail = ServiceExists(MATH_RTF_REPLACE_FORMULAE) && DBGetContactSettingByte(NULL, SRMSGMOD_T, "wantmathmod", 1);
      if(myGlobals.m_MathModAvail) {
          char *szDelim = (char *)CallService(MATH_GET_STARTDELIMITER, 0, 0);
          if(szDelim) {

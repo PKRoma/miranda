@@ -19,6 +19,17 @@ the file listing the same day.
 Trunk is now using version numbers 1.1.0.x until the next major release. Bugfixes
 will be backported to stable branch, new features will only go into trunk.
 
+Version 1.1.0.14 - 2006/12/06
+
+        * more work on clickable nicknames in group chats.
+        * draw inactive / disabled status bar icons with high transparency to make
+          them appear "dimmed". Less confusing than constantly disappearing/jumping
+          icons in the status bar.
+        * clickable nicknames in the group chat history can now be right-clicked to
+          open the user context menu (same menu as in nickname list).
+        * fixed ugly crash bug introduced in .13 (clicking on the session list/tray
+          icon).
+
 Version 1.1.0.13 - 2006/11/26
 
         + group chat module has been converted to UNICODE (ghazan)
