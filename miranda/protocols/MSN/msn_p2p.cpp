@@ -944,8 +944,8 @@ static void sttInitFileTransfer(
 		if ( pictmatch ) {
 			char szCtBuf[32], szPtBuf[32]; 
 			UrlDecode(dbv.pszVal);
-			pictmatch &= txtParseParam( szContext,  "SHA1C=", "\"", "\"", szCtBuf, sizeof( szCtBuf ));
-			pictmatch &= txtParseParam( dbv.pszVal, "SHA1C=", "\"", "\"", szPtBuf, sizeof( szPtBuf ));
+			pictmatch &= txtParseParam( szContext,  "SHA1D=", "\"", "\"", szCtBuf, sizeof( szCtBuf ));
+			pictmatch &= txtParseParam( dbv.pszVal, "SHA1D=", "\"", "\"", szPtBuf, sizeof( szPtBuf ));
 			pictmatch = pictmatch && strcmp( szCtBuf, szPtBuf ) == 0;
 			MSN_FreeVariant( &dbv );
 		}
@@ -1177,16 +1177,32 @@ static void sttInitDirectTransfer2(
 	MSN_SendBroadcast( ft->std.hContact, ACKTYPE_FILE, ACKRESULT_INITIALISING, ft, 0);
 	p2p_sendAck( ft, info, hdrdata );
 
+
 	if ( !strcmp( szListening, "true" ) && strcmp( dc->xNonce, sttVoidNonce )) {
+		bool extOk = szExternalAddress != NULL && szExternalPort != NULL;
+		bool intOk = szInternalAddress != NULL && szInternalPort != NULL;
+
 		ThreadData* newThread = new ThreadData;
+
+		char ipaddr[256] = "";
+		MSN_GetMyHostAsString( ipaddr, sizeof( ipaddr ));
+
+		if ( extOk && ( strcmp( szExternalAddress, ipaddr ) || !intOk ))
+			mir_snprintf( newThread->mServer, sizeof( newThread->mServer ), "%s:%s", szExternalAddress, szExternalPort );
+		else if ( intOk )
+			mir_snprintf( newThread->mServer, sizeof( newThread->mServer ), "%s:%s", szInternalAddress, szInternalPort );
+		else {
+			MSN_DebugLog( "Invalid data packet, exiting..." );
+			delete newThread;
+			return;
+		}
+
 		newThread->mType = SERVER_P2P_DIRECT;
 		newThread->mInitialContact = ft->std.hContact;
 
-		strncpy( newThread->mCookie, dc->callId, sizeof( newThread->mCookie ));
-		mir_snprintf( newThread->mServer, sizeof( newThread->mServer ), "%s:%s", szInternalAddress, szInternalPort );
+		strncpy( newThread->mCookie, szCallID, sizeof( newThread->mCookie ));
 		newThread->startThread(( pThreadFunc )p2p_fileActiveThread );
 	}
-	else p2p_sendStatus( ft, info, 603 );
 }
 
 static void sttAcceptTransfer(
@@ -1291,8 +1307,7 @@ LBL_Close:
 		}
 
 		directconnection* dc = p2p_getDCByCallID( szCallID );
-		if ( dc == NULL ) 
-			goto LBL_Close;
+		if ( dc == NULL ) return;
 
 		dc->useHashedNonce = szHashedNonce != NULL;
 		dc->xNonce = mir_strdup( szHashedNonce ? szHashedNonce : szNonce ); 
@@ -1314,7 +1329,7 @@ LBL_Close:
 			else {
 				MSN_DebugLog( "Invalid data packet, exiting..." );
 				delete newThread;
-				goto LBL_Close;
+				return;
 			}
 
 			newThread->mType = SERVER_P2P_DIRECT;
@@ -1649,6 +1664,9 @@ void __stdcall p2p_invite( HANDLE hContact, int iAppID, filetransfer* ft )
 		p = strstr( tBuffer, "Size=\"" );
 		if ( p != NULL )
 			ft->std.totalBytes = ft->std.currentFileSize = atol( p + 6 );
+
+		p = strstr( tBuffer, "avatarid" );
+		if ( p != NULL ) strcpy(p-1, "/>");
 
 		if ( ft->create() == -1 ) {
 			MSN_DebugLog( "Avatar creation failed for MSNCTX=\'%s\'", tBuffer );
