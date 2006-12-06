@@ -189,7 +189,7 @@ int ModernDrawStatusBarWorker(HWND hWnd, HDC hDC)
         else
             protosperline=orig_visProtoCount;
         protosperline=min(protosperline,orig_visProtoCount);
-        linecount=(int)(((float)orig_visProtoCount/protosperline)+(.5));
+        linecount=(orig_visProtoCount+(protosperline-1))/protosperline; //divide with rounding to up
         for (line=0; line<linecount; line++)
         {    
             int height;
