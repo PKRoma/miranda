@@ -830,10 +830,8 @@ int JabberGetStatus( WPARAM wParam, LPARAM lParam )
 
 int JabberLoadIcon( WPARAM wParam, LPARAM lParam )
 {
-	if (( wParam & 0xffff ) == PLI_PROTOCOL ) {
-		JabberIconsInit();
+	if (( wParam & 0xffff ) == PLI_PROTOCOL )
 		return ( int )CopyIcon( LoadIconEx( "main" ));
-	}
 
 	return ( int ) ( HICON ) NULL;
 }

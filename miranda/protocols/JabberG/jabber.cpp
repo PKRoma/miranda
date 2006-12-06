@@ -317,8 +317,8 @@ extern "C" int __declspec( dllexport ) Load( PLUGINLINK *link )
 	JabberSerialInit();
 	JabberIqInit();
 	JabberListInit();
-	JabberSvcInit();
 	JabberIconsInit();
+	JabberSvcInit();
 	return 0;
 }
 
