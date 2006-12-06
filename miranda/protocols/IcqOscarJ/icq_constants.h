@@ -218,12 +218,13 @@
 #define MGTYPE_XTRAZ_SCRIPT_s       0x3b60b3ef, 0xd82a6c45, 0xa4e09c5a, 0x5e67e865
 
 // Message Plugin Sub-Type IDs
-#define MGTYPE_STANDARD_SEND        0x00
-#define MGTYPE_CONTACTS_REQUEST     0x02
-#define MGTYPE_SCRIPT_INVITATION    0x01
-#define MGTYPE_SCRIPT_DATA          0x02
-#define MGTYPE_SCRIPT_USER_REMOVE   0x04
-#define MGTYPE_SCRIPT_NOTIFY        0x08
+#define MGTYPE_STANDARD_SEND        0x0000
+#define MGTYPE_CONTACTS_REQUEST     0x0002
+#define MGTYPE_SCRIPT_INVITATION    0x0001
+#define MGTYPE_SCRIPT_DATA          0x0002
+#define MGTYPE_SCRIPT_USER_REMOVE   0x0004
+#define MGTYPE_SCRIPT_NOTIFY        0x0008
+#define MGTYPE_UNDEFINED            0xFFFF
 
 
 
@@ -533,7 +534,7 @@
 
 
 // Internal Constants
-#define ICQ_PLUG_VERSION            0x80030807
+#define ICQ_PLUG_VERSION            0x80030808
 #define ICQ_VERSION                 8
 #define DC_TYPE                     DC_NORMAL // Used for DC settings
 #define MAX_NICK_SIZE               32

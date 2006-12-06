@@ -59,6 +59,7 @@ Bugfixes:
   Fixed peer-to-peer session cookie checking (was working only due to coincidence)
   Fixed SMS message handling, made message parsing more consistent
   Applied fix for re-requesting authorization (thx Bio)
+  Fixed handling of message acks & status msg replies from icq6
 
 New Features:
   Oscar File Transfers - like icq5 (including transfer thru server)

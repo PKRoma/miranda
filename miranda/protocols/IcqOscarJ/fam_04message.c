@@ -1050,6 +1050,13 @@ static int TypeGUIDToTypeId(DWORD dwGuid1, DWORD dwGuid2, DWORD dwGuid3, DWORD d
   {
     nTypeID = MTYPE_STATUSMSGEXT;
   }
+  else if (wType==MGTYPE_UNDEFINED)
+  {
+    if (CompareGUIDs(dwGuid1, dwGuid2, dwGuid3, dwGuid4, PSIG_MESSAGE))
+    { // icq6 message ack
+      nTypeID = MTYPE_PLAIN;
+    }
+  }
   else if (wType==MGTYPE_STANDARD_SEND)
   {
     if (CompareGUIDs(dwGuid1, dwGuid2, dwGuid3, dwGuid4, MGTYPE_WEBURL))
@@ -1158,6 +1165,11 @@ int unpackPluginTypeId(BYTE** pBuffer, WORD* pwLen, int *pTypeId, WORD *pFunctio
     {
       *pBuffer += 3;
       wLen -= 3;
+    }
+    else if (typeId == MTYPE_PLAIN) // FIXME:
+    {
+      *pBuffer += 17;
+      wLen -= 17;
     }
     else
     {
@@ -1999,6 +2011,22 @@ static void handleRecvMsgResponse(unsigned char *buf, WORD wLen, WORD wFlags, DW
 
         switch (typeId)
         {
+        case MTYPE_PLAIN:
+          if (pCookieData && pCookieData->bMessageType == MTYPE_AUTOAWAY && dwLengthToEnd >= 4)
+          { // icq6 invented this
+            char *szMsg;
+
+            szMsg = (char*)_alloca(dwDataLen + 1);
+            if (dwDataLen > 0)
+              memcpy(szMsg, buf, dwDataLen);
+            szMsg[dwDataLen] = '\0';
+            handleStatusMsgReply("SNAC(4.B) ", hContact, dwUin, wVersion, pCookieData->nAckType, (WORD)dwCookie, szMsg);
+
+            break;
+          }
+          else
+            ackType = ACKTYPE_MESSAGE;
+          break;
 
         case MTYPE_URL:
           ackType = ACKTYPE_URL;
@@ -2161,6 +2189,10 @@ static void handleRecvServMsgError(unsigned char *buf, WORD wLen, WORD wFlags, D
       pszErrorMessage = ICQTranslate("The user has logged off. Select 'Retry' to send an offline message.\r\nSNAC(4.1) Error x04");
       break;
 
+    case 0x0005:     // Requested service unavailable
+      pszErrorMessage = ICQTranslate("The messaging service is temporarily unavailable. Wait a while and try again.\r\nSNAC(4.1) Error x05");
+      break;
+
     case 0x0009:     // Not supported by client (resend in a simpler format)
       pszErrorMessage = ICQTranslate("The receiving client does not support this type of message.\r\nSNAC(4.1) Error x09");
       break;
@@ -2178,7 +2210,6 @@ static void handleRecvServMsgError(unsigned char *buf, WORD wLen, WORD wFlags, D
       break;
 
     case 0x0001:     // Invalid SNAC header
-    case 0x0005:     // Requested service unavailable
     case 0x0006:     // Requested service not defined
     case 0x0007:     // You sent obsolete SNAC
     case 0x0008:     // Not supported by server
