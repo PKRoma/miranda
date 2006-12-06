@@ -289,50 +289,6 @@ static void ResizeIeView(HWND hwndDlg, struct MessageWindowData *dat, DWORD px, 
     }
 }
 
-#ifdef __MATHMOD_SUPPORT
-static void updatePreview(HWND hwndDlg, struct MessageWindowData *dat)
-{	
-	TMathWindowInfo mathWndInfo;
-
-	int len=GetWindowTextLengthA( GetDlgItem( hwndDlg, IDC_MESSAGE) );
-	RECT windRect;
-	char * thestr = malloc(len+5);
-	GetWindowTextA( GetDlgItem( hwndDlg, IDC_MESSAGE), thestr, len+1);
-	GetWindowRect(dat->pContainer->hwnd,&windRect);
-	mathWndInfo.top=windRect.top;
-	mathWndInfo.left=windRect.left;
-	mathWndInfo.right=windRect.right;
-	mathWndInfo.bottom=windRect.bottom;
-
-	CallService(MTH_SETFORMULA,0,(LPARAM) thestr);
-	CallService(MTH_RESIZE,0,(LPARAM) &mathWndInfo);
-	free(thestr);
-}
-
-static void updateMathWindow(HWND hwndDlg, struct MessageWindowData *dat)
-{
-    WINDOWPLACEMENT cWinPlace;
-
-    if(!myGlobals.m_MathModAvail)
-        return;
-    
-    updatePreview(hwndDlg, dat);
-    CallService(MTH_SHOW, 0, 0);
-    cWinPlace.length=sizeof(WINDOWPLACEMENT);
-    GetWindowPlacement(dat->pContainer->hwnd, &cWinPlace);
-    return;
-    if (cWinPlace.showCmd == SW_SHOWMAXIMIZED)
-    {
-        RECT rcWindow;
-        GetWindowRect(hwndDlg, &rcWindow);
-        if(CallService(MTH_GET_PREVIEW_SHOWN,0,0))
-            MoveWindow(dat->pContainer->hwnd,rcWindow.left,rcWindow.top,rcWindow.right-rcWindow.left,GetSystemMetrics(SM_CYSCREEN)-CallService(MTH_GET_PREVIEW_HEIGHT ,0,0),1);
-        else
-            MoveWindow(dat->pContainer->hwnd,rcWindow.left,rcWindow.top,rcWindow.right-rcWindow.left,GetSystemMetrics(SM_CYSCREEN),1);
-    }
-}
-#endif
-
 static LRESULT CALLBACK IEViewSubclassProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 {
 	struct MessageWindowData *mwdat = (struct MessageWindowData *)GetWindowLong(GetParent(hwnd), GWL_USERDATA);
@@ -416,7 +372,7 @@ static void MsgWindowUpdateState(HWND hwndDlg, struct MessageWindowData *dat, UI
     #if defined(__MATHMOD_SUPPORT)
         if(myGlobals.m_MathModAvail) {
             CallService(MTH_Set_ToolboxEditHwnd,0,(LPARAM)GetDlgItem(hwndDlg, IDC_MESSAGE)); 
-            updateMathWindow(hwndDlg, dat);
+            MTH_updateMathWindow(hwndDlg, dat);
         }
     #endif                
         dat->dwLastUpdate = GetTickCount();
@@ -4573,7 +4529,7 @@ quote_from_last:
 #ifdef __MATHMOD_SUPPORT					
                     //mathMod begin
 					if(myGlobals.m_MathModAvail && HIWORD(wParam) == EN_CHANGE)
-                        updateMathWindow(hwndDlg, dat);
+                        MTH_updateMathWindow(hwndDlg, dat);
 					//mathMod end
 #endif                     
                     if (HIWORD(wParam) == EN_CHANGE) {

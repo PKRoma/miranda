@@ -21,6 +21,10 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include "../commonheaders.h"
 #include "../resource.h"
 
+#ifdef __MATHMOD_SUPPORT
+	#include "../m_MathModule.h"
+#endif
+
 extern PSLWA pSetLayeredWindowAttributes;
 extern COLORREF g_ContainerColorKey;
 extern StatusItems_t StatusItems[];
@@ -147,7 +151,14 @@ static void Chat_UpdateWindowState(HWND hwndDlg, struct MessageWindowData *dat, 
 		UpdateTrayMenuState(dat, FALSE);
 		DM_SetDBButtonStates(hwndDlg, dat);
 
-		if (dat->dwFlagsEx & MWF_EX_DELAYEDSPLITTER) {
+#if defined(__MATHMOD_SUPPORT)
+        if(myGlobals.m_MathModAvail) {
+            CallService(MTH_Set_ToolboxEditHwnd,0,(LPARAM)GetDlgItem(hwndDlg, IDC_CHAT_MESSAGE)); 
+            MTH_updateMathWindow(hwndDlg, dat);
+        }
+#endif                
+
+        if (dat->dwFlagsEx & MWF_EX_DELAYEDSPLITTER) {
 			dat->dwFlagsEx &= ~MWF_EX_DELAYEDSPLITTER;
 			ShowWindow(dat->pContainer->hwnd, SW_RESTORE);
 			PostMessage(hwndDlg, DM_SPLITTERMOVEDGLOBAL, dat->wParam, dat->lParam);
@@ -2393,6 +2404,9 @@ LABEL_SHOWWINDOW:
 
         case IDC_CHAT_MESSAGE:
             //MessageBoxA(0, "command from message", "foo", MB_OK);
+            if(myGlobals.m_MathModAvail)
+                MTH_updateMathWindow(hwndDlg, dat);
+
 			if (HIWORD(wParam) == EN_CHANGE) {
 				if (dat->pContainer->hwndActive == hwndDlg)
 					UpdateReadChars(hwndDlg, dat);

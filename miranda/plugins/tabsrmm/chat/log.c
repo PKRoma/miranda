@@ -23,6 +23,10 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include <mbstring.h>
 #include <shlwapi.h>
 
+#ifdef __MATHMOD_SUPPORT
+    #include "../m_MathModule.h"
+#endif
+
 
 // The code for streaming the text is to a large extent copied from
 // the srmm module and then modified to fit the chat module.
@@ -687,7 +691,7 @@ void Log_StreamInEvent(HWND hwndDlg,  LOGINFO* lin, SESSION_INFO* si, BOOL bRedr
 
 	if (bRedraw || si->iType != GCW_CHATROOM || !si->bFilterEnabled || (si->iLogFilterFlags&lin->iType) != 0)
 	{
-		BOOL bFlag = FALSE;
+		BOOL bFlag = FALSE, fDoReplace;
 
 		ZeroMemory(&stream, sizeof(stream));
 		stream.pfnCallback = Log_StreamCallback;
@@ -733,13 +737,13 @@ void Log_StreamInEvent(HWND hwndDlg,  LOGINFO* lin, SESSION_INFO* si, BOOL bRedr
 
 		// do smileys
 		SendMessage(hwndRich, EM_EXGETSEL, (WPARAM)0, (LPARAM)&newsel);
-		if (myGlobals.g_SmileyAddAvail && (bRedraw
-			|| (lin->ptszText
+        fDoReplace = (bRedraw || (lin->ptszText
 			&& lin->iType != GC_EVENT_JOIN
 			&& lin->iType != GC_EVENT_NICK
 			&& lin->iType != GC_EVENT_ADDSTATUS
-			&& lin->iType != GC_EVENT_REMOVESTATUS )))
-		{
+			&& lin->iType != GC_EVENT_REMOVESTATUS ));
+
+		if (myGlobals.g_SmileyAddAvail && fDoReplace) {
 			SMADD_RICHEDIT3 sm = {0};
 
 			newsel.cpMin = sel.cpMin;
@@ -755,7 +759,31 @@ void Log_StreamInEvent(HWND hwndDlg,  LOGINFO* lin, SESSION_INFO* si, BOOL bRedr
 			CallService(MS_SMILEYADD_REPLACESMILEYS, 0, (LPARAM)&sm);
 		}
 
-		if (g_Settings.ClickableNicks) {
+#ifdef __MATHMOD_SUPPORT
+        if (myGlobals.m_MathModAvail && fDoReplace) {
+            TMathRicheditInfo mathReplaceInfo;
+            CHARRANGE mathNewSel;
+            mathNewSel.cpMin = sel.cpMin;
+
+            if(mathNewSel.cpMin < 0)
+                mathNewSel.cpMin = 0;
+
+            mathNewSel.cpMax = -1;
+
+            mathReplaceInfo.hwndRichEditControl = hwndRich;
+
+            if (!bRedraw) 
+                mathReplaceInfo.sel = &mathNewSel; 
+            else 
+                mathReplaceInfo.sel=0;
+
+            mathReplaceInfo.disableredraw = TRUE;
+            CallService(MATH_RTF_REPLACE_FORMULAE,0, (LPARAM)&mathReplaceInfo);
+			bFlag = TRUE;
+        }
+#endif
+
+        if (g_Settings.ClickableNicks) {
 			CHARFORMAT2 cf2 = {0};
 			FINDTEXTEX fi, fi2;
 

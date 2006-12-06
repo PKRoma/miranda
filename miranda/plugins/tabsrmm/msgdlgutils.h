@@ -90,6 +90,11 @@ void        GetMyNick(HWND hwndDlg, struct MessageWindowData *dat);
 int         FindRTLLocale(struct MessageWindowData *dat);
 HICON       MY_GetContactIcon(struct MessageWindowData *dat);
 
+// mathmod
+
+void        MTH_updatePreview(HWND hwndDlg, struct MessageWindowData *dat);
+void        MTH_updateMathWindow(HWND hwndDlg, struct MessageWindowData *dat);
+
 extern BOOL CALLBACK SelectContainerDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam);
 extern BOOL CALLBACK DlgProcContainerOptions(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam);
 

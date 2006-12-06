@@ -30,6 +30,10 @@ $Id$
 #include "commonheaders.h"
 #pragma hdrstop
 
+#ifdef __MATHMOD_SUPPORT
+	#include "m_MathModule.h"
+#endif
+
 extern      MYGLOBALS myGlobals;
 extern      NEN_OPTIONS nen_options;
 extern      LOGFONTA logfonts[MSGDLGFONTCOUNT + 2];
@@ -3071,4 +3075,50 @@ HICON MY_GetContactIcon(struct MessageWindowData *dat)
     }
     return CopyIcon(LoadSkinnedProtoIcon(dat->szProto, dat->wStatus));
 }
+
+#ifdef __MATHMOD_SUPPORT
+void MTH_updatePreview(HWND hwndDlg, struct MessageWindowData *dat)
+{	
+	TMathWindowInfo mathWndInfo;
+    HWND hwndEdit = GetDlgItem(hwndDlg, dat->bType == SESSIONTYPE_IM ? IDC_MESSAGE : IDC_CHAT_MESSAGE);
+	int len = GetWindowTextLengthA(hwndEdit);
+	RECT windRect;
+	char * thestr = malloc(len+5);
+
+	GetWindowTextA(hwndEdit, thestr, len+1);
+	GetWindowRect(dat->pContainer->hwnd,&windRect);
+	mathWndInfo.top=windRect.top;
+	mathWndInfo.left=windRect.left;
+	mathWndInfo.right=windRect.right;
+	mathWndInfo.bottom=windRect.bottom;
+
+	CallService(MTH_SETFORMULA,0,(LPARAM) thestr);
+	CallService(MTH_RESIZE,0,(LPARAM) &mathWndInfo);
+	free(thestr);
+}
+
+void MTH_updateMathWindow(HWND hwndDlg, struct MessageWindowData *dat)
+{
+    WINDOWPLACEMENT cWinPlace;
+
+    if(!myGlobals.m_MathModAvail)
+        return;
+    
+    MTH_updatePreview(hwndDlg, dat);
+    CallService(MTH_SHOW, 0, 0);
+    cWinPlace.length=sizeof(WINDOWPLACEMENT);
+    GetWindowPlacement(dat->pContainer->hwnd, &cWinPlace);
+    return;
+    /*
+    if (cWinPlace.showCmd == SW_SHOWMAXIMIZED)
+    {
+        RECT rcWindow;
+        GetWindowRect(hwndDlg, &rcWindow);
+        if(CallService(MTH_GET_PREVIEW_SHOWN,0,0))
+            MoveWindow(dat->pContainer->hwnd,rcWindow.left,rcWindow.top,rcWindow.right-rcWindow.left,GetSystemMetrics(SM_CYSCREEN)-CallService(MTH_GET_PREVIEW_HEIGHT ,0,0),1);
+        else
+            MoveWindow(dat->pContainer->hwnd,rcWindow.left,rcWindow.top,rcWindow.right-rcWindow.left,GetSystemMetrics(SM_CYSCREEN),1);
+    }*/
+}
+#endif
 
