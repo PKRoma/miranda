@@ -21,34 +21,35 @@
 //
 // -----------------------------------------------------------------------------
 
-typedef struct
-{
-  int   section;
-  DWORD name_hash;
-  char *name;
-  TCHAR *description;
-  TCHAR *default_file;
-  int   default_indx;
-  HICON icon;
-  int   cx, cy;
-
-  int default_icon_index;
-  HICON default_icon;
-  
-  int ref_count;
-  int temp;
-
-  TCHAR *temp_file;
-  HICON temp_icon;
-} IconItem;
-
 typedef struct 
 {
-  TCHAR *name;
-  DWORD name_hash;
-  int flags;
-} SectionItem;
+	TCHAR* name;
+	int    flags;
+	int    maxOrder;
+}
+	SectionItem;
 
+typedef struct
+{
+	char*        name;
+	SectionItem* section;
+	int          orderID;
+	TCHAR*       description;
+	TCHAR*       default_file;
+	int          default_indx;
+	HICON        icon;
+	int          cx, cy;
+			 
+	int          default_icon_index;
+	HICON        default_icon;
+			 
+	int          ref_count;
+	int          temp;
+			 
+	TCHAR*       temp_file;
+	HICON        temp_icon;
+}
+	IconItem;
 
 // extracticon.c
 UINT _ExtractIconEx(LPCTSTR lpszFile, int iconIndex, int cxIcon, int cyIcon, HICON *phicon, UINT flags);

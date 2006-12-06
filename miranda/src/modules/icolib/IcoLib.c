@@ -28,47 +28,40 @@
 
 HANDLE hEventIconsChanged;
 
-
 int InitSkin2Icons(void);
 void UninitSkin2Icons(void);
 BOOL CALLBACK DlgProcIcoLibOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam);
 
-
 static int SkinSystemShutdown(WPARAM wParam,LPARAM lParam)
 {
-  UninitSkin2Icons();
-  return 0;
+	UninitSkin2Icons();
+	return 0;
 }
-
 
 static UINT iconsExpertOnlyControls[]={IDC_IMPORT};
 static int SkinOptionsInit(WPARAM wParam,LPARAM lParam)
 {
-  OPTIONSDIALOGPAGE odp = {0};
+	OPTIONSDIALOGPAGE odp = {0};
 
-  odp.cbSize = sizeof(odp);
-  odp.hInstance = GetModuleHandle(NULL);
-  odp.flags = ODPF_BOLDGROUPS | ODPF_TCHAR;
-  odp.position = -180000000;
-  odp.pszTemplate = MAKEINTRESOURCEA(IDD_OPT_ICOLIB);
-  odp.ptszTitle = TranslateT("Icons");
-  odp.ptszGroup = TranslateT("Customize");
-  odp.pfnDlgProc = DlgProcIcoLibOpts;
-  odp.expertOnlyControls = iconsExpertOnlyControls;
-  odp.nExpertOnlyControls = SIZEOF(iconsExpertOnlyControls);
-  CallService(MS_OPT_ADDPAGE, wParam, (LPARAM)&odp);
-
-  return 0;
+	odp.cbSize = sizeof(odp);
+	odp.hInstance = GetModuleHandle(NULL);
+	odp.flags = ODPF_BOLDGROUPS | ODPF_TCHAR;
+	odp.position = -180000000;
+	odp.pszTemplate = MAKEINTRESOURCEA(IDD_OPT_ICOLIB);
+	odp.ptszTitle = TranslateT("Icons");
+	odp.ptszGroup = TranslateT("Customize");
+	odp.pfnDlgProc = DlgProcIcoLibOpts;
+	odp.expertOnlyControls = iconsExpertOnlyControls;
+	odp.nExpertOnlyControls = SIZEOF(iconsExpertOnlyControls);
+	CallService(MS_OPT_ADDPAGE, wParam, (LPARAM)&odp);
+	return 0;
 }
-
 
 static int SkinSystemModulesLoaded(WPARAM wParam,LPARAM lParam)
 {
-  HookEvent(ME_OPT_INITIALISE, SkinOptionsInit);
-
-  return 0;
+	HookEvent(ME_OPT_INITIALISE, SkinOptionsInit);
+	return 0;
 }
-
 
 //
 //   Miranda's module load/unload code
@@ -76,10 +69,10 @@ static int SkinSystemModulesLoaded(WPARAM wParam,LPARAM lParam)
 
 int LoadIcoLibModule( void )
 {
-  HookEvent(ME_SYSTEM_MODULESLOADED, SkinSystemModulesLoaded);
-  HookEvent(ME_SYSTEM_SHUTDOWN, SkinSystemShutdown);
+	HookEvent(ME_SYSTEM_MODULESLOADED, SkinSystemModulesLoaded);
+	HookEvent(ME_SYSTEM_SHUTDOWN, SkinSystemShutdown);
 
-  if (InitSkin2Icons()) return 1;
+	if (InitSkin2Icons()) return 1;
 
-  return 0;
+	return 0;
 }
