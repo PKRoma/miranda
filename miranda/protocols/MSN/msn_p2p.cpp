@@ -900,6 +900,16 @@ static void sttInitFileTransfer(
 	{	const char* p = tFileInfo2[ "Context" ];
 		if ( p ) {
 			int cbLen = strlen( p );
+			if ( cbLen & 3 ) { // fix for stupid Kopete's base64 encoder
+				char* p1 = ( char* )alloca( cbLen+5 );
+				memcpy( p1, p, cbLen );
+				p = p1;
+				p1 += cbLen; 
+				for ( int i = 4 - (cbLen & 3); i > 0; i--, p1++, cbLen++ )
+					*p1 = '=';
+				*p1 = 0;
+			}
+
 			szContext = ( char* )alloca( cbLen+1 );
 
 			NETLIBBASE64 nlb = { ( char* )p, cbLen, ( PBYTE )szContext, cbLen };
