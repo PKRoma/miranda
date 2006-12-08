@@ -140,7 +140,7 @@ static int NetlibRegisterUser(WPARAM wParam,LPARAM lParam)
 	thisUser->handleType=NLH_USER;
 	thisUser->user=*nlu;
 	if((thisUser->user.szSettingsModule=mir_strdup(nlu->szSettingsModule))==NULL
-	   || (nlu->szDescriptiveName && (thisUser->user.szDescriptiveName=mir_strdup(nlu->szDescriptiveName))==NULL)
+	   || (nlu->szDescriptiveName && (thisUser->user.ptszDescriptiveName = a2t(nlu->szDescriptiveName))==NULL)
 	   || (nlu->szHttpGatewayUserAgent && (thisUser->user.szHttpGatewayUserAgent=mir_strdup(nlu->szHttpGatewayUserAgent))==NULL)) {
 		SetLastError(ERROR_OUTOFMEMORY);
 		return (int)(HANDLE)NULL;

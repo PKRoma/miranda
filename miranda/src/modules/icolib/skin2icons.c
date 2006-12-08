@@ -30,9 +30,6 @@
 #include "IcoLib.h"
 #include "../database/dblists.h"
 
-char* u2a( wchar_t* src );
-wchar_t* a2u( char* src );
-
 static HANDLE hIcons2ChangedEvent;
 static HICON hIconBlank = NULL;
 

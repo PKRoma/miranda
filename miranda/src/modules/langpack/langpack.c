@@ -360,3 +360,46 @@ int LoadLangPackModule(void)
 	}
 	return 0;
 }
+
+/////////////////////////////////////////////////////////////////////////////////////////
+// Langpack ANSI <-> UNICODE transformation routines
+
+TCHAR* a2t( const char* str )
+{
+	if ( str == NULL )
+		return NULL;
+
+	#if defined( _UNICODE )
+		return LangPackPcharToTchar( str );
+	#else
+		return mir_strdup( str );
+	#endif
+}
+
+char* u2a( wchar_t* src )
+{
+	int codepage = LangPackGetDefaultCodePage();
+
+	int cbLen = WideCharToMultiByte( codepage, 0, src, -1, NULL, 0, NULL, NULL );
+	char* result = ( char* )mir_alloc( cbLen+1 );
+	if ( result == NULL )
+		return NULL;
+
+	WideCharToMultiByte( codepage, 0, src, -1, result, cbLen, NULL, NULL );
+	result[ cbLen ] = 0;
+	return result;
+}
+
+wchar_t* a2u( char* src )
+{
+	int codepage = LangPackGetDefaultCodePage();
+
+	int cbLen = MultiByteToWideChar( codepage, 0, src, -1, NULL, 0 );
+	wchar_t* result = ( wchar_t* )mir_alloc( sizeof( wchar_t )*(cbLen+1));
+	if ( result == NULL )
+		return NULL;
+
+	MultiByteToWideChar( codepage, 0, src, -1, result, cbLen );
+	result[ cbLen ] = 0;
+	return result;
+}

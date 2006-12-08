@@ -270,7 +270,7 @@ static BOOL CALLBACK DlgProcNetlibOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LP
 				tempSettings[iUser].szSettingsModule=mir_strdup(netlibUser[iUser]->user.szSettingsModule);
 				CopySettingsStruct(&tempSettings[iUser].settings,&netlibUser[iUser]->settings);
 				if(netlibUser[iUser]->user.flags&NUF_NOOPTIONS) continue;
-				iItem=SendDlgItemMessageA(hwndDlg,IDC_NETLIBUSERS,CB_ADDSTRING,0,(LPARAM)netlibUser[iUser]->user.szDescriptiveName);
+				iItem = SendDlgItemMessage(hwndDlg,IDC_NETLIBUSERS,CB_ADDSTRING,0,(LPARAM)netlibUser[iUser]->user.ptszDescriptiveName);
 				SendDlgItemMessage(hwndDlg,IDC_NETLIBUSERS,CB_SETITEMDATA,iItem,iUser);
 			}
 			LeaveCriticalSection(&csNetlibUser);
