@@ -1153,7 +1153,7 @@ static int MsnUserIsTyping(WPARAM wParam, LPARAM lParam)
 
 	ThreadData* T = MSN_GetThreadByContact( hContact );
 	if ( T == NULL ) {
-		if ( MSN_GetUnconnectedThread( hContact ) == NULL )
+		if ( MsgQueue_CheckContact( hContact ) == NULL )
 			msnNsThread->sendPacket( "XFR", "SB" );
 
 		MsgQueue_Add( hContact, 'U', tCommand, -1 );

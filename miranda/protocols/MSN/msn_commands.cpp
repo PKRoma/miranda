@@ -587,6 +587,8 @@ void MSN_ReceiveMessage( ThreadData* info, char* cmdString, char* params )
 			p += tPrefixLen*sizeof( wchar_t );
 		}
 
+		MSN_CallService( MS_PROTO_CONTACTISTYPING, WPARAM( tContact ), 0 );
+
 		if ( info->mChatID[0] ) {
 			GCDEST gcd = { msnProtocolName, NULL, GC_EVENT_MESSAGE };
 			gcd.ptszID = info->mChatID;
@@ -1565,7 +1567,7 @@ LBL_InvalidCommand:
 
 		case ' TSL':	//********* LST: section 7.6 List Retrieval And Property Management
 		{
-			int	listId;
+			int	listId = 0;
 			char *userEmail = NULL, *userNick = NULL, *userId = NULL, *groupId = NULL;
 			char* tWords[ 10 ];
 

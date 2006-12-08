@@ -278,14 +278,17 @@ LBL_Continue:
 
 			GetDlgItemTextA( hwndDlg, IDC_PASSWORD, password, sizeof( password ));
 			MSN_CallService( MS_DB_CRYPT_ENCODESTRING, sizeof( password ),( LPARAM )password );
-			if ( DBGetContactSetting( (char *)"Password", msnProtocolName, NULL, &dbv ))
-				dbv.pszVal = NULL;
-			if ( lstrcmpA( password, dbv.pszVal )) {
+			if ( !DBGetContactSetting( NULL, msnProtocolName, "Password", &dbv )) {
+				if ( lstrcmpA( password, dbv.pszVal )) {
+					reconnectRequired = true;
+					MSN_SetString( NULL, "Password", password );
+				}
+				MSN_FreeVariant( &dbv );
+			}
+			else {
 				reconnectRequired = true;
 				MSN_SetString( NULL, "Password", password );
 			}
-			if ( dbv.pszVal != NULL )
-				MSN_FreeVariant( &dbv );
 
 			GetDlgItemText( hwndDlg, IDC_HANDLE2, screenStr, sizeof( screenStr ));
 			if	( !MSN_GetStringT( "Nick", NULL, &dbv )) {

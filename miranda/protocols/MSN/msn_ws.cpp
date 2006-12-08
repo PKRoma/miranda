@@ -97,7 +97,10 @@ bool ThreadData::isTimeout( void )
 
 			res = MSN_CallService( MS_MSG_GETWINDOWDATA, ( WPARAM )&msgWinInData, ( LPARAM )&msgWinData ) != 0;
 			res = res || msgWinData.hwndWindow == NULL;
-	}	}
+		}
+		else
+			res = true;
+	}
 
 	if ( res ) 
 		MSN_DebugLog( "Dropping the idle switchboard due to inactivity" );

@@ -23,7 +23,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 #include "msn_global.h"
 
-static const char defaultPassportUrl[] = "https://loginnet.passport.com/RST.srf";
+static const char defaultPassportUrl[] = "https://login.live.com/RST.srf";
 
 static const char authPacket[] =
 "<?xml version=\"1.0\" encoding=\"UTF-8\"?>"
@@ -223,11 +223,12 @@ char* SSL_WinInet::getSslResult( char* parUrl, char* parAuthInfo )
 			mir_snprintf( tBuffer, SSL_BUF_SIZE, "https=http://%s:%d http=http://%s:%d", 
 				szProxy, tPortNumber, szProxy, tPortNumber );
 
-			tNetHandle = f_InternetOpen( "MSMSGS", INTERNET_OPEN_TYPE_PROXY, tBuffer, NULL, 0 );
+			tNetHandle = f_InternetOpen( MSN_USER_AGENT, INTERNET_OPEN_TYPE_PROXY, tBuffer, NULL, 0 );
 		}
-		else tNetHandle = f_InternetOpen( "MSMSGS", INTERNET_OPEN_TYPE_PRECONFIG, NULL, NULL, 0 );
+		else tNetHandle = f_InternetOpen( MSN_USER_AGENT, INTERNET_OPEN_TYPE_PRECONFIG, NULL, NULL, 0 );
 	}
-	else tNetHandle = f_InternetOpen( "MSMSGS", INTERNET_OPEN_TYPE_DIRECT, NULL, NULL, 0 );
+	else 
+		tNetHandle = f_InternetOpen( MSN_USER_AGENT, INTERNET_OPEN_TYPE_DIRECT, NULL, NULL, 0 );
 
 	if ( tNetHandle == NULL ) {
 		MSN_DebugLog( "InternetOpen() failed" );
@@ -263,8 +264,7 @@ char* SSL_WinInet::getSslResult( char* parUrl, char* parAuthInfo )
 	HINTERNET tUrlHandle = f_InternetConnect( tNetHandle, parUrl, INTERNET_DEFAULT_HTTPS_PORT, "", "", INTERNET_SERVICE_HTTP, 0, 0 );
 	if ( tUrlHandle != NULL ) 
 	{
-		HINTERNET tRequest = f_HttpOpenRequest( tUrlHandle, "POST", tObjectName, 
-			parAuthInfo ? NULL: HTTP_VERSIONA, NULL, NULL, tFlags, NULL );
+		HINTERNET tRequest = f_HttpOpenRequest( tUrlHandle, "POST", tObjectName, NULL, NULL, NULL, tFlags, NULL );
 		if ( tRequest != NULL ) {
 			DWORD tBufSize;
 
@@ -278,7 +278,8 @@ char* SSL_WinInet::getSslResult( char* parUrl, char* parAuthInfo )
 
 		static const char headers[] =  "Accept: txt/*\r\nConnection: close\r\n";
 LBL_Restart:
-			MSN_DebugLog( "Sending request...\n%s", parAuthInfo );
+			MSN_DebugLog( "Sending request..." );
+//			MSN_DebugLog( parAuthInfo );
 			DWORD tErrorCode = f_HttpSendRequest( tRequest, headers, strlen(headers), parAuthInfo, strlen( parAuthInfo ));
 			if ( tErrorCode == 0 ) {
 				TWinErrorCode errCode;
@@ -522,11 +523,11 @@ char* SSL_OpenSsl::getSslResult( char* parUrl, char* parAuthInfo )
 				int nBytes = mir_snprintf( buf, SSL_BUF_SIZE,
 					"POST /%s HTTP/1.1\r\n"
 					"Accept: text/*\r\n"
-					"User-Agent: Mozilla/4.0 (compatible; MSIE 6.0; Windows NT 5.1)\r\n"
+					"User-Agent: %s\r\n"
 					"Content-Length: %u\r\n"
 					"Host: %s\r\n"
 					"Connection: close\r\n"
-					"Cache-Control: no-cache\r\n\r\n%s", path, strlen( parAuthInfo ), url+8, parAuthInfo );
+					"Cache-Control: no-cache\r\n\r\n%s", path, MSN_USER_AGENT, strlen( parAuthInfo ), url+8, parAuthInfo );
 
 //				MSN_DebugLog( "Sending SSL query:\n%s", buf );
 				pfn_SSL_write( ssl, buf, strlen( buf ));
@@ -583,7 +584,7 @@ int MSN_GetPassportAuth( char* authChallengeInfo, char*& parResult )
 	}
 
 	char szPassword[ 100 ];
-	MSN_GetStaticString( "Password", NULL, szPassword, sizeof szPassword );
+	MSN_GetStaticString( "Password", NULL, szPassword, sizeof( szPassword ));
 	MSN_CallService( MS_DB_CRYPT_DECODESTRING, strlen( szPassword )+1, ( LPARAM )szPassword );
 	szPassword[ 16 ] = 0;
 	char* szEncPassword = HtmlEncode(szPassword);
