@@ -217,14 +217,17 @@ LBL_Continue:
 
 			GetDlgItemTextA( hwndDlg, IDC_PASSWORD, password, sizeof( password ));
 			MSN_CallService( MS_DB_CRYPT_ENCODESTRING, sizeof( password ),( LPARAM )password );
-			if ( DBGetContactSetting( (char *)"Password", msnProtocolName, NULL, &dbv ))
-				dbv.pszVal = NULL;
-			if ( lstrcmpA( password, dbv.pszVal )) {
+			if ( !DBGetContactSetting( NULL, msnProtocolName, "Password", &dbv )) {
+				if ( lstrcmpA( password, dbv.pszVal )) {
+					reconnectRequired = true;
+					MSN_SetString( NULL, "Password", password );
+				}
+				MSN_FreeVariant( &dbv );
+			}
+			else {
 				reconnectRequired = true;
 				MSN_SetString( NULL, "Password", password );
 			}
-			if ( dbv.pszVal != NULL )
-				MSN_FreeVariant( &dbv );
 
 			GetDlgItemText( hwndDlg, IDC_HANDLE2, screenStr, sizeof( screenStr ));
 			if	( !MSN_GetStringT( "Nick", NULL, &dbv )) {
@@ -328,8 +331,14 @@ static BOOL CALLBACK DlgProcMsnConnOpts(HWND hwndDlg, UINT msg, WPARAM wParam, L
 	case WM_COMMAND:
 		switch ( LOWORD( wParam )) {
 		case IDC_RESETSERVER:
-			SetDlgItemTextA( hwndDlg, IDC_LOGINSERVER, MSN_DEFAULT_LOGIN_SERVER );
-			SetDlgItemInt(  hwndDlg, IDC_MSNPORT,  1863, FALSE );
+			if ( IsDlgButtonChecked( hwndDlg, IDC_USEGATEWAY )) {
+				SetDlgItemTextA( hwndDlg, IDC_LOGINSERVER, MSN_DEFAULT_GATEWAY );
+				SetDlgItemInt( hwndDlg, IDC_MSNPORT, 80, FALSE );
+			} 
+			else {
+				SetDlgItemTextA( hwndDlg, IDC_LOGINSERVER, MSN_DEFAULT_LOGIN_SERVER );
+				SetDlgItemInt(  hwndDlg, IDC_MSNPORT,  1863, FALSE );
+			}
 			goto LBL_Apply;
 		}
 

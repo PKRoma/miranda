@@ -587,6 +587,8 @@ void MSN_ReceiveMessage( ThreadData* info, char* cmdString, char* params )
 			p += tPrefixLen*sizeof( wchar_t );
 		}
 
+		MSN_CallService( MS_PROTO_CONTACTISTYPING, WPARAM( tContact ), 0 );
+
 		if ( info->mChatID[0] ) {
 			GCDEST gcd = { msnProtocolName, NULL, GC_EVENT_MESSAGE };
 			gcd.ptszID = info->mChatID;
@@ -1397,9 +1399,9 @@ LBL_InvalidCommand:
 					if ( dwValue & 0x200 )
 						MSN_SetString( hContact, "MirVer", "Webmessenger" );
 					else if ( dwValue == 1342177280 )
-						MSN_SetString( hContact, "MirVer", "Miranda IM 0.5.x" );
+						MSN_SetString( hContact, "MirVer", "Miranda IM 0.5.x (MSN v.0.5.x)" );
 					else if ( dwValue == 805306404 )
-						MSN_SetString( hContact, "MirVer", "Miranda IM 0.4.x" );
+						MSN_SetString( hContact, "MirVer", "Miranda IM 0.4.x (MSN v.0.4.x)" );
 					else if (( dwValue & 0x60000000 ) == 0x60000000 )
 						MSN_SetString( hContact, "MirVer", "MSN 8.x" );
 					else if (( dwValue & 0x50000000 ) == 0x50000000 )
@@ -1565,13 +1567,9 @@ LBL_InvalidCommand:
 
 		case ' TSL':	//********* LST: section 7.6 List Retrieval And Property Management
 		{
-			int	listId;
+			int	listId = 0;
 			char *userEmail = NULL, *userNick = NULL, *userId = NULL, *groupId = NULL;
-
-			union	{
-				char* tWords[ 10 ];
-				struct { char *userEmail, *userNick, *list, *groupid; } data;
-			};
+			char* tWords[ 10 ];
 
 			int tNumTokens = sttDivideWords( params, 10, tWords );
 
@@ -1589,7 +1587,7 @@ LBL_InvalidCommand:
 				else {
 					listId = atol( p );
 					if ( i < tNumTokens-1 )
-						groupId = tWords[i+1];
+						groupId = tWords[tNumTokens-1];
 					break;
 			}	}
 
