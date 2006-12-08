@@ -376,7 +376,7 @@ TCHAR* a2t( const char* str )
 	#endif
 }
 
-char* u2a( wchar_t* src )
+char* u2a( const wchar_t* src )
 {
 	int codepage = LangPackGetDefaultCodePage();
 
@@ -390,7 +390,7 @@ char* u2a( wchar_t* src )
 	return result;
 }
 
-wchar_t* a2u( char* src )
+wchar_t* a2u( const char* src )
 {
 	int codepage = LangPackGetDefaultCodePage();
 

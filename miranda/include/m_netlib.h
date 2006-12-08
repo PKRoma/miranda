@@ -62,7 +62,10 @@ typedef PBYTE (*NETLIBHTTPGATEWAYUNWRAPRECVPROC)(NETLIBHTTPREQUEST *nlhr,PBYTE b
 typedef struct {
 	int cbSize;
 	char *szSettingsModule;         //used for db settings and log
-	char *szDescriptiveName;          //used in options dialog, already translated
+	union {
+		char *szDescriptiveName;          //used in options dialog, already translated
+		TCHAR *ptszDescriptiveName;
+	};
 	DWORD flags;
 	char *szHttpGatewayHello;
 	char *szHttpGatewayUserAgent;		 //can be NULL to send no user-agent, also used by HTTPS proxies
