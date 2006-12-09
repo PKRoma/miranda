@@ -1732,8 +1732,8 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
 					if ((dat->wStatus != dat->wOldStatus || lParam != 0)
 						&& DBGetContactSettingByte(NULL, SRMMMOD, SRMSGSET_SHOWSTATUSCH, SRMSGDEFSET_SHOWSTATUSCH)) {
 						DBEVENTINFO dbei;
-						TCHAR buffer[450];
-						char blob[1000];
+						TCHAR buffer[512];
+						char blob[2048];
 						HANDLE hNewEvent;
 						int iLen;
 						TCHAR *szOldStatus = mir_tstrdup((TCHAR *) CallService(MS_CLIST_GETSTATUSMODEDESCRIPTION, (WPARAM) dat->wOldStatus, GCMDF_TCHAR));
@@ -1810,20 +1810,18 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
 		SendMessage(hwndDlg, DM_REMAKELOG, 0, 0);
 		break;
 	case DM_SWITCHUNICODE:
+#ifdef _UNICODE
 		{
 			StatusBarData sbd;
 			dat->flags ^= SMF_DISABLE_UNICODE;
 			sbd.iItem = 2;
 			sbd.iFlags = SBDF_TEXT | SBDF_ICON;
-#ifdef _UNICODE
 			sbd.hIcon = g_dat->hIcons[(dat->flags & SMF_DISABLE_UNICODE) ? SMF_ICON_UNICODEOFF : SMF_ICON_UNICODEON];
-#else
-			sbd.hIcon = g_dat->hIcons[SMF_ICON_UNICODEOFF];
-#endif
 			sbd.pszText = _T("");
 			SendMessage(dat->hwndParent, CM_UPDATESTATUSBAR, (WPARAM)&sbd, (LPARAM)hwndDlg);
 			SendMessage(hwndDlg, DM_REMAKELOG, 0, 0);
 		}
+#endif
 		break;
 	case DM_SWITCHRTL:
 		{
@@ -2083,7 +2081,11 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
 			SendMessage(dat->hwndParent, CM_UPDATESTATUSBAR, (WPARAM)&sbd, (LPARAM)hwndDlg);
 			UpdateReadChars(hwndDlg, dat);
 			sbd.iItem = 2;
+#if defined ( _UNICODE )
 			sbd.hIcon = g_dat->hIcons[(dat->flags & SMF_DISABLE_UNICODE) ? SMF_ICON_UNICODEOFF : SMF_ICON_UNICODEON];
+#else
+			sbd.hIcon = g_dat->hIcons[SMF_ICON_UNICODEOFF];
+#endif
 			sbd.pszText = _T("");
 			SendMessage(dat->hwndParent, CM_UPDATESTATUSBAR, (WPARAM)&sbd, (LPARAM)hwndDlg);
 		}

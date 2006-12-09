@@ -255,8 +255,22 @@ static void AddEventToBuffer(char **buffer, int *bufferEnd, int *bufferAlloced, 
 	if ( streamData && streamData->lin ) {
 		switch ( streamData->lin->iType ) {
 		case GC_EVENT_MESSAGE:
-			if ( streamData->lin->ptszText )
-				Log_AppendRTF( streamData, buffer, bufferEnd, bufferAlloced, _T("%s"), streamData->lin->ptszText );
+			if ( streamData->lin->ptszText ) {
+				TCHAR *ptszText = streamData->lin->ptszText;
+				/* TODO: convert code page */
+				//streamData->si
+		#if defined( _UNICODE )
+				if (streamData->si->codePage != CP_ACP) {
+					char *aText = t2acp(streamData->lin->ptszText, CP_ACP);
+					TCHAR *wText = a2tcp(aText, streamData->si->codePage);
+					Log_AppendRTF( streamData, buffer, bufferEnd, bufferAlloced, _T("%s"), wText );
+					mir_free(aText);
+					mir_free(wText);
+					break;
+				}
+		#endif
+				Log_AppendRTF( streamData, buffer, bufferEnd, bufferAlloced, _T("%s"), ptszText );
+			}
 			break;
 		case GC_EVENT_ACTION:
 			if ( streamData->lin->ptszNick && streamData->lin->ptszText)
