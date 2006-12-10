@@ -62,10 +62,10 @@ char* u2a( const wchar_t* src, int codepage )
 	return result;
 }
 
-char* a2u( const char* src, int codepage )
+wchar_t* a2u( const char* src, int codepage )
 {
 	int cbLen = MultiByteToWideChar( codepage, 0, src, -1, NULL, 0 );
-	wchar_t* result = ( wchar_t* )mir_alloc( sizeof(wchar_t)cbLen+1 );
+	wchar_t* result = ( wchar_t* )mir_alloc( sizeof(wchar_t)*(cbLen+1));
 	if ( result == NULL )
 		return NULL;
 	MultiByteToWideChar( codepage, 0, src, -1, result, cbLen );

@@ -31,5 +31,5 @@ extern TCHAR *a2tcp(const char *text, int cp);
 extern char* t2a(const TCHAR* src);
 extern char* t2acp(const TCHAR* src, int cp);
 extern char* u2a( const wchar_t* src, int codepage );
-extern char* a2u( const char* src, int codepage );
+extern wchar_t* a2u( const char* src, int codepage );
 #endif
