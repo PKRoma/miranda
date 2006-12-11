@@ -39,6 +39,7 @@ static char *relnotes[] = {
     "\\par\t\\b\\ul1 Release notes for version 1.1.0.14\\b0\\ul0\\par ",
     "*\tMore work on clickable links in group chats.\\par",
     "*\tInactive status bar icons are now painted with high tranparency to appear dimmed.\\par",
+    "*\tSupport for new mathmod plugin and added mathmod parsing to group chats (needs to be enabled on the group chat options page).\\par",
     NULL
 };
 

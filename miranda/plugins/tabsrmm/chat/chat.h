@@ -345,6 +345,7 @@ struct GlobalLogSettings_t {
 	BYTE        ScaleIcons;
 	BYTE        UseDividers;
 	BYTE        DividersUsePopupConfig;
+    BYTE        MathMod;
 	COLORREF    nickColors[7];
 	HBRUSH      SelectionBGBrush;
 };

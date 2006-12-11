@@ -760,7 +760,7 @@ void Log_StreamInEvent(HWND hwndDlg,  LOGINFO* lin, SESSION_INFO* si, BOOL bRedr
 		}
 
 #ifdef __MATHMOD_SUPPORT
-        if (myGlobals.m_MathModAvail && fDoReplace) {
+        if (g_Settings.MathMod && fDoReplace) {
             TMathRicheditInfo mathReplaceInfo;
             CHARRANGE mathNewSel;
             mathNewSel.cpMin = sel.cpMin;

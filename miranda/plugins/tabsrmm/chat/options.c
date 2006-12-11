@@ -22,6 +22,10 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include <shlobj.h>
 #include <shlwapi.h>
 
+#ifdef __MATHMOD_SUPPORT
+	#include "../m_MathModule.h"
+#endif
+
 extern HBRUSH 			hListBkgBrush;
 extern HICON			hIcons[30];	
 extern FONTINFO			aFonts[OPTIONS_FONTCOUNT];
@@ -147,7 +151,8 @@ static struct branch_t branch2[] = {
     {_T("Colorize nicknames (not when using clickable nicknames)"), "ColorizeNicks", 0,0, NULL},
     {_T("Scale down icons to 10x10 pixels in the chat log"), "ScaleIcons", 0,1, NULL},
     {_T("Draw dividers to mark inactivity"), "UseDividers", 0,1, NULL},
-    {_T("Use the containers popup configuration to place dividers"), "DividersUsePopupConfig", 0,1, NULL}
+    {_T("Use the containers popup configuration to place dividers"), "DividersUsePopupConfig", 0,1, NULL},
+    {_T("Support math module plugin"), "MathModSupport", 0,0, NULL}
 };
 static struct branch_t branch3[] = {
 	{_T("Show topic changes"), "FilterFlags", GC_EVENT_TOPIC, 0, NULL},
@@ -1378,6 +1383,7 @@ void LoadGlobalSettings(void)
 	g_Settings.ScaleIcons = DBGetContactSettingByte(NULL, "Chat", "ScaleIcons", 1);
 	g_Settings.UseDividers = DBGetContactSettingByte(NULL, "Chat", "UseDividers", 1);
 	g_Settings.DividersUsePopupConfig = DBGetContactSettingByte(NULL, "Chat", "DividersUsePopupConfig", 1);
+    g_Settings.MathMod = ServiceExists(MATH_RTF_REPLACE_FORMULAE) && DBGetContactSettingByte(NULL, "Chat", "MathModSupport", 0);
 
 	if (hListBkgBrush)
 		DeleteObject(hListBkgBrush);

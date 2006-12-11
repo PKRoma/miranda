@@ -152,7 +152,7 @@ static void Chat_UpdateWindowState(HWND hwndDlg, struct MessageWindowData *dat, 
 		DM_SetDBButtonStates(hwndDlg, dat);
 
 #if defined(__MATHMOD_SUPPORT)
-        if(myGlobals.m_MathModAvail) {
+        if(g_Settings.MathMod) {
             CallService(MTH_Set_ToolboxEditHwnd,0,(LPARAM)GetDlgItem(hwndDlg, IDC_CHAT_MESSAGE)); 
             MTH_updateMathWindow(hwndDlg, dat);
         }
@@ -2404,7 +2404,7 @@ LABEL_SHOWWINDOW:
 
         case IDC_CHAT_MESSAGE:
             //MessageBoxA(0, "command from message", "foo", MB_OK);
-            if(myGlobals.m_MathModAvail)
+            if(g_Settings.MathMod)
                 MTH_updateMathWindow(hwndDlg, dat);
 
 			if (HIWORD(wParam) == EN_CHANGE) {

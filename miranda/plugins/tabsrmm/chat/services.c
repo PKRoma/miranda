@@ -19,6 +19,10 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 */
 #include "../commonheaders.h"
 
+#ifdef __MATHMOD_SUPPORT
+	#include "../m_MathModule.h"
+#endif
+
 extern HANDLE		hMessageWindowList;
 extern BOOL			IEviewInstalled;
 extern int          g_chat_integration_enabled;
@@ -117,6 +121,8 @@ int Chat_ModulesLoaded(WPARAM wParam,LPARAM lParam)
 	CList_SetAllOffline(TRUE);
 
 	g_chat_fully_initialized = TRUE;
+
+    g_Settings.MathMod = ServiceExists(MATH_RTF_REPLACE_FORMULAE) && DBGetContactSettingByte(NULL, "Chat", "MathModSupport", 0);
 	return 0;
 }
 
