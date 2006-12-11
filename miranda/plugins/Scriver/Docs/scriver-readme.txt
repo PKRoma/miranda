@@ -73,7 +73,7 @@ created. CTRL key needs to be pressed only when a tab is being dropped.
 6. Change Log
 -------------
 2.5.9.10
-+ separate sizes for single and group chats
++ separate dimensions for single and group chats
 + codepage selection in group chats (Unicode version only)
 * bugfixes
 2.5.9.9
