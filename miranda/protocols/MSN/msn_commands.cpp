@@ -49,6 +49,7 @@ char* sid = NULL;
 char* kv = NULL;
 char* MSPAuth = NULL;
 char* passport = NULL;
+char* urlId = NULL;
 char* profileURL = NULL;
 char* rru = NULL;
 extern HANDLE	 hMSNNudge;
@@ -1643,9 +1644,13 @@ LBL_InvalidCommand:
 
 				if ( MyOptions.ManageServer ) {
 					if ( groupId != NULL ) {
-						char* p = strchr( groupId, ',' );
-						if ( p != NULL )
-							*p = 0;
+						char *p = groupId;
+						while ( p != NULL ) {
+							char *q = strchr( groupId, ',' );
+							if ( q != NULL ) *(q++) = 0;
+							if ( p != groupId ) msnNsThread->sendPacket( "REM", "FL %s %s", userId, p );
+							p = q;
+						}
 
 						MSN_SetString( sttListedContact, "GroupID", groupId );
 
@@ -1842,6 +1847,7 @@ LBL_InvalidCommand:
 			if ( trid == tridUrlInbox ) {
 				replaceStr( passport, data.passport );
 				replaceStr( rru, data.rru );
+				replaceStr( urlId, data.urlID );
 				tridUrlInbox = -1;
 			}
 			else if ( trid == tridUrlEdit ) {
@@ -1868,7 +1874,11 @@ LBL_InvalidCommand:
 					break;
 				}
 
-				HANDLE hContact = MsgQueue_GetNextRecipient();
+				HANDLE hContact;
+				do {
+					hContact = MsgQueue_GetNextRecipient();
+				} while ( hContact != NULL && MSN_GetUnconnectedThread( hContact ) != NULL );
+
 				if ( hContact == NULL ) { //can happen if both parties send first message at the same time
 					MSN_DebugLog( "USR (SB) internal: thread created for no reason" );
 					info->sendPacket( "OUT", NULL );
@@ -1994,7 +2004,6 @@ LBL_InvalidCommand:
 
 				MSN_DebugLog( "Switching to notification server '%s'...", data.newServer );
 				newThread->startThread(( pThreadFunc )MSNServerThread );
-				//sl = time(NULL); //for hotmail
 				return 1;  //kill the old thread
 			}
 

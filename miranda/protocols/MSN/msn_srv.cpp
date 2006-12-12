@@ -130,12 +130,15 @@ LPCSTR MSN_GetGroupByNumber( int pNumber )
 
 void MSN_MoveContactToGroup( HANDLE hContact, const char* grpName )
 {
-	LPCSTR szId;
-	char szContactID[ 100 ], szGroupID[ 100 ];
-	if ( MSN_GetStaticString( "ID", hContact, szContactID, sizeof szContactID ))
+	if ( strcmp( grpName, "MetaContacts Hidden Group" ) == 0 )
 		return;
 
-	if ( MSN_GetStaticString( "GroupID", hContact, szGroupID, sizeof szGroupID ))
+	LPCSTR szId;
+	char szContactID[ 100 ], szGroupID[ 100 ];
+	if ( MSN_GetStaticString( "ID", hContact, szContactID, sizeof( szContactID )))
+		return;
+
+	if ( MSN_GetStaticString( "GroupID", hContact, szGroupID, sizeof( szGroupID )))
 		szGroupID[ 0 ] = 0;
 
 	bool bInsert = szGroupID[0] == 0, bDelete = szGroupID[0] != 0;

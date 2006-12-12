@@ -308,10 +308,9 @@ ThreadData* __stdcall MSN_GetThreadByContact( HANDLE hContact, TInfoType type )
 		if ( T->mJoinedCount == 0 || T->mJoinedContacts == NULL || T->s == NULL || T->mType != type )
 			continue;
 
-		if ( T->mJoinedContacts[0] == hContact && T->mInitialContact == NULL ) {
+		if ( T->mJoinedContacts[0] == hContact && T->mInitialContact == NULL )
 			result = T;
-			break;
-	}	}
+	}
 
 	LeaveCriticalSection( &sttLock );
 	return result;

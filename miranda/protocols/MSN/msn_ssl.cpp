@@ -268,7 +268,7 @@ char* SSL_WinInet::getSslResult( char* parUrl, char* parAuthInfo )
 		if ( tRequest != NULL ) {
 			DWORD tBufSize;
 
-			unsigned tm = 3000;
+			unsigned tm = 6000;
 			f_InternetSetOption( tRequest, INTERNET_OPTION_CONNECT_TIMEOUT, &tm, sizeof(tm));
 			f_InternetSetOption( tRequest, INTERNET_OPTION_SEND_TIMEOUT, &tm, sizeof(tm));
 			f_InternetSetOption( tRequest, INTERNET_OPTION_RECEIVE_TIMEOUT, &tm, sizeof(tm));

@@ -103,7 +103,8 @@ bool ThreadData::isTimeout( void )
 	}
 
 	if ( res ) 
-		MSN_DebugLog( "Dropping the idle switchboard due to inactivity" );
+		MSN_DebugLog( "Dropping the idle %s due to inactivity",
+			mType == SERVER_SWITCHBOARD ? "switchboard" : "p2p");
 	else
 		mWaitPeriod = 60;
 

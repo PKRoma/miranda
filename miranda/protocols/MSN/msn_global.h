@@ -662,6 +662,7 @@ extern	char*	      mailsoundname;
 extern	char*       sid;
 extern	char*       kv;
 extern	char*       passport;
+extern	char*       urlId;
 extern	char*       MSPAuth;
 
 extern	HANDLE		hNetlibUser;

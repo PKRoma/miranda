@@ -725,15 +725,13 @@ DWORD WINAPI MsnShowMailThread( LPVOID )
 		return 0;
 
 	MSN_CallService( MS_DB_CRYPT_DECODESTRING, strlen( dbv.pszVal )+1, ( LPARAM )dbv.pszVal );
-	char* passwd = ( char* )alloca( strlen( dbv.pszVal )*3 );
-	UrlEncode( dbv.pszVal, passwd, strlen( dbv.pszVal )*3 );
-	MSN_FreeVariant( &dbv );
 
 	// for hotmail access
 	int tm = time(NULL) - sl;
 
 	char hippy[ 2048 ];
-	long challen = mir_snprintf( hippy, sizeof( hippy ), "%s%lu%s", MSPAuth, tm, passwd );
+	long challen = mir_snprintf( hippy, sizeof( hippy ), "%s%lu%s", MSPAuth, tm, dbv.pszVal );
+	MSN_FreeVariant( &dbv );
 
 	//Digest it
 	unsigned char digest[16];
@@ -749,10 +747,10 @@ DWORD WINAPI MsnShowMailThread( LPVOID )
 
 		mir_snprintf(hippy, sizeof(hippy), 
 			"%s&auth=%s&creds=%08x%08x%08x%08x&sl=%d&username=%s&mode=ttl"
-			"&sid=%s&id=2&rru=%s&svc=mail&js=yes",
+			"&sid=%s&id=%s&rru=%s&svc=mail&js=yes",
 			passport, MSPAuth, htonl(*(PDWORD)(digest+0)),htonl(*(PDWORD)(digest+4)),
 			htonl(*(PDWORD)(digest+8)),htonl(*(PDWORD)(digest+12)),
-			tm, email, sid, rruenc); 
+			tm, email, sid, urlId, rruenc); 
 	}
 	else
 		strcpy( hippy, "http://go.msn.com/0/1" );
