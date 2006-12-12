@@ -949,11 +949,16 @@ static void sttProcessStatusMessage( BYTE* buf, unsigned len, HANDLE hContact )
 	{
 		// User contact options
 		char *format = mir_strdup( parts[3] );
+		char *unknown = NULL;
+		if (ServiceExists(MS_LISTENINGTO_GETUNKNOWNTEXT))
+			unknown = mir_utf8encodeT((TCHAR *) CallService(MS_LISTENINGTO_GETUNKNOWNTEXT, 0, 0));
 
 		for (int i = 4; i < pCount; i++) {
 			char part[16];
 			mir_snprintf(part, sizeof(part), "{%d}", i - 4);
 			size_t lenPart = strlen(part);
+			if (parts[i][0] == '\0' && unknown != NULL)
+				parts[i] = unknown;
 			size_t lenPartsI = strlen(parts[i]);
 			for (p = strstr(format, part); p; p = strstr(p + lenPartsI, part)) {
 				if (lenPart < lenPartsI) {
@@ -966,6 +971,7 @@ static void sttProcessStatusMessage( BYTE* buf, unsigned len, HANDLE hContact )
 		}	}
 
 		MSN_SetStringUtf( hContact, "ListeningTo", format );
+		mir_free(unknown);
 		mir_free(format);
 	}
 	else
