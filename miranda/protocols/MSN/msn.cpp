@@ -153,9 +153,6 @@ static int OnModulesLoaded( WPARAM wParam, LPARAM lParam )
 
 	char szBuffer[ MAX_PATH ];
 
-	if ( MSN_GetStaticString( "MsnPassportHost", NULL, szBuffer, sizeof szBuffer ))
-		MSN_SetString( NULL, "MsnPassportHost", "https://loginnet.passport.com/login2.srf" );
-
 	WORD wPort = MSN_GetWord( NULL, "YourPort", 0xFFFF );
 	if ( wPort != 0xFFFF ) {
 		MSN_SetByte( "NLSpecifyIncomingPorts", 1 );

@@ -276,7 +276,8 @@ char* SSL_WinInet::getSslResult( char* parUrl, char* parAuthInfo )
 		if ( MyOptions.UseProxy && MSN_GetByte( "NLUseProxyAuth", 0  ))
 			applyProxy( tRequest );
 
-		static const char headers[] =  "Accept: txt/*\r\nConnection: close\r\n";
+		static const char headers[] =  "Accept: txt/*\r\n";
+//		static const char headers[] =  "Accept: txt/*\r\nConnection: close\r\n";
 LBL_Restart:
 			MSN_DebugLog( "Sending request..." );
 //			MSN_DebugLog( parAuthInfo );
@@ -526,7 +527,7 @@ char* SSL_OpenSsl::getSslResult( char* parUrl, char* parAuthInfo )
 					"User-Agent: %s\r\n"
 					"Content-Length: %u\r\n"
 					"Host: %s\r\n"
-					"Connection: close\r\n"
+					"Connection: Keep-Alive\r\n"
 					"Cache-Control: no-cache\r\n\r\n%s", path, MSN_USER_AGENT, strlen( parAuthInfo ), url+8, parAuthInfo );
 
 //				MSN_DebugLog( "Sending SSL query:\n%s", buf );
