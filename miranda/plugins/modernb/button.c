@@ -92,21 +92,6 @@ static LRESULT CALLBACK SkinButtonProc(HWND hwndDlg, UINT  msg, WPARAM wParam, L
 				lpSBData->pbState = 0;
 				lpSBData->fSendOnDown = FALSE;
 				lpSBData->nFontID = -1;
-				/*
-				bct->arrow = NULL;
-				bct->defbutton = 0;
-				bct->hIcon = bct->hIconPrivate = 0;
-				bct->iIcon = 0;
-				bct->hIml = 0;
-				bct->hBitmap = NULL;
-				bct->hThemeButton = NULL;
-				bct->hThemeToolbar = NULL;
-				bct->flatBtn = 0;
-				bct->bThemed = FALSE;
-				bct->bSkinned = 0;
-				bct->buttonItem = NULL;
-				LoadTheme(bct);
-				*/
 				SetWindowLong(hwndDlg, 0, (LONG) lpSBData);
 				if (((CREATESTRUCTA *) lParam)->lpszName)
 					SetWindowText(hwndDlg, ((CREATESTRUCT *) lParam)->lpszName);

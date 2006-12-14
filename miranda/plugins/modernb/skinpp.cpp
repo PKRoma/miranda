@@ -179,8 +179,3 @@ HRESULT skinpp_SKIN::PutDataToXMLDocument()
 /////////////////////// END of skinpp_SKIN \\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\
 
 
-//////////////////////////////////////////////////////////////////////////
-//
-//   skinpp_SKINOBJECT implementation
-//
-

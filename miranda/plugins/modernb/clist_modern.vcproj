@@ -663,9 +663,6 @@
 				RelativePath=".\rowheight_funcs.c">
 			</File>
 			<File
-				RelativePath=".\SkinEditor.c">
-			</File>
-			<File
 				RelativePath="SkinEngine.c">
 			</File>
 			<File
@@ -840,6 +837,9 @@
 				</File>
 				<File
 					RelativePath=".\rowtemplateopt.c">
+				</File>
+				<File
+					RelativePath=".\SkinEditor.c">
 				</File>
 				<File
 					RelativePath=".\SkinOpt.c">

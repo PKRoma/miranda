@@ -87,7 +87,7 @@ static CRITICAL_SECTION cs_SkinChanging={0};
 
 
 /* Private module procedures */
-
+static BOOL SkinEngine_GetMaskBit(BYTE *line, int x);
 static int  SkinEngine_Service_AlphaTextOut(WPARAM wParam,LPARAM lParam);
 static BOOL SkinEngine_Service_DrawIconEx(WPARAM wParam,LPARAM lParam);
 static int  SkinEngine_Service_RegisterFramePaintCallbackProcedure(WPARAM wParam, LPARAM lParam);
@@ -2835,48 +2835,232 @@ HICON SkinEngine_ImageList_GetIcon(HIMAGELIST himl, int i, UINT fStyle)
     return ImageList_GetIcon(himl,i,ILD_TRANSPARENT);
 }
 
+////////////////////////////////////////////////////////////////////////////
+// This creates new dib image from Imagelist icon ready to alphablend it 
+
+HBITMAP SkinEngine_ExtractDIBFromImagelistIcon( HIMAGELIST himl,int index, int * outWidth, int * outHeight)
+{
+    
+    BITMAP      bmImg,
+                bmMsk;
+    
+    IMAGEINFO   imi;
+
+    HBITMAP     hOutBmp=NULL;
+
+
+    int         iWidth,
+                iHeight;
+
+    int         iRowImgShift,
+                iRowMskShift;
+
+    BOOL        fDibImgBits,
+                fDibMskBits;
+
+    BYTE        *pImg=NULL,
+                *pMsk=NULL,
+                *pDib=NULL;
+
+    BYTE        *pWorkImg=NULL,
+                *pWorkMsk=NULL,
+                *pWorkDib=NULL;
+
+    BOOL        fHasMask,
+                fHasAlpha;
+
+    if (!ImageList_GetImageInfo(himl, index, &imi)) return NULL;
+    
+    iWidth=imi.rcImage.right-imi.rcImage.left;
+    iHeight=imi.rcImage.bottom-imi.rcImage.top;
+
+    if (iWidth<=0 && iHeight<=0) return NULL;
+    
+    GetObject(imi.hbmImage,sizeof(BITMAP),&bmImg);
+    if (bmImg.bmBitsPixel!=32) return NULL;  //only 32bpp imagelist is supported    
+    GetObject(imi.hbmMask,sizeof(BITMAP),&bmMsk);
+
+
+    // get bytes...
+    fDibImgBits = (bmImg.bmBits!=NULL);
+    fDibMskBits = (bmMsk.bmBits!=NULL);
+
+    if (!fDibImgBits)  //there is not dib section for image
+    {
+        //lets create new pixel map for it
+        DWORD dwSize=sizeof(BYTE)*bmImg.bmHeight*bmImg.bmWidthBytes;
+        pImg=(BYTE*)malloc(dwSize);
+        // and fill it
+        GetBitmapBits(imi.hbmImage,dwSize,pImg);
+    }
+    else    
+    {
+        pImg=bmImg.bmBits;
+    }
+
+    if (!fDibMskBits)  //there is not dib section for mask
+    {
+        //lets create new pixel map for it
+        DWORD dwSize=sizeof(BYTE)*bmMsk.bmHeight*bmMsk.bmWidthBytes;
+        pMsk=(BYTE*)malloc(dwSize);
+        // and fill it
+        GetBitmapBits(imi.hbmMask,dwSize,pMsk);
+    }
+    else    
+    {
+        pMsk=bmMsk.bmBits;
+    }
+    
+    // ok lets shift pointers according required image reference.
+    {
+        if (!fDibImgBits)
+        {
+            iRowImgShift=bmImg.bmWidthBytes; //top to bottom
+            pWorkImg=pImg+((imi.rcImage.left*bmImg.bmBitsPixel)>>3)+(imi.rcImage.top*iRowImgShift);
+        }
+        else
+        {
+            iRowImgShift=-bmImg.bmWidthBytes;
+            pWorkImg=pImg+((imi.rcImage.left*bmImg.bmBitsPixel)>>3)+((bmImg.bmHeight-imi.rcImage.top-1)*bmImg.bmWidthBytes); //bottom to top
+        }
+    
+        if (!fDibMskBits)
+        {
+            iRowMskShift=bmMsk.bmWidthBytes;
+            pWorkMsk=pMsk+((imi.rcImage.left*bmMsk.bmBitsPixel)>>3)+(imi.rcImage.top*iRowMskShift);  //top to bottom
+        }
+        else
+        {
+            iRowMskShift=-bmMsk.bmWidthBytes;
+            pWorkMsk=pMsk+((imi.rcImage.left*bmMsk.bmBitsPixel)>>3)+((bmMsk.bmHeight-imi.rcImage.top-1)*bmMsk.bmWidthBytes); //bottom to top
+        }
+    }
+    //pWork* are poited to start of mask and image area
+
+    // lets check if required image really has non empty mask
+    {
+        BYTE x, y;
+        BYTE * pCheckMsk=pWorkMsk;
+        fHasMask=FALSE;
+        for (y=0; !fHasMask && y<iHeight; y++)
+        {
+            for (x=0; !fHasMask && x<iWidth/8; x++)
+            {
+                if (pCheckMsk[x])
+                {
+                    fHasMask=TRUE;
+                    break;
+                }
+            }
+            pCheckMsk+=iRowMskShift;
+        }
+    }
+
+    // lets check if required image really has not empty alpha channel
+    {
+        BYTE x, y;
+        BYTE * pCheckAlpha=pWorkImg+3;
+        fHasAlpha=FALSE;
+        for (y=0; !fHasAlpha && y<iHeight; y++)
+        {
+            for (x=0; !fHasAlpha && x<iWidth; x++)
+            {
+                if (pCheckAlpha[x<<2])
+                {
+                    fHasAlpha=TRUE;
+                    break;
+                }
+            }
+            pCheckAlpha+=iRowImgShift;
+        }
+    }
+
+    // We are ready to create output DIB image
+    hOutBmp=SkinEngine_CreateDIB32Point(iWidth, iHeight, &pDib);
+    if (hOutBmp)
+    {        
+        int x,y;
+        
+        BYTE *pRowImg;
+        BYTE *pRowDib;
+        
+        pWorkDib=pDib+(iHeight-1)*iWidth*4;
+        //ok lets go...
+        
+        for (y=0; y<iHeight; y++)
+        {
+            pRowImg=pWorkImg;
+            pRowDib=pWorkDib;
+            for (x=0; x<iWidth; x++)
+            {
+                DWORD dwVal=*((DWORD*)pRowImg);
+                BOOL fMasked = fHasMask?SkinEngine_GetMaskBit(pWorkMsk,x):FALSE;
+
+                if (fMasked) dwVal=0;                   // if mask bit is set - point have to be empty
+                else if (!fHasAlpha) dwVal|=0xFF000000; // if there not alpha channel let set it opaque
+                
+                if (dwVal!=0) *((DWORD*)pRowDib)=dwVal; // drop out if it is not zero
+
+                pRowImg+=4;                             //shift to next pixel
+                pRowDib+=4; 
+            }
+            pWorkImg+=iRowImgShift;
+            pWorkMsk+=iRowMskShift;
+            pWorkDib-=iWidth*sizeof(DWORD);
+        }
+
+        // finally set output width and height
+        if (outHeight) *outHeight=iHeight;
+        if (outWidth)  *outWidth=iWidth;
+    }
+    //Cleanup
+    {
+        if (!fDibImgBits && pImg)
+            free(pImg);
+        if (!fDibMskBits && pMsk) 
+            free(pMsk);
+    }
+    return hOutBmp; 
+}
 
 BOOL SkinEngine_ImageList_DrawEx( HIMAGELIST himl,int i,HDC hdcDst,int x,int y,int dx,int dy,COLORREF rgbBk,COLORREF rgbFg,UINT fStyle)
-{
-    HICON ic=SkinEngine_ImageList_GetIcon(himl,i,fStyle);
-    int ddx;
-    int ddy;
-    BYTE alpha=255;
-    HBITMAP hbmpold, hbmp;
+{    
+    //the routine to directly draw icon from image list without creating icon from there - should be some faster
+    int iWidth, iHeight;
+    BYTE alpha;
+
+    HDC hDC;
+    HBITMAP hBitmap;
+    HBITMAP hOldBitmap;    
+
+    BLENDFUNCTION bf={AC_SRC_OVER, 0, 255, AC_SRC_ALPHA };
+    
+    if (i<0) return FALSE;
+
+    hBitmap=SkinEngine_ExtractDIBFromImagelistIcon(himl, i, &iWidth, &iHeight);
+    if (!hBitmap) 
+    {
+        log0("SkinEngine_ExtractDIBFromImagelistIcon returns NULL if we cant extract dib - lets call native WinGDI routine...");
+        return ImageList_DrawEx(himl,i,hdcDst, x, y, dx, dy, rgbBk, rgbFg, fStyle);
+    }
+    
+    // ok looks like al fine lets draw it
+    hDC=CreateCompatibleDC(hdcDst);
+    hOldBitmap=SelectObject(hDC,hBitmap);
 
     if (fStyle&ILD_BLEND25) alpha=64;
     else if (fStyle&ILD_BLEND50) alpha=128;
-    ImageList_GetIconSize(himl,&ddx,&ddy);  
-    ddx=dx?dx:ddx;
-    ddy=dy?dy:ddy;
-    if (alpha==255) 
-    {
-        SkinEngine_DrawIconEx(hdcDst,x,y,ic,dx?dx:ddx,dy?dy:ddy,0,NULL,DI_NORMAL);
-    }
-    else
-    {
-        hbmp=SkinEngine_CreateDIB32(ddx,ddy);
-        if (hbmp)
-        {
-            HDC hdc=CreateCompatibleDC(hdcDst);
-            BLENDFUNCTION bf={AC_SRC_OVER, 0, 255, AC_SRC_ALPHA };
-            bf.SourceConstantAlpha=alpha;    
-            hbmpold=SelectObject(hdc,hbmp);
-            SkinEngine_DrawIconEx(hdc,0,0,ic,ddx,ddy,0,NULL,DI_NORMAL);
-            SkinEngine_AlphaBlend(hdcDst,x,y,ddx,ddy,hdc,0,0,ddx,ddy,bf);
-            SelectObject(hdc,hbmpold);
-            DeleteObject(hbmp);
-            mod_DeleteDC(hdc);
-        }
-    }
-    {
-        BOOL ret=DestroyIcon_protect(ic);
-        if (!ret)
-            ret=ret;
+    else alpha=255;
 
-    }
+    bf.SourceConstantAlpha=alpha;    
+    SkinEngine_AlphaBlend(hdcDst,x,y,dx?dx:iWidth,dy?dy:iHeight,hDC,0,0,iWidth,iHeight,bf);
+
+    SelectObject(hDC,hOldBitmap);
+    DeleteObject(hBitmap);
+    DeleteDC(hDC);    
     return TRUE;
 }
+
 
 static BOOL SkinEngine_Service_DrawIconEx(WPARAM wParam,LPARAM lParam)
 {
