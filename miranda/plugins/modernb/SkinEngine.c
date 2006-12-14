@@ -2811,15 +2811,18 @@ HICON SkinEngine_ImageList_GetIcon(HIMAGELIST himl, int i, UINT fStyle)
 					{		  
 						DWORD val=*c;
 						BYTE a= (BYTE)((val)>>24);
-						BYTE r= (BYTE)((val&0xFF0000)>>16);
-						BYTE g= (BYTE)((val&0xFF00)>>8);
-						BYTE b= (BYTE)(val&0xFF);
-						if (a<r || a<g || a<b)
-						{
-							a=max(max(r,g),b);
-							val=a<<24|r<<16|g<<8|b;
-							*c=val;
-						}
+                        if (a!=0)
+                        {
+						    BYTE r= (BYTE)((val&0xFF0000)>>16);
+						    BYTE g= (BYTE)((val&0xFF00)>>8);
+						    BYTE b= (BYTE)(val&0xFF);
+                            if (a<r || a<g || a<b)
+						    {
+							    a=max(max(r,g),b);
+							    val=a<<24|r<<16|g<<8|b;
+							    *c=val;
+						    }
+                        }
 						c++;
 					}
 					bcbits+=bm.bmWidthBytes;
@@ -2868,7 +2871,7 @@ HBITMAP SkinEngine_ExtractDIBFromImagelistIcon( HIMAGELIST himl,int index, int *
 
     BOOL        fHasMask,
                 fHasAlpha;
-
+    
     if (!ImageList_GetImageInfo(himl, index, &imi)) return NULL;
     
     iWidth=imi.rcImage.right-imi.rcImage.left;
@@ -2996,8 +2999,10 @@ HBITMAP SkinEngine_ExtractDIBFromImagelistIcon( HIMAGELIST himl,int index, int *
                 DWORD dwVal=*((DWORD*)pRowImg);
                 BOOL fMasked = fHasMask?SkinEngine_GetMaskBit(pWorkMsk,x):FALSE;
 
-                if (fMasked) dwVal=0;                   // if mask bit is set - point have to be empty
-                else if (!fHasAlpha) dwVal|=0xFF000000; // if there not alpha channel let set it opaque
+                if (fMasked) 
+                    dwVal=0;                   // if mask bit is set - point have to be empty
+                else if (!fHasAlpha)
+                    dwVal|=0xFF000000; // if there not alpha channel let set it opaque
                 
                 if (dwVal!=0) *((DWORD*)pRowDib)=dwVal; // drop out if it is not zero
 
