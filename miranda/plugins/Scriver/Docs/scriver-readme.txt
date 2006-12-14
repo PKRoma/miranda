@@ -72,6 +72,8 @@ created. CTRL key needs to be pressed only when a tab is being dropped.
 
 6. Change Log
 -------------
+2.5.9.11
++ codepage selection in ANSI version
 2.5.9.10
 + separate dimensions for single and group chats
 + codepage selection in group chats (Unicode version only)
