@@ -362,6 +362,17 @@ static char *CreateRTFHeader(struct MessageWindowData *dat)
 	LOGFONT lf;
 	COLORREF colour;
 	HDC hdc;
+	int charset;
+	BOOL forceCharset = FALSE;
+#if !defined ( _UNICODE )
+		if (dat->codePage != CP_ACP) {
+			CHARSETINFO csi;
+ 			if(TranslateCharsetInfo((DWORD*)dat->codePage, &csi, TCI_SRCCODEPAGE)) {
+				forceCharset = TRUE;
+				charset = csi.ciCharset;
+			}
+		}
+#endif
 
 	hdc = GetDC(NULL);
 	logPixelSY = GetDeviceCaps(hdc, LOGPIXELSY);
@@ -375,8 +386,12 @@ static char *CreateRTFHeader(struct MessageWindowData *dat)
 	else
 		AppendToBuffer(&buffer, &bufferEnd, &bufferAlloced, "{\\rtf1\\ansi\\deff0{\\fonttbl");
 	for (i = 0; i < fontOptionsListSize; i++) {
+		int cs = charset;
 		LoadMsgDlgFont(i, &lf, NULL);
-		AppendToBuffer(&buffer, &bufferEnd, &bufferAlloced, "{\\f%u\\fnil\\fcharset%u " TCHAR_STR_PARAM ";}", i, lf.lfCharSet, lf.lfFaceName);
+		if (!forceCharset) {
+			cs = lf.lfCharSet;
+		}
+		AppendToBuffer(&buffer, &bufferEnd, &bufferAlloced, "{\\f%u\\fnil\\fcharset%u " TCHAR_STR_PARAM ";}", i, cs, lf.lfFaceName);
 	}
 	AppendToBuffer(&buffer, &bufferEnd, &bufferAlloced, "}{\\colortbl ");
 	for (i = 0; i < fontOptionsListSize; i++) {

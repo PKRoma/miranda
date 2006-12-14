@@ -1265,14 +1265,11 @@ BOOL CALLBACK RoomWndProc(HWND hwndDlg,UINT uMsg,WPARAM wParam,LPARAM lParam)
       break;
 
 	case DM_GETCODEPAGE:
-#ifdef _UNICODE
 		SetWindowLong(hwndDlg, DWL_MSGRESULT, si->codePage);
-#else
-		SetWindowLong(hwndDlg, DWL_MSGRESULT, 1200);
-#endif
 		return TRUE;
 	case DM_SETCODEPAGE:
 		si->codePage = (int) lParam;
+		si->pszHeader = Log_CreateRtfHeader(MM_FindModule(si->pszModule), si);
         SendMessage(hwndDlg, GC_REDRAWLOG2, 0, 0);
 		break;
 
