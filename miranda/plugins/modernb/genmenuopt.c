@@ -102,7 +102,7 @@ int SaveTree(HWND hwndDlg)
 
 int BuildMenuObjectsTree(HWND hwndDlg)
 {
-	TVINSERTSTRUCTA tvis;
+	TVINSERTSTRUCT tvis;
 	int i;
 
 	tvis.hParent=NULL;
@@ -112,11 +112,12 @@ int BuildMenuObjectsTree(HWND hwndDlg)
 	if (MenuObjectsCount==0)
 		return(FALSE);
 
-	for(i=0;i<MenuObjectsCount;i++) {				
+	for(i=0;i<MenuObjectsCount;i++) 
+    {				
 		tvis.item.lParam=(LPARAM)MenuObjects[i].id;
-		tvis.item.pszText=Translate(MenuObjects[i].Name);
+		tvis.item.pszText=(TCHAR*)CallService( MS_LANGPACK_PCHARTOTCHAR,0,(LPARAM)(MenuObjects[i].Name));
 		tvis.item.iImage=tvis.item.iSelectedImage=TRUE;
-		SendDlgItemMessageA(hwndDlg, IDC_MENUOBJECTS, TVM_INSERTITEMA, 0, (LPARAM)&tvis);
+		SendDlgItemMessage(hwndDlg, IDC_MENUOBJECTS, TVM_INSERTITEM, 0, (LPARAM)&tvis);
 	}
 	return(1);
 }
