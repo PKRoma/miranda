@@ -638,8 +638,14 @@ int MO_AddNewMenuItem(WPARAM wParam,LPARAM lParam)
   MenuObjects[objidx].MenuItems[miidx].mi=*pmi;
   if (pmi->flags&CMIF_TCHAR)
 	MenuObjects[objidx].MenuItems[miidx].mi.ptszName = mir_tstrdup(pmi->ptszName);
-  else
+  else if (!(pmi->flags&CMIF_KEEPUNTRANSLATED))
 	MenuObjects[objidx].MenuItems[miidx].mi.ptszName = (TCHAR*)CallService( MS_LANGPACK_PCHARTOTCHAR,0,(LPARAM)pmi->pszName);
+  else 
+#ifdef _UNICODE 
+    MenuObjects[objidx].MenuItems[miidx].mi.ptszName = a2u(pmi->pszName);
+#else
+    MenuObjects[objidx].MenuItems[miidx].mi.ptszName = mir_tstrdup(pmi->pszName);
+#endif
 	
   MenuObjects[objidx].MenuItems[miidx].iconId=-1;
   MenuObjects[objidx].MenuItems[miidx].OverrideShow=TRUE;

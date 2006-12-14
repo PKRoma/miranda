@@ -207,6 +207,9 @@ int lParam;
 #else
 	#define CMIF_TCHAR       0      //will return char*, as usual
 #endif
+
+#define CMIF_KEEPUNTRANSLATED  1024      //will return TCHAR* instead of char*
+
 /*GENMENU_MODULE*/
 
 #define SETTING_NOOFFLINEBOTTOM_DEFAULT 0
