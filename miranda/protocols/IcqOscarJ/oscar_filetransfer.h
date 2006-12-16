@@ -77,14 +77,14 @@ typedef struct {
   WORD wEncrypt, wCompress;
   WORD wFilesCount,wFilesLeft;
   WORD wPartsCount, wPartsLeft;
-  DWORD dwTotalSize;
-  DWORD dwThisFileSize;
+  DWORD64 qwTotalSize;
+  DWORD64 qwThisFileSize;
   DWORD dwThisFileDate; // modification date
   DWORD dwThisFileCheck;
   DWORD dwRecvForkCheck, dwThisForkSize;
   DWORD dwThisFileCreation; // creation date (not used)
   DWORD dwThisForkCheck;
-  DWORD dwBytesDone;
+  DWORD64 qwBytesDone;
   DWORD dwRecvFileCheck;
   char rawIDString[32];
   BYTE bHeaderFlags;
@@ -94,9 +94,8 @@ typedef struct {
   WORD wEncoding, wSubEncoding;
   WORD cbRawFileName;
   char *rawFileName;
-  char *ThisFileName;
   // helper data
-  DWORD dwFileBytesDone;
+  DWORD64 qwFileBytesDone;
   int fileId;
   void* connection;
   void* listener;

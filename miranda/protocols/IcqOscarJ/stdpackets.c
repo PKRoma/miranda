@@ -1604,10 +1604,10 @@ void oft_sendFileRequest(DWORD dwUin, char *szUid, oscar_filetransfer* ft, char*
   WORD wDataLen;
 
   szCoolStr = (char*)_alloca(strlennull(ft->szDescription)+strlennull(pszFiles) + 160);
-  sprintf(szCoolStr, "<ICQ_COOL_FT><FS>%s</FS><S>%d</S><SID>1</SID><DESC>%s</DESC></ICQ_COOL_FT>", pszFiles, ft->dwTotalSize, ft->szDescription);
+  sprintf(szCoolStr, "<ICQ_COOL_FT><FS>%s</FS><S>%I64u</S><SID>1</SID><DESC>%s</DESC></ICQ_COOL_FT>", pszFiles, ft->qwTotalSize, ft->szDescription);
   szCoolStr = MangleXml(szCoolStr, strlennull(szCoolStr));
 
-  wDataLen = 81 + strlennull(szCoolStr) + strlennull(pszFiles);
+  wDataLen = 93 + strlennull(szCoolStr) + strlennull(pszFiles);
   if (ft->bUseProxy) wDataLen += 4;
 
   packServMsgSendHeader(&packet, ft->dwCookie, ft->pMessage.dwMsgID1, ft->pMessage.dwMsgID2, dwUin, szUid, 2, (WORD)(wDataLen + 0x1E));
@@ -1647,10 +1647,15 @@ void oft_sendFileRequest(DWORD dwUin, char *szUid, oscar_filetransfer* ft, char*
     packWord(&packet, (WORD)(9 + strlennull(pszFiles)));
     packWord(&packet, (WORD)(ft->wFilesCount == 1 ? 1 : 2));
     packWord(&packet, ft->wFilesCount);
-    packDWord(&packet, ft->dwTotalSize);
+    packDWord(&packet, (DWORD)ft->qwTotalSize);
     packBuffer(&packet, pszFiles, (WORD)(strlennull(pszFiles) + 1));
   }
   packTLV(&packet, 0x2712, 5, "utf-8");
+  { // TLV(0x2713)
+    packWord(&packet, 0x2713);
+    packWord(&packet, 8);
+    packQWord(&packet, ft->qwTotalSize);
+  }
 
   sendServPacket(&packet);                          // Send the monster
 }

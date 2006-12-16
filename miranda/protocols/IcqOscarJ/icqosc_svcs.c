@@ -301,7 +301,7 @@ int IcqSetMyAvatar(WPARAM wParam, LPARAM lParam)
       char* ihash = (char*)_alloca(0x14);
       // upload hash to server
       ihash[0] = 0;    //unknown
-      ihash[1] = dwPaFormat == PA_FORMAT_XML ? 8 : 1; //hash type
+      ihash[1] = dwPaFormat == PA_FORMAT_XML ? AVATAR_HASH_FLASH : AVATAR_HASH_STATIC; //hash type
       ihash[2] = 1;    //hash status
       ihash[3] = 0x10; //hash len
       memcpy(ihash+4, hash, 0x10);

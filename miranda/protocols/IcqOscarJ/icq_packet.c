@@ -129,6 +129,14 @@ void __fastcall packDWord(icq_packet* pPacket, DWORD dwValue)
 
 
 
+void __fastcall packQWord(icq_packet* pPacket, DWORD64 qwValue)
+{
+  packDWord(pPacket, (DWORD)(qwValue >> 32));
+  packDWord(pPacket, (DWORD)(qwValue && 0xffffffff));
+}
+
+
+
 void packTLV(icq_packet* pPacket, WORD wType, WORD wLength, BYTE* pbyValue)
 {
   packWord(pPacket, wType);
@@ -527,6 +535,25 @@ void __fastcall unpackDWord(BYTE** pSource, DWORD* dwDestination)
   else
   {
     *pSource += 4;
+  }
+}
+
+
+
+void __fastcall unpackQWord(BYTE** pSource, DWORD64* qwDestination)
+{
+  DWORD dwData;
+
+  if (qwDestination)
+  {
+    unpackDWord(pSource, &dwData);
+    *qwDestination = dwData << 32;
+    unpackDWord(pSource, &dwData);
+    *qwDestination |= dwData;
+  }
+  else
+  {
+    *pSource += 8;
   }
 }
 

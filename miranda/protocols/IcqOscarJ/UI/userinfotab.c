@@ -341,7 +341,7 @@ static BOOL CALLBACK AvatarDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM
               {
                 strcpy(szAvatar, file);
                 SAFE_FREE(&file);
-                if (dbvHash.pbVal[1] == 8) // we do this by hand, as owner's format is not saved
+                if (dbvHash.pbVal[1] == AVATAR_HASH_FLASH) // we do this by hand, as owner's format is not saved
                   dwPaFormat = PA_FORMAT_XML;
               }
               else

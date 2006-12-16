@@ -53,6 +53,7 @@ static icq_capability CapabilityRecord[] =
   {CAPF_SRV_RELAY, {CAP_SRV_RELAY}},
   {CAPF_UTF,       {CAP_UTF      }},
   {CAPF_RTF,       {CAP_RTF      }},
+  {CAPF_ICQDIRECT, {CAP_ICQDIRECT}},
   {CAPF_TYPING,    {CAP_TYPING   }},
   {CAPF_XTRAZ,     {CAP_XTRAZ    }},
   {CAPF_AIM_FILE,  {CAP_AIM_FILE }}

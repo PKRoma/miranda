@@ -508,33 +508,36 @@ static DWORD __stdcall icq_directThread(directthreadstartinfo *dtsi)
     nloc.szHost = inet_ntoa(addr);
     nloc.wPort = (WORD)dc.dwRemotePort;
     dc.hConnection = NetLib_OpenConnection(ghDirectNetlibUser, dc.type==DIRECTCONN_REVERSE?"Reverse ":NULL, &nloc);
-    if (dc.hConnection == NULL)
+    if (!dc.hConnection)
     {
-      if (dc.type != DIRECTCONN_REVERSE)
-      { // try reverse connect
-        reverse_cookie *pCookie = (reverse_cookie*)SAFE_MALLOC(sizeof(reverse_cookie));
-        DWORD dwCookie;
+      if (CheckContactCapabilities(dc.hContact, CAPF_ICQDIRECT))
+      { // only if the contact support ICQ DC connections
+        if (dc.type != DIRECTCONN_REVERSE)
+        { // try reverse connect
+          reverse_cookie *pCookie = (reverse_cookie*)SAFE_MALLOC(sizeof(reverse_cookie));
+          DWORD dwCookie;
 
-        NetLog_Direct("connect() failed (%d), trying reverse.", GetLastError());
+          NetLog_Direct("connect() failed (%d), trying reverse.", GetLastError());
 
-        if (pCookie)
-        { // init cookie
-          InitMessageCookie(&pCookie->pMessage);
-          pCookie->pMessage.bMessageType = MTYPE_REVERSE_REQUEST;
-          pCookie->hContact = dc.hContact;
-          pCookie->dwUin = dc.dwRemoteUin;
-          pCookie->type = dc.type;
-          pCookie->ft = dc.ft;
-          dwCookie = AllocateCookie(CKT_REVERSEDIRECT, 0, dc.dwRemoteUin, pCookie);
-          icq_sendReverseReq(&dc, dwCookie, (message_cookie_data*)pCookie);
-          RemoveDirectConnFromList(&dc);
+          if (pCookie)
+          { // init cookie
+            InitMessageCookie(&pCookie->pMessage);
+            pCookie->pMessage.bMessageType = MTYPE_REVERSE_REQUEST;
+            pCookie->hContact = dc.hContact;
+            pCookie->dwUin = dc.dwRemoteUin;
+            pCookie->type = dc.type;
+            pCookie->ft = dc.ft;
+            dwCookie = AllocateCookie(CKT_REVERSEDIRECT, 0, dc.dwRemoteUin, pCookie);
+            icq_sendReverseReq(&dc, dwCookie, (message_cookie_data*)pCookie);
+            RemoveDirectConnFromList(&dc);
 
-          return 0;
+            return 0;
+          }
+          else
+            NetLog_Direct("Reverse failed (%s)", "malloc failed");
         }
-        else
-          NetLog_Direct("Reverse failed (%s)", "malloc failed");
       }
-      else // we failed reverse connection
+      if (dc.type == DIRECTCONN_REVERSE) // failed reverse connection
       { // announce we failed
         icq_sendReverseFailed(&dc, dwReqMsgID1, dwReqMsgID2, dc.dwReqId);
       }

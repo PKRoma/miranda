@@ -39,6 +39,10 @@
 
 extern BOOL AvatarsReady;
 
+#define AVATAR_HASH_STATIC  0x01
+#define AVATAR_HASH_FLASH   0x08
+#define AVATAR_HASH_BIGGER  0x0C
+
 void handleAvatarContactHash(DWORD dwUIN, char* szUID, HANDLE hContact, unsigned char* pHash, unsigned int nHashLen, WORD wOldStatus);
 
 char* loadMyAvatarFileName();

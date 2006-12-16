@@ -416,7 +416,7 @@ void handleServiceFam(unsigned char* pBuffer, WORD wBufferLength, snac_header* p
       nloc.szHost = pServer; 
       nloc.wPort = wPort;
 
-      hConnection = NetLib_OpenConnection(ghServerNetlibUser, wFamily == 0x10 ? "Avatar " : NULL, &nloc);
+      hConnection = NetLib_OpenConnection(ghServerNetlibUser, wFamily == ICQ_AVATAR_FAMILY ? "Avatar " : NULL, &nloc);
       
       if (hConnection == NULL)
       {
@@ -504,7 +504,7 @@ void handleServiceFam(unsigned char* pBuffer, WORD wBufferLength, snac_header* p
                 NetLog_Server("Our avatar is different, set our new hash.");
 
                 pHash[0] = 0;
-                pHash[1] = dwPaFormat == PA_FORMAT_XML ? 8 : 1;
+                pHash[1] = dwPaFormat == PA_FORMAT_XML ? AVATAR_HASH_FLASH : AVATAR_HASH_STATIC;
                 pHash[2] = 1; // state of the hash
                 pHash[3] = 0x10; // len of the hash
                 memcpy(pHash + 4, hash, 0x10);
@@ -565,7 +565,7 @@ void handleServiceFam(unsigned char* pBuffer, WORD wBufferLength, snac_header* p
 
             if (cbFileSize != 0)
             {
-              SetAvatarData(NULL, (WORD)(dwPaFormat == PA_FORMAT_XML ? 8 : 1), ppMap, cbFileSize);
+              SetAvatarData(NULL, (WORD)(dwPaFormat == PA_FORMAT_XML ? AVATAR_HASH_FLASH : AVATAR_HASH_STATIC), ppMap, cbFileSize);
               LinkContactPhotoToFile(NULL, file);
             }
 
@@ -581,7 +581,7 @@ void handleServiceFam(unsigned char* pBuffer, WORD wBufferLength, snac_header* p
             NetLog_Server("Our file is different, set our new hash.");
 
             pHash[0] = 0;
-            pHash[1] = dwPaFormat == PA_FORMAT_XML ? 8 : 1;
+            pHash[1] = dwPaFormat == PA_FORMAT_XML ? AVATAR_HASH_FLASH : AVATAR_HASH_STATIC;
             pHash[2] = 1; // state of the hash
             pHash[3] = 0x10; // len of the hash
             memcpy(pHash + 4, hash, 0x10);
@@ -891,7 +891,7 @@ void setUserInfo()
     packBuffer(&packet, capXStatus[bXStatus-1], 0x10);
   }
 
-  packNewCap(&packet, 0x1344);      // AIM_CAPS_ICQ
+  packNewCap(&packet, 0x1344);      // AIM_CAPS_ICQDIRECT
 
   packDWord(&packet, 0x4D697261);   // Miranda Signature
   packDWord(&packet, 0x6E64614D);
