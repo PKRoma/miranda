@@ -830,8 +830,6 @@ static bool sttAddGroup( char* params, bool isFromBoot )
 
 	UrlDecode( data.grpName );
 	MSN_AddGroup( data.grpName, data.grpId );
-	if ( hGroupAddEvent != NULL )
-		SetEvent( hGroupAddEvent );
 
 	int i;
 	char str[ 10 ];
@@ -847,6 +845,7 @@ static bool sttAddGroup( char* params, bool isFromBoot )
 		MSN_FreeVariant( &dbv );
 		if ( result ) {
 			MSN_SetGroupNumber( data.grpId, i );
+			if ( !isFromBoot ) MSN_UploadServerGroups( data.grpName );
 			return true;
 	}	}
 
@@ -859,6 +858,7 @@ static bool sttAddGroup( char* params, bool isFromBoot )
 			DBWriteContactSettingStringUtf( NULL, "CListGroups", str, szNewName );
 			CallService( MS_CLUI_GROUPADDED, i, 0 );
 	}	}
+
 	return true;
 }
 
@@ -1102,7 +1102,13 @@ int MSN_HandleCommands( ThreadData* info, char* cmdString )
 			if ( hContact != NULL ) {
 				if ( userId  != NULL ) MSN_SetString( hContact, "ID", userId );
 				if ( groupId != NULL ) MSN_SetString( hContact, "GroupID", groupId );
-			}
+				else {
+					if ( MyOptions.ManageServer && strcmp( tWords[0], "FL" ) == 0 ) { 
+						DBVARIANT dbv;
+						if ( !DBGetContactSettingStringUtf( hContact, "CList", "Group", &dbv )) {
+							MSN_MoveContactToGroup( hContact, dbv.pszVal );
+							MSN_FreeVariant( &dbv );
+			}	}	}	}
 			break;
 		}
 		case ' DDA':    //********* ADD: section 7.8 List Modifications
@@ -1278,6 +1284,7 @@ LBL_InvalidCommand:
 
 			MSN_SendBroadcast( NULL, ACKTYPE_STATUS, ACKRESULT_SUCCESS,( HANDLE )oldMode, msnStatusMode );
 			MSN_DebugLog( "Status change acknowledged: %s", params );
+			MSN_RemoveEmptyGroups();
 			break;
 		}
 		case ' LHC':    //********* CHL: Query from Server on MSNP7
@@ -1593,8 +1600,9 @@ LBL_InvalidCommand:
 					userId = p+2;
 				else {
 					listId = atol( p );
-					if ( i < tNumTokens-1 )
-						groupId = tWords[tNumTokens-1];
+					int grOff = i + 1 + MyOptions.UseMSNP11;
+					if ( grOff < tNumTokens )
+						groupId = tWords[grOff];
 					break;
 			}	}
 
@@ -1648,31 +1656,8 @@ LBL_InvalidCommand:
 				if ( userId  != NULL )
 					MSN_SetString( sttListedContact, "ID", userId );
 
-				if ( MyOptions.ManageServer ) {
-					if ( groupId != NULL ) {
-						char *p = groupId;
-						while ( p != NULL ) {
-							char *q = strchr( groupId, ',' );
-							if ( q != NULL ) *(q++) = 0;
-							if ( p != groupId ) msnNsThread->sendPacket( "REM", "FL %s %s", userId, p );
-							p = q;
-						}
-
-						MSN_SetString( sttListedContact, "GroupID", groupId );
-
-						if (( p = ( char* )MSN_GetGroupById( groupId )) != NULL ) {
-							DBVARIANT dbv;
-							if ( !DBGetContactSettingStringUtf( sttListedContact, "CList", "Group", &dbv )) {
-								if ( strcmp( dbv.pszVal, p ))
-									DBWriteContactSettingStringUtf( sttListedContact, "CList", "Group", p );
-								MSN_FreeVariant( &dbv );
-							}
-							else DBWriteContactSettingStringUtf( sttListedContact, "CList", "Group", p );
-					}	}
-					else {
-						DBDeleteContactSetting( sttListedContact, "CList", "Group" );
-						DBDeleteContactSetting( sttListedContact, msnProtocolName, "GroupID" );
-			}	}	}
+				 MSN_SyncContactToServerGroup( sttListedContact, userId, groupId );
+			}
 			break;
 		}
 		case ' GSM':   //********* MSG: sections 8.7 Instant Messages, 8.8 Receiving an Instant Message
@@ -1749,6 +1734,7 @@ LBL_InvalidCommand:
 				HANDLE hContact = MSN_HContactById( data.serial );
 				if ( hContact != NULL )
 					DBDeleteContactSetting( hContact, msnProtocolName, "GroupID" );
+				MSN_RemoveEmptyGroups();
 			}
 			else { // remove a user from a list
 				int listId = Lists_NameToCode( data.list );
@@ -1759,9 +1745,11 @@ LBL_InvalidCommand:
 							char tEmail[ MSN_MAX_EMAIL_LEN ];
 							if ( !MSN_GetStaticString( "e-mail", hContact, tEmail, sizeof tEmail ))
 								Lists_Remove( listId, tEmail );
-					}	}
+						}	
+						MSN_RemoveEmptyGroups();
+					}
 					else {
-                  UrlDecode( data.serial );
+						UrlDecode( data.serial );
 						Lists_Remove( listId, data.serial );
 			}	}	}
 			break;

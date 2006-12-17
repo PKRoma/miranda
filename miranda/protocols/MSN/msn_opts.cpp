@@ -103,20 +103,6 @@ static BOOL (WINAPI *pfnEnableThemeDialogTexture)(HANDLE, DWORD) = 0;
 
 BOOL CALLBACK DlgProcMsnServLists(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam);
 
-static void __cdecl sttUploadGroups( void* )
-{
-	HANDLE hContact = ( HANDLE )MSN_CallService( MS_DB_CONTACT_FINDFIRST, 0, 0 );
-	while ( hContact != NULL ) {
-		if ( !lstrcmpA( msnProtocolName, ( char* )MSN_CallService( MS_PROTO_GETCONTACTBASEPROTO, ( WPARAM )hContact,0 ))) {
-			DBVARIANT dbv;
-			if ( !DBGetContactSettingStringUtf( hContact, "CList", "Group", &dbv )) {
-				MSN_MoveContactToGroup( hContact, dbv.pszVal );
-				MSN_FreeVariant( &dbv );
-		}	}
-
-		hContact = ( HANDLE )MSN_CallService( MS_DB_CONTACT_FINDNEXT,( WPARAM )hContact, 0 );
-}	}
-
 /////////////////////////////////////////////////////////////////////////////////////////
 // MSN Options dialog procedure
 
@@ -150,7 +136,7 @@ static BOOL CALLBACK DlgProcMsnOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARA
 		CheckDlgButton( hwndDlg, IDC_SENDFONTINFO,      MSN_GetByte( "SendFontInfo", 1 ));
 		CheckDlgButton( hwndDlg, IDC_USE_OWN_NICKNAME,  MSN_GetByte( "NeverUpdateNickname", 0 ));
 		CheckDlgButton( hwndDlg, IDC_AWAY_AS_BRB,       MSN_GetByte( "AwayAsBrb", 0 ));
-		CheckDlgButton( hwndDlg, IDC_MANAGEGROUPS,      MSN_GetByte( "ManageServer", 0 ));
+		CheckDlgButton( hwndDlg, IDC_MANAGEGROUPS,      MSN_GetByte( "ManageServer", 1 ));
 
 		int tValue = MSN_GetByte( "RunMailerOnHotmail", 0 );
 		CheckDlgButton( hwndDlg, IDC_RUN_APP_ON_HOTMAIL, tValue );
@@ -206,7 +192,7 @@ static BOOL CALLBACK DlgProcMsnOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARA
 					if ( IDYES == MessageBox( hwndDlg,
 											TranslateT( "Server groups import may change your contact list layout after next login. Do you want to upload your groups to the server?" ),
 											TranslateT( "MSN Protocol" ), MB_YESNOCANCEL ))
-						(new ThreadData())->startThread( sttUploadGroups );
+						MSN_UploadServerGroups( NULL );
 				goto LBL_Apply;
 
 			case IDC_RUN_APP_ON_HOTMAIL: {
@@ -698,7 +684,7 @@ void __stdcall LoadOptions()
 	MyOptions.DisableMenu = MSN_GetByte( "DisableSetNickname", FALSE );
 	MyOptions.EnableAvatars = MSN_GetByte( "EnableAvatars", TRUE );
 	MyOptions.KeepConnectionAlive = MSN_GetByte( "KeepAlive", FALSE );
-	MyOptions.ManageServer = MSN_GetByte( "ManageServer", FALSE );
+	MyOptions.ManageServer = MSN_GetByte( "ManageServer", TRUE );
 	MyOptions.PopupTimeoutHotmail = MSN_GetDword( NULL, "PopupTimeout", 3 );
 	MyOptions.PopupTimeoutOther = MSN_GetDword( NULL, "PopupTimeoutOther", MyOptions.PopupTimeoutHotmail );
 	MyOptions.ShowErrorsAsPopups = MSN_GetByte( "ShowErrorsAsPopups", FALSE );

@@ -260,7 +260,7 @@ int MsnDbSettingChanged(WPARAM wParam,LPARAM lParam)
 		LPCSTR szId = MSN_GetGroupByNumber( iNumber );
 		if ( szId == NULL ) {
 			if ( cws->value.type == DBVT_ASCIIZ )
-				MSN_AddServerGroup( cws->value.pszVal+1 );
+				MSN_AddServerGroup( cws->value.pszVal+1, hContact );
 			return 0;
 		}
 
