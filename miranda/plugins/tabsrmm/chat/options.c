@@ -488,7 +488,8 @@ static void InitSetting(TCHAR** ppPointer, char* pszSetting, TCHAR* pszDefault)
 		replaceStr( ppPointer, dbv.ptszVal );
 		DBFreeVariant(&dbv);
 	}
-	else replaceStr( ppPointer, pszDefault );
+	else 
+        replaceStr( ppPointer, pszDefault );
 }
 
 #define OPT_FIXHEADINGS (WM_USER+1)
@@ -622,18 +623,19 @@ BOOL CALLBACK DlgProcOptions1(HWND hwndDlg,UINT uMsg,WPARAM wParam,LPARAM lParam
 					{
                         if (g_chat_integration_enabled) {
                             int iLen;
-                            char * pszText = NULL;
+                            TCHAR *pszText = NULL;
                             BYTE b;
 
                             iLen = GetWindowTextLength(GetDlgItem(hwndDlg, IDC_GROUP));
                             if (iLen > 0)
                             {
-                                pszText = realloc(pszText, iLen+1);
-                                GetDlgItemTextA(hwndDlg, IDC_GROUP, pszText,iLen+1);
-                                DBWriteContactSettingString(NULL, "Chat", "AddToGroup", pszText);
+                                pszText = realloc(pszText, (iLen + 2) * sizeof(TCHAR));
+                                GetDlgItemText(hwndDlg, IDC_GROUP, pszText, iLen + 1);
+                                DBWriteContactSettingTString(NULL, "Chat", "AddToGroup", pszText);
                             }
                             else
-                                DBWriteContactSettingString(NULL, "Chat", "AddToGroup", "");
+                                DBWriteContactSettingTString(NULL, "Chat", "AddToGroup", _T(""));
+
                             if (pszText)
                                 free(pszText);
 
