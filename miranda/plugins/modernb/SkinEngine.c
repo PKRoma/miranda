@@ -2880,7 +2880,13 @@ HBITMAP SkinEngine_ExtractDIBFromImagelistIcon( HIMAGELIST himl,int index, int *
     if (iWidth<=0 && iHeight<=0) return NULL;
     
     GetObject(imi.hbmImage,sizeof(BITMAP),&bmImg);
-    if (bmImg.bmBitsPixel!=32) return NULL;  //only 32bpp imagelist is supported    
+    if (bmImg.bmBitsPixel!=32) 
+    {
+        // finally set output width and height
+        if (outHeight) *outHeight=iHeight;
+        if (outWidth)  *outWidth=iWidth;
+        return NULL;  //only 32bpp imagelist is supported    
+    }
     GetObject(imi.hbmMask,sizeof(BITMAP),&bmMsk);
 
 
@@ -3043,19 +3049,28 @@ BOOL SkinEngine_ImageList_DrawEx( HIMAGELIST himl,int i,HDC hdcDst,int x,int y,i
     if (i<0) return FALSE;
 
     hBitmap=SkinEngine_ExtractDIBFromImagelistIcon(himl, i, &iWidth, &iHeight);
+    
+    if (fStyle&ILD_BLEND25) alpha=64;
+    else if (fStyle&ILD_BLEND50) alpha=128;
+    else alpha=255;
+    
     if (!hBitmap) 
-    {
-        log0("SkinEngine_ExtractDIBFromImagelistIcon returns NULL if we cant extract dib - lets call native WinGDI routine...");
-        return ImageList_DrawEx(himl,i,hdcDst, x, y, dx, dy, rgbBk, rgbFg, fStyle);
+    {        
+        HICON hIcon=SkinEngine_ImageList_GetIcon(himl,i,ILD_NORMAL);        
+        if (hIcon) 
+        {
+            SkinEngine_DrawIconEx(hdcDst,x,y,hIcon,dx?dx:iWidth,dy?dy:iHeight,0,NULL,DI_NORMAL|(alpha<<24));
+            DestroyIcon(hIcon);
+            return TRUE;
+        }        
+        return FALSE;
     }
     
     // ok looks like al fine lets draw it
     hDC=CreateCompatibleDC(hdcDst);
     hOldBitmap=SelectObject(hDC,hBitmap);
 
-    if (fStyle&ILD_BLEND25) alpha=64;
-    else if (fStyle&ILD_BLEND50) alpha=128;
-    else alpha=255;
+
 
     bf.SourceConstantAlpha=alpha;    
     SkinEngine_AlphaBlend(hdcDst,x,y,dx?dx:iWidth,dy?dy:iHeight,hDC,0,0,iWidth,iHeight,bf);

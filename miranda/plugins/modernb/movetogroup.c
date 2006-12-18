@@ -130,7 +130,7 @@ static int OnContactMenuBuild(WPARAM wParam,LPARAM lParam)
 
 static int MTG_DOMOVE(WPARAM wParam,LPARAM lParam)
 {
-    char *grpname;
+    TCHAR *grpname;
     char *intname;
 
 
@@ -145,10 +145,10 @@ static int MTG_DOMOVE(WPARAM wParam,LPARAM lParam)
 
     intname=(char *)_alloca(20);
     _itoa(lParam,intname,10);
-    grpname=DBGetStringA(0,"CListGroups",intname);
+    grpname=DBGetStringT(0,"CListGroups",intname);
     if (grpname)
     {
-        DBWriteContactSettingString((HANDLE)wParam,"CList","Group",grpname + 1);
+        DBWriteContactSettingTString((HANDLE)wParam,"CList","Group",grpname + 1);
         mir_free(grpname);
     };
 
