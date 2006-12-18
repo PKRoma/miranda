@@ -291,7 +291,10 @@ int RowHeights_HitTest(struct ClcData *dat, int pos_y)
 }
 
 int RowHeights_GetHeight(struct ClcData *dat, int item)
-{	
+{
+	if ( dat->row_heights == 0 )
+		return 0;
+
 	return dat->row_heights[ item ];
 }
 
