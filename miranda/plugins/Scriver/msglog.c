@@ -362,7 +362,7 @@ static char *CreateRTFHeader(struct MessageWindowData *dat)
 	LOGFONT lf;
 	COLORREF colour;
 	HDC hdc;
-	int charset;
+	int charset = 0;
 	BOOL forceCharset = FALSE;
 #if !defined ( _UNICODE )
 		if (dat->codePage != CP_ACP) {
@@ -386,12 +386,9 @@ static char *CreateRTFHeader(struct MessageWindowData *dat)
 	else
 		AppendToBuffer(&buffer, &bufferEnd, &bufferAlloced, "{\\rtf1\\ansi\\deff0{\\fonttbl");
 	for (i = 0; i < fontOptionsListSize; i++) {
-		int cs = charset;
 		LoadMsgDlgFont(i, &lf, NULL);
-		if (!forceCharset) {
-			cs = lf.lfCharSet;
-		}
-		AppendToBuffer(&buffer, &bufferEnd, &bufferAlloced, "{\\f%u\\fnil\\fcharset%u " TCHAR_STR_PARAM ";}", i, cs, lf.lfFaceName);
+		AppendToBuffer(&buffer, &bufferEnd, &bufferAlloced, "{\\f%u\\fnil\\fcharset%u " TCHAR_STR_PARAM ";}", i, 
+			(!forceCharset) ? lf.lfCharSet : charset, lf.lfFaceName);
 	}
 	AppendToBuffer(&buffer, &bufferEnd, &bufferAlloced, "}{\\colortbl ");
 	for (i = 0; i < fontOptionsListSize; i++) {
