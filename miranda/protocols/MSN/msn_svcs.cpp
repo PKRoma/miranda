@@ -290,9 +290,9 @@ int MsnDbSettingChanged(WPARAM wParam,LPARAM lParam)
 				MSN_AddUser( hContact, tEmail, LIST_AL );
 	}	}	}
 
-	if ( !strcmp( cws->szModule, "CList" ) && MyOptions.ManageServer ) {
+	if ( !strcmp( cws->szModule, "CList" )) {
 		char* szProto = ( char* )MSN_CallService( MS_PROTO_GETCONTACTBASEPROTO, ( WPARAM ) hContact, 0 );
-		if ( szProto == NULL || strcmp( szProto, msnProtocolName ))
+		if ( lstrcmpA( szProto, msnProtocolName ))
 			return 0;
 
 		if ( !strcmp( cws->szSetting, "Group" )) {

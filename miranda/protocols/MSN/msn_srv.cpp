@@ -130,6 +130,8 @@ LPCSTR MSN_GetGroupByNumber( int pNumber )
 
 void MSN_MoveContactToGroup( HANDLE hContact, const char* grpName )
 {
+	if ( !MyOptions.ManageServer ) return;
+
 	if ( lstrcmpA( grpName, "MetaContacts Hidden Group" ) == 0 )
 		return;
 
@@ -217,9 +219,8 @@ void MSN_RemoveEmptyGroups( void )
 	unsigned i = 0;
 	for ( ServerGroupItem* q = sttFirst; q != NULL; q = q->next )
 	{
-		if ( cCount[i] == 0 ) 
+		if ( cCount[i++] == 0 ) 
 			msnNsThread->sendPacket( "RMG", q->id );
-		++i;
 	}
 	mir_free( cCount );
 }
@@ -240,7 +241,7 @@ void MSN_AddServerGroup( const char* pszGroupName, HANDLE hContact )
 
 void  MSN_UploadServerGroups( char* group )
 {
-	if (!MyOptions.ManageServer ) return;
+	if ( !MyOptions.ManageServer ) return;
 
 	HANDLE hContact = ( HANDLE )MSN_CallService( MS_DB_CONTACT_FINDFIRST, 0, 0 );
 	while ( hContact != NULL ) {
@@ -248,8 +249,8 @@ void  MSN_UploadServerGroups( char* group )
 			DBVARIANT dbv;
 			if ( !DBGetContactSettingStringUtf( hContact, "CList", "Group", &dbv )) {
 				char szGroupID[ 100 ];
-				if ( group == NULL || strcmp( group, dbv.pszVal ) != 0 ||
-					MSN_GetStaticString( "GroupID", hContact, szGroupID, sizeof( szGroupID )) != 0 ) 
+				if ( group == NULL || ( strcmp( group, dbv.pszVal ) == 0 &&
+					MSN_GetStaticString( "GroupID", hContact, szGroupID, sizeof( szGroupID )) != 0 )) 
 				{
 					MSN_MoveContactToGroup( hContact, dbv.pszVal );
 				}
@@ -276,7 +277,7 @@ void MSN_SyncContactToServerGroup( HANDLE hContact, char* userId, char* groupId 
 	if ( groupId != NULL ) {
 		char *p = groupId;
 		while ( p != NULL ) {
-			char *q = strchr( groupId, ',' );
+			char *q = strchr( p, ',' );
 			if ( q != NULL ) *(q++) = 0;  
 			
 			if ( lstrcmpA( MSN_GetGroupById( p ), dbv.pszVal ) == 0 ) {

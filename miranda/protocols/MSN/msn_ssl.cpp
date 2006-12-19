@@ -527,7 +527,7 @@ char* SSL_OpenSsl::getSslResult( char* parUrl, char* parAuthInfo )
 					"User-Agent: %s\r\n"
 					"Content-Length: %u\r\n"
 					"Host: %s\r\n"
-					"Connection: Keep-Alive\r\n"
+					"Connection: close\r\n"
 					"Cache-Control: no-cache\r\n\r\n%s", path, MSN_USER_AGENT, strlen( parAuthInfo ), url+8, parAuthInfo );
 
 //				MSN_DebugLog( "Sending SSL query:\n%s", buf );
