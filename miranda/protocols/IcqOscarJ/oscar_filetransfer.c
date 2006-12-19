@@ -1518,6 +1518,9 @@ static int oft_handleProxyData(oscar_connection *oc, unsigned char *buf, int len
         case 0x0D:
           szError = "Bad request";
           break;
+        case 0x0E:
+          szError = "Malformed packet";
+          break;
         case 0x10:
           szError = "Initial request timeout";
           break;
@@ -2018,11 +2021,12 @@ static void handleOFT2FramePacket(oscar_connection *oc, WORD datatype, BYTE *pBu
 static void proxy_sendInitTunnel(oscar_connection *oc)
 {
   icq_packet packet;
+  WORD wLen = 39 + getUINLen(dwLocalUIN);
 
-  packet.wLen = 0x30;
+  packet.wLen = wLen;
   init_generic_packet(&packet, 2);
 
-  packWord(&packet, (WORD)(packet.wLen - 2));
+  packWord(&packet, wLen);
   packWord(&packet, OSCAR_PROXY_VERSION);
   packWord(&packet, 0x02);                      // wCommand
   packDWord(&packet, 0);                        // Unknown
@@ -2041,11 +2045,12 @@ static void proxy_sendInitTunnel(oscar_connection *oc)
 static void proxy_sendJoinTunnel(oscar_connection *oc, WORD wPort)
 {
   icq_packet packet;
+  WORD wLen = 41 + getUINLen(dwLocalUIN);
 
-  packet.wLen = 0x32;
+  packet.wLen = wLen;
   init_generic_packet(&packet, 2);
 
-  packWord(&packet, (WORD)(packet.wLen - 2));
+  packWord(&packet, wLen);
   packWord(&packet, OSCAR_PROXY_VERSION);
   packWord(&packet, 0x04);                      // wCommand
   packDWord(&packet, 0);                        // Unknown
