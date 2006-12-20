@@ -102,57 +102,10 @@ static void SetValue(HWND hwndDlg,int idCtrl,HANDLE hContact,char *szModule,char
                             pstr=inet_ntoa(ia);
                             if(dbv.dVal==0) unspecified=1;
                     }
-										else if (special == SVS_GGVERSION) {
-												int v = dbv.dVal & 0x00ffffff;
-												switch(v)
-												{
-                                                    case 0x24:
-                                                        pstr = "6.1 build 155"; break;
-                                                    case 0x22:
-                                                        pstr = "6.0 build 140"; break;
-													case 0x21:
-														pstr = "6.0 build 133"; break;
-													case 0x20:
-														pstr = "6.0b"; break;
-													case 0x1e:
-														pstr = "5.7b build 121"; break;
-													case 0x1c:
-														pstr = "5.7b"; break;
-													case 0x1b:
-														pstr = "5.0.5"; break;
-													case 0x19:
-														pstr = "5.0.3"; break;
-													case 0x18:
-														pstr = "5.0.0-1"; break;
-													case 0x17:
-														pstr = "4.9.2"; break;
-													case 0x16:
-														pstr = "4.9.1"; break;
-													case 0x15:
-														pstr = "4.8.9"; break;
-													case 0x14:
-														pstr = "4.8.1-3"; break;
-													case 0x11:
-														pstr = "4.6.1-10"; break;
-													case 0x10:
-														pstr = "4.5.15-22"; break;
-													case 0x0f:
-														pstr = "4.5.12"; break;
-													case 0x0b:
-														pstr = "4.0.25-30"; break;
-													default:
-														if (v < 0x0b)
-															pstr = "< 4.0.25";
-														else if (v > 0x24)
-															pstr = "> 6.1";
-														else
-														{
-															pstr=str;
-															snprintf(str,sizeof(str),"(?) 0x%.2x",v);
-														}
-												}
-										}
-                    else pstr=itoa(special==SVS_SIGNED?dbv.lVal:dbv.dVal,str,10);
+					else if(special == SVS_GGVERSION)
+						pstr = (char *)gg_version2string(dbv.dVal);
+                    else 
+						pstr = itoa(special==SVS_SIGNED?dbv.lVal:dbv.dVal,str,10);
                     break;
             case DBVT_ASCIIZ:
                     unspecified=(special==SVS_ZEROISUNSPEC && dbv.pszVal[0]=='\0');

@@ -321,6 +321,7 @@ int status_gg2s(int status);
 char *gg_status2db(int status, const char *suffix);
 char *ws_strerror(int code);
 uint32_t swap32(uint32_t x);
+const char *gg_version2string(int v);
 
 /* Global GG functions */
 void gg_refreshblockedicon();

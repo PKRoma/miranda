@@ -1418,5 +1418,74 @@ void gg_changecontactstatus(uin_t uin, int status, const char *idescr, int time,
 	// Store contact ip and port
 	if(remote_ip) DBWriteContactSettingDword(hContact, GG_PROTO, GG_KEY_CLIENTIP, (DWORD) swap32(remote_ip));
 	if(remote_port) DBWriteContactSettingWord(hContact, GG_PROTO, GG_KEY_CLIENTPORT, (WORD) remote_port);
-	if(version) DBWriteContactSettingDword(hContact, GG_PROTO, GG_KEY_CLIENTVERSION, (DWORD) version);
+	if(version)
+	{
+		char sversion[32];
+		DBWriteContactSettingDword(hContact, GG_PROTO, GG_KEY_CLIENTVERSION, (DWORD) version);
+		_snprintf(sversion, sizeof(sversion), "Gadu-Gadu %s", gg_version2string(version));
+		DBWriteContactSettingString(hContact, GG_PROTO, "MirVer", sversion);
+	}
+}
+
+////////////////////////////////////////////////////////////
+// Returns GG client version string from packet version
+const char *gg_version2string(int v)
+{
+	const char *pstr = "???";
+	v &= 0x00ffffff;
+	switch(v)
+	{
+		case 0x29:
+			pstr = "7.6 build 1688"; break;
+		case 0x28:
+			pstr = "7.5.0 build 2201"; break;
+		case 0x27:
+			pstr = "7.0 build 22"; break;
+		case 0x26:
+			pstr = "7.0 build 20"; break;
+		case 0x25:
+			pstr = "7.0 build 1"; break;
+		case 0x24:
+			pstr = "7.6 build 1359"; break;
+			/* pstr = "6.1 build 155 / 7.6 build 1359"; break; */
+		case 0x22:
+			pstr = "6.0 build 140"; break;
+		case 0x21:
+			pstr = "6.0 build 133"; break;
+		case 0x20:
+			pstr = "6.0b"; break;
+		case 0x1e:
+			pstr = "5.7b build 121"; break;
+		case 0x1c:
+			pstr = "5.7b"; break;
+		case 0x1b:
+			pstr = "5.0.5"; break;
+		case 0x19:
+			pstr = "5.0.3"; break;
+		case 0x18:
+			pstr = "5.0.0-1"; break;
+		case 0x17:
+			pstr = "4.9.2"; break;
+		case 0x16:
+			pstr = "4.9.1"; break;
+		case 0x15:
+			pstr = "4.8.9"; break;
+		case 0x14:
+			pstr = "4.8.1-3"; break;
+		case 0x11:
+			pstr = "4.6.1-10"; break;
+		case 0x10:
+			pstr = "4.5.15-22"; break;
+		case 0x0f:
+			pstr = "4.5.12"; break;
+		case 0x0b:
+			pstr = "4.0.25-30"; break;
+		default:
+			if (v < 0x0b)
+				pstr = "< 4.0.25";
+			else if (v > 0x29)
+				pstr = "> 7.6";
+			break;
+	}
+	return pstr;
 }
