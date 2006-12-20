@@ -1420,7 +1420,7 @@ void gg_changecontactstatus(uin_t uin, int status, const char *idescr, int time,
 	if(remote_port) DBWriteContactSettingWord(hContact, GG_PROTO, GG_KEY_CLIENTPORT, (WORD) remote_port);
 	if(version)
 	{
-		char sversion[32];
+		char sversion[48];
 		DBWriteContactSettingDword(hContact, GG_PROTO, GG_KEY_CLIENTVERSION, (DWORD) version);
 		_snprintf(sversion, sizeof(sversion), "Gadu-Gadu %s", gg_version2string(version));
 		DBWriteContactSettingString(hContact, GG_PROTO, "MirVer", sversion);
@@ -1446,8 +1446,7 @@ const char *gg_version2string(int v)
 		case 0x25:
 			pstr = "7.0 build 1"; break;
 		case 0x24:
-			pstr = "7.6 build 1359"; break;
-			/* pstr = "6.1 build 155 / 7.6 build 1359"; break; */
+			pstr = "6.1 build 155 / 7.6 build 1359"; break;
 		case 0x22:
 			pstr = "6.0 build 140"; break;
 		case 0x21:

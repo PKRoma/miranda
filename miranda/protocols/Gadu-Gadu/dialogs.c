@@ -765,7 +765,7 @@ static BOOL CALLBACK gg_advoptsdlgproc(HWND hwndDlg, UINT msg, WPARAM wParam, LP
 			switch (((LPNMHDR) lParam)->code) {
 				case PSN_APPLY:
 				{
-					char str[128];
+					char str[512];
 					DBWriteContactSettingByte(NULL, GG_PROTO, GG_KEY_KEEPALIVE, (BYTE) IsDlgButtonChecked(hwndDlg, IDC_KEEPALIVE));
 					DBWriteContactSettingByte(NULL, GG_PROTO, GG_KEY_SHOWCERRORS, (BYTE) IsDlgButtonChecked(hwndDlg, IDC_SHOWCERRORS));
 					DBWriteContactSettingByte(NULL, GG_PROTO, GG_KEY_ARECONNECT, (BYTE) IsDlgButtonChecked(hwndDlg, IDC_ARECONNECT));
