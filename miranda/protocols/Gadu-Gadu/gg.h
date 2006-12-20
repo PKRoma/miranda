@@ -22,7 +22,7 @@
 #define GG_H
 
 #if defined(__DEBUG__) || defined(_DEBUG)
-#define DEBUGMODE               // Debug Mode
+#define DEBUGMODE				// Debug Mode
 #endif
 
 #if _WIN32_WINNT < 0x0500
@@ -92,13 +92,13 @@ extern "C" {
 // Extended search result structure, used for all searches
 typedef struct
 {
-    PROTOSEARCHRESULT hdr;
-    uin_t uin;
+	PROTOSEARCHRESULT hdr;
+	uin_t uin;
 } GGSEARCHRESULT;
 
 typedef struct
 {
-    int mode;
+	int mode;
 	uin_t uin;
 	char *pass;
 	char *email;
@@ -107,20 +107,20 @@ typedef struct
 
 typedef struct
 {
-    list_t watches, transfers, requests;
-    pthread_t dccId;
-    pthread_t id;
-    struct gg_session *sess;
-    struct gg_dcc *dcc;
-    HANDLE event;
+	list_t watches, transfers, requests;
+	pthread_t dccId;
+	pthread_t id;
+	struct gg_session *sess;
+	struct gg_dcc *dcc;
+	HANDLE event;
 } GGTHREAD;
 
 typedef struct
 {
-    uin_t *recipients;
-    int recipients_count;
-    char id[32];
-    BOOL ignore;
+	uin_t *recipients;
+	int recipients_count;
+	char id[32];
+	BOOL ignore;
 } GGGC;
 
 // Main strings
@@ -128,123 +128,123 @@ extern char ggProto[];
 extern char *ggProtoName;
 extern char *ggProtoError;
 
-#define GG_PROTO 		 ggProto     	// Protocol ID
+#define GG_PROTO		 ggProto		// Protocol ID
 #define GG_PROTONAME	 ggProtoName	// Protocol Name
-#define GG_PROTOERROR	 ggProtoError  	// Protocol Error
-#define GGDEF_PROTO  	 "GG"			// Default Proto
+#define GG_PROTOERROR	 ggProtoError	// Protocol Error
+#define GGDEF_PROTO 	 "GG"			// Default Proto
 #define GGDEF_PROTONAME  "Gadu-Gadu"	// Default ProtoName
 
 // Process handles / seqs
-#define GG_SEQ_INFO	        	100
-#define GG_SEQ_SEARCH           200
-#define GG_SEQ_AWAYMSG          300
-#define GG_SEQ_GETNICK	        400
-#define GG_SEQ_CHINFO	        500
+#define GG_SEQ_INFO				100
+#define GG_SEQ_SEARCH			200
+#define GG_SEQ_AWAYMSG			300
+#define GG_SEQ_GETNICK			400
+#define GG_SEQ_CHINFO			500
 
 // Services
-#define GGS_IMPORT_SERVER       "%s/ImportFromServer"
-#define GGS_REMOVE_SERVER       "%s/RemoveFromServer"
-#define GGS_IMPORT_TEXT         "%s/ImportFromText"
-#define GGS_EXPORT_SERVER       "%s/ExportFromServer"
-#define GGS_EXPORT_TEXT         "%s/ExportFromText"
-#define GGS_CHPASS              "%s/ChangePassword"
+#define GGS_IMPORT_SERVER		"%s/ImportFromServer"
+#define GGS_REMOVE_SERVER		"%s/RemoveFromServer"
+#define GGS_IMPORT_TEXT 		"%s/ImportFromText"
+#define GGS_EXPORT_SERVER		"%s/ExportFromServer"
+#define GGS_EXPORT_TEXT 		"%s/ExportFromText"
+#define GGS_CHPASS				"%s/ChangePassword"
 
-#define GGS_SENDIMAGE           "%s/SendImage"
-#define GGS_RECVIMAGE           "%s/RecvImage"
+#define GGS_SENDIMAGE			"%s/SendImage"
+#define GGS_RECVIMAGE			"%s/RecvImage"
 
 // Keys
-#define GG_PLUGINVERSION  		"Version"		// Plugin version.. user for cleanup from previous versions
+#define GG_PLUGINVERSION		"Version"		// Plugin version.. user for cleanup from previous versions
 
-#define GG_KEY_UIN				"UIN"           // Uin - unique number
-#define GG_KEY_PASSWORD			"Password"      // Password
+#define GG_KEY_UIN				"UIN"			// Uin - unique number
+#define GG_KEY_PASSWORD			"Password"		// Password
 #define GG_KEY_EMAIL			"e-mail"		// E-mail
-#define GG_KEY_STATUS			"Status"        // Status
+#define GG_KEY_STATUS			"Status"		// Status
 #define GG_KEY_STARTUPSTATUS	"StartupStatus" // Status used when starting up
-#define GG_KEY_NICK				"Nick"          // Nick
-#define GG_KEY_STATUSDESCR		"StatusMsg"     // Users status description, to be compatible with MWClist
-                                                // should be stored in "CList" group
-#define GG_KEY_KEEPALIVE		"KeepAlive"     // Keep-alive support
+#define GG_KEY_NICK				"Nick"			// Nick
+#define GG_KEY_STATUSDESCR		"StatusMsg" 	// Users status description, to be compatible with MWClist
+												// should be stored in "CList" group
+#define GG_KEY_KEEPALIVE		"KeepAlive" 	// Keep-alive support
 #define GG_KEYDEF_KEEPALIVE		1
 
-#define GG_KEY_SHOWCERRORS		"ShowCErrors"   // Show connection errors
+#define GG_KEY_SHOWCERRORS		"ShowCErrors"	// Show connection errors
 #define GG_KEYDEF_SHOWCERRORS	1
 
-#define GG_KEY_ARECONNECT		"AReconnect"    // Automatically reconnect
+#define GG_KEY_ARECONNECT		"AReconnect"	// Automatically reconnect
 #define GG_KEYDEF_ARECONNECT	0
 
 #define GG_KEY_LEAVESTATUSMSG	"LeaveStatusMsg"// Leave status msg when disconnected
 #define GG_KEYDEF_LEAVESTATUSMSG 0
-#define GG_KEY_LEAVESTATUS      "LeaveStatus"
-#define GG_KEYDEF_LEAVESTATUS   0
+#define GG_KEY_LEAVESTATUS		"LeaveStatus"
+#define GG_KEYDEF_LEAVESTATUS	0
 
-#define GG_KEY_FRIENDSONLY		"FriendsOnly"   // Friend only visibility
+#define GG_KEY_FRIENDSONLY		"FriendsOnly"	// Friend only visibility
 #define GG_KEYDEF_FRIENDSONLY	0
 
-#define GG_KEY_SHOWNOTONMYLIST		"ShowNotOnMyList"   // Show contacts having me on their list but not on my list
+#define GG_KEY_SHOWNOTONMYLIST		"ShowNotOnMyList"	// Show contacts having me on their list but not on my list
 #define GG_KEYDEF_SHOWNOTONMYLIST	0
 
 #define GG_KEY_SHOWINVISIBLE	"ShowInvisible" // Show invisible users when described
 #define GG_KEYDEF_SHOWINVISIBLE	0
 
-#define GG_KEY_IGNORECONF	    "IgnoreConf"    // Ignore incoming conference messages
+#define GG_KEY_IGNORECONF		"IgnoreConf"	// Ignore incoming conference messages
 #define GG_KEYDEF_IGNORECONF	0
 
-#define GG_KEY_IMGRECEIVE	    "ReceiveImg"    // Popup image window automatically
+#define GG_KEY_IMGRECEIVE		"ReceiveImg"	// Popup image window automatically
 #define GG_KEYDEF_IMGRECEIVE	1
 
-#define GG_KEY_IMGMETHOD	    "PopupImg"      // Popup image window automatically
+#define GG_KEY_IMGMETHOD		"PopupImg"		// Popup image window automatically
 #define GG_KEYDEF_IMGMETHOD		1
 
 // Hidden option
-#define GG_KEY_STARTINVISIBLE   "StartInvisible"// Starts as invisible
+#define GG_KEY_STARTINVISIBLE	"StartInvisible"// Starts as invisible
 #define GG_KEYDEF_STARTINVISIBLE 0
 
-#define GG_KEY_MSGACK			"MessageAck"   		// Acknowledge when sending msg
+#define GG_KEY_MSGACK			"MessageAck"		// Acknowledge when sending msg
 #define GG_KEYDEF_MSGACK		1
 
-#define GG_KEY_MANUALHOST		"ManualHost"    // Specify by hand server host/port
+#define GG_KEY_MANUALHOST		"ManualHost"	// Specify by hand server host/port
 #define GG_KEYDEF_MANUALHOST	0
-// #define GG_KEY_SERVERHOST		"ServerHost"    // Host (depreciated)
-// #define GG_KEY_SERVERPORT		"ServerPort"    // Port (depreciated)
+// #define GG_KEY_SERVERHOST		"ServerHost"	// Host (depreciated)
+// #define GG_KEY_SERVERPORT		"ServerPort"	// Port (depreciated)
 #define GG_KEY_SSLCONN			"SSLConnection" // Use SSL/TLS for connections
 #define GG_KEYDEF_SSLCONN		0
-#define GG_KEY_SERVERHOSTS		"ServerHosts"   // NL separated list of hosts for server connection
-#define GG_KEYDEF_SERVERHOSTS   "217.17.41.83\r\n217.17.41.85\r\n217.17.41.88\r\n217.17.41.89\r\n217.17.41.92\r\n217.17.41.93"
+#define GG_KEY_SERVERHOSTS		"ServerHosts"	// NL separated list of hosts for server connection
+#define GG_KEYDEF_SERVERHOSTS	"217.17.41.83\r\n217.17.41.85\r\n217.17.41.88\r\n217.17.41.89\r\n217.17.41.92\r\n217.17.41.93"
 
 
-#define GG_KEY_CLIENTIP 		"IP"      		// Contact IP (by notify)
-#define GG_KEY_CLIENTPORT		"ClientPort"    // Contact port
-#define GG_KEY_CLIENTVERSION "ClientVersion"    // Contact app version
+#define GG_KEY_CLIENTIP 		"IP"			// Contact IP (by notify)
+#define GG_KEY_CLIENTPORT		"ClientPort"	// Contact port
+#define GG_KEY_CLIENTVERSION "ClientVersion"	// Contact app version
 
-#define GG_KEY_DIRECTCONNS		"DirectConns"   // Use direct connections
+#define GG_KEY_DIRECTCONNS		"DirectConns"	// Use direct connections
 #define GG_KEYDEF_DIRECTCONNS	1
-#define GG_KEY_DIRECTPORT		"DirectPort"    // Direct connections port
+#define GG_KEY_DIRECTPORT		"DirectPort"	// Direct connections port
 #define GG_KEYDEF_DIRECTPORT	1550
 
-#define GG_KEY_FORWARDING		"Forwarding"    // Use forwarding
+#define GG_KEY_FORWARDING		"Forwarding"	// Use forwarding
 #define GG_KEYDEF_FORWARDING	0
-#define GG_KEY_FORWARDHOST		"ForwardHost"   // Forwarding host (firewall)
-#define GG_KEY_FORWARDPORT		"ForwardPort"   // Forwarding port (firewall port)
-#define GG_KEYDEF_FORWARDPORT	1550    		// Forwarding port (firewall port)
+#define GG_KEY_FORWARDHOST		"ForwardHost"	// Forwarding host (firewall)
+#define GG_KEY_FORWARDPORT		"ForwardPort"	// Forwarding port (firewall port)
+#define GG_KEYDEF_FORWARDPORT	1550			// Forwarding port (firewall port)
 
-#define GG_KEY_GC_POLICY_UNKNOWN        "GCPolicyUnknown"
-#define GG_KEYDEF_GC_POLICY_UNKNOWN     1
+#define GG_KEY_GC_POLICY_UNKNOWN		"GCPolicyUnknown"
+#define GG_KEYDEF_GC_POLICY_UNKNOWN 	1
 
-#define GG_KEY_GC_COUNT_UNKNOWN         "GCCountUnknown"
-#define GG_KEYDEF_GC_COUNT_UNKNOWN      5
+#define GG_KEY_GC_COUNT_UNKNOWN 		"GCCountUnknown"
+#define GG_KEYDEF_GC_COUNT_UNKNOWN		5
 
-#define GG_KEY_GC_POLICY_TOTAL          "GCPolicyTotal"
-#define GG_KEYDEF_GC_POLICY_TOTAL       1
+#define GG_KEY_GC_POLICY_TOTAL			"GCPolicyTotal"
+#define GG_KEYDEF_GC_POLICY_TOTAL		1
 
-#define GG_KEY_GC_COUNT_TOTAL           "GCCountTotal"
-#define GG_KEYDEF_GC_COUNT_TOTAL        10
+#define GG_KEY_GC_COUNT_TOTAL			"GCCountTotal"
+#define GG_KEYDEF_GC_COUNT_TOTAL		10
 
-#define GG_KEY_GC_POLICY_DEFAULT        "GCPolicyDefault"
-#define GG_KEYDEF_GC_POLICY_DEFAULT     0
+#define GG_KEY_GC_POLICY_DEFAULT		"GCPolicyDefault"
+#define GG_KEYDEF_GC_POLICY_DEFAULT 	0
 
-#define GG_KEY_DELETEUSER		"DeleteUser"    // When user is deleted
+#define GG_KEY_DELETEUSER		"DeleteUser"	// When user is deleted
 
-#define GG_KEY_APPARENT         "ApparentMode"  // Visible list
+#define GG_KEY_APPARENT 		"ApparentMode"	// Visible list
 
 #define GG_KEY_TIMEDEVIATION	"TimeDeviation" // Max time deviation for connections (seconds)
 #define GG_KEYDEF_TIMEDEVIATION	300
@@ -288,16 +288,16 @@ extern list_t ggThreadList;
 extern HANDLE hNetlib;
 extern HANDLE hLibSSL;
 extern HANDLE hLibEAY;
-extern pthread_mutex_t threadMutex;     // Used when modifying thread structure
-extern pthread_mutex_t modeMsgsMutex;   // Used when modifying away msgs structure
+extern pthread_mutex_t threadMutex; 	// Used when modifying thread structure
+extern pthread_mutex_t modeMsgsMutex;	// Used when modifying away msgs structure
 extern char *ggTokenid;
 extern char *ggTokenval;
 struct gg_status_msgs
 {
-    char *szOnline;
-    char *szAway;
-    char *szInvisible;
-    char *szOffline;
+	char *szOnline;
+	char *szAway;
+	char *szInvisible;
+	char *szOffline;
 };
 extern struct gg_status_msgs ggModeMsg;
 extern uin_t nextUIN;

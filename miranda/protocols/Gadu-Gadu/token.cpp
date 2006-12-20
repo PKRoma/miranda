@@ -39,13 +39,13 @@ int tokenheight = 0;
 // User Util Dlg Page : Data
 BOOL CALLBACK gg_tokendlgproc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam)
 {
-    switch(msg)
-    {
-        case WM_INITDIALOG:
-            TranslateDialogDefault(hwndDlg);
+	switch(msg)
+	{
+		case WM_INITDIALOG:
+			TranslateDialogDefault(hwndDlg);
 			RECT rc; GetClientRect(GetDlgItem(hwndDlg, IDC_WHITERECT), &rc);
 			InvalidateRect(hwndDlg, &rc, TRUE);
-            return TRUE;
+			return TRUE;
 
 		case WM_CTLCOLORSTATIC:
 			/*
@@ -57,21 +57,21 @@ BOOL CALLBACK gg_tokendlgproc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPar
 			}
 			*/
 			break;
-        case WM_COMMAND:
-            switch(LOWORD(wParam))
-            {
-                case IDOK:
-                {
+		case WM_COMMAND:
+			switch(LOWORD(wParam))
+			{
+				case IDOK:
+				{
 					GetDlgItemText(hwndDlg, IDC_TOKEN, strtokenval, sizeof(strtokenval));
 					EndDialog(hwndDlg, IDOK);
-                    break;
-                }
-                case IDCANCEL:
-                    EndDialog(hwndDlg, IDCANCEL);
-                    break;
-            }
-            break;
-        case WM_PAINT:
+					break;
+				}
+				case IDCANCEL:
+					EndDialog(hwndDlg, IDCANCEL);
+					break;
+			}
+			break;
+		case WM_PAINT:
 			{
 				PAINTSTRUCT paintStruct;
 				HDC hdc = BeginPaint(hwndDlg, &paintStruct);
@@ -101,10 +101,10 @@ BOOL CALLBACK gg_tokendlgproc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPar
 			}
 			break;
 
-        case WM_DESTROY:
-            break;
-    }
-    return FALSE;
+		case WM_DESTROY:
+			break;
+	}
+	return FALSE;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -155,8 +155,8 @@ int gg_gettoken()
 	// Lock memory for reading
 	LPVOID pvData = GlobalLock(hGlobal);
 	if (pvData == NULL)
-    {
-        GlobalUnlock(hGlobal);
+	{
+		GlobalUnlock(hGlobal);
 		MessageBox(
 				NULL,
 				Translate("Could not lock memory for token."),
@@ -164,16 +164,16 @@ int gg_gettoken()
 				MB_OK | MB_ICONSTOP
 		);
 		gg_free_pubdir(h);
-        return FALSE;
-    }
+		return FALSE;
+	}
 	memcpy(pvData, h->body, h->body_size);
-    GlobalUnlock(hGlobal);
+	GlobalUnlock(hGlobal);
 
 	// Create IStream* from global memory
 	LPSTREAM pstm = NULL;
-    HRESULT hr = CreateStreamOnHGlobal(hGlobal,TRUE, &pstm);
-    if (!(SUCCEEDED(hr)) || (pstm == NULL))
-    {
+	HRESULT hr = CreateStreamOnHGlobal(hGlobal,TRUE, &pstm);
+	if (!(SUCCEEDED(hr)) || (pstm == NULL))
+	{
 		MessageBox(
 				NULL,
 				Translate("CreateStreamOnHGlobal() failed for token."),
@@ -181,34 +181,34 @@ int gg_gettoken()
 				MB_OK | MB_ICONSTOP
 		);
 
-        if (pstm != NULL) pstm->Release();
+		if (pstm != NULL) pstm->Release();
 		gg_free_pubdir(h);
-        return FALSE;
-    }
+		return FALSE;
+	}
 
 	// Create IPicture from image file
 	if (tokenPicture) tokenPicture->Release();
-    hr = OleLoadPicture(pstm, h->body_size, FALSE, IID_IPicture,
-                          (LPVOID *)&tokenPicture);
+	hr = OleLoadPicture(pstm, h->body_size, FALSE, IID_IPicture,
+						  (LPVOID *)&tokenPicture);
 
 	// Free gg structs
 	gg_free_pubdir(h);
 	// Check results
-    if (!(SUCCEEDED(hr)) || (tokenPicture == NULL))
-    {
-    	pstm->Release();
+	if (!(SUCCEEDED(hr)) || (tokenPicture == NULL))
+	{
+		pstm->Release();
 		MessageBox(
 				NULL,
 				Translate("Could not load image (hr failure) for token."),
 				GG_PROTOERROR,
 				MB_OK | MB_ICONSTOP
 		);
-        return FALSE;
-    }
-    pstm->Release();
+		return FALSE;
+	}
+	pstm->Release();
 
 	// Load token dialog
-    if(DialogBoxParam(hInstance, MAKEINTRESOURCE(IDD_TOKEN), NULL, gg_tokendlgproc, 0) == IDCANCEL)
+	if(DialogBoxParam(hInstance, MAKEINTRESOURCE(IDD_TOKEN), NULL, gg_tokendlgproc, 0) == IDCANCEL)
 	{
 		return FALSE;
 	}

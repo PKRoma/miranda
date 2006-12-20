@@ -4,10 +4,10 @@
 ####################################################################
 #
 # TARGETS:
-# all       Compiles dll into debug directory (create dir first)
-# depend    Generate dependancy file (Makefile.dep)
-# format    Formats the source files using GNU Indent
-# clean     Cleans object files
+# all		Compiles dll into debug directory (create dir first)
+# depend	Generate dependancy file (Makefile.dep)
+# format	Formats the source files using GNU Indent
+# clean 	Cleans object files
 #
 ####################################################################
 #
@@ -15,8 +15,8 @@
 #
 # Example Usage: 'make DEBUG=1'
 #
-# DEBUG     Compiles with debug options on
-# INC       Miranda SDK headers
+# DEBUG 	Compiles with debug options on
+# INC		Miranda SDK headers
 #
 ####################################################################
 #
@@ -25,14 +25,14 @@
 # http://mingw.org/.  I have only tested on MinGW Version 2.0.0
 # (using the latest package updates).  Older versions make work as
 # well.  You will also need a copy of rm.exe for the make clean to
-# work (http://unxutils.sourceforge.net/).  Make sure you create a
+# work (http://unxutils.sourceforge.net/).	Make sure you create a
 # 'debug\plugins' directory in the root directory of this cvs
-# module or the compile will fail.  To format the code (format
+# module or the compile will fail.	To format the code (format
 # target) you will need GNU Indent from:
 # http://gnuwin32.sourceforge.net/.  Indent.exe will need to be in
 # the path or in the same directory as the source.
 ####################################################################
-CFILES = 	gg.c \
+CFILES =	gg.c \
 			keepalive.c \
 			dialogs.c \
 			pthread.c \
@@ -45,7 +45,7 @@ CFILES = 	gg.c \
 			ssl.c \
 			core.c \
 			groupchat.c
-CPPFILES = 	token.cpp \
+CPPFILES =	token.cpp \
 			image.cpp
 
 OBJ = $(CFILES:.c=.o) $(CPPFILES:.cpp=.o)
@@ -79,7 +79,7 @@ endif
 
 # Flags
 #LFLAGS  = --no-export-all-symbols --add-stdcall-alias
-LFLAGS  = -shared
+LFLAGS	= -shared
 RCFLAGS = --input-format rc --output-format coff
 ifdef DEBUG
 CFLAGS = -g $(DEFINES) $(INC)
