@@ -602,7 +602,11 @@ int ContactSettingChanged(WPARAM wParam,LPARAM lParam)
 		if(!strcmp(cws->szModule,"CList")) 
 		{
 			//name is null or (setting is myhandle)
-			if (pdnce->name==NULL || !strcmp(cws->szSetting,"MyHandle"))
+            if (!strcmp(cws->szSetting,"Rate"))
+            {
+                pcli->pfnClcBroadcast(CLM_AUTOREBUILD, 0, 0);
+            }
+			else if (pdnce->name==NULL || !strcmp(cws->szSetting,"MyHandle"))
 			{
 				InvalidateDNCEbyPointer((HANDLE)wParam,pdnce,cws->value.type);
 			}
@@ -624,6 +628,7 @@ int ContactSettingChanged(WPARAM wParam,LPARAM lParam)
 			else if(!strcmp(cws->szSetting,"noOffline")) 
 			{
 				InvalidateDNCEbyPointer((HANDLE)wParam,pdnce,cws->value.type);		
+                pcli->pfnClcBroadcast(CLM_AUTOREBUILD,0, 0);
 			}
 		}
 		else if(!strcmp(cws->szModule,"Protocol")) 

@@ -1384,6 +1384,18 @@
 				RelativePath=".\res\phone.ico">
 			</File>
 			<File
+				RelativePath=".\res\rate_high.ico">
+			</File>
+			<File
+				RelativePath=".\res\rate_low.ico">
+			</File>
+			<File
+				RelativePath=".\res\rate_med.ico">
+			</File>
+			<File
+				RelativePath=".\res\rate_none.ico">
+			</File>
+			<File
 				RelativePath=".\res\rename.ico">
 			</File>
 			<File

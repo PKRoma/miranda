@@ -289,6 +289,7 @@ struct ClcContact {
 	RECT pos_contact_time;
 	RECT pos_extra[MAXEXTRACOLUMNS];
     DWORD lastPaintCounter;
+    BYTE bContactRate;
 };
 
 

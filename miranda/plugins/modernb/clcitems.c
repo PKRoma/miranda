@@ -222,6 +222,7 @@ if (group->cl.items[i]->timezone != -1)
 	Cache_GetTimezone(dat, group->cl.items[i]->hContact);
 	Cache_GetText(dat, group->cl.items[i],1);
 	ClearRowByIndexCache();
+    group->cl.items[i]->bContactRate=DBGetContactSettingByte(hContact, "CList", "Rate",0);
 	return group->cl.items[i];
 }
 

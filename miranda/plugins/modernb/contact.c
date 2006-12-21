@@ -157,6 +157,8 @@ int CompareContacts2(const struct ClcContact *contact1,const struct ClcContact *
 
 		if (rc != 0 && (szProto1 != NULL && szProto2 != NULL)) return rc;
 	}
+    else if (by==SORTBY_RATE)
+        return contact2->bContactRate-contact1->bContactRate;
 	// else :o)
 	return 0;
 }

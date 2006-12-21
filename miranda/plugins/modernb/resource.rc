@@ -380,6 +380,10 @@ IDI_ALWAYSVIS           ICON                    "res\\AlwaysVis.ico"
 IDI_NEVERVIS            ICON                    "res\\NeverVis.ico"
 IDI_DELETE              ICON                    "res\\delete.ico"
 IDI_CHAT                ICON                    "res\\Chatchannel.ico"
+IDI_FAVORITE_0          ICON                    "res\\rate_none.ico"
+IDI_FAVORITE_1          ICON                    "res\\rate_low.ico"
+IDI_FAVORITE_2          ICON                    "res\\rate_med.ico"
+IDI_FAVORITE_3          ICON                    "res\\rate_high.ico"
 
 /////////////////////////////////////////////////////////////////////////////
 //

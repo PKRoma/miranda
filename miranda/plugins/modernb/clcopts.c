@@ -1644,8 +1644,9 @@ static BOOL CALLBACK DlgProcGenOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARA
 		CheckDlgButton(hwndDlg, IDC_DISABLEGROUPS, DBGetContactSettingByte(NULL,"CList","UseGroups",SETTING_USEGROUPS_DEFAULT) ? BST_UNCHECKED : BST_CHECKED);
 		{
 			int i, item;
-			TCHAR *sortby[]={_T("Name"), _T("Status"), _T("Last message time"), _T("Protocol"), _T("-Nothing-")};
-			for (i=0; i<sizeof(sortby)/sizeof(char*); i++) {
+			TCHAR *sortby[]={_T("Name"), _T("Status"), _T("Last message time"), _T("Protocol"),_T("Rate"), _T("-Nothing-")};
+			for (i=0; i<sizeof(sortby)/sizeof(char*); i++) 
+            {
 				item=SendDlgItemMessage(hwndDlg,IDC_CLSORT1,CB_ADDSTRING,0,(LPARAM)TranslateTS(sortby[i]));
 				SendDlgItemMessage(hwndDlg,IDC_CLSORT1,CB_SETITEMDATA,item,(LPARAM)0);
 				item=SendDlgItemMessage(hwndDlg,IDC_CLSORT2,CB_ADDSTRING,0,(LPARAM)TranslateTS(sortby[i]));

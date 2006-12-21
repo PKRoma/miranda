@@ -182,6 +182,12 @@
 #define IDI_ICON5                       455
 #define IDI_CHAT                        455
 #define IDI_LISTENING_TO                456
+//have to be sequenced
+#define IDI_FAVORITE_0                  500
+#define IDI_FAVORITE_1                  501
+#define IDI_FAVORITE_2                  502
+#define IDI_FAVORITE_3                  503
+//
 #define IDC_RESETPROTOCOLDATA           1000
 #define IDC_SAVE                        1001
 #define IDC_DEFBKCOLOR                  1001
@@ -1004,7 +1010,7 @@
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
-#define _APS_NEXT_RESOURCE_VALUE        456
+#define _APS_NEXT_RESOURCE_VALUE        461
 #define _APS_NEXT_COMMAND_VALUE         40020
 #define _APS_NEXT_CONTROL_VALUE         2002
 #define _APS_NEXT_SYMED_VALUE           101
