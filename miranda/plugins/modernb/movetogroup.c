@@ -210,6 +210,7 @@ static HANDLE hOnContactMenuBuild_FAV=NULL;
 static int FAV_OnContactMenuBuild(WPARAM wParam,LPARAM lParam)
 {
     CLISTMENUITEM mi;
+    BOOL NeedFree=FALSE;
     BYTE bContactRate=DBGetContactSettingByte((HANDLE)wParam, "CList", "Rate",0);
     //if (hFavoriteContactMenu)
     TCHAR *rates[]={
@@ -217,6 +218,13 @@ static int FAV_OnContactMenuBuild(WPARAM wParam,LPARAM lParam)
             _T("Low"),
             _T("Medium"),
             _T("High") };
+    
+    char* iconsName[]={
+                "Contact rate None",
+                "Contact rate Low",
+                "Contact rate Medium",
+                "Contact rate High" };
+
     if (bContactRate>SIZEOF(rates)-1)
         bContactRate=SIZEOF(rates)-1;
     if (hFavoriteContactMenu)
@@ -230,7 +238,8 @@ static int FAV_OnContactMenuBuild(WPARAM wParam,LPARAM lParam)
 
         memset(&mi,0,sizeof(mi));
         mi.cbSize=sizeof(mi);
-        mi.hIcon=LoadSmallIcon(g_hInst,MAKEINTRESOURCE(IDI_FAVORITE_0 + bContactRate));
+        mi.hIcon=CLUI_LoadIconFromExternalFile("clisticons.dll",8,TRUE,TRUE,iconsName[bContactRate],"Contact List",Translate(iconsName[bContactRate]),-IDI_FAVORITE_0 - bContactRate, &NeedFree);
+           // LoadSmallIcon(g_hInst,MAKEINTRESOURCE(IDI_FAVORITE_0 + bContactRate));
         mi.pszPopupName=(char *)-1;
         mi.position=0;
         if (!bContactRate)
@@ -244,20 +253,22 @@ static int FAV_OnContactMenuBuild(WPARAM wParam,LPARAM lParam)
         }
         mi.flags=CMIF_ROOTPOPUP|CMIF_TCHAR;
         hFavoriteContactMenu=(HANDLE)CallService(MS_CLIST_ADDCONTACTMENUITEM, 0, (LPARAM)&mi);
-        if (mi.hIcon) DestroyIcon(mi.hIcon);
+        CallService(MS_SKIN2_RELEASEICON,(WPARAM)mi.hIcon,0);
+        if (mi.hIcon && NeedFree) DestroyIcon(mi.hIcon);
 
         mi.pszPopupName=(char*)hFavoriteContactMenu;
         if (!hFavoriteContactMenuItems)
             hFavoriteContactMenuItems=(HANDLE)malloc(sizeof(HANDLE)*SIZEOF(rates));
         for (i=0; i<SIZEOF(rates); i++)
         {
-            mi.hIcon=LoadSmallIcon(g_hInst,MAKEINTRESOURCE(IDI_FAVORITE_0 + i));               
+            mi.hIcon=mi.hIcon=CLUI_LoadIconFromExternalFile("clisticons.dll",8+i,TRUE,TRUE,iconsName[i],"Contact List",Translate(iconsName[i]),-IDI_FAVORITE_0 - i, &NeedFree);
             mi.ptszName=rates[i];
             mi.flags=CMIF_CHILDPOPUP|CMIF_TCHAR|((bContactRate==i)?CMIF_CHECKED:0);
             mi.pszService=CLUI_FAVSETRATE;
             mi.popupPosition=i;
             hFavoriteContactMenuItems[i]=(HANDLE)CallService(MS_CLIST_ADDCONTACTMENUITEM, 0, (LPARAM)&mi);
-            if (mi.hIcon) DestroyIcon(mi.hIcon);
+            CallService(MS_SKIN2_RELEASEICON,(WPARAM)mi.hIcon,0);
+            if (mi.hIcon && NeedFree) DestroyIcon(mi.hIcon);
         }
         {
             mi.hIcon=NULL;
