@@ -979,7 +979,7 @@ void Cache_GetFirstLineText(struct ClcData *dat, struct ClcContact *contact)
 
 void Cache_GetSecondLineText(struct SHORTDATA *dat, PDNCE pdnce)
 {
-    TCHAR Text[120-MAXEXTRACOLUMNS]={0};
+    TCHAR Text[240-MAXEXTRACOLUMNS]={0};
     int type = TEXT_EMPTY;
    
     if (dat->second_line_show)	
@@ -1017,7 +1017,7 @@ void Cache_GetSecondLineText(struct SHORTDATA *dat, PDNCE pdnce)
 */
 void Cache_GetThirdLineText(struct SHORTDATA *dat, PDNCE pdnce)
 {
-    TCHAR Text[120-MAXEXTRACOLUMNS]={0};
+    TCHAR Text[240-MAXEXTRACOLUMNS]={0};
     int type = TEXT_EMPTY;
     if (dat->third_line_show)
         type = Cache_GetLineText(pdnce, dat->third_line_type,(TCHAR*)Text, SIZEOF(Text), dat->third_line_text,
