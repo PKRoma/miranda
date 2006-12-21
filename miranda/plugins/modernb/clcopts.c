@@ -221,7 +221,7 @@ static struct TabItemOptionConf
 	{ _T("Window"), IDD_OPT_CLUI, DlgProcCluiOpts },
 	{ _T("Behaviour"), IDD_OPT_CLUI_2, DlgProcCluiOpts2 },
 	{ _T("Status Bar"), IDD_OPT_SBAR, DlgProcSBarOpts},	
-	{ _T("Additional stuffs"), IDD_OPT_META_CLC, DlgProcClcMetaOpts },
+	{ _T("Additional stuff"), IDD_OPT_META_CLC, DlgProcClcMetaOpts },
 	{ 0 }
 };
 

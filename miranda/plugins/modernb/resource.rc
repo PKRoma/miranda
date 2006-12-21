@@ -145,7 +145,7 @@ BEGIN
                     32,11
     LTEXT           "WARNING: \tSkins can modify your current profile. Rollback is not possible. \n\t\tPlease BACKUP your database before applying skin.",
                     IDC_STATIC,3,188,294,17
-    LTEXT           "* Restart can be required to all changes take effect",
+    LTEXT           "* Restart may be required for all changes to take effect",
                     IDC_STATIC,3,210,200,8
     COMBOBOX        IDC_COMBO1,177,189,123,76,CBS_DROPDOWN | CBS_SORT | NOT 
                     WS_VISIBLE | WS_VSCROLL | WS_TABSTOP
