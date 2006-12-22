@@ -1062,23 +1062,26 @@ static BOOL CALLBACK DlgProcOptions2(HWND hwndDlg,UINT uMsg,WPARAM wParam,LPARAM
 	case WM_NOTIFY:
 		if (((LPNMHDR)lParam)->idFrom == 0 && ((LPNMHDR)lParam)->code == PSN_APPLY ) {
 			int iLen;
-			char * pszText = NULL;
-			char * p2 = NULL;
+			TCHAR *p2 = NULL;
+			char  *pszText = NULL;
             
             if (g_chat_integration_enabled) {
                 iLen = GetWindowTextLength(GetDlgItem(hwndDlg, IDC_HIGHLIGHTWORDS));
                 if ( iLen > 0 ) {
-                    pszText = realloc(pszText, iLen+1);
-                    GetDlgItemTextA(hwndDlg, IDC_HIGHLIGHTWORDS, pszText,iLen+1);
-                    p2 = strchr(pszText, ',');
-                    while ( p2 ) {
-                        *p2 = ' ';
-                        p2 = strchr(pszText, ',');
-                    }
-
-                    DBWriteContactSettingString(NULL, "Chat", "HighlightWords", pszText);
+					TCHAR *ptszText = malloc((iLen + 2) * sizeof(TCHAR));
+					if(ptszText) {
+						GetDlgItemText(hwndDlg, IDC_HIGHLIGHTWORDS, ptszText, iLen+1);
+						p2 = _tcschr(ptszText, (TCHAR)',');
+						while (p2) {
+							*p2 = (TCHAR)' ';
+							p2 = _tcschr(ptszText, ',');
+						}
+						DBWriteContactSettingTString(NULL, "Chat", "HighlightWords", ptszText);
+						free(ptszText);
+					}
                 }
-                else DBDeleteContactSetting(NULL, "Chat", "HighlightWords");
+                else 
+                    DBDeleteContactSetting(NULL, "Chat", "HighlightWords");
 
                 iLen = GetWindowTextLength(GetDlgItem(hwndDlg, IDC_LOGDIRECTORY));
                 if ( iLen > 0 ) {
