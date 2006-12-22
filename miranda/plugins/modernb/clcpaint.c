@@ -180,6 +180,7 @@ HFONT CLCPaint_ChangeToFont(HDC hdc,struct ClcData *dat,int id,int *fontHeight)
     res=SelectObject(hdc,dat->fontModernInfo[id].hFont);
     SetTextColor(hdc,dat->fontModernInfo[id].colour);
     if(fontHeight) *fontHeight=dat->fontModernInfo[id].fontHeight;
+    SkinEngine_ResetTextEffect(hdc);
     if (dat->hWnd==pcli->hwndContactTree && dat->fontModernInfo[id].effect!=0)
         SkinEngine_SelectTextEffect(hdc,dat->fontModernInfo[id].effect-1,dat->fontModernInfo[id].effectColour1,dat->fontModernInfo[id].effectColour2);
     else SkinEngine_ResetTextEffect(hdc);

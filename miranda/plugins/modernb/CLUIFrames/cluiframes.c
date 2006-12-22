@@ -3124,6 +3124,8 @@ int DrawTitleBar(HDC hdcMem2,RECT rect,int Frameid)
 
 
   hoTTBFont=SelectObject(hdcMem,TitleBarFont);
+  SkinEngine_ResetTextEffect(hdcMem);
+  SkinEngine_ResetTextEffect(hdcMem2);
   hBack=GetSysColorBrush(COLOR_3DFACE);
   hoBrush=SelectObject(hdcMem,hBack);  
   lockfrm();
