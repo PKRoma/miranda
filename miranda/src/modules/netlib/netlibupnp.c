@@ -94,7 +94,7 @@ static int expireTime = 120;
 
 static WORD *portList;
 static unsigned numports, numportsAlloc;
-HANDLE portListMutex, cleanupThread;
+HANDLE portListMutex;
 
 static char szCtlUrl[256], szDev[256];
 
@@ -279,6 +279,7 @@ static int httpTransact(char* szUrl, char* szResult, int resSize, char* szAction
 	char szHost[256], szPath[256], szRes[6];
 	int sz, res = 0;
 	unsigned short sPort;
+	SOCKET sock = INVALID_SOCKET;
 
 	char* szPostHdr = soap_post_hdr;
 	char* szData = mir_alloc(4096);
@@ -306,11 +307,12 @@ static int httpTransact(char* szUrl, char* szResult, int resSize, char* szAction
 		{
 			static TIMEVAL tv = { 5, 0 };
 			static unsigned ttl = 4;
+			static u_long mode = 1; 
 			fd_set readfd;
-
-			SOCKET sock = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
-
 			SOCKADDR_IN enetaddr;
+
+			sock = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
+
 			enetaddr.sin_family = AF_INET;
 			enetaddr.sin_port = htons(sPort);
 			enetaddr.sin_addr.s_addr = inet_addr(szHost);
@@ -329,58 +331,70 @@ static int httpTransact(char* szUrl, char* szResult, int resSize, char* szAction
 
 			setsockopt(sock, IPPROTO_IP, IP_TTL, (char *)&ttl, sizeof(unsigned));
 
-			if (connect(sock, (SOCKADDR*)&enetaddr, sizeof(enetaddr)) == 0)
+			ioctlsocket(sock, FIONBIO, &mode);
+
+			if (connect(sock, (SOCKADDR*)&enetaddr, sizeof(enetaddr)) == SOCKET_ERROR)
 			{
-				if (send( sock, szData, sz, 0 ) != SOCKET_ERROR)
+				int err = WSAGetLastError();
+				
+				if (err != WSAEWOULDBLOCK)
 				{
-					LongLog(szData);
-					sz = 0;
-					for(;;) 
-					{
-						int bytesRecv;
-						char *hdrend;
-
-						if (select(0, &readfd, NULL, NULL, &tv) != 1) 
-						{
-							Netlib_Logf(NULL, "UPnP select timeout"); 
-							break;
-						}
-
-						bytesRecv = recv( sock, &szResult[sz], resSize-sz, 0 );
-						if ( bytesRecv == 0 || bytesRecv == SOCKET_ERROR) 
-							break;
-						else
-							sz += bytesRecv;
-
-						if (sz >= (resSize-1)) 
-						{
-							szResult[resSize-1] = 0;
-							break;
-						}
-						else
-							szResult[sz] = 0;
-
-						hdrend = strstr(szResult, "\r\n\r\n");
-						if (hdrend != NULL &&
-						   (txtParseParam(szResult, NULL, "Content-Length:", "\r", szRes, sizeof(szRes)) ||
-						    txtParseParam(szResult, NULL, "CONTENT-LENGTH:", "\r", szRes, sizeof(szRes))))
-						{
-							int pktsz = atol(szRes) + (hdrend - szResult + 4);
-							if (sz >= pktsz)
-							{
-								szResult[pktsz] = 0;
-								break;
-							}
-						}
-
-					}
-					LongLog(szResult);
+					Netlib_Logf(NULL, "UPnP connect failed %d", err);
+					break;
 				}
-				else
-					Netlib_Logf(NULL, "UPnP send failed %d", WSAGetLastError()); 
+				else if (select(-1, NULL, &readfd, NULL, &tv) != 1) 
+				{
+					Netlib_Logf(NULL, "UPnP connect timeout");
+					break;
+				}
+			}
+			if (send( sock, szData, sz, 0 ) != SOCKET_ERROR)
+			{
+				LongLog(szData);
+				sz = 0;
+				for(;;) 
+				{
+					int bytesRecv;
+					char *hdrend;
+
+					if (select(0, &readfd, NULL, NULL, &tv) != 1) 
+					{
+						Netlib_Logf(NULL, "UPnP recieve timeout"); 
+						break;
+					}
+
+					bytesRecv = recv( sock, &szResult[sz], resSize-sz, 0 );
+					if ( bytesRecv == 0 || bytesRecv == SOCKET_ERROR) 
+						break;
+					else
+						sz += bytesRecv;
+
+					if (sz >= (resSize-1)) 
+					{
+						szResult[resSize-1] = 0;
+						break;
+					}
+					else
+						szResult[sz] = 0;
+
+					hdrend = strstr(szResult, "\r\n\r\n");
+					if (hdrend != NULL &&
+						(txtParseParam(szResult, NULL, "Content-Length:", "\r", szRes, sizeof(szRes)) ||
+						txtParseParam(szResult, NULL, "CONTENT-LENGTH:", "\r", szRes, sizeof(szRes))))
+					{
+						int pktsz = atol(szRes) + (hdrend - szResult + 4);
+						if (sz >= pktsz)
+						{
+							szResult[pktsz] = 0;
+							break;
+						}
+					}
+
+				}
+				LongLog(szResult);
 			}
 			else
-				Netlib_Logf(NULL, "UPnP connect failed %d", WSAGetLastError()); 
+				Netlib_Logf(NULL, "UPnP send failed %d", WSAGetLastError()); 
 
 			if (szActionName == NULL) 
 			{
@@ -390,6 +404,7 @@ static int httpTransact(char* szUrl, char* szResult, int resSize, char* szAction
 
 			shutdown(sock, 2);
 			closesocket(sock);
+			sock = INVALID_SOCKET;
 		}
 		txtParseParam(szResult, "HTTP", " ", " ", szRes, sizeof(szRes));
 		res = atol(szRes);
@@ -397,6 +412,12 @@ static int httpTransact(char* szUrl, char* szResult, int resSize, char* szAction
 			szPostHdr = soap_post_hdr_m;
 		else
 			break;
+	}
+
+	if (sock != INVALID_SOCKET)
+	{
+		shutdown(sock, 2);
+		closesocket(sock);
 	}
 
 	mir_free(szData);
@@ -573,9 +594,6 @@ static void NetlibUPnPCleanup(void* extra)
 			NetlibUPnPDeletePortMapping(ports[i], "TCP");
 			ReleaseMutex(portListMutex);
 	}	}
-
-	// this handle will be closed automatically by _endthread()
-	cleanupThread = NULL;
 }
 
 void NetlibUPnPInit(void)
@@ -586,14 +604,11 @@ void NetlibUPnPInit(void)
 	
 	portListMutex = CreateMutex(NULL, FALSE, NULL);
 
-	cleanupThread = (HANDLE)forkthread(NetlibUPnPCleanup, 0, NULL);
+	forkthread(NetlibUPnPCleanup, 0, NULL);
 }
 
 void NetlibUPnPDestroy(void)
 {
-	if ( cleanupThread != NULL )
-		WaitForSingleObject(cleanupThread, INFINITE);
-
 	mir_free(portList);
 	CloseHandle(portListMutex);
 }
