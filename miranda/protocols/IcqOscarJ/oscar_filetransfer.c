@@ -2102,8 +2102,8 @@ static void oft_sendFileData(oscar_connection *oc)
   ft->qwBytesDone += bytesRead;
   ft->qwFileBytesDone += bytesRead;
 
-  if (GetTickCount() > ft->dwLastNotify + 700 || oc->wantIdleTime == 0)
-  {
+  if (GetTickCount() > ft->dwLastNotify + 700 || oc->wantIdleTime == 0 || ft->qwFileBytesDone == ft->qwThisFileSize)
+  { // notify only once a while or after last data packet sent
     PROTOFILETRANSFERSTATUS pfts;
 
     oft_buildProtoFileTransferStatus(ft, &pfts);

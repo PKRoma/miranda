@@ -547,7 +547,7 @@ void __fastcall unpackQWord(BYTE** pSource, DWORD64* qwDestination)
   if (qwDestination)
   {
     unpackDWord(pSource, &dwData);
-    *qwDestination = dwData << 32;
+    *qwDestination = ((DWORD64)dwData) << 32;
     unpackDWord(pSource, &dwData);
     *qwDestination |= dwData;
   }
