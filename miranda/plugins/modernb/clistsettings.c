@@ -273,6 +273,7 @@ void cliCheckCacheItem(pdisplayNameCacheEntry pdnce)
 				if (g_flag_bOnModulesLoadedCalled)
 					pdnce->name = GetNameForContact(pdnce->hContact,0,&pdnce->isUnknown); //TODO UNICODE
 				else
+                    // what to return here???
 					pdnce->name = GetNameForContact(pdnce->hContact,0,&pdnce->isUnknown); //TODO UNICODE
 			}	
 		}

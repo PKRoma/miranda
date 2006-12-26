@@ -2880,16 +2880,83 @@ HBITMAP SkinEngine_ExtractDIBFromImagelistIcon( HIMAGELIST himl,int index, int *
     if (iWidth<=0 && iHeight<=0) return NULL;
     
     GetObject(imi.hbmImage,sizeof(BITMAP),&bmImg);
+    GetObject(imi.hbmMask,sizeof(BITMAP),&bmMsk);
+
     if (bmImg.bmBitsPixel!=32) 
     {
+        // draw it on 32bit using native procedure
+        HBITMAP hResultBmp=SkinEngine_CreateDIB32Point(iWidth,iHeight,&pDib);
+        HDC hTempDC=CreateCompatibleDC(NULL);
+        HBITMAP hOldBmp=SelectObject(hTempDC,hResultBmp);
+        ImageList_DrawEx(himl,index,hTempDC,0,0,iWidth,iHeight,CLR_NONE,CLR_NONE,ILD_IMAGE);
+        SelectObject(hTempDC,hOldBmp);
+        DeleteDC(hTempDC);
+        
+        // and after tune up alpha layer via analyzing mask.       
+        fDibMskBits = (bmMsk.bmBits!=NULL);
+        if (!fDibMskBits)  //there is not dib section for mask
+        {
+            //lets create new pixel map for it
+            DWORD dwSize=sizeof(BYTE)*bmMsk.bmHeight*bmMsk.bmWidthBytes;
+            pMsk=(BYTE*)malloc(dwSize);
+            // and fill it
+            GetBitmapBits(imi.hbmMask,dwSize,pMsk);
+        }
+        else    
+        {
+            pMsk=bmMsk.bmBits;
+        }
+
+        if (!fDibMskBits)
+        {
+            iRowMskShift=bmMsk.bmWidthBytes;
+            pWorkMsk=pMsk+((imi.rcImage.left*bmMsk.bmBitsPixel)>>3)+(imi.rcImage.top*iRowMskShift);  //top to bottom
+        }
+        else
+        {
+            iRowMskShift=-bmMsk.bmWidthBytes;
+            pWorkMsk=pMsk+((imi.rcImage.left*bmMsk.bmBitsPixel)>>3)+((bmMsk.bmHeight-imi.rcImage.top-1)*bmMsk.bmWidthBytes); //bottom to top
+        }
+        
+        if (hResultBmp)
+        {   // lets analize it
+            int x,y;
+            BYTE *pRowDib;
+
+            pWorkDib=pDib+(iHeight-1)*iWidth*4;
+            //ok lets go...
+
+            for (y=0; y<iHeight; y++)
+            {
+                pRowDib=pWorkDib;
+                for (x=0; x<iWidth; x++)
+                {
+                    DWORD dwVal=*((DWORD*)pRowDib);
+                    BOOL fMasked = SkinEngine_GetMaskBit(pWorkMsk,x);
+
+                    if (fMasked) 
+                        dwVal=0;                   // if mask bit is set - point have to be empty
+                    else 
+                        dwVal|=0xFF000000;         // if there not alpha channel let set it opaque
+
+                    *((DWORD*)pRowDib)=dwVal;      // drop out if it is not zero
+
+                    pRowDib+=4; 
+                }
+                pWorkMsk+=iRowMskShift;
+                pWorkDib-=iWidth*sizeof(DWORD);
+            }
+        }
+        //Cleanup
+        if (!fDibMskBits && pMsk) 
+            free(pMsk);
+
         // finally set output width and height
         if (outHeight) *outHeight=iHeight;
         if (outWidth)  *outWidth=iWidth;
-        return NULL;  //only 32bpp imagelist is supported    
-    }
-    GetObject(imi.hbmMask,sizeof(BITMAP),&bmMsk);
-
-
+        return hResultBmp; 
+    } //end of non32bit mode
+    
     // get bytes...
     fDibImgBits = (bmImg.bmBits!=NULL);
     fDibMskBits = (bmMsk.bmBits!=NULL);
