@@ -2374,7 +2374,7 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
 				GetWindowRect(GetDlgItem(hwndDlg, IDC_SMILEYS), &rc);
 				smaddInfo.Direction = 0;
 				smaddInfo.xPosition = rc.left;
-				smaddInfo.yPosition = rc.top + 24;
+				smaddInfo.yPosition = rc.bottom;
 				smaddInfo.hContact = dat->hContact;
 				CallService(MS_SMILEYADD_SHOWSELECTION, 0, (LPARAM) &smaddInfo);
 			}

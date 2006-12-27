@@ -1965,17 +1965,17 @@ LABEL_SHOWWINDOW:
             GetWindowRect(GetDlgItem(hwndDlg, IDC_CHAT_SMILEY), &rc);
 
             smaddInfo.cbSize = sizeof(SMADD_SHOWSEL3);
+			smaddInfo.hwndParent = GetParent(hwndDlg);
             smaddInfo.hwndTarget = GetDlgItem(hwndDlg, IDC_CHAT_MESSAGE);
             smaddInfo.targetMessage = EM_REPLACESEL;
             smaddInfo.targetWParam = TRUE;
             smaddInfo.Protocolname = si->pszModule;
-            smaddInfo.Direction = 3;
-            smaddInfo.xPosition = rc.left+3;
-            smaddInfo.yPosition = rc.top-1;
+            //smaddInfo.Direction = 3;
+			smaddInfo.Direction = 0;
+            smaddInfo.xPosition = rc.left;
+            smaddInfo.yPosition = rc.bottom;
             smaddInfo.hContact = si->hContact;
-
-            if (SmileyAddInstalled)
-               CallService(MS_SMILEYADD_SHOWSELECTION, 0, (LPARAM) &smaddInfo);
+			CallService(MS_SMILEYADD_SHOWSELECTION, 0, (LPARAM) &smaddInfo);
          }
          break;
 

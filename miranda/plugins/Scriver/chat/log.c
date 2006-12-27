@@ -604,7 +604,7 @@ char * Log_CreateRtfHeader(MODULEINFO * mi, SESSION_INFO* si)
 {
 	char *buffer;
 	int bufferAlloced, bufferEnd, i = 0;
-	int charset;
+	int charset = 0;
 	BOOL forceCharset = FALSE;
 
 #if !defined ( _UNICODE )
@@ -636,11 +636,7 @@ char * Log_CreateRtfHeader(MODULEINFO * mi, SESSION_INFO* si)
 	// font table
 	Log_Append(&buffer, &bufferEnd, &bufferAlloced, "{\\rtf1\\ansi\\deff0{\\fonttbl");
 	for (i = 0; i < OPTIONS_FONTCOUNT; i++) {
-		int cs = cs = aFonts[i].lf.lfCharSet;
-		if (forceCharset) {
-			cs = charset;
-		}
-		Log_Append(&buffer, &bufferEnd, &bufferAlloced, "{\\f%u\\fnil\\fcharset%u" TCHAR_STR_PARAM ";}", i, cs, aFonts[i].lf.lfFaceName);
+		Log_Append(&buffer, &bufferEnd, &bufferAlloced, "{\\f%u\\fnil\\fcharset%u" TCHAR_STR_PARAM ";}", i, (!forceCharset) ? aFonts[i].lf.lfCharSet : charset, aFonts[i].lf.lfFaceName);
 	}
 	// colour table
 	Log_Append(&buffer, &bufferEnd, &bufferAlloced, "}{\\colortbl ;");
