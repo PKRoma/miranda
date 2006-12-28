@@ -1,7 +1,7 @@
                    Miranda Instant Messenger Release Notes
                    ---------------------------------------
 
-                           September 2006 (v0.5.1)
+                           December 2006 (v0.6)
 
                           http://www.miranda-im.org
 
@@ -28,6 +28,15 @@ to list all the important ones without getting too technical.
 
 If you want to see the full changelogs, go here:
 http://files.miranda-im.org/builds/ChangeLog
+
+* New in 0.6
+Enhancements
+ - core support for memory operations, strings, utf8 support, threading;
+ - tabbed options support;
+ - Jabber: support for NTLM & MD5-DIGEST auth modes;
+ - MSN: support for WLM8 direct transfers.
+
+Bugfixes:
 
 * New in 0.5.1
 Enhancements
