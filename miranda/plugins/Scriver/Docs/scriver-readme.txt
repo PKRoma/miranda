@@ -33,7 +33,7 @@ CTRL+SHIFT+T - switch tool bar on/off
 CTRL+A - select all
 CTRL+L - clear logs
 CTRL+W - close tab/window
-CTRL+SHIFt+ENTER - send to all open tabs
+CTRL+SHIFT+ENTER - send to all open tabs
 SHIFT+ESC - minimize window
 ESC - close tab/window
 
@@ -72,6 +72,8 @@ created. CTRL key needs to be pressed only when a tab is being dropped.
 
 6. Change Log
 -------------
+2.5.9.12
++ bugfixes
 2.5.9.11
 + codepage selection in ANSI version
 2.5.9.10
