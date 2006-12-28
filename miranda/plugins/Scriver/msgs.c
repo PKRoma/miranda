@@ -49,6 +49,20 @@ PSLWA pSetLayeredWindowAttributes;
 BOOL (WINAPI *pfnEnableThemeDialogTexture)(HANDLE, DWORD) = 0;
 BOOL (WINAPI *pfnIsAppThemed)(VOID) = 0;
 
+#ifdef __MINGW32__
+// RichEdit interface GUIDs
+const CLSID IID_IRichEditOle=
+{ 0x00020D00, 0x00, 0x00,
+    { 0x00, 0x00, 0x00, 0x00,
+      0x00, 0x00, 0x00, 0x46 } };
+
+const CLSID IID_IRichEditOleCallback=
+{ 0x00020D03, 0x00, 0x00,
+    { 0x00, 0x00, 0x00, 0x00,
+      0x00, 0x00, 0x00, 0x46 } };
+
+#endif
+
 static int SRMMStatusToPf2(int status)
 {
     switch (status) {
