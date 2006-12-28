@@ -33,10 +33,23 @@ http://files.miranda-im.org/builds/ChangeLog
 Enhancements
  - core support for memory operations, strings, utf8 support, threading;
  - tabbed options support;
+ - ICQ: GDI resources optimization for extended status icons;
  - Jabber: support for NTLM & MD5-DIGEST auth modes;
- - MSN: support for WLM8 direct transfers.
+ - MSN: support for WLM8 direct transfers;
+ - MSN: file transfers added for the HTTP gateway mode;
+ - MSN: improved keep-alive packets sending;
+ - Jabber: ability to remove your account from the server;
+ - Jabber: ability to resolve nick names for transports.
 
 Bugfixes:
+ - AIM: fix for file transfers;
+ - ICQ: some fixes for avatars;
+ - IRC: fix for nicknames which contain spaces;
+ - Jabber: added language id to the login request ('en');
+ - Jabber: Jabber crashes on very large images in vCards;
+ - Jabber: fix for issues with backslashes in the transports names;
+ - Jabber: fix for sending files to Pandion IM;
+ - MSN: improved error 217 (contact already exists) processing.
 
 * New in 0.5.1
 Enhancements
