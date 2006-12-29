@@ -382,8 +382,6 @@ static void handleUserOnline(BYTE* buf, WORD wLen, serverthread_info* info)
     ICQWriteContactSettingDword(hContact,  "LogonTS",      dwOnlineSince);
     if (dwUIN)
     { // on AIM these are not used
-      ICQWriteContactSettingDword(hContact, "IP",           dwIP);
-      ICQWriteContactSettingDword(hContact, "RealIP",       dwRealIP);
       ICQWriteContactSettingDword(hContact, "DirectCookie", dwDirectConnCookie);
       ICQWriteContactSettingByte(hContact,  "DCType",       (BYTE)nTCPFlag);
       ICQWriteContactSettingWord(hContact,  "UserPort",     (WORD)(dwPort & 0xffff));
@@ -393,6 +391,16 @@ static void handleUserOnline(BYTE* buf, WORD wLen, serverthread_info* info)
     {
       ICQWriteContactSettingUtf(hContact,   "MirVer",       szClient);
       ICQWriteContactSettingByte(hContact,  "ClientID",     bClientId);
+      ICQWriteContactSettingDword(hContact, "IP",           dwIP);
+      ICQWriteContactSettingDword(hContact, "RealIP",       dwRealIP);
+    }
+    else
+    { // if not first notification only write significant information
+      if (dwIP)
+        ICQWriteContactSettingDword(hContact, "IP",         dwIP);
+      if (dwRealIP)
+        ICQWriteContactSettingDword(hContact, "RealIP",     dwRealIP);
+
     }
     ICQWriteContactSettingWord(hContact,  "Status", (WORD)IcqStatusToMiranda(wStatus));
     ICQWriteContactSettingDword(hContact, "IdleTS", tIdleTS);

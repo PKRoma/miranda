@@ -33,20 +33,25 @@ ______________
 - Some wicked firewall software can cause HTML tags (e.g. <font> </font>) to be added to
   incoming messages.
 
+- With HTTP Proxy Mode in Connection settings, neither Avatars nor File Transfer can work.
+  This is partly a limitation of current Miranda's network module implementation. But
+  File Transfer cannot work with HTTP Proxy, that is a protocol limitation.
+
+
 TO-DO List
 __________
 
-0.3.9
-  Manage server-list dialog now groups requests - much faster
+0.3.11
+  Server-list support now groups requests - much more faster & reliable
   Full support for sub-groups in Manage server-list dialog
   Simple sub-groups support (optional)
-  Real Level 1 rate management (will solve multi-recipient message problems)
+  Bigger Avatars support (like ICQ 6)
   
 
 0.5
   Account management (together with Miranda core changes)
   Multi-user chat (Xtraz based)
-  Mid-NetLib module for HTTP gateway (for avatars to work) [icq_net]
+  Mid-NetLib module for HTTP gateway (for Avatars to work) [icq_net]
 
 
 
@@ -59,10 +64,12 @@ Bugfixes:
   Fixed peer-to-peer session cookie checking (was working only due to coincidence)
   Fixed SMS message handling, made message parsing more consistent
   Applied fix for re-requesting authorization (thx Bio)
-  Fixed handling of message acks & status msg replies from icq6
+  Fixed handling of message acks & status msg replies from ICQ 6
+  Fixed handling of malformed messages acks
+  Minor protocol related tweaks
 
 New Features:
-  Oscar File Transfers - like icq5 (including transfer thru server)
+  Oscar File Transfers - like icq5 (including: transfer thru server, resume)
 
 Improvements:
   Client detection improvements

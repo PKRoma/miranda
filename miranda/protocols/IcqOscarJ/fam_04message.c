@@ -1891,6 +1891,14 @@ static void handleRecvMsgResponse(unsigned char *buf, WORD wLen, WORD wFlags, DW
     if (!FindCookie(wCookie, &dwCookieUin, &pCookieData))
     { // use old reliable method
       NetLog_Server("Warning: Invalid cookie in %s from (%u)", "message response", dwUin);
+
+      if (pCookieData->bMessageType != MTYPE_AUTOAWAY && bFlags == 3)
+      { // most probably a broken ack of some kind (e.g. from R&Q), try to fix that
+        bMsgType = pCookieData->bMessageType;
+        bFlags = 0;
+
+        NetLog_Server("Warning: Invalid message type in %s from (%u)", "message response", dwUin);
+      }
     }
     else if (bMsgType != MTYPE_PLUGIN && pCookieData->bMessageType != MTYPE_AUTOAWAY)
     { // just because some clients break it...

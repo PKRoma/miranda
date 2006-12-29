@@ -2108,6 +2108,8 @@ int IcqGrantAuthorization(WPARAM wParam, LPARAM lParam)
 
     // send without reason, do we need any ?
     icq_sendGrantAuthServ(dwUin, szUid, NULL);
+    // auth granted, remove contact menu item
+    ICQDeleteContactSetting((HANDLE)wParam, "Grant");
   }
 
   return 0;
