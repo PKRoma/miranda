@@ -1011,7 +1011,7 @@ static LRESULT CALLBACK NicklistSubclassProc(HWND hwnd, UINT msg, WPARAM wParam,
             return TRUE;
       }   }
       break;
-	  
+
 	case WM_MOUSEMOVE:
 		{
 			SESSION_INFO* parentdat =(SESSION_INFO*)GetWindowLong(GetParent(hwnd),GWL_USERDATA);
@@ -1860,7 +1860,7 @@ LABEL_SHOWWINDOW:
 					if ( ui != NULL ) {
 						static TCHAR ptszBuf[ 1024 ];
 						mir_sntprintf( ptszBuf, SIZEOF(ptszBuf), _T("%s: %s\r\n%s: %s\r\n%s: %s"),
-							TranslateT( "Nick name" ), ui->pszNick, 
+							TranslateT( "Nick name" ), ui->pszNick,
 							TranslateT( "Unique id" ), ui->pszUID,
 							TranslateT( "Status" ), TM_WordToString( parentdat->pStatuses, ui->Status ));
 						lpttd->lpszText = ptszBuf;
@@ -1984,18 +1984,21 @@ LABEL_SHOWWINDOW:
             char szFile[MAX_PATH];
             char szName[MAX_PATH];
             char szFolder[MAX_PATH];
+			char *pszSessionName;
             MODULEINFO * pInfo = MM_FindModule(si->pszModule);
 
             if (!IsWindowEnabled(GetDlgItem(hwndDlg,IDC_CHAT_HISTORY)))
                break;
 
             if ( pInfo ) {
-               mir_snprintf(szName, MAX_PATH, "%s", pInfo->pszModDispName ? pInfo->pszModDispName : si->pszModule);
+               mir_snprintf(szName, MAX_PATH, "%s", pInfo->pszModDispName);
                ValidateFilename(szName);
                mir_snprintf(szFolder, MAX_PATH,"%s\\%s", g_Settings.pszLogDir, szName );
 
-               mir_snprintf(szName, MAX_PATH,"%s.log",si->ptszID);
-               ValidateFilename(szName);
+				pszSessionName = t2a( si->ptszID );
+				mir_snprintf( szName, MAX_PATH,"%s.log", pszSessionName );
+				ValidateFilename(szName);
+				mir_free( pszSessionName );
 
                mir_snprintf(szFile, MAX_PATH,"%s\\%s", szFolder, szName );
 
