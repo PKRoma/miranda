@@ -115,6 +115,7 @@
 #define IDC_ST_ENTERMSG                 1013
 #define IDC_ST_ENTERURL                 1014
 #define IDC_SPECIFYPORTSO               1014
+#define IDC_ENABLEUPNP                  1015
 #define IDC_SHOWNAMES                   1024
 #define IDC_ABOUT                       1032
 #define IDC_MYNOTES                     1033
@@ -264,12 +265,10 @@
 #define IDC_STSIMPLERIGHT               1440
 #define IDC_NETLIBUSERS                 1443
 #define IDC_STOFTENPORT                 1445
-#define IDC_STATIC51                    1446
 #define IDC_STATIC52                    1447
 #define IDC_STATIC43                    1448
 #define IDC_LOGOPTIONS                  1449
 #define IDC_PORTSRANGE                  1450
-#define IDC_STATIC53                    1451
 #define IDC_PORTSRANGEO                 1452
 #define IDC_STATIC54                    1453
 #define IDC_TOOUTPUTDEBUGSTRING         1455
@@ -383,7 +382,7 @@
 #define POPUP_DELETEGROUP               40053
 
 // Next default values for new objects
-//
+// 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NEXT_RESOURCE_VALUE        274

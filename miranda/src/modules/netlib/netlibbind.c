@@ -221,7 +221,7 @@ int NetlibBindPort(WPARAM wParam,LPARAM lParam)
 			if(he->h_addr_list[0])
 				nlb->dwInternalIP=ntohl(*(PDWORD)he->h_addr_list[0]);
 		}
-		if (NetlibUPnPAddPortMapping(nlb->wPort, "TCP", &nlbp->wExPort, 
+		if (nlu->settings.enableUPnP&&NetlibUPnPAddPortMapping(nlb->wPort, "TCP", &nlbp->wExPort, 
 			&extIP, nlb->cbSize > NETLIBBIND_SIZEOF_V2))
 		{
 			if (nlb->cbSize > NETLIBBIND_SIZEOF_V2)
