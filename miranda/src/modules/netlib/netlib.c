@@ -170,7 +170,8 @@ static int NetlibRegisterUser(WPARAM wParam,LPARAM lParam)
 	thisUser->settings.szIncomingPorts=GetNetlibUserSettingString(thisUser->user.szSettingsModule,"NLIncomingPorts",0);
 	thisUser->settings.specifyOutgoingPorts=GetNetlibUserSettingInt(thisUser->user.szSettingsModule,"NLSpecifyOutgoingPorts",0);
 	thisUser->settings.szOutgoingPorts=GetNetlibUserSettingString(thisUser->user.szSettingsModule,"NLOutgoingPorts",0);
-
+	thisUser->settings.enableUPnP=GetNetlibUserSettingInt(thisUser->user.szSettingsModule,"NLEnableUPnP",1); //default to on
+    
 	EnterCriticalSection(&csNetlibUser);
 	netlibUser=(struct NetlibUser**)mir_realloc(netlibUser,sizeof(struct NetlibUser*)*++netlibUserCount);
 	netlibUser[netlibUserCount-1]=thisUser;

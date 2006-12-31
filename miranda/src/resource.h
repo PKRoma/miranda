@@ -1,5 +1,5 @@
 //{{NO_DEPENDENCIES}}
-// Microsoft Visual C++ generated include file.
+// Microsoft Developer Studio generated include file.
 // Used by resource.rc
 //
 #define IDC_AUTHICON                    1
@@ -120,6 +120,7 @@
 #define IDC_ST_ENTERMSG                 1013
 #define IDC_ST_ENTERURL                 1014
 #define IDC_SPECIFYPORTSO               1014
+#define IDC_ENABLEUPNP                  1015
 #define IDC_SHOWNAMES                   1024
 #define IDC_ABOUT                       1032
 #define IDC_MYNOTES                     1033
@@ -136,10 +137,8 @@
 #define IDC_NAMENICK                    1049
 #define IDC_NAMEFIRST                   1050
 #define IDC_NAMELAST                    1051
-#define IDC_BTN_UNDO2                   1052
 #define IDC_NICK                        1053
 #define IDC_BTN_EXPORT                  1054
-#define IDC_TOOLTIP                     1055
 #define IDC_FONTLIST                    1056
 #define IDC_CHOOSEFONT                  1057
 #define IDC_GENDER                      1060
@@ -234,29 +233,10 @@
 #define IDC_PROTOLIST                   1245
 #define IDC_TODEFICON                   1246
 #define IDC_IMPORTMULTI                 1247
-#define IDC_FONTID                      1256
-#define IDC_SAMETYPE                    1257
-#define IDC_SAMESTYLE                   1258
-#define IDC_SAMECOLOUR                  1259
-#define IDC_SAMEAS                      1260
-#define IDC_TYPEFACE                    1261
-#define IDC_BOLD                        1262
-#define IDC_ITALIC                      1263
-#define IDC_COLOUR                      1264
-#define IDC_UNDERLINE                   1265
-#define IDC_SAMESIZE                    1268
 #define IDC_BKGCOLOUR                   1269
 #define IDC_FILENAME                    1271
 #define IDC_FONTCOLOUR                  1282
-#define IDC_SAMPLE                      1292
-#define IDC_FONTSIZE                    1293
-#define IDC_SCRIPT                      1300
-#define IDC_STSAMETEXT                  1302
-#define IDC_STASTEXT                    1303
-#define IDC_STSIZETEXT                  1304
-#define IDC_STCOLOURTEXT                1305
 #define IDC_INTERESTS                   1305
-#define IDC_STHORZBAR                   1306
 #define IDC_EMAILS                      1306
 #define IDC_PAST                        1307
 #define IDC_PHONES                      1308
@@ -300,12 +280,10 @@
 #define IDC_STSIMPLERIGHT               1440
 #define IDC_NETLIBUSERS                 1443
 #define IDC_STOFTENPORT                 1445
-#define IDC_STATIC51                    1446
 #define IDC_STATIC52                    1447
 #define IDC_STATIC43                    1448
 #define IDC_LOGOPTIONS                  1449
 #define IDC_PORTSRANGE                  1450
-#define IDC_STATIC53                    1451
 #define IDC_PORTSRANGEO                 1452
 #define IDC_STATIC54                    1453
 #define IDC_TOOUTPUTDEBUGSTRING         1455
@@ -420,7 +398,7 @@
 #define POPUP_DELETEGROUP               40053
 
 // Next default values for new objects
-//
+// 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NEXT_RESOURCE_VALUE        274
