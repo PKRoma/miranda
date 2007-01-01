@@ -189,6 +189,7 @@ typedef struct {
 	char *szIncomingPorts;   //can be NULL. Of form "1024-1050,1060-1070,2000"
 	int specifyOutgoingPorts; // 0.3.3a+
 	char *szOutgoingPorts; // 0.3.3a+
+    int enableUPnP; //0.6.1+ only for NUF_INCOMING
 } NETLIBUSERSETTINGS;
 #define MS_NETLIB_GETUSERSETTINGS  "Netlib/GetUserSettings"
 
