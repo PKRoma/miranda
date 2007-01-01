@@ -1,6 +1,6 @@
 /*
 UPnP plugin for Miranda IM
-Copyright (C) 2006 borkra
+Copyright (C) 2007 borkra
 
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License
