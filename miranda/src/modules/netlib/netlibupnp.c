@@ -551,7 +551,6 @@ static void NetlibUPnPCleanup(void* extra)
 {
     if (DBGetContactSettingByte(NULL,"Netlib","NLEnableUPnP",1)==0) {
         // upnp is disabled globally, no need for a cleanup
-        cleanupThread = NULL;
         return;
     }
 	findUPnPGateway();
