@@ -67,7 +67,8 @@ int NetlibFreeBoundPort(struct NetlibBoundPort *nlbp)
 	closesocket(nlbp->s);
 	WaitForSingleObject(nlbp->hThread,INFINITE);
 	CloseHandle(nlbp->hThread);
-	NetlibUPnPDeletePortMapping(nlbp->wExPort, "TCP");
+    if (nlbp->uPnPEnabled)
+        NetlibUPnPDeletePortMapping(nlbp->wExPort, "TCP");
 	mir_free(nlbp);
 	return 1;
 }
@@ -125,6 +126,7 @@ int NetlibBindPort(WPARAM wParam,LPARAM lParam)
 	nlbp->nlu=nlu;
 	nlbp->pfnNewConnectionV2=nlb->pfnNewConnectionV2;
 	nlbp->s=socket(AF_INET,SOCK_STREAM,0);
+    nlbp->uPnPEnabled = FALSE;
 	nlbp->pExtra= (nlb->cbSize == sizeof(NETLIBBIND)) ? nlb->pExtra : NULL;
 	if(nlbp->s==INVALID_SOCKET) {
 		Netlib_Logf(nlu,"%s %d: %s() failed (%u)",__FILE__,__LINE__,"socket",WSAGetLastError());
@@ -224,6 +226,7 @@ int NetlibBindPort(WPARAM wParam,LPARAM lParam)
 		if (nlu->settings.enableUPnP&&NetlibUPnPAddPortMapping(nlb->wPort, "TCP", &nlbp->wExPort, 
 			&extIP, nlb->cbSize > NETLIBBIND_SIZEOF_V2))
 		{
+            nlbp->uPnPEnabled = TRUE;
 			if (nlb->cbSize > NETLIBBIND_SIZEOF_V2)
 			{
 				nlb->wExPort = nlbp->wExPort;
