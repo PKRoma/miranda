@@ -310,7 +310,7 @@ int YahooRecvMessage(WPARAM wParam, LPARAM lParam)
 	// NUDGES
     if( !lstrcmp(pre->szMessage, "<ding>")  && ServiceExists("NUDGE/Send")){
 		YAHOO_DebugLog("[YahooRecvMessage] Doing Nudge Service!");
-		NotifyEventHooks(hYahooNudge, (WPARAM) ccs->hContact, 0);
+		NotifyEventHooks(hYahooNudge, (WPARAM) ccs->hContact, pre->timestamp);
 		return 0;
     } 
 	
