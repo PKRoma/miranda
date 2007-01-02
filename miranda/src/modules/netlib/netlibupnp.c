@@ -533,18 +533,10 @@ void NetlibUPnPDeletePortMapping(WORD extport, char* proto)
 //	findUPnPGateway();
 
 	if (gatewayFound) {
-		unsigned i, mappedPort=0;
+		unsigned i;
 		char* szData = (char*)alloca(4096);
 		
 		WaitForSingleObject(portListMutex, INFINITE);
-        
-        for ( i=0; i < numports; ++i )
-			if ( portList[i] == extport )
-                mappedPort=1;
-        if ( mappedPort==0 ) {
-            ReleaseMutex(portListMutex);
-            return;
-        }
 		mir_snprintf(szData, 4096, delete_port_mapping, extport, proto);
 		httpTransact(szCtlUrl, szData, 4096, "DeletePortMapping");
 
@@ -557,6 +549,11 @@ void NetlibUPnPDeletePortMapping(WORD extport, char* proto)
 
 static void NetlibUPnPCleanup(void* extra)
 {
+    if (DBGetContactSettingByte(NULL,"Netlib","NLEnableUPnP",1)==0) {
+        // upnp is disabled globally, no need for a cleanup
+        cleanupThread = NULL;
+        return;
+    }
 	findUPnPGateway();
 
 	if ( gatewayFound ) {
