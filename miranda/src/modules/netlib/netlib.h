@@ -74,7 +74,6 @@ struct NetlibBoundPort {
 	struct NetlibUser *nlu;
 	NETLIBNEWCONNECTIONPROC_V2 pfnNewConnectionV2;
 	HANDLE hThread;
-    BOOL uPnPEnabled;
 	void *pExtra;
 };
 
