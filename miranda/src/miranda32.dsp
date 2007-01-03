@@ -879,6 +879,8 @@ SOURCE=.\modules\icolib\extracticon.c
 
 !ELSEIF  "$(CFG)" == "miranda32 - Win32 Debug"
 
+# SUBTRACT CPP /YX /Yc /Yu
+
 !ELSEIF  "$(CFG)" == "miranda32 - Win32 Release Unicode"
 
 # SUBTRACT CPP /YX /Yc /Yu
@@ -899,17 +901,6 @@ SOURCE=.\modules\icolib\IcoLib.h
 # Begin Source File
 
 SOURCE=.\modules\icolib\skin2icons.c
-
-!IF  "$(CFG)" == "miranda32 - Win32 Release"
-
-!ELSEIF  "$(CFG)" == "miranda32 - Win32 Debug"
-
-!ELSEIF  "$(CFG)" == "miranda32 - Win32 Release Unicode"
-
-!ELSEIF  "$(CFG)" == "miranda32 - Win32 Debug Unicode"
-
-!ENDIF 
-
 # End Source File
 # End Group
 # End Group
