@@ -195,7 +195,7 @@ static void ShowPopupMenu(HWND hwndDlg, struct MessageWindowData *dat, int idFro
 		NotifyEventHooks(g_hEvent_MsgPopup, 0, (LPARAM)&mwpd);
 	}
 
-    if(iSelection > 800 && iSelection < 1400 && idFrom == IDC_LOG) {
+    if(((iSelection > 800 && iSelection < 1400) || iSelection == 20866)  && idFrom == IDC_LOG) {
         dat->codePage = iSelection;
         DBWriteContactSettingDword(dat->hContact, SRMSGMOD_T, "ANSIcodepage", dat->codePage);
     }

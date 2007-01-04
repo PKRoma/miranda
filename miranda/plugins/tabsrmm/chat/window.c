@@ -2032,7 +2032,7 @@ LABEL_SHOWWINDOW:
 
 					uID = CreateGCMenu(hwndDlg, &hMenu, 1, pt, si, NULL, pszWord);
 
-                    if((uID > 800 && uID < 1400) || uID == CP_UTF8) {
+                    if((uID > 800 && uID < 1400) || uID == CP_UTF8 || uID == 20866) {
                         dat->codePage = uID;
                         DBWriteContactSettingDword(dat->hContact, SRMSGMOD_T, "ANSIcodepage", dat->codePage);
                     }

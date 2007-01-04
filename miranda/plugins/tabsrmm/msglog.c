@@ -47,6 +47,7 @@ struct CPTABLE cpTable[] = {
     {	950,	_T("Traditional Chinese") },
     {	1250,	_T("Central European") },
     {	1251,	_T("Cyrillic") },
+    {   20866,  _T("Cyrillic KOI8-R") },
     {	1252,	_T("Latin I") },
     {	1253,	_T("Greek") },
     {	1254,	_T("Turkish") },
