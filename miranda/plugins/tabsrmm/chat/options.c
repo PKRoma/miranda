@@ -134,7 +134,8 @@ static struct branch_t branch1[] = {
 	{_T("Show the topic of the room on your contact list (if supported)"), "TopicOnClist", 0, 0, NULL},
 	{_T("Do not play sounds when the chat room is focused"), "SoundsFocus", 0, 0, NULL},
 	{_T("Do not pop up the window when joining a chat room"), "PopupOnJoin", 0,0, NULL},
-	{_T("Toggle the visible state when double clicking in the contact list"), "ToggleVisibility", 0,0, NULL}
+	{_T("Toggle the visible state when double clicking in the contact list"), "ToggleVisibility", 0,0, NULL},
+    {_T("Sync splitter position with standard IM sessions"), "SyncSplitter", 0,0, NULL}
 };
 static struct branch_t branch2[] = {
 	{_T("Prefix all events with a timestamp"), "ShowTimeStamp", 0,1, NULL},

@@ -2766,6 +2766,9 @@ int MY_GetContactDisplayNameW(HANDLE hContact, wchar_t *szwBuf, unsigned int siz
 	CONTACTINFO ci;
     char *szBasenick = NULL;
         
+    if(szProto == NULL)
+        szProto = (char *)CallService(MS_PROTO_GETCONTACTBASEPROTO, (WPARAM)hContact, 0);
+
     if(myGlobals.bUnicodeBuild) {
     	ZeroMemory(&ci, sizeof(ci));
     	ci.cbSize = sizeof(ci);

@@ -52,6 +52,7 @@ extern StatusItems_t StatusItems[];
 extern struct GlobalLogSettings_t g_Settings;
 extern BOOL g_framelessSkinmode;
 extern HANDLE g_hEvent_MsgPopup;
+extern int    g_chat_integration_enabled;
 
 extern PITA pfnIsThemeActive;
 extern POTD pfnOpenThemeData;
@@ -1371,21 +1372,22 @@ LRESULT CALLBACK SplitterSubclassProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM
                         case ID_SPLITTERCONTEXT_SAVEGLOBALFORALLSESSIONS:
                         {
                             RECT rcWin;
+                            BYTE bSync = DBGetContactSettingByte(NULL, "Chat", "SyncSplitter", 0);
 
                             GetWindowRect(hwndParent, &rcWin);
-                            if(dat->bType == SESSIONTYPE_IM) {
+
+                            if(dat->bType == SESSIONTYPE_IM || bSync) {
                                 dat->dwFlagsEx &= ~(MWF_SHOW_SPLITTEROVERRIDE);
                                 DBWriteContactSettingByte(dat->hContact, SRMSGMOD_T, "splitoverride", 0);
                                 WindowList_Broadcast(hMessageWindowList, DM_SPLITTERMOVEDGLOBAL, 
                                                      rcWin.bottom - HIWORD(messagePos), rc.bottom);
                             }
-                            else {
+                            if ((dat->bType == SESSIONTYPE_CHAT || bSync) && g_chat_integration_enabled) {
                                 SM_BroadcastMessage(NULL, DM_SAVESIZE, 0, 0, 0);
                                 SM_BroadcastMessage(NULL, DM_SPLITTERMOVEDGLOBAL, rcWin.bottom - (short)HIWORD(messagePos) + rc.bottom / 2, (LPARAM)rc.bottom, 0);
                                 SM_BroadcastMessage(NULL, WM_SIZE, 0, 0, 1);
                                 DBWriteContactSettingWord(NULL, "Chat", "splitY", (WORD)g_Settings.iSplitterY);
                             }
-
                             break;
                         }
                         default:
