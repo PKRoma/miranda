@@ -1373,20 +1373,37 @@ LRESULT CALLBACK SplitterSubclassProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM
                         {
                             RECT rcWin;
                             BYTE bSync = DBGetContactSettingByte(NULL, "Chat", "SyncSplitter", 0);
+                            DWORD dwOff_IM = 0, dwOff_CHAT = 0;
 
+                            if(bSync) {
+                                if(dat->bType == SESSIONTYPE_IM) {
+                                    dwOff_IM = 0;
+                                    dwOff_CHAT = -1;
+                                }
+                                else if(dat->bType == SESSIONTYPE_CHAT) {
+                                    dwOff_CHAT = 0;
+                                    dwOff_IM = 1;
+                                }
+                            }
                             GetWindowRect(hwndParent, &rcWin);
 
                             if(dat->bType == SESSIONTYPE_IM || bSync) {
                                 dat->dwFlagsEx &= ~(MWF_SHOW_SPLITTEROVERRIDE);
                                 DBWriteContactSettingByte(dat->hContact, SRMSGMOD_T, "splitoverride", 0);
                                 WindowList_Broadcast(hMessageWindowList, DM_SPLITTERMOVEDGLOBAL, 
-                                                     rcWin.bottom - HIWORD(messagePos), rc.bottom);
+                                                     rcWin.bottom - HIWORD(messagePos) + dwOff_IM, rc.bottom);
+                                if(bSync) {
+                                    g_Settings.iSplitterY = dat->splitterY - 23;
+                                    DBWriteContactSettingWord(NULL, "Chat", "splitY", (WORD)g_Settings.iSplitterY);
+                                }
                             }
                             if ((dat->bType == SESSIONTYPE_CHAT || bSync) && g_chat_integration_enabled) {
                                 SM_BroadcastMessage(NULL, DM_SAVESIZE, 0, 0, 0);
-                                SM_BroadcastMessage(NULL, DM_SPLITTERMOVEDGLOBAL, rcWin.bottom - (short)HIWORD(messagePos) + rc.bottom / 2, (LPARAM)rc.bottom, 0);
+                                SM_BroadcastMessage(NULL, DM_SPLITTERMOVEDGLOBAL, rcWin.bottom - (short)HIWORD(messagePos) + rc.bottom / 2 + dwOff_CHAT, (LPARAM)rc.bottom, 0);
                                 SM_BroadcastMessage(NULL, WM_SIZE, 0, 0, 1);
                                 DBWriteContactSettingWord(NULL, "Chat", "splitY", (WORD)g_Settings.iSplitterY);
+                                if(bSync)
+                                    DBWriteContactSettingDword(NULL, SRMSGMOD_T, "splitsplity", (DWORD)g_Settings.iSplitterY + 23);
                             }
                             break;
                         }

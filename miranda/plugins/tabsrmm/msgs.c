@@ -36,10 +36,9 @@ $Id$
 
 static char *relnotes[] = {
     "{\\rtf1\\ansi\\deff0\\pard\\li%u\\fi-%u\\ri%u\\tx%u}",
-    "\\par\t\\b\\ul1 Release notes for version 1.1.0.14\\b0\\ul0\\par ",
-    "*\tMore work on clickable links in group chats.\\par",
-    "*\tInactive status bar icons are now painted with high tranparency to appear dimmed.\\par",
-    "*\tSupport for new mathmod plugin and added mathmod parsing to group chats (needs to be enabled on the group chat options page).\\par",
+    "\\par\t\\b\\ul1 Release notes for version 1.1.0.15\\b0\\ul0\\par ",
+    "*\tAdded option to sync splitter positions between group chat and normal IM sessions.\\par",
+    "*\tSome unicode related bug fixes in chat.\\par",
     NULL
 };
 
