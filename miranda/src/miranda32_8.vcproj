@@ -3504,6 +3504,10 @@
 					>
 				</File>
 				<File
+					RelativePath=".\modules\clist\clistmenus.c"
+					>
+				</File>
+				<File
 					RelativePath=".\modules\clist\clistmod.c"
 					>
 				</File>
@@ -3532,11 +3536,27 @@
 					>
 				</File>
 				<File
+					RelativePath=".\modules\clist\genmenu.c"
+					>
+				</File>
+				<File
+					RelativePath=".\modules\clist\genmenu.h"
+					>
+				</File>
+				<File
+					RelativePath=".\modules\clist\genmenuopt.c"
+					>
+				</File>
+				<File
 					RelativePath=".\modules\clist\groups.c"
 					>
 				</File>
 				<File
 					RelativePath=".\modules\clist\keyboard.c"
+					>
+				</File>
+				<File
+					RelativePath=".\modules\clist\movetogroup.c"
 					>
 				</File>
 			</Filter>

@@ -200,4 +200,6 @@ ExternDrawer SED;
 
 #define CLM_SETEXTRACOLUMNSSPACE   (CLM_FIRST+73)   //wParam=extra space between icons
 
+void FreeAndNil( void** p );
+
 #endif _CLC_H_

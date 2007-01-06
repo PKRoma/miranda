@@ -3,49 +3,42 @@
 //general menu object module
 #include "m_genmenu.h"
 
-typedef struct
+typedef struct _menuProto
 {
-	int id;
-	int globalid;
-
-	int iconId;
-	TMO_MenuItem mi;
-	boolean OverrideShow;
-	char *UniqName;
-	TCHAR *CustomName;
-	HMENU hSubMenu;
-	boolean IconRegistred;
+	char *szProto;
+	HANDLE menuID;
+	HANDLE hasAdded;
 }
-	TMO_IntMenuItem,*PMO_IntMenuItem;
-	
+	MenuProto;
+
 typedef struct
 {
-char *Name;//for debug purposes
-int id;
+	char *Name;//for debug purposes
+	int id;
 
-//ExecService
-//LPARAM lParam;//owner data 
-//WPARAM wParam;//allways lparam from winproc
-char *ExecService;
+	//ExecService
+	//LPARAM lParam;//owner data
+	//WPARAM wParam;//allways lparam from winproc
+	char *ExecService;
 
-//CheckService called when building menu
-//return false to skip item.
-//LPARAM lParam;//0 
-//WPARAM wParam;//CheckParam
-char *CheckService;//analog to check_proc
+	//CheckService called when building menu
+	//return false to skip item.
+	//LPARAM lParam;//0
+	//WPARAM wParam;//CheckParam
+	char *CheckService;//analog to check_proc
 
-//LPARAM lParam;//ownerdata 
-//WPARAM wParam;//menuitemhandle
-char *FreeService;//callback service used to free ownerdata for menuitems
+	//LPARAM lParam;//ownerdata
+	//WPARAM wParam;//menuitemhandle
+	char *FreeService;//callback service used to free ownerdata for menuitems
 
-//LPARAM lParam;//MENUITEMINFOA filled with all needed data 
-//WPARAM wParam;//menuitemhandle
-char *onAddService;//called just before add MENUITEMINFOA to hMenu
+	//LPARAM lParam;//MENUITEMINFO filled with all needed data
+	//WPARAM wParam;//menuitemhandle
+	char *onAddService;//called just before add MENUITEMINFO to hMenu
 
-PMO_IntMenuItem MenuItems;
-int MenuItemsCount;
-HANDLE hMenuIcons;
-BOOL bUseUserDefinedItems;
+	PMO_IntMenuItem MenuItems;
+	int MenuItemsCount;
+	HANDLE hMenuIcons;
+	BOOL bUseUserDefinedItems;
 }
 	TIntMenuObject,*PIntMenuObject;
 
@@ -66,6 +59,9 @@ int getGlobalId(const int MenuObjectId,const int MenuItemId);
 //general stuff
 int InitGenMenu();
 int UnitGenMenu();
+
+TMO_IntMenuItem * GetMenuItemByGlobalID(int globalMenuID);
+BOOL	FindMenuHanleByGlobalID(HMENU hMenu, int globalID, struct _MenuItemHandles * dat);	//GenMenu.c
 
 int GenMenuOptInit(WPARAM wParam,LPARAM lParam);
 int GetMenuObjbyId(const int id);

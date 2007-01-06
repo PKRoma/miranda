@@ -73,8 +73,8 @@ int hkSearch(WPARAM wParam,LPARAM lParam)
 int hkRead(WPARAM wParam,LPARAM lParam)
 {
 	if(pcli->pfnEventsProcessTrayDoubleClick()==0) return TRUE;
-	SetForegroundWindow((HWND)CallService(MS_CLUI_GETHWND,0,0));
-	SetFocus((HWND)CallService(MS_CLUI_GETHWND,0,0));
+	SetForegroundWindow(pcli->hwndContactList);
+	SetFocus(pcli->hwndContactList);
 	return 0;
 }
 
@@ -87,7 +87,6 @@ int hkOpts(WPARAM wParam,LPARAM lParam)
 int hkCloseMiranda(WPARAM wParam,LPARAM lParam)
 {
 	CallService("CloseAction",0,0);
-	//SendMessage((HWND)CallService(MS_CLUI_GETHWND,0,0),WM_COMMAND,ID_ICQ_EXIT,0);
 	return 0;
 }
 
@@ -95,7 +94,7 @@ int hkRestoreStatus(WPARAM wParam,LPARAM lParam)
 {
 	int nStatus = DBGetContactSettingWord(NULL, "CList", "Status", ID_STATUS_OFFLINE);
 	if (nStatus != ID_STATUS_OFFLINE)
-		PostMessage((HWND)CallService(MS_CLUI_GETHWND,0,0), WM_COMMAND, nStatus, 0);
+		PostMessage(pcli->hwndContactList, WM_COMMAND, nStatus, 0);
 
 	return 0;
 }
@@ -310,11 +309,7 @@ static int ServiceSkinAddNewHotKey(WPARAM wParam,LPARAM lParam)
 	}
 
 	HotKeyCount++;
-	{
-		HWND hwnd;
-		hwnd=(HWND)CallService(MS_CLUI_GETHWND,0,0);
-		if (hwnd)  RegistersAllHotkey(hwnd);
-	}
+	if (pcli->hwndContactList)  RegistersAllHotkey(pcli->hwndContactList);
 	return 0;
 }
 
@@ -590,7 +585,7 @@ BOOL CALLBACK DlgProcHotKeyOpts2(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM l
 							tvi.hItem=TreeView_GetNextSibling(hwndTree,tvi.hItem);
 						}
 					}
-					RegistersAllHotkey((HWND)CallService(MS_CLUI_GETHWND,0,0));
+					RegistersAllHotkey(pcli->hwndContactList);
 					return TRUE;
 				}
 			}

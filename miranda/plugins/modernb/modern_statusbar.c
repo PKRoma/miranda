@@ -710,7 +710,7 @@ LRESULT CALLBACK ModernStatusProc(HWND hwnd,UINT msg,WPARAM wParam,LPARAM lParam
 			  hMenu=(HMENU)CallService(MS_CLIST_MENUGETSTATUS,0,0);
 			  if(allocedItemData>=1 && menusProto && i<AllocedProtos)// && GetSubMenu(hMenu,i)) hMenu=GetSubMenu(hMenu,i);
 				{			
-					TMO_IntMenuItem * it=GetMenuItemByGlobalID((int)menusProto[i].menuID);
+					TMO_IntMenuItem * it=pcli->pfnMOGetMenuItemByGlobalID((int)menusProto[i].menuID);
 					hMenu=it->hSubMenu;
 				}
 				if (hMenu)
@@ -734,7 +734,7 @@ LRESULT CALLBACK ModernStatusProc(HWND hwnd,UINT msg,WPARAM wParam,LPARAM lParam
 				hMenu=(HMENU)CallService(MS_CLIST_MENUGETSTATUS,0,0);		
 				if(allocedItemData>1 && menusProto && i<AllocedProtos)// && GetSubMenu(hMenu,i)) hMenu=GetSubMenu(hMenu,i);
 				{			
-					TMO_IntMenuItem * it=GetMenuItemByGlobalID((int)menusProto[i].menuID);
+					TMO_IntMenuItem * it=pcli->pfnMOGetMenuItemByGlobalID((int)menusProto[i].menuID);
 					hMenu=it->hSubMenu;
 				}
 			}

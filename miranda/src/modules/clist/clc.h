@@ -142,6 +142,9 @@ int ClcOptInit(WPARAM wParam,LPARAM lParam);
 DWORD GetDefaultExStyle(void);
 void GetFontSetting(int i,LOGFONTA *lf,COLORREF *colour);
 
+//clistmenus.c
+int MenuProcessCommand(WPARAM wParam,LPARAM lParam);
+
 //clistsettings.c
 TCHAR* GetContactDisplayNameW( HANDLE hContact, int mode );
 

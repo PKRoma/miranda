@@ -332,7 +332,7 @@ int Cache_GetTextThreadProc(void * lpParam)
     __try
     {
         BOOL exit=FALSE;
-        HWND hwnd=(HWND)CallService(MS_CLUI_GETHWND,0,0);
+		  HWND hwnd=pcli->hwndContactList;
         struct SHORTDATA data={0};
         struct SHORTDATA * dat;
         cache_CallProcSync(CLUI_SyncGetShortData,(WPARAM)pcli->hwndContactTree,(LPARAM)&data);       

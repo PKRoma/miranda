@@ -803,6 +803,10 @@ SOURCE=.\modules\clist\clistevents.c
 # End Source File
 # Begin Source File
 
+SOURCE=.\modules\clist\clistmenus.c
+# End Source File
+# Begin Source File
+
 SOURCE=.\modules\clist\clistmod.c
 # End Source File
 # Begin Source File
@@ -831,11 +835,27 @@ SOURCE=.\modules\clist\Docking.c
 # End Source File
 # Begin Source File
 
+SOURCE=.\modules\clist\genmenu.c
+# End Source File
+# Begin Source File
+
+SOURCE=.\modules\clist\genmenu.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\modules\clist\genmenuopt.c
+# End Source File
+# Begin Source File
+
 SOURCE=.\modules\clist\groups.c
 # End Source File
 # Begin Source File
 
 SOURCE=.\modules\clist\keyboard.c
+# End Source File
+# Begin Source File
+
+SOURCE=.\modules\clist\movetogroup.c
 # End Source File
 # End Group
 # Begin Group "fontservice"

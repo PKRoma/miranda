@@ -484,7 +484,7 @@ static int TrayIconUpdate(HICON hNewIcon,const TCHAR *szNewTip,const char *szPre
 	int i;
 
 	nid.cbSize = ( dviShell.dwMajorVersion >= 5 ) ? sizeof(nid) : NOTIFYICONDATA_V1_SIZE;
-	nid.hWnd = (HWND)CallService(MS_CLUI_GETHWND,0,0);
+	nid.hWnd = pcli->hwndContactList;
 	nid.uFlags = NIF_ICON | NIF_TIP;
 	nid.hIcon = hNewIcon;			
 	if (!hNewIcon) 
@@ -616,7 +616,7 @@ void cliTrayIconUpdateBase(char *szChangedProto)
 	PROTOCOLDESCRIPTOR **protos;
 	int averageMode=0;
 	
-	HWND hwnd=(HWND)CallService(MS_CLUI_GETHWND,0,0);
+	HWND hwnd=pcli->hwndContactList;
 	if (!szChangedProto) return;
 	if(cycleTimerId) {KillTimer(NULL,cycleTimerId); cycleTimerId=0;}
 	CallService(MS_PROTO_ENUMPROTOCOLS,(WPARAM)&count,(LPARAM)&protos);
@@ -829,7 +829,7 @@ static VOID CALLBACK TrayIconAutoHideTimer(HWND hwnd,UINT message,UINT idEvent,D
 {
 	HWND hwndClui, ActiveWindow;
 	KillTimer(hwnd,idEvent);
-	hwndClui=(HWND)CallService(MS_CLUI_GETHWND,0,0);
+	hwndClui=pcli->hwndContactList;
 	ActiveWindow=GetActiveWindow();
 	if(ActiveWindow==hwndClui) return;
 	if (CLUI_CheckOwnedByClui(ActiveWindow)) return; 
@@ -842,14 +842,14 @@ static VOID CALLBACK TrayIconAutoHideTimer(HWND hwnd,UINT message,UINT idEvent,D
 int TrayIconPauseAutoHide(WPARAM wParam,LPARAM lParam)
 {
 	if(DBGetContactSettingByte(NULL,"CList","AutoHide",SETTING_AUTOHIDE_DEFAULT)) {
-		if(GetActiveWindow()!=(HWND)CallService(MS_CLUI_GETHWND,0,0)
-			&&GetWindow(GetParent(GetActiveWindow()),GW_OWNER)!=(HWND)CallService(MS_CLUI_GETHWND,0,0) )
+		if(GetActiveWindow()!=pcli->hwndContactList
+			&&GetWindow(GetParent(GetActiveWindow()),GW_OWNER) != pcli->hwndContactList )
 		{   
 			HWND h1,h2,h3,h4;
 			h1=GetActiveWindow();
 			h2=GetParent(h1);
 			h3=GetWindow(h2,GW_OWNER);
-			h4=(HWND)CallService(MS_CLUI_GETHWND,0,0);
+			h4=pcli->hwndContactList;
 
 			KillTimer(NULL,autoHideTimerId);
 			autoHideTimerId=SetTimer(NULL,0,1000*DBGetContactSettingWord(NULL,"CList","HideTime",SETTING_HIDETIME_DEFAULT),TrayIconAutoHideTimer);
@@ -947,7 +947,7 @@ case WM_ACTIVATE:
 		SetCursor(LoadCursor(NULL, IDC_ARROW));	
 		h1=(HWND)msg->lParam;
 		h2=h1?GetParent(h1):NULL;
-		h4=(HWND)CallService(MS_CLUI_GETHWND,0,0);
+		h4=pcli->hwndContactList;
 		if(DBGetContactSettingByte(NULL,"CList","AutoHide",SETTING_AUTOHIDE_DEFAULT)) {
 			if(LOWORD(msg->wParam)==WA_INACTIVE && h2!=h4)
 				autoHideTimerId=SetTimer(NULL,0,1000*DBGetContactSettingWord(NULL,"CList","HideTime",SETTING_HIDETIME_DEFAULT),TrayIconAutoHideTimer);
@@ -1079,7 +1079,7 @@ int cliCListTrayNotify(MIRANDASYSTRAYNOTIFY *msn)
 			if (trayIcon) {
 				NOTIFYICONDATAW nid = {0};
 				nid.cbSize = ( dviShell.dwMajorVersion >= 5 ) ? sizeof(nid) : NOTIFYICONDATAW_V1_SIZE;
-				nid.hWnd = (HWND) CallService(MS_CLUI_GETHWND, 0, 0);
+				nid.hWnd = pcli->hwndContactList;
 				if (msn->szProto) {
 					int j;
 					for (j = 0; j < trayIconCount; j++) {
@@ -1118,7 +1118,7 @@ int cliCListTrayNotify(MIRANDASYSTRAYNOTIFY *msn)
 			if (trayIcon) {
 				NOTIFYICONDATAA nid = {0};
 				nid.cbSize = ( dviShell.dwMajorVersion >= 5 ) ? sizeof(nid) : NOTIFYICONDATAA_V1_SIZE;
-				nid.hWnd = (HWND) CallService(MS_CLUI_GETHWND, 0, 0);
+				nid.hWnd = pcli->hwndContactList;
 				if (msn->szProto) {
 					int j;
 					for (j = 0; j < trayIconCount; j++) {
@@ -1423,7 +1423,7 @@ void UninitTrayMenu()
 //////////////////////////////END TRAY MENU/////////////////////////
 void cliTrayIconIconsChanged(void)
 {
-	HWND hwnd = (HWND) CallService(MS_CLUI_GETHWND, 0, 0);
+	HWND hwnd = pcli->hwndContactList;
 	CListTray_TrayIconDestroy(hwnd);
 	TrayIconInit(hwnd);
 }

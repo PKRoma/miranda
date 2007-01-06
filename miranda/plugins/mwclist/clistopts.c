@@ -194,7 +194,7 @@ static BOOL CALLBACK DlgProcGenOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARA
 								if(caps&CLUIF_DISABLEGROUPS) DBWriteContactSettingByte(NULL,"CList","UseGroups",(BYTE)!IsDlgButtonChecked(hwndDlg,IDC_DISABLEGROUPS));
 								if(!(caps&CLUIF_HASONTOPOPTION)) {
 									DBWriteContactSettingByte(NULL,"CList","OnTop",(BYTE)IsDlgButtonChecked(hwndDlg,IDC_ONTOP));
-									SetWindowPos((HWND)CallService(MS_CLUI_GETHWND,0,0), IsDlgButtonChecked(hwndDlg,IDC_ONTOP)?HWND_TOPMOST:HWND_NOTOPMOST, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE);
+									SetWindowPos(pcli->hwndContactList,IsDlgButtonChecked(hwndDlg,IDC_ONTOP)?HWND_TOPMOST:HWND_NOTOPMOST, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE);
 								}
 								if(!(caps&CLUIF_HASAUTOHIDEOPTION)) {
 									DBWriteContactSettingByte(NULL,"CList","AutoHide",(BYTE)IsDlgButtonChecked(hwndDlg,IDC_AUTOHIDE));
@@ -290,7 +290,7 @@ static BOOL CALLBACK DlgProcHotkeyOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LP
 			{
 				case PSN_APPLY:
 				{	char str[256];
-					HotKeysUnregister((HWND)CallService(MS_CLUI_GETHWND,0,0));
+					HotKeysUnregister(pcli->hwndContactList);
 					DBWriteContactSettingByte(NULL,"CList","HKEnShowHide",(BYTE)IsDlgButtonChecked(hwndDlg,IDC_SHOWHIDE));
 					DBWriteContactSettingWord(NULL,"CList","HKShowHide",(WORD)SendDlgItemMessage(hwndDlg,IDC_HKSHOWHIDE,HKM_GETHOTKEY,0,0));
 					DBWriteContactSettingByte(NULL,"CList","HKEnReadMsg",(BYTE)IsDlgButtonChecked(hwndDlg,IDC_READMSG));
@@ -302,7 +302,7 @@ static BOOL CALLBACK DlgProcHotkeyOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LP
 					DBWriteContactSettingByte(NULL,"CList","HKSearchNewWnd",(BYTE)IsDlgButtonChecked(hwndDlg,IDC_SEARCHNEWWND));
 					DBWriteContactSettingByte(NULL,"CList","HKEnShowOptions",(BYTE)IsDlgButtonChecked(hwndDlg,IDC_SHOWOPTIONS));
 					DBWriteContactSettingWord(NULL,"CList","HKShowOptions",(WORD)SendDlgItemMessage(hwndDlg,IDC_HKSHOWOPTIONS,HKM_GETHOTKEY,0,0));
-					HotKeysRegister((HWND)CallService(MS_CLUI_GETHWND,0,0));
+					HotKeysRegister(pcli->hwndContactList);
 					return TRUE;
 				}
 			}

@@ -5,7 +5,6 @@
 #include "clist.h"
 #include "CLUIFRAMES\cluiframes.h"
 #include "modern_row.h"
-#include "genmenu.h"
 #include "SkinEngine.h"
 #include "mod_skin_selector.h"
 #include "modern_statusbar.h"
@@ -75,8 +74,6 @@ extern HFONT TitleBarFont;
 extern struct _menuProto * menusProto;
 extern int AllocedProtos;
 extern BOOL g_mutex_bChangingMode;
-extern PIntMenuObject MenuObjects;
-extern int MenuObjectsCount;
 extern HANDLE g_hMainThread;
 extern DWORD g_dwMainThreadID;
 extern DWORD g_dwAskAwayMsgThreadID;
@@ -261,7 +258,6 @@ int		SkinSelector_DeleteMask(MODERNMASK * mm);											//mod_skin_selector.c
 int		StoreAllContactData(struct ClcData *dat);											//cache_func.c
 int		ToggleHideOffline(WPARAM wParam,LPARAM lParam);										//contact.c
 int		UnitFramesMenu();																	//framesmenu.c
-TMO_IntMenuItem* GetMenuItemByGlobalID(int globalMenuID);									//genmenu.c
 void	ClcOptionsChanged();																//clc.c
 void	Docking_GetMonitorRectFromWindow(HWND hWnd,RECT *rc);								//Docking.c
 void	DrawAvatarImageWithGDIp(HDC hDestDC,int x, int y, DWORD width, DWORD height, HBITMAP hbmp, int x1, int y1, DWORD width1, DWORD height1,DWORD flag,BYTE alpha);	//gdiplus.cpp

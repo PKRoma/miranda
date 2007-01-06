@@ -12,6 +12,7 @@
 #define IDI_OFFLINE                     105
 #define IDD_CUSTOM_FONT                 106
 #define IDD_OPT_FONTS                   107
+#define IDD_OPT_GENMENU                 108
 #define IDD_OPT_ICOLIB                  110
 #define IDD_ICOLIB_IMPORT               111
 #define IDD_ADDED                       115
@@ -164,6 +165,16 @@
 #define IDC_EDIT                        1078
 #define IDC_LIST                        1079
 #define IDC_HISTORY                     1080
+#define IDC_MENUOBJECTS                 1081
+#define IDC_MENUITEMS                   1082
+#define IDC_NOTSUPPORTWARNING           1083
+#define IDC_INSERTSEPARATOR             1084
+#define IDC_GENMENU_SERVICE             1085
+#define IDC_GENMENU_CUSTOMNAME          1086
+#define IDC_GENMENU_SET                 1087
+#define IDC_GENMENU_SET2                1088
+#define IDC_GENMENU_DEFAULT             1089
+#define IDC_ICONBLINK                   1090
 #define IDC_BUILDTIME                   1108
 #define IDC_CREDITSFILE                 1109
 #define IDC_NUMBER                      1113

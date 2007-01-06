@@ -42,7 +42,6 @@ int CLUIFrameSetFloat(WPARAM wParam,LPARAM lParam);
 int CLUIFrameResizeFloatingFrame(int framepos);
 extern int ProcessCommandProxy(WPARAM wParam,LPARAM lParam);
 extern int InitFramesMenus(void);
-extern int UnitFramesMenu();
 int GapBetweenTitlebar;
 
 LOGFONTA TitleBarLogFont={0};
@@ -2183,27 +2182,23 @@ boolean AlignCOLLIconToLeft; //will hide frame icon
 
 int OnFrameTitleBarBackgroundChange()
 {
-		{
-		DBVARIANT dbv;
+	DBVARIANT dbv;
 
-		AlignCOLLIconToLeft=DBGetContactSettingByte(NULL,"FrameTitleBar","AlignCOLLIconToLeft",0);
+	AlignCOLLIconToLeft=DBGetContactSettingByte(NULL,"FrameTitleBar","AlignCOLLIconToLeft",0);
 
-		bkColour=DBGetContactSettingDword(NULL,"FrameTitleBar","BkColour",CLCDEFAULT_BKCOLOUR);
-		//SelBkColour=DBGetContactSettingDword(NULL,"FrameTitleBar","SelBkColour",0);
+	bkColour=DBGetContactSettingDword(NULL,"FrameTitleBar","BkColour",CLCDEFAULT_BKCOLOUR);
+	//SelBkColour=DBGetContactSettingDword(NULL,"FrameTitleBar","SelBkColour",0);
 
-		if(hBmpBackground) {DeleteObject(hBmpBackground); hBmpBackground=NULL;}
-		if(DBGetContactSettingByte(NULL,"FrameTitleBar","UseBitmap",CLCDEFAULT_USEBITMAP)) {
-			if(!DBGetContactSetting(NULL,"FrameTitleBar","BkBitmap",&dbv)) {
-				hBmpBackground=(HBITMAP)CallService(MS_UTILS_LOADBITMAP,0,(LPARAM)dbv.pszVal);
-				mir_free(dbv.pszVal);
-			}
+	if(hBmpBackground) {DeleteObject(hBmpBackground); hBmpBackground=NULL;}
+	if(DBGetContactSettingByte(NULL,"FrameTitleBar","UseBitmap",CLCDEFAULT_USEBITMAP)) {
+		if(!DBGetContactSetting(NULL,"FrameTitleBar","BkBitmap",&dbv)) {
+			hBmpBackground=(HBITMAP)CallService(MS_UTILS_LOADBITMAP,0,(LPARAM)dbv.pszVal);
+			mir_free(dbv.pszVal);
 		}
-		backgroundBmpUse=DBGetContactSettingWord(NULL,"FrameTitleBar","BkBmpUse",CLCDEFAULT_BKBMPUSE);
-		}
+	}
+	backgroundBmpUse=DBGetContactSettingWord(NULL,"FrameTitleBar","BkBmpUse",CLCDEFAULT_BKBMPUSE);
 
-//		RecreateStatusBar(CallService(MS_CLUI_GETHWND,0,0));
-//		if (pcli->hwndStatus) InvalidateRect(pcli->hwndStatus,NULL,TRUE);
-		CLUIFramesOnClistResize(0,0);
+	CLUIFramesOnClistResize(0,0);
 	return 0;
 }
 
@@ -3425,6 +3420,5 @@ int UnLoadCLUIFramesModule(void)
 	DeleteObject(TitleBarFont);
 	ulockfrm();
 	DeleteCriticalSection(&csFrameHook);
-	UnitFramesMenu();
 	return 0;
 }

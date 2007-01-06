@@ -30,7 +30,6 @@ CLIST_INTERFACE* pcli = NULL;
 struct LIST_INTERFACE li;
 struct MM_INTERFACE memoryManagerInterface;
 static HANDLE hCListShutdown = 0;
-extern int LoadMoveToGroup();
 
 HMENU BuildGroupPopupMenu( struct ClcGroup* group );
 
@@ -172,9 +171,13 @@ int __declspec(dllexport) CListInitialise(PLUGINLINK * link)
 
 		pcli = ( CLIST_INTERFACE* )CallService(MS_CLIST_RETRIEVE_INTERFACE, 0, (LPARAM)g_hInst);
 		if ( (int)pcli == CALLSERVICE_NOTFOUND ) {
-			MessageBoxA( NULL, "This version of plugin requires Miranda IM 0.5 or later", "Fatal error", MB_OK );
+LBL_Error:
+			MessageBoxA( NULL, "This version of plugin requires Miranda IM 0.7.0.8 or later", "Fatal error", MB_OK );
 			return 1;
 		}
+		if ( pcli->version < 4 )
+			goto LBL_Error;
+
 		pcli->pfnBuildGroupPopupMenu = BuildGroupPopupMenu;
 		pcli->pfnCalcEipPosition = CalcEipPosition;
 		pcli->pfnCheckCacheItem = CheckPDNCE;
@@ -214,7 +217,6 @@ int __declspec(dllexport) CListInitialise(PLUGINLINK * link)
 		if (rc==0) rc=LoadCLCModule();
 
 		HookEvent(ME_SYSTEM_MODULESLOADED, systemModulesLoaded);
-		LoadMoveToGroup();
 		BGModuleLoad();
 
 		OutputDebugStringA("CListInitialise ClistMW...Done\r\n");

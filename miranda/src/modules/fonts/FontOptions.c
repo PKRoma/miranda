@@ -166,9 +166,11 @@ BOOL ExportSettings(HWND hwndDlg, TCHAR *filename, FontIdList* flist, ColourIdLi
 	return TRUE;
 }
 
-void OptionsChanged() {
 #define INTM_RELOADOPTIONS   (WM_USER+21)
-	HWND hWnd = FindWindowEx((HWND)CallService(MS_CLUI_GETHWND, 0, 0), 0, CLISTCONTROL_CLASS, 0);
+
+void OptionsChanged()
+{
+	HWND hWnd = FindWindowEx( cli.hwndContactList, 0, CLISTCONTROL_CLASS, 0);
 	if(hWnd) SendMessage(hWnd, INTM_RELOADOPTIONS, 0, 0);
 	NotifyEventHooks(hFontReloadEvent, 0, 0);
 	NotifyEventHooks(hColourReloadEvent, 0, 0);

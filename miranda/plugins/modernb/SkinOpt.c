@@ -187,7 +187,7 @@ static BOOL CALLBACK DlgSkinOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM l
 					SkinEngine_RedrawCompleteWindow();        
 					CLUIFrames_OnClistResize_mod(0,0,0);
 					{
-						HWND hwnd=(HWND)CallService(MS_CLUI_GETHWND,0,0);
+						HWND hwnd=pcli->hwndContactList;
 						RECT rc={0};
 						GetWindowRect(hwnd, &rc);
 						CLUIFrames_OnMoving(hwnd,&rc);

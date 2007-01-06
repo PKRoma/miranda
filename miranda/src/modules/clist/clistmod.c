@@ -35,7 +35,6 @@ int GetContactDisplayName(WPARAM wParam, LPARAM lParam);
 int InvalidateDisplayName(WPARAM wParam, LPARAM lParam);
 int InitGroupServices(void);
 int Docking_IsDocked(WPARAM wParam, LPARAM lParam);
-int MenuProcessCommand(WPARAM wParam, LPARAM lParam);
 void InitDisplayNameCache(void);
 void FreeDisplayNameCache(void);
 void InitTray(void);
@@ -277,7 +276,7 @@ static int CListIconsChanged(WPARAM wParam, LPARAM lParam)
 		for (j = 0; j < SIZEOF(statusModeList); j++)
 			ImageList_ReplaceIcon(hCListImages, protoIconIndex[i].iIconBase + j, LoadSkinnedProtoIcon(protoIconIndex[i].szProto, statusModeList[j]));
 	cli.pfnTrayIconIconsChanged();
-	cli.pfnInvalidateRect((HWND) CallService(MS_CLUI_GETHWND, 0, 0), NULL, TRUE);
+	cli.pfnInvalidateRect( cli.hwndContactList, NULL, TRUE);
 	return 0;
 }
 

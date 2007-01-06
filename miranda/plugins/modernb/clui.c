@@ -28,7 +28,6 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include "m_clc.h"
 #include "m_clui.h"
 #include "m_skin.h"
-#include "genmenu.h"
 #include "wingdi.h"
 #include <Winuser.h>
 #include "skinengine.h"
@@ -45,7 +44,7 @@ BOOL CLUI_CheckOwnedByClui(HWND hWnd)
 {
     HWND hWndMid, hWndClui;
     if (!hWnd) return FALSE;
-    hWndClui=(HWND)CallService(MS_CLUI_GETHWND,0,0);
+    hWndClui=pcli->hwndContactList;
     hWndMid=GetAncestor(hWnd,GA_ROOTOWNER);
     if(hWndMid==hWndClui) return TRUE;
     {
@@ -938,7 +937,7 @@ static int CLUI_DrawMenuBackGround(HWND hwnd, HDC hdc, int item)
     DeleteObject(treg); 
     {
         RECT rc;
-        HWND hwnd=(HWND)CallService(MS_CLUI_GETHWND,0,0);
+        HWND hwnd=pcli->hwndContactList;
         GetWindowRect(hwnd,&rc);
         OffsetRect(&rc,-rc.left, -rc.top);
         FillRect(hdc,&r1,GetSysColorBrush(COLOR_MENU));

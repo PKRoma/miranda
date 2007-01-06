@@ -41,7 +41,6 @@ int CListOptInit(WPARAM wParam, LPARAM lParam);
 void TrayIconUpdateBase(const char *szChangedProto);
 int EventsProcessContactDoubleClick(HANDLE hContact);
 int SetHideOffline(WPARAM wParam, LPARAM lParam);
-int MenuProcessCommand(WPARAM wParam, LPARAM lParam);
 
 HANDLE hContactDoubleClicked, hStatusModeChangeEvent;
 HIMAGELIST hCListImages;
@@ -50,12 +49,6 @@ extern int      currentDesiredStatusMode, g_maxStatus;
 extern HANDLE   hSvc_GetContactStatusMsg;
 
 extern struct CluiData g_CluiData;
-
-static int SetStatusMode(WPARAM wParam, LPARAM lParam)
-{
-	MenuProcessCommand(MAKEWPARAM(LOWORD(wParam), MPCF_MAINMENU), 0);
-	return 0;
-}
 
 static int GetStatusMode(WPARAM wParam, LPARAM lParam)
 {
@@ -106,7 +99,6 @@ int LoadContactListModule(void)
 	HookEvent(ME_SYSTEM_SHUTDOWN, ContactListShutdownProc);
 	HookEvent(ME_OPT_INITIALISE, CListOptInit);
 	hStatusModeChangeEvent = CreateHookableEvent(ME_CLIST_STATUSMODECHANGE);
-	CreateServiceFunction(MS_CLIST_SETSTATUSMODE, SetStatusMode);
 	CreateServiceFunction(MS_CLIST_GETSTATUSMODE, GetStatusMode);
 
 	hSvc_GetContactStatusMsg = CreateServiceFunction("CList/GetContactStatusMsg", GetContactStatusMessage);

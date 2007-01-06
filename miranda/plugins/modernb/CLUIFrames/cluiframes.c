@@ -3059,8 +3059,6 @@ int OnFrameTitleBarBackgroundChange(WPARAM wParam,LPARAM lParam)
     backgroundBmpUse=DBGetContactSettingWord(NULL,"FrameTitleBar","BkBmpUse",CLCDEFAULT_BKBMPUSE);
   };
 
-  //		RecreateStatusBar(CallService(MS_CLUI_GETHWND,0,0));
-  //		if (pcli->hwndStatus) CLUI__cliInvalidateRect(pcli->hwndStatus,NULL,TRUE);
   CLUIFramesOnClistResize(0,0);
   return 0;
 }
@@ -3924,18 +3922,18 @@ LRESULT CALLBACK CLUIFrameSubContainerProc(HWND hwnd, UINT msg, WPARAM wParam, L
 			CLUI_SmoothAlphaTransition(hwnd, alpha, 1);
         }
       }
-
     }
     return DefWindowProc(hwnd, msg, wParam, lParam);
+
   case WM_NOTIFY:
-    return SendMessage((HWND)CallService(MS_CLUI_GETHWND,0,0),msg,wParam,lParam); 
   case WM_PARENTNOTIFY:  
-    return SendMessage((HWND)CallService(MS_CLUI_GETHWND,0,0),msg,wParam,lParam); 
   case WM_SYSCOMMAND:
-    return SendMessage((HWND)CallService(MS_CLUI_GETHWND,0,0),msg,wParam,lParam); 
+    return SendMessage(pcli->hwndContactList,msg,wParam,lParam); 
+
   case WM_MOVE:
     if (g_CluiData.fDocked) return 1;
     break;
+
   case WM_WINDOWPOSCHANGING:
     {
       if (g_CluiData.mutexPreventDockMoving)
@@ -4351,8 +4349,6 @@ int LoadCLUIFramesModule(void)
   subconclass.lpszClassName = TEXT(CLUIFrameSubContainerClassName);
   RegisterClass(&subconclass);
 
-  pcli->hwndContactList=(HWND)CallService(MS_CLUI_GETHWND,0,0);
-  //pcli->hwndStatus=FindWindowEx(pcli->hwndContactList,NULL,"msctls_statusbar32",NULL);
   //container helper
 
   cntclass.style         = CS_DBLCLKS/*|CS_HREDRAW|CS_VREDRAW*/|( IsWinVerXPPlus()  ? CS_DROPSHADOW : 0);

@@ -497,14 +497,6 @@ SOURCE=.\gdiplus.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=.\genmenu.c
-# End Source File
-# Begin Source File
-
-SOURCE=.\genmenuopt.c
-# End Source File
-# Begin Source File
-
 SOURCE=.\groupmenu.c
 # End Source File
 # Begin Source File
@@ -570,10 +562,6 @@ SOURCE=.\modern_statusbar.c
 # End Source File
 # Begin Source File
 
-SOURCE=.\movetogroup.c
-# End Source File
-# Begin Source File
-
 SOURCE=.\rowheight_funcs.c
 # End Source File
 # Begin Source File
@@ -626,15 +614,7 @@ SOURCE=.\forkthread.h
 # End Source File
 # Begin Source File
 
-SOURCE=.\genmenu.h
-# End Source File
-# Begin Source File
-
 SOURCE=.\IcoLib.h
-# End Source File
-# Begin Source File
-
-SOURCE=.\m_genmenu.h
 # End Source File
 # Begin Source File
 

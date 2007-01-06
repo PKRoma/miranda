@@ -568,7 +568,6 @@
 					>
 					<Tool
 						Name="VCCLCompilerTool"
-						UsePrecompiledHeader="2"
 						PrecompiledHeaderThrough="commonheaders.h"
 					/>
 				</FileConfiguration>
@@ -577,7 +576,6 @@
 					>
 					<Tool
 						Name="VCCLCompilerTool"
-						UsePrecompiledHeader="2"
 						PrecompiledHeaderThrough="commonheaders.h"
 					/>
 				</FileConfiguration>
@@ -590,6 +588,7 @@
 					>
 					<Tool
 						Name="VCCLCompilerTool"
+						UsePrecompiledHeader="2"
 						PrecompiledHeaderThrough="commonheaders.h"
 					/>
 				</FileConfiguration>
@@ -598,6 +597,7 @@
 					>
 					<Tool
 						Name="VCCLCompilerTool"
+						UsePrecompiledHeader="2"
 						PrecompiledHeaderThrough="commonheaders.h"
 					/>
 				</FileConfiguration>
@@ -793,10 +793,6 @@
 						PrecompiledHeaderThrough="commonheaders.h"
 					/>
 				</FileConfiguration>
-			</File>
-			<File
-				RelativePath=".\genmenu.c"
-				>
 			</File>
 			<File
 				RelativePath="groupmenu.c"
@@ -1058,10 +1054,6 @@
 					</FileConfiguration>
 				</File>
 				<File
-					RelativePath=".\genmenuopt.c"
-					>
-				</File>
-				<File
 					RelativePath=".\newrowopts.c"
 					>
 				</File>
@@ -1224,10 +1216,6 @@
 				>
 			</File>
 			<File
-				RelativePath=".\genmenu.h"
-				>
-			</File>
-			<File
 				RelativePath=".\image_array.h"
 				>
 			</File>
@@ -1249,10 +1237,6 @@
 			</File>
 			<File
 				RelativePath=".\m_clui.h"
-				>
-			</File>
-			<File
-				RelativePath=".\m_genmenu.h"
 				>
 			</File>
 			<File

@@ -44,7 +44,7 @@ int OnStatusBarBackgroundChange()
 		extraspace=DBGetContactSettingDword(NULL,"StatusBar","BkExtraSpace",0);
 	}
 
-	RecreateStatusBar(CallService(MS_CLUI_GETHWND,0,0));
+	RecreateStatusBar(pcli->hwndContactList);
 	if (pcli->hwndStatus) InvalidateRect(pcli->hwndStatus,NULL,TRUE);
 	return 0;
 }

@@ -79,7 +79,6 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include "alphablend.h"
 #include "rowheight_funcs.h"
 #include "m_genmenu.h"
-#include "CLUIFrames/genmenu.h"
 #include "m_genmenu.h"
 #include "m_cluiframes.h"
 #include "m_clui.h"
@@ -142,3 +141,5 @@ extern BOOL __forceinline GetItemByStatus(int status, StatusItems_t *retitem);
 
 void GDIp_DrawAlpha(HDC hdcwnd, PRECT rc, DWORD basecolor, BYTE alpha, DWORD basecolor2, BOOL transparent, DWORD FLG_GRADIENT, DWORD FLG_CORNER, DWORD BORDERSTYLE);
 void DrawAlpha(HDC hdcwnd, PRECT rc, DWORD basecolor, int alpha, DWORD basecolor2, BOOL transparent, BYTE FLG_GRADIENT, BYTE FLG_CORNER, DWORD BORDERSTYLE, ImageItem *item);
+
+void FreeAndNil( void** );

@@ -87,8 +87,6 @@ int CluiOptInit(WPARAM wParam, LPARAM lParam)
 	odp.nExpertOnlyControls = 0;
 	odp.expertOnlyControls = NULL;
 	CallService(MS_OPT_ADDPAGE, wParam, (LPARAM) &odp);
-
-	GenMenuOptInit(wParam, lParam);
 	return 0;
 }
 

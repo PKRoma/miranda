@@ -336,9 +336,6 @@
 				RelativePath=".\clcpaint.c">
 			</File>
 			<File
-				RelativePath=".\clistmenus.c">
-			</File>
-			<File
 				RelativePath="clistopts.c">
 				<FileConfiguration
 					Name="Debug|Win32">

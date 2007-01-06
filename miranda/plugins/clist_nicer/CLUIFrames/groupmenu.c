@@ -107,7 +107,7 @@ static int AddGroupMenuItem(WPARAM wParam,LPARAM lParam)
 	tmi.flags=mi->flags;
 	tmi.hIcon=mi->hIcon;
 	tmi.hotKey=mi->hotKey;
-	tmi.pszName=(TCHAR*)mi->pszName;
+	tmi.pszName=mi->pszName;
 	tmi.position=mi->position;
 
 	//pszPopupName for new system mean root level
@@ -551,7 +551,7 @@ static int AddSubGroupMenuItem(WPARAM wParam,LPARAM lParam)
 	tmi.flags=mi->flags;
 	tmi.hIcon=mi->hIcon;
 	tmi.hotKey=mi->hotKey;
-	tmi.pszName=(TCHAR*)mi->pszName;
+	tmi.pszName=mi->pszName;
 	tmi.position=mi->position;
 
 	//pszPopupName for new system mean root level

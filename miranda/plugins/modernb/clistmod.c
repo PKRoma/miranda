@@ -222,12 +222,6 @@ int CListMod_ContactListShutdownProc(WPARAM wParam,LPARAM lParam)
 	return 0;
 }
 
-static int SetStatusMode(WPARAM wParam, LPARAM lParam)
-{
-	MenuProcessCommand(MAKEWPARAM(LOWORD(wParam), MPCF_MAINMENU), 0);
-	return 0;
-}
-
 int CLUIGetCapsService(WPARAM wParam,LPARAM lParam)
 {
 	if (lParam)
@@ -280,7 +274,6 @@ int LoadContactListModule(void)
 	CreateServiceFunction(MS_CLIST_CONTACTCHANGEGROUP,ContactChangeGroup);
 	CreateServiceFunction(MS_CLIST_TOGGLEHIDEOFFLINE,ToggleHideOffline);
 	CreateServiceFunction(MS_CLIST_GETCONTACTICON,GetContactIcon);
-	CreateServiceFunction(MS_CLIST_SETSTATUSMODE, SetStatusMode);
 
 	MySetProcessWorkingSetSize=(BOOL (WINAPI*)(HANDLE,SIZE_T,SIZE_T))GetProcAddress(GetModuleHandle(TEXT("kernel32")),"SetProcessWorkingSetSize");
 	hCListImages = ImageList_Create(16, 16, ILC_MASK|ILC_COLOR32, 32, 0);

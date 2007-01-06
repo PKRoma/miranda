@@ -1,12 +1,13 @@
 #ifndef M_GENMENU_H
 #define M_GENMENU_H
+
 /*
   Main features:
   1) Independet from clist,may be used in any module.
   2) Module defined Exec and Check services.
   3) Menu with any level of popups,icons for root of popup.
   4) You may use measure/draw/processcommand even if menuobject is unknown.
-	  
+
   Idea of GenMenu module consists of that,
   it must be independet and offers only general menu purpose services:
   MO_CREATENEWMENUOBJECT
@@ -29,7 +30,7 @@
 
   ExecService and CheckService used as callbacks when GenMenu must
   processcommand for menu item or decide to show or not item.This make
-  GenMenu independet of which params must passed to service when user 
+  GenMenu independet of which params must passed to service when user
   click on menu,this decide each module.
 						28-04-2003 Bethoven
 
@@ -39,12 +40,12 @@
 
 /*
 Analog to CLISTMENUITEM,but invented two params root and ownerdata.
-root is used for creating any level popup menus,set to -1 to build 
-at first level and root=MenuItemHandle to place items in submenu 
+root is used for creating any level popup menus,set to -1 to build
+at first level and root=MenuItemHandle to place items in submenu
 of this item.Must be used two new flags CMIF_ROOTPOPUP and CMIF_CHILDPOPUP
 (defined in m_clist.h)
 
-ownerdata is passed to callback services(ExecService and CheckService) 
+ownerdata is passed to callback services(ExecService and CheckService)
 when building menu or processed command.
 */
 
@@ -198,6 +199,16 @@ int lParam;
 /*GENMENU_MODULE*/
 #define CMIF_ROOTPOPUP  128   //root item for new popup(save return id for childs)
 #define CMIF_CHILDPOPUP 256   //child for rootpopup menu
+
+#define CMIF_UNICODE        512      //will return TCHAR* instead of char*
+#if defined( _UNICODE )
+	#define CMIF_TCHAR       CMIF_UNICODE      //will return TCHAR* instead of char*
+#else
+	#define CMIF_TCHAR       0       //will return char*, as usual
+#endif
+
+#define CMIF_KEEPUNTRANSLATED  1024 // don't translate a menu item
+
 /*GENMENU_MODULE*/
 
 #define SETTING_NOOFFLINEBOTTOM_DEFAULT 0
@@ -205,7 +216,11 @@ int lParam;
 typedef struct
 {
 	int cbSize;
-	TCHAR *pszName;
+	union
+	{
+		char *pszName;
+		TCHAR *ptszName;
+	};
 	int position;
 	int root;
 	int flags;
@@ -216,7 +231,7 @@ typedef struct
 	TMO_MenuItem,*PMO_MenuItem;
 
 /*
-This structure passed to CheckService. 
+This structure passed to CheckService.
 */
 typedef struct
 {
@@ -227,41 +242,47 @@ typedef struct
 }
 	TCheckProcParam,*PCheckProcParam;
 
-typedef struct{
-int cbSize;
-char *name;
+typedef struct
+{
+	int cbSize;
+	char *name;
 
-/*
-This service called when module build menu(MO_BUILDMENU).
-Service called with params 
+	/*
+	This service called when module build menu(MO_BUILDMENU).
+	Service called with params
 
-wparam=PCheckProcParam
-lparam=0
-if return==FALSE item is skiped.
-*/
-char *CheckService;
+	wparam=PCheckProcParam
+	lparam=0
+	if return==FALSE item is skiped.
+	*/
+	char *CheckService;
 
-/*
-This service called when user select menu item.
-Service called with params 
-wparam=ownerdata
-lparam=lParam from MO_PROCESSCOMMAND
-*/
-char *ExecService;//called when processmenuitem called
-}TMenuParam,*PMenuParam;
+	/*
+	This service called when user select menu item.
+	Service called with params
+	wparam=ownerdata
+	lparam=lParam from MO_PROCESSCOMMAND
+	*/
+	char *ExecService;//called when processmenuitem called
+}
+	TMenuParam,*PMenuParam;
 
 //used in MO_BUILDMENU
-typedef struct tagListParam{
+typedef struct tagListParam
+{
 	int rootlevel;
 	int MenuObjectHandle;
 	int wParam,lParam;
-}ListParam,*lpListParam;
+}
+	ListParam,*lpListParam;
 
-typedef struct{
-HMENU menu;
-int ident;
-LPARAM lParam;
-}ProcessCommandParam,*lpProcessCommandParam;
+typedef struct
+{
+	HMENU menu;
+	int ident;
+	LPARAM lParam;
+}
+	ProcessCommandParam,*lpProcessCommandParam;
 
 //wparam started hMenu
 //lparam ListParam*
@@ -276,7 +297,7 @@ LPARAM lParam;
 //if menu not known call this
 //LOWORD(wparam) menuident (from WM_COMMAND message)
 //returns TRUE if it processed the command, FALSE otherwise
-//Service automatically find right menuobject and menuitem 
+//Service automatically find right menuobject and menuitem
 //and call MO_PROCESSCOMMAND
 #define MO_PROCESSCOMMANDBYMENUIDENT		"MO/ProcessCommandByMenuIdent"
 
@@ -289,7 +310,7 @@ LPARAM lParam;
 //wparam=MenuObjectHandle
 //lparam=0
 //returns 0 on success,-1 on failure
-//Note: you must free all ownerdata structures, before you 
+//Note: you must free all ownerdata structures, before you
 //call this service.MO_REMOVEMENUOBJECT NOT free it.
 #define MO_REMOVEMENUOBJECT					"MO/RemoveMenuObject"
 
@@ -304,7 +325,7 @@ LPARAM lParam;
 //wparam=MenuObjectHandle
 //lparam=PMO_MenuItem
 //return MenuItemHandle on success,-1 on failure
-//Service supports old menu items (without CMIF_ROOTPOPUP or 
+//Service supports old menu items (without CMIF_ROOTPOPUP or
 //CMIF_CHILDPOPUP flag).For old menu items needed root will be created
 //automatically.
 #define MO_ADDNEWMENUITEM					"MO/AddNewMenuItem"
@@ -321,7 +342,7 @@ LPARAM lParam;
 
 //wparam=MenuItemHandle
 //lparam=PMO_MenuItem
-//returns 0 and filled PMO_MenuItem structure on success and 
+//returns 0 and filled PMO_MenuItem structure on success and
 //-1 on failure
 #define MO_GETMENUITEM						"MO/GetMenuItem"
 
@@ -351,18 +372,23 @@ LPARAM lParam;
 //lParam=mi.ownerdata
 #define OPT_MENUOBJECT_SET_FREE_SERVICE						2
 
-//Set onAddService for menuobject. 
+//Set onAddService for menuobject.
 #define OPT_MENUOBJECT_SET_ONADD_SERVICE					3
+
+//Set menu check service
+#define OPT_MENUOBJECT_SET_CHECK_SERVICE          4
 
 //enable ability user to edit menuitems via options page.
 #define OPT_USERDEFINEDITEMS 1
 
 
-typedef struct tagOptParam{
+typedef struct tagOptParam
+{
 	int Handle;
 	int Setting;
 	int Value;
-}OptParam,*lpOptParam;
+}
+	OptParam,*lpOptParam;
 
 //wparam=0
 //lparam=*lpOptParam

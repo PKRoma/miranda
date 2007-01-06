@@ -21,7 +21,7 @@ along with this program; if not, write to the Free Software
 Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 */
 #include "commonheaders.h"
-#include "CLUIFrames/genmenu.h"
+//#include "CLUIFrames/genmenu.h"
 #include "m_genmenu.h"
 #include "m_ignore.h"
 #include "CLUIFrames/cluiframes.h"
@@ -30,12 +30,6 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 #define ME_CLIST_PREBUILDSTATUSMENU "CList/PreBuildStatusMenu"
 #define MS_CLIST_ADDSTATUSMENUITEM "CList/AddStatusMenuItem"
-
-#define FIRSTCUSTOMMENUITEMID	30000
-#define MENU_CUSTOMITEMMAIN		0x80000000
-//#define MENU_CUSTOMITEMCONTEXT	0x40000000
-//#define MENU_CUSTOMITEMFRAME	0x20000000
-
 
 typedef struct {
 	WORD id;
@@ -46,21 +40,14 @@ typedef struct {
 protoMenu *protoMenus = NULL;
 
 //new menu sys
-static int hMainMenuObject;
-static int hContactMenuObject;
 static int hStatusMenuObject;
 int MenuModulesLoaded(WPARAM,LPARAM);
 
 int statustopos(int status);
-//
-//HIMAGELIST hImlMenuIcons;
 
-static HANDLE hPreBuildMainMenuEvent;
-
-static HANDLE hPreBuildContactMenuEvent;
 HANDLE hPreBuildStatusMenuEvent,hAckHook,hAckHook;
 
-static HMENU hMainMenu,hStatusMenu = 0;
+static HMENU hStatusMenu = 0;
 int currentStatusMenuItem,currentDesiredStatusMode;
 static int statusModeList[]={ID_STATUS_OFFLINE,ID_STATUS_ONLINE,ID_STATUS_AWAY,ID_STATUS_NA,ID_STATUS_OCCUPIED,ID_STATUS_DND,ID_STATUS_FREECHAT,ID_STATUS_INVISIBLE,ID_STATUS_ONTHEPHONE,ID_STATUS_OUTTOLUNCH};
 static int skinIconStatusList[]={SKINICON_STATUS_OFFLINE,SKINICON_STATUS_ONLINE,SKINICON_STATUS_AWAY,SKINICON_STATUS_NA,SKINICON_STATUS_OCCUPIED,SKINICON_STATUS_DND,SKINICON_STATUS_FREE4CHAT,SKINICON_STATUS_INVISIBLE,SKINICON_STATUS_ONTHEPHONE,SKINICON_STATUS_OUTTOLUNCH};
@@ -77,34 +64,13 @@ typedef struct {
 lpStatusMenuHandles hStatusMenuHandles;
 int hStatusMenuHandlesCnt;
 
-
 extern HANDLE hStatusModeChangeEvent;
 extern int  CheckProtocolOrder();
 extern int g_shutDown;
 extern struct ClcData *g_clcData;
 
-//mainmenu exec param(ownerdata)
-typedef struct {
-	char *szServiceName;
-	int Param1;
-}MainMenuExecParam,*lpMainMenuExecParam;
-//
-
-
 //contactmenu exec param(ownerdata)
 //also used in checkservice
-typedef struct {
-	char *szServiceName;
-	char *pszContactOwner;//for check proc
-	int param;
-}ContactMenuExecParam,*lpContactMenuExecParam;
-
-typedef struct {
-	char *szProto;
-	int isOnList;
-	int isOnline;
-} BuildContactParam;
-
 
 typedef struct {
 	char *proto;
@@ -113,371 +79,8 @@ typedef struct {
 
 	BOOL custom;
 	char *svc;
-    int hMenuItem;
+	int hMenuItem;
 }StatusMenuExecParam,*lpStatusMenuExecParam;
-
-//////////////////////////////MAIN MENU/////////////////////////
-
-/*
-wparam=handle to the menu item returned by MS_CLIST_ADDCONTACTMENUITEM
-return 0 on success.
-*/
-static int RemoveMainMenuItem(WPARAM wParam,LPARAM lParam)
-{
-	/*not need if used free service
-	lpMainMenuExecParam mmep;
-
-	mmep=CallService(MO_MENUITEMGETOWNERDATA,wParam,lParam);
-
-	if (mmep!=NULL){
-	FreeAndNil(&mmep->szServiceName);
-	mir_free(mmep);
-	}
-	*/
-	CallService(MO_REMOVEMENUITEM,wParam,0);
-	return 0;
-}
-
-static int BuildMainMenu(WPARAM wParam,LPARAM lParam)
-{
-	int tick;
-	HMENU hMenu;
-	ListParam param;
-
-	memset(&param,0,sizeof(param));
-	param.MenuObjectHandle=hMainMenuObject;
-	param.rootlevel=-1;
-
-	hMenu=hMainMenu;
-	tick=GetTickCount();
-	NotifyEventHooks(hPreBuildMainMenuEvent,(WPARAM)0,(LPARAM)0);
-
-	CallService(MO_BUILDMENU,(WPARAM)hMenu,(LPARAM)&param);
-	if(pcli->hwndContactList)
-		DrawMenuBar(pcli->hwndContactList);
-	tick=GetTickCount()-tick;
-	return(int)hMenu;
-}
-
-static int AddMainMenuItem(WPARAM wParam,LPARAM lParam)
-{
-	CLISTMENUITEM *mi=(CLISTMENUITEM*)lParam;
-	TMO_MenuItem tmi;
-	OptParam op;
-
-	if (mi->cbSize!=sizeof(CLISTMENUITEM)) return 0;
-
-	memset(&tmi,0,sizeof(tmi));
-	tmi.cbSize = sizeof(tmi);
-	tmi.flags = mi->flags;
-	tmi.hIcon = mi->hIcon;
-	tmi.hotKey = mi->hotKey;
-	tmi.pszName = (TCHAR*)mi->pszName;
-	tmi.position = mi->position;
-
-	//pszPopupName for new system mean root level
-	//pszPopupName for old system mean that exists popup
-	tmi.root = (int)mi->pszPopupName;
-	tmi.ownerdata=NULL;
-
-	{
-		lpMainMenuExecParam mmep;
-		mmep=(lpMainMenuExecParam)mir_alloc(sizeof(MainMenuExecParam));
-		if (mmep==NULL) {
-			return(0);
-		}
-
-		//we need just one parametr.
-		mmep->szServiceName=mir_strdup(mi->pszService);
-		mmep->Param1=mi->popupPosition;
-
-		tmi.ownerdata=mmep;
-	}
-	op.Handle=CallService(MO_ADDNEWMENUITEM,(WPARAM)hMainMenuObject,(LPARAM)&tmi);
-	op.Setting=OPT_MENUITEMSETUNIQNAME;
-	op.Value=(int)mi->pszService;
-	CallService(MO_SETOPTIONSMENUITEM,(WPARAM)0,(LPARAM)&op);
-	return(op.Handle);
-
-	//	mainItemCount++;
-	//	return MENU_CUSTOMITEMMAIN|(mainMenuItem[mainItemCount-1].id);
-}
-
-int MainMenuCheckService(WPARAM wParam,LPARAM lParam) {
-	//not used
-	return(0);
-}
-
-//called with:
-//wparam - ownerdata
-//lparam - lparam from winproc
-int MainMenuExecService(WPARAM wParam,LPARAM lParam) {
-	if (wParam!=0) {
-		lpMainMenuExecParam mmep=(lpMainMenuExecParam)wParam;
-		if (!strcmp(mmep->szServiceName,"Help/AboutCommand")) {
-			//bug in help.c,it used wparam as parent window handle without reason.
-			mmep->Param1=0;
-		}
-		CallService(mmep->szServiceName,mmep->Param1,lParam);
-
-
-	}
-	return(1);
-}
-int FreeOwnerDataMainMenu (WPARAM wParam,LPARAM lParam)
-{
-	lpMainMenuExecParam mmep;
-	mmep=(lpMainMenuExecParam)lParam;
-	if (mmep!=NULL) {
-		FreeAndNil(&mmep->szServiceName);
-		FreeAndNil(&mmep);
-	}
-	return(0);
-}
-
-//////////////////////////////END MAIN MENU/////////////////////////
-
-
-
-//////////////////////////////CONTACT MENU/////////////////////////
-
-static int RemoveContactMenuItem(WPARAM wParam,LPARAM lParam)
-{
-	//identical
-
-	CallService(MO_REMOVEMENUITEM,wParam,0);
-	return 0;
-}
-
-static int AddContactMenuItem(WPARAM wParam,LPARAM lParam)
-{
-	CLISTMENUITEM *mi=(CLISTMENUITEM*)lParam;
-	TMO_MenuItem tmi;
-	OptParam op;
-
-	if (mi->cbSize!=sizeof(CLISTMENUITEM)) return 0;
-
-	memset(&tmi,0,sizeof(tmi));
-	tmi.cbSize=sizeof(tmi);
-	tmi.flags=mi->flags;
-	tmi.hIcon=mi->hIcon;
-	tmi.hotKey=mi->hotKey;
-	tmi.position=mi->position;
-	tmi.pszName=(TCHAR*)mi->pszName;
-	tmi.root=(int)mi->pszPopupName;
-
-	if (!(mi->flags&CMIF_ROOTPOPUP||mi->flags&CMIF_CHILDPOPUP)) {
-		//old system
-		tmi.flags|=CMIF_CHILDPOPUP;
-		tmi.root=-1;
-	}
-
-
-	{
-		//owner data                                
-		lpContactMenuExecParam cmep;
-		cmep=(lpContactMenuExecParam)mir_alloc(sizeof(ContactMenuExecParam));
-		memset(cmep,0,sizeof(ContactMenuExecParam));
-		cmep->szServiceName=mir_strdup(mi->pszService);
-		if (mi->pszContactOwner!=NULL) cmep->pszContactOwner=mir_strdup(mi->pszContactOwner);
-		cmep->param=mi->popupPosition;  
-		tmi.ownerdata=cmep;
-	}
-
-	op.Handle=(int)CallService(MO_ADDNEWMENUITEM,(WPARAM)hContactMenuObject,(LPARAM)&tmi);  
-	op.Setting=OPT_MENUITEMSETUNIQNAME;
-	{
-		char buf[256];
-		wsprintfA(buf,"%s/%s",mi->pszContactOwner?mi->pszContactOwner:"",mi->pszService?mi->pszService:"");
-		op.Value=(int)buf;
-		CallService(MO_SETOPTIONSMENUITEM,(WPARAM)0,(LPARAM)&op);
-	}
-	return(op.Handle);
-}
-
-static int BuildContactMenu(WPARAM wParam,LPARAM lParam)
-{
-	HMENU hMenu;
-	int isOnline,isOnList;
-	HANDLE hContact=(HANDLE)wParam;
-	char *szProto;
-	BuildContactParam bcp;
-	ListParam param;
-
-    NotifyEventHooks(hPreBuildContactMenuEvent,(WPARAM)hContact,0);
-
-	szProto=(char*)CallService(MS_PROTO_GETCONTACTBASEPROTO,(WPARAM)hContact,0);
-	isOnList=0==DBGetContactSettingByte(hContact,"CList","NotOnList",0);
-	isOnline=szProto!=NULL && ID_STATUS_OFFLINE!=DBGetContactSettingWord(hContact,szProto,"Status",ID_STATUS_OFFLINE);
-
-	bcp.szProto=szProto;
-	bcp.isOnList=isOnList;
-	bcp.isOnline=isOnline;
-
-	memset(&param,0,sizeof(param));
-
-	param.MenuObjectHandle=hContactMenuObject;
-	param.rootlevel=-1;
-	param.wParam=(WPARAM)&bcp;
-
-	hMenu=CreatePopupMenu();
-	CallService(MO_BUILDMENU,(WPARAM)hMenu,(LPARAM)&param);
-
-	return(int)hMenu;
-}
-
-//called with:
-//wparam - ownerdata
-//lparam - lparam from winproc
-int ContactMenuExecService(WPARAM wParam,LPARAM lParam) {
-	if (wParam!=0) {
-		lpContactMenuExecParam cmep=(lpContactMenuExecParam)wParam;
-		//call with wParam=(WPARAM)(HANDLE)hContact,lparam=popupposition
-		CallService(cmep->szServiceName,lParam,cmep->param);
-
-	}
-	return(0);
-}
-
-//true - ok,false ignore
-int ContactMenuCheckService(WPARAM wParam,LPARAM lParam) {
-
-	PCheckProcParam pcpp=(PCheckProcParam)wParam;
-	BuildContactParam *bcp=NULL;
-	lpContactMenuExecParam cmep=NULL;
-	TMO_MenuItem mi;
-
-	if (pcpp==NULL) {
-		return(FALSE);
-	}
-	bcp=(BuildContactParam *)pcpp->wParam;
-	if (bcp==NULL) {
-		return(FALSE);
-	}
-
-	cmep=pcpp->MenuItemOwnerData;
-	if (cmep==NULL) {
-		return(TRUE);
-	}//this is root...build it
-
-	if (cmep->pszContactOwner!=NULL) {
-		if (bcp->szProto==NULL) return(FALSE);
-		if (strcmp(cmep->pszContactOwner,bcp->szProto)) return(FALSE);
-	}
-	if (MO_GetMenuItem((WPARAM)pcpp->MenuItemHandle,(LPARAM)&mi)==0) {
-		if (mi.flags&CMIF_HIDDEN) return(FALSE);
-		if (mi.flags&CMIF_NOTONLIST && bcp->isOnList) return(FALSE);
-		if (mi.flags&CMIF_NOTOFFLIST && !(bcp->isOnList)) return(FALSE);
-		if (mi.flags&CMIF_NOTONLINE && (bcp->isOnline)) return(FALSE);
-		if (mi.flags&CMIF_NOTOFFLINE && !(bcp->isOnline)) return(FALSE);
-	}
-	return TRUE;
-
-	return(0);
-}
-
-int FreeOwnerDataContactMenu (WPARAM wParam,LPARAM lParam)
-{
-
-	lpContactMenuExecParam cmep;
-
-	cmep=(lpContactMenuExecParam)lParam;
-	if (cmep!=NULL) {
-		FreeAndNil(&cmep->szServiceName);
-		FreeAndNil(&cmep->pszContactOwner);
-		FreeAndNil(&cmep);
-	}
-	return(0);
-}
-
-
-//////////////////////////////END CONTACT MENU/////////////////////////
-
-
-//wparam MenuItemHandle
-static int ModifyCustomMenuItem(WPARAM wParam,LPARAM lParam)
-{
-	CLISTMENUITEM *mi=(CLISTMENUITEM*)lParam;
-	TMO_MenuItem tmi;
-
-	if ( lParam == 0 )
-		return(-1);
-
-	if ( mi->cbSize != sizeof( CLISTMENUITEM )) 
-		return 1;
-
-	tmi.cbSize = sizeof(tmi);
-	tmi.flags = mi->flags;
-	tmi.hIcon = mi->hIcon;
-	tmi.hotKey = mi->hotKey;
-    tmi.pszName = NULL;
-    
-    if(mi->pszName != 0 && !IsBadReadPtr(mi->pszName, 4)) {
-        tmi.pszName = (TCHAR*)CallService(MS_LANGPACK_PCHARTOTCHAR, 0, (LPARAM)mi->pszName );
-    }
-    else if(mi->pszName != NULL) {
-        //_DebugTraceA("modify menu item: invalid pointer (%x), %x", mi->pszName, mi->flags);
-    }
-
-
-    //todo new flags for this parametrs
-	//tmi.ownerdata
-	//tmi.position
-	{	
-        int result = CallService(MO_MODIFYMENUITEM,wParam,(LPARAM)&tmi);
-        if(tmi.pszName)
-            mir_free( tmi.pszName );
-
-        return result;
-    }
-}
-
-int MenuProcessCommand(WPARAM wParam,LPARAM lParam)
-{
-	if ((HIWORD(wParam)&MPCF_CONTACTMENU)||(HIWORD(wParam)&MPCF_MAINMENU)) {
-		//process old menu sys
-		if (HIWORD(wParam)&MPCF_CONTACTMENU) {
-			//make faked globalid
-			return(CallService(MO_PROCESSCOMMAND,getGlobalId(hContactMenuObject,LOWORD(wParam)),lParam));
-		}
-		if (HIWORD(wParam)&MPCF_MAINMENU) {
-			int hst=LOWORD(wParam);
-			if ((hst>=ID_STATUS_OFFLINE)&&(hst<=ID_STATUS_OUTTOLUNCH)) {
-				int pos=statustopos(hst);
-				if (pos!=-1&&hStatusMainMenuHandles!=NULL) {
-					return(CallService(MO_PROCESSCOMMAND,(WPARAM)hStatusMainMenuHandles[pos],lParam));
-				}
-
-			}
-			//make faked globalid
-
-		}
-
-		//unknown old menu
-		return(CallService(MO_PROCESSCOMMANDBYMENUIDENT,LOWORD(wParam),lParam));    
-	}
-	else {
-
-		/*
-		if (!IsBadCodePtr(wParam))
-		{
-		pcp=(lpProcessCommandParam)wParam;
-		mii.cbSize=sizeof(mii);
-		mii.fMask=MIIM_DATA;
-
-		if (GetMenuItemInfo(pcp->menu,pcp->ident,FALSE,&mii)!=0)
-		{
-		return(CallService(MO_PROCESSCOMMAND,mii.dwItemData,pcp->lParam));
-		}
-		}
-		*/
-		//prefered to call top way but only if caller KNOW hmenu 
-		return(CallService(MO_PROCESSCOMMANDBYMENUIDENT,LOWORD(wParam),lParam));    
-
-	}
-
-	return 0;
-}
 
 int StatusMenuExecService(WPARAM wParam,LPARAM lParam)
 {
@@ -496,12 +99,12 @@ int StatusMenuExecService(WPARAM wParam,LPARAM lParam)
 				PMO_IntMenuItem pimi;
 				int i=(DBGetContactSettingByte(NULL,smep->proto,"LockMainStatus",0)?0:1);
 				DBWriteContactSettingByte(NULL,smep->proto,"LockMainStatus",i);
-				pimi=MO_GetIntMenuItem(smep->protoindex);
+				pimi = pcli->pfnMOGetIntMenuItem(smep->protoindex);
 				if (i)
 					pimi->mi.flags|=CMIF_CHECKED;
 				else pimi->mi.flags&=~CMIF_CHECKED;
-                if(pcli->hwndStatus)
-                    InvalidateRect(pcli->hwndStatus, NULL, FALSE);
+				if(pcli->hwndStatus)
+					InvalidateRect(pcli->hwndStatus, NULL, FALSE);
 			}
 			else if ((smep->proto!=NULL)) {
 				CallProtoService(smep->proto,PS_SETSTATUS,smep->status,0);  
@@ -543,64 +146,6 @@ int FreeOwnerDataStatusMenu (WPARAM wParam,LPARAM lParam)
 	return(0);
 }
 
-static int MenuProcessHotkey(WPARAM vKey,LPARAM lParam)
-{
-	int res;
-	/*
-	if(lParam&MPCF_MAINMENU) {
-	if(vKey>='0' && vKey<='9' && GetKeyState(VK_CONTROL)&0x8000 && !(GetKeyState(VK_MENU)&0x8000) && !(GetKeyState(VK_SHIFT)&0x8000)) {
-	MenuProcessCommand(MAKEWPARAM(statusModeList[vKey-'0'],MPCF_MAINMENU),0);
-	return 1;
-	}
-	}
-	*/
-	res=CallService(MO_PROCESSHOTKEYS,(WPARAM)hStatusMenuObject,(LPARAM)vKey);
-	if (res) {
-		return(res);
-	}
-	res=CallService(MO_PROCESSHOTKEYS,(WPARAM)hMainMenuObject,(LPARAM)vKey);
-	if (res) {
-		return(res);
-	}
-	return 0;
-}
-
-static int MenuIconsChanged(WPARAM wParam,LPARAM lParam)
-{
-
-	//just rebuild menu
-	MenuModulesLoaded(0,0);
-
-	return 0;
-}
-
-static void GiveExistingItemAnIcon(UINT id,HICON hIcon)
-{
-}
-
-static int MeasureMenuItem(WPARAM wParam,LPARAM lParam)
-{
-	//	LPMEASUREITEMSTRUCT mis=(LPMEASUREITEMSTRUCT)lParam;
-	return(CallService(MO_MEASUREMENUITEM,(WPARAM)0,lParam));
-}
-
-static int DrawMenuItem(WPARAM wParam,LPARAM lParam)
-{
-	//LPDRAWITEMSTRUCT dis=(LPDRAWITEMSTRUCT)lParam;
-	return(CallService(MO_DRAWMENUITEM,(WPARAM)0,lParam));
-}
-
-static int MenuGetMain(WPARAM wParam,LPARAM lParam)
-{
-	if (hMainMenu!=NULL) {
-		while (GetMenuItemCount(hMainMenu)>0) {
-			DeleteMenu(hMainMenu,0,MF_BYPOSITION);
-		}
-	}
-	BuildMainMenu(0,0);
-	return(int)hMainMenu;
-}
-
 static int BuildStatusMenu(WPARAM wParam,LPARAM lParam)
 {
 	int tick;
@@ -617,59 +162,11 @@ static int BuildStatusMenu(WPARAM wParam,LPARAM lParam)
 		DeleteMenu( hStatusMenu, 0, MF_BYPOSITION );
 
 	tick=GetTickCount();
-	//NotifyEventHooks(hPreBuildMainMenuEvent,0,0);
 
 	CallService(MO_BUILDMENU,(WPARAM)hMenu,(LPARAM)&param);
 	DrawMenuBar((HWND)CallService("CLUI/GetHwnd",(WPARAM)0,(LPARAM)0));
 	tick=GetTickCount()-tick;
 	return(int)hMenu;
-}
-
-
-static int MenuGetStatus(WPARAM wParam,LPARAM lParam)
-{
-	//return (int)hStatusMenu;
-	return BuildStatusMenu(0,0);
-}
-
-
-int freeownerdataformenus()
-{
-	/* not needed due free service
-	void *data;
-	int i;
-	if (hStatusMainMenuHandles!=NULL)
-	{
-	for (i=0;i<hStatusMainMenuHandlesCnt;i++)
-	{
-
-
-	data=(void *)CallService(MO_MENUITEMGETOWNERDATA,hStatusMainMenuHandles[i],0);
-	if (data!=NULL)
-	{
-	mir_free(data);
-	data=NULL;
-	}
-
-	}
-	}
-
-	if (hStatusMenuHandles!=NULL)
-	{
-
-	for (i=0;i<hStatusMenuHandlesCnt;i++)
-	{
-	data=(void *)CallService(MO_MENUITEMGETOWNERDATA,hStatusMenuHandles[i].menuhandle,0);
-	if (data!=NULL)
-	{
-	mir_free(data);
-	data=NULL;
-	}
-
-	}
-	}
-	*/
-	return(1);
 }
 
 int GetProtoIndexByPos(PROTOCOLDESCRIPTOR ** proto, int protoCnt, int Pos)
@@ -717,7 +214,6 @@ int MenuModulesLoaded(WPARAM wParam,LPARAM lParam)
 
 	//status menu
 	if (hStatusMenuObject!=0) {
-		freeownerdataformenus();
 		CallService(MO_REMOVEMENUOBJECT,hStatusMenuObject,0);
 		if (hStatusMainMenuHandles!=NULL)
 			mir_free(hStatusMainMenuHandles);
@@ -787,7 +283,7 @@ int MenuModulesLoaded(WPARAM wParam,LPARAM lParam)
 			ic=tmi.hIcon;
 			tmi.root=-1;
 			CallProtoService(proto[i]->szName,PS_GETNAME,sizeof(protoName),(LPARAM)protoName);
-			tmi.pszName = (TCHAR*)protoName;
+			tmi.pszName = protoName;
 			rootmenu=CallService(MO_ADDNEWMENUITEM,(WPARAM)hStatusMenuObject,(LPARAM)&tmi);
 			strncpy(protoMenus[vis].protoName, protoName, 50);
 			protoMenus[vis].menuID = rootmenu;
@@ -799,7 +295,7 @@ int MenuModulesLoaded(WPARAM wParam,LPARAM lParam)
 			//if(statusModeList[j]==ID_STATUS_OFFLINE){tmi.flags|=CMIF_CHECKED;}
 			tmi.root=rootmenu;
 			tmi.position=pos++;
-			tmi.pszName=(TCHAR*)protoName;
+			tmi.pszName=protoName;
 			tmi.hIcon=(HICON)CallProtoService(proto[i]->szName,PS_LOADICON,PLI_PROTOCOL|PLIF_SMALL,0);
 			{
 				lpStatusMenuExecParam smep;
@@ -828,7 +324,7 @@ int MenuModulesLoaded(WPARAM wParam,LPARAM lParam)
 
 					tmi.root=rootmenu;
 					tmi.position=pos++;
-					tmi.pszName=(TCHAR*)CallService(MS_CLIST_GETSTATUSMODEDESCRIPTION,statusModeList[j],0);
+					tmi.pszName=(char*)CallService(MS_CLIST_GETSTATUSMODEDESCRIPTION,statusModeList[j],0);
 					tmi.hIcon=LoadSkinnedProtoIcon(proto[i]->szName,statusModeList[j]);
 					{
 						lpStatusMenuExecParam smep;
@@ -875,9 +371,9 @@ int MenuModulesLoaded(WPARAM wParam,LPARAM lParam)
 					tmi.position=pos++;
 					tmi.root=-1;
 					tmi.hotKey=MAKELPARAM(MOD_CONTROL,'0'+j);
-					tmi.pszName=(TCHAR*)CallService(MS_CLIST_GETSTATUSMODEDESCRIPTION,statusModeList[j],0);
+					tmi.pszName=(char*)CallService(MS_CLIST_GETSTATUSMODEDESCRIPTION,statusModeList[j],0);
 					wsprintfA(( LPSTR )buf, "%s\tCtrl+%c", tmi.pszName, '0'+j );
-					tmi.pszName=(TCHAR*)buf;
+					tmi.pszName=(char*)buf;
 					{
 						//owner data
 						lpStatusMenuExecParam smep;
@@ -971,7 +467,6 @@ static int MenuProtoAck(WPARAM wParam,LPARAM lParam)
 			}
 		}
 
-
 		if (ack->lParam>=ID_STATUS_OFFLINE && ack->lParam<ID_STATUS_OFFLINE+sizeof(statusModeList)/sizeof(statusModeList[0])) {
 			int pos = statustopos((int)ack->lParam);
 			if (pos>=0 && pos < sizeof(statusModeList)/sizeof(statusModeList[0])) {
@@ -1022,7 +517,7 @@ static int AddStatusMenuItem(WPARAM wParam,LPARAM lParam)
 				tmi.hIcon=mi->hIcon;
 				tmi.hotKey=mi->hotKey;
 				tmi.position = 1;
-				tmi.pszName = _T("Custom Status"); //mi->pszName;
+				tmi.pszName = "Custom Status"; //mi->pszName;
 				tmi.root = protoMenus[i].menuID;
 				protoMenus[i].menuID = (int)CallService(MO_ADDNEWMENUITEM,(WPARAM)hStatusMenuObject,(LPARAM)&tmi);
 				break;
@@ -1040,7 +535,7 @@ no_custom_status_item:
 	tmi.hIcon=mi->hIcon;
 	tmi.hotKey=mi->hotKey;
 	tmi.position=mi->position;
-	tmi.pszName = (TCHAR*)mi->pszName;
+	tmi.pszName = mi->pszName;
 	tmi.root = szFound ? (int)protoMenus[i].menuID : (int)mi->pszPopupName;
 
 	//owner data
@@ -1051,7 +546,7 @@ no_custom_status_item:
 	tmi.ownerdata=smep;
 
 	op.Handle=(int)CallService(MO_ADDNEWMENUITEM,(WPARAM)hStatusMenuObject,(LPARAM)&tmi);  
-    ((lpStatusMenuExecParam)(tmi.ownerdata))->hMenuItem=op.Handle;
+	((lpStatusMenuExecParam)(tmi.ownerdata))->hMenuItem=op.Handle;
 	op.Setting=OPT_MENUITEMSETUNIQNAME;
 
 	{
@@ -1063,7 +558,8 @@ no_custom_status_item:
 	return(op.Handle);
 }
 
-static int MenuModulesShutdown(WPARAM wParam,LPARAM lParam) {
+static int MenuModulesShutdown(WPARAM wParam,LPARAM lParam)
+{
 	UnhookEvent(hAckHook);
 	if(protoMenus) {
 		free(protoMenus);
@@ -1078,7 +574,7 @@ int CloseAction(WPARAM wParam,LPARAM lParam)
 	g_shutDown = 1;
 	k=CallService(MS_SYSTEM_OKTOEXIT,(WPARAM)0,(LPARAM)0);
 	if (k) {
-		SendMessage((HWND)CallService(MS_CLUI_GETHWND,(WPARAM)0,(LPARAM)0),WM_DESTROY,0,0);
+		SendMessage( pcli->hwndContactList, WM_DESTROY, 0, 0 );
 		PostQuitMessage(0);
 		Sleep(0);
 	}
@@ -1091,166 +587,166 @@ static HANDLE hWindowListIGN = 0;
 /*                                                              
  * dialog procedure for handling the contact ignore dialog (available from the contact
  * menu
-*/
+ */
 
 static BOOL CALLBACK IgnoreDialogProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)
- {
-    HANDLE hContact = (HANDLE)GetWindowLong(hWnd, GWL_USERDATA);
+{
+	HANDLE hContact = (HANDLE)GetWindowLong(hWnd, GWL_USERDATA);
 
-    switch(msg) {
-        case WM_INITDIALOG:
-        {
-            DWORD dwMask;
-            struct ClcContact *contact = NULL;
-            int pCaps;
-            HWND hwndAdd;
+	switch(msg) {
+	case WM_INITDIALOG:
+		{
+			DWORD dwMask;
+			struct ClcContact *contact = NULL;
+			int pCaps;
+			HWND hwndAdd;
 
-            hContact = (HANDLE)lParam;
-            SetWindowLong(hWnd, GWL_USERDATA, (LONG)hContact);
-            dwMask = DBGetContactSettingDword(hContact, "Ignore", "Mask1", 0);
-            SendMessage(hWnd, WM_USER + 100, (WPARAM)hContact, dwMask);
-            SendMessage(hWnd, WM_USER + 120, 0, 0);
-            TranslateDialogDefault(hWnd);
-            hwndAdd = GetDlgItem(hWnd, IDC_IGN_ADDPERMANENTLY); // CreateWindowEx(0, _T("CLCButtonClass"), _T("FOO"), WS_VISIBLE | BS_PUSHBUTTON | WS_CHILD | WS_TABSTOP, 200, 276, 106, 24, hWnd, (HMENU)IDC_IGN_ADDPERMANENTLY, g_hInst, NULL);
-            SendMessage(hwndAdd, BUTTONSETASFLATBTN, 0, 1);
-            SendMessage(hwndAdd, BUTTONSETASFLATBTN + 10, 0, 1);
+			hContact = (HANDLE)lParam;
+			SetWindowLong(hWnd, GWL_USERDATA, (LONG)hContact);
+			dwMask = DBGetContactSettingDword(hContact, "Ignore", "Mask1", 0);
+			SendMessage(hWnd, WM_USER + 100, (WPARAM)hContact, dwMask);
+			SendMessage(hWnd, WM_USER + 120, 0, 0);
+			TranslateDialogDefault(hWnd);
+			hwndAdd = GetDlgItem(hWnd, IDC_IGN_ADDPERMANENTLY); // CreateWindowEx(0, _T("CLCButtonClass"), _T("FOO"), WS_VISIBLE | BS_PUSHBUTTON | WS_CHILD | WS_TABSTOP, 200, 276, 106, 24, hWnd, (HMENU)IDC_IGN_ADDPERMANENTLY, g_hInst, NULL);
+			SendMessage(hwndAdd, BUTTONSETASFLATBTN, 0, 1);
+			SendMessage(hwndAdd, BUTTONSETASFLATBTN + 10, 0, 1);
 
-            SendMessage(hwndAdd, BM_SETIMAGE, IMAGE_ICON, (LPARAM)LoadImage(GetModuleHandle(NULL), MAKEINTRESOURCE(210), IMAGE_ICON, 16, 16, LR_SHARED));
-            SetWindowText(hwndAdd, TranslateT("Add permanently"));
-            EnableWindow(hwndAdd, DBGetContactSettingByte(hContact, "CList", "NotOnList", 0));
+			SendMessage(hwndAdd, BM_SETIMAGE, IMAGE_ICON, (LPARAM)LoadImage(GetModuleHandle(NULL), MAKEINTRESOURCE(210), IMAGE_ICON, 16, 16, LR_SHARED));
+			SetWindowText(hwndAdd, TranslateT("Add permanently"));
+			EnableWindow(hwndAdd, DBGetContactSettingByte(hContact, "CList", "NotOnList", 0));
 
-            if(g_clcData) {
-                if(FindItem(pcli->hwndContactTree, g_clcData, hContact, &contact, NULL, NULL)) {
-                    if(contact && contact->type != CLCIT_CONTACT) {
-                        DestroyWindow(hWnd);
-                        return FALSE;
-                    } else if(contact) {
-                        TCHAR szTitle[512];
+			if(g_clcData) {
+				if(FindItem(pcli->hwndContactTree, g_clcData, hContact, &contact, NULL, NULL)) {
+					if(contact && contact->type != CLCIT_CONTACT) {
+						DestroyWindow(hWnd);
+						return FALSE;
+					} else if(contact) {
+						TCHAR szTitle[512];
 
-                        mir_sntprintf(szTitle, 512, TranslateT("Ignore options for %s"), contact->szText);
-                        SetWindowText(hWnd, szTitle);
-                        SendMessage(hWnd, WM_SETICON, ICON_BIG, (LPARAM)LoadSkinnedIcon(SKINICON_OTHER_MIRANDA));
-                        pCaps = CallProtoService(contact->proto, PS_GETCAPS, PFLAGNUM_1, 0);
-                        EnableWindow(GetDlgItem(hWnd, IDC_IGN_ALWAYSONLINE), pCaps & PF1_INVISLIST ? TRUE : FALSE);
-                        EnableWindow(GetDlgItem(hWnd, IDC_IGN_ALWAYSOFFLINE), pCaps & PF1_VISLIST ? TRUE : FALSE);
-                    }
-                } else {
-                    DestroyWindow(hWnd);
-                    return FALSE;
-                }
-            }
-            WindowList_Add(hWindowListIGN, hWnd, hContact);
-            ShowWindow(hWnd, SW_SHOWNORMAL);
-            return TRUE;
-        }
-        case WM_COMMAND:
-            switch(LOWORD(wParam)) {
-                case IDC_IGN_ALL:
-                    SendMessage(hWnd, WM_USER + 100, (WPARAM)hContact, (LPARAM)0xffffffff);
-                    return 0;
-                case IDC_IGN_NONE:
-                    SendMessage(hWnd, WM_USER + 100, (WPARAM)hContact, (LPARAM)0);
-                    return 0;
-                case IDC_IGN_ALWAYSONLINE:
-                    if(IsDlgButtonChecked(hWnd, IDC_IGN_ALWAYSONLINE))
-                        CheckDlgButton(hWnd, IDC_IGN_ALWAYSOFFLINE, FALSE);
-                    break;
-                case IDC_IGN_ALWAYSOFFLINE:
-                    if(IsDlgButtonChecked(hWnd, IDC_IGN_ALWAYSOFFLINE))
-                        CheckDlgButton(hWnd, IDC_IGN_ALWAYSONLINE, FALSE);
-                    break;
-                case IDC_HIDECONTACT:
-                    DBWriteContactSettingByte(hContact, "CList", "Hidden", IsDlgButtonChecked(hWnd, IDC_HIDECONTACT) ? 1 : 0);
-                    break;
-                case IDC_IGN_ADDPERMANENTLY:
-                {
-                    ADDCONTACTSTRUCT acs = {0};
+						mir_sntprintf(szTitle, 512, TranslateT("Ignore options for %s"), contact->szText);
+						SetWindowText(hWnd, szTitle);
+						SendMessage(hWnd, WM_SETICON, ICON_BIG, (LPARAM)LoadSkinnedIcon(SKINICON_OTHER_MIRANDA));
+						pCaps = CallProtoService(contact->proto, PS_GETCAPS, PFLAGNUM_1, 0);
+						EnableWindow(GetDlgItem(hWnd, IDC_IGN_ALWAYSONLINE), pCaps & PF1_INVISLIST ? TRUE : FALSE);
+						EnableWindow(GetDlgItem(hWnd, IDC_IGN_ALWAYSOFFLINE), pCaps & PF1_VISLIST ? TRUE : FALSE);
+					}
+				} else {
+					DestroyWindow(hWnd);
+					return FALSE;
+				}
+			}
+			WindowList_Add(hWindowListIGN, hWnd, hContact);
+			ShowWindow(hWnd, SW_SHOWNORMAL);
+			return TRUE;
+		}
+	case WM_COMMAND:
+		switch(LOWORD(wParam)) {
+	  	case IDC_IGN_ALL:
+			SendMessage(hWnd, WM_USER + 100, (WPARAM)hContact, (LPARAM)0xffffffff);
+		  	return 0;
+	  	case IDC_IGN_NONE:
+			SendMessage(hWnd, WM_USER + 100, (WPARAM)hContact, (LPARAM)0);
+		  	return 0;
+	  	case IDC_IGN_ALWAYSONLINE:
+			if(IsDlgButtonChecked(hWnd, IDC_IGN_ALWAYSONLINE))
+				CheckDlgButton(hWnd, IDC_IGN_ALWAYSOFFLINE, FALSE);
+		  	break;
+	  	case IDC_IGN_ALWAYSOFFLINE:
+			if(IsDlgButtonChecked(hWnd, IDC_IGN_ALWAYSOFFLINE))
+				CheckDlgButton(hWnd, IDC_IGN_ALWAYSONLINE, FALSE);
+		  	break;
+	  	case IDC_HIDECONTACT:
+			DBWriteContactSettingByte(hContact, "CList", "Hidden", IsDlgButtonChecked(hWnd, IDC_HIDECONTACT) ? 1 : 0);
+		  	break;
+	  	case IDC_IGN_ADDPERMANENTLY:
+			{
+				ADDCONTACTSTRUCT acs = {0};
 
-                    acs.handle = hContact;
-                    acs.handleType = HANDLE_CONTACT;
-                    acs.szProto = 0;
-                    CallService(MS_ADDCONTACT_SHOW, (WPARAM)hWnd, (LPARAM)&acs);
-                    EnableWindow(GetDlgItem(hWnd, IDC_IGN_ADDPERMANENTLY), DBGetContactSettingByte(hContact, "CList", "NotOnList", 0));
-                    break;
-                }
-                case IDOK:
-                {
-                    DWORD newMask = 0;
-                    SendMessage(hWnd, WM_USER + 110, 0, (LPARAM)&newMask);
-                    DBWriteContactSettingDword(hContact, "Ignore", "Mask1", newMask);
-                    SendMessage(hWnd, WM_USER + 130, 0, 0);
-                }
-                case IDCANCEL:
-                    DestroyWindow(hWnd);
-                    break;
-            }
-            break;
-        case WM_USER + 100:                                         // fill dialog (wParam = hContact, lParam = mask)
-        {
-            CheckDlgButton(hWnd, IDC_IGN_MSGEVENTS, lParam & (1 << (IGNOREEVENT_MESSAGE - 1)) ? BST_CHECKED : BST_UNCHECKED);
-            CheckDlgButton(hWnd, IDC_IGN_FILEEVENTS, lParam & (1 << (IGNOREEVENT_FILE - 1)) ? BST_CHECKED : BST_UNCHECKED);
-            CheckDlgButton(hWnd, IDC_IGN_URLEVENTS, lParam & (1 << (IGNOREEVENT_URL - 1)) ? BST_CHECKED : BST_UNCHECKED);
-            CheckDlgButton(hWnd, IDC_IGN_AUTH, lParam & (1 << (IGNOREEVENT_AUTHORIZATION - 1)) ? BST_CHECKED : BST_UNCHECKED);
-            CheckDlgButton(hWnd, IDC_IGN_ADD, lParam & (1 << (IGNOREEVENT_YOUWEREADDED - 1)) ? BST_CHECKED : BST_UNCHECKED);
-            CheckDlgButton(hWnd, IDC_IGN_ONLINE, lParam & (1 << (IGNOREEVENT_USERONLINE - 1)) ? BST_CHECKED : BST_UNCHECKED);
-            return 0;
-        }
-        case WM_USER + 110:                                         // retrieve value
-        {
-            DWORD *dwNewMask = (DWORD *)lParam, dwMask = 0;
+				acs.handle = hContact;
+			  	acs.handleType = HANDLE_CONTACT;
+			  	acs.szProto = 0;
+			  	CallService(MS_ADDCONTACT_SHOW, (WPARAM)hWnd, (LPARAM)&acs);
+			  	EnableWindow(GetDlgItem(hWnd, IDC_IGN_ADDPERMANENTLY), DBGetContactSettingByte(hContact, "CList", "NotOnList", 0));
+			  	break;
+		  	}
+	  	case IDOK:
+			{
+				DWORD newMask = 0;
+			  	SendMessage(hWnd, WM_USER + 110, 0, (LPARAM)&newMask);
+			  	DBWriteContactSettingDword(hContact, "Ignore", "Mask1", newMask);
+			  	SendMessage(hWnd, WM_USER + 130, 0, 0);
+		  	}
+	  	case IDCANCEL:
+			DestroyWindow(hWnd);
+		  	break;
+		}
+		break;
+	case WM_USER + 100:                                         // fill dialog (wParam = hContact, lParam = mask)
+		{
+			CheckDlgButton(hWnd, IDC_IGN_MSGEVENTS, lParam & (1 << (IGNOREEVENT_MESSAGE - 1)) ? BST_CHECKED : BST_UNCHECKED);
+			CheckDlgButton(hWnd, IDC_IGN_FILEEVENTS, lParam & (1 << (IGNOREEVENT_FILE - 1)) ? BST_CHECKED : BST_UNCHECKED);
+			CheckDlgButton(hWnd, IDC_IGN_URLEVENTS, lParam & (1 << (IGNOREEVENT_URL - 1)) ? BST_CHECKED : BST_UNCHECKED);
+			CheckDlgButton(hWnd, IDC_IGN_AUTH, lParam & (1 << (IGNOREEVENT_AUTHORIZATION - 1)) ? BST_CHECKED : BST_UNCHECKED);
+			CheckDlgButton(hWnd, IDC_IGN_ADD, lParam & (1 << (IGNOREEVENT_YOUWEREADDED - 1)) ? BST_CHECKED : BST_UNCHECKED);
+			CheckDlgButton(hWnd, IDC_IGN_ONLINE, lParam & (1 << (IGNOREEVENT_USERONLINE - 1)) ? BST_CHECKED : BST_UNCHECKED);
+			return 0;
+		}
+	case WM_USER + 110:                                         // retrieve value
+		{
+			DWORD *dwNewMask = (DWORD *)lParam, dwMask = 0;
 
-            dwMask = (IsDlgButtonChecked(hWnd, IDC_IGN_MSGEVENTS) ? (1 << (IGNOREEVENT_MESSAGE - 1)) : 0) |
-                     (IsDlgButtonChecked(hWnd, IDC_IGN_FILEEVENTS) ? (1 << (IGNOREEVENT_FILE - 1)) : 0) |
-                     (IsDlgButtonChecked(hWnd, IDC_IGN_URLEVENTS) ? (1 << (IGNOREEVENT_URL - 1)) : 0) |
-                     (IsDlgButtonChecked(hWnd, IDC_IGN_AUTH) ? (1 << (IGNOREEVENT_AUTHORIZATION - 1)) : 0) |
-                     (IsDlgButtonChecked(hWnd, IDC_IGN_ADD) ? (1 << (IGNOREEVENT_YOUWEREADDED - 1)) : 0) |
-                     (IsDlgButtonChecked(hWnd, IDC_IGN_ONLINE) ? (1 << (IGNOREEVENT_USERONLINE - 1)) : 0);
+			dwMask = (IsDlgButtonChecked(hWnd, IDC_IGN_MSGEVENTS) ? (1 << (IGNOREEVENT_MESSAGE - 1)) : 0) |
+				(IsDlgButtonChecked(hWnd, IDC_IGN_FILEEVENTS) ? (1 << (IGNOREEVENT_FILE - 1)) : 0) |
+				(IsDlgButtonChecked(hWnd, IDC_IGN_URLEVENTS) ? (1 << (IGNOREEVENT_URL - 1)) : 0) |
+				(IsDlgButtonChecked(hWnd, IDC_IGN_AUTH) ? (1 << (IGNOREEVENT_AUTHORIZATION - 1)) : 0) |
+				(IsDlgButtonChecked(hWnd, IDC_IGN_ADD) ? (1 << (IGNOREEVENT_YOUWEREADDED - 1)) : 0) |
+				(IsDlgButtonChecked(hWnd, IDC_IGN_ONLINE) ? (1 << (IGNOREEVENT_USERONLINE - 1)) : 0);
 
-            if(dwNewMask)
-                *dwNewMask = dwMask;
-            return 0;
-        }
-        case WM_USER + 120:                                         // set visibility status
-        {
-            struct ClcContact *contact = NULL;
+			if(dwNewMask)
+				*dwNewMask = dwMask;
+			return 0;
+		}
+	case WM_USER + 120:                                         // set visibility status
+		{
+			struct ClcContact *contact = NULL;
 
-            if(FindItem(pcli->hwndContactTree, g_clcData, hContact, &contact, NULL, NULL)) {
-                if(contact) {
-                    WORD wApparentMode = DBGetContactSettingWord(contact->hContact, contact->proto, "ApparentMode", 0);
+			if(FindItem(pcli->hwndContactTree, g_clcData, hContact, &contact, NULL, NULL)) {
+				if(contact) {
+					WORD wApparentMode = DBGetContactSettingWord(contact->hContact, contact->proto, "ApparentMode", 0);
 
-                    CheckDlgButton(hWnd, IDC_IGN_ALWAYSOFFLINE, wApparentMode == ID_STATUS_OFFLINE ? TRUE : FALSE);
-                    CheckDlgButton(hWnd, IDC_IGN_ALWAYSONLINE, wApparentMode == ID_STATUS_ONLINE ? TRUE : FALSE);
-                }
-            }
-            return 0;
-        }
-        case WM_USER + 130:                                         // update apparent mode
-        {
-            struct ClcContact *contact = NULL;
+					CheckDlgButton(hWnd, IDC_IGN_ALWAYSOFFLINE, wApparentMode == ID_STATUS_OFFLINE ? TRUE : FALSE);
+					CheckDlgButton(hWnd, IDC_IGN_ALWAYSONLINE, wApparentMode == ID_STATUS_ONLINE ? TRUE : FALSE);
+				}
+			}
+			return 0;
+		}
+	case WM_USER + 130:                                         // update apparent mode
+		{
+			struct ClcContact *contact = NULL;
 
-            if(FindItem(pcli->hwndContactTree, g_clcData, hContact, &contact, NULL, NULL)) {
-                if(contact) {
-                    WORD wApparentMode = 0, oldApparentMode = DBGetContactSettingWord(hContact, contact->proto, "ApparentMode", 0);
+			if(FindItem(pcli->hwndContactTree, g_clcData, hContact, &contact, NULL, NULL)) {
+				if(contact) {
+					WORD wApparentMode = 0, oldApparentMode = DBGetContactSettingWord(hContact, contact->proto, "ApparentMode", 0);
 
-                    if(IsDlgButtonChecked(hWnd, IDC_IGN_ALWAYSONLINE))
-                        wApparentMode = ID_STATUS_ONLINE;
-                    else if(IsDlgButtonChecked(hWnd, IDC_IGN_ALWAYSOFFLINE))
-                        wApparentMode = ID_STATUS_OFFLINE;
+					if(IsDlgButtonChecked(hWnd, IDC_IGN_ALWAYSONLINE))
+						wApparentMode = ID_STATUS_ONLINE;
+					else if(IsDlgButtonChecked(hWnd, IDC_IGN_ALWAYSOFFLINE))
+						wApparentMode = ID_STATUS_OFFLINE;
 
-                    //DBWriteContactSettingWord(hContact, contact->proto, "ApparentMode", wApparentMode);
-                    //if(oldApparentMode != wApparentMode)
-                        CallContactService(hContact, PSS_SETAPPARENTMODE, (WPARAM)wApparentMode, 0);
-                    SendMessage(hWnd, WM_USER + 120, 0, 0);
-                }
-            }
-            return 0;
-        }
-        case WM_DESTROY:
-            SetWindowLong(hWnd, GWL_USERDATA, 0);
-            WindowList_Remove(hWindowListIGN, hWnd);
-            break;
-    }
-    return FALSE;
+					//DBWriteContactSettingWord(hContact, contact->proto, "ApparentMode", wApparentMode);
+					//if(oldApparentMode != wApparentMode)
+					CallContactService(hContact, PSS_SETAPPARENTMODE, (WPARAM)wApparentMode, 0);
+					SendMessage(hWnd, WM_USER + 120, 0, 0);
+				}
+			}
+			return 0;
+		}
+	case WM_DESTROY:
+		SetWindowLong(hWnd, GWL_USERDATA, 0);
+		WindowList_Remove(hWindowListIGN, hWnd);
+		break;
+	}
+	return FALSE;
 }
 
 /*                                                              
@@ -1267,22 +763,22 @@ static BOOL CALLBACK IgnoreDialogProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM
 
 static int SetContactIgnore(WPARAM wParam, LPARAM lParam)
 {
-    HANDLE hWnd = 0;
+	HANDLE hWnd = 0;
 
-    if(hWindowListIGN == 0)
-        hWindowListIGN = (HANDLE)CallService(MS_UTILS_ALLOCWINDOWLIST, 0, 0);
+	if(hWindowListIGN == 0)
+		hWindowListIGN = (HANDLE)CallService(MS_UTILS_ALLOCWINDOWLIST, 0, 0);
 
-    hWnd = WindowList_Find(hWindowListIGN, (HANDLE)wParam);
+	hWnd = WindowList_Find(hWindowListIGN, (HANDLE)wParam);
 
-    if(wParam) {
-        if(hWnd == 0)
-            CreateDialogParam(g_hInst, MAKEINTRESOURCE(IDD_QUICKIGNORE), 0, IgnoreDialogProc, (LPARAM)wParam);
-        else {
-            if(IsWindow(hWnd))
-                SetFocus(hWnd);
-        }
-    }
-    return 0;
+	if(wParam) {
+		if(hWnd == 0)
+			CreateDialogParam(g_hInst, MAKEINTRESOURCE(IDD_QUICKIGNORE), 0, IgnoreDialogProc, (LPARAM)wParam);
+		else {
+			if(IsWindow(hWnd))
+				SetFocus(hWnd);
+		}
+	}
+	return 0;
 }
 
 /*                                                              
@@ -1321,127 +817,33 @@ static int SetContactFloating(WPARAM wParam, LPARAM lParam)
 
 int InitCustomMenus(void)
 {
-	TMenuParam tmp;
-	OptParam op;
-
-	CreateServiceFunction("MainMenuExecService",MainMenuExecService);
-
-	CreateServiceFunction("ContactMenuExecService",ContactMenuExecService);
-	CreateServiceFunction("ContactMenuCheckService",ContactMenuCheckService);
-
 	CreateServiceFunction("StatusMenuExecService",StatusMenuExecService);
 
 	CreateServiceFunction("CloseAction",CloseAction);
 	CreateServiceFunction("CList/SetContactPriority", SetContactPriority);
 	CreateServiceFunction("CList/SetContactFloating", SetContactFloating);
-    CreateServiceFunction("CList/SetContactIgnore", SetContactIgnore);
+	CreateServiceFunction("CList/SetContactIgnore", SetContactIgnore);
 
 	//free services
-	CreateServiceFunction("CLISTMENUS/FreeOwnerDataMainMenu",FreeOwnerDataMainMenu);
-	CreateServiceFunction("CLISTMENUS/FreeOwnerDataContactMenu",FreeOwnerDataContactMenu);
 	CreateServiceFunction("CLISTMENUS/FreeOwnerDataStatusMenu",FreeOwnerDataStatusMenu);
-
-	CreateServiceFunction(MS_CLIST_ADDMAINMENUITEM,AddMainMenuItem);
-	CreateServiceFunction(MS_CLIST_MENUGETMAIN,MenuGetMain);
-	CreateServiceFunction(MS_CLIST_REMOVEMAINMENUITEM,RemoveMainMenuItem);
-	CreateServiceFunction(MS_CLIST_MENUBUILDMAIN,BuildMainMenu);
-
-	CreateServiceFunction(MS_CLIST_ADDCONTACTMENUITEM,AddContactMenuItem);
-	CreateServiceFunction(MS_CLIST_MENUBUILDCONTACT,BuildContactMenu);
-	CreateServiceFunction(MS_CLIST_REMOVECONTACTMENUITEM,RemoveContactMenuItem);
-
-	CreateServiceFunction(MS_CLIST_MODIFYMENUITEM,ModifyCustomMenuItem);
-	CreateServiceFunction(MS_CLIST_MENUMEASUREITEM,MeasureMenuItem);
-	CreateServiceFunction(MS_CLIST_MENUDRAWITEM,DrawMenuItem);
-
-	CreateServiceFunction(MS_CLIST_MENUGETSTATUS,MenuGetStatus);
-	CreateServiceFunction(MS_CLIST_MENUPROCESSCOMMAND,MenuProcessCommand);
-	CreateServiceFunction(MS_CLIST_MENUPROCESSHOTKEY,MenuProcessHotkey);
-
-	hPreBuildContactMenuEvent=CreateHookableEvent(ME_CLIST_PREBUILDCONTACTMENU);
 
 	CreateServiceFunction(MS_CLIST_ADDSTATUSMENUITEM,AddStatusMenuItem);
 	hPreBuildStatusMenuEvent=CreateHookableEvent(ME_CLIST_PREBUILDSTATUSMENU);
 
-	hPreBuildMainMenuEvent=CreateHookableEvent(ME_CLIST_PREBUILDMAINMENU);
-
 	hAckHook=(HANDLE)HookEvent(ME_PROTO_ACK,MenuProtoAck);
 
-	hMainMenu=GetSubMenu(LoadMenu(GetModuleHandle(NULL),MAKEINTRESOURCE(IDR_CLISTMENU)),0);
 	hStatusMenu=GetSubMenu(LoadMenu(GetModuleHandle(NULL),MAKEINTRESOURCE(IDR_CLISTMENU)),1);
-	CallService(MS_LANGPACK_TRANSLATEMENU,(WPARAM)hMainMenu,0);
 	CallService(MS_LANGPACK_TRANSLATEMENU,(WPARAM)hStatusMenu,0);
 
-	//	nextMenuId=FIRSTCUSTOMMENUITEMID;
 	hStatusMainMenuHandles=NULL;
 	hStatusMainMenuHandlesCnt=0;
 
 	hStatusMenuHandles=NULL;
 	hStatusMenuHandlesCnt=0;
 
-	//new menu sys
-	InitGenMenu();
-
-	//main menu
-	memset(&tmp,0,sizeof(tmp));
-	tmp.cbSize=sizeof(tmp);
-	tmp.CheckService=NULL;
-	tmp.ExecService="MainMenuExecService";
-	tmp.name=Translate("MainMenu");
-	hMainMenuObject=CallService(MO_CREATENEWMENUOBJECT,(WPARAM)0,(LPARAM)&tmp);
-
-	op.Handle=hMainMenuObject;
-	op.Setting=OPT_USERDEFINEDITEMS;
-	op.Value=(int)TRUE;
-	CallService(MO_SETOPTIONSMENUOBJECT,(WPARAM)0,(LPARAM)&op);
-
-	op.Handle=hMainMenuObject;
-	op.Setting=OPT_MENUOBJECT_SET_FREE_SERVICE;
-	op.Value=(int)"CLISTMENUS/FreeOwnerDataMainMenu";
-	CallService(MO_SETOPTIONSMENUOBJECT,(WPARAM)0,(LPARAM)&op);
-
-	//contact menu
-	memset(&tmp,0,sizeof(tmp));
-	tmp.cbSize=sizeof(tmp);
-	tmp.CheckService="ContactMenuCheckService";
-	tmp.ExecService="ContactMenuExecService";
-	tmp.name=Translate("ContactMenu");
-	hContactMenuObject=CallService(MO_CREATENEWMENUOBJECT,(WPARAM)0,(LPARAM)&tmp);
-
-	op.Handle=hContactMenuObject;
-	op.Setting=OPT_USERDEFINEDITEMS;
-	op.Value=(int)TRUE;
-	CallService(MO_SETOPTIONSMENUOBJECT,(WPARAM)0,(LPARAM)&op);
-
-	op.Handle=hContactMenuObject;
-	op.Setting=OPT_MENUOBJECT_SET_FREE_SERVICE;
-	op.Value=(int)"CLISTMENUS/FreeOwnerDataContactMenu";
-	CallService(MO_SETOPTIONSMENUOBJECT,(WPARAM)0,(LPARAM)&op);
-
-	{   //add  exit command to menu
-		CLISTMENUITEM mi;
-		memset(&mi,0,sizeof(mi));
-		mi.cbSize=sizeof(mi);
-		mi.position=0x7fffffff;
-		mi.pszService="CloseAction";
-		mi.pszName=Translate("E&xit");
-		AddMainMenuItem((WPARAM)0,(LPARAM)&mi);
-	}
-
 	currentStatusMenuItem=ID_STATUS_OFFLINE;
 	currentDesiredStatusMode=ID_STATUS_OFFLINE;
-	/*
-	{	MENUITEMINFO mii;
-	mii.cbSize=MENUITEMINFO_V4_SIZE;
-	mii.fMask=MIIM_STATE;
-	mii.fState=MFS_CHECKED|MFS_DEFAULT;
-	SetMenuItemInfo(hStatusMenu,currentStatusMenuItem,FALSE,&mii);
-	}
-	*/  
-	if (IsWinVer98Plus())
-		HookEvent(ME_SKIN_ICONSCHANGED,MenuIconsChanged);
 
-	//HookEvent(ME_SYSTEM_MODULESLOADED,MenuModulesLoaded);
 	HookEvent(ME_SYSTEM_SHUTDOWN,MenuModulesShutdown);
 	return 0;
 }
@@ -1450,13 +852,10 @@ void UninitCustomMenus(void)
 {
 	if ( hStatusMainMenuHandles != NULL )
 		mir_free(hStatusMainMenuHandles);
-
 	hStatusMainMenuHandles=NULL;
 
 	if ( hStatusMenuHandles != NULL )
 		mir_free(hStatusMenuHandles);
 
 	hStatusMenuHandles=NULL;
-
-	UnitGenMenu();
 }

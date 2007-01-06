@@ -1,15 +1,11 @@
-#include "../commonheaders.h"
-#include "../m_genmenu.h"
+#include "commonheaders.h"
 #include "genmenu.h"
-#pragma hdrstop 
 
 #define STR_SEPARATOR _T("---------------------------------------------")
 
 extern int DefaultImageListColorDepth;
 extern PIntMenuObject MenuObjects;
 extern int MenuObjectsCount;
-extern BOOL CALLBACK ProtocolOrderOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam);
-HTREEITEM MoveItemAbove(HWND hTreeWnd, HTREEITEM hItem, HTREEITEM hInsertAfter);
 long handleCustomDraw(HWND hWndTreeView, LPNMTVCUSTOMDRAW pNMTVCD);
 
 int hInst;
@@ -253,24 +249,21 @@ int BuildTree(HWND hwndDlg,int MenuObjectId)
 				PD->name = mir_tstrdup(dbv.ptszVal);            
 				mir_free(dbv.pszVal);
 			}
-			else PD->name = mir_tstrdup(pimo->MenuItems[i].mi.pszName);
+			else PD->name = mir_tstrdup(pimo->MenuItems[i].mi.ptszName);
 		}
 
-		PD->defname=mir_tstrdup(pimo->MenuItems[i].mi.pszName);
+		PD->defname = mir_tstrdup(pimo->MenuItems[i].mi.ptszName);
 
 		wsprintfA(buf, "%s_visible", menuItemName);
-		PD->show=DBGetContactSettingByte(NULL,MenuNameItems, buf, 1);           
+		PD->show = DBGetContactSettingByte(NULL,MenuNameItems, buf, 1);           
 
 		wsprintfA(buf, "%s_pos", menuItemName);
-		PD->pos=DBGetContactSettingDword(NULL,MenuNameItems, buf, 1);
+		PD->pos = DBGetContactSettingDword(NULL,MenuNameItems, buf, 1);
 
-		PD->id=pimo->MenuItems[i].id;
-		{
-			char buf[256];
-			wsprintfA(buf,"buildtree name: %s,id: %d\r\n",pimo->MenuItems[i].mi.pszName,pimo->MenuItems[i].id);
-		}
+		PD->id = pimo->MenuItems[i].id;
 
-		if (pimo->MenuItems[i].UniqName) PD->uniqname=mir_strdup(pimo->MenuItems[i].UniqName);
+		if ( pimo->MenuItems[i].UniqName )
+			PD->uniqname = mir_strdup( pimo->MenuItems[i].UniqName );
 
 		PDar[count]=PD;
 		count++;
@@ -330,6 +323,36 @@ void RebuildCurrent(HWND hwndDlg)
 	tvi.hItem=hti;
 	TreeView_GetItem(GetDlgItem(hwndDlg,IDC_MENUOBJECTS),&tvi);
 	BuildTree(hwndDlg,(int)tvi.lParam);
+}
+
+HTREEITEM MoveItemAbove(HWND hTreeWnd, HTREEITEM hItem, HTREEITEM hInsertAfter)
+{
+	TVITEM tvi={0};
+	tvi.mask=TVIF_HANDLE|TVIF_PARAM;
+	tvi.hItem=hItem;
+	if (!SendMessage(hTreeWnd, TVM_GETITEM, 0, (LPARAM)&tvi))
+		return NULL;
+	if (hItem && hInsertAfter) {
+		TVINSERTSTRUCT tvis;
+		TCHAR name[128];
+		if (hItem == hInsertAfter)
+			return hItem;
+
+		tvis.item.mask=TVIF_HANDLE|TVIF_PARAM|TVIF_TEXT|TVIF_IMAGE|TVIF_SELECTEDIMAGE;
+		tvis.item.stateMask=0xFFFFFFFF;
+		tvis.item.pszText=name;
+		tvis.item.cchTextMax=sizeof(name);
+		tvis.item.hItem=hItem;      
+		tvis.item.iImage=tvis.item.iSelectedImage=((MenuItemOptData *)tvi.lParam)->show;
+		if(!SendMessage(hTreeWnd, TVM_GETITEM, 0, (LPARAM)&tvis.item))
+			return NULL;
+		if (!TreeView_DeleteItem(hTreeWnd,hItem)) 
+			return NULL;
+		tvis.hParent=NULL;
+		tvis.hInsertAfter=hInsertAfter;
+		return TreeView_InsertItem(hTreeWnd, &tvis);
+	}
+	return NULL;    
 }
 
 WNDPROC MyOldWindowProc=NULL;
@@ -395,8 +418,8 @@ static BOOL CALLBACK GenMenuOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM l
 		{   
 			HIMAGELIST himlCheckBoxes;
 			himlCheckBoxes=ImageList_Create(GetSystemMetrics(SM_CXSMICON),GetSystemMetrics(SM_CYSMICON),ILC_COLOR32|ILC_MASK,2,2);
-			ImageList_AddIcon(himlCheckBoxes,LoadIcon(g_hInst,MAKEINTRESOURCE(IDI_NOTICK)));
-			ImageList_AddIcon(himlCheckBoxes,LoadIcon(g_hInst,MAKEINTRESOURCE(IDI_TICK)));
+			ImageList_AddIcon(himlCheckBoxes,LoadIcon(GetModuleHandle(NULL),MAKEINTRESOURCE(IDI_NOTICK)));
+			ImageList_AddIcon(himlCheckBoxes,LoadIcon(GetModuleHandle(NULL),MAKEINTRESOURCE(IDI_TICK)));
 			TreeView_SetImageList(GetDlgItem(hwndDlg,IDC_MENUOBJECTS),himlCheckBoxes,TVSIL_NORMAL);
 			TreeView_SetImageList(GetDlgItem(hwndDlg,IDC_MENUITEMS),himlCheckBoxes,TVSIL_NORMAL);
 		}
@@ -738,36 +761,6 @@ static BOOL CALLBACK GenMenuOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM l
 	return FALSE;
 }
 
-HTREEITEM MoveItemAbove(HWND hTreeWnd, HTREEITEM hItem, HTREEITEM hInsertAfter)
-{
-	TVITEM tvi={0};
-	tvi.mask=TVIF_HANDLE|TVIF_PARAM;
-	tvi.hItem=hItem;
-	if (!SendMessage(hTreeWnd, TVM_GETITEM, 0, (LPARAM)&tvi))
-		return NULL;
-	if (hItem && hInsertAfter) {
-		TVINSERTSTRUCT tvis;
-		TCHAR name[128];
-		if (hItem == hInsertAfter)
-			return hItem;
-
-		tvis.item.mask=TVIF_HANDLE|TVIF_PARAM|TVIF_TEXT|TVIF_IMAGE|TVIF_SELECTEDIMAGE;
-		tvis.item.stateMask=0xFFFFFFFF;
-		tvis.item.pszText=name;
-		tvis.item.cchTextMax=sizeof(name);
-		tvis.item.hItem=hItem;      
-		tvis.item.iImage=tvis.item.iSelectedImage=((MenuItemOptData *)tvi.lParam)->show;
-		if(!SendMessage(hTreeWnd, TVM_GETITEM, 0, (LPARAM)&tvis.item))
-			return NULL;
-		if (!TreeView_DeleteItem(hTreeWnd,hItem)) 
-			return NULL;
-		tvis.hParent=NULL;
-		tvis.hInsertAfter=hInsertAfter;
-		return TreeView_InsertItem(hTreeWnd, &tvis);
-	}
-	return NULL;    
-}
-
 long handleCustomDraw(HWND hWndTreeView, LPNMTVCUSTOMDRAW pNMTVCD)
 {
 	if (pNMTVCD==NULL)
@@ -842,23 +835,12 @@ int GenMenuOptInit(WPARAM wParam,LPARAM lParam)
 	ZeroMemory(&odp,sizeof(odp));
 	odp.cbSize=sizeof(odp);
 	odp.position=-1000000000;
-	odp.hInstance=g_hInst;
+	odp.hInstance=GetModuleHandle(NULL);
 	odp.pszTemplate=MAKEINTRESOURCEA(IDD_OPT_GENMENU);
 	odp.pszGroup=Translate("Customize");
 	odp.pszTitle=Translate("Menu Order");
 	odp.pfnDlgProc=GenMenuOpts;
 	odp.flags=ODPF_BOLDGROUPS;//|ODPF_EXPERTONLY;
-	CallService(MS_OPT_ADDPAGE,wParam,(LPARAM)&odp);
-
-	ZeroMemory(&odp,sizeof(odp));
-	odp.cbSize=sizeof(odp);
-	odp.position=-1000000000;
-	odp.hInstance=g_hInst;//GetModuleHandle(NULL);
-	odp.pszTemplate=MAKEINTRESOURCEA(IDD_OPT_PROTOCOLORDER);
-	odp.pszGroup=Translate("Contact List");
-	odp.pszTitle=Translate("Protocols");
-	odp.pfnDlgProc=ProtocolOrderOpts;
-	odp.flags=ODPF_BOLDGROUPS|ODPF_EXPERTONLY;
 	CallService(MS_OPT_ADDPAGE,wParam,(LPARAM)&odp);
 	return 0;
 }

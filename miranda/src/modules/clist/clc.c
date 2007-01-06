@@ -26,6 +26,14 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 #define NEWSTR_ALLOCA(A) (A==NULL)?NULL:strcpy((char*)alloca(strlen(A)+1),A)
 
+int InitGenMenu( void );
+int UnitGenMenu( void );
+
+int InitCustomMenus( void );
+int UninitCustomMenus( void );
+
+void MTG_OnmodulesLoad( void );
+
 static HANDLE hClcWindowList;
 static HANDLE hShowInfoTipEvent;
 HANDLE hHideInfoTipEvent;
@@ -127,6 +135,8 @@ static int ClcModulesLoaded(WPARAM wParam, LPARAM lParam)
 		cli.clcProto[cli.hClcProtoCount].dwStatus = ID_STATUS_OFFLINE;
 		cli.hClcProtoCount++;
 	}
+
+	MTG_OnmodulesLoad();
 	return 0;
 }
 
@@ -192,6 +202,8 @@ static int ClcShutdown(WPARAM wParam, LPARAM lParam)
 	if (cli.clcProto) mir_free(cli.clcProto);
 	FreeFileDropping();
 	FreeDisplayNameCache();
+	UnitGenMenu();
+	UninitCustomMenus();
 	return 0;
 }
 
@@ -222,6 +234,9 @@ int LoadCLCModule(void)
 	HookEvent(ME_SKIN_ICONSCHANGED, ClcIconsChanged);
 	hAckHook = (HANDLE) HookEvent(ME_PROTO_ACK, ClcProtoAck);
 	HookEvent(ME_SYSTEM_SHUTDOWN, ClcShutdown);
+
+	InitGenMenu();
+	InitCustomMenus();
 	return 0;
 }
 

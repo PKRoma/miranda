@@ -979,63 +979,6 @@
 					</FileConfiguration>
 				</File>
 				<File
-					RelativePath=".\CLUIFrames\genmenu.c">
-					<FileConfiguration
-						Name="Debug|Win32">
-						<Tool
-							Name="VCCLCompilerTool"
-							PrecompiledHeaderThrough="../commonheaders.h"/>
-					</FileConfiguration>
-					<FileConfiguration
-						Name="Release|Win32">
-						<Tool
-							Name="VCCLCompilerTool"
-							PrecompiledHeaderThrough="../commonheaders.h"/>
-					</FileConfiguration>
-					<FileConfiguration
-						Name="Debug Unicode|Win32">
-						<Tool
-							Name="VCCLCompilerTool"
-							PrecompiledHeaderThrough="../commonheaders.h"/>
-					</FileConfiguration>
-					<FileConfiguration
-						Name="Release Unicode|Win32">
-						<Tool
-							Name="VCCLCompilerTool"
-							PrecompiledHeaderThrough="../commonheaders.h"/>
-					</FileConfiguration>
-				</File>
-				<File
-					RelativePath=".\CLUIFrames\genmenu.h">
-				</File>
-				<File
-					RelativePath=".\CLUIFrames\genmenuopt.c">
-					<FileConfiguration
-						Name="Debug|Win32">
-						<Tool
-							Name="VCCLCompilerTool"
-							PrecompiledHeaderThrough="../commonheaders.h"/>
-					</FileConfiguration>
-					<FileConfiguration
-						Name="Release|Win32">
-						<Tool
-							Name="VCCLCompilerTool"
-							PrecompiledHeaderThrough="../commonheaders.h"/>
-					</FileConfiguration>
-					<FileConfiguration
-						Name="Debug Unicode|Win32">
-						<Tool
-							Name="VCCLCompilerTool"
-							PrecompiledHeaderThrough="../commonheaders.h"/>
-					</FileConfiguration>
-					<FileConfiguration
-						Name="Release Unicode|Win32">
-						<Tool
-							Name="VCCLCompilerTool"
-							PrecompiledHeaderThrough="../commonheaders.h"/>
-					</FileConfiguration>
-				</File>
-				<File
 					RelativePath=".\CLUIFrames\groupmenu.c">
 					<FileConfiguration
 						Name="Debug|Win32">

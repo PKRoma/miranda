@@ -37,10 +37,6 @@ BOOL(WINAPI * MySetLayeredWindowAttributes) (HWND, COLORREF, BYTE, DWORD) = NULL
 /////////////////////////////////////////////////////////////////////////////////////////
 // external functions
 
-int MenuProcessCommand(WPARAM wParam, LPARAM lParam);
-int InitCustomMenus(void);
-void UninitCustomMenus(void);
-
 void PaintClc(HWND hwnd, struct ClcData *dat, HDC hdc, RECT * rcPaint);
 
 int ClcOptInit(WPARAM wParam, LPARAM lParam);
@@ -106,21 +102,6 @@ static int OnOptsInit(WPARAM wParam, LPARAM lParam)
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////
-// menu status services
-
-static int SetStatusMode(WPARAM wParam, LPARAM lParam)
-{
-	//todo: check wParam is valid so people can't use this to run random menu items
-	MenuProcessCommand(MAKEWPARAM(LOWORD(wParam), MPCF_MAINMENU), 0);
-	return 0;
-}
-
-static int GetStatusMode(WPARAM wParam, LPARAM lParam)
-{
-	return currentDesiredStatusMode;
-}
-
-/////////////////////////////////////////////////////////////////////////////////////////
 // main clist initialization routine
 
 int __declspec(dllexport) CListInitialise(PLUGINLINK * link)
@@ -138,9 +119,13 @@ int __declspec(dllexport) CListInitialise(PLUGINLINK * link)
 
 	pcli = ( CLIST_INTERFACE* )CallService(MS_CLIST_RETRIEVE_INTERFACE, 0, (LPARAM)g_hInst);
 	if ( (int)pcli == CALLSERVICE_NOTFOUND ) {
-		MessageBoxA( NULL, "This version of plugin requires Miranda IM 0.5 or later", "Fatal error", MB_OK );
+LBL_Error:
+		MessageBoxA( NULL, "This version of plugin requires Miranda IM 0.7.0.8 or later", "Fatal error", MB_OK );
 		return 1;
 	}
+	if ( pcli->version < 4 )
+		goto LBL_Error;
+
 	pcli->pfnPaintClc = PaintClc;
 
 	MySetLayeredWindowAttributes = (BOOL(WINAPI *) (HWND, COLORREF, BYTE, DWORD)) GetProcAddress(
@@ -150,10 +135,6 @@ int __declspec(dllexport) CListInitialise(PLUGINLINK * link)
 	HookEvent(ME_OPT_INITIALISE, OnOptsInit);
 
 	hStatusModeChangeEvent = CreateHookableEvent(ME_CLIST_STATUSMODECHANGE);
-
-	InitCustomMenus();
-	CreateServiceFunction(MS_CLIST_SETSTATUSMODE, SetStatusMode);
-	CreateServiceFunction(MS_CLIST_GETSTATUSMODE, GetStatusMode);
 	return 0;
 }
 
@@ -170,6 +151,5 @@ int __declspec(dllexport) Load(PLUGINLINK * link)
 
 int __declspec(dllexport) Unload(void)
 {
-	UninitCustomMenus();
 	return 0;
 }

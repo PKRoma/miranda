@@ -23,6 +23,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 #include "commonheaders.h"
 #include "clc.h"
+#include "genmenu.h"
 
 CLIST_INTERFACE cli = { 0 };
 
@@ -180,7 +181,7 @@ static int srvRetrieveInterface( WPARAM wParam, LPARAM lParam )
 	int rc;
 
 	if ( interfaceInited == 0 ) {
-		cli.version = 3;
+		cli.version = 4;
 
 		cli.pfnClcOptionsChanged               = fnClcOptionsChanged;
 		cli.pfnClcBroadcast                    = fnClcBroadcast;
@@ -296,6 +297,9 @@ static int srvRetrieveInterface( WPARAM wParam, LPARAM lParam )
 		cli.pfnHotKeysUnregister					= fnHotKeysUnregister;
 		cli.pfnHotKeysProcess						= fnHotKeysProcess;
 		cli.pfnHotkeysProcessMessage			   = fnHotkeysProcessMessage;
+
+		cli.pfnMOGetIntMenuItem                = MO_GetIntMenuItem;
+		cli.pfnMOGetMenuItemByGlobalID         = GetMenuItemByGlobalID;
 
 		cli.hInst = ( HMODULE )lParam;
 

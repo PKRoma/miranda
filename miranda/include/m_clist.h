@@ -113,6 +113,7 @@ typedef struct {
 //displayed in brackets after the menu item text. This only works in debug
 //builds.
 #define MS_CLIST_ADDCONTACTMENUITEM     "CList/AddContactMenuItem"
+#define MS_CLIST_ADDSTATUSMENUITEM      "CList/AddStatusMenuItem"
 
 //modify an existing menu item     v0.1.0.1+
 //wParam=(WPARAM)(HANDLE)hMenuItem

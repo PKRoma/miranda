@@ -8,14 +8,23 @@ extern int InitCustomMenus(void);
 //contactmenu exec param(ownerdata)
 //also used in checkservice
 typedef struct{
-char *szServiceName;
-int Frameid;
-int param1;
+	char *szServiceName;
+	int Frameid;
+	int param1;
 }FrameMenuExecParam,*lpFrameMenuExecParam;
+
+void FreeAndNil( void **p )
+{
+	if ( p == NULL )
+		return;
+
+	if ( *p != NULL ) {
+		mir_free( *p );
+		*p = NULL;
+}	}
 
 int FreeOwnerDataFrameMenu (WPARAM wParam,LPARAM lParam)
 {
-
 	lpFrameMenuExecParam cmep;
 
 	cmep=(lpFrameMenuExecParam)lParam;
@@ -30,18 +39,18 @@ static int AddContextFrameMenuItem(WPARAM wParam,LPARAM lParam)
 {
 	CLISTMENUITEM *mi=(CLISTMENUITEM*)lParam;
 	TMO_MenuItem tmi;
-	
+
 	if(mi->cbSize!=sizeof(CLISTMENUITEM)) return 0;
 
 	memset(&tmi,0,sizeof(tmi));
-	
+
 	tmi.cbSize=sizeof(tmi);
 	tmi.flags=mi->flags;
 	tmi.hIcon=mi->hIcon;
 	tmi.hotKey=mi->hotKey;
 	tmi.position=mi->position;
 	tmi.pszName=mi->pszName;
-	
+
 	if(mi->flags&CMIF_ROOTPOPUP||mi->flags&CMIF_CHILDPOPUP)
 		tmi.root=(int)mi->pszPopupName;
 	{
@@ -51,10 +60,10 @@ static int AddContextFrameMenuItem(WPARAM wParam,LPARAM lParam)
 		fmep->szServiceName=mir_strdup(mi->pszService);
 		fmep->Frameid=mi->popupPosition;
 		fmep->param1=(int)mi->pszContactOwner;
-		
+
 		tmi.ownerdata=fmep;
 	}
-	
+
 	return(CallService(MO_ADDNEWMENUITEM,(WPARAM)hFrameMenuObject,(LPARAM)&tmi));
 }
 
@@ -64,11 +73,11 @@ static int RemoveContextFrameMenuItem(WPARAM wParam,LPARAM lParam)
 	lpFrameMenuExecParam fmep;
 	fmep=(lpFrameMenuExecParam)CallService(MO_MENUITEMGETOWNERDATA,wParam,lParam);
 	if (fmep!=NULL){
-		if (fmep->szServiceName!=NULL){
-			mir_free(fmep->szServiceName);
-			fmep->szServiceName=NULL;
-		}
-		mir_free(fmep);
+	if (fmep->szServiceName!=NULL){
+	mir_free(fmep->szServiceName);
+	fmep->szServiceName=NULL;
+	}
+	mir_free(fmep);
 	}
 	*/
 	CallService(MO_REMOVEMENUITEM,wParam,0);
@@ -78,17 +87,18 @@ static int RemoveContextFrameMenuItem(WPARAM wParam,LPARAM lParam)
 //called with:
 //wparam - ownerdata
 //lparam - lparam from winproc
-int FrameMenuExecService(WPARAM wParam,LPARAM lParam) {
+int FrameMenuExecService(WPARAM wParam,LPARAM lParam)
+{
 	lpFrameMenuExecParam fmep=(lpFrameMenuExecParam)wParam;
 	if (fmep==NULL){return(-1);}
-		CallService(fmep->szServiceName,lParam,fmep->param1);	
+	CallService(fmep->szServiceName,lParam,fmep->param1);	
 
-		return(0);
+	return(0);
 }
 
 //true - ok,false ignore
-int FrameMenuCheckService(WPARAM wParam,LPARAM lParam) {
-	
+int FrameMenuCheckService(WPARAM wParam,LPARAM lParam)
+{
 	PCheckProcParam pcpp=(PCheckProcParam)wParam;
 	lpFrameMenuExecParam fmep;
 	TMO_MenuItem mi;
@@ -99,10 +109,9 @@ int FrameMenuCheckService(WPARAM wParam,LPARAM lParam) {
 		fmep=mi.ownerdata;
 		if (fmep!=NULL)
 		{
-		//pcpp->wParam  -  frameid
-		if (((WPARAM)fmep->Frameid==pcpp->wParam)||fmep->Frameid==-1) return(TRUE);	
+			//pcpp->wParam  -  frameid
+			if (((WPARAM)fmep->Frameid==pcpp->wParam)||fmep->Frameid==-1) return(TRUE);	
 		}
-
 	}
 	return(FALSE);
 }
@@ -125,7 +134,7 @@ static int BuildContextFrameMenu(WPARAM wParam,LPARAM lParam)
 	param.wParam=wParam;
 	param.lParam=lParam;
 	param.rootlevel=-1;
-	
+
 	hMenu=CreatePopupMenu();
 	//NotifyEventHooks(hPreBuildFrameMenuEvent,wParam,-1);
 	ContextFrameMenuNotify(wParam,-1);
@@ -136,111 +145,91 @@ static int BuildContextFrameMenu(WPARAM wParam,LPARAM lParam)
 //==========================Frames end
 boolean InternalGenMenuModule=FALSE;
 
-int MeasureItemProxy(WPARAM wParam,LPARAM lParam) {
-
-int val;
+int MeasureItemProxy(WPARAM wParam,LPARAM lParam)
+{
+	int val;
 	if (InternalGenMenuModule) 
+	{
+		val=CallService(MS_INT_MENUMEASUREITEM,wParam,lParam);
+		if (val) return(val);
+	}
+	return CallService(MS_CLIST_MENUMEASUREITEM,wParam,lParam);
+}
+
+int DrawItemProxy(WPARAM wParam,LPARAM lParam)
 {
-
-	val=CallService(MS_INT_MENUMEASUREITEM,wParam,lParam);
-	if (val) return(val);
+	if (InternalGenMenuModule) 
+	{
+		int val;
+		val=CallService(MS_INT_MENUDRAWITEM,wParam,lParam);
+		if (val) return(val);
+	}
+	return CallService(MS_CLIST_MENUDRAWITEM,wParam,lParam);
 }
-return CallService(MS_CLIST_MENUMEASUREITEM,wParam,lParam);
 
-
-}
-
-
-int DrawItemProxy(WPARAM wParam,LPARAM lParam) {
-if (InternalGenMenuModule) 
+int ProcessCommandProxy(WPARAM wParam,LPARAM lParam)
 {
-int val;
-	val=CallService(MS_INT_MENUDRAWITEM,wParam,lParam);
-	if (val) return(val);
-}
-return CallService(MS_CLIST_MENUDRAWITEM,wParam,lParam);
+	if (InternalGenMenuModule) 
+	{
+		int val;
+		val=CallService(MS_INT_MENUPROCESSCOMMAND,wParam,lParam);
+		if (val) return(val);
+	}
+
+	return CallService(MS_CLIST_MENUPROCESSCOMMAND,wParam,lParam);
 
 }
 
-
-
-int ProcessCommandProxy(WPARAM wParam,LPARAM lParam) {
-if (InternalGenMenuModule) 
+int ModifyMenuItemProxy(WPARAM wParam,LPARAM lParam)
 {
-	int val;
-	val=CallService(MS_INT_MENUPROCESSCOMMAND,wParam,lParam);
-	if (val) return(val);
-}
- 
-return CallService(MS_CLIST_MENUPROCESSCOMMAND,wParam,lParam);
+	if (InternalGenMenuModule) 
+	{
+		int val;
+		val=CallService(MS_INT_MODIFYMENUITEM,wParam,lParam);
+		if (val) return(val);
+	}
 
+	return CallService(MS_CLIST_MODIFYMENUITEM,wParam,lParam);
 }
-
-int ModifyMenuItemProxy(WPARAM wParam,LPARAM lParam) {
-if (InternalGenMenuModule) 
-{
-	int val;
-	val=CallService(MS_INT_MODIFYMENUITEM,wParam,lParam);
-	if (val) return(val);
-}
- 
-return CallService(MS_CLIST_MODIFYMENUITEM,wParam,lParam);
-
-}
-
 
 int InitFramesMenus(void)
 {
 	TMenuParam tmp;
 
-if (!ServiceExists(MO_REMOVEMENUOBJECT))
-{
-	
-	InitGenMenu();
-	InitCustomMenus();
-	InternalGenMenuModule=TRUE;
-}
-
-if (ServiceExists(MO_REMOVEMENUOBJECT))
-{
-	CreateServiceFunction("FrameMenuExecService",FrameMenuExecService);
-	CreateServiceFunction("FrameMenuCheckService",FrameMenuCheckService);
-	CreateServiceFunction("FrameMenuFreeService",FreeOwnerDataFrameMenu);
-
-
-	CreateServiceFunction(MS_CLIST_REMOVECONTEXTFRAMEMENUITEM,RemoveContextFrameMenuItem);
-	CreateServiceFunction(MS_CLIST_ADDCONTEXTFRAMEMENUITEM,AddContextFrameMenuItem);
-	CreateServiceFunction(MS_CLIST_MENUBUILDFRAMECONTEXT,BuildContextFrameMenu);
-	CreateServiceFunction(MS_CLIST_FRAMEMENUNOTIFY,ContextFrameMenuNotify);
-	hPreBuildFrameMenuEvent=CreateHookableEvent(ME_CLIST_PREBUILDFRAMEMENU);
-
-	//frame menu object
-	memset(&tmp,0,sizeof(tmp));
-	tmp.cbSize=sizeof(tmp);
-	tmp.CheckService="FrameMenuCheckService";
-	tmp.ExecService="FrameMenuExecService";
-	tmp.name="FrameMenu";
-	hFrameMenuObject=CallService(MO_CREATENEWMENUOBJECT,0,(LPARAM)&tmp);
+	if (!ServiceExists(MO_REMOVEMENUOBJECT))
 	{
-		OptParam op;
-	op.Handle=hFrameMenuObject;
-	op.Setting=OPT_MENUOBJECT_SET_FREE_SERVICE;
-	op.Value=(int)"FrameMenuFreeService";
-	CallService(MO_SETOPTIONSMENUOBJECT,(WPARAM)0,(LPARAM)&op);
+
+		InitCustomMenus();
+		InternalGenMenuModule=TRUE;
 	}
 
+	if (ServiceExists(MO_REMOVEMENUOBJECT))
+	{
+		CreateServiceFunction("FrameMenuExecService",FrameMenuExecService);
+		CreateServiceFunction("FrameMenuCheckService",FrameMenuCheckService);
+		CreateServiceFunction("FrameMenuFreeService",FreeOwnerDataFrameMenu);
 
-}
+
+		CreateServiceFunction(MS_CLIST_REMOVECONTEXTFRAMEMENUITEM,RemoveContextFrameMenuItem);
+		CreateServiceFunction(MS_CLIST_ADDCONTEXTFRAMEMENUITEM,AddContextFrameMenuItem);
+		CreateServiceFunction(MS_CLIST_MENUBUILDFRAMECONTEXT,BuildContextFrameMenu);
+		CreateServiceFunction(MS_CLIST_FRAMEMENUNOTIFY,ContextFrameMenuNotify);
+		hPreBuildFrameMenuEvent=CreateHookableEvent(ME_CLIST_PREBUILDFRAMEMENU);
+
+		//frame menu object
+		memset(&tmp,0,sizeof(tmp));
+		tmp.cbSize=sizeof(tmp);
+		tmp.CheckService="FrameMenuCheckService";
+		tmp.ExecService="FrameMenuExecService";
+		tmp.name="FrameMenu";
+		hFrameMenuObject=CallService(MO_CREATENEWMENUOBJECT,0,(LPARAM)&tmp);
+		{
+			OptParam op;
+			op.Handle=hFrameMenuObject;
+			op.Setting=OPT_MENUOBJECT_SET_FREE_SERVICE;
+			op.Value=(int)"FrameMenuFreeService";
+			CallService(MO_SETOPTIONSMENUOBJECT,(WPARAM)0,(LPARAM)&op);
+		}
+	}
 	return 0;
-}
-int UnitFramesMenu()
-{
-	/*
-	if (ServiceExists(MO_REMOVEMENUOBJECT)) 
-	{
-		CallService(MO_REMOVEMENUOBJECT,hFrameMenuObject,0);
-		if (InternalGenMenuModule){UnitGenMenu();}
-	}
-*/
-	return(0);
 }

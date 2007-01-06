@@ -147,7 +147,7 @@ static int DeleteGroup(WPARAM wParam, LPARAM lParam)
 	if (DBGetContactSettingTString(NULL, "CListGroups", str, &dbv))
 		return 1;
 	if (DBGetContactSettingByte(NULL, "CList", "ConfirmDelete", SETTING_CONFIRMDELETE_DEFAULT))
-		if (MessageBox((HWND)CallService(MS_CLUI_GETHWND, 0, 0), TranslateT("Are you sure you want to delete this group?  This operation can not be undone."), TranslateT("Delete Group"), MB_YESNO|MB_ICONQUESTION)==IDNO)
+		if (MessageBox(cli.hwndContactList, TranslateT("Are you sure you want to delete this group?  This operation can not be undone."), TranslateT("Delete Group"), MB_YESNO|MB_ICONQUESTION)==IDNO)
 			return 1;
 	lstrcpyn(name, dbv.ptszVal + 1, SIZEOF(name));
 	DBFreeVariant(&dbv);

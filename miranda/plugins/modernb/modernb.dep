@@ -6,9 +6,11 @@
 	"..\..\include\m_clc.h"\
 	"..\..\include\m_clist.h"\
 	"..\..\include\m_clistint.h"\
+	"..\..\include\m_clui.h"\
 	"..\..\include\m_contacts.h"\
 	"..\..\include\m_database.h"\
 	"..\..\include\m_file.h"\
+	"..\..\include\m_genmenu.h"\
 	"..\..\include\m_icolib.h"\
 	"..\..\include\m_langpack.h"\
 	"..\..\include\m_options.h"\
@@ -16,6 +18,7 @@
 	"..\..\include\m_protocols.h"\
 	"..\..\include\m_protosvc.h"\
 	"..\..\include\m_skin.h"\
+	"..\..\include\m_skin_eng.h"\
 	"..\..\include\m_system.h"\
 	"..\..\include\m_userinfo.h"\
 	"..\..\include\m_utils.h"\
@@ -29,12 +32,10 @@
 	".\CLUIFrames\m_cluiframes.h"\
 	".\commonheaders.h"\
 	".\commonprototypes.h"\
-	".\genmenu.h"\
 	".\image_array.h"\
 	".\log.h"\
 	".\m_avatars.h"\
 	".\m_clui.h"\
-	".\m_genmenu.h"\
 	".\m_metacontacts.h"\
 	".\m_skin_eng.h"\
 	".\m_smileyadd.h"\
@@ -44,7 +45,7 @@
 	".\modern_row.h"\
 	".\modern_statusbar.h"\
 	".\rowheight_funcs.h"\
-	".\skinengine.h"\
+	".\SkinEngine.h"\
 	
 
 .\CLUIFrames\extraimage.c : \
@@ -53,9 +54,11 @@
 	"..\..\include\m_clc.h"\
 	"..\..\include\m_clist.h"\
 	"..\..\include\m_clistint.h"\
+	"..\..\include\m_clui.h"\
 	"..\..\include\m_contacts.h"\
 	"..\..\include\m_database.h"\
 	"..\..\include\m_file.h"\
+	"..\..\include\m_genmenu.h"\
 	"..\..\include\m_icolib.h"\
 	"..\..\include\m_langpack.h"\
 	"..\..\include\m_options.h"\
@@ -63,6 +66,7 @@
 	"..\..\include\m_protocols.h"\
 	"..\..\include\m_protosvc.h"\
 	"..\..\include\m_skin.h"\
+	"..\..\include\m_skin_eng.h"\
 	"..\..\include\m_system.h"\
 	"..\..\include\m_userinfo.h"\
 	"..\..\include\m_utils.h"\
@@ -76,12 +80,10 @@
 	".\CLUIFrames\m_cluiframes.h"\
 	".\commonheaders.h"\
 	".\commonprototypes.h"\
-	".\genmenu.h"\
 	".\image_array.h"\
 	".\log.h"\
 	".\m_avatars.h"\
 	".\m_clui.h"\
-	".\m_genmenu.h"\
 	".\m_metacontacts.h"\
 	".\m_skin_eng.h"\
 	".\m_smileyadd.h"\
@@ -91,7 +93,7 @@
 	".\modern_row.h"\
 	".\modern_statusbar.h"\
 	".\rowheight_funcs.h"\
-	".\skinengine.h"\
+	".\SkinEngine.h"\
 	
 
 .\CLUIFrames\framesmenu.c : \
@@ -100,9 +102,11 @@
 	"..\..\include\m_clc.h"\
 	"..\..\include\m_clist.h"\
 	"..\..\include\m_clistint.h"\
+	"..\..\include\m_clui.h"\
 	"..\..\include\m_contacts.h"\
 	"..\..\include\m_database.h"\
 	"..\..\include\m_file.h"\
+	"..\..\include\m_genmenu.h"\
 	"..\..\include\m_icolib.h"\
 	"..\..\include\m_langpack.h"\
 	"..\..\include\m_options.h"\
@@ -110,6 +114,7 @@
 	"..\..\include\m_protocols.h"\
 	"..\..\include\m_protosvc.h"\
 	"..\..\include\m_skin.h"\
+	"..\..\include\m_skin_eng.h"\
 	"..\..\include\m_system.h"\
 	"..\..\include\m_userinfo.h"\
 	"..\..\include\m_utils.h"\
@@ -123,12 +128,10 @@
 	".\CLUIFrames\m_cluiframes.h"\
 	".\commonheaders.h"\
 	".\commonprototypes.h"\
-	".\genmenu.h"\
 	".\image_array.h"\
 	".\log.h"\
 	".\m_avatars.h"\
 	".\m_clui.h"\
-	".\m_genmenu.h"\
 	".\m_metacontacts.h"\
 	".\m_skin_eng.h"\
 	".\m_smileyadd.h"\
@@ -138,7 +141,7 @@
 	".\modern_row.h"\
 	".\modern_statusbar.h"\
 	".\rowheight_funcs.h"\
-	".\skinengine.h"\
+	".\SkinEngine.h"\
 	
 
 .\CLUIFrames\protocolorder.c : \
@@ -147,9 +150,11 @@
 	"..\..\include\m_clc.h"\
 	"..\..\include\m_clist.h"\
 	"..\..\include\m_clistint.h"\
+	"..\..\include\m_clui.h"\
 	"..\..\include\m_contacts.h"\
 	"..\..\include\m_database.h"\
 	"..\..\include\m_file.h"\
+	"..\..\include\m_genmenu.h"\
 	"..\..\include\m_icolib.h"\
 	"..\..\include\m_langpack.h"\
 	"..\..\include\m_options.h"\
@@ -157,6 +162,7 @@
 	"..\..\include\m_protocols.h"\
 	"..\..\include\m_protosvc.h"\
 	"..\..\include\m_skin.h"\
+	"..\..\include\m_skin_eng.h"\
 	"..\..\include\m_system.h"\
 	"..\..\include\m_userinfo.h"\
 	"..\..\include\m_utils.h"\
@@ -170,12 +176,10 @@
 	".\CLUIFrames\m_cluiframes.h"\
 	".\commonheaders.h"\
 	".\commonprototypes.h"\
-	".\genmenu.h"\
 	".\image_array.h"\
 	".\log.h"\
 	".\m_avatars.h"\
 	".\m_clui.h"\
-	".\m_genmenu.h"\
 	".\m_metacontacts.h"\
 	".\m_skin_eng.h"\
 	".\m_smileyadd.h"\
@@ -185,7 +189,7 @@
 	".\modern_row.h"\
 	".\modern_statusbar.h"\
 	".\rowheight_funcs.h"\
-	".\skinengine.h"\
+	".\SkinEngine.h"\
 	
 
 .\button.c : \
@@ -197,6 +201,7 @@
 	"..\..\include\m_contacts.h"\
 	"..\..\include\m_database.h"\
 	"..\..\include\m_file.h"\
+	"..\..\include\m_genmenu.h"\
 	"..\..\include\m_icolib.h"\
 	"..\..\include\m_langpack.h"\
 	"..\..\include\m_options.h"\
@@ -217,12 +222,10 @@
 	".\CLUIFrames\m_cluiframes.h"\
 	".\commonheaders.h"\
 	".\commonprototypes.h"\
-	".\genmenu.h"\
 	".\image_array.h"\
 	".\log.h"\
 	".\m_avatars.h"\
 	".\m_clui.h"\
-	".\m_genmenu.h"\
 	".\m_metacontacts.h"\
 	".\m_skin_eng.h"\
 	".\m_skinbutton.h"\
@@ -233,7 +236,7 @@
 	".\modern_row.h"\
 	".\modern_statusbar.h"\
 	".\rowheight_funcs.h"\
-	".\skinengine.h"\
+	".\SkinEngine.h"\
 	
 
 .\cache_funcs.c : \
@@ -245,6 +248,7 @@
 	"..\..\include\m_contacts.h"\
 	"..\..\include\m_database.h"\
 	"..\..\include\m_file.h"\
+	"..\..\include\m_genmenu.h"\
 	"..\..\include\m_icolib.h"\
 	"..\..\include\m_langpack.h"\
 	"..\..\include\m_options.h"\
@@ -265,12 +269,10 @@
 	".\CLUIFrames\m_cluiframes.h"\
 	".\commonheaders.h"\
 	".\commonprototypes.h"\
-	".\genmenu.h"\
 	".\image_array.h"\
 	".\log.h"\
 	".\m_avatars.h"\
 	".\m_clui.h"\
-	".\m_genmenu.h"\
 	".\m_metacontacts.h"\
 	".\m_skin_eng.h"\
 	".\m_smileyadd.h"\
@@ -280,7 +282,7 @@
 	".\modern_row.h"\
 	".\modern_statusbar.h"\
 	".\rowheight_funcs.h"\
-	".\skinengine.h"\
+	".\SkinEngine.h"\
 	
 
 .\clc.c : \
@@ -292,6 +294,7 @@
 	"..\..\include\m_contacts.h"\
 	"..\..\include\m_database.h"\
 	"..\..\include\m_file.h"\
+	"..\..\include\m_genmenu.h"\
 	"..\..\include\m_icolib.h"\
 	"..\..\include\m_langpack.h"\
 	"..\..\include\m_options.h"\
@@ -312,12 +315,10 @@
 	".\CLUIFrames\m_cluiframes.h"\
 	".\commonheaders.h"\
 	".\commonprototypes.h"\
-	".\genmenu.h"\
 	".\image_array.h"\
 	".\log.h"\
 	".\m_avatars.h"\
 	".\m_clui.h"\
-	".\m_genmenu.h"\
 	".\m_metacontacts.h"\
 	".\m_skin_eng.h"\
 	".\m_smileyadd.h"\
@@ -327,7 +328,7 @@
 	".\modern_row.h"\
 	".\modern_statusbar.h"\
 	".\rowheight_funcs.h"\
-	".\skinengine.h"\
+	".\SkinEngine.h"\
 	
 
 .\clcidents.c : \
@@ -339,6 +340,7 @@
 	"..\..\include\m_contacts.h"\
 	"..\..\include\m_database.h"\
 	"..\..\include\m_file.h"\
+	"..\..\include\m_genmenu.h"\
 	"..\..\include\m_icolib.h"\
 	"..\..\include\m_langpack.h"\
 	"..\..\include\m_options.h"\
@@ -359,12 +361,10 @@
 	".\CLUIFrames\m_cluiframes.h"\
 	".\commonheaders.h"\
 	".\commonprototypes.h"\
-	".\genmenu.h"\
 	".\image_array.h"\
 	".\log.h"\
 	".\m_avatars.h"\
 	".\m_clui.h"\
-	".\m_genmenu.h"\
 	".\m_metacontacts.h"\
 	".\m_skin_eng.h"\
 	".\m_smileyadd.h"\
@@ -374,7 +374,7 @@
 	".\modern_row.h"\
 	".\modern_statusbar.h"\
 	".\rowheight_funcs.h"\
-	".\skinengine.h"\
+	".\SkinEngine.h"\
 	
 
 .\clcitems.c : \
@@ -386,6 +386,7 @@
 	"..\..\include\m_contacts.h"\
 	"..\..\include\m_database.h"\
 	"..\..\include\m_file.h"\
+	"..\..\include\m_genmenu.h"\
 	"..\..\include\m_icolib.h"\
 	"..\..\include\m_langpack.h"\
 	"..\..\include\m_options.h"\
@@ -406,12 +407,10 @@
 	".\CLUIFrames\m_cluiframes.h"\
 	".\commonheaders.h"\
 	".\commonprototypes.h"\
-	".\genmenu.h"\
 	".\image_array.h"\
 	".\log.h"\
 	".\m_avatars.h"\
 	".\m_clui.h"\
-	".\m_genmenu.h"\
 	".\m_metacontacts.h"\
 	".\m_skin_eng.h"\
 	".\m_smileyadd.h"\
@@ -421,7 +420,7 @@
 	".\modern_row.h"\
 	".\modern_statusbar.h"\
 	".\rowheight_funcs.h"\
-	".\skinengine.h"\
+	".\SkinEngine.h"\
 	
 
 .\clcmsgs.c : \
@@ -433,6 +432,7 @@
 	"..\..\include\m_contacts.h"\
 	"..\..\include\m_database.h"\
 	"..\..\include\m_file.h"\
+	"..\..\include\m_genmenu.h"\
 	"..\..\include\m_icolib.h"\
 	"..\..\include\m_langpack.h"\
 	"..\..\include\m_options.h"\
@@ -453,12 +453,10 @@
 	".\CLUIFrames\m_cluiframes.h"\
 	".\commonheaders.h"\
 	".\commonprototypes.h"\
-	".\genmenu.h"\
 	".\image_array.h"\
 	".\log.h"\
 	".\m_avatars.h"\
 	".\m_clui.h"\
-	".\m_genmenu.h"\
 	".\m_metacontacts.h"\
 	".\m_skin_eng.h"\
 	".\m_smileyadd.h"\
@@ -468,7 +466,7 @@
 	".\modern_row.h"\
 	".\modern_statusbar.h"\
 	".\rowheight_funcs.h"\
-	".\skinengine.h"\
+	".\SkinEngine.h"\
 	
 
 .\clcopts.c : \
@@ -480,6 +478,7 @@
 	"..\..\include\m_contacts.h"\
 	"..\..\include\m_database.h"\
 	"..\..\include\m_file.h"\
+	"..\..\include\m_genmenu.h"\
 	"..\..\include\m_icolib.h"\
 	"..\..\include\m_langpack.h"\
 	"..\..\include\m_options.h"\
@@ -501,12 +500,10 @@
 	".\commonheaders.h"\
 	".\commonprototypes.h"\
 	".\effectenum.h"\
-	".\genmenu.h"\
 	".\image_array.h"\
 	".\log.h"\
 	".\m_avatars.h"\
 	".\m_clui.h"\
-	".\m_genmenu.h"\
 	".\m_metacontacts.h"\
 	".\m_skin_eng.h"\
 	".\m_smileyadd.h"\
@@ -516,7 +513,7 @@
 	".\modern_row.h"\
 	".\modern_statusbar.h"\
 	".\rowheight_funcs.h"\
-	".\skinengine.h"\
+	".\SkinEngine.h"\
 	
 
 .\clcpaint.c : \
@@ -528,6 +525,7 @@
 	"..\..\include\m_contacts.h"\
 	"..\..\include\m_database.h"\
 	"..\..\include\m_file.h"\
+	"..\..\include\m_genmenu.h"\
 	"..\..\include\m_icolib.h"\
 	"..\..\include\m_langpack.h"\
 	"..\..\include\m_options.h"\
@@ -548,12 +546,10 @@
 	".\CLUIFrames\m_cluiframes.h"\
 	".\commonheaders.h"\
 	".\commonprototypes.h"\
-	".\genmenu.h"\
 	".\image_array.h"\
 	".\log.h"\
 	".\m_avatars.h"\
 	".\m_clui.h"\
-	".\m_genmenu.h"\
 	".\m_metacontacts.h"\
 	".\m_skin_eng.h"\
 	".\m_smileyadd.h"\
@@ -563,7 +559,7 @@
 	".\modern_row.h"\
 	".\modern_statusbar.h"\
 	".\rowheight_funcs.h"\
-	".\skinengine.h"\
+	".\SkinEngine.h"\
 	
 
 .\clcutils.c : \
@@ -575,6 +571,7 @@
 	"..\..\include\m_contacts.h"\
 	"..\..\include\m_database.h"\
 	"..\..\include\m_file.h"\
+	"..\..\include\m_genmenu.h"\
 	"..\..\include\m_icolib.h"\
 	"..\..\include\m_langpack.h"\
 	"..\..\include\m_options.h"\
@@ -595,12 +592,10 @@
 	".\CLUIFrames\m_cluiframes.h"\
 	".\commonheaders.h"\
 	".\commonprototypes.h"\
-	".\genmenu.h"\
 	".\image_array.h"\
 	".\log.h"\
 	".\m_avatars.h"\
 	".\m_clui.h"\
-	".\m_genmenu.h"\
 	".\m_metacontacts.h"\
 	".\m_skin_eng.h"\
 	".\m_smileyadd.h"\
@@ -610,7 +605,7 @@
 	".\modern_row.h"\
 	".\modern_statusbar.h"\
 	".\rowheight_funcs.h"\
-	".\skinengine.h"\
+	".\SkinEngine.h"\
 	
 
 .\clistevents.c : \
@@ -622,6 +617,7 @@
 	"..\..\include\m_contacts.h"\
 	"..\..\include\m_database.h"\
 	"..\..\include\m_file.h"\
+	"..\..\include\m_genmenu.h"\
 	"..\..\include\m_icolib.h"\
 	"..\..\include\m_langpack.h"\
 	"..\..\include\m_options.h"\
@@ -642,12 +638,10 @@
 	".\CLUIFrames\m_cluiframes.h"\
 	".\commonheaders.h"\
 	".\commonprototypes.h"\
-	".\genmenu.h"\
 	".\image_array.h"\
 	".\log.h"\
 	".\m_avatars.h"\
 	".\m_clui.h"\
-	".\m_genmenu.h"\
 	".\m_metacontacts.h"\
 	".\m_skin_eng.h"\
 	".\m_smileyadd.h"\
@@ -657,7 +651,7 @@
 	".\modern_row.h"\
 	".\modern_statusbar.h"\
 	".\rowheight_funcs.h"\
-	".\skinengine.h"\
+	".\SkinEngine.h"\
 	
 
 .\clistmenus.c : \
@@ -669,6 +663,7 @@
 	"..\..\include\m_contacts.h"\
 	"..\..\include\m_database.h"\
 	"..\..\include\m_file.h"\
+	"..\..\include\m_genmenu.h"\
 	"..\..\include\m_icolib.h"\
 	"..\..\include\m_langpack.h"\
 	"..\..\include\m_options.h"\
@@ -689,12 +684,10 @@
 	".\CLUIFrames\m_cluiframes.h"\
 	".\commonheaders.h"\
 	".\commonprototypes.h"\
-	".\genmenu.h"\
 	".\image_array.h"\
 	".\log.h"\
 	".\m_avatars.h"\
 	".\m_clui.h"\
-	".\m_genmenu.h"\
 	".\m_metacontacts.h"\
 	".\m_skin_eng.h"\
 	".\m_smileyadd.h"\
@@ -704,7 +697,7 @@
 	".\modern_row.h"\
 	".\modern_statusbar.h"\
 	".\rowheight_funcs.h"\
-	".\skinengine.h"\
+	".\SkinEngine.h"\
 	
 
 .\clistmod.c : \
@@ -716,6 +709,7 @@
 	"..\..\include\m_contacts.h"\
 	"..\..\include\m_database.h"\
 	"..\..\include\m_file.h"\
+	"..\..\include\m_genmenu.h"\
 	"..\..\include\m_icolib.h"\
 	"..\..\include\m_langpack.h"\
 	"..\..\include\m_options.h"\
@@ -736,12 +730,10 @@
 	".\CLUIFrames\m_cluiframes.h"\
 	".\commonheaders.h"\
 	".\commonprototypes.h"\
-	".\genmenu.h"\
 	".\image_array.h"\
 	".\log.h"\
 	".\m_avatars.h"\
 	".\m_clui.h"\
-	".\m_genmenu.h"\
 	".\m_metacontacts.h"\
 	".\m_skin_eng.h"\
 	".\m_smileyadd.h"\
@@ -751,7 +743,7 @@
 	".\modern_row.h"\
 	".\modern_statusbar.h"\
 	".\rowheight_funcs.h"\
-	".\skinengine.h"\
+	".\SkinEngine.h"\
 	
 
 .\clistopts.c : \
@@ -763,6 +755,7 @@
 	"..\..\include\m_contacts.h"\
 	"..\..\include\m_database.h"\
 	"..\..\include\m_file.h"\
+	"..\..\include\m_genmenu.h"\
 	"..\..\include\m_icolib.h"\
 	"..\..\include\m_langpack.h"\
 	"..\..\include\m_options.h"\
@@ -783,12 +776,10 @@
 	".\CLUIFrames\m_cluiframes.h"\
 	".\commonheaders.h"\
 	".\commonprototypes.h"\
-	".\genmenu.h"\
 	".\image_array.h"\
 	".\log.h"\
 	".\m_avatars.h"\
 	".\m_clui.h"\
-	".\m_genmenu.h"\
 	".\m_metacontacts.h"\
 	".\m_skin_eng.h"\
 	".\m_smileyadd.h"\
@@ -798,7 +789,7 @@
 	".\modern_row.h"\
 	".\modern_statusbar.h"\
 	".\rowheight_funcs.h"\
-	".\skinengine.h"\
+	".\SkinEngine.h"\
 	
 
 .\clistsettings.c : \
@@ -810,6 +801,7 @@
 	"..\..\include\m_contacts.h"\
 	"..\..\include\m_database.h"\
 	"..\..\include\m_file.h"\
+	"..\..\include\m_genmenu.h"\
 	"..\..\include\m_icolib.h"\
 	"..\..\include\m_langpack.h"\
 	"..\..\include\m_options.h"\
@@ -830,12 +822,10 @@
 	".\CLUIFrames\m_cluiframes.h"\
 	".\commonheaders.h"\
 	".\commonprototypes.h"\
-	".\genmenu.h"\
 	".\image_array.h"\
 	".\log.h"\
 	".\m_avatars.h"\
 	".\m_clui.h"\
-	".\m_genmenu.h"\
 	".\m_metacontacts.h"\
 	".\m_skin_eng.h"\
 	".\m_smileyadd.h"\
@@ -845,7 +835,7 @@
 	".\modern_row.h"\
 	".\modern_statusbar.h"\
 	".\rowheight_funcs.h"\
-	".\skinengine.h"\
+	".\SkinEngine.h"\
 	
 
 .\clisttray.c : \
@@ -857,6 +847,7 @@
 	"..\..\include\m_contacts.h"\
 	"..\..\include\m_database.h"\
 	"..\..\include\m_file.h"\
+	"..\..\include\m_genmenu.h"\
 	"..\..\include\m_icolib.h"\
 	"..\..\include\m_langpack.h"\
 	"..\..\include\m_options.h"\
@@ -877,12 +868,10 @@
 	".\CLUIFrames\m_cluiframes.h"\
 	".\commonheaders.h"\
 	".\commonprototypes.h"\
-	".\genmenu.h"\
 	".\image_array.h"\
 	".\log.h"\
 	".\m_avatars.h"\
 	".\m_clui.h"\
-	".\m_genmenu.h"\
 	".\m_metacontacts.h"\
 	".\m_skin_eng.h"\
 	".\m_smileyadd.h"\
@@ -892,7 +881,7 @@
 	".\modern_row.h"\
 	".\modern_statusbar.h"\
 	".\rowheight_funcs.h"\
-	".\skinengine.h"\
+	".\SkinEngine.h"\
 	
 
 .\clui.c : \
@@ -904,6 +893,7 @@
 	"..\..\include\m_contacts.h"\
 	"..\..\include\m_database.h"\
 	"..\..\include\m_file.h"\
+	"..\..\include\m_genmenu.h"\
 	"..\..\include\m_icolib.h"\
 	"..\..\include\m_langpack.h"\
 	"..\..\include\m_options.h"\
@@ -925,12 +915,10 @@
 	".\CLUIFrames\m_cluiframes.h"\
 	".\commonheaders.h"\
 	".\commonprototypes.h"\
-	".\genmenu.h"\
 	".\image_array.h"\
 	".\log.h"\
 	".\m_avatars.h"\
 	".\m_clui.h"\
-	".\m_genmenu.h"\
 	".\m_metacontacts.h"\
 	".\m_skin_eng.h"\
 	".\m_smileyadd.h"\
@@ -940,7 +928,7 @@
 	".\modern_row.h"\
 	".\modern_statusbar.h"\
 	".\rowheight_funcs.h"\
-	".\skinengine.h"\
+	".\SkinEngine.h"\
 	
 
 .\cluiservices.c : \
@@ -952,6 +940,7 @@
 	"..\..\include\m_contacts.h"\
 	"..\..\include\m_database.h"\
 	"..\..\include\m_file.h"\
+	"..\..\include\m_genmenu.h"\
 	"..\..\include\m_icolib.h"\
 	"..\..\include\m_langpack.h"\
 	"..\..\include\m_options.h"\
@@ -972,12 +961,10 @@
 	".\CLUIFrames\m_cluiframes.h"\
 	".\commonheaders.h"\
 	".\commonprototypes.h"\
-	".\genmenu.h"\
 	".\image_array.h"\
 	".\log.h"\
 	".\m_avatars.h"\
 	".\m_clui.h"\
-	".\m_genmenu.h"\
 	".\m_metacontacts.h"\
 	".\m_skin_eng.h"\
 	".\m_smileyadd.h"\
@@ -987,7 +974,7 @@
 	".\modern_row.h"\
 	".\modern_statusbar.h"\
 	".\rowheight_funcs.h"\
-	".\skinengine.h"\
+	".\SkinEngine.h"\
 	
 
 .\commonheaders.c : \
@@ -999,6 +986,7 @@
 	"..\..\include\m_contacts.h"\
 	"..\..\include\m_database.h"\
 	"..\..\include\m_file.h"\
+	"..\..\include\m_genmenu.h"\
 	"..\..\include\m_icolib.h"\
 	"..\..\include\m_langpack.h"\
 	"..\..\include\m_options.h"\
@@ -1019,12 +1007,10 @@
 	".\CLUIFrames\m_cluiframes.h"\
 	".\commonheaders.h"\
 	".\commonprototypes.h"\
-	".\genmenu.h"\
 	".\image_array.h"\
 	".\log.h"\
 	".\m_avatars.h"\
 	".\m_clui.h"\
-	".\m_genmenu.h"\
 	".\m_metacontacts.h"\
 	".\m_skin_eng.h"\
 	".\m_smileyadd.h"\
@@ -1034,7 +1020,7 @@
 	".\modern_row.h"\
 	".\modern_statusbar.h"\
 	".\rowheight_funcs.h"\
-	".\skinengine.h"\
+	".\SkinEngine.h"\
 	
 
 .\contact.c : \
@@ -1046,6 +1032,7 @@
 	"..\..\include\m_contacts.h"\
 	"..\..\include\m_database.h"\
 	"..\..\include\m_file.h"\
+	"..\..\include\m_genmenu.h"\
 	"..\..\include\m_icolib.h"\
 	"..\..\include\m_langpack.h"\
 	"..\..\include\m_options.h"\
@@ -1066,12 +1053,10 @@
 	".\CLUIFrames\m_cluiframes.h"\
 	".\commonheaders.h"\
 	".\commonprototypes.h"\
-	".\genmenu.h"\
 	".\image_array.h"\
 	".\log.h"\
 	".\m_avatars.h"\
 	".\m_clui.h"\
-	".\m_genmenu.h"\
 	".\m_metacontacts.h"\
 	".\m_skin_eng.h"\
 	".\m_smileyadd.h"\
@@ -1081,7 +1066,7 @@
 	".\modern_row.h"\
 	".\modern_statusbar.h"\
 	".\rowheight_funcs.h"\
-	".\skinengine.h"\
+	".\SkinEngine.h"\
 	
 
 .\Docking.c : \
@@ -1093,6 +1078,7 @@
 	"..\..\include\m_contacts.h"\
 	"..\..\include\m_database.h"\
 	"..\..\include\m_file.h"\
+	"..\..\include\m_genmenu.h"\
 	"..\..\include\m_icolib.h"\
 	"..\..\include\m_langpack.h"\
 	"..\..\include\m_options.h"\
@@ -1113,12 +1099,10 @@
 	".\CLUIFrames\m_cluiframes.h"\
 	".\commonheaders.h"\
 	".\commonprototypes.h"\
-	".\genmenu.h"\
 	".\image_array.h"\
 	".\log.h"\
 	".\m_avatars.h"\
 	".\m_clui.h"\
-	".\m_genmenu.h"\
 	".\m_metacontacts.h"\
 	".\m_skin_eng.h"\
 	".\m_smileyadd.h"\
@@ -1128,107 +1112,13 @@
 	".\modern_row.h"\
 	".\modern_statusbar.h"\
 	".\rowheight_funcs.h"\
-	".\skinengine.h"\
+	".\SkinEngine.h"\
 	
 
 .\gdiplus.cpp : \
 	"..\..\include\win2k.h"\
 	".\m_avatars.h"\
 	".\modern_global_structure.h"\
-	
-
-.\genmenu.c : \
-	"..\..\include\m_addcontact.h"\
-	"..\..\include\m_button.h"\
-	"..\..\include\m_clc.h"\
-	"..\..\include\m_clist.h"\
-	"..\..\include\m_clistint.h"\
-	"..\..\include\m_contacts.h"\
-	"..\..\include\m_database.h"\
-	"..\..\include\m_file.h"\
-	"..\..\include\m_icolib.h"\
-	"..\..\include\m_langpack.h"\
-	"..\..\include\m_options.h"\
-	"..\..\include\m_plugins.h"\
-	"..\..\include\m_protocols.h"\
-	"..\..\include\m_protosvc.h"\
-	"..\..\include\m_skin.h"\
-	"..\..\include\m_system.h"\
-	"..\..\include\m_userinfo.h"\
-	"..\..\include\m_utils.h"\
-	"..\..\include\newpluginapi.h"\
-	"..\..\include\statusmodes.h"\
-	"..\..\include\win2k.h"\
-	".\cache_funcs.h"\
-	".\clc.h"\
-	".\clist.h"\
-	".\CLUIFrames\cluiframes.h"\
-	".\CLUIFrames\m_cluiframes.h"\
-	".\commonheaders.h"\
-	".\commonprototypes.h"\
-	".\genmenu.h"\
-	".\image_array.h"\
-	".\log.h"\
-	".\m_avatars.h"\
-	".\m_clui.h"\
-	".\m_genmenu.h"\
-	".\m_metacontacts.h"\
-	".\m_skin_eng.h"\
-	".\m_smileyadd.h"\
-	".\m_variables.h"\
-	".\mod_skin_selector.h"\
-	".\modern_global_structure.h"\
-	".\modern_row.h"\
-	".\modern_statusbar.h"\
-	".\rowheight_funcs.h"\
-	".\skinengine.h"\
-	
-
-.\genmenuopt.c : \
-	"..\..\include\m_addcontact.h"\
-	"..\..\include\m_button.h"\
-	"..\..\include\m_clc.h"\
-	"..\..\include\m_clist.h"\
-	"..\..\include\m_clistint.h"\
-	"..\..\include\m_contacts.h"\
-	"..\..\include\m_database.h"\
-	"..\..\include\m_file.h"\
-	"..\..\include\m_icolib.h"\
-	"..\..\include\m_langpack.h"\
-	"..\..\include\m_options.h"\
-	"..\..\include\m_plugins.h"\
-	"..\..\include\m_protocols.h"\
-	"..\..\include\m_protosvc.h"\
-	"..\..\include\m_skin.h"\
-	"..\..\include\m_system.h"\
-	"..\..\include\m_userinfo.h"\
-	"..\..\include\m_utils.h"\
-	"..\..\include\newpluginapi.h"\
-	"..\..\include\statusmodes.h"\
-	"..\..\include\win2k.h"\
-	".\cache_funcs.h"\
-	".\clc.h"\
-	".\clist.h"\
-	".\CLUIFrames\cluiframes.h"\
-	".\CLUIFrames\m_cluiframes.h"\
-	".\commonheaders.h"\
-	".\commonprototypes.h"\
-	".\genmenu.h"\
-	".\image_array.h"\
-	".\log.h"\
-	".\m_avatars.h"\
-	".\m_clui.h"\
-	".\m_genmenu.h"\
-	".\m_metacontacts.h"\
-	".\m_skin_eng.h"\
-	".\m_smileyadd.h"\
-	".\m_variables.h"\
-	".\mod_skin_selector.h"\
-	".\modern_global_structure.h"\
-	".\modern_row.h"\
-	".\modern_statusbar.h"\
-	".\rowheight_funcs.h"\
-	".\skinengine.h"\
 	
 
 .\groupmenu.c : \
@@ -1240,6 +1130,7 @@
 	"..\..\include\m_contacts.h"\
 	"..\..\include\m_database.h"\
 	"..\..\include\m_file.h"\
+	"..\..\include\m_genmenu.h"\
 	"..\..\include\m_icolib.h"\
 	"..\..\include\m_langpack.h"\
 	"..\..\include\m_options.h"\
@@ -1260,12 +1151,10 @@
 	".\CLUIFrames\m_cluiframes.h"\
 	".\commonheaders.h"\
 	".\commonprototypes.h"\
-	".\genmenu.h"\
 	".\image_array.h"\
 	".\log.h"\
 	".\m_avatars.h"\
 	".\m_clui.h"\
-	".\m_genmenu.h"\
 	".\m_metacontacts.h"\
 	".\m_skin_eng.h"\
 	".\m_smileyadd.h"\
@@ -1275,7 +1164,7 @@
 	".\modern_row.h"\
 	".\modern_statusbar.h"\
 	".\rowheight_funcs.h"\
-	".\skinengine.h"\
+	".\SkinEngine.h"\
 	
 
 .\image_array.c : \
@@ -1287,6 +1176,7 @@
 	"..\..\include\m_contacts.h"\
 	"..\..\include\m_database.h"\
 	"..\..\include\m_file.h"\
+	"..\..\include\m_genmenu.h"\
 	"..\..\include\m_icolib.h"\
 	"..\..\include\m_langpack.h"\
 	"..\..\include\m_options.h"\
@@ -1307,12 +1197,10 @@
 	".\CLUIFrames\m_cluiframes.h"\
 	".\commonheaders.h"\
 	".\commonprototypes.h"\
-	".\genmenu.h"\
 	".\image_array.h"\
 	".\log.h"\
 	".\m_avatars.h"\
 	".\m_clui.h"\
-	".\m_genmenu.h"\
 	".\m_metacontacts.h"\
 	".\m_skin_eng.h"\
 	".\m_smileyadd.h"\
@@ -1322,7 +1210,7 @@
 	".\modern_row.h"\
 	".\modern_statusbar.h"\
 	".\rowheight_funcs.h"\
-	".\skinengine.h"\
+	".\SkinEngine.h"\
 	
 
 .\init.c : \
@@ -1334,6 +1222,7 @@
 	"..\..\include\m_contacts.h"\
 	"..\..\include\m_database.h"\
 	"..\..\include\m_file.h"\
+	"..\..\include\m_genmenu.h"\
 	"..\..\include\m_icolib.h"\
 	"..\..\include\m_langpack.h"\
 	"..\..\include\m_options.h"\
@@ -1354,12 +1243,10 @@
 	".\CLUIFrames\m_cluiframes.h"\
 	".\commonheaders.h"\
 	".\commonprototypes.h"\
-	".\genmenu.h"\
 	".\image_array.h"\
 	".\log.h"\
 	".\m_avatars.h"\
 	".\m_clui.h"\
-	".\m_genmenu.h"\
 	".\m_metacontacts.h"\
 	".\m_skin_eng.h"\
 	".\m_smileyadd.h"\
@@ -1369,7 +1256,7 @@
 	".\modern_row.h"\
 	".\modern_statusbar.h"\
 	".\rowheight_funcs.h"\
-	".\skinengine.h"\
+	".\SkinEngine.h"\
 	".\version.h"\
 	
 
@@ -1382,6 +1269,7 @@
 	"..\..\include\m_contacts.h"\
 	"..\..\include\m_database.h"\
 	"..\..\include\m_file.h"\
+	"..\..\include\m_genmenu.h"\
 	"..\..\include\m_icolib.h"\
 	"..\..\include\m_langpack.h"\
 	"..\..\include\m_options.h"\
@@ -1402,12 +1290,10 @@
 	".\CLUIFrames\m_cluiframes.h"\
 	".\commonheaders.h"\
 	".\commonprototypes.h"\
-	".\genmenu.h"\
 	".\image_array.h"\
 	".\log.h"\
 	".\m_avatars.h"\
 	".\m_clui.h"\
-	".\m_genmenu.h"\
 	".\m_metacontacts.h"\
 	".\m_skin_eng.h"\
 	".\m_smileyadd.h"\
@@ -1417,7 +1303,7 @@
 	".\modern_row.h"\
 	".\modern_statusbar.h"\
 	".\rowheight_funcs.h"\
-	".\skinengine.h"\
+	".\SkinEngine.h"\
 	
 
 .\mod_skin_selector.c : \
@@ -1429,6 +1315,7 @@
 	"..\..\include\m_contacts.h"\
 	"..\..\include\m_database.h"\
 	"..\..\include\m_file.h"\
+	"..\..\include\m_genmenu.h"\
 	"..\..\include\m_icolib.h"\
 	"..\..\include\m_langpack.h"\
 	"..\..\include\m_options.h"\
@@ -1449,12 +1336,10 @@
 	".\CLUIFrames\m_cluiframes.h"\
 	".\commonheaders.h"\
 	".\commonprototypes.h"\
-	".\genmenu.h"\
 	".\image_array.h"\
 	".\log.h"\
 	".\m_avatars.h"\
 	".\m_clui.h"\
-	".\m_genmenu.h"\
 	".\m_metacontacts.h"\
 	".\m_skin_eng.h"\
 	".\m_smileyadd.h"\
@@ -1464,7 +1349,7 @@
 	".\modern_row.h"\
 	".\modern_statusbar.h"\
 	".\rowheight_funcs.h"\
-	".\skinengine.h"\
+	".\SkinEngine.h"\
 	
 
 .\modern_button.c : \
@@ -1476,6 +1361,7 @@
 	"..\..\include\m_contacts.h"\
 	"..\..\include\m_database.h"\
 	"..\..\include\m_file.h"\
+	"..\..\include\m_genmenu.h"\
 	"..\..\include\m_icolib.h"\
 	"..\..\include\m_langpack.h"\
 	"..\..\include\m_options.h"\
@@ -1496,12 +1382,10 @@
 	".\CLUIFrames\m_cluiframes.h"\
 	".\commonheaders.h"\
 	".\commonprototypes.h"\
-	".\genmenu.h"\
 	".\image_array.h"\
 	".\log.h"\
 	".\m_avatars.h"\
 	".\m_clui.h"\
-	".\m_genmenu.h"\
 	".\m_metacontacts.h"\
 	".\m_skin_eng.h"\
 	".\m_smileyadd.h"\
@@ -1511,7 +1395,7 @@
 	".\modern_row.h"\
 	".\modern_statusbar.h"\
 	".\rowheight_funcs.h"\
-	".\skinengine.h"\
+	".\SkinEngine.h"\
 	
 
 .\modern_row.cpp : \
@@ -1523,6 +1407,7 @@
 	"..\..\include\m_contacts.h"\
 	"..\..\include\m_database.h"\
 	"..\..\include\m_file.h"\
+	"..\..\include\m_genmenu.h"\
 	"..\..\include\m_icolib.h"\
 	"..\..\include\m_langpack.h"\
 	"..\..\include\m_options.h"\
@@ -1543,12 +1428,10 @@
 	".\CLUIFrames\m_cluiframes.h"\
 	".\commonheaders.h"\
 	".\commonprototypes.h"\
-	".\genmenu.h"\
 	".\image_array.h"\
 	".\log.h"\
 	".\m_avatars.h"\
 	".\m_clui.h"\
-	".\m_genmenu.h"\
 	".\m_metacontacts.h"\
 	".\m_skin_eng.h"\
 	".\m_smileyadd.h"\
@@ -1558,7 +1441,7 @@
 	".\modern_row.h"\
 	".\modern_statusbar.h"\
 	".\rowheight_funcs.h"\
-	".\skinengine.h"\
+	".\SkinEngine.h"\
 	
 
 .\modern_statusbar.c : \
@@ -1570,6 +1453,7 @@
 	"..\..\include\m_contacts.h"\
 	"..\..\include\m_database.h"\
 	"..\..\include\m_file.h"\
+	"..\..\include\m_genmenu.h"\
 	"..\..\include\m_icolib.h"\
 	"..\..\include\m_langpack.h"\
 	"..\..\include\m_options.h"\
@@ -1590,12 +1474,10 @@
 	".\CLUIFrames\m_cluiframes.h"\
 	".\commonheaders.h"\
 	".\commonprototypes.h"\
-	".\genmenu.h"\
 	".\image_array.h"\
 	".\log.h"\
 	".\m_avatars.h"\
 	".\m_clui.h"\
-	".\m_genmenu.h"\
 	".\m_metacontacts.h"\
 	".\m_skin_eng.h"\
 	".\m_smileyadd.h"\
@@ -1605,54 +1487,7 @@
 	".\modern_row.h"\
 	".\modern_statusbar.h"\
 	".\rowheight_funcs.h"\
-	".\skinengine.h"\
-	
-
-.\movetogroup.c : \
-	"..\..\include\m_addcontact.h"\
-	"..\..\include\m_button.h"\
-	"..\..\include\m_clc.h"\
-	"..\..\include\m_clist.h"\
-	"..\..\include\m_clistint.h"\
-	"..\..\include\m_contacts.h"\
-	"..\..\include\m_database.h"\
-	"..\..\include\m_file.h"\
-	"..\..\include\m_icolib.h"\
-	"..\..\include\m_langpack.h"\
-	"..\..\include\m_options.h"\
-	"..\..\include\m_plugins.h"\
-	"..\..\include\m_protocols.h"\
-	"..\..\include\m_protosvc.h"\
-	"..\..\include\m_skin.h"\
-	"..\..\include\m_system.h"\
-	"..\..\include\m_userinfo.h"\
-	"..\..\include\m_utils.h"\
-	"..\..\include\newpluginapi.h"\
-	"..\..\include\statusmodes.h"\
-	"..\..\include\win2k.h"\
-	".\cache_funcs.h"\
-	".\clc.h"\
-	".\clist.h"\
-	".\CLUIFrames\cluiframes.h"\
-	".\CLUIFrames\m_cluiframes.h"\
-	".\commonheaders.h"\
-	".\commonprototypes.h"\
-	".\genmenu.h"\
-	".\image_array.h"\
-	".\log.h"\
-	".\m_avatars.h"\
-	".\m_clui.h"\
-	".\m_genmenu.h"\
-	".\m_metacontacts.h"\
-	".\m_skin_eng.h"\
-	".\m_smileyadd.h"\
-	".\m_variables.h"\
-	".\mod_skin_selector.h"\
-	".\modern_global_structure.h"\
-	".\modern_row.h"\
-	".\modern_statusbar.h"\
-	".\rowheight_funcs.h"\
-	".\skinengine.h"\
+	".\SkinEngine.h"\
 	
 
 .\rowheight_funcs.c : \
@@ -1664,6 +1499,7 @@
 	"..\..\include\m_contacts.h"\
 	"..\..\include\m_database.h"\
 	"..\..\include\m_file.h"\
+	"..\..\include\m_genmenu.h"\
 	"..\..\include\m_icolib.h"\
 	"..\..\include\m_langpack.h"\
 	"..\..\include\m_options.h"\
@@ -1684,12 +1520,10 @@
 	".\CLUIFrames\m_cluiframes.h"\
 	".\commonheaders.h"\
 	".\commonprototypes.h"\
-	".\genmenu.h"\
 	".\image_array.h"\
 	".\log.h"\
 	".\m_avatars.h"\
 	".\m_clui.h"\
-	".\m_genmenu.h"\
 	".\m_metacontacts.h"\
 	".\m_skin_eng.h"\
 	".\m_smileyadd.h"\
@@ -1699,7 +1533,7 @@
 	".\modern_row.h"\
 	".\modern_statusbar.h"\
 	".\rowheight_funcs.h"\
-	".\skinengine.h"\
+	".\SkinEngine.h"\
 	
 
 .\rowtemplateopt.c : \
@@ -1711,6 +1545,7 @@
 	"..\..\include\m_contacts.h"\
 	"..\..\include\m_database.h"\
 	"..\..\include\m_file.h"\
+	"..\..\include\m_genmenu.h"\
 	"..\..\include\m_icolib.h"\
 	"..\..\include\m_langpack.h"\
 	"..\..\include\m_options.h"\
@@ -1731,12 +1566,10 @@
 	".\CLUIFrames\m_cluiframes.h"\
 	".\commonheaders.h"\
 	".\commonprototypes.h"\
-	".\genmenu.h"\
 	".\image_array.h"\
 	".\log.h"\
 	".\m_avatars.h"\
 	".\m_clui.h"\
-	".\m_genmenu.h"\
 	".\m_metacontacts.h"\
 	".\m_skin_eng.h"\
 	".\m_smileyadd.h"\
@@ -1746,7 +1579,7 @@
 	".\modern_row.h"\
 	".\modern_statusbar.h"\
 	".\rowheight_funcs.h"\
-	".\skinengine.h"\
+	".\SkinEngine.h"\
 	
 
 .\SkinEditor.c : \
@@ -1758,6 +1591,7 @@
 	"..\..\include\m_contacts.h"\
 	"..\..\include\m_database.h"\
 	"..\..\include\m_file.h"\
+	"..\..\include\m_genmenu.h"\
 	"..\..\include\m_icolib.h"\
 	"..\..\include\m_langpack.h"\
 	"..\..\include\m_options.h"\
@@ -1778,12 +1612,10 @@
 	".\CLUIFrames\m_cluiframes.h"\
 	".\commonheaders.h"\
 	".\commonprototypes.h"\
-	".\genmenu.h"\
 	".\image_array.h"\
 	".\log.h"\
 	".\m_avatars.h"\
 	".\m_clui.h"\
-	".\m_genmenu.h"\
 	".\m_metacontacts.h"\
 	".\m_skin_eng.h"\
 	".\m_smileyadd.h"\
@@ -1793,7 +1625,7 @@
 	".\modern_row.h"\
 	".\modern_statusbar.h"\
 	".\rowheight_funcs.h"\
-	".\skinengine.h"\
+	".\SkinEngine.h"\
 	
 
 .\SkinEngine.c : \
@@ -1805,6 +1637,7 @@
 	"..\..\include\m_contacts.h"\
 	"..\..\include\m_database.h"\
 	"..\..\include\m_file.h"\
+	"..\..\include\m_genmenu.h"\
 	"..\..\include\m_icolib.h"\
 	"..\..\include\m_langpack.h"\
 	"..\..\include\m_options.h"\
@@ -1827,12 +1660,10 @@
 	".\commonheaders.h"\
 	".\commonprototypes.h"\
 	".\effectenum.h"\
-	".\genmenu.h"\
 	".\image_array.h"\
 	".\log.h"\
 	".\m_avatars.h"\
 	".\m_clui.h"\
-	".\m_genmenu.h"\
 	".\m_metacontacts.h"\
 	".\m_skin_eng.h"\
 	".\m_smileyadd.h"\
@@ -1842,7 +1673,7 @@
 	".\modern_row.h"\
 	".\modern_statusbar.h"\
 	".\rowheight_funcs.h"\
-	".\skinengine.h"\
+	".\SkinEngine.h"\
 	
 
 .\SkinOpt.c : \
@@ -1854,6 +1685,7 @@
 	"..\..\include\m_contacts.h"\
 	"..\..\include\m_database.h"\
 	"..\..\include\m_file.h"\
+	"..\..\include\m_genmenu.h"\
 	"..\..\include\m_icolib.h"\
 	"..\..\include\m_langpack.h"\
 	"..\..\include\m_options.h"\
@@ -1874,12 +1706,10 @@
 	".\CLUIFrames\m_cluiframes.h"\
 	".\commonheaders.h"\
 	".\commonprototypes.h"\
-	".\genmenu.h"\
 	".\image_array.h"\
 	".\log.h"\
 	".\m_avatars.h"\
 	".\m_clui.h"\
-	".\m_genmenu.h"\
 	".\m_metacontacts.h"\
 	".\m_skin_eng.h"\
 	".\m_smileyadd.h"\
@@ -1889,7 +1719,7 @@
 	".\modern_row.h"\
 	".\modern_statusbar.h"\
 	".\rowheight_funcs.h"\
-	".\skinengine.h"\
+	".\SkinEngine.h"\
 	
 
 .\utf.c : \
@@ -1901,6 +1731,7 @@
 	"..\..\include\m_contacts.h"\
 	"..\..\include\m_database.h"\
 	"..\..\include\m_file.h"\
+	"..\..\include\m_genmenu.h"\
 	"..\..\include\m_icolib.h"\
 	"..\..\include\m_langpack.h"\
 	"..\..\include\m_options.h"\
@@ -1921,12 +1752,10 @@
 	".\CLUIFrames\m_cluiframes.h"\
 	".\commonheaders.h"\
 	".\commonprototypes.h"\
-	".\genmenu.h"\
 	".\image_array.h"\
 	".\log.h"\
 	".\m_avatars.h"\
 	".\m_clui.h"\
-	".\m_genmenu.h"\
 	".\m_metacontacts.h"\
 	".\m_skin_eng.h"\
 	".\m_smileyadd.h"\
@@ -1936,7 +1765,7 @@
 	".\modern_row.h"\
 	".\modern_statusbar.h"\
 	".\rowheight_funcs.h"\
-	".\skinengine.h"\
+	".\SkinEngine.h"\
 	
 
 .\viewmodes.c : \
@@ -1948,6 +1777,7 @@
 	"..\..\include\m_contacts.h"\
 	"..\..\include\m_database.h"\
 	"..\..\include\m_file.h"\
+	"..\..\include\m_genmenu.h"\
 	"..\..\include\m_icolib.h"\
 	"..\..\include\m_langpack.h"\
 	"..\..\include\m_options.h"\
@@ -1968,12 +1798,10 @@
 	".\CLUIFrames\m_cluiframes.h"\
 	".\commonheaders.h"\
 	".\commonprototypes.h"\
-	".\genmenu.h"\
 	".\image_array.h"\
 	".\log.h"\
 	".\m_avatars.h"\
 	".\m_clui.h"\
-	".\m_genmenu.h"\
 	".\m_metacontacts.h"\
 	".\m_skin_eng.h"\
 	".\m_skinbutton.h"\
@@ -1984,7 +1812,7 @@
 	".\modern_row.h"\
 	".\modern_statusbar.h"\
 	".\rowheight_funcs.h"\
-	".\skinengine.h"\
+	".\SkinEngine.h"\
 	
 
 .\resource.rc : \
@@ -2032,6 +1860,10 @@
 	".\res\offline.ico"\
 	".\res\online.ico"\
 	".\res\phone.ico"\
+	".\res\rate_high.ico"\
+	".\res\rate_low.ico"\
+	".\res\rate_med.ico"\
+	".\res\rate_none.ico"\
 	".\res\rename.ico"\
 	".\res\sendmail.ico"\
 	".\res\show_avatar.ico"\

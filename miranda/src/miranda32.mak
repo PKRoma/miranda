@@ -27,6 +27,10 @@ NULL=
 NULL=nul
 !ENDIF 
 
+CPP=cl.exe
+MTL=midl.exe
+RSC=rc.exe
+
 !IF  "$(CFG)" == "miranda32 - Win32 Release"
 
 OUTDIR=.\Release
@@ -71,6 +75,8 @@ CLEAN :
 	-@erase "$(INTDIR)\clistcore.sbr"
 	-@erase "$(INTDIR)\clistevents.obj"
 	-@erase "$(INTDIR)\clistevents.sbr"
+	-@erase "$(INTDIR)\clistmenus.obj"
+	-@erase "$(INTDIR)\clistmenus.sbr"
 	-@erase "$(INTDIR)\clistmod.obj"
 	-@erase "$(INTDIR)\clistmod.sbr"
 	-@erase "$(INTDIR)\clistsettings.obj"
@@ -123,6 +129,10 @@ CLEAN :
 	-@erase "$(INTDIR)\FontOptions.sbr"
 	-@erase "$(INTDIR)\FontService.obj"
 	-@erase "$(INTDIR)\FontService.sbr"
+	-@erase "$(INTDIR)\genmenu.obj"
+	-@erase "$(INTDIR)\genmenu.sbr"
+	-@erase "$(INTDIR)\genmenuopt.obj"
+	-@erase "$(INTDIR)\genmenuopt.sbr"
 	-@erase "$(INTDIR)\groups.obj"
 	-@erase "$(INTDIR)\groups.sbr"
 	-@erase "$(INTDIR)\help.obj"
@@ -152,6 +162,8 @@ CLEAN :
 	-@erase "$(INTDIR)\module_fonts.sbr"
 	-@erase "$(INTDIR)\modules.obj"
 	-@erase "$(INTDIR)\modules.sbr"
+	-@erase "$(INTDIR)\movetogroup.obj"
+	-@erase "$(INTDIR)\movetogroup.sbr"
 	-@erase "$(INTDIR)\netlib.obj"
 	-@erase "$(INTDIR)\netlib.sbr"
 	-@erase "$(INTDIR)\netlibbind.obj"
@@ -235,42 +247,8 @@ CLEAN :
 "$(OUTDIR)" :
     if not exist "$(OUTDIR)/$(NULL)" mkdir "$(OUTDIR)"
 
-CPP=cl.exe
 CPP_PROJ=/nologo /MD /W3 /GX /Zi /O1 /I "../include" /D "NDEBUG" /D "WIN32" /D "_WINDOWS" /D "_NOSDK" /D "_STATIC" /Fr"$(INTDIR)\\" /Fp"$(INTDIR)\miranda32.pch" /Yu"commonheaders.h" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /FD /c 
-
-.c{$(INTDIR)}.obj::
-   $(CPP) @<<
-   $(CPP_PROJ) $< 
-<<
-
-.cpp{$(INTDIR)}.obj::
-   $(CPP) @<<
-   $(CPP_PROJ) $< 
-<<
-
-.cxx{$(INTDIR)}.obj::
-   $(CPP) @<<
-   $(CPP_PROJ) $< 
-<<
-
-.c{$(INTDIR)}.sbr::
-   $(CPP) @<<
-   $(CPP_PROJ) $< 
-<<
-
-.cpp{$(INTDIR)}.sbr::
-   $(CPP) @<<
-   $(CPP_PROJ) $< 
-<<
-
-.cxx{$(INTDIR)}.sbr::
-   $(CPP) @<<
-   $(CPP_PROJ) $< 
-<<
-
-MTL=midl.exe
 MTL_PROJ=/nologo /D "NDEBUG" /mktyplib203 /o "NUL" /win32 
-RSC=rc.exe
 RSC_PROJ=/l 0x409 /fo"$(INTDIR)\resource.res" /d "NDEBUG" 
 BSC32=bscmake.exe
 BSC32_FLAGS=/nologo /o"$(OUTDIR)\miranda32.bsc" 
@@ -366,7 +344,11 @@ BSC32_SBRS= \
 	"$(INTDIR)\services.sbr" \
 	"$(INTDIR)\extracticon.sbr" \
 	"$(INTDIR)\IcoLib.sbr" \
-	"$(INTDIR)\skin2icons.sbr"
+	"$(INTDIR)\skin2icons.sbr" \
+	"$(INTDIR)\genmenuopt.sbr" \
+	"$(INTDIR)\movetogroup.sbr" \
+	"$(INTDIR)\clistmenus.sbr" \
+	"$(INTDIR)\genmenu.sbr"
 
 "$(OUTDIR)\miranda32.bsc" : "$(OUTDIR)" $(BSC32_SBRS)
     $(BSC32) @<<
@@ -468,7 +450,11 @@ LINK32_OBJS= \
 	"$(INTDIR)\extracticon.obj" \
 	"$(INTDIR)\IcoLib.obj" \
 	"$(INTDIR)\skin2icons.obj" \
-	"$(INTDIR)\resource.res"
+	"$(INTDIR)\resource.res" \
+	"$(INTDIR)\genmenuopt.obj" \
+	"$(INTDIR)\movetogroup.obj" \
+	"$(INTDIR)\clistmenus.obj" \
+	"$(INTDIR)\genmenu.obj"
 
 "..\bin\release\miranda32.exe" : "$(OUTDIR)" $(DEF_FILE) $(LINK32_OBJS)
     $(LINK32) @<<
@@ -519,6 +505,8 @@ CLEAN :
 	-@erase "$(INTDIR)\clistcore.sbr"
 	-@erase "$(INTDIR)\clistevents.obj"
 	-@erase "$(INTDIR)\clistevents.sbr"
+	-@erase "$(INTDIR)\clistmenus.obj"
+	-@erase "$(INTDIR)\clistmenus.sbr"
 	-@erase "$(INTDIR)\clistmod.obj"
 	-@erase "$(INTDIR)\clistmod.sbr"
 	-@erase "$(INTDIR)\clistsettings.obj"
@@ -571,6 +559,10 @@ CLEAN :
 	-@erase "$(INTDIR)\FontOptions.sbr"
 	-@erase "$(INTDIR)\FontService.obj"
 	-@erase "$(INTDIR)\FontService.sbr"
+	-@erase "$(INTDIR)\genmenu.obj"
+	-@erase "$(INTDIR)\genmenu.sbr"
+	-@erase "$(INTDIR)\genmenuopt.obj"
+	-@erase "$(INTDIR)\genmenuopt.sbr"
 	-@erase "$(INTDIR)\groups.obj"
 	-@erase "$(INTDIR)\groups.sbr"
 	-@erase "$(INTDIR)\help.obj"
@@ -600,6 +592,8 @@ CLEAN :
 	-@erase "$(INTDIR)\module_fonts.sbr"
 	-@erase "$(INTDIR)\modules.obj"
 	-@erase "$(INTDIR)\modules.sbr"
+	-@erase "$(INTDIR)\movetogroup.obj"
+	-@erase "$(INTDIR)\movetogroup.sbr"
 	-@erase "$(INTDIR)\netlib.obj"
 	-@erase "$(INTDIR)\netlib.sbr"
 	-@erase "$(INTDIR)\netlibbind.obj"
@@ -684,42 +678,8 @@ CLEAN :
 "$(OUTDIR)" :
     if not exist "$(OUTDIR)/$(NULL)" mkdir "$(OUTDIR)"
 
-CPP=cl.exe
 CPP_PROJ=/nologo /MDd /W3 /Gm /GX /ZI /Od /I "../include" /D "_DEBUG" /D "WIN32" /D "_WINDOWS" /D "_NOSDK" /D "_STATIC" /Fr"$(INTDIR)\\" /Fp"$(INTDIR)\miranda32.pch" /Yu"commonheaders.h" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /FD /c 
-
-.c{$(INTDIR)}.obj::
-   $(CPP) @<<
-   $(CPP_PROJ) $< 
-<<
-
-.cpp{$(INTDIR)}.obj::
-   $(CPP) @<<
-   $(CPP_PROJ) $< 
-<<
-
-.cxx{$(INTDIR)}.obj::
-   $(CPP) @<<
-   $(CPP_PROJ) $< 
-<<
-
-.c{$(INTDIR)}.sbr::
-   $(CPP) @<<
-   $(CPP_PROJ) $< 
-<<
-
-.cpp{$(INTDIR)}.sbr::
-   $(CPP) @<<
-   $(CPP_PROJ) $< 
-<<
-
-.cxx{$(INTDIR)}.sbr::
-   $(CPP) @<<
-   $(CPP_PROJ) $< 
-<<
-
-MTL=midl.exe
 MTL_PROJ=/nologo /D "_DEBUG" /mktyplib203 /o "NUL" /win32 
-RSC=rc.exe
 RSC_PROJ=/l 0x409 /fo"$(INTDIR)\resource.res" /d "_DEBUG" 
 BSC32=bscmake.exe
 BSC32_FLAGS=/nologo /o"$(OUTDIR)\miranda32.bsc" 
@@ -815,7 +775,11 @@ BSC32_SBRS= \
 	"$(INTDIR)\services.sbr" \
 	"$(INTDIR)\extracticon.sbr" \
 	"$(INTDIR)\IcoLib.sbr" \
-	"$(INTDIR)\skin2icons.sbr"
+	"$(INTDIR)\skin2icons.sbr" \
+	"$(INTDIR)\genmenuopt.sbr" \
+	"$(INTDIR)\movetogroup.sbr" \
+	"$(INTDIR)\clistmenus.sbr" \
+	"$(INTDIR)\genmenu.sbr"
 
 "$(OUTDIR)\miranda32.bsc" : "$(OUTDIR)" $(BSC32_SBRS)
     $(BSC32) @<<
@@ -917,7 +881,11 @@ LINK32_OBJS= \
 	"$(INTDIR)\extracticon.obj" \
 	"$(INTDIR)\IcoLib.obj" \
 	"$(INTDIR)\skin2icons.obj" \
-	"$(INTDIR)\resource.res"
+	"$(INTDIR)\resource.res" \
+	"$(INTDIR)\genmenuopt.obj" \
+	"$(INTDIR)\movetogroup.obj" \
+	"$(INTDIR)\clistmenus.obj" \
+	"$(INTDIR)\genmenu.obj"
 
 "..\bin\debug\miranda32.exe" : "$(OUTDIR)" $(DEF_FILE) $(LINK32_OBJS)
     $(LINK32) @<<
@@ -949,6 +917,7 @@ CLEAN :
 	-@erase "$(INTDIR)\clcutils.obj"
 	-@erase "$(INTDIR)\clistcore.obj"
 	-@erase "$(INTDIR)\clistevents.obj"
+	-@erase "$(INTDIR)\clistmenus.obj"
 	-@erase "$(INTDIR)\clistmod.obj"
 	-@erase "$(INTDIR)\clistsettings.obj"
 	-@erase "$(INTDIR)\clisttray.obj"
@@ -975,6 +944,8 @@ CLEAN :
 	-@erase "$(INTDIR)\findadd.obj"
 	-@erase "$(INTDIR)\FontOptions.obj"
 	-@erase "$(INTDIR)\FontService.obj"
+	-@erase "$(INTDIR)\genmenu.obj"
+	-@erase "$(INTDIR)\genmenuopt.obj"
 	-@erase "$(INTDIR)\groups.obj"
 	-@erase "$(INTDIR)\help.obj"
 	-@erase "$(INTDIR)\history.obj"
@@ -990,6 +961,7 @@ CLEAN :
 	-@erase "$(INTDIR)\miranda32.pch"
 	-@erase "$(INTDIR)\module_fonts.obj"
 	-@erase "$(INTDIR)\modules.obj"
+	-@erase "$(INTDIR)\movetogroup.obj"
 	-@erase "$(INTDIR)\netlib.obj"
 	-@erase "$(INTDIR)\netlibbind.obj"
 	-@erase "$(INTDIR)\netlibhttp.obj"
@@ -1036,42 +1008,8 @@ CLEAN :
 "$(OUTDIR)" :
     if not exist "$(OUTDIR)/$(NULL)" mkdir "$(OUTDIR)"
 
-CPP=cl.exe
 CPP_PROJ=/nologo /MD /W3 /GX /Zi /O1 /I "../include" /D "NDEBUG" /D "WIN32" /D "_WINDOWS" /D "_NOSDK" /D "UNICODE" /D "_STATIC" /Fp"$(INTDIR)\miranda32.pch" /Yu"commonheaders.h" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /FD /c 
-
-.c{$(INTDIR)}.obj::
-   $(CPP) @<<
-   $(CPP_PROJ) $< 
-<<
-
-.cpp{$(INTDIR)}.obj::
-   $(CPP) @<<
-   $(CPP_PROJ) $< 
-<<
-
-.cxx{$(INTDIR)}.obj::
-   $(CPP) @<<
-   $(CPP_PROJ) $< 
-<<
-
-.c{$(INTDIR)}.sbr::
-   $(CPP) @<<
-   $(CPP_PROJ) $< 
-<<
-
-.cpp{$(INTDIR)}.sbr::
-   $(CPP) @<<
-   $(CPP_PROJ) $< 
-<<
-
-.cxx{$(INTDIR)}.sbr::
-   $(CPP) @<<
-   $(CPP_PROJ) $< 
-<<
-
-MTL=midl.exe
 MTL_PROJ=/nologo /D "NDEBUG" /mktyplib203 /o "NUL" /win32 
-RSC=rc.exe
 RSC_PROJ=/l 0x409 /fo"$(INTDIR)\resource.res" /d "NDEBUG" 
 BSC32=bscmake.exe
 BSC32_FLAGS=/nologo /o"$(OUTDIR)\miranda32.bsc" 
@@ -1172,7 +1110,11 @@ LINK32_OBJS= \
 	"$(INTDIR)\extracticon.obj" \
 	"$(INTDIR)\IcoLib.obj" \
 	"$(INTDIR)\skin2icons.obj" \
-	"$(INTDIR)\resource.res"
+	"$(INTDIR)\resource.res" \
+	"$(INTDIR)\genmenuopt.obj" \
+	"$(INTDIR)\movetogroup.obj" \
+	"$(INTDIR)\clistmenus.obj" \
+	"$(INTDIR)\genmenu.obj"
 
 "..\bin\Release Unicode\miranda32.exe" : "$(OUTDIR)" $(DEF_FILE) $(LINK32_OBJS)
     $(LINK32) @<<
@@ -1223,6 +1165,8 @@ CLEAN :
 	-@erase "$(INTDIR)\clistcore.sbr"
 	-@erase "$(INTDIR)\clistevents.obj"
 	-@erase "$(INTDIR)\clistevents.sbr"
+	-@erase "$(INTDIR)\clistmenus.obj"
+	-@erase "$(INTDIR)\clistmenus.sbr"
 	-@erase "$(INTDIR)\clistmod.obj"
 	-@erase "$(INTDIR)\clistmod.sbr"
 	-@erase "$(INTDIR)\clistsettings.obj"
@@ -1275,6 +1219,10 @@ CLEAN :
 	-@erase "$(INTDIR)\FontOptions.sbr"
 	-@erase "$(INTDIR)\FontService.obj"
 	-@erase "$(INTDIR)\FontService.sbr"
+	-@erase "$(INTDIR)\genmenu.obj"
+	-@erase "$(INTDIR)\genmenu.sbr"
+	-@erase "$(INTDIR)\genmenuopt.obj"
+	-@erase "$(INTDIR)\genmenuopt.sbr"
 	-@erase "$(INTDIR)\groups.obj"
 	-@erase "$(INTDIR)\groups.sbr"
 	-@erase "$(INTDIR)\help.obj"
@@ -1304,6 +1252,8 @@ CLEAN :
 	-@erase "$(INTDIR)\module_fonts.sbr"
 	-@erase "$(INTDIR)\modules.obj"
 	-@erase "$(INTDIR)\modules.sbr"
+	-@erase "$(INTDIR)\movetogroup.obj"
+	-@erase "$(INTDIR)\movetogroup.sbr"
 	-@erase "$(INTDIR)\netlib.obj"
 	-@erase "$(INTDIR)\netlib.sbr"
 	-@erase "$(INTDIR)\netlibbind.obj"
@@ -1388,42 +1338,8 @@ CLEAN :
 "$(OUTDIR)" :
     if not exist "$(OUTDIR)/$(NULL)" mkdir "$(OUTDIR)"
 
-CPP=cl.exe
 CPP_PROJ=/nologo /MDd /W3 /Gm /GX /ZI /Od /I "../include" /D "_DEBUG" /D "WIN32" /D "_WINDOWS" /D "_NOSDK" /D "UNICODE" /D "_STATIC" /Fr"$(INTDIR)\\" /Fp"$(INTDIR)\miranda32.pch" /Yu"commonheaders.h" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /FD /c 
-
-.c{$(INTDIR)}.obj::
-   $(CPP) @<<
-   $(CPP_PROJ) $< 
-<<
-
-.cpp{$(INTDIR)}.obj::
-   $(CPP) @<<
-   $(CPP_PROJ) $< 
-<<
-
-.cxx{$(INTDIR)}.obj::
-   $(CPP) @<<
-   $(CPP_PROJ) $< 
-<<
-
-.c{$(INTDIR)}.sbr::
-   $(CPP) @<<
-   $(CPP_PROJ) $< 
-<<
-
-.cpp{$(INTDIR)}.sbr::
-   $(CPP) @<<
-   $(CPP_PROJ) $< 
-<<
-
-.cxx{$(INTDIR)}.sbr::
-   $(CPP) @<<
-   $(CPP_PROJ) $< 
-<<
-
-MTL=midl.exe
 MTL_PROJ=/nologo /D "_DEBUG" /mktyplib203 /o "NUL" /win32 
-RSC=rc.exe
 RSC_PROJ=/l 0x409 /fo"$(INTDIR)\resource.res" /d "_DEBUG" 
 BSC32=bscmake.exe
 BSC32_FLAGS=/nologo /o"$(OUTDIR)\miranda32.bsc" 
@@ -1519,7 +1435,11 @@ BSC32_SBRS= \
 	"$(INTDIR)\services.sbr" \
 	"$(INTDIR)\extracticon.sbr" \
 	"$(INTDIR)\IcoLib.sbr" \
-	"$(INTDIR)\skin2icons.sbr"
+	"$(INTDIR)\skin2icons.sbr" \
+	"$(INTDIR)\genmenuopt.sbr" \
+	"$(INTDIR)\movetogroup.sbr" \
+	"$(INTDIR)\clistmenus.sbr" \
+	"$(INTDIR)\genmenu.sbr"
 
 "$(OUTDIR)\miranda32.bsc" : "$(OUTDIR)" $(BSC32_SBRS)
     $(BSC32) @<<
@@ -1621,7 +1541,11 @@ LINK32_OBJS= \
 	"$(INTDIR)\extracticon.obj" \
 	"$(INTDIR)\IcoLib.obj" \
 	"$(INTDIR)\skin2icons.obj" \
-	"$(INTDIR)\resource.res"
+	"$(INTDIR)\resource.res" \
+	"$(INTDIR)\genmenuopt.obj" \
+	"$(INTDIR)\movetogroup.obj" \
+	"$(INTDIR)\clistmenus.obj" \
+	"$(INTDIR)\genmenu.obj"
 
 "..\bin\Debug Unicode\miranda32.exe" : "$(OUTDIR)" $(DEF_FILE) $(LINK32_OBJS)
     $(LINK32) @<<
@@ -1629,6 +1553,36 @@ LINK32_OBJS= \
 <<
 
 !ENDIF 
+
+.c{$(INTDIR)}.obj::
+   $(CPP) @<<
+   $(CPP_PROJ) $< 
+<<
+
+.cpp{$(INTDIR)}.obj::
+   $(CPP) @<<
+   $(CPP_PROJ) $< 
+<<
+
+.cxx{$(INTDIR)}.obj::
+   $(CPP) @<<
+   $(CPP_PROJ) $< 
+<<
+
+.c{$(INTDIR)}.sbr::
+   $(CPP) @<<
+   $(CPP_PROJ) $< 
+<<
+
+.cpp{$(INTDIR)}.sbr::
+   $(CPP) @<<
+   $(CPP_PROJ) $< 
+<<
+
+.cxx{$(INTDIR)}.sbr::
+   $(CPP) @<<
+   $(CPP_PROJ) $< 
+<<
 
 
 !IF "$(NO_EXTERNAL_DEPS)" != "1"
@@ -4133,6 +4087,38 @@ SOURCE=.\modules\clist\clistevents.c
 
 !ENDIF 
 
+SOURCE=.\modules\clist\clistmenus.c
+
+!IF  "$(CFG)" == "miranda32 - Win32 Release"
+
+
+"$(INTDIR)\clistmenus.obj"	"$(INTDIR)\clistmenus.sbr" : $(SOURCE) "$(INTDIR)" "$(INTDIR)\miranda32.pch"
+	$(CPP) $(CPP_PROJ) $(SOURCE)
+
+
+!ELSEIF  "$(CFG)" == "miranda32 - Win32 Debug"
+
+
+"$(INTDIR)\clistmenus.obj"	"$(INTDIR)\clistmenus.sbr" : $(SOURCE) "$(INTDIR)" "$(INTDIR)\miranda32.pch"
+	$(CPP) $(CPP_PROJ) $(SOURCE)
+
+
+!ELSEIF  "$(CFG)" == "miranda32 - Win32 Release Unicode"
+
+
+"$(INTDIR)\clistmenus.obj" : $(SOURCE) "$(INTDIR)" "$(INTDIR)\miranda32.pch"
+	$(CPP) $(CPP_PROJ) $(SOURCE)
+
+
+!ELSEIF  "$(CFG)" == "miranda32 - Win32 Debug Unicode"
+
+
+"$(INTDIR)\clistmenus.obj"	"$(INTDIR)\clistmenus.sbr" : $(SOURCE) "$(INTDIR)" "$(INTDIR)\miranda32.pch"
+	$(CPP) $(CPP_PROJ) $(SOURCE)
+
+
+!ENDIF 
+
 SOURCE=.\modules\clist\clistmod.c
 
 !IF  "$(CFG)" == "miranda32 - Win32 Release"
@@ -4357,6 +4343,70 @@ SOURCE=.\modules\clist\Docking.c
 
 !ENDIF 
 
+SOURCE=.\modules\clist\genmenu.c
+
+!IF  "$(CFG)" == "miranda32 - Win32 Release"
+
+
+"$(INTDIR)\genmenu.obj"	"$(INTDIR)\genmenu.sbr" : $(SOURCE) "$(INTDIR)" "$(INTDIR)\miranda32.pch"
+	$(CPP) $(CPP_PROJ) $(SOURCE)
+
+
+!ELSEIF  "$(CFG)" == "miranda32 - Win32 Debug"
+
+
+"$(INTDIR)\genmenu.obj"	"$(INTDIR)\genmenu.sbr" : $(SOURCE) "$(INTDIR)" "$(INTDIR)\miranda32.pch"
+	$(CPP) $(CPP_PROJ) $(SOURCE)
+
+
+!ELSEIF  "$(CFG)" == "miranda32 - Win32 Release Unicode"
+
+
+"$(INTDIR)\genmenu.obj" : $(SOURCE) "$(INTDIR)" "$(INTDIR)\miranda32.pch"
+	$(CPP) $(CPP_PROJ) $(SOURCE)
+
+
+!ELSEIF  "$(CFG)" == "miranda32 - Win32 Debug Unicode"
+
+
+"$(INTDIR)\genmenu.obj"	"$(INTDIR)\genmenu.sbr" : $(SOURCE) "$(INTDIR)" "$(INTDIR)\miranda32.pch"
+	$(CPP) $(CPP_PROJ) $(SOURCE)
+
+
+!ENDIF 
+
+SOURCE=.\modules\clist\genmenuopt.c
+
+!IF  "$(CFG)" == "miranda32 - Win32 Release"
+
+
+"$(INTDIR)\genmenuopt.obj"	"$(INTDIR)\genmenuopt.sbr" : $(SOURCE) "$(INTDIR)" "$(INTDIR)\miranda32.pch"
+	$(CPP) $(CPP_PROJ) $(SOURCE)
+
+
+!ELSEIF  "$(CFG)" == "miranda32 - Win32 Debug"
+
+
+"$(INTDIR)\genmenuopt.obj"	"$(INTDIR)\genmenuopt.sbr" : $(SOURCE) "$(INTDIR)" "$(INTDIR)\miranda32.pch"
+	$(CPP) $(CPP_PROJ) $(SOURCE)
+
+
+!ELSEIF  "$(CFG)" == "miranda32 - Win32 Release Unicode"
+
+
+"$(INTDIR)\genmenuopt.obj" : $(SOURCE) "$(INTDIR)" "$(INTDIR)\miranda32.pch"
+	$(CPP) $(CPP_PROJ) $(SOURCE)
+
+
+!ELSEIF  "$(CFG)" == "miranda32 - Win32 Debug Unicode"
+
+
+"$(INTDIR)\genmenuopt.obj"	"$(INTDIR)\genmenuopt.sbr" : $(SOURCE) "$(INTDIR)" "$(INTDIR)\miranda32.pch"
+	$(CPP) $(CPP_PROJ) $(SOURCE)
+
+
+!ENDIF 
+
 SOURCE=.\modules\clist\groups.c
 
 !IF  "$(CFG)" == "miranda32 - Win32 Release"
@@ -4416,6 +4466,38 @@ SOURCE=.\modules\clist\keyboard.c
 
 
 "$(INTDIR)\keyboard.obj"	"$(INTDIR)\keyboard.sbr" : $(SOURCE) "$(INTDIR)" "$(INTDIR)\miranda32.pch"
+	$(CPP) $(CPP_PROJ) $(SOURCE)
+
+
+!ENDIF 
+
+SOURCE=.\modules\clist\movetogroup.c
+
+!IF  "$(CFG)" == "miranda32 - Win32 Release"
+
+
+"$(INTDIR)\movetogroup.obj"	"$(INTDIR)\movetogroup.sbr" : $(SOURCE) "$(INTDIR)" "$(INTDIR)\miranda32.pch"
+	$(CPP) $(CPP_PROJ) $(SOURCE)
+
+
+!ELSEIF  "$(CFG)" == "miranda32 - Win32 Debug"
+
+
+"$(INTDIR)\movetogroup.obj"	"$(INTDIR)\movetogroup.sbr" : $(SOURCE) "$(INTDIR)" "$(INTDIR)\miranda32.pch"
+	$(CPP) $(CPP_PROJ) $(SOURCE)
+
+
+!ELSEIF  "$(CFG)" == "miranda32 - Win32 Release Unicode"
+
+
+"$(INTDIR)\movetogroup.obj" : $(SOURCE) "$(INTDIR)" "$(INTDIR)\miranda32.pch"
+	$(CPP) $(CPP_PROJ) $(SOURCE)
+
+
+!ELSEIF  "$(CFG)" == "miranda32 - Win32 Debug Unicode"
+
+
+"$(INTDIR)\movetogroup.obj"	"$(INTDIR)\movetogroup.sbr" : $(SOURCE) "$(INTDIR)" "$(INTDIR)\miranda32.pch"
 	$(CPP) $(CPP_PROJ) $(SOURCE)
 
 
@@ -4563,9 +4645,9 @@ CPP_SWITCHES=/nologo /MD /W3 /GX /Zi /O1 /I "../include" /D "NDEBUG" /D "WIN32" 
 
 !ELSEIF  "$(CFG)" == "miranda32 - Win32 Debug"
 
-CPP_SWITCHES=/nologo /MDd /W3 /Gm /GX /ZI /Od /I "../include" /D "_DEBUG" /D "WIN32" /D "_WINDOWS" /D "_NOSDK" /D "_STATIC" /Fr"$(INTDIR)\\" /Fp"$(INTDIR)\miranda32.pch" /Yu"commonheaders.h" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /FD /c 
+CPP_SWITCHES=/nologo /MDd /W3 /Gm /GX /ZI /Od /I "../include" /D "_DEBUG" /D "WIN32" /D "_WINDOWS" /D "_NOSDK" /D "_STATIC" /Fr"$(INTDIR)\\" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /FD /c 
 
-"$(INTDIR)\extracticon.obj"	"$(INTDIR)\extracticon.sbr" : $(SOURCE) "$(INTDIR)" "$(INTDIR)\miranda32.pch"
+"$(INTDIR)\extracticon.obj"	"$(INTDIR)\extracticon.sbr" : $(SOURCE) "$(INTDIR)"
 	$(CPP) @<<
   $(CPP_SWITCHES) $(SOURCE)
 <<

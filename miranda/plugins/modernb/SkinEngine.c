@@ -3120,7 +3120,7 @@ BOOL SkinEngine_ImageList_DrawEx( HIMAGELIST himl,int i,HDC hdcDst,int x,int y,i
     if (fStyle&ILD_BLEND25) alpha=64;
     else if (fStyle&ILD_BLEND50) alpha=128;
     else alpha=255;
-    
+
     if (!hBitmap) 
     {        
         HICON hIcon=SkinEngine_ImageList_GetIcon(himl,i,ILD_NORMAL);        
@@ -3136,8 +3136,6 @@ BOOL SkinEngine_ImageList_DrawEx( HIMAGELIST himl,int i,HDC hdcDst,int x,int y,i
     // ok looks like al fine lets draw it
     hDC=CreateCompatibleDC(hdcDst);
     hOldBitmap=SelectObject(hDC,hBitmap);
-
-
 
     bf.SourceConstantAlpha=alpha;    
     SkinEngine_AlphaBlend(hdcDst,x,y,dx?dx:iWidth,dy?dy:iHeight,hDC,0,0,iWidth,iHeight,bf);
@@ -3882,7 +3880,7 @@ int SkinEngine_UpdateWindowImageRect(RECT * r)                                  
 void SkinEngine_ApplyTransluency()
 {
     int IsTransparancy;
-    HWND hwnd=(HWND)CallService(MS_CLUI_GETHWND,0,0);
+    HWND hwnd=pcli->hwndContactList;
     BOOL layered=(GetWindowLong(hwnd, GWL_EXSTYLE) & WS_EX_LAYERED)?TRUE:FALSE;
 
     IsTransparancy=g_CluiData.fSmoothAnimation || g_bTransparentFlag;
