@@ -2,8 +2,8 @@
 
 Miranda IM: the free IM client for Microsoft* Windows*
 
-Copyright 2000-2006 Miranda ICQ/IM project, 
-all portions of this codebase are copyrighted to the people 
+Copyright 2000-2007 Miranda ICQ/IM project,
+all portions of this codebase are copyrighted to the people
 listed in contributors.txt.
 
 This program is free software; you can redistribute it and/or
@@ -67,7 +67,7 @@ int NetlibFreeBoundPort(struct NetlibBoundPort *nlbp)
 	closesocket(nlbp->s);
 	WaitForSingleObject(nlbp->hThread,INFINITE);
 	CloseHandle(nlbp->hThread);
-    NetlibUPnPDeletePortMapping(nlbp->wExPort, "TCP");
+	NetlibUPnPDeletePortMapping(nlbp->wExPort, "TCP");
 	mir_free(nlbp);
 	return 1;
 }
@@ -114,9 +114,9 @@ int NetlibBindPort(WPARAM wParam,LPARAM lParam)
 		SetLastError(ERROR_INVALID_PARAMETER);
 		return (int)(HANDLE)NULL;
 	}
-	if ( nlb->cbSize != sizeof(NETLIBBIND)   && 
-		 nlb->cbSize != NETLIBBIND_SIZEOF_V2 && 
-		 nlb->cbSize != NETLIBBIND_SIZEOF_V1 ) 
+	if ( nlb->cbSize != sizeof(NETLIBBIND)   &&
+		 nlb->cbSize != NETLIBBIND_SIZEOF_V2 &&
+		 nlb->cbSize != NETLIBBIND_SIZEOF_V1 )
 	{
 		return (int)(HANDLE)NULL;
 	}
@@ -125,7 +125,7 @@ int NetlibBindPort(WPARAM wParam,LPARAM lParam)
 	nlbp->nlu=nlu;
 	nlbp->pfnNewConnectionV2=nlb->pfnNewConnectionV2;
 	nlbp->s=socket(AF_INET,SOCK_STREAM,0);
-	nlbp->pExtra= (nlb->cbSize == sizeof(NETLIBBIND)) ? nlb->pExtra : NULL;
+	nlbp->pExtra= (nlb->cbSize != NETLIBBIND_SIZEOF_V1) ? nlb->pExtra : NULL;
 	if(nlbp->s==INVALID_SOCKET) {
 		Netlib_Logf(nlu,"%s %d: %s() failed (%u)",__FILE__,__LINE__,"socket",WSAGetLastError());
 		mir_free(nlbp);
@@ -176,10 +176,10 @@ int NetlibBindPort(WPARAM wParam,LPARAM lParam)
 	else {
 		/* if ->wPort==0 then they'll get any free port, otherwise they'll
 		be asking for whatever was in nlb->wPort*/
-		if (nlb->wPort!=0) {			
+		if (nlb->wPort!=0) {
 			Netlib_Logf(nlu,"%s %d: trying to bind port %d, this 'feature' can be abused, please be sure you want to allow it.",__FILE__,__LINE__,nlb->wPort);
 			sin.sin_port=htons(nlb->wPort);
-		} 
+		}
 		if(bind(nlbp->s,(SOCKADDR *)&sin,sizeof(sin))==0) foundPort=1;
 	}
 	if(!foundPort) {
@@ -221,7 +221,7 @@ int NetlibBindPort(WPARAM wParam,LPARAM lParam)
 			if(he->h_addr_list[0])
 				nlb->dwInternalIP=ntohl(*(PDWORD)he->h_addr_list[0]);
 		}
-		if (nlu->settings.enableUPnP&&NetlibUPnPAddPortMapping(nlb->wPort, "TCP", &nlbp->wExPort, 
+		if (nlu->settings.enableUPnP&&NetlibUPnPAddPortMapping(nlb->wPort, "TCP", &nlbp->wExPort,
 			&extIP, nlb->cbSize > NETLIBBIND_SIZEOF_V2))
 		{
 			if (nlb->cbSize > NETLIBBIND_SIZEOF_V2)
