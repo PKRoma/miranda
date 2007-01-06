@@ -851,14 +851,11 @@ int oftInitTransfer(HANDLE hContact, DWORD dwUin, char* szUid, char** files, cha
     // Send packet
     if (ft->listener)
     {
-      char* pszUserMsg = ansi_to_utf8(pszFiles);
-
-      oft_sendFileRequest(dwUin, szUid, ft, pszUserMsg, ICQGetContactSettingDword(NULL, "RealIP", 0));
-      SAFE_FREE(&pszUserMsg);
+      oft_sendFileRequest(dwUin, szUid, ft, pszFiles, ICQGetContactSettingDword(NULL, "RealIP", 0));
     }
     else
     { // try stage 1 proxy
-      ft->szThisFile = ansi_to_utf8(pszFiles);
+      ft->szThisFile = null_strdup(pszFiles);
       OpenOscarConnection(hContact, ft, OCT_PROXY_INIT);
     }
   }
