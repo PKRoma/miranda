@@ -46,8 +46,10 @@ typedef struct FontSettingsW_tag
 
 #if defined( _UNICODE )
   #define FontSettingsT FontSettingsW
+  #define FontID_SIZEOF_V2 660
 #else
   #define FontSettingsT FontSettings
+  #define FontID_SIZEOF_V2 372
 #endif
 
 // a font identifier structure - used for registering a font, and getting one out again
