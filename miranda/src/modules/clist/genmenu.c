@@ -1129,7 +1129,8 @@ int InitGenMenu()
 	isGenMenuInited=TRUE;
 	LeaveCriticalSection( &csMenuHook );
 
-	HookEvent(ME_SYSTEM_MODULESLOADED,OnModulesLoaded);
+	HookEvent( ME_SYSTEM_MODULESLOADED, OnModulesLoaded );
+	HookEvent( ME_OPT_INITIALISE,       GenMenuOptInit  );
 	return 0;
 }
 

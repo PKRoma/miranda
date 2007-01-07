@@ -235,7 +235,6 @@ int LoadCLCModule(void)
 	hAckHook = (HANDLE) HookEvent(ME_PROTO_ACK, ClcProtoAck);
 	HookEvent(ME_SYSTEM_SHUTDOWN, ClcShutdown);
 
-	InitGenMenu();
 	InitCustomMenus();
 	return 0;
 }

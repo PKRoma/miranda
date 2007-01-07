@@ -827,7 +827,7 @@ long handleCustomDraw(HWND hWndTreeView, LPNMTVCUSTOMDRAW pNMTVCD)
 	return 0;
 }
 
-int GenMenuOptInit(WPARAM wParam,LPARAM lParam)
+int GenMenuOptInit(WPARAM wParam, LPARAM lParam)
 {
 	OPTIONSDIALOGPAGE odp;
 	//hInst=GetModuleHandle(NULL);

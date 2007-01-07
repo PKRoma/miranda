@@ -63,7 +63,7 @@ int UnitGenMenu();
 TMO_IntMenuItem * GetMenuItemByGlobalID(int globalMenuID);
 BOOL	FindMenuHanleByGlobalID(HMENU hMenu, int globalID, struct _MenuItemHandles * dat);	//GenMenu.c
 
-int GenMenuOptInit(WPARAM wParam,LPARAM lParam);
+int GenMenuOptInit(WPARAM wParam, LPARAM lParam);
 int GetMenuObjbyId(const int id);
 int GetMenuItembyId(const int objpos,const int id);
 int MO_GetMenuItem(WPARAM wParam,LPARAM lParam);
