@@ -72,6 +72,10 @@ created. CTRL key needs to be pressed only when a tab is being dropped.
 
 6. Change Log
 -------------
+2.5.9.13
+* status bar clean-up
+* bugfixes
+! requires Miranda 0.6 or later
 2.5.9.12
 + bugfixes
 2.5.9.11
