@@ -1617,10 +1617,10 @@ bgdone:
 
 		line_num++;
         if(g_CluiData.bForceRefetchOnPaint)
-            group->cl.items[group->scanIndex]->ace = 0xffffffff;
+            group->cl.items[group->scanIndex]->ace = (struct avatarCacheEntry*)-1;
 
 		if (y > rcPaint->top - dat->row_heights[line_num] && y <= rcPaint->bottom) {
-            if (group->cl.items[group->scanIndex]->ace == 0xffffffff)
+            if (group->cl.items[group->scanIndex]->ace == (struct avatarCacheEntry*)-1 )
                 group->cl.items[group->scanIndex]->ace = (struct avatarCacheEntry *)CallService(MS_AV_GETAVATARBITMAP, (WPARAM)group->cl.items[group->scanIndex]->hContact, 0);
 			RowHeights_GetRowHeight(dat, hwnd, group->cl.items[group->scanIndex], line_num, style);
 			PaintItem(hdcMem, group, group->cl.items[group->scanIndex], indent, y, dat, index, hwnd, style, &clRect, &bFirstNGdrawn, groupCountsFontTopShift, dat->row_heights[line_num]);
