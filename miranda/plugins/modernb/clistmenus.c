@@ -79,10 +79,15 @@ char * GetUniqueProtoName(char * proto)
 {
 	int i, count;
 	PROTOCOLDESCRIPTOR **protos;
+	char name[64];
 	CallService(MS_PROTO_ENUMPROTOCOLS, (WPARAM) & count, (LPARAM) & protos);
 	for (i=0; i<count; i++)
-		if (!_strcmpi(proto,protos[i]->szName))
+	{
+		name[0] = '\0';
+		CallProtoService(protos[i]->szName, PS_GETNAME, sizeof(name), (LPARAM) name);
+		if (!_strcmpi(proto,name))
 			return protos[i]->szName;
+	}
 	return NULL;
 }
 
@@ -206,8 +211,7 @@ int StatusMenuCheckService(WPARAM wParam, LPARAM lParam)
 		if (smep->proto)
 		{
 			int curProtoStatus;
-			prot=GetUniqueProtoName(smep->proto);
-			curProtoStatus=CallProtoService(prot,PS_GETSTATUS,0,0);
+			curProtoStatus=CallProtoService(smep->proto,PS_GETSTATUS,0,0);
 			timi=pcli->pfnMOGetMenuItemByGlobalID(pcpp->MenuItemHandle);
 			if (smep->status == curProtoStatus)
 				timi->mi.flags |= CMIF_CHECKED;
@@ -292,8 +296,9 @@ int StatusMenuExecService(WPARAM wParam,LPARAM lParam)
 			if ((smep->status==0) && (smep->protoindex!=0) && (smep->proto!=NULL))
 			{
 				PMO_IntMenuItem pimi;
-				int i=(DBGetContactSettingByte(NULL,GetUniqueProtoName(smep->proto),"LockMainStatus",0)?0:1);
-				DBWriteContactSettingByte(NULL,GetUniqueProtoName(smep->proto),"LockMainStatus",i);
+				char *prot = GetUniqueProtoName(smep->proto);
+				int i=(DBGetContactSettingByte(NULL,prot,"LockMainStatus",0)?0:1);
+				DBWriteContactSettingByte(NULL,prot,"LockMainStatus",i);
 				pimi = pcli->pfnMOGetIntMenuItem(smep->protoindex);
 				if (i)
 				{
@@ -324,7 +329,7 @@ int StatusMenuExecService(WPARAM wParam,LPARAM lParam)
 				currentDesiredStatusMode=smep->status;
 				//	NotifyEventHooks(hStatusModeChangeEvent,currentDesiredStatusMode,0);
 				for(i=0;i<protoCount;i++)
-					if (!(MenusProtoCount>1 && DBGetContactSettingByte(NULL,GetUniqueProtoName(proto[i]->szName),"LockMainStatus",0)))
+					if (!(MenusProtoCount>1 && DBGetContactSettingByte(NULL,proto[i]->szName,"LockMainStatus",0)))
 						CallProtoService(proto[i]->szName,PS_SETSTATUS,currentDesiredStatusMode,0);
 				NotifyEventHooks(hStatusModeChangeEvent,currentDesiredStatusMode,0);
 
@@ -541,7 +546,7 @@ int MenuModulesLoaded(WPARAM wParam,LPARAM lParam)
 			};
 
 			tmi.hIcon=ic;
-			if (DBGetContactSettingByte(NULL,GetUniqueProtoName(protoName),"LockMainStatus",0)) tmi.flags|=CMIF_CHECKED;
+			if (DBGetContactSettingByte(NULL,proto[i]->szName,"LockMainStatus",0)) tmi.flags|=CMIF_CHECKED;
 			if (tmi.flags&CMIF_CHECKED)
 			{
 				char buf[256];
