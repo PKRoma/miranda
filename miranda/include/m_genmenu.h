@@ -164,10 +164,16 @@ int lParam;
 //wParam=lParam=0
 #define ME_CLIST_PREBUILDTRAYMENU					"CList/PreBuildTrayMenu"
 
+// STATUS MENU
 
+//the status menu is about to be built
+//wParam=lParam=0
+#define ME_CLIST_PREBUILDSTATUSMENU "CList/PreBuildStatusMenu"
 
-// TRAY MENU
-
+//add a new item to the status menu
+//wParam=0
+//lParam=(LPARAM)(CLISTMENUITEM*)&mi
+#define MS_CLIST_ADDSTATUSMENUITEM "CList/AddStatusMenuItem"
 
 //remove a item from main menu
 //wParam=hMenuItem returned by MS_CLIST_ADDMAINMENUITEM

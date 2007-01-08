@@ -188,6 +188,7 @@ LBL_Error:
 		pcli->pfnFindItem = FindItem;
 		pcli->pfnFreeCacheItem = FreeDisplayNameCacheItem;
 		pcli->pfnGetDefaultFontSetting = GetDefaultFontSetting;
+		pcli->pfnGetProtocolVisibility = GetProtocolVisibility;
 		pcli->pfnGetRowsPriorTo = GetRowsPriorTo;
 		pcli->pfnGetRowByIndex = GetRowByIndex;
 		pcli->pfnHitTest = HitTest;

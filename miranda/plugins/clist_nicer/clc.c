@@ -61,7 +61,7 @@ LONG g_cxsmIcon, g_cysmIcon;
 void  ShutdownGdiPlus();
 void  SetDBButtonStates(HANDLE hContact);
 
-int GetProtocolVisibility(char *ProtoName)
+int GetProtocolVisibility(const char *ProtoName)
 {
 	int i;
 	int res=0;

@@ -36,7 +36,6 @@ HIMAGELIST hCListImages;
 
 HANDLE hStatusModeChangeEvent,hContactIconChangedEvent;
 extern BYTE nameOrder[];
-extern int currentDesiredStatusMode;
 
 static HANDLE hSettingChanged, hProtoAckHook;
 
@@ -81,7 +80,7 @@ static int ProtocolAck(WPARAM wParam,LPARAM lParam)
 
 static int GetStatusMode(WPARAM wParam, LPARAM lParam)
 {
-	return currentDesiredStatusMode;
+	return pcli->currentDesiredStatusMode;
 }
 
 static int ContactListShutdownProc(WPARAM wParam,LPARAM lParam)

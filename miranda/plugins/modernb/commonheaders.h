@@ -122,16 +122,8 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #define mir_free_and_nill(x) {mir_free(x); x=NULL;}
 // shared vars
 
-typedef struct _menuProto 
-{
-  char *szProto;
-  HANDLE menuID;
-  HANDLE hasAdded;
-} MenuProto;
-
 #define CLUI_FRAME_AUTOHIDENOTIFY  512
 #define CLUI_FRAME_SHOWALWAYS      1024
-
 
 extern struct LIST_INTERFACE li;
 extern struct MM_INTERFACE memoryManagerInterface;

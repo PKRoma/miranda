@@ -32,7 +32,6 @@ UNICODE done
 static VOID CALLBACK TrayCycleTimerProc(HWND hwnd, UINT message, UINT idEvent, DWORD dwTime);
 
 extern HIMAGELIST hCListImages;
-extern int currentStatusMenuItem, currentDesiredStatusMode;
 
 extern struct CluiData g_CluiData;
 

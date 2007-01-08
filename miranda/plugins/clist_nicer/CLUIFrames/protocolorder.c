@@ -6,11 +6,9 @@
 #include "cluiframes.h"
 
 extern int DefaultImageListColorDepth;
-extern HANDLE hPreBuildStatusMenuEvent;
 
 extern HINSTANCE g_hInst;
 extern char *DBGetString(HANDLE hContact,const char *szModule,const char *szSetting);
-extern int MenuModulesLoaded(WPARAM wParam,LPARAM lParam);
 
 struct ProtocolOrderData {
     int dragging;
@@ -263,10 +261,10 @@ BOOL CALLBACK ProtocolOrderOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lP
                                     count++;
                                 }
                                 CluiProtocolStatusChanged(0,0);
-                                MenuModulesLoaded(0,0);
+                                pcli->pfnReloadProtoMenus();
                                 pcli->pfnTrayIconIconsChanged();
                                 pcli->pfnClcOptionsChanged();
-								NotifyEventHooks(hPreBuildStatusMenuEvent, 0, 0);
+                                NotifyEventHooks(pcli->hPreBuildStatusMenuEvent, 0, 0);
                             }
                     }
                     break;

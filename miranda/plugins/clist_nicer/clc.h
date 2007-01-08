@@ -441,7 +441,7 @@ int __fastcall GetStatusOnlineness(int status);
 void GetExtendedInfo(struct ClcContact *contact, struct ClcData *dat);
 extern LRESULT CALLBACK NewStatusBarWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam);
 void HideShowNotifyFrame();
-int GetProtocolVisibility(char * ProtoName);
+int GetProtocolVisibility(const char * ProtoName);
 DWORD GetCLUIWindowStyle(BYTE style);
 void ApplyCLUIBorderStyle(HWND hwnd);
 
@@ -519,7 +519,6 @@ int Docking_IsDocked(WPARAM wParam, LPARAM lParam);
 
 // Menus
 
-int MenuModulesLoaded(WPARAM wParam, LPARAM lParam);
 int ClcSoundHook(WPARAM wParam, LPARAM lParam);
 
 void IMG_DeleteItems();

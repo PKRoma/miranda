@@ -25,6 +25,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #define M_CLISTINT_H__ 1
 
 #include "m_genmenu.h"
+#include "m_protocols.h"
 
 #define HCONTACT_ISGROUP    0x80000000
 #define HCONTACT_ISINFO     0xFFFF0000
@@ -96,6 +97,8 @@ struct ClcFontInfo
 	COLORREF colour;
 };
 
+/* genmenu structs */
+
 typedef struct
 {
 	int id;
@@ -110,6 +113,17 @@ typedef struct
 	HMENU hSubMenu;
 }
 	TMO_IntMenuItem,*PMO_IntMenuItem;
+
+typedef struct _menuProto
+{
+	char*  szProto;
+	HANDLE menuID;
+	HANDLE hasAdded;
+	HICON  hIcon;
+}
+	MenuProto;
+
+/* constants */
 
 #define DRAGSTAGE_NOTMOVED  0
 #define DRAGSTAGE_ACTIVE    1
@@ -344,8 +358,18 @@ typedef struct
 	 * version 4 additions (0.7.0.x) - genmenu
 	 *************************************************************************************/
 
+	MenuProto* menuProtos;
+	int        menuProtoCount;
+
+	HANDLE hPreBuildStatusMenuEvent;
+	int    currentStatusMenuItem, currentDesiredStatusMode;
+
 	PMO_IntMenuItem ( *pfnMOGetIntMenuItem )( int );
 	PMO_IntMenuItem ( *pfnMOGetMenuItemByGlobalID )( int globalMenuID );
+
+	int   ( *pfnGetProtocolVisibility )( const char* );
+	int   ( *pfnGetProtoIndexByPos )( PROTOCOLDESCRIPTOR** proto, int protoCnt, int Pos);
+	void  ( *pfnReloadProtoMenus )( void );
 }
 	CLIST_INTERFACE;
 

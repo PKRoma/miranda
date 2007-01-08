@@ -1274,9 +1274,6 @@
 				RelativePath="commonheaders.h">
 			</File>
 			<File
-				RelativePath="forkthread.h">
-			</File>
-			<File
 				RelativePath="resource.h">
 			</File>
 			<File

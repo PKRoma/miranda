@@ -109,6 +109,10 @@ int   fnEventsProcessTrayDoubleClick( void );
 int   fnGetImlIconIndex(HICON hIcon);
 int   fnRemoveEvent( HANDLE hContact, HANDLE dbEvent );
 
+/* clistmenus.c */
+int    GetProtoIndexByPos(PROTOCOLDESCRIPTOR ** proto, int protoCnt, int Pos);
+int    MenuModulesLoaded( WPARAM, LPARAM );
+
 /* clistmod.c */
 int    fnIconFromStatusMode(const char *szProto, int status, HANDLE hContact);
 int    fnShowHide( WPARAM wParam, LPARAM lParam );
@@ -174,6 +178,16 @@ static BOOL fnInvalidateRect( HWND hwnd, CONST RECT* lpRect,BOOL bErase )
 
 static void fnOnCreateClc( void )
 {
+}
+
+static int fnGetProtocolVisibility( const char* proto )
+{
+	return TRUE;
+}
+
+static void fnReloadProtoMenus( void )
+{
+	MenuModulesLoaded( 0, 0 );
 }
 
 static int srvRetrieveInterface( WPARAM wParam, LPARAM lParam )
@@ -300,6 +314,9 @@ static int srvRetrieveInterface( WPARAM wParam, LPARAM lParam )
 
 		cli.pfnMOGetIntMenuItem                = MO_GetIntMenuItem;
 		cli.pfnMOGetMenuItemByGlobalID         = GetMenuItemByGlobalID;
+		cli.pfnGetProtocolVisibility           = fnGetProtocolVisibility;
+		cli.pfnGetProtoIndexByPos              = GetProtoIndexByPos;
+		cli.pfnReloadProtoMenus                = fnReloadProtoMenus;
 
 		cli.hInst = ( HMODULE )lParam;
 

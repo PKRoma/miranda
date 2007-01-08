@@ -182,7 +182,7 @@ static TCHAR* TrayIconMakeTooltip(const TCHAR *szPrefix, const char *szProto)
 			cn=DBGetContactSettingDword(NULL,"Protocols","ProtoCount",0);
 			for(t=0;t<cn;t++) {
 				TCHAR *ProtoXStatus=NULL;
-				i=GetProtoIndexByPos(protos, count,t);
+				i=pcli->pfnGetProtoIndexByPos(protos, count,t);
 				if (i==-1) return TEXT("???");
 //			for (i = count - 1; i >= 0; i--) {
 				if (protos[i]->type != PROTOTYPE_PROTOCOL || !GetProtocolVisibility(protos[i]->szName))
@@ -432,7 +432,7 @@ static int TrayIconInit(HWND hwnd)
 			for(i=count-1;i>=0;i--) 
 			{	
 				int j;
-				j=GetProtoIndexByPos(protos,count,i);
+				j=pcli->pfnGetProtoIndexByPos(protos,count,i);
 				if (j>-1)
 					if(protos[j]->type==PROTOTYPE_PROTOCOL && (GetProtocolVisibility(protos[j]->szName)!=0)) TrayIconAdd(hwnd,protos[j]->szName,NULL,CallProtoService(protos[j]->szName,PS_GETSTATUS,0,0));
 			}

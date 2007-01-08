@@ -31,7 +31,6 @@ extern struct ClcData *g_clcData;
 
 extern HWND g_hwndViewModeFrame;
 extern HIMAGELIST himlExtraImages;
-extern HANDLE hPreBuildStatusMenuEvent;
 extern struct CluiTopButton top_buttons[];
 extern BOOL (WINAPI *MySetLayeredWindowAttributes)(HWND, COLORREF, BYTE, DWORD);
 extern BOOL (WINAPI *MyEnableThemeDialogTexture)(HANDLE, DWORD);
@@ -1543,7 +1542,7 @@ void extbk_import(char *file, HWND hwndDlg)
             IcoLibReloadIcons();
         else {
             CLN_LoadAllIcons(0);
-            NotifyEventHooks(hPreBuildStatusMenuEvent, 0, 0);
+            NotifyEventHooks(pcli->hPreBuildStatusMenuEvent, 0, 0);
             ReloadExtraIcons();
         }
         pcli->pfnClcBroadcast(CLM_AUTOREBUILD, 0, 0);
@@ -1736,7 +1735,6 @@ BOOL CALLBACK OptionsDlgProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
              MyEnableThemeDialogTexture((HWND)tci.lParam, ETDT_ENABLETAB);
 
          if(ServiceExists(MS_CLNSE_INVOKE)) {
-
              ZeroMemory(&sd, sizeof(sd));
              sd.cbSize = sizeof(sd);
              sd.StatusItems = StatusItems;

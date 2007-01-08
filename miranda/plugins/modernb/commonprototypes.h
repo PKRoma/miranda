@@ -228,13 +228,12 @@ int		CheckFramesPos(RECT *wr);															//cluiframes.c
 int		ClcProtoAck(WPARAM wParam,LPARAM lParam);											//clc.c
 int		DeleteButtons();																	//modernbutton.c
 int		DrawTitleBar(HDC hdcMem2,RECT rect,int Frameid);									//cluiframes.c
-int		GetAverageMode();																	//clisttray.c
+int		GetAverageMode( void );																	//clisttray.c
 int		GetContactCachedStatus(HANDLE hContact);											//clistsettings.c
 int		GetContactIcon(WPARAM wParam,LPARAM lParam);										//clistmod.c
 int		GetContactIconC(pdisplayNameCacheEntry cacheEntry);									//clistmod.c
 int		GetContactIndex(struct ClcGroup *group,struct ClcContact *contact);					//clcidents.c
-int		GetProtocolVisibility(char * ProtoName);											//clc.c  //strange defined there bot not used in cll.. MB move to protocolorder.c ?
-int		GetProtoIndexByPos(PROTOCOLDESCRIPTOR ** proto, int protoCnt, int Pos);				//clistmenus.c
+int		GetProtocolVisibility(const char * ProtoName);											//clc.c  //strange defined there bot not used in cll.. MB move to protocolorder.c ?
 int		GetStatusForContact(HANDLE hContact,char *szProto);									//clistsettings.c
 int		InitCustomMenus(void);																//clistmenus.c
 int		InitFramesMenus(void);																//framesmenus.c
@@ -248,7 +247,7 @@ int		ModifyMenuItemProxy(WPARAM wParam,LPARAM lParam);									//framesmenu.c
 int		OnFrameTitleBarBackgroundChange(WPARAM wParam,LPARAM lParam);						//cluiframes.c
 int		ProcessCommandProxy(WPARAM wParam,LPARAM lParam);									//framesmenu.c
 int		QueueAllFramesUpdating (BYTE);														//cluiframes.c
-int		RecurciveDeleteMenu(HMENU hMenu);													//clistmenus.c
+int		RecursiveDeleteMenu(HMENU hMenu);													//clistmenus.c
 int		RedrawButtons(HDC hdc);																//modern_button.c
 int		RegisterButtonByParce(char * ObjectName, char * Params);							//mod_skin_selector.c
 int		RestoreAllContactData(struct ClcData *dat);											//cache_funcs.c

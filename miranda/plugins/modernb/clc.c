@@ -520,7 +520,7 @@ int ProceedDragToScroll(HWND hwnd, int Y)
 /*
 *	Is protocol visible?
 */
-int GetProtocolVisibility(char * ProtoName)
+int GetProtocolVisibility(const char * ProtoName)
 {
 	int i;
 	int res=0;
@@ -549,10 +549,6 @@ int GetProtocolVisibility(char * ProtoName)
 	}
 	return 0;
 }
-
-
-
-
 
 /*
 *	Calling after contact list option is changed

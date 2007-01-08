@@ -45,14 +45,14 @@ int SetHideOffline(WPARAM wParam, LPARAM lParam);
 HANDLE hContactDoubleClicked, hStatusModeChangeEvent;
 HIMAGELIST hCListImages;
 
-extern int      currentDesiredStatusMode, g_maxStatus;
+extern int      g_maxStatus;
 extern HANDLE   hSvc_GetContactStatusMsg;
 
 extern struct CluiData g_CluiData;
 
 static int GetStatusMode(WPARAM wParam, LPARAM lParam)
 {
-	return(g_maxStatus == ID_STATUS_OFFLINE ? currentDesiredStatusMode : g_maxStatus);
+	return(g_maxStatus == ID_STATUS_OFFLINE ? pcli->currentDesiredStatusMode : g_maxStatus);
 }
 
 extern int ( *saveIconFromStatusMode )( const char *szProto, int status, HANDLE hContact );

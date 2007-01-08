@@ -62,7 +62,6 @@ struct ExtraCache *g_ExtraCache = NULL;
 int g_nextExtraCacheEntry = 0;
 int g_maxExtraCacheEntry = 0;
 
-extern HANDLE hPreBuildStatusMenuEvent;
 extern ImageItem *g_CLUIImageItem;
 extern HBRUSH g_CLUISkinnedBkColor;
 extern StatusItems_t *StatusItems;
@@ -586,8 +585,8 @@ void IcoLibReloadIcons()
     }
     //
 	pcli->pfnClcBroadcast(CLM_AUTOREBUILD, 0, 0);
-	MenuModulesLoaded(0, 0);
-    NotifyEventHooks(hPreBuildStatusMenuEvent, 0, 0);
+	pcli->pfnReloadProtoMenus();
+	NotifyEventHooks(pcli->hPreBuildStatusMenuEvent, 0, 0);
 	SendMessage(g_hwndViewModeFrame, WM_USER + 100, 0, 0);
 }
 
@@ -1271,10 +1270,10 @@ LRESULT CALLBACK ContactListWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM l
 		break;
 	case M_CREATECLC:
 		{
-            if(DBGetContactSettingByte(NULL, "CLUI", "useskin", 0))
-                IMG_LoadItems();
-            CreateButtonBar(hwnd);
-		    NotifyEventHooks(hPreBuildStatusMenuEvent, 0, 0);
+			if(DBGetContactSettingByte(NULL, "CLUI", "useskin", 0))
+				IMG_LoadItems();
+			CreateButtonBar(hwnd);
+			NotifyEventHooks(pcli->hPreBuildStatusMenuEvent, 0, 0);
 			SendMessage(hwnd, WM_SETREDRAW, FALSE, FALSE);
 			{
 				BYTE windowStyle = DBGetContactSettingByte(NULL, "CLUI", "WindowStyle", 0);

@@ -37,22 +37,21 @@ int LoadSkinButtonModule();
 void  UninitSkinHotKeys();
 void  GetDefaultFontSetting(int i,LOGFONT *lf,COLORREF *colour);
 int   CLUI_OnSkinLoad(WPARAM wParam, LPARAM lParam);
-int	  LoadContactListModule(void);
+int   LoadContactListModule(void);
 int   LoadCLCModule(void);
-
 
 void	cliCheckCacheItem(pdisplayNameCacheEntry pdnce);
 void	cliFreeCacheItem( pdisplayNameCacheEntry p );
 void	cliRebuildEntireList(HWND hwnd,struct ClcData *dat);
 void	cliRecalcScrollBar(HWND hwnd,struct ClcData *dat);
-int		cliHotKeysProcess(HWND hwnd,WPARAM wParam,LPARAM lParam);
-int		cliHotkeysProcessMessage(WPARAM wParam,LPARAM lParam);
-int		cliHotKeysRegister(HWND hwnd);
-int		cliHotKeysUnregister(HWND hwnd);
+int   cliHotKeysProcess(HWND hwnd,WPARAM wParam,LPARAM lParam);
+int   cliHotkeysProcessMessage(WPARAM wParam,LPARAM lParam);
+int   cliHotKeysRegister(HWND hwnd);
+int   cliHotKeysUnregister(HWND hwnd);
 void	CLUI_cliOnCreateClc(void);
-int		cli_AddItemToGroup(struct ClcGroup *group, int iAboveItem);
-int		cli_AddInfoItemToGroup(struct ClcGroup *group,int flags,const TCHAR *pszText);
-int     cliGetGroupContentsCount(struct ClcGroup *group, int visibleOnly);
+int   cli_AddItemToGroup(struct ClcGroup *group, int iAboveItem);
+int   cli_AddInfoItemToGroup(struct ClcGroup *group,int flags,const TCHAR *pszText);
+int   cliGetGroupContentsCount(struct ClcGroup *group, int visibleOnly);
 struct CListEvent* cliCreateEvent( void );
 
 int cliGetRowsPriorTo(struct ClcGroup *group,struct ClcGroup *subgroup,int contactIndex);
@@ -106,11 +105,8 @@ void cli_FreeGroup( struct ClcGroup* );
 
 void (*saveSaveStateAndRebuildList)(HWND hwnd, struct ClcData *dat);
 
-
-
 char* cli_GetGroupCountsText(struct ClcData *dat, struct ClcContact *contact);
 char* (*saveGetGroupCountsText)(struct ClcData *dat, struct ClcContact *contact);
-
 
 CluiData g_CluiData={0};
 
@@ -258,8 +254,10 @@ LBL_Error:
 	pcli->pfnTrayIconUpdateWithImageList		= cliTrayIconUpdateWithImageList;
 	pcli->pfnCluiProtocolStatusChanged	= cliCluiProtocolStatusChanged;
 	pcli->pfnHotkeysProcessMessage		= cliHotkeysProcessMessage;
+	pcli->pfnHotKeysProcess		= cliHotKeysProcess;
+	pcli->pfnHotKeysRegister	= cliHotKeysRegister;
+	pcli->pfnHotKeysUnregister	= cliHotKeysUnregister;
 	pcli->pfnBeginRenameSelection		= cliBeginRenameSelection;
-	pcli->pfnTrayIconIconsChanged		= cliTrayIconIconsChanged;
 	pcli->pfnCListTrayNotify	= cliCListTrayNotify;
 	pcli->pfnCreateClcContact	= cliCreateClcContact;
 	pcli->pfnCreateCacheItem	= cliCreateCacheItem;
@@ -267,12 +265,10 @@ LBL_Error:
 	pcli->pfnGetRowHeight		= cliGetRowHeight;
 	pcli->pfnGetRowTopY			= cliGetRowTopY;
 	pcli->pfnGetRowTotalHeight	= cliGetRowTotalHeight;
+	pcli->pfnGetProtocolVisibility = GetProtocolVisibility;
 	pcli->pfnInvalidateRect		= CLUI__cliInvalidateRect;
 	pcli->pfnGetCacheEntry		= cliGetCacheEntry;
 	pcli->pfnOnCreateClc		= CLUI_cliOnCreateClc;
-	pcli->pfnHotKeysProcess		= cliHotKeysProcess;
-	pcli->pfnHotKeysRegister	= cliHotKeysRegister;
-	pcli->pfnHotKeysUnregister	= cliHotKeysUnregister;
 	pcli->pfnPaintClc			= CLCPaint_cliPaintClc;
 	pcli->pfnRebuildEntireList	= cliRebuildEntireList;
 	pcli->pfnRecalcScrollBar	= cliRecalcScrollBar;
@@ -282,30 +278,31 @@ LBL_Error:
 	pcli->pfnHitTest			= cliHitTest;
 	pcli->pfnCompareContacts	= cliCompareContacts;
 	pcli->pfnBuildGroupPopupMenu= cliBuildGroupPopupMenu;
+	pcli->pfnTrayIconIconsChanged		= cliTrayIconIconsChanged;
 	pcli->pfnTrayIconSetToBase	= cliTrayIconSetToBase;
 	pcli->pfnFindItem			= cliFindItem;
 	pcli->pfnGetRowByIndex		= cliGetRowByIndex;
 	pcli->pfnGetRowsPriorTo		= cliGetRowsPriorTo;
-    pcli->pfnGetGroupContentsCount =cliGetGroupContentsCount;
-    pcli->pfnCreateEvent        = cliCreateEvent;
+	pcli->pfnGetGroupContentsCount =cliGetGroupContentsCount;
+	pcli->pfnCreateEvent        = cliCreateEvent;
 
 	//partialy overloaded - call default handlers from inside
-    saveIconFromStatusMode      = pcli->pfnIconFromStatusMode;
-    pcli->pfnIconFromStatusMode = cli_IconFromStatusMode;
+	saveIconFromStatusMode      = pcli->pfnIconFromStatusMode;
+	pcli->pfnIconFromStatusMode = cli_IconFromStatusMode;
 
 	saveLoadCluiGlobalOpts		= pcli->pfnLoadCluiGlobalOpts;
 	pcli->pfnLoadCluiGlobalOpts = CLUI_cli_LoadCluiGlobalOpts;
 
 	saveSortCLC					= pcli->pfnSortCLC;	
 	pcli->pfnSortCLC			= cli_SortCLC;
-	
+
 	saveAddGroup				= pcli->pfnAddGroup; 
 	pcli->pfnAddGroup			= cli_AddGroup;
-	
+
 	saveGetGroupCountsText		= pcli->pfnGetGroupCountsText;
 	pcli->pfnGetGroupCountsText	= cli_GetGroupCountsText;
 
-    saveAddContactToTree		= pcli->pfnAddContactToTree;  
+	saveAddContactToTree		= pcli->pfnAddContactToTree;  
 	pcli->pfnAddContactToTree	= cli_AddContactToTree;
 
 	saveAddInfoItemToGroup		= pcli->pfnAddInfoItemToGroup; 
@@ -325,13 +322,13 @@ LBL_Error:
 
 	saveFreeGroup				= pcli->pfnFreeGroup; 
 	pcli->pfnFreeGroup			= cli_FreeGroup;
-	
+
 	saveChangeContactIcon		= pcli->pfnChangeContactIcon;
 	pcli->pfnChangeContactIcon	= cli_ChangeContactIcon;
-    
+
 	saveTrayIconProcessMessage		= pcli->pfnTrayIconProcessMessage; 
 	pcli->pfnTrayIconProcessMessage	= cli_TrayIconProcessMessage;
-	
+
 	saveSaveStateAndRebuildList		= pcli->pfnSaveStateAndRebuildList;
 	pcli->pfnSaveStateAndRebuildList= cli_SaveStateAndRebuildList;
 

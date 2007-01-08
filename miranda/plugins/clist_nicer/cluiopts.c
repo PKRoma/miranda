@@ -33,7 +33,7 @@ extern struct CluiData g_CluiData;
 extern pfnDrawAlpha pDrawAlpha;
 extern DWORD g_gdiplusToken;
 extern WNDPROC OldStatusBarProc;
-extern HANDLE hPreBuildStatusMenuEvent, hExtraImageApplying;
+extern HANDLE hExtraImageApplying;
 extern SIZE g_oldSize;
 extern POINT g_oldPos;
 extern HIMAGELIST himlExtraImages;
@@ -397,8 +397,8 @@ static BOOL CALLBACK DlgProcCluiOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPAR
 						IcoLibReloadIcons();
 					else {
 						CLN_LoadAllIcons(0);
-						MenuModulesLoaded(0, 0);
-					    NotifyEventHooks(hPreBuildStatusMenuEvent, 0, 0);
+						pcli->pfnReloadProtoMenus();
+						NotifyEventHooks(pcli->hPreBuildStatusMenuEvent, 0, 0);
 						ReloadExtraIcons();
 					}
 					pcli->pfnClcBroadcast(CLM_AUTOREBUILD, 0, 0);

@@ -347,6 +347,7 @@ LBL_Error:
 	pcli->pfnCreateEvent = fnCreateEvent;
 	pcli->pfnDocking_ProcessWindowMessage = Docking_ProcessWindowMessage;
 	pcli->pfnGetDefaultFontSetting = GetDefaultFontSetting;
+	pcli->pfnGetProtocolVisibility = GetProtocolVisibility;
 	pcli->pfnGetRowBottomY = RowHeights_GetItemBottomY;
 	pcli->pfnGetRowHeight = RowHeights_GetHeight;
 	pcli->pfnGetRowTopY = RowHeights_GetItemTopY;
@@ -386,7 +387,6 @@ LBL_Error:
 	if (rc == 0)
 		rc = LoadCLCModule();
 	HookEvent(ME_SYSTEM_MODULESLOADED, systemModulesLoaded);
-	HookEvent(ME_SYSTEM_MODULESLOADED, MenuModulesLoaded);
 	return rc;
 }
 

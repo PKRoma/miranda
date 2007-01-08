@@ -4417,7 +4417,7 @@ int UnloadMainMenu()
 		CallService(MS_CLIST_REMOVEMAINMENUITEM,(WPARAM)MainMIRoot,0); 
 		MainMIRoot=(HANDLE)-1;
 	}
-	MenuModulesShutdown(0,0);
+
 	return (int) MainMIRoot;
 }
 

@@ -3,14 +3,6 @@
 //general menu object module
 #include "m_genmenu.h"
 
-typedef struct _menuProto
-{
-	char *szProto;
-	HANDLE menuID;
-	HANDLE hasAdded;
-}
-	MenuProto;
-
 typedef struct
 {
 	char *Name;//for debug purposes
