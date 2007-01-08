@@ -2518,7 +2518,16 @@ LABEL_SHOWWINDOW:
 					ValidateFilename(szName);
 					mir_snprintf(szFolder, MAX_PATH,"%s\\%s", g_Settings.pszLogDir, szName );
 
-					mir_snprintf(szName, MAX_PATH,"%s.log",si->ptszID);
+#if defined(_UNICODE)
+                    {
+                        wchar_t wszName[MAX_PATH];
+                        mir_sntprintf(wszName, MAX_PATH,_T("%s.log"),si->ptszID);
+                        WideCharToMultiByte(CP_ACP, 0, wszName, -1, szName, MAX_PATH, 0, 0);
+                        szName[MAX_PATH - 1] = 0;
+                    }
+#else
+                    mir_snprintf(szName, MAX_PATH,"%s.log",si->ptszID);
+#endif
 					ValidateFilename(szName);
 
 					mir_snprintf(szFile, MAX_PATH,"%s\\%s", szFolder, szName );
