@@ -44,7 +44,7 @@ extern HCURSOR hDragCursor;
 
 #define SB_CHAR_WIDTH		 40
 #define SB_SENDING_WIDTH 	 25
-#define SB_UNICODE_WIDTH 	 16
+#define SB_UNICODE_WIDTH 	 18
 
 #define TIMERID_FLASHWND     1
 #define TIMEOUT_FLASHWND     900
