@@ -2,8 +2,8 @@
 !include "Sections.nsh"
 
 !define MIM_NAME                "Miranda IM"
-!define MIM_VERSION             "0.6"
-;!define MIM_PREVIEW             "2" ; comment out for final build
+!define MIM_VERSION             "0.6.1"
+;!define MIM_PREVIEW             "1" ; comment out for final build
 
 !define MIM_BUILD_UNICODE
 
