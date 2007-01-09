@@ -369,7 +369,6 @@ int __declspec(dllexport) Unload(void)
 {
 	TRACE("Unloading ClistMW\r\n");	
 	if (IsWindow(pcli->hwndContactList)) DestroyWindow(pcli->hwndContactList);
-	UninitCustomMenus();
 	UnloadAvatarOverlayIcon();
 	UninitSkinHotKeys();
 	UnhookEvent(g_hSkinLoadedEvent);

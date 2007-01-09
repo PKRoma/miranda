@@ -39,8 +39,6 @@ int CListMod_HideWindow(HWND hwndContactList, int mode);
 void GroupMenus_Init(void);
 int AddMainMenuItem(WPARAM wParam,LPARAM lParam);
 int AddContactMenuItem(WPARAM wParam,LPARAM lParam);
-int InitCustomMenus(void);
-void UninitCustomMenus(void);
 void UninitCListEvents(void);
 int ContactSettingChanged(WPARAM wParam,LPARAM lParam);
 int ContactAdded(WPARAM wParam,LPARAM lParam);
@@ -205,6 +203,7 @@ void UninitTrayMenu();
 void UnLoadContactListModule()  //unhooks noncritical events
 {
     UninitTrayMenu();
+    UninitCustomMenus();
    // UnloadMainMenu();
    // UnloadStatusMenu();
     UnhookEvent(hookOptInitialise_CList);
@@ -215,7 +214,6 @@ void UnLoadContactListModule()  //unhooks noncritical events
 int CListMod_ContactListShutdownProc(WPARAM wParam,LPARAM lParam)
 {
     UnhookEvent(hookSystemShutdown_CListMod);	
-	UninitCustomMenus();
     FreeDisplayNameCache();
     if(g_hMainThread) CloseHandle(g_hMainThread);
     g_hMainThread=NULL;
