@@ -246,9 +246,11 @@ LBL_Error:
 	//  'save*' - pointer to stored default parent handle
 	//	'cli_*'	- new handler with default core service calling
 
-	pcli->pfnCheckCacheItem		= (void (*)(ClcCacheEntryBase*)) cliCheckCacheItem;
-	pcli->pfnFreeCacheItem		= (void(*)(ClcCacheEntryBase*)) cliFreeCacheItem;
-	pcli->pfnTrayIconUpdateBase	= (void (*)(const char *szChangedProto)) cliTrayIconUpdateBase;	
+	pcli->bDisplayLocked = TRUE;
+
+	pcli->pfnCheckCacheItem	= (void (*)(ClcCacheEntryBase*)) cliCheckCacheItem;
+	pcli->pfnFreeCacheItem = (void(*)(ClcCacheEntryBase*)) cliFreeCacheItem;
+	pcli->pfnTrayIconUpdateBase = (void (*)(const char *szChangedProto)) cliTrayIconUpdateBase;	
 	
 	pcli->pfnInvalidateDisplayNameCacheEntry	= cliInvalidateDisplayNameCacheEntry;
 	pcli->pfnTrayIconUpdateWithImageList		= cliTrayIconUpdateWithImageList;

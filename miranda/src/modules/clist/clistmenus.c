@@ -200,7 +200,7 @@ static int AddMainMenuItem(WPARAM wParam,LPARAM lParam)
 		//pszPopupName for new system mean root level
 		//pszPopupName for old system mean that exists popup
 		tmi.root = (int)mi->pszPopupName;
-		{	
+		{
 			lpMainMenuExecParam mmep;
 			mmep = ( lpMainMenuExecParam )mir_alloc( sizeof( MainMenuExecParam ));
 			if ( mmep == NULL )
@@ -404,7 +404,7 @@ int FreeOwnerDataContactMenu (WPARAM wParam,LPARAM lParam)
 BOOL FindMenuHandleByGlobalID(HMENU hMenu, int globalID, MenuItemData* itdat)
 {
 	int i;
-	PMO_IntMenuItem pimi;	
+	PMO_IntMenuItem pimi;
 	MENUITEMINFO mii={0};
 	BOOL inSub=FALSE;
 	if (!itdat)
@@ -480,69 +480,70 @@ int StatusMenuCheckService(WPARAM wParam, LPARAM lParam)
 			else
 				reset=FALSE;
 
-			timi = cli.pfnMOGetMenuItemByGlobalID( pcpp->MenuItemHandle );
-			if ( check )
-				timi->mi.flags |= CMIF_CHECKED;
-			else
-				timi->mi.flags &= ~CMIF_CHECKED;
-			if ( timi->mi.flags & CMIF_CHECKED || reset || check ) {
-				timiParent = cli.pfnMOGetMenuItemByGlobalID( timi->mi.root );
-				if ( timiParent ) {
-					CLISTMENUITEM mi2={0};
-					reset=FALSE;
-					mi2.cbSize = sizeof(mi2);
-					mi2.flags=CMIM_NAME;
-					if (timi->mi.hIcon) {
-						mi2.ptszName= timi->mi.ptszName;
-						mi2.flags|=CMIF_TCHAR;
-					}
-					else {
-						mi2.ptszName=TranslateT("Custom status");
-						mi2.flags|=CMIF_TCHAR;
-					}
-					timiParent=cli.pfnMOGetMenuItemByGlobalID(timi->mi.root);
-					{
-						MENUITEMINFO mi={0};
-						int res=0;
-						TCHAR d[200];
-						BOOL m;
-						MenuItemData it={0};
-						mi.cbSize=sizeof(mi);
-						mi.fMask=MIIM_STRING;
-						m=FindMenuHandleByGlobalID(hStatusMenu,timiParent->globalid,&it);
-						if ( m ) {
-							GetMenuString(it.OwnerMenu,it.position,d,100,MF_BYPOSITION);
-							mi.fMask=MIIM_STRING|MIIM_BITMAP;
-							mi.fType=MFT_STRING;
-							mi.hbmpChecked=mi.hbmpItem=mi.hbmpUnchecked=(HBITMAP)mi2.hIcon;
-							mi.dwTypeData=mi2.ptszName;
-							mi.hbmpItem=HBMMENU_CALLBACK;
-							res=SetMenuItemInfo(it.OwnerMenu,it.position,TRUE,&mi);
-					}	}
+			if ( timi = cli.pfnMOGetMenuItemByGlobalID( pcpp->MenuItemHandle )) {
+				if ( check )
+					timi->mi.flags |= CMIF_CHECKED;
+				else
+					timi->mi.flags &= ~CMIF_CHECKED;
+				if ( timi->mi.flags & CMIF_CHECKED || reset || check ) {
+					timiParent = cli.pfnMOGetMenuItemByGlobalID( timi->mi.root );
+					if ( timiParent ) {
+						CLISTMENUITEM mi2={0};
+						reset=FALSE;
+						mi2.cbSize = sizeof(mi2);
+						mi2.flags=CMIM_NAME;
+						if (timi->mi.hIcon) {
+							mi2.ptszName= timi->mi.ptszName;
+							mi2.flags|=CMIF_TCHAR;
+						}
+						else {
+							mi2.ptszName=TranslateT("Custom status");
+							mi2.flags|=CMIF_TCHAR;
+						}
+						timiParent=cli.pfnMOGetMenuItemByGlobalID(timi->mi.root);
+						{
+							MENUITEMINFO mi={0};
+							int res=0;
+							TCHAR d[200];
+							BOOL m;
+							MenuItemData it={0};
+							mi.cbSize=sizeof(mi);
+							mi.fMask=MIIM_STRING;
+							m=FindMenuHandleByGlobalID(hStatusMenu,timiParent->globalid,&it);
+							if ( m ) {
+								GetMenuString(it.OwnerMenu,it.position,d,100,MF_BYPOSITION);
+								mi.fMask=MIIM_STRING|MIIM_BITMAP;
+								mi.fType=MFT_STRING;
+								mi.hbmpChecked=mi.hbmpItem=mi.hbmpUnchecked=(HBITMAP)mi2.hIcon;
+								mi.dwTypeData=mi2.ptszName;
+								mi.hbmpItem=HBMMENU_CALLBACK;
+								res=SetMenuItemInfo(it.OwnerMenu,it.position,TRUE,&mi);
+						}	}
 
-					CallService(MS_CLIST_MODIFYMENUITEM, (WPARAM)timi->mi.root, (LPARAM)&mi2);
-					timiParent->iconId=timi->iconId;
-		}	}	}
+						CallService(MS_CLIST_MODIFYMENUITEM, (WPARAM)timi->mi.root, (LPARAM)&mi2);
+						timiParent->iconId=timi->iconId;
+		}	}	}	}
 	}
 	else if ( smep && smep->status && !smep->custom ) {
 		if ( smep->proto ) {
 			int curProtoStatus;
 			curProtoStatus = CallProtoService(smep->proto,PS_GETSTATUS,0,0);
-			timi=cli.pfnMOGetMenuItemByGlobalID(pcpp->MenuItemHandle);
-			if (smep->status == curProtoStatus)
-				timi->mi.flags |= CMIF_CHECKED;
-			else
-				timi->mi.flags &= ~CMIF_CHECKED;
+			if (timi=cli.pfnMOGetMenuItemByGlobalID(pcpp->MenuItemHandle)) {
+				if (smep->status == curProtoStatus)
+					timi->mi.flags |= CMIF_CHECKED;
+				else
+					timi->mi.flags &= ~CMIF_CHECKED;
+			}
 		}
 		else if ( !smep->custom && smep->status ) {
 			int curStatus;
 			curStatus = GetAverageMode();
-			timi = cli.pfnMOGetMenuItemByGlobalID(pcpp->MenuItemHandle);
-			if ( smep->status == curStatus )
-				timi->mi.flags |= CMIF_CHECKED;
-			else
-				timi->mi.flags &= ~CMIF_CHECKED;
-		}
+			if ( timi = cli.pfnMOGetMenuItemByGlobalID(pcpp->MenuItemHandle)) {
+				if ( smep->status == curStatus )
+					timi->mi.flags |= CMIF_CHECKED;
+				else
+					timi->mi.flags &= ~CMIF_CHECKED;
+		}	}
 	}
 	else {
 		if ( !smep || smep->proto ) {
@@ -608,8 +609,11 @@ int StatusMenuExecService(WPARAM wParam,LPARAM lParam)
 					pimi->mi.flags|=CMIF_CHECKED;
 					if ( pimi->mi.pszName )
 						mir_free( pimi->mi.pszName );
-					_snprintf(buf,SIZEOF(buf),Translate("%s (locked)"),smep->proto);
-					pimi->mi.ptszName = LangPackPcharToTchar( buf );
+					if ( cli.bDisplayLocked ) {
+						_snprintf(buf,SIZEOF(buf),Translate("%s (locked)"),smep->proto);
+                  pimi->mi.ptszName = LangPackPcharToTchar( buf );
+					}
+					else pimi->mi.ptszName = LangPackPcharToTchar( smep->proto );
 				}
 				else {
 					if ( pimi->mi.pszName )
@@ -617,11 +621,12 @@ int StatusMenuExecService(WPARAM wParam,LPARAM lParam)
 					pimi->mi.ptszName = LangPackPcharToTchar( smep->proto );
 					pimi->mi.flags &= ~CMIF_CHECKED;
 				}
+				if ( cli.hwndStatus )
+					InvalidateRect( cli.hwndStatus, NULL, FALSE );
 			}
 			else if ( smep->proto != NULL ) {
 				CallProtoService(smep->proto,PS_SETSTATUS,smep->status,0);
 				NotifyEventHooks(hStatusModeChangeEvent, smep->status, (LPARAM)smep->proto);
-				//CallProtoService(smep->proto,PS_SETSTATUS,smep->status,0);
 			}
 			else {
 				int MenusProtoCount = 0;
@@ -700,7 +705,7 @@ int MenuProcessCommand(WPARAM wParam,LPARAM lParam)
 BOOL FindMenuHanleByGlobalID(HMENU hMenu, int globalID, MenuItemData* itdat)
 {
 	int i;
-	PMO_IntMenuItem pimi;	
+	PMO_IntMenuItem pimi;
 	MENUITEMINFO mii = {0};
 	BOOL inSub=FALSE;
 
@@ -714,13 +719,13 @@ BOOL FindMenuHanleByGlobalID(HMENU hMenu, int globalID, MenuItemData* itdat)
 		if ( mii.fType == MFT_SEPARATOR )
 			continue;
 
-		if ( mii.hSubMenu ) 
+		if ( mii.hSubMenu )
 			inSub = FindMenuHanleByGlobalID( mii.hSubMenu, globalID, itdat );
 		if (inSub)
 			return inSub;
 
 		pimi = MO_GetIntMenuItem(mii.dwItemData);
-		if ( pimi != NULL ) {	
+		if ( pimi != NULL ) {
 			if ( pimi->globalid == globalID ) {
 				itdat->OwnerMenu = hMenu;
 				itdat->position = i;
@@ -851,7 +856,7 @@ int GetProtoIndexByPos(PROTOCOLDESCRIPTOR ** proto, int protoCnt, int Pos)
 			}	}
 
 		DBFreeVariant( &dbv );
-	}	
+	}
 
 	return -1;
 }
@@ -937,11 +942,13 @@ int MenuModulesLoaded(WPARAM wParam,LPARAM lParam)
 		if (!((proto[i]->type!=PROTOTYPE_PROTOCOL) || (DBGetContactSettingByte(NULL,"CLUI","DontHideStatusMenu",0)==0&&GetProtocolVisibility(proto[i]->szName)==0)))  visnetworkProtoCount++;
 	}
 
-	for(s=0;s<storedProtoCount;s++) {
-		pos=0;
-		i=GetProtoIndexByPos(proto,protoCount,s);
-		if (i==-1) continue;
-		if ((proto[i]->type!=PROTOTYPE_PROTOCOL) || (DBGetContactSettingByte(NULL,"CLUI","DontHideStatusMenu",0)==0&&GetProtocolVisibility(proto[i]->szName)==0)) continue;
+	for ( s=0; s < storedProtoCount; s++ ) {
+		pos = 0;
+		i = GetProtoIndexByPos(proto,protoCount,s);
+		if ( i == -1 )
+			continue;
+		if ((proto[i]->type!=PROTOTYPE_PROTOCOL) || (DBGetContactSettingByte(NULL,"CLUI","DontHideStatusMenu",0)==0&&GetProtocolVisibility(proto[i]->szName)==0))
+			continue;
 
 		flags=CallProtoService(proto[i]->szName,PS_GETCAPS,PFLAGNUM_2,0);
 		if (visnetworkProtoCount>1) {
@@ -960,53 +967,44 @@ int MenuModulesLoaded(WPARAM wParam,LPARAM lParam)
 			tmi.root=-1;
 
 			CallProtoService(proto[i]->szName,PS_GETNAME,sizeof(protoName),(LPARAM)protoName);
-			tmi.pszName=protoName;
-			rootmenu=CallService(MO_ADDNEWMENUITEM,(WPARAM)hStatusMenuObject,(LPARAM)&tmi);
+			tmi.pszName = protoName;
+			rootmenu = CallService(MO_ADDNEWMENUITEM,(WPARAM)hStatusMenuObject,(LPARAM)&tmi);
+
 			memset(&tmi,0,sizeof(tmi));
-			tmi.cbSize=sizeof(tmi);
-			tmi.flags=CMIF_CHILDPOPUP;
-			//if (statusModeList[j]==ID_STATUS_OFFLINE){tmi.flags|=CMIF_CHECKED;};
-			tmi.root=rootmenu;
-			tmi.position=pos++;
-			tmi.pszName=protoName;
+			tmi.cbSize = sizeof(tmi);
+			tmi.flags = CMIF_CHILDPOPUP;
+			tmi.root = rootmenu;
+			tmi.position = pos++;
+			tmi.pszName = protoName;
+			tmi.hIcon = ic;
 			{
 				//owner data
-				lpStatusMenuExecParam smep;
-				smep=(lpStatusMenuExecParam)mir_alloc(sizeof(StatusMenuExecParam));
-				smep->custom = FALSE;
-				smep->status=0;
-				smep->svc=NULL;
-				smep->protoindex=0;
-				smep->proto=mir_strdup(protoName);
-				tmi.ownerdata=smep;
-			};
+				lpStatusMenuExecParam smep = ( lpStatusMenuExecParam )mir_alloc( sizeof( StatusMenuExecParam ));
+				memset( smep, 0, sizeof( *smep ));
+				smep->proto = mir_strdup(protoName);
+				tmi.ownerdata = smep;
+			}
 
-			tmi.hIcon=ic;
-			if (DBGetContactSettingByte(NULL,GetUniqueProtoName(protoName),"LockMainStatus",0)) tmi.flags|=CMIF_CHECKED;
-			if (tmi.flags&CMIF_CHECKED)
-			{
-				char buf[256];
-				_snprintf(buf,sizeof(buf),Translate("%s (locked)"),protoName);
-				tmi.pszName=mir_strdup(buf);
+			if ( DBGetContactSettingByte( NULL, GetUniqueProtoName(protoName), "LockMainStatus", 0 ))
+				tmi.flags |= CMIF_CHECKED;
+
+			if (( tmi.flags & CMIF_CHECKED ) && cli.bDisplayLocked ) {
+				char* p = NEWSTR_ALLOCA(protoName);
+				_snprintf( protoName, sizeof(protoName), Translate("%s (locked)"), p );
 			}
 
 			op.Handle=CallService(MO_ADDNEWMENUITEM,(WPARAM)hStatusMenuObject,(LPARAM)&tmi);
 			((lpStatusMenuExecParam)tmi.ownerdata)->protoindex=(int)op.Handle;
 			CallService(MO_MODIFYMENUITEM,(WPARAM)op.Handle,(LPARAM)&tmi);
-			if (tmi.flags&CMIF_CHECKED)
-			{
-				mir_free(tmi.pszName);
-			}
-			{
-				if (cli.menuProtos)
-					cli.menuProtos=(MenuProto*)mir_realloc(cli.menuProtos,sizeof(MenuProto)*(cli.menuProtoCount+1));
-				else
-					cli.menuProtos=(MenuProto*)mir_alloc(sizeof(MenuProto));
-				memset(&(cli.menuProtos[cli.menuProtoCount]),0,sizeof(MenuProto));
-				cli.menuProtos[cli.menuProtoCount].menuID=(HANDLE)rootmenu;
-				cli.menuProtos[cli.menuProtoCount].szProto=mir_strdup(protoName);
-				cli.menuProtoCount++;
-			}
+
+			if (cli.menuProtos)
+				cli.menuProtos=(MenuProto*)mir_realloc(cli.menuProtos,sizeof(MenuProto)*(cli.menuProtoCount+1));
+			else
+				cli.menuProtos=(MenuProto*)mir_alloc(sizeof(MenuProto));
+			memset(&(cli.menuProtos[cli.menuProtoCount]),0,sizeof(MenuProto));
+			cli.menuProtos[cli.menuProtoCount].menuID=(HANDLE)rootmenu;
+			cli.menuProtos[cli.menuProtoCount].szProto=mir_strdup(protoName);
+			cli.menuProtoCount++;
 			{
 				char buf[256];
 				sprintf(buf,"RootProtocolIcon_%s",proto[i]->szName);
@@ -1294,7 +1292,7 @@ static int AddStatusMenuItem(WPARAM wParam,LPARAM lParam)
 		tmi.ownerdata=smep;
 	}
 
-	op.Handle = ((lpStatusMenuExecParam)(tmi.ownerdata))->hMenuItem = 
+	op.Handle = ((lpStatusMenuExecParam)(tmi.ownerdata))->hMenuItem =
 		(int)CallService(MO_ADDNEWMENUITEM,(WPARAM)hStatusMenuObject,(LPARAM)&tmi);
 	op.Setting=OPT_MENUITEMSETUNIQNAME;
 	{

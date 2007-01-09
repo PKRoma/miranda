@@ -363,6 +363,7 @@ typedef struct
 
 	HANDLE hPreBuildStatusMenuEvent;
 	int    currentStatusMenuItem, currentDesiredStatusMode;
+	BOOL   bDisplayLocked;
 
 	PMO_IntMenuItem ( *pfnMOGetIntMenuItem )( int );
 	PMO_IntMenuItem ( *pfnMOGetMenuItemByGlobalID )( int globalMenuID );
