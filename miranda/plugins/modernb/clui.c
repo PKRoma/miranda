@@ -882,8 +882,7 @@ static int CLUI_CreateCLC(HWND parent)
         nLastRequiredHeight=0;
         mutex_bDisableAutoUpdate=0;
 
-    }  
-	CreateViewModeFrame();
+    }  	
     hSettingChangedHook=HookEvent(ME_DB_CONTACT_SETTINGCHANGED,CLUI_OnSettingChanging);
     return(0);
 };
@@ -2383,8 +2382,9 @@ void CLUI_cliOnCreateClc(void)
     CreateServiceFunction(MS_CLUI_SHOWMAINMENU,CLUI_ShowMainMenu);
     CreateServiceFunction(MS_CLUI_SHOWSTATUSMENU,CLUI_ShowStatusMenu);
 
-    CLUI_ReloadCLUIOptions();
+    CLUI_ReloadCLUIOptions();	
     EventArea_Create(pcli->hwndContactList);
+	CreateViewModeFrame();
     pcli->hwndStatus=(HWND)StatusBar_Create(pcli->hwndContactList);    
 }
 

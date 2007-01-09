@@ -1052,7 +1052,15 @@ case INTM_RELOADOPTIONS:
 			pcli->pfnInvalidateRect(GetParent(hwnd), NULL, FALSE);
 		break;
 	}
-
+case WM_CHAR:
+	{
+		if (wParam==27 && dat->szQuickSearch[0] == '\0') //escape and not quick search
+		{
+			// minimize clist	
+			CListMod_HideWindow(pcli->hwndContactList, SW_HIDE);
+		}
+		return saveContactListControlWndProc(hwnd,msg,wParam,lParam);
+	}
 case WM_PAINT:
 	{	
 		HDC hdc;
