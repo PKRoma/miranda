@@ -35,7 +35,7 @@ Enhancements
  - Improved control/shift/enter behavior in chat windows
  
 Bugfixes:
- - History button didn't open history
+ - History button in chats didn't open history
  - Fixed network bind plugin compatibility issues with older plugins
  
 * New in 0.6
