@@ -304,23 +304,24 @@ static LRESULT CALLBACK MessageSubclassProc(HWND hwnd, UINT msg, WPARAM wParam, 
 			if (wParam == VK_SPACE && isCtrl && !isAlt) // ctrl-space (paste clean text)
 				return TRUE;
 
-			if (wParam == '\n' || wParam == '\r') {
-				if (( isShift != 0 ) ^ (0 != DBGetContactSettingByte(NULL, "Chat", "SendOnEnter", 1))) {
-					PostMessage(GetParent(hwnd), WM_COMMAND, IDOK, 0);
-					return 0;
-				}
-
-				if (DBGetContactSettingByte(NULL, "Chat", "SendOnDblEnter", 0)) {
-					if (dat->lastEnterTime + 2 < time(NULL))
-						dat->lastEnterTime = time(NULL);
-					else {
+    		if (wParam == '\n' || wParam == '\r') {
+	       		if ((isCtrl != 0) ^ (0 != DBGetContactSettingByte(NULL, "Chat", "SendOnEnter", 1))) {
+		      		PostMessage(GetParent(hwnd), WM_COMMAND, IDOK, 0);
+			     	return 0;
+			    }
+			    if (DBGetContactSettingByte(NULL, "Chat", "SendOnDblEnter", 0)) {
+				    if (dat->lastEnterTime + 2 < time(NULL))
+					   dat->lastEnterTime = time(NULL);
+				    else {
 						SendMessage(hwnd, WM_KEYDOWN, VK_BACK, 0);
 						SendMessage(hwnd, WM_KEYUP, VK_BACK, 0);
 						PostMessage(GetParent(hwnd), WM_COMMAND, IDOK, 0);
 						return 0;
-				}	}
-			}
-			else dat->lastEnterTime = 0;
+				    }
+			    }
+		    }
+		    else
+		        dat->lastEnterTime = 0;
 
 			if (wParam == 1 && isCtrl && !isAlt) {      //ctrl-a
 				SendMessage(hwnd, EM_SETSEL, 0, -1);
