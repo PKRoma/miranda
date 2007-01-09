@@ -32,10 +32,12 @@ http://files.miranda-im.org/builds/ChangeLog
 * New in 0.6.1
 Enhancements
  - Added option to enable/disable UPnP support
+ - Improved control/shift/enter behavior in chat windows
  
 Bugfixes:
  - History button didn't open history
-
+ - Fixed network bind plugin compatibility issues with older plugins
+ 
 * New in 0.6
 Enhancements
  - Implemented UPnP support
