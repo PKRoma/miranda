@@ -264,7 +264,8 @@ BOOL CALLBACK ProtocolOrderOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lP
                                 pcli->pfnReloadProtoMenus();
                                 pcli->pfnTrayIconIconsChanged();
                                 pcli->pfnClcOptionsChanged();
-                                NotifyEventHooks(pcli->hPreBuildStatusMenuEvent, 0, 0);
+                                //FYR: Not necessary. It is already notified in pfnReloadProtoMenus
+                                //NotifyEventHooks(pcli->hPreBuildStatusMenuEvent, 0, 0);
                             }
                     }
                     break;

@@ -398,7 +398,8 @@ static BOOL CALLBACK DlgProcCluiOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPAR
 					else {
 						CLN_LoadAllIcons(0);
 						pcli->pfnReloadProtoMenus();
-						NotifyEventHooks(pcli->hPreBuildStatusMenuEvent, 0, 0);
+                        //FYR: Not necessary. It is already notified in pfnReloadProtoMenus
+                        //NotifyEventHooks(pcli->hPreBuildStatusMenuEvent, 0, 0);
 						ReloadExtraIcons();
 					}
 					pcli->pfnClcBroadcast(CLM_AUTOREBUILD, 0, 0);

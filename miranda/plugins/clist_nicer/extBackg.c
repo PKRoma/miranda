@@ -1542,7 +1542,10 @@ void extbk_import(char *file, HWND hwndDlg)
             IcoLibReloadIcons();
         else {
             CLN_LoadAllIcons(0);
-            NotifyEventHooks(pcli->hPreBuildStatusMenuEvent, 0, 0);
+            //FYR: may be better to call pfnReloadProtoMenus
+            pcli->pfnReloadProtoMenus();
+            //FYR: Not necessary. It is already notified in pfnReloadProtoMenus
+            //NotifyEventHooks(pcli->hPreBuildStatusMenuEvent, 0, 0);
             ReloadExtraIcons();
         }
         pcli->pfnClcBroadcast(CLM_AUTOREBUILD, 0, 0);

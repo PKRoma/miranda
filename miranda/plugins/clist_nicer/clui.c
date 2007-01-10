@@ -586,7 +586,8 @@ void IcoLibReloadIcons()
     //
 	pcli->pfnClcBroadcast(CLM_AUTOREBUILD, 0, 0);
 	pcli->pfnReloadProtoMenus();
-	NotifyEventHooks(pcli->hPreBuildStatusMenuEvent, 0, 0);
+	//FYR: Not necessary. It is already notified in pfnReloadProtoMenus
+    //NotifyEventHooks(pcli->hPreBuildStatusMenuEvent, 0, 0);
 	SendMessage(g_hwndViewModeFrame, WM_USER + 100, 0, 0);
 }
 
@@ -1273,7 +1274,8 @@ LRESULT CALLBACK ContactListWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM l
 			if(DBGetContactSettingByte(NULL, "CLUI", "useskin", 0))
 				IMG_LoadItems();
 			CreateButtonBar(hwnd);
-			NotifyEventHooks(pcli->hPreBuildStatusMenuEvent, 0, 0);
+            //FYR: to be checked: otherwise it raises double xStatus items
+            //NotifyEventHooks(pcli->hPreBuildStatusMenuEvent, 0, 0);
 			SendMessage(hwnd, WM_SETREDRAW, FALSE, FALSE);
 			{
 				BYTE windowStyle = DBGetContactSettingByte(NULL, "CLUI", "WindowStyle", 0);
