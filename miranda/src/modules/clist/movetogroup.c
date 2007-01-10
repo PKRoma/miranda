@@ -3,7 +3,7 @@
 
 HANDLE hOnCntMenuBuild;
 HANDLE hMoveToGroupItem=0, hPriorityItem = 0, hFloatingItem = 0;
-HANDLE *hGroupsItems = NULL;
+HANDLE *lphGroupsItems = NULL;
 int nGroupsItems = 0, cbGroupsItems = 0;
 
 TCHAR* DBGetString(HANDLE hContact, const char* szModule, const char* szSetting)
@@ -59,7 +59,7 @@ static int OnContactMenuBuild(WPARAM wParam,LPARAM lParam)
     CLISTMENUITEM mi = { 0 };
     mi.cbSize = sizeof( mi );
 	
-    // FYR: Moved back Visibility and ignore to clist_nicer
+    // FYR: Moved back Visibility and Ignore to clist_nicer
     //
     //if ( !hIgnoreItem ) {
     //    mi.position = 200000;
@@ -79,7 +79,7 @@ static int OnContactMenuBuild(WPARAM wParam,LPARAM lParam)
 
 	if ( !cbGroupsItems ) {
 		cbGroupsItems = 0x10;
-		hGroupsItems = (HANDLE*)malloc(cbGroupsItems*sizeof(HANDLE));
+		lphGroupsItems = (HANDLE*)malloc(cbGroupsItems*sizeof(HANDLE));
 	}
 
 	szContactGroup = DBGetString((HANDLE)wParam, "CList", "Group");
@@ -88,9 +88,9 @@ static int OnContactMenuBuild(WPARAM wParam,LPARAM lParam)
 	pos = 1000;
 	if ( !nGroupsItems ) {
 		nGroupsItems++;
-		hGroupsItems[0] = AddGroupItem(hMoveToGroupItem, TranslateT("Root Group"), pos++, -1, !szContactGroup);
+		lphGroupsItems[0] = AddGroupItem(hMoveToGroupItem, TranslateT("Root Group"), pos++, -1, !szContactGroup);
 	}
-	else ModifyGroupItem( hGroupsItems[0], TranslateT("Root Group"), !szContactGroup);
+	else ModifyGroupItem( lphGroupsItems[0], TranslateT("Root Group"), !szContactGroup);
 
 	pos += 100000; // Separator
 
@@ -108,14 +108,14 @@ static int OnContactMenuBuild(WPARAM wParam,LPARAM lParam)
 			checked = 1;
 
 		if ( nGroupsItems > i )
-			ModifyGroupItem(hGroupsItems[i], szGroupName + 1, checked);
+			ModifyGroupItem(lphGroupsItems[i], szGroupName + 1, checked);
 		else {
 			nGroupsItems++;
 			if ( cbGroupsItems < nGroupsItems ) {
 				cbGroupsItems += 0x10;
-				hGroupsItems = (HANDLE*)realloc( hGroupsItems, cbGroupsItems*sizeof( HANDLE ));
+				lphGroupsItems = (HANDLE*)realloc( lphGroupsItems, cbGroupsItems*sizeof( HANDLE ));
 			}
-			hGroupsItems[i] = AddGroupItem( hMoveToGroupItem, szGroupName + 1, pos++, i, checked );
+			lphGroupsItems[i] = AddGroupItem( hMoveToGroupItem, szGroupName + 1, pos++, i, checked );
 		}
 		i++;
 		mir_free(szGroupName);
@@ -124,8 +124,8 @@ static int OnContactMenuBuild(WPARAM wParam,LPARAM lParam)
 
 	while (nGroupsItems > i) {
 		nGroupsItems--;
-		CallService(MS_CLIST_REMOVECONTACTMENUITEM, (WPARAM)hGroupsItems[nGroupsItems], 0);
-		hGroupsItems[nGroupsItems] = NULL;
+		CallService(MS_CLIST_REMOVECONTACTMENUITEM, (WPARAM)lphGroupsItems[nGroupsItems], 0);
+		lphGroupsItems[nGroupsItems] = NULL;
 	}
 
 	return 0;
@@ -168,6 +168,6 @@ int UnloadMoveToGroup(void)
 
 	nGroupsItems = 0;
 	cbGroupsItems = 0;
-	free(hGroupsItems);
+	free(lphGroupsItems);
 	return 0;
 }

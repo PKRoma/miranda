@@ -43,6 +43,7 @@ static int hMainMenuObject;
 static int hContactMenuObject;
 static int hStatusMenuObject;
 int MenuModulesLoaded(WPARAM,LPARAM);
+int UnloadMoveToGroup(void);
 
 int statustopos(int status);
 //
@@ -1433,6 +1434,9 @@ int InitCustomMenus(void)
 void UninitCustomMenus(void)
 {
 	int i;
+    
+    UnloadMoveToGroup();
+
 	if (!cli.menuProtos) return;
 	for (i=0; i<cli.menuProtoCount; i++)
 		if (cli.menuProtos[i].szProto)
