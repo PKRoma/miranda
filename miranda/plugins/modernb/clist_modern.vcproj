@@ -267,7 +267,6 @@
 				IgnoreImportLibrary="TRUE"
 				AdditionalOptions="/MACHINE:I386"
 				AdditionalDependencies="MSImg32.Lib comctl32.lib shlwapi.lib  gdiplus.lib Delayimp.lib"
-				OutputFile="c:/program files/miranda im/plugins/$(ProjectName).dll"
 				IgnoreAllDefaultLibraries="FALSE"
 				IgnoreDefaultLibraryNames=""
 				DelayLoadDLLs="gdiplus.dll"
