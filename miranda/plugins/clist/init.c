@@ -2,8 +2,8 @@
 
 Miranda IM: the free IM client for Microsoft* Windows*
 
-Copyright 2000-2005 Miranda ICQ/IM project, 
-all portions of this codebase are copyrighted to the people 
+Copyright 2000-2005 Miranda ICQ/IM project,
+all portions of this codebase are copyrighted to the people
 listed in contributors.txt.
 
 This program is free software; you can redistribute it and/or
@@ -33,11 +33,11 @@ extern int currentDesiredStatusMode;
 
 struct MM_INTERFACE mmi;
 BOOL(WINAPI * MySetLayeredWindowAttributes) (HWND, COLORREF, BYTE, DWORD) = NULL;
-int InitCustomMenus( void );
 
 /////////////////////////////////////////////////////////////////////////////////////////
 // external functions
 
+void InitCustomMenus( void );
 void PaintClc(HWND hwnd, struct ClcData *dat, HDC hdc, RECT * rcPaint);
 
 int ClcOptInit(WPARAM wParam, LPARAM lParam);
@@ -65,7 +65,7 @@ PLUGININFO pluginInfo = {
 		"Classic contact list",
 	#endif
 	PLUGIN_MAKE_VERSION(0, 5, 1, 1),
-		
+
 	"Display contacts, event notifications, protocol status",
 	"Miranda IM project",
 	"ghazan@miranda-im.org",
@@ -105,14 +105,6 @@ static int OnOptsInit(WPARAM wParam, LPARAM lParam)
 /////////////////////////////////////////////////////////////////////////////////////////
 // main clist initialization routine
 
-int CloseAction(WPARAM wParam,LPARAM lParam)
-{
-	if (CallService(MS_SYSTEM_OKTOEXIT,(WPARAM)0,(LPARAM)0))
-		SendMessage( pcli->hwndContactList,WM_DESTROY,0,0 );
-
-	return(0);
-}
-
 int __declspec(dllexport) CListInitialise(PLUGINLINK * link)
 {
 	int rc = 0;
@@ -142,7 +134,7 @@ LBL_Error:
 	HookEvent(ME_OPT_INITIALISE, OnOptsInit);
 
 	hStatusModeChangeEvent = CreateHookableEvent( ME_CLIST_STATUSMODECHANGE );
-	CreateServiceFunction( "CloseAction", CloseAction );
+	InitCustomMenus();
 	return 0;
 }
 
