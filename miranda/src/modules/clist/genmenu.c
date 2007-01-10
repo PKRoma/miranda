@@ -967,6 +967,7 @@ HMENU BuildRecursiveMenu(HMENU hMenu,ListParam *param)
 					mii.hSubMenu = hSubMenu;
 					mii.hbmpItem = HBMMENU_CALLBACK;
 					mii.dwTypeData = ( MenuItems[j].CustomName ) ? MenuItems[j].CustomName : mi->ptszName;
+                    MenuItems[j].hSubMenu=hSubMenu;
 
 					#ifdef PUTPOSITIONSONMENU
 						if ( GetKeyState(VK_CONTROL) & 0x8000) {
