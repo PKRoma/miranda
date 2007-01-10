@@ -1086,10 +1086,10 @@ int MenuModulesLoaded(WPARAM wParam,LPARAM lParam)
 					tmi.position=pos++;
 					tmi.root=-1;
 					tmi.hotKey=MAKELPARAM(MOD_CONTROL,'0'+j);
-					tmi.pszName=(char*)CallService(MS_CLIST_GETSTATUSMODEDESCRIPTION,statusModeList[j],0);
+					tmi.pszName = ( char* )CallService(MS_CLIST_GETSTATUSMODEDESCRIPTION,statusModeList[j],0);
 
-					wsprintf((LPTSTR)buf, _T("%s\tCtrl-%c"), tmi.pszName,'0'+j);
-					tmi.pszName=(char *)buf;
+					//wsprintf((LPTSTR)buf, _T("%s\tCtrl-%c"), tmi.pszName,'0'+j);
+					//tmi.pszName=(char *)buf;
 					{
 						//owner data
 						lpStatusMenuExecParam smep;

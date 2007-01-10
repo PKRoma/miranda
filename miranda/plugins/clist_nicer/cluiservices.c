@@ -45,10 +45,7 @@ static int GetClistVersion(WPARAM wParam, LPARAM lParam)
 	return (int)g_szVersionString;
 }
 
-static char *xStatusNames_ansi[] = { ("Angry"), ("Duck"), ("Tired"), ("Party"), ("Beer"), ("Thinking"), ("Eating"), ("TV"), ("Friends"), ("Coffee"),
-("Music"), ("Business"), ("Camera"), ("Funny"), ("Phone"), ("Games"), ("College"), ("Shopping"), ("Sick"), ("Sleeping"),
-("Surfing"), ("@Internet"), ("Engineering"), ("Typing"), ("Eating..yummy.."), ("Having fun"), ("Chit chatting"), ("Crashing"), ("Going to toilet")};
- 
+extern TCHAR* xStatusDescr[];
 
 void FreeProtocolData( void )
 {
@@ -245,7 +242,7 @@ void CluiProtocolStatusChanged( int parStatus, const char* szProto )
 					BYTE xStatus = DBGetContactSettingByte(NULL, curprotocol->szName, "XStatusId", -1);
 					CLISTMENUITEM mi = {0};
 					mi.cbSize = sizeof(mi);
-					mi.flags = CMIM_FLAGS|CMIM_NAME|CMIM_ICON;
+					mi.flags = CMIM_FLAGS | CMIM_NAME | CMIM_ICON | CMIF_TCHAR;
 
 					if(pcli->menuProtos[i].hIcon) {
 						DestroyIcon(pcli->menuProtos[i].hIcon);
@@ -259,11 +256,11 @@ void CluiProtocolStatusChanged( int parStatus, const char* szProto )
 						if(ServiceExists(szServiceName)) {
 							mi.hIcon = (HICON)CallProtoService(curprotocol->szName, "/GetXStatusIcon", 0, 0);	// get OWN xStatus icon (if set)
 							pcli->menuProtos[i].hIcon = mi.hIcon;
-							mi.pszName = xStatusNames_ansi[xStatus - 1];
+							mi.ptszName = xStatusDescr[xStatus - 1];
 						}
 					}
 					else {
-						mi.pszName = "None";
+						mi.ptszName = _T("None");
 						mi.flags |= CMIF_CHECKED;
 						mi.hIcon = 0;
 						pcli->menuProtos[i].hIcon = 0;
