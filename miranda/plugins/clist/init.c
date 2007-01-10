@@ -31,8 +31,9 @@ HANDLE hStatusModeChangeEvent;
 
 extern int currentDesiredStatusMode;
 
-struct MM_INTERFACE memoryManagerInterface;
+struct MM_INTERFACE mmi;
 BOOL(WINAPI * MySetLayeredWindowAttributes) (HWND, COLORREF, BYTE, DWORD) = NULL;
+int InitCustomMenus( void );
 
 /////////////////////////////////////////////////////////////////////////////////////////
 // external functions
@@ -104,6 +105,14 @@ static int OnOptsInit(WPARAM wParam, LPARAM lParam)
 /////////////////////////////////////////////////////////////////////////////////////////
 // main clist initialization routine
 
+int CloseAction(WPARAM wParam,LPARAM lParam)
+{
+	if (CallService(MS_SYSTEM_OKTOEXIT,(WPARAM)0,(LPARAM)0))
+		SendMessage( pcli->hwndContactList,WM_DESTROY,0,0 );
+
+	return(0);
+}
+
 int __declspec(dllexport) CListInitialise(PLUGINLINK * link)
 {
 	int rc = 0;
@@ -113,9 +122,7 @@ int __declspec(dllexport) CListInitialise(PLUGINLINK * link)
 	#endif
 
 	// get the internal malloc/free()
-	memset(&memoryManagerInterface, 0, sizeof(memoryManagerInterface));
-	memoryManagerInterface.cbSize = sizeof(memoryManagerInterface);
-	CallService(MS_SYSTEM_GET_MMI, 0, (LPARAM) & memoryManagerInterface);
+	mir_getMMI( &mmi );
 
 	pcli = ( CLIST_INTERFACE* )CallService(MS_CLIST_RETRIEVE_INTERFACE, 0, (LPARAM)g_hInst);
 	if ( (int)pcli == CALLSERVICE_NOTFOUND ) {
@@ -134,7 +141,8 @@ LBL_Error:
 	HookEvent(ME_SYSTEM_MODULESLOADED, OnModulesLoaded);
 	HookEvent(ME_OPT_INITIALISE, OnOptsInit);
 
-	hStatusModeChangeEvent = CreateHookableEvent(ME_CLIST_STATUSMODECHANGE);
+	hStatusModeChangeEvent = CreateHookableEvent( ME_CLIST_STATUSMODECHANGE );
+	CreateServiceFunction( "CloseAction", CloseAction );
 	return 0;
 }
 
