@@ -5,7 +5,7 @@
 // Copyright © 2000,2001 Richard Hughes, Roland Rabien, Tristan Van de Vreede
 // Copyright © 2001,2002 Jon Keating, Richard Hughes
 // Copyright © 2002,2003,2004 Martin Öberg, Sam Kothari, Robert Rainwater
-// Copyright © 2004,2005,2006 Joe Kucera
+// Copyright © 2004,2005,2006,2007 Joe Kucera
 //
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License
@@ -215,6 +215,14 @@ void SafeReleaseFileTransfer(void **ft)
         for (i = 0; i < oft->wFilesCount; i++)
           SAFE_FREE(&oft->files[i]);
         SAFE_FREE((char**)&oft->files);
+      }
+      if (oft->files_ansi)
+      {
+        int i;
+
+        for (i = 0; i < oft->wFilesCount; i++)
+          SAFE_FREE(&oft->files_ansi[i]);
+        SAFE_FREE((char**)&oft->files_ansi);
       }
       // Invalidate transfer
       ReleaseOscarTransfer(oft);
@@ -746,11 +754,12 @@ int oftInitTransfer(HANDLE hContact, DWORD dwUin, char* szUid, char** files, cha
 
   for (filesCount = 0; files[filesCount]; filesCount++);
   ft->files = (char **)SAFE_MALLOC(sizeof(char *) * filesCount);
+  ft->files_ansi = (char **)SAFE_MALLOC(sizeof(char *) * filesCount);
   ft->qwTotalSize = 0;
   for (i = 0; i < filesCount; i++)
   {
     if (_stati64(files[i], &statbuf))
-      NetLog_Server("IcqSendFile() was passed invalid filename(s)");
+      NetLog_Server("IcqSendFile() was passed invalid filename \"%s\"", files[i]);
     else
     {
       if (!(statbuf.st_mode&_S_IFDIR))
@@ -778,6 +787,7 @@ int oftInitTransfer(HANDLE hContact, DWORD dwUin, char* szUid, char** files, cha
           }
         }
         ft->files[ft->wFilesCount] = ansi_to_utf8(files[i]);
+        ft->files_ansi[ft->wFilesCount] = null_strdup(files[i]);
 
         ft->wFilesCount++;
         ft->qwTotalSize += statbuf.st_size;
@@ -1019,7 +1029,7 @@ static void oft_buildProtoFileTransferStatus(oscar_filetransfer* ft, PROTOFILETR
   pfts->hContact = ft->hContact;
   pfts->sending = ft->sending;
   if (ft->sending)
-    pfts->files = ft->files;
+    pfts->files = ft->files_ansi;
   else
     pfts->files = NULL;  /* FIXME */
   pfts->totalFiles = ft->wFilesCount;
