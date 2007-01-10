@@ -1233,8 +1233,8 @@ static int AddStatusMenuItem(WPARAM wParam,LPARAM lParam)
 		if (!val)
 			_snprintf(buf,sizeof(buf),Translate("%s Custom Status"),cli.menuProtos[i].szProto);
 		if (  cli.menuProtos[i].menuID &&
-			( (val && lstrcmpiA(cli.menuProtos[i].szProto,mi->pszContactOwner))||
-			(wParam==0 && lstrcmpiA(buf,mi->pszPopupName)) ) )
+			( (val && !lstrcmpiA(cli.menuProtos[i].szProto,mi->pszContactOwner))||
+			(wParam==0 && !lstrcmpiA(buf,mi->pszPopupName)) ) )
 		{
 			mp=&cli.menuProtos[i];
 			break;
