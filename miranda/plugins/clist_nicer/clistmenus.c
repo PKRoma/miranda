@@ -281,9 +281,24 @@ int InitCustomMenus(void)
 	CreateServiceFunction("CList/SetContactPriority", SetContactPriority);
 	CreateServiceFunction("CList/SetContactFloating", SetContactFloating);
 	CreateServiceFunction("CList/SetContactIgnore", SetContactIgnore);
+    {
+        //FYR: Visibility and ignore item moved back to clist_nicer from core
+        HANDLE hIgnoreItem = 0;  // FYR: moved from global it is never used globally
+        CLISTMENUITEM mi = { 0 };
+        mi.cbSize = sizeof( mi );
+
+        if ( !hIgnoreItem ) {
+            mi.position = 200000;
+            mi.pszPopupName = ( char* )-1;
+            mi.pszService = "CList/SetContactIgnore";
+            mi.pszName = Translate("&Visibility and ignore...");
+            hIgnoreItem = (HANDLE)CallService(MS_CLIST_ADDCONTACTMENUITEM, 0, (LPARAM)&mi);
+        }
+    }
 	return 0;
 }
 
 void UninitCustomMenus(void)
 {
+
 }

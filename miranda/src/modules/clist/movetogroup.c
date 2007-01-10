@@ -2,7 +2,7 @@
 //#include "genmenu.h"
 
 HANDLE hOnCntMenuBuild;
-HANDLE hMoveToGroupItem=0, hPriorityItem = 0, hFloatingItem = 0, hIgnoreItem = 0;
+HANDLE hMoveToGroupItem=0, hPriorityItem = 0, hFloatingItem = 0;
 HANDLE *hGroupsItems = NULL;
 int nGroupsItems = 0, cbGroupsItems = 0;
 
@@ -55,19 +55,21 @@ static int OnContactMenuBuild(WPARAM wParam,LPARAM lParam)
 	int i, pos;
 	TCHAR *szGroupName, *szContactGroup;
 	char intname[20];
+    
+    CLISTMENUITEM mi = { 0 };
+    mi.cbSize = sizeof( mi );
+	
+    // FYR: Moved back Visibility and ignore to clist_nicer
+    //
+    //if ( !hIgnoreItem ) {
+    //    mi.position = 200000;
+    //    mi.pszPopupName = ( char* )-1;
+    //    mi.pszService = "CList/SetContactIgnore";
+    //    mi.pszName = Translate("&Visibility and ignore...");
+    //    hIgnoreItem = (HANDLE)CallService(MS_CLIST_ADDCONTACTMENUITEM, 0, (LPARAM)&mi);
+    //}
 
-	CLISTMENUITEM mi = { 0 };
-	mi.cbSize = sizeof( mi );
-
-	if ( !hIgnoreItem ) {
-		mi.position = 200000;
-		mi.pszPopupName = ( char* )-1;
-		mi.pszService = "CList/SetContactIgnore";
-		mi.pszName = Translate("&Visibility and ignore...");
-		hIgnoreItem = (HANDLE)CallService(MS_CLIST_ADDCONTACTMENUITEM, 0, (LPARAM)&mi);
-	}
-
-	if ( !hMoveToGroupItem ) {
+    if ( !hMoveToGroupItem ) {
 		mi.pszPopupName = ( char* )-1;
 		mi.position = 100000;
 		mi.pszName = Translate("&Move to Group");
