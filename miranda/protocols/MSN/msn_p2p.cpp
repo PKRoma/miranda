@@ -920,34 +920,11 @@ static void sttInitFileTransfer(
 			dwAppID = 1;
 	}
 	{	const char* p = tFileInfo2[ "Context" ];
-		if ( p ) {
-			int cbLen = strlen( p );
-			if ( cbLen & 3 ) { // fix for stupid Kopete's base64 encoder
-				char* p1 = ( char* )alloca( cbLen+5 );
-				memcpy( p1, p, cbLen );
-				p = p1;
-				p1 += cbLen; 
-				for ( int i = 4 - (cbLen & 3); i > 0; i--, p1++, cbLen++ )
-					*p1 = '=';
-				*p1 = 0;
-			}
-
-			szContext = ( char* )alloca( cbLen+1 );
-
-			NETLIBBASE64 nlb = { ( char* )p, cbLen, ( PBYTE )szContext, cbLen };
-			MSN_CallService( MS_NETLIB_BASE64DECODE, 0, LPARAM( &nlb ));
+		if ( p != NULL ) {
+			size_t len = strlen( p );
+			szContext = ( char* )alloca( len + 1 );
+			MSN_Base64Decode( p, szContext, len );
 	}	}
-
-	if ( szContext == NULL && memcmp( msgbody, "Context: ", 9 ) == 0 ) {
-		msgbody += 9;
-		int cbLen = strlen( msgbody );
-		if ( cbLen > 252 )
-			cbLen = 252;
-		szContext = ( char* )alloca( cbLen+1 );
-
-		NETLIBBASE64 nlb = { ( char* )msgbody, cbLen, ( PBYTE )szContext, cbLen };
-		MSN_CallService( MS_NETLIB_BASE64DECODE, 0, LPARAM( &nlb ));
-	}
 
 	if ( szSessionID == NULL || dwAppID == -1 || szEufGuid == NULL ) {
 		MSN_DebugLog( "Ignoring invalid invitation: SessionID='%s', AppID=%ld, Branch='%s'", szSessionID, dwAppID, szEufGuid );

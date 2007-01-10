@@ -165,7 +165,8 @@ WCHAR*   __stdcall   HtmlEncodeW( const WCHAR* str );
 #else
 	#define  HtmlEncodeT HtmlEncode
 #endif
-bool txtParseParam (char* szData, char* presearch, char* start, char* finish, char* param, int size);
+bool txtParseParam (const char* szData, const char* presearch, const char* start, const char* finish, char* param, const int size);
+void MSN_Base64Decode( const char* str, char* res, size_t reslen );
 
 void		__stdcall	UrlDecode( char*str );
 void		__stdcall	UrlEncode( const char* src, char* dest, int cbDest );

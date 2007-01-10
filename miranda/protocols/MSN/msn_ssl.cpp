@@ -73,6 +73,34 @@ static const char authPacket[] =
 	"</Body>"
 "</Envelope>";
 
+static const char oimPacket[] =
+"<?xml version=\"1.0\" encoding=\"utf-8\"?>" 
+"<soap:Envelope xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\"" 
+		" xmlns:xsd=\"http://www.w3.org/2001/XMLSchema\""
+		" xmlns:soap=\"http://schemas.xmlsoap.org/soap/envelope/\">"
+	"<soap:Header>"
+		"<PassportCookie xmlns=\"http://www.hotmail.msn.com/ws/2004/09/oim/rsi\">" 
+			"<t>%s</t>"
+			"<p>%s</p>" 
+		"</PassportCookie>"
+	"</soap:Header>"
+	"<soap:Body>"
+		"<%s xmlns=\"http://www.hotmail.msn.com/ws/2004/09/oim/rsi\">"
+		"%s"
+		"</%s>"
+	"</soap:Body>"
+"</soap:Envelope>";
+
+static const char oimGetAction[] = "<messageId>%s</messageId> <alsoMarkAsRead>%s</alsoMarkAsRead>";
+static const char oimDeleteAction[] =
+"<messageIds>"
+	"<messageId>%s</messageId>" 
+"</messageIds>";
+
+
+char pToken[256], tToken[256]; 
+
+
 /////////////////////////////////////////////////////////////////////////////////////////
 // Basic SSL operation class
 
@@ -81,7 +109,7 @@ struct SSL_Base
 	virtual	~SSL_Base() {}
 
 	virtual  int init() = 0;
-	virtual  char* getSslResult( char* parUrl, char* parAuthInfo ) = 0;
+	virtual  char* getSslResult( char* parUrl, char* parAuthInfo, char* hdrs ) = 0;
 };
 
 /////////////////////////////////////////////////////////////////////////////////////////
@@ -109,7 +137,7 @@ struct SSL_WinInet : public SSL_Base
 {
 	virtual ~SSL_WinInet();
 
-	virtual  char* getSslResult( char* parUrl, char* parAuthInfo );
+	virtual  char* getSslResult( char* parUrl, char* parAuthInfo, char* hdrs );
 	virtual  int init();
 
 	void applyProxy( HINTERNET );
@@ -188,7 +216,7 @@ void SSL_WinInet::readInput( HINTERNET hRequest )
 		while (dwSize != 0);
 }
 
-char* SSL_WinInet::getSslResult( char* parUrl, char* parAuthInfo )
+char* SSL_WinInet::getSslResult( char* parUrl, char* parAuthInfo, char* hdrs )
 {
 	DWORD tFlags =
 		INTERNET_FLAG_IGNORE_REDIRECT_TO_HTTPS |
@@ -276,11 +304,12 @@ char* SSL_WinInet::getSslResult( char* parUrl, char* parAuthInfo )
 		if ( MyOptions.UseProxy && MSN_GetByte( "NLUseProxyAuth", 0  ))
 			applyProxy( tRequest );
 
-		static const char headers[] =  "Accept: txt/*\r\n";
-//		static const char headers[] =  "Accept: txt/*\r\nConnection: close\r\n";
+		char headers[1024];
+		mir_snprintf(headers, sizeof(headers), "Accept: txt/xml\r\nContent-Type: text/xml; charset=utf-8\r\n%s", hdrs ? hdrs : "");
+
 LBL_Restart:
 			MSN_DebugLog( "Sending request..." );
-//			MSN_DebugLog( parAuthInfo );
+			MSN_DebugLog( parAuthInfo );
 			DWORD tErrorCode = f_HttpSendRequest( tRequest, headers, strlen(headers), parAuthInfo, strlen( parAuthInfo ));
 			if ( tErrorCode == 0 ) {
 				TWinErrorCode errCode;
@@ -345,7 +374,18 @@ LBL_Restart:
 
 					tBufSize = SSL_BUF_SIZE;
 					f_HttpQueryInfo( tRequest, HTTP_QUERY_RAW_HEADERS_CRLF, tBuffer, &tBufSize, NULL );
-					MSN_DebugLog( "SSL response: '%s'", tBuffer );
+
+					DWORD dwSize = 0, dwOffset = tBufSize;
+					do {
+						f_InternetReadFile( tRequest, tBuffer+dwOffset, SSL_BUF_SIZE - dwOffset, &dwSize);
+						dwOffset += dwSize;
+					}
+					while (dwSize != 0);
+					tBuffer[dwOffset] = 0;
+
+					MSN_DebugLog( "SSL response:" );
+					MSN_CallService( MS_NETLIB_LOG, ( WPARAM )hNetlibUser, ( LPARAM )tBuffer );
+
 					tSslAnswer = NULL;
 			}	}
 
@@ -373,7 +413,7 @@ typedef int ( *PFN_SSL_int_pvoid_pvoid_int ) ( PVOID, PVOID, int );
 
 struct SSL_OpenSsl : public SSL_Base
 {
-	virtual  char* getSslResult( char* parUrl, char* parAuthInfo );
+	virtual  char* getSslResult( char* parUrl, char* parAuthInfo, char* hdrs );
 	virtual  int init();
 
 	static	PVOID sslCtx;
@@ -461,7 +501,7 @@ int SSL_OpenSsl::init()
 
 /////////////////////////////////////////////////////////////////////////////////////////
 
-char* SSL_OpenSsl::getSslResult( char* parUrl, char* parAuthInfo )
+char* SSL_OpenSsl::getSslResult( char* parUrl, char* parAuthInfo, char* hdrs )
 {
 	if ( strnicmp( parUrl, "https://", 8 ) != 0 )
 		return NULL;
@@ -523,12 +563,14 @@ char* SSL_OpenSsl::getSslResult( char* parUrl, char* parAuthInfo )
 
 				int nBytes = mir_snprintf( buf, SSL_BUF_SIZE,
 					"POST /%s HTTP/1.1\r\n"
-					"Accept: text/*\r\n"
+					"Accept: text/xml\r\n"
+					"%s"
 					"User-Agent: %s\r\n"
 					"Content-Length: %u\r\n"
 					"Host: %s\r\n"
 					"Connection: close\r\n"
-					"Cache-Control: no-cache\r\n\r\n%s", path, MSN_USER_AGENT, strlen( parAuthInfo ), url+8, parAuthInfo );
+					"Cache-Control: no-cache\r\n\r\n%s", path, hdrs ? hdrs : "",
+					MSN_USER_AGENT, strlen( parAuthInfo ), url+8, parAuthInfo );
 
 //				MSN_DebugLog( "Sending SSL query:\n%s", buf );
 				pfn_SSL_write( ssl, buf, strlen( buf ));
@@ -615,7 +657,7 @@ int MSN_GetPassportAuth( char* authChallengeInfo, char*& parResult )
 	for (;;)
 	{
 		mir_free( tResult );
-		tResult = pAgent->getSslResult( szPassportHost, szAuthInfo );
+		tResult = pAgent->getSslResult( szPassportHost, szAuthInfo, NULL );
 		if ( tResult == NULL ) {
 			if ( defaultUrlAllow ) {
 				strcpy( szPassportHost, defaultPassportUrl );
@@ -668,12 +710,121 @@ int MSN_GetPassportAuth( char* authChallengeInfo, char*& parResult )
 			"Unable to contact MS Passport servers check proxy/firewall settings" );
 		MSN_SendBroadcast( NULL, ACKTYPE_LOGIN, ACKRESULT_FAILED, NULL, LOGINERR_WRONGPASSWORD );
 	}
+	else
+	{
+		char * pt = strstr(tResult, "&p=");
+		int ptlen = pt - tResult - 2;
+		strncpy(tToken, tResult+2, ptlen);
+		tToken[ptlen] = 0;
+		strcpy(pToken, pt+3);
+	}
 
 	MSN_DebugLog( "MSN_CheckRedirector exited with errorCode = %d", retVal );
 
 	delete pAgent;
 	return retVal;
 }
+
+void MSN_GetOIMs( const char* initxml )
+{
+	SSL_Base* pAgent;
+	if ( MSN_GetByte( "UseOpenSSL", 0 ))
+		pAgent = new SSL_OpenSsl();
+	else
+		pAgent = new SSL_WinInet();
+	if ( pAgent == NULL )
+		return;
+
+	if ( pAgent->init() ) {
+		delete pAgent;
+		return;
+	}
+
+	char szData1[1024], szData[2048];
+	const char *xmlst = initxml;
+
+	for (;;)
+	{
+		char szId[128], szEmail[MSN_MAX_EMAIL_LEN];
+
+		xmlst = strstr( xmlst, "<M>" );
+		if ( xmlst == NULL ) break;
+
+		txtParseParam( xmlst, NULL, "<I>", "</I>", szId, sizeof( szId ));
+		txtParseParam( xmlst, NULL, "<E>", "</E>", szEmail, sizeof( szEmail ));
+
+		mir_snprintf( szData1, sizeof( szData1 ), oimGetAction, szId, "false");
+		mir_snprintf( szData, sizeof( szData ), oimPacket, tToken, pToken, "GetMessage", szData1, "GetMessage" );
+
+		char* tResult = pAgent->getSslResult( "https://rsi.hotmail.com/rsi/rsi.asmx", szData,
+			"SOAPAction: \"http://www.hotmail.msn.com/ws/2004/09/oim/rsi/GetMessage\"\r\n" );
+
+		if (tResult != NULL)
+		{
+			char szTime[32], *p;
+			time_t evtm = 0;
+
+			txtParseParam( tResult, "FILETIME", "[", "]", szTime, strlen( szTime ));
+			FILETIME ftm;
+			ftm.dwLowDateTime = strtoul( szTime, &p, 16 );
+			if ( *p == ':' ) { 
+				ftm.dwHighDateTime = strtoul( p+1, &p, 16 );
+				
+				LARGE_INTEGER *lin = (LARGE_INTEGER*)&ftm;
+				lin->QuadPart /= 10000000;
+				lin->QuadPart -= 11644473600i64;
+				evtm = lin->LowPart;
+			}
+			else
+				evtm = time( NULL );
+
+			txtParseParam( tResult, "<GetMessageResult>", "\r\n\r\n", "\r\n", tResult, strlen( tResult ));
+			
+			size_t len = strlen( tResult );
+			char* szMsg = ( char* )alloca( len + 1 );
+
+			MSN_Base64Decode( tResult, szMsg, len );
+
+			mir_free( tResult );
+
+			wchar_t* szMsgU = NULL;
+			mir_utf8decode( szMsg, &szMsgU );
+
+			size_t alen = strlen( szMsg );
+			size_t ulen = wcslen( szMsgU );
+
+			char *szMsgC = ( char* )mir_alloc( alen + ulen + 4 );
+			memcpy( szMsgC, szMsg, alen + 1);
+			memcpy( szMsgC+alen+1, szMsgU, ( ulen + 1 ) * sizeof( wchar_t ));
+			
+			mir_free( szMsgU );
+
+			PROTORECVEVENT pre;
+			pre.szMessage = ( char* )szMsgC;
+			pre.flags = PREF_UNICODE /*+ (( isRtl ) ? PREF_RTL : 0)*/;
+			pre.timestamp = evtm;
+			pre.lParam = 0;
+
+			CCSDATA ccs;
+			ccs.hContact = MSN_HContactFromEmail( szEmail, szEmail, 0, 0 );
+			ccs.szProtoService = PSR_MESSAGE;
+			ccs.wParam = 0;
+			ccs.lParam = ( LPARAM )&pre;
+			MSN_CallService( MS_PROTO_CHAINRECV, 0, ( LPARAM )&ccs );
+
+			mir_snprintf( szData1, sizeof( szData1 ), oimDeleteAction, szId);
+			mir_snprintf( szData, sizeof( szData ), oimPacket, tToken, pToken, "DeleteMessages", szData1, "DeleteMessages" );
+			
+			tResult = pAgent->getSslResult( "https://rsi.hotmail.com/rsi/rsi.asmx", szData,
+				"SOAPAction: \"http://www.hotmail.msn.com/ws/2004/09/oim/rsi/DeleteMessages\"\r\n" );
+
+		}
+
+		xmlst += 3;
+	}
+	delete pAgent;
+}
+
 
 void UninitSsl( void )
 {

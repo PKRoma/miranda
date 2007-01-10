@@ -116,7 +116,7 @@ int __stdcall MSN_AddUser( HANDLE hContact, const char* email, int flags )
 					return -1;
 
 			char id[ MSN_GUID_LEN ];
-			if ( !MSN_GetStaticString( "ID", hContact, id, sizeof id ))
+			if ( !MSN_GetStaticString( "ID", hContact, id, sizeof( id )))
 				msgid = msnNsThread->sendPacket( "REM", "%s %s", listName, id );
 		}
 		else {
@@ -1145,9 +1145,9 @@ TCHAR* UnEscapeChatTags(TCHAR* str_in)
 	return str_in;
 }
 
-bool txtParseParam (char* szData, char* presearch, char* start, char* finish, char* param, int size)
+bool txtParseParam (const char* szData, const char* presearch, const char* start, const char* finish, char* param, const int size)
 {
-	char *cp, *cp1;
+	const char *cp, *cp1;
 	int len;
 	
 	if (szData == NULL) return false;
@@ -1175,3 +1175,25 @@ bool txtParseParam (char* szData, char* presearch, char* start, char* finish, ch
 
 	return true;
 } 
+
+
+void MSN_Base64Decode( const char* str, char* res, size_t reslen )
+{
+	if ( str == NULL ) res[0] = 0;
+
+	char* p = const_cast< char* >( str );
+	int cbLen = strlen( p );
+	if ( cbLen & 3 ) { // fix for stupid Kopete's base64 encoder
+		char* p1 = ( char* )alloca( cbLen+5 );
+		memcpy( p1, p, cbLen );
+		p = p1;
+		p1 += cbLen; 
+		for ( int i = 4 - (cbLen & 3); i > 0; i--, p1++, cbLen++ )
+			*p1 = '=';
+		*p1 = 0;
+	}
+
+	NETLIBBASE64 nlb = { p, cbLen, ( PBYTE )res, reslen };
+	MSN_CallService( MS_NETLIB_BASE64DECODE, 0, LPARAM( &nlb ));
+	res[nlb.cbDecoded] = 0;
+}

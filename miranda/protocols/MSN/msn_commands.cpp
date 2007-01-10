@@ -37,6 +37,7 @@ void __cdecl MSNServerThread( ThreadData* info );
 void __cdecl MSNSendfileThread( ThreadData* info );
 
 int MSN_GetPassportAuth( char* authChallengeInfo, char*& parResult );
+void MSN_GetOIMs( const char* initxml );
 
 void mmdecode(char *trg, char *str);
 
@@ -213,6 +214,8 @@ static void sttNotificationMessage( const char* msgBody, bool isInitial )
 				UnreadMessages = atoi( p+4 );
 			if (( p = strstr( MailData, "<OU>" )) != NULL )
 				UnreadJunkEmails = atoi( p+4 );
+
+			MSN_GetOIMs( MailData );
 		}
 
 		// nothing to do, a fake notification
@@ -748,6 +751,12 @@ void MSN_ReceiveMessage( ThreadData* info, char* cmdString, char* params )
 		sttNotificationMessage( msgBody, true );
 	else if ( !strnicmp( tContentType, "text/x-msmsgsinitialmdatanotification", 37 ))
 		sttNotificationMessage( msgBody, true );
+	else if ( !strnicmp( tContentType, "text/x-msmsgsoimnotification", 28 )) {
+		MimeHeaders tFileInfo;
+		tFileInfo.readFromBuffer( msgBody );
+		const char* MailData = tFileInfo[ "Mail-Data" ];
+		if ( MailData != NULL )	MSN_GetOIMs( msgBody );
+	}
 	else if ( !strnicmp( tContentType, "text/x-msmsgsinvite", 19 ))
 		sttInviteMessage( info, msgBody, data.fromEmail, data.fromNick );
 	else if ( !strnicmp( tContentType, "application/x-msnmsgrp2p", 24 ))

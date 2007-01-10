@@ -274,27 +274,26 @@ void MSN_SyncContactToServerGroup( HANDLE hContact, char* userId, char* groupId 
 		dbv.pszVal = NULL;
 
 	bool grpFound = false;
-	if ( groupId != NULL ) {
-		char *p = groupId;
-		while ( p != NULL ) {
-			char *q = strchr( p, ',' );
-			if ( q != NULL ) *(q++) = 0;  
-			
-			if ( lstrcmpA( MSN_GetGroupById( p ), dbv.pszVal ) == 0 ) {
-				groupId = p;
-				grpFound = true;
-			}
-			else {
-				if ( q != NULL || grpFound )
-					msnNsThread->sendPacket( "REM", "FL %s %s", userId, p );
-				else
-					groupId = p;
-			}
-			p = q;
+	char *p = groupId;
+	while ( p != NULL ) {
+		char *q = strchr( p, ',' );
+		if ( q != NULL ) *(q++) = 0;  
+		
+		if ( dbv.pszVal != NULL && lstrcmpA( MSN_GetGroupById( p ), dbv.pszVal ) == 0 ) {
+			groupId = p;
+			grpFound = true;
 		}
+		else {
+			if ( q != NULL || grpFound )
+				msnNsThread->sendPacket( "REM", "FL %s %s", userId, p );
+			else
+				groupId = p;
+		}
+		p = q;
+	}
 
+	if ( groupId != NULL ) {
 		MSN_SetString( hContact, "GroupID", groupId );
-
 		if ( !grpFound )
 			DBWriteContactSettingStringUtf( hContact, "CList", "Group", MSN_GetGroupById( groupId ));
 	}
