@@ -9,6 +9,8 @@ Adam Strzelecki
 Piotr Piastucki
 Alex Sanda
 Aaron Myles Landwehr
+Scott Ellis
+Denis Stanishevskiy
 
 Retired Members:
 Richard Hughes
