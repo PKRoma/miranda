@@ -289,7 +289,7 @@ __inline static int Utils_RestoreWindowPositionNoMove(HWND hwnd,HANDLE hContact,
 //Returns numbers of chars copied.
 #define MS_UTILS_PATHTOABSOLUTE "Utils/PathToAbsolute"
 
-//Unicode versions (0.7+)
+//Unicode versions (0.6.2+)
 #ifdef _UNICODE
   #define MS_UTILS_PATHTORELATIVEW "Utils/PathToRelativeW"
   #define MS_UTILS_PATHTOABSOLUTEW "Utils/PathToAbsoluteW"
