@@ -121,6 +121,21 @@ typedef struct _MenuItemHandles
 /////////////////////////////////////////////////////////////////////////////////////////
 // service functions
 
+void FreeMenuProtos( void )
+{
+	int i;
+
+	for ( i=0; i < cli.menuProtoCount; i++ )
+		if ( cli.menuProtos[i].szProto )
+			mir_free(cli.menuProtos[i].szProto);
+
+	if ( cli.menuProtos ) {
+		mir_free( cli.menuProtos );
+		cli.menuProtos = NULL;
+	}
+	cli.menuProtoCount = 0;
+}
+
 char* GetUniqueProtoName(char * proto)
 {
 	int i, count;
@@ -926,15 +941,7 @@ int MenuModulesLoaded(WPARAM wParam,LPARAM lParam)
 	memset(&menusProtoSingle,0,sizeof(MenuProto));
 	menusProtoSingle.menuID=(HANDLE)-1;
 
-	if (cli.menuProtos)  //free cli.menuProtos
-	{
-		int i;
-		for (i=0; i<cli.menuProtoCount;i++)
-			if (cli.menuProtos[i].szProto) mir_free (cli.menuProtos[i].szProto);
-		mir_free(cli.menuProtos);
-		cli.menuProtos=NULL;
-		cli.menuProtoCount=0;
-	}
+	FreeMenuProtos();
 
 	for (s=0;s<storedProtoCount;s++)
 	{
@@ -1433,15 +1440,11 @@ int InitCustomMenus(void)
 
 void UninitCustomMenus(void)
 {
-	int i;
-    
-    UnloadMoveToGroup();
+	if ( !cli.menuProtos )
+		return;
 
-	if (!cli.menuProtos) return;
-	for (i=0; i<cli.menuProtoCount; i++)
-		if (cli.menuProtos[i].szProto)
-			mir_free(cli.menuProtos[i].szProto);
-	if (cli.menuProtos) mir_free(cli.menuProtos);
+	UnloadMoveToGroup();
+	FreeMenuProtos();
 
 	if (hStatusMainMenuHandles!=NULL)
 		mir_free(hStatusMainMenuHandles);
@@ -1449,9 +1452,9 @@ void UninitCustomMenus(void)
 	hStatusMainMenuHandles=NULL;
 
 	if ( hStatusMenuHandles != NULL )
-		mir_free(hStatusMenuHandles);
+		mir_free( hStatusMenuHandles );
+	hStatusMenuHandles = NULL;
 
-	hStatusMenuHandles=NULL;
-	if (hMainMenuObject) CallService(MO_REMOVEMENUOBJECT,hMainMenuObject,0);
-	if (hStatusMenuObject) CallService(MO_REMOVEMENUOBJECT,hMainMenuObject,0);
+	if ( hMainMenuObject   ) CallService( MO_REMOVEMENUOBJECT, hMainMenuObject, 0 );
+	if ( hStatusMenuObject ) CallService( MO_REMOVEMENUOBJECT, hMainMenuObject, 0 );
 }
