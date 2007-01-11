@@ -908,27 +908,28 @@ static void sttInitFileTransfer(
 		return;
 	}
 
-	char* szContext = NULL;
 	long dwAppID = -1;
 
 	const char	*szSessionID = tFileInfo2[ "SessionID" ],
-				*szEufGuid   = tFileInfo2[ "EUF-GUID" ];
+					*szEufGuid   = tFileInfo2[ "EUF-GUID" ],
+					*szContext   = tFileInfo2[ "Context" ];
 	{	const char* p = tFileInfo2[ "AppID" ];
 		if ( p )
 			dwAppID = atol( p );
 		if ( dwAppID == 12 )
 			dwAppID = 1;
 	}
-	{	const char* p = tFileInfo2[ "Context" ];
-		if ( p != NULL ) {
-			size_t len = strlen( p );
-			szContext = ( char* )alloca( len + 1 );
-			MSN_Base64Decode( p, szContext, len );
-	}	}
 
-	if ( szSessionID == NULL || dwAppID == -1 || szEufGuid == NULL ) {
-		MSN_DebugLog( "Ignoring invalid invitation: SessionID='%s', AppID=%ld, Branch='%s'", szSessionID, dwAppID, szEufGuid );
+	if ( szSessionID == NULL || dwAppID == -1 || szEufGuid == NULL || szContext == NULL ) {
+		MSN_DebugLog( "Ignoring invalid invitation: SessionID='%s', AppID=%ld, Branch='%s',Context='%s'", 
+			szSessionID, dwAppID, szEufGuid, szContext );
 		return;
+	}
+
+	{	size_t len = strlen( szContext );
+		char* p = ( char* )alloca( len + 1 );
+		MSN_Base64Decode( szContext, p, len );
+		szContext = p;
 	}
 
 	srand( time( NULL ));
