@@ -1,4 +1,4 @@
-# Project: scriver_icons
+# Project: Scriver_icons
 
 CPP  = g++.exe
 CC   = gcc.exe

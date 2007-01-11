@@ -1,4 +1,4 @@
-# Project: scriver_a
+# Project: Scriver_a
 
 CPP  = g++.exe
 CC   = gcc.exe
