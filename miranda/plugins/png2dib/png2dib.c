@@ -194,7 +194,7 @@ BOOL __declspec(dllexport) mempng2dib(
 		pbmih->biWidth = iWidth;
 		pbmih->biHeight = iHeight;
 		pbmih->biPlanes = 1;
-		pbmih->biBitCount = ulChannels * 8;
+		pbmih->biBitCount = (unsigned short)(ulChannels * 8);
 		pbmih->biCompression = 0;
 		pbmih->biSizeImage = iWidth * iHeight * ulChannels;
 
