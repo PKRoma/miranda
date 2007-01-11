@@ -1868,7 +1868,7 @@ END
 // TEXT
 //
 
-IDR_CREDITS             TEXT    MOVEABLE PURE   "../docs/credits.txt"
+IDR_CREDITS             TEXT    MOVEABLE PURE   "../docs/contributors.txt"
 
 /////////////////////////////////////////////////////////////////////////////
 //

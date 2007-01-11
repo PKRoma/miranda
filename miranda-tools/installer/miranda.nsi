@@ -2,8 +2,8 @@
 !include "Sections.nsh"
 
 !define MIM_NAME                "Miranda IM"
-!define MIM_VERSION             "0.6"
-!define MIM_PREVIEW             "1" ; comment out for final build
+!define MIM_VERSION             "0.6.1"
+;!define MIM_PREVIEW             "1" ; comment out for final build
 
 !define MIM_BUILD_UNICODE
 
@@ -76,8 +76,8 @@ Section "Miranda IM"
   SetOutPath "$INSTDIR"
   File "${MIM_BUILD_DIR}\miranda32.exe"
   File "${MIM_BUILD_DIRANSI}\dbtool.exe"
-  File /oname=contributors.txt "${MIM_BUILD_SRC}\docs\credits.txt"
-  File /oname=readme.txt "${MIM_BUILD_SRC}\docs\releasenotes.txt"
+  File /oname=contributors.txt "${MIM_BUILD_SRC}\docs\contributors.txt"
+  File /oname=readme.txt "${MIM_BUILD_SRC}\docs\readme.txt"
   File /oname=license.txt "${MIM_BUILD_SRC}\docs\license.txt"
 
   SetOverWrite off
