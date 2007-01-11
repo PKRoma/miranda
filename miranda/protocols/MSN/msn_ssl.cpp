@@ -92,10 +92,8 @@ static const char oimPacket[] =
 "</soap:Envelope>";
 
 static const char oimGetAction[] = "<messageId>%s</messageId> <alsoMarkAsRead>%s</alsoMarkAsRead>";
-static const char oimDeleteAction[] =
-"<messageIds>"
-	"<messageId>%s</messageId>" 
-"</messageIds>";
+static const char oimDeleteAction[] = "<messageIds>%s</messageIds>";
+static const char oimDeleteActionAtom[] = "<messageId>%s</messageId>"; 
 
 
 char pToken[256], tToken[256]; 
@@ -231,7 +229,7 @@ char* SSL_WinInet::getSslResult( char* parUrl, char* parAuthInfo, char* hdrs )
 		INTERNET_FLAG_SECURE;
 
 	HINTERNET tNetHandle;
-	char* tBuffer = ( char* )alloca( SSL_BUF_SIZE );
+	char* tBuffer = ( char* )alloca( SSL_BUF_SIZE + 1 );
 
 	if ( MyOptions.UseProxy ) {
 		DWORD ptype = MSN_GetByte( "NLProxyType", 0 );
@@ -338,7 +336,7 @@ LBL_Restart:
 							f_InternetReadFile( tRequest, tBuffer+dwOffset, SSL_BUF_SIZE - dwOffset, &dwSize);
 							dwOffset += dwSize;
 						}
-						while (dwSize != 0);
+						while (dwSize != 0 && dwOffset < SSL_BUF_SIZE);
 						tBuffer[dwOffset] = 0;
 
 						tSslAnswer = mir_strdup( tBuffer );
@@ -380,7 +378,7 @@ LBL_Restart:
 						f_InternetReadFile( tRequest, tBuffer+dwOffset, SSL_BUF_SIZE - dwOffset, &dwSize);
 						dwOffset += dwSize;
 					}
-					while (dwSize != 0);
+					while (dwSize != 0  && dwOffset < SSL_BUF_SIZE);
 					tBuffer[dwOffset] = 0;
 
 					MSN_DebugLog( "SSL response:" );
@@ -559,7 +557,7 @@ char* SSL_OpenSsl::getSslResult( char* parUrl, char* parAuthInfo, char* hdrs )
 			if ( pfn_SSL_connect( ssl ) > 0 ) {
 				MSN_DebugLog( "SSL connection succeeded" );
 
-				char *buf = ( char* )alloca( SSL_BUF_SIZE );
+				char *buf = ( char* )alloca( SSL_BUF_SIZE + 1 );
 
 				int nBytes = mir_snprintf( buf, SSL_BUF_SIZE,
 					"POST /%s HTTP/1.1\r\n"
@@ -567,26 +565,27 @@ char* SSL_OpenSsl::getSslResult( char* parUrl, char* parAuthInfo, char* hdrs )
 					"%s"
 					"User-Agent: %s\r\n"
 					"Content-Length: %u\r\n"
+					"Content-Type: text/xml; charset=utf-8\r\n"
 					"Host: %s\r\n"
 					"Connection: close\r\n"
-					"Cache-Control: no-cache\r\n\r\n%s", path, hdrs ? hdrs : "",
-					MSN_USER_AGENT, strlen( parAuthInfo ), url+8, parAuthInfo );
+					"Cache-Control: no-cache\r\n\r\n", path, hdrs ? hdrs : "",
+					MSN_USER_AGENT, strlen( parAuthInfo ), url+8 );
 
 //				MSN_DebugLog( "Sending SSL query:\n%s", buf );
 				pfn_SSL_write( ssl, buf, strlen( buf ));
-
+				pfn_SSL_write( ssl, parAuthInfo, strlen( parAuthInfo ));
+				
 				nBytes = 0;
 				unsigned dwSize;
 				do {
-					dwSize = pfn_SSL_read( ssl, buf+nBytes, SSL_BUF_SIZE );
+					dwSize = pfn_SSL_read( ssl, buf+nBytes, SSL_BUF_SIZE - nBytes );
 					nBytes += dwSize;
 				}
-				while (dwSize != 0);
+				while (dwSize != 0 && nBytes < SSL_BUF_SIZE);
 				buf[nBytes] = 0;
 
 				if ( nBytes > 0 ) {
-					result = ( char* )mir_alloc( nBytes+1 );
-					memcpy( result, buf, nBytes+1 );
+					result = mir_strdup( buf );
 
 					MSN_DebugLog( "SSL read successfully read %d bytes:", nBytes );
 					MSN_CallService( MS_NETLIB_LOG, ( WPARAM )hNetlibUser, ( LPARAM )result );
@@ -740,12 +739,15 @@ void MSN_GetOIMs( const char* initxml )
 		return;
 	}
 
-	char szData1[1024], szData[2048];
 	const char *xmlst = initxml;
+
+	char* szDelAct = ( char* )mir_calloc( 1 );
+	size_t lenDelAct = 1;
 
 	for (;;)
 	{
 		char szId[128], szEmail[MSN_MAX_EMAIL_LEN];
+		char szData1[1024], szData[2048];
 
 		xmlst = strstr( xmlst, "<M>" );
 		if ( xmlst == NULL ) break;
@@ -762,18 +764,18 @@ void MSN_GetOIMs( const char* initxml )
 		if (tResult != NULL)
 		{
 			char szTime[32], *p;
-			time_t evtm = 0;
+			time_t evtm;
 
-			txtParseParam( tResult, "FILETIME", "[", "]", szTime, strlen( szTime ));
-			FILETIME ftm;
-			ftm.dwLowDateTime = strtoul( szTime, &p, 16 );
+			txtParseParam( tResult, "FILETIME", "[", "]", szTime, sizeof( szTime ));
+			
+			unsigned filetimeLo = strtoul( szTime, &p, 16 );
 			if ( *p == ':' ) { 
-				ftm.dwHighDateTime = strtoul( p+1, &p, 16 );
-				
-				LARGE_INTEGER *lin = (LARGE_INTEGER*)&ftm;
-				lin->QuadPart /= 10000000;
-				lin->QuadPart -= 11644473600i64;
-				evtm = lin->LowPart;
+				unsigned __int64 filetime = strtoul( p+1, &p, 16 );
+				filetime <<= 32;
+				filetime |= filetimeLo;
+				filetime /= 10000000;
+				filetime -= 11644473600ui64;
+				evtm = ( time_t )filetime;
 			}
 			else
 				evtm = time( NULL );
@@ -781,7 +783,7 @@ void MSN_GetOIMs( const char* initxml )
 			txtParseParam( tResult, "<GetMessageResult>", "\r\n\r\n", "\r\n", tResult, strlen( tResult ));
 			
 			size_t len = strlen( tResult );
-			char* szMsg = ( char* )alloca( len + 1 );
+			char* szMsg = ( char* )alloca( len * 4 + 4 );
 
 			MSN_Base64Decode( tResult, szMsg, len );
 
@@ -791,16 +793,13 @@ void MSN_GetOIMs( const char* initxml )
 			mir_utf8decode( szMsg, &szMsgU );
 
 			size_t alen = strlen( szMsg );
-			size_t ulen = wcslen( szMsgU );
 
-			char *szMsgC = ( char* )mir_alloc( alen + ulen + 4 );
-			memcpy( szMsgC, szMsg, alen + 1);
-			memcpy( szMsgC+alen+1, szMsgU, ( ulen + 1 ) * sizeof( wchar_t ));
+			wcscpy(( wchar_t* )( szMsg+alen+1 ), szMsgU );
 			
 			mir_free( szMsgU );
 
 			PROTORECVEVENT pre;
-			pre.szMessage = ( char* )szMsgC;
+			pre.szMessage = szMsg;
 			pre.flags = PREF_UNICODE /*+ (( isRtl ) ? PREF_RTL : 0)*/;
 			pre.timestamp = evtm;
 			pre.lParam = 0;
@@ -812,16 +811,30 @@ void MSN_GetOIMs( const char* initxml )
 			ccs.lParam = ( LPARAM )&pre;
 			MSN_CallService( MS_PROTO_CHAINRECV, 0, ( LPARAM )&ccs );
 
-			mir_snprintf( szData1, sizeof( szData1 ), oimDeleteAction, szId);
-			mir_snprintf( szData, sizeof( szData ), oimPacket, tToken, pToken, "DeleteMessages", szData1, "DeleteMessages" );
-			
-			tResult = pAgent->getSslResult( "https://rsi.hotmail.com/rsi/rsi.asmx", szData,
-				"SOAPAction: \"http://www.hotmail.msn.com/ws/2004/09/oim/rsi/DeleteMessages\"\r\n" );
-
+			lenDelAct += mir_snprintf( szData1, sizeof( szData1 ), oimDeleteActionAtom, szId);
+			szDelAct = ( char* )mir_realloc( szDelAct, lenDelAct );
+			strcat( szDelAct, szData1 );
 		}
 
 		xmlst += 3;
 	}
+	
+	if ( lenDelAct > 1 )
+	{
+		lenDelAct += sizeof( oimDeleteAction );
+		char* szDelActAll = ( char* )alloca ( lenDelAct );
+		mir_snprintf( szDelActAll, lenDelAct, oimDeleteAction, szDelAct);
+		
+		lenDelAct += sizeof( oimPacket ) + sizeof( tToken ) + sizeof( pToken ) + 28;
+		char* szDelPack = ( char* )alloca ( lenDelAct );
+		mir_snprintf( szDelPack, lenDelAct, oimPacket, tToken, pToken, "DeleteMessages", szDelActAll, "DeleteMessages" );
+			
+		char* tResult = pAgent->getSslResult( "https://rsi.hotmail.com/rsi/rsi.asmx", szDelPack,
+			"SOAPAction: \"http://www.hotmail.msn.com/ws/2004/09/oim/rsi/DeleteMessages\"\r\n" );
+		mir_free( tResult );
+	}
+	mir_free( szDelAct );
+
 	delete pAgent;
 }
 
