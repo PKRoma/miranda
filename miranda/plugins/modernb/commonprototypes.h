@@ -71,8 +71,6 @@ extern BOOL g_bTransparentFlag;
 extern HINSTANCE g_hInst;
 extern HIMAGELIST hCListImages;
 extern HFONT TitleBarFont;
-extern struct _menuProto * menusProto;
-extern int AllocedProtos;
 extern BOOL g_mutex_bChangingMode;
 extern HANDLE g_hMainThread;
 extern DWORD g_dwMainThreadID;
