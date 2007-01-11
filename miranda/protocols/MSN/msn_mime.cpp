@@ -113,7 +113,7 @@ const char* MimeHeaders::readFromBuffer( const char* parString )
 
 		const char* peol = strchr( parString, '\r' );
 		if ( peol == NULL )
-			peol = parString + strlen(parString)+1;
+			peol = parString + strlen(parString);
 
 		int cbLen = int( peol - parString );
 		if ( cbLen > sizeof( line ))
