@@ -3,6 +3,18 @@ Microsoft Developer Studio Workspace File, Format Version 6.00
 
 ###############################################################################
 
+Project: "ICONS"="..\protocols\IcqOscarJ\icons_pack\ICONS.dsp" - Package Owner=<4>
+
+Package=<5>
+{{{
+}}}
+
+Package=<4>
+{{{
+}}}
+
+###############################################################################
+
 Project: "IRC"="..\protocols\IRC\IRC.dsp" - Package Owner=<4>
 
 Package=<5>
