@@ -670,20 +670,26 @@ int MSN_GetPassportAuth( char* authChallengeInfo, char*& parResult )
 
 		int status = 0;
 		sscanf( tResult, "HTTP/1.1 %d", &status );
-		if ( status == 302 ) // Handle redirect
-		{
+LBL_Restart:
+		if ( status == 100 ) { // Continue
+			char* p = strstr( tResult + 10, "HTTP/1.1" );
+			if ( p == NULL )
+				status = 404;
+			else
+				sscanf( p, "HTTP/1.1 %d", &status );
+			goto LBL_Restart;
+		}
+		if ( status == 302 ) { // Handle redirect
 			if (txtParseParam(tResult, NULL, "Location:", "\r", szPassportHost, sizeof(szPassportHost))) 
 				MSN_DebugLog( "Redirected to '%s'", szPassportHost );
 			else break;
 		}
-		else if (status == 200) 
-		{
+		else if (status == 200) {
 			if (txtParseParam(tResult, NULL, "<psf:redirectUrl>", "<", szPassportHost, sizeof(szPassportHost))) 
 				MSN_DebugLog( "Redirected to '%s'", szPassportHost );
 			else break;
 		}
-		else
-		{
+		else {
 			if ( defaultUrlAllow ) {
 				strcpy( szPassportHost, defaultPassportUrl );
 				defaultUrlAllow = false;
