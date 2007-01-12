@@ -1043,5 +1043,9 @@ SOURCE=.\res\useronli.ico
 SOURCE=.\res\viewdetails.ico
 # End Source File
 # End Group
+# Begin Source File
+
+SOURCE=..\docs\contributors.txt
+# End Source File
 # End Target
 # End Project

@@ -113,6 +113,7 @@ static HTREEITEM FindNamedTreeItemAtRoot(HWND hwndTree, const TCHAR* name)
 #define DM_REBUILD_STREE (WM_USER+1)
 #define DM_HIDEPANE      (WM_USER+2)
 #define DM_SHOWPANE      (WM_USER+3)
+#define DM_CHECKENABLED  (WM_USER+4)
 BOOL CALLBACK DlgProcSoundOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam)
 {
 	static HWND hwndTree = NULL;
@@ -124,6 +125,8 @@ BOOL CALLBACK DlgProcSoundOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPa
 		SendMessage(hwndDlg, DM_HIDEPANE, 0, 0);
 		SendMessage(hwndDlg, DM_REBUILD_STREE, 0, 0);
 		TreeView_SetItemState(hwndTree, 0, TVIS_SELECTED, TVIS_SELECTED);
+        CheckDlgButton(hwndDlg, IDC_ENABLESOUNDS, DBGetContactSettingByte(NULL, "Skin", "UseSound", 1));
+        SendMessage(hwndDlg, DM_CHECKENABLED, 0, 0);
 		return TRUE;
 
 	case DM_REBUILD_STREE:
@@ -190,7 +193,22 @@ BOOL CALLBACK DlgProcSoundOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPa
 		ShowWindow(GetDlgItem(hwndDlg, IDC_PREVIEW), SW_SHOW);
 		ShowWindow(GetDlgItem(hwndDlg, IDC_GETMORE), SW_SHOW);
 		break;
+    case DM_CHECKENABLED:
+    {
+        EnableWindow(GetDlgItem(hwndDlg, IDC_SOUNDTREE), IsDlgButtonChecked(hwndDlg, IDC_ENABLESOUNDS));
+        if (!IsDlgButtonChecked(hwndDlg, IDC_ENABLESOUNDS)) {
+            SendMessage(hwndDlg, DM_HIDEPANE, 0, 0);
+        }
+        else {
+            if (TreeView_GetSelection(hwndTree)&&TreeView_GetParent(hwndTree, TreeView_GetSelection(hwndTree)))
+                SendMessage(hwndDlg, DM_SHOWPANE, 0, 0);
+        }
+        break;
+    }
 	case WM_COMMAND:
+		if(LOWORD(wParam)==IDC_ENABLESOUNDS) {
+            SendMessage(hwndDlg, DM_CHECKENABLED, 0, 0);
+        }
 		if(LOWORD(wParam)==IDC_PREVIEW) {
 			TVITEM tvi;
 			HTREEITEM hti;
@@ -273,6 +291,8 @@ BOOL CALLBACK DlgProcSoundOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPa
 			if (((LPNMHDR)lParam)->code == PSN_APPLY)
 			{	
 				int i;
+                
+                DBWriteContactSettingByte(NULL, "Skin", "UseSound", (BYTE) IsDlgButtonChecked(hwndDlg, IDC_ENABLESOUNDS));
 				for(i=0;i<soundCount;i++) {
 					if(soundList[i].tempFile)
 						DBWriteContactSettingString(NULL,"SkinSounds",soundList[i].name,soundList[i].tempFile);
@@ -300,7 +320,6 @@ BOOL CALLBACK DlgProcSoundOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPa
 
 						tvi.hItem=TreeView_GetNextSibling(hwndTree,tvi.hItem);
 				}	}
-
 				return TRUE;
 			}
 			break;
