@@ -824,7 +824,7 @@ END
 IDD_OPT_SOUND DIALOGEX 0, 0, 285, 240
 STYLE DS_3DLOOK | DS_FIXEDSYS | WS_CHILD | WS_VISIBLE
 EXSTYLE WS_EX_CONTROLPARENT
-FONT 8, "MS Shell Dlg", 0, 0, 0x1
+FONT 8, "MS Shell Dlg"
 BEGIN
     GROUPBOX        "Sounds",IDC_STATIC,4,4,277,154
     PUSHBUTTON      "&Change...",IDC_CHANGE,16,213,50,14
@@ -834,12 +834,14 @@ BEGIN
     CONTROL         "Tree1",IDC_SOUNDTREE,"SysTreeView32",TVS_HASBUTTONS | 
                     TVS_HASLINES | TVS_LINESATROOT | TVS_DISABLEDRAGDROP | 
                     TVS_SHOWSELALWAYS | TVS_FULLROWSELECT | WS_BORDER | 
-                    WS_TABSTOP,12,15,261,137
+                    WS_TABSTOP,12,33,261,119
     GROUPBOX        "Sound Information",IDC_SGROUP,4,162,277,71
     LTEXT           "Location:",IDC_SLOC,17,190,40,9
     LTEXT           "",IDC_LOCATION,65,190,208,18
     LTEXT           "Name:",IDC_NAME,17,174,39,9
     LTEXT           "",IDC_NAMEVAL,64,174,209,9
+    CONTROL         "Enable sound events",IDC_ENABLESOUNDS,"Button",
+                    BS_AUTOCHECKBOX | WS_TABSTOP,12,17,261,10
 END
 
 IDD_OPT_ICONS DIALOGEX 0, 0, 257, 193
@@ -1266,7 +1268,7 @@ BEGIN
 END
 
 IDD_OPT_GENMENU DIALOGEX 0, 0, 306, 241
-STYLE DS_SETFONT | DS_FIXEDSYS | WS_CHILD
+STYLE DS_FIXEDSYS | WS_CHILD
 FONT 8, "MS Shell Dlg", 0, 0, 0x1
 BEGIN
     CONTROL         "Tree1",IDC_MENUITEMS,"SysTreeView32",TVS_SHOWSELALWAYS | 
@@ -1290,7 +1292,7 @@ BEGIN
 END
 
 IDD_OPT_PROTOCOLORDER DIALOGEX 0, 0, 300, 211
-STYLE DS_SETFONT | DS_FIXEDSYS | WS_CHILD
+STYLE DS_FIXEDSYS | WS_CHILD
 FONT 8, "MS Shell Dlg", 0, 0, 0x1
 BEGIN
     CTEXT           "Note: Miranda IM will have to be restarted for changes to take effect.",
@@ -1302,6 +1304,7 @@ BEGIN
                     IDC_STATIC,85,15,132,20
     PUSHBUTTON      "Reset",IDC_RESETPROTOCOLDATA,120,140,50,14,BS_NOTIFY
 END
+
 
 /////////////////////////////////////////////////////////////////////////////
 //

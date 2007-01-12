@@ -387,6 +387,7 @@
 #define IDC_RESTART                     1692
 #define IDC_TAB                         1693
 #define IDC_IDLETERMINAL                1694
+#define IDC_ENABLESOUNDS                1695
 #define IDI_SEARCHALL                   32548
 #define ID_ICQ_EXIT                     40001
 #define IDM_COPY                        40001
@@ -413,12 +414,12 @@
 #define POPUP_DELETEGROUP               40053
 
 // Next default values for new objects
-//
+// 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NEXT_RESOURCE_VALUE        274
 #define _APS_NEXT_COMMAND_VALUE         40018
-#define _APS_NEXT_CONTROL_VALUE         1695
+#define _APS_NEXT_CONTROL_VALUE         1696
 #define _APS_NEXT_SYMED_VALUE           101
 #endif
 #endif
