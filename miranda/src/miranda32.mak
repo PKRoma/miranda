@@ -198,6 +198,8 @@ CLEAN :
 	-@erase "$(INTDIR)\profilemanager.sbr"
 	-@erase "$(INTDIR)\protochains.obj"
 	-@erase "$(INTDIR)\protochains.sbr"
+	-@erase "$(INTDIR)\protocolorder.obj"
+	-@erase "$(INTDIR)\protocolorder.sbr"
 	-@erase "$(INTDIR)\protocols.obj"
 	-@erase "$(INTDIR)\protocols.sbr"
 	-@erase "$(INTDIR)\protodir.obj"
@@ -329,6 +331,7 @@ BSC32_SBRS= \
 	"$(INTDIR)\clcutils.sbr" \
 	"$(INTDIR)\clistcore.sbr" \
 	"$(INTDIR)\clistevents.sbr" \
+	"$(INTDIR)\clistmenus.sbr" \
 	"$(INTDIR)\clistmod.sbr" \
 	"$(INTDIR)\clistsettings.sbr" \
 	"$(INTDIR)\clisttray.sbr" \
@@ -336,8 +339,11 @@ BSC32_SBRS= \
 	"$(INTDIR)\cluiservices.sbr" \
 	"$(INTDIR)\contact.sbr" \
 	"$(INTDIR)\Docking.sbr" \
+	"$(INTDIR)\genmenu.sbr" \
+	"$(INTDIR)\genmenuopt.sbr" \
 	"$(INTDIR)\groups.sbr" \
 	"$(INTDIR)\keyboard.sbr" \
+	"$(INTDIR)\movetogroup.sbr" \
 	"$(INTDIR)\FontOptions.sbr" \
 	"$(INTDIR)\FontService.sbr" \
 	"$(INTDIR)\module_fonts.sbr" \
@@ -345,10 +351,7 @@ BSC32_SBRS= \
 	"$(INTDIR)\extracticon.sbr" \
 	"$(INTDIR)\IcoLib.sbr" \
 	"$(INTDIR)\skin2icons.sbr" \
-	"$(INTDIR)\genmenuopt.sbr" \
-	"$(INTDIR)\movetogroup.sbr" \
-	"$(INTDIR)\clistmenus.sbr" \
-	"$(INTDIR)\genmenu.sbr"
+	"$(INTDIR)\protocolorder.sbr"
 
 "$(OUTDIR)\miranda32.bsc" : "$(OUTDIR)" $(BSC32_SBRS)
     $(BSC32) @<<
@@ -434,6 +437,7 @@ LINK32_OBJS= \
 	"$(INTDIR)\clcutils.obj" \
 	"$(INTDIR)\clistcore.obj" \
 	"$(INTDIR)\clistevents.obj" \
+	"$(INTDIR)\clistmenus.obj" \
 	"$(INTDIR)\clistmod.obj" \
 	"$(INTDIR)\clistsettings.obj" \
 	"$(INTDIR)\clisttray.obj" \
@@ -441,8 +445,11 @@ LINK32_OBJS= \
 	"$(INTDIR)\cluiservices.obj" \
 	"$(INTDIR)\contact.obj" \
 	"$(INTDIR)\Docking.obj" \
+	"$(INTDIR)\genmenu.obj" \
+	"$(INTDIR)\genmenuopt.obj" \
 	"$(INTDIR)\groups.obj" \
 	"$(INTDIR)\keyboard.obj" \
+	"$(INTDIR)\movetogroup.obj" \
 	"$(INTDIR)\FontOptions.obj" \
 	"$(INTDIR)\FontService.obj" \
 	"$(INTDIR)\module_fonts.obj" \
@@ -451,10 +458,7 @@ LINK32_OBJS= \
 	"$(INTDIR)\IcoLib.obj" \
 	"$(INTDIR)\skin2icons.obj" \
 	"$(INTDIR)\resource.res" \
-	"$(INTDIR)\genmenuopt.obj" \
-	"$(INTDIR)\movetogroup.obj" \
-	"$(INTDIR)\clistmenus.obj" \
-	"$(INTDIR)\genmenu.obj"
+	"$(INTDIR)\protocolorder.obj"
 
 "..\bin\release\miranda32.exe" : "$(OUTDIR)" $(DEF_FILE) $(LINK32_OBJS)
     $(LINK32) @<<
@@ -628,6 +632,8 @@ CLEAN :
 	-@erase "$(INTDIR)\profilemanager.sbr"
 	-@erase "$(INTDIR)\protochains.obj"
 	-@erase "$(INTDIR)\protochains.sbr"
+	-@erase "$(INTDIR)\protocolorder.obj"
+	-@erase "$(INTDIR)\protocolorder.sbr"
 	-@erase "$(INTDIR)\protocols.obj"
 	-@erase "$(INTDIR)\protocols.sbr"
 	-@erase "$(INTDIR)\protodir.obj"
@@ -760,6 +766,7 @@ BSC32_SBRS= \
 	"$(INTDIR)\clcutils.sbr" \
 	"$(INTDIR)\clistcore.sbr" \
 	"$(INTDIR)\clistevents.sbr" \
+	"$(INTDIR)\clistmenus.sbr" \
 	"$(INTDIR)\clistmod.sbr" \
 	"$(INTDIR)\clistsettings.sbr" \
 	"$(INTDIR)\clisttray.sbr" \
@@ -767,8 +774,11 @@ BSC32_SBRS= \
 	"$(INTDIR)\cluiservices.sbr" \
 	"$(INTDIR)\contact.sbr" \
 	"$(INTDIR)\Docking.sbr" \
+	"$(INTDIR)\genmenu.sbr" \
+	"$(INTDIR)\genmenuopt.sbr" \
 	"$(INTDIR)\groups.sbr" \
 	"$(INTDIR)\keyboard.sbr" \
+	"$(INTDIR)\movetogroup.sbr" \
 	"$(INTDIR)\FontOptions.sbr" \
 	"$(INTDIR)\FontService.sbr" \
 	"$(INTDIR)\module_fonts.sbr" \
@@ -776,10 +786,7 @@ BSC32_SBRS= \
 	"$(INTDIR)\extracticon.sbr" \
 	"$(INTDIR)\IcoLib.sbr" \
 	"$(INTDIR)\skin2icons.sbr" \
-	"$(INTDIR)\genmenuopt.sbr" \
-	"$(INTDIR)\movetogroup.sbr" \
-	"$(INTDIR)\clistmenus.sbr" \
-	"$(INTDIR)\genmenu.sbr"
+	"$(INTDIR)\protocolorder.sbr"
 
 "$(OUTDIR)\miranda32.bsc" : "$(OUTDIR)" $(BSC32_SBRS)
     $(BSC32) @<<
@@ -865,6 +872,7 @@ LINK32_OBJS= \
 	"$(INTDIR)\clcutils.obj" \
 	"$(INTDIR)\clistcore.obj" \
 	"$(INTDIR)\clistevents.obj" \
+	"$(INTDIR)\clistmenus.obj" \
 	"$(INTDIR)\clistmod.obj" \
 	"$(INTDIR)\clistsettings.obj" \
 	"$(INTDIR)\clisttray.obj" \
@@ -872,8 +880,11 @@ LINK32_OBJS= \
 	"$(INTDIR)\cluiservices.obj" \
 	"$(INTDIR)\contact.obj" \
 	"$(INTDIR)\Docking.obj" \
+	"$(INTDIR)\genmenu.obj" \
+	"$(INTDIR)\genmenuopt.obj" \
 	"$(INTDIR)\groups.obj" \
 	"$(INTDIR)\keyboard.obj" \
+	"$(INTDIR)\movetogroup.obj" \
 	"$(INTDIR)\FontOptions.obj" \
 	"$(INTDIR)\FontService.obj" \
 	"$(INTDIR)\module_fonts.obj" \
@@ -882,10 +893,7 @@ LINK32_OBJS= \
 	"$(INTDIR)\IcoLib.obj" \
 	"$(INTDIR)\skin2icons.obj" \
 	"$(INTDIR)\resource.res" \
-	"$(INTDIR)\genmenuopt.obj" \
-	"$(INTDIR)\movetogroup.obj" \
-	"$(INTDIR)\clistmenus.obj" \
-	"$(INTDIR)\genmenu.obj"
+	"$(INTDIR)\protocolorder.obj"
 
 "..\bin\debug\miranda32.exe" : "$(OUTDIR)" $(DEF_FILE) $(LINK32_OBJS)
     $(LINK32) @<<
@@ -979,6 +987,7 @@ CLEAN :
 	-@erase "$(INTDIR)\path.obj"
 	-@erase "$(INTDIR)\profilemanager.obj"
 	-@erase "$(INTDIR)\protochains.obj"
+	-@erase "$(INTDIR)\protocolorder.obj"
 	-@erase "$(INTDIR)\protocols.obj"
 	-@erase "$(INTDIR)\protodir.obj"
 	-@erase "$(INTDIR)\resizer.obj"
@@ -1094,6 +1103,7 @@ LINK32_OBJS= \
 	"$(INTDIR)\clcutils.obj" \
 	"$(INTDIR)\clistcore.obj" \
 	"$(INTDIR)\clistevents.obj" \
+	"$(INTDIR)\clistmenus.obj" \
 	"$(INTDIR)\clistmod.obj" \
 	"$(INTDIR)\clistsettings.obj" \
 	"$(INTDIR)\clisttray.obj" \
@@ -1101,8 +1111,11 @@ LINK32_OBJS= \
 	"$(INTDIR)\cluiservices.obj" \
 	"$(INTDIR)\contact.obj" \
 	"$(INTDIR)\Docking.obj" \
+	"$(INTDIR)\genmenu.obj" \
+	"$(INTDIR)\genmenuopt.obj" \
 	"$(INTDIR)\groups.obj" \
 	"$(INTDIR)\keyboard.obj" \
+	"$(INTDIR)\movetogroup.obj" \
 	"$(INTDIR)\FontOptions.obj" \
 	"$(INTDIR)\FontService.obj" \
 	"$(INTDIR)\module_fonts.obj" \
@@ -1111,10 +1124,7 @@ LINK32_OBJS= \
 	"$(INTDIR)\IcoLib.obj" \
 	"$(INTDIR)\skin2icons.obj" \
 	"$(INTDIR)\resource.res" \
-	"$(INTDIR)\genmenuopt.obj" \
-	"$(INTDIR)\movetogroup.obj" \
-	"$(INTDIR)\clistmenus.obj" \
-	"$(INTDIR)\genmenu.obj"
+	"$(INTDIR)\protocolorder.obj"
 
 "..\bin\Release Unicode\miranda32.exe" : "$(OUTDIR)" $(DEF_FILE) $(LINK32_OBJS)
     $(LINK32) @<<
@@ -1288,6 +1298,8 @@ CLEAN :
 	-@erase "$(INTDIR)\profilemanager.sbr"
 	-@erase "$(INTDIR)\protochains.obj"
 	-@erase "$(INTDIR)\protochains.sbr"
+	-@erase "$(INTDIR)\protocolorder.obj"
+	-@erase "$(INTDIR)\protocolorder.sbr"
 	-@erase "$(INTDIR)\protocols.obj"
 	-@erase "$(INTDIR)\protocols.sbr"
 	-@erase "$(INTDIR)\protodir.obj"
@@ -1420,6 +1432,7 @@ BSC32_SBRS= \
 	"$(INTDIR)\clcutils.sbr" \
 	"$(INTDIR)\clistcore.sbr" \
 	"$(INTDIR)\clistevents.sbr" \
+	"$(INTDIR)\clistmenus.sbr" \
 	"$(INTDIR)\clistmod.sbr" \
 	"$(INTDIR)\clistsettings.sbr" \
 	"$(INTDIR)\clisttray.sbr" \
@@ -1427,8 +1440,11 @@ BSC32_SBRS= \
 	"$(INTDIR)\cluiservices.sbr" \
 	"$(INTDIR)\contact.sbr" \
 	"$(INTDIR)\Docking.sbr" \
+	"$(INTDIR)\genmenu.sbr" \
+	"$(INTDIR)\genmenuopt.sbr" \
 	"$(INTDIR)\groups.sbr" \
 	"$(INTDIR)\keyboard.sbr" \
+	"$(INTDIR)\movetogroup.sbr" \
 	"$(INTDIR)\FontOptions.sbr" \
 	"$(INTDIR)\FontService.sbr" \
 	"$(INTDIR)\module_fonts.sbr" \
@@ -1436,10 +1452,7 @@ BSC32_SBRS= \
 	"$(INTDIR)\extracticon.sbr" \
 	"$(INTDIR)\IcoLib.sbr" \
 	"$(INTDIR)\skin2icons.sbr" \
-	"$(INTDIR)\genmenuopt.sbr" \
-	"$(INTDIR)\movetogroup.sbr" \
-	"$(INTDIR)\clistmenus.sbr" \
-	"$(INTDIR)\genmenu.sbr"
+	"$(INTDIR)\protocolorder.sbr"
 
 "$(OUTDIR)\miranda32.bsc" : "$(OUTDIR)" $(BSC32_SBRS)
     $(BSC32) @<<
@@ -1525,6 +1538,7 @@ LINK32_OBJS= \
 	"$(INTDIR)\clcutils.obj" \
 	"$(INTDIR)\clistcore.obj" \
 	"$(INTDIR)\clistevents.obj" \
+	"$(INTDIR)\clistmenus.obj" \
 	"$(INTDIR)\clistmod.obj" \
 	"$(INTDIR)\clistsettings.obj" \
 	"$(INTDIR)\clisttray.obj" \
@@ -1532,8 +1546,11 @@ LINK32_OBJS= \
 	"$(INTDIR)\cluiservices.obj" \
 	"$(INTDIR)\contact.obj" \
 	"$(INTDIR)\Docking.obj" \
+	"$(INTDIR)\genmenu.obj" \
+	"$(INTDIR)\genmenuopt.obj" \
 	"$(INTDIR)\groups.obj" \
 	"$(INTDIR)\keyboard.obj" \
+	"$(INTDIR)\movetogroup.obj" \
 	"$(INTDIR)\FontOptions.obj" \
 	"$(INTDIR)\FontService.obj" \
 	"$(INTDIR)\module_fonts.obj" \
@@ -1542,10 +1559,7 @@ LINK32_OBJS= \
 	"$(INTDIR)\IcoLib.obj" \
 	"$(INTDIR)\skin2icons.obj" \
 	"$(INTDIR)\resource.res" \
-	"$(INTDIR)\genmenuopt.obj" \
-	"$(INTDIR)\movetogroup.obj" \
-	"$(INTDIR)\clistmenus.obj" \
-	"$(INTDIR)\genmenu.obj"
+	"$(INTDIR)\protocolorder.obj"
 
 "..\bin\Debug Unicode\miranda32.exe" : "$(OUTDIR)" $(DEF_FILE) $(LINK32_OBJS)
     $(LINK32) @<<
@@ -4498,6 +4512,38 @@ SOURCE=.\modules\clist\movetogroup.c
 
 
 "$(INTDIR)\movetogroup.obj"	"$(INTDIR)\movetogroup.sbr" : $(SOURCE) "$(INTDIR)" "$(INTDIR)\miranda32.pch"
+	$(CPP) $(CPP_PROJ) $(SOURCE)
+
+
+!ENDIF 
+
+SOURCE=.\modules\clist\protocolorder.c
+
+!IF  "$(CFG)" == "miranda32 - Win32 Release"
+
+
+"$(INTDIR)\protocolorder.obj"	"$(INTDIR)\protocolorder.sbr" : $(SOURCE) "$(INTDIR)" "$(INTDIR)\miranda32.pch"
+	$(CPP) $(CPP_PROJ) $(SOURCE)
+
+
+!ELSEIF  "$(CFG)" == "miranda32 - Win32 Debug"
+
+
+"$(INTDIR)\protocolorder.obj"	"$(INTDIR)\protocolorder.sbr" : $(SOURCE) "$(INTDIR)" "$(INTDIR)\miranda32.pch"
+	$(CPP) $(CPP_PROJ) $(SOURCE)
+
+
+!ELSEIF  "$(CFG)" == "miranda32 - Win32 Release Unicode"
+
+
+"$(INTDIR)\protocolorder.obj" : $(SOURCE) "$(INTDIR)" "$(INTDIR)\miranda32.pch"
+	$(CPP) $(CPP_PROJ) $(SOURCE)
+
+
+!ELSEIF  "$(CFG)" == "miranda32 - Win32 Debug Unicode"
+
+
+"$(INTDIR)\protocolorder.obj"	"$(INTDIR)\protocolorder.sbr" : $(SOURCE) "$(INTDIR)" "$(INTDIR)\miranda32.pch"
 	$(CPP) $(CPP_PROJ) $(SOURCE)
 
 

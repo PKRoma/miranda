@@ -27,6 +27,10 @@ NULL=
 NULL=nul
 !ENDIF 
 
+CPP=cl.exe
+MTL=midl.exe
+RSC=rc.exe
+
 !IF  "$(CFG)" == "clist_nicer - Win32 Release"
 
 OUTDIR=.\Release
@@ -68,7 +72,6 @@ CLEAN :
 	-@erase "$(INTDIR)\groupmenu.obj"
 	-@erase "$(INTDIR)\init.obj"
 	-@erase "$(INTDIR)\movetogroup.obj"
-	-@erase "$(INTDIR)\protocolorder.obj"
 	-@erase "$(INTDIR)\resource.res"
 	-@erase "$(INTDIR)\rowheight_funcs.obj"
 	-@erase "$(INTDIR)\statusbar.obj"
@@ -85,42 +88,8 @@ CLEAN :
 "$(OUTDIR)" :
     if not exist "$(OUTDIR)/$(NULL)" mkdir "$(OUTDIR)"
 
-CPP=cl.exe
 CPP_PROJ=/nologo /MD /W3 /Zi /O1 /I "../../include/" /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "_MBCS" /D "_USRDLL" /D "CLIST_EXPORTS" /Fp"$(INTDIR)\clist.pch" /Yu"commonheaders.h" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /FD /c 
-
-.c{$(INTDIR)}.obj::
-   $(CPP) @<<
-   $(CPP_PROJ) $< 
-<<
-
-.cpp{$(INTDIR)}.obj::
-   $(CPP) @<<
-   $(CPP_PROJ) $< 
-<<
-
-.cxx{$(INTDIR)}.obj::
-   $(CPP) @<<
-   $(CPP_PROJ) $< 
-<<
-
-.c{$(INTDIR)}.sbr::
-   $(CPP) @<<
-   $(CPP_PROJ) $< 
-<<
-
-.cpp{$(INTDIR)}.sbr::
-   $(CPP) @<<
-   $(CPP_PROJ) $< 
-<<
-
-.cxx{$(INTDIR)}.sbr::
-   $(CPP) @<<
-   $(CPP_PROJ) $< 
-<<
-
-MTL=midl.exe
 MTL_PROJ=/nologo /D "NDEBUG" /mktyplib203 /win32 
-RSC=rc.exe
 RSC_PROJ=/l 0x809 /fo"$(INTDIR)\resource.res" /i "../../include/" /d "NDEBUG" 
 BSC32=bscmake.exe
 BSC32_FLAGS=/nologo /o"$(OUTDIR)\clist.bsc" 
@@ -132,7 +101,6 @@ LINK32_OBJS= \
 	"$(INTDIR)\cluiframes.obj" \
 	"$(INTDIR)\framesmenu.obj" \
 	"$(INTDIR)\groupmenu.obj" \
-	"$(INTDIR)\protocolorder.obj" \
 	"$(INTDIR)\alphablend.obj" \
 	"$(INTDIR)\clc.obj" \
 	"$(INTDIR)\CLCButton.obj" \
@@ -214,7 +182,6 @@ CLEAN :
 	-@erase "$(INTDIR)\groupmenu.obj"
 	-@erase "$(INTDIR)\init.obj"
 	-@erase "$(INTDIR)\movetogroup.obj"
-	-@erase "$(INTDIR)\protocolorder.obj"
 	-@erase "$(INTDIR)\resource.res"
 	-@erase "$(INTDIR)\rowheight_funcs.obj"
 	-@erase "$(INTDIR)\statusbar.obj"
@@ -231,42 +198,8 @@ CLEAN :
 "$(OUTDIR)" :
     if not exist "$(OUTDIR)/$(NULL)" mkdir "$(OUTDIR)"
 
-CPP=cl.exe
 CPP_PROJ=/nologo /MDd /W3 /Gm /GX /ZI /Od /I "../../include" /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /D "_MBCS" /D "_USRDLL" /D "CLIST_EXPORTS" /Fp"$(INTDIR)\clist.pch" /Yu"commonheaders.h" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /FD /GZ /c 
-
-.c{$(INTDIR)}.obj::
-   $(CPP) @<<
-   $(CPP_PROJ) $< 
-<<
-
-.cpp{$(INTDIR)}.obj::
-   $(CPP) @<<
-   $(CPP_PROJ) $< 
-<<
-
-.cxx{$(INTDIR)}.obj::
-   $(CPP) @<<
-   $(CPP_PROJ) $< 
-<<
-
-.c{$(INTDIR)}.sbr::
-   $(CPP) @<<
-   $(CPP_PROJ) $< 
-<<
-
-.cpp{$(INTDIR)}.sbr::
-   $(CPP) @<<
-   $(CPP_PROJ) $< 
-<<
-
-.cxx{$(INTDIR)}.sbr::
-   $(CPP) @<<
-   $(CPP_PROJ) $< 
-<<
-
-MTL=midl.exe
 MTL_PROJ=/nologo /D "_DEBUG" /mktyplib203 /win32 
-RSC=rc.exe
 RSC_PROJ=/l 0x809 /fo"$(INTDIR)\resource.res" /i "../../include/" /d "_DEBUG" 
 BSC32=bscmake.exe
 BSC32_FLAGS=/nologo /o"$(OUTDIR)\clist.bsc" 
@@ -278,7 +211,6 @@ LINK32_OBJS= \
 	"$(INTDIR)\cluiframes.obj" \
 	"$(INTDIR)\framesmenu.obj" \
 	"$(INTDIR)\groupmenu.obj" \
-	"$(INTDIR)\protocolorder.obj" \
 	"$(INTDIR)\alphablend.obj" \
 	"$(INTDIR)\clc.obj" \
 	"$(INTDIR)\CLCButton.obj" \
@@ -360,7 +292,6 @@ CLEAN :
 	-@erase "$(INTDIR)\groupmenu.obj"
 	-@erase "$(INTDIR)\init.obj"
 	-@erase "$(INTDIR)\movetogroup.obj"
-	-@erase "$(INTDIR)\protocolorder.obj"
 	-@erase "$(INTDIR)\resource.res"
 	-@erase "$(INTDIR)\rowheight_funcs.obj"
 	-@erase "$(INTDIR)\statusbar.obj"
@@ -377,42 +308,8 @@ CLEAN :
 "$(OUTDIR)" :
     if not exist "$(OUTDIR)/$(NULL)" mkdir "$(OUTDIR)"
 
-CPP=cl.exe
 CPP_PROJ=/nologo /MD /W3 /Zi /O1 /Oy /I "../../include/" /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "UNICODE" /D "_USRDLL" /D "CLIST_EXPORTS" /Fp"$(INTDIR)\clist.pch" /Yu"commonheaders.h" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /FD /c 
-
-.c{$(INTDIR)}.obj::
-   $(CPP) @<<
-   $(CPP_PROJ) $< 
-<<
-
-.cpp{$(INTDIR)}.obj::
-   $(CPP) @<<
-   $(CPP_PROJ) $< 
-<<
-
-.cxx{$(INTDIR)}.obj::
-   $(CPP) @<<
-   $(CPP_PROJ) $< 
-<<
-
-.c{$(INTDIR)}.sbr::
-   $(CPP) @<<
-   $(CPP_PROJ) $< 
-<<
-
-.cpp{$(INTDIR)}.sbr::
-   $(CPP) @<<
-   $(CPP_PROJ) $< 
-<<
-
-.cxx{$(INTDIR)}.sbr::
-   $(CPP) @<<
-   $(CPP_PROJ) $< 
-<<
-
-MTL=midl.exe
 MTL_PROJ=/nologo /D "NDEBUG" /mktyplib203 /win32 
-RSC=rc.exe
 RSC_PROJ=/l 0x809 /fo"$(INTDIR)\resource.res" /i "../../include/" /d "NDEBUG" /d "UNICODE" 
 BSC32=bscmake.exe
 BSC32_FLAGS=/nologo /o"$(OUTDIR)\clist.bsc" 
@@ -424,7 +321,6 @@ LINK32_OBJS= \
 	"$(INTDIR)\cluiframes.obj" \
 	"$(INTDIR)\framesmenu.obj" \
 	"$(INTDIR)\groupmenu.obj" \
-	"$(INTDIR)\protocolorder.obj" \
 	"$(INTDIR)\alphablend.obj" \
 	"$(INTDIR)\clc.obj" \
 	"$(INTDIR)\CLCButton.obj" \
@@ -506,7 +402,6 @@ CLEAN :
 	-@erase "$(INTDIR)\groupmenu.obj"
 	-@erase "$(INTDIR)\init.obj"
 	-@erase "$(INTDIR)\movetogroup.obj"
-	-@erase "$(INTDIR)\protocolorder.obj"
 	-@erase "$(INTDIR)\resource.res"
 	-@erase "$(INTDIR)\rowheight_funcs.obj"
 	-@erase "$(INTDIR)\statusbar.obj"
@@ -523,42 +418,8 @@ CLEAN :
 "$(OUTDIR)" :
     if not exist "$(OUTDIR)/$(NULL)" mkdir "$(OUTDIR)"
 
-CPP=cl.exe
 CPP_PROJ=/nologo /MTd /W3 /Gm /GX /ZI /Od /I "../../include" /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /D "UNICODE" /D "_USRDLL" /D "CLIST_EXPORTS" /Fp"$(INTDIR)\clist.pch" /Yu"commonheaders.h" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /FD /GZ /c 
-
-.c{$(INTDIR)}.obj::
-   $(CPP) @<<
-   $(CPP_PROJ) $< 
-<<
-
-.cpp{$(INTDIR)}.obj::
-   $(CPP) @<<
-   $(CPP_PROJ) $< 
-<<
-
-.cxx{$(INTDIR)}.obj::
-   $(CPP) @<<
-   $(CPP_PROJ) $< 
-<<
-
-.c{$(INTDIR)}.sbr::
-   $(CPP) @<<
-   $(CPP_PROJ) $< 
-<<
-
-.cpp{$(INTDIR)}.sbr::
-   $(CPP) @<<
-   $(CPP_PROJ) $< 
-<<
-
-.cxx{$(INTDIR)}.sbr::
-   $(CPP) @<<
-   $(CPP_PROJ) $< 
-<<
-
-MTL=midl.exe
 MTL_PROJ=/nologo /D "_DEBUG" /mktyplib203 /win32 
-RSC=rc.exe
 RSC_PROJ=/l 0x809 /fo"$(INTDIR)\resource.res" /i "../../include/" /d "_DEBUG" 
 BSC32=bscmake.exe
 BSC32_FLAGS=/nologo /o"$(OUTDIR)\clist.bsc" 
@@ -570,7 +431,6 @@ LINK32_OBJS= \
 	"$(INTDIR)\cluiframes.obj" \
 	"$(INTDIR)\framesmenu.obj" \
 	"$(INTDIR)\groupmenu.obj" \
-	"$(INTDIR)\protocolorder.obj" \
 	"$(INTDIR)\alphablend.obj" \
 	"$(INTDIR)\clc.obj" \
 	"$(INTDIR)\CLCButton.obj" \
@@ -612,6 +472,36 @@ LINK32_OBJS= \
 <<
 
 !ENDIF 
+
+.c{$(INTDIR)}.obj::
+   $(CPP) @<<
+   $(CPP_PROJ) $< 
+<<
+
+.cpp{$(INTDIR)}.obj::
+   $(CPP) @<<
+   $(CPP_PROJ) $< 
+<<
+
+.cxx{$(INTDIR)}.obj::
+   $(CPP) @<<
+   $(CPP_PROJ) $< 
+<<
+
+.c{$(INTDIR)}.sbr::
+   $(CPP) @<<
+   $(CPP_PROJ) $< 
+<<
+
+.cpp{$(INTDIR)}.sbr::
+   $(CPP) @<<
+   $(CPP_PROJ) $< 
+<<
+
+.cxx{$(INTDIR)}.sbr::
+   $(CPP) @<<
+   $(CPP_PROJ) $< 
+<<
 
 
 !IF "$(NO_EXTERNAL_DEPS)" != "1"
@@ -749,50 +639,6 @@ CPP_SWITCHES=/nologo /MD /W3 /Zi /O1 /Oy /I "../../include/" /D "WIN32" /D "NDEB
 CPP_SWITCHES=/nologo /MTd /W3 /Gm /GX /ZI /Od /I "../../include" /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /D "UNICODE" /D "_USRDLL" /D "CLIST_EXPORTS" /Fp"$(INTDIR)\clist.pch" /Yu"../commonheaders.h" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /FD /GZ /c 
 
 "$(INTDIR)\groupmenu.obj" : $(SOURCE) "$(INTDIR)" "$(INTDIR)\clist.pch"
-	$(CPP) @<<
-  $(CPP_SWITCHES) $(SOURCE)
-<<
-
-
-!ENDIF 
-
-SOURCE=.\CLUIFrames\protocolorder.c
-
-!IF  "$(CFG)" == "clist_nicer - Win32 Release"
-
-CPP_SWITCHES=/nologo /MD /W3 /Zi /O1 /I "../../include/" /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "_MBCS" /D "_USRDLL" /D "CLIST_EXPORTS" /Fp"$(INTDIR)\clist.pch" /Yu"../commonheaders.h" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /FD /c 
-
-"$(INTDIR)\protocolorder.obj" : $(SOURCE) "$(INTDIR)" "$(INTDIR)\clist.pch"
-	$(CPP) @<<
-  $(CPP_SWITCHES) $(SOURCE)
-<<
-
-
-!ELSEIF  "$(CFG)" == "clist_nicer - Win32 Debug"
-
-CPP_SWITCHES=/nologo /MDd /W3 /Gm /GX /ZI /Od /I "../../include" /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /D "_MBCS" /D "_USRDLL" /D "CLIST_EXPORTS" /Fp"$(INTDIR)\clist.pch" /Yu"../commonheaders.h" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /FD /GZ /c 
-
-"$(INTDIR)\protocolorder.obj" : $(SOURCE) "$(INTDIR)" "$(INTDIR)\clist.pch"
-	$(CPP) @<<
-  $(CPP_SWITCHES) $(SOURCE)
-<<
-
-
-!ELSEIF  "$(CFG)" == "clist_nicer - Win32 Release Unicode"
-
-CPP_SWITCHES=/nologo /MD /W3 /Zi /O1 /Oy /I "../../include/" /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "UNICODE" /D "_USRDLL" /D "CLIST_EXPORTS" /Fp"$(INTDIR)\clist.pch" /Yu"../commonheaders.h" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /FD /c 
-
-"$(INTDIR)\protocolorder.obj" : $(SOURCE) "$(INTDIR)" "$(INTDIR)\clist.pch"
-	$(CPP) @<<
-  $(CPP_SWITCHES) $(SOURCE)
-<<
-
-
-!ELSEIF  "$(CFG)" == "clist_nicer - Win32 Debug Unicode"
-
-CPP_SWITCHES=/nologo /MTd /W3 /Gm /GX /ZI /Od /I "../../include" /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /D "UNICODE" /D "_USRDLL" /D "CLIST_EXPORTS" /Fp"$(INTDIR)\clist.pch" /Yu"../commonheaders.h" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /FD /GZ /c 
-
-"$(INTDIR)\protocolorder.obj" : $(SOURCE) "$(INTDIR)" "$(INTDIR)\clist.pch"
 	$(CPP) @<<
   $(CPP_SWITCHES) $(SOURCE)
 <<

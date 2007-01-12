@@ -857,6 +857,10 @@ SOURCE=.\modules\clist\keyboard.c
 
 SOURCE=.\modules\clist\movetogroup.c
 # End Source File
+# Begin Source File
+
+SOURCE=.\modules\clist\protocolorder.c
+# End Source File
 # End Group
 # Begin Group "fontservice"
 

@@ -62,10 +62,6 @@ cd ..\clist_nicer
 nmake /f clist.mak CFG="clist_nicer - Win32 Release Unicode"
 if errorlevel 1 goto :Error
 
-cd ..\help
-nmake /f help.mak CFG="help - Win32 Release Unicode"
-if errorlevel 1 goto :Error
-
 cd ..\loadavatars
 nmake /f avatars.mak CFG="loadavatars - Win32 Release Unicode"
 if errorlevel 1 goto :Error
@@ -224,7 +220,6 @@ rem  Unicode plugins
 copy ..\..\plugins\chat\Release_Unicode\chat.pdb               %Temp%\pdbw\plugins
 copy ..\..\plugins\clist\Release_Unicode\clist_classic.pdb     %Temp%\pdbw\plugins
 copy ..\..\plugins\clist_nicer\Release_Unicode\clist_nicer.pdb %Temp%\pdbw\plugins
-copy ..\..\plugins\help\Release_Unicode\help.pdb               %Temp%\pdbw\plugins
 copy ..\..\plugins\modernb\Release_Unicode\clist_modern.pdb    %Temp%\pdbw\plugins
 copy ..\..\plugins\mwclist\Release_Unicode\clist_mw.pdb        %Temp%\pdbw\plugins
 copy ..\..\plugins\srmm\Release_Unicode\srmm.pdb               %Temp%\pdbw\plugins

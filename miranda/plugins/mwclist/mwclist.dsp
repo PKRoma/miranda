@@ -181,11 +181,6 @@ SOURCE=.\CLUIFrames\m_cluiframes.h
 # End Source File
 # Begin Source File
 
-SOURCE=.\CLUIFrames\protocolorder.c
-# ADD CPP /Yu"../commonheaders.h"
-# End Source File
-# Begin Source File
-
 SOURCE=.\CLUIFrames\statusbar.c
 # ADD CPP /Yu"../commonheaders.h"
 # End Source File

@@ -40,7 +40,6 @@ extern BYTE nameOrder[];
 extern SortedList lContactsCache;
 extern BOOL g_flag_bOnModulesLoadedCalled;
 extern HIMAGELIST hCListImages;
-extern int currentStatusMenuItem,currentDesiredStatusMode;
 extern HANDLE hContactIconChangedEvent;
 extern SKINOBJECTSLIST g_SkinObjectList;
 extern CURRWNDIMAGEDATA * g_pCachedWindow;

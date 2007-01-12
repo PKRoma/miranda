@@ -73,7 +73,6 @@ CLEAN :
 	-@erase "$(INTDIR)\modern_row.obj"
 	-@erase "$(INTDIR)\modern_statusbar.obj"
 	-@erase "$(INTDIR)\modernb.pch"
-	-@erase "$(INTDIR)\protocolorder.obj"
 	-@erase "$(INTDIR)\resource.res"
 	-@erase "$(INTDIR)\rowheight_funcs.obj"
 	-@erase "$(INTDIR)\rowtemplateopt.obj"
@@ -105,7 +104,6 @@ LINK32_OBJS= \
 	"$(INTDIR)\cluiframes.obj" \
 	"$(INTDIR)\extraimage.obj" \
 	"$(INTDIR)\framesmenu.obj" \
-	"$(INTDIR)\protocolorder.obj" \
 	"$(INTDIR)\button.obj" \
 	"$(INTDIR)\cache_funcs.obj" \
 	"$(INTDIR)\clc.obj" \
@@ -191,7 +189,6 @@ CLEAN :
 	-@erase "$(INTDIR)\modern_row.obj"
 	-@erase "$(INTDIR)\modern_statusbar.obj"
 	-@erase "$(INTDIR)\modernb.pch"
-	-@erase "$(INTDIR)\protocolorder.obj"
 	-@erase "$(INTDIR)\resource.res"
 	-@erase "$(INTDIR)\rowheight_funcs.obj"
 	-@erase "$(INTDIR)\rowtemplateopt.obj"
@@ -224,7 +221,6 @@ LINK32_OBJS= \
 	"$(INTDIR)\cluiframes.obj" \
 	"$(INTDIR)\extraimage.obj" \
 	"$(INTDIR)\framesmenu.obj" \
-	"$(INTDIR)\protocolorder.obj" \
 	"$(INTDIR)\button.obj" \
 	"$(INTDIR)\cache_funcs.obj" \
 	"$(INTDIR)\clc.obj" \
@@ -310,7 +306,6 @@ CLEAN :
 	-@erase "$(INTDIR)\modern_row.obj"
 	-@erase "$(INTDIR)\modern_statusbar.obj"
 	-@erase "$(INTDIR)\modernb.pch"
-	-@erase "$(INTDIR)\protocolorder.obj"
 	-@erase "$(INTDIR)\resource.res"
 	-@erase "$(INTDIR)\rowheight_funcs.obj"
 	-@erase "$(INTDIR)\rowtemplateopt.obj"
@@ -342,7 +337,6 @@ LINK32_OBJS= \
 	"$(INTDIR)\cluiframes.obj" \
 	"$(INTDIR)\extraimage.obj" \
 	"$(INTDIR)\framesmenu.obj" \
-	"$(INTDIR)\protocolorder.obj" \
 	"$(INTDIR)\button.obj" \
 	"$(INTDIR)\cache_funcs.obj" \
 	"$(INTDIR)\clc.obj" \
@@ -428,7 +422,6 @@ CLEAN :
 	-@erase "$(INTDIR)\modern_row.obj"
 	-@erase "$(INTDIR)\modern_statusbar.obj"
 	-@erase "$(INTDIR)\modernb.pch"
-	-@erase "$(INTDIR)\protocolorder.obj"
 	-@erase "$(INTDIR)\resource.res"
 	-@erase "$(INTDIR)\rowheight_funcs.obj"
 	-@erase "$(INTDIR)\rowtemplateopt.obj"
@@ -460,7 +453,6 @@ LINK32_OBJS= \
 	"$(INTDIR)\cluiframes.obj" \
 	"$(INTDIR)\extraimage.obj" \
 	"$(INTDIR)\framesmenu.obj" \
-	"$(INTDIR)\protocolorder.obj" \
 	"$(INTDIR)\button.obj" \
 	"$(INTDIR)\cache_funcs.obj" \
 	"$(INTDIR)\clc.obj" \
@@ -672,50 +664,6 @@ CPP_SWITCHES=/nologo /MD /W3 /Zi /O1 /I "../../include" /D "WIN32" /D "NDEBUG" /
 CPP_SWITCHES=/nologo /MDd /W3 /Gm /GX /ZI /Od /I "../../include" /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /D "UNICODE" /D "_USRDLL" /D "modernb_EXPORTS" /Fp"$(INTDIR)\modernb.pch" /Yu"../commonheaders.h" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /FD /GZ /c 
 
 "$(INTDIR)\framesmenu.obj" : $(SOURCE) "$(INTDIR)" "$(INTDIR)\modernb.pch"
-	$(CPP) @<<
-  $(CPP_SWITCHES) $(SOURCE)
-<<
-
-
-!ENDIF 
-
-SOURCE=.\CLUIFrames\protocolorder.c
-
-!IF  "$(CFG)" == "modernb - Win32 Release"
-
-CPP_SWITCHES=/nologo /MD /W3 /Zi /O1 /I "../../include" /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "_MBCS" /D "_USRDLL" /D "modernb_EXPORTS" /Fp"$(INTDIR)\modernb.pch" /Yu"../commonheaders.h" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /FD /c 
-
-"$(INTDIR)\protocolorder.obj" : $(SOURCE) "$(INTDIR)" "$(INTDIR)\modernb.pch"
-	$(CPP) @<<
-  $(CPP_SWITCHES) $(SOURCE)
-<<
-
-
-!ELSEIF  "$(CFG)" == "modernb - Win32 Debug"
-
-CPP_SWITCHES=/nologo /MDd /W3 /Gm /GX /ZI /Od /I "../../include" /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /D "_MBCS" /D "_USRDLL" /D "modernb_EXPORTS" /Fp"$(INTDIR)\modernb.pch" /Yu"../commonheaders.h" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /FD /GZ /c 
-
-"$(INTDIR)\protocolorder.obj" : $(SOURCE) "$(INTDIR)" "$(INTDIR)\modernb.pch"
-	$(CPP) @<<
-  $(CPP_SWITCHES) $(SOURCE)
-<<
-
-
-!ELSEIF  "$(CFG)" == "modernb - Win32 Release Unicode"
-
-CPP_SWITCHES=/nologo /MD /W3 /Zi /O1 /I "../../include" /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "UNICODE" /D "_USRDLL" /D "modernb_EXPORTS" /Fp"$(INTDIR)\modernb.pch" /Yu"../commonheaders.h" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /FD /c 
-
-"$(INTDIR)\protocolorder.obj" : $(SOURCE) "$(INTDIR)" "$(INTDIR)\modernb.pch"
-	$(CPP) @<<
-  $(CPP_SWITCHES) $(SOURCE)
-<<
-
-
-!ELSEIF  "$(CFG)" == "modernb - Win32 Debug Unicode"
-
-CPP_SWITCHES=/nologo /MDd /W3 /Gm /GX /ZI /Od /I "../../include" /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /D "UNICODE" /D "_USRDLL" /D "modernb_EXPORTS" /Fp"$(INTDIR)\modernb.pch" /Yu"../commonheaders.h" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /FD /GZ /c 
-
-"$(INTDIR)\protocolorder.obj" : $(SOURCE) "$(INTDIR)" "$(INTDIR)\modernb.pch"
 	$(CPP) @<<
   $(CPP_SWITCHES) $(SOURCE)
 <<

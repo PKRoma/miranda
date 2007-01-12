@@ -190,6 +190,3 @@ int UnloadFavoriteContactMenu()
 
     return 0;
 }
-
-
-

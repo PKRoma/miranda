@@ -144,54 +144,6 @@
 	".\SkinEngine.h"\
 	
 
-.\CLUIFrames\protocolorder.c : \
-	"..\..\include\m_addcontact.h"\
-	"..\..\include\m_button.h"\
-	"..\..\include\m_clc.h"\
-	"..\..\include\m_clist.h"\
-	"..\..\include\m_clistint.h"\
-	"..\..\include\m_clui.h"\
-	"..\..\include\m_contacts.h"\
-	"..\..\include\m_database.h"\
-	"..\..\include\m_file.h"\
-	"..\..\include\m_genmenu.h"\
-	"..\..\include\m_icolib.h"\
-	"..\..\include\m_langpack.h"\
-	"..\..\include\m_options.h"\
-	"..\..\include\m_plugins.h"\
-	"..\..\include\m_protocols.h"\
-	"..\..\include\m_protosvc.h"\
-	"..\..\include\m_skin.h"\
-	"..\..\include\m_skin_eng.h"\
-	"..\..\include\m_system.h"\
-	"..\..\include\m_userinfo.h"\
-	"..\..\include\m_utils.h"\
-	"..\..\include\newpluginapi.h"\
-	"..\..\include\statusmodes.h"\
-	"..\..\include\win2k.h"\
-	".\cache_funcs.h"\
-	".\clc.h"\
-	".\clist.h"\
-	".\CLUIFrames\cluiframes.h"\
-	".\CLUIFrames\m_cluiframes.h"\
-	".\commonheaders.h"\
-	".\commonprototypes.h"\
-	".\image_array.h"\
-	".\log.h"\
-	".\m_avatars.h"\
-	".\m_clui.h"\
-	".\m_metacontacts.h"\
-	".\m_skin_eng.h"\
-	".\m_smileyadd.h"\
-	".\m_variables.h"\
-	".\mod_skin_selector.h"\
-	".\modern_global_structure.h"\
-	".\modern_row.h"\
-	".\modern_statusbar.h"\
-	".\rowheight_funcs.h"\
-	".\SkinEngine.h"\
-	
-
 .\button.c : \
 	"..\..\include\m_addcontact.h"\
 	"..\..\include\m_button.h"\

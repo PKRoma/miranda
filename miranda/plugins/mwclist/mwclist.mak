@@ -65,7 +65,6 @@ CLEAN :
 	-@erase "$(INTDIR)\init.obj"
 	-@erase "$(INTDIR)\keyboard.obj"
 	-@erase "$(INTDIR)\mwclist.pch"
-	-@erase "$(INTDIR)\protocolorder.obj"
 	-@erase "$(INTDIR)\resource.res"
 	-@erase "$(INTDIR)\statusbar.obj"
 	-@erase "$(INTDIR)\vc60.idb"
@@ -91,7 +90,6 @@ LINK32_OBJS= \
 	"$(INTDIR)\cluiframes.obj" \
 	"$(INTDIR)\extraimage.obj" \
 	"$(INTDIR)\framesmenu.obj" \
-	"$(INTDIR)\protocolorder.obj" \
 	"$(INTDIR)\statusbar.obj" \
 	"$(INTDIR)\BkgrCfg.obj" \
 	"$(INTDIR)\clc.obj" \
@@ -155,7 +153,6 @@ CLEAN :
 	-@erase "$(INTDIR)\init.obj"
 	-@erase "$(INTDIR)\keyboard.obj"
 	-@erase "$(INTDIR)\mwclist.pch"
-	-@erase "$(INTDIR)\protocolorder.obj"
 	-@erase "$(INTDIR)\resource.res"
 	-@erase "$(INTDIR)\statusbar.obj"
 	-@erase "$(INTDIR)\vc60.idb"
@@ -182,7 +179,6 @@ LINK32_OBJS= \
 	"$(INTDIR)\cluiframes.obj" \
 	"$(INTDIR)\extraimage.obj" \
 	"$(INTDIR)\framesmenu.obj" \
-	"$(INTDIR)\protocolorder.obj" \
 	"$(INTDIR)\statusbar.obj" \
 	"$(INTDIR)\BkgrCfg.obj" \
 	"$(INTDIR)\clc.obj" \
@@ -246,7 +242,6 @@ CLEAN :
 	-@erase "$(INTDIR)\init.obj"
 	-@erase "$(INTDIR)\keyboard.obj"
 	-@erase "$(INTDIR)\mwclist.pch"
-	-@erase "$(INTDIR)\protocolorder.obj"
 	-@erase "$(INTDIR)\resource.res"
 	-@erase "$(INTDIR)\statusbar.obj"
 	-@erase "$(INTDIR)\vc60.idb"
@@ -272,7 +267,6 @@ LINK32_OBJS= \
 	"$(INTDIR)\cluiframes.obj" \
 	"$(INTDIR)\extraimage.obj" \
 	"$(INTDIR)\framesmenu.obj" \
-	"$(INTDIR)\protocolorder.obj" \
 	"$(INTDIR)\statusbar.obj" \
 	"$(INTDIR)\BkgrCfg.obj" \
 	"$(INTDIR)\clc.obj" \
@@ -336,7 +330,6 @@ CLEAN :
 	-@erase "$(INTDIR)\init.obj"
 	-@erase "$(INTDIR)\keyboard.obj"
 	-@erase "$(INTDIR)\mwclist.pch"
-	-@erase "$(INTDIR)\protocolorder.obj"
 	-@erase "$(INTDIR)\resource.res"
 	-@erase "$(INTDIR)\statusbar.obj"
 	-@erase "$(INTDIR)\vc60.idb"
@@ -362,7 +355,6 @@ LINK32_OBJS= \
 	"$(INTDIR)\cluiframes.obj" \
 	"$(INTDIR)\extraimage.obj" \
 	"$(INTDIR)\framesmenu.obj" \
-	"$(INTDIR)\protocolorder.obj" \
 	"$(INTDIR)\statusbar.obj" \
 	"$(INTDIR)\BkgrCfg.obj" \
 	"$(INTDIR)\clc.obj" \
@@ -560,50 +552,6 @@ CPP_SWITCHES=/nologo /MD /W3 /Zi /O1 /I "../../include" /D "WIN32" /D "NDEBUG" /
 CPP_SWITCHES=/nologo /MDd /W3 /Gm /GX /ZI /Od /I "../../include" /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /D "UNICODE" /D "_USRDLL" /D "mwclist_EXPORTS" /Fp"$(INTDIR)\mwclist.pch" /Yu"../commonheaders.h" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /FD /GZ /c 
 
 "$(INTDIR)\framesmenu.obj" : $(SOURCE) "$(INTDIR)" "$(INTDIR)\mwclist.pch"
-	$(CPP) @<<
-  $(CPP_SWITCHES) $(SOURCE)
-<<
-
-
-!ENDIF 
-
-SOURCE=.\CLUIFrames\protocolorder.c
-
-!IF  "$(CFG)" == "mwclist - Win32 Release"
-
-CPP_SWITCHES=/nologo /MD /W3 /Zi /O1 /I "../../include" /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "_MBCS" /D "_USRDLL" /D "mwclist_EXPORTS" /Fp"$(INTDIR)\mwclist.pch" /Yu"../commonheaders.h" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /FD /c 
-
-"$(INTDIR)\protocolorder.obj" : $(SOURCE) "$(INTDIR)" "$(INTDIR)\mwclist.pch"
-	$(CPP) @<<
-  $(CPP_SWITCHES) $(SOURCE)
-<<
-
-
-!ELSEIF  "$(CFG)" == "mwclist - Win32 Debug"
-
-CPP_SWITCHES=/nologo /MDd /W3 /Gm /GX /ZI /Od /I "../../include" /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /D "_MBCS" /D "_USRDLL" /D "mwclist_EXPORTS" /Fp"$(INTDIR)\mwclist.pch" /Yu"../commonheaders.h" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /FD /GZ /c 
-
-"$(INTDIR)\protocolorder.obj" : $(SOURCE) "$(INTDIR)" "$(INTDIR)\mwclist.pch"
-	$(CPP) @<<
-  $(CPP_SWITCHES) $(SOURCE)
-<<
-
-
-!ELSEIF  "$(CFG)" == "mwclist - Win32 Release Unicode"
-
-CPP_SWITCHES=/nologo /MD /W3 /Zi /O1 /I "../../include" /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "UNICODE" /D "_USRDLL" /D "mwclist_EXPORTS" /Fp"$(INTDIR)\mwclist.pch" /Yu"../commonheaders.h" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /FD /c 
-
-"$(INTDIR)\protocolorder.obj" : $(SOURCE) "$(INTDIR)" "$(INTDIR)\mwclist.pch"
-	$(CPP) @<<
-  $(CPP_SWITCHES) $(SOURCE)
-<<
-
-
-!ELSEIF  "$(CFG)" == "mwclist - Win32 Debug Unicode"
-
-CPP_SWITCHES=/nologo /MDd /W3 /Gm /GX /ZI /Od /I "../../include" /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /D "UNICODE" /D "_USRDLL" /D "mwclist_EXPORTS" /Fp"$(INTDIR)\mwclist.pch" /Yu"../commonheaders.h" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /FD /GZ /c 
-
-"$(INTDIR)\protocolorder.obj" : $(SOURCE) "$(INTDIR)" "$(INTDIR)\mwclist.pch"
 	$(CPP) @<<
   $(CPP_SWITCHES) $(SOURCE)
 <<
