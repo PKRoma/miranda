@@ -102,6 +102,14 @@ static int OnOptsInit(WPARAM wParam, LPARAM lParam)
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////
+// menu status services
+
+static int GetStatusMode(WPARAM wParam, LPARAM lParam)
+{
+	return pcli->currentDesiredStatusMode;
+}
+
+/////////////////////////////////////////////////////////////////////////////////////////
 // main clist initialization routine
 
 int __declspec(dllexport) CListInitialise(PLUGINLINK * link)
@@ -128,6 +136,8 @@ LBL_Error:
 
 	MySetLayeredWindowAttributes = (BOOL(WINAPI *) (HWND, COLORREF, BYTE, DWORD)) GetProcAddress(
 		LoadLibraryA("user32.dll"), "SetLayeredWindowAttributes");
+
+	CreateServiceFunction(MS_CLIST_GETSTATUSMODE, GetStatusMode);
 
 	HookEvent(ME_SYSTEM_MODULESLOADED, OnModulesLoaded);
 	HookEvent(ME_OPT_INITIALISE, OnOptsInit);
