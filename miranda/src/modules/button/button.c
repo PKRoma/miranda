@@ -445,7 +445,7 @@ static LRESULT CALLBACK MButtonWndProc(HWND hwndDlg, UINT msg,  WPARAM wParam, L
 			break;
 		case BUTTONADDTOOLTIP:
 		{
-			TOOLINFOA ti;
+			TOOLINFO ti;
 
 			if (!(char*)wParam) break;
             EnterCriticalSection(&csTips);
@@ -457,14 +457,20 @@ static LRESULT CALLBACK MButtonWndProc(HWND hwndDlg, UINT msg,  WPARAM wParam, L
 			ti.uFlags = TTF_IDISHWND;
 			ti.hwnd = bct->hwnd;
 			ti.uId = (UINT)bct->hwnd;
-			if (SendMessage(hwndToolTips, TTM_GETTOOLINFO, 0, (LPARAM)&ti)) {
+			if (SendMessage(hwndToolTips, TTM_GETTOOLINFO, 0, (LPARAM)&ti))
 				SendMessage(hwndToolTips, TTM_DELTOOL, 0, (LPARAM)&ti);
-			}
 			ti.uFlags = TTF_IDISHWND|TTF_SUBCLASS;
 			ti.uId = (UINT)bct->hwnd;
-			ti.lpszText=(char*)wParam;
-			SendMessageA( hwndToolTips, TTM_ADDTOOLA, 0, (LPARAM)&ti);
+			#if defined( _UNICODE )
+				ti.lpszText = a2u(( char* )wParam );
+			#else
+				ti.lpszText = ( char* )wParam;
+			#endif
+			SendMessage( hwndToolTips, TTM_ADDTOOL, 0, (LPARAM)&ti);
 			LeaveCriticalSection(&csTips);
+			#if defined( _UNICODE )
+				mir_free( ti.lpszText );
+			#endif
 			break;
 		}
 		case WM_SETFOCUS: // set keybord focus and redraw
