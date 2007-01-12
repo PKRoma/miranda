@@ -32,6 +32,7 @@ static HANDLE hContactDraggingEvent, hContactDroppedEvent, hContactDragStopEvent
 static int transparentFocus = 1;
 UINT uMsgProcessProfile;
 
+int  CheckProtocolOrder();
 void LoadCluiServices();
 
 BOOL(WINAPI * MySetLayeredWindowAttributes) (HWND, COLORREF, BYTE, DWORD);
@@ -294,6 +295,7 @@ int LoadCLUIModule(void)
 	hContactDroppedEvent  = CreateHookableEvent(ME_CLUI_CONTACTDROPPED);
 	hContactDragStopEvent = CreateHookableEvent(ME_CLUI_CONTACTDRAGSTOP);
 	LoadCluiServices();
+	CheckProtocolOrder();
 
 	wndclass.style = CS_HREDRAW | CS_VREDRAW | CS_DBLCLKS | CS_GLOBALCLASS;
 	wndclass.lpfnWndProc = cli.pfnContactListControlWndProc;

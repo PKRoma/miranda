@@ -65,7 +65,6 @@ void CluiProtocolStatusChanged( int parStatus, const char* szProto )
 	if ( protoCount == 0 )
 		return;
 
-	//CheckProtocolOrder();
 	storedcount=DBGetContactSettingDword(0,"Protocols","ProtoCount",-1);
 	if ( storedcount == -1 )
 		return;

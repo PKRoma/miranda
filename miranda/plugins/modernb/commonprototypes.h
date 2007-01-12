@@ -156,9 +156,6 @@ int		ModernButton_LoadModule();
 int		ModernButton_ReposButtons(HWND parent, BOOL draw, RECT * r);
 int     ModernButton_UnloadModule(WPARAM,LPARAM);
 
-/* ProtocolOrder */
-int		ProtocolOrder_CheckOrder();
-
 /* RowHeight */
 int		RowHeight_CalcRowHeight(struct ClcData *dat, HWND hwnd, struct ClcContact *contact, int item);
 

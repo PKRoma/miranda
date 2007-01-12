@@ -415,7 +415,6 @@ static BOOL CALLBACK DlgProcSBarOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPAR
 				    CallService(MS_CLIST_FRAMES_SETFRAMEOPTIONS,MAKEWPARAM(FO_FLAGS,hFrameHelperStatusBar),frameopt);
 
 					SendMessage(pcli->hwndContactList,WM_SIZE,0,0);
-					//CheckProtocolOrder();
 					
 					OnStatusBarBackgroundChange();
 					CluiProtocolStatusChanged(0,0);			

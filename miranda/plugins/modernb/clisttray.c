@@ -178,8 +178,9 @@ static TCHAR* TrayIconMakeTooltip(const TCHAR *szPrefix, const char *szProto)
 
 			t=0;
 			cn=DBGetContactSettingDword(NULL,"Protocols","ProtoCount",-1);
-			if (cn==-1) ProtocolOrder_CheckOrder();
-			cn=DBGetContactSettingDword(NULL,"Protocols","ProtoCount",0);
+			if (cn==-1)
+				return NULL;
+
 			for(t=0;t<cn;t++) {
 				TCHAR *ProtoXStatus=NULL;
 				i=pcli->pfnGetProtoIndexByPos(protos, count,t);

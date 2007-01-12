@@ -763,6 +763,9 @@
 				<File
 					RelativePath=".\modules\clist\movetogroup.c">
 				</File>
+				<File
+					RelativePath=".\modules\clist\protocolorder.c">
+				</File>
 			</Filter>
 			<Filter
 				Name="contacts"

@@ -836,7 +836,7 @@ int GetProtocolVisibility(char *ProtoName)
 	char buf2[10];
 	int count;
 
-	if(ProtoName == NULL)
+	if ( ProtoName == NULL )
 		return 0;
 
 	count = (int)DBGetContactSettingDword(0, "Protocols", "ProtoCount", -1);
@@ -852,8 +852,8 @@ int GetProtocolVisibility(char *ProtoName)
 				return res;
 			}
 			mir_free(dbv.pszVal);
-		}
-	}
+	}	}
+
 	return 0;
 }
 
@@ -869,7 +869,7 @@ int GetProtoIndexByPos(PROTOCOLDESCRIPTOR ** proto, int protoCnt, int Pos)
 			if ( lstrcmpA( proto[p]->szName, dbv.pszVal ) == 0 ) {
 				DBFreeVariant( &dbv );
 				return p;
-			}	}
+		}	}
 
 		DBFreeVariant( &dbv );
 	}
@@ -937,8 +937,15 @@ int MenuModulesLoaded(WPARAM wParam,LPARAM lParam)
 	hStatusMenuHandlesCnt=protoCount;
 
 	memset(hStatusMenuHandles,0,sizeof(tStatusMenuHandles)*protoCount);
-	storedProtoCount=DBGetContactSettingDword(0,"Protocols","ProtoCount",-1);
-	memset(&menusProtoSingle,0,sizeof(MenuProto));
+	if (( storedProtoCount = DBGetContactSettingDword(0,"Protocols","ProtoCount",-1)) == -1 ) {
+		storedProtoCount = 0;
+		for ( i=0; i < protoCount; i++ ) {
+			if ( proto[i]->type != PROTOTYPE_PROTOCOL || CallProtoService( proto[i]->szName, PS_GETCAPS, PFLAGNUM_2, 0 ) == 0 )
+				continue;
+			storedProtoCount++;
+	}	}
+
+	memset( &menusProtoSingle, 0, sizeof( MenuProto ));
 	menusProtoSingle.menuID=(HANDLE)-1;
 
 	FreeMenuProtos();

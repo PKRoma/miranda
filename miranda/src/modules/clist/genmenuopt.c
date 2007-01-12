@@ -763,13 +763,14 @@ static BOOL CALLBACK GenMenuOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM l
 
 long handleCustomDraw(HWND hWndTreeView, LPNMTVCUSTOMDRAW pNMTVCD)
 {
-	if (pNMTVCD==NULL)
+	if ( pNMTVCD == NULL )
 		return -1;
 
 	//SetWindowTheme(hWndTreeView, "", "");
-	switch (pNMTVCD->nmcd.dwDrawStage) {
+	switch ( pNMTVCD->nmcd.dwDrawStage ) {
 	case CDDS_PREPAINT:
-		return(CDRF_NOTIFYITEMDRAW);
+		return CDRF_NOTIFYITEMDRAW;
+
 	case CDDS_ITEMPREPAINT:
 		{
 			HTREEITEM hItem = (HTREEITEM) pNMTVCD->nmcd.dwItemSpec;
@@ -782,8 +783,7 @@ long handleCustomDraw(HWND hWndTreeView, LPNMTVCUSTOMDRAW pNMTVCD)
 			tvi.pszText=(LPTSTR)(&buf);
 			tvi.cchTextMax=254;
 			TreeView_GetItem(hWndTreeView, &tvi);
-			if (((MenuItemOptData *)tvi.lParam)->isSelected) {// || (tvi.state&(TVIS_DROPHILITED|TVIS_SELECTED)))
-
+			if (((MenuItemOptData *)tvi.lParam)->isSelected) {
 				pNMTVCD->clrTextBk = GetSysColor(COLOR_HIGHLIGHT);
 				pNMTVCD->clrText   = GetSysColor(COLOR_HIGHLIGHTTEXT);
 			}
@@ -791,11 +791,12 @@ long handleCustomDraw(HWND hWndTreeView, LPNMTVCUSTOMDRAW pNMTVCD)
 				pNMTVCD->clrTextBk = GetSysColor(COLOR_WINDOW);
 				pNMTVCD->clrText   = GetSysColor(COLOR_WINDOWTEXT);
 			}
+
 			/* At this point, you can change the background colors for the item
 			and any subitems and return CDRF_NEWFONT. If the list-view control
 			is in report mode, you can simply return CDRF_NOTIFYSUBITEMREDRAW
 			to customize the item's subitems individually */
-			if (tvi.iImage==-1) {
+			if ( tvi.iImage == -1 ) {
 				HBRUSH br;
 				SIZE sz; 
 				RECT rc;
@@ -816,31 +817,34 @@ long handleCustomDraw(HWND hWndTreeView, LPNMTVCUSTOMDRAW pNMTVCD)
 
 			return CDRF_NEWFONT|(k?CDRF_SKIPDEFAULT:0);
 		}
-	case CDDS_ITEM:
-		{
-			int i=0;
-			i++;
-		}
 	default:
 		break;
 	}
 	return 0;
 }
 
+BOOL CALLBACK ProtocolOrderOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam);
+
 int GenMenuOptInit(WPARAM wParam, LPARAM lParam)
 {
-	OPTIONSDIALOGPAGE odp;
-	//hInst=GetModuleHandle(NULL);
-
-	ZeroMemory(&odp,sizeof(odp));
+	OPTIONSDIALOGPAGE odp = { 0 };
 	odp.cbSize=sizeof(odp);
-	odp.position=-1000000000;
-	odp.hInstance=GetModuleHandle(NULL);
-	odp.pszTemplate=MAKEINTRESOURCEA(IDD_OPT_GENMENU);
-	odp.pszGroup=Translate("Customize");
-	odp.pszTitle=Translate("Menu Order");
-	odp.pfnDlgProc=GenMenuOpts;
-	odp.flags=ODPF_BOLDGROUPS;//|ODPF_EXPERTONLY;
-	CallService(MS_OPT_ADDPAGE,wParam,(LPARAM)&odp);
+	odp.hInstance = GetModuleHandle( NULL );
+	odp.pszGroup = Translate( "Customize" );
+
+	odp.position = -1000000000;
+	odp.pszTemplate = MAKEINTRESOURCEA( IDD_OPT_GENMENU );
+	odp.pszTitle = Translate("Menu Order");
+	odp.pfnDlgProc = GenMenuOpts;
+	odp.flags = ODPF_BOLDGROUPS;
+	CallService( MS_OPT_ADDPAGE, wParam, ( LPARAM )&odp );
+
+	odp.position = -10000000;
+	odp.groupPosition = 1000000;
+	odp.pszTemplate = MAKEINTRESOURCEA( IDD_OPT_PROTOCOLORDER );
+	odp.pszTitle = Translate( "Protocol order" );
+	odp.pfnDlgProc = ProtocolOrderOpts;
+	odp.flags = ODPF_BOLDGROUPS|ODPF_EXPERTONLY;
+	CallService( MS_OPT_ADDPAGE, wParam, ( LPARAM )&odp );
 	return 0;
 }

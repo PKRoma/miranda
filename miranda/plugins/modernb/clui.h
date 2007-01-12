@@ -102,9 +102,6 @@ void GroupMenus_Init();
 int ModernButton_LoadModule();
 int ModernButton_ReposButtons(HWND parent, BOOL draw,RECT *r);
 
-int ProtocolOrder_CheckOrder();
-int ProtocolOrder_LoadModule(void);
-
 void SkinEngine_ApplyTransluency();
 HBITMAP SkinEngine_CreateDIB32(int cx, int cy);
 HBITMAP SkinEngine_CreateDIB32Point(int cx, int cy, void ** bits);

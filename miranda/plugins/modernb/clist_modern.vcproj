@@ -798,33 +798,6 @@
 					RelativePath=".\newrowopts.c">
 				</File>
 				<File
-					RelativePath=".\CLUIFrames\protocolorder.c">
-					<FileConfiguration
-						Name="Release|Win32">
-						<Tool
-							Name="VCCLCompilerTool"
-							PrecompiledHeaderThrough="../commonheaders.h"/>
-					</FileConfiguration>
-					<FileConfiguration
-						Name="Debug|Win32">
-						<Tool
-							Name="VCCLCompilerTool"
-							PrecompiledHeaderThrough="../commonheaders.h"/>
-					</FileConfiguration>
-					<FileConfiguration
-						Name="Debug Unicode|Win32">
-						<Tool
-							Name="VCCLCompilerTool"
-							PrecompiledHeaderThrough="../commonheaders.h"/>
-					</FileConfiguration>
-					<FileConfiguration
-						Name="Release Unicode|Win32">
-						<Tool
-							Name="VCCLCompilerTool"
-							PrecompiledHeaderThrough="../commonheaders.h"/>
-					</FileConfiguration>
-				</File>
-				<File
 					RelativePath=".\rowtemplateopt.c">
 				</File>
 				<File
