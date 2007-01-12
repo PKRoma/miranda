@@ -5,7 +5,7 @@
 
 typedef struct
 {
-	char *Name;//for debug purposes
+	char* Name;
 	int id;
 
 	//ExecService
