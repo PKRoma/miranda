@@ -334,25 +334,9 @@ BOOL CALLBACK DlgProcSoundOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPa
 			case TVN_KEYDOWN:
 				{
 					NMTVKEYDOWN* ptkd = (NMTVKEYDOWN*)lParam;
-					TVHITTESTINFO hti;
-
-					if (ptkd) {
-						if (ptkd->wVKey == 0x0020) {
-							hti.pt.x=(short)LOWORD(GetMessagePos());
-							hti.pt.y=(short)HIWORD(GetMessagePos());
-							ScreenToClient(((LPNMHDR)lParam)->hwndFrom,&hti.pt);
-							if(TreeView_HitTest(((LPNMHDR)lParam)->hwndFrom,&hti)) {
-								if (hti.flags&TVHT_ONITEM) {
-									if (TreeView_GetParent(hwndTree, hti.hItem)!=TreeView_GetRoot(hwndTree)) {
-										// the stupid checkbox gets enabled here.
-									}
-									else {
-										SendMessage(GetParent(hwndDlg), PSM_CHANGED, 0, 0);
-									}
-								}
-							}
-						}
-					}
+                    
+                    if (ptkd&&ptkd->wVKey==VK_SPACE&&TreeView_GetSelection(ptkd->hdr.hwndFrom))
+                        SendMessage(GetParent(hwndDlg), PSM_CHANGED, 0, 0);
 				}
 				break;
 			case NM_CLICK:
@@ -364,7 +348,7 @@ BOOL CALLBACK DlgProcSoundOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPa
 					if(TreeView_HitTest(((LPNMHDR)lParam)->hwndFrom,&hti)) {
 						if (hti.flags&TVHT_ONITEM) {
 							if(hti.flags&TVHT_ONITEMSTATEICON) {
-								if (TreeView_GetParent(hwndTree, hti.hItem)!=TreeView_GetRoot(hwndTree))
+								if (TreeView_GetParent(hwndTree, hti.hItem)!=NULL)
 									SendMessage(GetParent(hwndDlg), PSM_CHANGED, 0, 0);
 							}
 						}
