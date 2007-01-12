@@ -2,8 +2,8 @@
 
 Miranda IM: the free IM client for Microsoft* Windows*
 
-Copyright 2000-2003 Miranda ICQ/IM project, 
-all portions of this codebase are copyrighted to the people 
+Copyright 2000-2003 Miranda ICQ/IM project,
+all portions of this codebase are copyrighted to the people
 listed in contributors.txt.
 
 This program is free software; you can redistribute it and/or
@@ -42,7 +42,6 @@ void TrayIconUpdateBase(const char *szChangedProto);
 int EventsProcessContactDoubleClick(HANDLE hContact);
 int SetHideOffline(WPARAM wParam, LPARAM lParam);
 
-HANDLE hContactDoubleClicked, hStatusModeChangeEvent;
 HIMAGELIST hCListImages;
 
 extern int      g_maxStatus;
@@ -98,7 +97,6 @@ int LoadContactListModule(void)
 {
 	HookEvent(ME_SYSTEM_SHUTDOWN, ContactListShutdownProc);
 	HookEvent(ME_OPT_INITIALISE, CListOptInit);
-	hStatusModeChangeEvent = CreateHookableEvent(ME_CLIST_STATUSMODECHANGE);
 	CreateServiceFunction(MS_CLIST_GETSTATUSMODE, GetStatusMode);
 
 	hSvc_GetContactStatusMsg = CreateServiceFunction("CList/GetContactStatusMsg", GetContactStatusMessage);
@@ -108,7 +106,7 @@ int LoadContactListModule(void)
 }
 
 /*
-Begin of Hrk's code for bug 
+Begin of Hrk's code for bug
 */
 #define GWVS_HIDDEN 1
 #define GWVS_VISIBLE 2

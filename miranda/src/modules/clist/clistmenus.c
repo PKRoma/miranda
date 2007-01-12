@@ -1371,6 +1371,7 @@ int InitCustomMenus(void)
 	hPreBuildContactMenuEvent=CreateHookableEvent(ME_CLIST_PREBUILDCONTACTMENU);
 	hPreBuildMainMenuEvent=CreateHookableEvent(ME_CLIST_PREBUILDMAINMENU);
 	cli.hPreBuildStatusMenuEvent=CreateHookableEvent(ME_CLIST_PREBUILDSTATUSMENU);
+	hStatusModeChangeEvent = CreateHookableEvent( ME_CLIST_STATUSMODECHANGE );
 
 	hAckHook=(HANDLE)HookEvent(ME_PROTO_ACK,MenuProtoAck);
 

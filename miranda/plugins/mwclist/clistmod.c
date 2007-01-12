@@ -2,8 +2,8 @@
 
 Miranda IM: the free IM client for Microsoft* Windows*
 
-Copyright 2000-2003 Miranda ICQ/IM project, 
-all portions of this codebase are copyrighted to the people 
+Copyright 2000-2003 Miranda ICQ/IM project,
+all portions of this codebase are copyrighted to the people
 listed in contributors.txt.
 
 This program is free software; you can redistribute it and/or
@@ -34,7 +34,7 @@ void InitTrayMenus(void);
 
 HIMAGELIST hCListImages;
 
-HANDLE hStatusModeChangeEvent,hContactIconChangedEvent;
+HANDLE hContactIconChangedEvent;
 extern BYTE nameOrder[];
 
 static HANDLE hSettingChanged, hProtoAckHook;
@@ -100,12 +100,11 @@ int LoadContactListModule(void)
 
 	hCListImages = (HIMAGELIST)CallService(MS_CLIST_GETICONSIMAGELIST, 0, 0);
 	DefaultImageListColorDepth=DBGetContactSettingDword(NULL,"CList","DefaultImageListColorDepth",ILC_COLOR32);
-	
+
 	hProtoAckHook = (HANDLE) HookEvent(ME_PROTO_ACK, ProtocolAck);
 	HookEvent(ME_OPT_INITIALISE,CListOptInit);
 	HookEvent(ME_SYSTEM_SHUTDOWN,ContactListShutdownProc);
 	hSettingChanged=HookEvent(ME_DB_CONTACT_SETTINGCHANGED,ContactSettingChanged);
-	hStatusModeChangeEvent=CreateHookableEvent(ME_CLIST_STATUSMODECHANGE);
 	hContactIconChangedEvent=CreateHookableEvent(ME_CLIST_CONTACTICONCHANGED);
 	CreateServiceFunction(MS_CLIST_CONTACTCHANGEGROUP,ContactChangeGroup);
 	CreateServiceFunction(MS_CLIST_HOTKEYSPROCESSMESSAGE,HotkeysProcessMessage);

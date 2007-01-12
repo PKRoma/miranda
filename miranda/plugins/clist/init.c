@@ -27,7 +27,6 @@ HINSTANCE g_hInst = 0;
 PLUGINLINK *pluginLink;
 CLIST_INTERFACE* pcli = NULL;
 HIMAGELIST himlCListClc = NULL;
-HANDLE hStatusModeChangeEvent;
 
 extern int currentDesiredStatusMode;
 
@@ -133,7 +132,6 @@ LBL_Error:
 	HookEvent(ME_SYSTEM_MODULESLOADED, OnModulesLoaded);
 	HookEvent(ME_OPT_INITIALISE, OnOptsInit);
 
-	hStatusModeChangeEvent = CreateHookableEvent( ME_CLIST_STATUSMODECHANGE );
 	InitCustomMenus();
 	return 0;
 }

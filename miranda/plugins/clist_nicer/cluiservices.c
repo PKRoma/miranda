@@ -30,7 +30,6 @@ extern HIMAGELIST hCListImages, himlExtraImages;;
 extern struct CluiData g_CluiData;
 extern int g_shutDown;
 extern PLUGININFO pluginInfo;
-extern HANDLE hStatusModeChangeEvent;
 
 extern ButtonItem *g_ButtonItems;
 
