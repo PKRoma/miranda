@@ -166,6 +166,7 @@ static int GetWindowData(WPARAM wParam, LPARAM lParam)
 		mwod->local = GetParent(GetParent(hwnd));
 		SendMessage(hwnd, DM_GETWINDOWSTATE, 0, 0);
 		mwod->uState = GetWindowLong(hwnd, DWL_MSGRESULT);
+        return 0;
 	}
     else if((si = SM_FindSessionByHCONTACT(mwid->hContact)) != NULL && si->hWnd != 0) {
         mwod->uFlags = MSG_WINDOW_UFLAG_MSG_BOTH;
@@ -173,11 +174,16 @@ static int GetWindowData(WPARAM wParam, LPARAM lParam)
         mwod->local = GetParent(GetParent(si->hWnd));
         SendMessage(si->hWnd, DM_GETWINDOWSTATE, 0, 0);
         mwod->uState = GetWindowLong(si->hWnd, DWL_MSGRESULT);
+        return 0;
     }
-	else
-		mwod->uState = 0;
+	else {
+        mwod->uState = 0;
+        mwod->hContact = 0;
+        mwod->hwndWindow = 0;
+        mwod->uFlags = 0;
+    }
 		
-	return 0;
+	return 1;
 }
 
 /*
