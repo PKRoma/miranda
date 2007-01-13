@@ -57,33 +57,31 @@ static char search_device[] =
 	"<serviceType>%s</serviceType>";
 
 static char soap_action[] =
-	"<s:Envelope\r\n"
-	"    xmlns:s=\"http://schemas.xmlsoap.org/soap/envelope/\"\r\n"
-	"    s:encodingStyle=\"http://schemas.xmlsoap.org/soap/encoding/\">\r\n"
-	"  <s:Body>\r\n"
-	"    <u:%s xmlns:u=\"%s\">\r\n"
-	"%s"
-	"    </u:%s>\r\n"
-	"  </s:Body>\r\n"
-	"</s:Envelope>\r\n";
+	"<s:Envelope xmlns:s=\"http://schemas.xmlsoap.org/soap/envelope/\" s:encodingStyle=\"http://schemas.xmlsoap.org/soap/encoding/\">"
+		"<s:Body>"
+			"<u:%s xmlns:u=\"%s\">"
+				"%s"
+			"</u:%s>"
+		"</s:Body>"
+	"</s:Envelope>";
 
 static char add_port_mapping[] =
-	"      <NewRemoteHost></NewRemoteHost>\r\n"
-	"      <NewExternalPort>%i</NewExternalPort>\r\n"
-	"      <NewProtocol>%s</NewProtocol>\r\n"
-	"      <NewInternalPort>%i</NewInternalPort>\r\n"
-	"      <NewInternalClient>%s</NewInternalClient>\r\n"
-	"      <NewEnabled>1</NewEnabled>\r\n"
-	"      <NewPortMappingDescription>Miranda</NewPortMappingDescription>\r\n"
-	"      <NewLeaseDuration>0</NewLeaseDuration>\r\n";
+	"<NewRemoteHost></NewRemoteHost>"
+	"<NewExternalPort>%i</NewExternalPort>"
+	"<NewProtocol>%s</NewProtocol>"
+	"<NewInternalPort>%i</NewInternalPort>"
+	"<NewInternalClient>%s</NewInternalClient>"
+	"<NewEnabled>1</NewEnabled>"
+	"<NewPortMappingDescription>Miranda</NewPortMappingDescription>"
+	"<NewLeaseDuration>0</NewLeaseDuration>";
 
 static char delete_port_mapping[] =
-	"     <NewRemoteHost></NewRemoteHost>\r\n"
-	"     <NewExternalPort>%i</NewExternalPort>\r\n"
-	"     <NewProtocol>%s</NewProtocol>\r\n";
+	"<NewRemoteHost></NewRemoteHost>"
+	"<NewExternalPort>%i</NewExternalPort>"
+	"<NewProtocol>%s</NewProtocol>";
 
 static char get_port_mapping[] =
-	"     <NewPortMappingIndex>%i</NewPortMappingIndex>\r\n";
+	"<NewPortMappingIndex>%i</NewPortMappingIndex>";
 
 static BOOL gatewayFound = FALSE;
 static SOCKADDR_IN locIP;
@@ -200,7 +198,7 @@ static void discoverUPnP(char* szUrl, int sizeUrl)
 
 	static const unsigned any = INADDR_ANY;
 	fd_set readfd;
-	TIMEVAL tv = { 1, 0 };
+	TIMEVAL tv = { 1, 500000 };
 
 	char hostname[256];
 	PHOSTENT he;
@@ -274,7 +272,7 @@ static void discoverUPnP(char* szUrl, int sizeUrl)
 static int httpTransact(char* szUrl, char* szResult, int resSize, char* szActionName)
 {
 	// Parse URL
-	char szHost[256], szPath[256], szRes[6];
+	char szHost[256], szPath[256], szRes[16];
 	int sz, res = 0;
 	unsigned short sPort;
 	SOCKET sock = INVALID_SOCKET;
@@ -315,6 +313,7 @@ static int httpTransact(char* szUrl, char* szResult, int resSize, char* szAction
 			enetaddr.sin_port = htons(sPort);
 			enetaddr.sin_addr.s_addr = inet_addr(szHost);
 
+			// Resolve host name if needed
 			if (enetaddr.sin_addr.s_addr == INADDR_NONE)
 			{
 				PHOSTENT he = gethostbyname(szHost);
@@ -327,46 +326,58 @@ static int httpTransact(char* szUrl, char* szResult, int resSize, char* szAction
 			FD_ZERO(&readfd);
 			FD_SET(sock, &readfd);
 
+			// Limit the scope of the connection (does not work for 
 			setsockopt(sock, IPPROTO_IP, IP_TTL, (char *)&ttl, sizeof(unsigned));
 
+			// Put socket into non-blocking mode for timeout on connect
 			ioctlsocket(sock, FIONBIO, &mode);
 
+			// Connect to the remote host
 			if (connect(sock, (SOCKADDR*)&enetaddr, sizeof(enetaddr)) == SOCKET_ERROR)
 			{
 				int err = WSAGetLastError();
 				
+				// Socket connection failed
 				if (err != WSAEWOULDBLOCK)
 				{
 					Netlib_Logf(NULL, "UPnP connect failed %d", err);
 					break;
 				}
+				// Wait for socket to connect 
 				else if (select(-1, NULL, &readfd, NULL, &tv) != 1) 
 				{
 					Netlib_Logf(NULL, "UPnP connect timeout");
 					break;
 				}
 			}
+
 			if (send( sock, szData, sz, 0 ) != SOCKET_ERROR)
 			{
+				char *hdrend = NULL;
+				int acksz = 0, pktsz = 0;
+
 				LongLog(szData);
 				sz = 0;
 				for(;;) 
 				{
 					int bytesRecv;
-					char *hdrend;
 
+					// Wait for the next packet
 					if (select(0, &readfd, NULL, NULL, &tv) != 1) 
 					{
 						Netlib_Logf(NULL, "UPnP recieve timeout"); 
 						break;
 					}
 
+					// 
 					bytesRecv = recv( sock, &szResult[sz], resSize-sz, 0 );
+					// Connection closed or aborted, all data received
 					if ( bytesRecv == 0 || bytesRecv == SOCKET_ERROR) 
 						break;
 					else
 						sz += bytesRecv;
 
+					// Insert null terminator to use string functions
 					if (sz >= (resSize-1)) 
 					{
 						szResult[resSize-1] = 0;
@@ -374,20 +385,66 @@ static int httpTransact(char* szUrl, char* szResult, int resSize, char* szAction
 					}
 					else
 						szResult[sz] = 0;
-
-					hdrend = strstr(szResult, "\r\n\r\n");
-					if (hdrend != NULL &&
-						(txtParseParam(szResult, NULL, "Content-Length:", "\r", szRes, sizeof(szRes)) ||
-						txtParseParam(szResult, NULL, "CONTENT-LENGTH:", "\r", szRes, sizeof(szRes))))
+					
+					// HTTP header found?
+					if (hdrend == NULL)
 					{
-						int pktsz = atol(szRes) + (hdrend - szResult + 4);
-						if (sz >= pktsz)
+						// Find HTTP header end
+						hdrend = strstr(szResult, "\r\n\r\n");
+						if (hdrend != NULL)
 						{
-							szResult[pktsz] = 0;
-							break;
+							hdrend += 4;
+
+							// Get packet size if provided
+							if (txtParseParam(szResult, NULL, "Content-Length:", "\r", szRes, sizeof(szRes)) ||
+								txtParseParam(szResult, NULL, "CONTENT-LENGTH:", "\r", szRes, sizeof(szRes)))
+							{
+								// Add size of HTTP header to the packet size to compute full transmission size
+								pktsz = atol(szRes) + (hdrend - szResult);
+							}
+							// Get encoding type if provided
+							if (txtParseParam(szResult, NULL, "Transfer-Encoding:", "\r", szRes, sizeof(szRes)) &&
+								stricmp(szRes, "Chunked") == 0)
+							{
+								acksz = hdrend - szResult;
+							}
 						}
 					}
 
+					// Content-Length bytes reached, all data received
+					if (sz >= pktsz && pktsz != 0)
+					{
+						szResult[pktsz] = 0;
+						break;
+					}
+ 
+					// Chunked encoding processing
+					if (sz > acksz && acksz != 0)
+					{
+						// Parse out chunk size
+						char* data = szResult + acksz;
+						char* peol1 = data == hdrend ? data - 2 : strstr(data, "\r\n");
+						if (peol1 != NULL)
+						{
+							char *peol2;
+							peol1 += 2;
+							
+							peol2 = strstr(peol1, "\r\n");
+							if (peol2 != NULL)
+							{
+								// Get chunk size
+								int chunkBytes = strtol(peol1, NULL, 16);
+								acksz += chunkBytes;
+								peol2 += 2;
+
+								memmove(data, peol2, strlen(peol2)+1);
+								sz -= peol2 - data;
+
+								// Last chunk, all data received
+								if (chunkBytes == 0) break;
+							}
+						}
+					}
 				}
 				LongLog(szResult);
 			}
@@ -398,6 +455,15 @@ static int httpTransact(char* szUrl, char* szResult, int resSize, char* szAction
 			{
 				int len = sizeof(locIP);
 				getsockname(sock, (SOCKADDR*)&locIP, &len);
+				if (locIP.sin_addr.S_un.S_addr == 0x0100007f)
+				{
+					struct hostent *he;
+
+					gethostname(szPath, sizeof(szPath));
+					he = gethostbyname(szPath);
+					if (he != NULL)
+						locIP.sin_addr.S_un.S_addr = *(PDWORD)he->h_addr_list[0];
+				}
 			}
 
 			shutdown(sock, 2);
@@ -503,7 +569,7 @@ BOOL NetlibUPnPAddPortMapping(WORD intport, char *proto, WORD *extport, DWORD *e
 				*extport, proto, intport, inet_ntoa(locIP.sin_addr));
 			res = httpTransact(szCtlUrl, szData, 4096, "AddPortMapping");
 		}
-			while (search && res == 718);
+		while (search && res == 718);
 		
 		if (res == 200) {
 			szData[0] = 0;
