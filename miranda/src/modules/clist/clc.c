@@ -199,16 +199,16 @@ static int ClcShutdown(WPARAM wParam, LPARAM lParam)
 {
 	UnhookEvent(hAckHook);
 	UnhookEvent(hClcSettingsChanged);
-	
-    if (cli.clcProto) mir_free(cli.clcProto);
-	
-    FreeFileDropping();
+
+	if (cli.clcProto) mir_free(cli.clcProto);
+
+	FreeFileDropping();
 	FreeDisplayNameCache();
-    
-    UninitCustomMenus();
+
+	UninitCustomMenus();
 	UnitGenMenu();	
-	
-    return 0;
+
+	return 0;
 }
 
 static void SortClcByTimer( HWND hwnd )

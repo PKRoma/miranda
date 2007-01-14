@@ -125,11 +125,11 @@ void FreeMenuProtos( void )
 {
 	int i;
 
-	for ( i=0; i < cli.menuProtoCount; i++ )
-		if ( cli.menuProtos[i].szProto )
-			mir_free(cli.menuProtos[i].szProto);
-
 	if ( cli.menuProtos ) {
+		for ( i=0; i < cli.menuProtoCount; i++ )
+			if ( cli.menuProtos[i].szProto )
+				mir_free(cli.menuProtos[i].szProto);
+
 		mir_free( cli.menuProtos );
 		cli.menuProtos = NULL;
 	}
@@ -1448,9 +1448,6 @@ int InitCustomMenus(void)
 
 void UninitCustomMenus(void)
 {
-	if ( !cli.menuProtos )
-		return;
-
 	UnloadMoveToGroup();
 	FreeMenuProtos();
 
