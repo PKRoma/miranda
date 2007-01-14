@@ -255,7 +255,7 @@ static void sttSavePicture2disk( filetransfer* ft )
 		MSN_SetString( ft->std.hContact, "AvatarSavedHash", pshad+7 );
 	}
 	else {
-		DBDeleteContactSetting( ft->std.hContact, msnProtocolName, "AvatarHash" );
+		MSN_DeleteSetting( ft->std.hContact, "AvatarHash" );
 		MSN_SendBroadcast( AI.hContact, ACKTYPE_AVATAR, ACKRESULT_FAILED, HANDLE( &AI ), NULL );
 	}
 

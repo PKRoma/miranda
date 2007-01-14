@@ -1060,7 +1060,7 @@ static int MsnSetCurrentMedia(WPARAM wParam, LPARAM lParam)
 
 	// Set user text
 	if (msnCurrentMedia.cbSize == 0)
-		DBDeleteContactSetting( NULL, msnProtocolName, "ListeningTo" );
+		MSN_DeleteSetting( NULL, "ListeningTo" );
 	else 
 	{
 		TCHAR *text;

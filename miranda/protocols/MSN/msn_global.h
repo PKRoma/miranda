@@ -209,6 +209,7 @@ int		__stdcall	MSN_CallService( const char* szSvcName, WPARAM wParam, LPARAM lPa
 #endif
 
 HANDLE   __stdcall   MSN_CreateProtoServiceFunction( const char*, MIRANDASERVICE );
+void     __stdcall   MSN_DeleteSetting( HANDLE hContact, const char* valueName );
 void     __stdcall   MSN_EnableMenuItems( BOOL );
 void     __fastcall  MSN_FreeVariant( DBVARIANT* dbv );
 char*    __stdcall   MSN_GetContactName( HANDLE hContact );

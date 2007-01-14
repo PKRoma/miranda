@@ -812,7 +812,7 @@ static long		sttListedContactMask;
 
 static void sttDeleteUnusedSetting( long mask, const char* settingName )
 {	if (( sttListedContactMask & mask ) == 0 )
-		DBDeleteContactSetting( sttListedContact, msnProtocolName, settingName );
+		MSN_DeleteSetting( sttListedContact, settingName );
 }
 
 static void sttProcessListedContactMask()
@@ -914,20 +914,20 @@ static void sttProcessStatusMessage( BYTE* buf, unsigned len, HANDLE hContact )
 
 	p = strstr( dataBuf, "<CurrentMedia>" );
 	if ( !p ) {
-		DBDeleteContactSetting( hContact, msnProtocolName, "ListeningTo" );
+		MSN_DeleteSetting( hContact, "ListeningTo" );
 		return;
 	}
 
 	p += 14;
 	char* p1 = strstr( p, "</CurrentMedia>" );
 	if ( !p1 ) {
-		DBDeleteContactSetting( hContact, msnProtocolName, "ListeningTo" );
+		MSN_DeleteSetting( hContact, "ListeningTo" );
 		return;
 	}
 
 	*p1 = 0;
 	if ( *p == 0 ) {
-		DBDeleteContactSetting( hContact, msnProtocolName, "ListeningTo" );
+		MSN_DeleteSetting( hContact, "ListeningTo" );
 		return;
 	}
 
@@ -948,7 +948,7 @@ static void sttProcessStatusMessage( BYTE* buf, unsigned len, HANDLE hContact )
 
 	// Now let's mount the final string
 	if ( pCount <= 4 )  {
-		DBDeleteContactSetting( hContact, msnProtocolName, "ListeningTo" );
+		MSN_DeleteSetting( hContact, "ListeningTo" );
 		return;
 	}
 
@@ -1447,6 +1447,21 @@ LBL_InvalidCommand:
 						MSN_SetWord( hContact, "Status", (WORD)ID_STATUS_INVISIBLE);
 
 					MSN_SetString( hContact, "PictContext", data.cmdstring );
+
+               char* p = strstr( data.cmdstring, "SHA1D=\"" );
+					if ( p ) {
+						p += 7;
+						char* p1 = strchr( p+1, '\"' );
+						if ( p1 ) {
+							*p1 = 0;
+							MSN_SetString( hContact, "AvatarHash", p );
+							*p1 = '\"';
+						}
+						else p = NULL;
+					}
+					if ( p == NULL )
+						MSN_DeleteSetting( hContact, "AvatarHash" );
+
 					if ( hContact != NULL ) {
 						char szSavedContext[ 256 ];
 						int result = MSN_GetStaticString( "PictSavedContext", hContact, szSavedContext, sizeof( szSavedContext ));
@@ -1454,8 +1469,8 @@ LBL_InvalidCommand:
 							MSN_SendBroadcast( hContact, ACKTYPE_AVATAR, ACKRESULT_STATUS, NULL, NULL );
 				}	}
 				else {
-					DBDeleteContactSetting( hContact, msnProtocolName, "PictContext" );
-					DBDeleteContactSetting( hContact, msnProtocolName, "PictSavedContext" );
+					MSN_DeleteSetting( hContact, "PictContext" );
+					MSN_DeleteSetting( hContact, "PictSavedContext" );
 					MSN_SendBroadcast( hContact, ACKTYPE_AVATAR, ACKRESULT_STATUS, NULL, NULL );
 			}	}
 
@@ -1742,7 +1757,7 @@ LBL_InvalidCommand:
 			if ( sttDivideWords( params, 3, tWords ) == 3 ) { // remove from a group
 				HANDLE hContact = MSN_HContactById( data.serial );
 				if ( hContact != NULL )
-					DBDeleteContactSetting( hContact, msnProtocolName, "GroupID" );
+					MSN_DeleteSetting( hContact, "GroupID" );
 				MSN_RemoveEmptyGroups();
 			}
 			else { // remove a user from a list

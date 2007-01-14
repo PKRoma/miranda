@@ -159,7 +159,7 @@ static int OnModulesLoaded( WPARAM wParam, LPARAM lParam )
 		ltoa( wPort, szBuffer, 10 );
 		MSN_SetString( NULL, "NLIncomingPorts", szBuffer );
 
-		DBDeleteContactSetting( NULL, msnProtocolName, "YourPort" );
+		MSN_DeleteSetting( NULL, "YourPort" );
 	}
 
 	mir_snprintf( szBuffer, sizeof szBuffer, "%s plugin connections", msnProtocolName );

@@ -42,6 +42,11 @@ int __stdcall MSN_CallService( const char* szSvcName, WPARAM wParam, LPARAM lPar
 }
 #endif
 
+void __stdcall MSN_DeleteSetting( HANDLE hContact, const char* valueName )
+{
+	DBDeleteContactSetting( hContact, msnProtocolName, valueName );
+}
+
 void __stdcall MSN_EnableMenuItems( BOOL parEnable )
 {
 	CLISTMENUITEM clmi;
