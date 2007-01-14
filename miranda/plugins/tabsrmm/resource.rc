@@ -125,7 +125,7 @@ BEGIN
     LTEXT           "When set to ""Local"", current global settings are inherited for this user. Future changes of message log related options will then be private.",IDC_STATIC,73,13,196,24
     GROUPBOX        "Message log view mode",IDC_STATIC,2,44,274,33
     COMBOBOX        IDC_IEVIEWMODE,6,58,119,46,CBS_DROPDOWNLIST | WS_VSCROLL | WS_GROUP | WS_TABSTOP
-    LTEXT           "Select whether you want IEView for this contact. Default is enabled when IEView is installed",IDC_STATIC,130,50,141,24
+    LTEXT           "Select how to display the message log. This setting can be ignored when one of the listed plugins is not installed.",IDC_STATIC,130,50,141,24
     GROUPBOX        "Send text formatting method",IDC_STATIC,2,78,274,33
     COMBOBOX        IDC_TEXTFORMATTING,6,90,119,46,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
     LTEXT           "You can override the global setting for text formatting here. Use ""Force Off"" to never send formatting info for this contact.",IDC_STATIC,130,85,141,24
