@@ -1,7 +1,7 @@
                    Miranda Instant Messenger Release Notes
                    ---------------------------------------
 
-                           January 2007 (v0.6.2)
+                            January 2007 (v0.6.2)
 
                           http://www.miranda-im.org
 
@@ -22,12 +22,6 @@ Contents
 
 1. New in this version
 ----------------------
-
-This section lists some of the changes between different releases. We have tried
-to list all the important ones without getting too technical.
-
-If you want to see the full changelogs, go here:
-http://files.miranda-im.org/builds/ChangeLog
 
 * New in 0.6.2
 Enhancements
