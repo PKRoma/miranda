@@ -237,7 +237,7 @@ void CluiProtocolStatusChanged( int parStatus, const char* szProto )
 			int i;
 
 			for(i = 0; i < pcli->menuProtoCount; i++) {
-				if(!strcmp(pcli->menuProtos[i].szProto, curprotocol->szName) && pcli->menuProtos[i].menuID != 0 && pcli->menuProtos[i].hasAdded != 0) {
+				if(!strcmp(pcli->menuProtos[i].szProto, curprotocol->szName) && pcli->menuProtos[i].menuID != 0 && pcli->menuProtos[i].hasAdded !=0) {
 					BYTE xStatus = DBGetContactSettingByte(NULL, curprotocol->szName, "XStatusId", -1);
 					CLISTMENUITEM mi = {0};
 					mi.cbSize = sizeof(mi);
@@ -264,7 +264,7 @@ void CluiProtocolStatusChanged( int parStatus, const char* szProto )
 						mi.hIcon = 0;
 						pcli->menuProtos[i].hIcon = 0;
 					}
-					CallService(MS_CLIST_MODIFYMENUITEM, (WPARAM)pcli->menuProtos[i].menuID, (LPARAM)&mi);
+					CallService(MS_CLIST_MODIFYMENUITEM, (WPARAM)pcli->menuProtos[i].hasAdded, (LPARAM)&mi);
 					break;
 				}
 			}

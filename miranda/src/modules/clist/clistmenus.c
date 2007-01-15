@@ -1028,7 +1028,9 @@ int MenuModulesLoaded(WPARAM wParam,LPARAM lParam)
 				cli.menuProtos=(MenuProto*)mir_alloc(sizeof(MenuProto));
 			memset(&(cli.menuProtos[cli.menuProtoCount]),0,sizeof(MenuProto));
 			cli.menuProtos[cli.menuProtoCount].menuID=(HANDLE)rootmenu;
-			cli.menuProtos[cli.menuProtoCount].szProto=mir_strdup(protoName);
+			//cli.menuProtos[cli.menuProtoCount].szProto=mir_strdup(protoName);
+            cli.menuProtos[cli.menuProtoCount].szProto=mir_strdup(proto[i]->szName);
+            
 			cli.menuProtoCount++;
 			{
 				char buf[256];

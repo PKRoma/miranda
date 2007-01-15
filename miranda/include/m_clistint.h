@@ -116,7 +116,7 @@ typedef struct
 
 typedef struct _menuProto
 {
-	char*  szProto;
+	char*  szProto;             //This is DLL-based unique name
 	HANDLE menuID;
 	HANDLE hasAdded;
 	HICON  hIcon;
