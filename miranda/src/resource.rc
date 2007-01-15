@@ -837,7 +837,7 @@ BEGIN
                     WS_TABSTOP,12,33,261,119
     GROUPBOX        "Sound Information",IDC_SGROUP,4,162,277,71
     LTEXT           "Location:",IDC_SLOC,17,190,40,9
-    LTEXT           "",IDC_LOCATION,65,190,208,18
+    EDITTEXT        IDC_LOCATION,65,190,208,13,ES_AUTOHSCROLL | ES_READONLY
     LTEXT           "Name:",IDC_NAME,17,174,39,9
     LTEXT           "",IDC_NAMEVAL,64,174,209,9
     CONTROL         "Enable sound events",IDC_ENABLESOUNDS,"Button",
