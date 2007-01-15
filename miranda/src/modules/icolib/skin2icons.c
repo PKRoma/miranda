@@ -20,6 +20,7 @@ You should have received a copy of the GNU General Public License
 along with this program; if not, write to the Free Software
 Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 */
+
 #define _WIN32_IE 0x0560
 #define _WIN32_WINNT 0x0501
 
@@ -29,7 +30,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include "IcoLib.h"
 #include "../database/dblists.h"
 
-static HANDLE hIcons2ChangedEvent;
+static HANDLE hIcons2ChangedEvent, hIconsChangedEvent;
 static HICON hIconBlank = NULL;
 
 HANDLE hIcoLib_AddNewIcon, hIcoLib_RemoveIcon, hIcoLib_GetIcon, hIcoLib_ReleaseIcon;
@@ -536,6 +537,7 @@ void DoIconsChanged(HWND hwndDlg)
 	SendMessage(hwndDlg, DM_UPDATEICONSPREVIEW, 0, 0);
 
 	iconEventActive = 1; // Disable icon destroying - performance boost
+	NotifyEventHooks(hIconsChangedEvent, 0, 0);
 	NotifyEventHooks(hIcons2ChangedEvent, 0, 0);
 	iconEventActive = 0;
 
@@ -1202,6 +1204,7 @@ int InitSkin2Icons(void)
 	hIcoLib_ReleaseIcon = CreateServiceFunction(MS_SKIN2_RELEASEICON, IcoLib_ReleaseIcon);
 
 	hIcons2ChangedEvent = CreateHookableEvent(ME_SKIN2_ICONSCHANGED);
+	hIconsChangedEvent = CreateHookableEvent(ME_SKIN_ICONSCHANGED);
 	return 0;
 }
 
@@ -1209,6 +1212,7 @@ void UninitSkin2Icons(void)
 {
 	int indx;
 
+	DestroyHookableEvent(hIconsChangedEvent);
 	DestroyHookableEvent(hIcons2ChangedEvent);
 
 	DestroyServiceFunction(hIcoLib_AddNewIcon);

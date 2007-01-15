@@ -23,16 +23,15 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include "commonheaders.h"
 
 int InitSkinIcons(void);
-void UninitSkinIcons(void);
 int InitSkinSounds(void);
 void UninitSkinSounds(void);
+
 BOOL CALLBACK DlgProcSoundOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam);
-BOOL CALLBACK DlgProcIconsOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam);
 
 static int SkinSystemShutdown(WPARAM wParam,LPARAM lParam)
 {
 	UninitSkinSounds();
-	UninitSkinIcons();
+//	UninitSkinIcons();
 	return 0;
 }
 
@@ -48,15 +47,6 @@ static int SkinOptionsInit(WPARAM wParam,LPARAM lParam)
 	odp.pszTitle = "Sounds";
 	odp.pfnDlgProc = DlgProcSoundOpts;
 	odp.flags = ODPF_BOLDGROUPS;
-	CallService( MS_OPT_ADDPAGE, wParam, ( LPARAM )&odp );
-
-	odp.position = -180000000;
-	odp.pszTemplate = MAKEINTRESOURCEA(IDD_OPT_ICONS);
-	odp.pszTitle = "Icons";
-	odp.pszGroup = "Contact List";
-	odp.pfnDlgProc = DlgProcIconsOpts;
-	odp.expertOnlyControls = iconsExpertOnlyControls;
-	odp.nExpertOnlyControls = SIZEOF( iconsExpertOnlyControls );
 	CallService( MS_OPT_ADDPAGE, wParam, ( LPARAM )&odp );
 	return 0;
 }
