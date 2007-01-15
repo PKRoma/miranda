@@ -2,7 +2,7 @@
 !include "Sections.nsh"
 
 !define MIM_NAME                "Miranda IM"
-!define MIM_VERSION             "0.6.1"
+!define MIM_VERSION             "0.6.2"
 ;!define MIM_PREVIEW             "1" ; comment out for final build
 
 !define MIM_BUILD_UNICODE
@@ -38,12 +38,12 @@ VAR INST_UPGRADE
 !packhdr "temp_installer.dat" "upx -9 temp_installer.dat"
 
 !define MUI_HEADERIMAGE
-!define MUI_HEADERIMAGE_BITMAP "${NSISDIR}\Contrib\Graphics\Header\orange.bmp"
-!define MUI_HEADERIMAGE_UNBITMAP "${NSISDIR}\Contrib\Graphics\Header\orange-uninstall.bmp"
-!define MUI_WELCOMEFINISHPAGE_BITMAP "${NSISDIR}\Contrib\Graphics\Wizard\orange.bmp"
-!define MUI_UNWELCOMEFINISHPAGE_BITMAP "${NSISDIR}\Contrib\Graphics\Wizard\orange-uninstall.bmp"
-!define MUI_ICON "${NSISDIR}\Contrib\Graphics\Icons\orange-install.ico"
-!define MUI_UNICON "${NSISDIR}\Contrib\Graphics\Icons\orange-uninstall.ico"
+!define MUI_HEADERIMAGE_BITMAP "Graphics\header.bmp"
+!define MUI_HEADERIMAGE_UNBITMAP "Graphics\header.bmp"
+!define MUI_WELCOMEFINISHPAGE_BITMAP "Graphics\welcome.bmp"
+!define MUI_UNWELCOMEFINISHPAGE_BITMAP "Graphics\welcome.bmp"
+!define MUI_ICON "Graphics\install.ico"
+!define MUI_UNICON "Graphics\uninstall.ico"
 !define MUI_ABORTWARNING
 !define MUI_COMPONENTSPAGE_NODESC
 !define MUI_LICENSEPAGE_BGCOLOR /grey
@@ -66,12 +66,6 @@ Section "Miranda IM"
   SetDetailsPrint textonly
   DetailPrint "Installing Miranda IM Core Files..."
   SetDetailsPrint listonly
-
-  Delete "$INSTDIR\Uninstall\unins000.dat"
-  Delete "$INSTDIR\Uninstall\unins000.exe"
-  Delete "$INSTDIR\Uninstall\unins001.dat"
-  Delete "$INSTDIR\Uninstall\unins001.exe"
-  RMDir  "$INSTDIR\Uninstall"
 
   SetOutPath "$INSTDIR"
   File "${MIM_BUILD_DIR}\miranda32.exe"
