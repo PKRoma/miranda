@@ -135,17 +135,25 @@ void FreeMenuProtos( void )
 	}
 	cli.menuProtoCount = 0;
 }
+//////////////////////////////////////////////////////////////////////////
+// The function converts Human-readable name of protocol like 'Freenode (IRC)' 
+// to unique name of protocol based on DLL name, like 'FREENODE'
+//
 
-char* GetUniqueProtoName(char * proto)
+char * GetUniqueProtoName(char * proto)
 {
-	int i, count;
-	PROTOCOLDESCRIPTOR **protos;
-	CallService(MS_PROTO_ENUMPROTOCOLS, (WPARAM) & count, (LPARAM) & protos);
-	for (i=0; i<count; i++)
-		if (!_strcmpi(proto,protos[i]->szName))
-			return protos[i]->szName;
-
-	return NULL;
+    int i, count;
+    PROTOCOLDESCRIPTOR **protos;
+    char name[64];
+    CallService(MS_PROTO_ENUMPROTOCOLS, (WPARAM) & count, (LPARAM) & protos);
+    for (i=0; i<count; i++)
+    {
+        name[0] = '\0';
+        CallProtoService(protos[i]->szName, PS_GETNAME, sizeof(name), (LPARAM) name);
+        if (!_strcmpi(proto,name))
+            return protos[i]->szName;
+    }
+    return NULL;
 }
 
 int GetAverageMode()
@@ -569,7 +577,8 @@ int StatusMenuCheckService(WPARAM wParam, LPARAM lParam)
 				BOOL IconNeedDestroy=FALSE;
 				char* prot;
 				if (smep)
-					prot = GetUniqueProtoName( smep->proto );
+//					prot = GetUniqueProtoName( smep->proto );
+                    prot = smep->proto;
 				else
 				{
 					#ifdef UNICODE
@@ -616,7 +625,8 @@ int StatusMenuExecService(WPARAM wParam,LPARAM lParam)
 			CallService(MS_PROTO_ENUMPROTOCOLS,(WPARAM)&protoCount,(LPARAM)&proto);
 			if ( smep->status == 0 && smep->protoindex !=0 && smep->proto != NULL ) {
 				PMO_IntMenuItem pimi;
-				char *prot = GetUniqueProtoName(smep->proto);
+                //char *prot = GetUniqueProtoName(smep->proto);
+                char *prot = smep->proto;
 				int i=(DBGetContactSettingByte(NULL,prot,"LockMainStatus",0)?0:1);
 				DBWriteContactSettingByte(NULL,prot,"LockMainStatus",i);
 				pimi = cli.pfnMOGetIntMenuItem(smep->protoindex);
@@ -996,11 +1006,11 @@ int MenuModulesLoaded(WPARAM wParam,LPARAM lParam)
 				//owner data
 				lpStatusMenuExecParam smep = ( lpStatusMenuExecParam )mir_alloc( sizeof( StatusMenuExecParam ));
 				memset( smep, 0, sizeof( *smep ));
-				smep->proto = mir_strdup(protoName);
+				smep->proto = mir_strdup(proto[i]->szName);
 				tmi.ownerdata = smep;
 			}
 
-			if ( DBGetContactSettingByte( NULL, GetUniqueProtoName(protoName), "LockMainStatus", 0 ))
+			if ( DBGetContactSettingByte( NULL, proto[i]->szName, "LockMainStatus", 0 ))
 				tmi.flags |= CMIF_CHECKED;
 
 			if (( tmi.flags & CMIF_CHECKED ) && cli.bDisplayLocked ) {
