@@ -278,6 +278,9 @@ BOOL CALLBACK DlgProcSoundOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPa
 			CallService(MS_UTILS_OPENURL,1,(LPARAM)"http://addons.miranda-im.org/index.php?action=display&id=5");
 			break;
 		}
+        if(LOWORD(wParam)==IDC_LOCATION) {
+            break;   
+        }
 		SendMessage(GetParent(hwndDlg), PSM_CHANGED, 0, 0);
 		break;
 	case WM_NOTIFY:
