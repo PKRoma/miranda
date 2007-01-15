@@ -1,7 +1,7 @@
                    Miranda Instant Messenger Release Notes
                    ---------------------------------------
 
-                           January 2007 (v0.6.1)
+                           January 2007 (v0.6.2)
 
                           http://www.miranda-im.org
 
@@ -29,6 +29,16 @@ to list all the important ones without getting too technical.
 If you want to see the full changelogs, go here:
 http://files.miranda-im.org/builds/ChangeLog
 
+* New in 0.6.2
+Enhancements
+ - Improved unicode support in path utilities
+ - UPnP routers that use chunked encoding are now supported
+ - Added ability to enable/disable sounds globally
+
+Bugfixes
+ - Tooltips on button controls displayed incorrectly in ANSI version
+ - Enabling/disabling first group of sounds in options didn't enable apply button
+ 
 * New in 0.6.1
 Enhancements
  - Added option to enable/disable UPnP support
