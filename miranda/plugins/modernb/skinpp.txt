@@ -84,5 +84,65 @@ if glyph image is too small:
 			directions, tile vertical, tile horizontal, stretch 
 			both directions), default is 'stretch'
 
-\************************************************************************/	
+
 	
+	
+********** Example of skin ***************
+
+<skin>
+<!-- Skin Info (about, author, etc.) -->
+		.....
+		
+<!-- Properties (margins, db settings) -->
+	<skin.properties>
+	....
+	</skin.properties>
+	
+	<? include="./xml_file_to_be_included.xml" ?>
+	
+<!-- Objects (objects to be drawn) -->
+	<skin.objects>		
+		<object.name type='glyph' opacity='255'>
+			<image file="filename.png" x='0' y='0' width='0' height='0' />
+			<resize top='0' left='0' bottom='0' right='0' mode='tile' />		
+			<fonts>
+				<main effort='255' color='0x000000' alpha='255' effect='none' effect.color='0x000000' effect.alpha='255' />
+				<second effort='255' color='0x000000' alpha='255' effect='none' effect.color='0x000000' effect.alpha='255' />
+				<third effort='255' color='0x000000' alpha='255' effect='none' effect.color='0x000000' effect.alpha='255' />
+			</fonts>
+		</object.name>
+		.....
+		
+	</skin.objects>	
+
+<!-- Selectors (selector what need to be drawn) -->
+	<skin.selectors>
+	....
+	</skin.selectors>
+
+<!-- Buttons -->
+	<skin.buttons>
+	....
+	</skin.buttons>
+	
+<!-- Row Layout (layout of row) -->
+	<skin.rowlayout>
+		<tr>	
+			<tc valign='vcenter'>
+		    		<tr valign='vcenter' halign='hcenter'>
+	      				<tc valign='vcenter' halign='hcenter' draw='avatar' /> 
+	      				<tc mode='layer' valign='bottom' halign='right' draw='icon' />
+	      			</tr>  
+		      	</rc> 
+		      	<tc valign='vcenter'>
+		      		<tr draw='text' />
+	      			<tr draw='text2' />
+      				<tr draw='text3' />
+	      		</tc> 
+	      		<tc mode='layer' valign='top' halign='right' draw='extra' />
+		</tr>
+	</skin.rowlayout>	
+...
+</skin>
+
+\************************************************************************/	
