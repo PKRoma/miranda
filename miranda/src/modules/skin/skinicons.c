@@ -132,22 +132,15 @@ static int LoadSkinProtoIcon(WPARAM wParam,LPARAM lParam)
 	mir_snprintf(iconName, SIZEOF(iconName), "%s%s%d", statusIconsFmt, szProto, 0);
 	hIcon = (HICON)IcoLib_GetIcon(0, (LPARAM)iconName);
 	if ( hIcon == NULL ) {
-		SKINICONDESC sid;
 		char szPath[MAX_PATH], szFullPath[MAX_PATH],*str;
 		char iconId[MAX_PATH];
-		DWORD caps2;
-		//  NB: "iconName" in following code using for SECTION name representation
+		DWORD caps2 = CallProtoService(szProto,PS_GETCAPS,PFLAGNUM_2,0);
+		SKINICONDESC sid = { 0 };
 		//
 		//  Queried protocol isn't in list, adding
 		//
 		strcpy(iconName, PROTOCOLS_PREFIX); suffIndx = strlen(iconName);
 		CallProtoService(szProto,PS_GETNAME,sizeof(iconName)-suffIndx,(LPARAM)iconName+suffIndx);
-
-		caps2=CallProtoService(szProto,PS_GETCAPS,PFLAGNUM_2,0);
-		//DWORD sectionIndx = (DWORD)IcoLib_AddSection(iconName, TRUE);
-		// using of DWORD allows to check both positivity of index an d
-		//if (sectionIndx < (DWORD)sectionCount)
-			//sectionList[sectionIndx].kind = ICOLIB_SECTION_GROUP_PROTOCOL;
 
 		sid.cbSize = sizeof(sid);
 		sid.cx = GetSystemMetrics(SM_CXSMICON);
