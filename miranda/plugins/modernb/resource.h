@@ -2,70 +2,32 @@
 // Microsoft Visual C++ generated include file.
 // Used by resource.rc
 //
-#define IDC_AUTHICON                    1
-#define IDC_NOTOALL                     3
 #define IDC_APPLY                       3
-#define MIM_V1                          10
-#define IDI_GLOBUS                      11
-#define MIM_V2                          20
-#define MIM_V3                          30
-#define MIM_V4                          30
-#define IDI_MIRANDA                     102
+// ID marked as '//!!!' have to be same as in //miranda/src/resource.h
+
+#define IDI_MIRANDA                     102 //!!!
+#define IDI_SMS                         103 //!!!
+#define IDI_URL                         138 //!!!
+#define IDI_FINDUSER                    161 //!!!
+#define IDI_OPTIONS                     163 //!!!
+#define IDI_RENAME                      173 //!!!
+#define IDI_DELETE                      175 //!!!
+#define IDC_DROP                        183 //!!!
+#define IDI_SENDEMAIL                   193 //!!!
+#define IDI_BLANK                       200 //!!!
+#define IDI_NOTICK                      205 //!!!
+#define IDI_TICK                        206 //!!!
+#define IDC_DROPUSER                    215 //!!!
+
 #define IDD_OPT_ITEM_CONTACT_TIME       102
-#define IDD_ABOUT                       103
-#define IDI_SMS                         103
 #define IDD_OPT_ROWTMPL                 103
-#define IDI_ONLINE                      104
-#define IDI_OFFLINE                     105
-#define IDD_GNUPL                       110
-#define IDD_ADDED                       115
-#define IDD_URLSEND                     119
-#define IDD_URLRECV                     120
-#define IDD_AUTHREQ                     121
-#define IDD_DETAILS                     125
 #define IDD_OPT_CLIST                   126
-#define IDD_HISTORY                     127
-#define IDI_AWAY                        128
-#define IDI_FREE4CHAT                   129
-#define IDI_INVISIBLE                   130
-#define IDI_NA                          131
 #define IDD_OPT_SOUND                   134
 #define IDD_OPT_HOTKEYS                 134
-#define IDI_SENDURL                     135
-#define IDI_RECVMSG                     136
-#define IDI_SENDMSG                     137
-#define IDI_URL                         138
-#define IDI_DND                         158
-#define IDI_OCCUPIED                    159
-#define IDI_USERDETAILS                 160
-#define IDI_FINDUSER                    161
-#define IDI_HELP                        162
-#define IDI_OPTIONS                     163
-#define IDI_MIRANDAWEBSITE              172
-#define IDI_RENAME                      173
-#define IDI_HISTORY                     174
-#define IDI_DELETE                      175
+
 #define IDR_CONTEXT                     180
-#define IDC_DROP                        183
-#define IDD_OPT_HOTKEY                  184
-#define IDD_HISTORY_FIND                192
-#define IDI_SENDEMAIL                   193
-#define IDD_FILERECV                    194
-#define IDD_PROFILEMANAGER              197
-#define IDD_NEWPROFILE                  198
 #define IDR_CLISTMENU                   199
-#define IDI_BLANK                       200
-#define IDD_FINDADD                     201
-#define IDI_USERONLINE                  201
-#define IDD_OPT_AUTOAWAY                202
-#define IDI_GROUPSHUT                   202
-#define IDD_OPTIONS                     203
-#define IDI_GROUPOPEN                   203
-#define IDD_PLUGINCONFLICT              204
-#define IDD_FILESEND                    205
-#define IDI_NOTICK                      205
-#define IDD_OPT_PLUGINS                 206
-#define IDI_TICK                        206
+
 #define IDD_OPT_ICONS                   207
 #define IDI_FILE                        207
 #define IDI_TIMESTAMP                   208
@@ -76,7 +38,6 @@
 #define IDD_READAWAYMSG                 213
 #define IDI_EMPTYBLOB                   213
 #define IDD_OPT_IGNORE                  214
-#define IDC_HYPERLINKHAND               214
 #define IDD_OPT_VISIBILITY              215
 #define IDD_SETAWAYMSG                  216
 #define IDI_DETAILSLOGO                 216
@@ -116,8 +77,6 @@
 #define IDI_DOWNARROW                   264
 #define IDD_CREDITS                     265
 #define IDD_OPT_IDLE                    268
-#define IDI_EMAIL                       277
-#define IDI_BLANK1                      278
 #define IDD_OPT_META_CLC                279
 #define IDI_NEWGROUP                    282
 #define IDI_NEWGROUP2                   283
@@ -457,7 +416,7 @@
 #define IDC_DONTCYCLE                   1315
 #define IDC_PRIMARYSTATUS               1316
 #define IDC_CYCLE                       1317
-#define IDC_DROPUSER                    1317
+
 #define IDC_CYCLETIME                   1318
 #define IDC_CYCLETIMESPIN               1319
 #define IDC_HIDETIMESPIN                1320

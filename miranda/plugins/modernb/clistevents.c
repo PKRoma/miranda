@@ -309,7 +309,7 @@ static int EventArea_DrawWorker(HWND hWnd, HDC hDC)
 	    } 
         else 
         {
-		    HICON hIcon = LoadImage(g_hInst, MAKEINTRESOURCE(IDI_BLANK), IMAGE_ICON, 16, 16, 0);
+		    HICON hIcon = LoadImage(GetModuleHandle(NULL), MAKEINTRESOURCE(IDI_BLANK), IMAGE_ICON, 16, 16, 0);
 		    SkinEngine_DrawText(hDC, g_CluiData.szNoEvents, lstrlen(g_CluiData.szNoEvents), &rc, DT_VCENTER | DT_SINGLELINE);
 		    SkinEngine_DrawIconEx(hDC, 4, (rc.bottom + rc.top - 16) / 2, hIcon, 16, 16, 0, 0, DI_NORMAL | DI_COMPAT);
 		    DestroyIcon(hIcon);

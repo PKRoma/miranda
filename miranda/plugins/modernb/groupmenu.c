@@ -266,7 +266,7 @@ int static OnIconLibIconChanged(WPARAM wParam,LPARAM lParam)
 	CLISTMENUITEM clmi={0};
 	BOOL needFree;
     if (MirandaExiting()) return 0;
-	hicon=CLUI_LoadIconFromExternalFile("clisticons.dll",2,TRUE,FALSE,"NewGroup","Contact List","New Group",-IDI_NEWGROUP,&needFree);
+	hicon=CLUI_LoadIconFromExternalFile("clisticons.dll",2,TRUE,FALSE,"NewGroup","Contact List","New Group",-IDI_NEWGROUP2,&needFree);
 	NewGroupIconidx=ImageList_ReplaceIcon(hCListImages,NewGroupIconidx,hicon);	
 	if (needFree) DestroyIcon_protect(hicon);
 	clmi.cbSize=sizeof(clmi);

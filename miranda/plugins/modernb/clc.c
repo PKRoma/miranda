@@ -1601,7 +1601,7 @@ case DROPTARGET_ONCONTACT:
 		if (contSour->type==CLCIT_CONTACT && mir_strcmp(contSour->proto,"MetaContacts"))
 		{
 			if (!contSour->isSubcontact)
-				hNewCursor=LoadCursor(g_hInst, MAKEINTRESOURCE(IDC_DROPUSER));  /// Add to meta
+				hNewCursor=LoadCursor(GetModuleHandle(NULL), MAKEINTRESOURCE(IDC_DROPUSER));  /// Add to meta
 			else
 				hNewCursor=LoadCursor(g_hInst, MAKEINTRESOURCE(IDC_DROPMETA));
 		}
@@ -1617,7 +1617,7 @@ case DROPTARGET_ONMETACONTACT:
 		if (contSour->type==CLCIT_CONTACT && mir_strcmp(contSour->proto,"MetaContacts"))
 		{
 			if (!contSour->isSubcontact)
-				hNewCursor=LoadCursor(g_hInst, MAKEINTRESOURCE(IDC_DROPUSER));  /// Add to meta
+				hNewCursor=LoadCursor(GetModuleHandle(NULL), MAKEINTRESOURCE(IDC_DROPUSER));  /// Add to meta
 			else
 				if  (contSour->subcontacts==contDest)
 					hNewCursor=LoadCursor(g_hInst, MAKEINTRESOURCE(IDC_DEFAULTSUB)); ///MakeDefault
@@ -1634,7 +1634,7 @@ case DROPTARGET_ONSUBCONTACT:
 		if (contSour->type==CLCIT_CONTACT && mir_strcmp(contSour->proto,"MetaContacts"))
 		{
 			if (!contSour->isSubcontact)
-				hNewCursor=LoadCursor(g_hInst, MAKEINTRESOURCE(IDC_DROPUSER));  /// Add to meta
+				hNewCursor=LoadCursor(GetModuleHandle(NULL), MAKEINTRESOURCE(IDC_DROPUSER));  /// Add to meta
 			else
 				if (contDest->subcontacts==contSour->subcontacts)
 					break;
@@ -1644,11 +1644,11 @@ case DROPTARGET_ONSUBCONTACT:
 	break;
 case DROPTARGET_ONGROUP:
 	{
-		hNewCursor=LoadCursor(g_hInst, MAKEINTRESOURCE(IDC_DROPUSER));
+		hNewCursor=LoadCursor(GetModuleHandle(NULL), MAKEINTRESOURCE(IDC_DROPUSER));
 	}				
 	break;
 case DROPTARGET_INSERTION:
-	hNewCursor=LoadCursor(g_hInst, MAKEINTRESOURCE(IDC_DROP));
+	hNewCursor=LoadCursor(GetModuleHandle(NULL), MAKEINTRESOURCE(IDC_DROP));
 	break;
 case DROPTARGET_OUTSIDE:
 	{	NMCLISTCONTROL nm;
@@ -1684,7 +1684,7 @@ default:
 			struct ClcContact *contSour;
 			cliGetRowByIndex(dat,dat->iDragItem,&contSour,NULL);
 			if (!contSour->isSubcontact)
-				hNewCursor=LoadCursor(g_hInst, MAKEINTRESOURCE(IDC_DROPUSER));
+				hNewCursor=LoadCursor(GetModuleHandle(NULL), MAKEINTRESOURCE(IDC_DROPUSER));
 		}
 		break;
 	}

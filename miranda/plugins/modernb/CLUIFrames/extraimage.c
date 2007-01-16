@@ -148,15 +148,15 @@ int OnIconLibIconChanged(WPARAM wParam,LPARAM lParam)
 	HICON hicon;
 	BOOL needFree;
     if (MirandaExiting()) return 0;
-	hicon=CLUI_LoadIconFromExternalFile("clisticons.dll",0,TRUE,FALSE,"Email","Contact List",Translate("Email Icon"),-IDI_EMAIL, &needFree);
+	hicon=CLUI_LoadIconFromExternalFile("clisticons.dll",0,TRUE,FALSE,"Email","Contact List",Translate("Email Icon"),IDI_SENDEMAIL, &needFree);
 	ExtraImageIconsIndex[0]=ImageList_ReplaceIcon(hExtraImageList,ExtraImageIconsIndex[0],hicon );		
     if (needFree) DestroyIcon_protect(hicon);
 
-	hicon=CLUI_LoadIconFromExternalFile("clisticons.dll",1,TRUE,FALSE,"Sms","Contact List",Translate("Sms Icon"),-IDI_SMS,&needFree);
+	hicon=CLUI_LoadIconFromExternalFile("clisticons.dll",1,TRUE,FALSE,"Sms","Contact List",Translate("Sms Icon"),IDI_SMS,&needFree);
 	ExtraImageIconsIndex[1]=ImageList_ReplaceIcon(hExtraImageList,ExtraImageIconsIndex[1],hicon );		
 	if (needFree) DestroyIcon_protect(hicon);
 
-	hicon=CLUI_LoadIconFromExternalFile("clisticons.dll",4,TRUE,FALSE,"Web","Contact List",Translate("Web Icon"),-IDI_GLOBUS,&needFree);
+	hicon=CLUI_LoadIconFromExternalFile("clisticons.dll",4,TRUE,FALSE,"Web","Contact List",Translate("Web Icon"),IDI_URL,&needFree);
 	ExtraImageIconsIndex[2]=ImageList_ReplaceIcon(hExtraImageList,ExtraImageIconsIndex[2],hicon );		
 	if (needFree) DestroyIcon_protect(hicon);
 
@@ -199,18 +199,18 @@ void ExtraImage_ReloadExtraIcons()
 		CallService(MS_PROTO_ENUMPROTOCOLS,(WPARAM)&count,(LPARAM)&protos);
 
 		//loading icons
-		hicon=CLUI_LoadIconFromExternalFile("clisticons.dll",0,TRUE,TRUE,"Email","Contact List",Translate("Email Icon"),-IDI_EMAIL,&needFree);
-		if (!hicon) {hicon=LoadSmallIcon(g_hInst, MAKEINTRESOURCE(IDI_EMAIL)); needFree=TRUE;}
+		hicon=CLUI_LoadIconFromExternalFile("clisticons.dll",0,TRUE,TRUE,"Email","Contact List",Translate("Email Icon"),IDI_SENDEMAIL,&needFree);
+		if (!hicon) {hicon=LoadSmallIcon(GetModuleHandle(NULL), MAKEINTRESOURCE(IDI_SENDEMAIL)); needFree=TRUE;}
 		ExtraImageIconsIndex[0]=ImageList_AddIcon(hExtraImageList,hicon );
 		if (needFree) DestroyIcon_protect(hicon);
 
-		hicon=CLUI_LoadIconFromExternalFile("clisticons.dll",1,TRUE,TRUE,"Sms","Contact List",Translate("Sms Icon"),-IDI_SMS,&needFree);
+		hicon=CLUI_LoadIconFromExternalFile("clisticons.dll",1,TRUE,TRUE,"Sms","Contact List",Translate("Sms Icon"),IDI_SMS,&needFree);
 		if (!hicon) {hicon=LoadSmallIcon(g_hInst, MAKEINTRESOURCE(IDI_SMS)); needFree=TRUE;} 
 		ExtraImageIconsIndex[1]=ImageList_AddIcon(hExtraImageList,hicon );
 		if (needFree) DestroyIcon_protect(hicon);
 
-		hicon=CLUI_LoadIconFromExternalFile("clisticons.dll",4,TRUE,TRUE,"Web","Contact List",Translate("Web Icon"),-IDI_GLOBUS,&needFree);
-		if (!hicon) {hicon=LoadSmallIcon(g_hInst, MAKEINTRESOURCE(IDI_GLOBUS)); needFree=TRUE;}
+		hicon=CLUI_LoadIconFromExternalFile("clisticons.dll",4,TRUE,TRUE,"Web","Contact List",Translate("Web Icon"),IDI_URL,&needFree);
+		if (!hicon) {hicon=LoadSmallIcon(GetModuleHandle(NULL), MAKEINTRESOURCE(IDI_URL)); needFree=TRUE;}
 		ExtraImageIconsIndex[2]=ImageList_AddIcon(hExtraImageList,hicon );
 		if (needFree) DestroyIcon_protect(hicon);
 

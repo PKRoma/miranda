@@ -600,6 +600,7 @@ HICON CLUI_LoadIconFromExternalFile(char *filename,int i,boolean UseLibrary,bool
     if (UseLibrary&2) 
         _snprintf(szMyPath, sizeof(szMyPath), "%s\\Icons\\%s", szPath, filename);
     _snprintf(szFullPath, sizeof(szFullPath), "%s\\Icons\\%s,%d", szPath, filename, i);
+    if(str!=NULL) *str='\\';
     if (UseLibrary&2)
     {
         BOOL nf;
@@ -629,8 +630,9 @@ HICON CLUI_LoadIconFromExternalFile(char *filename,int i,boolean UseLibrary,bool
             sid.pszSection = Translate(SectName);				
             sid.pszName=IconName;
             sid.pszDescription=Description;
-            sid.pszDefaultFile=szMyPath;
-            sid.iDefaultIndex=(UseLibrary&2)?i:internalidx;
+            sid.pszDefaultFile=internalidx<0?szMyPath:szPath;
+
+            sid.iDefaultIndex=(UseLibrary&2)?i:(internalidx<0)?internalidx:-internalidx;
             CallService(MS_SKIN2_ADDICON, 0, (LPARAM)&sid);
         }
         return ((HICON)CallService(MS_SKIN2_GETICON, 0, (LPARAM)IconName));
@@ -861,7 +863,6 @@ static int CLUI_CreateCLC(HWND parent)
         Frame.hWnd=pcli->hwndContactTree;
         Frame.align=alClient;
         Frame.hIcon=LoadSkinnedIcon(SKINICON_OTHER_MIRANDA);
-        //LoadSmallIconShared(hInst,MAKEINTRESOURCEA(IDI_MIRANDA));
         Frame.Flags=F_VISIBLE|F_SHOWTB|F_SHOWTBTIP|F_NO_SUBCONTAINER;
         Frame.name=Translate("My Contacts");
         hFrameContactTree=(HWND)CallService(MS_CLIST_FRAMES_ADDFRAME,(WPARAM)&Frame,(LPARAM)0);

@@ -166,7 +166,7 @@ int MakeVer(a,b,c,d)
 
 __declspec(dllexport) PLUGININFO* MirandaPluginInfo(DWORD mirandaVersion)
 {
-	if ( mirandaVersion < PLUGIN_MAKE_VERSION(0,6,0,15) )
+	if ( mirandaVersion < PLUGIN_MAKE_VERSION(0,7,0,9) )
 	{
 		return NULL;
 	}
@@ -209,7 +209,7 @@ int __declspec(dllexport) CListInitialise(PLUGINLINK * link)
 	int rc=0;
 	pluginLink=link;
 	#ifdef _DEBUG
-		_CrtSetBreakAlloc(7680);
+		//_CrtSetBreakAlloc(7680);
 	#endif
 	memset(&memoryManagerInterface,0,sizeof(memoryManagerInterface));
 	memoryManagerInterface.cbSize = sizeof(memoryManagerInterface);
