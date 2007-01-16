@@ -270,13 +270,17 @@ BOOL CALLBACK ProtocolOrderOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lP
 				while ( tvi.hItem != NULL ) {
 					_itoa( count, buf, 10 );
 					TreeView_GetItem(GetDlgItem(hwndDlg,IDC_PROTOCOLORDER),&tvi);
-					DBWriteContactSettingString(NULL,"Protocols",(char *)&buf,((ProtocolData *)tvi.lParam)->RealName);
+                    
+                    if (tvi.lParam!=0) {
+					    
+                        DBWriteContactSettingString(NULL,"Protocols",(char *)&buf,((ProtocolData *)tvi.lParam)->RealName);
 
-					_itoa(OFFSET_PROTOPOS+count,(char *)&buf,10);//save pos in protos
-					DBWriteContactSettingDword(0,"Protocols",(char *)&buf,((ProtocolData *)tvi.lParam)->protopos);
+					    _itoa(OFFSET_PROTOPOS+count,(char *)&buf,10);//save position in protos
+					    DBWriteContactSettingDword(0,"Protocols",(char *)&buf,((ProtocolData *)tvi.lParam)->protopos);
 
-					_itoa(OFFSET_VISIBLE+count,(char *)&buf,10);//save pos in protos
-					DBWriteContactSettingDword(0,"Protocols",(char *)&buf,((ProtocolData *)tvi.lParam)->show);
+					    _itoa(OFFSET_VISIBLE+count,(char *)&buf,10);//save visible in protos
+					    DBWriteContactSettingDword(0,"Protocols",(char *)&buf,((ProtocolData *)tvi.lParam)->show);
+                    }
 
 					tvi.hItem=TreeView_GetNextSibling(GetDlgItem(hwndDlg,IDC_PROTOCOLORDER),tvi.hItem);
 					count++;
@@ -291,6 +295,15 @@ BOOL CALLBACK ProtocolOrderOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lP
 
 		case IDC_PROTOCOLORDER:
 			switch (((LPNMHDR)lParam)->code) {
+            
+            case TVN_DELETEITEMA: 
+                {
+                    NMTREEVIEWA * pnmtv = (NMTREEVIEWA *) lParam;
+                    if (pnmtv && pnmtv->itemOld.lParam)
+                        mir_free((ProtocolData*)pnmtv->itemOld.lParam);
+                }
+                break;
+
 			case TVN_BEGINDRAGA:
 				SetCapture(hwndDlg);
 				dat->dragging=1;
@@ -361,6 +374,7 @@ BOOL CALLBACK ProtocolOrderOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lP
 			if ( hti.flags & (TVHT_ONITEM|TVHT_ONITEMRIGHT )) {
 				TVINSERTSTRUCT tvis;
 				TCHAR name[128];
+                ProtocolData * lpOldData;
 				tvis.item.mask = TVIF_HANDLE|TVIF_PARAM|TVIF_TEXT|TVIF_IMAGE|TVIF_SELECTEDIMAGE;
 				tvis.item.stateMask = 0xFFFFFFFF;
 				tvis.item.pszText = name;
@@ -368,8 +382,16 @@ BOOL CALLBACK ProtocolOrderOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lP
 				tvis.item.hItem = dat->hDragItem;
 				tvis.item.iImage = tvis.item.iSelectedImage = ((ProtocolData *)tvi.lParam)->show;
 				TreeView_GetItem(GetDlgItem(hwndDlg,IDC_PROTOCOLORDER),&tvis.item);
-
-				TreeView_DeleteItem(GetDlgItem(hwndDlg,IDC_PROTOCOLORDER),dat->hDragItem);
+                
+                //the pointed lParam will be freed inside TVN_DELETEITEM 
+                //so lets substitute it with 0
+                lpOldData=(ProtocolData *)tvis.item.lParam; 
+                tvis.item.lParam=0; 
+                TreeView_SetItem(GetDlgItem(hwndDlg,IDC_PROTOCOLORDER),&tvis.item);               
+                tvis.item.lParam=(LPARAM)lpOldData; 
+				
+                //now current item contain lParam=0 we can delete it. the memory will be kept.               
+                TreeView_DeleteItem(GetDlgItem(hwndDlg,IDC_PROTOCOLORDER),dat->hDragItem);
 				tvis.hParent = NULL;
 				tvis.hInsertAfter = hti.hItem;
 				TreeView_SelectItem(GetDlgItem(hwndDlg,IDC_PROTOCOLORDER),TreeView_InsertItem(GetDlgItem(hwndDlg,IDC_PROTOCOLORDER),&tvis));
