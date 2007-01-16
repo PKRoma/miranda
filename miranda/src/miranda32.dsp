@@ -1136,5 +1136,9 @@ SOURCE=.\res\viewdetails.ico
 
 SOURCE=..\docs\contributors.txt
 # End Source File
+# Begin Source File
+
+SOURCE=.\res\typing.ico
+# End Source File
 # End Target
 # End Project

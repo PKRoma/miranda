@@ -103,6 +103,7 @@
 #define IDD_OPT_IDLE                    268
 #define IDD_PROFILE_SELECTION           269
 #define IDD_PROFILE_NEW                 270
+#define IDI_TYPING                      274
 #define IDC_SAVE                        1001
 #define IDI_ONTHEPHONE                  1002
 #define IDC_MESSAGE                     1002
@@ -220,6 +221,7 @@
 #define IDC_DONTREPLY                   1209
 #define IDC_NONEICON                    1209
 #define IDC_USEPREVIOUS                 1210
+#define IDC_TYPINGICON                  1210
 #define IDC_NODIALOG                    1211
 #define IDC_USESPECIFIC                 1212
 #define IDC_FILEDIR                     1213
@@ -417,7 +419,7 @@
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
-#define _APS_NEXT_RESOURCE_VALUE        274
+#define _APS_NEXT_RESOURCE_VALUE        275
 #define _APS_NEXT_COMMAND_VALUE         40018
 #define _APS_NEXT_CONTROL_VALUE         1696
 #define _APS_NEXT_SYMED_VALUE           101

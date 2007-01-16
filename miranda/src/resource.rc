@@ -865,31 +865,31 @@ END
 IDD_OPT_IGNORE DIALOGEX 0, 0, 313, 240
 STYLE DS_FIXEDSYS | WS_CHILD | WS_VISIBLE
 EXSTYLE WS_EX_CONTROLPARENT
-FONT 8, "MS Shell Dlg", 0, 0, 0x1
+FONT 8, "MS Shell Dlg"
 BEGIN
     LTEXT           "The following events are being ignored:",IDC_STATIC,8,
                     14,297,8
     ICON            IDI_RECVMSG,IDC_MSGICON,8,172,20,20,SS_CENTERIMAGE
-    LTEXT           "Ignore messages",IDC_STATIC,26,178,70,8,SS_NOPREFIX | 
+    LTEXT           "Messages",IDC_STATIC,28,178,70,8,SS_NOPREFIX | 
                     SS_CENTERIMAGE
     ICON            IDI_URL,IDC_URLICON,8,187,20,20,SS_CENTERIMAGE
-    LTEXT           "Ignore URLs",IDC_STATIC,26,193,70,8,SS_NOPREFIX | 
+    LTEXT           "URLs",IDC_STATIC,28,193,70,8,SS_NOPREFIX | 
                     SS_CENTERIMAGE
     ICON            IDI_FILE,IDC_FILEICON,8,202,20,20,SS_CENTERIMAGE
-    LTEXT           "Ignore files",IDC_STATIC,26,208,70,8,SS_NOPREFIX | 
+    LTEXT           "Files",IDC_STATIC,28,208,70,8,SS_NOPREFIX | 
                     SS_CENTERIMAGE
     ICON            IDI_MIRANDA,IDC_AUTHICON,96,172,20,20,SS_CENTERIMAGE
-    LTEXT           "Suppress auth requests",IDC_STATIC,114,178,107,8,
+    LTEXT           "Auth Requests",IDC_STATIC,116,178,107,8,
                     SS_NOPREFIX | SS_CENTERIMAGE
     ICON            IDI_USERONLINE,IDC_ONLINEICON,96,187,20,20,
                     SS_CENTERIMAGE
-    LTEXT           "Suppress online notification",IDC_STATIC,114,193,107,8,
+    LTEXT           "Online Notification",IDC_STATIC,116,193,107,8,
                     SS_NOPREFIX | SS_CENTERIMAGE
-    ICON            IDI_FILLEDBLOB,IDC_ALLICON,221,172,20,20,SS_CENTERIMAGE
-    LTEXT           "Ignore all",IDC_STATIC,239,178,66,8,SS_NOPREFIX | 
+    ICON            IDI_FILLEDBLOB,IDC_ALLICON,221,187,20,20,SS_CENTERIMAGE
+    LTEXT           "All Events",IDC_STATIC,241,193,66,8,SS_NOPREFIX | 
                     SS_CENTERIMAGE
-    ICON            IDI_EMPTYBLOB,IDC_NONEICON,221,187,20,20,SS_CENTERIMAGE
-    LTEXT           "Ignore none",IDC_STATIC,239,193,66,8,SS_NOPREFIX | 
+    ICON            IDI_EMPTYBLOB,IDC_NONEICON,221,202,20,20,SS_CENTERIMAGE
+    LTEXT           "None",IDC_STATIC,241,208,66,8,SS_NOPREFIX | 
                     SS_CENTERIMAGE
     CTEXT           "Only the ticked contacts will be shown on the main contact list",
                     IDC_STCHECKMARKS,8,227,297,8
@@ -897,7 +897,10 @@ BEGIN
                     146,WS_EX_CLIENTEDGE
     GROUPBOX        "Ignore",IDC_STATIC,0,0,313,240
     ICON            IDI_ADDCONTACT,IDC_ADDED,96,202,20,20,SS_CENTERIMAGE
-    LTEXT           "Suppress added notification",IDC_STATIC,114,208,107,8,
+    LTEXT           "Added Notification",IDC_STATIC,116,208,107,8,
+                    SS_NOPREFIX | SS_CENTERIMAGE
+    ICON            IDI_TYPING,IDC_TYPINGICON,221,172,20,20,SS_CENTERIMAGE
+    LTEXT           "Typing",IDC_STATIC,241,178,66,8,
                     SS_NOPREFIX | SS_CENTERIMAGE
 END
 
@@ -1779,6 +1782,7 @@ IDI_OUTTOLUNCH          ICON    DISCARDABLE     "res/outtolun.ico"
 IDI_INVISIBLE           ICON    DISCARDABLE     "res/invisible.ico"
 IDI_MULTISEND           ICON    DISCARDABLE     "res/multisend.ico"
 IDI_DOWNARROW           ICON    DISCARDABLE     "res/downarrow.ico"
+IDI_TYPING              ICON    DISCARDABLE     "res\\typing.ico"
 
 /////////////////////////////////////////////////////////////////////////////
 //

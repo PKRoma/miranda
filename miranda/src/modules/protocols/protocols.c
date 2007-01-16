@@ -95,6 +95,7 @@ static int Proto_ContactIsTyping(WPARAM wParam,LPARAM lParam)
 	char *szProto=(char*)CallService(MS_PROTO_GETCONTACTBASEPROTO,wParam,0);
 
 	if (!szProto) return 0;
+    if (CallService(MS_IGNORE_ISIGNORED,wParam,IGNOREEVENT_TYPINGNOTIFY)) return 0;
 	if (type<PROTOTYPE_CONTACTTYPING_OFF) return 0;
 	if (Proto_ValidTypingContact((HANDLE)wParam, szProto))
 		NotifyEventHooks(hTypeEvent, wParam, lParam);
