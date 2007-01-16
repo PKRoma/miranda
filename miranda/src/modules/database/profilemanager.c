@@ -494,8 +494,8 @@ static BOOL CALLBACK DlgProfileManager(HWND hwndDlg, UINT msg, WPARAM wParam, LP
 			case IDC_LOGO:
 			case IDC_NAME:
 			case IDC_DESCRIPTION:
-				SetBkColor((HDC)wParam,RGB(255,255,255));
-				return (BOOL)GetStockObject(WHITE_BRUSH);
+				SetBkColor((HDC)wParam, GetSysColor(COLOR_WINDOW));
+				return (BOOL)GetSysColorBrush(COLOR_WINDOW);
 			}
 			break;
 		case PSM_CHANGED:

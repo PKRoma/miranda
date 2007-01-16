@@ -258,9 +258,8 @@ static BOOL CALLBACK DlgProcDetails(HWND hwndDlg, UINT msg, WPARAM wParam, LPARA
 			switch (GetDlgCtrlID((HWND)lParam)) {
 			case IDC_WHITERECT:
 			case IDC_LOGO:
-				SetBkColor((HDC)wParam,RGB(255,255,255));
-				return (BOOL)GetStockObject(WHITE_BRUSH);
-			
+                SetBkColor((HDC)wParam, GetSysColor(COLOR_WINDOW));
+				return (BOOL)GetSysColorBrush(COLOR_WINDOW);
 			case IDC_UPDATING:
 			{
 				COLORREF textCol,bgCol,newCol;
