@@ -250,6 +250,7 @@ int __declspec(dllexport)Load(PLUGINLINK *link)
 		lstrcpyn(yahooProtocolName, protocolname, MAX_PATH);
 	} else 
 		lstrcpy(yahooProtocolName, "YAHOO");
+	LoadYahooServices();
 
 	mir_snprintf( path, sizeof( path ), "%s/Status", yahooProtocolName );
 	CallService( MS_DB_SETSETTINGRESIDENT, TRUE, ( LPARAM )path );
@@ -297,8 +298,6 @@ int __declspec(dllexport)Load(PLUGINLINK *link)
 	yahoo_logoff_buddies();
 
 	SkinAddNewSoundEx(Translate( "mail" ), yahooProtocolName, "New E-mail available in Inbox" );
-
-	LoadYahooServices();
 	return 0;
 }
 
