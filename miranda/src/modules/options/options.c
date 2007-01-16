@@ -22,8 +22,6 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 */
 #include "commonheaders.h"
 
-char* u2a( wchar_t* src );
-
 #define OPENOPTIONSDIALOG_OLD_SIZE 12
 
 static HANDLE hOptionsInitEvent;

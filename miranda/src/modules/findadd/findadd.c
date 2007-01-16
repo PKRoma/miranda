@@ -34,8 +34,6 @@ static HWND hwndFindAdd=NULL;
 static HANDLE hHookModulesLoaded = 0;
 static int OnSystemModulesLoaded(WPARAM wParam,LPARAM lParam);
 
-wchar_t* a2u( char* src );
-
 void ListView_SetItemTextA( HWND hwndLV, int i, int iSubItem, char* pszText )
 {
 	LV_ITEMA _ms_lvi;
