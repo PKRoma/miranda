@@ -70,9 +70,7 @@ static void ThemeDialogBackground(HWND hwnd) {
 			HRESULT (STDAPICALLTYPE *MyEnableThemeDialogTexture)(HWND,DWORD) = (HRESULT (STDAPICALLTYPE*)(HWND,DWORD))GetProcAddress(hThemeAPI,"EnableThemeDialogTexture");
 			if (MyEnableThemeDialogTexture)
 				MyEnableThemeDialogTexture(hwnd,0x00000002|0x00000004); //0x00000002|0x00000004=ETDT_ENABLETAB
-		}
-	}
-}
+}	}	}
 
 static int findProfiles(char * szProfileDir, ENUMPROFILECALLBACK callback, LPARAM lParam)
 {
@@ -81,25 +79,27 @@ static int findProfiles(char * szProfileDir, ENUMPROFILECALLBACK callback, LPARA
 	char searchspec[MAX_PATH];
 	mir_snprintf(searchspec, SIZEOF(searchspec), "%s\\*.dat", szProfileDir);
 	hFind = FindFirstFileA(searchspec, &ffd);
-	if ( hFind != INVALID_HANDLE_VALUE ) {
-		do { 			
-			if ( !(ffd.dwFileAttributes&FILE_ATTRIBUTE_DIRECTORY) && isValidProfileName(ffd.cFileName) ) 
-			{
-				char buf[MAX_PATH];
-				mir_snprintf(buf,SIZEOF(buf),"%s\\%s",szProfileDir, ffd.cFileName);
-				if ( !callback(buf, ffd.cFileName, lParam) ) break;
-			}
-		} while ( FindNextFileA(hFind, &ffd) );
-		FindClose(hFind);
-		return 1;
+	if ( hFind == INVALID_HANDLE_VALUE )
+		return 0;
+
+	do { 			
+		if ( !(ffd.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY) && isValidProfileName( ffd.cFileName )) {
+			char buf[MAX_PATH];
+			mir_snprintf(buf,SIZEOF(buf),"%s\\%s",szProfileDir, ffd.cFileName);
+			if ( !callback(buf, ffd.cFileName, lParam ))
+				break;
+		}
 	}
-	return 0;
+		while ( FindNextFileA(hFind, &ffd) );
+	FindClose(hFind);
+	return 1;
 }
 
 static LRESULT CALLBACK ProfileNameValidate(HWND edit, UINT msg, WPARAM wParam, LPARAM lParam)
 {
 	if ( msg==WM_CHAR ) {		
-		if ( strchr(".?/\\#' ",(char)wParam&0xFF) != 0 ) return 0;
+		if ( strchr(".?/\\#' ",(char)wParam&0xFF) != 0 )
+			return 0;
 		PostMessage(GetParent(edit),WM_INPUTCHANGED,0,0);
 	}
 	return CallWindowProc((WNDPROC)GetWindowLong(edit,GWL_USERDATA),edit,msg,wParam,lParam);
@@ -113,7 +113,9 @@ static int FindDbProviders(char * pluginname, DATABASELINK * dblink, LPARAM lPar
 
 	if ( dblink->getFriendlyName(szName,SIZEOF(szName),1) == 0 ) {
 		// add to combo box
-		LRESULT index = SendMessageA(hwndCombo, CB_ADDSTRING, 0, (LPARAM)Translate(szName));
+		TCHAR* p = ( TCHAR* )LangPackPcharToTchar( szName );
+		LRESULT index = SendMessage( hwndCombo, CB_ADDSTRING, 0, (LPARAM)Translate( p ));
+		mir_free( p );
 		SendMessage(hwndCombo, CB_SETITEMDATA, index, (LPARAM)dblink);
 	}	
 	return DBPE_CONT;
@@ -125,10 +127,13 @@ static int checkAutoCreateProfile(char * profile)
 	char ac[MAX_PATH];
 	char env_profile[MAX_PATH];
 	GetPrivateProfileStringA("Database", "AutoCreate", "no", ac, SIZEOF(ac), mirandabootini);
-	if ( lstrcmpiA(ac,"yes") != 0 ) return 0;
+	if ( lstrcmpiA(ac,"yes") != 0 )
+		return 0;
+
 	GetPrivateProfileStringA("Database", "DefaultProfile", "", ac, SIZEOF(ac), mirandabootini);
 	ExpandEnvironmentStringsA(ac, env_profile, SIZEOF(env_profile));	
-	if ( profile != NULL ) strcpy(profile, env_profile);
+	if ( profile != NULL )
+		strcpy(profile, env_profile);
 	return lstrlenA(env_profile) > 0;
 }
 
@@ -136,83 +141,80 @@ static BOOL CALLBACK DlgProfileNew(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM
 {
 	struct DlgProfData * dat = (struct DlgProfData *)GetWindowLong(hwndDlg,GWL_USERDATA);
 	switch (msg) {
-		case WM_INITDIALOG:
+	case WM_INITDIALOG:
+		TranslateDialogDefault( hwndDlg );
+		SetWindowLong(hwndDlg, GWL_USERDATA, lParam);
+		dat = (struct DlgProfData *)lParam;
 		{
-			TranslateDialogDefault(hwndDlg);
-			// lParam = (struct DlgProfData *)
-			SetWindowLong(hwndDlg, GWL_USERDATA, lParam);
-			dat=(struct DlgProfData *)lParam;
-			{
-				// fill in the db plugins present
-				PLUGIN_DB_ENUM dbe;
-				dbe.cbSize=sizeof(dbe);
-				dbe.pfnEnumCallback=(int(*)(char*,void*,LPARAM))FindDbProviders;
-				dbe.lParam=(LPARAM)hwndDlg;
-				if ( CallService(MS_PLUGINS_ENUMDBPLUGINS,0,(LPARAM)&dbe) == (-1) ) {
-					// no plugins?!
-					EnableWindow(GetDlgItem(hwndDlg,IDC_PROFILEDRIVERS),FALSE);
-					EnableWindow(GetDlgItem(hwndDlg,IDC_PROFILENAME),FALSE);
-					ShowWindow(GetDlgItem(hwndDlg,IDC_NODBDRIVERS),TRUE);
-				} //if
-				// default item
-				SendDlgItemMessage(hwndDlg, IDC_PROFILEDRIVERS, CB_SETCURSEL, 0, 0);
+			// fill in the db plugins present
+			PLUGIN_DB_ENUM dbe;
+			dbe.cbSize = sizeof(dbe);
+			dbe.pfnEnumCallback = (int(*)(char*,void*,LPARAM))FindDbProviders;
+			dbe.lParam = (LPARAM)hwndDlg;
+			if ( CallService( MS_PLUGINS_ENUMDBPLUGINS, 0, ( LPARAM )&dbe ) == -1 ) {
+				// no plugins?!
+				EnableWindow( GetDlgItem(hwndDlg, IDC_PROFILEDRIVERS ), FALSE );
+				EnableWindow( GetDlgItem(hwndDlg, IDC_PROFILENAME ), FALSE );
+				ShowWindow( GetDlgItem(hwndDlg, IDC_NODBDRIVERS ), TRUE );
 			}
-			// subclass the profile name box
-			{
-				HWND hwndProfile=GetDlgItem(hwndDlg, IDC_PROFILENAME);
-				WNDPROC proc = (WNDPROC)GetWindowLong(hwndProfile, GWL_WNDPROC);
-				SetWindowLong(hwndProfile,GWL_USERDATA,(LONG)proc);
-				SetWindowLong(hwndProfile,GWL_WNDPROC,(LONG)ProfileNameValidate);
-			}
-			// decide if there is a default profile name given in the INI and if it should be used
-			{
-				char profile[MAX_PATH];
-				if ( checkAutoCreateProfile((char*)&profile) ) SetDlgItemTextA(hwndDlg, IDC_PROFILENAME, profile);
-			}
-			// focus on the textbox
-			PostMessage(hwndDlg,WM_FOCUSTEXTBOX,0,0);
-			return TRUE;
+			// default item
+			SendDlgItemMessage(hwndDlg, IDC_PROFILEDRIVERS, CB_SETCURSEL, 0, 0);
 		}
-		case WM_FOCUSTEXTBOX:
+		// subclass the profile name box
 		{
-			SetFocus(GetDlgItem(hwndDlg,IDC_PROFILENAME));
-			break;
+			HWND hwndProfile = GetDlgItem(hwndDlg, IDC_PROFILENAME);
+			WNDPROC proc = (WNDPROC)GetWindowLong(hwndProfile, GWL_WNDPROC);
+			SetWindowLong(hwndProfile,GWL_USERDATA,(LONG)proc);
+			SetWindowLong(hwndProfile,GWL_WNDPROC,(LONG)ProfileNameValidate);
 		}
-		case WM_INPUTCHANGED: // when input in the edit box changes
+		// decide if there is a default profile name given in the INI and if it should be used
 		{
-			SendMessage(GetParent(hwndDlg),PSM_CHANGED,0,0);
-			EnableWindow(dat->hwndOK, GetWindowTextLength(GetDlgItem(hwndDlg,IDC_PROFILENAME)) > 0 );
-			break;
+			char profile[MAX_PATH];
+			if ( checkAutoCreateProfile(( char* )&profile ))
+				SetDlgItemTextA(hwndDlg, IDC_PROFILENAME, profile);
 		}
-		case WM_SHOWWINDOW:
-		{
-			if ( wParam ) { 
-				SetWindowText( dat->hwndOK, TranslateT("&Create"));
-				SendMessage(hwndDlg,WM_INPUTCHANGED,0,0);
-			}
-			break;
+		// focus on the textbox
+		PostMessage( hwndDlg, WM_FOCUSTEXTBOX, 0, 0 );
+		return TRUE;
+
+	case WM_FOCUSTEXTBOX:
+		SetFocus( GetDlgItem( hwndDlg, IDC_PROFILENAME ));
+		break;
+
+	case WM_INPUTCHANGED: // when input in the edit box changes
+		SendMessage( GetParent( hwndDlg ), PSM_CHANGED, 0, 0 );
+		EnableWindow( dat->hwndOK, GetWindowTextLength( GetDlgItem( hwndDlg, IDC_PROFILENAME )) > 0 );
+		break;
+
+	case WM_SHOWWINDOW:
+		if ( wParam ) { 
+			SetWindowText( dat->hwndOK, TranslateT("&Create"));
+			SendMessage( hwndDlg, WM_INPUTCHANGED, 0, 0 );
 		}
-		case WM_NOTIFY:
+		break;
+
+	case WM_NOTIFY:
 		{
-			NMHDR * hdr = (NMHDR *)lParam;
-			if ( hdr && hdr->code == PSN_APPLY && dat && IsWindowVisible(hwndDlg) ) {
+			NMHDR* hdr = ( NMHDR* )lParam;
+			if ( hdr && hdr->code == PSN_APPLY && dat && IsWindowVisible( hwndDlg )) {
 				char szName[MAX_PATH];						
 				LRESULT curSel = SendDlgItemMessage(hwndDlg,IDC_PROFILEDRIVERS,CB_GETCURSEL,0,0);				
 				if ( curSel == CB_ERR ) break; // should never happen				
-				GetWindowTextA(GetDlgItem(hwndDlg,IDC_PROFILENAME),szName,SIZEOF(szName));
-				if ( lstrlenA(szName) == 0 ) break;
-				mir_snprintf(dat->pd->szProfile,MAX_PATH,"%s\\%s.dat",dat->pd->szProfileDir,szName);
-				dat->pd->newProfile=1;
-				dat->pd->dblink=(DATABASELINK *)SendDlgItemMessage(hwndDlg,IDC_PROFILEDRIVERS,CB_GETITEMDATA,(WPARAM)curSel,0);
+				GetWindowTextA( GetDlgItem( hwndDlg, IDC_PROFILENAME ), szName, SIZEOF( szName ));
+				if ( szName[0] == 0 )
+					break;
+
+				mir_snprintf( dat->pd->szProfile, MAX_PATH, "%s\\%s.dat", dat->pd->szProfileDir, szName );
+				dat->pd->newProfile = 1;
+				dat->pd->dblink = (DATABASELINK *)SendDlgItemMessage( hwndDlg, IDC_PROFILEDRIVERS, CB_GETITEMDATA, ( WPARAM )curSel, 0 );
 				
-				if ( makeDatabase(dat->pd->szProfile, dat->pd->dblink, hwndDlg) == 0 ) {
-					SetWindowLong(hwndDlg,DWL_MSGRESULT,PSNRET_INVALID_NOCHANGEPAGE);
+				if ( makeDatabase( dat->pd->szProfile, dat->pd->dblink, hwndDlg ) == 0 ) {
+					SetWindowLong( hwndDlg, DWL_MSGRESULT, PSNRET_INVALID_NOCHANGEPAGE );
 					return FALSE;
-				}
-			}
-			break;
-		}
+		}	}	}
+		break;
 	}
+
 	return FALSE;
 }
 
@@ -220,8 +222,8 @@ TCHAR* rtrim( TCHAR *string )
 {
    TCHAR* p = string + _tcslen( string ) - 1;
 
-   while ( p >= string )
-   {  if ( *p != ' ' && *p != '\t' && *p != '\n' && *p != '\r' )
+   while ( p >= string ) {
+		if ( *p != ' ' && *p != '\t' && *p != '\n' && *p != '\r' )
          break;
 
 		*p-- = 0;
@@ -269,7 +271,7 @@ BOOL EnumProfilesForList(char * fullpath, char * profile, LPARAM lParam)
 		}
 		if ( fp ) fclose(fp);
 	}
-	iItem=SendMessageA( hwndList, LVM_INSERTITEMA, 0, (LPARAM)&item);	
+	iItem = SendMessageA( hwndList, LVM_INSERTITEMA, 0, (LPARAM)&item );
 	if ( lstrcmpiA(szDefaultMirandaProfile, profile) == 0 ) 
 		ListView_SetItemState(hwndList, iItem, LVIS_SELECTED, LVIS_SELECTED);
 
@@ -286,25 +288,24 @@ BOOL EnumProfilesForList(char * fullpath, char * profile, LPARAM lParam)
 		item2.mask = LVIF_TEXT;
 		item2.iItem = iItem;
 
-		dbe.cbSize=sizeof(dbe);
-		dbe.pfnEnumCallback=(int(*)(char*,void*,LPARAM))DetectDbProvider;
-		dbe.lParam=(LPARAM)szPath;
+		dbe.cbSize = sizeof(dbe);
+		dbe.pfnEnumCallback = (int(*)(char*,void*,LPARAM))DetectDbProvider;
+		dbe.lParam = (LPARAM)szPath;
 		strncpy( szPath, fullpath, sizeof(szPath));
-		if (CallService(MS_PLUGINS_ENUMDBPLUGINS,0,(LPARAM)&dbe)==1) {
-			HANDLE hFile;
-
-			hFile=CreateFileA(fullpath,GENERIC_READ|GENERIC_WRITE,0,NULL,OPEN_EXISTING,0,NULL);
-			if (hFile == INVALID_HANDLE_VALUE) {
+		if ( CallService( MS_PLUGINS_ENUMDBPLUGINS, 0, ( LPARAM )&dbe ) == 1 ) {
+			HANDLE hFile = CreateFileA(fullpath,GENERIC_READ|GENERIC_WRITE,0,NULL,OPEN_EXISTING,0,NULL);
+			if ( hFile == INVALID_HANDLE_VALUE) {
 				// file locked
-				item.pszText = Translate("<In Use>");
+				item2.pszText = TranslateT( "<In Use>" );
+				item2.iSubItem = 1;
+				SendMessage( hwndList, LVM_SETITEMTEXT, iItem, ( LPARAM )&item2 );
 			}
 			else {
 				CloseHandle(hFile);
 				item.pszText = szPath;
-			}
-			item.iSubItem = 1;
-			SendMessageA( hwndList, LVM_SETITEMTEXTA, iItem, (LPARAM)&item );
-		}
+				item.iSubItem = 1;
+				SendMessageA( hwndList, LVM_SETITEMTEXTA, iItem, (LPARAM)&item );
+		}	}
 
 		item2.iSubItem = 3;
 		item2.pszText = rtrim( _tctime( &statbuf.st_ctime ));
@@ -319,17 +320,18 @@ BOOL EnumProfilesForList(char * fullpath, char * profile, LPARAM lParam)
 
 static BOOL CALLBACK DlgProfileSelect(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam)
 {
-	struct DlgProfData * dat = (struct DlgProfData *)GetWindowLong(hwndDlg, GWL_USERDATA);
+	struct DlgProfData* dat = (struct DlgProfData *)GetWindowLong(hwndDlg, GWL_USERDATA);
+
 	switch (msg) {
-		case WM_INITDIALOG:
+	case WM_INITDIALOG:
 		{
 			HWND hwndList = GetDlgItem(hwndDlg, IDC_PROFILELIST);
 			HIMAGELIST hImgList=0;
 			LVCOLUMN col;
 
-			TranslateDialogDefault(hwndDlg);
+			TranslateDialogDefault( hwndDlg );
 			
-			dat = (struct DlgProfData *) lParam;
+			dat = ( struct DlgProfData* ) lParam;
 			SetWindowLong(hwndDlg,GWL_USERDATA,(LONG)dat);
 
 			// set columns
@@ -365,7 +367,7 @@ static BOOL CALLBACK DlgProfileSelect(HWND hwndDlg, UINT msg, WPARAM wParam, LPA
 			PostMessage(hwndDlg,WM_FOCUSTEXTBOX,0,0);
 			return TRUE;
 		}
-		case WM_FOCUSTEXTBOX:
+	case WM_FOCUSTEXTBOX:
 		{
 			HWND hwndList=GetDlgItem(hwndDlg,IDC_PROFILELIST);
 			SetFocus(hwndList);		
@@ -373,33 +375,32 @@ static BOOL CALLBACK DlgProfileSelect(HWND hwndDlg, UINT msg, WPARAM wParam, LPA
 				ListView_SetItemState(hwndList, 0, LVIS_SELECTED, LVIS_SELECTED);
 			break;
 		}
-		case WM_SHOWWINDOW:
-		{
-			if ( wParam ) {
-				SetWindowText(dat->hwndOK,TranslateT("&Run"));
-				EnableWindow(dat->hwndOK, ListView_GetSelectedCount(GetDlgItem(hwndDlg,IDC_PROFILELIST))==1);
-			}
-			break;
+	case WM_SHOWWINDOW:
+		if ( wParam ) {
+			SetWindowText(dat->hwndOK,TranslateT("&Run"));
+			EnableWindow(dat->hwndOK, ListView_GetSelectedCount(GetDlgItem(hwndDlg,IDC_PROFILELIST))==1);
 		}
-		case WM_NOTIFY:
+		break;
+
+	case WM_NOTIFY:
 		{
 			LPNMHDR hdr = (LPNMHDR) lParam;
-			if ( hdr && hdr->code == PSN_INFOCHANGED) {
+			if ( hdr && hdr->code == PSN_INFOCHANGED)
 				break;
-			}
+
 			if ( hdr && hdr->idFrom == IDC_PROFILELIST ) {
 				switch ( hdr->code ) {
 					case LVN_ITEMCHANGED:
-					{
-						EnableWindow(dat->hwndOK, ListView_GetSelectedCount(hdr->hwndFrom)==1);
-					}
+						EnableWindow( dat->hwndOK, ListView_GetSelectedCount( hdr->hwndFrom ) == 1);
+
 					case NM_DBLCLK:
 					{					
 						HWND hwndList = GetDlgItem(hwndDlg, IDC_PROFILELIST);
 						LVITEMA item;						
 						char profile[MAX_PATH];
 						
-						if ( dat == NULL ) break;
+						if ( dat == NULL )
+							break;
 						ZeroMemory(&item,sizeof(item));
 						item.mask = LVIF_TEXT;
 						item.iItem = ListView_GetNextItem(hwndList, -1, LVNI_SELECTED | LVNI_ALL);
@@ -410,240 +411,251 @@ static BOOL CALLBACK DlgProfileSelect(HWND hwndDlg, UINT msg, WPARAM wParam, LPA
 							if ( hdr->code == NM_DBLCLK ) EndDialog(GetParent(hwndDlg), 1);								
 						}						
 						return TRUE;
-					}					
-				}
-			}
+			}	}	}
 			break;
-		}
-	} //switch
+	}	}
+
 	return FALSE;
 }
 
 static BOOL CALLBACK DlgProfileManager(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam)
 {
-	struct DetailsData *dat;
+	struct DetailsData* dat = ( struct DetailsData* )GetWindowLong( hwndDlg, GWL_USERDATA );
 
-	dat=(struct DetailsData*)GetWindowLong(hwndDlg,GWL_USERDATA);
-	switch (msg)
-	{
-		case WM_INITDIALOG:
-		{	
-			struct DlgProfData * prof = (struct DlgProfData *)lParam;			
-			PROPSHEETHEADER *psh = prof->psh;
-			TranslateDialogDefault(hwndDlg);
-			SendMessage(hwndDlg, WM_SETICON, ICON_BIG, (LPARAM)LoadIcon(GetModuleHandle(NULL), MAKEINTRESOURCE(IDI_USERDETAILS)));
-			dat=(struct DetailsData*)mir_alloc(sizeof(struct DetailsData));
-			dat->prof = prof;
-			prof->hwndOK=GetDlgItem(hwndDlg,IDOK);
-			EnableWindow(prof->hwndOK, FALSE);
-			SetWindowLong(hwndDlg, GWL_USERDATA, (LONG)dat);
-			SetDlgItemTextA(hwndDlg,IDC_NAME,"Miranda IM Profile Manager");
-			{	LOGFONT lf;
-				HFONT hNormalFont=(HFONT)SendDlgItemMessage(hwndDlg,IDC_NAME,WM_GETFONT,0,0);
-				GetObject(hNormalFont,sizeof(lf),&lf);
-				lf.lfWeight=FW_BOLD;
-				dat->hBoldFont=CreateFontIndirect(&lf);
-				SendDlgItemMessage(hwndDlg,IDC_NAME,WM_SETFONT,(WPARAM)dat->hBoldFont,0);
-			}
-			{	OPTIONSDIALOGPAGE *odp;
-				int i;
-				TCITEM tci;
-
-				dat->currentPage=0;
-				dat->pageCount=psh->nPages;
-				dat->opd=(struct DetailsPageData*)mir_alloc(sizeof(struct DetailsPageData)*dat->pageCount);
-				odp=(OPTIONSDIALOGPAGE*)psh->ppsp;
-
-				tci.mask=TCIF_TEXT;
-				for(i=0;i<dat->pageCount;i++) {
-					dat->opd[i].pTemplate=(DLGTEMPLATE *)LockResource(LoadResource(odp[i].hInstance,FindResourceA(odp[i].hInstance,odp[i].pszTemplate,MAKEINTRESOURCEA(5))));
-					dat->opd[i].dlgProc=odp[i].pfnDlgProc;
-					dat->opd[i].hInst=odp[i].hInstance;
-					dat->opd[i].hwnd=NULL;
-					dat->opd[i].changed=0;
-					tci.pszText=(TCHAR*)odp[i].ptszTitle;
-					if ( dat->prof->pd->noProfiles || checkAutoCreateProfile(NULL) ) dat->currentPage=1;
-					TabCtrl_InsertItem( GetDlgItem(hwndDlg,IDC_TABS), i, &tci );
-			}	}
-
-			GetWindowRect(GetDlgItem(hwndDlg,IDC_TABS),&dat->rcDisplay);
-			TabCtrl_AdjustRect(GetDlgItem(hwndDlg,IDC_TABS),FALSE,&dat->rcDisplay);
-			{	
-				POINT pt={0,0};
-				ClientToScreen(hwndDlg,&pt);
-				OffsetRect(&dat->rcDisplay,-pt.x,-pt.y);
-			}
-
-			TabCtrl_SetCurSel(GetDlgItem(hwndDlg,IDC_TABS),dat->currentPage);
-			dat->opd[dat->currentPage].hwnd=CreateDialogIndirectParam(dat->opd[dat->currentPage].hInst,dat->opd[dat->currentPage].pTemplate,hwndDlg,dat->opd[dat->currentPage].dlgProc,(LPARAM)dat->prof);
-			ThemeDialogBackground(dat->opd[dat->currentPage].hwnd);
-			SetWindowPos(dat->opd[dat->currentPage].hwnd,HWND_TOP,dat->rcDisplay.left,dat->rcDisplay.top,0,0,SWP_NOSIZE);
-			{	PSHNOTIFY pshn;
-				pshn.hdr.code=PSN_INFOCHANGED;
-				pshn.hdr.hwndFrom=dat->opd[dat->currentPage].hwnd;
-				pshn.hdr.idFrom=0;
-				pshn.lParam=(LPARAM)0;
-				SendMessage(dat->opd[dat->currentPage].hwnd,WM_NOTIFY,0,(LPARAM)&pshn);
-			}
-			ShowWindow(dat->opd[dat->currentPage].hwnd,SW_SHOW);
-			return TRUE;
+	switch (msg) {
+	case WM_INITDIALOG:
+	{	
+		struct DlgProfData * prof = (struct DlgProfData *)lParam;			
+		PROPSHEETHEADER *psh = prof->psh;
+		TranslateDialogDefault(hwndDlg);
+		SendMessage(hwndDlg, WM_SETICON, ICON_BIG, (LPARAM)LoadIcon(GetModuleHandle(NULL), MAKEINTRESOURCE(IDI_USERDETAILS)));
+		dat = (struct DetailsData*)mir_alloc(sizeof(struct DetailsData));
+		dat->prof = prof;
+		prof->hwndOK = GetDlgItem( hwndDlg, IDOK );
+		EnableWindow( prof->hwndOK, FALSE );
+		SetWindowLong( hwndDlg, GWL_USERDATA, (LONG)dat );
+		SetDlgItemTextA( hwndDlg, IDC_NAME, "Miranda IM Profile Manager" );
+		{	LOGFONT lf;
+			HFONT hNormalFont = ( HFONT )SendDlgItemMessage( hwndDlg, IDC_NAME, WM_GETFONT, 0, 0 );
+			GetObject( hNormalFont, sizeof( lf ), &lf );
+			lf.lfWeight = FW_BOLD;
+			dat->hBoldFont = CreateFontIndirect(&lf);
+			SendDlgItemMessage( hwndDlg, IDC_NAME, WM_SETFONT, ( WPARAM )dat->hBoldFont, 0 );
 		}
-		case WM_CTLCOLORSTATIC:
-			switch (GetDlgCtrlID((HWND)lParam)) {
-			case IDC_WHITERECT:
-			case IDC_LOGO:
-			case IDC_NAME:
-			case IDC_DESCRIPTION:
-				SetBkColor((HDC)wParam, GetSysColor(COLOR_WINDOW));
-				return (BOOL)GetSysColorBrush(COLOR_WINDOW);
-			}
-			break;
-		case PSM_CHANGED:
-			dat->opd[dat->currentPage].changed=1;
-			return TRUE;
-		case PSM_FORCECHANGED:
-		{	PSHNOTIFY pshn;
+		{	OPTIONSDIALOGPAGE *odp;
 			int i;
+			TCITEM tci;
 
-			pshn.hdr.code=PSN_INFOCHANGED;
-			pshn.hdr.idFrom=0;
-			pshn.lParam=(LPARAM)0;
-			for(i=0;i<dat->pageCount;i++) {
-				pshn.hdr.hwndFrom=dat->opd[i].hwnd;
-				if(dat->opd[i].hwnd!=NULL)
-					SendMessage(dat->opd[i].hwnd,WM_NOTIFY,0,(LPARAM)&pshn);
+			dat->currentPage = 0;
+			dat->pageCount = psh->nPages;
+			dat->opd = ( struct DetailsPageData* )mir_alloc( sizeof( struct DetailsPageData )*dat->pageCount );
+			odp = ( OPTIONSDIALOGPAGE* )psh->ppsp;
+
+			tci.mask = TCIF_TEXT;
+			for( i=0; i < dat->pageCount; i++ ) {
+				dat->opd[i].pTemplate = (DLGTEMPLATE *)LockResource(LoadResource(odp[i].hInstance,FindResourceA(odp[i].hInstance,odp[i].pszTemplate,MAKEINTRESOURCEA(5))));
+				dat->opd[i].dlgProc = odp[i].pfnDlgProc;
+				dat->opd[i].hInst = odp[i].hInstance;
+				dat->opd[i].hwnd = NULL;
+				dat->opd[i].changed = 0;
+				tci.pszText = ( TCHAR* )odp[i].ptszTitle;
+				if ( dat->prof->pd->noProfiles || checkAutoCreateProfile( NULL ))
+					dat->currentPage = 1;
+				TabCtrl_InsertItem( GetDlgItem(hwndDlg,IDC_TABS), i, &tci );
+		}	}
+
+		GetWindowRect(GetDlgItem(hwndDlg,IDC_TABS),&dat->rcDisplay);
+		TabCtrl_AdjustRect(GetDlgItem(hwndDlg,IDC_TABS),FALSE,&dat->rcDisplay);
+		{	
+			POINT pt = {0,0};
+			ClientToScreen( hwndDlg, &pt );
+			OffsetRect( &dat->rcDisplay, -pt.x, -pt.y );
+		}
+
+		TabCtrl_SetCurSel( GetDlgItem( hwndDlg, IDC_TABS ), dat->currentPage );
+		dat->opd[dat->currentPage].hwnd = CreateDialogIndirectParam(dat->opd[dat->currentPage].hInst,dat->opd[dat->currentPage].pTemplate,hwndDlg,dat->opd[dat->currentPage].dlgProc,(LPARAM)dat->prof);
+		ThemeDialogBackground( dat->opd[dat->currentPage].hwnd );
+		SetWindowPos( dat->opd[dat->currentPage].hwnd, HWND_TOP, dat->rcDisplay.left, dat->rcDisplay.top, 0, 0, SWP_NOSIZE );
+		{	PSHNOTIFY pshn;
+			pshn.hdr.code = PSN_INFOCHANGED;
+			pshn.hdr.hwndFrom = dat->opd[dat->currentPage].hwnd;
+			pshn.hdr.idFrom = 0;
+			pshn.lParam = ( LPARAM )0;
+			SendMessage( dat->opd[dat->currentPage].hwnd, WM_NOTIFY, 0, ( LPARAM )&pshn );
+		}
+		ShowWindow( dat->opd[dat->currentPage].hwnd, SW_SHOW );
+		return TRUE;
+	}
+	case WM_CTLCOLORSTATIC:
+		switch ( GetDlgCtrlID(( HWND )lParam )) {
+		case IDC_WHITERECT:
+		case IDC_LOGO:
+		case IDC_NAME:
+		case IDC_DESCRIPTION:
+			SetBkColor(( HDC )wParam, GetSysColor( COLOR_WINDOW ));
+			return ( BOOL )GetSysColorBrush( COLOR_WINDOW );
+		}
+		break;
+
+	case PSM_CHANGED:
+		dat->opd[dat->currentPage].changed=1;
+		return TRUE;
+
+	case PSM_FORCECHANGED:
+	{	PSHNOTIFY pshn;
+		int i;
+
+		pshn.hdr.code = PSN_INFOCHANGED;
+		pshn.hdr.idFrom = 0;
+		pshn.lParam = (LPARAM)0;
+		for ( i=0; i < dat->pageCount; i++ ) {
+			pshn.hdr.hwndFrom = dat->opd[i].hwnd;
+			if ( dat->opd[i].hwnd != NULL )
+				SendMessage(dat->opd[i].hwnd,WM_NOTIFY,0,(LPARAM)&pshn);
+		}
+		break;
+	}
+	case WM_NOTIFY:
+		switch(wParam) {
+		case IDC_TABS:
+			switch(((LPNMHDR)lParam)->code) {
+			case TCN_SELCHANGING:
+			{	PSHNOTIFY pshn;
+				if ( dat->currentPage == -1 || dat->opd[dat->currentPage].hwnd == NULL )
+					break;
+				pshn.hdr.code = PSN_KILLACTIVE;
+				pshn.hdr.hwndFrom = dat->opd[dat->currentPage].hwnd;
+				pshn.hdr.idFrom = 0;
+				pshn.lParam = 0;
+				if ( SendMessage( dat->opd[dat->currentPage].hwnd, WM_NOTIFY, 0, ( LPARAM )&pshn )) {
+					SetWindowLong( hwndDlg, DWL_MSGRESULT, TRUE );
+					return TRUE;
+				}
+				break;
+			}
+			case TCN_SELCHANGE:
+				if ( dat->currentPage != -1 && dat->opd[dat->currentPage].hwnd != NULL )
+					ShowWindow( dat->opd[ dat->currentPage ].hwnd, SW_HIDE );
+
+				dat->currentPage = TabCtrl_GetCurSel(GetDlgItem(hwndDlg,IDC_TABS));
+				if ( dat->currentPage != -1 ) {
+					if ( dat->opd[dat->currentPage].hwnd == NULL ) {
+						PSHNOTIFY pshn;
+						dat->opd[dat->currentPage].hwnd=CreateDialogIndirectParam(dat->opd[dat->currentPage].hInst,dat->opd[dat->currentPage].pTemplate,hwndDlg,dat->opd[dat->currentPage].dlgProc,(LPARAM)dat->prof);
+						ThemeDialogBackground(dat->opd[dat->currentPage].hwnd);
+						SetWindowPos(dat->opd[dat->currentPage].hwnd,HWND_TOP,dat->rcDisplay.left,dat->rcDisplay.top,0,0,SWP_NOSIZE);
+						pshn.hdr.code=PSN_INFOCHANGED;
+						pshn.hdr.hwndFrom=dat->opd[dat->currentPage].hwnd;
+						pshn.hdr.idFrom=0;
+						pshn.lParam=(LPARAM)0;
+						SendMessage(dat->opd[dat->currentPage].hwnd,WM_NOTIFY,0,(LPARAM)&pshn);
+					}
+					ShowWindow(dat->opd[dat->currentPage].hwnd,SW_SHOW);
+				}
+				break;
 			}
 			break;
 		}
-		case WM_NOTIFY:
-			switch(wParam) {
-				case IDC_TABS:
-					switch(((LPNMHDR)lParam)->code) {
-						case TCN_SELCHANGING:
-						{	PSHNOTIFY pshn;
-							if(dat->currentPage==-1 || dat->opd[dat->currentPage].hwnd==NULL) break;
-							pshn.hdr.code=PSN_KILLACTIVE;
-							pshn.hdr.hwndFrom=dat->opd[dat->currentPage].hwnd;
-							pshn.hdr.idFrom=0;
-							pshn.lParam=(LPARAM)0;
-							if(SendMessage(dat->opd[dat->currentPage].hwnd,WM_NOTIFY,0,(LPARAM)&pshn)) {
-								SetWindowLong(hwndDlg,DWL_MSGRESULT,TRUE);
-								return TRUE;
-							}
-							break;
-						}
-						case TCN_SELCHANGE:
-							if(dat->currentPage!=-1 && dat->opd[dat->currentPage].hwnd!=NULL) ShowWindow(dat->opd[dat->currentPage].hwnd,SW_HIDE);
-							dat->currentPage=TabCtrl_GetCurSel(GetDlgItem(hwndDlg,IDC_TABS));
-							if(dat->currentPage!=-1) {
-								if(dat->opd[dat->currentPage].hwnd==NULL) {
-									PSHNOTIFY pshn;
-									dat->opd[dat->currentPage].hwnd=CreateDialogIndirectParam(dat->opd[dat->currentPage].hInst,dat->opd[dat->currentPage].pTemplate,hwndDlg,dat->opd[dat->currentPage].dlgProc,(LPARAM)dat->prof);
-									ThemeDialogBackground(dat->opd[dat->currentPage].hwnd);
-									SetWindowPos(dat->opd[dat->currentPage].hwnd,HWND_TOP,dat->rcDisplay.left,dat->rcDisplay.top,0,0,SWP_NOSIZE);
-									pshn.hdr.code=PSN_INFOCHANGED;
-									pshn.hdr.hwndFrom=dat->opd[dat->currentPage].hwnd;
-									pshn.hdr.idFrom=0;
-									pshn.lParam=(LPARAM)0;
-									SendMessage(dat->opd[dat->currentPage].hwnd,WM_NOTIFY,0,(LPARAM)&pshn);
-								}
-								ShowWindow(dat->opd[dat->currentPage].hwnd,SW_SHOW);
-							}
-							break;
-					}
-					break;
-			}
-			break;
-		case WM_COMMAND:
-			switch(LOWORD(wParam)) {
-				case IDCANCEL:
-				{	int i;
-					PSHNOTIFY pshn;
-					pshn.hdr.idFrom=0;
-					pshn.lParam=0;
-					pshn.hdr.code=PSN_RESET;					
-					for(i=0;i<dat->pageCount;i++) {
-						if(dat->opd[i].hwnd==NULL || !dat->opd[i].changed) continue;
-						pshn.hdr.hwndFrom=dat->opd[i].hwnd;
-						SendMessage(dat->opd[i].hwnd,WM_NOTIFY,0,(LPARAM)&pshn);
-					}
-					EndDialog(hwndDlg,0);					
-					break;
-				}
-				case IDOK:
-				{	
-					int i;
-					PSHNOTIFY pshn;
-					pshn.hdr.idFrom=0;
-					pshn.lParam=(LPARAM)0;					
-					if(dat->currentPage!=-1) {
-						pshn.hdr.code=PSN_KILLACTIVE;
-						pshn.hdr.hwndFrom=dat->opd[dat->currentPage].hwnd;
-						if(SendMessage(dat->opd[dat->currentPage].hwnd,WM_NOTIFY,0,(LPARAM)&pshn))
-							break;
-					}
+		break;
 
-					pshn.hdr.code=PSN_APPLY;
-					for(i=0;i<dat->pageCount;i++) {
-						if(dat->opd[i].hwnd==NULL || !dat->opd[i].changed) continue;
-						pshn.hdr.hwndFrom=dat->opd[i].hwnd;
-						SendMessage(dat->opd[i].hwnd,WM_NOTIFY,0,(LPARAM)&pshn);
-						if ( GetWindowLong(dat->opd[i].hwnd,DWL_MSGRESULT) == PSNRET_INVALID_NOCHANGEPAGE) {
-							TabCtrl_SetCurSel(GetDlgItem(hwndDlg,IDC_TABS),i);
-							if(dat->currentPage!=-1) ShowWindow(dat->opd[dat->currentPage].hwnd,SW_HIDE);
-							dat->currentPage=i;
-							ShowWindow(dat->opd[dat->currentPage].hwnd,SW_SHOW);							
-							return 0;
-						}
-					}	
-					EndDialog(hwndDlg,1);
-					break;
-				}
-			}
-			break;
-		case WM_DESTROY:
-			SendDlgItemMessage(hwndDlg,IDC_NAME,WM_SETFONT,SendDlgItemMessage(hwndDlg,IDC_WHITERECT,WM_GETFONT,0,0),0);
-			DeleteObject(dat->hBoldFont);
+	case WM_COMMAND:
+		switch(LOWORD(wParam)) {
+		case IDCANCEL:
 			{	int i;
-				for(i=0;i<dat->pageCount;i++)
-					if(dat->opd[i].hwnd!=NULL) DestroyWindow(dat->opd[i].hwnd);
+				PSHNOTIFY pshn;
+				pshn.hdr.idFrom=0;
+				pshn.lParam=0;
+				pshn.hdr.code=PSN_RESET;					
+				for(i=0;i<dat->pageCount;i++) {
+					if (dat->opd[i].hwnd==NULL || !dat->opd[i].changed) continue;
+					pshn.hdr.hwndFrom=dat->opd[i].hwnd;
+					SendMessage(dat->opd[i].hwnd,WM_NOTIFY,0,(LPARAM)&pshn);
+				}
+				EndDialog(hwndDlg,0);					
 			}
-			mir_free(dat->opd);
-			mir_free(dat);
 			break;
+
+		case IDOK:
+			{	
+				int i;
+				PSHNOTIFY pshn;
+				pshn.hdr.idFrom=0;
+				pshn.lParam=(LPARAM)0;					
+				if ( dat->currentPage != -1 ) {
+					pshn.hdr.code = PSN_KILLACTIVE;
+					pshn.hdr.hwndFrom = dat->opd[dat->currentPage].hwnd;
+					if ( SendMessage(dat->opd[dat->currentPage].hwnd, WM_NOTIFY, 0, ( LPARAM )&pshn ))
+						break;
+				}
+
+				pshn.hdr.code=PSN_APPLY;
+				for ( i=0; i < dat->pageCount; i++ ) {
+					if ( dat->opd[i].hwnd == NULL || !dat->opd[i].changed )
+						continue;
+
+					pshn.hdr.hwndFrom = dat->opd[i].hwnd;
+					SendMessage( dat->opd[i].hwnd, WM_NOTIFY, 0, ( LPARAM )&pshn );
+					if ( GetWindowLong( dat->opd[i].hwnd, DWL_MSGRESULT ) == PSNRET_INVALID_NOCHANGEPAGE) {
+						TabCtrl_SetCurSel( GetDlgItem( hwndDlg, IDC_TABS ), i );
+						if ( dat->currentPage != -1 )
+							ShowWindow( dat->opd[ dat->currentPage ].hwnd, SW_HIDE );
+						dat->currentPage = i;
+						ShowWindow( dat->opd[dat->currentPage].hwnd, SW_SHOW );							
+						return 0;
+				}	}	
+				EndDialog(hwndDlg,1);
+				break;
+		}	}
+		break;
+
+	case WM_DESTROY:
+		SendDlgItemMessage( hwndDlg, IDC_NAME, WM_SETFONT, SendDlgItemMessage( hwndDlg, IDC_WHITERECT, WM_GETFONT, 0, 0 ), 0 );
+		DeleteObject( dat->hBoldFont );
+		{	int i;
+			for ( i=0; i < dat->pageCount; i++ )
+				if ( dat->opd[i].hwnd != NULL )
+					DestroyWindow( dat->opd[i].hwnd );
+		}
+		mir_free( dat->opd );
+		mir_free( dat );
+		break;
 	}
 	return FALSE;
 }
 
 static int AddProfileManagerPage(struct DetailsPageInit * opi, OPTIONSDIALOGPAGE * odp)
 {
-	if(opi==NULL||odp==NULL);
-	if(odp->cbSize!=sizeof(OPTIONSDIALOGPAGE)) return 1;
-	opi->odp=(OPTIONSDIALOGPAGE*)mir_realloc(opi->odp,sizeof(OPTIONSDIALOGPAGE)*(opi->pageCount+1));
-	opi->odp[opi->pageCount].cbSize=sizeof(OPTIONSDIALOGPAGE);
-	opi->odp[opi->pageCount].hInstance=odp->hInstance;
-	opi->odp[opi->pageCount].pfnDlgProc=odp->pfnDlgProc;
-	opi->odp[opi->pageCount].position=odp->position;
-	opi->odp[opi->pageCount].ptszTitle=LangPackPcharToTchar(odp->pszTitle);
-	if((DWORD)odp->pszTemplate&0xFFFF0000) opi->odp[opi->pageCount].pszTemplate=mir_strdup(odp->pszTemplate);
-	else opi->odp[opi->pageCount].pszTemplate=odp->pszTemplate;
-	opi->odp[opi->pageCount].pszGroup=NULL;
-	opi->odp[opi->pageCount].groupPosition=odp->groupPosition;
-	opi->odp[opi->pageCount].hGroupIcon=odp->hGroupIcon;
-	opi->odp[opi->pageCount].hIcon=odp->hIcon;
-	opi->pageCount++;
+	if ( odp->cbSize != sizeof( OPTIONSDIALOGPAGE ))
+		return 1;
+
+	opi->odp = ( OPTIONSDIALOGPAGE* )mir_realloc( opi->odp, sizeof( OPTIONSDIALOGPAGE )*( opi->pageCount+1 ));
+	{
+		OPTIONSDIALOGPAGE* p = opi->odp + opi->pageCount++;
+		p->cbSize        = sizeof(OPTIONSDIALOGPAGE);
+		p->hInstance     = odp->hInstance;
+		p->pfnDlgProc    = odp->pfnDlgProc;
+		p->position      = odp->position;
+		p->ptszTitle     = LangPackPcharToTchar(odp->pszTitle);
+		p->pszGroup      = NULL;
+		p->groupPosition = odp->groupPosition;
+		p->hGroupIcon    = odp->hGroupIcon;
+		p->hIcon         = odp->hIcon;
+		if (( DWORD )odp->pszTemplate & 0xFFFF0000 )
+			p->pszTemplate = mir_strdup( odp->pszTemplate );
+		else
+			p->pszTemplate = odp->pszTemplate;
+	}
 	return 0;
 }
-
 
 int getProfileManager(PROFILEMANAGERDATA * pd)
 {	
 	PROPSHEETHEADER psh;
 	struct DlgProfData prof;
-	struct DetailsPageInit opi;
 	int rc=0;
 	int i;
 
+	struct DetailsPageInit opi;
 	opi.pageCount=0;
 	opi.odp=NULL;
 	
@@ -656,39 +668,38 @@ int getProfileManager(PROFILEMANAGERDATA * pd)
 	{
 		OPTIONSDIALOGPAGE odp;
 		ZeroMemory(&odp,sizeof(odp));
-		odp.cbSize=sizeof(odp);
-		odp.pszTitle=Translate("My Profiles");
-		odp.pfnDlgProc=DlgProfileSelect;
-		odp.pszTemplate=MAKEINTRESOURCEA(IDD_PROFILE_SELECTION);
-		odp.hInstance=GetModuleHandle(NULL);
+		odp.cbSize      = sizeof(odp);
+		odp.pszTitle    = Translate( "My Profiles" );
+		odp.pfnDlgProc  = DlgProfileSelect;
+		odp.pszTemplate = MAKEINTRESOURCEA(IDD_PROFILE_SELECTION);
+		odp.hInstance   = GetModuleHandle(NULL);
 		AddProfileManagerPage(&opi, &odp);
 
-		odp.pszTitle=Translate("New Profile");
-		odp.pszTemplate=MAKEINTRESOURCEA(IDD_PROFILE_NEW);
-		odp.pfnDlgProc=DlgProfileNew;
+		odp.pszTitle    = Translate( "New Profile" );
+		odp.pszTemplate = MAKEINTRESOURCEA(IDD_PROFILE_NEW);
+		odp.pfnDlgProc  = DlgProfileNew;
 		AddProfileManagerPage(&opi, &odp);
 	}
 
-	ZeroMemory(&psh,sizeof(psh));
-	psh.dwSize = sizeof(psh);
-	psh.dwFlags = PSH_PROPSHEETPAGE|PSH_NOAPPLYNOW;
+	ZeroMemory( &psh, sizeof( psh ));
+	psh.dwSize     = sizeof(psh);
+	psh.dwFlags    = PSH_PROPSHEETPAGE|PSH_NOAPPLYNOW;
 	psh.hwndParent = NULL;
-	psh.nPages = opi.pageCount;
+	psh.nPages     = opi.pageCount;
 	psh.pStartPage = 0;
-	psh.ppsp = (PROPSHEETPAGE*)opi.odp;	
-	prof.pd=pd;
-	prof.psh=&psh;
-	rc=DialogBoxParam(GetModuleHandle(NULL),MAKEINTRESOURCE(IDD_PROFILEMANAGER),NULL,DlgProfileManager,(LPARAM)&prof);
+	psh.ppsp       = (PROPSHEETPAGE*)opi.odp;	
+	prof.pd        = pd;
+	prof.psh       = &psh;
+	rc = DialogBoxParam(GetModuleHandle(NULL),MAKEINTRESOURCE(IDD_PROFILEMANAGER),NULL,DlgProfileManager,(LPARAM)&prof);
 
-	if (rc != -1)
-	{
-		for(i=0;i<opi.pageCount;i++)
-		{
-			mir_free((char*)opi.odp[i].pszTitle);
-			if(opi.odp[i].pszGroup!=NULL) mir_free(opi.odp[i].pszGroup);
-			if((DWORD)opi.odp[i].pszTemplate&0xFFFF0000) mir_free((char*)opi.odp[i].pszTemplate);
+	if ( rc != -1 )
+		for ( i=0; i < opi.pageCount; i++ ) {
+			mir_free(( char* )opi.odp[i].pszTitle );
+			mir_free( opi.odp[i].pszGroup );
+			if (( DWORD )opi.odp[i].pszTemplate & 0xFFFF0000 )
+				mir_free(( char* )opi.odp[i].pszTemplate );
 		}
-	}
+
 	if ( opi.odp != NULL )
 		mir_free(opi.odp);
 
