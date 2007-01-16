@@ -202,8 +202,6 @@ int BgStatusBarChange(WPARAM wParam,LPARAM lParam)
 }
 
 
-BOOL CALLBACK ProtocolOrderOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam);
-
 static BOOL CALLBACK DlgProcGenOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam);
 static BOOL CALLBACK DlgProcSBarOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam);
 static BOOL CALLBACK DlgProcCluiOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam);
@@ -515,31 +513,7 @@ static BOOL CALLBACK DlgProcClcMainOpts(HWND hwndDlg, UINT msg, WPARAM wParam, L
 					TreeView_SetItem(((LPNMHDR)lParam)->hwndFrom,&tvi);
 					SendMessage(GetParent(hwndDlg), PSM_CHANGED, (WPARAM)hwndDlg, 0);
 				}
-
-				/*
-				case NM_CLICK:
-				{
-
-				TVHITTESTINFO hti;
-				hti.pt.x=(short)LOWORD(GetMessagePos());
-				hti.pt.y=(short)HIWORD(GetMessagePos());
-				ScreenToClient(((LPNMHDR)lParam)->hwndFrom,&hti.pt);
-				if(TreeView_HitTest(((LPNMHDR)lParam)->hwndFrom,&hti))
-				if(hti.flags&TVHT_ONITEMICON) {
-				TVITEMA tvi;
-				tvi.mask=TVIF_HANDLE|TVIF_IMAGE|TVIF_SELECTEDIMAGE;
-				tvi.hItem=hti.hItem;
-				TreeView_GetItem(((LPNMHDR)lParam)->hwndFrom,&tvi);
-				tvi.iImage=tvi.iSelectedImage=!tvi.iImage;
-				((ProtocolData *)tvi.lParam)->show=tvi.iImage;
-				TreeView_SetItem(((LPNMHDR)lParam)->hwndFrom,&tvi);
-				SendMessage(GetParent(hwndDlg), PSM_CHANGED, (WPARAM)hwndDlg, 0);
-
-				//all changes take effect in runtime
-				//CLUI_ShowWindowMod(GetDlgItem(hwndDlg,IDC_PROTOCOLORDERWARNING),SW_SHOW);
-				}
-				*/
-		}
+    	}
 		break;
 	case 0:
 		switch (((LPNMHDR)lParam)->code)

@@ -203,7 +203,6 @@ int     SkinEngine_ValidateFrameImageProc(RECT * r);
 BOOL    wildcmp(char * name, char * mask, BYTE option);										//mod_skin_selector.c
 BOOL	wildcmpi(char * name, char * mask);													//mod_skin_selector.c
 BOOL	CALLBACK DlgSkinEditorOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam);	//SkinEditor.c
-BOOL	CALLBACK ProtocolOrderOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam);	//ProtocolOrder.c
 BOOL	CALLBACK DlgProcHotKeyOpts2(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam);	//Keyboard.c
 BOOL	CALLBACK DlgTmplEditorOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam);	//RowTemplate.c
 BOOL	FindMenuHanleByGlobalID(HMENU hMenu, int globalID, struct _MenuItemHandles * dat);	//GenMenu.c

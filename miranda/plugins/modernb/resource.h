@@ -182,12 +182,10 @@
 #define IDI_ICON5                       455
 #define IDI_CHAT                        455
 #define IDI_LISTENING_TO                456
-//have to be sequenced
 #define IDI_FAVORITE_0                  500
 #define IDI_FAVORITE_1                  501
 #define IDI_FAVORITE_2                  502
 #define IDI_FAVORITE_3                  503
-//
 #define IDC_RESETPROTOCOLDATA           1000
 #define IDC_SAVE                        1001
 #define IDC_DEFBKCOLOR                  1001
@@ -920,7 +918,6 @@
 #define IDC_CLSORT1                     6666
 #define IDC_CLSORT2                     6667
 #define IDC_CLSORT3                     6668
-#define IDD_OPT_GENMENU                 11267
 #define IDD_OPT_CLCBKG3                 11268
 #define IDD_OPT_ITEM_EXTRAICONS         11269
 #define IDC_MENUITEMS                   11710
