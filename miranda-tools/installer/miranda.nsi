@@ -256,7 +256,7 @@ Function VerifyInstallDir
   Goto noupgradeend
   noupgrade:
   SectionSetText ${pStoreData} "Store profile data in user home directory"
-  !insertmacro ClearSectionFlag ${pStoreData} ${SF_SELECTED}
+  !insertmacro SetSectionFlag ${pStoreData} ${SF_SELECTED}
   noupgradeend:
   !endif
 FunctionEnd
