@@ -159,7 +159,7 @@ int OnDetailsInit(WPARAM wParam, LPARAM lParam);
  
 static int OnModulesLoaded( WPARAM wParam, LPARAM lParam )
 {
-	char tModule[ 100 ], tModuleDescr[ 100 ];
+	char tModuleDescr[ 100 ];
 	NETLIBUSER nlu = {0};
 
 	if ( !ServiceExists( MS_DB_CONTACT_GETSETTING_STR )) {
@@ -173,7 +173,7 @@ static int OnModulesLoaded( WPARAM wParam, LPARAM lParam )
 	YahooIconsInit();
 	YahooMenuInit();
 	
-	CharUpper( lstrcpy( tModule, yahooProtocolName ));
+	CharUpper( yahooProtocolName );
 	wsprintf(tModuleDescr, "%s plugin connections", yahooProtocolName);
 	
 	nlu.cbSize = sizeof(nlu);
@@ -184,7 +184,7 @@ static int OnModulesLoaded( WPARAM wParam, LPARAM lParam )
    	nlu.flags = NUF_OUTGOING | NUF_HTTPCONNS;
 #endif
 
-	nlu.szSettingsModule = tModule;
+	nlu.szSettingsModule = yahooProtocolName;
 	nlu.szDescriptiveName = Translate( tModuleDescr );
 	
 #ifdef HTTP_GATEWAY
