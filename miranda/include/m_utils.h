@@ -334,6 +334,14 @@ static __inline int mir_vsnprintf(char *buffer, size_t count, const char* fmt, v
 	return len;
 }
 
+static __inline int mir_vsntprintf(TCHAR *buffer, size_t count, const TCHAR* fmt, va_list va) {
+    int len;
+
+    len = _vsntprintf(buffer, count-1, fmt, va);
+    buffer[count-1] = 0;
+    return len;
+}
+
 // allows to include TCHAR* strings into mir_snprintf and NetLib_Logf calls
 #if defined( _UNICODE )
 	#define TCHAR_STR_PARAM "%S"
