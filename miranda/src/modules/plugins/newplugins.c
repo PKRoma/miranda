@@ -453,7 +453,10 @@ static BOOL dialogListPlugins(WIN32_FIND_DATAA * fd, char * path, WPARAM wParam,
 		ListView_SetItemText(hwndList, iRow, 3, TranslateTS( gModule != NULL ? _T("Yes"):_T("No") ));
 		ListView_SetItemTextA(hwndList, iRow, 4, pi.pluginInfo->author);
 		ListView_SetItemTextA(hwndList, iRow, 5, pi.pluginInfo->authorEmail);
-		ListView_SetItemTextA(hwndList, iRow, 6, Translate(pi.pluginInfo->description));
+		{	TCHAR* p = LangPackPcharToTchar( pi.pluginInfo->description );
+			ListView_SetItemText(hwndList, iRow, 6, TranslateTS( p ));
+			mir_free( p );
+		}
 		ListView_SetItemTextA(hwndList, iRow, 7, pi.pluginInfo->copyright);
 		ListView_SetItemTextA(hwndList, iRow, 8, pi.pluginInfo->homepage);
 	}
