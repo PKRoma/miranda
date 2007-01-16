@@ -46,3 +46,8 @@ int    LangPackGetDefaultCodePage();
 int    LangPackGetDefaultLocale();
 TCHAR* LangPackPcharToTchar( const char* pszStr );
 char*  LangPackTranslateString(const char *szEnglish, const int W);
+
+TCHAR*   a2t( const char* str );
+char*    u2a( const wchar_t* src );
+wchar_t* a2u( const char* src );
+
