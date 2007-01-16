@@ -113,6 +113,7 @@ BOOL CALLBACK DlgProcAbout(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam)
 		switch ( GetWindowLong(( HWND )lParam, GWL_ID )) {
 		case IDC_MIRANDA:
 			SetTextColor((HDC)wParam,RGB(180,10,10));
+			break;
 		case IDC_VERSION:
 			SetTextColor((HDC)wParam,GetSysColor(COLOR_GRAYTEXT));
 			break;
@@ -122,6 +123,7 @@ BOOL CALLBACK DlgProcAbout(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam)
 		case IDC_CREDITSFILE:
 		case IDC_DEVS:
 			SetTextColor((HDC)wParam,GetSysColor(COLOR_WINDOWTEXT));
+			break;
 		default:
 			return FALSE;
       }
