@@ -43,7 +43,7 @@ static int SkinOptionsInit(WPARAM wParam,LPARAM lParam)
 	odp.position = -200000000;
 	odp.hInstance = GetModuleHandle(NULL);
 	odp.pszTemplate = MAKEINTRESOURCEA(IDD_OPT_SOUND);
-	odp.pszGroup = "Events";
+	odp.pszGroup = "Customize";
 	odp.pszTitle = "Sounds";
 	odp.pfnDlgProc = DlgProcSoundOpts;
 	odp.flags = ODPF_BOLDGROUPS;

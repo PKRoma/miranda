@@ -834,11 +834,11 @@ int GenMenuOptInit(WPARAM wParam, LPARAM lParam)
 	OPTIONSDIALOGPAGE odp = { 0 };
 	odp.cbSize=sizeof(odp);
 	odp.hInstance = GetModuleHandle( NULL );
-	odp.pszGroup = Translate( "Customize" );
+	odp.pszGroup = "Customize";
 
 	odp.position = -1000000000;
 	odp.pszTemplate = MAKEINTRESOURCEA( IDD_OPT_GENMENU );
-	odp.pszTitle = Translate("Menu Order");
+	odp.pszTitle = "Menus";
 	odp.pfnDlgProc = GenMenuOpts;
 	odp.flags = ODPF_BOLDGROUPS;
 	CallService( MS_OPT_ADDPAGE, wParam, ( LPARAM )&odp );
@@ -846,7 +846,7 @@ int GenMenuOptInit(WPARAM wParam, LPARAM lParam)
 	odp.position = -10000000;
 	odp.groupPosition = 1000000;
 	odp.pszTemplate = MAKEINTRESOURCEA( IDD_OPT_PROTOCOLORDER );
-	odp.pszTitle = Translate( "Protocol order" );
+	odp.pszTitle = "Protocols";
 	odp.pfnDlgProc = ProtocolOrderOpts;
 	odp.flags = ODPF_BOLDGROUPS|ODPF_EXPERTONLY;
 	CallService( MS_OPT_ADDPAGE, wParam, ( LPARAM )&odp );
