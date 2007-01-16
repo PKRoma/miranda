@@ -382,6 +382,7 @@ void __stdcall p2p_sendRedirect( ThreadData* info, filetransfer* ft )
 		info->send(( char* )p2pPacket, sizeof( P2P_Header ) + sizeof( DWORD ));
 	}
 	else info->sendRawMessage( 'D', buf, int( p - buf ));
+	ft->tType = info ? info->mType : SERVER_SWITCHBOARD;
 	ft->ts = time( NULL );
 	ft->p2p_waitack = true;
 }
