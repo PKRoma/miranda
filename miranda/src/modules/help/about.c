@@ -48,8 +48,7 @@ BOOL CALLBACK DlgProcAbout(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam)
 			hFont=CreateFontIndirect(&lf);
 			SendDlgItemMessage(hwndDlg,IDC_VERSION,WM_SETFONT,(WPARAM)hFont,0);
 		}
-		{
-			char filename[MAX_PATH],*productCopyright;
+		{	char filename[MAX_PATH],*productCopyright;
 			DWORD unused;
 			DWORD verInfoSize;
 			UINT blockSize;
@@ -83,49 +82,52 @@ BOOL CALLBACK DlgProcAbout(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam)
 		}
 		SendMessage(hwndDlg, WM_SETICON, ICON_BIG, (LPARAM)LoadIcon(GetModuleHandle(NULL), MAKEINTRESOURCE(IDI_MIRANDA)));
 		return TRUE;
+
 	case WM_COMMAND:
-		switch(LOWORD(wParam)) {
+		switch( LOWORD( wParam )) {
 		case IDOK:
 		case IDCANCEL:
 			DestroyWindow(hwndDlg);
 			return TRUE;
 		case IDC_CONTRIBLINK:
-			{
-				if (iState) {
-					iState = 0;
-					SetDlgItemText(hwndDlg, IDC_CONTRIBLINK, TranslateT("Credits >"));
-					ShowWindow(GetDlgItem(hwndDlg, IDC_DEVS), SW_SHOW);
-					ShowWindow(GetDlgItem(hwndDlg, IDC_BUILDTIME), SW_SHOW);
-					ShowWindow(GetDlgItem(hwndDlg, IDC_CREDITSFILE), SW_HIDE);
-				}
-				else {
-					iState = 1;
-					SetDlgItemText(hwndDlg, IDC_CONTRIBLINK, TranslateT("< About"));
-					ShowWindow(GetDlgItem(hwndDlg, IDC_DEVS), SW_HIDE);
-					ShowWindow(GetDlgItem(hwndDlg, IDC_BUILDTIME), SW_HIDE);
-					ShowWindow(GetDlgItem(hwndDlg, IDC_CREDITSFILE), SW_SHOW);
-				}
-				break;
+			if (iState) {
+				iState = 0;
+				SetDlgItemText(hwndDlg, IDC_CONTRIBLINK, TranslateT("Credits >"));
+				ShowWindow(GetDlgItem(hwndDlg, IDC_DEVS), SW_SHOW);
+				ShowWindow(GetDlgItem(hwndDlg, IDC_BUILDTIME), SW_SHOW);
+				ShowWindow(GetDlgItem(hwndDlg, IDC_CREDITSFILE), SW_HIDE);
 			}
-		}
-		break;
-	case WM_CTLCOLOREDIT:
-	case WM_CTLCOLORSTATIC:
-		if((HWND)lParam==GetDlgItem(hwndDlg,IDC_WHITERECT)
-			|| (HWND)lParam==GetDlgItem(hwndDlg,IDC_MIRANDA)
-			|| (HWND)lParam==GetDlgItem(hwndDlg,IDC_VERSION)
-			|| (HWND)lParam==GetDlgItem(hwndDlg,IDC_BUILDTIME)
-			|| (HWND)lParam==GetDlgItem(hwndDlg,IDC_LOGO)
-			|| (HWND)lParam==GetDlgItem(hwndDlg,IDC_CREDITSFILE)
-			|| (HWND)lParam==GetDlgItem(hwndDlg,IDC_DEVS)) {
-				if((HWND)lParam==GetDlgItem(hwndDlg,IDC_VERSION))
-					SetTextColor((HDC)wParam,GetSysColor(COLOR_GRAYTEXT));
-				else
-					SetTextColor((HDC)wParam,GetSysColor(COLOR_WINDOWTEXT));
-				SetBkColor((HDC)wParam, GetSysColor(COLOR_WINDOW));
-				return (BOOL)GetSysColorBrush(COLOR_WINDOW);
+			else {
+				iState = 1;
+				SetDlgItemText(hwndDlg, IDC_CONTRIBLINK, TranslateT("< About"));
+				ShowWindow(GetDlgItem(hwndDlg, IDC_DEVS), SW_HIDE);
+				ShowWindow(GetDlgItem(hwndDlg, IDC_BUILDTIME), SW_HIDE);
+				ShowWindow(GetDlgItem(hwndDlg, IDC_CREDITSFILE), SW_SHOW);
 			}
 			break;
+		}
+		break;
+
+	case WM_CTLCOLOREDIT:
+	case WM_CTLCOLORSTATIC:
+		switch ( GetWindowLong(( HWND )lParam, GWL_ID )) {
+		case IDC_MIRANDA:
+			SetTextColor((HDC)wParam,RGB(180,10,10));
+		case IDC_VERSION:
+			SetTextColor((HDC)wParam,GetSysColor(COLOR_GRAYTEXT));
+			break;
+		case IDC_WHITERECT:
+		case IDC_BUILDTIME:
+		case IDC_LOGO:
+		case IDC_CREDITSFILE:
+		case IDC_DEVS:
+			SetTextColor((HDC)wParam,GetSysColor(COLOR_WINDOWTEXT));
+		default:
+			return FALSE;
+      }
+		SetBkColor((HDC)wParam, GetSysColor(COLOR_WINDOW));
+		return (BOOL)GetSysColorBrush(COLOR_WINDOW);
+
 	case WM_DESTROY:
 		{	HFONT hFont = (HFONT)SendDlgItemMessage(hwndDlg,IDC_MIRANDA,WM_GETFONT,0,0);
 			SendDlgItemMessage(hwndDlg,IDC_MIRANDA,WM_SETFONT,SendDlgItemMessage(hwndDlg,IDOK,WM_GETFONT,0,0),0);
