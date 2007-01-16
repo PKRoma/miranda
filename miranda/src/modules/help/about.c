@@ -118,14 +118,12 @@ BOOL CALLBACK DlgProcAbout(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam)
 			|| (HWND)lParam==GetDlgItem(hwndDlg,IDC_LOGO)
 			|| (HWND)lParam==GetDlgItem(hwndDlg,IDC_CREDITSFILE)
 			|| (HWND)lParam==GetDlgItem(hwndDlg,IDC_DEVS)) {
-				if((HWND)lParam==GetDlgItem(hwndDlg,IDC_MIRANDA))
-					SetTextColor((HDC)wParam,RGB(180,10,10));
-				else if((HWND)lParam==GetDlgItem(hwndDlg,IDC_VERSION))
-					SetTextColor((HDC)wParam,RGB(70,70,70));
+				if((HWND)lParam==GetDlgItem(hwndDlg,IDC_VERSION))
+					SetTextColor((HDC)wParam,GetSysColor(COLOR_GRAYTEXT));
 				else
-					SetTextColor((HDC)wParam,RGB(0,0,0));
-				SetBkColor((HDC)wParam,RGB(255,255,255));
-				return (BOOL)GetStockObject(WHITE_BRUSH);
+					SetTextColor((HDC)wParam,GetSysColor(COLOR_WINDOWTEXT));
+				SetBkColor((HDC)wParam, GetSysColor(COLOR_WINDOW));
+				return (BOOL)GetSysColorBrush(COLOR_WINDOW);
 			}
 			break;
 	case WM_DESTROY:
