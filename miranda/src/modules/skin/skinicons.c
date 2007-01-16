@@ -233,50 +233,50 @@ static void convertOneProtocol( char* moduleName, char* iconName )
 int InitSkinIcons(void)
 {
 	SKINICONDESC sid;
-	int i;
+	int i, j = 0;
 	char iconName[MAX_PATH];
 	char moduleName[MAX_PATH];
 	int iconNameSuffIndx;
+	DBVARIANT dbv;
 
-	if (!DBGetContactSettingByte(NULL, "SkinIcons", "DisableImport", 0))
 	//
 	//  Perform "1st-time running import"
-	{
-		DBVARIANT dbv;
-		int j = 0;
 
-		for ( i = 0; i < SIZEOF(mainIcons); i++ ) {
-			itoa( mainIcons[i].id, moduleName, 10 );
-			if ( !DBGetContactSettingTString( NULL, "Icons", moduleName, &dbv ) ) {
-				strcpy(iconName, mainIconsFmt);
-				itoa(i, iconName + strlen(iconName), 10);
+	for ( i = 0; i < SIZEOF(mainIcons); i++ ) {
+		itoa( mainIcons[i].id, moduleName, 10 );
+		if ( DBGetContactSettingTString( NULL, "Icons", moduleName, &dbv ))
+			break;
 
-				DBWriteContactSettingTString( NULL, "SkinIcons", iconName, dbv.ptszVal );
-				DBFreeVariant( &dbv );
+		strcpy(iconName, mainIconsFmt);
+		itoa(i, iconName + strlen(iconName), 10);
 
-				DBDeleteContactSetting( NULL, "Icons", moduleName );
-		}	}
+		DBWriteContactSettingTString( NULL, "SkinIcons", iconName, dbv.ptszVal );
+		DBFreeVariant( &dbv );
 
-		while ( TRUE ) {
-			// get the next protocol name
-			moduleName[0] = 'p';
-			moduleName[1] = 0;
-			itoa( j++, moduleName+1, 100 );
-			if ( DBGetContactSettingTString( NULL, "Icons", moduleName, &dbv ))
-				break;
-
-			// make old skinicons' prefix
-			mir_snprintf( moduleName, SIZEOF(moduleName), TCHAR_STR_PARAM, dbv.ptszVal );
-			// make IcoLib's prefix
-			mir_snprintf( iconName, SIZEOF(iconName), "%s" TCHAR_STR_PARAM, statusIconsFmt, dbv.ptszVal );
-
-			convertOneProtocol( moduleName, iconName );
-			DBFreeVariant( &dbv );
-		}
-		moduleName[0] = 0;
-		strcpy(iconName, "core_status_" GLOBAL_PROTO_NAME);
-		convertOneProtocol( moduleName, iconName );
+		DBDeleteContactSetting( NULL, "Icons", moduleName );
 	}
+
+	while ( TRUE ) {
+		// get the next protocol name
+		moduleName[0] = 'p';
+		moduleName[1] = 0;
+		itoa( j++, moduleName+1, 100 );
+		if ( DBGetContactSettingTString( NULL, "Icons", moduleName, &dbv ))
+			break;
+
+		DBDeleteContactSetting( NULL, "Icons", moduleName );
+
+		// make old skinicons' prefix
+		mir_snprintf( moduleName, SIZEOF(moduleName), TCHAR_STR_PARAM, dbv.ptszVal );
+		// make IcoLib's prefix
+		mir_snprintf( iconName, SIZEOF(iconName), "%s" TCHAR_STR_PARAM, statusIconsFmt, dbv.ptszVal );
+
+		convertOneProtocol( moduleName, iconName );
+		DBFreeVariant( &dbv );
+	}
+	moduleName[0] = 0;
+	strcpy(iconName, "core_status_" GLOBAL_PROTO_NAME);
+	convertOneProtocol( moduleName, iconName );
 
 	hLoadSkinIcon = CreateServiceFunction(MS_SKIN_LOADICON,LoadSkinIcon);
 	hLoadSkinProtoIcon = CreateServiceFunction(MS_SKIN_LOADPROTOICON,LoadSkinProtoIcon);
