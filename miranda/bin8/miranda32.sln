@@ -14,8 +14,6 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "dbtool", "..\..\miranda-too
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "fastlock", "..\plugins\fastlock\fastlock_8.vcproj", "{F6CB5679-D70E-4154-8B0B-C2A424FB6127}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "help", "..\plugins\help\help_8.vcproj", "{4AD5A72D-C667-4902-844D-C09F74CE7245}"
-EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "import", "..\plugins\import\import_8.vcproj", "{9299B507-1AF9-4C93-9560-5F637D1E0C9E}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "miranda32", "..\src\miranda32_8.vcproj", "{F9916510-9055-4C9F-997A-3755DEC1511B}"
@@ -55,8 +53,6 @@ EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "clist_mw", "..\plugins\mwclist\clist_mw_8.vcproj", "{56997126-0098-407A-94E1-7C5748C1C9EF}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "clist_modern", "..\plugins\modernb\clist_modern_8.vcproj", "{D9057E63-AAAA-4FE7-800A-20C02F4761F3}"
-EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "FontService", "..\plugins\fontservice\FontService_8.vcproj", "{3FAA6ED0-CE70-469F-9165-2B242FB270BD}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "MetaContacts", "..\plugins\metacontacts\MetaContacts_8.vcproj", "{0007BE9F-DD4D-4E9B-B1C8-C5049538F862}"
 EndProject
@@ -148,14 +144,6 @@ Global
 		{F6CB5679-D70E-4154-8B0B-C2A424FB6127}.Release Unicode|Win32.Build.0 = Release|Win32
 		{F6CB5679-D70E-4154-8B0B-C2A424FB6127}.Release|Win32.ActiveCfg = Release|Win32
 		{F6CB5679-D70E-4154-8B0B-C2A424FB6127}.Release|Win32.Build.0 = Release|Win32
-		{4AD5A72D-C667-4902-844D-C09F74CE7245}.Debug Unicode|Win32.ActiveCfg = Debug Unicode|Win32
-		{4AD5A72D-C667-4902-844D-C09F74CE7245}.Debug Unicode|Win32.Build.0 = Debug Unicode|Win32
-		{4AD5A72D-C667-4902-844D-C09F74CE7245}.Debug|Win32.ActiveCfg = Debug|Win32
-		{4AD5A72D-C667-4902-844D-C09F74CE7245}.Debug|Win32.Build.0 = Debug|Win32
-		{4AD5A72D-C667-4902-844D-C09F74CE7245}.Release Unicode|Win32.ActiveCfg = Release Unicode|Win32
-		{4AD5A72D-C667-4902-844D-C09F74CE7245}.Release Unicode|Win32.Build.0 = Release Unicode|Win32
-		{4AD5A72D-C667-4902-844D-C09F74CE7245}.Release|Win32.ActiveCfg = Release|Win32
-		{4AD5A72D-C667-4902-844D-C09F74CE7245}.Release|Win32.Build.0 = Release|Win32
 		{9299B507-1AF9-4C93-9560-5F637D1E0C9E}.Debug Unicode|Win32.ActiveCfg = Debug|Win32
 		{9299B507-1AF9-4C93-9560-5F637D1E0C9E}.Debug Unicode|Win32.Build.0 = Debug|Win32
 		{9299B507-1AF9-4C93-9560-5F637D1E0C9E}.Debug|Win32.ActiveCfg = Debug|Win32
@@ -314,14 +302,6 @@ Global
 		{D9057E63-AAAA-4FE7-800A-20C02F4761F3}.Release Unicode|Win32.Build.0 = Release Unicode|Win32
 		{D9057E63-AAAA-4FE7-800A-20C02F4761F3}.Release|Win32.ActiveCfg = Release|Win32
 		{D9057E63-AAAA-4FE7-800A-20C02F4761F3}.Release|Win32.Build.0 = Release|Win32
-		{3FAA6ED0-CE70-469F-9165-2B242FB270BD}.Debug Unicode|Win32.ActiveCfg = Debug|Win32
-		{3FAA6ED0-CE70-469F-9165-2B242FB270BD}.Debug Unicode|Win32.Build.0 = Debug|Win32
-		{3FAA6ED0-CE70-469F-9165-2B242FB270BD}.Debug|Win32.ActiveCfg = Debug|Win32
-		{3FAA6ED0-CE70-469F-9165-2B242FB270BD}.Debug|Win32.Build.0 = Debug|Win32
-		{3FAA6ED0-CE70-469F-9165-2B242FB270BD}.Release Unicode|Win32.ActiveCfg = Release|Win32
-		{3FAA6ED0-CE70-469F-9165-2B242FB270BD}.Release Unicode|Win32.Build.0 = Release|Win32
-		{3FAA6ED0-CE70-469F-9165-2B242FB270BD}.Release|Win32.ActiveCfg = Release|Win32
-		{3FAA6ED0-CE70-469F-9165-2B242FB270BD}.Release|Win32.Build.0 = Release|Win32
 		{0007BE9F-DD4D-4E9B-B1C8-C5049538F862}.Debug Unicode|Win32.ActiveCfg = Debug|Win32
 		{0007BE9F-DD4D-4E9B-B1C8-C5049538F862}.Debug Unicode|Win32.Build.0 = Debug|Win32
 		{0007BE9F-DD4D-4E9B-B1C8-C5049538F862}.Debug|Win32.ActiveCfg = Debug|Win32
