@@ -78,20 +78,23 @@ void fnHotKeysUnregister(HWND hwnd)
 	if (aHide) {
 		UnregisterHotKey(hwnd, aHide);
 		GlobalDeleteAtom(aHide);
+		aHide = 0;
 	}
 	if (aRead) {
 		UnregisterHotKey(hwnd, aRead);
 		GlobalDeleteAtom(aRead);
+		aRead = 0;
 	}
 	if (aSearch) {
 		UnregisterHotKey(hwnd, aSearch);
 		GlobalDeleteAtom(aSearch);
+		aSearch = 0;
 	}
 	if (aOpts) {
 		UnregisterHotKey(hwnd, aOpts);
 		GlobalDeleteAtom(aOpts);
-	}
-}
+		aOpts = 0;
+}	}
 
 int fnHotKeysProcess(HWND hwnd, WPARAM wParam, LPARAM lParam)
 {
