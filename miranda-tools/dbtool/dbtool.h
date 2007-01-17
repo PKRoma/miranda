@@ -96,6 +96,6 @@ __inline LPSTR Translate(LPSTR source)
 	#define TranslateT(s) (TCHAR*)LangPackTranslateString((LPCSTR)_T(s),1)
 	#define TranslateTS(s) (TCHAR*)LangPackTranslateString((LPCSTR)s,1)
 #else
-	#define TranslateT(s) Translate(s,0)
-	#define TranslateTS(s) Translate(s,0)
+	#define TranslateT(s) LangPackTranslateString(s,0)
+	#define TranslateTS(s) LangPackTranslateString(s,0)
 #endif
