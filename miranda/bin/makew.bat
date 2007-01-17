@@ -15,7 +15,7 @@ nmake /f miranda32.mak CFG="miranda32 - Win32 Release Unicode"
 if errorlevel 1 goto :Error
 
 cd ..\..\miranda-tools\dbtool
-nmake /f dbtool.mak CFG="dbtool - Win32 Release"
+nmake /f dbtool.mak CFG="dbtool - Win32 Release Unicode"
 if errorlevel 1 goto :Error
 
 rem ---------------------------------------------------------------------------
@@ -87,7 +87,6 @@ rem Zip it
 rem ---------------------------------------------------------------------------
 
 cd "..\..\bin\Release Unicode"
-copy ..\release\dbtool.exe
 
 copy ..\release\Icons\xstatus_ICQ.dll    Icons
 
