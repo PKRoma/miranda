@@ -1,5 +1,6 @@
 !include "MUI.nsh"
 !include "Sections.nsh"
+!include "WinVer.nsh"
 
 !define MIM_NAME                "Miranda IM"
 !define MIM_VERSION             "0.6.2"
@@ -7,14 +8,15 @@
 
 !define MIM_BUILD_UNICODE
 
+!define MIM_BUILD_ICONS_LOW     "icons\bin\locolor"
+!define MIM_BUILD_ICONS_HI      "icons\bin\hicolor"
+
 !ifdef MIM_BUILD_UNICODE
 !define MIM_BUILD_TYPE          "unicode"
 !define MIM_BUILD_DIR           "..\..\miranda\bin\Release Unicode"
-!define MIM_BUILD_ICONS         "icons\bin\hicolor"
 !else
 !define MIM_BUILD_TYPE          "ansi"
 !define MIM_BUILD_DIR           "..\..\miranda\bin\Release"
-!define MIM_BUILD_ICONS         "icons\bin\locolor"
 !endif
 !define MIM_BUILD_DIRANSI       "..\..\miranda\bin\Release"
 !define MIM_BUILD_SRC           "..\..\miranda"
@@ -68,6 +70,19 @@ VAR INST_UPGRADE
 
 !insertmacro MUI_LANGUAGE "English"
 
+!macro InstallMirandaIcon IconFile
+  SetOutPath "$INSTDIR\Icons"
+  !ifdef MIM_BUILD_UNICODE
+  ${If} ${AtLeastWinXP}
+  File "${MIM_BUILD_ICONS_HI}\${IconFile}"
+  ${Else}
+  File "${MIM_BUILD_ICONS_LOW}\${IconFile}"
+  ${EndIf}
+  !else
+  File "${MIM_BUILD_LOW}\${IconFile}"
+  !endif
+!macroend
+
 Section "Miranda IM"
   SectionIn RO
   SetDetailsPrint textonly
@@ -105,8 +120,7 @@ SubSection /e "Protocols"
     SetDetailsPrint listonly
     SetOutPath "$INSTDIR\Plugins"
     File "${MIM_BUILD_DIRANSI}\plugins\Aim.dll"
-    SetOutPath "$INSTDIR\Icons"
-    File "${MIM_BUILD_ICONS}\proto_AIM.dll"
+    !insertmacro InstallMirandaIcon "proto_AIM.dll"
   SectionEnd
 
   Section "ICQ"
@@ -117,7 +131,7 @@ SubSection /e "Protocols"
     File "${MIM_BUILD_DIRANSI}\plugins\icq.dll"
     SetOutPath "$INSTDIR\Icons"
     File "${MIM_BUILD_DIRANSI}\Icons\xstatus_ICQ.dll"
-    File "${MIM_BUILD_ICONS}\proto_ICQ.dll"
+    !insertmacro InstallMirandaIcon "proto_ICQ.dll"
   SectionEnd
 
   Section "IRC"
@@ -129,8 +143,7 @@ SubSection /e "Protocols"
     SetOverWrite off
     File "${MIM_BUILD_SRC}\protocols\IRC\Docs\IRC_Servers.ini"
     SetOverWrite on
-    SetOutPath "$INSTDIR\Icons"
-    File "${MIM_BUILD_ICONS}\proto_IRC.dll"
+    !insertmacro InstallMirandaIcon "proto_IRC.dll"
   SectionEnd
 
   Section "Jabber"
@@ -140,7 +153,7 @@ SubSection /e "Protocols"
     SetOutPath "$INSTDIR\Plugins"
     File "${MIM_BUILD_DIR}\plugins\jabber.dll"
     SetOutPath "$INSTDIR\Icons"
-    File "${MIM_BUILD_ICONS}\proto_Jabber.dll"
+    !insertmacro InstallMirandaIcon "proto_Jabber.dll"
   SectionEnd
 
   Section "MSN"
@@ -149,8 +162,7 @@ SubSection /e "Protocols"
     SetDetailsPrint listonly
     SetOutPath "$INSTDIR\Plugins"
     File "${MIM_BUILD_DIR}\plugins\msn.dll"
-    SetOutPath "$INSTDIR\Icons"
-    File "${MIM_BUILD_ICONS}\proto_MSN.dll"
+    !insertmacro InstallMirandaIcon "proto_MSN.dll"
   SectionEnd
 
   Section "Yahoo"
@@ -159,8 +171,7 @@ SubSection /e "Protocols"
     SetDetailsPrint listonly
     SetOutPath "$INSTDIR\Plugins"
     File "${MIM_BUILD_DIRANSI}\plugins\yahoo.dll"
-    SetOutPath "$INSTDIR\Icons"
-    File "${MIM_BUILD_ICONS}\proto_Yahoo.dll"
+    !insertmacro InstallMirandaIcon "proto_Yahoo.dll"
   SectionEnd
 SubSectionEnd
 
@@ -267,3 +278,4 @@ Function VerifyInstallDir
   noupgradeend:
   !endif
 FunctionEnd
+
