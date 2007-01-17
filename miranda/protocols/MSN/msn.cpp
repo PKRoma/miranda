@@ -160,13 +160,13 @@ static int OnModulesLoaded( WPARAM wParam, LPARAM lParam )
 		DBDeleteContactSetting( NULL, msnProtocolName, "YourPort" );
 	}
 
-	mir_snprintf( szBuffer, sizeof szBuffer, "%s plugin connections", msnProtocolName );
+	mir_snprintf( szBuffer, sizeof(szBuffer), MSN_Translate("%s plugin connections"), msnProtocolName );
 
 	NETLIBUSER nlu = {0};
 	nlu.cbSize = sizeof( nlu );
 	nlu.flags = NUF_INCOMING | NUF_OUTGOING | NUF_HTTPCONNS;
 	nlu.szSettingsModule = msnProtocolName;
-	nlu.szDescriptiveName = MSN_Translate( szBuffer );
+	nlu.szDescriptiveName = szBuffer;
 
 	if ( MyOptions.UseGateway ) {
 		nlu.flags |= NUF_HTTPGATEWAY;
