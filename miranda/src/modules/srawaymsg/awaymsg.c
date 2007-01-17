@@ -21,6 +21,7 @@ along with this program; if not, write to the Free Software
 Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 */
 #include "commonheaders.h"
+#include "m_icolib.h"
 
 int LoadAwayMessageSending(void);
 
@@ -131,6 +132,7 @@ static int AwayMsgPreBuildMenu(WPARAM wParam,LPARAM lParam)
 		}
 	}
 	CallService(MS_CLIST_MODIFYMENUITEM,(WPARAM)hAwayMsgMenuItem,(LPARAM)&clmi);
+    IconLib_ReleaseIcon(clmi.hIcon,0);
 	return 0;
 }
 

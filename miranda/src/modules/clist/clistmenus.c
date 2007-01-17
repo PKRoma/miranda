@@ -24,6 +24,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 #include "genmenu.h"
 #include "m_clui.h"
+#include "m_icolib.h"
 #pragma hdrstop
 
 #define FIRSTCUSTOMMENUITEMID	30000
@@ -604,7 +605,9 @@ int StatusMenuCheckService(WPARAM wParam, LPARAM lParam)
 					if ( IconNeedDestroy ) {
 						DestroyIcon( timi->mi.hIcon );
 						timi->mi.hIcon = NULL;
-	}	}	}	}	}
+                    } else {  
+                        IconLib_ReleaseIcon(timi->mi.hIcon,0);
+    }   }  }	}	}
 
 	return TRUE;
 }
@@ -1083,6 +1086,7 @@ int MenuModulesLoaded(WPARAM wParam,LPARAM lParam)
 						op.Setting=OPT_MENUITEMSETUNIQNAME;
 						CallService(MO_SETOPTIONSMENUITEM,(WPARAM)0,(LPARAM)&op);
 					}
+                    IconLib_ReleaseIcon(tmi.hIcon,0);
 				}
 			}
 		}
@@ -1111,8 +1115,7 @@ int MenuModulesLoaded(WPARAM wParam,LPARAM lParam)
 					tmi.position=pos++;
 					tmi.root=-1;
 					tmi.hotKey=MAKELPARAM(MOD_CONTROL,'0'+j);
-					tmi.pszName = ( char* )CallService(MS_CLIST_GETSTATUSMODEDESCRIPTION,statusModeList[j],0);
-
+					tmi.pszName = ( char* )CallService(MS_CLIST_GETSTATUSMODEDESCRIPTION,statusModeList[j],0);                    
 					//wsprintf((LPTSTR)buf, _T("%s\tCtrl-%c"), tmi.pszName,'0'+j);
 					//tmi.pszName=(char *)buf;
 					{
@@ -1134,7 +1137,7 @@ int MenuModulesLoaded(WPARAM wParam,LPARAM lParam)
 						op.Setting=OPT_MENUITEMSETUNIQNAME;
 						CallService(MO_SETOPTIONSMENUITEM,(WPARAM)0,(LPARAM)&op);
 					}
-
+                    IconLib_ReleaseIcon(tmi.hIcon,0);
 					break;
 				}
 			}

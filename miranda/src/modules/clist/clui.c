@@ -22,6 +22,7 @@
 */
 #include "commonheaders.h"
 #include "clc.h"
+#include "m_icolib.h"
 
 #define TM_AUTOALPHA  1
 #define MENU_MIRANDAMENU         0xFFFF1234
@@ -95,7 +96,7 @@ static void DisconnectAll()
 
 static int CluiIconsChanged(WPARAM wParam, LPARAM lParam)
 {
-	ImageList_ReplaceIcon(himlMirandaIcon, 0, LoadSkinnedIcon(SKINICON_OTHER_MIRANDA));
+	ImageList_ReplaceIcon_IconLibLoaded(himlMirandaIcon, 0, LoadSkinnedIcon(SKINICON_OTHER_MIRANDA));
 	DrawMenuBar(cli.hwndContactList);
 	return 0;
 }
@@ -320,6 +321,7 @@ int LoadCLUIModule(void)
 	wndclass.lpszMenuName = MAKEINTRESOURCE(IDR_CLISTMENU);
 	wndclass.lpszClassName = _T(MIRANDACLASS);
 	RegisterClass(&wndclass);
+    IconLib_ReleaseIcon(wndclass.hIcon,0);
 
 	if (DBGetContactSettingTString(NULL, "CList", "TitleText", &dbv))
 		lstrcpyn(titleText, _T(MIRANDANAME), SIZEOF( titleText ));
@@ -494,7 +496,7 @@ LRESULT CALLBACK fnContactListWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM
 		mii.cbSize = MENUITEMINFO_V4_SIZE;
 		mii.fMask = MIIM_TYPE | MIIM_DATA;
 		himlMirandaIcon = ImageList_Create(g_IconWidth, g_IconHeight, ILC_COLOR32 | ILC_MASK, 1, 1);
-		ImageList_AddIcon(himlMirandaIcon, LoadSkinnedIcon(SKINICON_OTHER_MIRANDA));
+		ImageList_AddIcon_IconLibLoaded(himlMirandaIcon, LoadSkinnedIcon(SKINICON_OTHER_MIRANDA));
 		mii.dwItemData = MENU_MIRANDAMENU;
 		mii.fType = MFT_OWNERDRAW;
 		mii.dwTypeData = NULL;

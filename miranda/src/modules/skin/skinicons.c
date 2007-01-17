@@ -123,6 +123,7 @@ int ImageList_AddIcon_IconLibLoaded(HIMAGELIST hIml, HICON hIcon)
     return res;
 }
 
+
 int ImageList_ReplaceIcon_NotShared(HIMAGELIST hIml, int iIndex, HINSTANCE hInstance, LPCTSTR szResource) 
 {   
     HICON hTempIcon=LoadIconEx(hInstance, szResource, 0);
@@ -131,6 +132,12 @@ int ImageList_ReplaceIcon_NotShared(HIMAGELIST hIml, int iIndex, HINSTANCE hInst
     return res;
 }
 
+int ImageList_ReplaceIcon_IconLibLoaded(HIMAGELIST hIml, int nIndex, HICON hIcon) 
+{   
+    int res=ImageList_ReplaceIcon(hIml,nIndex, hIcon);
+    IconLib_ReleaseIcon(hIcon,0);
+    return res;
+}
 //
 //  wParam = szProto
 //  lParam = status

@@ -228,7 +228,7 @@ static int ContactListModulesLoaded(WPARAM wParam, LPARAM lParam)
 		protoIconIndex = (struct ProtoIconIndex *) mir_realloc(protoIconIndex, sizeof(struct ProtoIconIndex) * (protoIconIndexCount + 1));
 		protoIconIndex[protoIconIndexCount].szProto = protoList[i]->szName;
 		for (j = 0; j < SIZEOF(statusModeList); j++) {
-			iImg = ImageList_AddIcon(hCListImages, LoadSkinnedProtoIcon(protoList[i]->szName, statusModeList[j]));
+			iImg = ImageList_AddIcon_IconLibLoaded(hCListImages, LoadSkinnedProtoIcon(protoList[i]->szName, statusModeList[j]));
 			if (j == 0)
 				protoIconIndex[protoIconIndexCount].iIconBase = iImg;
 		}
@@ -270,12 +270,12 @@ static int CListIconsChanged(WPARAM wParam, LPARAM lParam)
 	int i, j;
 
 	for (i = 0; i < SIZEOF(statusModeList); i++)
-		ImageList_ReplaceIcon(hCListImages, i + 1, LoadSkinnedIcon(skinIconStatusList[i]));
-	ImageList_ReplaceIcon(hCListImages, IMAGE_GROUPOPEN, LoadSkinnedIcon(SKINICON_OTHER_GROUPOPEN));
-	ImageList_ReplaceIcon(hCListImages, IMAGE_GROUPSHUT, LoadSkinnedIcon(SKINICON_OTHER_GROUPSHUT));
+		ImageList_ReplaceIcon_IconLibLoaded(hCListImages, i + 1, LoadSkinnedIcon(skinIconStatusList[i]));
+	ImageList_ReplaceIcon_IconLibLoaded(hCListImages, IMAGE_GROUPOPEN, LoadSkinnedIcon(SKINICON_OTHER_GROUPOPEN));
+	ImageList_ReplaceIcon_IconLibLoaded(hCListImages, IMAGE_GROUPSHUT, LoadSkinnedIcon(SKINICON_OTHER_GROUPSHUT));
 	for (i = 0; i < protoIconIndexCount; i++)
 		for (j = 0; j < SIZEOF(statusModeList); j++)
-			ImageList_ReplaceIcon(hCListImages, protoIconIndex[i].iIconBase + j, LoadSkinnedProtoIcon(protoIconIndex[i].szProto, statusModeList[j]));
+			ImageList_ReplaceIcon_IconLibLoaded(hCListImages, protoIconIndex[i].iIconBase + j, LoadSkinnedProtoIcon(protoIconIndex[i].szProto, statusModeList[j]));
 	cli.pfnTrayIconIconsChanged();
 	cli.pfnInvalidateRect( cli.hwndContactList, NULL, TRUE);
 	return 0;
@@ -481,7 +481,6 @@ static int HotkeysProcessMessageStub( WPARAM wParam, LPARAM lParam ) { return cl
 
 int LoadContactListModule2(void)
 {
-    HICON hTempIcon;
 	HookEvent(ME_SYSTEM_SHUTDOWN, ContactListShutdownProc);
 	HookEvent(ME_SYSTEM_MODULESLOADED, ContactListModulesLoaded);
 	hContactSettingChanged = HookEvent(ME_DB_CONTACT_SETTINGCHANGED, ContactSettingChanged);
@@ -521,20 +520,13 @@ int LoadContactListModule2(void)
 		int i;
 		for (i = 0; i < SIZEOF(statusModeList); i++)
         {
-            hTempIcon=LoadSkinnedIcon(skinIconStatusList[i]);
-			ImageList_AddIcon(hCListImages, hTempIcon);
-            //now all core skin icons are loaded via icon lib. so lets release them
-            IconLib_ReleaseIcon(hTempIcon,0);
+               //now all core skin icons are loaded via icon lib. so lets release them
+			ImageList_AddIcon_IconLibLoaded(hCListImages, LoadSkinnedIcon(skinIconStatusList[i]));                    
         }
 	}
-	//see IMAGE_GROUP... in clist.h if you add more images above here
-    hTempIcon=LoadSkinnedIcon(SKINICON_OTHER_GROUPOPEN);
-	ImageList_AddIcon(hCListImages, hTempIcon);
-    IconLib_ReleaseIcon(hTempIcon,0);
-    
-    hTempIcon=LoadSkinnedIcon(SKINICON_OTHER_GROUPSHUT);
-    ImageList_AddIcon(hCListImages, hTempIcon);
-    IconLib_ReleaseIcon(hTempIcon,0);
+	//see IMAGE_GROUP... in clist.h if you add more images above here    
+	ImageList_AddIcon_IconLibLoaded(hCListImages, LoadSkinnedIcon(SKINICON_OTHER_GROUPOPEN));
+    ImageList_AddIcon_IconLibLoaded(hCListImages, LoadSkinnedIcon(SKINICON_OTHER_GROUPSHUT));
 
 	return 0;
 }
