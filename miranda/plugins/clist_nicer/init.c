@@ -46,7 +46,6 @@ extern int g_nextExtraCacheEntry;
 extern int g_maxExtraCacheEntry;
 extern pfnDrawAlpha pDrawAlpha;
 extern DWORD g_gdiplusToken;
-extern HANDLE hSoundHook, hIcoLibChanged;
 extern HIMAGELIST himlExtraImages;
 extern DWORD ( WINAPI *pfnSetLayout )(HDC, DWORD);
 

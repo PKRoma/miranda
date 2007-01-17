@@ -461,7 +461,7 @@ static void InitIcoLib()
 
 static int IcoLibChanged(WPARAM wParam, LPARAM lParam)
 {
-	IcoLibReloadIcons();
+    IcoLibReloadIcons();
 	return 0;
 }
 
@@ -565,8 +565,10 @@ void IcoLibReloadIcons()
 			continue;
 
 		hIcon = (HICON) CallService(MS_SKIN2_GETICON, 0, (LPARAM) top_buttons[i].szIcoLibIcon);
-		SendMessage(top_buttons[i].hwnd, BM_SETIMAGE, IMAGE_ICON, (LPARAM) hIcon);
-		InvalidateRect(top_buttons[i].hwnd, NULL, TRUE);
+        if(top_buttons[i].hwnd && IsWindow(top_buttons[i].hwnd)) {
+            SendMessage(top_buttons[i].hwnd, BM_SETIMAGE, IMAGE_ICON, (LPARAM) hIcon);
+            InvalidateRect(top_buttons[i].hwnd, NULL, TRUE);
+        }
 	}
 	g_CluiData.hIconVisible = (HICON) CallService(MS_SKIN2_GETICON, 0, (LPARAM) "CLN_visible");
 	g_CluiData.hIconInvisible = (HICON) CallService(MS_SKIN2_GETICON, 0, (LPARAM) "CLN_invisible");
