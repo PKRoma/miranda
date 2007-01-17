@@ -57,31 +57,33 @@ static char search_device[] =
 	"<serviceType>%s</serviceType>";
 
 static char soap_action[] =
-	"<s:Envelope xmlns:s=\"http://schemas.xmlsoap.org/soap/envelope/\" s:encodingStyle=\"http://schemas.xmlsoap.org/soap/encoding/\">"
-		"<s:Body>"
-			"<u:%s xmlns:u=\"%s\">"
-				"%s"
-			"</u:%s>"
-		"</s:Body>"
-	"</s:Envelope>";
+	"<s:Envelope\r\n"
+	"    xmlns:s=\"http://schemas.xmlsoap.org/soap/envelope/\"\r\n"
+	"    s:encodingStyle=\"http://schemas.xmlsoap.org/soap/encoding/\">\r\n"
+	"  <s:Body>\r\n"
+	"    <u:%s xmlns:u=\"%s\">\r\n"
+	"%s"
+	"    </u:%s>\r\n"
+	"  </s:Body>\r\n"
+	"</s:Envelope>\r\n";
 
 static char add_port_mapping[] =
-	"<NewRemoteHost></NewRemoteHost>"
-	"<NewExternalPort>%i</NewExternalPort>"
-	"<NewProtocol>%s</NewProtocol>"
-	"<NewInternalPort>%i</NewInternalPort>"
-	"<NewInternalClient>%s</NewInternalClient>"
-	"<NewEnabled>1</NewEnabled>"
-	"<NewPortMappingDescription>Miranda</NewPortMappingDescription>"
-	"<NewLeaseDuration>0</NewLeaseDuration>";
+	"      <NewRemoteHost></NewRemoteHost>\r\n"
+	"      <NewExternalPort>%i</NewExternalPort>\r\n"
+	"      <NewProtocol>%s</NewProtocol>\r\n"
+	"      <NewInternalPort>%i</NewInternalPort>\r\n"
+	"      <NewInternalClient>%s</NewInternalClient>\r\n"
+	"      <NewEnabled>1</NewEnabled>\r\n"
+	"      <NewPortMappingDescription>Miranda</NewPortMappingDescription>\r\n"
+	"      <NewLeaseDuration>0</NewLeaseDuration>\r\n";
 
 static char delete_port_mapping[] =
-	"<NewRemoteHost></NewRemoteHost>"
-	"<NewExternalPort>%i</NewExternalPort>"
-	"<NewProtocol>%s</NewProtocol>";
+	"     <NewRemoteHost></NewRemoteHost>\r\n"
+	"     <NewExternalPort>%i</NewExternalPort>\r\n"
+	"     <NewProtocol>%s</NewProtocol>\r\n";
 
 static char get_port_mapping[] =
-	"<NewPortMappingIndex>%i</NewPortMappingIndex>";
+	"     <NewPortMappingIndex>%i</NewPortMappingIndex>\r\n";
 
 static BOOL gatewayFound = FALSE;
 static SOCKADDR_IN locIP;
