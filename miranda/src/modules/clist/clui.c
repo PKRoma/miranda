@@ -321,7 +321,7 @@ int LoadCLUIModule(void)
 	wndclass.lpszMenuName = MAKEINTRESOURCE(IDR_CLISTMENU);
 	wndclass.lpszClassName = _T(MIRANDACLASS);
 	RegisterClass(&wndclass);
-    IconLib_ReleaseIcon(wndclass.hIcon,0);
+   // IconLib_ReleaseIcon(wndclass.hIcon,0);
 
 	if (DBGetContactSettingTString(NULL, "CList", "TitleText", &dbv))
 		lstrcpyn(titleText, _T(MIRANDANAME), SIZEOF( titleText ));
