@@ -200,16 +200,19 @@ static BOOL CALLBACK DlgProcIgnoreOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LP
 			{	HIMAGELIST hIml;
 				int i;
 				hIml=ImageList_Create(GetSystemMetrics(SM_CXSMICON),GetSystemMetrics(SM_CYSMICON),(IsWinVerXPPlus()?ILC_COLOR32:ILC_COLOR16)|ILC_MASK,3+IGNOREEVENT_MAX,3+IGNOREEVENT_MAX);
-				ImageList_AddIcon(hIml,LoadIcon(GetModuleHandle(NULL),MAKEINTRESOURCE(IDI_SMALLDOT)));
-				ImageList_AddIcon(hIml,LoadIcon(GetModuleHandle(NULL),MAKEINTRESOURCE(IDI_FILLEDBLOB)));
-				ImageList_AddIcon(hIml,LoadIcon(GetModuleHandle(NULL),MAKEINTRESOURCE(IDI_EMPTYBLOB)));
-				ImageList_AddIcon(hIml,LoadSkinnedIcon(SKINICON_EVENT_MESSAGE));
-				ImageList_AddIcon(hIml,LoadSkinnedIcon(SKINICON_EVENT_URL));
-				ImageList_AddIcon(hIml,LoadSkinnedIcon(SKINICON_EVENT_FILE));
-				ImageList_AddIcon(hIml,LoadSkinnedIcon(SKINICON_OTHER_USERONLINE));
-				ImageList_AddIcon(hIml,LoadSkinnedIcon(SKINICON_OTHER_MIRANDA));
-				ImageList_AddIcon(hIml,LoadIcon(GetModuleHandle(NULL),MAKEINTRESOURCE(IDI_ADDCONTACT)));
-				ImageList_AddIcon(hIml,LoadIcon(GetModuleHandle(NULL),MAKEINTRESOURCE(IDI_TYPING)));
+				ImageList_AddIcon_NotShared(hIml,GetModuleHandle(NULL),MAKEINTRESOURCE(IDI_SMALLDOT));
+                ImageList_AddIcon_NotShared(hIml,GetModuleHandle(NULL),MAKEINTRESOURCE(IDI_FILLEDBLOB));
+                ImageList_AddIcon_NotShared(hIml,GetModuleHandle(NULL),MAKEINTRESOURCE(IDI_EMPTYBLOB));
+
+				ImageList_AddIcon_IconLibLoaded(hIml,LoadSkinnedIcon(SKINICON_EVENT_MESSAGE));
+				ImageList_AddIcon_IconLibLoaded(hIml,LoadSkinnedIcon(SKINICON_EVENT_URL));
+				ImageList_AddIcon_IconLibLoaded(hIml,LoadSkinnedIcon(SKINICON_EVENT_FILE));
+				ImageList_AddIcon_IconLibLoaded(hIml,LoadSkinnedIcon(SKINICON_OTHER_USERONLINE));
+				ImageList_AddIcon_IconLibLoaded(hIml,LoadSkinnedIcon(SKINICON_OTHER_MIRANDA));
+
+                ImageList_AddIcon_NotShared(hIml,GetModuleHandle(NULL),MAKEINTRESOURCE(IDI_ADDCONTACT));
+                ImageList_AddIcon_NotShared(hIml,GetModuleHandle(NULL),MAKEINTRESOURCE(IDI_TYPING));
+
 				SendDlgItemMessage(hwndDlg,IDC_LIST,CLM_SETEXTRAIMAGELIST,0,(LPARAM)hIml);
 				for( i=0; i < SIZEOF(hIcons); i++ )
 					hIcons[i]=ImageList_GetIcon(hIml,1+i,ILD_NORMAL);

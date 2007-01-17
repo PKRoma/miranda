@@ -76,6 +76,61 @@ __inline int IcoLib_AddNewIcon(WPARAM wParam, LPARAM lParam)
 	return CallService( MS_SKIN2_ADDICON, wParam, lParam );
 }
 
+// load small icon (shared) it's not need to be destroyed
+
+static HICON LoadSmallIconShared(HINSTANCE hInstance, LPCTSTR lpIconName)
+{
+    int cx=GetSystemMetrics(SM_CXSMICON);
+    return LoadImage(hInstance,lpIconName, IMAGE_ICON,cx,cx, LR_DEFAULTCOLOR|LR_SHARED);
+}
+
+// load small icon (not shared) it IS NEED to be destroyed
+static HICON LoadSmallIcon(HINSTANCE hInstance, LPCTSTR lpIconName)
+{
+    HICON hIcon=NULL;				  // icon handle 
+    int index=-(int)lpIconName;
+    TCHAR filename[MAX_PATH]={0};
+    GetModuleFileName(hInstance,filename,MAX_PATH);
+    ExtractIconEx(filename,index,NULL,&hIcon,1);
+    return hIcon;
+}
+
+// load small icon from hInstance
+HICON LoadIconEx(HINSTANCE hInstance, LPCTSTR lpIconName, BOOL bShared)
+{
+    HICON hResIcon=bShared?LoadSmallIcon(hInstance,lpIconName):LoadSmallIconShared(hInstance,lpIconName);
+    if (!hResIcon) //Icon not found in hInstance lets try to load it from core
+    {
+        HINSTANCE hCoreInstance=GetModuleHandle(NULL);
+        if (hCoreInstance!=hInstance)
+            hResIcon=bShared?LoadSmallIcon(hInstance,lpIconName):LoadSmallIconShared(hInstance,lpIconName);
+    }
+    return hResIcon;
+}
+
+int ImageList_AddIcon_NotShared(HIMAGELIST hIml, HINSTANCE hInstance, LPCTSTR szResource) 
+{   
+    HICON hTempIcon=LoadIconEx(hInstance, szResource, 0);
+    int res=ImageList_AddIcon(hIml, hTempIcon);
+    Safe_DestroyIcon(hTempIcon); 
+    return res;
+}
+
+int ImageList_AddIcon_IconLibLoaded(HIMAGELIST hIml, HICON hIcon) 
+{   
+    int res=ImageList_AddIcon(hIml, hIcon);
+    IconLib_ReleaseIcon(hIcon,0);
+    return res;
+}
+
+int ImageList_ReplaceIcon_NotShared(HIMAGELIST hIml, int iIndex, HINSTANCE hInstance, LPCTSTR szResource) 
+{   
+    HICON hTempIcon=LoadIconEx(hInstance, szResource, 0);
+    int res=ImageList_ReplaceIcon(hIml, iIndex, hTempIcon);
+    Safe_DestroyIcon(hTempIcon); 
+    return res;
+}
+
 //
 //  wParam = szProto
 //  lParam = status

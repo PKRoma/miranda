@@ -994,7 +994,6 @@ int MenuModulesLoaded(WPARAM wParam,LPARAM lParam)
 			CallProtoService(proto[i]->szName,PS_GETNAME,sizeof(protoName),(LPARAM)protoName);
 			tmi.pszName = protoName;
 			rootmenu = CallService(MO_ADDNEWMENUITEM,(WPARAM)hStatusMenuObject,(LPARAM)&tmi);
-
 			memset(&tmi,0,sizeof(tmi));
 			tmi.cbSize = sizeof(tmi);
 			tmi.flags = CMIF_CHILDPOPUP;

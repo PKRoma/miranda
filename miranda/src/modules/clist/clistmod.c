@@ -22,6 +22,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 */
 #include "commonheaders.h"
 #include "clc.h"
+#include "m_icolib.h"
 
 int AddMainMenuItem(WPARAM wParam, LPARAM lParam);
 int AddContactMenuItem(WPARAM wParam, LPARAM lParam);
@@ -480,6 +481,7 @@ static int HotkeysProcessMessageStub( WPARAM wParam, LPARAM lParam ) { return cl
 
 int LoadContactListModule2(void)
 {
+    HICON hTempIcon;
 	HookEvent(ME_SYSTEM_SHUTDOWN, ContactListShutdownProc);
 	HookEvent(ME_SYSTEM_MODULESLOADED, ContactListModulesLoaded);
 	hContactSettingChanged = HookEvent(ME_DB_CONTACT_SETTINGCHANGED, ContactSettingChanged);
@@ -512,14 +514,27 @@ int LoadContactListModule2(void)
 	hCListImages = ImageList_Create(16, 16, ILC_MASK | (IsWinVerXPPlus()? ILC_COLOR32 : ILC_COLOR16), 13, 0);
 	HookEvent(ME_SKIN_ICONSCHANGED, CListIconsChanged);
 	CreateServiceFunction(MS_CLIST_GETICONSIMAGELIST, GetIconsImageList);
-	ImageList_AddIcon(hCListImages, LoadIcon(cli.hInst, MAKEINTRESOURCE(IDI_BLANK)));
+  
+	ImageList_AddIcon_NotShared(hCListImages, cli.hInst, MAKEINTRESOURCE(IDI_BLANK));
+
 	{
 		int i;
 		for (i = 0; i < SIZEOF(statusModeList); i++)
-			ImageList_AddIcon(hCListImages, LoadSkinnedIcon(skinIconStatusList[i]));
+        {
+            hTempIcon=LoadSkinnedIcon(skinIconStatusList[i]);
+			ImageList_AddIcon(hCListImages, hTempIcon);
+            //now all core skin icons are loaded via icon lib. so lets release them
+            IconLib_ReleaseIcon(hTempIcon,0);
+        }
 	}
 	//see IMAGE_GROUP... in clist.h if you add more images above here
-	ImageList_AddIcon(hCListImages, LoadSkinnedIcon(SKINICON_OTHER_GROUPOPEN));
-	ImageList_AddIcon(hCListImages, LoadSkinnedIcon(SKINICON_OTHER_GROUPSHUT));
+    hTempIcon=LoadSkinnedIcon(SKINICON_OTHER_GROUPOPEN);
+	ImageList_AddIcon(hCListImages, hTempIcon);
+    IconLib_ReleaseIcon(hTempIcon,0);
+    
+    hTempIcon=LoadSkinnedIcon(SKINICON_OTHER_GROUPSHUT);
+    ImageList_AddIcon(hCListImages, hTempIcon);
+    IconLib_ReleaseIcon(hTempIcon,0);
+
 	return 0;
 }

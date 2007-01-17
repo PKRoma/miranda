@@ -1188,7 +1188,8 @@ int OnIconLibChanges(WPARAM wParam,LPARAM lParam)
                 {
                     ImageList_ReplaceIcon(MenuObjects[mo].hMenuIcons,MenuObjects[mo].MenuItems[mi].iconId,newIcon);
                 }
-                if (deficon) DestroyIcon(deficon);
+                Safe_DestroyIcon(deficon);
+                IconLib_ReleaseIcon(newIcon,0);
             }	
 #ifdef UNICODE
             if (descr) mir_free(descr);
@@ -1227,7 +1228,8 @@ int RegisterOneIcon(int mo,int mi)
             defic,
             TRUE,&MenuObjects[mo].MenuItems[mi].IconRegistred);	
         if (newIcon) ImageList_ReplaceIcon(MenuObjects[mo].hMenuIcons,MenuObjects[mo].MenuItems[mi].iconId,newIcon);
-        if (defic) DestroyIcon(defic);
+        Safe_DestroyIcon(defic);
+        IconLib_ReleaseIcon(newIcon,0);
     };
 
 #ifdef UNICODE
@@ -1315,3 +1317,4 @@ int UnitGenMenu()
 	DeleteCriticalSection(&csMenuHook);
 	return 0;
 }
+

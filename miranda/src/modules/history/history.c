@@ -69,11 +69,13 @@ int LoadHistoryModule(void)
 	mi.cbSize=sizeof(mi);
 	mi.position=1000090000;
 	mi.flags=0;
-	mi.hIcon=LoadIcon(GetModuleHandle(NULL),MAKEINTRESOURCE(IDI_HISTORY));
+	mi.hIcon=LoadIconEx(GetModuleHandle(NULL),MAKEINTRESOURCE(IDI_HISTORY),FALSE);
 	mi.pszContactOwner=NULL;    //all contacts
 	mi.pszName=Translate("View &History");
 	mi.pszService=MS_HISTORY_SHOWCONTACTHISTORY;
 	CallService(MS_CLIST_ADDCONTACTMENUITEM,0,(LPARAM)&mi);
+    Safe_DestroyIcon(mi.hIcon);
+
     hWindowList=(HANDLE)CallService(MS_UTILS_ALLOCWINDOWLIST,0,0);
     HookEvent(ME_DB_CONTACT_DELETED,HistoryContactDelete);
 	HookEvent(ME_SYSTEM_PRESHUTDOWN,PreShutdownHistoryModule);

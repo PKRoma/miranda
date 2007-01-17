@@ -486,14 +486,17 @@ int LoadUserInfoModule(void)
 	mi.cbSize=sizeof(mi);
 	mi.position=1000050000;
 	mi.flags=0;
-	mi.hIcon=LoadIcon(GetModuleHandle(NULL),MAKEINTRESOURCE(IDI_USERDETAILS));
+	mi.hIcon=LoadIconEx(GetModuleHandle(NULL),MAKEINTRESOURCE(IDI_USERDETAILS),FALSE);
 	mi.pszContactOwner=NULL;
 	mi.pszName=Translate("User &Details");
 	mi.pszService=MS_USERINFO_SHOWDIALOG;
-	CallService(MS_CLIST_ADDCONTACTMENUITEM,0,(LPARAM)&mi);
+	CallService(MS_CLIST_ADDCONTACTMENUITEM,0,(LPARAM)&mi);   
 	mi.position=500050000;
 	mi.pszName=Translate("View/Change My &Details...");
 	CallService(MS_CLIST_ADDMAINMENUITEM,0,(LPARAM)&mi);
 	hWindowList=(HANDLE)CallService(MS_UTILS_ALLOCWINDOWLIST,0,0);
+    
+    Safe_DestroyIcon(mi.hIcon);
+
 	return 0;
 }

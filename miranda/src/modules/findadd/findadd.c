@@ -351,8 +351,8 @@ static BOOL CALLBACK DlgProcFindAdd(HWND hwndDlg, UINT msg, WPARAM wParam, LPARA
 				if(netProtoCount>1) {
 					cbei.pszText=TranslateT("All Networks");
 					GetTextExtentPoint32(hdc,cbei.pszText,lstrlen(cbei.pszText),&textSize);
-					if (textSize.cx>cbwidth) cbwidth = textSize.cx;
-					cbei.iImage=cbei.iSelectedImage=ImageList_AddIcon(dat->himlComboIcons,LoadIcon(GetModuleHandle(NULL),MAKEINTRESOURCE(IDI_SEARCHALL)));
+					if (textSize.cx>cbwidth) cbwidth = textSize.cx;                    
+					cbei.iImage=cbei.iSelectedImage=ImageList_AddIcon_NotShared(dat->himlComboIcons, GetModuleHandle(NULL), MAKEINTRESOURCE(IDI_SEARCHALL));
 					cbei.lParam=0;
 					SendDlgItemMessageA(hwndDlg,IDC_PROTOLIST,CBEM_INSERTITEM,0,(LPARAM)&cbei);
 					cbei.iItem++;
@@ -888,10 +888,11 @@ static int OnSystemModulesLoaded(WPARAM wParam,LPARAM lParam)
 		ZeroMemory(&mi, sizeof(mi));
 		mi.cbSize = sizeof(mi);
 		mi.position = 500020000;
-		mi.hIcon = LoadIcon(GetModuleHandle(NULL), MAKEINTRESOURCE(IDI_FINDUSER));
+		mi.hIcon = LoadIconEx(GetModuleHandle(NULL), MAKEINTRESOURCE(IDI_FINDUSER),FALSE);
 		mi.pszName = Translate("&Find/Add Contacts...");
 		mi.pszService = MS_FINDADD_FINDADD;
 		CallService(MS_CLIST_ADDMAINMENUITEM, 0, (LPARAM)&mi);
+        Safe_DestroyIcon(mi.hIcon);
 	}
 
 	return 0;
