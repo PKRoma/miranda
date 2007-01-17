@@ -373,7 +373,7 @@ int EventArea_Create(HWND hCluiWnd)
     Frame.cbSize=sizeof(CLISTFrame);
     Frame.hWnd=g_CluiData.hwndEventFrame;
     Frame.align=alBottom;
-    Frame.hIcon=LoadSkinnedIcon (SKINICON_OTHER_MIRANDA);
+    Frame.hIcon=LoadSkinnedIcon(SKINICON_OTHER_MIRANDA);
     Frame.Flags=(DBGetContactSettingByte(NULL,"CLUI","ShowEventArea",1)?F_VISIBLE:0)|F_LOCKED|F_NOBORDER|F_NO_SUBCONTAINER;
     Frame.height=h;
     Frame.name=(Translate("Event Area"));

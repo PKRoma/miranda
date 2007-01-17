@@ -1085,19 +1085,19 @@ LRESULT CALLBACK ViewModeFrameWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM
 			{
 				BOOL needFree;
 				HICON hicon;
-				hicon=CLUI_LoadIconFromExternalFile("clisticons.dll",0,TRUE,TRUE,"CLN_CLVM_reset","Contact List",Translate("Reset view mode"),-IDI_DELETE, &needFree);								
+				hicon=CLUI_LoadIconFromExternalFile("clisticons.dll",0,TRUE,TRUE,"CLN_CLVM_reset","Contact List",Translate("Reset view mode"),IDI_DELETE, &needFree);								
 				SendMessage(GetDlgItem(hwnd, IDC_RESETMODES), BM_SETIMAGE, IMAGE_ICON, (LPARAM)(needFree?DuplicateIcon(g_hInst,hicon):hicon));
 				if (needFree) DestroyIcon_protect(hicon);
 				
-				hicon=CLUI_LoadIconFromExternalFile("clisticons.dll",0,TRUE,TRUE,"CLN_CLVM_options","Contact List",Translate("Setup view modes"),-IDI_RENAME, &needFree);								
+				hicon=CLUI_LoadIconFromExternalFile("clisticons.dll",0,TRUE,TRUE,"CLN_CLVM_options","Contact List",Translate("Setup view modes"),IDI_RENAME, &needFree);								
                 SendMessage(GetDlgItem(hwnd, IDC_CONFIGUREMODES), BM_SETIMAGE, IMAGE_ICON, (LPARAM)(needFree?DuplicateIcon(g_hInst,hicon):hicon));
 				if (needFree) DestroyIcon_protect(hicon);
                 //SendMessage(GetDlgItem(hwnd, IDC_SELECTMODE), BM_SETIMAGE, IMAGE_ICON, (LPARAM)CallService(MS_SKIN2_GETICON, 0, (LPARAM)"CLN_CLVM_select"));
             }
             else 
 			{
-                SendMessage(GetDlgItem(hwnd, IDC_RESETMODES), BM_SETIMAGE, IMAGE_ICON, (LPARAM)LoadImage(g_hInst, MAKEINTRESOURCE(IDI_DELETE), IMAGE_ICON, 16, 16, LR_SHARED));
-                SendMessage(GetDlgItem(hwnd, IDC_CONFIGUREMODES), BM_SETIMAGE, IMAGE_ICON, (LPARAM)LoadImage(g_hInst, MAKEINTRESOURCE(IDI_RENAME), IMAGE_ICON, 16, 16, LR_SHARED));
+                SendMessage(GetDlgItem(hwnd, IDC_RESETMODES), BM_SETIMAGE, IMAGE_ICON, (LPARAM)LoadImage(GetModuleHandle(NULL), MAKEINTRESOURCE(IDI_DELETE), IMAGE_ICON, 16, 16, LR_SHARED));
+                SendMessage(GetDlgItem(hwnd, IDC_CONFIGUREMODES), BM_SETIMAGE, IMAGE_ICON, (LPARAM)LoadImage(GetModuleHandle(NULL), MAKEINTRESOURCE(IDI_RENAME), IMAGE_ICON, 16, 16, LR_SHARED));
                 //SendMessage(GetDlgItem(hwnd, IDC_SELECTMODE), BM_SETIMAGE, IMAGE_ICON, (LPARAM)LoadImage(g_hInst, MAKEINTRESOURCE(IDI_CHAT), IMAGE_ICON, 16, 16, LR_SHARED));
             }
             {
