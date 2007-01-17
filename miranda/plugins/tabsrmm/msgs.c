@@ -956,8 +956,12 @@ static int SplitmsgModulesLoaded(WPARAM wParam, LPARAM lParam)
     }
 #endif    
     UnhookEvent(hModulesLoadedEvent);
+    hEventDbSettingChange = HookEvent(ME_DB_CONTACT_SETTINGCHANGED, MessageSettingChanged);
+    hEventContactDeleted = HookEvent(ME_DB_CONTACT_DELETED, ContactDeleted);
+
     hEventDispatch = HookEvent(ME_DB_EVENT_ADDED, DispatchNewEvent);
     hEventDbEventAdded = HookEvent(ME_DB_EVENT_ADDED, MessageEventAdded);
+
     ZeroMemory(&mi, sizeof(mi));
     mi.cbSize = sizeof(mi);
     mi.position = -2000090000;
@@ -1380,8 +1384,8 @@ tzdone:
     ZeroMemory(sendJobs, NR_SENDJOBS * sizeof(struct SendJob));
 
     InitOptions();
-    hEventDbSettingChange = HookEvent(ME_DB_CONTACT_SETTINGCHANGED, MessageSettingChanged);
-    hEventContactDeleted = HookEvent(ME_DB_CONTACT_DELETED, ContactDeleted);
+    //hEventDbSettingChange = HookEvent(ME_DB_CONTACT_SETTINGCHANGED, MessageSettingChanged);
+    //hEventContactDeleted = HookEvent(ME_DB_CONTACT_DELETED, ContactDeleted);
     hModulesLoadedEvent = HookEvent(ME_SYSTEM_MODULESLOADED, SplitmsgModulesLoaded);
     HookEvent(ME_SKIN_ICONSCHANGED, IconsChanged);
     HookEvent(ME_PROTO_CONTACTISTYPING, TypingMessage);
