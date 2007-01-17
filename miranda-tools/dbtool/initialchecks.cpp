@@ -31,43 +31,43 @@ int WorkInitialChecks(int firstTime)
 
 	sourceFileSize=GetFileSize(opts.hFile,NULL);
 	if(sourceFileSize==0) {
-		AddToStatus(STATUS_WARNING,"Database is newly created and has no data to process");
-		AddToStatus(STATUS_SUCCESS,"Processing completed successfully");
+		AddToStatus(STATUS_WARNING,TranslateT("Database is newly created and has no data to process"));
+		AddToStatus(STATUS_SUCCESS,TranslateT("Processing completed successfully"));
 		return ERROR_INVALID_DATA;
 	}
 	ReadFile(opts.hFile,&dbhdr,sizeof(dbhdr),&bytesRead,NULL);
 	if(bytesRead<sizeof(dbhdr)) {
-		AddToStatus(STATUS_FATAL,"Database is corrupted and too small to contain any recoverable data");
+		AddToStatus(STATUS_FATAL,TranslateT("Database is corrupted and too small to contain any recoverable data"));
 		return ERROR_BAD_FORMAT;
 	}
 	if(memcmp(dbhdr.signature,&dbSignature,sizeof(dbhdr.signature))) {
-		AddToStatus(STATUS_FATAL,"Database signature is corrupted, automatic repair is impossible");
+		AddToStatus(STATUS_FATAL,TranslateT("Database signature is corrupted, automatic repair is impossible"));
 		return ERROR_BAD_FORMAT;
 	}
 	if(dbhdr.version!=0x00000700) {
-		AddToStatus(STATUS_FATAL,"Database is marked as belonging to an unknown version of Miranda");
+		AddToStatus(STATUS_FATAL,TranslateT("Database is marked as belonging to an unknown version of Miranda"));
 		return ERROR_BAD_FORMAT;
 	}
-	strcpy(opts.workingFilename,opts.filename);
+	_tcscpy(opts.workingFilename,opts.filename);
 	if(opts.bAggressive) {
 		HANDLE hFile;
 		BYTE buf[65536];
 		DWORD bytesRead,bytesWritten;
 
-		*strrchr(opts.workingFilename,'.')=0;
-		strcat(opts.workingFilename," (Working Copy).dat");
-		AddToStatus(STATUS_MESSAGE,"Creating working database (aggressive mode)");
+		*_tcsrchr( opts.workingFilename, '.' ) = 0;
+		_tcscat( opts.workingFilename, TranslateT(" (Working Copy).dat"));
+		AddToStatus( STATUS_MESSAGE, TranslateT("Creating working database (aggressive mode)"));
 		SetFilePointer(opts.hFile,0,NULL,FILE_BEGIN);
-		hFile=CreateFile(opts.workingFilename,GENERIC_WRITE,FILE_SHARE_READ,NULL,CREATE_ALWAYS,FILE_FLAG_SEQUENTIAL_SCAN,NULL);
-		if(hFile==INVALID_HANDLE_VALUE) {
-			AddToStatus(STATUS_FATAL,"Can't create working file (%u)",GetLastError());
+		hFile = CreateFile( opts.workingFilename,GENERIC_WRITE,FILE_SHARE_READ,NULL,CREATE_ALWAYS,FILE_FLAG_SEQUENTIAL_SCAN,NULL );
+		if ( hFile == INVALID_HANDLE_VALUE ) {
+			AddToStatus(STATUS_FATAL,TranslateT("Can't create working file (%u)"),GetLastError());
 			return ERROR_ACCESS_DENIED;
 		}
 		for(;;) {
 			ReadFile(opts.hFile,buf,sizeof(buf),&bytesRead,NULL);
 			WriteFile(hFile,buf,bytesRead,&bytesWritten,NULL);
 			if(bytesWritten<bytesRead) {
-				AddToStatus(STATUS_FATAL,"Error writing file, probably disk full - try without aggressive mode (%u)",GetLastError());
+				AddToStatus(STATUS_FATAL,TranslateT("Error writing file, probably disk full - try without aggressive mode (%u)"),GetLastError());
 				CloseHandle(hFile);
 				DeleteFile(opts.workingFilename);
 				return ERROR_HANDLE_DISK_FULL;
@@ -76,23 +76,23 @@ int WorkInitialChecks(int firstTime)
 		}
 		CloseHandle(hFile);
 		CloseHandle(opts.hFile);
-		opts.hFile=CreateFile(opts.workingFilename,GENERIC_READ|GENERIC_WRITE,FILE_SHARE_READ,NULL,OPEN_EXISTING,0,NULL);
+		opts.hFile = CreateFile(opts.workingFilename,GENERIC_READ|GENERIC_WRITE,FILE_SHARE_READ,NULL,OPEN_EXISTING,0,NULL);
 		if(opts.hFile==INVALID_HANDLE_VALUE) {
-			AddToStatus(STATUS_FATAL,"Can't read from working file (%u)",GetLastError());
+			AddToStatus(STATUS_FATAL,TranslateT("Can't read from working file (%u)"),GetLastError());
 			return ERROR_ACCESS_DENIED;
 		}
 	}
 	if(opts.bCheckOnly) {
-		strcpy(opts.outputFilename,"<check only>");
+		_tcscpy( opts.outputFilename, TranslateT("<check only>"));
 		opts.hOutFile=INVALID_HANDLE_VALUE;
 	}
 	else {
-		strcpy(opts.outputFilename,opts.filename);
-		*strrchr(opts.outputFilename,'.')=0;
-		strcat(opts.outputFilename," (Output).dat");
-		opts.hOutFile=CreateFile(opts.outputFilename,GENERIC_WRITE,FILE_SHARE_READ,NULL,CREATE_ALWAYS,FILE_FLAG_SEQUENTIAL_SCAN,NULL);
-		if(opts.hOutFile==INVALID_HANDLE_VALUE) {
-			AddToStatus(STATUS_FATAL,"Can't create output file (%u)",GetLastError());
+		_tcscpy(opts.outputFilename,opts.filename);
+		*_tcsrchr(opts.outputFilename,'.')=0;
+		_tcscat(opts.outputFilename,TranslateT(" (Output).dat"));
+		opts.hOutFile = CreateFile(opts.outputFilename,GENERIC_WRITE,FILE_SHARE_READ,NULL,CREATE_ALWAYS,FILE_FLAG_SEQUENTIAL_SCAN,NULL);
+		if ( opts.hOutFile == INVALID_HANDLE_VALUE ) {
+			AddToStatus(STATUS_FATAL,TranslateT("Can't create output file (%u)"),GetLastError());
 			return ERROR_ACCESS_DENIED;
 		}
 	}

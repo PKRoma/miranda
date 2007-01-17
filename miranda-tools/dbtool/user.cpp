@@ -30,15 +30,15 @@ int WorkUser(int firstTime)
 	int first=0;
 
 	if(firstTime) {
-		AddToStatus(STATUS_MESSAGE,"Processing user data");
+		AddToStatus(STATUS_MESSAGE,TranslateT("Processing user data"));
 		if(!SignatureValid(dbhdr.ofsUser,DBCONTACT_SIGNATURE)) {
-			AddToStatus(STATUS_ERROR,"User corrupted, this could cause major problems");
+			AddToStatus(STATUS_ERROR,TranslateT("User corrupted, this could cause major problems"));
 			return ERROR_NO_MORE_ITEMS;
 		}
 		if(ReadSegment(dbhdr.ofsUser,&user,sizeof(DBContact))!=ERROR_SUCCESS)
 			return ERROR_NO_MORE_ITEMS;
 		if(user.ofsNext) {
-			AddToStatus(STATUS_WARNING,"More than one user contact: keeping only first");
+			AddToStatus(STATUS_WARNING,TranslateT("More than one user contact: keeping only first"));
 			user.ofsNext=0;
 		}
 		if((ofsUser=WriteSegment(WSOFS_END,&user,sizeof(DBContact)))==WS_ERROR)

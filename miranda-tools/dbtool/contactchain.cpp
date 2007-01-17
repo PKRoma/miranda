@@ -30,7 +30,7 @@ static DBContact dbc;
 static void FinishUp(void)
 {
 	if(contactCount!=dbhdr.contactCount)
-		AddToStatus(STATUS_WARNING,"Contact count marked wrongly: correcting");
+		AddToStatus(STATUS_WARNING,TranslateT("Contact count marked wrongly: correcting"));
 	dbhdr.contactCount=contactCount;
 }
 
@@ -39,7 +39,7 @@ int WorkContactChain(int firstTime)
 	int first=0;
 
 	if(firstTime) {
-		AddToStatus(STATUS_MESSAGE,"Processing contact chain");
+		AddToStatus(STATUS_MESSAGE,TranslateT("Processing contact chain"));
 		ofsDestPrevContact=0;
 		ofsThisContact=dbhdr.ofsFirstContact;
 		contactCount=0;
@@ -55,7 +55,7 @@ int WorkContactChain(int firstTime)
 				return ERROR_NO_MORE_ITEMS;
 			}
 			if(!SignatureValid(ofsThisContact,DBCONTACT_SIGNATURE)) {
-				AddToStatus(STATUS_ERROR,"Contact chain corrupted, further entries ignored");
+				AddToStatus(STATUS_ERROR,TranslateT("Contact chain corrupted, further entries ignored"));
 				FinishUp();
 				return ERROR_NO_MORE_ITEMS;
 			}

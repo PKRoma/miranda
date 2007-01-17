@@ -30,7 +30,7 @@ int WorkAggressive(int firstTime)
 
 	if(firstTime) {
 		if(!opts.bAggressive) return ERROR_NO_MORE_ITEMS;
-		AddToStatus(STATUS_MESSAGE,"Performing aggressive pass");
+		AddToStatus(STATUS_MESSAGE,TranslateT("Performing aggressive pass"));
 		ofsCurrent=0;
 	}
 	blockBytes=min(BLOCKSIZE+3,(int)(sourceFileSize-ofsCurrent));
@@ -42,10 +42,10 @@ int WorkAggressive(int firstTime)
 	for(i=0;i<blockBytes;i++) {
 		if(buf[i]) {
 			if((*(PDWORD)&buf[i]&0x00FFFFFF)!=0xDECADE)
-				AddToStatus(STATUS_WARNING,"Aggressive: random junk at %08X: skipping",ofsCurrent+i);
+				AddToStatus(STATUS_WARNING,TranslateT("Aggressive: random junk at %08X: skipping"),ofsCurrent+i);
 			else {
 				//TODO: give user the option of placing manually
-				AddToStatus(STATUS_ERROR,"Aggressive: unlinked data at %08X: can't automatically place",ofsCurrent+i);
+				AddToStatus(STATUS_ERROR,TranslateT("Aggressive: unlinked data at %08X: can't automatically place"),ofsCurrent+i);
 			}
 			for(;i<blockBytes;i++)
 				if(buf[i]==0) {i--; break;}

@@ -29,7 +29,7 @@ BOOL CALLBACK WelcomeDlgProc(HWND hdlg,UINT message,WPARAM wParam,LPARAM lParam)
 	if(DoMyControlProcessing(hdlg,message,wParam,lParam,&bReturn)) return bReturn;
 	switch(message) {
 		case WM_INITDIALOG:
-			{	HRSRC hRsrcWatermark=FindResource(hInst,MAKEINTRESOURCE(IDE_WATERMARK),"EMF");
+			{	HRSRC hRsrcWatermark=FindResourceA(hInst,MAKEINTRESOURCEA(IDE_WATERMARK),"EMF");
 				HGLOBAL hGlobWatermark=LoadResource(hInst,hRsrcWatermark);
 				hEmfWatermark=SetEnhMetaFileBits(SizeofResource(hInst,hRsrcWatermark),(PBYTE)LockResource(hGlobWatermark));
 			}

@@ -37,7 +37,7 @@ static void FinishUp(DWORD ofsLast,DBContact *dbc)
 {
 	WriteOfsNextToPrevious(ofsLast,dbc,0);
 	if(eventCount!=dbc->eventCount)
-		AddToStatus(STATUS_WARNING,"Event count marked wrongly: correcting");
+		AddToStatus(STATUS_WARNING,TranslateT("Event count marked wrongly: correcting"));
 	dbc->eventCount=eventCount;
 	dbc->ofsLastEvent=ofsLast;
 	if(opts.bMarkRead) {
@@ -81,7 +81,7 @@ int WorkEventChain(DWORD ofsContact,DBContact *dbc,int firstTime)
 		return ERROR_NO_MORE_ITEMS;
 	}
 	if(!SignatureValid(ofsThisEvent,DBEVENT_SIGNATURE)) {
-		AddToStatus(STATUS_ERROR,"Event chain corrupted, further entries ignored");
+		AddToStatus(STATUS_ERROR,TranslateT("Event chain corrupted, further entries ignored"));
 		FinishUp(ofsDestPrevEvent,dbc);
 		return ERROR_NO_MORE_ITEMS;
 	}
@@ -91,29 +91,29 @@ int WorkEventChain(DWORD ofsContact,DBContact *dbc,int firstTime)
 	}
 	if(firstTime) {
 		if(!(dbeOld.flags&DBEF_FIRST)) {
-			AddToStatus(STATUS_WARNING,"First event not marked as such: correcting");
+			AddToStatus(STATUS_WARNING,TranslateT("First event not marked as such: correcting"));
 			dbeOld.flags|=DBEF_FIRST;
 		}
 		dbeOld.ofsPrev=ofsContact;
 	}
 	else if(dbeOld.flags&DBEF_FIRST) {
-		AddToStatus(STATUS_WARNING,"Event marked as first which is not: correcting");
+		AddToStatus(STATUS_WARNING,TranslateT("Event marked as first which is not: correcting"));
 		dbeOld.flags&=~DBEF_FIRST;
 	}
 	if(dbeOld.flags&~(DBEF_FIRST|DBEF_READ|DBEF_SENT|DBEF_RTL)) {
-		AddToStatus(STATUS_WARNING,"Extra flags found in event: removing");
+		AddToStatus(STATUS_WARNING,TranslateT("Extra flags found in event: removing"));
 		dbeOld.flags&=(DBEF_FIRST|DBEF_READ|DBEF_SENT|DBEF_RTL);
 	}
 	if(!(dbeOld.flags&(DBEF_READ|DBEF_SENT))) {
 		if(opts.bMarkRead) dbeOld.flags|=DBEF_READ;
 		else if(ofsFirstUnread==0) {
 			if(dbc->ofsFirstUnreadEvent!=ofsThisEvent || dbc->timestampFirstUnread!=dbeOld.timestamp)
-				AddToStatus(STATUS_WARNING,"First unread event marked wrong: fixing");
+				AddToStatus(STATUS_WARNING,TranslateT("First unread event marked wrong: fixing"));
 			isUnread=1;
 		}
 	}
 	if(dbeOld.cbBlob>1024*1024 || dbeOld.cbBlob==0) {
-		AddToStatus(STATUS_ERROR,"Infeasibly large event blob: skipping");
+		AddToStatus(STATUS_ERROR,TranslateT("Infeasibly large event blob: skipping"));
 		ofsThisEvent=dbeOld.ofsNext;
 		return ERROR_SUCCESS;
 	}
@@ -122,7 +122,7 @@ int WorkEventChain(DWORD ofsContact,DBContact *dbc,int firstTime)
 		return ERROR_SUCCESS;
 	}
 	if(!firstTime && dbeOld.ofsPrev!=ofsPrevEvent)
-		AddToStatus(STATUS_WARNING,"Event not backlinked correctly: fixing");
+		AddToStatus(STATUS_WARNING,TranslateT("Event not backlinked correctly: fixing"));
 	dbeOld.ofsPrev=ofsDestPrevEvent;
 	if (offsetof(DBEvent,blob)+dbeOld.cbBlob > memsize) {
 		memsize = offsetof(DBEvent,blob)+dbeOld.cbBlob;
