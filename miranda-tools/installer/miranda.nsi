@@ -47,6 +47,13 @@ VAR INST_UPGRADE
 !define MUI_ABORTWARNING
 !define MUI_COMPONENTSPAGE_NODESC
 !define MUI_LICENSEPAGE_BGCOLOR /grey
+!define MUI_FINISHPAGE_RUN $INSTDIR\miranda32.exe
+!define MUI_FINISHPAGE_RUN_TEXT "Start Miranda IM"
+!define MUI_FINISHPAGE_SHOWREADME $INSTDIR\readme.txt
+!define MUI_FINISHPAGE_SHOWREADME_TEXT "View Readme"
+!define MUI_FINISHPAGE_SHOWREADME_NOTCHECKED
+!define MUI_FINISHPAGE_LINK "Donate to Miranda IM"
+!define MUI_FINISHPAGE_LINK_LOCATION "http://www.miranda-im.org/donate/"
 
 !insertmacro MUI_PAGE_WELCOME
 !insertmacro MUI_PAGE_LICENSE "${MIM_BUILD_SRC}\docs\license.txt"
@@ -259,9 +266,4 @@ Function VerifyInstallDir
   !insertmacro SetSectionFlag ${pStoreData} ${SF_SELECTED}
   noupgradeend:
   !endif
-FunctionEnd
-
-Function .onInstSuccess
-  SetOutPath "$INSTDIR"
-  Exec "$INSTDIR\miranda32.exe"
 FunctionEnd
