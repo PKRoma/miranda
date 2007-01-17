@@ -37,7 +37,7 @@ void GetProfileDirectory(TCHAR* szMirandaDir, TCHAR* szPath, int cbPath)
 		szPath[lstrlen(szPath)-1]='\0';
 }
 
-static int AddDatabaseToList(HWND hwndList, const TCHAR* filename)
+static int AddDatabaseToList(HWND hwndList, TCHAR* filename)
 {
 	LV_ITEM lvi;
 	int iNewItem;
