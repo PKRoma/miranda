@@ -224,6 +224,8 @@ int NetlibBindPort(WPARAM wParam,LPARAM lParam)
 		if (nlu->settings.enableUPnP&&NetlibUPnPAddPortMapping(nlb->wPort, "TCP", &nlbp->wExPort,
 			&extIP, nlb->cbSize > NETLIBBIND_SIZEOF_V2))
 		{
+			Netlib_Logf(NULL, "UPnP port mapping succeeded. Internal Port: %u External Port: %u\n", 
+				nlb->wPort, nlbp->wExPort); 
 			if (nlb->cbSize > NETLIBBIND_SIZEOF_V2)
 			{
 				nlb->wExPort = nlbp->wExPort;
@@ -232,6 +234,8 @@ int NetlibBindPort(WPARAM wParam,LPARAM lParam)
 		}
 		else
 		{
+			Netlib_Logf(NULL, "UPnP port mapping failed. Internal Port: %u\n", nlb->wPort); 
+
 			nlbp->wExPort = 0;
 			if (nlb->cbSize > NETLIBBIND_SIZEOF_V2)
 			{
