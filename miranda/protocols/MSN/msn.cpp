@@ -113,7 +113,7 @@ bool				msnUseExtendedPopups;
 int CompareHandles( const void* p1, const void* p2 )
 {	return (long)p1 - (long)p2;
 }
-static LIST<void> arHooks( 20, CompareHandles ); 
+static LIST<void> arHooks( 20, CompareHandles );
 
 int MsnContactDeleted( WPARAM wParam, LPARAM lParam );
 int MsnDbSettingChanged(WPARAM wParam,LPARAM lParam);
@@ -162,13 +162,13 @@ static int OnModulesLoaded( WPARAM wParam, LPARAM lParam )
 		MSN_DeleteSetting( NULL, "YourPort" );
 	}
 
-	mir_snprintf( szBuffer, sizeof szBuffer, "%s plugin connections", msnProtocolName );
+	mir_snprintf( szBuffer, sizeof(szBuffer), MSN_Translate("%s plugin connections"), msnProtocolName );
 
 	NETLIBUSER nlu = {0};
 	nlu.cbSize = sizeof( nlu );
 	nlu.flags = NUF_INCOMING | NUF_OUTGOING | NUF_HTTPCONNS;
 	nlu.szSettingsModule = msnProtocolName;
-	nlu.szDescriptiveName = MSN_Translate( szBuffer );
+	nlu.szDescriptiveName = szBuffer;
 
 	if ( MyOptions.UseGateway ) {
 		nlu.flags |= NUF_HTTPGATEWAY;
@@ -312,7 +312,7 @@ extern "C" int __declspec(dllexport) Load( PLUGINLINK* link )
 	char evtname[250];
 	sprintf(evtname,"%s/Nudge",protocolname);
 	hMSNNudge = CreateHookableEvent(evtname);
-	
+
 	MSN_InitThreads();
 
 	PROTOCOLDESCRIPTOR pd;
