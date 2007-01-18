@@ -899,7 +899,7 @@ LRESULT CALLBACK fnContactListWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM
 				else nPanel = nm->dwItemSpec;
 
 				if (nParts > 1)
-					hMenu = GetSubMenu(hMenu, nParts-nPanel-1);
+					hMenu = GetSubMenu(hMenu, nPanel);
 				SendMessage(cli.hwndStatus, SB_GETRECT, nPanel, (LPARAM) & rc);
 				pt.x = rc.left;
 				pt.y = rc.top;
@@ -982,9 +982,8 @@ LRESULT CALLBACK fnContactListWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM
 				if (showOpts & 2) {
 					char szName[64];
 					szName[0] = 0;
-					if (CallProtoService(szProto, PS_GETNAME, sizeof(szName), (LPARAM) szName)) {
+					if (CallProtoService(szProto, PS_GETNAME, sizeof(szName), (LPARAM) szName))
 						strcpy(szName, szProto);
-					}           //if
 					if (lstrlenA(szName) < SIZEOF(szName) - 1)
 						lstrcatA(szName, " ");
 					GetTextExtentPoint32A(dis->hDC, szName, lstrlenA(szName), &textSize);
