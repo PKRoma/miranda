@@ -1193,7 +1193,7 @@ int InitSkin2Icons(void)
 	sectionList.sortFunc  = ( FSortFunc )sttCompareSections;
 	iconList.sortFunc     = ( FSortFunc )sttCompareIcons;
 
-	hIconBlank = LoadIcon(NULL, MAKEINTRESOURCE(IDI_BLANK));
+	hIconBlank = LoadIconEx(NULL, MAKEINTRESOURCE(IDI_BLANK),0);
 
 	hDefaultIconList = ImageList_Create(GetSystemMetrics(SM_CXSMICON),GetSystemMetrics(SM_CYSMICON),ILC_COLOR32|ILC_MASK,15,15);
 

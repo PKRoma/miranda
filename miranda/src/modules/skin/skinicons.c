@@ -103,7 +103,7 @@ HICON LoadIconEx(HINSTANCE hInstance, LPCTSTR lpIconName, BOOL bShared)
     {
         HINSTANCE hCoreInstance=GetModuleHandle(NULL);
         if (hCoreInstance!=hInstance)
-            hResIcon=bShared?LoadSmallIcon(hInstance,lpIconName):LoadSmallIconShared(hInstance,lpIconName);
+            hResIcon=bShared?LoadSmallIcon(hCoreInstance,lpIconName):LoadSmallIconShared(hCoreInstance,lpIconName);
     }
     return hResIcon;
 }
