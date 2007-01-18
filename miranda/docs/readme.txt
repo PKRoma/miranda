@@ -34,6 +34,7 @@ Bugfixes
  - Enabling/disabling first group of sounds in options didn't enable apply button
  - Path in sound options was cut off for long paths
  - Some dialog backgrounds were not using system colors
+ - Global hotkeys didn't work correctly
 
 * New in 0.6.1
 Enhancements
