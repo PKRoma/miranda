@@ -35,6 +35,7 @@ Bugfixes
  - Path in sound options was cut off for long paths
  - Some dialog backgrounds were not using system colors
  - Global hotkeys didn't work correctly
+ - AIM: Messages were not received properly
 
 * New in 0.6.1
 Enhancements
