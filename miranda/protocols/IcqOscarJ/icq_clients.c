@@ -5,7 +5,7 @@
 // Copyright © 2000,2001 Richard Hughes, Roland Rabien, Tristan Van de Vreede
 // Copyright © 2001,2002 Jon Keating, Richard Hughes
 // Copyright © 2002,2003,2004 Martin Öberg, Sam Kothari, Robert Rainwater
-// Copyright © 2004,2005,2006 Joe Kucera
+// Copyright © 2004,2005,2006,2007 Joe Kucera
 // 
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License
@@ -580,8 +580,10 @@ char* detectUserClient(HANDLE hContact, DWORD dwUin, WORD wVersion, DWORD dwFT1,
               szClient = "libgaim"; // Gaim 1.5.1 most probably
             else if (MatchCap(caps, wLen, &capAimChat, 0x10) && CheckContactCapabilities(hContact, CAPF_AIM_FILE) && wLen == 0x20)
               szClient = "Easy Message";
-            else if (MatchCap(caps, wLen, &capAimIcon, 0x10) && CheckContactCapabilities(hContact, CAPF_UTF) && wLen == 0x20)
+            else if (MatchCap(caps, wLen, &capAimIcon, 0x10) && MatchCap(caps, wLen, &capAimChat, 0x10) && CheckContactCapabilities(hContact, CAPF_UTF) && wLen == 0x20)
               szClient = "Meebo";
+            else if (MatchCap(caps, wLen, &capAimIcon, 0x10) && CheckContactCapabilities(hContact, CAPF_UTF) && wLen == 0x20)
+              szClient = "PyICQ-t Jabber Transport";
             else if (MatchCap(caps, wLen, &capAimIcon, 0x10) && MatchCap(caps, wLen, &capIcqLite, 0x10) && CheckContactCapabilities(hContact, CAPF_UTF | CAPF_XTRAZ))
               szClient = "PyICQ-t Jabber Transport";
             else if (MatchCap(caps, wLen, &capIsIcq, 0x10) && CheckContactCapabilities(hContact, CAPF_UTF | CAPF_SRV_RELAY | CAPF_TYPING) && wLen == 0x40)

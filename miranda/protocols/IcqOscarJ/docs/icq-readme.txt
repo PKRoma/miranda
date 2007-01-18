@@ -54,6 +54,12 @@ __________
 Changes
 _______
 
+0.3.7.6
+
+Bugfixes:
+  Some fixes from development version 0.3.8.x
+  
+  
 0.3.7.5
 
 Bugfixes:
@@ -377,7 +383,7 @@ Thanks to Angeli-Ka for nice custom status icons.
 License and Copyright
 _____________________
 
-Copyright (C) 2000-2006 Joe Kucera, Martin Öberg, Richard Hughes, Jon Keating
+Copyright (C) 2000-2007 Joe Kucera, Martin Öberg, Richard Hughes, Jon Keating
 
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License

@@ -5,7 +5,7 @@
 // Copyright © 2000,2001 Richard Hughes, Roland Rabien, Tristan Van de Vreede
 // Copyright © 2001,2002 Jon Keating, Richard Hughes
 // Copyright © 2002,2003,2004 Martin Öberg, Sam Kothari, Robert Rainwater
-// Copyright © 2004,2005,2006 Joe Kucera
+// Copyright © 2004,2005,2006,2007 Joe Kucera
 //
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License
@@ -220,6 +220,7 @@
 #define MGTYPE_SCRIPT_DATA          0x02
 #define MGTYPE_SCRIPT_USER_REMOVE   0x04
 #define MGTYPE_SCRIPT_NOTIFY        0x08
+#define MGTYPE_UNDEFINED            0xFFFF
 
 
 
@@ -529,7 +530,7 @@
 
 
 // Internal Constants
-#define ICQ_PLUG_VERSION            0x00030705
+#define ICQ_PLUG_VERSION            0x00030706
 #define ICQ_VERSION                 8
 #define DC_TYPE                     DC_NORMAL // Used for DC settings
 #define MAX_NICK_SIZE               32

@@ -5,7 +5,7 @@
 // Copyright © 2000,2001 Richard Hughes, Roland Rabien, Tristan Van de Vreede
 // Copyright © 2001,2002 Jon Keating, Richard Hughes
 // Copyright © 2002,2003,2004 Martin Öberg, Sam Kothari, Robert Rainwater
-// Copyright © 2004,2005,2006 Joe Kucera
+// Copyright © 2004,2005,2006,2007 Joe Kucera
 //
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License
@@ -1027,6 +1027,13 @@ int TypeGUIDToTypeId(DWORD dwGuid1, DWORD dwGuid2, DWORD dwGuid3, DWORD dwGuid4,
   {
     nTypeID = MTYPE_STATUSMSGEXT;
   }
+  else if (wType==MGTYPE_UNDEFINED)
+  {
+    if (CompareGUIDs(dwGuid1, dwGuid2, dwGuid3, dwGuid4, PSIG_MESSAGE))
+    { // icq6 message ack
+      nTypeID = MTYPE_PLAIN;
+    }
+  }
   else if (wType==MGTYPE_STANDARD_SEND)
   {
     if (CompareGUIDs(dwGuid1, dwGuid2, dwGuid3, dwGuid4, MGTYPE_WEBURL))
@@ -1813,6 +1820,14 @@ static void handleRecvMsgResponse(unsigned char *buf, WORD wLen, WORD wFlags, DW
     if (!FindCookie(wCookie, &dwCookieUin, &pCookieData))
     { // use old reliable method
       NetLog_Server("Warning: Invalid cookie in %s from (%u)", "message response", dwUin);
+
+      if (pCookieData->bMessageType != MTYPE_AUTOAWAY && bFlags == 3)
+      { // most probably a broken ack of some kind (e.g. from R&Q), try to fix that
+        bMsgType = pCookieData->bMessageType;
+        bFlags = 0;
+
+        NetLog_Server("Warning: Invalid message type in %s from (%u)", "message response", dwUin);
+      }
     }
     else if (bMsgType != MTYPE_PLUGIN && pCookieData->bMessageType != MTYPE_AUTOAWAY)
     { // just because some clients break it...
@@ -1945,6 +1960,12 @@ static void handleRecvMsgResponse(unsigned char *buf, WORD wLen, WORD wFlags, DW
         if (!typeId)
           NetLog_Server("Error: Unknown type {%04x%04x%04x%04x-%02x}: %s", q1,q2,q3,q4,qt,szPluginName);
 
+        if (typeId == MTYPE_PLAIN)
+        { // hotfix: icq6 reply
+          wLen -= 2;
+          buf += 2;
+        }
+
         if (wLen < 4)
         {
           NetLog_Server("Error: Invalid greeting %s", "message response");
@@ -1965,6 +1986,22 @@ static void handleRecvMsgResponse(unsigned char *buf, WORD wLen, WORD wFlags, DW
 
         switch (typeId)
         {
+        case MTYPE_PLAIN:
+          if (pCookieData && pCookieData->bMessageType == MTYPE_AUTOAWAY && dwLengthToEnd >= 4)
+          { // icq6 invented this
+            char *szMsg;
+
+            szMsg = (char*)_alloca(dwDataLen + 1);
+            if (dwDataLen > 0)
+              memcpy(szMsg, buf, dwDataLen);
+            szMsg[dwDataLen] = '\0';
+            handleStatusMsgReply("SNAC(4.B) ", hContact, dwUin, wVersion, pCookieData->nAckType, (WORD)dwCookie, szMsg);
+
+            break;
+          }
+          else
+            ackType = ACKTYPE_MESSAGE;
+          break;
 
         case MTYPE_URL:
           ackType = ACKTYPE_URL;
