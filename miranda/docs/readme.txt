@@ -36,6 +36,7 @@ Bugfixes
  - Some dialog backgrounds were not using system colors
  - Global hotkeys didn't work correctly
  - AIM: Messages were not received properly
+ - ICQ: Fixed Meebo client detection
 
 * New in 0.6.1
 Enhancements
