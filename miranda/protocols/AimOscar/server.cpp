@@ -730,6 +730,7 @@ void snac_received_message(SNAC &snac,HANDLE hServerConn,unsigned short &seqno)/
 	{   
 		
 		HANDLE hContact=0;
+		unsigned short channel=snac.ushort(8);
 		unsigned char sn_length=snac.ubyte(10);
 		char* sn=snac.part(11,sn_length);
 		int offset=15+sn_length;
@@ -747,12 +748,25 @@ void snac_received_message(SNAC &snac,HANDLE hServerConn,unsigned short &seqno)/
 		bool unicode_message=0;
 		short recv_file_type=-1;
 		unsigned short request_num=0;
+		unsigned short tlv_head_num=snac.ushort(offset-2);
 		char local_ip[20],verified_ip[20],proxy_ip[20];
 		ZeroMemory(local_ip,sizeof(local_ip));
 		ZeroMemory(verified_ip,sizeof(verified_ip));
 		ZeroMemory(proxy_ip,sizeof(proxy_ip));
 		unsigned short port=0;
 		//end file transfer stuff
+		for(int i=0;i<tlv_head_num;i++)
+		{ // skip server-added TLVs - prevent another problems with parsing
+			TLV tlv(snac.val(offset));
+
+			if(tlv.cmp(0x0004)&&!tlv.len())//auto response flag
+			{
+					auto_response=1;
+			}
+			offset+=TLV_HEADER_SIZE+tlv.len();
+			// some extra sanity
+			if (offset>=snac.len()) break;
+		}
 		while(offset<snac.len())
 		{
 			TLV tlv(snac.val(offset));
@@ -789,11 +803,7 @@ void snac_received_message(SNAC &snac,HANDLE hServerConn,unsigned short &seqno)/
 						msg_buf=buf;
 				}
 			}
-			if(tlv.cmp(0x0004)&&!tlv.len())//auto response flag
-			{
-					auto_response=1;
-			}
-			if(tlv.cmp(0x0005))//recv rendervous packet
+			if(tlv.cmp(0x0005)&&channel==2)//recv rendervous packet
 			{
 				recv_file_type=snac.ushort(offset);
 				icbm_cookie=snac.part(offset+2,8);
