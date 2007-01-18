@@ -320,8 +320,7 @@ int LoadCLUIModule(void)
 	wndclass.hbrBackground = (HBRUSH) (COLOR_3DFACE + 1);
 	wndclass.lpszMenuName = MAKEINTRESOURCE(IDR_CLISTMENU);
 	wndclass.lpszClassName = _T(MIRANDACLASS);
-	RegisterClass(&wndclass);
-   // IconLib_ReleaseIcon(wndclass.hIcon,0);
+	RegisterClass(&wndclass);  
 
 	if (DBGetContactSettingTString(NULL, "CList", "TitleText", &dbv))
 		lstrcpyn(titleText, _T(MIRANDANAME), SIZEOF( titleText ));
