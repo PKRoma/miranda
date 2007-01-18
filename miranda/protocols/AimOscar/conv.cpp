@@ -177,6 +177,54 @@ char* strip_special_chars(char *src, HANDLE hContact)
 	}
 	return 0;
 }
+
+wchar_t* plain_to_html(wchar_t *src)
+{   // first mangle all html special chars
+		wchar_t *ptr;
+		wchar_t* dest=wcsldup(src,wcslen(src));
+    ptr = dest; // need to go over
+		while ((ptr = wcsstr(ptr, L"&")) != NULL)
+		{
+			int addr=ptr-dest;
+			dest=renew(dest,wcslen(dest)+2,8);
+			ptr=dest+addr;
+			memmove(ptr + 5, ptr + 1, wcslen(ptr + 1)*2 + 10);
+			memcpy(ptr,L"&amp;",10);
+      ptr++; // break the infinite loop
+		}
+		while ((ptr = wcsstr(dest, L"<")) != NULL)
+		{
+			int addr=ptr-dest;
+			dest=renew(dest,wcslen(dest)+2,7);
+			ptr=dest+addr;
+			memmove(ptr + 4, ptr + 1, wcslen(ptr + 1)*2 + 8);
+			memcpy(ptr,L"&lt;",8);
+		}
+		while ((ptr = wcsstr(dest, L">")) != NULL)
+		{
+			int addr=ptr-dest;
+			dest=renew(dest,wcslen(dest)+2,7);
+			ptr=dest+addr;
+			memmove(ptr + 4, ptr + 1, wcslen(ptr + 1)*2 + 8);
+			memcpy(ptr,L"&gt;",8);
+		}
+		while ((ptr = wcsstr(dest, L"\"")) != NULL)
+		{
+			int addr=ptr-dest;
+			dest=renew(dest,wcslen(dest)+2,9);
+			ptr=dest+addr;
+			memmove(ptr + 5, ptr + 1, wcslen(ptr + 1)*2 + 12);
+			memcpy(ptr,L"&quot;",12);
+		}
+		dest[wcslen(dest)]='\0';
+    // add basic html tags
+    ptr = new wchar_t[wcslen(dest)+30];
+    wcscpy(ptr, L"<HTML><BODY>");
+    wcscat(ptr, dest);
+    wcscat(ptr, L"</HTML></BODY>");
+    delete[] dest;
+		return ptr;
+}
 char* strip_carrots(char *src)// EAT!!!!!!!!!!!!!
 {
 	wchar_t* buf=new wchar_t[strlen(src)+1];
