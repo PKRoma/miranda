@@ -36,6 +36,7 @@ Bugfixes
  - Some dialog backgrounds were not using system colors
  - Global hotkeys didn't work correctly
  - AIM: Messages were not received properly
+ - AIM: Fixed formatting of outgoing unicode messages (AIM 5.9 was affected)
  - ICQ: Fixed compatibility issues with ICQ 6
  - ICQ: Fixed Meebo client detection
 
