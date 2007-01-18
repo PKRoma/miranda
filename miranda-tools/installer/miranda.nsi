@@ -79,7 +79,7 @@ VAR INST_UPGRADE
   File "${MIM_BUILD_ICONS_LOW}\${IconFile}"
   ${EndIf}
   !else
-  File "${MIM_BUILD_LOW}\${IconFile}"
+  File "${MIM_BUILD_ICONS_LOW}\${IconFile}"
   !endif
 !macroend
 
