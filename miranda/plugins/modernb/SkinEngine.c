@@ -302,6 +302,7 @@ BOOL SkinEngine_SetRectOpaque(HDC memdc,RECT *fr)
     BITMAP bmp;
     HBITMAP hbmp=GetCurrentObject(memdc,OBJ_BITMAP);  
     GetObject(hbmp, sizeof(bmp),&bmp);
+    if (bmp.bmPlanes!=1) return FALSE;
     sx=(fr->left>0)?fr->left:0;
     sy=(fr->top>0)?fr->top:0;
     ex=(fr->right<bmp.bmWidth)?fr->right:bmp.bmWidth;
