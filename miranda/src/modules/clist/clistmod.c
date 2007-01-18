@@ -518,15 +518,13 @@ int LoadContactListModule2(void)
 
 	{
 		int i;
+		//now all core skin icons are loaded via icon lib. so lets release them
 		for (i = 0; i < SIZEOF(statusModeList); i++)
-        {
-               //now all core skin icons are loaded via icon lib. so lets release them
 			ImageList_AddIcon_IconLibLoaded(hCListImages, LoadSkinnedIcon(skinIconStatusList[i]));                    
-        }
 	}
+
 	//see IMAGE_GROUP... in clist.h if you add more images above here    
 	ImageList_AddIcon_IconLibLoaded(hCListImages, LoadSkinnedIcon(SKINICON_OTHER_GROUPOPEN));
-    ImageList_AddIcon_IconLibLoaded(hCListImages, LoadSkinnedIcon(SKINICON_OTHER_GROUPSHUT));
-
+	ImageList_AddIcon_IconLibLoaded(hCListImages, LoadSkinnedIcon(SKINICON_OTHER_GROUPSHUT));
 	return 0;
 }
