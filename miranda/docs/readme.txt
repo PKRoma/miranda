@@ -1,7 +1,7 @@
                    Miranda Instant Messenger Release Notes
                    ---------------------------------------
 
-                            January 2007 (v0.6.2)
+                            January 2007 (v0.6.3)
 
                           http://www.miranda-im.org
 
@@ -22,6 +22,11 @@ Contents
 
 1. New in this version
 ----------------------
+
+* New in 0.6.3
+Bugfixes:
+ - Pin to Desktop was broken
+ - AIM: Auto response messages weren't shown as auto responses
 
 * New in 0.6.2
 Enhancements
