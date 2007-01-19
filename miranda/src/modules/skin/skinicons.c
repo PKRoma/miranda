@@ -259,7 +259,7 @@ static int LoadSkinProtoIcon(WPARAM wParam,LPARAM lParam)
             sid.iDefaultIndex=0;
             sid.pszDescription="";
             IcoLib_AddNewIcon(0, (LPARAM)&sid);            
-            hIcon = IcoLib_GetIcon( 0, (LPARAM)protocolIconName );
+            hIcon = (HICON) IcoLib_GetIcon( 0, (LPARAM)protocolIconName );
             if ( hIcon ) {
                 IconLib_ReleaseIcon( sid.hDefaultIcon, 0 );
                 return (int)hIcon;
