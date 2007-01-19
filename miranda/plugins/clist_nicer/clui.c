@@ -471,38 +471,14 @@ static int IcoLibChanged(WPARAM wParam, LPARAM lParam)
 
 void CLN_LoadAllIcons(BOOL mode)
 {
-	int i;
-	HICON hIcon;
-
-	if (g_CluiData.IcoLib_Avail) {
-		if(mode) {
-			InitIcoLib();
-			hIcoLibChanged = HookEvent(ME_SKIN2_ICONSCHANGED, IcoLibChanged);
-			g_CluiData.hIconVisible = (HICON) CallService(MS_SKIN2_GETICON, 0, (LPARAM) "CLN_visible");
-			g_CluiData.hIconInvisible = (HICON) CallService(MS_SKIN2_GETICON, 0, (LPARAM) "CLN_invisible");
-			g_CluiData.hIconChatactive = (HICON) CallService(MS_SKIN2_GETICON, 0, (LPARAM) "CLN_chatactive");
-		}
-		CacheClientIcons();
-	} else {
-		if(mode) {
-			for (i = IDI_OVL_OFFLINE; i <= IDI_OVL_OUTTOLUNCH; i++)
-				overlayicons[i - IDI_OVL_OFFLINE] = LoadImage(g_hInst, MAKEINTRESOURCE(i), IMAGE_ICON, g_cxsmIcon, g_cysmIcon, LR_SHARED);
-			g_CluiData.hIconVisible = LoadImage(g_hInst, MAKEINTRESOURCE(IDI_CLVISIBLE), IMAGE_ICON, g_cxsmIcon, g_cysmIcon, LR_SHARED);
-			g_CluiData.hIconInvisible = LoadImage(g_hInst, MAKEINTRESOURCE(IDI_CLINVISIBLE), IMAGE_ICON, g_cxsmIcon, g_cysmIcon, LR_SHARED);
-			g_CluiData.hIconChatactive = LoadImage(g_hInst, MAKEINTRESOURCE(IDI_OVL_FREEFORCHAT), IMAGE_ICON, g_cxsmIcon, g_cysmIcon, LR_SHARED);
-			g_CluiData.hIconConnecting = LoadImage(g_hInst, MAKEINTRESOURCE(IDI_PROTOCONNECTING), IMAGE_ICON, g_cxsmIcon, g_cysmIcon, LR_SHARED);
-		}
-		hIcon = LoadImage(g_hInst, MAKEINTRESOURCE(IDI_EMAIL), IMAGE_ICON, g_cxsmIcon, g_cysmIcon, LR_SHARED);
-		ImageList_AddIcon(himlExtraImages, hIcon);
-		DestroyIcon(hIcon);
-		hIcon = LoadImage(g_hInst, MAKEINTRESOURCE(IDI_URL), IMAGE_ICON, g_cxsmIcon, g_cysmIcon, LR_SHARED);
-		ImageList_AddIcon(himlExtraImages, hIcon);
-		DestroyIcon(hIcon);
-		hIcon = LoadImage(g_hInst, MAKEINTRESOURCE(IDI_SMS), IMAGE_ICON, g_cxsmIcon, g_cysmIcon, LR_SHARED);
-		ImageList_AddIcon(himlExtraImages, hIcon);
-		ImageList_AddIcon(himlExtraImages, hIcon);
-		DestroyIcon(hIcon);
-	}
+    if(mode) {
+        InitIcoLib();
+        hIcoLibChanged = HookEvent(ME_SKIN2_ICONSCHANGED, IcoLibChanged);
+        g_CluiData.hIconVisible = (HICON) CallService(MS_SKIN2_GETICON, 0, (LPARAM) "CLN_visible");
+        g_CluiData.hIconInvisible = (HICON) CallService(MS_SKIN2_GETICON, 0, (LPARAM) "CLN_invisible");
+        g_CluiData.hIconChatactive = (HICON) CallService(MS_SKIN2_GETICON, 0, (LPARAM) "CLN_chatactive");
+    }
+    CacheClientIcons();
 }
 
 void ConfigureEventArea(HWND hwnd)
@@ -1308,7 +1284,17 @@ LRESULT CALLBACK ContactListWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM l
             }
 
 			DBWriteContactSettingByte(NULL, "CList", "State", old_cliststate);
-			
+
+            if(DBGetContactSettingByte(NULL, "CList", "AutoApplyLastViewMode", 0)) {
+                DBVARIANT dbv = {0};
+                if(!DBGetContactSetting(NULL, "CList", "LastViewMode", &dbv)) {
+                    if(lstrlenA(dbv.pszVal) > 2) {
+                        if(DBGetContactSettingDword(NULL, CLVM_MODULE, dbv.pszVal, -1) != 0xffffffff)
+                            ApplyViewMode((char *)dbv.pszVal);
+                    }
+                    DBFreeVariant(&dbv);
+                }
+            }
 			if(!g_CluiData.autosize)
 				ShowCLUI(hwnd);
 			else {
@@ -1931,8 +1917,8 @@ LRESULT CALLBACK ContactListWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM l
 				case IDC_TBSOUND:
 					{
 						g_CluiData.soundsOff = !g_CluiData.soundsOff;
-						DBWriteContactSettingByte(NULL, "CLUI", "NoSounds", g_CluiData.soundsOff);
-						DBWriteContactSettingByte(NULL, "Skin", "UseSound", g_CluiData.soundsOff ? 0 : 1);
+						DBWriteContactSettingByte(NULL, "CLUI", "NoSounds", (BYTE)g_CluiData.soundsOff);
+						DBWriteContactSettingByte(NULL, "Skin", "UseSound", (BYTE)(g_CluiData.soundsOff ? 0 : 1));
 						return 0;
 					}
 				case IDC_TBSELECTVIEWMODE:
@@ -2285,7 +2271,7 @@ buttons_done:
 				case ID_BUTTONBAR_SKINNEDTOOLBAR:
 					g_CluiData.bSkinnedToolbar = !g_CluiData.bSkinnedToolbar;
 					SetTBSKinned(g_CluiData.bSkinnedToolbar);
-					DBWriteContactSettingByte(NULL, "CLUI", "tb_skinned", g_CluiData.bSkinnedToolbar);
+					DBWriteContactSettingByte(NULL, "CLUI", "tb_skinned", (BYTE)g_CluiData.bSkinnedToolbar);
 					PostMessage(hwnd, CLUIINTM_REDRAW, 0, 0);
 					break;
 				}

@@ -108,9 +108,9 @@ void RecalcScrollBar(HWND hwnd, struct ClcData *dat);
 
 PLUGININFO pluginInfo = {
 #if defined(_UNICODE)
-	sizeof(PLUGININFO), "CList Nicer+ (Unicode)", PLUGIN_MAKE_VERSION(0, 7, 0, 5),
+	sizeof(PLUGININFO), "CList Nicer+ (Unicode)", PLUGIN_MAKE_VERSION(0, 7, 1, 0),
 #else
-	sizeof(PLUGININFO), "CList Nicer+", PLUGIN_MAKE_VERSION(0, 7, 0, 5),
+	sizeof(PLUGININFO), "CList Nicer+", PLUGIN_MAKE_VERSION(0, 7, 1, 0),
 #endif
 		"Display contacts, event notifications, protocol status",
 		"Pixel, egoDust, cyreve, Nightwish", "", "Copyright 2000-2006 Miranda-IM project", "http://www.miranda-im.org",
@@ -326,7 +326,7 @@ int __declspec(dllexport) CListInitialise(PLUGINLINK * link)
 		pDrawAlpha = (g_CluiData.dwFlags & CLUI_FRAME_GDIPLUS && g_gdiplusToken) ? (pfnDrawAlpha)GDIp_DrawAlpha : (pfnDrawAlpha)DrawAlpha;
 
 	if(DBGetContactSettingByte(NULL, "Skin", "UseSound", 0) != g_CluiData.soundsOff)
-		DBWriteContactSettingByte(NULL, "Skin", "UseSound", g_CluiData.soundsOff ? 0 : 1);
+		DBWriteContactSettingByte(NULL, "Skin", "UseSound", (BYTE)(g_CluiData.soundsOff ? 0 : 1));
 
 	// get the clist interface
 	pcli = ( CLIST_INTERFACE* )CallService(MS_CLIST_RETRIEVE_INTERFACE, 0, (LPARAM)g_hInst);

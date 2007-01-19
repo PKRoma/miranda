@@ -366,7 +366,7 @@ void LoadExtBkSettingsFromDB()
 }
 
 // writes whole struct to the database
-static void SaveCompleteStructToDB(void)
+static void SaveCompleteStructToDB()
 {
     int n;
     char buffer[255];

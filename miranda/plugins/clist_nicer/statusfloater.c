@@ -678,13 +678,13 @@ void FLT_Update(struct ClcData *dat, struct ClcContact *contact)
 		DWORD oldFlags = g_CluiData.dwFlags;
 		DWORD oldExtraImageMask = g_CluiData.dwExtraImageMask;
 		struct avatarCacheEntry *ace_old = contact->ace;
-		BYTE oldDualRow = g_CluiData.dualRowMode;
+		BYTE oldDualRow = contact->bSecondLine;
 
 		if(!(g_floatoptions.dwFlags & FLT_AVATARS))
 			contact->ace = 0;
 
 		if(!(g_floatoptions.dwFlags & FLT_DUALROW))
-			g_CluiData.dualRowMode = MULTIROW_NEVER;
+			contact->bSecondLine = MULTIROW_NEVER;
 
 		if(!(g_floatoptions.dwFlags & FLT_EXTRAICONS)) {
 			g_CluiData.dwFlags &= ~CLUI_SHOWCLIENTICONS;
@@ -707,7 +707,7 @@ void FLT_Update(struct ClcData *dat, struct ClcContact *contact)
 
 		g_CluiData.dwFlags = oldFlags;
 		contact->ace = ace_old;
-		g_CluiData.dualRowMode = oldDualRow;
+		contact->bSecondLine = oldDualRow;
 		g_CluiData.dwExtraImageMask = oldExtraImageMask;
 	}
 	DeleteObject(rgn);

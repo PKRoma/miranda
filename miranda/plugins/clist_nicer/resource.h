@@ -170,6 +170,8 @@
 #define IDC_DATE                        1027
 #define IDC_IGN_ALWAYSOFFLINE           1027
 #define IDC_DEPARTMENT                  1028
+#define IDC_IGN_ONLINE2                 1028
+#define IDC_IGN_PRIORITY                1028
 #define IDC_DETAILS                     1029
 #define IDC_DISABLEGROUPS               1030
 #define IDC_DOBYEAR                     1031
@@ -645,6 +647,8 @@
 #define IDC_WINCOLOUR                   1659
 #define IDC_ICONBLINK                   1660
 #define IDC_SELECT_D                    1661
+#define IDC_ICONBLINK2                  1661
+#define IDC_APPLYLASTVIEWMODE           1661
 #define IDC_SELECT_F                    1662
 #define IDC_SELECT_L                    1663
 #define IDC_SELECT_N                    1664
@@ -848,7 +852,9 @@
 #define IDC_FLT_PADBOTTOMSPIN           40048
 #define IDC_UNLOAD                      40048
 #define ID_BUTTONBAR_DRAWSUNKENFRAME    40049
+#define IDC_AVATARDISPMODE              40059
 #define POPUP_NEWGROUP                  40050
+#define IDC_SECONDLINEMODE              40050
 #define POPUP_SHOWSTATUSICONS           40051
 #define POPUP_RENAMEGROUP               40052
 #define POPUP_DELETEGROUP               40053
@@ -866,7 +872,7 @@
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NEXT_RESOURCE_VALUE        7
 #define _APS_NEXT_COMMAND_VALUE         40061
-#define _APS_NEXT_CONTROL_VALUE         40049
+#define _APS_NEXT_CONTROL_VALUE         40050
 #define _APS_NEXT_SYMED_VALUE           40154
 #endif
 #endif

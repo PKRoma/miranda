@@ -33,7 +33,7 @@ extern struct ExtraCache *g_ExtraCache;
 extern int g_nextExtraCacheEntry, g_maxExtraCacheEntry;
 extern ImageItem *g_glyphItem;
 
-extern int hClcProtoCount;
+extern int hClcProtoCount, g_list_avatars;
 extern ClcProtoStatus *clcProto;
 extern HIMAGELIST hCListImages;
 extern struct CluiData g_CluiData;
@@ -485,7 +485,7 @@ static RECT rcContent;
 static BOOL pi_selectiveIcon;
 
 static BOOL av_left, av_right, av_rightwithnick;
-static BOOL av_wanted, mirror_rtl, mirror_always, mirror_rtltext;
+static BOOL mirror_rtl, mirror_always, mirror_rtltext;
 
 BYTE savedCORNER = -1;
 
@@ -516,7 +516,7 @@ void __inline PaintItem(HDC hdcMem, struct ClcGroup *group, struct ClcContact *c
 	struct ExtraCache *cEntry = NULL;
 	DWORD dwFlags = g_CluiData.dwFlags;
 	int scanIndex;
-	BOOL check_selected;
+	BOOL check_selected, av_local_wanted;
     
 	rowHeight -= g_CluiData.bRowSpacing;
 	savedCORNER = -1;
@@ -526,6 +526,7 @@ void __inline PaintItem(HDC hdcMem, struct ClcGroup *group, struct ClcContact *c
 
 	g_RTL = FALSE;
 	scanIndex = group->scanIndex;
+    av_local_wanted = (g_list_avatars > 0);
 
 	type = contact->type;
 	flags = contact->flags;
@@ -930,9 +931,9 @@ bgskipped:
     rcContent.bottom = y + rowHeight;
     rcContent.left = leftX;
     rcContent.right = clRect->right - dat->rightMargin;
-	twoRows = ((dat->fontInfo[FONTID_STATUS].fontHeight + fontHeight <= rowHeight + 1) && (g_CluiData.dualRowMode != MULTIROW_NEVER)) && !dat->bisEmbedded;
+	twoRows = ((dat->fontInfo[FONTID_STATUS].fontHeight + fontHeight <= rowHeight + 1) && (contact->bSecondLine != MULTIROW_NEVER)) && !dat->bisEmbedded;
 
-    pi_avatar = !dat->bisEmbedded && type == CLCIT_CONTACT && (av_wanted) && contact->ace != 0 && !(contact->ace->dwFlags & AVS_HIDEONCLIST);
+    pi_avatar = !dat->bisEmbedded && type == CLCIT_CONTACT && (contact->cFlags & ECF_AVATAR) && contact->ace != 0 && !(contact->ace->dwFlags & AVS_HIDEONCLIST);
 
 	//checkboxes
 	if (checkboxWidth) {
@@ -988,7 +989,7 @@ bgskipped:
 			rcContent.right -= (rightOffset);
 		}
 	}
-	else if(type == CLCIT_CONTACT && !dat->bisEmbedded && !g_selectiveIcon && (dwFlags & CLUI_FRAME_ALWAYSALIGNNICK) && av_wanted && (av_left || av_right)) {
+	else if(type == CLCIT_CONTACT && !dat->bisEmbedded && !g_selectiveIcon && (dwFlags & CLUI_FRAME_ALWAYSALIGNNICK) && av_local_wanted && (av_left || av_right)) {
 		if(av_right)
 			rcContent.right -= (g_CluiData.avatarSize);
 		if(av_left)
@@ -1026,7 +1027,7 @@ bgskipped:
 			else {
 				LONG offset = 0;
 				BOOL centered = FALSE;
-				offset +=  (type != CLCIT_CONTACT || avatar_done || !(av_wanted) ? 20 : dwFlags & CLUI_FRAME_ALWAYSALIGNNICK && av_left && g_selectiveIcon ? g_CluiData.avatarSize + 2 : 20);
+				offset +=  (type != CLCIT_CONTACT || avatar_done || !(av_local_wanted) ? 20 : dwFlags & CLUI_FRAME_ALWAYSALIGNNICK && av_left && g_selectiveIcon ? g_CluiData.avatarSize + 2 : 20);
 				centered = (g_CluiData.bCenterStatusIcons && offset == g_CluiData.avatarSize + 2);
 				ImageList_DrawEx(hCListImages, iImage, hdcMem,  centered ? rcContent.left + offset / 2 - 10 : rcContent.left, (twoRows && type == CLCIT_CONTACT && !g_CluiData.bCenterStatusIcons) ? y + 2 : y + ((rowHeight - 16) >> 1), 0, 0, CLR_NONE, colourFg, mode);
 				rcContent.left += offset;
@@ -1176,18 +1177,18 @@ text:
 		// avatar
 
 		if(!dat->bisEmbedded) {
-			if(av_wanted && !avatar_done && pi_avatar) {
+			if(av_local_wanted && !avatar_done && pi_avatar) {
 				if(av_rightwithnick) {
 					RECT rcAvatar = rcContent;
 
 					rcAvatar.left = rcContent.right - (g_CluiData.avatarSize - 1);
-					DrawAvatar(hdcMem, &rcAvatar, contact, y, dat, iImage ? cstatus : 0, rowHeight);
+					DrawAvatar(hdcMem, &rcAvatar, contact, y, dat, (WORD)(iImage ? cstatus : 0), rowHeight);
 					rcContent.right -= (g_CluiData.avatarSize + 2);
 				}
 				else
-					rcContent.left += DrawAvatar(hdcMem, &rcContent, contact, y, dat, iImage ? cstatus : 0, rowHeight);
+					rcContent.left += DrawAvatar(hdcMem, &rcContent, contact, y, dat, (WORD)(iImage ? cstatus : 0), rowHeight);
 			}
-			else if(dwFlags & CLUI_FRAME_ALWAYSALIGNNICK && !avatar_done && av_wanted)
+			else if(dwFlags & CLUI_FRAME_ALWAYSALIGNNICK && !avatar_done && av_local_wanted)
 				rcContent.left += (dwFlags & (CLUI_FRAME_AVATARSLEFT | CLUI_FRAME_AVATARSRIGHT | CLUI_FRAME_AVATARSRIGHTWITHNICK) ? 0 : g_CluiData.avatarSize + 2);
 		}
 
@@ -1460,7 +1461,6 @@ void PaintClc(HWND hwnd, struct ClcData *dat, HDC hdc, RECT *rcPaint)
 	av_left = (g_CluiData.dwFlags & CLUI_FRAME_AVATARSLEFT);
 	av_right = (g_CluiData.dwFlags & CLUI_FRAME_AVATARSRIGHT);
 	av_rightwithnick = (g_CluiData.dwFlags & CLUI_FRAME_AVATARSRIGHTWITHNICK);
-	av_wanted = (g_CluiData.dwFlags & CLUI_FRAME_AVATARS);
 
 	mirror_rtl = (g_CluiData.bUseDCMirroring == 2);
 	mirror_always = (g_CluiData.bUseDCMirroring == 1);
@@ -1468,7 +1468,6 @@ void PaintClc(HWND hwnd, struct ClcData *dat, HDC hdc, RECT *rcPaint)
 
 	g_center = DBGetContactSettingByte(NULL, "CLCExt", "EXBK_CenterGroupnames", 0) && !dat->bisEmbedded;
 	g_ignoreselforgroups = DBGetContactSettingByte(NULL, "CLC", "IgnoreSelforGroups", 0);
-	g_selectiveIcon = (g_CluiData.dwFlags & CLUI_FRAME_SELECTIVEICONS) && (g_CluiData.dwFlags & CLUI_FRAME_AVATARS) && !dat->bisEmbedded;
 	g_exIconSpacing = g_CluiData.exIconScale + 2;
 
 	if (dat->greyoutFlags & pcli->pfnClcStatusToPf2(my_status) || style & WS_DISABLED)
@@ -1604,7 +1603,33 @@ bgdone:
 	if ( dat->row_heights == NULL )
 		RowHeights_CalcRowHeights(dat, hwnd);
 
-	for (index = 0; y< rcPaint->bottom;) {
+    g_list_avatars = 0;
+    while(TRUE)
+    {
+        if (group->scanIndex==group->cl.count) 
+        {
+            group=group->parent;
+            if(group==NULL) break;	// Finished list
+            group->scanIndex++;
+            continue;
+        }
+
+        if(group->cl.items[group->scanIndex]->cFlags & ECF_AVATAR)
+            g_list_avatars++;
+
+        if(group->cl.items[group->scanIndex]->type==CLCIT_GROUP && /*!IsBadCodePtr((FARPROC)group->cl.items[group->scanIndex]->group) && */ (group->cl.items[group->scanIndex]->group->expanded & 0x0000ffff)) {
+            group=group->cl.items[group->scanIndex]->group;
+            group->scanIndex=0;
+            continue;
+        }
+        group->scanIndex++;
+    }
+    g_selectiveIcon = (g_list_avatars > 0) && (g_CluiData.dwFlags & CLUI_FRAME_SELECTIVEICONS) && !dat->bisEmbedded;
+
+    group = &dat->list;
+    group->scanIndex = 0;
+
+    for (index = 0; y< rcPaint->bottom;) {
 		if (group->scanIndex == group->cl.count) {
 			group = group->parent;
 			indent--;

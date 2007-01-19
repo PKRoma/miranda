@@ -62,7 +62,6 @@ static UINT _page1Controls[] = {IDC_STATIC1, IDC_STATIC2, IDC_STATIC3, IDC_STATI
 
 static UINT _page2Controls[] = {IDC_CLIST, IDC_STATIC9, IDC_STATIC8, IDC_CLEARALL, IDC_CURVIEWMODE2, 0};
 
-void ApplyViewMode(const char *name);
 
 /*
  * enumerate all view modes, call the callback function with the mode name

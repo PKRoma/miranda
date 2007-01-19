@@ -32,7 +32,7 @@ UNICODE done
 
 static BOOL CALLBACK DlgProcClcMainOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam);
 static BOOL CALLBACK DlgProcClcBkgOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam);
-static BOOL CALLBACK DlgProcClcTextOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam);
+//static BOOL CALLBACK DlgProcClcTextOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam);
 extern BOOL CALLBACK DlgProcViewModesSetup(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam);
 extern BOOL CALLBACK DlgProcFloatingContacts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam);
 extern BOOL CALLBACK OptionsDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam);
@@ -89,13 +89,15 @@ int ClcOptInit(WPARAM wParam, LPARAM lParam)
     odp.flags = ODPF_BOLDGROUPS;
     CallService(MS_OPT_ADDPAGE, wParam, (LPARAM) &odp);
 
-	if(!ServiceExists(MS_FONT_REGISTER)) {
+    /* removed - font service now integrated in Miranda 
+    if(!ServiceExists(MS_FONT_REGISTER)) {
         odp.pszTemplate = MAKEINTRESOURCEA(IDD_OPT_CLCTEXT);
         odp.pszGroup = Translate("Customize");
         odp.pszTitle = Translate("Contact list fonts");
         odp.pfnDlgProc = DlgProcClcTextOpts;    
         CallService(MS_OPT_ADDPAGE, wParam, (LPARAM) &odp);
     }
+    */
     odp.pszTemplate = MAKEINTRESOURCEA(IDD_OPT);
     odp.pszGroup = Translate("Customize");
     odp.pszTitle = Translate("Contact list skin");
@@ -277,9 +279,9 @@ static BOOL CALLBACK DlgProcClcMainOpts(HWND hwndDlg, UINT msg, WPARAM wParam, L
                             g_CluiData.bDblClkAvatars = IsDlgButtonChecked(hwndDlg, IDC_DBLCLKAVATARS) ? TRUE : FALSE;
                             DBWriteContactSettingByte(NULL, "CLC", "RowHeight", (BYTE) SendDlgItemMessage(hwndDlg, IDC_ROWHEIGHTSPIN, UDM_GETPOS, 0, 0));
                             DBWriteContactSettingByte(NULL, "CLC", "GRowHeight", (BYTE) SendDlgItemMessage(hwndDlg, IDC_GROUPROWHEIGHTSPIN, UDM_GETPOS, 0, 0));
-                            DBWriteContactSettingByte(NULL, "CLC", "dblclkav", g_CluiData.bDblClkAvatars);
+                            DBWriteContactSettingByte(NULL, "CLC", "dblclkav", (BYTE)g_CluiData.bDblClkAvatars);
                             DBWriteContactSettingDword(NULL, "CLUI", "Frameflags", g_CluiData.dwFlags);
-                            DBWriteContactSettingByte(NULL, "CLCExt", "EXBK_CenterGroupnames", IsDlgButtonChecked(hwndDlg, IDC_CENTERGROUPNAMES));
+                            DBWriteContactSettingByte(NULL, "CLCExt", "EXBK_CenterGroupnames", (BYTE)IsDlgButtonChecked(hwndDlg, IDC_CENTERGROUPNAMES));
                             pcli->pfnClcOptionsChanged();
                             CoolSB_SetupScrollBar();
                             PostMessage(pcli->hwndContactList, CLUIINTM_REDRAW, 0, 0);
@@ -393,7 +395,7 @@ static BOOL CALLBACK DlgProcClcBkgOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LP
                                     DBDeleteContactSetting(NULL, "CLC", "BkColour");
                                 else
                                     DBWriteContactSettingDword(NULL, "CLC", "BkColour", col);
-                                DBWriteContactSettingByte(NULL, "CLC", "UseWinColours", IsDlgButtonChecked(hwndDlg, IDC_WINCOLOUR));
+                                DBWriteContactSettingByte(NULL, "CLC", "UseWinColours", (BYTE)IsDlgButtonChecked(hwndDlg, IDC_WINCOLOUR));
                             } {
                                 char str[MAX_PATH], strrel[MAX_PATH];
                                 
@@ -418,7 +420,7 @@ static BOOL CALLBACK DlgProcClcBkgOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LP
                                     flags |= CLBF_PROPORTIONAL;
                                 DBWriteContactSettingWord(NULL, "CLC", "BkBmpUse", flags);
                                 g_CluiData.bWallpaperMode = IsDlgButtonChecked(hwndDlg, IDC_SKINMODE) ? 1 : 0;
-                                DBWriteContactSettingByte(NULL, "CLUI", "UseBkSkin", g_CluiData.bWallpaperMode);
+                                DBWriteContactSettingByte(NULL, "CLUI", "UseBkSkin", (BYTE)g_CluiData.bWallpaperMode);
                             }
                             pcli->pfnClcOptionsChanged();
                             PostMessage(pcli->hwndContactList, CLUIINTM_REDRAW, 0, 0);
@@ -483,6 +485,12 @@ static int fontListOrder[FONTID_LAST+1] = {
 #define M_GUESSSAMEASBOXES   (WM_USER+19)
 #define M_SETSAMEASBOXES     (WM_USER+20)
 
+/*
+ * The following code has been disabled, because Miranda 0.7 has the font services
+ * integrated. "Per plugin" font settings are no longer needed.
+ */
+
+/*
 static int CALLBACK EnumFontsProc(ENUMLOGFONTEX *lpelfe, NEWTEXTMETRICEX *lpntme, int FontType, LPARAM lParam)
 {
     if (!IsWindow((HWND) lParam))
@@ -519,7 +527,9 @@ static int TextOptsDlgResizer(HWND hwndDlg, LPARAM lParam, UTILRESIZECONTROL *ur
 {
     return RD_ANCHORX_LEFT | RD_ANCHORY_TOP;
 }
+*/
 
+/*
 static BOOL CALLBACK DlgProcClcTextOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam)
 {
     static HFONT hFontSample;
@@ -901,3 +911,4 @@ static BOOL CALLBACK DlgProcClcTextOpts(HWND hwndDlg, UINT msg, WPARAM wParam, L
     }
     return FALSE;
 }
+*/

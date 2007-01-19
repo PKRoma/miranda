@@ -355,12 +355,12 @@ static BOOL CALLBACK DlgProcCluiOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPAR
 				DBWriteContactSettingByte(NULL, "CList", "OnDesktop", (BYTE) IsDlgButtonChecked(hwndDlg, IDC_ONDESKTOP));
 				DBWriteContactSettingDword(NULL, "CLUI", "Frameflags", g_CluiData.dwFlags);
 				g_CluiData.bFullTransparent = IsDlgButtonChecked(hwndDlg, IDC_FULLTRANSPARENT) ? 1 : 0;
-				DBWriteContactSettingByte(NULL, "CLUI", "fulltransparent", g_CluiData.bFullTransparent);
+				DBWriteContactSettingByte(NULL, "CLUI", "fulltransparent", (BYTE)g_CluiData.bFullTransparent);
 
 				g_CluiData.exIconScale = SendDlgItemMessage(hwndDlg, IDC_EXICONSCALESPIN, UDM_GETPOS, 0, 0);
 				g_CluiData.exIconScale = (g_CluiData.exIconScale < 8 || g_CluiData.exIconScale > 20) ? 16 : g_CluiData.exIconScale;
 
-				DBWriteContactSettingByte(NULL, "CLC", "ExIconScale", g_CluiData.exIconScale);
+				DBWriteContactSettingByte(NULL, "CLC", "ExIconScale", (BYTE)g_CluiData.exIconScale);
 				if (g_CluiData.bLayeredHack && MySetLayeredWindowAttributes)
 					SetWindowLong(pcli->hwndContactList, GWL_EXSTYLE, GetWindowLong(pcli->hwndContactList, GWL_EXSTYLE) | WS_EX_LAYERED);
 
@@ -477,7 +477,7 @@ static BOOL CALLBACK DlgProcSBarOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPAR
 			g_CluiData.bEqualSections = IsDlgButtonChecked(hwndDlg, IDC_EQUALSECTIONS) ? 1 : 0;
 			g_CluiData.bSkinnedStatusBar = IsDlgButtonChecked(hwndDlg, IDC_SKINBACKGROUND) ? 1 : 0;
 			g_CluiData.bShowXStatusOnSbar = IsDlgButtonChecked(hwndDlg, IDC_SHOWXSTATUS) ? 1 : 0;
-			DBWriteContactSettingByte(NULL, "CLUI", "xstatus_sbar", g_CluiData.bShowXStatusOnSbar);
+			DBWriteContactSettingByte(NULL, "CLUI", "xstatus_sbar", (BYTE)g_CluiData.bShowXStatusOnSbar);
 			DBWriteContactSettingByte(NULL, "CLUI", "SBarBevel", (BYTE) IsDlgButtonChecked(hwndDlg, IDC_SBPANELBEVEL));
 			if (DBGetContactSettingByte(NULL, "CLUI", "ShowGrip", 1) != (BYTE) IsDlgButtonChecked(hwndDlg, IDC_SHOWGRIP)) {
 				HWND parent = GetParent(pcli->hwndStatus);
@@ -544,10 +544,14 @@ static BOOL CALLBACK DlgProcPlusOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPAR
 			if(g_CluiData.bAvatarServiceAvail) {
 				CheckDlgButton(hwndDlg, IDC_CLISTAVATARS, (dwFlags & CLUI_FRAME_AVATARS) ? BST_CHECKED : BST_UNCHECKED);
 				EnableWindow(GetDlgItem(hwndDlg, IDC_CLISTAVATARS), TRUE);
+                while(avatar_controls[i] != 0)
+                    EnableWindow(GetDlgItem(hwndDlg, avatar_controls[i++]), TRUE);
 			}
 			else {
 				CheckDlgButton(hwndDlg, IDC_CLISTAVATARS, FALSE);
 				EnableWindow(GetDlgItem(hwndDlg, IDC_CLISTAVATARS), FALSE);
+                while(avatar_controls[i] != 0)
+                    EnableWindow(GetDlgItem(hwndDlg, avatar_controls[i++]), FALSE);
 			}
 			CheckDlgButton(hwndDlg, IDC_AVATARSBORDER, (dwFlags & CLUI_FRAME_AVATARBORDER) ? BST_CHECKED : BST_UNCHECKED);
 			CheckDlgButton(hwndDlg, IDC_AVATARSROUNDED, (dwFlags & CLUI_FRAME_ROUNDAVATAR) ? BST_CHECKED : BST_UNCHECKED);
@@ -559,8 +563,6 @@ static BOOL CALLBACK DlgProcPlusOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPAR
 
 			SendMessage(hwndDlg, WM_COMMAND, IDC_CLISTAVATARS, 0);
 			SendDlgItemMessage(hwndDlg, IDC_AVATARBORDERCLR, CPM_SETCOLOUR, 0, g_CluiData.avatarBorder);
-			while(avatar_controls[i] != 0)
-				EnableWindow(GetDlgItem(hwndDlg, avatar_controls[i++]), IsDlgButtonChecked(hwndDlg, IDC_CLISTAVATARS) ? TRUE : FALSE);
 
 			SendDlgItemMessage(hwndDlg, IDC_RADIUSSPIN, UDM_SETRANGE, 0, MAKELONG(10, 2));
 			SendDlgItemMessage(hwndDlg, IDC_RADIUSSPIN, UDM_SETPOS, 0, g_CluiData.avatarRadius);
@@ -609,14 +611,9 @@ static BOOL CALLBACK DlgProcPlusOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPAR
 	case WM_COMMAND:
 		switch(LOWORD(wParam)) {
 		case IDC_CLISTAVATARS:
-			{
-				int i = 0;
-				while(avatar_controls[i] != 0)
-					EnableWindow(GetDlgItem(hwndDlg, avatar_controls[i++]), IsDlgButtonChecked(hwndDlg, IDC_CLISTAVATARS) ? TRUE : FALSE);
-				if((HWND)lParam != GetFocus())
-					return 0;
-				break;
-			}
+            if((HWND)lParam != GetFocus())
+                return 0;
+            break;
 		case IDC_SHOWLOCALTIME:
 			EnableWindow(GetDlgItem(hwndDlg, IDC_SHOWLOCALTIMEONLYWHENDIFFERENT), IsDlgButtonChecked(hwndDlg, IDC_SHOWLOCALTIME));
 			break;
@@ -693,19 +690,19 @@ static BOOL CALLBACK DlgProcPlusOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPAR
 				g_CluiData.bShowLocalTimeSelective = IsDlgButtonChecked(hwndDlg, IDC_SHOWLOCALTIMEONLYWHENDIFFERENT) ? 1 : 0;
 				g_CluiData.bUseDCMirroring = (BYTE)SendDlgItemMessage(hwndDlg, IDC_CLISTALIGN, CB_GETCURSEL, 0, 0);
 				DBWriteContactSettingByte(NULL, "CLC", "MirrorDC", g_CluiData.bUseDCMirroring);
-				DBWriteContactSettingByte(NULL, "CLC", "ShowLocalTime", g_CluiData.bShowLocalTime);
-				DBWriteContactSettingByte(NULL, "CLC", "SelectiveLocalTime", g_CluiData.bShowLocalTimeSelective);
+				DBWriteContactSettingByte(NULL, "CLC", "ShowLocalTime", (BYTE)g_CluiData.bShowLocalTime);
+				DBWriteContactSettingByte(NULL, "CLC", "SelectiveLocalTime", (BYTE)g_CluiData.bShowLocalTimeSelective);
 				KillTimer(pcli->hwndContactTree, TIMERID_REFRESH);
 				if(g_CluiData.bShowLocalTime)
 					SetTimer(pcli->hwndContactTree, TIMERID_REFRESH, 65000, NULL);
 				DBWriteContactSettingDword(NULL, "CLC", "avatarborder", g_CluiData.avatarBorder);
 				DBWriteContactSettingDword(NULL, "CLUI", "Frameflags", g_CluiData.dwFlags);
 				DBWriteContactSettingDword(NULL, "CLC", "avatarradius", g_CluiData.avatarRadius);
-				DBWriteContactSettingWord(NULL, "CList", "AvatarSize", g_CluiData.avatarSize);
+				DBWriteContactSettingWord(NULL, "CList", "AvatarSize", (WORD)g_CluiData.avatarSize);
 				DBWriteContactSettingByte(NULL, "CLC", "DualRowMode", g_CluiData.dualRowMode);
 				DBWriteContactSettingByte(NULL, "CList", "AvatarPadding", g_CluiData.avatarPadding);
-				DBWriteContactSettingByte(NULL, "CList", "NoOfflineAV", g_CluiData.bNoOfflineAvatars);
-				DBWriteContactSettingByte(NULL, "CLC", "si_centered", g_CluiData.bCenterStatusIcons);
+				DBWriteContactSettingByte(NULL, "CList", "NoOfflineAV", (BYTE)g_CluiData.bNoOfflineAvatars);
+				DBWriteContactSettingByte(NULL, "CLC", "si_centered", (BYTE)g_CluiData.bCenterStatusIcons);
 				if(!pDrawAlpha)
 					pDrawAlpha = (g_CluiData.dwFlags & CLUI_FRAME_GDIPLUS  && g_gdiplusToken) ? (pfnDrawAlpha)GDIp_DrawAlpha : (pfnDrawAlpha)DrawAlpha;
 				ConfigureFrame();
@@ -714,8 +711,7 @@ static BOOL CALLBACK DlgProcPlusOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPAR
                 HideShowNotifyFrame();
 				SendMessage(pcli->hwndContactTree, WM_SIZE, 0, 0);
 				SendMessage(pcli->hwndContactList, WM_SIZE, 0, 0);
-				if(bOldMirrorMode != g_CluiData.bUseDCMirroring)
-					pcli->pfnClcBroadcast(CLM_AUTOREBUILD, 0, 0);
+                pcli->pfnClcBroadcast(CLM_AUTOREBUILD, 0, 0);
 				PostMessage(pcli->hwndContactList, CLUIINTM_REDRAW, 0, 0);
 				return TRUE;
 			}

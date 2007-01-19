@@ -73,8 +73,17 @@ struct ClcGroup;
 
 #define EXTRAIMAGECACHESIZE 1000
 
+// extra cache contact flags
+
 #define ECF_RTLNICK 1
 #define ECF_RTLSTATUSMSG 2
+#define ECF_FORCEAVATAR 4
+#define ECF_HIDEAVATAR 8
+
+// other contact flags (struct ClCContact;
+
+#define ECF_AVATAR 1
+#define ECF_SECONDLINE 2
 
 struct ContactFloater {
 	struct ContactFloater *pNextFloater;
@@ -132,6 +141,8 @@ struct ClcContact {
 	int extraCacheEntry;
 	int avatarLeft, extraIconRightBegin;
 	int isRtl;
+    DWORD cFlags;
+    BYTE  bSecondLine;
 };
 
 #define DRAGSTAGE_NOTMOVED  0
@@ -470,6 +481,9 @@ char* Utf8Encode( const char* src );
 void CreateViewModeFrame();
 int GetExtraCache(HANDLE hContact, char *szProto);
 void ReloadExtraInfo(HANDLE hContact);
+void LoadAvatarForContact(struct ClcContact *p);
+void ApplyViewMode(const char *name);
+
 //clcpaint.c
 void PaintClc(HWND hwnd, struct ClcData *dat, HDC hdc, RECT *rcPaint);
 void __inline PaintItem(HDC hdcMem, struct ClcGroup *group, struct ClcContact *contact, int indent, int y, struct ClcData *dat, int index, HWND hwnd, DWORD style, RECT *clRect, BOOL *bFirstNGdrawn, int groupCountsFontTopShift, int rowHeight);

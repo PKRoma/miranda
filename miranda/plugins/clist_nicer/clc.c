@@ -44,7 +44,7 @@ extern BOOL (WINAPI *MySetLayeredWindowAttributes)(HWND, COLORREF, BYTE, DWORD);
 extern int during_sizing;
 extern StatusItems_t *StatusItems;
 extern int g_shutDown;
-extern int g_nextExtraCacheEntry, g_maxExtraCacheEntry;
+extern int g_nextExtraCacheEntry, g_maxExtraCacheEntry, g_list_avatars;
 extern struct ExtraCache *g_ExtraCache;
 
 HIMAGELIST hCListImages;
@@ -252,6 +252,7 @@ static int ClcPreshutdown(WPARAM wParam, LPARAM lParam)
 	if (hIcoLibChanged)
 		UnhookEvent(hIcoLibChanged);
 
+    DBWriteContactSettingString(NULL, "CList", "LastViewMode", g_CluiData.current_viewmode);
 	return 0;
 }
 
@@ -534,6 +535,9 @@ LBL_Def:
 			if(!FindItem(hwnd, dat, (HANDLE)wParam, &contact, NULL, NULL))
 				return 0;
 			contact->ace = cEntry;
+            if(cEntry)
+                g_list_avatars++;
+
 			PostMessage(hwnd, INTM_INVALIDATE, 0, (LPARAM)contact->hContact);
 			goto LBL_Def;
 		}
@@ -567,8 +571,10 @@ LBL_Def:
 					contact->ace = (struct avatarCacheEntry *)CallService(MS_AV_GETAVATARBITMAP, wParam, 0);
 					if (contact->ace != NULL && contact->ace->cbSize != sizeof(struct avatarCacheEntry))
 						contact->ace = NULL;
-					if (contact->ace != NULL)
-						contact->ace->t_lastAccess = time(NULL);
+					if (contact->ace != NULL) {
+                        contact->ace->t_lastAccess = time(NULL);
+                        g_list_avatars++;
+                    }
 				}
 			}
 			contact->wStatus = wStatus;
@@ -678,7 +684,7 @@ LBL_Def:
 						HANDLE hMasterContact = (HANDLE)DBGetContactSettingDword((HANDLE)wParam, "MetaContacts", "Handle", 0);
 						if(hMasterContact && hMasterContact != (HANDLE)wParam)				// avoid recursive call of settings handler
 							DBWriteContactSettingByte(hMasterContact, "MetaContacts", "XStatusId", 
-													  DBGetContactSettingByte((HANDLE)wParam, szProto, "XStatusId", 0));
+													  (BYTE)DBGetContactSettingByte((HANDLE)wParam, szProto, "XStatusId", 0));
 						break;
 					}
 				}

@@ -42,36 +42,6 @@ static int OnContactMenuBuild(WPARAM wParam,LPARAM lParam)
 		}
 		CallService(MS_CLIST_MODIFYMENUITEM, (WPARAM)hFloatingItem, (LPARAM)&mi);
 	}
-
-	// Menu Item - Priority Contact
-	if (!hPriorityItem)
-	{
-		memset(&mi,0,sizeof(mi));
-		mi.cbSize=sizeof(mi);
-		mi.position=200000;
-		mi.pszPopupName=(char *)-1;
-		mi.pszService="CList/SetContactPriority";
-		mi.pszName=Translate("&Priority Contact");
-		if (pcli) 
-		{
-			if (SendMessage(pcli->hwndContactTree, CLM_QUERYPRIORITYCONTACT, wParam, 0))
-				mi.flags = CMIF_CHECKED;
-		}
-		hPriorityItem = (HANDLE)CallService(MS_CLIST_ADDCONTACTMENUITEM, 0, (LPARAM)&mi);
-	}
-	else
-	{
-		memset(&mi,0,sizeof(mi));
-		mi.cbSize=sizeof(mi);
-		mi.flags=CMIM_FLAGS;
-		if (pcli) 
-		{
-			if (SendMessage(pcli->hwndContactTree, CLM_QUERYPRIORITYCONTACT, wParam, 0))
-				mi.flags |= CMIF_CHECKED;
-		}
-		CallService(MS_CLIST_MODIFYMENUITEM, (WPARAM)hPriorityItem, (LPARAM)&mi);
-	}
-
 	return 0;
 }
 

@@ -28,8 +28,11 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 #pragma hdrstop
 
-extern int g_shutDown;
-extern struct ClcData *g_clcData;
+extern int      g_shutDown;
+extern struct   ClcData *g_clcData;
+extern int      g_nextExtraCacheEntry, g_maxExtraCacheEntry;
+extern struct   ExtraCache *g_ExtraCache;
+extern struct   CluiData g_CluiData;
 
 int CloseAction(WPARAM wParam,LPARAM lParam)
 {
@@ -78,6 +81,16 @@ static BOOL CALLBACK IgnoreDialogProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM
 			SetWindowText(hwndAdd, TranslateT("Add permanently"));
 			EnableWindow(hwndAdd, DBGetContactSettingByte(hContact, "CList", "NotOnList", 0));
 
+            SendDlgItemMessage(hWnd, IDC_AVATARDISPMODE, CB_INSERTSTRING, -1, (LPARAM)TranslateT("Default (global setting)"));
+            SendDlgItemMessage(hWnd, IDC_AVATARDISPMODE, CB_INSERTSTRING, -1, (LPARAM)TranslateT("Show always when available"));
+            SendDlgItemMessage(hWnd, IDC_AVATARDISPMODE, CB_INSERTSTRING, -1, (LPARAM)TranslateT("Hide always"));
+
+            SendDlgItemMessage(hWnd, IDC_SECONDLINEMODE, CB_INSERTSTRING, -1, (LPARAM)TranslateT("Default (global setting)"));
+            SendDlgItemMessage(hWnd, IDC_SECONDLINEMODE, CB_INSERTSTRING, -1, (LPARAM)TranslateT("Never"));
+            SendDlgItemMessage(hWnd, IDC_SECONDLINEMODE, CB_INSERTSTRING, -1, (LPARAM)TranslateT("Always"));
+            SendDlgItemMessage(hWnd, IDC_SECONDLINEMODE, CB_INSERTSTRING, -1, (LPARAM)TranslateT("When space is available"));
+            SendDlgItemMessage(hWnd, IDC_SECONDLINEMODE, CB_INSERTSTRING, -1, (LPARAM)TranslateT("When needed by status message"));
+
 			if(g_clcData) {
 				if(FindItem(pcli->hwndContactTree, g_clcData, hContact, &contact, NULL, NULL)) {
 					if(contact && contact->type != CLCIT_CONTACT) {
@@ -85,13 +98,30 @@ static BOOL CALLBACK IgnoreDialogProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM
 						return FALSE;
 					} else if(contact) {
 						TCHAR szTitle[512];
+                        DWORD dwFlags = DBGetContactSettingDword(hContact, "CList", "CLN_Flags", 0);
+                        BYTE  bSecondLine = DBGetContactSettingByte(hContact, "CList", "CLN_2ndline", -1);
 
-						mir_sntprintf(szTitle, 512, TranslateT("Ignore options for %s"), contact->szText);
+						mir_sntprintf(szTitle, 512, TranslateT("Contact list display and ignore options for %s"), contact->szText);
 						SetWindowText(hWnd, szTitle);
 						SendMessage(hWnd, WM_SETICON, ICON_BIG, (LPARAM)LoadSkinnedIcon(SKINICON_OTHER_MIRANDA));
 						pCaps = CallProtoService(contact->proto, PS_GETCAPS, PFLAGNUM_1, 0);
 						EnableWindow(GetDlgItem(hWnd, IDC_IGN_ALWAYSONLINE), pCaps & PF1_INVISLIST ? TRUE : FALSE);
 						EnableWindow(GetDlgItem(hWnd, IDC_IGN_ALWAYSOFFLINE), pCaps & PF1_VISLIST ? TRUE : FALSE);
+                        CheckDlgButton(hWnd, IDC_IGN_PRIORITY, contact->flags & CONTACTF_PRIORITY ? TRUE : FALSE);
+                        EnableWindow(GetDlgItem(hWnd, IDC_IGN_PRIORITY), TRUE);
+                        EnableWindow(GetDlgItem(hWnd, IDC_AVATARDISPMODE), TRUE);
+                        EnableWindow(GetDlgItem(hWnd, IDC_SECONDLINEMODE), TRUE);
+                        if(dwFlags & ECF_FORCEAVATAR)
+                            SendDlgItemMessage(hWnd, IDC_AVATARDISPMODE, CB_SETCURSEL, 1, 0);
+                        else if(dwFlags & ECF_HIDEAVATAR)
+                            SendDlgItemMessage(hWnd, IDC_AVATARDISPMODE, CB_SETCURSEL, 2, 0);
+                        else
+                            SendDlgItemMessage(hWnd, IDC_AVATARDISPMODE, CB_SETCURSEL, 0, 0);
+
+                        if(bSecondLine == 0xff)
+                            SendDlgItemMessage(hWnd, IDC_SECONDLINEMODE, CB_SETCURSEL, 0, 0);
+                        else
+                            SendDlgItemMessage(hWnd, IDC_SECONDLINEMODE, CB_SETCURSEL, (WPARAM)(bSecondLine + 1), 0);
 					}
 				} else {
 					DestroyWindow(hWnd);
@@ -104,6 +134,9 @@ static BOOL CALLBACK IgnoreDialogProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM
 		}
 	case WM_COMMAND:
 		switch(LOWORD(wParam)) {
+        case IDC_IGN_PRIORITY:
+            SendMessage(pcli->hwndContactTree, CLM_TOGGLEPRIORITYCONTACT, (WPARAM)hContact, 0);
+            return 0;
 	  	case IDC_IGN_ALL:
 			SendMessage(hWnd, WM_USER + 100, (WPARAM)hContact, (LPARAM)0xffffffff);
 		  	return 0;
@@ -119,7 +152,7 @@ static BOOL CALLBACK IgnoreDialogProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM
 				CheckDlgButton(hWnd, IDC_IGN_ALWAYSONLINE, FALSE);
 		  	break;
 	  	case IDC_HIDECONTACT:
-			DBWriteContactSettingByte(hContact, "CList", "Hidden", IsDlgButtonChecked(hWnd, IDC_HIDECONTACT) ? 1 : 0);
+			DBWriteContactSettingByte(hContact, "CList", "Hidden", (BYTE)(IsDlgButtonChecked(hWnd, IDC_HIDECONTACT) ? 1 : 0));
 		  	break;
 	  	case IDC_IGN_ADDPERMANENTLY:
 			{
@@ -135,9 +168,43 @@ static BOOL CALLBACK IgnoreDialogProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM
 	  	case IDOK:
 			{
 				DWORD newMask = 0;
+                struct ClcContact *contact = NULL;
+
 			  	SendMessage(hWnd, WM_USER + 110, 0, (LPARAM)&newMask);
 			  	DBWriteContactSettingDword(hContact, "Ignore", "Mask1", newMask);
 			  	SendMessage(hWnd, WM_USER + 130, 0, 0);
+
+                if(g_clcData) {
+                    if(FindItem(pcli->hwndContactTree, g_clcData, hContact, &contact, NULL, NULL)) {
+                        if(contact) {
+                            LRESULT iSel = SendDlgItemMessage(hWnd, IDC_AVATARDISPMODE, CB_GETCURSEL, 0, 0);
+                            DWORD dwFlags = DBGetContactSettingDword(hContact, "CList", "CLN_Flags", 0);
+
+                            if(iSel != CB_ERR) {
+                                dwFlags &= ~(ECF_FORCEAVATAR | ECF_HIDEAVATAR);
+
+                                if(iSel == 1)
+                                    dwFlags |= ECF_FORCEAVATAR;
+                                else if(iSel == 2)
+                                    dwFlags |= ECF_HIDEAVATAR;
+                                DBWriteContactSettingDword(hContact, "CList", "CLN_Flags", dwFlags);
+                                LoadAvatarForContact(contact);
+                            }
+
+                            if((iSel = SendDlgItemMessage(hWnd, IDC_SECONDLINEMODE, CB_GETCURSEL, 0, 0)) != CB_ERR) {
+                                if(iSel == 0) {
+                                    DBDeleteContactSetting(hContact, "CList", "CLN_2ndline");
+                                    contact->bSecondLine = g_CluiData.dualRowMode;
+                                }
+                                else {
+                                    DBWriteContactSettingByte(hContact, "CList", "CLN_2ndline", (BYTE)(iSel - 1));
+                                    contact->bSecondLine = (BYTE)(iSel - 1);
+                                }
+                            }
+                            pcli->pfnClcBroadcast(CLM_AUTOREBUILD, 0, 0);
+                        }
+                    }
+                }
 		  	}
 	  	case IDCANCEL:
 			DestroyWindow(hWnd);
@@ -242,24 +309,6 @@ static int SetContactIgnore(WPARAM wParam, LPARAM lParam)
 }
 
 /*                                                              
- * service function: Set or clear a contacts priority flag (this is a toggle service)
- * (clist_nicer+ specific service)
- * 
- * Servicename = CList/SetContactPriority (wParam = contacts handle)
- *
- * priority contacts appear on top of the current sorting order (the priority flag
- * overrides any other sorting, thus putting priority contacts at the top of the list
- * or group). If more than one contact per group have this flag set, they will be
- * sorted using the current contact list sorting rule(s).
-*/
-
-static int SetContactPriority(WPARAM wParam, LPARAM lParam)
-{
-	SendMessage(pcli->hwndContactTree, CLM_TOGGLEPRIORITYCONTACT, wParam, lParam);
-	return 0;
-}
-
-/*                                                              
  * service function: Set a contacts floating status.
  * (clist_nicer+ specific service)
  * 
@@ -278,7 +327,6 @@ static int SetContactFloating(WPARAM wParam, LPARAM lParam)
 int InitCustomMenus(void)
 {
 	CreateServiceFunction("CloseAction",CloseAction);
-	CreateServiceFunction("CList/SetContactPriority", SetContactPriority);
 	CreateServiceFunction("CList/SetContactFloating", SetContactFloating);
 	CreateServiceFunction("CList/SetContactIgnore", SetContactIgnore);
     {
@@ -291,7 +339,7 @@ int InitCustomMenus(void)
             mi.position = 200000;
             mi.pszPopupName = ( char* )-1;
             mi.pszService = "CList/SetContactIgnore";
-            mi.pszName = Translate("&Visibility and ignore...");
+            mi.pszName = Translate("&Contact list settings...");
             hIgnoreItem = (HANDLE)CallService(MS_CLIST_ADDCONTACTMENUITEM, 0, (LPARAM)&mi);
         }
     }

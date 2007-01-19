@@ -181,6 +181,7 @@ static BOOL CALLBACK DlgProcGenOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARA
             SendDlgItemMessage(hwndDlg, IDC_BLINKSPIN, UDM_SETRANGE, 0, MAKELONG(0x3FFF, 250));
             SendDlgItemMessage(hwndDlg, IDC_BLINKSPIN, UDM_SETPOS, 0, MAKELONG(DBGetContactSettingWord(NULL, "CList", "IconFlashTime", 550), 0));
             CheckDlgButton(hwndDlg, IDC_NOTRAYINFOTIPS, g_CluiData.bNoTrayTips ? 1 : 0);
+            CheckDlgButton(hwndDlg, IDC_APPLYLASTVIEWMODE, DBGetContactSettingByte(NULL, "CList", "AutoApplyLastViewMode", 0) ? 1 : 0);
             return TRUE;
         case WM_COMMAND:
             if (LOWORD(wParam) == IDC_AUTOHIDE) {
@@ -256,11 +257,12 @@ static BOOL CALLBACK DlgProcGenOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARA
                             DBWriteContactSettingWord(NULL, "CList", "IconFlashTime", (WORD) SendDlgItemMessage(hwndDlg, IDC_BLINKSPIN, UDM_GETPOS, 0, 0));
                             DBWriteContactSettingByte(NULL, "CList", "DisableTrayFlash", (BYTE) IsDlgButtonChecked(hwndDlg, IDC_DISABLEBLINK));
                             DBWriteContactSettingByte(NULL, "CList", "NoIconBlink", (BYTE) IsDlgButtonChecked(hwndDlg, IDC_ICONBLINK));
+                            DBWriteContactSettingByte(NULL, "CList", "AutoApplyLastViewMode", (BYTE)IsDlgButtonChecked(hwndDlg, IDC_APPLYLASTVIEWMODE));
                             g_CluiData.bDontSeparateOffline = IsDlgButtonChecked(hwndDlg, IDC_DONTSEPARATE) ? 1 : 0;
-                            DBWriteContactSettingByte(NULL, "CList", "DontSeparateOffline", g_CluiData.bDontSeparateOffline);
+                            DBWriteContactSettingByte(NULL, "CList", "DontSeparateOffline", (BYTE)g_CluiData.bDontSeparateOffline);
 
                             g_CluiData.bNoTrayTips = IsDlgButtonChecked(hwndDlg, IDC_NOTRAYINFOTIPS) ? 1 : 0;
-                            DBWriteContactSettingByte(NULL, "CList", "NoTrayTips", g_CluiData.bNoTrayTips);
+                            DBWriteContactSettingByte(NULL, "CList", "NoTrayTips", (BYTE)g_CluiData.bNoTrayTips);
                             if (!SendDlgItemMessage(hwndDlg, IDC_PRIMARYSTATUS, CB_GETITEMDATA, SendDlgItemMessage(hwndDlg, IDC_PRIMARYSTATUS, CB_GETCURSEL, 0, 0), 0))
                                 DBDeleteContactSetting(NULL, "CList", "PrimaryStatus");
                             else

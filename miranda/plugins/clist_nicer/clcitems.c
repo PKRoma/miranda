@@ -33,6 +33,7 @@ TCHAR* xStatusDescr[] =
  };
 
 CRITICAL_SECTION cs_extcache;
+int    g_list_avatars = 0;
 
 extern struct CluiData g_CluiData;
 extern HANDLE hExtraImageListRebuilding, hExtraImageApplying;
@@ -99,6 +100,27 @@ struct ClcGroup *RemoveItemFromGroup(HWND hwnd, struct ClcGroup *group, struct C
 	return(saveRemoveItemFromGroup(hwnd, group, contact, updateTotalCount));
 }
 
+void LoadAvatarForContact(struct ClcContact *p)
+{
+    DWORD dwFlags = DBGetContactSettingDword(p->hContact, "CList", "CLN_Flags", 0);
+
+    if(g_CluiData.dwFlags & CLUI_FRAME_AVATARS)
+        p->cFlags = (dwFlags & ECF_HIDEAVATAR ? p->cFlags & ~ECF_AVATAR : p->cFlags | ECF_AVATAR);
+    else
+        p->cFlags = (dwFlags & ECF_FORCEAVATAR ? p->cFlags | ECF_AVATAR : p->cFlags & ~ECF_AVATAR);
+
+    p->ace = NULL;
+    if(g_CluiData.bAvatarServiceAvail && (p->cFlags & ECF_AVATAR) && (!g_CluiData.bNoOfflineAvatars || p->wStatus != ID_STATUS_OFFLINE)) {
+        p->ace = (struct avatarCacheEntry *)CallService(MS_AV_GETAVATARBITMAP, (WPARAM)p->hContact, 0);
+        if (p->ace != NULL && p->ace->cbSize != sizeof(struct avatarCacheEntry))
+            p->ace = NULL;
+        if (p->ace != NULL) {
+            p->ace->t_lastAccess = g_CluiData.t_now;
+            g_list_avatars++;
+        }
+    }
+}
+
 int AddContactToGroup(struct ClcData *dat, struct ClcGroup *group, HANDLE hContact)
 {
 	int i = saveAddContactToGroup( dat, group, hContact );
@@ -120,14 +142,8 @@ int AddContactToGroup(struct ClcData *dat, struct ClcGroup *group, HANDLE hConta
 	}
 
 	p->codePage = DBGetContactSettingDword(hContact, "Tab_SRMsg", "ANSIcodepage", DBGetContactSettingDword(hContact, "UserInfo", "ANSIcodepage", CP_ACP));
-	p->ace = NULL;
-	if(g_CluiData.bAvatarServiceAvail && (!g_CluiData.bNoOfflineAvatars || p->wStatus != ID_STATUS_OFFLINE)) {
-		p->ace = (struct avatarCacheEntry *)CallService(MS_AV_GETAVATARBITMAP, (WPARAM)hContact, 0);
-		if (p->ace != NULL && p->ace->cbSize != sizeof(struct avatarCacheEntry))
-			p->ace = NULL;
-		if (p->ace != NULL)
-			p->ace->t_lastAccess = g_CluiData.t_now;
-	}
+    LoadAvatarForContact(p);
+    p->bSecondLine = DBGetContactSettingByte(hContact, "CList", "CLN_2ndline", g_CluiData.dualRowMode);
 
 	if(dat->bisEmbedded)
 		p->extraCacheEntry = -1;
@@ -165,6 +181,7 @@ void RebuildEntireList(HWND hwnd, struct ClcData *dat)
 
 	RowHeights_Clear(dat);
 	RowHeights_GetMaxRowHeight(dat, hwnd);
+    g_list_avatars = 0;
 
 	dat->list.expanded = 1;
 	dat->list.hideOffline = DBGetContactSettingByte(NULL, "CLC", "HideOfflineRoot", 0);
