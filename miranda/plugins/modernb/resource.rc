@@ -766,7 +766,7 @@ BEGIN
                     "Button",BS_AUTOCHECKBOX | WS_TABSTOP,16,141,196,10
     GROUPBOX        "MetaContacts stuff",IDC_FRAME_META,2,71,218,101
     GROUPBOX        "Additional stuff",IDC_FRAME_META2,2,16,218,53
-    CTEXT           "For other stuffs MetaContacts plugin should be loaded.\n\nhttp://miranda-im.org/download",
+    CTEXT           "For other stuff MetaContacts plugin should be loaded.\n\nhttp://miranda-im.org/download",
                     IDC_FRAME_META_CAPT,11,87,201,26,NOT WS_VISIBLE
     CONTROL         "Allow internal requesting of away message text",
                     IDC_DISCOVER_AWAYMSG,"Button",BS_AUTOCHECKBOX | 
