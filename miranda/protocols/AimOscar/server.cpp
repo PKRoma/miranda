@@ -759,10 +759,6 @@ void snac_received_message(SNAC &snac,HANDLE hServerConn,unsigned short &seqno)/
 		{ // skip server-added TLVs - prevent another problems with parsing
 			TLV tlv(snac.val(offset));
 
-			if(tlv.cmp(0x0004)&&!tlv.len())//auto response flag
-			{
-					auto_response=1;
-			}
 			offset+=TLV_HEADER_SIZE+tlv.len();
 			// some extra sanity
 			if (offset>=snac.len()) break;
@@ -771,6 +767,10 @@ void snac_received_message(SNAC &snac,HANDLE hServerConn,unsigned short &seqno)/
 		{
 			TLV tlv(snac.val(offset));
 			offset+=TLV_HEADER_SIZE;
+			if(tlv.cmp(0x0004)&&!tlv.len())//auto response flag
+			{
+					auto_response=1;
+			}
 			if(tlv.cmp(0x0002))//msg
 			{
 				unsigned short caps_length=tlv.ushort(2);
