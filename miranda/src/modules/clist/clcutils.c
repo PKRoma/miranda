@@ -74,17 +74,10 @@ int fnHitTest(HWND hwnd, struct ClcData *dat, int testx, int testy, struct ClcCo
 	RECT clRect;
 	HFONT hFont;
 	DWORD style = GetWindowLong(hwnd, GWL_STYLE);
-	POINT pt;
 
 	if ( flags )
 		*flags = 0;
 	
-	pt.x = testx;
-	pt.y = testy;
-	MapWindowPoints(hwnd, NULL, &pt, 1);
-	if ( ChildWindowFromPointEx( GetDesktopWindow(), pt, CWP_SKIPINVISIBLE | CWP_SKIPTRANSPARENT ) != cli.hwndContactList )
-		return -1;
-
 	GetClientRect(hwnd, &clRect);
 	if ( testx < 0 || testy < 0 || testy >= clRect.bottom || testx >= clRect.right ) {
 		if ( flags ) {
