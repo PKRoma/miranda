@@ -163,6 +163,8 @@ int CheckProtocolOrder()
 	DBWriteContactSettingDword(0,"Protocols","PrVer",PrVer);
 	return 1;
 }
+//clistmenus.c
+char * GetUniqueProtoName(char * proto);
 
 int FillTree(HWND hwnd)
 {
@@ -185,14 +187,16 @@ int FillTree(HWND hwnd)
 
 	for ( i = 0; i < count; i++ ) {
 		_itoa(i,	(char *)&buf,10);
-		szSTName = DBGetStringA(0,"Protocols",(char *)&buf);
-		if ( szSTName == NULL )
+		szSTName = DBGetStringA(0,"Protocols",(char *)&buf);		
+        if ( szSTName == NULL )
 			continue;
 
 		CallProtoService( szSTName, PS_GETNAME, sizeof( szName ), ( LPARAM )szName );
 
 		PD = ( ProtocolData* )mir_alloc( sizeof( ProtocolData ));
-		PD->RealName = szSTName;
+		PD->RealName = GetUniqueProtoName(szSTName); //it return static pointer to protocol name-> not net to be freed
+        mir_free(szSTName);
+        szSTName=PD->RealName;
 
 		_itoa( OFFSET_VISIBLE+i, buf, 10 );
 		PD->show=(boolean)DBGetContactSettingDword(0,"Protocols", buf, 1 );
@@ -223,7 +227,12 @@ BOOL CALLBACK ProtocolOrderOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lP
 	struct ProtocolOrderData *dat = (struct ProtocolOrderData*)GetWindowLong(GetDlgItem(hwndDlg,IDC_PROTOCOLORDER),GWL_USERDATA);
 
 	switch (msg) {
-	case WM_INITDIALOG: 
+
+    case WM_DESTROY:
+            if (dat) mir_free(dat);
+            break;
+
+    case WM_INITDIALOG: 
 		TranslateDialogDefault(hwndDlg);
 		dat=(struct ProtocolOrderData*)mir_alloc(sizeof(struct ProtocolOrderData));
 		SetWindowLong(GetDlgItem(hwndDlg,IDC_PROTOCOLORDER),GWL_USERDATA,(long)dat);
@@ -341,9 +350,13 @@ BOOL CALLBACK ProtocolOrderOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lP
 			ScreenToClient(GetDlgItem(hwndDlg,IDC_PROTOCOLORDER),&hti.pt);
 			TreeView_HitTest(GetDlgItem(hwndDlg,IDC_PROTOCOLORDER),&hti);
 			if ( hti.flags & (TVHT_ONITEM|TVHT_ONITEMRIGHT )) {
+                HTREEITEM it=hti.hItem;
 				hti.pt.y-=TreeView_GetItemHeight(GetDlgItem(hwndDlg,IDC_PROTOCOLORDER))/2;
 				TreeView_HitTest(GetDlgItem(hwndDlg,IDC_PROTOCOLORDER),&hti);
-				TreeView_SetInsertMark(GetDlgItem(hwndDlg,IDC_PROTOCOLORDER),hti.hItem,1);
+                if (!(hti.flags&TVHT_ABOVE))
+                    TreeView_SetInsertMark(GetDlgItem(hwndDlg,IDC_PROTOCOLORDER),hti.hItem,1);
+                else 
+                    TreeView_SetInsertMark(GetDlgItem(hwndDlg,IDC_PROTOCOLORDER),it,0);
 			}
 			else {
 				if(hti.flags&TVHT_ABOVE) SendDlgItemMessage(hwndDlg,IDC_PROTOCOLORDER,WM_VSCROLL,MAKEWPARAM(SB_LINEUP,0),0);
@@ -367,11 +380,12 @@ BOOL CALLBACK ProtocolOrderOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lP
 			ScreenToClient(GetDlgItem(hwndDlg,IDC_PROTOCOLORDER),&hti.pt);
 			hti.pt.y-=TreeView_GetItemHeight(GetDlgItem(hwndDlg,IDC_PROTOCOLORDER))/2;
 			TreeView_HitTest(GetDlgItem(hwndDlg,IDC_PROTOCOLORDER),&hti);
-			if(dat->hDragItem==hti.hItem) break;
+            if(dat->hDragItem==hti.hItem) break;
+            if (hti.flags&TVHT_ABOVE) hti.hItem=TVI_FIRST;
 			tvi.mask=TVIF_HANDLE|TVIF_PARAM;
-			tvi.hItem=hti.hItem;
+			tvi.hItem=dat->hDragItem;
 			TreeView_GetItem(GetDlgItem(hwndDlg,IDC_PROTOCOLORDER),&tvi);
-			if ( hti.flags & (TVHT_ONITEM|TVHT_ONITEMRIGHT )) {
+			if ( hti.flags & (TVHT_ONITEM|TVHT_ONITEMRIGHT )||(hti.hItem==TVI_FIRST)) {
 				TVINSERTSTRUCT tvis;
 				TCHAR name[128];
                 ProtocolData * lpOldData;
