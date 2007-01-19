@@ -191,8 +191,8 @@ static int LoadSkinProtoIcon(WPARAM wParam,LPARAM lParam)
 	if ( hIcon != NULL )
 		return (int)hIcon;
 
-	mir_snprintf(iconName, SIZEOF(iconName), "%s%s%d", statusIconsFmt, szProto, 0);
-	hIcon = (HICON)IcoLib_GetIcon(0, (LPARAM)iconName);
+	//mir_snprintf(iconName, SIZEOF(iconName), "%s%s%d", statusIconsFmt, szProto, 0);
+	//hIcon = (HICON)IcoLib_GetIcon(0, (LPARAM)iconName);
 	if ( hIcon == NULL ) {
 		char szPath[MAX_PATH], szFullPath[MAX_PATH],*str;
 		char iconId[MAX_PATH];
@@ -227,9 +227,9 @@ static int LoadSkinProtoIcon(WPARAM wParam,LPARAM lParam)
 		strcat(iconId, szProto);
 		suffIndx = strlen(iconId);
 		for (i = 0; i < SIZEOF(statusIcons); i++)
-		if ( caps2 & statusIcons[i].pf2 ) {
+		if ( caps2 & statusIcons[i].pf2) {
 			// format: core_%s%d
-			itoa(i, iconId + suffIndx, 10);
+			itoa(i, iconId + suffIndx, 10);            
 			sid.pszName = iconId;
 			sid.pszDescription = (char*)CallService(MS_CLIST_GETSTATUSMODEDESCRIPTION,statusIcons[i].id,0);
 			//statusIcons[i].description;
@@ -239,8 +239,34 @@ static int LoadSkinProtoIcon(WPARAM wParam,LPARAM lParam)
 		// format: core_status_%s%d
 		strcpy(iconName, statusIconsFmt);
 		strcat(iconName, szProto);
-		itoa(statusIndx, iconName + strlen(iconName), 10);
-		return (int)IcoLib_GetIcon(0, (LPARAM)iconName);
+		itoa(statusIndx, iconName + strlen(iconName), 10);		
+        hIcon = (HICON) IcoLib_GetIcon(0, (LPARAM)iconName);
+        if ( hIcon ) return (int)hIcon;
+
+        // icon cant be get probably faked protocol 
+        // register icon with section==NULL to keep it invisible
+        // and default icon as global status icon
+        // then try to load it
+        {
+            char * protocolIconName=NEWSTR_ALLOCA( iconName );
+            strcpy(iconName, statusIconsFmt);
+            strcat(iconName, GLOBAL_PROTO_NAME);
+            itoa(statusIndx, iconName + strlen(iconName), 10);		
+            hIcon=(HICON) IcoLib_GetIcon( 0, (LPARAM)iconName ); 
+            sid.hDefaultIcon=hIcon;
+            sid.pszSection=NULL;
+            sid.pszName=protocolIconName;
+            sid.iDefaultIndex=0;
+            sid.pszDescription="";
+            IcoLib_AddNewIcon(0, (LPARAM)&sid);            
+            hIcon = IcoLib_GetIcon( 0, (LPARAM)protocolIconName );
+            if ( hIcon ) {
+                IconLib_ReleaseIcon( sid.hDefaultIcon, 0 );
+                return (int)hIcon;
+            } else {
+                return (int)sid.hDefaultIcon;
+            }
+        }
 	}
 
 	return (int)hIcon;

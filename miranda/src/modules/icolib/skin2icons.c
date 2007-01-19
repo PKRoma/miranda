@@ -112,8 +112,11 @@ static HICON ExtractIconFromPath(const TCHAR *path, int cxIcon, int cyIcon)
 
 static SectionItem* IcoLib_AddSection(TCHAR *sectionName, BOOL create_new)
 {
-	SectionItem key = { sectionName, 0 };
+	SectionItem key = { sectionName, 0 };    
 	int indx;
+
+    if ( !sectionName ) return NULL;
+
 	if ( List_GetIndex(( SortedList* )&sectionList, &key, &indx ))
 		return sectionList.items[indx];
 
@@ -185,7 +188,7 @@ static int IcoLib_AddNewIcon(WPARAM wParam,LPARAM lParam)
 			item->description = mir_tstrdup(sid->ptszDescription);
 			item->section = IcoLib_AddSection(sid->pwszSection, TRUE);
 		#else
-			char *pszSection = u2a(sid->pwszSection);
+        char *pszSection = sid->pwszSection ? u2a(sid->pwszSection) : NULL;
 
 			item->description = u2a(sid->pwszDescription);
 			item->section = IcoLib_AddSection(pszSection, TRUE);
@@ -194,7 +197,7 @@ static int IcoLib_AddNewIcon(WPARAM wParam,LPARAM lParam)
 	}
 	else {
 		#ifdef _UNICODE
-			WCHAR *pwszSection = a2u(sid->pszSection);
+        WCHAR *pwszSection = sid->pszSection ? a2u(sid->pszSection) : NULL;
 
 			item->description = a2u(sid->pszDescription);
 			item->section = IcoLib_AddSection(pwszSection, TRUE);
@@ -204,8 +207,10 @@ static int IcoLib_AddNewIcon(WPARAM wParam,LPARAM lParam)
 			item->section = IcoLib_AddSection(sid->pszSection, TRUE);
 		#endif
 	}
-
-	item->orderID = ++item->section->maxOrder;
+    if (item->section)
+	    item->orderID = ++item->section->maxOrder;
+    else
+        item->orderID=0;
 
 	if (sid->pszDefaultFile) {
 		char fileFull[MAX_PATH];
@@ -237,7 +242,7 @@ static int IcoLib_AddNewIcon(WPARAM wParam,LPARAM lParam)
 	}
 	else item->default_icon_index = -1;
 
-	if (sid->cbSize >= SKINICONDESC_SIZE)
+	if (sid->cbSize >= SKINICONDESC_SIZE && item->section)
 		item->section->flags = sid->flags & SIDF_SORTED;
 
 	LeaveCriticalSection(&csIconList);
