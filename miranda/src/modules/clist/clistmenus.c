@@ -102,7 +102,7 @@ typedef struct
 
 typedef struct
 {
-	char *proto;
+	char *proto;            //This is unique protoname
 	int protoindex;
 	int status;
 
@@ -630,28 +630,31 @@ int StatusMenuExecService(WPARAM wParam,LPARAM lParam)
 				PMO_IntMenuItem pimi;
                 //char *prot = GetUniqueProtoName(smep->proto);
                 char *prot = smep->proto;
+                char szHumanName[64]={0};
 				int i=(DBGetContactSettingByte(NULL,prot,"LockMainStatus",0)?0:1);
 				DBWriteContactSettingByte(NULL,prot,"LockMainStatus",i);
-				pimi = cli.pfnMOGetIntMenuItem(smep->protoindex);
+                CallProtoService(smep->proto,PS_GETNAME,(WPARAM)SIZEOF(szHumanName),(LPARAM)szHumanName);
+                pimi = cli.pfnMOGetIntMenuItem(smep->protoindex);
 				if ( i ) {
 					char buf[256];
 					pimi->mi.flags|=CMIF_CHECKED;
 					if ( pimi->mi.pszName )
 						mir_free( pimi->mi.pszName );
-					if ( cli.bDisplayLocked ) {
-						_snprintf(buf,SIZEOF(buf),Translate("%s (locked)"),smep->proto);
-                  pimi->mi.ptszName = LangPackPcharToTchar( buf );
+					if ( cli.bDisplayLocked ) 
+                    {
+						_snprintf(buf,SIZEOF(buf),Translate("%s (locked)"),szHumanName);
+                        pimi->mi.ptszName = LangPackPcharToTchar( buf );
 					}
-					else pimi->mi.ptszName = LangPackPcharToTchar( smep->proto );
+					else pimi->mi.ptszName = LangPackPcharToTchar( szHumanName );
 				}
 				else {
 					if ( pimi->mi.pszName )
 						mir_free( pimi->mi.pszName );
-					pimi->mi.ptszName = LangPackPcharToTchar( smep->proto );
+					pimi->mi.ptszName = LangPackPcharToTchar( szHumanName );
 					pimi->mi.flags &= ~CMIF_CHECKED;
 				}
 				if ( cli.hwndStatus )
-					InvalidateRect( cli.hwndStatus, NULL, FALSE );
+					InvalidateRect( cli.hwndStatus, NULL, TRUE );
 			}
 			else if ( smep->proto != NULL ) {
 				CallProtoService(smep->proto,PS_SETSTATUS,smep->status,0);
@@ -1315,7 +1318,7 @@ static int AddStatusMenuItem(WPARAM wParam,LPARAM lParam)
 			int i=0;
 			while(buf[i]!='\0' && buf[i]!='/') i++;
 			buf[i]='\0';
-			smep->proto=mir_strdup(buf);
+            smep->proto=mir_strdup(buf);
 			mir_free(buf);
 		}
 		tmi.ownerdata=smep;
