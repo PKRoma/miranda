@@ -471,15 +471,9 @@ void Chat_AddIcons(void)
 // load icons from the skinning module if available
 HICON LoadIconEx(int iIndex, char * pszIcoLibName, int iX, int iY)
 {
-	if (ServiceExists(MS_SKIN2_ADDICON))
-	{
-		char szTemp[256];
-		mir_snprintf(szTemp, sizeof(szTemp), "chat_%s", pszIcoLibName);
-		return (HICON) CallService(MS_SKIN2_GETICON, 0, (LPARAM)szTemp);
-	}
-	else
-		return (HICON)LoadImage(g_hIconDLL, MAKEINTRESOURCE(iIndex),IMAGE_ICON,iX,iY,LR_SHARED);
-	return 0;
+    char szTemp[256];
+    mir_snprintf(szTemp, sizeof(szTemp), "chat_%s", pszIcoLibName);
+    return (HICON) CallService(MS_SKIN2_GETICON, 0, (LPARAM)szTemp);
 }
 
 static void InitSetting(TCHAR** ppPointer, char* pszSetting, TCHAR* pszDefault)

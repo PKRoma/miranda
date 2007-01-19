@@ -36,9 +36,9 @@ $Id$
 
 static char *relnotes[] = {
     "{\\rtf1\\ansi\\deff0\\pard\\li%u\\fi-%u\\ri%u\\tx%u}",
-    "\\par\t\\b\\ul1 Release notes for version 1.1.0.15\\b0\\ul0\\par ",
-    "*\tAdded option to sync splitter positions between group chat and normal IM sessions.\\par",
-    "*\tSome unicode related bug fixes in chat.\\par",
+    "\\par\t\\b\\ul1 Release notes for version 1.1.0.16\\b0\\ul0\\par ",
+    "*\tRemoved old icon code. tabSRMM will \\b now require \\b0 the icolib plugin OR a nightly build 0.7 #8 or later.\\par",
+    "*\tSome minor bugs in template editor fixed.\\par",
     NULL
 };
 
@@ -2039,7 +2039,6 @@ static int LoadFromIconLib()
         }
         n++;
     }
-    
     CacheMsgLogIcons();
     WindowList_Broadcast(hMessageWindowList, DM_LOADBUTTONBARICONS, 0, 0);
     return 0;
@@ -2057,48 +2056,11 @@ static void LoadIconTheme()
     int i = 0, version = 0, n = 0;
     //char szDebug[80];
     
-    if(ServiceExists(MS_SKIN2_ADDICON)) {               // ico lib present...
-        if(SetupIconLibConfig() == 0)
-            return;
-        else
-            LoadFromIconLib();
+    if(SetupIconLibConfig() == 0)
         return;
-    }
-
-    // no icolib present, load it the default way...
-    
-    if(g_hIconDLL == 0) {                               // first time, load the library...
-        strncpy(szFilename, "plugins\\tabsrmm_icons.dll", MAX_PATH);
-        g_hIconDLL = LoadLibraryA(szFilename);
-        if(g_hIconDLL == 0) {
-            strncpy(szFilename, "icons\\tabsrmm_icons.dll", MAX_PATH);
-            g_hIconDLL = LoadLibraryA(szFilename);
-        }
-    }
-
-    if(g_hIconDLL == NULL)
-        MessageBoxA(0, "Critical: cannot load resource DLL (no icons will be shown)", "tabSRMM", MB_OK);
-    else {
-        version = GetIconPackVersion(g_hIconDLL);
-        myGlobals.g_hbmUnknown = LoadImage(g_hIconDLL, MAKEINTRESOURCE(IDB_UNKNOWNAVATAR), IMAGE_BITMAP, 0, 0, 0);
-        if(myGlobals.g_hbmUnknown == 0) {
-            HDC dc = GetDC(0);
-            myGlobals.g_hbmUnknown = CreateCompatibleBitmap(dc, 20, 20);
-            ReleaseDC(0, dc);
-        }
-        while(ICONBLOCKS[n].szSection) {
-            i = 0;
-            while(ICONBLOCKS[n].idesc[i].szDesc) {
-                *(ICONBLOCKS[n].idesc[i].phIcon) = (HICON)LoadImage(g_hIconDLL, MAKEINTRESOURCE(abs(ICONBLOCKS[n].idesc[i].uId)),
-                                                                    IMAGE_ICON, ICONBLOCKS[n].idesc[i].bForceSmall ? cxIcon : 0, ICONBLOCKS[n].idesc[i].bForceSmall ? cyIcon : 0, 0);
-                i++;
-            }
-            n++;
-        }
-        CacheMsgLogIcons();
-        WindowList_Broadcast(hMessageWindowList, DM_LOADBUTTONBARICONS, 0, 0);
-        return;
-    }
+    else
+        LoadFromIconLib();
+    return;
 }
 
 static void UnloadIcons()

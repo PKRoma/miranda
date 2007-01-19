@@ -19,6 +19,15 @@ the file listing the same day.
 Trunk is now using version numbers 1.1.0.x until the next major release. Bugfixes
 will be backported to stable branch, new features will only go into trunk.
 
+Version 1.1.0.16 - 2007/01/20
+
+        * bugfixes
+        * 3-way message log selection added to the user preferences dialog.
+        * fixed problem with calling certain protocol services too early.
+        * fixed own nickname not showing in template editor.
+        * removed old icon loading code. IcoLib API is now required (either
+          via IcoLib plugin or new Miranda 0.7 core).
+
 Version 1.1.0.14 - 2006/12/06
 
         * more work on clickable nicknames in group chats.
