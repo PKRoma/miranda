@@ -902,6 +902,7 @@ set_bg_l:
 				} else {
 					DrawAlpha(hdcMem, &rc, sselected->COLOR, sselected->ALPHA, sselected->COLOR2, sselected->COLOR2_TRANSPARENT, sselected->GRADIENT, sselected->CORNER, sselected->BORDERSTYLE, sselected->imageItem);
 				}
+                SetTextColor(hdcMem, sselected->TEXTCOLOR);
 			}
 			else {
                 rc.left = bg_indent_l;
@@ -909,17 +910,21 @@ set_bg_l:
                 rc.right = clRect->right - bg_indent_r;
                 rc.bottom = y + rowHeight;
                 FillRect(hdcMem, &rc, GetSysColorBrush(COLOR_HIGHLIGHT));
+                SetTextColor(hdcMem, dat->selTextColour);
             }
-			SetTextColor(hdcMem, dat->selTextColour);
 		}
 	} 
 	else if (g_hottrack) {
-		SetHotTrackColour(hdcMem,dat);
+        StatusItems_t *ht = &StatusItems[ID_EXTBKHOTTRACK - ID_STATUS_OFFLINE];
+
+        SetHotTrackColour(hdcMem,dat);
+        if(ht->IGNORED == 0)
+            SetTextColor(hdcMem, ht->TEXTCOLOR);
 		if(!g_hottrack_done) {
-	        StatusItems_t *ht = &StatusItems[ID_EXTBKHOTTRACK - ID_STATUS_OFFLINE];
-		    if (ht->IGNORED == 0)
-				DrawAlpha(hdcMem, &rc, ht->COLOR, ht->ALPHA, ht->COLOR2, ht->COLOR2_TRANSPARENT, ht->GRADIENT, 
-						  ht->CORNER, ht->BORDERSTYLE, ht->imageItem);
+		    if (ht->IGNORED == 0) {
+                DrawAlpha(hdcMem, &rc, ht->COLOR, ht->ALPHA, ht->COLOR2, ht->COLOR2_TRANSPARENT, ht->GRADIENT, 
+                          ht->CORNER, ht->BORDERSTYLE, ht->imageItem);
+            }
 		}
 	}
 

@@ -102,7 +102,12 @@ struct ClcGroup *RemoveItemFromGroup(HWND hwnd, struct ClcGroup *group, struct C
 
 void LoadAvatarForContact(struct ClcContact *p)
 {
-    DWORD dwFlags = DBGetContactSettingDword(p->hContact, "CList", "CLN_Flags", 0);
+    DWORD dwFlags;
+
+    if(p->extraCacheEntry >= 0 && p->extraCacheEntry <= g_maxExtraCacheEntry)
+        dwFlags = g_ExtraCache[p->extraCacheEntry].dwDFlags;
+    else
+        dwFlags = DBGetContactSettingDword(p->hContact, "CList", "CLN_Flags", 0);
 
     if(g_CluiData.dwFlags & CLUI_FRAME_AVATARS)
         p->cFlags = (dwFlags & ECF_HIDEAVATAR ? p->cFlags & ~ECF_AVATAR : p->cFlags | ECF_AVATAR);
@@ -114,11 +119,11 @@ void LoadAvatarForContact(struct ClcContact *p)
         p->ace = (struct avatarCacheEntry *)CallService(MS_AV_GETAVATARBITMAP, (WPARAM)p->hContact, 0);
         if (p->ace != NULL && p->ace->cbSize != sizeof(struct avatarCacheEntry))
             p->ace = NULL;
-        if (p->ace != NULL) {
+        if (p->ace != NULL)
             p->ace->t_lastAccess = g_CluiData.t_now;
-            g_list_avatars++;
-        }
     }
+    if(p->ace == NULL)
+        p->cFlags &= ~ECF_AVATAR;
 }
 
 int AddContactToGroup(struct ClcData *dat, struct ClcGroup *group, HANDLE hContact)
@@ -142,7 +147,6 @@ int AddContactToGroup(struct ClcData *dat, struct ClcGroup *group, HANDLE hConta
 	}
 
 	p->codePage = DBGetContactSettingDword(hContact, "Tab_SRMsg", "ANSIcodepage", DBGetContactSettingDword(hContact, "UserInfo", "ANSIcodepage", CP_ACP));
-    LoadAvatarForContact(p);
     p->bSecondLine = DBGetContactSettingByte(hContact, "CList", "CLN_2ndline", g_CluiData.dualRowMode);
 
 	if(dat->bisEmbedded)
@@ -162,6 +166,7 @@ int AddContactToGroup(struct ClcData *dat, struct ClcGroup *group, HANDLE hConta
 			}
 		}
 	}
+    LoadAvatarForContact(p);
 #if defined(_UNICODE)
 	RTL_DetectAndSet( p, p->hContact);
 #endif    
@@ -181,7 +186,6 @@ void RebuildEntireList(HWND hwnd, struct ClcData *dat)
 
 	RowHeights_Clear(dat);
 	RowHeights_GetMaxRowHeight(dat, hwnd);
-    g_list_avatars = 0;
 
 	dat->list.expanded = 1;
 	dat->list.hideOffline = DBGetContactSettingByte(NULL, "CLC", "HideOfflineRoot", 0);
@@ -575,6 +579,7 @@ int GetExtraCache(HANDLE hContact, char *szProto)
         g_ExtraCache[g_nextExtraCacheEntry].status_item = NULL;
         LoadSkinItemToCache(&g_ExtraCache[g_nextExtraCacheEntry], szProto);
         g_ExtraCache[g_nextExtraCacheEntry].dwCFlags = g_ExtraCache[g_nextExtraCacheEntry].timediff = g_ExtraCache[g_nextExtraCacheEntry].timezone = 0;
+        g_ExtraCache[g_nextExtraCacheEntry].dwDFlags = DBGetContactSettingDword(hContact, "CList", "CLN_Flags", 0);
         GetCachedStatusMsg(g_nextExtraCacheEntry, szProto);
 		g_ExtraCache[g_nextExtraCacheEntry].dwLastMsgTime = INTSORT_GetLastMsgTime(hContact);
         iFound = g_nextExtraCacheEntry++;

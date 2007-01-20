@@ -188,6 +188,8 @@ static BOOL CALLBACK IgnoreDialogProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM
                                 else if(iSel == 2)
                                     dwFlags |= ECF_HIDEAVATAR;
                                 DBWriteContactSettingDword(hContact, "CList", "CLN_Flags", dwFlags);
+                                if(contact->extraCacheEntry >= 0 && contact->extraCacheEntry <= g_maxExtraCacheEntry)
+                                    g_ExtraCache[contact->extraCacheEntry].dwDFlags = dwFlags;
                                 LoadAvatarForContact(contact);
                             }
 

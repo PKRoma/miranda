@@ -105,6 +105,7 @@ struct ExtraCache {
 	DWORD timezone;
 	DWORD timediff;
 	DWORD dwCFlags;
+    DWORD dwDFlags;     // display flags for caching only
 	StatusItems_t *status_item, *proto_status_item;
 	CONTACTFLOATER *floater;
 	DWORD dwLastMsgTime;

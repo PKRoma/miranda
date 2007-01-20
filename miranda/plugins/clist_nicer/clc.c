@@ -535,9 +535,20 @@ LBL_Def:
 			if(!FindItem(hwnd, dat, (HANDLE)wParam, &contact, NULL, NULL))
 				return 0;
 			contact->ace = cEntry;
-            if(cEntry)
-                g_list_avatars++;
+            if(cEntry == NULL)
+                contact->cFlags &= ~ECF_AVATAR;
+            else {
+				DWORD dwFlags;
 
+                if(contact->extraCacheEntry >= 0 && contact->extraCacheEntry <= g_maxExtraCacheEntry)
+                    dwFlags = g_ExtraCache[contact->extraCacheEntry].dwDFlags;
+                else
+                    dwFlags = DBGetContactSettingDword(contact->hContact, "CList", "CLN_Flags", 0);
+                if(g_CluiData.dwFlags & CLUI_FRAME_AVATARS)
+                    contact->cFlags = (dwFlags & ECF_HIDEAVATAR ? contact->cFlags & ~ECF_AVATAR : contact->cFlags | ECF_AVATAR);
+                else
+                    contact->cFlags = (dwFlags & ECF_FORCEAVATAR ? contact->cFlags | ECF_AVATAR : contact->cFlags & ~ECF_AVATAR);
+            }
 			PostMessage(hwnd, INTM_INVALIDATE, 0, (LPARAM)contact->hContact);
 			goto LBL_Def;
 		}
@@ -567,15 +578,8 @@ LBL_Def:
 
 			wStatus = DBGetContactSettingWord((HANDLE)wParam, contact->proto, "Status", ID_STATUS_OFFLINE);
 			if(g_CluiData.bNoOfflineAvatars && wStatus != ID_STATUS_OFFLINE && contact->wStatus == ID_STATUS_OFFLINE) {
-				if(g_CluiData.bAvatarServiceAvail && contact->ace == NULL) {
-					contact->ace = (struct avatarCacheEntry *)CallService(MS_AV_GETAVATARBITMAP, wParam, 0);
-					if (contact->ace != NULL && contact->ace->cbSize != sizeof(struct avatarCacheEntry))
-						contact->ace = NULL;
-					if (contact->ace != NULL) {
-                        contact->ace->t_lastAccess = time(NULL);
-                        g_list_avatars++;
-                    }
-				}
+				if(g_CluiData.bAvatarServiceAvail && contact->ace == NULL)
+                    LoadAvatarForContact(contact);
 			}
 			contact->wStatus = wStatus;
 			goto LBL_Def;
