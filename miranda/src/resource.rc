@@ -824,7 +824,7 @@ END
 IDD_OPT_SOUND DIALOGEX 0, 0, 285, 240
 STYLE DS_3DLOOK | DS_FIXEDSYS | WS_CHILD | WS_VISIBLE
 EXSTYLE WS_EX_CONTROLPARENT
-FONT 8, "MS Shell Dlg"
+FONT 8, "MS Shell Dlg", 0, 0, 0x1
 BEGIN
     GROUPBOX        "Sounds",IDC_STATIC,4,4,277,154
     PUSHBUTTON      "&Change...",IDC_CHANGE,16,213,50,14
@@ -1164,6 +1164,34 @@ BEGIN
     RTEXT           "Homepage:",IDC_STATIC,7,213,38,8
     CTEXT           "Please restart Miranda IM for your changes to take effect.",
                     IDC_RESTART,5,233,305,11,NOT WS_VISIBLE
+END
+
+IDD_UPDATE_NOTIFY DIALOG DISCARDABLE  0, 0, 259, 103
+STYLE DS_MODALFRAME | DS_CENTER | WS_POPUP | WS_VISIBLE | WS_CAPTION | 
+    WS_SYSMENU
+CAPTION "Miranda IM v%s Now Available"
+FONT 8, "MS Shell Dlg"
+BEGIN
+    LTEXT           "A new version of Miranda IM is now available.  Click the download button to download this new update.",
+                    IDC_STATIC,7,7,245,21
+    LTEXT           "New Version:",IDC_NEWVERSIONLABEL,7,47,65,8
+    LTEXT           "Current Version:",IDC_STATIC,7,32,65,8
+    LTEXT           "",IDC_CURRENTVERSION,77,32,87,8
+    LTEXT           "",IDC_VERSION,77,47,87,8
+    PUSHBUTTON      "&Download Now",IDC_DOWNLOAD,7,61,66,15
+    DEFPUSHBUTTON   "&Close",IDOK,202,84,50,15
+    CONTROL         "",IDC_STATIC,"Static",SS_ETCHEDHORZ,7,80,245,1
+END
+
+IDD_OPT_UPDATENOTIFY DIALOGEX 0, 0, 238, 49
+STYLE DS_FIXEDSYS | WS_CHILD
+EXSTYLE WS_EX_CONTROLPARENT
+FONT 8, "MS Shell Dlg"
+BEGIN
+    GROUPBOX        "Update Notification Options",IDC_STATIC,2,4,233,40
+    CONTROL         "Check for new versions of Miranda IM periodically.",
+                    IDC_ENABLEUPDATES,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,
+                    11,22,212,10
 END
 
 
@@ -1559,6 +1587,22 @@ BEGIN
     IDD_OPT_PLUGINS, DIALOG
     BEGIN
         BOTTOMMARGIN, 235
+    END
+
+    IDD_UPDATE_NOTIFY, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 252
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 97
+    END
+
+    IDD_OPT_UPDATENOTIFY, DIALOG
+    BEGIN
+        LEFTMARGIN, 2
+        RIGHTMARGIN, 235
+        TOPMARGIN, 4
+        BOTTOMMARGIN, 44
     END
 END
 #endif    // APSTUDIO_INVOKED

@@ -838,6 +838,14 @@ SOURCE=.\modules\clist\groups.c
 SOURCE=.\modules\clist\keyboard.c
 # End Source File
 # End Group
+# Begin Group "updatenotify"
+
+# PROP Default_Filter ""
+# Begin Source File
+
+SOURCE=.\modules\updatenotify\updatenotify.c
+# End Source File
+# End Group
 # End Group
 # Begin Group "Resources"
 
