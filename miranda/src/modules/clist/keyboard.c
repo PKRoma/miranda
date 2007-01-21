@@ -108,10 +108,7 @@ int fnHotKeysProcess(HWND hwnd, WPARAM wParam, LPARAM lParam)
 		}
 	}
 	else if (wParam == aRead) {
-		if (cli.pfnEventsProcessTrayDoubleClick() == 0)
-			return TRUE;
-		SetForegroundWindow(hwnd);
-		SetFocus(hwnd);
+		cli.pfnEventsProcessTrayDoubleClick();
 	}
 	else if (wParam == aOpts) {
 		CallService("Options/OptionsCommand", 0, 0);
