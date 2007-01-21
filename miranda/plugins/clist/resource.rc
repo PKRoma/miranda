@@ -58,11 +58,11 @@ BEGIN
                     WS_TABSTOP,14,19,78,9
     CONTROL         "HotKey1",IDC_HKSHOWHIDE,"msctls_hotkey32",WS_BORDER | 
                     WS_TABSTOP,92,17,93,12
-    CONTROL         "Read Msg:",IDC_READMSG,"Button",BS_AUTOCHECKBOX | 
+    CONTROL         "Read Message:",IDC_READMSG,"Button",BS_AUTOCHECKBOX | 
                     WS_TABSTOP,14,36,78,9
     CONTROL         "HotKey1",IDC_HKREADMSG,"msctls_hotkey32",WS_BORDER | 
                     WS_TABSTOP,92,34,93,12
-    CONTROL         "Net Search:",IDC_NETSEARCH,"Button",BS_AUTOCHECKBOX | 
+    CONTROL         "Web Search:",IDC_NETSEARCH,"Button",BS_AUTOCHECKBOX | 
                     WS_TABSTOP,14,53,78,9
     CONTROL         "HotKey1",IDC_HKSEARCH,"msctls_hotkey32",WS_BORDER | 
                     WS_TABSTOP,92,51,93,12
