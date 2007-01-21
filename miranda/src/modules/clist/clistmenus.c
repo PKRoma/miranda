@@ -1137,6 +1137,7 @@ int MenuModulesLoaded(WPARAM wParam,LPARAM lParam)
 					CallService(MO_SETOPTIONSMENUITEM,(WPARAM)0,(LPARAM)&op);
 				}
 				IconLib_ReleaseIcon(tmi.hIcon,0);
+				break;
 	}	}	}
 
 	BuildStatusMenu(0,0);
