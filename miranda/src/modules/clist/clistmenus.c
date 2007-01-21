@@ -632,7 +632,7 @@ int StatusMenuExecService(WPARAM wParam,LPARAM lParam)
                 char *prot = smep->proto;
                 char szHumanName[64]={0};
 				int i=(DBGetContactSettingByte(NULL,prot,"LockMainStatus",0)?0:1);
-				DBWriteContactSettingByte(NULL,prot,"LockMainStatus",i);
+				DBWriteContactSettingByte(NULL,prot,"LockMainStatus",(BYTE)i);
                 CallProtoService(smep->proto,PS_GETNAME,(WPARAM)SIZEOF(szHumanName),(LPARAM)szHumanName);
                 pimi = cli.pfnMOGetIntMenuItem(smep->protoindex);
 				if ( i ) {

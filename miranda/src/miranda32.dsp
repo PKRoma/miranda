@@ -1101,10 +1101,6 @@ SOURCE=.\resource.h
 # End Source File
 # Begin Source File
 
-SOURCE=.\resource.rc
-# End Source File
-# Begin Source File
-
 SOURCE=.\res\searchal.ico
 # End Source File
 # Begin Source File
@@ -1142,6 +1138,10 @@ SOURCE=.\res\url.ico
 # Begin Source File
 
 SOURCE=.\res\useronli.ico
+# End Source File
+# Begin Source File
+
+SOURCE=.\vc6.rc
 # End Source File
 # Begin Source File
 

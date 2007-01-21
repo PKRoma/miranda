@@ -206,7 +206,6 @@ CLEAN :
 	-@erase "$(INTDIR)\protodir.sbr"
 	-@erase "$(INTDIR)\resizer.obj"
 	-@erase "$(INTDIR)\resizer.sbr"
-	-@erase "$(INTDIR)\resource.res"
 	-@erase "$(INTDIR)\searchresults.obj"
 	-@erase "$(INTDIR)\searchresults.sbr"
 	-@erase "$(INTDIR)\sendmsg.obj"
@@ -223,6 +222,8 @@ CLEAN :
 	-@erase "$(INTDIR)\sounds.sbr"
 	-@erase "$(INTDIR)\stdinfo.obj"
 	-@erase "$(INTDIR)\stdinfo.sbr"
+	-@erase "$(INTDIR)\updatenotify.obj"
+	-@erase "$(INTDIR)\updatenotify.sbr"
 	-@erase "$(INTDIR)\url.obj"
 	-@erase "$(INTDIR)\url.sbr"
 	-@erase "$(INTDIR)\urldialogs.obj"
@@ -235,6 +236,7 @@ CLEAN :
 	-@erase "$(INTDIR)\utf.sbr"
 	-@erase "$(INTDIR)\utils.obj"
 	-@erase "$(INTDIR)\utils.sbr"
+	-@erase "$(INTDIR)\vc6.res"
 	-@erase "$(INTDIR)\vc60.idb"
 	-@erase "$(INTDIR)\vc60.pdb"
 	-@erase "$(INTDIR)\visibility.obj"
@@ -251,7 +253,7 @@ CLEAN :
 
 CPP_PROJ=/nologo /MD /W3 /GX /Zi /O1 /I "../include" /D "NDEBUG" /D "WIN32" /D "_WINDOWS" /D "_NOSDK" /D "_STATIC" /Fr"$(INTDIR)\\" /Fp"$(INTDIR)\miranda32.pch" /Yu"commonheaders.h" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /FD /c 
 MTL_PROJ=/nologo /D "NDEBUG" /mktyplib203 /o "NUL" /win32 
-RSC_PROJ=/l 0x409 /fo"$(INTDIR)\resource.res" /d "NDEBUG" 
+RSC_PROJ=/l 0x409 /fo"$(INTDIR)\vc6.res" /d "NDEBUG" 
 BSC32=bscmake.exe
 BSC32_FLAGS=/nologo /o"$(OUTDIR)\miranda32.bsc" 
 BSC32_SBRS= \
@@ -344,6 +346,7 @@ BSC32_SBRS= \
 	"$(INTDIR)\groups.sbr" \
 	"$(INTDIR)\keyboard.sbr" \
 	"$(INTDIR)\movetogroup.sbr" \
+	"$(INTDIR)\protocolorder.sbr" \
 	"$(INTDIR)\FontOptions.sbr" \
 	"$(INTDIR)\FontService.sbr" \
 	"$(INTDIR)\module_fonts.sbr" \
@@ -351,7 +354,7 @@ BSC32_SBRS= \
 	"$(INTDIR)\extracticon.sbr" \
 	"$(INTDIR)\IcoLib.sbr" \
 	"$(INTDIR)\skin2icons.sbr" \
-	"$(INTDIR)\protocolorder.sbr"
+	"$(INTDIR)\updatenotify.sbr"
 
 "$(OUTDIR)\miranda32.bsc" : "$(OUTDIR)" $(BSC32_SBRS)
     $(BSC32) @<<
@@ -450,6 +453,7 @@ LINK32_OBJS= \
 	"$(INTDIR)\groups.obj" \
 	"$(INTDIR)\keyboard.obj" \
 	"$(INTDIR)\movetogroup.obj" \
+	"$(INTDIR)\protocolorder.obj" \
 	"$(INTDIR)\FontOptions.obj" \
 	"$(INTDIR)\FontService.obj" \
 	"$(INTDIR)\module_fonts.obj" \
@@ -457,8 +461,8 @@ LINK32_OBJS= \
 	"$(INTDIR)\extracticon.obj" \
 	"$(INTDIR)\IcoLib.obj" \
 	"$(INTDIR)\skin2icons.obj" \
-	"$(INTDIR)\resource.res" \
-	"$(INTDIR)\protocolorder.obj"
+	"$(INTDIR)\updatenotify.obj" \
+	"$(INTDIR)\vc6.res"
 
 "..\bin\release\miranda32.exe" : "$(OUTDIR)" $(DEF_FILE) $(LINK32_OBJS)
     $(LINK32) @<<
@@ -640,7 +644,6 @@ CLEAN :
 	-@erase "$(INTDIR)\protodir.sbr"
 	-@erase "$(INTDIR)\resizer.obj"
 	-@erase "$(INTDIR)\resizer.sbr"
-	-@erase "$(INTDIR)\resource.res"
 	-@erase "$(INTDIR)\searchresults.obj"
 	-@erase "$(INTDIR)\searchresults.sbr"
 	-@erase "$(INTDIR)\sendmsg.obj"
@@ -657,6 +660,8 @@ CLEAN :
 	-@erase "$(INTDIR)\sounds.sbr"
 	-@erase "$(INTDIR)\stdinfo.obj"
 	-@erase "$(INTDIR)\stdinfo.sbr"
+	-@erase "$(INTDIR)\updatenotify.obj"
+	-@erase "$(INTDIR)\updatenotify.sbr"
 	-@erase "$(INTDIR)\url.obj"
 	-@erase "$(INTDIR)\url.sbr"
 	-@erase "$(INTDIR)\urldialogs.obj"
@@ -669,6 +674,7 @@ CLEAN :
 	-@erase "$(INTDIR)\utf.sbr"
 	-@erase "$(INTDIR)\utils.obj"
 	-@erase "$(INTDIR)\utils.sbr"
+	-@erase "$(INTDIR)\vc6.res"
 	-@erase "$(INTDIR)\vc60.idb"
 	-@erase "$(INTDIR)\vc60.pdb"
 	-@erase "$(INTDIR)\visibility.obj"
@@ -686,7 +692,7 @@ CLEAN :
 
 CPP_PROJ=/nologo /MDd /W3 /Gm /GX /ZI /Od /I "../include" /D "_DEBUG" /D "WIN32" /D "_WINDOWS" /D "_NOSDK" /D "_STATIC" /Fr"$(INTDIR)\\" /Fp"$(INTDIR)\miranda32.pch" /Yu"commonheaders.h" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /FD /c 
 MTL_PROJ=/nologo /D "_DEBUG" /mktyplib203 /o "NUL" /win32 
-RSC_PROJ=/l 0x409 /fo"$(INTDIR)\resource.res" /d "_DEBUG" 
+RSC_PROJ=/l 0x409 /fo"$(INTDIR)\vc6.res" /d "_DEBUG" 
 BSC32=bscmake.exe
 BSC32_FLAGS=/nologo /o"$(OUTDIR)\miranda32.bsc" 
 BSC32_SBRS= \
@@ -779,6 +785,7 @@ BSC32_SBRS= \
 	"$(INTDIR)\groups.sbr" \
 	"$(INTDIR)\keyboard.sbr" \
 	"$(INTDIR)\movetogroup.sbr" \
+	"$(INTDIR)\protocolorder.sbr" \
 	"$(INTDIR)\FontOptions.sbr" \
 	"$(INTDIR)\FontService.sbr" \
 	"$(INTDIR)\module_fonts.sbr" \
@@ -786,7 +793,7 @@ BSC32_SBRS= \
 	"$(INTDIR)\extracticon.sbr" \
 	"$(INTDIR)\IcoLib.sbr" \
 	"$(INTDIR)\skin2icons.sbr" \
-	"$(INTDIR)\protocolorder.sbr"
+	"$(INTDIR)\updatenotify.sbr"
 
 "$(OUTDIR)\miranda32.bsc" : "$(OUTDIR)" $(BSC32_SBRS)
     $(BSC32) @<<
@@ -885,6 +892,7 @@ LINK32_OBJS= \
 	"$(INTDIR)\groups.obj" \
 	"$(INTDIR)\keyboard.obj" \
 	"$(INTDIR)\movetogroup.obj" \
+	"$(INTDIR)\protocolorder.obj" \
 	"$(INTDIR)\FontOptions.obj" \
 	"$(INTDIR)\FontService.obj" \
 	"$(INTDIR)\module_fonts.obj" \
@@ -892,8 +900,8 @@ LINK32_OBJS= \
 	"$(INTDIR)\extracticon.obj" \
 	"$(INTDIR)\IcoLib.obj" \
 	"$(INTDIR)\skin2icons.obj" \
-	"$(INTDIR)\resource.res" \
-	"$(INTDIR)\protocolorder.obj"
+	"$(INTDIR)\updatenotify.obj" \
+	"$(INTDIR)\vc6.res"
 
 "..\bin\debug\miranda32.exe" : "$(OUTDIR)" $(DEF_FILE) $(LINK32_OBJS)
     $(LINK32) @<<
@@ -991,7 +999,6 @@ CLEAN :
 	-@erase "$(INTDIR)\protocols.obj"
 	-@erase "$(INTDIR)\protodir.obj"
 	-@erase "$(INTDIR)\resizer.obj"
-	-@erase "$(INTDIR)\resource.res"
 	-@erase "$(INTDIR)\searchresults.obj"
 	-@erase "$(INTDIR)\sendmsg.obj"
 	-@erase "$(INTDIR)\services.obj"
@@ -1000,12 +1007,14 @@ CLEAN :
 	-@erase "$(INTDIR)\skinicons.obj"
 	-@erase "$(INTDIR)\sounds.obj"
 	-@erase "$(INTDIR)\stdinfo.obj"
+	-@erase "$(INTDIR)\updatenotify.obj"
 	-@erase "$(INTDIR)\url.obj"
 	-@erase "$(INTDIR)\urldialogs.obj"
 	-@erase "$(INTDIR)\userinfo.obj"
 	-@erase "$(INTDIR)\useronline.obj"
 	-@erase "$(INTDIR)\utf.obj"
 	-@erase "$(INTDIR)\utils.obj"
+	-@erase "$(INTDIR)\vc6.res"
 	-@erase "$(INTDIR)\vc60.idb"
 	-@erase "$(INTDIR)\vc60.pdb"
 	-@erase "$(INTDIR)\visibility.obj"
@@ -1019,7 +1028,7 @@ CLEAN :
 
 CPP_PROJ=/nologo /MD /W3 /GX /Zi /O1 /I "../include" /D "NDEBUG" /D "WIN32" /D "_WINDOWS" /D "_NOSDK" /D "UNICODE" /D "_STATIC" /Fp"$(INTDIR)\miranda32.pch" /Yu"commonheaders.h" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /FD /c 
 MTL_PROJ=/nologo /D "NDEBUG" /mktyplib203 /o "NUL" /win32 
-RSC_PROJ=/l 0x409 /fo"$(INTDIR)\resource.res" /d "NDEBUG" 
+RSC_PROJ=/l 0x409 /fo"$(INTDIR)\vc6.res" /d "NDEBUG" 
 BSC32=bscmake.exe
 BSC32_FLAGS=/nologo /o"$(OUTDIR)\miranda32.bsc" 
 BSC32_SBRS= \
@@ -1116,6 +1125,7 @@ LINK32_OBJS= \
 	"$(INTDIR)\groups.obj" \
 	"$(INTDIR)\keyboard.obj" \
 	"$(INTDIR)\movetogroup.obj" \
+	"$(INTDIR)\protocolorder.obj" \
 	"$(INTDIR)\FontOptions.obj" \
 	"$(INTDIR)\FontService.obj" \
 	"$(INTDIR)\module_fonts.obj" \
@@ -1123,8 +1133,8 @@ LINK32_OBJS= \
 	"$(INTDIR)\extracticon.obj" \
 	"$(INTDIR)\IcoLib.obj" \
 	"$(INTDIR)\skin2icons.obj" \
-	"$(INTDIR)\resource.res" \
-	"$(INTDIR)\protocolorder.obj"
+	"$(INTDIR)\updatenotify.obj" \
+	"$(INTDIR)\vc6.res"
 
 "..\bin\Release Unicode\miranda32.exe" : "$(OUTDIR)" $(DEF_FILE) $(LINK32_OBJS)
     $(LINK32) @<<
@@ -1306,7 +1316,6 @@ CLEAN :
 	-@erase "$(INTDIR)\protodir.sbr"
 	-@erase "$(INTDIR)\resizer.obj"
 	-@erase "$(INTDIR)\resizer.sbr"
-	-@erase "$(INTDIR)\resource.res"
 	-@erase "$(INTDIR)\searchresults.obj"
 	-@erase "$(INTDIR)\searchresults.sbr"
 	-@erase "$(INTDIR)\sendmsg.obj"
@@ -1323,6 +1332,8 @@ CLEAN :
 	-@erase "$(INTDIR)\sounds.sbr"
 	-@erase "$(INTDIR)\stdinfo.obj"
 	-@erase "$(INTDIR)\stdinfo.sbr"
+	-@erase "$(INTDIR)\updatenotify.obj"
+	-@erase "$(INTDIR)\updatenotify.sbr"
 	-@erase "$(INTDIR)\url.obj"
 	-@erase "$(INTDIR)\url.sbr"
 	-@erase "$(INTDIR)\urldialogs.obj"
@@ -1335,6 +1346,7 @@ CLEAN :
 	-@erase "$(INTDIR)\utf.sbr"
 	-@erase "$(INTDIR)\utils.obj"
 	-@erase "$(INTDIR)\utils.sbr"
+	-@erase "$(INTDIR)\vc6.res"
 	-@erase "$(INTDIR)\vc60.idb"
 	-@erase "$(INTDIR)\vc60.pdb"
 	-@erase "$(INTDIR)\visibility.obj"
@@ -1352,7 +1364,7 @@ CLEAN :
 
 CPP_PROJ=/nologo /MDd /W3 /Gm /GX /ZI /Od /I "../include" /D "_DEBUG" /D "WIN32" /D "_WINDOWS" /D "_NOSDK" /D "UNICODE" /D "_STATIC" /Fr"$(INTDIR)\\" /Fp"$(INTDIR)\miranda32.pch" /Yu"commonheaders.h" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /FD /c 
 MTL_PROJ=/nologo /D "_DEBUG" /mktyplib203 /o "NUL" /win32 
-RSC_PROJ=/l 0x409 /fo"$(INTDIR)\resource.res" /d "_DEBUG" 
+RSC_PROJ=/l 0x409 /fo"$(INTDIR)\vc6.res" /d "_DEBUG" 
 BSC32=bscmake.exe
 BSC32_FLAGS=/nologo /o"$(OUTDIR)\miranda32.bsc" 
 BSC32_SBRS= \
@@ -1445,6 +1457,7 @@ BSC32_SBRS= \
 	"$(INTDIR)\groups.sbr" \
 	"$(INTDIR)\keyboard.sbr" \
 	"$(INTDIR)\movetogroup.sbr" \
+	"$(INTDIR)\protocolorder.sbr" \
 	"$(INTDIR)\FontOptions.sbr" \
 	"$(INTDIR)\FontService.sbr" \
 	"$(INTDIR)\module_fonts.sbr" \
@@ -1452,7 +1465,7 @@ BSC32_SBRS= \
 	"$(INTDIR)\extracticon.sbr" \
 	"$(INTDIR)\IcoLib.sbr" \
 	"$(INTDIR)\skin2icons.sbr" \
-	"$(INTDIR)\protocolorder.sbr"
+	"$(INTDIR)\updatenotify.sbr"
 
 "$(OUTDIR)\miranda32.bsc" : "$(OUTDIR)" $(BSC32_SBRS)
     $(BSC32) @<<
@@ -1551,6 +1564,7 @@ LINK32_OBJS= \
 	"$(INTDIR)\groups.obj" \
 	"$(INTDIR)\keyboard.obj" \
 	"$(INTDIR)\movetogroup.obj" \
+	"$(INTDIR)\protocolorder.obj" \
 	"$(INTDIR)\FontOptions.obj" \
 	"$(INTDIR)\FontService.obj" \
 	"$(INTDIR)\module_fonts.obj" \
@@ -1558,8 +1572,8 @@ LINK32_OBJS= \
 	"$(INTDIR)\extracticon.obj" \
 	"$(INTDIR)\IcoLib.obj" \
 	"$(INTDIR)\skin2icons.obj" \
-	"$(INTDIR)\resource.res" \
-	"$(INTDIR)\protocolorder.obj"
+	"$(INTDIR)\updatenotify.obj" \
+	"$(INTDIR)\vc6.res"
 
 "..\bin\Debug Unicode\miranda32.exe" : "$(OUTDIR)" $(DEF_FILE) $(LINK32_OBJS)
     $(LINK32) @<<
@@ -4785,9 +4799,41 @@ SOURCE=.\modules\icolib\skin2icons.c
 
 !ENDIF 
 
-SOURCE=.\resource.rc
+SOURCE=.\modules\updatenotify\updatenotify.c
 
-"$(INTDIR)\resource.res" : $(SOURCE) "$(INTDIR)"
+!IF  "$(CFG)" == "miranda32 - Win32 Release"
+
+
+"$(INTDIR)\updatenotify.obj"	"$(INTDIR)\updatenotify.sbr" : $(SOURCE) "$(INTDIR)" "$(INTDIR)\miranda32.pch"
+	$(CPP) $(CPP_PROJ) $(SOURCE)
+
+
+!ELSEIF  "$(CFG)" == "miranda32 - Win32 Debug"
+
+
+"$(INTDIR)\updatenotify.obj"	"$(INTDIR)\updatenotify.sbr" : $(SOURCE) "$(INTDIR)" "$(INTDIR)\miranda32.pch"
+	$(CPP) $(CPP_PROJ) $(SOURCE)
+
+
+!ELSEIF  "$(CFG)" == "miranda32 - Win32 Release Unicode"
+
+
+"$(INTDIR)\updatenotify.obj" : $(SOURCE) "$(INTDIR)" "$(INTDIR)\miranda32.pch"
+	$(CPP) $(CPP_PROJ) $(SOURCE)
+
+
+!ELSEIF  "$(CFG)" == "miranda32 - Win32 Debug Unicode"
+
+
+"$(INTDIR)\updatenotify.obj"	"$(INTDIR)\updatenotify.sbr" : $(SOURCE) "$(INTDIR)" "$(INTDIR)\miranda32.pch"
+	$(CPP) $(CPP_PROJ) $(SOURCE)
+
+
+!ENDIF 
+
+SOURCE=.\vc6.rc
+
+"$(INTDIR)\vc6.res" : $(SOURCE) "$(INTDIR)"
 	$(RSC) $(RSC_PROJ) $(SOURCE)
 
 

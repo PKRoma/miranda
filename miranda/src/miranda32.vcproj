@@ -2597,6 +2597,13 @@
 				</File>
 			</Filter>
 			<Filter
+				Name="updater"
+				Filter="">
+				<File
+					RelativePath=".\modules\updatenotify\updatenotify.c">
+				</File>
+			</Filter>
+			<Filter
 				Name="userinfo"
 				Filter="">
 				<File
@@ -3272,6 +3279,9 @@
 			</File>
 			<File
 				RelativePath="res\useronli.ico">
+			</File>
+			<File
+				RelativePath=".\version.rc">
 			</File>
 			<File
 				RelativePath="res\viewdetails.ico">

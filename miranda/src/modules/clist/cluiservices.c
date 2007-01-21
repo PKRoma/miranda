@@ -164,7 +164,7 @@ int fnCluiProtocolStatusChanged(int parStatus, const char* szProto)
 
 	SendMessage(cli.hwndStatus, SB_GETBORDERS, 0, ( LPARAM )&borders);
 
-	partWidths = (int *) mir_alloc( cli.menuProtoCount * sizeof( int ));
+	partWidths = ( int* )alloca( cli.menuProtoCount * sizeof( int ));
 	if ( DBGetContactSettingByte( NULL, "CLUI", "EqualSections", 0 )) {
 		RECT rc;
 		GetClientRect( cli.hwndStatus, &rc );
