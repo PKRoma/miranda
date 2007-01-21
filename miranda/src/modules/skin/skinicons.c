@@ -41,6 +41,7 @@ struct StandardIconDescription mainIcons[] =
 	{ SKINICON_EVENT_URL,        "URL",             -IDI_URL        },
 	{ SKINICON_EVENT_FILE,       "File",            -IDI_FILE       },
 	{ SKINICON_OTHER_USERONLINE, "User Online",     -IDI_USERONLINE },
+	{ SKINICON_OTHER_CONNECTING, "Connecting",      -IDI_LOAD       },
 	{ SKINICON_OTHER_GROUPOPEN,  "Group (Open)",    -IDI_GROUPOPEN  },
 	{ SKINICON_OTHER_GROUPSHUT,  "Group (Closed)",  -IDI_GROUPSHUT  }
 };
@@ -56,7 +57,7 @@ struct StandardIconDescription statusIcons[] =
 	{ ID_STATUS_FREECHAT,        "Free for chat",    -IDI_FREE4CHAT,     PF2_FREECHAT   },
 	{ ID_STATUS_INVISIBLE,       "Invisible",        -IDI_INVISIBLE,     PF2_INVISIBLE  },
 	{ ID_STATUS_ONTHEPHONE,      "On the phone",     -IDI_ONTHEPHONE,    PF2_ONTHEPHONE },
-	{ ID_STATUS_OUTTOLUNCH,      "Out to lunch",     -IDI_OUTTOLUNCH,    PF2_OUTTOLUNCH }
+	{ ID_STATUS_OUTTOLUNCH,      "Out to lunch",     -IDI_OUTTOLUNCH,    PF2_OUTTOLUNCH },
 };
 
 const char* mainIconsFmt   = "core_main_";
@@ -149,6 +150,9 @@ static int LoadSkinProtoIcon(WPARAM wParam,LPARAM lParam)
 	char iconName[MAX_PATH];
 	HICON hIcon;
 	int suffIndx;
+
+	if ( lParam >= ID_STATUS_CONNECTING && lParam < ID_STATUS_CONNECTING+MAX_CONNECT_RETRIES )
+		return LoadSkinIcon( SKINICON_OTHER_CONNECTING, 0 );
 
 	for ( i = 0; i < SIZEOF(statusIcons); i++)
 		if ( statusIcons[i].id == lParam ) {

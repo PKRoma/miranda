@@ -1782,7 +1782,8 @@ IDI_OUTTOLUNCH          ICON    DISCARDABLE     "res/outtolun.ico"
 IDI_INVISIBLE           ICON    DISCARDABLE     "res/invisible.ico"
 IDI_MULTISEND           ICON    DISCARDABLE     "res/multisend.ico"
 IDI_DOWNARROW           ICON    DISCARDABLE     "res/downarrow.ico"
-IDI_TYPING              ICON    DISCARDABLE     "res\\typing.ico"
+IDI_TYPING              ICON    DISCARDABLE     "res/typing.ico"
+IDI_LOAD                ICON    DISCARDABLE     "res/load.ico"
 
 /////////////////////////////////////////////////////////////////////////////
 //

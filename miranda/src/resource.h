@@ -26,6 +26,7 @@
 #define IDI_FREE4CHAT                   129
 #define IDI_INVISIBLE                   130
 #define IDI_NA                          131
+#define IDI_LOAD                        132
 #define IDD_OPT_SOUND                   134
 #define IDI_RECVMSG                     136
 #define IDI_SENDMSG                     137
@@ -416,7 +417,7 @@
 #define POPUP_DELETEGROUP               40053
 
 // Next default values for new objects
-// 
+//
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NEXT_RESOURCE_VALUE        275
