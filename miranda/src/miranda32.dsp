@@ -927,6 +927,14 @@ SOURCE=.\modules\icolib\IcoLib.h
 SOURCE=.\modules\icolib\skin2icons.c
 # End Source File
 # End Group
+# Begin Group "updatenotify"
+
+# PROP Default_Filter ""
+# Begin Source File
+
+SOURCE=.\modules\updatenotify\updatenotify.c
+# End Source File
+# End Group
 # End Group
 # Begin Group "Resources"
 
@@ -946,6 +954,10 @@ SOURCE=.\res\blank.ico
 # Begin Source File
 
 SOURCE=.\res\changefont.ico
+# End Source File
+# Begin Source File
+
+SOURCE=..\docs\contributors.txt
 # End Source File
 # Begin Source File
 
@@ -1121,6 +1133,10 @@ SOURCE=.\res\timestamp.ico
 # End Source File
 # Begin Source File
 
+SOURCE=.\res\typing.ico
+# End Source File
+# Begin Source File
+
 SOURCE=.\res\url.ico
 # End Source File
 # Begin Source File
@@ -1132,13 +1148,5 @@ SOURCE=.\res\useronli.ico
 SOURCE=.\res\viewdetails.ico
 # End Source File
 # End Group
-# Begin Source File
-
-SOURCE=..\docs\contributors.txt
-# End Source File
-# Begin Source File
-
-SOURCE=.\res\typing.ico
-# End Source File
 # End Target
 # End Project

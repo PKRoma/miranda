@@ -105,6 +105,7 @@ int LoadButtonModule(void);		// window class: button class
 int LoadContactsModule(void);    // random: contact
 int LoadFontserviceModule(void); // ui: font manager
 int LoadIcoLibModule(void);   // ui: icons manager
+int LoadUpdateNotifyModule(void); // random: update notification
 
 static int LoadDefaultModules(void)
 {
@@ -123,6 +124,7 @@ static int LoadDefaultModules(void)
 	if (LoadContactsModule()) return 1;
 	if (LoadContactListModule()) return 1;
 	if (LoadAddContactModule()) return 1;
+    if (LoadUpdateNotifyModule()) return 1;
 	if (LoadNewPluginsModule()) return 1; // will call Load() on everything, clist will load first
 
 	//this info will be available at LoadNewPluginsModule()

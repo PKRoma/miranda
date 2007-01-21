@@ -824,7 +824,7 @@ END
 IDD_OPT_SOUND DIALOGEX 0, 0, 285, 240
 STYLE DS_3DLOOK | DS_FIXEDSYS | WS_CHILD | WS_VISIBLE
 EXSTYLE WS_EX_CONTROLPARENT
-FONT 8, "MS Shell Dlg"
+FONT 8, "MS Shell Dlg", 0, 0, 0x1
 BEGIN
     GROUPBOX        "Sounds",IDC_STATIC,4,4,277,154
     PUSHBUTTON      "&Change...",IDC_CHANGE,16,213,50,14
@@ -865,7 +865,7 @@ END
 IDD_OPT_IGNORE DIALOGEX 0, 0, 313, 240
 STYLE DS_FIXEDSYS | WS_CHILD | WS_VISIBLE
 EXSTYLE WS_EX_CONTROLPARENT
-FONT 8, "MS Shell Dlg"
+FONT 8, "MS Shell Dlg", 0, 0, 0x1
 BEGIN
     LTEXT           "The following events are being ignored:",IDC_STATIC,8,
                     14,297,8
@@ -879,8 +879,8 @@ BEGIN
     LTEXT           "Files",IDC_STATIC,28,208,70,8,SS_NOPREFIX | 
                     SS_CENTERIMAGE
     ICON            IDI_MIRANDA,IDC_AUTHICON,96,172,20,20,SS_CENTERIMAGE
-    LTEXT           "Auth Requests",IDC_STATIC,116,178,107,8,
-                    SS_NOPREFIX | SS_CENTERIMAGE
+    LTEXT           "Auth Requests",IDC_STATIC,116,178,107,8,SS_NOPREFIX | 
+                    SS_CENTERIMAGE
     ICON            IDI_USERONLINE,IDC_ONLINEICON,96,187,20,20,
                     SS_CENTERIMAGE
     LTEXT           "Online Notification",IDC_STATIC,116,193,107,8,
@@ -900,8 +900,8 @@ BEGIN
     LTEXT           "Added Notification",IDC_STATIC,116,208,107,8,
                     SS_NOPREFIX | SS_CENTERIMAGE
     ICON            IDI_TYPING,IDC_TYPINGICON,221,172,20,20,SS_CENTERIMAGE
-    LTEXT           "Typing",IDC_STATIC,241,178,66,8,
-                    SS_NOPREFIX | SS_CENTERIMAGE
+    LTEXT           "Typing",IDC_STATIC,241,178,66,8,SS_NOPREFIX | 
+                    SS_CENTERIMAGE
 END
 
 IDD_OPT_VISIBILITY DIALOGEX 0, 0, 313, 240
@@ -1308,6 +1308,34 @@ BEGIN
     PUSHBUTTON      "Reset",IDC_RESETPROTOCOLDATA,120,140,50,14,BS_NOTIFY
 END
 
+IDD_UPDATE_NOTIFY DIALOG DISCARDABLE  0, 0, 259, 103
+STYLE DS_MODALFRAME | DS_CENTER | WS_POPUP | WS_VISIBLE | WS_CAPTION | 
+    WS_SYSMENU
+CAPTION "Miranda IM v%s Now Available"
+FONT 8, "MS Shell Dlg"
+BEGIN
+    LTEXT           "A new version of Miranda IM is now available.  Click the download button to download this new update.",
+                    IDC_STATIC,7,7,245,21
+    LTEXT           "New Version:",IDC_NEWVERSIONLABEL,7,47,65,8
+    LTEXT           "Current Version:",IDC_STATIC,7,32,65,8
+    LTEXT           "",IDC_CURRENTVERSION,77,32,87,8
+    LTEXT           "",IDC_VERSION,77,47,87,8
+    PUSHBUTTON      "&Download Now",IDC_DOWNLOAD,7,61,66,15
+    DEFPUSHBUTTON   "&Close",IDOK,202,84,50,15
+    CONTROL         "",IDC_STATIC,"Static",SS_ETCHEDHORZ,7,80,245,1
+END
+
+IDD_OPT_UPDATENOTIFY DIALOGEX 0, 0, 238, 49
+STYLE DS_FIXEDSYS | WS_CHILD
+EXSTYLE WS_EX_CONTROLPARENT
+FONT 8, "MS Shell Dlg"
+BEGIN
+    GROUPBOX        "Update Notification Options",IDC_STATIC,2,4,233,40
+    CONTROL         "Check for new versions of Miranda IM periodically.",
+                    IDC_ENABLEUPDATES,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,
+                    11,22,212,10
+END
+
 
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -1702,6 +1730,22 @@ BEGIN
     BEGIN
         BOTTOMMARGIN, 235
     END
+
+    IDD_UPDATE_NOTIFY, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 179
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 83
+    END
+
+    IDD_OPT_UPDATENOTIFY, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 179
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 83
+    END
 END
 #endif    // APSTUDIO_INVOKED
 
@@ -1902,10 +1946,10 @@ IDB_SORTCOLDOWN         BITMAP  MOVEABLE PURE   "res/sortcold.bmp"
 
 /////////////////////////////////////////////////////////////////////////////
 //
-// RT_MANIFEST
+// 24
 //
 
-1                       RT_MANIFEST             "miranda32.exe.manifest"
+1                       24      MOVEABLE PURE   "miranda32.exe.manifest"
 #endif    // English (U.S.) resources
 /////////////////////////////////////////////////////////////////////////////
 
@@ -1916,7 +1960,6 @@ IDB_SORTCOLDOWN         BITMAP  MOVEABLE PURE   "res/sortcold.bmp"
 //
 // Generated from the TEXTINCLUDE 3 resource.
 //
-#include "version.rc"
 
 
 /////////////////////////////////////////////////////////////////////////////

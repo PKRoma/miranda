@@ -105,6 +105,8 @@
 #define IDD_PROFILE_SELECTION           269
 #define IDD_PROFILE_NEW                 270
 #define IDI_TYPING                      274
+#define IDD_UPDATE_NOTIFY               275
+#define IDD_OPT_UPDATENOTIFY            276
 #define IDC_SAVE                        1001
 #define IDI_ONTHEPHONE                  1002
 #define IDC_MESSAGE                     1002
@@ -391,6 +393,10 @@
 #define IDC_TAB                         1693
 #define IDC_IDLETERMINAL                1694
 #define IDC_ENABLESOUNDS                1695
+#define IDC_NEWVERSIONLABEL             1696
+#define IDC_CURRENTVERSION              1697
+#define IDC_DOWNLOAD                    1699
+#define IDC_ENABLEUPDATES               1700
 #define IDI_SEARCHALL                   32548
 #define ID_ICQ_EXIT                     40001
 #define IDM_COPY                        40001
@@ -420,9 +426,9 @@
 //
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
-#define _APS_NEXT_RESOURCE_VALUE        275
+#define _APS_NEXT_RESOURCE_VALUE        277
 #define _APS_NEXT_COMMAND_VALUE         40018
-#define _APS_NEXT_CONTROL_VALUE         1696
+#define _APS_NEXT_CONTROL_VALUE         1701
 #define _APS_NEXT_SYMED_VALUE           101
 #endif
 #endif
