@@ -63,7 +63,7 @@ int MSN_HandleErrors( ThreadData* info, char* cmdString )
 
 	case ERR_NOT_ONLINE:
 		MSN_SendBroadcast( info->mInitialContact, ACKTYPE_MESSAGE, ACKRESULT_FAILED, 
-			( HANDLE )999999, ( LPARAM )Translate("User not online"));
+			( HANDLE )999999, ( LPARAM )MSN_Translate("User not online"));
 		return 1;
 
 	case ERR_NOT_EXPECTED:

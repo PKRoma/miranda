@@ -77,7 +77,7 @@ static int MsnInviteCommand( WPARAM wParam, LPARAM lParam )
 
 	switch( tThreads ) {
 	case 0:
-		MessageBoxA(NULL, Translate("No active chat session is found."), Translate("MSN Chat"), MB_OK|MB_ICONINFORMATION);
+		MessageBox(NULL, TranslateT("No active chat session is found."), TranslateT("MSN Chat"), MB_OK|MB_ICONINFORMATION);
 		return 0;
 
 	case 1:
@@ -91,7 +91,7 @@ static int MsnInviteCommand( WPARAM wParam, LPARAM lParam )
 			if (( long )tActiveThreads[i]->mJoinedContacts[0] < 0 ) {
 				char sessionName[ 255 ];
 				mir_snprintf( sessionName, sizeof( sessionName ), "%s %s%s",
-					msnProtocolName, Translate( "Chat #" ), tActiveThreads[i]->mChatID );
+					msnProtocolName, MSN_Translate( "Chat #" ), tActiveThreads[i]->mChatID );
 				::AppendMenuA( tMenu, MF_STRING, ( UINT_PTR )( i+1 ), sessionName );
 			}
 			else ::AppendMenu( tMenu, MF_STRING, ( UINT_PTR )( i+1 ), MSN_GetContactNameT( *tActiveThreads[i]->mJoinedContacts ));
@@ -118,7 +118,7 @@ static int MsnInviteCommand( WPARAM wParam, LPARAM lParam )
 		for ( int j=0; j < tActiveThreads[ tChosenThread ]->mJoinedCount; j++ ) {
 			// if the user is already in the chat session
 			if ( tActiveThreads[ tChosenThread ]->mJoinedContacts[j] == ( HANDLE )wParam ) {
-				MessageBoxA(NULL, Translate("User is already in the chat session."), Translate("MSN Chat"), MB_OK|MB_ICONINFORMATION);
+				MessageBox(NULL, TranslateT("User is already in the chat session."), TranslateT("MSN Chat"), MB_OK|MB_ICONINFORMATION);
 				return 0;
 		}	}
 
@@ -139,7 +139,7 @@ int MsnRebuildContactMenu( WPARAM wParam, LPARAM lParam )
 	if ( !MSN_GetStaticString( "e-mail", ( HANDLE )wParam, szEmail, sizeof( szEmail ))) {
 		CLISTMENUITEM clmi = { 0 };
 		clmi.cbSize = sizeof( clmi );
-		clmi.pszName = MSN_Translate( ( Lists_IsInList( LIST_BL, szEmail ) ? "&Unblock" : "&Block" ));
+		clmi.pszName = Lists_IsInList( LIST_BL, szEmail ) ? "&Unblock" : "&Block";
 		clmi.flags = CMIM_NAME;
 		MSN_CallService( MS_CLIST_MODIFYMENUITEM, ( WPARAM )msnBlockMenuItem, ( LPARAM )&clmi );
 	}
@@ -162,7 +162,7 @@ static int MsnSendNetMeeting( WPARAM wParam, LPARAM lParam )
 	ThreadData* thread = MSN_GetThreadByContact( hContact );
 
 	if ( thread == NULL ) {
-		MessageBoxA( NULL, MSN_Translate( "You must be talking to start Netmeeting" ), "MSN Protocol", MB_OK | MB_ICONERROR );
+		MessageBox( NULL, TranslateT( "You must be talking to start Netmeeting" ), _T("MSN Protocol"), MB_OK | MB_ICONERROR );
 		return 0;
 	}
 
@@ -291,7 +291,7 @@ void MsnInitMenus( void )
 		mi.popupPosition = 500085000;
 		mi.position = 2000060000;
 		mi.hIcon = LoadIconEx( "main" );
-		mi.pszName = MSN_Translate( "Set &Nickname" );
+		mi.pszName = "Set &Nickname";
 		msnMenuItems[ 0 ] = ( HANDLE )MSN_CallService( MS_CLIST_ADDMAINMENUITEM, 0, (LPARAM)&mi );
 		ReleaseIconEx( "main" );
 
@@ -300,7 +300,7 @@ void MsnInitMenus( void )
 
 		mi.position = 2000060001;
 		mi.hIcon = LoadIconEx( "inbox" );
-		mi.pszName = MSN_Translate( "Display Hotmail &Inbox" );
+		mi.pszName = "Display Hotmail &Inbox";
 		MSN_CallService( MS_CLIST_ADDMAINMENUITEM, 0, (LPARAM)&mi );
 		ReleaseIconEx( "inbox" );
 
@@ -309,7 +309,7 @@ void MsnInitMenus( void )
 
 		mi.position = 2000060002;
 		mi.hIcon = LoadIconEx( "profile" );
-		mi.pszName = MSN_Translate( "Edit MSN &Profile" );
+		mi.pszName = "Edit MSN &Profile";
 		msnMenuItems[ 1 ] = ( HANDLE )MSN_CallService( MS_CLIST_ADDMAINMENUITEM, 0, (LPARAM)&mi );
 		ReleaseIconEx( "profile" );
 
@@ -318,7 +318,7 @@ void MsnInitMenus( void )
 
 		mi.position = 2000060003;
 		mi.hIcon = LoadIconEx( "services" );
-		mi.pszName = MSN_Translate( "View MSN Services &Status" );
+		mi.pszName = "View MSN Services &Status";
 		MSN_CallService( MS_CLIST_ADDMAINMENUITEM, 0, (LPARAM)&mi );
 		ReleaseIconEx( "services" );
 
@@ -327,7 +327,7 @@ void MsnInitMenus( void )
 
 		mi.position = 2000060004;
 		mi.hIcon = LoadIconEx( "avatar" );
-		mi.pszName = MSN_Translate( "Set &Avatar" );
+		mi.pszName = "Set &Avatar";
 		MSN_CallService( MS_CLIST_ADDMAINMENUITEM, 0, (LPARAM)&mi );
 		ReleaseIconEx( "avatar" );
 	}
@@ -341,7 +341,7 @@ void MsnInitMenus( void )
 	mi.position = -500050000;
 	mi.hIcon = LoadIconEx( "block" );
 	mi.pszContactOwner = msnProtocolName;
-	mi.pszName = MSN_Translate( "&Block" );
+	mi.pszName = "&Block";
 	msnBlockMenuItem = ( HANDLE )MSN_CallService( MS_CLIST_ADDCONTACTMENUITEM, 0, ( LPARAM )&mi );
 	ReleaseIconEx( "block" );
 
@@ -351,7 +351,7 @@ void MsnInitMenus( void )
 	mi.flags = CMIF_NOTOFFLINE;
 	mi.position = -500050001;
 	mi.hIcon = LoadIconEx( "invite" );
-	mi.pszName = MSN_Translate( "&Invite to chat" );
+	mi.pszName = "&Invite to chat";
 	MSN_CallService( MS_CLIST_ADDCONTACTMENUITEM, 0, ( LPARAM )&mi );
 	ReleaseIconEx( "invite" );
 
@@ -361,7 +361,7 @@ void MsnInitMenus( void )
 	mi.flags = CMIF_NOTOFFLINE;
 	mi.position = -500050002;
 	mi.hIcon = LoadIconEx( "netmeeting" );
-	mi.pszName = MSN_Translate( "&Start Netmeeting" );
+	mi.pszName = "&Start Netmeeting";
 	MSN_CallService( MS_CLIST_ADDCONTACTMENUITEM, 0, ( LPARAM )&mi );
 	ReleaseIconEx( "netmeeting" );
 
@@ -371,7 +371,7 @@ void MsnInitMenus( void )
 	mi.flags = 0;
 	mi.position = -500050003;
 	mi.hIcon = LoadIconEx( "profile" );
-	mi.pszName = MSN_Translate( "&View Profile" );
+	mi.pszName = "&View Profile";
 	MSN_CallService( MS_CLIST_ADDCONTACTMENUITEM, 0, ( LPARAM )&mi );
 	ReleaseIconEx( "profile" );
 

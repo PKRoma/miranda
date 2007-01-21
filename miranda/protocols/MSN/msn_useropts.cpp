@@ -282,7 +282,7 @@ int MsnOnDetailsInit( WPARAM wParam, LPARAM lParam )
 		odp.pfnDlgProc = MsnDlgProc;
 		odp.position = -1900000000;
 		odp.pszTemplate = MAKEINTRESOURCEA(IDD_USEROPTS);
-		odp.pszTitle = Translate(msnProtocolName);
+		odp.pszTitle = MSN_Translate(msnProtocolName);
 		MSN_CallService(MS_USERINFO_ADDPAGE, wParam, (LPARAM)&odp);
 	}
 	return 0;

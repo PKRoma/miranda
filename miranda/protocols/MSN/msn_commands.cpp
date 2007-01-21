@@ -1269,7 +1269,7 @@ LBL_InvalidCommand:
 				MSN_CallService( MS_GC_EVENT, NULL, ( LPARAM )&gce );
 			}
 			else if ( personleft == 2 && lstrcmpA( data.isIdle, "1" ) ) {
-				if ( MessageBoxA( NULL, Translate( "There is only 1 person left in the chat, do you want to switch back to standard message window?"), Translate("MSN Chat"), MB_YESNO|MB_ICONQUESTION) == IDYES) {
+				if ( MessageBox( NULL, TranslateT( "There is only 1 person left in the chat, do you want to switch back to standard message window?"), TranslateT("MSN Chat"), MB_YESNO|MB_ICONQUESTION) == IDYES) {
 					// a flag to let the kill function know what to do
 					// if the value is 1, then it'll open up the srmm window
 					info->mJoinedCount--;
