@@ -908,6 +908,20 @@ LRESULT CALLBACK fnContactListWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM
 		}	}
 		return FALSE;
 
+	case WM_MENUSELECT:
+		if((HMENU)lParam == cli.hMenuMain) {
+			int pos = LOWORD(wParam);
+			POINT pt;
+			GetCursorPos(&pt);
+			if ((pos == 0 || pos == 1) && (HIWORD(wParam) & MF_POPUP) && MenuItemFromPoint(hwnd, cli.hMenuMain, pt) != -1) {
+				MENUITEMINFO mii = { 0 };
+				mii.cbSize = MENUITEMINFO_V4_SIZE;
+				mii.fMask = MIIM_SUBMENU;
+				mii.hSubMenu = (HMENU)CallService((pos == 0) ? MS_CLIST_MENUGETMAIN : MS_CLIST_MENUGETSTATUS, 0, 0);
+				SetMenuItemInfo(cli.hMenuMain, pos, TRUE, &mii);
+		}	}
+		break;
+
 	case WM_CONTEXTMENU:
 		{
 			RECT rc;

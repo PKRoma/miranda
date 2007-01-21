@@ -32,8 +32,6 @@ BOOL (WINAPI *MySetProcessWorkingSetSize)(HANDLE, SIZE_T, SIZE_T) = 0;
 extern int AddEvent(WPARAM wParam, LPARAM lParam);
 extern int RemoveEvent(WPARAM wParam, LPARAM lParam);
 
-int AddMainMenuItem(WPARAM wParam, LPARAM lParam);
-int AddContactMenuItem(WPARAM wParam, LPARAM lParam);
 int InitCustomMenus(void);
 void UninitCustomMenus(void);
 int GetContactStatusMessage(WPARAM wParam, LPARAM lParam);

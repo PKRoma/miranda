@@ -27,7 +27,6 @@ UNICODE done
 
 void ReloadExtraIcons( void );
 
-extern HMENU hMenuMain;
 extern BOOL(WINAPI *MySetLayeredWindowAttributes)(HWND, COLORREF, BYTE, DWORD);
 extern struct CluiData g_CluiData;
 extern pfnDrawAlpha pDrawAlpha;
@@ -321,7 +320,7 @@ static BOOL CALLBACK DlgProcCluiOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPAR
 				if (!IsDlgButtonChecked(hwndDlg, IDC_SHOWMAINMENU))
 					SetMenu(pcli->hwndContactList, NULL);
 				else
-					SetMenu(pcli->hwndContactList, hMenuMain);
+					SetMenu(pcli->hwndContactList, pcli->hMenuMain);
 
 				DBWriteContactSettingByte(NULL, "CList", "Min2Tray", (BYTE) IsDlgButtonChecked(hwndDlg, IDC_MIN2TRAY));
 				if (IsIconic(pcli->hwndContactList) && windowStyle != SETTING_WINDOWSTYLE_TOOLWINDOW)

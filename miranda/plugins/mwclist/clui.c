@@ -573,11 +573,6 @@ LRESULT CALLBACK ContactListWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM l
 	}
 
 	switch (msg) {
-	case WM_INITMENU:
-		if ( ServiceExists( MS_CLIST_MENUBUILDMAIN ))
-			CallService(MS_CLIST_MENUBUILDMAIN,0,0);
-      return 0;
-
 	case WM_CREATE:
 		CallService(MS_LANGPACK_TRANSLATEMENU,(WPARAM)GetMenu(hwnd),0);
 		DrawMenuBar(hwnd);

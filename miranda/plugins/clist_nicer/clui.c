@@ -42,7 +42,6 @@ static LONG g_CLUI_x_off, g_CLUI_y_off, g_CLUI_y1_off, g_CLUI_x1_off;
 static RECT rcWPC;
 
 static HMODULE hUserDll;
-HMENU hMenuMain;
 static int transparentFocus = 1;
 static byte oldhideoffline;
 static int disableautoupd=1;
@@ -1151,7 +1150,6 @@ static void ShowCLUI(HWND hwnd)
 	int onTop = DBGetContactSettingByte(NULL, "CList", "OnTop", SETTING_ONTOP_DEFAULT);
 
 	SendMessage(hwnd, WM_SETREDRAW, FALSE, FALSE);
-	hMenuMain = GetMenu(pcli->hwndContactList);
 	if (!DBGetContactSettingByte(NULL, "CLUI", "ShowMainMenu", SETTING_SHOWMAINMENU_DEFAULT))
 		SetMenu(pcli->hwndContactList, NULL);
 	if (state == SETTING_STATE_NORMAL) {
@@ -1742,27 +1740,6 @@ LRESULT CALLBACK ContactListWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM l
 			MySetLayeredWindowAttributes(hwnd, g_CluiData.bFullTransparent ? g_CluiData.colorkey : RGB(0, 0, 0), (BYTE) (destAlpha), LWA_ALPHA | (g_CluiData.bFullTransparent ? LWA_COLORKEY : 0));
 			return DefWindowProc(hwnd, msg, wParam, lParam);
 		}
-	case WM_MENUSELECT:
-		{
-			POINT pt;
-			int pos;
-
-			if((HMENU)lParam != hMenuMain)
-				break;
-
-			GetCursorPos(&pt);
-			pos = LOWORD(wParam); //MenuItemFromPoint(hwnd, hMenuMain, pt);
-			if ((pos == 0 || pos == 1) && HIWORD(wParam) & MF_POPUP && MenuItemFromPoint(hwnd, hMenuMain, pt) != -1) {
-				MENUITEMINFO mii;
-
-				ZeroMemory(&mii, sizeof(mii));
-				mii.cbSize = MENUITEMINFO_V4_SIZE;
-				mii.fMask = MIIM_SUBMENU;
-				mii.hSubMenu = (pos == 0) ? (HMENU)CallService(MS_CLIST_MENUGETMAIN, 0, 0) : (HMENU)CallService(MS_CLIST_MENUGETSTATUS, 0, 0);
-				SetMenuItemInfo(hMenuMain, pos, TRUE, &mii);
-			}
-			break;
-		}
     case WM_SYSCOMMAND:
         if (wParam == SC_MAXIMIZE)
             return 0;
@@ -1891,7 +1868,6 @@ LRESULT CALLBACK ContactListWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM l
 						RECT rc;
 						HMENU hMenu = (HMENU) CallService(MS_CLIST_MENUGETMAIN, 0, 0);
 
-						//HMENU hmenu = GetSubMenu(hMenuMain, 0);
 						GetWindowRect(GetDlgItem(hwnd, LOWORD(wParam)), &rc);
 						TrackPopupMenu(hMenu, TPM_TOPALIGN|TPM_LEFTALIGN|TPM_RIGHTBUTTON, rc.left, LOWORD(wParam) == IDC_TBMENU ? rc.top : rc.bottom, 0, hwnd, NULL);
 						return 0;

@@ -351,9 +351,6 @@ int MO_ModifyMenuItem(WPARAM wParam,LPARAM lParam)
 	if ( pmiparam->flags & CMIM_HOTKEY )
 		pimi->mi.hotKey = pmiparam->hotKey;
 
-	if ( pmiparam->flags & CMIM_HOTKEY )
-		pimi->mi.hotKey = pmiparam->hotKey;
-
 	LeaveCriticalSection( &csMenuHook );
 	return 0;
 }
