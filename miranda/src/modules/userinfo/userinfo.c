@@ -474,7 +474,7 @@ int ShutdownUserInfo(WPARAM wParam,LPARAM lParam)
 
 int LoadUserInfoModule(void)
 {
-	CLISTMENUITEM mi;
+	CLISTMENUITEM mi = { 0 };
 
 	CreateServiceFunction(MS_USERINFO_SHOWDIALOG,ShowDetailsDialogCommand);
 	hDetailsInitEvent=CreateHookableEvent(ME_USERINFO_INITIALISE);
@@ -482,21 +482,19 @@ int LoadUserInfoModule(void)
 	HookEvent(ME_DB_CONTACT_DELETED,UserInfoContactDelete);
 	HookEvent(ME_SYSTEM_PRESHUTDOWN,ShutdownUserInfo);
 	CreateServiceFunction(MS_USERINFO_ADDPAGE,AddDetailsPage);
-	ZeroMemory(&mi,sizeof(mi));
-	mi.cbSize=sizeof(mi);
-	mi.position=1000050000;
-	mi.flags=0;
-	mi.hIcon=LoadIconEx(GetModuleHandle(NULL),MAKEINTRESOURCE(IDI_USERDETAILS),FALSE);
-	mi.pszContactOwner=NULL;
-	mi.pszName=Translate("User &Details");
-	mi.pszService=MS_USERINFO_SHOWDIALOG;
-	CallService(MS_CLIST_ADDCONTACTMENUITEM,0,(LPARAM)&mi);   
-	mi.position=500050000;
-	mi.pszName=Translate("View/Change My &Details...");
-	CallService(MS_CLIST_ADDMAINMENUITEM,0,(LPARAM)&mi);
-	hWindowList=(HANDLE)CallService(MS_UTILS_ALLOCWINDOWLIST,0,0);
-    
-    Safe_DestroyIcon(mi.hIcon);
 
+	mi.cbSize = sizeof(mi);
+	mi.position = 1000050000;
+	mi.hIcon = LoadIconEx(GetModuleHandle(NULL),MAKEINTRESOURCE(IDI_USERDETAILS),FALSE);
+	mi.pszName = "User &Details";
+	mi.pszService = MS_USERINFO_SHOWDIALOG;
+	CallService(MS_CLIST_ADDCONTACTMENUITEM,0,(LPARAM)&mi);   
+
+	mi.position = 500050000;
+	mi.pszName = "View/Change My &Details...";
+	CallService(MS_CLIST_ADDMAINMENUITEM,0,(LPARAM)&mi);
+
+	hWindowList = (HANDLE)CallService(MS_UTILS_ALLOCWINDOWLIST,0,0);
+	Safe_DestroyIcon(mi.hIcon);
 	return 0;
 }

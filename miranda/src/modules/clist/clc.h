@@ -80,6 +80,15 @@ struct ClcData {
 	int needsResort;
 };
 
+typedef HMONITOR ( WINAPI *pfnMyMonitorFromPoint )(POINT,DWORD);
+extern pfnMyMonitorFromPoint MyMonitorFromPoint;
+
+typedef HMONITOR( WINAPI *pfnMyMonitorFromWindow) (HWND, DWORD);
+extern pfnMyMonitorFromWindow MyMonitorFromWindow;
+
+typedef BOOL(WINAPI *pfnMyGetMonitorInfo) (HMONITOR, LPMONITORINFO);
+extern pfnMyGetMonitorInfo MyGetMonitorInfo;
+
 //clc.c
 extern int g_IconWidth, g_IconHeight;
 

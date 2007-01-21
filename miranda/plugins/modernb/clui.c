@@ -1043,33 +1043,36 @@ int CLUI_SizingGetWindowRect(HWND hwnd,RECT * rc)
 
 static void CLUI_SnappingToEdge(HWND hwnd, WINDOWPOS * wp) //by ZORG
 {
-    if (DBGetContactSettingByte(NULL,"CLUI","SnapToEdges",0))
-    {
-        RECT* dr;
-        MONITORINFO monInfo;
-        HMONITOR curMonitor = MonitorFromWindow(hwnd, MONITOR_DEFAULTTONEAREST);
+	if ( MyMonitorFromWindow == NULL || MyGetMonitorInfo == NULL )
+		return;
 
-        monInfo.cbSize = sizeof(monInfo);
-        GetMonitorInfo(curMonitor, &monInfo);
+	if (DBGetContactSettingByte(NULL,"CLUI","SnapToEdges",0))
+	{
+		RECT* dr;
+		MONITORINFO monInfo;
+		HMONITOR curMonitor = MyMonitorFromWindow(hwnd, MONITOR_DEFAULTTONEAREST);
 
-        dr = &(monInfo.rcWork);
+		monInfo.cbSize = sizeof(monInfo);
+		MyGetMonitorInfo(curMonitor, &monInfo);
 
-        // Left side
-        if ( wp->x < dr->left + 10 && wp->x > dr->left - 10 && g_CluiData.bBehindEdgeSettings!=1)
-            wp->x = dr->left;
+		dr = &(monInfo.rcWork);
 
-        // Right side
-        if ( dr->right - wp->x - wp->cx <10 && dr->right - wp->x - wp->cx > -10 && g_CluiData.bBehindEdgeSettings!=2)
-            wp->x = dr->right - wp->cx;
+		// Left side
+		if ( wp->x < dr->left + 10 && wp->x > dr->left - 10 && g_CluiData.bBehindEdgeSettings!=1)
+			wp->x = dr->left;
 
-        // Top side
-        if ( wp->y < dr->top + 10 && wp->y > dr->top - 10)
-            wp->y = dr->top;
+		// Right side
+		if ( dr->right - wp->x - wp->cx <10 && dr->right - wp->x - wp->cx > -10 && g_CluiData.bBehindEdgeSettings!=2)
+			wp->x = dr->right - wp->cx;
 
-        // Bottom side
-        if ( dr->bottom - wp->y - wp->cy <10 && dr->bottom - wp->y - wp->cy > -10)
-            wp->y = dr->bottom - wp->cy;
-    }
+		// Top side
+		if ( wp->y < dr->top + 10 && wp->y > dr->top - 10)
+			wp->y = dr->top;
+
+		// Bottom side
+		if ( dr->bottom - wp->y - wp->cy <10 && dr->bottom - wp->y - wp->cy > -10)
+			wp->y = dr->bottom - wp->cy;
+	}
 }
 
 int CALLBACK CLUI_SyncGetPDNCE(WPARAM wParam, LPARAM lParam)

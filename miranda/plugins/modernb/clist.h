@@ -30,6 +30,15 @@ void cliTrayIconUpdateWithImageList(int iImage,const TCHAR *szNewTip,char *szPre
 void cli_ChangeContactIcon(HANDLE hContact,int iIcon,int add);
 int GetContactInfosForSort(HANDLE hContact,char **Proto,TCHAR **Name,int *Status);
 
+typedef HMONITOR ( WINAPI *pfnMyMonitorFromPoint )(POINT,DWORD);
+extern pfnMyMonitorFromPoint MyMonitorFromPoint;
+
+typedef HMONITOR( WINAPI *pfnMyMonitorFromWindow) (HWND, DWORD);
+extern pfnMyMonitorFromWindow MyMonitorFromWindow;
+
+typedef BOOL(WINAPI *pfnMyGetMonitorInfo) (HMONITOR, LPMONITORINFO);
+extern pfnMyGetMonitorInfo MyGetMonitorInfo;
+
 typedef struct  {
 	HANDLE hContact;
 	TCHAR *name;

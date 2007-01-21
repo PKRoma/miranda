@@ -27,6 +27,9 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include "clist.h"
 #include "commonprototypes.h"
 
+pfnMyMonitorFromPoint  MyMonitorFromPoint = NULL;
+pfnMyMonitorFromWindow MyMonitorFromWindow = NULL;
+pfnMyGetMonitorInfo    MyGetMonitorInfo = NULL;
 
 static HANDLE hookSystemShutdown_CListMod=NULL;
 HANDLE  hookOptInitialise_CList=NULL,
@@ -276,7 +279,16 @@ int LoadContactListModule(void)
 	hCListImages = ImageList_Create(16, 16, ILC_MASK|ILC_COLOR32, 32, 0);
 	InitCustomMenus();
 	InitTray();
-
+	{
+		HINSTANCE hUser = GetModuleHandleA("USER32");
+		MyMonitorFromPoint  = ( pfnMyMonitorFromPoint )GetProcAddress( hUser,"MonitorFromPoint" );
+		MyMonitorFromWindow = ( pfnMyMonitorFromWindow )GetProcAddress( hUser, "MonitorFromWindow" );
+		#if defined( _UNICODE )
+			MyGetMonitorInfo = ( pfnMyGetMonitorInfo )GetProcAddress( hUser, "GetMonitorInfoW");
+		#else
+			MyGetMonitorInfo = ( pfnMyGetMonitorInfo )GetProcAddress( hUser, "GetMonitorInfoA");
+		#endif
+	}
 	return 0;
 }
 

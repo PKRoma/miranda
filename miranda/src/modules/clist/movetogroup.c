@@ -55,24 +55,14 @@ static int OnContactMenuBuild(WPARAM wParam,LPARAM lParam)
 	int i, pos;
 	TCHAR *szGroupName, *szContactGroup;
 	char intname[20];
-    
-    CLISTMENUITEM mi = { 0 };
-    mi.cbSize = sizeof( mi );
-	
-    // FYR: Moved back Visibility and Ignore to clist_nicer
-    //
-    //if ( !hIgnoreItem ) {
-    //    mi.position = 200000;
-    //    mi.pszPopupName = ( char* )-1;
-    //    mi.pszService = "CList/SetContactIgnore";
-    //    mi.pszName = Translate("&Visibility and ignore...");
-    //    hIgnoreItem = (HANDLE)CallService(MS_CLIST_ADDCONTACTMENUITEM, 0, (LPARAM)&mi);
-    //}
 
-    if ( !hMoveToGroupItem ) {
+	CLISTMENUITEM mi = { 0 };
+	mi.cbSize = sizeof( mi );
+
+	if ( !hMoveToGroupItem ) {
 		mi.pszPopupName = ( char* )-1;
 		mi.position = 100000;
-		mi.pszName = Translate("&Move to Group");
+		mi.pszName = "&Move to Group";
 		mi.flags = CMIF_ROOTPOPUP;
 		hMoveToGroupItem = (HANDLE)CallService(MS_CLIST_ADDCONTACTMENUITEM, 0, (LPARAM)&mi);
 	}

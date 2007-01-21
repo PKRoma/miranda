@@ -69,7 +69,7 @@ plugin may add different menu items with some service.
 
 
 25-11-2002		Full support of runtime build of all menus.
-				Contact			MS_CLIST_ADDCONTACTMENUITEM
+				Contact		MS_CLIST_ADDCONTACTMENUITEM
 								MS_CLIST_REMOVECONTACTMENUITEM
 								MS_CLIST_MENUBUILDCONTACT
 								ME_CLIST_PREBUILDCONTACTMENU
@@ -79,7 +79,7 @@ plugin may add different menu items with some service.
 								MS_CLIST_MENUBUILDMAIN
 								ME_CLIST_PREBUILDMAINMENU
 
-				FrameMenu		MS_CLIST_ADDCONTEXTFRAMEMENUITEM
+				FrameMenu	MS_CLIST_ADDCONTEXTFRAMEMENUITEM
 								MS_CLIST_REMOVECONTEXTFRAMEMENUITEM
 								MS_CLIST_MENUBUILDFRAMECONTEXT
 								ME_CLIST_PREBUILDFRAMEMENU

@@ -370,30 +370,30 @@ int LoadCLUIModule(void)
 		mi.flags = 0;
 		mi.hIcon = LoadIconEx(cli.hInst, MAKEINTRESOURCE(IDI_DELETE),FALSE);
 		mi.pszContactOwner = NULL;      //on every contact
-		mi.pszName = Translate("De&lete");
+		mi.pszName = "De&lete";
 		mi.pszService = "CList/DeleteContactCommand";
 		CallService(MS_CLIST_ADDCONTACTMENUITEM, 0, (LPARAM) & mi);
-        Safe_DestroyIcon(mi.hIcon);
+		Safe_DestroyIcon(mi.hIcon);
 
 		CreateServiceFunction("CList/RenameContactCommand", MenuItem_RenameContact);
 		mi.position = 2000050000;
 		mi.flags = 0;
 		mi.hIcon = LoadIconEx(cli.hInst, MAKEINTRESOURCE(IDI_RENAME),FALSE);
 		mi.pszContactOwner = NULL;      //on every contact
-		mi.pszName = Translate("&Rename");
+		mi.pszName = "&Rename";
 		mi.pszService = "CList/RenameContactCommand";
 		hRenameMenuItem = (HANDLE) CallService(MS_CLIST_ADDCONTACTMENUITEM, 0, (LPARAM) & mi);
 		HookEvent(ME_CLIST_PREBUILDCONTACTMENU, MenuItem_PreBuild);
-        Safe_DestroyIcon(mi.hIcon);
+		Safe_DestroyIcon(mi.hIcon);
 
 		CreateServiceFunction("CList/AddToListContactCommand", MenuItem_AddContactToList);
 		mi.position = -2050000000;
 		mi.flags = CMIF_NOTONLIST;
 		mi.hIcon = LoadIconEx(cli.hInst, MAKEINTRESOURCE(IDI_ADDCONTACT),FALSE);
-		mi.pszName = Translate("&Add permanently to list");
+		mi.pszName = "&Add permanently to list";
 		mi.pszService = "CList/AddToListContactCommand";
 		CallService(MS_CLIST_ADDCONTACTMENUITEM, 0, (LPARAM) & mi);
-        Safe_DestroyIcon(mi.hIcon);
+		Safe_DestroyIcon(mi.hIcon);
 	}
 	return 0;
 }

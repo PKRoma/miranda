@@ -41,6 +41,10 @@ void FreeDisplayNameCache(void);
 void InitTray(void);
 void LoadCLUIModule();
 
+pfnMyMonitorFromPoint  MyMonitorFromPoint = NULL;
+pfnMyMonitorFromWindow MyMonitorFromWindow = NULL;
+pfnMyGetMonitorInfo    MyGetMonitorInfo = NULL;
+
 HANDLE hContactDoubleClicked, hContactIconChangedEvent;
 HIMAGELIST hCListImages;
 BOOL(WINAPI * MySetProcessWorkingSetSize) (HANDLE, SIZE_T, SIZE_T);
@@ -361,7 +365,7 @@ int fnShowHide(WPARAM wParam, LPARAM lParam)
 	}
 	if (bShow == TRUE) {
 		WINDOWPLACEMENT pl = { 0 };
-		HMONITOR(WINAPI * MyMonitorFromWindow) (HWND, DWORD);
+		
 		RECT rcScreen, rcWindow;
 		int offScreen = 0;
 
@@ -373,16 +377,13 @@ int fnShowHide(WPARAM wParam, LPARAM lParam)
 		SetForegroundWindow(cli.hwndContactList);
 		DBWriteContactSettingByte(NULL, "CList", "State", SETTING_STATE_NORMAL);
 		//this forces the window onto the visible screen
-		MyMonitorFromWindow = (HMONITOR(WINAPI *) (HWND, DWORD)) GetProcAddress(GetModuleHandleA("USER32"), "MonitorFromWindow");
 		GetWindowRect(cli.hwndContactList, &rcWindow);
 		if (MyMonitorFromWindow) {
 			if (MyMonitorFromWindow(cli.hwndContactList, 0) == NULL) {
-				BOOL(WINAPI * MyGetMonitorInfoA) (HMONITOR, LPMONITORINFO);
 				MONITORINFO mi = { 0 };
 				HMONITOR hMonitor = MyMonitorFromWindow(cli.hwndContactList, 2);
-				MyGetMonitorInfoA = (BOOL(WINAPI *) (HMONITOR, LPMONITORINFO)) GetProcAddress(GetModuleHandleA("USER32"), "GetMonitorInfoA");
 				mi.cbSize = sizeof(mi);
-				MyGetMonitorInfoA(hMonitor, &mi);
+				MyGetMonitorInfo(hMonitor, &mi);
 				rcScreen = mi.rcWork;
 				offScreen = 1;
 			}
@@ -509,6 +510,17 @@ int LoadContactListModule2(void)
 	InitCListEvents();
 	InitGroupServices();
 	InitTray();
+
+	{
+		HINSTANCE hUser = GetModuleHandleA("USER32");
+		MyMonitorFromPoint  = ( pfnMyMonitorFromPoint )GetProcAddress( hUser,"MonitorFromPoint" );
+		MyMonitorFromWindow = ( pfnMyMonitorFromWindow )GetProcAddress( hUser, "MonitorFromWindow" );
+		#if defined( _UNICODE )
+			MyGetMonitorInfo = ( pfnMyGetMonitorInfo )GetProcAddress( hUser, "GetMonitorInfoW");
+		#else
+			MyGetMonitorInfo = ( pfnMyGetMonitorInfo )GetProcAddress( hUser, "GetMonitorInfoA");
+		#endif
+	}
 
 	hCListImages = ImageList_Create(16, 16, ILC_MASK | (IsWinVerXPPlus()? ILC_COLOR32 : ILC_COLOR16), 13, 0);
 	HookEvent(ME_SKIN_ICONSCHANGED, CListIconsChanged);

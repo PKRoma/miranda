@@ -855,17 +855,15 @@ static int AddOptionsPage(WPARAM wParam,LPARAM lParam)
 
 static int OptModulesLoaded(WPARAM wParam,LPARAM lParam)
 {
-	CLISTMENUITEM mi;
-
-	ZeroMemory(&mi,sizeof(mi));
-	mi.cbSize=sizeof(mi);
-	mi.flags=0;
-	mi.hIcon=LoadIconEx(GetModuleHandle(NULL),MAKEINTRESOURCE(IDI_OPTIONS),FALSE);
-	mi.position=1900000000;
-	mi.pszName=Translate("&Options...");
-	mi.pszService="Options/OptionsCommand";
+	CLISTMENUITEM mi = { 0 };
+	mi.cbSize = sizeof(mi);
+	mi.flags = 0;
+	mi.hIcon = LoadIconEx(GetModuleHandle(NULL),MAKEINTRESOURCE(IDI_OPTIONS),FALSE);
+	mi.position = 1900000000;
+	mi.pszName = "&Options...";
+	mi.pszService = "Options/OptionsCommand";
 	CallService(MS_CLIST_ADDMAINMENUITEM,0,(LPARAM)&mi);
-    Safe_DestroyIcon(mi.hIcon);
+	Safe_DestroyIcon(mi.hIcon);
 	return 0;
 }
 

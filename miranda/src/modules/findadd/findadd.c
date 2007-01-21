@@ -871,7 +871,6 @@ int LoadFindAddModule(void)
 
 static int OnSystemModulesLoaded(WPARAM wParam,LPARAM lParam)
 {
-	CLISTMENUITEM mi;
 	int netProtoCount, protoCount, i;
 	PROTOCOLDESCRIPTOR **protos;
 
@@ -885,14 +884,14 @@ static int OnSystemModulesLoaded(WPARAM wParam,LPARAM lParam)
 		}
 
 	if (netProtoCount > 0) {
-		ZeroMemory(&mi, sizeof(mi));
-		mi.cbSize = sizeof(mi);
-		mi.position = 500020000;
-		mi.hIcon = LoadIconEx(GetModuleHandle(NULL), MAKEINTRESOURCE(IDI_FINDUSER),FALSE);
-		mi.pszName = Translate("&Find/Add Contacts...");
+		CLISTMENUITEM mi = { 0 };
+		mi.cbSize     = sizeof(mi);
+		mi.position   = 500020000;
+		mi.hIcon      = LoadIconEx(GetModuleHandle(NULL), MAKEINTRESOURCE(IDI_FINDUSER),FALSE);
+		mi.pszName    = "&Find/Add Contacts...";
 		mi.pszService = MS_FINDADD_FINDADD;
 		CallService(MS_CLIST_ADDMAINMENUITEM, 0, (LPARAM)&mi);
-        Safe_DestroyIcon(mi.hIcon);
+		Safe_DestroyIcon(mi.hIcon);
 	}
 
 	return 0;

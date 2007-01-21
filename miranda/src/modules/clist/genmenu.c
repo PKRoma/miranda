@@ -329,11 +329,11 @@ int MO_ModifyMenuItem(WPARAM wParam,LPARAM lParam)
 		FreeAndNil(&pimi->mi.pszName);
 		#if defined( _UNICODE )
 			if ( pmiparam->flags & CMIF_UNICODE )
-				pimi->mi.ptszName = TranslateTS( mir_tstrdup( pmiparam->ptszName ));
+				pimi->mi.ptszName = mir_tstrdup( TranslateTS( pmiparam->ptszName ));
 			else
-				pimi->mi.ptszName = TranslateTS( LangPackPcharToTchar(( char* )pmiparam->ptszName ));
+				pimi->mi.ptszName = LangPackPcharToTchar( Translate( pmiparam->pszName ));
 		#else
-			pimi->mi.ptszName = Translate( mir_strdup( pmiparam->ptszName ));
+			pimi->mi.ptszName = mir_strdup( Translate( pmiparam->ptszName ));
 		#endif
 	}
 	if ( pmiparam->flags & CMIM_FLAGS ) {
@@ -626,11 +626,11 @@ int MO_AddNewMenuItem(WPARAM wParam,LPARAM lParam)
 		p->IconRegistred = FALSE;
 		#if defined( _UNICODE )
 			if ( pmi->flags & CMIF_UNICODE )
-				p->mi.ptszName = TranslateTS( mir_tstrdup( pmi->ptszName ));
+				p->mi.ptszName = mir_tstrdup( TranslateTS( pmi->ptszName ));
 			else
-				p->mi.ptszName = TranslateTS( LangPackPcharToTchar(( char* )pmi->ptszName ));
+				p->mi.ptszName = LangPackPcharToTchar( Translate( pmi->pszName ));
 		#else
-			p->mi.ptszName = Translate( mir_strdup( pmi->ptszName ));
+			p->mi.ptszName = mir_strdup( Translate( pmi->ptszName ));
 		#endif
 		if ( pmi->hIcon != NULL ) 
 			p->iconId = ImageList_AddIcon( MenuObjects[objidx].hMenuIcons, pmi->hIcon );

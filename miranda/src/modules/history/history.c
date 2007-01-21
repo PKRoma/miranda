@@ -60,24 +60,22 @@ int PreShutdownHistoryModule(WPARAM wParam, LPARAM lParam)
 
 int LoadHistoryModule(void)
 {
-	CLISTMENUITEM mi;
+	CLISTMENUITEM mi = { 0 };
 
 	//bit of a fudge that the one service works for both global requests and
 	//the contact list's menu processing stuff
 	CreateServiceFunction(MS_HISTORY_SHOWCONTACTHISTORY,UserHistoryCommand);
-	ZeroMemory(&mi,sizeof(mi));
-	mi.cbSize=sizeof(mi);
-	mi.position=1000090000;
-	mi.flags=0;
-	mi.hIcon=LoadIconEx(GetModuleHandle(NULL),MAKEINTRESOURCE(IDI_HISTORY),FALSE);
-	mi.pszContactOwner=NULL;    //all contacts
-	mi.pszName=Translate("View &History");
-	mi.pszService=MS_HISTORY_SHOWCONTACTHISTORY;
-	CallService(MS_CLIST_ADDCONTACTMENUITEM,0,(LPARAM)&mi);
-    Safe_DestroyIcon(mi.hIcon);
 
-    hWindowList=(HANDLE)CallService(MS_UTILS_ALLOCWINDOWLIST,0,0);
-    HookEvent(ME_DB_CONTACT_DELETED,HistoryContactDelete);
+	mi.cbSize = sizeof(mi);
+	mi.position = 1000090000;
+	mi.hIcon = LoadIconEx(GetModuleHandle(NULL),MAKEINTRESOURCE(IDI_HISTORY),FALSE);
+	mi.pszName = "View &History";
+	mi.pszService = MS_HISTORY_SHOWCONTACTHISTORY;
+	CallService(MS_CLIST_ADDCONTACTMENUITEM,0,(LPARAM)&mi);
+	Safe_DestroyIcon(mi.hIcon);
+
+	hWindowList=(HANDLE)CallService(MS_UTILS_ALLOCWINDOWLIST,0,0);
+	HookEvent(ME_DB_CONTACT_DELETED,HistoryContactDelete);
 	HookEvent(ME_SYSTEM_PRESHUTDOWN,PreShutdownHistoryModule);
 	return 0;
 }
