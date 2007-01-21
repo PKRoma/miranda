@@ -31,6 +31,9 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #define LOGICON_MSG_OUT     1
 #define LOGICON_MSG_NOTICE  2
 
+#if defined ( _UNICODE )
+extern int RTL_Detect(WCHAR *pszwText);
+#endif
 extern HINSTANCE g_hInst;
 static int logPixelSY;
 static PBYTE pLogIconBmpBits[3];
@@ -197,6 +200,9 @@ struct EventData *getEventFromDB(struct MessageWindowData *dat, HANDLE hContact,
 		} else {
 			event->pszTextW = a2tcp((char *) dbei.pBlob, dat->codePage);
 		}
+	}
+	if ( RTL_Detect(event->pszTextW)) {
+		event->dwFlags |= DBEF_RTL;
 	}
 #else
 	if (event->dwFlags & IEEDF_SENT) {
