@@ -41,9 +41,9 @@ struct StandardIconDescription mainIcons[] =
 	{ SKINICON_EVENT_URL,        "URL",             -IDI_URL        },
 	{ SKINICON_EVENT_FILE,       "File",            -IDI_FILE       },
 	{ SKINICON_OTHER_USERONLINE, "User Online",     -IDI_USERONLINE },
-	{ SKINICON_OTHER_CONNECTING, "Connecting",      -IDI_LOAD       },
 	{ SKINICON_OTHER_GROUPOPEN,  "Group (Open)",    -IDI_GROUPOPEN  },
-	{ SKINICON_OTHER_GROUPSHUT,  "Group (Closed)",  -IDI_GROUPSHUT  }
+	{ SKINICON_OTHER_GROUPSHUT,  "Group (Closed)",  -IDI_GROUPSHUT  },
+	{ SKINICON_OTHER_CONNECTING, "Connecting",      -IDI_LOAD       }
 };
 
 struct StandardIconDescription statusIcons[] =
@@ -151,8 +151,10 @@ static int LoadSkinProtoIcon(WPARAM wParam,LPARAM lParam)
 	HICON hIcon;
 	int suffIndx;
 
-	if ( lParam >= ID_STATUS_CONNECTING && lParam < ID_STATUS_CONNECTING+MAX_CONNECT_RETRIES )
-		return LoadSkinIcon( SKINICON_OTHER_CONNECTING, 0 );
+	if ( lParam >= ID_STATUS_CONNECTING && lParam < ID_STATUS_CONNECTING+MAX_CONNECT_RETRIES ) {
+		sprintf( iconName, "%s%d", mainIconsFmt, 7 );
+		return IcoLib_GetIcon( 0, ( LPARAM )iconName );
+	}
 
 	for ( i = 0; i < SIZEOF(statusIcons); i++)
 		if ( statusIcons[i].id == lParam ) {

@@ -42,9 +42,9 @@ __inline static HICON LoadSkinnedIcon(int id) {return (HICON)CallService(MS_SKIN
 #define SKINICON_OTHER_EXIT			201
 #define SKINICON_OTHER_SHOWHIDE		202
 #define SKINICON_OTHER_GROUPOPEN    203		//v0.1.1.0+
-#define SKINICON_OTHER_GROUPSHUT    205		//v0.1.1.0+
 #define SKINICON_OTHER_USERONLINE   204     //v0.1.0.1+
-#define SKINICON_OTHER_CONNECTING   205     //v0.1.0.1+
+#define SKINICON_OTHER_GROUPSHUT    205		//v0.1.1.0+
+#define SKINICON_OTHER_CONNECTING   206     //v0.1.0.1+
 //menu icons are owned by the module that uses them so are not and should not
 //be skinnable. Except exit and show/hide
 
