@@ -1053,7 +1053,7 @@ int MenuModulesLoaded(WPARAM wParam,LPARAM lParam)
 			for ( j=0; j < SIZEOF(statusModeList); j++ ) {
 				if ( !( flags & statusModePf2List[j] ))
 					continue;
-				if (( flags2 & statusModePf2List[j] ) && i > 0 )
+				if (( flags2 & statusModePf2List[j] ) && j > 0 )
 					continue;
 
 				//adding
