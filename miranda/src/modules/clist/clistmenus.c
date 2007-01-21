@@ -219,7 +219,7 @@ static int AddMainMenuItem(WPARAM wParam,LPARAM lParam)
 		tmi.flags    = mi->flags;
 		tmi.hIcon    = mi->hIcon;
 		tmi.hotKey   = mi->hotKey;
-		tmi.ptszName = TranslateTS(mi->ptszName);
+		tmi.ptszName = mi->ptszName;
 		tmi.position = mi->position;
 
 		//pszPopupName for new system mean root level
