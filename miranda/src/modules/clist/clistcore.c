@@ -188,6 +188,7 @@ static int fnGetProtocolVisibility( const char* proto )
 static void fnReloadProtoMenus( void )
 {
 	MenuModulesLoaded( 0, 0 );
+	cli.pfnCluiProtocolStatusChanged(0,0);
 }
 
 static int srvRetrieveInterface( WPARAM wParam, LPARAM lParam )
