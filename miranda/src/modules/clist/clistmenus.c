@@ -899,7 +899,7 @@ int MenuModulesLoaded(WPARAM wParam,LPARAM lParam)
 	int storedProtoCount;
 	int visnetworkProtoCount=0;
 	PROTOCOLDESCRIPTOR **proto;
-	DWORD statusFlags=0,flags,flags2;
+	DWORD flags,flags2;
 	TMO_MenuItem tmi;
 	TMenuParam tmp;
 	int pos=0;
@@ -983,6 +983,7 @@ int MenuModulesLoaded(WPARAM wParam,LPARAM lParam)
 
 		flags = CallProtoService(proto[i]->szName,PS_GETCAPS,PFLAGNUM_2,0);
 		flags2 = CallProtoService(proto[i]->szName,PS_GETCAPS,PFLAGNUM_5,0);
+		flags &= ~flags2; 
 
 		if ( visnetworkProtoCount > 1 ) {
 			char protoName[128];
@@ -1052,8 +1053,6 @@ int MenuModulesLoaded(WPARAM wParam,LPARAM lParam)
 			for ( j=0; j < SIZEOF(statusModeList); j++ ) {
 				if ( !( flags & statusModePf2List[j] ))
 					continue;
-				if (( flags2 & statusModePf2List[j] ) && j > 0 )
-					continue;
 
 				//adding
 				memset( &tmi, 0, sizeof( tmi ));
@@ -1089,8 +1088,6 @@ int MenuModulesLoaded(WPARAM wParam,LPARAM lParam)
 				}
 				IconLib_ReleaseIcon(tmi.hIcon,0);
 		}	}
-
-		statusFlags|=flags;
 	}
 	NotifyEventHooks(cli.hPreBuildStatusMenuEvent, 0, 0);
 	pos = 200000;
@@ -1104,6 +1101,9 @@ int MenuModulesLoaded(WPARAM wParam,LPARAM lParam)
 				continue;
 
 			flags = CallProtoService(proto[i]->szName,PS_GETCAPS,PFLAGNUM_2,0);
+			flags2 = CallProtoService(proto[i]->szName,PS_GETCAPS,PFLAGNUM_5,0);
+			flags &= ~flags2; 
+			
 			if ( flags & statusModePf2List[j] ) {
 				memset( &tmi, 0, sizeof( tmi ));
 				memset( &buf, 0, 256 );

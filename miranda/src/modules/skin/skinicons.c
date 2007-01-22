@@ -227,7 +227,7 @@ static int LoadSkinProtoIcon(WPARAM wParam,LPARAM lParam)
 
 				if ( i < SIZEOF( statusIcons )) {
 					mir_snprintf( szFullPath, SIZEOF(szFullPath), "%s\\Plugins\\%s.dll", szPath, szProto );
-					if ( ExtractIconExA( szFullPath, statusIcons[i].resource_id, NULL, &hIcon, 1 ) > 0 ) {
+				if (( int )ExtractIconExA( szFullPath, statusIcons[i].resource_id, NULL, &hIcon, 1 ) > 0 ) {
 						DestroyIcon( hIcon );
 						sid.pszDefaultFile = szFullPath;
 						hIcon = NULL;
