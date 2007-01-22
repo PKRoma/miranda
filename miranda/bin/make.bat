@@ -120,7 +120,9 @@ call :WriteVer2 %Version% %SubVersion% %3
 goto :eof
 
 :WriteVer2
-echo #ifndef _MAC >..\src\version.rc
+echo #include ^<windows.h^>                                                         >..\src\version.rc
+echo #include ^<winres.h^>                                                         >>..\src\version.rc
+echo #ifndef _MAC                                                                  >>..\src\version.rc
 echo ///////////////////////////////////////////////////////////////////////////// >>..\src\version.rc
 echo //                                                                            >>..\src\version.rc
 echo // Version                                                                    >>..\src\version.rc
