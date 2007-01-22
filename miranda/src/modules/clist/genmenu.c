@@ -1091,7 +1091,7 @@ int RecursiveRemoveChilds(int pos,ListParam *param)
 
 /* iconlib in menu */
 #include "m_icolib.h"
-
+extern int hStatusMenuObject;
 HICON LoadIconFromLibrary(char *SectName,char *Name,char *Description,HICON hIcon,boolean RegisterIt,boolean *RegistredOk)
 {		
     SKINICONDESC sid={0};
@@ -1205,6 +1205,7 @@ int RegisterOneIcon(int mo,int mi)
     char *uname;
     char *desc;	
     if(!ServiceExists(MS_SKIN2_ADDICON)) return 0;
+	if (hStatusMenuObject==MenuObjects[mo].id) return 0; //skip status menu
     uname=MenuObjects[mo].MenuItems[mi].UniqName;
     if (uname==NULL) 
 #ifdef UNICODE

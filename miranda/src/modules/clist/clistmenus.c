@@ -42,7 +42,7 @@ typedef struct  {
 //new menu sys
 static int hMainMenuObject;
 static int hContactMenuObject;
-static int hStatusMenuObject;
+int hStatusMenuObject=0;
 int MenuModulesLoaded(WPARAM,LPARAM);
 int UnloadMoveToGroup(void);
 

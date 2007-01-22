@@ -81,63 +81,63 @@ __inline int IcoLib_AddNewIcon(WPARAM wParam, LPARAM lParam)
 
 static HICON LoadSmallIconShared(HINSTANCE hInstance, LPCTSTR lpIconName)
 {
-    int cx=GetSystemMetrics(SM_CXSMICON);
-    return LoadImage(hInstance,lpIconName, IMAGE_ICON,cx,cx, LR_DEFAULTCOLOR|LR_SHARED);
+	int cx=GetSystemMetrics(SM_CXSMICON);
+	return LoadImage(hInstance,lpIconName, IMAGE_ICON,cx,cx, LR_DEFAULTCOLOR|LR_SHARED);
 }
 
 // load small icon (not shared) it IS NEED to be destroyed
 static HICON LoadSmallIcon(HINSTANCE hInstance, LPCTSTR lpIconName)
 {
-    HICON hIcon=NULL;				  // icon handle 
-    int index=-(int)lpIconName;
-    TCHAR filename[MAX_PATH]={0};
-    GetModuleFileName(hInstance,filename,MAX_PATH);
-    ExtractIconEx(filename,index,NULL,&hIcon,1);
-    return hIcon;
+	HICON hIcon=NULL;				  // icon handle 
+	int index=-(int)lpIconName;
+	TCHAR filename[MAX_PATH]={0};
+	GetModuleFileName(hInstance,filename,MAX_PATH);
+	ExtractIconEx(filename,index,NULL,&hIcon,1);
+	return hIcon;
 }
 
 // load small icon from hInstance
 HICON LoadIconEx(HINSTANCE hInstance, LPCTSTR lpIconName, BOOL bShared)
 {
-    HICON hResIcon=bShared?LoadSmallIcon(hInstance,lpIconName):LoadSmallIconShared(hInstance,lpIconName);
-    if (!hResIcon) //Icon not found in hInstance lets try to load it from core
-    {
-        HINSTANCE hCoreInstance=GetModuleHandle(NULL);
-        if (hCoreInstance!=hInstance)
-            hResIcon=bShared?LoadSmallIcon(hCoreInstance,lpIconName):LoadSmallIconShared(hCoreInstance,lpIconName);
-    }
-    return hResIcon;
+	HICON hResIcon=bShared?LoadSmallIcon(hInstance,lpIconName):LoadSmallIconShared(hInstance,lpIconName);
+	if (!hResIcon) //Icon not found in hInstance lets try to load it from core
+	{
+		HINSTANCE hCoreInstance=GetModuleHandle(NULL);
+		if (hCoreInstance!=hInstance)
+			hResIcon=bShared?LoadSmallIcon(hCoreInstance,lpIconName):LoadSmallIconShared(hCoreInstance,lpIconName);
+	}
+	return hResIcon;
 }
 
 int ImageList_AddIcon_NotShared(HIMAGELIST hIml, HINSTANCE hInstance, LPCTSTR szResource) 
 {   
-    HICON hTempIcon=LoadIconEx(hInstance, szResource, 0);
-    int res=ImageList_AddIcon(hIml, hTempIcon);
-    Safe_DestroyIcon(hTempIcon); 
-    return res;
+	HICON hTempIcon=LoadIconEx(hInstance, szResource, 0);
+	int res=ImageList_AddIcon(hIml, hTempIcon);
+	Safe_DestroyIcon(hTempIcon); 
+	return res;
 }
 
 int ImageList_AddIcon_IconLibLoaded(HIMAGELIST hIml, HICON hIcon) 
 {   
-    int res=ImageList_AddIcon(hIml, hIcon);
-    IconLib_ReleaseIcon(hIcon,0);
-    return res;
+	int res=ImageList_AddIcon(hIml, hIcon);
+	IconLib_ReleaseIcon(hIcon,0);
+	return res;
 }
 
 
 int ImageList_ReplaceIcon_NotShared(HIMAGELIST hIml, int iIndex, HINSTANCE hInstance, LPCTSTR szResource) 
 {   
-    HICON hTempIcon=LoadIconEx(hInstance, szResource, 0);
-    int res=ImageList_ReplaceIcon(hIml, iIndex, hTempIcon);
-    Safe_DestroyIcon(hTempIcon); 
-    return res;
+	HICON hTempIcon=LoadIconEx(hInstance, szResource, 0);
+	int res=ImageList_ReplaceIcon(hIml, iIndex, hTempIcon);
+	Safe_DestroyIcon(hTempIcon); 
+	return res;
 }
 
 int ImageList_ReplaceIcon_IconLibLoaded(HIMAGELIST hIml, int nIndex, HICON hIcon) 
 {   
-    int res=ImageList_ReplaceIcon(hIml,nIndex, hIcon);
-    IconLib_ReleaseIcon(hIcon,0);
-    return res;
+	int res=ImageList_ReplaceIcon(hIml,nIndex, hIcon);
+	IconLib_ReleaseIcon(hIcon,0);
+	return res;
 }
 //
 //  wParam = szProto
@@ -162,107 +162,122 @@ static int LoadSkinProtoIcon(WPARAM wParam,LPARAM lParam)
 			break;
 		}
 
-	if ( statusIndx == -1 )
-		return (int)NULL;
+		if ( statusIndx == -1 )
+			return (int)NULL;
 
-	if ( !szProto ) {
-		PROTOCOLDESCRIPTOR **proto;
-		DWORD protoCount;
+		if ( !szProto ) {
+			PROTOCOLDESCRIPTOR **proto;
+			DWORD protoCount;
 
-		CallService(MS_PROTO_ENUMPROTOCOLS,(WPARAM)&protoCount,(LPARAM)&proto);
-		// Only return a protocol specific icon if there is only one protocol
-		// Otherwise return the global icon. This affects the global status menu mainly.
-		if ( protoCount == 1 ) {
-			HICON hIcon;
+			CallService(MS_PROTO_ENUMPROTOCOLS,(WPARAM)&protoCount,(LPARAM)&proto);
+			// Only return a protocol specific icon if there is only one protocol
+			// Otherwise return the global icon. This affects the global status menu mainly.
+			if ( protoCount == 1 ) {
+				HICON hIcon;
 
-			// format: core_status_%proto%statusindex
+				// format: core_status_%proto%statusindex
+				strcpy(iconName, statusIconsFmt);
+				strcat(iconName, proto[0]->szName);
+				itoa(statusIndx, iconName + strlen(iconName), 10);
+
+				hIcon = (HICON)IcoLib_GetIcon(0, (LPARAM)iconName);
+				if (hIcon) return (int)hIcon;
+			}
+
+			// format: core_status_%s%d
 			strcpy(iconName, statusIconsFmt);
-			strcat(iconName, proto[0]->szName);
+			strcat(iconName, GLOBAL_PROTO_NAME);
 			itoa(statusIndx, iconName + strlen(iconName), 10);
-
-			hIcon = (HICON)IcoLib_GetIcon(0, (LPARAM)iconName);
-			if (hIcon) return (int)hIcon;
+			return (int)IcoLib_GetIcon(0, (LPARAM)iconName);
 		}
 
 		// format: core_status_%s%d
-		strcpy(iconName, statusIconsFmt);
-		strcat(iconName, GLOBAL_PROTO_NAME);
-		itoa(statusIndx, iconName + strlen(iconName), 10);
-		return (int)IcoLib_GetIcon(0, (LPARAM)iconName);
-	}
+		mir_snprintf(iconName, SIZEOF(iconName), "%s%s%d", statusIconsFmt, szProto, statusIndx);
+		hIcon = (HICON)IcoLib_GetIcon(0, (LPARAM)iconName);
+		if ( hIcon != NULL )
+			return (int)hIcon;
 
-	// format: core_status_%s%d
-	mir_snprintf(iconName, SIZEOF(iconName), "%s%s%d", statusIconsFmt, szProto, statusIndx);
-	hIcon = (HICON)IcoLib_GetIcon(0, (LPARAM)iconName);
-	if ( hIcon != NULL )
-		return (int)hIcon;
+		//mir_snprintf(iconName, SIZEOF(iconName), "%s%s%d", statusIconsFmt, szProto, 0);
+		//hIcon = (HICON)IcoLib_GetIcon(0, (LPARAM)iconName);
+		if ( hIcon == NULL ) {
+			char szPath[MAX_PATH], szFullPath[MAX_PATH],*str;
+			char iconId[MAX_PATH];
+			DWORD caps2 = CallProtoService(szProto,PS_GETCAPS,PFLAGNUM_2,0);
+			SKINICONDESC sid = { 0 };
+			//
+			//  Queried protocol isn't in list, adding
+			//
+			strcpy(iconName, PROTOCOLS_PREFIX); suffIndx = strlen(iconName);
+			CallProtoService(szProto,PS_GETNAME,sizeof(iconName)-suffIndx,(LPARAM)iconName+suffIndx);
 
-	mir_snprintf(iconName, SIZEOF(iconName), "%s%s%d", statusIconsFmt, szProto, 0);
-	hIcon = (HICON)IcoLib_GetIcon(0, (LPARAM)iconName);
-	if ( hIcon == NULL ) {
-		char szPath[MAX_PATH], szFullPath[MAX_PATH],*str;
-		char iconId[MAX_PATH];
-		DWORD caps2 = CallProtoService(szProto,PS_GETCAPS,PFLAGNUM_2,0);
-		SKINICONDESC sid = { 0 };
-		//
-		//  Queried protocol isn't in list, adding
-		//
-		strcpy(iconName, PROTOCOLS_PREFIX); suffIndx = strlen(iconName);
-		CallProtoService(szProto,PS_GETNAME,sizeof(iconName)-suffIndx,(LPARAM)iconName+suffIndx);
+			sid.cbSize = sizeof(sid);
+			sid.cx = GetSystemMetrics(SM_CXSMICON);
+			sid.cy = GetSystemMetrics(SM_CYSMICON);
 
-		sid.cbSize = sizeof(sid);
-		sid.cx = GetSystemMetrics(SM_CXSMICON);
-		sid.cy = GetSystemMetrics(SM_CYSMICON);
+			GetModuleFileNameA(GetModuleHandle(NULL), szPath, MAX_PATH);
+			str = strrchr( szPath, '\\' );
+			if ( str != NULL ) *str = 0;
+			mir_snprintf( szFullPath, SIZEOF(szFullPath), "%s\\Icons\\proto_%s.dll", szPath, szProto );
+			if ( GetFileAttributesA( szFullPath ) != INVALID_FILE_ATTRIBUTES )
+				sid.pszDefaultFile = szFullPath;
+			else {
+				for ( i = 0; i < SIZEOF(statusIcons); i++ )
+					if ( statusIcons[i].id == lParam )
+						break;
 
-		GetModuleFileNameA(GetModuleHandle(NULL), szPath, MAX_PATH);
-		str = strrchr( szPath, '\\' );
-		if ( str != NULL ) *str = 0;
-		mir_snprintf( szFullPath, SIZEOF(szFullPath), "%s\\Icons\\proto_%s.dll", szPath, szProto );
-		if ( GetFileAttributesA( szFullPath ) != INVALID_FILE_ATTRIBUTES )
-			sid.pszDefaultFile = szFullPath;
-		else {
+				if ( i < SIZEOF( statusIcons )) {
+					mir_snprintf( szFullPath, SIZEOF(szFullPath), "%s\\Plugins\\%s.dll", szPath, szProto );
+					if ( ExtractIconExA( szFullPath, statusIcons[i].resource_id, NULL, &hIcon, 1 ) > 0 ) {
+						DestroyIcon( hIcon );
+						sid.pszDefaultFile = szFullPath;
+						hIcon = NULL;
+					}	}
+
+				if ( sid.pszDefaultFile == NULL ) {
+					if ( str != NULL ) *str = '\\';
+					sid.pszDefaultFile = szPath;
+				}	}
+
+			//
+			// Add global icons to list
+			//
+			sid.pszSection = iconName;
+			strcpy(iconId, statusIconsFmt);
+			strcat(iconId, szProto);
+			suffIndx = strlen(iconId);
 			for ( i = 0; i < SIZEOF(statusIcons); i++ )
-				if ( statusIcons[i].id == lParam )
-					break;
+				if ( caps2 & statusIcons[i].pf2 ) {
+					// format: core_%s%d
+					itoa(i, iconId + suffIndx, 10);
+					sid.pszName = iconId;
+					sid.pszDescription = (char*)CallService(MS_CLIST_GETSTATUSMODEDESCRIPTION,statusIcons[i].id,0);
+					//statusIcons[i].description;
+					sid.iDefaultIndex = statusIcons[i].resource_id;
+					IcoLib_AddNewIcon(0, (LPARAM)&sid);
+				}
+				// format: core_status_%s%d
+				strcpy(iconName, statusIconsFmt);
+				strcat(iconName, szProto);
+				itoa(statusIndx, iconName + strlen(iconName), 10);
+				hIcon = (HICON) IcoLib_GetIcon(0, (LPARAM)iconName);
+				if ( hIcon ) return (int)hIcon;
 
-			if ( i < SIZEOF( statusIcons )) {
-				mir_snprintf( szFullPath, SIZEOF(szFullPath), "%s\\Plugins\\%s.dll", szPath, szProto );
-				if ( ExtractIconExA( szFullPath, statusIcons[i].resource_id, NULL, &hIcon, 1 ) > 0 ) {
-					DestroyIcon( hIcon );
-					sid.pszDefaultFile = szFullPath;
-					hIcon = NULL;
-			}	}
+				// icon cant be get probably faked protocol 
+				// register icon with section==NULL to keep it invisible
+				// and default icon as global status icon
+				// then try to load it
+				{
+					sid.pszSection=NULL;
+					sid.pszName=iconName;
+					sid.iDefaultIndex = statusIcons[statusIndx].resource_id;;
+					sid.pszDescription="";
+					IcoLib_AddNewIcon(0, (LPARAM)&sid);            
+					hIcon = (HICON)IcoLib_GetIcon( 0, (LPARAM)iconName );
+					return (int)hIcon;
+				}
+		}
 
-			if ( sid.pszDefaultFile == NULL ) {
-				if ( str != NULL ) *str = '\\';
-				sid.pszDefaultFile = szPath;
-		}	}
-
-		//
-		// Add global icons to list
-		//
-		sid.pszSection = iconName;
-		strcpy(iconId, statusIconsFmt);
-		strcat(iconId, szProto);
-		suffIndx = strlen(iconId);
-		for ( i = 0; i < SIZEOF(statusIcons); i++ )
-			if ( caps2 & statusIcons[i].pf2 ) {
-				// format: core_%s%d
-				itoa(i, iconId + suffIndx, 10);
-				sid.pszName = iconId;
-				sid.pszDescription = (char*)CallService(MS_CLIST_GETSTATUSMODEDESCRIPTION,statusIcons[i].id,0);
-				//statusIcons[i].description;
-				sid.iDefaultIndex = statusIcons[i].resource_id;
-				IcoLib_AddNewIcon(0, (LPARAM)&sid);
-			}
-		// format: core_status_%s%d
-		strcpy(iconName, statusIconsFmt);
-		strcat(iconName, szProto);
-		itoa(statusIndx, iconName + strlen(iconName), 10);
-		return (int)IcoLib_GetIcon(0, (LPARAM)iconName);
-	}
-
-	return (int)hIcon;
+		return (int)hIcon;
 }
 
 static int LoadSkinIcon(WPARAM wParam, LPARAM lParam)
@@ -284,7 +299,7 @@ static int LoadSkinIcon(WPARAM wParam, LPARAM lParam)
 			strcpy(iconName, mainIconsFmt);
 			itoa(i, iconName + strlen(iconName), 10);
 			return (int)IcoLib_GetIcon(0, (LPARAM)iconName);
-	}	}
+		}	}
 
 	return (int)NULL;
 }
@@ -309,7 +324,7 @@ static void convertOneProtocol( char* moduleName, char* iconName )
 			DBFreeVariant( &dbv );
 
 			DBDeleteContactSetting( NULL, "Icons", moduleName );
-}	}	}
+		}	}	}
 
 int InitSkinIcons(void)
 {
