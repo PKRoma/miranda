@@ -87,7 +87,11 @@ int fnHitTest(HWND hwnd, struct ClcData *dat, int testx, int testy, struct ClcCo
 	hwndRoot = hwnd;
 	while (hwndTmp = GetParent(hwndRoot))
 		hwndRoot = hwndTmp;
-	if ( ChildWindowFromPointEx(GetDesktopWindow(), pt, CWP_SKIPINVISIBLE|CWP_SKIPTRANSPARENT ) != hwndRoot )
+	hwndTmp = ChildWindowFromPointEx(GetDesktopWindow(), pt, CWP_SKIPINVISIBLE|CWP_SKIPTRANSPARENT);
+	if (// [our root window is not under cursor]
+		(hwndTmp != hwndRoot) &&
+		// AND [desktop ("Progman" class) is not under cursor OR our root window is not it's child located under cursor (pinned mode)]
+		!(hwndTmp == FindWindowA("Progman",0)) && (ChildWindowFromPointEx(hwndTmp, pt, CWP_SKIPINVISIBLE|CWP_SKIPTRANSPARENT) == hwndRoot))
 		return -1;
 
 	GetClientRect(hwnd, &clRect);
