@@ -60,7 +60,7 @@ int SkinOptInit(WPARAM wParam,LPARAM lParam)
 	odp.pfnDlgProc=DlgSkinOpts;
 	odp.pszTemplate=MAKEINTRESOURCEA(IDD_OPT_SKIN);
 	odp.pszGroup=Translate("Customize");
-	odp.pszTitle=Translate("Skin");
+	odp.pszTitle=Translate("Contact list skin");
 	odp.flags=ODPF_BOLDGROUPS;
 	odp.pszTab=Translate("Load/Save");
 	CallService(MS_OPT_ADDPAGE,wParam,(LPARAM)&odp);
