@@ -27,7 +27,7 @@ Enhancement
  - Update notification added to notify of new Miranda releases
 
 Bugfixes:
- - "Read Message" hotkey opened contact list if not events were present
+ - "Read Message" hotkey opened contact list if no events were present
 
 * New in 0.6.3
 Bugfixes:
