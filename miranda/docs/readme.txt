@@ -22,6 +22,12 @@ Contents
 
 1. New in this version
 ----------------------
+* New in 0.6.4
+Enhancement
+ - Update notification added to notify of new Miranda releases
+
+Bugfixes:
+ - "Read Message" hotkey opened contact list if not events were present
 
 * New in 0.6.3
 Bugfixes:

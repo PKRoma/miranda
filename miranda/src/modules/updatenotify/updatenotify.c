@@ -67,7 +67,7 @@ int LoadUpdateNotifyModule(void) {
     hHookModules = HookEvent(ME_SYSTEM_MODULESLOADED, UpdateNotifyModulesLoaded);
     HookEvent(ME_SYSTEM_SHUTDOWN, UnloadUpdateNotifyModule);
     HookEvent(ME_OPT_INITIALISE, UpdateNotifyOptInit);
-    updateTimerId = SetTimer(NULL, 0, 1000*60, UpdateNotifyTimerCheck); // Check for update one minute after startup
+    updateTimerId = SetTimer(NULL, 0, 1000*15, UpdateNotifyTimerCheck); // Check for update 15 secs after startup
     return 0;
 }
 
