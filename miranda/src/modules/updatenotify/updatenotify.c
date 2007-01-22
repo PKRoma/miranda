@@ -33,7 +33,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #define UN_DEFAULTCHECKTIME 60*24*60 /* Default to check once every 24 hours */
 
 typedef struct {
-    char version[16];
+    char version[64];
     char downloadUrl[256];
 } UpdateNotifyData;
 
