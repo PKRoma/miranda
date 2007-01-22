@@ -1094,168 +1094,139 @@ int RecursiveRemoveChilds(int pos,ListParam *param)
 extern int hStatusMenuObject;
 HICON LoadIconFromLibrary(char *SectName,char *Name,char *Description,HICON hIcon,boolean RegisterIt,boolean *RegistredOk)
 {		
-    SKINICONDESC sid={0};
-    int retval;
+	SKINICONDESC sid={0};
+	int retval;
 
-    //if (hIcon==NULL) return hIcon;
-    if(RegistredOk) *RegistredOk=FALSE;
-    if (Name || Description)  
-    {				
-        char iconame[256];
-        
-        if (Name!=NULL&&strlen(Name)!=0)
-        {
-            _snprintf(iconame,sizeof(iconame),"genmenu_%s_%s",SectName,Name);
-        }
-        else 
-        {
-            _snprintf(iconame,sizeof(iconame),"genmenu_%s_%s",SectName,Description);
-        }
+	if ( RegistredOk )
+		*RegistredOk = FALSE;
 
-        
-        if(ServiceExists(MS_SKIN2_ADDICON))
-        {
+	if ( Name || Description ) {				
+		char iconame[256];
 
-            if (RegisterIt)
-            {
-                char sectionName[256];
-                char * buf=strdup(Description);
-                {   
-                    //remove '&'
-                    char * start=buf;
-                    while (start=strchr(start,'&'))
-                    {
-                       memmove(start,start+1,strlen(start+1)+1);
-                       if (*start!='\0') start++;
-                       else break;
-                    }
-                }
-                _snprintf(sectionName,sizeof(sectionName),"Menu Icons/%s",SectName);
-                sid.cbSize = sizeof(sid);
-                sid.cx=16;
-                sid.cy=16;
-                sid.pszSection = Translate(sectionName);				
-                sid.pszName=iconame;
-                sid.pszDefaultFile=NULL;
-                sid.pszDescription=buf;
-                sid.hDefaultIcon=hIcon;
+		if (Name!=NULL&&strlen(Name)!=0)
+			_snprintf(iconame,sizeof(iconame),"genmenu_%s_%s",SectName,Name);
+		else 
+			_snprintf(iconame,sizeof(iconame),"genmenu_%s_%s",SectName,Description);
 
-                retval=CallService(MS_SKIN2_ADDICON, 0, (LPARAM)&sid);
-                free(buf);
-                if(RegistredOk) *RegistredOk=TRUE;
-            };
-            return ((HICON)CallService(MS_SKIN2_GETICON, 0, (LPARAM)iconame));
-        }
-    };
+		if ( ServiceExists( MS_SKIN2_ADDICON )) {
+			if ( RegisterIt ) {
+				char sectionName[256];
+				char * buf = strdup(Description);
 
-    return hIcon;
+				//remove '&'
+				char* start = buf;
+				while ( start = strchr( start, '&' )) {
+					memmove(start,start+1,strlen(start+1)+1);
+					if (*start!='\0') start++;
+					else break;
+				}
+
+				_snprintf(sectionName,sizeof(sectionName),"Menu Icons/%s",SectName);
+				sid.cbSize = sizeof(sid);
+				sid.cx=16;
+				sid.cy=16;
+				sid.pszSection = Translate(sectionName);				
+				sid.pszName=iconame;
+				sid.pszDefaultFile=NULL;
+				sid.pszDescription=buf;
+				sid.hDefaultIcon=hIcon;
+
+				retval=CallService(MS_SKIN2_ADDICON, 0, (LPARAM)&sid);
+				free(buf);
+				if ( RegistredOk )
+					*RegistredOk=TRUE;
+			}
+			return ((HICON)CallService(MS_SKIN2_GETICON, 0, (LPARAM)iconame));
+	}	}
+
+	return hIcon;
 }
 
 int OnIconLibChanges(WPARAM wParam,LPARAM lParam)
 {
-    int mo,mi;
-    HICON newIcon;
-    EnterCriticalSection( &csMenuHook );
-    for (mo=0;mo<MenuObjectsCount;mo++)
-    {
-        for (mi=0;mi<MenuObjects[mo].MenuItemsCount;mi++)
-        {
-            char *uname=NULL;
-#ifdef UNICODE
-            char * descr=u2a(MenuObjects[mo].MenuItems[mi].mi.ptszName);
-#else
-            char * descr=MenuObjects[mo].MenuItems[mi].mi.pszName;
-#endif
-            uname=mir_strdup(MenuObjects[mo].MenuItems[mi].UniqName);
-            if (uname==NULL) 
-#ifdef UNICODE
-                uname=u2a(MenuObjects[mo].MenuItems[mi].CustomName);
-#else
-                uname=mir_strdup(MenuObjects[mo].MenuItems[mi].CustomName);
-#endif
-            //&&MenuObjects[mo].MenuItems[mi].iconId!=-1	
-            if (MenuObjects[mo].MenuItems[mi].IconRegistred&&uname!=NULL)
-            {	
-                HICON deficon=ImageList_GetIcon(MenuObjects[mo].hMenuIcons,MenuObjects[mo].MenuItems[mi].iconId,0);
-                newIcon=LoadIconFromLibrary(MenuObjects[mo].Name,
-                    uname,
-                    descr,
-                    deficon,FALSE,NULL);
-                if (newIcon)
-                {
-                    ImageList_ReplaceIcon(MenuObjects[mo].hMenuIcons,MenuObjects[mo].MenuItems[mi].iconId,newIcon);
-                }
-                Safe_DestroyIcon(deficon);
-                IconLib_ReleaseIcon(newIcon,0);
-            }	
-#ifdef UNICODE
-            if (descr) mir_free(descr);
-#endif
-            if (uname) mir_free(uname);
-        };
-    }
+	int mo,mi;
+	HICON newIcon;
+	EnterCriticalSection( &csMenuHook );
+	for ( mo=0; mo < MenuObjectsCount; mo++ ) {
+		for ( mi=0; mi < MenuObjects[mo].MenuItemsCount; mi++ ) {
+			#ifdef UNICODE
+				char* descr=u2a(MenuObjects[mo].MenuItems[mi].mi.ptszName);
+			#else
+				char* descr=MenuObjects[mo].MenuItems[mi].mi.pszName;
+			#endif
+			char* uname = mir_strdup(MenuObjects[mo].MenuItems[mi].UniqName);
+			if ( uname == NULL ) 
+			#ifdef UNICODE
+				uname=u2a(MenuObjects[mo].MenuItems[mi].CustomName);
+			#else
+				uname=mir_strdup(MenuObjects[mo].MenuItems[mi].CustomName);
+			#endif
+			//&&MenuObjects[mo].MenuItems[mi].iconId!=-1	
+			if ( MenuObjects[mo].MenuItems[mi].IconRegistred && uname != NULL ) {	
+				HICON deficon = ImageList_GetIcon(MenuObjects[mo].hMenuIcons,MenuObjects[mo].MenuItems[mi].iconId,0);
+				newIcon = LoadIconFromLibrary( MenuObjects[mo].Name, uname, descr, deficon, FALSE, NULL );
+				if (newIcon)
+					ImageList_ReplaceIcon(MenuObjects[mo].hMenuIcons,MenuObjects[mo].MenuItems[mi].iconId,newIcon);
 
-    LeaveCriticalSection( &csMenuHook );
-    return 0;
+				Safe_DestroyIcon(deficon);
+				IconLib_ReleaseIcon(newIcon,0);
+			}	
+			#ifdef UNICODE
+				mir_free( descr );
+			#endif
+			mir_free( uname );
+	}	}
+
+	LeaveCriticalSection( &csMenuHook );
+	return 0;
 }
 
 int RegisterOneIcon(int mo,int mi)
 {
-    HICON newIcon;
-    char *uname;
-    char *desc;	
-    if(!ServiceExists(MS_SKIN2_ADDICON)) return 0;
-	if (hStatusMenuObject==MenuObjects[mo].id) return 0; //skip status menu
-    uname=MenuObjects[mo].MenuItems[mi].UniqName;
-    if (uname==NULL) 
-#ifdef UNICODE
-        uname=u2a(MenuObjects[mo].MenuItems[mi].CustomName);
-        desc=u2a(MenuObjects[mo].MenuItems[mi].mi.ptszName);
-#else
-        uname=MenuObjects[mo].MenuItems[mi].CustomName;
-        desc=MenuObjects[mo].MenuItems[mi].mi.pszName;
-#endif
-    if (!MenuObjects[mo].MenuItems[mi].IconRegistred)
-    {	    
-        HICON defic=0;        
-        defic=ImageList_GetIcon(MenuObjects[mo].hMenuIcons,MenuObjects[mo].MenuItems[mi].iconId,0);
-        newIcon=LoadIconFromLibrary(
-            MenuObjects[mo].Name,
-            uname,
-            desc,
-            defic,
-            TRUE,&MenuObjects[mo].MenuItems[mi].IconRegistred);	
-        if (newIcon) ImageList_ReplaceIcon(MenuObjects[mo].hMenuIcons,MenuObjects[mo].MenuItems[mi].iconId,newIcon);
-        Safe_DestroyIcon(defic);
-        IconLib_ReleaseIcon(newIcon,0);
-    };
+	HICON newIcon;
+	char *uname, *desc;	
 
-#ifdef UNICODE
-    if (!MenuObjects[mo].MenuItems[mi].UniqName)
-        if (uname) mir_free(uname);
-    if (desc) mir_free(desc);
-#endif
-    return 0;
+	if ( hStatusMenuObject == MenuObjects[mo].id ) //skip status menu
+		return 0;
+
+	uname = MenuObjects[mo].MenuItems[mi].UniqName;
+	if ( uname == NULL ) 
+	#ifdef UNICODE
+		uname = u2a(MenuObjects[mo].MenuItems[mi].CustomName);
+	desc = u2a(MenuObjects[mo].MenuItems[mi].mi.ptszName);
+	#else
+		uname = MenuObjects[mo].MenuItems[mi].CustomName;
+	desc = MenuObjects[mo].MenuItems[mi].mi.pszName;
+	#endif
+	
+	if ( !MenuObjects[mo].MenuItems[mi].IconRegistred ) {	    
+		HICON defic = ImageList_GetIcon( MenuObjects[mo].hMenuIcons, MenuObjects[mo].MenuItems[mi].iconId, 0 );
+		newIcon = LoadIconFromLibrary( MenuObjects[mo].Name, uname, desc, defic, TRUE, &MenuObjects[mo].MenuItems[mi].IconRegistred );	
+		if ( newIcon )
+			ImageList_ReplaceIcon( MenuObjects[mo].hMenuIcons, MenuObjects[mo].MenuItems[mi].iconId, newIcon );
+		Safe_DestroyIcon( defic );
+		IconLib_ReleaseIcon( newIcon, 0 );
+	}
+
+	#ifdef UNICODE
+		if ( !MenuObjects[mo].MenuItems[mi].UniqName )
+			mir_free( uname );
+		mir_free( desc );
+	#endif
+	return 0;
 }
 
 int RegisterAllIconsinIconLib()
 {
-    int mi,mo;
-    //register all icons
-    if(ServiceExists(MS_SKIN2_ADDICON))
-    {
-        for (mo=0;mo<MenuObjectsCount;mo++)
-        {
-            for (mi=0;mi<MenuObjects[mo].MenuItemsCount;mi++)
-            {
-                RegisterOneIcon(mo,mi);
-            }
-        };
-        OnIconLibChanges(0,0);
-    };
-    return 0;
-};
+	int mi,mo;
+	//register all icons
+	for ( mo=0; mo < MenuObjectsCount; mo++ )
+		for ( mi=0; mi < MenuObjects[mo].MenuItemsCount; mi++ )
+			RegisterOneIcon( mo, mi );
 
+	OnIconLibChanges(0,0);
+	return 0;
+}
 
 int posttimerid;
 //#define PostRegisterTimerID 12001
@@ -1263,40 +1234,40 @@ int posttimerid;
 VOID CALLBACK PostRegisterIcons( HWND hwnd, UINT uMsg, UINT_PTR idEvent, DWORD dwTime )
 {
 	KillTimer( 0, posttimerid );
-    RegisterAllIconsinIconLib();
+	RegisterAllIconsinIconLib();
 }
 
 int OnModulesLoaded(WPARAM wParam,LPARAM lParam)
 {
 	posttimerid = SetTimer(( HWND )NULL, 0, 5, ( TIMERPROC )PostRegisterIcons );
-    HookEvent(ME_SKIN2_ICONSCHANGED,OnIconLibChanges);
+	HookEvent(ME_SKIN2_ICONSCHANGED,OnIconLibChanges);
 	return 0;
 }
 
 int InitGenMenu()
 {
 	InitializeCriticalSection( &csMenuHook );
-	CreateServiceFunction(MO_BUILDMENU,MO_BuildMenu);
+	CreateServiceFunction( MO_BUILDMENU, MO_BuildMenu );
 
-	CreateServiceFunction(MO_PROCESSCOMMAND,MO_ProcessCommand);
-	CreateServiceFunction(MO_CREATENEWMENUOBJECT,MO_CreateNewMenuObject);
-	CreateServiceFunction(MO_REMOVEMENUITEM,MO_RemoveMenuItem);
-	CreateServiceFunction(MO_ADDNEWMENUITEM,MO_AddNewMenuItem);
-	CreateServiceFunction(MO_MENUITEMGETOWNERDATA,MO_MenuItemGetOwnerData);
-	CreateServiceFunction(MO_MODIFYMENUITEM,MO_ModifyMenuItem);
-	CreateServiceFunction(MO_GETMENUITEM,MO_GetMenuItem);
-	CreateServiceFunction(MO_PROCESSCOMMANDBYMENUIDENT,MO_ProcessCommandByMenuIdent);
-	CreateServiceFunction(MO_PROCESSHOTKEYS,MO_ProcessHotKeys);
-	CreateServiceFunction(MO_REMOVEMENUOBJECT,MO_RemoveMenuObject);
+	CreateServiceFunction( MO_PROCESSCOMMAND, MO_ProcessCommand );
+	CreateServiceFunction( MO_CREATENEWMENUOBJECT, MO_CreateNewMenuObject );
+	CreateServiceFunction( MO_REMOVEMENUITEM, MO_RemoveMenuItem );
+	CreateServiceFunction( MO_ADDNEWMENUITEM, MO_AddNewMenuItem );
+	CreateServiceFunction( MO_MENUITEMGETOWNERDATA, MO_MenuItemGetOwnerData );
+	CreateServiceFunction( MO_MODIFYMENUITEM, MO_ModifyMenuItem );
+	CreateServiceFunction( MO_GETMENUITEM, MO_GetMenuItem );
+	CreateServiceFunction( MO_PROCESSCOMMANDBYMENUIDENT, MO_ProcessCommandByMenuIdent );
+	CreateServiceFunction( MO_PROCESSHOTKEYS, MO_ProcessHotKeys );
+	CreateServiceFunction( MO_REMOVEMENUOBJECT, MO_RemoveMenuObject );
 
-	CreateServiceFunction(MO_DRAWMENUITEM,MO_DrawMenuItem);
-	CreateServiceFunction(MO_MEASUREMENUITEM,MO_MeasureMenuItem);
+	CreateServiceFunction( MO_DRAWMENUITEM, MO_DrawMenuItem );
+	CreateServiceFunction( MO_MEASUREMENUITEM, MO_MeasureMenuItem );
 
-	CreateServiceFunction(MO_SETOPTIONSMENUOBJECT,MO_SetOptionsMenuObject);
-	CreateServiceFunction(MO_SETOPTIONSMENUITEM,MO_SetOptionsMenuItem);
+	CreateServiceFunction( MO_SETOPTIONSMENUOBJECT, MO_SetOptionsMenuObject );
+	CreateServiceFunction( MO_SETOPTIONSMENUITEM, MO_SetOptionsMenuItem );
 
 	EnterCriticalSection( &csMenuHook );
-	isGenMenuInited=TRUE;
+	isGenMenuInited = TRUE;
 	LeaveCriticalSection( &csMenuHook );
 
 	HookEvent( ME_SYSTEM_MODULESLOADED, OnModulesLoaded );
@@ -1315,4 +1286,3 @@ int UnitGenMenu()
 	DeleteCriticalSection(&csMenuHook);
 	return 0;
 }
-
