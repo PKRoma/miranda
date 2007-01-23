@@ -70,8 +70,8 @@ int SaveTree(HWND hwndDlg)
 		TreeView_GetItem( hTree, &tvi );
 		iod = ( MenuItemOptData* )tvi.lParam;
 		name = iod->name;
-		menuitempos=GetMenuItembyId(menupos,iod->id);
-		if (menuitempos!=-1) {
+		menuitempos = GetMenuItembyId(menupos,iod->id);
+		if ( menuitempos != -1 ) {
 			GetMenuItemName( &pimo->MenuItems[menuitempos], menuItemName, sizeof(menuItemName));
 
 			wsprintfA(DBString, "%s_visible", menuItemName);
@@ -403,109 +403,97 @@ static BOOL CALLBACK GenMenuOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM l
 	struct OrderData *dat = (struct OrderData*)GetWindowLong(GetDlgItem(hwndDlg,IDC_MENUITEMS),GWL_USERDATA);
 
 	switch (msg) {
-	case WM_INITDIALOG: {
-
+	case WM_INITDIALOG:
 		TranslateDialogDefault(hwndDlg);
 		dat=(struct OrderData*)mir_alloc(sizeof(struct OrderData));
 		SetWindowLong(GetDlgItem(hwndDlg,IDC_MENUITEMS),GWL_USERDATA,(LONG)dat);
 		dat->dragging=0;
 		MyOldWindowProc=(WNDPROC)GetWindowLong(GetDlgItem(hwndDlg,IDC_MENUITEMS),GWL_WNDPROC);
 		SetWindowLong(GetDlgItem(hwndDlg,IDC_MENUITEMS),GWL_WNDPROC,(LONG)&LBTNDOWNProc);
-
-
-		//SetWindowLong(GetDlgItem(hwndDlg,IDC_BUTTONORDERTREE),GWL_STYLE,GetWindowLong(GetDlgItem(hwndDlg,IDC_BUTTONORDERTREE),GWL_STYLE)|TVS_NOHSCROLL);
-
 		{
 			HIMAGELIST himlCheckBoxes;
 			himlCheckBoxes=ImageList_Create(GetSystemMetrics(SM_CXSMICON),GetSystemMetrics(SM_CYSMICON),ILC_COLOR32|ILC_MASK,2,2);
 
-            ImageList_AddIcon_NotShared(himlCheckBoxes, GetModuleHandle(NULL), MAKEINTRESOURCE(IDI_NOTICK));               
-            ImageList_AddIcon_NotShared(himlCheckBoxes, GetModuleHandle(NULL), MAKEINTRESOURCE(IDI_TICK));   
-            
+			ImageList_AddIcon_NotShared(himlCheckBoxes, GetModuleHandle(NULL), MAKEINTRESOURCE(IDI_NOTICK));               
+			ImageList_AddIcon_NotShared(himlCheckBoxes, GetModuleHandle(NULL), MAKEINTRESOURCE(IDI_TICK));
+
 			TreeView_SetImageList(GetDlgItem(hwndDlg,IDC_MENUOBJECTS),himlCheckBoxes,TVSIL_NORMAL);
 			TreeView_SetImageList(GetDlgItem(hwndDlg,IDC_MENUITEMS),himlCheckBoxes,TVSIL_NORMAL);
 		}
 		BuildMenuObjectsTree(hwndDlg);
-		//			Tree
-		//			BuildTree(hwndDlg);
-		//			OptionsOpened=TRUE;
-
-		//			OptionshWnd=hwndDlg;
 		return TRUE;
-							}
+
 	case WM_COMMAND:
-		{
-			if ((HIWORD(wParam)==BN_CLICKED|| HIWORD(wParam)==BN_DBLCLK)) {
-				int ctrlid=LOWORD(wParam);
-				if (ctrlid==IDC_INSERTSEPARATOR) {
-					InsertSeparator(hwndDlg);
-					SendMessage(GetParent(hwndDlg), PSM_CHANGED, 0, 0);
-				}
-				if (ctrlid==IDC_GENMENU_DEFAULT) {
+		if ((HIWORD(wParam)==BN_CLICKED|| HIWORD(wParam)==BN_DBLCLK)) {
+			int ctrlid=LOWORD(wParam);
+			if (ctrlid==IDC_INSERTSEPARATOR) {
+				InsertSeparator(hwndDlg);
+				SendMessage(GetParent(hwndDlg), PSM_CHANGED, 0, 0);
+			}
+			if (ctrlid==IDC_GENMENU_DEFAULT) {
 
-					TVITEM tvi;
-					HTREEITEM hti;
-					char buf[256];
+				TVITEM tvi;
+				HTREEITEM hti;
+				char buf[256];
 
-					hti=TreeView_GetSelection(GetDlgItem(hwndDlg,IDC_MENUITEMS));
-					if (hti==NULL)
-						break;
+				hti=TreeView_GetSelection(GetDlgItem(hwndDlg,IDC_MENUITEMS));
+				if (hti==NULL)
+					break;
 
-					tvi.mask=TVIF_HANDLE|TVIF_IMAGE|TVIF_SELECTEDIMAGE|TVIF_PARAM;
-					tvi.hItem=hti;
-					TreeView_GetItem(GetDlgItem(hwndDlg,IDC_MENUITEMS),&tvi);
+				tvi.mask=TVIF_HANDLE|TVIF_IMAGE|TVIF_SELECTEDIMAGE|TVIF_PARAM;
+				tvi.hItem=hti;
+				TreeView_GetItem(GetDlgItem(hwndDlg,IDC_MENUITEMS),&tvi);
 
-					if ( _tcsstr(((MenuItemOptData *)tvi.lParam)->name, _T("---------------------------------------------")))
-						break;
+				if ( _tcsstr(((MenuItemOptData *)tvi.lParam)->name, _T("---------------------------------------------")))
+					break;
 
-					ZeroMemory(buf,256);
-					GetDlgItemTextA(hwndDlg,IDC_GENMENU_CUSTOMNAME,buf,256);
-					if (((MenuItemOptData *)tvi.lParam)->name) {
-						mir_free(((MenuItemOptData *)tvi.lParam)->name);
-					}
-
-					((MenuItemOptData *)tvi.lParam)->name = mir_tstrdup( ((MenuItemOptData *)tvi.lParam)->defname );
-
-					SaveTree(hwndDlg);
-					RebuildCurrent(hwndDlg);
-
+				ZeroMemory(buf,256);
+				GetDlgItemTextA(hwndDlg,IDC_GENMENU_CUSTOMNAME,buf,256);
+				if (((MenuItemOptData *)tvi.lParam)->name) {
+					mir_free(((MenuItemOptData *)tvi.lParam)->name);
 				}
 
-				if (ctrlid==IDC_GENMENU_SET) {
+				((MenuItemOptData *)tvi.lParam)->name = mir_tstrdup( ((MenuItemOptData *)tvi.lParam)->defname );
 
-					TVITEM tvi;
-					TCHAR buf[256];
-
-					HTREEITEM hti = TreeView_GetSelection( GetDlgItem( hwndDlg,IDC_MENUITEMS ));
-					if ( hti == NULL )
-						break;
-
-					tvi.mask = TVIF_HANDLE|TVIF_IMAGE|TVIF_SELECTEDIMAGE|TVIF_PARAM;
-					tvi.hItem = hti;
-					SendDlgItemMessage(hwndDlg, IDC_MENUITEMS, TVM_GETITEM, 0, (LPARAM)&tvi);
-
-					if ( _tcsstr(((MenuItemOptData *)tvi.lParam)->name, STR_SEPARATOR ))
-						break;
-
-					ZeroMemory(buf,sizeof( buf ));
-					GetDlgItemText( hwndDlg, IDC_GENMENU_CUSTOMNAME, buf, SIZEOF( buf ));
-					if (((MenuItemOptData *)tvi.lParam)->name)
-						mir_free(((MenuItemOptData *)tvi.lParam)->name);
-
-					((MenuItemOptData *)tvi.lParam)->name = mir_tstrdup(buf);
-
-					SaveTree(hwndDlg);
-					RebuildCurrent(hwndDlg);
-				}
-				break;
+				SaveTree(hwndDlg);
+				RebuildCurrent(hwndDlg);
 			}
 
-			if ((HIWORD(wParam)==STN_CLICKED|| HIWORD(wParam)==STN_DBLCLK)) {
-				int ctrlid=LOWORD(wParam);
+			if (ctrlid==IDC_GENMENU_SET) {
 
+				TVITEM tvi;
+				TCHAR buf[256];
+
+				HTREEITEM hti = TreeView_GetSelection( GetDlgItem( hwndDlg,IDC_MENUITEMS ));
+				if ( hti == NULL )
+					break;
+
+				tvi.mask = TVIF_HANDLE|TVIF_IMAGE|TVIF_SELECTEDIMAGE|TVIF_PARAM;
+				tvi.hItem = hti;
+				SendDlgItemMessage(hwndDlg, IDC_MENUITEMS, TVM_GETITEM, 0, (LPARAM)&tvi);
+
+				if ( _tcsstr(((MenuItemOptData *)tvi.lParam)->name, STR_SEPARATOR ))
+					break;
+
+				ZeroMemory(buf,sizeof( buf ));
+				GetDlgItemText( hwndDlg, IDC_GENMENU_CUSTOMNAME, buf, SIZEOF( buf ));
+				if (((MenuItemOptData *)tvi.lParam)->name)
+					mir_free(((MenuItemOptData *)tvi.lParam)->name);
+
+				((MenuItemOptData *)tvi.lParam)->name = mir_tstrdup(buf);
+
+				SaveTree(hwndDlg);
+				RebuildCurrent(hwndDlg);
 			}
 			break;
 		}
+
+		if ((HIWORD(wParam)==STN_CLICKED|| HIWORD(wParam)==STN_DBLCLK)) {
+			int ctrlid=LOWORD(wParam);
+
+		}
+		break;
+
 	case WM_NOTIFY:
 		switch(((LPNMHDR)lParam)->idFrom ) {
 		case 0:
