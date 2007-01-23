@@ -327,7 +327,7 @@ struct MD5_INTERFACE
 
 #define MS_SYSTEM_GET_MD5I  "Miranda/System/GetMD5I"
 
-__forceinline int mir_getMD5I( struct MD5_INTERFACE* dest )
+static __inline int mir_getMD5I( struct MD5_INTERFACE* dest )
 {
 	dest->cbSize = sizeof(*dest);
 	return CallService( MS_SYSTEM_GET_MD5I, 0, (LPARAM)dest );
