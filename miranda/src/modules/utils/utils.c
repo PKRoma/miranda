@@ -29,6 +29,10 @@ int InitHyperlink(void);
 int InitColourPicker(void);
 int InitBitmapFilter(void);
 int InitPathUtils(void);
+void md5_init(md5_state_t *pms);
+void md5_append(md5_state_t *pms, const md5_byte_t *data, int nbytes);
+void md5_finish(md5_state_t *pms, md5_byte_t digest[16]);
+void md5_hash_string(const md5_byte_t *data, int len, md5_byte_t digest[16]);
 
 static struct CountryListEntry countries[]={
 	{0   ,"Unspecified"},
@@ -391,6 +395,22 @@ static int GetCountryList(WPARAM wParam,LPARAM lParam)
 	return 0;
 }
 
+int GetMD5Interface(WPARAM wParam, LPARAM lParam)
+{
+	struct MD5_INTERFACE *md5i = (struct MD5_INTERFACE*) lParam;
+	if ( md5i == NULL )
+		return 1;
+	if ( md5i->cbSize != sizeof( struct MD5_INTERFACE ))
+		return 1;
+    
+	md5i->md5_init = md5_init;
+	md5i->md5_append = md5_append;
+	md5i->md5_finish = md5_finish;
+    md5i->md5_hash = md5_hash_string;
+	return 0;
+}
+struct MD5_INTERFACE md5i;
+
 int LoadUtilsModule(void)
 {
 	CreateServiceFunction(MS_UTILS_RESIZEDIALOG,ResizeDialog);
@@ -398,6 +418,7 @@ int LoadUtilsModule(void)
 	CreateServiceFunction(MS_UTILS_RESTOREWINDOWPOSITION,RestoreWindowPosition);
 	CreateServiceFunction(MS_UTILS_GETCOUNTRYBYNUMBER,GetCountryByNumber);
 	CreateServiceFunction(MS_UTILS_GETCOUNTRYLIST,GetCountryList);
+    CreateServiceFunction(MS_SYSTEM_GET_MD5I,GetMD5Interface);
 	InitOpenUrl();
 	InitWindowList();
 	InitHyperlink();

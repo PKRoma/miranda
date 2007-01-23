@@ -731,6 +731,10 @@ SOURCE=.\modules\utils\hyperlink.c
 # End Source File
 # Begin Source File
 
+SOURCE=.\modules\utils\md5.c
+# End Source File
+# Begin Source File
+
 SOURCE=.\modules\utils\openurl.c
 # End Source File
 # Begin Source File
