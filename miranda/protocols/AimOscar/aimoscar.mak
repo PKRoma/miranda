@@ -25,6 +25,10 @@ NULL=
 NULL=nul
 !ENDIF 
 
+CPP=cl.exe
+MTL=midl.exe
+RSC=rc.exe
+
 !IF  "$(CFG)" == "aim - Win32 Release"
 
 OUTDIR=.\Release
@@ -44,7 +48,6 @@ CLEAN :
 	-@erase "$(INTDIR)\file.obj"
 	-@erase "$(INTDIR)\flap.obj"
 	-@erase "$(INTDIR)\links.obj"
-	-@erase "$(INTDIR)\md5.obj"
 	-@erase "$(INTDIR)\packets.obj"
 	-@erase "$(INTDIR)\popup.obj"
 	-@erase "$(INTDIR)\proxy.obj"
@@ -68,42 +71,8 @@ CLEAN :
 "$(OUTDIR)" :
     if not exist "$(OUTDIR)/$(NULL)" mkdir "$(OUTDIR)"
 
-CPP=cl.exe
 CPP_PROJ=/nologo /MD /W3 /GX /Zi /O1 /I "../../include" /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "_MBCS" /D "_USRDLL" /D "AIM_EXPORTS" /Fp"$(INTDIR)\aimoscar.pch" /YX /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /FD /c 
-
-.c{$(INTDIR)}.obj::
-   $(CPP) @<<
-   $(CPP_PROJ) $< 
-<<
-
-.cpp{$(INTDIR)}.obj::
-   $(CPP) @<<
-   $(CPP_PROJ) $< 
-<<
-
-.cxx{$(INTDIR)}.obj::
-   $(CPP) @<<
-   $(CPP_PROJ) $< 
-<<
-
-.c{$(INTDIR)}.sbr::
-   $(CPP) @<<
-   $(CPP_PROJ) $< 
-<<
-
-.cpp{$(INTDIR)}.sbr::
-   $(CPP) @<<
-   $(CPP_PROJ) $< 
-<<
-
-.cxx{$(INTDIR)}.sbr::
-   $(CPP) @<<
-   $(CPP_PROJ) $< 
-<<
-
-MTL=midl.exe
 MTL_PROJ=/nologo /D "NDEBUG" /mktyplib203 /win32 
-RSC=rc.exe
 RSC_PROJ=/l 0x409 /fo"$(INTDIR)\aim.res" /d "NDEBUG" 
 BSC32=bscmake.exe
 BSC32_FLAGS=/nologo /o"$(OUTDIR)\aimoscar.bsc" 
@@ -121,7 +90,6 @@ LINK32_OBJS= \
 	"$(INTDIR)\file.obj" \
 	"$(INTDIR)\flap.obj" \
 	"$(INTDIR)\links.obj" \
-	"$(INTDIR)\md5.obj" \
 	"$(INTDIR)\packets.obj" \
 	"$(INTDIR)\popup.obj" \
 	"$(INTDIR)\proxy.obj" \
@@ -172,8 +140,6 @@ CLEAN :
 	-@erase "$(INTDIR)\flap.sbr"
 	-@erase "$(INTDIR)\links.obj"
 	-@erase "$(INTDIR)\links.sbr"
-	-@erase "$(INTDIR)\md5.obj"
-	-@erase "$(INTDIR)\md5.sbr"
 	-@erase "$(INTDIR)\packets.obj"
 	-@erase "$(INTDIR)\packets.sbr"
 	-@erase "$(INTDIR)\popup.obj"
@@ -210,42 +176,8 @@ CLEAN :
 "$(OUTDIR)" :
     if not exist "$(OUTDIR)/$(NULL)" mkdir "$(OUTDIR)"
 
-CPP=cl.exe
 CPP_PROJ=/nologo /MDd /W2 /Gm /GX /ZI /Od /I "../../include" /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /D "_MBCS" /D "_USRDLL" /D "AIM_EXPORTS" /FR"$(INTDIR)\\" /Fp"$(INTDIR)\aimoscar.pch" /YX /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /FD /GZ /c 
-
-.c{$(INTDIR)}.obj::
-   $(CPP) @<<
-   $(CPP_PROJ) $< 
-<<
-
-.cpp{$(INTDIR)}.obj::
-   $(CPP) @<<
-   $(CPP_PROJ) $< 
-<<
-
-.cxx{$(INTDIR)}.obj::
-   $(CPP) @<<
-   $(CPP_PROJ) $< 
-<<
-
-.c{$(INTDIR)}.sbr::
-   $(CPP) @<<
-   $(CPP_PROJ) $< 
-<<
-
-.cpp{$(INTDIR)}.sbr::
-   $(CPP) @<<
-   $(CPP_PROJ) $< 
-<<
-
-.cxx{$(INTDIR)}.sbr::
-   $(CPP) @<<
-   $(CPP_PROJ) $< 
-<<
-
-MTL=midl.exe
 MTL_PROJ=/nologo /D "_DEBUG" /mktyplib203 /win32 
-RSC=rc.exe
 RSC_PROJ=/l 0x409 /fo"$(INTDIR)\aim.res" /d "_DEBUG" 
 BSC32=bscmake.exe
 BSC32_FLAGS=/nologo /o"$(OUTDIR)\aimoscar.bsc" 
@@ -259,7 +191,6 @@ BSC32_SBRS= \
 	"$(INTDIR)\file.sbr" \
 	"$(INTDIR)\flap.sbr" \
 	"$(INTDIR)\links.sbr" \
-	"$(INTDIR)\md5.sbr" \
 	"$(INTDIR)\packets.sbr" \
 	"$(INTDIR)\popup.sbr" \
 	"$(INTDIR)\proxy.sbr" \
@@ -290,7 +221,6 @@ LINK32_OBJS= \
 	"$(INTDIR)\file.obj" \
 	"$(INTDIR)\flap.obj" \
 	"$(INTDIR)\links.obj" \
-	"$(INTDIR)\md5.obj" \
 	"$(INTDIR)\packets.obj" \
 	"$(INTDIR)\popup.obj" \
 	"$(INTDIR)\proxy.obj" \
@@ -311,6 +241,36 @@ LINK32_OBJS= \
 <<
 
 !ENDIF 
+
+.c{$(INTDIR)}.obj::
+   $(CPP) @<<
+   $(CPP_PROJ) $< 
+<<
+
+.cpp{$(INTDIR)}.obj::
+   $(CPP) @<<
+   $(CPP_PROJ) $< 
+<<
+
+.cxx{$(INTDIR)}.obj::
+   $(CPP) @<<
+   $(CPP_PROJ) $< 
+<<
+
+.c{$(INTDIR)}.sbr::
+   $(CPP) @<<
+   $(CPP_PROJ) $< 
+<<
+
+.cpp{$(INTDIR)}.sbr::
+   $(CPP) @<<
+   $(CPP_PROJ) $< 
+<<
+
+.cxx{$(INTDIR)}.sbr::
+   $(CPP) @<<
+   $(CPP_PROJ) $< 
+<<
 
 
 !IF "$(NO_EXTERNAL_DEPS)" != "1"
@@ -463,22 +423,6 @@ SOURCE=.\links.cpp
 
 
 "$(INTDIR)\links.obj"	"$(INTDIR)\links.sbr" : $(SOURCE) "$(INTDIR)"
-
-
-!ENDIF 
-
-SOURCE=.\md5.cpp
-
-!IF  "$(CFG)" == "aim - Win32 Release"
-
-
-"$(INTDIR)\md5.obj" : $(SOURCE) "$(INTDIR)"
-
-
-!ELSEIF  "$(CFG)" == "aim - Win32 Debug"
-
-
-"$(INTDIR)\md5.obj"	"$(INTDIR)\md5.sbr" : $(SOURCE) "$(INTDIR)"
 
 
 !ENDIF 

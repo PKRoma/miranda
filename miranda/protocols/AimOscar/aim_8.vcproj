@@ -267,10 +267,6 @@
 				>
 			</File>
 			<File
-				RelativePath=".\md5.cpp"
-				>
-			</File>
-			<File
 				RelativePath=".\packets.cpp"
 				>
 			</File>
@@ -486,10 +482,6 @@
 			</File>
 			<File
 				RelativePath=".\m_cluiframes.h"
-				>
-			</File>
-			<File
-				RelativePath=".\md5.h"
 				>
 			</File>
 			<File

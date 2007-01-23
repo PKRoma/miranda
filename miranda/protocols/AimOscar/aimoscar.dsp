@@ -129,10 +129,6 @@ SOURCE=.\links.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=.\md5.cpp
-# End Source File
-# Begin Source File
-
 SOURCE=.\packets.cpp
 # End Source File
 # Begin Source File
@@ -222,10 +218,6 @@ SOURCE=.\flap.h
 # Begin Source File
 
 SOURCE=.\links.h
-# End Source File
-# Begin Source File
-
-SOURCE=.\md5.h
 # End Source File
 # Begin Source File
 

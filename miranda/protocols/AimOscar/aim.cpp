@@ -17,6 +17,7 @@ PLUGININFO pluginInfo={
 };
 oscar_data conn;
 file_transfer* fu;
+MD5_INTERFACE  md5i;
 extern "C" __declspec(dllexport) bool WINAPI DllMain(HINSTANCE hinstDLL,DWORD /*fdwReason*/,LPVOID /*lpvReserved*/)
 {
 	conn.hInstance = hinstDLL;
@@ -74,6 +75,7 @@ extern "C" int __declspec(dllexport) Load(PLUGINLINK *link)
 	memcpy(&FILE_TRANSFER_KEY[lstrlen(filetransfer_key)],"\0",1);
 	//end location of memory
 	pluginLink = link;
+	mir_getMD5I( &md5i );
 	conn.status=ID_STATUS_OFFLINE;
 	pd.cbSize = sizeof(pd);
     pd.szName = AIM_PROTOCOL_NAME;
