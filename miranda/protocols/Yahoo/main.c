@@ -33,9 +33,11 @@ extern yahoo_local_account *ylad;
 /*
  * Global Variables
  */
-HINSTANCE		hinstance;
-PLUGINLINK		*pluginLink;
+HINSTANCE   hinstance;
+PLUGINLINK* pluginLink;
 char			yahooProtocolName[MAX_PATH];
+
+struct MD5_INTERFACE md5i;
 
 HANDLE		    hNetlibUser = NULL;
 HANDLE			YahooMenuItems[ MENU_ITEMS_COUNT ];
@@ -228,6 +230,7 @@ int __declspec(dllexport)Load(PLUGINLINK *link)
 	char* protocolname;
 	
  	pluginLink=link;
+	mir_getMD5I( &md5i );
 	//
 	// Need to disable threading since we got our own routines.
 	//

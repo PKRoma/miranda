@@ -47,7 +47,6 @@ CLEAN :
 	-@erase "$(INTDIR)\im.obj"
 	-@erase "$(INTDIR)\libyahoo2.obj"
 	-@erase "$(INTDIR)\main.obj"
-	-@erase "$(INTDIR)\md5.obj"
 	-@erase "$(INTDIR)\options.obj"
 	-@erase "$(INTDIR)\search.obj"
 	-@erase "$(INTDIR)\server.obj"
@@ -84,8 +83,8 @@ LINK32_FLAGS=kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi3
 LINK32_OBJS= \
 	"$(INTDIR)\crypt.obj" \
 	"$(INTDIR)\libyahoo2.obj" \
-	"$(INTDIR)\md5.obj" \
 	"$(INTDIR)\sha.obj" \
+	"$(INTDIR)\yahoo_auth.obj" \
 	"$(INTDIR)\yahoo_httplib.obj" \
 	"$(INTDIR)\yahoo_list.obj" \
 	"$(INTDIR)\yahoo_util.obj" \
@@ -93,6 +92,7 @@ LINK32_OBJS= \
 	"$(INTDIR)\chat.obj" \
 	"$(INTDIR)\file_transfer.obj" \
 	"$(INTDIR)\http_gateway.obj" \
+	"$(INTDIR)\icolib.obj" \
 	"$(INTDIR)\im.obj" \
 	"$(INTDIR)\main.obj" \
 	"$(INTDIR)\options.obj" \
@@ -102,9 +102,7 @@ LINK32_OBJS= \
 	"$(INTDIR)\util.obj" \
 	"$(INTDIR)\webcam.obj" \
 	"$(INTDIR)\yahoo.obj" \
-	"$(INTDIR)\Yahoo.res" \
-	"$(INTDIR)\icolib.obj" \
-	"$(INTDIR)\yahoo_auth.obj"
+	"$(INTDIR)\Yahoo.res"
 
 "..\..\Bin\Release\Plugins\Yahoo.dll" : "$(OUTDIR)" $(DEF_FILE) $(LINK32_OBJS)
     $(LINK32) @<<
@@ -129,7 +127,6 @@ CLEAN :
 	-@erase "$(INTDIR)\im.obj"
 	-@erase "$(INTDIR)\libyahoo2.obj"
 	-@erase "$(INTDIR)\main.obj"
-	-@erase "$(INTDIR)\md5.obj"
 	-@erase "$(INTDIR)\options.obj"
 	-@erase "$(INTDIR)\search.obj"
 	-@erase "$(INTDIR)\server.obj"
@@ -166,8 +163,8 @@ LINK32_FLAGS=kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi3
 LINK32_OBJS= \
 	"$(INTDIR)\crypt.obj" \
 	"$(INTDIR)\libyahoo2.obj" \
-	"$(INTDIR)\md5.obj" \
 	"$(INTDIR)\sha.obj" \
+	"$(INTDIR)\yahoo_auth.obj" \
 	"$(INTDIR)\yahoo_httplib.obj" \
 	"$(INTDIR)\yahoo_list.obj" \
 	"$(INTDIR)\yahoo_util.obj" \
@@ -175,6 +172,7 @@ LINK32_OBJS= \
 	"$(INTDIR)\chat.obj" \
 	"$(INTDIR)\file_transfer.obj" \
 	"$(INTDIR)\http_gateway.obj" \
+	"$(INTDIR)\icolib.obj" \
 	"$(INTDIR)\im.obj" \
 	"$(INTDIR)\main.obj" \
 	"$(INTDIR)\options.obj" \
@@ -184,9 +182,7 @@ LINK32_OBJS= \
 	"$(INTDIR)\util.obj" \
 	"$(INTDIR)\webcam.obj" \
 	"$(INTDIR)\yahoo.obj" \
-	"$(INTDIR)\Yahoo.res" \
-	"$(INTDIR)\icolib.obj" \
-	"$(INTDIR)\yahoo_auth.obj"
+	"$(INTDIR)\Yahoo.res"
 
 "..\..\Bin\Debug\Plugins\Yahoo.dll" : "$(OUTDIR)" $(DEF_FILE) $(LINK32_OBJS)
     $(LINK32) @<<
@@ -245,12 +241,6 @@ SOURCE=.\libyahoo2\crypt.c
 SOURCE=.\libyahoo2\libyahoo2.c
 
 "$(INTDIR)\libyahoo2.obj" : $(SOURCE) "$(INTDIR)"
-	$(CPP) $(CPP_PROJ) $(SOURCE)
-
-
-SOURCE=.\libyahoo2\md5.c
-
-"$(INTDIR)\md5.obj" : $(SOURCE) "$(INTDIR)"
 	$(CPP) $(CPP_PROJ) $(SOURCE)
 
 

@@ -105,10 +105,6 @@ SOURCE=.\libyahoo2\libyahoo2.c
 # End Source File
 # Begin Source File
 
-SOURCE=.\libyahoo2\md5.c
-# End Source File
-# Begin Source File
-
 SOURCE=.\libyahoo2\sha.c
 # End Source File
 # Begin Source File

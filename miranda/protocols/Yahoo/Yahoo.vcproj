@@ -324,12 +324,6 @@
 					RelativePath=".\libyahoo2\libyahoo2.c">
 				</File>
 				<File
-					RelativePath=".\libyahoo2\md5.c">
-				</File>
-				<File
-					RelativePath=".\libyahoo2\md5.h">
-				</File>
-				<File
 					RelativePath=".\libyahoo2\sha.c">
 				</File>
 				<File
