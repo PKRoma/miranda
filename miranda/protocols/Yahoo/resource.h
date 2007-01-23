@@ -1,9 +1,9 @@
 /*
  * $Id$
  *
- * myYahoo Miranda Plugin 
+ * myYahoo Miranda Plugin
  *
- * Authors: Gennady Feldman (aka Gena01) 
+ * Authors: Gennady Feldman (aka Gena01)
  *          Laurent Marechal (aka Peorth)
  *
  * This code is under GPL and is based on AIM, MSN and Miranda source code.
@@ -15,9 +15,9 @@
 #define IDI_INBOX                       102
 #define IDI_PROFILE                     103
 #define IDI_REFRESH                     104
-#define IDI_YAB		                    105
 #define IDI_SET_STATUS                  106
 #define IDI_CALENDAR                    107
+#define IDI_YAB		                   108
 
 #define IDD_OPT_YAHOO                   185
 #define IDD_SETCUSTSTAT                 186
@@ -44,7 +44,7 @@
 #define IDC_NEWYAHOOACCOUNTLINK         1438
 #define IDC_RESETSERVER                 1472
 #define IDC_DISMAINMENU                 1475
-#define IDC_DISABLE_UTF8                1476 
+#define IDC_DISABLE_UTF8                1476
 #define IDC_USE_YAB		                1477
 #define IDC_SHOW_ERRORS	                1478
 #define IDC_SHOW_AVATARS                1479
@@ -67,4 +67,3 @@
  *
  */
 #define IDC_STATIC                      -1
-
