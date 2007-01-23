@@ -44,6 +44,9 @@ int OnDetailsInit(WPARAM wParam, LPARAM lParam)
   if ((lParam == 0) && YAHOO_GetByte( "ShowAvatars", 0 ))
   {
 	 // Avatar page only for valid contacts
+	  // bug #2613: clear the whole structure. Thanks George
+	  ZeroMemory(&odp, sizeof(odp)); 
+	  
 	  odp.cbSize = sizeof(odp);
 	  odp.hIcon = NULL;
 	  odp.hInstance = hinstance;
