@@ -578,6 +578,7 @@ LBL_Def:
 
 			wStatus = DBGetContactSettingWord((HANDLE)wParam, contact->proto, "Status", ID_STATUS_OFFLINE);
 			if(g_CluiData.bNoOfflineAvatars && wStatus != ID_STATUS_OFFLINE && contact->wStatus == ID_STATUS_OFFLINE) {
+                contact->wStatus = wStatus;
 				if(g_CluiData.bAvatarServiceAvail && contact->ace == NULL)
                     LoadAvatarForContact(contact);
 			}
