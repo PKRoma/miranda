@@ -210,6 +210,7 @@ static void UpdateNotifyPerform(void *p) {
             }
             if (resUpdate&&und.version[0]&&und.downloadUrl[0]) {
                 DialogBoxParam(GetModuleHandle(NULL), MAKEINTRESOURCE(IDD_UPDATE_NOTIFY), 0, UpdateNotifyProc,(LPARAM)&und);
+                hwndUpdateDlg = 0;
             }
         }
         CallService(MS_NETLIB_FREEHTTPREQUESTSTRUCT, 0, (LPARAM)resp);
