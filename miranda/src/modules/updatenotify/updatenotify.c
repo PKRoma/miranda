@@ -31,14 +31,17 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #define UN_URL              "http://update.miranda-im.org/update.php"
 #define UN_MINCHECKTIME     60*60 /* Check no more than once an hour */
 #define UN_DEFAULTCHECKTIME 60*24*60 /* Default to check once every 24 hours */
+#define UN_FIRSTCHECK       15 /* First check 15 seconds after startup */
 
 typedef struct {
     char version[64];
     char downloadUrl[256];
 } UpdateNotifyData;
 
-static HANDLE hNetlibUser = 0, hHookModules;
+static HANDLE hNetlibUser = 0, hHookModules, hHookPreShutdown;
 static UINT updateTimerId;
+static DWORD dwUpdateThreadID = 0;
+static HWND hwndUpdateDlg = 0;
 
 static int UpdateNotifyOptInit(WPARAM wParam, LPARAM lParam);
 static VOID CALLBACK UpdateNotifyTimerCheck(HWND hwnd, UINT uMsg, UINT_PTR idEvent, DWORD dwTime);
@@ -48,6 +51,7 @@ static BOOL CALLBACK UpdateNotifyOptsProc(HWND hwndDlg, UINT msg, WPARAM wParam,
 
 static int UnloadUpdateNotifyModule(WPARAM wParam, LPARAM lParam) {
     UnhookEvent(hHookModules);
+    UnhookEvent(hHookPreShutdown);
 	return 0;
 }
 
@@ -63,11 +67,19 @@ static int UpdateNotifyModulesLoaded(WPARAM wParam, LPARAM lParam) {
     return 0;
 }
 
+static int UpdateNotifyPreShutdown(WPARAM wParam, LPARAM lParam) {
+    if (IsWindow(hwndUpdateDlg)) {
+        SendMessage(hwndUpdateDlg, WM_COMMAND, MAKELONG(IDOK, 0), 0);
+    }
+    return 0;
+}
+
 int LoadUpdateNotifyModule(void) {
     hHookModules = HookEvent(ME_SYSTEM_MODULESLOADED, UpdateNotifyModulesLoaded);
+    hHookPreShutdown =   HookEvent(ME_SYSTEM_PRESHUTDOWN, UpdateNotifyPreShutdown);
     HookEvent(ME_SYSTEM_SHUTDOWN, UnloadUpdateNotifyModule);
     HookEvent(ME_OPT_INITIALISE, UpdateNotifyOptInit);
-    updateTimerId = SetTimer(NULL, 0, 1000*15, UpdateNotifyTimerCheck); // Check for update 15 secs after startup
+    updateTimerId = SetTimer(NULL, 0, 1000*UN_FIRSTCHECK, UpdateNotifyTimerCheck);
     return 0;
 }
 
@@ -91,6 +103,10 @@ static VOID CALLBACK UpdateNotifyTimerCheck(HWND hwnd, UINT uMsg, UINT_PTR idEve
     KillTimer(NULL, updateTimerId);
     if (!DBGetContactSettingByte(NULL, UN_MOD, UN_ENABLE, UN_ENABLE_DEF)) 
         return;
+    if (dwUpdateThreadID!=0) {
+        Netlib_Logf(hNetlibUser, "Update notification already running, ignoring attempt");
+        return;
+    }
     {
         DWORD lastCheck = 0;
         
@@ -99,7 +115,7 @@ static VOID CALLBACK UpdateNotifyTimerCheck(HWND hwnd, UINT uMsg, UINT_PTR idEve
         lastCheck = DBGetContactSettingDword(NULL, UN_MOD, UN_LASTCHECK, 0);
         if (!lastCheck) { // never checked for update before
             Netlib_Logf(hNetlibUser, "Running update notify check for the first time.");
-            mir_forkthread(UpdateNotifyPerform, 0);
+            dwUpdateThreadID = mir_forkthread(UpdateNotifyPerform, 0);
         }
         else {
             DWORD dwNow = time(NULL), dwTimeDiff;
@@ -114,8 +130,9 @@ static VOID CALLBACK UpdateNotifyTimerCheck(HWND hwnd, UINT uMsg, UINT_PTR idEve
             if (dwServerPing<UN_MINCHECKTIME)
                 dwServerPing = UN_MINCHECKTIME;
             if (dwTimeDiff>dwServerPing)
-                mir_forkthread(UpdateNotifyPerform, 0);
+                dwUpdateThreadID = mir_forkthread(UpdateNotifyPerform, 0);
         }
+        updateTimerId = SetTimer(NULL, 0, 1000*UN_MINCHECKTIME, UpdateNotifyTimerCheck);
     }
 }
 
@@ -200,6 +217,7 @@ static void UpdateNotifyPerform(void *p) {
     else {
         Netlib_Logf(hNetlibUser, "No response from HTTP request");
     }
+    dwUpdateThreadID = 0;
 }
 
 
@@ -211,6 +229,7 @@ static BOOL CALLBACK UpdateNotifyProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPA
             UpdateNotifyData *und = (UpdateNotifyData*)lParam;
             char szTmp[128], *p;
             
+            hwndUpdateDlg = hwndDlg;
             TranslateDialogDefault(hwndDlg);
             SendMessage(hwndDlg, WM_SETICON, ICON_BIG, (LPARAM)LoadIcon(GetModuleHandle(NULL), MAKEINTRESOURCE(IDI_MIRANDA)));
             mir_snprintf(szTmp, sizeof(szTmp), Translate("Miranda IM %s Now Available"), und->version);
