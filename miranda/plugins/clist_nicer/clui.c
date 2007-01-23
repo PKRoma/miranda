@@ -1718,7 +1718,7 @@ LRESULT CALLBACK ContactListWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM l
 			if (wParam) {
 				sourceAlpha = 0;
 				destAlpha = g_CluiData.isTransparent ? g_CluiData.alpha : 255;
-				MySetLayeredWindowAttributes(hwnd, g_CluiData.bFullTransparent ? g_CluiData.colorkey : RGB(0, 0, 0), sourceAlpha, LWA_ALPHA | (g_CluiData.bFullTransparent ? LWA_COLORKEY : 0));
+				MySetLayeredWindowAttributes(hwnd, g_CluiData.bFullTransparent ? (COLORREF)g_CluiData.colorkey : RGB(0, 0, 0), (BYTE)sourceAlpha, LWA_ALPHA | (g_CluiData.bFullTransparent ? LWA_COLORKEY : 0));
 				noRecurse = 1;
 				ShowWindow(hwnd, SW_SHOW);
 				RedrawWindow(hwnd, NULL, NULL, RDW_INVALIDATE|RDW_UPDATENOW|RDW_ALLCHILDREN);

@@ -33,8 +33,6 @@ TCHAR* xStatusDescr[] =
  };
 
 CRITICAL_SECTION cs_extcache;
-int    g_list_avatars = 0;
-
 extern struct CluiData g_CluiData;
 extern HANDLE hExtraImageListRebuilding, hExtraImageApplying;
 

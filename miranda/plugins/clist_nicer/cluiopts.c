@@ -377,13 +377,13 @@ static BOOL CALLBACK DlgProcCluiOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPAR
 						SetWindowLong(pcli->hwndContactList, GWL_EXSTYLE, GetWindowLong(pcli->hwndContactList, GWL_EXSTYLE) | WS_EX_LAYERED);
 						MySetLayeredWindowAttributes(pcli->hwndContactList, 0, 255, LWA_ALPHA | LWA_COLORKEY);
 						MySetLayeredWindowAttributes(pcli->hwndContactList, 
-							g_CluiData.bFullTransparent ? g_CluiData.colorkey : 0,
-							g_CluiData.isTransparent ? g_CluiData.autoalpha : 255,
-							(g_CluiData.isTransparent ? LWA_ALPHA : 0) | (g_CluiData.bFullTransparent ? LWA_COLORKEY : 0));
+							(COLORREF)(g_CluiData.bFullTransparent ? g_CluiData.colorkey : 0),
+							(BYTE)(g_CluiData.isTransparent ? g_CluiData.autoalpha : 255),
+							(DWORD)((g_CluiData.isTransparent ? LWA_ALPHA : 0L) | (g_CluiData.bFullTransparent ? LWA_COLORKEY : 0L)));
 					}
 				} else {
 					if (MySetLayeredWindowAttributes)
-						MySetLayeredWindowAttributes(pcli->hwndContactList, RGB(0, 0, 0), 255, LWA_ALPHA);
+						MySetLayeredWindowAttributes(pcli->hwndContactList, RGB(0, 0, 0), (BYTE)255, LWA_ALPHA);
 					if(!g_CluiData.bLayeredHack)
 						SetWindowLong(pcli->hwndContactList, GWL_EXSTYLE, GetWindowLong(pcli->hwndContactList, GWL_EXSTYLE) & ~WS_EX_LAYERED);
 				}

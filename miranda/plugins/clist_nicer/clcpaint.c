@@ -33,7 +33,8 @@ extern struct ExtraCache *g_ExtraCache;
 extern int g_nextExtraCacheEntry, g_maxExtraCacheEntry;
 extern ImageItem *g_glyphItem;
 
-extern int hClcProtoCount, g_list_avatars;
+extern int hClcProtoCount;
+
 extern ClcProtoStatus *clcProto;
 extern HIMAGELIST hCListImages;
 extern struct CluiData g_CluiData;
@@ -69,6 +70,7 @@ BYTE saved_alpha;
 int my_status;
 
 BOOL g_inCLCpaint = FALSE;
+static int g_list_avatars = 0;
 
 #undef _GDITEXTRENDERING
 

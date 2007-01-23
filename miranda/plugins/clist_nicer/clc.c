@@ -44,7 +44,7 @@ extern BOOL (WINAPI *MySetLayeredWindowAttributes)(HWND, COLORREF, BYTE, DWORD);
 extern int during_sizing;
 extern StatusItems_t *StatusItems;
 extern int g_shutDown;
-extern int g_nextExtraCacheEntry, g_maxExtraCacheEntry, g_list_avatars;
+extern int g_nextExtraCacheEntry, g_maxExtraCacheEntry;
 extern struct ExtraCache *g_ExtraCache;
 
 HIMAGELIST hCListImages;
