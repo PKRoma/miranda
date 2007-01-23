@@ -11,13 +11,13 @@
  * and for answering some of my questions during development of this plugin.
  */
 
-#define IDI_YAHOO                       101
-#define IDI_INBOX                       102
-#define IDI_PROFILE                     103
-#define IDI_REFRESH                     104
-#define IDI_SET_STATUS                  106
-#define IDI_CALENDAR                    107
-#define IDI_YAB		                   108
+#define IDI_YAHOO                       10101
+#define IDI_INBOX                       10102
+#define IDI_PROFILE                     10103
+#define IDI_REFRESH                     10104
+#define IDI_YAB		                   	10105
+#define IDI_SET_STATUS                  10106
+#define IDI_CALENDAR                    10107
 
 #define IDD_OPT_YAHOO                   185
 #define IDD_SETCUSTSTAT                 186
