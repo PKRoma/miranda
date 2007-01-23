@@ -29,10 +29,10 @@ int InitHyperlink(void);
 int InitColourPicker(void);
 int InitBitmapFilter(void);
 int InitPathUtils(void);
-void md5_init(md5_state_t *pms);
-void md5_append(md5_state_t *pms, const md5_byte_t *data, int nbytes);
-void md5_finish(md5_state_t *pms, md5_byte_t digest[16]);
-void md5_hash_string(const md5_byte_t *data, int len, md5_byte_t digest[16]);
+void md5_init(mir_md5_state_t *pms);
+void md5_append(mir_md5_state_t *pms, const mir_md5_byte_t *data, int nbytes);
+void md5_finish(mir_md5_state_t *pms, mir_md5_byte_t digest[16]);
+void md5_hash_string(const mir_md5_byte_t *data, int len, mir_md5_byte_t digest[16]);
 
 static struct CountryListEntry countries[]={
 	{0   ,"Unspecified"},

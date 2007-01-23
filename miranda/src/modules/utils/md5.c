@@ -56,7 +56,7 @@
 #include "commonheaders.h"
 
 
-#define T_MASK ((md5_word_t)~0)
+#define T_MASK ((mir_md5_word_t)~0)
 #define T1 /* 0xd76aa478 */ (T_MASK ^ 0x28955b87)
 #define T2 /* 0xe8c7b756 */ (T_MASK ^ 0x173848a9)
 #define T3    0x242070db
@@ -123,15 +123,15 @@
 #define T64 /* 0xeb86d391 */ (T_MASK ^ 0x14792c6e)
 
 //gfd*
-static void md5_process(md5_state_t *pms, const md5_byte_t *data /*[64]*/)
+static void md5_process(mir_md5_state_t *pms, const mir_md5_byte_t *data /*[64]*/)
 {
-  md5_word_t
+  mir_md5_word_t
     a = pms->abcd[0], b = pms->abcd[1],
     c = pms->abcd[2], d = pms->abcd[3];
-  md5_word_t t;
+  mir_md5_word_t t;
   /* Define storage for little-endian or both types of CPUs. */
-  md5_word_t xbuf[16];
-  const md5_word_t *X;
+  mir_md5_word_t xbuf[16];
+  const mir_md5_word_t *X;
 
   {
     /*
@@ -141,15 +141,15 @@ static void md5_process(md5_state_t *pms, const md5_byte_t *data /*[64]*/)
      */
     static const int w = 1;
 
-  if (*((const md5_byte_t *)&w)) /* dynamic little-endian */
+  if (*((const mir_md5_byte_t *)&w)) /* dynamic little-endian */
   {
       /*
        * On little-endian machines, we can process properly aligned
        * data without copying it.
        */
-      if (!((data - (const md5_byte_t *)0) & 3)) {
+      if (!((data - (const mir_md5_byte_t *)0) & 3)) {
     /* data are properly aligned */
-    X = (const md5_word_t *)data;
+    X = (const mir_md5_word_t *)data;
       } else {
     /* not aligned */
     memcpy(xbuf, data, 64);
@@ -162,7 +162,7 @@ static void md5_process(md5_state_t *pms, const md5_byte_t *data /*[64]*/)
        * On big-endian machines, we must arrange the bytes in the
        * right order.
        */
-      const md5_byte_t *xp = data;
+      const mir_md5_byte_t *xp = data;
       int i;
 
       X = xbuf;    /* (dynamic only) */
@@ -282,7 +282,7 @@ static void md5_process(md5_state_t *pms, const md5_byte_t *data /*[64]*/)
     pms->abcd[3] += d;
 }
 
-void md5_init(md5_state_t *pms)
+void md5_init(mir_md5_state_t *pms)
 {
   pms->count[0] = pms->count[1] = 0;
   pms->abcd[0] = 0x67452301;
@@ -291,12 +291,12 @@ void md5_init(md5_state_t *pms)
   pms->abcd[3] = 0x10325476;
 }
 
-void md5_append(md5_state_t *pms, const md5_byte_t *data, int nbytes)
+void md5_append(mir_md5_state_t *pms, const mir_md5_byte_t *data, int nbytes)
 {
-  const md5_byte_t *p = data;
+  const mir_md5_byte_t *p = data;
   int left = nbytes;
   int offset = (pms->count[0] >> 3) & 63;
-  md5_word_t nbits = (md5_word_t)(nbytes << 3);
+  mir_md5_word_t nbits = (mir_md5_word_t)(nbytes << 3);
 
   if (nbytes <= 0)
     return;
@@ -329,31 +329,31 @@ void md5_append(md5_state_t *pms, const md5_byte_t *data, int nbytes)
     memcpy(pms->buf, p, left);
 }
 
-void md5_finish(md5_state_t *pms, md5_byte_t digest[16])
+void md5_finish(mir_md5_state_t *pms, mir_md5_byte_t digest[16])
 {
-  static const md5_byte_t pad[64] = {
+  static const mir_md5_byte_t pad[64] = {
     0x80, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
   };
-  md5_byte_t data[8];
+  mir_md5_byte_t data[8];
   int i;
 
   /* Save the length before padding. */
   for (i = 0; i < 8; ++i)
-    data[i] = (md5_byte_t)(pms->count[i >> 2] >> ((i & 3) << 3));
+    data[i] = (mir_md5_byte_t)(pms->count[i >> 2] >> ((i & 3) << 3));
   /* Pad to 56 bytes mod 64. */
   md5_append(pms, pad, ((55 - (pms->count[0] >> 3)) & 63) + 1);
   /* Append the length. */
   md5_append(pms, data, 8);
   for (i = 0; i < 16; ++i)
-    digest[i] = (md5_byte_t)(pms->abcd[i >> 2] >> ((i & 3) << 3));
+    digest[i] = (mir_md5_byte_t)(pms->abcd[i >> 2] >> ((i & 3) << 3));
 }
 
-void md5_hash_string(const md5_byte_t *data, int len, md5_byte_t digest[16])
+void md5_hash_string(const mir_md5_byte_t *data, int len, mir_md5_byte_t digest[16])
 {
-    md5_state_t state;
+    mir_md5_state_t state;
     md5_init(&state);
 	md5_append(&state, data, len);
     md5_finish(&state, digest);

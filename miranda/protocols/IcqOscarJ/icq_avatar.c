@@ -1290,11 +1290,11 @@ void handleAvatarFam(unsigned char *pBuffer, WORD wBufferLength, snac_header* pS
 
           if (ac->hashlen == 0x14 && ac->hash[3] == 0x10 && ICQGetContactSettingByte(NULL, "StrictAvatarCheck", DEFAULT_AVATARS_CHECK))
           { // check only standard hashes
-            md5_state_t state;
-            md5_byte_t digest[16];
+            mir_md5_state_t state;
+            mir_md5_byte_t digest[16];
             
             mir_md5_init(&state);
-            mir_md5_append(&state, (const md5_byte_t *)pBuffer, datalen);
+            mir_md5_append(&state, (const mir_md5_byte_t *)pBuffer, datalen);
             mir_md5_finish(&state, digest);
             // check if received data corresponds to specified hash
             if (memcmp(ac->hash+4, digest, 0x10)) aValid = 0;

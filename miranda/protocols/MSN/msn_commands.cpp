@@ -1302,7 +1302,7 @@ LBL_InvalidCommand:
 
 			//Digest it
 			DWORD md5hash[ 4 ];
-			md5_state_t context;
+			mir_md5_state_t context;
 			mir_md5_init( &context );
 			mir_md5_append( &context, ( BYTE* )authChallengeInfo, strlen( authChallengeInfo ));
 			mir_md5_append( &context, ( BYTE* )msnProtChallenge,  strlen( msnProtChallenge  ));

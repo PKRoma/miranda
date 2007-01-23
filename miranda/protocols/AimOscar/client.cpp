@@ -29,16 +29,16 @@ int aim_auth_request(HANDLE hServerConn,unsigned short &seqno,char* key,char* la
 {
 	unsigned short offset=0;
 	char* buf=new char[SNAC_SIZE+TLV_HEADER_SIZE*13+MD5_HASH_LENGTH+lstrlen(conn.username)+lstrlen(AIM_CLIENT_ID_STRING)+15+lstrlen(language)+lstrlen(country)];
-	md5_byte_t pass_hash[16];
-	md5_byte_t auth_hash[16];
-	md5_state_t state;
+	mir_md5_byte_t pass_hash[16];
+	mir_md5_byte_t auth_hash[16];
+	mir_md5_state_t state;
 	mir_md5_init(&state);
-	mir_md5_append(&state,(const md5_byte_t *)conn.password, lstrlen(conn.password));
+	mir_md5_append(&state,(const mir_md5_byte_t *)conn.password, lstrlen(conn.password));
 	mir_md5_finish(&state,pass_hash);
 	mir_md5_init(&state);
-	mir_md5_append(&state,(md5_byte_t*)key, lstrlen(key));
-	mir_md5_append(&state,(md5_byte_t*)pass_hash,MD5_HASH_LENGTH);
-	mir_md5_append(&state,(md5_byte_t*)AIM_MD5_STRING, lstrlen(AIM_MD5_STRING));
+	mir_md5_append(&state,(mir_md5_byte_t*)key, lstrlen(key));
+	mir_md5_append(&state,(mir_md5_byte_t*)pass_hash,MD5_HASH_LENGTH);
+	mir_md5_append(&state,(mir_md5_byte_t*)AIM_MD5_STRING, lstrlen(AIM_MD5_STRING));
 	mir_md5_finish(&state,auth_hash);
 	aim_writesnac(0x17,0x02,4,offset,buf);
 	aim_writetlv(0x01,(unsigned short)lstrlen(conn.username),conn.username,offset,buf);

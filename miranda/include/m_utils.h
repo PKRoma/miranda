@@ -307,22 +307,22 @@ __inline static int Utils_RestoreWindowPositionNoMove(HWND hwnd,HANDLE hContact,
 	Contains functions for md5 handling
 */
 /* Define the state of the MD5 Algorithm. */
-typedef unsigned char md5_byte_t; /* 8-bit byte */
-typedef unsigned int md5_word_t; /* 32-bit word */
+typedef unsigned char mir_md5_byte_t; /* 8-bit byte */
+typedef unsigned int mir_md5_word_t; /* 32-bit word */
 
 typedef struct md5_state_s {
-    md5_word_t count[2];  /* message length in bits, lsw first */
-    md5_word_t abcd[4];    /* digest buffer */
-    md5_byte_t buf[64];    /* accumulate block */
-} md5_state_t;
+    mir_md5_word_t count[2];  /* message length in bits, lsw first */
+    mir_md5_word_t abcd[4];    /* digest buffer */
+    mir_md5_byte_t buf[64];    /* accumulate block */
+} mir_md5_state_t;
 
 struct MD5_INTERFACE
 {
 	int cbSize;
-    void (*md5_init) (md5_state_t *pms);
-    void (*md5_append) (md5_state_t *pms, const md5_byte_t *data, int nbytes);
-    void (*md5_finish) (md5_state_t *pms, md5_byte_t digest[16]);
-    void (*md5_hash) (const md5_byte_t *data, int len, md5_byte_t digest[16]);
+    void (*md5_init) (mir_md5_state_t *pms);
+    void (*md5_append) (mir_md5_state_t *pms, const mir_md5_byte_t *data, int nbytes);
+    void (*md5_finish) (mir_md5_state_t *pms, mir_md5_byte_t digest[16]);
+    void (*md5_hash) (const mir_md5_byte_t *data, int len, mir_md5_byte_t digest[16]);
 };
 
 #define MS_SYSTEM_GET_MD5I  "Miranda/System/GetMD5I"

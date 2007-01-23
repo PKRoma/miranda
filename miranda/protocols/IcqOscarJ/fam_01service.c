@@ -631,8 +631,8 @@ void handleServiceFam(unsigned char* pBuffer, WORD wBufferLength, snac_header* p
 
 char* calcMD5Hash(char* szFile)
 {
-  md5_state_t state;
-  md5_byte_t digest[16];
+  mir_md5_state_t state;
+  mir_md5_byte_t digest[16];
 
   if (szFile)
   {
@@ -650,7 +650,7 @@ char* calcMD5Hash(char* szFile)
     if (cbFileSize != 0 && res)
     {
       mir_md5_init(&state);
-      mir_md5_append(&state, (const md5_byte_t *)ppMap, cbFileSize);
+      mir_md5_append(&state, (const mir_md5_byte_t *)ppMap, cbFileSize);
       mir_md5_finish(&state, digest);
       memcpy(res, digest, 16);
     }

@@ -2155,8 +2155,8 @@ static void yahoo_process_auth_pre_0x0b(struct yahoo_input_data *yid,
 
 	struct yahoo_packet *pack;
 	
-	md5_byte_t result[16];
-	md5_state_t ctx;
+	mir_md5_byte_t result[16];
+	mir_md5_state_t ctx;
 	char *crypt_result;
 	unsigned char *password_hash = malloc(25);
 	unsigned char *crypt_hash = malloc(25);
@@ -2174,13 +2174,13 @@ static void yahoo_process_auth_pre_0x0b(struct yahoo_input_data *yid,
 	sv = (sv % 8) % 5;
 
 	mir_md5_init(&ctx);
-	mir_md5_append(&ctx, (md5_byte_t *)yd->password, strlen(yd->password));
+	mir_md5_append(&ctx, (mir_md5_byte_t *)yd->password, strlen(yd->password));
 	mir_md5_finish(&ctx, result);
 	to_y64(password_hash, result, 16);
 	
 	mir_md5_init(&ctx);
 	crypt_result = yahoo_crypt(yd->password, "$1$_2S43d5f$");  
-	mir_md5_append(&ctx, (md5_byte_t *)crypt_result, strlen(crypt_result));
+	mir_md5_append(&ctx, (mir_md5_byte_t *)crypt_result, strlen(crypt_result));
 	mir_md5_finish(&ctx, result);
 	to_y64(crypt_hash, result, 16);
 	free(crypt_result);
@@ -2224,12 +2224,12 @@ static void yahoo_process_auth_pre_0x0b(struct yahoo_input_data *yid,
 	}
 		
 	mir_md5_init(&ctx);  
-	mir_md5_append(&ctx, (md5_byte_t *)hash_string_p, strlen((char *)hash_string_p));
+	mir_md5_append(&ctx, (mir_md5_byte_t *)hash_string_p, strlen((char *)hash_string_p));
 	mir_md5_finish(&ctx, result);
 	to_y64(result6, result, 16);
 
 	mir_md5_init(&ctx);  
-	mir_md5_append(&ctx, (md5_byte_t *)hash_string_c, strlen((char *)hash_string_c));
+	mir_md5_append(&ctx, (mir_md5_byte_t *)hash_string_c, strlen((char *)hash_string_c));
 	mir_md5_finish(&ctx, result);
 	to_y64(result96, result, 16);
 
@@ -2261,8 +2261,8 @@ static void yahoo_process_auth_0x0b(struct yahoo_input_data *yid, const char *se
 	struct yahoo_data 				*yd = yid->yd;
 	struct yahoo_server_settings 	*yss;
 	
-	md5_byte_t			result[16];
-	md5_state_t			ctx;
+	mir_md5_byte_t			result[16];
+	mir_md5_state_t			ctx;
 
 	SHA_CTX				ctx1;
 	SHA_CTX				ctx2;
@@ -2484,13 +2484,13 @@ static void yahoo_process_auth_0x0b(struct yahoo_input_data *yid, const char *se
 
 	/* Get password and crypt hashes as per usual. */
 	mir_md5_init(&ctx);
-	mir_md5_append(&ctx, (md5_byte_t *)yd->password,  strlen(yd->password));
+	mir_md5_append(&ctx, (mir_md5_byte_t *)yd->password,  strlen(yd->password));
 	mir_md5_finish(&ctx, result);
 	to_y64(password_hash, result, 16);
 
 	mir_md5_init(&ctx);
 	crypt_result = yahoo_crypt(yd->password, "$1$_2S43d5f$");  
-	mir_md5_append(&ctx, (md5_byte_t *)crypt_result, strlen(crypt_result));
+	mir_md5_append(&ctx, (mir_md5_byte_t *)crypt_result, strlen(crypt_result));
 	mir_md5_finish(&ctx, result);
 	to_y64(crypt_hash, result, 16);
 	free(crypt_result);

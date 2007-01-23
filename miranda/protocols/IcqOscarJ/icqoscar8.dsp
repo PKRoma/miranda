@@ -684,10 +684,6 @@ SOURCE=.\icqoscar.c
 # End Source File
 # Begin Source File
 
-SOURCE=.\md5.c
-# End Source File
-# Begin Source File
-
 SOURCE=.\oscar_filetransfer.c
 # End Source File
 # Begin Source File
