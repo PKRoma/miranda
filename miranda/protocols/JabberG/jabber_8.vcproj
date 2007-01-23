@@ -1504,10 +1504,6 @@
 				</FileConfiguration>
 			</File>
 			<File
-				RelativePath=".\md5c.cpp"
-				>
-			</File>
-			<File
 				RelativePath="sha1.cpp"
 				>
 				<FileConfiguration
@@ -1592,10 +1588,6 @@
 			</File>
 			<File
 				RelativePath="jabber_xmlns.h"
-				>
-			</File>
-			<File
-				RelativePath=".\md5.h"
 				>
 			</File>
 			<File

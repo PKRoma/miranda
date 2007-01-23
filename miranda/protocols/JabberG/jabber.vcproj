@@ -1146,27 +1146,6 @@
 				</FileConfiguration>
 			</File>
 			<File
-				RelativePath=".\md5c.cpp">
-				<FileConfiguration
-					Name="Debug|Win32">
-					<Tool
-						Name="VCCLCompilerTool"
-						UsePrecompiledHeader="0"/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Release|Win32">
-					<Tool
-						Name="VCCLCompilerTool"
-						UsePrecompiledHeader="0"/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Release Unicode|Win32">
-					<Tool
-						Name="VCCLCompilerTool"
-						UsePrecompiledHeader="0"/>
-				</FileConfiguration>
-			</File>
-			<File
 				RelativePath="sha1.cpp">
 				<FileConfiguration
 					Name="Debug|Win32">
@@ -1233,9 +1212,6 @@
 			</File>
 			<File
 				RelativePath="jabber_xmlns.h">
-			</File>
-			<File
-				RelativePath=".\md5.h">
 			</File>
 			<File
 				RelativePath=".\resource.h">
