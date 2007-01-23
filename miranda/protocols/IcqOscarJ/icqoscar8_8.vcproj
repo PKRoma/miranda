@@ -342,10 +342,6 @@
 				>
 			</File>
 			<File
-				RelativePath="md5.h"
-				>
-			</File>
-			<File
 				RelativePath=".\oscar_filetransfer.h"
 				>
 			</File>
@@ -1414,30 +1410,6 @@
 					AdditionalIncludeDirectories=""
 					BasicRuntimeChecks="3"
 					UsePrecompiledHeader="1"
-					BrowseInformation="1"
-				/>
-			</FileConfiguration>
-		</File>
-		<File
-			RelativePath="md5.c"
-			>
-			<FileConfiguration
-				Name="Release|Win32"
-				>
-				<Tool
-					Name="VCCLCompilerTool"
-					Optimization="1"
-					AdditionalIncludeDirectories=""
-				/>
-			</FileConfiguration>
-			<FileConfiguration
-				Name="Debug|Win32"
-				>
-				<Tool
-					Name="VCCLCompilerTool"
-					Optimization="0"
-					AdditionalIncludeDirectories=""
-					BasicRuntimeChecks="3"
 					BrowseInformation="1"
 				/>
 			</FileConfiguration>
