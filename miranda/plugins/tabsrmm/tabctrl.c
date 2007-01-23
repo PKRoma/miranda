@@ -1021,6 +1021,9 @@ static void DrawThemesXpTabItem(HDC pDC, int ixItem, RECT *rcItem, UINT uiFlag, 
     DeleteDC(dcMem);
 }
 
+static int tab_tip_active = 0;
+static POINT ptMouseT = {0};
+
 static LRESULT CALLBACK TabControlSubclassProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 {
     struct TabControlData *tabdat = 0;
@@ -1151,6 +1154,25 @@ static LRESULT CALLBACK TabControlSubclassProc(HWND hwnd, UINT msg, WPARAM wPara
             SendMessage(GetParent(hwnd), DM_CLOSETABATMOUSE, 0, (LPARAM)&pt);
             return 1;
         }
+        case WM_SETCURSOR:
+        {
+            POINT pt;
+
+            GetCursorPos(&pt);
+            SendMessage(GetParent(hwnd), msg, wParam, lParam);
+            if (pt.x == ptMouseT.x && pt.y == ptMouseT.y) {
+                return 1;
+            }
+            ptMouseT = pt;
+            if(tab_tip_active){
+                KillTimer(hwnd, TIMERID_HOVER_T);
+                CallService("mToolTip/HideTip", 0, 0);
+                tab_tip_active = FALSE;
+            }
+            KillTimer(hwnd, TIMERID_HOVER_T);
+            SetTimer(hwnd, TIMERID_HOVER_T, 450, 0);
+            break;
+        }
         case WM_SIZE:
         {
             int iTabs = TabCtrl_GetItemCount(hwnd);
@@ -1195,10 +1217,19 @@ static LRESULT CALLBACK TabControlSubclassProc(HWND hwnd, UINT msg, WPARAM wPara
             SendMessage(GetParent(hwnd), DM_CLOSETABATMOUSE, 0, (LPARAM)&pt);
             break;
         }
+        case WM_RBUTTONDOWN:
+            KillTimer(hwnd, TIMERID_HOVER_T);
+            CallService("mToolTip/HideTip", 0, 0);
+            tab_tip_active = FALSE;
+            break;
 
         case WM_LBUTTONDOWN:
 		{
 			TCHITTESTINFO tci = {0};
+
+            KillTimer(hwnd, TIMERID_HOVER_T);
+            CallService("mToolTip/HideTip", 0, 0);
+            tab_tip_active = FALSE;
 
             if(GetKeyState(VK_CONTROL) & 0x8000) {
                 tci.pt.x=(short)LOWORD(GetMessagePos());
@@ -1586,6 +1617,45 @@ skip_tabs:
             DeleteDC(hdc);
             EndPaint(hwnd, &ps);
             return 0;
+        }
+        case WM_TIMER:
+        {
+            if(wParam == TIMERID_HOVER_T) {
+                POINT pt;
+                CLCINFOTIP ti = {0};
+                ti.cbSize = sizeof(ti);
+
+                KillTimer(hwnd, TIMERID_HOVER_T);
+                GetCursorPos(&pt);
+                if(pt.x == ptMouseT.x && pt.y == ptMouseT.y) {
+                    TCITEM item = {0};
+                    int    nItem = 0;
+					struct MessageWindowData *dat = 0;
+
+                    ti.ptCursor = pt;
+                    //ScreenToClient(hwnd, &pt);
+
+                    item.mask = TCIF_PARAM;
+                    nItem = GetTabItemFromMouse(hwnd, &pt);
+                    if(nItem >= 0 && nItem < TabCtrl_GetItemCount(hwnd)) {
+                        TabCtrl_GetItem(hwnd, nItem, &item);
+                        /*
+                         * get the message window data for the session to which this tab item belongs
+                         */
+
+                        if(IsWindow((HWND)item.lParam) && item.lParam != 0)
+                            dat = (struct MessageWindowData *)GetWindowLong((HWND)item.lParam, GWL_USERDATA);
+                        if(dat) {
+                            tab_tip_active = TRUE;
+                            ti.isGroup = 0;
+                            ti.hItem = dat->hContact;
+                            ti.isTreeFocused = 0;
+                            CallService("mToolTip/ShowTip", 0, (LPARAM)&ti);
+                        }
+                    }
+                }
+            }
+            break;
         }
         case WM_MOUSEWHEEL:
         {

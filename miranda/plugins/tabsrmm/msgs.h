@@ -901,6 +901,7 @@ extern const int msgDlgFontCount;
 #define TIMERID_HEARTBEAT    2
 #define TIMEOUT_HEARTBEAT    20000
 #define TIMERID_HOVER 10
+#define TIMERID_HOVER_T 11
 
 #define SRMSGMOD "SRMsg"
 #define SRMSGMOD_T "Tab_SRMsg"

@@ -1041,6 +1041,8 @@ static BOOL CALLBACK ContainerWndProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPA
  * container window procedure...
  */
 
+static BOOL fHaveTipper = FALSE;
+
 static BOOL CALLBACK DlgProcContainer(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam)
 {
     struct ContainerWindowData *pContainer = 0;        // pointer to our struct ContainerWindowData
@@ -1068,6 +1070,8 @@ static BOOL CALLBACK DlgProcContainer(HWND hwndDlg, UINT msg, WPARAM wParam, LPA
                 HWND  hwndButton = 0;
                 BOOL isFlat = DBGetContactSettingByte(NULL, SRMSGMOD_T, "tbflat", 0);
                 BOOL isThemed = !DBGetContactSettingByte(NULL, SRMSGMOD_T, "nlflat", 0);
+
+                fHaveTipper = ServiceExists("mToolTip/ShowTip");
 
                 if(MyMonitorFromWindow == 0)
                     MyMonitorFromWindow = (HMONITOR(WINAPI *) (HWND, DWORD)) GetProcAddress(GetModuleHandleA("USER32"), "MonitorFromWindow");
@@ -1186,13 +1190,18 @@ static BOOL CALLBACK DlgProcContainer(HWND hwndDlg, UINT msg, WPARAM wParam, LPA
                 /*
                  * tab tooltips...
                  */
-                pContainer->hwndTip = CreateWindowEx(0, TOOLTIPS_CLASS, NULL, WS_POPUP | TTS_NOPREFIX | TTS_ALWAYSTIP, CW_USEDEFAULT, CW_USEDEFAULT,
-                                                     CW_USEDEFAULT, CW_USEDEFAULT, hwndDlg, NULL, g_hInst, (LPVOID) NULL);
+                if(!fHaveTipper) {
+                    pContainer->hwndTip = CreateWindowEx(0, TOOLTIPS_CLASS, NULL, WS_POPUP | TTS_NOPREFIX | TTS_ALWAYSTIP, CW_USEDEFAULT, CW_USEDEFAULT,
+                                                         CW_USEDEFAULT, CW_USEDEFAULT, hwndDlg, NULL, g_hInst, (LPVOID) NULL);
 
-                if (pContainer->hwndTip) {
-                    SetWindowPos(pContainer->hwndTip, HWND_TOPMOST,0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE | SWP_NOACTIVATE);
-                    TabCtrl_SetToolTips(GetDlgItem(hwndDlg, IDC_MSGTABS), pContainer->hwndTip);
+                    if (pContainer->hwndTip) {
+                        SetWindowPos(pContainer->hwndTip, HWND_TOPMOST,0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE | SWP_NOACTIVATE);
+                        TabCtrl_SetToolTips(GetDlgItem(hwndDlg, IDC_MSGTABS), pContainer->hwndTip);
+                    }
+
                 }
+                else
+                    pContainer->hwndTip = 0;
 
                 if(pContainer->dwFlags & CNT_CREATE_MINIMIZED) {
                     SetWindowLong(hwndDlg, GWL_STYLE, GetWindowLong(hwndDlg, GWL_STYLE) & ~WS_VISIBLE);
@@ -2011,6 +2020,9 @@ panel_found:
 #if defined ( _UNICODE )
                             const wchar_t *newTitle;
 #endif
+
+                            if(fHaveTipper)
+                                break;
 
                             GetCursorPos(&pt);
                             if ((iItem = GetTabItemFromMouse(hwndTab, &pt)) == -1)
@@ -2892,7 +2904,8 @@ panel_found:
 
                 if(pContainer->hMenu)
                     DestroyMenu(pContainer->hMenu);
-    			DestroyWindow(pContainer->hwndTip);
+                if(pContainer->hwndTip);
+    			    DestroyWindow(pContainer->hwndTip);
     			RemoveContainerFromList(pContainer);
 #if defined(__MATHMOD_SUPPORT)
                 if(myGlobals.m_MathModAvail)
@@ -3106,7 +3119,7 @@ int ActivateTabFromHWND(HWND hwndTab, HWND hwnd)
  * pt: mouse coordinates, obtained from GetCursorPos()
  */
 
-static int GetTabItemFromMouse(HWND hwndTab, POINT *pt)
+int GetTabItemFromMouse(HWND hwndTab, POINT *pt)
 {
     TCHITTESTINFO tch;
 
