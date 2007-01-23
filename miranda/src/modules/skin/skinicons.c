@@ -145,11 +145,12 @@ int ImageList_ReplaceIcon_IconLibLoaded(HIMAGELIST hIml, int nIndex, HICON hIcon
 //
 static int LoadSkinProtoIcon(WPARAM wParam,LPARAM lParam)
 {
-	char *szProto = (char*)wParam;
+	char* szProto = (char*)wParam;
 	int i, statusIndx = -1;
 	char iconName[MAX_PATH];
 	HICON hIcon;
 	int suffIndx;
+	DWORD caps2 = ( szProto == NULL ) ? ( DWORD )-1 : CallProtoService(szProto,PS_GETCAPS,PFLAGNUM_2,0);
 
 	if ( lParam >= ID_STATUS_CONNECTING && lParam < ID_STATUS_CONNECTING+MAX_CONNECT_RETRIES ) {
 		sprintf( iconName, "%s%d", mainIconsFmt, 7 );
@@ -158,6 +159,9 @@ static int LoadSkinProtoIcon(WPARAM wParam,LPARAM lParam)
 
 	for ( i = 0; i < SIZEOF(statusIcons); i++)
 		if ( statusIcons[i].id == lParam ) {
+			if ( !( caps2 & statusIcons[i].pf2 ))
+				return (int)NULL;
+
 			statusIndx = i; 
 			break;
 		}
@@ -202,7 +206,6 @@ static int LoadSkinProtoIcon(WPARAM wParam,LPARAM lParam)
 		if ( hIcon == NULL ) {
 			char szPath[MAX_PATH], szFullPath[MAX_PATH],*str;
 			char iconId[MAX_PATH];
-			DWORD caps2 = CallProtoService(szProto,PS_GETCAPS,PFLAGNUM_2,0);
 			SKINICONDESC sid = { 0 };
 			//
 			//  Queried protocol isn't in list, adding
@@ -227,16 +230,17 @@ static int LoadSkinProtoIcon(WPARAM wParam,LPARAM lParam)
 
 				if ( i < SIZEOF( statusIcons )) {
 					mir_snprintf( szFullPath, SIZEOF(szFullPath), "%s\\Plugins\\%s.dll", szPath, szProto );
-				if (( int )ExtractIconExA( szFullPath, statusIcons[i].resource_id, NULL, &hIcon, 1 ) > 0 ) {
+					if (( int )ExtractIconExA( szFullPath, statusIcons[i].resource_id, NULL, &hIcon, 1 ) > 0 ) {
 						DestroyIcon( hIcon );
 						sid.pszDefaultFile = szFullPath;
 						hIcon = NULL;
-					}	}
+				}	}
 
 				if ( sid.pszDefaultFile == NULL ) {
-					if ( str != NULL ) *str = '\\';
+					if ( str != NULL )
+						*str = '\\';
 					sid.pszDefaultFile = szPath;
-				}	}
+			}	}
 
 			//
 			// Add global icons to list
