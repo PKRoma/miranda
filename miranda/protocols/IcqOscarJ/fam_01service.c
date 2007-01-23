@@ -649,9 +649,9 @@ char* calcMD5Hash(char* szFile)
     res = (char*)SAFE_MALLOC(16*sizeof(char));
     if (cbFileSize != 0 && res)
     {
-      md5_init(&state);
-      md5_append(&state, (const md5_byte_t *)ppMap, cbFileSize);
-      md5_finish(&state, digest);
+      mir_md5_init(&state);
+      mir_md5_append(&state, (const md5_byte_t *)ppMap, cbFileSize);
+      mir_md5_finish(&state, digest);
       memcpy(res, digest, 16);
     }
 

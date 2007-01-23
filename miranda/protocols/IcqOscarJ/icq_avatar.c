@@ -1293,9 +1293,9 @@ void handleAvatarFam(unsigned char *pBuffer, WORD wBufferLength, snac_header* pS
             md5_state_t state;
             md5_byte_t digest[16];
             
-            md5_init(&state);
-            md5_append(&state, (const md5_byte_t *)pBuffer, datalen);
-            md5_finish(&state, digest);
+            mir_md5_init(&state);
+            mir_md5_append(&state, (const md5_byte_t *)pBuffer, datalen);
+            mir_md5_finish(&state, digest);
             // check if received data corresponds to specified hash
             if (memcmp(ac->hash+4, digest, 0x10)) aValid = 0;
           }

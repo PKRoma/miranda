@@ -118,7 +118,5 @@
 #include "icq_popups.h"
 #include "iconlib.h"
 
-#include "md5.h"
-
 // :TODO: This should not be here :p
 void icq_FirstRunCheck(void);

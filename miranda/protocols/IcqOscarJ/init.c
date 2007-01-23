@@ -38,8 +38,8 @@
 
 #include "m_updater.h"
 
-
 PLUGINLINK* pluginLink;
+struct MD5_INTERFACE md5i;
 HANDLE hHookUserInfoInit = NULL;
 HANDLE hHookOptionInit = NULL;
 HANDLE hHookUserMenu = NULL;
@@ -127,6 +127,7 @@ int __declspec(dllexport) Load(PLUGINLINK *link)
   PROTOCOLDESCRIPTOR pd = {0};
 
   pluginLink = link;
+  mir_getMD5I( &md5i );
 
   ghServerNetlibUser = NULL;
 
