@@ -27,7 +27,6 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include <direct.h>
 
 #include "resource.h"
-#include "msn_md5.h"
 #include "uxtheme.h"
 
 #include "m_icolib.h"
@@ -721,10 +720,7 @@ DWORD WINAPI MsnShowMailThread( LPVOID )
 
 	//Digest it
 	unsigned char digest[16];
-	MD5_CTX context;
-	MD5Init( &context);
-	MD5Update( &context, ( BYTE* )hippy, challen );
-	MD5Final( digest, &context );
+	mir_md5_hash(( BYTE* )hippy, challen, digest );
 
 	if ( rru && passport )
 	{

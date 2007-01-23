@@ -30,8 +30,6 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 #include "resource.h"
 
-#include "msn_md5.h"
-
 void __cdecl MSNNudgeThread( ThreadData* info );
 void __cdecl MSNServerThread( ThreadData* info );
 void __cdecl MSNSendfileThread( ThreadData* info );
@@ -1304,11 +1302,11 @@ LBL_InvalidCommand:
 
 			//Digest it
 			DWORD md5hash[ 4 ];
-			MD5_CTX context;
-			MD5Init(&context);
-			MD5Update(&context, ( BYTE* )authChallengeInfo, strlen( authChallengeInfo ));
-			MD5Update(&context, ( BYTE* )msnProtChallenge,  strlen( msnProtChallenge  ));
-			MD5Final(( BYTE* )md5hash, &context);
+			md5_state_t context;
+			mir_md5_init( &context );
+			mir_md5_append( &context, ( BYTE* )authChallengeInfo, strlen( authChallengeInfo ));
+			mir_md5_append( &context, ( BYTE* )msnProtChallenge,  strlen( msnProtChallenge  ));
+			mir_md5_finish( &context, ( BYTE* )md5hash );
 
 			if ( MyOptions.UseMSNP11 ) {
 		      LONGLONG hash1 = *( LONGLONG* )&md5hash[0], hash2 = *( LONGLONG* )&md5hash[2];

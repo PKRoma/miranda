@@ -31,7 +31,6 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include <fcntl.h>
 #include <sys/stat.h>
 
-#include "msn_md5.h"
 #include "sha1.h"
 #include "resource.h"
 
@@ -235,10 +234,7 @@ void __stdcall MSN_GetAvatarFileName( HANDLE hContact, char* pszDest, int cbLen 
 			ltoa(( long )hContact, szEmail, 10 );
 
 		long digest[ 4 ];
-		MD5_CTX ctx;
-		MD5Init( &ctx );
-		MD5Update( &ctx, ( BYTE* )szEmail, strlen( szEmail ));
-		MD5Final(( BYTE* )digest, &ctx );
+		mir_md5_hash(( BYTE* )szEmail, strlen( szEmail ), ( BYTE* )digest );
 
 		tPathLen += mir_snprintf( pszDest + tPathLen, MAX_PATH - tPathLen, "%08lX%08lX%08lX%08lX",
 			digest[0], digest[1], digest[2], digest[3] );

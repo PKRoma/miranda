@@ -208,14 +208,6 @@ SOURCE=.\msn_lists.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=.\msn_md5.h
-# End Source File
-# Begin Source File
-
-SOURCE=.\msn_md5c.cpp
-# End Source File
-# Begin Source File
-
 SOURCE=.\msn_menu.cpp
 # End Source File
 # Begin Source File
