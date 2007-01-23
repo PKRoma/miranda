@@ -34,7 +34,7 @@ extern yahoo_local_account *ylad;
 int OnDetailsInit(WPARAM wParam, LPARAM lParam)
 {
   char* szProto;
-  OPTIONSDIALOGPAGE odp;
+  OPTIONSDIALOGPAGE odp = { 0 };
   char szAvtCaption[MAX_PATH+8];
 
   szProto = (char*)CallService(MS_PROTO_GETCONTACTBASEPROTO, lParam, 0);
@@ -44,9 +44,6 @@ int OnDetailsInit(WPARAM wParam, LPARAM lParam)
   if ((lParam == 0) && YAHOO_GetByte( "ShowAvatars", 0 ))
   {
 	 // Avatar page only for valid contacts
-	  // bug #2613: clear the whole structure. Thanks George
-	  ZeroMemory(&odp, sizeof(odp)); 
-	  
 	  odp.cbSize = sizeof(odp);
 	  odp.hIcon = NULL;
 	  odp.hInstance = hinstance;
