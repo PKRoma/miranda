@@ -279,7 +279,7 @@ static LRESULT CALLBACK ModernButtonWndProc(HWND hwndDlg, UINT msg,  WPARAM wPar
 {
     ModernButtonCtrl* bct =  (msg!=WM_NCCREATE)?(ModernButtonCtrl *)GetWindowLong(hwndDlg, GWL_USERDATA):0;
     if (bct)
-      if (bct->HandleService)
+      if (bct->HandleService && !IsBadStringPtrA(bct->HandleService,255))
         if (ServiceExists(bct->HandleService))
         {
             int t;
