@@ -268,15 +268,6 @@ SOURCE=.\msn_ws.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=.\sha1.c
-# SUBTRACT CPP /YX /Yc /Yu
-# End Source File
-# Begin Source File
-
-SOURCE=.\sha1.h
-# End Source File
-# Begin Source File
-
 SOURCE=.\version.h
 # End Source File
 # End Group

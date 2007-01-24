@@ -27,7 +27,6 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include <io.h>
 #include <fcntl.h>
 #include <sys/stat.h>
-#include "sha1.h"
 
 static char sttP2Pheader[] =
 	"Content-Type: application/x-msnmsgrp2p\r\n"
@@ -179,14 +178,14 @@ static void sttSavePicture2disk( filetransfer* ft )
 	if ( pshad == NULL )
 		return;
 
-	SHA1Context sha1ctx;
-	BYTE sha[ SHA1HashSize ];
+	mir_sha1_ctx sha1ctx;
+	BYTE sha[ MIR_SHA1_HASH_SIZE ];
 	char szSha[ 40 ];
 	NETLIBBASE64 nlb = { szSha, sizeof( szSha ), ( PBYTE )sha, sizeof( sha ) };
 
-	SHA1Reset( &sha1ctx );
-	SHA1Input( &sha1ctx, ( BYTE* )ft->fileBuffer, ft->std.currentFileSize );
-	SHA1Result( &sha1ctx, sha );
+	mir_sha1_init( &sha1ctx );
+	mir_sha1_append( &sha1ctx, ( BYTE* )ft->fileBuffer, ft->std.currentFileSize );
+	mir_sha1_finish( &sha1ctx, sha );
 
 	MSN_CallService( MS_NETLIB_BASE64ENCODE, 0, LPARAM( &nlb ));
 	if ( strncmp( pshad + 7, szSha, strlen( szSha )) != 0 )

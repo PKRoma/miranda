@@ -31,7 +31,6 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include <fcntl.h>
 #include <sys/stat.h>
 
-#include "sha1.h"
 #include "resource.h"
 
 #include "version.h"
@@ -984,12 +983,12 @@ directconnection::~directconnection()
 
 char* directconnection::calcHashedNonce(UUID* nonce)
 {
-	SHA1Context sha1ctx;
-	BYTE sha[ SHA1HashSize ];
+	mir_sha1_ctx sha1ctx;
+	BYTE sha[ MIR_SHA1_HASH_SIZE ];
 
-	SHA1Reset( &sha1ctx );
-	SHA1Input( &sha1ctx, ( BYTE* )nonce, sizeof( UUID ));
-	SHA1Result( &sha1ctx, sha );
+	mir_sha1_init( &sha1ctx );
+	mir_sha1_append( &sha1ctx, ( BYTE* )nonce, sizeof( UUID ));
+	mir_sha1_finish( &sha1ctx, sha );
 
 	char* p;
 	UuidToStringA(( UUID* )&sha, ( BYTE** )&p );

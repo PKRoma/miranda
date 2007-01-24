@@ -23,8 +23,6 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 #include "msn_global.h"
 
-#include "sha1.h"
-
 /////////////////////////////////////////////////////////////////////////////////////////
 // MSN_BitmapToAvatarDibBits - rescales a bitmap to 96x96 pixels and creates a DIB from it
 
@@ -124,12 +122,12 @@ int __stdcall MSN_SaveBitmapAsAvatar( HBITMAP hBitmap, const char* szFileName )
 	CallService( MS_DIB2PNG, 0, (LPARAM)&convertor );
 	GlobalFree( pDib );
 
-	SHA1Context sha1ctx;
-	BYTE sha1c[ SHA1HashSize ], sha1d[ SHA1HashSize ];
+	mir_sha1_ctx sha1ctx;
+	BYTE sha1c[ MIR_SHA1_HASH_SIZE ], sha1d[ MIR_SHA1_HASH_SIZE ];
 	char szSha1c[ 40 ], szSha1d[ 40 ];
-	SHA1Reset( &sha1ctx );
-	SHA1Input( &sha1ctx, convertor.pResult, dwPngSize );
-	SHA1Result( &sha1ctx, sha1d );
+	mir_sha1_init( &sha1ctx );
+	mir_sha1_append( &sha1ctx, convertor.pResult, dwPngSize );
+	mir_sha1_finish( &sha1ctx, sha1d );
 	{	NETLIBBASE64 nlb = { szSha1d, sizeof( szSha1d ), ( PBYTE )sha1d, sizeof( sha1d ) };
 		MSN_CallService( MS_NETLIB_BASE64ENCODE, 0, LPARAM( &nlb ));
 	}
@@ -138,28 +136,28 @@ int __stdcall MSN_SaveBitmapAsAvatar( HBITMAP hBitmap, const char* szFileName )
 	char fname[_MAX_FNAME];
 	char ext[_MAX_EXT];
 	_splitpath(szFileName, drive, dir, fname, ext );
-	SHA1Reset( &sha1ctx );
+	mir_sha1_init( &sha1ctx );
 
-	SHA1Input( &sha1ctx, ( PBYTE )"Creator", 7 );
-	SHA1Input( &sha1ctx, ( PBYTE )MyOptions.szEmail, strlen( MyOptions.szEmail ));
+	mir_sha1_append( &sha1ctx, ( PBYTE )"Creator", 7 );
+	mir_sha1_append( &sha1ctx, ( PBYTE )MyOptions.szEmail, strlen( MyOptions.szEmail ));
 
 	char szFileSize[ 20 ];
 	ltoa( dwPngSize, szFileSize, 10 );
-	SHA1Input( &sha1ctx, ( PBYTE )"Size", 4 );
-	SHA1Input( &sha1ctx, ( PBYTE )szFileSize, strlen( szFileSize ));
+	mir_sha1_append( &sha1ctx, ( PBYTE )"Size", 4 );
+	mir_sha1_append( &sha1ctx, ( PBYTE )szFileSize, strlen( szFileSize ));
 
-	SHA1Input( &sha1ctx, ( PBYTE )"Type", 4 );
-	SHA1Input( &sha1ctx, ( PBYTE )"3", 1 );
+	mir_sha1_append( &sha1ctx, ( PBYTE )"Type", 4 );
+	mir_sha1_append( &sha1ctx, ( PBYTE )"3", 1 );
 
-	SHA1Input( &sha1ctx, ( PBYTE )"Location", 8 );
-	SHA1Input( &sha1ctx, ( PBYTE )fname, sizeof( fname ));
+	mir_sha1_append( &sha1ctx, ( PBYTE )"Location", 8 );
+	mir_sha1_append( &sha1ctx, ( PBYTE )fname, sizeof( fname ));
 
-	SHA1Input( &sha1ctx, ( PBYTE )"Friendly", 8 );
-	SHA1Input( &sha1ctx, ( PBYTE )"AAA=", 4 );
+	mir_sha1_append( &sha1ctx, ( PBYTE )"Friendly", 8 );
+	mir_sha1_append( &sha1ctx, ( PBYTE )"AAA=", 4 );
 
-	SHA1Input( &sha1ctx, ( PBYTE )"SHA1D", 5 );
-	SHA1Input( &sha1ctx, ( PBYTE )szSha1d, strlen( szSha1d ));
-	SHA1Result( &sha1ctx, sha1c );
+	mir_sha1_append( &sha1ctx, ( PBYTE )"SHA1D", 5 );
+	mir_sha1_append( &sha1ctx, ( PBYTE )szSha1d, strlen( szSha1d ));
+	mir_sha1_finish( &sha1ctx, sha1c );
 	{	NETLIBBASE64 nlb = { szSha1c, sizeof( szSha1c ), ( PBYTE )sha1c, sizeof( sha1c ) };
 		MSN_CallService( MS_NETLIB_BASE64ENCODE, 0, LPARAM( &nlb ));
 	}
