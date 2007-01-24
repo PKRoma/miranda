@@ -52,10 +52,11 @@ PLUGININFO pluginInfo = {
 	0
 };
 
-MM_INTERFACE   mmi;
-LIST_INTERFACE li;
-UTF8_INTERFACE utfi;
-MD5_INTERFACE  md5i;
+MM_INTERFACE    mmi;
+LIST_INTERFACE  li;
+UTF8_INTERFACE  utfi;
+MD5_INTERFACE   md5i;
+SHA1_INTERFACE  sha1i;
 
 HANDLE hMainThread = NULL;
 DWORD jabberMainThreadId;
@@ -250,6 +251,7 @@ extern "C" int __declspec( dllexport ) Load( PLUGINLINK *link )
 	mir_getLI( &li );
 	mir_getUTFI( &utfi );
 	mir_getMD5I( &md5i );
+	mir_getSHA1I( &sha1i );
 
 	// creating the plugins name
 	char text[_MAX_PATH];
