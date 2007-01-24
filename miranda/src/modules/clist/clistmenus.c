@@ -985,7 +985,7 @@ int MenuModulesLoaded(WPARAM wParam,LPARAM lParam)
 		flags2 = CallProtoService(proto[i]->szName,PS_GETCAPS,PFLAGNUM_5,0);
 		flags &= ~flags2; 
 
-		if ( visnetworkProtoCount > 1 ) {
+		if ( visnetworkProtoCount > 0 ) {
 			char protoName[128];
 			int j;
 			int rootmenu;
@@ -1037,7 +1037,6 @@ int MenuModulesLoaded(WPARAM wParam,LPARAM lParam)
 			memset(&(cli.menuProtos[cli.menuProtoCount]),0,sizeof(MenuProto));
 			cli.menuProtos[cli.menuProtoCount].menuID=(HANDLE)rootmenu;
 			cli.menuProtos[cli.menuProtoCount].szProto=mir_strdup(proto[i]->szName);
-			//cli.menuProtos[cli.menuProtoCount].szProto=mir_strdup(protoName);
 
 			cli.menuProtoCount++;
 			{
