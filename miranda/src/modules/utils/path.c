@@ -61,14 +61,19 @@ static int pathToAbsolute(WPARAM wParam, LPARAM lParam) {
     char *pSrc = (char*)wParam;
     char *pOut = (char*)lParam;
     if (!pSrc||!strlen(pSrc)||strlen(pSrc)>MAX_PATH) return 0;
-    if (pathIsAbsolute(pSrc)||!isalnum(pSrc[0])) {
+
+    if (pathIsAbsolute(pSrc)||(!isalnum(pSrc[0]) && pSrc[0]!='\\' )) {
         mir_snprintf(pOut, MAX_PATH, "%s", pSrc);
         return strlen(pOut);
     }
-    else {
+    else if (pSrc[0]!='\\') {
         mir_snprintf(pOut, MAX_PATH, "%s%s", szMirandaPath, pSrc);
         return strlen(pOut);
     }
+	else {
+		mir_snprintf(pOut, MAX_PATH, "%s%s", szMirandaPath, pSrc+1);
+		return strlen(pOut);
+	}
 }
 
 #ifdef _UNICODE
