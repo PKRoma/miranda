@@ -2888,6 +2888,9 @@
 					</FileConfiguration>
 				</File>
 				<File
+					RelativePath=".\modules\utils\md5.c">
+				</File>
+				<File
 					RelativePath="modules\utils\openurl.c">
 					<FileConfiguration
 						Name="Release|Win32">
@@ -3003,6 +3006,9 @@
 							PreprocessorDefinitions=""
 							BrowseInformation="1"/>
 					</FileConfiguration>
+				</File>
+				<File
+					RelativePath=".\modules\utils\sha1.c">
 				</File>
 				<File
 					RelativePath=".\modules\utils\utf.c">
