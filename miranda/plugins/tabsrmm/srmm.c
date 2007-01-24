@@ -51,11 +51,11 @@ PLUGININFO pluginInfo = {
         "tabSRMsg",
     #endif    
 #endif
-    PLUGIN_MAKE_VERSION(1, 1, 0, 16),
+    PLUGIN_MAKE_VERSION(1, 1, 0, 17),
     "Chat module for instant messaging and group chat, offering a tabbed interface and many advanced features.",
     "The Miranda developers team",
     "silvercircle@gmail.com",
-    "© 2000-2006 Miranda Project",
+    "© 2000-2007 Miranda Project",
     "http://tabsrmm.sourceforge.net",
     0,
     DEFMOD_SRMESSAGE            // replace internal version (if any)

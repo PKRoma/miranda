@@ -1116,13 +1116,14 @@ static int OptInitialise(WPARAM wParam, LPARAM lParam)
     odp.position = 910000000;
     odp.hInstance = g_hInst;
 	odp.pszTemplate = MAKEINTRESOURCEA(IDD_OPTIONSDIALOG);
-    odp.pszTitle = Translate("Message Window");
+    odp.pszTitle = Translate("Message Sessions");
     odp.pfnDlgProc = OptionsDlgProc;
-    odp.pszGroup = Translate("Message Sessions");
+    odp.pszGroup = NULL;//Translate("Message Sessions");
     odp.nIDBottomSimpleControl = 0;
     odp.flags = ODPF_BOLDGROUPS;
     CallService(MS_OPT_ADDPAGE, wParam, (LPARAM) & odp);
     
+    odp.pszGroup = Translate("Message Sessions");
 	odp.pszTemplate = MAKEINTRESOURCEA(IDD_OPT_MSGTYPE);
     odp.pszTitle = Translate("Typing Notify");
     odp.pfnDlgProc = DlgProcTypeOptions;

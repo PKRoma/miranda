@@ -1160,7 +1160,7 @@ static LRESULT CALLBACK TabControlSubclassProc(HWND hwnd, UINT msg, WPARAM wPara
 
             GetCursorPos(&pt);
             SendMessage(GetParent(hwnd), msg, wParam, lParam);
-            if (pt.x == ptMouseT.x && pt.y == ptMouseT.y) {
+            if (abs(pt.x - ptMouseT.x) < 4  && abs(pt.y - ptMouseT.y) < 4) {
                 return 1;
             }
             ptMouseT = pt;
@@ -1627,7 +1627,7 @@ skip_tabs:
 
                 KillTimer(hwnd, TIMERID_HOVER_T);
                 GetCursorPos(&pt);
-                if(pt.x == ptMouseT.x && pt.y == ptMouseT.y) {
+                if(abs(pt.x - ptMouseT.x) < 5 && abs(pt.y - ptMouseT.y) < 5) {
                     TCITEM item = {0};
                     int    nItem = 0;
 					struct MessageWindowData *dat = 0;
