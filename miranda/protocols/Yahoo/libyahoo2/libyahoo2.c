@@ -2762,7 +2762,7 @@ static void yahoo_process_auth_resp(struct yahoo_input_data *yid, struct yahoo_p
 			login_status = atoi(pair->value);
 	}
 
-	if(pkt->status == 0xffffffff) {
+	if(pkt->status == YPACKET_STATUS_DISCONNECTED) {
 		YAHOO_CALLBACK(ext_yahoo_login_response)(yd->client_id, login_status, url);
 	/*	yahoo_logoff(yd->client_id);*/
 	}
