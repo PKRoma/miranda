@@ -35,7 +35,6 @@ extern int RemoveEvent(WPARAM wParam, LPARAM lParam);
 int InitCustomMenus(void);
 void UninitCustomMenus(void);
 int GetContactStatusMessage(WPARAM wParam, LPARAM lParam);
-int CListOptInit(WPARAM wParam, LPARAM lParam);
 void TrayIconUpdateBase(const char *szChangedProto);
 int EventsProcessContactDoubleClick(HANDLE hContact);
 int SetHideOffline(WPARAM wParam, LPARAM lParam);
@@ -94,7 +93,6 @@ static int ContactListShutdownProc(WPARAM wParam, LPARAM lParam)
 int LoadContactListModule(void)
 {
 	HookEvent(ME_SYSTEM_SHUTDOWN, ContactListShutdownProc);
-	HookEvent(ME_OPT_INITIALISE, CListOptInit);
 	CreateServiceFunction(MS_CLIST_GETSTATUSMODE, GetStatusMode);
 
 	hSvc_GetContactStatusMsg = CreateServiceFunction("CList/GetContactStatusMsg", GetContactStatusMessage);

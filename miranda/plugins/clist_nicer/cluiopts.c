@@ -25,8 +25,6 @@ UNICODE done
 */
 #include "commonheaders.h"
 
-void ReloadExtraIcons( void );
-
 extern BOOL(WINAPI *MySetLayeredWindowAttributes)(HWND, COLORREF, BYTE, DWORD);
 extern struct CluiData g_CluiData;
 extern pfnDrawAlpha pDrawAlpha;
@@ -35,78 +33,23 @@ extern WNDPROC OldStatusBarProc;
 extern HANDLE hExtraImageApplying;
 extern SIZE g_oldSize;
 extern POINT g_oldPos;
-extern HIMAGELIST himlExtraImages;
 extern COLORREF g_CLUISkinnedBkColorRGB;
 extern HPEN g_hPenCLUIFrames;
-
-static BOOL CALLBACK DlgProcCluiOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam);
-static BOOL CALLBACK DlgProcSBarOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam);
-static BOOL CALLBACK DlgProcPlusOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam);
-
-static UINT expertOnlyControls[] = {
-	IDC_BRINGTOFRONT, IDC_AUTOSIZE, IDC_STATIC21, IDC_MAXSIZEHEIGHT, IDC_MAXSIZESPIN, IDC_STATIC22, IDC_AUTOSIZEUPWARD, IDC_SHOWMAINMENU, IDC_CLIENTDRAG
-};
-
+ 
 static void __setFlag(DWORD dwFlag, int iMode)
 {
 	g_CluiData.dwFlags = iMode ? g_CluiData.dwFlags | dwFlag : g_CluiData.dwFlags & ~dwFlag;
 }
 
-int CluiOptInit(WPARAM wParam, LPARAM lParam)
-{
-	OPTIONSDIALOGPAGE odp;
+static int opt_clui_changed = 0;
 
-	ZeroMemory(&odp, sizeof(odp));
-	odp.cbSize = sizeof(odp);
-	odp.position = 0;
-	odp.hInstance = g_hInst;
-	odp.pszTemplate = MAKEINTRESOURCEA(IDD_OPT_CLUI);
-	odp.pszTitle = Translate("Window");
-	odp.pszGroup = Translate("Contact List");
-	odp.pfnDlgProc = DlgProcCluiOpts;
-	odp.flags = ODPF_BOLDGROUPS;
-	odp.nIDBottomSimpleControl = IDC_STWINDOWGROUP;
-	odp.expertOnlyControls = expertOnlyControls;
-	odp.nExpertOnlyControls = sizeof(expertOnlyControls) / sizeof(expertOnlyControls[0]);
-	CallService(MS_OPT_ADDPAGE, wParam, (LPARAM) &odp);
-	odp.pszTemplate = MAKEINTRESOURCEA(IDD_OPT_SBAR);
-	odp.pszTitle = Translate("Status Bar");
-	odp.pfnDlgProc = DlgProcSBarOpts;
-	odp.flags = ODPF_BOLDGROUPS | ODPF_EXPERTONLY;
-	odp.nIDBottomSimpleControl = 0;
-	odp.nExpertOnlyControls = 0;
-	odp.expertOnlyControls = NULL;
-	CallService(MS_OPT_ADDPAGE, wParam, (LPARAM) &odp);
-
-	odp.pszTemplate = MAKEINTRESOURCEA(IDD_OPT_PLUS);
-	odp.pszTitle = Translate("Advanced options");
-	odp.pfnDlgProc = DlgProcPlusOpts;
-	odp.flags = ODPF_BOLDGROUPS;
-	odp.nIDBottomSimpleControl = 0;
-	odp.nExpertOnlyControls = 0;
-	odp.expertOnlyControls = NULL;
-	CallService(MS_OPT_ADDPAGE, wParam, (LPARAM) &odp);
-	return 0;
-}
-
-static BOOL CALLBACK DlgProcCluiOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam)
+BOOL CALLBACK DlgProcCluiOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam)
 {
 	switch (msg) {
 	case WM_INITDIALOG:
 		{
+            opt_clui_changed = 0;
 			TranslateDialogDefault(hwndDlg);
-
-			CheckDlgButton(hwndDlg, IDC_SHOWCLIENTICONS, g_CluiData.dwExtraImageMask & EIMG_SHOW_CLIENT);
-			CheckDlgButton(hwndDlg, IDC_SHOWEXTENDEDSTATUS, g_CluiData.dwExtraImageMask & EIMG_SHOW_EXTRA);
-			CheckDlgButton(hwndDlg, IDC_EXTRAMAIL, g_CluiData.dwExtraImageMask & EIMG_SHOW_MAIL);
-			CheckDlgButton(hwndDlg, IDC_EXTRAWEB, g_CluiData.dwExtraImageMask & EIMG_SHOW_URL);
-			CheckDlgButton(hwndDlg, IDC_EXTRAPHONE, g_CluiData.dwExtraImageMask & EIMG_SHOW_SMS);
-			CheckDlgButton(hwndDlg, IDC_EXTRARESERVED, g_CluiData.dwExtraImageMask & EIMG_SHOW_RESERVED);
-			CheckDlgButton(hwndDlg, IDC_EXTRARESERVED2, g_CluiData.dwExtraImageMask & EIMG_SHOW_RESERVED2);
-            CheckDlgButton(hwndDlg, IDC_EXTRARESERVED3, g_CluiData.dwExtraImageMask & EIMG_SHOW_RESERVED3);
-            CheckDlgButton(hwndDlg, IDC_EXTRARESERVED4, g_CluiData.dwExtraImageMask & EIMG_SHOW_RESERVED4);
-            CheckDlgButton(hwndDlg, IDC_EXTRARESERVED5, g_CluiData.dwExtraImageMask & EIMG_SHOW_RESERVED5);
-
 			CheckDlgButton(hwndDlg, IDC_BRINGTOFRONT, DBGetContactSettingByte(NULL, "CList", "BringToFront", SETTING_BRINGTOFRONT_DEFAULT) ? BST_CHECKED : BST_UNCHECKED);
 			CheckDlgButton(hwndDlg, IDC_ONTOP, DBGetContactSettingByte(NULL, "CList", "OnTop", SETTING_ONTOP_DEFAULT) ? BST_CHECKED : BST_UNCHECKED);
 			CheckDlgButton(hwndDlg, IDC_MIN2TRAY, DBGetContactSettingByte(NULL, "CList", "Min2Tray", SETTING_MIN2TRAY_DEFAULT) ? BST_CHECKED : BST_UNCHECKED);
@@ -214,11 +157,12 @@ static BOOL CALLBACK DlgProcCluiOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPAR
 			EnableWindow(GetDlgItem(hwndDlg, IDC_MAXSIZESPIN), IsDlgButtonChecked(hwndDlg, IDC_AUTOSIZE));
 			EnableWindow(GetDlgItem(hwndDlg, IDC_AUTOSIZEUPWARD), IsDlgButtonChecked(hwndDlg, IDC_AUTOSIZE));
 		}
-		if ((LOWORD(wParam) == IDC_EXICONSCALE || LOWORD(wParam) == IDC_FRAMEGAP || LOWORD(wParam) == IDC_HIDETIME || LOWORD(wParam) == IDC_CLIPBORDER || LOWORD(wParam) == IDC_ROWGAP || LOWORD(wParam) == IDC_TITLETEXT ||
+		if ((LOWORD(wParam) == IDC_FRAMEGAP || LOWORD(wParam) == IDC_HIDETIME || LOWORD(wParam) == IDC_CLIPBORDER || LOWORD(wParam) == IDC_ROWGAP || LOWORD(wParam) == IDC_TITLETEXT ||
 			LOWORD(wParam) == IDC_MAXSIZEHEIGHT || LOWORD(wParam) == IDC_CLEFT || LOWORD(wParam) == IDC_CRIGHT || LOWORD(wParam) == IDC_CTOP
 			|| LOWORD(wParam) == IDC_CBOTTOM) && (HIWORD(wParam) != EN_CHANGE || (HWND) lParam != GetFocus()))
 			return 0;
 		SendMessage(GetParent(hwndDlg), PSM_CHANGED, 0, 0);
+        opt_clui_changed = 1;
 		break;
 
 	case WM_HSCROLL:
@@ -229,8 +173,10 @@ static BOOL CALLBACK DlgProcCluiOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPAR
 			wsprintfA(str, "%d%%", 100 * SendDlgItemMessage(hwndDlg, IDC_TRANSACTIVE, TBM_GETPOS, 0, 0) / 255);
 			SetDlgItemTextA(hwndDlg, IDC_ACTIVEPERC, str);
 		}
-		if (wParam != 0x12345678)
-			SendMessage(GetParent(hwndDlg), PSM_CHANGED, 0, 0);
+		if (wParam != 0x12345678) {
+            SendMessage(GetParent(hwndDlg), PSM_CHANGED, 0, 0);
+            opt_clui_changed = 1;
+        }
 		break;
 	case WM_NOTIFY:
 		switch (((LPNMHDR) lParam)->code) {
@@ -242,7 +188,10 @@ static BOOL CALLBACK DlgProcCluiOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPAR
 				BYTE windowStyle = (BYTE)SendDlgItemMessage(hwndDlg, IDC_BORDERSTYLE, CB_GETCURSEL, 0, 0);
 				COLORREF clr_cluiframes;
 
-				DBWriteContactSettingByte(NULL, "CLUI", "FadeInOut", (BYTE) IsDlgButtonChecked(hwndDlg, IDC_FADEINOUT));
+                if(!opt_clui_changed)
+                    return TRUE;
+
+                DBWriteContactSettingByte(NULL, "CLUI", "FadeInOut", (BYTE) IsDlgButtonChecked(hwndDlg, IDC_FADEINOUT));
 				g_CluiData.fadeinout = IsDlgButtonChecked(hwndDlg, IDC_FADEINOUT) ? 1 : 0;
 				oldFading = g_CluiData.fadeinout;
 				g_CluiData.fadeinout = FALSE;
@@ -285,23 +234,7 @@ static BOOL CALLBACK DlgProcCluiOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPAR
                 } else
                     SetParent(pcli->hwndContactList, NULL);
 
-				__setFlag(CLUI_SHOWCLIENTICONS, IsDlgButtonChecked(hwndDlg, IDC_SHOWCLIENTICONS));
-				__setFlag(CLUI_SHOWXSTATUS, IsDlgButtonChecked(hwndDlg, IDC_SHOWEXTENDEDSTATUS));
-
-				g_CluiData.dwExtraImageMask = (IsDlgButtonChecked(hwndDlg, IDC_EXTRAMAIL) ? EIMG_SHOW_MAIL : 0) |
-					(IsDlgButtonChecked(hwndDlg, IDC_EXTRAWEB) ? EIMG_SHOW_URL : 0) |
-					(IsDlgButtonChecked(hwndDlg, IDC_SHOWEXTENDEDSTATUS) ? EIMG_SHOW_EXTRA : 0) |
-					(IsDlgButtonChecked(hwndDlg, IDC_EXTRAPHONE) ? EIMG_SHOW_SMS : 0) |
-					(IsDlgButtonChecked(hwndDlg, IDC_EXTRARESERVED) ? EIMG_SHOW_RESERVED : 0) |
-					(IsDlgButtonChecked(hwndDlg, IDC_SHOWCLIENTICONS) ? EIMG_SHOW_CLIENT : 0) |
-					(IsDlgButtonChecked(hwndDlg, IDC_EXTRARESERVED2) ? EIMG_SHOW_RESERVED2 : 0) |
-                    (IsDlgButtonChecked(hwndDlg, IDC_EXTRARESERVED3) ? EIMG_SHOW_RESERVED3 : 0) |
-                    (IsDlgButtonChecked(hwndDlg, IDC_EXTRARESERVED4) ? EIMG_SHOW_RESERVED4 : 0) |
-                    (IsDlgButtonChecked(hwndDlg, IDC_EXTRARESERVED5) ? EIMG_SHOW_RESERVED5 : 0);
-
 				g_CluiData.bClipBorder = (BYTE)GetDlgItemInt(hwndDlg, IDC_CLIPBORDER, &translated, FALSE);
-
-				DBWriteContactSettingDword(NULL, "CLUI", "ximgmask", g_CluiData.dwExtraImageMask);
 				DBWriteContactSettingDword(NULL, "CLUI", "Frameflags", g_CluiData.dwFlags);
 				DBWriteContactSettingByte(NULL, "CLUI", "clipborder", g_CluiData.bClipBorder);
 
@@ -389,26 +322,13 @@ static BOOL CALLBACK DlgProcCluiOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPAR
 				}
 
                 ConfigureCLUIGeometry(1);
-				if(oldexIconScale != g_CluiData.exIconScale) {
-					ImageList_RemoveAll(himlExtraImages);
-					ImageList_SetIconSize(himlExtraImages, g_CluiData.exIconScale, g_CluiData.exIconScale);
-					if(g_CluiData.IcoLib_Avail)
-						IcoLibReloadIcons();
-					else {
-						CLN_LoadAllIcons(0);
-						pcli->pfnReloadProtoMenus();
-                        //FYR: Not necessary. It is already notified in pfnReloadProtoMenus
-                        //NotifyEventHooks(pcli->hPreBuildStatusMenuEvent, 0, 0);
-						ReloadExtraIcons();
-					}
-					pcli->pfnClcBroadcast(CLM_AUTOREBUILD, 0, 0);
-				}
                 ShowWindow(pcli->hwndContactList, SW_SHOW);
                 SendMessage(pcli->hwndContactList, WM_SIZE, 0, 0);
                 SetWindowPos(pcli->hwndContactList, 0, 0, 0, 0, 0, SWP_NOZORDER | SWP_NOMOVE | SWP_NOSIZE | SWP_FRAMECHANGED);
                 RedrawWindow(pcli->hwndContactList, NULL, NULL, RDW_FRAME | RDW_INVALIDATE | RDW_UPDATENOW);
 				g_CluiData.fadeinout = oldFading;
 				SFL_SetState(g_CluiData.bUseFloater & CLUI_FLOATER_AUTOHIDE ? (DBGetContactSettingByte(NULL, "CList", "State", SETTING_STATE_NORMAL) == SETTING_STATE_NORMAL ? 0 : 1) : 1);
+                opt_clui_changed = 0;
 				return TRUE;
 			}
 		}
@@ -417,10 +337,13 @@ static BOOL CALLBACK DlgProcCluiOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPAR
 	return FALSE;
 }
 
-static BOOL CALLBACK DlgProcSBarOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam)
+static int opt_sbar_changed = 0;
+
+BOOL CALLBACK DlgProcSBarOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam)
 {
 	switch (msg) {
-	case WM_INITDIALOG:
+    case WM_INITDIALOG:
+        opt_sbar_changed = 0;
 		TranslateDialogDefault(hwndDlg);
 		CheckDlgButton(hwndDlg, IDC_SHOWSBAR, DBGetContactSettingByte(NULL, "CLUI", "ShowSBar", 1) ? BST_CHECKED : BST_UNCHECKED); {
 			BYTE showOpts = DBGetContactSettingByte(NULL, "CLUI", "SBarShow", 1);
@@ -462,10 +385,14 @@ static BOOL CALLBACK DlgProcSBarOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPAR
 			EnableWindow(GetDlgItem(hwndDlg, IDC_SKINBACKGROUND), IsDlgButtonChecked(hwndDlg, IDC_SHOWSBAR));
 		}
 		SendMessage(GetParent(hwndDlg), PSM_CHANGED, 0, 0);
+        opt_sbar_changed = 1;
 		break;
 	case WM_NOTIFY:
 		switch (((LPNMHDR) lParam)->code) {
-		case PSN_APPLY:
+        case PSN_APPLY:
+            if(!opt_sbar_changed)
+                return TRUE;
+
 			DBWriteContactSettingByte(NULL, "CLUI", "ShowSBar", (BYTE) IsDlgButtonChecked(hwndDlg, IDC_SHOWSBAR));
 			DBWriteContactSettingByte(NULL, "CLUI", "SBarShow", (BYTE) ((IsDlgButtonChecked(hwndDlg, IDC_SHOWICON) ? 1 : 0) | (IsDlgButtonChecked(hwndDlg, IDC_SHOWPROTO) ? 2 : 0) | (IsDlgButtonChecked(hwndDlg, IDC_SHOWSTATUS) ? 4 : 0)));
 			DBWriteContactSettingByte(NULL, "CLUI", "SBarRightClk", (BYTE) IsDlgButtonChecked(hwndDlg, IDC_RIGHTMIRANDA));
@@ -503,6 +430,7 @@ static BOOL CALLBACK DlgProcSBarOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPAR
 			SendMessage(pcli->hwndContactList, WM_SIZE, 0, 0);
 			CluiProtocolStatusChanged(0, 0);
 			PostMessage(pcli->hwndContactList, CLUIINTM_REDRAW, 0, 0);
+            opt_sbar_changed = 0;
 			return TRUE;
 		}
 		break;
@@ -512,7 +440,7 @@ static BOOL CALLBACK DlgProcSBarOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPAR
 
 static UINT avatar_controls[] = { IDC_ALIGNMENT, IDC_AVATARSBORDER, IDC_AVATARSROUNDED, IDC_AVATARBORDERCLR, IDC_ALWAYSALIGNNICK, IDC_AVATARHEIGHT, IDC_AVATARSIZESPIN, 0 };
 
-static BOOL CALLBACK DlgProcPlusOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam)
+BOOL CALLBACK DlgProcPlusOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam)
 {
 	switch (msg) {
 	case WM_INITDIALOG:

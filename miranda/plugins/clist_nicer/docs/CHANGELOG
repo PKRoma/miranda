@@ -7,6 +7,16 @@
 + = new feature
 - = removed
 
+0.7.1.1  - 2007/01/25
+
+                * more options for per contact display settings.
+
+                * the font colors for selected and hottracked skin items are no longer ignored.
+
+                * removed internal font configuration dialog. Customize->Fonts is now where fonts 
+                  and colors can be configured for NON-SKINNED MODE ONLY. Otherwise, settings from
+                  Customize->Contact List skin->Skin items are used.
+
 0.7.1.0  - 2007/01/20
                 
                 * removed old icon code. From now on, clist_nicer requires IcoLib services, either

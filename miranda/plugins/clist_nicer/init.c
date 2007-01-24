@@ -43,7 +43,7 @@ extern int SetHideOffline(WPARAM wParam, LPARAM lParam);
 extern struct CluiData g_CluiData;
 extern struct ExtraCache *g_ExtraCache;
 extern int g_nextExtraCacheEntry;
-extern int g_maxExtraCacheEntry;
+int g_maxExtraCacheEntry = 0;
 extern pfnDrawAlpha pDrawAlpha;
 extern DWORD g_gdiplusToken;
 extern HIMAGELIST himlExtraImages;
@@ -108,9 +108,9 @@ void RecalcScrollBar(HWND hwnd, struct ClcData *dat);
 
 PLUGININFO pluginInfo = {
 #if defined(_UNICODE)
-	sizeof(PLUGININFO), "CList Nicer+ (Unicode)", PLUGIN_MAKE_VERSION(0, 7, 1, 0),
+	sizeof(PLUGININFO), "CList Nicer+ (Unicode)", PLUGIN_MAKE_VERSION(0, 7, 1, 1),
 #else
-	sizeof(PLUGININFO), "CList Nicer+", PLUGIN_MAKE_VERSION(0, 7, 1, 0),
+	sizeof(PLUGININFO), "CList Nicer+", PLUGIN_MAKE_VERSION(0, 7, 1, 1),
 #endif
 		"Display contacts, event notifications, protocol status",
 		"Pixel, egoDust, cyreve, Nightwish", "", "Copyright 2000-2006 Miranda-IM project", "http://www.miranda-im.org",
@@ -251,7 +251,10 @@ int __declspec(dllexport) CListInitialise(PLUGINLINK * link)
 	{
 		int iCount = CallService(MS_DB_CONTACT_GETCOUNT, 0, 0);
 		
-		iCount += 10;
+		iCount += 20;
+        if(iCount < 300)
+            iCount = 300;
+
 		g_ExtraCache = malloc(sizeof(struct ExtraCache) * iCount);
 		ZeroMemory(g_ExtraCache, sizeof(struct ExtraCache) * iCount);
 		g_nextExtraCacheEntry = 0;

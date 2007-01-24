@@ -28,7 +28,7 @@ UNICODE done
 extern struct CluiData g_CluiData;
 
 extern struct ExtraCache *g_ExtraCache;
-extern int g_nextExtraCacheEntry, g_maxExtraCacheEntry;
+extern int g_nextExtraCacheEntry;
 
 //processing of all the CLM_ messages incoming
 

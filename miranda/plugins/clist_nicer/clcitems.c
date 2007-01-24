@@ -102,7 +102,7 @@ void LoadAvatarForContact(struct ClcContact *p)
 {
     DWORD dwFlags;
 
-    if(p->extraCacheEntry >= 0 && p->extraCacheEntry <= g_maxExtraCacheEntry)
+    if(p->extraCacheEntry >= 0 && p->extraCacheEntry < g_nextExtraCacheEntry)
         dwFlags = g_ExtraCache[p->extraCacheEntry].dwDFlags;
     else
         dwFlags = DBGetContactSettingDword(p->hContact, "CList", "CLN_Flags", 0);
@@ -163,8 +163,8 @@ int AddContactToGroup(struct ClcData *dat, struct ClcGroup *group, HANDLE hConta
 				}
 			}
 		}
+        LoadAvatarForContact(p);
 	}
-    LoadAvatarForContact(p);
 #if defined(_UNICODE)
 	RTL_DetectAndSet( p, p->hContact);
 #endif    
@@ -551,6 +551,24 @@ void ReloadSkinItemsToCache()
     }
 }
 
+DWORD CalcXMask(HANDLE hContact)
+{
+    DWORD dwXMask = DBGetContactSettingDword(hContact, "CList", "CLN_xmask", 0);
+    int   i;
+    DWORD dwResult = g_CluiData.dwExtraImageMask, bForced, bHidden;
+
+    for(i = 0; i <= 10; i++) {
+        bForced = (dwXMask & (1 << (2 * i)));
+        bHidden = (dwXMask & (1 << (2 * i + 1)));
+        if(bForced == 0 && bHidden == 0)
+            continue;
+        else if(bForced)
+            dwResult |= (1 << i);
+        else if(bHidden)
+            dwResult &= ~(1 << i);
+    }
+    return(dwResult);
+}
 int GetExtraCache(HANDLE hContact, char *szProto)
 {
     int i, iFound = -1;
@@ -578,6 +596,7 @@ int GetExtraCache(HANDLE hContact, char *szProto)
         LoadSkinItemToCache(&g_ExtraCache[g_nextExtraCacheEntry], szProto);
         g_ExtraCache[g_nextExtraCacheEntry].dwCFlags = g_ExtraCache[g_nextExtraCacheEntry].timediff = g_ExtraCache[g_nextExtraCacheEntry].timezone = 0;
         g_ExtraCache[g_nextExtraCacheEntry].dwDFlags = DBGetContactSettingDword(hContact, "CList", "CLN_Flags", 0);
+        g_ExtraCache[g_nextExtraCacheEntry].dwXMask = CalcXMask(hContact);
         GetCachedStatusMsg(g_nextExtraCacheEntry, szProto);
 		g_ExtraCache[g_nextExtraCacheEntry].dwLastMsgTime = INTSORT_GetLastMsgTime(hContact);
         iFound = g_nextExtraCacheEntry++;

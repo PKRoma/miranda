@@ -79,6 +79,12 @@ struct ClcGroup;
 #define ECF_RTLSTATUSMSG 2
 #define ECF_FORCEAVATAR 4
 #define ECF_HIDEAVATAR 8
+#define ECF_FORCEOVERLAY 16
+#define ECF_HIDEOVERLAY 32
+#define ECF_FORCELOCALTIME 64
+#define ECF_HIDELOCALTIME 128
+#define ECF_FORCEVISIBILITY 256
+#define ECF_HIDEVISIBILITY  512
 
 // other contact flags (struct ClCContact;
 
@@ -106,6 +112,7 @@ struct ExtraCache {
 	DWORD timediff;
 	DWORD dwCFlags;
     DWORD dwDFlags;     // display flags for caching only
+    DWORD dwXMask;      // local extra icon mask, calculated from CLN_xmask
 	StatusItems_t *status_item, *proto_status_item;
 	CONTACTFLOATER *floater;
 	DWORD dwLastMsgTime;
@@ -484,6 +491,7 @@ int GetExtraCache(HANDLE hContact, char *szProto);
 void ReloadExtraInfo(HANDLE hContact);
 void LoadAvatarForContact(struct ClcContact *p);
 void ApplyViewMode(const char *name);
+DWORD CalcXMask(HANDLE hContact);
 
 //clcpaint.c
 void PaintClc(HWND hwnd, struct ClcData *dat, HDC hdc, RECT *rcPaint);

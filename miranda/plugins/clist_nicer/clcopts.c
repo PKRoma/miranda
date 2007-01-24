@@ -25,6 +25,7 @@ UNICODE done
 */
 #include "commonheaders.h"
 #include "coolsb/coolscroll.h"
+#include <uxtheme.h>
 
 #define DBFONTF_BOLD       1
 #define DBFONTF_ITALIC     2
@@ -36,8 +37,18 @@ static BOOL CALLBACK DlgProcClcBkgOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LP
 extern BOOL CALLBACK DlgProcViewModesSetup(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam);
 extern BOOL CALLBACK DlgProcFloatingContacts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam);
 extern BOOL CALLBACK OptionsDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam);
-
+extern BOOL CALLBACK DlgProcCluiOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam);
+extern BOOL CALLBACK DlgProcSBarOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam);
+extern BOOL CALLBACK DlgProcPlusOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam);
+extern BOOL CALLBACK DlgProcGenOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam);
+extern BOOL CALLBACK DlgProcHotkeyOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam);
+extern BOOL (WINAPI *MyEnableThemeDialogTexture)(HANDLE, DWORD);
+extern void ReloadExtraIcons( void );
+       
 extern struct CluiData g_CluiData;
+extern int    g_nextExtraCacheEntry;
+extern struct ExtraCache *g_ExtraCache;
+extern HIMAGELIST himlExtraImages;
 
 void GetDefaultFontSetting(int i, LOGFONT *lf, COLORREF *colour)
 {
@@ -63,6 +74,217 @@ void GetDefaultFontSetting(int i, LOGFONT *lf, COLORREF *colour)
 		break;
 }	}
 
+static int opt_xicons_changed_flag = 0;
+
+BOOL CALLBACK DlgProcXIcons(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam)
+{
+	switch (msg) {
+	case WM_INITDIALOG:
+		{
+			TranslateDialogDefault(hwndDlg);
+
+			CheckDlgButton(hwndDlg, IDC_SHOWCLIENTICONS, g_CluiData.dwExtraImageMask & EIMG_SHOW_CLIENT);
+			CheckDlgButton(hwndDlg, IDC_SHOWEXTENDEDSTATUS, g_CluiData.dwExtraImageMask & EIMG_SHOW_EXTRA);
+			CheckDlgButton(hwndDlg, IDC_EXTRAMAIL, g_CluiData.dwExtraImageMask & EIMG_SHOW_MAIL);
+			CheckDlgButton(hwndDlg, IDC_EXTRAWEB, g_CluiData.dwExtraImageMask & EIMG_SHOW_URL);
+			CheckDlgButton(hwndDlg, IDC_EXTRAPHONE, g_CluiData.dwExtraImageMask & EIMG_SHOW_SMS);
+			CheckDlgButton(hwndDlg, IDC_EXTRARESERVED, g_CluiData.dwExtraImageMask & EIMG_SHOW_RESERVED);
+			CheckDlgButton(hwndDlg, IDC_EXTRARESERVED2, g_CluiData.dwExtraImageMask & EIMG_SHOW_RESERVED2);
+            CheckDlgButton(hwndDlg, IDC_EXTRARESERVED3, g_CluiData.dwExtraImageMask & EIMG_SHOW_RESERVED3);
+            CheckDlgButton(hwndDlg, IDC_EXTRARESERVED4, g_CluiData.dwExtraImageMask & EIMG_SHOW_RESERVED4);
+            CheckDlgButton(hwndDlg, IDC_EXTRARESERVED5, g_CluiData.dwExtraImageMask & EIMG_SHOW_RESERVED5);
+			SendDlgItemMessage(hwndDlg, IDC_EXICONSCALESPIN, UDM_SETRANGE, 0, MAKELONG(20, 8));
+			SendDlgItemMessage(hwndDlg, IDC_EXICONSCALESPIN, UDM_SETPOS, 0, (LPARAM)g_CluiData.exIconScale);
+            opt_xicons_changed_flag = 0;
+			return TRUE;
+		}
+	case WM_COMMAND:
+		if ((LOWORD(wParam) == IDC_EXICONSCALE) && (HIWORD(wParam) != EN_CHANGE || (HWND) lParam != GetFocus()))
+			return 0;
+		SendMessage(GetParent(hwndDlg), PSM_CHANGED, 0, 0);
+        opt_xicons_changed_flag = 1;
+		break;
+
+	case WM_NOTIFY:
+		switch (((LPNMHDR) lParam)->code) {
+		case PSN_APPLY:
+			{
+				int   oldexIconScale = g_CluiData.exIconScale;
+                DWORD oldMask = g_CluiData.dwExtraImageMask;
+
+                int      i;
+
+                if(!opt_xicons_changed_flag)
+                    return TRUE;
+
+				g_CluiData.dwExtraImageMask = (IsDlgButtonChecked(hwndDlg, IDC_EXTRAMAIL) ? EIMG_SHOW_MAIL : 0) |
+					(IsDlgButtonChecked(hwndDlg, IDC_EXTRAWEB) ? EIMG_SHOW_URL : 0) |
+					(IsDlgButtonChecked(hwndDlg, IDC_SHOWEXTENDEDSTATUS) ? EIMG_SHOW_EXTRA : 0) |
+					(IsDlgButtonChecked(hwndDlg, IDC_EXTRAPHONE) ? EIMG_SHOW_SMS : 0) |
+					(IsDlgButtonChecked(hwndDlg, IDC_EXTRARESERVED) ? EIMG_SHOW_RESERVED : 0) |
+					(IsDlgButtonChecked(hwndDlg, IDC_SHOWCLIENTICONS) ? EIMG_SHOW_CLIENT : 0) |
+					(IsDlgButtonChecked(hwndDlg, IDC_EXTRARESERVED2) ? EIMG_SHOW_RESERVED2 : 0) |
+                    (IsDlgButtonChecked(hwndDlg, IDC_EXTRARESERVED3) ? EIMG_SHOW_RESERVED3 : 0) |
+                    (IsDlgButtonChecked(hwndDlg, IDC_EXTRARESERVED4) ? EIMG_SHOW_RESERVED4 : 0) |
+                    (IsDlgButtonChecked(hwndDlg, IDC_EXTRARESERVED5) ? EIMG_SHOW_RESERVED5 : 0);
+
+                for(i = 0; i < g_nextExtraCacheEntry; i++)
+                    g_ExtraCache[i].dwXMask = CalcXMask(g_ExtraCache[i].hContact);
+
+				DBWriteContactSettingDword(NULL, "CLUI", "ximgmask", g_CluiData.dwExtraImageMask);
+
+				g_CluiData.exIconScale = SendDlgItemMessage(hwndDlg, IDC_EXICONSCALESPIN, UDM_GETPOS, 0, 0);
+				g_CluiData.exIconScale = (g_CluiData.exIconScale < 8 || g_CluiData.exIconScale > 20) ? 16 : g_CluiData.exIconScale;
+
+				DBWriteContactSettingByte(NULL, "CLC", "ExIconScale", (BYTE)g_CluiData.exIconScale);
+
+				if(oldexIconScale != g_CluiData.exIconScale) {
+					ImageList_RemoveAll(himlExtraImages);
+					ImageList_SetIconSize(himlExtraImages, g_CluiData.exIconScale, g_CluiData.exIconScale);
+					if(g_CluiData.IcoLib_Avail)
+						IcoLibReloadIcons();
+					else {
+						CLN_LoadAllIcons(0);
+						pcli->pfnReloadProtoMenus();
+                        //FYR: Not necessary. It is already notified in pfnReloadProtoMenus
+                        //NotifyEventHooks(pcli->hPreBuildStatusMenuEvent, 0, 0);
+						ReloadExtraIcons();
+					}
+					pcli->pfnClcBroadcast(CLM_AUTOREBUILD, 0, 0);
+				}
+                if(oldMask != g_CluiData.dwExtraImageMask)
+                    pcli->pfnClcBroadcast(CLM_AUTOREBUILD, 0, 0);
+
+                opt_xicons_changed_flag = 0;
+				return TRUE;
+			}
+		}
+		break;
+	}
+	return FALSE;
+}
+
+static BOOL CALLBACK TabOptionsDlgProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
+{
+   static int iInit = TRUE;
+   
+   switch(msg)
+   {
+      case WM_INITDIALOG:
+      {
+         TCITEM tci;
+         RECT rcClient;
+         int oPage = DBGetContactSettingByte(NULL, "CLUI", "opage", 0);
+
+         GetClientRect(hwnd, &rcClient);
+         iInit = TRUE;
+         tci.mask = TCIF_PARAM|TCIF_TEXT;
+         tci.lParam = (LPARAM)CreateDialog(g_hInst,MAKEINTRESOURCE(IDD_OPT_CLIST), hwnd, DlgProcGenOpts);
+         tci.pszText = TranslateT("General");
+         TabCtrl_InsertItem(GetDlgItem(hwnd, IDC_OPTIONSTAB), 0, &tci);
+         MoveWindow((HWND)tci.lParam,5,25,rcClient.right-9,rcClient.bottom-30,1);
+         ShowWindow((HWND)tci.lParam, oPage == 0 ? SW_SHOW : SW_HIDE);
+         if(MyEnableThemeDialogTexture)
+             MyEnableThemeDialogTexture((HWND)tci.lParam, ETDT_ENABLETAB);
+
+         tci.lParam = (LPARAM)CreateDialog(g_hInst,MAKEINTRESOURCE(IDD_OPT_CLC), hwnd, DlgProcClcMainOpts);
+         tci.pszText = TranslateT("List layout");
+         TabCtrl_InsertItem(GetDlgItem(hwnd, IDC_OPTIONSTAB), 1, &tci);
+         MoveWindow((HWND)tci.lParam,5,25,rcClient.right-9,rcClient.bottom-30,1);
+         ShowWindow((HWND)tci.lParam, oPage == 1 ? SW_SHOW : SW_HIDE);
+         if(MyEnableThemeDialogTexture)
+             MyEnableThemeDialogTexture((HWND)tci.lParam, ETDT_ENABLETAB);
+
+         tci.lParam = (LPARAM)CreateDialog(g_hInst,MAKEINTRESOURCE(IDD_OPT_CLUI), hwnd, DlgProcCluiOpts);
+         tci.pszText = TranslateT("Window");
+         TabCtrl_InsertItem(GetDlgItem(hwnd, IDC_OPTIONSTAB), 2, &tci);
+         MoveWindow((HWND)tci.lParam,5,25,rcClient.right-9,rcClient.bottom-30,1);
+         ShowWindow((HWND)tci.lParam, oPage == 2 ? SW_SHOW : SW_HIDE);
+         if(MyEnableThemeDialogTexture)
+             MyEnableThemeDialogTexture((HWND)tci.lParam, ETDT_ENABLETAB);
+
+         tci.lParam = (LPARAM)CreateDialog(g_hInst,MAKEINTRESOURCE(IDD_OPT_CLCBKG), hwnd, DlgProcClcBkgOpts);
+         tci.pszText = TranslateT("Background");
+         TabCtrl_InsertItem(GetDlgItem(hwnd, IDC_OPTIONSTAB), 3, &tci);
+         MoveWindow((HWND)tci.lParam,5,25,rcClient.right-9,rcClient.bottom-30,1);
+         ShowWindow((HWND)tci.lParam, oPage == 3 ? SW_SHOW : SW_HIDE);
+         if(MyEnableThemeDialogTexture)
+             MyEnableThemeDialogTexture((HWND)tci.lParam, ETDT_ENABLETAB);
+
+         tci.lParam = (LPARAM)CreateDialog(g_hInst,MAKEINTRESOURCE(IDD_OPT_SBAR), hwnd, DlgProcSBarOpts);
+         tci.pszText = TranslateT("Status Bar");
+         TabCtrl_InsertItem(GetDlgItem(hwnd, IDC_OPTIONSTAB), 4, &tci);
+         MoveWindow((HWND)tci.lParam,5,25,rcClient.right-9,rcClient.bottom-30,1);
+         ShowWindow((HWND)tci.lParam, oPage == 4 ? SW_SHOW : SW_HIDE);
+         if(MyEnableThemeDialogTexture)
+             MyEnableThemeDialogTexture((HWND)tci.lParam, ETDT_ENABLETAB);
+
+         tci.lParam = (LPARAM)CreateDialog(g_hInst,MAKEINTRESOURCE(IDD_OPT_XICONS), hwnd, DlgProcXIcons);
+         tci.pszText = TranslateT("Extra icons");
+         TabCtrl_InsertItem(GetDlgItem(hwnd, IDC_OPTIONSTAB), 5, &tci);
+         MoveWindow((HWND)tci.lParam,5,25,rcClient.right-9,rcClient.bottom-30,1);
+         ShowWindow((HWND)tci.lParam, oPage == 5 ? SW_SHOW : SW_HIDE);
+         if(MyEnableThemeDialogTexture)
+             MyEnableThemeDialogTexture((HWND)tci.lParam, ETDT_ENABLETAB);
+
+         TabCtrl_SetCurSel(GetDlgItem(hwnd, IDC_OPTIONSTAB), oPage);
+         iInit = FALSE;
+         return FALSE;
+      }
+      
+       case PSM_CHANGED: // used so tabs dont have to call SendMessage(GetParent(GetParent(hwnd)), PSM_CHANGED, 0, 0);
+         if(!iInit)
+             SendMessage(GetParent(hwnd), PSM_CHANGED, 0, 0);
+         break;
+      case WM_NOTIFY:
+         switch(((LPNMHDR)lParam)->idFrom) {
+            case 0:
+               switch (((LPNMHDR)lParam)->code)
+               {
+                  case PSN_APPLY:
+                     {
+                        TCITEM tci;
+                        int i,count;
+                        tci.mask = TCIF_PARAM;
+                        count = TabCtrl_GetItemCount(GetDlgItem(hwnd,IDC_OPTIONSTAB));
+                        for (i=0;i<count;i++)
+                        {
+                           TabCtrl_GetItem(GetDlgItem(hwnd,IDC_OPTIONSTAB),i,&tci);
+                           SendMessage((HWND)tci.lParam,WM_NOTIFY,0,lParam);
+                        }
+                     }
+                  break;
+               }
+            break;
+            case IDC_OPTIONSTAB:
+               switch (((LPNMHDR)lParam)->code)
+               {
+                  case TCN_SELCHANGING:
+                     {
+                        TCITEM tci;
+                        tci.mask = TCIF_PARAM;
+                        TabCtrl_GetItem(GetDlgItem(hwnd,IDC_OPTIONSTAB),TabCtrl_GetCurSel(GetDlgItem(hwnd,IDC_OPTIONSTAB)),&tci);
+                        ShowWindow((HWND)tci.lParam,SW_HIDE);                     
+                     }
+                  break;
+                  case TCN_SELCHANGE:
+                     {
+                        TCITEM tci;
+                        tci.mask = TCIF_PARAM;
+                        TabCtrl_GetItem(GetDlgItem(hwnd,IDC_OPTIONSTAB),TabCtrl_GetCurSel(GetDlgItem(hwnd,IDC_OPTIONSTAB)),&tci);
+                        ShowWindow((HWND)tci.lParam,SW_SHOW);
+                        DBWriteContactSettingByte(NULL, "CLUI", "opage", (BYTE)TabCtrl_GetCurSel(GetDlgItem(hwnd, IDC_OPTIONSTAB)));
+                     }
+                  break;
+               }
+            break;
+
+         }
+      break;
+   }
+   return FALSE;
+}
+
 int ClcOptInit(WPARAM wParam, LPARAM lParam)
 {
     OPTIONSDIALOGPAGE odp;
@@ -72,36 +294,46 @@ int ClcOptInit(WPARAM wParam, LPARAM lParam)
     odp.position = 0;
     odp.hInstance = g_hInst;
     odp.pszGroup = Translate("Contact List");
-    odp.pszTemplate = MAKEINTRESOURCEA(IDD_OPT_CLC);
-    odp.pszTitle = Translate("List");
-    odp.pfnDlgProc = DlgProcClcMainOpts;
-    odp.flags = ODPF_BOLDGROUPS | ODPF_EXPERTONLY;
-    CallService(MS_OPT_ADDPAGE, wParam, (LPARAM) &odp);
-    odp.pszTemplate = MAKEINTRESOURCEA(IDD_OPT_CLCBKG);
-    odp.pszTitle = Translate("List Background");
-    odp.pfnDlgProc = DlgProcClcBkgOpts;
-    odp.flags = ODPF_BOLDGROUPS;
-    CallService(MS_OPT_ADDPAGE, wParam, (LPARAM) &odp);
 
     odp.pszTemplate = MAKEINTRESOURCEA(IDD_OPT_FLOATING);
     odp.pszTitle = Translate("Floating contacts");
     odp.pfnDlgProc = DlgProcFloatingContacts;
-    odp.flags = ODPF_BOLDGROUPS;
+    odp.flags = ODPF_BOLDGROUPS | ODPF_EXPERTONLY;
     CallService(MS_OPT_ADDPAGE, wParam, (LPARAM) &odp);
 
-    /* removed - font service now integrated in Miranda 
-    if(!ServiceExists(MS_FONT_REGISTER)) {
-        odp.pszTemplate = MAKEINTRESOURCEA(IDD_OPT_CLCTEXT);
-        odp.pszGroup = Translate("Customize");
-        odp.pszTitle = Translate("Contact list fonts");
-        odp.pfnDlgProc = DlgProcClcTextOpts;    
-        CallService(MS_OPT_ADDPAGE, wParam, (LPARAM) &odp);
-    }
-    */
+    odp.pszTemplate = MAKEINTRESOURCEA(IDD_OPT_PLUS);
+    odp.pszTitle = Translate("Advanced options");
+    odp.pfnDlgProc = DlgProcPlusOpts;
+    odp.flags = ODPF_BOLDGROUPS | ODPF_EXPERTONLY;
+    odp.nIDBottomSimpleControl = 0;
+    odp.nExpertOnlyControls = 0;
+    odp.expertOnlyControls = NULL;
+    CallService(MS_OPT_ADDPAGE, wParam, (LPARAM) &odp);
+
     odp.pszTemplate = MAKEINTRESOURCEA(IDD_OPT);
     odp.pszGroup = Translate("Customize");
     odp.pszTitle = Translate("Contact list skin");
+    odp.flags = ODPF_BOLDGROUPS;
     odp.pfnDlgProc = OptionsDlgProc;
+    CallService(MS_OPT_ADDPAGE, wParam, (LPARAM) &odp);
+
+    odp.position = -1000000000;
+    odp.pszTemplate = MAKEINTRESOURCEA(IDD_OPTIONSDIALOG);
+    odp.pszGroup = NULL;
+    odp.pszTitle = Translate("Contact List");
+    odp.pfnDlgProc = TabOptionsDlgProc;
+    odp.flags = ODPF_BOLDGROUPS;
+    odp.nIDBottomSimpleControl = 0;
+    CallService(MS_OPT_ADDPAGE, wParam, (LPARAM) &odp);
+
+    odp.position = -900000000;
+    odp.pszTemplate = MAKEINTRESOURCEA(IDD_OPT_HOTKEY);
+    odp.pszTitle = Translate("Hotkeys");
+    odp.pszGroup = Translate("Events");
+    odp.pfnDlgProc = DlgProcHotkeyOpts;
+    odp.nIDBottomSimpleControl = 0;
+    odp.nExpertOnlyControls = 0;
+    odp.expertOnlyControls = NULL;
     CallService(MS_OPT_ADDPAGE, wParam, (LPARAM) &odp);
     return 0;
 }
@@ -159,11 +391,14 @@ static DWORD MakeCheckBoxTreeFlags(HWND hwndTree)
     return flags;
 }
 
+static int opt_clc_main_changed = 0;
+
 static BOOL CALLBACK DlgProcClcMainOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam)
 {
     switch (msg) {
         case WM_INITDIALOG:
             TranslateDialogDefault(hwndDlg);
+            opt_clc_main_changed = 0;
             SetWindowLong(GetDlgItem(hwndDlg, IDC_GREYOUTOPTS), GWL_STYLE, GetWindowLong(GetDlgItem(hwndDlg, IDC_GREYOUTOPTS), GWL_STYLE) | TVS_NOHSCROLL | TVS_CHECKBOXES);
             SetWindowLong(GetDlgItem(hwndDlg, IDC_HIDEOFFLINEOPTS), GWL_STYLE, GetWindowLong(GetDlgItem(hwndDlg, IDC_HIDEOFFLINEOPTS), GWL_STYLE) | TVS_NOHSCROLL | TVS_CHECKBOXES); {
                 int i;
@@ -210,6 +445,7 @@ static BOOL CALLBACK DlgProcClcMainOpts(HWND hwndDlg, UINT msg, WPARAM wParam, L
 
             return TRUE;
         case WM_VSCROLL:
+            opt_clc_main_changed = 1;
             SendMessage(GetParent(hwndDlg), PSM_CHANGED, 0, 0);
             break;
         case WM_COMMAND:
@@ -221,6 +457,7 @@ static BOOL CALLBACK DlgProcClcMainOpts(HWND hwndDlg, UINT msg, WPARAM wParam, L
                 && (HIWORD(wParam) != EN_CHANGE || (HWND) lParam != GetFocus()))
                 return 0;
             SendMessage(GetParent(hwndDlg), PSM_CHANGED, 0, 0);
+            opt_clc_main_changed = 1;
             break;
         case WM_NOTIFY:
             switch (((LPNMHDR) lParam)->idFrom) {
@@ -239,6 +476,7 @@ static BOOL CALLBACK DlgProcClcMainOpts(HWND hwndDlg, UINT msg, WPARAM wParam, L
                                 TreeView_GetItem(((LPNMHDR) lParam)->hwndFrom, &tvi);
                                 tvi.iImage = tvi.iSelectedImage = tvi.iImage == 1 ? 2 : 1;
                                 TreeView_SetItem(((LPNMHDR) lParam)->hwndFrom, &tvi);
+                                opt_clc_main_changed = 1;
                                 SendMessage(GetParent(hwndDlg), PSM_CHANGED, 0, 0);
                             }
                     }
@@ -249,6 +487,10 @@ static BOOL CALLBACK DlgProcClcMainOpts(HWND hwndDlg, UINT msg, WPARAM wParam, L
                             {
                                 int i;
                                 DWORD exStyle = 0;
+
+                                if(!opt_clc_main_changed)
+                                    return TRUE;
+
                                 for (i = 0; i < sizeof(checkBoxToStyleEx) / sizeof(checkBoxToStyleEx[0]); i++) {
                                     if ((IsDlgButtonChecked(hwndDlg, checkBoxToStyleEx[i].id) == 0) == checkBoxToStyleEx[i].not)
                                         exStyle |= checkBoxToStyleEx[i]. flag;
@@ -285,6 +527,7 @@ static BOOL CALLBACK DlgProcClcMainOpts(HWND hwndDlg, UINT msg, WPARAM wParam, L
                             pcli->pfnClcOptionsChanged();
                             CoolSB_SetupScrollBar();
                             PostMessage(pcli->hwndContactList, CLUIINTM_REDRAW, 0, 0);
+                            opt_clc_main_changed = 0;
                             return TRUE;
                     }
                     break;
@@ -297,10 +540,13 @@ static BOOL CALLBACK DlgProcClcMainOpts(HWND hwndDlg, UINT msg, WPARAM wParam, L
     return FALSE;
 }
 
+static int opt_clc_bkg_changed = 0;
+
 static BOOL CALLBACK DlgProcClcBkgOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam)
 {
     switch (msg) {
         case WM_INITDIALOG:
+            opt_clc_bkg_changed = 0;
             TranslateDialogDefault(hwndDlg);
             CheckDlgButton(hwndDlg, IDC_BITMAP, DBGetContactSettingByte(NULL, "CLC", "UseBitmap", CLCDEFAULT_USEBITMAP) ? BST_CHECKED : BST_UNCHECKED);
             SendMessage(hwndDlg, WM_USER + 10, 0, 0);           
@@ -382,13 +628,17 @@ static BOOL CALLBACK DlgProcClcBkgOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LP
             if (LOWORD(wParam) == IDC_FILENAME && (HIWORD(wParam) != EN_CHANGE || (HWND) lParam != GetFocus()))
                 return 0;
             SendMessage(GetParent(hwndDlg), PSM_CHANGED, 0, 0);
+            opt_clc_bkg_changed = 1;
             break;
         case WM_NOTIFY:
             switch (((LPNMHDR) lParam)->idFrom) {
                 case 0:
                     switch (((LPNMHDR) lParam)->code) {
                         case PSN_APPLY:
-                            DBWriteContactSettingByte(NULL, "CLC", "UseBitmap", (BYTE) IsDlgButtonChecked(hwndDlg, IDC_BITMAP)); {
+                                if(!opt_clc_bkg_changed)
+                                    return TRUE;
+
+                                DBWriteContactSettingByte(NULL, "CLC", "UseBitmap", (BYTE) IsDlgButtonChecked(hwndDlg, IDC_BITMAP)); {
                                 COLORREF col;
                                 col = SendDlgItemMessage(hwndDlg, IDC_BKGCOLOUR, CPM_GETCOLOUR, 0, 0);
                                 if (col == CLCDEFAULT_BKCOLOUR)
@@ -424,6 +674,7 @@ static BOOL CALLBACK DlgProcClcBkgOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LP
                             }
                             pcli->pfnClcOptionsChanged();
                             PostMessage(pcli->hwndContactList, CLUIINTM_REDRAW, 0, 0);
+                            opt_clc_bkg_changed = 0;
                             return TRUE;
                     }
                     break;

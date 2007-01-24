@@ -30,7 +30,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 extern int      g_shutDown;
 extern struct   ClcData *g_clcData;
-extern int      g_nextExtraCacheEntry, g_maxExtraCacheEntry;
+extern int      g_nextExtraCacheEntry;
 extern struct   ExtraCache *g_ExtraCache;
 extern struct   CluiData g_CluiData;
 
@@ -54,6 +54,12 @@ static HANDLE hWindowListIGN = 0;
  * dialog procedure for handling the contact ignore dialog (available from the contact
  * menu
  */
+
+static UINT xImgCtrlIds[] = {IDC_SHOWCLIENTICONS, IDC_SHOWEXTENDEDSTATUS,IDC_EXTRAMAIL,
+                             IDC_EXTRAWEB, IDC_EXTRAPHONE, IDC_EXTRARESERVED, IDC_EXTRARESERVED2,
+                             IDC_EXTRARESERVED3, IDC_EXTRARESERVED4, IDC_EXTRARESERVED5, 0};
+
+static UINT xImgCtrlBits[] = {6, 4, 0, 1, 2, 3, 5, 7, 8, 9, 10};
 
 static BOOL CALLBACK IgnoreDialogProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)
 {
@@ -81,6 +87,14 @@ static BOOL CALLBACK IgnoreDialogProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM
 			SetWindowText(hwndAdd, TranslateT("Add permanently"));
 			EnableWindow(hwndAdd, DBGetContactSettingByte(hContact, "CList", "NotOnList", 0));
 
+            hwndAdd = GetDlgItem(hWnd, IDC_DSP_LOADDEFAULT); // CreateWindowEx(0, _T("CLCButtonClass"), _T("FOO"), WS_VISIBLE | BS_PUSHBUTTON | WS_CHILD | WS_TABSTOP, 200, 276, 106, 24, hWnd, (HMENU)IDC_IGN_ADDPERMANENTLY, g_hInst, NULL);
+            SendMessage(hwndAdd, BUTTONSETASFLATBTN, 0, 1);
+            SendMessage(hwndAdd, BUTTONSETASFLATBTN + 10, 0, 1);
+
+            SendMessage(hwndAdd, BM_SETIMAGE, IMAGE_ICON, (LPARAM)LoadImage(GetModuleHandle(NULL), MAKEINTRESOURCE(IDI_DELETE), IMAGE_ICON, 16, 16, LR_SHARED));
+            SetWindowText(hwndAdd, TranslateT("Revert to default"));
+            EnableWindow(hwndAdd, TRUE);
+
             SendDlgItemMessage(hWnd, IDC_AVATARDISPMODE, CB_INSERTSTRING, -1, (LPARAM)TranslateT("Default (global setting)"));
             SendDlgItemMessage(hWnd, IDC_AVATARDISPMODE, CB_INSERTSTRING, -1, (LPARAM)TranslateT("Show always when available"));
             SendDlgItemMessage(hWnd, IDC_AVATARDISPMODE, CB_INSERTSTRING, -1, (LPARAM)TranslateT("Hide always"));
@@ -100,6 +114,8 @@ static BOOL CALLBACK IgnoreDialogProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM
 						TCHAR szTitle[512];
                         DWORD dwFlags = DBGetContactSettingDword(hContact, "CList", "CLN_Flags", 0);
                         BYTE  bSecondLine = DBGetContactSettingByte(hContact, "CList", "CLN_2ndline", -1);
+                        DWORD dwXMask = DBGetContactSettingDword(hContact, "CList", "CLN_xmask", 0);
+                        int   i = 0;
 
 						mir_sntprintf(szTitle, 512, TranslateT("Contact list display and ignore options for %s"), contact->szText);
 						SetWindowText(hWnd, szTitle);
@@ -117,6 +133,37 @@ static BOOL CALLBACK IgnoreDialogProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM
                             SendDlgItemMessage(hWnd, IDC_AVATARDISPMODE, CB_SETCURSEL, 2, 0);
                         else
                             SendDlgItemMessage(hWnd, IDC_AVATARDISPMODE, CB_SETCURSEL, 0, 0);
+
+                        if(dwFlags & ECF_FORCEOVERLAY)
+                            SendDlgItemMessage(hWnd, IDC_OVERLAYICON, BM_SETCHECK, BST_CHECKED, 0);
+                        else if(dwFlags & ECF_HIDEOVERLAY)
+                            SendDlgItemMessage(hWnd, IDC_OVERLAYICON, BM_SETCHECK, BST_UNCHECKED, 0);
+                        else
+                            SendDlgItemMessage(hWnd, IDC_OVERLAYICON, BM_SETCHECK, BST_INDETERMINATE, 0);
+
+                        if(dwFlags & ECF_FORCELOCALTIME)
+                            SendDlgItemMessage(hWnd, IDC_SHOWLOCALTIME1, BM_SETCHECK, BST_CHECKED, 0);
+                        else if(dwFlags & ECF_HIDELOCALTIME)
+                            SendDlgItemMessage(hWnd, IDC_SHOWLOCALTIME1, BM_SETCHECK, BST_UNCHECKED, 0);
+                        else
+                            SendDlgItemMessage(hWnd, IDC_SHOWLOCALTIME1, BM_SETCHECK, BST_INDETERMINATE, 0);
+
+                        if(dwFlags & ECF_FORCEVISIBILITY)
+                            SendDlgItemMessage(hWnd, IDC_SHOWVISIBILITY, BM_SETCHECK, BST_CHECKED, 0);
+                        else if(dwFlags & ECF_HIDEVISIBILITY)
+                            SendDlgItemMessage(hWnd, IDC_SHOWVISIBILITY, BM_SETCHECK, BST_UNCHECKED, 0);
+                        else
+                            SendDlgItemMessage(hWnd, IDC_SHOWVISIBILITY, BM_SETCHECK, BST_INDETERMINATE, 0);
+
+                        while(xImgCtrlIds[i] != 0) {
+                            if(dwXMask & (1 << (2 * xImgCtrlBits[i])))
+                                SendDlgItemMessage(hWnd, xImgCtrlIds[i], BM_SETCHECK, BST_CHECKED, 0);
+                            else if(dwXMask & (1 << (2 * xImgCtrlBits[i] + 1)))
+                                SendDlgItemMessage(hWnd, xImgCtrlIds[i], BM_SETCHECK, BST_UNCHECKED, 0);
+                            else
+                                SendDlgItemMessage(hWnd, xImgCtrlIds[i], BM_SETCHECK, BST_INDETERMINATE, 0);
+                            i++;
+                        }
 
                         if(bSecondLine == 0xff)
                             SendDlgItemMessage(hWnd, IDC_SECONDLINEMODE, CB_SETCURSEL, 0, 0);
@@ -165,6 +212,20 @@ static BOOL CALLBACK IgnoreDialogProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM
 			  	EnableWindow(GetDlgItem(hWnd, IDC_IGN_ADDPERMANENTLY), DBGetContactSettingByte(hContact, "CList", "NotOnList", 0));
 			  	break;
 		  	}
+        case IDC_DSP_LOADDEFAULT:
+            {
+                int i = 0;
+
+                SendDlgItemMessage(hWnd, IDC_AVATARDISPMODE, CB_SETCURSEL, 0, 0);
+                SendDlgItemMessage(hWnd, IDC_SECONDLINEMODE, CB_SETCURSEL, 0, 0);
+                while(xImgCtrlIds[i] != 0)
+                    SendDlgItemMessage(hWnd, xImgCtrlIds[i++], BM_SETCHECK, BST_INDETERMINATE, 0);
+
+                SendDlgItemMessage(hWnd, IDC_OVERLAYICON, BM_SETCHECK, BST_INDETERMINATE, 0);
+                SendDlgItemMessage(hWnd, IDC_LOCALTIME, BM_SETCHECK, BST_INDETERMINATE, 0);
+                SendDlgItemMessage(hWnd, IDC_SHOWVISIBILITY, BM_SETCHECK, BST_INDETERMINATE, 0);
+                break;
+            }
 	  	case IDOK:
 			{
 				DWORD newMask = 0;
@@ -178,7 +239,9 @@ static BOOL CALLBACK IgnoreDialogProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM
                     if(FindItem(pcli->hwndContactTree, g_clcData, hContact, &contact, NULL, NULL)) {
                         if(contact) {
                             LRESULT iSel = SendDlgItemMessage(hWnd, IDC_AVATARDISPMODE, CB_GETCURSEL, 0, 0);
-                            DWORD dwFlags = DBGetContactSettingDword(hContact, "CList", "CLN_Flags", 0);
+                            DWORD dwFlags = DBGetContactSettingDword(hContact, "CList", "CLN_Flags", 0), dwXMask = 0;
+							LRESULT  checked = 0;
+                            int      i = 0;
 
                             if(iSel != CB_ERR) {
                                 dwFlags &= ~(ECF_FORCEAVATAR | ECF_HIDEAVATAR);
@@ -187,11 +250,31 @@ static BOOL CALLBACK IgnoreDialogProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM
                                     dwFlags |= ECF_FORCEAVATAR;
                                 else if(iSel == 2)
                                     dwFlags |= ECF_HIDEAVATAR;
-                                DBWriteContactSettingDword(hContact, "CList", "CLN_Flags", dwFlags);
-                                if(contact->extraCacheEntry >= 0 && contact->extraCacheEntry <= g_maxExtraCacheEntry)
-                                    g_ExtraCache[contact->extraCacheEntry].dwDFlags = dwFlags;
                                 LoadAvatarForContact(contact);
                             }
+
+                            dwFlags &= ~(ECF_FORCEOVERLAY | ECF_HIDEOVERLAY | ECF_FORCELOCALTIME | ECF_HIDELOCALTIME | 
+                                         ECF_FORCEVISIBILITY | ECF_HIDEVISIBILITY);
+
+                            checked = SendDlgItemMessage(hWnd, IDC_OVERLAYICON, BM_GETCHECK, 0, 0);
+                            if(checked == BST_CHECKED)
+                                dwFlags |= ECF_FORCEOVERLAY;
+                            else if(checked == BST_UNCHECKED)
+                                dwFlags |= ECF_HIDEOVERLAY;
+
+                            checked = SendDlgItemMessage(hWnd, IDC_SHOWLOCALTIME1, BM_GETCHECK, 0, 0);
+                            if(checked == BST_CHECKED)
+                                dwFlags |= ECF_FORCELOCALTIME;
+                            else if(checked == BST_UNCHECKED)
+                                dwFlags |= ECF_HIDELOCALTIME;
+
+                            checked = SendDlgItemMessage(hWnd, IDC_SHOWVISIBILITY, BM_GETCHECK, 0, 0);
+                            if(checked == BST_CHECKED)
+                                dwFlags |= ECF_FORCEVISIBILITY;
+                            else if(checked == BST_UNCHECKED)
+                                dwFlags |= ECF_HIDEVISIBILITY;
+
+                            DBWriteContactSettingDword(hContact, "CList", "CLN_Flags", dwFlags);
 
                             if((iSel = SendDlgItemMessage(hWnd, IDC_SECONDLINEMODE, CB_GETCURSEL, 0, 0)) != CB_ERR) {
                                 if(iSel == 0) {
@@ -202,6 +285,19 @@ static BOOL CALLBACK IgnoreDialogProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM
                                     DBWriteContactSettingByte(hContact, "CList", "CLN_2ndline", (BYTE)(iSel - 1));
                                     contact->bSecondLine = (BYTE)(iSel - 1);
                                 }
+                            }
+                            while(xImgCtrlIds[i] != 0) {
+                                checked = SendDlgItemMessage(hWnd, xImgCtrlIds[i], BM_GETCHECK, 0, 0);
+                                if(checked == BST_CHECKED)
+                                    dwXMask |= (1 << (2 * xImgCtrlBits[i]));
+                                else if(checked == BST_UNCHECKED)
+                                    dwXMask |= (1 << (2 * xImgCtrlBits[i] + 1));
+                                i++;
+                            }
+                            DBWriteContactSettingDword(hContact, "CList", "CLN_xmask", dwXMask);
+                            if(contact->extraCacheEntry >= 0 && contact->extraCacheEntry <= g_nextExtraCacheEntry) {
+                                g_ExtraCache[contact->extraCacheEntry].dwDFlags = dwFlags;
+                                g_ExtraCache[contact->extraCacheEntry].dwXMask = CalcXMask(hContact);
                             }
                             pcli->pfnClcBroadcast(CLM_AUTOREBUILD, 0, 0);
                         }

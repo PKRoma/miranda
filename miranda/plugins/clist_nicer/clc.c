@@ -44,7 +44,7 @@ extern BOOL (WINAPI *MySetLayeredWindowAttributes)(HWND, COLORREF, BYTE, DWORD);
 extern int during_sizing;
 extern StatusItems_t *StatusItems;
 extern int g_shutDown;
-extern int g_nextExtraCacheEntry, g_maxExtraCacheEntry;
+extern int g_nextExtraCacheEntry;
 extern struct ExtraCache *g_ExtraCache;
 
 HIMAGELIST hCListImages;
@@ -540,7 +540,7 @@ LBL_Def:
             else {
 				DWORD dwFlags;
 
-                if(contact->extraCacheEntry >= 0 && contact->extraCacheEntry <= g_maxExtraCacheEntry)
+                if(contact->extraCacheEntry >= 0 && contact->extraCacheEntry < g_nextExtraCacheEntry)
                     dwFlags = g_ExtraCache[contact->extraCacheEntry].dwDFlags;
                 else
                     dwFlags = DBGetContactSettingDword(contact->hContact, "CList", "CLN_Flags", 0);
@@ -616,7 +616,7 @@ LBL_Def:
 			struct ClcContact *contact = NULL;
 
 			if(FindItem(hwnd, dat, (HANDLE)lParam, &contact, NULL, 0)) {
-				if(contact && contact->extraCacheEntry >= 0 && contact->extraCacheEntry <= g_nextExtraCacheEntry && g_ExtraCache[contact->extraCacheEntry].floater)
+				if(contact && contact->extraCacheEntry >= 0 && contact->extraCacheEntry < g_nextExtraCacheEntry && g_ExtraCache[contact->extraCacheEntry].floater)
 					FLT_Update(dat, contact);
 			}
 		}

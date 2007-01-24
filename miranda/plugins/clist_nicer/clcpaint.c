@@ -30,7 +30,7 @@ extern struct avatarCache *g_avatarCache;
 extern int g_curAvatar;
 
 extern struct ExtraCache *g_ExtraCache;
-extern int g_nextExtraCacheEntry, g_maxExtraCacheEntry;
+extern int g_nextExtraCacheEntry;
 extern ImageItem *g_glyphItem;
 
 extern int hClcProtoCount;
@@ -305,7 +305,7 @@ HDC hdcAV;
 
 LONG g_maxAV_X = 200, g_maxAV_Y = 200;
 
-static int __fastcall DrawAvatar(HDC hdcMem, RECT *rc, struct ClcContact *contact, int y, struct ClcData *dat, WORD cstatus, int rowHeight)
+static int __fastcall DrawAvatar(HDC hdcMem, RECT *rc, struct ClcContact *contact, int y, struct ClcData *dat, WORD cstatus, int rowHeight, DWORD dwFlags)
 {
 	float dScale = 0.;
 	float newHeight, newWidth;
@@ -320,9 +320,10 @@ static int __fastcall DrawAvatar(HDC hdcMem, RECT *rc, struct ClcContact *contac
 	DWORD av_saved_left;
 	BOOL gdiPlus;
     StatusItems_t *item = contact->wStatus == ID_STATUS_OFFLINE ? &StatusItems[ID_EXTBKAVATARFRAMEOFFLINE - ID_STATUS_OFFLINE] : &StatusItems[ID_EXTBKAVATARFRAME - ID_STATUS_OFFLINE];
-    int skinMarginX, skinMarginY;
-    contact->avatarLeft = -1;
+    int  skinMarginX, skinMarginY;
+    BOOL fOverlay = (g_CluiData.dwFlags & CLUI_FRAME_OVERLAYICONS);
 
+    contact->avatarLeft = -1;
 	if(!g_CluiData.bAvatarServiceAvail || dat->bisEmbedded)
 		return 0;
 
@@ -424,7 +425,12 @@ static int __fastcall DrawAvatar(HDC hdcMem, RECT *rc, struct ClcContact *contac
 		FrameRgn(hdcMem, rgn, g_CluiData.hBrushAvatarBorder, 1, 1);
 	}
 
-	if(g_CluiData.dwFlags & CLUI_FRAME_OVERLAYICONS && cstatus && (int)newHeight >= g_cysmIcon)
+    if(fOverlay)
+        fOverlay = (dwFlags & ECF_HIDEOVERLAY) ? 0 : 1;
+    else
+        fOverlay = (dwFlags & ECF_FORCEOVERLAY) ? 1 : 0;
+
+    if(fOverlay && cstatus && (int)newHeight >= g_cysmIcon)
 		DrawIconEx(hdcMem, rc->left + (int)newWidth - 15, y + topoffset + (int)newHeight - 15, overlayicons[cstatus - ID_STATUS_OFFLINE], g_cxsmIcon, g_cysmIcon, 0, 0, DI_NORMAL | DI_COMPAT);
 
 	SelectClipRgn(hdcMem, NULL);
@@ -518,7 +524,7 @@ void __inline PaintItem(HDC hdcMem, struct ClcGroup *group, struct ClcContact *c
 	struct ExtraCache *cEntry = NULL;
 	DWORD dwFlags = g_CluiData.dwFlags;
 	int scanIndex;
-	BOOL check_selected, av_local_wanted;
+	BOOL check_selected, av_local_wanted, fLocalTime;
     
 	rowHeight -= g_CluiData.bRowSpacing;
 	savedCORNER = -1;
@@ -986,13 +992,13 @@ bgskipped:
 		rc.bottom = rc.top + rowHeight;
 
 		if(av_left) {
-			leftOffset += DrawAvatar(hdcMem, &rc, contact, y, dat, (WORD)(iImage ? cstatus : 0), rowHeight);
+			leftOffset += DrawAvatar(hdcMem, &rc, contact, y, dat, (WORD)(iImage ? cstatus : 0), rowHeight, cEntry->dwDFlags);
 			rcContent.left += leftOffset;
 			leftX += leftOffset;
 		}
 		else {
 			rc.left = (rcContent.right - g_CluiData.avatarSize) + 1;
-			rightOffset += DrawAvatar(hdcMem, &rc, contact, y, dat, (WORD)(iImage ? cstatus : 0), rowHeight);
+			rightOffset += DrawAvatar(hdcMem, &rc, contact, y, dat, (WORD)(iImage ? cstatus : 0), rowHeight, cEntry->dwDFlags);
 			rcContent.right -= (rightOffset);
 		}
 	}
@@ -1054,7 +1060,7 @@ bgskipped:
             if(cEntry && (contact->extraCacheEntry >= 0 && contact->extraCacheEntry < g_nextExtraCacheEntry && cEntry->iExtraValid)) {
 				int i;
 				for(i = 9; i >= 0; i--) {
-					if(cEntry->iExtraImage[i] != 0xff && ((1 << i) & g_CluiData.dwExtraImageMask)) {
+					if(cEntry->iExtraImage[i] != 0xff && ((1 << i) & cEntry->dwXMask)) {
 						if(contact->extraIconRightBegin == 0 && i != 9)
 							contact->extraIconRightBegin = rcContent.right;
 						ImageList_DrawEx(dat->himlExtraColumns, cEntry->iExtraImage[i], hdcMem, rcContent.right - g_CluiData.exIconScale, twoRows ? rcContent.bottom - g_exIconSpacing : y + ((rowHeight - g_CluiData.exIconScale) >> 1), 
@@ -1065,14 +1071,23 @@ bgskipped:
 				}
 			}
 			if (!bApparentModeDontCare && (dwFlags & CLUI_SHOWVISI) && contact->proto) {
-				if(cEntry && cEntry->isChatRoom)
-					DrawIconEx(hdcMem, rcContent.right - g_CluiData.exIconScale, twoRows ? rcContent.bottom - g_exIconSpacing : y + ((rowHeight - g_CluiData.exIconScale) >> 1), 
-					g_CluiData.hIconChatactive, g_CluiData.exIconScale, g_CluiData.exIconScale, 0, 0, DI_NORMAL | DI_COMPAT);
-				else
-					DrawIconEx(hdcMem, rcContent.right - g_CluiData.exIconScale, twoRows ? rcContent.bottom - g_exIconSpacing : y + ((rowHeight - g_CluiData.exIconScale) >> 1), 
-					flags & CONTACTF_VISTO ? g_CluiData.hIconVisible : g_CluiData.hIconInvisible, g_CluiData.exIconScale, g_CluiData.exIconScale, 0, 0, DI_NORMAL | DI_COMPAT);
-				rcContent.right -= g_exIconSpacing;
-				rightIcons++;
+                BOOL fVisi;
+
+                if(dwFlags & CLUI_SHOWVISI)
+                    fVisi = cEntry->dwDFlags & ECF_HIDEVISIBILITY ? 0 : 1;
+                else
+                    fVisi = cEntry->dwDFlags & ECF_FORCEVISIBILITY ? 1 : 0;
+
+                if(fVisi) {
+                    if(cEntry->isChatRoom)
+                        DrawIconEx(hdcMem, rcContent.right - g_CluiData.exIconScale, twoRows ? rcContent.bottom - g_exIconSpacing : y + ((rowHeight - g_CluiData.exIconScale) >> 1), 
+                        g_CluiData.hIconChatactive, g_CluiData.exIconScale, g_CluiData.exIconScale, 0, 0, DI_NORMAL | DI_COMPAT);
+                    else
+                        DrawIconEx(hdcMem, rcContent.right - g_CluiData.exIconScale, twoRows ? rcContent.bottom - g_exIconSpacing : y + ((rowHeight - g_CluiData.exIconScale) >> 1), 
+                        flags & CONTACTF_VISTO ? g_CluiData.hIconVisible : g_CluiData.hIconInvisible, g_CluiData.exIconScale, g_CluiData.exIconScale, 0, 0, DI_NORMAL | DI_COMPAT);
+                    rcContent.right -= g_exIconSpacing;
+                    rightIcons++;
+                }
 			}
 		}
 	}
@@ -1189,11 +1204,11 @@ text:
 					RECT rcAvatar = rcContent;
 
 					rcAvatar.left = rcContent.right - (g_CluiData.avatarSize - 1);
-					DrawAvatar(hdcMem, &rcAvatar, contact, y, dat, (WORD)(iImage ? cstatus : 0), rowHeight);
+					DrawAvatar(hdcMem, &rcAvatar, contact, y, dat, (WORD)(iImage ? cstatus : 0), rowHeight, cEntry->dwDFlags);
 					rcContent.right -= (g_CluiData.avatarSize + 2);
 				}
 				else
-					rcContent.left += DrawAvatar(hdcMem, &rcContent, contact, y, dat, (WORD)(iImage ? cstatus : 0), rowHeight);
+					rcContent.left += DrawAvatar(hdcMem, &rcContent, contact, y, dat, (WORD)(iImage ? cstatus : 0), rowHeight, cEntry->dwDFlags);
 			}
 			else if(dwFlags & CLUI_FRAME_ALWAYSALIGNNICK && !avatar_done && av_local_wanted)
 				rcContent.left += (dwFlags & (CLUI_FRAME_AVATARSLEFT | CLUI_FRAME_AVATARSRIGHT | CLUI_FRAME_AVATARSRIGHTWITHNICK) ? 0 : g_CluiData.avatarSize + 2);
@@ -1226,7 +1241,12 @@ text:
 
 			rcContent.top = y + g_CluiData.avatarPadding / 2;
 
-			if(cEntry->timezone != -1 && g_CluiData.bShowLocalTime) {
+            if(g_CluiData.bShowLocalTime)
+                fLocalTime = cEntry->dwDFlags & ECF_HIDELOCALTIME ? 0 : 1;
+            else
+                fLocalTime = cEntry->dwDFlags & ECF_FORCELOCALTIME ? 1 : 0;
+
+			if(cEntry->timezone != -1 && fLocalTime) {
 				DBTIMETOSTRING dbtts;
 				char szResult[80];
 				int  idOldFont;

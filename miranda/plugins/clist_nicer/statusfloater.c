@@ -676,7 +676,7 @@ void FLT_Update(struct ClcData *dat, struct ClcContact *contact)
 
 	if(FindItem(pcli->hwndContactTree, dat, contact->hContact, &newContact, &group, 0)) {
 		DWORD oldFlags = g_CluiData.dwFlags;
-		DWORD oldExtraImageMask = g_CluiData.dwExtraImageMask;
+		DWORD oldExtraImageMask = g_ExtraCache[contact->extraCacheEntry].dwXMask;
 		struct avatarCacheEntry *ace_old = contact->ace;
 		BYTE oldDualRow = contact->bSecondLine;
 
@@ -688,7 +688,7 @@ void FLT_Update(struct ClcData *dat, struct ClcContact *contact)
 
 		if(!(g_floatoptions.dwFlags & FLT_EXTRAICONS)) {
 			g_CluiData.dwFlags &= ~CLUI_SHOWCLIENTICONS;
-			g_CluiData.dwExtraImageMask = 0;
+			g_ExtraCache[contact->extraCacheEntry].dwXMask = 0;
 		}
 
 		g_HDC = hdc;
@@ -708,7 +708,7 @@ void FLT_Update(struct ClcData *dat, struct ClcContact *contact)
 		g_CluiData.dwFlags = oldFlags;
 		contact->ace = ace_old;
 		contact->bSecondLine = oldDualRow;
-		g_CluiData.dwExtraImageMask = oldExtraImageMask;
+		g_ExtraCache[contact->extraCacheEntry].dwXMask = oldExtraImageMask;
 	}
 	DeleteObject(rgn);
 	if(MyUpdateLayeredWindow)

@@ -32,44 +32,11 @@ extern struct ExtraCache *g_ExtraCache;
 void LoadContactTree(void);
 void SortContacts(void);
 
-static BOOL CALLBACK DlgProcGenOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam);
-static BOOL CALLBACK DlgProcHotkeyOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam);
-
-static UINT expertOnlyControls[] = {
-    IDC_ALWAYSSTATUS
-};
-int CListOptInit(WPARAM wParam, LPARAM lParam)
-{
-    OPTIONSDIALOGPAGE odp;
-
-    ZeroMemory(&odp, sizeof(odp));
-    odp.cbSize = sizeof(odp);
-    odp.position = -1000000000;
-    odp.hInstance = g_hInst;
-    odp.pszTemplate = MAKEINTRESOURCEA(IDD_OPT_CLIST);
-    odp.pszTitle = Translate("Contact List");
-    odp.pfnDlgProc = DlgProcGenOpts;
-    odp.flags = ODPF_BOLDGROUPS;
-    odp.nIDBottomSimpleControl = IDC_STCLISTGROUP;
-    odp.expertOnlyControls = expertOnlyControls;
-    odp.nExpertOnlyControls = sizeof(expertOnlyControls) / sizeof(expertOnlyControls[0]);
-    CallService(MS_OPT_ADDPAGE, wParam, (LPARAM) &odp);
-
-    odp.position = -900000000;
-    odp.pszTemplate = MAKEINTRESOURCEA(IDD_OPT_HOTKEY);
-    odp.pszTitle = Translate("Hotkeys");
-    odp.pszGroup = Translate("Events");
-    odp.pfnDlgProc = DlgProcHotkeyOpts;
-    odp.nIDBottomSimpleControl = 0;
-    odp.nExpertOnlyControls = 0;
-    odp.expertOnlyControls = NULL;
-    CallService(MS_OPT_ADDPAGE, wParam, (LPARAM) &odp);
-    return 0;
-}
-
 static UINT sortCtrlIDs[] = {IDC_SORTPRIMARY, IDC_SORTTHEN, IDC_SORTFINALLY, 0};
 
-static BOOL CALLBACK DlgProcGenOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam)
+static int opt_gen_opts_changed = 0;
+
+BOOL CALLBACK DlgProcGenOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam)
 {
     switch (msg) {
         case WM_USER+1:
@@ -87,6 +54,7 @@ static BOOL CALLBACK DlgProcGenOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARA
                 break;
             }
         case WM_INITDIALOG:
+            opt_gen_opts_changed = 0;
             TranslateDialogDefault(hwndDlg);
             SetWindowLong(hwndDlg, GWL_USERDATA, (LONG) HookEventMessage(ME_DB_CONTACT_SETTINGCHANGED, hwndDlg, WM_USER + 1));
             CheckDlgButton(hwndDlg, IDC_ONTOP, DBGetContactSettingByte(NULL, "CList", "OnTop", SETTING_ONTOP_DEFAULT) ? BST_CHECKED : BST_UNCHECKED);
@@ -203,12 +171,15 @@ static BOOL CALLBACK DlgProcGenOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARA
             if (LOWORD(wParam) == IDC_BLINKTIME && HIWORD(wParam) != EN_CHANGE || (HWND) lParam != GetFocus())
                 return 0; // dont make apply enabled during buddy set crap
             SendMessage(GetParent(hwndDlg), PSM_CHANGED, 0, 0);
+            opt_gen_opts_changed = TRUE;
             break;
         case WM_NOTIFY:
             switch (((LPNMHDR) lParam)->idFrom) {
                 case 0:
                     switch (((LPNMHDR) lParam)->code) {
                         case PSN_APPLY:
+                            if(!opt_gen_opts_changed)
+                                return TRUE;
                             DBWriteContactSettingByte(NULL, "CList", "HideOffline", (BYTE) IsDlgButtonChecked(hwndDlg, IDC_HIDEOFFLINE)); {
                                 DWORD caps = CallService(MS_CLUI_GETCAPS, CLUICAPS_FLAGS1, 0);
                                 if (caps & CLUIF_HIDEEMPTYGROUPS)
@@ -272,6 +243,7 @@ static BOOL CALLBACK DlgProcGenOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARA
                             SendMessage(pcli->hwndContactTree, CLM_AUTOREBUILD, 0, 0); /* force reshuffle */
                             g_CluiData.dwFlags = IsDlgButtonChecked(hwndDlg, IDC_EVENTSONTOP) ? g_CluiData.dwFlags | CLUI_STICKYEVENTS : g_CluiData.dwFlags & ~CLUI_STICKYEVENTS;
                             DBWriteContactSettingDword(NULL, "CLUI", "Frameflags", g_CluiData.dwFlags);
+                            opt_gen_opts_changed = 0;
                             return TRUE;
                     }
                     break;
@@ -281,7 +253,7 @@ static BOOL CALLBACK DlgProcGenOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARA
     return FALSE;
 }
 
-static BOOL CALLBACK DlgProcHotkeyOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam)
+BOOL CALLBACK DlgProcHotkeyOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam)
 {
     switch (msg) {
         case WM_INITDIALOG:

@@ -59,7 +59,6 @@ extern HWND g_hwndViewModeFrame, g_hwndEventArea;
 struct ClcData *g_clcData = NULL;
 struct ExtraCache *g_ExtraCache = NULL;
 int g_nextExtraCacheEntry = 0;
-int g_maxExtraCacheEntry = 0;
 
 extern ImageItem *g_CLUIImageItem;
 extern HBRUSH g_CLUISkinnedBkColor;
@@ -88,7 +87,6 @@ BOOL (WINAPI *MyUpdateLayeredWindow)(HWND hwnd, HDC hdcDst, POINT *pptDst,SIZE *
 extern LRESULT CALLBACK EventAreaWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam);
 extern HANDLE hNotifyFrame;
 
-int CluiOptInit(WPARAM wParam, LPARAM lParam);
 int SortList(WPARAM wParam, LPARAM lParam);
 int LoadCluiServices(void);
 void InitGroupMenus();
@@ -555,7 +553,7 @@ void IcoLibReloadIcons()
     {
         int i;
 
-        for(i = 0; i < g_maxExtraCacheEntry; i++) {
+        for(i = 0; i < g_nextExtraCacheEntry; i++) {
             if(g_ExtraCache[i].hContact)
                 NotifyEventHooks(hExtraImageApplying, (WPARAM)g_ExtraCache[i].hContact, 0);
         }
@@ -2566,7 +2564,6 @@ void LoadCLUIModule(void)
 	WNDCLASS wndclass;
 
 	HookEvent(ME_SYSTEM_MODULESLOADED, CluiModulesLoaded);
-	HookEvent(ME_OPT_INITIALISE, CluiOptInit);
 	HookEvent(ME_MC_DEFAULTTCHANGED, MetaChanged);
 	HookEvent(ME_MC_SUBCONTACTSCHANGED, MetaChanged);
 

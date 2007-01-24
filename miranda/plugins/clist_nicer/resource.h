@@ -10,6 +10,7 @@
 #define IDD_OPT_SKIN                    4
 #define IDD_QUICKIGNORE                 5
 #define IDD_OPT                         6
+#define IDD_OPTIONSDIALOG               101
 #define IDI_MIRANDA                     102
 #define IDD_CLNABOUT                    102
 #define IDD_ABOUT                       103
@@ -84,6 +85,7 @@
 #define IDI_FILLEDBLOB                  212
 #define IDD_OPT_AWAYMSG                 217
 #define IDD_OPT_CLUI                    218
+#define IDD_OPT_XICONS                  219
 #define IDD_INFO_SUMMARY                220
 #define IDD_INFO_CONTACT                221
 #define IDD_INFO_BACKGROUND             222
@@ -116,7 +118,6 @@
 #define IDI_DOWNARROW                   264
 #define IDD_CREDITS                     265
 #define IDD_OPT_IDLE                    268
-#define IDD_OPT_EXTBKG                  270
 #define IDD_OPT_PLUS                    271
 #define IDI_NEWGROUP                    282
 #define IDI_NEWGROUP2                   283
@@ -629,6 +630,7 @@
 #define IDC_IGN_NONE2                   1635
 #define IDC_IGN_ADDPERMANENTLY          1635
 #define IDC_IDLECHECK                   1636
+#define IDC_DSP_LOADDEFAULT             1636
 #define IDC_IDLEONWINDOWS               1637
 #define IDC_IDLEONMIRANDA               1638
 #define IDC_IDLEUSEGLI                  1639
@@ -755,8 +757,6 @@
 #define IDI_PROTOCONNECTING             2111
 #define IDI_TBTOPMENU                   2112
 #define IDI_PUMPKIN                     3000
-#define IDD_OPT_GENMENU                 11267
-#define IDD_OPT_PROTOCOLORDER           11268
 #define IDC_MENUITEMS                   11710
 #define IDC_MENUOBJECTS                 11711
 #define IDC_NOTSUPPORTWARNING           11712
@@ -852,17 +852,20 @@
 #define IDC_FLT_PADBOTTOMSPIN           40048
 #define IDC_UNLOAD                      40048
 #define ID_BUTTONBAR_DRAWSUNKENFRAME    40049
-#define IDC_AVATARDISPMODE              40059
 #define POPUP_NEWGROUP                  40050
 #define IDC_SECONDLINEMODE              40050
 #define POPUP_SHOWSTATUSICONS           40051
+#define IDC_OVERLAYICON                 40051
+#define IDC_SHOWLOCALTIME1              40052
 #define POPUP_RENAMEGROUP               40052
 #define POPUP_DELETEGROUP               40053
+#define IDC_SHOWLOCALTIME2              40053
 #define ID_BUTTONBAR_SKINNEDTOOLBAR     40054
 #define ID_APPEARANCE_USESTATUSFLOATER  40055
 #define ID_APPEARANCE_AUTO              40056
 #define POPUP_FLOATER                   40057
 #define POPUP_FLOATER_AUTOHIDE          40058
+#define IDC_AVATARDISPMODE              40059
 #define ID_APPEARANCE_SHOWEVENTAREAINFLOATER 40059
 #define POPUP_FLOATER_EVENTS            40060
 
@@ -872,7 +875,7 @@
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NEXT_RESOURCE_VALUE        7
 #define _APS_NEXT_COMMAND_VALUE         40061
-#define _APS_NEXT_CONTROL_VALUE         40050
+#define _APS_NEXT_CONTROL_VALUE         40052
 #define _APS_NEXT_SYMED_VALUE           40154
 #endif
 #endif
