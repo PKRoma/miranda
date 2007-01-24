@@ -412,7 +412,7 @@ static LRESULT CALLBACK ModernButtonWndProc(HWND hwndDlg, UINT msg,  WPARAM wPar
         PaintWorker(bct->hwnd,0);
         if (bct->Imm)
         {
-        if (bct->CommandService)
+        if (bct->CommandService && !IsBadStringPtrA(bct->CommandService,255))
             if (ServiceExists(bct->CommandService))
             CallService(bct->CommandService,0,0);
             else if (bct->ValueDBSection && bct->ValueTypeDef)          
@@ -433,7 +433,7 @@ static LRESULT CALLBACK ModernButtonWndProc(HWND hwndDlg, UINT msg,  WPARAM wPar
         bct->hover=0;
         bct->down=0;
         PaintWorker(bct->hwnd,0);
-        if (bct->CommandService)
+        if (bct->CommandService && !IsBadStringPtrA(bct->CommandService,255))
         if (ServiceExists(bct->CommandService))
             CallService(bct->CommandService,0,0);
         else if (bct->ValueDBSection && bct->ValueTypeDef)          
