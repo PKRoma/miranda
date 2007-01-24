@@ -1593,7 +1593,7 @@ HBITMAP SkinEngine_LoadGlyphImage(char * szFileName)
 {
     // try to find image in loaded
     DWORD i;HBITMAP hbmp;
-    char szFile [MAX_PATH];
+	char szFile [MAX_PATH]={0};
     SkinEngine_GetFullFilename(szFile,szFileName,g_SkinObjectList.szSkinPlace,TRUE);
     /*{
     _snprintf(fn,sizeof(fn),"%s\\%s",g_SkinObjectList.SkinPlace,szfileName);

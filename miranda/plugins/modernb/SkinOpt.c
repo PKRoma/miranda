@@ -38,6 +38,7 @@ typedef struct _SkinListData
 	char Name[MAX_NAME];
 	char File[MAX_PATH];
 } SkinListData;
+
 HBITMAP hPreviewBitmap=NULL;
 
 static int AddItemToTree(HWND hTree, char * folder, char * itemName, void * data);
@@ -78,7 +79,7 @@ static BOOL CALLBACK DlgSkinOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM l
 	{
 	case WM_DESTROY: 
 		{
-			if (hPreviewBitmap) DeleteObject(hPreviewBitmap);
+			if (hPreviewBitmap) SkinEngine_UnloadGlyphImage(hPreviewBitmap);
 			break;
 		}
 
@@ -105,8 +106,11 @@ static BOOL CALLBACK DlgSkinOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM l
 				SendDlgItemMessage(hwndDlg,IDC_COLOUR_STATUSBAR,CPM_SETDEFAULTCOLOUR,0,c4);                              
 				/* End of Text colors */
 			}
-
-			TreeView_SelectItem(GetDlgItem(hwndDlg,IDC_TREE1),(HTREEITEM)it);						
+			{
+				HWND wnd=GetDlgItem(hwndDlg,IDC_TREE1);
+				TreeView_SelectItem(wnd,(HTREEITEM)it);						
+			}
+			
 		}
 		return 0;
 	case WM_COMMAND:
@@ -321,7 +325,7 @@ static BOOL CALLBACK DlgSkinOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM l
 					SkinListData * sd=NULL;
 					if (hPreviewBitmap) 
 					{
-						DeleteObject(hPreviewBitmap);
+						SkinEngine_UnloadGlyphImage(hPreviewBitmap);
 						hPreviewBitmap=NULL;
 					}
 					if (nmtv->itemNew.lParam)
@@ -403,14 +407,14 @@ static BOOL CALLBACK DlgSkinOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM l
 				ShowWindow(GetDlgItem(hwndDlg,IDC_PREVIEW),hPreviewBitmap?SW_SHOW:SW_HIDE);
 				return 0;
 			}			
-		else if (nmtv->hdr.code==TVN_SELCHANGEDA || nmtv->hdr.code==TVN_SELCHANGEDW)
-		{
-			if (nmtv->itemOld.lParam)
-				mir_free_and_nill((void*)(nmtv->itemOld.lParam));
-			return 0;
-		}
-		break;
-		}
+				else if (nmtv->hdr.code==TVN_DELETEITEMA || nmtv->hdr.code==TVN_DELETEITEMW)
+				{
+					if (nmtv->itemOld.lParam)
+					mir_free_and_nill((void*)(nmtv->itemOld.lParam));
+					return 0;
+				}
+			break;
+			}
 	case 0:
 		switch (((LPNMHDR)lParam)->code)
 		{
@@ -488,43 +492,6 @@ int FillAvailableSkinList(HWND hwndDlg)
 	attrib = GetFileAttributesA(path);
 	if (attrib != INVALID_FILE_ATTRIBUTES && (attrib & FILE_ATTRIBUTE_DIRECTORY))
 		SearchSkinFiles(hwndDlg,path);
-	/*_snprintf(mask,sizeof(mask),"%s\\*.msf",path); 
-	//fd.attrib=_A_SUBDIR;
-	hFile=_findfirst(mask,&fd);
-	if (hFile!=-1)
-	{
-	do {     
-	AddSkinToList(hwndDlg,path,fd.name);
-	}while (!_findnext(hFile,&fd));
-	_findclose(hFile);
-	}
-	_snprintf(mask,sizeof(mask),"%s\\*",path);
-	hFile=_findfirst(mask,&fd);
-	if (hFile!=-1)
-	{
-	do {
-	if (fd.attrib&_A_SUBDIR && !(boolstrcmpi(fd.name,".")||boolstrcmpi(fd.name,"..")))
-	{//second level of subfolders
-	struct _finddata_t fd2={0};
-	long hFile2; 
-	int res2=-1;
-	char path2[MAX_PATH],mask2[MAX_PATH];
-	_snprintf(path2,sizeof(path2),"%s\\%s",path,fd.name); 
-	_snprintf(mask2,sizeof(mask2),"%s\\*.msf",path2); 
-	hFile2=_findfirst(mask2,&fd2);
-	if (hFile2!=-1)
-	{
-	do {     
-	AddSkinToList(hwndDlg,path2,fd2.name);
-	}while (!_findnext(hFile2,&fd2));
-	_findclose(hFile2);
-	}//end second level
-	}
-	}while (!_findnext(hFile,&fd));
-	_findclose(hFile);
-	}
-	*/
-	
 	{
 		char * skinfile;
 		char skinfull[MAX_PATH];
@@ -590,26 +557,6 @@ int AddSkinToList(HWND hwndDlg,char * path, char* file)
 			strcpy(sd->File,fullName);
 		}
 		return AddItemToTree(GetDlgItem(hwndDlg,IDC_TREE1),fullName,sd->Name,sd);
-		/*{
-		int i,c;
-		SkinListData * sd2;
-		c=SendDlgItemMessage(hwndDlg,IDC_SKINS_LIST,LB_GETCOUNT,0,0);
-		for (i=0; i<c;i++)
-		{
-		sd2=(SkinListData *)SendDlgItemMessage(hwndDlg,IDC_SKINS_LIST,LB_GETITEMDATA,(WPARAM)i,0); 
-		if (sd2 && boolstrcmpi(sd2->File,sd->File)) return i;
-		}
-		}
-		{
-		int item;
-		item=SendDlgItemMessageA(hwndDlg,IDC_SKINS_LIST,LB_ADDSTRING,0,(LPARAM)sd->Name);   //TODO UNICODE SKIN NAMES
-		if (item!=-1)
-		{
-		SendDlgItemMessage(hwndDlg,IDC_SKINS_LIST,LB_SETITEMDATA,(WPARAM)item,(LPARAM)sd); 
-		}
-		return item;
-		}
-		*/
 	}
 	return -1;
 }
@@ -716,7 +663,10 @@ static int AddItemToTree(HWND hTree, char * folder, char * itemName, void * data
 		return (int)TreeView_InsertItemA(hTree,&tvis);
 	}
 	else
+	{
+		mir_free_and_nill(data); //need to free otherwise memory leak
 		return (int)cItem;
+	}
 	return 0;
 }
 
