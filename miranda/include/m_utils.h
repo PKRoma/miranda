@@ -310,7 +310,7 @@ __inline static int Utils_RestoreWindowPositionNoMove(HWND hwnd,HANDLE hContact,
 typedef unsigned char mir_md5_byte_t; /* 8-bit byte */
 typedef unsigned int mir_md5_word_t; /* 32-bit word */
 
-typedef struct md5_state_s {
+typedef struct mir_md5_state_s {
     mir_md5_word_t count[2];  /* message length in bits, lsw first */
     mir_md5_word_t abcd[4];    /* digest buffer */
     mir_md5_byte_t buf[64];    /* accumulate block */
