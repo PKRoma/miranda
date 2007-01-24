@@ -747,6 +747,10 @@ SOURCE=.\modules\utils\resizer.c
 # End Source File
 # Begin Source File
 
+SOURCE=.\modules\utils\sha1.c
+# End Source File
+# Begin Source File
+
 SOURCE=.\modules\utils\utf.c
 # End Source File
 # Begin Source File

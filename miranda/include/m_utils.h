@@ -340,6 +340,41 @@ extern struct MD5_INTERFACE md5i;
 #define mir_md5_finish(A,B)     md5i.md5_finish(A,B)
 #define mir_md5_hash(A,B,C)     md5i.md5_hash(A,B,C)
 
+/*
+	SHA1 interface. 0.7.0.12
+
+	Contains functions for SHA1 handling
+*/
+typedef struct {
+  unsigned long H[5];
+  unsigned long W[80];
+  int lenW;
+  unsigned long sizeHi,sizeLo;
+} mir_sha1_ctx;
+
+struct SHA1_INTERFACE
+{
+	int cbSize;
+    void (*sha1_init) (mir_sha1_ctx *ctx);
+    void (*sha1_append) (mir_sha1_ctx *ctx, unsigned char *dataIn, int len);
+    void (*sha1_finish) (mir_sha1_ctx *ctx, unsigned char hashout[20]);
+    void (*sha1_hash) (unsigned char *dataIn, int len, unsigned char hashout[20]);
+};
+
+#define MS_SYSTEM_GET_SHA1I  "Miranda/System/GetSHA1I"
+
+static __inline int mir_getSHA1I( struct SHA1_INTERFACE* dest )
+{
+	dest->cbSize = sizeof(*dest);
+	return CallService( MS_SYSTEM_GET_SHA1I, 0, (LPARAM)dest );
+}
+
+extern struct SHA1_INTERFACE sha1i;
+
+#define mir_sha1_init(A)         sha1i.sha1_init(A)
+#define mir_sha1_append(A,B,C)   sha1i.sha1_append(A,B,C)
+#define mir_sha1_finish(A,B)     sha1i.sha1_finish(A,B)
+#define mir_sha1_hash(A,B,C)     sha1i.sha1_hash(A,B,C)
 
 // Added in 0.4.0.1
 // Here are some string wrappers that are more safe than the win32 versions
