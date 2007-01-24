@@ -490,6 +490,13 @@
 	"..\include\m_protomod.h"\
 	
 
+.\modules\utils\md5.c : \
+	"..\include\m_clui.h"\
+	"..\include\m_genmenu.h"\
+	"..\include\m_plugins.h"\
+	"..\include\m_protomod.h"\
+	
+
 .\modules\utils\openurl.c : \
 	"..\include\m_clui.h"\
 	"..\include\m_genmenu.h"\

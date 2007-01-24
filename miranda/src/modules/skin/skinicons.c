@@ -57,7 +57,7 @@ struct StandardIconDescription statusIcons[] =
 	{ ID_STATUS_FREECHAT,        "Free for chat",    -IDI_FREE4CHAT,     PF2_FREECHAT   },
 	{ ID_STATUS_INVISIBLE,       "Invisible",        -IDI_INVISIBLE,     PF2_INVISIBLE  },
 	{ ID_STATUS_ONTHEPHONE,      "On the phone",     -IDI_ONTHEPHONE,    PF2_ONTHEPHONE },
-	{ ID_STATUS_OUTTOLUNCH,      "Out to lunch",     -IDI_OUTTOLUNCH,    PF2_OUTTOLUNCH },
+	{ ID_STATUS_OUTTOLUNCH,      "Out to lunch",     -IDI_OUTTOLUNCH,    PF2_OUTTOLUNCH }
 };
 
 const char* mainIconsFmt   = "core_main_";
