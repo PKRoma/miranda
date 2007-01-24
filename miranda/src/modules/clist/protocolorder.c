@@ -380,8 +380,8 @@ BOOL CALLBACK ProtocolOrderOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lP
 			ScreenToClient(GetDlgItem(hwndDlg,IDC_PROTOCOLORDER),&hti.pt);
 			hti.pt.y-=TreeView_GetItemHeight(GetDlgItem(hwndDlg,IDC_PROTOCOLORDER))/2;
 			TreeView_HitTest(GetDlgItem(hwndDlg,IDC_PROTOCOLORDER),&hti);
-            if(dat->hDragItem==hti.hItem) break;
-            if (hti.flags&TVHT_ABOVE) hti.hItem=TVI_FIRST;
+			if(dat->hDragItem==hti.hItem) break;
+			if (hti.flags&TVHT_ABOVE) hti.hItem=TVI_FIRST;
 			tvi.mask=TVIF_HANDLE|TVIF_PARAM;
 			tvi.hItem=dat->hDragItem;
 			TreeView_GetItem(GetDlgItem(hwndDlg,IDC_PROTOCOLORDER),&tvi);
@@ -396,16 +396,16 @@ BOOL CALLBACK ProtocolOrderOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lP
 				tvis.item.hItem = dat->hDragItem;
 				tvis.item.iImage = tvis.item.iSelectedImage = ((ProtocolData *)tvi.lParam)->show;
 				TreeView_GetItem(GetDlgItem(hwndDlg,IDC_PROTOCOLORDER),&tvis.item);
-                
-                //the pointed lParam will be freed inside TVN_DELETEITEM 
-                //so lets substitute it with 0
-                lpOldData=(ProtocolData *)tvis.item.lParam; 
-                tvis.item.lParam=0; 
-                TreeView_SetItem(GetDlgItem(hwndDlg,IDC_PROTOCOLORDER),&tvis.item);               
-                tvis.item.lParam=(LPARAM)lpOldData; 
-				
-                //now current item contain lParam=0 we can delete it. the memory will be kept.               
-                TreeView_DeleteItem(GetDlgItem(hwndDlg,IDC_PROTOCOLORDER),dat->hDragItem);
+
+				//the pointed lParam will be freed inside TVN_DELETEITEM 
+				//so lets substitute it with 0
+				lpOldData=(ProtocolData *)tvis.item.lParam; 
+				tvis.item.lParam=0; 
+				TreeView_SetItem(GetDlgItem(hwndDlg,IDC_PROTOCOLORDER),&tvis.item);               
+				tvis.item.lParam=(LPARAM)lpOldData; 
+
+				//now current item contain lParam=0 we can delete it. the memory will be kept.               
+				TreeView_DeleteItem(GetDlgItem(hwndDlg,IDC_PROTOCOLORDER),dat->hDragItem);
 				tvis.hParent = NULL;
 				tvis.hInsertAfter = hti.hItem;
 				TreeView_SelectItem(GetDlgItem(hwndDlg,IDC_PROTOCOLORDER),TreeView_InsertItem(GetDlgItem(hwndDlg,IDC_PROTOCOLORDER),&tvis));

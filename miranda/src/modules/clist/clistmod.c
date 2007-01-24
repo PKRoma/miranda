@@ -51,6 +51,7 @@ BOOL(WINAPI * MySetProcessWorkingSetSize) (HANDLE, SIZE_T, SIZE_T);
 extern BYTE nameOrder[];
 static int statusModeList[] = { ID_STATUS_OFFLINE, ID_STATUS_ONLINE, ID_STATUS_AWAY, ID_STATUS_NA, ID_STATUS_OCCUPIED, ID_STATUS_DND, ID_STATUS_FREECHAT, ID_STATUS_INVISIBLE, ID_STATUS_ONTHEPHONE, ID_STATUS_OUTTOLUNCH };
 static int skinIconStatusList[] = { SKINICON_STATUS_OFFLINE, SKINICON_STATUS_ONLINE, SKINICON_STATUS_AWAY, SKINICON_STATUS_NA, SKINICON_STATUS_OCCUPIED, SKINICON_STATUS_DND, SKINICON_STATUS_FREE4CHAT, SKINICON_STATUS_INVISIBLE, SKINICON_STATUS_ONTHEPHONE, SKINICON_STATUS_OUTTOLUNCH };
+static int skinIconStatusFlags[] = { 0xFFFFFFFF, PF2_ONLINE, PF2_SHORTAWAY, PF2_LONGAWAY, PF2_LIGHTDND, PF2_HEAVYDND, PF2_FREECHAT, PF2_INVISIBLE, PF2_ONTHEPHONE, PF2_OUTTOLUNCH };
 struct ProtoIconIndex
 {
 	char *szProto;
@@ -161,9 +162,7 @@ static int ProtocolAck(WPARAM wParam, LPARAM lParam)
 					if (DBGetContactSettingByte(hContact, "CList", "Delete", 0))
 						CallService(MS_DB_CONTACT_DELETE, (WPARAM) hContact, 0);
 				hContact = (HANDLE) CallService(MS_DB_CONTACT_FINDNEXT, (WPARAM) hContact, 0);
-			}
-		}
-	}
+	}	}	}
 
 	cli.pfnTrayIconUpdateBase(ack->szModule);
 	return 0;
@@ -171,16 +170,22 @@ static int ProtocolAck(WPARAM wParam, LPARAM lParam)
 
 int fnIconFromStatusMode(const char *szProto, int status)
 {
-	int index, i;
+	int index = 0, i;
+	DWORD caps2 = (szProto == NULL) ? (DWORD)-1 : CallProtoService( szProto, PS_GETCAPS, PFLAGNUM_2, 0 );
 
-	for (index = 0; index < SIZEOF(statusModeList); index++)
-		if (status == statusModeList[index])
+	for ( i = 0; i < SIZEOF(statusModeList); i++ ) {
+		if ( status == statusModeList[i] )
 			break;
-	if (index == SIZEOF(statusModeList))
+
+		if ( caps2 != 0 && ( caps2 & skinIconStatusFlags[i] ))
+			index++;
+	}
+
+	if ( index == SIZEOF(statusModeList))
 		index = 0;
 	if (szProto == NULL)
 		return index + 1;
-	for (i = 0; i < protoIconIndexCount; i++) {
+	for ( i = 0; i < protoIconIndexCount; i++ ) {
 		if (strcmp(szProto, protoIconIndex[i].szProto))
 			continue;
 		return protoIconIndex[i].iIconBase + index;
