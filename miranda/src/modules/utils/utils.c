@@ -34,9 +34,9 @@ void md5_append(mir_md5_state_t *pms, const mir_md5_byte_t *data, int nbytes);
 void md5_finish(mir_md5_state_t *pms, mir_md5_byte_t digest[16]);
 void md5_hash_string(const mir_md5_byte_t *data, int len, mir_md5_byte_t digest[16]);
 void shaInit(mir_sha1_ctx *ctx);
-void shaUpdate(mir_sha1_ctx *ctx, unsigned char *dataIn, int len);
-void shaFinal(mir_sha1_ctx *ctx, unsigned char hashout[20]);
-void shaBlock(unsigned char *dataIn, int len, unsigned char hashout[20]);
+void shaUpdate(mir_sha1_ctx *ctx, mir_sha1_byte_t *dataIn, int len);
+void shaFinal(mir_sha1_ctx *ctx, mir_sha1_byte_t hashout[20]);
+void shaBlock(mir_sha1_byte_t *dataIn, int len, mir_sha1_byte_t hashout[20]);
 
 static struct CountryListEntry countries[]={
 	{0   ,"Unspecified"},

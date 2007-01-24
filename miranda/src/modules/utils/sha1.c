@@ -57,7 +57,7 @@ void shaInit(mir_sha1_ctx *ctx) {
 }
 
 
-void shaUpdate(mir_sha1_ctx *ctx, unsigned char *dataIn, int len) {
+void shaUpdate(mir_sha1_ctx *ctx, mir_sha1_byte_t *dataIn, int len) {
   int i;
 
   /* Read the data into W and process blocks as they get full
@@ -75,7 +75,7 @@ void shaUpdate(mir_sha1_ctx *ctx, unsigned char *dataIn, int len) {
 }
 
 
-void shaFinal(mir_sha1_ctx *ctx, unsigned char hashout[20]) {
+void shaFinal(mir_sha1_ctx *ctx, mir_sha1_byte_t hashout[20]) {
   unsigned char pad0x80 = 0x80;
   unsigned char pad0x00 = 0x00;
   unsigned char padlen[8];
@@ -110,7 +110,7 @@ void shaFinal(mir_sha1_ctx *ctx, unsigned char hashout[20]) {
 }
 
 
-void shaBlock(unsigned char *dataIn, int len, unsigned char hashout[20]) {
+void shaBlock(mir_sha1_byte_t *dataIn, int len, mir_sha1_byte_t hashout[20]) {
   mir_sha1_ctx ctx;
 
   shaInit(&ctx);

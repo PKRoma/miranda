@@ -345,20 +345,24 @@ extern struct MD5_INTERFACE md5i;
 
 	Contains functions for SHA1 handling
 */
+typedef unsigned char mir_sha1_byte_t;
+typedef unsigned long mir_sha1_long_t;
+#define MIR_SHA1_HASH_SIZE 20
+
 typedef struct {
-  unsigned long H[5];
-  unsigned long W[80];
+  mir_sha1_long_t H[5];
+  mir_sha1_long_t W[80];
   int lenW;
-  unsigned long sizeHi,sizeLo;
+  mir_sha1_long_t sizeHi,sizeLo;
 } mir_sha1_ctx;
 
 struct SHA1_INTERFACE
 {
 	int cbSize;
     void (*sha1_init) (mir_sha1_ctx *ctx);
-    void (*sha1_append) (mir_sha1_ctx *ctx, unsigned char *dataIn, int len);
-    void (*sha1_finish) (mir_sha1_ctx *ctx, unsigned char hashout[20]);
-    void (*sha1_hash) (unsigned char *dataIn, int len, unsigned char hashout[20]);
+    void (*sha1_append) (mir_sha1_ctx *ctx, mir_sha1_byte_t *dataIn, int len);
+    void (*sha1_finish) (mir_sha1_ctx *ctx, mir_sha1_byte_t hashout[20]);
+    void (*sha1_hash) (mir_sha1_byte_t *dataIn, int len, mir_sha1_byte_t hashout[20]);
 };
 
 #define MS_SYSTEM_GET_SHA1I  "Miranda/System/GetSHA1I"
