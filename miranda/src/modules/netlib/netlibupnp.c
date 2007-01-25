@@ -25,7 +25,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 static char search_request_msg[] = 
 	"M-SEARCH * HTTP/1.1\r\n"
-	"MX: 2\r\n"
+	"MX: 1\r\n"
 	"HOST: 239.255.255.250:1900\r\n"
 	"MAN: \"ssdp:discover\"\r\n"
 	"ST: urn:schemas-upnp-org:service:%s\r\n"
@@ -570,8 +570,10 @@ BOOL NetlibUPnPAddPortMapping(WORD intport, char *proto, WORD *extport, DWORD *e
 			mir_snprintf(szData, 4096, add_port_mapping, 
 				*extport, proto, intport, inet_ntoa(locIP.sin_addr));
 			res = httpTransact(szCtlUrl, szData, 4096, "AddPortMapping");
+			txtParseParam(szData, NULL, "<errorCode>", "</errorCode>", szExtIP, sizeof(szExtIP));
+
 		}
-		while (search && res == 718);
+		while (search && res == 500 && atol(szExtIP) == 718);
 		
 		if (res == 200) {
 			szData[0] = 0;
