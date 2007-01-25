@@ -20,6 +20,7 @@
 #include <m_langpack.h>
 #include <m_skin.h>
 #include <m_utils.h>
+#include <win2k.h>
 #include "m_icolib.h"
 
 #include "resource.h"
@@ -31,13 +32,13 @@ struct
 	int   defIconID;
 }
 static iconList[] = {
-	{	"Main",			"yahoo",		IDI_YAHOO     },
-	{	"Mail",			"mail",			IDI_INBOX     },
-	{	"Profile",		"profile",		IDI_PROFILE   },
-	{	"Refresh",		"refresh",		IDI_REFRESH   },
-	{	"Address Book", "yab",  		IDI_YAB    	  },
-	{	"Set Status",   "set_status",  	IDI_SET_STATUS },
-	{	"Calendar",  	"calendar",  	IDI_CALENDAR },
+	{	"Main",         "yahoo",      IDI_YAHOO      },
+	{	"Mail",         "mail",       IDI_INBOX      },
+	{	"Profile",      "profile",    IDI_PROFILE    },
+	{	"Refresh",      "refresh",    IDI_REFRESH    },
+	{	"Address Book", "yab",        IDI_YAB    	   },
+	{	"Set Status",   "set_status", IDI_SET_STATUS },
+	{	"Calendar",     "calendar",   IDI_CALENDAR   }
 };
 
 void YahooIconsInit( void )
@@ -52,7 +53,7 @@ void YahooIconsInit( void )
 	sid.cx = sid.cy = 16;
 	sid.pszSection = Translate( yahooProtocolName );
 
-	for ( i = 0; i < 7; i++ ) {
+	for ( i = 0; i < SIZEOF(iconList); i++ ) {
 		char szSettingName[100];
 		mir_snprintf( szSettingName, sizeof( szSettingName ), "%s_%s", yahooProtocolName, iconList[i].szName );
 		sid.pszName = szSettingName;
