@@ -100,7 +100,7 @@ int YAHOO_avt_hash(const char *key, long ksize)
   return h;
 }
 	
-int calcMD5Hash(char* szFile)
+static int calcHash(char* szFile)
 {
   if (szFile) {
     HANDLE hFile = NULL, hMap = NULL;
@@ -149,7 +149,7 @@ HBITMAP YAHOO_SetAvatar(const char *szFile)
 	if (avt && YAHOO_SaveBitmapAsAvatar( avt, szMyFile) == 0) {
 		unsigned int hash;
 				
-		hash = calcMD5Hash(szMyFile);
+		hash = calcHash(szMyFile);
 		if (hash) {
 			LOG(("[YAHOO_SetAvatar] File: '%s' CK: %d", szMyFile, hash));	
 			  
