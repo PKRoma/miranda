@@ -33,7 +33,7 @@ extern yahoo_local_account *ylad;
 int OnDetailsInit(WPARAM wParam, LPARAM lParam)
 {
   char* szProto;
-  OPTIONSDIALOGPAGE odp;
+  OPTIONSDIALOGPAGE odp = ( 0 };
   char szAvtCaption[MAX_PATH+8];
 
   szProto = (char*)CallService(MS_PROTO_GETCONTACTBASEPROTO, lParam, 0);
