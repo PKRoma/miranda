@@ -846,23 +846,23 @@ BOOL getTreeNodeText( HWND hwndTree, HTREEITEM hItem, char* szBuf, size_t cbLen 
 {
 	int codepage = CallService( MS_LANGPACK_GETCODEPAGE, 0, 0 );
 	int indx = strlen(szBuf);
-    TCHAR buf[MAX_PATH];
+	TCHAR buf[MAX_PATH];
 
 	TVITEM tvi = {0};
 	tvi.hItem = hItem;
 
 	while( tvi.hItem != NULL ) {
-		int i;
 		tvi.mask = TVIF_HANDLE | TVIF_TEXT;
 		tvi.pszText = buf;
 		tvi.cchTextMax = SIZEOF(buf);
-		if( !TreeView_GetItem( hwndTree, &tvi ) ) break;
-#ifdef _UNICODE
-		indx += WideCharToMultiByte( codepage, 0, buf, -1, szBuf+indx, cbLen-indx, NULL, NULL )-1;
-#else
-		strncpy( szBuf+indx, buf, cbLen-indx ); szBuf[cbLen-1] = 0;
-		indx += strlen( szBuf+indx );
-#endif
+		if ( !TreeView_GetItem( hwndTree, &tvi )) 
+			break;
+		#ifdef _UNICODE
+				indx += WideCharToMultiByte( codepage, 0, buf, -1, szBuf+indx, cbLen-indx, NULL, NULL )-1;
+		#else
+				strncpy( szBuf+indx, buf, cbLen-indx ); szBuf[cbLen-1] = 0;
+				indx += strlen( szBuf+indx );
+		#endif
 		szBuf[indx++] = '/';
 		tvi.hItem = TreeView_GetParent( hwndTree, tvi.hItem ); 
 	}
@@ -873,7 +873,7 @@ BOOL getTreeNodeText( HWND hwndTree, HTREEITEM hItem, char* szBuf, size_t cbLen 
 
 static void SaveCollapseState( HWND hwndTree )
 {
-	HTREEITEM hti;//, hti_root;
+	HTREEITEM hti;
 	int codepage = CallService( MS_LANGPACK_GETCODEPAGE, 0, 0 );
 	TVITEM tvi;
 
@@ -881,28 +881,19 @@ static void SaveCollapseState( HWND hwndTree )
 	while( hti != NULL ) {
 		HTREEITEM ht;
 		char paramName[MAX_PATH];
-		SectionItem* si;
 
 		tvi.mask = TVIF_STATE | TVIF_HANDLE | TVIF_CHILDREN | TVIF_PARAM;
 		tvi.hItem = hti;
 		tvi.stateMask = (DWORD)-1;
 		TreeView_GetItem( hwndTree, &tvi );
-/*
-		if( ( si = (SectionItem*)tvi.lParam ) != NULL ) {		
-#ifdef _UNICODE
-			WideCharToMultiByte( codepage, 0, si->name, -1, paramName, SIZEOF(paramName), NULL, NULL );
-#else
-			paramName = si->name;
-#endif
-*/
-			if( tvi.cChildren > 0 ) {
-				*paramName = 0; getTreeNodeText( hwndTree, hti, paramName, sizeof(paramName) );
-				if( tvi.state & TVIS_EXPANDED )
-					DBWriteContactSettingByte(NULL, "SkinIconsUI", paramName, TVIS_EXPANDED );
-				else
-					DBWriteContactSettingByte(NULL, "SkinIconsUI", paramName, 0 );
-			}
-//		}
+
+		if( tvi.cChildren > 0 ) {
+			*paramName = 0; getTreeNodeText( hwndTree, hti, paramName, sizeof(paramName) );
+			if ( tvi.state & TVIS_EXPANDED )
+				DBWriteContactSettingByte(NULL, "SkinIconsUI", paramName, TVIS_EXPANDED );
+			else
+				DBWriteContactSettingByte(NULL, "SkinIconsUI", paramName, 0 );
+		}
 
 		ht = TreeView_GetChild( hwndTree, hti );
 		if( ht == NULL ) {
@@ -911,11 +902,10 @@ static void SaveCollapseState( HWND hwndTree )
 				ht = TreeView_GetParent( hwndTree, hti );
 				if( ht == NULL ) break;
 				ht = TreeView_GetNextSibling( hwndTree, ht );
-			}
-		}
+		}	}
+
 		hti = ht;
-	}
-}
+}	}
 
 BOOL CALLBACK DlgProcIcoLibOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam)
 {
@@ -926,32 +916,31 @@ BOOL CALLBACK DlgProcIcoLibOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lP
 	dat = (struct IcoLibOptsData*)GetWindowLong(hwndDlg, GWL_USERDATA);
 	switch (msg) {
 	case WM_INITDIALOG:
+		TranslateDialogDefault(hwndDlg);
+
+		dat = (struct IcoLibOptsData*)mir_alloc(sizeof(struct IcoLibOptsData));
+		dat->hwndIndex = NULL;
+		SetWindowLong(hwndDlg, GWL_USERDATA, (LONG)dat);
+		//
+		//  Reset temporary data & upload sections list
+		//
+		EnterCriticalSection(&csIconList);
 		{
 			int indx;
-
-			TranslateDialogDefault(hwndDlg);
-
-			dat = (struct IcoLibOptsData*)mir_alloc(sizeof(struct IcoLibOptsData));
-			dat->hwndIndex = NULL;
-			SetWindowLong(hwndDlg, GWL_USERDATA, (LONG)dat);
-			//
-			//  Reset temporary data & upload sections list
-			//
-			EnterCriticalSection(&csIconList);
 			for (indx = 0; indx < iconList.count; indx++) {
 				iconList.items[indx]->temp_file = NULL;
 				iconList.items[indx]->temp_icon = NULL;
 			}
-			LeaveCriticalSection(&csIconList);
-			//
-			//  Setup preview listview
-			//
-			ListView_SetImageList(hPreview, ImageList_Create(GetSystemMetrics(SM_CXSMICON),GetSystemMetrics(SM_CYSMICON),ILC_COLOR32|ILC_MASK,0,30), LVSIL_NORMAL);
-			ListView_SetIconSpacing(hPreview, 56, 67);
-
-			SendMessage(hwndDlg, DM_REBUILD_CTREE, 0, 0);
-			return TRUE;
 		}
+		LeaveCriticalSection(&csIconList);
+		//
+		//  Setup preview listview
+		//
+		ListView_SetImageList(hPreview, ImageList_Create(GetSystemMetrics(SM_CXSMICON),GetSystemMetrics(SM_CYSMICON),ILC_COLOR32|ILC_MASK,0,30), LVSIL_NORMAL);
+		ListView_SetIconSpacing(hPreview, 56, 67);
+
+		SendMessage(hwndDlg, DM_REBUILD_CTREE, 0, 0);
+		return TRUE;
 
 	case DM_REBUILD_CTREE:
 		{
