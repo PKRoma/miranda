@@ -542,7 +542,7 @@ int RegisterButtonByParce(char * ObjectName, char * Params)
 
         MinWidth=atoi(GetParamN(Params,buf2, sizeof(buf2),a+7,',',0));
         MinHeight=atoi(GetParamN(Params,buf2, sizeof(buf2),a+8,',',0));
-        GetParamNT(Params,Hint, sizeof(Hint),a+9,',',0);
+        GetParamNT(Params,Hint, SIZEOF(Hint),a+9,',',0);
         if (a)
         {
           GetParamN(Params,Section, sizeof(Section),2,',',0);
@@ -557,8 +557,8 @@ int RegisterButtonByParce(char * ObjectName, char * Params)
              +64*(TL[3]=='B')
              +128*(TL[3]=='C')
              +256*(TL[4]=='I');
-        if (a) res=ModernButton_AddButton(pcli->hwndContactList,ObjectName+1,pServiceName,pStatusServiceName,"\0",Left,Top,Right,Bottom,alingnto,Hint,Section,Type,MinWidth,MinHeight);
-        else res=ModernButton_AddButton(pcli->hwndContactList,ObjectName+1,pServiceName,pStatusServiceName,"\0",Left,Top,Right,Bottom,alingnto,Hint,NULL,NULL,MinWidth,MinHeight);
+        if (a) res=ModernButton_AddButton(pcli->hwndContactList,ObjectName+1,pServiceName,pStatusServiceName,"\0",Left,Top,Right,Bottom,alingnto,TranslateTS(Hint),Section,Type,MinWidth,MinHeight);
+        else res=ModernButton_AddButton(pcli->hwndContactList,ObjectName+1,pServiceName,pStatusServiceName,"\0",Left,Top,Right,Bottom,alingnto,TranslateTS(Hint),NULL,NULL,MinWidth,MinHeight);
     }
 return res;
 }

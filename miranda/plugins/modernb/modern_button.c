@@ -47,12 +47,12 @@ typedef struct _ModernButtonCtrl
   char    * ID;
   char    * CommandService;
   char    * StateService;
-  char    * HandleService;
-  TCHAR   * Hint;
+  char    * HandleService;  
   char    * ValueDBSection;
   char    * ValueTypeDef;
   int     Left, Top, Bottom, Right;
   HMENU   hMenu;
+  TCHAR   * Hint;
 
 } ModernButtonCtrl;
 typedef struct _HandleServiceParams
@@ -278,19 +278,22 @@ return 0;
 static LRESULT CALLBACK ModernButtonWndProc(HWND hwndDlg, UINT msg,  WPARAM wParam, LPARAM lParam)
 {
     ModernButtonCtrl* bct =  (msg!=WM_NCCREATE)?(ModernButtonCtrl *)GetWindowLong(hwndDlg, GWL_USERDATA):0;
-    if (bct)
-      if (bct->HandleService && !IsBadStringPtrA(bct->HandleService,255))
-        if (ServiceExists(bct->HandleService))
-        {
-            int t;
-            HandleServiceParams MSG={0};
-            MSG.hwnd=hwndDlg;
-            MSG.msg=msg;
-            MSG.wParam=wParam;
-            MSG.lParam=lParam;
-            t=CallService(bct->HandleService,(WPARAM)&MSG,0);
-            if (MSG.handled) return t;
-        }
+	if (bct && bct->HandleService && IsBadStringPtrA(bct->HandleService,255))
+		bct->HandleService=NULL;
+	
+	if (bct)
+      if (bct->HandleService)
+		  if (ServiceExists(bct->HandleService))
+		  {
+				int t;
+				HandleServiceParams MSG={0};
+				MSG.hwnd=hwndDlg;
+				MSG.msg=msg;
+				MSG.wParam=wParam;
+				MSG.lParam=lParam;
+				t=CallService(bct->HandleService,(WPARAM)&MSG,0);
+				if (MSG.handled) return t;
+		  }
     switch(msg) 
     {
     case WM_NCCREATE:
@@ -410,11 +413,13 @@ static LRESULT CALLBACK ModernButtonWndProc(HWND hwndDlg, UINT msg,  WPARAM wPar
         bct->down=1;
 	    SetForegroundWindow(GetParent(bct->hwnd));
         PaintWorker(bct->hwnd,0);
-        if (bct->Imm)
+        if (bct && bct->CommandService && IsBadStringPtrA(bct->CommandService,255))
+			   bct->CommandService=NULL;
+		if (bct->Imm)
         {
-        if (bct->CommandService && !IsBadStringPtrA(bct->CommandService,255))
+        if (bct->CommandService)
             if (ServiceExists(bct->CommandService))
-            CallService(bct->CommandService,0,0);
+				CallService(bct->CommandService,0,0);
             else if (bct->ValueDBSection && bct->ValueTypeDef)          
             ToggleDBValue(bct->ValueDBSection,bct->ValueTypeDef);                      
         bct->down=0;
@@ -433,7 +438,9 @@ static LRESULT CALLBACK ModernButtonWndProc(HWND hwndDlg, UINT msg,  WPARAM wPar
         bct->hover=0;
         bct->down=0;
         PaintWorker(bct->hwnd,0);
-        if (bct->CommandService && !IsBadStringPtrA(bct->CommandService,255))
+		if (bct && bct->CommandService && IsBadStringPtrA(bct->CommandService,255))
+			bct->CommandService=NULL;
+        if (bct->CommandService)
         if (ServiceExists(bct->CommandService))
             CallService(bct->CommandService,0,0);
         else if (bct->ValueDBSection && bct->ValueTypeDef)          
