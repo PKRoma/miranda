@@ -124,7 +124,6 @@ static int LoadDefaultModules(void)
 	if (LoadContactsModule()) return 1;
 	if (LoadContactListModule()) return 1;
 	if (LoadAddContactModule()) return 1;
-    if (LoadUpdateNotifyModule()) return 1;
 	if (LoadNewPluginsModule()) return 1; // will call Load() on everything, clist will load first
 
 	//this info will be available at LoadNewPluginsModule()
@@ -147,7 +146,7 @@ static int LoadDefaultModules(void)
 	if (!disableDefaultModule[DEFMOD_SRAWAY]) if (LoadAwayMsgModule()) return 1;
 	if (!disableDefaultModule[DEFMOD_RNDIGNORE]) if (LoadIgnoreModule()) return 1;
 	if (!disableDefaultModule[DEFMOD_UIVISIBILITY]) if (LoadVisibilityModule()) return 1;	
-	//if (!disableDefaultModule[DEFMOD_UIPLUGINOPTS]) if (LoadPluginOptionsModule()) return 1;	
+	if (!disableDefaultModule[DEFMOD_UPDATENOTIFY]) if (LoadUpdateNotifyModule()) return 1;	
 	return 0;
 }
 
