@@ -892,7 +892,7 @@ int GetProtoIndexByPos(PROTOCOLDESCRIPTOR ** proto, int protoCnt, int Pos)
 	return -1;
 }
 
-MenuProto menusProtoSingle={0};
+
 int MenuModulesLoaded(WPARAM wParam,LPARAM lParam)
 {
 	int i,j,protoCount=0,networkProtoCount,s;
@@ -960,9 +960,6 @@ int MenuModulesLoaded(WPARAM wParam,LPARAM lParam)
 			storedProtoCount++;
 	}	}
 
-	memset( &menusProtoSingle, 0, sizeof( MenuProto ));
-	menusProtoSingle.menuID=(HANDLE)-1;
-
 	FreeMenuProtos();
 
 	for ( s = 0; s < storedProtoCount; s++ ) {
@@ -985,7 +982,7 @@ int MenuModulesLoaded(WPARAM wParam,LPARAM lParam)
 		flags2 = CallProtoService(proto[i]->szName,PS_GETCAPS,PFLAGNUM_5,0);
 		flags &= ~flags2; 
 
-		if ( visnetworkProtoCount > 0 ) {
+		if ( visnetworkProtoCount > 1 ) {
 			char protoName[128];
 			int j;
 			int rootmenu;
@@ -1087,6 +1084,17 @@ int MenuModulesLoaded(WPARAM wParam,LPARAM lParam)
 				}
 				IconLib_ReleaseIcon(tmi.hIcon,0);
 		}	}
+		else
+		{
+			if (cli.menuProtos)
+				cli.menuProtos=(MenuProto*)mir_realloc(cli.menuProtos,sizeof(MenuProto)*(cli.menuProtoCount+1));
+			else
+				cli.menuProtos=(MenuProto*)mir_alloc(sizeof(MenuProto));
+			memset(&(cli.menuProtos[cli.menuProtoCount]),0,sizeof(MenuProto));
+			cli.menuProtos[cli.menuProtoCount].menuID=(HANDLE)-1;
+			cli.menuProtos[cli.menuProtoCount].szProto=mir_strdup(proto[i]->szName);
+			cli.menuProtoCount++;
+		}
 	}
 	NotifyEventHooks(cli.hPreBuildStatusMenuEvent, 0, 0);
 	pos = 200000;
@@ -1262,13 +1270,13 @@ static int AddStatusMenuItem(WPARAM wParam,LPARAM lParam)
 			break;
 	}	}
 
-	if (cli.menuProtoCount==0) {
+	if (cli.menuProtoCount==1) {
 		if (!val)
-			_snprintf(buf,sizeof(buf),Translate("%s Custom Status"),menusProtoSingle.szProto);
-		if ( (val && !lstrcmpiA(menusProtoSingle.szProto,mi->pszContactOwner))||
+			_snprintf(buf,sizeof(buf),Translate("%s Custom Status"),cli.menuProtos[0].szProto);
+		if ( (val && !lstrcmpiA(cli.menuProtos[0].szProto,mi->pszContactOwner))||
 			(wParam==0 && !lstrcmpiA(buf,mi->pszPopupName)) )
 		{
-			mp=&menusProtoSingle;
+			mp=&cli.menuProtos[0];
 	}	}
 	// End
 
