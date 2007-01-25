@@ -132,8 +132,8 @@ BOOL CALLBACK SelectDbDlgProc(HWND hdlg,UINT message,WPARAM wParam,LPARAM lParam
 			}
 			{	HKEY hKey;
 				DWORD cbData = sizeof( szMirandaPath );
-				if ( RegOpenKeyExA(HKEY_LOCAL_MACHINE,"SOFTWARE\\Miranda",0,KEY_QUERY_VALUE,&hKey)==ERROR_SUCCESS) {
-					if ( RegQueryValueExA(hKey,"Install_Dir",NULL,NULL,(PBYTE)szMirandaPath,&cbData)!=ERROR_SUCCESS)
+				if ( RegOpenKeyEx(HKEY_LOCAL_MACHINE,_T("SOFTWARE\\Miranda"),0,KEY_QUERY_VALUE,&hKey)==ERROR_SUCCESS) {
+					if ( RegQueryValueEx(hKey,_T("Install_Dir"),NULL,NULL,(PBYTE)szMirandaPath,&cbData)!=ERROR_SUCCESS)
 						szMirandaPath[0] = 0;
 					RegCloseKey( hKey );
 				}
