@@ -23,6 +23,10 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include "commonheaders.h"
 #include "netlib.h"
 
+extern struct NetlibUser **netlibUser;
+extern int netlibUserCount;
+extern CRITICAL_SECTION csNetlibUser;
+
 static char search_request_msg[] = 
 	"M-SEARCH * HTTP/1.1\r\n"
 	"MX: 1\r\n"
@@ -620,6 +624,16 @@ static void NetlibUPnPCleanup(void* extra)
     if (DBGetContactSettingByte(NULL,"Netlib","NLEnableUPnP",1)==0) {
         // upnp is disabled globally, no need for a cleanup
         return;
+    }
+    {
+        int i, incoming = 0;
+        EnterCriticalSection(&csNetlibUser);
+        for(i=netlibUserCount;i>0;i--) {
+            if (netlibUser[i]->user.flags&NUF_INCOMING)
+                incoming = 1;
+        }
+		LeaveCriticalSection(&csNetlibUser);
+        if (!incoming) return;
     }
 	findUPnPGateway();
 
