@@ -65,8 +65,8 @@ typedef struct PLUGIN_DB_ENUM {
 #define DEFMOD_RNDIDLE			23   //v0.3.4a+
 #define DEFMOD_CLISTALL			24	 //v0.3.4a+ (2004/09/28)
 #define DEFMOD_DB				25   //v0.3.4.3+ (2004/10/11)
-
-#define DEFMOD_HIGHEST          25
+#define DEFMOD_UPDATENOTIFY     27
+#define DEFMOD_HIGHEST          27
 
 //plugins/getdisabledefaultarray
 //gets an array of the modules that the plugins report they want to replace

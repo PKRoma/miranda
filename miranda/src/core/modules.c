@@ -142,7 +142,7 @@ static int LoadDefaultModules(void)
 	if(!disableDefaultModule[DEFMOD_SRAWAY]) if(LoadAwayMsgModule()) return 1;
 	if(!disableDefaultModule[DEFMOD_RNDIGNORE]) if(LoadIgnoreModule()) return 1;
 	if(!disableDefaultModule[DEFMOD_UIVISIBILITY]) if(LoadVisibilityModule()) return 1;	
-	//if(!disableDefaultModule[DEFMOD_UIPLUGINOPTS]) if(LoadPluginOptionsModule()) return 1;	
+	if(!disableDefaultModule[DEFMOD_UPDATENOTIFY]) if (LoadUpdateNotifyModule()) return 1;	
 	return 0;
 }
 
