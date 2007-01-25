@@ -27,8 +27,6 @@ UNICODE done
 
 extern BOOL(WINAPI *MySetLayeredWindowAttributes)(HWND, COLORREF, BYTE, DWORD);
 extern struct CluiData g_CluiData;
-extern pfnDrawAlpha pDrawAlpha;
-extern DWORD g_gdiplusToken;
 extern WNDPROC OldStatusBarProc;
 extern HANDLE hExtraImageApplying;
 extern SIZE g_oldSize;
@@ -438,8 +436,6 @@ BOOL CALLBACK DlgProcSBarOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPar
 	return FALSE;
 }
 
-static UINT avatar_controls[] = { IDC_ALIGNMENT, IDC_AVATARSBORDER, IDC_AVATARSROUNDED, IDC_AVATARBORDERCLR, IDC_ALWAYSALIGNNICK, IDC_AVATARHEIGHT, IDC_AVATARSIZESPIN, 0 };
-
 BOOL CALLBACK DlgProcPlusOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam)
 {
 	switch (msg) {
@@ -447,70 +443,16 @@ BOOL CALLBACK DlgProcPlusOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPar
 		{
 			DWORD dwFlags = g_CluiData.dwFlags;
 			int i = 0;
-
 			TranslateDialogDefault(hwndDlg);
-
-			CheckDlgButton(hwndDlg, IDC_SHOWSTATUSICONS, (dwFlags & CLUI_FRAME_STATUSICONS) ? BST_CHECKED : BST_UNCHECKED);
-			CheckDlgButton(hwndDlg, IDC_SHOWVISIBILITY, dwFlags & CLUI_SHOWVISI);
-			CheckDlgButton(hwndDlg, IDC_SHOWMETA, dwFlags & CLUI_USEMETAICONS);
-			CheckDlgButton(hwndDlg, IDC_NOAVATARSOFFLINE, g_CluiData.bNoOfflineAvatars);
-			SendDlgItemMessage(hwndDlg, IDC_DUALROWMODE, CB_INSERTSTRING, -1, (LPARAM)TranslateT("Never"));
-			SendDlgItemMessage(hwndDlg, IDC_DUALROWMODE, CB_INSERTSTRING, -1, (LPARAM)TranslateT("Always"));
-			SendDlgItemMessage(hwndDlg, IDC_DUALROWMODE, CB_INSERTSTRING, -1, (LPARAM)TranslateT("When space allows it"));
-			SendDlgItemMessage(hwndDlg, IDC_DUALROWMODE, CB_INSERTSTRING, -1, (LPARAM)TranslateT("When needed"));
-
-			SendDlgItemMessage(hwndDlg, IDC_DUALROWMODE, CB_SETCURSEL, (WPARAM)g_CluiData.dualRowMode, 0);
 
 			CheckDlgButton(hwndDlg, IDC_SHOWBUTTONBAR, dwFlags & CLUI_FRAME_SHOWTOPBUTTONS);
 			CheckDlgButton(hwndDlg, IDC_SHOWBOTTOMBUTTONS, dwFlags & CLUI_FRAME_SHOWBOTTOMBUTTONS);
 			CheckDlgButton(hwndDlg, IDC_CLISTSUNKEN, dwFlags & CLUI_FRAME_CLISTSUNKEN);
-
 			CheckDlgButton(hwndDlg, IDC_EVENTAREAAUTOHIDE, dwFlags & CLUI_FRAME_AUTOHIDENOTIFY);
 			CheckDlgButton(hwndDlg, IDC_EVENTAREASUNKEN, (dwFlags & CLUI_FRAME_EVENTAREASUNKEN) ? BST_CHECKED : BST_UNCHECKED);
 
-			if(g_CluiData.bAvatarServiceAvail) {
-				CheckDlgButton(hwndDlg, IDC_CLISTAVATARS, (dwFlags & CLUI_FRAME_AVATARS) ? BST_CHECKED : BST_UNCHECKED);
-				EnableWindow(GetDlgItem(hwndDlg, IDC_CLISTAVATARS), TRUE);
-                while(avatar_controls[i] != 0)
-                    EnableWindow(GetDlgItem(hwndDlg, avatar_controls[i++]), TRUE);
-			}
-			else {
-				CheckDlgButton(hwndDlg, IDC_CLISTAVATARS, FALSE);
-				EnableWindow(GetDlgItem(hwndDlg, IDC_CLISTAVATARS), FALSE);
-                while(avatar_controls[i] != 0)
-                    EnableWindow(GetDlgItem(hwndDlg, avatar_controls[i++]), FALSE);
-			}
-			CheckDlgButton(hwndDlg, IDC_AVATARSBORDER, (dwFlags & CLUI_FRAME_AVATARBORDER) ? BST_CHECKED : BST_UNCHECKED);
-			CheckDlgButton(hwndDlg, IDC_AVATARSROUNDED, (dwFlags & CLUI_FRAME_ROUNDAVATAR) ? BST_CHECKED : BST_UNCHECKED);
-			CheckDlgButton(hwndDlg, IDC_ALWAYSALIGNNICK, (dwFlags & CLUI_FRAME_ALWAYSALIGNNICK) ? BST_CHECKED : BST_UNCHECKED);
-			CheckDlgButton(hwndDlg, IDC_SHOWSTATUSMSG, (dwFlags & CLUI_FRAME_SHOWSTATUSMSG) ? BST_CHECKED : BST_UNCHECKED);
-			CheckDlgButton(hwndDlg, IDC_OVERLAYICONS, (dwFlags & CLUI_FRAME_OVERLAYICONS) ? BST_CHECKED : BST_UNCHECKED);
-			CheckDlgButton(hwndDlg, IDC_SELECTIVEICONS, (dwFlags & CLUI_FRAME_SELECTIVEICONS) ? BST_CHECKED : BST_UNCHECKED);
-			CheckDlgButton(hwndDlg, IDC_RENDERGDIP, (dwFlags & CLUI_FRAME_GDIPLUS) ? BST_CHECKED : BST_UNCHECKED);
-
-			SendMessage(hwndDlg, WM_COMMAND, IDC_CLISTAVATARS, 0);
-			SendDlgItemMessage(hwndDlg, IDC_AVATARBORDERCLR, CPM_SETCOLOUR, 0, g_CluiData.avatarBorder);
-
-			SendDlgItemMessage(hwndDlg, IDC_RADIUSSPIN, UDM_SETRANGE, 0, MAKELONG(10, 2));
-			SendDlgItemMessage(hwndDlg, IDC_RADIUSSPIN, UDM_SETPOS, 0, g_CluiData.avatarRadius);
-
-			SendDlgItemMessage(hwndDlg, IDC_AVATARSIZESPIN, UDM_SETRANGE, 0, MAKELONG(100, 16));
-			SendDlgItemMessage(hwndDlg, IDC_AVATARSIZESPIN, UDM_SETPOS, 0, g_CluiData.avatarSize);
-
 			SendDlgItemMessage(hwndDlg, IDC_AVATARPADDINGSPIN, UDM_SETRANGE, 0, MAKELONG(10, 0));
 			SendDlgItemMessage(hwndDlg, IDC_AVATARPADDINGSPIN, UDM_SETPOS, 0, g_CluiData.avatarPadding);
-
-			EnableWindow(GetDlgItem(hwndDlg, IDC_RADIUS), IsDlgButtonChecked(hwndDlg, IDC_AVATARSROUNDED) ? TRUE : FALSE);
-			EnableWindow(GetDlgItem(hwndDlg, IDC_RADIUSSPIN), IsDlgButtonChecked(hwndDlg, IDC_AVATARSROUNDED) ? TRUE : FALSE);
-
-			EnableWindow(GetDlgItem(hwndDlg, IDC_AVATARBORDERCLR), IsDlgButtonChecked(hwndDlg, IDC_AVATARSBORDER) ? TRUE : FALSE);
-
-			EnableWindow(GetDlgItem(hwndDlg, IDC_RENDERGDIP), g_gdiplusToken != 0 ? TRUE : FALSE);
-
-			SendDlgItemMessage(hwndDlg, IDC_ALIGNMENT, CB_INSERTSTRING, -1, (LPARAM)TranslateT("With Nickname - left"));
-			SendDlgItemMessage(hwndDlg, IDC_ALIGNMENT, CB_INSERTSTRING, -1, (LPARAM)TranslateT("Far left"));
-			SendDlgItemMessage(hwndDlg, IDC_ALIGNMENT, CB_INSERTSTRING, -1, (LPARAM)TranslateT("Far right"));
-			SendDlgItemMessage(hwndDlg, IDC_ALIGNMENT, CB_INSERTSTRING, -1, (LPARAM)TranslateT("With Nickname - right"));
 
 			SendDlgItemMessage(hwndDlg, IDC_CLISTALIGN, CB_INSERTSTRING, -1, (LPARAM)TranslateT("Never"));
 			SendDlgItemMessage(hwndDlg, IDC_CLISTALIGN, CB_INSERTSTRING, -1, (LPARAM)TranslateT("Always"));
@@ -518,45 +460,10 @@ BOOL CALLBACK DlgProcPlusOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPar
 			SendDlgItemMessage(hwndDlg, IDC_CLISTALIGN, CB_INSERTSTRING, -1, (LPARAM)TranslateT("RTL TEXT only"));
 
 			SendDlgItemMessage(hwndDlg, IDC_CLISTALIGN, CB_SETCURSEL, g_CluiData.bUseDCMirroring, 0);
-
-			CheckDlgButton(hwndDlg, IDC_STATUSICONSCENTERED, g_CluiData.bCenterStatusIcons ? 1 : 0);
-			CheckDlgButton(hwndDlg, IDC_SHOWLOCALTIME, g_CluiData.bShowLocalTime ? 1 : 0);
-			CheckDlgButton(hwndDlg, IDC_SHOWLOCALTIMEONLYWHENDIFFERENT, g_CluiData.bShowLocalTimeSelective ? 1 : 0);
-
-			EnableWindow(GetDlgItem(hwndDlg, IDC_SHOWLOCALTIMEONLYWHENDIFFERENT), IsDlgButtonChecked(hwndDlg, IDC_SHOWLOCALTIME));
-
-			if(dwFlags & CLUI_FRAME_AVATARSLEFT)
-				SendDlgItemMessage(hwndDlg, IDC_ALIGNMENT, CB_SETCURSEL, 1, 0);
-			else if(dwFlags & CLUI_FRAME_AVATARSRIGHT)
-				SendDlgItemMessage(hwndDlg, IDC_ALIGNMENT, CB_SETCURSEL, 2, 0);
-			else if(dwFlags & CLUI_FRAME_AVATARSRIGHTWITHNICK)
-				SendDlgItemMessage(hwndDlg, IDC_ALIGNMENT, CB_SETCURSEL, 3, 0);
-			else
-				SendDlgItemMessage(hwndDlg, IDC_ALIGNMENT, CB_SETCURSEL, 0, 0);
 			return TRUE;
 		}
 	case WM_COMMAND:
-		switch(LOWORD(wParam)) {
-		case IDC_CLISTAVATARS:
-            if((HWND)lParam != GetFocus())
-                return 0;
-            break;
-		case IDC_SHOWLOCALTIME:
-			EnableWindow(GetDlgItem(hwndDlg, IDC_SHOWLOCALTIMEONLYWHENDIFFERENT), IsDlgButtonChecked(hwndDlg, IDC_SHOWLOCALTIME));
-			break;
-		case IDC_AVATARSROUNDED:
-			EnableWindow(GetDlgItem(hwndDlg, IDC_RADIUS), IsDlgButtonChecked(hwndDlg, IDC_AVATARSROUNDED) ? TRUE : FALSE);
-			EnableWindow(GetDlgItem(hwndDlg, IDC_RADIUSSPIN), IsDlgButtonChecked(hwndDlg, IDC_AVATARSROUNDED) ? TRUE : FALSE);
-			break;
-		case IDC_AVATARSBORDER:
-			EnableWindow(GetDlgItem(hwndDlg, IDC_AVATARBORDERCLR), IsDlgButtonChecked(hwndDlg, IDC_AVATARSBORDER) ? TRUE : FALSE);
-			break;
-		case IDC_SHOWMETA:
-			__setFlag(CLUI_USEMETAICONS, IsDlgButtonChecked(hwndDlg, IDC_SHOWMETA));
-			pcli->pfnClcBroadcast(CLM_AUTOREBUILD, 0, 0);
-			break;
-		}
-		if ((LOWORD(wParam) == IDC_RADIUS || LOWORD(wParam) == IDC_AVATARHEIGHT || LOWORD(wParam) == IDC_AVATARPADDING) && (HIWORD(wParam) != EN_CHANGE || (HWND) lParam != GetFocus()))
+		if ((LOWORD(wParam) == IDC_AVATARPADDING) && (HIWORD(wParam) != EN_CHANGE || (HWND) lParam != GetFocus()))
 			return 0;
 		SendMessage(GetParent(hwndDlg), PSM_CHANGED, 0, 0);
 		break;
@@ -565,16 +472,7 @@ BOOL CALLBACK DlgProcPlusOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPar
 		case PSN_APPLY:
 			{
 				BOOL translated;
-				LRESULT sel = SendDlgItemMessage(hwndDlg, IDC_ALIGNMENT, CB_GETCURSEL, 0, 0);
 				BYTE bOldMirrorMode = g_CluiData.bUseDCMirroring;
-
-				__setFlag(CLUI_FRAME_STATUSICONS, IsDlgButtonChecked(hwndDlg, IDC_SHOWSTATUSICONS));
-				__setFlag(CLUI_SHOWVISI, IsDlgButtonChecked(hwndDlg, IDC_SHOWVISIBILITY));
-				__setFlag(CLUI_USEMETAICONS, IsDlgButtonChecked(hwndDlg, IDC_SHOWMETA));
-
-				__setFlag(CLUI_FRAME_AVATARS, IsDlgButtonChecked(hwndDlg, IDC_CLISTAVATARS));
-				__setFlag(CLUI_FRAME_AVATARBORDER, IsDlgButtonChecked(hwndDlg, IDC_AVATARSBORDER));
-				__setFlag(CLUI_FRAME_ROUNDAVATAR, IsDlgButtonChecked(hwndDlg, IDC_AVATARSROUNDED));
 
 				__setFlag(CLUI_FRAME_EVENTAREASUNKEN, IsDlgButtonChecked(hwndDlg, IDC_EVENTAREASUNKEN));
 				__setFlag(CLUI_FRAME_AUTOHIDENOTIFY, IsDlgButtonChecked(hwndDlg, IDC_EVENTAREAAUTOHIDE));
@@ -582,56 +480,14 @@ BOOL CALLBACK DlgProcPlusOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPar
 				__setFlag(CLUI_FRAME_SHOWTOPBUTTONS, IsDlgButtonChecked(hwndDlg, IDC_SHOWBUTTONBAR));
 				__setFlag(CLUI_FRAME_SHOWBOTTOMBUTTONS, IsDlgButtonChecked(hwndDlg, IDC_SHOWBOTTOMBUTTONS));
 				__setFlag(CLUI_FRAME_CLISTSUNKEN, IsDlgButtonChecked(hwndDlg, IDC_CLISTSUNKEN));
-				__setFlag(CLUI_FRAME_ALWAYSALIGNNICK, IsDlgButtonChecked(hwndDlg, IDC_ALWAYSALIGNNICK));
 
-				__setFlag(CLUI_FRAME_SELECTIVEICONS, IsDlgButtonChecked(hwndDlg, IDC_SELECTIVEICONS));
-				__setFlag(CLUI_FRAME_OVERLAYICONS, IsDlgButtonChecked(hwndDlg, IDC_OVERLAYICONS));
-				__setFlag(CLUI_FRAME_SHOWSTATUSMSG, IsDlgButtonChecked(hwndDlg, IDC_SHOWSTATUSMSG));
-				__setFlag(CLUI_FRAME_GDIPLUS, IsDlgButtonChecked(hwndDlg, IDC_RENDERGDIP));
-
-				pDrawAlpha = NULL;
-
-				g_CluiData.dualRowMode = (BYTE)SendDlgItemMessage(hwndDlg, IDC_DUALROWMODE, CB_GETCURSEL, 0, 0);
-				if(g_CluiData.dualRowMode == CB_ERR)
-					g_CluiData.dualRowMode = 0;
-
-				if(sel != CB_ERR) {
-					g_CluiData.dwFlags &= ~(CLUI_FRAME_AVATARSLEFT | CLUI_FRAME_AVATARSRIGHT | CLUI_FRAME_AVATARSRIGHTWITHNICK);
-					if(sel == 1)
-						__setFlag(CLUI_FRAME_AVATARSLEFT, 1);
-					else if(sel == 2)
-						__setFlag(CLUI_FRAME_AVATARSRIGHT, 1);
-					else if(sel == 3)
-						__setFlag(CLUI_FRAME_AVATARSRIGHTWITHNICK, 1);
-				}
-				if(g_CluiData.hBrushAvatarBorder)
-					DeleteObject(g_CluiData.hBrushAvatarBorder);
-				g_CluiData.avatarBorder = SendDlgItemMessage(hwndDlg, IDC_AVATARBORDERCLR, CPM_GETCOLOUR, 0, 0);
-				g_CluiData.hBrushAvatarBorder = CreateSolidBrush(g_CluiData.avatarBorder);
-				g_CluiData.avatarRadius = GetDlgItemInt(hwndDlg, IDC_RADIUS, &translated, FALSE);
-				g_CluiData.avatarSize = GetDlgItemInt(hwndDlg, IDC_AVATARHEIGHT, &translated, FALSE);
-				g_CluiData.avatarPadding = GetDlgItemInt(hwndDlg, IDC_AVATARPADDING, &translated, FALSE);
-				g_CluiData.bNoOfflineAvatars = IsDlgButtonChecked(hwndDlg, IDC_NOAVATARSOFFLINE) ? TRUE : FALSE;
-				g_CluiData.bCenterStatusIcons = IsDlgButtonChecked(hwndDlg, IDC_STATUSICONSCENTERED) ? TRUE : FALSE;
-				g_CluiData.bShowLocalTime = IsDlgButtonChecked(hwndDlg, IDC_SHOWLOCALTIME) ? 1 : 0;
-				g_CluiData.bShowLocalTimeSelective = IsDlgButtonChecked(hwndDlg, IDC_SHOWLOCALTIMEONLYWHENDIFFERENT) ? 1 : 0;
+                g_CluiData.avatarPadding = GetDlgItemInt(hwndDlg, IDC_AVATARPADDING, &translated, FALSE);
 				g_CluiData.bUseDCMirroring = (BYTE)SendDlgItemMessage(hwndDlg, IDC_CLISTALIGN, CB_GETCURSEL, 0, 0);
+
 				DBWriteContactSettingByte(NULL, "CLC", "MirrorDC", g_CluiData.bUseDCMirroring);
-				DBWriteContactSettingByte(NULL, "CLC", "ShowLocalTime", (BYTE)g_CluiData.bShowLocalTime);
-				DBWriteContactSettingByte(NULL, "CLC", "SelectiveLocalTime", (BYTE)g_CluiData.bShowLocalTimeSelective);
-				KillTimer(pcli->hwndContactTree, TIMERID_REFRESH);
-				if(g_CluiData.bShowLocalTime)
-					SetTimer(pcli->hwndContactTree, TIMERID_REFRESH, 65000, NULL);
-				DBWriteContactSettingDword(NULL, "CLC", "avatarborder", g_CluiData.avatarBorder);
-				DBWriteContactSettingDword(NULL, "CLUI", "Frameflags", g_CluiData.dwFlags);
-				DBWriteContactSettingDword(NULL, "CLC", "avatarradius", g_CluiData.avatarRadius);
-				DBWriteContactSettingWord(NULL, "CList", "AvatarSize", (WORD)g_CluiData.avatarSize);
-				DBWriteContactSettingByte(NULL, "CLC", "DualRowMode", g_CluiData.dualRowMode);
-				DBWriteContactSettingByte(NULL, "CList", "AvatarPadding", g_CluiData.avatarPadding);
-				DBWriteContactSettingByte(NULL, "CList", "NoOfflineAV", (BYTE)g_CluiData.bNoOfflineAvatars);
-				DBWriteContactSettingByte(NULL, "CLC", "si_centered", (BYTE)g_CluiData.bCenterStatusIcons);
-				if(!pDrawAlpha)
-					pDrawAlpha = (g_CluiData.dwFlags & CLUI_FRAME_GDIPLUS  && g_gdiplusToken) ? (pfnDrawAlpha)GDIp_DrawAlpha : (pfnDrawAlpha)DrawAlpha;
+                DBWriteContactSettingDword(NULL, "CLUI", "Frameflags", g_CluiData.dwFlags);
+                DBWriteContactSettingByte(NULL, "CList", "AvatarPadding", g_CluiData.avatarPadding);
+
 				ConfigureFrame();
 				ConfigureCLUIGeometry(1);
 				ConfigureEventArea(pcli->hwndContactList);

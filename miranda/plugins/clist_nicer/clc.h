@@ -101,6 +101,23 @@ struct ContactFloater {
 
 typedef struct ContactFloater CONTACTFLOATER;
 
+struct DisplayProfile {
+    TCHAR   tszName[60];
+    DWORD   dwFlags, dwFlagsEx;
+    DWORD   dwExtraImageMask;
+    int     exIconScale;
+    BOOL    bCenterStatusIcons;
+    BOOL    bDimIdle, bNoOfflineAvatars, bShowLocalTime, bShowLocalTimeSelective;
+    BYTE    dualRowMode;
+    COLORREF avatarBorder;
+    DWORD    avatarRadius;
+    int      avatarSize;
+};
+
+#define DSP_PROFILES_MODULE "CLN_DspProfiles"           // db module for display profiles
+
+typedef struct DisplayProfile DISPLAYPROFILE;
+
 struct ExtraCache {
 	BYTE iExtraImage[MAXEXTRACOLUMNS];
 	HANDLE hContact;

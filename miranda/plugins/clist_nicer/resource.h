@@ -121,6 +121,8 @@
 #define IDD_OPT_PLUS                    271
 #define IDI_NEWGROUP                    282
 #define IDI_NEWGROUP2                   283
+#define IDD_OPT_DSPPROFILES             300
+#define IDD_OPT_DSPADVANCED             301
 #define IDC_ACTIVEPERC                  1000
 #define IDC_RESETPROTOCOLDATA           1000
 #define IDC_OPTIONSTAB                  1000
@@ -860,9 +862,13 @@
 #define POPUP_RENAMEGROUP               40052
 #define POPUP_DELETEGROUP               40053
 #define IDC_SHOWLOCALTIME2              40053
+#define IDC_DSP_ADD                     -25483
 #define ID_BUTTONBAR_SKINNEDTOOLBAR     40054
+#define IDC_DSP_DELETE                  40054
 #define ID_APPEARANCE_USESTATUSFLOATER  40055
+#define IDC_DSP_RENAME                  40055
 #define ID_APPEARANCE_AUTO              40056
+#define IDC_DSP_APPLY                   40056
 #define POPUP_FLOATER                   40057
 #define POPUP_FLOATER_AUTOHIDE          40058
 #define IDC_AVATARDISPMODE              40059
@@ -875,7 +881,7 @@
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NEXT_RESOURCE_VALUE        7
 #define _APS_NEXT_COMMAND_VALUE         40061
-#define _APS_NEXT_CONTROL_VALUE         40052
+#define _APS_NEXT_CONTROL_VALUE         40054
 #define _APS_NEXT_SYMED_VALUE           40154
 #endif
 #endif
