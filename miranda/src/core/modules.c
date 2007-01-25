@@ -196,25 +196,25 @@ void DestroyModularEngine(void)
 DWORD NameHashFunction(const char *szStr)
 {
 #if defined _M_IX86 && !defined _NUMEGA_BC_FINALCHECK && !defined NOINLINEASM
-	__asm {		   //this breaks if szStr is empty
-		xor  edx,edx
-		xor  eax,eax
-		mov  esi,szStr
-		mov  al,[esi]
-		xor  cl,cl
+	__asm {
+		xor   edx,edx
+		xor   eax,eax
+		mov   esi,szStr
+		mov   al,[esi]
+		dec   esi
+		xor   cl,cl
 	lph_top:	 //only 4 of 9 instructions in here don't use AL, so optimal pipe use is impossible
-		xor  edx,eax
-		inc  esi
-		xor  eax,eax
-		and  cl,31
-		mov  al,[esi]
-		add  cl,5
-		test al,al
-		rol  eax,cl		 //rol is u-pipe only, but pairable
+		xor   edx,eax
+		inc   esi
+		and   cl,31
+		movzx al,[esi]
+		add   cl,5
+		test  al,al
+		rol   eax,cl		 //rol is u-pipe only, but pairable
 		                 //rol doesn't touch z-flag
-		jnz  lph_top  //5 clock tick loop. not bad.
+		jnz   lph_top  //5 clock tick loop. not bad.
 
-		xor  eax,edx
+		xor   eax,edx
 	}
 #else
 	DWORD hash=0;
