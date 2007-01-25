@@ -159,9 +159,6 @@ static int LoadSkinProtoIcon(WPARAM wParam,LPARAM lParam)
 
 	for ( i = 0; i < SIZEOF(statusIcons); i++ ) {
 		if ( statusIcons[i].id == lParam ) {
-			if ( caps2 != 0 && !( caps2 & statusIcons[i].pf2 ))
-				return (int)NULL;
-
 			statusIndx = i; 
 			break;
 	}	}
@@ -262,22 +259,15 @@ static int LoadSkinProtoIcon(WPARAM wParam,LPARAM lParam)
 		strcat(iconName, szProto);
 		itoa(statusIndx, iconName + strlen(iconName), 10);
 		hIcon = (HICON) IcoLib_GetIcon(0, (LPARAM)iconName);
-		if ( hIcon ) return (int)hIcon;
+		if ( hIcon ) 
+			return ( int )hIcon;
+	}
 
-		// icon cant be get probably faked protocol 
-		// register icon with section==NULL to keep it invisible
-		// and default icon as global status icon
-		// then try to load it
-		{
-			sid.pszSection=NULL;
-			sid.pszName=iconName;
-			sid.iDefaultIndex = statusIcons[statusIndx].resource_id;;
-			sid.pszDescription="";
-			IcoLib_AddNewIcon(0, (LPARAM)&sid);            
-			hIcon = (HICON)IcoLib_GetIcon( 0, (LPARAM)iconName );
-			return (int)hIcon;
-	}	}
-
+	if ( hIcon == NULL ) {
+		mir_snprintf( iconName, SIZEOF(iconName), "%s%s%d", statusIconsFmt, GLOBAL_PROTO_NAME, statusIndx );
+		hIcon = (HICON)IcoLib_GetIcon(0, (LPARAM)iconName);
+	}
+ 
 	return (int)hIcon;
 }
 
@@ -325,7 +315,7 @@ static void convertOneProtocol( char* moduleName, char* iconName )
 			DBFreeVariant( &dbv );
 
 			DBDeleteContactSetting( NULL, "Icons", moduleName );
-		}	}	}
+}	}	}
 
 int InitSkinIcons(void)
 {
