@@ -61,7 +61,7 @@ PLUGININFO pluginInfo={
 		"Yahoo Protocol support via libyahoo2 library. [Built: "__DATE__" "__TIME__"]",
 		"Gennady Feldman, Laurent Marechal",
 		"gena01@miranda-im.org",
-		"© 2003-2006 G.Feldman",
+		"© 2003-2007 G.Feldman",
 		"http://www.miranda-im.org/download/details.php?action=viewfile&id=1248",
 		0, //not transient
 		0 //DEFMOD_PROTOCOLYAHOO - no core yahoo protocol
@@ -104,12 +104,12 @@ BOOL WINAPI DllMain(HINSTANCE hinst,DWORD fdwReason,LPVOID lpvReserved)
 __declspec(dllexport) PLUGININFO* MirandaPluginInfo(DWORD mirandaVersion)
 {
 	//
-    // We require Miranda 0.7.0.3
-	// This requires the latest trunk... experimental API used here
+    // We require Miranda 0.7.0.12
+	// This requires the latest trunk... [md5, sha, etc..]
 	//
-    if (mirandaVersion < PLUGIN_MAKE_VERSION(0, 7, 0, 3)) {
+    if (mirandaVersion < PLUGIN_MAKE_VERSION(0, 7, 0, 12)) {
 		MessageBox( NULL, 
-				"Yahoo plugin cannot be loaded. It requires Miranda IM 0.7.0.3 or later.", 
+				"Yahoo plugin cannot be loaded. It requires Miranda IM 0.7.0.12 or later.", 
 				"Yahoo", 
 				MB_OK|MB_ICONWARNING|MB_SETFOREGROUND|MB_TOPMOST );
 
@@ -225,7 +225,7 @@ static int OnModulesLoaded( WPARAM wParam, LPARAM lParam )
 
 int __declspec(dllexport)Load(PLUGINLINK *link)
 {
-	PROTOCOLDESCRIPTOR pd;
+	PROTOCOLDESCRIPTOR pd = { 0 };
 	char path[MAX_PATH], tNudge[250];
 	char* protocolname;
 	
@@ -253,6 +253,7 @@ int __declspec(dllexport)Load(PLUGINLINK *link)
 		lstrcpyn(yahooProtocolName, protocolname, MAX_PATH);
 	} else 
 		lstrcpy(yahooProtocolName, "YAHOO");
+	
 	LoadYahooServices();
 
 	mir_snprintf( path, sizeof( path ), "%s/Status", yahooProtocolName );
@@ -287,7 +288,6 @@ int __declspec(dllexport)Load(PLUGINLINK *link)
 	hYahooNudge = CreateHookableEvent(tNudge);
 	
 	// 2.
-	ZeroMemory(&pd,sizeof(pd));
 	pd.cbSize=sizeof(pd);
 	pd.szName=yahooProtocolName;
 	pd.type=PROTOTYPE_PROTOCOL;
