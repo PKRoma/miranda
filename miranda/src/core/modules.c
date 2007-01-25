@@ -207,7 +207,7 @@ DWORD NameHashFunction(const char *szStr)
 		xor   edx,eax
 		inc   esi
 		and   cl,31
-		movzx al,[esi]
+		movzx eax,byte ptr [esi]
 		add   cl,5
 		test  al,al
 		rol   eax,cl		 //rol is u-pipe only, but pairable
