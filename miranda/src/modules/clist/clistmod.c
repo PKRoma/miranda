@@ -170,16 +170,11 @@ static int ProtocolAck(WPARAM wParam, LPARAM lParam)
 
 int fnIconFromStatusMode(const char *szProto, int status)
 {
-	int index = 0, i;
-	DWORD caps2 = (szProto == NULL) ? (DWORD)-1 : CallProtoService( szProto, PS_GETCAPS, PFLAGNUM_2, 0 );
+	int index, i;
 
-	for ( i = 0; i < SIZEOF(statusModeList); i++ ) {
-		if ( status == statusModeList[i] )
+	for ( index = 0; index < SIZEOF(statusModeList); index++ )
+		if ( status == statusModeList[index] )
 			break;
-
-		if ( caps2 != 0 && ( caps2 & skinIconStatusFlags[i] ))
-			index++;
-	}
 
 	if ( index == SIZEOF(statusModeList))
 		index = 0;
