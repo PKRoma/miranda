@@ -370,7 +370,7 @@ int fnShowHide(WPARAM wParam, LPARAM lParam)
 	}
 	if (bShow == TRUE) {
 		WINDOWPLACEMENT pl = { 0 };
-		
+
 		RECT rcScreen, rcWindow;
 		int offScreen = 0;
 
@@ -530,17 +530,17 @@ int LoadContactListModule2(void)
 	hCListImages = ImageList_Create(16, 16, ILC_MASK | (IsWinVerXPPlus()? ILC_COLOR32 : ILC_COLOR16), 13, 0);
 	HookEvent(ME_SKIN_ICONSCHANGED, CListIconsChanged);
 	CreateServiceFunction(MS_CLIST_GETICONSIMAGELIST, GetIconsImageList);
-  
+
 	ImageList_AddIcon_NotShared(hCListImages, cli.hInst, MAKEINTRESOURCE(IDI_BLANK));
 
 	{
 		int i;
 		//now all core skin icons are loaded via icon lib. so lets release them
 		for (i = 0; i < SIZEOF(statusModeList); i++)
-			ImageList_AddIcon_IconLibLoaded(hCListImages, LoadSkinnedIcon(skinIconStatusList[i]));                    
+			ImageList_AddIcon_IconLibLoaded(hCListImages, LoadSkinnedIcon(skinIconStatusList[i]));
 	}
 
-	//see IMAGE_GROUP... in clist.h if you add more images above here    
+	//see IMAGE_GROUP... in clist.h if you add more images above here
 	ImageList_AddIcon_IconLibLoaded(hCListImages, LoadSkinnedIcon(SKINICON_OTHER_GROUPOPEN));
 	ImageList_AddIcon_IconLibLoaded(hCListImages, LoadSkinnedIcon(SKINICON_OTHER_GROUPSHUT));
 	return 0;
