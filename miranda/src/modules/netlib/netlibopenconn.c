@@ -25,6 +25,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 extern CRITICAL_SECTION csNetlibUser;
 extern DWORD g_LastConnectionTick; // protected by csNetlibUser
+static int iUPnPCleanup = 0;
 
 //returns in network byte order
 DWORD DnsLookup(struct NetlibUser *nlu,const char *szHost)
@@ -424,6 +425,12 @@ int NetlibOpenConnection(WPARAM wParam,LPARAM lParam)
 	struct NetlibConnection *nlc;
 	SOCKADDR_IN sin;
 
+    EnterCriticalSection(&csNetlibUser);
+    if(iUPnPCleanup==0) {
+        forkthread(NetlibUPnPCleanup, 0, NULL);
+        iUPnPCleanup = 1;
+    }
+    LeaveCriticalSection(&csNetlibUser);
 	if(GetNetlibHandleType(nlu)!=NLH_USER || !(nlu->user.flags&NUF_OUTGOING) || nloc==NULL 
 		|| !(nloc->cbSize==NETLIBOPENCONNECTION_V1_SIZE||nloc->cbSize==sizeof(NETLIBOPENCONNECTION)) || nloc->szHost==NULL || nloc->wPort==0) {
 		SetLastError(ERROR_INVALID_PARAMETER);
