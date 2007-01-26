@@ -619,7 +619,7 @@ void NetlibUPnPDeletePortMapping(WORD extport, char* proto)
 		ReleaseMutex(portListMutex);
 }	}
 
-static void NetlibUPnPCleanup(void* extra)
+void NetlibUPnPCleanup(void* extra)
 {
     if (DBGetContactSettingByte(NULL,"Netlib","NLEnableUPnP",1)==0) {
         // upnp is disabled globally, no need for a cleanup
@@ -688,8 +688,6 @@ void NetlibUPnPInit(void)
 	portList = mir_alloc(sizeof(WORD)*numportsAlloc);
 	
 	portListMutex = CreateMutex(NULL, FALSE, NULL);
-
-	forkthread(NetlibUPnPCleanup, 0, NULL);
 }
 
 void NetlibUPnPDestroy(void)
