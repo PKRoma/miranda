@@ -5,7 +5,7 @@
 // Copyright © 2000,2001 Richard Hughes, Roland Rabien, Tristan Van de Vreede
 // Copyright © 2001,2002 Jon Keating, Richard Hughes
 // Copyright © 2002,2003,2004 Martin Öberg, Sam Kothari, Robert Rainwater
-// Copyright © 2004,2005,2006 Joe Kucera
+// Copyright © 2004,2005,2006,2007 Joe Kucera
 //
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License
@@ -1294,12 +1294,12 @@ static HANDLE handleMessageAck(DWORD dwUin, WORD wCookie, WORD wVersion, int typ
   if (bFlags == 3)
   {
     HANDLE hContact;
-    DWORD dwCookieUin;
+    HANDLE hCookieContact;
     message_cookie_data* pCookieData = NULL;
 
     hContact = HContactFromUIN(dwUin, NULL);
 
-    if (!FindCookie(wCookie, &dwCookieUin, &pCookieData))
+    if (!FindCookie(wCookie, &hCookieContact, &pCookieData))
     {
       NetLog_Server("%sIgnoring unrequested status message from %u", "handleMessageAck: ", dwUin);
 
@@ -1307,9 +1307,9 @@ static HANDLE handleMessageAck(DWORD dwUin, WORD wCookie, WORD wVersion, int typ
       return INVALID_HANDLE_VALUE;
     }
 
-    if (dwUin != dwCookieUin)
+    if (hContact != hCookieContact)
     {
-      NetLog_Server("%sAck UIN does not match Cookie UIN(%u != %u)", "handleMessageAck: ", dwUin, dwCookieUin);
+      NetLog_Server("%sAck Contact does not match Cookie Contact(0x%x != 0x%x)", "handleMessageAck: ", hContact, hCookieContact);
 
       ReleaseCookie(wCookie);
       return INVALID_HANDLE_VALUE;
@@ -1658,10 +1658,6 @@ void handleMessageTypes(DWORD dwUin, DWORD dwTimestamp, DWORD dwMsgID, DWORD dwM
 
     switch(dwUin)
     {
-      case 1002:    /* SMS receipt */
-//        handleSmsReceipt(pMsg, dwDataLen); // now handled properly by plugin-id
-        break;
-
       case 1111:    /* icqmail 'you've got mail' - not processed */
         break;
     }
@@ -1677,6 +1673,14 @@ void handleMessageTypes(DWORD dwUin, DWORD dwTimestamp, DWORD dwMsgID, DWORD dwM
     NetLog_Server("Received SMS Mobile message");
 
     ICQBroadcastAck(NULL, ICQACKTYPE_SMS, ACKRESULT_SUCCESS, NULL, (LPARAM)szMsg);
+    break;
+
+  case MTYPE_STATUSMSGEXT:
+    /* it's either extended StatusMsg reply from icq2003b or a IcqWebMessage */
+    if (dwUin == 1003)
+    {
+      NetLog_Server("Received ICQWebMessage - NOT SUPPORTED");
+    }
     break;
 
   case MTYPE_WWP:
@@ -1807,7 +1811,7 @@ static void handleRecvMsgResponse(unsigned char *buf, WORD wLen, WORD wFlags, DW
   BYTE bFlags;
   WORD wLength;
   HANDLE hContact;
-  DWORD dwCookieUin;
+  HANDLE hCookieContact;
   DWORD dwMsgID1, dwMsgID2;
   WORD wVersion = 0;
   message_cookie_data* pCookieData = NULL;
@@ -1832,7 +1836,7 @@ static void handleRecvMsgResponse(unsigned char *buf, WORD wLen, WORD wFlags, DW
   buf += 2;   // 3. unknown
   wLen -= 2;
 
-  if (!FindMessageCookie(dwMsgID1, dwMsgID2, &dwCookie, &dwCookieUin, &pCookieData))
+  if (!FindMessageCookie(dwMsgID1, dwMsgID2, &dwCookie, &hCookieContact, &pCookieData))
   {
     NetLog_Server("SNAC(4.B) Received an ack that I did not ask for from (%u)", dwUin);
     return;
@@ -1888,7 +1892,7 @@ static void handleRecvMsgResponse(unsigned char *buf, WORD wLen, WORD wFlags, DW
     buf += 2;
     wLen -= 2;
 
-    if (!FindCookie(wCookie, &dwCookieUin, &pCookieData))
+    if (!FindCookie(wCookie, &hCookieContact, &pCookieData))
     { // use old reliable method
       NetLog_Server("Warning: Invalid cookie in %s from (%u)", "message response", dwUin);
 
@@ -1921,9 +1925,9 @@ static void handleRecvMsgResponse(unsigned char *buf, WORD wLen, WORD wFlags, DW
     bFlags = 0;
   }
 
-  if (dwCookieUin != dwUin)
+  if (hCookieContact != hContact)
   {
-    NetLog_Server("SNAC(4.B) Ack UIN does not match Cookie UIN(%u != %u)", dwUin, dwCookieUin);
+    NetLog_Server("SNAC(4.B) Ack Contact does not match Cookie Contact(0x%x != 0x%x)", hContact, hCookieContact);
 
     ReleaseCookie(dwCookie); // This could be a bad idea, but I think it is safe
     return;
@@ -2141,7 +2145,6 @@ static void handleRecvServMsgError(unsigned char *buf, WORD wLen, WORD wFlags, D
 {
   WORD wError;
   char* pszErrorMessage;
-  DWORD dwUin;
   HANDLE hContact;
   message_cookie_data* pCookieData = NULL;
   int nMessageType;
@@ -2150,20 +2153,16 @@ static void handleRecvServMsgError(unsigned char *buf, WORD wLen, WORD wFlags, D
   if (wLen < 2)
     return;
 
-  if (FindCookie((WORD)dwSequence, &dwUin, &pCookieData))
+  if (FindCookie((WORD)dwSequence, &hContact, &pCookieData))
   { // all packet cookies from msg family has command 0 in the queue
-    hContact = HContactFromUIN(dwUin, NULL);
+    DWORD dwUin;
+    uid_str szUid;
+
+    ICQGetContactSettingUID(hContact, &dwUin, &szUid);
 
     // Error code
     unpackWord(&buf, &wError);
 
-    if ((hContact == NULL) || (hContact == INVALID_HANDLE_VALUE))
-    {
-      NetLog_Server("SNAC(4.1) Received a SENDMSG Error (%u) from invalid contact %u", wError, dwUin);
-
-      ReleaseCookie((WORD)dwSequence);
-      return;
-    }
     if (wError == 9 && pCookieData->bMessageType == MTYPE_AUTOAWAY)
     { // we failed to request away message the normal way, try it AIM way
       icq_packet packet;
@@ -2192,8 +2191,16 @@ static void handleRecvServMsgError(unsigned char *buf, WORD wLen, WORD wFlags, D
       break;
 
     case 0x0004:     // Recipient is not logged in (resend in a offline message)
-      if (pCookieData->bMessageType == MTYPE_PLAIN) // TODO: this needs better solution
+      if (pCookieData->bMessageType == MTYPE_PLAIN) 
+      {
+        if (((message_cookie_data_ex*)pCookieData)->isOffline)
+        { // offline failed - most probably to AIM contact
+          pszErrorMessage = ICQTranslate("The contact does not support receiving offline messages.");
+          break;
+        }
+        // TODO: this needs better solution
         ICQWriteContactSettingWord(hContact, "Status", ID_STATUS_OFFLINE);
+      }
       pszErrorMessage = ICQTranslate("The user has logged off. Select 'Retry' to send an offline message.\r\nSNAC(4.1) Error x04");
       break;
 
@@ -2321,7 +2328,7 @@ static void handleServerAck(unsigned char *buf, WORD wLen, WORD wFlags, DWORD dw
 
   hContact = HContactFromUID(dwUin, szUID, NULL);
 
-  if (FindCookie((WORD)dwSequence, &dwUin, &pCookieData))
+  if (FindCookie((WORD)dwSequence, NULL, &pCookieData))
   {
     // If the user requested a full ack, the
     // server ack should be ignored here.

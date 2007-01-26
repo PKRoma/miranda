@@ -5,7 +5,7 @@
 // Copyright © 2000,2001 Richard Hughes, Roland Rabien, Tristan Van de Vreede
 // Copyright © 2001,2002 Jon Keating, Richard Hughes
 // Copyright © 2002,2003,2004 Martin Öberg, Sam Kothari, Robert Rainwater
-// Copyright © 2004,2005,2006 Joe Kucera
+// Copyright © 2004,2005,2006,2007 Joe Kucera
 // 
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License
@@ -527,7 +527,7 @@ static DWORD __stdcall icq_directThread(directthreadstartinfo *dtsi)
             pCookie->dwUin = dc.dwRemoteUin;
             pCookie->type = dc.type;
             pCookie->ft = dc.ft;
-            dwCookie = AllocateCookie(CKT_REVERSEDIRECT, 0, dc.dwRemoteUin, pCookie);
+            dwCookie = AllocateCookie(CKT_REVERSEDIRECT, 0, dc.hContact, pCookie);
             icq_sendReverseReq(&dc, dwCookie, (message_cookie_data*)pCookie);
             RemoveDirectConnFromList(&dc);
 
@@ -720,11 +720,10 @@ static void handleDirectPacket(directconnect* dc, PBYTE buf, WORD wLen)
       if (dc->incoming && dc->type == DIRECTCONN_REVERSE)
       {
         reverse_cookie* pCookie;
-        DWORD dwCookieUin;
 
         dc->incoming = 0;
 
-        if (FindCookie(dc->dwReqId, &dwCookieUin, &pCookie) && pCookie)
+        if (FindCookie(dc->dwReqId, NULL, &pCookie) && pCookie)
         { // valid reverse DC, check and init session
           FreeCookie(dc->dwReqId);
           if (pCookie->dwUin == dc->dwRemoteUin)
@@ -854,9 +853,8 @@ static void handleDirectPacket(directconnect* dc, PBYTE buf, WORD wLen)
           if (!dc->dwRemoteUin)
           { // we need to load cookie (licq)
             reverse_cookie* pCookie;
-            DWORD dwCookieUin;
 
-            if (FindCookie(dc->dwReqId, &dwCookieUin, &pCookie) && pCookie)
+            if (FindCookie(dc->dwReqId, NULL, &pCookie) && pCookie)
             { // valid reverse DC, check and init session
               dc->dwRemoteUin = pCookie->dwUin;
               dc->hContact = pCookie->hContact;

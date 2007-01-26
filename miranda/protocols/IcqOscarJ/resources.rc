@@ -458,7 +458,7 @@ FONT 8, "MS Shell Dlg", 0, 0, 0x1
 BEGIN
     DEFPUSHBUTTON   "Closing in %d",IDOK,62,79,65,14
     LTEXT           "Title:",IDC_STATIC,5,0,179,8
-    EDITTEXT        IDC_XTITLE,5,9,179,13
+    EDITTEXT        IDC_XTITLE,5,9,179,13,ES_AUTOHSCROLL
     LTEXT           "Message:",IDC_STATIC,5,22,179,8
     EDITTEXT        IDC_XMSG,5,31,179,43,ES_MULTILINE | ES_AUTOVSCROLL | 
                     ES_WANTRETURN | WS_VSCROLL
@@ -666,7 +666,7 @@ END
 //
 
 VS_VERSION_INFO VERSIONINFO
- FILEVERSION 0,3,8,8
+ FILEVERSION 0,3,8,9
  PRODUCTVERSION 0,6,0,0
  FILEFLAGSMASK 0x3fL
 #ifdef _DEBUG
@@ -685,9 +685,9 @@ BEGIN
             VALUE "Comments", "Licensed under the terms of the GNU General Public License\0"
             VALUE "CompanyName", "\0"
             VALUE "FileDescription", "ICQ protocol plugin for Miranda IM, enhanced\0"
-            VALUE "FileVersion", "0, 3, 8, 8\0"
+            VALUE "FileVersion", "0, 3, 8, 9\0"
             VALUE "InternalName", "ICQJ protocol plugin for Miranda IM\0"
-            VALUE "LegalCopyright", "Copyright (C) 2000-2006 Joe Kucera, Angeli-Ka, Bio, Martin Öberg, Richard Hughes, Jon Keating\0"
+            VALUE "LegalCopyright", "Copyright (C) 2000-2007 Joe Kucera, Angeli-Ka, Bio, Martin Öberg, Richard Hughes, Jon Keating\0"
             VALUE "OriginalFilename", "ICQ.dll\0"
             VALUE "ProductName", "ICQ Protocol Support\0"
             VALUE "ProductVersion", "0, 6, 0, 0\0"

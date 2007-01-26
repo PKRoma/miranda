@@ -75,6 +75,9 @@ Improvements:
   Client detection improvements
   Level 1 Rate management (global) - should solve problems with many contacts in list
   Support for Custom Profile Folders plug-in - configurable avatars cache folder
+  Ability to send long offline messages (up to 4096 characters)
+  Messsage Error handling is now complete (no more disconnections on long msgs) 
+  Support for Aim contacts enhanced
 
 
 0.3.7.5
@@ -402,7 +405,7 @@ Thanks to Angeli-Ka for nice custom status icons.
 License and Copyright
 _____________________
 
-Copyright (C) 2000-2006 Joe Kucera, Martin Öberg, Richard Hughes, Jon Keating
+Copyright (C) 2000-2007 Joe Kucera, Martin Öberg, Richard Hughes, Jon Keating
 
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License

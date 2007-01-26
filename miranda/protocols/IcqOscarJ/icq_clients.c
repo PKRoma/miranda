@@ -5,7 +5,7 @@
 // Copyright © 2000,2001 Richard Hughes, Roland Rabien, Tristan Van de Vreede
 // Copyright © 2001,2002 Jon Keating, Richard Hughes
 // Copyright © 2002,2003,2004 Martin Öberg, Sam Kothari, Robert Rainwater
-// Copyright © 2004,2005,2006 Joe Kucera
+// Copyright © 2004,2005,2006,2007 Joe Kucera
 // 
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License
@@ -318,9 +318,14 @@ char* detectUserClient(HANDLE hContact, DWORD dwUin, WORD wVersion, DWORD dwFT1,
         *bClientId = 2;
       }
       else if (MatchCap(caps, wLen, &capTrillian, 0x10) || MatchCap(caps, wLen, &capTrilCrypt, 0x10))
-      { // this is Trillian, check for new version
+      { // this is Trillian, check for new versions
         if (CheckContactCapabilities(hContact, CAPF_RTF))
-          szClient = "Trillian v3";
+        {
+          if (CheckContactCapabilities(hContact, CAPF_OSCAR_FILE))
+            szClient = "Trillian Astra";
+          else
+            szClient = "Trillian v3";
+        }
         else
           szClient = cliTrillian;
       }
@@ -521,7 +526,7 @@ char* detectUserClient(HANDLE hContact, DWORD dwUin, WORD wVersion, DWORD dwFT1,
           if (CheckContactCapabilities(hContact, CAPF_XTRAZ))
           {
             *bClientId = 0;
-            if (CheckContactCapabilities(hContact, CAPF_AIM_FILE))
+            if (CheckContactCapabilities(hContact, CAPF_OSCAR_FILE))
             {
               if (MatchCap(caps, wLen, &captZers, 0x10))
               { // capable of tZers ?
@@ -605,7 +610,7 @@ char* detectUserClient(HANDLE hContact, DWORD dwUin, WORD wVersion, DWORD dwFT1,
               MatchCap(caps, wLen, &capIs2002, 0x10) && MatchCap(caps, wLen, &capComm20012, 0x10))
               szClient = cliSpamBot;
             else if (MatchCap(caps, wLen, &capAimIcon, 0x10) && MatchCap(caps, wLen, &capAimDirect, 0x10) && 
-              CheckContactCapabilities(hContact, CAPF_AIM_FILE | CAPF_UTF))
+              CheckContactCapabilities(hContact, CAPF_OSCAR_FILE | CAPF_UTF))
             { // detect libgaim
               if (CheckContactCapabilities(hContact, CAPF_SRV_RELAY))
                 szClient = "Adium X"; // yeah, AFAIK only Adium has this fixed
@@ -613,9 +618,9 @@ char* detectUserClient(HANDLE hContact, DWORD dwUin, WORD wVersion, DWORD dwFT1,
                 szClient = "libgaim";
             }
             else if (MatchCap(caps, wLen, &capAimIcon, 0x10) && MatchCap(caps, wLen, &capAimDirect, 0x10) &&
-              MatchCap(caps, wLen, &capAimChat, 0x10) && CheckContactCapabilities(hContact, CAPF_AIM_FILE) && wLen == 0x40)
+              MatchCap(caps, wLen, &capAimChat, 0x10) && CheckContactCapabilities(hContact, CAPF_OSCAR_FILE) && wLen == 0x40)
               szClient = "libgaim"; // Gaim 1.5.1 most probably
-            else if (MatchCap(caps, wLen, &capAimChat, 0x10) && CheckContactCapabilities(hContact, CAPF_AIM_FILE) && wLen == 0x20)
+            else if (MatchCap(caps, wLen, &capAimChat, 0x10) && CheckContactCapabilities(hContact, CAPF_OSCAR_FILE) && wLen == 0x20)
               szClient = "Easy Message";
             else if (MatchCap(caps, wLen, &capAimIcon, 0x10) && MatchCap(caps, wLen, &capAimChat, 0x10) && CheckContactCapabilities(hContact, CAPF_UTF) && wLen == 0x30)
               szClient = "Meebo";

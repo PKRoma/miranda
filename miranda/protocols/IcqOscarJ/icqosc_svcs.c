@@ -5,7 +5,7 @@
 // Copyright © 2000,2001 Richard Hughes, Roland Rabien, Tristan Van de Vreede
 // Copyright © 2001,2002 Jon Keating, Richard Hughes
 // Copyright © 2002,2003,2004 Martin Öberg, Sam Kothari, Robert Rainwater
-// Copyright © 2004,2005,2006 Joe Kucera
+// Copyright © 2004,2005,2006,2007 Joe Kucera
 //
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License
@@ -1039,7 +1039,7 @@ int IcqGetInfo(WPARAM wParam, LPARAM lParam)
     }
 
     if (dwUin)
-      dwCookie = icq_sendGetInfoServ(dwUin, (ccs->wParam & SGIF_MINIMAL) != 0, (ccs->wParam & SGIF_ONOPEN) != 0);
+      dwCookie = icq_sendGetInfoServ(ccs->hContact, dwUin, (ccs->wParam & SGIF_MINIMAL) != 0, (ccs->wParam & SGIF_ONOPEN) != 0);
     else // TODO: this needs something better
       dwCookie = icq_sendGetAimProfileServ(ccs->hContact, szUid);
 
@@ -1305,7 +1305,7 @@ int IcqGetAwayMsg(WPARAM wParam,LPARAM lParam)
           int iRes = icq_sendGetAwayMsgDirect(ccs->hContact, wMessageType);
           if (iRes) return iRes; // we succeded, return
         }
-        return icq_sendGetAwayMsgServ(dwUin, wMessageType, 
+        return icq_sendGetAwayMsgServ(ccs->hContact, dwUin, wMessageType, 
           (WORD)(ICQGetContactSettingWord(ccs->hContact, "Version", 0)==9?9:ICQ_VERSION)); // Success
       }
     }
@@ -1313,7 +1313,7 @@ int IcqGetAwayMsg(WPARAM wParam,LPARAM lParam)
     {
       if (wStatus == ID_STATUS_AWAY)
       {
-        return icq_sendGetAimAwayMsgServ(szUID, MTYPE_AUTOAWAY);
+        return icq_sendGetAimAwayMsgServ(ccs->hContact, szUID, MTYPE_AUTOAWAY);
       }
     }
   }
@@ -1362,7 +1362,7 @@ int IcqSendMessage(WPARAM wParam, LPARAM lParam)
         return dwCookie;
       }
 
-      if (dwUin && gbTempVisListEnabled && gnCurrentStatus == ID_STATUS_INVISIBLE)
+      if (gbTempVisListEnabled && gnCurrentStatus == ID_STATUS_INVISIBLE)
         makeContactTemporaryVisible(ccs->hContact);  // make us temporarily visible to contact
 
       pszText = (char*)ccs->lParam;
@@ -1375,10 +1375,10 @@ int IcqSendMessage(WPARAM wParam, LPARAM lParam)
         dwCookie = GenerateCookie(0);
         icq_SendProtoAck(ccs->hContact, dwCookie, ACKRESULT_FAILED, ACKTYPE_MESSAGE, ICQTranslate("You cannot send messages when you are offline."));
       }
-      else if ((wRecipientStatus == ID_STATUS_OFFLINE) && (strlennull(pszText) > 450))
+      else if ((wRecipientStatus == ID_STATUS_OFFLINE) && (strlennull(pszText) > 4096))
       {
         dwCookie = GenerateCookie(0);
-        icq_SendProtoAck(ccs->hContact, dwCookie, ACKRESULT_FAILED, ACKTYPE_MESSAGE, ICQTranslate("Messages to offline contacts must be shorter than 450 characters."));
+        icq_SendProtoAck(ccs->hContact, dwCookie, ACKRESULT_FAILED, ACKTYPE_MESSAGE, ICQTranslate("Messages to offline contacts must be shorter than 4096 characters."));
       }
       // Looks OK
       else
@@ -1429,12 +1429,27 @@ int IcqSendMessage(WPARAM wParam, LPARAM lParam)
 #endif
         if (dwUin && gbDCMsgEnabled && IsDirectConnectionOpen(ccs->hContact, DIRECTCONN_STANDARD, 0))
         {
-          int iRes = icq_SendDirectMessage(dwUin, ccs->hContact, pszText, strlennull(pszText), 1, pCookieData, NULL);
+          int iRes = icq_SendDirectMessage(ccs->hContact, pszText, strlennull(pszText), 1, pCookieData, NULL);
           if (iRes) return iRes; // we succeded, return
         }
 
         if ((!dwUin || !CheckContactCapabilities(ccs->hContact, CAPF_SRV_RELAY)) || (wRecipientStatus == ID_STATUS_OFFLINE))
         {
+          // set flag for offline messages - to allow proper error handling
+          if (wRecipientStatus == ID_STATUS_OFFLINE) ((message_cookie_data_ex*)pCookieData)->isOffline = TRUE;
+
+          if (strlennull(pszText) > MAX_MESSAGESNACSIZE)
+          { // max length check // TLV(2) is currently limited to 0xA00 bytes in online mode
+            // only limit to not get disconnected, all other will be handled by error 0x0A
+            SAFE_FREE(&pCookieData);
+            if (!dwUin) SAFE_FREE(&pszText);
+
+            dwCookie = GenerateCookie(0);
+            icq_SendProtoAck(ccs->hContact, dwCookie, ACKRESULT_FAILED, ACKTYPE_MESSAGE, ICQTranslate("The message could not be delivered, it is too long."));
+
+            return dwCookie;
+          }
+
           dwCookie = icq_SendChannel1Message(dwUin, szUID, ccs->hContact, pszText, pCookieData);
         }
         else
@@ -1446,7 +1461,17 @@ int IcqSendMessage(WPARAM wParam, LPARAM lParam)
           else
             wPriority = 0x0021;
 
-          dwCookie = icq_SendChannel2Message(dwUin, pszText, strlennull(pszText), wPriority, pCookieData, NULL);
+          if (strlennull(pszText) > MAX_MESSAGESNACSIZE - 102)
+          { // max length check
+            SAFE_FREE(&pCookieData);
+
+            dwCookie = GenerateCookie(0);
+            icq_SendProtoAck(ccs->hContact, dwCookie, ACKRESULT_FAILED, ACKTYPE_MESSAGE, ICQTranslate("The message could not be delivered, it is too long."));
+
+            return dwCookie;
+          }
+
+          dwCookie = icq_SendChannel2Message(dwUin, ccs->hContact, pszText, strlennull(pszText), wPriority, pCookieData, NULL);
         }
 
         // This will stop the message dialog from waiting for the real message delivery ack
@@ -1523,7 +1548,7 @@ int IcqSendMessageW(WPARAM wParam, LPARAM lParam)
         return dwCookie;
       }
 
-      if (dwUin && gbTempVisListEnabled && gnCurrentStatus == ID_STATUS_INVISIBLE)
+      if (gbTempVisListEnabled && gnCurrentStatus == ID_STATUS_INVISIBLE)
         makeContactTemporaryVisible(ccs->hContact); // make us temporarily visible to contact
 
       pszText = (wchar_t*)((char*)ccs->lParam+strlennull((char*)ccs->lParam)+1); // get the UTF-16 part
@@ -1571,7 +1596,7 @@ int IcqSendMessageW(WPARAM wParam, LPARAM lParam)
           char* utf8msg = make_utf8_string(pszText);
           int iRes;
 
-          iRes = icq_SendDirectMessage(dwUin, ccs->hContact, utf8msg, strlennull(utf8msg), 1, pCookieData, CAP_UTF8MSGS);
+          iRes = icq_SendDirectMessage(ccs->hContact, utf8msg, strlennull(utf8msg), 1, pCookieData, CAP_UTF8MSGS);
           SAFE_FREE(&utf8msg);
 
           if (iRes) return iRes; // we succeded, return
@@ -1597,6 +1622,17 @@ int IcqSendMessageW(WPARAM wParam, LPARAM lParam)
             SAFE_FREE(&tmp);
           }
 
+          if (wcslen(pszText)*sizeof(wchar_t) > MAX_MESSAGESNACSIZE)
+          { // max length check // TLV(2) is currently limited to 0xA00 bytes in online mode
+            // only limit to not get disconnected, all other will be handled by error 0x0A
+            SAFE_FREE(&pCookieData);
+            if (!dwUin) SAFE_FREE(&pszText);
+
+            dwCookie = GenerateCookie(0);
+            icq_SendProtoAck(ccs->hContact, dwCookie, ACKRESULT_FAILED, ACKTYPE_MESSAGE, ICQTranslate("The message could not be delivered, it is too long."));
+
+            return dwCookie;
+          }
           dwCookie = icq_SendChannel1MessageW(dwUin, szUID, ccs->hContact, pszText, pCookieData);
 
           if (!dwUin) SAFE_FREE(&pszText);
@@ -1612,7 +1648,19 @@ int IcqSendMessageW(WPARAM wParam, LPARAM lParam)
             wPriority = 0x0021;
 
           utf8msg = make_utf8_string(pszText);
-          dwCookie = icq_SendChannel2Message(dwUin, utf8msg, strlennull(utf8msg), wPriority, pCookieData, CAP_UTF8MSGS);
+
+          if (strlennull(utf8msg) > MAX_MESSAGESNACSIZE - 144)
+          { // max length check
+            SAFE_FREE(&pCookieData);
+            SAFE_FREE(&utf8msg);
+
+            dwCookie = GenerateCookie(0);
+            icq_SendProtoAck(ccs->hContact, dwCookie, ACKRESULT_FAILED, ACKTYPE_MESSAGE, ICQTranslate("The message could not be delivered, it is too long."));
+
+            return dwCookie;
+          }
+
+          dwCookie = icq_SendChannel2Message(dwUin, ccs->hContact, utf8msg, strlennull(utf8msg), wPriority, pCookieData, CAP_UTF8MSGS);
 
           SAFE_FREE(&utf8msg);
         }
@@ -1691,7 +1739,7 @@ int IcqSendUrl(WPARAM wParam, LPARAM lParam)
 
         if (gbDCMsgEnabled && IsDirectConnectionOpen(ccs->hContact, DIRECTCONN_STANDARD, 0))
         {
-          int iRes = icq_SendDirectMessage(dwUin, ccs->hContact, szBody, nBodyLen, 1, pCookieData, NULL);
+          int iRes = icq_SendDirectMessage(ccs->hContact, szBody, nBodyLen, 1, pCookieData, NULL);
           if (iRes) return iRes; // we succeded, return
         }
 
@@ -1699,7 +1747,7 @@ int IcqSendUrl(WPARAM wParam, LPARAM lParam)
         if (!CheckContactCapabilities(ccs->hContact, CAPF_SRV_RELAY) ||
           wRecipientStatus == ID_STATUS_OFFLINE)
         {
-          dwCookie = icq_SendChannel4Message(dwUin, MTYPE_URL,
+          dwCookie = icq_SendChannel4Message(dwUin, ccs->hContact, MTYPE_URL,
             (WORD)nBodyLen, szBody, pCookieData);
         }
         else
@@ -1711,7 +1759,7 @@ int IcqSendUrl(WPARAM wParam, LPARAM lParam)
           else
             wPriority = 0x0021;
 
-          dwCookie = icq_SendChannel2Message(dwUin, szBody, nBodyLen, wPriority, pCookieData, NULL);
+          dwCookie = icq_SendChannel2Message(dwUin, ccs->hContact, szBody, nBodyLen, wPriority, pCookieData, NULL);
         }
 
         // This will stop the message dialog from waiting for the real message delivery ack
@@ -1837,7 +1885,7 @@ int IcqSendContacts(WPARAM wParam, LPARAM lParam)
 
             if (gbDCMsgEnabled && IsDirectConnectionOpen(ccs->hContact, DIRECTCONN_STANDARD, 0))
             {
-              int iRes = icq_SendDirectMessage(dwUin, ccs->hContact, pBody, nBodyLength, 1, pCookieData, NULL);
+              int iRes = icq_SendDirectMessage(ccs->hContact, pBody, nBodyLength, 1, pCookieData, NULL);
 
               if (iRes)
               {
@@ -1859,7 +1907,7 @@ int IcqSendContacts(WPARAM wParam, LPARAM lParam)
             if (!CheckContactCapabilities(ccs->hContact, CAPF_SRV_RELAY) ||
               wRecipientStatus == ID_STATUS_OFFLINE)
             {
-              dwCookie = icq_SendChannel4Message(dwUin, MTYPE_CONTACTS,
+              dwCookie = icq_SendChannel4Message(dwUin, ccs->hContact, MTYPE_CONTACTS,
                 (WORD)nBodyLength, pBody, pCookieData);
             }
             else
@@ -1871,7 +1919,7 @@ int IcqSendContacts(WPARAM wParam, LPARAM lParam)
               else
                 wPriority = 0x0021;
 
-              dwCookie = icq_SendChannel2Message(dwUin, pBody, nBodyLength, wPriority, pCookieData, NULL);
+              dwCookie = icq_SendChannel2Message(dwUin, ccs->hContact, pBody, nBodyLength, wPriority, pCookieData, NULL);
             }
 
             // This will stop the message dialog from waiting for the real message delivery ack
@@ -1933,7 +1981,7 @@ int IcqSendFile(WPARAM wParam, LPARAM lParam)
 
       if (ICQGetContactStatus(hContact) != ID_STATUS_OFFLINE)
       {
-        if (CheckContactCapabilities(hContact, CAPF_AIM_FILE))
+        if (CheckContactCapabilities(hContact, CAPF_OSCAR_FILE))
         {
           return oftInitTransfer(hContact, dwUin, szUid, files, pszDesc);
         }
@@ -1972,7 +2020,7 @@ int IcqSendFile(WPARAM wParam, LPARAM lParam)
             ft->sending = 1;
             ft->fileId = -1;
             ft->iCurrentFile = 0;
-            ft->dwCookie = AllocateCookie(CKT_FILE, 0, dwUin, ft);
+            ft->dwCookie = AllocateCookie(CKT_FILE, 0, hContact, ft);
             ft->hConnection = NULL;
 
             // Send file transfer request

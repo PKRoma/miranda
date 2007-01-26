@@ -5,7 +5,7 @@
 // Copyright © 2000,2001 Richard Hughes, Roland Rabien, Tristan Van de Vreede
 // Copyright © 2001,2002 Jon Keating, Richard Hughes
 // Copyright © 2002,2003,2004 Martin Öberg, Sam Kothari, Robert Rainwater
-// Copyright © 2004,2005,2006 Joe Kucera
+// Copyright © 2004,2005,2006,2007 Joe Kucera
 // 
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License
@@ -48,7 +48,7 @@ void InitDB()
 
 
 
-void ICQCreateResidentSetting(const char* szSetting)
+void __stdcall ICQCreateResidentSetting(const char* szSetting)
 {
   char pszSetting[2*MAX_PATH];
 
@@ -60,21 +60,21 @@ void ICQCreateResidentSetting(const char* szSetting)
 
 
 
-BYTE ICQGetContactSettingByte(HANDLE hContact, const char* szSetting, BYTE bDef)
+BYTE __stdcall ICQGetContactSettingByte(HANDLE hContact, const char* szSetting, BYTE bDef)
 {
   return DBGetContactSettingByte(hContact, gpszICQProtoName, szSetting, bDef);
 }
 
 
 
-WORD ICQGetContactSettingWord(HANDLE hContact, const char* szSetting, WORD wDef)
+WORD __stdcall ICQGetContactSettingWord(HANDLE hContact, const char* szSetting, WORD wDef)
 {
   return DBGetContactSettingWord(hContact, gpszICQProtoName, szSetting, wDef);
 }
 
 
 
-DWORD ICQGetContactSettingDword(HANDLE hContact, const char* szSetting, DWORD dwDef)
+DWORD __stdcall ICQGetContactSettingDword(HANDLE hContact, const char* szSetting, DWORD dwDef)
 {
   DBVARIANT dbv;
   DBCONTACTGETSETTING cgs;
@@ -97,14 +97,14 @@ DWORD ICQGetContactSettingDword(HANDLE hContact, const char* szSetting, DWORD dw
 
 
 
-DWORD ICQGetContactSettingUIN(HANDLE hContact)
+DWORD __stdcall ICQGetContactSettingUIN(HANDLE hContact)
 {
   return ICQGetContactSettingDword(hContact, UNIQUEIDSETTING, 0);
 }
 
 
 
-int ICQGetContactSettingUID(HANDLE hContact, DWORD *pdwUin, uid_str* ppszUid)
+int __stdcall ICQGetContactSettingUID(HANDLE hContact, DWORD *pdwUin, uid_str* ppszUid)
 {
   DBVARIANT dbv;
   int iRes = 1;
@@ -136,14 +136,14 @@ int ICQGetContactSettingUID(HANDLE hContact, DWORD *pdwUin, uid_str* ppszUid)
 
 
 
-int ICQGetContactSetting(HANDLE hContact, const char* szSetting, DBVARIANT *dbv)
+int __stdcall ICQGetContactSetting(HANDLE hContact, const char* szSetting, DBVARIANT *dbv)
 {
   return DBGetContactSetting(hContact, gpszICQProtoName, szSetting, dbv);
 }
 
 
 
-char* UniGetContactSettingUtf(HANDLE hContact, const char *szModule,const char* szSetting, char* szDef)
+char* __stdcall UniGetContactSettingUtf(HANDLE hContact, const char *szModule,const char* szSetting, char* szDef)
 {
   DBVARIANT dbv = {DBVT_DELETED};
   char* szRes;
@@ -170,14 +170,14 @@ char* UniGetContactSettingUtf(HANDLE hContact, const char *szModule,const char* 
 
 
 
-char* ICQGetContactSettingUtf(HANDLE hContact, const char* szSetting, char* szDef)
+char* __stdcall ICQGetContactSettingUtf(HANDLE hContact, const char* szSetting, char* szDef)
 {
   return UniGetContactSettingUtf(hContact, gpszICQProtoName, szSetting, szDef);
 }
 
 
 
-WORD ICQGetContactStatus(HANDLE hContact)
+WORD __stdcall ICQGetContactStatus(HANDLE hContact)
 {
   return ICQGetContactSettingWord(hContact, "Status", ID_STATUS_OFFLINE);
 }
@@ -185,7 +185,7 @@ WORD ICQGetContactStatus(HANDLE hContact)
 
 
 // (c) by George Hazan
-int ICQGetContactStaticString(HANDLE hContact, const char* valueName, char* dest, int dest_len)
+int __stdcall ICQGetContactStaticString(HANDLE hContact, const char* valueName, char* dest, int dest_len)
 {
   DBVARIANT dbv;
   DBCONTACTGETSETTING sVal;
@@ -213,42 +213,42 @@ int ICQGetContactStaticString(HANDLE hContact, const char* valueName, char* dest
 
 
 
-int ICQDeleteContactSetting(HANDLE hContact, const char* szSetting)
+int __stdcall ICQDeleteContactSetting(HANDLE hContact, const char* szSetting)
 {
   return DBDeleteContactSetting(hContact, gpszICQProtoName, szSetting);
 }
 
 
 
-int ICQWriteContactSettingByte(HANDLE hContact, const char* szSetting, BYTE bValue)
+int __stdcall ICQWriteContactSettingByte(HANDLE hContact, const char* szSetting, BYTE bValue)
 {
   return DBWriteContactSettingByte(hContact, gpszICQProtoName, szSetting, bValue);
 }
 
 
 
-int ICQWriteContactSettingWord(HANDLE hContact, const char* szSetting, WORD wValue)
+int __stdcall ICQWriteContactSettingWord(HANDLE hContact, const char* szSetting, WORD wValue)
 {
   return DBWriteContactSettingWord(hContact, gpszICQProtoName, szSetting, wValue);
 }
 
 
 
-int ICQWriteContactSettingDword(HANDLE hContact, const char* szSetting, DWORD dwValue)
+int __stdcall ICQWriteContactSettingDword(HANDLE hContact, const char* szSetting, DWORD dwValue)
 {
   return DBWriteContactSettingDword(hContact, gpszICQProtoName, szSetting, dwValue);
 }
 
 
 
-int ICQWriteContactSettingString(HANDLE hContact, const char* szSetting, char* szValue)
+int __stdcall ICQWriteContactSettingString(HANDLE hContact, const char* szSetting, char* szValue)
 {
   return DBWriteContactSettingString(hContact, gpszICQProtoName, szSetting, szValue);
 }
 
 
 
-int UniWriteContactSettingUtf(HANDLE hContact, const char *szModule, const char* szSetting, char* szValue)
+int __stdcall UniWriteContactSettingUtf(HANDLE hContact, const char *szModule, const char* szSetting, char* szValue)
 {
   if (bUtfReadyDB)
     return DBWriteContactSettingStringUtf(hContact, szModule, szSetting, szValue);
@@ -267,14 +267,14 @@ int UniWriteContactSettingUtf(HANDLE hContact, const char *szModule, const char*
 
 
 
-int ICQWriteContactSettingUtf(HANDLE hContact, const char* szSetting, char* szValue)
+int __stdcall ICQWriteContactSettingUtf(HANDLE hContact, const char* szSetting, char* szValue)
 {
   return UniWriteContactSettingUtf(hContact, gpszICQProtoName, szSetting, szValue);
 }
 
 
 
-int ICQWriteContactSettingBlob(HANDLE hContact,const char *szSetting,const char *val, const int cbVal)
+int __stdcall ICQWriteContactSettingBlob(HANDLE hContact,const char *szSetting,const char *val, const int cbVal)
 {
   DBCONTACTWRITESETTING cws;
 
@@ -288,14 +288,14 @@ int ICQWriteContactSettingBlob(HANDLE hContact,const char *szSetting,const char 
 
 
 
-int ICQFreeVariant(DBVARIANT* dbv)
+int __stdcall ICQFreeVariant(DBVARIANT* dbv)
 {
   return DBFreeVariant(dbv);
 }
 
 
 
-int IsICQContact(HANDLE hContact)
+int __fastcall IsICQContact(HANDLE hContact)
 {
   char* szProto = (char*)CallService(MS_PROTO_GETCONTACTBASEPROTO, (WPARAM)hContact, 0);
 
@@ -304,7 +304,7 @@ int IsICQContact(HANDLE hContact)
 
 
 
-HANDLE ICQAddEvent(HANDLE hContact, WORD wType, DWORD dwTime, DWORD flags, DWORD cbBlob, PBYTE pBlob)
+HANDLE __stdcall ICQAddEvent(HANDLE hContact, WORD wType, DWORD dwTime, DWORD flags, DWORD cbBlob, PBYTE pBlob)
 {
   DBEVENTINFO dbei = {0};
 
@@ -321,7 +321,7 @@ HANDLE ICQAddEvent(HANDLE hContact, WORD wType, DWORD dwTime, DWORD flags, DWORD
 
 
 
-HANDLE ICQFindFirstContact()
+HANDLE __fastcall ICQFindFirstContact()
 {
   HANDLE hContact = (HANDLE)CallService(MS_DB_CONTACT_FINDFIRST, 0, 0);
 
@@ -334,7 +334,7 @@ HANDLE ICQFindFirstContact()
 
 
 
-HANDLE ICQFindNextContact(HANDLE hContact)
+HANDLE __fastcall ICQFindNextContact(HANDLE hContact)
 {
   hContact = (HANDLE)CallService(MS_DB_CONTACT_FINDNEXT,(WPARAM)hContact,0);
 

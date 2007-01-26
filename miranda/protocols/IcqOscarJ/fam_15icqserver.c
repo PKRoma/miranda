@@ -5,7 +5,7 @@
 // Copyright © 2000,2001 Richard Hughes, Roland Rabien, Tristan Van de Vreede
 // Copyright © 2001,2002 Jon Keating, Richard Hughes
 // Copyright © 2002,2003,2004 Martin Öberg, Sam Kothari, Robert Rainwater
-// Copyright © 2004,2005,2006 Joe Kucera
+// Copyright © 2004,2005,2006,2007 Joe Kucera
 // 
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License
@@ -123,14 +123,13 @@ static void handleExtensionError(unsigned char *buf, WORD wPackLen)
             // more sofisticated detection, send ack
             if (wSubType == META_REQUEST_FULL_INFO)
             {
-              DWORD dwCookieUin;
+              HANDLE hContact;
               fam15_cookie_data* pCookieData = NULL;
               int foundCookie;
 
-              foundCookie = FindCookie(wCookie, &dwCookieUin, (void**)&pCookieData);
+              foundCookie = FindCookie(wCookie, &hContact, (void**)&pCookieData);
               if (foundCookie && pCookieData)
               {
-                HANDLE hContact = HContactFromUIN(dwCookieUin, NULL);
                 ICQBroadcastAck(hContact,  ACKTYPE_GETINFO, ACKRESULT_FAILED, (HANDLE)1 ,0);
 
                 ReleaseCookie(wCookie);  // we do not leak cookie and memory
@@ -731,20 +730,18 @@ static void parseSearchReplies(unsigned char *databuf, WORD wPacketLen, WORD wCo
 static void parseUserInfoRequestReplies(unsigned char *databuf, WORD wPacketLen, WORD wCookie, WORD wFlags, WORD wReplySubtype, BYTE bResultCode)
 {
   BOOL bMoreDataFollows;
-  DWORD dwCookieUin;
   fam15_cookie_data* pCookieData = NULL;
   HANDLE hContact = INVALID_HANDLE_VALUE;
+  DWORD dwCookieUin;
   int foundCookie;
   BOOL bOK = TRUE;
   
 
-  foundCookie = FindCookie(wCookie, &dwCookieUin, (void**)&pCookieData);
+  foundCookie = FindCookie(wCookie, &hContact, (void**)&pCookieData);
   if (foundCookie && pCookieData)
   {
     if (pCookieData->bRequestType == REQUESTTYPE_OWNER)
       hContact = NULL; // this is here for situation when we have own uin in clist
-    else
-      hContact = HContactFromUIN(dwCookieUin, NULL);
   }
   else
   {
@@ -752,6 +749,8 @@ static void parseUserInfoRequestReplies(unsigned char *databuf, WORD wPacketLen,
 
     return;
   }
+  // obtain contact UIN
+  dwCookieUin = ICQGetContactSettingUIN(hContact);
 
   if (bResultCode != 0x0A)
   {

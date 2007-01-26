@@ -5,7 +5,7 @@
 // Copyright © 2000,2001 Richard Hughes, Roland Rabien, Tristan Van de Vreede
 // Copyright © 2001,2002 Jon Keating, Richard Hughes
 // Copyright © 2002,2003,2004 Martin Öberg, Sam Kothari, Robert Rainwater
-// Copyright © 2004,2005,2006 Joe Kucera
+// Copyright © 2004,2005,2006,2007 Joe Kucera
 //
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License
@@ -311,7 +311,7 @@ DWORD icq_SendChannel1Message(DWORD dwUin, char *szUID, HANDLE hContact, char *p
 
 
   wMessageLen = strlennull(pszText);
-  dwCookie = AllocateCookie(CKT_MESSAGE, 0, dwUin, (void*)pCookieData);
+  dwCookie = AllocateCookie(CKT_MESSAGE, 0, hContact, (void*)pCookieData);
 
   if (pCookieData->nAckType == ACKTYPE_SERVER)
     wPacketLength = 25;
@@ -364,7 +364,7 @@ DWORD icq_SendChannel1MessageW(DWORD dwUin, char *szUID, HANDLE hContact, wchar_
 
 
   wMessageLen = wcslen(pszText)*sizeof(wchar_t);
-  dwCookie = AllocateCookie(CKT_MESSAGE, 0, dwUin, (void*)pCookieData);
+  dwCookie = AllocateCookie(CKT_MESSAGE, 0, hContact, (void*)pCookieData);
 
   if (pCookieData->nAckType == ACKTYPE_SERVER)
     wPacketLength = 26;
@@ -410,13 +410,13 @@ DWORD icq_SendChannel1MessageW(DWORD dwUin, char *szUID, HANDLE hContact, wchar_
 
 
 
-DWORD icq_SendChannel2Message(DWORD dwUin, const char *szMessage, int nBodyLen, WORD wPriority, message_cookie_data *pCookieData, char *szCap)
+DWORD icq_SendChannel2Message(DWORD dwUin, HANDLE hContact, const char *szMessage, int nBodyLen, WORD wPriority, message_cookie_data *pCookieData, char *szCap)
 {
   icq_packet packet;
   DWORD dwCookie;
 
 
-  dwCookie = AllocateCookie(CKT_MESSAGE, 0, dwUin, (void*)pCookieData);
+  dwCookie = AllocateCookie(CKT_MESSAGE, 0, hContact, (void*)pCookieData);
 
   // Pack the standard header
   packServChannel2Header(&packet, dwUin, (WORD)(nBodyLen + (szCap ? 53:11)), pCookieData->dwMsgID1, pCookieData->dwMsgID2, dwCookie, ICQ_VERSION, (BYTE)pCookieData->bMessageType, 0,
@@ -445,14 +445,14 @@ DWORD icq_SendChannel2Message(DWORD dwUin, const char *szMessage, int nBodyLen, 
 
 
 
-DWORD icq_SendChannel4Message(DWORD dwUin, BYTE bMsgType, WORD wMsgLen, const char *szMsg, message_cookie_data *pCookieData)
+DWORD icq_SendChannel4Message(DWORD dwUin, HANDLE hContact, BYTE bMsgType, WORD wMsgLen, const char *szMsg, message_cookie_data *pCookieData)
 {
   icq_packet packet;
   WORD wPacketLength;
   DWORD dwCookie;
 
 
-  dwCookie = AllocateCookie(CKT_MESSAGE, 0, dwUin, (void*)pCookieData);
+  dwCookie = AllocateCookie(CKT_MESSAGE, 0, hContact, (void*)pCookieData);
 
   if (pCookieData->nAckType == ACKTYPE_SERVER)
     wPacketLength = 28;
@@ -497,7 +497,7 @@ void sendOwnerInfoRequest(void)
 
   pCookieData = SAFE_MALLOC(sizeof(fam15_cookie_data));
   pCookieData->bRequestType = REQUESTTYPE_OWNER;
-  dwCookie = AllocateCookie(CKT_FAMILYSPECIAL, 0, dwLocalUIN, (void*)pCookieData);
+  dwCookie = AllocateCookie(CKT_FAMILYSPECIAL, 0, NULL, (void*)pCookieData);
 
   packServIcqExtensionHeader(&packet, 6, 0x07D0, (WORD)dwCookie);
   packLEWord(&packet, META_REQUEST_SELF_INFO);
@@ -508,7 +508,7 @@ void sendOwnerInfoRequest(void)
 
 
 
-void sendUserInfoAutoRequest(DWORD dwUin)
+void sendUserInfoAutoRequest(HANDLE hContact, DWORD dwUin)
 {
   icq_packet packet;
   DWORD dwCookie;
@@ -517,7 +517,7 @@ void sendUserInfoAutoRequest(DWORD dwUin)
 
   pCookieData = SAFE_MALLOC(sizeof(fam15_cookie_data));
   pCookieData->bRequestType = REQUESTTYPE_USERAUTO;
-  dwCookie = AllocateCookie(CKT_FAMILYSPECIAL, 0, dwUin, (void*)pCookieData);
+  dwCookie = AllocateCookie(CKT_FAMILYSPECIAL, 0, hContact, (void*)pCookieData);
 
   packServIcqExtensionHeader(&packet, 6, 0x07D0, (WORD)dwCookie);
   packLEWord(&packet, META_REQUEST_SHORT_INFO);
@@ -528,7 +528,7 @@ void sendUserInfoAutoRequest(DWORD dwUin)
 
 
 
-DWORD icq_sendGetInfoServ(DWORD dwUin, int bMinimal, int bManual)
+DWORD icq_sendGetInfoServ(HANDLE hContact, DWORD dwUin, int bMinimal, int bManual)
 {
   icq_packet packet;
   DWORD dwCookie;
@@ -551,7 +551,7 @@ DWORD icq_sendGetInfoServ(DWORD dwUin, int bMinimal, int bManual)
   LeaveCriticalSection(&ratesMutex);
 
   pCookieData = SAFE_MALLOC(sizeof(fam15_cookie_data));
-  dwCookie = AllocateCookie(CKT_FAMILYSPECIAL, 0, dwUin, (void*)pCookieData);
+  dwCookie = AllocateCookie(CKT_FAMILYSPECIAL, 0, hContact, (void*)pCookieData);
 
   packServIcqExtensionHeader(&packet, 6, CLI_META_INFO_REQ, (WORD)dwCookie);
   if (bMinimal)
@@ -591,9 +591,8 @@ DWORD icq_sendGetAimProfileServ(HANDLE hContact, char* szUid)
   LeaveCriticalSection(&ratesMutex);
 
   pCookieData = SAFE_MALLOC(sizeof(fam15_cookie_data));
-  dwCookie = AllocateCookie(CKT_FAMILYSPECIAL, ICQ_LOCATION_REQ_USER_INFO, 0, (void*)pCookieData);
+  dwCookie = AllocateCookie(CKT_FAMILYSPECIAL, ICQ_LOCATION_REQ_USER_INFO, hContact, (void*)pCookieData);
   pCookieData->bRequestType = REQUESTTYPE_PROFILE;
-  pCookieData->hContact = hContact;
 
   serverPacketInit(&packet, (WORD)(13 + bUIDlen));
   packFNACHeaderFull(&packet, ICQ_LOCATION_FAMILY, ICQ_LOCATION_REQ_USER_INFO, 0, dwCookie);
@@ -608,7 +607,7 @@ DWORD icq_sendGetAimProfileServ(HANDLE hContact, char* szUid)
 
 
 
-DWORD icq_sendGetAwayMsgServ(DWORD dwUin, int type, WORD wVersion)
+DWORD icq_sendGetAwayMsgServ(HANDLE hContact, DWORD dwUin, int type, WORD wVersion)
 {
   icq_packet packet;
   DWORD dwCookie;
@@ -625,7 +624,7 @@ DWORD icq_sendGetAwayMsgServ(DWORD dwUin, int type, WORD wVersion)
   LeaveCriticalSection(&ratesMutex);
 
   pCookieData = CreateMessageCookie(MTYPE_AUTOAWAY, (BYTE)type);
-  dwCookie = AllocateCookie(CKT_MESSAGE, 0, dwUin, (void*)pCookieData);
+  dwCookie = AllocateCookie(CKT_MESSAGE, 0, hContact, (void*)pCookieData);
 
   packServChannel2Header(&packet, dwUin, 3, pCookieData->dwMsgID1, pCookieData->dwMsgID2, dwCookie, wVersion, (BYTE)type, 3, 1, 0, 0, 0);
   packEmptyMsg(&packet);    // Message
@@ -636,7 +635,7 @@ DWORD icq_sendGetAwayMsgServ(DWORD dwUin, int type, WORD wVersion)
 
 
 
-DWORD icq_sendGetAimAwayMsgServ(char *szUID, int type)
+DWORD icq_sendGetAimAwayMsgServ(HANDLE hContact, char *szUID, int type)
 {
   icq_packet packet;
   DWORD dwCookie;
@@ -644,13 +643,12 @@ DWORD icq_sendGetAimAwayMsgServ(char *szUID, int type)
   BYTE bUIDlen = strlennull(szUID);
 
   pCookieData = CreateMessageCookie(MTYPE_AUTOAWAY, (byte)type);
-  dwCookie = AllocateCookie(CKT_MESSAGE, 0, 0, (void*)pCookieData);
+  dwCookie = AllocateCookie(CKT_MESSAGE, 0, hContact, (void*)pCookieData);
 
   serverPacketInit(&packet, (WORD)(13 + bUIDlen));
   packFNACHeaderFull(&packet, ICQ_LOCATION_FAMILY, ICQ_LOCATION_REQ_USER_INFO, 0, dwCookie);
   packWord(&packet, 0x03);
-  packByte(&packet, bUIDlen);
-  packBuffer(&packet, szUID, bUIDlen);
+  packUID(&packet, 0, szUID);
 
   sendServPacket(&packet);
 

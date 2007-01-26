@@ -810,7 +810,7 @@ int oftInitTransfer(HANDLE hContact, DWORD dwUin, char* szUid, char** files, cha
   ft->sending = 1;
   ft->fileId = -1;
   ft->iCurrentFile = 0;
-  ft->dwCookie = AllocateCookie(CKT_FILE, ICQ_MSG_SRV_SEND, dwUin, ft);
+  ft->dwCookie = AllocateCookie(CKT_FILE, ICQ_MSG_SRV_SEND, hContact, ft);
 
   // Init oscar fields
   {
@@ -887,7 +887,7 @@ DWORD oftFileAllow(HANDLE hContact, WPARAM wParam, LPARAM lParam)
   ft->szPath = ansi_to_utf8((char *)lParam);
 
   // Create cookie
-  ft->dwCookie = AllocateCookie(CKT_FILE, ICQ_MSG_SRV_SEND, dwUin, ft);
+  ft->dwCookie = AllocateCookie(CKT_FILE, ICQ_MSG_SRV_SEND, hContact, ft);
 
   OpenOscarConnection(hContact, ft, ft->bUseProxy ? OCT_PROXY_RECV: OCT_NORMAL);
 

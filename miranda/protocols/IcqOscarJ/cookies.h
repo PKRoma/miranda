@@ -5,7 +5,7 @@
 // Copyright © 2000,2001 Richard Hughes, Roland Rabien, Tristan Van de Vreede
 // Copyright © 2001,2002 Jon Keating, Richard Hughes
 // Copyright © 2002,2003,2004 Martin Öberg, Sam Kothari, Robert Rainwater
-// Copyright © 2004,2005,2006 Joe Kucera
+// Copyright © 2004,2005,2006,2007 Joe Kucera
 // 
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License
@@ -50,7 +50,7 @@
 typedef struct icq_cookie_info_s
 {
   DWORD dwCookie;
-  DWORD dwUin;
+  HANDLE hContact;
   void *pvExtra;
   DWORD dwTime;
   BYTE bType;
@@ -75,11 +75,15 @@ typedef struct message_cookie_data_s
 #define ACKTYPE_SERVER 1
 #define ACKTYPE_CLIENT 2
 
+typedef struct message_cookie_data_ex_s
+{
+  message_cookie_data msg;
+  BYTE isOffline;
+} message_cookie_data_ex;
 
 typedef struct fam15_cookie_data_s
 {
   BYTE bRequestType;
-  HANDLE hContact;
 } fam15_cookie_data;
 
 #define REQUESTTYPE_OWNER        0
@@ -124,16 +128,16 @@ typedef struct {
 void InitCookies(void);
 void UninitCookies(void);
 
-DWORD AllocateCookie(BYTE bType, WORD wIdent, DWORD dwUin, void *pvExtra);
+DWORD AllocateCookie(BYTE bType, WORD wIdent, HANDLE hContact, void *pvExtra);
 void FreeCookie(DWORD dwCookie);
 void ReleaseCookie(DWORD dwCookie);
 DWORD GenerateCookie(WORD wIdent);
 
 int GetCookieType(DWORD dwCookie);
 
-int FindCookie(DWORD wCookie, DWORD *pdwUin, void **ppvExtra);
-int FindCookieByData(void *pvExtra, DWORD *pdwCookie, DWORD *pdwUin);
-int FindMessageCookie(DWORD dwMsgID1, DWORD dwMsgID2, DWORD *pdwCookie, DWORD *pdwUin, message_cookie_data **ppvExtra);
+int FindCookie(DWORD wCookie, HANDLE *phContact, void **ppvExtra);
+int FindCookieByData(void *pvExtra, DWORD *pdwCookie, HANDLE *phContact);
+int FindMessageCookie(DWORD dwMsgID1, DWORD dwMsgID2, DWORD *pdwCookie, HANDLE *phContact, message_cookie_data **ppvExtra);
 
 void InitMessageCookie(message_cookie_data *pCookie);
 message_cookie_data *CreateMessageCookie(WORD bMsgType, BYTE bAckType);

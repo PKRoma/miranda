@@ -5,7 +5,7 @@
 // Copyright © 2000,2001 Richard Hughes, Roland Rabien, Tristan Van de Vreede
 // Copyright © 2001,2002 Jon Keating, Richard Hughes
 // Copyright © 2002,2003,2004 Martin Öberg, Sam Kothari, Robert Rainwater
-// Copyright © 2004,2005,2006 Joe Kucera
+// Copyright © 2004,2005,2006,2007 Joe Kucera
 // 
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License
@@ -708,7 +708,7 @@ DWORD icq_modifyServerPrivacyItem(HANDLE hContact, DWORD dwUin, char* szUid, WOR
     ack->hContact = hContact;
     ack->wContactId = wItemId;
 
-    dwCookie = AllocateCookie(CKT_SERVERLIST, wAction, dwUin, ack);
+    dwCookie = AllocateCookie(CKT_SERVERLIST, wAction, hContact, ack);
   }
   return icq_sendSimpleItem(dwCookie, wAction, dwUin, szUid, 0, wItemId, wType);
 }
@@ -1405,7 +1405,7 @@ void addServContactReady(WORD wGroupID, LPARAM lParam)
   ack->wGroupId = wGroupID;
   ack->wContactId = wItemID;
 
-  dwCookie = AllocateCookie(CKT_SERVERLIST, ICQ_LISTS_ADDTOLIST, dwUin, ack);
+  dwCookie = AllocateCookie(CKT_SERVERLIST, ICQ_LISTS_ADDTOLIST, ack->hContact, ack);
 
   sendAddStart(0);
   icq_sendServerContact(ack->hContact, dwCookie, ICQ_LISTS_ADDTOLIST, wGroupID, wItemID);
@@ -1483,7 +1483,7 @@ DWORD removeServContact(HANDLE hContact)
     ack->wGroupId = wGroupID;
     ack->wContactId = wItemID;
 
-    dwCookie = AllocateCookie(CKT_SERVERLIST, ICQ_LISTS_REMOVEFROMLIST, dwUin, ack);
+    dwCookie = AllocateCookie(CKT_SERVERLIST, ICQ_LISTS_REMOVEFROMLIST, hContact, ack);
   }
 
   sendAddStart(0);
@@ -1555,8 +1555,8 @@ void moveServContactReady(WORD wNewGroupID, LPARAM lParam)
   ack->wNewGroupId = wNewGroupID;
   ack->lParam = 0; // we use this as a sign
 
-  dwCookie = AllocateCookie(CKT_SERVERLIST, ICQ_LISTS_REMOVEFROMLIST, dwUin, ack);
-  dwCookie2 = AllocateCookie(CKT_SERVERLIST, ICQ_LISTS_ADDTOLIST, dwUin, ack);
+  dwCookie = AllocateCookie(CKT_SERVERLIST, ICQ_LISTS_REMOVEFROMLIST, ack->hContact, ack);
+  dwCookie2 = AllocateCookie(CKT_SERVERLIST, ICQ_LISTS_ADDTOLIST, ack->hContact, ack);
 
   sendAddStart(0);
   // imitate icq5, previously here was different order, but AOL changed and it ceased to work
@@ -1653,7 +1653,7 @@ static DWORD updateServContact(HANDLE hContact)
     ack->dwUin = dwUin;
     ack->hContact = hContact;
 
-    dwCookie = AllocateCookie(CKT_SERVERLIST, ICQ_LISTS_UPDATEGROUP, dwUin, ack);
+    dwCookie = AllocateCookie(CKT_SERVERLIST, ICQ_LISTS_UPDATEGROUP, hContact, ack);
   }
 
   // There is no need to send ICQ_LISTS_CLI_MODIFYSTART or
@@ -1737,7 +1737,7 @@ void resetServContactAuthState(HANDLE hContact, DWORD dwUin)
       ack->wGroupId = wGroupId;
       ack->dwAction = SSA_CONTACT_FIX_AUTH;
       ack->dwUin = dwUin;
-      dwCookie = AllocateCookie(CKT_SERVERLIST, 0, dwUin, ack);
+      dwCookie = AllocateCookie(CKT_SERVERLIST, 0, hContact, ack);
 
       sendAddStart(0);
       icq_sendServerContact(hContact, dwCookie, ICQ_LISTS_REMOVEFROMLIST, wGroupId, wContactId);

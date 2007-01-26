@@ -5,7 +5,7 @@
 // Copyright © 2000,2001 Richard Hughes, Roland Rabien, Tristan Van de Vreede
 // Copyright © 2001,2002 Jon Keating, Richard Hughes
 // Copyright © 2002,2003,2004 Martin Öberg, Sam Kothari, Robert Rainwater
-// Copyright © 2004,2005,2006 Joe Kucera
+// Copyright © 2004,2005,2006,2007 Joe Kucera
 // 
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License
@@ -50,13 +50,13 @@ typedef struct icq_capability_s
 
 static icq_capability CapabilityRecord[] =
 {
-  {CAPF_SRV_RELAY, {CAP_SRV_RELAY}},
-  {CAPF_UTF,       {CAP_UTF      }},
-  {CAPF_RTF,       {CAP_RTF      }},
-  {CAPF_ICQDIRECT, {CAP_ICQDIRECT}},
-  {CAPF_TYPING,    {CAP_TYPING   }},
-  {CAPF_XTRAZ,     {CAP_XTRAZ    }},
-  {CAPF_AIM_FILE,  {CAP_AIM_FILE }}
+  {CAPF_SRV_RELAY, {CAP_SRV_RELAY }},
+  {CAPF_UTF,       {CAP_UTF       }},
+  {CAPF_RTF,       {CAP_RTF       }},
+  {CAPF_ICQDIRECT, {CAP_ICQDIRECT }},
+  {CAPF_TYPING,    {CAP_TYPING    }},
+  {CAPF_XTRAZ,     {CAP_XTRAZ     }},
+  {CAPF_OSCAR_FILE,{CAP_OSCAR_FILE}}
 };
 
 

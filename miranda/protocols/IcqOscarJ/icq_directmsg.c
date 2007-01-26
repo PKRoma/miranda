@@ -5,7 +5,7 @@
 // Copyright © 2000,2001 Richard Hughes, Roland Rabien, Tristan Van de Vreede
 // Copyright © 2001,2002 Jon Keating, Richard Hughes
 // Copyright © 2002,2003,2004 Martin Öberg, Sam Kothari, Robert Rainwater
-// Copyright © 2004,2005,2006 Joe Kucera
+// Copyright © 2004,2005,2006,2007 Joe Kucera
 // 
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License
@@ -179,16 +179,16 @@ void handleDirectMessage(directconnect* dc, PBYTE buf, WORD wLen)
     }
     else
     {
-      DWORD dwCookieUin;
+      HANDLE hCookieContact;
       message_cookie_data* pCookieData = NULL;
 
-      if (!FindCookie(wCookie, &dwCookieUin, &pCookieData))
+      if (!FindCookie(wCookie, &hCookieContact, &pCookieData))
       {
         NetLog_Direct("Received an unexpected direct ack");
       }
-      else if (dwCookieUin != dc->dwRemoteUin)
+      else if (hCookieContact != dc->hContact)
       {
-        NetLog_Direct("Direct UIN does not match Cookie UIN(%u != %u)", dc->dwRemoteUin, dwCookieUin);
+        NetLog_Direct("Direct Contact does not match Cookie Contact(0x%x != 0x%x)", dc->hContact, hCookieContact);
         ReleaseCookie(wCookie); // This could be a bad idea, but I think it is safe
       }
       else
@@ -316,16 +316,16 @@ void handleDirectGreetingMessage(directconnect* dc, PBYTE buf, WORD wLen, WORD w
   }
   else if (typeId && wCommand == DIRECT_ACK)
   {
-    DWORD dwCookieUin;
+    HANDLE hCookieContact;
     message_cookie_data* pCookieData = NULL;
 
-    if (!FindCookie(wCookie, &dwCookieUin, &pCookieData))
+    if (!FindCookie(wCookie, &hCookieContact, &pCookieData))
     {
       NetLog_Direct("Received an unexpected direct ack");
     }
-    else if (dwCookieUin != dc->dwRemoteUin)
+    else if (hCookieContact != dc->hContact)
     {
-      NetLog_Direct("Direct UIN does not match Cookie UIN(%u != %u)", dc->dwRemoteUin, dwCookieUin);
+      NetLog_Direct("Direct Contact does not match Cookie Contact(0x%x != 0x%x)", dc->hContact, hCookieContact);
       ReleaseCookie(wCookie); // This could be a bad idea, but I think it is safe
     }
     else
@@ -352,7 +352,7 @@ void handleDirectGreetingMessage(directconnect* dc, PBYTE buf, WORD wLen, WORD w
             memcpy(szMsg, buf, dwDataLength);
           szMsg[dwDataLength] = '\0';
 
-          handleXtrazNotifyResponse(dwCookieUin, dc->hContact, wCookie, szMsg, dwDataLength);
+          handleXtrazNotifyResponse(dc->dwRemoteUin, dc->hContact, wCookie, szMsg, dwDataLength);
         }
         break;
 

@@ -5,7 +5,7 @@
 // Copyright © 2000,2001 Richard Hughes, Roland Rabien, Tristan Van de Vreede
 // Copyright © 2001,2002 Jon Keating, Richard Hughes
 // Copyright © 2002,2003,2004 Martin Öberg, Sam Kothari, Robert Rainwater
-// Copyright © 2004,2005,2006 Joe Kucera
+// Copyright © 2004,2005,2006,2007 Joe Kucera
 // 
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License
@@ -44,14 +44,14 @@ void handleFileAck(PBYTE buf, WORD wLen, DWORD dwUin, DWORD dwCookie, WORD wStat
 {
   char* pszFileName = NULL;
   DWORD dwFileSize;
-  DWORD dwCookieUin;
+  HANDLE hCookieContact;
   WORD wPort;
   WORD wFilenameLength;
   filetransfer* ft;
 
   
   // Find the filetransfer that belongs to this response
-  if (!FindCookie(dwCookie, &dwCookieUin, &ft))
+  if (!FindCookie(dwCookie, &hCookieContact, &ft))
   {
     NetLog_Direct("Error: Received unexpected file transfer request response");
     return;
@@ -59,7 +59,7 @@ void handleFileAck(PBYTE buf, WORD wLen, DWORD dwUin, DWORD dwCookie, WORD wStat
 
   FreeCookie(dwCookie);
   
-  if (dwCookieUin != dwUin)
+  if (hCookieContact != HContactFromUIN(dwUin, NULL))
   {
     NetLog_Direct("Error: UINs do not match in file transfer request response");
     return;

@@ -5,7 +5,7 @@
 // Copyright © 2000,2001 Richard Hughes, Roland Rabien, Tristan Van de Vreede
 // Copyright © 2001,2002 Jon Keating, Richard Hughes
 // Copyright © 2002,2003,2004 Martin  berg, Sam Kothari, Robert Rainwater
-// Copyright © 2004,2005,2006 Joe Kucera
+// Copyright © 2004,2005,2006,2007 Joe Kucera
 //
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License
@@ -116,6 +116,7 @@ static void handleUserOnline(BYTE* buf, WORD wLen, serverthread_info* info)
   WORD wStatus;
   BYTE nTCPFlag = 0;
   DWORD dwOnlineSince;
+  DWORD dwMemberSince;
   WORD wIdleTimer;
   time_t tIdleTS = 0;
   char szStrBuf[MAX_PATH];
@@ -230,6 +231,9 @@ static void handleUserOnline(BYTE* buf, WORD wLen, serverthread_info* info)
 
     // Get Online Since TLV
     dwOnlineSince = getDWordFromChain(pChain, 0x03, 1);
+
+    // Get Member Since TLV
+    dwMemberSince = getDWordFromChain(pChain, 0x05, 1);
 
     // Get Idle timer TLV
     wIdleTimer = getWordFromChain(pChain, 0x04, 1);
@@ -379,7 +383,9 @@ static void handleUserOnline(BYTE* buf, WORD wLen, serverthread_info* info)
   {
     if (szClient == 0) szClient = ICQTranslateUtfStatic("Unknown", szStrBuf); // if no detection, set uknown
 
-    ICQWriteContactSettingDword(hContact,  "LogonTS",      dwOnlineSince);
+    ICQWriteContactSettingDword(hContact, "LogonTS",      dwOnlineSince);
+    if (dwMemberSince)
+      ICQWriteContactSettingDword(hContact, "MemberTS",     dwMemberSince);
     if (dwUIN)
     { // on AIM these are not used
       ICQWriteContactSettingDword(hContact, "DirectCookie", dwDirectConnCookie);

@@ -5,7 +5,7 @@
 // Copyright © 2000,2001 Richard Hughes, Roland Rabien, Tristan Van de Vreede
 // Copyright © 2001,2002 Jon Keating, Richard Hughes
 // Copyright © 2002,2003,2004 Martin Öberg, Sam Kothari, Robert Rainwater
-// Copyright © 2004,2005,2006 Joe Kucera
+// Copyright © 2004,2005,2006,2007 Joe Kucera
 //
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License
@@ -61,11 +61,11 @@ extern int bHideXStatusUI;
 PLUGININFO pluginInfo = {
   sizeof(PLUGININFO),
   NULL,
-  PLUGIN_MAKE_VERSION(0,3,8,8),
+  PLUGIN_MAKE_VERSION(0,3,8,9),
   "Support for ICQ network, enhanced.",
   "Joe Kucera, Bio, Martin Öberg, Richard Hughes, Jon Keating, etc",
   "jokusoftware@miranda-im.org",
-  "(C) 2000-2006 M.Öberg, R.Hughes, J.Keating, Bio, Angeli-Ka, J.Kucera",
+  "(C) 2000-2007 M.Öberg, R.Hughes, J.Keating, Bio, Angeli-Ka, J.Kucera",
   "http://addons.miranda-im.org/details.php?action=viewfile&id=1683",
   0,  //not transient
   0   //doesn't replace anything built-in
@@ -78,17 +78,17 @@ static int OnSystemPreShutdown(WPARAM wParam,LPARAM lParam);
 static int icq_PrebuildContactMenu(WPARAM wParam, LPARAM lParam);
 static int IconLibIconsChanged(WPARAM wParam, LPARAM lParam);
 
-
+static BOOL bInited = FALSE;
 
 PLUGININFO __declspec(dllexport) *MirandaPluginInfo(DWORD mirandaVersion)
 {
-  // Only load for 0.4.0.1 or greater
-  // Miranda IM v0.4.0.1 contained important DB bug fix
-  if (mirandaVersion < PLUGIN_MAKE_VERSION(0, 4, 0, 1)) 
+  // Only load for 0.7.0.12 or greater
+  // We need core MD5 interface
+  if (mirandaVersion < PLUGIN_MAKE_VERSION(0, 7, 0, 12)) 
   {
     return NULL;
   }
-  else
+  else if (!bInited)
   {
     // Are we running under Unicode Windows version ?
     gbUnicodeAPI = (GetVersion() & 0x80000000) == 0;
@@ -97,8 +97,10 @@ PLUGININFO __declspec(dllexport) *MirandaPluginInfo(DWORD mirandaVersion)
       strcat(pluginName, " (Unicode)");
     pluginInfo.shortName = pluginName;
     MIRANDA_VERSION = mirandaVersion;
-    return &pluginInfo;
+
+    bInited = TRUE;
   }
+  return &pluginInfo;
 }
 
 
@@ -140,6 +142,15 @@ int __declspec(dllexport) Load(PLUGINLINK *link)
 
     CallService(MS_SYSTEM_GETVERSIONTEXT, MAX_PATH, (LPARAM)szVer);
     gbUnicodeCore = (strstr(szVer, "Unicode") != NULL);
+
+    if (strstr(szVer, "alpha") != NULL)
+    { // Are we running under Alpha Core
+      MIRANDA_VERSION |= 0x80000000;
+    }
+    else if (MIRANDA_VERSION >= 0x00050000 && strstr(szVer, "Preview") == NULL)
+    { // for Final Releases of Miranda 0.5+ clear build number
+      MIRANDA_VERSION &= 0xFFFFFF00;
+    }
   }
 
   srand(time(NULL));
