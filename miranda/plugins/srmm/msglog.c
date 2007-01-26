@@ -190,6 +190,7 @@ int DbEventIsShown(DBEVENTINFO * dbei, struct MessageWindowData *dat)
 		case EVENTTYPE_MESSAGE:
 			return 1;
 		case EVENTTYPE_STATUSCHANGE:
+		case EVENTTYPE_FILE:
 			if (dbei->flags & DBEF_READ)
 				return 0;
 			return 1;
@@ -260,6 +261,7 @@ static char *CreateRTFFromDbEvent(struct MessageWindowData *dat, HANDLE hContact
 				}
 				break;
 			case EVENTTYPE_STATUSCHANGE:
+			case EVENTTYPE_FILE:
 				i = LOGICON_MSG_NOTICE;
 				break;
 		}
@@ -374,6 +376,17 @@ static char *CreateRTFFromDbEvent(struct MessageWindowData *dat, HANDLE hContact
 			AppendToBufferWithRTF(&buffer, &bufferEnd, &bufferAlloced, msg);
 			if (ci.pszVal)
 				mir_free(ci.pszVal);
+			break;
+		}
+		case EVENTTYPE_FILE:
+		{
+			char* filename = dbei.pBlob + sizeof(DWORD);
+			char* descr = filename + lstrlenA( filename ) + 1;
+			AppendToBuffer(&buffer, &bufferEnd, &bufferAlloced, " %s ", SetToStyle(MSGFONTID_NOTICE));
+         if ( *descr != 0 )
+				AppendToBuffer( &buffer, &bufferEnd, &bufferAlloced, "%s (%s)", filename, descr );
+			else
+				AppendToBuffer( &buffer, &bufferEnd, &bufferAlloced, "%s", filename );
 			break;
 		}
 	}
