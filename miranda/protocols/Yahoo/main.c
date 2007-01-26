@@ -26,7 +26,6 @@
 
 #include "options.h"
 
-//#define HTTP_GATEWAY
 extern char *szStartMsg;
 extern yahoo_local_account *ylad;
 

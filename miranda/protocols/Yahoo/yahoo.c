@@ -76,15 +76,18 @@ extern char *szStartMsg;
 char * yahoo_status_code(enum yahoo_status s)
 {
 	int i;
+
 	for(i=0; yahoo_status_codes[i].label; i++)
 		if(yahoo_status_codes[i].id == s)
 			return yahoo_status_codes[i].label;
+		
 	return "Unknown";
 }
 
 int miranda_to_yahoo(int myyahooStatus)
 {
     int ret = YAHOO_STATUS_OFFLINE;
+	
     switch (myyahooStatus) {
     case ID_STATUS_ONLINE: 
                         ret = YAHOO_STATUS_AVAILABLE;
@@ -117,7 +120,6 @@ int miranda_to_yahoo(int myyahooStatus)
 
 void yahoo_set_status(int myyahooStatus, char *msg, int away)
 {
-	//LOG(("yahoo_set_status myyahooStatus: %s (%d), msg: %s, away: %d", (char *) CallService(MS_CLIST_GETSTATUSMODEDESCRIPTION, myyahooStatus, 0), myyahooStatus, msg, away));
 	LOG(("yahoo_set_status myyahooStatus: %d, msg: %s, away: %d", myyahooStatus, msg, away));
 
 	/* Safety check, don't dereference Invalid pointers */
@@ -144,6 +146,7 @@ void yahoo_stealth(const char *buddy, int add)
 int yahoo_to_miranda_status(int yahooStatus, int away)
 {
     int ret = ID_STATUS_OFFLINE;
+	
     switch (yahooStatus) {
     case YAHOO_STATUS_AVAILABLE: 
                         ret = ID_STATUS_ONLINE;
@@ -1290,13 +1293,14 @@ static int connection_tags=0;
 int ext_yahoo_add_handler(int id, int fd, yahoo_input_condition cond, void *data)
 {
 	struct _conn *c = y_new0(struct _conn, 1);
+	
+	LOG(("[ext_yahoo_add_handler] fd:%d id:%d tag %d", fd, id, c->tag));
+	
 	c->tag = ++connection_tags;
 	c->id = id;
 	c->fd = fd;
 	c->cond = cond;
 	c->data = data;
-
-	LOG(("Add %d for %d, tag %d", fd, id, c->tag));
 
 	connections = y_list_prepend(connections, c);
 
@@ -1306,7 +1310,7 @@ int ext_yahoo_add_handler(int id, int fd, yahoo_input_condition cond, void *data
 void ext_yahoo_remove_handler(int id, int tag)
 {
 	YList *l;
-	LOG(("ext_yahoo_remove_handler id:%d tag:%d ", id, tag));
+	LOG(("[ext_yahoo_remove_handler] id:%d tag:%d ", id, tag));
 	
 	for(l = connections; l; l = y_list_next(l)) {
 		struct _conn *c = l->data;
