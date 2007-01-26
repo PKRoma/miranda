@@ -118,11 +118,12 @@
 #define IDI_DOWNARROW                   264
 #define IDD_CREDITS                     265
 #define IDD_OPT_IDLE                    268
-#define IDD_OPT_PLUS                    271
 #define IDI_NEWGROUP                    282
 #define IDI_NEWGROUP2                   283
 #define IDD_OPT_DSPPROFILES             300
 #define IDD_OPT_DSPADVANCED             301
+#define IDD_OPT_DSPITEMS                302
+#define IDD_OPT_DSPGROUPS               303
 #define IDC_ACTIVEPERC                  1000
 #define IDC_RESETPROTOCOLDATA           1000
 #define IDC_OPTIONSTAB                  1000
@@ -182,7 +183,7 @@
 #define IDC_MYNOTES                     1033
 #define IDC_DONTREPLY                   1034
 #define IDC_DROPSHADOW                  1035
-#define IDC_DROPUSER                    1036
+#define IDC_DROPUSER                    215
 #define IDC_URLS                        1037
 #define IDC_DUMPRECV                    1038
 #define IDC_REPLY                       1039
@@ -258,7 +259,7 @@
 #define IDC_HKSEARCH                    1084
 #define IDC_USESOUND                    1085
 #define IDC_HKSHOWOPTIONS               1086
-#define IDC_HYPERLINKHAND               1087
+#define IDC_HYPERLINKHAND               214
 #define IDC_LANGUAGE1                   1088
 #define IDC_LANGUAGE2                   1089
 #define IDC_LANGUAGE3                   1090

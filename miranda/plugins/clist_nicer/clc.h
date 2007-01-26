@@ -107,11 +107,16 @@ struct DisplayProfile {
     DWORD   dwExtraImageMask;
     int     exIconScale;
     BOOL    bCenterStatusIcons;
-    BOOL    bDimIdle, bNoOfflineAvatars, bShowLocalTime, bShowLocalTimeSelective;
+    BOOL    bDimIdle, bNoOfflineAvatars, bShowLocalTime, bShowLocalTimeSelective, bDontSeparateOffline, bCenterGroupNames;
     BYTE    dualRowMode;
     COLORREF avatarBorder;
     DWORD    avatarRadius;
     int      avatarSize;
+    DWORD    clcExStyle;
+    DWORD    clcOfflineModes;
+    BYTE     sortOrder[3], bUseDCMirroring, bGroupAlign;
+    BYTE     avatarPadding;
+    BYTE     bLeftMargin, bRightMargin, bRowSpacing, bGroupIndent, bRowHeight, bGroupRowHeight;
 };
 
 #define DSP_PROFILES_MODULE "CLN_DspProfiles"           // db module for display profiles

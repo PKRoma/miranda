@@ -34,11 +34,6 @@ extern POINT g_oldPos;
 extern COLORREF g_CLUISkinnedBkColorRGB;
 extern HPEN g_hPenCLUIFrames;
  
-static void __setFlag(DWORD dwFlag, int iMode)
-{
-	g_CluiData.dwFlags = iMode ? g_CluiData.dwFlags | dwFlag : g_CluiData.dwFlags & ~dwFlag;
-}
-
 static int opt_clui_changed = 0;
 
 BOOL CALLBACK DlgProcCluiOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam)
@@ -430,74 +425,6 @@ BOOL CALLBACK DlgProcSBarOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPar
 			PostMessage(pcli->hwndContactList, CLUIINTM_REDRAW, 0, 0);
             opt_sbar_changed = 0;
 			return TRUE;
-		}
-		break;
-	}
-	return FALSE;
-}
-
-BOOL CALLBACK DlgProcPlusOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam)
-{
-	switch (msg) {
-	case WM_INITDIALOG:
-		{
-			DWORD dwFlags = g_CluiData.dwFlags;
-			int i = 0;
-			TranslateDialogDefault(hwndDlg);
-
-			CheckDlgButton(hwndDlg, IDC_SHOWBUTTONBAR, dwFlags & CLUI_FRAME_SHOWTOPBUTTONS);
-			CheckDlgButton(hwndDlg, IDC_SHOWBOTTOMBUTTONS, dwFlags & CLUI_FRAME_SHOWBOTTOMBUTTONS);
-			CheckDlgButton(hwndDlg, IDC_CLISTSUNKEN, dwFlags & CLUI_FRAME_CLISTSUNKEN);
-			CheckDlgButton(hwndDlg, IDC_EVENTAREAAUTOHIDE, dwFlags & CLUI_FRAME_AUTOHIDENOTIFY);
-			CheckDlgButton(hwndDlg, IDC_EVENTAREASUNKEN, (dwFlags & CLUI_FRAME_EVENTAREASUNKEN) ? BST_CHECKED : BST_UNCHECKED);
-
-			SendDlgItemMessage(hwndDlg, IDC_AVATARPADDINGSPIN, UDM_SETRANGE, 0, MAKELONG(10, 0));
-			SendDlgItemMessage(hwndDlg, IDC_AVATARPADDINGSPIN, UDM_SETPOS, 0, g_CluiData.avatarPadding);
-
-			SendDlgItemMessage(hwndDlg, IDC_CLISTALIGN, CB_INSERTSTRING, -1, (LPARAM)TranslateT("Never"));
-			SendDlgItemMessage(hwndDlg, IDC_CLISTALIGN, CB_INSERTSTRING, -1, (LPARAM)TranslateT("Always"));
-			SendDlgItemMessage(hwndDlg, IDC_CLISTALIGN, CB_INSERTSTRING, -1, (LPARAM)TranslateT("For RTL only"));
-			SendDlgItemMessage(hwndDlg, IDC_CLISTALIGN, CB_INSERTSTRING, -1, (LPARAM)TranslateT("RTL TEXT only"));
-
-			SendDlgItemMessage(hwndDlg, IDC_CLISTALIGN, CB_SETCURSEL, g_CluiData.bUseDCMirroring, 0);
-			return TRUE;
-		}
-	case WM_COMMAND:
-		if ((LOWORD(wParam) == IDC_AVATARPADDING) && (HIWORD(wParam) != EN_CHANGE || (HWND) lParam != GetFocus()))
-			return 0;
-		SendMessage(GetParent(hwndDlg), PSM_CHANGED, 0, 0);
-		break;
-	case WM_NOTIFY:
-		switch (((LPNMHDR) lParam)->code) {
-		case PSN_APPLY:
-			{
-				BOOL translated;
-				BYTE bOldMirrorMode = g_CluiData.bUseDCMirroring;
-
-				__setFlag(CLUI_FRAME_EVENTAREASUNKEN, IsDlgButtonChecked(hwndDlg, IDC_EVENTAREASUNKEN));
-				__setFlag(CLUI_FRAME_AUTOHIDENOTIFY, IsDlgButtonChecked(hwndDlg, IDC_EVENTAREAAUTOHIDE));
-
-				__setFlag(CLUI_FRAME_SHOWTOPBUTTONS, IsDlgButtonChecked(hwndDlg, IDC_SHOWBUTTONBAR));
-				__setFlag(CLUI_FRAME_SHOWBOTTOMBUTTONS, IsDlgButtonChecked(hwndDlg, IDC_SHOWBOTTOMBUTTONS));
-				__setFlag(CLUI_FRAME_CLISTSUNKEN, IsDlgButtonChecked(hwndDlg, IDC_CLISTSUNKEN));
-
-                g_CluiData.avatarPadding = GetDlgItemInt(hwndDlg, IDC_AVATARPADDING, &translated, FALSE);
-				g_CluiData.bUseDCMirroring = (BYTE)SendDlgItemMessage(hwndDlg, IDC_CLISTALIGN, CB_GETCURSEL, 0, 0);
-
-				DBWriteContactSettingByte(NULL, "CLC", "MirrorDC", g_CluiData.bUseDCMirroring);
-                DBWriteContactSettingDword(NULL, "CLUI", "Frameflags", g_CluiData.dwFlags);
-                DBWriteContactSettingByte(NULL, "CList", "AvatarPadding", g_CluiData.avatarPadding);
-
-				ConfigureFrame();
-				ConfigureCLUIGeometry(1);
-				ConfigureEventArea(pcli->hwndContactList);
-                HideShowNotifyFrame();
-				SendMessage(pcli->hwndContactTree, WM_SIZE, 0, 0);
-				SendMessage(pcli->hwndContactList, WM_SIZE, 0, 0);
-                pcli->pfnClcBroadcast(CLM_AUTOREBUILD, 0, 0);
-				PostMessage(pcli->hwndContactList, CLUIINTM_REDRAW, 0, 0);
-				return TRUE;
-			}
 		}
 		break;
 	}
