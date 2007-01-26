@@ -202,7 +202,7 @@ struct EventData *getEventFromDB(struct MessageWindowData *dat, HANDLE hContact,
 		}
 	}
 	if ( RTL_Detect(event->pszTextW)) {
-		event->dwFlags |= DBEF_RTL;
+		event->dwFlags |= IEEDF_RTL;
 	}
 #else
 	if (event->dwFlags & IEEDF_SENT) {
