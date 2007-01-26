@@ -628,7 +628,7 @@ void NetlibUPnPCleanup(void* extra)
     {
         int i, incoming = 0;
         EnterCriticalSection(&csNetlibUser);
-        for(i=netlibUserCount;i>0;i--) {
+        for(i=netlibUserCount; i--; ) {
             if (netlibUser[i]->user.flags&NUF_INCOMING)
                 incoming = 1;
         }
