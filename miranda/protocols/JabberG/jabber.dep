@@ -86,8 +86,7 @@
 	".\jabber.h"\
 	".\jabber_byte.h"\
 	".\jabber_list.h"\
-	".\jabber_xml.h"\
-	".\sha1.h"\
+	".\jabber_xml.h"
 	
 
 .\jabber_byte.cpp : \
@@ -347,8 +346,7 @@
 	".\jabber_byte.h"\
 	".\jabber_iq.h"\
 	".\jabber_list.h"\
-	".\jabber_xml.h"\
-	".\sha1.h"\
+	".\jabber_xml.h"
 	
 
 .\jabber_iqid_muc.cpp : \
@@ -749,8 +747,7 @@
 	".\jabber.h"\
 	".\jabber_byte.h"\
 	".\jabber_list.h"\
-	".\jabber_xml.h"\
-	".\sha1.h"\
+	".\jabber_xml.h"
 	
 
 .\jabber_util.cpp : \
@@ -779,9 +776,7 @@
 	".\jabber_byte.h"\
 	".\jabber_list.h"\
 	".\jabber_ssl.h"\
-	".\jabber_xml.h"\
-	".\sha1.h"\
-	
+	".\jabber_xml.h"	
 
 .\jabber_vcard.cpp : \
 	"..\..\include\m_chat.h"\
@@ -894,10 +889,6 @@
 	".\jabber_byte.h"\
 	".\jabber_list.h"\
 	".\jabber_xml.h"\
-	
-
-.\sha1.cpp : \
-	".\sha1.h"\
 	
 
 .\msvc6.rc : \
