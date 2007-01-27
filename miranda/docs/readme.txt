@@ -24,10 +24,14 @@ Contents
 ----------------------
 * New in 0.6.4
 Enhancement
- - Update notification added to notify of new Miranda releases
+ - Update notification added to notify of new Miranda IM releases
 
 Bugfixes:
  - "Read Message" hotkey opened contact list if no events were present
+ - Translation fix in Find/Add error message
+ - Improved UPnP support and disabled UPnP cleanup when no incoming connections available
+ - Show file transfers correctly in message window
+
 
 * New in 0.6.3
 Bugfixes:
