@@ -1236,10 +1236,23 @@ int IcqSetApparentMode(WPARAM wParam, LPARAM lParam)
           // yet so we just ignore this for now.
           if (icqOnline)
           {
-            if (oldMode != 0) // Remove from old list
+            if (oldMode != 0)
+            { // Remove from old list
+              if (oldMode == ID_STATUS_OFFLINE && ICQGetContactSettingWord(ccs->hContact, "SrvIgnoreID", 0))
+              { // Need to remove Ignore item as well
+                icq_removeServerPrivacyItem(ccs->hContact, uin, uid, ICQGetContactSettingWord(ccs->hContact, "SrvIgnoreID", 0), SSI_ITEM_IGNORE);
+
+                ICQWriteContactSettingWord(ccs->hContact, "SrvIgnoreID", 0);
+              }
               icq_sendChangeVisInvis(ccs->hContact, uin, uid, oldMode==ID_STATUS_OFFLINE, 0);
-            if (ccs->wParam != 0) // Add to new list
+            }
+            if (ccs->wParam != 0)
+            { // Add to new list
+              if (ccs->wParam==ID_STATUS_OFFLINE && ICQGetContactSettingWord(ccs->hContact, "SrvIgnoreID", 0))
+                return 0; // Success: offline by ignore item
+
               icq_sendChangeVisInvis(ccs->hContact, uin, uid, ccs->wParam==ID_STATUS_OFFLINE, 1);
+            }
           }
 
           return 0; // Success

@@ -1316,7 +1316,7 @@ static void handleServerCList(unsigned char *buf, WORD wLen, WORD wFlags, server
           // Set apparent mode & ignore
           ICQWriteContactSettingWord(hContact, "ApparentMode", ID_STATUS_OFFLINE);
           // set ignore all events
-          DBWriteContactSettingDword(hContact, "Ignore", "Mask1", 0xFFFF);
+          CallService(MS_IGNORE_IGNORE, (WPARAM)hContact, IGNOREEVENT_ALL);
           NetLog_Server("Ignore-contact (%s)", szRecordName);
         }
         else
