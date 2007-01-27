@@ -78,9 +78,9 @@ static int OnContactMenuBuild(WPARAM wParam,LPARAM lParam)
 	pos = 1000;
 	if ( !nGroupsItems ) {
 		nGroupsItems++;
-		lphGroupsItems[0] = AddGroupItem(hMoveToGroupItem, TranslateT("Root Group"), pos++, -1, !szContactGroup);
+		lphGroupsItems[0] = AddGroupItem(hMoveToGroupItem, TranslateT("<Root Group>"), pos++, -1, !szContactGroup);
 	}
-	else ModifyGroupItem( lphGroupsItems[0], TranslateT("Root Group"), !szContactGroup);
+	else ModifyGroupItem( lphGroupsItems[0], TranslateT("<Root Group>"), !szContactGroup);
 
 	pos += 100000; // Separator
 
