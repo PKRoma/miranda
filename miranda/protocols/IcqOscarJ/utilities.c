@@ -1022,6 +1022,8 @@ void ResetSettingsOnLoad()
       ICQDeleteContactSetting(hContact, DBSETTING_XSTATUSNAME);
       ICQDeleteContactSetting(hContact, DBSETTING_XSTATUSMSG);
     }
+    ICQWriteContactSettingByte(hContact, "DCStatus", 0);
+
     hContact = ICQFindNextContact(hContact);
   }
 }

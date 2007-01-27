@@ -2120,6 +2120,8 @@ static void handleRecvMsgResponse(unsigned char *buf, WORD wLen, WORD wFlags, DW
           ICQBroadcastAck(ft->hContact, ACKTYPE_FILE, ACKRESULT_FAILED, ft, 0);
         }
         NetLog_Server("Reverse Connect request failed");
+        // Set DC status to failed
+        ICQWriteContactSettingByte(hContact, "DCStatus", 2);
       }
       break;
 

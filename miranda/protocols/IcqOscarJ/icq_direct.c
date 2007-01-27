@@ -322,7 +322,11 @@ BOOL IsDirectConnectionOpen(HANDLE hContact, int type, int bPassive)
   if (!bPassive && !bIsCreated && !bIsOpen && type == DIRECTCONN_STANDARD && gbDCMsgEnabled == 2)
   { // do not try to open DC to offline contact
     if (ICQGetContactStatus(hContact) == ID_STATUS_OFFLINE) return FALSE;
+    // do not try to open DC if previous attempt was not successfull
+    if (ICQGetContactSettingByte(hContact, "DCStatus", 0)) return FALSE;
 
+    // Set DC status as tried
+    ICQWriteContactSettingByte(hContact, "DCStatus", 1);
     // Create a new connection
     OpenDirectConnection(hContact, DIRECTCONN_STANDARD, NULL);
   }
@@ -537,6 +541,9 @@ static DWORD __stdcall icq_directThread(directthreadstartinfo *dtsi)
             NetLog_Direct("Reverse failed (%s)", "malloc failed");
         }
       }
+      else // Set DC status to failed
+        ICQWriteContactSettingByte(dc.hContact, "DCStatus", 2);
+
       if (dc.type == DIRECTCONN_REVERSE) // failed reverse connection
       { // announce we failed
         icq_sendReverseFailed(&dc, dwReqMsgID1, dwReqMsgID2, dc.dwReqId);
@@ -897,6 +904,8 @@ static void handleDirectPacket(directconnect* dc, PBYTE buf, WORD wLen)
             dc->initialised = 1;
           }
         }
+        // Set DC Status to successful
+        ICQWriteContactSettingByte(dc->hContact, "DCStatus", 0);
       }
       else
       {

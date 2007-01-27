@@ -207,6 +207,7 @@ int __declspec(dllexport) Load(PLUGINLINK *link)
   ICQCreateResidentSetting("TickTS");
   ICQCreateResidentSetting("IdleTS");
   ICQCreateResidentSetting("LogonTS");
+  ICQCreateResidentSetting("DCStatus");
 
   // Reset a bunch of session specific settings
   ResetSettingsOnLoad();

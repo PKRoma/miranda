@@ -463,6 +463,8 @@ static void handleUserOffline(BYTE *buf, WORD wLen)
     ICQWriteContactSettingDword(hContact, "IdleTS", 0);
     // close Direct Connections to that user
     CloseContactDirectConns(hContact);
+    // Reset DC status
+    ICQWriteContactSettingByte(hContact, "DCStatus", 0);
     // clear Xtraz status
     handleXStatusCaps(hContact, NULL, 0);
   }
