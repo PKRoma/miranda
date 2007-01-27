@@ -707,7 +707,7 @@ static char* buildUinList(int subtype, WORD wMaxLen, HANDLE* hContactResume)
         add = ICQGetContactSettingByte(hContact, "TemporaryVisible", 0);
         // clear temporary flag
         // Here we assume that all temporary contacts will be in one packet
-        ICQDeleteContactSetting(hContact, "TemporaryVisible");
+        ICQWriteContactSettingByte(hContact, "TemporaryVisible", 0);
         break;
 
       default:

@@ -118,8 +118,7 @@ char* MirandaVersionToString(char* szStr, int v, int m)
 
 
 const capstr capMirandaIm = {'M', 'i', 'r', 'a', 'n', 'd', 'a', 'M', 0, 0, 0, 0, 0, 0, 0, 0};
-const capstr capIcqJs7    = {0x69, 0x63, 0x71, 0x6A, 0x20, 0x20, 0x20, 0x20, 0x20, 0x20, 0x20, 0x20, 0x20, 0x20, 0x20, 0x20};
-const capstr capIcqJs7sec = {0x69, 0x63, 0x71, 0x6A, 0x20, 0x53, 0x65, 0x63, 0x75, 0x72, 0x65, 0x20, 0x49, 0x4D, 0x20, 0x20};
+const capstr capIcqJs7    = {'i', 'c', 'q', 'j', ' ', 'S', 'e', 'c', 'u', 'r', 'e', ' ', 'I', 'M', 0, 0};
 const capstr capAimOscar  = {'M', 'i', 'r', 'a', 'n', 'd', 'a', 'A', 0, 0, 0, 0, 0, 0, 0, 0};
 const capstr capTrillian  = {0x97, 0xb1, 0x27, 0x51, 0x24, 0x3c, 0x43, 0x34, 0xad, 0x22, 0xd6, 0xab, 0xf7, 0x3f, 0x14, 0x09};
 const capstr capTrilCrypt = {0xf2, 0xe7, 0xc7, 0xf4, 0xfe, 0xad, 0x4d, 0xfb, 0xb2, 0x35, 0x36, 0x79, 0x8b, 0xdf, 0x00, 0x00};
@@ -301,14 +300,13 @@ char* detectUserClient(HANDLE hContact, DWORD dwUin, WORD wVersion, DWORD dwFT1,
 
         szClient = MirandaVersionToString(szClientBuf, iver, mver);
 
-        if (MatchCap(caps, wLen, &capIcqJs7, 0x10))
+        if (MatchCap(caps, wLen, &capIcqJs7, 0x4))
         { // detect mod
           strcat(szClient, " (s7 & sss)");
-        }
-        else if (MatchCap(caps, wLen, &capIcqJs7sec, 0x10))
-        {
-          strcat(szClient, " (s7 & sss)");
-          strcat(szClient, " + SecureIM");
+          if (MatchCap(caps, wLen, &capIcqJs7, 0xE))
+          {
+            strcat(szClient, " + SecureIM");
+          }
         }
         else if (dwFT1 == 0xFFFFFFFF && dwFT3 == 0x5AFEC0DE)
         {
@@ -316,6 +314,19 @@ char* detectUserClient(HANDLE hContact, DWORD dwUin, WORD wVersion, DWORD dwFT1,
         }
 
         *bClientId = 2;
+      }
+      else if (capId = MatchCap(caps, wLen, &capIcqJs7, 4))
+      { // detect newer icqj mod
+        DWORD mver = (*capId)[0x4] << 0x18 | (*capId)[0x5] << 0x10 | (*capId)[0x6] << 8 | (*capId)[0x7];
+        DWORD iver = (*capId)[0x8] << 0x18 | (*capId)[0x9] << 0x10 | (*capId)[0xA] << 8 | (*capId)[0xB];
+        DWORD scode = (*capId)[0xC] << 0x18 | (*capId)[0xD] << 0x10 | (*capId)[0xE] << 8 | (*capId)[0xF];
+
+        szClient = MirandaVersionToString(szClientBuf, iver, mver);
+        strcat(szClient, " (s7 & sss)");
+        if (scode == 0x5AFEC0DE)
+        {
+          strcat(szClient, " + SecureIM");
+        }
       }
       else if (MatchCap(caps, wLen, &capTrillian, 0x10) || MatchCap(caps, wLen, &capTrilCrypt, 0x10))
       { // this is Trillian, check for new versions

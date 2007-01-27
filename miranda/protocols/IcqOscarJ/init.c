@@ -86,6 +86,8 @@ PLUGININFO __declspec(dllexport) *MirandaPluginInfo(DWORD mirandaVersion)
   // We need core MD5 interface
   if (mirandaVersion < PLUGIN_MAKE_VERSION(0, 7, 0, 12)) 
   {
+    MessageBox( NULL, "ICQ plugin cannot be loaded. It requires Miranda IM 0.7.0.12 or later.", "ICQ Plugin", 
+      MB_OK|MB_ICONWARNING|MB_SETFOREGROUND|MB_TOPMOST );
     return NULL;
   }
   else if (!bInited)
