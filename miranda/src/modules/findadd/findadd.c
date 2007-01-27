@@ -245,8 +245,8 @@ static void CheckSearchTypeRadioButton(HWND hwndDlg,int idControl)
 		CheckDlgButton(hwndDlg,controls[i],idControl==controls[i]?BST_CHECKED:BST_UNCHECKED);
 }
 
-static TCHAR sttErrMsg[] = _T( "You haven't filled in the search field. Please enter a search term and try again.");
-static TCHAR sttErrTitle[] = _T( "Search" );
+#define sttErrMsg TranslateT("You haven't filled in the search field. Please enter a search term and try again.")
+#define sttErrTitle TranslateT("Search")
 
 static void SetListItemText( HWND hwndDlg, int idx, int col, char* szText )
 {
