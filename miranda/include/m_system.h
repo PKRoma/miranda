@@ -415,7 +415,7 @@ static __inline int mir_forkthreadex( pThreadFuncEx aFunc, void* arg, int stackS
 	params.arg        = arg;
 	params.iStackSize = stackSize;
 	params.threadID   = pThreadID;
-	return CallService( MS_SYSTEM_FORK_THREAD, 0, (LPARAM)&params );
+	return CallService( MS_SYSTEM_FORK_THREAD_EX, 0, (LPARAM)&params );
 }
 
 /*
