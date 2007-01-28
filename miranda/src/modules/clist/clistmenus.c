@@ -24,7 +24,6 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 #include "genmenu.h"
 #include "m_clui.h"
-#include "m_icolib.h"
 #pragma hdrstop
 
 #define FIRSTCUSTOMMENUITEMID	30000
@@ -161,6 +160,7 @@ int GetAverageMode()
 {
 	int count,netProtoCount,i;
 	int averageMode=0;
+	int flags, flags2;
 	PROTOCOLDESCRIPTOR **protos;
 	CallService(MS_PROTO_ENUMPROTOCOLS,(WPARAM)&count,(LPARAM)&protos);
 	for ( i=0,netProtoCount = 0; i < count; i++ ) {
@@ -168,6 +168,11 @@ int GetAverageMode()
 			continue;
 
 		netProtoCount++;
+
+		flags = CallProtoService(protos[i]->szName,PS_GETCAPS,PFLAGNUM_2,0);
+		flags2 = CallProtoService(protos[i]->szName,PS_GETCAPS,PFLAGNUM_5,0);
+		if ((flags & ~flags2) == 0) continue;
+
 		if ( averageMode == 0 )
 			averageMode = CallProtoService( protos[i]->szName, PS_GETSTATUS, 0, 0 );
 		else if ( averageMode != CallProtoService( protos[i]->szName, PS_GETSTATUS, 0, 0 )) {
@@ -981,6 +986,7 @@ int MenuModulesLoaded(WPARAM wParam,LPARAM lParam)
 		flags = CallProtoService(proto[i]->szName,PS_GETCAPS,PFLAGNUM_2,0);
 		flags2 = CallProtoService(proto[i]->szName,PS_GETCAPS,PFLAGNUM_5,0);
 		flags &= ~flags2; 
+		if (flags == 0) continue;
 
 		if ( visnetworkProtoCount > 1 ) {
 			char protoName[128];
@@ -1174,6 +1180,10 @@ static int MenuProtoAck(WPARAM wParam,LPARAM lParam)
 	networkProtoCount = 0;
 	for ( i=0; i < protoCount; i++ ) {
 		if ( proto[i]->type == PROTOTYPE_PROTOCOL ) {
+			int flags = CallProtoService(proto[i]->szName,PS_GETCAPS,PFLAGNUM_2,0);
+			int flags2 = CallProtoService(proto[i]->szName,PS_GETCAPS,PFLAGNUM_5,0);
+			if ((flags & ~flags2) == 0) continue;
+
 			thisStatus = CallProtoService(proto[i]->szName,PS_GETSTATUS,0,0);
 			if ( overallStatus == 0 )
 				overallStatus = thisStatus;

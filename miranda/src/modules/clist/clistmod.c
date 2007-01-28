@@ -22,7 +22,6 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 */
 #include "commonheaders.h"
 #include "clc.h"
-#include "m_icolib.h"
 
 int AddMainMenuItem(WPARAM wParam, LPARAM lParam);
 int AddContactMenuItem(WPARAM wParam, LPARAM lParam);
@@ -168,7 +167,7 @@ static int ProtocolAck(WPARAM wParam, LPARAM lParam)
 	return 0;
 }
 
-int fnIconFromStatusMode(const char *szProto, int status)
+int fnIconFromStatusMode(const char *szProto, int status, HANDLE hContact)
 {
 	int index, i;
 

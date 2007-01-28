@@ -220,6 +220,7 @@ static int SRFileModulesLoaded(WPARAM wParam,LPARAM lParam)
 			hFileMenuCount++;
 		}
 	}
+	IconLib_ReleaseIcon(mi.hIcon, 0);
 	RemoveUnreadFileEvents();
 	return 0;
 }
@@ -238,6 +239,8 @@ int FilePreBuildContactMenu(WPARAM wParam,LPARAM lParam) {
 
 		for(i=0;i<hFileMenuCount;i++)
 			CallService(MS_CLIST_MODIFYMENUITEM, (WPARAM)hFileMenu[i], (LPARAM)&mi);
+
+		IconLib_ReleaseIcon(mi.hIcon, 0);
 	}
 	return 0;
 }

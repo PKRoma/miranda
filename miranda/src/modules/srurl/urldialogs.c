@@ -255,6 +255,7 @@ BOOL CALLBACK DlgProcUrlRecv(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
 			}
 			break;
 		case WM_DESTROY:
+			IconLib_ReleaseIcon((HICON)SendMessage(hwndDlg, WM_SETICON, ICON_BIG, 0), 0);
 			WindowList_Remove(hUrlWindowList, hwndDlg);
 			{int i;for(i=0; i < SIZEOF(dat->hIcons); i++ ) DestroyIcon(dat->hIcons[i]);}
 			mir_free(dat);
@@ -717,6 +718,7 @@ BOOL CALLBACK DlgProcUrlSend(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
 			break;
 		}
 		case WM_DESTROY:
+			IconLib_ReleaseIcon((HICON)SendMessage(hwndDlg, WM_SETICON, ICON_BIG, 0), 0);
 			WindowList_Remove(hUrlWindowList, hwndDlg);
 			{int i;for(i=0; i < SIZEOF(dat->hIcons); i++ ) DestroyIcon(dat->hIcons[i]);}
 			SetWindowLong(GetWindow(GetDlgItem(hwndDlg,IDC_URLS),GW_CHILD),GWL_WNDPROC,(LONG)OldSendEditProc);

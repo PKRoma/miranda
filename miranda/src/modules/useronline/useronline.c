@@ -54,6 +54,7 @@ static int UserOnlineSettingChanged(WPARAM wParam,LPARAM lParam)
 				mir_snprintf(tooltip,SIZEOF(tooltip),Translate("%s is Online"),(char*)CallService(MS_CLIST_GETCONTACTDISPLAYNAME,wParam,0));
 				cle.pszTooltip=tooltip;
 				CallService(MS_CLIST_ADDEVENT,0,(LPARAM)&cle);
+				IconLib_ReleaseIcon( cle.hIcon, 0 );
 
 				SkinPlaySound("UserOnline");
 			}

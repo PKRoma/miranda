@@ -22,7 +22,6 @@
 */
 #include "commonheaders.h"
 #include "clc.h"
-#include "m_icolib.h"
 
 #define TM_AUTOALPHA  1
 #define MENU_MIRANDAMENU         0xFFFF1234
@@ -985,11 +984,11 @@ LRESULT CALLBACK fnContactListWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM
 				SetBkMode(dis->hDC, TRANSPARENT);
 				x = dis->rcItem.left;
 				if (showOpts & 1) {
-					HICON hIcon;
-					hIcon = LoadSkinnedProtoIcon(szProto, status);
+					HICON hIcon = LoadSkinnedProtoIcon(szProto, status);
 					DrawIconEx(dis->hDC, x, (dis->rcItem.top + dis->rcItem.bottom - g_IconHeight) >> 1, hIcon,
 						g_IconWidth, g_IconHeight, 0, NULL, DI_NORMAL);
 					x += g_IconWidth + 2;
+					IconLib_ReleaseIcon(hIcon,0);
 				}
 				else
 					x += 2;

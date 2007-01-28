@@ -1090,7 +1090,6 @@ int RecursiveRemoveChilds(int pos,ListParam *param)
 
 
 /* iconlib in menu */
-#include "m_icolib.h"
 extern int hStatusMenuObject;
 HICON LoadIconFromLibrary(char *SectName,char *Name,char *Description,HICON hIcon,boolean RegisterIt,boolean *RegistredOk)
 {		

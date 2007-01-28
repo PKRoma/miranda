@@ -135,6 +135,7 @@ static int SRUrlModulesLoaded(WPARAM wParam,LPARAM lParam)
 			hUrlContactMenu[hUrlContactMenuCount++] = (HANDLE)CallService(MS_CLIST_ADDCONTACTMENUITEM,0,(LPARAM)&mi);
 		}
 	}
+	IconLib_ReleaseIcon(mi.hIcon, 0);
 	RestoreUnreadUrlAlerts();
 	return 0;
 }
@@ -152,6 +153,8 @@ static int UrlMenuIconChanged(WPARAM wParam, LPARAM lParam)
 
 		for (j=0; j<hUrlContactMenuCount; j++)
 			CallService(MS_CLIST_MODIFYMENUITEM,(WPARAM)hUrlContactMenu[j],(LPARAM)&mi);
+
+		IconLib_ReleaseIcon(mi.hIcon, 0);
 	}
 	return 0;
 }

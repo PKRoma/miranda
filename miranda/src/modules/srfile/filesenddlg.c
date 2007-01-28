@@ -366,6 +366,7 @@ BOOL CALLBACK DlgProcSendFile(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPar
 			break;
 		}
 		case WM_DESTROY:
+			IconLib_ReleaseIcon((HICON)SendMessage(hwndDlg, WM_SETICON, ICON_BIG, 0), 0);
 			if(dat->hPreshutdownEvent) UnhookEvent(dat->hPreshutdownEvent);
 			if(dat->hwndTransfer) DestroyWindow(dat->hwndTransfer);
 			FreeFilesMatrix(&dat->files);
