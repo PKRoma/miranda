@@ -52,6 +52,7 @@ static void JabberProcessIq( XmlNode *node, void *userdata );
 static void JabberProcessProceed( XmlNode *node, void *userdata );
 static void JabberProcessRegIq( XmlNode *node, void *userdata );
 
+extern int bSecureIM;
 static VOID CALLBACK JabberDummyApcFunc( DWORD param )
 {
 	return;
@@ -214,7 +215,7 @@ LBL_FatalError:
 			jabberStatus = ID_STATUS_OFFLINE;
 			JSendBroadcast( NULL, ACKTYPE_STATUS, ACKRESULT_SUCCESS, ( HANDLE ) oldStatus, jabberStatus );
 LBL_Exit:
-			mir_free( info );
+			delete info;
 			return;
 		}
 
@@ -725,7 +726,6 @@ static void __cdecl JabberWaitAndReconnectThread( int unused )
 	thread->type = JABBER_SESSION_NORMAL;
 	thread->hThread = ( HANDLE ) mir_forkthread(( pThreadFunc )JabberServerThread, thread );
 }
-
 
 static void JabberProcessFailure( XmlNode *node, void *userdata ) {
 //	JabberXmlDumpNode( node );
@@ -1371,6 +1371,7 @@ static void JabberProcessIqVersion( TCHAR* idStr, XmlNode* node )
 
 	char mversion[100];
 	JCallService( MS_SYSTEM_GETVERSIONTEXT, sizeof( mversion ), ( LPARAM )mversion );
+	if (bSecureIM) strcat(mversion, " (SecureIM)");
 
 	TCHAR* fullVer = (TCHAR*)alloca(1000 * sizeof( TCHAR ));
 	mir_sntprintf( fullVer, 1000, _T("Miranda IM ") _T(TCHAR_STR_PARAM) _T(" (Jabber v.") _T(TCHAR_STR_PARAM) _T(" [%s])"),
