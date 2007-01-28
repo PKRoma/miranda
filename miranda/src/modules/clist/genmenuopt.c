@@ -138,12 +138,10 @@ int sortfunc(const void *a,const void *b)
 int InsertSeparator(HWND hwndDlg)
 {
 	MenuItemOptData *PD;
-	TVINSERTSTRUCT tvis;
-	TVITEM tvi;
-	HTREEITEM hti;
+	TVINSERTSTRUCT tvis = {0};
+	TVITEM tvi = {0};
+	HTREEITEM hti = {0};
 
-	ZeroMemory(&tvi,sizeof(tvi));
-	ZeroMemory(&hti,sizeof(hti));
 	hti=TreeView_GetSelection(GetDlgItem(hwndDlg,IDC_MENUITEMS));
 	if (hti==NULL)
 		return 1;
@@ -153,7 +151,6 @@ int InsertSeparator(HWND hwndDlg)
 	if (TreeView_GetItem(GetDlgItem(hwndDlg,IDC_MENUITEMS),&tvi)==FALSE)
 		return 1;
 
-	ZeroMemory(&tvis,sizeof(tvis));
 	PD=(MenuItemOptData*)mir_alloc(sizeof(MenuItemOptData));
 	ZeroMemory(PD,sizeof(MenuItemOptData));
 	PD->id   = -1;
@@ -435,6 +432,7 @@ static BOOL CALLBACK GenMenuOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM l
 				TVITEM tvi;
 				HTREEITEM hti;
 				char buf[256];
+				MenuItemOptData *iod;
 
 				hti=TreeView_GetSelection(GetDlgItem(hwndDlg,IDC_MENUITEMS));
 				if (hti==NULL)
@@ -443,17 +441,18 @@ static BOOL CALLBACK GenMenuOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM l
 				tvi.mask=TVIF_HANDLE|TVIF_IMAGE|TVIF_SELECTEDIMAGE|TVIF_PARAM;
 				tvi.hItem=hti;
 				TreeView_GetItem(GetDlgItem(hwndDlg,IDC_MENUITEMS),&tvi);
+				iod = ( MenuItemOptData * )tvi.lParam;
 
-				if ( _tcsstr(((MenuItemOptData *)tvi.lParam)->name, _T("---------------------------------------------")))
+				if ( iod->name && _tcsstr(iod->name, _T("---------------------------------------------")))
 					break;
 
 				ZeroMemory(buf,256);
 				GetDlgItemTextA(hwndDlg,IDC_GENMENU_CUSTOMNAME,buf,256);
-				if (((MenuItemOptData *)tvi.lParam)->name) {
-					mir_free(((MenuItemOptData *)tvi.lParam)->name);
+				if (iod->name) {
+					mir_free(iod->name);
 				}
 
-				((MenuItemOptData *)tvi.lParam)->name = mir_tstrdup( ((MenuItemOptData *)tvi.lParam)->defname );
+				iod->name = mir_tstrdup( iod->defname );
 
 				SaveTree(hwndDlg);
 				RebuildCurrent(hwndDlg);
@@ -463,6 +462,7 @@ static BOOL CALLBACK GenMenuOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM l
 
 				TVITEM tvi;
 				TCHAR buf[256];
+				MenuItemOptData *iod;
 
 				HTREEITEM hti = TreeView_GetSelection( GetDlgItem( hwndDlg,IDC_MENUITEMS ));
 				if ( hti == NULL )
@@ -471,16 +471,17 @@ static BOOL CALLBACK GenMenuOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM l
 				tvi.mask = TVIF_HANDLE|TVIF_IMAGE|TVIF_SELECTEDIMAGE|TVIF_PARAM;
 				tvi.hItem = hti;
 				SendDlgItemMessage(hwndDlg, IDC_MENUITEMS, TVM_GETITEM, 0, (LPARAM)&tvi);
+				iod = ( MenuItemOptData * )tvi.lParam;
 
-				if ( _tcsstr(((MenuItemOptData *)tvi.lParam)->name, STR_SEPARATOR ))
+				if ( iod->name && _tcsstr(iod->name, STR_SEPARATOR ))
 					break;
 
 				ZeroMemory(buf,sizeof( buf ));
 				GetDlgItemText( hwndDlg, IDC_GENMENU_CUSTOMNAME, buf, SIZEOF( buf ));
-				if (((MenuItemOptData *)tvi.lParam)->name)
-					mir_free(((MenuItemOptData *)tvi.lParam)->name);
+				if (iod->name)
+					mir_free(iod->name);
 
-				((MenuItemOptData *)tvi.lParam)->name = mir_tstrdup(buf);
+				iod->name = mir_tstrdup(buf);
 
 				SaveTree(hwndDlg);
 				RebuildCurrent(hwndDlg);
@@ -611,6 +612,7 @@ static BOOL CALLBACK GenMenuOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM l
 				{
 					TVITEM tvi;
 					HTREEITEM hti;
+					MenuItemOptData *iod;
 
 					SetDlgItemTextA(hwndDlg,IDC_GENMENU_CUSTOMNAME,"");
 					SetDlgItemTextA(hwndDlg,IDC_GENMENU_SERVICE,"");
@@ -620,12 +622,9 @@ static BOOL CALLBACK GenMenuOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM l
 					EnableWindow(GetDlgItem(hwndDlg,IDC_GENMENU_SET),FALSE);
 
 					hti=TreeView_GetSelection(GetDlgItem(hwndDlg,IDC_MENUITEMS));
-					if (hti==NULL) {
-						EnableWindow(GetDlgItem(hwndDlg,IDC_GENMENU_CUSTOMNAME),FALSE);
-						EnableWindow(GetDlgItem(hwndDlg,IDC_GENMENU_DEFAULT),FALSE);
-						EnableWindow(GetDlgItem(hwndDlg,IDC_GENMENU_SET),FALSE);
+					if (hti==NULL)
 						break;
-					}
+
 					tvi.mask=TVIF_HANDLE|TVIF_IMAGE|TVIF_SELECTEDIMAGE|TVIF_PARAM;
 					tvi.hItem=hti;
 					TreeView_GetItem(GetDlgItem(hwndDlg,IDC_MENUITEMS),&tvi);
@@ -633,12 +632,14 @@ static BOOL CALLBACK GenMenuOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM l
 					if ( tvi.lParam == 0 )
 						break;
 
-					if ( _tcsstr(((MenuItemOptData *)tvi.lParam)->name, STR_SEPARATOR ))
+					iod = ( MenuItemOptData * )tvi.lParam;
+
+					if ( iod->name && _tcsstr(iod->name, STR_SEPARATOR ))
 						break;
 
-					SetDlgItemText(hwndDlg,IDC_GENMENU_CUSTOMNAME,((MenuItemOptData *)tvi.lParam)->name);
+					SetDlgItemText(hwndDlg,IDC_GENMENU_CUSTOMNAME,iod->name);
 					{
-						TCHAR* p = a2t(((MenuItemOptData *)tvi.lParam)->uniqname );
+						TCHAR* p = a2t(iod->uniqname );
 						if ( p ) {
 							SetDlgItemText( hwndDlg, IDC_GENMENU_SERVICE, p );
 							mir_free( p );
