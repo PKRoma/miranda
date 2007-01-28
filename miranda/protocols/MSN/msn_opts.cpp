@@ -89,7 +89,7 @@ static BOOL CALLBACK DlgProcMsnOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARA
 		CheckDlgButton( hwndDlg, IDC_SENDFONTINFO,      MSN_GetByte( "SendFontInfo", 1 ));
 		CheckDlgButton( hwndDlg, IDC_USE_OWN_NICKNAME,  MSN_GetByte( "NeverUpdateNickname", 0 ));
 		CheckDlgButton( hwndDlg, IDC_AWAY_AS_BRB,       MSN_GetByte( "AwayAsBrb", 0 ));
-		CheckDlgButton( hwndDlg, IDC_MANAGEGROUPS,      MSN_GetByte( "ManageServer", 0 ));
+		CheckDlgButton( hwndDlg, IDC_MANAGEGROUPS,      MSN_GetByte( "ManageServer", 1 ));
 
 		int tValue = MSN_GetByte( "RunMailerOnHotmail", 0 );
 		CheckDlgButton( hwndDlg, IDC_RUN_APP_ON_HOTMAIL, tValue );
@@ -195,7 +195,7 @@ LBL_Continue:
 				}
 
 				SendMessage( tEditField, EM_SETSEL, 0, tSelectLen );
-				SendMessage( tEditField, EM_REPLACESEL, TRUE, LPARAM( szFile ));
+				SendMessageA( tEditField, EM_REPLACESEL, TRUE, LPARAM( szFile ));
 				goto LBL_Apply;
 		}	}
 
@@ -637,7 +637,7 @@ void __stdcall LoadOptions()
 	MyOptions.DisableMenu = MSN_GetByte( "DisableSetNickname", FALSE );
 	MyOptions.EnableAvatars = MSN_GetByte( "EnableAvatars", TRUE );
 	MyOptions.KeepConnectionAlive = MSN_GetByte( "KeepAlive", FALSE );
-	MyOptions.ManageServer = MSN_GetByte( "ManageServer", FALSE );
+	MyOptions.ManageServer = MSN_GetByte( "ManageServer", TRUE );
 	MyOptions.PopupTimeoutHotmail = MSN_GetDword( NULL, "PopupTimeout", 3 );
 	MyOptions.PopupTimeoutOther = MSN_GetDword( NULL, "PopupTimeoutOther", MyOptions.PopupTimeoutHotmail );
 	MyOptions.ShowErrorsAsPopups = MSN_GetByte( "ShowErrorsAsPopups", FALSE );
