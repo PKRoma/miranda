@@ -24,13 +24,8 @@ UNICODE done
 
 */
 #include "commonheaders.h"
+#include <m_icq.h>
 
-TCHAR* xStatusDescr[] = 
-{
-	_T("Angry"), _T("Duck"), _T("Tired"), _T("Party"), _T("Beer"), _T("Thinking"), _T("Eating"), _T("TV"), _T("Friends"), _T("Coffee"),
-	_T("Music"), _T("Business"), _T("Camera"), _T("Funny"), _T("Phone"), _T("Games"), _T("College"), _T("Shopping"), _T("Sick"), _T("Sleeping"),
-    _T("Surfing"), _T("@Internet"), _T("Engineering"), _T("Typing"), _T("Eating..yummy.."), _T("Having fun"), _T("Chit chatting"), _T("Crashing"), _T("Going to toilet")
- };
 
 CRITICAL_SECTION cs_extcache;
 extern struct CluiData g_CluiData;
@@ -301,12 +296,26 @@ BYTE GetCachedStatusMsg(int iExtraCacheEntry, char *szProto)
 			_tcsncpy(cEntry->statusMsg, dbv.ptszVal, iLen + 1);
 		}
 		else {
-			BYTE bXStatus = DBGetContactSettingByte(hContact, szProto, "XStatusId", 0);
-			if(bXStatus > 0 && bXStatus <= 29) {
-				TCHAR *szwXstatusName = TranslateTS(xStatusDescr[bXStatus - 1]);
-				cEntry->statusMsg = (TCHAR *)realloc(cEntry->statusMsg, (lstrlen(szwXstatusName) + 2) * sizeof(TCHAR));
-				_tcsncpy(cEntry->statusMsg, szwXstatusName, lstrlen(szwXstatusName) + 1);
-				cEntry->bStatusMsgValid = STATUSMSG_XSTATUSNAME;
+			ICQ_CUSTOM_STATUS cst = {0};
+			int xStatus;
+			TCHAR xStatusName[128];
+			char szServiceName[128];
+
+			mir_snprintf(szServiceName, 128, "%s%s", szProto, PS_ICQ_GETCUSTOMSTATUSEX);
+
+			cst.cbSize = sizeof(ICQ_CUSTOM_STATUS);
+			cst.flags = CSSF_MASK_STATUS;
+			cst.status = &xStatus;
+			if(ServiceExists(szServiceName) && !CallService(szServiceName, (WPARAM)hContact, (LPARAM)&cst) && xStatus > 0) {
+				cst.flags = CSSF_MASK_NAME | CSSF_DEFAULT_NAME | CSSF_TCHAR;
+				cst.wParam = &xStatus;
+				cst.ptszName = xStatusName; 
+				if(!CallService(szServiceName, (WPARAM)hContact, (LPARAM)&cst)) {
+					TCHAR *szwXstatusName = TranslateTS(xStatusName);
+					cEntry->statusMsg = (TCHAR *)realloc(cEntry->statusMsg, (lstrlen(szwXstatusName) + 2) * sizeof(TCHAR));
+					_tcsncpy(cEntry->statusMsg, szwXstatusName, lstrlen(szwXstatusName) + 1);
+					cEntry->bStatusMsgValid = STATUSMSG_XSTATUSNAME;
+				}
 			}
 		}
 	}

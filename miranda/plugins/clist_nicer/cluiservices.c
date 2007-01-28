@@ -25,6 +25,7 @@ UNICODE done
 */
 #include "commonheaders.h"
 #include "cluiframes/cluiframes.h"
+#include <m_icq.h>
 
 extern HIMAGELIST hCListImages, himlExtraImages;;
 extern struct CluiData g_CluiData;
@@ -44,7 +45,6 @@ static int GetClistVersion(WPARAM wParam, LPARAM lParam)
 	return (int)g_szVersionString;
 }
 
-extern TCHAR* xStatusDescr[];
 
 void FreeProtocolData( void )
 {
@@ -104,7 +104,7 @@ void CluiProtocolStatusChanged( int parStatus, const char* szProto )
 
 	SendMessage(pcli->hwndStatus,SB_GETBORDERS,0,(LPARAM)&borders);
 
-	partWidths=(int*)malloc((storedcount+1)*sizeof(int));
+	partWidths=(int*)_alloca((storedcount+1)*sizeof(int));
 
 	if (g_CluiData.bEqualSections) {
 		RECT rc;
@@ -183,7 +183,6 @@ void CluiProtocolStatusChanged( int parStatus, const char* szProto )
 	}
 	if (partCount==0) {
 		SendMessage(pcli->hwndStatus,SB_SIMPLE,TRUE,0);
-		free(partWidths);
 		return;
 	}
 	SendMessage(pcli->hwndStatus,SB_SIMPLE,FALSE,0);
@@ -192,7 +191,6 @@ void CluiProtocolStatusChanged( int parStatus, const char* szProto )
 	windowStyle = DBGetContactSettingByte(NULL, "CLUI", "WindowStyle", 0);
 	SendMessage(pcli->hwndStatus,SB_SETMINHEIGHT, 18 + g_CluiData.bClipBorder + ((windowStyle == SETTING_WINDOWSTYLE_THINBORDER || windowStyle == SETTING_WINDOWSTYLE_NOBORDER) ? 3 : 0), 0);
 	SendMessage(pcli->hwndStatus, SB_SETPARTS, partCount, (LPARAM)partWidths);
-	free(partWidths);
 
 	for (partCount=0,i=0;i<storedcount;i++) {      //count down since built in ones tend to go at the end
 		ProtocolData    *PD;
@@ -233,42 +231,50 @@ void CluiProtocolStatusChanged( int parStatus, const char* szProto )
 				szMaxProto = curprotocol->szName;
 			}
 		}
-		if(pcli->menuProtos != NULL) {
+/* // Joe @ Whale: The core handles this by itself now, do not mess with it // 0.7.0.8+
+    if(pcli->menuProtos != NULL) {
 			int i;
 
 			for(i = 0; i < pcli->menuProtoCount; i++) {
 				if(!strcmp(pcli->menuProtos[i].szProto, curprotocol->szName) && pcli->menuProtos[i].menuID != 0 && pcli->menuProtos[i].hasAdded !=0) {
-					BYTE xStatus = DBGetContactSettingByte(NULL, curprotocol->szName, "XStatusId", -1);
 					CLISTMENUITEM mi = {0};
+					char szServiceName[128];
+					TCHAR xStatusName[128];
+					int xStatus = 0;
+					int xStatusCount;
+					ICQ_CUSTOM_STATUS cst = {0};
 					mi.cbSize = sizeof(mi);
 					mi.flags = CMIM_FLAGS | CMIM_NAME | CMIM_ICON | CMIF_TCHAR;
 
-					if(pcli->menuProtos[i].hIcon) {
-						DestroyIcon(pcli->menuProtos[i].hIcon);
-						pcli->menuProtos[i].hIcon = 0;
-					}
+					mir_snprintf(szServiceName, 128, "%s%s", curprotocol->szName, PS_ICQ_GETCUSTOMSTATUSEX);
 
-					if(xStatus > 0 && xStatus <= 29) {
-						char szServiceName[128];
+					cst.cbSize = sizeof(ICQ_CUSTOM_STATUS);
+					cst.flags = CSSF_MASK_STATUS | CSSF_STATUSES_COUNT;
+					cst.wParam = &xStatusCount;
+					cst.status = &xStatus;
+					if(ServiceExists(szServiceName) && !CallService(szServiceName, 0, (LPARAM)&cst)) {
+						if(xStatus > 0 && xStatus <= xStatusCount) {
+							mi.hIcon = (HICON)CallProtoService(curprotocol->szName, PS_ICQ_GETCUSTOMSTATUSICON, 0, LR_SHARED);	// get OWN xStatus icon (if set)
 
-						mir_snprintf(szServiceName, 128, "%s/GetXStatusIcon", curprotocol->szName);
-						if(ServiceExists(szServiceName)) {
-							mi.hIcon = (HICON)CallProtoService(curprotocol->szName, "/GetXStatusIcon", 0, 0);	// get OWN xStatus icon (if set)
-							pcli->menuProtos[i].hIcon = mi.hIcon;
-							mi.ptszName = xStatusDescr[xStatus - 1];
+							cst.flags = CSSF_MASK_NAME | CSSF_DEFAULT_NAME | CSSF_TCHAR;
+							cst.wParam = &xStatus;
+							cst.ptszName = xStatusName; 
+							if(!CallService(szServiceName, 0, (LPARAM)&cst))
+								mi.ptszName = xStatusName;
+							else
+								mi.ptszName = _T("Custom Status");
+						}	
+						else {
+							mi.ptszName = _T("None");
+							mi.flags |= CMIF_CHECKED;
+							mi.hIcon = 0;
 						}
+						CallService(MS_CLIST_MODIFYMENUITEM, (WPARAM)pcli->menuProtos[i].hasAdded, (LPARAM)&mi);
 					}
-					else {
-						mi.ptszName = _T("None");
-						mi.flags |= CMIF_CHECKED;
-						mi.hIcon = 0;
-						pcli->menuProtos[i].hIcon = 0;
-					}
-					CallService(MS_CLIST_MODIFYMENUITEM, (WPARAM)pcli->menuProtos[i].hasAdded, (LPARAM)&mi);
 					break;
 				}
 			}
-		}
+		}*/
 		partCount++;
 	}
 	// update the clui button

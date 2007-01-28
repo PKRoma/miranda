@@ -24,7 +24,8 @@ UNICODE done
 
 */
 #include "commonheaders.h"
-#include "../../include/m_findadd.h"
+#include <m_findadd.h>
+#include <m_icq.h>
 #include "m_updater.h"
 #include "cluiframes/cluiframes.h"
 #include "coolsb/coolscroll.h"
@@ -2291,21 +2292,8 @@ buttons_done:
 
 				if (showOpts & 1) {
 					HICON hIcon;
-					BYTE xStatusID = 0;
-					BOOL bDestroy = FALSE;
 
-					if(g_CluiData.bShowXStatusOnSbar && status > ID_STATUS_OFFLINE && DBGetContactSettingByte(NULL, szProto, "XStatusEnabled", 0) && (xStatusID = DBGetContactSettingByte(NULL, szProto, "XStatusId", 0)) > 0) {
-						if(xStatusID > 0 && xStatusID <= 32) {
-							char szServiceName[128];
-
-							mir_snprintf(szServiceName, 128, "%s/GetXStatusIcon", pd->RealName);
-							if(ServiceExists(szServiceName)) {
-								hIcon = (HICON)CallProtoService(pd->RealName, "/GetXStatusIcon", 0, 0);	// get OWN xStatus icon (if set)
-								bDestroy = TRUE;
-							}
-						}
-					}
-					else if(status >= ID_STATUS_CONNECTING && status < ID_STATUS_OFFLINE) {
+					if(status >= ID_STATUS_CONNECTING && status < ID_STATUS_OFFLINE) {
 						if(g_CluiData.IcoLib_Avail) {
 							char szBuffer[128];
 							mir_snprintf(szBuffer, 128, "%s_conn", pd->RealName);
@@ -2313,6 +2301,21 @@ buttons_done:
 						}
 						else
 							hIcon = g_CluiData.hIconConnecting;
+					}
+					else if(g_CluiData.bShowXStatusOnSbar && status > ID_STATUS_OFFLINE) {
+						ICQ_CUSTOM_STATUS cst = {0};
+						char szServiceName[128];
+						int xStatus;
+
+						mir_snprintf(szServiceName, 128, "%s%s", pd->RealName, PS_ICQ_GETCUSTOMSTATUSEX);
+						cst.cbSize = sizeof(ICQ_CUSTOM_STATUS);
+						cst.flags = CSSF_MASK_STATUS;
+						cst.status = &xStatus;
+						if(ServiceExists(szServiceName) && !CallService(szServiceName, 0, (LPARAM)&cst) && xStatus > 0) {
+							hIcon = (HICON)CallProtoService(pd->RealName, PS_ICQ_GETCUSTOMSTATUSICON, 0, LR_SHARED);	// get OWN xStatus icon (if set)
+						}
+						else
+							hIcon = LoadSkinnedProtoIcon(szProto, status);
 					}
 					else
 						hIcon = LoadSkinnedProtoIcon(szProto, status);
@@ -2344,8 +2347,6 @@ buttons_done:
                             DeleteObject(hbr);
                         }
                     }
-					if(bDestroy)
-						DestroyIcon(hIcon);
 					x += 18;
 				} else {
 					x += 2;
