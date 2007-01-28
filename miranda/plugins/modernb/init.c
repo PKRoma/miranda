@@ -269,7 +269,6 @@ LBL_Error:
 	pcli->pfnGetRowHeight		= cliGetRowHeight;
 	pcli->pfnGetRowTopY			= cliGetRowTopY;
 	pcli->pfnGetRowTotalHeight	= cliGetRowTotalHeight;
-	pcli->pfnGetProtocolVisibility = GetProtocolVisibility;
 	pcli->pfnInvalidateRect		= CLUI__cliInvalidateRect;
 	pcli->pfnGetCacheEntry		= cliGetCacheEntry;
 	pcli->pfnOnCreateClc		= CLUI_cliOnCreateClc;

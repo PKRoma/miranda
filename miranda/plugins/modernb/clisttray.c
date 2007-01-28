@@ -114,7 +114,7 @@ int CListTray_GetGlobalStatus(WPARAM wparam,LPARAM lparam)
 	int connectingCount=0;
 	for (i=0;i<pcli->hClcProtoCount;i++) 
 	{
-		if(!GetProtocolVisibility(pcli->clcProto[i].szProto)) continue;
+		if(!pcli->pfnGetProtocolVisibility(pcli->clcProto[i].szProto)) continue;
 		if (pcli->clcProto[i].dwStatus>=ID_STATUS_CONNECTING &&
 			pcli->clcProto[i].dwStatus<ID_STATUS_CONNECTING+MAX_CONNECT_RETRIES)
 		{
@@ -186,7 +186,7 @@ static TCHAR* TrayIconMakeTooltip(const TCHAR *szPrefix, const char *szProto)
 				i=pcli->pfnGetProtoIndexByPos(protos, count,t);
 				if (i==-1) return TEXT("???");
 //			for (i = count - 1; i >= 0; i--) {
-				if (protos[i]->type != PROTOTYPE_PROTOCOL || !GetProtocolVisibility(protos[i]->szName))
+				if (protos[i]->type != PROTOTYPE_PROTOCOL || !pcli->pfnGetProtocolVisibility(protos[i]->szName))
 					continue;
 				// GetXStatus
 				{			
@@ -392,7 +392,7 @@ int GetAverageMode()
 	PROTOCOLDESCRIPTOR **protos;
 	CallService(MS_PROTO_ENUMPROTOCOLS,(WPARAM)&count,(LPARAM)&protos);
 	for(i=0,netProtoCount=0;i<count;i++) {
-		if(protos[i]->type!=PROTOTYPE_PROTOCOL || (GetProtocolVisibility(protos[i]->szName)==0)) continue;
+		if(protos[i]->type!=PROTOTYPE_PROTOCOL || (pcli->pfnGetProtocolVisibility(protos[i]->szName)==0)) continue;
 		cycleStep=i;
 		netProtoCount++;
 		if(averageMode==0) averageMode=CallProtoService(protos[i]->szName,PS_GETSTATUS,0,0);
@@ -420,7 +420,7 @@ static int TrayIconInit(HWND hwnd)
 	{
 		int i;
 		int netProtoCount=0; 
-		for(i=0,netProtoCount=0;i<count;i++) if(protos[i]->type==PROTOTYPE_PROTOCOL && (GetProtocolVisibility(protos[i]->szName)!=0) ) netProtoCount++;
+		for(i=0,netProtoCount=0;i<count;i++) if(protos[i]->type==PROTOTYPE_PROTOCOL && (pcli->pfnGetProtocolVisibility(protos[i]->szName)!=0) ) netProtoCount++;
 
 		trayIconCount=netProtoCount;
 	}
@@ -435,7 +435,7 @@ static int TrayIconInit(HWND hwnd)
 				int j;
 				j=pcli->pfnGetProtoIndexByPos(protos,count,i);
 				if (j>-1)
-					if(protos[j]->type==PROTOTYPE_PROTOCOL && (GetProtocolVisibility(protos[j]->szName)!=0)) TrayIconAdd(hwnd,protos[j]->szName,NULL,CallProtoService(protos[j]->szName,PS_GETSTATUS,0,0));
+					if(protos[j]->type==PROTOTYPE_PROTOCOL && (pcli->pfnGetProtocolVisibility(protos[j]->szName)!=0)) TrayIconAdd(hwnd,protos[j]->szName,NULL,CallProtoService(protos[j]->szName,PS_GETSTATUS,0,0));
 			}
 		}
 	else if((averageMode==-1 || (averageMode>=0&&DBGetContactSettingByte(NULL,"CList","AlwaysPrimary",0))) && DBGetContactSettingByte(NULL,"CList","TrayIcon",SETTING_TRAYICON_DEFAULT)==SETTING_TRAYICON_SINGLE) {
@@ -546,7 +546,7 @@ static VOID CALLBACK RefreshTimerProc(HWND hwnd,UINT message,UINT idEvent,DWORD 
 	CallService(MS_PROTO_ENUMPROTOCOLS,(WPARAM)&count,(LPARAM)&protos);
 	for (i=0; i<count; i++)
 		if(protos[i]->type==PROTOTYPE_PROTOCOL &&
-			(GetProtocolVisibility(protos[i]->szName)!=0))
+			(pcli->pfnGetProtocolVisibility(protos[i]->szName)!=0))
 			cliTrayIconUpdateBase(protos[i]->szName);
 
 }
@@ -566,7 +566,7 @@ static int TrayIconSetBaseInfo(HICON hIcon, char *szPreferredProto)
 			return i;
 		}
 		// if average mode ==-1 	
-		if ((GetProtocolVisibility(szPreferredProto)) && 
+		if ((pcli->pfnGetProtocolVisibility(szPreferredProto)) && 
 			(GetAverageMode()==-1) && 
 			(DBGetContactSettingByte(NULL,"CList","TrayIcon",SETTING_TRAYICON_DEFAULT)==SETTING_TRAYICON_MULTI) &&
 			!(DBGetContactSettingByte(NULL,"CList","AlwaysMulti",SETTING_ALWAYSMULTI_DEFAULT)))
@@ -602,7 +602,7 @@ static VOID CALLBACK TrayCycleTimerProc(HWND hwnd,UINT message,UINT idEvent,DWOR
 	CallService(MS_PROTO_ENUMPROTOCOLS,(WPARAM)&count,(LPARAM)&protos);
 	for(cycleStep++;;cycleStep++) {
 		if(cycleStep>=count) {cycleStep=0; iteration++;}
-		if(protos[cycleStep]->type==PROTOTYPE_PROTOCOL && (GetProtocolVisibility(protos[cycleStep]->szName)!=0)) break;
+		if(protos[cycleStep]->type==PROTOTYPE_PROTOCOL && (pcli->pfnGetProtocolVisibility(protos[cycleStep]->szName)!=0)) break;
 		if (iteration>5) break;
 	}
 	DestroyIcon_protect(trayIcon[0].hBaseIcon);
@@ -622,7 +622,7 @@ void cliTrayIconUpdateBase(char *szChangedProto)
 	if(cycleTimerId) {KillTimer(NULL,cycleTimerId); cycleTimerId=0;}
 	CallService(MS_PROTO_ENUMPROTOCOLS,(WPARAM)&count,(LPARAM)&protos);
 	for(i=0,netProtoCount=0;i<count;i++) {
-		if(protos[i]->type!=PROTOTYPE_PROTOCOL || (GetProtocolVisibility(protos[i]->szName)==0)) continue;
+		if(protos[i]->type!=PROTOTYPE_PROTOCOL || (pcli->pfnGetProtocolVisibility(protos[i]->szName)==0)) continue;
 		netProtoCount++;
 		if(!lstrcmpA(szChangedProto,protos[i]->szName)) cycleStep=i;
 		if(averageMode==0) averageMode=CallProtoService(protos[i]->szName,PS_GETSTATUS,0,0);
@@ -713,7 +713,7 @@ void cliTrayIconUpdateBase(char *szChangedProto)
 
 					if(DBGetContactSettingByte(NULL,"CList","AlwaysMulti",SETTING_ALWAYSMULTI_DEFAULT))
 					{
-						if (GetProtocolVisibility(szChangedProto))
+						if (pcli->pfnGetProtocolVisibility(szChangedProto))
 						{
 
 							int status;
@@ -735,7 +735,7 @@ void cliTrayIconUpdateBase(char *szChangedProto)
 						}
 					}
 					else 
-					{       if (GetProtocolVisibility(szChangedProto))
+					{       if (pcli->pfnGetProtocolVisibility(szChangedProto))
 					{
 						int i;
 						int avg;
@@ -770,7 +770,7 @@ void cliTrayIconUpdateBase(char *szChangedProto)
 			}
 		}
 	}
-	else if (GetProtocolVisibility(szChangedProto))
+	else if (pcli->pfnGetProtocolVisibility(szChangedProto))
 	{
 		int status=CallProtoService(szChangedProto,PS_GETSTATUS,0,0);
 		BOOL workAround;

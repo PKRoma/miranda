@@ -225,7 +225,6 @@ int		GetContactCachedStatus(HANDLE hContact);											//clistsettings.c
 int		GetContactIcon(WPARAM wParam,LPARAM lParam);										//clistmod.c
 int		GetContactIconC(pdisplayNameCacheEntry cacheEntry);									//clistmod.c
 int		GetContactIndex(struct ClcGroup *group,struct ClcContact *contact);					//clcidents.c
-int		GetProtocolVisibility(const char * ProtoName);											//clc.c  //strange defined there bot not used in cll.. MB move to protocolorder.c ?
 int		GetStatusForContact(HANDLE hContact,char *szProto);									//clistsettings.c
 int		InitCustomMenus(void);																//clistmenus.c
 int		InitFramesMenus(void);																//framesmenus.c

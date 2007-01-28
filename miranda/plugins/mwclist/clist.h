@@ -30,7 +30,6 @@ void TrayIconUpdateWithImageList(int iImage,const char *szNewTip,char *szPreferr
 void SortContacts(void);
 void ChangeContactIcon(HANDLE hContact,int iIcon,int add);
 int GetContactInfosForSort(HANDLE hContact,char **Proto,TCHAR **Name,int *Status);
-int GetProtocolVisibility(const char* ProtoName);
 
 typedef struct  {
 	HANDLE hContact;

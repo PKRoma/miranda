@@ -349,7 +349,6 @@ LBL_Error:
 	pcli->pfnCreateEvent = fnCreateEvent;
 	pcli->pfnDocking_ProcessWindowMessage = Docking_ProcessWindowMessage;
 	pcli->pfnGetDefaultFontSetting = GetDefaultFontSetting;
-	pcli->pfnGetProtocolVisibility = GetProtocolVisibility;
 	pcli->pfnGetRowBottomY = RowHeights_GetItemBottomY;
 	pcli->pfnGetRowHeight = RowHeights_GetHeight;
 	pcli->pfnGetRowTopY = RowHeights_GetItemTopY;

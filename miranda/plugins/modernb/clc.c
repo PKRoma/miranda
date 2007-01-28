@@ -516,40 +516,6 @@ int ProceedDragToScroll(HWND hwnd, int Y)
 	return 1;
 }
 
-
-/*
-*	Is protocol visible?
-*/
-int GetProtocolVisibility(const char * ProtoName)
-{
-	int i;
-	int res=0;
-	DBVARIANT dbv={0};
-	char buf2[15];
-	int count;
-	if (!ProtoName) return 0;
-	count=(int)DBGetContactSettingDword(0,"Protocols","ProtoCount",-1);
-	if (count==-1) return 1;
-	for (i=0; i<count; i++)
-	{
-		_itoa(i,buf2,10);
-		if (!DBGetContactSetting(NULL,"Protocols",buf2,&dbv))
-		{
-			if (mir_strcmp(ProtoName,dbv.pszVal)==0)
-			{
-				//mir_free_and_nill(dbv.pszVal);
-				DBFreeVariant(&dbv);
-				_itoa(i+400,buf2,10);
-				res= DBGetContactSettingDword(NULL,"Protocols",buf2,0);
-				return res;
-			}
-			//mir_free_and_nill(dbv.pszVal);
-			DBFreeVariant(&dbv);
-		}
-	}
-	return 0;
-}
-
 /*
 *	Calling after contact list option is changed
 */

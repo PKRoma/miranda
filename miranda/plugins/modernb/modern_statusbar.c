@@ -169,7 +169,7 @@ int ModernDrawStatusBarWorker(HWND hWnd, HDC hDC)
 		if (i==-1) 
 			vis=FALSE;
 		else
-			vis=GetProtocolVisibility(proto[i]->szName);
+			vis=pcli->pfnGetProtocolVisibility(proto[i]->szName);
 		if (!vis) continue;
 	    if(!CallProtoService(proto[i]->szName,PS_GETNAME,(WPARAM)SIZEOF(buf),(LPARAM)buf))
             ProtosData[visProtoCount].ProtoHumanName=mir_strdup(buf);

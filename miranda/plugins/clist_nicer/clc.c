@@ -61,35 +61,6 @@ LONG g_cxsmIcon, g_cysmIcon;
 void  ShutdownGdiPlus();
 void  SetDBButtonStates(HANDLE hContact);
 
-int GetProtocolVisibility(const char *ProtoName)
-{
-	int i;
-	int res=0;
-	DBVARIANT dbv;
-	char buf2[10];
-	int count;
-
-	if(ProtoName == NULL)
-		return 0;
-
-	count = (int)DBGetContactSettingDword(0, "Protocols", "ProtoCount", -1);
-	if (count == -1)
-		return 1;
-	for (i = 0; i < count; i++) {
-		_itoa(i, buf2, 10);
-		if (!DBGetContactSetting(NULL, "Protocols", buf2, &dbv)) {
-			if (strcmp(ProtoName, dbv.pszVal) == 0) {
-				mir_free(dbv.pszVal);
-				_itoa(i + 400, buf2, 10);
-				res= DBGetContactSettingDword(NULL, "Protocols", buf2, 0);
-				return res;
-			}
-			mir_free(dbv.pszVal);
-		}
-	}
-	return 0;
-}
-
 HMENU BuildGroupPopupMenu( struct ClcGroup* group )
 {
 	return (HMENU)CallService(MS_CLIST_MENUBUILDSUBGROUP,(WPARAM)group,0);

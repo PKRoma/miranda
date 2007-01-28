@@ -482,7 +482,6 @@ int __fastcall GetStatusOnlineness(int status);
 void GetExtendedInfo(struct ClcContact *contact, struct ClcData *dat);
 extern LRESULT CALLBACK NewStatusBarWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam);
 void HideShowNotifyFrame();
-int GetProtocolVisibility(const char * ProtoName);
 DWORD GetCLUIWindowStyle(BYTE style);
 void ApplyCLUIBorderStyle(HWND hwnd);
 
