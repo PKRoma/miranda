@@ -233,6 +233,10 @@ static BOOL CALLBACK DlgProcSetNickname(HWND hwndDlg, UINT msg, WPARAM wParam, L
 		case WM_CLOSE:
 			DestroyWindow( hwndDlg );
 			break;
+
+		case WM_DESTROY:
+			ReleaseIconEx( "main" );
+			break;
 	}
 	return FALSE;
 }

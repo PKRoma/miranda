@@ -241,7 +241,7 @@ LBL_Continue:
 				}
 
 				SendMessage( tEditField, EM_SETSEL, 0, tSelectLen );
-				SendMessage( tEditField, EM_REPLACESEL, TRUE, LPARAM( szFile ));
+				SendMessageA( tEditField, EM_REPLACESEL, TRUE, LPARAM( szFile ));
 				goto LBL_Apply;
 		}	}
 
@@ -749,8 +749,8 @@ LRESULT CALLBACK NullWindowProc( HWND hWnd, UINT message, WPARAM wParam, LPARAM 
 {
 	switch( message ) {
 		case WM_COMMAND: {
-			void* tData = PUGetPluginData( hWnd );
-			if ( tData != NULL ) {
+			PopupData* tData = ( PopupData* )PUGetPluginData( hWnd );
+			if ( tData != NULL && ( tData->flags & MSN_ALLOW_ENTER )) {
 				MsnShowMailThread( NULL );
 				PUDeletePopUp( hWnd );
 			}
@@ -760,6 +760,14 @@ LRESULT CALLBACK NullWindowProc( HWND hWnd, UINT message, WPARAM wParam, LPARAM 
 		case WM_CONTEXTMENU:
 			PUDeletePopUp( hWnd );
 			break;
+
+		case UM_FREEPLUGINDATA:	{
+			PopupData* tData = ( PopupData* )PUGetPluginData( hWnd );
+			if ( tData != NULL ) 
+				CallService( MS_SKIN2_RELEASEICON, (WPARAM)tData->hIcon, 0 );
+			mir_free( tData );
+			break;
+		}
 	}
 
 	return DefWindowProc(hWnd, message, wParam, lParam);

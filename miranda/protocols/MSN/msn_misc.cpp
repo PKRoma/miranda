@@ -621,17 +621,17 @@ void __stdcall	MSN_ShowPopup( const char* nickname, const char* msg, int flags )
 	POPUPDATAEX* ppd = ( POPUPDATAEX* )mir_calloc( sizeof( POPUPDATAEX ));
 
 	ppd->lchContact = NULL;
-	ppd->lchIcon = LoadIconEx( "main" );
 	strcpy( ppd->lpzContactName, nickname );
 	strcpy( ppd->lpzText, msg );
 
 	if ( flags & MSN_SHOW_ERROR ) {
-		ppd->lchIcon = LoadIcon( NULL, IDI_WARNING );
+		ppd->lchIcon = ( HICON )LoadImage( NULL, IDI_WARNING, IMAGE_ICON, 0, 0, LR_SHARED );
 		ppd->colorBack = RGB(191,0,0); //Red
 		ppd->colorText = RGB(255,245,225); //Yellow
 		ppd->iSeconds  = 60;
 	}
 	else {
+		ppd->lchIcon = LoadIconEx( "main" );
 		ppd->colorBack = ( MyOptions.UseWinColors ) ? GetSysColor( COLOR_BTNFACE ) : MyOptions.BGColour;
 		ppd->colorText = ( MyOptions.UseWinColors ) ? GetSysColor( COLOR_WINDOWTEXT ) : MyOptions.TextColour;
 		if ( msnUseExtendedPopups )
@@ -639,22 +639,13 @@ void __stdcall	MSN_ShowPopup( const char* nickname, const char* msg, int flags )
 	}
 
 	ppd->PluginWindowProc = ( WNDPROC )NullWindowProc;
-	ppd->PluginData = ( flags & MSN_ALLOW_ENTER ) ? &ppd : NULL;
+	ppd->PluginData = mir_alloc( sizeof( PopupData ));
+
+	PopupData* pud = ( PopupData* )ppd->PluginData;
+	pud->flags = flags;
+	pud->hIcon = ppd->lchIcon;
 
 	QueueUserAPC( sttMainThreadCallback , msnMainThread, ( ULONG )ppd );
-}
-
-/////////////////////////////////////////////////////////////////////////////////////////
-// MSN_StoreLen - stores a message's length in a buffer
-
-char* __stdcall MSN_StoreLen( char* dest, char* last )
-{
-	char tBuffer[ 20 ];
-	ltoa( short( last-dest )-7, tBuffer, 10 );
-	int cbDigits = strlen( tBuffer );
-	memcpy( dest, tBuffer, cbDigits );
-	memmove( dest + cbDigits, dest + 5, int( last-dest )-7 );
-	return last - ( 5 - cbDigits );
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////

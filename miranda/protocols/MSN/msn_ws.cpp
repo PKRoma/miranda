@@ -92,7 +92,7 @@ bool ThreadData::isTimeout( void )
 			MessageWindowInputData msgWinInData = { 
 				sizeof( MessageWindowInputData ), mJoinedContacts[0], MSG_WINDOW_UFLAG_MSG_BOTH 
 			};
-			MessageWindowData msgWinData;
+			MessageWindowData msgWinData = {0};
 			msgWinData.cbSize = sizeof( MessageWindowData );
 
 			res = MSN_CallService( MS_MSG_GETWINDOWDATA, ( WPARAM )&msgWinInData, ( LPARAM )&msgWinData ) != 0;
@@ -102,13 +102,19 @@ bool ThreadData::isTimeout( void )
 			res = true;
 	}
 
-	if ( res ) 
-		MSN_DebugLog( "Dropping the idle %s due to inactivity",
-			mType == SERVER_SWITCHBOARD ? "switchboard" : "p2p");
+	if ( res ) {
+		bool sbsess = mType == SERVER_SWITCHBOARD;
+
+		MSN_DebugLog( "Dropping the idle %s due to inactivity", sbsess ? "switchboard" : "p2p");
+		if ( !sbsess ) return true; 
+
+		sendPacket( "OUT", NULL );
+		mWaitPeriod = 15;
+	}
 	else
 		mWaitPeriod = 60;
 
-	return res;
+	return false;
 }
 
 
@@ -335,7 +341,8 @@ LBL_RecvAgain:
 			if ( MSN_CallService( MS_NETLIB_SELECT, 0, ( LPARAM )&nls ) != 0 )
 				break;
 
-			if ( isTimeout() ) return 0;
+			if ( isTimeout() ) 
+				return 0;
 	}	}
 
 	int ret = MSN_CallService( MS_NETLIB_RECV, ( WPARAM )s, ( LPARAM )&nlb );

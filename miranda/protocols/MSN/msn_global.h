@@ -191,7 +191,6 @@ void		__stdcall	MSN_GetCustomSmileyFileName( HANDLE hContact, char* pszDest, int
 LPTSTR	__stdcall   MSN_GetErrorText( DWORD parErrorCode );
 void     __stdcall   MSN_SendStatusMessage( const char* msg );
 void		__stdcall	MSN_SetServerStatus( int newStatus );
-char*		__stdcall	MSN_StoreLen( char* dest, char* last );
 void		__stdcall	LoadOptions( void );
 
 int		__stdcall	MSN_SendNickname(char *nickname);
@@ -258,6 +257,13 @@ void   strdel( char* parBuffer, int len );
 // PNG library interface
 
 BOOL __stdcall MSN_LoadPngModule( void );
+
+
+typedef struct
+{
+	unsigned flags;
+	HICON hIcon;
+} PopupData;
 
 /////////////////////////////////////////////////////////////////////////////////////////
 //	MIME headers processing

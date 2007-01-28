@@ -505,21 +505,13 @@ void MSN_ReceiveMessage( ThreadData* info, char* cmdString, char* params )
 
 	char* msg = ( char* )alloca( msgBytes+1 );
 
-	int bytesFromData = min( info->mBytesInData, msgBytes );
-	memcpy( msg, info->mData, bytesFromData );
-	info->mBytesInData -= bytesFromData;
-	memmove( info->mData, info->mData + bytesFromData, info->mBytesInData );
+	HReadBuffer buf( info, 0 );
+	BYTE* msgb = buf.surelyRead( msgBytes );
+	if ( msgb == NULL ) return;
 
-	while ( bytesFromData < msgBytes ) {
-		int recvResult;
-		recvResult = info->recv( msg + bytesFromData, msgBytes - bytesFromData );
-		if ( recvResult <= 0 )
-			return;
-
-		bytesFromData += recvResult;
-	}
-
+	memcpy( msg, msgb, msgBytes );
 	msg[ msgBytes ] = 0;
+
 	MSN_DebugLog( "Message:\n%s", msg );
 
 	MimeHeaders tHeader;
