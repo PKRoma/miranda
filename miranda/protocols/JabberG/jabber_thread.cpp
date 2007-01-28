@@ -52,6 +52,7 @@ static void JabberProcessIq( XmlNode *node, void *userdata );
 static void JabberProcessProceed( XmlNode *node, void *userdata );
 static void JabberProcessRegIq( XmlNode *node, void *userdata );
 
+extern int bSecureIM;
 static VOID CALLBACK JabberDummyApcFunc( DWORD param )
 {
 	return;
@@ -1369,6 +1370,7 @@ static void JabberProcessIqVersion( TCHAR* idStr, XmlNode* node )
 
 	char mversion[100];
 	JCallService( MS_SYSTEM_GETVERSIONTEXT, sizeof( mversion ), ( LPARAM )mversion );
+	if (bSecureIM) strcat(mversion, " (SecureIM)");
 
 	TCHAR* fullVer = (TCHAR*)alloca(1000 * sizeof( TCHAR ));
 	mir_sntprintf( fullVer, 1000, _T("Miranda IM ") _T(TCHAR_STR_PARAM) _T(" (Jabber v.") _T(TCHAR_STR_PARAM) _T(" [%s])"),

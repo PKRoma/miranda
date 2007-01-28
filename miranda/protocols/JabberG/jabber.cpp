@@ -130,6 +130,7 @@ void JabberMenuInit( void );
 int JabberSvcInit( void );
 int JabberSvcUninit( void );
 
+int bSecureIM;
 extern "C" BOOL WINAPI DllMain( HINSTANCE hModule, DWORD dwReason, LPVOID lpvReserved )
 {
 	#ifdef _DEBUG
@@ -206,6 +207,7 @@ static int OnModulesLoaded( WPARAM wParam, LPARAM lParam )
 	JabberWsInit();
 	JabberSslInit();
 	HookEvent( ME_USERINFO_INITIALISE, JabberUserInfoInit );
+	bSecureIM = (ServiceExists("SecureIM/IsContactSecured"));
 
 	if ( ServiceExists( MS_GC_REGISTER )) {
 		jabberChatDllPresent = true;
