@@ -111,6 +111,7 @@ int   fnRemoveEvent( HANDLE hContact, HANDLE dbEvent );
 
 /* clistmenus.c */
 int    GetProtoIndexByPos(PROTOCOLDESCRIPTOR ** proto, int protoCnt, int Pos);
+int    fnGetProtocolVisibility( const char* proto );
 int    MenuModulesLoaded( WPARAM, LPARAM );
 
 /* clistmod.c */
@@ -178,11 +179,6 @@ static BOOL fnInvalidateRect( HWND hwnd, CONST RECT* lpRect,BOOL bErase )
 
 static void fnOnCreateClc( void )
 {
-}
-
-static int fnGetProtocolVisibility( const char* proto )
-{
-	return TRUE;
 }
 
 static void fnReloadProtoMenus( void )

@@ -984,8 +984,8 @@ BOOL CALLBACK DlgProcIcoLibOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lP
 							tvis.hParent = hSection;
 							tvis.hInsertAfter = TVI_LAST;//TVI_SORT;
 							tvis.item.pszText = TranslateTS( pItemName );
-							//tvis.item.lParam = sectionName ? 0 : (LPARAM)sectionList.items[indx];
-							tvis.item.lParam = (LPARAM)sectionList.items[indx];
+							tvis.item.lParam = sectionName ? 0 : (LPARAM)sectionList.items[indx];
+							//tvis.item.lParam = (LPARAM)sectionList.items[indx];
 							tvis.item.mask = TVIF_TEXT|TVIF_PARAM|TVIF_STATE;
 							tvis.item.state = tvis.item.stateMask = DBGetContactSettingByte(NULL, "SkinIconsUI", paramName, TVIS_EXPANDED );
 							hItem = TreeView_InsertItem(hwndTree, &tvis);

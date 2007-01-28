@@ -64,7 +64,7 @@ int SaveTree(HWND hwndDlg)
 	pimo = &MenuObjects[menupos];
 
 	mir_snprintf( MenuNameItems, sizeof(MenuNameItems), "%s_Items", pimo->Name);
-	runtimepos=0;
+	runtimepos = 100;
 
 	while ( tvi.hItem != NULL ) {
 		TreeView_GetItem( hTree, &tvi );
@@ -86,7 +86,7 @@ int SaveTree(HWND hwndDlg)
 					DBWriteContactSettingTString(NULL, MenuNameItems, DBString, name);
 			}	}
 
-			runtimepos+=100;
+			runtimepos += 100;
 		}
 
 		if ( name && !_tcscmp(name, STR_SEPARATOR) && iod->show )
@@ -422,77 +422,74 @@ static BOOL CALLBACK GenMenuOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM l
 
 	case WM_COMMAND:
 		if ((HIWORD(wParam)==BN_CLICKED|| HIWORD(wParam)==BN_DBLCLK)) {
-			int ctrlid=LOWORD(wParam);
-			if (ctrlid==IDC_INSERTSEPARATOR) {
+			switch ( LOWORD(wParam)) {
+			case IDC_INSERTSEPARATOR:
 				InsertSeparator(hwndDlg);
 				SendMessage(GetParent(hwndDlg), PSM_CHANGED, 0, 0);
-			}
-			if (ctrlid==IDC_GENMENU_DEFAULT) {
+				break;
+			
+			case IDC_GENMENU_DEFAULT:
+				{
+					TVITEM tvi;
+					HTREEITEM hti;
+					char buf[256];
+					MenuItemOptData *iod;
 
-				TVITEM tvi;
-				HTREEITEM hti;
-				char buf[256];
-				MenuItemOptData *iod;
+					hti=TreeView_GetSelection(GetDlgItem(hwndDlg,IDC_MENUITEMS));
+					if (hti==NULL)
+						break;
 
-				hti=TreeView_GetSelection(GetDlgItem(hwndDlg,IDC_MENUITEMS));
-				if (hti==NULL)
-					break;
+					tvi.mask=TVIF_HANDLE|TVIF_IMAGE|TVIF_SELECTEDIMAGE|TVIF_PARAM;
+					tvi.hItem=hti;
+					TreeView_GetItem(GetDlgItem(hwndDlg,IDC_MENUITEMS),&tvi);
+					iod = ( MenuItemOptData * )tvi.lParam;
 
-				tvi.mask=TVIF_HANDLE|TVIF_IMAGE|TVIF_SELECTEDIMAGE|TVIF_PARAM;
-				tvi.hItem=hti;
-				TreeView_GetItem(GetDlgItem(hwndDlg,IDC_MENUITEMS),&tvi);
-				iod = ( MenuItemOptData * )tvi.lParam;
+					if ( iod->name && _tcsstr(iod->name, _T("---------------------------------------------")))
+						break;
 
-				if ( iod->name && _tcsstr(iod->name, _T("---------------------------------------------")))
-					break;
+					ZeroMemory(buf,256);
+					GetDlgItemTextA(hwndDlg,IDC_GENMENU_CUSTOMNAME,buf,256);
+					if (iod->name)
+						mir_free(iod->name);
+					iod->name = mir_tstrdup( iod->defname );
 
-				ZeroMemory(buf,256);
-				GetDlgItemTextA(hwndDlg,IDC_GENMENU_CUSTOMNAME,buf,256);
-				if (iod->name) {
-					mir_free(iod->name);
+					SaveTree(hwndDlg);
+					RebuildCurrent(hwndDlg);
+					SendMessage( GetParent( hwndDlg ), PSM_CHANGED, 0, 0 );
 				}
+				break;
 
-				iod->name = mir_tstrdup( iod->defname );
+			case IDC_GENMENU_SET:
+				{
+					TVITEM tvi;
+					TCHAR buf[256];
+					MenuItemOptData *iod;
 
-				SaveTree(hwndDlg);
-				RebuildCurrent(hwndDlg);
-			}
+					HTREEITEM hti = TreeView_GetSelection( GetDlgItem( hwndDlg,IDC_MENUITEMS ));
+					if ( hti == NULL )
+						break;
 
-			if (ctrlid==IDC_GENMENU_SET) {
+					tvi.mask = TVIF_HANDLE|TVIF_IMAGE|TVIF_SELECTEDIMAGE|TVIF_PARAM;
+					tvi.hItem = hti;
+					SendDlgItemMessage(hwndDlg, IDC_MENUITEMS, TVM_GETITEM, 0, (LPARAM)&tvi);
+					iod = ( MenuItemOptData * )tvi.lParam;
 
-				TVITEM tvi;
-				TCHAR buf[256];
-				MenuItemOptData *iod;
+					if ( iod->name && _tcsstr(iod->name, STR_SEPARATOR ))
+						break;
 
-				HTREEITEM hti = TreeView_GetSelection( GetDlgItem( hwndDlg,IDC_MENUITEMS ));
-				if ( hti == NULL )
-					break;
+					ZeroMemory(buf,sizeof( buf ));
+					GetDlgItemText( hwndDlg, IDC_GENMENU_CUSTOMNAME, buf, SIZEOF( buf ));
+					if (iod->name)
+						mir_free(iod->name);
 
-				tvi.mask = TVIF_HANDLE|TVIF_IMAGE|TVIF_SELECTEDIMAGE|TVIF_PARAM;
-				tvi.hItem = hti;
-				SendDlgItemMessage(hwndDlg, IDC_MENUITEMS, TVM_GETITEM, 0, (LPARAM)&tvi);
-				iod = ( MenuItemOptData * )tvi.lParam;
+					iod->name = mir_tstrdup(buf);
 
-				if ( iod->name && _tcsstr(iod->name, STR_SEPARATOR ))
-					break;
-
-				ZeroMemory(buf,sizeof( buf ));
-				GetDlgItemText( hwndDlg, IDC_GENMENU_CUSTOMNAME, buf, SIZEOF( buf ));
-				if (iod->name)
-					mir_free(iod->name);
-
-				iod->name = mir_tstrdup(buf);
-
-				SaveTree(hwndDlg);
-				RebuildCurrent(hwndDlg);
-			}
-			break;
-		}
-
-		if ((HIWORD(wParam)==STN_CLICKED|| HIWORD(wParam)==STN_DBLCLK)) {
-			int ctrlid=LOWORD(wParam);
-
-		}
+					SaveTree(hwndDlg);
+					RebuildCurrent(hwndDlg);
+					SendMessage( GetParent( hwndDlg ), PSM_CHANGED, 0, 0 );
+				}
+				break;
+		}	}
 		break;
 
 	case WM_NOTIFY:

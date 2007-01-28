@@ -848,7 +848,7 @@ static int MenuGetStatus(WPARAM wParam,LPARAM lParam)
 	return BuildStatusMenu(0,0);
 }
 
-int GetProtocolVisibility(char *ProtoName)
+int fnGetProtocolVisibility(const char *ProtoName)
 {
 	int i;
 	int res=0;
@@ -896,7 +896,6 @@ int GetProtoIndexByPos(PROTOCOLDESCRIPTOR ** proto, int protoCnt, int Pos)
 
 	return -1;
 }
-
 
 int MenuModulesLoaded(WPARAM wParam,LPARAM lParam)
 {
@@ -971,7 +970,7 @@ int MenuModulesLoaded(WPARAM wParam,LPARAM lParam)
 		i = GetProtoIndexByPos(proto,protoCount,s);
 		if ( i == -1 )
 			continue;
-		if (!((proto[i]->type!=PROTOTYPE_PROTOCOL) || (DBGetContactSettingByte(NULL,"CLUI","DontHideStatusMenu",0)==0&&GetProtocolVisibility(proto[i]->szName)==0)))
+		if (!((proto[i]->type!=PROTOTYPE_PROTOCOL) || (DBGetContactSettingByte(NULL,"CLUI","DontHideStatusMenu",0)==0 && cli.pfnGetProtocolVisibility(proto[i]->szName)==0)))
 			visnetworkProtoCount++;
 	}
 
@@ -980,7 +979,7 @@ int MenuModulesLoaded(WPARAM wParam,LPARAM lParam)
 		i = GetProtoIndexByPos(proto,protoCount,s);
 		if ( i == -1 )
 			continue;
-		if (( proto[i]->type != PROTOTYPE_PROTOCOL) || (DBGetContactSettingByte(NULL,"CLUI","DontHideStatusMenu",0)==0 && GetProtocolVisibility(proto[i]->szName)==0))
+		if (( proto[i]->type != PROTOTYPE_PROTOCOL) || (DBGetContactSettingByte(NULL,"CLUI","DontHideStatusMenu",0)==0 && cli.pfnGetProtocolVisibility(proto[i]->szName)==0))
 			continue;
 
 		flags = CallProtoService(proto[i]->szName,PS_GETCAPS,PFLAGNUM_2,0);
