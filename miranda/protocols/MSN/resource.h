@@ -7,6 +7,7 @@
 #define IDD_OPT_MSN_CONN                106
 #define IDD_HOTMAIL_OPT_POPUP           107
 #define IDI_MSNBLOCK                    108
+#define IDI_SERVICES                    109
 #define IDI_INBOX                       112
 #define IDI_INVITE                      113
 #define IDI_NETMEETING                  114
@@ -18,8 +19,7 @@
 #define IDI_LIST_BL                     122
 #define IDI_LIST_RL                     123
 #define IDI_AVATAR                      125
-#define IDI_NUDGE                       128
-#define IDI_SERVICES                    129
+#define IDI_NUDGE                       126
 #define IDI_ICON2                       130
 #define IDD_DIALOG1                     131
 #define IDD_SETAVATAR                   132
