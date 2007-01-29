@@ -110,17 +110,14 @@ void handleFileAck(PBYTE buf, WORD wLen, DWORD dwUin, DWORD dwCookie, WORD wStat
 
 filetransfer *CreateFileTransfer(HANDLE hContact, DWORD dwUin, int nVersion)
 {
-  filetransfer *ft;
+  filetransfer *ft = CreateIcqFileTransfer();
 
-  ft = (filetransfer*)SAFE_MALLOC(sizeof(filetransfer));
-  if (ft)
-  {
-    ft->dwUin = dwUin;
-    ft->hContact = hContact;
-    ft->nVersion = nVersion;
-    ft->pMessage.bMessageType = MTYPE_FILEREQ;
-    InitMessageCookie(&ft->pMessage);
-  }
+  ft->dwUin = dwUin;
+  ft->hContact = hContact;
+  ft->nVersion = nVersion;
+  ft->pMessage.bMessageType = MTYPE_FILEREQ;
+  InitMessageCookie(&ft->pMessage);
+
   return ft;
 }
 
@@ -224,12 +221,15 @@ void icq_CancelFileTransfer(HANDLE hContact, filetransfer* ft)
   if (FindCookieByData(ft, &dwCookie, NULL))
     FreeCookie(dwCookie);      /* this bit stops a send that's waiting for acceptance */
 
-  NetLib_SafeCloseHandle(&ft->hConnection, FALSE);
+  if (IsValidFileTransfer(ft))
+  { // Transfer still out there, end it
+    NetLib_SafeCloseHandle(&ft->hConnection, FALSE);
 
-  ICQBroadcastAck(ft->hContact, ACKTYPE_FILE, ACKRESULT_FAILED, ft, 0);
+    ICQBroadcastAck(ft->hContact, ACKTYPE_FILE, ACKRESULT_FAILED, ft, 0);
 
-  /* FIXME: Do not free ft, or anything therein, it is freed inside DC thread ! */
-  #ifdef _DEBUG
-    NetLog_Direct("icq_CancelFileTransfer: OK");
-  #endif
+    if (!FindFileTransferDC(ft))
+    { // Release orphan structure only
+      SafeReleaseFileTransfer(&ft);
+    }
+  }
 }

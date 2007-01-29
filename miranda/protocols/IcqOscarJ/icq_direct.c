@@ -550,9 +550,12 @@ static DWORD __stdcall icq_directThread(directthreadstartinfo *dtsi)
       }
       NetLog_Direct("connect() failed (%d)", GetLastError());
       RemoveDirectConnFromList(&dc);
-      if (dc.type == DIRECTCONN_FILE) 
+      if (dc.type == DIRECTCONN_FILE)
+      {
         ICQBroadcastAck(dc.ft->hContact, ACKTYPE_FILE, ACKRESULT_FAILED, dc.ft, 0);
-
+        // Release transfer
+        SafeReleaseFileTransfer(&dc.ft);
+      }
       return 0;
     }
 

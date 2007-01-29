@@ -69,11 +69,11 @@ static void proxy_sendJoinTunnel(oscar_connection *oc, WORD wPort);
 
 
 static CRITICAL_SECTION oftMutex;
-static int oftTransferCount = 0;
-static oscar_filetransfer** oftTransferList = NULL;
+static int fileTransferCount = 0;
+static basic_filetransfer** fileTransferList = NULL;
 
 static oscar_filetransfer* CreateOscarTransfer();
-static void ReleaseOscarTransfer(oscar_filetransfer *ft);
+static void ReleaseFileTransfer(void *ft);
 static oscar_filetransfer* FindOscarTransfer(HANDLE hContact, DWORD dwID1, DWORD dwID2);
 
 
@@ -90,8 +90,8 @@ static oscar_filetransfer* CreateOscarTransfer()
 
   EnterCriticalSection(&oftMutex);
 
-  oftTransferList = (oscar_filetransfer**)realloc(oftTransferList, sizeof(oscar_filetransfer*)*(oftTransferCount + 1));
-  oftTransferList[oftTransferCount++] = ft;
+  fileTransferList = (basic_filetransfer**)realloc(fileTransferList, sizeof(basic_filetransfer*)*(fileTransferCount + 1));
+  fileTransferList[fileTransferCount++] = (basic_filetransfer*)ft;
 
   LeaveCriticalSection(&oftMutex);
 
@@ -100,20 +100,61 @@ static oscar_filetransfer* CreateOscarTransfer()
 
 
 
-static void ReleaseOscarTransfer(oscar_filetransfer *ft)
+filetransfer *CreateIcqFileTransfer()
+{
+  filetransfer *ft = (filetransfer*)SAFE_MALLOC(sizeof(filetransfer));
+
+  ft->ft_magic = FT_MAGIC_ICQ;
+
+  EnterCriticalSection(&oftMutex);
+
+  fileTransferList = (basic_filetransfer**)realloc(fileTransferList, sizeof(basic_filetransfer*)*(fileTransferCount + 1));
+  fileTransferList[fileTransferCount++] = (basic_filetransfer*)ft;
+
+  LeaveCriticalSection(&oftMutex);
+
+  return ft;
+}
+
+
+
+static void ReleaseFileTransfer(void *ft)
 {
   int i;
 
-  for (i = 0; i < oftTransferCount; i++)
+  for (i = 0; i < fileTransferCount; i++)
   {
-    if (oftTransferList[i] == ft)
+    if (fileTransferList[i] == ft)
     {
-      oftTransferCount--;
-      oftTransferList[i] = oftTransferList[oftTransferCount];
-      oftTransferList = (oscar_filetransfer**)realloc(oftTransferList, sizeof(oscar_filetransfer*)*oftTransferCount);
+      fileTransferCount--;
+      fileTransferList[i] = fileTransferList[fileTransferCount];
+      fileTransferList = (basic_filetransfer**)realloc(fileTransferList, sizeof(basic_filetransfer*)*fileTransferCount);
       break;
     }
   }
+}
+
+
+
+int IsValidFileTransfer(void *ft)
+{
+  int i;
+
+  EnterCriticalSection(&oftMutex);
+
+  for (i = 0; i < fileTransferCount; i++)
+  {
+    if (fileTransferList[i] == ft)
+    {
+      LeaveCriticalSection(&oftMutex);
+
+      return 1;
+    }
+  }
+
+  LeaveCriticalSection(&oftMutex);
+
+  return 0;
 }
 
 
@@ -124,9 +165,9 @@ int IsValidOscarTransfer(void *ft)
 
   EnterCriticalSection(&oftMutex);
 
-  for (i = 0; i < oftTransferCount; i++)
+  for (i = 0; i < fileTransferCount; i++)
   {
-    if (oftTransferList[i] == ft)
+    if (fileTransferList[i] == ft && ((basic_filetransfer*)ft)->ft_magic == FT_MAGIC_OSCAR)
     {
       LeaveCriticalSection(&oftMutex);
 
@@ -147,13 +188,18 @@ static oscar_filetransfer* FindOscarTransfer(HANDLE hContact, DWORD dwID1, DWORD
 
   EnterCriticalSection(&oftMutex);
 
-  for (i = 0; i < oftTransferCount; i++)
+  for (i = 0; i < fileTransferCount; i++)
   {
-    if (oftTransferList[i]->hContact == hContact && oftTransferList[i]->pMessage.dwMsgID1 == dwID1 && oftTransferList[i]->pMessage.dwMsgID2 == dwID2)
+    if (((basic_filetransfer*)fileTransferList[i])->ft_magic == FT_MAGIC_OSCAR)
     {
-      LeaveCriticalSection(&oftMutex);
+      oscar_filetransfer *oft = (oscar_filetransfer*)fileTransferList[i];
 
-      return oftTransferList[i];
+      if (oft->hContact == hContact && oft->pMessage.dwMsgID1 == dwID1 && oft->pMessage.dwMsgID2 == dwID2)
+      {
+        LeaveCriticalSection(&oftMutex);
+
+        return oft;
+      }
     }
   }
 
@@ -168,6 +214,9 @@ static oscar_filetransfer* FindOscarTransfer(HANDLE hContact, DWORD dwID1, DWORD
 void SafeReleaseFileTransfer(void **ft)
 {
   basic_filetransfer **bft = (basic_filetransfer**)ft;
+
+  // Check if filetransfer validity
+  if (!IsValidFileTransfer(*ft)) return;
 
   EnterCriticalSection(&oftMutex);
 
@@ -190,11 +239,20 @@ void SafeReleaseFileTransfer(void **ft)
           SAFE_FREE(&ift->files[i]);
         SAFE_FREE((char**)&ift->files);
       }
+      // Invalidate transfer
+      ReleaseFileTransfer(ift);
+      // Release memory
       SAFE_FREE(ft);
     }
     else if ((*bft)->ft_magic == FT_MAGIC_OSCAR)
     { // release oscar filetransfer structure and its contents
       oscar_filetransfer *oft = (oscar_filetransfer*)(*bft);
+      // Release only valid transfers
+      if (!IsValidOscarTransfer(oft))
+      {
+        LeaveCriticalSection(&oftMutex);
+        return;
+      }
       // If connected, close connection
       if (oft->connection)
         CloseOscarConnection(oft->connection);
@@ -225,7 +283,7 @@ void SafeReleaseFileTransfer(void **ft)
         SAFE_FREE((char**)&oft->files_ansi);
       }
       // Invalidate transfer
-      ReleaseOscarTransfer(oft);
+      ReleaseFileTransfer(oft);
       // Release memory
       SAFE_FREE(ft);
     }
@@ -797,6 +855,8 @@ int oftInitTransfer(HANDLE hContact, DWORD dwUin, char* szUid, char** files, cha
   if (ft->qwTotalSize >= 0x100000000 && ft->wFilesCount > 1)
   { // file larger than 4GB can be send only as single
     icq_LogMessage(LOG_ERROR, "The files are too big to be sent at once. Files bigger than 4GB can be sent only separately.");
+    // Notify UI
+    ICQBroadcastAck(ft->hContact, ACKTYPE_FILE, ACKRESULT_FAILED, (HANDLE)ft, 0);
     // Release transfer
     SafeReleaseFileTransfer(&ft);
 
@@ -816,7 +876,6 @@ int oftInitTransfer(HANDLE hContact, DWORD dwUin, char* szUid, char** files, cha
   {
     ft->wEncrypt = 0;
     ft->wCompress = 0;
-    ft->wEncoding = 2; // ucs-2 encoded filename
     ft->wPartsCount = 1;
     ft->wPartsLeft = 1;
     strcpy(ft->rawIDString, "Cool FileXfer");
@@ -902,15 +961,19 @@ DWORD oftFileDeny(HANDLE hContact, WPARAM wParam, LPARAM lParam)
   DWORD dwUin;
   uid_str szUid;
 
-  if (ICQGetContactSettingUID(hContact, &dwUin, &szUid))
-    return 1; // Invalid contact
+  if (IsValidOscarTransfer(ft))
+  {
+    if (ICQGetContactSettingUID(hContact, &dwUin, &szUid))
+      return 1; // Invalid contact
 
-  oft_sendFileDeny(dwUin, szUid, ft);
+    oft_sendFileDeny(dwUin, szUid, ft);
 
-  // Release structure
-  SafeReleaseFileTransfer(&ft);
+    // Release structure
+    SafeReleaseFileTransfer(&ft);
 
-  return 0; // Success
+    return 0; // Success
+  }
+  return 1; // Invalid transfer
 }
 
 
@@ -921,20 +984,24 @@ DWORD oftFileCancel(HANDLE hContact, WPARAM wParam, LPARAM lParam)
   DWORD dwUin;
   uid_str szUid;
 
-  if (ft->hContact != hContact)
-    return 1; // Bad contact or hTransfer
+  if (IsValidOscarTransfer(ft))
+  {
+    if (ft->hContact != hContact)
+      return 1; // Bad contact or hTransfer
 
-  if (ICQGetContactSettingUID(hContact, &dwUin, &szUid))
-    return 1; // Invalid contact
+    if (ICQGetContactSettingUID(hContact, &dwUin, &szUid))
+      return 1; // Invalid contact
 
-  oft_sendFileDeny(dwUin, szUid, ft);
+    oft_sendFileDeny(dwUin, szUid, ft);
 
-  ICQBroadcastAck(hContact, ACKTYPE_FILE, ACKRESULT_FAILED, ft, 0);
+    ICQBroadcastAck(hContact, ACKTYPE_FILE, ACKRESULT_FAILED, ft, 0);
 
-  // Release structure
-  SafeReleaseFileTransfer(&ft);
+    // Release structure
+    SafeReleaseFileTransfer(&ft);
 
-  return 0; // Success
+    return 0; // Success
+  }
+  return 1; // Invalid transfer
 }
 
 
@@ -1400,9 +1467,21 @@ static DWORD __stdcall oft_connectionThread(oscarthreadstartinfo *otsi)
 
   CloseOscarConnection(&oc);
 
-  // FIXME: Clean up, error handling
+  // Clean up, error handling
   if (IsValidOscarTransfer(oc.ft))
   {
+    if (oc.status == OCS_DATA)
+    {
+      ICQBroadcastAck(oc.hContact, ACKTYPE_FILE, ACKRESULT_FAILED, oc.ft, 0);
+
+      icq_LogMessage(LOG_ERROR, "Connection lost during file transfer.");
+    }
+    else if (oc.status == OCS_NEGOTIATION)
+    {
+      ICQBroadcastAck(oc.hContact, ACKTYPE_FILE, ACKRESULT_FAILED, oc.ft, 0);
+
+      icq_LogMessage(LOG_ERROR, "File transfer negotiation failed for unknown reason.");
+    }
     oc.ft->connection = NULL; // release link
   }
 
@@ -2144,6 +2223,8 @@ static void oft_sendPeerInit(oscar_connection *oc)
   if (FileStatUtf(ft->szThisFile, &statbuf))
   {
     icq_LogMessage(LOG_ERROR, "Your file transfer has been aborted because one of the files that you selected to send is no longer readable from the disk. You may have deleted or moved it.");
+
+    ICQBroadcastAck(ft->hContact, ACKTYPE_FILE, ACKRESULT_FAILED, ft, 0);
     // Release transfer
     SafeReleaseFileTransfer(&oc->ft);
     return;
@@ -2158,15 +2239,16 @@ static void oft_sendPeerInit(oscar_connection *oc)
       if (pszThisFileName[i] == '\\' || pszThisFileName[i] == '/') pszThisFileName[i] = 0x01;
     }
   }
-  pwsThisFile = make_unicode_string(pszThisFileName);
-  SAFE_FREE(&pszThisFileName);
 
   ICQBroadcastAck(ft->hContact, ACKTYPE_FILE, ACKRESULT_NEXTFILE, ft, 0);
 
   ft->fileId = OpenFileUtf(ft->szThisFile, _O_BINARY | _O_RDONLY, 0);
   if (ft->fileId == -1)
   {
+    SAFE_FREE(&pszThisFileName);
     icq_LogMessage(LOG_ERROR, "Your file transfer has been aborted because one of the files that you selected to send is no longer readable from the disk. You may have deleted or moved it.");
+    //
+    ICQBroadcastAck(ft->hContact, ACKTYPE_FILE, ACKRESULT_FAILED, ft, 0);
     // Release transfer
     SafeReleaseFileTransfer(&oc->ft);
     return;
@@ -2179,22 +2261,28 @@ static void oft_sendPeerInit(oscar_connection *oc)
   ft->qwFileBytesDone = 0;
   ft->dwRecvFileCheck = 0xFFFF0000;
   SAFE_FREE(&ft->rawFileName);
-  ft->cbRawFileName = wcslen(pwsThisFile) * sizeof(wchar_t) + 2;
-  if (ft->cbRawFileName < 64) ft->cbRawFileName = 64;
-  ft->rawFileName = (char*)SAFE_MALLOC(ft->cbRawFileName);
-  {
-    WORD mc = 1;
-    wchar_t *target = (wchar_t*)ft->rawFileName;
-    char *source = (char*)pwsThisFile;
 
-    while (mc) // FIXME: this is ugly!!
-    {
-      unpackWord(&source, &mc);
-      *target = mc;
-      target++;
-    }
+  if (IsUSASCII(pszThisFileName, strlennull(pszThisFileName)))
+  {
+    ft->wEncoding = 0; // ascii
+    ft->cbRawFileName = strlennull(pszThisFileName);
+    if (ft->cbRawFileName < 64) ft->cbRawFileName = 64;
+    ft->rawFileName = (char*)SAFE_MALLOC(ft->cbRawFileName);
+    strcpy(ft->rawFileName, pszThisFileName);
+    SAFE_FREE(&pszThisFileName);
   }
-  SAFE_FREE(&pwsThisFile);
+  else
+  {
+    ft->wEncoding = 2; // ucs-2
+    pwsThisFile = make_unicode_string(pszThisFileName);
+    SAFE_FREE(&pszThisFileName);
+    ft->cbRawFileName = wcslen(pwsThisFile) * sizeof(wchar_t) + 2;
+    if (ft->cbRawFileName < 64) ft->cbRawFileName = 64;
+    ft->rawFileName = (char*)SAFE_MALLOC(ft->cbRawFileName);
+    // convert to LE ordered string
+    unpackWideString((char**)&pwsThisFile, (wchar_t*)ft->rawFileName, (WORD)(wcslen(pwsThisFile) * sizeof(wchar_t)));
+    SAFE_FREE(&pwsThisFile);
+  }
   ft->wFilesLeft = (WORD)(ft->wFilesCount - ft->iCurrentFile);
 
   sendOFT2FramePacket(oc, OFT_TYPE_REQUEST);

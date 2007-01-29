@@ -149,6 +149,9 @@ typedef struct {
 oscar_listener* CreateOscarListener(oscar_filetransfer *ft, NETLIBNEWCONNECTIONPROC_V2 handler);
 void ReleaseOscarListener(oscar_listener **pListener);
 
+filetransfer *CreateIcqFileTransfer();
+
+int IsValidFileTransfer(void *ft);
 int IsValidOscarTransfer(void *ft);
 
 void OpenOscarConnection(HANDLE hContact, oscar_filetransfer *ft, int type);
