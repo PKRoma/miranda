@@ -17,6 +17,12 @@ along with this program; if not, write to the Free Software
 Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 */
 
+#if defined( UNICODE ) && !defined( _UNICODE )
+	#define _UNICODE
+#endif
+
+#include <tchar.h>
+
 #include <windows.h>
 #include <stdio.h>
 #include <stddef.h>
@@ -40,10 +46,10 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #define WZN_CANCELCLICKED (WM_USER+1222)
 
 struct DbToolOptions {
-	char filename[MAX_PATH];
-	char workingFilename[MAX_PATH];
-	char outputFilename[MAX_PATH];
-	char backupFilename[MAX_PATH];
+	TCHAR filename[MAX_PATH];
+	TCHAR workingFilename[MAX_PATH];
+	TCHAR outputFilename[MAX_PATH];
+	TCHAR backupFilename[MAX_PATH];
 	HANDLE hFile;
 	HANDLE hOutFile;
 	DWORD error;
@@ -57,13 +63,15 @@ extern DBHeader dbhdr;
 
 int DoMyControlProcessing(HWND hdlg,UINT message,WPARAM wParam,LPARAM lParam,BOOL *bReturn);
 
+#define SIZEOF(X) (sizeof(X)/sizeof(X[0]))
+
 #define STATUS_MESSAGE    0
 #define STATUS_WARNING    1
 #define STATUS_ERROR      2
 #define STATUS_FATAL      3
 #define STATUS_SUCCESS    4
 #define STATUS_CLASSMASK  0x0f
-int AddToStatus(DWORD flags,char *fmt,...);
+int AddToStatus(DWORD flags, TCHAR* fmt,...);
 void SetProgressBar(int perThou);
 
 int PeekSegment(DWORD ofs,PVOID buf,int cbBytes);
@@ -74,3 +82,20 @@ DWORD WriteSegment(DWORD ofs,PVOID buf,int cbBytes);
 int SignatureValid(DWORD ofs,DWORD signature);
 DWORD ConvertModuleNameOfs(DWORD ofsOld);
 void FreeModuleChain();
+
+int TranslateDialog(HWND hwndDlg);
+int LoadLangPackModule(void);
+int LangPackShutdown(void);
+
+char* LangPackTranslateString(const char *szEnglish, const int W);
+__inline LPSTR Translate(LPSTR source)
+{	return ( LPSTR )LangPackTranslateString( source, 0 );
+}
+
+#if defined( _UNICODE )
+	#define TranslateT(s) (TCHAR*)LangPackTranslateString((LPCSTR)_T(s),1)
+	#define TranslateTS(s) (TCHAR*)LangPackTranslateString((LPCSTR)s,1)
+#else
+	#define TranslateT(s) LangPackTranslateString(s,0)
+	#define TranslateTS(s) LangPackTranslateString(s,0)
+#endif

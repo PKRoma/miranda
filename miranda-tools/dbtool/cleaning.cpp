@@ -32,6 +32,7 @@ BOOL CALLBACK CleaningDlgProc(HWND hdlg,UINT message,WPARAM wParam,LPARAM lParam
 			CheckDlgButton(hdlg,IDC_ERASEHISTORY,opts.bEraseHistory);
 			EnableWindow(GetDlgItem(hdlg,IDC_ERASEHISTORY),!opts.bAggressive);
 			CheckDlgButton(hdlg,IDC_MARKREAD,opts.bMarkRead);
+			TranslateDialog(hdlg);
 			return TRUE;
 		case WZN_PAGECHANGING:
 			opts.bEraseHistory=IsDlgButtonChecked(hdlg,IDC_ERASEHISTORY)&&!opts.bAggressive;

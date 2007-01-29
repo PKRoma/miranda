@@ -33,6 +33,7 @@ BOOL CALLBACK FileAccessDlgProc(HWND hdlg,UINT message,WPARAM wParam,LPARAM lPar
 			CheckDlgButton(hdlg,IDC_BACKUP,opts.bBackup);
 			CheckDlgButton(hdlg,IDC_AGGRESSIVE,opts.bAggressive);
 			SendMessage(hdlg,WM_COMMAND,MAKEWPARAM(IDC_CHECKONLY,BN_CLICKED),0);
+			TranslateDialog(hdlg);
 			return TRUE;
 		case WZN_PAGECHANGING:
 			opts.bCheckOnly=IsDlgButtonChecked(hdlg,IDC_CHECKONLY);

@@ -30,7 +30,7 @@ static BOOL CALLBACK MyControlsEnumChildren(HWND hwnd,LPARAM lParam)
 	char szClass[64];
 	int makeBold=0;
 
-	GetClassName(hwnd,szClass,sizeof(szClass));
+	GetClassNameA(hwnd,szClass,sizeof(szClass));
 	if(!strcmp(szClass,"Static")) {
 		if(((style&SS_TYPEMASK)==SS_LEFT || (style&SS_TYPEMASK)==SS_CENTER || (style&SS_TYPEMASK)==SS_RIGHT) && exstyle&WS_EX_CLIENTEDGE)
 			makeBold=1;
@@ -60,7 +60,7 @@ int DoMyControlProcessing(HWND hdlg,UINT message,WPARAM wParam,LPARAM lParam,BOO
 		case WM_INITDIALOG:
 			EnumChildWindows(hdlg,MyControlsEnumChildren,0);
 			if(hEmfHeaderLogo==NULL) {
-				HRSRC hRsrc=FindResource(hInst,MAKEINTRESOURCE(IDE_HDRLOGO),"EMF");
+				HRSRC hRsrc=FindResourceA(hInst,MAKEINTRESOURCEA(IDE_HDRLOGO),"EMF");
 				HGLOBAL hGlob=LoadResource(hInst,hRsrc);
 				hEmfHeaderLogo=SetEnhMetaFileBits(SizeofResource(hInst,hRsrc),(PBYTE)LockResource(hGlob));
 			}
@@ -69,7 +69,7 @@ int DoMyControlProcessing(HWND hdlg,UINT message,WPARAM wParam,LPARAM lParam,BOO
 		case WM_CTLCOLORSTATIC:
 			if((GetWindowLong((HWND)lParam,GWL_STYLE)&0xFFFF)==0) {
 				char szText[256];
-				GetWindowText((HWND)lParam,szText,sizeof(szText));
+				GetWindowTextA((HWND)lParam,szText,sizeof(szText));
 				if(!strcmp(szText,"whiterect")) {
 					SetTextColor((HDC)wParam,RGB(255,255,255));
 					SetBkColor((HDC)wParam,RGB(255,255,255));
@@ -97,13 +97,14 @@ BOOL CALLBACK WizardDlgProc(HWND hdlg,UINT message,WPARAM wParam,LPARAM lParam)
 			SendMessage(hdlg,WM_SETICON,ICON_SMALL,(LPARAM)LoadIcon(hInst,MAKEINTRESOURCE(IDI_DBTOOL)));
 			hdlgPage=NULL;
 			SendMessage(hdlg,WZM_GOTOPAGE,IDD_WELCOME,(LPARAM)WelcomeDlgProc);
+			TranslateDialog(hdlg);
 			return TRUE;
 		case WZM_GOTOPAGE:
 			if(hdlgPage!=NULL) DestroyWindow(hdlgPage);
 			EnableWindow(GetDlgItem(hdlg,IDC_BACK),TRUE);
 			EnableWindow(GetDlgItem(hdlg,IDOK),TRUE);
 			EnableWindow(GetDlgItem(hdlg,IDCANCEL),TRUE);
-			SetDlgItemText(hdlg,IDCANCEL,"Cancel");
+			SetDlgItemText(hdlg,IDCANCEL,TranslateT("Cancel"));
 			hdlgPage=CreateDialog(hInst,MAKEINTRESOURCE(wParam),hdlg,(DLGPROC)lParam);
 			SetWindowPos(hdlgPage,0,0,0,0,0,SWP_NOZORDER|SWP_NOSIZE);
 			ShowWindow(hdlgPage,SW_SHOW);
@@ -123,6 +124,7 @@ BOOL CALLBACK WizardDlgProc(HWND hdlg,UINT message,WPARAM wParam,LPARAM lParam)
 			break;
 		case WM_DESTROY:
 			DestroyWindow(hdlgPage);
+			LangPackShutdown();
 			if(hBoldFont!=NULL) DeleteObject(hBoldFont);
 			if(hEmfHeaderLogo!=NULL) DeleteEnhMetaFile(hEmfHeaderLogo);
 			break;

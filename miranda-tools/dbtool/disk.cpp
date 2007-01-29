@@ -26,13 +26,13 @@ int SignatureValid(DWORD ofs,DWORD signature)
 	DWORD sig;
 
 	if(ofs>=sourceFileSize)	{
-		AddToStatus(STATUS_ERROR,"Invalid offset found");
+		AddToStatus(STATUS_ERROR,TranslateT("Invalid offset found"));
 		return 0;
 	}
 	SetFilePointer(opts.hFile,ofs,NULL,FILE_BEGIN);
 	ReadFile(opts.hFile,&sig,sizeof(sig),&bytesRead,NULL);
 	if(bytesRead<sizeof(sig)) {
-		AddToStatus(STATUS_ERROR,"Error reading, database truncated? (%u)",GetLastError());
+		AddToStatus(STATUS_ERROR,TranslateT("Error reading, database truncated? (%u)"),GetLastError());
 		return 0;
 	}
 	return sig==signature;
@@ -42,13 +42,13 @@ int PeekSegment(DWORD ofs,PVOID buf,int cbBytes)
 {
 	DWORD bytesRead;
 	if(ofs>=sourceFileSize) {
-		AddToStatus(STATUS_ERROR,"Invalid offset found");
+		AddToStatus(STATUS_ERROR,TranslateT("Invalid offset found"));
 		return ERROR_SEEK;
 	}
 	SetFilePointer(opts.hFile,ofs,NULL,FILE_BEGIN);
 	ReadFile(opts.hFile,buf,cbBytes,&bytesRead,NULL);
 	if(bytesRead==0) {
-		AddToStatus(STATUS_ERROR,"Error reading, database truncated? (%u)",GetLastError());
+		AddToStatus(STATUS_ERROR,TranslateT("Error reading, database truncated? (%u)"),GetLastError());
 		return ERROR_READ_FAULT;
 	}
 	if((int)bytesRead<cbBytes) return ERROR_HANDLE_EOF;
@@ -67,7 +67,7 @@ int ReadSegment(DWORD ofs,PVOID buf,int cbBytes)
 		zeros=(PBYTE)calloc(cbBytes,1);
 		SetFilePointer(opts.hFile,ofs,NULL,FILE_BEGIN);
 		WriteFile(opts.hFile,zeros,cbBytes,&bytesWritten,NULL);
-		if((int)bytesWritten<cbBytes) AddToStatus(STATUS_WARNING,"Can't write to working file, aggressive mode may be too aggressive now (%u)",GetLastError());
+		if((int)bytesWritten<cbBytes) AddToStatus(STATUS_WARNING,TranslateT("Can't write to working file, aggressive mode may be too aggressive now (%u)"),GetLastError());
 		free(zeros);
 	}
 	spaceProcessed+=cbBytes;
@@ -85,7 +85,7 @@ DWORD WriteSegment(DWORD ofs,PVOID buf,int cbBytes)
 	SetFilePointer(opts.hOutFile,ofs,NULL,FILE_BEGIN);
 	WriteFile(opts.hOutFile,buf,cbBytes,&bytesWritten,NULL);
 	if((int)bytesWritten<cbBytes) {
-		AddToStatus(STATUS_FATAL,"Can't write to output file - disk full? (%u)",GetLastError());
+		AddToStatus(STATUS_FATAL,TranslateT("Can't write to output file - disk full? (%u)"),GetLastError());
 		return WS_ERROR;
 	}
 	return ofs;

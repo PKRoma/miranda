@@ -34,13 +34,13 @@ int WorkSettingsChain(DWORD ofsContact,DBContact *dbc,int firstTime)
 	if(ofsThisSettings==0)
 		return ERROR_NO_MORE_ITEMS;
 	if(!SignatureValid(ofsThisSettings,DBCONTACTSETTINGS_SIGNATURE)) {
-		AddToStatus(STATUS_ERROR,"Settings chain corrupted, further entries ignored");
+		AddToStatus(STATUS_ERROR,TranslateT("Settings chain corrupted, further entries ignored"));
 		return ERROR_NO_MORE_ITEMS;
 	}
 	if(PeekSegment(ofsThisSettings,&dbcsOld,sizeof(dbcsOld))!=ERROR_SUCCESS)
 		return ERROR_NO_MORE_ITEMS;
 	if(dbcsOld.cbBlob>256*1024 || dbcsOld.cbBlob==0) {
-		AddToStatus(STATUS_ERROR,"Infeasibly large settings blob: skipping");
+		AddToStatus(STATUS_ERROR,TranslateT("Infeasibly large settings blob: skipping"));
 		ofsThisSettings=dbcsOld.ofsNext;
 		return ERROR_SUCCESS;
 	}
@@ -55,7 +55,7 @@ int WorkSettingsChain(DWORD ofsContact,DBContact *dbc,int firstTime)
 		return ERROR_SUCCESS;
 	}
 	if(dbcsNew->blob[0]==0) {
-		AddToStatus(STATUS_MESSAGE,"Empty settings group at %08X: deleting",ofsThisSettings);
+		AddToStatus(STATUS_MESSAGE,TranslateT("Empty settings group at %08X: deleting"),ofsThisSettings);
 		ofsThisSettings=dbcsOld.ofsNext;
 		return ERROR_SUCCESS;
 	}

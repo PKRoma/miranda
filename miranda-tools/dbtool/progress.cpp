@@ -27,14 +27,14 @@ static HWND hwndStatus,hdlgProgress,hwndBar;
 HANDLE hEventRun,hEventAbort;
 int errorCount;
 
-int AddToStatus(DWORD flags,char *fmt,...)
+int AddToStatus(DWORD flags, TCHAR* fmt,...)
 {
 	va_list vararg;
-	char str[256];
+	TCHAR str[256];
 	int i,ret;
 
 	va_start(vararg,fmt);
-	ret=_vsnprintf(str,sizeof(str),fmt,vararg);
+	ret=_vsntprintf(str,SIZEOF(str),fmt,vararg);
 	va_end(vararg);
 	i=SendMessage(hwndStatus,LB_ADDSTRING,0,(LPARAM)str);
 	SendMessage(hwndStatus,LB_SETITEMDATA,i,flags);
@@ -42,7 +42,7 @@ int AddToStatus(DWORD flags,char *fmt,...)
 	SendMessage(hwndStatus,LB_SETTOPINDEX,i,0);
 #ifdef _DEBUG
 	OutputDebugString(str);
-	OutputDebugString("\n");
+	OutputDebugStringA("\n");
 #endif
 	if((flags&STATUS_CLASSMASK)==STATUS_ERROR) errorCount++;
 	return ret;
@@ -80,7 +80,7 @@ BOOL CALLBACK ProgressDlgProc(HWND hdlg,UINT message,WPARAM wParam,LPARAM lParam
 				hdc=GetDC(NULL);
 				hFont=(HFONT)SendMessage(hdlg,WM_GETFONT,0,0);
 				hoFont=(HFONT)SelectObject(hdc,hFont);
-				GetTextExtentPoint32(hdc,"x",1,&s);
+				GetTextExtentPoint32(hdc,_T("x"),1,&s);
 				SelectObject(hdc,hoFont);
 				ReleaseDC(NULL,hdc);
 				fontHeight=s.cy;
@@ -98,6 +98,7 @@ BOOL CALLBACK ProgressDlgProc(HWND hdlg,UINT message,WPARAM wParam,LPARAM lParam
 			manualAbort=0;
 			hEventRun=CreateEvent(NULL,TRUE,TRUE,NULL);
 			hEventAbort=CreateEvent(NULL,TRUE,FALSE,NULL);
+			TranslateDialog(hdlg);
 			_beginthread(WorkerThread,0,NULL);
 			return TRUE;
 		case WM_MEASUREITEM:
@@ -108,7 +109,7 @@ BOOL CALLBACK ProgressDlgProc(HWND hdlg,UINT message,WPARAM wParam,LPARAM lParam
 		}
 		case WM_DRAWITEM:
 		{	LPDRAWITEMSTRUCT dis=(LPDRAWITEMSTRUCT)lParam;
-			char str[256];
+			TCHAR str[256];
 			int bold=0;
 			HFONT hoFont;
 			if((int)dis->itemID==-1) break;
@@ -133,7 +134,7 @@ BOOL CALLBACK ProgressDlgProc(HWND hdlg,UINT message,WPARAM wParam,LPARAM lParam
 					break;
 			}
 			if(bold) hoFont=(HFONT)SelectObject(dis->hDC,hBoldFont);
-			ExtTextOut(dis->hDC,dis->rcItem.left,dis->rcItem.top,ETO_CLIPPED|ETO_OPAQUE,&dis->rcItem,str,strlen(str),NULL);
+			ExtTextOut(dis->hDC,dis->rcItem.left,dis->rcItem.top,ETO_CLIPPED|ETO_OPAQUE,&dis->rcItem,str,_tcslen(str),NULL);
 			if(bold) SelectObject(dis->hDC,hoFont);
 			return TRUE;
 		}
@@ -142,12 +143,12 @@ BOOL CALLBACK ProgressDlgProc(HWND hdlg,UINT message,WPARAM wParam,LPARAM lParam
 			EnableWindow(GetDlgItem(GetParent(hdlg),IDOK),TRUE);
 			if(manualAbort==1) EndDialog(GetParent(hdlg),0);
 			else if(manualAbort==2) SendMessage(GetParent(hdlg),WZM_GOTOPAGE,IDD_CLEANING,(LPARAM)CleaningDlgProc);
-			AddToStatus(STATUS_SUCCESS,"Click Next to continue");
+			AddToStatus(STATUS_SUCCESS,TranslateT("Click Next to continue"));
 			break;
 		case WZN_CANCELCLICKED:
 			ResetEvent(hEventRun);
 			if(IsWindowEnabled(GetDlgItem(GetParent(hdlg),IDOK))) break;
-			if(MessageBox(hdlg,"Processing has not yet completed, if you cancel now then the changes that have currently been made will be rolled back and the original database will be restored. Do you still want to cancel?","Miranda Database Tool",MB_YESNO)==IDYES) {
+			if(MessageBox(hdlg,TranslateT("Processing has not yet completed, if you cancel now then the changes that have currently been made will be rolled back and the original database will be restored. Do you still want to cancel?"),TranslateT("Miranda Database Tool"),MB_YESNO)==IDYES) {
 				manualAbort=1;
 				SetEvent(hEventAbort);
 			}
@@ -159,7 +160,7 @@ BOOL CALLBACK ProgressDlgProc(HWND hdlg,UINT message,WPARAM wParam,LPARAM lParam
 				case IDC_BACK:
 					ResetEvent(hEventRun);
 					if(!IsWindowEnabled(GetDlgItem(GetParent(hdlg),IDOK))) {
-						if(MessageBox(hdlg,"Processing has not yet completed, if you go back now then the changes that have currently been made will be rolled back and the original database will be restored. Do you still want to go back?","Miranda Database Tool",MB_YESNO)==IDYES) {
+						if(MessageBox(hdlg,TranslateT("Processing has not yet completed, if you go back now then the changes that have currently been made will be rolled back and the original database will be restored. Do you still want to go back?"),TranslateT("Miranda Database Tool"),MB_YESNO)==IDYES) {
 							manualAbort=2;
 							SetEvent(hEventAbort);
 						}

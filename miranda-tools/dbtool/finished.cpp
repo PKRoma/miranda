@@ -29,33 +29,43 @@ BOOL CALLBACK FinishedDlgProc(HWND hdlg,UINT message,WPARAM wParam,LPARAM lParam
 	switch(message) {
 		case WM_INITDIALOG:
 			EnableWindow(GetDlgItem(GetParent(hdlg),IDC_BACK),FALSE);
-			SetDlgItemText(GetParent(hdlg),IDCANCEL,"&Finish");
+			SetDlgItemText(GetParent(hdlg),IDCANCEL,TranslateT("&Finish"));
 			SetWindowLong(GetDlgItem(hdlg,IDC_DBFILE),GWL_STYLE,GetWindowLong(GetDlgItem(hdlg,IDC_DBFILE),GWL_STYLE)|SS_PATHELLIPSIS);
-			SetDlgItemText(hdlg,IDC_DBFILE,opts.filename);
+			SetDlgItemText( hdlg, IDC_DBFILE, opts.filename );
 			if(opts.bBackup) {
 				ShowWindow(GetDlgItem(hdlg,IDC_STBACKUP),TRUE);
 				SetWindowLong(GetDlgItem(hdlg,IDC_BACKUPFILE),GWL_STYLE,GetWindowLong(GetDlgItem(hdlg,IDC_BACKUPFILE),GWL_STYLE)|SS_PATHELLIPSIS);
 				SetDlgItemText(hdlg,IDC_BACKUPFILE,opts.backupFilename);
 			}
 			else ShowWindow(GetDlgItem(hdlg,IDC_STBACKUP),FALSE);
+			TranslateDialog(hdlg);
 			return TRUE;
 		case WM_LAUNCHMIRANDA:
 			if(IsDlgButtonChecked(hdlg,IDC_LAUNCHMIRANDA)) {
-				char dbFile[MAX_PATH],dbPath[MAX_PATH],*str2;
-				strcpy(dbPath,opts.filename);
-				str2=strrchr(dbPath,'\\');
-				if(str2==NULL) {
-					strcpy(dbFile,dbPath);
-					dbPath[0]=0;
+				TCHAR dbFile[MAX_PATH],dbPath[MAX_PATH],*str2;
+				_tcscpy(dbPath,opts.filename);
+				str2 = _tcsrchr(dbPath,'\\');
+				if ( str2 == NULL ) {
+					_tcscpy( dbFile, dbPath );
+					dbPath[ 0 ] = 0;
 				}
 				else {
-					strcpy(dbFile,str2+1);
-					*str2=0;
+					_tcscpy( dbFile, str2+1 );
+					*str2 = 0;
 				}
-				str2=strrchr(dbFile,'.');
-				if(str2!=NULL) *str2=0;
-				strcat(dbPath,"\\miranda32.exe");
-				ShellExecute(hdlg,NULL,dbPath,dbFile,"",0);
+				str2 = _tcsrchr( dbFile, '.' );
+				if ( str2 != NULL )
+					*str2 = 0;
+				_tcscat( dbPath, _T("\\miranda32.exe"));
+				if ( GetFileAttributes( dbPath ) == INVALID_FILE_ATTRIBUTES ) {
+					GetModuleFileName( NULL, dbPath, SIZEOF( dbPath ));
+					if (( str2 = _tcsrchr( dbPath, '\\' )) != NULL )
+						*str2 = 0;
+					else
+						dbPath[0] = 0;
+					_tcscat( dbPath, _T("\\miranda32.exe"));
+				}
+				ShellExecute( hdlg, NULL, dbPath, dbFile, _T(""), 0 );
 			}
 			break;
 		case WZN_CANCELCLICKED:

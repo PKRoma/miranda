@@ -39,7 +39,7 @@ void __cdecl WorkerThread(void *unused)
 	int task,ret,firstTime;
 	DWORD sp=0;
 
-	AddToStatus(STATUS_MESSAGE,"Database worker thread activated");
+	AddToStatus(STATUS_MESSAGE,TranslateT("Database worker thread activated"));
 	SetFilePointer(opts.hFile,0,NULL,FILE_BEGIN);
 	spaceUsed=1; spaceProcessed=0;
 	firstTime=0;
@@ -50,15 +50,15 @@ void __cdecl WorkerThread(void *unused)
 		}
 		WaitForSingleObject(hEventRun,INFINITE);
 		if(WaitForSingleObject(hEventAbort,0)==WAIT_OBJECT_0) {
-			AddToStatus(STATUS_FATAL,"Processing aborted by user");
+			AddToStatus(STATUS_FATAL,TranslateT("Processing aborted by user"));
 			break;
 		}
 		ret=Workers[task](firstTime);
 		firstTime=0;
 		if(ret==ERROR_NO_MORE_ITEMS) {
 			if(++task==sizeof(Workers)/sizeof(Workers[0])) {
-				if(errorCount) AddToStatus(STATUS_SUCCESS,"All tasks completed but with %d error%s",errorCount,errorCount==1?"":"s");
-				else AddToStatus(STATUS_SUCCESS,"All tasks completed successfully");
+				if(errorCount) AddToStatus(STATUS_SUCCESS,TranslateT("All tasks completed but with %d error%s"),errorCount,errorCount==1?_T(""):TranslateT("s"));
+				else AddToStatus(STATUS_SUCCESS,TranslateT("All tasks completed successfully"));
 				break;
 			}
 			firstTime=1;

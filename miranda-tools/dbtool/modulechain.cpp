@@ -33,7 +33,7 @@ int WorkModuleChain(int firstTime)
 	DBModuleName moduleName,*newModName;
 
 	if(firstTime) {
-		AddToStatus(STATUS_MESSAGE,"Processing module name chain");
+		AddToStatus(STATUS_MESSAGE,TranslateT("Processing module name chain"));
 		modChainCount=0;
 		if(modChain!=NULL) free(modChain);
 		modChain = (ModChainEntry*)malloc(sizeof(ModChainEntry));
@@ -47,7 +47,7 @@ int WorkModuleChain(int firstTime)
 				return ERROR_SUCCESS;
 			}
 			if(!SignatureValid(ofsCurrent,DBMODULENAME_SIGNATURE)) {
-				AddToStatus(STATUS_ERROR,"Module chain corrupted, further entries ignored");
+				AddToStatus(STATUS_ERROR,TranslateT("Module chain corrupted, further entries ignored"));
 				phase++;
 				return ERROR_SUCCESS;
 			}
@@ -56,7 +56,7 @@ int WorkModuleChain(int firstTime)
 				return ERROR_SUCCESS;
 			}
 			if(moduleName.cbName>256)
-				AddToStatus(STATUS_WARNING,"Unreasonably long module name, skipping");
+				AddToStatus(STATUS_WARNING,TranslateT("Unreasonably long module name, skipping"));
 			else {
 				modChain=(ModChainEntry*)realloc(modChain,sizeof(ModChainEntry)*++modChainCount);
 
@@ -94,7 +94,7 @@ int WorkModuleChain(int firstTime)
 							modChain[i].ofsNew = modChain[iCurrentModName].ofsNew;
 							n++;
 						}
-						if (n) AddToStatus(STATUS_WARNING,"Module name '%s' is not unique: %d duplicates found)", modChain[iCurrentModName].name,n);
+						if (n) AddToStatus(STATUS_WARNING,TranslateT("Module name '%s' is not unique: %d duplicates found)"), modChain[iCurrentModName].name,n);
 				}
 				if(iCurrentModName==0)
 					dbhdr.ofsFirstModuleName=modChain[iCurrentModName].ofsNew;
@@ -121,7 +121,7 @@ DWORD ConvertModuleNameOfs(DWORD ofsOld)
 			return modChain[i].ofsNew;
 
 	i = 0;
-	AddToStatus(STATUS_ERROR,"Invalid module name offset, skipping data");
+	AddToStatus(STATUS_ERROR,TranslateT("Invalid module name offset, skipping data"));
 	return 0;
 }
 
