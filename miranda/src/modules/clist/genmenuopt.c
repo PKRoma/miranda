@@ -5,7 +5,7 @@
 
 extern int DefaultImageListColorDepth;
 extern PIntMenuObject MenuObjects;
-extern int MenuObjectsCount;
+extern int MenuObjectsCount, hStatusMenuObject;
 long handleCustomDraw(HWND hWndTreeView, LPNMTVCUSTOMDRAW pNMTVCD);
 
 int hInst;
@@ -112,6 +112,9 @@ int BuildMenuObjectsTree(HWND hwndDlg)
 		return FALSE;
 
 	for ( i=0; i < MenuObjectsCount; i++ ) {
+		if ( MenuObjects[i].id == hStatusMenuObject )
+			continue;
+
 		tvis.item.lParam  = ( LPARAM )MenuObjects[i].id;
 		tvis.item.pszText = LangPackPcharToTchar( MenuObjects[i].Name );
 		tvis.item.iImage  = tvis.item.iSelectedImage = TRUE;
@@ -229,11 +232,11 @@ int BuildTree(HWND hwndDlg,int MenuObjectId)
 		count++;
 	}
 
-	PDar=mir_alloc(sizeof(lpMenuItemOptData)*count);
+	PDar = mir_alloc(sizeof(lpMenuItemOptData)*count);
 
-	count=0;
-	for (i=0;i<pimo->MenuItemsCount;i++) {
-		if (pimo->MenuItems[i].mi.root!=-1)
+	count = 0;
+	for ( i=0; i < pimo->MenuItemsCount; i++ ) {
+		if ( pimo->MenuItems[i].mi.root != -1 )
 			continue;
 
 		PD=(MenuItemOptData*)mir_alloc(sizeof(MenuItemOptData));

@@ -107,19 +107,19 @@ void UnpackGlobalId( int id, int* MenuObjectId, int* MenuItemId )
 
 //wparam=0
 //lparam=LPMEASUREITEMSTRUCT
-static int MO_MeasureMenuItem( WPARAM wParam, LPARAM lParam )
+int MO_MeasureMenuItem( LPMEASUREITEMSTRUCT mis )
 {
 	PMO_IntMenuItem pimi = NULL;
-	LPMEASUREITEMSTRUCT mis = ( LPMEASUREITEMSTRUCT )lParam;
-
 	if ( !isGenMenuInited )
 		return -1;
 
 	if ( mis == NULL )
 		return FALSE;
+
 	pimi = MO_GetIntMenuItem( mis->itemData );
 	if ( pimi == NULL )
 		return FALSE;
+
 	if ( pimi->iconId == -1 )
 		return FALSE;
 
@@ -130,11 +130,10 @@ static int MO_MeasureMenuItem( WPARAM wParam, LPARAM lParam )
 
 //wparam=0
 //lparam=LPDRAWITEMSTRUCT
-int MO_DrawMenuItem(WPARAM wParam,LPARAM lParam)
+int MO_DrawMenuItem( LPDRAWITEMSTRUCT dis )
 {
 	PMO_IntMenuItem pimi = NULL;
 	int y,objidx,menuitemidx;
-	LPDRAWITEMSTRUCT dis = ( LPDRAWITEMSTRUCT )lParam;
 
 	if ( !isGenMenuInited )
 		return -1;
@@ -246,24 +245,24 @@ int MO_RemoveMenuObject(WPARAM wParam,LPARAM lParam)
 
 //wparam=MenuObjectHandle
 //lparam=vKey
-int MO_ProcessHotKeys(WPARAM wParam,LPARAM lParam)
+int MO_ProcessHotKeys( int menuHandle, int vKey )
 {
 	int objidx;//pos in array
-	PMO_IntMenuItem pimi;
 	int i;
-	int vKey = (int)lParam;
 
-	if ( !isGenMenuInited) return -1;
+	if ( !isGenMenuInited)
+		return -1;
+
 	EnterCriticalSection( &csMenuHook );
 
-	objidx = GetMenuObjbyId(( int )wParam );
+	objidx = GetMenuObjbyId( menuHandle );
 	if ( objidx == -1 ) { 
 		LeaveCriticalSection( &csMenuHook );
 		return FALSE;
 	}
 
 	for ( i=0; i < MenuObjects[objidx].MenuItemsCount; i++ ) {
-		pimi = &MenuObjects[objidx].MenuItems[i];
+		PMO_IntMenuItem pimi = &MenuObjects[objidx].MenuItems[i];
 		if ( pimi->mi.hotKey == 0 ) continue;
 		if ( HIWORD(pimi->mi.hotKey) != vKey) continue;
 		if ( !(LOWORD(pimi->mi.hotKey) & MOD_ALT     ) != !( GetKeyState( VK_MENU    ) & 0x8000)) continue;
@@ -302,9 +301,8 @@ int MO_GetMenuItem(WPARAM wParam,LPARAM lParam)
 
 //wparam MenuItemHandle
 //lparam PMO_MenuItem
-int MO_ModifyMenuItem(WPARAM wParam,LPARAM lParam)
+int MO_ModifyMenuItem( int menuHandle, PMO_MenuItem pmiparam )
 {
-	PMO_MenuItem pmiparam=(PMO_MenuItem)lParam;
 	PMO_IntMenuItem pimi;
 	int oldflags;
 	int objidx;
@@ -313,7 +311,7 @@ int MO_ModifyMenuItem(WPARAM wParam,LPARAM lParam)
 		return -1;
 
 	EnterCriticalSection( &csMenuHook );
-	pimi = MO_GetIntMenuItem(wParam);
+	pimi = MO_GetIntMenuItem( menuHandle );
 	if ( pimi == NULL || pmiparam->cbSize != sizeof( TMO_MenuItem )) {
 		LeaveCriticalSection( &csMenuHook );
 		return -1;
@@ -442,25 +440,17 @@ int MO_ProcessCommand(WPARAM wParam,LPARAM lParam)
 	return 1;
 }
 
-int setcnt=0;
-int MO_SetOptionsMenuItem(WPARAM wParam,LPARAM lParam)
+int MO_SetOptionsMenuItem( int handle, int setting, int value )
 {
-	lpOptParam lpop;
-	PMO_IntMenuItem pimi;
 	int objidx;
 
 	if ( !isGenMenuInited )
 		return -1;
 
-	if ( lParam == 0 )
-		return 0;
-
 	EnterCriticalSection( &csMenuHook );
-	setcnt++;
 	__try
 	{
-		lpop = ( lpOptParam )lParam;
-		pimi = MO_GetIntMenuItem( lpop->Handle );
+		PMO_IntMenuItem pimi = MO_GetIntMenuItem( handle );
 		if ( pimi == NULL ) { 
 			LeaveCriticalSection( &csMenuHook );
 			return -1;
@@ -471,56 +461,50 @@ int MO_SetOptionsMenuItem(WPARAM wParam,LPARAM lParam)
 			return -1;
 		}
 
-		if ( lpop->Setting == OPT_MENUITEMSETUNIQNAME && !( pimi->mi.flags & CMIF_ROOTPOPUP )) {
-			FreeAndNil(&pimi->UniqName);
-			pimi->UniqName = mir_strdup(( char* )lpop->Value );
+		if ( setting == OPT_MENUITEMSETUNIQNAME && !( pimi->mi.flags & CMIF_ROOTPOPUP )) {
+			mir_free( pimi->UniqName );
+			pimi->UniqName = mir_strdup(( char* )value );
 		}
 	}
 	__finally
 	{
-		setcnt--;
 		LeaveCriticalSection( &csMenuHook );
 	}
 	return 1;
 }
 
-int MO_SetOptionsMenuObject(WPARAM wParam,LPARAM lParam)
+int MO_SetOptionsMenuObject( int handle, int setting, int value )
 {
 	int  pimoidx;
-	lpOptParam lpop;
 
 	if ( !isGenMenuInited )
 		return -1;
 
-	if ( lParam == 0 )
-		return 0;
-
 	EnterCriticalSection( &csMenuHook );
 	__try
 	{
-		lpop = ( lpOptParam )lParam;
-		pimoidx = GetMenuObjbyId( lpop->Handle );
+		pimoidx = GetMenuObjbyId( handle );
 		if ( pimoidx == -1 )
 			return 0;
 
-		switch ( lpop->Setting ) {
+		switch ( setting ) {
 		case OPT_MENUOBJECT_SET_ONADD_SERVICE:
 			FreeAndNil( &MenuObjects[pimoidx].onAddService );
-			MenuObjects[pimoidx].onAddService = mir_strdup(( char* )lpop->Value );
+			MenuObjects[pimoidx].onAddService = mir_strdup(( char* )value );
 			break;
 
 		case OPT_MENUOBJECT_SET_FREE_SERVICE:
 			FreeAndNil( &MenuObjects[pimoidx].FreeService );
-			MenuObjects[pimoidx].FreeService = mir_strdup(( char* )lpop->Value );
+			MenuObjects[pimoidx].FreeService = mir_strdup(( char* )value );
 			break;
 
 		case OPT_MENUOBJECT_SET_CHECK_SERVICE:
 			FreeAndNil( &MenuObjects[pimoidx].CheckService );
-			MenuObjects[pimoidx].CheckService = mir_strdup((char *)lpop->Value);
+			MenuObjects[pimoidx].CheckService = mir_strdup(( char* )value);
 			break;
 
 		case OPT_USERDEFINEDITEMS:
-			MenuObjects[pimoidx].bUseUserDefinedItems = ( BOOL )lpop->Value;
+			MenuObjects[pimoidx].bUseUserDefinedItems = ( BOOL )value;
 			break;
 		}
 	}
@@ -549,11 +533,7 @@ int MO_CreateNewMenuObject(WPARAM wParam,LPARAM lParam)
 	MenuObjects[ MenuObjectsCount ].Name = mir_strdup( pmp->name );
 	MenuObjects[ MenuObjectsCount ].CheckService = mir_strdup( pmp->CheckService );
 	MenuObjects[ MenuObjectsCount ].ExecService = mir_strdup( pmp->ExecService );
-
-	//if ( IsWinVerXPPlus())		//need 32-bit icons on XP for alpha channels
 	MenuObjects[ MenuObjectsCount ].hMenuIcons = ImageList_Create( GetSystemMetrics(SM_CXSMICON), GetSystemMetrics(SM_CYSMICON), ILC_COLOR32|ILC_MASK, 15, 100 );
-	//else	  //Win2k won't blend icons with imagelist_drawex when color-depth>16-bit. Don't know about WinME, but it certainly doesn't support alpha channels
-	//  MenuObjects[MenuObjectsCount].hMenuIcons=ImageList_Create(GetSystemMetrics(SM_CXSMICON),GetSystemMetrics(SM_CYSMICON),ILC_COLOR16|ILC_MASK,15,100);
 
 	result = MenuObjects[MenuObjectsCount].id;
 	MenuObjectsCount++;
@@ -576,7 +556,7 @@ int MO_RemoveMenuItem(WPARAM wParam,LPARAM lParam)
 	}
 
 	lp.MenuObjectHandle = MenuObjects[objidx].id;
-	res=RecursiveRemoveChilds( menuitemidx, &lp );
+	res = RecursiveRemoveChilds( menuitemidx, &lp );
 	LeaveCriticalSection( &csMenuHook );
 	return res;
 }
@@ -584,18 +564,14 @@ int MO_RemoveMenuItem(WPARAM wParam,LPARAM lParam)
 //wparam=MenuObjectHandle
 //lparam=PMO_MenuItem
 //return MenuItemHandle
-int MO_AddNewMenuItem(WPARAM wParam,LPARAM lParam)
+int MO_AddNewMenuItem( int menuobjecthandle, PMO_MenuItem pmi )
 {
-	PMO_MenuItem pmi = ( PMO_MenuItem )lParam;
-	int objidx, menuobjecthandle;
-	int miidx, result;
-	int res;
+	int objidx, miidx, result, res;
 
 	if ( !isGenMenuInited || pmi == NULL )
 		return -1;
 
 	EnterCriticalSection( &csMenuHook );
-	menuobjecthandle = wParam;
 	objidx = GetMenuObjbyId( menuobjecthandle );
 	if ( objidx == -1 || pmi->cbSize != sizeof( TMO_MenuItem )) {
 		LeaveCriticalSection( &csMenuHook );
@@ -605,7 +581,7 @@ int MO_AddNewMenuItem(WPARAM wParam,LPARAM lParam)
 	//old mode
 	if ( !( pmi->flags & CMIF_ROOTPOPUP || pmi->flags & CMIF_CHILDPOPUP )) {
 		LeaveCriticalSection( &csMenuHook );
-		res = (int)MO_AddOldNewMenuItem( wParam, lParam );
+		res = (int)MO_AddOldNewMenuItem( menuobjecthandle, pmi );
 		return res;
 	}
 
@@ -632,7 +608,7 @@ int MO_AddNewMenuItem(WPARAM wParam,LPARAM lParam)
 		if ( pmi->hIcon != NULL ) 
 			p->iconId = ImageList_AddIcon( MenuObjects[objidx].hMenuIcons, pmi->hIcon );
 
-		result = getGlobalId( wParam, p->id );
+		result = getGlobalId( menuobjecthandle, p->id );
 	}
 	LeaveCriticalSection( &csMenuHook );
 	return result;
@@ -640,16 +616,16 @@ int MO_AddNewMenuItem(WPARAM wParam,LPARAM lParam)
 
 //wparam=MenuObjectHandle
 //lparam=PMO_MenuItem
-int MO_AddOldNewMenuItem(WPARAM wParam,LPARAM lParam)
+
+int MO_AddOldNewMenuItem( int menuobjecthandle, PMO_MenuItem pmi )
 {
-	PMO_MenuItem pmi = ( PMO_MenuItem )lParam;
 	int objidx;
 	int oldroot,i;
 
 	if ( !isGenMenuInited || pmi == NULL )
 		return -1;
 
-	objidx = GetMenuObjbyId( wParam );
+	objidx = GetMenuObjbyId( menuobjecthandle );
 	if ( objidx == -1 )
 		return -1;
 
@@ -681,20 +657,20 @@ int MO_AddOldNewMenuItem(WPARAM wParam,LPARAM lParam)
 		if ( oldroot == -1 ) {
 			//not found,creating root
 			TMO_MenuItem tmi = { 0 };
-			tmi = *( PMO_MenuItem )lParam;
+			tmi = *pmi;
 			tmi.flags |= CMIF_ROOTPOPUP;
 			tmi.ownerdata = 0;
 			tmi.root = -1;
 			//copy pszPopupName
 			tmi.ptszName = ( TCHAR* )pmi->root;
-			oldroot = MO_AddNewMenuItem( wParam, ( LPARAM )&tmi );
+			oldroot = MO_AddNewMenuItem( menuobjecthandle, &tmi );
 		}
 		pmi->root = oldroot;
 		//popup will be created in next commands
 	}
 	pmi->flags |= CMIF_CHILDPOPUP;
 	//add popup(root allready exists)
-	return MO_AddNewMenuItem( wParam, ( LPARAM )pmi );
+	return MO_AddNewMenuItem( menuobjecthandle, pmi );
 }
 
 static int WhereToPlace(HMENU hMenu,PMO_MenuItem mi,MENUITEMINFO *mii,ListParam *param)
@@ -786,13 +762,13 @@ static void InsertMenuItemWithSeparators(HMENU hMenu,int uItem,BOOL fByPosition,
 
 	if ( uItem == GetMenuItemCount( hMenu )-1 ) {
 		TCHAR str[32];
-		mii.fMask = MIIM_SUBMENU|MIIM_DATA|MIIM_TYPE;
+		mii.fMask = MIIM_SUBMENU | MIIM_DATA | MIIM_TYPE;
 		mii.dwTypeData = str;
 		mii.cch = SIZEOF( str );
 		GetMenuItemInfo( hMenu, uItem, TRUE, &mii );
 	}
 
-	InsertMenuItem(hMenu,uItem,TRUE,lpmii);
+	InsertMenuItem( hMenu, uItem, TRUE, lpmii );
 }
 
 //wparam started hMenu
@@ -1251,20 +1227,40 @@ int RegisterAllIconsinIconLib()
 	return 0;
 }
 
+/////////////////////////////////////////////////////////////////////////////////////////
+// Static services
+
 int posttimerid;
-//#define PostRegisterTimerID 12001
-int posttimerid;
-VOID CALLBACK PostRegisterIcons( HWND hwnd, UINT uMsg, UINT_PTR idEvent, DWORD dwTime )
+
+static VOID CALLBACK PostRegisterIcons( HWND hwnd, UINT uMsg, UINT_PTR idEvent, DWORD dwTime )
 {
 	KillTimer( 0, posttimerid );
 	RegisterAllIconsinIconLib();
 }
 
-int OnModulesLoaded(WPARAM wParam,LPARAM lParam)
+static int OnModulesLoaded(WPARAM wParam,LPARAM lParam)
 {
 	posttimerid = SetTimer(( HWND )NULL, 0, 5, ( TIMERPROC )PostRegisterIcons );
 	HookEvent(ME_SKIN2_ICONSCHANGED,OnIconLibChanges);
 	return 0;
+}
+
+static int SRVMO_SetOptionsMenuObject( WPARAM wParam, LPARAM lParam)
+{	
+	lpOptParam lpop = ( lpOptParam )lParam;
+	if ( lpop == NULL )
+		return 0;
+
+	return MO_SetOptionsMenuObject( lpop->Handle, lpop->Setting, lpop->Value );
+}
+
+static int SRVMO_SetOptionsMenuItem( WPARAM wParam, LPARAM lParam)
+{
+	lpOptParam lpop = ( lpOptParam )lParam;
+	if ( lpop == NULL )
+		return 0;
+
+	return MO_SetOptionsMenuItem( lpop->Handle, lpop->Setting, lpop->Value );
 }
 
 int InitGenMenu()
@@ -1275,19 +1271,16 @@ int InitGenMenu()
 	CreateServiceFunction( MO_PROCESSCOMMAND, MO_ProcessCommand );
 	CreateServiceFunction( MO_CREATENEWMENUOBJECT, MO_CreateNewMenuObject );
 	CreateServiceFunction( MO_REMOVEMENUITEM, MO_RemoveMenuItem );
-	CreateServiceFunction( MO_ADDNEWMENUITEM, MO_AddNewMenuItem );
+	CreateServiceFunction( MO_ADDNEWMENUITEM, ( MIRANDASERVICE )MO_AddNewMenuItem );
 	CreateServiceFunction( MO_MENUITEMGETOWNERDATA, MO_MenuItemGetOwnerData );
-	CreateServiceFunction( MO_MODIFYMENUITEM, MO_ModifyMenuItem );
+	CreateServiceFunction( MO_MODIFYMENUITEM, ( MIRANDASERVICE )MO_ModifyMenuItem );
 	CreateServiceFunction( MO_GETMENUITEM, MO_GetMenuItem );
 	CreateServiceFunction( MO_PROCESSCOMMANDBYMENUIDENT, MO_ProcessCommandByMenuIdent );
-	CreateServiceFunction( MO_PROCESSHOTKEYS, MO_ProcessHotKeys );
+	CreateServiceFunction( MO_PROCESSHOTKEYS, ( MIRANDASERVICE )MO_ProcessHotKeys );
 	CreateServiceFunction( MO_REMOVEMENUOBJECT, MO_RemoveMenuObject );
 
-	CreateServiceFunction( MO_DRAWMENUITEM, MO_DrawMenuItem );
-	CreateServiceFunction( MO_MEASUREMENUITEM, MO_MeasureMenuItem );
-
-	CreateServiceFunction( MO_SETOPTIONSMENUOBJECT, MO_SetOptionsMenuObject );
-	CreateServiceFunction( MO_SETOPTIONSMENUITEM, MO_SetOptionsMenuItem );
+	CreateServiceFunction( MO_SETOPTIONSMENUOBJECT, SRVMO_SetOptionsMenuObject );
+	CreateServiceFunction( MO_SETOPTIONSMENUITEM, SRVMO_SetOptionsMenuItem );
 
 	EnterCriticalSection( &csMenuHook );
 	isGenMenuInited = TRUE;

@@ -40,10 +40,20 @@ typedef struct
 //internal usage
 HMENU BuildRecursiveMenu(HMENU hMenu,ListParam *param);
 int RecursiveRemoveChilds(int pos,ListParam *param);
-PMO_IntMenuItem MO_GetIntMenuItem(int globid);
-int MO_AddOldNewMenuItem(WPARAM wParam,LPARAM lParam);
 void UnpackGlobalId(int id,int *MenuObjectId,int *MenuItemId);
 void GetMenuItemName( PMO_IntMenuItem pMenuItem, char* pszDest, size_t cbDestSize );
+
+PMO_IntMenuItem MO_GetIntMenuItem(int globid);
+
+int MO_AddNewMenuItem( int menuobjecthandle, PMO_MenuItem pmi );
+int MO_AddOldNewMenuItem( int menuobjecthandle, PMO_MenuItem pmi );
+int MO_DrawMenuItem( LPDRAWITEMSTRUCT dis );
+int MO_MeasureMenuItem( LPMEASUREITEMSTRUCT mis );
+int MO_ModifyMenuItem( int menuHandle, PMO_MenuItem pmiparam );
+int MO_ProcessCommand( WPARAM wParam, LPARAM lParam );
+int MO_ProcessHotKeys( int menuHandle, int vKey );
+int MO_SetOptionsMenuItem( int menuobjecthandle, int setting, int value );
+int MO_SetOptionsMenuObject( int menuobjecthandle, int setting, int value );
 
 //for old processcommand
 int getGlobalId(const int MenuObjectId,const int MenuItemId);
@@ -61,6 +71,5 @@ int GetMenuItembyId(const int objpos,const int id);
 int MO_GetMenuItem(WPARAM wParam,LPARAM lParam);
 void FreeAndNil(void **p);
 static int RemoveFromList(int pos,void **lpList,int *ListElemCount,int ElemSize);
-int MO_ProcessCommand(WPARAM wParam,LPARAM lParam);
 static int RemoveFromList(int pos,void **lpList,int *ListElemCount,int ElemSize);
 #endif
