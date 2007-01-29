@@ -57,6 +57,14 @@ BOOL CALLBACK FinishedDlgProc(HWND hdlg,UINT message,WPARAM wParam,LPARAM lParam
 				if ( str2 != NULL )
 					*str2 = 0;
 				_tcscat( dbPath, _T("\\miranda32.exe"));
+				if ( GetFileAttributes( dbPath ) == INVALID_FILE_ATTRIBUTES ) {
+					GetModuleFileName( NULL, dbPath, SIZEOF( dbPath ));
+					if (( str2 = _tcsrchr( dbPath, '\\' )) != NULL )
+						*str2 = 0;
+					else
+						dbPath[0] = 0;
+					_tcscat( dbPath, _T("\\miranda32.exe"));
+				}
 				ShellExecute( hdlg, NULL, dbPath, dbFile, _T(""), 0 );
 			}
 			break;
