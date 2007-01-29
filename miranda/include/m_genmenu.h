@@ -358,18 +358,6 @@ typedef struct
 //this should be called in WM_KEYDOWN
 #define	MO_PROCESSHOTKEYS					"MO/ProcessHotKeys"
 
-//process a WM_DRAWITEM message
-//wparam=0
-//lparam=LPDRAWITEMSTRUCT
-//returns TRUE if it processed the command, FALSE otherwise
-#define MO_DRAWMENUITEM						"MO/DrawMenuItem"
-
-//process a WM_MEASUREITEM message
-//wparam=0
-//lparam=LPMEASUREITEMSTRUCT
-//returns TRUE if it processed the command, FALSE otherwise
-#define MO_MEASUREMENUITEM					"MO/MeasureMenuItem"
-
 //set uniq name to menuitem(used to store it in database when enabled OPT_USERDEFINEDITEMS)
 #define OPT_MENUITEMSETUNIQNAME								1
 
