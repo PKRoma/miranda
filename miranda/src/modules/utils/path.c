@@ -61,14 +61,18 @@ static int pathToAbsolute(WPARAM wParam, LPARAM lParam) {
     char *pSrc = (char*)wParam;
     char *pOut = (char*)lParam;
     if (!pSrc||!strlen(pSrc)||strlen(pSrc)>MAX_PATH) return 0;
-    if (pathIsAbsolute(pSrc)||!isalnum(pSrc[0])) {
+    if (pathIsAbsolute(pSrc)||(!isalnum(pSrc[0]) && pSrc[0]!='\\' )) {
         mir_snprintf(pOut, MAX_PATH, "%s", pSrc);
         return strlen(pOut);
     }
-    else {
+    else if (pSrc[0]!='\\') {
         mir_snprintf(pOut, MAX_PATH, "%s%s", szMirandaPath, pSrc);
         return strlen(pOut);
     }
+	else {
+		mir_snprintf(pOut, MAX_PATH, "%s%s", szMirandaPath, pSrc+1);
+		return strlen(pOut);
+	}
 }
 
 #ifdef _UNICODE
@@ -111,14 +115,18 @@ static int pathToAbsoluteW(WPARAM wParam, LPARAM lParam) {
     TCHAR *pSrc = (TCHAR*)wParam;
     TCHAR *pOut = (TCHAR*)lParam;
     if (!pSrc||!lstrlen(pSrc)||lstrlen(pSrc)>MAX_PATH) return 0;
-    if (pathIsAbsoluteW(pSrc)||!isalnum(pSrc[0])) {
+    if (pathIsAbsoluteW(pSrc)||(!isalnum(pSrc[0]) && pSrc[0]!='\\' )) {
         mir_sntprintf(pOut, MAX_PATH, _T("%s"), pSrc);
         return lstrlen(pOut);
     }
-    else {
+    else if (pSrc[0]!='\\') {
         mir_sntprintf(pOut, MAX_PATH, _T("%s%s"), szMirandaPathW, pSrc);
         return lstrlen(pOut);
     }
+	else {
+		mir_sntprintf(pOut, MAX_PATH, _T("%s%s"), szMirandaPathW, pSrc+1);
+		return lstrlen(pOut);
+	}
 }
 
 int InitPathUtilsW(void)
