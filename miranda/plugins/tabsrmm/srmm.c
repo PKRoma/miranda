@@ -36,6 +36,8 @@ HINSTANCE g_hInst;
 extern MYGLOBALS myGlobals;
 struct MM_INTERFACE memoryManagerInterface;
 
+pfnSetMenuInfo fnSetMenuInfo = NULL;
+
 PLUGININFO pluginInfo = {
     sizeof(PLUGININFO),
 #ifdef _UNICODE
@@ -78,20 +80,22 @@ __declspec(dllexport)
 
 int __declspec(dllexport) Load(PLUGINLINK * link)
 {
-    pluginLink = link;
+	pluginLink = link;
 
 #ifdef _DEBUG //mem leak detector :-) Thanks Tornado!
-    {
-        int flag = _CrtSetDbgFlag(_CRTDBG_REPORT_FLAG); // Get current flag
-        flag |= (_CRTDBG_LEAK_CHECK_DF | _CRTDBG_ALLOC_MEM_DF | _CRTDBG_CHECK_CRT_DF); // Turn on leak-checking bit
-        _CrtSetDbgFlag(flag); // Set flag to the new value
-    }
+	{
+		int flag = _CrtSetDbgFlag(_CRTDBG_REPORT_FLAG); // Get current flag
+		flag |= (_CRTDBG_LEAK_CHECK_DF | _CRTDBG_ALLOC_MEM_DF | _CRTDBG_CHECK_CRT_DF); // Turn on leak-checking bit
+		_CrtSetDbgFlag(flag); // Set flag to the new value
+	}
 #endif
 
-    memset(&memoryManagerInterface, 0, sizeof(memoryManagerInterface));
-    memoryManagerInterface.cbSize = sizeof(memoryManagerInterface);
-    CallService(MS_SYSTEM_GET_MMI, 0, (LPARAM) &memoryManagerInterface);
-    
+	memset(&memoryManagerInterface, 0, sizeof(memoryManagerInterface));
+	memoryManagerInterface.cbSize = sizeof(memoryManagerInterface);
+	CallService(MS_SYSTEM_GET_MMI, 0, (LPARAM) &memoryManagerInterface);
+
+	fnSetMenuInfo = ( pfnSetMenuInfo )GetProcAddress( GetModuleHandleA( "USER32.DLL" ), "GetMenuInfo" );
+
 	Chat_Load(pluginLink);
 	return LoadSendRecvMessageModule();
 }

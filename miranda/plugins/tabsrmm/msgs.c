@@ -2050,7 +2050,6 @@ static int LoadFromIconLib()
 
 static void LoadIconTheme()
 {
-    char szFilename[MAX_PATH];
     int cxIcon = GetSystemMetrics(SM_CXSMICON);
     int cyIcon = GetSystemMetrics(SM_CYSMICON);
     int i = 0, version = 0, n = 0;

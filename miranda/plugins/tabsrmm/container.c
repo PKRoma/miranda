@@ -2607,11 +2607,11 @@ panel_found:
                         mii.wID = 0xffff5000 + i;
                         SetMenuItemInfo(pContainer->hMenu, i, TRUE, &mii);
                     }
-                    if(bSkinned && g_MenuBGBrush) {
+                    if(bSkinned && g_MenuBGBrush && fnSetMenuInfo) {
                         mi.cbSize = sizeof(mi);
                         mi.hbrBack = g_MenuBGBrush;
                         mi.fMask = MIM_BACKGROUND;
-                        SetMenuInfo(pContainer->hMenu, &mi);
+                        fnSetMenuInfo(pContainer->hMenu, &mi);
                     }
                 }
                 SetMenu(hwndDlg, pContainer->hMenu);

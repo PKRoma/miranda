@@ -171,6 +171,7 @@ int         CheckThemeVersion(const char *szIniFilename);
 void        WriteThemeToINI(const char *szIniFilename, struct MessageWindowData *dat);
 void        ReadThemeFromINI(const char *szIniFilename, struct MessageWindowData *dat, int noAdvanced, DWORD dwFlags);
 
+// compatibility
 
-
-
+typedef     BOOL ( *pfnSetMenuInfo )( HMENU hmenu, LPCMENUINFO lpcmi );
+extern      pfnSetMenuInfo fnSetMenuInfo;
