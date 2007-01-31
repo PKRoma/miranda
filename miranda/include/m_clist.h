@@ -2,8 +2,8 @@
 
 Miranda IM: the free IM client for Microsoft* Windows*
 
-Copyright 2000-2007 Miranda ICQ/IM project, 
-all portions of this codebase are copyrighted to the people 
+Copyright 2000-2007 Miranda ICQ/IM project,
+all portions of this codebase are copyrighted to the people
 listed in contributors.txt.
 
 This program is free software; you can redistribute it and/or
@@ -48,14 +48,15 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 //lParam=flags, below
 //returns a static buffer of the description of the given status mode
 //returns NULL if the status mode was unknown
-#define GSMDF_PREFIXONLINE  1   //prefix "Online: " to all status modes that
-                  //imply online, eg "Online: Away"
-#define GCMDF_UNICODE        2      //will return TCHAR* instead of char*
+#define GSMDF_PREFIXONLINE   1   //prefix "Online: " to all status modes that
+                                 //imply online, eg "Online: Away"
+#define GCMDF_UNICODE        2   //will return TCHAR* instead of char*
 #if defined( _UNICODE )
 	#define GCMDF_TCHAR       GCMDF_UNICODE      //will return TCHAR* instead of char*
 #else
 	#define GCMDF_TCHAR       0      //will return char*, as usual
 #endif
+#define GSMDF_UNTRANSLATED   4
 #define MS_CLIST_GETSTATUSMODEDESCRIPTION  "CList/GetStatusModeDescription"
 
 //add a new item to the main menu
@@ -102,6 +103,18 @@ typedef struct {
 #define CMIF_NOTONLINE  16	 //          "      online
 #define CMIF_NOTONLIST  32   //item won't appear on standard contacts
 #define CMIF_NOTOFFLIST 64   //item won't appear on contacts that have the 'NotOnList' setting
+#define CMIF_ROOTPOPUP  128   //root item for new popup(save return id for childs)
+#define CMIF_CHILDPOPUP 256   //child for rootpopup menu
+
+#define CMIF_UNICODE        512      //will return TCHAR* instead of char*
+#if defined( _UNICODE )
+	#define CMIF_TCHAR       CMIF_UNICODE      //will return TCHAR* instead of char*
+#else
+	#define CMIF_TCHAR       0       //will return char*, as usual
+#endif
+
+#define CMIF_KEEPUNTRANSLATED  1024 // don't translate a menu item
+
 #define MS_CLIST_ADDMAINMENUITEM        "CList/AddMainMenuItem"
 
 //add a new item to the user contact menus
@@ -548,4 +561,3 @@ typedef struct {
 #define SETTING_BRINGTOFRONT_DEFAULT 0
 
 #endif // M_CLIST_H__
-

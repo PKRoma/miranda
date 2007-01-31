@@ -136,7 +136,7 @@ void FreeMenuProtos( void )
 	cli.menuProtoCount = 0;
 }
 //////////////////////////////////////////////////////////////////////////
-// The function converts Human-readable name of protocol like 'Freenode (IRC)' 
+// The function converts Human-readable name of protocol like 'Freenode (IRC)'
 // to unique name of protocol based on DLL name, like 'FREENODE'
 //
 
@@ -922,7 +922,7 @@ int MenuModulesLoaded(WPARAM wParam,LPARAM lParam)
 	tmp.ExecService="StatusMenuExecService";
 	tmp.CheckService="StatusMenuCheckService";
 	//tmp.
-	tmp.name=Translate("StatusMenu");
+	tmp.name="StatusMenu";
 
 	hStatusMenuObject=(int)CallService(MO_CREATENEWMENUOBJECT,(WPARAM)0,(LPARAM)&tmp);
 	MO_SetOptionsMenuObject( hStatusMenuObject, OPT_MENUOBJECT_SET_FREE_SERVICE, (int)"CLISTMENUS/FreeOwnerDataStatusMenu" );
@@ -966,7 +966,7 @@ int MenuModulesLoaded(WPARAM wParam,LPARAM lParam)
 
 		flags = CallProtoService(proto[i]->szName,PS_GETCAPS,PFLAGNUM_2,0);
 		flags2 = CallProtoService(proto[i]->szName,PS_GETCAPS,PFLAGNUM_5,0);
-		flags &= ~flags2; 
+		flags &= ~flags2;
 		if (flags == 0) continue;
 
 		if ( visnetworkProtoCount > 1 ) {
@@ -1043,7 +1043,7 @@ int MenuModulesLoaded(WPARAM wParam,LPARAM lParam)
 					tmi.flags |= CMIF_CHECKED;
 				tmi.root = rootmenu;
 				tmi.position = pos++;
-				tmi.ptszName = ( TCHAR* )CallService( MS_CLIST_GETSTATUSMODEDESCRIPTION, statusModeList[j], GCMDF_TCHAR );
+				tmi.ptszName = cli.pfnGetStatusModeDescription( statusModeList[j], GCMDF_TCHAR | GSMDF_UNTRANSLATED );
 				tmi.hIcon = LoadSkinnedProtoIcon( proto[i]->szName, statusModeList[j] );
 				{
 					//owner data
@@ -1066,8 +1066,7 @@ int MenuModulesLoaded(WPARAM wParam,LPARAM lParam)
 				}
 				IconLib_ReleaseIcon(tmi.hIcon,0);
 		}	}
-		else
-		{
+		else {
 			if (cli.menuProtos)
 				cli.menuProtos=(MenuProto*)mir_realloc(cli.menuProtos,sizeof(MenuProto)*(cli.menuProtoCount+1));
 			else
@@ -1076,28 +1075,25 @@ int MenuModulesLoaded(WPARAM wParam,LPARAM lParam)
 			cli.menuProtos[cli.menuProtoCount].menuID=(HANDLE)-1;
 			cli.menuProtos[cli.menuProtoCount].szProto=mir_strdup(proto[i]->szName);
 			cli.menuProtoCount++;
-		}
-	}
+	}	}
+
 	NotifyEventHooks(cli.hPreBuildStatusMenuEvent, 0, 0);
 	pos = 200000;
 
 	//add to root menu
 	for ( j=0; j < SIZEOF(statusModeList); j++ ) {
-		char buf[ 256 ];
-
 		for ( i=0; i < protoCount; i++ ) {
 			if ( proto[i]->type != PROTOTYPE_PROTOCOL )
 				continue;
 
 			flags = CallProtoService(proto[i]->szName,PS_GETCAPS,PFLAGNUM_2,0);
 			flags2 = CallProtoService(proto[i]->szName,PS_GETCAPS,PFLAGNUM_5,0);
-			flags &= ~flags2; 
-			
+			flags &= ~flags2;
+
 			if ( flags & statusModePf2List[j] ) {
 				memset( &tmi, 0, sizeof( tmi ));
-				memset( &buf, 0, 256 );
 				tmi.cbSize = sizeof( tmi );
-				tmi.flags = CMIF_CHILDPOPUP;
+				tmi.flags = CMIF_CHILDPOPUP | CMIF_TCHAR;
 				if ( statusModeList[j] == ID_STATUS_OFFLINE )
 					tmi.flags |= CMIF_CHECKED;
 
@@ -1105,7 +1101,6 @@ int MenuModulesLoaded(WPARAM wParam,LPARAM lParam)
 				tmi.position = pos++;
 				tmi.root = -1;
 				tmi.hotKey = MAKELPARAM(MOD_CONTROL,'0'+j);
-				tmi.pszName = ( char* )CallService(MS_CLIST_GETSTATUSMODEDESCRIPTION,statusModeList[j],0);                    
 				{
 					//owner data
 					lpStatusMenuExecParam smep = ( lpStatusMenuExecParam )mir_alloc( sizeof( StatusMenuExecParam ));
@@ -1115,11 +1110,18 @@ int MenuModulesLoaded(WPARAM wParam,LPARAM lParam)
 					smep->svc = NULL;
 					tmi.ownerdata = smep;
 				}
-				hStatusMainMenuHandles[j] = MO_AddNewMenuItem( hStatusMenuObject, &tmi );
-
-				sprintf( buf, "Root2ProtocolIcon_%s_%s", proto[i]->szName, tmi.pszName );
-				MO_SetOptionsMenuItem( hStatusMainMenuHandles[j], OPT_MENUITEMSETUNIQNAME, ( int )buf );
-
+				{
+					TCHAR buf[ 256 ];
+					mir_sntprintf( buf, SIZEOF( buf ), _T("%s\tCtrl+%c"),
+						cli.pfnGetStatusModeDescription( statusModeList[j], GSMDF_UNTRANSLATED ), '0'+j );
+					tmi.ptszName = buf;
+					hStatusMainMenuHandles[j] = MO_AddNewMenuItem( hStatusMenuObject, &tmi );
+				}
+				{
+					char buf[ 256 ];
+					mir_snprintf( buf, sizeof( buf ), "Root2ProtocolIcon_%s_%s", proto[i]->szName, tmi.pszName );
+					MO_SetOptionsMenuItem( hStatusMainMenuHandles[j], OPT_MENUITEMSETUNIQNAME, ( int )buf );
+				}
 				IconLib_ReleaseIcon( tmi.hIcon, 0 );
 				break;
 	}	}	}
@@ -1237,7 +1239,7 @@ static int AddStatusMenuItem(WPARAM wParam,LPARAM lParam)
 	int i, menuHandle;
 	char buf[MAX_PATH+64];
 	BOOL val = ( wParam != 0 && !IsBadStringPtrA( mi->pszContactOwner, 130 )); //proto name should be less than 128
-	if ( mi->cbSize != sizeof( CLISTMENUITEM )) 
+	if ( mi->cbSize != sizeof( CLISTMENUITEM ))
 		return 0;
 
 	for (i=0; i<cli.menuProtoCount; i++) {
@@ -1329,7 +1331,6 @@ int InitCustomMenus(void)
 
 	CreateServiceFunction("StatusMenuExecService",StatusMenuExecService);
 	CreateServiceFunction("StatusMenuCheckService",StatusMenuCheckService);
-	//CreateServiceFunction("CloseAction",CloseAction);
 
 	//free services
 	CreateServiceFunction("CLISTMENUS/FreeOwnerDataMainMenu",FreeOwnerDataMainMenu);
@@ -1378,12 +1379,12 @@ int InitCustomMenus(void)
 	InitGenMenu();
 
 	//main menu
-	{	
+	{
 		TMenuParam tmp = { 0 };
 		tmp.cbSize=sizeof(tmp);
 		tmp.CheckService=NULL;
 		tmp.ExecService="MainMenuExecService";
-		tmp.name=Translate("MainMenu");
+		tmp.name="MainMenu";
 		hMainMenuObject=CallService(MO_CREATENEWMENUOBJECT,(WPARAM)0,(LPARAM)&tmp);
 	}
 
@@ -1391,18 +1392,18 @@ int InitCustomMenus(void)
 	MO_SetOptionsMenuObject( hMainMenuObject, OPT_MENUOBJECT_SET_FREE_SERVICE, (int)"CLISTMENUS/FreeOwnerDataMainMenu" );
 
 	//contact menu
-	{	
+	{
 		TMenuParam tmp = { 0 };
 		tmp.cbSize=sizeof(tmp);
 		tmp.CheckService="ContactMenuCheckService";
 		tmp.ExecService="ContactMenuExecService";
-		tmp.name="Contact Menu";
+		tmp.name="ContactMenu";
 		hContactMenuObject=CallService(MO_CREATENEWMENUOBJECT,(WPARAM)0,(LPARAM)&tmp);
 	}
 
 	MO_SetOptionsMenuObject( hContactMenuObject, OPT_USERDEFINEDITEMS, TRUE );
 	MO_SetOptionsMenuObject( hContactMenuObject, OPT_MENUOBJECT_SET_FREE_SERVICE, (int)"CLISTMENUS/FreeOwnerDataContactMenu" );
-	
+
    // add exit command to menu
 	{
 		CLISTMENUITEM mi;

@@ -1,6 +1,10 @@
 #ifndef M_GENMENU_H
 #define M_GENMENU_H
 
+#ifndef M_CLIST_H__
+   #include <m_clist.h>
+#endif
+
 /*
   Main features:
   1) Independet from clist,may be used in any module.
@@ -200,21 +204,6 @@ int lParam;
 //lParam=0
 //returns 0 on success, nonzero on failure
 #define MS_CLIST_REMOVECONTACTMENUITEM			"CList/RemoveContactMenuItem"
-/*GENMENU_MODULE*/
-
-/*GENMENU_MODULE*/
-#define CMIF_ROOTPOPUP  128   //root item for new popup(save return id for childs)
-#define CMIF_CHILDPOPUP 256   //child for rootpopup menu
-
-#define CMIF_UNICODE        512      //will return TCHAR* instead of char*
-#if defined( _UNICODE )
-	#define CMIF_TCHAR       CMIF_UNICODE      //will return TCHAR* instead of char*
-#else
-	#define CMIF_TCHAR       0       //will return char*, as usual
-#endif
-
-#define CMIF_KEEPUNTRANSLATED  1024 // don't translate a menu item
-
 /*GENMENU_MODULE*/
 
 #define SETTING_NOOFFLINEBOTTOM_DEFAULT 0

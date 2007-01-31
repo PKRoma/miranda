@@ -68,57 +68,58 @@ TCHAR* fnGetStatusModeDescription( int mode, int flags )
 	int    noPrefixReqd = 0;
 	switch (mode) {
 	case ID_STATUS_OFFLINE:
-		descr = TranslateT("Offline");
+		descr = _T("Offline");
 		noPrefixReqd = 1;
 		break;
 	case ID_STATUS_CONNECTING:
-		descr = TranslateT("Connecting");
+		descr = _T("Connecting");
 		noPrefixReqd = 1;
 		break;
 	case ID_STATUS_ONLINE:
-		descr = TranslateT("Online");
+		descr = _T("Online");
 		noPrefixReqd = 1;
 		break;
 	case ID_STATUS_AWAY:
-		descr = TranslateT("Away");
+		descr = _T("Away");
 		break;
 	case ID_STATUS_DND:
-		descr = TranslateT("DND");
+		descr = _T("DND");
 		break;
 	case ID_STATUS_NA:
-		descr = TranslateT("NA");
+		descr = _T("NA");
 		break;
 	case ID_STATUS_OCCUPIED:
-		descr = TranslateT("Occupied");
+		descr = _T("Occupied");
 		break;
 	case ID_STATUS_FREECHAT:
-		descr = TranslateT("Free for chat");
+		descr = _T("Free for chat");
 		break;
 	case ID_STATUS_INVISIBLE:
-		descr = TranslateT("Invisible");
+		descr = _T("Invisible");
 		break;
 	case ID_STATUS_OUTTOLUNCH:
-		descr = TranslateT("Out to lunch");
+		descr = _T("Out to lunch");
 		break;
 	case ID_STATUS_ONTHEPHONE:
-		descr = TranslateT("On the phone");
+		descr = _T("On the phone");
 		break;
 	case ID_STATUS_IDLE:
-		descr = TranslateT("Idle");
+		descr = _T("Idle");
 		break;
 	default:
 		if (mode > ID_STATUS_CONNECTING && mode < ID_STATUS_CONNECTING + MAX_CONNECT_RETRIES) {
-			mir_sntprintf(szMode, SIZEOF(szMode), TranslateT("Connecting (attempt %d)"), mode - ID_STATUS_CONNECTING + 1);
+			const TCHAR* connFmt = _T("Connecting (attempt %d)");
+			mir_sntprintf(szMode, SIZEOF(szMode), (flags&GSMDF_UNTRANSLATED)?connFmt:TranslateTS(connFmt), mode - ID_STATUS_CONNECTING + 1);
 			return szMode;
 		}
 		return NULL;
 	}
 	if (noPrefixReqd || !(flags & GSMDF_PREFIXONLINE))
-		return descr;
+		return ( flags & GSMDF_UNTRANSLATED ) ? descr : TranslateTS( descr );
 
-	lstrcpy(szMode, TranslateT("Online"));
-	lstrcat(szMode, _T(": "));
-	lstrcat(szMode, descr);
+	lstrcpy( szMode, TranslateT( "Online" ));
+	lstrcat( szMode, _T(": "));
+	lstrcat( szMode, ( flags & GSMDF_UNTRANSLATED ) ? descr : TranslateTS( descr ));
 	return szMode;
 }
 
