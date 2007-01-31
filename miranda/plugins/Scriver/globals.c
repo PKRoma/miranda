@@ -158,7 +158,7 @@ int IcoLibIconsChanged(WPARAM wParam, LPARAM lParam)
 
 void RegisterIcoLibIcons() {
 	if (ServiceExists(MS_SKIN2_ADDICON)) {
-		SKINICONDESC sid;
+		SKINICONDESC sid = { 0 };
 		char path[MAX_PATH];
 		GetModuleFileNameA(g_hInst, path, MAX_PATH);
 		sid.cbSize = sizeof(SKINICONDESC);
