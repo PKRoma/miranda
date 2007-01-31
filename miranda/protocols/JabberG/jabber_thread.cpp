@@ -157,7 +157,7 @@ static void xmlStreamInitializeNow(ThreadData* info) {
 	JabberXmlSetCallback( &xmlState, 1, ELEM_OPEN, JabberProcessStreamOpening, info );
 	JabberXmlSetCallback( &xmlState, 1, ELEM_CLOSE, JabberProcessStreamClosing, info );
 	JabberXmlSetCallback( &xmlState, 2, ELEM_CLOSE, JabberProcessProtocol, info );
-	{	
+	{
 		XmlNode stream( "stream:stream" );
 		stream.props = "<?xml version='1.0' encoding='UTF-8'?>";
 		stream.addAttr( "to", info->server );
@@ -669,7 +669,7 @@ static void JabberProcessFeatures( XmlNode *node, void *userdata )
 
 		if ( auth == NULL && isPlainAvailable )
 			auth = new TPlainAuth( info );
-		
+
 		if ( auth == NULL ) {
 			if ( isAuthAvailable ) { // no known mechanisms but iq_auth is available
 				JabberPerformIqAuth( info );
@@ -812,7 +812,7 @@ static void JabberProcessProtocol( XmlNode *node, void *userdata )
 		JabberProcessProceed( node, userdata );
 		return;
 	}
-	
+
 	if ( !strcmp( node->name, "stream:features" ))
 		JabberProcessFeatures( node, userdata );
 	else if ( !strcmp( node->name, "success"))
@@ -1370,11 +1370,10 @@ static void JabberProcessIqVersion( TCHAR* idStr, XmlNode* node )
 
 	char mversion[100];
 	JCallService( MS_SYSTEM_GETVERSIONTEXT, sizeof( mversion ), ( LPARAM )mversion );
-	if (bSecureIM) strcat(mversion, " (SecureIM)");
 
 	TCHAR* fullVer = (TCHAR*)alloca(1000 * sizeof( TCHAR ));
-	mir_sntprintf( fullVer, 1000, _T("Miranda IM ") _T(TCHAR_STR_PARAM) _T(" (Jabber v.") _T(TCHAR_STR_PARAM) _T(" [%s])"),
-		mversion, __VERSION_STRING, jabberThreadInfo->resource );
+	mir_sntprintf( fullVer, 1000, _T("Miranda IM ") _T(TCHAR_STR_PARAM) _T(" (Jabber v.") _T(TCHAR_STR_PARAM) _T(" [%s])") _T(TCHAR_STR_PARAM),
+		mversion, __VERSION_STRING, jabberThreadInfo->resource, bSecureIM ? " (SecureIM)":"" );
 
 	XmlNodeIq iq( "result", idStr, from );
 	XmlNode* query = iq.addQuery( "jabber:iq:version" );
