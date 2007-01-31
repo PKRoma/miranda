@@ -5,7 +5,7 @@
 // Copyright © 2000,2001 Richard Hughes, Roland Rabien, Tristan Van de Vreede
 // Copyright © 2001,2002 Jon Keating, Richard Hughes
 // Copyright © 2002,2003,2004 Martin Öberg, Sam Kothari, Robert Rainwater
-// Copyright © 2004,2005,2006 Joe Kucera
+// Copyright © 2004,2005,2006,2007 Joe Kucera
 // 
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License
@@ -326,7 +326,7 @@ static BOOL CALLBACK AvatarDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM
 
       if (!ICQGetContactSettingUID((HANDLE)lParam, &dwUIN, &szUID))
       {
-        if (!ICQGetContactSetting((HANDLE)lParam, "AvatarHash", &dbvHash))
+        if (!ICQGetContactSetting((HANDLE)lParam, "AvatarHash", &dbvHash) && dbvHash.type == DBVT_BLOB)
         {
           dwPaFormat = ICQGetContactSettingByte((HANDLE)lParam, "AvatarType", PA_FORMAT_UNKNOWN);
           if (!pData->hContact || (dwPaFormat != PA_FORMAT_UNKNOWN))
@@ -348,7 +348,7 @@ static BOOL CALLBACK AvatarDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM
                 szAvatar[0] = '\0';
             }
 
-            if (!pData->hContact || !IsAvatarSaved((HANDLE)lParam, dbvHash.pbVal))
+            if (!pData->hContact || !IsAvatarSaved((HANDLE)lParam, dbvHash.pbVal, dbvHash.cpbVal))
             { // if the file exists, we know we have the current avatar
               if (!access(szAvatar, 0)) bValid = 1;
             }
@@ -371,7 +371,7 @@ static BOOL CALLBACK AvatarDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM
         else if (pData->hContact) // only retrieve users avatars
         {
           GetAvatarFileName(dwUIN, szUID, szAvatar, 255);
-          GetAvatarData((HANDLE)lParam, dwUIN, szUID, dbvHash.pbVal, 0x14, szAvatar);
+          GetAvatarData((HANDLE)lParam, dwUIN, szUID, dbvHash.pbVal, dbvHash.cpbVal, szAvatar);
         }
       }
 

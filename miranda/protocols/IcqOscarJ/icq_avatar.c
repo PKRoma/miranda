@@ -279,13 +279,13 @@ int DetectAvatarFormat(char* szFile)
 
 
 
-int IsAvatarSaved(HANDLE hContact, char* pHash)
+int IsAvatarSaved(HANDLE hContact, char* pHash, int nHashLen)
 {
   DBVARIANT dbvSaved = {0};
 
   if (!ICQGetContactSetting(hContact, "AvatarSaved", &dbvSaved))
   {
-    if ((dbvSaved.cpbVal != 0x14) || memcmp(dbvSaved.pbVal, pHash, 0x14))
+    if ((dbvSaved.cpbVal != nHashLen) || memcmp(dbvSaved.pbVal, pHash, nHashLen))
     { // the hashes is different
       ICQFreeVariant(&dbvSaved);
       
@@ -390,9 +390,14 @@ void StopAvatarThread()
 
 
 
-static void NetLog_Hash(const char* pszIdent, unsigned char* pHash)
+static void NetLog_Hash(const char* pszIdent, unsigned char* pHash, int nHashLen)
 {
-  NetLog_Server("%s Hash: %02X%02X%02X%02X%02X%02X%02X%02X%02X%02X%02X%02X%02X%02X%02X%02X%02X%02X%02X%02X", pszIdent, pHash[0], pHash[1], pHash[2], pHash[3], pHash[4], pHash[5], pHash[6], pHash[7], pHash[8], pHash[9], pHash[10], pHash[11], pHash[12], pHash[13], pHash[14], pHash[15], pHash[16], pHash[17], pHash[18], pHash[19]);
+  if (nHashLen == 0x14)
+    NetLog_Server("%s Hash: %02X%02X%02X%02X%02X%02X%02X%02X%02X%02X%02X%02X%02X%02X%02X%02X%02X%02X%02X%02X", pszIdent, pHash[0], pHash[1], pHash[2], pHash[3], pHash[4], pHash[5], pHash[6], pHash[7], pHash[8], pHash[9], pHash[10], pHash[11], pHash[12], pHash[13], pHash[14], pHash[15], pHash[16], pHash[17], pHash[18], pHash[19]);
+  else if (nHashLen == 0x09)
+    NetLog_Server("%s Hash: %02X%02X%02X%02X%02X%02X%02X%02X%02X", pszIdent, pHash[0], pHash[1], pHash[2], pHash[3], pHash[4], pHash[5], pHash[6], pHash[7], pHash[8]);
+  else
+    NetLog_Server("%s Hash: Unknown hash format.", pszIdent);
 }
 
 
@@ -404,24 +409,62 @@ void handleAvatarContactHash(DWORD dwUIN, char* szUID, HANDLE hContact, unsigned
   int bJob = FALSE;
   char szAvatar[MAX_PATH];
   int dwPaFormat;
+  int avatarType = -1;
+  BYTE* pAvatarHash = NULL;
+  unsigned int cbAvatarHash;
+  BYTE emptyItem[0x10] = {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};
 
-  if (nHashLen >= 0x14)
-  {
-    // check if it is really avatar (it can be also AIM's online message)
-    if (pHash[0] != 0 || (pHash[1] != AVATAR_HASH_STATIC && pHash[1] != AVATAR_HASH_FLASH)) return;
+  if (nHashLen < 4) return; // nothing to work with
 
-    if (nHashLen == 0x18 && pHash[3] == 0)
-    { // icq probably set two avatars, get something from that
-      memcpy(pHash, pHash+4, 0x14);
+  while (nHashLen >= 4)
+  { // parse online message items one by one
+    WORD itemType = pHash[0] << 8 | pHash[1];
+    BYTE itemLen = pHash[3];
+    BYTE itemFlags = pHash[2];
+
+    // just some validity check
+    if ((unsigned int)(itemLen + 4) > nHashLen) 
+      itemLen = nHashLen - 4;
+
+    if (memcmp(pHash+4, emptyItem, itemLen > 0x10 ? 0x10 : itemLen))
+    { // Item types
+      // 0000: AIM avatar ?
+      // 0001: AIM/ICQ avatar ID/hash (len 5 or 16 bytes)
+      // 0002: iChat online message
+      // 0008: ICQ Flash avatar hash (16 bytes)
+      // 000C: ICQ 6 bigger avatar (16 bytes)
+      if (itemType == AVATAR_HASH_STATIC && (itemLen == 0x05 || itemLen == 0x10) && avatarType == -1)
+      { // normal avatar
+        pAvatarHash = pHash;
+        cbAvatarHash = itemLen + 4;
+        avatarType = itemType;
+      }
+      else if (itemType == AVATAR_HASH_FLASH && itemLen == 0x10 && avatarType == -1)
+      { // flash avatar
+        pAvatarHash = pHash;
+        cbAvatarHash = itemLen + 4;
+        avatarType = itemType;
+      }
+      else if (itemType == AVATAR_HASH_BIGGER && itemLen == 0x10)
+      { // big avatar (ICQ 6)
+        pAvatarHash = pHash;
+        cbAvatarHash = itemLen + 4;
+        avatarType = itemType;
+      }
     }
+    pHash += itemLen + 4;
+    nHashLen -= itemLen + 4;
+  }
 
+  if (avatarType != -1)
+  {
     if (gbAvatarsEnabled)
     { // check settings, should we request avatar immediatelly
       BYTE bAutoLoad = ICQGetContactSettingByte(NULL, "AvatarsAutoLoad", DEFAULT_LOAD_AVATARS);
 
       if (ICQGetContactSetting(hContact, "AvatarHash", &dbv))
       { // we not found old hash, i.e. get new avatar
-        int fileState = IsAvatarSaved(hContact, pHash);
+        int fileState = IsAvatarSaved(hContact, pAvatarHash, cbAvatarHash);
 
         // check saved hash and file, if equal only store hash
         if (!fileState)
@@ -433,7 +476,7 @@ void handleAvatarContactHash(DWORD dwUIN, char* szUID, HANDLE hContact, unsigned
           { // the file is there, link to contactphoto, save hash
             NetLog_Server("Avatar is known, hash stored, linked to file.");
 
-            ICQWriteContactSettingBlob(hContact, "AvatarHash", pHash, 0x14);
+            ICQWriteContactSettingBlob(hContact, "AvatarHash", pAvatarHash, cbAvatarHash);
 
             if (dwPaFormat != PA_FORMAT_UNKNOWN && dwPaFormat != PA_FORMAT_XML)
               LinkContactPhotoToFile(hContact, szAvatar);
@@ -456,15 +499,15 @@ void handleAvatarContactHash(DWORD dwUIN, char* szUID, HANDLE hContact, unsigned
       }
       else
       { // we found hash check if it changed or not
-        NetLog_Hash("Old", dbv.pbVal);
-        if ((dbv.cpbVal != 0x14) || memcmp(dbv.pbVal, pHash, 0x14))
+        NetLog_Hash("Old", dbv.pbVal, dbv.cpbVal);
+        if ((dbv.cpbVal != cbAvatarHash) || memcmp(dbv.pbVal, pAvatarHash, cbAvatarHash))
         { // the hash is different, request new avatar
           LinkContactPhotoToFile(hContact, NULL); // unlink photo
           bJob = TRUE;
         }
         else
         { // the hash does not changed, check if we have correct file
-          int fileState = IsAvatarSaved(hContact, pHash);
+          int fileState = IsAvatarSaved(hContact, pAvatarHash, cbAvatarHash);
 
           // we should have file, check if the file really exists
           if (!fileState)
@@ -504,7 +547,7 @@ void handleAvatarContactHash(DWORD dwUIN, char* szUID, HANDLE hContact, unsigned
       {
         if (bJob == TRUE)
         {
-          NetLog_Hash("New", pHash);
+          NetLog_Hash("New", pAvatarHash, cbAvatarHash);
           NetLog_Server("User has Avatar, new hash stored.");
 
           // Remove possible block - hash changed, try again.
@@ -528,14 +571,14 @@ void handleAvatarContactHash(DWORD dwUIN, char* szUID, HANDLE hContact, unsigned
         else
           NetLog_Server("User has Avatar, file is missing.");
 
-        ICQWriteContactSettingBlob(hContact, "AvatarHash", pHash, 0x14);
+        ICQWriteContactSettingBlob(hContact, "AvatarHash", pAvatarHash, cbAvatarHash);
 
         ICQBroadcastAck(hContact, ACKTYPE_AVATAR, ACKRESULT_STATUS, NULL, (LPARAM)NULL);
 
         if (bAutoLoad)
         { // auto-load is on, so request the avatar now, otherwise we are done
           GetAvatarFileName(dwUIN, szUID, szAvatar, MAX_PATH);
-          GetAvatarData(hContact, dwUIN, szUID, pHash, 0x14 /*nHashLen*/, szAvatar);
+          GetAvatarData(hContact, dwUIN, szUID, pAvatarHash, cbAvatarHash, szAvatar);
         } // avatar request sent or added to queue
       }
       else

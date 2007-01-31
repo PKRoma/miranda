@@ -184,7 +184,7 @@ int IcqGetAvatarInfo(WPARAM wParam, LPARAM lParam)
 
   if (!gbAvatarsEnabled) return GAIR_NOAVATAR;
 
-  if (ICQGetContactSetting(pai->hContact, "AvatarHash", &dbv) || dbv.cpbVal != 0x14)
+  if (ICQGetContactSetting(pai->hContact, "AvatarHash", &dbv) || dbv.type != DBVT_BLOB || (dbv.cpbVal != 0x14 && dbv.cpbVal != 0x09))
     return GAIR_NOAVATAR; // we did not found avatar hash or hash invalid - no avatar available
 
   if (ICQGetContactSettingUID(pai->hContact, &dwUIN, &szUID))
@@ -201,7 +201,7 @@ int IcqGetAvatarInfo(WPARAM wParam, LPARAM lParam)
 
     pai->format = dwPaFormat; 
 
-    if (!IsAvatarSaved(pai->hContact, dbv.pbVal))
+    if (!IsAvatarSaved(pai->hContact, dbv.pbVal, dbv.cpbVal))
     { // hashes are the same
       if (access(pai->filename, 0) == 0)
       {
@@ -212,7 +212,7 @@ int IcqGetAvatarInfo(WPARAM wParam, LPARAM lParam)
     }
   }
 
-  if (IsAvatarSaved(pai->hContact, dbv.pbVal))
+  if (IsAvatarSaved(pai->hContact, dbv.pbVal, dbv.cpbVal))
   { // we didn't received the avatar before - this ensures we will not request avatar again and again
     if ((wParam & GAIF_FORCE) != 0 && pai->hContact != 0)
     { // request avatar data
