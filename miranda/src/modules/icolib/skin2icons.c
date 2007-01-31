@@ -43,6 +43,12 @@ struct IcoLibOptsData {
 
 CRITICAL_SECTION csIconList;
 
+#define SECTIONPARAM_MAKE(index, level, flags) MAKELONG( (index)&0xFFFF, MAKEWORD( level, flags ) )
+#define SECTIONPARAM_INDEX(lparam) LOWORD( lparam )
+#define SECTIONPARAM_LEVEL(lparam) LOBYTE( HIWORD(lparam) )
+#define SECTIONPARAM_FLAGS(lparam) HIBYTE( HIWORD(lparam) )
+#define SECTIONPARAM_HAVEPAGE	0x0001
+
 struct
 {
 	SectionItem** items;
@@ -404,14 +410,16 @@ void LoadSubIcons(HWND htv, TCHAR *filename, HTREEITEM hItem)
 	tvi.hItem = hItem;
 
 	TreeView_GetItem(htv, &tvi);
-	sectionActive = ( SectionItem* )tvi.lParam;
+	sectionActive = sectionList.items[ SECTIONPARAM_INDEX(tvi.lParam) ];
 
 	tvi.hItem = TreeView_GetChild(htv, tvi.hItem);
 	while (tvi.hItem) {
 		LoadSubIcons(htv, filename, tvi.hItem);
 		tvi.hItem = TreeView_GetNextSibling(htv, tvi.hItem);
 	}
-	LoadSectionIcons(filename, sectionActive);
+
+	if( SECTIONPARAM_FLAGS(tvi.lParam) & SECTIONPARAM_HAVEPAGE )
+		LoadSectionIcons(filename, sectionActive);
 }
 
 static void UndoChanges(int iconIndx, int cmd)
@@ -436,13 +444,13 @@ void UndoSubItemChanges(HWND htv, HTREEITEM hItem, int cmd)
 
 	tvi.mask = TVIF_HANDLE|TVIF_PARAM;
 	tvi.hItem = hItem;
-	TreeView_GetItem(htv, &tvi); // tvi.lParam == active section
+	TreeView_GetItem(htv, &tvi);
 
-	if (tvi.lParam != 0) {
+	if ( SECTIONPARAM_FLAGS(tvi.lParam) & SECTIONPARAM_HAVEPAGE ) {
 		EnterCriticalSection(&csIconList);
 
 		for (indx = 0; indx < iconList.count; indx++)
-			if (iconList.items[indx]->section == (SectionItem*)tvi.lParam)
+			if (iconList.items[indx]->section == sectionList.items[ SECTIONPARAM_INDEX(tvi.lParam) ])
 				UndoChanges(indx, cmd);
 
 		LeaveCriticalSection(&csIconList);
@@ -841,32 +849,28 @@ static int CALLBACK DoSortIconsFuncByOrder(LPARAM lParam1, LPARAM lParam2, LPARA
 {	return iconList.items[lParam1]->orderID - iconList.items[lParam2]->orderID;
 }
 
-BOOL getTreeNodeText( HWND hwndTree, HTREEITEM hItem, char* szBuf, size_t cbLen )
+BOOL getTreeNodeText( HWND hwndTree, LPARAM lParam, char* szBuf, size_t cbLen )
 {
 	int codepage = CallService( MS_LANGPACK_GETCODEPAGE, 0, 0 );
-	int indx = strlen(szBuf);
-	TCHAR buf[MAX_PATH];
-
-	TVITEM tvi = {0};
-	tvi.hItem = hItem;
-
-	while( tvi.hItem != NULL ) {
-		tvi.mask = TVIF_HANDLE | TVIF_TEXT;
-		tvi.pszText = buf;
-		tvi.cchTextMax = SIZEOF(buf);
-		if ( !TreeView_GetItem( hwndTree, &tvi )) 
-			break;
-		#ifdef _UNICODE
-				indx += WideCharToMultiByte( codepage, 0, buf, -1, szBuf+indx, cbLen-indx, NULL, NULL )-1;
-		#else
-				strncpy( szBuf+indx, buf, cbLen-indx ); szBuf[cbLen-1] = 0;
-				indx += strlen( szBuf+indx );
-		#endif
-		szBuf[indx++] = '/';
-		tvi.hItem = TreeView_GetParent( hwndTree, tvi.hItem ); 
+	DWORD indx = SECTIONPARAM_LEVEL( lParam );
+	SectionItem* section = sectionList.items[ SECTIONPARAM_INDEX( lParam ) ];
+	TCHAR *p = section->name;
+	while( indx-- ) {
+		p = _tcschr( p, '/' );
+		if( p == NULL ) {
+			*szBuf = 0; return FALSE;
+		}
+		p++;
 	}
-	szBuf[indx] = 0;
-
+	p = _tcschr( p, '/' );
+	if( p == NULL )
+		p = section->name + _tcslen( section->name );
+#ifdef _UNICODE
+	indx = WideCharToMultiByte( codepage, 0, section->name, (p - section->name), szBuf, cbLen, NULL, NULL );
+#else
+	indx = strncpy( szBuf, section->name, (p - section->name) );
+#endif
+	szBuf[min(indx, cbLen-1)] = 0;
 	return TRUE;
 }
 
@@ -887,7 +891,7 @@ static void SaveCollapseState( HWND hwndTree )
 		TreeView_GetItem( hwndTree, &tvi );
 
 		if( tvi.cChildren > 0 ) {
-			*paramName = 0; getTreeNodeText( hwndTree, hti, paramName, sizeof(paramName) );
+			getTreeNodeText( hwndTree, tvi.lParam, paramName, sizeof(paramName) );
 			if ( tvi.state & TVIS_EXPANDED )
 				DBWriteContactSettingByte(NULL, "SkinIconsUI", paramName, TVIS_EXPANDED );
 			else
@@ -953,6 +957,7 @@ BOOL CALLBACK DlgProcIcoLibOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lP
 
 			for (indx = 0; indx < sectionList.count; indx++) {
 				TCHAR* sectionName;
+				int sectionLevel = 0;
 
 				hSection = NULL;
 				lstrcpy(itemName, sectionList.items[indx]->name);
@@ -969,24 +974,21 @@ BOOL CALLBACK DlgProcIcoLibOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lP
 						sectionName++;
 					}
 
+					pItemName = TranslateTS( pItemName );
+
 					hItem = FindNamedTreeItemAt(hwndTree, hSection, pItemName);
 					if (!sectionName || !hItem) {
 						if (!hItem) {
 							TVINSERTSTRUCT tvis = {0};
 							char paramName[MAX_PATH];
-#ifdef _UNICODE
-							WideCharToMultiByte( CallService( MS_LANGPACK_GETCODEPAGE, 0, 0 ), 0, pItemName, -1, paramName, SIZEOF(paramName), NULL, NULL );
-#else
-							strncpy( paramName, pItemName, SIZEOF(paramName) );
-#endif
-							strcat( paramName, "/" );
-							getTreeNodeText( hwndTree, hSection, paramName, sizeof(paramName) );
+
 							tvis.hParent = hSection;
 							tvis.hInsertAfter = TVI_LAST;//TVI_SORT;
-							tvis.item.pszText = TranslateTS( pItemName );
-							tvis.item.lParam = sectionName ? 0 : (LPARAM)sectionList.items[indx];
-							//tvis.item.lParam = (LPARAM)sectionList.items[indx];
 							tvis.item.mask = TVIF_TEXT|TVIF_PARAM|TVIF_STATE;
+							tvis.item.pszText = pItemName;
+							tvis.item.lParam = SECTIONPARAM_MAKE( indx, sectionLevel, sectionName?0:SECTIONPARAM_HAVEPAGE );
+
+							getTreeNodeText( hwndTree, tvis.item.lParam, paramName, sizeof(paramName) );
 							tvis.item.state = tvis.item.stateMask = DBGetContactSettingByte(NULL, "SkinIconsUI", paramName, TVIS_EXPANDED );
 							hItem = TreeView_InsertItem(hwndTree, &tvis);
 						}
@@ -994,10 +996,13 @@ BOOL CALLBACK DlgProcIcoLibOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lP
 							TVITEM tvi = {0};
 
 							tvi.hItem = hItem;
-							tvi.lParam = (LPARAM)sectionList.items[indx];
+							tvi.lParam = SECTIONPARAM_MAKE( indx, sectionLevel, SECTIONPARAM_HAVEPAGE );
 							tvi.mask = TVIF_PARAM | TVIF_HANDLE;
 							TreeView_SetItem(hwndTree, &tvi);
 					}	}
+
+					sectionLevel++;
+
 
 					hSection = hItem;
 			}	}
@@ -1221,7 +1226,9 @@ BOOL CALLBACK DlgProcIcoLibOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lP
 					NMTREEVIEW *pnmtv = (NMTREEVIEW*)lParam;
 					TVITEM tvi = pnmtv->itemNew;
 
-					SendMessage(hwndDlg, DM_REBUILDICONSPREVIEW, 0, tvi.lParam);
+					SendMessage(hwndDlg, DM_REBUILDICONSPREVIEW, 0, ( LPARAM )(
+					    (SECTIONPARAM_FLAGS(tvi.lParam)&SECTIONPARAM_HAVEPAGE)?
+						sectionList.items[ SECTIONPARAM_INDEX(tvi.lParam) ] : NULL ) );
 					break;
 		}	}	}
 		break;
