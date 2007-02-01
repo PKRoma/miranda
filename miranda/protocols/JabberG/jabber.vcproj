@@ -1194,6 +1194,9 @@
 				RelativePath="icos\addcontact.ico">
 			</File>
 			<File
+				RelativePath=".\icos\auth_revoke.ico">
+			</File>
+			<File
 				RelativePath="icos\block.ico">
 			</File>
 			<File
@@ -1239,10 +1242,16 @@
 				RelativePath="icos\pages.ico">
 			</File>
 			<File
+				RelativePath=".\icos\refresh.ico">
+			</File>
+			<File
 				RelativePath="icos\rename.ico">
 			</File>
 			<File
 				RelativePath="icos\request.ico">
+			</File>
+			<File
+				RelativePath=".\icos\roster.ico">
 			</File>
 			<File
 				RelativePath="icos\save.ico">
