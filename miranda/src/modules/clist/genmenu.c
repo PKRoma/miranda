@@ -329,7 +329,7 @@ int MO_ModifyMenuItem( int menuHandle, PMO_MenuItem pmiparam )
 			if ( pmiparam->flags & CMIF_UNICODE )
 				pimi->mi.ptszName = mir_tstrdup( TranslateTS( pmiparam->ptszName ));
 			else
-				pimi->mi.ptszName = LangPackPcharToTchar( Translate( pmiparam->pszName ));
+				pimi->mi.ptszName = LangPackPcharToTchar( pmiparam->pszName );
 		#else
 			pimi->mi.ptszName = mir_strdup( Translate( pmiparam->ptszName ));
 		#endif
@@ -601,7 +601,7 @@ int MO_AddNewMenuItem( int menuobjecthandle, PMO_MenuItem pmi )
 			if ( pmi->flags & CMIF_UNICODE )
 				p->mi.ptszName = mir_tstrdup( TranslateTS( pmi->ptszName ));
 			else
-				p->mi.ptszName = LangPackPcharToTchar( Translate( pmi->pszName ));
+				p->mi.ptszName = LangPackPcharToTchar( pmi->pszName );
 		#else
 			p->mi.ptszName = mir_strdup( Translate( pmi->ptszName ));
 		#endif
@@ -641,7 +641,7 @@ int MO_AddOldNewMenuItem( int menuobjecthandle, PMO_MenuItem pmi )
 		pmi->root = -1; //first level
 	}
 	else { // no,search for needed root and create it if need
-		TCHAR* tszRoot = ( TCHAR* )CallService( MS_LANGPACK_PCHARTOTCHAR, 0, (LPARAM)pmi->root );
+		TCHAR* tszRoot = LangPackPcharToTchar( pmi->root );
 
 		oldroot = -1;
 		for ( i=0; i < MenuObjects[objidx].MenuItemsCount; i++ ) {
