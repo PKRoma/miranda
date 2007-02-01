@@ -62,7 +62,8 @@ struct DetailsData {
 extern char mirandabootini[MAX_PATH]; // bad bad bad bad!
 static char szDefaultMirandaProfile[MAX_PATH];
 
-static void ThemeDialogBackground(HWND hwnd) {
+static void ThemeDialogBackground(HWND hwnd)
+{
 	if (IsWinVerXPPlus()) {
 		static HMODULE hThemeAPI = NULL;
 		if (!hThemeAPI) hThemeAPI = GetModuleHandleA("uxtheme");
@@ -113,7 +114,7 @@ static int FindDbProviders(char * pluginname, DATABASELINK * dblink, LPARAM lPar
 
 	if ( dblink->getFriendlyName(szName,SIZEOF(szName),1) == 0 ) {
 		// add to combo box
-		TCHAR* p = ( TCHAR* )LangPackPcharToTchar( szName );
+		TCHAR* p = LangPackPcharToTchar( szName );
 		LRESULT index = SendMessage( hwndCombo, CB_ADDSTRING, 0, (LPARAM)Translate( p ));
 		mir_free( p );
 		SendMessage(hwndCombo, CB_SETITEMDATA, index, (LPARAM)dblink);
@@ -266,14 +267,21 @@ BOOL EnumProfilesForList(char * fullpath, char * profile, LPARAM lParam)
 		FILE * fp = fopen(fullpath, "r+");
 		item.iImage = fp != NULL ? 0 : 1;
 		if ( stat(fullpath, &statbuf) == 0) {
-			mir_snprintf(sizeBuf,SIZEOF(sizeBuf),"%u KB", statbuf.st_size / 1024);
+			if ( statbuf.st_size > 1000000 ) {
+				mir_snprintf(sizeBuf,SIZEOF(sizeBuf),"%.3lf", (double)statbuf.st_size / 1048576.0 );
+				strcpy( sizeBuf+5, " MB" );
+			}
+			else {
+				mir_snprintf(sizeBuf,SIZEOF(sizeBuf),"%.3lf", (double)statbuf.st_size / 1024.0 );
+				strcpy( sizeBuf+5, " KB" );
+			}
 			bFileExists = TRUE;
 		}
 		if ( fp ) fclose(fp);
 	}
 	iItem = SendMessageA( hwndList, LVM_INSERTITEMA, 0, (LPARAM)&item );
 	if ( lstrcmpiA(szDefaultMirandaProfile, profile) == 0 ) 
-		ListView_SetItemState(hwndList, iItem, LVIS_SELECTED, LVIS_SELECTED);
+		ListView_SetItemState(hwndList, iItem, LVIS_SELECTED | LVIS_FOCUSED, LVIS_SELECTED | LVIS_FOCUSED);
 
 	item.iItem = iItem;
 	item.iSubItem = 2;
@@ -359,11 +367,14 @@ static BOOL CALLBACK DlgProfileSelect(HWND hwndDlg, UINT msg, WPARAM wParam, LPA
 			// icons
 			hImgList=ImageList_Create(16, 16, ILC_MASK | (IsWinVerXPPlus() ? ILC_COLOR32 : ILC_COLOR16), 1, 1);
 
-            ImageList_AddIcon_NotShared(hImgList, GetModuleHandle(NULL), MAKEINTRESOURCE(IDI_USERDETAILS));
-            ImageList_AddIcon_NotShared(hImgList, GetModuleHandle(NULL), MAKEINTRESOURCE(IDI_DELETE));
+			ImageList_AddIcon_NotShared(hImgList, GetModuleHandle(NULL), MAKEINTRESOURCE(IDI_USERDETAILS));
+			ImageList_AddIcon_NotShared(hImgList, GetModuleHandle(NULL), MAKEINTRESOURCE(IDI_DELETE));
 
 			// LV will destroy the image list
-			ListView_SetImageList(hwndList, hImgList, LVSIL_SMALL);			
+			ListView_SetImageList(hwndList, hImgList, LVSIL_SMALL);
+			ListView_SetExtendedListViewStyle(hwndList,
+				ListView_GetExtendedListViewStyle(hwndList) | LVS_EX_DOUBLEBUFFER | LVS_EX_LABELTIP | LVS_EX_FULLROWSELECT);
+
 			// find all the profiles
 			findProfiles(dat->pd->szProfileDir, EnumProfilesForList, (LPARAM)hwndDlg);
 			PostMessage(hwndDlg,WM_FOCUSTEXTBOX,0,0);
