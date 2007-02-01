@@ -43,7 +43,7 @@ PLUGININFO pluginInfo = {
 	"rainwater@miranda-im.org",
 	"Copyright 2000-2006 Miranda IM project",
 	"http://www.miranda-im.org",
-	0,
+	UNICODE_AWARE,
 	DEFMOD_SRMESSAGE            // replace internal version (if any)
 };
 

@@ -61,7 +61,7 @@ PLUGININFO pluginInfo = {
 	"project-info@miranda-im.org",
 	"© 2003-2006 Miranda team",
 	"http://miranda-im.org/",
-	0,
+	UNICODE_AWARE,
 	0
 };
 

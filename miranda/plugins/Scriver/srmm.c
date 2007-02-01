@@ -50,7 +50,7 @@ PLUGININFO pluginInfo = {
 	"the_leech@users.berlios.de",
 	"Copyright © 2000-2006 Miranda ICQ/IM Project, Piotr Piastucki",
 	"http://mgoodies.berlios.de",
-	0,
+	UNICODE_AWARE,
 	DEFMOD_SRMESSAGE            // replace internal version (if any)
 };
 

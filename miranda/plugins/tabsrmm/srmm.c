@@ -59,7 +59,7 @@ PLUGININFO pluginInfo = {
     "silvercircle@gmail.com",
     "© 2000-2007 Miranda Project",
     "http://tabsrmm.sourceforge.net",
-    0,
+    UNICODE_AWARE,
     DEFMOD_SRMESSAGE            // replace internal version (if any)
 };
 

@@ -48,7 +48,7 @@ PLUGININFO pluginInfo = {
 	"ghazan@miranda-im.org",
 	"( c ) 2002-05 Santithorn Bunchua, George Hazan",
 	"http://miranda-im.org/download/details.php?action=viewfile&id=437",
-	0,
+	UNICODE_AWARE,
 	0
 };
 
