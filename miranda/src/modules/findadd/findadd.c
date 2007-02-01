@@ -352,7 +352,7 @@ static BOOL CALLBACK DlgProcFindAdd(HWND hwndDlg, UINT msg, WPARAM wParam, LPARA
 					cbei.pszText=TranslateT("All Networks");
 					GetTextExtentPoint32(hdc,cbei.pszText,lstrlen(cbei.pszText),&textSize);
 					if (textSize.cx>cbwidth) cbwidth = textSize.cx;                    
-					cbei.iImage=cbei.iSelectedImage=ImageList_AddIcon_NotShared(dat->himlComboIcons, GetModuleHandle(NULL), MAKEINTRESOURCE(IDI_SEARCHALL));
+					cbei.iImage=cbei.iSelectedImage=ImageList_AddIcon_NotShared(dat->himlComboIcons, MAKEINTRESOURCE(IDI_SEARCHALL));
 					cbei.lParam=0;
 					SendDlgItemMessageA(hwndDlg,IDC_PROTOLIST,CBEM_INSERTITEM,0,(LPARAM)&cbei);
 					cbei.iItem++;

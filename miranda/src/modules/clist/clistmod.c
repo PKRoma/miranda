@@ -232,7 +232,7 @@ static int ContactListModulesLoaded(WPARAM wParam, LPARAM lParam)
 		protoIconIndex = (struct ProtoIconIndex *) mir_realloc(protoIconIndex, sizeof(struct ProtoIconIndex) * (protoIconIndexCount + 1));
 		protoIconIndex[protoIconIndexCount].szProto = protoList[i]->szName;
 		for (j = 0; j < SIZEOF(statusModeList); j++) {
-			iImg = ImageList_AddIcon_IconLibLoaded(hCListImages, LoadSkinnedProtoIcon(protoList[i]->szName, statusModeList[j]));
+			iImg = ImageList_AddIcon_ProtoIconLibLoaded(hCListImages, protoList[i]->szName, statusModeList[j] );
 			if (j == 0)
 				protoIconIndex[protoIconIndexCount].iIconBase = iImg;
 		}
@@ -526,17 +526,17 @@ int LoadContactListModule2(void)
 	HookEvent(ME_SKIN_ICONSCHANGED, CListIconsChanged);
 	CreateServiceFunction(MS_CLIST_GETICONSIMAGELIST, GetIconsImageList);
 
-	ImageList_AddIcon_NotShared(hCListImages, cli.hInst, MAKEINTRESOURCE(IDI_BLANK));
+	ImageList_AddIcon_NotShared(hCListImages, MAKEINTRESOURCE(IDI_BLANK));
 
 	{
 		int i;
 		//now all core skin icons are loaded via icon lib. so lets release them
 		for (i = 0; i < SIZEOF(statusModeList); i++)
-			ImageList_AddIcon_IconLibLoaded(hCListImages, LoadSkinnedIcon(skinIconStatusList[i]));
+			ImageList_AddIcon_IconLibLoaded(hCListImages, skinIconStatusList[i] );
 	}
 
 	//see IMAGE_GROUP... in clist.h if you add more images above here
-	ImageList_AddIcon_IconLibLoaded(hCListImages, LoadSkinnedIcon(SKINICON_OTHER_GROUPOPEN));
-	ImageList_AddIcon_IconLibLoaded(hCListImages, LoadSkinnedIcon(SKINICON_OTHER_GROUPSHUT));
+	ImageList_AddIcon_IconLibLoaded(hCListImages, SKINICON_OTHER_GROUPOPEN );
+	ImageList_AddIcon_IconLibLoaded(hCListImages, SKINICON_OTHER_GROUPSHUT );
 	return 0;
 }

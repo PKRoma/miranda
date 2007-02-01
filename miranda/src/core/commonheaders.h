@@ -86,16 +86,3 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include <m_ignore.h>
 #include <m_utils.h>
 #include <m_icolib.h>
-
-//skinicons.c
-HICON LoadIconEx(HINSTANCE hInstance, LPCTSTR lpIconName, BOOL bShared);
-int ImageList_AddIcon_NotShared(HIMAGELIST hIml, HINSTANCE hInstance, LPCTSTR szResource);
-int ImageList_ReplaceIcon_NotShared(HIMAGELIST hIml, int iIndex, HINSTANCE hInstance, LPCTSTR szResource);
-
-int ImageList_AddIcon_IconLibLoaded(HIMAGELIST hIml, HICON hIcon);
-int ImageList_ReplaceIcon_IconLibLoaded(HIMAGELIST hIml, int nIndex, HICON hIcon);
-
-#define IconLib_ReleaseIcon(hIcon, szName) CallService(MS_SKIN2_RELEASEICON,(WPARAM)hIcon, (LPARAM)szName)
-#define Safe_DestroyIcon(hIcon) if (hIcon) DestroyIcon(hIcon)
-
-

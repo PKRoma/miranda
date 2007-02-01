@@ -494,7 +494,7 @@ LRESULT CALLBACK fnContactListWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM
 		mii.cbSize = MENUITEMINFO_V4_SIZE;
 		mii.fMask = MIIM_TYPE | MIIM_DATA;
 		himlMirandaIcon = ImageList_Create(g_IconWidth, g_IconHeight, ILC_COLOR32 | ILC_MASK, 1, 1);
-		ImageList_AddIcon_IconLibLoaded(himlMirandaIcon, LoadSkinnedIcon(SKINICON_OTHER_MIRANDA));
+		ImageList_AddIcon_IconLibLoaded(himlMirandaIcon, SKINICON_OTHER_MIRANDA );
 		mii.dwItemData = MENU_MIRANDAMENU;
 		mii.fType = MFT_OWNERDRAW;
 		mii.dwTypeData = NULL;

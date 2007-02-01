@@ -52,3 +52,16 @@ char*  LangPackTranslateString(const char *szEnglish, const int W);
 TCHAR*   a2t( const char* str );
 char*    u2a( const wchar_t* src );
 wchar_t* a2u( const char* src );
+
+/**** skinicons.c **********************************************************************/
+
+HICON LoadIconEx(HINSTANCE hInstance, LPCTSTR lpIconName, BOOL bShared);
+int ImageList_AddIcon_NotShared(HIMAGELIST hIml, LPCTSTR szResource);
+int ImageList_ReplaceIcon_NotShared(HIMAGELIST hIml, int iIndex, HINSTANCE hInstance, LPCTSTR szResource);
+
+int ImageList_AddIcon_IconLibLoaded(HIMAGELIST hIml, int iconId);
+int ImageList_AddIcon_ProtoIconLibLoaded(HIMAGELIST hIml, const char* szProto, int iconId);
+int ImageList_ReplaceIcon_IconLibLoaded(HIMAGELIST hIml, int nIndex, HICON hIcon);
+
+#define IconLib_ReleaseIcon(hIcon, szName) CallService(MS_SKIN2_RELEASEICON,(WPARAM)hIcon, (LPARAM)szName)
+#define Safe_DestroyIcon(hIcon) if (hIcon) DestroyIcon(hIcon)
