@@ -821,6 +821,7 @@ static struct LISTOPTIONSITEM tabItems[] = {
     0, _T("Show status text on tabs"), 0, LOI_TYPE_SETTING, (UINT_PTR)"tabstatus", 0,
     0, _T("Prefer xStatus icons when available"), 0, LOI_TYPE_SETTING, (UINT_PTR)"use_xicons", 0,
     0, _T("Warn when closing a tab or window"), 0, LOI_TYPE_SETTING, (UINT_PTR)"warnonexit", 0,
+    0, _T("Detailed tooltip on tabs (requires mToolTip or Tipper plugin)"), 1, LOI_TYPE_SETTING, (UINT_PTR)"d_tooltips", 0,
     0, _T("ALWAYS pop up and activate new message windows (has PRIORITY!)"), SRMSGDEFSET_AUTOPOPUP, LOI_TYPE_SETTING, (UINT_PTR)SRMSGSET_AUTOPOPUP, 1,
     0, _T("Create new tabs in existing windows without activating them"), 0, LOI_TYPE_SETTING, (UINT_PTR)"autotabs", 1,
     0, _T("Create new windows in minimized state"), 0, LOI_TYPE_SETTING, (UINT_PTR)"autocontainer", 1,

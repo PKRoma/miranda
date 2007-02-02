@@ -1190,7 +1190,7 @@ static BOOL CALLBACK DlgProcContainer(HWND hwndDlg, UINT msg, WPARAM wParam, LPA
                 /*
                  * tab tooltips...
                  */
-                if(!fHaveTipper) {
+                if(!fHaveTipper || DBGetContactSettingByte(NULL, SRMSGMOD_T, "d_tooltips", 1) == 0) {
                     pContainer->hwndTip = CreateWindowEx(0, TOOLTIPS_CLASS, NULL, WS_POPUP | TTS_NOPREFIX | TTS_ALWAYSTIP, CW_USEDEFAULT, CW_USEDEFAULT,
                                                          CW_USEDEFAULT, CW_USEDEFAULT, hwndDlg, NULL, g_hInst, (LPVOID) NULL);
 
@@ -2021,7 +2021,7 @@ panel_found:
                             const wchar_t *newTitle;
 #endif
 
-                            if(fHaveTipper)
+                            if(pContainer->hwndTip == 0)
                                 break;
 
                             GetCursorPos(&pt);

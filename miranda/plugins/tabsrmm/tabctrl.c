@@ -1620,7 +1620,7 @@ skip_tabs:
         }
         case WM_TIMER:
         {
-            if(wParam == TIMERID_HOVER_T) {
+            if(wParam == TIMERID_HOVER_T &&  DBGetContactSettingByte(NULL, SRMSGMOD_T, "d_tooltips", 1)) {
                 POINT pt;
                 CLCINFOTIP ti = {0};
                 ti.cbSize = sizeof(ti);

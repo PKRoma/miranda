@@ -1176,9 +1176,15 @@ static LRESULT CALLBACK NicklistSubclassProc(HWND hwnd, UINT msg, WPARAM wParam,
 		}
 		break;
 
-	case WM_RBUTTONDOWN:
-		SendMessage(hwnd, WM_LBUTTONDOWN, wParam, lParam);
-		break;
+    case WM_RBUTTONDOWN:
+        {
+            int iCounts = SendMessage(hwnd, LB_GETSELCOUNT, 0, 0);
+
+            if(iCounts != LB_ERR && iCounts > 1)
+                return 0;
+            SendMessage(hwnd, WM_LBUTTONDOWN, wParam, lParam);
+            break;
+        }
 
 	case WM_RBUTTONUP:
 		SendMessage(hwnd, WM_LBUTTONUP, wParam, lParam);
@@ -1203,7 +1209,8 @@ static LRESULT CALLBACK NicklistSubclassProc(HWND hwnd, UINT msg, WPARAM wParam,
 				hti.pt.x = 4;
 				hti.pt.y = (index - top)*height + 1;
 			}
-			else ScreenToClient(hwnd,&hti.pt);
+			else 
+                ScreenToClient(hwnd,&hti.pt);
 
 			item = LOWORD(SendMessage(GetDlgItem(hwndParent, IDC_LIST), LB_ITEMFROMPOINT, 0, MAKELPARAM(hti.pt.x, hti.pt.y)));
 			ui = SM_GetUserFromIndex(parentdat->ptszID, parentdat->pszModule, item);
@@ -1220,16 +1227,41 @@ static LRESULT CALLBACK NicklistSubclassProc(HWND hwnd, UINT msg, WPARAM wParam,
 				uID = CreateGCMenu(hwnd, &hMenu, 0, hti.pt, parentdat, uinew.pszUID, NULL);
 
 				switch (uID) {
-				case 0:
-					break;
+    				case 0:
+    					break;
+    
+    				case ID_MESS:
+    					DoEventHookAsync(GetParent(hwnd), parentdat->ptszID, parentdat->pszModule, GC_USER_PRIVMESS, ui->pszUID, NULL, (LPARAM)NULL);
+    					break;
+    
+                    default:
+                    {
+                        int iCount = SendMessage(hwnd, LB_GETCOUNT, 0, 0);
 
-				case ID_MESS:
-					DoEventHookAsync(GetParent(hwnd), parentdat->ptszID, parentdat->pszModule, GC_USER_PRIVMESS, ui->pszUID, NULL, (LPARAM)NULL);
-					break;
+                        if(iCount != LB_ERR) {
+                            int iSelectedItems = SendMessage(hwnd, LB_GETSELCOUNT, 0, 0);
 
-				default:
-					DoEventHookAsync(hwndParent, parentdat->ptszID, parentdat->pszModule, GC_USER_NICKLISTMENU, ui->pszUID, NULL, (LPARAM)uID);
-					break;
+                            if(iSelectedItems != LB_ERR) {
+                                int *pItems = (int *)malloc(sizeof(int) * (iSelectedItems + 1));
+
+                                if(pItems) {
+                                    if(SendMessage(hwnd, LB_GETSELITEMS, (WPARAM)iSelectedItems, (LPARAM)pItems) != LB_ERR) {
+                                        USERINFO *ui1 = NULL;
+										int i;
+
+                                        for(i = 0; i < iSelectedItems; i++) {
+                                            ui1 = SM_GetUserFromIndex(parentdat->ptszID, parentdat->pszModule, pItems[i]);
+                                            if(ui1)
+                                                DoEventHookAsync(hwndParent, parentdat->ptszID, parentdat->pszModule, GC_USER_NICKLISTMENU, ui1->pszUID, NULL, (LPARAM)uID);
+                                        }
+                                    }
+                                    free(pItems);
+                                }
+                            }
+                        }
+    					//DoEventHookAsync(hwndParent, parentdat->ptszID, parentdat->pszModule, GC_USER_NICKLISTMENU, ui->pszUID, NULL, (LPARAM)uID);
+    					break;
+                    }
 				}
 				DestroyGCMenu(&hMenu, 1);
 				return TRUE;
@@ -1712,7 +1744,7 @@ BOOL CALLBACK RoomWndProc(HWND hwndDlg,UINT uMsg,WPARAM wParam,LPARAM lParam)
 					hOldFont = (HFONT) SelectObject(dis->hDC, hFont);
 					SetBkMode(dis->hDC, TRANSPARENT);
 
-					if (dis->itemAction == ODA_FOCUS && dis->itemState & ODS_SELECTED) {
+					if (/*dis->itemAction == ODA_FOCUS || */ dis->itemState & ODS_SELECTED) {
 						FillRect(dis->hDC, &dis->rcItem, g_Settings.SelectionBGBrush);
 						SetTextColor(dis->hDC, g_Settings.nickColors[6]);
 					}
