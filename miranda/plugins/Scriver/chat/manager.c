@@ -106,12 +106,12 @@ int SM_RemoveSession( const TCHAR* pszID, const char* pszModule)
 			if (pTemp->hWnd )
 				SendMessage(pTemp->hWnd, GC_EVENT_CONTROL+WM_USER+500, SESSION_TERMINATE, 0);
 
+			DoEventHook(pTemp->ptszID, pTemp->pszModule, GC_SESSION_TERMINATE, NULL, NULL, (DWORD)pTemp->dwItemData);
+			
 			if (pLast == NULL)
 				m_WndList = pTemp->next;
 			else
 				pLast->next = pTemp->next;
-
-			DoEventHook(pTemp->ptszID, pTemp->pszModule, GC_SESSION_TERMINATE, NULL, NULL, (DWORD)pTemp->dwItemData);
 
 			UM_RemoveAll(&pTemp->pUsers);
 			TM_RemoveAll(&pTemp->pStatuses);
