@@ -366,9 +366,8 @@ static BOOL CALLBACK DlgProfileSelect(HWND hwndDlg, UINT msg, WPARAM wParam, LPA
 
 			// icons
 			hImgList=ImageList_Create(16, 16, ILC_MASK | (IsWinVerXPPlus() ? ILC_COLOR32 : ILC_COLOR16), 1, 1);
-
-			ImageList_AddIcon_NotShared(hImgList, GetModuleHandle(NULL), MAKEINTRESOURCE(IDI_USERDETAILS));
-			ImageList_AddIcon_NotShared(hImgList, GetModuleHandle(NULL), MAKEINTRESOURCE(IDI_DELETE));
+            ImageList_AddIcon(hImgList, LoadIcon(GetModuleHandle(NULL), MAKEINTRESOURCE(IDI_USERDETAILS)));
+			ImageList_AddIcon(hImgList, LoadIcon(GetModuleHandle(NULL), MAKEINTRESOURCE(IDI_DELETE)));
 
 			// LV will destroy the image list
 			ListView_SetImageList(hwndList, hImgList, LVSIL_SMALL);
