@@ -624,7 +624,7 @@ static char *CreateRTFFromDbEvent2(struct MessageWindowData *dat, struct EventDa
 {
 	char *buffer;
 	int bufferAlloced, bufferEnd;
-	int showColon = 0;
+	int style, showColon = 0;
 	int isGroupBreak = TRUE;
 	int highlight = 0;
 	bufferEnd = 0;
@@ -758,6 +758,7 @@ static char *CreateRTFFromDbEvent2(struct MessageWindowData *dat, struct EventDa
 		if (g_dat->flags & SMF_MSGONNEWLINE && showColon) {
 			AppendToBuffer(&buffer, &bufferEnd, &bufferAlloced, "\\par");
 		}
+		style = event->dwFlags & IEEDF_SENT ? MSGFONTID_MYMSG : MSGFONTID_YOURMSG;
 		{
 			int lasttoken = 0, newtoken = 0;
 			int laststart = 0, newstart =0, newlen = 0;
@@ -786,7 +787,7 @@ static char *CreateRTFFromDbEvent2(struct MessageWindowData *dat, struct EventDa
 						newstart = j;
 					} 
 					if (lasttoken == 0) {
-						AppendToBuffer(&buffer, &bufferEnd, &bufferAlloced, "%s ", SetToStyle(event->dwFlags & IEEDF_SENT ? MSGFONTID_MYMSG : MSGFONTID_YOURMSG));
+						AppendToBuffer(&buffer, &bufferEnd, &bufferAlloced, "%s ", SetToStyle(style));
 					} else {
 						AppendToBuffer(&buffer, &bufferEnd, &bufferAlloced, "%s ", SetToStyle(event->dwFlags & IEEDF_SENT ? MSGFONTID_MYURL : MSGFONTID_YOURURL));
 					}
@@ -810,7 +811,8 @@ static char *CreateRTFFromDbEvent2(struct MessageWindowData *dat, struct EventDa
 		case EVENTTYPE_URL:
 		case EVENTTYPE_FILE:
 		{
-			AppendToBuffer(&buffer, &bufferEnd, &bufferAlloced, "%s ", SetToStyle(MSGFONTID_NOTICE));
+			style = MSGFONTID_NOTICE;
+			AppendToBuffer(&buffer, &bufferEnd, &bufferAlloced, "%s ", SetToStyle(style));
 			if (event->eventType == EVENTTYPE_FILE) {
 				if (event->dwFlags & IEEDF_SENT) {
 					AppendTToBuffer(&buffer, &bufferEnd, &bufferAlloced, TranslateT("File sent"));
@@ -827,6 +829,7 @@ static char *CreateRTFFromDbEvent2(struct MessageWindowData *dat, struct EventDa
 				AppendTToBuffer(&buffer, &bufferEnd, &bufferAlloced, _T(":"));
 			}
 			AppendTToBuffer(&buffer, &bufferEnd, &bufferAlloced, _T(" "));
+			
 			if (event->dwFlags & IEEDF_UNICODE_TEXT) {
 				AppendUnicodeToBuffer(&buffer, &bufferEnd, &bufferAlloced, event->pszTextW);
 			} else {
