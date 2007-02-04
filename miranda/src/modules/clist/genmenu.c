@@ -1107,36 +1107,35 @@ HICON LoadIconFromLibrary(char *SectName,char *Name,char *Description,HICON hIco
 		else 
 			_snprintf(iconame,sizeof(iconame),"genmenu_%s_%s",SectName,Description);
 
-		if ( ServiceExists( MS_SKIN2_ADDICON )) {
-			if ( RegisterIt ) {
-				char sectionName[256];
-				char * buf = strdup(Description);
+		if ( RegisterIt ) {
+			char sectionName[256];
+			char * buf = strdup(Description);
 
-				//remove '&'
-				char* start = buf;
-				while ( start = strchr( start, '&' )) {
-					memmove(start,start+1,strlen(start+1)+1);
-					if (*start!='\0') start++;
-					else break;
-				}
-
-				_snprintf(sectionName,sizeof(sectionName),"Menu Icons/%s",SectName);
-				sid.cbSize = sizeof(sid);
-				sid.cx=16;
-				sid.cy=16;
-				sid.pszSection = Translate(sectionName);				
-				sid.pszName=iconame;
-				sid.pszDefaultFile=NULL;
-				sid.pszDescription=buf;
-				sid.hDefaultIcon=hIcon;
-
-				retval=CallService(MS_SKIN2_ADDICON, 0, (LPARAM)&sid);
-				free(buf);
-				if ( RegistredOk )
-					*RegistredOk=TRUE;
+			//remove '&'
+			char* start = buf;
+			while ( start = strchr( start, '&' )) {
+				memmove(start,start+1,strlen(start+1)+1);
+				if (*start!='\0') start++;
+				else break;
 			}
-			return ((HICON)CallService(MS_SKIN2_GETICON, 0, (LPARAM)iconame));
-	}	}
+
+			_snprintf(sectionName,sizeof(sectionName),"Menu Icons/%s",SectName);
+			sid.cbSize = sizeof(sid);
+			sid.cx=16;
+			sid.cy=16;
+			sid.pszSection = Translate(sectionName);				
+			sid.pszName=iconame;
+			sid.pszDefaultFile=NULL;
+			sid.pszDescription=buf;
+			sid.hDefaultIcon=hIcon;
+
+			retval=CallService(MS_SKIN2_ADDICON, 0, (LPARAM)&sid);
+			free(buf);
+			if ( RegistredOk )
+				*RegistredOk=TRUE;
+		}
+		return ((HICON)CallService(MS_SKIN2_GETICON, 0, (LPARAM)iconame));
+	}
 
 	return hIcon;
 }

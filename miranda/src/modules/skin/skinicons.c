@@ -225,9 +225,6 @@ static int LoadSkinProtoIcon(WPARAM wParam,LPARAM lParam)
 	if ( statusIndx == -1 )
 		return (int)NULL;
 
-	if ( caps2 == 0 )
-		caps2 = statusIcons[ i ].pf2;
-
 	if ( !szProto ) {
 		PROTOCOLDESCRIPTOR **proto;
 		DWORD protoCount;
@@ -303,16 +300,24 @@ static int LoadSkinProtoIcon(WPARAM wParam,LPARAM lParam)
 		strcpy(iconId, statusIconsFmt);
 		strcat(iconId, szProto);
 		suffIndx = strlen(iconId);
-		for ( i = 0; i < SIZEOF(statusIcons); i++ ) {
-			if ( caps2 & statusIcons[i].pf2 ) {
-				// format: core_%s%d
-				itoa(i, iconId + suffIndx, 10);
-				sid.pszName = iconId;
-				sid.pszDescription = (char*)CallService(MS_CLIST_GETSTATUSMODEDESCRIPTION,statusIcons[i].id,0);
-				//statusIcons[i].description;
-				sid.iDefaultIndex = statusIcons[i].resource_id;
-				IcoLib_AddNewIcon(0, (LPARAM)&sid);
-		}	}
+		{
+			int lowidx, highidx;
+			if ( caps2 == 0 )
+				lowidx = statusIndx, highidx = statusIndx+1;
+			else
+				lowidx = 0, highidx = SIZEOF(statusIcons);
+
+			for ( i = lowidx; i < highidx; i++ ) {
+				if ( caps2 == 0 || ( caps2 & statusIcons[i].pf2 )) {
+					// format: core_%s%d
+					itoa(i, iconId + suffIndx, 10);
+					sid.pszName = iconId;
+					sid.pszDescription = (char*)CallService(MS_CLIST_GETSTATUSMODEDESCRIPTION,statusIcons[i].id,0);
+					//statusIcons[i].description;
+					sid.iDefaultIndex = statusIcons[i].resource_id;
+					IcoLib_AddNewIcon(0, (LPARAM)&sid);
+		}	}	}
+
 		// format: core_status_%s%d
 		strcpy(iconName, statusIconsFmt);
 		strcat(iconName, szProto);
