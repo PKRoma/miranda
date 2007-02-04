@@ -641,7 +641,7 @@ int MO_AddOldNewMenuItem( int menuobjecthandle, PMO_MenuItem pmi )
 		pmi->root = -1; //first level
 	}
 	else { // no,search for needed root and create it if need
-		TCHAR* tszRoot = LangPackPcharToTchar( pmi->root );
+		TCHAR* tszRoot = LangPackPcharToTchar(( char* )pmi->root );
 
 		oldroot = -1;
 		for ( i=0; i < MenuObjects[objidx].MenuItemsCount; i++ ) {
