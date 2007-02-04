@@ -137,7 +137,7 @@ static BOOL CALLBACK DlgProcVisibilityOpts(HWND hwndDlg, UINT msg, WPARAM wParam
 			TranslateDialogDefault(hwndDlg);
 			{	HIMAGELIST hIml;
 				hIml=ImageList_Create(GetSystemMetrics(SM_CXSMICON),GetSystemMetrics(SM_CYSMICON),(IsWinVerXPPlus()?ILC_COLOR32:ILC_COLOR16)|ILC_MASK,3,3);
-				ImageList_AddIcon_NotShared(hIml,MAKEINTRESOURCE(IDI_SMALLDOT));
+				ImageList_AddIcon_IconLibLoaded(hIml,SKINICON_OTHER_SMALLDOT);
 				ImageList_AddIcon_IconLibLoaded(hIml,SKINICON_STATUS_INVISIBLE);
 				ImageList_AddIcon_IconLibLoaded(hIml,SKINICON_STATUS_OFFLINE);
 				SendDlgItemMessage(hwndDlg,IDC_LIST,CLM_SETEXTRAIMAGELIST,0,(LPARAM)hIml);

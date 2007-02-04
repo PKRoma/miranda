@@ -75,36 +75,36 @@ int LoadHelpModule(void)
 	CreateServiceFunction("Help/BugCommand",BugCommand);
 
 	mi.cbSize = sizeof(mi);
-	mi.hIcon = LoadIconEx(GetModuleHandle(NULL),MAKEINTRESOURCE(IDI_MIRANDA),0);
+	mi.hIcon = LoadSkinnedIcon(SKINICON_OTHER_MIRANDA);
 	mi.pszPopupName = "&Help";
 	mi.popupPosition = 2000090000;
 	mi.position = 2000090000;
 	mi.pszName = "&About...";
 	mi.pszService = "Help/AboutCommand";
 	CallService(MS_CLIST_ADDMAINMENUITEM,0,(LPARAM)&mi);
-	Safe_DestroyIcon(mi.hIcon);
+	IconLib_ReleaseIcon(mi.hIcon, 0);
 
-	mi.hIcon = LoadIconEx(GetModuleHandle(NULL),MAKEINTRESOURCE(IDI_HELP),FALSE);
+	mi.hIcon =  LoadSkinnedIcon(SKINICON_OTHER_HELP);
 	mi.position = -500050000;
 	mi.pszName = "&Support\tF1";
 	mi.hotKey = MAKELPARAM(0,VK_F1);
 	mi.pszService = "Help/IndexCommand";
 	CallService(MS_CLIST_ADDMAINMENUITEM,0,(LPARAM)&mi);
-	Safe_DestroyIcon(mi.hIcon);
+	IconLib_ReleaseIcon(mi.hIcon, 0);
 
-	mi.hIcon = LoadIconEx(GetModuleHandle(NULL),MAKEINTRESOURCE(IDI_MIRANDAWEBSITE),FALSE);
+	mi.hIcon =  LoadSkinnedIcon(SKINICON_OTHER_MIRANDAWEB);
 	mi.position = 2000050000;
 	mi.pszName = "&Miranda IM Homepage";
 	mi.hotKey = 0;
 	mi.pszService = "Help/WebsiteCommand";
 	CallService(MS_CLIST_ADDMAINMENUITEM,0,(LPARAM)&mi);
-	Safe_DestroyIcon(mi.hIcon);
+	IconLib_ReleaseIcon(mi.hIcon, 0);
 
-	mi.hIcon = LoadIconEx(GetModuleHandle(NULL),MAKEINTRESOURCE(IDI_URL),FALSE);
+	mi.hIcon = LoadSkinnedIcon(SKINICON_EVENT_URL);
 	mi.position = 2000040000;
 	mi.pszName = "&Report Bug";
 	mi.pszService = "Help/BugCommand";
 	CallService(MS_CLIST_ADDMAINMENUITEM,0,(LPARAM)&mi);
-	Safe_DestroyIcon(mi.hIcon);
+	IconLib_ReleaseIcon(mi.hIcon, 0);
 	return 0;
 }

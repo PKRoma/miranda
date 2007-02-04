@@ -332,6 +332,7 @@ static LRESULT CALLBACK MButtonWndProc(HWND hwndDlg, UINT msg,  WPARAM wParam, L
 					}
 				}
 				LeaveCriticalSection(&csTips);
+				if (bct->arrow) IconLib_ReleaseIcon(bct->arrow, 0);
 				DestroyTheme(bct);
 				mir_free(bct);
 			}
@@ -354,6 +355,17 @@ static LRESULT CALLBACK MButtonWndProc(HWND hwndDlg, UINT msg,  WPARAM wParam, L
 			}
 			break;
 		}
+		case WM_KEYUP:
+			if (bct->stateId!=PBS_DISABLED && wParam == VK_SPACE) {
+				if (bct->pushBtn) {
+					if (bct->pbState) bct->pbState = 0;
+					else bct->pbState = 1;
+					InvalidateRect(bct->hwnd, NULL, TRUE);
+				}
+				SendMessage(GetParent(hwndDlg), WM_COMMAND, MAKELONG(GetDlgCtrlID(hwndDlg), BN_CLICKED), (LPARAM)hwndDlg);
+				return 0;
+			}
+			break;
 		case WM_SYSKEYUP:
 			if (bct->stateId!=PBS_DISABLED && bct->cHot && bct->cHot == tolower((int)wParam)) {
 				if (bct->pushBtn) {
@@ -390,6 +402,11 @@ static LRESULT CALLBACK MButtonWndProc(HWND hwndDlg, UINT msg,  WPARAM wParam, L
 			break;
 		}
 		case BM_SETIMAGE:
+		{
+			HGDIOBJ hnd = NULL;
+			if (bct->hIcon) hnd = bct->hIcon;
+			else if (bct->hBitmap) hnd = bct->hBitmap;
+
 			if (wParam == IMAGE_ICON) {
 				bct->hIcon = (HICON)lParam;
 				bct->hBitmap = NULL;
@@ -400,7 +417,12 @@ static LRESULT CALLBACK MButtonWndProc(HWND hwndDlg, UINT msg,  WPARAM wParam, L
 				bct->hIcon = NULL;
 				InvalidateRect(bct->hwnd, NULL, TRUE);
 			}
-			break;
+			return (LRESULT)hnd;
+		}
+		case BM_GETIMAGE:
+			if (bct->hIcon) return (LRESULT)bct->hIcon;
+			else if (bct->hBitmap) return (LRESULT)bct->hBitmap;
+			else return 0;
 		case BM_SETCHECK:
 			if (!bct->pushBtn) break;
 			if (wParam == BST_CHECKED) {
@@ -421,11 +443,11 @@ static LRESULT CALLBACK MButtonWndProc(HWND hwndDlg, UINT msg,  WPARAM wParam, L
 		case BUTTONSETARROW: // turn arrow on/off
 			if (wParam) {
 				if (!bct->arrow)
-					bct->arrow = (HICON)LoadImage(GetModuleHandle(NULL),MAKEINTRESOURCE(IDI_DOWNARROW),IMAGE_ICON,GetSystemMetrics(SM_CXSMICON),GetSystemMetrics(SM_CYSMICON),0);
+					bct->arrow = LoadSkinnedIcon(SKINICON_OTHER_ADDCONTACT);
 			}
 			else {
 				if (bct->arrow) {
-					DestroyIcon(bct->arrow);
+					IconLib_ReleaseIcon(bct->arrow, 0);
 					bct->arrow = NULL;
 				}
 			}

@@ -81,11 +81,11 @@ int LoadSendRecvEMailModule(void)
 	mi.cbSize = sizeof(mi);
 	mi.position = -2000010000;
 	mi.flags = 0;
-	mi.hIcon = LoadIconEx(GetModuleHandle(NULL), MAKEINTRESOURCE(IDI_SENDEMAIL),FALSE);
+	mi.hIcon = LoadSkinnedIcon(SKINICON_OTHER_SENDEMAIL);
 	mi.pszName = "&E-mail";
 	mi.pszService = MS_EMAIL_SENDEMAIL;
 	hEMailMenuItem = (HANDLE)CallService(MS_CLIST_ADDCONTACTMENUITEM, 0, (LPARAM)&mi);
 	HookEvent(ME_CLIST_PREBUILDCONTACTMENU, EMailPreBuildMenu);
-	Safe_DestroyIcon(mi.hIcon);
+	IconLib_ReleaseIcon(mi.hIcon, 0);
 	return 0;
 }

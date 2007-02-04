@@ -272,7 +272,7 @@ static BOOL CALLBACK DlgProcFindAdd(HWND hwndDlg, UINT msg, WPARAM wParam, LPARA
 			HICON hIcon;
 
 			TranslateDialogDefault(hwndDlg);
-			SendMessage(hwndDlg, WM_SETICON, ICON_BIG, (LPARAM)LoadIcon(GetModuleHandle(NULL), MAKEINTRESOURCE(IDI_FINDUSER)));
+			Window_SetIcon_IcoLib(hwndDlg,SKINICON_OTHER_FINDUSER);
 			ListView_SetExtendedListViewStyle(GetDlgItem(hwndDlg,IDC_RESULTS),LVS_EX_FULLROWSELECT|LVS_EX_HEADERDRAGDROP);
 			dat=(struct FindAddDlgData*)mir_alloc(sizeof(struct FindAddDlgData));
 			SetWindowLong(hwndDlg,GWL_USERDATA,(LONG)dat);
@@ -352,7 +352,7 @@ static BOOL CALLBACK DlgProcFindAdd(HWND hwndDlg, UINT msg, WPARAM wParam, LPARA
 					cbei.pszText=TranslateT("All Networks");
 					GetTextExtentPoint32(hdc,cbei.pszText,lstrlen(cbei.pszText),&textSize);
 					if (textSize.cx>cbwidth) cbwidth = textSize.cx;                    
-					cbei.iImage=cbei.iSelectedImage=ImageList_AddIcon_NotShared(dat->himlComboIcons, MAKEINTRESOURCE(IDI_SEARCHALL));
+					cbei.iImage=cbei.iSelectedImage=ImageList_AddIcon_IconLibLoaded(dat->himlComboIcons, SKINICON_OTHER_SEARCHALL);
 					cbei.lParam=0;
 					SendDlgItemMessageA(hwndDlg,IDC_PROTOLIST,CBEM_INSERTITEM,0,(LPARAM)&cbei);
 					cbei.iItem++;
@@ -803,14 +803,15 @@ static BOOL CALLBACK DlgProcFindAdd(HWND hwndDlg, UINT msg, WPARAM wParam, LPARA
 			if(dat->hResultHook!=NULL) UnhookEvent(dat->hResultHook);
 			FreeSearchResults(GetDlgItem(hwndDlg,IDC_RESULTS));
 			ImageList_Destroy(dat->himlComboIcons);
-			if(dat->search) mir_free(dat->search);
+			mir_free(dat->search);
 			if(dat->hwndAdvSearch) {
 				DestroyWindow(dat->hwndAdvSearch);
 				dat->hwndAdvSearch=NULL;
 			}
 			DeleteObject(dat->hBmpSortDown);
 			DeleteObject(dat->hBmpSortUp);
-			mir_free(dat);			
+			mir_free(dat);
+			Window_FreeIcon_IcoLib(hwndDlg);
 			Utils_SaveWindowPosition(hwndDlg,NULL,"FindAdd","");
 			break;
 	}
@@ -876,25 +877,23 @@ static int OnSystemModulesLoaded(WPARAM wParam,LPARAM lParam)
 
 	// Make sure we have some networks to search on.
 	CallService(MS_PROTO_ENUMPROTOCOLS,(WPARAM)&protoCount,(LPARAM)&protos);
-	for(i=0,netProtoCount=0;i<protoCount;i++)
-		if(protos[i]->type==PROTOTYPE_PROTOCOL) {
-			int protoCaps=CallProtoService(protos[i]->szName, PS_GETCAPS, PFLAGNUM_1, 0);
-			if ( protoCaps&PF1_BASICSEARCH || protoCaps&PF1_SEARCHBYEMAIL || protoCaps&PF1_SEARCHBYNAME 
-				|| protoCaps&PF1_EXTSEARCHUI ) netProtoCount++;
+	for ( i=0, netProtoCount=0; i < protoCount; i++ )
+		if ( protos[i]->type == PROTOTYPE_PROTOCOL ) {
+			int protoCaps = CallProtoService( protos[i]->szName, PS_GETCAPS, PFLAGNUM_1, 0 );
+			if ( protoCaps & ( PF1_BASICSEARCH | PF1_SEARCHBYEMAIL | PF1_SEARCHBYNAME | PF1_EXTSEARCHUI ))
+				netProtoCount++;
 		}
 
-	if (netProtoCount > 0) {
+	if ( netProtoCount > 0 ) {
 		CLISTMENUITEM mi = { 0 };
 		mi.cbSize     = sizeof(mi);
 		mi.position   = 500020000;
-		mi.hIcon      = LoadIconEx(GetModuleHandle(NULL), MAKEINTRESOURCE(IDI_FINDUSER),FALSE);
+		mi.hIcon      = LoadSkinnedIcon(SKINICON_OTHER_FINDUSER);
 		mi.pszName    = "&Find/Add Contacts...";
 		mi.pszService = MS_FINDADD_FINDADD;
 		CallService(MS_CLIST_ADDMAINMENUITEM, 0, (LPARAM)&mi);
-		Safe_DestroyIcon(mi.hIcon);
+		IconLib_ReleaseIcon(mi.hIcon, 0);
 	}
 
 	return 0;
-
 }
-

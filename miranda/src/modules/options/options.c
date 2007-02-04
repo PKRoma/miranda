@@ -187,7 +187,7 @@ static BOOL CALLBACK OptionsDlgProc(HWND hdlg,UINT message,WPARAM wParam,LPARAM 
 
 		Utils_RestoreWindowPositionNoSize(hdlg, NULL, "Options", "");
 		TranslateDialogDefault(hdlg);
-		SendMessage(hdlg, WM_SETICON, ICON_BIG, (LPARAM)LoadIcon(GetModuleHandle(NULL),MAKEINTRESOURCE(IDI_OPTIONS)));
+		Window_SetIcon_IcoLib(hdlg, SKINICON_OTHER_OPTIONS);
 		CheckDlgButton(hdlg,IDC_EXPERT,DBGetContactSettingByte(NULL,"Options","Expert",SETTING_SHOWEXPERT_DEFAULT)?BST_CHECKED:BST_UNCHECKED);
 		EnableWindow(GetDlgItem(hdlg,IDC_APPLY),FALSE);
 		dat=(struct OptionsDlgData*)mir_alloc(sizeof(struct OptionsDlgData));
@@ -697,6 +697,7 @@ static BOOL CALLBACK OptionsDlgProc(HWND hdlg,UINT message,WPARAM wParam,LPARAM 
 		break;
 	case WM_DESTROY:
 		SaveOptionsTreeState( hdlg );
+		Window_FreeIcon_IcoLib( hdlg );
 		if ( dat->currentPage != -1 ) {
 			if ( dat->opd[dat->currentPage].pszTab )
 				DBWriteContactSettingTString( NULL, "Options", "LastTab", dat->opd[dat->currentPage].pszTab );
@@ -858,12 +859,12 @@ static int OptModulesLoaded(WPARAM wParam,LPARAM lParam)
 	CLISTMENUITEM mi = { 0 };
 	mi.cbSize = sizeof(mi);
 	mi.flags = 0;
-	mi.hIcon = LoadIconEx(GetModuleHandle(NULL),MAKEINTRESOURCE(IDI_OPTIONS),FALSE);
+	mi.hIcon = LoadSkinnedIcon(SKINICON_OTHER_OPTIONS);
 	mi.position = 1900000000;
 	mi.pszName = "&Options...";
 	mi.pszService = "Options/OptionsCommand";
 	CallService(MS_CLIST_ADDMAINMENUITEM,0,(LPARAM)&mi);
-	Safe_DestroyIcon(mi.hIcon);
+	IconLib_ReleaseIcon(mi.hIcon, 0);
 	return 0;
 }
 

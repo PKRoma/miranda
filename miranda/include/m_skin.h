@@ -45,6 +45,26 @@ __inline static HICON LoadSkinnedIcon(int id) {return (HICON)CallService(MS_SKIN
 #define SKINICON_OTHER_USERONLINE   204     //v0.1.0.1+
 #define SKINICON_OTHER_GROUPSHUT    205		//v0.1.1.0+
 #define SKINICON_OTHER_CONNECTING   206     //v0.1.0.1+
+#define SKINICON_OTHER_ADDCONTACT   207     //v0.7.0.2+
+#define SKINICON_OTHER_USERDETAILS  208     //v0.7.0.2+
+#define SKINICON_OTHER_HISTORY      209     //v0.7.0.2+
+#define SKINICON_OTHER_DOWNARROW    210     //v0.7.0.2+
+#define SKINICON_OTHER_FINDUSER     211     //v0.7.0.2+
+#define SKINICON_OTHER_OPTIONS      212     //v0.7.0.2+
+#define SKINICON_OTHER_SENDEMAIL    213     //v0.7.0.2+
+#define SKINICON_OTHER_DELETE       214     //v0.7.0.2+
+#define SKINICON_OTHER_RENAME       215     //v0.7.0.2+
+#define SKINICON_OTHER_SMS          216     //v0.7.0.2+
+#define SKINICON_OTHER_SEARCHALL    217     //v0.7.0.2+
+#define SKINICON_OTHER_TICK         218     //v0.7.0.2+
+#define SKINICON_OTHER_NOTICK       219     //v0.7.0.2+
+#define SKINICON_OTHER_HELP         220     //v0.7.0.2+
+#define SKINICON_OTHER_MIRANDAWEB   221     //v0.7.0.2+
+#define SKINICON_OTHER_TYPING       222     //v0.7.0.2+
+#define SKINICON_OTHER_SMALLDOT     223     //v0.7.0.2+
+#define SKINICON_OTHER_FILLEDBLOB   224     //v0.7.0.2+
+#define SKINICON_OTHER_EMPTYBLOB    225     //v0.7.0.2+
+
 //menu icons are owned by the module that uses them so are not and should not
 //be skinnable. Except exit and show/hide
 
@@ -142,5 +162,6 @@ __inline static int SkinPlaySound(const char *name) {return CallService(MS_SKIN_
 // Skin/LoadNetworkAnim - get some silly spinner thing when we want to be busy
 
 #endif //M_SKIN_H__
+
 
 

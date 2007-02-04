@@ -57,7 +57,7 @@ static BOOL CALLBACK ReadAwayMsgDlgProc(HWND hwndDlg,UINT message,WPARAM wParam,
 				GetDlgItemText(hwndDlg,IDC_RETRIEVING,format,SIZEOF(format));
 				mir_sntprintf(str,SIZEOF(str),format,status);
 				SetDlgItemText(hwndDlg,IDC_RETRIEVING,str);
-				SendMessage(hwndDlg, WM_SETICON, ICON_BIG, (LPARAM)LoadSkinnedProtoIcon(szProto, dwStatus));
+				Window_SetProtoIcon_IcoLib(hwndDlg, szProto, dwStatus);
 			}
 			return TRUE;
 		case HM_AWAYMSG:
@@ -85,8 +85,10 @@ static BOOL CALLBACK ReadAwayMsgDlgProc(HWND hwndDlg,UINT message,WPARAM wParam,
 			DestroyWindow(hwndDlg);
 			break;
 		case WM_DESTROY:
-			if(dat->hAwayMsgEvent!=NULL) UnhookEvent(dat->hAwayMsgEvent);
+			if ( dat->hAwayMsgEvent != NULL )
+				UnhookEvent(dat->hAwayMsgEvent);
 			WindowList_Remove(hWindowList,hwndDlg);
+			Window_FreeIcon_IcoLib(hwndDlg);
 			mir_free(dat);
 			break;
 	}

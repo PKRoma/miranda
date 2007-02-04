@@ -35,14 +35,33 @@ struct StandardIconDescription
 
 struct StandardIconDescription mainIcons[] =
 {
-	{ SKINICON_OTHER_MIRANDA,    "Miranda IM",      -IDI_MIRANDA    },
-	{ SKINICON_EVENT_MESSAGE,    "Message",         -IDI_RECVMSG    },
-	{ SKINICON_EVENT_URL,        "URL",             -IDI_URL        },
-	{ SKINICON_EVENT_FILE,       "File",            -IDI_FILE       },
-	{ SKINICON_OTHER_USERONLINE, "User Online",     -IDI_USERONLINE },
-	{ SKINICON_OTHER_GROUPOPEN,  "Group (Open)",    -IDI_GROUPOPEN  },
-	{ SKINICON_OTHER_GROUPSHUT,  "Group (Closed)",  -IDI_GROUPSHUT  },
-	{ SKINICON_OTHER_CONNECTING, "Connecting",      -IDI_LOAD       }
+	{ SKINICON_OTHER_MIRANDA,     "Miranda IM",      -IDI_MIRANDA        },
+	{ SKINICON_EVENT_MESSAGE,     "Message",         -IDI_RECVMSG        },
+	{ SKINICON_EVENT_URL,         "URL",             -IDI_URL            },
+	{ SKINICON_EVENT_FILE,        "File",            -IDI_FILE           },
+	{ SKINICON_OTHER_USERONLINE,  "User Online",     -IDI_USERONLINE     },
+	{ SKINICON_OTHER_GROUPOPEN,   "Group (Open)",    -IDI_GROUPOPEN      },
+	{ SKINICON_OTHER_GROUPSHUT,   "Group (Closed)",  -IDI_GROUPSHUT      },
+	{ SKINICON_OTHER_CONNECTING,  "Connecting",      -IDI_LOAD           },
+	{ SKINICON_OTHER_ADDCONTACT,  "Add Contact",     -IDI_ADDCONTACT     },
+	{ SKINICON_OTHER_USERDETAILS, "User Details",    -IDI_USERDETAILS    },
+	{ SKINICON_OTHER_HISTORY,     "History",         -IDI_HISTORY        },
+	{ SKINICON_OTHER_DOWNARROW,   "Down Arrow",      -IDI_DOWNARROW      },
+	{ SKINICON_OTHER_FINDUSER,    "Find User",       -IDI_FINDUSER       },
+	{ SKINICON_OTHER_OPTIONS,     "Options",         -IDI_OPTIONS        },
+	{ SKINICON_OTHER_SENDEMAIL,   "Send E-mail",     -IDI_SENDEMAIL      },
+	{ SKINICON_OTHER_DELETE,      "Delete",          -IDI_DELETE         },
+	{ SKINICON_OTHER_RENAME,      "Rename",          -IDI_RENAME         },
+	{ SKINICON_OTHER_SMS,         "SMS",             -IDI_SMS            },
+	{ SKINICON_OTHER_SEARCHALL,   "Search All",      -IDI_SEARCHALL      },
+	{ SKINICON_OTHER_TICK,        "Tick",            -IDI_TICK           },
+	{ SKINICON_OTHER_NOTICK,      "No Tick",         -IDI_NOTICK         },
+	{ SKINICON_OTHER_HELP,        "Help",            -IDI_HELP           },
+	{ SKINICON_OTHER_MIRANDAWEB,  "Miranda Website", -IDI_MIRANDAWEBSITE },
+	{ SKINICON_OTHER_TYPING,      "Typing",          -IDI_TYPING         },
+	{ SKINICON_OTHER_SMALLDOT,    "Small Dot",       -IDI_SMALLDOT       },
+	{ SKINICON_OTHER_FILLEDBLOB,  "Filled Blob",     -IDI_FILLEDBLOB     },
+	{ SKINICON_OTHER_EMPTYBLOB,   "Empty Blob",      -IDI_EMPTYBLOB      },
 };
 
 struct StandardIconDescription statusIcons[] =
@@ -124,7 +143,7 @@ int ImageList_AddIcon_IconLibLoaded(HIMAGELIST hIml, int iconId)
 	return res;
 }
 
-int ImageList_AddIcon_ProtoIconLibLoaded(HIMAGELIST hIml, const char* szProto, int iconId) 
+int ImageList_AddIcon_ProtoIconLibLoaded(HIMAGELIST hIml, const char* szProto, int iconId)
 {  
 	HICON hIcon = LoadSkinnedProtoIcon( szProto, iconId );
 	int res=ImageList_AddIcon(hIml, hIcon);
@@ -146,6 +165,39 @@ int ImageList_ReplaceIcon_IconLibLoaded(HIMAGELIST hIml, int nIndex, HICON hIcon
 	IconLib_ReleaseIcon(hIcon,0);
 	return res;
 }
+
+void Window_SetIcon_IcoLib(HWND hWnd, int iconId)
+{
+	HICON hIcon = LoadSkinnedIcon( iconId );
+	SendMessage(hWnd, WM_SETICON, ICON_BIG, ( LPARAM )hIcon);
+}
+
+void Window_SetProtoIcon_IcoLib(HWND hWnd, const char* szProto, int iconId)
+{
+	HICON hIcon = LoadSkinnedProtoIcon( szProto, iconId );
+	SendMessage(hWnd, WM_SETICON, ICON_BIG, ( LPARAM )hIcon);
+}
+
+void Window_FreeIcon_IcoLib(HWND hWnd)
+{
+	HICON hIcon = ( HICON )SendMessage(hWnd, WM_SETICON, ICON_BIG, ( LPARAM )NULL);
+	IconLib_ReleaseIcon(hIcon, 0);
+}
+
+void Button_SetIcon_IcoLib(HWND hwndDlg, int itemId, int iconId, const char* tooltip)
+{
+	HWND hWnd = GetDlgItem( hwndDlg, itemId );
+	SendMessage( hWnd, BM_SETIMAGE, IMAGE_ICON, ( LPARAM )LoadSkinnedIcon( iconId ));
+	SendMessage( hWnd, BUTTONSETASFLATBTN, 0, 0 );
+	SendMessage( hWnd, BUTTONADDTOOLTIP, (WPARAM)Translate(tooltip), 0);
+}
+
+void Button_FreeIcon_IcoLib(HWND hwndDlg, int itemId)
+{
+	HICON hIcon = ( HICON )SendDlgItemMessage(hwndDlg, itemId, BM_SETIMAGE, IMAGE_ICON, 0 );
+	IconLib_ReleaseIcon(hIcon,0);
+}
+
 //
 //  wParam = szProto
 //  lParam = status

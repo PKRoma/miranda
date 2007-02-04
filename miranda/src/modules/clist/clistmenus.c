@@ -983,10 +983,10 @@ int MenuModulesLoaded(WPARAM wParam,LPARAM lParam)
 			tmi.hIcon=(HICON)CallProtoService(proto[i]->szName,PS_LOADICON,PLI_PROTOCOL|PLIF_SMALL,0);
 			ic = tmi.hIcon;
 			tmi.root = -1;
-
 			CallProtoService(proto[i]->szName,PS_GETNAME,sizeof(protoName),(LPARAM)protoName);
 			tmi.pszName = protoName;
 			rootmenu = MO_AddNewMenuItem( hStatusMenuObject, &tmi );
+
 			memset(&tmi,0,sizeof(tmi));
 			tmi.cbSize = sizeof(tmi);
 			tmi.flags = CMIF_CHILDPOPUP;

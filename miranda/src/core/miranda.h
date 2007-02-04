@@ -63,5 +63,12 @@ int ImageList_AddIcon_IconLibLoaded(HIMAGELIST hIml, int iconId);
 int ImageList_AddIcon_ProtoIconLibLoaded(HIMAGELIST hIml, const char* szProto, int iconId);
 int ImageList_ReplaceIcon_IconLibLoaded(HIMAGELIST hIml, int nIndex, HICON hIcon);
 
+void Button_SetIcon_IcoLib(HWND hDlg, int itemId, int iconId, const char* tooltip);
+void Button_FreeIcon_IcoLib(HWND hDlg, int itemId);
+
+void Window_SetIcon_IcoLib(HWND hWnd, int iconId);
+void Window_SetProtoIcon_IcoLib(HWND hWnd, const char* szProto, int iconId);
+void Window_FreeIcon_IcoLib(HWND hWnd);
+
 #define IconLib_ReleaseIcon(hIcon, szName) CallService(MS_SKIN2_RELEASEICON,(WPARAM)hIcon, (LPARAM)szName)
 #define Safe_DestroyIcon(hIcon) if (hIcon) DestroyIcon(hIcon)
