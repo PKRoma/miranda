@@ -254,7 +254,7 @@ static int LoadSkinProtoIcon(WPARAM wParam,LPARAM lParam)
 	// format: core_status_%s%d
 	mir_snprintf(iconName, SIZEOF(iconName), "%s%s%d", statusIconsFmt, szProto, statusIndx);
 	hIcon = (HICON)IcoLib_GetIcon(0, (LPARAM)iconName);
-	if ( hIcon == NULL ) {
+	if ( hIcon == NULL && ( caps2 == 0 || ( caps2 & statusIcons[statusIndx].pf2 ))) {
 		char szPath[MAX_PATH], szFullPath[MAX_PATH],*str;
 		char iconId[MAX_PATH];
 		SKINICONDESC sid = { 0 };
@@ -275,17 +275,12 @@ static int LoadSkinProtoIcon(WPARAM wParam,LPARAM lParam)
 		if ( GetFileAttributesA( szFullPath ) != INVALID_FILE_ATTRIBUTES )
 			sid.pszDefaultFile = szFullPath;
 		else {
-			for ( i = 0; i < SIZEOF(statusIcons); i++ )
-				if ( statusIcons[i].id == lParam )
-					break;
-
-			if ( i < SIZEOF( statusIcons )) {
-				mir_snprintf( szFullPath, SIZEOF(szFullPath), "%s\\Plugins\\%s.dll", szPath, szProto );
-				if (( int )ExtractIconExA( szFullPath, statusIcons[i].resource_id, NULL, &hIcon, 1 ) > 0 ) {
-					DestroyIcon( hIcon );
-					sid.pszDefaultFile = szFullPath;
-					hIcon = NULL;
-			}	}
+			mir_snprintf( szFullPath, SIZEOF(szFullPath), "%s\\Plugins\\%s.dll", szPath, szProto );
+			if (( int )ExtractIconExA( szFullPath, statusIcons[i].resource_id, NULL, &hIcon, 1 ) > 0 ) {
+				DestroyIcon( hIcon );
+				sid.pszDefaultFile = szFullPath;
+				hIcon = NULL;
+			}
 
 			if ( sid.pszDefaultFile == NULL ) {
 				if ( str != NULL )
