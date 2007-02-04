@@ -363,6 +363,8 @@ static int IcoLib_ReleaseIcon(WPARAM wParam, LPARAM lParam)
 		item->ref_count--;
 		if (!iconEventActive && !item->ref_count && item->icon != item->default_icon)
 			SafeDestroyIcon(&item->icon);
+		LeaveCriticalSection(&csIconList);
+		return 1;
 	}
 
 	LeaveCriticalSection(&csIconList);

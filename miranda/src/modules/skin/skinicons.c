@@ -349,7 +349,7 @@ static int LoadSkinIcon(WPARAM wParam, LPARAM lParam)
 			strcpy(iconName, mainIconsFmt);
 			itoa(i, iconName + strlen(iconName), 10);
 			return (int)IcoLib_GetIcon(0, (LPARAM)iconName);
-		}	}
+	}	}
 
 	return (int)NULL;
 }
