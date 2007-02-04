@@ -187,9 +187,7 @@ static bool sttSetAvatar( HWND hwndDlg )
 	}
 
 	MSN_SaveBitmapAsAvatar( hAvatar = hBitmap, szFileName );
-
-	if ( msnLoggedIn )
-		MSN_SetServerStatus( msnStatusMode );
+	MSN_SetServerStatus( msnStatusMode );
 
 	return true;
 }

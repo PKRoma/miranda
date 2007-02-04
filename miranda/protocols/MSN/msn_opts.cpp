@@ -96,7 +96,6 @@ void __stdcall ReleaseIconEx( const char* name )
 // External data declarations
 
 extern unsigned long sl;
-extern char *rru;
 
 static BOOL (WINAPI *pfnEnableThemeDialogTexture)(HANDLE, DWORD) = 0;
 
@@ -763,9 +762,11 @@ LRESULT CALLBACK NullWindowProc( HWND hWnd, UINT message, WPARAM wParam, LPARAM 
 
 		case UM_FREEPLUGINDATA:	{
 			PopupData* tData = ( PopupData* )PUGetPluginData( hWnd );
-			if ( tData != NULL ) 
+			if ( tData != NULL && tData != (void*)CALLSERVICE_NOTFOUND)
+			{
 				CallService( MS_SKIN2_RELEASEICON, (WPARAM)tData->hIcon, 0 );
-			mir_free( tData );
+				mir_free( tData );
+			}
 			break;
 		}
 	}

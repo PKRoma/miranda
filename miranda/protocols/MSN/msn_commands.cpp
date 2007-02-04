@@ -658,7 +658,7 @@ void MSN_ReceiveMessage( ThreadData* info, char* cmdString, char* params )
 			if ( hContact != NULL )
 				strcpy( userNick, MSN_GetContactName( hContact ));
 
-			MSN_CallService( MS_PROTO_CONTACTISTYPING, WPARAM( hContact ), 5 );
+			MSN_CallService( MS_PROTO_CONTACTISTYPING, WPARAM( hContact ), 6 );
 
 			if ( MSN_GetByte( "DisplayTyping", 0 ))
 				MSN_ShowPopup( userNick, MSN_Translate( "typing..." ), 0 );
@@ -1137,28 +1137,34 @@ LBL_InvalidCommand:
 				info->sendCaps();
 				if ( info->mJoinedCount == 1 ) {
 					MsgQueueEntry E;
+					bool msgExist = false, typing = false;
 					HANDLE hContact = info->mJoinedContacts[0];
-					if ( MsgQueue_GetNext( hContact, E ) != 0 ) {
-						do {
-							if ( E.msgType != 'X' ) {
-								if ( E.msgSize == 0 ) {
-									info->sendMessage( E.msgType, E.message, E.flags );
-									MSN_SendBroadcast( hContact, ACKTYPE_MESSAGE, ACKRESULT_SUCCESS, ( HANDLE )E.seq, 0 );
-								}
-								else info->sendRawMessage( E.msgType, E.message, E.msgSize );
-							}
+					
+					while (MsgQueue_GetNext( hContact, E ) != 0 ) 
+					{
+						if ( E.msgType == 'X' ) continue;
 
-							mir_free( E.message );
-
-							if ( E.ft != NULL ) {
-								info->mMsnFtp = E.ft;
-							}
+						if ( E.msgType == 2571 ) 
+							typing = E.flags != 0; 
+						else if ( E.msgSize == 0 ) {
+							info->sendMessage( E.msgType, E.message, E.flags );
+							MSN_SendBroadcast( hContact, ACKTYPE_MESSAGE, ACKRESULT_SUCCESS, ( HANDLE )E.seq, 0 );
 						}
-							while (MsgQueue_GetNext( hContact, E ) != 0 );
+						else info->sendRawMessage( E.msgType, E.message, E.msgSize );
 
-						if ( MSN_GetByte( "EnableDeliveryPopup", 1 ))
+						mir_free( E.message );
+						msgExist = true;
+
+						if ( E.ft != NULL )
+							info->mMsnFtp = E.ft;
+					}
+
+					if ( typing )
+						MSN_StartStopTyping( info, true );
+
+					if ( msgExist && MSN_GetByte( "EnableDeliveryPopup", 1 ))
 							MSN_ShowPopup( MSN_GetContactName( hContact ), MSN_Translate( "First message delivered" ), 0 );
-			}	}	}
+			}	}
 
 			break;
 
@@ -1281,9 +1287,12 @@ LBL_InvalidCommand:
 			int oldMode = msnStatusMode;
 			msnStatusMode = MSNStatusToMiranda( params );
 
-			MSN_SendBroadcast( NULL, ACKTYPE_STATUS, ACKRESULT_SUCCESS,( HANDLE )oldMode, msnStatusMode );
-			MSN_DebugLog( "Status change acknowledged: %s", params );
-			MSN_RemoveEmptyGroups();
+			if ( msnStatusMode != ID_STATUS_IDLE )
+			{
+				MSN_SendBroadcast( NULL, ACKTYPE_STATUS, ACKRESULT_SUCCESS,( HANDLE )oldMode, msnStatusMode );
+				MSN_DebugLog( "Status change acknowledged: %s", params );
+				MSN_RemoveEmptyGroups();
+			}
 			break;
 		}
 		case ' LHC':    //********* CHL: Query from Server on MSNP7
@@ -1352,6 +1361,7 @@ LBL_InvalidCommand:
 			if (( hContact = MSN_HContactFromEmail( params, NULL, 0, 0 )) != NULL )
 			{
 				MSN_SetWord( hContact, "Status", ID_STATUS_OFFLINE );
+				MSN_SetDword( hContact, "IdleTS", 0 );
 				MsgQueue_Clear( hContact );
 			}
 			break;
@@ -1399,6 +1409,7 @@ LBL_InvalidCommand:
 				MSN_SetStringUtf( hContact, "Nick", data.userNick );
 				lastStatus = MSN_GetWord( hContact, "Status", ID_STATUS_OFFLINE);
 				MSN_SetWord( hContact, "Status", ( WORD )MSNStatusToMiranda( data.userStatus ));
+				MSN_SetDword( hContact, "IdleTS", strcmp( data.userStatus, "IDL" ) ? 0 : time( NULL ));
 			}
 
 			if ( lastStatus == ID_STATUS_OFFLINE )
@@ -1530,27 +1541,34 @@ LBL_InvalidCommand:
 			if ( MSN_ContactJoined( info, hContact ) == 1 ) {
 				info->sendCaps();
 				MsgQueueEntry E;
-				if ( MsgQueue_GetNext( hContact, E ) != 0 ) {
-					do {
-						if ( E.msgType != 'X' ) {
-							if ( E.msgSize == 0 ) {
-								info->sendMessage( E.msgType, E.message, E.flags );
-								MSN_SendBroadcast( hContact, ACKTYPE_MESSAGE, ACKRESULT_SUCCESS, ( HANDLE )E.seq, 0 );
-							}
-							else info->sendRawMessage( E.msgType, E.message, E.msgSize );
-						}
 
-						mir_free( E.message );
+				bool msgExist = false, typing = false;
+				
+				while (MsgQueue_GetNext( hContact, E ) != 0 ) 
+				{
+					if ( E.msgType == 'X' ) continue;
 
-						if ( E.ft != NULL ) {
-							info->mMsnFtp = E.ft;
-						}
+					if ( E.msgType == 2571 ) 
+						typing = E.flags != 0; 
+					else if ( E.msgSize == 0 ) {
+						info->sendMessage( E.msgType, E.message, E.flags );
+						MSN_SendBroadcast( hContact, ACKTYPE_MESSAGE, ACKRESULT_SUCCESS, ( HANDLE )E.seq, 0 );
 					}
-					while (MsgQueue_GetNext( hContact, E ) != 0 );
+					else info->sendRawMessage( E.msgType, E.message, E.msgSize );
 
-					if ( MSN_GetByte( "EnableDeliveryPopup", 1 ))
-						MSN_ShowPopup( MSN_GetContactName( hContact ), MSN_Translate( "First message delivered" ), 0 );
-			}	}
+					mir_free( E.message );
+					msgExist = true;
+
+					if ( E.ft != NULL )
+						info->mMsnFtp = E.ft;
+				}
+
+				if ( typing )
+					MSN_StartStopTyping( info, true );
+
+				if ( msgExist && MSN_GetByte( "EnableDeliveryPopup", 1 ))
+					MSN_ShowPopup( MSN_GetContactName( hContact ), MSN_Translate( "First message delivered" ), 0 );
+			}
 			else {
 				bool chatCreated = info->mChatID[0] != 0;
 

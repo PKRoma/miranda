@@ -62,16 +62,16 @@ char* __stdcall MirandaStatusToMSN( int status )
 		case ID_STATUS_ONTHEPHONE: return "PHN";
 		case ID_STATUS_OUTTOLUNCH: return "LUN";
 		case ID_STATUS_INVISIBLE:	return "HDN";
-//		case ID_STATUS_IDLE:			return "IDL";
+		case ID_STATUS_IDLE:			return "IDL";
 		default:							return "NLN";
 }	}
 
 int __stdcall MSNStatusToMiranda(const char *status)
 {
 	switch((*(PDWORD)status&0x00FFFFFF)|0x20000000) {
+		case ' LDI': //return ID_STATUS_IDLE;
 		case ' NLN': return ID_STATUS_ONLINE;
 		case ' YWA': return ( MyOptions.AwayAsBrb ) ? ID_STATUS_NA : ID_STATUS_AWAY;
-		case ' LDI': //return ID_STATUS_IDLE;
 		case ' BRB': return ( MyOptions.AwayAsBrb ) ? ID_STATUS_AWAY : ID_STATUS_NA;
 		case ' YSB': return ID_STATUS_OCCUPIED;
 		case ' NHP': return ID_STATUS_ONTHEPHONE;
@@ -294,8 +294,10 @@ void __stdcall	MSN_GoOffline()
 	while ( hContact != NULL )
 	{
 		if ( !lstrcmpA( msnProtocolName, (char*)MSN_CallService( MS_PROTO_GETCONTACTBASEPROTO, ( WPARAM )hContact, 0 )))
-			if ( ID_STATUS_OFFLINE != MSN_GetWord( hContact, "Status", ID_STATUS_OFFLINE ))
+			if ( ID_STATUS_OFFLINE != MSN_GetWord( hContact, "Status", ID_STATUS_OFFLINE )) {
 				MSN_SetWord( hContact, "Status", ID_STATUS_OFFLINE );
+				MSN_SetDword( hContact, "IdleTS", 0 );
+			}
 
 		hContact = ( HANDLE )MSN_CallService( MS_DB_CONTACT_FINDNEXT, ( WPARAM )hContact, 0 );
 }	}
@@ -424,6 +426,43 @@ int __stdcall MSN_SendNicknameW( WCHAR* nickname)
 	mir_free( nickutf );
 	return 0;
 }
+
+// Typing notifications support
+
+void MSN_SendTyping( ThreadData* info  )
+{
+	char tCommand[ 1024 ];
+	mir_snprintf( tCommand, sizeof( tCommand ),
+		"Content-Type: text/x-msmsgscontrol\r\n"
+		"TypingUser: %s\r\n\r\n\r\n", MyOptions.szEmail );
+
+	info->sendMessage( 'U', tCommand, MSG_DISABLE_HDR );
+}
+
+
+static VOID CALLBACK TypingTimerProc(HWND hwnd, UINT uMsg, UINT_PTR idEvent, DWORD dwTime) 
+{
+	ThreadData* T = MSN_GetThreadByTimer( idEvent );
+	if ( T != NULL )
+		MSN_SendTyping( T );
+	else
+		KillTimer( NULL, idEvent );
+}	
+
+
+void __stdcall MSN_StartStopTyping( ThreadData* info, bool start )
+{
+	if ( start && info->mTimerId == 0 ) {
+		info->mTimerId = SetTimer(NULL, NULL, 5000, TypingTimerProc);
+		MSN_SendTyping( info );
+	}
+	else if ( !start && info->mTimerId != 0 ) {
+			KillTimer( NULL, info->mTimerId );
+			info->mTimerId = 0;
+	}
+}
+
+
 
 /////////////////////////////////////////////////////////////////////////////////////////
 // MSN_SendStatusMessage - notify a server about the status message change
@@ -554,19 +593,20 @@ void __stdcall MSN_SetServerStatus( int newStatus )
 	if ( !msnLoggedIn )
 		return;
 
-	char* szStatusName = MirandaStatusToMSN( newStatus );
+	char* szStatusName = MirandaStatusToMSN( newStatus  );
 
 	if ( newStatus != ID_STATUS_OFFLINE ) {
 		char szMsnObject[ 1000 ];
-		if ( MSN_GetStaticString( "PictObject", NULL, szMsnObject, sizeof szMsnObject ))
+		if ( MSN_GetStaticString( "PictObject", NULL, szMsnObject, sizeof( szMsnObject )))
 			szMsnObject[ 0 ] = 0;
 
 		//here we say what functions can be used with this plugins : http://siebe.bot2k3.net/docs/?url=clientid.html
 		msnNsThread->sendPacket( "CHG", "%s 1342177280 %s", szStatusName, szMsnObject );
 
 		if ( MyOptions.UseMSNP11 ) {
+			int status = newStatus == ID_STATUS_IDLE ? ID_STATUS_ONLINE : newStatus;
 			for ( int i=0; i < MSN_NUM_MODES; i++ ) { 
-				if ( msnModeMsgs[ i ].m_mode == newStatus ) {
+				if ( msnModeMsgs[ i ].m_mode == status ) {
 					MSN_SendStatusMessage( msnModeMsgs[ i ].m_msg );
 					break;
 		}	}	}

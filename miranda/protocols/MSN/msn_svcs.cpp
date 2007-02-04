@@ -324,7 +324,25 @@ int MsnDbSettingChanged(WPARAM wParam,LPARAM lParam)
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////
-// MsnWindowEvent - goes to the Profile section at the Hotmail.com
+// MsnWindowEvent - creates session on window open
+
+int MsnIdleChanged(WPARAM wParam, LPARAM lParam)
+{
+	if ( !msnLoggedIn || msnDesiredStatus != ID_STATUS_ONLINE )
+		return 0;
+
+    if ( lParam & IDF_PRIVACY ) {
+		if ( msnStatusMode == ID_STATUS_IDLE )
+			MSN_SetServerStatus( ID_STATUS_ONLINE );
+	}
+    else 
+		MSN_SetServerStatus( lParam & IDF_ISIDLE ? ID_STATUS_IDLE : ID_STATUS_ONLINE );
+
+	return 0;
+}
+
+/////////////////////////////////////////////////////////////////////////////////////////
+// MsnWindowEvent - creates session on window open
 
 int MsnWindowEvent(WPARAM wParam, LPARAM lParam)
 {
@@ -642,7 +660,7 @@ static int MsnGetCaps(WPARAM wParam,LPARAM lParam)
 
 static void sttInfoAck( HANDLE hContact )
 {
-	Sleep( 100 );
+	Sleep( 150 );
 	MSN_SendBroadcast( hContact, ACKTYPE_GETINFO, ACKRESULT_SUCCESS, ( HANDLE )1, 0 );
 }
 
@@ -927,7 +945,7 @@ static int MsnSendNudge( WPARAM wParam, LPARAM lParam )
 		MsgQueue_Add( hContact, 'N', msg, -1 );
 	}
 	else
-		thread->sendPacket( "MSG",msg);
+		thread->sendPacket( "MSG", msg );
 	return 0;
 }
 
@@ -961,8 +979,7 @@ int MsnSetAvatar( WPARAM wParam, LPARAM lParam )
 
 	MSN_SaveBitmapAsAvatar( hBitmap, (char *) lParam );
 	DeleteObject( hBitmap );
-	if ( msnLoggedIn )
-		MSN_SetServerStatus( msnStatusMode );
+	MSN_SetServerStatus( msnStatusMode );
 	return 0;
 }
 
@@ -1134,31 +1151,32 @@ extern char sttHeaderStart[];
 
 static int MsnUserIsTyping(WPARAM wParam, LPARAM lParam)
 {
-	if ( !msnLoggedIn || lParam == PROTOTYPE_SELFTYPING_OFF )
+	if ( !msnLoggedIn )
 		return 0;
 
 	HANDLE hContact = ( HANDLE )wParam;
-	WORD wStatus = MSN_GetWord( hContact, "Status", ID_STATUS_OFFLINE );
-	if ( wStatus == ID_STATUS_OFFLINE || msnStatusMode == ID_STATUS_INVISIBLE )
-		return 0;
 
 	char tEmail[ MSN_MAX_EMAIL_LEN ];
 	if ( !MSN_GetStaticString( "e-mail", hContact, tEmail, sizeof( tEmail )) && !strcmp( tEmail, MyOptions.szEmail ))
 		return 0;
 
-	char tCommand[ 1024 ];
-	mir_snprintf( tCommand, sizeof( tCommand ),
-		"Content-Type: text/x-msmsgscontrol\r\n"
-		"TypingUser: %s\r\n\r\n\r\n", MyOptions.szEmail );
-
 	ThreadData* T = MSN_GetThreadByContact( hContact );
+
+	bool typing = lParam == PROTOTYPE_SELFTYPING_ON;
+
 	if ( T == NULL ) {
-		if ( MsgQueue_CheckContact( hContact ) == NULL )
+		WORD wStatus = MSN_GetWord( hContact, "Status", ID_STATUS_OFFLINE );
+		if ( wStatus == ID_STATUS_OFFLINE || msnStatusMode == ID_STATUS_INVISIBLE )
+			return 0;
+
+		if ( typing && MsgQueue_CheckContact( hContact ) == NULL )
 			msnNsThread->sendPacket( "XFR", "SB" );
 
-		MsgQueue_Add( hContact, 'U', tCommand, -1 );
+		MsgQueue_Add( hContact, 2571, NULL, 0, NULL, typing );
 	}
-	else T->sendMessage( 'U', tCommand, MSG_DISABLE_HDR );
+	else 
+		MSN_StartStopTyping( T, typing );
+
 	return 0;
 }
 

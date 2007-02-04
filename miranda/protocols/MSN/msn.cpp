@@ -56,7 +56,6 @@ void		UninitSsl( void );
 /////////////////////////////////////////////////////////////////////////////////////////
 // Global variables
 
-int      uniqueEventId = 0;
 int      msnSearchID = -1;
 char*    msnExternalIP = NULL;
 char*    msnPreviousUUX = NULL;
@@ -106,8 +105,7 @@ bool			volatile msnLoggedIn = false;
 ThreadData*	volatile msnNsThread = NULL;
 
 int				msnStatusMode,
-					msnDesiredStatus;
-HANDLE			msnMenuItems[ MENU_ITEMS_COUNT ];
+				msnDesiredStatus;
 HANDLE			hNetlibUser = NULL;
 HANDLE			hInitChat = NULL;
 bool				msnUseExtendedPopups;
@@ -121,6 +119,8 @@ int MsnContactDeleted( WPARAM wParam, LPARAM lParam );
 int MsnDbSettingChanged(WPARAM wParam,LPARAM lParam);
 int MsnOnDetailsInit( WPARAM wParam, LPARAM lParam );
 int MsnRebuildContactMenu( WPARAM wParam, LPARAM lParam );
+int MsnIdleChanged( WPARAM wParam, LPARAM lParam );
+int MsnIconsChanged( WPARAM wParam, LPARAM lParam );
 
 int MSN_GCEventHook( WPARAM wParam, LPARAM lParam );
 int MSN_GCMenuHook( WPARAM wParam, LPARAM lParam );
@@ -251,7 +251,8 @@ static int OnModulesLoaded( WPARAM wParam, LPARAM lParam )
 	msnUseExtendedPopups = ServiceExists( MS_POPUP_ADDPOPUPEX ) != 0;
 	arHooks.insert( HookEvent( ME_USERINFO_INITIALISE, MsnOnDetailsInit ));
 	arHooks.insert( HookEvent( ME_MSG_WINDOWEVENT, MsnWindowEvent ));
-	//arHooks.insert( HookEvent( ME_SKIN2_ICONSCHANGED, MsnWindowEvent ));
+	arHooks.insert( HookEvent( ME_SKIN2_ICONSCHANGED, MsnIconsChanged ));
+	arHooks.insert( HookEvent( ME_IDLE_CHANGED, MsnIdleChanged ));
 	arHooks.insert( HookEvent( ME_DB_CONTACT_DELETED, MsnContactDeleted ));
 	arHooks.insert( HookEvent( ME_DB_CONTACT_SETTINGCHANGED, MsnDbSettingChanged ));
 	arHooks.insert( HookEvent( ME_CLIST_PREBUILDCONTACTMENU, MsnRebuildContactMenu ));
@@ -301,7 +302,10 @@ extern "C" int __declspec(dllexport) Load( PLUGINLINK* link )
 	mir_snprintf( path, sizeof( path ), "%s/Status", protocolname );
 	MSN_CallService( MS_DB_SETSETTINGRESIDENT, TRUE, ( LPARAM )path );
 
-//	Uninstalling purposes
+	mir_snprintf( path, sizeof( path ), "%s/IdleTS", protocolname );
+	MSN_CallService( MS_DB_SETSETTINGRESIDENT, TRUE, ( LPARAM )path );
+
+	//	Uninstalling purposes
 //	if (ServiceExists("PluginSweeper/Add"))
 //		MSN_CallService("PluginSweeper/Add",(WPARAM)MSN_Translate(ModuleName),(LPARAM)ModuleName);
 
@@ -353,9 +357,6 @@ extern "C" int __declspec(dllexport) Load( PLUGINLINK* link )
 
 /////////////////////////////////////////////////////////////////////////////////////////
 // Unload a plugin
-
-extern char* rru;
-extern char* profileURL;
 
 extern "C" int __declspec( dllexport ) Unload( void )
 {

@@ -23,8 +23,6 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 #include "msn_global.h"
 
-extern HANDLE msnBlockMenuItem;
-
 HANDLE __stdcall MSN_CreateProtoServiceFunction(
 	const char* szService,
 	MIRANDASERVICE serviceProc )
@@ -45,26 +43,6 @@ int __stdcall MSN_CallService( const char* szSvcName, WPARAM wParam, LPARAM lPar
 void __stdcall MSN_DeleteSetting( HANDLE hContact, const char* valueName )
 {
 	DBDeleteContactSetting( hContact, msnProtocolName, valueName );
-}
-
-void __stdcall MSN_EnableMenuItems( BOOL parEnable )
-{
-	CLISTMENUITEM clmi;
-	memset( &clmi, 0, sizeof( clmi ));
-	clmi.cbSize = sizeof( clmi );
-	clmi.flags = CMIM_FLAGS;
-	if ( !parEnable )
-		clmi.flags |= CMIF_GRAYED;
-
-	for ( int i=0; i < MENU_ITEMS_COUNT; i++ )
-	{
-		if ( msnMenuItems[i] == NULL )
-			continue;
-
-		MSN_CallService( MS_CLIST_MODIFYMENUITEM, ( WPARAM )msnMenuItems[i], ( LPARAM )&clmi );
-	}
-
-	MSN_CallService( MS_CLIST_MODIFYMENUITEM, ( WPARAM )msnBlockMenuItem, ( LPARAM )&clmi );
 }
 
 DWORD __stdcall MSN_GetByte( const char* valueName, int parDefltValue )
