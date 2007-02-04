@@ -74,6 +74,10 @@ cd ..\mwclist
 nmake /f mwclist.mak CFG="mwclist - Win32 Release Unicode"
 if errorlevel 1 goto :Error
 
+cd ..\scriver
+nmake /f scriver.mak CFG="scriver - Win32 Release Unicode"
+if errorlevel 1 goto :Error
+
 cd ..\srmm
 nmake /f srmm.mak CFG="srmm - Win32 Release Unicode"
 if errorlevel 1 goto :Error
@@ -223,6 +227,7 @@ copy ..\..\plugins\clist\Release_Unicode\clist_classic.pdb     %Temp%\pdbw\plugi
 copy ..\..\plugins\clist_nicer\Release_Unicode\clist_nicer.pdb %Temp%\pdbw\plugins
 copy ..\..\plugins\modernb\Release_Unicode\clist_modern.pdb    %Temp%\pdbw\plugins
 copy ..\..\plugins\mwclist\Release_Unicode\clist_mw.pdb        %Temp%\pdbw\plugins
+copy ..\..\plugins\scriver\Release_Unicode\scriver.pdb         %Temp%\pdbw\plugins
 copy ..\..\plugins\srmm\Release_Unicode\srmm.pdb               %Temp%\pdbw\plugins
 copy ..\..\plugins\tabSRMM\Release_Unicode\tabSRMM.pdb         %Temp%\pdbw\plugins
 rem  Non-Unicode plugins

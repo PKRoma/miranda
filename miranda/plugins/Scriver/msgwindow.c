@@ -34,7 +34,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #endif
 */
 #ifndef __MINGW32__
-#if (_MSC_VER < 1300)
+#if (_MSC_VER < 1000)
 #include "multimon.h"
 #endif
 #endif

@@ -53,7 +53,7 @@ Package=<5>
 {{{
     begin source code control
     "$/Miranda/miranda/protocols/AimTOC2", YCPAAAAA
-    ..\protocols\AimOscar
+    ..\protocols\aimoscar
     end source code control
 }}}
 
@@ -278,6 +278,22 @@ Package=<5>
     begin source code control
     "$/Miranda/miranda/plugins/png2dib", FLIAAAAA
     ..\plugins\png2dib
+    end source code control
+}}}
+
+Package=<4>
+{{{
+}}}
+
+###############################################################################
+
+Project: "scriver"=..\plugins\Scriver\scriver.dsp - Package Owner=<4>
+
+Package=<5>
+{{{
+    begin source code control
+    "$/Miranda/miranda/plugins/Scriver", KCWAAAAA
+    ..\plugins\scriver
     end source code control
 }}}
 

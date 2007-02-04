@@ -94,6 +94,10 @@ cd ..\png2dib
 nmake /f png2dib.mak CFG="png2dib - Win32 Release"
 if errorlevel 1 goto :Error
 
+cd ..\scriver
+nmake /f scriver.mak CFG="scriver - Win32 Release"
+if errorlevel 1 goto :Error
+
 cd ..\srmm
 nmake /f srmm.mak CFG="srmm - Win32 Release"
 if errorlevel 1 goto :Error
@@ -236,6 +240,7 @@ copy ..\..\plugins\import\Release\import.pdb           %Temp%\pdba\plugins
 copy ..\..\plugins\modernb\Release\clist_modern.pdb    %Temp%\pdba\plugins
 copy ..\..\plugins\mwclist\Release\clist_mw.pdb        %Temp%\pdba\plugins
 copy ..\..\plugins\png2dib\Release\png2dib.pdb         %Temp%\pdba\plugins
+copy ..\..\plugins\srmm\Release\scriver.pdb            %Temp%\pdba\plugins
 copy ..\..\plugins\srmm\Release\srmm.pdb               %Temp%\pdba\plugins
 copy ..\..\plugins\tabSRMM\Release\tabSRMM.pdb         %Temp%\pdba\plugins
 
