@@ -620,6 +620,53 @@ static int DetectURL(const char* text) {
 	return 0;
 }
 
+static void AppendWithCustomLinks(struct EventData *event, int style, char **buffer, int *bufferEnd, int *bufferAlloced) {
+	int lasttoken = 0, newtoken = 0;
+	int laststart = 0, newstart =0, newlen = 0;
+	int j, len;
+	if (event->dwFlags & IEEDF_UNICODE_TEXT) {
+		len = wcslen(event->pszTextW);
+	} else {
+		len = strlen(event->pszText);
+	}
+	for (j = 0; j < len ; ) {
+		int l;
+		newstart = j;
+		newtoken = 0;
+		newlen = 1;
+		if (event->dwFlags & IEEDF_UNICODE_TEXT) {
+			l = DetectURLW(event->pszTextW+j);
+		} else {
+			l = DetectURL(event->pszText+j);
+		}
+		if (l > 0) {
+			newtoken = 1;
+			newlen = l;
+		}
+		if (j == 0) {
+			lasttoken = newtoken;
+		}
+		j += newlen;
+		if ((newtoken != lasttoken && j>0) || j >= len) {
+			if (j == len) {
+				newstart = j;
+			} 
+			if (lasttoken == 0) {
+				AppendToBuffer(buffer, bufferEnd, bufferAlloced, "%s ", SetToStyle(style));
+			} else {
+				AppendToBuffer(buffer, bufferEnd, bufferAlloced, "%s ", SetToStyle(event->dwFlags & IEEDF_SENT ? MSGFONTID_MYURL : MSGFONTID_YOURURL));
+			}
+			if (event->dwFlags & IEEDF_UNICODE_TEXT) {
+				AppendUnicodeToBufferL(buffer, bufferEnd, bufferAlloced, event->pszTextW + laststart, newstart - laststart);
+			} else {
+				AppendAnsiToBufferL(buffer, bufferEnd, bufferAlloced, event->pszText + laststart, newstart - laststart);
+			}
+			laststart = newstart;
+			lasttoken = newtoken;
+		}
+	}
+}
+
 //mir_free() the return value
 static char *CreateRTFFromDbEvent2(struct MessageWindowData *dat, struct EventData *event, struct LogStreamData *streamData)
 {
@@ -760,50 +807,12 @@ static char *CreateRTFFromDbEvent2(struct MessageWindowData *dat, struct EventDa
 			AppendToBuffer(&buffer, &bufferEnd, &bufferAlloced, "\\par");
 		}
 		style = event->dwFlags & IEEDF_SENT ? MSGFONTID_MYMSG : MSGFONTID_YOURMSG;
-		{
-			int lasttoken = 0, newtoken = 0;
-			int laststart = 0, newstart =0, newlen = 0;
-			int j, len = wcslen(event->pszTextW);
-			for (j = 0; j < len ; ) {
-				int l;
-				newstart = j;
+		AppendWithCustomLinks(event, style, &buffer, &bufferEnd, &bufferAlloced);
+		/*		
+		AppendToBuffer(&buffer, &bufferEnd, &bufferAlloced, "%s ", SetToStyle(event->dwFlags & IEEDF_SENT ? MSGFONTID_MYMSG : MSGFONTID_YOURMSG));
 		if (event->dwFlags & IEEDF_UNICODE_TEXT) {
-					l = DetectURLW(event->pszTextW+j);
+			AppendUnicodeToBuffer(&buffer, &bufferEnd, &bufferAlloced, event->pszTextW);
 		} else {
-					l = DetectURL(event->pszText+j);
-				}
-				if (l > 0) {
-					newtoken = 1;
-					newlen = l;
-				} else {
-					newtoken = 0;
-					newlen = 1;
-				}
-				if (j == 0) {
-					lasttoken = newtoken;
-				}
-				j+= newlen;
-				if ((newtoken != lasttoken && j>0) || j >= len) {
-					if (j == len) {
-						newstart = j;
-					} 
-					if (lasttoken == 0) {
-						AppendToBuffer(&buffer, &bufferEnd, &bufferAlloced, "%s ", SetToStyle(style));
-					} else {
-						AppendToBuffer(&buffer, &bufferEnd, &bufferAlloced, "%s ", SetToStyle(event->dwFlags & IEEDF_SENT ? MSGFONTID_MYURL : MSGFONTID_YOURURL));
-					}
-					if (event->dwFlags & IEEDF_UNICODE_TEXT) {
-						AppendUnicodeToBufferL(&buffer, &bufferEnd, &bufferAlloced, event->pszTextW + laststart, newstart - laststart);
-					} else {
-						AppendAnsiToBufferL(&buffer, &bufferEnd, &bufferAlloced, event->pszText + laststart, newstart - laststart);
-					}
-					laststart = newstart;
-					lasttoken = newtoken;
-				}
-			}
-		}
-/*		else {
-			AppendToBuffer(&buffer, &bufferEnd, &bufferAlloced, "%s ", SetToStyle(event->dwFlags & IEEDF_SENT ? MSGFONTID_MYMSG : MSGFONTID_YOURMSG));
 			AppendAnsiToBuffer(&buffer, &bufferEnd, &bufferAlloced, event->pszText);
 		}
 		*/
