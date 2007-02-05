@@ -443,7 +443,7 @@ static LRESULT CALLBACK MButtonWndProc(HWND hwndDlg, UINT msg,  WPARAM wParam, L
 		case BUTTONSETARROW: // turn arrow on/off
 			if (wParam) {
 				if (!bct->arrow)
-					bct->arrow = LoadSkinnedIcon(SKINICON_OTHER_ADDCONTACT);
+					bct->arrow = LoadSkinnedIcon(SKINICON_OTHER_DOWNARROW);
 			}
 			else {
 				if (bct->arrow) {
