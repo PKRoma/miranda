@@ -32,7 +32,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 static HANDLE hIcons2ChangedEvent, hIconsChangedEvent;
 static HICON hIconBlank = NULL;
 
-HANDLE hIcoLib_AddNewIcon, hIcoLib_RemoveIcon, hIcoLib_GetIcon, hIcoLib_ReleaseIcon;
+HANDLE hIcoLib_AddNewIcon, hIcoLib_RemoveIcon, hIcoLib_GetIcon, hIcoLib_IsManaged, hIcoLib_AddRef, hIcoLib_ReleaseIcon;
 
 static HIMAGELIST hDefaultIconList;
 static int iconEventActive = 0;
@@ -147,6 +147,20 @@ static IconItem* IcoLib_FindIcon(const char* pszIconName)
 	return NULL;
 }
 
+static IconItem* IcoLib_FindHIcon(HICON hIcon)
+{
+	IconItem *item = NULL;
+	int indx;
+
+	for (indx = 0; indx < iconList.count; indx++) {
+		if (iconList.items[indx]->icon == hIcon) {
+			item = iconList.items[indx];
+			break;
+	}	}
+
+	return item;
+}
+
 static void IcoLib_FreeIcon(IconItem* icon)
 {
 	SAFE_FREE(&icon->name);
@@ -165,7 +179,7 @@ static void IcoLib_FreeIcon(IconItem* icon)
 static int IcoLib_AddNewIcon(WPARAM wParam,LPARAM lParam)
 {
 	SKINICONDESC *sid = (SKINICONDESC*)lParam;
-	int utf = 0;
+	int utf = 0, utf_path = 0;
 	IconItem *item;
 
 	if (!sid->cbSize) return 0x10000000;
@@ -173,8 +187,10 @@ static int IcoLib_AddNewIcon(WPARAM wParam,LPARAM lParam)
 	if (sid->cbSize < SKINICONDESC_SIZE_V1)
 		return 1;
 
-	if (sid->cbSize >= SKINICONDESC_SIZE)
+	if (sid->cbSize >= SKINICONDESC_SIZE) {
 		utf = sid->flags & SIDF_UNICODE ? 1 : 0;
+		utf_path = sid->flags & SIDF_PATH_UNICODE ? 1 : 0;
+	}
 
 	EnterCriticalSection(&csIconList);
 
@@ -193,7 +209,7 @@ static int IcoLib_AddNewIcon(WPARAM wParam,LPARAM lParam)
 			item->description = mir_tstrdup(sid->ptszDescription);
 			item->section = IcoLib_AddSection(sid->pwszSection, TRUE);
 		#else
-        char *pszSection = sid->pwszSection ? u2a(sid->pwszSection) : NULL;
+			char *pszSection = sid->pwszSection ? u2a(sid->pwszSection) : NULL;
 
 			item->description = u2a(sid->pwszDescription);
 			item->section = IcoLib_AddSection(pszSection, TRUE);
@@ -202,7 +218,7 @@ static int IcoLib_AddNewIcon(WPARAM wParam,LPARAM lParam)
 	}
 	else {
 		#ifdef _UNICODE
-        WCHAR *pwszSection = sid->pszSection ? a2u(sid->pszSection) : NULL;
+			WCHAR *pwszSection = sid->pszSection ? a2u(sid->pszSection) : NULL;
 
 			item->description = a2u(sid->pszDescription);
 			item->section = IcoLib_AddSection(pwszSection, TRUE);
@@ -212,21 +228,42 @@ static int IcoLib_AddNewIcon(WPARAM wParam,LPARAM lParam)
 			item->section = IcoLib_AddSection(sid->pszSection, TRUE);
 		#endif
 	}
-    if (item->section)
-	    item->orderID = ++item->section->maxOrder;
-    else
-        item->orderID=0;
+	if (item->section)
+		item->orderID = ++item->section->maxOrder;
+	else
+		item->orderID = 0;
 
 	if (sid->pszDefaultFile) {
-		char fileFull[MAX_PATH];
+		if (utf_path) {
+			#ifdef _UNICODE
+				WCHAR fileFull[MAX_PATH];
 
-		CallService(MS_UTILS_PATHTOABSOLUTE, (WPARAM)sid->pszDefaultFile, (LPARAM)fileFull);
-		#ifdef _UNICODE
-			item->default_file = a2u(fileFull);
-		#else
-			item->default_file = mir_strdup(fileFull);
-		#endif
-	}
+				CallService(MS_UTILS_PATHTOABSOLUTEW, (WPARAM)sid->pwszDefaultFile, (LPARAM)fileFull);
+				item->default_file = mir_wstrdup(fileFull);
+			#else
+				char *file = u2a(sid->pwszDefaultFile);
+				char fileFull[MAX_PATH];
+
+				CallService(MS_UTILS_PATHTOABSOLUTE, (WPARAM)file, (LPARAM)fileFull);
+				SAFE_FREE(&file);
+				item->default_file = mir_strdup(fileFull);
+			#endif
+		}
+		else {
+			#ifdef _UNICODE
+				WCHAR *file = a2u(sid->pszDefaultFile);
+				WCHAR fileFull[MAX_PATH];
+
+				CallService(MS_UTILS_PATHTOABSOLUTEW, (WPARAM)file, (LPARAM)fileFull);
+				SAFE_FREE(&file);
+				item->default_file = mir_wstrdup(fileFull);
+			#else
+				char fileFull[MAX_PATH];
+
+				CallService(MS_UTILS_PATHTOABSOLUTE, (WPARAM)sid->pszDefaultFile, (LPARAM)fileFull);
+				item->default_file = mir_strdup(fileFull);
+			#endif
+	}	}
 	item->default_indx = sid->iDefaultIndex;
 	if (sid->cbSize >= SKINICONDESC_SIZE_V2 && sid->hDefaultIcon)
 		item->default_icon = DuplicateIcon(NULL, sid->hDefaultIcon);
@@ -337,6 +374,52 @@ static int IcoLib_GetIcon(WPARAM wParam, LPARAM lParam)
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////
+// IcoLib_IsManaged
+// lParam: NULL
+// wParam: HICON
+
+static int IcoLib_IsManaged(WPARAM wParam, LPARAM lParam)
+{
+	IconItem *item = NULL;
+
+	EnterCriticalSection(&csIconList);
+
+	item = IcoLib_FindHIcon((HICON)wParam);
+
+	if (item && item->ref_count) {
+		LeaveCriticalSection(&csIconList);
+		return 1;
+	}
+
+	LeaveCriticalSection(&csIconList);
+	return 0;
+}
+
+/////////////////////////////////////////////////////////////////////////////////////////
+// IcoLib_AddRef
+// lParam: NULL
+// wParam: HICON
+
+static int IcoLib_AddRef(WPARAM wParam, LPARAM lParam)
+{
+	IconItem *item = NULL;
+
+	EnterCriticalSection(&csIconList);
+
+	item = IcoLib_FindHIcon((HICON)wParam);
+
+	if (item && item->ref_count) {
+		item->ref_count++;
+		LeaveCriticalSection(&csIconList);
+		return 0;
+	}
+
+	LeaveCriticalSection(&csIconList);
+	return 1;
+}
+
+
+/////////////////////////////////////////////////////////////////////////////////////////
 // IcoLib_ReleaseIcon
 // lParam: pszIconName or NULL
 // wParam: HICON or NULL
@@ -350,14 +433,8 @@ static int IcoLib_ReleaseIcon(WPARAM wParam, LPARAM lParam)
 	if (lParam)
 		item = IcoLib_FindIcon((char*)lParam);
 
-	if (!item && wParam) { // find by HICON
-		int indx;
-
-		for (indx = 0; indx < iconList.count; indx++) {
-			if (iconList.items[indx]->icon == (HICON)wParam) {
-				item = iconList.items[indx];
-				break;
-	}	}	}
+	if (!item && wParam) // find by HICON
+		item = IcoLib_FindHIcon((HICON)wParam);
 
 	if (item && item->ref_count) {
 		item->ref_count--;
@@ -1288,6 +1365,8 @@ int InitSkin2Icons(void)
 	hIcoLib_AddNewIcon  = CreateServiceFunction(MS_SKIN2_ADDICON,     IcoLib_AddNewIcon);
 	hIcoLib_RemoveIcon  = CreateServiceFunction(MS_SKIN2_REMOVEICON,  IcoLib_RemoveIcon);
 	hIcoLib_GetIcon     = CreateServiceFunction(MS_SKIN2_GETICON,     IcoLib_GetIcon);
+	hIcoLib_IsManaged   = CreateServiceFunction(MS_SKIN2_ISMANAGEDICON, IcoLib_IsManaged);
+	hIcoLib_AddRef      = CreateServiceFunction(MS_SKIN2_ADDREFICON,  IcoLib_AddRef); 
 	hIcoLib_ReleaseIcon = CreateServiceFunction(MS_SKIN2_RELEASEICON, IcoLib_ReleaseIcon);
 
 	hIcons2ChangedEvent = CreateHookableEvent(ME_SKIN2_ICONSCHANGED);
@@ -1305,6 +1384,8 @@ void UninitSkin2Icons(void)
 	DestroyServiceFunction(hIcoLib_AddNewIcon);
 	DestroyServiceFunction(hIcoLib_RemoveIcon);
 	DestroyServiceFunction(hIcoLib_GetIcon);
+	DestroyServiceFunction(hIcoLib_IsManaged);
+	DestroyServiceFunction(hIcoLib_AddRef);
 	DestroyServiceFunction(hIcoLib_ReleaseIcon);
 	DeleteCriticalSection(&csIconList);
 

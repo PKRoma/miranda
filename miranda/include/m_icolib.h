@@ -30,28 +30,38 @@ typedef struct {
   union {
     char *pszSection;         // section name used to group icons
     TCHAR *ptszSection;
-    wchar_t *pwszSection;
+    WCHAR *pwszSection;
   };
   union {
     char *pszDescription;     // description for options dialog
     TCHAR *ptszDescription;
-    wchar_t *pwszDescription;
+    WCHAR *pwszDescription;
   };
   char *pszName;              // name to refer to icon when playing and in db
-  char *pszDefaultFile;       // default icon file to use
+  union {
+    char *pszDefaultFile;     // default icon file to use
+    TCHAR *ptszDefaultFile;
+    WCHAR *pwszDefaultFile;
+  };
   int  iDefaultIndex;         // index of icon in default file
   HICON hDefaultIcon;         // handle to default icon
   int cx,cy;                  // dimensions of icon
   int flags;                  // combination of SIDF_*
 } SKINICONDESC;
 
-#define SIDF_SORTED   0x1     // Icons in section are sorted by name
-#define SIDF_UNICODE  0x100   // Section and Description are in UCS-2
+#define SIDF_SORTED       0x01    // Icons in section are sorted by name
+#define SIDF_UNICODE      0x100   // Section and Description are in UCS-2
+#define SIDF_PATH_UNICODE 0x200   // Default File is in UCS-2
+#define SIDF_ALL_UNICODE  SIDF_PATH_UNICODE | SIDF_UNICODE
 
 #if defined(_UNICODE)
-  #define SIDF_TCHAR  SIDF_UNICODE
+  #define SIDF_TCHAR      SIDF_UNICODE
+  #define SIDF_PATH_TCHAR SIDF_PATH_UNICODE
+  #define SIDF_ALL_TCHAR  SIDF_ALL_UNICODE
 #else
-  #define SIDF_TCHAR  0
+  #define SIDF_TCHAR      0
+  #define SIDF_PATH_TCHAR 0
+  #define SIDF_ALL_TCHAR  0
 #endif
 
 //
@@ -78,12 +88,28 @@ typedef struct {
 #define MS_SKIN2_GETICON "Skin2/Icons/GetIcon"
 
 //
-//  Retrieved HICON is not needed anymore (this helps optimize GDI usage)
+//  Add reference to HICON
+//
+//  wParam = (WPARAM)HICON
+//  lParam = 0
+//
+#define MS_SKIN2_ADDREFICON "Skin2/Icons/AddRef"
+
+//
+//  Retrieved HICON is not needed anymore (release reference; this helps optimize GDI usage)
 //
 //  wParam = (WPARAM)HICON (optional)
 //  lParam = (LPARAM)(char*)pszName (optional)  // at least one needs to be specified
 //
 #define MS_SKIN2_RELEASEICON "Skin2/Icons/ReleaseIcon"
+
+//
+//  Check whether HICON is managed by IcoLib
+//
+//  wParam = (WPARAM)HICON
+//  lParam = 0
+//
+#define MS_SKIN2_ISMANAGEDICON "Skin2/Icons/IsManaged"
 
 //
 //  Icons change notification
