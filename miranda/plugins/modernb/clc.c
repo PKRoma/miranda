@@ -364,6 +364,8 @@ static int ClcModulesLoaded(WPARAM wParam,LPARAM lParam) {
 	}
 	HookEvent(ME_BACKGROUNDCONFIG_CHANGED,BgStatusBarChange);
 	HookEvent(ME_BACKGROUNDCONFIG_CHANGED,OnFrameTitleBarBackgroundChange);
+
+
 	return 0;
 }
 

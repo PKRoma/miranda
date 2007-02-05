@@ -281,8 +281,6 @@ int LoadCLUIModule(void)
 	DBVARIANT dbv;
 	TCHAR titleText[256];
 
-	cli.pfnLoadContactTree();
-
 	uMsgProcessProfile = RegisterWindowMessageA("Miranda::ProcessProfile");
 	cli.pfnLoadCluiGlobalOpts();
 	hUserDll = LoadLibraryA("user32.dll");

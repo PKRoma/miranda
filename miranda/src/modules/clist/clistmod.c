@@ -38,6 +38,7 @@ int Docking_IsDocked(WPARAM wParam, LPARAM lParam);
 void InitDisplayNameCache(void);
 void FreeDisplayNameCache(void);
 void InitTray(void);
+void LoadCLUIModule();
 
 pfnMyMonitorFromPoint  MyMonitorFromPoint = NULL;
 pfnMyMonitorFromWindow MyMonitorFromWindow = NULL;
@@ -237,12 +238,14 @@ static int ContactListModulesLoaded(WPARAM wParam, LPARAM lParam)
 		}
 		protoIconIndexCount++;
 	}
+	cli.pfnLoadContactTree();
 
 	if ( !ServiceExists( MS_DB_CONTACT_GETSETTING_STR )) {
 		MessageBox( NULL, TranslateT( "This plugin requires db3x plugin version 0.5.1.0 or later" ), _T("CList"), MB_OK );
 		return 1;
 	}
 
+	LoadCLUIModule();
 	return 0;
 }
 

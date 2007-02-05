@@ -4160,13 +4160,11 @@ int CLUIFrameSetFloat(WPARAM wParam,LPARAM lParam)
 }
 
 
-static int CLUIFrameOnModulesLoad(WPARAM wParam,LPARAM lParam)
+static CLUIFrameOnModulesLoad(WPARAM wParam,LPARAM lParam)
 {
-	CLUIFramesLoadMainMenu(0,0);
-	CLUIFramesCreateMenuForFrame(-1,-1,000010000,MS_CLIST_ADDCONTEXTFRAMEMENUITEM);
-	return 0;
+  CLUIFramesLoadMainMenu(0,0);
+  CLUIFramesCreateMenuForFrame(-1,-1,000010000,MS_CLIST_ADDCONTEXTFRAMEMENUITEM);
 }
-
 static CLUIFrameOnModulesUnload(WPARAM wParam,LPARAM lParam)
 {
   //
