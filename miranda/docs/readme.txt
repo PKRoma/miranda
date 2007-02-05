@@ -25,13 +25,18 @@ Contents
 * New in 0.6.4
 Enhancement
  - Update notification added to notify of new Miranda IM releases
+ - Improved dbTool and now supports language packs (translations)
+ - Some cosmetic changes to the profile selection dialog
 
 Bugfixes:
  - "Read Message" hotkey opened contact list if no events were present
  - Translation fix in Find/Add error message
  - Improved UPnP support and disabled UPnP cleanup when no incoming connections available
  - Show file transfers correctly in message window
-
+ - Improved UPnP router support
+ - Read message hotkey opened the contact list of there was no event
+ - UPnP cleanup will not run if there are no incoming connections
+ - MSN: Uploading avatars was broke
 
 * New in 0.6.3
 Bugfixes:
