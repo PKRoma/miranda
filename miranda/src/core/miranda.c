@@ -31,6 +31,7 @@ int InitialiseModularEngine(void);
 void DestroyingModularEngine(void);
 void DestroyModularEngine(void);
 int UnloadNewPluginsModule(void);
+void LoadCLUIModule();
 
 HINSTANCE GetInstByAddress( void* codePtr );
 
@@ -408,6 +409,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 	}
 	InsertRegistryKey();
 	NotifyEventHooks(hModulesLoadedEvent,0,0);
+	LoadCLUIModule();
 	MyMsgWaitForMultipleObjectsEx=(DWORD (WINAPI *)(DWORD,CONST HANDLE*,DWORD,DWORD,DWORD))GetProcAddress(GetModuleHandleA("user32"),"MsgWaitForMultipleObjectsEx");
 	forkthread(compactHeapsThread,0,NULL);
 	CreateServiceFunction(MS_SYSTEM_SETIDLECALLBACK,SystemSetIdleCallback);

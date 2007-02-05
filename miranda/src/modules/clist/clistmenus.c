@@ -898,7 +898,6 @@ int MenuModulesLoaded(WPARAM wParam,LPARAM lParam)
 	PROTOCOLDESCRIPTOR **proto;
 	DWORD flags,flags2;
 	TMO_MenuItem tmi;
-	TMenuParam tmp;
 	int pos=0;
 
 	CallService(MS_PROTO_ENUMPROTOCOLS,(WPARAM)&protoCount,(LPARAM)&proto);
@@ -906,38 +905,39 @@ int MenuModulesLoaded(WPARAM wParam,LPARAM lParam)
 
 	//clear statusmenu
 	while ( GetMenuItemCount(hStatusMenu) > 0 )
-		DeleteMenu(hStatusMenu,0,MF_BYPOSITION);
+		DeleteMenu( hStatusMenu, 0, MF_BYPOSITION );
 
 	//status menu
-	if (hStatusMenuObject!=0) {
-		CallService(MO_REMOVEMENUOBJECT,hStatusMenuObject,0);
-		if ( hStatusMainMenuHandles != NULL)
+	if ( hStatusMenuObject != 0 ) {
+		CallService( MO_REMOVEMENUOBJECT, hStatusMenuObject, 0 );
+		if ( hStatusMainMenuHandles != NULL )
 			mir_free( hStatusMainMenuHandles );
 
 		if ( hStatusMenuHandles != NULL )
 			mir_free( hStatusMenuHandles );
 	}
-	memset(&tmp,0,sizeof(tmp));
-	tmp.cbSize=sizeof(tmp);
-	tmp.ExecService="StatusMenuExecService";
-	tmp.CheckService="StatusMenuCheckService";
-	//tmp.
-	tmp.name="StatusMenu";
+	{
+		TMenuParam tmp = { 0 };
+		tmp.cbSize = sizeof(tmp);
+		tmp.ExecService = "StatusMenuExecService";
+		tmp.CheckService = "StatusMenuCheckService";
+		tmp.name = "StatusMenu";
+		hStatusMenuObject = ( int )CallService(MO_CREATENEWMENUOBJECT,(WPARAM)0,(LPARAM)&tmp);
+	}
 
-	hStatusMenuObject=(int)CallService(MO_CREATENEWMENUOBJECT,(WPARAM)0,(LPARAM)&tmp);
 	MO_SetOptionsMenuObject( hStatusMenuObject, OPT_MENUOBJECT_SET_FREE_SERVICE, (int)"CLISTMENUS/FreeOwnerDataStatusMenu" );
 
 	hStatusMainMenuHandles = ( int* )mir_alloc( SIZEOF(statusModeList) * sizeof( int ));
 	hStatusMainMenuHandlesCnt = SIZEOF(statusModeList);
-	for (i=0;i<protoCount;i++)
-		if (proto[i]->type==PROTOTYPE_PROTOCOL)
+	for ( i=0; i < protoCount; i++ )
+		if ( proto[i]->type == PROTOTYPE_PROTOCOL )
 			networkProtoCount++;
 
 	memset( hStatusMainMenuHandles, 0, SIZEOF(statusModeList) * sizeof( int ));
 	hStatusMenuHandles = ( tStatusMenuHandles* )mir_alloc(sizeof(tStatusMenuHandles)*protoCount);
 	hStatusMenuHandlesCnt = protoCount;
 
-	memset(hStatusMenuHandles,0,sizeof(tStatusMenuHandles)*protoCount);
+	memset( hStatusMenuHandles, 0, sizeof(tStatusMenuHandles)*protoCount);
 	if (( storedProtoCount = DBGetContactSettingDword(0,"Protocols","ProtoCount",-1)) == -1 ) {
 		storedProtoCount = 0;
 		for ( i=0; i < protoCount; i++ ) {
