@@ -837,9 +837,9 @@ static BOOL CALLBACK FilterWndProc(HWND hwndDlg,UINT uMsg,WPARAM wParam,LPARAM l
          if (iFlags&GC_EVENT_ADDSTATUS)
             iFlags |= GC_EVENT_REMOVESTATUS;
 
-         SendMessage(GetParent(hwndDlg), GC_CHANGEFILTERFLAG, 0, (LPARAM)iFlags);
+         SendMessage(si->hWnd, GC_CHANGEFILTERFLAG, 0, (LPARAM)iFlags);
          if (si->bFilterEnabled)
-            SendMessage(GetParent(hwndDlg), GC_REDRAWLOG, 0, 0);
+            SendMessage(si->hWnd, GC_REDRAWLOG, 0, 0);
          PostMessage(hwndDlg, WM_CLOSE, 0, 0);
       }
       break;
