@@ -482,43 +482,41 @@ int CLUI_OnSkinLoad(WPARAM wParam, LPARAM lParam)
 
 static int CLUI_ModulesLoaded(WPARAM wParam,LPARAM lParam)
 {
-    MENUITEMINFO mii;
-    /*
-    *	Updater support
-    */
+	MENUITEMINFO mii;
+	/*
+	*	Updater support
+	*/
 #ifdef _UNICODE
-    CallService("Update/RegisterFL", (WPARAM)2103, (LPARAM)&pluginInfo);
+	CallService("Update/RegisterFL", (WPARAM)2103, (LPARAM)&pluginInfo);
 #else
-    CallService("Update/RegisterFL", (WPARAM)2996, (LPARAM)&pluginInfo);
+	CallService("Update/RegisterFL", (WPARAM)2996, (LPARAM)&pluginInfo);
 #endif 
 
-    /*
-    *  End of updater support
-    */
+	/*
+	*  End of updater support
+	*/
 
-    /*
-    *  Metacontact groups support
-    */
+	/*
+	*  Metacontact groups support
+	*/
 	g_CluiData.bMetaAvail = ServiceExists(MS_MC_GETDEFAULTCONTACT) ? TRUE : FALSE;
 	setlocale(LC_CTYPE,"");  //fix for case insensitive comparing
-    CLCPaint_FillQuickHash();
-    if (ServiceExists(MS_MC_DISABLEHIDDENGROUP));
-    CallService(MS_MC_DISABLEHIDDENGROUP, (WPARAM)TRUE, (LPARAM)0);
+	CLCPaint_FillQuickHash();
+	if (ServiceExists(MS_MC_DISABLEHIDDENGROUP));
+	CallService(MS_MC_DISABLEHIDDENGROUP, (WPARAM)TRUE, (LPARAM)0);
 
-    ZeroMemory(&mii,sizeof(mii));
-    mii.cbSize=MENUITEMINFO_V4_SIZE;
-    mii.fMask=MIIM_SUBMENU;
-    mii.hSubMenu=(HMENU)CallService(MS_CLIST_MENUGETMAIN,0,0);
-    SetMenuItemInfo(g_hMenuMain,0,TRUE,&mii);
-    mii.hSubMenu=(HMENU)CallService(MS_CLIST_MENUGETSTATUS,0,0);
-    SetMenuItemInfo(g_hMenuMain,1,TRUE,&mii);
+	ZeroMemory(&mii,sizeof(mii));
+	mii.cbSize=MENUITEMINFO_V4_SIZE;
+	mii.fMask=MIIM_SUBMENU;
+	mii.hSubMenu=(HMENU)CallService(MS_CLIST_MENUGETMAIN,0,0);
+	SetMenuItemInfo(g_hMenuMain,0,TRUE,&mii);
+	mii.hSubMenu=(HMENU)CallService(MS_CLIST_MENUGETSTATUS,0,0);
+	SetMenuItemInfo(g_hMenuMain,1,TRUE,&mii);
 
-    CLUIServices_ProtocolStatusChanged(0,0);
-    SleepEx(0,TRUE);
-    g_flag_bOnModulesLoadedCalled=TRUE;	
-    ///pcli->pfnInvalidateDisplayNameCacheEntry(INVALID_HANDLE_VALUE);   
-    PostMessage(pcli->hwndContactList,M_CREATECLC,0,0); //$$$
-    return 0;
+	CLUIServices_ProtocolStatusChanged(0,0);
+	SleepEx(0,TRUE);
+	g_flag_bOnModulesLoadedCalled=TRUE;	
+	return 0;
 }
 
 static LPPROTOTICKS CLUI_GetProtoTicksByProto(char * szProto)
@@ -563,7 +561,6 @@ static int CLUI_GetConnectingIconForProtoCount(char *szProto)
     ret=ExtractIconExA(fileFull,-1,NULL,NULL,1);
     if (ret==0) ret=8;
     return ret;
-
 }
 
 static HICON CLUI_ExtractIconFromPath(const char *path, BOOL * needFree)
@@ -1319,43 +1316,38 @@ int CLUI_OnSizingMoving(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 
 LRESULT CALLBACK CLUI__cli_ContactListWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 {    
-    /*
-    This registers a window message with RegisterWindowMessage() and then waits for such a message,
-    if it gets it, it tries to open a file mapping object and then maps it to this process space,
-    it expects 256 bytes of data (incl. NULL) it will then write back the profile it is using the DB to fill in the answer.
+	/*
+	This registers a window message with RegisterWindowMessage() and then waits for such a message,
+	if it gets it, it tries to open a file mapping object and then maps it to this process space,
+	it expects 256 bytes of data (incl. NULL) it will then write back the profile it is using the DB to fill in the answer.
 
-    The caller is expected to create this mapping object and tell us the ID we need to open ours.	
-    */
-    if (g_CluiData.bSTATE==STATE_EXITING && msg!=WM_DESTROY) 
-        return 0;
-    if (msg==uMsgGetProfile && wParam != 0) { /* got IPC message */
-        HANDLE hMap;
-        char szName[MAX_PATH];
-        int rc=0;
-        _snprintf(szName,sizeof(szName),"Miranda::%u", wParam); // caller will tell us the ID of the map
-        hMap = OpenFileMappingA(FILE_MAP_ALL_ACCESS,FALSE,szName);
-        if (hMap != NULL) {
-            void *hView=NULL;
-            hView=MapViewOfFile(hMap, FILE_MAP_ALL_ACCESS, 0, 0, MAX_PATH);
-            if (hView) {
-                char szFilePath[MAX_PATH], szProfile[MAX_PATH];
-                CallService(MS_DB_GETPROFILEPATH,MAX_PATH,(LPARAM)&szFilePath);
-                CallService(MS_DB_GETPROFILENAME,MAX_PATH,(LPARAM)&szProfile);
-                _snprintf(hView,MAX_PATH,"%s\\%s",szFilePath,szProfile);
-                UnmapViewOfFile(hView);
-                rc=1;
-            }
-            CloseHandle(hMap);
-        }
-        return rc;
-    }
+	The caller is expected to create this mapping object and tell us the ID we need to open ours.	
+	*/
+	if (g_CluiData.bSTATE==STATE_EXITING && msg!=WM_DESTROY) 
+		return 0;
+	if (msg==uMsgGetProfile && wParam != 0) { /* got IPC message */
+		HANDLE hMap;
+		char szName[MAX_PATH];
+		int rc=0;
+		_snprintf(szName,sizeof(szName),"Miranda::%u", wParam); // caller will tell us the ID of the map
+		hMap = OpenFileMappingA(FILE_MAP_ALL_ACCESS,FALSE,szName);
+		if (hMap != NULL) {
+			void *hView=NULL;
+			hView=MapViewOfFile(hMap, FILE_MAP_ALL_ACCESS, 0, 0, MAX_PATH);
+			if (hView) {
+				char szFilePath[MAX_PATH], szProfile[MAX_PATH];
+				CallService(MS_DB_GETPROFILEPATH,MAX_PATH,(LPARAM)&szFilePath);
+				CallService(MS_DB_GETPROFILENAME,MAX_PATH,(LPARAM)&szProfile);
+				_snprintf(hView,MAX_PATH,"%s\\%s",szFilePath,szProfile);
+				UnmapViewOfFile(hView);
+				rc=1;
+			}
+			CloseHandle(hMap);
+		}
+		return rc;
+	}
 
-    
-
-	
-
-    switch (msg) 
-    {
+	switch (msg) {
 	case WM_SIZE:
 	case WM_SIZING:
 	case WM_MOVE:
@@ -1393,7 +1385,8 @@ LRESULT CALLBACK CLUI__cli_ContactListWndProc(HWND hwnd, UINT msg, WPARAM wParam
 
     case WM_NCCREATE:
         {	LPCREATESTRUCT p = (LPCREATESTRUCT)lParam;
-        p->style &= ~(CS_HREDRAW | CS_VREDRAW);
+				p->style &= ~(CS_HREDRAW | CS_VREDRAW);
+				PostMessage(hwnd,M_CREATECLC,0,0); //$$$
         }
         break;
 

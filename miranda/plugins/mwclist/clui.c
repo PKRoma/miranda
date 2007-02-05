@@ -98,9 +98,6 @@ static int CluiModulesLoaded(WPARAM wParam,LPARAM lParam)
 	canloadstatusbar=TRUE;
 	SendMessage(pcli->hwndContactList,WM_SIZE,0,0);
 	CluiProtocolStatusChanged(0,0);
-	Sleep(0);
-	PostMessage(pcli->hwndContactList,M_CREATECLC,0,0);
-	
 	OnModulesLoadedCalled=TRUE;	
 	pcli->pfnInvalidateDisplayNameCacheEntry(INVALID_HANDLE_VALUE);
 	InitGroupMenus();
@@ -581,7 +578,7 @@ LRESULT CALLBACK ContactListWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM l
 		//create the status wnd
 		//pcli->hwndStatus = CreateStatusWindow(WS_CHILD | (DBGetContactSettingByte(NULL,"CLUI","ShowSBar",1)?WS_VISIBLE:0), "", hwnd, 0);	
 		CluiProtocolStatusChanged(0,0);
-		
+
 		hMsgGetProfile = RegisterWindowMessageA( "Miranda::GetProfile" ); // don't localise
 		
 		if ( DBGetContactSettingByte( NULL, "CList", "Transparent", 0 )) {
@@ -599,11 +596,25 @@ LRESULT CALLBACK ContactListWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM l
 		#endif
 		return FALSE;
 
+	case WM_NCCREATE:
+		PreCreateCLC(hwnd);
+
+		{	//int state=DBGetContactSettingByte(NULL,"CList","State",SETTING_STATE_NORMAL);
+			hMenuMain=GetMenu(hwnd);
+			if(!DBGetContactSettingByte(NULL,"CLUI","ShowMainMenu",SETTING_SHOWMAINMENU_DEFAULT)) SetMenu(hwnd,NULL);
+			SetWindowPos(hwnd, DBGetContactSettingByte(NULL,"CList","OnTop",SETTING_ONTOP_DEFAULT) ? HWND_TOPMOST : HWND_NOTOPMOST, 0, 0, 0, 0, SWP_NOSIZE | SWP_NOMOVE);
+		}
+
+		PostMessage(hwnd,M_CREATECLC,0,0);
+		break;
+
 	case M_SETALLEXTRAICONS:
 		return TRUE;
 
 	case M_CREATECLC:
 		CreateCLC(hwnd);
+		// create status bar frame
+		CreateStatusBarhWnd(hwnd);
 		return TRUE;
 
 	case WM_SIZE:
@@ -927,17 +938,6 @@ int LoadCLUIModule(void)
 	oldhideoffline=DBGetContactSettingByte(NULL,"CList","HideOffline",SETTING_HIDEOFFLINE_DEFAULT);
 
 	laster=GetLastError();
-	PreCreateCLC(pcli->hwndContactList);
-
-	// create status bar frame
-	CreateStatusBarhWnd(pcli->hwndContactList);				
-
-	{	//int state=DBGetContactSettingByte(NULL,"CList","State",SETTING_STATE_NORMAL);
-		hMenuMain=GetMenu(pcli->hwndContactList);
-		if(!DBGetContactSettingByte(NULL,"CLUI","ShowMainMenu",SETTING_SHOWMAINMENU_DEFAULT)) SetMenu(pcli->hwndContactList,NULL);
-		SetWindowPos(pcli->hwndContactList, DBGetContactSettingByte(NULL,"CList","OnTop",SETTING_ONTOP_DEFAULT) ? HWND_TOPMOST : HWND_NOTOPMOST, 0, 0, 0, 0, SWP_NOSIZE | SWP_NOMOVE);
-	}
-
 	lastreqh=0;
 	return 0;
 }
