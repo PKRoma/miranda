@@ -23,12 +23,16 @@ Contents
 1. New in this version
 ----------------------
 * New in 0.6.4
+Bugfixes
+ - Update notification module not loaded correctly
+
+* New in 0.6.4
 Enhancement
  - Update notification added to notify of new Miranda IM releases
  - Improved dbTool and now supports language packs (translations)
  - Some cosmetic changes to the profile selection dialog
 
-Bugfixes:
+Bugfixes
  - "Read Message" hotkey opened contact list if no events were present
  - Translation fix in Find/Add error message
  - Improved UPnP support and disabled UPnP cleanup when no incoming connections available
@@ -38,7 +42,7 @@ Bugfixes:
  - MSN: Uploading avatars was broken
 
 * New in 0.6.3
-Bugfixes:
+Bugfixes
  - Pin to Desktop was broken
  - AIM: Auto response messages weren't shown as auto responses
 
