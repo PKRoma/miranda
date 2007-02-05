@@ -74,6 +74,12 @@ int DeleteAllSettingInProtocols()
 	return 0;
 }
 
+static int __inline isProtoSuitable( const char* szProto )
+{
+   return CallProtoService(szProto, PS_GETCAPS, PFLAGNUM_2, 0 ) & 
+				~CallProtoService(szProto, PS_GETCAPS, PFLAGNUM_5, 0 );
+}
+
 int CheckProtocolOrder()
 {
 	boolean protochanged=FALSE;
@@ -103,7 +109,7 @@ int CheckProtocolOrder()
 		v=0;
 		//calc only needed protocols
 		for ( i=0; i < count; i++ ) {
-			if ( protos[i]->type != PROTOTYPE_PROTOCOL || CallProtoService(protos[i]->szName, PS_GETCAPS, PFLAGNUM_2, 0 ) == 0 )
+			if ( protos[i]->type != PROTOTYPE_PROTOCOL || !isProtoSuitable( protos[i]->szName ))
 				continue;
 			v++;
 		}
@@ -141,7 +147,7 @@ int CheckProtocolOrder()
 
 	v=0;
 	for ( i = 0; i < count; i++ ) {
-		if ( protos[i]->type != PROTOTYPE_PROTOCOL || CallProtoService( protos[i]->szName, PS_GETCAPS, PFLAGNUM_2, 0 ) == 0 )
+		if ( protos[i]->type != PROTOTYPE_PROTOCOL || !isProtoSuitable( protos[i]->szName ))
 			continue;
 
 		_itoa( v, ( char* )&buf, 10 );
