@@ -272,6 +272,7 @@ static int AppendAnsiToBufferL(char **buffer, int *cbBufferEnd, int *cbBufferAll
 	int textCharsCount = 0;
 	char *d;
 	int wasEOL = 0;
+	unsigned char *maxLine = line + maxLen;
 	int lineLen = strlen(line) * 9 + 8;
 	if (*cbBufferEnd + lineLen > *cbBufferAlloced) {
 		cbBufferAlloced[0] += (lineLen + 1024 - lineLen % 1024);
@@ -282,7 +283,7 @@ static int AppendAnsiToBufferL(char **buffer, int *cbBufferEnd, int *cbBufferAll
 	strcpy(d, "{");
 	d += 1;
 
-	for (; *line && (maxLen < 0 || textCharsCount < maxLen); line++, textCharsCount++) {
+	for (; *line && (maxLen < 0 || line < maxLine); line++, textCharsCount++) {
 		wasEOL = 0;
 		if (*line == '\r' && line[1] == '\n') {
 			CopyMemory(d, "\\par ", 5);
@@ -326,6 +327,7 @@ static int AppendUnicodeToBufferL(char **buffer, int *cbBufferEnd, int *cbBuffer
 	int textCharsCount = 0;
 	char *d;
 	int wasEOL = 0;
+	WCHAR *maxLine = line + maxLen;
 	int lineLen = wcslen(line) * 9 + 8;
 	if (*cbBufferEnd + lineLen > *cbBufferAlloced) {
 		cbBufferAlloced[0] += (lineLen + 1024 - lineLen % 1024);
@@ -336,7 +338,7 @@ static int AppendUnicodeToBufferL(char **buffer, int *cbBufferEnd, int *cbBuffer
 	strcpy(d, "{\\uc1 ");
 	d += 6;
 
-	for (; *line && (maxLen < 0 || textCharsCount < maxLen); line++, textCharsCount++) {
+	for (; *line && (maxLen < 0 || line < maxLine); line++, textCharsCount++) {
 		wasEOL = 0;
 		if (*line == '\r' && line[1] == '\n') {
 			CopyMemory(d, "\\par ", 5);
@@ -540,7 +542,8 @@ int isSameDate(time_t time1, time_t time2)
 	return 0;
 }
 
-static int DetectURLW(wchar_t *text) {
+static int DetectURLW(wchar_t *text, BOOL firstChar) {
+	wchar_t c;
 	struct prefix_s {
 		wchar_t *text;
 		int length;
@@ -557,30 +560,34 @@ static int DetectURLW(wchar_t *text) {
 		{L"news:", 5},
 		{L"wais:", 5},
 		{L"www.", 4}
-	};	
-	int found = 0;
-	int i, len = 0;
-	int prefixlen = SIZEOF(prefixes);
-	for (i = 0; i < prefixlen; i++) {
-		if (!wcsncmp(text, prefixes[i].text, prefixes[i].length)) {
-			len = prefixes[i].length;
-			found = 1;
-			break;
-		}
-	}
-	if (found) {
-		for (; text[len]!='\n' && text[len]!='\r' && text[len]!='\t' && text[len]!=' ' && text[len]!='\0';  len++);
-		for (; len > 0; len --) {
-			if ((text[len-1] >= '0' && text[len-1]<='9') || (text[len-1] >= 'A' && text[len-1]<='Z') || (text[len-1] >= 'a' && text[len-1]<='z')) {
+	};
+	c = firstChar ? ' ' : text[-1];
+	if (!((c >= '0' && c<='9') || (c >= 'A' && c<='Z') || (c >= 'a' && c<='z'))) {
+		int found = 0;
+		int i, len = 0;
+		int prefixlen = SIZEOF(prefixes);
+		for (i = 0; i < prefixlen; i++) {
+			if (!wcsncmp(text, prefixes[i].text, prefixes[i].length)) {
+				len = prefixes[i].length;
+				found = 1;
 				break;
 			}
 		}
-		return len;
+		if (found) {
+			for (; text[len]!='\n' && text[len]!='\r' && text[len]!='\t' && text[len]!=' ' && text[len]!='\0';  len++);
+			for (; len > 0; len --) {
+				if ((text[len-1] >= '0' && text[len-1]<='9') || (text[len-1] >= 'A' && text[len-1]<='Z') || (text[len-1] >= 'a' && text[len-1]<='z')) {
+					break;
+				}
+			}
+			return len;
+		}
 	}
 	return 0;
 }
 
-static int DetectURL(const char* text) {
+static int DetectURL(const char* text, BOOL firstChar) {
+	char c;
 	struct prefix_s {
 		char *text;
 		int length;
@@ -598,46 +605,48 @@ static int DetectURL(const char* text) {
 		{"wais:", 5},
 		{"www.", 4}
 	};	
-	int found = 0;
-	int i, len = 0;
-	int prefixlen = SIZEOF(prefixes);
-	for (i = 0; i < prefixlen; i++) {
-		if (!strncmp(text, prefixes[i].text, prefixes[i].length)) {
-			len = prefixes[i].length;
-			found = 1;
-			break;
-		}
-	}
-	if (found) {
-		for (; text[len]!='\n' && text[len]!='\r' && text[len]!='\t' && text[len]!=' ' && text[len]!='\0';  len++);
-		for (; len > 0; len --) {
-			if ((text[len-1] >= '0' && text[len-1]<='9') || (text[len-1] >= 'A' && text[len-1]<='Z') || (text[len-1] >= 'a' && text[len-1]<='z')) {
+	c = firstChar ? ' ' : text[-1];
+	if (!((c >= '0' && c<='9') || (c >= 'A' && c<='Z') || (c >= 'a' && c<='z'))) {
+		int found = 0;
+		int i, len = 0;
+		int prefixlen = SIZEOF(prefixes);
+		for (i = 0; i < prefixlen; i++) {
+			if (!strncmp(text, prefixes[i].text, prefixes[i].length)) {
+				len = prefixes[i].length;
+				found = 1;
 				break;
 			}
 		}
-		return len;
+		if (found) {
+			for (; text[len]!='\n' && text[len]!='\r' && text[len]!='\t' && text[len]!=' ' && text[len]!='\0';  len++);
+			for (; len > 0; len --) {
+				if ((text[len-1] >= '0' && text[len-1]<='9') || (text[len-1] >= 'A' && text[len-1]<='Z') || (text[len-1] >= 'a' && text[len-1]<='z')) {
+					break;
+				}
+			}
+			return len;
+		}
 	}
 	return 0;
 }
 
 static void AppendWithCustomLinks(struct EventData *event, int style, char **buffer, int *bufferEnd, int *bufferAlloced) {
 	int lasttoken = 0, newtoken = 0;
-	int laststart = 0, newstart =0, newlen = 0;
+	int laststart = 0, newlen = 0;
 	int j, len;
 	if (event->dwFlags & IEEDF_UNICODE_TEXT) {
 		len = wcslen(event->pszTextW);
 	} else {
 		len = strlen(event->pszText);
 	}
-	for (j = 0; j < len ; ) {
+	for (j = 0; j < len ; j+=newlen) {
 		int l;
-		newstart = j;
 		newtoken = 0;
 		newlen = 1;
 		if (event->dwFlags & IEEDF_UNICODE_TEXT) {
-			l = DetectURLW(event->pszTextW+j);
+			l = DetectURLW(event->pszTextW+j, j==0);
 		} else {
-			l = DetectURL(event->pszText+j);
+			l = DetectURL(event->pszText+j, j==0);
 		}
 		if (l > 0) {
 			newtoken = 1;
@@ -646,23 +655,31 @@ static void AppendWithCustomLinks(struct EventData *event, int style, char **buf
 		if (j == 0) {
 			lasttoken = newtoken;
 		}
-		j += newlen;
-		if ((newtoken != lasttoken && j>0) || j >= len) {
-			if (j == len) {
-				newstart = j;
-			} 
+		if (newtoken != lasttoken) {
 			if (lasttoken == 0) {
 				AppendToBuffer(buffer, bufferEnd, bufferAlloced, "%s ", SetToStyle(style));
 			} else {
 				AppendToBuffer(buffer, bufferEnd, bufferAlloced, "%s ", SetToStyle(event->dwFlags & IEEDF_SENT ? MSGFONTID_MYURL : MSGFONTID_YOURURL));
 			}
 			if (event->dwFlags & IEEDF_UNICODE_TEXT) {
-				AppendUnicodeToBufferL(buffer, bufferEnd, bufferAlloced, event->pszTextW + laststart, newstart - laststart);
+				AppendUnicodeToBufferL(buffer, bufferEnd, bufferAlloced, event->pszTextW + laststart, j - laststart);
 			} else {
-				AppendAnsiToBufferL(buffer, bufferEnd, bufferAlloced, event->pszText + laststart, newstart - laststart);
+				AppendAnsiToBufferL(buffer, bufferEnd, bufferAlloced, event->pszText + laststart, j - laststart);
 			}
-			laststart = newstart;
+			laststart = j;
 			lasttoken = newtoken;
+		}
+	}
+	if (len - laststart > 0) {
+		if (lasttoken == 0) {
+			AppendToBuffer(buffer, bufferEnd, bufferAlloced, "%s ", SetToStyle(style));
+		} else {
+			AppendToBuffer(buffer, bufferEnd, bufferAlloced, "%s ", SetToStyle(event->dwFlags & IEEDF_SENT ? MSGFONTID_MYURL : MSGFONTID_YOURURL));
+		}
+		if (event->dwFlags & IEEDF_UNICODE_TEXT) {
+			AppendUnicodeToBufferL(buffer, bufferEnd, bufferAlloced, event->pszTextW + laststart, len - laststart);
+		} else {
+			AppendAnsiToBufferL(buffer, bufferEnd, bufferAlloced, event->pszText + laststart, len - laststart);
 		}
 	}
 }
