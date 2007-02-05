@@ -34,9 +34,8 @@ Bugfixes:
  - Improved UPnP support and disabled UPnP cleanup when no incoming connections available
  - Show file transfers correctly in message window
  - Improved UPnP router support
- - Read message hotkey opened the contact list of there was no event
  - UPnP cleanup will not run if there are no incoming connections
- - MSN: Uploading avatars was broke
+ - MSN: Uploading avatars was broken
 
 * New in 0.6.3
 Bugfixes:
