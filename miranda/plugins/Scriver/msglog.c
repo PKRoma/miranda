@@ -24,6 +24,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include "commonheaders.h"
 #include <ctype.h>
 #include <mbstring.h>
+#include "tom.h"
 
 #define MIRANDA_0_5
 
@@ -766,9 +767,9 @@ static char *CreateRTFFromDbEvent2(struct MessageWindowData *dat, struct EventDa
 			for (j = 0; j < len ; ) {
 				int l;
 				newstart = j;
-				if (event->dwFlags & IEEDF_UNICODE_TEXT) {
+		if (event->dwFlags & IEEDF_UNICODE_TEXT) {
 					l = DetectURLW(event->pszTextW+j);
-				} else {
+		} else {
 					l = DetectURL(event->pszText+j);
 				}
 				if (l > 0) {
@@ -1051,23 +1052,23 @@ void StreamInEvents(HWND hwndDlg, HANDLE hDbEventFirst, int count, int fAppend)
 	stream.dwCookie = (DWORD_PTR) & streamData;
 	sel.cpMin = 0;
 	if (fAppend) {
-		GETTEXTLENGTHEX gtxl = {0};
+        GETTEXTLENGTHEX gtxl = {0};
 #if defined( _UNICODE )
-		gtxl.codepage = 1200;
+        gtxl.codepage = 1200;
 #else
-		gtxl.codepage = CP_ACP;
+        gtxl.codepage = CP_ACP;
 #endif
-		gtxl.codepage = 1200;
-		gtxl.flags = GTL_DEFAULT | GTL_PRECISE | GTL_NUMCHARS;
-		fi.chrg.cpMin = SendDlgItemMessage(hwndDlg, IDC_LOG, EM_GETTEXTLENGTHEX, (WPARAM)&gtxl, 0);
-		sel.cpMin = sel.cpMax = GetWindowTextLength(GetDlgItem(hwndDlg, IDC_LOG));
-		SendDlgItemMessage(hwndDlg, IDC_LOG, EM_EXSETSEL, 0, (LPARAM) & sel);
-	} else {
+        gtxl.codepage = 1200;
+        gtxl.flags = GTL_DEFAULT | GTL_PRECISE | GTL_NUMCHARS;
+        fi.chrg.cpMin = SendDlgItemMessage(hwndDlg, IDC_LOG, EM_GETTEXTLENGTHEX, (WPARAM)&gtxl, 0);
+        sel.cpMin = sel.cpMax = GetWindowTextLength(GetDlgItem(hwndDlg, IDC_LOG));
+        SendDlgItemMessage(hwndDlg, IDC_LOG, EM_EXSETSEL, 0, (LPARAM) & sel);
+    } else {
 		SetDlgItemText(hwndDlg, IDC_LOG, _T(""));
-		sel.cpMin = 0;
+        sel.cpMin = 0;
 		sel.cpMax = GetWindowTextLength(GetDlgItem(hwndDlg, IDC_LOG));
-		SendDlgItemMessage(hwndDlg, IDC_LOG, EM_EXSETSEL, 0, (LPARAM) & sel);
-		fi.chrg.cpMin = 0;
+        SendDlgItemMessage(hwndDlg, IDC_LOG, EM_EXSETSEL, 0, (LPARAM) & sel);
+        fi.chrg.cpMin = 0;
 		dat->isMixed = 0;
 	}
 //SFF_SELECTION |
@@ -1092,12 +1093,12 @@ void StreamInEvents(HWND hwndDlg, HANDLE hDbEventFirst, int count, int fAppend)
 		smre.cbSize = sizeof(SMADD_RICHEDIT3);
 		smre.hwndRichEditControl = GetDlgItem(hwndDlg, IDC_LOG);
 		smre.Protocolname = dat->szProto;
-		if (dat->szProto!=NULL && strcmp(dat->szProto,"MetaContacts")==0) {
-			HANDLE hContact = (HANDLE) CallService(MS_MC_GETMOSTONLINECONTACT, (WPARAM) dat->hContact, 0);
-			if (hContact!=NULL) {
-				smre.Protocolname = (char*) CallService(MS_PROTO_GETCONTACTBASEPROTO, (WPARAM)hContact, 0);
-			}
-		}
+        if (dat->szProto!=NULL && strcmp(dat->szProto,"MetaContacts")==0) {
+            HANDLE hContact = (HANDLE) CallService(MS_MC_GETMOSTONLINECONTACT, (WPARAM) dat->hContact, 0);
+            if (hContact!=NULL) {
+                smre.Protocolname = (char*) CallService(MS_PROTO_GETCONTACTBASEPROTO, (WPARAM)hContact, 0);
+            }
+        }
 		if (fi.chrg.cpMin > 0) {
 			sel.cpMin = fi.chrg.cpMin;
 			sel.cpMax = -1;
