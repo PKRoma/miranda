@@ -121,8 +121,7 @@ BOOL CALLBACK MsnDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam)
 				MSN_GetAvatarFileName(( HANDLE )lParam, tBuffer, sizeof tBuffer );
 
 				if ( access( tBuffer, 0 )) {
-LBL_Reread:		DBWriteContactSettingString( pData->hContact, "ContactPhoto", "File", tBuffer );
-					p2p_invite( pData->hContact, MSN_APPID_AVATAR );
+LBL_Reread:		p2p_invite( pData->hContact, MSN_APPID_AVATAR );
 					return TRUE;
 				}
 
@@ -208,8 +207,8 @@ BOOL CALLBACK AvatarDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam
 				hAvatar = ( HBITMAP )MSN_CallService( MS_UTILS_LOADBITMAP, 0, ( LPARAM )tBuffer );
 				if ( hAvatar != NULL )
 		         SendDlgItemMessage(hwndDlg, IDC_AVATAR, STM_SETIMAGE, IMAGE_BITMAP, (WPARAM)hAvatar );
-			}	
-			else { 
+			}
+			else {
 				MSN_SetByte( "EnableAvatars", 0 );
 				MyOptions.EnableAvatars = FALSE;
 		}	}
