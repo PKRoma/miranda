@@ -48,7 +48,6 @@ static int bXStatusMenuBuilt = 0;
 static HANDLE hHookExtraIconsRebuild = NULL;
 static HANDLE hHookStatusBuild = NULL;
 static HANDLE hHookExtraIconsApply = NULL;
-static HMODULE hXStatusIconsDLL = NULL;
 static HANDLE hXStatusIcons[32];
 static HANDLE hXStatusItems[33];
 
@@ -120,6 +119,7 @@ static HANDLE LoadXStatusIconLibrary(char* path, const char* sub)
 static char* InitXStatusIconLibrary(char* buf)
 {
 	char path[2*MAX_PATH];
+  HMODULE hXStatusIconsDLL;
 
   // get miranda's exe path
   GetModuleFileNameA(NULL, path, MAX_PATH);
@@ -133,46 +133,31 @@ static char* InitXStatusIconLibrary(char* buf)
     strcpy(buf, path);
 
     if (LoadStringA(hXStatusIconsDLL, IDS_IDENTIFY, path, sizeof(path)) == 0 || strcmpnull(path, "# Custom Status Icons #"))
-    {
-      FreeLibrary(hXStatusIconsDLL);
-      hXStatusIconsDLL = NULL;
+    { // library is invalid
+      *buf = '\0';
     }
-    else
-      return buf;
+    FreeLibrary(hXStatusIconsDLL);
   }
-  *buf = '\0';
+  else
+    *buf = '\0';
 
   return buf;
 }
 
 
 
-HICON LoadDefaultXStatusIcon(int bStatus, UINT flags)
-{
-  if (hXStatusIconsDLL)
-    return LoadImage(hXStatusIconsDLL, MAKEINTRESOURCE(IDI_XSTATUS1 + bStatus - 1), IMAGE_ICON, 0, 0, flags & LR_SHARED);
-  else
-    return NULL;
-}
-
-
-
 HICON GetXStatusIcon(int bStatus, UINT flags)
 {
-  if (IconLibInstalled())
-  {
-    char szTemp[64];
-    HICON icon;
+  char szTemp[64];
+  HICON icon;
 
-    null_snprintf(szTemp, sizeof(szTemp), "xstatus%d", bStatus - 1);
-    icon = IconLibGetIcon(szTemp);
+  null_snprintf(szTemp, sizeof(szTemp), "xstatus%d", bStatus - 1);
+  icon = IconLibGetIcon(szTemp);
 
-    if (flags & LR_SHARED)
-      return icon;
-    else
-      return CopyIcon(icon);
-  }
-  return LoadDefaultXStatusIcon(bStatus, flags);
+  if (flags & LR_SHARED)
+    return icon;
+  else
+    return CopyIcon(icon);
 }
 
 

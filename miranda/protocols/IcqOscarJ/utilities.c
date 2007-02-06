@@ -1059,7 +1059,7 @@ BOOL IsStringUIN(char* pszString)
 
 
 
-void __cdecl icq_ProtocolAckThread(icq_ack_args* pArguments)
+static DWORD __stdcall icq_ProtocolAckThread(icq_ack_args* pArguments)
 {
   ICQBroadcastAck(pArguments->hContact, pArguments->nAckType, pArguments->nAckResult, pArguments->hSequence, pArguments->pszMessage);
 
@@ -1071,7 +1071,7 @@ void __cdecl icq_ProtocolAckThread(icq_ack_args* pArguments)
   SAFE_FREE((char **)&pArguments->pszMessage);
   SAFE_FREE(&pArguments);
 
-  return;
+  return 0;
 }
 
 
@@ -1089,7 +1089,7 @@ void icq_SendProtoAck(HANDLE hContact, DWORD dwCookie, int nAckResult, int nAckT
   pArgs->nAckType = nAckType;
   pArgs->pszMessage = (LPARAM)null_strdup(pszMessage);
 
-  forkthread(icq_ProtocolAckThread, 0, pArgs);
+  ICQCreateThread(icq_ProtocolAckThread, pArgs);
 }
 
 
@@ -1590,6 +1590,34 @@ char* __fastcall ICQTranslateUtfStatic(const char* src, char* buf)
     buf[0] = '\0';
 
   return buf;
+}
+
+
+
+HANDLE ICQCreateThreadEx(pThreadFuncEx AFunc, void* arg, DWORD* pThreadID)
+{
+  FORK_THREADEX_PARAMS params;
+  DWORD dwThreadId;
+  HANDLE hThread;
+
+  params.pFunc      = AFunc;
+  params.arg        = arg;
+  params.iStackSize = 0;
+  params.threadID   = &dwThreadId;
+  hThread = (HANDLE)CallService(MS_SYSTEM_FORK_THREAD_EX, 0, (LPARAM)&params);
+  if (pThreadID)
+    *pThreadID = dwThreadId;
+
+  return hThread;
+}
+
+
+
+void ICQCreateThread(pThreadFuncEx AFunc, void* arg)
+{
+  HANDLE hThread = ICQCreateThreadEx(AFunc, arg, NULL);
+
+  CloseHandle(hThread);
 }
 
 

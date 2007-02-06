@@ -5,7 +5,7 @@
 // Copyright © 2000,2001 Richard Hughes, Roland Rabien, Tristan Van de Vreede
 // Copyright © 2001,2002 Jon Keating, Richard Hughes
 // Copyright © 2002,2003,2004 Martin Öberg, Sam Kothari, Robert Rainwater
-// Copyright © 2004,2005,2006 Joe Kucera
+// Copyright © 2004,2005,2006,2007 Joe Kucera
 //
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License
@@ -46,11 +46,11 @@ typedef struct {
 
 static BOOL bErrorVisible = FALSE;
 
-static void __cdecl icq_LogMessageThread(void* arg) 
+static DWORD __stdcall icq_LogMessageThread(void* arg) 
 {
   LogMessageInfo *err = (LogMessageInfo*)arg;
 
-  if (!err) return;
+  if (!err) return 0;
   bErrorVisible = TRUE;
   if (err->szMsg&&err->szTitle)
     MessageBoxUtf(NULL, err->szMsg, err->szTitle, MB_OK);
@@ -58,6 +58,8 @@ static void __cdecl icq_LogMessageThread(void* arg)
   SAFE_FREE(&err->szTitle);
   SAFE_FREE(&err);
   bErrorVisible = FALSE;
+
+  return 0;
 }
 
 
@@ -83,7 +85,7 @@ void icq_LogMessage(int level, const char *szMsg)
       lmi = (LogMessageInfo*)SAFE_MALLOC(sizeof(LogMessageInfo));
       lmi->szMsg = ICQTranslateUtf(szMsg);
       lmi->szTitle = ICQTranslateUtf(szLevelDescr[level]);
-      forkthread(icq_LogMessageThread, 0, lmi);
+      ICQCreateThread(icq_LogMessageThread, lmi);
     }
   }
 }

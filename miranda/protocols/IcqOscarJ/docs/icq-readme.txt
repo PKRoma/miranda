@@ -58,7 +58,7 @@ __________
 Changes
 _______
 
-0.3.8 Devel builds
+0.3.9
 
 Bugfixes:
   Fixed peer-to-peer session cookie checking (was working only due to coincidence)

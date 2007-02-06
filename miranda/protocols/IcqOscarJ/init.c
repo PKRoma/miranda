@@ -61,7 +61,7 @@ extern int bHideXStatusUI;
 PLUGININFO pluginInfo = {
   sizeof(PLUGININFO),
   NULL,
-  PLUGIN_MAKE_VERSION(0,3,8,9),
+  PLUGIN_MAKE_VERSION(0,3,10,1),
   "Support for ICQ network, enhanced.",
   "Joe Kucera, Bio, Martin Öberg, Richard Hughes, Jon Keating, etc",
   "jokusoftware@miranda-im.org",
@@ -441,10 +441,7 @@ static int OnSystemModulesLoaded(WPARAM wParam,LPARAM lParam)
     mi.cbSize = sizeof(mi);
     mi.position = 1000030000;
     mi.flags = 0;
-    if (IconLibInstalled())
-      mi.hIcon = IconLibGetIcon("req_auth");
-    else
-      mi.hIcon = LoadImage(hInst,MAKEINTRESOURCE(IDI_AUTH_ASK),IMAGE_ICON,0,0,LR_SHARED);
+    mi.hIcon = IconLibGetIcon("req_auth");
     mi.pszContactOwner = gpszICQProtoName;
     mi.pszName = ICQTranslate("Request authorization");
     mi.pszService = pszServiceName;
@@ -455,10 +452,7 @@ static int OnSystemModulesLoaded(WPARAM wParam,LPARAM lParam)
     strcat(pszServiceName, MS_GRANT_AUTH);
 
     mi.position = 1000029999;
-    if (IconLibInstalled())
-      mi.hIcon = IconLibGetIcon("grant_auth");
-    else
-      mi.hIcon = LoadImage(hInst,MAKEINTRESOURCE(IDI_AUTH_GRANT),IMAGE_ICON,0,0,LR_SHARED);
+    mi.hIcon = IconLibGetIcon("grant_auth");
     mi.pszName = ICQTranslate("Grant authorization");
     hUserMenuGrant = (HANDLE)CallService(MS_CLIST_ADDCONTACTMENUITEM, 0, (LPARAM)&mi);
     IconLibReleaseIcon("grant_auth");
@@ -467,10 +461,7 @@ static int OnSystemModulesLoaded(WPARAM wParam,LPARAM lParam)
     strcat(pszServiceName, MS_REVOKE_AUTH);
 
     mi.position = 1000029998;
-    if (IconLibInstalled())
-      mi.hIcon = IconLibGetIcon("revoke_auth");
-    else
-      mi.hIcon = LoadImage(hInst,MAKEINTRESOURCE(IDI_AUTH_REVOKE),IMAGE_ICON,0,0,LR_SHARED);
+    mi.hIcon = IconLibGetIcon("revoke_auth");
     mi.pszName = ICQTranslate("Revoke authorization");
     hUserMenuRevoke = (HANDLE)CallService(MS_CLIST_ADDCONTACTMENUITEM, 0, (LPARAM)&mi);
     IconLibReleaseIcon("revoke_auth");

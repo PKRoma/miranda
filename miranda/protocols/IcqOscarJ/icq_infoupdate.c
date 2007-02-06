@@ -79,7 +79,7 @@ void icq_InitInfoUpdate(void)
 
     dwUpdateThreshold = ICQGetContactSettingByte(NULL, "InfoUpdate", UPDATE_THRESHOLD)*3600*24;
 
-    hInfoThread = (HANDLE)forkthreadex(NULL, 0, icq_InfoUpdateThread, 0, 0, (DWORD*)&hInfoThread);
+    hInfoThread = ICQCreateThreadEx(icq_InfoUpdateThread, NULL, NULL);
   }
 
   bPendingUsers = 0;

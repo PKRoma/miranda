@@ -108,7 +108,6 @@
 #include "icq_uploadui.h"
 #include "log.h"
 #include "channels.h"
-#include "forkthread.h"
 #include "UI/askauthentication.h"
 #include "UI/userinfotab.h"
 #include "UI/loginpassword.h"

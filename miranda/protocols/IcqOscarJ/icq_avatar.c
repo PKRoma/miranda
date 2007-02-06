@@ -303,7 +303,6 @@ int IsAvatarSaved(HANDLE hContact, char* pHash, int nHashLen)
 void StartAvatarThread(HANDLE hConn, char* cookie, WORD cookieLen) // called from event
 {
   avatarthreadstartinfo* atsi = NULL;
-  pthread_t tid;
 
   if (!hConn)
   {
@@ -368,8 +367,7 @@ void StartAvatarThread(HANDLE hConn, char* cookie, WORD cookieLen) // called fro
   atsi->pCookie = cookie;
   atsi->wCookieLen = cookieLen;
   currentAvatarThread = atsi; // we store only current thread
-  tid.hThread = (HANDLE)forkthreadex(NULL, 0, icq_avatarThread, atsi, 0, &tid.dwThreadId);
-  CloseHandle(tid.hThread);
+  ICQCreateThread(icq_avatarThread, atsi);
   
   return;
 }

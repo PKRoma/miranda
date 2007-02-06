@@ -5,7 +5,7 @@
 // Copyright © 2000,2001 Richard Hughes, Roland Rabien, Tristan Van de Vreede
 // Copyright © 2001,2002 Jon Keating, Richard Hughes
 // Copyright © 2002,2003,2004 Martin Öberg, Sam Kothari, Robert Rainwater
-// Copyright © 2004,2005,2006 Joe Kucera
+// Copyright © 2004,2005,2006,2007 Joe Kucera
 //
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License
@@ -47,7 +47,8 @@ extern int icqGoingOnlineStatus;
 HANDLE hServerConn;
 WORD wListenPort;
 WORD wLocalSequence;
-static pthread_t serverThreadId;
+static DWORD serverThreadId;
+static HANDLE serverThreadHandle;
 
 static int handleServerPackets(unsigned char* buf, int len, serverthread_info* info);
 
@@ -227,13 +228,13 @@ void icq_serverDisconnect(BOOL bBlock)
     LeaveCriticalSection(&connectionHandleMutex);
     
     // Not called from network thread?
-    if (bBlock && GetCurrentThreadId() != serverThreadId.dwThreadId)
+    if (bBlock && GetCurrentThreadId() != serverThreadId)
     {
-      while (WaitForSingleObjectEx(serverThreadId.hThread, INFINITE, TRUE) != WAIT_OBJECT_0);
-      CloseHandle(serverThreadId.hThread);
+      while (WaitForSingleObjectEx(serverThreadHandle, INFINITE, TRUE) != WAIT_OBJECT_0);
+      CloseHandle(serverThreadHandle);
     }
     else
-      CloseHandle(serverThreadId.hThread);
+      CloseHandle(serverThreadHandle);
   }
   else
     LeaveCriticalSection(&connectionHandleMutex);
@@ -403,5 +404,5 @@ void icq_login(const char* szPassword)
 
   dwLocalUIN = dwUin;
 
-  serverThreadId.hThread = (HANDLE)forkthreadex(NULL, 0, icq_serverThread, stsi, 0, &serverThreadId.dwThreadId);
+  serverThreadHandle = ICQCreateThreadEx(icq_serverThread, stsi, &serverThreadId);
 }

@@ -118,10 +118,6 @@ SOURCE=.\families.h
 # End Source File
 # Begin Source File
 
-SOURCE=.\forkthread.h
-# End Source File
-# Begin Source File
-
 SOURCE=.\globals.h
 # End Source File
 # Begin Source File
@@ -219,10 +215,6 @@ SOURCE=.\log.h
 # Begin Source File
 
 SOURCE=.\UI\loginpassword.h
-# End Source File
-# Begin Source File
-
-SOURCE=.\m_icq.h
 # End Source File
 # Begin Source File
 
@@ -616,10 +608,6 @@ SOURCE=.\capabilities.c
 # Begin Source File
 
 SOURCE=.\cookies.c
-# End Source File
-# Begin Source File
-
-SOURCE=.\forkthread.c
 # End Source File
 # Begin Source File
 

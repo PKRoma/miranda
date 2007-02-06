@@ -89,8 +89,6 @@ CLEAN :
 	-@erase "$(INTDIR)\fam_15icqserver.sbr"
 	-@erase "$(INTDIR)\fam_17signon.obj"
 	-@erase "$(INTDIR)\fam_17signon.sbr"
-	-@erase "$(INTDIR)\forkthread.obj"
-	-@erase "$(INTDIR)\forkthread.sbr"
 	-@erase "$(INTDIR)\i18n.obj"
 	-@erase "$(INTDIR)\i18n.sbr"
 	-@erase "$(INTDIR)\iconlib.obj"
@@ -222,7 +220,6 @@ BSC32_SBRS= \
 	"$(INTDIR)\upload.sbr" \
 	"$(INTDIR)\capabilities.sbr" \
 	"$(INTDIR)\cookies.sbr" \
-	"$(INTDIR)\forkthread.sbr" \
 	"$(INTDIR)\i18n.sbr" \
 	"$(INTDIR)\iconlib.sbr" \
 	"$(INTDIR)\icq_avatar.sbr" \
@@ -291,7 +288,6 @@ LINK32_OBJS= \
 	"$(INTDIR)\upload.obj" \
 	"$(INTDIR)\capabilities.obj" \
 	"$(INTDIR)\cookies.obj" \
-	"$(INTDIR)\forkthread.obj" \
 	"$(INTDIR)\i18n.obj" \
 	"$(INTDIR)\iconlib.obj" \
 	"$(INTDIR)\icq_avatar.obj" \
@@ -377,8 +373,6 @@ CLEAN :
 	-@erase "$(INTDIR)\fam_15icqserver.sbr"
 	-@erase "$(INTDIR)\fam_17signon.obj"
 	-@erase "$(INTDIR)\fam_17signon.sbr"
-	-@erase "$(INTDIR)\forkthread.obj"
-	-@erase "$(INTDIR)\forkthread.sbr"
 	-@erase "$(INTDIR)\i18n.obj"
 	-@erase "$(INTDIR)\i18n.sbr"
 	-@erase "$(INTDIR)\iconlib.obj"
@@ -511,7 +505,6 @@ BSC32_SBRS= \
 	"$(INTDIR)\upload.sbr" \
 	"$(INTDIR)\capabilities.sbr" \
 	"$(INTDIR)\cookies.sbr" \
-	"$(INTDIR)\forkthread.sbr" \
 	"$(INTDIR)\i18n.sbr" \
 	"$(INTDIR)\iconlib.sbr" \
 	"$(INTDIR)\icq_avatar.sbr" \
@@ -580,7 +573,6 @@ LINK32_OBJS= \
 	"$(INTDIR)\upload.obj" \
 	"$(INTDIR)\capabilities.obj" \
 	"$(INTDIR)\cookies.obj" \
-	"$(INTDIR)\forkthread.obj" \
 	"$(INTDIR)\i18n.obj" \
 	"$(INTDIR)\iconlib.obj" \
 	"$(INTDIR)\icq_avatar.obj" \
@@ -868,11 +860,6 @@ SOURCE=.\capabilities.c
 SOURCE=.\cookies.c
 
 "$(INTDIR)\cookies.obj"	"$(INTDIR)\cookies.sbr" : $(SOURCE) "$(INTDIR)" "$(INTDIR)\icqoscar8.pch"
-
-
-SOURCE=.\forkthread.c
-
-"$(INTDIR)\forkthread.obj"	"$(INTDIR)\forkthread.sbr" : $(SOURCE) "$(INTDIR)" "$(INTDIR)\icqoscar8.pch"
 
 
 SOURCE=.\i18n.c
