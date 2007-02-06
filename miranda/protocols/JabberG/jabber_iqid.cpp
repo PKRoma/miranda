@@ -38,10 +38,10 @@ static void JabberOnLoggedIn( ThreadData* info )
 {
 	jabberOnline = TRUE;
 	jabberLoggedInTime = time(0);
-		
+
 	int iqId = JabberSerialNext();
 	JabberIqAdd( iqId, IQ_PROC_NONE, JabberIqResultGetRoster );
-		
+
 	XmlNode iq( "iq" ); iq.addAttr( "type", "get" ); iq.addAttrID( iqId );
 	XmlNode* query = iq.addChild( "query" ); query->addAttr( "xmlns", "jabber:iq:roster" );
 	JabberSend( info->s, iq );
@@ -123,7 +123,7 @@ void JabberIqResultSetAuth( XmlNode *iqNode, void *userdata )
 
 		iqId = JabberSerialNext();
 		JabberIqAdd( iqId, IQ_PROC_NONE, JabberIqResultGetRoster );
-		{	XmlNodeIq iq( "get", iqId ); 
+		{	XmlNodeIq iq( "get", iqId );
 			XmlNode* query = iq.addQuery( "jabber:iq:roster" );
 			JabberSend( info->s, iq );
 		}
@@ -133,7 +133,7 @@ void JabberIqResultSetAuth( XmlNode *iqNode, void *userdata )
 			iqId = JabberSerialNext();
 			JabberIqAdd( iqId, IQ_PROC_GETAGENTS, JabberIqResultGetAgents );
 
-			XmlNodeIq iq( "get", iqId ); 
+			XmlNodeIq iq( "get", iqId );
 			XmlNode* query = iq.addQuery( "jabber:iq:agents" );
 			JabberSend( info->s, iq );
 		}
@@ -582,7 +582,7 @@ LBL_Ret:
 		hasPhoto = TRUE;
 		if ( jabberVcardPhotoFileName ) {
 			DeleteFileA( jabberVcardPhotoFileName );
-			mir_free( jabberVcardPhotoFileName ); 
+			mir_free( jabberVcardPhotoFileName );
 			jabberVcardPhotoFileName = NULL;
 		}
 		replaceStr( jabberVcardPhotoFileName, szTempFileName );
@@ -1385,7 +1385,7 @@ void JabberIqResultGetAvatar( XmlNode *iqNode, void *userdata )
 	}
 	if ( n == NULL )
 		return;
-	
+
 	int resultLen = 0;
 	char* body = JabberBase64Decode( n->text, &resultLen );
 
@@ -1427,8 +1427,6 @@ LBL_ErrFormat:
 	JSetString( hContact, "AvatarSaved", buffer );
 
 	JabberGetAvatarFileName( hContact, AI.filename, sizeof AI.filename );
-
-	DBWriteContactSettingString( hContact, "ContactPhoto", "File", AI.filename );
 
 	FILE* out = fopen( AI.filename, "wb" );
 	if ( out != NULL ) {
