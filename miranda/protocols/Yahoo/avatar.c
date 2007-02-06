@@ -571,7 +571,6 @@ void get_picture(int id, int fd, int error,	const char *filename, unsigned long 
 				WriteFile(myhFile, pBuff, rsize, &c, NULL );
 				CloseHandle(myhFile);
 				
-				DBWriteContactSettingString(hContact, "ContactPhoto", "File", buf);
 				DBWriteContactSettingDword(hContact, yahooProtocolName, "PictLastCheck", 0);
 			} else {
 				LOG(("Can not open file for writing: %s", buf));
@@ -854,9 +853,6 @@ void yahoo_reset_avatar(HANDLE 	hContact)
 {
 	LOG(("[YAHOO_RESET_AVATAR]"));
 
-	// STUPID SCRIVER Doesn't listen to ACKTYPE_AVATAR. so remove the file reference!
-	//DBDeleteContactSetting(hContact, "ContactPhoto", "File");	
-	
 	ProtoBroadcastAck(yahooProtocolName, hContact, ACKTYPE_AVATAR, ACKRESULT_STATUS, NULL, 0);
 }
 
