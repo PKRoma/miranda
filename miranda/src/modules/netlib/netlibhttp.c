@@ -106,11 +106,12 @@ static int HttpPeekFirstResponseLine(struct NetlibConnection *nlc,DWORD dwTimeou
 			   || *pHttpMinor++!='.'
 			   || (httpMinorVer=strtol(pHttpMinor,&pResultCode,10))<0
 			   || pResultCode==pHttpMinor
-			   || (tokenLen=strspn(pResultCode," \t"))==0
+			   || (tokenLen=strspn(pResultCode," \t\n\0"))==0	//by FYR: Some proxy may not return code description but mostly 'HTTP/1.0 200' is able to work result
 			   || (*resultCode=strtol(pResultCode+=tokenLen,&pResultDescr,10))==0
-			   || pResultDescr==pResultCode
-			   || (tokenLen=strspn(pResultDescr," \t"))==0
-			   || *(pResultDescr+=tokenLen)=='\0') {
+			// || pResultDescr==pResultCode
+			// || (tokenLen=strspn(pResultDescr," \t"))==0
+			// || *(pResultDescr+=tokenLen)=='\0' 
+			   ) {
 				SetLastError(peol==buffer?ERROR_BAD_FORMAT:ERROR_INVALID_DATA);
 				return 0;
 			}
