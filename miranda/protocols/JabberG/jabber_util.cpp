@@ -306,7 +306,7 @@ void __stdcall JabberUtfToTchar( const char* pszValue, size_t cbLen, LPTSTR& des
 		// this code can cause access violation when a stack overflow occurs
 		pszCopy = ( char* )alloca( cbLen+1 );
 	}
-	__finally
+	__except( EXCEPTION_EXECUTE_HANDLER )
 	{
 		bNeedsFree = true;
 		pszCopy = ( char* )malloc( cbLen+1 );
