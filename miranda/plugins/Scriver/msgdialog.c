@@ -288,28 +288,42 @@ int RTL_Detect(WCHAR *pszwText)
 }
 #endif
 
-static void AddToFileList(char ***pppFiles,int *totalCount,const char *szFilename) {
+static void AddToFileList(char ***pppFiles,int *totalCount,const TCHAR* szFilename)
+{
 	*pppFiles=(char**)mir_realloc(*pppFiles,(++*totalCount+1)*sizeof(char*));
-	(*pppFiles)[*totalCount]=NULL;
-	(*pppFiles)[*totalCount-1]=mir_strdup(szFilename);
-	if(GetFileAttributesA(szFilename)&FILE_ATTRIBUTE_DIRECTORY) {
-		WIN32_FIND_DATAA fd;
-		HANDLE hFind;
-		char szPath[MAX_PATH];
-		lstrcpyA(szPath,szFilename);
-		lstrcatA(szPath,"\\*");
-		if((hFind=FindFirstFileA(szPath,&fd))) {
-			do {
-				if(!lstrcmpA(fd.cFileName,".") || !lstrcmpA(fd.cFileName,"..")) continue;
-				lstrcpyA(szPath,szFilename);
-				lstrcatA(szPath,"\\");
-				lstrcatA(szPath,fd.cFileName);
-				AddToFileList(pppFiles,totalCount,szPath);
-			} while(FindNextFileA(hFind,&fd));
-			FindClose(hFind);
-		}
+	(*pppFiles)[*totalCount] = NULL;
+
+	#if defined( _UNICODE )
+	{
+		TCHAR tszShortName[ MAX_PATH ];
+		char  szShortName[ MAX_PATH ];
+		if ( GetShortPathName( szFilename, tszShortName, SIZEOF( tszShortName )) == 0 )
+         WideCharToMultiByte( CP_ACP, 0, szFilename, -1, szShortName, sizeof( szShortName ), NULL, NULL );
+		else
+         WideCharToMultiByte( CP_ACP, 0, tszShortName, -1, szShortName, sizeof( szShortName ), NULL, NULL );
+		(*pppFiles)[*totalCount-1] = mir_strdup( szShortName );
 	}
-}
+	#else
+		(*pppFiles)[*totalCount-1] = mir_strdup( szFilename );
+	#endif
+
+	if ( GetFileAttributes(szFilename) & FILE_ATTRIBUTE_DIRECTORY ) {
+		WIN32_FIND_DATA fd;
+		HANDLE hFind;
+		TCHAR szPath[MAX_PATH];
+		lstrcpy(szPath,szFilename);
+		lstrcat(szPath,_T("\\*"));
+		if (( hFind = FindFirstFile( szPath, &fd )) != INVALID_HANDLE_VALUE ) {
+			do {
+				if ( !lstrcmp(fd.cFileName,_T(".")) || !lstrcmp(fd.cFileName,_T(".."))) continue;
+				lstrcpy(szPath,szFilename);
+				lstrcat(szPath,_T("\\"));
+				lstrcat(szPath,fd.cFileName);
+				AddToFileList(pppFiles,totalCount,szPath);
+			}
+				while( FindNextFile( hFind,&fd ));
+			FindClose( hFind );
+}	}	}
 
 static int GetToolbarWidth()
 {
@@ -1374,16 +1388,12 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
 		if (!(CallProtoService(dat->szProto, PS_GETCAPS, PFLAGNUM_1,0)&PF1_FILESEND)) break;
 		if (dat->wStatus==ID_STATUS_OFFLINE) break;
 		if (dat->hContact!=NULL) {
-			HDROP hDrop;
-			char **ppFiles=NULL;
-			char szFilename[MAX_PATH];
-			int fileCount,totalCount=0,i;
-
-			hDrop=(HDROP)wParam;
-			fileCount=DragQueryFile(hDrop,-1,NULL,0);
-			ppFiles=NULL;
-			for(i=0;i<fileCount;i++) {
-				DragQueryFileA(hDrop, i, szFilename, sizeof(szFilename));
+			TCHAR szFilename[MAX_PATH];
+			HDROP hDrop = (HDROP)wParam;
+			int fileCount = DragQueryFile(hDrop,-1,NULL,0), totalCount = 0, i;
+			char** ppFiles = NULL;
+			for ( i=0; i < fileCount; i++ ) {
+				DragQueryFile(hDrop, i, szFilename, SIZEOF(szFilename));
 				AddToFileList(&ppFiles, &totalCount, szFilename);
 			}
 			CallServiceSync(MS_FILE_SENDSPECIFICFILES, (WPARAM)dat->hContact, (LPARAM)ppFiles);
@@ -2733,7 +2743,7 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
 			NotifyTyping(dat, PROTOTYPE_SELFTYPING_OFF);
 		}
 		CallService(MS_SKIN2_RELEASEICON,(WPARAM)dat->userMenuIcon, 0);
-		dat->userMenuIcon = NULL;		
+		dat->userMenuIcon = NULL;
 		if (dat->sendInfo) {
 			int i;
 			for (i = 0; i < dat->sendCount; i++) {
