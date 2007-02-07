@@ -97,7 +97,7 @@ BEGIN
     CONTROL         "Treat Away status as 'Be Right Back'",IDC_AWAY_AS_BRB,
                     "Button",BS_AUTOCHECKBOX | WS_TABSTOP,11,140,288,10
     CONTROL         "Manage server groups",IDC_MANAGEGROUPS,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,11,151,288,10
-    CONTROL         "Run the following application when new Hotmail is arrived",IDC_RUN_APP_ON_HOTMAIL,
+    CONTROL         "Run the following application when new Hotmail arrives",IDC_RUN_APP_ON_HOTMAIL,
                     "Button",BS_AUTOCHECKBOX | WS_TABSTOP,11,173,288,10
     EDITTEXT        IDC_MAILER_APP,23,184,161,12,ES_AUTOHSCROLL
     PUSHBUTTON      "...",IDC_ENTER_MAILER_APP,189,184,15,12
