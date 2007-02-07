@@ -81,7 +81,7 @@
 [Manage server groups]
 [Treat Away status as 'Be Right Back']
 [Never update your nickname from server]
-[Run the following application when new Hotmail is arrived]
+[Run the following application when new Hotmail arrives]
 [Server groups import may change your contact list layout after next login. Do you want to upload your groups to the server?]
 
 ; Network options dialog
