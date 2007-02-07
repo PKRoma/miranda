@@ -1,7 +1,7 @@
                    Miranda Instant Messenger Release Notes
                    ---------------------------------------
 
-                            February 2007 (v0.6.5)
+                            February 2007 (v0.6.6)
 
                           http://www.miranda-im.org
 
@@ -22,6 +22,13 @@ Contents
 
 1. New in this version
 ----------------------
+* New in 0.6.6
+Bugfixes
+ - Fixed dragging/dropping file with non-locale characters into message window
+ - Logging large chunks of data to disk could cause crash
+ - Fetching events from the database sometimes failed
+ - Sounds in message windows didn't play properly
+
 * New in 0.6.5
 Bugfixes
  - Update notification module not loaded correctly
