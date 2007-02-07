@@ -278,7 +278,7 @@ static int GetEvent(WPARAM wParam,LPARAM lParam)
 	int bytesToCopy,i;
 	
 	if(dbei==NULL||dbei->cbSize!=sizeof(DBEVENTINFO)) return 1;
-    if(dbei->pBlob==NULL) {
+    if(dbei->cbBlob>0&&dbei->pBlob==NULL) {
         dbei->cbBlob = 0;
         return 1;
     }
