@@ -585,8 +585,11 @@ void SetDialogToType(HWND hwndDlg)
     SendMessage(hwndDlg, DM_UPDATETITLE, 0, 1);
     SendMessage(hwndDlg, WM_SIZE, 0, 0);
 
-    EnableWindow(GetDlgItem(hwndDlg, IDC_CONTACTPIC), FALSE);
-    EnableWindow(GetDlgItem(hwndDlg, IDC_PANELPIC), FALSE);
+	if(!myGlobals.g_FlashAvatarAvail) {
+		EnableWindow(GetDlgItem(hwndDlg, IDC_CONTACTPIC), FALSE);
+		EnableWindow(GetDlgItem(hwndDlg, IDC_PANELPIC), FALSE);
+	}
+
     ShowWindow(GetDlgItem(hwndDlg, IDC_TOGGLESIDEBAR), myGlobals.m_SideBarEnabled ? SW_SHOW : SW_HIDE);
 
     // info panel stuff
@@ -1626,6 +1629,16 @@ static int MessageDialogResize(HWND hwndDlg, LPARAM lParam, UTILRESIZECONTROL * 
                 dat->fMustOffset = TRUE;
             } else
                 dat->fMustOffset = FALSE;
+
+            if (myGlobals.g_FlashAvatarAvail) {
+                RECT rc = { urc->rcItem.left,  urc->rcItem.top, urc->rcItem.right, urc->rcItem.bottom };
+                FLASHAVATAR fa = {0};
+    
+                fa.hContact = !(dat->dwFlagsEx & MWF_SHOW_INFOPANEL) ? dat->hContact : NULL;
+                fa.id = 25367;
+                fa.cProto = dat->szProto;
+                CallService(MS_FAVATAR_RESIZE, (WPARAM)&fa, (LPARAM)&rc);
+            }
 
             return RD_ANCHORX_RIGHT|RD_ANCHORY_BOTTOM;
         case IDC_MESSAGE:
@@ -5499,9 +5512,25 @@ verify:
         {
             BOOL not_sending=GetKeyState(VK_CONTROL)&0x8000;
          if (!not_sending) {
-            if(dat->szProto==NULL) break;
-            if(!(CallProtoService(dat->szProto,PS_GETCAPS,PFLAGNUM_1,0)&PF1_FILESEND)) break;
-            if(dat->wStatus == ID_STATUS_OFFLINE) break;
+            char *szProto = dat->bIsMeta ? dat->szMetaProto : dat->szProto;
+            int  pcaps;
+
+            if(szProto == NULL) 
+                break;
+
+            pcaps = CallProtoService(szProto, PS_GETCAPS,PFLAGNUM_1, 0);
+            if(!(pcaps & PF1_FILESEND)) 
+                break;
+            if(dat->wStatus == ID_STATUS_OFFLINE) {
+                pcaps = CallProtoService(szProto, PS_GETCAPS,PFLAGNUM_4, 0);
+                if(!(pcaps & PF4_OFFLINEFILES)) {
+                    TCHAR szBuffer[256];
+
+                    _sntprintf(szBuffer, safe_sizeof(szBuffer), TranslateT("Contact is offline and this protocol does not support sending files to offline users."));
+                    SendMessage(hwndDlg, DM_ACTIVATETOOLTIP, IDC_MESSAGE, (LPARAM)szBuffer);
+                    break;
+                }
+            }
          }
          if(dat->hContact!=NULL) {
 				TCHAR szFilename[MAX_PATH];

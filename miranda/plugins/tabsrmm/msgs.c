@@ -39,6 +39,7 @@ static char *relnotes[] = {
     "\\par\t\\b\\ul1 Release notes for version 1.1.0.18\\b0\\ul0\\par ",
     "*\tCorrected slightly wrong Shift-Enter behaviour (group chats).\\par",
     "*\tTab tooltips no longer remain sticky when closing the tab.\\par",
+    "*\tIt is now possible to send files to offline users via drag and drop (note, not all protocols support this feature).\\par",
     NULL
 };
 

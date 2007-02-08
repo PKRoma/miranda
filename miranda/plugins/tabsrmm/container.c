@@ -2868,7 +2868,10 @@ panel_found:
 
   	  			if (myGlobals.g_FlashAvatarAvail) { // destroy own flash avatar
 	  				FLASHAVATAR fa = {0};
+					struct MessageWindowData *dat = (struct MessageWindowData *)GetWindowLong(pContainer->hwndActive, GWL_USERDATA);
+
 					fa.id = 25367;
+					fa.cProto = dat ? dat->szProto : NULL;
 					CallService(MS_FAVATAR_DESTROY, (WPARAM)&fa, 0);
   	  			}
                 //DestroyWindow(hwndTab);

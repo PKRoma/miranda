@@ -339,6 +339,7 @@ LRESULT DM_RecalcPictureSize(HWND hwndDlg, struct MessageWindowData *dat)
         }
         GetObject(hbm, sizeof(bminfo), &bminfo);
         CalcDynamicAvatarSize(hwndDlg, dat, &bminfo);
+        /*
         if (myGlobals.g_FlashAvatarAvail) {
             RECT rc = { 0, 0, dat->pic.cx, dat->pic.cy };
             if(!(dat->dwFlagsEx & MWF_SHOW_INFOPANEL)) {
@@ -350,6 +351,7 @@ LRESULT DM_RecalcPictureSize(HWND hwndDlg, struct MessageWindowData *dat)
                 fa.id = 25367;
                 CallService(MS_FAVATAR_RESIZE, (WPARAM)&fa, (LPARAM)&rc);				}
         }
+        */
         SendMessage(hwndDlg, WM_SIZE, 0, 0);
     }
     return 0;

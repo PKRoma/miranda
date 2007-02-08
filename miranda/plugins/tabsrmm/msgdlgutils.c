@@ -316,11 +316,12 @@ void CalcDynamicAvatarSize(HWND hwndDlg, struct MessageWindowData *dat, BITMAP *
 		FLASHAVATAR fa ={0};
 		fa.cProto = dat->szProto;
 		fa.id = 25367;
+		fa.hContact = (dat->dwFlagsEx & MWF_SHOW_INFOPANEL) ? NULL : dat->hContact;
 		CallService(MS_FAVATAR_GETINFO, (WPARAM)&fa, 0);
 		if(fa.hWindow) {
-			bminfo->bmHeight = 64;
-			bminfo->bmWidth = 52;
-		}
+			bminfo->bmHeight = FAVATAR_HEIGHT;
+			bminfo->bmWidth = FAVATAR_WIDTH;		
+        }
 	}    
     GetClientRect(hwndDlg, &rc);
     
@@ -797,8 +798,18 @@ int GetAvatarVisibility(HWND hwndDlg, struct MessageWindowData *dat)
 				break;
 			case 3:
 			{
-				HBITMAP hbm = ((dat->ace && !(dat->ace->dwFlags & AVS_HIDEONCLIST)) ? dat->ace->hbmPic : 0);
-				if(hbm && hbm != myGlobals.g_hbmUnknown)
+                FLASHAVATAR fa = {0};
+                HBITMAP hbm = ((dat->ace && !(dat->ace->dwFlags & AVS_HIDEONCLIST)) ? dat->ace->hbmPic : 0);
+
+				if(myGlobals.g_FlashAvatarAvail) {
+					fa.cProto = dat->szProto;
+					fa.id = 25367;
+					fa.hContact = dat->hContact;
+					fa.hParentWindow = GetDlgItem(hwndDlg, IDC_PANELPIC);
+
+					CallService(MS_FAVATAR_MAKE, (WPARAM)&fa, 0);
+				}
+				if((hbm && hbm != myGlobals.g_hbmUnknown) || (fa.hWindow != NULL))
 					dat->showInfoPic = 1;
 				else
 					dat->showInfoPic = 0;
@@ -824,8 +835,18 @@ int GetAvatarVisibility(HWND hwndDlg, struct MessageWindowData *dat)
             case 2:
             case 1:
 			{
+				FLASHAVATAR fa = {0};
 				HBITMAP hbm = (dat->ace && !(dat->ace->dwFlags & AVS_HIDEONCLIST)) ? dat->ace->hbmPic : 0;
-				if(hbm && hbm != myGlobals.g_hbmUnknown)
+
+				if(myGlobals.g_FlashAvatarAvail) {
+					fa.cProto = dat->szProto;
+					fa.id = 25367;
+					fa.hContact = dat->hContact;
+					fa.hParentWindow = GetDlgItem(hwndDlg, IDC_CONTACTPIC);
+
+					CallService(MS_FAVATAR_MAKE, (WPARAM)&fa, 0);
+				}
+				if((hbm && hbm != myGlobals.g_hbmUnknown) || (fa.hWindow != NULL))
 					dat->showPic = 1;
 				else
 					dat->showPic = 0;
@@ -2128,9 +2149,36 @@ int MsgWindowDrawHandler(WPARAM wParam, LPARAM lParam, HWND hwndDlg, struct Mess
 		HPEN hPenBorder = 0, hPenOld = 0;
 		HRGN clipRgn = 0;
         int  iRad = myGlobals.m_WinVerMajor >= 5 ? 4 : 6;
+        BOOL flashAvatar = FALSE;
+
+		if(myGlobals.g_FlashAvatarAvail && (!bPanelPic || (bPanelPic && dat->showInfoPic == 1))) {
+			FLASHAVATAR fa = {0}; 
+
+			fa.id = 25367;
+			fa.cProto = dat->szProto;
+			if(!bPanelPic && (dat->dwFlagsEx & MWF_SHOW_INFOPANEL)) {
+				fa.hParentWindow = GetDlgItem(hwndDlg, IDC_CONTACTPIC);
+				CallService(MS_FAVATAR_MAKE, (WPARAM)&fa, 0);
+				EnableWindow(GetDlgItem(hwndDlg, IDC_CONTACTPIC), fa.hWindow != 0);
+			} else {
+				fa.hContact = dat->hContact;
+				fa.hParentWindow = GetDlgItem(hwndDlg, (dat->dwFlagsEx & MWF_SHOW_INFOPANEL) ? IDC_PANELPIC : IDC_CONTACTPIC);
+				CallService(MS_FAVATAR_MAKE, (WPARAM)&fa, 0);
+				EnableWindow(GetDlgItem(hwndDlg, (dat->dwFlagsEx & MWF_SHOW_INFOPANEL) ? IDC_PANELPIC : IDC_CONTACTPIC), fa.hWindow != 0);
+				dat->hwndFlash = fa.hWindow;
+			}
+			if(fa.hWindow != 0) {
+				bminfo.bmHeight = FAVATAR_HEIGHT;
+				bminfo.bmWidth = FAVATAR_WIDTH;
+				CallService(MS_FAVATAR_SETBKCOLOR, (WPARAM)&fa, (LPARAM)dat->avatarbg);
+				flashAvatar = TRUE;
+			}
+		}
 
         if(bPanelPic) {
-            GetObject(dat->ace ? dat->ace->hbmPic : myGlobals.g_hbmUnknown, sizeof(bminfo), &bminfo);
+			if(!flashAvatar) {
+            	GetObject(dat->ace ? dat->ace->hbmPic : myGlobals.g_hbmUnknown, sizeof(bminfo), &bminfo);
+			}
 			if((dat->ace && dat->showInfoPic && !(dat->ace->dwFlags & AVS_HIDEONCLIST)) || dat->showInfoPic)
                 aceFlags = dat->ace ? dat->ace->dwFlags : 0;
 			else {
@@ -2158,14 +2206,6 @@ int MsgWindowDrawHandler(WPARAM wParam, LPARAM lParam, HWND hwndDlg, struct Mess
         cy = rcClient.bottom;
         if(cx < 5 || cy < 5)
             return TRUE;
-
-        hPenBorder = CreatePen(PS_SOLID, 1, (COLORREF)DBGetContactSettingDword(NULL, SRMSGMOD_T, "avborderclr", RGB(0, 0, 0)));
-        
-        hdcDraw = CreateCompatibleDC(dis->hDC);
-        hbmDraw = CreateCompatibleBitmap(dis->hDC, cx, cy);
-        hbmOld = SelectObject(hdcDraw, hbmDraw);
-        
-		hPenOld = SelectObject(hdcDraw, hPenBorder);
 
         if(bPanelPic) {
             if(bminfo.bmHeight > bminfo.bmWidth) {
@@ -2199,6 +2239,18 @@ int MsgWindowDrawHandler(WPARAM wParam, LPARAM lParam, HWND hwndDlg, struct Mess
                 dNewWidth = (double)(rc.right) * 0.8;
             iMaxHeight = dat->iRealAvatarHeight;
         }
+
+		if(flashAvatar) 
+            return TRUE;
+
+        hPenBorder = CreatePen(PS_SOLID, 1, (COLORREF)DBGetContactSettingDword(NULL, SRMSGMOD_T, "avborderclr", RGB(0, 0, 0)));
+        
+        hdcDraw = CreateCompatibleDC(dis->hDC);
+        hbmDraw = CreateCompatibleBitmap(dis->hDC, cx, cy);
+        hbmOld = SelectObject(hdcDraw, hbmDraw);
+        
+		hPenOld = SelectObject(hdcDraw, hPenBorder);
+
         bgBrush = CreateSolidBrush(dat->avatarbg);
         hOldBrush = SelectObject(hdcDraw, bgBrush);
 		rcFrame = rcClient;
@@ -2279,26 +2331,7 @@ int MsgWindowDrawHandler(WPARAM wParam, LPARAM lParam, HWND hwndDlg, struct Mess
         SelectObject(hdcDraw, hOldBrush);
         DeleteObject(bgBrush);
         DeleteObject(hPenBorder);
-        if(myGlobals.g_FlashAvatarAvail) {
-            FLASHAVATAR fa = {0}; 
-
-            fa.id = 25367;
-            fa.cProto = dat->szProto;
-			if(!bPanelPic && (dat->dwFlagsEx & MWF_SHOW_INFOPANEL)) {
-				//CallService(MS_FAVATAR_GETINFO, (WPARAM)&fa, 0);
-				fa.hParentWindow = GetDlgItem(hwndDlg, IDC_CONTACTPIC);
-				CallService(MS_FAVATAR_MAKE, (WPARAM)&fa, 0);
-			} else {
-				fa.hContact = dat->hContact;
-                fa.hParentWindow = GetDlgItem(hwndDlg, (dat->dwFlagsEx & MWF_SHOW_INFOPANEL) ? IDC_PANELPIC : IDC_CONTACTPIC);
-                CallService(MS_FAVATAR_MAKE, (WPARAM)&fa, 0);
-                dat->hwndFlash = fa.hWindow;
-            }
-            if(fa.hWindow == 0)
-                BitBlt(dis->hDC, 0, 0, cx, cy, hdcDraw, 0, 0, SRCCOPY);
-        }
-        else
-            BitBlt(dis->hDC, 0, 0, cx, cy, hdcDraw, 0, 0, SRCCOPY);
+        BitBlt(dis->hDC, 0, 0, cx, cy, hdcDraw, 0, 0, SRCCOPY);
         SelectObject(hdcDraw, hbmOld);
         DeleteObject(hbmDraw);
         DeleteDC(hdcDraw);

@@ -1134,7 +1134,7 @@ nounicode:
                 case 't':
                 case 'T':
                     if(showTime) {
-                        szFinalTimestamp = Template_MakeRelativeDate(dat, final_time, g_groupBreak, dwEffectiveFlags & MWF_LOG_SHOWSECONDS ? cc : (TCHAR)'t');
+                        szFinalTimestamp = Template_MakeRelativeDate(dat, final_time, g_groupBreak, (unsigned short)(dwEffectiveFlags & MWF_LOG_SHOWSECONDS ? cc : (TCHAR)'t'));
                         AppendTimeStamp(szFinalTimestamp, isSent, &buffer, &bufferEnd, &bufferAlloced, skipFont, dat, iFontIDOffset);
                     }
                     else

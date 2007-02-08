@@ -50,6 +50,23 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 #define MS_FAVATAR_SETEMOFACE 	"FlashAvatar/SetEmoFace"
 
+#define MS_FAVATAR_SETPOS 		"FlashAvatar/SetPos"
+
+/**
+	WPARAM FLASHAVATAR* (hContact, hParentWindow)
+	LPARAM COLORREF
+ */
+
+#define MS_FAVATAR_SETBKCOLOR	"FlashAvatar/SetBkColor"
+
+// tZers macros
+/**
+	WPARAM not used
+	LPARAM not used
+*/
+#define MS_TZERS_SUPPORT "FlashAvatar/tZers"
+#define EVENTTYPE_TZERS 4
+
 // Avatar emotion faces
 #define AV_SMILE	"smile"
 #define AV_SAD		"sad"
@@ -61,6 +78,10 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #define AV_LOVE		"love"
 #define AV_NORMAL	"stam"
 
+#define FAVATAR_WIDTH 52
+#define FAVATAR_HEIGHT 64
+
+// FLASHAVATAR structure
 typedef struct {
 	HANDLE hContact;	// contact who flash avatar belongs to
 	HWND hWindow;		// handle of flash avatar object
@@ -68,4 +89,5 @@ typedef struct {
 	char* cUrl;			// url of .swf file
 	int id;				// unique number of plugin which wants to use avatar service
     char* cProto;	    // contacts protocol
+    char  reserved[16]; // future usage
 } FLASHAVATAR;
