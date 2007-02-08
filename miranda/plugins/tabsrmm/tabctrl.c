@@ -1021,7 +1021,6 @@ static void DrawThemesXpTabItem(HDC pDC, int ixItem, RECT *rcItem, UINT uiFlag, 
     DeleteDC(dcMem);
 }
 
-static int tab_tip_active = 0;
 static POINT ptMouseT = {0};
 
 static LRESULT CALLBACK TabControlSubclassProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
@@ -1049,6 +1048,7 @@ static LRESULT CALLBACK TabControlSubclassProc(HWND hwnd, UINT msg, WPARAM wPara
             tabdat->hwnd = hwnd;
             tabdat->cx = GetSystemMetrics(SM_CXSMICON);
             tabdat->cy = GetSystemMetrics(SM_CYSMICON);
+            tabdat->fTipActive = FALSE;
             SendMessage(hwnd, EM_THEMECHANGED, 0, 0);
             OldTabControlClassProc = wcl.lpfnWndProc;
             return TRUE;
@@ -1164,10 +1164,10 @@ static LRESULT CALLBACK TabControlSubclassProc(HWND hwnd, UINT msg, WPARAM wPara
                 return 1;
             }
             ptMouseT = pt;
-            if(tab_tip_active){
+            if(tabdat->fTipActive){
                 KillTimer(hwnd, TIMERID_HOVER_T);
                 CallService("mToolTip/HideTip", 0, 0);
-                tab_tip_active = FALSE;
+                tabdat->fTipActive = FALSE;
             }
             KillTimer(hwnd, TIMERID_HOVER_T);
             SetTimer(hwnd, TIMERID_HOVER_T, 450, 0);
@@ -1220,7 +1220,7 @@ static LRESULT CALLBACK TabControlSubclassProc(HWND hwnd, UINT msg, WPARAM wPara
         case WM_RBUTTONDOWN:
             KillTimer(hwnd, TIMERID_HOVER_T);
             CallService("mToolTip/HideTip", 0, 0);
-            tab_tip_active = FALSE;
+            tabdat->fTipActive = FALSE;
             break;
 
         case WM_LBUTTONDOWN:
@@ -1229,7 +1229,7 @@ static LRESULT CALLBACK TabControlSubclassProc(HWND hwnd, UINT msg, WPARAM wPara
 
             KillTimer(hwnd, TIMERID_HOVER_T);
             CallService("mToolTip/HideTip", 0, 0);
-            tab_tip_active = FALSE;
+            tabdat->fTipActive = FALSE;
 
             if(GetKeyState(VK_CONTROL) & 0x8000) {
                 tci.pt.x=(short)LOWORD(GetMessagePos());
@@ -1646,7 +1646,7 @@ skip_tabs:
                         if(IsWindow((HWND)item.lParam) && item.lParam != 0)
                             dat = (struct MessageWindowData *)GetWindowLong((HWND)item.lParam, GWL_USERDATA);
                         if(dat) {
-                            tab_tip_active = TRUE;
+                            tabdat->fTipActive = TRUE;
                             ti.isGroup = 0;
                             ti.hItem = dat->hContact;
                             ti.isTreeFocused = 0;
@@ -1668,6 +1668,13 @@ skip_tabs:
                 SendMessage(GetParent(hwnd), DM_SELECTTAB, DM_SELECT_NEXT, 0);
             InvalidateRect(hwnd, NULL, FALSE);
             break;
+        }
+        case  WM_USER + 100:
+        {
+            if(tabdat->fTipActive) {
+                tabdat->fTipActive = FALSE;
+                CallService("mToolTip/HideTip", 0, 0);
+            }
         }
     }
     return CallWindowProc(OldTabControlClassProc, hwnd, msg, wParam, lParam); 

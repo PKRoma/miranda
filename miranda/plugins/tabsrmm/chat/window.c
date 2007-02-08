@@ -622,6 +622,16 @@ static LRESULT CALLBACK MessageSubclassProc(HWND hwnd, UINT msg, WPARAM wParam, 
 
 			if (wParam == VK_RETURN) {
 				dat->szTabSave[0] = '\0';
+
+                if (isShift) {
+                    if(myGlobals.m_SendOnShiftEnter) {
+                        PostMessage(hwndParent, WM_COMMAND, IDOK, 0);
+                        return 0;
+                    }
+                    else
+                        break;
+                }
+
 				if (((isCtrl) != 0) ^ (0 != myGlobals.m_SendOnEnter))
 					return 0;
 
@@ -2976,6 +2986,7 @@ LABEL_SHOWWINDOW:
 
 			i = GetTabIndexFromHWND(hwndTab, hwndDlg);
 			if (i >= 0) {
+                SendMessage(hwndTab, WM_USER + 100, 0, 0);              // clean up tooltip
 				TabCtrl_DeleteItem(hwndTab, i);
 				BroadCastContainer(dat->pContainer, DM_REFRESHTABINDEX, 0, 0);
 				dat->iTabID = -1;

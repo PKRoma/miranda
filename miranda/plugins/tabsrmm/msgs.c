@@ -36,9 +36,9 @@ $Id$
 
 static char *relnotes[] = {
     "{\\rtf1\\ansi\\deff0\\pard\\li%u\\fi-%u\\ri%u\\tx%u}",
-    "\\par\t\\b\\ul1 Release notes for version 1.1.0.17\\b0\\ul0\\par ",
-    "*\tHovering a tab will now show a tipper/mToolTip style tip.\\par",
-    "*\t\\b Moved main option page to Options->Message Sessions!\\b0. The old \"Message Window\" entry is now gone.\\par",
+    "\\par\t\\b\\ul1 Release notes for version 1.1.0.18\\b0\\ul0\\par ",
+    "*\tCorrected slightly wrong Shift-Enter behaviour (group chats).\\par",
+    "*\tTab tooltips no longer remain sticky when closing the tab.\\par",
     NULL
 };
 

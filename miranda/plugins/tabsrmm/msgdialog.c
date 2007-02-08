@@ -5792,6 +5792,7 @@ verify:
 
                 i = GetTabIndexFromHWND(hwndTab, hwndDlg);
                 if (i >= 0) {
+                    SendMessage(hwndTab, WM_USER + 100, 0, 0);                      // remove tooltip
                     TabCtrl_DeleteItem(hwndTab, i);
                     BroadCastContainer(m_pContainer, DM_REFRESHTABINDEX, 0, 0);
                     dat->iTabID = -1;

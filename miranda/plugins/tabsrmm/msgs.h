@@ -458,6 +458,7 @@ struct TabControlData {
     HIMAGELIST himlDrag;
     BOOL    bRefreshWithoutClip;
     BOOL    fSavePos;
+    BOOL    fTipActive;
 };
 
 /*
