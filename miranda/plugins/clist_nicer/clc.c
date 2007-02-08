@@ -477,6 +477,7 @@ LBL_Def:
 			dat->bNeedSort = TRUE;
 			PostMessage(hwnd, INTM_SORTCLC, 0, 0);
 			// XXX SortCLC(hwnd, dat, 1);
+            //contact->iRowHeight = -1;
 			goto LBL_Def;
 		}
 
@@ -488,6 +489,7 @@ LBL_Def:
 			contact->codePage = DBGetContactSettingDword((HANDLE) wParam, "Tab_SRMsg", "ANSIcodepage", DBGetContactSettingDword((HANDLE)wParam, "UserInfo", "ANSIcodepage", CP_ACP));
 			// XXX InvalidateRect(hwnd, NULL, FALSE);
 			PostMessage(hwnd, INTM_INVALIDATE, 0, 0);
+            //contact->iRowHeight = -1;
 			goto LBL_Def;
 		}
 	case INTM_AVATARCHANGED:
@@ -520,6 +522,7 @@ LBL_Def:
                 else
                     contact->cFlags = (dwFlags & ECF_FORCEAVATAR ? contact->cFlags | ECF_AVATAR : contact->cFlags & ~ECF_AVATAR);
             }
+            //contact->iRowHeight = -1;
 			PostMessage(hwnd, INTM_INVALIDATE, 0, (LPARAM)contact->hContact);
 			goto LBL_Def;
 		}
@@ -536,6 +539,7 @@ LBL_Def:
 				szProto = contact->proto;
 			}
 			GetCachedStatusMsg(index, szProto);
+            //contact->iRowHeight = -1;
 			PostMessage(hwnd, INTM_INVALIDATE, 0, (LPARAM)(contact ? contact->hContact : 0));
 			goto LBL_Def;
 		}
@@ -554,6 +558,7 @@ LBL_Def:
                     LoadAvatarForContact(contact);
 			}
 			contact->wStatus = wStatus;
+            //contact->iRowHeight = -1;
 			goto LBL_Def;
 		}
 	case INTM_PROTOCHANGED:
@@ -570,6 +575,7 @@ LBL_Def:
 			RTL_DetectAndSet(contact, 0);
 #endif
 			dat->bNeedSort = TRUE;
+            //contact->iRowHeight = -1;
 			PostMessage(hwnd, INTM_SORTCLC, 0, 0);
 			// XXX SortCLC(hwnd, dat, 1);
 			goto LBL_Def;
@@ -607,6 +613,7 @@ LBL_Def:
 
 			iItem = pcli->pfnGetRowsPriorTo(&dat->list, group, li.List_IndexOf(( SortedList* )&group->cl, contact));
 			pcli->pfnInvalidateItem(hwnd, dat, iItem);
+            //contact->iRowHeight = -1;
 			goto LBL_Def;
 		}
 	case INTM_FORCESORT:
@@ -636,6 +643,7 @@ LBL_Def:
 			if (DBGetContactSettingDword((HANDLE) wParam, szProto, "IdleTS", 0)) {
 				contact->flags |= CONTACTF_IDLE;
 			}
+            //contact->iRowHeight = -1;
 			PostMessage(hwnd, INTM_INVALIDATE, 0, (LPARAM)contact->hContact);
 			goto LBL_Def;
 		}
@@ -672,6 +680,7 @@ LBL_Def:
 			if (szProto == NULL)
 				break;
 			GetCachedStatusMsg(index, szProto);
+            //contact->iRowHeight = -1;
 			PostMessage(hwnd, INTM_INVALIDATE, 0, (LPARAM)(contact ? contact->hContact : 0));
 			goto LBL_Def;
 		}

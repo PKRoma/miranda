@@ -1674,6 +1674,7 @@ static BOOL CALLBACK DlgProcSkinOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPAR
                         break;
                     }
                 case IDC_RELOADSKIN:
+                    DBWriteContactSettingByte(NULL, "CLUI", "skin_changed", 1);
                     ApplyCLUISkin();
                     break;
                 case IDC_RELOAD:
@@ -1871,6 +1872,11 @@ BOOL CALLBACK OptionsDlgProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 
 int CoolSB_SetupScrollBar()
 {
+    /*
+     * a skinned scrollbar is only valid when ALL items are skinned with image items
+     * and no item is set to ignored
+     */
+
     g_CluiData.bSkinnedScrollbar = !StatusItems[ID_EXTBKSCROLLBACK - ID_STATUS_OFFLINE].IGNORED &&
         !StatusItems[ID_EXTBKSCROLLBACKLOWER - ID_STATUS_OFFLINE].IGNORED &&
         !StatusItems[ID_EXTBKSCROLLTHUMB - ID_STATUS_OFFLINE].IGNORED &&
@@ -1879,6 +1885,19 @@ int CoolSB_SetupScrollBar()
         !StatusItems[ID_EXTBKSCROLLBUTTON - ID_STATUS_OFFLINE].IGNORED &&
         !StatusItems[ID_EXTBKSCROLLBUTTONHOVER - ID_STATUS_OFFLINE].IGNORED &&
         !StatusItems[ID_EXTBKSCROLLBUTTONPRESSED - ID_STATUS_OFFLINE].IGNORED;
+
+
+    if(!StatusItems[ID_EXTBKSCROLLBACK - ID_STATUS_OFFLINE].imageItem ||
+        !StatusItems[ID_EXTBKSCROLLBACKLOWER - ID_STATUS_OFFLINE].imageItem ||
+        !StatusItems[ID_EXTBKSCROLLTHUMB - ID_STATUS_OFFLINE].imageItem ||
+        !StatusItems[ID_EXTBKSCROLLTHUMBHOVER - ID_STATUS_OFFLINE].imageItem ||
+        !StatusItems[ID_EXTBKSCROLLTHUMBPRESSED - ID_STATUS_OFFLINE].imageItem ||
+        !StatusItems[ID_EXTBKSCROLLBUTTON - ID_STATUS_OFFLINE].imageItem ||
+        !StatusItems[ID_EXTBKSCROLLBUTTONHOVER - ID_STATUS_OFFLINE].imageItem ||
+        !StatusItems[ID_EXTBKSCROLLBUTTONPRESSED - ID_STATUS_OFFLINE].imageItem)
+
+        g_CluiData.bSkinnedScrollbar = FALSE;
+
 
     if(DBGetContactSettingByte(NULL, "CLC", "NoVScrollBar", 0)) {
         UninitializeCoolSB(pcli->hwndContactTree);

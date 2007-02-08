@@ -126,9 +126,6 @@ BOOL CALLBACK DlgProcCluiOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPar
 			SendDlgItemMessage(hwndDlg, IDC_FRAMEGAPSPIN, UDM_SETRANGE, 0, MAKELONG(10, 0));
 			SendDlgItemMessage(hwndDlg, IDC_FRAMEGAPSPIN, UDM_SETPOS, 0, (LPARAM)g_CluiData.gapBetweenFrames);
 
-			SendDlgItemMessage(hwndDlg, IDC_EXICONSCALESPIN, UDM_SETRANGE, 0, MAKELONG(20, 8));
-			SendDlgItemMessage(hwndDlg, IDC_EXICONSCALESPIN, UDM_SETPOS, 0, (LPARAM)g_CluiData.exIconScale);
-
 			return TRUE;
 		}
 	case WM_COMMAND:
@@ -176,7 +173,6 @@ BOOL CALLBACK DlgProcCluiOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPar
 		case PSN_APPLY:
 			{
 				BOOL translated;
-				int oldexIconScale = g_CluiData.exIconScale;
 				BYTE oldFading;
 				BYTE windowStyle = (BYTE)SendDlgItemMessage(hwndDlg, IDC_BORDERSTYLE, CB_GETCURSEL, 0, 0);
 				COLORREF clr_cluiframes;
@@ -282,10 +278,6 @@ BOOL CALLBACK DlgProcCluiOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPar
 				g_CluiData.bFullTransparent = IsDlgButtonChecked(hwndDlg, IDC_FULLTRANSPARENT) ? 1 : 0;
 				DBWriteContactSettingByte(NULL, "CLUI", "fulltransparent", (BYTE)g_CluiData.bFullTransparent);
 
-				g_CluiData.exIconScale = SendDlgItemMessage(hwndDlg, IDC_EXICONSCALESPIN, UDM_GETPOS, 0, 0);
-				g_CluiData.exIconScale = (g_CluiData.exIconScale < 8 || g_CluiData.exIconScale > 20) ? 16 : g_CluiData.exIconScale;
-
-				DBWriteContactSettingByte(NULL, "CLC", "ExIconScale", (BYTE)g_CluiData.exIconScale);
 				if (g_CluiData.bLayeredHack && MySetLayeredWindowAttributes)
 					SetWindowLong(pcli->hwndContactList, GWL_EXSTYLE, GetWindowLong(pcli->hwndContactList, GWL_EXSTYLE) | WS_EX_LAYERED);
 

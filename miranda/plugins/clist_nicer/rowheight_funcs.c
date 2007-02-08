@@ -185,7 +185,10 @@ int __forceinline RowHeights_GetRowHeight(struct ClcData *dat, HWND hwnd, struct
 	int height = 0;
 	//DWORD style=GetWindowLong(hwnd,GWL_STYLE);
 
-	if (!RowHeights_Alloc(dat, item + 1))
+    //if(contact->iRowHeight == item)
+    //    return(dat->row_heights[item]);
+
+    if (!RowHeights_Alloc(dat, item + 1))
 		return -1;
 
     height = dat->fontInfo[GetBasicFontID(contact)].fontHeight;
@@ -215,6 +218,7 @@ int __forceinline RowHeights_GetRowHeight(struct ClcData *dat, HWND hwnd, struct
     height += g_CluiData.bRowSpacing;
 
 	dat->row_heights[item] = height;
+    //contact->iRowHeight = item;
 
 	return height;
 }

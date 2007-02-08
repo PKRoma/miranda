@@ -126,6 +126,8 @@ int AddContactToGroup(struct ClcData *dat, struct ClcGroup *group, HANDLE hConta
 
 	p->wStatus = DBGetContactSettingWord(hContact, p->proto, "Status", ID_STATUS_OFFLINE);
 	p->xStatus = DBGetContactSettingByte(hContact, p->proto, "XStatusId", 0);
+    //p->iRowHeight = -1;
+
 	if (p->proto)
 		p->bIsMeta = !strcmp(p->proto, "MetaContacts");
 	else

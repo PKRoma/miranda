@@ -101,9 +101,18 @@ struct ContactFloater {
 
 typedef struct ContactFloater CONTACTFLOATER;
 
+#define DSPF_CENTERSTATUSICON 1
+#define DSPF_DIMIDLE 2
+#define DSPF_NOFFLINEAVATARS 4
+#define DSPF_SHOWLOCALTIME 8
+#define DSPF_LOCALTIMESELECTIVE 16
+#define DSPF_DONTSEPARATEOFFLINE 32
+#define DSPF_CENTERGROUPNAMES 64
+
 struct DisplayProfile {
+    UINT    uID;
     TCHAR   tszName[60];
-    DWORD   dwFlags, dwFlagsEx;
+    DWORD   dwFlags;
     DWORD   dwExtraImageMask;
     int     exIconScale;
     BOOL    bCenterStatusIcons;
@@ -173,6 +182,7 @@ struct ClcContact {
 	int isRtl;
     DWORD cFlags;
     BYTE  bSecondLine;
+    //int iRowHeight;   // index into the row height table (for caching)
 };
 
 #define DRAGSTAGE_NOTMOVED  0
