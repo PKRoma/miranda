@@ -48,6 +48,14 @@ BOOL IsStaticIcon(HICON hIcon) {
 	return FALSE;
 }
 
+void ReleaseIconSafe(HICON hIcon) {
+	if (!IsStaticIcon(hIcon)) {
+		DWORD result = CallService(MS_SKIN2_RELEASEICON,(WPARAM)hIcon, 0);
+		if ( result == 1 )
+			DestroyIcon(hIcon);
+	}
+}
+
 void ReleaseIconSmart(HICON hIcon) {
 	if (!IsStaticIcon(hIcon)) {
 		DWORD result = CallService(MS_SKIN2_RELEASEICON,(WPARAM)hIcon, 0);
@@ -62,7 +70,7 @@ int ImageList_AddIcon_Ex(HIMAGELIST hIml, int id) {
  	CallService(MS_SKIN2_RELEASEICON,(WPARAM)hIcon, 0);
  	return res;
 }
- 
+
 int ImageList_ReplaceIcon_Ex(HIMAGELIST hIml, int nIndex, int id) {
 	HICON hIcon = LoadSkinnedIcon(id);
 	int res = ImageList_ReplaceIcon(hIml, nIndex, hIcon);
@@ -76,7 +84,7 @@ int ImageList_AddIcon_ProtoEx(HIMAGELIST hIml, const char* szProto, int status) 
 	CallService(MS_SKIN2_RELEASEICON,(WPARAM)hIcon, 0);
  	return res;
 }
- 
+
 int ImageList_ReplaceIcon_ProtoEx(HIMAGELIST hIml, int nIndex, const char* szProto, int status) {
 	HICON hIcon = LoadSkinnedProtoIcon(szProto, status);
 	int res = ImageList_ReplaceIcon(hIml, nIndex, hIcon);
@@ -299,7 +307,7 @@ void LoadGlobalIcons() {
 		g_dat->hIcons[SMF_ICON_INCOMING] = (HICON) LoadImage(g_hInst, MAKEINTRESOURCE(IDI_INCOMING),IMAGE_ICON,0,0,0);
 		g_dat->hIcons[SMF_ICON_OUTGOING] = (HICON) LoadImage(g_hInst, MAKEINTRESOURCE(IDI_OUTGOING),IMAGE_ICON,0,0,0);
 		g_dat->hIcons[SMF_ICON_NOTICE] = (HICON) LoadImage(g_hInst, MAKEINTRESOURCE(IDI_NOTICE),IMAGE_ICON,0,0,0);
-		
+
 		g_dat->hIcons[SMF_ICON_CLOSEX] = (HICON) LoadImage(g_hInst, MAKEINTRESOURCE(IDI_CLOSEX),IMAGE_ICON,0,0,0);
 	}
 	for (i=0; i<sizeof(buttonIcons)/sizeof(int); i++) {
