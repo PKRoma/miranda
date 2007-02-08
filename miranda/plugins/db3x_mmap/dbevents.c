@@ -274,6 +274,10 @@ static int GetEvent(WPARAM wParam,LPARAM lParam)
 	int bytesToCopy,i;
 
 	if(dbei==NULL||dbei->cbSize!=sizeof(DBEVENTINFO)) return 1;
+	if(dbei->cbBlob > 0 && dbei->pBlob == NULL) {
+		dbei->cbBlob = 0;
+		return 1;
+	}
 	EnterCriticalSection(&csDbAccess);
 	dbe=(struct DBEvent*)DBRead(wParam,sizeof(struct DBEvent),NULL);
 	if(dbe->signature!=DBEVENT_SIGNATURE) {
