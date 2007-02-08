@@ -215,7 +215,7 @@ LBL_FatalError:
 			jabberStatus = ID_STATUS_OFFLINE;
 			JSendBroadcast( NULL, ACKTYPE_STATUS, ACKRESULT_SUCCESS, ( HANDLE ) oldStatus, jabberStatus );
 LBL_Exit:
-			delete info;
+			mir_free( info );
 			return;
 		}
 
