@@ -696,9 +696,17 @@ static __inline void Netlib_DestroySecurityProvider( char* szProviderName, HANDL
 // Returns the NTLM response string. The result value should be freed using mir_free
 #define MS_NETLIB_NTLMCREATERESPONSE "Netlib/NtlmCreateResponse"
 
-static __inline char* Netlib_NtlmCreateResponse( HANDLE hProvider, char* szChallenge )
+typedef struct {
+   char* szChallenge;
+	char* userName;
+	char* password;
+}
+	NETLIBNTLMREQUEST;
+
+static __inline char* Netlib_NtlmCreateResponse( HANDLE hProvider, char* szChallenge, char* login, char* psw )
 {
-	return (char*)CallService( MS_NETLIB_NTLMCREATERESPONSE, (WPARAM)hProvider, (LPARAM)szChallenge );
+	NETLIBNTLMREQUEST temp = { szChallenge, login, psw };
+	return (char*)CallService( MS_NETLIB_NTLMCREATERESPONSE, (WPARAM)hProvider, (LPARAM)&temp );
 }
 
 #endif // M_NETLIB_H__

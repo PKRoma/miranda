@@ -50,7 +50,7 @@ char* TNtlmAuth::getInitialRequest()
 	if ( !hProvider )
 		return NULL;
 
-	return Netlib_NtlmCreateResponse( hProvider, "" );
+	return mir_strdup("");
 }
 
 char* TNtlmAuth::getChallenge( const TCHAR* challenge )
@@ -59,8 +59,10 @@ char* TNtlmAuth::getChallenge( const TCHAR* challenge )
 		return NULL;
 
 	char* text = t2a( challenge );
-	char* result = Netlib_NtlmCreateResponse( hProvider, text );
+	char* user = t2a( info->username );
+	char* result = Netlib_NtlmCreateResponse( hProvider, text, user, info->password );
 	mir_free( text );
+	mir_free( user );
 	return result;
 }
 

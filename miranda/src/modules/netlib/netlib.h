@@ -155,7 +155,7 @@ void   NetlibSecurityInit(void);
 void   NetlibSecurityDestroy(void);
 void   NetlibDestroySecurityProvider(char* provider, HANDLE hSecurity);
 HANDLE NetlibInitSecurityProvider(char* provider);
-char*  NtlmCreateResponseFromChallenge(HANDLE hSecurity, char *szChallenge);
+char*  NtlmCreateResponseFromChallenge(HANDLE hSecurity, char *szChallenge, char* login, char* psw);
 
 
 static __inline int NLSend(struct NetlibConnection *nlc,const char *buf,int len,int flags) {
