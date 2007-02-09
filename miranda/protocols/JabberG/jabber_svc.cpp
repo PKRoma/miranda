@@ -52,7 +52,7 @@ static HANDLE AddToListByJID( const TCHAR* newJid, DWORD flags )
 		JSetStringT( hContact, "jid", jid );
 		if (( nick=JabberNickFromJID( newJid )) == NULL )
 			nick = mir_tstrdup( newJid );
-		JSetStringT( hContact, "Nick", nick );
+//		JSetStringT( hContact, "Nick", nick );
 		mir_free( nick );
 		mir_free( jid );
 
@@ -450,7 +450,7 @@ void sttAddContactForever( DBCONTACTWRITESETTING* cws, HANDLE hContact )
 		JabberAddContactToRoster( jid.ptszVal, nick, dbv.ptszVal, subscription );
 		JFreeVariant( &dbv );
 	}
-	else JabberAddContactToRoster( jid.ptszVal, nick, NULL, subscription );
+	else JabberAddContactToRoster( jid.ptszVal, NULL, NULL, subscription );
 
 	XmlNode presence( "presence" ); presence.addAttr( "to", jid.ptszVal ); presence.addAttr( "type", "subscribe" );
 	JabberSend( jabberThreadInfo->s, presence );

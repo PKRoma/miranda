@@ -50,7 +50,12 @@ char* TNtlmAuth::getInitialRequest()
 	if ( !hProvider )
 		return NULL;
 
-	return mir_strdup("");
+	// use the full auth for the external servers
+	if ( info->password[0] != 0 )
+		return mir_strdup("");
+
+	// use the transparent auth for local servers (password is empty)
+	return Netlib_NtlmCreateResponse( hProvider, "", NULL, NULL );
 }
 
 char* TNtlmAuth::getChallenge( const TCHAR* challenge )
@@ -58,11 +63,15 @@ char* TNtlmAuth::getChallenge( const TCHAR* challenge )
 	if ( !hProvider )
 		return NULL;
 
-	char* text = t2a( challenge );
-	char* user = t2a( info->username );
-	char* result = Netlib_NtlmCreateResponse( hProvider, text, user, info->password );
+	char *text = t2a( challenge ), *result;
+	if ( info->password[0] != 0 ) {
+		char* user = t2a( info->username );
+		result = Netlib_NtlmCreateResponse( hProvider, text, user, info->password );
+		mir_free( user );
+	}
+	else result = Netlib_NtlmCreateResponse( hProvider, text, NULL, NULL );
+	
 	mir_free( text );
-	mir_free( user );
 	return result;
 }
 
