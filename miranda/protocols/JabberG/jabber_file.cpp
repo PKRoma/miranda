@@ -254,10 +254,7 @@ void __cdecl JabberFileServerThread( filetransfer* ft )
 		
 			char* pFileName = JabberHttpUrlEncode( p );
 			if ( pFileName != NULL ) {
-				int id = JabberSerialNext();
-				if ( ft->iqId ) mir_free( ft->iqId );
-				ft->iqId = ( TCHAR* )mir_alloc( sizeof(TCHAR)*( strlen( JABBER_IQID )+20 ));
-				wsprintf( ft->iqId, _T(JABBER_IQID)_T("%d"), id );
+				ft->iqId = JabberSerialNext();
 
 				char *myAddr;
 				DBVARIANT dbv;
@@ -276,7 +273,7 @@ void __cdecl JabberFileServerThread( filetransfer* ft )
 				int len = lstrlen(ptszResource) + lstrlen(ft->jid) + 2;
 				TCHAR* fulljid = ( TCHAR* )alloca( sizeof( TCHAR )*len );
 				wsprintf( fulljid, _T("%s/%s"), ft->jid, ptszResource );
-				XmlNodeIq iq( "set", id, fulljid );
+				XmlNodeIq iq( "set", ft->iqId, fulljid );
 				XmlNode* query = iq.addQuery( "jabber:iq:oob" );
 				query->addChild( "url", szAddr );
 				query->addChild( "desc", ft->szDescription );
@@ -512,7 +509,6 @@ filetransfer::~filetransfer()
 
 	if ( jid ) mir_free( jid );
 	if ( sid ) mir_free( sid );
-	if ( iqId ) mir_free( iqId );
 	if ( fileSize ) mir_free( fileSize );
 	if ( httpHostName ) mir_free( httpHostName );
 	if ( httpPath ) mir_free( httpPath );

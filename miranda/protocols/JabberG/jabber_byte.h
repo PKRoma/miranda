@@ -35,7 +35,7 @@ typedef struct {
 	TCHAR* srcJID;
 	TCHAR* dstJID;
 	TCHAR* streamhostJID;
-	TCHAR* iqId;
+	int    iqId;
 	JABBER_BYTE_STATE state;
 	HANDLE hConn;
 	HANDLE hEvent;

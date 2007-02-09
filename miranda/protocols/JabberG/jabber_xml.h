@@ -98,7 +98,7 @@ struct XmlNode
 struct XmlNodeIq : public XmlNode
 {
 	XmlNodeIq( const char* type, int id = NOID, const TCHAR* to = NULL );
-	XmlNodeIq( const char* type, const TCHAR* idStr, const TCHAR* to );
+//	XmlNodeIq( const char* type, const TCHAR* idStr, const TCHAR* to );
 	#if defined( _UNICODE )
 		XmlNodeIq( const char* type, int id, const char* to );
 	#endif

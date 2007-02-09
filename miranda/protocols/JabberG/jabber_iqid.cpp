@@ -618,6 +618,7 @@ void JabberIqResultGetVcard( XmlNode *iqNode, void *userdata )
 	JabberLog( "<iq/> iqIdGetVcard" );
 	if (( type=JabberXmlGetAttrValue( iqNode, "type" )) == NULL ) return;
 	if (( jid=JabberXmlGetAttrValue( iqNode, "from" )) == NULL ) return;
+	int id = JabberGetPacketID( iqNode );
 
 	len = _tcslen( jabberJID );
 	if ( !_tcsnicmp( jid, jabberJID, len ) && ( jid[len]=='/' || jid[len]=='\0' )) {
@@ -1041,11 +1042,6 @@ void JabberIqResultGetVcard( XmlNode *iqNode, void *userdata )
 			jabberVcardPhotoFileName = NULL;
 		}
 
-		int id = 0;
-		TCHAR* str = JabberXmlGetAttrValue( iqNode, "id" );
-		if ( str != NULL )
-         id = _ttoi( str+strlen( JABBER_IQID ));
-
 		if ( id == jabberThreadInfo->resolveID ) {
 			TCHAR* p = _tcschr( jid, '@' );
 			JabberResolveTransportNicks(( p != NULL ) ?  p+1 : jid );
@@ -1074,14 +1070,13 @@ void JabberIqResultSetVcard( XmlNode *iqNode, void *userdata )
 void JabberIqResultSetSearch( XmlNode *iqNode, void *userdata )
 {
 	XmlNode *queryNode, *itemNode, *n;
-	TCHAR* type, *jid, *str;
-	int id, i;
+	TCHAR* type, *jid;
+	int i, id;
 	JABBER_SEARCH_RESULT jsr;
 
 	JabberLog( "<iq/> iqIdGetSearch" );
 	if (( type=JabberXmlGetAttrValue( iqNode, "type" )) == NULL ) return;
-	if (( str=JabberXmlGetAttrValue( iqNode, "id" )) == NULL ) return;
-	id = _ttoi( str+strlen( JABBER_IQID ));
+	if (( id = JabberGetPacketID( iqNode )) == -1 ) return;
 
 	if ( !lstrcmp( type, _T("result"))) {
 		if (( queryNode=JabberXmlGetChild( iqNode, "query" )) == NULL ) return;
@@ -1125,12 +1120,12 @@ void JabberIqResultSetSearch( XmlNode *iqNode, void *userdata )
 void JabberIqResultExtSearch( XmlNode *iqNode, void *userdata )
 {
 	XmlNode *queryNode;
-	TCHAR* type, *str;
+	TCHAR* type;
+	int id;
 
 	JabberLog( "<iq/> iqIdGetExtSearch" );
 	if (( type=JabberXmlGetAttrValue( iqNode, "type" )) == NULL ) return;
-	if (( str=JabberXmlGetAttrValue( iqNode, "id" )) == NULL ) return;
-	int id = _ttoi( str+strlen( JABBER_IQID ));
+	if (( id = JabberGetPacketID( iqNode )) == -1 ) return;
 
 	if ( !lstrcmp( type, _T("result"))) {
 		if (( queryNode=JabberXmlGetChild( iqNode, "query" )) == NULL ) return;

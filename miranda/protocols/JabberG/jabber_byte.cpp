@@ -43,7 +43,6 @@ void JabberByteFreeJbt( JABBER_BYTE_TRANSFER *jbt )
 	if ( jbt->srcJID ) mir_free( jbt->srcJID );
 	if ( jbt->dstJID ) mir_free( jbt->dstJID );
 	if ( jbt->streamhostJID ) mir_free( jbt->streamhostJID );
-	if ( jbt->iqId ) mir_free( jbt->iqId );
 	if ( jbt->sid ) mir_free( jbt->sid );
 	if ( jbt->iqNode ) delete jbt->iqNode;
 	mir_free( jbt );
@@ -278,7 +277,7 @@ static int JabberByteReceiveParse( HANDLE hConn, JABBER_BYTE_TRANSFER *jbt, char
 void __cdecl JabberByteReceiveThread( JABBER_BYTE_TRANSFER *jbt )
 {
 	XmlNode *iqNode, *queryNode, *n;
-	TCHAR *from, *to, *sid, *szId, *szHost, *szPort, *str;
+	TCHAR *from, *to, *sid, *szHost, *szPort, *str;
 	int i;
 	WORD port;
 	HANDLE hConn;
@@ -295,8 +294,7 @@ void __cdecl JabberByteReceiveThread( JABBER_BYTE_TRANSFER *jbt )
 		( sid=JabberXmlGetAttrValue( queryNode, "sid" ))!=NULL &&
 		( n=JabberXmlGetChild( queryNode, "streamhost" ))!=NULL ) {
 
-		szId = JabberXmlGetAttrValue( iqNode, "id" );
-		jbt->iqId = ( szId ) ? mir_tstrdup( szId ):NULL;
+		jbt->iqId = JabberGetPacketID( iqNode );
 		jbt->srcJID = mir_tstrdup( from );
 		jbt->dstJID = mir_tstrdup( to );
 		jbt->sid = mir_tstrdup( sid );

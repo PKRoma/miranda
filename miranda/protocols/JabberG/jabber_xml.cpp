@@ -538,14 +538,6 @@ XmlNodeIq::XmlNodeIq( const char* type, int id, const TCHAR* to ) :
 	if ( id   != NOID ) addAttrID( id );
 }
 
-XmlNodeIq::XmlNodeIq( const char* type, const TCHAR* idStr, const TCHAR* to ) :
-	XmlNode( "iq" )
-{
-	if ( type  != NULL ) addAttr( "type", type  );
-	if ( to    != NULL ) addAttr( "to",   to    );
-	if ( idStr != NULL ) addAttr( "id",   idStr );
-}
-
 #if defined( _UNICODE )
 XmlNodeIq::XmlNodeIq( const char* type, int id, const char* to ) :
 	XmlNode( "iq" )

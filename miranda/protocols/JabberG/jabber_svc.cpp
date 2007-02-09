@@ -274,7 +274,6 @@ int JabberBasicSearch( WPARAM wParam, LPARAM lParam )
 	if ( !jabberOnline || ( jsb=( JABBER_SEARCH_BASIC * ) mir_alloc( sizeof( JABBER_SEARCH_BASIC )) )==NULL )
 		return 0;
 
-	jsb->hSearch = JabberSerialNext();
 	if ( strchr( szJid, '@' ) == NULL ) {
 		char szServer[ 100 ];
 		if ( JGetStaticString( "LoginServer", NULL, szServer, sizeof szServer ))
@@ -284,7 +283,14 @@ int JabberBasicSearch( WPARAM wParam, LPARAM lParam )
 	}
 	else strncpy( jsb->jid, szJid, SIZEOF(jsb->jid));
 
-	mir_forkthread(( pThreadFunc )JabberBasicSearchThread, jsb );
+	if ( JGetByte( "ValidateAddition", TRUE )) {
+		TCHAR* ptszJid = a2t( jsb->jid );
+		jsb->hSearch = jabberSearchID = JabberSendGetVcard( ptszJid );
+	}
+	else {
+		jsb->hSearch = JabberSerialNext();
+		mir_forkthread(( pThreadFunc )JabberBasicSearchThread, jsb );
+	}
 	return jsb->hSearch;
 }
 

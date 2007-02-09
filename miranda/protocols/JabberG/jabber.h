@@ -246,7 +246,7 @@ struct filetransfer
 	JABBER_FILE_STATE state;
 	TCHAR* jid;
 	int    fileId;
-	TCHAR* iqId;
+	int    iqId;
 	TCHAR* sid;
 	int    bCompleted;
 	HANDLE hWaitEvent;
@@ -330,6 +330,7 @@ extern BOOL   jabberConnected;
 extern BOOL   jabberOnline;
 extern int    jabberStatus;
 extern int    jabberDesiredStatus;
+extern int    jabberSearchID;
 extern time_t jabberLoggedInTime;
 
 extern CRITICAL_SECTION modeMsgMutex;
@@ -531,6 +532,7 @@ void          __stdcall JabberStringAppend( char* *str, int *sizeAlloced, const 
 TCHAR*        __stdcall JabberGetClientJID( const TCHAR* jid, TCHAR*, size_t );
 TCHAR*        __stdcall JabberStripJid( const TCHAR* jid, TCHAR* dest, size_t destLen );
 int           __stdcall JabberGetPictureType( const char* buf );
+int           __stdcall JabberGetPacketID( XmlNode* n );
 
 #if defined( _UNICODE )
 	#define JabberUnixToDosT JabberUnixToDosW
@@ -556,5 +558,6 @@ int           JabberWsRecv( JABBER_SOCKET s, char* data, long datalen );
 char* t2a( const TCHAR* src );
 char* u2a( const wchar_t* src );
 wchar_t* a2u( const char* src );
+TCHAR* a2t( const char* src );
 
 #endif

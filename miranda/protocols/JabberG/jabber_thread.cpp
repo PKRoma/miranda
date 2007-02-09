@@ -878,7 +878,6 @@ static void JabberProcessMessage( XmlNode *node, void *userdata )
 	ThreadData* info;
 	XmlNode *subjectNode, *xNode, *inviteNode, *idNode, *n;
 	TCHAR* from, *type, *nick, *idStr, *fromResource;
-	int id;
 	HANDLE hContact;
 
 	if ( !node->name || strcmp( node->name, "message" )) return;
@@ -890,17 +889,14 @@ static void JabberProcessMessage( XmlNode *node, void *userdata )
 
 	XmlNode* errorNode = JabberXmlGetChild( node, "error" );
 	if ( errorNode != NULL || !lstrcmp( type, _T("error"))) {
-		//we  check if is message delivery failure
-		if (( idStr = JabberXmlGetAttrValue( node, "id" )) != NULL ) {
-			if ( !_tcsncmp( idStr, _T(JABBER_IQID), strlen( JABBER_IQID )) ) {
-				JABBER_LIST_ITEM* item = JabberListGetItemPtr( LIST_ROSTER, from );
-				if ( item != NULL ) {
-					id = _ttoi(( idStr )+strlen( JABBER_IQID ));
-					if ( id == item->idMsgAckPending ) { // yes, it is
-						char *errText = t2a(JabberErrorMsg(errorNode));
-						JSendBroadcast( JabberHContactFromJID( from ), ACKTYPE_MESSAGE, ACKRESULT_FAILED, ( HANDLE ) 1, (LPARAM)errText );
-						mir_free(errText);
-		}	}	}	}
+		// we check if is message delivery failure
+		int id = JabberGetPacketID( node );
+		JABBER_LIST_ITEM* item = JabberListGetItemPtr( LIST_ROSTER, from );
+		if ( item != NULL && id == item->idMsgAckPending ) { // yes, it is
+			char *errText = t2a(JabberErrorMsg(errorNode));
+			JSendBroadcast( JabberHContactFromJID( from ), ACKTYPE_MESSAGE, ACKRESULT_FAILED, ( HANDLE ) 1, (LPARAM)errText );
+			mir_free(errText);
+		}
 		return;
 	}
 
@@ -979,16 +975,10 @@ static void JabberProcessMessage( XmlNode *node, void *userdata )
 		else if ( !_tcscmp( ptszXmlns, _T("jabber:x:event"))) {
 			if ( bodyNode == NULL ) {
 				idNode = JabberXmlGetChild( xNode, "id" );
-				if ( JabberXmlGetChild( xNode, "delivered" )!=NULL || JabberXmlGetChild( xNode, "offline" )!=NULL ) {
-					id = -1;
-					if ( idNode!=NULL && idNode->text!=NULL )
-						if ( !_tcsncmp( idNode->text, _T(JABBER_IQID), strlen( JABBER_IQID )) )
-							id = _ttoi(( idNode->text )+strlen( JABBER_IQID ));
-
+				if ( JabberXmlGetChild( xNode, "delivered" ) != NULL || JabberXmlGetChild( xNode, "offline" ) != NULL )
 					if ( item != NULL )
-						if ( id == item->idMsgAckPending )
+						if ( JabberGetPacketID( idNode ) == item->idMsgAckPending )
 							JSendBroadcast( JabberHContactFromJID( from ), ACKTYPE_MESSAGE, ACKRESULT_SUCCESS, ( HANDLE ) 1, 0 );
-				}
 
 				if ( JabberXmlGetChild( xNode, "composing" ) != NULL )
 					if (( hContact = JabberHContactFromJID( from )) != NULL )
@@ -1334,7 +1324,7 @@ static void JabberProcessPresence( XmlNode *node, void *userdata )
 /////////////////////////////////////////////////////////////////////////////////////////
 // Handles various <iq... requests
 
-static void JabberProcessIqVersion( TCHAR* idStr, XmlNode* node )
+static void JabberProcessIqVersion( int id, XmlNode* node )
 {
 	TCHAR* from;
 	if (( from=JabberXmlGetAttrValue( node, "from" )) == NULL )
@@ -1375,7 +1365,7 @@ static void JabberProcessIqVersion( TCHAR* idStr, XmlNode* node )
 	mir_sntprintf( fullVer, 1000, _T("Miranda IM ") _T(TCHAR_STR_PARAM) _T(" (Jabber v.") _T(TCHAR_STR_PARAM) _T(" [%s])") _T(TCHAR_STR_PARAM),
 		mversion, __VERSION_STRING, jabberThreadInfo->resource, bSecureIM ? " (SecureIM)":"" );
 
-	XmlNodeIq iq( "result", idStr, from );
+	XmlNodeIq iq( "result", id, from );
 	XmlNode* query = iq.addQuery( "jabber:iq:version" );
 	query->addChild( "name", fullVer ); query->addChild( "version", version ); query->addChild( "os", os );
 	JabberSend( jabberThreadInfo->s, iq );
@@ -1383,7 +1373,7 @@ static void JabberProcessIqVersion( TCHAR* idStr, XmlNode* node )
 	if ( version ) mir_free( version );
 }
 
-static void JabberProcessIqTime( TCHAR* idStr, XmlNode* node ) //added by Rion (jep-0090)
+static void JabberProcessIqTime( int id, XmlNode* node ) //added by Rion (jep-0090)
 {
 	TCHAR* from;
 	struct tm *gmt;
@@ -1399,13 +1389,13 @@ static void JabberProcessIqTime( TCHAR* idStr, XmlNode* node ) //added by Rion (
 	dtime = ctime(&ltime);
 	dtime[24]=0;
 
-	XmlNodeIq iq( "result", idStr, from );
+	XmlNodeIq iq( "result", id, from );
 	XmlNode* query = iq.addQuery( "jabber:iq:time" );
 	query->addChild( "utc", stime ); query->addChild( "tz", _tzname[1] ); query->addChild( "display", dtime );
 	JabberSend( jabberThreadInfo->s, iq );
 }
 
-static void JabberProcessIqAvatar( TCHAR* idStr, XmlNode* node )
+static void JabberProcessIqAvatar( int id, XmlNode* node )
 {
 	if ( !JGetByte( "EnableAvatars", TRUE ))
 		return;
@@ -1445,7 +1435,7 @@ static void JabberProcessIqAvatar( TCHAR* idStr, XmlNode* node )
 	fclose( in );
 
 	char* str = JabberBase64Encode( buffer, bytes );
-	XmlNodeIq iq( "result", idStr, from );
+	XmlNodeIq iq( "result", id, from );
 	XmlNode* query = iq.addQuery( "jabber:iq:avatar" );
 	XmlNode* data = query->addChild( "data", str ); data->addAttr( "mimetype", szMimeType );
 	JabberSend( jabberThreadInfo->s, iq );
@@ -1512,11 +1502,10 @@ static void JabberProcessIq( XmlNode *node, void *userdata )
 	ThreadData* info;
 	HANDLE hContact;
 	XmlNode *queryNode, *siNode, *n;
-	TCHAR* from, *type, *jid, *nick;
-	TCHAR* xmlns, *profile;
-	TCHAR* idStr, *str, *p, *q;
+	TCHAR *from, *type, *jid, *nick;
+	TCHAR *xmlns, *profile;
+	TCHAR *str, *p, *q;
 	TCHAR text[256];
-	int id;
 	int i;
 	JABBER_IQ_PFUNC pfunc;
 
@@ -1524,10 +1513,7 @@ static void JabberProcessIq( XmlNode *node, void *userdata )
 	if (( info=( ThreadData* ) userdata ) == NULL ) return;
 	if (( type=JabberXmlGetAttrValue( node, "type" )) == NULL ) return;
 
-	id = -1;
-	if (( idStr=JabberXmlGetAttrValue( node, "id" )) != NULL )
-		if ( !_tcsncmp( idStr, _T(JABBER_IQID), strlen( JABBER_IQID )) )
-			id = _ttoi( idStr+strlen( JABBER_IQID ));
+	int id = JabberGetPacketID( node );
 
 	queryNode = JabberXmlGetChild( node, "query" );
 	xmlns = JabberXmlGetAttrValue( queryNode, "xmlns" );
@@ -1665,8 +1651,7 @@ static void JabberProcessIq( XmlNode *node, void *userdata )
 							ft->httpPath = t2a( ++q );
 				}	}	}
 
-				if (( str=JabberXmlGetAttrValue( node, "id" )) != NULL )
-					ft->iqId = mir_tstrdup( str );
+				ft->iqId = JabberGetPacketID( node );
 
 				if ( ft->httpHostName && ft->httpPath ) {
 					CCSDATA ccs;
@@ -1708,7 +1693,7 @@ static void JabberProcessIq( XmlNode *node, void *userdata )
 				}
 				else {
 					// reject
-					XmlNodeIq iq( "error", idStr, ft->jid );
+					XmlNodeIq iq( "error", id, ft->jid );
 					XmlNode* e = iq.addChild( "error", "File transfer refused" ); e->addAttr( "code", 406 );
 					JabberSend( jabberThreadInfo->s, iq );
 					delete ft;
@@ -1725,11 +1710,11 @@ static void JabberProcessIq( XmlNode *node, void *userdata )
 		// RECVED: software version query
 		// ACTION: return my software version
 		if ( !_tcscmp( xmlns, _T("jabber:iq:version")))
-			JabberProcessIqVersion( idStr, node );
+			JabberProcessIqVersion( id, node );
 		else if ( !_tcscmp( xmlns, _T("jabber:iq:avatar")))
-			JabberProcessIqAvatar( idStr, node );
+			JabberProcessIqAvatar( id, node );
 		else if ( !_tcscmp( xmlns, _T("jabber:iq:time")))
-			JabberProcessIqTime( idStr, node );
+			JabberProcessIqTime( id, node );
 	}
 	// RECVED: <iq type='result'><query ...
 	else if ( !_tcscmp( type, _T("result")) && queryNode != NULL && xmlns != NULL ) {
@@ -1751,9 +1736,7 @@ static void JabberProcessIq( XmlNode *node, void *userdata )
 		// ACTION: reply with bad-profile
 		else {
 			if (( from=JabberXmlGetAttrValue( node, "from" )) != NULL ) {
-				idStr = JabberXmlGetAttrValue( node, "id" );
-
-				XmlNodeIq iq( "error", idStr, from );
+				XmlNodeIq iq( "error", id, from );
 				XmlNode* error = iq.addChild( "error" ); error->addAttr( "code", "400" ); error->addAttr( "type", "cancel" );
 				XmlNode* brq = error->addChild( "bad-request" ); brq->addAttr( "xmlns", "urn:ietf:params:xml:ns:xmpp-stanzas" );
 				XmlNode* bp = error->addChild( "bad-profile" ); brq->addAttr( "xmlns", "http://jabber.org/protocol/si" );
@@ -1771,7 +1754,7 @@ static void JabberProcessIq( XmlNode *node, void *userdata )
 		i = 0;
 		while (( i=JabberListFindNext( LIST_FILE, i )) >= 0 ) {
 			JABBER_LIST_ITEM *item = JabberListGetItemPtrFromIndex( i );
-			if ( item->ft != NULL && item->ft->state == FT_CONNECTING && !_tcscmp( idStr, item->ft->iqId )) {
+			if ( item->ft != NULL && item->ft->state == FT_CONNECTING && id == item->ft->iqId ) {
 				JabberLog( "Denying file sending request" );
 				item->ft->state = FT_DENIED;
 				if ( item->ft->hFileEvent != NULL )
@@ -1790,10 +1773,7 @@ static void JabberProcessRegIq( XmlNode *node, void *userdata )
 	if (( info=( ThreadData* ) userdata ) == NULL ) return;
 	if (( type=JabberXmlGetAttrValue( node, "type" )) == NULL ) return;
 
-	unsigned int id = -1;
-	if (( str=JabberXmlGetAttrValue( node, "id" )) != NULL )
-		if ( !_tcsncmp( str, _T(JABBER_IQID), strlen( JABBER_IQID )) )
-			id = _ttoi( str + strlen( JABBER_IQID ));
+	int id = JabberGetPacketID( node );
 
 	if ( !_tcscmp( type, _T("result"))) {
 
