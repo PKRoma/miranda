@@ -1,7 +1,7 @@
                    Miranda Instant Messenger Release Notes
                    ---------------------------------------
 
-                            February 2007 (v0.6.6)
+                            February 2007 (v0.6.7)
 
                           http://www.miranda-im.org
 
@@ -22,6 +22,11 @@ Contents
 
 1. New in this version
 ----------------------
+* New in 0.6.7
+Bugfixes
+ - Jabber: Fixed crash on exit when using Jabber
+ - MSN: Uploading avatars was broken
+
 * New in 0.6.6
 Bugfixes
  - Fixed dragging/dropping file with non-locale characters into message window
@@ -46,7 +51,6 @@ Bugfixes
  - Show file transfers correctly in message window
  - Improved UPnP router support
  - UPnP cleanup will not run if there are no incoming connections
- - MSN: Uploading avatars was broken
 
 * New in 0.6.3
 Bugfixes
