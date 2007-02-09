@@ -27,6 +27,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #define UN_ENABLE_DEF       1
 #define UN_LASTCHECK        "UpdateNotifyLastCheck"
 #define UN_SERVERPERIOD     "UpdateNotifyPingDelayPeriod"
+#define UN_CURRENTVERSION   "UpdateNotifyCurrentVersion"
 #define UN_CUSTOMURL        "UpdateNotifyCustomURL"
 #define UN_URL              "http://update.miranda-im.org/update.php"
 #define UN_MINCHECKTIME     60*60 /* Check no more than once an hour */
@@ -136,7 +137,7 @@ static VOID CALLBACK UpdateNotifyTimerCheck(HWND hwnd, UINT uMsg, UINT_PTR idEve
     }
 }
 
-static void UpdateNotifyPerform(void *p) {
+static void UpdateNotifyPerform(void *manual) {
     NETLIBHTTPREQUEST req;
     NETLIBHTTPREQUEST *resp;
     NETLIBHTTPHEADER headers[1];
@@ -209,8 +210,18 @@ static void UpdateNotifyPerform(void *p) {
                 }
             }
             if (resUpdate&&und.version[0]&&und.downloadUrl[0]) {
-                DialogBoxParam(GetModuleHandle(NULL), MAKEINTRESOURCE(IDD_UPDATE_NOTIFY), 0, UpdateNotifyProc,(LPARAM)&und);
-                hwndUpdateDlg = 0;
+                int notify = 1;
+                
+                if (!DBGetContactSetting(NULL, UN_MOD, UN_CURRENTVERSION, &dbv)) {
+                    if (!strcmp(dbv.pszVal, und.version)) // already notified of this version, don't show dialog
+                        notify = 0;
+                    DBFreeVariant(&dbv);
+                }
+                if (notify) {
+                    DBWriteContactSettingString(NULL, UN_MOD, UN_CURRENTVERSION, und.version);
+                    DialogBoxParam(GetModuleHandle(NULL), MAKEINTRESOURCE(IDD_UPDATE_NOTIFY), 0, UpdateNotifyProc,(LPARAM)&und);
+                    hwndUpdateDlg = 0;
+                }
             }
         }
         CallService(MS_NETLIB_FREEHTTPREQUESTSTRUCT, 0, (LPARAM)resp);
