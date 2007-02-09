@@ -199,7 +199,7 @@ void RegisterIcoLibIcons() {
 		GetModuleFileNameA(g_hInst, path, MAX_PATH);
 		sid.cbSize = sizeof(SKINICONDESC);
 		sid.cx = sid.cy = 16;
-		sid.pszSection = "Scriver";
+		sid.pszSection = Translate("Scriver/Messaging");
 		sid.pszDefaultFile = path;
 		sid.pszName = (char *) "scriver_ADD";
 		sid.iDefaultIndex = -IDI_ADDCONTACT;

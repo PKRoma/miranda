@@ -1,7 +1,7 @@
 /*
 Chat module plugin for Miranda IM
 
-Copyright (C) 2003 Jörgen Persson
+Copyright (C) 2003 JÃ¶rgen Persson
 
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License
@@ -413,7 +413,7 @@ void AddIcons(void)
 		sid.cx = sid.cy = 16;
 		sid.cbSize = sizeof(SKINICONDESC);
 
-		sid.pszSection = Translate("Chat windows");
+		sid.pszSection = Translate("Scriver/Chat windows");
 		GetModuleFileNameA(g_hInst, szFile, MAX_PATH);
 		sid.pszDefaultFile = szFile;
 
@@ -520,7 +520,7 @@ void AddIcons(void)
 		sid.iDefaultIndex = -IDI_STATUS5;
 		CallService(MS_SKIN2_ADDICON, 0, (LPARAM)&sid);
 
-		sid.pszSection = Translate("Chat log");
+		sid.pszSection = Translate("Scriver/Chat log");
 		sid.pszDescription = Translate("Message in (10x10)");
 		sid.pszName = "chat_log_message_in";
 		sid.iDefaultIndex = -IDI_MESSAGE;
@@ -1037,12 +1037,12 @@ BOOL CALLBACK DlgProcOptions2(HWND hwndDlg,UINT uMsg,WPARAM wParam,LPARAM lParam
 		if (((LPNMHDR)lParam)->idFrom == 0 && ((LPNMHDR)lParam)->code == PSN_APPLY ) {
 			int iLen;
 			char * pszText = NULL;
-			
+
 			iLen = GetWindowTextLength(GetDlgItem(hwndDlg, IDC_CHAT_HIGHLIGHTWORDS));
 			if ( iLen > 0 ) {
 				TCHAR *ptszText = mir_alloc((iLen+2) * sizeof(TCHAR));
 				TCHAR *p2 = NULL;
-				
+
 				if(ptszText) {
 				    GetDlgItemText(hwndDlg, IDC_CHAT_HIGHLIGHTWORDS, ptszText, iLen + 1);
 				    p2 = _tcschr(ptszText, (TCHAR)',');
@@ -1389,7 +1389,7 @@ int OptionsInit(void)
 	SkinAddNewSoundEx("ChatJoin", "Chat", Translate("User has joined"));
 	SkinAddNewSoundEx("ChatPart", "Chat", Translate("User has left"));
 	SkinAddNewSoundEx("ChatKick", "Chat", Translate("User has kicked some other user"));
-	SkinAddNewSoundEx("ChatMode", "Chat", Translate("User´s status was changed"));
+	SkinAddNewSoundEx("ChatMode", "Chat", Translate("UserÂ´s status was changed"));
 	SkinAddNewSoundEx("ChatNick", "Chat", Translate("User has changed name"));
 	SkinAddNewSoundEx("ChatNotice", "Chat", Translate("User has sent a notice"));
 	SkinAddNewSoundEx("ChatQuit", "Chat", Translate("User has disconnected"));
