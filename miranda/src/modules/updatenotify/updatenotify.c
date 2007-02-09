@@ -237,7 +237,7 @@ static BOOL CALLBACK UpdateNotifyProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPA
 	switch ( msg ) {
 	case WM_INITDIALOG:
 		TranslateDialogDefault(hwndDlg);
-		Window_SetIcon_IcoLib(hwndDlg, SKINICON_OTHER_MIRANDA);
+		SendMessage(hwndDlg, WM_SETICON, ICON_BIG, (LPARAM)LoadIcon(GetModuleHandle(NULL), MAKEINTRESOURCE(IDI_MIRANDA)));
 		{
 			UpdateNotifyData *und = (UpdateNotifyData*)lParam;
 			char szTmp[128], *p;
@@ -287,10 +287,6 @@ static BOOL CALLBACK UpdateNotifyProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPA
 			DestroyWindow(hwndDlg);
 			return TRUE;
 		}
-		break;
-
-	case WM_DESTROY:
-		Window_FreeIcon_IcoLib( hwndDlg );
 		break;
 	}
 	return FALSE;
