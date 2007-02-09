@@ -26,24 +26,28 @@
 #ifndef __GG_LIBGADU_H
 #define __GG_LIBGADU_H
 
-/* Miranda IM fix */
-/* Should be set regardless of C++/C */
+#include "libgadu-config.h"
+
+#if defined(__cplusplus) || defined(__GG_LIBGADU_MIRANDA)
 #ifdef _WIN32
 #pragma pack(push, 1)
+#endif
 #endif
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-#include "libgadu-config.h" /* Miranda IM fix */
 #include <sys/types.h>
 #include <stdio.h>
 #include <stdarg.h>
 
 #ifdef __GG_LIBGADU_HAVE_OPENSSL
-/* Miranda IM fix */
+#ifdef __GG_LIBGADU_MIRANDA
 #include "../ssl.h"
+#else
+#include <openssl/ssl.h>
+#endif
 #endif
 
 /*
@@ -211,7 +215,11 @@ struct gg_dcc {
 	int port;		/* port, na którym siedzi */
 	uin_t uin;		/* uin klienta */
 	uin_t peer_uin;		/* uin drugiej strony */
-	FILE *file_fd;		/* deskryptor pliku */ /* Miranda IM */
+#ifdef __GG_LIBGADU_MIRANDA
+	FILE *file_fd;		/* deskryptor pliku */
+#else
+	int file_fd;		/* deskryptor pliku */
+#endif
 	unsigned int offset;	/* offset w pliku */
 	unsigned int chunk_size;/* rozmiar kawa³ka */
 	unsigned int chunk_offset;/* offset w aktualnym kawa³ku */
@@ -224,10 +232,11 @@ struct gg_dcc {
 	uint32_t remote_addr;	/* adres drugiej strony */
 	uint16_t remote_port;	/* port drugiej strony */
 
-	/* Miranda IM Extras */
+#ifdef __GG_LIBGADU_MIRANDA
 	void *contact;
 	char *folder;
 	uint32_t tick;
+#endif
 };
 
 /*

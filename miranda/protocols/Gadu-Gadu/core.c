@@ -268,7 +268,9 @@ void *__stdcall gg_mainthread(void *empty)
 		{ 0,						"Unknown" }
 	};
 	GGTHREAD *thread = empty;
+#if 1 // __GG_LIBGADU_MIRANDA
 	NETLIBUSERSETTINGS nlus;
+#endif
 	char *szMsg;
 
 	// Time deviation (300s)
@@ -298,6 +300,7 @@ start:
 	// Send Era Omnix info if set
 	p.era_omnix = DBGetContactSettingByte(NULL, GG_PROTO, "EraOmnix", 0);
 
+#if 1 // __GG_LIBGADU_MIRANDA
 	// Setup proxy
 	nlus.cbSize = sizeof(nlus);
 	if(CallService(MS_NETLIB_GETUSERSETTINGS, (WPARAM)hNetlib, (LPARAM)&nlus))
@@ -326,6 +329,9 @@ start:
 #else
 		gg_proxy_enabled = 0;
 #endif
+#else
+		gg_proxy_enabled = 0;
+#endif // __GG_LIBGADU_MIRANDA
 
 	// Check out manual host setting
 	if(DBGetContactSettingByte(NULL, GG_PROTO, GG_KEY_MANUALHOST, GG_KEYDEF_MANUALHOST))
@@ -987,6 +993,7 @@ int gg_userdeleted(WPARAM wParam, LPARAM lParam)
 			free(chat->recipients);
 			list_remove(&ggGCList, chat, 1);
 			// Terminate chat window / shouldn't cascade entry is deleted
+			CallService(MS_GC_EVENT, SESSION_OFFLINE, (LPARAM)&gcevent);
 			CallService(MS_GC_EVENT, SESSION_TERMINATE, (LPARAM)&gcevent);
 		}
 
@@ -1222,12 +1229,15 @@ HANDLE gg_getcontact(uin_t uin, int create, int inlist, char *szNick)
 	char *szProto;
 
 	// It's my UIN exit !!!
+	/*
 	if(uin == (uin_t)DBGetContactSettingDword(NULL, GG_PROTO, GG_KEY_UIN, 0))
 		return NULL;
+	*/
 
 	// Look for contact in DB
 	hContact = (HANDLE) CallService(MS_DB_CONTACT_FINDFIRST, 0, 0);
-	while (hContact) {
+	while (hContact)
+	{
 		szProto = (char *) CallService(MS_PROTO_GETCONTACTBASEPROTO, (WPARAM) hContact, 0);
 		if(szProto != NULL && !strcmp(szProto, GG_PROTO))
 		{

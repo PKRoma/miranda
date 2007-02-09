@@ -20,6 +20,8 @@
  *  USA.
  */
 
+#include "libgadu-config.h"
+
 #include <ctype.h>
 #include <errno.h>
 #include <stdarg.h>
@@ -29,7 +31,9 @@
 #include <unistd.h>
 
 #include "libgadu.h"
-#define random(x) rand(x)
+#ifdef __GG_LIBGADU_MIRANDA
+#define random() rand()
+#endif
 
 /*
  * gg_register3()
@@ -443,6 +447,7 @@ int gg_pubdir_watch_fd(struct gg_http *h)
 		gg_debug(GG_DEBUG_MISC, "=> pubdir, not enough memory for results\n");
 		return -1;
 	}
+
 	p->success = 0;
 	p->uin = 0;
 	

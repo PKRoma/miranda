@@ -20,6 +20,8 @@
  *  USA.
  */
 
+#include "libgadu-config.h"
+
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <sys/ioctl.h>
@@ -41,7 +43,9 @@
 
 #include "compat.h"
 #include "libgadu.h"
-#undef small /* Miranda IM fix */
+#ifdef __GG_LIBGADU_MIRANDA
+#undef small
+#endif
 
 #ifndef GG_DEBUG_DISABLE
 /*
@@ -166,8 +170,11 @@ int gg_dcc_fill_file_info2(struct gg_dcc *d, const char *filename, const char *l
 		return -1;
 	}
 
-	/* Miranda IM fix */
+#ifdef __GG_LIBGADU_MIRANDA
 	if ((d->file_fd = fopen(filename, "rb")) == NULL) {
+#else
+	if ((d->file_fd = open(local_filename, O_RDONLY)) == -1) {
+#endif
 		gg_debug(GG_DEBUG_MISC, "// gg_dcc_fill_file_info2() open() failed (%s)\n", strerror(errno));
 		return -1;
 	}
@@ -184,8 +191,11 @@ int gg_dcc_fill_file_info2(struct gg_dcc *d, const char *filename, const char *l
 	d->file_info.size = gg_fix32(st.st_size);
 	d->file_info.mode = gg_fix32(0x20);	/* FILE_ATTRIBUTE_ARCHIVE */
 
-	/* Miranda IM Fix */
+#ifdef __GG_LIBGADU_MIRANDA
 	if (!(name = strrchr(filename, '\\')))
+#else
+	if (!(name = strrchr(filename, '/')))
+#endif
 		name = filename;
 	else
 		name++;
@@ -271,7 +281,11 @@ static struct gg_dcc *gg_dcc_transfer(uint32_t ip, uint16_t port, uin_t my_uin, 
 	d->state = GG_STATE_CONNECTING;
 	d->type = type;
 	d->timeout = GG_DEFAULT_TIMEOUT;
-	d->file_fd = NULL; /* Miranda IM fix */
+#ifdef __GG_LIBGADU_MIRANDA
+	d->file_fd = NULL;
+#else
+	d->file_fd = -1;
+#endif
 	d->active = 1;
 	d->fd = -1;
 	d->uin = my_uin;

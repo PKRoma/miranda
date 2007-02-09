@@ -18,16 +18,19 @@
  *  USA.
  */
 
+#include "libgadu-config.h"
+
 #include <errno.h>
 #include <stdlib.h>
 #include <string.h>
 #include <time.h>
 
-#include "libgadu.h"
-
-/* Miranda IM fix */
+#ifdef __GG_LIBGADU_MIRANDA
 #include <sys/socket.h>
 #undef small
+#endif
+
+#include "libgadu.h"
 
 /*
  * gg_pubdir50_new()

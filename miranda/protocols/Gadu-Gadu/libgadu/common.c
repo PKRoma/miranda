@@ -203,10 +203,11 @@ char *gg_get_line(char **ptr)
 	if (!(foo = strchr(*ptr, '\n')))
 		*ptr += strlen(*ptr);
 	else {
+		size_t len = strlen(res);
 		*ptr = foo + 1;
 		*foo = 0;
-		if (strlen(res) > 1 && res[strlen(res) - 1] == '\r')
-			res[strlen(res) - 1] = 0;
+		if (len > 1 && res[len - 1] == '\r')
+			res[len - 1] = 0;
 	}
 
 	return res;

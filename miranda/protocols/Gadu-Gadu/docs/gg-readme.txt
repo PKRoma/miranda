@@ -59,6 +59,11 @@ Note: For secure connections this plugin requires OpenSSL DLL
 
 5. History
 ----------
+0.0.4.1: 2006-12-20
+ - Fix: 512 characters for settings such as custom server list
+ - Fix: Detection of Gadu-Gadu versions upto 7.6
+ - Plugin now writes MirVer, so all tooltip plugins can show contact client type 
+   and version string.
 0.0.4.0: 2006-10-23
  - Fix: Messages always have NOW timestamps unless they are OFFLINE.
    Online messages won't be shifted in the order even user has clockskew.

@@ -18,13 +18,13 @@
  *  USA.
  */
 
+#include "libgadu-config.h"
+
 #include <sys/types.h>
 #include <sys/wait.h>
 #include <sys/socket.h>
 #include <netinet/in.h>
 #include <arpa/inet.h>
-
-#include "libgadu-config.h"
 
 #include <ctype.h>
 #include <errno.h>

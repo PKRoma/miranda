@@ -35,6 +35,9 @@
 /* Defined if libgadu was compiled and linked with TLS support. */
 #define __GG_LIBGADU_HAVE_OPENSSL
 
+/* Defined if libgadu should be compatible with Miranda win32 sockets. */
+#define __GG_LIBGADU_MIRANDA
+
 /* Include file containing uintXX_t declarations. */
 #include <stdint.h>
 

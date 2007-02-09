@@ -21,14 +21,14 @@
  *  USA.
  */
 
+#include "libgadu-config.h"
+
 #include <sys/types.h>
 #include <sys/wait.h>
 #include <sys/ioctl.h>
 #include <sys/socket.h>
 #include <netinet/in.h>
 #include <arpa/inet.h>
-
-#include "libgadu-config.h"
 
 #include <errno.h>
 #ifdef __GG_LIBGADU_HAVE_PTHREAD
@@ -39,12 +39,12 @@
 #include <stdlib.h>
 #include <time.h>
 #include <unistd.h>
-/* Miranda-IM
+#ifndef __GG_LIBGADU_MIRANDA
 #ifdef __GG_LIBGADU_HAVE_OPENSSL
 #  include <openssl/err.h>
 #  include <openssl/x509.h>
 #endif
-*/
+#endif
 
 #include "compat.h"
 #include "libgadu.h"

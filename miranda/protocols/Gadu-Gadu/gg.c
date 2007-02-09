@@ -41,8 +41,6 @@ HINSTANCE hInstance;
 int ggStatus = ID_STATUS_OFFLINE;			// gadu-gadu status
 int ggDesiredStatus = ID_STATUS_OFFLINE;	// gadu-gadu desired status
 HANDLE hNetlib; 							// used just for logz
-HANDLE hLibSSL;								// SSL main library handle
-HANDLE hLibEAY;								// SSL/EAY misc library handle
 char ggProto[64] = GGDEF_PROTO;				// proto id get from DLL name	(def GG from GG.dll or GGdebug.dll)
 											// (static variable because may be needed after destroy)
 char *ggProtoName = NULL;					// proto name get from DLL name (def Gadu-Gadu from GG.dll or GGdebug.dll)

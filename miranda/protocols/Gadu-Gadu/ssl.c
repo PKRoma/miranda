@@ -25,6 +25,10 @@
 
 #include "gg.h"
 
+#ifdef __GG_LIBGADU_HAVE_OPENSSL
+HANDLE hLibSSL;								// SSL main library handle
+HANDLE hLibEAY;								// SSL/EAY misc library handle
+
 PFN_SSL_int_void			SSL_library_init;		// int SSL_library_init()
 PFN_SSL_pvoid_void			TLSv1_client_method;	// SSL_METHOD *TLSv1_client_method()
 PFN_SSL_pvoid_pvoid			SSL_CTX_new;			// SSL_CTX *SSL_CTX_new(SSL_METHOD *method)
@@ -173,9 +177,6 @@ BOOL gg_ssl_init()
 void gg_ssl_uninit()
 {
 	if (hLibSSL) {
-#ifdef DEBUGMODE
-		gg_netlog("gg_ssl_uninit(): Free SSL library.");
-#endif
 		FreeLibrary(hLibSSL);
 		hLibSSL = NULL;
 		FreeLibrary(hLibEAY);
@@ -184,3 +185,4 @@ void gg_ssl_uninit()
 
 	DeleteCriticalSection(&sslHandleMutex);
 }
+#endif

@@ -22,6 +22,8 @@
  *  USA.
  */
 
+#include "libgadu-config.h"
+
 #include <sys/types.h>
 #include <sys/wait.h>
 #include <sys/socket.h>
@@ -30,8 +32,6 @@
 #ifdef sun
 #  include <sys/filio.h>
 #endif
-
-#include "libgadu-config.h"
 
 #include <errno.h>
 #include <netdb.h>
@@ -44,14 +44,14 @@
 #include <string.h>
 #include <signal.h>
 #include <unistd.h>
-/* Miranda-IM
+#ifndef __GG_LIBGADU_MIRANDA
 #ifdef __GG_LIBGADU_HAVE_OPENSSL
 #  include <openssl/err.h>
 #  include <openssl/rand.h>
 #endif
-*/
+#else
 #define kill(x, y) 
-/* /Miranda-IM */
+#endif
 
 #include "compat.h"
 #include "libgadu.h"
@@ -73,8 +73,9 @@ int gg_proxy_http_only = 0;
 char *gg_proxy_username = NULL;
 char *gg_proxy_password = NULL;
 
-/* Miranda IM Extras */
+#ifdef __GG_LIBGADU_MIRANDA
 int gg_failno = 0;
+#endif
 
 #ifndef lint
 static char rcsid[]

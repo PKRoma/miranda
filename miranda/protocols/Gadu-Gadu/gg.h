@@ -286,8 +286,13 @@ extern int ggDesiredStatus;
 extern GGTHREAD *ggThread;
 extern list_t ggThreadList;
 extern HANDLE hNetlib;
+#ifdef __GG_LIBGADU_HAVE_OPENSSL
 extern HANDLE hLibSSL;
 extern HANDLE hLibEAY;
+#else
+#define hLibSSL FALSE
+#define hLibEAY FALSE
+#endif
 extern pthread_mutex_t threadMutex; 	// Used when modifying thread structure
 extern pthread_mutex_t modeMsgsMutex;	// Used when modifying away msgs structure
 extern char *ggTokenid;
@@ -394,6 +399,15 @@ int gg_gc_changenick(HANDLE hContact, char *pszNick);
 // Debug functions
 #ifdef DEBUGMODE
 const char *ggdebug_eventtype(struct gg_event *e);
+#endif
+
+/* SSL functions */
+#ifdef __GG_LIBGADU_HAVE_OPENSSL
+BOOL gg_ssl_init();
+void gg_ssl_uninit();
+#else
+#define gg_ssl_init()
+#define gg_ssl_uninit()
 #endif
 
 #ifdef __cplusplus
