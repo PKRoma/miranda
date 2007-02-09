@@ -27,6 +27,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #define UN_ENABLE_DEF       1
 #define UN_LASTCHECK        "UpdateNotifyLastCheck"
 #define UN_SERVERPERIOD     "UpdateNotifyPingDelayPeriod"
+#define UN_CURRENTVERSION   "UpdateNotifyCurrentVersion"
 #define UN_CUSTOMURL        "UpdateNotifyCustomURL"
 #define UN_URL              "http://update.miranda-im.org/update.php"
 #define UN_MINCHECKTIME     60*60 /* Check no more than once an hour */
@@ -136,7 +137,7 @@ static VOID CALLBACK UpdateNotifyTimerCheck(HWND hwnd, UINT uMsg, UINT_PTR idEve
     }
 }
 
-static void UpdateNotifyPerform(void *p) {
+static void UpdateNotifyPerform(void *manual) {
     NETLIBHTTPREQUEST req;
     NETLIBHTTPREQUEST *resp;
     NETLIBHTTPHEADER headers[1];
@@ -209,8 +210,18 @@ static void UpdateNotifyPerform(void *p) {
                 }
             }
             if (resUpdate&&und.version[0]&&und.downloadUrl[0]) {
-                DialogBoxParam(GetModuleHandle(NULL), MAKEINTRESOURCE(IDD_UPDATE_NOTIFY), 0, UpdateNotifyProc,(LPARAM)&und);
-                hwndUpdateDlg = 0;
+                int notify = 1;
+                
+                if (!DBGetContactSetting(NULL, UN_MOD, UN_CURRENTVERSION, &dbv)) {
+                    if (!strcmp(dbv.pszVal, und.version)) // already notified of this version, don't show dialog
+                        notify = 0;
+                    DBFreeVariant(&dbv);
+                }
+                if (notify) {
+                    DBWriteContactSettingString(NULL, UN_MOD, UN_CURRENTVERSION, und.version);
+                    DialogBoxParam(GetModuleHandle(NULL), MAKEINTRESOURCE(IDD_UPDATE_NOTIFY), 0, UpdateNotifyProc,(LPARAM)&und);
+                    hwndUpdateDlg = 0;
+                }
             }
         }
         CallService(MS_NETLIB_FREEHTTPREQUESTSTRUCT, 0, (LPARAM)resp);
@@ -221,99 +232,94 @@ static void UpdateNotifyPerform(void *p) {
     dwUpdateThreadID = 0;
 }
 
-
-static BOOL CALLBACK UpdateNotifyProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam) {
-	switch (msg)
-	{
-		case WM_INITDIALOG:
+static BOOL CALLBACK UpdateNotifyProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam)
+{
+	switch ( msg ) {
+	case WM_INITDIALOG:
+		TranslateDialogDefault(hwndDlg);
+		Window_SetIcon_IcoLib(hwndDlg, SKINICON_OTHER_MIRANDA);
 		{
-            UpdateNotifyData *und = (UpdateNotifyData*)lParam;
-            char szTmp[128], *p;
-            
-            hwndUpdateDlg = hwndDlg;
-            TranslateDialogDefault(hwndDlg);
-            SendMessage(hwndDlg, WM_SETICON, ICON_BIG, (LPARAM)LoadIcon(GetModuleHandle(NULL), MAKEINTRESOURCE(IDI_MIRANDA)));
-            mir_snprintf(szTmp, sizeof(szTmp), Translate("Miranda IM %s Now Available"), und->version);
-            SetWindowTextA(hwndDlg, szTmp);
-            CallService(MS_SYSTEM_GETVERSIONTEXT, sizeof(szTmp), (LPARAM)szTmp);
-            p = strstr(szTmp, " Unicode");
-            if (p)
-                *p = '\0';   
-            SetDlgItemTextA(hwndDlg, IDC_CURRENTVERSION, szTmp);
-            mir_snprintf(szTmp, sizeof(szTmp), "%s", und->version);
-            SetDlgItemTextA(hwndDlg, IDC_VERSION, szTmp);
-            {
-                HFONT hFont;
-                LOGFONT lf;
-                
-                hFont = (HFONT)SendDlgItemMessage(hwndDlg, IDC_VERSION, WM_GETFONT, 0, 0);
-                GetObject(hFont, sizeof(lf), &lf);
-                lf.lfWeight = FW_BOLD;
-                hFont = CreateFontIndirect(&lf);
-                SendDlgItemMessage(hwndDlg, IDC_VERSION, WM_SETFONT, (WPARAM)hFont, 0);
-                hFont = (HFONT)SendDlgItemMessage(hwndDlg, IDC_NEWVERSIONLABEL, WM_GETFONT, 0, 0);
-                GetObject(hFont, sizeof(lf), &lf);
-                lf.lfWeight = FW_BOLD;
-                hFont = CreateFontIndirect(&lf);
-                SendDlgItemMessage(hwndDlg, IDC_NEWVERSIONLABEL, WM_SETFONT, (WPARAM)hFont, 0);  
-            }
-            SetWindowLong(hwndDlg, GWL_USERDATA, lParam);
-            break;
-        }
-        case WM_COMMAND:
-        {
-			switch (LOWORD(wParam))
+			UpdateNotifyData *und = (UpdateNotifyData*)lParam;
+			char szTmp[128], *p;
+
+			hwndUpdateDlg = hwndDlg;
+			mir_snprintf(szTmp, sizeof(szTmp), Translate("Miranda IM %s Now Available"), und->version);
+			SetWindowTextA(hwndDlg, szTmp);
+			CallService(MS_SYSTEM_GETVERSIONTEXT, sizeof(szTmp), (LPARAM)szTmp);
+			p = strstr(szTmp, " Unicode");
+			if (p)
+				*p = '\0';   
+			SetDlgItemTextA(hwndDlg, IDC_CURRENTVERSION, szTmp);
+			mir_snprintf(szTmp, sizeof(szTmp), "%s", und->version);
+			SetDlgItemTextA(hwndDlg, IDC_VERSION, szTmp);
 			{
-                case IDC_DOWNLOAD:
-                {
-                    UpdateNotifyData *und = (UpdateNotifyData*)GetWindowLong(hwndDlg, GWL_USERDATA);
-                    if (und&&und->downloadUrl) {
-                        CallService(MS_UTILS_OPENURL, 1, (LPARAM)und->downloadUrl);
-                        DestroyWindow(hwndDlg);
-                    }
-                    break;
-                }
-                case IDOK:
-                case IDCANCEL:
-                    DestroyWindow(hwndDlg);
-                    return TRUE;
-            }
-            break;
-        }
-    }
-    return FALSE;
+				HFONT hFont;
+				LOGFONT lf;
+
+				hFont = (HFONT)SendDlgItemMessage(hwndDlg, IDC_VERSION, WM_GETFONT, 0, 0);
+				GetObject(hFont, sizeof(lf), &lf);
+				lf.lfWeight = FW_BOLD;
+				hFont = CreateFontIndirect(&lf);
+				SendDlgItemMessage(hwndDlg, IDC_VERSION, WM_SETFONT, (WPARAM)hFont, 0);
+				hFont = (HFONT)SendDlgItemMessage(hwndDlg, IDC_NEWVERSIONLABEL, WM_GETFONT, 0, 0);
+				GetObject(hFont, sizeof(lf), &lf);
+				lf.lfWeight = FW_BOLD;
+				hFont = CreateFontIndirect(&lf);
+				SendDlgItemMessage(hwndDlg, IDC_NEWVERSIONLABEL, WM_SETFONT, (WPARAM)hFont, 0);  
+			}
+			SetWindowLong(hwndDlg, GWL_USERDATA, lParam);
+		}
+		break;
+
+	case WM_COMMAND:
+		switch (LOWORD(wParam)) {
+		case IDC_DOWNLOAD:
+			{
+				UpdateNotifyData *und = (UpdateNotifyData*)GetWindowLong(hwndDlg, GWL_USERDATA);
+				if (und&&und->downloadUrl) {
+					CallService(MS_UTILS_OPENURL, 1, (LPARAM)und->downloadUrl);
+					DestroyWindow(hwndDlg);
+				}
+				break;
+			}
+		case IDOK:
+		case IDCANCEL:
+			DestroyWindow(hwndDlg);
+			return TRUE;
+		}
+		break;
+
+	case WM_DESTROY:
+		Window_FreeIcon_IcoLib( hwndDlg );
+		break;
+	}
+	return FALSE;
 }
 
-static BOOL CALLBACK UpdateNotifyOptsProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam) {
-	switch (msg) 
-    {
-        case WM_INITDIALOG:
-        {
-            TranslateDialogDefault(hwndDlg);
-            CheckDlgButton(hwndDlg, IDC_ENABLEUPDATES, DBGetContactSettingByte(NULL, UN_MOD, UN_ENABLE, UN_ENABLE_DEF) ? BST_CHECKED : BST_UNCHECKED);
-            return TRUE;
-        }
-        case WM_COMMAND:
-        {
-            switch (LOWORD(wParam)) 
-            {
-                case IDC_ENABLEUPDATES:
-                {
-                    SendMessage(GetParent(hwndDlg), PSM_CHANGED, 0, 0);
-                    break;
-                }
-            }
-            break;
-        }
-        case WM_NOTIFY:
-        {
-            NMHDR *hdr = (NMHDR *)lParam;
-            
-            if (hdr&&hdr->code==PSN_APPLY) {
-                DBWriteContactSettingByte(NULL, UN_MOD, UN_ENABLE, (BYTE)(IsDlgButtonChecked(hwndDlg, IDC_ENABLEUPDATES)));
-            }
-            break;
-        }
-    }
-    return FALSE;
+static BOOL CALLBACK UpdateNotifyOptsProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam)
+{
+	switch (msg) {
+	case WM_INITDIALOG:
+		TranslateDialogDefault(hwndDlg);
+		CheckDlgButton(hwndDlg, IDC_ENABLEUPDATES, DBGetContactSettingByte(NULL, UN_MOD, UN_ENABLE, UN_ENABLE_DEF) ? BST_CHECKED : BST_UNCHECKED);
+		return TRUE;
+
+	case WM_COMMAND:
+		switch (LOWORD(wParam)) {
+		case IDC_ENABLEUPDATES:
+			SendMessage(GetParent(hwndDlg), PSM_CHANGED, 0, 0);
+			break;
+		}
+		break;
+
+	case WM_NOTIFY:
+		{
+			NMHDR *hdr = (NMHDR *)lParam;
+			if (hdr&&hdr->code==PSN_APPLY) {
+				DBWriteContactSettingByte(NULL, UN_MOD, UN_ENABLE, (BYTE)(IsDlgButtonChecked(hwndDlg, IDC_ENABLEUPDATES)));
+			}
+			break;
+		}
+	}
+	return FALSE;
 }
