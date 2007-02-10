@@ -149,7 +149,7 @@ void __cdecl aim_protocol_negotiation()
 	conn.hServerPacketRecver=NULL;
 	conn.hServerPacketRecver = (HANDLE) CallService(MS_NETLIB_CREATEPACKETRECVER, (WPARAM)conn.hServerConn, 2048 * 8);
 	packetRecv.cbSize = sizeof(packetRecv);
-	packetRecv.dwTimeout = INFINITE;
+	packetRecv.dwTimeout = INFINITE;	
 	#if _MSC_VER
 	#pragma warning( disable: 4127)
 	#endif
@@ -230,6 +230,7 @@ void __cdecl aim_protocol_negotiation()
 					offline_contacts();
 					broadcast_status(ID_STATUS_OFFLINE);
 					LOG("Connection Negotiation Thread Ending: Flap 0x04");
+					SetEvent(conn.hAvatarEvent);
 					LeaveCriticalSection(&connectionMutex);
 					return;
 				}
@@ -238,6 +239,7 @@ void __cdecl aim_protocol_negotiation()
 	}
 	offline_contacts();
 	broadcast_status(ID_STATUS_OFFLINE);
+	SetEvent(conn.hAvatarEvent);
 	LOG("Connection Negotiation Thread Ending: End of Thread");
 	LeaveCriticalSection(&connectionMutex);
 }
@@ -280,10 +282,10 @@ void __cdecl aim_mail_negotiation()
 				flap_length+=FLAP_SIZE+flap.len();
   				if(flap.cmp(0x01))
 				{
-					aim_send_cookie(conn.hMailConn,conn.mail_seqno,COOKIE_LENGTH,COOKIE);//cookie challenge
-					delete[] COOKIE;
-					COOKIE=NULL;
-					COOKIE_LENGTH=0;
+					aim_send_cookie(conn.hMailConn,conn.mail_seqno,MAIL_COOKIE_LENGTH,MAIL_COOKIE);//cookie challenge
+					delete[] MAIL_COOKIE;
+					MAIL_COOKIE=NULL;
+					MAIL_COOKIE_LENGTH=0;
 				}
 				else if(flap.cmp(0x02))
 				{
@@ -291,7 +293,7 @@ void __cdecl aim_mail_negotiation()
 					if(snac.cmp(0x0001))
 					{
 						snac_supported_families(snac,conn.hMailConn,conn.mail_seqno);
-						snac_mail_supported_family_versions(snac,conn.hMailConn,conn.mail_seqno);
+						snac_supported_family_versions(snac,conn.hMailConn,conn.mail_seqno);
 						snac_mail_rate_limitations(snac,conn.hMailConn,conn.mail_seqno);
 						snac_error(snac);
 					}
@@ -303,10 +305,87 @@ void __cdecl aim_mail_negotiation()
 				else if(flap.cmp(0x04))
 				{
 					Netlib_CloseHandle(hServerPacketRecver);
+					LOG("Mail Server Connection has ended");
+					return;
+				}
+			}
+		}
+	}
+	LOG("Mail Server Connection has ended");
+	Netlib_CloseHandle(hServerPacketRecver);
+}
+void __cdecl aim_avatar_negotiation()
+{
+	NETLIBPACKETRECVER packetRecv;
+	int recvResult=0;
+	ZeroMemory(&packetRecv, sizeof(packetRecv));
+	HANDLE hServerPacketRecver=NULL;
+	hServerPacketRecver = (HANDLE) CallService(MS_NETLIB_CREATEPACKETRECVER, (WPARAM)conn.hAvatarConn, 2048 * 8);
+	packetRecv.cbSize = sizeof(packetRecv);
+	packetRecv.dwTimeout = 300000;//5 minutes connected
+	#if _MSC_VER
+	#pragma warning( disable: 4127)
+	#endif
+	while(1)
+	{
+		#if _MSC_VER
+		#pragma warning( default: 4127)
+		#endif
+		recvResult = CallService(MS_NETLIB_GETMOREPACKETS, (WPARAM) hServerPacketRecver, (LPARAM) & packetRecv);
+		if (recvResult == 0)
+		{
+                break;
+		}
+        if (recvResult == SOCKET_ERROR)
+		{
+                break;
+		}
+		if(recvResult>0)
+		{
+			unsigned short flap_length=0;
+			for(;packetRecv.bytesUsed<packetRecv.bytesAvailable;packetRecv.bytesUsed=flap_length)
+			{
+				if(!packetRecv.buffer)
+					break;
+				FLAP flap((char*)&packetRecv.buffer[packetRecv.bytesUsed],(unsigned short)(packetRecv.bytesAvailable-packetRecv.bytesUsed));
+				if(!flap.len())
+					break;
+				flap_length+=FLAP_SIZE+flap.len();
+  				if(flap.cmp(0x01))
+				{
+					aim_send_cookie(conn.hAvatarConn,conn.avatar_seqno,AVATAR_COOKIE_LENGTH,AVATAR_COOKIE);//cookie challenge
+					delete[] AVATAR_COOKIE;
+					AVATAR_COOKIE=NULL;
+					AVATAR_COOKIE_LENGTH=0;
+				}
+				else if(flap.cmp(0x02))
+				{
+					SNAC snac(flap.val(),flap.snaclen());
+					if(snac.cmp(0x0001))
+					{
+						snac_supported_families(snac,conn.hAvatarConn,conn.avatar_seqno);
+						snac_supported_family_versions(snac,conn.hAvatarConn,conn.avatar_seqno);
+						snac_avatar_rate_limitations(snac,conn.hAvatarConn,conn.avatar_seqno);
+						snac_error(snac);
+					}
+					if(snac.cmp(0x0010))
+					{
+						snac_retrieve_avatar(snac);
+					}
+				}
+				else if(flap.cmp(0x04))
+				{
+					Netlib_CloseHandle(hServerPacketRecver);
+					conn.hAvatarConn=0;
+					LOG("Avatar Server Connection has ended");
+					conn.AvatarLimitThread=0;
 					return;
 				}
 			}
 		}
 	}
 	Netlib_CloseHandle(hServerPacketRecver);
+	LOG("Avatar Server Connection has ended");
+	conn.hAvatarConn=0;
+	conn.AvatarLimitThread=0;
 }

@@ -14,7 +14,7 @@ static int GetCaps(WPARAM wParam, LPARAM /*lParam*/)
             ret = PF2_SHORTAWAY;
             break;
 		case PFLAGNUM_4:
-			ret = PF4_SUPPORTTYPING | PF4_FORCEAUTH | PF4_FORCEADDED | PF4_SUPPORTIDLE;
+			ret = PF4_SUPPORTTYPING | PF4_FORCEAUTH | PF4_FORCEADDED | PF4_SUPPORTIDLE | PF4_AVATARS;
             break;
 		case PFLAGNUM_5:                
             ret = PF2_ONTHEPHONE;
@@ -181,7 +181,8 @@ static int SendMsgW(WPARAM /*wParam*/, LPARAM lParam)
 		//if(DBGetContactSettingByte(ccs->hContact, AIM_PROTOCOL_NAME, AIM_KEY_US, 0))
 		//{
 		wchar_t* msg=wcsldup((wchar_t*)((char*)ccs->lParam+lstrlen((char*)ccs->lParam)+1),wcslen((wchar_t*)((char*)ccs->lParam+lstrlen((char*)ccs->lParam)+1)));
-		wchar_t* smsg=plain_to_html(msg);
+		//wchar_t* smsg=plain_to_html(msg);
+		wchar_t* smsg=strip_carrots(msg);
 		delete[] msg;
 		if(DBGetContactSettingByte(NULL, AIM_PROTOCOL_NAME, AIM_KEY_FO, 0))
 		{
@@ -228,16 +229,21 @@ static int RecvMsg(WPARAM /*wParam*/, LPARAM lParam)
 	char* buf = 0;
 	if ( pre->flags & PREF_UNICODE )
 	{
+		LOG("Recieved a unicode message.");
 		wchar_t* wbuf=(wchar_t*)&pre->szMessage[lstrlen(pre->szMessage)+1];
 		wchar_t* st_wbuf;
 		if(DBGetContactSettingByte(NULL, AIM_PROTOCOL_NAME, AIM_KEY_FI, 0))
 		{
+			LOG("Converting from html to bbcodes then stripping leftover html.(U)");
 			wchar_t* bbuf=html_to_bbcodes(wbuf);
 			st_wbuf=strip_html(bbuf);
-			free(bbuf);
+			delete[] bbuf;
 		}
 		else
+		{
+			LOG("Stripping html.(U)");
 			st_wbuf=strip_html(wbuf);
+		}
 		//delete[] pre->szMessage; not necessary - done in server.cpp
 		buf=(char *)malloc(wcslen(st_wbuf)*3+3);
 		WideCharToMultiByte( CP_ACP, 0,st_wbuf, -1,buf,wcslen(st_wbuf)+1, NULL, NULL);
@@ -249,14 +255,19 @@ static int RecvMsg(WPARAM /*wParam*/, LPARAM lParam)
 	}
 	else
 	{
+		LOG("Recieved a non-unicode message.");
 		if(DBGetContactSettingByte(NULL, AIM_PROTOCOL_NAME, AIM_KEY_FI, 0))
 		{
+			LOG("Converting from html to bbcodes then stripping leftover html.");
 			char* bbuf=html_to_bbcodes(pre->szMessage);
 			buf=strip_html(bbuf);
-			free(bbuf);
+			delete[] bbuf;
 		}
 		else
+		{
+			LOG("Stripping html.");
 			buf=strip_html(pre->szMessage);
+		}
 		dbei.pBlob=(PBYTE)buf;
 		dbei.cbBlob = lstrlen(buf)+1;
 	}
@@ -309,33 +320,26 @@ static int GetAwayMsg(WPARAM /*wParam*/, LPARAM lParam)
 {
 	if (conn.state!=1)
 		return 0;
-	DBVARIANT dbv;
 	CCSDATA* ccs = (CCSDATA*)lParam;
 	if(ID_STATUS_OFFLINE==DBGetContactSettingWord(ccs->hContact, AIM_PROTOCOL_NAME, AIM_KEY_ST, ID_STATUS_OFFLINE))
 		return 0;
-	if(!DBGetContactSetting((HANDLE)ccs->hContact, AIM_PROTOCOL_NAME, AIM_KEY_SN, &dbv))
+	if(char* sn=getSetting(ccs->hContact,AIM_PROTOCOL_NAME,AIM_KEY_SN))
 	{
-		if(aim_query_away_message(conn.hServerConn,conn.seqno,dbv.pszVal))
-		{
-			DBFreeVariant(&dbv);
-			return 1;
-		}
-		DBFreeVariant(&dbv);
-	}
+		awaymsg_request_handler(sn);
+		delete[] sn;
+	}	
 	return 0;
 }
 static int GetHTMLAwayMsg(WPARAM wParam, LPARAM /*lParam*/)
 {
 	if (conn.state!=1)
 		return 0;
-	DBVARIANT dbv;
-	if(!DBGetContactSetting((HANDLE)wParam, AIM_PROTOCOL_NAME, AIM_KEY_SN, &dbv))
+	if(char* sn=getSetting((HANDLE&)wParam,AIM_PROTOCOL_NAME,AIM_KEY_SN))
 	{
-		if(aim_query_away_message(conn.hServerConn,conn.seqno,dbv.pszVal))
-		{
-			conn.requesting_HTML_ModeMsg=1;				
-		}
-		DBFreeVariant(&dbv);
+		char URL[256];
+		mir_snprintf(URL,lstrlen(CWD)+lstrlen(AIM_PROTOCOL_NAME)+lstrlen(sn)+9+4,"%s\\%s\\%s\\away.html",CWD,AIM_PROTOCOL_NAME,sn);
+		execute_cmd("http",URL);
+		delete[] sn;
 	}
 	return 0;
 }
@@ -685,6 +689,83 @@ static int EditProfile(WPARAM /*wParam*/, LPARAM /*lParam*/)
 	DialogBox(conn.hInstance, MAKEINTRESOURCE(IDD_AIM), NULL, userinfo_dialog);
 	return 0;
 }
+static int GetAvatarInfo(WPARAM /*wParam*/,LPARAM lParam)
+{
+	PROTO_AVATAR_INFORMATION* AI = ( PROTO_AVATAR_INFORMATION* )lParam;
+	//avatar_apply(HANDLE &hContact)
+
+//	DBVARIANT dbv;
+	//if (!DBGetContactSetting(ccs->hContact, AIM_PROTOCOL_NAME, AIM_KEY_SN, &dbv))
+	if(char* sn=getSetting(AI->hContact,AIM_PROTOCOL_NAME,AIM_KEY_SN))
+	{
+		if(char* photo_path=getSetting(AI->hContact,"ContactPhoto","File"))
+		{
+			//int length=lstrlen(CWD)+lstrlen(AIM_PROTOCOL_NAME)+lstrlen(sn)+11;
+			//char* avatar_path= new char[length];
+			FILE* photo_file=fopen(photo_path,"rb");
+			if(photo_file)
+			{
+				char buf[10];
+				fread(buf,1,10,photo_file);
+				fclose(photo_file);
+				char filetype[5];
+				detect_image_type(buf,filetype);
+				if(!lstrcmpi(filetype,".jpg"))
+					AI->format=PA_FORMAT_JPEG;
+				else if(!lstrcmpi(filetype,".gif"))
+					AI->format=PA_FORMAT_GIF;
+				else if(!lstrcmpi(filetype,".png"))
+					AI->format=PA_FORMAT_PNG;
+				else if(!lstrcmpi(filetype,".bmp"))
+					AI->format=PA_FORMAT_BMP;
+				strlcpy(AI->filename,photo_path,lstrlen(photo_path));
+			//mir_snprintf(avatar_path, length, "%s\\%s\\%s\\avatar.",CWD,AIM_PROTOCOL_NAME,sn);	
+			//photo_path[lstrlen(photo_path)-4]='\0';
+			//if(!lstrcmpi(photo_path,avatar_path)&&!photopath[length+4])
+			//{
+				//photo_path[lstrlen(photo_path)+1]='.';
+				delete[] photo_path;
+				delete[] sn;
+				return GAIR_SUCCESS; 
+			}
+			//}
+			delete[] photo_path;
+		}
+		else if(char* hash=getSetting(AI->hContact,AIM_PROTOCOL_NAME,AIM_KEY_AH))
+		{
+			delete[] sn;
+			return GAIR_WAITFOR;
+		}
+		delete[] sn;
+		return GAIR_NOAVATAR;
+	}
+	//AI.cbSize = sizeof AI;
+	//AI.hContact = hContact;
+	//DBVARIANT dbv;
+///	if(!DBGetContactSetting( AI->hContact, "ContactPhoto", "File",&dbv))//check for image type in db 
+	//{
+//		memcpy(&filetype,&filename[lstrlen(filename)]-3,4);
+	//	DBFreeVariant(&dbv);
+	//}
+
+/*	strlcpy(AI.filename,filename,lstrlen(filename)+1);
+	char filetype[4];
+	memcpy(&filetype,&filename[lstrlen(filename)]-3,4);
+	if(!lstrcmpi(filetype,"jpg")||!lstrcmpi(filetype,"jpeg"))
+		AI.format=PA_FORMAT_JPEG;
+	else if(!lstrcmpi(filetype,"gif"))
+		AI.format=PA_FORMAT_GIF;
+	else if(!lstrcmpi(filetype,"png"))
+		AI.format=PA_FORMAT_PNG;
+	else if(!lstrcmpi(filetype,"bmp"))
+		AI.format=PA_FORMAT_BMP;
+	DBWriteContactSettingString( hContact, "ContactPhoto", "File", AI.filename );
+	LOG("Successfully added avatar for %s",sn);
+	ProtoBroadcastAck(AIM_PROTOCOL_NAME, hContact, ACKTYPE_AVATAR, ACKRESULT_SUCCESS,&AI,0);
+
+*/
+		return 1;
+}
 int ExtraIconsRebuild(WPARAM /*wParam*/, LPARAM /*lParam*/) 
 {
 	if (ServiceExists(MS_CLIST_EXTRA_ADD_ICON))
@@ -815,6 +896,9 @@ void CreateServices()
 	CreateServiceFunction(service_name,UserIsTyping);
 	mir_snprintf(service_name, sizeof(service_name), "%s%s", AIM_PROTOCOL_NAME, PSS_AUTHREQUEST);
 	CreateServiceFunction(service_name,AuthRequest);
+	mir_snprintf(service_name, sizeof(service_name), "%s%s", AIM_PROTOCOL_NAME, PS_GETAVATARINFO);
+	CreateServiceFunction(service_name,GetAvatarInfo);
+	
 	//Do not put any services below HTML get away message!!!
 
 	mir_snprintf(service_name, sizeof(service_name), "%s%s", AIM_PROTOCOL_NAME, "/ManageAccount");

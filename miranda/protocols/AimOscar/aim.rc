@@ -66,25 +66,26 @@ BEGIN
     LTEXT           "Display Name:",IDC_STATIC,9,39,48,15
     LTEXT           "Password:",IDC_STATIC,21,59,35,15
     LTEXT           "Login Server:",IDC_STATIC,11,80,44,12
-    CONTROL         "Message Delivery Confirmation",IDC_DC,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,14,119,130,13
-    CONTROL         "Do Not Autoreply When Away",IDC_DM,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,14,132,143,13
-    CONTROL         "Convert Incoming Messages to BBCode",IDC_FI,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,14,145,143,13
-    CONTROL         "Convert Outgoing Messages to HTML",IDC_FO,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,14,157,143,13
-    CONTROL         "Disable Account Type Icons",IDC_AT,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,14,170,133,13
-    CONTROL         "Disable Extended Status Icons",IDC_ES,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,14,183,143,13
-    CONTROL         "Handle aim: links on websites",IDC_WEBSUPPORT,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,14,196,143,13
-    CONTROL         "Check Mail on Login",IDC_CM,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,14,209,143,13
-	GROUPBOX        "AIM User Details",IDC_DETAILS,3,7,161,95,WS_GROUP
+    CONTROL         "Message Delivery Confirmation",IDC_DC,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,14,116,130,13
+    CONTROL         "Do Not Autoreply When Away",IDC_DM,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,14,128,143,13
+    CONTROL         "Convert Incoming Messages to BBCode",IDC_FI,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,14,140,143,13
+    CONTROL         "Convert Outgoing Messages to HTML",IDC_FO,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,14,152,143,13
+    CONTROL         "Disable Avatars",IDC_DA,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,14,164,143,13
+	CONTROL         "Disable Account Type Icons",IDC_AT,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,14,176,133,13
+    CONTROL         "Disable Extended Status Icons",IDC_ES,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,14,188,143,13
+    CONTROL         "Handle aim: links on websites",IDC_WEBSUPPORT,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,14,200,143,13
+    CONTROL         "Check Mail on Login",IDC_CM,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,14,212,143,13
+    GROUPBOX        "AIM User Details",IDC_DETAILS,3,7,161,95,WS_GROUP
     GROUPBOX        "Advanced Options",IDC_EXPERT,166,7,156,95,WS_GROUP
     LTEXT           "*Aim must be reconnected  for some option to take effect.",IDC_MASQ,186,109,115,18,NOT WS_VISIBLE
     CONTROL         "Send Keep Alive Packets",IDC_KA,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,174,21,93,13
-	LTEXT           "File Transfer Grace Period:",IDC_STATIC,174,40,87,12
+    LTEXT           "File Transfer Grace Period:",IDC_STATIC,174,40,87,12
     EDITTEXT        IDC_GP,261,39,20,12,ES_AUTOHSCROLL | ES_NUMBER,WS_EX_RIGHT
     LTEXT           "(seconds)",IDC_STATIC,285,41,32,12
-	CONTROL         "Instant Idle on Login",IDC_II,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,174,52,93,13
+    CONTROL         "Instant Idle on Login",IDC_II,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,174,52,93,13
     CONTROL         "Force Proxy File Transfers",IDC_FP,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,174,65,130,11
     CONTROL         "Masquerade as a Sidekick/Hiptop User",IDC_HF,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,174,76,143,13
-  END
+END
 
 IDD_INFO DIALOGEX 0, 0, 329, 190
 STYLE DS_SETFONT | DS_3DLOOK | DS_FIXEDSYS | WS_MINIMIZEBOX | WS_MAXIMIZEBOX | WS_POPUP | WS_CAPTION | WS_SYSMENU | WS_THICKFRAME

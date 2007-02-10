@@ -210,7 +210,7 @@ int aim_set_caps(HANDLE hServerConn,unsigned short &seqno)
 	memcpy(&temp[AIM_CAPS_LENGTH*i++],AIM_CAP_SEND_FILES,AIM_CAPS_LENGTH);
 	//memcpy(&temp[AIM_CAPS_LENGTH*i++],AIM_CAP_ROUTER_FIND,AIM_CAPS_LENGTH);
 	//memcpy(&temp[AIM_CAPS_LENGTH*i++],AIM_CAP_DIRECT_IM,AIM_CAPS_LENGTH);
-	//memcpy(&temp[AIM_CAPS_LENGTH*i++],AIM_CAP_AVATARS,AIM_CAPS_LENGTH);
+	memcpy(&temp[AIM_CAPS_LENGTH*i++],AIM_CAP_AVATARS,AIM_CAPS_LENGTH);
 	//memcpy(&temp[AIM_CAPS_LENGTH*i++],AIM_CAP_ADDINS,AIM_CAPS_LENGTH);
 	memcpy(&temp[AIM_CAPS_LENGTH*i++],AIM_CAP_RECEIVE_FILES,AIM_CAPS_LENGTH);
 	//memcpy(&temp[AIM_CAPS_LENGTH*i++],AIM_CAP_CHANNEL_TWO,AIM_CAPS_LENGTH);
@@ -374,6 +374,20 @@ int aim_mail_ready(HANDLE hServerConn,unsigned short &seqno)
 	aim_writefamily(AIM_SERVICE_GENERIC,offset,buf);
 	aim_writegeneric(4,AIM_TOOL_VERSION,offset,buf);
 	aim_writefamily(AIM_SERVICE_MAIL,offset,buf);
+	aim_writegeneric(4,AIM_TOOL_VERSION,offset,buf);
+	if(aim_sendflap(hServerConn,0x02,offset,buf,seqno)==0)
+		return 0;
+	else
+		return -1;
+}
+int aim_avatar_ready(HANDLE hServerConn,unsigned short &seqno)
+{
+	unsigned short offset=0;
+	char buf[SNAC_SIZE+TLV_HEADER_SIZE*4];
+	aim_writesnac(0x01,0x02,6,offset,buf);
+	aim_writefamily(AIM_SERVICE_GENERIC,offset,buf);
+	aim_writegeneric(4,AIM_TOOL_VERSION,offset,buf);
+	aim_writefamily(AIM_SERVICE_AVATAR,offset,buf);
 	aim_writegeneric(4,AIM_TOOL_VERSION,offset,buf);
 	if(aim_sendflap(hServerConn,0x02,offset,buf,seqno)==0)
 		return 0;
@@ -700,7 +714,7 @@ int aim_send_file(HANDLE hServerConn,unsigned short &seqno,char* sn,char* icbm_c
 		aim_writetlv(0x0e,2,"\x65\x6e",frag_offset,msg_frag);
 		aim_writetlv(0x0d,8,"us-ascii",frag_offset,msg_frag);
 		if(descr)
-			aim_writetlv(0x0c,lstrlen(descr),descr,frag_offset,msg_frag);
+			aim_writetlv(0x0c,(unsigned short)lstrlen(descr),descr,frag_offset,msg_frag);
 		else
 			aim_writetlv(0x0c,6,"<HTML>",frag_offset,msg_frag);
 		unsigned long lip=_htonl(ip);
@@ -741,7 +755,7 @@ int aim_send_file(HANDLE hServerConn,unsigned short &seqno,char* sn,char* icbm_c
 			aim_writegeneric(2,"\0\1",frag_offset,msg_frag);//number of files being transfered
 			total_bytes=_htonl(total_bytes);
 			aim_writegeneric(4,(char*)&total_bytes,frag_offset,msg_frag);//number of bytes in file
-			aim_writegeneric(lstrlen(file_name),file_name,frag_offset,msg_frag);//filename
+			aim_writegeneric((unsigned short)lstrlen(file_name),file_name,frag_offset,msg_frag);//filename
 			aim_writegeneric(1,"\0",frag_offset,msg_frag);//null termination
 			//end tlv
 			aim_writetlv(0x2712,8,"us-ascii",frag_offset,msg_frag);//character set
@@ -1051,7 +1065,7 @@ int aim_request_mail(HANDLE hServerConn,unsigned short &seqno)
 	else
 		return 0;
 }
-int aim_request_avatar(HANDLE hServerConn,unsigned short &seqno,char* sn, char* hash)
+int aim_request_avatar(HANDLE hServerConn,unsigned short &seqno,char* sn, char* hash, unsigned short hash_size)
 {
 	unsigned short offset=0;
 	char sn_length=(char)strlen(sn);
@@ -1059,8 +1073,10 @@ int aim_request_avatar(HANDLE hServerConn,unsigned short &seqno,char* sn, char* 
 	aim_writesnac(0x10,0x04,6,offset,buf);
 	aim_writegeneric(1,&sn_length,offset,buf);
 	aim_writegeneric(sn_length,sn,offset,buf);
-	aim_writegeneric(5,"\x01\0\x01\0\x10",offset,buf);
-	aim_writegeneric(16,hash,offset,buf);
+	aim_writegeneric(4,"\x01\0\x01\0",offset,buf);
+	char* size=(char*)&hash_size;
+	aim_writegeneric(1,&size[0],offset,buf);
+	aim_writegeneric(hash_size,hash,offset,buf);
 	if(aim_sendflap(hServerConn,0x02,offset,buf,seqno)==0)
 	{
 		delete[] buf;

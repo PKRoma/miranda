@@ -43,7 +43,7 @@ wchar_t* strip_html(wchar_t *src)
         memmove(ptr + 2, ptr + 4, wcslen(ptr + 4)*2 + 2);
     }
     rptr = dest;
-	while (ptr = wcsstr(rptr, L"<A HREF=\""))
+	/*while (ptr = wcsstr(rptr, L"<A HREF=\""))
 	{
 		int addr=ptr-rptr;
 		dest=renew(dest,wcslen(dest)*2+2,7);
@@ -121,7 +121,7 @@ wchar_t* strip_html(wchar_t *src)
 		}
         else
             rptr++;
-    }
+    }*/
     while ((ptr = wcsstr(rptr, L"<"))) {
         ptrl = ptr + 1;
         if ((ptrl = wcsstr(ptrl, L">"))) {
@@ -178,7 +178,7 @@ char* strip_special_chars(char *src, HANDLE hContact)
 	return 0;
 }
 
-wchar_t* plain_to_html(wchar_t *src)
+/*wchar_t* plain_to_html(wchar_t *src)
 {   // first mangle all html special chars
 		wchar_t *ptr;
 		wchar_t* dest=wcsldup(src,wcslen(src));
@@ -224,7 +224,7 @@ wchar_t* plain_to_html(wchar_t *src)
     wcscat(ptr, L"</HTML></BODY>");
     delete[] dest;
 		return ptr;
-}
+}*/
 char* strip_carrots(char *src)// EAT!!!!!!!!!!!!!
 {
 	wchar_t* buf=new wchar_t[strlen(src)+1];

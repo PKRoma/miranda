@@ -53,7 +53,9 @@
 #include "snac.h"
 #include "tlv.h"
 //rest o includes
+#include "avatars.h"
 #include "aim.h"
+#include "away.h"
 #include "utility.h"
 #include "client.h"
 #include "connection.h"
@@ -102,6 +104,7 @@
 #define AIM_KEY_II						"InstantIdle"
 #define AIM_KEY_IIT						"InstantIdleTS"
 #define AIM_KEY_CM						"CheckMail"
+#define AIM_KEY_DA						"DisableAvatars"
 
 //Other plugin Option Keys
 #define OTH_KEY_AI						"AwayIgnore"
@@ -147,6 +150,7 @@
 #define AIM_KEY_NL						"NotOnList"
 #define AIM_KEY_LM						"LastMessage"
 #define AIM_KEY_NC						"NewContact"
+#define AIM_KEY_AH						"AvatarHash"
 //File Transfer Keys
 #define AIM_KEY_FT						"FileTransfer"//1= sending 0=receiving
 #define AIM_KEY_CK						"Cookie"
@@ -279,7 +283,6 @@ public:
 	char* szModeMsg;//away message
 
 	//Some bools to keep track of different things
-	bool requesting_HTML_ModeMsg;
 	bool request_HTML_profile;
 	bool extra_icons_loaded;
 	bool freeing_DirectBoundPort;
@@ -317,6 +320,15 @@ public:
 	unsigned short mail_seqno;
 	int mail_packet_offset;
 	
+	//avatar connection stuff
+	HANDLE hAvatarConn;
+	unsigned short avatar_seqno;
+	HANDLE hAvatarEvent;
+	bool AvatarLimitThread;
+
+	//away message retrieval stuff
+	HANDLE hAwayMsgEvent;
+
 	//Some Icon handles
 	HANDLE bot_icon;
 	HANDLE icq_icon;

@@ -3,7 +3,7 @@ HANDLE hThemeButton = NULL;
 COLORREF foreground=0;
 COLORREF background=0xffffff;
 COLORREF custColours[16]={0};
-static DWORD CALLBACK Message_StreamCallback(DWORD dwCookie, LPBYTE pbBuff, LONG cb, LONG * pcb)
+/*static DWORD CALLBACK Message_StreamCallback(DWORD dwCookie, LPBYTE pbBuff, LONG cb, LONG * pcb)
 {
 	static DWORD dwRead;
     char ** ppText = (char **) dwCookie;
@@ -28,7 +28,7 @@ static DWORD CALLBACK Message_StreamCallback(DWORD dwCookie, LPBYTE pbBuff, LONG
 	}
 	
     return 0;
-}
+}*/
 static int CALLBACK EnumFontsProc(ENUMLOGFONTEX *lpelfe, NEWTEXTMETRICEX* /*lpntme*/, int /*FontType*/, LPARAM lParam)
 {
     if (!IsWindow((HWND) lParam))
@@ -775,6 +775,7 @@ BOOL CALLBACK options_dialog(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
 			CheckDlgButton(hwndDlg, IDC_II, DBGetContactSettingByte(NULL, AIM_PROTOCOL_NAME, AIM_KEY_II, 0));//Instant Idle
 			CheckDlgButton(hwndDlg, IDC_CM, DBGetContactSettingByte(NULL, AIM_PROTOCOL_NAME, AIM_KEY_CM, 0));//Check Mail
 			CheckDlgButton(hwndDlg, IDC_KA, DBGetContactSettingByte(NULL, AIM_PROTOCOL_NAME, AIM_KEY_KA, 0));//Keep Alive
+			CheckDlgButton(hwndDlg, IDC_DA, DBGetContactSettingByte(NULL, AIM_PROTOCOL_NAME, AIM_KEY_DA, 0));//Disable Avatars
 			break;
 		}
 		case WM_COMMAND:
@@ -844,6 +845,13 @@ BOOL CALLBACK options_dialog(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
 						DBWriteContactSettingByte(NULL, AIM_PROTOCOL_NAME, AIM_KEY_DC, 0);
 					//End Delivery Confirmation
 
+					//Disable Avatar
+					if (IsDlgButtonChecked(hwndDlg, IDC_DA))
+                        DBWriteContactSettingByte(NULL, AIM_PROTOCOL_NAME, AIM_KEY_DA, 1);
+					else
+						DBWriteContactSettingByte(NULL, AIM_PROTOCOL_NAME, AIM_KEY_DA, 0);
+					//Disable Avatar
+					
 					//Force Proxy Transfer
 					if (IsDlgButtonChecked(hwndDlg, IDC_FP))
 						DBWriteContactSettingByte(NULL, AIM_PROTOCOL_NAME, AIM_KEY_FP, 1);

@@ -19,6 +19,7 @@ int aim_accept_rates(HANDLE hServerConn,unsigned short &seqno);
 int aim_set_caps(HANDLE hServerConn,unsigned short &seqno);
 int aim_client_ready(HANDLE hServerConn,unsigned short &seqno);
 int aim_mail_ready(HANDLE hServerConn,unsigned short &seqno);
+int aim_avatar_ready(HANDLE hServerConn,unsigned short &seqno);
 int aim_send_plaintext_message(HANDLE hServerConn,unsigned short &seqno,char* sn,char* msg,bool auto_response);
 int aim_send_unicode_message(HANDLE hServerConn,unsigned short &seqno,char* sn,wchar_t* msg);
 int aim_query_away_message(HANDLE hServerConn,unsigned short &seqno,char* sn);
@@ -37,5 +38,5 @@ int aim_deny_file(HANDLE hServerConn,unsigned short &seqno,char* sn,char* icbm_c
 int aim_typing_notification(HANDLE hServerConn,unsigned short &seqno,char* sn,unsigned short type);
 int aim_set_idle(HANDLE hServerConn,unsigned short &seqno,unsigned long seconds);
 int aim_request_mail(HANDLE hServerConn,unsigned short &seqno);
-int aim_request_avatar(HANDLE hServerConn,unsigned short &seqno,char* sn, char* hash);//family 0x0010
+int aim_request_avatar(HANDLE hServerConn,unsigned short &seqno,char* sn, char* hash, unsigned short hash_size);//family 0x0010
 #endif

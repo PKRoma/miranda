@@ -35,6 +35,7 @@ unsigned short search_for_free_item_id(HANDLE hbuddy);
 char* get_members_of_group(unsigned short group_id,unsigned short &size);
 void __cdecl basic_search_ack_success(char *snsearch);
 void delete_module(char* module, HANDLE hContact);
+FILE* open_contact_file(char* sn, char* file, char* mode, char* &path, bool contact_dir);
 void write_away_message(HANDLE hContact,char* sn,char* msg);
 void write_profile(char* sn,char* msg);
 unsigned int aim_oft_checksum_file(char *filename);
@@ -62,6 +63,10 @@ void set_extra_icon(char* data);
 //char* get_outer_group();
 void wcs_htons(wchar_t * ch);
 void assign_modmsg(char* msg);
+char* bytes_to_string(char* bytes, int num_bytes);
+void string_to_bytes(char* string, char* bytes);
+unsigned short string_to_bytes_count(char* string);
+char* getSetting(HANDLE &hContact,char* module,char* setting);
 template <class T>
 T* renew(T* src, int size, int size_chg)
 {

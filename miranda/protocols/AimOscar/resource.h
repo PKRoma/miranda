@@ -68,6 +68,8 @@
 #define IDC_ES                          1140
 #define IDC_FI                          1150
 #define IDC_FO                          1160
+#define IDC_FO2                         1161
+#define IDC_DA                          1161
 #define IDC_HF                          1170
 #define IDC_MASQ                        1180
 #define IDC_WEBSUPPORT                  1190
@@ -78,7 +80,6 @@
 #define IDC_PROFILE                     1220
 #define IDC_IIM                         1230
 #define IDC_IIH                         1240
-#define IDC_STATIC                      -1
 
 // Next default values for new objects
 // 
