@@ -53,13 +53,11 @@ void		UninitSsl( void );
 /////////////////////////////////////////////////////////////////////////////////////////
 // Global variables
 
-int      uniqueEventId = 0;
 int      msnSearchID = -1;
 char*    msnExternalIP = NULL;
 char*    msnPreviousUUX = NULL;
 HANDLE   msnMainThread;
 int      msnOtherContactsBlocked = 0;
-HANDLE   hGroupAddEvent = NULL;
 HANDLE   hMSNNudge = NULL;
 bool		msnHaveChatDll = false;
 
@@ -114,6 +112,7 @@ static HANDLE hHookHandle[8] = { 0 };
 bool				msnUseExtendedPopups;
 
 int MsnOnDetailsInit( WPARAM wParam, LPARAM lParam );
+int MsnIdleChanged( WPARAM wParam, LPARAM lParam );
 
 int MSN_GCEventHook( WPARAM wParam, LPARAM lParam );
 int MSN_GCMenuHook( WPARAM wParam, LPARAM lParam );
@@ -245,6 +244,7 @@ static int OnModulesLoaded( WPARAM wParam, LPARAM lParam )
 	msnUseExtendedPopups = ServiceExists( MS_POPUP_ADDPOPUPEX ) != 0;
 	hHookHandle[3] = HookEvent( ME_USERINFO_INITIALISE, MsnOnDetailsInit );
 	hHookHandle[4] = HookEvent( ME_MSG_WINDOWEVENT, MsnWindowEvent );
+	hHookHandle[5] = HookEvent( ME_IDLE_CHANGED, MsnIdleChanged );
 	return 0;
 }
 
@@ -385,6 +385,7 @@ extern "C" int __declspec( dllexport ) Unload( void )
 	if ( MSPAuth ) mir_free( MSPAuth );
 	if ( rru ) mir_free( rru );
 	if ( profileURL ) mir_free( profileURL );
+	if ( urlId ) mir_free( urlId );
 
 	if ( msnPreviousUUX ) mir_free( msnPreviousUUX );
 	if ( msnExternalIP ) mir_free( msnExternalIP );

@@ -468,9 +468,9 @@ char* SSL_OpenSsl::getSslResult( char* parUrl, char* parAuthInfo )
 					"GET /%s HTTP/1.1\r\n"
 					"Accept: */*\r\n"
 					"Accept-Language: en;q=0.5\r\n"
-					"User-Agent: Mozilla/4.0 (compatible; MSIE 6.0; Windows NT 5.1; SV1; .NET CLR 1.1.4322)\r\n"
+					"User-Agent: %s\r\n"
 					"Host: %s\r\n"
-					"Connection: Keep-Alive\r\n", path, url+8 );
+					"Connection: close\r\n", path, MSN_USER_AGENT, url+8 );
 
 				if ( parAuthInfo != NULL ) {
 					strcat( buf+nBytes, parAuthInfo );
@@ -584,11 +584,11 @@ int MSN_GetPassportAuth( char* authChallengeInfo, char*& parResult )
 	MSN_CallService( MS_DB_CRYPT_DECODESTRING, strlen( szPassword )+1, ( LPARAM )szPassword );
 	szPassword[ 16 ] = 0;
 
-	char* szAuthInfo = ( char* )alloca( 1024 );
-	int nBytes = mir_snprintf( szAuthInfo, 1024,
+	char* szAuthInfo = ( char* )alloca( 2048 );
+	int nBytes = mir_snprintf( szAuthInfo, 2048,
 		"Authorization: Passport1.4 OrgVerb=GET,OrgURL=http%%3A%%2F%%2Fmessenger%%2Emsn%%2Ecom,sign-in=%s,pwd=",
 		tEmail );
-	UrlEncode( szPassword, szAuthInfo+nBytes, 1024-nBytes );
+	UrlEncode( szPassword, szAuthInfo+nBytes, 2048-nBytes );
 	strcat( szAuthInfo+nBytes, "," );
 	strcat( szAuthInfo+nBytes, authChallengeInfo );
 

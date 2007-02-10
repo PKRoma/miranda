@@ -105,7 +105,7 @@ const char* MimeHeaders::readFromBuffer( const char* parString )
 	MimeHeader headers[ 100 ];
 	char		  line[ 4096 ];
 
-	while ( true ) {
+	while ( *parString ) {
 		if ( parString[0] == '\r' && parString[1] == '\n' ) {
 			parString += 2;
 			break;
@@ -113,7 +113,7 @@ const char* MimeHeaders::readFromBuffer( const char* parString )
 
 		const char* peol = strchr( parString, '\r' );
 		if ( peol == NULL )
-			break;
+			peol = parString + strlen(parString);
 
 		int cbLen = int( peol - parString );
 		if ( cbLen > sizeof( line ))

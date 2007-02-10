@@ -64,16 +64,16 @@ char* __stdcall MirandaStatusToMSN( int status )
 		case ID_STATUS_ONTHEPHONE: return "PHN";
 		case ID_STATUS_OUTTOLUNCH: return "LUN";
 		case ID_STATUS_INVISIBLE:	return "HDN";
-//		case ID_STATUS_IDLE:			return "IDL";
+		case ID_STATUS_IDLE:			return "IDL";
 		default:							return "NLN";
 }	}
 
 int __stdcall MSNStatusToMiranda(const char *status)
 {
 	switch((*(PDWORD)status&0x00FFFFFF)|0x20000000) {
+		case ' LDI': //return ID_STATUS_IDLE;
 		case ' NLN': return ID_STATUS_ONLINE;
 		case ' YWA': return ( MyOptions.AwayAsBrb ) ? ID_STATUS_NA : ID_STATUS_AWAY;
-		case ' LDI': //return ID_STATUS_IDLE;
 		case ' BRB': return ( MyOptions.AwayAsBrb ) ? ID_STATUS_AWAY : ID_STATUS_NA;
 		case ' YSB': return ID_STATUS_OCCUPIED;
 		case ' NHP': return ID_STATUS_ONTHEPHONE;
@@ -116,7 +116,7 @@ int __stdcall MSN_AddUser( HANDLE hContact, const char* email, int flags )
 					return -1;
 
 			char id[ MSN_GUID_LEN ];
-			if ( !MSN_GetStaticString( "ID", hContact, id, sizeof id ))
+			if ( !MSN_GetStaticString( "ID", hContact, id, sizeof( id )))
 				msgid = msnNsThread->sendPacket( "REM", "%s %s", listName, id );
 		}
 		else {
@@ -166,23 +166,6 @@ void __stdcall MSN_AddAuthRequest( HANDLE hContact, const char *email, const cha
 	strcpy(( char* )pCurBlob, email ); pCurBlob += strlen( email )+1;
 	*pCurBlob = '\0';         	   //reason
 	MSN_CallService( MS_DB_EVENT_ADD, NULL,( LPARAM )&dbei );
-}
-
-/////////////////////////////////////////////////////////////////////////////////////////
-// MSN_AddServerGroup - adds a group to the server list
-
-void MSN_AddServerGroup( const char* pszGroupName )
-{
-	char szBuf[ 200 ];
-	UrlEncode( pszGroupName, szBuf, sizeof szBuf );
-
-	if ( hGroupAddEvent == NULL )
-		hGroupAddEvent = CreateEvent( NULL, FALSE, FALSE, NULL );
-
-	msnNsThread->sendPacket( "ADG", "%s", szBuf );
-
-	WaitForSingleObject( hGroupAddEvent, INFINITE );
-	CloseHandle( hGroupAddEvent ); hGroupAddEvent = NULL;
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////
@@ -316,8 +299,10 @@ void __stdcall	MSN_GoOffline()
 	while ( hContact != NULL )
 	{
 		if ( !lstrcmpA( msnProtocolName, (char*)MSN_CallService( MS_PROTO_GETCONTACTBASEPROTO, ( WPARAM )hContact, 0 )))
-			if ( ID_STATUS_OFFLINE != MSN_GetWord( hContact, "Status", ID_STATUS_OFFLINE ))
+			if ( ID_STATUS_OFFLINE != MSN_GetWord( hContact, "Status", ID_STATUS_OFFLINE )) {
 				MSN_SetWord( hContact, "Status", ID_STATUS_OFFLINE );
+				MSN_SetDword( hContact, "IdleTS", 0 );
+			}
 
 		hContact = ( HANDLE )MSN_CallService( MS_DB_CONTACT_FINDNEXT, ( WPARAM )hContact, 0 );
 }	}
@@ -381,12 +366,11 @@ void ThreadData::sendCaps( void )
 	MSN_CallService( MS_SYSTEM_GETVERSIONTEXT, sizeof( mversion ), ( LPARAM )mversion );
 
 	int nBytes = mir_snprintf( capMsg, sizeof( capMsg ),
-		"MIME-Version: 1.0\r\n"
 		"Content-Type: text/x-clientcaps\r\n\r\n"
 		"Client-Name: Miranda IM %s (MSN v.%s)\r\n",
 		mversion, __VERSION_STRING );
 
-	sendPacket( "MSG", "%c %d\r\n%s", 'N', nBytes, capMsg );
+	sendMessage( 'U', capMsg, MSG_DISABLE_HDR );
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////
@@ -447,6 +431,43 @@ int __stdcall MSN_SendNicknameW( WCHAR* nickname)
 	mir_free( nickutf );
 	return 0;
 }
+
+// Typing notifications support
+
+void MSN_SendTyping( ThreadData* info  )
+{
+	char tCommand[ 1024 ];
+	mir_snprintf( tCommand, sizeof( tCommand ),
+		"Content-Type: text/x-msmsgscontrol\r\n"
+		"TypingUser: %s\r\n\r\n\r\n", MyOptions.szEmail );
+
+	info->sendMessage( 'U', tCommand, MSG_DISABLE_HDR );
+}
+
+
+static VOID CALLBACK TypingTimerProc(HWND hwnd, UINT uMsg, UINT_PTR idEvent, DWORD dwTime) 
+{
+	ThreadData* T = MSN_GetThreadByTimer( idEvent );
+	if ( T != NULL )
+		MSN_SendTyping( T );
+	else
+		KillTimer( NULL, idEvent );
+}	
+
+
+void __stdcall MSN_StartStopTyping( ThreadData* info, bool start )
+{
+	if ( start && info->mTimerId == 0 ) {
+		info->mTimerId = SetTimer(NULL, NULL, 5000, TypingTimerProc);
+		MSN_SendTyping( info );
+	}
+	else if ( !start && info->mTimerId != 0 ) {
+			KillTimer( NULL, info->mTimerId );
+			info->mTimerId = 0;
+	}
+}
+
+
 
 /////////////////////////////////////////////////////////////////////////////////////////
 // MSN_SendStatusMessage - notify a server about the status message change
@@ -577,19 +598,20 @@ void __stdcall MSN_SetServerStatus( int newStatus )
 	if ( !msnLoggedIn )
 		return;
 
-	char* szStatusName = MirandaStatusToMSN( newStatus );
+	char* szStatusName = MirandaStatusToMSN( newStatus  );
 
 	if ( newStatus != ID_STATUS_OFFLINE ) {
 		char szMsnObject[ 1000 ];
-		if ( MSN_GetStaticString( "PictObject", NULL, szMsnObject, sizeof szMsnObject ))
+		if ( MSN_GetStaticString( "PictObject", NULL, szMsnObject, sizeof( szMsnObject )))
 			szMsnObject[ 0 ] = 0;
 
 		//here we say what functions can be used with this plugins : http://siebe.bot2k3.net/docs/?url=clientid.html
 		msnNsThread->sendPacket( "CHG", "%s 1342177280 %s", szStatusName, szMsnObject );
 
 		if ( MyOptions.UseMSNP11 ) {
+			int status = newStatus == ID_STATUS_IDLE ? ID_STATUS_ONLINE : newStatus;
 			for ( int i=0; i < MSN_NUM_MODES; i++ ) { 
-				if ( msnModeMsgs[ i ].m_mode == newStatus ) {
+				if ( msnModeMsgs[ i ].m_mode == status ) {
 					MSN_SendStatusMessage( msnModeMsgs[ i ].m_msg );
 					break;
 		}	}	}
@@ -667,18 +689,6 @@ void __stdcall	MSN_ShowPopup( const char* nickname, const char* msg, int flags )
 	QueueUserAPC( sttMainThreadCallback , msnMainThread, ( ULONG )ppd );
 }
 
-/////////////////////////////////////////////////////////////////////////////////////////
-// MSN_StoreLen - stores a message's length in a buffer
-
-char* __stdcall MSN_StoreLen( char* dest, char* last )
-{
-	char tBuffer[ 20 ];
-	ltoa( short( last-dest )-7, tBuffer, 10 );
-	int cbDigits = strlen( tBuffer );
-	memcpy( dest, tBuffer, cbDigits );
-	memmove( dest + cbDigits, dest + 5, int( last-dest )-7 );
-	return last - ( 5 - cbDigits );
-}
 
 /////////////////////////////////////////////////////////////////////////////////////////
 // UrlDecode - converts URL chars like %20 into printable characters
@@ -1161,4 +1171,57 @@ TCHAR* UnEscapeChatTags(TCHAR* str_in)
 	}
 	*d = 0;
 	return str_in;
+}
+
+bool txtParseParam (const char* szData, const char* presearch, const char* start, const char* finish, char* param, const int size)
+{
+	const char *cp, *cp1;
+	int len;
+	
+	if (szData == NULL) return false;
+
+	if (presearch != NULL)
+	{
+		cp1 = strstr(szData, presearch);
+		if (cp1 == NULL) return false;
+	}
+	else
+		cp1 = szData;
+
+	cp = strstr(cp1, start);
+	if (cp == NULL) return false;
+	cp += strlen(start);
+	while (*cp == ' ') ++cp;
+
+	cp1 = strstr(cp, finish);
+	if (cp1 == NULL) return FALSE;
+	while (*(cp1-1) == ' ' && cp1 > cp) --cp1;
+
+	len = min(cp1 - cp, size - 1);
+	memmove(param, cp, len);
+	param[len] = 0;
+
+	return true;
+} 
+
+
+void MSN_Base64Decode( const char* str, char* res, size_t reslen )
+{
+	if ( str == NULL ) res[0] = 0;
+
+	char* p = const_cast< char* >( str );
+	int cbLen = strlen( p );
+	if ( cbLen & 3 ) { // fix for stupid Kopete's base64 encoder
+		char* p1 = ( char* )alloca( cbLen+5 );
+		memcpy( p1, p, cbLen );
+		p = p1;
+		p1 += cbLen; 
+		for ( int i = 4 - (cbLen & 3); i > 0; i--, p1++, cbLen++ )
+			*p1 = '=';
+		*p1 = 0;
+	}
+
+	NETLIBBASE64 nlb = { p, cbLen, ( PBYTE )res, reslen };
+	MSN_CallService( MS_NETLIB_BASE64DECODE, 0, LPARAM( &nlb ));
+	res[nlb.cbDecoded] = 0;
 }

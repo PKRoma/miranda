@@ -49,6 +49,7 @@ char* sid = NULL;
 char* kv = NULL;
 char* MSPAuth = NULL;
 char* passport = NULL;
+char* urlId = NULL;
 char* profileURL = NULL;
 char* rru = NULL;
 extern HANDLE	 hMSNNudge;
@@ -664,7 +665,7 @@ void MSN_ReceiveMessage( ThreadData* info, char* cmdString, char* params )
 			if ( hContact != NULL )
 				strcpy( userNick, MSN_GetContactName( hContact ));
 
-			MSN_CallService( MS_PROTO_CONTACTISTYPING, WPARAM( hContact ), 5 );
+			MSN_CallService( MS_PROTO_CONTACTISTYPING, WPARAM( hContact ), 6 );
 
 			if ( MSN_GetByte( "DisplayTyping", 0 ))
 				MSN_ShowPopup( userNick, MSN_Translate( "typing..." ), 0 );
@@ -829,8 +830,6 @@ static bool sttAddGroup( char* params, bool isFromBoot )
 
 	UrlDecode( data.grpName );
 	MSN_AddGroup( data.grpName, data.grpId );
-	if ( hGroupAddEvent != NULL )
-		SetEvent( hGroupAddEvent );
 
 	int i;
 	char str[ 10 ];
@@ -846,6 +845,7 @@ static bool sttAddGroup( char* params, bool isFromBoot )
 		MSN_FreeVariant( &dbv );
 		if ( result ) {
 			MSN_SetGroupNumber( data.grpId, i );
+			if ( !isFromBoot ) MSN_UploadServerGroups( data.grpName );
 			return true;
 	}	}
 
@@ -858,6 +858,7 @@ static bool sttAddGroup( char* params, bool isFromBoot )
 			DBWriteContactSettingStringUtf( NULL, "CListGroups", str, szNewName );
 			CallService( MS_CLUI_GROUPADDED, i, 0 );
 	}	}
+
 	return true;
 }
 
@@ -1095,7 +1096,13 @@ int MSN_HandleCommands( ThreadData* info, char* cmdString )
 			if ( hContact != NULL ) {
 				if ( userId  != NULL ) MSN_SetString( hContact, "ID", userId );
 				if ( groupId != NULL ) MSN_SetString( hContact, "GroupID", groupId );
-			}
+				else {
+					if ( MyOptions.ManageServer && strcmp( tWords[0], "FL" ) == 0 ) { 
+						DBVARIANT dbv;
+						if ( !DBGetContactSettingStringUtf( hContact, "CList", "Group", &dbv )) {
+							MSN_MoveContactToGroup( hContact, dbv.pszVal );
+							MSN_FreeVariant( &dbv );
+			}	}	}	}
 			break;
 		}
 		case ' DDA':    //********* ADD: section 7.8 List Modifications
@@ -1125,28 +1132,34 @@ LBL_InvalidCommand:
 				info->sendCaps();
 				if ( info->mJoinedCount == 1 ) {
 					MsgQueueEntry E;
+					bool msgExist = false, typing = false;
 					HANDLE hContact = info->mJoinedContacts[0];
-					if ( MsgQueue_GetNext( hContact, E ) != 0 ) {
-						do {
-							if ( E.msgType != 'X' ) {
-								if ( E.msgSize == 0 ) {
-									info->sendMessage( E.msgType, E.message, E.flags );
-									MSN_SendBroadcast( hContact, ACKTYPE_MESSAGE, ACKRESULT_SUCCESS, ( HANDLE )E.seq, 0 );
-								}
-								else info->sendRawMessage( E.msgType, E.message, E.msgSize );
-							}
+					
+					while (MsgQueue_GetNext( hContact, E ) != 0 ) 
+					{
+						if ( E.msgType == 'X' ) continue;
 
-							mir_free( E.message );
-
-							if ( E.ft != NULL ) {
-								info->mMsnFtp = E.ft;
-							}
+						if ( E.msgType == 2571 ) 
+							typing = E.flags != 0; 
+						else if ( E.msgSize == 0 ) {
+							info->sendMessage( E.msgType, E.message, E.flags );
+							MSN_SendBroadcast( hContact, ACKTYPE_MESSAGE, ACKRESULT_SUCCESS, ( HANDLE )E.seq, 0 );
 						}
-							while (MsgQueue_GetNext( hContact, E ) != 0 );
+						else info->sendRawMessage( E.msgType, E.message, E.msgSize );
 
-						if ( MSN_GetByte( "EnableDeliveryPopup", 1 ))
+						mir_free( E.message );
+						msgExist = true;
+
+						if ( E.ft != NULL )
+							info->mMsnFtp = E.ft;
+					}
+
+					if ( typing )
+						MSN_StartStopTyping( info, true );
+
+					if ( msgExist && MSN_GetByte( "EnableDeliveryPopup", 1 ))
 							MSN_ShowPopup( MSN_GetContactName( hContact ), MSN_Translate( "First message delivered" ), 0 );
-			}	}	}
+			}	}
 
 			break;
 
@@ -1247,7 +1260,7 @@ LBL_InvalidCommand:
 				MSN_CallService( MS_GC_EVENT, NULL, ( LPARAM )&gce );
 			}
 			else if ( personleft == 2 && lstrcmpA( data.isIdle, "1" ) ) {
-				if ( MessageBoxA( NULL, Translate( "There is only 1 person left in the chat, do you want to switch back to standard message window?"), Translate("MSN Chat"), MB_YESNO|MB_ICONQUESTION) == IDYES) {
+				if ( MessageBox( NULL, TranslateT( "There is only 1 person left in the chat, do you want to switch back to standard message window?"), TranslateT("MSN Chat"), MB_YESNO|MB_ICONQUESTION) == IDYES) {
 					// a flag to let the kill function know what to do
 					// if the value is 1, then it'll open up the srmm window
 					info->mJoinedCount--;
@@ -1269,8 +1282,12 @@ LBL_InvalidCommand:
 			int oldMode = msnStatusMode;
 			msnStatusMode = MSNStatusToMiranda( params );
 
-			MSN_SendBroadcast( NULL, ACKTYPE_STATUS, ACKRESULT_SUCCESS,( HANDLE )oldMode, msnStatusMode );
-			MSN_DebugLog( "Status change acknowledged: %s", params );
+			if ( msnStatusMode != ID_STATUS_IDLE )
+			{
+				MSN_SendBroadcast( NULL, ACKTYPE_STATUS, ACKRESULT_SUCCESS,( HANDLE )oldMode, msnStatusMode );
+				MSN_DebugLog( "Status change acknowledged: %s", params );
+				MSN_RemoveEmptyGroups();
+			}
 			break;
 		}
 		case ' LHC':    //********* CHL: Query from Server on MSNP7
@@ -1339,6 +1356,7 @@ LBL_InvalidCommand:
 			if (( hContact = MSN_HContactFromEmail( params, NULL, 0, 0 )) != NULL )
 			{
 				MSN_SetWord( hContact, "Status", ID_STATUS_OFFLINE );
+				MSN_SetDword( hContact, "IdleTS", 0 );
 				MsgQueue_Clear( hContact );
 			}
 			break;
@@ -1386,6 +1404,7 @@ LBL_InvalidCommand:
 				MSN_SetStringUtf( hContact, "Nick", data.userNick );
 				lastStatus = MSN_GetWord( hContact, "Status", ID_STATUS_OFFLINE);
 				MSN_SetWord( hContact, "Status", ( WORD )MSNStatusToMiranda( data.userStatus ));
+				MSN_SetDword( hContact, "IdleTS", strcmp( data.userStatus, "IDL" ) ? 0 : time( NULL ));
 			}
 
 			if ( lastStatus == ID_STATUS_OFFLINE )
@@ -1502,27 +1521,34 @@ LBL_InvalidCommand:
 			if ( MSN_ContactJoined( info, hContact ) == 1 ) {
 				info->sendCaps();
 				MsgQueueEntry E;
-				if ( MsgQueue_GetNext( hContact, E ) != 0 ) {
-					do {
-						if ( E.msgType != 'X' ) {
-							if ( E.msgSize == 0 ) {
-								info->sendMessage( E.msgType, E.message, E.flags );
-								MSN_SendBroadcast( hContact, ACKTYPE_MESSAGE, ACKRESULT_SUCCESS, ( HANDLE )E.seq, 0 );
-							}
-							else info->sendRawMessage( E.msgType, E.message, E.msgSize );
-						}
 
-						mir_free( E.message );
+				bool msgExist = false, typing = false;
+				
+				while (MsgQueue_GetNext( hContact, E ) != 0 ) 
+				{
+					if ( E.msgType == 'X' ) continue;
 
-						if ( E.ft != NULL ) {
-							info->mMsnFtp = E.ft;
-						}
+					if ( E.msgType == 2571 ) 
+						typing = E.flags != 0; 
+					else if ( E.msgSize == 0 ) {
+						info->sendMessage( E.msgType, E.message, E.flags );
+						MSN_SendBroadcast( hContact, ACKTYPE_MESSAGE, ACKRESULT_SUCCESS, ( HANDLE )E.seq, 0 );
 					}
-					while (MsgQueue_GetNext( hContact, E ) != 0 );
+					else info->sendRawMessage( E.msgType, E.message, E.msgSize );
 
-					if ( MSN_GetByte( "EnableDeliveryPopup", 1 ))
-						MSN_ShowPopup( MSN_GetContactName( hContact ), MSN_Translate( "First message delivered" ), 0 );
-			}	}
+					mir_free( E.message );
+					msgExist = true;
+
+					if ( E.ft != NULL )
+						info->mMsnFtp = E.ft;
+				}
+
+				if ( typing )
+					MSN_StartStopTyping( info, true );
+
+				if ( msgExist && MSN_GetByte( "EnableDeliveryPopup", 1 ))
+					MSN_ShowPopup( MSN_GetContactName( hContact ), MSN_Translate( "First message delivered" ), 0 );
+			}
 			else {
 				bool chatCreated = info->mChatID[0] != 0;
 
@@ -1586,8 +1612,9 @@ LBL_InvalidCommand:
 					userId = p+2;
 				else {
 					listId = atol( p );
-					if ( i < tNumTokens-1 )
-						groupId = tWords[tNumTokens-1];
+					int grOff = i + 1 + MyOptions.UseMSNP11;
+					if ( grOff < tNumTokens )
+						groupId = tWords[grOff];
 					break;
 			}	}
 
@@ -1641,27 +1668,8 @@ LBL_InvalidCommand:
 				if ( userId  != NULL )
 					MSN_SetString( sttListedContact, "ID", userId );
 
-				if ( MyOptions.ManageServer ) {
-					if ( groupId != NULL ) {
-						char* p = strchr( groupId, ',' );
-						if ( p != NULL )
-							*p = 0;
-
-						MSN_SetString( sttListedContact, "GroupID", groupId );
-
-						if (( p = ( char* )MSN_GetGroupById( groupId )) != NULL ) {
-							DBVARIANT dbv;
-							if ( !DBGetContactSettingStringUtf( sttListedContact, "CList", "Group", &dbv )) {
-								if ( strcmp( dbv.pszVal, p ))
-									DBWriteContactSettingStringUtf( sttListedContact, "CList", "Group", p );
-								MSN_FreeVariant( &dbv );
-							}
-							else DBWriteContactSettingStringUtf( sttListedContact, "CList", "Group", p );
-					}	}
-					else {
-						DBDeleteContactSetting( sttListedContact, "CList", "Group" );
-						DBDeleteContactSetting( sttListedContact, msnProtocolName, "GroupID" );
-			}	}	}
+				 MSN_SyncContactToServerGroup( sttListedContact, userId, groupId );
+			}
 			break;
 		}
 		case ' GSM':   //********* MSG: sections 8.7 Instant Messages, 8.8 Receiving an Instant Message
@@ -1738,6 +1746,7 @@ LBL_InvalidCommand:
 				HANDLE hContact = MSN_HContactById( data.serial );
 				if ( hContact != NULL )
 					DBDeleteContactSetting( hContact, msnProtocolName, "GroupID" );
+				MSN_RemoveEmptyGroups();
 			}
 			else { // remove a user from a list
 				int listId = Lists_NameToCode( data.list );
@@ -1748,9 +1757,11 @@ LBL_InvalidCommand:
 							char tEmail[ MSN_MAX_EMAIL_LEN ];
 							if ( !MSN_GetStaticString( "e-mail", hContact, tEmail, sizeof tEmail ))
 								Lists_Remove( listId, tEmail );
-					}	}
+						}	
+						MSN_RemoveEmptyGroups();
+					}
 					else {
-                  UrlDecode( data.serial );
+						UrlDecode( data.serial );
 						Lists_Remove( listId, data.serial );
 			}	}	}
 			break;
@@ -1842,6 +1853,7 @@ LBL_InvalidCommand:
 			if ( trid == tridUrlInbox ) {
 				replaceStr( passport, data.passport );
 				replaceStr( rru, data.rru );
+				replaceStr( urlId, data.urlID );
 				tridUrlInbox = -1;
 			}
 			else if ( trid == tridUrlEdit ) {
@@ -1868,7 +1880,11 @@ LBL_InvalidCommand:
 					break;
 				}
 
-				HANDLE hContact = MsgQueue_GetNextRecipient();
+				HANDLE hContact;
+				do {
+					hContact = MsgQueue_GetNextRecipient();
+				} while ( hContact != NULL && MSN_GetUnconnectedThread( hContact ) != NULL );
+
 				if ( hContact == NULL ) { //can happen if both parties send first message at the same time
 					MSN_DebugLog( "USR (SB) internal: thread created for no reason" );
 					info->sendPacket( "OUT", NULL );
@@ -1994,7 +2010,6 @@ LBL_InvalidCommand:
 
 				MSN_DebugLog( "Switching to notification server '%s'...", data.newServer );
 				newThread->startThread(( pThreadFunc )MSNServerThread );
-				//sl = time(NULL); //for hotmail
 				return 1;  //kill the old thread
 			}
 

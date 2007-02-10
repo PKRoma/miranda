@@ -130,28 +130,31 @@ LPCSTR MSN_GetGroupByNumber( int pNumber )
 
 void MSN_MoveContactToGroup( HANDLE hContact, const char* grpName )
 {
-	LPCSTR szId;
-	char szContactID[ 100 ], szGroupID[ 100 ];
-	if ( MSN_GetStaticString( "ID", hContact, szContactID, sizeof szContactID ))
+	if ( !MyOptions.ManageServer ) return;
+
+	if ( lstrcmpA( grpName, "MetaContacts Hidden Group" ) == 0 )
 		return;
 
-	if ( MSN_GetStaticString( "GroupID", hContact, szGroupID, sizeof szGroupID ))
+	LPCSTR szId;
+	char szContactID[ 100 ], szGroupID[ 100 ];
+	if ( MSN_GetStaticString( "ID", hContact, szContactID, sizeof( szContactID )))
+		return;
+
+	if ( MSN_GetStaticString( "GroupID", hContact, szGroupID, sizeof( szGroupID )))
 		szGroupID[ 0 ] = 0;
 
-	bool bInsert = szGroupID[0] == 0, bDelete = szGroupID[0] != 0;
+	bool bInsert = false, bDelete = szGroupID[0] != 0;
 
 	if ( grpName != NULL )
 	{
-		if (( szId = MSN_GetGroupByName( grpName )) == NULL ) {
-			MSN_AddServerGroup( grpName );
-			if (( szId = MSN_GetGroupByName( grpName )) == NULL )
-				return;
+		szId = MSN_GetGroupByName( grpName );
+		if ( szId == NULL )
+			MSN_AddServerGroup( grpName, hContact );
+		else {
+			if ( !strcmp( szGroupID, szId )) bDelete = false;
+			else                             bInsert = true;
 		}
-
-		if ( !strcmp( szGroupID, szId ))	bDelete = false;
-		else                             bInsert = true;
 	}
-	else bInsert = false;		
 
 	if ( bInsert )
 		msnNsThread->sendPacket( "ADC", "FL C=%s %s", szContactID, szId );
@@ -182,3 +185,122 @@ void MSN_SetGroupNumber( const char* pId, int pNumber )
 			p->number = pNumber;
 			return;
 }	}	}
+
+/////////////////////////////////////////////////////////////////////////////////////////
+// MSN_RemoveEmptyGroups - removes empty groups from the server list
+
+void MSN_RemoveEmptyGroups( void )
+{
+	if ( !MyOptions.ManageServer ) return;
+
+	unsigned nGroups = 0;
+	for ( ServerGroupItem* p = sttFirst; p != NULL; p = p->next ) ++nGroups;
+
+	unsigned *cCount = ( unsigned* )mir_calloc( nGroups * sizeof( unsigned ));
+
+	HANDLE hContact = ( HANDLE )MSN_CallService( MS_DB_CONTACT_FINDFIRST, 0, 0 );
+	while ( hContact != NULL )
+	{
+		char *proto = (char*)MSN_CallService( MS_PROTO_GETCONTACTBASEPROTO, ( WPARAM )hContact, 0 );
+		if ( lstrcmpA( msnProtocolName, proto ) == 0 ) 
+		{
+			char szGroupID[ 100 ];
+			if ( !MSN_GetStaticString( "GroupID", hContact, szGroupID, sizeof( szGroupID ))) {
+				unsigned i = 0;
+				for ( ServerGroupItem* p = sttFirst; p != NULL; p = p->next )
+					if ( stricmp( p->id, szGroupID ) != 0 ) ++i;
+					else { ++cCount[i]; break; }
+			}
+		}
+
+		hContact = ( HANDLE )MSN_CallService( MS_DB_CONTACT_FINDNEXT, ( WPARAM )hContact, 0 );
+	}
+
+	unsigned i = 0;
+	for ( ServerGroupItem* q = sttFirst; q != NULL; q = q->next )
+	{
+		if ( cCount[i++] == 0 ) 
+			msnNsThread->sendPacket( "RMG", q->id );
+	}
+	mir_free( cCount );
+}
+
+/////////////////////////////////////////////////////////////////////////////////////////
+// MSN_AddServerGroup - adds a group to the server list
+
+void MSN_AddServerGroup( const char* pszGroupName, HANDLE hContact )
+{
+	char szBuf[ 200 ];
+	UrlEncode( pszGroupName, szBuf, sizeof szBuf );
+	msnNsThread->sendPacket( "ADG", "%s", szBuf );
+	DBDeleteContactSetting( hContact, msnProtocolName, "GroupID" );
+}
+
+/////////////////////////////////////////////////////////////////////////////////////////
+// MSN_UploadServerGroups - adds a group to the server list and contacts into the group
+
+void  MSN_UploadServerGroups( char* group )
+{
+	if ( !MyOptions.ManageServer ) return;
+
+	HANDLE hContact = ( HANDLE )MSN_CallService( MS_DB_CONTACT_FINDFIRST, 0, 0 );
+	while ( hContact != NULL ) {
+		if ( !lstrcmpA( msnProtocolName, ( char* )MSN_CallService( MS_PROTO_GETCONTACTBASEPROTO, ( WPARAM )hContact,0 ))) {
+			DBVARIANT dbv;
+			if ( !DBGetContactSettingStringUtf( hContact, "CList", "Group", &dbv )) {
+				char szGroupID[ 100 ];
+				if ( group == NULL || ( strcmp( group, dbv.pszVal ) == 0 &&
+					MSN_GetStaticString( "GroupID", hContact, szGroupID, sizeof( szGroupID )) != 0 )) 
+				{
+					MSN_MoveContactToGroup( hContact, dbv.pszVal );
+				}
+				MSN_FreeVariant( &dbv );
+		}	}
+
+		hContact = ( HANDLE )MSN_CallService( MS_DB_CONTACT_FINDNEXT,( WPARAM )hContact, 0 );
+}	}
+
+/////////////////////////////////////////////////////////////////////////////////////////
+// MSN_SyncContactToServerGroup - moves contact into appropriate group according to server
+// if contact in multiple server groups it get removed from all of them other themn it's
+// in or the last one
+
+void MSN_SyncContactToServerGroup( HANDLE hContact, char* userId, char* groupId )
+{
+	if ( !MyOptions.ManageServer ) return;
+
+	DBVARIANT dbv;
+	if ( DBGetContactSettingStringUtf( hContact, "CList", "Group", &dbv ))
+		dbv.pszVal = NULL;
+
+	bool grpFound = false;
+	char *p = groupId;
+	while ( p != NULL ) {
+		char *q = strchr( p, ',' );
+		if ( q != NULL ) *(q++) = 0;  
+		
+		if ( dbv.pszVal != NULL && lstrcmpA( MSN_GetGroupById( p ), dbv.pszVal ) == 0 ) {
+			groupId = p;
+			grpFound = true;
+		}
+		else {
+			if ( q != NULL || grpFound )
+				msnNsThread->sendPacket( "REM", "FL %s %s", userId, p );
+			else
+				groupId = p;
+		}
+		p = q;
+	}
+
+	if ( groupId != NULL ) {
+		MSN_SetString( hContact, "GroupID", groupId );
+		if ( !grpFound )
+			DBWriteContactSettingStringUtf( hContact, "CList", "Group", MSN_GetGroupById( groupId ));
+	}
+	else {
+		DBDeleteContactSetting( hContact, "CList", "Group" );
+		DBDeleteContactSetting( hContact, msnProtocolName, "GroupID" );
+	}	
+
+	if ( dbv.pszVal != NULL ) MSN_FreeVariant( &dbv );
+}

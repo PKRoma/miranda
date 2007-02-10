@@ -324,7 +324,22 @@ ThreadData* __stdcall MSN_GetThreadByContact( HANDLE hContact, TInfoType type )
 		if ( T->mJoinedCount == 0 || T->mJoinedContacts == NULL || T->s == NULL || T->mType != type )
 			continue;
 
-		if ( T->mJoinedContacts[0] == hContact && T->mInitialContact == NULL ) {
+		if ( T->mJoinedContacts[0] == hContact && T->mInitialContact == NULL )
+			result = T;
+	}
+
+	LeaveCriticalSection( &sttLock );
+	return result;
+}
+
+ThreadData* __stdcall MSN_GetThreadByTimer( UINT timerId )
+{
+	ThreadData* result = NULL;
+	EnterCriticalSection( &sttLock );
+
+	for ( int i=0; i < sttThreads.getCount(); i++ ) {
+		ThreadData* T = sttThreads[ i ];
+		if ( T->mType == SERVER_SWITCHBOARD && T->mTimerId == timerId ) {
 			result = T;
 			break;
 	}	}
@@ -492,6 +507,9 @@ ThreadData::~ThreadData()
 
 	if ( hWaitEvent != INVALID_HANDLE_VALUE )
 		CloseHandle( hWaitEvent );
+
+	if ( mTimerId != 0 ) 
+		KillTimer( NULL, mTimerId );
 
 	p2p_clearDormantSessions();
 

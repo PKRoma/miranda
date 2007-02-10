@@ -42,20 +42,6 @@ static BOOL (WINAPI *pfnEnableThemeDialogTexture)(HANDLE, DWORD) = 0;
 
 BOOL CALLBACK DlgProcMsnServLists(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam);
 
-static void __cdecl sttUploadGroups( void* )
-{
-	HANDLE hContact = ( HANDLE )MSN_CallService( MS_DB_CONTACT_FINDFIRST, 0, 0 );
-	while ( hContact != NULL ) {
-		if ( !lstrcmpA( msnProtocolName, ( char* )MSN_CallService( MS_PROTO_GETCONTACTBASEPROTO, ( WPARAM )hContact,0 ))) {
-			DBVARIANT dbv;
-			if ( !DBGetContactSettingStringUtf( hContact, "CList", "Group", &dbv )) {
-				MSN_MoveContactToGroup( hContact, dbv.pszVal );
-				MSN_FreeVariant( &dbv );
-		}	}
-
-		hContact = ( HANDLE )MSN_CallService( MS_DB_CONTACT_FINDNEXT,( WPARAM )hContact, 0 );
-}	}
-
 /////////////////////////////////////////////////////////////////////////////////////////
 // MSN Options dialog procedure
 
@@ -145,7 +131,7 @@ static BOOL CALLBACK DlgProcMsnOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARA
 					if ( IDYES == MessageBox( hwndDlg,
 											TranslateT( "Server groups import may change your contact list layout after next login. Do you want to upload your groups to the server?" ),
 											TranslateT( "MSN Protocol" ), MB_YESNOCANCEL ))
-						(new ThreadData())->startThread( sttUploadGroups );
+						MSN_UploadServerGroups( NULL );
 				goto LBL_Apply;
 
 			case IDC_RUN_APP_ON_HOTMAIL: {
@@ -664,15 +650,13 @@ DWORD WINAPI MsnShowMailThread( LPVOID )
 		return 0;
 
 	MSN_CallService( MS_DB_CRYPT_DECODESTRING, strlen( dbv.pszVal )+1, ( LPARAM )dbv.pszVal );
-	char* passwd = ( char* )alloca( strlen( dbv.pszVal )*3 );
-	UrlEncode( dbv.pszVal, passwd, strlen( dbv.pszVal )*3 );
-	MSN_FreeVariant( &dbv );
 
 	// for hotmail access
 	int tm = time(NULL) - sl;
 
 	char hippy[ 2048 ];
-	long challen = mir_snprintf( hippy, sizeof( hippy ), "%s%lu%s", MSPAuth, tm, passwd );
+	long challen = mir_snprintf( hippy, sizeof( hippy ), "%s%lu%s", MSPAuth, tm, dbv.pszVal );
+	MSN_FreeVariant( &dbv );
 
 	//Digest it
 	unsigned char digest[16];
@@ -688,10 +672,10 @@ DWORD WINAPI MsnShowMailThread( LPVOID )
 
 		mir_snprintf(hippy, sizeof(hippy), 
 			"%s&auth=%s&creds=%08x%08x%08x%08x&sl=%d&username=%s&mode=ttl"
-			"&sid=%s&id=2&rru=%s&svc=mail&js=yes",
+			"&sid=%s&id=%s&rru=%s&svc=mail&js=yes",
 			passport, MSPAuth, htonl(*(PDWORD)(digest+0)),htonl(*(PDWORD)(digest+4)),
 			htonl(*(PDWORD)(digest+8)),htonl(*(PDWORD)(digest+12)),
-			tm, email, sid, rruenc); 
+			tm, email, sid, urlId, rruenc); 
 	}
 	else
 		strcpy( hippy, "http://go.msn.com/0/1" );
