@@ -1285,7 +1285,7 @@ void snac_service_redirect(SNAC &snac)//family 0x0001
 		}
 		if(family==0x0018)
 		{
-			conn.hMailConn=aim_peer_connect(server,5190);
+			conn.hMailConn=aim_peer_connect(server,conn.port);
 			if(conn.hMailConn)
 			{
 				LOG("Successfully Connected to the Mail Server.");
@@ -1298,7 +1298,7 @@ void snac_service_redirect(SNAC &snac)//family 0x0001
 		}
 		else if(family==0x0010)
 		{
-			conn.hAvatarConn=aim_peer_connect(server,5190);
+			conn.hAvatarConn=aim_peer_connect(server,conn.port);
 			if(conn.hAvatarConn)
 			{
 				LOG("Successfully Connected to the Avatar Server.");

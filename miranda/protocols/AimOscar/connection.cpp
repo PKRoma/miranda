@@ -21,6 +21,7 @@ HANDLE aim_connect(char* server)
     ncon.cbSize = sizeof(ncon);
     ncon.szHost = host;
     ncon.wPort =(short)atoi(port);
+	conn.port=ncon.wPort;
     HANDLE con = (HANDLE) CallService(MS_NETLIB_OPENCONNECTION, (WPARAM) conn.hNetlib, (LPARAM) & ncon);
 	delete[] server_dup;
 	return con;

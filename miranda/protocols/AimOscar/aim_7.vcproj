@@ -165,6 +165,12 @@
 				RelativePath=".\aim.rc">
 			</File>
 			<File
+				RelativePath=".\avatars.cpp">
+			</File>
+			<File
+				RelativePath=".\away.cpp">
+			</File>
+			<File
 				RelativePath=".\client.cpp">
 			</File>
 			<File
@@ -208,9 +214,6 @@
 			</File>
 			<File
 				RelativePath=".\strl.cpp">
-			</File>
-			<File
-				RelativePath=".\strl.h">
 			</File>
 			<File
 				RelativePath=".\theme.cpp">
@@ -263,6 +266,12 @@
 				RelativePath=".\aim.h">
 			</File>
 			<File
+				RelativePath=".\avatars.h">
+			</File>
+			<File
+				RelativePath=".\away.h">
+			</File>
+			<File
 				RelativePath=".\client.h">
 			</File>
 			<File
@@ -312,6 +321,9 @@
 			</File>
 			<File
 				RelativePath=".\snac.h">
+			</File>
+			<File
+				RelativePath=".\strl.h">
 			</File>
 			<File
 				RelativePath=".\theme.h">

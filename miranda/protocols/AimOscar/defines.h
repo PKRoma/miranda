@@ -281,6 +281,7 @@ public:
 	unsigned int status;//current status
 	int initial_status;//start up status
 	char* szModeMsg;//away message
+	unsigned short port;
 
 	//Some bools to keep track of different things
 	bool request_HTML_profile;
