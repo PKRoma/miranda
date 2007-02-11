@@ -652,6 +652,9 @@ void JabberGroupchatProcessPresence( XmlNode *node, void *userdata )
 
 		JabberListRemoveResource( LIST_CHATROOM, from );
 		JabberGcLogUpdateMemberStatus( item, nick, NULL, GC_EVENT_PART, NULL );
+
+		HANDLE hContact = JabberHContactFromJID( from );
+		JSetWord( hContact, "Status", ID_STATUS_OFFLINE );
 	}
 	else if ( !lstrcmp( type, _T("error"))) {
 		errorNode = JabberXmlGetChild( node, "error" );
