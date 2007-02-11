@@ -22,7 +22,6 @@ along with this program; if not, write to the Free Software
 Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 */
 #include "commonheaders.h"
-#include <uxtheme.h>
 
 extern HINSTANCE g_hInst;
 extern HANDLE hEventOptInitialise;
@@ -34,22 +33,19 @@ BOOL CALLBACK DlgProcOptions1(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPar
 BOOL CALLBACK DlgProcOptions2(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam);
 
 typedef struct TabDefStruct {
-	HWND hwnd;
 	DLGPROC dlgProc;
 	DWORD dlgId;
 	TCHAR *tabName;
-	BOOL  bChanged;
 } TabDef;
 
 static TabDef tabPages[] = {
-						 {NULL, DlgProcContainerOptions, IDD_OPT_CONTAINER, _T("Containers"), FALSE},
-						 {NULL, DlgProcOptions, IDD_OPT_MSGDLG, _T("Messaging"), FALSE},
-						 {NULL, DlgProcLogOptions, IDD_OPT_MSGLOG, _T("Messaging Log"), FALSE},
-						 {NULL, DlgProcOptions1, IDD_OPTIONS1, _T("Chat"), FALSE},
-						 {NULL, DlgProcOptions2, IDD_OPTIONS2, _T("Chat Log"), FALSE}
+						 {DlgProcContainerOptions, IDD_OPT_CONTAINER, _T("Containers")},
+						 {DlgProcOptions, IDD_OPT_MSGDLG, _T("Messaging")},
+						 {DlgProcLogOptions, IDD_OPT_MSGLOG, _T("Messaging Log")},
+						 {DlgProcOptions1, IDD_OPTIONS1, _T("Chat")},
+						 {DlgProcOptions2, IDD_OPTIONS2, _T("Chat Log")}
 						 };
 
-static HWND hwndCurrentTab;
 
 #define FONTF_BOLD   1
 #define FONTF_ITALIC 2
@@ -250,107 +246,6 @@ static DWORD MakeCheckBoxTreeFlags(HWND hwndTree)
     }
     return flags;
 }
-
-static void SetOptionsDlgToType(HWND hwnd, int iExpert)
-{
-	DWORD i;
-    HWND tc;
-	RECT rc;
-	TCITEM tci;
-	tc = GetDlgItem(hwnd, IDC_TABS);
-	rc.top = rc.bottom = rc.left = rc.right = 0;
-	TabCtrl_DeleteAllItems(tc);
-	tci.mask = TCIF_TEXT;
-	for (i=0; i < SIZEOF(tabPages) - (iExpert ? 0 : 0); i++) {
-		tci.pszText = TranslateTS(tabPages[i].tabName);
-		TabCtrl_InsertItem(tc, i, &tci);
-	}
-	GetClientRect(tc, &rc);
-	TabCtrl_AdjustRect(tc, FALSE, &rc);
-	for (i=0; i < SIZEOF(tabPages) - (iExpert ? 0 : 0); i++) {
-		SetWindowPos(tabPages[i].hwnd, HWND_TOP, rc.left, rc.top, rc.right - rc.left, rc.bottom - rc.top, SWP_HIDEWINDOW);
-	}
-	hwndCurrentTab = tabPages[0].hwnd;
-	ShowWindow(tabPages[0].hwnd, SW_SHOW);
-}
-
-
-static BOOL CALLBACK DlgProcOptionsMain(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam)
-{
-	switch (msg) {
-		case WM_INITDIALOG:
-		{
-			int i;
-			for (i=0; i < sizeof(tabPages)/sizeof(tabPages[0]); i++) {
-				tabPages[i].hwnd = CreateDialogParam(g_hInst, MAKEINTRESOURCE(tabPages[i].dlgId), hwndDlg, tabPages[i].dlgProc, (LPARAM) NULL);
-				tabPages[i].bChanged = FALSE;
-				if (pfnEnableThemeDialogTexture) {
-					pfnEnableThemeDialogTexture(tabPages[i].hwnd, ETDT_ENABLETAB);
-				}
-			}
-			SetOptionsDlgToType(hwndDlg, SendMessage(GetParent(hwndDlg), PSM_ISEXPERT, 0, 0));
-			return TRUE;
-		}
-	case PSM_CHANGED:
-		{
-			int i;
-			for (i=0; i < sizeof(tabPages)/sizeof(tabPages[0]); i++) {
-				if (tabPages[i].hwnd == hwndCurrentTab) {
-					tabPages[i].bChanged = TRUE;
-				}
-			}
-			SendMessage(GetParent(hwndDlg), PSM_CHANGED, 0, 0);
-			return TRUE;
-
-		}
-	case WM_NOTIFY:
-		{
-			switch (((LPNMHDR) lParam)->code) {
-			case TCN_SELCHANGE:
-                switch (wParam) {
-				case IDC_TABS:
-					{
-						HWND hwnd = tabPages[TabCtrl_GetCurSel(GetDlgItem(hwndDlg, IDC_TABS))].hwnd;
-						if (hwnd!=hwndCurrentTab) {
-	                    	ShowWindow(hwnd, SW_SHOW);
-	                    	ShowWindow(hwndCurrentTab, SW_HIDE);
-	                    	hwndCurrentTab = hwnd;
-						}
-					}
-					break;
-				}
-				break;
-			case PSN_APPLY:
-				{
-					int i, changed = 0;
-					for (i=0; i < sizeof(tabPages)/sizeof(tabPages[0]); i++) {
-						if (tabPages[i].bChanged) {
-							changed = 1;
-							tabPages[i].bChanged = FALSE;
-							SendMessage(tabPages[i].hwnd, WM_NOTIFY, wParam, lParam);
-						}
-					}
-					if (changed) {
-						ReloadGlobals();
-						WindowList_Broadcast(g_dat->hParentWindowList, DM_OPTIONSAPPLIED, 0, 0);
-						WindowList_Broadcast(g_dat->hMessageWindowList, DM_OPTIONSAPPLIED, 0, 0);
-					}
-					return TRUE;
-				}
-				/*
-			case PSN_EXPERTCHANGED:
-				{
-					SetOptionsDlgToType(hwndDlg, SendMessage(GetParent(hwndDlg), PSM_ISEXPERT, 0, 0));
-					break;
-				}
-				*/
-			}
-		}
-		break;
-	}
-	return FALSE;
-}
-
 
 static BOOL CALLBACK DlgProcContainerOptions(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam)
 {
@@ -1403,6 +1298,7 @@ static BOOL CALLBACK DlgProcTypeOptions(HWND hwndDlg, UINT msg, WPARAM wParam, L
 
 int OptInitialise(WPARAM wParam, LPARAM lParam)
 {
+	int i;
 	OPTIONSDIALOGPAGE odp = { 0 };
 	odp.cbSize = sizeof(odp);
 	odp.position = 910000000;
@@ -1411,20 +1307,12 @@ int OptInitialise(WPARAM wParam, LPARAM lParam)
 	odp.ptszGroup = TranslateT("Message Sessions"); //Events
 	odp.flags = ODPF_BOLDGROUPS | ODPF_TCHAR;
 	odp.pszTemplate = MAKEINTRESOURCEA(IDD_OPT_MAIN);
-	odp.pfnDlgProc = DlgProcOptionsMain;
-	odp.ptszTab = NULL;
-/*
-	odp.pszTemplate = MAKEINTRESOURCEA(tabPages[0].dlgId);
-	odp.pfnDlgProc = tabPages[0].dlgProc;
-	odp.ptszTab = tabPages[0].tabName;
-
-	CallService(MS_OPT_ADDPAGE, wParam, (LPARAM) & odp);
-
-	odp.pszTemplate = MAKEINTRESOURCEA(tabPages[1].dlgId);
-	odp.pfnDlgProc = tabPages[1].dlgProc;
-	odp.ptszTab = tabPages[1].tabName;
-*/
-	CallService(MS_OPT_ADDPAGE, wParam, (LPARAM) & odp);
+	for (i = 0; i < SIZEOF(tabPages); i++) {
+		odp.pszTemplate = MAKEINTRESOURCEA(tabPages[i].dlgId);
+		odp.pfnDlgProc = tabPages[i].dlgProc;
+		odp.ptszTab = tabPages[i].tabName;
+		CallService(MS_OPT_ADDPAGE, wParam, (LPARAM) & odp);
+	}
 	odp.pszTemplate = MAKEINTRESOURCEA(IDD_OPT_MSGTYPE);
 	odp.ptszTitle = TranslateT("Typing Notify");
 	odp.pfnDlgProc = DlgProcTypeOptions;

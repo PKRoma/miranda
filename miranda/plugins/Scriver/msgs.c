@@ -35,6 +35,7 @@ HCURSOR hCurSplitNS, hCurSplitWE, hCurHyperlinkHand, hDragCursor;
 static HANDLE hEventDbEventAdded, hEventDbSettingChange, hEventContactDeleted;
 static HANDLE hEventClistDoubleClicked, hEventSmileyAddOptionsChanged, hEventIEViewOptionsChanged, hEventMyAvatarChanged, hEventAvatarChanged;
 static HANDLE hEventOptInitialise, hEventFontServiceFontsChanged, hEventIconPressed;
+static HANDLE hEventModulesLoaded, hEventPreshutdown;
 
 static HANDLE hSvcSendMessageCommand, hSvcSendMessageCommandW, hSvcGetWindowAPI, hSvcGetWindowClass, hSvcGetWindowData, hSvcReadMessageCommand, hSvcTypingMessageCommand;
 
@@ -522,7 +523,7 @@ static int SplitmsgModulesLoaded(WPARAM wParam, LPARAM lParam)
       }
    }
    CallService(MS_SKIN2_RELEASEICON,(WPARAM)mi.hIcon, 0);
-   
+
    hEventClistDoubleClicked = HookEvent(ME_CLIST_DOUBLECLICKED, SendMessageCommand);
    hEventSmileyAddOptionsChanged = HookEvent(ME_SMILEYADD_OPTIONSCHANGED, SmileySettingsChanged);
    hEventIEViewOptionsChanged = HookEvent(ME_IEVIEW_OPTIONSCHANGED, SmileySettingsChanged);
@@ -612,10 +613,10 @@ int LoadSendRecvMessageModule(void) {
    hEventDbSettingChange = HookEvent(ME_DB_CONTACT_SETTINGCHANGED, MessageSettingChanged);
    hEventContactDeleted = HookEvent(ME_DB_CONTACT_DELETED, ContactDeleted);
    //ME_MSG_ICONPRESSED
-   HookEvent(ME_SYSTEM_MODULESLOADED, SplitmsgModulesLoaded);
+   hEventModulesLoaded = HookEvent(ME_SYSTEM_MODULESLOADED, SplitmsgModulesLoaded);
    HookEvent(ME_SKIN_ICONSCHANGED, IconsChanged);
    HookEvent(ME_PROTO_CONTACTISTYPING, TypingMessage);
-   HookEvent(ME_SYSTEM_PRESHUTDOWN, PreshutdownSendRecv);
+   hEventPreshutdown = HookEvent(ME_SYSTEM_PRESHUTDOWN, PreshutdownSendRecv);
    hSvcSendMessageCommand = CreateServiceFunction(MS_MSG_SENDMESSAGE, SendMessageCommand);
 #if defined(_UNICODE)
    hSvcSendMessageCommandW = CreateServiceFunction(MS_MSG_SENDMESSAGE "W", SendMessageCommandW);
