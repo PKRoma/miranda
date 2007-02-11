@@ -14,7 +14,6 @@
 
 .\icq_opts.c : \
 	"..\..\include\win2k.h"\
-	"c:\program files\microsoft visual studio 8\vc\platformsdk\include\uxtheme.h"\
 	
 
 .\UI\userinfotab.c : \
@@ -94,12 +93,4 @@
 	".\UI\loginpassword.h"\
 	".\UI\userinfotab.h"\
 	".\utilities.h"\
-	"c:\program files\microsoft visual studio 8\vc\platformsdk\include\basetsd.h"\
-	"c:\program files\microsoft visual studio 8\vc\platformsdk\include\guiddef.h"\
-	"c:\program files\microsoft visual studio 8\vc\platformsdk\include\propidl.h"\
-	"c:\program files\microsoft visual studio 8\vc\platformsdk\include\reason.h"\
-	"c:\program files\microsoft visual studio 8\vc\platformsdk\include\specstrings.h"\
-	"c:\program files\microsoft visual studio 8\vc\platformsdk\include\stralign.h"\
-	"c:\program files\microsoft visual studio 8\vc\platformsdk\include\tvout.h"\
-	"c:\program files\microsoft visual studio 8\vc\platformsdk\include\winefs.h"\
 	

@@ -166,7 +166,7 @@ char* cliIM2       = "IM2";
 char* cliSpamBot   = "Spam Bot";
 
 
-char* detectUserClient(HANDLE hContact, DWORD dwUin, WORD wVersion, DWORD dwFT1, DWORD dwFT2, DWORD dwFT3, DWORD dwOnlineSince, DWORD dwDirectCookie, DWORD dwWebPort, BYTE* caps, WORD wLen, BYTE* bClientId, char* szClientBuf)
+char* detectUserClient(HANDLE hContact, DWORD dwUin, WORD wVersion, DWORD dwFT1, DWORD dwFT2, DWORD dwFT3, DWORD dwOnlineSince, BYTE bDirectFlag, DWORD dwDirectCookie, DWORD dwWebPort, BYTE* caps, WORD wLen, BYTE* bClientId, char* szClientBuf)
 {
   LPSTR szClient = NULL;
 
@@ -595,10 +595,15 @@ char* detectUserClient(HANDLE hContact, DWORD dwUin, WORD wVersion, DWORD dwFT1,
               szClient = "ICQ 2000";
             }
           }
-          else if (CheckContactCapabilities(hContact, CAPF_TYPING))
-            szClient = "Icq2Go! (Java)";
-          else 
-            szClient = "Icq2Go!";
+          if (CheckContactCapabilities(hContact, CAPF_UTF))
+          {
+            if (CheckContactCapabilities(hContact, CAPF_TYPING))
+              szClient = "Icq2Go! (Java)";
+            else if (bDirectFlag == 0x04)
+              szClient = "1&1 PC Messenger";
+            else
+              szClient = "Icq2Go!";
+          }
         }
         else if (wVersion == 0xA)
         {
