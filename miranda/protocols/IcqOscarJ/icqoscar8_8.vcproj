@@ -246,10 +246,6 @@
 				>
 			</File>
 			<File
-				RelativePath="forkthread.h"
-				>
-			</File>
-			<File
 				RelativePath="guids.h"
 				>
 			</File>
@@ -335,10 +331,6 @@
 			</File>
 			<File
 				RelativePath="UI\loginpassword.h"
-				>
-			</File>
-			<File
-				RelativePath="m_icq.h"
 				>
 			</File>
 			<File
@@ -1155,30 +1147,6 @@
 		<File
 			RelativePath=".\directpackets.c"
 			>
-		</File>
-		<File
-			RelativePath="forkthread.c"
-			>
-			<FileConfiguration
-				Name="Release|Win32"
-				>
-				<Tool
-					Name="VCCLCompilerTool"
-					Optimization="1"
-					AdditionalIncludeDirectories=""
-				/>
-			</FileConfiguration>
-			<FileConfiguration
-				Name="Debug|Win32"
-				>
-				<Tool
-					Name="VCCLCompilerTool"
-					Optimization="0"
-					AdditionalIncludeDirectories=""
-					BasicRuntimeChecks="3"
-					BrowseInformation="1"
-				/>
-			</FileConfiguration>
 		</File>
 		<File
 			RelativePath="i18n.c"
