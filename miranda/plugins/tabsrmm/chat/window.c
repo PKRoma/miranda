@@ -591,6 +591,13 @@ static LRESULT CALLBACK MessageSubclassProc(HWND hwnd, UINT msg, WPARAM wParam, 
 			BOOL isCtrl = GetKeyState(VK_CONTROL) & 0x8000;
 			BOOL isAlt = GetKeyState(VK_MENU) & 0x8000;
 
+            if(wParam == VK_INSERT && !isShift && !isCtrl && !isAlt) {
+                mwdat->fInsertMode = !mwdat->fInsertMode;
+                SendMessage(hwndParent, WM_COMMAND, MAKEWPARAM(GetDlgCtrlID(hwnd), EN_CHANGE), (LPARAM) hwnd);
+            }
+            if(wParam == VK_CAPITAL || wParam == VK_NUMLOCK)
+                SendMessage(hwndParent, WM_COMMAND, MAKEWPARAM(GetDlgCtrlID(hwnd), EN_CHANGE), (LPARAM) hwnd);
+
 			if (isCtrl && isAlt && !isShift) {
 				switch (wParam) {
 				case VK_UP:
@@ -1416,6 +1423,9 @@ BOOL CALLBACK RoomWndProc(HWND hwndDlg,UINT uMsg,WPARAM wParam,LPARAM lParam)
 			dat->hwnd = hwndDlg;
 			psi->hWnd = hwndDlg;
 			psi->iSplitterY = g_Settings.iSplitterY;
+            dat->fInsertMode = FALSE;
+
+            dat->codePage = DBGetContactSettingDword(dat->hContact, SRMSGMOD_T, "ANSIcodepage", CP_ACP);
 
 			BroadCastContainer(dat->pContainer, DM_REFRESHTABINDEX, 0, 0);
 

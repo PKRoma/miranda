@@ -1672,7 +1672,7 @@ buttons_done:
                     SendMessage(pContainer->hwndStatus, SB_SETPARTS, myGlobals.g_SecureIMAvail ? 5 : 4, (LPARAM) statwidths);
                     pContainer->statusBarHeight = (rcs.bottom - rcs.top) + 1;
                     */
-                    statwidths[0] = (rcs.right - rcs.left) - (2 * SB_CHAR_WIDTH) - (35 + ((status_icon_list_size) * (myGlobals.m_smcxicon + 2)));
+                    statwidths[0] = (rcs.right - rcs.left) - (2 * SB_CHAR_WIDTH + 20) - (35 + ((status_icon_list_size) * (myGlobals.m_smcxicon + 2)));
                     statwidths[1] = (rcs.right - rcs.left) - (45 + ((status_icon_list_size) * (myGlobals.m_smcxicon + 2)));
                     statwidths[2] = -1;
                     SendMessage(pContainer->hwndStatus, SB_SETPARTS, 3, (LPARAM) statwidths);

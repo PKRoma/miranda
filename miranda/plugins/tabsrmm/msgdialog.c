@@ -885,6 +885,13 @@ static LRESULT CALLBACK MessageEditSubclassProc(HWND hwnd, UINT msg, WPARAM wPar
             BOOL isShift = GetKeyState(VK_SHIFT) & 0x8000;
             BOOL isAlt = GetKeyState(VK_MENU) & 0x8000;
 
+            if(wParam == VK_INSERT && !isShift && !isCtrl && !isAlt) {
+                mwdat->fInsertMode = !mwdat->fInsertMode;
+                SendMessage(hwndParent, WM_COMMAND, MAKEWPARAM(GetDlgCtrlID(hwnd), EN_CHANGE), (LPARAM) hwnd);
+            }
+            if(wParam == VK_CAPITAL || wParam == VK_NUMLOCK)
+                SendMessage(hwndParent, WM_COMMAND, MAKEWPARAM(GetDlgCtrlID(hwnd), EN_CHANGE), (LPARAM) hwnd);
+
             if(wParam == VK_RETURN) {
                 if (isShift) {
                     if(myGlobals.m_SendOnShiftEnter) {
@@ -1804,6 +1811,7 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                 dat->wOldStatus = -1;
                 dat->iOldHash = -1;
                 dat->bType = SESSIONTYPE_IM;
+                dat->fInsertMode = FALSE;
 
                 newData->item.lParam = (LPARAM) hwndDlg;
                 TabCtrl_SetItem(hwndTab, newData->iTabID, &newData->item);

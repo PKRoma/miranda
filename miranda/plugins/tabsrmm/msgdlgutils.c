@@ -708,9 +708,14 @@ int MsgWindowMenuHandler(HWND hwndDlg, struct MessageWindowData *dat, int select
 
 void UpdateReadChars(HWND hwndDlg, struct MessageWindowData *dat)
 {
+
     if (dat->pContainer->hwndStatus && SendMessage(dat->pContainer->hwndStatus, SB_GETPARTS, 0, 0) >= 3) {
         char buf[128];
         int len;
+        char szIndicators[20];
+        BOOL fCaps, fNum;
+
+        szIndicators[0] = 0;
         if(dat->bType == SESSIONTYPE_CHAT)
             len = GetWindowTextLength(GetDlgItem(hwndDlg, IDC_CHAT_MESSAGE));
         else {
@@ -724,7 +729,20 @@ void UpdateReadChars(HWND hwndDlg, struct MessageWindowData *dat)
             len = GetWindowTextLength(GetDlgItem(hwndDlg, IDC_MESSAGE));
 #endif
         }
-        _snprintf(buf, sizeof(buf), "%s %d/%d", dat->lcID, dat->iOpenJobs, len);
+
+        fCaps = (GetKeyState(VK_CAPITAL) & 1);
+        fNum = (GetKeyState(VK_NUMLOCK) & 1);
+
+        if(dat->fInsertMode)
+            lstrcatA(szIndicators, "O");
+        if(fCaps)
+            lstrcatA(szIndicators, "C");
+        if(fNum)
+            lstrcatA(szIndicators, "N");
+        if(dat->fInsertMode || fCaps || fNum)
+            lstrcatA(szIndicators, " | ");
+
+        _snprintf(buf, sizeof(buf), "%s%s %d/%d", szIndicators, dat->lcID, dat->iOpenJobs, len);
         SendMessageA(dat->pContainer->hwndStatus, SB_SETTEXTA, 1, (LPARAM) buf);
     }
 }
