@@ -306,7 +306,7 @@ void JabberIqResultGetRoster( XmlNode* iqNode, void* )
 		JABBER_LIST_ITEM* item = JabberListAdd( LIST_ROSTER, jid );
 		item->subscription = sub;
 
-		replaceStr( item->nick, nick );
+		mir_free( item->nick ); item->nick = nick;
 
 		XmlNode* groupNode = JabberXmlGetChild( itemNode, "group" );
 		replaceStr( item->group, ( groupNode ) ? groupNode->text : NULL );
