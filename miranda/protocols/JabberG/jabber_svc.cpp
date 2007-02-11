@@ -268,7 +268,7 @@ static void __cdecl JabberBasicSearchThread( JABBER_SEARCH_BASIC *jsb )
 int JabberBasicSearch( WPARAM wParam, LPARAM lParam )
 {
 	char* szJid = ( char* )lParam;
-	JabberLog( "JabberBasicSearch called with lParam = " TCHAR_STR_PARAM, szJid );
+	JabberLog( "JabberBasicSearch called with lParam = '%s'", szJid );
 
 	JABBER_SEARCH_BASIC *jsb;
 	if ( !jabberOnline || ( jsb=( JABBER_SEARCH_BASIC * ) mir_alloc( sizeof( JABBER_SEARCH_BASIC )) )==NULL )
@@ -284,13 +284,17 @@ int JabberBasicSearch( WPARAM wParam, LPARAM lParam )
 	else strncpy( jsb->jid, szJid, SIZEOF(jsb->jid));
 
 	if ( JGetByte( "ValidateAddition", TRUE )) {
+		JabberLog( "Sending basic search validation request for '%s'", jsb->jid );
 		TCHAR* ptszJid = a2t( jsb->jid );
-		jsb->hSearch = jabberSearchID = JabberSendGetVcard( ptszJid );
+		jabberSearchID = JabberSendGetVcard( ptszJid );
+		mir_free( ptszJid );
+		mir_free( jsb );
+		return jabberSearchID;
 	}
-	else {
-		jsb->hSearch = JabberSerialNext();
-		mir_forkthread(( pThreadFunc )JabberBasicSearchThread, jsb );
-	}
+	
+	JabberLog( "Adding '%s' without validation", jsb->jid );
+   jsb->hSearch = JabberSerialNext();
+	mir_forkthread(( pThreadFunc )JabberBasicSearchThread, jsb );
 	return jsb->hSearch;
 }
 
@@ -318,7 +322,7 @@ int JabberContactDeleted( WPARAM wParam, LPARAM lParam )
 		if ( !JabberListExist( LIST_CHATROOM, jid ) || q == NULL )
 			if ( JabberListExist( LIST_ROSTER, jid )) {
 				// Remove from roster, server also handles the presence unsubscription process.
-				XmlNodeIq iq( "set" );
+				XmlNodeIq iq( "set" ); iq.addAttrID( JabberSerialNext());
 				XmlNode* query = iq.addQuery( "jabber:iq:roster" );
 				XmlNode* item = query->addChild( "item" ); item->addAttr( "jid", jid ); item->addAttr( "subscription", "remove" );
 				JabberSend( jabberThreadInfo->s, iq );
@@ -460,6 +464,8 @@ void sttAddContactForever( DBCONTACTWRITESETTING* cws, HANDLE hContact )
 
 	XmlNode presence( "presence" ); presence.addAttr( "to", jid.ptszVal ); presence.addAttr( "type", "subscribe" );
 	JabberSend( jabberThreadInfo->s, presence );
+
+	JabberSendGetVcard( jid.ptszVal );
 
 	mir_free( nick );
 	DBDeleteContactSetting( hContact, "CList", "Hidden" );

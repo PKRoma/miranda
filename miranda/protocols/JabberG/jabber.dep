@@ -86,7 +86,7 @@
 	".\jabber.h"\
 	".\jabber_byte.h"\
 	".\jabber_list.h"\
-	".\jabber_xml.h"
+	".\jabber_xml.h"\
 	
 
 .\jabber_byte.cpp : \
@@ -747,7 +747,7 @@
 	".\jabber.h"\
 	".\jabber_byte.h"\
 	".\jabber_list.h"\
-	".\jabber_xml.h"
+	".\jabber_xml.h"\
 	
 
 .\jabber_util.cpp : \

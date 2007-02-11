@@ -136,7 +136,7 @@ void JabberGcLogCreate( JABBER_LIST_ITEM* item )
 	NotifyEventHooks( hInitChat, (WPARAM)item, 0 );
 }
 
-void JabberGcLogUpdateMemberStatus( JABBER_LIST_ITEM* item, TCHAR* nick, int action, XmlNode* reason )
+void JabberGcLogUpdateMemberStatus( JABBER_LIST_ITEM* item, TCHAR* nick, TCHAR* jid, int action, XmlNode* reason )
 {
 	int statusToSet = 0;
 	TCHAR* szReason = NULL;
@@ -153,6 +153,8 @@ void JabberGcLogUpdateMemberStatus( JABBER_LIST_ITEM* item, TCHAR* nick, int act
 	gce.cbSize = sizeof(GCEVENT);
 	gce.ptszNick = nick;
 	gce.ptszUID = nick;
+	if (jid != NULL)
+		gce.ptszUserInfo = jid;
 	gce.ptszText = szReason;
 	gce.dwFlags = GC_TCHAR;
 	gce.pDest = &gcd;
@@ -219,7 +221,7 @@ void JabberGcQuit( JABBER_LIST_ITEM* item, int code, XmlNode* reason )
 	}
 	else {
 		TCHAR* myNick = JabberNickFromJID( jabberJID );
-		JabberGcLogUpdateMemberStatus( item, myNick, GC_EVENT_KICK, reason );
+		JabberGcLogUpdateMemberStatus( item, myNick, NULL, GC_EVENT_KICK, reason );
 		mir_free( myNick );
 		JCallService( MS_GC_EVENT, SESSION_OFFLINE, ( LPARAM )&gce );
 	}

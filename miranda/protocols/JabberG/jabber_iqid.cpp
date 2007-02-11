@@ -306,15 +306,10 @@ void JabberIqResultGetRoster( XmlNode* iqNode, void* )
 		JABBER_LIST_ITEM* item = JabberListAdd( LIST_ROSTER, jid );
 		item->subscription = sub;
 
-		if ( item->nick ) mir_free( item->nick );
-		item->nick = nick;
+		replaceStr( item->nick, nick );
 
-		if ( item->group ) mir_free( item->group );
 		XmlNode* groupNode = JabberXmlGetChild( itemNode, "group" );
-		if ( groupNode != NULL && groupNode->text != NULL )
-			item->group = mir_tstrdup( groupNode->text );
-		else
-			item->group = NULL;
+		replaceStr( item->group, ( groupNode ) ? groupNode->text : NULL );
 
 		HANDLE hContact = JabberHContactFromJID( jid );
 		if ( hContact == NULL ) {
@@ -323,18 +318,21 @@ void JabberIqResultGetRoster( XmlNode* iqNode, void* )
 			hContact = JabberDBCreateContact( jid, nick, FALSE, TRUE );
 		}
 
-		DBVARIANT dbNick;
-		if ( !JGetStringT( hContact, "Nick", &dbNick )) {
-			if ( lstrcmp( nick, dbNick.ptszVal ) != 0 )
-				DBWriteContactSettingTString( hContact, "CList", "MyHandle", nick );
-			else
-				DBDeleteContactSetting( hContact, "CList", "MyHandle" );
-			JFreeVariant( &dbNick );
+		if ( name != NULL ) {
+			DBVARIANT dbNick;
+			if ( !JGetStringT( hContact, "Nick", &dbNick )) {
+				if ( lstrcmp( nick, dbNick.ptszVal ) != 0 )
+					DBWriteContactSettingTString( hContact, "CList", "MyHandle", nick );
+				else
+					DBDeleteContactSetting( hContact, "CList", "MyHandle" );
+
+				JFreeVariant( &dbNick );
+			}
+			else DBWriteContactSettingTString( hContact, "CList", "MyHandle", nick );
 		}
-		else DBWriteContactSettingTString( hContact, "CList", "MyHandle", nick );
+		else DBDeleteContactSetting( hContact, "CList", "MyHandle" );
 
 		if ( JGetByte( hContact, "ChatRoom", 0 )) {
-			//DBDeleteContactSetting( hContact, "CList", "Hidden" );
 			QueueUserAPC( sttCreateRoom, hMainThread, ( unsigned long )jid );
 			DBDeleteContactSetting( hContact, "CList", "Hidden" );
 			li.List_Insert( &chatRooms, hContact, chatRooms.realCount );
@@ -606,13 +604,21 @@ LBL_Ret:
 	goto LBL_Ret;
 }
 
+static char* sttGetText( XmlNode* node, char* tag )
+{
+	XmlNode* n = JabberXmlGetChild( node, tag );
+	if ( n == NULL )
+		return NULL;
+
+	return t2a( n->text );
+}
+
 void JabberIqResultGetVcard( XmlNode *iqNode, void *userdata )
 {
 	XmlNode *vCardNode, *m, *n, *o;
 	TCHAR* type, *jid;
 	HANDLE hContact;
 	TCHAR text[128];
-	int len;
 	DBVARIANT dbv;
 
 	JabberLog( "<iq/> iqIdGetVcard" );
@@ -620,7 +626,33 @@ void JabberIqResultGetVcard( XmlNode *iqNode, void *userdata )
 	if (( jid=JabberXmlGetAttrValue( iqNode, "from" )) == NULL ) return;
 	int id = JabberGetPacketID( iqNode );
 
-	len = _tcslen( jabberJID );
+	if ( id == jabberSearchID ) {
+		jabberSearchID = -1;
+		
+		if (( vCardNode = JabberXmlGetChild( iqNode, "vCard" )) != NULL ) {
+			if ( !lstrcmp( type, _T("result"))) {
+				JABBER_SEARCH_RESULT jsr = { 0 };
+				jsr.hdr.cbSize = sizeof( JABBER_SEARCH_RESULT );
+				jsr.hdr.nick = sttGetText( vCardNode, "NICKNAME" );
+				jsr.hdr.firstName = sttGetText( vCardNode, "FN" );
+				jsr.hdr.lastName = "";
+				jsr.hdr.email = sttGetText( vCardNode, "EMAIL" );
+				_tcsncpy( jsr.jid, jid, SIZEOF( jsr.jid ));
+				jsr.jid[ SIZEOF( jsr.jid )-1 ] = '\0';
+				JSendBroadcast( NULL, ACKTYPE_SEARCH, ACKRESULT_DATA, ( HANDLE )id, ( LPARAM )&jsr );
+				JSendBroadcast( NULL, ACKTYPE_SEARCH, ACKRESULT_SUCCESS, ( HANDLE )id, 0 );
+				mir_free( jsr.hdr.nick );
+				mir_free( jsr.hdr.firstName );
+				mir_free( jsr.hdr.email );
+			}
+			else if ( !lstrcmp( type, _T("error")))
+				JSendBroadcast( NULL, ACKTYPE_SEARCH, ACKRESULT_SUCCESS, ( HANDLE )id, 0 );
+		}
+		else JSendBroadcast( NULL, ACKTYPE_SEARCH, ACKRESULT_SUCCESS, ( HANDLE )id, 0 );
+		return;
+	}
+
+	int len = _tcslen( jabberJID );
 	if ( !_tcsnicmp( jid, jabberJID, len ) && ( jid[len]=='/' || jid[len]=='\0' )) {
 		hContact = NULL;
 		JabberLog( "Vcard for myself" );

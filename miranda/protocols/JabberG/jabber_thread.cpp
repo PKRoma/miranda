@@ -39,8 +39,8 @@ Last change by : $Author$
 
 // <iq/> identification number for various actions
 // for JABBER_REGISTER thread
-unsigned int iqIdRegGetReg;
-unsigned int iqIdRegSetReg;
+int iqIdRegGetReg;
+int iqIdRegSetReg;
 
 static void __cdecl JabberKeepAliveThread( JABBER_SOCKET s );
 static void JabberProcessStreamOpening( XmlNode *node, void *userdata );
@@ -775,14 +775,14 @@ static void JabberProcessSuccess( XmlNode *node, void *userdata )
 	if ( !_tcscmp( type, _T("urn:ietf:params:xml:ns:xmpp-sasl") )) {
 		DBVARIANT dbv;
 
-		JabberLog( "Succcess: Logged-in." );
+		JabberLog( "Success: Logged-in." );
 		if ( DBGetContactSetting( NULL, jabberProtoName, "Nick", &dbv ))
 			JSetStringT( NULL, "Nick", info->username );
 		else
 			JFreeVariant( &dbv );
 		xmlStreamInitialize( "after successful sasl" );
 	}
-	else JabberLog( "Succcess: unknown action "TCHAR_STR_PARAM".",type);
+	else JabberLog( "Success: unknown action "TCHAR_STR_PARAM".",type);
 }
 
 static void JabberProcessChallenge( XmlNode *node, void *userdata )
@@ -975,10 +975,16 @@ static void JabberProcessMessage( XmlNode *node, void *userdata )
 		else if ( !_tcscmp( ptszXmlns, _T("jabber:x:event"))) {
 			if ( bodyNode == NULL ) {
 				idNode = JabberXmlGetChild( xNode, "id" );
-				if ( JabberXmlGetChild( xNode, "delivered" ) != NULL || JabberXmlGetChild( xNode, "offline" ) != NULL )
+				if ( JabberXmlGetChild( xNode, "delivered" ) != NULL || JabberXmlGetChild( xNode, "offline" ) != NULL ) {
+					int id = -1;
+					if ( idNode != NULL && idNode->text != NULL )
+						if ( !_tcsncmp( idNode->text, _T(JABBER_IQID), strlen( JABBER_IQID )) )
+							id = _ttoi(( idNode->text )+strlen( JABBER_IQID ));
+
 					if ( item != NULL )
-						if ( JabberGetPacketID( idNode ) == item->idMsgAckPending )
+						if ( id == item->idMsgAckPending )
 							JSendBroadcast( JabberHContactFromJID( from ), ACKTYPE_MESSAGE, ACKRESULT_SUCCESS, ( HANDLE ) 1, 0 );
+				}
 
 				if ( JabberXmlGetChild( xNode, "composing" ) != NULL )
 					if (( hContact = JabberHContactFromJID( from )) != NULL )
@@ -1542,7 +1548,7 @@ static void JabberProcessIq( XmlNode *node, void *userdata )
 		// RECVED: roster push
 		// ACTION: similar to iqIdGetRoster above
 		if ( !_tcscmp( xmlns, _T("jabber:iq:roster"))) {
-			XmlNode *itemNode, *groupNode;
+			XmlNode *itemNode;
 			JABBER_LIST_ITEM *item;
 			TCHAR* name;
 
@@ -1565,14 +1571,10 @@ static void JabberProcessIq( XmlNode *node, void *userdata )
 
 					if ( nick != NULL ) {
 						if (( item=JabberListAdd( LIST_ROSTER, jid )) != NULL ) {
-							if ( item->nick ) mir_free( item->nick );
-							item->nick = nick;
+							replaceStr( item->nick, nick );
 
-							if ( item->group ) mir_free( item->group );
-							if (( groupNode=JabberXmlGetChild( itemNode, "group" ))!=NULL && groupNode->text!=NULL )
-								item->group = mir_tstrdup( groupNode->text );
-							else
-								item->group = NULL;
+							XmlNode* groupNode = JabberXmlGetChild( itemNode, "group" );
+							replaceStr( item->group, ( groupNode ) ? groupNode->text : NULL );
 
 							if (( hContact=JabberHContactFromJID( jid )) == NULL ) {
 								// Received roster has a new JID.
@@ -1581,15 +1583,19 @@ static void JabberProcessIq( XmlNode *node, void *userdata )
 							}
 							else JSetStringT( hContact, "jid", jid );
 
-                     DBVARIANT dbnick;
-							if ( !JGetStringT( hContact, "Nick", &dbnick )) {
-								if ( _tcscmp( nick, dbnick.ptszVal ) != 0 )
-									DBWriteContactSettingTString( hContact, "CList", "MyHandle", nick );
-								else
-									DBDeleteContactSetting( hContact, "CList", "MyHandle" );
-								JFreeVariant( &dbnick );
+							if ( name != NULL ) {
+								DBVARIANT dbnick;
+								if ( !JGetStringT( hContact, "Nick", &dbnick )) {
+									if ( _tcscmp( nick, dbnick.ptszVal ) != 0 )
+										DBWriteContactSettingTString( hContact, "CList", "MyHandle", nick );
+									else 
+										DBDeleteContactSetting( hContact, "CList", "MyHandle" );
+
+									JFreeVariant( &dbnick );
+								}
+								else DBWriteContactSettingTString( hContact, "CList", "MyHandle", nick );
 							}
-							else DBWriteContactSettingTString( hContact, "CList", "MyHandle", nick );
+							else DBDeleteContactSetting( hContact, "CList", "MyHandle" );
 
 							if ( item->group != NULL ) {
 								JabberContactListCreateGroup( item->group );

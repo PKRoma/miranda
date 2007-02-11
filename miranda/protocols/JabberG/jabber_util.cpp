@@ -1148,7 +1148,7 @@ TStringPairs::TStringPairs( char* buffer ) :
 
 TStringPairs::~TStringPairs()
 {
-	delete elems;
+	delete[] elems;
 }
 
 const char* TStringPairs::operator[]( const char* key ) const
