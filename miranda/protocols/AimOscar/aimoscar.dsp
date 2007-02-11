@@ -97,6 +97,14 @@ SOURCE=.\aim.cpp
 # End Source File
 # Begin Source File
 
+SOURCE=.\avatars.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\away.cpp
+# End Source File
+# Begin Source File
+
 SOURCE=.\client.cpp
 # End Source File
 # Begin Source File
@@ -182,6 +190,14 @@ SOURCE=.\windows.cpp
 # Begin Source File
 
 SOURCE=.\aim.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\avatars.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\away.h
 # End Source File
 # Begin Source File
 

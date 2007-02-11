@@ -25,6 +25,10 @@ NULL=
 NULL=nul
 !ENDIF 
 
+CPP=cl.exe
+MTL=midl.exe
+RSC=rc.exe
+
 !IF  "$(CFG)" == "aim - Win32 Release"
 
 OUTDIR=.\Release
@@ -36,6 +40,8 @@ ALL : "..\..\bin\release\plugins\Aim.dll"
 CLEAN :
 	-@erase "$(INTDIR)\aim.obj"
 	-@erase "$(INTDIR)\aim.res"
+	-@erase "$(INTDIR)\avatars.obj"
+	-@erase "$(INTDIR)\away.obj"
 	-@erase "$(INTDIR)\client.obj"
 	-@erase "$(INTDIR)\connection.obj"
 	-@erase "$(INTDIR)\conv.obj"
@@ -67,42 +73,8 @@ CLEAN :
 "$(OUTDIR)" :
     if not exist "$(OUTDIR)/$(NULL)" mkdir "$(OUTDIR)"
 
-CPP=cl.exe
 CPP_PROJ=/nologo /MD /W3 /GX /Zi /O1 /I "../../include" /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "_MBCS" /D "_USRDLL" /D "AIM_EXPORTS" /Fp"$(INTDIR)\aimoscar.pch" /YX /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /FD /c 
-
-.c{$(INTDIR)}.obj::
-   $(CPP) @<<
-   $(CPP_PROJ) $< 
-<<
-
-.cpp{$(INTDIR)}.obj::
-   $(CPP) @<<
-   $(CPP_PROJ) $< 
-<<
-
-.cxx{$(INTDIR)}.obj::
-   $(CPP) @<<
-   $(CPP_PROJ) $< 
-<<
-
-.c{$(INTDIR)}.sbr::
-   $(CPP) @<<
-   $(CPP_PROJ) $< 
-<<
-
-.cpp{$(INTDIR)}.sbr::
-   $(CPP) @<<
-   $(CPP_PROJ) $< 
-<<
-
-.cxx{$(INTDIR)}.sbr::
-   $(CPP) @<<
-   $(CPP_PROJ) $< 
-<<
-
-MTL=midl.exe
 MTL_PROJ=/nologo /D "NDEBUG" /mktyplib203 /win32 
-RSC=rc.exe
 RSC_PROJ=/l 0x409 /fo"$(INTDIR)\aim.res" /d "NDEBUG" 
 BSC32=bscmake.exe
 BSC32_FLAGS=/nologo /o"$(OUTDIR)\aimoscar.bsc" 
@@ -132,7 +104,9 @@ LINK32_OBJS= \
 	"$(INTDIR)\tlv.obj" \
 	"$(INTDIR)\utility.obj" \
 	"$(INTDIR)\windows.obj" \
-	"$(INTDIR)\aim.res"
+	"$(INTDIR)\aim.res" \
+	"$(INTDIR)\avatars.obj" \
+	"$(INTDIR)\away.obj"
 
 "..\..\bin\release\plugins\Aim.dll" : "$(OUTDIR)" $(DEF_FILE) $(LINK32_OBJS)
     $(LINK32) @<<
@@ -154,6 +128,10 @@ CLEAN :
 	-@erase "$(INTDIR)\aim.obj"
 	-@erase "$(INTDIR)\aim.res"
 	-@erase "$(INTDIR)\aim.sbr"
+	-@erase "$(INTDIR)\avatars.obj"
+	-@erase "$(INTDIR)\avatars.sbr"
+	-@erase "$(INTDIR)\away.obj"
+	-@erase "$(INTDIR)\away.sbr"
 	-@erase "$(INTDIR)\client.obj"
 	-@erase "$(INTDIR)\client.sbr"
 	-@erase "$(INTDIR)\connection.obj"
@@ -206,8 +184,75 @@ CLEAN :
 "$(OUTDIR)" :
     if not exist "$(OUTDIR)/$(NULL)" mkdir "$(OUTDIR)"
 
-CPP=cl.exe
 CPP_PROJ=/nologo /MDd /W2 /Gm /GX /ZI /Od /I "../../include" /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /D "_MBCS" /D "_USRDLL" /D "AIM_EXPORTS" /FR"$(INTDIR)\\" /Fp"$(INTDIR)\aimoscar.pch" /YX /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /FD /GZ /c 
+MTL_PROJ=/nologo /D "_DEBUG" /mktyplib203 /win32 
+RSC_PROJ=/l 0x409 /fo"$(INTDIR)\aim.res" /d "_DEBUG" 
+BSC32=bscmake.exe
+BSC32_FLAGS=/nologo /o"$(OUTDIR)\aimoscar.bsc" 
+BSC32_SBRS= \
+	"$(INTDIR)\aim.sbr" \
+	"$(INTDIR)\client.sbr" \
+	"$(INTDIR)\connection.sbr" \
+	"$(INTDIR)\conv.sbr" \
+	"$(INTDIR)\direct_connect.sbr" \
+	"$(INTDIR)\error.sbr" \
+	"$(INTDIR)\file.sbr" \
+	"$(INTDIR)\flap.sbr" \
+	"$(INTDIR)\links.sbr" \
+	"$(INTDIR)\packets.sbr" \
+	"$(INTDIR)\popup.sbr" \
+	"$(INTDIR)\proxy.sbr" \
+	"$(INTDIR)\server.sbr" \
+	"$(INTDIR)\services.sbr" \
+	"$(INTDIR)\snac.sbr" \
+	"$(INTDIR)\strl.sbr" \
+	"$(INTDIR)\theme.sbr" \
+	"$(INTDIR)\thread.sbr" \
+	"$(INTDIR)\tlv.sbr" \
+	"$(INTDIR)\utility.sbr" \
+	"$(INTDIR)\windows.sbr" \
+	"$(INTDIR)\avatars.sbr" \
+	"$(INTDIR)\away.sbr"
+
+"$(OUTDIR)\aimoscar.bsc" : "$(OUTDIR)" $(BSC32_SBRS)
+    $(BSC32) @<<
+  $(BSC32_FLAGS) $(BSC32_SBRS)
+<<
+
+LINK32=link.exe
+LINK32_FLAGS=wsock32.lib kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /nologo /dll /incremental:yes /pdb:"$(OUTDIR)\Aim.pdb" /debug /machine:I386 /out:"../../bin/debug/plugins/Aim.dll" /implib:"$(OUTDIR)\Aim.lib" /pdbtype:sept 
+LINK32_OBJS= \
+	"$(INTDIR)\aim.obj" \
+	"$(INTDIR)\client.obj" \
+	"$(INTDIR)\connection.obj" \
+	"$(INTDIR)\conv.obj" \
+	"$(INTDIR)\direct_connect.obj" \
+	"$(INTDIR)\error.obj" \
+	"$(INTDIR)\file.obj" \
+	"$(INTDIR)\flap.obj" \
+	"$(INTDIR)\links.obj" \
+	"$(INTDIR)\packets.obj" \
+	"$(INTDIR)\popup.obj" \
+	"$(INTDIR)\proxy.obj" \
+	"$(INTDIR)\server.obj" \
+	"$(INTDIR)\services.obj" \
+	"$(INTDIR)\snac.obj" \
+	"$(INTDIR)\strl.obj" \
+	"$(INTDIR)\theme.obj" \
+	"$(INTDIR)\thread.obj" \
+	"$(INTDIR)\tlv.obj" \
+	"$(INTDIR)\utility.obj" \
+	"$(INTDIR)\windows.obj" \
+	"$(INTDIR)\aim.res" \
+	"$(INTDIR)\avatars.obj" \
+	"$(INTDIR)\away.obj"
+
+"..\..\bin\debug\plugins\Aim.dll" : "$(OUTDIR)" $(DEF_FILE) $(LINK32_OBJS)
+    $(LINK32) @<<
+  $(LINK32_FLAGS) $(LINK32_OBJS)
+<<
+
+!ENDIF 
 
 .c{$(INTDIR)}.obj::
    $(CPP) @<<
@@ -239,73 +284,6 @@ CPP_PROJ=/nologo /MDd /W2 /Gm /GX /ZI /Od /I "../../include" /D "WIN32" /D "_DEB
    $(CPP_PROJ) $< 
 <<
 
-MTL=midl.exe
-MTL_PROJ=/nologo /D "_DEBUG" /mktyplib203 /win32 
-RSC=rc.exe
-RSC_PROJ=/l 0x409 /fo"$(INTDIR)\aim.res" /d "_DEBUG" 
-BSC32=bscmake.exe
-BSC32_FLAGS=/nologo /o"$(OUTDIR)\aimoscar.bsc" 
-BSC32_SBRS= \
-	"$(INTDIR)\aim.sbr" \
-	"$(INTDIR)\client.sbr" \
-	"$(INTDIR)\connection.sbr" \
-	"$(INTDIR)\conv.sbr" \
-	"$(INTDIR)\direct_connect.sbr" \
-	"$(INTDIR)\error.sbr" \
-	"$(INTDIR)\file.sbr" \
-	"$(INTDIR)\flap.sbr" \
-	"$(INTDIR)\links.sbr" \
-	"$(INTDIR)\packets.sbr" \
-	"$(INTDIR)\popup.sbr" \
-	"$(INTDIR)\proxy.sbr" \
-	"$(INTDIR)\server.sbr" \
-	"$(INTDIR)\services.sbr" \
-	"$(INTDIR)\snac.sbr" \
-	"$(INTDIR)\strl.sbr" \
-	"$(INTDIR)\theme.sbr" \
-	"$(INTDIR)\thread.sbr" \
-	"$(INTDIR)\tlv.sbr" \
-	"$(INTDIR)\utility.sbr" \
-	"$(INTDIR)\windows.sbr"
-
-"$(OUTDIR)\aimoscar.bsc" : "$(OUTDIR)" $(BSC32_SBRS)
-    $(BSC32) @<<
-  $(BSC32_FLAGS) $(BSC32_SBRS)
-<<
-
-LINK32=link.exe
-LINK32_FLAGS=wsock32.lib kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /nologo /dll /incremental:yes /pdb:"$(OUTDIR)\Aim.pdb" /debug /machine:I386 /out:"../../bin/debug/plugins/Aim.dll" /implib:"$(OUTDIR)\Aim.lib" /pdbtype:sept 
-LINK32_OBJS= \
-	"$(INTDIR)\aim.obj" \
-	"$(INTDIR)\client.obj" \
-	"$(INTDIR)\connection.obj" \
-	"$(INTDIR)\conv.obj" \
-	"$(INTDIR)\direct_connect.obj" \
-	"$(INTDIR)\error.obj" \
-	"$(INTDIR)\file.obj" \
-	"$(INTDIR)\flap.obj" \
-	"$(INTDIR)\links.obj" \
-	"$(INTDIR)\packets.obj" \
-	"$(INTDIR)\popup.obj" \
-	"$(INTDIR)\proxy.obj" \
-	"$(INTDIR)\server.obj" \
-	"$(INTDIR)\services.obj" \
-	"$(INTDIR)\snac.obj" \
-	"$(INTDIR)\strl.obj" \
-	"$(INTDIR)\theme.obj" \
-	"$(INTDIR)\thread.obj" \
-	"$(INTDIR)\tlv.obj" \
-	"$(INTDIR)\utility.obj" \
-	"$(INTDIR)\windows.obj" \
-	"$(INTDIR)\aim.res"
-
-"..\..\bin\debug\plugins\Aim.dll" : "$(OUTDIR)" $(DEF_FILE) $(LINK32_OBJS)
-    $(LINK32) @<<
-  $(LINK32_FLAGS) $(LINK32_OBJS)
-<<
-
-!ENDIF 
-
 
 !IF "$(NO_EXTERNAL_DEPS)" != "1"
 !IF EXISTS("aimoscar.dep")
@@ -329,6 +307,38 @@ SOURCE=.\aim.cpp
 
 
 "$(INTDIR)\aim.obj"	"$(INTDIR)\aim.sbr" : $(SOURCE) "$(INTDIR)"
+
+
+!ENDIF 
+
+SOURCE=.\avatars.cpp
+
+!IF  "$(CFG)" == "aim - Win32 Release"
+
+
+"$(INTDIR)\avatars.obj" : $(SOURCE) "$(INTDIR)"
+
+
+!ELSEIF  "$(CFG)" == "aim - Win32 Debug"
+
+
+"$(INTDIR)\avatars.obj"	"$(INTDIR)\avatars.sbr" : $(SOURCE) "$(INTDIR)"
+
+
+!ENDIF 
+
+SOURCE=.\away.cpp
+
+!IF  "$(CFG)" == "aim - Win32 Release"
+
+
+"$(INTDIR)\away.obj" : $(SOURCE) "$(INTDIR)"
+
+
+!ELSEIF  "$(CFG)" == "aim - Win32 Debug"
+
+
+"$(INTDIR)\away.obj"	"$(INTDIR)\away.sbr" : $(SOURCE) "$(INTDIR)"
 
 
 !ENDIF 
