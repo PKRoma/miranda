@@ -600,7 +600,7 @@ char* detectUserClient(HANDLE hContact, DWORD dwUin, WORD wVersion, DWORD dwFT1,
             if (CheckContactCapabilities(hContact, CAPF_TYPING))
               szClient = "Icq2Go! (Java)";
             else if (bDirectFlag == 0x04)
-              szClient = "1&1 PC Messenger";
+              szClient = "Pocket Web 1&1";
             else
               szClient = "Icq2Go!";
           }
