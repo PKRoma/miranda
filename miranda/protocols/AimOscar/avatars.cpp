@@ -6,49 +6,53 @@ void avatar_request_handler(TLV &tlv, HANDLE &hContact,char* sn,int &offset)//ch
 {
 	if(!DBGetContactSettingByte(NULL, AIM_PROTOCOL_NAME, AIM_KEY_DA, 0))
 	{
-		int avatar_exist=1;
-		int hash_size=(int)tlv.ubyte(offset+3);
-		char* hash=tlv.part(offset+4,hash_size);
-		char* hash_string=bytes_to_string(hash,hash_size);
-		if(lstrcmp(hash_string,"0201d20472"))//gaim default icon fix- we don't want their blank icon displaying.
+		if(char* norm_sn=normalize_name(sn))
 		{
-			
-			if(char* photo_path=getSetting(hContact,"ContactPhoto","File"))//check for image type in db 
+			int avatar_exist=1;
+			int hash_size=(int)tlv.ubyte(offset+3);
+			char* hash=tlv.part(offset+4,hash_size);
+			char* hash_string=bytes_to_string(hash,hash_size);
+			if(lstrcmp(hash_string,"0201d20472"))//gaim default icon fix- we don't want their blank icon displaying.
 			{
-				char filetype[5];
-				memcpy(&filetype,&photo_path[lstrlen(photo_path)]-4,5);
-				char* filename=strlcat(sn,filetype);
-				char* path;
-				FILE* out=open_contact_file(sn,filename,"rb",path,0);
-				if(out!=NULL)//make sure file exist then check hash in db
+				
+				if(char* photo_path=getSetting(hContact,"ContactPhoto","File"))//check for image type in db 
 				{
-					fclose(out);
-					if(char* hash=getSetting(hContact,AIM_PROTOCOL_NAME,AIM_KEY_AH))
+					char filetype[5];
+					memcpy(&filetype,&photo_path[lstrlen(photo_path)]-4,5);
+					char* filename=strlcat(norm_sn,filetype);
+					char* path;
+					FILE* out=open_contact_file(norm_sn,filename,"rb",path,0);
+					if(out!=NULL)//make sure file exist then check hash in db
 					{
-						avatar_exist=lstrcmp(hash_string,hash);
-						if(!avatar_exist)//NULL means it exist
+						fclose(out);
+						if(char* hash=getSetting(hContact,AIM_PROTOCOL_NAME,AIM_KEY_AH))
 						{
-							LOG("Avatar exist for %s. So attempting to apply it",sn);
-							avatar_apply(hContact,sn,path);
+							avatar_exist=lstrcmp(hash_string,hash);
+							if(!avatar_exist)//NULL means it exist
+							{
+								LOG("Avatar exist for %s. So attempting to apply it",norm_sn);
+								avatar_apply(hContact,norm_sn,path);
+							}
+							delete[] hash;
 						}
-						delete[] hash;
+						delete[] path;
 					}
-					delete[] path;
+					delete[] photo_path;
+					delete[] filename;
 				}
-				delete[] photo_path;
-				delete[] filename;
+				if(avatar_exist)//NULL means it exist
+				{
+					int length=lstrlen(sn)+2+hash_size*2;
+					char* blob= new char[length];
+					mir_snprintf(blob,length,"%s;%s",sn,hash_string);
+					LOG("Starting avatar request thread for %s)",sn);
+					ForkThread((pThreadFunc)avatar_request_thread,blob);
+				}
 			}
-			if(avatar_exist)//NULL means it exist
-			{
-				int length=lstrlen(sn)+2+hash_size*2;
-				char* blob= new char[length];
-				mir_snprintf(blob,length,"%s;%s",sn,hash_string);
-				LOG("Starting avatar request thread for %s)",sn);
-				ForkThread((pThreadFunc)avatar_request_thread,blob);
-			}
+			delete[] hash;
+			delete[] hash_string;
+			delete[] norm_sn;
 		}
-		delete[] hash;
-		delete[] hash_string;
 	}
 }
 void avatar_request_thread(char* data)
