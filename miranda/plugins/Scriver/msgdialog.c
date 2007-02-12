@@ -1940,6 +1940,10 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
 					oldSplitterY = dat->toolbarSize.cy + dat->splitterPos - (rc.bottom - pt.y);
 					if (oldSplitterY < 18) oldSplitterY = 18;
 					if (oldSplitterY > 26) oldSplitterY = 26;
+					if (oldSplitterY == dat->toolbarSize.cy) {
+						break;
+					}
+					pt.y = oldSplitterY - dat->toolbarSize.cy - dat->splitterPos + rc.bottom;
 					dat->toolbarSize.cy = oldSplitterY;
 				}
 				oldSplitterY = dat->splitterPos;
