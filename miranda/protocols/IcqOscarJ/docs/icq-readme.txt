@@ -41,7 +41,7 @@ ______________
 TO-DO List
 __________
 
-0.3.11
+0.3.10
   Server-list support now groups requests - much more faster & reliable
   Full support for sub-groups in Manage server-list dialog
   Simple sub-groups support (optional)
@@ -78,6 +78,7 @@ Improvements:
   Ability to send long offline messages (up to 4096 characters)
   Messsage Error handling is now complete (no more disconnections on long msgs) 
   Support for Aim contacts enhanced
+  Better support for Miranda Ignore module
 
 
 0.3.7.5

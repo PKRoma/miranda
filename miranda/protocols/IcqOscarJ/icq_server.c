@@ -370,6 +370,25 @@ void sendServPacket(icq_packet* pPacket)
 
 
 
+int IsServerOverRate(WORD wFamily, WORD wCommand, int nLevel)
+{
+  WORD wGroup;
+  int result = FALSE;
+
+  EnterCriticalSection(&ratesMutex);
+  wGroup = ratesGroupFromSNAC(gRates, wFamily, wCommand);
+
+  // check if the rate is not over specified level
+  if (ratesNextRateLevel(gRates, wGroup) < ratesGetLimitLevel(gRates, wGroup, nLevel))
+    result = TRUE;
+
+  LeaveCriticalSection(&ratesMutex);
+
+  return result;
+}
+
+
+
 void icq_login(const char* szPassword)
 {
   DBVARIANT dbvServer = {DBVT_DELETED};

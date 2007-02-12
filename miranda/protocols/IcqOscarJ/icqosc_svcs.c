@@ -320,11 +320,9 @@ int IcqSetMyAvatar(WPARAM wParam, LPARAM lParam)
   }
   else
   { // delete user avatar
-    BYTE bEmptyAvatar[4] = {0x00, 0x01, 0x01,0x00};
-
     ICQDeleteContactSetting(NULL, "AvatarFile");
-    ICQDeleteContactSetting(NULL, "AvatarHash");
-    updateServAvatarHash(bEmptyAvatar, 4); // clear hash on server
+    ICQWriteContactSettingBlob(NULL, "AvatarHash", hashEmptyAvatar, 9);
+    updateServAvatarHash(hashEmptyAvatar, 9); // set blank avatar
     iRet = 0;
   }
 
@@ -1105,14 +1103,13 @@ int IcqFileDeny(WPARAM wParam, LPARAM lParam)
     CCSDATA *ccs = (CCSDATA *)lParam;
     DWORD dwUin;
     uid_str szUid;
+    basic_filetransfer *ft = (basic_filetransfer*)ccs->wParam;
 
     if (ICQGetContactSettingUID(ccs->hContact, &dwUin, &szUid))
       return 1; // Invalid contact
 
     if (icqOnline && ccs->wParam && ccs->hContact) 
     {
-      basic_filetransfer *ft = (basic_filetransfer*)ccs->wParam;
-
       if (dwUin && ft->ft_magic == FT_MAGIC_ICQ)
       { // deny old fashioned file transfer
         filetransfer *ft = (filetransfer*)ccs->wParam;
@@ -1129,7 +1126,8 @@ int IcqFileDeny(WPARAM wParam, LPARAM lParam)
         return oftFileDeny(ccs->hContact, ccs->wParam, ccs->lParam);
       }
     }
-    /* FIXME: ft leaks (but can get double freed?) */
+    // Release possible orphan structure
+    SafeReleaseFileTransfer(&ft);
   }
 
   return nReturnValue;
@@ -1462,6 +1460,17 @@ int IcqSendMessage(WPARAM wParam, LPARAM lParam)
 
             return dwCookie;
           }
+          // Rate check
+          if (IsServerOverRate(ICQ_MSG_FAMILY, ICQ_MSG_SRV_SEND, RML_LIMIT))
+          { // rate is too high, the message will not go thru...
+            SAFE_FREE(&pCookieData);
+            if (!dwUin) SAFE_FREE(&pszText);
+
+            dwCookie = GenerateCookie(0);
+            icq_SendProtoAck(ccs->hContact, dwCookie, ACKRESULT_FAILED, ACKTYPE_MESSAGE, ICQTranslate("The message could not be delivered. You are sending too fast. Wait a while and try again."));
+
+            return dwCookie;
+          }
 
           dwCookie = icq_SendChannel1Message(dwUin, szUID, ccs->hContact, pszText, pCookieData);
         }
@@ -1480,6 +1489,16 @@ int IcqSendMessage(WPARAM wParam, LPARAM lParam)
 
             dwCookie = GenerateCookie(0);
             icq_SendProtoAck(ccs->hContact, dwCookie, ACKRESULT_FAILED, ACKTYPE_MESSAGE, ICQTranslate("The message could not be delivered, it is too long."));
+
+            return dwCookie;
+          }
+          // Rate check
+          if (IsServerOverRate(ICQ_MSG_FAMILY, ICQ_MSG_SRV_SEND, RML_LIMIT))
+          { // rate is too high, the message will not go thru...
+            SAFE_FREE(&pCookieData);
+
+            dwCookie = GenerateCookie(0);
+            icq_SendProtoAck(ccs->hContact, dwCookie, ACKRESULT_FAILED, ACKTYPE_MESSAGE, ICQTranslate("The message could not be delivered. You are sending too fast. Wait a while and try again."));
 
             return dwCookie;
           }
@@ -1646,6 +1665,17 @@ int IcqSendMessageW(WPARAM wParam, LPARAM lParam)
 
             return dwCookie;
           }
+          // Rate check
+          if (IsServerOverRate(ICQ_MSG_FAMILY, ICQ_MSG_SRV_SEND, RML_LIMIT))
+          { // rate is too high, the message will not go thru...
+            SAFE_FREE(&pCookieData);
+            if (!dwUin) SAFE_FREE(&pszText);
+
+            dwCookie = GenerateCookie(0);
+            icq_SendProtoAck(ccs->hContact, dwCookie, ACKRESULT_FAILED, ACKTYPE_MESSAGE, ICQTranslate("The message could not be delivered. You are sending too fast. Wait a while and try again."));
+
+            return dwCookie;
+          }
           dwCookie = icq_SendChannel1MessageW(dwUin, szUID, ccs->hContact, pszText, pCookieData);
 
           if (!dwUin) SAFE_FREE(&pszText);
@@ -1669,6 +1699,17 @@ int IcqSendMessageW(WPARAM wParam, LPARAM lParam)
 
             dwCookie = GenerateCookie(0);
             icq_SendProtoAck(ccs->hContact, dwCookie, ACKRESULT_FAILED, ACKTYPE_MESSAGE, ICQTranslate("The message could not be delivered, it is too long."));
+
+            return dwCookie;
+          }
+          // Rate check
+          if (IsServerOverRate(ICQ_MSG_FAMILY, ICQ_MSG_SRV_SEND, RML_LIMIT))
+          { // rate is too high, the message will not go thru...
+            SAFE_FREE(&pCookieData);
+            SAFE_FREE(&utf8msg);
+
+            dwCookie = GenerateCookie(0);
+            icq_SendProtoAck(ccs->hContact, dwCookie, ACKRESULT_FAILED, ACKTYPE_MESSAGE, ICQTranslate("The message could not be delivered. You are sending too fast. Wait a while and try again."));
 
             return dwCookie;
           }
@@ -1756,6 +1797,16 @@ int IcqSendUrl(WPARAM wParam, LPARAM lParam)
           if (iRes) return iRes; // we succeded, return
         }
 
+        // Rate check
+        if (IsServerOverRate(ICQ_MSG_FAMILY, ICQ_MSG_SRV_SEND, RML_LIMIT))
+        { // rate is too high, the message will not go thru...
+          SAFE_FREE(&pCookieData);
+
+          dwCookie = GenerateCookie(0);
+          icq_SendProtoAck(ccs->hContact, dwCookie, ACKRESULT_FAILED, ACKTYPE_URL, ICQTranslate("The message could not be delivered. You are sending too fast. Wait a while and try again."));
+
+          return dwCookie;
+        }
         // Select channel and send
         if (!CheckContactCapabilities(ccs->hContact, CAPF_SRV_RELAY) ||
           wRecipientStatus == ID_STATUS_OFFLINE)
@@ -1916,6 +1967,24 @@ int IcqSendContacts(WPARAM wParam, LPARAM lParam)
               }
             }
 
+            // Rate check
+            if (IsServerOverRate(ICQ_MSG_FAMILY, ICQ_MSG_SRV_SEND, RML_LIMIT))
+            { // rate is too high, the message will not go thru...
+              SAFE_FREE(&pCookieData);
+              SAFE_FREE(&pBody);
+              for(i = 0; i < nContacts; i++)
+              {
+                SAFE_FREE(&contacts[i].szNick);
+                SAFE_FREE(&contacts[i].uid);
+              }
+
+              SAFE_FREE(&contacts);
+
+              dwCookie = GenerateCookie(0);
+              icq_SendProtoAck(ccs->hContact, dwCookie, ACKRESULT_FAILED, ACKTYPE_CONTACTS, ICQTranslate("The message could not be delivered. You are sending too fast. Wait a while and try again."));
+
+              return dwCookie;
+            }
             // Select channel and send
             if (!CheckContactCapabilities(ccs->hContact, CAPF_SRV_RELAY) ||
               wRecipientStatus == ID_STATUS_OFFLINE)

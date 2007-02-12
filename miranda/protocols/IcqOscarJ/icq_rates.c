@@ -5,7 +5,7 @@
 // Copyright © 2000,2001 Richard Hughes, Roland Rabien, Tristan Van de Vreede
 // Copyright © 2001,2002 Jon Keating, Richard Hughes
 // Copyright © 2002,2003,2004 Martin Öberg, Sam Kothari, Robert Rainwater
-// Copyright © 2004,2005,2006 Joe Kucera
+// Copyright © 2004,2005,2006,2007 Joe Kucera
 // 
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License
@@ -66,7 +66,8 @@ rates* ratesCreate(BYTE* pBuffer, WORD wLen)
       unpackDWord(&pBuffer, &pGroup->dwWindowSize);
       unpackDWord(&pBuffer, &pGroup->dwClearLevel);
       unpackDWord(&pBuffer, &pGroup->dwAlertLevel);
-      pBuffer += 12;
+      unpackDWord(&pBuffer, &pGroup->dwLimitLevel);
+      pBuffer += 8;
       unpackDWord(&pBuffer, &pGroup->dwMaxLevel);
       pBuffer += 5;
       wLen -= 35;
@@ -262,6 +263,9 @@ int ratesGetLimitLevel(rates* pRates, WORD wGroup, int nLevel)
     case RML_ALERT:
       return pGroup->dwAlertLevel;
 
+    case RML_LIMIT:
+      return pGroup->dwLimitLevel;
+
     case RML_IDLE_10:
       return pGroup->dwClearLevel + ((pGroup->dwMaxLevel - pGroup->dwClearLevel)/10);
 
@@ -340,6 +344,21 @@ static void RatesTimer1()
   EnterCriticalSection(&ratesListsMutex);
   // take from queue, execute
   item = pendingList1[0];
+
+  EnterCriticalSection(&ratesMutex);
+  if (ratesNextRateLevel(gRates, item->wGroup) < ratesGetLimitLevel(gRates, item->wGroup, RML_IDLE_30))
+  { // the rate is higher, keep sleeping
+    int nDelay = ratesDelayToLevel(gRates, item->wGroup, ratesGetLimitLevel(gRates, item->wGroup, RML_IDLE_50) + 200);
+
+    LeaveCriticalSection(&ratesMutex);
+    LeaveCriticalSection(&ratesListsMutex);
+    if (nDelay < 10) nDelay = 10;
+    InitDelay(nDelay, RatesTimer1);
+
+    return;
+  }
+  LeaveCriticalSection(&ratesMutex);
+
   if (pendingListSize1 > 1)
   { // we need to keep order
     memmove(&pendingList1[0], &pendingList1[1], (pendingListSize1 - 1)*sizeof(rate_record*));
@@ -436,6 +455,21 @@ static void RatesTimer2()
   EnterCriticalSection(&ratesListsMutex);
   // take from queue, execute
   item = pendingList2[0];
+
+  EnterCriticalSection(&ratesMutex);
+  if (ratesNextRateLevel(gRates, item->wGroup) < ratesGetLimitLevel(gRates, item->wGroup, RML_IDLE_10))
+  { // the rate is higher, keep sleeping
+    int nDelay = ratesDelayToLevel(gRates, item->wGroup, ratesGetLimitLevel(gRates, item->wGroup, RML_IDLE_30) + 100);
+
+    LeaveCriticalSection(&ratesMutex);
+    LeaveCriticalSection(&ratesListsMutex);
+    if (nDelay < 10) nDelay = 10;
+    InitDelay(nDelay, RatesTimer2);
+
+    return;
+  }
+
+  LeaveCriticalSection(&ratesMutex);
   if (pendingListSize2 > 1)
   { // we need to keep order
     memmove(&pendingList2[0], &pendingList2[1], (pendingListSize2 - 1)*sizeof(rate_record*));

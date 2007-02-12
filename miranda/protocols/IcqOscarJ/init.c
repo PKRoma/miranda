@@ -96,7 +96,10 @@ PLUGININFO __declspec(dllexport) *MirandaPluginInfo(DWORD mirandaVersion)
     gbUnicodeAPI = (GetVersion() & 0x80000000) == 0;
     strcpy(pluginName, "IcqOscarJ Protocol");
     if (gbUnicodeAPI)
+    {
       strcat(pluginName, " (Unicode)");
+      pluginInfo.isTransient = 1; // UNICODE_AWARE
+    }
     pluginInfo.shortName = pluginName;
     MIRANDA_VERSION = mirandaVersion;
 

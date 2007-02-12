@@ -79,6 +79,9 @@ typedef struct avatarrequest_t
 #define ART_UPLOAD  2
 #define ART_BLOCK   4
 
+
+BYTE hashEmptyAvatar[9] = {0x00, 0x01, 0x00, 0x05, 0x02, 0x01, 0xD2, 0x04, 0x72};
+
 avatarthreadstartinfo* currentAvatarThread; 
 int pendingAvatarsStart = 1;
 static avatarrequest* pendingRequests = NULL;
@@ -401,7 +404,7 @@ static void NetLog_Hash(const char* pszIdent, unsigned char* pHash, int nHashLen
 
 
 // handle Contact's avatar hash
-void handleAvatarContactHash(DWORD dwUIN, char* szUID, HANDLE hContact, unsigned char* pHash, unsigned int nHashLen, WORD wOldStatus)
+void handleAvatarContactHash(DWORD dwUIN, char* szUID, HANDLE hContact, unsigned char* pHash, int nHashLen, WORD wOldStatus)
 {
   DBVARIANT dbv;
   int bJob = FALSE;
@@ -409,8 +412,10 @@ void handleAvatarContactHash(DWORD dwUIN, char* szUID, HANDLE hContact, unsigned
   int dwPaFormat;
   int avatarType = -1;
   BYTE* pAvatarHash = NULL;
-  unsigned int cbAvatarHash;
+  int cbAvatarHash;
   BYTE emptyItem[0x10] = {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};
+
+  if (!gbAvatarsEnabled) return; // only if enabled
 
   if (nHashLen < 4) return; // nothing to work with
 
@@ -421,7 +426,7 @@ void handleAvatarContactHash(DWORD dwUIN, char* szUID, HANDLE hContact, unsigned
     BYTE itemFlags = pHash[2];
 
     // just some validity check
-    if ((unsigned int)(itemLen + 4) > nHashLen) 
+    if (itemLen + 4 > nHashLen) 
       itemLen = nHashLen - 4;
 
     if (memcmp(pHash+4, emptyItem, itemLen > 0x10 ? 0x10 : itemLen))
@@ -455,36 +460,86 @@ void handleAvatarContactHash(DWORD dwUIN, char* szUID, HANDLE hContact, unsigned
   }
 
   if (avatarType != -1)
-  {
-    if (gbAvatarsEnabled)
-    { // check settings, should we request avatar immediatelly
-      BYTE bAutoLoad = ICQGetContactSettingByte(NULL, "AvatarsAutoLoad", DEFAULT_LOAD_AVATARS);
+  { // check settings, should we request avatar immediatelly
+    BYTE bAutoLoad = ICQGetContactSettingByte(NULL, "AvatarsAutoLoad", DEFAULT_LOAD_AVATARS);
 
-      if (ICQGetContactSetting(hContact, "AvatarHash", &dbv))
-      { // we not found old hash, i.e. get new avatar
+    if (avatarType == AVATAR_HASH_STATIC && cbAvatarHash == 0x09 && !memcmp(pAvatarHash + 4, hashEmptyAvatar + 4, 0x05))
+    { // empty avatar - unlink image, clear hash
+      ICQDeleteContactSetting(hContact, "AvatarHash");
+      LinkContactPhotoToFile(hContact, NULL);
+
+      ICQBroadcastAck(hContact, ACKTYPE_AVATAR, ACKRESULT_STATUS, NULL, (LPARAM)NULL);
+      return;
+    }
+
+    if (ICQGetContactSetting(hContact, "AvatarHash", &dbv))
+    { // we not found old hash, i.e. get new avatar
+      int fileState = IsAvatarSaved(hContact, pAvatarHash, cbAvatarHash);
+
+      // check saved hash and file, if equal only store hash
+      if (!fileState)
+      { // hashes are the same
+        dwPaFormat = ICQGetContactSettingByte(hContact, "AvatarType", PA_FORMAT_UNKNOWN);
+
+        GetFullAvatarFileName(dwUIN, szUID, dwPaFormat, szAvatar, MAX_PATH);
+        if (access(szAvatar, 0) == 0)
+        { // the file is there, link to contactphoto, save hash
+          NetLog_Server("Avatar is known, hash stored, linked to file.");
+
+          ICQWriteContactSettingBlob(hContact, "AvatarHash", pAvatarHash, cbAvatarHash);
+
+          if (dwPaFormat != PA_FORMAT_UNKNOWN && dwPaFormat != PA_FORMAT_XML)
+            LinkContactPhotoToFile(hContact, szAvatar);
+          else  // the format is not supported unlink
+            LinkContactPhotoToFile(hContact, NULL);
+
+          ICQBroadcastAck(hContact, ACKTYPE_AVATAR, ACKRESULT_STATUS, NULL, (LPARAM)NULL);
+        }
+        else // the file is lost, request avatar again
+          bJob = TRUE;
+      }
+      else
+      { // the hash is not the one we want, request avatar
+        if (fileState == 2)
+        { // the hash is different, unlink contactphoto
+          LinkContactPhotoToFile(hContact, NULL);
+        }
+        bJob = TRUE;
+      }
+    }
+    else
+    { // we found hash check if it changed or not
+      NetLog_Hash("Old", dbv.pbVal, dbv.cpbVal);
+      if ((dbv.cpbVal != cbAvatarHash) || memcmp(dbv.pbVal, pAvatarHash, cbAvatarHash))
+      { // the hash is different, request new avatar
+        LinkContactPhotoToFile(hContact, NULL); // unlink photo
+        bJob = TRUE;
+      }
+      else
+      { // the hash does not changed, check if we have correct file
         int fileState = IsAvatarSaved(hContact, pAvatarHash, cbAvatarHash);
 
-        // check saved hash and file, if equal only store hash
+        // we should have file, check if the file really exists
         if (!fileState)
-        { // hashes are the same
+        {
           dwPaFormat = ICQGetContactSettingByte(hContact, "AvatarType", PA_FORMAT_UNKNOWN);
-
-          GetFullAvatarFileName(dwUIN, szUID, dwPaFormat, szAvatar, MAX_PATH);
-          if (access(szAvatar, 0) == 0)
-          { // the file is there, link to contactphoto, save hash
-            NetLog_Server("Avatar is known, hash stored, linked to file.");
-
-            ICQWriteContactSettingBlob(hContact, "AvatarHash", pAvatarHash, cbAvatarHash);
-
-            if (dwPaFormat != PA_FORMAT_UNKNOWN && dwPaFormat != PA_FORMAT_XML)
-              LinkContactPhotoToFile(hContact, szAvatar);
-            else  // the format is not supported unlink
-              LinkContactPhotoToFile(hContact, NULL);
-
-            ICQBroadcastAck(hContact, ACKTYPE_AVATAR, ACKRESULT_STATUS, NULL, (LPARAM)NULL);
+          if (dwPaFormat == PA_FORMAT_UNKNOWN)
+          { // we do not know the format, get avatar again
+            bJob = 2;
           }
-          else // the file is lost, request avatar again
-            bJob = TRUE;
+          else
+          {
+            GetFullAvatarFileName(dwUIN, szUID, dwPaFormat, szAvatar, MAX_PATH);
+            if (access(szAvatar, 0) == 0)
+            { // the file exists, so try to update photo setting
+              if (dwPaFormat != PA_FORMAT_XML && dwPaFormat != PA_FORMAT_UNKNOWN)
+              {
+                LinkContactPhotoToFile(hContact, szAvatar);
+              }
+            }
+            else // the file was lost, get it again
+              bJob = 2;
+          }
         }
         else
         { // the hash is not the one we want, request avatar
@@ -492,102 +547,58 @@ void handleAvatarContactHash(DWORD dwUIN, char* szUID, HANDLE hContact, unsigned
           { // the hash is different, unlink contactphoto
             LinkContactPhotoToFile(hContact, NULL);
           }
-          bJob = TRUE;
+          bJob = 2;
         }
       }
-      else
-      { // we found hash check if it changed or not
-        NetLog_Hash("Old", dbv.pbVal, dbv.cpbVal);
-        if ((dbv.cpbVal != cbAvatarHash) || memcmp(dbv.pbVal, pAvatarHash, cbAvatarHash))
-        { // the hash is different, request new avatar
-          LinkContactPhotoToFile(hContact, NULL); // unlink photo
-          bJob = TRUE;
-        }
-        else
-        { // the hash does not changed, check if we have correct file
-          int fileState = IsAvatarSaved(hContact, pAvatarHash, cbAvatarHash);
+      ICQFreeVariant(&dbv);
+    }
 
-          // we should have file, check if the file really exists
-          if (!fileState)
-          {
-            dwPaFormat = ICQGetContactSettingByte(hContact, "AvatarType", PA_FORMAT_UNKNOWN);
-            if (dwPaFormat == PA_FORMAT_UNKNOWN)
-            { // we do not know the format, get avatar again
-              bJob = 2;
-            }
-            else
-            {
-              GetFullAvatarFileName(dwUIN, szUID, dwPaFormat, szAvatar, MAX_PATH);
-              if (access(szAvatar, 0) == 0)
-              { // the file exists, so try to update photo setting
-                if (dwPaFormat != PA_FORMAT_XML && dwPaFormat != PA_FORMAT_UNKNOWN)
-                {
-                  LinkContactPhotoToFile(hContact, szAvatar);
-                }
-              }
-              else // the file was lost, get it again
-                bJob = 2;
-            }
-          }
-          else
-          { // the hash is not the one we want, request avatar
-            if (fileState == 2)
-            { // the hash is different, unlink contactphoto
-              LinkContactPhotoToFile(hContact, NULL);
-            }
-            bJob = 2;
-          }
-        }
-        ICQFreeVariant(&dbv);
-      }
-
-      if (bJob)
+    if (bJob)
+    {
+      if (bJob == TRUE)
       {
-        if (bJob == TRUE)
+        NetLog_Hash("New", pAvatarHash, cbAvatarHash);
+        NetLog_Server("User has Avatar, new hash stored.");
+
+        // Remove possible block - hash changed, try again.
+        EnterCriticalSection(&cookieMutex);
         {
-          NetLog_Hash("New", pAvatarHash, cbAvatarHash);
-          NetLog_Server("User has Avatar, new hash stored.");
-
-          // Remove possible block - hash changed, try again.
-          EnterCriticalSection(&cookieMutex);
+          avatarrequest* ar = pendingRequests;
+        
+          while (ar)
           {
-            avatarrequest* ar = pendingRequests;
-          
-            while (ar)
-            {
-              if (ar->hContact == hContact && ar->type == ART_BLOCK)
-              { // found one, remove
-                RemoveAvatarRequestFromQueue(ar);
-                SAFE_FREE(&ar);
-                break;
-              }
-              ar = ar->pNext;
+            if (ar->hContact == hContact && ar->type == ART_BLOCK)
+            { // found one, remove
+              RemoveAvatarRequestFromQueue(ar);
+              SAFE_FREE(&ar);
+              break;
             }
+            ar = ar->pNext;
           }
-          LeaveCriticalSection(&cookieMutex);
         }
-        else
-          NetLog_Server("User has Avatar, file is missing.");
-
-        ICQWriteContactSettingBlob(hContact, "AvatarHash", pAvatarHash, cbAvatarHash);
-
-        ICQBroadcastAck(hContact, ACKTYPE_AVATAR, ACKRESULT_STATUS, NULL, (LPARAM)NULL);
-
-        if (bAutoLoad)
-        { // auto-load is on, so request the avatar now, otherwise we are done
-          GetAvatarFileName(dwUIN, szUID, szAvatar, MAX_PATH);
-          GetAvatarData(hContact, dwUIN, szUID, pAvatarHash, cbAvatarHash, szAvatar);
-        } // avatar request sent or added to queue
+        LeaveCriticalSection(&cookieMutex);
       }
       else
-      {
-        NetLog_Server("User has Avatar.");
-      }
+        NetLog_Server("User has Avatar, file is missing.");
+
+      ICQWriteContactSettingBlob(hContact, "AvatarHash", pAvatarHash, cbAvatarHash);
+
+      ICQBroadcastAck(hContact, ACKTYPE_AVATAR, ACKRESULT_STATUS, NULL, (LPARAM)NULL);
+
+      if (bAutoLoad)
+      { // auto-load is on, so request the avatar now, otherwise we are done
+        GetAvatarFileName(dwUIN, szUID, szAvatar, MAX_PATH);
+        GetAvatarData(hContact, dwUIN, szUID, pAvatarHash, cbAvatarHash, szAvatar);
+      } // avatar request sent or added to queue
+    }
+    else
+    {
+      NetLog_Server("User has Avatar.");
     }
   }
   else if (wOldStatus == ID_STATUS_OFFLINE)
   { // if user were offline, and now hash not found, clear the hash
-    ICQDeleteContactSetting(hContact, "AvatarHash"); // TODO: need more testing
+    ICQDeleteContactSetting(hContact, "AvatarHash");
   }
 }
 

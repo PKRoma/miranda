@@ -161,7 +161,9 @@ void handleDirectMessage(directconnect* dc, PBYTE buf, WORD wLen)
           handleMessageTypes(dc->dwRemoteUin, time(NULL), 0, 0, wCookie, dc->wVersion, (int)bMsgType, (int)bMsgFlags, 0, (DWORD)wLen, wTextLen, buf, TRUE);
     
           // Send acknowledgement
-          if (bMsgType == MTYPE_PLAIN || bMsgType == MTYPE_URL || bMsgType == MTYPE_CONTACTS)
+          if ((bMsgType == MTYPE_PLAIN && !CallService(MS_IGNORE_ISIGNORED, (WPARAM)dc->hContact, IGNOREEVENT_MESSAGE))
+            || (bMsgType == MTYPE_URL && !CallService(MS_IGNORE_ISIGNORED, (WPARAM)dc->hContact, IGNOREEVENT_URL))
+            || bMsgType == MTYPE_CONTACTS)
           {
             icq_sendDirectMsgAck(dc, wCookie, bMsgType, bMsgFlags, CAP_RTFMSGS);
           }
@@ -297,7 +299,8 @@ void handleDirectGreetingMessage(directconnect* dc, PBYTE buf, WORD wLen, WORD w
   }
   else if (typeId && wCommand == DIRECT_MESSAGE)
   {
-    if (typeId == MTYPE_URL || typeId == MTYPE_CONTACTS)
+    if ((typeId == MTYPE_URL && !CallService(MS_IGNORE_ISIGNORED, (WPARAM)dc->hContact, IGNOREEVENT_URL))
+      || typeId == MTYPE_CONTACTS)
     { 
       icq_sendDirectMsgAck(dc, wCookie, (BYTE)typeId, 0, CAP_RTFMSGS);
     }

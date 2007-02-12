@@ -786,8 +786,11 @@ static void parseTLV2711(DWORD dwUin, HANDLE hContact, DWORD dwID1, DWORD dwID2,
         // Everything else
       default:
         {
+          HANDLE hIgnoreContact = (hContact == INVALID_HANDLE_VALUE) ? NULL : hContact;
           // Only ack message packets
-          if (bMsgType == MTYPE_PLAIN || bMsgType == MTYPE_URL || bMsgType == MTYPE_CONTACTS)
+          if ((bMsgType == MTYPE_PLAIN && !CallService(MS_IGNORE_ISIGNORED, (WPARAM)hIgnoreContact, IGNOREEVENT_MESSAGE)) 
+            || (bMsgType == MTYPE_URL && !CallService(MS_IGNORE_ISIGNORED, (WPARAM)hIgnoreContact, IGNOREEVENT_URL)) 
+            || bMsgType == MTYPE_CONTACTS)
             icq_sendAdvancedMsgAck(dwUin, dwID1, dwID2, wCookie, bMsgType, bFlags);
           handleMessageTypes(dwUin, time(NULL), dwID1, dwID2, wCookie, wVersion, bMsgType, bFlags, wAckType, tlv->wLen - 53, wMsgLen, pDataBuf, FALSE);
           break;
@@ -932,7 +935,12 @@ void parseServerGreeting(BYTE* pDataBuf, WORD wLen, WORD wMsgLen, DWORD dwUin, B
     }
     else if (typeId)
     {
-      if (typeId == MTYPE_URL || typeId == MTYPE_CONTACTS)
+      HANDLE hIgnoreContact = HContactFromUIN(dwUin, NULL);
+
+      if (hIgnoreContact == INVALID_HANDLE_VALUE) hIgnoreContact = NULL;
+
+      if ((typeId == MTYPE_URL && !CallService(MS_IGNORE_ISIGNORED, (WPARAM)hIgnoreContact, IGNOREEVENT_URL))
+        || typeId == MTYPE_CONTACTS)
         icq_sendAdvancedMsgAck(dwUin, dwID1, dwID2, wCookie, (BYTE)typeId, bFlags);
 
       handleMessageTypes(dwUin, time(NULL), dwID1, dwID2, wCookie, wVersion, typeId, bFlags, wAckType, dwLengthToEnd, (WORD)dwDataLen, pDataBuf, FALSE);
@@ -2545,6 +2553,20 @@ static void handleTypingNotification(unsigned char* buf, WORD wLen, WORD wFlags,
   case MTN_BEGUN:
     CallService(MS_PROTO_CONTACTISTYPING, (WPARAM)hContact, (LPARAM)60);
     NetLog_Server("%s is typing a message (ch %u).", strUID(dwUin, szUID), wChannel);
+    break;
+
+  case MTN_WINDOW_CLOSED:
+    {
+      char szFormat[MAX_PATH];
+      char szMsg[MAX_PATH];
+      char *nick = NickFromHandleUtf(hContact);
+
+      null_snprintf(szMsg, MAX_PATH, ICQTranslateUtfStatic("Contact \"%s\" has closed the message window.", szFormat), nick);
+      ShowPopUpMsg(hContact, ICQTranslateUtfStatic("ICQ Note", szFormat), szMsg, LOG_NOTE);
+      SAFE_FREE(&nick);
+
+      NetLog_Server("%s has closed the message window.", strUID(dwUin, szUID));
+    }
     break;
 
   default:

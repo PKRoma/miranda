@@ -533,22 +533,9 @@ DWORD icq_sendGetInfoServ(HANDLE hContact, DWORD dwUin, int bMinimal, int bManua
   icq_packet packet;
   DWORD dwCookie;
   fam15_cookie_data *pCookieData = NULL;
-  WORD wGroup;
-  int nLimitLevel;
 
-  EnterCriticalSection(&ratesMutex);
-  wGroup = ratesGroupFromSNAC(gRates, ICQ_EXTENSIONS_FAMILY, ICQ_META_CLI_REQ);
-  if (bManual)
-    nLimitLevel = ratesGetLimitLevel(gRates, wGroup, RML_IDLE_10);
-  else
-    nLimitLevel = ratesGetLimitLevel(gRates, wGroup, RML_IDLE_50);
-
-  if (ratesNextRateLevel(gRates, wGroup) < nLimitLevel)
-  {
-    LeaveCriticalSection(&ratesMutex);
+  if (IsServerOverRate(ICQ_EXTENSIONS_FAMILY, ICQ_META_CLI_REQ, bManual ? RML_IDLE_10 : RML_IDLE_50))
     return 0;
-  }
-  LeaveCriticalSection(&ratesMutex);
 
   pCookieData = SAFE_MALLOC(sizeof(fam15_cookie_data));
   dwCookie = AllocateCookie(CKT_FAMILYSPECIAL, 0, hContact, (void*)pCookieData);
@@ -579,16 +566,9 @@ DWORD icq_sendGetAimProfileServ(HANDLE hContact, char* szUid)
   DWORD dwCookie;
   fam15_cookie_data *pCookieData = NULL;
   BYTE bUIDlen = strlennull(szUid);
-  WORD wGroup;
 
-  EnterCriticalSection(&ratesMutex);
-  wGroup = ratesGroupFromSNAC(gRates, ICQ_LOCATION_FAMILY, ICQ_LOCATION_REQ_USER_INFO);
-  if (ratesNextRateLevel(gRates, wGroup) < ratesGetLimitLevel(gRates, wGroup, RML_IDLE_10))
-  {
-    LeaveCriticalSection(&ratesMutex);
+  if (IsServerOverRate(ICQ_LOCATION_FAMILY, ICQ_LOCATION_REQ_USER_INFO, RML_IDLE_10))
     return 0;
-  }
-  LeaveCriticalSection(&ratesMutex);
 
   pCookieData = SAFE_MALLOC(sizeof(fam15_cookie_data));
   dwCookie = AllocateCookie(CKT_FAMILYSPECIAL, ICQ_LOCATION_REQ_USER_INFO, hContact, (void*)pCookieData);
@@ -612,16 +592,9 @@ DWORD icq_sendGetAwayMsgServ(HANDLE hContact, DWORD dwUin, int type, WORD wVersi
   icq_packet packet;
   DWORD dwCookie;
   message_cookie_data *pCookieData = NULL;
-  WORD wGroup;
 
-  EnterCriticalSection(&ratesMutex);
-  wGroup = ratesGroupFromSNAC(gRates, ICQ_MSG_FAMILY, ICQ_MSG_SRV_SEND);
-  if (ratesNextRateLevel(gRates, wGroup) < ratesGetLimitLevel(gRates, wGroup, RML_IDLE_30))
-  {
-    LeaveCriticalSection(&ratesMutex);
+  if (IsServerOverRate(ICQ_MSG_FAMILY, ICQ_MSG_SRV_SEND, RML_IDLE_30))
     return 0;
-  }
-  LeaveCriticalSection(&ratesMutex);
 
   pCookieData = CreateMessageCookie(MTYPE_AUTOAWAY, (BYTE)type);
   dwCookie = AllocateCookie(CKT_MESSAGE, 0, hContact, (void*)pCookieData);
