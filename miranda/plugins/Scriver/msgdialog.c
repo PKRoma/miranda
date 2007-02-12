@@ -1929,17 +1929,23 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
 			RECT rc;
 			RECT rcLog;
 			if ((HWND) lParam == GetDlgItem(hwndDlg, IDC_SPLITTER)) {
+				BOOL isCtrl = GetKeyState(VK_CONTROL) & 0x8000;
 				int oldSplitterY;
 				GetWindowRect(GetDlgItem(hwndDlg, IDC_LOG), &rcLog);
 				GetClientRect(hwndDlg, &rc);
 				pt.x = 0;
 				pt.y = wParam;
 				ScreenToClient(hwndDlg, &pt);
-
+				if (isCtrl) {
+					oldSplitterY = dat->toolbarSize.cy + dat->splitterPos - (rc.bottom - pt.y);
+					if (oldSplitterY < 18) oldSplitterY = 18;
+					if (oldSplitterY > 28) oldSplitterY = 26;
+					dat->toolbarSize.cy = oldSplitterY;
+				}
 				oldSplitterY = dat->splitterPos;
 				dat->splitterPos = rc.bottom - pt.y;
-				GetWindowRect(GetDlgItem(hwndDlg, IDC_MESSAGE), &rc);
 			/*
+				GetWindowRect(GetDlgItem(hwndDlg, IDC_MESSAGE), &rc);
 				if (rc.bottom - rc.top + (dat->splitterPos - oldSplitterY) < dat->minEditBoxSize.cy)
 					dat->splitterPos = oldSplitterY + dat->minEditBoxSize.cy - (rc.bottom - rc.top);
 				if (rcLog.bottom - rcLog.top - (dat->splitterPos - oldSplitterY) < dat->minEditBoxSize.cy)
