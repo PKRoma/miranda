@@ -255,7 +255,7 @@ static void JabberFtReceiveFinal( BOOL success, void *userdata );
 
 void JabberFtHandleSiRequest( XmlNode *iqNode )
 {
-	TCHAR* from, *sid, *str, *filename;
+	TCHAR* from, *sid, *str, *szId, *filename;
 	XmlNode *siNode, *fileNode, *featureNode, *xNode, *fieldNode, *optionNode, *n;
 	int filesize, i;
 	JABBER_FT_TYPE ftType;
@@ -265,9 +265,8 @@ void JabberFtHandleSiRequest( XmlNode *iqNode )
 		  ( str=JabberXmlGetAttrValue( iqNode, "type" ))==NULL || _tcscmp( str, _T("set")) ||
 		  ( siNode=JabberXmlGetChildWithGivenAttrValue( iqNode, "si", "xmlns", _T("http://jabber.org/protocol/si"))) == NULL )
 		return;
-	
-	int id = JabberGetPacketID( iqNode );
 
+	szId = JabberXmlGetAttrValue( iqNode, "id" );
 	if (( sid=JabberXmlGetAttrValue( siNode, "id" ))!=NULL &&
 		( fileNode=JabberXmlGetChildWithGivenAttrValue( siNode, "file", "xmlns", _T("http://jabber.org/protocol/si/profile/file-transfer")))!=NULL &&
 		( filename=JabberXmlGetAttrValue( fileNode, "name" ))!=NULL &&
@@ -299,7 +298,7 @@ void JabberFtHandleSiRequest( XmlNode *iqNode )
 				ft->jid = mir_tstrdup( from );
 				ft->std.hContact = JabberHContactFromJID( from );
 				ft->sid = mir_tstrdup( sid );
-				ft->iqId = id;
+				ft->iqId = mir_tstrdup( szId );
 				ft->type = ftType;
 				ft->std.totalFiles = 1;
 				ft->std.currentFile = localFilename;
@@ -322,7 +321,7 @@ void JabberFtHandleSiRequest( XmlNode *iqNode )
 			}
 			else {
 				// Unknown stream mechanism
-				XmlNodeIq iq( "error", id, from );
+				XmlNodeIq iq( "error", szId, from );
 				XmlNode* e = iq.addChild( "error" ); e->addAttr( "code", 400 ); e->addAttr( "type", "cancel" );
 				XmlNode* br = e->addChild( "bad-request" ); br->addAttr( "xmlns", "urn:ietf:params:xml:ns:xmpp-stanzas" );
 				XmlNode* nvs = e->addChild( "no-valid-streams" ); nvs->addAttr( "xmlns", "http://jabber.org/protocol/si" );
@@ -331,7 +330,7 @@ void JabberFtHandleSiRequest( XmlNode *iqNode )
 	}	}	}
 
 	// Bad stream initiation, reply with bad-profile
-	XmlNodeIq iq( "error", id, from );
+	XmlNodeIq iq( "error", szId, from );
 	XmlNode* e = iq.addChild( "error" ); e->addAttr( "code", 400 ); e->addAttr( "type", "cancel" );
 	XmlNode* br = e->addChild( "bad-request" ); br->addAttr( "xmlns", "urn:ietf:params:xml:ns:xmpp-stanzas" );
 	XmlNode* nvs = e->addChild( "bad-profile" ); nvs->addAttr( "xmlns", "http://jabber.org/protocol/si" );

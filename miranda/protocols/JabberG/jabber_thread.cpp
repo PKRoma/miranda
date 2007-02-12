@@ -1330,7 +1330,7 @@ static void JabberProcessPresence( XmlNode *node, void *userdata )
 /////////////////////////////////////////////////////////////////////////////////////////
 // Handles various <iq... requests
 
-static void JabberProcessIqVersion( int id, XmlNode* node )
+static void JabberProcessIqVersion( TCHAR* idStr, XmlNode* node )
 {
 	TCHAR* from;
 	if (( from=JabberXmlGetAttrValue( node, "from" )) == NULL )
@@ -1371,7 +1371,7 @@ static void JabberProcessIqVersion( int id, XmlNode* node )
 	mir_sntprintf( fullVer, 1000, _T("Miranda IM ") _T(TCHAR_STR_PARAM) _T(" (Jabber v.") _T(TCHAR_STR_PARAM) _T(" [%s])") _T(TCHAR_STR_PARAM),
 		mversion, __VERSION_STRING, jabberThreadInfo->resource, bSecureIM ? " (SecureIM)":"" );
 
-	XmlNodeIq iq( "result", id, from );
+	XmlNodeIq iq( "result", idStr, from );
 	XmlNode* query = iq.addQuery( "jabber:iq:version" );
 	query->addChild( "name", fullVer ); query->addChild( "version", version ); query->addChild( "os", os );
 	JabberSend( jabberThreadInfo->s, iq );
@@ -1379,7 +1379,7 @@ static void JabberProcessIqVersion( int id, XmlNode* node )
 	if ( version ) mir_free( version );
 }
 
-static void JabberProcessIqTime( int id, XmlNode* node ) //added by Rion (jep-0090)
+static void JabberProcessIqTime( TCHAR* idStr, XmlNode* node ) //added by Rion (jep-0090)
 {
 	TCHAR* from;
 	struct tm *gmt;
@@ -1395,13 +1395,13 @@ static void JabberProcessIqTime( int id, XmlNode* node ) //added by Rion (jep-00
 	dtime = ctime(&ltime);
 	dtime[24]=0;
 
-	XmlNodeIq iq( "result", id, from );
+	XmlNodeIq iq( "result", idStr, from );
 	XmlNode* query = iq.addQuery( "jabber:iq:time" );
 	query->addChild( "utc", stime ); query->addChild( "tz", _tzname[1] ); query->addChild( "display", dtime );
 	JabberSend( jabberThreadInfo->s, iq );
 }
 
-static void JabberProcessIqAvatar( int id, XmlNode* node )
+static void JabberProcessIqAvatar( TCHAR* idStr, XmlNode* node )
 {
 	if ( !JGetByte( "EnableAvatars", TRUE ))
 		return;
@@ -1441,7 +1441,7 @@ static void JabberProcessIqAvatar( int id, XmlNode* node )
 	fclose( in );
 
 	char* str = JabberBase64Encode( buffer, bytes );
-	XmlNodeIq iq( "result", id, from );
+	XmlNodeIq iq( "result", idStr, from );
 	XmlNode* query = iq.addQuery( "jabber:iq:avatar" );
 	XmlNode* data = query->addChild( "data", str ); data->addAttr( "mimetype", szMimeType );
 	JabberSend( jabberThreadInfo->s, iq );
@@ -1520,6 +1520,7 @@ static void JabberProcessIq( XmlNode *node, void *userdata )
 	if (( type=JabberXmlGetAttrValue( node, "type" )) == NULL ) return;
 
 	int id = JabberGetPacketID( node );
+	TCHAR* idStr = JabberXmlGetAttrValue( node, "id" );
 
 	queryNode = JabberXmlGetChild( node, "query" );
 	xmlns = JabberXmlGetAttrValue( queryNode, "xmlns" );
@@ -1657,7 +1658,8 @@ static void JabberProcessIq( XmlNode *node, void *userdata )
 							ft->httpPath = t2a( ++q );
 				}	}	}
 
-				ft->iqId = JabberGetPacketID( node );
+				if ( idStr != NULL )
+					ft->iqId = mir_tstrdup( idStr );
 
 				if ( ft->httpHostName && ft->httpPath ) {
 					CCSDATA ccs;
@@ -1699,7 +1701,7 @@ static void JabberProcessIq( XmlNode *node, void *userdata )
 				}
 				else {
 					// reject
-					XmlNodeIq iq( "error", id, ft->jid );
+					XmlNodeIq iq( "error", idStr, ft->jid );
 					XmlNode* e = iq.addChild( "error", "File transfer refused" ); e->addAttr( "code", 406 );
 					JabberSend( jabberThreadInfo->s, iq );
 					delete ft;
@@ -1716,11 +1718,11 @@ static void JabberProcessIq( XmlNode *node, void *userdata )
 		// RECVED: software version query
 		// ACTION: return my software version
 		if ( !_tcscmp( xmlns, _T("jabber:iq:version")))
-			JabberProcessIqVersion( id, node );
+			JabberProcessIqVersion( idStr, node );
 		else if ( !_tcscmp( xmlns, _T("jabber:iq:avatar")))
-			JabberProcessIqAvatar( id, node );
+			JabberProcessIqAvatar( idStr, node );
 		else if ( !_tcscmp( xmlns, _T("jabber:iq:time")))
-			JabberProcessIqTime( id, node );
+			JabberProcessIqTime( idStr, node );
 	}
 	// RECVED: <iq type='result'><query ...
 	else if ( !_tcscmp( type, _T("result")) && queryNode != NULL && xmlns != NULL ) {
@@ -1742,7 +1744,7 @@ static void JabberProcessIq( XmlNode *node, void *userdata )
 		// ACTION: reply with bad-profile
 		else {
 			if (( from=JabberXmlGetAttrValue( node, "from" )) != NULL ) {
-				XmlNodeIq iq( "error", id, from );
+				XmlNodeIq iq( "error", idStr, from );
 				XmlNode* error = iq.addChild( "error" ); error->addAttr( "code", "400" ); error->addAttr( "type", "cancel" );
 				XmlNode* brq = error->addChild( "bad-request" ); brq->addAttr( "xmlns", "urn:ietf:params:xml:ns:xmpp-stanzas" );
 				XmlNode* bp = error->addChild( "bad-profile" ); brq->addAttr( "xmlns", "http://jabber.org/protocol/si" );
@@ -1760,7 +1762,7 @@ static void JabberProcessIq( XmlNode *node, void *userdata )
 		i = 0;
 		while (( i=JabberListFindNext( LIST_FILE, i )) >= 0 ) {
 			JABBER_LIST_ITEM *item = JabberListGetItemPtrFromIndex( i );
-			if ( item->ft != NULL && item->ft->state == FT_CONNECTING && id == item->ft->iqId ) {
+			if ( item->ft != NULL && item->ft->state == FT_CONNECTING && !_tcscmp( idStr, item->ft->iqId )) {
 				JabberLog( "Denying file sending request" );
 				item->ft->state = FT_DENIED;
 				if ( item->ft->hFileEvent != NULL )

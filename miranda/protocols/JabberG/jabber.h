@@ -248,7 +248,7 @@ struct filetransfer
 	JABBER_FILE_STATE state;
 	TCHAR* jid;
 	int    fileId;
-	int    iqId;
+	TCHAR* iqId;
 	TCHAR* sid;
 	int    bCompleted;
 	HANDLE hWaitEvent;
