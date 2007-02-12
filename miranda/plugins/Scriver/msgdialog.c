@@ -1141,7 +1141,7 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
 			dat->minLogBoxHeight = dat->minEditBoxHeight;
 			dat->splitterPos = (int) DBGetContactSettingDword((g_dat->flags & SMF_SAVESPLITTERPERCONTACT) ? dat->hContact : NULL, SRMMMOD, "splitterPos", (DWORD) - 1);
 //			dat->nFlashMax = DBGetContactSettingByte(NULL, SRMMMOD, SRMSGSET_FLASHCOUNT, SRMSGDEFSET_FLASHCOUNT);
-			dat->toolbarSize.cy = 24 + 2;//rc.bottom - rc.top + 3;
+			dat->toolbarSize.cy = DBGetContactSettingDword((g_dat->flags & SMF_SAVESPLITTERPERCONTACT) ? dat->hContact : NULL, SRMMMOD, "splitterHeight", (DWORD) 26);
 			dat->toolbarSize.cx = GetToolbarWidth();
 			if (dat->splitterPos == -1) {
 				dat->splitterPos = dat->minEditBoxHeight;
@@ -1939,7 +1939,7 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
 				if (isCtrl) {
 					oldSplitterY = dat->toolbarSize.cy + dat->splitterPos - (rc.bottom - pt.y);
 					if (oldSplitterY < 18) oldSplitterY = 18;
-					if (oldSplitterY > 28) oldSplitterY = 26;
+					if (oldSplitterY > 26) oldSplitterY = 26;
 					dat->toolbarSize.cy = oldSplitterY;
 				}
 				oldSplitterY = dat->splitterPos;
@@ -2772,6 +2772,7 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
 		DBWriteContactSettingByte(dat->hContact, SRMMMOD, "DisableUnicode", (BYTE) ((dat->flags & SMF_DISABLE_UNICODE) ? 1 : 0));
 		DBWriteContactSettingWord(dat->hContact, SRMMMOD, "CodePage", (WORD) dat->codePage);
 		DBWriteContactSettingDword((g_dat->flags & SMF_SAVESPLITTERPERCONTACT) ? dat->hContact : NULL, SRMMMOD, "splitterPos", dat->splitterPos);
+		DBWriteContactSettingDword((g_dat->flags & SMF_SAVESPLITTERPERCONTACT) ? dat->hContact : NULL, SRMMMOD, "splitterHeight", dat->toolbarSize.cy);
 		if (dat->avatarPic && !g_dat->avatarServiceExists)
 			DeleteObject(dat->avatarPic);
 		NotifyLocalWinEvent(dat->hContact, hwndDlg, MSG_WINDOW_EVT_CLOSE);
