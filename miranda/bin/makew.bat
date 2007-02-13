@@ -58,13 +58,13 @@ cd ..\clist
 nmake /f clist.mak CFG="clist - Win32 Release Unicode"
 if errorlevel 1 goto :Error
 
-cd ..\clist_nicer
-nmake /f clist.mak CFG="clist_nicer - Win32 Release Unicode"
-if errorlevel 1 goto :Error
+rem cd ..\clist_nicer
+rem nmake /f clist.mak CFG="clist_nicer - Win32 Release Unicode"
+rem if errorlevel 1 goto :Error
 
-cd ..\help
-nmake /f help.mak CFG="help - Win32 Release Unicode"
-if errorlevel 1 goto :Error
+rem cd ..\help
+rem nmake /f help.mak CFG="help - Win32 Release Unicode"
+rem if errorlevel 1 goto :Error
 
 cd ..\loadavatars
 nmake /f avatars.mak CFG="loadavatars - Win32 Release Unicode"

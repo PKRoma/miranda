@@ -68,6 +68,8 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include <m_message.h>
 #include <m_skin.h>
 #include <m_chat.h>
+#include <m_clc.h>
+#include <m_button.h>
 #include <win2k.h>
 
 #include "jabber_xml.h"
@@ -181,6 +183,9 @@ enum JABBER_SESSION_TYPE
 };
 
 struct ThreadData {
+	ThreadData( JABBER_SESSION_TYPE parType );
+	~ThreadData();
+
 	HANDLE hThread;
 	JABBER_SESSION_TYPE type;
 
@@ -191,8 +196,11 @@ struct ThreadData {
 	TCHAR resource[128];
 	TCHAR fullJID[256];
 	WORD  port;
+
 	JABBER_SOCKET s;
 	BOOL  useSSL;
+	PVOID ssl;
+	CRITICAL_SECTION iomutex; // protects i/o operations
 
 	int    resolveID;
 	HANDLE resolveContact;
@@ -202,6 +210,10 @@ struct ThreadData {
 	HWND  reg_hwndDlg;
 	BOOL  reg_done, bIsSessionAvailable;
 	class TJabberAuth* auth;
+
+	int   recv( char* buf, size_t len );
+	int   send( const char* fmt, ... );
+	int   send( struct XmlNode& node );
 };
 
 struct JABBER_MODEMSGS
@@ -327,6 +339,7 @@ extern BOOL   jabberConnected;
 extern BOOL   jabberOnline;
 extern int    jabberStatus;
 extern int    jabberDesiredStatus;
+extern int    jabberSearchID;
 extern time_t jabberLoggedInTime;
 
 extern CRITICAL_SECTION modeMsgMutex;
@@ -374,7 +387,7 @@ HBITMAP __stdcall JabberStretchBitmap( HBITMAP hBitmap );
 //---- jabber_chat.cpp ----------------------------------------------
 
 void JabberGcLogCreate( JABBER_LIST_ITEM* item );
-void JabberGcLogUpdateMemberStatus( JABBER_LIST_ITEM* item, TCHAR* nick, int action, XmlNode* reason );
+void JabberGcLogUpdateMemberStatus( JABBER_LIST_ITEM* item, TCHAR* nick, TCHAR* jid, int action, XmlNode* reason );
 void JabberGcQuit( JABBER_LIST_ITEM* jid, int code, XmlNode* reason );
 
 //---- jabber_file.c ------------------------------------------------
@@ -494,8 +507,6 @@ struct TStringPairs
 void          __stdcall JabberSerialInit( void );
 void          __stdcall JabberSerialUninit( void );
 unsigned int  __stdcall JabberSerialNext( void );
-int           __stdcall JabberSend( JABBER_SOCKET s, const char* fmt, ... );
-int           __stdcall JabberSend( JABBER_SOCKET s, XmlNode& node );
 HANDLE        __stdcall JabberHContactFromJID( const TCHAR* jid );
 void          __stdcall JabberLog( const char* fmt, ... );
 TCHAR*        __stdcall JabberNickFromJID( const TCHAR* jid );
@@ -526,6 +537,7 @@ void          __stdcall JabberStringAppend( char* *str, int *sizeAlloced, const 
 TCHAR*        __stdcall JabberGetClientJID( const TCHAR* jid, TCHAR*, size_t );
 TCHAR*        __stdcall JabberStripJid( const TCHAR* jid, TCHAR* dest, size_t destLen );
 int           __stdcall JabberGetPictureType( const char* buf );
+int           __stdcall JabberGetPacketID( XmlNode* n );
 
 #if defined( _UNICODE )
 	#define JabberUnixToDosT JabberUnixToDosW
@@ -548,8 +560,9 @@ int           JabberWsRecv( JABBER_SOCKET s, char* data, long datalen );
 ///////////////////////////////////////////////////////////////////////////////
 // UTF encode helper
 
-char* t2a( const TCHAR* src );
-char* u2a( const wchar_t* src );
+char*    t2a( const TCHAR* src );
+char*    u2a( const wchar_t* src );
 wchar_t* a2u( const char* src );
+TCHAR*   a2t( const char* src );
 
 #endif

@@ -130,7 +130,7 @@ void JabberFtInitiate( TCHAR* jid, filetransfer* ft )
 	XmlNode* x = feature->addChild( "x" ); x->addAttr( "xmlns", "jabber:x:data" ); x->addAttr( "type", "form" );
 	XmlNode* field = x->addChild( "field" ); field->addAttr( "var", "stream-method" ); field->addAttr( "type", "list-single" );
 	XmlNode* option = field->addChild( "option" ); option->addChild( "value", "http://jabber.org/protocol/bytestreams" );
-	JabberSend( jabberThreadInfo->s, iq );
+	jabberThreadInfo->send( iq );
 }
 
 static void JabberFtSiResult( XmlNode *iqNode, void *userdata )
@@ -298,7 +298,7 @@ void JabberFtHandleSiRequest( XmlNode *iqNode )
 				ft->jid = mir_tstrdup( from );
 				ft->std.hContact = JabberHContactFromJID( from );
 				ft->sid = mir_tstrdup( sid );
-				ft->iqId = ( szId ) ? mir_tstrdup( szId ):NULL;
+				ft->iqId = mir_tstrdup( szId );
 				ft->type = ftType;
 				ft->std.totalFiles = 1;
 				ft->std.currentFile = localFilename;
@@ -325,7 +325,7 @@ void JabberFtHandleSiRequest( XmlNode *iqNode )
 				XmlNode* e = iq.addChild( "error" ); e->addAttr( "code", 400 ); e->addAttr( "type", "cancel" );
 				XmlNode* br = e->addChild( "bad-request" ); br->addAttr( "xmlns", "urn:ietf:params:xml:ns:xmpp-stanzas" );
 				XmlNode* nvs = e->addChild( "no-valid-streams" ); nvs->addAttr( "xmlns", "http://jabber.org/protocol/si" );
-				JabberSend( jabberThreadInfo->s, iq );
+				jabberThreadInfo->send( iq );
 				return;
 	}	}	}
 
@@ -334,7 +334,7 @@ void JabberFtHandleSiRequest( XmlNode *iqNode )
 	XmlNode* e = iq.addChild( "error" ); e->addAttr( "code", 400 ); e->addAttr( "type", "cancel" );
 	XmlNode* br = e->addChild( "bad-request" ); br->addAttr( "xmlns", "urn:ietf:params:xml:ns:xmpp-stanzas" );
 	XmlNode* nvs = e->addChild( "bad-profile" ); nvs->addAttr( "xmlns", "http://jabber.org/protocol/si" );
-	JabberSend( jabberThreadInfo->s, iq );
+	jabberThreadInfo->send( iq );
 }
 
 void JabberFtAcceptSiRequest( filetransfer* ft )
@@ -351,7 +351,7 @@ void JabberFtAcceptSiRequest( filetransfer* ft )
 		XmlNode* x = f->addChild( "x" ); x->addAttr( "xmlns", "jabber:x:data" ); x->addAttr( "type", "submit" );
 		XmlNode* fl = x->addChild( "field" ); fl->addAttr( "var", "stream-method" );
 		fl->addChild( "value", "http://jabber.org/protocol/bytestreams" );
-		JabberSend( jabberThreadInfo->s, iq );
+		jabberThreadInfo->send( iq );
 }	}
 
 BOOL JabberFtHandleBytestreamRequest( XmlNode *iqNode )

@@ -62,7 +62,10 @@ typedef PBYTE (*NETLIBHTTPGATEWAYUNWRAPRECVPROC)(NETLIBHTTPREQUEST *nlhr,PBYTE b
 typedef struct {
 	int cbSize;
 	char *szSettingsModule;         //used for db settings and log
-	char *szDescriptiveName;          //used in options dialog, already translated
+	union {
+		char *szDescriptiveName;          //used in options dialog, already translated
+		TCHAR *ptszDescriptiveName;
+	};
 	DWORD flags;
 	char *szHttpGatewayHello;
 	char *szHttpGatewayUserAgent;		 //can be NULL to send no user-agent, also used by HTTPS proxies
@@ -676,7 +679,7 @@ static __inline int Netlib_Logf(HANDLE hUser,const char *fmt,...)
 // Returns HANDLE = NULL on error or non-null value on success
 #define MS_NETLIB_INITSECURITYPROVIDER "Netlib/InitSecurityProvider"
 
-__inline HANDLE Netlib_InitSecurityProvider( char* szProviderName )
+static __inline HANDLE Netlib_InitSecurityProvider( char* szProviderName )
 {
 	return (HANDLE)CallService( MS_NETLIB_INITSECURITYPROVIDER, 0, (LPARAM)szProviderName );
 }
@@ -685,17 +688,25 @@ __inline HANDLE Netlib_InitSecurityProvider( char* szProviderName )
 // Right now only NTLM is supported
 #define MS_NETLIB_DESTROYSECURITYPROVIDER "Netlib/DestroySecurityProvider"
 
-__inline void Netlib_DestroySecurityProvider( char* szProviderName, HANDLE hProvider )
+static __inline void Netlib_DestroySecurityProvider( char* szProviderName, HANDLE hProvider )
 {
 	CallService( MS_NETLIB_DESTROYSECURITYPROVIDER, (WPARAM)szProviderName, (LPARAM)hProvider );
 }
 
 // Returns the NTLM response string. The result value should be freed using mir_free
-#define MS_NETLIB_NTLMCREATERESPONSE "Netlib/DestroySecurityProvider"
+#define MS_NETLIB_NTLMCREATERESPONSE "Netlib/NtlmCreateResponse"
 
-__inline char* Netlib_NtlmCreateResponse( HANDLE hProvider, char* szChallenge )
+typedef struct {
+   char* szChallenge;
+	char* userName;
+	char* password;
+}
+	NETLIBNTLMREQUEST;
+
+static __inline char* Netlib_NtlmCreateResponse( HANDLE hProvider, char* szChallenge, char* login, char* psw )
 {
-	return (char*)CallService( MS_NETLIB_DESTROYSECURITYPROVIDER, (WPARAM)hProvider, (LPARAM)szChallenge );
+	NETLIBNTLMREQUEST temp = { szChallenge, login, psw };
+	return (char*)CallService( MS_NETLIB_NTLMCREATERESPONSE, (WPARAM)hProvider, (LPARAM)&temp );
 }
 
 #endif // M_NETLIB_H__

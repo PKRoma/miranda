@@ -35,7 +35,9 @@ void JabberAddContactToRoster( const TCHAR* jid, const TCHAR* nick, const TCHAR*
 {
 	XmlNodeIq iq( "set" );
 	XmlNode* query = iq.addQuery( "jabber:iq:roster" );
-	XmlNode* item = query->addChild( "item" ); item->addAttr( "name", nick ); item->addAttr( "jid", jid );
+	XmlNode* item = query->addChild( "item" ); item->addAttr( "jid", jid );
+	if ( nick )
+		item->addAttr( "name", nick );
 	switch( subscription ) {
 		case SUB_BOTH: item->addAttr( "subscription", "both" ); break;
 		case SUB_TO:   item->addAttr( "subscription", "to" );   break;
@@ -45,7 +47,7 @@ void JabberAddContactToRoster( const TCHAR* jid, const TCHAR* nick, const TCHAR*
 
 	if ( grpName != NULL )
 		item->addChild( "group", grpName );
-	JabberSend( jabberThreadInfo->s, iq );
+	jabberThreadInfo->send( iq );
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -129,7 +131,7 @@ void JabberDBAddAuthRequest( TCHAR* jid, TCHAR* nick )
 {
 	HANDLE hContact = JabberDBCreateContact( jid, NULL, FALSE, TRUE );
 	JDeleteSetting( hContact, "Hidden" );
-	JSetStringT( hContact, "Nick", nick );
+	//JSetStringT( hContact, "Nick", nick );
 
 	#if defined( _UNICODE )
 		char* szJid = u2a( jid );
@@ -214,8 +216,10 @@ HANDLE JabberDBCreateContact( TCHAR* jid, TCHAR* nick, BOOL temporary, BOOL stri
 			JSetStringT( hContact, "Nick", nick );
 		if ( temporary )
 			DBWriteContactSettingByte( hContact, "CList", "NotOnList", 1 );
+		else
+			JabberSendGetVcard( s );
 		JabberLog( "Create Jabber contact jid=" TCHAR_STR_PARAM ", nick=" TCHAR_STR_PARAM, s, nick );
-        JabberDBCheckIsTransportedContact(s,hContact);
+		JabberDBCheckIsTransportedContact(s,hContact);
 	}
 
 	mir_free( s );

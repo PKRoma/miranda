@@ -3039,6 +3039,13 @@
 					RelativePath=".\modules\clist\keyboard.c">
 				</File>
 			</Filter>
+			<Filter
+				Name="updater"
+				Filter="">
+				<File
+					RelativePath=".\modules\updatenotify\updatenotify.c">
+				</File>
+			</Filter>
 		</Filter>
 		<Filter
 			Name="Resources"

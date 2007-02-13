@@ -11,10 +11,6 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "dbtool", "..\..\miranda-too
 	ProjectSection(ProjectDependencies) = postProject
 	EndProjectSection
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "help", "..\plugins\help\help.vcproj", "{4AD5A72D-C667-4902-844D-C09F74CE7245}"
-	ProjectSection(ProjectDependencies) = postProject
-	EndProjectSection
-EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "import", "..\plugins\import\import.vcproj", "{9299B507-1AF9-4C93-9560-5F637D1E0C9E}"
 	ProjectSection(ProjectDependencies) = postProject
 	EndProjectSection
@@ -72,6 +68,28 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "IRC", "..\..\..\Miranda\mir
 	EndProjectSection
 EndProject
 Global
+	GlobalSection(DPCodeReviewSolutionGUID) = preSolution
+		DPCodeReviewSolutionGUID = {00000000-0000-0000-0000-000000000000}
+	EndGlobalSection
+	GlobalSection(SourceCodeControl) = preSolution
+		SccNumberOfProjects = 3
+		SccProjectUniqueName0 = ..\\..\\miranda-tools\\dbtool\\dbtool.vcproj
+		SccProjectName0 = \u0022$/Miranda/miranda-tools/dbtool\u0022,\u0020DIIAAAAA
+		SccLocalPath0 = ..\\..\\miranda-tools\\dbtool
+		SccProvider0 = MSSCCI:Microsoft\u0020Visual\u0020SourceSafe
+		CanCheckoutShared = false
+		SccProjectUniqueName1 = ..\\src\\miranda32.vcproj
+		SccProjectName1 = \u0022$/Miranda/miranda\u0022,\u0020SHIAAAAA
+		SccLocalPath1 = ..
+		SccProvider1 = MSSCCI:Microsoft\u0020Visual\u0020SourceSafe
+		CanCheckoutShared = false
+		SccProjectFilePathRelativizedFromConnection1 = src\\
+		SccProjectUniqueName2 = ..\\plugins\\chat\\chat.vcproj
+		SccProjectName2 = \u0022$/Miranda/miranda/plugins/chat\u0022,\u0020DOPAAAAA
+		SccLocalPath2 = ..\\plugins\\chat
+		SccProvider2 = MSSCCI:Microsoft\u0020Visual\u0020SourceSafe
+		CanCheckoutShared = false
+	EndGlobalSection
 	GlobalSection(SolutionConfiguration) = preSolution
 		Debug = Debug
 		Debug Unicode = Debug Unicode
@@ -105,14 +123,6 @@ Global
 		{A2E9DA24-95E4-4414-94AF-488A382E276A}.Release.Build.0 = Release|Win32
 		{A2E9DA24-95E4-4414-94AF-488A382E276A}.Release Unicode.ActiveCfg = Release|Win32
 		{A2E9DA24-95E4-4414-94AF-488A382E276A}.Release Unicode.Build.0 = Release|Win32
-		{4AD5A72D-C667-4902-844D-C09F74CE7245}.Debug.ActiveCfg = Debug|Win32
-		{4AD5A72D-C667-4902-844D-C09F74CE7245}.Debug.Build.0 = Debug|Win32
-		{4AD5A72D-C667-4902-844D-C09F74CE7245}.Debug Unicode.ActiveCfg = Debug Unicode|Win32
-		{4AD5A72D-C667-4902-844D-C09F74CE7245}.Debug Unicode.Build.0 = Debug Unicode|Win32
-		{4AD5A72D-C667-4902-844D-C09F74CE7245}.Release.ActiveCfg = Release|Win32
-		{4AD5A72D-C667-4902-844D-C09F74CE7245}.Release.Build.0 = Release|Win32
-		{4AD5A72D-C667-4902-844D-C09F74CE7245}.Release Unicode.ActiveCfg = Release|Win32
-		{4AD5A72D-C667-4902-844D-C09F74CE7245}.Release Unicode.Build.0 = Release|Win32
 		{9299B507-1AF9-4C93-9560-5F637D1E0C9E}.Debug.ActiveCfg = Debug|Win32
 		{9299B507-1AF9-4C93-9560-5F637D1E0C9E}.Debug.Build.0 = Debug|Win32
 		{9299B507-1AF9-4C93-9560-5F637D1E0C9E}.Debug Unicode.ActiveCfg = Debug|Win32

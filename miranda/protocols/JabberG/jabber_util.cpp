@@ -69,67 +69,6 @@ void __stdcall JabberLog( const char* fmt, ... )
 	JCallService( MS_NETLIB_LOG, ( WPARAM )hNetlibUser, ( LPARAM )str );
 }
 
-// Caution: DO NOT use JabberSend() to send binary ( non-string ) data
-int __stdcall JabberSend( HANDLE hConn, XmlNode& node )
-{
-	char* str = node.getText();
-	int size = strlen( str ), result;
-
-	EnterCriticalSection( &mutex );
-
-	PVOID ssl;
-	if (( ssl=JabberSslHandleToSsl( hConn )) != NULL ) {
-		if ( DBGetContactSettingByte( NULL, "Netlib", "DumpSent", TRUE ) == TRUE ) {
-			char* szLogBuffer = ( char* )alloca( size+32 );
-			strcpy( szLogBuffer, "( SSL ) Data sent\n" );
-			memcpy( szLogBuffer+strlen( szLogBuffer ), str, size+1  ); // also copy \0 
-			Netlib_Logf( hNetlibUser, "%s", szLogBuffer );	// %s to protect against when fmt tokens are in szLogBuffer causing crash
-		}
-
-		result = pfn_SSL_write( ssl, str, size );
-	}
-	else result = JabberWsSend( hConn, str, size );
-	LeaveCriticalSection( &mutex );
-
-	mir_free( str );
-	return result;
-}
-
-int __stdcall JabberSend( HANDLE hConn, const char* fmt, ... )
-{
-	int result;
-
-	EnterCriticalSection( &mutex );
-
-	va_list vararg;
-	va_start( vararg,fmt );
-	int size = 512;
-	char* str = ( char* )mir_alloc( size );
-	while ( _vsnprintf( str, size, fmt, vararg ) == -1 ) {
-		size += 512;
-		str = ( char* )mir_realloc( str, size );
-	}
-	va_end( vararg );
-
-	size = strlen( str );
-	PVOID ssl;
-	if (( ssl=JabberSslHandleToSsl( hConn )) != NULL ) {
-		if ( DBGetContactSettingByte( NULL, "Netlib", "DumpSent", TRUE ) == TRUE ) {
-			char* szLogBuffer = ( char* )alloca( size+32 );
-			strcpy( szLogBuffer, "( SSL ) Data sent\n" );
-			memcpy( szLogBuffer+strlen( szLogBuffer ), str, size+1 ); // also copy \0 
-			Netlib_Logf( hNetlibUser, "%s", szLogBuffer );	// %s to protect against when fmt tokens are in szLogBuffer causing crash
-		}
-
-		result = pfn_SSL_write( ssl, str, size );
-	}
-	else result = JabberWsSend( hConn, str, size );
-	LeaveCriticalSection( &mutex );
-
-	mir_free( str );
-	return result;
-}
-
 ///////////////////////////////////////////////////////////////////////////////
 // JabberHContactFromJID - looks for the HCONTACT with required JID
 
@@ -538,7 +477,7 @@ void __stdcall JabberSendVisibleInvisiblePresence( BOOL invisible )
 		WORD apparentMode = JGetWord( hContact, "ApparentMode", 0 );
 		if ( invisible==TRUE && apparentMode==ID_STATUS_OFFLINE ) {
 			XmlNode p( "presence" ); p.addAttr( "to", item->jid ); p.addAttr( "type", "invisible" );
-			JabberSend( jabberThreadInfo->s, p );
+			jabberThreadInfo->send( p );
 		}
 		else if ( invisible==FALSE && apparentMode==ID_STATUS_ONLINE )
 			JabberSendPresenceTo( jabberStatus, item->jid, NULL );
@@ -834,7 +773,7 @@ struct MyCountryListEntry
 	int id;
 	TCHAR* szName;
 }
-static extraCtry[] = 
+static extraCtry[] =
 {
 	{ 1,	_T("United States") },
 	{ 1,	_T("United States of America") },
@@ -936,7 +875,7 @@ void __stdcall JabberSendPresenceTo( int status, TCHAR* to, XmlNode* extra )
 		// Should not reach here
 		break;
 	}
-	JabberSend( jabberThreadInfo->s, p );
+	jabberThreadInfo->send( p );
 	LeaveCriticalSection( &modeMsgMutex );
 }
 
@@ -980,6 +919,21 @@ void __stdcall JabberStringAppend( char* *str, int *sizeAlloced, const char* fmt
 		p = *str + len;
 	}
 	va_end( vararg );
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// JabberGetPacketID - converts the xml id attribute into an integer
+
+int __stdcall JabberGetPacketID( XmlNode* n )
+{
+	int result = -1;
+
+	TCHAR* str = JabberXmlGetAttrValue( n, "id" );
+	if ( str )
+		if ( !_tcsncmp( str, _T(JABBER_IQID), SIZEOF( JABBER_IQID )-1 ))
+			result = _ttoi( str + SIZEOF( JABBER_IQID )-1 );
+
+	return result;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -1048,6 +1002,18 @@ int __stdcall JabberGetPictureType( const char* buf )
 /////////////////////////////////////////////////////////////////////////////////////////
 // Unicode functions
 
+TCHAR* a2t( const char* str )
+{
+	if ( str == NULL )
+		return NULL;
+
+	#if defined( _UNICODE )
+		return ( TCHAR* )JCallService( MS_LANGPACK_PCHARTOTCHAR, 0, (LPARAM)str );
+	#else
+		return mir_strdup( str );
+	#endif
+}
+
 char* t2a( const TCHAR* src )
 {
 	#if defined( _UNICODE )
@@ -1092,7 +1058,7 @@ TStringPairs::TStringPairs( char* buffer ) :
 	elems( NULL )
 {
    TStringPairsElem tempElem[ 100 ];
-   
+
 	for ( numElems=0; *buffer; numElems++ ) {
 		char* p = strchr( buffer, '=' );
 		if ( p == NULL )
@@ -1122,7 +1088,7 @@ TStringPairs::TStringPairs( char* buffer ) :
 
 TStringPairs::~TStringPairs()
 {
-	delete elems;
+	delete[] elems;
 }
 
 const char* TStringPairs::operator[]( const char* key ) const

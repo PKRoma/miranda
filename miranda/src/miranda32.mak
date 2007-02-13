@@ -27,10 +27,6 @@ NULL=
 NULL=nul
 !ENDIF 
 
-CPP=cl.exe
-MTL=midl.exe
-RSC=rc.exe
-
 !IF  "$(CFG)" == "miranda32 - Win32 Release"
 
 OUTDIR=.\Release
@@ -199,6 +195,8 @@ CLEAN :
 	-@erase "$(INTDIR)\sounds.sbr"
 	-@erase "$(INTDIR)\stdinfo.obj"
 	-@erase "$(INTDIR)\stdinfo.sbr"
+	-@erase "$(INTDIR)\updatenotify.obj"
+	-@erase "$(INTDIR)\updatenotify.sbr"
 	-@erase "$(INTDIR)\url.obj"
 	-@erase "$(INTDIR)\url.sbr"
 	-@erase "$(INTDIR)\urldialogs.obj"
@@ -225,8 +223,42 @@ CLEAN :
 "$(OUTDIR)" :
     if not exist "$(OUTDIR)/$(NULL)" mkdir "$(OUTDIR)"
 
+CPP=cl.exe
 CPP_PROJ=/nologo /MD /W3 /GX /Zi /O1 /I "../include" /D "NDEBUG" /D "WIN32" /D "_WINDOWS" /D "_NOSDK" /D "_STATIC" /Fr"$(INTDIR)\\" /Fp"$(INTDIR)\miranda32.pch" /Yu"commonheaders.h" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /FD /c 
+
+.c{$(INTDIR)}.obj::
+   $(CPP) @<<
+   $(CPP_PROJ) $< 
+<<
+
+.cpp{$(INTDIR)}.obj::
+   $(CPP) @<<
+   $(CPP_PROJ) $< 
+<<
+
+.cxx{$(INTDIR)}.obj::
+   $(CPP) @<<
+   $(CPP_PROJ) $< 
+<<
+
+.c{$(INTDIR)}.sbr::
+   $(CPP) @<<
+   $(CPP_PROJ) $< 
+<<
+
+.cpp{$(INTDIR)}.sbr::
+   $(CPP) @<<
+   $(CPP_PROJ) $< 
+<<
+
+.cxx{$(INTDIR)}.sbr::
+   $(CPP) @<<
+   $(CPP_PROJ) $< 
+<<
+
+MTL=midl.exe
 MTL_PROJ=/nologo /D "NDEBUG" /mktyplib203 /o "NUL" /win32 
+RSC=rc.exe
 RSC_PROJ=/l 0x409 /fo"$(INTDIR)\resource.res" /d "NDEBUG" 
 BSC32=bscmake.exe
 BSC32_FLAGS=/nologo /o"$(OUTDIR)\miranda32.bsc" 
@@ -261,6 +293,7 @@ BSC32_SBRS= \
 	"$(INTDIR)\netlibopenconn.sbr" \
 	"$(INTDIR)\netlibopts.sbr" \
 	"$(INTDIR)\netlibpktrecver.sbr" \
+	"$(INTDIR)\netlibsecurity.sbr" \
 	"$(INTDIR)\netlibsock.sbr" \
 	"$(INTDIR)\netlibupnp.sbr" \
 	"$(INTDIR)\options.sbr" \
@@ -315,7 +348,7 @@ BSC32_SBRS= \
 	"$(INTDIR)\Docking.sbr" \
 	"$(INTDIR)\groups.sbr" \
 	"$(INTDIR)\keyboard.sbr" \
-	"$(INTDIR)\netlibsecurity.sbr"
+	"$(INTDIR)\updatenotify.sbr"
 
 "$(OUTDIR)\miranda32.bsc" : "$(OUTDIR)" $(BSC32_SBRS)
     $(BSC32) @<<
@@ -355,6 +388,7 @@ LINK32_OBJS= \
 	"$(INTDIR)\netlibopenconn.obj" \
 	"$(INTDIR)\netlibopts.obj" \
 	"$(INTDIR)\netlibpktrecver.obj" \
+	"$(INTDIR)\netlibsecurity.obj" \
 	"$(INTDIR)\netlibsock.obj" \
 	"$(INTDIR)\netlibupnp.obj" \
 	"$(INTDIR)\options.obj" \
@@ -409,8 +443,8 @@ LINK32_OBJS= \
 	"$(INTDIR)\Docking.obj" \
 	"$(INTDIR)\groups.obj" \
 	"$(INTDIR)\keyboard.obj" \
-	"$(INTDIR)\resource.res" \
-	"$(INTDIR)\netlibsecurity.obj"
+	"$(INTDIR)\updatenotify.obj" \
+	"$(INTDIR)\resource.res"
 
 "..\bin\release\miranda32.exe" : "$(OUTDIR)" $(DEF_FILE) $(LINK32_OBJS)
     $(LINK32) @<<
@@ -585,6 +619,8 @@ CLEAN :
 	-@erase "$(INTDIR)\sounds.sbr"
 	-@erase "$(INTDIR)\stdinfo.obj"
 	-@erase "$(INTDIR)\stdinfo.sbr"
+	-@erase "$(INTDIR)\updatenotify.obj"
+	-@erase "$(INTDIR)\updatenotify.sbr"
 	-@erase "$(INTDIR)\url.obj"
 	-@erase "$(INTDIR)\url.sbr"
 	-@erase "$(INTDIR)\urldialogs.obj"
@@ -612,8 +648,42 @@ CLEAN :
 "$(OUTDIR)" :
     if not exist "$(OUTDIR)/$(NULL)" mkdir "$(OUTDIR)"
 
+CPP=cl.exe
 CPP_PROJ=/nologo /MDd /W3 /Gm /GX /ZI /Od /I "../include" /D "_DEBUG" /D "WIN32" /D "_WINDOWS" /D "_NOSDK" /D "_STATIC" /Fr"$(INTDIR)\\" /Fp"$(INTDIR)\miranda32.pch" /Yu"commonheaders.h" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /FD /c 
+
+.c{$(INTDIR)}.obj::
+   $(CPP) @<<
+   $(CPP_PROJ) $< 
+<<
+
+.cpp{$(INTDIR)}.obj::
+   $(CPP) @<<
+   $(CPP_PROJ) $< 
+<<
+
+.cxx{$(INTDIR)}.obj::
+   $(CPP) @<<
+   $(CPP_PROJ) $< 
+<<
+
+.c{$(INTDIR)}.sbr::
+   $(CPP) @<<
+   $(CPP_PROJ) $< 
+<<
+
+.cpp{$(INTDIR)}.sbr::
+   $(CPP) @<<
+   $(CPP_PROJ) $< 
+<<
+
+.cxx{$(INTDIR)}.sbr::
+   $(CPP) @<<
+   $(CPP_PROJ) $< 
+<<
+
+MTL=midl.exe
 MTL_PROJ=/nologo /D "_DEBUG" /mktyplib203 /o "NUL" /win32 
+RSC=rc.exe
 RSC_PROJ=/l 0x409 /fo"$(INTDIR)\resource.res" /d "_DEBUG" 
 BSC32=bscmake.exe
 BSC32_FLAGS=/nologo /o"$(OUTDIR)\miranda32.bsc" 
@@ -648,6 +718,7 @@ BSC32_SBRS= \
 	"$(INTDIR)\netlibopenconn.sbr" \
 	"$(INTDIR)\netlibopts.sbr" \
 	"$(INTDIR)\netlibpktrecver.sbr" \
+	"$(INTDIR)\netlibsecurity.sbr" \
 	"$(INTDIR)\netlibsock.sbr" \
 	"$(INTDIR)\netlibupnp.sbr" \
 	"$(INTDIR)\options.sbr" \
@@ -702,7 +773,7 @@ BSC32_SBRS= \
 	"$(INTDIR)\Docking.sbr" \
 	"$(INTDIR)\groups.sbr" \
 	"$(INTDIR)\keyboard.sbr" \
-	"$(INTDIR)\netlibsecurity.sbr"
+	"$(INTDIR)\updatenotify.sbr"
 
 "$(OUTDIR)\miranda32.bsc" : "$(OUTDIR)" $(BSC32_SBRS)
     $(BSC32) @<<
@@ -742,6 +813,7 @@ LINK32_OBJS= \
 	"$(INTDIR)\netlibopenconn.obj" \
 	"$(INTDIR)\netlibopts.obj" \
 	"$(INTDIR)\netlibpktrecver.obj" \
+	"$(INTDIR)\netlibsecurity.obj" \
 	"$(INTDIR)\netlibsock.obj" \
 	"$(INTDIR)\netlibupnp.obj" \
 	"$(INTDIR)\options.obj" \
@@ -796,8 +868,8 @@ LINK32_OBJS= \
 	"$(INTDIR)\Docking.obj" \
 	"$(INTDIR)\groups.obj" \
 	"$(INTDIR)\keyboard.obj" \
-	"$(INTDIR)\resource.res" \
-	"$(INTDIR)\netlibsecurity.obj"
+	"$(INTDIR)\updatenotify.obj" \
+	"$(INTDIR)\resource.res"
 
 "..\bin\debug\miranda32.exe" : "$(OUTDIR)" $(DEF_FILE) $(LINK32_OBJS)
     $(LINK32) @<<
@@ -892,6 +964,7 @@ CLEAN :
 	-@erase "$(INTDIR)\skinicons.obj"
 	-@erase "$(INTDIR)\sounds.obj"
 	-@erase "$(INTDIR)\stdinfo.obj"
+	-@erase "$(INTDIR)\updatenotify.obj"
 	-@erase "$(INTDIR)\url.obj"
 	-@erase "$(INTDIR)\urldialogs.obj"
 	-@erase "$(INTDIR)\userinfo.obj"
@@ -909,8 +982,42 @@ CLEAN :
 "$(OUTDIR)" :
     if not exist "$(OUTDIR)/$(NULL)" mkdir "$(OUTDIR)"
 
+CPP=cl.exe
 CPP_PROJ=/nologo /MD /W3 /GX /Zi /O1 /I "../include" /D "NDEBUG" /D "WIN32" /D "_WINDOWS" /D "_NOSDK" /D "UNICODE" /D "_STATIC" /Fp"$(INTDIR)\miranda32.pch" /Yu"commonheaders.h" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /FD /c 
+
+.c{$(INTDIR)}.obj::
+   $(CPP) @<<
+   $(CPP_PROJ) $< 
+<<
+
+.cpp{$(INTDIR)}.obj::
+   $(CPP) @<<
+   $(CPP_PROJ) $< 
+<<
+
+.cxx{$(INTDIR)}.obj::
+   $(CPP) @<<
+   $(CPP_PROJ) $< 
+<<
+
+.c{$(INTDIR)}.sbr::
+   $(CPP) @<<
+   $(CPP_PROJ) $< 
+<<
+
+.cpp{$(INTDIR)}.sbr::
+   $(CPP) @<<
+   $(CPP_PROJ) $< 
+<<
+
+.cxx{$(INTDIR)}.sbr::
+   $(CPP) @<<
+   $(CPP_PROJ) $< 
+<<
+
+MTL=midl.exe
 MTL_PROJ=/nologo /D "NDEBUG" /mktyplib203 /o "NUL" /win32 
+RSC=rc.exe
 RSC_PROJ=/l 0x409 /fo"$(INTDIR)\resource.res" /d "NDEBUG" 
 BSC32=bscmake.exe
 BSC32_FLAGS=/nologo /o"$(OUTDIR)\miranda32.bsc" 
@@ -949,6 +1056,7 @@ LINK32_OBJS= \
 	"$(INTDIR)\netlibopenconn.obj" \
 	"$(INTDIR)\netlibopts.obj" \
 	"$(INTDIR)\netlibpktrecver.obj" \
+	"$(INTDIR)\netlibsecurity.obj" \
 	"$(INTDIR)\netlibsock.obj" \
 	"$(INTDIR)\netlibupnp.obj" \
 	"$(INTDIR)\options.obj" \
@@ -1003,8 +1111,8 @@ LINK32_OBJS= \
 	"$(INTDIR)\Docking.obj" \
 	"$(INTDIR)\groups.obj" \
 	"$(INTDIR)\keyboard.obj" \
-	"$(INTDIR)\resource.res" \
-	"$(INTDIR)\netlibsecurity.obj"
+	"$(INTDIR)\updatenotify.obj" \
+	"$(INTDIR)\resource.res"
 
 "..\bin\Release Unicode\miranda32.exe" : "$(OUTDIR)" $(DEF_FILE) $(LINK32_OBJS)
     $(LINK32) @<<
@@ -1179,6 +1287,8 @@ CLEAN :
 	-@erase "$(INTDIR)\sounds.sbr"
 	-@erase "$(INTDIR)\stdinfo.obj"
 	-@erase "$(INTDIR)\stdinfo.sbr"
+	-@erase "$(INTDIR)\updatenotify.obj"
+	-@erase "$(INTDIR)\updatenotify.sbr"
 	-@erase "$(INTDIR)\url.obj"
 	-@erase "$(INTDIR)\url.sbr"
 	-@erase "$(INTDIR)\urldialogs.obj"
@@ -1206,8 +1316,42 @@ CLEAN :
 "$(OUTDIR)" :
     if not exist "$(OUTDIR)/$(NULL)" mkdir "$(OUTDIR)"
 
+CPP=cl.exe
 CPP_PROJ=/nologo /MDd /W3 /Gm /GX /ZI /Od /I "../include" /D "_DEBUG" /D "WIN32" /D "_WINDOWS" /D "_NOSDK" /D "UNICODE" /D "_STATIC" /Fr"$(INTDIR)\\" /Fp"$(INTDIR)\miranda32.pch" /Yu"commonheaders.h" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /FD /c 
+
+.c{$(INTDIR)}.obj::
+   $(CPP) @<<
+   $(CPP_PROJ) $< 
+<<
+
+.cpp{$(INTDIR)}.obj::
+   $(CPP) @<<
+   $(CPP_PROJ) $< 
+<<
+
+.cxx{$(INTDIR)}.obj::
+   $(CPP) @<<
+   $(CPP_PROJ) $< 
+<<
+
+.c{$(INTDIR)}.sbr::
+   $(CPP) @<<
+   $(CPP_PROJ) $< 
+<<
+
+.cpp{$(INTDIR)}.sbr::
+   $(CPP) @<<
+   $(CPP_PROJ) $< 
+<<
+
+.cxx{$(INTDIR)}.sbr::
+   $(CPP) @<<
+   $(CPP_PROJ) $< 
+<<
+
+MTL=midl.exe
 MTL_PROJ=/nologo /D "_DEBUG" /mktyplib203 /o "NUL" /win32 
+RSC=rc.exe
 RSC_PROJ=/l 0x409 /fo"$(INTDIR)\resource.res" /d "_DEBUG" 
 BSC32=bscmake.exe
 BSC32_FLAGS=/nologo /o"$(OUTDIR)\miranda32.bsc" 
@@ -1242,6 +1386,7 @@ BSC32_SBRS= \
 	"$(INTDIR)\netlibopenconn.sbr" \
 	"$(INTDIR)\netlibopts.sbr" \
 	"$(INTDIR)\netlibpktrecver.sbr" \
+	"$(INTDIR)\netlibsecurity.sbr" \
 	"$(INTDIR)\netlibsock.sbr" \
 	"$(INTDIR)\netlibupnp.sbr" \
 	"$(INTDIR)\options.sbr" \
@@ -1296,7 +1441,7 @@ BSC32_SBRS= \
 	"$(INTDIR)\Docking.sbr" \
 	"$(INTDIR)\groups.sbr" \
 	"$(INTDIR)\keyboard.sbr" \
-	"$(INTDIR)\netlibsecurity.sbr"
+	"$(INTDIR)\updatenotify.sbr"
 
 "$(OUTDIR)\miranda32.bsc" : "$(OUTDIR)" $(BSC32_SBRS)
     $(BSC32) @<<
@@ -1336,6 +1481,7 @@ LINK32_OBJS= \
 	"$(INTDIR)\netlibopenconn.obj" \
 	"$(INTDIR)\netlibopts.obj" \
 	"$(INTDIR)\netlibpktrecver.obj" \
+	"$(INTDIR)\netlibsecurity.obj" \
 	"$(INTDIR)\netlibsock.obj" \
 	"$(INTDIR)\netlibupnp.obj" \
 	"$(INTDIR)\options.obj" \
@@ -1390,8 +1536,8 @@ LINK32_OBJS= \
 	"$(INTDIR)\Docking.obj" \
 	"$(INTDIR)\groups.obj" \
 	"$(INTDIR)\keyboard.obj" \
-	"$(INTDIR)\resource.res" \
-	"$(INTDIR)\netlibsecurity.obj"
+	"$(INTDIR)\updatenotify.obj" \
+	"$(INTDIR)\resource.res"
 
 "..\bin\Debug Unicode\miranda32.exe" : "$(OUTDIR)" $(DEF_FILE) $(LINK32_OBJS)
     $(LINK32) @<<
@@ -1399,36 +1545,6 @@ LINK32_OBJS= \
 <<
 
 !ENDIF 
-
-.c{$(INTDIR)}.obj::
-   $(CPP) @<<
-   $(CPP_PROJ) $< 
-<<
-
-.cpp{$(INTDIR)}.obj::
-   $(CPP) @<<
-   $(CPP_PROJ) $< 
-<<
-
-.cxx{$(INTDIR)}.obj::
-   $(CPP) @<<
-   $(CPP_PROJ) $< 
-<<
-
-.c{$(INTDIR)}.sbr::
-   $(CPP) @<<
-   $(CPP_PROJ) $< 
-<<
-
-.cpp{$(INTDIR)}.sbr::
-   $(CPP) @<<
-   $(CPP_PROJ) $< 
-<<
-
-.cxx{$(INTDIR)}.sbr::
-   $(CPP) @<<
-   $(CPP_PROJ) $< 
-<<
 
 
 !IF "$(NO_EXTERNAL_DEPS)" != "1"
@@ -4216,6 +4332,38 @@ SOURCE=.\modules\clist\keyboard.c
 
 
 "$(INTDIR)\keyboard.obj"	"$(INTDIR)\keyboard.sbr" : $(SOURCE) "$(INTDIR)" "$(INTDIR)\miranda32.pch"
+	$(CPP) $(CPP_PROJ) $(SOURCE)
+
+
+!ENDIF 
+
+SOURCE=.\modules\updatenotify\updatenotify.c
+
+!IF  "$(CFG)" == "miranda32 - Win32 Release"
+
+
+"$(INTDIR)\updatenotify.obj"	"$(INTDIR)\updatenotify.sbr" : $(SOURCE) "$(INTDIR)" "$(INTDIR)\miranda32.pch"
+	$(CPP) $(CPP_PROJ) $(SOURCE)
+
+
+!ELSEIF  "$(CFG)" == "miranda32 - Win32 Debug"
+
+
+"$(INTDIR)\updatenotify.obj"	"$(INTDIR)\updatenotify.sbr" : $(SOURCE) "$(INTDIR)" "$(INTDIR)\miranda32.pch"
+	$(CPP) $(CPP_PROJ) $(SOURCE)
+
+
+!ELSEIF  "$(CFG)" == "miranda32 - Win32 Release Unicode"
+
+
+"$(INTDIR)\updatenotify.obj" : $(SOURCE) "$(INTDIR)" "$(INTDIR)\miranda32.pch"
+	$(CPP) $(CPP_PROJ) $(SOURCE)
+
+
+!ELSEIF  "$(CFG)" == "miranda32 - Win32 Debug Unicode"
+
+
+"$(INTDIR)\updatenotify.obj"	"$(INTDIR)\updatenotify.sbr" : $(SOURCE) "$(INTDIR)" "$(INTDIR)\miranda32.pch"
 	$(CPP) $(CPP_PROJ) $(SOURCE)
 
 

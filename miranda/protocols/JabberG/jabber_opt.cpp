@@ -69,9 +69,7 @@ static BOOL CALLBACK JabberRegisterDlgProc( HWND hwndDlg, UINT msg, WPARAM wPara
 			ShowWindow( GetDlgItem( hwndDlg, IDC_PROGRESS_REG ), SW_SHOW );
 			ShowWindow( GetDlgItem( hwndDlg, IDCANCEL2 ), SW_SHOW );
 			regInfo = ( ThreadData* ) GetWindowLong( hwndDlg, GWL_USERDATA );
-			thread = ( ThreadData* ) mir_alloc( sizeof( ThreadData ));
-			memset( thread, 0, sizeof( ThreadData ));
-			thread->type = JABBER_SESSION_REGISTER;
+			thread = new ThreadData( JABBER_SESSION_REGISTER );
 			_tcsncpy( thread->username, regInfo->username, SIZEOF( thread->username ));
 			strncpy( thread->password, regInfo->password, SIZEOF( thread->password ));
 			strncpy( thread->server, regInfo->server, SIZEOF( thread->server ));
@@ -282,7 +280,7 @@ static BOOL CALLBACK JabberOptDlgProc( HWND hwndDlg, UINT msg, WPARAM wParam, LP
 					SendMessage( GetParent( hwndDlg ), PSM_CHANGED, 0, 0 );
 			}
 
-			ThreadData regInfo;
+			ThreadData regInfo( JABBER_SESSION_NORMAL );
 			GetDlgItemText( hwndDlg, IDC_EDIT_USERNAME, regInfo.username, SIZEOF( regInfo.username ));
 			GetDlgItemTextA( hwndDlg, IDC_EDIT_PASSWORD, regInfo.password, SIZEOF( regInfo.password ));
 			GetDlgItemTextA( hwndDlg, IDC_EDIT_LOGIN_SERVER, regInfo.server, SIZEOF( regInfo.server ));
@@ -308,7 +306,7 @@ static BOOL CALLBACK JabberOptDlgProc( HWND hwndDlg, UINT msg, WPARAM wParam, LP
 			return TRUE;
 		case IDC_BUTTON_REGISTER:
 		{
-			ThreadData regInfo;
+			ThreadData regInfo( JABBER_SESSION_NORMAL );
 			GetDlgItemText( hwndDlg, IDC_EDIT_USERNAME, regInfo.username, SIZEOF( regInfo.username ));
 			GetDlgItemTextA( hwndDlg, IDC_EDIT_PASSWORD, regInfo.password, SIZEOF( regInfo.password ));
 			GetDlgItemTextA( hwndDlg, IDC_EDIT_LOGIN_SERVER, regInfo.server, SIZEOF( regInfo.server ));
@@ -333,7 +331,7 @@ static BOOL CALLBACK JabberOptDlgProc( HWND hwndDlg, UINT msg, WPARAM wParam, LP
 			{
 				XmlNodeIq iq( "set", NOID, jabberJID );
 				iq.addQuery( "jabber:iq:register" )->addChild( "remove" );
-				JabberSend( jabberThreadInfo->s, iq );
+				jabberThreadInfo->send( iq );
 			}
 			break;
 		case IDC_MSGLANG:
@@ -511,6 +509,7 @@ static BOOL CALLBACK JabberAdvOptDlgProc( HWND hwndDlg, UINT msg, WPARAM wParam,
 		CheckDlgButton( hwndDlg, IDC_AUTO_ACCEPT_MUC, JGetByte( "AutoAcceptMUC", FALSE ));
 		CheckDlgButton( hwndDlg, IDC_AUTOJOIN, JGetByte( "AutoJoinConferences", FALSE ));
 		CheckDlgButton( hwndDlg, IDC_DISABLE_SASL, JGetByte( "Disable3920auth", FALSE ));
+		CheckDlgButton( hwndDlg, IDC_VALIDATEADD, JGetByte( "ValidateAddition", TRUE ));
 		return TRUE;
 	}
 	case WM_COMMAND:
@@ -584,6 +583,7 @@ static BOOL CALLBACK JabberAdvOptDlgProc( HWND hwndDlg, UINT msg, WPARAM wParam,
 			JSetByte( "EnableAvatars",       ( BYTE )IsDlgButtonChecked( hwndDlg, IDC_ENABLE_AVATARS ));
 			JSetByte( "AutoAcceptMUC",       ( BYTE )IsDlgButtonChecked( hwndDlg, IDC_AUTO_ACCEPT_MUC ));
 			JSetByte( "AutoJoinConferences", ( BYTE )IsDlgButtonChecked( hwndDlg, IDC_AUTOJOIN ));
+			JSetByte( "ValidateAddition",    ( BYTE )IsDlgButtonChecked( hwndDlg, IDC_VALIDATEADD ));
 			return TRUE;
 		}
 		break;

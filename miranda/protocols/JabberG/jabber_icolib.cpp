@@ -22,7 +22,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 File name      : $Source: /cvsroot/miranda/miranda/protocols/JabberG/jabber_misc.cpp,v $
 Revision       : $Revision: 3322 $
-Last change on : $Date: 2006-07-13 16:11:29 +0400 
+Last change on : $Date: 2006-07-13 16:11:29 +0400
 Last change by : $Author: rainwater $
 
 */
@@ -81,8 +81,8 @@ static BOOL WildComparei(char * name, char * mask)
 
 	if(*mask != '*') return FALSE;
 	for(;; mask++, name++)
-	{      
-		while(*mask == '*') {    
+	{
+		while(*mask == '*') {
 			last = mask++;
 			if(*mask == '\0') return ((BOOL)!*mask);   /* true */
 		}
@@ -97,9 +97,9 @@ static BOOL MatchMask( char* name, char* mask)
 	if ( !mask || !name )
 		return mask == name;
 
-	if ( *mask != '|' ) 
+	if ( *mask != '|' )
 		return WildComparei( name, mask );
-	
+
 	char* temp = NEWSTR_ALLOCA(mask);
 	for ( int e=1; mask[e] != '\0'; e++ ) {
 		int s = e;
@@ -153,12 +153,12 @@ static HICON LoadTransportIcon(char *filename,int i,char *IconName,char *SectNam
 	HICON hi=ExtractIconFromPath(szFullPath,&nf);
 	if (hi) has_proto_icon=TRUE;
 	if (hi && nf) DestroyIcon(hi);
-	if (!ServiceExists(MS_SKIN2_ADDICON)) {		
+	if (!ServiceExists(MS_SKIN2_ADDICON)) {
 		hIcon=ExtractIconFromPath(szFullPath,needFree);
 		if (hIcon) return hIcon;
 		_snprintf(szFullPath, sizeof(szFullPath), "%s,%d", szMyPath, internalidx);
 		hIcon=ExtractIconFromPath(szFullPath,needFree);
-		if (hIcon) return hIcon;		
+		if (hIcon) return hIcon;
 	}
 	else {
 		if ( IconName != NULL && SectName != NULL)	{
@@ -166,7 +166,7 @@ static HICON LoadTransportIcon(char *filename,int i,char *IconName,char *SectNam
 			sid.cx=16;
 			sid.cy=16;
 			sid.hDefaultIcon = (has_proto_icon)?NULL:(HICON)CallService(MS_SKIN_LOADPROTOICON,(WPARAM)NULL,(LPARAM)(-internalidx));
-			sid.pszSection = Translate(SectName);				
+			sid.pszSection = Translate(SectName);
 			sid.pszName=IconName;
 			sid.pszDescription=Description;
 			sid.pszDefaultFile=szMyPath;
@@ -180,7 +180,7 @@ static HICON LoadTransportIcon(char *filename,int i,char *IconName,char *SectNam
 
 static HICON LoadSmallIcon(HINSTANCE hInstance, LPCTSTR lpIconName)
 {
-	HICON hIcon=NULL;				  // icon handle 
+	HICON hIcon=NULL;				  // icon handle
 	int index=-(int)lpIconName;
 	TCHAR filename[MAX_PATH]={0};
 	GetModuleFileName(hInstance,filename,MAX_PATH);
@@ -191,7 +191,7 @@ static HICON LoadSmallIcon(HINSTANCE hInstance, LPCTSTR lpIconName)
 static int LoadAdvancedIcons(int iID)
 {
 	int i;
-	char * proto=TransportProtoTable[iID].proto;    
+	char * proto=TransportProtoTable[iID].proto;
 	char * defFile[MAX_PATH]={0};
 	char * Group[255];
 	char * Uname[255];
@@ -204,14 +204,14 @@ static int LoadAdvancedIcons(int iID)
 		hAdvancedStatusIcon=(HIMAGELIST)CallService(MS_CLIST_GETICONSIMAGELIST,0,0);
 
 	for (i=0; i<ID_STATUS_ONTHEPHONE-ID_STATUS_OFFLINE; i++) {
-		HICON hicon;        
+		HICON hicon;
 		BOOL needFree;
 		int n=skinStatusToJabberStatus[i];
 		char * descr=(char*)CallService(MS_CLIST_GETSTATUSMODEDESCRIPTION,n+ID_STATUS_OFFLINE,0);
 		_snprintf((char *)Uname, sizeof(Uname),"%s_Transport_%s_%d",jabberProtoName,proto,n);
 		hicon=(HICON)LoadTransportIcon((char*)defFile,-skinIconStatusToResourceId[i],(char*)Uname,(char*)Group,(char*)descr,-(n+ID_STATUS_OFFLINE),&needFree);
 		int index=(TransportProtoTable[iID].startIndex==-1)?-1:TransportProtoTable[iID].startIndex+n;
-		int added=ImageList_ReplaceIcon(hAdvancedStatusIcon,index,hicon?hicon:empty);          
+		int added=ImageList_ReplaceIcon(hAdvancedStatusIcon,index,hicon?hicon:empty);
 		if (first==-1) first=added;
 		if (hicon && needFree) DestroyIcon(hicon);
 	}
@@ -225,7 +225,7 @@ static int LoadAdvancedIcons(int iID)
 static int GetTransportProtoID(char * TransportDomain)
 {
 	for ( int i=0; i<SIZEOF(TransportProtoTable); i++)
-		if (MatchMask(TransportDomain,TransportProtoTable[i].mask)) 
+		if (MatchMask(TransportDomain,TransportProtoTable[i].mask))
 			return i;
 
 	return -1;
@@ -253,7 +253,7 @@ static int GetTransportStatusIconIndex(int iID, int Status)
 /////////////////////////////////////////////////////////////////////////////////////////
 // a hook for the IcoLib plugin
 
-int ReloadIconsEventHook(WPARAM wParam, LPARAM lParam)   
+int ReloadIconsEventHook(WPARAM wParam, LPARAM lParam)
 {
 	for ( int i=0; i < SIZEOF(TransportProtoTable); i++ )
 		if ( TransportProtoTable[i].startIndex != -1 )
@@ -268,7 +268,7 @@ int ReloadIconsEventHook(WPARAM wParam, LPARAM lParam)
 // lParam - should be 0 (reserverd for futher usage)
 // return value: -1 - no Advanced status
 // : other - index of icons in clcimagelist.
-// if imagelist require advanced painting status overlay(like xStatus) 
+// if imagelist require advanced painting status overlay(like xStatus)
 // index should be shifted to HIWORD, LOWORD should be 0
 
 int JGetAdvancedStatusIcon(WPARAM wParam, LPARAM lParam)
@@ -282,7 +282,7 @@ int JGetAdvancedStatusIcon(WPARAM wParam, LPARAM lParam)
 	if (!JGetByte(hContact,"IsTransported",0)) return -1;
 	if (JGetStringUtf(hContact,"Transport",&dbv)) return -1;
 	iID=GetTransportProtoID(dbv.pszVal);
-	if (iID>=0) 
+	if (iID>=0)
 	{
 		WORD Status=ID_STATUS_OFFLINE;
 		Status = JGetWord(hContact,"Status",ID_STATUS_OFFLINE);
@@ -297,7 +297,7 @@ int JGetAdvancedStatusIcon(WPARAM wParam, LPARAM lParam)
 /////////////////////////////////////////////////////////////////////////////////////////
 //   Transport check functions
 
-static int PushIconLibRegistration( TCHAR* TransportDomain ) //need to push Imagelist addition to 
+static int PushIconLibRegistration( TCHAR* TransportDomain ) //need to push Imagelist addition to
 {
 	if ( ServiceExists( MS_SKIN2_ADDICON )) {
 		char* domain = t2a(TransportDomain);

@@ -51,7 +51,12 @@ char* TNtlmAuth::getInitialRequest()
 	if ( !hProvider )
 		return NULL;
 
-	return Netlib_NtlmCreateResponse( hProvider, "" );
+	// use the full auth for the external servers
+	if ( info->password[0] != 0 )
+		return mir_strdup("");
+
+	// use the transparent auth for local servers (password is empty)
+	return Netlib_NtlmCreateResponse( hProvider, "", NULL, NULL );
 }
 
 char* TNtlmAuth::getChallenge( const TCHAR* challenge )
@@ -59,8 +64,14 @@ char* TNtlmAuth::getChallenge( const TCHAR* challenge )
 	if ( !hProvider )
 		return NULL;
 
-	char* text = t2a( challenge );
-	char* result = Netlib_NtlmCreateResponse( hProvider, text );
+	char *text = ( !lstrcmp( challenge, _T("="))) ? mir_strdup( "" ) : t2a( challenge ), *result;
+	if ( info->password[0] != 0 ) {
+		char* user = t2a( info->username );
+		result = Netlib_NtlmCreateResponse( hProvider, text, user, info->password );
+		mir_free( user );
+	}
+	else result = Netlib_NtlmCreateResponse( hProvider, text, NULL, NULL );
+	
 	mir_free( text );
 	return result;
 }
@@ -152,6 +163,7 @@ char* TMD5Auth::getChallenge( const TCHAR* challenge )
 	mir_free( uname );
 	mir_free( passw );
 	mir_free( serv );
+	mir_free( text );
 
    return JabberBase64Encode( buf, cbLen );
 }

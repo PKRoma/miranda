@@ -25,6 +25,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 #define SECURITY_WIN32
 #include <security.h>
+#include <rpcdce.h>
 
 static HMODULE g_hSecurity = NULL;
 static PSecurityFunctionTableA g_pSSPI = NULL;
@@ -37,6 +38,26 @@ typedef struct
 	unsigned stage;
 }
 	NtlmHandleType;
+
+typedef struct 
+{
+	WORD     len;
+	WORD     allocedSpace;
+	DWORD    offset;
+}
+	NTLM_String;
+
+typedef struct
+{
+   char        sign[8];
+	DWORD       type;   // == 2
+	NTLM_String targetName;
+	DWORD       flags;
+	BYTE        challenge[8];
+	BYTE        context[8];
+	NTLM_String targetInfo;
+}
+	NtlmType2packet;
 
 static unsigned secCnt = 0, ntlmCnt = 0;
 static HANDLE hSecMutex; 
@@ -128,7 +149,7 @@ void NetlibDestroySecurityProvider(char* provider, HANDLE hSecurity)
 	ReleaseMutex(hSecMutex);
 }
 
-char* NtlmCreateResponseFromChallenge(HANDLE hSecurity, char *szChallenge)
+char* NtlmCreateResponseFromChallenge(HANDLE hSecurity, char *szChallenge, char* login, char* psw)
 {
 	SECURITY_STATUS sc;
 	SecBufferDesc outputBufferDescriptor,inputBufferDescriptor;
@@ -157,6 +178,51 @@ char* NtlmCreateResponseFromChallenge(HANDLE hSecurity, char *szChallenge)
 		inputSecurityToken.BufferType=SECBUFFER_TOKEN;
 		inputSecurityToken.cbBuffer=nlb64.cbDecoded;
 		inputSecurityToken.pvBuffer=nlb64.pbDecoded;
+
+		// try to decode the domain name from the NTLM challenge
+		if ( login != NULL ) {
+			NtlmType2packet* pkt = ( NtlmType2packet* )nlb64.pbDecoded;
+			if ( !strcmp( pkt->sign, "NTLMSSP" ) && pkt->type == 2 ) {
+				char* domainName = ( char* )&nlb64.pbDecoded[ pkt->targetName.offset ];
+				int domainLen = pkt->targetName.len;
+
+				// Negotiate Unicode? if yes, convert the unicode name to ANSI
+				if ( pkt->flags & 1 ) {
+					char* buf = ( char* )alloca( domainLen ); // trailing '\0' is not needed
+					WideCharToMultiByte( CP_ACP, 0, ( WCHAR* )domainName, domainLen, buf, domainLen, NULL, NULL );
+					domainLen /= 2;
+					domainName = buf;
+				}
+
+				// remove old credentials and reinitialize the security context using new data
+				if ( hNtlm->stage != 0 ) {
+					g_pSSPI->DeleteSecurityContext(&hNtlm->hClientContext);
+					g_pSSPI->FreeCredentialsHandle(&hNtlm->hClientCredential);
+				}
+				{
+					SEC_WINNT_AUTH_IDENTITY_A auth = { 0 };
+					auth.User = login;
+					auth.UserLength = lstrlenA(login);
+					auth.Password = psw;
+					auth.PasswordLength = lstrlenA(psw);
+					auth.Flags = SEC_WINNT_AUTH_IDENTITY_ANSI;
+					auth.Domain = domainName;
+					auth.DomainLength = domainLen;
+
+					g_pSSPI->AcquireCredentialsHandleA(NULL, "NTLM", SECPKG_CRED_BOTH,
+						NULL, &auth, NULL, NULL, &hNtlm->hClientCredential, &tokenExpiration);
+			}	}
+
+			outputBufferDescriptor.cBuffers = 1;
+			outputBufferDescriptor.pBuffers = &outputSecurityToken;
+			outputBufferDescriptor.ulVersion = SECBUFFER_VERSION;
+			outputSecurityToken.BufferType = SECBUFFER_TOKEN;
+			outputSecurityToken.cbBuffer = ntlmSecurityPackageInfo->cbMaxToken;
+			outputSecurityToken.pvBuffer = mir_alloc(outputSecurityToken.cbBuffer);
+
+			g_pSSPI->InitializeSecurityContextA(&hNtlm->hClientCredential, NULL, NULL, 0, 0, SECURITY_NATIVE_DREP, 
+				NULL, 0, &hNtlm->hClientContext, &outputBufferDescriptor, &contextAttributes, &tokenExpiration);
+		}
 	}
 	else {
 		if (hNtlm->stage != 0) {
@@ -164,7 +230,7 @@ char* NtlmCreateResponseFromChallenge(HANDLE hSecurity, char *szChallenge)
 			g_pSSPI->FreeCredentialsHandle(&hNtlm->hClientCredential);
 		}
 
-		sc = g_pSSPI->AcquireCredentialsHandleA(NULL, "NTLM", SECPKG_CRED_OUTBOUND,
+		g_pSSPI->AcquireCredentialsHandleA(NULL, "NTLM", SECPKG_CRED_OUTBOUND,
 			NULL, NULL, NULL, NULL, &hNtlm->hClientCredential, &tokenExpiration);
 		hNtlm->stage = 0;
 	}
@@ -176,7 +242,7 @@ char* NtlmCreateResponseFromChallenge(HANDLE hSecurity, char *szChallenge)
 	outputBufferDescriptor.ulVersion = SECBUFFER_VERSION;
 	outputSecurityToken.BufferType = SECBUFFER_TOKEN;
 	outputSecurityToken.cbBuffer = ntlmSecurityPackageInfo->cbMaxToken;
-	outputSecurityToken.pvBuffer = mir_alloc(outputSecurityToken.cbBuffer);
+	outputSecurityToken.pvBuffer = alloca(outputSecurityToken.cbBuffer);
 
 	sc = g_pSSPI->InitializeSecurityContextA(&hNtlm->hClientCredential, 
 		*szChallenge ? &hNtlm->hClientContext : NULL,
@@ -191,10 +257,8 @@ char* NtlmCreateResponseFromChallenge(HANDLE hSecurity, char *szChallenge)
 		hNtlm->stage = 0;
 	}
 
-	if (sc != SEC_E_OK && sc != SEC_I_CONTINUE_NEEDED) {
-		mir_free(outputSecurityToken.pvBuffer); 
+	if (sc != SEC_E_OK && sc != SEC_I_CONTINUE_NEEDED)
 		return NULL;
-	}
 
 	nlb64.cbDecoded = outputSecurityToken.cbBuffer;
 	nlb64.pbDecoded = outputSecurityToken.pvBuffer;
@@ -202,10 +266,8 @@ char* NtlmCreateResponseFromChallenge(HANDLE hSecurity, char *szChallenge)
 	nlb64.pszEncoded = (char*)mir_alloc(nlb64.cchEncoded);
 	if (!NetlibBase64Encode(0,(LPARAM)&nlb64)) {
 		mir_free(nlb64.pszEncoded); 
-		mir_free(outputSecurityToken.pvBuffer); 
 		return NULL;
 	}
-	mir_free(outputSecurityToken.pvBuffer);
 	return nlb64.pszEncoded;
 }
 
@@ -224,7 +286,8 @@ static int DestroySecurityProviderService( WPARAM wParam, LPARAM lParam )
 
 static int NtlmCreateResponseService( WPARAM wParam, LPARAM lParam )
 {
-	return (int)NtlmCreateResponseFromChallenge(( HANDLE )wParam, ( char* )lParam );
+	NETLIBNTLMREQUEST* req = ( NETLIBNTLMREQUEST* )lParam;
+	return (int)NtlmCreateResponseFromChallenge(( HANDLE )wParam, req->szChallenge, req->userName, req->password );
 }
 
 void NetlibSecurityInit(void)

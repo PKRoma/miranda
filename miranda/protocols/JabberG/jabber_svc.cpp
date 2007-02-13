@@ -52,7 +52,7 @@ static HANDLE AddToListByJID( const TCHAR* newJid, DWORD flags )
 		JSetStringT( hContact, "jid", jid );
 		if (( nick=JabberNickFromJID( newJid )) == NULL )
 			nick = mir_tstrdup( newJid );
-		JSetStringT( hContact, "Nick", nick );
+//		JSetStringT( hContact, "Nick", nick );
 		mir_free( nick );
 		mir_free( jid );
 
@@ -164,7 +164,7 @@ int JabberAuthAllow( WPARAM wParam, LPARAM lParam )
 	JabberLog( "Send 'authorization allowed' to " TCHAR_STR_PARAM, jid );
 
 	XmlNode presence( "presence" ); presence.addAttr( "to", jid ); presence.addAttr( "type", "subscribed" );
-	JabberSend( jabberThreadInfo->s, presence );
+	jabberThreadInfo->send( presence );
 
 	#if defined( _UNICODE )
 		TCHAR* newJid = a2u( jid );
@@ -228,7 +228,7 @@ int JabberAuthDeny( WPARAM wParam, LPARAM lParam )
 	JabberLog( "Send 'authorization denied' to " TCHAR_STR_PARAM, jid );
 
 	XmlNode presence( "presence" ); presence.addAttr( "to", jid ); presence.addAttr( "type", "unsubscribed" );
-	JabberSend( jabberThreadInfo->s, presence );
+	jabberThreadInfo->send( presence );
 
 	mir_free( dbei.pBlob );
 	return 0;
@@ -268,13 +268,12 @@ static void __cdecl JabberBasicSearchThread( JABBER_SEARCH_BASIC *jsb )
 int JabberBasicSearch( WPARAM wParam, LPARAM lParam )
 {
 	char* szJid = ( char* )lParam;
-	JabberLog( "JabberBasicSearch called with lParam = " TCHAR_STR_PARAM, szJid );
+	JabberLog( "JabberBasicSearch called with lParam = '%s'", szJid );
 
 	JABBER_SEARCH_BASIC *jsb;
 	if ( !jabberOnline || ( jsb=( JABBER_SEARCH_BASIC * ) mir_alloc( sizeof( JABBER_SEARCH_BASIC )) )==NULL )
 		return 0;
 
-	jsb->hSearch = JabberSerialNext();
 	if ( strchr( szJid, '@' ) == NULL ) {
 		char szServer[ 100 ];
 		if ( JGetStaticString( "LoginServer", NULL, szServer, sizeof szServer ))
@@ -284,6 +283,17 @@ int JabberBasicSearch( WPARAM wParam, LPARAM lParam )
 	}
 	else strncpy( jsb->jid, szJid, SIZEOF(jsb->jid));
 
+	if ( JGetByte( "ValidateAddition", TRUE )) {
+		JabberLog( "Sending basic search validation request for '%s'", jsb->jid );
+		TCHAR* ptszJid = a2t( jsb->jid );
+		jabberSearchID = JabberSendGetVcard( ptszJid );
+		mir_free( ptszJid );
+		mir_free( jsb );
+		return jabberSearchID;
+	}
+	
+	JabberLog( "Adding '%s' without validation", jsb->jid );
+   jsb->hSearch = JabberSerialNext();
 	mir_forkthread(( pThreadFunc )JabberBasicSearchThread, jsb );
 	return jsb->hSearch;
 }
@@ -312,10 +322,10 @@ int JabberContactDeleted( WPARAM wParam, LPARAM lParam )
 		if ( !JabberListExist( LIST_CHATROOM, jid ) || q == NULL )
 			if ( JabberListExist( LIST_ROSTER, jid )) {
 				// Remove from roster, server also handles the presence unsubscription process.
-				XmlNodeIq iq( "set" );
+				XmlNodeIq iq( "set" ); iq.addAttrID( JabberSerialNext());
 				XmlNode* query = iq.addQuery( "jabber:iq:roster" );
 				XmlNode* item = query->addChild( "item" ); item->addAttr( "jid", jid ); item->addAttr( "subscription", "remove" );
-				JabberSend( jabberThreadInfo->s, iq );
+				jabberThreadInfo->send( iq );
 			}
 
 		JFreeVariant( &dbv );
@@ -450,10 +460,12 @@ void sttAddContactForever( DBCONTACTWRITESETTING* cws, HANDLE hContact )
 		JabberAddContactToRoster( jid.ptszVal, nick, dbv.ptszVal, subscription );
 		JFreeVariant( &dbv );
 	}
-	else JabberAddContactToRoster( jid.ptszVal, nick, NULL, subscription );
+	else JabberAddContactToRoster( jid.ptszVal, NULL, NULL, subscription );
 
 	XmlNode presence( "presence" ); presence.addAttr( "to", jid.ptszVal ); presence.addAttr( "type", "subscribe" );
-	JabberSend( jabberThreadInfo->s, presence );
+	jabberThreadInfo->send( presence );
+
+	JabberSendGetVcard( jid.ptszVal );
 
 	mir_free( nick );
 	DBDeleteContactSetting( hContact, "CList", "Hidden" );
@@ -554,7 +566,7 @@ int JabberFileDeny( WPARAM wParam, LPARAM lParam )
 	case FT_OOB:
 		{	XmlNode* e = iq.addChild( "error", _T("File transfer refused"));
 			e->addAttr( "code", 406 );
-			JabberSend( jabberThreadInfo->s, iq );
+			jabberThreadInfo->send( iq );
 		}
 		break;
 	case FT_BYTESTREAM:
@@ -562,7 +574,7 @@ int JabberFileDeny( WPARAM wParam, LPARAM lParam )
 			e->addAttr( "code", 403 ); e->addAttr( "type", "cancel" );
 			XmlNode* f = e->addChild( "forbidden" ); f->addAttr( "xmlns", "urn:ietf:params:xml:ns:xmpp-stanzas" );
 			XmlNode* t = f->addChild( "text", "File transfer refused" ); t->addAttr( "xmlns", "urn:ietf:params:xml:ns:xmpp-stanzas" );
-			JabberSend( jabberThreadInfo->s, iq );
+			jabberThreadInfo->send( iq );
 		}
 		break;
 	}
@@ -668,7 +680,7 @@ static int JabberGetAvatarInfo(WPARAM wParam,LPARAM lParam)
 				if (isXVcard) {
 					XmlNode* vs = iq.addChild( "vCard" ); vs->addAttr( "xmlns", "vcard-temp" );
 				} else XmlNode* query = iq.addQuery( isXVcard?"":"jabber:iq:avatar" );
-				JabberSend( jabberThreadInfo->s, iq );
+				jabberThreadInfo->send( iq );
 
 				JFreeVariant( &dbv );
 				return GAIR_WAITFOR;
@@ -902,7 +914,7 @@ int JabberSearchByEmail( WPARAM wParam, LPARAM lParam )
 	XmlNodeIq iq( "set", iqId, szServerName );
 	XmlNode* query = iq.addQuery( "jabber:iq:search" );
 	query->addChild( "email", ( char* )lParam );
-	JabberSend( jabberThreadInfo->s, iq );
+	jabberThreadInfo->send( iq );
 	return iqId;
 }
 
@@ -957,7 +969,7 @@ int JabberSearchByName( WPARAM wParam, LPARAM lParam )
 		else query->addChild( "last", psbn->pszLastName );
 	}
 
-	JabberSend( jabberThreadInfo->s, iq );
+	jabberThreadInfo->send( iq );
 	return iqId;
 }
 
@@ -1022,7 +1034,7 @@ int JabberSendFile( WPARAM wParam, LPARAM lParam )
 			mir_sntprintf( jid, SIZEOF(jid), _T("%s/%s"), item->jid, rs );
 			XmlNodeIq iq( "get", iqId, jid );
 			XmlNode* query = iq.addQuery( "http://jabber.org/protocol/disco#info" );
-			JabberSend( jabberThreadInfo->s, iq );
+			jabberThreadInfo->send( iq );
 		}
 	}
 	else if (( item->cap & CLIENT_CAP_FILE ) && ( item->cap & CLIENT_CAP_BYTESTREAM ))
@@ -1112,7 +1124,7 @@ int JabberSendMessage( WPARAM wParam, LPARAM lParam )
 				XmlNode* x = m.addChild( "x" ); x->addAttr( "xmlns", "jabber:x:event" ); x->addChild( "composing" );
 			}
 
-			JabberSend( jabberThreadInfo->s, m );
+			jabberThreadInfo->send( m );
 			mir_forkthread( JabberSendMessageAckThread, ccs->hContact );
 		}
 		else {
@@ -1126,7 +1138,7 @@ int JabberSendMessage( WPARAM wParam, LPARAM lParam )
 
 			XmlNode* x = m.addChild( "x" ); x->addAttr( "xmlns", "jabber:x:event" );
 			x->addChild( "composing" ); x->addChild( "delivered" ); x->addChild( "offline" );
-			JabberSend( jabberThreadInfo->s, m );
+			jabberThreadInfo->send( m );
 	}	}
 
 	JFreeVariant( &dbv );
@@ -1154,7 +1166,7 @@ int JabberSetApparentMode( WPARAM wParam, LPARAM lParam )
 		case ID_STATUS_ONLINE:
 			if ( jabberStatus == ID_STATUS_INVISIBLE || oldMode == ID_STATUS_OFFLINE ) {
 				XmlNode p( "presence" ); p.addAttr( "to", jid );
-				JabberSend( jabberThreadInfo->s, p );
+				jabberThreadInfo->send( p );
 			}
 			break;
 		case ID_STATUS_OFFLINE:
@@ -1263,13 +1275,10 @@ int JabberSetStatus( WPARAM wParam, LPARAM lParam )
 
  	if ( desiredStatus == ID_STATUS_OFFLINE ) {
 		if ( jabberThreadInfo ) {
-			HANDLE s = jabberThreadInfo->s;
+			jabberThreadInfo->send( "</stream:stream>" );
 			jabberThreadInfo = NULL;
-			if ( jabberConnected ) {
-				JabberSend( s, "</stream:stream>" );
+			if ( jabberConnected )
 				jabberConnected = jabberOnline = FALSE;
-			}
-			Netlib_CloseHandle(s); // New Line
 		}
 
 		int oldStatus = jabberStatus;
@@ -1280,12 +1289,8 @@ int JabberSetStatus( WPARAM wParam, LPARAM lParam )
 		if ( jabberConnected )
 			return 0;
 
-		ThreadData* thread = ( ThreadData* ) mir_alloc( sizeof( ThreadData ));
-
-		ZeroMemory( thread, sizeof( ThreadData ));
-		thread->type = JABBER_SESSION_NORMAL;
+		ThreadData* thread = new ThreadData( JABBER_SESSION_NORMAL );
 		jabberDesiredStatus = desiredStatus;
-
 		int oldStatus = jabberStatus;
 		jabberStatus = ID_STATUS_CONNECTING;
 		JSendBroadcast( NULL, ACKTYPE_STATUS, ACKRESULT_SUCCESS, ( HANDLE ) oldStatus, jabberStatus );
@@ -1319,11 +1324,11 @@ int JabberUserIsTyping( WPARAM wParam, LPARAM lParam )
 			switch ( lParam ){
 			case PROTOTYPE_SELFTYPING_OFF:
 				m.addChild( "paused" )->addAttr( "xmlns", _T("http://jabber.org/protocol/chatstates"));
-				JabberSend( jabberThreadInfo->s, m );
+				jabberThreadInfo->send( m );
 				break;
 			case PROTOTYPE_SELFTYPING_ON:
 				m.addChild( "composing" )->addAttr( "xmlns", _T("http://jabber.org/protocol/chatstates"));
-				JabberSend( jabberThreadInfo->s, m );
+				jabberThreadInfo->send( m );
 				break;
 			}
 		}
@@ -1334,11 +1339,11 @@ int JabberUserIsTyping( WPARAM wParam, LPARAM lParam )
 
 			switch ( lParam ){
 			case PROTOTYPE_SELFTYPING_OFF:
-				JabberSend( jabberThreadInfo->s, m );
+				jabberThreadInfo->send( m );
 				break;
 			case PROTOTYPE_SELFTYPING_ON:
 				x->addChild( "composing" );
-				JabberSend( jabberThreadInfo->s, m );
+				jabberThreadInfo->send( m );
 				break;
 	}	}	}
 
@@ -1351,7 +1356,7 @@ int JabberUserIsTyping( WPARAM wParam, LPARAM lParam )
 
 int ServiceSendXML(WPARAM wParam, LPARAM lParam)
 {
-	return JabberSend( jabberThreadInfo->s, (char*)lParam);
+	return jabberThreadInfo->send( (char*)lParam);
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////

@@ -62,16 +62,8 @@ cd ..\clist
 nmake /f clist.mak CFG="clist - Win32 Release"
 if errorlevel 1 goto :Error
 
-cd ..\clist_nicer
-nmake /f clist.mak CFG="clist_nicer - Win32 Release"
-if errorlevel 1 goto :Error
-
 cd ..\db3x
 nmake /f db3x.mak CFG="db3x - Win32 Release"
-if errorlevel 1 goto :Error
-
-cd ..\help
-nmake /f help.mak CFG="help - Win32 Release"
 if errorlevel 1 goto :Error
 
 cd ..\import
@@ -81,10 +73,6 @@ if errorlevel 1 goto :Error
 cd ..\loadavatars
 nmake /f avatars.mak CFG="loadavatars - Win32 Release"
 if errorlevel 1 goto :Error
-
-rem cd ..\modernb
-rem nmake /f modernb.mak CFG="modernb - Win32 Release"
-rem if errorlevel 1 goto :Error
 
 cd ..\mwclist
 nmake /f mwclist.mak CFG="mwclist - Win32 Release"
