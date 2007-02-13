@@ -25,7 +25,8 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include <richedit.h>
 #include <richole.h>
 #define MSGERROR_CANCEL	0
-#define MSGERROR_RETRY	    1
+#define MSGERROR_RETRY	1
+#define MSGERROR_DONE	2
 
 struct NewMessageWindowLParam
 {
@@ -67,6 +68,7 @@ struct MessageWindowData
 	TCmdList *cmdListCurrent;
 	int bIsRtl, bIsFirstAppend, bIsAutoRTL;
 	int lastEventType;
+	HWND hwndErrorDlg;
 };
 
 #define HM_EVENTSENT         (WM_USER+10)

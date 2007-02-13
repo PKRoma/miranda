@@ -1412,7 +1412,7 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
 			KillTimer(hwndDlg, wParam);
 			ShowWindow(hwndDlg, SW_SHOWNORMAL);
 			EnableWindow(hwndDlg, FALSE);
-			CreateDialogParam(g_hInst, MAKEINTRESOURCE(IDD_MSGSENDERROR), hwndDlg, ErrorDlgProc, (LPARAM) strdup( Translate("The message send timed out.")));
+			dat->hwndErrorDlg = CreateDialogParam(g_hInst, MAKEINTRESOURCE(IDD_MSGSENDERROR), hwndDlg, ErrorDlgProc, (LPARAM) Translate("The message send timed out."));
 		}
 		else if (wParam == TIMERID_FLASHWND) {
 			FlashWindow(hwndDlg, TRUE);
@@ -1457,12 +1457,19 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
 		}
 		break;
 	case DM_ERRORDECIDED:
+		dat->hwndErrorDlg = NULL;
 		EnableWindow(hwndDlg, TRUE);
 		switch (wParam) {
 		case MSGERROR_CANCEL:
 			EnableWindow(GetDlgItem(hwndDlg, IDOK), TRUE);
 			SendDlgItemMessage(hwndDlg, IDC_MESSAGE, EM_SETREADONLY, FALSE, 0);
 			SetFocus(GetDlgItem(hwndDlg, IDC_MESSAGE));
+			break;
+		case MSGERROR_DONE:
+			// messages were delivered succesfully after timeout
+			SetFocus(GetDlgItem(hwndDlg,IDC_MESSAGE));
+			if (DBGetContactSettingByte(NULL, SRMMMOD, SRMSGSET_AUTOCLOSE, SRMSGDEFSET_AUTOCLOSE))
+				DestroyWindow(hwndDlg);
 			break;
 		case MSGERROR_RETRY:
 			{
@@ -1542,7 +1549,7 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
 				return CallService(MS_CLIST_MENUDRAWITEM, wParam, lParam);
 			}
 		case WM_COMMAND:
-			if (CallService(MS_CLIST_MENUPROCESSCOMMAND, MAKEWPARAM(LOWORD(wParam), MPCF_CONTACTMENU), (LPARAM) dat->hContact))
+			if (!lParam && CallService(MS_CLIST_MENUPROCESSCOMMAND, MAKEWPARAM(LOWORD(wParam), MPCF_CONTACTMENU), (LPARAM) dat->hContact))
 				break;
 			switch (LOWORD(wParam)) {
 			case IDOK:
@@ -1812,7 +1819,7 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
 					KillTimer(hwndDlg, TIMERID_MSGSEND);
 					ShowWindow(hwndDlg, SW_SHOWNORMAL);
 					EnableWindow(hwndDlg, FALSE);
-					CreateDialogParam(g_hInst, MAKEINTRESOURCE(IDD_MSGSENDERROR), hwndDlg, ErrorDlgProc, (ack->lParam == 0) ? 0 : (LPARAM) strdup((char *) ack->lParam));
+					dat->hwndErrorDlg = CreateDialogParam(g_hInst, MAKEINTRESOURCE(IDD_MSGSENDERROR), hwndDlg, ErrorDlgProc, ack->lParam);
 					return 0;
 			}
 			if (dat->sendBuffer==NULL) return 0;
@@ -1849,6 +1856,10 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
 				len = GetWindowTextLength(GetDlgItem(hwndDlg, IDC_MESSAGE));
 				UpdateReadChars(hwndDlg, dat->hwndStatus);
 				EnableWindow(GetDlgItem(hwndDlg, IDOK), len != 0);
+				if (dat->hwndErrorDlg) {
+					SendMessage(dat->hwndErrorDlg, DM_ERRORDECIDED, MSGERROR_DONE, 0);
+					break;
+				}
 				if (DBGetContactSettingByte(NULL, SRMMMOD, SRMSGSET_AUTOCLOSE, SRMSGDEFSET_AUTOCLOSE))
 					DestroyWindow(hwndDlg);
 			}
