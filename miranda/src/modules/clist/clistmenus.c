@@ -1113,7 +1113,7 @@ int MenuModulesLoaded(WPARAM wParam,LPARAM lParam)
 				{
 					TCHAR buf[ 256 ];
 					mir_sntprintf( buf, SIZEOF( buf ), _T("%s\tCtrl+%c"),
-						cli.pfnGetStatusModeDescription( statusModeList[j], GSMDF_UNTRANSLATED ), '0'+j );
+						cli.pfnGetStatusModeDescription( statusModeList[j], GCMDF_TCHAR ), '0'+j );
 					tmi.ptszName = buf;
 					hStatusMainMenuHandles[j] = MO_AddNewMenuItem( hStatusMenuObject, &tmi );
 				}
