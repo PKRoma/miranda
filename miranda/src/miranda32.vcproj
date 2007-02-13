@@ -3294,6 +3294,15 @@
 				RelativePath="res\viewdetails.ico">
 			</File>
 		</Filter>
+		<File
+			RelativePath="..\docs\contributors.txt">
+		</File>
+		<File
+			RelativePath=".\res\load.ico">
+		</File>
+		<File
+			RelativePath=".\res\typing.ico">
+		</File>
 	</Files>
 	<Globals>
 	</Globals>

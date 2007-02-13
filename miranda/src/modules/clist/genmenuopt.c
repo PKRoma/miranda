@@ -35,7 +35,6 @@ int SaveTree(HWND hwndDlg)
 	int count;
 	TCHAR idstr[100];
 	char menuItemName[256],DBString[256],MenuNameItems[256];
-	TCHAR *name;
 	int menuitempos,menupos;
 	int MenuObjectId,runtimepos;
 	PIntMenuObject pimo;
@@ -69,27 +68,26 @@ int SaveTree(HWND hwndDlg)
 	while ( tvi.hItem != NULL ) {
 		TreeView_GetItem( hTree, &tvi );
 		iod = ( MenuItemOptData* )tvi.lParam;
-		name = iod->name;
 		menuitempos = GetMenuItembyId(menupos,iod->id);
 		if ( menuitempos != -1 ) {
 			GetMenuItemName( &pimo->MenuItems[menuitempos], menuItemName, sizeof(menuItemName));
 
-			wsprintfA(DBString, "%s_visible", menuItemName);
-			DBWriteContactSettingByte(NULL, MenuNameItems, DBString, iod->show);
+			wsprintfA( DBString, "%s_visible", menuItemName );
+			DBWriteContactSettingByte( NULL, MenuNameItems, DBString, iod->show );
 
-			wsprintfA(DBString, "%s_pos", menuItemName);
-			DBWriteContactSettingDword(NULL, MenuNameItems, DBString, runtimepos);
+			wsprintfA( DBString, "%s_pos", menuItemName );
+			DBWriteContactSettingDword( NULL, MenuNameItems, DBString, runtimepos );
 
-			if ( name && iod->defname ) {
-				if( _tcscmp(name, iod->defname ) !=0 ) {
-					wsprintfA( DBString, "%s_name", menuItemName );
-					DBWriteContactSettingTString(NULL, MenuNameItems, DBString, name);
-			}	}
+			wsprintfA( DBString, "%s_name", menuItemName );
+			if ( lstrcmp( iod->name, iod->defname ) != 0 )
+				DBWriteContactSettingTString( NULL, MenuNameItems, DBString, iod->name );
+			else
+				DBDeleteContactSetting( NULL, MenuNameItems, DBString );
 
 			runtimepos += 100;
 		}
 
-		if ( name && !_tcscmp(name, STR_SEPARATOR) && iod->show )
+		if ( iod->name && !_tcscmp( iod->name, STR_SEPARATOR) && iod->show )
 			runtimepos += SEPARATORPOSITIONINTERVAL;
 
 		tvi.hItem = TreeView_GetNextSibling( hTree, tvi.hItem );
@@ -161,12 +159,12 @@ int InsertSeparator(HWND hwndDlg)
 	PD->show = TRUE;
 	PD->pos  = ((MenuItemOptData *)tvi.lParam)->pos-1;
 
-	tvis.item.lParam=(LPARAM)(PD);
-	tvis.item.pszText=(PD->name);
-	tvis.item.iImage=tvis.item.iSelectedImage=PD->show;
-	tvis.hParent=NULL;
-	tvis.hInsertAfter=hti;
-	tvis.item.mask=TVIF_PARAM|TVIF_TEXT|TVIF_IMAGE|TVIF_SELECTEDIMAGE;
+	tvis.item.lParam = (LPARAM)(PD);
+	tvis.item.pszText = PD->name;
+	tvis.item.iImage = tvis.item.iSelectedImage=PD->show;
+	tvis.hParent = NULL;
+	tvis.hInsertAfter = hti;
+	tvis.item.mask = TVIF_PARAM|TVIF_TEXT|TVIF_IMAGE|TVIF_SELECTEDIMAGE;
 	SendDlgItemMessage(hwndDlg, IDC_MENUITEMS, TVM_INSERTITEM, 0, (LPARAM)&tvis);
 	return 1;
 }
@@ -278,10 +276,10 @@ int BuildTree(HWND hwndDlg,int MenuObjectId)
 		if ( PDar[i]->pos-lastpos >= SEPARATORPOSITIONINTERVAL ) {
 			PD=(MenuItemOptData*)mir_alloc(sizeof(MenuItemOptData));
 			ZeroMemory(PD,sizeof(MenuItemOptData));
-			PD->id=-1;
-			PD->name=mir_tstrdup( _T("---------------------------------------------"));
-			PD->pos=PDar[i]->pos-1;
-			PD->show=TRUE;
+			PD->id = -1;
+			PD->name = mir_tstrdup( STR_SEPARATOR );
+			PD->pos = PDar[i]->pos-1;
+			PD->show = TRUE;
 
 			tvis.item.lParam=(LPARAM)(PD);
 			tvis.item.pszText=(PD->name);
@@ -435,7 +433,6 @@ static BOOL CALLBACK GenMenuOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM l
 				{
 					TVITEM tvi;
 					HTREEITEM hti;
-					char buf[256];
 					MenuItemOptData *iod;
 
 					hti=TreeView_GetSelection(GetDlgItem(hwndDlg,IDC_MENUITEMS));
@@ -447,11 +444,9 @@ static BOOL CALLBACK GenMenuOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM l
 					TreeView_GetItem(GetDlgItem(hwndDlg,IDC_MENUITEMS),&tvi);
 					iod = ( MenuItemOptData * )tvi.lParam;
 
-					if ( iod->name && _tcsstr(iod->name, _T("---------------------------------------------")))
+					if ( iod->name && _tcsstr( iod->name, STR_SEPARATOR ))
 						break;
 
-					ZeroMemory(buf,256);
-					GetDlgItemTextA(hwndDlg,IDC_GENMENU_CUSTOMNAME,buf,256);
 					if (iod->name)
 						mir_free(iod->name);
 					iod->name = mir_tstrdup( iod->defname );
@@ -643,9 +638,9 @@ static BOOL CALLBACK GenMenuOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM l
 						if ( p ) {
 							SetDlgItemText( hwndDlg, IDC_GENMENU_SERVICE, p );
 							mir_free( p );
-						}
-					}
-					EnableWindow(GetDlgItem(hwndDlg,IDC_GENMENU_DEFAULT),TRUE);
+					}	}
+
+					EnableWindow(GetDlgItem(hwndDlg,IDC_GENMENU_DEFAULT), lstrcmp( iod->name, iod->defname) != 0 );
 					EnableWindow(GetDlgItem(hwndDlg,IDC_GENMENU_SET),TRUE);
 					EnableWindow(GetDlgItem(hwndDlg,IDC_GENMENU_CUSTOMNAME),TRUE);
 					break;
