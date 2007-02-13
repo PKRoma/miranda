@@ -30,20 +30,16 @@ Last change by : $Author$
 #include "jabber.h"
 #include "jabber_ssl.h"
 
-PFN_SSL_int_void			pfn_SSL_library_init;		// int SSL_library_init()
-PFN_SSL_pvoid_void			pfn_SSLv23_client_method;	// SSL_METHOD *SSLv23_client_method()
-PFN_SSL_pvoid_pvoid			pfn_SSL_CTX_new;			// SSL_CTX *SSL_CTX_new( SSL_METHOD *method )
-PFN_SSL_void_pvoid			pfn_SSL_CTX_free;			// void SSL_CTX_free( SSL_CTX *ctx );
-PFN_SSL_pvoid_pvoid			pfn_SSL_new;				// SSL *SSL_new( SSL_CTX *ctx )
-PFN_SSL_void_pvoid			pfn_SSL_free;				// void SSL_free( SSL *ssl );
-PFN_SSL_int_pvoid_int		pfn_SSL_set_fd;				// int SSL_set_fd( SSL *ssl, int fd );
-PFN_SSL_int_pvoid			pfn_SSL_connect;			// int SSL_connect( SSL *ssl );
-PFN_SSL_int_pvoid_pvoid_int	pfn_SSL_read;				// int SSL_read( SSL *ssl, void *buffer, int bufsize )
-PFN_SSL_int_pvoid_pvoid_int	pfn_SSL_write;				// int SSL_write( SSL *ssl, void *buffer, int bufsize )
-
-static CRITICAL_SECTION sslHandleMutex;
-static JABBER_SSL_MAPPING *sslHandleList = NULL;
-static int sslHandleCount = 0;
+PFN_SSL_int_void             pfn_SSL_library_init;      // int SSL_library_init()
+PFN_SSL_pvoid_void           pfn_SSLv23_client_method;  // SSL_METHOD *SSLv23_client_method()
+PFN_SSL_pvoid_pvoid          pfn_SSL_CTX_new;           // SSL_CTX *SSL_CTX_new( SSL_METHOD *method )
+PFN_SSL_void_pvoid           pfn_SSL_CTX_free;          // void SSL_CTX_free( SSL_CTX *ctx );
+PFN_SSL_pvoid_pvoid          pfn_SSL_new;               // SSL *SSL_new( SSL_CTX *ctx )
+PFN_SSL_void_pvoid           pfn_SSL_free;              // void SSL_free( SSL *ssl );
+PFN_SSL_int_pvoid_int        pfn_SSL_set_fd;            // int SSL_set_fd( SSL *ssl, int fd );
+PFN_SSL_int_pvoid            pfn_SSL_connect;           // int SSL_connect( SSL *ssl );
+PFN_SSL_int_pvoid_pvoid_int  pfn_SSL_read;              // int SSL_read( SSL *ssl, void *buffer, int bufsize )
+PFN_SSL_int_pvoid_pvoid_int  pfn_SSL_write;             // int SSL_write( SSL *ssl, void *buffer, int bufsize )
 
 BOOL JabberSslInit()
 {
@@ -51,10 +47,6 @@ BOOL JabberSslInit()
 		return TRUE;
 
 	BOOL error = FALSE;
-
-	sslHandleList = NULL;
-	sslHandleCount = 0;
-	InitializeCriticalSection( &sslHandleMutex );
 
 	hLibSSL = LoadLibraryA( "SSLEAY32.DLL" );
 	if ( !hLibSSL )
@@ -109,70 +101,4 @@ void JabberSslUninit()
 		JabberLog( "Free SSL library" );
 		FreeLibrary( hLibSSL );
 		hLibSSL = NULL;
-	}
-
-	if ( sslHandleList ) mir_free( sslHandleList );
-	sslHandleCount = 0;
-	DeleteCriticalSection( &sslHandleMutex );
-}
-
-int JabberSslFindHandle( HANDLE hConn )
-{
-	int i;
-
-	EnterCriticalSection( &sslHandleMutex );
-	for ( i=0; i<sslHandleCount; i++ ) {
-		if ( sslHandleList[i].h == hConn ) {
-			LeaveCriticalSection( &sslHandleMutex );
-			return i;
-		}
-	}
-	LeaveCriticalSection( &sslHandleMutex );
-	return -1;
-}
-
-PVOID JabberSslHandleToSsl( HANDLE hConn )
-{
-	int i;
-
-	EnterCriticalSection( &sslHandleMutex );
-	for ( i=0; i<sslHandleCount; i++ ) {
-		if ( sslHandleList[i].h == hConn ) {
-			LeaveCriticalSection( &sslHandleMutex );
-			return sslHandleList[i].ssl;
-		}
-	}
-	LeaveCriticalSection( &sslHandleMutex );
-	return NULL;
-}
-
-void JabberSslAddHandle( HANDLE hConn, PVOID ssl )
-{
-	EnterCriticalSection( &sslHandleMutex );
-	if ( JabberSslFindHandle( hConn ) >= 0 ) {
-		LeaveCriticalSection( &sslHandleMutex );
-		return;
-	}
-
-	sslHandleList = ( JABBER_SSL_MAPPING * ) mir_realloc( sslHandleList, ( sslHandleCount+1 )*sizeof( JABBER_SSL_MAPPING ));
-	sslHandleList[sslHandleCount].h = hConn;
-	sslHandleList[sslHandleCount].ssl = ssl;
-	sslHandleCount++;
-	LeaveCriticalSection( &sslHandleMutex );
-}
-
-void JabberSslRemoveHandle( HANDLE hConn )
-{
-	int i;
-
-	EnterCriticalSection( &sslHandleMutex );
-	if (( i=JabberSslFindHandle( hConn )) < 0 ) {
-		LeaveCriticalSection( &sslHandleMutex );
-		return;
-	}
-
-	sslHandleCount--;
-	memmove( sslHandleList+i, sslHandleList+i+1, ( sslHandleCount-i )*sizeof( JABBER_SSL_MAPPING ));
-	sslHandleList = ( JABBER_SSL_MAPPING * ) mir_realloc( sslHandleList, sslHandleCount*sizeof( JABBER_SSL_MAPPING ));
-	LeaveCriticalSection( &sslHandleMutex );
-}
+}	}

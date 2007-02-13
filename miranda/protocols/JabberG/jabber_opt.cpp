@@ -331,7 +331,7 @@ static BOOL CALLBACK JabberOptDlgProc( HWND hwndDlg, UINT msg, WPARAM wParam, LP
 			{
 				XmlNodeIq iq( "set", NOID, jabberJID );
 				iq.addQuery( "jabber:iq:register" )->addChild( "remove" );
-				JabberSend( jabberThreadInfo->s, iq );
+				jabberThreadInfo->send( iq );
 			}
 			break;
 		case IDC_MSGLANG:

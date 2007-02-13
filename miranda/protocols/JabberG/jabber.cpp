@@ -62,7 +62,6 @@ HANDLE hMainThread = NULL;
 DWORD jabberMainThreadId;
 char* jabberProtoName;	// "JABBER"
 char* jabberModuleName;	// "Jabber"
-CRITICAL_SECTION mutex;
 HANDLE hNetlibUser;
 // Main jabber server connection thread global variables
 ThreadData* jabberThreadInfo = NULL;
@@ -316,7 +315,6 @@ extern "C" int __declspec( dllexport ) Load( PLUGINLINK *link )
 	memset(( char* )&modeMsgs, 0, sizeof( JABBER_MODEMSGS ));
 	jabberCodePage = JGetWord( NULL, "CodePage", CP_ACP );
 
-	InitializeCriticalSection( &mutex );
 	InitializeCriticalSection( &modeMsgMutex );
 
 	srand(( unsigned ) time( NULL ));
@@ -348,7 +346,6 @@ extern "C" int __declspec( dllexport ) Unload( void )
 	JabberSerialUninit();
 	JabberWsUninit();
 	DeleteCriticalSection( &modeMsgMutex );
-	DeleteCriticalSection( &mutex );
 	mir_free( modeMsgs.szOnline );
 	mir_free( modeMsgs.szAway );
 	mir_free( modeMsgs.szNa );

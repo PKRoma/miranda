@@ -47,7 +47,7 @@ void JabberAddContactToRoster( const TCHAR* jid, const TCHAR* nick, const TCHAR*
 
 	if ( grpName != NULL )
 		item->addChild( "group", grpName );
-	JabberSend( jabberThreadInfo->s, iq );
+	jabberThreadInfo->send( iq );
 }
 
 ///////////////////////////////////////////////////////////////////////////////
