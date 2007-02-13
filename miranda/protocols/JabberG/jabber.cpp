@@ -202,7 +202,6 @@ HANDLE hChatEvent = NULL,
 static int OnModulesLoaded( WPARAM wParam, LPARAM lParam )
 {
 	JabberWsInit();
-	JabberSslInit();
 	HookEvent( ME_USERINFO_INITIALISE, JabberUserInfoInit );
 	bSecureIM = (ServiceExists("SecureIM/IsContactSecured"));
 

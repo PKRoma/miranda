@@ -27,6 +27,7 @@ Last change by : $Author$
 
 #include "jabber.h"
 #include "jabber_list.h"
+#include "jabber_ssl.h"
 #include <commctrl.h>
 #include "resource.h"
 #include <uxtheme.h>
@@ -203,7 +204,7 @@ static BOOL CALLBACK JabberOptDlgProc( HWND hwndDlg, UINT msg, WPARAM wParam, LP
 
 			CheckDlgButton( hwndDlg, IDC_USE_SSL, JGetByte( "UseSSL", FALSE ));
 			CheckDlgButton( hwndDlg, IDC_USE_TLS, JGetByte( "UseTLS", FALSE ));
-			if ( !hLibSSL ) {
+			if ( !JabberSslInit() ) {
 				EnableWindow(GetDlgItem( hwndDlg, IDC_USE_SSL ), FALSE );
 				EnableWindow(GetDlgItem( hwndDlg, IDC_USE_TLS ), FALSE );
 				EnableWindow(GetDlgItem( hwndDlg, IDC_DOWNLOAD_OPENSSL ), TRUE );

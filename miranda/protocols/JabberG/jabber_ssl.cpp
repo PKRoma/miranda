@@ -47,6 +47,9 @@ static int sslHandleCount = 0;
 
 BOOL JabberSslInit()
 {
+	if ( hLibSSL )
+		return TRUE;
+
 	BOOL error = FALSE;
 
 	sslHandleList = NULL;

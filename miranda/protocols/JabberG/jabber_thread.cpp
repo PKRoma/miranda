@@ -34,13 +34,14 @@ Last change by : $Author$
 #include "jabber_list.h"
 #include "jabber_iq.h"
 #include "jabber_secur.h"
+#include "jabber_ssl.h"
 #include "resource.h"
 #include "version.h"
 
 // <iq/> identification number for various actions
 // for JABBER_REGISTER thread
-unsigned int iqIdRegGetReg;
-unsigned int iqIdRegSetReg;
+int iqIdRegGetReg;
+int iqIdRegSetReg;
 
 static void __cdecl JabberKeepAliveThread( JABBER_SOCKET s );
 static void JabberProcessStreamOpening( XmlNode *node, void *userdata );
@@ -371,7 +372,7 @@ LBL_Exit:
 	BOOL sslMode = FALSE;
 	if ( info->useSSL ) {
 		JabberLog( "Intializing SSL connection" );
-		if ( hLibSSL!=NULL && socket!=INVALID_SOCKET ) {
+		if ( JabberSslInit() && socket != INVALID_SOCKET ) {
 			JabberLog( "SSL using socket = %d", socket );
 			if (( ssl=pfn_SSL_new( jabberSslCtx )) != NULL ) {
 				JabberLog( "SSL create context ok" );
@@ -776,14 +777,14 @@ static void JabberProcessSuccess( XmlNode *node, void *userdata )
 	if ( !_tcscmp( type, _T("urn:ietf:params:xml:ns:xmpp-sasl") )) {
 		DBVARIANT dbv;
 
-		JabberLog( "Succcess: Logged-in." );
+		JabberLog( "Success: Logged-in." );
 		if ( DBGetContactSetting( NULL, jabberProtoName, "Nick", &dbv ))
 			JSetStringT( NULL, "Nick", info->username );
 		else
 			JFreeVariant( &dbv );
 		xmlStreamInitialize( "after successful sasl" );
 	}
-	else JabberLog( "Succcess: unknown action "TCHAR_STR_PARAM".",type);
+	else JabberLog( "Success: unknown action "TCHAR_STR_PARAM".",type);
 }
 
 static void JabberProcessChallenge( XmlNode *node, void *userdata )
@@ -852,6 +853,11 @@ static void JabberProcessProceed( XmlNode *node, void *userdata )
 
 	if ( !lstrcmp( type, _T("urn:ietf:params:xml:ns:xmpp-tls" ))) {
 		JabberLog("Starting TLS...");
+		if ( !JabberSslInit() ) {
+			JabberLog( "SSL initialization failed" );
+			return;
+		}
+
 		int socket = JCallService( MS_NETLIB_GETSOCKET, ( WPARAM ) info->s, 0 );
 		PVOID ssl;
 		if (( ssl=pfn_SSL_new( jabberSslCtx )) != NULL ) {
