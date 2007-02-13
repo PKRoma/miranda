@@ -138,7 +138,6 @@ static int ModifyStatusIcon(WPARAM wParam, LPARAM lParam) {
 				hwnd = WindowList_Find(g_dat->hMessageWindowList, hContact);
 				if (hwnd == NULL) {
 					hwnd = SM_FindWindowByContact(hContact);
-
 				}
 				if (hwnd != NULL) {
 					PostMessage(GetParent(hwnd), DM_STATUSICONCHANGE, 0, 0);
