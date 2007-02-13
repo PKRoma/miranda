@@ -34,6 +34,7 @@ Last change by : $Author$
 #include "jabber_list.h"
 #include "jabber_iq.h"
 #include "jabber_secur.h"
+#include "jabber_ssl.h"
 #include "resource.h"
 #include "version.h"
 
@@ -371,7 +372,7 @@ LBL_Exit:
 	BOOL sslMode = FALSE;
 	if ( info->useSSL ) {
 		JabberLog( "Intializing SSL connection" );
-		if ( hLibSSL!=NULL && socket!=INVALID_SOCKET ) {
+		if ( JabberSslInit() && socket != INVALID_SOCKET ) {
 			JabberLog( "SSL using socket = %d", socket );
 			if (( ssl=pfn_SSL_new( jabberSslCtx )) != NULL ) {
 				JabberLog( "SSL create context ok" );
@@ -851,6 +852,11 @@ static void JabberProcessProceed( XmlNode *node, void *userdata )
 
 	if ( !lstrcmp( type, _T("urn:ietf:params:xml:ns:xmpp-tls" ))) {
 		JabberLog("Starting TLS...");
+		if ( !JabberSslInit() ) {
+			JabberLog( "SSL initialization failed" );
+			return;
+		}
+
 		int socket = JCallService( MS_NETLIB_GETSOCKET, ( WPARAM ) info->s, 0 );
 		PVOID ssl;
 		if (( ssl=pfn_SSL_new( jabberSslCtx )) != NULL ) {

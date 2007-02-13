@@ -206,7 +206,6 @@ static int OnModulesLoaded( WPARAM wParam, LPARAM lParam )
 {
 	JabberMenuInit();
 	JabberWsInit();
-	JabberSslInit();
 	HookEvent( ME_USERINFO_INITIALISE, JabberUserInfoInit );
 	bSecureIM = (ServiceExists("SecureIM/IsContactSecured"));
 
