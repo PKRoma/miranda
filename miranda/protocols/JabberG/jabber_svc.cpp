@@ -1276,6 +1276,7 @@ int JabberSetStatus( WPARAM wParam, LPARAM lParam )
  	if ( desiredStatus == ID_STATUS_OFFLINE ) {
 		if ( jabberThreadInfo ) {
 			jabberThreadInfo->send( "</stream:stream>" );
+			jabberThreadInfo->close();
 			jabberThreadInfo = NULL;
 			if ( jabberConnected )
 				jabberConnected = jabberOnline = FALSE;

@@ -211,6 +211,7 @@ struct ThreadData {
 	BOOL  reg_done, bIsSessionAvailable;
 	class TJabberAuth* auth;
 
+	void  close( void );
 	int   recv( char* buf, size_t len );
 	int   send( const char* fmt, ... );
 	int   send( struct XmlNode& node );
@@ -562,9 +563,9 @@ int           JabberWsRecv( JABBER_SOCKET s, char* data, long datalen );
 ///////////////////////////////////////////////////////////////////////////////
 // UTF encode helper
 
-char* t2a( const TCHAR* src );
-char* u2a( const wchar_t* src );
+char*    t2a( const TCHAR* src );
+char*    u2a( const wchar_t* src );
 wchar_t* a2u( const char* src );
-TCHAR* a2t( const char* src );
+TCHAR*   a2t( const char* src );
 
 #endif

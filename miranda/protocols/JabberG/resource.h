@@ -207,7 +207,6 @@
 
 #define IDC_DISABLE_SASL                1182
 #define IDC_UNREGISTER                  1183
-#define IDC_CHECK1                      1184
 #define IDC_VALIDATEADD                 1184
 #define IDC_WHITERECT                   1221
 #define IDC_UPDATING                    1231

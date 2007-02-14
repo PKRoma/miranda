@@ -195,7 +195,8 @@ void __cdecl JabberServerThread( ThreadData* info )
 			// reconnect.
 			QueueUserAPC( JabberDummyApcFunc, jabberThreadInfo->hThread, 0 );
 			JabberLog( "Thread ended, another normal thread is running" );
-			mir_free( info );
+LBL_Exit:
+			delete info;
 			return;
 		}
 
@@ -208,6 +209,14 @@ void __cdecl JabberServerThread( ThreadData* info )
 			JFreeVariant( &dbv );
 		}
 		else {
+			DWORD dwSize = SIZEOF( info->username );
+			if ( GetUserName( info->username, &dwSize ))
+				JSetStringT( NULL, "LoginName", info->username );
+			else
+				info->username[0] = 0;
+		}
+
+		if ( *rtrim(info->username) == '\0' ) {
 			JabberLog( "Thread ended, login name is not configured" );
 			JSendBroadcast( NULL, ACKTYPE_LOGIN, ACKRESULT_FAILED, NULL, LOGINERR_BADUSERID );
 LBL_FatalError:
@@ -215,15 +224,7 @@ LBL_FatalError:
 			oldStatus = jabberStatus;
 			jabberStatus = ID_STATUS_OFFLINE;
 			JSendBroadcast( NULL, ACKTYPE_STATUS, ACKRESULT_SUCCESS, ( HANDLE ) oldStatus, jabberStatus );
-LBL_Exit:
-			delete info;
-			return;
-		}
-
-		if ( *rtrim(info->username) == '\0' ) {
-			JabberLog( "Thread ended, login name is not configured" );
-			JSendBroadcast( NULL, ACKTYPE_LOGIN, ACKRESULT_FAILED, NULL, LOGINERR_BADUSERID );
-			goto LBL_FatalError;
+         goto LBL_Exit;
 		}
 
 		if ( !DBGetContactSetting( NULL, jabberProtoName, "LoginServer", &dbv )) {
@@ -1831,12 +1832,16 @@ ThreadData::ThreadData( JABBER_SESSION_TYPE parType )
 
 ThreadData::~ThreadData()
 {
-	if ( s )
-		Netlib_CloseHandle(s); // New Line
-
 	delete auth;
 	DeleteCriticalSection( &iomutex );
 }
+
+void ThreadData::close()
+{
+	if ( s ) {
+		Netlib_CloseHandle(s);
+		s = NULL;
+}	}
 
 int ThreadData::recv( char* buf, size_t len )
 {
