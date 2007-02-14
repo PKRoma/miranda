@@ -1,8 +1,7 @@
 /*
 Scriver
 
-Copyright 2000-2003 Miranda ICQ/IM project,
-Copyright 2005 Piotr Piastucki
+Copyright 2000-2007 Miranda ICQ/IM project,
 
 all portions of this codebase are copyrighted to the people
 listed in contributors.txt.
@@ -223,10 +222,10 @@ static void RemoveSendBuffer(struct MessageWindowData *dat, int i) {
 				break;
 		if (i == dat->sendCount) {
 			//all messages sent
+			KillTimer(dat->hwnd, TIMERID_MSGSEND);
 			dat->sendCount = 0;
 			mir_free(dat->sendInfo);
 			dat->sendInfo = NULL;
-			KillTimer(dat->hwnd, TIMERID_MSGSEND);
 		}
 	}
 }
@@ -2113,7 +2112,7 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
 			int i;
 			int timeout = DBGetContactSettingDword(NULL, SRMMMOD, SRMSGSET_MSGTIMEOUT, SRMSGDEFSET_MSGTIMEOUT);
 			for (i = 0; i < dat->sendCount; i++) {
-				if (dat->sendInfo[i].sendBuffer) {
+				if (dat->sendInfo[i].sendBuffer && dat->sendInfo[i].hwndErrorDlg == NULL) {
 					if (dat->sendInfo[i].timeout < timeout) {
 						dat->sendInfo[i].timeout+=1000;
 						if (dat->sendInfo[i].timeout >= timeout) {
@@ -2123,16 +2122,15 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
 							ewd->textSize = dat->sendInfo[i].sendBufferSize;
 							ewd->szText = (char *)mir_alloc(dat->sendInfo[i].sendBufferSize);
 							memcpy(ewd->szText, dat->sendInfo[i].sendBuffer, dat->sendInfo[i].sendBufferSize);
-							ewd->flags = dat->sendInfo[i].flags;
 							ewd->hwndParent = hwndDlg;
+							ewd->sendIdx = i;
 							if (dat->messagesInProgress>0) {
 								dat->messagesInProgress--;
 								if (g_dat->flags & SMF_SHOWPROGRESS) {
 									SendMessage(hwndDlg, DM_UPDATESTATUSBAR, 0, 0);
 								}
 							}
-							CreateDialogParam(g_hInst, MAKEINTRESOURCE(IDD_MSGSENDERROR), hwndDlg, ErrorDlgProc, (LPARAM) ewd);
-							//RemoveSendBuffer(dat, i);
+							dat->sendInfo[i].hwndErrorDlg = CreateDialogParam(g_hInst, MAKEINTRESOURCE(IDD_MSGSENDERROR), hwndDlg, ErrorDlgProc, (LPARAM) ewd);
 						}
 					}
 				}
@@ -2174,37 +2172,45 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
 				dat->sendInfo[dat->sendCount-1].sendBufferSize = msi->sendBufferSize;
 				dat->sendInfo[dat->sendCount-1].sendBuffer = (char *) mir_alloc(msi->sendBufferSize);
 				dat->sendInfo[dat->sendCount-1].flags = msi->flags;
-				dat->sendInfo[dat->sendCount-1].timeout=0;
+				dat->sendInfo[dat->sendCount-1].timeout = 0;
 				memcpy(dat->sendInfo[dat->sendCount-1].sendBuffer, msi->sendBuffer, dat->sendInfo[dat->sendCount-1].sendBufferSize);
 				SetTimer(hwndDlg, TIMERID_MSGSEND, 1000, NULL);
 				dat->messagesInProgress++;
 				if (g_dat->flags & SMF_SHOWPROGRESS) {
 					SendMessage(hwndDlg, DM_UPDATESTATUSBAR, 0, 0);
 				}
-				hSendId = (HANDLE) CallContactService(dat->hContact, MsgServiceName(dat->hContact), msi->flags, (LPARAM) dat->sendInfo[dat->sendCount-1].sendBuffer);
+				hSendId = (HANDLE) CallContactService(dat->hContact, MsgServiceName(dat->hContact), dat->sendInfo[dat->sendCount-1].flags, (LPARAM) dat->sendInfo[dat->sendCount-1].sendBuffer);
 				if (dat->sendCount>0) {
 					dat->sendInfo[dat->sendCount-1].hSendId = hSendId;
 				}
 			}
 
 		break;
+	case DM_RESENDMESSAGE:
+		{
+			int sendIdx = (int) lParam;
+			dat->sendInfo[dat->sendCount-1].timeout = 0;
+			SetTimer(hwndDlg, TIMERID_MSGSEND, 1000, NULL);
+			dat->messagesInProgress++;
+			if (g_dat->flags & SMF_SHOWPROGRESS) {
+				SendMessage(hwndDlg, DM_UPDATESTATUSBAR, 0, 0);
+			}
+			dat->sendInfo[sendIdx].hSendId = (HANDLE) CallContactService(dat->hContact, MsgServiceName(dat->hContact), dat->sendInfo[sendIdx].flags, (LPARAM) dat->sendInfo[sendIdx].sendBuffer);
+		}
+		break;
 	case DM_ERRORDECIDED:
-		switch (wParam) {
-		case MSGERROR_CANCEL:
-			{
+		{
+			int sendIdx = (int) lParam;
+			dat->sendInfo[sendIdx].hwndErrorDlg = NULL;
+			switch (wParam) {
+			case MSGERROR_CANCEL:
+				RemoveSendBuffer(dat, (int)lParam);
 				SetFocus(GetDlgItem(hwndDlg, IDC_MESSAGE));
+				break;
+			case MSGERROR_RETRY:
+				SendMessage(hwndDlg, DM_RESENDMESSAGE, 0, lParam);
+				break;
 			}
-			break;
-		case MSGERROR_RETRY:
-			if (lParam) {
-				struct MessageSendInfo msi;
-				ErrorWindowData *ewd = (ErrorWindowData *)lParam;
-				msi.sendBufferSize = ewd->textSize;
-				msi.sendBuffer = ewd->szText;
-				msi.flags = ewd->flags;
-				SendMessage(hwndDlg, DM_SENDMESSAGE, 0, (LPARAM)&msi);
-			}
-			break;
 		}
 		break;
 	case WM_MEASUREITEM:
@@ -2259,7 +2265,7 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
 				return CallService(MS_CLIST_MENUDRAWITEM, wParam, lParam);
 			}
 	case WM_COMMAND:
-		if (CallService(MS_CLIST_MENUPROCESSCOMMAND, MAKEWPARAM(LOWORD(wParam), MPCF_CONTACTMENU), (LPARAM) dat->hContact))
+		if (!lParam && CallService(MS_CLIST_MENUPROCESSCOMMAND, MAKEWPARAM(LOWORD(wParam), MPCF_CONTACTMENU), (LPARAM) dat->hContact))
 			break;
 		switch (LOWORD(wParam)) {
 		case IDC_SENDALL:
@@ -2388,29 +2394,6 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
 			}
 			break;
 		case IDC_QUOTE:
-			/*
-			{
-				char szFilename[MAX_PATH];
-				OPENFILENAMEA ofn={0};
-				strcpy(szFilename, "");
-				ofn.lStructSize=sizeof(OPENFILENAME);
-				ofn.hwndOwner=hwndDlg;
-				ofn.lpstrFile = szFilename;
-				ofn.lpstrFilter = "Rich Text File\0*.rtf\0\0";
-				ofn.nMaxFile = MAX_PATH;
-				ofn.nMaxFileTitle = MAX_PATH;
-				ofn.Flags = OFN_HIDEREADONLY;
-				ofn.lpstrDefExt = "rtf";
-				if (GetSaveFileNameA(&ofn)) {
-					//remove(szFilename);
-					EDITSTREAM stream = { 0 };
-					stream.dwCookie = (DWORD_PTR)szFilename;
-					stream.dwError = 0;
-					stream.pfnCallback = EditStreamCallback;
-					SendDlgItemMessage(hwndDlg, IDC_LOG, EM_STREAMOUT, SF_RTF | SF_USECODEPAGE, (LPARAM) & stream);
-				}
-			}
-			*/
 			{
 				DBEVENTINFO dbei = { 0 };
 				SETTEXTEX  st;
@@ -2709,10 +2692,9 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
 					ewd->textSize = dat->sendInfo[i].sendBufferSize;
 					ewd->szText = (char *)mir_alloc(dat->sendInfo[i].sendBufferSize);
 					memcpy(ewd->szText, dat->sendInfo[i].sendBuffer, dat->sendInfo[i].sendBufferSize);
-					ewd->flags = dat->sendInfo[i].flags;
 					ewd->hwndParent = hwndDlg;
-					CreateDialogParam(g_hInst, MAKEINTRESOURCE(IDD_MSGSENDERROR), hwndDlg, ErrorDlgProc, (LPARAM) ewd);//hwndDlg
-					RemoveSendBuffer(dat, i);
+					ewd->sendIdx = i;
+					dat->sendInfo[i].hwndErrorDlg = CreateDialogParam(g_hInst, MAKEINTRESOURCE(IDD_MSGSENDERROR), hwndDlg, ErrorDlgProc, (LPARAM) ewd);//hwndDlg
 				}
 				return 0;
 			}
@@ -2733,6 +2715,9 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
 			if (dat->hDbEventFirst == NULL) {
 				dat->hDbEventFirst = hNewEvent;
 				SendMessage(hwndDlg, DM_REMAKELOG, 0, 0);
+			}
+			if (dat->sendInfo[i].hwndErrorDlg != NULL) {
+				DestroyWindow(dat->sendInfo[i].hwndErrorDlg);
 			}
 			RemoveSendBuffer(dat, i);
 			if (dat->sendCount == 0) {

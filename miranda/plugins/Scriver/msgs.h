@@ -1,8 +1,7 @@
 /*
 Scriver
 
-Copyright 2000-2003 Miranda ICQ/IM project,
-Copyright 2005 Piotr Piastucki
+Copyright 2000-2007 Miranda ICQ/IM project,
 
 all portions of this codebase are copyrighted to the people
 listed in contributors.txt.
@@ -27,7 +26,8 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include <richedit.h>
 #include <richole.h>
 #define MSGERROR_CANCEL	0
-#define MSGERROR_RETRY	    1
+#define MSGERROR_RETRY	1
+#define MSGERROR_DONE	2
 
 typedef DWORD (WINAPI *PSLWA)(HWND, DWORD, BYTE, DWORD);
 extern PSLWA pSetLayeredWindowAttributes;
@@ -40,7 +40,7 @@ typedef struct ErrorWindowDataStruct
 	TCHAR*	szDescription;
 	char*	szText;
 	int		textSize;
-	int		flags;
+	int		sendIdx;
 	HWND	hwndParent;
 } ErrorWindowData;
 
@@ -104,11 +104,12 @@ typedef struct NewMessageWindowLParamStruct
 
 struct MessageSendInfo
 {
-	HANDLE hSendId;
+	HANDLE 	hSendId;
 	int		timeout;
 	char *	sendBuffer;
 	int		sendBufferSize;
 	int		flags;
+	HWND	hwndErrorDlg;
 };
 
 
@@ -182,6 +183,8 @@ struct MessageWindowData
 #define HM_ACKEVENT          (WM_USER+29)
 
 #define DM_UPDATEICON		 (WM_USER+31)
+
+#define DM_RESENDMESSAGE	 (WM_USER+32)
 
 #define DM_CLEARLOG			 (WM_USER+46)
 #define DM_SWITCHSTATUSBAR	 (WM_USER+47)
