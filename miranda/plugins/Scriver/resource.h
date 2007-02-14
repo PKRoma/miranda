@@ -172,9 +172,6 @@
 #define IDI_REMSTATUS                   442
 #define IDI_ACTION                      443
 #define IDI_HIGHLIGHT                   444
-#define IDI_BLANK                       446
-#define IDI_TAG1                        449
-#define IDI_TAG2                        450
 #define IDR_MENU                        451
 #define IDD_COLORCHOOSER                452
 #define IDI_STATUS3                     453

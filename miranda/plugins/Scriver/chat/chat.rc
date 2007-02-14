@@ -179,17 +179,6 @@ END
 #endif    // APSTUDIO_INVOKED
 
 
-/////////////////////////////////////////////////////////////////////////////
-//
-// Icon
-//
-
-// Icon with lowest ID value placed first to ensure application icon
-// remains consistent on all systems.
-IDI_TAG1                ICON                    "chat\\Icons\\tag1.ico"
-IDI_TAG2                ICON                    "chat\\Icons\\tag2.ico"
-/////////////////////////////////////////////////////////////////////////////
-
 ////////////////////////////////////////////////////////////////////////////
 //
 // Dialog
@@ -237,7 +226,6 @@ IDI_COLOR               ICON                    "chat\\Icons\\color.ico"
 IDI_FILTER              ICON                    "chat\\Icons\\filter.ico"
 IDI_CHAT_HISTORY        ICON                    "chat\\Icons\\history.ico"
 IDI_NICKLIST            ICON                    "chat\\Icons\\nicklist.ico"
-IDI_BLANK               ICON                    "chat\\Icons\\blank.ico"
 IDI_STATUS3             ICON                    "chat\\Icons\\4.ico"
 IDI_STATUS2             ICON                    "chat\\Icons\\3.ico"
 IDI_STATUS4             ICON                    "chat\\Icons\\5.ico"
