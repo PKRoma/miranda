@@ -37,9 +37,9 @@ Modified by FYR
 
 typedef BOOL (* ExecuteOnAllContactsFuncPtr) (struct ClcContact *contact, BOOL subcontact, void *param);
 
-int CALLBACK CLUI_SyncGetPDNCE(WPARAM wParam, LPARAM lParam);
-int CALLBACK CLUI_SyncSetPDNCE(WPARAM wParam, LPARAM lParam);
-int CALLBACK CLUI_SyncGetShortData(WPARAM wParam, LPARAM lParam);
+int CLUI_SyncGetPDNCE(WPARAM wParam, LPARAM lParam);
+int CLUI_SyncSetPDNCE(WPARAM wParam, LPARAM lParam);
+int CLUI_SyncGetShortData(WPARAM wParam, LPARAM lParam);
 /***********************************/
 /**   Module static declarations  **/
 /***********************************/
@@ -76,7 +76,7 @@ const DWORD const_AskPeriod = 3000;
 SortedList *CopySmileyString(SortedList *plInput);
 
 
-typedef int (CALLBACK *PSYNCCALLBACKPROC)(WPARAM,LPARAM);
+typedef int (*PSYNCCALLBACKPROC)(WPARAM,LPARAM);
 
 typedef struct tagSYNCCALLITEM
 {

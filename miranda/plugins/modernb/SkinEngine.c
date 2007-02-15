@@ -50,6 +50,8 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 SKINOBJECTSLIST g_SkinObjectList={0};
 CURRWNDIMAGEDATA * g_pCachedWindow=NULL;
 
+wndFrame * FindFrameByItsHWND(HWND FrameHwnd);	//cluiframes.c
+
 BOOL (WINAPI *g_proc_UpdateLayeredWindow)(HWND,HDC,POINT*,SIZE*,HDC,POINT*,COLORREF,BLENDFUNCTION*,DWORD);
 
 BOOL    g_flag_bPostWasCanceled =FALSE,
@@ -90,8 +92,6 @@ static CRITICAL_SECTION cs_SkinChanging={0};
 static BOOL SkinEngine_GetMaskBit(BYTE *line, int x);
 static int  SkinEngine_Service_AlphaTextOut(WPARAM wParam,LPARAM lParam);
 static BOOL SkinEngine_Service_DrawIconEx(WPARAM wParam,LPARAM lParam);
-static int  SkinEngine_Service_RegisterFramePaintCallbackProcedure(WPARAM wParam, LPARAM lParam);
-
 
 static int  SkinEngine_AlphaTextOut (HDC hDC, LPCTSTR lpString, int nCount, RECT * lpRect, UINT format, DWORD ARGBcolor);
 static void SkinEngine_AddParseTextGlyphObject(char * szGlyphTextID,char * szDefineString,SKINOBJECTSLIST *Skin);
@@ -103,6 +103,8 @@ static HBITMAP SkinEngine_LoadGlyphImageByDecoders(char * szFileName);
 static int  SkinEngine_LoadSkinFromResource();
 static void SkinEngine_PreMultiplyChanells(HBITMAP hbmp,BYTE Mult);
 static int  SkinEngine_ValidateSingleFrameImage(wndFrame * Frame, BOOL SkipBkgBlitting);
+static int SkinEngine_Service_UpdateFrameImage(WPARAM wParam, LPARAM lParam);
+static int SkinEngine_Service_InvalidateFrameImage(WPARAM wParam, LPARAM lParam);
 
 
 //Decoders
@@ -198,8 +200,7 @@ int SkinEngine_LoadModule()
     {       
         //  CreateServiceFunction(MS_SKIN_REGISTEROBJECT,SkinEngine_RegisterObject);
         CreateServiceFunction(MS_SKIN_DRAWGLYPH,SkinEngine_Service_DrawGlyph);
-        //    CreateServiceFunction(MS_SKIN_REGISTERDEFOBJECT,ServCreateGlyphedObjectDefExt);
-        CreateServiceFunction(MS_SKINENG_REGISTERPAINTSUB,SkinEngine_Service_RegisterFramePaintCallbackProcedure);
+        //    CreateServiceFunction(MS_SKIN_REGISTERDEFOBJECT,ServCreateGlyphedObjectDefExt);        
         CreateServiceFunction(MS_SKINENG_UPTATEFRAMEIMAGE,SkinEngine_Service_UpdateFrameImage);
         CreateServiceFunction(MS_SKINENG_INVALIDATEFRAMEIMAGE,SkinEngine_Service_InvalidateFrameImage);
 
@@ -3312,19 +3313,7 @@ BOOL SkinEngine_DrawIconEx(HDC hdcDst,int xLeft,int yTop,HICON hIcon,int cxWidth
     return 1;// DrawIconExS(hdc,xLeft,yTop,hIcon,cxWidth,cyWidth,istepIfAniCur,hbrFlickerFreeDraw,diFlags);
 }
 
-static int SkinEngine_Service_RegisterFramePaintCallbackProcedure(WPARAM wParam, LPARAM lParam)
-{
-    if (!wParam) return 0;
-    {
-        wndFrame *frm=FindFrameByItsHWND((HWND)wParam);
-        if (!frm) return 0;
-        if (lParam)
-            frm->PaintCallbackProc=(tPaintCallbackProc)lParam;
-        else
-            frm->PaintCallbackProc=NULL;
-        return 1;
-    }
-}
+
 
 int SkinEngine_PrepeareImageButDontUpdateIt(RECT * r)
 {
@@ -3348,7 +3337,7 @@ int SkinEngine_RedrawCompleteWindow()
     if (g_CluiData.fLayered)
     { 
         SkinEngine_DrawNonFramedObjects(TRUE,0);
-        SkinEngine_Service_InvalidateFrameImage(0,0);   
+        CallService(MS_SKINENG_INVALIDATEFRAMEIMAGE,0,0);   
     }
     else
     {
@@ -3361,7 +3350,7 @@ int SkinEngine_RedrawCompleteWindow()
 // lParam = pointer to sPaintRequest (or NULL to redraw all)
 // return 2 - already queued, data updated, 1-have been queued, 0 - failure
 
-int SkinEngine_Service_UpdateFrameImage(WPARAM wParam, LPARAM lParam)           // Immideately recall paint routines for frame and refresh image
+static int SkinEngine_Service_UpdateFrameImage(WPARAM wParam, LPARAM lParam)           // Immideately recall paint routines for frame and refresh image
 {
     RECT wnd;
     wndFrame *frm;
@@ -3381,6 +3370,7 @@ int SkinEngine_Service_UpdateFrameImage(WPARAM wParam, LPARAM lParam)           
     else if (wParam==0) SkinEngine_ValidateFrameImageProc(&wnd);
     else // all Ok Update Single Frame
     {
+		// TO BE LOCKED OR PROXIED
         frm=FindFrameByItsHWND((HWND)wParam);
         if (!frm)  SkinEngine_ValidateFrameImageProc(&wnd);
         // Validate frame, update window image and remove it from queue
@@ -3411,7 +3401,7 @@ int SkinEngine_Service_UpdateFrameImage(WPARAM wParam, LPARAM lParam)           
     }
     return 1;   
 }
-int SkinEngine_Service_InvalidateFrameImage(WPARAM wParam, LPARAM lParam)       // Post request for updating
+static int SkinEngine_Service_InvalidateFrameImage(WPARAM wParam, LPARAM lParam)       // Post request for updating
 {
 
     if (wParam)
@@ -3449,10 +3439,10 @@ int SkinEngine_Service_InvalidateFrameImage(WPARAM wParam, LPARAM lParam)       
         }      
         else
         {
-            QueueAllFramesUpdating(1);
+            callProxied_QueueAllFramesUpdating(1);
         }
     }
-    else QueueAllFramesUpdating(1);
+    else callProxied_QueueAllFramesUpdating(1);
     if (!flag_bUpdateQueued||g_flag_bPostWasCanceled)
         if (PostMessage(pcli->hwndContactList,UM_UPDATE,0,0))
         {            
@@ -3758,7 +3748,7 @@ int SkinEngine_DrawNonFramedObjects(BOOL Erase,RECT *r)
                 SetRect(&rc,Frames[i].wndSize.left,Frames[i].wndSize.top-g_nTitleBarHeight-g_nGapBetweenTitlebar,Frames[i].wndSize.right,Frames[i].wndSize.top-g_nGapBetweenTitlebar);
                 //GetWindowRect(Frames[i].TitleBar.hwnd,&rc);
                 //OffsetRect(&rc,-wnd.left,-wnd.top);
-                DrawTitleBar(g_pCachedWindow->hBackDC,rc,Frames[i].id);
+                callProxied_DrawTitleBar(g_pCachedWindow->hBackDC,&rc,Frames[i].id);
             }
     }
     g_mutex_bLockUpdating=1;
@@ -3821,7 +3811,7 @@ int SkinEngine_ValidateFrameImageProc(RECT * r)                                /
     if (IsForceAllPainting) 
     { 
         BitBlt(g_pCachedWindow->hImageDC,0,0,g_pCachedWindow->Width,g_pCachedWindow->Height,g_pCachedWindow->hBackDC,0,0,SRCCOPY);
-        QueueAllFramesUpdating(1);
+        callProxied_QueueAllFramesUpdating(1);
     }
     //-- Validating frames
     { 
@@ -3837,7 +3827,7 @@ int SkinEngine_ValidateFrameImageProc(RECT * r)                                /
     if (!mutex_bLockUpdate)  SkinEngine_UpdateWindowImageRect(&wnd);
     //-- Clear queue
     {
-        QueueAllFramesUpdating(0);
+        callProxied_QueueAllFramesUpdating(0);
         flag_bUpdateQueued=0;
         g_flag_bPostWasCanceled=0;
     }
@@ -3932,7 +3922,7 @@ int SkinEngine_JustUpdateWindowImageRect(RECT * rty)
     {
         if (!(GetWindowLong(pcli->hwndContactList, GWL_EXSTYLE)&WS_EX_LAYERED))
             SetWindowLong(pcli->hwndContactList,GWL_EXSTYLE, GetWindowLong(pcli->hwndContactList, GWL_EXSTYLE) |WS_EX_LAYERED);
-        SetAlpha(g_CluiData.bCurrentAlpha);
+        callProxied_SetAlpha(g_CluiData.bCurrentAlpha);
 
         res=g_proc_UpdateLayeredWindow(pcli->hwndContactList,g_pCachedWindow->hScreenDC,&dest,&sz,g_pCachedWindow->hImageDC,&src,RGB(1,1,1),&bf,ULW_ALPHA);
     }

@@ -363,7 +363,7 @@ static int ClcModulesLoaded(WPARAM wParam,LPARAM lParam) {
 		hSmileyAddOptionsChangedHook=HookEvent(ME_SMILEYADD_OPTIONSCHANGED,SmileyAddOptionsChanged);
 	}
 	HookEvent(ME_BACKGROUNDCONFIG_CHANGED,BgStatusBarChange);
-	HookEvent(ME_BACKGROUNDCONFIG_CHANGED,OnFrameTitleBarBackgroundChange);
+	HookEvent(ME_BACKGROUNDCONFIG_CHANGED,callProxied_OnFrameTitleBarBackgroundChange);
 
 
 	return 0;
@@ -1041,7 +1041,7 @@ case WM_PAINT:
 				CLCPaint_cliPaintClc(hwnd,dat,ps.hdc,&ps.rcPaint);
 				EndPaint(hwnd,&ps);
 			}
-			else SkinEngine_Service_InvalidateFrameImage((WPARAM)hwnd,0);
+			else CallService(MS_SKINENG_INVALIDATEFRAMEIMAGE,(WPARAM)hwnd,0);
 		}
 		return DefWindowProc(hwnd, msg, wParam, lParam);           
 	}

@@ -1142,7 +1142,6 @@ LRESULT CALLBACK ViewModeFrameWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM
         case WM_PAINT:
 			if (GetParent(hwnd)==pcli->hwndContactList && g_CluiData.fLayered)				
 			{
-				//SkinEngine_Service_InvalidateFrameImage((WPARAM)hwnd,0);
 				ValidateRect(hwnd,NULL);
 			}
 			else if (GetParent(hwnd)!=pcli->hwndContactList || !g_CluiData.fLayered)

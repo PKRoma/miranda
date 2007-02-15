@@ -494,12 +494,12 @@ int cliShowHide(WPARAM wParam,LPARAM lParam)
 		SystemParametersInfo(SPI_GETWORKAREA,0,&rcScreen,FALSE);
 		GetWindowRect(pcli->hwndContactList,&rcWindow);
 
-		CLUIFrames_ActivateSubContainers(TRUE);
+		callProxied_CLUIFrames_ActivateSubContainers(TRUE);
 		CLUI_ShowWindowMod(pcli->hwndContactList, SW_RESTORE);
 
 		if (!DBGetContactSettingByte(NULL,"CList","OnDesktop",0))
 		{
-			CLUIFrames_OnShowHide(pcli->hwndContactList,1);
+			callProxied_CLUIFrames_OnShowHide(pcli->hwndContactList,1);	//TO BE PROXIED
 			SetWindowPos(pcli->hwndContactList, HWND_TOPMOST, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE |SWP_NOACTIVATE);
 			g_bCalledFromShowHide=1;
 			//BringWindowToTop(pcli->hwndContactList);
@@ -512,7 +512,7 @@ int cliShowHide(WPARAM wParam,LPARAM lParam)
 		else
 		{
 			SetWindowPos(pcli->hwndContactList, HWND_NOTOPMOST, 0, 0, 0, 0, SWP_NOSIZE | SWP_NOMOVE);
-			CLUIFrames_OnShowHide(pcli->hwndContactList,1);
+			callProxied_CLUIFrames_OnShowHide(pcli->hwndContactList,1);
 			SetForegroundWindow(pcli->hwndContactList);
 		}
 		DBWriteContactSettingByte(NULL,"CList","State",SETTING_STATE_NORMAL);
@@ -548,7 +548,6 @@ int cliShowHide(WPARAM wParam,LPARAM lParam)
 	else { //It needs to be hidden
 
 		CListMod_HideWindow(pcli->hwndContactList, SW_HIDE);
-		//CLUIFrames_OnShowHide(pcli->hwndContactList,0);
 
 		DBWriteContactSettingByte(NULL,"CList","State",SETTING_STATE_HIDDEN);
 		if(MySetProcessWorkingSetSize!=NULL && DBGetContactSettingByte(NULL,"CList","DisableWorkingSet",1)) MySetProcessWorkingSetSize(GetCurrentProcess(),-1,-1);

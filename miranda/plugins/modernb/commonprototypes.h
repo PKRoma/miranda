@@ -127,14 +127,6 @@ int		CLUI_TestCursorOnBorders();
 int		CLUI_UpdateTimer(BYTE BringIn);
 void	CLUI_UpdateLayeredMode();
 
-/* CLUIFrames */
-int		CLUIFrames_ActivateSubContainers(BOOL active);
-int		CLUIFrames_OnClistResize_mod(WPARAM wParam,LPARAM lParam, int mode);
-int		CLUIFrames_OnMoving(HWND hwnd,RECT *lParam);
-int		CLUIFrames_OnShowHide(HWND hwnd, int mode);
-void	CLUIFrames_SetLayeredMode(BOOL fLayeredMode,HWND hwnd);
-int		CLUIFrames_SetParentForContainers(HWND parent);
-
 /* CLUIServices */
 int		CLUIServices_ProtocolStatusChanged(WPARAM wParam,LPARAM lParam);
 
@@ -187,8 +179,6 @@ int		SkinEngine_RedrawCompleteWindow();
 BOOL	SkinEngine_ResetTextEffect(HDC);
 BOOL	SkinEngine_SelectTextEffect(HDC hdc, BYTE EffectID, DWORD FirstColor, DWORD SecondColor);
 int		SkinEngine_Service_DrawGlyph(WPARAM wParam,LPARAM lParam);
-int		SkinEngine_Service_InvalidateFrameImage(WPARAM wParam, LPARAM lParam);       // Post request for updating"
-int     SkinEngine_Service_UpdateFrameImage(WPARAM wParam, LPARAM lParam);
 BOOL	SkinEngine_SetRectOpaque(HDC memdc,RECT *fr);
 BOOL	SkinEngine_SetRgnOpaque(HDC memdc,HRGN hrgn);
 BOOL	SkinEngine_TextOut(HDC hdc, int x, int y, LPCTSTR lpString, int nCount);
@@ -198,6 +188,23 @@ int     SkinEngine_UnloadModule();
 int     SkinEngine_UpdateWindowImage();
 int     SkinEngine_UpdateWindowImageRect(RECT * lpRect);
 int     SkinEngine_ValidateFrameImageProc(RECT * r);
+
+/* CLUIFrames.c PROXIED */
+
+int callProxied_OnFrameTitleBarBackgroundChange(WPARAM wParam,LPARAM lParam);
+int callProxied_CLUIFrames_ActivateSubContainers(BOOL wParam);
+int callProxied_CLUIFrames_OnClistResize_mod(WPARAM wParam,LPARAM lParam);
+int callProxied_CLUIFrames_OnMoving(HWND hwnd,RECT *lParam);
+int callProxied_CLUIFrames_OnShowHide(HWND hwnd, int mode);
+int callProxied_CLUIFrames_SetLayeredMode(BOOL fLayeredMode,HWND hwnd);
+int callProxied_CLUIFrames_SetParentForContainers(HWND parent);
+int callProxied_CLUIFramesOnClistResize(WPARAM wParam,LPARAM lParam);
+int callProxied_DrawTitleBar(HDC hdcMem2,RECT * rect,int Frameid);
+int callProxied_FindFrameID(HWND FrameHwnd);
+int callProxied_QueueAllFramesUpdating(BYTE queue);
+int callProxied_SetAlpha(BYTE Alpha);
+int callProxied_SizeFramesByWindowRect(RECT *r, HDWP * PosBatch, int mode);
+
 
 /* others TODO: move above */
 BOOL    wildcmp(char * name, char * mask, BYTE option);										//mod_skin_selector.c
@@ -216,10 +223,8 @@ HICON	GetIconFromStatusMode(HANDLE hContact, const char *szProto,int status);			
 HICON	GetMainStatusOverlay(int STATUS);													//clc.c
 int	__fastcall	CLVM_GetContactHiddenStatus(HANDLE hContact, char *szStatus, struct ClcData *dat);  //clcitems.c
 int		BgStatusBarChange(WPARAM wParam,LPARAM lParam);										//clcopts.c
-int		CheckFramesPos(RECT *wr);															//cluiframes.c
 int		ClcProtoAck(WPARAM wParam,LPARAM lParam);											//clc.c
 int		DeleteButtons();																	//modernbutton.c
-int		DrawTitleBar(HDC hdcMem2,RECT rect,int Frameid);									//cluiframes.c
 int		GetAverageMode( void );																	//clisttray.c
 int		GetContactCachedStatus(HANDLE hContact);											//clistsettings.c
 int		GetContactIcon(WPARAM wParam,LPARAM lParam);										//clistmod.c
@@ -242,8 +247,8 @@ int		RecursiveDeleteMenu(HMENU hMenu);													//clistmenus.c
 int		RedrawButtons(HDC hdc);																//modern_button.c
 int		RegisterButtonByParce(char * ObjectName, char * Params);							//mod_skin_selector.c
 int		RestoreAllContactData(struct ClcData *dat);											//cache_funcs.c
-int		SetAlpha(BYTE bAlpha);																//cluiframes.c
-int		SizeFramesByWindowRect(RECT *r, HDWP * PosBatch, int mode);							//cluiframes.c
+int		callProxied_SetAlpha(BYTE bAlpha);																//cluiframes.c
+
 int		SkinSelector_DeleteMask(MODERNMASK * mm);											//mod_skin_selector.c
 int		StoreAllContactData(struct ClcData *dat);											//cache_func.c
 int		ToggleHideOffline(WPARAM wParam,LPARAM lParam);										//contact.c
@@ -262,7 +267,7 @@ void	UninitCustomMenus();																//clistmenus.c
 void	UnloadAvatarOverlayIcon();															//clc.c
 void	UnLoadContactListModule();															//clistmod.c
 void	UpdateAllAvatars(struct ClcData *dat);												//cache_func.c
-wndFrame * FindFrameByItsHWND(HWND FrameHwnd);												//cluiframes.c
+											//cluiframes.c
 
 
 // INTERFACES

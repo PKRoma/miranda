@@ -489,7 +489,7 @@ static LRESULT CALLBACK EventArea_WndProc(HWND hwnd, UINT msg, WPARAM wParam, LP
     case WM_PAINT:
         {
             if (GetParent(hwnd)==pcli->hwndContactList && g_CluiData.fLayered)
-                SkinEngine_Service_InvalidateFrameImage((WPARAM)hwnd,0);
+                CallService(MS_SKINENG_INVALIDATEFRAMEIMAGE,(WPARAM)hwnd,0);
             else if (GetParent(hwnd)==pcli->hwndContactList && !g_CluiData.fLayered)
 	        {
 		        HDC hdc, hdc2;

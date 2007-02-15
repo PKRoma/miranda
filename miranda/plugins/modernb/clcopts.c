@@ -863,7 +863,7 @@ static const TCHAR *szFontIdDescr[FONTID_MODERN_MAX+1]=
 	_T("Standard contacts"),
 		_T("Online contacts to whom you have a different visibility"),
 		_T("Offline contacts"),
-		_T("Contacts which are 'not on list'"),
+		_T("Contacts who are 'not on list'"),
 		_T("Open groups"),
 		_T("Open group member counts"),
 		_T("Dividers"),
@@ -2436,7 +2436,7 @@ static BOOL CALLBACK DlgProcCluiOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPAR
 				if (IsWindow(hProgMan)) 
 				{
 					SetParent(pcli->hwndContactList,hProgMan);
-					CLUIFrames_SetParentForContainers(hProgMan);
+					callProxied_CLUIFrames_SetParentForContainers(hProgMan);
 					g_CluiData.fOnDesktop=1;
 				}
 			} 
@@ -2445,7 +2445,7 @@ static BOOL CALLBACK DlgProcCluiOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPAR
 				if (GetParent(pcli->hwndContactList))
 				{
 					SetParent(pcli->hwndContactList,NULL);
-					CLUIFrames_SetParentForContainers(NULL);
+					callProxied_CLUIFrames_SetParentForContainers(NULL);
 				}
 				g_CluiData.fOnDesktop=0;
 			}
@@ -2466,7 +2466,7 @@ static BOOL CALLBACK DlgProcCluiOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPAR
 
 				DBWriteContactSettingDword(NULL,"CLUIFrames","GapBetweenFrames",(DWORD)i1);
 				DBWriteContactSettingDword(NULL,"CLUIFrames","GapBetweenTitleBar",(DWORD)i2);
-				CLUIFramesOnClistResize((WPARAM)pcli->hwndContactList,(LPARAM)0);
+				callProxied_CLUIFramesOnClistResize((WPARAM)pcli->hwndContactList,(LPARAM)0);
 			}
 			//DBWriteContactSettingByte(NULL,"CLUI","AutoSizeUpward",(BYTE)IsDlgButtonChecked(hwndDlg,IDC_AUTOSIZEUPWARD));
 			//DBWriteContactSettingByte(NULL,"CLUI","SnapToEdges",(BYTE)IsDlgButtonChecked(hwndDlg,IDC_SNAPTOEDGES));

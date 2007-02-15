@@ -73,17 +73,6 @@ int CListSettings_SetToCache(pdisplayNameCacheEntry pSrc);
 int CListTray_GetGlobalStatus(WPARAM wparam,LPARAM lparam);
 void CListTray_TrayIconDestroy(HWND hwnd);
 
-int CLUIFrames_ActivateSubContainers(BOOL active);
-int CLUIFrames_ApplyNewSizes(int mode);
-int CLUIFrames_GetTotalHeight();
-int CLUIFrames_OnClistResize_mod(WPARAM wParam,LPARAM lParam, int mode);
-int CLUIFrames_OnMoving(HWND hwnd,RECT *lParam);
-int CLUIFrames_OnShowHide(HWND hwnd, int mode);
-int CLUIFrames_RepaintSubContainers();
-int CLUIFrames_SetParentForContainers(HWND parent);
-void __inline CLUIFrames_UnLockFrame();
-int CLUIFrames_UpdateFrame(WPARAM wParam,LPARAM lParam);
-
 int CLUIServices_LoadModule(void);
 int CLUIServices_SortList(WPARAM wParam,LPARAM lParam);
 int CLUIServices_ProtocolStatusChanged(WPARAM wParam,LPARAM lParam);

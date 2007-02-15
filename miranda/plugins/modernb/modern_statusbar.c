@@ -14,7 +14,7 @@ POINT lastpnt;
 HWND hModernStatusBar=NULL;
 HANDLE hFramehModernStatusBar=NULL;
 
-int FindFrameID(HWND FrameHwnd);
+int callProxied_FindFrameID(HWND FrameHwnd);
 
 #define DBFONTF_BOLD       1
 #define DBFONTF_ITALIC     2
@@ -67,7 +67,7 @@ int LoadStatusBarData()
   {
     int vis=DBGetContactSettingByte(NULL,"CLUI","ShowSBar",1);
     int frameopt;
-    int frameID=FindFrameID(hModernStatusBar);
+    int frameID=callProxied_FindFrameID(hModernStatusBar);
     frameopt=CallService(MS_CLIST_FRAMES_GETFRAMEOPTIONS,MAKEWPARAM(FO_FLAGS,frameID),0);
     frameopt=frameopt & (~F_VISIBLE);
     if(vis)
@@ -517,7 +517,7 @@ LRESULT CALLBACK ModernStatusProc(HWND hwnd,UINT msg,WPARAM wParam,LPARAM lParam
 	  return 0;
   case WM_PAINT:
     if (GetParent(hwnd)==pcli->hwndContactList && g_CluiData.fLayered)
-      SkinEngine_Service_InvalidateFrameImage((WPARAM)hwnd,0);
+      CallService(MS_SKINENG_INVALIDATEFRAMEIMAGE,(WPARAM)hwnd,0);
     else if (GetParent(hwnd)==pcli->hwndContactList && !g_CluiData.fLayered)
 	{
 		HDC hdc, hdc2;
@@ -589,7 +589,7 @@ LRESULT CALLBACK ModernStatusProc(HWND hwnd,UINT msg,WPARAM wParam,LPARAM lParam
 					NotifyEventHooks(hStatusBarHideToolTipEvent,0,0);
 					tooltipshoing=FALSE;
 				};
-	  ID=FindFrameID(hwnd);
+	  ID=callProxied_FindFrameID(hwnd);
 	  if (ID)
 	  {
 		res=CallService(MS_CLIST_FRAMES_GETFRAMEOPTIONS, MAKEWPARAM(FO_FLAGS,ID),0);

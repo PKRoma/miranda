@@ -810,14 +810,14 @@ BOOL CALLBACK DlgSkinEditorOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lP
 					//ReloadSkin
 					SkinEngine_LoadSkinFromDB();	
 					pcli->pfnClcBroadcast( INTM_RELOADOPTIONS,0,0);
-					CLUIFrames_OnClistResize_mod(0,0,0);
+					callProxied_CLUIFrames_OnClistResize_mod(0,0);
 					SkinEngine_RedrawCompleteWindow();        
-					CLUIFrames_OnClistResize_mod(0,0,0);
+					callProxied_CLUIFrames_OnClistResize_mod(0,0);
 					{
 						HWND hwnd=pcli->hwndContactList;
 						RECT rc={0};
 						GetWindowRect(hwnd, &rc);
-						CLUIFrames_OnMoving(hwnd,&rc);
+						callProxied_CLUIFrames_OnMoving(hwnd,&rc);
 					}
 					return TRUE;
 				}
