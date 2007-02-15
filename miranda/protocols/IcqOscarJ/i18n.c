@@ -4,7 +4,7 @@
 //
 // Copyright © 2000,2001 Richard Hughes, Roland Rabien, Tristan Van de Vreede
 // Copyright © 2001,2002 Jon Keating, Richard Hughes
-// Copyright © 2002,2003,2004 Martin  berg, Sam Kothari, Robert Rainwater
+// Copyright © 2002,2003,2004 Martin Öberg, Sam Kothari, Robert Rainwater
 // Copyright © 2004,2005,2006,2007 Joe Kucera
 //
 // This program is free software; you can redistribute it and/or
@@ -171,6 +171,7 @@ unsigned char *make_utf8_string(const wchar_t *unicode)
   unsigned char* out;
   unsigned short c;
 
+  if (!unicode) return NULL;
 
   /* first calculate the size of the target string */
   c = unicode[index++];
@@ -222,6 +223,8 @@ wchar_t *make_unicode_string(const unsigned char *utf8)
   int size = 0, index = 0, out_index = 0;
   wchar_t *out;
   unsigned char c;
+
+  if (!utf8) return NULL;
 
   /* first calculate the size of the target string */
   c = utf8[index++];
