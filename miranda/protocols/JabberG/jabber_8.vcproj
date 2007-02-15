@@ -1118,6 +1118,10 @@
 				</FileConfiguration>
 			</File>
 			<File
+				RelativePath=".\jabber_search.cpp"
+				>
+			</File>
+			<File
 				RelativePath=".\jabber_secur.cpp"
 				>
 			</File>
@@ -1526,6 +1530,10 @@
 			</File>
 			<File
 				RelativePath="jabber_proxy.h"
+				>
+			</File>
+			<File
+				RelativePath=".\jabber_search.h"
 				>
 			</File>
 			<File
