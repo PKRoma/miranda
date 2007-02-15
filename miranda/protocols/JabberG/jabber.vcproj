@@ -4,6 +4,7 @@
 	Version="7.10"
 	Name="jabber"
 	ProjectGUID="{33276462-8313-4192-8306-13717ECCA60A}"
+	RootNamespace="jabber"
 	SccProjectName="SAK"
 	SccAuxPath="SAK"
 	SccLocalPath="SAK"
@@ -844,6 +845,9 @@
 				</FileConfiguration>
 			</File>
 			<File
+				RelativePath=".\jabber_search.cpp">				
+			</File>
+			<File
 				RelativePath=".\jabber_secur.cpp">
 			</File>
 			<File
@@ -1164,6 +1168,9 @@
 			</File>
 			<File
 				RelativePath="jabber_proxy.h">
+			</File>
+			<File
+				RelativePath=".\jabber_search.h">
 			</File>
 			<File
 				RelativePath=".\jabber_secur.h">

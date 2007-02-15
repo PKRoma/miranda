@@ -191,7 +191,7 @@ void RemoveAndClearOneObject(int arpos)
 {
 	PIntMenuObject p = &MenuObjects[arpos];
 	int j;
-	
+
 	for ( j=0; j < p->MenuItemsCount; j++ ) {
 		if ( p->FreeService )
 			CallService(p->FreeService,(WPARAM)p->MenuItems[j].globalid,(LPARAM)p->MenuItems[j].mi.ownerdata);
@@ -256,7 +256,7 @@ int MO_ProcessHotKeys( int menuHandle, int vKey )
 	EnterCriticalSection( &csMenuHook );
 
 	objidx = GetMenuObjbyId( menuHandle );
-	if ( objidx == -1 ) { 
+	if ( objidx == -1 ) {
 		LeaveCriticalSection( &csMenuHook );
 		return FALSE;
 	}
@@ -451,7 +451,7 @@ int MO_SetOptionsMenuItem( int handle, int setting, int value )
 	__try
 	{
 		PMO_IntMenuItem pimi = MO_GetIntMenuItem( handle );
-		if ( pimi == NULL ) { 
+		if ( pimi == NULL ) {
 			LeaveCriticalSection( &csMenuHook );
 			return -1;
 		}
@@ -461,7 +461,7 @@ int MO_SetOptionsMenuItem( int handle, int setting, int value )
 			return -1;
 		}
 
-		if ( setting == OPT_MENUITEMSETUNIQNAME && !( pimi->mi.flags & CMIF_ROOTPOPUP )) {
+		if ( setting == OPT_MENUITEMSETUNIQNAME ) {
 			mir_free( pimi->UniqName );
 			pimi->UniqName = mir_strdup(( char* )value );
 		}
@@ -605,7 +605,7 @@ int MO_AddNewMenuItem( int menuobjecthandle, PMO_MenuItem pmi )
 		#else
 			p->mi.ptszName = mir_strdup( Translate( pmi->ptszName ));
 		#endif
-		if ( pmi->hIcon != NULL ) 
+		if ( pmi->hIcon != NULL )
 			p->iconId = ImageList_AddIcon( MenuObjects[objidx].hMenuIcons, pmi->hIcon );
 
 		result = getGlobalId( menuobjecthandle, p->id );
@@ -663,7 +663,8 @@ int MO_AddOldNewMenuItem( int menuobjecthandle, PMO_MenuItem pmi )
 			tmi.root = -1;
 			//copy pszPopupName
 			tmi.ptszName = ( TCHAR* )pmi->root;
-			oldroot = MO_AddNewMenuItem( menuobjecthandle, &tmi );
+			if (( oldroot = MO_AddNewMenuItem( menuobjecthandle, &tmi )) != -1 )
+				MO_SetOptionsMenuItem( oldroot, OPT_MENUITEMSETUNIQNAME, (int)pmi->root );
 		}
 		pmi->root = oldroot;
 		//popup will be created in next commands
@@ -683,7 +684,7 @@ static int WhereToPlace(HMENU hMenu,PMO_MenuItem mi,MENUITEMINFO *mii,ListParam 
 		if ( mii->fType != MFT_SEPARATOR ) {
 			PMO_IntMenuItem pimi = MO_GetIntMenuItem(mii->dwItemData);
 			if ( pimi != NULL )
-				if ( pimi->mi.position <= mi->position ) 
+				if ( pimi->mi.position <= mi->position )
 					break;
 	}	}
 
@@ -699,7 +700,7 @@ static void InsertMenuItemWithSeparators(HMENU hMenu,int uItem,BOOL fByPosition,
 
 	int objid,menuitemid;//id
 	int objidx,menuitemidx;//pos in array
-	
+
 	UnpackGlobalId( lpmii->dwItemData, &objid, &menuitemid );
 	if ( objid == -1 || menuitemid == -1 )
 		return;
@@ -787,7 +788,7 @@ int MO_BuildMenu(WPARAM wParam,LPARAM lParam)
 
 	lp = ( ListParam* )lParam;
 	pimoidx = GetMenuObjbyId( lp->MenuObjectHandle );
-	if ( pimoidx == -1 ) 
+	if ( pimoidx == -1 )
 		return 0;
 
 	res = (int)BuildRecursiveMenu(( HMENU )wParam, ( ListParam* )lParam );
@@ -831,6 +832,7 @@ HMENU BuildRecursiveMenu(HMENU hMenu,ListParam *param)
 	char *checkproc=NULL;
 	char *onAddproc=NULL;
 	char MenuNameItems[256];
+	BOOL bIsConversionDone = LangPackGetDefaultCodePage() == CP_ACP; // check the langpack presence
 
 	if ( param == NULL )
 		return NULL;
@@ -847,6 +849,9 @@ HMENU BuildRecursiveMenu(HMENU hMenu,ListParam *param)
 
 	localparam = *param;
 	wsprintfA(MenuNameItems, "%s_Items", MenuObjects[pimoidx].Name);
+
+	if ( !bIsConversionDone )
+		bIsConversionDone = DBGetContactSettingByte( NULL, MenuNameItems, "LangpackConversion", 0 );
 
 	while ( rootlevel == -1 && GetMenuItemCount( hMenu ) > 0 )
 		DeleteMenu( hMenu, 0, MF_BYPOSITION );
@@ -867,16 +872,30 @@ HMENU BuildRecursiveMenu(HMENU hMenu,ListParam *param)
 
 		/**************************************/
 		if ( rootlevel == -1 && mi->root == -1 && MenuObjects[pimoidx].bUseUserDefinedItems ) {
-			char menuItemName[256];
-			char DBString[256];
+			char menuItemName[256], menuItemNameLP[256];
+			char DBString[256], DBStringLP[256];
 			DBVARIANT dbv;
 			int pos;
+			BOOL bCheckDouble = FALSE;
 			memset(&dbv,0,sizeof(dbv));
 
 			GetMenuItemName( &MenuItems[j], menuItemName, sizeof( menuItemName ));
+			if ( !bIsConversionDone ) {
+				strcpy( DBString, menuItemName+1 );
+				DBString[ strlen(DBString)-1 ] = 0;
+				mir_snprintf( menuItemNameLP, sizeof(menuItemNameLP), "{%s}", Translate( DBString ));
+				bCheckDouble = strcmp( menuItemName, menuItemNameLP ) != 0;
+			}
 
 			// check if it visible
 			wsprintfA( DBString, "%s_visible", menuItemName );
+			if ( bCheckDouble ) {
+				wsprintfA( DBStringLP, "%s_visible", menuItemNameLP );
+				if ( !DBGetContactSetting( NULL, MenuNameItems, DBStringLP, &dbv )) {
+               DBDeleteContactSetting( NULL, MenuNameItems, DBStringLP );
+					DBWriteContactSettingByte( NULL, MenuNameItems, DBString, dbv.bVal );
+			}	}
+
 			if ( DBGetContactSettingByte( NULL, MenuNameItems, DBString, -1 ) == -1 )
 				DBWriteContactSettingByte( NULL, MenuNameItems, DBString, 1 );
 
@@ -888,6 +907,13 @@ HMENU BuildRecursiveMenu(HMENU hMenu,ListParam *param)
 
 			// mi.pszName
 			wsprintfA( DBString, "%s_name", menuItemName );
+			if ( bCheckDouble ) {
+				wsprintfA( DBStringLP, "%s_name", menuItemNameLP );
+				if ( !DBGetContactSettingTString( NULL, MenuNameItems, DBStringLP, &dbv )) {
+               DBDeleteContactSetting( NULL, MenuNameItems, DBStringLP );
+					DBWriteContactSettingTString( NULL, MenuNameItems, DBString, dbv.ptszVal );
+			}	}
+
 			if ( !DBGetContactSettingTString( NULL, MenuNameItems, DBString, &dbv )) {
 				if ( _tcslen( dbv.ptszVal ) > 0 ) {
 					if ( MenuItems[j].CustomName ) mir_free( MenuItems[j].CustomName );
@@ -897,6 +923,13 @@ HMENU BuildRecursiveMenu(HMENU hMenu,ListParam *param)
 			}
 
 			wsprintfA( DBString, "%s_pos", menuItemName );
+			if ( bCheckDouble ) {
+				wsprintfA( DBStringLP, "%s_pos", menuItemNameLP );
+				if ( !DBGetContactSetting( NULL, MenuNameItems, DBStringLP, &dbv )) {
+               DBDeleteContactSetting( NULL, MenuNameItems, DBStringLP );
+					DBWriteContactSettingDword( NULL, MenuNameItems, DBString, dbv.lVal );
+			}	}
+
 			if (( pos = DBGetContactSettingDword( NULL, MenuNameItems, DBString, -1 )) <= 0 ) {
 				DBWriteContactSettingDword( NULL,MenuNameItems, DBString, mi->position );
 				if ( mi->flags & CMIF_ROOTPOPUP )
@@ -911,6 +944,9 @@ HMENU BuildRecursiveMenu(HMENU hMenu,ListParam *param)
 					else if ( mi->position >= initPosition  )
 						initPosition = mi->position;
 		}	}	}
+
+		if ( !bIsConversionDone )
+			DBWriteContactSettingByte( NULL, MenuNameItems, "LangpackConversion", 1 );
 
 		/**************************************/
 
@@ -1092,19 +1128,19 @@ int RecursiveRemoveChilds(int pos,ListParam *param)
 /* iconlib in menu */
 extern int hStatusMenuObject;
 HICON LoadIconFromLibrary(char *SectName,char *Name,char *Description,HICON hIcon,boolean RegisterIt,boolean *RegistredOk)
-{		
+{
 	SKINICONDESC sid={0};
 	int retval;
 
 	if ( RegistredOk )
 		*RegistredOk = FALSE;
 
-	if ( Name || Description ) {				
+	if ( Name || Description ) {
 		char iconame[256];
 
 		if (Name!=NULL&&strlen(Name)!=0)
 			_snprintf(iconame,sizeof(iconame),"genmenu_%s_%s",SectName,Name);
-		else 
+		else
 			_snprintf(iconame,sizeof(iconame),"genmenu_%s_%s",SectName,Description);
 
 		if ( RegisterIt ) {
@@ -1123,7 +1159,7 @@ HICON LoadIconFromLibrary(char *SectName,char *Name,char *Description,HICON hIco
 			sid.cbSize = sizeof(sid);
 			sid.cx=16;
 			sid.cy=16;
-			sid.pszSection = Translate(sectionName);				
+			sid.pszSection = Translate(sectionName);
 			sid.pszName=iconame;
 			sid.pszDefaultFile=NULL;
 			sid.pszDescription=buf;
@@ -1148,19 +1184,19 @@ int OnIconLibChanges(WPARAM wParam,LPARAM lParam)
 	for ( mo=0; mo < MenuObjectsCount; mo++ ) {
 		for ( mi=0; mi < MenuObjects[mo].MenuItemsCount; mi++ ) {
 			#ifdef UNICODE
-				char* descr=u2a(MenuObjects[mo].MenuItems[mi].mi.ptszName);
+				char* descr = u2a(MenuObjects[mo].MenuItems[mi].mi.ptszName);
 			#else
-				char* descr=MenuObjects[mo].MenuItems[mi].mi.pszName;
+				char* descr = MenuObjects[mo].MenuItems[mi].mi.pszName;
 			#endif
 			char* uname = mir_strdup(MenuObjects[mo].MenuItems[mi].UniqName);
-			if ( uname == NULL ) 
+			if ( uname == NULL )
 			#ifdef UNICODE
 				uname=u2a(MenuObjects[mo].MenuItems[mi].CustomName);
 			#else
 				uname=mir_strdup(MenuObjects[mo].MenuItems[mi].CustomName);
 			#endif
-			//&&MenuObjects[mo].MenuItems[mi].iconId!=-1	
-			if ( MenuObjects[mo].MenuItems[mi].IconRegistred && uname != NULL ) {	
+			//&&MenuObjects[mo].MenuItems[mi].iconId!=-1
+			if ( MenuObjects[mo].MenuItems[mi].IconRegistred && uname != NULL ) {
 				HICON deficon = ImageList_GetIcon(MenuObjects[mo].hMenuIcons,MenuObjects[mo].MenuItems[mi].iconId,0);
 				newIcon = LoadIconFromLibrary( MenuObjects[mo].Name, uname, descr, deficon, FALSE, NULL );
 				if (newIcon)
@@ -1168,7 +1204,7 @@ int OnIconLibChanges(WPARAM wParam,LPARAM lParam)
 
 				Safe_DestroyIcon(deficon);
 				IconLib_ReleaseIcon(newIcon,0);
-			}	
+			}
 			#ifdef UNICODE
 				mir_free( descr );
 			#endif
@@ -1182,24 +1218,24 @@ int OnIconLibChanges(WPARAM wParam,LPARAM lParam)
 int RegisterOneIcon(int mo,int mi)
 {
 	HICON newIcon;
-	char *uname, *desc;	
+	char *uname, *desc;
 
 	if ( hStatusMenuObject == MenuObjects[mo].id ) //skip status menu
 		return 0;
 
 	uname = MenuObjects[mo].MenuItems[mi].UniqName;
-	if ( uname == NULL ) 
+	if ( uname == NULL )
 	#ifdef UNICODE
 		uname = u2a(MenuObjects[mo].MenuItems[mi].CustomName);
-	desc = u2a(MenuObjects[mo].MenuItems[mi].mi.ptszName);
+		desc = u2a(MenuObjects[mo].MenuItems[mi].mi.ptszName);
 	#else
 		uname = MenuObjects[mo].MenuItems[mi].CustomName;
-	desc = MenuObjects[mo].MenuItems[mi].mi.pszName;
+		desc = MenuObjects[mo].MenuItems[mi].mi.pszName;
 	#endif
-	
-	if ( !MenuObjects[mo].MenuItems[mi].IconRegistred ) {	    
+
+	if ( !MenuObjects[mo].MenuItems[mi].IconRegistred ) {
 		HICON defic = ImageList_GetIcon( MenuObjects[mo].hMenuIcons, MenuObjects[mo].MenuItems[mi].iconId, 0 );
-		newIcon = LoadIconFromLibrary( MenuObjects[mo].Name, uname, desc, defic, TRUE, &MenuObjects[mo].MenuItems[mi].IconRegistred );	
+		newIcon = LoadIconFromLibrary( MenuObjects[mo].Name, uname, desc, defic, TRUE, &MenuObjects[mo].MenuItems[mi].IconRegistred );
 		if ( newIcon )
 			ImageList_ReplaceIcon( MenuObjects[mo].hMenuIcons, MenuObjects[mo].MenuItems[mi].iconId, newIcon );
 		Safe_DestroyIcon( defic );
@@ -1245,7 +1281,7 @@ static int OnModulesLoaded(WPARAM wParam,LPARAM lParam)
 }
 
 static int SRVMO_SetOptionsMenuObject( WPARAM wParam, LPARAM lParam)
-{	
+{
 	lpOptParam lpop = ( lpOptParam )lParam;
 	if ( lpop == NULL )
 		return 0;

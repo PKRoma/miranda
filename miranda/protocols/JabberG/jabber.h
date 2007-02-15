@@ -455,6 +455,11 @@ char*  UnEscapeChatTags(char* str_in);
 
 void JabberEnableMenuItems( BOOL bEnable );
 
+//---- jabber_search.cpp -------------------------------------------------
+int JabberSearchCreateAdvUI( WPARAM wParam, LPARAM lParam);
+int JabberSearchByAdvanced( WPARAM wParam, LPARAM lParam );
+
+
 //---- jabber_std.cpp ----------------------------------------------
 
 #if defined( _DEBUG )

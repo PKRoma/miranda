@@ -1,5 +1,5 @@
 //{{NO_DEPENDENCIES}}
-// Microsoft Developer Studio generated include file.
+// Microsoft Visual C++ generated include file.
 // Used by resource.rc
 //
 #define IDC_AUTHICON                    1
@@ -295,8 +295,10 @@
 #define IDC_BYADVANCED                  1403
 #define IDC_ADVANCED                    1404
 #define IDC_PROTOCOLORDER               1405
-#define IDC_RESETPROTOCOLDATA           1406
-#define IDC_PROTOCOLORDERWARNING        1407
+#define IDC_TINYEXTENDEDGROUP           1406
+#define IDC_RESETPROTOCOLDATA           1407
+#define IDC_BYCUSTOM                    1408
+#define IDC_PROTOCOLORDERWARNING        1409
 #define IDC_STSIMPLERIGHT               1440
 #define IDC_NETLIBUSERS                 1443
 #define IDC_STOFTENPORT                 1445
@@ -423,7 +425,7 @@
 #define POPUP_DELETEGROUP               40053
 
 // Next default values for new objects
-//
+// 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NEXT_RESOURCE_VALUE        277

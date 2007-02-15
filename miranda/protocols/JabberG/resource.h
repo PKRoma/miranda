@@ -28,6 +28,7 @@
 #define IDD_VCARD_PHOTO                 132
 #define IDD_VCARD_NOTE                  133
 #define IDD_CHANGEPASSWORD              136
+#define IDD_SEARCHUSER                  138
 #define IDD_OPT_JABBERMAIN              139
 #define IDD_OPT_JABBER2                 140
 #define IDI_REQUEST                     141
@@ -214,6 +215,8 @@
 #define IDC_PHONES                      1308
 #define IDC_UPDATE                      1313
 #define IDC_STATUS                      1414
+#define IDC_GO                          1196
+#define IDC_INSTRUCTIONS                1414
 #define IDC_PLAN                        1415
 #define IDC_PERSONALGROUP               1434
 #define IDC_EXTRAGROUP                  1436
@@ -232,15 +235,12 @@
 #define IDM_INVITE                      10016
 
 // Next default values for new objects
-// 
+//
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
- #ifndef APSTUDIO_READONLY_SYMBOLS
- #define _APS_NEXT_RESOURCE_VALUE        188
- #define _APS_NEXT_COMMAND_VALUE         40017
- #define _APS_NEXT_CONTROL_VALUE         1187
- #define _APS_NEXT_SYMED_VALUE           101
+#define _APS_NEXT_RESOURCE_VALUE        190
+#define _APS_NEXT_COMMAND_VALUE         40017
+#define _APS_NEXT_CONTROL_VALUE         1209
+#define _APS_NEXT_SYMED_VALUE           101
 #endif
 #endif
-#endif
-

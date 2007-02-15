@@ -217,6 +217,7 @@ BEGIN
                     159,62,10
     CONTROL         "Advanced >>",IDC_ADVANCED,"Button",BS_AUTOCHECKBOX | 
                     BS_PUSHLIKE | WS_TABSTOP,11,171,105,14
+    GROUPBOX        "",IDC_TINYEXTENDEDGROUP,5,164,117,25
     DEFPUSHBUTTON   "&Search",IDOK,5,197,117,17
     CONTROL         "List1",IDC_RESULTS,"SysListView32",LVS_REPORT | 
                     LVS_SINGLESEL | LVS_SHOWSELALWAYS | LVS_AUTOARRANGE | 
@@ -226,6 +227,8 @@ BEGIN
     PUSHBUTTON      "Add to list",IDC_ADD,354,200,68,14,WS_DISABLED
     CONTROL         "",IDC_STATUSBAR,"msctls_statusbar32",WS_TABSTOP | 0x100,
                     0,220,427,10
+    CONTROL         "Custom",IDC_BYCUSTOM,"Button",BS_AUTORADIOBUTTON,11,164,
+                    89,10
 END
 
 IDD_OPTIONS DIALOGEX 0, 0, 428, 271
@@ -1719,7 +1722,6 @@ BEGIN
         VERTGUIDE, 166
         VERTGUIDE, 177
         VERTGUIDE, 306
-        BOTTOMMARGIN, 235
         HORZGUIDE, 80
         HORZGUIDE, 113
     END
@@ -1762,7 +1764,6 @@ BEGIN
         LEFTMARGIN, 7
         RIGHTMARGIN, 179
         TOPMARGIN, 7
-        BOTTOMMARGIN, 83
     END
 END
 #endif    // APSTUDIO_INVOKED
@@ -1982,4 +1983,5 @@ IDB_SORTCOLDOWN         BITMAP                  "res/sortcold.bmp"
 
 /////////////////////////////////////////////////////////////////////////////
 #endif    // not APSTUDIO_INVOKED
+
 

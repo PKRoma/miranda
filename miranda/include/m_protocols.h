@@ -2,8 +2,8 @@
 
 Miranda IM: the free IM client for Microsoft* Windows*
 
-Copyright 2000-2007 Miranda ICQ/IM project, 
-all portions of this codebase are copyrighted to the people 
+Copyright 2000-2007 Miranda ICQ/IM project,
+all portions of this codebase are copyrighted to the people
 listed in contributors.txt.
 
 This program is free software; you can redistribute it and/or
@@ -88,8 +88,8 @@ typedef struct {
 #define ACKTYPE_STATUS     12
 #define ACKTYPE_CONTACTS   13	//send/recv of contacts
 #define ACKTYPE_AVATAR	   14   //send/recv of avatars from a protocol
-#define ACKRESULT_SUCCESS     0
-#define ACKRESULT_FAILED      1
+#define ACKRESULT_SUCCESS      0
+#define ACKRESULT_FAILED       1
 //'in progress' result codes:
 #define ACKRESULT_CONNECTING  100
 #define ACKRESULT_CONNECTED   101
@@ -102,6 +102,7 @@ typedef struct {
 #define ACKRESULT_STATUS	  108  //an ack or a series of acks to do with a task have a status change
 #define ACKRESULT_LISTENING   109  //waiting for connection
 #define ACKRESULT_CONNECTPROXY 110 //connecting to file proxy
+#define ACKRESULT_SEARCHRESULT 111 //result of extended search
 #define ME_PROTO_ACK       "Proto/Ack"
 
 // v0.3.2+: When result is ACKRESULT_FAILED or ACKRESULT_DENIED, lParam can point to
@@ -144,7 +145,7 @@ typedef struct {
 	char *szName;    //unique name of the module
 	int type;      //module type, see PROTOTYPE_ constants
 } PROTOCOLDESCRIPTOR;
-// v0.3.3+: 
+// v0.3.3+:
 //
 // For recv, it will go from lower to higher, so in this case:
 // check ignore, decrypt (encryption), translate
@@ -207,9 +208,9 @@ typedef struct {
 #define MS_PROTO_CONTACTISTYPING "Proto/ContactIsTyping"
 
 //This hook notifies when a user is typing.  If a message dialog supports sending v0.3.3+
-//typing notifications it should hook this event and fire the 
+//typing notifications it should hook this event and fire the
 //ProtoService PSS_USERISTYPING to the contacts protocol *after* verifying
-//that the hContact is not NULL and the the user wishes to send notifications 
+//that the hContact is not NULL and the the user wishes to send notifications
 //to this user (checked visibility, individual typing blocking, etc).
 //wParam=(WPARAM)(HANDLE)hContact
 //lParam=(LPARAM)(int)typing state
@@ -255,7 +256,7 @@ ProtoBroadcastAck(), listeners must hook ME_PROTO_ACK, note that lParam = ACKDAT
 #define PA_FORMAT_UNKNOWN	0	// the protocol can not determine much about the "bitmap"
 #define PA_FORMAT_PNG		1	// the image is PNG
 #define PA_FORMAT_JPEG		2
-#define PA_FORMAT_ICON		3	
+#define PA_FORMAT_ICON		3
 #define PA_FORMAT_BMP		4
 #define PA_FORMAT_GIF       5
 #define PA_FORMAT_SWF       6
@@ -286,5 +287,3 @@ typedef struct {
 
 
 #endif // M_PROTOCOLS_H
-
-

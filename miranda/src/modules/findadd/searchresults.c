@@ -143,37 +143,59 @@ void LoadColumnSizes(HWND hwndResults,const char *szProto)
 	Header_SetItem(ListView_GetHeader(hwndResults),dat->iLastColumnSortIndex,&hdi);
 }
 
+static LPARAM ListView_GetItemLParam(HWND hwndList, int idx)
+{
+    LVITEM lv={0};
+	lv.mask=LVIF_PARAM;
+	ListView_GetItem(hwndList,&lv);
+	return lv.lParam;
+}
 int CALLBACK SearchResultsCompareFunc(LPARAM lParam1, LPARAM lParam2, LPARAM lParamSort)
 {
-	struct FindAddDlgData *dat=(struct FindAddDlgData*)lParamSort;
+	struct FindAddDlgData *dat=(struct FindAddDlgData*)GetWindowLong((HWND) lParamSort, GWL_USERDATA);
 	int sortMultiplier;
 	int sortCol;
-	struct ListSearchResult *lsr1=(struct ListSearchResult*)lParam1,*lsr2=(struct ListSearchResult*)lParam2;
-	
+	struct ListSearchResult *lsr1, *lsr2;
+	HWND hList=GetDlgItem((HWND) lParamSort, IDC_RESULTS);
+
 	sortMultiplier=dat->bSortAscending?1:-1;
 	sortCol=dat->iLastColumnSortIndex;
-	if ( lsr1 == NULL || lsr2 == NULL ) return 0;
-	switch(sortCol)
+	if (!dat->bFlexSearchResult)
 	{
-	case COLUMNID_PROTO:
-		return lstrcmpA(lsr1->szProto, lsr2->szProto)*sortMultiplier;
-	case COLUMNID_NICK:
-		return lstrcmpiA(lsr1->psr.nick, lsr2->psr.nick)*sortMultiplier;
-	case COLUMNID_FIRST:
-		return lstrcmpiA(lsr1->psr.firstName, lsr2->psr.firstName)*sortMultiplier;
-	case COLUMNID_LAST:
-		return lstrcmpiA(lsr1->psr.lastName, lsr2->psr.lastName)*sortMultiplier;
-	case COLUMNID_EMAIL:
-		return lstrcmpiA(lsr1->psr.email, lsr2->psr.email)*sortMultiplier;
-	case COLUMNID_HANDLE:
-		if(!lstrcmpA(lsr1->szProto,lsr2->szProto)) {
-			if(!lstrcmpA(lsr1->szProto,"ICQ")) {
-				if(((ICQSEARCHRESULT*)&lsr1->psr)->uin<((ICQSEARCHRESULT*)&lsr2->psr)->uin) return -sortMultiplier;
-				return sortMultiplier;
+		lsr1=(struct ListSearchResult*)ListView_GetItemLParam(hList, (int)lParam1);
+		lsr2=(struct ListSearchResult*)ListView_GetItemLParam(hList, (int)lParam2);
+
+		if ( lsr1 == NULL || lsr2 == NULL ) return 0;
+		switch(sortCol)
+		{
+		case COLUMNID_PROTO:
+			return lstrcmpA(lsr1->szProto, lsr2->szProto)*sortMultiplier;
+		case COLUMNID_NICK:
+			return lstrcmpiA(lsr1->psr.nick, lsr2->psr.nick)*sortMultiplier;
+		case COLUMNID_FIRST:
+			return lstrcmpiA(lsr1->psr.firstName, lsr2->psr.firstName)*sortMultiplier;
+		case COLUMNID_LAST:
+			return lstrcmpiA(lsr1->psr.lastName, lsr2->psr.lastName)*sortMultiplier;
+		case COLUMNID_EMAIL:
+			return lstrcmpiA(lsr1->psr.email, lsr2->psr.email)*sortMultiplier;
+		case COLUMNID_HANDLE:
+			if(!lstrcmpA(lsr1->szProto,lsr2->szProto)) {
+				if(!lstrcmpA(lsr1->szProto,"ICQ")) {
+					if(((ICQSEARCHRESULT*)&lsr1->psr)->uin<((ICQSEARCHRESULT*)&lsr2->psr)->uin) return -sortMultiplier;
+					return sortMultiplier;
+				}
+				else return 0;
 			}
-			else return 0;
+			else return lstrcmpA(lsr1->szProto, lsr2->szProto)*sortMultiplier;
 		}
-		else return lstrcmpA(lsr1->szProto, lsr2->szProto)*sortMultiplier;
+	}
+	else 
+	{
+		static TCHAR szText1[100];
+		static TCHAR szText2[100];
+		ListView_GetItemText(hList,(int)lParam1,sortCol,szText1,SIZEOF(szText1));
+		ListView_GetItemText(hList,(int)lParam2,sortCol,szText2,SIZEOF(szText2));
+		return _tcsicmp(szText1, szText2)*sortMultiplier;
 	}
 	return 0;
 }
