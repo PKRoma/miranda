@@ -313,6 +313,7 @@ static BOOL CALLBACK DlgProcFindAdd(HWND hwndDlg, UINT msg, WPARAM wParam, LPARA
 			dat->bSortAscending=1;
 			dat->hBmpSortUp=(HBITMAP)LoadImage(GetModuleHandle(NULL),MAKEINTRESOURCE(IDB_SORTCOLUP),IMAGE_BITMAP,0,0,LR_LOADMAP3DCOLORS);
 			dat->hBmpSortDown=(HBITMAP)LoadImage(GetModuleHandle(NULL),MAKEINTRESOURCE(IDB_SORTCOLDOWN),IMAGE_BITMAP,0,0,LR_LOADMAP3DCOLORS);
+			dat->bFlexSearchResult=FALSE;
 			SendDlgItemMessage(hwndDlg,IDC_MOREOPTIONS,BUTTONSETARROW,1,0);
 
 			{	LVCOLUMN lvc;
@@ -607,6 +608,10 @@ static BOOL CALLBACK DlgProcFindAdd(HWND hwndDlg, UINT msg, WPARAM wParam, LPARA
 							DestroyWindow(dat->hwndAdvSearch);
 							dat->hwndAdvSearch=NULL;
 						}
+						if(dat->hwndTinySearch) {
+							DestroyWindow(dat->hwndTinySearch);
+							dat->hwndTinySearch=NULL;
+						}
 						SendMessage(hwndDlg,M_SETGROUPVISIBILITIES,0,0);
 					}
 					break;
@@ -745,6 +750,11 @@ static BOOL CALLBACK DlgProcFindAdd(HWND hwndDlg, UINT msg, WPARAM wParam, LPARA
 					break;
 				}
 			}
+			if (lParam && dat->hwndTinySearch==(HWND)lParam 
+				&& HIWORD(wParam)==EN_SETFOCUS && LOWORD(wParam)==0 
+				&& !IsDlgButtonChecked(hwndDlg, IDC_BYCUSTOM))	{
+					CheckSearchTypeRadioButton(hwndDlg, IDC_BYCUSTOM);
+			}
 			break;
 		case WM_CONTEXTMENU:
 		{	POINT pt;
@@ -790,7 +800,7 @@ static BOOL CALLBACK DlgProcFindAdd(HWND hwndDlg, UINT msg, WPARAM wParam, LPARA
 				PROTOSEARCHRESULT *psr;							
 				HWND hwndList=GetDlgItem(hwndDlg,IDC_RESULTS);
 				CUSTOMSEARCHRESULTS * csr=(CUSTOMSEARCHRESULTS*)ack->lParam;
-								
+				dat->bFlexSearchResult=TRUE;				
 				psr=&(csr->psr);
 				// check if this is column names data (psr->cbSize==0)
 				if ( psr->cbSize==0 ){ // blob contain info about columns
@@ -862,7 +872,7 @@ static BOOL CALLBACK DlgProcFindAdd(HWND hwndDlg, UINT msg, WPARAM wParam, LPARA
 				struct ListSearchResult *lsr;
 				char *szComboProto;
 				COMBOBOXEXITEM cbei={0};
-
+				dat->bFlexSearchResult=FALSE;
 				lsr=(struct ListSearchResult*)mir_alloc(offsetof(struct ListSearchResult,psr)+psr->cbSize);
 				lsr->szProto=ack->szModule;
 				CopyMemory(&lsr->psr,psr,psr->cbSize);

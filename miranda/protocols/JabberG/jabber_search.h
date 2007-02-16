@@ -22,6 +22,9 @@ typedef struct tag_Data
 {
 	TCHAR *Label;
 	TCHAR * Var;
+	TCHAR * defValue;
+	BOOL  bHidden;
+	BOOL  bReadOnly;
 	int Order;
 
 } Data;
@@ -39,7 +42,7 @@ static HWND searchHandleDlg=NULL;
 
 //local functions declarations
 static int JabberSearchFrameProc(HWND hwnd, int msg, WPARAM wParam, LPARAM lParam);
-static int JabberSearchAddField(HWND hwndDlg, TCHAR *Label, TCHAR * Var, int Order );
+static int JabberSearchAddField(HWND hwndDlg, Data* FieldDat );
 static void JabberIqResultGetSearchFields( XmlNode *iqNode, void *userdata );
 static void JabberSearchFreeData(HWND hwndDlg, JabberSearchData * dat);
 static void JabberSearchRefreshFrameScroll(HWND hwndDlg, JabberSearchData * dat);
@@ -52,13 +55,26 @@ static void JabberSearchAddToRecent(TCHAR * szAddr, HWND hwnd);
 template <typename _KEYTYPE , int (*COMPARATOR)(_KEYTYPE*, _KEYTYPE*) > 
 class UNIQUE_MAP
 {
-private:
+
+public:	
+	typedef _KEYTYPE* (*COPYKEYPROC)(_KEYTYPE*);
+	typedef void (*DESTROYKEYPROC)(_KEYTYPE*);
+
+private:	
 	typedef struct _tagRECORD
 	{
-		_tagRECORD(_KEYTYPE * key, TCHAR * value=NULL)	{ _key=key; _value=value; _order=0;	}
+		_tagRECORD(_KEYTYPE * key, TCHAR * value=NULL)	{ _key=key; _value=value; _order=0; _destroyKeyProc=NULL;	}
+		~_tagRECORD()
+		{
+			if (_key && _destroyKeyProc) 
+				_destroyKeyProc(_key);
+			_key=NULL;
+			_destroyKeyProc=NULL; 
+		}
 		_KEYTYPE *_key; 
 		TCHAR * _value;
 		int _order;
+		DESTROYKEYPROC _destroyKeyProc;
 	} _RECORD;
 
 	int _nextOrder;
@@ -77,6 +93,7 @@ private:
 		int _itemOrder=p->_order;
 		if (_Records.remove(p))
 		{
+			delete(p);
 			_nextOrder--;
 			for (int i=0; i<_Records.getCount(); i++)
 			{
@@ -126,6 +143,36 @@ public:
 		else
 		{
 			_Records[index]->_value=Value;		
+			delete rec;
+		}
+		return index;
+	}
+	int insertCopyKey(_KEYTYPE* Key, TCHAR *Value, _KEYTYPE** _KeyReturn, COPYKEYPROC CopyProc, DESTROYKEYPROC DestroyProc )
+	{
+		_RECORD * rec= new _RECORD(Key,Value);
+		int index=_Records.getIndex(rec);
+		if (index<0)
+		{
+			_KEYTYPE* newKey=CopyProc(Key);
+			if(!_Records.insert(rec)) 
+			{
+				delete rec;
+				DestroyProc(newKey);
+				if (_KeyReturn) *_KeyReturn=NULL;
+			}
+			else 
+			{
+				rec->_key=newKey;
+				rec->_destroyKeyProc=DestroyProc;
+				index=_Records.getIndex(rec);
+				rec->_order=_nextOrder++;
+				if (_KeyReturn) *_KeyReturn=newKey;
+			}
+		}
+		else
+		{
+			_Records[index]->_value=Value;	
+			if (_KeyReturn) *_KeyReturn=_Records[index]->_key;
 			delete rec;
 		}
 		return index;
@@ -191,3 +238,8 @@ public:
 		return _Records.getIndex(&temp);
 	}
 };
+
+inline int TCharKeyCmp(TCHAR* a, TCHAR* b)
+{
+	return (int)(_tcsicmp(a,b));
+}
