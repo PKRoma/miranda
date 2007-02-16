@@ -905,21 +905,7 @@ SOURCE=.\modules\fonts\services.c
 
 SOURCE=.\modules\icolib\extracticon.c
 
-!IF  "$(CFG)" == "miranda32 - Win32 Release"
-
 # SUBTRACT CPP /YX /Yc /Yu
-
-!ELSEIF  "$(CFG)" == "miranda32 - Win32 Debug"
-
-# SUBTRACT CPP /YX /Yc /Yu
-
-!ELSEIF  "$(CFG)" == "miranda32 - Win32 Release Unicode"
-
-# SUBTRACT CPP /YX /Yc /Yu
-
-!ELSEIF  "$(CFG)" == "miranda32 - Win32 Debug Unicode"
-
-!ENDIF 
 
 # End Source File
 # Begin Source File
