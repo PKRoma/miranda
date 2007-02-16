@@ -2375,7 +2375,7 @@ void CLUI_cliOnCreateClc(void)
 		CreateServiceFunction("CList/ShowContactAvatar",CLUI_MenuItem_ShowContactAvatar);
 		mi.position=2000150000;
 		mi.hIcon=LoadSmallIcon(g_hInst,MAKEINTRESOURCE(IDI_SHOW_AVATAR));
-		mi.pszName=Translate("Show Contact &Avatar");
+		mi.pszName=("Show Contact &Avatar");
 		mi.pszService="CList/ShowContactAvatar";
 		hShowAvatarMenuItem = (HANDLE)CallService(MS_CLIST_ADDCONTACTMENUITEM,0,(LPARAM)&mi);
 		DestroyIcon_protect(mi.hIcon);
@@ -2383,7 +2383,7 @@ void CLUI_cliOnCreateClc(void)
 		CreateServiceFunction("CList/HideContactAvatar",CLUI_MenuItem_HideContactAvatar);
 		mi.position=2000150001;
 		mi.hIcon=LoadSmallIcon(g_hInst,MAKEINTRESOURCE(IDI_HIDE_AVATAR));
-		mi.pszName=Translate("Hide Contact &Avatar");
+		mi.pszName=("Hide Contact &Avatar");
 		mi.pszService="CList/HideContactAvatar";
 		hHideAvatarMenuItem = (HANDLE)CallService(MS_CLIST_ADDCONTACTMENUITEM,0,(LPARAM)&mi);
 		DestroyIcon_protect(mi.hIcon);
