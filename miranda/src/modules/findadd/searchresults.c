@@ -181,7 +181,8 @@ int CALLBACK SearchResultsCompareFunc(LPARAM lParam1, LPARAM lParam2, LPARAM lPa
 		case COLUMNID_HANDLE:
 			if(!lstrcmpA(lsr1->szProto,lsr2->szProto)) {
 				if(!lstrcmpA(lsr1->szProto,"ICQ")) {
-					if(((ICQSEARCHRESULT*)&lsr1->psr)->uin<((ICQSEARCHRESULT*)&lsr2->psr)->uin) return -sortMultiplier;
+					ULONG UIN1 = ((ICQSEARCHRESULT*)&lsr1->psr)->uin, UIN2 = ((ICQSEARCHRESULT*)&lsr2->psr)->uin;
+					if( UIN1 < UIN2 ) return -sortMultiplier;
 					return sortMultiplier;
 				}
 				else return 0;
@@ -191,8 +192,8 @@ int CALLBACK SearchResultsCompareFunc(LPARAM lParam1, LPARAM lParam2, LPARAM lPa
 	}
 	else 
 	{
-		static TCHAR szText1[100];
-		static TCHAR szText2[100];
+		TCHAR szText1[100];
+		TCHAR szText2[100];
 		ListView_GetItemText(hList,(int)lParam1,sortCol,szText1,SIZEOF(szText1));
 		ListView_GetItemText(hList,(int)lParam2,sortCol,szText2,SIZEOF(szText2));
 		return _tcsicmp(szText1, szText2)*sortMultiplier;

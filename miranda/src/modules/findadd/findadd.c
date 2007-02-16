@@ -306,19 +306,13 @@ static BOOL CALLBACK DlgProcFindAdd(HWND hwndDlg, UINT msg, WPARAM wParam, LPARA
 			Window_SetIcon_IcoLib(hwndDlg,SKINICON_OTHER_FINDUSER);
 			ListView_SetExtendedListViewStyle(GetDlgItem(hwndDlg,IDC_RESULTS),LVS_EX_FULLROWSELECT|LVS_EX_HEADERDRAGDROP);
 			dat=(struct FindAddDlgData*)mir_alloc(sizeof(struct FindAddDlgData));
+			memset(dat,0,sizeof(struct FindAddDlgData));
 			SetWindowLong(hwndDlg,GWL_USERDATA,(LONG)dat);
-			dat->hResultHook=NULL;
 			dat->notSearchedYet=1;
-			dat->search=NULL;
-			dat->searchCount=0;
 			dat->iLastColumnSortIndex=1;
 			dat->bSortAscending=1;
 			dat->hBmpSortUp=(HBITMAP)LoadImage(GetModuleHandle(NULL),MAKEINTRESOURCE(IDB_SORTCOLUP),IMAGE_BITMAP,0,0,LR_LOADMAP3DCOLORS);
 			dat->hBmpSortDown=(HBITMAP)LoadImage(GetModuleHandle(NULL),MAKEINTRESOURCE(IDB_SORTCOLDOWN),IMAGE_BITMAP,0,0,LR_LOADMAP3DCOLORS);
-			dat->throbbing=0;
-			dat->pivot=0;
-			dat->hwndAdvSearch=NULL;
-			dat->hwndTinySearch=NULL;
 			SendDlgItemMessage(hwndDlg,IDC_MOREOPTIONS,BUTTONSETARROW,1,0);
 
 			{	LVCOLUMN lvc;
@@ -788,6 +782,7 @@ static BOOL CALLBACK DlgProcFindAdd(HWND hwndDlg, UINT msg, WPARAM wParam, LPARA
 					SetDlgItemText(hwndDlg, IDOK, TranslateT("&Search"));
 					StopThrobber(hwndDlg,dat);
 				}
+				ListView_SortItemsEx(GetDlgItem(hwndDlg, IDC_RESULTS), SearchResultsCompareFunc, (LPARAM)hwndDlg);
 				SetStatusBarSearchInfo(GetDlgItem(hwndDlg,IDC_STATUSBAR),dat);
 			}
 			else if(ack->result==ACKRESULT_SEARCHRESULT && ack->lParam) {		
@@ -899,7 +894,6 @@ static BOOL CALLBACK DlgProcFindAdd(HWND hwndDlg, UINT msg, WPARAM wParam, LPARA
 					wsprintfA(str, "%u", isr->uin);
 					ListView_SetItemTextA(GetDlgItem(hwndDlg,IDC_RESULTS),i,col++,str);
 				}
-				ListView_SortItemsEx(GetDlgItem(hwndDlg, IDC_RESULTS), SearchResultsCompareFunc, (LPARAM)hwndDlg);
 				SetStatusBarResultInfo(hwndDlg,dat);
 			}
 			break;
