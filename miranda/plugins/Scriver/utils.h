@@ -24,6 +24,10 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #ifndef UTILS_H
 #define UTILS_H
 
+extern void HookEvent_Ex(const char *name, MIRANDAHOOK hook);
+extern void CreateServiceFunction_Ex(const char *name, MIRANDASERVICE service);
+extern void UnhookEvents_Ex();
+extern void DestroyServices_Ex();
 extern int IsUnicodeMIM();
 extern int safe_wcslen(wchar_t *msg, int maxLen) ;
 extern TCHAR *a2t(const char *text);

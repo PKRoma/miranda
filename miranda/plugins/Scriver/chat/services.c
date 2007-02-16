@@ -28,12 +28,7 @@ extern BOOL			IEviewInstalled;
 
 HANDLE				hSendEvent;
 HANDLE				hBuildMenuEvent ;
-HANDLE				g_hModulesLoaded;
-HANDLE				g_hSystemPreShutdown;
 HANDLE				g_hHookContactDblClick;
-HANDLE				g_hIconsChanged;
-HANDLE				g_hSmileyOptionsChanged = NULL;
-HANDLE				g_hIconsChanged2;
 CRITICAL_SECTION	cs;
 
 void RegisterFonts( void );
@@ -54,22 +49,13 @@ static HANDLE     hServiceRegister = NULL,
 void HookEvents(void)
 {
 	InitializeCriticalSection(&cs);
-//	g_hModulesLoaded =			HookEvent(ME_SYSTEM_MODULESLOADED, ModulesLoaded);
 	g_hHookContactDblClick=		HookEvent(ME_CLIST_DOUBLECLICKED, CList_RoomDoubleclicked);
-	g_hSystemPreShutdown =		HookEvent(ME_SYSTEM_PRESHUTDOWN, PreShutdown);
-//	g_hIconsChanged =			HookEvent(ME_SKIN_ICONSCHANGED, Chat_IconsChanged);
 	return;
 }
 
 void UnhookEvents(void)
 {
-	UnhookEvent(g_hModulesLoaded);
-	UnhookEvent(g_hSystemPreShutdown);
 	UnhookEvent(g_hHookContactDblClick);
-//	UnhookEvent(g_hIconsChanged);
-//	UnhookEvent(g_hIconsChanged2);
-	if (g_hSmileyOptionsChanged)
-		UnhookEvent(g_hSmileyOptionsChanged);
 	DeleteCriticalSection(&cs);
 }
 
@@ -111,11 +97,8 @@ int Chat_ModulesLoaded(WPARAM wParam,LPARAM lParam)
 	RegisterFonts();
 	LoadIcons();
 
-//	g_hIconsChanged2 =	HookEvent(ME_SKIN2_ICONSCHANGED, Chat_IconsChanged);
-
 	if ( ServiceExists( MS_SMILEYADD_SHOWSELECTION )) {
 		SmileyAddInstalled = TRUE;
-		g_hSmileyOptionsChanged = HookEvent(ME_SMILEYADD_OPTIONSCHANGED, SmileyOptionsChanged);
 	}
 	if ( ServiceExists( MS_POPUP_ADDPOPUPEX ))
 		PopUpInstalled = TRUE;
@@ -128,13 +111,13 @@ int Chat_ModulesLoaded(WPARAM wParam,LPARAM lParam)
 }
 
 
-int SmileyOptionsChanged(WPARAM wParam,LPARAM lParam)
+int Chat_SmileyOptionsChanged(WPARAM wParam,LPARAM lParam)
 {
 	SM_BroadcastMessage(NULL, GC_REDRAWLOG, 0, 1, FALSE);
 	return 0;
 }
 
-int PreShutdown(WPARAM wParam,LPARAM lParam)
+int Chat_PreShutdown(WPARAM wParam,LPARAM lParam)
 {
 	SM_BroadcastMessage(NULL, GC_CLOSEWINDOW, 0, 1, FALSE);
 

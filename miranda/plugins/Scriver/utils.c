@@ -25,6 +25,46 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include <ctype.h>
 #include <mbstring.h>
 
+static unsigned hookNum = 0;
+static unsigned serviceNum = 0;
+static HANDLE hHooks[15] = {};
+static HANDLE hServices[7] = {0};
+
+void HookEvent_Ex(const char *name, MIRANDAHOOK hook) {
+	if (hookNum < SIZEOF(hHooks)) {
+		hHooks[hookNum++] = HookEvent(name, hook);
+	} else {
+		MessageBoxA(NULL, "Too many hooks...", "WARNING", MB_OK);
+	}
+} 
+	  
+void CreateServiceFunction_Ex(const char *name, MIRANDASERVICE service) {
+	if (serviceNum < SIZEOF(hServices)) {
+		hServices[serviceNum++] = CreateServiceFunction(name, service);
+	} else {
+		MessageBoxA(NULL, "Too many services...", "WARNING", MB_OK);
+	}
+} 
+
+void UnhookEvents_Ex() {
+	int i;
+	for (i=0; i<SIZEOF(hHooks); ++i) {
+		if (hHooks[i] != NULL) {
+			UnhookEvent(hHooks[i]);	
+		}
+	}
+}
+
+void DestroyServices_Ex() {
+	int i;
+	for (i=0; i<SIZEOF(hServices); ++i) {
+		if (hServices[i] != NULL) {
+			DestroyServiceFunction(hServices[i]);
+		}
+	}
+}
+
+
 int safe_wcslen(wchar_t *msg, int maxLen) {
     int i;
 	for (i = 0; i < maxLen; i++) {
@@ -50,8 +90,7 @@ TCHAR *a2tcp(const char *text, int cp) {
 	return NULL;
 }
 
-char* u2a( const wchar_t* src, int codepage )
-{
+char* u2a( const wchar_t* src, int codepage ) {
 	int cbLen = WideCharToMultiByte( codepage, 0, src, -1, NULL, 0, NULL, NULL );
 	char* result = ( char* )mir_alloc( cbLen+1 );
 	if ( result == NULL )
@@ -62,8 +101,7 @@ char* u2a( const wchar_t* src, int codepage )
 	return result;
 }
 
-wchar_t* a2u( const char* src, int codepage )
-{
+wchar_t* a2u( const char* src, int codepage ) {
 	int cbLen = MultiByteToWideChar( codepage, 0, src, -1, NULL, 0 );
 	wchar_t* result = ( wchar_t* )mir_alloc( sizeof(wchar_t)*(cbLen+1));
 	if ( result == NULL )

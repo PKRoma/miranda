@@ -24,7 +24,12 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include "commonheaders.h"
 #include "statusicon.h"
 
-extern int Chat_ModulesLoaded(WPARAM wParam, LPARAM lParam);
+extern int    Chat_ModulesLoaded(WPARAM wParam,LPARAM lParam);
+extern int    Chat_FontsChanged(WPARAM wParam,LPARAM lParam);
+extern int    Chat_SmileyOptionsChanged(WPARAM wParam,LPARAM lParam);
+extern int    Chat_PreShutdown(WPARAM wParam,LPARAM lParam);
+extern int    Chat_IconsChanged(WPARAM wParam,LPARAM lParam);
+
 extern int OptInitialise(WPARAM wParam, LPARAM lParam);
 extern int FontServiceFontsChanged(WPARAM wParam, LPARAM lParam);
 int StatusIconPressed(WPARAM wParam, LPARAM lParam);
@@ -32,12 +37,6 @@ int StatusIconPressed(WPARAM wParam, LPARAM lParam);
 static void InitREOleCallback(void);
 
 HCURSOR hCurSplitNS, hCurSplitWE, hCurHyperlinkHand, hDragCursor;
-static HANDLE hEventDbEventAdded, hEventDbSettingChange, hEventContactDeleted;
-static HANDLE hEventClistDoubleClicked, hEventSmileyAddOptionsChanged, hEventIEViewOptionsChanged, hEventMyAvatarChanged, hEventAvatarChanged;
-static HANDLE hEventOptInitialise, hEventFontServiceFontsChanged, hEventIconPressed;
-static HANDLE hEventModulesLoaded, hEventPreshutdown;
-
-static HANDLE hSvcSendMessageCommand, hSvcSendMessageCommandW, hSvcGetWindowAPI, hSvcGetWindowClass, hSvcGetWindowData, hSvcReadMessageCommand, hSvcTypingMessageCommand;
 
 HANDLE *hMsgMenuItem = NULL, hHookWinEvt=NULL, hHookWinPopup=NULL;;
 int hMsgMenuItemCount = 0;
@@ -524,21 +523,23 @@ static int SplitmsgModulesLoaded(WPARAM wParam, LPARAM lParam)
    }
    CallService(MS_SKIN2_RELEASEICON,(WPARAM)mi.hIcon, 0);
 
-   hEventClistDoubleClicked = HookEvent(ME_CLIST_DOUBLECLICKED, SendMessageCommand);
-   hEventSmileyAddOptionsChanged = HookEvent(ME_SMILEYADD_OPTIONSCHANGED, SmileySettingsChanged);
-   hEventIEViewOptionsChanged = HookEvent(ME_IEVIEW_OPTIONSCHANGED, SmileySettingsChanged);
-   hEventMyAvatarChanged = HookEvent(ME_AV_MYAVATARCHANGED, MyAvatarChanged);
-   hEventAvatarChanged = HookEvent(ME_AV_AVATARCHANGED, AvatarChanged);
-   hEventFontServiceFontsChanged = HookEvent(ME_FONT_RELOAD, FontServiceFontsChanged);
-   hEventIconPressed = HookEvent(ME_MSG_ICONPRESSED, StatusIconPressed);
-   RestoreUnreadMessageAlerts();
-   Chat_ModulesLoaded(wParam, lParam);
-   RegisterStatusIcons();
-   return 0;
+	HookEvent_Ex(ME_CLIST_DOUBLECLICKED, SendMessageCommand);
+	HookEvent_Ex(ME_SMILEYADD_OPTIONSCHANGED, SmileySettingsChanged);
+	HookEvent_Ex(ME_IEVIEW_OPTIONSCHANGED, SmileySettingsChanged);
+	HookEvent_Ex(ME_AV_MYAVATARCHANGED, MyAvatarChanged);
+	HookEvent_Ex(ME_AV_AVATARCHANGED, AvatarChanged);
+	HookEvent_Ex(ME_FONT_RELOAD, FontServiceFontsChanged);
+	HookEvent_Ex(ME_MSG_ICONPRESSED, StatusIconPressed);
+   
+	RestoreUnreadMessageAlerts();
+	Chat_ModulesLoaded(wParam, lParam);
+	RegisterStatusIcons();
+	return 0;
 }
 
 int PreshutdownSendRecv(WPARAM wParam, LPARAM lParam)
 {
+	Chat_PreShutdown(wParam, lParam);
 	WindowList_BroadcastAsync(g_dat->hMessageWindowList, WM_CLOSE, 0, 0);
 	DeinitStatusIcons();
 	return 0;
@@ -546,42 +547,24 @@ int PreshutdownSendRecv(WPARAM wParam, LPARAM lParam)
 
 int SplitmsgShutdown(void)
 {
-   DestroyCursor(hCurSplitNS);
-   DestroyCursor(hCurHyperlinkHand);
-   DestroyCursor(hCurSplitWE);
-   DestroyCursor(hDragCursor);
-   UnhookEvent(hEventDbEventAdded);
-   UnhookEvent(hEventDbSettingChange);
-   UnhookEvent(hEventContactDeleted);
-   UnhookEvent(hEventClistDoubleClicked);
-   UnhookEvent(hEventSmileyAddOptionsChanged);
-   UnhookEvent(hEventIEViewOptionsChanged);
-   UnhookEvent(hEventMyAvatarChanged);
-   UnhookEvent(hEventAvatarChanged);
-   UnhookEvent(hEventOptInitialise);
-   UnhookEvent(hEventFontServiceFontsChanged);
-   UnhookEvent(hEventIconPressed);
-   DestroyHookableEvent(hHookWinEvt);
-   DestroyHookableEvent(hHookWinPopup);
-   DestroyServiceFunction(hSvcSendMessageCommand);
-#if defined(_UNICODE)
-   DestroyServiceFunction(hSvcSendMessageCommandW);
-#endif
-   DestroyServiceFunction(hSvcGetWindowAPI);
-   DestroyServiceFunction(hSvcGetWindowClass);
-   DestroyServiceFunction(hSvcGetWindowData);
-   DestroyServiceFunction(hSvcReadMessageCommand);
-   DestroyServiceFunction(hSvcTypingMessageCommand);
-   FreeMsgLogIcons();
-   FreeLibrary(GetModuleHandleA("riched20.dll"));
-   OleUninitialize();
-   if (hMsgMenuItem) {
-      mir_free(hMsgMenuItem);
-      hMsgMenuItem = NULL;
-      hMsgMenuItemCount = 0;
-   }
-   FreeGlobals();
-   return 0;
+	DestroyCursor(hCurSplitNS);
+	DestroyCursor(hCurHyperlinkHand);
+	DestroyCursor(hCurSplitWE);
+	DestroyCursor(hDragCursor);
+	UnhookEvents_Ex();
+	DestroyServices_Ex();
+	DestroyHookableEvent(hHookWinEvt);
+	DestroyHookableEvent(hHookWinPopup);
+	FreeMsgLogIcons();
+	FreeLibrary(GetModuleHandleA("riched20.dll"));
+	OleUninitialize();
+	if (hMsgMenuItem) {
+		mir_free(hMsgMenuItem);
+		hMsgMenuItem = NULL;
+		hMsgMenuItemCount = 0;
+	}
+	FreeGlobals();
+	return 0;
 }
 
 int LoadSendRecvMessageModule(void) {
@@ -604,41 +587,43 @@ int LoadSendRecvMessageModule(void) {
 			pfnIsAppThemed = (BOOL (WINAPI *)(VOID))GetProcAddress(hDLL, "IsAppThemed");
 		}
 	}
-   InitGlobals();
-   OleInitialize(NULL);
-   InitREOleCallback();
-   InitStatusIcons();
-   hEventOptInitialise = HookEvent(ME_OPT_INITIALISE, OptInitialise);
-   hEventDbEventAdded = HookEvent(ME_DB_EVENT_ADDED, MessageEventAdded);
-   hEventDbSettingChange = HookEvent(ME_DB_CONTACT_SETTINGCHANGED, MessageSettingChanged);
-   hEventContactDeleted = HookEvent(ME_DB_CONTACT_DELETED, ContactDeleted);
-   //ME_MSG_ICONPRESSED
-   hEventModulesLoaded = HookEvent(ME_SYSTEM_MODULESLOADED, SplitmsgModulesLoaded);
-   HookEvent(ME_SKIN_ICONSCHANGED, IconsChanged);
-   HookEvent(ME_PROTO_CONTACTISTYPING, TypingMessage);
-   hEventPreshutdown = HookEvent(ME_SYSTEM_PRESHUTDOWN, PreshutdownSendRecv);
-   hSvcSendMessageCommand = CreateServiceFunction(MS_MSG_SENDMESSAGE, SendMessageCommand);
-#if defined(_UNICODE)
-   hSvcSendMessageCommandW = CreateServiceFunction(MS_MSG_SENDMESSAGE "W", SendMessageCommandW);
-#endif
-   hSvcGetWindowAPI =  CreateServiceFunction(MS_MSG_GETWINDOWAPI, GetWindowAPI);
-   hSvcGetWindowClass = CreateServiceFunction(MS_MSG_GETWINDOWCLASS, GetWindowClass);
-   hSvcGetWindowData = CreateServiceFunction(MS_MSG_GETWINDOWDATA, GetWindowData);
-   hSvcReadMessageCommand = CreateServiceFunction("SRMsg/ReadMessage", ReadMessageCommand);
-   hSvcTypingMessageCommand = CreateServiceFunction("SRMsg/TypingMessage", TypingMessageCommand);
-   hHookWinEvt = CreateHookableEvent(ME_MSG_WINDOWEVENT);
-   hHookWinPopup = CreateHookableEvent(ME_MSG_WINDOWPOPUP);
-   SkinAddNewSoundEx("RecvMsgActive", Translate("Messages"), Translate("Incoming (Focused Window)"));
-   SkinAddNewSoundEx("RecvMsgInactive", Translate("Messages"), Translate("Incoming (Unfocused Window)"));
-   SkinAddNewSoundEx("AlertMsg", Translate("Messages"), Translate("Incoming (New Session)"));
-   SkinAddNewSoundEx("SendMsg", Translate("Messages"), Translate("Outgoing"));
-   hCurSplitNS = LoadCursor(NULL, IDC_SIZENS);
-   hCurSplitWE = LoadCursor(NULL, IDC_SIZEWE);
-   hCurHyperlinkHand = LoadCursor(NULL, IDC_HAND);
-   if (hCurHyperlinkHand == NULL)
-      hCurHyperlinkHand = LoadCursor(g_hInst, MAKEINTRESOURCE(IDC_HYPERLINKHAND));
-   hDragCursor = LoadCursor(g_hInst,  MAKEINTRESOURCE(IDC_DRAGCURSOR));
-   return 0;
+	InitGlobals();
+	OleInitialize(NULL);
+	InitREOleCallback();
+	InitStatusIcons();
+	
+	HookEvent_Ex(ME_OPT_INITIALISE, OptInitialise);
+	HookEvent_Ex(ME_DB_EVENT_ADDED, MessageEventAdded);
+	HookEvent_Ex(ME_DB_CONTACT_SETTINGCHANGED, MessageSettingChanged);
+	HookEvent_Ex(ME_DB_CONTACT_DELETED, ContactDeleted);
+	HookEvent_Ex(ME_SYSTEM_MODULESLOADED, SplitmsgModulesLoaded);
+	HookEvent_Ex(ME_SKIN_ICONSCHANGED, IconsChanged);
+	HookEvent_Ex(ME_PROTO_CONTACTISTYPING, TypingMessage);
+	HookEvent_Ex(ME_SYSTEM_PRESHUTDOWN, PreshutdownSendRecv);	
+	
+	CreateServiceFunction_Ex(MS_MSG_SENDMESSAGE, SendMessageCommand);
+ #if defined(_UNICODE)
+	CreateServiceFunction_Ex(MS_MSG_SENDMESSAGE "W", SendMessageCommandW);
+ #endif
+	CreateServiceFunction_Ex(MS_MSG_GETWINDOWAPI, GetWindowAPI);
+	CreateServiceFunction_Ex(MS_MSG_GETWINDOWCLASS, GetWindowClass);
+	CreateServiceFunction_Ex(MS_MSG_GETWINDOWDATA, GetWindowData);
+	CreateServiceFunction_Ex("SRMsg/ReadMessage", ReadMessageCommand);
+	CreateServiceFunction_Ex("SRMsg/TypingMessage", TypingMessageCommand);	
+	
+	hHookWinEvt = CreateHookableEvent(ME_MSG_WINDOWEVENT);
+	hHookWinPopup = CreateHookableEvent(ME_MSG_WINDOWPOPUP);
+	SkinAddNewSoundEx("RecvMsgActive", Translate("Messages"), Translate("Incoming (Focused Window)"));
+	SkinAddNewSoundEx("RecvMsgInactive", Translate("Messages"), Translate("Incoming (Unfocused Window)"));
+	SkinAddNewSoundEx("AlertMsg", Translate("Messages"), Translate("Incoming (New Session)"));
+	SkinAddNewSoundEx("SendMsg", Translate("Messages"), Translate("Outgoing"));
+	hCurSplitNS = LoadCursor(NULL, IDC_SIZENS);
+	hCurSplitWE = LoadCursor(NULL, IDC_SIZEWE);
+	hCurHyperlinkHand = LoadCursor(NULL, IDC_HAND);
+	if (hCurHyperlinkHand == NULL)
+		hCurHyperlinkHand = LoadCursor(g_hInst, MAKEINTRESOURCE(IDC_HYPERLINKHAND));
+	hDragCursor = LoadCursor(g_hInst,  MAKEINTRESOURCE(IDC_DRAGCURSOR));
+	return 0;
 }
 
 static IRichEditOleCallbackVtbl reOleCallbackVtbl;

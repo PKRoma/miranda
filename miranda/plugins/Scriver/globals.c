@@ -36,7 +36,11 @@ HANDLE hEventSkin2IconsChanged;
 static HANDLE g_hAck = 0;
 static int ackevent(WPARAM wParam, LPARAM lParam);
 
-void Chat_IconsChanged();
+int    Chat_ModulesLoaded(WPARAM wParam,LPARAM lParam);
+int    Chat_PreShutdown(WPARAM wParam,LPARAM lParam);
+int    Chat_FontsChanged(WPARAM wParam,LPARAM lParam);
+int    Chat_IconsChanged(WPARAM wParam,LPARAM lParam);
+int    Chat_SmileyOptionsChanged(WPARAM wParam,LPARAM lParam);
 
 BOOL IsStaticIcon(HICON hIcon) {
 	int i;
@@ -174,13 +178,14 @@ int IconsChanged(WPARAM wParam, LPARAM lParam)
 	// change all the icons
 	WindowList_Broadcast(g_dat->hMessageWindowList, DM_CHANGEICONS, 0, 0);
 	WindowList_Broadcast(g_dat->hMessageWindowList, DM_UPDATETITLEBAR, 0, 0);
-	Chat_IconsChanged();
+	Chat_IconsChanged(wParam, lParam);
 	return 0;
 }
 
 int SmileySettingsChanged(WPARAM wParam, LPARAM lParam)
 {
 	WindowList_Broadcast(g_dat->hMessageWindowList, DM_REMAKELOG, wParam, 0);
+	Chat_SmileyOptionsChanged(wParam, lParam);
 	return 0;
 }
 
@@ -394,7 +399,8 @@ void InitGlobals() {
 }
 
 void FreeGlobals() {
-	if (g_hAck) UnhookEvent(g_hAck);
+	if (g_hAck) 
+		UnhookEvent(g_hAck);
 	if (g_dat) {
 		if (g_dat->draftList != NULL) tcmdlist_free(g_dat->draftList);
 		if (g_dat->hTabIconList)
@@ -411,7 +417,8 @@ void FreeGlobals() {
 		}
 		mir_free(g_dat);
 	}
-	UnhookEvent(hEventSkin2IconsChanged);
+	if (hEventSkin2IconsChanged) 
+		UnhookEvent(hEventSkin2IconsChanged);
 }
 
 void ReloadGlobals() {
