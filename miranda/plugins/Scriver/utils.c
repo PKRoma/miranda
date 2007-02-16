@@ -27,28 +27,26 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 static unsigned hookNum = 0;
 static unsigned serviceNum = 0;
-static HANDLE hHooks[15] = {};
-static HANDLE hServices[7] = {0};
+static HANDLE* hHooks = NULL;
+static HANDLE* hServices = NULL;
 
-void HookEvent_Ex(const char *name, MIRANDAHOOK hook) {
-	if (hookNum < SIZEOF(hHooks)) {
-		hHooks[hookNum++] = HookEvent(name, hook);
-	} else {
-		MessageBoxA(NULL, "Too many hooks...", "WARNING", MB_OK);
-	}
+HANDLE HookEvent_Ex(const char *name, MIRANDAHOOK hook) {
+	hookNum ++;
+	hHooks = (HANDLE *) mir_realloc(hHooks, sizeof(HANDLE) * (hookNum));
+	hHooks[hookNum - 1] = HookEvent(name, hook);
+	return hHooks[hookNum - 1] ;
 } 
 	  
-void CreateServiceFunction_Ex(const char *name, MIRANDASERVICE service) {
-	if (serviceNum < SIZEOF(hServices)) {
-		hServices[serviceNum++] = CreateServiceFunction(name, service);
-	} else {
-		MessageBoxA(NULL, "Too many services...", "WARNING", MB_OK);
-	}
+HANDLE CreateServiceFunction_Ex(const char *name, MIRANDASERVICE service) {
+	serviceNum++;
+	hServices = (HANDLE *) mir_realloc(hServices, sizeof(HANDLE) * (serviceNum));
+	hServices[serviceNum - 1] = CreateServiceFunction(name, service);
+	return hServices[serviceNum - 1] ;
 } 
 
 void UnhookEvents_Ex() {
 	int i;
-	for (i=0; i<SIZEOF(hHooks); ++i) {
+	for (i=0; i<hookNum ; ++i) {
 		if (hHooks[i] != NULL) {
 			UnhookEvent(hHooks[i]);	
 		}
@@ -57,7 +55,7 @@ void UnhookEvents_Ex() {
 
 void DestroyServices_Ex() {
 	int i;
-	for (i=0; i<SIZEOF(hServices); ++i) {
+	for (i=0; i<serviceNum; ++i) {
 		if (hServices[i] != NULL) {
 			DestroyServiceFunction(hServices[i]);
 		}

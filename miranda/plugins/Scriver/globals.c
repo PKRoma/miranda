@@ -197,7 +197,7 @@ int IcoLibIconsChanged(WPARAM wParam, LPARAM lParam)
 }
 
 void RegisterIcoLibIcons() {
-	hEventSkin2IconsChanged = HookEvent(ME_SKIN2_ICONSCHANGED, IcoLibIconsChanged);
+	hEventSkin2IconsChanged = HookEvent_Ex(ME_SKIN2_ICONSCHANGED, IcoLibIconsChanged);
 	if (hEventSkin2IconsChanged) {
 		SKINICONDESC sid = { 0 };
 		char path[MAX_PATH];
@@ -383,11 +383,11 @@ void InitGlobals() {
 	g_dat = (struct GlobalMessageData *)mir_alloc(sizeof(struct GlobalMessageData));
 	g_dat->hMessageWindowList = (HANDLE) CallService(MS_UTILS_ALLOCWINDOWLIST, 0, 0);
 	g_dat->hParentWindowList = (HANDLE) CallService(MS_UTILS_ALLOCWINDOWLIST, 0, 0);
-    g_dat->hMenuANSIEncoding = CreatePopupMenu();
-    AppendMenu(g_dat->hMenuANSIEncoding, MF_STRING, 500, TranslateT("Default codepage"));
-    AppendMenuA(g_dat->hMenuANSIEncoding, MF_SEPARATOR, 0, 0);
-    EnumSystemCodePagesA(LangAddCallback, CP_INSTALLED);
-	g_hAck = HookEvent(ME_PROTO_ACK, ackevent);
+	g_dat->hMenuANSIEncoding = CreatePopupMenu();
+	AppendMenu(g_dat->hMenuANSIEncoding, MF_STRING, 500, TranslateT("Default codepage"));
+	AppendMenuA(g_dat->hMenuANSIEncoding, MF_SEPARATOR, 0, 0);
+	EnumSystemCodePagesA(LangAddCallback, CP_INSTALLED);
+	g_hAck = HookEvent_Ex(ME_PROTO_ACK, ackevent);
 	ReloadGlobals();
 	g_dat->lastParent = NULL;
 	g_dat->lastChatParent = NULL;
@@ -399,8 +399,6 @@ void InitGlobals() {
 }
 
 void FreeGlobals() {
-	if (g_hAck) 
-		UnhookEvent(g_hAck);
 	if (g_dat) {
 		if (g_dat->draftList != NULL) tcmdlist_free(g_dat->draftList);
 		if (g_dat->hTabIconList)
@@ -417,8 +415,6 @@ void FreeGlobals() {
 		}
 		mir_free(g_dat);
 	}
-	if (hEventSkin2IconsChanged) 
-		UnhookEvent(hEventSkin2IconsChanged);
 }
 
 void ReloadGlobals() {
