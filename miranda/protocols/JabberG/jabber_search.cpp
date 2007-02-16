@@ -269,12 +269,10 @@ static void JabberSearchReturnResults( HANDLE  id, void * pvUsersInfo /*LIST<voi
 	/* Sending Users Data */
 	Results.jsr.hdr.cbSize = sizeof(Results.jsr); // sending user data
 
-	for ( int i=0; i < nUsersFound; i++ )
-	{
+	for ( i=0; i < nUsersFound; i++ ) {
 	   Results.jsr.jid[0]=_T('\0');
 	   U_TCHAR_MAP * pmUserData = (U_TCHAR_MAP *) plUsersInfo->operator [](i);
-	   for (int j=0; j < nFieldCount; j++)
-	   {
+	   for ( int j=0; j < nFieldCount; j++ ) {
 		   TCHAR* var = ListOfFields[j];
 		   TCHAR* value = pmUserData->operator [](var);
 		   Results.pszFields[j] = value ? value : _T(" ");
@@ -543,30 +541,29 @@ static BOOL CALLBACK JabberSearchAdvancedDlgProc(HWND hwndDlg, UINT msg, WPARAM 
 			SetDlgItemTextA(hwndDlg,IDC_SERVER,szServerName);
 			SendDlgItemMessageA(hwndDlg,IDC_SERVER,CB_ADDSTRING,0,(LPARAM)szServerName);
 			//TO DO: Add Transports here
-			int transpCount=jabberTransports.getCount();
-			for (int i=0; i<transpCount; i++)
-			{
-				TCHAR * szTransp=jabberTransports[i];
-				if (szTransp) JabberSearchAddUrlToRecentCombo(hwndDlg, szTransp );
+			int i, transpCount = jabberTransports.getCount();
+			for ( i=0; i < transpCount; i++ ) {
+				TCHAR* szTransp = jabberTransports[i];
+				if ( szTransp )
+					JabberSearchAddUrlToRecentCombo(hwndDlg, szTransp );
 			}
+
 			DBVARIANT dbv;
 			char key[30];
-			for (int i=0; i<10; i++)
-			{
+			for ( i=0; i < 10; i++ ) {
 				sprintf(key,"RecentlySearched_%d",i);
-				if (!JGetStringT( NULL, key, &dbv ))
-				{
+				if (!JGetStringT( NULL, key, &dbv )) {
 					JabberSearchAddUrlToRecentCombo(hwndDlg, dbv.ptszVal );
 					JFreeVariant( &dbv );
-				}
-			}
+			}	}
+
 			//TO DO: Add 4 recently used
 			dat->lastRequestIq=JabbeSearchrRenewFields(hwndDlg,dat);
 		}
 		return TRUE;
 
 	case WM_COMMAND:
-		if ( LOWORD(wParam)==IDC_SERVER )	{
+		if ( LOWORD(wParam) == IDC_SERVER ) {
 			switch ( HIWORD( wParam )) {
 			case CBN_SETFOCUS:
 				PostMessage(GetParent(hwndDlg),WM_COMMAND, MAKEWPARAM(0,EN_SETFOCUS), (LPARAM)hwndDlg);
