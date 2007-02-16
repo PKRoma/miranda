@@ -313,7 +313,6 @@ static BOOL CALLBACK DlgProcFindAdd(HWND hwndDlg, UINT msg, WPARAM wParam, LPARA
 			dat->bSortAscending=1;
 			dat->hBmpSortUp=(HBITMAP)LoadImage(GetModuleHandle(NULL),MAKEINTRESOURCE(IDB_SORTCOLUP),IMAGE_BITMAP,0,0,LR_LOADMAP3DCOLORS);
 			dat->hBmpSortDown=(HBITMAP)LoadImage(GetModuleHandle(NULL),MAKEINTRESOURCE(IDB_SORTCOLDOWN),IMAGE_BITMAP,0,0,LR_LOADMAP3DCOLORS);
-			dat->bFlexSearchResult=FALSE;
 			SendDlgItemMessage(hwndDlg,IDC_MOREOPTIONS,BUTTONSETARROW,1,0);
 
 			{	LVCOLUMN lvc;

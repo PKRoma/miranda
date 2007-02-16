@@ -145,11 +145,13 @@ void LoadColumnSizes(HWND hwndResults,const char *szProto)
 
 static LPARAM ListView_GetItemLParam(HWND hwndList, int idx)
 {
-    LVITEM lv={0};
-	lv.mask=LVIF_PARAM;
+	LVITEM lv;
+	lv.iItem = idx;
+	lv.mask = LVIF_PARAM;
 	ListView_GetItem(hwndList,&lv);
 	return lv.lParam;
 }
+
 int CALLBACK SearchResultsCompareFunc(LPARAM lParam1, LPARAM lParam2, LPARAM lParamSort)
 {
 	struct FindAddDlgData *dat=(struct FindAddDlgData*)GetWindowLong((HWND) lParamSort, GWL_USERDATA);
