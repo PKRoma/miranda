@@ -1819,7 +1819,7 @@ static int CLUIFramesLoadMainMenu()
     mi.hIcon=NULL;
     mi.flags=CMIF_GRAYED;
     mi.position=10000000;
-    mi.pszPopupName=Translate("Frames");
+    mi.pszPopupName=("Frames");
     mi.pszName=Translate("New Menu System not Found...");
     mi.pszService="";
     CallService(MS_CLIST_ADDMAINMENUITEM,0,(LPARAM)&mi);
@@ -1828,14 +1828,14 @@ static int CLUIFramesLoadMainMenu()
     mi.hIcon=NULL;
     mi.flags=0;
     mi.position=10100000;
-    mi.pszPopupName=Translate("Frames");
+    mi.pszPopupName=("Frames");
     mi.pszName=Translate("Show All Frames");
     mi.pszService=MS_CLIST_FRAMES_SHOWALLFRAMES;
     CallService(MS_CLIST_ADDMAINMENUITEM,0,(LPARAM)&mi);
 
     mi.hIcon=NULL;
     mi.position=10100001;
-    mi.pszPopupName=Translate("Frames");
+    mi.pszPopupName=("Frames");
     mi.flags=CMIF_CHILDPOPUP;
     mi.pszName=Translate("Show All Titlebars");
     mi.pszService=MS_CLIST_FRAMES_SHOWALLFRAMESTB;
