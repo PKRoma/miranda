@@ -51,6 +51,9 @@ void UnhookEvents_Ex() {
 			UnhookEvent(hHooks[i]);	
 		}
 	}
+	mir_free(hHooks);
+	hookNum = 0;
+	hHooks = NULL;
 }
 
 void DestroyServices_Ex() {
@@ -60,6 +63,9 @@ void DestroyServices_Ex() {
 			DestroyServiceFunction(hServices[i]);
 		}
 	}
+	mir_free(hServices);
+	serviceNum = 0;
+	hServices = NULL;
 }
 
 
