@@ -1076,6 +1076,7 @@ clvm_reset_command:
 				SetButtonStates(pcli->hwndContactList);
 				g_CluiData.current_viewmode[0] = 0;
 				g_CluiData.old_viewmode[0] = 0;
+                DBWriteContactSettingString(NULL, "CList", "LastViewMode", "");
 				break;
 			case IDC_CONFIGUREMODES:
 clvm_config_command:
@@ -1268,5 +1269,7 @@ void ApplyViewMode(const char *name)
     SetWindowTextA(hwndSelector, name);
     pcli->pfnClcBroadcast(CLM_AUTOREBUILD, 0, 0);
     SetButtonStates(pcli->hwndContactList);
+
+    DBWriteContactSettingString(NULL, "CList", "LastViewMode", g_CluiData.current_viewmode);
 }
 

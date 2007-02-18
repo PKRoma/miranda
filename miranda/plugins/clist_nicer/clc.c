@@ -222,8 +222,6 @@ static int ClcPreshutdown(WPARAM wParam, LPARAM lParam)
 	UnhookEvent(hClcDBEvent);
 	if (hIcoLibChanged)
 		UnhookEvent(hIcoLibChanged);
-
-    DBWriteContactSettingString(NULL, "CList", "LastViewMode", g_CluiData.current_viewmode);
 	return 0;
 }
 

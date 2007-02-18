@@ -161,6 +161,8 @@ int AddContactToGroup(struct ClcData *dat, struct ClcGroup *group, HANDLE hConta
 			}
 		}
         LoadAvatarForContact(p);
+        // notify other plugins to re-supply their extra images (icq for xstatus, mBirthday etc...)
+        NotifyEventHooks(hExtraImageApplying, (WPARAM)hContact, 0);
 	}
 #if defined(_UNICODE)
 	RTL_DetectAndSet( p, p->hContact);
@@ -511,10 +513,6 @@ void GetExtendedInfo(struct ClcContact *contact, struct ClcData *dat)
         contact_gmt_diff = g_ExtraCache[index].timezone > 128 ? 256 - g_ExtraCache[index].timezone : 0 - g_ExtraCache[index].timezone;
         g_ExtraCache[index].timediff = (int)g_CluiData.local_gmt_diff - (int)contact_gmt_diff*60*60/2;
     }
-
-    // notify other plugins to re-supply their extra images (icq for xstatus, mBirthday etc...)
-    
-    NotifyEventHooks(hExtraImageApplying, (WPARAM)contact->hContact, 0);
 }
 
 static void LoadSkinItemToCache(struct ExtraCache *cEntry, char *szProto)
