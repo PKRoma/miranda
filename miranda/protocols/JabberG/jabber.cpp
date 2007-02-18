@@ -198,6 +198,9 @@ int JabberGcInit( WPARAM, LPARAM );
 int JabberContactDeleted( WPARAM wParam, LPARAM lParam );
 int JabberDbSettingChanged( WPARAM wParam, LPARAM lParam );
 int JabberMenuPrebuildContactMenu( WPARAM wParam, LPARAM lParam );
+void JabberMenuHideSrmmIcon(HANDLE hContact);
+int JabberMenuProcessSrmmIconClick( WPARAM wParam, LPARAM lParam );
+int JabberMenuProcessSrmmEvent( WPARAM wParam, LPARAM lParam );
 
 static COLORREF crCols[16] = {0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15};
 
@@ -235,6 +238,26 @@ static int OnModulesLoaded( WPARAM wParam, LPARAM lParam )
 	arHooks.insert( HookEvent( ME_DB_CONTACT_SETTINGCHANGED, JabberDbSettingChanged ));
 	arHooks.insert( HookEvent( ME_DB_CONTACT_DELETED, JabberContactDeleted ));
 	arHooks.insert( HookEvent( ME_CLIST_PREBUILDCONTACTMENU, JabberMenuPrebuildContactMenu ));
+
+	if ( ServiceExists( MS_MSG_ADDICON )) {
+		StatusIconData sid = {0};
+		sid.cbSize = sizeof(sid);
+		sid.szModule = jabberProtoName;
+		sid.hIcon = LoadIconEx("main");
+		sid.hIconDisabled = LoadIconEx("main");
+		sid.flags = MBF_HIDDEN;
+		sid.szTooltip = "Jabber Resource";
+		CallService(MS_MSG_ADDICON, 0, (LPARAM) &sid);
+		arHooks.insert( HookEvent( ME_MSG_ICONPRESSED, JabberMenuProcessSrmmIconClick ));
+		arHooks.insert( HookEvent( ME_MSG_WINDOWEVENT, JabberMenuProcessSrmmEvent ));
+
+		HANDLE hContact = ( HANDLE ) JCallService( MS_DB_CONTACT_FINDFIRST, 0, 0 );
+		while ( hContact != NULL ) {
+			char* szProto = ( char* )JCallService( MS_PROTO_GETCONTACTBASEPROTO, ( WPARAM ) hContact, 0 );
+			if ( szProto != NULL && !strcmp( szProto, jabberProtoName ))
+				JabberMenuHideSrmmIcon(hContact);
+			hContact = ( HANDLE ) JCallService( MS_DB_CONTACT_FINDNEXT, ( WPARAM ) hContact, 0 );
+	}	}
 
 	JabberCheckAllContactsAreTransported();
 	return 0;
