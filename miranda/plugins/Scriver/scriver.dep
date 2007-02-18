@@ -436,7 +436,6 @@
 	".\chat\Icons\action.ico"\
 	".\chat\Icons\addmode.ico"\
 	".\chat\Icons\bkgcolor.ico"\
-	".\chat\Icons\blank.ico"\
 	".\chat\Icons\bold.ico"\
 	".\chat\Icons\color.ico"\
 	".\chat\Icons\filter.ico"\
@@ -458,8 +457,6 @@
 	".\chat\Icons\quit.ico"\
 	".\chat\Icons\removestatus.ico"\
 	".\chat\Icons\smiley.ico"\
-	".\chat\Icons\tag1.ico"\
-	".\chat\Icons\tag2.ico"\
 	".\chat\Icons\topic.ico"\
 	".\chat\Icons\topicbut.ico"\
 	".\chat\Icons\underline.ico"\

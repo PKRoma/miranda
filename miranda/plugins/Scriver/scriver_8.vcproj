@@ -1184,10 +1184,6 @@
 					>
 				</File>
 				<File
-					RelativePath=".\chat\Icons\blank.ico"
-					>
-				</File>
-				<File
 					RelativePath=".\chat\Icons\bold.ico"
 					>
 				</File>
@@ -1313,14 +1309,6 @@
 				</File>
 				<File
 					RelativePath=".\chat\Icons\smileyc.ico"
-					>
-				</File>
-				<File
-					RelativePath=".\chat\Icons\tag1.ico"
-					>
-				</File>
-				<File
-					RelativePath=".\chat\Icons\tag2.ico"
 					>
 				</File>
 				<File
