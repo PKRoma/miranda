@@ -132,9 +132,12 @@ const capstr capRAndQ     = {'R', '&', 'Q', 'i', 'n', 's', 'i', 'd', 'e', 0, 0, 
 const capstr capmChat     = {'m', 'C', 'h', 'a', 't', ' ', 'i', 'c', 'q', ' ', 0, 0, 0, 0, 0, 0};
 const capstr capJimm      = {'J', 'i', 'm', 'm', ' ', 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
 const capstr capAnastasia = {0x44, 0xE5, 0xBF, 0xCE, 0xB0, 0x96, 0xE5, 0x47, 0xBD, 0x65, 0xEF, 0xD6, 0xA3, 0x7E, 0x36, 0x02};
+const capstr capPalmJicq  = {'J', 'I', 'C', 'Q', 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
+const capstr capInluxMsgr = {0xA7, 0xE4, 0x0A, 0x96, 0xB3, 0xA0, 0x47, 0x9A, 0xB8, 0x45, 0xC9, 0xE4, 0x67, 0xC5, 0x6B, 0x1F};
 const capstr capQip       = {0x56, 0x3F, 0xC8, 0x09, 0x0B, 0x6F, 0x41, 'Q', 'I', 'P', ' ', '2', '0', '0', '5', 'a'};
 const capstr capQipPDA    = {0x56, 0x3F, 0xC8, 0x09, 0x0B, 0x6F, 0x41, 'Q', 'I', 'P', ' ', ' ', ' ', ' ', ' ', '!'};
-const capstr capQipMobile = {0x56, 0x3F, 0xC8, 0x09, 0x0B, 0x6F, 0x41, 'Q', 'I', 'P', ' ', ' ', ' ', ' ', ' ', '"'};
+const capstr capQipMobile = {0xB0, 0x82, 0x62, 0xF6, 0x7F, 0x7C, 0x45, 0x61, 0xAD, 0xC1, 0x1C, 0x6D, 0x75, 0x70, 0x5E, 0xC5};
+const capstr capQipInfium = {0x7C, 0x73, 0x75, 0x02, 0xC3, 0xBE, 0x4F, 0x3E, 0xA6, 0x9F, 0x01, 0x53, 0x13, 0x43, 0x1E, 0x1A};
 const capstr capIm2       = {0x74, 0xED, 0xC3, 0x36, 0x44, 0xDF, 0x48, 0x5B, 0x8B, 0x1C, 0x67, 0x1A, 0x1F, 0x86, 0x09, 0x9F}; // IM2 Ext Msg
 const capstr capMacIcq    = {0xdd, 0x16, 0xf2, 0x02, 0x84, 0xe6, 0x11, 0xd4, 0x90, 0xdb, 0x00, 0x10, 0x4b, 0x9b, 0x4b, 0x7d};
 const capstr capIs2001    = {0x2e, 0x7a, 0x64, 0x75, 0xfa, 0xdf, 0x4d, 0xc8, 0x88, 0x6f, 0xea, 0x35, 0x95, 0xfd, 0xb6, 0xdf};
@@ -435,6 +438,21 @@ char* detectUserClient(HANDLE hContact, DWORD dwUin, WORD wVersion, DWORD dwFT1,
       {
         szClient = "QIP Mobile (Java)";
       }
+      else if (MatchCap(caps, wLen, &capQipInfium, 0x10))
+      {
+        char ver[10];
+
+        strcpy(szClientBuf, "QIP Infium");
+        if (dwFT1)
+        { // add build
+          null_snprintf(ver, 10, " (%d)", (dwFT1 >> 0x18) | ((dwFT1 >> 0x08) & 0xFF00) | ((dwFT1 << 0x08) & 0xFF0000) | ((dwFT1 << 0x18) & 0xFF000000));
+          strcat(szClientBuf, ver);
+        }
+        if (dwFT2 == 0x0B)
+          strcat(szClientBuf, " Beta");
+
+        szClient = szClientBuf;
+      }
       else if (capId = MatchCap(caps, wLen, &capQip, 0xE))
       {
         char ver[10];
@@ -478,6 +496,21 @@ char* detectUserClient(HANDLE hContact, DWORD dwUin, WORD wVersion, DWORD dwFT1,
       else if (MatchCap(caps, wLen, &capAnastasia, 0x10))
       { // http://chis.nnov.ru/anastasia
         szClient = "Anastasia";
+      }
+      else if (capId = MatchCap(caps, wLen, &capPalmJicq, 0xC))
+      { // http://www.jsoft.ru
+        unsigned ver1 = (*capId)[0xC];
+        unsigned ver2 = (*capId)[0xD];
+        unsigned ver3 = (*capId)[0xE];
+        unsigned ver4 = (*capId)[0xF];
+
+        makeClientVersion(szClientBuf, "JICQ ", ver1, ver2, ver3, ver4);
+
+        szClient = szClientBuf;
+      }
+      else if (MatchCap(caps, wLen, &capInluxMsgr, 0x10))
+      { // http://www.inlusoft.com
+        szClient = "Inlux Messenger";
       }
       else if (szClient == cliLibicq2k)
       { // try to determine which client is behind libicq2000
