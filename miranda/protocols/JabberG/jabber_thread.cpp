@@ -228,7 +228,8 @@ LBL_Exit:
 			_tcsncpy( info->username, dbv.ptszVal, SIZEOF( info->username )-1 );
 			JFreeVariant( &dbv );
 		}
-		else {
+
+		if ( *rtrim(info->username) == '\0' ) {
 			DWORD dwSize = SIZEOF( info->username );
 			if ( GetUserName( info->username, &dwSize ))
 				JSetStringT( NULL, "LoginName", info->username );
