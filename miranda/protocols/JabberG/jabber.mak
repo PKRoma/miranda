@@ -44,6 +44,7 @@ CLEAN :
 	-@erase "$(INTDIR)\jabber.pch"
 	-@erase "$(INTDIR)\jabber_agent.obj"
 	-@erase "$(INTDIR)\jabber_bitmap.obj"
+	-@erase "$(INTDIR)\jabber_bookmarks.obj"
 	-@erase "$(INTDIR)\jabber_byte.obj"
 	-@erase "$(INTDIR)\jabber_chat.obj"
 	-@erase "$(INTDIR)\jabber_file.obj"
@@ -114,6 +115,7 @@ LINK32_OBJS= \
 	"$(INTDIR)\jabber_opt.obj" \
 	"$(INTDIR)\jabber_password.obj" \
 	"$(INTDIR)\jabber_proxy.obj" \
+	"$(INTDIR)\jabber_search.obj" \
 	"$(INTDIR)\jabber_secur.obj" \
 	"$(INTDIR)\jabber_ssl.obj" \
 	"$(INTDIR)\jabber_std.obj" \
@@ -126,7 +128,7 @@ LINK32_OBJS= \
 	"$(INTDIR)\jabber_xml.obj" \
 	"$(INTDIR)\jabber_xmlns.obj" \
 	"$(INTDIR)\msvc6.res" \
-	"$(INTDIR)\jabber_search.obj"
+	"$(INTDIR)\jabber_bookmarks.obj"
 
 "..\..\bin\release\plugins\jabber.dll" : "$(OUTDIR)" $(DEF_FILE) $(LINK32_OBJS)
     $(LINK32) @<<
@@ -152,6 +154,8 @@ CLEAN :
 	-@erase "$(INTDIR)\jabber_agent.sbr"
 	-@erase "$(INTDIR)\jabber_bitmap.obj"
 	-@erase "$(INTDIR)\jabber_bitmap.sbr"
+	-@erase "$(INTDIR)\jabber_bookmarks.obj"
+	-@erase "$(INTDIR)\jabber_bookmarks.sbr"
 	-@erase "$(INTDIR)\jabber_byte.obj"
 	-@erase "$(INTDIR)\jabber_byte.sbr"
 	-@erase "$(INTDIR)\jabber_chat.obj"
@@ -249,6 +253,7 @@ BSC32_SBRS= \
 	"$(INTDIR)\jabber_opt.sbr" \
 	"$(INTDIR)\jabber_password.sbr" \
 	"$(INTDIR)\jabber_proxy.sbr" \
+	"$(INTDIR)\jabber_search.sbr" \
 	"$(INTDIR)\jabber_secur.sbr" \
 	"$(INTDIR)\jabber_ssl.sbr" \
 	"$(INTDIR)\jabber_std.sbr" \
@@ -260,7 +265,7 @@ BSC32_SBRS= \
 	"$(INTDIR)\jabber_ws.sbr" \
 	"$(INTDIR)\jabber_xml.sbr" \
 	"$(INTDIR)\jabber_xmlns.sbr" \
-	"$(INTDIR)\jabber_search.sbr"
+	"$(INTDIR)\jabber_bookmarks.sbr"
 
 "$(OUTDIR)\jabber.bsc" : "$(OUTDIR)" $(BSC32_SBRS)
     $(BSC32) @<<
@@ -290,6 +295,7 @@ LINK32_OBJS= \
 	"$(INTDIR)\jabber_opt.obj" \
 	"$(INTDIR)\jabber_password.obj" \
 	"$(INTDIR)\jabber_proxy.obj" \
+	"$(INTDIR)\jabber_search.obj" \
 	"$(INTDIR)\jabber_secur.obj" \
 	"$(INTDIR)\jabber_ssl.obj" \
 	"$(INTDIR)\jabber_std.obj" \
@@ -302,7 +308,7 @@ LINK32_OBJS= \
 	"$(INTDIR)\jabber_xml.obj" \
 	"$(INTDIR)\jabber_xmlns.obj" \
 	"$(INTDIR)\msvc6.res" \
-	"$(INTDIR)\jabber_search.obj"
+	"$(INTDIR)\jabber_bookmarks.obj"
 
 "..\..\bin\debug\plugins\jabber.dll" : "$(OUTDIR)" $(DEF_FILE) $(LINK32_OBJS)
     $(LINK32) @<<
@@ -322,6 +328,7 @@ CLEAN :
 	-@erase "$(INTDIR)\jabber.pch"
 	-@erase "$(INTDIR)\jabber_agent.obj"
 	-@erase "$(INTDIR)\jabber_bitmap.obj"
+	-@erase "$(INTDIR)\jabber_bookmarks.obj"
 	-@erase "$(INTDIR)\jabber_byte.obj"
 	-@erase "$(INTDIR)\jabber_chat.obj"
 	-@erase "$(INTDIR)\jabber_file.obj"
@@ -392,6 +399,7 @@ LINK32_OBJS= \
 	"$(INTDIR)\jabber_opt.obj" \
 	"$(INTDIR)\jabber_password.obj" \
 	"$(INTDIR)\jabber_proxy.obj" \
+	"$(INTDIR)\jabber_search.obj" \
 	"$(INTDIR)\jabber_secur.obj" \
 	"$(INTDIR)\jabber_ssl.obj" \
 	"$(INTDIR)\jabber_std.obj" \
@@ -404,7 +412,7 @@ LINK32_OBJS= \
 	"$(INTDIR)\jabber_xml.obj" \
 	"$(INTDIR)\jabber_xmlns.obj" \
 	"$(INTDIR)\msvc6.res" \
-	"$(INTDIR)\jabber_search.obj"
+	"$(INTDIR)\jabber_bookmarks.obj"
 
 "..\..\bin\Release Unicode\plugins\jabber.dll" : "$(OUTDIR)" $(DEF_FILE) $(LINK32_OBJS)
     $(LINK32) @<<
@@ -430,6 +438,8 @@ CLEAN :
 	-@erase "$(INTDIR)\jabber_agent.sbr"
 	-@erase "$(INTDIR)\jabber_bitmap.obj"
 	-@erase "$(INTDIR)\jabber_bitmap.sbr"
+	-@erase "$(INTDIR)\jabber_bookmarks.obj"
+	-@erase "$(INTDIR)\jabber_bookmarks.sbr"
 	-@erase "$(INTDIR)\jabber_byte.obj"
 	-@erase "$(INTDIR)\jabber_byte.sbr"
 	-@erase "$(INTDIR)\jabber_chat.obj"
@@ -527,6 +537,7 @@ BSC32_SBRS= \
 	"$(INTDIR)\jabber_opt.sbr" \
 	"$(INTDIR)\jabber_password.sbr" \
 	"$(INTDIR)\jabber_proxy.sbr" \
+	"$(INTDIR)\jabber_search.sbr" \
 	"$(INTDIR)\jabber_secur.sbr" \
 	"$(INTDIR)\jabber_ssl.sbr" \
 	"$(INTDIR)\jabber_std.sbr" \
@@ -538,7 +549,7 @@ BSC32_SBRS= \
 	"$(INTDIR)\jabber_ws.sbr" \
 	"$(INTDIR)\jabber_xml.sbr" \
 	"$(INTDIR)\jabber_xmlns.sbr" \
-	"$(INTDIR)\jabber_search.sbr"
+	"$(INTDIR)\jabber_bookmarks.sbr"
 
 "$(OUTDIR)\jabber.bsc" : "$(OUTDIR)" $(BSC32_SBRS)
     $(BSC32) @<<
@@ -568,6 +579,7 @@ LINK32_OBJS= \
 	"$(INTDIR)\jabber_opt.obj" \
 	"$(INTDIR)\jabber_password.obj" \
 	"$(INTDIR)\jabber_proxy.obj" \
+	"$(INTDIR)\jabber_search.obj" \
 	"$(INTDIR)\jabber_secur.obj" \
 	"$(INTDIR)\jabber_ssl.obj" \
 	"$(INTDIR)\jabber_std.obj" \
@@ -580,7 +592,7 @@ LINK32_OBJS= \
 	"$(INTDIR)\jabber_xml.obj" \
 	"$(INTDIR)\jabber_xmlns.obj" \
 	"$(INTDIR)\msvc6.res" \
-	"$(INTDIR)\jabber_search.obj"
+	"$(INTDIR)\jabber_bookmarks.obj"
 
 "..\..\bin\debug\plugins\jabber.dll" : "$(OUTDIR)" $(DEF_FILE) $(LINK32_OBJS)
     $(LINK32) @<<
@@ -742,6 +754,34 @@ SOURCE=.\jabber_bitmap.cpp
 
 
 "$(INTDIR)\jabber_bitmap.obj"	"$(INTDIR)\jabber_bitmap.sbr" : $(SOURCE) "$(INTDIR)" "$(INTDIR)\jabber.pch"
+
+
+!ENDIF
+
+SOURCE=.\jabber_bookmarks.cpp
+
+!IF  "$(CFG)" == "jabberg - Win32 Release"
+
+
+"$(INTDIR)\jabber_bookmarks.obj" : $(SOURCE) "$(INTDIR)" "$(INTDIR)\jabber.pch"
+
+
+!ELSEIF  "$(CFG)" == "jabberg - Win32 Debug"
+
+
+"$(INTDIR)\jabber_bookmarks.obj"	"$(INTDIR)\jabber_bookmarks.sbr" : $(SOURCE) "$(INTDIR)" "$(INTDIR)\jabber.pch"
+
+
+!ELSEIF  "$(CFG)" == "jabberg - Win32 Release Unicode"
+
+
+"$(INTDIR)\jabber_bookmarks.obj" : $(SOURCE) "$(INTDIR)" "$(INTDIR)\jabber.pch"
+
+
+!ELSEIF  "$(CFG)" == "jabberg - Win32 Debug Unicode"
+
+
+"$(INTDIR)\jabber_bookmarks.obj"	"$(INTDIR)\jabber_bookmarks.sbr" : $(SOURCE) "$(INTDIR)" "$(INTDIR)\jabber.pch"
 
 
 !ENDIF
