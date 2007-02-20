@@ -29,33 +29,87 @@ Last change by : $Author: ghazan $
 #include "resource.h"
 #include "jabber_iq.h"
 
-static BOOL CALLBACK JabberBookmarksDlgProc( HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam );
-static BOOL CALLBACK JabberAddBookmarkDlgProc( HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam );
+/////////////////////////////////////////////////////////////////////////////////////////
+// Bookmarks editor window
 
-int JabberMenuHandleBookmarks( WPARAM wParam, LPARAM lParam )
+static BOOL CALLBACK JabberAddBookmarkDlgProc( HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam )
 {
-	int iqId;
+	TCHAR text[128];
+	JABBER_LIST_ITEM *item;
+	TCHAR* roomJID;
+	
+	switch ( msg ) {
+	case WM_INITDIALOG:
+		// lParam is the room JID ( room@server ) in UTF-8
+		hwndJabberAddBookmark= hwndDlg;
+		TranslateDialogDefault( hwndDlg );
+		if ( lParam ){
+			roomJID = mir_tstrdup((TCHAR*) lParam );
+			SetDlgItemText( hwndDlg, IDC_ROOM_JID, roomJID);
 
-	if ( IsWindow( hwndJabberBookmarks)) {
-		SetForegroundWindow( hwndJabberBookmarks );
+			item=JabberListGetItemPtr(LIST_BOOKMARK, roomJID);
+			if (item->name != NULL) SetDlgItemText( hwndDlg, IDC_NAME, mir_tstrdup (item->name) );
+			if (item->nick != NULL) SetDlgItemText( hwndDlg, IDC_NICK, mir_tstrdup (item->nick) );
+			if (item->password!= NULL) SetDlgItemText( hwndDlg, IDC_PASSWORD, mir_tstrdup (item->password) );
+		}
+		else EnableWindow( GetDlgItem( hwndDlg, IDOK ), FALSE );
+		return TRUE;
 
-		SendMessage( hwndJabberGroupchat, WM_JABBER_ACTIVATE, 0, 0 );	// Just to clear the list
-		iqId = JabberSerialNext();
-		JabberIqAdd( iqId, IQ_PROC_DISCOBOOKMARKS, JabberIqResultDiscoBookmarks);
+	case WM_COMMAND:
+		switch ( LOWORD( wParam )) {
+		case IDC_ROOM_JID:
+			if (( HWND )lParam==GetFocus() && HIWORD( wParam )==EN_CHANGE ) {
+				GetDlgItemText( hwndDlg, IDC_ROOM_JID, text, SIZEOF( text ));
+				roomJID = mir_tstrdup( text );
 
-		XmlNodeIq iq( "get", iqId);
+				if (roomJID == NULL || roomJID[0] == _T('\0')) EnableWindow( GetDlgItem( hwndDlg, IDOK ), FALSE );
+				else EnableWindow( GetDlgItem( hwndDlg, IDOK ), TRUE );
+				}
+				
+			break;
+		case IDOK:
+			GetDlgItemText( hwndDlg, IDC_ROOM_JID, text, SIZEOF( text ));
+			roomJID = mir_tstrdup( text );
 
-		XmlNode* query = iq.addQuery( "jabber:iq:private" );
-		XmlNode* storage = query->addChild("storage");
-		storage->addAttr("xmlns","storage:bookmarks");
+			item=JabberListAdd(LIST_BOOKMARK, roomJID);
 
-		// <iq/> result will send WM_JABBER_REFRESH to update the list with real data
-		jabberThreadInfo->send( iq );
+			GetDlgItemText( hwndDlg, IDC_NICK, text, SIZEOF( text ));
+			item->nick = mir_tstrdup( text );
+
+			GetDlgItemText( hwndDlg, IDC_PASSWORD, text, SIZEOF( text ));
+			item->password = mir_tstrdup( text );
+
+			GetDlgItemText( hwndDlg, IDC_NAME, text, SIZEOF( text ));
+			item->name = mir_tstrdup(( text[0] == 0 ) ? roomJID : text );
+			{
+            int iqId = JabberSerialNext();
+				JabberIqAdd( iqId, IQ_PROC_SETBOOKMARKS, JabberIqResultSetBookmarks);
+
+				XmlNodeIq iq( "set", iqId);
+				JabberSetBookmarkRequest(iq);
+				jabberThreadInfo->send( iq );
+			}
+			// fall through
+		case IDCANCEL:
+			EndDialog( hwndDlg, 0 );
+			break;
+		}
+		break;
+
+	case WM_JABBER_CHECK_ONLINE:
+		if ( !jabberOnline )
+			EndDialog( hwndDlg, 0 );
+		break;
+
+	case WM_DESTROY:
+		hwndJabberAddBookmark = NULL;
+		break;
 	}
-	else hwndJabberBookmarks = CreateDialogParam( hInst, MAKEINTRESOURCE( IDD_BOOKMARKS), NULL, JabberBookmarksDlgProc, lParam );
-
-	return 0;
+	return FALSE;
 }
+
+/////////////////////////////////////////////////////////////////////////////////////////
+// Bookmarks manager window
 
 static BOOL sortAscending;
 static int sortColumn;
@@ -98,6 +152,7 @@ static BOOL CALLBACK JabberBookmarksDlgProc( HWND hwndDlg, UINT msg, WPARAM wPar
 	case WM_INITDIALOG:
 		TranslateDialogDefault( hwndDlg );
 		SendMessage( hwndDlg, WM_SETICON, ICON_BIG, ( LPARAM )LoadIconEx( "bookmarks" ));
+		hwndJabberBookmarks = hwndDlg;
 
 		EnableWindow( GetDlgItem( hwndDlg, IDC_BROWSE ), FALSE );
 		EnableWindow( GetDlgItem( hwndDlg, IDC_ADD ), FALSE );
@@ -342,78 +397,30 @@ static BOOL CALLBACK JabberBookmarksDlgProc( HWND hwndDlg, UINT msg, WPARAM wPar
 	return FALSE;
 }
 
-static BOOL CALLBACK JabberAddBookmarkDlgProc( HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam )
+/////////////////////////////////////////////////////////////////////////////////////////
+// Launches the Bookmarks manager window
+
+int JabberMenuHandleBookmarks( WPARAM wParam, LPARAM lParam )
 {
-	TCHAR text[128];
-	JABBER_LIST_ITEM *item;
-	TCHAR* roomJID;
-	
-	switch ( msg ) {
-	case WM_INITDIALOG:
-		// lParam is the room JID ( room@server ) in UTF-8
-		hwndJabberAddBookmark= hwndDlg;
-		TranslateDialogDefault( hwndDlg );
-		if ( lParam ){
-			roomJID = mir_tstrdup((TCHAR*) lParam );
-			SetDlgItemText( hwndDlg, IDC_ROOM_JID, roomJID);
+	int iqId;
 
-			item=JabberListGetItemPtr(LIST_BOOKMARK, roomJID);
-			if (item->name != NULL) SetDlgItemText( hwndDlg, IDC_NAME, mir_tstrdup (item->name) );
-			if (item->nick != NULL) SetDlgItemText( hwndDlg, IDC_NICK, mir_tstrdup (item->nick) );
-			if (item->password!= NULL) SetDlgItemText( hwndDlg, IDC_PASSWORD, mir_tstrdup (item->password) );
-		}
-		else EnableWindow( GetDlgItem( hwndDlg, IDOK ), FALSE );
-		return TRUE;
+	if ( IsWindow( hwndJabberBookmarks)) {
+		SetForegroundWindow( hwndJabberBookmarks );
 
-	case WM_COMMAND:
-		switch ( LOWORD( wParam )) {
-		case IDC_ROOM_JID:
-			if (( HWND )lParam==GetFocus() && HIWORD( wParam )==EN_CHANGE ) {
-				GetDlgItemText( hwndDlg, IDC_ROOM_JID, text, SIZEOF( text ));
-				roomJID = mir_tstrdup( text );
+		SendMessage( hwndJabberGroupchat, WM_JABBER_ACTIVATE, 0, 0 );	// Just to clear the list
+		iqId = JabberSerialNext();
+		JabberIqAdd( iqId, IQ_PROC_DISCOBOOKMARKS, JabberIqResultDiscoBookmarks);
 
-				if (roomJID == NULL || roomJID[0] == _T('\0')) EnableWindow( GetDlgItem( hwndDlg, IDOK ), FALSE );
-				else EnableWindow( GetDlgItem( hwndDlg, IDOK ), TRUE );
-				}
-				
-			break;
-		case IDOK:
-			GetDlgItemText( hwndDlg, IDC_ROOM_JID, text, SIZEOF( text ));
-			roomJID = mir_tstrdup( text );
+		XmlNodeIq iq( "get", iqId);
 
-			item=JabberListAdd(LIST_BOOKMARK, roomJID);
+		XmlNode* query = iq.addQuery( "jabber:iq:private" );
+		XmlNode* storage = query->addChild("storage");
+		storage->addAttr("xmlns","storage:bookmarks");
 
-			GetDlgItemText( hwndDlg, IDC_NICK, text, SIZEOF( text ));
-			item->nick = mir_tstrdup( text );
-
-			GetDlgItemText( hwndDlg, IDC_PASSWORD, text, SIZEOF( text ));
-			item->password = mir_tstrdup( text );
-
-			GetDlgItemText( hwndDlg, IDC_NAME, text, SIZEOF( text ));
-			item->name = mir_tstrdup(( text[0] == 0 ) ? roomJID : text );
-			{
-            int iqId = JabberSerialNext();
-				JabberIqAdd( iqId, IQ_PROC_SETBOOKMARKS, JabberIqResultSetBookmarks);
-
-				XmlNodeIq iq( "set", iqId);
-				JabberSetBookmarkRequest(iq);
-				jabberThreadInfo->send( iq );
-			}
-			// fall through
-		case IDCANCEL:
-			EndDialog( hwndDlg, 0 );
-			break;
-		}
-		break;
-
-	case WM_JABBER_CHECK_ONLINE:
-		if ( !jabberOnline )
-			EndDialog( hwndDlg, 0 );
-		break;
-
-	case WM_DESTROY:
-		hwndJabberAddBookmark = NULL;
-		break;
+		// <iq/> result will send WM_JABBER_REFRESH to update the list with real data
+		jabberThreadInfo->send( iq );
 	}
-	return FALSE;
+	else CreateDialogParam( hInst, MAKEINTRESOURCE( IDD_BOOKMARKS), NULL, JabberBookmarksDlgProc, lParam );
+
+	return 0;
 }
