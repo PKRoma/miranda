@@ -97,7 +97,7 @@ PLUGININFO pluginInfo =
 	"George Hazan",
 	"george_hazan@hotmail.com",
 	"© 2001-5 Richard Hughes, George Hazan",
-	"http://miranda-im.org/download/details.php?action=viewfile&id=702",
+	"http://miranda-im.org",
 	UNICODE_AWARE,	0
 };
 
