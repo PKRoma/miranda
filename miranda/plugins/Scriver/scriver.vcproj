@@ -603,25 +603,29 @@
 						Name="Debug|Win32">
 						<Tool
 							Name="VCCLCompilerTool"
-							UsePrecompiledHeader="0"/>
+							UsePrecompiledHeader="3"
+							PrecompiledHeaderThrough="../commonheaders.h"/>
 					</FileConfiguration>
 					<FileConfiguration
 						Name="Release|Win32">
 						<Tool
 							Name="VCCLCompilerTool"
-							UsePrecompiledHeader="0"/>
+							UsePrecompiledHeader="3"
+							PrecompiledHeaderThrough="../commonheaders.h"/>
 					</FileConfiguration>
 					<FileConfiguration
 						Name="Release Unicode|Win32">
 						<Tool
 							Name="VCCLCompilerTool"
-							UsePrecompiledHeader="0"/>
+							UsePrecompiledHeader="3"
+							PrecompiledHeaderThrough="../commonheaders.h"/>
 					</FileConfiguration>
 					<FileConfiguration
 						Name="Debug Unicode|Win32">
 						<Tool
 							Name="VCCLCompilerTool"
-							UsePrecompiledHeader="0"/>
+							UsePrecompiledHeader="3"
+							PrecompiledHeaderThrough="../commonheaders.h"/>
 					</FileConfiguration>
 				</File>
 				<File
@@ -630,25 +634,29 @@
 						Name="Debug|Win32">
 						<Tool
 							Name="VCCLCompilerTool"
-							UsePrecompiledHeader="0"/>
+							UsePrecompiledHeader="3"
+							PrecompiledHeaderThrough="../commonheaders.h"/>
 					</FileConfiguration>
 					<FileConfiguration
 						Name="Release|Win32">
 						<Tool
 							Name="VCCLCompilerTool"
-							UsePrecompiledHeader="0"/>
+							UsePrecompiledHeader="3"
+							PrecompiledHeaderThrough="../commonheaders.h"/>
 					</FileConfiguration>
 					<FileConfiguration
 						Name="Release Unicode|Win32">
 						<Tool
 							Name="VCCLCompilerTool"
-							UsePrecompiledHeader="0"/>
+							UsePrecompiledHeader="3"
+							PrecompiledHeaderThrough="../commonheaders.h"/>
 					</FileConfiguration>
 					<FileConfiguration
 						Name="Debug Unicode|Win32">
 						<Tool
 							Name="VCCLCompilerTool"
-							UsePrecompiledHeader="0"/>
+							UsePrecompiledHeader="3"
+							PrecompiledHeaderThrough="../commonheaders.h"/>
 					</FileConfiguration>
 				</File>
 				<File
@@ -660,25 +668,29 @@
 						Name="Debug|Win32">
 						<Tool
 							Name="VCCLCompilerTool"
-							UsePrecompiledHeader="0"/>
+							UsePrecompiledHeader="3"
+							PrecompiledHeaderThrough="../commonheaders.h"/>
 					</FileConfiguration>
 					<FileConfiguration
 						Name="Release|Win32">
 						<Tool
 							Name="VCCLCompilerTool"
-							UsePrecompiledHeader="0"/>
+							UsePrecompiledHeader="3"
+							PrecompiledHeaderThrough="../commonheaders.h"/>
 					</FileConfiguration>
 					<FileConfiguration
 						Name="Release Unicode|Win32">
 						<Tool
 							Name="VCCLCompilerTool"
-							UsePrecompiledHeader="0"/>
+							UsePrecompiledHeader="3"
+							PrecompiledHeaderThrough="../commonheaders.h"/>
 					</FileConfiguration>
 					<FileConfiguration
 						Name="Debug Unicode|Win32">
 						<Tool
 							Name="VCCLCompilerTool"
-							UsePrecompiledHeader="0"/>
+							UsePrecompiledHeader="3"
+							PrecompiledHeaderThrough="../commonheaders.h"/>
 					</FileConfiguration>
 				</File>
 				<File
@@ -696,25 +708,29 @@
 						Name="Debug|Win32">
 						<Tool
 							Name="VCCLCompilerTool"
-							UsePrecompiledHeader="0"/>
+							UsePrecompiledHeader="3"
+							PrecompiledHeaderThrough="../commonheaders.h"/>
 					</FileConfiguration>
 					<FileConfiguration
 						Name="Release|Win32">
 						<Tool
 							Name="VCCLCompilerTool"
-							UsePrecompiledHeader="0"/>
+							UsePrecompiledHeader="3"
+							PrecompiledHeaderThrough="../commonheaders.h"/>
 					</FileConfiguration>
 					<FileConfiguration
 						Name="Release Unicode|Win32">
 						<Tool
 							Name="VCCLCompilerTool"
-							UsePrecompiledHeader="0"/>
+							UsePrecompiledHeader="3"
+							PrecompiledHeaderThrough="../commonheaders.h"/>
 					</FileConfiguration>
 					<FileConfiguration
 						Name="Debug Unicode|Win32">
 						<Tool
 							Name="VCCLCompilerTool"
-							UsePrecompiledHeader="0"/>
+							UsePrecompiledHeader="3"
+							PrecompiledHeaderThrough="../commonheaders.h"/>
 					</FileConfiguration>
 				</File>
 				<File
@@ -723,25 +739,29 @@
 						Name="Debug|Win32">
 						<Tool
 							Name="VCCLCompilerTool"
-							UsePrecompiledHeader="0"/>
+							UsePrecompiledHeader="3"
+							PrecompiledHeaderThrough="../commonheaders.h"/>
 					</FileConfiguration>
 					<FileConfiguration
 						Name="Release|Win32">
 						<Tool
 							Name="VCCLCompilerTool"
-							UsePrecompiledHeader="0"/>
+							UsePrecompiledHeader="3"
+							PrecompiledHeaderThrough="../commonheaders.h"/>
 					</FileConfiguration>
 					<FileConfiguration
 						Name="Release Unicode|Win32">
 						<Tool
 							Name="VCCLCompilerTool"
-							UsePrecompiledHeader="0"/>
+							UsePrecompiledHeader="3"
+							PrecompiledHeaderThrough="../commonheaders.h"/>
 					</FileConfiguration>
 					<FileConfiguration
 						Name="Debug Unicode|Win32">
 						<Tool
 							Name="VCCLCompilerTool"
-							UsePrecompiledHeader="0"/>
+							UsePrecompiledHeader="3"
+							PrecompiledHeaderThrough="../commonheaders.h"/>
 					</FileConfiguration>
 				</File>
 				<File
@@ -750,25 +770,29 @@
 						Name="Debug|Win32">
 						<Tool
 							Name="VCCLCompilerTool"
-							UsePrecompiledHeader="0"/>
+							UsePrecompiledHeader="3"
+							PrecompiledHeaderThrough="../commonheaders.h"/>
 					</FileConfiguration>
 					<FileConfiguration
 						Name="Release|Win32">
 						<Tool
 							Name="VCCLCompilerTool"
-							UsePrecompiledHeader="0"/>
+							UsePrecompiledHeader="3"
+							PrecompiledHeaderThrough="../commonheaders.h"/>
 					</FileConfiguration>
 					<FileConfiguration
 						Name="Release Unicode|Win32">
 						<Tool
 							Name="VCCLCompilerTool"
-							UsePrecompiledHeader="0"/>
+							UsePrecompiledHeader="3"
+							PrecompiledHeaderThrough="../commonheaders.h"/>
 					</FileConfiguration>
 					<FileConfiguration
 						Name="Debug Unicode|Win32">
 						<Tool
 							Name="VCCLCompilerTool"
-							UsePrecompiledHeader="0"/>
+							UsePrecompiledHeader="3"
+							PrecompiledHeaderThrough="../commonheaders.h"/>
 					</FileConfiguration>
 				</File>
 				<File
@@ -777,25 +801,29 @@
 						Name="Debug|Win32">
 						<Tool
 							Name="VCCLCompilerTool"
-							UsePrecompiledHeader="0"/>
+							UsePrecompiledHeader="3"
+							PrecompiledHeaderThrough="../commonheaders.h"/>
 					</FileConfiguration>
 					<FileConfiguration
 						Name="Release|Win32">
 						<Tool
 							Name="VCCLCompilerTool"
-							UsePrecompiledHeader="0"/>
+							UsePrecompiledHeader="3"
+							PrecompiledHeaderThrough="../commonheaders.h"/>
 					</FileConfiguration>
 					<FileConfiguration
 						Name="Release Unicode|Win32">
 						<Tool
 							Name="VCCLCompilerTool"
-							UsePrecompiledHeader="0"/>
+							UsePrecompiledHeader="3"
+							PrecompiledHeaderThrough="../commonheaders.h"/>
 					</FileConfiguration>
 					<FileConfiguration
 						Name="Debug Unicode|Win32">
 						<Tool
 							Name="VCCLCompilerTool"
-							UsePrecompiledHeader="0"/>
+							UsePrecompiledHeader="3"
+							PrecompiledHeaderThrough="../commonheaders.h"/>
 					</FileConfiguration>
 				</File>
 				<File
@@ -807,25 +835,29 @@
 						Name="Debug|Win32">
 						<Tool
 							Name="VCCLCompilerTool"
-							UsePrecompiledHeader="0"/>
+							UsePrecompiledHeader="3"
+							PrecompiledHeaderThrough="../commonheaders.h"/>
 					</FileConfiguration>
 					<FileConfiguration
 						Name="Release|Win32">
 						<Tool
 							Name="VCCLCompilerTool"
-							UsePrecompiledHeader="0"/>
+							UsePrecompiledHeader="3"
+							PrecompiledHeaderThrough="../commonheaders.h"/>
 					</FileConfiguration>
 					<FileConfiguration
 						Name="Release Unicode|Win32">
 						<Tool
 							Name="VCCLCompilerTool"
-							UsePrecompiledHeader="0"/>
+							UsePrecompiledHeader="3"
+							PrecompiledHeaderThrough="../commonheaders.h"/>
 					</FileConfiguration>
 					<FileConfiguration
 						Name="Debug Unicode|Win32">
 						<Tool
 							Name="VCCLCompilerTool"
-							UsePrecompiledHeader="0"/>
+							UsePrecompiledHeader="3"
+							PrecompiledHeaderThrough="../commonheaders.h"/>
 					</FileConfiguration>
 				</File>
 				<File
@@ -834,25 +866,29 @@
 						Name="Debug|Win32">
 						<Tool
 							Name="VCCLCompilerTool"
-							UsePrecompiledHeader="0"/>
+							UsePrecompiledHeader="3"
+							PrecompiledHeaderThrough="../commonheaders.h"/>
 					</FileConfiguration>
 					<FileConfiguration
 						Name="Release|Win32">
 						<Tool
 							Name="VCCLCompilerTool"
-							UsePrecompiledHeader="0"/>
+							UsePrecompiledHeader="3"
+							PrecompiledHeaderThrough="../commonheaders.h"/>
 					</FileConfiguration>
 					<FileConfiguration
 						Name="Release Unicode|Win32">
 						<Tool
 							Name="VCCLCompilerTool"
-							UsePrecompiledHeader="0"/>
+							UsePrecompiledHeader="3"
+							PrecompiledHeaderThrough="../commonheaders.h"/>
 					</FileConfiguration>
 					<FileConfiguration
 						Name="Debug Unicode|Win32">
 						<Tool
 							Name="VCCLCompilerTool"
-							UsePrecompiledHeader="0"/>
+							UsePrecompiledHeader="3"
+							PrecompiledHeaderThrough="../commonheaders.h"/>
 					</FileConfiguration>
 				</File>
 				<File
@@ -861,25 +897,29 @@
 						Name="Debug|Win32">
 						<Tool
 							Name="VCCLCompilerTool"
-							UsePrecompiledHeader="0"/>
+							UsePrecompiledHeader="3"
+							PrecompiledHeaderThrough="../commonheaders.h"/>
 					</FileConfiguration>
 					<FileConfiguration
 						Name="Release|Win32">
 						<Tool
 							Name="VCCLCompilerTool"
-							UsePrecompiledHeader="0"/>
+							UsePrecompiledHeader="3"
+							PrecompiledHeaderThrough="../commonheaders.h"/>
 					</FileConfiguration>
 					<FileConfiguration
 						Name="Release Unicode|Win32">
 						<Tool
 							Name="VCCLCompilerTool"
-							UsePrecompiledHeader="0"/>
+							UsePrecompiledHeader="3"
+							PrecompiledHeaderThrough="../commonheaders.h"/>
 					</FileConfiguration>
 					<FileConfiguration
 						Name="Debug Unicode|Win32">
 						<Tool
 							Name="VCCLCompilerTool"
-							UsePrecompiledHeader="0"/>
+							UsePrecompiledHeader="3"
+							PrecompiledHeaderThrough="../commonheaders.h"/>
 					</FileConfiguration>
 				</File>
 			</Filter>
@@ -919,13 +959,13 @@
 			Name="Resource Files"
 			Filter="ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe">
 			<File
-				RelativePath="res\addcontact.ico">
-			</File>
-			<File
 				RelativePath="..\..\src\res\addcontact.ico">
 			</File>
 			<File
 				RelativePath="..\..\Miranda-IM\res\addcontact.ico">
+			</File>
+			<File
+				RelativePath="res\addcontact.ico">
 			</File>
 			<File
 				RelativePath="res\Clock32.ico">
@@ -934,10 +974,10 @@
 				RelativePath="res\Clock8.ico">
 			</File>
 			<File
-				RelativePath="res\delete.ico">
+				RelativePath="..\..\src\res\delete.ico">
 			</File>
 			<File
-				RelativePath="..\..\src\res\delete.ico">
+				RelativePath="res\delete.ico">
 			</File>
 			<File
 				RelativePath="res\Details32.ico">
@@ -955,10 +995,10 @@
 				RelativePath="res\Downarrow8.ico">
 			</File>
 			<File
-				RelativePath="res\dragcopy.cur">
+				RelativePath="..\..\src\res\dragcopy.cur">
 			</File>
 			<File
-				RelativePath="..\..\src\res\dragcopy.cur">
+				RelativePath="res\dragcopy.cur">
 			</File>
 			<File
 				RelativePath="res\emptyblo.ico">

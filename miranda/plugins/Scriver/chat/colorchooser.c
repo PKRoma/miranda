@@ -18,9 +18,9 @@ along with this program; if not, write to the Free Software
 Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 */
 
-
 // this color chooser window is inspired by PeaCow's smiley chooser window for the Smileyadd plugin
 
+#include "../commonheaders.h"
 #include "chat.h"
 #include <math.h>
 

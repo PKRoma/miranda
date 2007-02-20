@@ -39,6 +39,8 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #define _WIN32_WINNT 0x0501
 #define _WIN32_IE 0x0501
 #define WIN32_LEAN_AND_MEAN
+#define _USE_32BIT_TIME_T
+
 #include <wchar.h>
 #include <tchar.h>
 #include <stdio.h>

@@ -17,6 +17,8 @@ You should have received a copy of the GNU General Public License
 along with this program; if not, write to the Free Software
 Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 */
+
+#include "../commonheaders.h"
 #include "chat.h"
 #include <shlwapi.h>
 
@@ -766,7 +768,9 @@ void DestroyGCMenu(HMENU *hMenu, int iIndex)
 
 BOOL DoEventHookAsync(HWND hwnd, const TCHAR* pszID, const char* pszModule, int iType, TCHAR* pszUID, TCHAR* pszText, DWORD dwItem)
 {
-	SESSION_INFO* si;
+	#if defined( _UNICODE )
+		SESSION_INFO* si;
+	#endif
 	GCHOOK* gch = (GCHOOK*)mir_alloc( sizeof( GCHOOK ));
 	GCDEST* gcd = (GCDEST*)mir_alloc( sizeof( GCDEST ));
 
@@ -800,7 +804,9 @@ BOOL DoEventHookAsync(HWND hwnd, const TCHAR* pszID, const char* pszModule, int 
 
 BOOL DoEventHook(const TCHAR* pszID, const char* pszModule, int iType, const TCHAR* pszUID, const TCHAR* pszText, DWORD dwItem)
 {
-	SESSION_INFO* si;
+	#if defined( _UNICODE )
+		SESSION_INFO* si;
+	#endif
 	GCHOOK gch = {0};
 	GCDEST gcd = {0};
 

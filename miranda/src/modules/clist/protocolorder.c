@@ -233,12 +233,11 @@ BOOL CALLBACK ProtocolOrderOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lP
 	struct ProtocolOrderData *dat = (struct ProtocolOrderData*)GetWindowLong(GetDlgItem(hwndDlg,IDC_PROTOCOLORDER),GWL_USERDATA);
 
 	switch (msg) {
+	case WM_DESTROY:
+		mir_free( dat );
+		break;
 
-    case WM_DESTROY:
-            if (dat) mir_free(dat);
-            break;
-
-    case WM_INITDIALOG: 
+	case WM_INITDIALOG: 
 		TranslateDialogDefault(hwndDlg);
 		dat=(struct ProtocolOrderData*)mir_alloc(sizeof(struct ProtocolOrderData));
 		SetWindowLong(GetDlgItem(hwndDlg,IDC_PROTOCOLORDER),GWL_USERDATA,(long)dat);
@@ -271,33 +270,31 @@ BOOL CALLBACK ProtocolOrderOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lP
 		switch(((LPNMHDR)lParam)->idFrom) {		
 		case 0: 
 			if (((LPNMHDR)lParam)->code == PSN_APPLY ) {
-				TVITEMA tvi;
 				int count;
-				char idstr[33];
 				char buf[10];
 
-				tvi.hItem=TreeView_GetRoot(GetDlgItem(hwndDlg,IDC_PROTOCOLORDER));
-				tvi.cchTextMax=32;
-				tvi.mask=TVIF_TEXT|TVIF_PARAM|TVIF_HANDLE;
-				tvi.pszText=(char *)&idstr;
-				count=0;
+				TVITEM tvi;
+				tvi.hItem = TreeView_GetRoot( GetDlgItem( hwndDlg, IDC_PROTOCOLORDER ));
+				tvi.cchTextMax = 32;
+				tvi.mask = TVIF_PARAM | TVIF_HANDLE;
+				count = 0;
 
 				while ( tvi.hItem != NULL ) {
 					_itoa( count, buf, 10 );
 					TreeView_GetItem(GetDlgItem(hwndDlg,IDC_PROTOCOLORDER),&tvi);
-                    
-                    if (tvi.lParam!=0) {
-					    
-                        DBWriteContactSettingString(NULL,"Protocols",(char *)&buf,((ProtocolData *)tvi.lParam)->RealName);
 
-					    _itoa(OFFSET_PROTOPOS+count,(char *)&buf,10);//save position in protos
-					    DBWriteContactSettingDword(0,"Protocols",(char *)&buf,((ProtocolData *)tvi.lParam)->protopos);
+					if (tvi.lParam!=0) {
+						ProtocolData* ppd = ( ProtocolData* )tvi.lParam;
+						DBWriteContactSettingString( NULL, "Protocols", buf, ppd->RealName );
 
-					    _itoa(OFFSET_VISIBLE+count,(char *)&buf,10);//save visible in protos
-					    DBWriteContactSettingDword(0,"Protocols",(char *)&buf,((ProtocolData *)tvi.lParam)->show);
-                    }
+						_itoa( OFFSET_PROTOPOS + count, buf, 10 );  //save position in protos
+						DBWriteContactSettingDword( NULL, "Protocols", buf, ppd->protopos );
 
-					tvi.hItem=TreeView_GetNextSibling(GetDlgItem(hwndDlg,IDC_PROTOCOLORDER),tvi.hItem);
+						_itoa( OFFSET_VISIBLE + count, buf, 10 );  //save visible in protos
+						DBWriteContactSettingDword( NULL, "Protocols", buf, ppd->show );
+					}
+
+					tvi.hItem = TreeView_GetNextSibling( GetDlgItem( hwndDlg, IDC_PROTOCOLORDER ), tvi.hItem );
 					count++;
 				}
 
@@ -310,14 +307,13 @@ BOOL CALLBACK ProtocolOrderOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lP
 
 		case IDC_PROTOCOLORDER:
 			switch (((LPNMHDR)lParam)->code) {
-            
-            case TVN_DELETEITEMA: 
-                {
-                    NMTREEVIEWA * pnmtv = (NMTREEVIEWA *) lParam;
-                    if (pnmtv && pnmtv->itemOld.lParam)
-                        mir_free((ProtocolData*)pnmtv->itemOld.lParam);
-                }
-                break;
+			case TVN_DELETEITEMA: 
+				{
+					NMTREEVIEWA * pnmtv = (NMTREEVIEWA *) lParam;
+					if (pnmtv && pnmtv->itemOld.lParam)
+						mir_free((ProtocolData*)pnmtv->itemOld.lParam);
+				}
+				break;
 
 			case TVN_BEGINDRAGA:
 				SetCapture(hwndDlg);
@@ -356,13 +352,13 @@ BOOL CALLBACK ProtocolOrderOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lP
 			ScreenToClient(GetDlgItem(hwndDlg,IDC_PROTOCOLORDER),&hti.pt);
 			TreeView_HitTest(GetDlgItem(hwndDlg,IDC_PROTOCOLORDER),&hti);
 			if ( hti.flags & (TVHT_ONITEM|TVHT_ONITEMRIGHT )) {
-                HTREEITEM it=hti.hItem;
-				hti.pt.y-=TreeView_GetItemHeight(GetDlgItem(hwndDlg,IDC_PROTOCOLORDER))/2;
+				HTREEITEM it = hti.hItem;
+				hti.pt.y -= TreeView_GetItemHeight(GetDlgItem(hwndDlg,IDC_PROTOCOLORDER))/2;
 				TreeView_HitTest(GetDlgItem(hwndDlg,IDC_PROTOCOLORDER),&hti);
-                if (!(hti.flags&TVHT_ABOVE))
-                    TreeView_SetInsertMark(GetDlgItem(hwndDlg,IDC_PROTOCOLORDER),hti.hItem,1);
-                else 
-                    TreeView_SetInsertMark(GetDlgItem(hwndDlg,IDC_PROTOCOLORDER),it,0);
+				if ( !( hti.flags & TVHT_ABOVE ))
+					TreeView_SetInsertMark(GetDlgItem(hwndDlg,IDC_PROTOCOLORDER),hti.hItem,1);
+				else 
+					TreeView_SetInsertMark(GetDlgItem(hwndDlg,IDC_PROTOCOLORDER),it,0);
 			}
 			else {
 				if(hti.flags&TVHT_ABOVE) SendDlgItemMessage(hwndDlg,IDC_PROTOCOLORDER,WM_VSCROLL,MAKEWPARAM(SB_LINEUP,0),0);
@@ -374,7 +370,7 @@ BOOL CALLBACK ProtocolOrderOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lP
 	case WM_LBUTTONUP:
 		if ( dat->dragging ) {
 			TVHITTESTINFO hti;
-			TVITEMA tvi;
+			TVITEM tvi;
 
 			TreeView_SetInsertMark(GetDlgItem(hwndDlg,IDC_PROTOCOLORDER),NULL,0);
 			dat->dragging=0;
@@ -394,7 +390,7 @@ BOOL CALLBACK ProtocolOrderOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lP
 			if ( hti.flags & (TVHT_ONITEM|TVHT_ONITEMRIGHT )||(hti.hItem==TVI_FIRST)) {
 				TVINSERTSTRUCT tvis;
 				TCHAR name[128];
-                ProtocolData * lpOldData;
+				ProtocolData * lpOldData;
 				tvis.item.mask = TVIF_HANDLE|TVIF_PARAM|TVIF_TEXT|TVIF_IMAGE|TVIF_SELECTEDIMAGE;
 				tvis.item.stateMask = 0xFFFFFFFF;
 				tvis.item.pszText = name;

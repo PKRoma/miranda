@@ -21,7 +21,6 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #ifndef _CHAT_H_
 #define _CHAT_H_
 
-#include "../commonheaders.h"
 #include <malloc.h>
 #include <m_protomod.h>
 #include <m_popup.h>
