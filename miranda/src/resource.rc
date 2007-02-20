@@ -1804,58 +1804,74 @@ END
 
 // Icon with lowest ID value placed first to ensure application icon
 // remains consistent on all systems.
-IDI_MIRANDA             ICON                    "res/miranda.ico"
-IDI_SEARCHALL           ICON                    "res/searchal.ico"
-IDI_SMS                 ICON                    "res/sms.ico"
-IDI_BLANK               ICON                    "res/blank.ico"
-IDI_NOTICK              ICON                    "res/notick.ico"
-IDI_TICK                ICON                    "res/notick1.ico"
-IDI_FILE                ICON                    "res/file.ico"
-IDI_TIMESTAMP           ICON                    "res/timestamp.ico"
-IDI_CHANGEFONT          ICON                    "res/changefont.ico"
-IDI_ADDCONTACT          ICON                    "res/addcontact.ico"
-IDI_USERDETAILS         ICON                    "res/viewdetails.ico"
-IDI_SMALLDOT            ICON                    "res/smalldot.ico"
-IDI_FILLEDBLOB          ICON                    "res/filledbl.ico"
-IDI_EMPTYBLOB           ICON                    "res/emptyblo.ico"
-IDI_DETAILSLOGO         ICON                    "res/detailsl.ico"
-IDI_RECVMSG             ICON                    "res/message.ico"
-IDI_SENDMSG             ICON                    "res/reply.ico"
-IDI_URL                 ICON                    "res/url.ico"
-IDI_NA                  ICON                    "res/na2.ico"
-IDI_AWAY                ICON                    "res/away.ico"
-IDI_FREE4CHAT           ICON                    "res/freechat.ico"
-IDI_ONLINE              ICON                    "res/online2.ico"
-IDI_OFFLINE             ICON                    "res/offline2.ico"
-IDI_DND                 ICON                    "res/dnd.ico"
-IDI_OCCUPIED            ICON                    "res/occupied.ico"
-IDI_FINDUSER            ICON                    "res/finduser.ico"
-IDI_HELP                ICON                    "res/help.ico"
-IDI_OPTIONS             ICON                    "res/options.ico"
-IDI_MIRANDAWEBSITE      ICON                    "res/mirandaw.ico"
-IDI_RENAME              ICON                    "res/rename.ico"
-IDI_HISTORY             ICON                    "res/history.ico"
-IDI_DELETE              ICON                    "res/delete.ico"
-IDI_SENDEMAIL           ICON                    "res/sendmail.ico"
-IDI_USERONLINE          ICON                    "res/useronli.ico"
-IDI_GROUPSHUT           ICON                    "res/groupshu.ico"
-IDI_GROUPOPEN           ICON                    "res/groupope.ico"
-IDI_ONTHEPHONE          ICON                    "res/onthepho.ico"
-IDI_OUTTOLUNCH          ICON                    "res/outtolun.ico"
-IDI_INVISIBLE           ICON                    "res/invisible.ico"
-IDI_MULTISEND           ICON                    "res/multisend.ico"
-IDI_DOWNARROW           ICON                    "res/downarrow.ico"
-IDI_TYPING              ICON                    "res/typing.ico"
-IDI_LOAD                ICON                    "res/load.ico"
+
+IDI_MIRANDA             ICON    DISCARDABLE     "res/miranda_logo.ico"
+IDI_MIRANDAWEBSITE      ICON    DISCARDABLE     "res/miranda_home.ico"
+IDI_DETAILSLOGO         ICON    DISCARDABLE     "res/miranda_manager.ico"
+
+IDI_USERDETAILS         ICON    DISCARDABLE     "res/contact_view_details.ico"
+
+IDI_ADDCONTACT          ICON    DISCARDABLE     "res/contact_add.ico"
+IDI_RENAME              ICON    DISCARDABLE     "res/contact_rename.ico"
+IDI_DELETE              ICON    DISCARDABLE     "res/contact_delete.ico"
+
+IDI_GROUPSHUT           ICON    DISCARDABLE     "res/group_closed.ico"
+IDI_GROUPOPEN           ICON    DISCARDABLE     "res/group_opened.ico"
+
+IDI_USERONLINE          ICON    DISCARDABLE     "res/status_user_online.ico"
+
+IDI_ONLINE              ICON    DISCARDABLE     "res/status_online.ico"
+IDI_AWAY                ICON    DISCARDABLE     "res/status_away.ico"
+IDI_NA                  ICON    DISCARDABLE     "res/status_NA.ico"
+IDI_OCCUPIED            ICON    DISCARDABLE     "res/status_occupied.ico"
+IDI_DND                 ICON    DISCARDABLE     "res/status_DND.ico"
+IDI_FREE4CHAT           ICON    DISCARDABLE     "res/status_free4chat.ico"
+IDI_INVISIBLE           ICON    DISCARDABLE     "res/status_invisible.ico"
+IDI_ONTHEPHONE          ICON    DISCARDABLE     "res/status_on_the_phone.ico"
+IDI_OUTTOLUNCH          ICON    DISCARDABLE     "res/status_out2lunch.ico"
+IDI_OFFLINE             ICON    DISCARDABLE     "res/status_offline.ico"
+
+IDI_LOAD                ICON    DISCARDABLE     "res/icon_connecting.ico"
+IDI_TYPING              ICON    DISCARDABLE     "res/icon_typing.ico"
+
+IDI_FINDUSER            ICON    DISCARDABLE     "res/icon_find_user.ico"
+IDI_SEARCHALL           ICON    DISCARDABLE     "res/icon_search_all.ico"
+
+IDI_OPTIONS             ICON    DISCARDABLE     "res/icon_options.ico"
+IDI_HELP                ICON    DISCARDABLE     "res/icon_help.ico"
+
+IDI_RECVMSG             ICON    DISCARDABLE     "res/icon_message.ico"
+IDI_FILE                ICON    DISCARDABLE     "res/icon_file.ico"
+IDI_HISTORY             ICON    DISCARDABLE     "res/icon_history.ico"
+
+IDI_URL                 ICON    DISCARDABLE     "res/icon_url.ico"
+IDI_SMS                 ICON    DISCARDABLE     "res/icon_sms.ico"
+IDI_SENDEMAIL           ICON    DISCARDABLE     "res/icon_mail.ico"
+
+IDI_SMALLDOT            ICON    DISCARDABLE     "res/icon_small_dot.ico"
+IDI_FILLEDBLOB          ICON    DISCARDABLE     "res/icon_auth_request.ico"
+IDI_EMPTYBLOB           ICON    DISCARDABLE     "res/icon_all.ico"
+
+IDI_DOWNARROW           ICON    DISCARDABLE     "res/icon_down_arrow.ico"
+
+IDI_NOTICK              ICON    DISCARDABLE     "res/check_off.ico"
+IDI_TICK                ICON    DISCARDABLE     "res/check_on.ico"
+
+IDI_BLANK               ICON    DISCARDABLE     "res/_blank.ico"
+
+//IDI_TIMESTAMP           ICON    DISCARDABLE     "res/icon_timestamp.ico"
+//IDI_CHANGEFONT          ICON    DISCARDABLE     "res/icon_changefont.ico"
+//IDI_SENDMSG             ICON    DISCARDABLE     "res/icon_reply.ico"
+//IDI_MULTISEND           ICON    DISCARDABLE     "res/icon_multisend.ico"
 
 /////////////////////////////////////////////////////////////////////////////
 //
 // Cursor
 //
 
-IDC_HYPERLINKHAND       CURSOR                  "res/hyperlin.cur"
-IDC_DROP                CURSOR                  "res/dragcopy.cur"
-IDC_DROPUSER            CURSOR                  "res/dropuser.cur"
+IDC_HYPERLINKHAND       CURSOR  DISCARDABLE     "res/cursor_hyperlink.cur"
+IDC_DROP                CURSOR  DISCARDABLE     "res/cursor_drag_copy.cur"
+IDC_DROPUSER            CURSOR  DISCARDABLE     "res/cursor_drop_user.cur"
 
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -1960,8 +1976,8 @@ IDR_CREDITS             TEXT                    "../docs/contributors.txt"
 // Bitmap
 //
 
-IDB_SORTCOLUP           BITMAP                  "res/sortcolu.bmp"
-IDB_SORTCOLDOWN         BITMAP                  "res/sortcold.bmp"
+IDB_SORTCOLUP           BITMAP                  "res/arrow_sort_column_up.bmp"
+IDB_SORTCOLDOWN         BITMAP                  "res/arrow_sort_column_down.bmp"
 
 /////////////////////////////////////////////////////////////////////////////
 //
