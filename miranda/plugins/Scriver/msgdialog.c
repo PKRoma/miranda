@@ -296,10 +296,14 @@ static void AddToFileList(char ***pppFiles,int *totalCount,const TCHAR* szFilena
 	{
 		TCHAR tszShortName[ MAX_PATH ];
 		char  szShortName[ MAX_PATH ];
-		if ( GetShortPathName( szFilename, tszShortName, SIZEOF( tszShortName )) == 0 )
-         WideCharToMultiByte( CP_ACP, 0, szFilename, -1, szShortName, sizeof( szShortName ), NULL, NULL );
-		else
-         WideCharToMultiByte( CP_ACP, 0, tszShortName, -1, szShortName, sizeof( szShortName ), NULL, NULL );
+		BOOL  bIsDefaultCharUsed = FALSE;
+		WideCharToMultiByte( CP_ACP, 0, szFilename, -1, szShortName, sizeof( szShortName ), NULL, &bIsDefaultCharUsed );
+		if ( bIsDefaultCharUsed ) {
+			if ( GetShortPathName( szFilename, tszShortName, SIZEOF( tszShortName )) == 0 )
+		      WideCharToMultiByte( CP_ACP, 0, szFilename, -1, szShortName, sizeof( szShortName ), NULL, NULL );
+			else
+				WideCharToMultiByte( CP_ACP, 0, tszShortName, -1, szShortName, sizeof( szShortName ), NULL, NULL );
+		}
 		(*pppFiles)[*totalCount-1] = mir_strdup( szShortName );
 	}
 	#else
