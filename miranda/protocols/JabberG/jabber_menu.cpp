@@ -2,7 +2,7 @@
 
 Jabber Protocol Plugin for Miranda IM
 Copyright ( C ) 2002-04  Santithorn Bunchua
-Copyright ( C ) 2005-06  George Hazan
+Copyright ( C ) 2005-07  George Hazan
 
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License
@@ -43,6 +43,8 @@ static HANDLE hMenuRefresh = NULL;
 static HANDLE hMenuAgent = NULL;
 static HANDLE hMenuChangePassword = NULL;
 static HANDLE hMenuGroupchat = NULL;
+static HANDLE hMenuBookmarks = NULL;
+
 
 int JabberMenuHandleAgents( WPARAM wParam, LPARAM lParam );
 int JabberMenuHandleChangePassword( WPARAM wParam, LPARAM lParam );
@@ -422,6 +424,15 @@ void JabberMenuInit()
 		mi.position = 2000050003;
 		mi.hIcon = LoadIconEx( "vcard" );
 		JCallService( MS_CLIST_ADDMAINMENUITEM, 0, ( LPARAM )&mi );
+
+        // "Bookmarks..."
+		strcpy( tDest, "/Bookmarks" );
+		CreateServiceFunction( text, JabberMenuHandleBookmarks);
+		mi.pszName = "Bookmarks...";
+		mi.position = 2000050004;
+		mi.hIcon = LoadIconEx( "bookmarks" );
+		hMenuBookmarks = ( HANDLE ) JCallService( MS_CLIST_ADDMAINMENUITEM, 0, ( LPARAM )&mi );
+		JCallService( MS_CLIST_MODIFYMENUITEM, ( WPARAM ) hMenuBookmarks, ( LPARAM )&clmi );
 }	}
 
 void JabberEnableMenuItems( BOOL bEnable )
@@ -435,6 +446,7 @@ void JabberEnableMenuItems( BOOL bEnable )
 	JCallService( MS_CLIST_MODIFYMENUITEM, ( WPARAM )hMenuAgent, ( LPARAM )&clmi );
 	JCallService( MS_CLIST_MODIFYMENUITEM, ( WPARAM )hMenuChangePassword, ( LPARAM )&clmi );
 	JCallService( MS_CLIST_MODIFYMENUITEM, ( WPARAM )hMenuGroupchat, ( LPARAM )&clmi );
+        JCallService( MS_CLIST_MODIFYMENUITEM, ( WPARAM )hMenuBookmarks, ( LPARAM )&clmi );
 }
 
 //////////////////////////////////////////////////////////////////////////

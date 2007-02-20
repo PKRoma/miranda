@@ -2,7 +2,7 @@
 
 Jabber Protocol Plugin for Miranda IM
 Copyright ( C ) 2002-04  Santithorn Bunchua
-Copyright ( C ) 2005-06  George Hazan
+Copyright ( C ) 2005-07  George Hazan
 
 Idea & portions of code by Artem Shpynov
 
@@ -87,7 +87,8 @@ static iconList[] =
 	{	"Convert to room",       "convert",    IDI_USER2ROOM  },
 	{	"Add to roster",         "addroster",  IDI_ADDROSTER  },
 	{	"Login/logout",          "trlogonoff", IDI_LOGIN      },
-	{	"Resolve nicks",         "trresolve",  IDI_REFRESH    }
+	{	"Resolve nicks",         "trresolve",  IDI_REFRESH    },
+    {   "Bookmarks",             "bookmarks",  IDI_BOOKMARKS  }   
 };
 
 void JabberIconsInit( void )

@@ -374,6 +374,9 @@
 				RelativePath=".\jabber_bitmap.cpp">
 			</File>
 			<File
+				RelativePath=".\jabber_bookmarks.cpp">
+			</File>
+			<File
 				RelativePath="jabber_byte.cpp">
 				<FileConfiguration
 					Name="Debug|Win32">
@@ -845,7 +848,7 @@
 				</FileConfiguration>
 			</File>
 			<File
-				RelativePath=".\jabber_search.cpp">				
+				RelativePath=".\jabber_search.cpp">
 			</File>
 			<File
 				RelativePath=".\jabber_secur.cpp">
