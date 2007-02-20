@@ -247,6 +247,21 @@ static DWORD MakeCheckBoxTreeFlags(HWND hwndTree)
     return flags;
 }
 
+static int changed = 0;
+
+static void ApplyChanges(int i) {
+	changed &= ~i;
+	if (changed == 0) {
+		ReloadGlobals();
+		WindowList_Broadcast(g_dat->hParentWindowList, DM_OPTIONSAPPLIED, 0, 0);
+		WindowList_Broadcast(g_dat->hMessageWindowList, DM_OPTIONSAPPLIED, 0, 0);
+	}
+}
+
+static void MarkChanges(int i) {
+	changed |= i;
+}
+
 static BOOL CALLBACK DlgProcContainerOptions(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam)
 {
 	switch (msg) {
@@ -482,6 +497,7 @@ static BOOL CALLBACK DlgProcContainerOptions(HWND hwndDlg, UINT msg, WPARAM wPar
 //				return 0;
 			}
 			SendMessage(GetParent(hwndDlg), PSM_CHANGED, 0, 0);
+			MarkChanges(1);
 			break;
 		case WM_HSCROLL:
 			{	char str[10];
@@ -490,6 +506,7 @@ static BOOL CALLBACK DlgProcContainerOptions(HWND hwndDlg, UINT msg, WPARAM wPar
 				sprintf(str,"%d%%",(int)(100*SendDlgItemMessage(hwndDlg,IDC_ITRANSPARENCYVALUE,TBM_GETPOS,0,0)/256));
 				SetDlgItemTextA(hwndDlg, IDC_ITRANSPARENCYPERC, str);
 				SendMessage(GetParent(hwndDlg), PSM_CHANGED, 0, 0);
+				MarkChanges(1);
 			}
 			break;
 		case WM_NOTIFY:
@@ -509,6 +526,7 @@ static BOOL CALLBACK DlgProcContainerOptions(HWND hwndDlg, UINT msg, WPARAM wPar
                                 tvi.iImage = tvi.iSelectedImage = tvi.iImage == 1 ? 2 : 1;
                                 TreeView_SetItem(((LPNMHDR) lParam)->hwndFrom, &tvi);
 								SendMessage(GetParent(hwndDlg), PSM_CHANGED, 0, 0);
+								MarkChanges(1);
                             }
                     }
                     break;
@@ -542,7 +560,7 @@ static BOOL CALLBACK DlgProcContainerOptions(HWND hwndDlg, UINT msg, WPARAM wPar
 							DBWriteContactSettingByte(NULL, SRMMMOD, SRMSGSET_USETRANSPARENCY, (BYTE) IsDlgButtonChecked(hwndDlg, IDC_TRANSPARENCY));
 							DBWriteContactSettingDword(NULL, SRMMMOD, SRMSGSET_ACTIVEALPHA, SendDlgItemMessage(hwndDlg,IDC_ATRANSPARENCYVALUE,TBM_GETPOS,0,0));
 							DBWriteContactSettingDword(NULL, SRMMMOD, SRMSGSET_INACTIVEALPHA, SendDlgItemMessage(hwndDlg,IDC_ITRANSPARENCYVALUE,TBM_GETPOS,0,0));
-
+							ApplyChanges(1);
 							return TRUE;
 						}
 					}
@@ -739,6 +757,7 @@ static BOOL CALLBACK DlgProcOptions(HWND hwndDlg, UINT msg, WPARAM wParam, LPARA
 					break;
 			}
 			SendMessage(GetParent(hwndDlg), PSM_CHANGED, 0, 0);
+			MarkChanges(2);
 			break;
 		case WM_HSCROLL:
 			{	char str[10];
@@ -747,6 +766,7 @@ static BOOL CALLBACK DlgProcOptions(HWND hwndDlg, UINT msg, WPARAM wParam, LPARA
 				sprintf(str,"%d%%",(int)(100*SendDlgItemMessage(hwndDlg,IDC_ITRANSPARENCYVALUE,TBM_GETPOS,0,0)/256));
 				SetDlgItemTextA(hwndDlg, IDC_ITRANSPARENCYPERC, str);
 				SendMessage(GetParent(hwndDlg), PSM_CHANGED, 0, 0);
+				MarkChanges(2);
 			}
 			break;
 		case WM_NOTIFY:
@@ -766,6 +786,7 @@ static BOOL CALLBACK DlgProcOptions(HWND hwndDlg, UINT msg, WPARAM wParam, LPARA
 								tvi.iImage = tvi.iSelectedImage = tvi.iImage == 1 ? 2 : 1;
 								TreeView_SetItem(((LPNMHDR) lParam)->hwndFrom, &tvi);
 								SendMessage(GetParent(hwndDlg), PSM_CHANGED, 0, 0);
+								MarkChanges(2);
 							}
 					}
 				    break;
@@ -802,6 +823,7 @@ static BOOL CALLBACK DlgProcOptions(HWND hwndDlg, UINT msg, WPARAM wParam, LPARA
 							DBWriteContactSettingByte(NULL, SRMMMOD, SRMSGSET_DELTEMP, (BYTE) IsDlgButtonChecked(hwndDlg, IDC_DELTEMP));
 							msgTimeout = GetDlgItemInt(hwndDlg, IDC_SECONDS, NULL, TRUE) >= SRMSGSET_MSGTIMEOUT_MIN / 1000 ? GetDlgItemInt(hwndDlg, IDC_SECONDS, NULL, TRUE) * 1000 : SRMSGDEFSET_MSGTIMEOUT;
 							DBWriteContactSettingDword(NULL, SRMMMOD, SRMSGSET_MSGTIMEOUT, msgTimeout);
+							ApplyChanges(2);
 
 							return TRUE;
 						}
@@ -1077,6 +1099,7 @@ static BOOL CALLBACK DlgProcLogOptions(HWND hwndDlg, UINT msg, WPARAM wParam, LP
 					break;
 			}
 			SendMessage(GetParent(hwndDlg), PSM_CHANGED, 0, 0);
+			MarkChanges(4);
 			break;
 		case WM_NOTIFY:
 			switch (((LPNMHDR) lParam)->idFrom) {
@@ -1129,6 +1152,7 @@ static BOOL CALLBACK DlgProcLogOptions(HWND hwndDlg, UINT msg, WPARAM wParam, LP
 
 							FreeMsgLogIcons();
 							LoadMsgLogIcons();
+							ApplyChanges(4);
 							return TRUE;
 					}
 					break;
@@ -1249,6 +1273,7 @@ static BOOL CALLBACK DlgProcTypeOptions(HWND hwndDlg, UINT msg, WPARAM wParam, L
 						EnableWindow(GetDlgItem(hwndDlg, IDC_NOTIFYBALLOON), FALSE);
 					}
 					SendMessage(GetParent(hwndDlg), PSM_CHANGED, 0, 0);
+					MarkChanges(4);
 					break;
 				case IDC_SHOWNOTIFY:
 					EnableWindow(GetDlgItem(hwndDlg, IDC_TYPEWIN), IsDlgButtonChecked(hwndDlg, IDC_SHOWNOTIFY));
@@ -1261,6 +1286,7 @@ static BOOL CALLBACK DlgProcTypeOptions(HWND hwndDlg, UINT msg, WPARAM wParam, L
 				case IDC_NOTIFYTRAY:
 				case IDC_NOTIFYBALLOON:
 					SendMessage(GetParent(hwndDlg), PSM_CHANGED, 0, 0);
+					MarkChanges(4);
 					break;
 			}
 			break;
@@ -1272,7 +1298,8 @@ static BOOL CALLBACK DlgProcTypeOptions(HWND hwndDlg, UINT msg, WPARAM wParam, L
 							ResetCList(hwndDlg);
 							break;
 						case CLN_CHECKCHANGED:
-						SendMessage(GetParent(hwndDlg), PSM_CHANGED, 0, 0);
+							SendMessage(GetParent(hwndDlg), PSM_CHANGED, 0, 0);
+							MarkChanges(4);
 							break;
 					}
 					break;
