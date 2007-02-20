@@ -55,7 +55,7 @@ int JabberMenuHandleGrantAuth( WPARAM wParam, LPARAM lParam );
 static int sttCompareHandles( const void* p1, const void* p2 )
 {	return (long)p1 - (long)p2;
 }
-static LIST<void> arHooks( 20, sttCompareHandles ); 
+static LIST<void> arHooks( 20, sttCompareHandles );
 
 /////////////////////////////////////////////////////////////////////////////////////////
 // contact menu services
@@ -492,8 +492,8 @@ int JabberMenuProcessSrmmEvent( WPARAM wParam, LPARAM lParam )
     {
 		if (hDialogsList)
 			WindowList_Remove(hDialogsList, event->hwndWindow);
-    }	
-	
+    }
+
 	return 0;
 }
 
@@ -514,7 +514,7 @@ int JabberMenuProcessSrmmIconClick( WPARAM wParam, LPARAM lParam )
 	if (JGetStringT(hContact, "jid", &dbv))
 		return 0;
 
-	
+
 	JABBER_LIST_ITEM *LI = JabberListGetItemPtr(LIST_ROSTER, dbv.ptszVal);
 	JFreeVariant( &dbv );
 
@@ -524,12 +524,12 @@ int JabberMenuProcessSrmmIconClick( WPARAM wParam, LPARAM lParam )
 	HMENU hMenu = CreatePopupMenu();
 	TCHAR buf[256];
 
-	mir_sntprintf(buf, SIZEOF(buf), _T("%s (%s)"), TranslateT("Last Active"),
+	mir_sntprintf(buf, SIZEOF(buf), _T("%s (%s)"), TranslateT("Last active"),
 		((LI->lastSeenResource>=0) && (LI->lastSeenResource < LI->resourceCount)) ?
-			LI->resource[LI->lastSeenResource].resourceName : TranslateT("No activity yet  use server's choice"));
+			LI->resource[LI->lastSeenResource].resourceName : TranslateT("No activity yet, use server's choice"));
 	AppendMenu(hMenu, MF_STRING, MENUITEM_LASTSEEN, buf);
 
-	AppendMenu(hMenu, MF_STRING, MENUITEM_SERVER, TranslateT("Highest Priority (Server's Choice)"));
+	AppendMenu(hMenu, MF_STRING, MENUITEM_SERVER, TranslateT("Highest priority (server's choice)"));
 
 	AppendMenu(hMenu, MF_SEPARATOR, 0, NULL);
 	for (int i = 0; i < LI->resourceCount; ++i)
