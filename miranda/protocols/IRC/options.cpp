@@ -770,12 +770,12 @@ BOOL CALLBACK OtherPrefsProc(HWND hwndDlg,UINT uMsg,WPARAM wParam,LPARAM lParam)
 					}
 
 					delete [] szNetwork;
-				}
+			}	}
 
-				SendDlgItemMessage(hwndDlg, IDC_PERFORMCOMBO, CB_SETCURSEL, 0, 0);				
-				SendMessage(hwndDlg, WM_COMMAND, MAKEWPARAM(IDC_PERFORMCOMBO, CBN_SELCHANGE), 0);
-				PerformlistModified = false;
-		}	}
+			SendDlgItemMessage(hwndDlg, IDC_PERFORMCOMBO, CB_SETCURSEL, 0, 0);				
+			SendMessage(hwndDlg, WM_COMMAND, MAKEWPARAM(IDC_PERFORMCOMBO, CBN_SELCHANGE), 0);
+			PerformlistModified = false;
+		}	
 		return TRUE;
 
 	case WM_COMMAND:
@@ -830,22 +830,24 @@ BOOL CALLBACK OtherPrefsProc(HWND hwndDlg,UINT uMsg,WPARAM wParam,LPARAM lParam)
 					char * temp = new char[j+1];
 					GetWindowText(GetDlgItem(hwndDlg, IDC_PERFORMEDIT), temp, j+1);
 
-					if(my_strstri(temp, "/away"))
+					if ( my_strstri(temp, "/away"))
 						MessageBox(NULL, Translate("The usage of /AWAY in your perform buffer is restricted\n as IRC sends this command automatically."), Translate("IRC Error"), MB_OK);
 					else {
 						int i = (int) SendMessage(GetDlgItem(hwndDlg, IDC_PERFORMCOMBO), CB_GETCURSEL, 0, 0);
-						PERFORM_INFO * pPerf = (PERFORM_INFO *)SendMessage(GetDlgItem(hwndDlg, IDC_PERFORMCOMBO), CB_GETITEMDATA, i, 0);
-						if (pPerf != 0) {
-							delete []pPerf->Perform;
-							delete pPerf;
-						}
-						pPerf = new PERFORM_INFO;
-						pPerf->Perform = new char[j+1];
-						lstrcpy(pPerf->Perform, temp);
-						SendMessage(GetDlgItem(hwndDlg, IDC_PERFORMCOMBO), CB_SETITEMDATA, i, (LPARAM) pPerf);
-						EnableWindow(GetDlgItem(hwndDlg, IDC_ADD), false);
+						if ( i != CB_ERR ) {
+							PERFORM_INFO * pPerf = (PERFORM_INFO *)SendMessage(GetDlgItem(hwndDlg, IDC_PERFORMCOMBO), CB_GETITEMDATA, i, 0);
+							if (pPerf != 0) {
+								delete []pPerf->Perform;
+								delete pPerf;
+							}
+							pPerf = new PERFORM_INFO;
+							pPerf->Perform = new char[j+1];
+							lstrcpy(pPerf->Perform, temp);
+							SendMessage(GetDlgItem(hwndDlg, IDC_PERFORMCOMBO), CB_SETITEMDATA, i, (LPARAM) pPerf);
+							EnableWindow(GetDlgItem(hwndDlg, IDC_ADD), false);
 
-						PerformlistModified = true;
+							PerformlistModified = true;
+						}
 					}
 					delete []temp;
 				}
@@ -854,6 +856,9 @@ BOOL CALLBACK OtherPrefsProc(HWND hwndDlg,UINT uMsg,WPARAM wParam,LPARAM lParam)
 			case IDC_DELETE:
 				{
 					int i = (int) SendMessage(GetDlgItem(hwndDlg, IDC_PERFORMCOMBO), CB_GETCURSEL, 0, 0);
+					if ( i == CB_ERR )
+						break;
+
 					PERFORM_INFO * pPerf = (PERFORM_INFO *)SendMessage(GetDlgItem(hwndDlg, IDC_PERFORMCOMBO), CB_GETITEMDATA, i, 0);
 					if (pPerf != 0) {
 						delete []pPerf->Perform;
