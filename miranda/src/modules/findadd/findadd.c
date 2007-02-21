@@ -859,7 +859,7 @@ static BOOL CALLBACK DlgProcFindAdd(HWND hwndDlg, UINT msg, WPARAM wParam, LPARA
 					}
 					ListView_SortItemsEx(GetDlgItem(hwndDlg, IDC_RESULTS), SearchResultsCompareFunc, (LPARAM)hwndDlg);
 					i=0;
-					while (ListView_SetColumnWidth(hwndList, i++, LVSCW_AUTOSIZE));
+					while (ListView_SetColumnWidth(hwndList, i++, LVSCW_AUTOSIZE_USEHEADER));
 					SetStatusBarResultInfo(hwndDlg,dat);
 				}
 				break;
