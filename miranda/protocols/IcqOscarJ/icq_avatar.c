@@ -122,7 +122,6 @@ static void RemoveAvatarRequestFromQueue(avatarrequest* request)
 static void FreeAvatarRequest(avatarrequest* request)
 {
 	if ( request ) {
-		SAFE_FREE( &request->file );
 		SAFE_FREE( &request->hash );
 		SAFE_FREE( &request->szFile );
 		SAFE_FREE( &request->szUid );
