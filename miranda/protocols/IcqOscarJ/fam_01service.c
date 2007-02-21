@@ -365,9 +365,9 @@ void handleServiceFam(unsigned char* pBuffer, WORD wBufferLength, snac_header* p
 
   case ICQ_SERVER_REDIRECT_SERVICE: // reply to family request, got new connection point
   {
-     oscar_tlv_chain* pChain = NULL;
-     WORD wFamily;
-     familyrequest_rec* reqdata;
+    oscar_tlv_chain* pChain = NULL;
+    WORD wFamily;
+    familyrequest_rec* reqdata;
 
     if (!(pChain = readIntoTLVChain(&pBuffer, wBufferLength, 0)))
     {
@@ -404,6 +404,7 @@ void handleServiceFam(unsigned char* pBuffer, WORD wBufferLength, snac_header* p
 
         SAFE_FREE(&pServer);
         SAFE_FREE(&pCookie);
+        SAFE_FREE(&reqdata);
         break;
       }
 
