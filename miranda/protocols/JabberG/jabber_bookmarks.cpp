@@ -37,7 +37,7 @@ static BOOL CALLBACK JabberAddBookmarkDlgProc( HWND hwndDlg, UINT msg, WPARAM wP
 	TCHAR text[128];
 	JABBER_LIST_ITEM *item;
 	TCHAR* roomJID;
-	
+
 	switch ( msg ) {
 	case WM_INITDIALOG:
 		// lParam is the room JID ( room@server ) in UTF-8
@@ -64,8 +64,8 @@ static BOOL CALLBACK JabberAddBookmarkDlgProc( HWND hwndDlg, UINT msg, WPARAM wP
 
 				if (roomJID == NULL || roomJID[0] == _T('\0')) EnableWindow( GetDlgItem( hwndDlg, IDOK ), FALSE );
 				else EnableWindow( GetDlgItem( hwndDlg, IDOK ), TRUE );
-				}
-				
+			}
+
 			break;
 		case IDOK:
 			GetDlgItemText( hwndDlg, IDC_ROOM_JID, text, SIZEOF( text ));
@@ -245,7 +245,7 @@ static BOOL CALLBACK JabberBookmarksDlgProc( HWND hwndDlg, UINT msg, WPARAM wPar
 			EnableWindow( GetDlgItem( hwndDlg, IDC_ADD ), FALSE );
 			EnableWindow( GetDlgItem( hwndDlg, IDC_EDIT ), FALSE );
 			EnableWindow( GetDlgItem( hwndDlg, IDC_REMOVE ), FALSE );
-			
+
 			lv = GetDlgItem( hwndDlg, IDC_BM_LIST);
 			ListView_DeleteAllItems( lv );
 		}
@@ -346,7 +346,7 @@ static BOOL CALLBACK JabberBookmarksDlgProc( HWND hwndDlg, UINT msg, WPARAM wPar
 					lvItem.iSubItem = 0;
 					lvItem.mask = LVIF_PARAM;
 					ListView_GetItem( lv, &lvItem );
-					
+
 					DialogBoxParam( hInst, MAKEINTRESOURCE( IDD_BOOKMARK_ADD ), hwndDlg, JabberAddBookmarkDlgProc, lvItem.lParam);
 
 					ListView_SetItemState( lv, lvItem.iItem, 0, LVIS_SELECTED ); // Unselect the item
@@ -366,11 +366,11 @@ static BOOL CALLBACK JabberBookmarksDlgProc( HWND hwndDlg, UINT msg, WPARAM wPar
 					lvItem.iSubItem = 0;
 					lvItem.mask = LVIF_PARAM;
 					ListView_GetItem( lv, &lvItem );
-					
+
 					JabberListRemove(LIST_BOOKMARK, ( TCHAR* )lvItem.lParam);
 
 					ListView_SetItemState( lv, lvItem.iItem, 0, LVIS_SELECTED ); // Unselect the item
-					
+
 					int iqId = JabberSerialNext();
 					JabberIqAdd( iqId, IQ_PROC_SETBOOKMARKS, JabberIqResultSetBookmarks);
 
@@ -404,10 +404,10 @@ int JabberMenuHandleBookmarks( WPARAM wParam, LPARAM lParam )
 {
 	int iqId;
 
-	if ( IsWindow( hwndJabberBookmarks)) {
+	if ( IsWindow( hwndJabberBookmarks )) {
 		SetForegroundWindow( hwndJabberBookmarks );
 
-		SendMessage( hwndJabberGroupchat, WM_JABBER_ACTIVATE, 0, 0 );	// Just to clear the list
+		SendMessage( hwndJabberBookmarks, WM_JABBER_ACTIVATE, 0, 0 );	// Just to clear the list
 		iqId = JabberSerialNext();
 		JabberIqAdd( iqId, IQ_PROC_DISCOBOOKMARKS, JabberIqResultDiscoBookmarks);
 
