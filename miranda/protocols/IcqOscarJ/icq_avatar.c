@@ -23,7 +23,7 @@
 //
 // -----------------------------------------------------------------------------
 //
-// File name      : $Source: /cvsroot/miranda/miranda/protocols/IcqOscarJ/icq_avatar.c,v $
+// File name      : $URL$
 // Revision       : $Revision$
 // Last change on : $Date$
 // Last change by : $Author$
@@ -102,10 +102,43 @@ void handleAvatarServiceFam(unsigned char* pBuffer, WORD wBufferLength, snac_hea
 void handleAvatarFam(unsigned char *pBuffer, WORD wBufferLength, snac_header* pSnacHeader, avatarthreadstartinfo *atsi);
 
 
-static void RemoveAvatarRequestFromQueue(avatarrequest* request)
+static void FreeAvatarRequest(avatarrequest **request)
 {
-  void** par = &pendingRequests;
-  avatarrequest* ar = pendingRequests;
+  avatarrequest *ar = *request;
+
+  if (ar)
+  {
+    switch (ar->type)
+    {
+    case ART_UPLOAD:
+      SAFE_FREE(&ar->pData);
+      break;
+    case ART_GET:
+      SAFE_FREE(&ar->hash);
+      SAFE_FREE(&ar->szUid);
+      SAFE_FREE(&ar->szFile);
+      break;
+    case ART_BLOCK:
+      break;
+    }
+  }
+  SAFE_FREE(request);
+}
+
+
+
+static void AddAvatarRequestToQueue(avatarrequest *request)
+{
+  request->pNext = pendingRequests;
+  pendingRequests = request;
+}
+
+
+
+static void RemoveAvatarRequestFromQueue(avatarrequest *request)
+{
+  void **par = &pendingRequests;
+  avatarrequest *ar = pendingRequests;
           
   while (ar)
   {
@@ -119,15 +152,19 @@ static void RemoveAvatarRequestFromQueue(avatarrequest* request)
   }
 }
 
-static void FreeAvatarRequest(avatarrequest* request)
+
+
+static avatarrequest *ReleaseAvatarRequestInQueue(avatarrequest *request)
 {
-	if ( request ) {
-		SAFE_FREE( &request->hash );
-		SAFE_FREE( &request->szFile );
-		SAFE_FREE( &request->szUid );
-	}
-	SAFE_FREE( &request );
+  avatarrequest *pNext = request->pNext;
+
+  RemoveAvatarRequestFromQueue(request);
+  FreeAvatarRequest(&request);
+
+  return pNext;
 }
+
+
 
 void InitAvatars()
 {
@@ -336,18 +373,13 @@ void StartAvatarThread(HANDLE hConn, char* cookie, WORD cookieLen) // called fro
       {
         if (ar->type == ART_UPLOAD)
         { // we found it, return error
-          void *tmp;
-
           if (!bYet)
           {
             icq_LogMessage(LOG_WARNING, "Error uploading avatar to server, server temporarily unavailable.");
           }
           bYet = 1;
-          SAFE_FREE(&ar->pData); // remove upload request from queue
-          RemoveAvatarRequestFromQueue(ar);
-          tmp = ar;
-          ar = ar->pNext;
-          FreeAvatarRequest(tmp);
+          // remove upload request from queue
+          ar = ReleaseAvatarRequestInQueue(ar);
           continue;
         }
         ar = ar->pNext;
@@ -571,14 +603,13 @@ void handleAvatarContactHash(DWORD dwUIN, char* szUID, HANDLE hContact, unsigned
         // Remove possible block - hash changed, try again.
         EnterCriticalSection(&cookieMutex);
         {
-          avatarrequest* ar = pendingRequests;
+          avatarrequest *ar = pendingRequests;
         
           while (ar)
           {
             if (ar->hContact == hContact && ar->type == ART_BLOCK)
             { // found one, remove
-              RemoveAvatarRequestFromQueue(ar);
-              FreeAvatarRequest(ar);
+              ReleaseAvatarRequestInQueue(ar);
               break;
             }
             ar = ar->pNext;
@@ -736,11 +767,7 @@ int GetAvatarData(HANDLE hContact, DWORD dwUin, char* szUid, char* hash, unsigne
       { // we found it, return error
         if (ar->type == ART_BLOCK && GetTickCount() > ar->timeOut)
         { // remove timeouted block
-          void *tmp = ar;
-
-          RemoveAvatarRequestFromQueue(ar);
-          ar = ar->pNext;
-          FreeAvatarRequest(tmp);
+          ar = ReleaseAvatarRequestInQueue(ar);
           continue;
         }
         LeaveCriticalSection(&cookieMutex);
@@ -769,8 +796,7 @@ int GetAvatarData(HANDLE hContact, DWORD dwUin, char* szUid, char* hash, unsigne
     memcpy(ar->hash, hash, hashlen); // copy the data
     ar->hashlen = hashlen;
     ar->szFile = null_strdup(file); // duplicate the string
-    ar->pNext = pendingRequests;
-    pendingRequests = ar;
+    AddAvatarRequestToQueue(ar);
   }
   LeaveCriticalSection(&cookieMutex);
 
@@ -802,7 +828,6 @@ int SetAvatarData(HANDLE hContact, WORD wRef, char* data, unsigned int datalen)
     ack = (avatarcookie*)SAFE_MALLOC(sizeof(avatarcookie));
     if (!ack) return 0; // out of memory, go away
     ack->hContact = hContact;
-    ack->cbData = datalen;
 
     dwCookie = AllocateCookie(CKT_AVATAR, ICQ_AVATAR_UPLOAD_REQUEST, 0, ack);
 
@@ -854,14 +879,13 @@ int SetAvatarData(HANDLE hContact, WORD wRef, char* data, unsigned int datalen)
     if (!ar->pData)
     { // alloc failed
       LeaveCriticalSection(&cookieMutex);
-      FreeAvatarRequest(ar);
+      SAFE_FREE(&ar);
       return 0;
     }
     memcpy(ar->pData, data, datalen); // copy the data
     ar->cbData = datalen;
     ar->wRef = wRef;
-    ar->pNext = pendingRequests;
-    pendingRequests = ar;
+    AddAvatarRequestToQueue(ar);
   }
   LeaveCriticalSection(&cookieMutex);
 
@@ -946,7 +970,7 @@ static DWORD __stdcall icq_avatarThread(avatarthreadstartinfo *atsi)
 
         while (pendingRequests && atsi->runCount < 3) // pick up an request and send it - happens immediatelly after login
         { // do not fill queue to top, leave one place free
-          avatarrequest* reqdata = pendingRequests;
+          avatarrequest *reqdata = pendingRequests;
 
           EnterCriticalSection(&ratesMutex);
           { // rate management
@@ -972,15 +996,9 @@ static DWORD __stdcall icq_avatarThread(avatarthreadstartinfo *atsi)
           {
           case ART_GET: // get avatar
             GetAvatarData(reqdata->hContact, reqdata->dwUin, reqdata->szUid, reqdata->hash, reqdata->hashlen, reqdata->szFile);
-
-            SAFE_FREE(&reqdata->szUid);
-            SAFE_FREE(&reqdata->szFile);
-            SAFE_FREE(&reqdata->hash); // as soon as it will be copied
             break;
           case ART_UPLOAD: // set avatar
             SetAvatarData(reqdata->hContact, reqdata->wRef, reqdata->pData, reqdata->cbData);
-
-            SAFE_FREE(&reqdata->pData);
             break;
           case ART_BLOCK: // block contact processing
             if (GetTickCount() < reqdata->timeOut)
@@ -996,7 +1014,7 @@ static DWORD __stdcall icq_avatarThread(avatarthreadstartinfo *atsi)
             }
             break;
           }
-          SAFE_FREE(&reqdata);
+          FreeAvatarRequest(&reqdata);
 
           if (pendingRequests && pendingRequests->type == ART_BLOCK) break; // leave the loop 
         }
