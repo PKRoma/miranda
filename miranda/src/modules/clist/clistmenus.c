@@ -1406,13 +1406,12 @@ int InitCustomMenus(void)
 
    // add exit command to menu
 	{
-		CLISTMENUITEM mi;
-		memset(&mi,0,sizeof(mi));
-		mi.cbSize=sizeof(mi);
-		mi.position=0x7fffffff;
-		mi.pszService="CloseAction";
-		mi.pszName=Translate("E&xit");
-		AddMainMenuItem((WPARAM)0,(LPARAM)&mi);
+		CLISTMENUITEM mi = { 0 };
+		mi.cbSize = sizeof( mi );
+		mi.position = 0x7fffffff;
+		mi.pszService = "CloseAction";
+		mi.pszName = "E&xit";
+		AddMainMenuItem( 0, ( LPARAM )&mi );
 	}
 
 	cli.currentStatusMenuItem=ID_STATUS_OFFLINE;
