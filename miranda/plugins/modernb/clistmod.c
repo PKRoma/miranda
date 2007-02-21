@@ -64,7 +64,7 @@ BOOL (WINAPI *MySetProcessWorkingSetSize)(HANDLE,SIZE_T,SIZE_T);
 static HANDLE hSettingChanged;
 
 //returns normal icon or combined with status overlay. Needs to be destroyed.
-HICON GetIconFromStatusMode(HANDLE hContact, const char *szProto,int status)
+HICON cliGetIconFromStatusMode(HANDLE hContact, const char *szProto,int status)
 {
 	HICON hIcon=NULL;
 	HICON hXIcon=NULL;

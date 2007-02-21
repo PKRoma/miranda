@@ -34,6 +34,8 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #define IsHContactContact(h) (((unsigned)(h)&HCONTACT_ISGROUP)==0)
 #define MAXEXTRACOLUMNS     16
 
+#define MAX_TIP_SIZE 2048
+
 #define INTM_NAMECHANGED     (WM_USER+10)
 #define INTM_ICONCHANGED     (WM_USER+11)
 #define INTM_GROUPCHANGED    (WM_USER+12)
@@ -95,6 +97,15 @@ struct ClcFontInfo
 	HFONT hFont;
 	int fontHeight,changed;
 	COLORREF colour;
+};
+
+struct trayIconInfo_t
+{
+	int    id;
+	char*  szProto;
+	HICON  hBaseIcon;
+	int    isBase;
+	TCHAR* ptszToolTip;
 };
 
 /* genmenu structs */
@@ -163,6 +174,10 @@ typedef struct _menuProto
 #define CLCDEFAULT_GAMMACORRECT  1
 #define CLCDEFAULT_SHOWIDLE      0
 #define CLCDEFAULT_USEWINDOWSCOLOURS 0
+
+#define TRAYICON_ID_BASE    100
+#define TIM_CALLBACK   (WM_USER+1857)
+#define TIM_CREATE     (WM_USER+1858)
 
 // Miranda 0.4.3.0+
 // retrieves the pointer to a CLIST_INTERFACE structure
@@ -371,6 +386,30 @@ typedef struct
 	int   ( *pfnGetProtocolVisibility )( const char* );
 	int   ( *pfnGetProtoIndexByPos )( PROTOCOLDESCRIPTOR** proto, int protoCnt, int Pos);
 	void  ( *pfnReloadProtoMenus )( void );
+
+	/*************************************************************************************
+	 * version 5 additions (0.7.0.x) - tray icons
+	 *************************************************************************************/
+
+	struct trayIconInfo_t* trayIcon;
+	int    trayIconCount;
+	int    shellVersion;
+	int    cycleTimerId, cycleStep;
+	TCHAR* szTip;
+
+	HICON ( *pfnGetIconFromStatusMode )( HANDLE hContact, const char *szProto, int status );
+
+	void   ( *pfnInitTray )( void );
+	int    ( *pfnTrayIconAdd )( HWND hwnd, const char *szProto, const char *szIconProto, int status );
+	int    ( *pfnTrayIconDestroy )( HWND hwnd );
+	int    ( *pfnTrayIconInit )( HWND hwnd );
+	TCHAR* ( *pfnTrayIconMakeTooltip )( const TCHAR *szPrefix, const char *szProto );
+	void   ( *pfnTrayIconRemove )( HWND hwnd, const char *szProto );
+	int    ( *pfnTrayIconSetBaseInfo )( HICON hIcon, const char *szPreferredProto );
+	void   ( *pfnTrayIconTaskbarCreated )( HWND hwnd );
+	int    ( *pfnTrayIconUpdate )( HICON hNewIcon, const TCHAR *szNewTip, const char *szPreferredProto, int isBase );
+
+	VOID ( CALLBACK *pfnTrayCycleTimerProc )( HWND hwnd, UINT message, UINT idEvent, DWORD dwTime );
 }
 	CLIST_INTERFACE;
 

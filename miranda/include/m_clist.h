@@ -511,11 +511,13 @@ typedef struct {
 
 	Version: 0.3.1a
 */
-#define NIIF_INFO       0x00000001
-#define NIIF_WARNING    0x00000002
-#define NIIF_ERROR      0x00000003
-#define NIIF_ICON_MASK  0x0000000F
-#define NIIF_NOSOUND    0x00000010
+#define NIIF_INFO           0x00000001
+#define NIIF_WARNING        0x00000002
+#define NIIF_ERROR          0x00000003
+#define NIIF_ICON_MASK      0x0000000F
+#define NIIF_NOSOUND        0x00000010
+#define NIIF_INTERN_UNICODE 0x00000100
+
 
 typedef struct {
 	int cbSize;			// sizeof(MIRANDASYSTRAY)

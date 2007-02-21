@@ -219,7 +219,7 @@ char*   GetContactCachedProtocol(HANDLE hContact);											//clistsettings.c
 char*   GetParamN(char * string, char * buf, int buflen, BYTE paramN, char Delim, BOOL SkipSpaces);  //mod_skin_selector.c
 DWORD	CompareContacts2_getLMTime(HANDLE u);												//contact.c
 DWORD	mod_CalcHash(const char * a);														//mod_skin_selector.c
-HICON	GetIconFromStatusMode(HANDLE hContact, const char *szProto,int status);				//clistmod.c
+HICON	cliGetIconFromStatusMode(HANDLE hContact, const char *szProto,int status);				//clistmod.c
 HICON	GetMainStatusOverlay(int STATUS);													//clc.c
 int	__fastcall	CLVM_GetContactHiddenStatus(HANDLE hContact, char *szStatus, struct ClcData *dat);  //clcitems.c
 int		BgStatusBarChange(WPARAM wParam,LPARAM lParam);										//clcopts.c
@@ -269,56 +269,52 @@ void	UnLoadContactListModule();															//clistmod.c
 void	UpdateAllAvatars(struct ClcData *dat);												//cache_func.c
 											//cluiframes.c
 
-
 // INTERFACES
-int		cliShowHide(WPARAM wParam,LPARAM lParam);
-BOOL	CLUI__cliInvalidateRect(HWND hWnd, CONST RECT* lpRect,BOOL bErase );
-int		cliCompareContacts(const struct ClcContact *contact1,const struct ClcContact *contact2);
-int		cliCListTrayNotify(MIRANDASYSTRAYNOTIFY *msn);
-int		cliFindItem(HWND hwnd,struct ClcData *dat,HANDLE hItem,struct ClcContact **contact,struct ClcGroup **subgroup,int *isVisible);
-void	cliTrayIconUpdateBase(char *szChangedProto);
-void	cliTrayIconSetToBase(char *szPreferredProto);
-void	cliTrayIconIconsChanged(void);
-void	cliCluiProtocolStatusChanged(int status,const unsigned char * proto);
-HMENU	cliBuildGroupPopupMenu(struct ClcGroup *group);
-void	cliInvalidateDisplayNameCacheEntry(HANDLE hContact);
-void	cliCheckCacheItem(pdisplayNameCacheEntry pdnce);
-ClcCacheEntryBase* cliGetCacheEntry(HANDLE hContact);
-void	cli_SaveStateAndRebuildList(HWND hwnd, struct ClcData *dat);
-void	CLUI_cli_LoadCluiGlobalOpts(void);
-int		cli_TrayIconProcessMessage(WPARAM wParam,LPARAM lParam);
+int    cliShowHide(WPARAM wParam,LPARAM lParam);
+BOOL   CLUI__cliInvalidateRect(HWND hWnd, CONST RECT* lpRect,BOOL bErase );
+int    cliCompareContacts(const struct ClcContact *contact1,const struct ClcContact *contact2);
+int    cliFindItem(HWND hwnd,struct ClcData *dat,HANDLE hItem,struct ClcContact **contact,struct ClcGroup **subgroup,int *isVisible);
+void   cliTrayIconUpdateBase(const char *szChangedProto);
+void   cliTrayIconIconsChanged(void);
+void   cliCluiProtocolStatusChanged(int status,const unsigned char * proto);
+HMENU  cliBuildGroupPopupMenu(struct ClcGroup *group);
+void   cliInvalidateDisplayNameCacheEntry(HANDLE hContact);
+void   cliCheckCacheItem(pdisplayNameCacheEntry pdnce);
+void   cli_SaveStateAndRebuildList(HWND hwnd, struct ClcData *dat);
+void   CLUI_cli_LoadCluiGlobalOpts(void);
+int    cli_TrayIconProcessMessage(WPARAM wParam,LPARAM lParam);
+BOOL   CLUI__cliInvalidateRect(HWND hWnd, CONST RECT* lpRect,BOOL bErase );
+
 struct ClcContact* cliCreateClcContact( void );
 ClcCacheEntryBase* cliCreateCacheItem(HANDLE hContact);
-void	cliTrayIconUpdateBase(char *szChangedProto);
-BOOL	CLUI__cliInvalidateRect(HWND hWnd, CONST RECT* lpRect,BOOL bErase );
-
+ClcCacheEntryBase* cliGetCacheEntry(HANDLE hContact);
 
 // FUNCTION POINTERS
+
+extern struct CListEvent* ( *saveAddEvent )( CLISTEVENT *cle );
+extern struct ClcGroup* ( *saveAddGroup )(HWND hwnd,struct ClcData *dat,const TCHAR *szName,DWORD flags,int groupId,int calcTotalMembers);
+
+extern void    ( *saveAddContactToTree )( HWND hwnd,struct ClcData *dat,HANDLE hContact,int updateTotalCount,int checkHideOffline);
+extern int     ( *saveAddItemToGroup )( struct ClcGroup *group, int iAboveItem );
+extern int     ( *saveAddInfoItemToGroup )( struct ClcGroup *group,int flags,const TCHAR *pszText);
+extern void    ( *saveChangeContactIcon )( HANDLE hContact,int iIcon,int add );
+extern void    ( *saveDeleteItemFromTree )( HWND hwnd, HANDLE hItem);
+extern void    ( *saveFreeContact )( struct ClcContact* );
+extern void    ( *saveFreeGroup )( struct ClcGroup* );
+extern char*   ( *saveGetGroupCountsText )( struct ClcData *dat, struct ClcContact *contact);
+extern int     ( *saveIconFromStatusMode )( const char *szProto,int nStatus, HANDLE hContact);
+extern LRESULT ( *saveProcessExternalMessages )(HWND hwnd,struct ClcData *dat,UINT msg,WPARAM wParam,LPARAM lParam);
+extern int     ( *saveRemoveEvent )( HANDLE hContact, HANDLE hDbEvent );
+extern void    ( *saveSortCLC )(HWND hwnd, struct ClcData *dat, int useInsertionSort );
+extern int     ( *saveTrayIconProcessMessage )( WPARAM wParam, LPARAM lParam );
+
 extern BOOL (WINAPI *g_proc_UpdateLayeredWindow)(HWND,HDC,POINT*,SIZE*,HDC,POINT*,COLORREF,BLENDFUNCTION*,DWORD);
-extern void (*saveSortCLC) (HWND hwnd, struct ClcData *dat, int useInsertionSort );
+extern BOOL (WINAPI *g_proc_SetLayeredWindowAttributesNew)(HWND,COLORREF,BYTE,DWORD);
+
 extern tPaintCallbackProc CLCPaint_PaintCallbackProc(HWND hWnd, HDC hDC, RECT * rcPaint, HRGN rgn, DWORD dFlags, void * CallBackData);
-extern BOOL (WINAPI *g_proc_UpdateLayeredWindow)(HWND,HDC,POINT*,SIZE*,HDC,POINT*,COLORREF,BLENDFUNCTION*,DWORD);
 extern LRESULT ( CALLBACK *saveContactListWndProc )(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam);
 extern BOOL (WINAPI *pfEnableThemeDialogTexture)(HANDLE, DWORD);
-extern int (* saveTrayIconProcessMessage) ( WPARAM wParam, LPARAM lParam );
 extern BOOL (WINAPI *MySetProcessWorkingSetSize)(HANDLE,SIZE_T,SIZE_T);
-extern BOOL (WINAPI *g_proc_SetLayeredWindowAttributesNew)(HWND,COLORREF,BYTE,DWORD);
-extern tPaintCallbackProc CLCPaint_PaintCallbackProc(HWND hWnd, HDC hDC, RECT * rcPaint, HRGN rgn, DWORD dFlags, void * CallBackData);
-extern struct ClcGroup* ( *saveAddGroup )(HWND hwnd,struct ClcData *dat,const TCHAR *szName,DWORD flags,int groupId,int calcTotalMembers);
-extern int ( *saveAddItemToGroup )( struct ClcGroup *group, int iAboveItem );
-extern int ( *saveAddInfoItemToGroup )(struct ClcGroup *group,int flags,const TCHAR *pszText);
-extern void ( *saveDeleteItemFromTree )(HWND hwnd, HANDLE hItem);
-extern void ( *saveFreeContact )( struct ClcContact* );
-extern void ( *saveFreeGroup )( struct ClcGroup* );
 extern LRESULT ( CALLBACK *saveContactListControlWndProc )(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam);
-extern char* (*saveGetGroupCountsText)(struct ClcData *dat, struct ClcContact *contact);
-extern int  (*saveIconFromStatusMode)(const char *szProto,int nStatus, HANDLE hContact);
-extern void ( *saveAddContactToTree)(HWND hwnd,struct ClcData *dat,HANDLE hContact,int updateTotalCount,int checkHideOffline);
-extern LRESULT ( *saveProcessExternalMessages )(HWND hwnd,struct ClcData *dat,UINT msg,WPARAM wParam,LPARAM lParam);
-extern void ( *saveChangeContactIcon)(HANDLE hContact,int iIcon,int add);
-extern struct CListEvent* ( *saveAddEvent )(CLISTEVENT *cle);
-extern int ( *saveRemoveEvent )(HANDLE hContact, HANDLE hDbEvent);
-extern int ( *saveTrayIconProcessMessage )(WPARAM wParam, LPARAM lParam);
-extern BOOL (WINAPI *g_proc_SetLayeredWindowAttributesNew)(HWND,COLORREF,BYTE,DWORD);
 
 #endif

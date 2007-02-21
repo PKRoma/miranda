@@ -235,10 +235,10 @@ int __declspec(dllexport) CListInitialise(PLUGINLINK * link)
 	pcli = ( CLIST_INTERFACE* )CallService(MS_CLIST_RETRIEVE_INTERFACE, 0, (LPARAM)g_hInst);
 	if ( (int)pcli == CALLSERVICE_NOTFOUND ) {
 LBL_Error:
-		MessageBoxA( NULL, "This version of plugin requires Miranda IM 0.7.0.8 or later", "Fatal error", MB_OK );
+		MessageBoxA( NULL, "This version of plugin requires Miranda IM 0.7.0.16 or later", "Fatal error", MB_OK );
 		return 1;
 	}
-	if ( pcli->version < 4 )
+	if ( pcli->version < 5 )
 		goto LBL_Error;
 
 	// OVERLOAD CLIST INTERFACE FUNCTIONS
@@ -252,17 +252,15 @@ LBL_Error:
 
 	pcli->pfnCheckCacheItem	= (void (*)(ClcCacheEntryBase*)) cliCheckCacheItem;
 	pcli->pfnFreeCacheItem = (void(*)(ClcCacheEntryBase*)) cliFreeCacheItem;
-	pcli->pfnTrayIconUpdateBase = (void (*)(const char *szChangedProto)) cliTrayIconUpdateBase;	
+	pcli->pfnTrayIconUpdateBase = cliTrayIconUpdateBase;	
 	
 	pcli->pfnInvalidateDisplayNameCacheEntry	= cliInvalidateDisplayNameCacheEntry;
-	pcli->pfnTrayIconUpdateWithImageList		= cliTrayIconUpdateWithImageList;
 	pcli->pfnCluiProtocolStatusChanged	= cliCluiProtocolStatusChanged;
 	pcli->pfnHotkeysProcessMessage		= cliHotkeysProcessMessage;
 	pcli->pfnHotKeysProcess		= cliHotKeysProcess;
 	pcli->pfnHotKeysRegister	= cliHotKeysRegister;
 	pcli->pfnHotKeysUnregister	= cliHotKeysUnregister;
 	pcli->pfnBeginRenameSelection		= cliBeginRenameSelection;
-	pcli->pfnCListTrayNotify	= cliCListTrayNotify;
 	pcli->pfnCreateClcContact	= cliCreateClcContact;
 	pcli->pfnCreateCacheItem	= cliCreateCacheItem;
 	pcli->pfnGetRowBottomY		= cliGetRowBottomY;
@@ -282,7 +280,7 @@ LBL_Error:
 	pcli->pfnCompareContacts	= cliCompareContacts;
 	pcli->pfnBuildGroupPopupMenu= cliBuildGroupPopupMenu;
 	pcli->pfnTrayIconIconsChanged		= cliTrayIconIconsChanged;
-	pcli->pfnTrayIconSetToBase	= cliTrayIconSetToBase;
+	pcli->pfnGetIconFromStatusMode = cliGetIconFromStatusMode;
 	pcli->pfnFindItem			= cliFindItem;
 	pcli->pfnGetRowByIndex		= cliGetRowByIndex;
 	pcli->pfnGetRowsPriorTo		= cliGetRowsPriorTo;

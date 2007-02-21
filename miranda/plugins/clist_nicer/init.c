@@ -53,14 +53,10 @@ struct LIST_INTERFACE li;
 struct MM_INTERFACE memoryManagerInterface;
 
 HMENU  BuildGroupPopupMenu( struct ClcGroup* group );
-int    CListTrayNotify( MIRANDASYSTRAYNOTIFY *msn );
 struct ClcContact* CreateClcContact( void );
 struct CListEvent* fnCreateEvent( void );
 void   ReloadThemedOptions();
-void   TrayIconIconsChanged(void);
-void   TrayIconSetToBase(char *szPreferredProto);
 void   TrayIconUpdateBase(const char *szChangedProto);
-void   TrayIconUpdateWithImageList(int iImage, const TCHAR *szNewTip, char *szPreferredProto);
 void    RegisterCLUIFrameClasses();
 
 void GetDefaultFontSetting(int i, LOGFONT *lf, COLORREF *colour);
@@ -342,7 +338,6 @@ LBL_Error:
 		goto LBL_Error;
 
 	pcli->pfnBuildGroupPopupMenu = BuildGroupPopupMenu;
-	pcli->pfnCListTrayNotify = CListTrayNotify;
 	pcli->pfnCluiProtocolStatusChanged = CluiProtocolStatusChanged;
 	pcli->pfnCompareContacts = CompareContacts;
 	pcli->pfnCreateClcContact = CreateClcContact;
@@ -361,10 +356,7 @@ LBL_Error:
 	pcli->pfnRebuildEntireList = RebuildEntireList;
 	pcli->pfnRowHitTest = RowHeights_HitTest;
 	pcli->pfnScrollTo = ScrollTo;
-	pcli->pfnTrayIconIconsChanged = TrayIconIconsChanged;
-	pcli->pfnTrayIconSetToBase = TrayIconSetToBase;
 	pcli->pfnTrayIconUpdateBase = TrayIconUpdateBase;
-	pcli->pfnTrayIconUpdateWithImageList = TrayIconUpdateWithImageList;
 	pcli->pfnSetHideOffline = SetHideOffline;
 	pcli->pfnShowHide = ShowHide;
 

@@ -37,7 +37,6 @@ int InitGroupServices(void);
 int Docking_IsDocked(WPARAM wParam, LPARAM lParam);
 void InitDisplayNameCache(void);
 void FreeDisplayNameCache(void);
-void InitTray(void);
 void LoadCLUIModule();
 
 pfnMyMonitorFromPoint  MyMonitorFromPoint = NULL;
@@ -166,6 +165,11 @@ static int ProtocolAck(WPARAM wParam, LPARAM lParam)
 
 	cli.pfnTrayIconUpdateBase(ack->szModule);
 	return 0;
+}
+
+HICON fnGetIconFromStatusMode( HANDLE hContact, const char *szProto, int status )
+{
+	return ImageList_GetIcon( hCListImages, cli.pfnIconFromStatusMode( szProto, status, hContact ), ILD_NORMAL);
 }
 
 int fnIconFromStatusMode(const char *szProto, int status, HANDLE hContact)
@@ -509,8 +513,7 @@ int LoadContactListModule2(void)
 	InitDisplayNameCache();
 	InitCListEvents();
 	InitGroupServices();
-	InitTray();
-
+	cli.pfnInitTray();
 	{
 		HINSTANCE hUser = GetModuleHandleA("USER32");
 		MyMonitorFromPoint  = ( pfnMyMonitorFromPoint )GetProcAddress( hUser,"MonitorFromPoint" );

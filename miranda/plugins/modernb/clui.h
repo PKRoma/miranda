@@ -71,7 +71,6 @@ int CListSettings_GetCopyFromCache(pdisplayNameCacheEntry pDest);
 int CListSettings_SetToCache(pdisplayNameCacheEntry pSrc);
 
 int CListTray_GetGlobalStatus(WPARAM wparam,LPARAM lparam);
-void CListTray_TrayIconDestroy(HWND hwnd);
 
 int CLUIServices_LoadModule(void);
 int CLUIServices_SortList(WPARAM wParam,LPARAM lParam);

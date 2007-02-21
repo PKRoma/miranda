@@ -2147,7 +2147,7 @@ LRESULT CALLBACK CLUI__cli_ContactListWndProc(HWND hwnd, UINT msg, WPARAM wParam
             if(hSmileyAddOptionsChangedHook!=0){UnhookEvent(hSmileyAddOptionsChangedHook);};
             if(hIconChangedHook!=0){UnhookEvent(hIconChangedHook);};
 
-            CListTray_TrayIconDestroy(hwnd);	
+            pcli->pfnTrayIconDestroy(hwnd);	
             mutex_bAnimationInProgress=0;  		
             CallService(MS_CLIST_FRAMES_REMOVEFRAME,(WPARAM)hFrameContactTree,(LPARAM)0);		
             TRACE("CLUI.c: WM_DESTROY - hFrameContactTree removed\n");

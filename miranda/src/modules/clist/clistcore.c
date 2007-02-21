@@ -27,6 +27,8 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 CLIST_INTERFACE cli = { 0 };
 
+static TCHAR szTip[MAX_TIP_SIZE+1];
+
 int LoadContactListModule2( void );
 int LoadCLCModule( void );
 
@@ -117,6 +119,7 @@ int    MenuModulesLoaded( WPARAM, LPARAM );
 /* clistmod.c */
 int    fnIconFromStatusMode(const char *szProto, int status, HANDLE hContact);
 int    fnShowHide( WPARAM wParam, LPARAM lParam );
+HICON  fnGetIconFromStatusMode( HANDLE hContact, const char *szProto, int status );
 TCHAR* fnGetStatusModeDescription( int wParam, int lParam);
 int    fnGetWindowVisibleState(HWND hWnd, int iStepX, int iStepY);
 
@@ -131,13 +134,24 @@ void fnCheckCacheItem( ClcCacheEntryBase* p );
 void fnFreeCacheItem( ClcCacheEntryBase* p );
 
 /* clisttray.c */
-int  fnCListTrayNotify(MIRANDASYSTRAYNOTIFY *msn);
-void fnTrayIconUpdateWithImageList ( int iImage, const TCHAR *szNewTip, char *szPreferredProto );
-void fnTrayIconUpdateBase ( const char *szChangedProto );
-void fnTrayIconSetToBase ( char *szPreferredProto );
-void fnTrayIconIconsChanged ( void );
-int  fnTrayIconPauseAutoHide ( WPARAM wParam, LPARAM lParam );
-int  fnTrayIconProcessMessage ( WPARAM wParam, LPARAM lParam );
+void   fnInitTray( void );
+int    fnCListTrayNotify(MIRANDASYSTRAYNOTIFY *msn);
+int    fnTrayIconAdd(HWND hwnd, const char *szProto, const char *szIconProto, int status);
+int    fnTrayIconDestroy( HWND hwnd );
+void   fnTrayIconIconsChanged ( void );
+int    fnTrayIconInit( HWND hwnd );
+TCHAR* fnTrayIconMakeTooltip( const TCHAR *szPrefix, const char *szProto );
+int    fnTrayIconPauseAutoHide ( WPARAM wParam, LPARAM lParam );
+int    fnTrayIconProcessMessage ( WPARAM wParam, LPARAM lParam );
+void   fnTrayIconRemove(HWND hwnd, const char *szProto);
+int    fnTrayIconSetBaseInfo(HICON hIcon, const char *szPreferredProto);
+void   fnTrayIconSetToBase ( char *szPreferredProto );
+void   fnTrayIconTaskbarCreated( HWND hwnd );
+int    fnTrayIconUpdate( HICON hNewIcon, const TCHAR *szNewTip, const char *szPreferredProto, int isBase );
+void   fnTrayIconUpdateBase ( const char *szChangedProto );
+void   fnTrayIconUpdateWithImageList ( int iImage, const TCHAR *szNewTip, char *szPreferredProto );
+
+VOID CALLBACK fnTrayCycleTimerProc(HWND hwnd, UINT message, UINT idEvent, DWORD dwTime);
 
 /* clui.c */
 LRESULT CALLBACK fnContactListWndProc ( HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam );
@@ -192,7 +206,7 @@ static int srvRetrieveInterface( WPARAM wParam, LPARAM lParam )
 	int rc;
 
 	if ( interfaceInited == 0 ) {
-		cli.version = 4;
+		cli.version = 5;
 
 		cli.pfnClcOptionsChanged               = fnClcOptionsChanged;
 		cli.pfnClcBroadcast                    = fnClcBroadcast;
@@ -273,12 +287,23 @@ static int srvRetrieveInterface( WPARAM wParam, LPARAM lParam )
 		cli.pfnFreeCacheItem                   = fnFreeCacheItem;
 		cli.pfnGetCacheEntry                   = fnGetCacheEntry;
 
-		cli.pfnTrayIconUpdateWithImageList	   = fnTrayIconUpdateWithImageList;
-		cli.pfnTrayIconUpdateBase				   = fnTrayIconUpdateBase;
-		cli.pfnTrayIconSetToBase					= fnTrayIconSetToBase;
+		cli.szTip                              = szTip;
+		cli.pfnInitTray                        = fnInitTray;
+		cli.pfnTrayCycleTimerProc              = fnTrayCycleTimerProc;
+		cli.pfnTrayIconAdd                     = fnTrayIconAdd;
+		cli.pfnTrayIconDestroy                 = fnTrayIconDestroy;
 		cli.pfnTrayIconIconsChanged            = fnTrayIconIconsChanged;
+		cli.pfnTrayIconInit                    = fnTrayIconInit;
+		cli.pfnTrayIconMakeTooltip              = fnTrayIconMakeTooltip;
 		cli.pfnTrayIconPauseAutoHide			   = fnTrayIconPauseAutoHide;
 		cli.pfnTrayIconProcessMessage			   = fnTrayIconProcessMessage;
+		cli.pfnTrayIconRemove                  = fnTrayIconRemove;
+		cli.pfnTrayIconSetBaseInfo             = fnTrayIconSetBaseInfo;
+		cli.pfnTrayIconSetToBase					= fnTrayIconSetToBase;
+		cli.pfnTrayIconTaskbarCreated          = fnTrayIconTaskbarCreated;
+		cli.pfnTrayIconUpdate                  = fnTrayIconUpdate;
+		cli.pfnTrayIconUpdateBase				   = fnTrayIconUpdateBase;
+		cli.pfnTrayIconUpdateWithImageList	   = fnTrayIconUpdateWithImageList;
 		cli.pfnCListTrayNotify                 = fnCListTrayNotify;
 
 		cli.pfnContactListWndProc				   = fnContactListWndProc;
@@ -296,6 +321,7 @@ static int srvRetrieveInterface( WPARAM wParam, LPARAM lParam )
 
 		cli.pfnDocking_ProcessWindowMessage	   = fnDocking_ProcessWindowMessage;
 
+		cli.pfnGetIconFromStatusMode           = fnGetIconFromStatusMode;
 		cli.pfnGetWindowVisibleState           = fnGetWindowVisibleState;
 		cli.pfnIconFromStatusMode              = fnIconFromStatusMode;
 		cli.pfnShowHide                        = fnShowHide;
