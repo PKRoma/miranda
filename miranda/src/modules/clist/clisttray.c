@@ -100,7 +100,8 @@ TCHAR* fnTrayIconMakeTooltip( const TCHAR *szPrefix, const char *szProto )
 
 		for ( t=0; t < cn; t++ ) {
 			i = cli.pfnGetProtoIndexByPos(protos, count,t);
-			if (i==-1) return TEXT("???");
+			if ( i == -1 )
+				return _T("???");
 
 			if ( protos[i]->type == PROTOTYPE_PROTOCOL && cli.pfnGetProtocolVisibility( protos[i]->szName ))
 				ProtoXStatus = sttGetXStatus( protos[i]->szName );

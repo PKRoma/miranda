@@ -854,7 +854,7 @@ int SetAvatarData(HANDLE hContact, WORD wRef, char* data, unsigned int datalen)
     if (!ar->pData)
     { // alloc failed
       LeaveCriticalSection(&cookieMutex);
-      SAFE_FREE(&ar);
+      FreeAvatarRequest(ar);
       return 0;
     }
     memcpy(ar->pData, data, datalen); // copy the data
