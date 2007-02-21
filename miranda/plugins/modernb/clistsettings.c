@@ -238,6 +238,12 @@ void cliCheckCacheItem(pdisplayNameCacheEntry pdnce)
 {
 	if (pdnce!=NULL)
 	{
+		if (pdnce->hContact==NULL) //selfcontact
+		{
+			if (!pdnce->name) pdnce->name=GetNameForContact(pdnce->hContact,0,&pdnce->isUnknown);
+			if (!pdnce->szName) pdnce->szName=t2a(pdnce->name);
+			return;
+		}
 		if (pdnce->szProto==NULL&&pdnce->protoNotExists==FALSE)
 		{
 			pdnce->szProto=GetProtoForContact(pdnce->hContact);

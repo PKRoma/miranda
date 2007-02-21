@@ -309,7 +309,7 @@ void GroupMenus_Init(void)
 	tmp.cbSize=sizeof(tmp);
 	tmp.CheckService=NULL;
 	tmp.ExecService="CLISTMENUSGroup/ExecService";
-	tmp.name=Translate("GroupMenu");
+	tmp.name=("GroupMenu");
 	hGroupMenuObject=(HANDLE)CallService(MO_CREATENEWMENUOBJECT,(WPARAM)0,(LPARAM)&tmp);
 	
 	
@@ -368,7 +368,7 @@ void GroupMenus_Init(void)
 	mi.cbSize=sizeof(mi);
 	mi.position=300100;
 	mi.pszService="";
-	mi.pszName=Translate("&Status");
+	mi.pszName=("&Status");
 	hGroupStatusMenuItemProxy=(HANDLE)AddGroupMenuItem((WPARAM)0,(LPARAM)&mi);
 
 	memset(&mi,0,sizeof(mi));
@@ -704,7 +704,7 @@ void InitSubGroupMenus(void)
 	tmp.cbSize=sizeof(tmp);
 	tmp.CheckService=NULL;
 	tmp.ExecService="CLISTMENUSSubGroup/ExecService";
-	tmp.name=Translate("SubGroupMenu");
+	tmp.name=("SubGroupMenu");
 	hSubGroupMenuObject=(HANDLE)CallService(MO_CREATENEWMENUOBJECT,(WPARAM)0,(LPARAM)&tmp);
 	
 	
