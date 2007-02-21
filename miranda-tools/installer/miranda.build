@@ -1,0 +1,217 @@
+<?xml version="1.0"?>
+<project name="Miranda IM" default="compile">
+    <property name="BUILD_VERSION" value="0.6.8pr1"/>
+    <property name="LOCAL_UNICODE" value="false"/>
+    
+    <target name="init">
+        <echo message="Base dir = ${project::get-base-directory()}" />
+    </target>
+    
+    <target name="compileansionly">
+        <exec program="msdev.exe" 
+            commandline="../../miranda/plugins/db3x/db3x.dsp /MAKE &quot;db3x - Win32 Release&quot;" />
+        <exec program="msdev.exe" 
+            commandline="../../miranda/plugins/import/import.dsp /MAKE &quot;import - Win32 Release&quot;" />
+        <exec program="msdev.exe" 
+            commandline="../../miranda/plugins/png2dib/png2dib.dsp /MAKE &quot;png2dib - Win32 Release&quot;" />
+        <exec program="msdev.exe" 
+            commandline="../../miranda/protocols/AimOscar/aimoscar.dsp /MAKE &quot;aim - Win32 Release&quot;" />
+        <exec program="msdev.exe" 
+            commandline="../../miranda/protocols/IcqOscarJ/icqoscar8.dsp /MAKE &quot;icqoscar8 - Win32 Release&quot;" /> 
+        <exec program="msdev.exe" 
+            commandline="../../miranda/protocols/IRC/IRC.dsp /MAKE &quot;IRC - Win32 Release&quot;" /> 
+        <exec program="msdev.exe" 
+            commandline="../../miranda/protocols/Yahoo/Yahoo.dsp /MAKE &quot;Yahoo - Win32 Release&quot;" />
+    </target>
+    
+    <target name="compileproject">
+        <if test="${LOCAL_UNICODE=='true'}">
+            <exec program="msdev.exe" 
+                commandline="../../miranda/src/miranda32.dsp /MAKE &quot;miranda32 - Win32 Release Unicode&quot;" />
+            <exec program="msdev.exe" 
+                commandline="../../miranda/plugins/chat/chat.dsp /MAKE &quot;chat - Win32 Release Unicode&quot;" />
+            <exec program="msdev.exe" 
+                commandline="../../miranda/plugins/clist/clist.dsp /MAKE &quot;clist - Win32 Release Unicode&quot;" />
+            <exec program="msdev.exe" 
+                commandline="../../miranda/plugins/srmm/srmm.dsp /MAKE &quot;srmm - Win32 Release Unicode&quot;" />
+            <exec program="msdev.exe" 
+                commandline="../../miranda/protocols/JabberG/jabber.dsp /MAKE &quot;jabberg - Win32 Release Unicode&quot;" />
+            <exec program="msdev.exe" 
+                commandline="../../miranda/protocols/MSN/msn.dsp /MAKE &quot;msn - Win32 Release Unicode&quot;" />
+            <exec program="msdev.exe" 
+                commandline="../dbtool/dbtool.dsp /MAKE &quot;dbtool - Win32 Release Unicode&quot;" />
+        </if>
+        <if test="${LOCAL_UNICODE=='false'}">
+            <exec program="msdev.exe" 
+                commandline="../../miranda/src/miranda32.dsp /MAKE &quot;miranda32 - Win32 Release&quot;" />
+            <exec program="msdev.exe" 
+                commandline="../../miranda/plugins/chat/chat.dsp /MAKE &quot;chat - Win32 Release&quot;" />
+            <exec program="msdev.exe" 
+                commandline="../../miranda/plugins/clist/clist.dsp /MAKE &quot;clist - Win32 Release&quot;" />
+            <exec program="msdev.exe" 
+                commandline="../../miranda/plugins/srmm/srmm.dsp /MAKE &quot;srmm - Win32 Release&quot;" />
+            <exec program="msdev.exe" 
+                commandline="../../miranda/protocols/JabberG/jabber.dsp /MAKE &quot;jabberg - Win32 Release&quot;" />
+            <exec program="msdev.exe" 
+                commandline="../../miranda/protocols/MSN/msn.dsp /MAKE &quot;msn - Win32 Release&quot;" />
+            <exec program="msdev.exe" 
+                commandline="../dbtool/dbtool.dsp /MAKE &quot;dbtool - Win32 Release&quot;" />
+        </if>
+    </target>
+    
+    <target name="zipproject">
+        <zip zipfile="miranda-im-v${BUILD_VERSION}-unicode.zip">
+            <fileset basedir="../../miranda/bin/release/plugins" prefix="plugins">
+                <include name="dbx_3x.dll" />
+                <include name="import.dll" />
+                <include name="png2dib.dll" />
+                <include name="aim.dll" />
+                <include name="icq.dll" />
+                <include name="irc.dll" />
+                <include name="yahoo.dll" />
+            </fileset>
+            <fileset basedir="../../miranda/bin/release unicode/plugins" prefix="plugins">
+                <include name="chat.dll" />
+                <include name="clist_classic.dll" />
+                <include name="srmm.dll" />
+                <include name="jabber.dll" />
+                <include name="msn.dll" />
+            </fileset>
+            <fileset basedir="../../miranda/protocols/IRC/Docs/" prefix="plugins">
+                <include name="IRC_Servers.ini" />
+            </fileset>
+            <fileset basedir="../../miranda/bin/release unicode/">
+                <include name="miranda32.exe" />
+                <include name="dbtool.exe" />
+            </fileset>
+            <fileset basedir="../../miranda/docs/">
+                <include name="license.txt" />
+                <include name="mirandaboot.ini" /> <!-- fix me -->
+                <include name="readme.txt" />
+            </fileset>
+        </zip>
+        <zip zipfile="miranda-im-v${BUILD_VERSION}-ansi.zip">
+            <fileset basedir="../../miranda/bin/release/plugins" prefix="plugins">
+                <include name="dbx_3x.dll" />
+                <include name="import.dll" />
+                <include name="png2dib.dll" />
+                <include name="aim.dll" />
+                <include name="icq.dll" />
+                <include name="irc.dll" />
+                <include name="yahoo.dll" />
+                <include name="chat.dll" />
+                <include name="clist_classic.dll" />
+                <include name="srmm.dll" />
+                <include name="jabber.dll" />
+                <include name="msn.dll" />
+            </fileset>
+            <fileset basedir="../../miranda/protocols/IRC/Docs/" prefix="plugins">
+                <include name="IRC_Servers.ini" />
+            </fileset>
+            <fileset basedir="../../miranda/bin/release/">
+                <include name="miranda32.exe" />
+                <include name="dbtool.exe" />
+            </fileset>
+            <fileset basedir="../../miranda/docs/">
+                <include name="license.txt" />
+                <include name="mirandaboot.ini" />
+                <include name="readme.txt" />
+            </fileset>
+        </zip>
+        <zip zipfile="miranda-im-v${BUILD_VERSION}-unicode-pdb.zip">
+            <fileset basedir="../../miranda/src/Release_Unicode/">
+                <include name="miranda32.pdb" />
+            </fileset>
+            <fileset basedir="../../miranda/plugins/chat/Release_Unicode/" prefix="plugins">
+                <include name="chat.pdb" />
+            </fileset>
+            <fileset basedir="../../miranda/plugins/clist/Release_Unicode/" prefix="plugins">
+                <include name="clist_classic.pdb" />
+            </fileset>
+            <fileset basedir="../../miranda/plugins/db3x/Release/" prefix="plugins">
+                <include name="dbx_3x.pdb" />
+            </fileset>
+            <fileset basedir="../../miranda/plugins/import/Release/" prefix="plugins">
+                <include name="import.pdb" />
+            </fileset>
+            <fileset basedir="../../miranda/plugins/png2dib/Release/" prefix="plugins">
+                <include name="png2dib.pdb" />
+            </fileset>
+            <fileset basedir="../../miranda/plugins/srmm/Release_Unicode/" prefix="plugins">
+                <include name="srmm.pdb" />
+            </fileset>
+            <fileset basedir="../../miranda/protocols/AimOscar/Release/" prefix="plugins">
+                <include name="aim.pdb" />
+            </fileset>
+            <fileset basedir="../../miranda/protocols/IcqOscarJ/Release/" prefix="plugins">
+                <include name="icq.pdb" />
+            </fileset>
+            <fileset basedir="../../miranda/protocols/IRC/Release/" prefix="plugins">
+                <include name="IRC.pdb" />
+            </fileset>
+            <fileset basedir="../../miranda/protocols/JabberG/Release_Unicode/" prefix="plugins">
+                <include name="jabber.pdb" />
+            </fileset>
+            <fileset basedir="../../miranda/protocols/MSN/Release_Unicode/" prefix="plugins">
+                <include name="msn.pdb" />
+            </fileset>
+            <fileset basedir="../../miranda/protocols/Yahoo/Release/" prefix="plugins">
+                <include name="Yahoo.pdb" />
+            </fileset>
+        </zip>
+        <zip zipfile="miranda-im-v${BUILD_VERSION}-ansi-pdb.zip">
+            <fileset basedir="../../miranda/src/Release/">
+                <include name="miranda32.pdb" />
+            </fileset>
+            <fileset basedir="../../miranda/plugins/chat/Release/" prefix="plugins">
+                <include name="chat.pdb" />
+            </fileset>
+            <fileset basedir="../../miranda/plugins/clist/Release/" prefix="plugins">
+                <include name="clist_classic.pdb" />
+            </fileset>
+            <fileset basedir="../../miranda/plugins/db3x/Release/" prefix="plugins">
+                <include name="dbx_3x.pdb" />
+            </fileset>
+            <fileset basedir="../../miranda/plugins/import/Release/" prefix="plugins">
+                <include name="import.pdb" />
+            </fileset>
+            <fileset basedir="../../miranda/plugins/png2dib/Release/" prefix="plugins">
+                <include name="png2dib.pdb" />
+            </fileset>
+            <fileset basedir="../../miranda/plugins/srmm/Release/" prefix="plugins">
+                <include name="srmm.pdb" />
+            </fileset>
+            <fileset basedir="../../miranda/protocols/AimOscar/Release/" prefix="plugins">
+                <include name="aim.pdb" />
+            </fileset>
+            <fileset basedir="../../miranda/protocols/IcqOscarJ/Release/" prefix="plugins">
+                <include name="icq.pdb" />
+            </fileset>
+            <fileset basedir="../../miranda/protocols/IRC/Release/" prefix="plugins">
+                <include name="IRC.pdb" />
+            </fileset>
+            <fileset basedir="../../miranda/protocols/JabberG/Release/" prefix="plugins">
+                <include name="jabber.pdb" />
+            </fileset>
+            <fileset basedir="../../miranda/protocols/MSN/Release/" prefix="plugins">
+                <include name="msn.pdb" />
+            </fileset>
+            <fileset basedir="../../miranda/protocols/Yahoo/Release/" prefix="plugins">
+                <include name="Yahoo.pdb" />
+            </fileset>
+        </zip>
+    </target>
+
+    <target name="compile">
+        <call target="init" />
+        <call target="compileansionly" />
+
+        <property name="LOCAL_UNICODE" value="false"/>
+        <call target="compileproject" />
+
+        <property name="LOCAL_UNICODE" value="true"/>
+        <call target="compileproject" />
+        
+        <call target="zipproject" />
+    </target>
+</project>
