@@ -94,14 +94,14 @@ void LoadMsgDlgFont(int i, LOGFONT* lf, COLORREF * colour)
 void RegisterSRMMFonts( void )
 {
 	FontIDT fontid = {0};
-	ColourIDT colourid;
+	ColourIDT colourid = {0};
 	char idstr[10];
 	int i, index = 0;
 
 	fontid.cbSize = sizeof(FontID);
 	fontid.flags = FIDF_ALLOWREREGISTER | FIDF_DEFAULTVALID;
 	for ( i = 0; i < msgDlgFontCount; i++, index++ ) {
-		strncpy(fontid.dbSettingsGroup, "SRMM", sizeof(fontid.dbSettingsGroup));
+		strncpy(fontid.dbSettingsGroup, SRMMMOD, sizeof(fontid.dbSettingsGroup));
 		_tcsncpy(fontid.group, TranslateT("Message Log"), SIZEOF(fontid.group));
 		_tcsncpy(fontid.name, TranslateTS(fontOptionsList[i].szDescr), SIZEOF(fontid.name));
 		sprintf(idstr, "SRMFont%d", index);
@@ -117,9 +117,9 @@ void RegisterSRMMFonts( void )
 	}
 
 	colourid.cbSize = sizeof(ColourID);
-	colourid.order = 0;
-	strncpy(colourid.dbSettingsGroup, "SRMM", sizeof(colourid.dbSettingsGroup));
-	strncpy(colourid.setting, "BkgColour", sizeof(colourid.setting));
+	strncpy(colourid.dbSettingsGroup, SRMMMOD, sizeof(colourid.dbSettingsGroup));
+	strncpy(colourid.setting, SRMSGSET_BKGCOLOUR, sizeof(colourid.setting));
+	colourid.defcolour = SRMSGDEFSET_BKGCOLOUR;
 	_tcsncpy(colourid.name, TranslateT("Background"), SIZEOF(colourid.name));
 	_tcsncpy(colourid.group, TranslateT("Message Log"), SIZEOF(colourid.group));
 	CallService(MS_COLOUR_REGISTERT, (WPARAM)&colourid, 0);
@@ -503,7 +503,7 @@ static BOOL CALLBACK DlgProcTypeOptions(HWND hwndDlg, UINT msg, WPARAM wParam, L
 			if (!ServiceExists(MS_CLIST_SYSTRAY_NOTIFY)) {
 				EnableWindow(GetDlgItem(hwndDlg, IDC_NOTIFYBALLOON), FALSE);
 				CheckDlgButton(hwndDlg, IDC_NOTIFYTRAY, BST_CHECKED);
-				SetWindowTextA(GetDlgItem(hwndDlg, IDC_NOTIFYBALLOON), Translate("Show balloon popup (unsupported system)"));
+				SetWindowText(GetDlgItem(hwndDlg, IDC_NOTIFYBALLOON), TranslateT("Show balloon popup (unsupported system)"));
 			}
 			break;
 		case WM_COMMAND:

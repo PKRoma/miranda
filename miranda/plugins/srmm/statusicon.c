@@ -169,7 +169,7 @@ void CheckIconClick(HANDLE hContact, HWND hwndFrom, POINT pt, RECT r, int gap, i
 HANDLE hServiceIcon[3];
 int InitStatusIcons() {
 	hServiceIcon[0] = CreateServiceFunction(MS_MSG_ADDICON, AddStatusIcon);
-	hServiceIcon[1] = CreateServiceFunction(MS_MSG_ADDICON, RemoveStatusIcon);
+	hServiceIcon[1] = CreateServiceFunction(MS_MSG_REMOVEICON, RemoveStatusIcon);
 	hServiceIcon[2] = CreateServiceFunction(MS_MSG_MODIFYICON, ModifyStatusIcon);
 	hHookIconPressedEvt = CreateHookableEvent(ME_MSG_ICONPRESSED);
 
