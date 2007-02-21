@@ -119,7 +119,16 @@ static void RemoveAvatarRequestFromQueue(avatarrequest* request)
   }
 }
 
-
+static void FreeAvatarRequest(avatarrequest* request)
+{
+	if ( request ) {
+		SAFE_FREE( &request->file );
+		SAFE_FREE( &request->hash );
+		SAFE_FREE( &request->szFile );
+		SAFE_FREE( &request->szUid );
+	}
+	SAFE_FREE( &request );
+}
 
 void InitAvatars()
 {
@@ -339,7 +348,7 @@ void StartAvatarThread(HANDLE hConn, char* cookie, WORD cookieLen) // called fro
           RemoveAvatarRequestFromQueue(ar);
           tmp = ar;
           ar = ar->pNext;
-          SAFE_FREE(&tmp);
+          FreeAvatarRequest(tmp);
           continue;
         }
         ar = ar->pNext;
@@ -570,7 +579,7 @@ void handleAvatarContactHash(DWORD dwUIN, char* szUID, HANDLE hContact, unsigned
             if (ar->hContact == hContact && ar->type == ART_BLOCK)
             { // found one, remove
               RemoveAvatarRequestFromQueue(ar);
-              SAFE_FREE(&ar);
+              FreeAvatarRequest(ar);
               break;
             }
             ar = ar->pNext;
@@ -732,7 +741,7 @@ int GetAvatarData(HANDLE hContact, DWORD dwUin, char* szUid, char* hash, unsigne
 
           RemoveAvatarRequestFromQueue(ar);
           ar = ar->pNext;
-          SAFE_FREE(&tmp);
+          FreeAvatarRequest(tmp);
           continue;
         }
         LeaveCriticalSection(&cookieMutex);
