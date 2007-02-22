@@ -23,7 +23,7 @@
 //
 // -----------------------------------------------------------------------------
 //
-// File name      : $Source: /cvsroot/miranda/miranda/protocols/IcqOscarJ/utilities.h,v $
+// File name      : $URL$
 // Revision       : $Revision$
 // Last change on : $Date$
 // Last change by : $Author$
@@ -141,6 +141,7 @@ WORD GetMyStatusFlags();
 
 /* Unicode FS utility functions */
 
+char* FileNameToUtf(const char *filename);
 int FileStatUtf(const char *path, struct _stati64 *buffer);
 int MakeDirUtf(const char *dir);
 int OpenFileUtf(const char *filename, int oflag, int pmode);

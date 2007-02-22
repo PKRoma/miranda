@@ -23,7 +23,7 @@
 //
 // -----------------------------------------------------------------------------
 //
-// File name      : $Source: /cvsroot/miranda/miranda/protocols/IcqOscarJ/oscar_filetransfer.c,v $
+// File name      : $URL$
 // Revision       : $Revision$
 // Last change on : $Date$
 // Last change by : $Author$
@@ -844,7 +844,7 @@ int oftInitTransfer(HANDLE hContact, DWORD dwUin, char* szUid, char** files, cha
             if (szBack) szBack[1] = '\0'; else szMasterDir[0] = '\0';
           }
         }
-        ft->files[ft->wFilesCount] = ansi_to_utf8(files[i]);
+        ft->files[ft->wFilesCount] = FileNameToUtf(files[i]);
         ft->files_ansi[ft->wFilesCount] = null_strdup(files[i]);
 
         ft->wFilesCount++;

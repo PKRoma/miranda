@@ -23,7 +23,7 @@
 //
 // -----------------------------------------------------------------------------
 //
-// File name      : $Source: /cvsroot/miranda/miranda/protocols/IcqOscarJ/utilities.c,v $
+// File name      : $URL$
 // Revision       : $Revision$
 // Last change on : $Date$
 // Last change by : $Author$
@@ -1670,6 +1670,45 @@ WORD GetMyStatusFlags()
       break;
   }
   return wFlags;
+}
+
+
+
+char* FileNameToUtf(const char *filename)
+{
+  if (gbUnicodeAPI)
+  { // reasonable only on NT systems
+    HINSTANCE hKernel;
+    DWORD (CALLBACK *RealGetLongPathName)(LPCWSTR, LPWSTR, DWORD);
+
+    hKernel = GetModuleHandle("KERNEL32");
+    *(FARPROC *)&RealGetLongPathName = GetProcAddress(hKernel, "GetLongPathNameW");
+
+    if (RealGetLongPathName)
+    { // the function is available (it is not on old NT systems)
+      wchar_t *unicode, *usFileName = NULL;
+      int wchars;
+
+      wchars = MultiByteToWideChar(CP_ACP, MB_PRECOMPOSED, filename,
+        strlennull(filename), NULL, 0);
+
+      unicode = (wchar_t*)_alloca((wchars + 1) * sizeof(wchar_t));
+      unicode[wchars] = 0;
+
+      MultiByteToWideChar(CP_ACP, MB_PRECOMPOSED, filename,
+        strlennull(filename), unicode, wchars);
+
+      wchars = RealGetLongPathName(unicode, usFileName, 0);
+      usFileName = (wchar_t*)_alloca((wchars + 1) * sizeof(wchar_t));
+      RealGetLongPathName(unicode, usFileName, wchars);
+
+      return make_utf8_string(usFileName);
+    }
+    else
+      return ansi_to_utf8(filename);
+  }
+  else
+    return ansi_to_utf8(filename);
 }
 
 
