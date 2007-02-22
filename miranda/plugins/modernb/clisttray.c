@@ -174,7 +174,7 @@ void cliTrayIconUpdateBase(const char *szChangedProto)
 
 	if(netProtoCount>1) {
 		if(averageMode>=ID_STATUS_OFFLINE) {
-			if(DBGetContactSettingByte(NULL,"CList","trayIcon",SETTING_TRAYICON_DEFAULT)==SETTING_TRAYICON_MULTI) {
+			if(DBGetContactSettingByte(NULL,"CList","TrayIcon",SETTING_TRAYICON_DEFAULT)==SETTING_TRAYICON_MULTI) {
 				if(DBGetContactSettingByte(NULL,"CList","AlwaysMulti",SETTING_ALWAYSMULTI_DEFAULT))
 					changed=pcli->pfnTrayIconSetBaseInfo(cliGetIconFromStatusMode(NULL,szChangedProto,averageMode),szChangedProto);
 				else if(pcli->trayIcon && pcli->trayIcon[0].szProto!=NULL) {
@@ -186,7 +186,7 @@ void cliTrayIconUpdateBase(const char *szChangedProto)
 			}
 			else
 			{
-				if(DBGetContactSettingByte(NULL,"CList","trayIcon",SETTING_TRAYICON_DEFAULT)==SETTING_TRAYICON_SINGLE
+				if(DBGetContactSettingByte(NULL,"CList","TrayIcon",SETTING_TRAYICON_DEFAULT)==SETTING_TRAYICON_SINGLE
 					&& DBGetContactSettingByte(NULL,"CList","AlwaysPrimary",0))
 				{
 					DBVARIANT dbv={DBVT_DELETED};
@@ -201,7 +201,7 @@ void cliTrayIconUpdateBase(const char *szChangedProto)
 			}
 		}
 		else {
-			switch(DBGetContactSettingByte(NULL,"CList","trayIcon",SETTING_TRAYICON_DEFAULT)) {
+			switch(DBGetContactSettingByte(NULL,"CList","TrayIcon",SETTING_TRAYICON_DEFAULT)) {
 			case SETTING_TRAYICON_SINGLE:
 				{
 					DBVARIANT dbv={DBVT_DELETED};
@@ -308,7 +308,7 @@ void cliTrayIconUpdateBase(const char *szChangedProto)
 		}	}
 
 		if (workAround) {
-			//BYTE b=DBGetContactSettingByte(NULL,"CList","trayIcon",SETTING_TRAYICON_DEFAULT);
+			//BYTE b=DBGetContactSettingByte(NULL,"CList","TrayIcon",SETTING_TRAYICON_DEFAULT);
 			//if (b==SETTING_TRAYICON_MULTI)
 			changed=pcli->pfnTrayIconSetBaseInfo(cliGetIconFromStatusMode(NULL,szChangedProto,averageMode),workAround?szChangedProto:NULL);
 	}	}
