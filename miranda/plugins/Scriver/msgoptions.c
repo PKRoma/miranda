@@ -258,7 +258,8 @@ static void ApplyChanges(int i) {
 	}
 }
 
-static void MarkChanges(int i) {
+static void MarkChanges(int i, HWND hWnd) {
+	SendMessage(GetParent(hWnd), PSM_CHANGED, 0, 0);
 	changed |= i;
 }
 
@@ -496,8 +497,7 @@ static BOOL CALLBACK DlgProcContainerOptions(HWND hwndDlg, UINT msg, WPARAM wPar
 //				default:
 //				return 0;
 			}
-			SendMessage(GetParent(hwndDlg), PSM_CHANGED, 0, 0);
-			MarkChanges(1);
+			MarkChanges(1, hwndDlg);
 			break;
 		case WM_HSCROLL:
 			{	char str[10];
@@ -505,8 +505,7 @@ static BOOL CALLBACK DlgProcContainerOptions(HWND hwndDlg, UINT msg, WPARAM wPar
 				SetDlgItemTextA(hwndDlg, IDC_ATRANSPARENCYPERC, str);
 				sprintf(str,"%d%%",(int)(100*SendDlgItemMessage(hwndDlg,IDC_ITRANSPARENCYVALUE,TBM_GETPOS,0,0)/256));
 				SetDlgItemTextA(hwndDlg, IDC_ITRANSPARENCYPERC, str);
-				SendMessage(GetParent(hwndDlg), PSM_CHANGED, 0, 0);
-				MarkChanges(1);
+				MarkChanges(1, hwndDlg);
 			}
 			break;
 		case WM_NOTIFY:
@@ -525,8 +524,7 @@ static BOOL CALLBACK DlgProcContainerOptions(HWND hwndDlg, UINT msg, WPARAM wPar
                                 TreeView_GetItem(((LPNMHDR) lParam)->hwndFrom, &tvi);
                                 tvi.iImage = tvi.iSelectedImage = tvi.iImage == 1 ? 2 : 1;
                                 TreeView_SetItem(((LPNMHDR) lParam)->hwndFrom, &tvi);
-								SendMessage(GetParent(hwndDlg), PSM_CHANGED, 0, 0);
-								MarkChanges(1);
+								MarkChanges(1, hwndDlg);
                             }
                     }
                     break;
@@ -756,8 +754,7 @@ static BOOL CALLBACK DlgProcOptions(HWND hwndDlg, UINT msg, WPARAM wParam, LPARA
 					}
 					break;
 			}
-			SendMessage(GetParent(hwndDlg), PSM_CHANGED, 0, 0);
-			MarkChanges(2);
+			MarkChanges(2, hwndDlg);
 			break;
 		case WM_HSCROLL:
 			{	char str[10];
@@ -765,8 +762,7 @@ static BOOL CALLBACK DlgProcOptions(HWND hwndDlg, UINT msg, WPARAM wParam, LPARA
 				SetDlgItemTextA(hwndDlg, IDC_ATRANSPARENCYPERC, str);
 				sprintf(str,"%d%%",(int)(100*SendDlgItemMessage(hwndDlg,IDC_ITRANSPARENCYVALUE,TBM_GETPOS,0,0)/256));
 				SetDlgItemTextA(hwndDlg, IDC_ITRANSPARENCYPERC, str);
-				SendMessage(GetParent(hwndDlg), PSM_CHANGED, 0, 0);
-				MarkChanges(2);
+				MarkChanges(2, hwndDlg);
 			}
 			break;
 		case WM_NOTIFY:
@@ -785,8 +781,7 @@ static BOOL CALLBACK DlgProcOptions(HWND hwndDlg, UINT msg, WPARAM wParam, LPARA
 								TreeView_GetItem(((LPNMHDR) lParam)->hwndFrom, &tvi);
 								tvi.iImage = tvi.iSelectedImage = tvi.iImage == 1 ? 2 : 1;
 								TreeView_SetItem(((LPNMHDR) lParam)->hwndFrom, &tvi);
-								SendMessage(GetParent(hwndDlg), PSM_CHANGED, 0, 0);
-								MarkChanges(2);
+								MarkChanges(2, hwndDlg);
 							}
 					}
 				    break;
@@ -1098,8 +1093,7 @@ static BOOL CALLBACK DlgProcLogOptions(HWND hwndDlg, UINT msg, WPARAM wParam, LP
 						return TRUE;
 					break;
 			}
-			SendMessage(GetParent(hwndDlg), PSM_CHANGED, 0, 0);
-			MarkChanges(4);
+			MarkChanges(4, hwndDlg);
 			break;
 		case WM_NOTIFY:
 			switch (((LPNMHDR) lParam)->idFrom) {
@@ -1272,8 +1266,7 @@ static BOOL CALLBACK DlgProcTypeOptions(HWND hwndDlg, UINT msg, WPARAM wParam, L
 						EnableWindow(GetDlgItem(hwndDlg, IDC_NOTIFYTRAY), FALSE);
 						EnableWindow(GetDlgItem(hwndDlg, IDC_NOTIFYBALLOON), FALSE);
 					}
-					SendMessage(GetParent(hwndDlg), PSM_CHANGED, 0, 0);
-					MarkChanges(4);
+					MarkChanges(4, hwndDlg);
 					break;
 				case IDC_SHOWNOTIFY:
 					EnableWindow(GetDlgItem(hwndDlg, IDC_TYPEWIN), IsDlgButtonChecked(hwndDlg, IDC_SHOWNOTIFY));
@@ -1285,8 +1278,7 @@ static BOOL CALLBACK DlgProcTypeOptions(HWND hwndDlg, UINT msg, WPARAM wParam, L
 				case IDC_TYPEWIN:
 				case IDC_NOTIFYTRAY:
 				case IDC_NOTIFYBALLOON:
-					SendMessage(GetParent(hwndDlg), PSM_CHANGED, 0, 0);
-					MarkChanges(4);
+					MarkChanges(4, hwndDlg);
 					break;
 			}
 			break;
@@ -1298,8 +1290,7 @@ static BOOL CALLBACK DlgProcTypeOptions(HWND hwndDlg, UINT msg, WPARAM wParam, L
 							ResetCList(hwndDlg);
 							break;
 						case CLN_CHECKCHANGED:
-							SendMessage(GetParent(hwndDlg), PSM_CHANGED, 0, 0);
-							MarkChanges(4);
+							MarkChanges(4, hwndDlg);
 							break;
 					}
 					break;
@@ -1325,7 +1316,7 @@ static BOOL CALLBACK DlgProcTypeOptions(HWND hwndDlg, UINT msg, WPARAM wParam, L
 
 int OptInitialise(WPARAM wParam, LPARAM lParam)
 {
-	int i;
+	DWORD i;
 	OPTIONSDIALOGPAGE odp = { 0 };
 	odp.cbSize = sizeof(odp);
 	odp.position = 910000000;
@@ -1333,7 +1324,7 @@ int OptInitialise(WPARAM wParam, LPARAM lParam)
 	odp.ptszTitle = TranslateT("Messaging");
 	odp.ptszGroup = TranslateT("Message Sessions"); //Events
 	odp.flags = ODPF_BOLDGROUPS | ODPF_TCHAR;
-	odp.pszTemplate = MAKEINTRESOURCEA(IDD_OPT_MAIN);
+	odp.nIDBottomSimpleControl = 0;
 	for (i = 0; i < SIZEOF(tabPages); i++) {
 		odp.pszTemplate = MAKEINTRESOURCEA(tabPages[i].dlgId);
 		odp.pfnDlgProc = tabPages[i].dlgProc;
@@ -1343,7 +1334,6 @@ int OptInitialise(WPARAM wParam, LPARAM lParam)
 	odp.pszTemplate = MAKEINTRESOURCEA(IDD_OPT_MSGTYPE);
 	odp.ptszTitle = TranslateT("Typing Notify");
 	odp.pfnDlgProc = DlgProcTypeOptions;
-	odp.nIDBottomSimpleControl = 0;
 	odp.ptszTab = NULL;
 	CallService(MS_OPT_ADDPAGE, wParam, (LPARAM) & odp);
 
