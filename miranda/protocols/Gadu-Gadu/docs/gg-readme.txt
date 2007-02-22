@@ -5,9 +5,9 @@
 // Author: Adam Strzelecki <ono+miranda@java.pl>
 //
 // Thanks: Santithorn Bunchua "KeH", Rober Rainwater,
-//         libgadu Authors <http://dev.null.pl/ekg/>,
-//         Liquid (Image send/recv), The Leech (Proxy fixes)
-//         MirandaIM Polish Forum
+//		   libgadu Authors <http://dev.null.pl/ekg/>,
+//		   Liquid (Image send/recv), The Leech (Proxy fixes)
+//		   MirandaIM Polish Forum
 ///////////////////////////////////////////////////////////////////
 
 1. About
@@ -37,16 +37,16 @@ connections.
  - Multiple plugin instances/accounts:
    <name>.dll or <name>debug.dll becomes proto name and id
    Warning: <name>.dll or <name>debug.dll is treated as
-            the same proto and name is case insensitive.
+			the same proto and name is case insensitive.
  - 1st user mail & phone used for import/export
  - SSL/TLS secure connections
  - Groupchat/conferencing (Miranda IM version 0.4 or higher)
 
 Note: For secure connections this plugin requires OpenSSL DLL
-      libraries to be present in system folder or Miranda folder.
+	  libraries to be present in system folder or Miranda folder.
 	  These libraries can be downloaded from:
-	  - http://www.miranda.kom.pl/download/misc/
-      - http://www.openssl.org/.
+	  - http://www.miranda-im.pl/download/misc/
+	  - http://www.openssl.org/.
 	  If DLL files are not present plugin works only with plain
 	  unsecure connections.
 
@@ -59,10 +59,13 @@ Note: For secure connections this plugin requires OpenSSL DLL
 
 5. History
 ----------
+0.0.4.2: 2007-02-22
+ - Binary release: Recompiled to support new NETLIB settings structure.
+   !!Warning!! Plugin requires now Miranda 0.6.1+ for proxy support.
 0.0.4.1: 2006-12-20
  - Fix: 512 characters for settings such as custom server list
  - Fix: Detection of Gadu-Gadu versions upto 7.6
- - Plugin now writes MirVer, so all tooltip plugins can show contact client type 
+ - Plugin now writes MirVer, so all tooltip plugins can show contact client type
    and version string.
 0.0.4.0: 2006-10-23
  - Fix: Messages always have NOW timestamps unless they are OFFLINE.
@@ -78,7 +81,7 @@ Note: For secure connections this plugin requires OpenSSL DLL
  - Fix: GG now handles PS_SETAWAYMSG without previously called PS_SETSTATUS.
    This should fix issue with Watrack that couldn't set the status message
    for GG protocol. (Spotted and fixed thanks to mruweq)
- - Fix: We were reading from freed variable after new account registration 
+ - Fix: We were reading from freed variable after new account registration
  - Fix: Possible crash when closing debug version
 0.0.3.7: 2005-12-19
  - Image sending and receiving now uses ImgDecoder if present for PNG images
@@ -126,10 +129,10 @@ Note: For secure connections this plugin requires OpenSSL DLL
  - Fix: Status descriptions were not set properly when Miranda wasn't asking
    for new status. This change may cause incompatibility with status routines
    different than built-in. Note for misc plugins (mBot, etc.):
-     For avoiding sending gg_setstatus(status, description) twice on
-     miranda_setstatus and miranda_setawaymsg, GG sets status only on
-     miranda_setawaymsg, also this order must be fulfilled to make GG working
-     right with Miranda. (this is how internal module sraway works actually)
+	 For avoiding sending gg_setstatus(status, description) twice on
+	 miranda_setstatus and miranda_setawaymsg, GG sets status only on
+	 miranda_setawaymsg, also this order must be fulfilled to make GG working
+	 right with Miranda. (this is how internal module sraway works actually)
  - When reconnect flag is set and manual server host cycling is on the end of
    the list, reconnect will go back to the begin
    (no longer taking address from web at the end)
@@ -277,29 +280,34 @@ Note: For secure connections this plugin requires OpenSSL DLL
 6. Latest development version:
 ------------------------------
 Latest development version is always available at:
-    http://www.miranda.kom.pl/download/
+	http://www.miranda-im.pl/download/
 
-    - GG.dll - release version
-    - GGdebug.dll - debug version, debug infos in NetLib log
-    - gg-readme.txt - this file with modified changelog
-    - gg-translation-sample.txt - latest partial langpack
+	- GG.dll - release version
+	- GGdebug.dll - debug version, debug infos in NetLib log
+	- gg-readme.txt - this file with modified changelog
+	- gg-translation-sample.txt - latest partial langpack
 
 7. Bugs
 -------
  - Before sending reports check if bugs are still present in latest
    development version
  - [Polish] Send bug reports to Polish Miranda IM Forum at:
-      http://www.miranda.kom.pl/viewforum.php?f=3
+		http://www.miranda-im.pl/viewforum.php?f=3
  - [English] Send bug reports to Miranda IM bugtracker at:
-      http://sourceforge.net/tracker/?atid=102179&group_id=2179
+		http://sourceforge.net/tracker/?atid=102179&group_id=2179
 
 8. Discussion & Feature Requests
 --------------------------------
  - Request features, discuss plugin at Polish Miranda IM Forum:
-      http://www.miranda.kom.pl/viewforum.php?f=3
+		http://www.miranda-im.pl/viewforum.php?f=3
 
+9. Source code
+--------------
+Source code of this plugin is available at Miranda IM SVN repository.
+Consult for details:
+		http://sourceforge.net/svn/?group_id=94142
 
-Copyright (C) 2003 Adam Strzelecki
+Copyright (C) 2003-2007 Adam Strzelecki
 
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License
