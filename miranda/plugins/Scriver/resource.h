@@ -2,7 +2,6 @@
 #define IDD_MSG                         101
 #define IDD_MSGSENDERROR                102
 #define IDD_CONFIRM_SENDALL             103
-#define IDD_OPT_MAIN					110
 #define IDD_OPT_MSGDLG                  111
 #define IDD_OPT_MSGLOG                  112
 #define IDD_OPT_CONTAINER				113
@@ -254,9 +253,6 @@
 #define ID_MESSAGE_SELECTALL            50018
 #define ID_MESSAGE_REDO                 50019
 #define ID_MESSAGE_PASTE                50020
-#define ID_CLOSE                        50022
-#define ID_CLOSEOTHER                   50023
-#define ID_LOCKPOSITION                 50024
 #define ID_Menu                         50026
 #define ID_SEARCH_GOOGLE                50027
 #define ID_SEARCH_WIKIPEDIA             50028

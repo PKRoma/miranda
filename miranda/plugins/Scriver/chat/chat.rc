@@ -278,12 +278,5 @@ BEGIN
         MENUITEM SEPARATOR
         MENUITEM "Clear",                       ID_MESSAGE_CLEAR
     END
-    POPUP "Tabs"
-    BEGIN
-        MENUITEM "&Close tab",                  ID_CLOSE
-        MENUITEM "C&lose other tabs",           ID_CLOSEOTHER
-        MENUITEM SEPARATOR
-        MENUITEM "&Open at this position",      ID_LOCKPOSITION
-    END
 END
 
