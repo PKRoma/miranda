@@ -1170,7 +1170,7 @@ static TOrderTreeData OrderTreeData[]=
 };
 
 
-
+/*
 int ReserveExtraSlot(WPARAM wParam,LPARAM lParam)
 {      
     int iLastFree=-1;
@@ -1213,6 +1213,7 @@ int ReserveExtraSlot(WPARAM wParam,LPARAM lParam)
     }
     return iLastFree;
 };
+*/
 
 #define PrVer 4
 

@@ -556,6 +556,11 @@ TCHAR * GetContactDisplayNameW( HANDLE hContact, int mode );
 char*   u2a( wchar_t* src );
 wchar_t* a2u( char* src );
 
+#ifdef _UNICODE
+#define t2a(src) u2a(src)
+#else
+#define t2a(src) mir_strdup(src)
+#endif
 
 //groups.c
 TCHAR*  GetGroupNameTS( int idx, DWORD* pdwFlags );
