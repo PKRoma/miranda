@@ -279,7 +279,6 @@ LBL_Error:
 	pcli->pfnHitTest			= cliHitTest;
 	pcli->pfnCompareContacts	= cliCompareContacts;
 	pcli->pfnBuildGroupPopupMenu= cliBuildGroupPopupMenu;
-	pcli->pfnTrayIconIconsChanged		= cliTrayIconIconsChanged;
 	pcli->pfnGetIconFromStatusMode = cliGetIconFromStatusMode;
 	pcli->pfnFindItem			= cliFindItem;
 	pcli->pfnGetRowByIndex		= cliGetRowByIndex;

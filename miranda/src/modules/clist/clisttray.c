@@ -23,6 +23,8 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include "commonheaders.h"
 #include "clc.h"
 
+#define TOOLTIP_TOLERANCE 5
+
 extern HIMAGELIST hCListImages;
 extern BOOL(WINAPI * MySetProcessWorkingSetSize) (HANDLE, SIZE_T, SIZE_T);
 
@@ -549,6 +551,62 @@ int fnTrayIconPauseAutoHide(WPARAM wParam, LPARAM lParam)
 	return 0;
 }
 
+/////////////////////////////////////////////////////////////////////////////////////////
+// processes tray icon's messages
+
+static BYTE s_LastHoverIconID = 0;
+static BOOL g_trayTooltipActive = FALSE;
+static POINT tray_hover_pos = {0};
+
+static void CALLBACK TrayHideToolTipTimerProc(HWND hwnd, UINT msg, UINT_PTR id, DWORD elapsed)
+{
+	if ( g_trayTooltipActive ) {
+		POINT pt;
+		GetCursorPos(&pt);
+		if ( abs(pt.x - tray_hover_pos.x) > TOOLTIP_TOLERANCE || abs(pt.y - tray_hover_pos.y) > TOOLTIP_TOLERANCE ) {
+			CallService("mToolTip/HideTip", 0, 0);
+			g_trayTooltipActive = FALSE;
+			KillTimer( hwnd, TIMERID_TRAYHOVER_2 );
+		}
+	}
+	else KillTimer( hwnd, TIMERID_TRAYHOVER_2 );
+}
+
+static void CALLBACK TrayToolTipTimerProc(HWND hwnd, UINT msg, UINT_PTR id, DWORD elapsed)
+{
+	if ( !g_trayTooltipActive && !cli.bTrayMenuOnScreen ) {
+		CLCINFOTIP ti = {0};
+		POINT pt;
+		GetCursorPos( &pt );
+		if ( abs(pt.x - tray_hover_pos.x) <= TOOLTIP_TOLERANCE && abs(pt.y - tray_hover_pos.y) <= TOOLTIP_TOLERANCE ) {
+			TCHAR* szTipCur = cli.szTip;
+			{
+				int n = s_LastHoverIconID-100;
+				if ( n >= 0 && n < cli.trayIconCount )
+					szTipCur = cli.trayIcon[n].ptszToolTip;
+			}
+			ti.rcItem.left   = pt.x - 10;
+			ti.rcItem.right  = pt.x + 10;
+			ti.rcItem.top    = pt.y - 10;
+			ti.rcItem.bottom = pt.y + 10;
+			ti.cbSize = sizeof( ti );
+			ti.isTreeFocused = GetFocus() == cli.hwndContactList ? 1 : 0;
+			#if defined( _UNICODE )
+			{	char* p = u2a( szTipCur );
+	        	CallService( "mToolTip/ShowTip", (WPARAM)p, (LPARAM)&ti );
+				mir_free( p );
+			}
+			#else
+	        	CallService( "mToolTip/ShowTip", (WPARAM)szTipCur, (LPARAM)&ti );
+			#endif
+			GetCursorPos( &tray_hover_pos );
+			SetTimer( cli.hwndContactList, TIMERID_TRAYHOVER_2, 600, TrayHideToolTipTimerProc );
+			g_trayTooltipActive = TRUE;
+	}	}
+
+	KillTimer(hwnd, id);
+}
+
 int fnTrayIconProcessMessage(WPARAM wParam, LPARAM lParam)
 {
 	MSG *msg = (MSG *) wParam;
@@ -561,6 +619,7 @@ int fnTrayIconProcessMessage(WPARAM wParam, LPARAM lParam)
 	case TIM_CREATE:
 		cli.pfnTrayIconInit(msg->hwnd);
 		break;
+
 	case WM_ACTIVATE:
 		if (DBGetContactSettingByte(NULL, "CList", "AutoHide", SETTING_AUTOHIDE_DEFAULT)) {
 			if (LOWORD(msg->wParam) == WA_INACTIVE)
@@ -569,22 +628,25 @@ int fnTrayIconProcessMessage(WPARAM wParam, LPARAM lParam)
 				KillTimer(NULL, autoHideTimerId);
 		}
 		break;
+
 	case WM_DESTROY:
 		cli.pfnTrayIconDestroy(msg->hwnd);
 		break;
+
 	case TIM_CALLBACK:
-		if (msg->lParam==WM_MBUTTONUP) {
-			cli.pfnShowHide(0, 0);
+		if ( msg->lParam == WM_RBUTTONDOWN || msg->lParam == WM_LBUTTONDOWN || msg->lParam == WM_RBUTTONDOWN && g_trayTooltipActive ) {
+			CallService("mToolTip/HideTip", 0, 0);
+			g_trayTooltipActive = FALSE;
 		}
-		else if (msg->lParam ==
-			(DBGetContactSettingByte(NULL, "CList", "Tray1Click", SETTING_TRAY1CLICK_DEFAULT) ? WM_LBUTTONUP : WM_LBUTTONDBLCLK)) {
-				if ((GetAsyncKeyState(VK_CONTROL) & 0x8000))
-					cli.pfnShowHide(0, 0);
-				else {
-					if (cli.pfnEventsProcessTrayDoubleClick())
-						cli.pfnShowHide(0, 0);
-				}
-			}
+
+		if ( msg->lParam == WM_MBUTTONUP )
+			cli.pfnShowHide(0, 0);
+		else if (msg->lParam == (DBGetContactSettingByte(NULL, "CList", "Tray1Click", SETTING_TRAY1CLICK_DEFAULT) ? WM_LBUTTONUP : WM_LBUTTONDBLCLK)) {
+			if ((GetAsyncKeyState(VK_CONTROL) & 0x8000))
+				cli.pfnShowHide(0, 0);
+			else if (cli.pfnEventsProcessTrayDoubleClick())
+				cli.pfnShowHide(0, 0);
+		}
 		else if (msg->lParam == WM_RBUTTONUP) {
 			MENUITEMINFO mi;
 			POINT pt;
@@ -613,18 +675,39 @@ int fnTrayIconProcessMessage(WPARAM wParam, LPARAM lParam)
 			RemoveMenu(hMenu, 1, MF_BYPOSITION);
 			DestroyMenu(hMainMenu);
 		}
+		else if ( msg->lParam == WM_MOUSEMOVE ) {
+			s_LastHoverIconID = msg->wParam;
+			if ( g_trayTooltipActive ) {
+				POINT pt;
+				GetCursorPos( &pt );
+				if ( abs(pt.x - tray_hover_pos.x) > TOOLTIP_TOLERANCE || abs(pt.y - tray_hover_pos.y) > TOOLTIP_TOLERANCE ) {
+					CallService("mToolTip/HideTip", 0, 0);
+					g_trayTooltipActive = FALSE;
+					ReleaseCapture();
+				}
+			}
+			else {
+				GetCursorPos(&tray_hover_pos);
+				SetTimer(cli.hwndContactList, TIMERID_TRAYHOVER, 600, TrayToolTipTimerProc);
+			}
+			break;
+		}
+
 		*((LRESULT *) lParam) = 0;
 		return TRUE;
+	
 	default:
 		if ( msg->message == WM_TASKBARCREATED ) {
 			cli.pfnTrayIconTaskbarCreated(msg->hwnd);
 			*((LRESULT *) lParam) = 0;
 			return TRUE;
-		}
-	}
+	}	}
 
 	return FALSE;
 }
+
+/////////////////////////////////////////////////////////////////////////////////////////
+// processes tray icon's notifications
 
 int fnCListTrayNotify(MIRANDASYSTRAYNOTIFY *msn)
 {

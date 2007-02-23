@@ -58,6 +58,9 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #define TIMERID_INFOTIP          13
 #define TIMERID_REBUILDAFTER     14
 #define TIMERID_DELAYEDRESORTCLC 15
+#define TIMERID_TRAYHOVER        16
+#define TIMERID_TRAYHOVER_2      17
+
 
 #define GROUP_ALLOCATE_STEP  8
 
@@ -396,6 +399,7 @@ typedef struct
 	int    shellVersion;
 	int    cycleTimerId, cycleStep;
 	TCHAR* szTip;
+	BOOL   bTrayMenuOnScreen;
 
 	HICON ( *pfnGetIconFromStatusMode )( HANDLE hContact, const char *szProto, int status );
 

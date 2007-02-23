@@ -46,9 +46,8 @@ UNICODE - done.
 #define TIMERID_DRAGAUTOSCROLL 11
 #define TIMERID_INFOTIP        13
 #define TIMERID_SORT           15
-#define TIMERID_TRAYHOVER      16
-#define TIMERID_REFRESH        17
-#define TIMERID_PAINT          18
+#define TIMERID_REFRESH        18
+#define TIMERID_PAINT          19
 struct ClcGroup;
 
 #define CONTACTF_ONLINE    1

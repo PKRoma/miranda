@@ -62,7 +62,6 @@ void mir_strset(TCHAR ** dest, TCHAR *source)
 static DLLVERSIONINFO dviShell;
 BOOL g_MultiConnectionMode=FALSE;
 char * g_szConnectingProto=NULL;
-static BOOL g_trayMenuOnScreen=FALSE;
 int GetStatusVal(int status)
 {
 	switch ( status ) {
@@ -319,8 +318,6 @@ void cliTrayIconUpdateBase(const char *szChangedProto)
 
 static int autoHideTimerId;
 
-#define TOOLTIP_TOLERANCE 5
-
 static VOID CALLBACK TrayIconAutoHideTimer(HWND hwnd,UINT message,UINT idEvent,DWORD dwTime)
 {
 	HWND hwndClui, ActiveWindow;
@@ -348,69 +345,13 @@ int TrayIconPauseAutoHide(WPARAM wParam,LPARAM lParam)
 	return 0;
 }
 
-
-static BYTE s_LastHoverIconID=0;
-
-static void CALLBACK TrayHideToolTipTimerProc(HWND hwnd, UINT msg, UINT_PTR id, DWORD elapsed)
-{
-	if (g_trayTooltipActive)
-	{
-		POINT pt;
-		GetCursorPos(&pt);
-		if(abs(pt.x - tray_hover_pos.x)>TOOLTIP_TOLERANCE || abs(pt.y - tray_hover_pos.y)>TOOLTIP_TOLERANCE)
-		{
-			CallService("mToolTip/HideTip", 0, 0);
-			g_trayTooltipActive = FALSE;
-			KillTimer(hwnd,TIMERID_TRAYHOVER_2);
-		}
-	}
-	else KillTimer(hwnd,TIMERID_TRAYHOVER_2);
-}
-
-static void CALLBACK TrayToolTipTimerProc(HWND hwnd, UINT msg, UINT_PTR id, DWORD elapsed)
-{
-	if(!g_trayTooltipActive && !g_trayMenuOnScreen)
-	{
-		CLCINFOTIP ti = {0};
-		POINT pt;
-		GetCursorPos(&pt);
-		if(abs(pt.x-tray_hover_pos.x)<=TOOLTIP_TOLERANCE && abs(pt.y-tray_hover_pos.y)<=TOOLTIP_TOLERANCE)
-		{
-			TCHAR * szTipCur = pcli->szTip;
-			{
-				int n=s_LastHoverIconID-100;
-				if (n>=0 && n < pcli->trayIconCount)
-					szTipCur=pcli->trayIcon[n].ptszToolTip;
-			}
-			ti.rcItem.left=pt.x-10;
-			ti.rcItem.right=pt.x+10;
-			ti.rcItem.top=pt.y-10;
-			ti.rcItem.bottom=pt.y+10;
-			ti.cbSize = sizeof(ti);
-			ti.isTreeFocused = GetFocus() == pcli->hwndContactList ? 1 : 0;
-			#if defined( _UNICODE )
-			{	char* p = u2a( szTipCur );
-	        	CallService("mToolTip/ShowTip", (WPARAM)p, (LPARAM)&ti);
-				mir_free_and_nill( p );
-			}
-			#else
-	        	CallService("mToolTip/ShowTip", (WPARAM)szTipCur, (LPARAM)&ti);
-			#endif
-			GetCursorPos(&tray_hover_pos);
-			SetTimer(pcli->hwndContactList, TIMERID_TRAYHOVER_2, 600, TrayHideToolTipTimerProc);
-			g_trayTooltipActive = TRUE;
-		}
-	}
-	KillTimer(hwnd, id);
-}
-
 int cli_TrayIconProcessMessage(WPARAM wParam,LPARAM lParam)
 {
 	MSG *msg=(MSG*)wParam;
 	switch(msg->message) {
 	case WM_EXITMENULOOP:
-		if (g_trayMenuOnScreen)
-			g_trayMenuOnScreen=FALSE;
+		if (pcli->bTrayMenuOnScreen)
+			pcli->bTrayMenuOnScreen=FALSE;
 		break;
 
 	case WM_DRAWITEM:
@@ -435,13 +376,7 @@ int cli_TrayIconProcessMessage(WPARAM wParam,LPARAM lParam)
 		break;
 
 	case TIM_CALLBACK:
-		if (msg->lParam==WM_MBUTTONDOWN || msg->lParam==WM_LBUTTONDOWN || msg->lParam==WM_RBUTTONDOWN && g_trayTooltipActive) {
-			CallService("mToolTip/HideTip", 0, 0);
-			g_trayTooltipActive = FALSE;
-		}
-		if (msg->lParam==WM_MBUTTONUP)
-			cliShowHide(0,0);
-		else if ((GetAsyncKeyState(VK_CONTROL)&0x8000) && msg->lParam == WM_LBUTTONDOWN && !DBGetContactSettingByte(NULL,"CList","Tray1Click",SETTING_TRAY1CLICK_DEFAULT)) {
+		if ((GetAsyncKeyState(VK_CONTROL)&0x8000) && msg->lParam == WM_LBUTTONDOWN && !DBGetContactSettingByte(NULL,"CList","Tray1Click",SETTING_TRAY1CLICK_DEFAULT)) {
 			POINT pt;
 			HMENU hMenu;
 			hMenu=(HMENU)CallService(MS_CLIST_MENUGETSTATUS,(WPARAM)0,(LPARAM)0);
@@ -450,7 +385,7 @@ int cli_TrayIconProcessMessage(WPARAM wParam,LPARAM lParam)
 			SetForegroundWindow(msg->hwnd);
 			SetFocus(msg->hwnd);
 			GetCursorPos(&pt);
-			g_trayMenuOnScreen=TRUE;
+			pcli->bTrayMenuOnScreen=TRUE;
 			TrackPopupMenu(hMenu, TPM_TOPALIGN | TPM_LEFTALIGN|TPM_LEFTBUTTON, pt.x, pt.y, 0, msg->hwnd, NULL);
 			PostMessage(msg->hwnd, WM_NULL, 0, 0);
 			g_mutex_bOnTrayRightClick=0;
@@ -458,13 +393,6 @@ int cli_TrayIconProcessMessage(WPARAM wParam,LPARAM lParam)
 		}
 		else if (msg->lParam==WM_MBUTTONDOWN ||msg->lParam==WM_LBUTTONDOWN ||msg->lParam==WM_RBUTTONDOWN) {
 			IS_WM_MOUSE_DOWN_IN_TRAY=1;
-		}
-		else if (msg->lParam==(DBGetContactSettingByte(NULL,"CList","Tray1Click",SETTING_TRAY1CLICK_DEFAULT)?WM_LBUTTONUP:WM_LBUTTONDBLCLK)) {
-			g_mutex_bOnTrayRightClick=1;
-			if ((GetAsyncKeyState(VK_CONTROL)&0x8000)) 
-				cliShowHide(0,0);
-			else if(pcli->pfnEventsProcessTrayDoubleClick())
-				cliShowHide(0,0);
 		}
 		else if (msg->lParam == WM_RBUTTONUP) {
 			POINT pt;
@@ -476,26 +404,10 @@ int cli_TrayIconProcessMessage(WPARAM wParam,LPARAM lParam)
 			SetFocus(msg->hwnd);
 
 			GetCursorPos(&pt);
-			g_trayMenuOnScreen=TRUE;
+			pcli->bTrayMenuOnScreen=TRUE;
 			TrackPopupMenu(hMenu, TPM_TOPALIGN | TPM_LEFTALIGN|TPM_LEFTBUTTON, pt.x, pt.y, 0, msg->hwnd, NULL);
 			PostMessage(msg->hwnd, WM_NULL, 0, 0);
 		}
-		else if (msg->lParam == WM_MOUSEMOVE) {
-			s_LastHoverIconID=msg->wParam;
-			if ( g_trayTooltipActive ) {
-				POINT pt;
-				GetCursorPos(&pt);
-				if(abs(pt.x - tray_hover_pos.x)>TOOLTIP_TOLERANCE || abs(pt.y - tray_hover_pos.y)>TOOLTIP_TOLERANCE) {
-					CallService("mToolTip/HideTip", 0, 0);
-					g_trayTooltipActive = FALSE;
-					ReleaseCapture();
-				}
-				break;
-			}
-			else {
-				GetCursorPos(&tray_hover_pos);
-				SetTimer(pcli->hwndContactList, TIMERID_TRAYHOVER, 600, TrayToolTipTimerProc);
-		}	}
 		else break;
 		*((LRESULT*)lParam)=0;
 		return TRUE;
@@ -593,11 +505,6 @@ static int AddTrayMenuItem(WPARAM wParam,LPARAM lParam)
 	//	return MENU_CUSTOMITEMMAIN|(mainMenuItem[mainItemCount-1].id);
 }
 
-int TrayMenuCheckService(WPARAM wParam,LPARAM lParam) {
-	//not used
-	return(0);
-};
-
 int TrayMenuonAddService(WPARAM wParam,LPARAM lParam) {
 
 	MENUITEMINFO *mii=(MENUITEMINFO* )wParam;
@@ -624,8 +531,7 @@ int TrayMenuonAddService(WPARAM wParam,LPARAM lParam) {
 	}
 
 	return(TRUE);
-};
-
+}
 
 //called with:
 //wparam - ownerdata
@@ -638,11 +544,11 @@ int TrayMenuExecService(WPARAM wParam,LPARAM lParam) {
 		{
 			//bug in help.c,it used wparam as parent window handle without reason.
 			mmep->Param1=0;
-		};
+		}
 		CallService(mmep->szServiceName,mmep->Param1,lParam);
-	};
+	}
 	return(1);
-};
+}
 
 int FreeOwnerDataTrayMenu (WPARAM wParam,LPARAM lParam)
 {
@@ -655,7 +561,7 @@ int FreeOwnerDataTrayMenu (WPARAM wParam,LPARAM lParam)
 	}
 
 	return(0);
-};
+}
 
 void InitTrayMenus(void)
 {
@@ -758,39 +664,17 @@ void InitTrayMenus(void)
 	};
 }
 
-
 void UninitTrayMenu()
 {
     if (hTrayMenuObject && ServiceExists(MO_REMOVEMENUOBJECT))
         CallService(MO_REMOVEMENUOBJECT,(WPARAM)hTrayMenuObject,0);
     hTrayMenuObject=NULL;
 }
-//////////////////////////////END TRAY MENU/////////////////////////
-void cliTrayIconIconsChanged(void)
-{
-	HWND hwnd = pcli->hwndContactList;
-	pcli->pfnTrayIconDestroy(hwnd);
-	pcli->pfnTrayIconInit(hwnd);
-}
 
 void InitTray(void)
 {
-	HINSTANCE hLib;
-	//////////////////////////////END TRAY MENU/////////////////////////
-	hLib=LoadLibrary(TEXT("shell32.dll"));
-	if (hLib) {
-		DLLGETVERSIONPROC proc;
-		dviShell.cbSize=sizeof(dviShell);
-		proc=(DLLGETVERSIONPROC)GetProcAddress(hLib,"DllGetVersion");
-		if (!IsBadCodePtr(proc)) {
-			proc(&dviShell);
-		}
-		FreeLibrary(hLib);
-	}
-	if (dviShell.dwMajorVersion>=5) {
-		CreateServiceFunction(MS_CLIST_SYSTRAY_NOTIFY,(MIRANDASERVICE)pcli->pfnCListTrayNotify);
-	}
-
 	InitTrayMenus();
 	return;
 }
+
+//////////////////////////////END TRAY MENU/////////////////////////

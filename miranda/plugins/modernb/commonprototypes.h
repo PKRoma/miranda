@@ -275,7 +275,6 @@ BOOL   CLUI__cliInvalidateRect(HWND hWnd, CONST RECT* lpRect,BOOL bErase );
 int    cliCompareContacts(const struct ClcContact *contact1,const struct ClcContact *contact2);
 int    cliFindItem(HWND hwnd,struct ClcData *dat,HANDLE hItem,struct ClcContact **contact,struct ClcGroup **subgroup,int *isVisible);
 void   cliTrayIconUpdateBase(const char *szChangedProto);
-void   cliTrayIconIconsChanged(void);
 void   cliCluiProtocolStatusChanged(int status,const unsigned char * proto);
 HMENU  cliBuildGroupPopupMenu(struct ClcGroup *group);
 void   cliInvalidateDisplayNameCacheEntry(HANDLE hContact);

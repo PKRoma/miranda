@@ -125,8 +125,6 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #define TIMERID_INFOTIP        13
 #define TIMERID_REBUILDAFTER   14
 #define TIMERID_DELAYEDRESORTCLC   15
-#define TIMERID_TRAYHOVER      16
-#define TIMERID_TRAYHOVER_2    17
 #define TIMERID_SUBEXPAND		21
 #define TIMERID_INVALIDATE 22
 

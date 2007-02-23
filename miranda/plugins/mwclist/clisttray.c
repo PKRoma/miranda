@@ -39,18 +39,7 @@ int TrayIconProcessMessage(WPARAM wParam,LPARAM lParam)
 		return CallService(MS_CLIST_MENUMEASUREITEM,msg->wParam,msg->lParam);
 		break;
 	case TIM_CALLBACK:
-		if (msg->lParam==WM_MBUTTONUP)
-		{
-			pcli->pfnShowHide(0,0);				
-		}
-		else if (msg->lParam==(DBGetContactSettingByte(NULL,"CList","Tray1Click",SETTING_TRAY1CLICK_DEFAULT)?WM_LBUTTONUP:WM_LBUTTONDBLCLK))
-		{
-			if ((GetAsyncKeyState(VK_CONTROL)&0x8000)) pcli->pfnShowHide(0,0);
-			else {
-				if( pcli->pfnEventsProcessTrayDoubleClick()) pcli->pfnShowHide(0,0);
-			}				
-		}
-		else if (msg->lParam == WM_RBUTTONUP)
+		if (msg->lParam == WM_RBUTTONUP)
 		{
 			POINT pt;	
 			HMENU hMenu=(HMENU)CallService(MS_CLIST_MENUBUILDTRAY,(WPARAM)0,(LPARAM)0);
@@ -60,6 +49,8 @@ int TrayIconProcessMessage(WPARAM wParam,LPARAM lParam)
 			GetCursorPos(&pt);
 			TrackPopupMenu(hMenu, TPM_TOPALIGN | TPM_LEFTALIGN, pt.x, pt.y, 0, msg->hwnd, NULL);
 		}
+		else break;
+
 		*((LRESULT*)lParam)=0;
 		return TRUE;
 	}

@@ -33,9 +33,6 @@ extern HIMAGELIST hCListImages;
 
 extern struct CluiData g_CluiData;
 
-BOOL g_trayTooltipActive = FALSE;
-POINT tray_hover_pos = {0};
-
 // don't move to win2k.h, need new and old versions to work on 9x/2000/XP
 #define NIF_STATE       0x00000008
 #define NIF_INFO        0x00000010
@@ -150,8 +147,7 @@ void TrayIconUpdateBase(const char *szChangedProto)
 	} else {
 		HICON hIcon = 0;
 		int iIcon = IconFromStatusMode(NULL, averageMode, 0, &hIcon);
-
-		if(hIcon)
+		if ( hIcon )
 			changed = pcli->pfnTrayIconSetBaseInfo(CopyIcon(hIcon), NULL);
 		else
 			changed = pcli->pfnTrayIconSetBaseInfo(ImageList_GetIcon(hCListImages, iIcon, ILD_NORMAL), NULL);
@@ -164,67 +160,14 @@ void TrayIconUpdateBase(const char *szChangedProto)
 
 extern int ( *saveTrayIconProcessMessage )(WPARAM wParam, LPARAM lParam);
 
-static void CALLBACK TrayToolTipTimerProc(HWND hwnd, UINT msg, UINT_PTR id, DWORD elapsed)
-{
-	if(!g_trayTooltipActive && !g_CluiData.bNoTrayTips) {
-		CLCINFOTIP ti = {0};
-		POINT pt;
-		GetCursorPos(&pt);
-		if(pt.x == tray_hover_pos.x && pt.y == tray_hover_pos.y) {
-			ti.cbSize = sizeof(ti);
-			ti.isTreeFocused = GetFocus() == pcli->hwndContactList ? 1 : 0;
-			#if defined( _UNICODE )
-			{	char* p = u2a( pcli->szTip );
-	        	CallService("mToolTip/ShowTip", (WPARAM)p, (LPARAM)&ti);
-				free( p );
-			}
-			#else
-	        	CallService("mToolTip/ShowTip", (WPARAM)pcli->szTip, (LPARAM)&ti);
-			#endif
-			GetCursorPos(&tray_hover_pos);
-			g_trayTooltipActive = TRUE;
-		}
-	}
-	KillTimer(hwnd, id);
-}
-
 int TrayIconProcessMessage(WPARAM wParam, LPARAM lParam)
 {
-	MSG *msg = (MSG *) wParam;
-	switch( msg->message ) {
-	case TIM_CALLBACK:
-		if (msg->lParam == WM_RBUTTONDOWN || msg->lParam == WM_LBUTTONDOWN) {
-			KillTimer(pcli->hwndContactList, TIMERID_TRAYHOVER);
-			CallService("mToolTip/HideTip", 0, 0);
-		}
-		if (msg->lParam == WM_MBUTTONUP) {
-			pcli->pfnShowHide(0, 0);
-		} else if (msg->lParam == (DBGetContactSettingByte(NULL, "CList", "Tray1Click", SETTING_TRAY1CLICK_DEFAULT) ? WM_LBUTTONUP : WM_LBUTTONDBLCLK)) {
-			if ((GetAsyncKeyState(VK_CONTROL) & 0x8000))
-				pcli->pfnShowHide(0, 0);
-			else {
-				if (pcli->pfnEventsProcessTrayDoubleClick())
-					pcli->pfnShowHide(0, 0);
-			}
-		} 
-		else if (msg->lParam == WM_MOUSEMOVE) {
-			if(g_trayTooltipActive) {
-				POINT pt;
-				GetCursorPos(&pt);
-				if(pt.x != tray_hover_pos.x || pt.y != tray_hover_pos.y) {
-					CallService("mToolTip/HideTip", 0, 0);
-					g_trayTooltipActive = FALSE;
-				}
-				break;
-			}
-
-			GetCursorPos(&tray_hover_pos);
-			SetTimer(pcli->hwndContactList, TIMERID_TRAYHOVER, 600, TrayToolTipTimerProc);
-		}
-		else break;
-		*((LRESULT *) lParam) = 0;
-		return TRUE;
-	}
+	MSG* msg = ( MSG* )wParam;
+	if ( msg->message == TIM_CALLBACK && msg->lParam == WM_MOUSEMOVE ) {
+		if ( g_CluiData.bNoTrayTips ) {
+			*((LRESULT *) lParam) = 0;
+			return TRUE;
+	}	}
 
 	return saveTrayIconProcessMessage(wParam, lParam);
 }
