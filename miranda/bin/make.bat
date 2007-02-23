@@ -237,6 +237,7 @@ copy ..\..\plugins\clist_nicer\Release\clist_nicer.pdb %Temp%\pdba\plugins
 copy ..\..\plugins\db3x\Release\dbx_3x.pdb             %Temp%\pdba\plugins
 copy ..\..\plugins\db3x_mmap\Release\dbx_mmap.pdb      %Temp%\pdba\plugins
 copy ..\..\plugins\import\Release\import.pdb           %Temp%\pdba\plugins
+copy ..\..\plugins\loadavatars\Release\loadavatars.pdb %Temp%\pdbw\plugins
 copy ..\..\plugins\modernb\Release\clist_modern.pdb    %Temp%\pdba\plugins
 copy ..\..\plugins\mwclist\Release\clist_mw.pdb        %Temp%\pdba\plugins
 copy ..\..\plugins\png2dib\Release\png2dib.pdb         %Temp%\pdba\plugins
