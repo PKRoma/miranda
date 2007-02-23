@@ -5516,6 +5516,7 @@ verify:
             return 0;
         case DM_STATUSICONCHANGE:
             if(m_pContainer->hwndStatus) {
+                SendMessage(dat->pContainer->hwnd, WM_SIZE, 0, 0);
                 SendMessage(m_pContainer->hwndStatus, SB_SETTEXT, (WPARAM)(SBT_OWNERDRAW) | 2, (LPARAM)0);
                 InvalidateRect(m_pContainer->hwndStatus, NULL, TRUE);
             }

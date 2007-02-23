@@ -511,6 +511,12 @@ static int MessageEventAdded(WPARAM wParam, LPARAM lParam)
     else {
         char *szProto = (char *)CallService(MS_PROTO_GETCONTACTBASEPROTO, (WPARAM)wParam, 0);
         DWORD dwStatus = 0;
+
+        if(myGlobals.g_MetaContactsAvail && szProto && !strcmp(szProto, (char *)CallService(MS_MC_GETPROTOCOLNAME, 0, 0))) {
+            HANDLE hSubconttact = (HANDLE)CallService(MS_MC_GETMOSTONLINECONTACT, wParam, 0);
+
+            szProto = (char *)CallService(MS_PROTO_GETCONTACTBASEPROTO, (WPARAM)hSubconttact, 0);
+        }
         if(szProto) {
             dwStatus = (DWORD)CallProtoService(szProto, PS_GETSTATUS, 0, 0);
             if(dwStatus == 0 || dwStatus <= ID_STATUS_OFFLINE || ((1<<(dwStatus - ID_STATUS_ONLINE)) & dwStatusMask))              // should never happen, but...

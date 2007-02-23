@@ -447,7 +447,6 @@ LRESULT CALLBACK StatusBarSubclassProc(HWND hWnd, UINT msg, WPARAM wParam, LPARA
                 KillTimer(hWnd, TIMERID_HOVER);
                 GetCursorPos(&pt);
                 if (pt.x == ptMouse.x && pt.y == ptMouse.y) {
-                    unsigned i;
                     RECT rc;
                     struct MessageWindowData *dat = (struct MessageWindowData *)GetWindowLong(pContainer->hwndActive, GWL_USERDATA);
 
@@ -457,10 +456,21 @@ LRESULT CALLBACK StatusBarSubclassProc(HWND hWnd, UINT msg, WPARAM wParam, LPARA
                     if(dat && PtInRect(&rc,pt)) {
                         int gap = 2;
                         struct StatusIconListNode *current = status_icon_list;
-						struct MessageWindowData *dat = (struct MessageWindowData *)GetWindowLong(pContainer->hwndActive, GWL_USERDATA);
                         unsigned int iconNum = (pt.x - rc.left ) / (myGlobals.m_smcxicon + gap);
+                        unsigned int list_icons = 0;
+                        char         buff[100];
+                        DWORD        flags;
 
-                        if((int)iconNum == status_icon_list_size && pContainer) {
+                        while(current) {
+                            sprintf(buff, "SRMMStatusIconFlags%d", (int)current->sid.dwId);
+                            flags = DBGetContactSettingByte(dat->hContact, current->sid.szModule, buff, current->sid.flags);
+                            if(!(flags & MBF_HIDDEN))
+                                list_icons++;
+                            current = current->next;
+                        }
+                        current = status_icon_list;
+
+                        if((int)iconNum == list_icons && pContainer) {
 #if defined(_UNICODE)
 							if(fHaveUCTip) {
 								wchar_t wBuf[512];
@@ -481,7 +491,7 @@ LRESULT CALLBACK StatusBarSubclassProc(HWND hWnd, UINT msg, WPARAM wParam, LPARA
 #endif
 							tooltip_active = TRUE;
                         }
-                        else if((int)iconNum == status_icon_list_size + 1 && dat && dat->bType == SESSIONTYPE_IM) {
+                        else if((int)iconNum == list_icons + 1 && dat && dat->bType == SESSIONTYPE_IM) {
                             int mtnStatus = (int)DBGetContactSettingByte(dat->hContact, SRMSGMOD, SRMSGSET_TYPING, DBGetContactSettingByte(NULL, SRMSGMOD, SRMSGSET_TYPINGNEW, SRMSGDEFSET_TYPINGNEW));
 #if defined(_UNICODE)
 
@@ -505,9 +515,13 @@ LRESULT CALLBACK StatusBarSubclassProc(HWND hWnd, UINT msg, WPARAM wParam, LPARA
 							tooltip_active = TRUE;
                         }
                         else {
-                            for(i = 0; current && i < iconNum; i++) 
+                            while(current && iconNum > 0) {
+                                //sprintf(buff, "SRMMStatusIconFlags%d", (int)current->sid.dwId);
+                                //flags = DBGetContactSettingByte(dat->hContact, current->sid.szModule, buff, current->sid.flags);
+                                //if(!(flags & MBF_HIDDEN)) 
+                                    iconNum--;
                                 current = current->next;
-
+                            }
                             if(current) {
                                 char buff[256];
 								BYTE flags;
@@ -1660,20 +1674,25 @@ buttons_done:
                 if (pContainer->hwndStatus) {
                     RECT rcs;
                     int statwidths[5];
+                    struct StatusIconListNode *current = status_icon_list;
+                    int    list_icons = 0;
+                    char   buff[100];
+					DWORD  flags;
+					struct MessageWindowData *dat = (struct MessageWindowData *)GetWindowLong(pContainer->hwndActive, GWL_USERDATA);
+
+                    while(current && dat) {
+                        sprintf(buff, "SRMMStatusIconFlags%d", (int)current->sid.dwId);
+                        flags = DBGetContactSettingByte(dat->hContact, current->sid.szModule, buff, current->sid.flags);
+                        if(!(flags & MBF_HIDDEN))
+                            list_icons++;
+                        current = current->next;
+                    }
 
                     SendMessage(pContainer->hwndStatus, WM_SIZE, 0, 0);
                     GetWindowRect(pContainer->hwndStatus, &rcs);
-                    /*
-                    statwidths[0] = (rcs.right - rcs.left) - (2 * SB_CHAR_WIDTH) - 24 - (myGlobals.g_SecureIMAvail ? 24 + ((status_icon_list_size - 1) * myGlobals.m_smcxicon) : 0);
-                    statwidths[1] = (rcs.right - rcs.left) - (SB_CHAR_WIDTH) - 8 - (myGlobals.g_SecureIMAvail ? 24 + ((status_icon_list_size - 1) * myGlobals.m_smcxicon) : 0);
-                    statwidths[2] = (rcs.right - rcs.left) - (myGlobals.g_SecureIMAvail ? (30 + 24 + ((status_icon_list_size - 1) * myGlobals.m_smcxicon)) : 30);
-                    statwidths[3] = myGlobals.g_SecureIMAvail ? (rcs.right - rcs.left) - 30 : -1;
-                    statwidths[4] = -1;
-                    SendMessage(pContainer->hwndStatus, SB_SETPARTS, myGlobals.g_SecureIMAvail ? 5 : 4, (LPARAM) statwidths);
-                    pContainer->statusBarHeight = (rcs.bottom - rcs.top) + 1;
-                    */
-                    statwidths[0] = (rcs.right - rcs.left) - (2 * SB_CHAR_WIDTH + 20) - (35 + ((status_icon_list_size) * (myGlobals.m_smcxicon + 2)));
-                    statwidths[1] = (rcs.right - rcs.left) - (45 + ((status_icon_list_size) * (myGlobals.m_smcxicon + 2)));
+
+                    statwidths[0] = (rcs.right - rcs.left) - (2 * SB_CHAR_WIDTH + 20) - (35 + ((list_icons) * (myGlobals.m_smcxicon + 2)));
+                    statwidths[1] = (rcs.right - rcs.left) - (45 + ((list_icons) * (myGlobals.m_smcxicon + 2)));
                     statwidths[2] = -1;
                     SendMessage(pContainer->hwndStatus, SB_SETPARTS, 3, (LPARAM) statwidths);
                     pContainer->statusBarHeight = (rcs.bottom - rcs.top) + 1;
