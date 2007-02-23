@@ -15,6 +15,7 @@
 	"..\include\m_findadd.h"\
 	"..\include\m_genmenu.h"\
 	"..\include\m_history.h"\
+	"..\include\m_icolib.h"\
 	"..\include\m_idle.h"\
 	"..\include\m_ignore.h"\
 	"..\include\m_langpack.h"\
@@ -327,7 +328,6 @@
 .\modules\skin\skinicons.c : \
 	"..\include\m_clui.h"\
 	"..\include\m_genmenu.h"\
-	"..\include\m_icolib.h"\
 	"..\include\m_plugins.h"\
 	"..\include\m_protomod.h"\
 	
@@ -356,7 +356,6 @@
 .\modules\srawaymsg\awaymsg.c : \
 	"..\include\m_clui.h"\
 	"..\include\m_genmenu.h"\
-	"..\include\m_icolib.h"\
 	"..\include\m_plugins.h"\
 	"..\include\m_protomod.h"\
 	
@@ -518,6 +517,13 @@
 	"..\include\m_protomod.h"\
 	
 
+.\modules\utils\sha1.c : \
+	"..\include\m_clui.h"\
+	"..\include\m_genmenu.h"\
+	"..\include\m_plugins.h"\
+	"..\include\m_protomod.h"\
+	
+
 .\modules\utils\utf.c : \
 	"..\include\m_clui.h"\
 	"..\include\m_genmenu.h"\
@@ -618,7 +624,6 @@
 .\modules\clist\clistmenus.c : \
 	"..\include\m_clui.h"\
 	"..\include\m_genmenu.h"\
-	"..\include\m_icolib.h"\
 	"..\include\m_plugins.h"\
 	"..\include\m_protomod.h"\
 	".\modules\clist\genmenu.h"\
@@ -627,7 +632,6 @@
 .\modules\clist\clistmod.c : \
 	"..\include\m_clui.h"\
 	"..\include\m_genmenu.h"\
-	"..\include\m_icolib.h"\
 	"..\include\m_plugins.h"\
 	"..\include\m_protomod.h"\
 	".\modules\clist\clc.h"\
@@ -653,7 +657,6 @@
 .\modules\clist\clui.c : \
 	"..\include\m_clui.h"\
 	"..\include\m_genmenu.h"\
-	"..\include\m_icolib.h"\
 	"..\include\m_plugins.h"\
 	"..\include\m_protomod.h"\
 	".\modules\clist\clc.h"\
@@ -686,7 +689,6 @@
 .\modules\clist\genmenu.c : \
 	"..\include\m_clui.h"\
 	"..\include\m_genmenu.h"\
-	"..\include\m_icolib.h"\
 	"..\include\m_plugins.h"\
 	"..\include\m_protomod.h"\
 	".\modules\clist\genmenu.h"\
@@ -772,7 +774,6 @@
 .\modules\icolib\IcoLib.c : \
 	"..\include\m_clui.h"\
 	"..\include\m_genmenu.h"\
-	"..\include\m_icolib.h"\
 	"..\include\m_plugins.h"\
 	"..\include\m_protomod.h"\
 	".\modules\icolib\IcoLib.h"\
@@ -781,7 +782,6 @@
 .\modules\icolib\skin2icons.c : \
 	"..\include\m_clui.h"\
 	"..\include\m_genmenu.h"\
-	"..\include\m_icolib.h"\
 	"..\include\m_plugins.h"\
 	"..\include\m_protomod.h"\
 	".\modules\database\dblists.h"\
@@ -799,54 +799,50 @@
 	"..\docs\contributors.txt"\
 	"..\include\statusmodes.h"\
 	".\miranda32.exe.manifest"\
-	".\res\addcontact.ico"\
-	".\res\away.ico"\
-	".\res\blank.ico"\
-	".\res\changefont.ico"\
-	".\res\delete.ico"\
-	".\res\detailsl.ico"\
-	".\res\dnd.ico"\
-	".\res\downarrow.ico"\
-	".\res\dragcopy.cur"\
-	".\res\dropuser.cur"\
-	".\res\emptyblo.ico"\
-	".\res\file.ico"\
-	".\res\filledbl.ico"\
-	".\res\finduser.ico"\
-	".\res\freechat.ico"\
-	".\res\groupope.ico"\
-	".\res\groupshu.ico"\
-	".\res\help.ico"\
-	".\res\history.ico"\
-	".\res\hyperlin.cur"\
-	".\res\invisible.ico"\
-	".\res\load.ico"\
-	".\res\message.ico"\
-	".\res\miranda.ico"\
-	".\res\mirandaw.ico"\
-	".\res\multisend.ico"\
-	".\res\na2.ico"\
-	".\res\notick.ico"\
-	".\res\notick1.ico"\
-	".\res\occupied.ico"\
-	".\res\offline2.ico"\
-	".\res\online2.ico"\
-	".\res\onthepho.ico"\
-	".\res\options.ico"\
-	".\res\outtolun.ico"\
-	".\res\rename.ico"\
-	".\res\reply.ico"\
-	".\res\searchal.ico"\
-	".\res\sendmail.ico"\
-	".\res\smalldot.ico"\
-	".\res\sms.ico"\
-	".\res\sortcold.bmp"\
-	".\res\sortcolu.bmp"\
-	".\res\timestamp.ico"\
-	".\res\typing.ico"\
-	".\res\url.ico"\
-	".\res\useronli.ico"\
-	".\res\viewdetails.ico"\
+	".\res\_blank.ico"\
+	".\res\arrow_sort_column_down.bmp"\
+	".\res\arrow_sort_column_up.bmp"\
+	".\res\check_off.ico"\
+	".\res\check_on.ico"\
+	".\res\contact_add.ico"\
+	".\res\contact_delete.ico"\
+	".\res\contact_rename.ico"\
+	".\res\contact_view_details.ico"\
+	".\res\cursor_drag_copy.cur"\
+	".\res\cursor_drop_user.cur"\
+	".\res\cursor_hyperlink.cur"\
+	".\res\group_closed.ico"\
+	".\res\group_opened.ico"\
+	".\res\icon_all.ico"\
+	".\res\icon_auth_request.ico"\
+	".\res\icon_connecting.ico"\
+	".\res\icon_down_arrow.ico"\
+	".\res\icon_file.ico"\
+	".\res\icon_find_user.ico"\
+	".\res\icon_help.ico"\
+	".\res\icon_history.ico"\
+	".\res\icon_mail.ico"\
+	".\res\icon_message.ico"\
+	".\res\icon_options.ico"\
+	".\res\icon_search_all.ico"\
+	".\res\icon_small_dot.ico"\
+	".\res\icon_sms.ico"\
+	".\res\icon_typing.ico"\
+	".\res\icon_url.ico"\
+	".\res\miranda_home.ico"\
+	".\res\miranda_logo.ico"\
+	".\res\miranda_manager.ico"\
+	".\res\status_away.ico"\
+	".\res\status_DND.ico"\
+	".\res\status_free4chat.ico"\
+	".\res\status_invisible.ico"\
+	".\res\status_NA.ico"\
+	".\res\status_occupied.ico"\
+	".\res\status_offline.ico"\
+	".\res\status_on_the_phone.ico"\
+	".\res\status_online.ico"\
+	".\res\status_out2lunch.ico"\
+	".\res\status_user_online.ico"\
 	".\resource.rc"\
 	".\version.rc"\
 	
