@@ -1,29 +1,29 @@
 # Microsoft Developer Studio Generated NMAKE File, Based on png2dib.dsp
 !IF "$(CFG)" == ""
-CFG=png2dib - Win32 Release
-!MESSAGE No configuration specified. Defaulting to png2dib - Win32 Release.
-!ENDIF
+CFG=png2dib - Win32 Debug
+!MESSAGE No configuration specified. Defaulting to png2dib - Win32 Debug.
+!ENDIF 
 
 !IF "$(CFG)" != "png2dib - Win32 Release" && "$(CFG)" != "png2dib - Win32 Debug"
 !MESSAGE Invalid configuration "$(CFG)" specified.
 !MESSAGE You can specify a configuration when running NMAKE
 !MESSAGE by defining the macro CFG on the command line. For example:
-!MESSAGE
+!MESSAGE 
 !MESSAGE NMAKE /f "png2dib.mak" CFG="png2dib - Win32 Debug"
-!MESSAGE
+!MESSAGE 
 !MESSAGE Possible choices for configuration are:
-!MESSAGE
+!MESSAGE 
 !MESSAGE "png2dib - Win32 Release" (based on "Win32 (x86) Dynamic-Link Library")
 !MESSAGE "png2dib - Win32 Debug" (based on "Win32 (x86) Dynamic-Link Library")
-!MESSAGE
+!MESSAGE 
 !ERROR An invalid configuration is specified.
-!ENDIF
+!ENDIF 
 
 !IF "$(OS)" == "Windows_NT"
 NULL=
-!ELSE
+!ELSE 
 NULL=nul
-!ENDIF
+!ENDIF 
 
 CPP=cl.exe
 MTL=midl.exe
@@ -34,17 +34,21 @@ RSC=rc.exe
 OUTDIR=.\Release
 INTDIR=.\Release
 
+!IF "$(RECURSE)" == "0" 
+
 ALL : "..\..\bin\Release\Plugins\png2dib.dll"
 
+!ELSE 
 
+ALL : "zlib - Win32 Release" "..\..\bin\Release\Plugins\png2dib.dll"
+
+!ENDIF 
+
+!IF "$(RECURSE)" == "1" 
+CLEAN :"zlib - Win32 ReleaseCLEAN" 
+!ELSE 
 CLEAN :
-	-@erase "$(INTDIR)\adler32.obj"
-	-@erase "$(INTDIR)\compress.obj"
-	-@erase "$(INTDIR)\crc32.obj"
-	-@erase "$(INTDIR)\deflate.obj"
-	-@erase "$(INTDIR)\inffast.obj"
-	-@erase "$(INTDIR)\inflate.obj"
-	-@erase "$(INTDIR)\inftrees.obj"
+!ENDIF 
 	-@erase "$(INTDIR)\png.obj"
 	-@erase "$(INTDIR)\png2dib.obj"
 	-@erase "$(INTDIR)\pnggccrd.obj"
@@ -62,12 +66,9 @@ CLEAN :
 	-@erase "$(INTDIR)\pngwrite.obj"
 	-@erase "$(INTDIR)\pngwtran.obj"
 	-@erase "$(INTDIR)\pngwutil.obj"
-	-@erase "$(INTDIR)\trees.obj"
-	-@erase "$(INTDIR)\uncompr.obj"
 	-@erase "$(INTDIR)\vc60.idb"
 	-@erase "$(INTDIR)\vc60.pdb"
 	-@erase "$(INTDIR)\version.res"
-	-@erase "$(INTDIR)\zutil.obj"
 	-@erase "$(OUTDIR)\png2dib.exp"
 	-@erase "$(OUTDIR)\png2dib.lib"
 	-@erase "$(OUTDIR)\png2dib.map"
@@ -77,28 +78,18 @@ CLEAN :
 "$(OUTDIR)" :
     if not exist "$(OUTDIR)/$(NULL)" mkdir "$(OUTDIR)"
 
-CPP_PROJ=/nologo /MD /W3 /GX /Zi /O1 /I "../../include" /D "NDEBUG" /D "WIN32" /D "_WINDOWS" /D "_MBCS" /D "_USRDLL" /D "NO_GZIP" /D "PNG_NO_STDIO" /D "PNG_NO_CONSOLE_IO" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /FD /c
-MTL_PROJ=/nologo /D "NDEBUG" /mktyplib203 /win32
-RSC_PROJ=/l 0x419 /fo"$(INTDIR)\version.res" /d "NDEBUG"
+CPP_PROJ=/nologo /MD /W3 /GX /Zi /O1 /I "../../include" /D "NDEBUG" /D "WIN32" /D "_WINDOWS" /D "_MBCS" /D "_USRDLL" /D "NO_GZIP" /D "PNG_NO_STDIO" /D "PNG_NO_CONSOLE_IO" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /FD /c 
+MTL_PROJ=/nologo /D "NDEBUG" /mktyplib203 /win32 
+RSC_PROJ=/l 0x419 /fo"$(INTDIR)\version.res" /d "NDEBUG" 
 BSC32=bscmake.exe
-BSC32_FLAGS=/nologo /o"$(OUTDIR)\png2dib.bsc"
+BSC32_FLAGS=/nologo /o"$(OUTDIR)\png2dib.bsc" 
 BSC32_SBRS= \
-
+	
 LINK32=link.exe
-LINK32_FLAGS=kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /nologo /dll /incremental:no /pdb:"$(OUTDIR)\png2dib.pdb" /map:"$(INTDIR)\png2dib.map" /debug /machine:I386 /def:".\png2dib.def" /out:"../../bin/Release/Plugins/png2dib.dll" /implib:"$(OUTDIR)\png2dib.lib" /filealign:512
+LINK32_FLAGS=kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /nologo /dll /incremental:no /pdb:"$(OUTDIR)\png2dib.pdb" /map:"$(INTDIR)\png2dib.map" /debug /machine:I386 /def:".\png2dib.def" /out:"../../bin/Release/Plugins/png2dib.dll" /implib:"$(OUTDIR)\png2dib.lib" /filealign:512 
 DEF_FILE= \
 	".\png2dib.def"
 LINK32_OBJS= \
-	"$(INTDIR)\adler32.obj" \
-	"$(INTDIR)\compress.obj" \
-	"$(INTDIR)\crc32.obj" \
-	"$(INTDIR)\deflate.obj" \
-	"$(INTDIR)\inffast.obj" \
-	"$(INTDIR)\inflate.obj" \
-	"$(INTDIR)\inftrees.obj" \
-	"$(INTDIR)\trees.obj" \
-	"$(INTDIR)\uncompr.obj" \
-	"$(INTDIR)\zutil.obj" \
 	"$(INTDIR)\png.obj" \
 	"$(INTDIR)\pnggccrd.obj" \
 	"$(INTDIR)\pngget.obj" \
@@ -116,7 +107,8 @@ LINK32_OBJS= \
 	"$(INTDIR)\pngwtran.obj" \
 	"$(INTDIR)\pngwutil.obj" \
 	"$(INTDIR)\png2dib.obj" \
-	"$(INTDIR)\version.res"
+	"$(INTDIR)\version.res" \
+	"..\zlib\Release\zlib.lib"
 
 "..\..\bin\Release\Plugins\png2dib.dll" : "$(OUTDIR)" $(DEF_FILE) $(LINK32_OBJS)
     $(LINK32) @<<
@@ -131,24 +123,21 @@ INTDIR=.\Debug
 OutDir=.\Debug
 # End Custom Macros
 
+!IF "$(RECURSE)" == "0" 
+
 ALL : "..\..\bin\Debug\plugins\png2dib.dll" "$(OUTDIR)\png2dib.bsc"
 
+!ELSE 
 
+ALL : "zlib - Win32 Debug" "..\..\bin\Debug\plugins\png2dib.dll" "$(OUTDIR)\png2dib.bsc"
+
+!ENDIF 
+
+!IF "$(RECURSE)" == "1" 
+CLEAN :"zlib - Win32 DebugCLEAN" 
+!ELSE 
 CLEAN :
-	-@erase "$(INTDIR)\adler32.obj"
-	-@erase "$(INTDIR)\adler32.sbr"
-	-@erase "$(INTDIR)\compress.obj"
-	-@erase "$(INTDIR)\compress.sbr"
-	-@erase "$(INTDIR)\crc32.obj"
-	-@erase "$(INTDIR)\crc32.sbr"
-	-@erase "$(INTDIR)\deflate.obj"
-	-@erase "$(INTDIR)\deflate.sbr"
-	-@erase "$(INTDIR)\inffast.obj"
-	-@erase "$(INTDIR)\inffast.sbr"
-	-@erase "$(INTDIR)\inflate.obj"
-	-@erase "$(INTDIR)\inflate.sbr"
-	-@erase "$(INTDIR)\inftrees.obj"
-	-@erase "$(INTDIR)\inftrees.sbr"
+!ENDIF 
 	-@erase "$(INTDIR)\png.obj"
 	-@erase "$(INTDIR)\png.sbr"
 	-@erase "$(INTDIR)\png2dib.obj"
@@ -183,15 +172,9 @@ CLEAN :
 	-@erase "$(INTDIR)\pngwtran.sbr"
 	-@erase "$(INTDIR)\pngwutil.obj"
 	-@erase "$(INTDIR)\pngwutil.sbr"
-	-@erase "$(INTDIR)\trees.obj"
-	-@erase "$(INTDIR)\trees.sbr"
-	-@erase "$(INTDIR)\uncompr.obj"
-	-@erase "$(INTDIR)\uncompr.sbr"
 	-@erase "$(INTDIR)\vc60.idb"
 	-@erase "$(INTDIR)\vc60.pdb"
 	-@erase "$(INTDIR)\version.res"
-	-@erase "$(INTDIR)\zutil.obj"
-	-@erase "$(INTDIR)\zutil.sbr"
 	-@erase "$(OUTDIR)\png2dib.bsc"
 	-@erase "$(OUTDIR)\png2dib.exp"
 	-@erase "$(OUTDIR)\png2dib.lib"
@@ -202,22 +185,12 @@ CLEAN :
 "$(OUTDIR)" :
     if not exist "$(OUTDIR)/$(NULL)" mkdir "$(OUTDIR)"
 
-CPP_PROJ=/nologo /MDd /W3 /Gm /GX /ZI /Od /I "../../include" /D "_DEBUG" /D "WIN32" /D "_WINDOWS" /D "_MBCS" /D "_USRDLL" /D "NO_GZIP" /D "PNG_NO_STDIO" /D "PNG_NO_CONSOLE_IO" /FR"$(INTDIR)\\" /Fp"$(INTDIR)\png2dib.pch" /YX /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /FD /GZ /c
-MTL_PROJ=/nologo /D "_DEBUG" /mktyplib203 /win32
-RSC_PROJ=/l 0x419 /fo"$(INTDIR)\version.res" /d "_DEBUG"
+CPP_PROJ=/nologo /MDd /W3 /Gm /GX /ZI /Od /I "../../include" /D "_DEBUG" /D "WIN32" /D "_WINDOWS" /D "_MBCS" /D "_USRDLL" /D "NO_GZIP" /D "PNG_NO_STDIO" /D "PNG_NO_CONSOLE_IO" /FR"$(INTDIR)\\" /Fp"$(INTDIR)\png2dib.pch" /YX /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /FD /GZ /c 
+MTL_PROJ=/nologo /D "_DEBUG" /mktyplib203 /win32 
+RSC_PROJ=/l 0x419 /fo"$(INTDIR)\version.res" /d "_DEBUG" 
 BSC32=bscmake.exe
-BSC32_FLAGS=/nologo /o"$(OUTDIR)\png2dib.bsc"
+BSC32_FLAGS=/nologo /o"$(OUTDIR)\png2dib.bsc" 
 BSC32_SBRS= \
-	"$(INTDIR)\adler32.sbr" \
-	"$(INTDIR)\compress.sbr" \
-	"$(INTDIR)\crc32.sbr" \
-	"$(INTDIR)\deflate.sbr" \
-	"$(INTDIR)\inffast.sbr" \
-	"$(INTDIR)\inflate.sbr" \
-	"$(INTDIR)\inftrees.sbr" \
-	"$(INTDIR)\trees.sbr" \
-	"$(INTDIR)\uncompr.sbr" \
-	"$(INTDIR)\zutil.sbr" \
 	"$(INTDIR)\png.sbr" \
 	"$(INTDIR)\pnggccrd.sbr" \
 	"$(INTDIR)\pngget.sbr" \
@@ -242,20 +215,10 @@ BSC32_SBRS= \
 <<
 
 LINK32=link.exe
-LINK32_FLAGS=kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /nologo /dll /incremental:yes /pdb:"$(OUTDIR)\png2dib.pdb" /debug /machine:I386 /def:".\png2dib.def" /out:"../../bin/Debug/plugins/png2dib.dll" /implib:"$(OUTDIR)\png2dib.lib" /pdbtype:sept
+LINK32_FLAGS=kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /nologo /dll /incremental:yes /pdb:"$(OUTDIR)\png2dib.pdb" /debug /machine:I386 /def:".\png2dib.def" /out:"../../bin/Debug/plugins/png2dib.dll" /implib:"$(OUTDIR)\png2dib.lib" /pdbtype:sept 
 DEF_FILE= \
 	".\png2dib.def"
 LINK32_OBJS= \
-	"$(INTDIR)\adler32.obj" \
-	"$(INTDIR)\compress.obj" \
-	"$(INTDIR)\crc32.obj" \
-	"$(INTDIR)\deflate.obj" \
-	"$(INTDIR)\inffast.obj" \
-	"$(INTDIR)\inflate.obj" \
-	"$(INTDIR)\inftrees.obj" \
-	"$(INTDIR)\trees.obj" \
-	"$(INTDIR)\uncompr.obj" \
-	"$(INTDIR)\zutil.obj" \
 	"$(INTDIR)\png.obj" \
 	"$(INTDIR)\pnggccrd.obj" \
 	"$(INTDIR)\pngget.obj" \
@@ -273,236 +236,57 @@ LINK32_OBJS= \
 	"$(INTDIR)\pngwtran.obj" \
 	"$(INTDIR)\pngwutil.obj" \
 	"$(INTDIR)\png2dib.obj" \
-	"$(INTDIR)\version.res"
+	"$(INTDIR)\version.res" \
+	"..\zlib\Debug\zlib.lib"
 
 "..\..\bin\Debug\plugins\png2dib.dll" : "$(OUTDIR)" $(DEF_FILE) $(LINK32_OBJS)
     $(LINK32) @<<
   $(LINK32_FLAGS) $(LINK32_OBJS)
 <<
 
-!ENDIF
+!ENDIF 
 
 .c{$(INTDIR)}.obj::
    $(CPP) @<<
-   $(CPP_PROJ) $<
+   $(CPP_PROJ) $< 
 <<
 
 .cpp{$(INTDIR)}.obj::
    $(CPP) @<<
-   $(CPP_PROJ) $<
+   $(CPP_PROJ) $< 
 <<
 
 .cxx{$(INTDIR)}.obj::
    $(CPP) @<<
-   $(CPP_PROJ) $<
+   $(CPP_PROJ) $< 
 <<
 
 .c{$(INTDIR)}.sbr::
    $(CPP) @<<
-   $(CPP_PROJ) $<
+   $(CPP_PROJ) $< 
 <<
 
 .cpp{$(INTDIR)}.sbr::
    $(CPP) @<<
-   $(CPP_PROJ) $<
+   $(CPP_PROJ) $< 
 <<
 
 .cxx{$(INTDIR)}.sbr::
    $(CPP) @<<
-   $(CPP_PROJ) $<
+   $(CPP_PROJ) $< 
 <<
 
 
 !IF "$(NO_EXTERNAL_DEPS)" != "1"
 !IF EXISTS("png2dib.dep")
 !INCLUDE "png2dib.dep"
-!ELSE
+!ELSE 
 !MESSAGE Warning: cannot find "png2dib.dep"
-!ENDIF
-!ENDIF
+!ENDIF 
+!ENDIF 
 
 
 !IF "$(CFG)" == "png2dib - Win32 Release" || "$(CFG)" == "png2dib - Win32 Debug"
-SOURCE=.\zlib\adler32.c
-
-!IF  "$(CFG)" == "png2dib - Win32 Release"
-
-
-"$(INTDIR)\adler32.obj" : $(SOURCE) "$(INTDIR)"
-	$(CPP) $(CPP_PROJ) $(SOURCE)
-
-
-!ELSEIF  "$(CFG)" == "png2dib - Win32 Debug"
-
-
-"$(INTDIR)\adler32.obj"	"$(INTDIR)\adler32.sbr" : $(SOURCE) "$(INTDIR)"
-	$(CPP) $(CPP_PROJ) $(SOURCE)
-
-
-!ENDIF
-
-SOURCE=.\zlib\compress.c
-
-!IF  "$(CFG)" == "png2dib - Win32 Release"
-
-
-"$(INTDIR)\compress.obj" : $(SOURCE) "$(INTDIR)"
-	$(CPP) $(CPP_PROJ) $(SOURCE)
-
-
-!ELSEIF  "$(CFG)" == "png2dib - Win32 Debug"
-
-
-"$(INTDIR)\compress.obj"	"$(INTDIR)\compress.sbr" : $(SOURCE) "$(INTDIR)"
-	$(CPP) $(CPP_PROJ) $(SOURCE)
-
-
-!ENDIF
-
-SOURCE=.\zlib\crc32.c
-
-!IF  "$(CFG)" == "png2dib - Win32 Release"
-
-
-"$(INTDIR)\crc32.obj" : $(SOURCE) "$(INTDIR)"
-	$(CPP) $(CPP_PROJ) $(SOURCE)
-
-
-!ELSEIF  "$(CFG)" == "png2dib - Win32 Debug"
-
-
-"$(INTDIR)\crc32.obj"	"$(INTDIR)\crc32.sbr" : $(SOURCE) "$(INTDIR)"
-	$(CPP) $(CPP_PROJ) $(SOURCE)
-
-
-!ENDIF
-
-SOURCE=.\zlib\deflate.c
-
-!IF  "$(CFG)" == "png2dib - Win32 Release"
-
-
-"$(INTDIR)\deflate.obj" : $(SOURCE) "$(INTDIR)"
-	$(CPP) $(CPP_PROJ) $(SOURCE)
-
-
-!ELSEIF  "$(CFG)" == "png2dib - Win32 Debug"
-
-
-"$(INTDIR)\deflate.obj"	"$(INTDIR)\deflate.sbr" : $(SOURCE) "$(INTDIR)"
-	$(CPP) $(CPP_PROJ) $(SOURCE)
-
-
-!ENDIF
-
-SOURCE=.\zlib\inffast.c
-
-!IF  "$(CFG)" == "png2dib - Win32 Release"
-
-
-"$(INTDIR)\inffast.obj" : $(SOURCE) "$(INTDIR)"
-	$(CPP) $(CPP_PROJ) $(SOURCE)
-
-
-!ELSEIF  "$(CFG)" == "png2dib - Win32 Debug"
-
-
-"$(INTDIR)\inffast.obj"	"$(INTDIR)\inffast.sbr" : $(SOURCE) "$(INTDIR)"
-	$(CPP) $(CPP_PROJ) $(SOURCE)
-
-
-!ENDIF
-
-SOURCE=.\zlib\inflate.c
-
-!IF  "$(CFG)" == "png2dib - Win32 Release"
-
-
-"$(INTDIR)\inflate.obj" : $(SOURCE) "$(INTDIR)"
-	$(CPP) $(CPP_PROJ) $(SOURCE)
-
-
-!ELSEIF  "$(CFG)" == "png2dib - Win32 Debug"
-
-
-"$(INTDIR)\inflate.obj"	"$(INTDIR)\inflate.sbr" : $(SOURCE) "$(INTDIR)"
-	$(CPP) $(CPP_PROJ) $(SOURCE)
-
-
-!ENDIF
-
-SOURCE=.\zlib\inftrees.c
-
-!IF  "$(CFG)" == "png2dib - Win32 Release"
-
-
-"$(INTDIR)\inftrees.obj" : $(SOURCE) "$(INTDIR)"
-	$(CPP) $(CPP_PROJ) $(SOURCE)
-
-
-!ELSEIF  "$(CFG)" == "png2dib - Win32 Debug"
-
-
-"$(INTDIR)\inftrees.obj"	"$(INTDIR)\inftrees.sbr" : $(SOURCE) "$(INTDIR)"
-	$(CPP) $(CPP_PROJ) $(SOURCE)
-
-
-!ENDIF
-
-SOURCE=.\zlib\trees.c
-
-!IF  "$(CFG)" == "png2dib - Win32 Release"
-
-
-"$(INTDIR)\trees.obj" : $(SOURCE) "$(INTDIR)"
-	$(CPP) $(CPP_PROJ) $(SOURCE)
-
-
-!ELSEIF  "$(CFG)" == "png2dib - Win32 Debug"
-
-
-"$(INTDIR)\trees.obj"	"$(INTDIR)\trees.sbr" : $(SOURCE) "$(INTDIR)"
-	$(CPP) $(CPP_PROJ) $(SOURCE)
-
-
-!ENDIF
-
-SOURCE=.\zlib\uncompr.c
-
-!IF  "$(CFG)" == "png2dib - Win32 Release"
-
-
-"$(INTDIR)\uncompr.obj" : $(SOURCE) "$(INTDIR)"
-	$(CPP) $(CPP_PROJ) $(SOURCE)
-
-
-!ELSEIF  "$(CFG)" == "png2dib - Win32 Debug"
-
-
-"$(INTDIR)\uncompr.obj"	"$(INTDIR)\uncompr.sbr" : $(SOURCE) "$(INTDIR)"
-	$(CPP) $(CPP_PROJ) $(SOURCE)
-
-
-!ENDIF
-
-SOURCE=.\zlib\zutil.c
-
-!IF  "$(CFG)" == "png2dib - Win32 Release"
-
-
-"$(INTDIR)\zutil.obj" : $(SOURCE) "$(INTDIR)"
-	$(CPP) $(CPP_PROJ) $(SOURCE)
-
-
-!ELSEIF  "$(CFG)" == "png2dib - Win32 Debug"
-
-
-"$(INTDIR)\zutil.obj"	"$(INTDIR)\zutil.sbr" : $(SOURCE) "$(INTDIR)"
-	$(CPP) $(CPP_PROJ) $(SOURCE)
-
-
-!ENDIF
-
 SOURCE=.\libpng\png.c
 
 !IF  "$(CFG)" == "png2dib - Win32 Release"
@@ -519,7 +303,7 @@ SOURCE=.\libpng\png.c
 	$(CPP) $(CPP_PROJ) $(SOURCE)
 
 
-!ENDIF
+!ENDIF 
 
 SOURCE=.\libpng\pnggccrd.c
 
@@ -537,7 +321,7 @@ SOURCE=.\libpng\pnggccrd.c
 	$(CPP) $(CPP_PROJ) $(SOURCE)
 
 
-!ENDIF
+!ENDIF 
 
 SOURCE=.\libpng\pngget.c
 
@@ -555,7 +339,7 @@ SOURCE=.\libpng\pngget.c
 	$(CPP) $(CPP_PROJ) $(SOURCE)
 
 
-!ENDIF
+!ENDIF 
 
 SOURCE=.\libpng\pngmem.c
 
@@ -573,7 +357,7 @@ SOURCE=.\libpng\pngmem.c
 	$(CPP) $(CPP_PROJ) $(SOURCE)
 
 
-!ENDIF
+!ENDIF 
 
 SOURCE=.\libpng\pngpread.c
 
@@ -591,7 +375,7 @@ SOURCE=.\libpng\pngpread.c
 	$(CPP) $(CPP_PROJ) $(SOURCE)
 
 
-!ENDIF
+!ENDIF 
 
 SOURCE=.\libpng\pngread.c
 
@@ -609,7 +393,7 @@ SOURCE=.\libpng\pngread.c
 	$(CPP) $(CPP_PROJ) $(SOURCE)
 
 
-!ENDIF
+!ENDIF 
 
 SOURCE=.\libpng\pngrio.c
 
@@ -627,7 +411,7 @@ SOURCE=.\libpng\pngrio.c
 	$(CPP) $(CPP_PROJ) $(SOURCE)
 
 
-!ENDIF
+!ENDIF 
 
 SOURCE=.\libpng\pngrtran.c
 
@@ -645,7 +429,7 @@ SOURCE=.\libpng\pngrtran.c
 	$(CPP) $(CPP_PROJ) $(SOURCE)
 
 
-!ENDIF
+!ENDIF 
 
 SOURCE=.\libpng\pngrutil.c
 
@@ -663,7 +447,7 @@ SOURCE=.\libpng\pngrutil.c
 	$(CPP) $(CPP_PROJ) $(SOURCE)
 
 
-!ENDIF
+!ENDIF 
 
 SOURCE=.\libpng\pngset.c
 
@@ -681,7 +465,7 @@ SOURCE=.\libpng\pngset.c
 	$(CPP) $(CPP_PROJ) $(SOURCE)
 
 
-!ENDIF
+!ENDIF 
 
 SOURCE=.\libpng\pngtrans.c
 
@@ -699,7 +483,7 @@ SOURCE=.\libpng\pngtrans.c
 	$(CPP) $(CPP_PROJ) $(SOURCE)
 
 
-!ENDIF
+!ENDIF 
 
 SOURCE=.\libpng\pngvcrd.c
 
@@ -717,7 +501,7 @@ SOURCE=.\libpng\pngvcrd.c
 	$(CPP) $(CPP_PROJ) $(SOURCE)
 
 
-!ENDIF
+!ENDIF 
 
 SOURCE=.\libpng\pngwio.c
 
@@ -735,7 +519,7 @@ SOURCE=.\libpng\pngwio.c
 	$(CPP) $(CPP_PROJ) $(SOURCE)
 
 
-!ENDIF
+!ENDIF 
 
 SOURCE=.\libpng\pngwrite.c
 
@@ -753,7 +537,7 @@ SOURCE=.\libpng\pngwrite.c
 	$(CPP) $(CPP_PROJ) $(SOURCE)
 
 
-!ENDIF
+!ENDIF 
 
 SOURCE=.\libpng\pngwtran.c
 
@@ -771,7 +555,7 @@ SOURCE=.\libpng\pngwtran.c
 	$(CPP) $(CPP_PROJ) $(SOURCE)
 
 
-!ENDIF
+!ENDIF 
 
 SOURCE=.\libpng\pngwutil.c
 
@@ -789,7 +573,7 @@ SOURCE=.\libpng\pngwutil.c
 	$(CPP) $(CPP_PROJ) $(SOURCE)
 
 
-!ENDIF
+!ENDIF 
 
 SOURCE=.\png2dib.c
 
@@ -805,7 +589,7 @@ SOURCE=.\png2dib.c
 "$(INTDIR)\png2dib.obj"	"$(INTDIR)\png2dib.sbr" : $(SOURCE) "$(INTDIR)"
 
 
-!ENDIF
+!ENDIF 
 
 SOURCE=.\version.rc
 
@@ -813,5 +597,32 @@ SOURCE=.\version.rc
 	$(RSC) $(RSC_PROJ) $(SOURCE)
 
 
+!IF  "$(CFG)" == "png2dib - Win32 Release"
 
-!ENDIF
+"zlib - Win32 Release" : 
+   cd "\Miranda\miranda\plugins\zlib"
+   $(MAKE) /$(MAKEFLAGS) /F .\zlib.mak CFG="zlib - Win32 Release" 
+   cd "..\png2dib"
+
+"zlib - Win32 ReleaseCLEAN" : 
+   cd "\Miranda\miranda\plugins\zlib"
+   $(MAKE) /$(MAKEFLAGS) /F .\zlib.mak CFG="zlib - Win32 Release" RECURSE=1 CLEAN 
+   cd "..\png2dib"
+
+!ELSEIF  "$(CFG)" == "png2dib - Win32 Debug"
+
+"zlib - Win32 Debug" : 
+   cd "\Miranda\miranda\plugins\zlib"
+   $(MAKE) /$(MAKEFLAGS) /F .\zlib.mak CFG="zlib - Win32 Debug" 
+   cd "..\png2dib"
+
+"zlib - Win32 DebugCLEAN" : 
+   cd "\Miranda\miranda\plugins\zlib"
+   $(MAKE) /$(MAKEFLAGS) /F .\zlib.mak CFG="zlib - Win32 Debug" RECURSE=1 CLEAN 
+   cd "..\png2dib"
+
+!ENDIF 
+
+
+!ENDIF 
+

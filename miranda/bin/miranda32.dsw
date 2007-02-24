@@ -283,6 +283,9 @@ Package=<5>
 
 Package=<4>
 {{{
+    Begin Project Dependency
+    Project_Dep_Name zlib
+    End Project Dependency
 }}}
 
 ###############################################################################
@@ -327,6 +330,18 @@ Package=<5>
     "$/Miranda/miranda/plugins/tabsrmm", JLIAAAAA
     ..\plugins\tabsrmm
     end source code control
+}}}
+
+Package=<4>
+{{{
+}}}
+
+###############################################################################
+
+Project: "zlib"=..\plugins\zlib\zlib.dsp - Package Owner=<4>
+
+Package=<5>
+{{{
 }}}
 
 Package=<4>

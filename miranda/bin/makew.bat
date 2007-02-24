@@ -92,6 +92,8 @@ rem ---------------------------------------------------------------------------
 
 cd "..\..\bin\Release Unicode"
 
+copy ..\release\zlib.dll
+
 copy ..\release\Icons\xstatus_ICQ.dll    Icons
 
 copy ..\release\Plugins\aim.dll          Plugins

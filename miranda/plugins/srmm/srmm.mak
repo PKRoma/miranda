@@ -80,8 +80,8 @@ LINK32_OBJS= \
 	"$(INTDIR)\msgtimedout.obj" \
 	"$(INTDIR)\richutil.obj" \
 	"$(INTDIR)\srmm.obj" \
-	"$(INTDIR)\resource.res" \
-	"$(INTDIR)\statusicon.obj"
+	"$(INTDIR)\statusicon.obj" \
+	"$(INTDIR)\resource.res"
 
 "..\..\bin\release\plugins\srmm.dll" : "$(OUTDIR)" $(DEF_FILE) $(LINK32_OBJS)
     $(LINK32) @<<
@@ -138,8 +138,8 @@ LINK32_OBJS= \
 	"$(INTDIR)\msgtimedout.obj" \
 	"$(INTDIR)\richutil.obj" \
 	"$(INTDIR)\srmm.obj" \
-	"$(INTDIR)\resource.res" \
-	"$(INTDIR)\statusicon.obj"
+	"$(INTDIR)\statusicon.obj" \
+	"$(INTDIR)\resource.res"
 
 "..\..\bin\debug\Plugins\srmm.dll" : "$(OUTDIR)" $(DEF_FILE) $(LINK32_OBJS)
     $(LINK32) @<<
@@ -195,8 +195,8 @@ LINK32_OBJS= \
 	"$(INTDIR)\msgtimedout.obj" \
 	"$(INTDIR)\richutil.obj" \
 	"$(INTDIR)\srmm.obj" \
-	"$(INTDIR)\resource.res" \
-	"$(INTDIR)\statusicon.obj"
+	"$(INTDIR)\statusicon.obj" \
+	"$(INTDIR)\resource.res"
 
 "..\..\bin\Release Unicode\plugins\srmm.dll" : "$(OUTDIR)" $(DEF_FILE) $(LINK32_OBJS)
     $(LINK32) @<<
@@ -252,8 +252,8 @@ LINK32_OBJS= \
 	"$(INTDIR)\msgtimedout.obj" \
 	"$(INTDIR)\richutil.obj" \
 	"$(INTDIR)\srmm.obj" \
-	"$(INTDIR)\resource.res" \
-	"$(INTDIR)\statusicon.obj"
+	"$(INTDIR)\statusicon.obj" \
+	"$(INTDIR)\resource.res"
 
 "..\..\bin\Debug Unicode\Plugins\srmm.dll" : "$(OUTDIR)" $(DEF_FILE) $(LINK32_OBJS)
     $(LINK32) @<<

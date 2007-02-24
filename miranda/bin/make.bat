@@ -54,6 +54,10 @@ rem ---------------------------------------------------------------------------
 rem Plugins
 rem ---------------------------------------------------------------------------
 
+cd ..\..\plugins\zlib
+nmake /f zlib.mak CFG="zlib - Win32 Release"
+if errorlevel 1 goto :Error
+
 cd ..\..\plugins\chat
 nmake /f chat.mak CFG="chat - Win32 Release"
 if errorlevel 1 goto :Error
