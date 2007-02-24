@@ -1112,9 +1112,8 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
 				ZeroMemory((void *)&pf2, sizeof(pf2));
 				pf2.cbSize = sizeof(pf2);
 				pf2.dwMask = PFM_RTLPARA;
-				pf2.wEffects = 0;
 				if (!(dat->flags & SMF_RTL)) {
-//					SendDlgItemMessage(hwndDlg, IDC_MESSAGE, EM_SETPARAFORMAT, 0, (LPARAM)&pf2);
+					pf2.wEffects = 0;
 					SetWindowLong(GetDlgItem(hwndDlg, IDC_MESSAGE),GWL_EXSTYLE,GetWindowLong(GetDlgItem(hwndDlg, IDC_MESSAGE),GWL_EXSTYLE) & ~(WS_EX_RIGHT | WS_EX_RTLREADING | WS_EX_LEFTSCROLLBAR));
 				} else {
 					pf2.wEffects = PFE_RTLPARA;
@@ -1124,11 +1123,12 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
 				/* Workaround to make Richedit display RTL messages correctly */
 				ZeroMemory((void *)&pf2, sizeof(pf2));
 				pf2.cbSize = sizeof(pf2);
-				pf2.dwMask = PFM_RTLPARA | PFM_OFFSET | PFM_OFFSETINDENT ;
-                pf2.wEffects = PFE_RTLPARA;
-                pf2.dxOffset = 30;
-                pf2.dxStartIndent = 30;
-                SendDlgItemMessage(hwndDlg, IDC_LOG, EM_SETPARAFORMAT, 0, (LPARAM)&pf2);
+				pf2.dwMask = PFM_RTLPARA | PFM_OFFSETINDENT | PFM_RIGHTINDENT;
+				pf2.wEffects = PFE_RTLPARA;
+				pf2.dxStartIndent = 30;
+				pf2.dxRightIndent = 30;
+				SendDlgItemMessage(hwndDlg, IDC_LOG, EM_SETPARAFORMAT, 0, (LPARAM)&pf2);
+				pf2.dwMask = PFM_RTLPARA;
 				pf2.wEffects = 0;
 				SendDlgItemMessage(hwndDlg, IDC_LOG, EM_SETPARAFORMAT, 0, (LPARAM)&pf2);
 				if (dat->flags & SMF_RTL) {
@@ -1637,6 +1637,7 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
 		}
 	case DM_OPTIONSAPPLIED:
 		{
+			PARAFORMAT2 pf2 = {0};
 			CHARFORMAT2 cf2 = {0};
 			LOGFONT lf;
 			COLORREF colour;
@@ -1690,6 +1691,14 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
 			cf2.bPitchAndFamily = lf.lfPitchAndFamily;
 			cf2.yHeight = abs(lf.lfHeight) * 15;
 			SendDlgItemMessageA(hwndDlg, IDC_MESSAGE, EM_SETCHARFORMAT, 0, (LPARAM)&cf2);
+			SendDlgItemMessage(hwndDlg, IDC_MESSAGE, EM_SETLANGOPTIONS, 0, (LPARAM) SendDlgItemMessage(hwndDlg, IDC_MESSAGE, EM_GETLANGOPTIONS, 0, 0) & ~IMF_AUTOKEYBOARD);
+
+			pf2.cbSize = sizeof(pf2);
+			pf2.dwMask = PFM_OFFSET;
+			pf2.dxOffset = (g_dat->flags & SMF_INDENTTEXT) ? g_dat->indentSize * 15 : 0;
+ 			SetDlgItemText(hwndDlg, IDC_LOG, _T(""));
+			SendDlgItemMessage(hwndDlg, IDC_LOG, EM_SETPARAFORMAT, 0, (LPARAM)&pf2);
+			SendDlgItemMessage(hwndDlg, IDC_LOG, EM_SETLANGOPTIONS, 0, (LPARAM) SendDlgItemMessage(hwndDlg, IDC_LOG, EM_GETLANGOPTIONS, 0, 0) & ~(IMF_AUTOKEYBOARD | IMF_AUTOFONTSIZEADJUST));
 
 			SendMessage(hwndDlg, DM_REMAKELOG, 0, 0);
 			SendMessage(hwndDlg, DM_UPDATEICON, 0, 0);

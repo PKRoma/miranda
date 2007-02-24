@@ -350,6 +350,11 @@ extern int fontOptionsListSize;
 #define SRMSGSET_LINECOLOUR			"LineColour"
 #define SRMSGDEFSET_LINECOLOUR		GetSysColor(COLOR_WINDOW)
 
+#define SRMSGSET_INDENTTEXT     	"IndentText"
+#define SRMSGDEFSET_INDENTTEXT		0
+#define SRMSGSET_INDENTSIZE     	"IndentSize"
+#define SRMSGDEFSET_INDENTSIZE		0
+
 #define SRMSGSET_SHOWLOGICONS		"ShowLogIcon"
 #define SRMSGDEFSET_SHOWLOGICONS	1
 #define SRMSGSET_HIDENAMES			"HideNames"

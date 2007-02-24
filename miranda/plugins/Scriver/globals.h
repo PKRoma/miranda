@@ -58,6 +58,8 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #define SMF_MARKFOLLOWUPS			0x02000000
 #define SMF_MSGONNEWLINE			0x04000000
 #define SMF_DRAWLINES				0x08000000
+#define SMF_INDENTTEXT				0x10000000
+
 
 #define SMF2_USETABS				0x00000001
 #define SMF2_HIDEONETAB				0x00000002
@@ -126,6 +128,7 @@ struct GlobalMessageData
 	int		buttonVisibility;
 	int		limitTabsNum;
 	int		limitChatsTabsNum;
+	int		indentSize;
 };
 
 int IconsChanged(WPARAM wParam, LPARAM lParam);

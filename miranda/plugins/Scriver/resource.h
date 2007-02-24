@@ -123,6 +123,9 @@
 #define IDC_POPLIST						1632
 #define IDC_LIMITNAMESLEN	            1633
 #define IDC_CHARS						1634
+#define IDC_INDENTTEXT					1635
+#define IDC_INDENTSIZE					1636
+#define IDC_INDENTSPIN					1637
 #define IDM_CUT                         40000
 #define IDM_COPY                        40001
 #define IDM_PASTE                       40002

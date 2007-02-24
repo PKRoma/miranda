@@ -267,7 +267,7 @@ static void AppendToBuffer(char **buffer, int *cbBufferEnd, int *cbBufferAlloced
 	*cbBufferEnd += charsDone;
 }
 
-static int AppendAnsiToBufferL(char **buffer, int *cbBufferEnd, int *cbBufferAlloced, unsigned char * line, int maxLen) 
+static int AppendAnsiToBufferL(char **buffer, int *cbBufferEnd, int *cbBufferAlloced, unsigned char * line, int maxLen)
 {
 	int textCharsCount = 0;
 	char *d;
@@ -286,13 +286,13 @@ static int AppendAnsiToBufferL(char **buffer, int *cbBufferEnd, int *cbBufferAll
 	for (; *line && (maxLen < 0 || line < maxLine); line++, textCharsCount++) {
 		wasEOL = 0;
 		if (*line == '\r' && line[1] == '\n') {
-			CopyMemory(d, "\\par ", 5);
+			CopyMemory(d, "\\line ", 5);
 			wasEOL = 1;
 			d += 5;
 			line++;
 		}
 		else if (*line == '\n') {
-			CopyMemory(d, "\\par ", 5);
+			CopyMemory(d, "\\line ", 5);
 			wasEOL = 1;
 			d += 5;
 		}
@@ -322,7 +322,7 @@ static int AppendAnsiToBufferL(char **buffer, int *cbBufferEnd, int *cbBufferAll
 }
 
 
-static int AppendUnicodeToBufferL(char **buffer, int *cbBufferEnd, int *cbBufferAlloced, WCHAR * line, int maxLen) 
+static int AppendUnicodeToBufferL(char **buffer, int *cbBufferEnd, int *cbBufferAlloced, WCHAR * line, int maxLen)
 {
 	int textCharsCount = 0;
 	char *d;
@@ -341,13 +341,13 @@ static int AppendUnicodeToBufferL(char **buffer, int *cbBufferEnd, int *cbBuffer
 	for (; *line && (maxLen < 0 || line < maxLine); line++, textCharsCount++) {
 		wasEOL = 0;
 		if (*line == '\r' && line[1] == '\n') {
-			CopyMemory(d, "\\par ", 5);
+			CopyMemory(d, "\\line ", 5);
 			wasEOL = 1;
 			d += 5;
 			line++;
 		}
 		else if (*line == '\n') {
-			CopyMemory(d, "\\par ", 5);
+			CopyMemory(d, "\\line ", 5);
 			wasEOL = 1;
 			d += 5;
 		}
@@ -376,12 +376,12 @@ static int AppendUnicodeToBufferL(char **buffer, int *cbBufferEnd, int *cbBuffer
 	return textCharsCount;
 }
 
-static int AppendAnsiToBuffer(char **buffer, int *cbBufferEnd, int *cbBufferAlloced, unsigned char * line) 
+static int AppendAnsiToBuffer(char **buffer, int *cbBufferEnd, int *cbBufferAlloced, unsigned char * line)
 {
 	return AppendAnsiToBufferL(buffer, cbBufferEnd, cbBufferAlloced, line, -1);
 }
 
-static int AppendUnicodeToBuffer(char **buffer, int *cbBufferEnd, int *cbBufferAlloced, WCHAR * line) 
+static int AppendUnicodeToBuffer(char **buffer, int *cbBufferEnd, int *cbBufferAlloced, WCHAR * line)
 {
 	return AppendUnicodeToBufferL(buffer, cbBufferEnd, cbBufferAlloced, line, -1);
 }
@@ -429,7 +429,7 @@ static char *CreateRTFHeader(struct MessageWindowData *dat)
 		AppendToBuffer(&buffer, &bufferEnd, &bufferAlloced, "{\\rtf1\\ansi\\deff0{\\fonttbl");
 	for (i = 0; i < fontOptionsListSize; i++) {
 		LoadMsgDlgFont(i, &lf, NULL);
-		AppendToBuffer(&buffer, &bufferEnd, &bufferAlloced, "{\\f%u\\fnil\\fcharset%u " TCHAR_STR_PARAM ";}", i, 
+		AppendToBuffer(&buffer, &bufferEnd, &bufferAlloced, "{\\f%u\\fnil\\fcharset%u " TCHAR_STR_PARAM ";}", i,
 			(!forceCharset) ? lf.lfCharSet : charset, lf.lfFaceName);
 	}
 	AppendToBuffer(&buffer, &bufferEnd, &bufferAlloced, "}{\\colortbl ");
@@ -604,7 +604,7 @@ static int DetectURL(const char* text, BOOL firstChar) {
 		{"news:", 5},
 		{"wais:", 5},
 		{"www.", 4}
-	};	
+	};
 	c = firstChar ? ' ' : text[-1];
 	if (!((c >= '0' && c<='9') || (c >= 'A' && c<='Z') || (c >= 'a' && c<='z'))) {
 		int found = 0;
@@ -697,6 +697,7 @@ static char *CreateRTFFromDbEvent2(struct MessageWindowData *dat, struct EventDa
 	buffer = (char *) mir_alloc(bufferAlloced);
 	buffer[0] = '\0';
 
+
  	if ((g_dat->flags & SMF_GROUPMESSAGES) && event->dwFlags == LOWORD(dat->lastEventType)
 	  && event->eventType == EVENTTYPE_MESSAGE && HIWORD(dat->lastEventType) == EVENTTYPE_MESSAGE
 	  && (isSameDate(event->time, dat->lastEventTime))
@@ -704,9 +705,12 @@ static char *CreateRTFFromDbEvent2(struct MessageWindowData *dat, struct EventDa
 	  && ((((int)event->time < dat->startTime) == (dat->lastEventTime < dat->startTime)) || !(event->dwFlags & IEEDF_READ))) {
 		isGroupBreak = FALSE;
 	}
-
 	if (!streamData->isFirst && !dat->isMixed) {
-		AppendToBuffer(&buffer, &bufferEnd, &bufferAlloced, "\\par");
+		if (isGroupBreak) {
+			AppendToBuffer(&buffer, &bufferEnd, &bufferAlloced, "\\par");
+		} else {
+			AppendToBuffer(&buffer, &bufferEnd, &bufferAlloced, "\\line");
+		}
 	}
 	if (event->dwFlags & IEEDF_RTL) {
 		dat->isMixed = 1;
@@ -732,7 +736,15 @@ static char *CreateRTFFromDbEvent2(struct MessageWindowData *dat, struct EventDa
 	} else {
 		highlight = fontOptionsListSize + 1;
 	}
+
 	AppendToBuffer(&buffer, &bufferEnd, &bufferAlloced, "\\highlight%d\\cf%d", highlight , highlight );
+	if (!streamData->isFirst && dat->isMixed) {
+		if (isGroupBreak) {
+			AppendToBuffer(&buffer, &bufferEnd, &bufferAlloced, "\\sl-1 \\par\\sl0");
+		} else {
+			AppendToBuffer(&buffer, &bufferEnd, &bufferAlloced, "\\sl-1 \\line\\sl0");
+		}
+	}
 	streamData->isFirst = FALSE;
 	if (dat->isMixed) {
 		if (event->dwFlags & IEEDF_RTL) {
@@ -800,7 +812,7 @@ static char *CreateRTFFromDbEvent2(struct MessageWindowData *dat, struct EventDa
 #endif
 		showColon = 1;
 		if (event->eventType == EVENTTYPE_MESSAGE && g_dat->flags & SMF_GROUPMESSAGES) {
-			AppendToBuffer(&buffer, &bufferEnd, &bufferAlloced, "\\par");
+			AppendToBuffer(&buffer, &bufferEnd, &bufferAlloced, "\\line");
 			showColon = 0;
 		}
 	}
@@ -821,11 +833,11 @@ static char *CreateRTFFromDbEvent2(struct MessageWindowData *dat, struct EventDa
 	switch (event->eventType) {
 		case EVENTTYPE_MESSAGE:
 		if (g_dat->flags & SMF_MSGONNEWLINE && showColon) {
-			AppendToBuffer(&buffer, &bufferEnd, &bufferAlloced, "\\par");
+			AppendToBuffer(&buffer, &bufferEnd, &bufferAlloced, "\\line");
 		}
 		style = event->dwFlags & IEEDF_SENT ? MSGFONTID_MYMSG : MSGFONTID_YOURMSG;
 		AppendWithCustomLinks(event, style, &buffer, &bufferEnd, &bufferAlloced);
-		/*		
+		/*
 		AppendToBuffer(&buffer, &bufferEnd, &bufferAlloced, "%s ", SetToStyle(event->dwFlags & IEEDF_SENT ? MSGFONTID_MYMSG : MSGFONTID_YOURMSG));
 		if (event->dwFlags & IEEDF_UNICODE_TEXT) {
 			AppendUnicodeToBuffer(&buffer, &bufferEnd, &bufferAlloced, event->pszTextW);
@@ -856,7 +868,7 @@ static char *CreateRTFFromDbEvent2(struct MessageWindowData *dat, struct EventDa
 				AppendTToBuffer(&buffer, &bufferEnd, &bufferAlloced, _T(":"));
 			}
 			AppendTToBuffer(&buffer, &bufferEnd, &bufferAlloced, _T(" "));
-			
+
 			if (event->dwFlags & IEEDF_UNICODE_TEXT) {
 				AppendUnicodeToBuffer(&buffer, &bufferEnd, &bufferAlloced, event->pszTextW);
 			} else {
@@ -877,7 +889,6 @@ static char *CreateRTFFromDbEvent2(struct MessageWindowData *dat, struct EventDa
 	if (dat->isMixed) {
 		AppendToBuffer(&buffer, &bufferEnd, &bufferAlloced, "\\par");
 	}
-
 	dat->lastEventTime = event->time;
 	dat->lastEventType = MAKELONG(event->dwFlags, event->eventType);
 	dat->lastEventContact = event->hContact;
@@ -972,14 +983,14 @@ void AutoURLDetect(HWND hwnd, CHARRANGE* sel) {
 		return;
 	}
 	// retrieve text range
-	if (TextDocument->lpVtbl->Range(TextDocument,sel->cpMin, sel->cpMax, &TextRange) != S_OK) 
+	if (TextDocument->lpVtbl->Range(TextDocument,sel->cpMin, sel->cpMax, &TextRange) != S_OK)
 	{
 		TextDocument->lpVtbl->Release(TextDocument);
 		RichEditOle->lpVtbl->Release(RichEditOle);
 		return;
 	}
-	
-	// retrieve text to parse for URLs 
+
+	// retrieve text to parse for URLs
 	if (TextRange->lpVtbl->GetText(TextRange, &btxt) != S_OK)
 	{
 		TextRange->lpVtbl->Release(TextRange);
@@ -989,11 +1000,11 @@ void AutoURLDetect(HWND hwnd, CHARRANGE* sel) {
 	}
 
 	TextRange->lpVtbl->Release(TextRange);
-	
+
 	// disable screen updates
-	
+
 	TextDocument->lpVtbl->Freeze(TextDocument, &cnt);
-	
+
 	TextDocument->lpVtbl->GetSelection(TextDocument, &TextSelection);
 
 	cf.cbSize = sizeof(cf);
@@ -1002,7 +1013,7 @@ void AutoURLDetect(HWND hwnd, CHARRANGE* sel) {
 	_tcsncpy(cf.szFaceName, lf.lfFaceName, SIZEOF(cf.szFaceName));
 	cf.crTextColor = RGB(255,255,255);//colour;
 	cf.yHeight = 20 * lf.lfHeight;
-	
+
 	//text = GetRichEditSelection(hwnd);
 	if (btxt!=NULL) {
 		int cpMin = sel->cpMin;
@@ -1018,7 +1029,7 @@ void AutoURLDetect(HWND hwnd, CHARRANGE* sel) {
 				j+= l-1;
 			}
 		}
-	} 	
+	}
 	TextSelection->lpVtbl->SetRange(TextSelection,oldSel.cpMin, oldSel.cpMax);
 	TextSelection->lpVtbl->Release(TextSelection);
 	TextDocument->lpVtbl->Unfreeze(TextDocument,&cnt);

@@ -131,30 +131,41 @@ BEGIN
     CONTROL         "Enable IEView",IDC_USEIEVIEW,"Button",BS_AUTOCHECKBOX | BS_FLAT |
                     WS_TABSTOP,7,12,146,10
     CONTROL         "Show icons",IDC_SHOWLOGICONS,"Button",BS_AUTOCHECKBOX |
-                    WS_TABSTOP,7,24,146,10
+                    WS_TABSTOP,7,23,146,10
     CONTROL         "Show names",IDC_SHOWNAMES,"Button",BS_AUTOCHECKBOX |
-                    WS_TABSTOP,7,36,146,10
+                    WS_TABSTOP,7,34,146,10
     CONTROL         "Show times",IDC_SHOWTIMES,"Button",BS_AUTOCHECKBOX |
-                    WS_TABSTOP,7,48,146,10
+                    WS_TABSTOP,7,45,146,10
     CONTROL         "Show seconds",IDC_SHOWSECONDS,"Button",BS_AUTOCHECKBOX |
-                    WS_TABSTOP,16,60,129,10
+                    WS_TABSTOP,16,56,129,10
     CONTROL         "Show dates",IDC_SHOWDATES,"Button",BS_AUTOCHECKBOX |
-                    WS_TABSTOP,16,72,137,10
+                    WS_TABSTOP,16,67,137,10
     CONTROL         "Use long date format",IDC_USELONGDATE,"Button",
-                    BS_AUTOCHECKBOX | WS_TABSTOP,25,84,128,10
+                    BS_AUTOCHECKBOX | WS_TABSTOP,25,78,128,10
     CONTROL         "Use relative timestamp",IDC_USERELATIVEDATE,"Button",
-                    BS_AUTOCHECKBOX | WS_TABSTOP,25,96,128,10
+                    BS_AUTOCHECKBOX | WS_TABSTOP,25,89,128,10
     CONTROL         "Use message grouping",IDC_GROUPMESSAGES,"Button",
-                    BS_AUTOCHECKBOX | WS_TABSTOP,7,108,146,10
+                    BS_AUTOCHECKBOX | WS_TABSTOP,7,100,146,10
     CONTROL         "Mark follow-up msgs with timestamp",IDC_MARKFOLLOWUPS,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,16,120,137,10
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,16,111,137,10
     CONTROL         "Start message text on a new line",IDC_MESSAGEONNEWLINE,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,132,146,10
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,122,146,10
+
+    CONTROL         "Indent text",IDC_INDENTTEXT,"Button",
+                    BS_AUTOCHECKBOX | WS_TABSTOP,7,133,110,10
+    EDITTEXT        IDC_INDENTSIZE,118,132,33,12,ES_RIGHT | ES_NUMBER |
+					WS_DISABLED
+    CONTROL         "Spin1",IDC_INDENTSPIN,"msctls_updown32",
+                    UDS_SETBUDDYINT | UDS_ALIGNRIGHT | UDS_AUTOBUDDY |
+                    UDS_ARROWKEYS | UDS_NOTHOUSANDS | UDS_HOTTRACK |
+                    WS_DISABLED,145,132,10,12
+
     CONTROL         "Draw lines between messages",IDC_DRAWLINES,"Button",
-                    BS_AUTOCHECKBOX | WS_TABSTOP,7,144,128,10
-    CONTROL         "",IDC_LINECOLOUR,"ColourPicker",WS_TABSTOP,135,144,16,11
+                    BS_AUTOCHECKBOX | WS_TABSTOP,7,145,128,10
+    CONTROL         "",IDC_LINECOLOUR,"ColourPicker",WS_TABSTOP,135,145,16,10
     CONTROL         "Show status changes",IDC_SHOWSTATUSCHANGES,"Button",
                     BS_AUTOCHECKBOX | WS_TABSTOP,7,156,130,10
+
     GROUPBOX        "Fonts",IDC_STATIC,158,0,146,178
     LTEXT           "Background colour:",IDC_STATIC,167,12,91,8
     CONTROL         "",IDC_BKGCOLOUR,"ColourPicker",WS_TABSTOP,263,10,35,12
