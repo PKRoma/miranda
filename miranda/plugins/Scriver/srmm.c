@@ -40,7 +40,7 @@ PLUGININFO pluginInfo = {
 #else
 	"Scriver",
 #endif
-	PLUGIN_MAKE_VERSION(2, 5, 9, 15),
+	PLUGIN_MAKE_VERSION(2, 5, 9, 16),
 #ifdef _UNICODE
 	"Scriver - send and receive instant messages (Unicode)",
 #else
@@ -48,7 +48,7 @@ PLUGININFO pluginInfo = {
 #endif
 	"Miranda IM Development Team",
 	"the_leech@users.berlios.de",
-	"Copyright © 2000-2007 Miranda IM Project",
+	"Copyright Â© 2000-2007 Miranda IM Project",
 	"http://mgoodies.berlios.de",
 	UNICODE_AWARE,
 	DEFMOD_SRMESSAGE            // replace internal version (if any)
