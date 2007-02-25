@@ -533,6 +533,21 @@ static LRESULT CALLBACK MessageSubclassProc(HWND hwnd, UINT msg, WPARAM wParam, 
 			BOOL isCtrl = GetKeyState(VK_CONTROL) & 0x8000;
 			BOOL isMenu = GetKeyState(VK_MENU) & 0x8000;
 
+            if (wParam == 0x0d && isCtrl && myGlobals.m_MathModAvail) {
+                TCHAR toInsert[100];
+                BYTE keyState[256];
+                int i;
+                int iLen = _tcslen(myGlobals.m_MathModStartDelimiter);
+                ZeroMemory(keyState, 256);
+                _tcsncpy(toInsert, myGlobals.m_MathModStartDelimiter, 30);
+                _tcsncat(toInsert, myGlobals.m_MathModStartDelimiter, 30);
+                SendMessage(hwnd, EM_REPLACESEL, TRUE, (LPARAM)toInsert);
+                SetKeyboardState(keyState);
+                for(i = 0; i < iLen; i++)
+                    SendMessage(hwnd, WM_KEYDOWN, mwdat->dwFlags & MWF_LOG_RTL ? VK_RIGHT : VK_LEFT, 0);
+                return 0;
+            }
+
 			if (GetWindowLong(hwnd, GWL_STYLE) & ES_READONLY)
 				break;
 
@@ -2234,7 +2249,7 @@ LABEL_SHOWWINDOW:
 							else {                      // clicked a nick name
                                 CHARRANGE chr;
                                 TEXTRANGE tr2;
-                                TCHAR tszAplTmpl[] = _T("%s,"), 
+                                TCHAR tszAplTmpl[] = _T("%s:"),
                                     *tszAppeal, *tszTmp;
                                 size_t st;
 
