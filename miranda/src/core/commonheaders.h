@@ -54,8 +54,6 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include "../resource.h"
 #include <win2k.h>
 #include "modules.h"
-#include "miranda.h"
-#include "forkthread.h"
 #include <m_system.h>
 #include <newpluginapi.h>
 #include <m_database.h>
@@ -86,3 +84,8 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include <m_ignore.h>
 #include <m_utils.h>
 #include <m_icolib.h>
+
+#include "forkthread.h"
+#include "miranda.h"
+
+#include "../resource.h"

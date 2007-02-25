@@ -49,7 +49,7 @@ static int UserOnlineSettingChanged(WPARAM wParam,LPARAM lParam)
 				cle.flags=CLEF_ONLYAFEW;
 				cle.hContact=(HANDLE)wParam;
 				cle.hDbEvent=(HANDLE)(uniqueEventId++);
-				cle.hIcon=LoadSkinnedIcon(SKINICON_OTHER_USERONLINE);
+				cle.hIcon = LoadSkinIcon( SKINICON_OTHER_USERONLINE );
 				cle.pszService="UserOnline/Description";
 				mir_snprintf(tooltip,SIZEOF(tooltip),Translate("%s is Online"),(char*)CallService(MS_CLIST_GETCONTACTDISPLAYNAME,wParam,0));
 				cle.pszTooltip=tooltip;

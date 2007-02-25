@@ -127,7 +127,7 @@ static int AwayMsgPreBuildMenu(WPARAM wParam,LPARAM lParam)
 			if(CallProtoService(szProto,PS_GETCAPS,PFLAGNUM_1,0)&PF1_MODEMSGRECV) {
 				if(CallProtoService(szProto,PS_GETCAPS,PFLAGNUM_3,0)&Proto_Status2Flag(status)){
 					clmi.flags=CMIM_FLAGS|CMIM_NAME|CMIF_NOTOFFLINE|CMIM_ICON;
-					clmi.hIcon = LoadSkinnedProtoIcon(szProto, status);
+					clmi.hIcon = LoadSkinProtoIcon(szProto, status);
 				}
 			}
 		}

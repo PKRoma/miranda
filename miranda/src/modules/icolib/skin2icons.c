@@ -32,7 +32,8 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 static HANDLE hIcons2ChangedEvent, hIconsChangedEvent;
 static HICON hIconBlank = NULL;
 
-HANDLE hIcoLib_AddNewIcon, hIcoLib_RemoveIcon, hIcoLib_GetIcon, hIcoLib_IsManaged, hIcoLib_AddRef, hIcoLib_ReleaseIcon;
+HANDLE hIcoLib_AddNewIcon, hIcoLib_RemoveIcon, hIcoLib_GetIcon, hIcoLib_GetIcon2, 
+       hIcoLib_IsManaged, hIcoLib_AddRef, hIcoLib_ReleaseIcon;
 
 static HIMAGELIST hDefaultIconList;
 static int iconEventActive = 0;
@@ -176,16 +177,16 @@ static void IcoLib_FreeIcon(IconItem* icon)
 /////////////////////////////////////////////////////////////////////////////////////////
 // IcoLib_AddNewIcon
 
-static int IcoLib_AddNewIcon(WPARAM wParam,LPARAM lParam)
+HANDLE IcoLib_AddNewIcon( SKINICONDESC* sid )
 {
-	SKINICONDESC *sid = (SKINICONDESC*)lParam;
 	int utf = 0, utf_path = 0;
 	IconItem *item;
 
-	if (!sid->cbSize) return 0x10000000;
+	if ( !sid->cbSize )
+		return NULL;
 
 	if (sid->cbSize < SKINICONDESC_SIZE_V1)
-		return 1;
+		return NULL;
 
 	if (sid->cbSize >= SKINICONDESC_SIZE) {
 		utf = sid->flags & SIDF_UNICODE ? 1 : 0;
@@ -288,7 +289,7 @@ static int IcoLib_AddNewIcon(WPARAM wParam,LPARAM lParam)
 		item->section->flags = sid->flags & SIDF_SORTED;
 
 	LeaveCriticalSection(&csIconList);
-	return 0;
+	return item;
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////
@@ -344,6 +345,8 @@ HICON IconItem_GetIcon(IconItem *item)
 	return hIcon;
 }
 
+/////////////////////////////////////////////////////////////////////////////////////////
+// IcoLib_GetIcon
 // lParam: pszIconName
 // wParam: PLOADIMAGEPARAM or NULL.
 // if wParam == NULL, default is used:
@@ -351,26 +354,45 @@ HICON IconItem_GetIcon(IconItem *item)
 //     cx/cyDesired = GetSystemMetrics(SM_CX/CYSMICON)
 //     fuLoad = 0
 
-static int IcoLib_GetIcon(WPARAM wParam, LPARAM lParam)
+HICON IcoLib_GetIcon( const char* pszIconName )
 {
-	char* pszIconName = (char *)lParam;
-	int result = 0;
+	IconItem *item;
+	HICON result = NULL;
 
-	if (pszIconName) {
-		IconItem *item;
+	if ( !pszIconName )
+		return hIconBlank;
 
-		EnterCriticalSection(&csIconList);
+	EnterCriticalSection(&csIconList);
 
-		item = IcoLib_FindIcon(pszIconName);
-		if (item) {
-			result = (int)IconItem_GetIcon(item);
-			item->ref_count++;
-		}
-		LeaveCriticalSection(&csIconList);
+	item = IcoLib_FindIcon(pszIconName);
+	if (item) {
+		result = IconItem_GetIcon( item );
+		item->ref_count++;
 	}
-	else result = (int)hIconBlank;
-
+	LeaveCriticalSection(&csIconList);
 	return result;
+}
+
+/////////////////////////////////////////////////////////////////////////////////////////
+// IcoLib_GetIconByHandle
+// lParam: icolib item handle
+// wParam: 0
+
+HICON IcoLib_GetIconByHandle( HANDLE hItem )
+{
+	HICON result;
+	IconItem* pi = ( IconItem* )hItem;
+
+	EnterCriticalSection(&csIconList);
+
+	if ( List_IndexOf(( SortedList* )&iconList, pi ) != -1 ) {
+		result = IconItem_GetIcon( pi );
+		pi->ref_count++;
+	}
+	else result = hIconBlank;
+
+	LeaveCriticalSection(&csIconList);
+	return result;			
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////
@@ -424,19 +446,19 @@ static int IcoLib_AddRef(WPARAM wParam, LPARAM lParam)
 // lParam: pszIconName or NULL
 // wParam: HICON or NULL
 
-static int IcoLib_ReleaseIcon(WPARAM wParam, LPARAM lParam)
+int IcoLib_ReleaseIcon( HICON hIcon, char* szIconName )
 {
 	IconItem *item = NULL;
 
 	EnterCriticalSection(&csIconList);
 
-	if (lParam)
-		item = IcoLib_FindIcon((char*)lParam);
+	if ( szIconName )
+		item = IcoLib_FindIcon( szIconName );
 
-	if (!item && wParam) // find by HICON
-		item = IcoLib_FindHIcon((HICON)wParam);
+	if ( !item && hIcon ) // find by HICON
+		item = IcoLib_FindHIcon( hIcon );
 
-	if (item && item->ref_count) {
+	if ( item && item->ref_count ) {
 		item->ref_count--;
 		if (!iconEventActive && !item->ref_count && item->icon != item->default_icon)
 			SafeDestroyIcon(&item->icon);
@@ -1351,6 +1373,18 @@ static int sttCompareIcons( const IconItem* p1, const IconItem* p2 )
 {	return strcmp( p1->name, p2->name );
 }
 
+static int sttIcoLib_AddNewIcon( WPARAM wParam, LPARAM lParam )
+{	return (int)IcoLib_AddNewIcon(( SKINICONDESC* )lParam );
+}
+
+static int sttIcoLib_GetIcon( WPARAM wParam, LPARAM lParam )
+{	return (int)IcoLib_GetIcon(( const char* )lParam );
+}
+
+static int sttIcoLib_GetIconByHandle( WPARAM wParam, LPARAM lParam )
+{	return (int)IcoLib_GetIconByHandle(( HANDLE )lParam );
+}
+
 int InitSkin2Icons(void)
 {
 	sectionList.increment = iconList.increment = 20;
@@ -1362,12 +1396,13 @@ int InitSkin2Icons(void)
 	hDefaultIconList = ImageList_Create(GetSystemMetrics(SM_CXSMICON),GetSystemMetrics(SM_CYSMICON),ILC_COLOR32|ILC_MASK,15,15);
 
 	InitializeCriticalSection(&csIconList);
-	hIcoLib_AddNewIcon  = CreateServiceFunction(MS_SKIN2_ADDICON,     IcoLib_AddNewIcon);
-	hIcoLib_RemoveIcon  = CreateServiceFunction(MS_SKIN2_REMOVEICON,  IcoLib_RemoveIcon);
-	hIcoLib_GetIcon     = CreateServiceFunction(MS_SKIN2_GETICON,     IcoLib_GetIcon);
-	hIcoLib_IsManaged   = CreateServiceFunction(MS_SKIN2_ISMANAGEDICON, IcoLib_IsManaged);
-	hIcoLib_AddRef      = CreateServiceFunction(MS_SKIN2_ADDREFICON,  IcoLib_AddRef); 
-	hIcoLib_ReleaseIcon = CreateServiceFunction(MS_SKIN2_RELEASEICON, IcoLib_ReleaseIcon);
+	hIcoLib_AddNewIcon  = CreateServiceFunction(MS_SKIN2_ADDICON,         sttIcoLib_AddNewIcon);
+	hIcoLib_RemoveIcon  = CreateServiceFunction(MS_SKIN2_REMOVEICON,      IcoLib_RemoveIcon);
+	hIcoLib_GetIcon     = CreateServiceFunction(MS_SKIN2_GETICON,         sttIcoLib_GetIcon);
+	hIcoLib_GetIcon2    = CreateServiceFunction(MS_SKIN2_GETICONBYHANDLE, sttIcoLib_GetIconByHandle);
+	hIcoLib_IsManaged   = CreateServiceFunction(MS_SKIN2_ISMANAGEDICON,   IcoLib_IsManaged);
+	hIcoLib_AddRef      = CreateServiceFunction(MS_SKIN2_ADDREFICON,      IcoLib_AddRef); 
+	hIcoLib_ReleaseIcon = CreateServiceFunction(MS_SKIN2_RELEASEICON,     ( MIRANDASERVICE )IcoLib_ReleaseIcon);
 
 	hIcons2ChangedEvent = CreateHookableEvent(ME_SKIN2_ICONSCHANGED);
 	hIconsChangedEvent = CreateHookableEvent(ME_SKIN_ICONSCHANGED);
@@ -1384,6 +1419,7 @@ void UninitSkin2Icons(void)
 	DestroyServiceFunction(hIcoLib_AddNewIcon);
 	DestroyServiceFunction(hIcoLib_RemoveIcon);
 	DestroyServiceFunction(hIcoLib_GetIcon);
+	DestroyServiceFunction(hIcoLib_GetIcon2);
 	DestroyServiceFunction(hIcoLib_IsManaged);
 	DestroyServiceFunction(hIcoLib_AddRef);
 	DestroyServiceFunction(hIcoLib_ReleaseIcon);

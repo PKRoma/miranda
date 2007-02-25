@@ -439,14 +439,12 @@ void fnDeleteFromContactList(HWND hwnd, struct ClcData *dat)
 		return;
 	switch (contact->type) {
 	case CLCIT_GROUP:
-		CallService(MS_CLIST_GROUPDELETE, (WPARAM) (HANDLE) contact->groupId, 0);
+		CallService(MS_CLIST_GROUPDELETE, (WPARAM)contact->groupId, 0);
 		break;
 	case CLCIT_CONTACT:
-		CallService("CList/DeleteContactCommand", (WPARAM) (HANDLE)
-			contact->hContact, (LPARAM) hwnd);
+		CallService("CList/DeleteContactCommand", (WPARAM)contact->hContact, (LPARAM)hwnd );
 		break;
-	}
-}
+}	}
 
 static WNDPROC OldRenameEditWndProc;
 static LRESULT CALLBACK RenameEditSubclassProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)

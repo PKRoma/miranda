@@ -219,7 +219,10 @@ typedef struct
 	int position;
 	int root;
 	int flags;
-	HICON hIcon;
+	union {
+		HICON hIcon;
+		HANDLE hIcolibItem;
+	};
 	DWORD hotKey;
 	void *ownerdata;
 }

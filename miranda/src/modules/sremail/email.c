@@ -75,17 +75,15 @@ static int EMailPreBuildMenu(WPARAM wParam, LPARAM lParam)
 int LoadSendRecvEMailModule(void)
 {
 	CLISTMENUITEM mi = { 0 };
-
-	CreateServiceFunction(MS_EMAIL_SENDEMAIL, SendEMailCommand);
-
 	mi.cbSize = sizeof(mi);
 	mi.position = -2000010000;
-	mi.flags = 0;
-	mi.hIcon = LoadSkinnedIcon(SKINICON_OTHER_SENDEMAIL);
+	mi.flags = CMIF_ICONFROMICOLIB;
+	mi.icolibItem = GetSkinIconHandle( SKINICON_OTHER_SENDEMAIL );
 	mi.pszName = "&E-mail";
 	mi.pszService = MS_EMAIL_SENDEMAIL;
 	hEMailMenuItem = (HANDLE)CallService(MS_CLIST_ADDCONTACTMENUITEM, 0, (LPARAM)&mi);
+
+	CreateServiceFunction(MS_EMAIL_SENDEMAIL, SendEMailCommand);
 	HookEvent(ME_CLIST_PREBUILDCONTACTMENU, EMailPreBuildMenu);
-	IconLib_ReleaseIcon(mi.hIcon, 0);
 	return 0;
 }

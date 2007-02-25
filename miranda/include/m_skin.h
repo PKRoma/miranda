@@ -34,16 +34,16 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 __inline static HICON LoadSkinnedIcon(int id) {return (HICON)CallService(MS_SKIN_LOADICON,id,0);}
 
 //event icons
-#define SKINICON_EVENT_MESSAGE		100
-#define SKINICON_EVENT_URL			101
-#define SKINICON_EVENT_FILE			102
+#define SKINICON_EVENT_MESSAGE      100
+#define SKINICON_EVENT_URL          101
+#define SKINICON_EVENT_FILE         102
 //other icons
-#define SKINICON_OTHER_MIRANDA		200
-#define SKINICON_OTHER_EXIT			201
-#define SKINICON_OTHER_SHOWHIDE		202
-#define SKINICON_OTHER_GROUPOPEN    203		//v0.1.1.0+
+#define SKINICON_OTHER_MIRANDA      200
+#define SKINICON_OTHER_EXIT         201
+#define SKINICON_OTHER_SHOWHIDE     202
+#define SKINICON_OTHER_GROUPOPEN    203     //v0.1.1.0+
 #define SKINICON_OTHER_USERONLINE   204     //v0.1.0.1+
-#define SKINICON_OTHER_GROUPSHUT    205		//v0.1.1.0+
+#define SKINICON_OTHER_GROUPSHUT    205     //v0.1.1.0+
 #define SKINICON_OTHER_CONNECTING   206     //v0.1.0.1+
 #define SKINICON_OTHER_ADDCONTACT   207     //v0.7.0.2+
 #define SKINICON_OTHER_USERDETAILS  208     //v0.7.0.2+

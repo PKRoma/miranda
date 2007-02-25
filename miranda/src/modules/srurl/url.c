@@ -57,7 +57,7 @@ static int UrlEventAdded(WPARAM wParam,LPARAM lParam)
 	cle.cbSize=sizeof(cle);
 	cle.hContact=(HANDLE)wParam;
 	cle.hDbEvent=(HANDLE)lParam;
-	cle.hIcon=LoadSkinnedIcon(SKINICON_EVENT_URL);
+	cle.hIcon = LoadSkinIcon( SKINICON_EVENT_URL );
 	cle.pszService="SRUrl/ReadUrl";
 	contactName=(char*)CallService(MS_CLIST_GETCONTACTDISPLAYNAME,wParam,0);
 	mir_snprintf(szTooltip,SIZEOF(szTooltip),Translate("URL from %s"),contactName);
@@ -81,7 +81,7 @@ static void RestoreUnreadUrlAlerts(void)
 
 	dbei.cbSize=sizeof(dbei);
 	cle.cbSize=sizeof(cle);
-	cle.hIcon=LoadSkinnedIcon(SKINICON_EVENT_URL);
+	cle.hIcon = LoadSkinIcon( SKINICON_EVENT_URL );
 	cle.pszService="SRUrl/ReadUrl";
 
 	hContact=(HANDLE)CallService(MS_DB_CONTACT_FINDFIRST,0,0);
@@ -122,7 +122,8 @@ static int SRUrlModulesLoaded(WPARAM wParam,LPARAM lParam)
 
 	mi.cbSize = sizeof(mi);
 	mi.position = -2000040000;
-	mi.hIcon = LoadSkinnedIcon(SKINICON_EVENT_URL);
+	mi.flags = CMIF_ICONFROMICOLIB;
+	mi.icolibItem = GetSkinIconHandle( SKINICON_EVENT_URL );
 	mi.pszName = "Web Page Address (&URL)";
 	mi.pszService = MS_URL_SENDURL;
 	CallService(MS_PROTO_ENUMPROTOCOLS,(WPARAM)&protoCount,(LPARAM)&protocol);
@@ -133,9 +134,8 @@ static int SRUrlModulesLoaded(WPARAM wParam,LPARAM lParam)
 			mi.pszContactOwner = protocol[i]->szName;
 			hUrlContactMenu = mir_realloc(hUrlContactMenu,(hUrlContactMenuCount+1)*sizeof(HANDLE));
 			hUrlContactMenu[hUrlContactMenuCount++] = (HANDLE)CallService(MS_CLIST_ADDCONTACTMENUITEM,0,(LPARAM)&mi);
-		}
-	}
-	IconLib_ReleaseIcon(mi.hIcon, 0);
+	}	}
+
 	RestoreUnreadUrlAlerts();
 	return 0;
 }
@@ -147,9 +147,9 @@ static int UrlMenuIconChanged(WPARAM wParam, LPARAM lParam)
 		int j; 
 		CLISTMENUITEM mi;
 
-		mi.cbSize=sizeof(mi);
-		mi.flags=CMIM_ICON;
-		mi.hIcon=LoadSkinnedIcon(SKINICON_EVENT_URL);
+		mi.cbSize = sizeof(mi);
+		mi.flags = CMIM_ICON;
+		mi.hIcon = LoadSkinIcon( SKINICON_EVENT_URL );
 
 		for (j=0; j<hUrlContactMenuCount; j++)
 			CallService(MS_CLIST_MODIFYMENUITEM,(WPARAM)hUrlContactMenu[j],(LPARAM)&mi);

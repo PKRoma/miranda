@@ -115,16 +115,15 @@ struct trayIconInfo_t
 
 typedef struct
 {
-	int id;
-	int globalid;
-
-	int iconId;
-	TMO_MenuItem mi;
-	boolean OverrideShow;
-	char *UniqName;
-	TCHAR *CustomName;
-	boolean IconRegistred;
-	HMENU hSubMenu;
+	int          id;
+	int          globalid;
+	int          iconId;          // icon index in the section's image list
+	TMO_MenuItem mi;              // user-defined data
+	BOOL         OverrideShow;
+	char*        UniqName;        // uniqie name
+	TCHAR*       CustomName;
+	HANDLE       hIcolibItem;     // handle of iconlib item
+	HMENU        hSubMenu;
 }
 	TMO_IntMenuItem,*PMO_IntMenuItem;
 

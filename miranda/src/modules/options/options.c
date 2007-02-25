@@ -858,13 +858,12 @@ static int OptModulesLoaded(WPARAM wParam,LPARAM lParam)
 {
 	CLISTMENUITEM mi = { 0 };
 	mi.cbSize = sizeof(mi);
-	mi.flags = 0;
-	mi.hIcon = LoadSkinnedIcon(SKINICON_OTHER_OPTIONS);
+	mi.flags = CMIF_ICONFROMICOLIB;
+	mi.icolibItem = GetSkinIconHandle( SKINICON_OTHER_OPTIONS );
 	mi.position = 1900000000;
 	mi.pszName = "&Options...";
 	mi.pszService = "Options/OptionsCommand";
-	CallService(MS_CLIST_ADDMAINMENUITEM,0,(LPARAM)&mi);
-	IconLib_ReleaseIcon(mi.hIcon, 0);
+	CallService( MS_CLIST_ADDMAINMENUITEM, 0, ( LPARAM )&mi );
 	return 0;
 }
 

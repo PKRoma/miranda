@@ -69,6 +69,7 @@ typedef struct {
 //
 //  wParam = (WPARAM)0
 //  lParam = (LPARAM)(SKINICONDESC*)sid;
+//  returns a handle to the newly added item
 //
 #define MS_SKIN2_ADDICON "Skin2/Icons/AddIcon"
 
@@ -86,6 +87,12 @@ typedef struct {
 //  Returned HICON SHOULDN'T be destroyed, it is managed by IcoLib
 //
 #define MS_SKIN2_GETICON "Skin2/Icons/GetIcon"
+
+//
+//  Retrieve HICON with HANDLE specified in lParam
+//  Returned HICON SHOULDN'T be destroyed, it is managed by IcoLib
+//
+#define MS_SKIN2_GETICONBYHANDLE "Skin2/Icons/GetIconByHandle"
 
 //
 //  Add reference to HICON

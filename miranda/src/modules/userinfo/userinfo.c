@@ -494,8 +494,9 @@ int LoadUserInfoModule(void)
 	CreateServiceFunction(MS_USERINFO_ADDPAGE,AddDetailsPage);
 
 	mi.cbSize = sizeof(mi);
+	mi.flags = CMIF_ICONFROMICOLIB;
 	mi.position = 1000050000;
-	mi.hIcon = LoadSkinnedIcon(SKINICON_OTHER_USERDETAILS);
+	mi.icolibItem = GetSkinIconHandle( SKINICON_OTHER_USERDETAILS );
 	mi.pszName = "User &Details";
 	mi.pszService = MS_USERINFO_SHOWDIALOG;
 	CallService(MS_CLIST_ADDCONTACTMENUITEM,0,(LPARAM)&mi);   
@@ -505,6 +506,5 @@ int LoadUserInfoModule(void)
 	CallService(MS_CLIST_ADDMAINMENUITEM,0,(LPARAM)&mi);
 
 	hWindowList = (HANDLE)CallService(MS_UTILS_ALLOCWINDOWLIST,0,0);
-	IconLib_ReleaseIcon(mi.hIcon, 0);
 	return 0;
 }

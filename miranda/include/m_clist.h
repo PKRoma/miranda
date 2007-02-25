@@ -70,32 +70,34 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 //there is a #define PUTPOSITIONSINMENU in clistmenus.c which, when set, will
 //cause the position numbers to be placed in brackets after the menu items
 typedef struct {
-	int cbSize;			//size in bytes of this structure
+	int cbSize;	            //size in bytes of this structure
 	union {
       char*  pszName;      //text of the menu item
 		TCHAR* ptszName;     //Unicode text of the menu item
 	};
-	DWORD flags;		//flags
-	int position;		//approx position on the menu. lower numbers go nearer the top
-	HICON hIcon;		//icon to put by the item. If this was not loaded from
-	                    //a resource, you can delete it straight after the call
-	char* pszService;	//name of service to call when the item gets selected
+	DWORD flags;            //set of CMIF_* flags
+	int position;           //approx position on the menu. lower numbers go nearer the top
+	union {
+		HICON hIcon;         //icon to put by the item. If this was not loaded from
+                           //a resource, you can delete it straight after the call
+		HANDLE icolibItem;   //set CMIF_ICONFROMICOLIB to pass this value
+	};
+	char* pszService;       //name of service to call when the item gets selected
 	union {
 		char* pszPopupName;  //name of the popup menu that this item is on. If this
-									//is NULL the item is on the root of the menu
-		TCHAR* ptszPopupName;
+		TCHAR* ptszPopupName; //is NULL the item is on the root of the menu
 	};
 
-	int popupPosition;	//position of the popup menu on the root menu. Ignored
-						//if pszPopupName is NULL or the popup menu already
-						//existed
-	DWORD hotKey;       //keyboard accelerator, same as lParam of WM_HOTKEY
-	                    //0 for none
-	char *pszContactOwner; //contact menus only. The protocol module that owns
-	          //the contacts to which this menu item applies. NULL if it
-			  //applies to all contacts. If it applies to multiple but not all
-			  //protocols, add multiple menu items or use ME_CLIST_PREBUILDCONTACTMENU
+	int popupPosition;      //position of the popup menu on the root menu. Ignored
+                           //if pszPopupName is NULL or the popup menu already
+                           //existed
+	DWORD hotKey;           //keyboard accelerator, same as lParam of WM_HOTKEY,0 for none
+	char *pszContactOwner;  //contact menus only. The protocol module that owns
+                           //the contacts to which this menu item applies. NULL if it
+                           //applies to all contacts. If it applies to multiple but not all
+                           //protocols, add multiple menu items or use ME_CLIST_PREBUILDCONTACTMENU
 } CLISTMENUITEM;
+
 #define CMIF_GRAYED     1
 #define CMIF_CHECKED    2
 #define CMIF_HIDDEN     4     //only works on contact menus
@@ -114,6 +116,7 @@ typedef struct {
 #endif
 
 #define CMIF_KEEPUNTRANSLATED  1024 // don't translate a menu item
+#define CMIF_ICONFROMICOLIB    2048 // use icolibName instead of hIcon
 
 #define MS_CLIST_ADDMAINMENUITEM        "CList/AddMainMenuItem"
 

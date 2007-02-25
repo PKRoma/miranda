@@ -54,7 +54,18 @@ char*    t2a( const TCHAR* src );
 char*    u2a( const wchar_t* src );
 wchar_t* a2u( const char* src );
 
+/**** skin2icons.c *********************************************************************/
+
+HANDLE IcoLib_AddNewIcon( SKINICONDESC* sid );
+HICON  IcoLib_GetIcon( const char* pszIconName );
+HICON  IcoLib_GetIconByHandle( HANDLE hItem );
+int    IcoLib_ReleaseIcon( HICON hIcon, char* szIconName );
+
 /**** skinicons.c **********************************************************************/
+
+HICON LoadSkinProtoIcon( const char* szProto, int status );
+HICON LoadSkinIcon( int idx );
+HANDLE GetSkinIconHandle( int idx );
 
 HICON LoadIconEx(HINSTANCE hInstance, LPCTSTR lpIconName, BOOL bShared);
 int ImageList_AddIcon_NotShared(HIMAGELIST hIml, LPCTSTR szResource);

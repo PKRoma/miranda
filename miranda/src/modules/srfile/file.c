@@ -77,9 +77,9 @@ static int FileEventAdded(WPARAM wParam,LPARAM lParam)
 		char szTooltip[256];
 
 		SkinPlaySound("RecvFile");
-		cle.hIcon=LoadSkinnedIcon(SKINICON_EVENT_FILE);
-		cle.pszService="SRFile/RecvFile";
-		contactName=(char*)CallService(MS_CLIST_GETCONTACTDISPLAYNAME,wParam,0);
+		cle.hIcon = LoadSkinIcon( SKINICON_EVENT_FILE );
+		cle.pszService = "SRFile/RecvFile";
+		contactName = (char*)CallService(MS_CLIST_GETCONTACTDISPLAYNAME,wParam,0);
 		mir_snprintf(szTooltip,SIZEOF(szTooltip),Translate("File from %s"),contactName);
 		cle.pszTooltip=szTooltip;
 		CallService(MS_CLIST_ADDEVENT,0,(LPARAM)&cle);
@@ -206,21 +206,24 @@ static int SRFileModulesLoaded(WPARAM wParam,LPARAM lParam)
 
 	mi.cbSize = sizeof(mi);
 	mi.position = -2000020000;
-	mi.hIcon = LoadSkinnedIcon(SKINICON_EVENT_FILE);
+	mi.icolibItem = GetSkinIconHandle( SKINICON_EVENT_FILE );
 	mi.pszName = "&File";
 	mi.pszService = MS_FILE_SENDFILE;
 	CallService(MS_PROTO_ENUMPROTOCOLS,(WPARAM)&protoCount,(LPARAM)&protocol);
-	for(i=0;i<protoCount;i++) {
-		if(protocol[i]->type!=PROTOTYPE_PROTOCOL) continue;
-		if(CallProtoService(protocol[i]->szName,PS_GETCAPS,PFLAGNUM_1,0)&PF1_FILESEND) {
-			mi.flags=(CallProtoService(protocol[i]->szName,PS_GETCAPS,PFLAGNUM_4,0)&PF4_OFFLINEFILES)?0:CMIF_NOTOFFLINE;
+	for ( i=0; i <protoCount; i++ ) {
+		if ( protocol[i]->type != PROTOTYPE_PROTOCOL )
+			continue;
+
+		if ( CallProtoService( protocol[i]->szName, PS_GETCAPS,PFLAGNUM_1, 0 ) & PF1_FILESEND ) {
+			mi.flags = CMIF_ICONFROMICOLIB;
+			if ( !( CallProtoService( protocol[i]->szName, PS_GETCAPS,PFLAGNUM_4, 0 ) & PF4_OFFLINEFILES ))
+				mi.flags |= CMIF_NOTOFFLINE;
 			mi.pszContactOwner = protocol[i]->szName;
 			hFileMenu = (HANDLE*)mir_realloc(hFileMenu,sizeof(HANDLE)*(hFileMenuCount+1));
 			hFileMenu[hFileMenuCount] = (HANDLE)CallService(MS_CLIST_ADDCONTACTMENUITEM,0,(LPARAM)&mi);
 			hFileMenuCount++;
-		}
-	}
-	IconLib_ReleaseIcon(mi.hIcon, 0);
+	}	}
+
 	RemoveUnreadFileEvents();
 	return 0;
 }
@@ -235,7 +238,7 @@ int FilePreBuildContactMenu(WPARAM wParam,LPARAM lParam) {
 		ZeroMemory(&mi,sizeof(mi));
 		mi.cbSize = sizeof(mi);
 		mi.flags = CMIM_FLAGS|CMIM_ICON;
-		mi.hIcon = LoadSkinnedIcon(SKINICON_EVENT_FILE);
+		mi.hIcon = LoadSkinIcon( SKINICON_EVENT_FILE );
 
 		for(i=0;i<hFileMenuCount;i++)
 			CallService(MS_CLIST_MODIFYMENUITEM, (WPARAM)hFileMenu[i], (LPARAM)&mi);

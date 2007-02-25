@@ -379,15 +379,15 @@ BOOL CALLBACK ContactDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
 										return TRUE;
 									}
 									if(nm->nmcd.lItemlParam==(LPARAM)(-2) && nm->iSubItem-3==(nm->nmcd.hdr.idFrom==IDC_PHONES))
-										hIcon=LoadSkinnedIcon(SKINICON_OTHER_ADDCONTACT);
+										hIcon = LoadSkinIcon( SKINICON_OTHER_ADDCONTACT );
 									else if(nm->iSubItem>1 && nm->nmcd.lItemlParam!=(LPARAM)(-1) && nm->nmcd.lItemlParam!=(LPARAM)(-2)) {
 										static int iconResources[3]={SKINICON_OTHER_RENAME,SKINICON_OTHER_DELETE};
 										if(nm->iSubItem==2 && nm->nmcd.hdr.idFrom==IDC_PHONES) {
 											TCHAR szText[2];
 											ListView_GetItemText(nm->nmcd.hdr.hwndFrom,nm->nmcd.dwItemSpec,nm->iSubItem,szText,SIZEOF(szText));
-											if(szText[0]) hIcon=LoadSkinnedIcon(SKINICON_OTHER_SMS);
+											if(szText[0]) hIcon = LoadSkinIcon( SKINICON_OTHER_SMS );
 										}
-										else hIcon=LoadSkinnedIcon(iconResources[nm->iSubItem-3+(nm->nmcd.hdr.idFrom==IDC_EMAILS)]);
+										else hIcon = LoadSkinIcon( iconResources[nm->iSubItem-3+(nm->nmcd.hdr.idFrom==IDC_EMAILS)] );
 									}
 									else break;
 									DrawIconEx(nm->nmcd.hdc,(rc.left+rc.right-GetSystemMetrics(SM_CXSMICON))/2,(rc.top+rc.bottom-GetSystemMetrics(SM_CYSMICON))/2,hIcon,GetSystemMetrics(SM_CXSMICON),GetSystemMetrics(SM_CYSMICON),0,NULL,DI_NORMAL);

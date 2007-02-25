@@ -1010,11 +1010,11 @@ static int OnSystemModulesLoaded(WPARAM wParam,LPARAM lParam)
 		CLISTMENUITEM mi = { 0 };
 		mi.cbSize     = sizeof(mi);
 		mi.position   = 500020000;
-		mi.hIcon      = LoadSkinnedIcon(SKINICON_OTHER_FINDUSER);
+		mi.flags      = CMIF_ICONFROMICOLIB;
+		mi.icolibItem = GetSkinIconHandle( SKINICON_OTHER_FINDUSER );
 		mi.pszName    = "&Find/Add Contacts...";
 		mi.pszService = MS_FINDADD_FINDADD;
 		CallService(MS_CLIST_ADDMAINMENUITEM, 0, (LPARAM)&mi);
-		IconLib_ReleaseIcon(mi.hIcon, 0);
 	}
 
 	return 0;

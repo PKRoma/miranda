@@ -95,7 +95,7 @@ static void DisconnectAll()
 
 static int CluiIconsChanged(WPARAM wParam, LPARAM lParam)
 {
-	ImageList_ReplaceIcon_IconLibLoaded(himlMirandaIcon, 0, LoadSkinnedIcon(SKINICON_OTHER_MIRANDA));
+	ImageList_ReplaceIcon_IconLibLoaded(himlMirandaIcon, 0, LoadSkinIcon( SKINICON_OTHER_MIRANDA ));
 	DrawMenuBar(cli.hwndContactList);
 	return 0;
 }
@@ -314,7 +314,7 @@ int LoadCLUIModule(void)
 	wndclass.cbClsExtra = 0;
 	wndclass.cbWndExtra = 0;
 	wndclass.hInstance = cli.hInst;
-	wndclass.hIcon = LoadSkinnedIcon(SKINICON_OTHER_MIRANDA);
+	wndclass.hIcon = LoadSkinIcon( SKINICON_OTHER_MIRANDA );
 	wndclass.hCursor = LoadCursor(NULL, IDC_ARROW);
 	wndclass.hbrBackground = (HBRUSH) (COLOR_3DFACE + 1);
 	wndclass.lpszMenuName = MAKEINTRESOURCE(IDR_CLISTMENU);
@@ -360,39 +360,35 @@ int LoadCLUIModule(void)
 		SetWindowPos(cli.hwndContactList, DBGetContactSettingByte(NULL, "CList", "OnTop", SETTING_ONTOP_DEFAULT) ? HWND_TOPMOST : HWND_NOTOPMOST, 0, 0, 0, 0, SWP_NOSIZE | SWP_NOMOVE);
 	}
 	{
-		CLISTMENUITEM mi;
-		ZeroMemory(&mi, sizeof(mi));
+		CLISTMENUITEM mi = { 0 };
 		mi.cbSize = sizeof(mi);
 
 		CreateServiceFunction("CList/DeleteContactCommand", MenuItem_DeleteContact);
 		mi.position = 2000070000;
-		mi.flags = 0;
-		mi.hIcon = LoadIconEx(cli.hInst, MAKEINTRESOURCE(IDI_DELETE),FALSE);
+		mi.flags = CMIF_ICONFROMICOLIB;
+		mi.icolibItem = GetSkinIconHandle( SKINICON_OTHER_DELETE );
 		mi.pszContactOwner = NULL;      //on every contact
 		mi.pszName = "De&lete";
 		mi.pszService = "CList/DeleteContactCommand";
 		CallService(MS_CLIST_ADDCONTACTMENUITEM, 0, (LPARAM) & mi);
-		Safe_DestroyIcon(mi.hIcon);
 
 		CreateServiceFunction("CList/RenameContactCommand", MenuItem_RenameContact);
 		mi.position = 2000050000;
-		mi.flags = 0;
-		mi.hIcon = LoadIconEx(cli.hInst, MAKEINTRESOURCE(IDI_RENAME),FALSE);
+		mi.icolibItem = GetSkinIconHandle( SKINICON_OTHER_RENAME );
 		mi.pszContactOwner = NULL;      //on every contact
 		mi.pszName = "&Rename";
 		mi.pszService = "CList/RenameContactCommand";
 		hRenameMenuItem = (HANDLE) CallService(MS_CLIST_ADDCONTACTMENUITEM, 0, (LPARAM) & mi);
-		HookEvent(ME_CLIST_PREBUILDCONTACTMENU, MenuItem_PreBuild);
-		Safe_DestroyIcon(mi.hIcon);
 
 		CreateServiceFunction("CList/AddToListContactCommand", MenuItem_AddContactToList);
 		mi.position = -2050000000;
-		mi.flags = CMIF_NOTONLIST;
-		mi.hIcon = LoadIconEx(cli.hInst, MAKEINTRESOURCE(IDI_ADDCONTACT),FALSE);
+		mi.flags |= CMIF_NOTONLIST;
+		mi.icolibItem = GetSkinIconHandle( SKINICON_OTHER_ADDCONTACT );
 		mi.pszName = "&Add permanently to list";
 		mi.pszService = "CList/AddToListContactCommand";
 		CallService(MS_CLIST_ADDCONTACTMENUITEM, 0, (LPARAM) & mi);
-		Safe_DestroyIcon(mi.hIcon);
+
+		HookEvent(ME_CLIST_PREBUILDCONTACTMENU, MenuItem_PreBuild);
 	}
 	return 0;
 }
@@ -984,7 +980,7 @@ LRESULT CALLBACK fnContactListWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM
 				SetBkMode(dis->hDC, TRANSPARENT);
 				x = dis->rcItem.left;
 				if (showOpts & 1) {
-					HICON hIcon = LoadSkinnedProtoIcon(szProto, status);
+					HICON hIcon = LoadSkinProtoIcon(szProto, status);
 					DrawIconEx(dis->hDC, x, (dis->rcItem.top + dis->rcItem.bottom - g_IconHeight) >> 1, hIcon,
 						g_IconWidth, g_IconHeight, 0, NULL, DI_NORMAL);
 					x += g_IconWidth + 2;
