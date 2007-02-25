@@ -151,18 +151,21 @@ BEGIN
     CONTROL         "Start message text on a new line",IDC_MESSAGEONNEWLINE,
                     "Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,122,146,10
 
+
+    CONTROL         "Draw lines between messages",IDC_DRAWLINES,"Button",
+                    BS_AUTOCHECKBOX | WS_TABSTOP,7,133,128,10
+    CONTROL         "",IDC_LINECOLOUR,"ColourPicker",WS_TABSTOP,135,132,16,11
+
+
     CONTROL         "Indent text",IDC_INDENTTEXT,"Button",
-                    BS_AUTOCHECKBOX | WS_TABSTOP,7,133,110,10
-    EDITTEXT        IDC_INDENTSIZE,118,132,33,12,ES_RIGHT | ES_NUMBER |
+                    BS_AUTOCHECKBOX | WS_TABSTOP,7,144,110,10
+    EDITTEXT        IDC_INDENTSIZE,118,144,33,12,ES_RIGHT | ES_NUMBER |
 					WS_DISABLED
     CONTROL         "Spin1",IDC_INDENTSPIN,"msctls_updown32",
                     UDS_SETBUDDYINT | UDS_ALIGNRIGHT | UDS_AUTOBUDDY |
                     UDS_ARROWKEYS | UDS_NOTHOUSANDS | UDS_HOTTRACK |
-                    WS_DISABLED,145,132,10,12
+                    WS_DISABLED,145,144,10,12
 
-    CONTROL         "Draw lines between messages",IDC_DRAWLINES,"Button",
-                    BS_AUTOCHECKBOX | WS_TABSTOP,7,145,128,10
-    CONTROL         "",IDC_LINECOLOUR,"ColourPicker",WS_TABSTOP,135,145,16,10
     CONTROL         "Show status changes",IDC_SHOWSTATUSCHANGES,"Button",
                     BS_AUTOCHECKBOX | WS_TABSTOP,7,156,130,10
 
