@@ -73,8 +73,6 @@ static int MsnInviteCommand( WPARAM wParam, LPARAM lParam )
 {
 	ThreadData* tActiveThreads[ 64 ];
 	int tThreads = MSN_GetActiveThreads( tActiveThreads ), tChosenThread;
-// modified for chat
-
 
 	switch( tThreads ) {
 	case 0:
@@ -290,99 +288,78 @@ void MsnInitMenus( void )
 	mi.pszService = servicefunction;
 	mi.pszPopupName = msnProtocolName;
 
-	if ( !MSN_GetByte( "DisableSetNickname", 0 )) {
-		strcpy( tDest, MS_SET_NICKNAME_UI );
-		arServices.insert( CreateServiceFunction( servicefunction, SetNicknameUI ));
+	strcpy( tDest, MS_SET_NICKNAME_UI );
+	arServices.insert( CreateServiceFunction( servicefunction, SetNicknameUI ));
+	mi.flags = CMIF_ICONFROMICOLIB;
+	mi.popupPosition = 500085000;
+	mi.position = 2000060000;
+	mi.icolibItem = GetIconHandle( IDI_MSN );
+	mi.pszName = "Set &Nickname";
+	msnMenuItems[ 0 ] = ( HANDLE )MSN_CallService( MS_CLIST_ADDMAINMENUITEM, 0, (LPARAM)&mi );
 
-		mi.popupPosition = 500085000;
-		mi.position = 2000060000;
-		mi.hIcon = LoadIconEx( "main" );
-		mi.pszName = "Set &Nickname";
-		msnMenuItems[ 0 ] = ( HANDLE )MSN_CallService( MS_CLIST_ADDMAINMENUITEM, 0, (LPARAM)&mi );
-		ReleaseIconEx( "main" );
+	strcpy( tDest, MS_GOTO_INBOX );
+	arServices.insert( CreateServiceFunction( servicefunction, MsnGotoInbox ));
+	mi.position = 2000060001;
+	mi.icolibItem = GetIconHandle( IDI_INBOX );
+	mi.pszName = "Display Hotmail &Inbox";
+	menuItemsAll[ 0 ] = ( HANDLE )MSN_CallService( MS_CLIST_ADDMAINMENUITEM, 0, (LPARAM)&mi );
 
-		strcpy( tDest, MS_GOTO_INBOX );
-		arServices.insert( CreateServiceFunction( servicefunction, MsnGotoInbox ));
+	strcpy( tDest, MS_EDIT_PROFILE );
+	arServices.insert( CreateServiceFunction( servicefunction, MsnEditProfile ));
+	mi.position = 2000060002;
+	mi.icolibItem = GetIconHandle( IDI_PROFILE );
+	mi.pszName = "Edit MSN &Profile";
+	msnMenuItems[ 1 ] = ( HANDLE )MSN_CallService( MS_CLIST_ADDMAINMENUITEM, 0, (LPARAM)&mi );
 
-		mi.position = 2000060001;
-		mi.hIcon = LoadIconEx( "inbox" );
-		mi.pszName = "Display Hotmail &Inbox";
-		menuItemsAll[ 0 ] = ( HANDLE )MSN_CallService( MS_CLIST_ADDMAINMENUITEM, 0, (LPARAM)&mi );
-		ReleaseIconEx( "inbox" );
+	strcpy( tDest, MS_VIEW_STATUS );
+	arServices.insert( CreateServiceFunction( servicefunction, MsnViewServiceStatus ));
+	mi.position = 2000060003;
+	mi.icolibItem = GetIconHandle( IDI_SERVICES );
+	mi.pszName = "View MSN Services &Status";
+	menuItemsAll[ 1 ] = ( HANDLE )MSN_CallService( MS_CLIST_ADDMAINMENUITEM, 0, (LPARAM)&mi );
 
-		strcpy( tDest, MS_EDIT_PROFILE );
-		arServices.insert( CreateServiceFunction( servicefunction, MsnEditProfile ));
-
-		mi.position = 2000060002;
-		mi.hIcon = LoadIconEx( "profile" );
-		mi.pszName = "Edit MSN &Profile";
-		msnMenuItems[ 1 ] = ( HANDLE )MSN_CallService( MS_CLIST_ADDMAINMENUITEM, 0, (LPARAM)&mi );
-		ReleaseIconEx( "profile" );
-
-		strcpy( tDest, MS_VIEW_STATUS );
-		arServices.insert( CreateServiceFunction( servicefunction, MsnViewServiceStatus ));
-
-		mi.position = 2000060003;
-		mi.hIcon = LoadIconEx( "services" );
-		mi.pszName = "View MSN Services &Status";
-		menuItemsAll[ 1 ] = ( HANDLE )MSN_CallService( MS_CLIST_ADDMAINMENUITEM, 0, (LPARAM)&mi );
-		ReleaseIconEx( "services" );
-
-		strcpy( tDest, MS_SET_AVATAR_UI );
-		arServices.insert( CreateServiceFunction( servicefunction, MsnSetAvatarUI ));
-
-		mi.position = 2000060004;
-		mi.hIcon = LoadIconEx( "avatar" );
-		mi.pszName = "Set &Avatar";
-		menuItemsAll[ 2 ] = ( HANDLE )MSN_CallService( MS_CLIST_ADDMAINMENUITEM, 0, (LPARAM)&mi );
-		ReleaseIconEx( "avatar" );
-	}
+	strcpy( tDest, MS_SET_AVATAR_UI );
+	arServices.insert( CreateServiceFunction( servicefunction, MsnSetAvatarUI ));
+	mi.position = 2000060004;
+	mi.icolibItem = GetIconHandle( IDI_AVATAR );
+	mi.pszName = "Set &Avatar";
+	menuItemsAll[ 2 ] = ( HANDLE )MSN_CallService( MS_CLIST_ADDMAINMENUITEM, 0, (LPARAM)&mi );
 
 	//////////////////////////////////////////////////////////////////////////////////////
 	// Contact menu initialization
 
 	strcpy( tDest, MSN_BLOCK );
 	arServices.insert( CreateServiceFunction( servicefunction, MsnBlockCommand ));
-
 	mi.position = -500050000;
-	mi.hIcon = LoadIconEx( "block" );
+	mi.icolibItem = GetIconHandle( IDI_MSNBLOCK );
 	mi.pszContactOwner = msnProtocolName;
 	mi.pszName = "&Block";
 	msnBlockMenuItem = ( HANDLE )MSN_CallService( MS_CLIST_ADDCONTACTMENUITEM, 0, ( LPARAM )&mi );
-	ReleaseIconEx( "block" );
 
 	strcpy( tDest, MSN_INVITE );
 	arServices.insert( CreateServiceFunction( servicefunction, MsnInviteCommand ));
-
-	mi.flags = CMIF_NOTOFFLINE;
+	mi.flags = CMIF_ICONFROMICOLIB | CMIF_NOTOFFLINE;
 	mi.position = -500050001;
-	mi.hIcon = LoadIconEx( "invite" );
+	mi.icolibItem = GetIconHandle( IDI_INVITE );
 	mi.pszName = "&Invite to chat";
 	menuItemsAll[ 3 ] = ( HANDLE )MSN_CallService( MS_CLIST_ADDCONTACTMENUITEM, 0, (LPARAM)&mi );
-	ReleaseIconEx( "invite" );
 
 	strcpy( tDest, MSN_NETMEETING );
 	arServices.insert( CreateServiceFunction( servicefunction, MsnSendNetMeeting ));
-
-	mi.flags = CMIF_NOTOFFLINE;
 	mi.position = -500050002;
-	mi.hIcon = LoadIconEx( "netmeeting" );
+	mi.icolibItem = GetIconHandle( IDI_NETMEETING );
 	mi.pszName = "&Start Netmeeting";
 	menuItemsAll[ 4 ] = ( HANDLE )MSN_CallService( MS_CLIST_ADDCONTACTMENUITEM, 0, (LPARAM)&mi );
-	ReleaseIconEx( "netmeeting" );
 
 	strcpy( tDest, MSN_VIEW_PROFILE );
 	arServices.insert( CreateServiceFunction( servicefunction, MsnViewProfile ));
-
 	mi.position = -500050003;
-	mi.hIcon = LoadIconEx( "profile" );
+	mi.icolibItem = GetIconHandle( IDI_PROFILE );
 	mi.pszName = "&View Profile";
 	menuItemsAll[ 5 ] = ( HANDLE )MSN_CallService( MS_CLIST_ADDCONTACTMENUITEM, 0, (LPARAM)&mi );
-	ReleaseIconEx( "profile" );
 
 	MSN_EnableMenuItems( FALSE );
 }
-
 
 void __stdcall MSN_EnableMenuItems( BOOL parEnable )
 {
@@ -393,55 +370,8 @@ void __stdcall MSN_EnableMenuItems( BOOL parEnable )
 		clmi.flags |= CMIF_GRAYED;
 
 	for ( int i=0; i < SIZEOF(msnMenuItems); i++ )
-	{
 		if ( msnMenuItems[i] != NULL )
 			MSN_CallService( MS_CLIST_MODIFYMENUITEM, ( WPARAM )msnMenuItems[i], ( LPARAM )&clmi );
-	}
 
 	MSN_CallService( MS_CLIST_MODIFYMENUITEM, ( WPARAM )msnBlockMenuItem, ( LPARAM )&clmi );
-}
-
-int MsnIconsChanged( WPARAM wParam, LPARAM lParam )
-{
-	CLISTMENUITEM mi = { 0 };
-	mi.cbSize = sizeof( mi );
-	mi.flags = CMIM_ICON;
-
-	mi.hIcon = LoadIconEx( "main" );
-	MSN_CallService( MS_CLIST_MODIFYMENUITEM, ( WPARAM )msnMenuItems[ 0 ], (LPARAM)&mi );
-	ReleaseIconEx( "main" );
-
-	mi.hIcon = LoadIconEx( "inbox" );
-	MSN_CallService( MS_CLIST_MODIFYMENUITEM, ( WPARAM )menuItemsAll[ 0 ], (LPARAM)&mi );
-	ReleaseIconEx( "inbox" );
-
-	mi.hIcon = LoadIconEx( "profile" );
-	MSN_CallService( MS_CLIST_MODIFYMENUITEM, ( WPARAM )msnMenuItems[ 1 ], (LPARAM)&mi );
-	ReleaseIconEx( "profile" );
-
-	mi.hIcon = LoadIconEx( "services" );
-	MSN_CallService( MS_CLIST_MODIFYMENUITEM, ( WPARAM )menuItemsAll[ 1 ], (LPARAM)&mi );
-	ReleaseIconEx( "services" );
-
-	mi.hIcon = LoadIconEx( "avatar" );
-	MSN_CallService( MS_CLIST_MODIFYMENUITEM, ( WPARAM )menuItemsAll[ 2 ], (LPARAM)&mi );
-	ReleaseIconEx( "avatar" );
-
-	mi.hIcon = LoadIconEx( "block" );
-	MSN_CallService( MS_CLIST_MODIFYMENUITEM, ( WPARAM )msnBlockMenuItem, ( LPARAM )&mi );
-	ReleaseIconEx( "block" );
-
-	mi.hIcon = LoadIconEx( "invite" );
-	MSN_CallService( MS_CLIST_MODIFYMENUITEM, ( WPARAM )menuItemsAll[ 3 ], (LPARAM)&mi );
-	ReleaseIconEx( "invite" );
-
-	mi.hIcon = LoadIconEx( "netmeeting" );
-	MSN_CallService( MS_CLIST_MODIFYMENUITEM, ( WPARAM )menuItemsAll[ 4 ], (LPARAM)&mi );
-	ReleaseIconEx( "netmeeting" );
-
-	mi.hIcon = LoadIconEx( "profile" );
-	MSN_CallService( MS_CLIST_MODIFYMENUITEM, ( WPARAM )menuItemsAll[ 5 ], (LPARAM)&mi );
-	ReleaseIconEx( "profile" );
-
-	return 0;
 }

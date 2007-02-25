@@ -232,17 +232,19 @@ int      __stdcall   MSN_EnterBitmapFileName( char* szDest );
 int      __stdcall   MSN_SaveBitmapAsAvatar( HBITMAP hBitmap, const char* szFileName );
 HBITMAP  __stdcall   MSN_StretchBitmap( HBITMAP hBitmap );
 
-TCHAR* EscapeChatTags(TCHAR* pszText);
-TCHAR* UnEscapeChatTags(TCHAR* str_in);
+VOID		CALLBACK    MSNMainTimerProc( HWND hwnd, UINT uMsg, UINT idEvent, DWORD dwTime );
+LRESULT	CALLBACK    NullWindowProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam);
+DWORD		WINAPI	   MsnShowMailThread( LPVOID );
 
-VOID		CALLBACK MSNMainTimerProc( HWND hwnd, UINT uMsg, UINT idEvent, DWORD dwTime );
-LRESULT	CALLBACK NullWindowProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam);
-DWORD		WINAPI	MsnShowMailThread( LPVOID );
-
+HANDLE   __stdcall   GetIconHandle( int iconId );
 HICON    __stdcall   LoadIconEx( const char* );
 void     __stdcall   ReleaseIconEx( const char* );
+
 void     MsnInitIcons( void );
 void     MsnInitMenus( void );
+
+TCHAR* EscapeChatTags(TCHAR* pszText);
+TCHAR* UnEscapeChatTags(TCHAR* str_in);
 
 TCHAR* a2tf( const TCHAR* str, BOOL unicode );
 void   overrideStr( TCHAR*& dest, const TCHAR* src, BOOL unicode, const TCHAR* def = NULL );
@@ -609,7 +611,6 @@ typedef struct
 	DWORD		PopupTimeoutHotmail;
 	DWORD		PopupTimeoutOther;
 
-	BOOL		DisableMenu;
 	BOOL		UseGateway;
 	BOOL		UseProxy;
 	BOOL		KeepConnectionAlive;

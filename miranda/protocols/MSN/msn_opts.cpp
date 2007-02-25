@@ -38,9 +38,10 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 struct
 {
-	char* szDescr;
-	char* szName;
-	int   defIconID;
+	char*  szDescr;
+	char*  szName;
+	int    defIconID;
+	HANDLE hIconLibItem;
 }
 static iconList[] =
 {
@@ -75,7 +76,7 @@ void MsnInitIcons( void )
 		sid.pszName = szSettingName;
 		sid.pszDescription = MSN_Translate( iconList[i].szDescr );
 		sid.iDefaultIndex = -iconList[i].defIconID;
-		CallService(MS_SKIN2_ADDICON, 0, (LPARAM)&sid);
+		iconList[i].hIconLibItem = ( HANDLE )CallService(MS_SKIN2_ADDICON, 0, (LPARAM)&sid);
 }	}
 
 HICON __stdcall LoadIconEx( const char* name )
@@ -83,6 +84,15 @@ HICON __stdcall LoadIconEx( const char* name )
 	char szSettingName[100];
 	mir_snprintf( szSettingName, sizeof( szSettingName ), "%s_%s", msnProtocolName, name );
 	return ( HICON )MSN_CallService( MS_SKIN2_GETICON, 0, (LPARAM)szSettingName );
+}
+
+HANDLE __stdcall GetIconHandle( int iconId )
+{
+	for ( int i=0; i < SIZEOF(iconList); i++ )
+		if ( iconList[i].defIconID == iconId )
+			return iconList[i].hIconLibItem;
+
+	return NULL;
 }
 
 void __stdcall ReleaseIconEx( const char* name )
@@ -129,7 +139,6 @@ static BOOL CALLBACK DlgProcMsnOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARA
 		if ( !msnLoggedIn )
 			EnableWindow( wnd, FALSE );
 
-		CheckDlgButton( hwndDlg, IDC_DISABLE_MAIN_MENU, MSN_GetByte( "DisableSetNickname", 0 ));
 		CheckDlgButton( hwndDlg, IDC_ENABLE_AVATARS,    MSN_GetByte( "EnableAvatars", TRUE ));
 		CheckDlgButton( hwndDlg, IDC_SENDFONTINFO,      MSN_GetByte( "SendFontInfo", 1 ));
 		CheckDlgButton( hwndDlg, IDC_USE_OWN_NICKNAME,  MSN_GetByte( "NeverUpdateNickname", 0 ));
@@ -292,7 +301,6 @@ LBL_Continue:
 			MSN_SetByte( "SendFontInfo", ( BYTE )IsDlgButtonChecked( hwndDlg, IDC_SENDFONTINFO ));
 			MSN_SetByte( "RunMailerOnHotmail", ( BYTE )IsDlgButtonChecked( hwndDlg, IDC_RUN_APP_ON_HOTMAIL ));
 			MSN_SetByte( "NeverUpdateNickname", ( BYTE )IsDlgButtonChecked( hwndDlg, IDC_USE_OWN_NICKNAME ));
-			MSN_SetByte( "DisableSetNickname", ( BYTE )IsDlgButtonChecked( hwndDlg, IDC_DISABLE_MAIN_MENU ));
 			MSN_SetByte( "AwayAsBrb", ( BYTE )IsDlgButtonChecked( hwndDlg, IDC_AWAY_AS_BRB ));
 			MSN_SetByte( "ManageServer", ( BYTE )IsDlgButtonChecked( hwndDlg, IDC_MANAGEGROUPS ));
 
@@ -679,7 +687,6 @@ void __stdcall LoadOptions()
 		DBGetContactSettingDword( NULL, ModuleName, "TextColour", GetSysColor( COLOR_WINDOWTEXT ));
 
 	MyOptions.AwayAsBrb = MSN_GetByte( "AwayAsBrb", FALSE );
-	MyOptions.DisableMenu = MSN_GetByte( "DisableSetNickname", FALSE );
 	MyOptions.EnableAvatars = MSN_GetByte( "EnableAvatars", TRUE );
 	MyOptions.KeepConnectionAlive = MSN_GetByte( "KeepAlive", FALSE );
 	MyOptions.ManageServer = MSN_GetByte( "ManageServer", TRUE );
