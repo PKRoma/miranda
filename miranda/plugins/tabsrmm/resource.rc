@@ -573,9 +573,9 @@ END
 // Cursor
 //
 
-IDC_HYPERLINKHAND       CURSOR                  "../../src/res/hyperlin.cur"
-IDC_DROP                CURSOR                  "../../src/res/DRAGCOPY.CUR"
-IDC_DROPUSER            CURSOR                  "../../src/res/dropuser.cur"
+IDC_HYPERLINKHAND       CURSOR                  "res/hyperlin.cur"
+IDC_DROP                CURSOR                  "res/dragcopy.cur"
+IDC_DROPUSER            CURSOR                  "res/dropuser.cur"
 
 /////////////////////////////////////////////////////////////////////////////
 //
