@@ -464,7 +464,7 @@ void JabberMenuHideSrmmIcon(HANDLE hContact)
 
 void JabberMenuUpdateSrmmIcon(JABBER_LIST_ITEM *item)
 {
-	if (!ServiceExists(MS_MSG_MODIFYICON))
+	if ( item->list != LIST_ROSTER || !ServiceExists( MS_MSG_MODIFYICON ))
 		return;
 
 	HANDLE hContact = JabberHContactFromJID(item->jid);
