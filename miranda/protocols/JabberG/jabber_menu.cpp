@@ -313,12 +313,16 @@ void JabberMenuInit()
 	strcpy( text, jabberProtoName );
 	char* tDest = text + strlen( text );
 
+	//////////////////////////////////////////////////////////////////////////////////////
+	// Contact menu initialization
+
 	// "Request authorization"
 	strcpy( tDest, "/RequestAuth" );
 	CreateServiceFunction( text, JabberMenuHandleRequestAuth );
 	mi.pszName = "Request authorization";
+	mi.flags = CMIF_ICONFROMICOLIB;
 	mi.position = -2000001000;
-	mi.hIcon = LoadIconEx( "Request" );
+	mi.icolibItem = GetIconHandle( IDI_REQUEST );
 	mi.pszService = text;
 	mi.pszContactOwner = jabberProtoName;
 	hMenuRequestAuth = ( HANDLE ) JCallService( MS_CLIST_ADDCONTACTMENUITEM, 0, ( LPARAM )&mi );
@@ -328,7 +332,7 @@ void JabberMenuInit()
 	CreateServiceFunction( text, JabberMenuHandleGrantAuth );
 	mi.pszName = "Grant authorization";
 	mi.position = -2000001001;
-	mi.hIcon = LoadIconEx( "Grant" );
+	mi.icolibItem = GetIconHandle( IDI_GRANT );
 	hMenuGrantAuth = ( HANDLE ) JCallService( MS_CLIST_ADDCONTACTMENUITEM, 0, ( LPARAM )&mi );
 
 	// Revoke auth
@@ -336,7 +340,7 @@ void JabberMenuInit()
 	CreateServiceFunction( text, JabberMenuRevokeAuth );
 	mi.pszName = "Revoke authorization";
 	mi.position = -2000001002;
-	mi.hIcon = LoadIconEx( "Revoke" );
+	mi.icolibItem = GetIconHandle( IDI_AUTHREVOKE );
 	hMenuRevokeAuth = ( HANDLE ) JCallService( MS_CLIST_ADDCONTACTMENUITEM, 0, ( LPARAM )&mi );
 
 	// "Grant authorization"
@@ -344,7 +348,7 @@ void JabberMenuInit()
 	CreateServiceFunction( text, JabberMenuJoinLeave );
 	mi.pszName = "Join chat";
 	mi.position = -2000001003;
-	mi.hIcon = LoadIconEx( "group" );
+	mi.icolibItem = GetIconHandle( IDI_GROUP );
 	hMenuJoinLeave = ( HANDLE ) JCallService( MS_CLIST_ADDCONTACTMENUITEM, 0, ( LPARAM )&mi );
 
 	// "Convert Chat/Contact"
@@ -352,7 +356,7 @@ void JabberMenuInit()
 	CreateServiceFunction( text, JabberMenuConvertChatContact );
 	mi.pszName = "Convert";
 	mi.position = -1999901004;
-	mi.hIcon = LoadIconEx( "convert" );
+	mi.icolibItem = GetIconHandle( IDI_USER2ROOM );
 	hMenuConvert = ( HANDLE ) JCallService( MS_CLIST_ADDCONTACTMENUITEM, 0, ( LPARAM )&mi );
 
 	// "Add to roster"
@@ -360,7 +364,7 @@ void JabberMenuInit()
 	CreateServiceFunction( text, JabberMenuRosterAdd );
 	mi.pszName = "Add to roster";
 	mi.position = -1999901005;
-	mi.hIcon = LoadIconEx( "addroster" );
+	mi.icolibItem = GetIconHandle( IDI_ADDROSTER );
 	hMenuRosterAdd = ( HANDLE ) JCallService( MS_CLIST_ADDCONTACTMENUITEM, 0, ( LPARAM )&mi );
 
 	// Login/logout
@@ -368,7 +372,7 @@ void JabberMenuInit()
 	CreateServiceFunction( text, JabberMenuTransportLogin );
 	mi.pszName = "Login/logout";
 	mi.position = -1999901006;
-	mi.hIcon = LoadIconEx( "trlogonoff" );
+	mi.icolibItem = GetIconHandle( IDI_LOGIN );
 	hMenuLogin = ( HANDLE ) JCallService( MS_CLIST_ADDCONTACTMENUITEM, 0, ( LPARAM )&mi );
 
 	// Retrieve nicks
@@ -376,64 +380,65 @@ void JabberMenuInit()
 	CreateServiceFunction( text, JabberMenuTransportResolve );
 	mi.pszName = "Resolve nicks";
 	mi.position = -1999901007;
-	mi.hIcon = LoadIconEx( "trresolve" );
+	mi.icolibItem = GetIconHandle( IDI_REFRESH );
 	hMenuRefresh = ( HANDLE ) JCallService( MS_CLIST_ADDCONTACTMENUITEM, 0, ( LPARAM )&mi );
 
-	// Add Jabber menu to the main menu
-	if ( !JGetByte( "DisableMainMenu", FALSE )) {
-		CLISTMENUITEM clmi;
-		memset( &clmi, 0, sizeof( CLISTMENUITEM ));
-		clmi.cbSize = sizeof( CLISTMENUITEM );
-		clmi.flags = CMIM_FLAGS | CMIF_GRAYED;
+	//////////////////////////////////////////////////////////////////////////////////////
+	// Main menu initialization
 
-		// "Agents..."
-		strcpy( tDest, "/Agents" );
-		CreateServiceFunction( text, JabberMenuHandleAgents );
+	CLISTMENUITEM clmi;
+	memset( &clmi, 0, sizeof( CLISTMENUITEM ));
+	clmi.cbSize = sizeof( CLISTMENUITEM );
+	clmi.flags = CMIM_FLAGS | CMIF_GRAYED;
 
-		mi.pszPopupName = jabberModuleName;
-		mi.popupPosition = 500090000;
-		mi.pszName = "Agents...";
-		mi.position = 2000050000;
-		mi.hIcon = LoadIconEx( "main" );
-		mi.pszService = text;
-		hMenuAgent = ( HANDLE ) JCallService( MS_CLIST_ADDMAINMENUITEM, 0, ( LPARAM )&mi );
-		JCallService( MS_CLIST_MODIFYMENUITEM, ( WPARAM ) hMenuAgent, ( LPARAM )&clmi );
+	// "Agents..."
+	strcpy( tDest, "/Agents" );
+	CreateServiceFunction( text, JabberMenuHandleAgents );
 
-		// "Change Password..."
-		strcpy( tDest, "/ChangePassword" );
-		CreateServiceFunction( text, JabberMenuHandleChangePassword );
-		mi.pszName = "Change Password...";
-		mi.position = 2000050001;
-		mi.hIcon = LoadIconEx( "key" );
-		hMenuChangePassword = ( HANDLE ) JCallService( MS_CLIST_ADDMAINMENUITEM, 0, ( LPARAM )&mi );
-		JCallService( MS_CLIST_MODIFYMENUITEM, ( WPARAM ) hMenuChangePassword, ( LPARAM )&clmi );
+	mi.pszPopupName = jabberModuleName;
+	mi.popupPosition = 500090000;
+	mi.pszName = "Agents...";
+	mi.position = 2000050000;
+	mi.icolibItem = GetIconHandle( IDI_JABBER );
+	mi.pszService = text;
+	hMenuAgent = ( HANDLE ) JCallService( MS_CLIST_ADDMAINMENUITEM, 0, ( LPARAM )&mi );
+	JCallService( MS_CLIST_MODIFYMENUITEM, ( WPARAM ) hMenuAgent, ( LPARAM )&clmi );
 
-		// "Multi-User Conference..."
-		strcpy( tDest, "/Groupchat" );
-		CreateServiceFunction( text, JabberMenuHandleGroupchat );
-		mi.pszName = "Multi-User Conference...";
-		mi.position = 2000050002;
-		mi.hIcon = LoadIconEx( "group" );
-		hMenuGroupchat = ( HANDLE ) JCallService( MS_CLIST_ADDMAINMENUITEM, 0, ( LPARAM )&mi );
-		JCallService( MS_CLIST_MODIFYMENUITEM, ( WPARAM ) hMenuGroupchat, ( LPARAM )&clmi );
+	// "Change Password..."
+	strcpy( tDest, "/ChangePassword" );
+	CreateServiceFunction( text, JabberMenuHandleChangePassword );
+	mi.pszName = "Change Password...";
+	mi.position = 2000050001;
+	mi.icolibItem = GetIconHandle( IDI_KEYS );
+	hMenuChangePassword = ( HANDLE ) JCallService( MS_CLIST_ADDMAINMENUITEM, 0, ( LPARAM )&mi );
+	JCallService( MS_CLIST_MODIFYMENUITEM, ( WPARAM ) hMenuChangePassword, ( LPARAM )&clmi );
 
-		// "Personal vCard..."
-		strcpy( tDest,  "/Vcard" );
-		CreateServiceFunction( text, JabberMenuHandleVcard );
-		mi.pszName = "Personal vCard...";
-		mi.position = 2000050003;
-		mi.hIcon = LoadIconEx( "vcard" );
-		JCallService( MS_CLIST_ADDMAINMENUITEM, 0, ( LPARAM )&mi );
+	// "Multi-User Conference..."
+	strcpy( tDest, "/Groupchat" );
+	CreateServiceFunction( text, JabberMenuHandleGroupchat );
+	mi.pszName = "Multi-User Conference...";
+	mi.position = 2000050002;
+	mi.icolibItem = GetIconHandle( IDI_GROUP );
+	hMenuGroupchat = ( HANDLE ) JCallService( MS_CLIST_ADDMAINMENUITEM, 0, ( LPARAM )&mi );
+	JCallService( MS_CLIST_MODIFYMENUITEM, ( WPARAM ) hMenuGroupchat, ( LPARAM )&clmi );
 
-        // "Bookmarks..."
-		strcpy( tDest, "/Bookmarks" );
-		CreateServiceFunction( text, JabberMenuHandleBookmarks);
-		mi.pszName = "Bookmarks...";
-		mi.position = 2000050004;
-		mi.hIcon = LoadIconEx( "bookmarks" );
-		hMenuBookmarks = ( HANDLE ) JCallService( MS_CLIST_ADDMAINMENUITEM, 0, ( LPARAM )&mi );
-		JCallService( MS_CLIST_MODIFYMENUITEM, ( WPARAM ) hMenuBookmarks, ( LPARAM )&clmi );
-}	}
+	// "Personal vCard..."
+	strcpy( tDest,  "/Vcard" );
+	CreateServiceFunction( text, JabberMenuHandleVcard );
+	mi.pszName = "Personal vCard...";
+	mi.position = 2000050003;
+	mi.icolibItem = GetIconHandle( IDI_VCARD );
+	JCallService( MS_CLIST_ADDMAINMENUITEM, 0, ( LPARAM )&mi );
+
+	// "Bookmarks..."
+	strcpy( tDest, "/Bookmarks" );
+	CreateServiceFunction( text, JabberMenuHandleBookmarks);
+	mi.pszName = "Bookmarks...";
+	mi.position = 2000050004;
+	mi.icolibItem = GetIconHandle( IDI_BOOKMARKS );
+	hMenuBookmarks = ( HANDLE ) JCallService( MS_CLIST_ADDMAINMENUITEM, 0, ( LPARAM )&mi );
+	JCallService( MS_CLIST_MODIFYMENUITEM, ( WPARAM ) hMenuBookmarks, ( LPARAM )&clmi );
+}
 
 void JabberEnableMenuItems( BOOL bEnable )
 {
@@ -446,11 +451,12 @@ void JabberEnableMenuItems( BOOL bEnable )
 	JCallService( MS_CLIST_MODIFYMENUITEM, ( WPARAM )hMenuAgent, ( LPARAM )&clmi );
 	JCallService( MS_CLIST_MODIFYMENUITEM, ( WPARAM )hMenuChangePassword, ( LPARAM )&clmi );
 	JCallService( MS_CLIST_MODIFYMENUITEM, ( WPARAM )hMenuGroupchat, ( LPARAM )&clmi );
-        JCallService( MS_CLIST_MODIFYMENUITEM, ( WPARAM )hMenuBookmarks, ( LPARAM )&clmi );
+	JCallService( MS_CLIST_MODIFYMENUITEM, ( WPARAM )hMenuBookmarks, ( LPARAM )&clmi );
 }
 
 //////////////////////////////////////////////////////////////////////////
 // resource menu
+
 static HANDLE hDialogsList = NULL;
 
 void JabberMenuHideSrmmIcon(HANDLE hContact)
@@ -468,7 +474,7 @@ void JabberMenuUpdateSrmmIcon(JABBER_LIST_ITEM *item)
 		return;
 
 	HANDLE hContact = JabberHContactFromJID(item->jid);
-	if (!hContact)
+	if ( !hContact )
 		return;
 
 	StatusIconData sid = {0};
@@ -482,17 +488,15 @@ int JabberMenuProcessSrmmEvent( WPARAM wParam, LPARAM lParam )
 {
 	MessageWindowEventData *event = (MessageWindowEventData *)lParam;
 
-    if (event->uType == MSG_WINDOW_EVT_OPEN)
-    {
-		if (!hDialogsList)
+	if ( event->uType == MSG_WINDOW_EVT_OPEN ) {
+		if ( !hDialogsList )
 			hDialogsList = (HANDLE)CallService(MS_UTILS_ALLOCWINDOWLIST, 0, 0);
 		WindowList_Add(hDialogsList, event->hwndWindow, event->hContact);
-    } else
-	if (event->uType == MSG_WINDOW_EVT_CLOSING)
-    {
+	}
+	else if ( event->uType == MSG_WINDOW_EVT_CLOSING ) {
 		if (hDialogsList)
 			WindowList_Remove(hDialogsList, event->hwndWindow);
-    }
+	}
 
 	return 0;
 }
@@ -500,6 +504,7 @@ int JabberMenuProcessSrmmEvent( WPARAM wParam, LPARAM lParam )
 #define MENUITEM_LASTSEEN	1
 #define MENUITEM_SERVER		2
 #define MENUITEM_RESOURCES	10
+
 int JabberMenuProcessSrmmIconClick( WPARAM wParam, LPARAM lParam )
 {
 	StatusIconClickData *sicd = (StatusIconClickData *)lParam;
@@ -514,11 +519,10 @@ int JabberMenuProcessSrmmIconClick( WPARAM wParam, LPARAM lParam )
 	if (JGetStringT(hContact, "jid", &dbv))
 		return 0;
 
-
 	JABBER_LIST_ITEM *LI = JabberListGetItemPtr(LIST_ROSTER, dbv.ptszVal);
 	JFreeVariant( &dbv );
 
-	if (!LI)
+	if ( !LI )
 		return 0;
 
 	HMENU hMenu = CreatePopupMenu();
@@ -534,6 +538,7 @@ int JabberMenuProcessSrmmIconClick( WPARAM wParam, LPARAM lParam )
 	AppendMenu(hMenu, MF_SEPARATOR, 0, NULL);
 	for (int i = 0; i < LI->resourceCount; ++i)
 		AppendMenu(hMenu, MF_STRING, MENUITEM_RESOURCES+i, LI->resource[i].resourceName);
+
 	if (LI->resourceMode == RSMODE_LASTSEEN)
 		CheckMenuItem(hMenu, MENUITEM_LASTSEEN, MF_BYCOMMAND|MF_CHECKED);
 	else if (LI->resourceMode == RSMODE_SERVER)
@@ -542,24 +547,20 @@ int JabberMenuProcessSrmmIconClick( WPARAM wParam, LPARAM lParam )
 		CheckMenuItem(hMenu, MENUITEM_RESOURCES+LI->manualResource, MF_BYCOMMAND|MF_CHECKED);
 
 	int res = TrackPopupMenu(hMenu, TPM_RETURNCMD, sicd->clickLocation.x, sicd->clickLocation.y, 0, WindowList_Find(hDialogsList, hContact), NULL);
-	if (res == MENUITEM_LASTSEEN)
-	{
+	if ( res == MENUITEM_LASTSEEN ) {
 		LI->manualResource = -1;
 		LI->resourceMode = RSMODE_LASTSEEN;
-	} else
-	if (res == MENUITEM_SERVER)
-	{
+	}
+	else if (res == MENUITEM_SERVER) {
 		LI->manualResource = -1;
 		LI->resourceMode = RSMODE_SERVER;
-	} else
-	if (res >= MENUITEM_RESOURCES)
-	{
+	}
+	else if (res >= MENUITEM_RESOURCES) {
 		LI->manualResource = res - MENUITEM_RESOURCES;
 		LI->resourceMode = RSMODE_MANUAL;
 	}
 
 	JabberUpdateMirVer(LI);
 	JabberMenuUpdateSrmmIcon(LI);
-
 	return 0;
 }

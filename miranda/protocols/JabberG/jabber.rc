@@ -133,12 +133,12 @@ BEGIN
                     IDC_DOWNLOAD_OPENSSL,"Hyperlink",WS_TABSTOP,16,97,270,11
 END
 
-IDD_OPT_JABBER2 DIALOGEX 0, 0, 304, 213
+IDD_OPT_JABBER2 DIALOGEX 0, 0, 304, 199
 STYLE DS_SETFONT | DS_FIXEDSYS | WS_CHILD
 EXSTYLE WS_EX_CONTROLPARENT
 FONT 8, "MS Shell Dlg", 0, 0, 0x1
 BEGIN
-    GROUPBOX        "File Transfer",IDC_STATIC,8,4,290,69
+    GROUPBOX        "File Transfer",IDC_STATIC,8,3,290,70
     CONTROL         "Allow file sending through direct peer-to-peer connection",
                     IDC_DIRECT,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,16,18,
                     202,10
@@ -152,7 +152,7 @@ BEGIN
     CONTROL         "Specify external address",IDC_DIRECT_MANUAL,"Button",
                     BS_AUTOCHECKBOX | WS_TABSTOP,16,30,101,10
     EDITTEXT        IDC_DIRECT_ADDR,124,29,81,12,ES_AUTOHSCROLL
-    GROUPBOX        "Miscellaneous",IDC_STATIC,8,74,290,131
+    GROUPBOX        "Miscellaneous",IDC_STATIC,8,75,290,118
     CONTROL         "Automatically add contact when accept authorization",
                     IDC_AUTO_ADD,"Button",BS_AUTOCHECKBOX | BS_TOP | 
                     WS_TABSTOP,16,90,280,12
@@ -164,18 +164,16 @@ BEGIN
     CONTROL         "Send messages slower, but with full acknowledgement",
                     IDC_MSG_ACK,"Button",BS_AUTOCHECKBOX | BS_TOP | 
                     WS_TABSTOP,16,126,269,10
-    CONTROL         "Disable main menu",IDC_DISABLE_MAINMENU,"Button",
-                    BS_AUTOCHECKBOX | WS_TABSTOP,16,138,280,10
     CONTROL         "Show transport agents on contact list",
                     IDC_SHOW_TRANSPORT,"Button",BS_AUTOCHECKBOX | BS_TOP | 
-                    WS_TABSTOP,16,150,280,10
+                    WS_TABSTOP,16,139,280,10
     CONTROL         "Enable avatars",IDC_ENABLE_AVATARS,"Button",
-                    BS_AUTOCHECKBOX | WS_TABSTOP,16,162,280,10
+                    BS_AUTOCHECKBOX | WS_TABSTOP,16,165,280,10
     CONTROL         "Disable SASL authentication (for old servers)",
                     IDC_DISABLE_SASL,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,
-                    16,174,279,10
+                    16,177,279,10
     CONTROL         "Validate contacts being added",IDC_VALIDATEADD,"Button",
-                    BS_AUTOCHECKBOX | WS_TABSTOP,16,186,280,10
+                    BS_AUTOCHECKBOX | WS_TABSTOP,16,152,280,10
 END
 
 IDD_INFO_JABBER DIALOGEX 0, 0, 221, 132
@@ -669,11 +667,10 @@ BEGIN
 
     IDD_OPT_JABBER2, DIALOG
     BEGIN
-        LEFTMARGIN, 1
+        LEFTMARGIN, 8
         RIGHTMARGIN, 296
         VERTGUIDE, 9
         TOPMARGIN, 3
-        BOTTOMMARGIN, 205
     END
 
     IDD_INFO_JABBER, DIALOG
@@ -877,7 +874,6 @@ BEGIN
         TOPMARGIN, 7
         BOTTOMMARGIN, 89
     END
-
 END
 #endif    // APSTUDIO_INVOKED
 
@@ -948,6 +944,4 @@ IDI_BOOKMARKS           ICON                    "icos\\bookmarks.ico"
 
 /////////////////////////////////////////////////////////////////////////////
 #endif    // not APSTUDIO_INVOKED
-
-
 

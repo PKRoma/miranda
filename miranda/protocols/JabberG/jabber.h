@@ -436,6 +436,7 @@ int    ReloadIconsEventHook(WPARAM wParam, LPARAM lParam);
 int    JGetAdvancedStatusIcon(WPARAM wParam, LPARAM lParam);
 void   JabberIconsInit( void );
 HICON  LoadIconEx( const char* name );
+HANDLE __stdcall GetIconHandle( int iconId );
 
 //---- jabber_libstr.c ----------------------------------------------
 

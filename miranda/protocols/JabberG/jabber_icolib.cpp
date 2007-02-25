@@ -70,9 +70,10 @@ static int skinStatusToJabberStatus[] = {0,1,2,3,4,4,6,7,2,2};
 
 struct
 {
-	char* szDescr;
-	char* szName;
-	int   defIconID;
+	char*  szDescr;
+	char*  szName;
+	int    defIconID;
+	HANDLE hIconLibItem;
 }
 static iconList[] =
 {
@@ -88,7 +89,7 @@ static iconList[] =
 	{	"Add to roster",         "addroster",  IDI_ADDROSTER  },
 	{	"Login/logout",          "trlogonoff", IDI_LOGIN      },
 	{	"Resolve nicks",         "trresolve",  IDI_REFRESH    },
-    {   "Bookmarks",             "bookmarks",  IDI_BOOKMARKS  }   
+	{	"Bookmarks",             "bookmarks",  IDI_BOOKMARKS  }   
 };
 
 void JabberIconsInit( void )
@@ -109,8 +110,17 @@ void JabberIconsInit( void )
 		sid.pszName = szSettingName;
 		sid.pszDescription = Translate( iconList[i].szDescr );
 		sid.iDefaultIndex = -iconList[i].defIconID;
-		CallService(MS_SKIN2_ADDICON, 0, (LPARAM)&sid);
+		iconList[i].hIconLibItem = ( HANDLE )CallService(MS_SKIN2_ADDICON, 0, (LPARAM)&sid);
 }	}
+
+HANDLE __stdcall GetIconHandle( int iconId )
+{
+	for ( int i=0; i < SIZEOF(iconList); i++ )
+		if ( iconList[i].defIconID == iconId )
+			return iconList[i].hIconLibItem;
+
+	return NULL;
+}
 
 HICON LoadIconEx( const char* name )
 {

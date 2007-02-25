@@ -1210,6 +1210,9 @@
 				RelativePath="icos\block.ico">
 			</File>
 			<File
+				RelativePath=".\icos\bookmarks.ico">
+			</File>
+			<File
 				RelativePath="icos\delete.ico">
 			</File>
 			<File
