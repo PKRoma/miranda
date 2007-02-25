@@ -145,9 +145,6 @@ static struct IconDesc myIcons[] = {
 		"CLN_slist", "Show tabSRMM session list", -IDI_TABSRMMSESSIONLIST,
 		"CLN_menu", "Show tabSRMM menu", -IDI_TABSRMMMENU,
 		"CLN_soundsoff", "Sounds are off", -IDI_SOUNDSOFF,
-		"CLN_email", "Email", -IDI_EMAIL,
-		"CLN_web", "Homepage", -IDI_URL,
-		"CLN_sms", "SMS", -IDI_SMS,
 		"CLN_CLVM_select", "Select view mode", -IDI_CLVM_SELECT,
 		"CLN_CLVM_reset", "Reset view mode", -IDI_DELETE,
 		"CLN_CLVM_options", "Configure view modes", -IDI_CLVM_OPTIONS,
@@ -385,16 +382,17 @@ static void CacheClientIcons()
 		mir_snprintf(szBuffer, sizeof(szBuffer), "cln_ovl_%d", ID_STATUS_OFFLINE + (i - IDI_OVL_OFFLINE));
 		overlayicons[i - IDI_OVL_OFFLINE] = (HICON) CallService(MS_SKIN2_GETICON, 0, (LPARAM) szBuffer);
 	}
-	ImageList_AddIcon(himlExtraImages, (HICON)CallService(MS_SKIN2_GETICON, 0, (LPARAM) "CLN_email"));
-	ImageList_AddIcon(himlExtraImages, (HICON)CallService(MS_SKIN2_GETICON, 0, (LPARAM) "CLN_web"));
-	ImageList_AddIcon(himlExtraImages, (HICON)CallService(MS_SKIN2_GETICON, 0, (LPARAM) "CLN_sms"));
+	ImageList_AddIcon(himlExtraImages, (HICON)CallService(MS_SKIN2_GETICON, 0, (LPARAM) "core_main_14"));
+	//ImageList_AddIcon(himlExtraImages, (HICON)CallService(MS_SKIN2_GETICON, 0, (LPARAM) "CLN_web"));
+    ImageList_AddIcon(himlExtraImages, (HICON)LoadSkinnedIcon(SKINICON_EVENT_URL));
+	ImageList_AddIcon(himlExtraImages, (HICON)CallService(MS_SKIN2_GETICON, 0, (LPARAM) "core_main_17"));
 	if(hIconSaved != 0) {
 		ImageList_AddIcon(himlExtraImages, hIconSaved);
 		DestroyIcon(hIconSaved);
 		hIconSaved = 0;
 	}
 	else
-		ImageList_AddIcon(himlExtraImages, (HICON)CallService(MS_SKIN2_GETICON, 0, (LPARAM) "CLN_sms"));
+		ImageList_AddIcon(himlExtraImages, (HICON)CallService(MS_SKIN2_GETICON, 0, (LPARAM) "core_main_17"));
 }
 
 static void InitIcoLib()

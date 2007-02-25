@@ -892,9 +892,6 @@ END
 
 // Icon with lowest ID value placed first to ensure application icon
 // remains consistent on all systems.
-IDI_EMAIL               ICON    DISCARDABLE     "res\\sendmail.ico"
-IDI_NEWGROUP2           ICON    DISCARDABLE     "res\\addgoupp.ico"
-IDI_SMS                 ICON    DISCARDABLE     "res\\sms.ico"
 IDI_RENAME              ICON    DISCARDABLE     "res\\rename.ico"
 IDI_BLANK               ICON    DISCARDABLE     "res\\blank.ico"
 IDI_DELETE              ICON    DISCARDABLE     "res\\delete.ico"
@@ -922,7 +919,6 @@ IDI_OVL_ONTHEPHONE      ICON    DISCARDABLE     "res\\overlay\\phone.ico"
 IDI_OVL_OUTTOLUNCH      ICON    DISCARDABLE     "res\\overlay\\lunch.ico"
 IDI_TICK                ICON    DISCARDABLE     "res\\notick1.ico"
 IDI_NOTICK              ICON    DISCARDABLE     "res\\notick.ico"
-IDI_URL                 ICON    DISCARDABLE     "res\\globus.ico"
 IDI_CLVM_SELECT         ICON    DISCARDABLE     "res\\arrow-down.ico"
 IDI_CLVM_OPTIONS        ICON    DISCARDABLE     "res\\options_clvm.ico"
 IDI_TBTOPMENU           ICON    DISCARDABLE     "res\\menu.ico"

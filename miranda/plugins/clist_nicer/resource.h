@@ -16,7 +16,6 @@
 #define IDD_ABOUT                       103
 #define IDI_ONLINE                      104
 #define IDI_OFFLINE                     105
-#define IDI_EMAIL                       106
 #define IDD_FILESEND                    107
 #define IDD_FINDADD                     108
 #define IDD_OPT_AUTOAWAY                109
@@ -44,14 +43,12 @@
 #define IDI_SENDURL                     135
 #define IDI_RECVMSG                     136
 #define IDI_SENDMSG                     137
-#define IDI_URL                         138
 #define IDI_EMPTYBLOB                   139
 #define IDI_FILE                        140
 #define IDI_GROUPOPEN                   141
 #define IDI_GROUPSHUT                   142
 #define IDI_NOTICK                      143
 #define IDI_ONTHEPHONE                  144
-#define IDI_SMS                         145
 #define IDI_TICK                        146
 #define IDI_USERONLINE                  147
 #define IDM_COPY                        148
@@ -118,8 +115,6 @@
 #define IDI_DOWNARROW                   264
 #define IDD_CREDITS                     265
 #define IDD_OPT_IDLE                    268
-#define IDI_NEWGROUP                    282
-#define IDI_NEWGROUP2                   283
 #define IDD_OPT_DSPPROFILES             300
 #define IDD_OPT_DSPADVANCED             301
 #define IDD_OPT_DSPITEMS                302
