@@ -59,6 +59,7 @@ wchar_t* a2u( const char* src );
 HANDLE IcoLib_AddNewIcon( SKINICONDESC* sid );
 HICON  IcoLib_GetIcon( const char* pszIconName );
 HICON  IcoLib_GetIconByHandle( HANDLE hItem );
+HANDLE IcoLib_IsManaged( HICON hIcon );
 int    IcoLib_ReleaseIcon( HICON hIcon, char* szIconName );
 
 /**** skinicons.c **********************************************************************/

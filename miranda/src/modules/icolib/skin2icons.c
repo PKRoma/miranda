@@ -400,21 +400,20 @@ HICON IcoLib_GetIconByHandle( HANDLE hItem )
 // lParam: NULL
 // wParam: HICON
 
-static int IcoLib_IsManaged(WPARAM wParam, LPARAM lParam)
+HANDLE IcoLib_IsManaged( HICON hIcon )
 {
-	IconItem *item = NULL;
+	IconItem* item;
 
 	EnterCriticalSection(&csIconList);
 
-	item = IcoLib_FindHIcon((HICON)wParam);
-
+	item = IcoLib_FindHIcon( hIcon );
 	if (item && item->ref_count) {
 		LeaveCriticalSection(&csIconList);
-		return 1;
+		return item;
 	}
 
 	LeaveCriticalSection(&csIconList);
-	return 0;
+	return NULL;
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////
@@ -1400,7 +1399,7 @@ int InitSkin2Icons(void)
 	hIcoLib_RemoveIcon  = CreateServiceFunction(MS_SKIN2_REMOVEICON,      IcoLib_RemoveIcon);
 	hIcoLib_GetIcon     = CreateServiceFunction(MS_SKIN2_GETICON,         sttIcoLib_GetIcon);
 	hIcoLib_GetIcon2    = CreateServiceFunction(MS_SKIN2_GETICONBYHANDLE, sttIcoLib_GetIconByHandle);
-	hIcoLib_IsManaged   = CreateServiceFunction(MS_SKIN2_ISMANAGEDICON,   IcoLib_IsManaged);
+	hIcoLib_IsManaged   = CreateServiceFunction(MS_SKIN2_ISMANAGEDICON,   ( MIRANDASERVICE )IcoLib_IsManaged);
 	hIcoLib_AddRef      = CreateServiceFunction(MS_SKIN2_ADDREFICON,      IcoLib_AddRef); 
 	hIcoLib_ReleaseIcon = CreateServiceFunction(MS_SKIN2_RELEASEICON,     ( MIRANDASERVICE )IcoLib_ReleaseIcon);
 

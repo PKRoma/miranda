@@ -334,17 +334,27 @@ int MO_ModifyMenuItem( int menuHandle, PMO_MenuItem pmiparam )
 		#endif
 	}
 	if ( pmiparam->flags & CMIM_FLAGS ) {
-		oldflags = ( pimi->mi.flags & CMIF_ROOTPOPUP ) | ( pimi->mi.flags & CMIF_CHILDPOPUP );
+		oldflags = pimi->mi.flags & ( CMIF_ROOTPOPUP | CMIF_CHILDPOPUP | CMIF_ICONFROMICOLIB );
 		pimi->mi.flags = pmiparam->flags & ~CMIM_ALL;
 		pimi->mi.flags |= oldflags;
 	}
 	if ( pmiparam->flags & CMIM_ICON ) {
-		pimi->mi.hIcon = pmiparam->hIcon;
-		if ( pmiparam->hIcon != NULL )
-			pimi->iconId = ImageList_ReplaceIcon( MenuObjects[objidx].hMenuIcons, pimi->iconId, pmiparam->hIcon );
-		else
-			pimi->iconId = -1;	  //fixme, should remove old icon & shuffle all iconIds
-	}
+		if ( pimi->mi.flags & CMIF_ICONFROMICOLIB ) {
+			HICON hIcon = IcoLib_GetIconByHandle( pimi->hIcolibItem );
+			if ( hIcon != NULL ) {
+				pimi->iconId = ImageList_ReplaceIcon( MenuObjects[objidx].hMenuIcons, pimi->iconId, hIcon );
+				IconLib_ReleaseIcon( hIcon, 0 );
+			}
+			else pimi->iconId = -1, pimi->hIcolibItem = NULL;
+		}
+		else {
+			pimi->mi.hIcon = pmiparam->hIcon;
+			if ( pmiparam->hIcon != NULL )
+				pimi->iconId = ImageList_ReplaceIcon( MenuObjects[objidx].hMenuIcons, pimi->iconId, pmiparam->hIcon );
+			else
+				pimi->iconId = -1;	  //fixme, should remove old icon & shuffle all iconIds
+	}	}
+
 	if ( pmiparam->flags & CMIM_HOTKEY )
 		pimi->mi.hotKey = pmiparam->hotKey;
 
@@ -604,13 +614,19 @@ int MO_AddNewMenuItem( int menuobjecthandle, PMO_MenuItem pmi )
 		#endif
 		if ( pmi->hIcon != NULL ) {
 			if ( pmi->flags & CMIF_ICONFROMICOLIB ) {
-				HICON hIcon = IcoLib_GetIconByHandle( pmi->hIcon );
+				HICON hIcon = IcoLib_GetIconByHandle( pmi->hIcolibItem );
 				p->iconId = ImageList_AddIcon( MenuObjects[objidx].hMenuIcons, hIcon );
 				p->hIcolibItem = pmi->hIcolibItem;
 				IconLib_ReleaseIcon( hIcon, 0 );
 			}
-			else p->iconId = ImageList_AddIcon( MenuObjects[objidx].hMenuIcons, pmi->hIcon );
-		}
+			else {
+				HANDLE hIcolibItem = IcoLib_IsManaged( pmi->hIcon );
+				if ( hIcolibItem ) {
+					p->iconId = ImageList_AddIcon( MenuObjects[objidx].hMenuIcons, pmi->hIcon );
+					p->hIcolibItem = hIcolibItem;
+				}
+				else p->iconId = ImageList_AddIcon( MenuObjects[objidx].hMenuIcons, pmi->hIcon );
+		}	}
 
 		result = getGlobalId( menuobjecthandle, p->id );
 	}
