@@ -436,12 +436,12 @@ void Chat_AddIcons(void)
 {
 	if (ServiceExists(MS_SKIN2_ADDICON))
 	{
-		SKINICONDESC3 sid = {0};
+		SKINICONDESC sid = {0};
 		char szFile[MAX_PATH];
 		int i = 0;
 
 		// 16x16 icons
-		sid.cbSize = sizeof(SKINICONDESC3);
+		sid.cbSize = sizeof( SKINICONDESC );
 		sid.pszSection = Translate("TabSRMM/Group chat windows");
 		GetModuleFileNameA(g_hIconDLL, szFile, MAX_PATH);
 		sid.pszDefaultFile = szFile;

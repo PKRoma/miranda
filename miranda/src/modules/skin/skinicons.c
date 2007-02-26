@@ -23,8 +23,6 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include "commonheaders.h"
 #include <io.h>
 
-HANDLE hLoadSkinIcon, hLoadSkinProtoIcon;
-
 struct StandardIconDescription
 {
 	int    id;
@@ -376,6 +374,14 @@ static void convertOneProtocol( char* moduleName, char* iconName )
 			DBDeleteContactSetting( NULL, "Icons", moduleName );
 }	}	}
 
+static int SRV_LoadSkinIcon( WPARAM wParam, LPARAM lParam )
+{
+	if ( lParam == 0 )
+		return ( int )LoadSkinIcon( wParam );
+
+	return ( int )GetSkinIconHandle( wParam );
+}
+
 int InitSkinIcons(void)
 {
 	SKINICONDESC sid;
@@ -424,8 +430,8 @@ int InitSkinIcons(void)
 	strcpy(iconName, "core_status_" GLOBAL_PROTO_NAME);
 	convertOneProtocol( moduleName, iconName );
 
-	hLoadSkinIcon = CreateServiceFunction( MS_SKIN_LOADICON, ( MIRANDASERVICE )LoadSkinIcon );
-	hLoadSkinProtoIcon = CreateServiceFunction( MS_SKIN_LOADPROTOICON,( MIRANDASERVICE )LoadSkinProtoIcon );
+	CreateServiceFunction( MS_SKIN_LOADICON, SRV_LoadSkinIcon );
+	CreateServiceFunction( MS_SKIN_LOADPROTOICON,( MIRANDASERVICE )LoadSkinProtoIcon );
 
 	ZeroMemory( &sid, sizeof(sid) );
 	sid.cbSize = sizeof(sid);

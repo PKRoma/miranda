@@ -75,6 +75,7 @@ typedef unsigned short wchar_t;
 #include "../../include/m_utils.h"
 #include "../../include/m_skin.h"
 #include "../../include/m_contacts.h"
+#include "../../include/m_icolib.h"
 
 #include "../../include/m_clc.h"
 #include "../../include/m_clui.h"
