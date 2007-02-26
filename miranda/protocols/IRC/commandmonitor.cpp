@@ -2803,7 +2803,6 @@ void CMyMonitor::OnIrcDisconnected()
 		gcd.iType = GC_EVENT_CONTROL;
 		gce.pDest = &gcd;
 		CallChatEvent( SESSION_OFFLINE, (LPARAM)&gce);
-
 	}
 
 	if(!Miranda_Terminated())
@@ -2813,13 +2812,11 @@ void CMyMonitor::OnIrcDisconnected()
 	CLISTMENUITEM clmi;
 	memset( &clmi, 0, sizeof( clmi ));
 	clmi.cbSize = sizeof( clmi );
-	clmi.flags = CMIM_FLAGS|CMIF_GRAYED;
+	clmi.flags = CMIM_FLAGS | CMIF_GRAYED;
 	CallService( MS_CLIST_MODIFYMENUITEM, ( WPARAM )hMenuJoin, ( LPARAM )&clmi );
 	CallService( MS_CLIST_MODIFYMENUITEM, ( WPARAM )hMenuList, ( LPARAM )&clmi );
 	CallService( MS_CLIST_MODIFYMENUITEM, ( WPARAM )hMenuNick, ( LPARAM )&clmi );
-
 }
-
 
 bool DoOnConnect(const CIrcMessage *pmsg)
 {

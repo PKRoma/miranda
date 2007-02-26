@@ -60,11 +60,11 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include "m_file.h"
 #include "m_ignore.h"
 #include "m_chat.h"
+#include "m_icolib.h"
 #include "m_ircscript.h"
 #include "resource.h"
 #include "irclib.h"
 #include "commandmonitor.h"
-#include "IcoLib.h"
 
 #ifndef NDEBUG
 #include <crtdbg.h>
@@ -218,91 +218,93 @@ typedef struct PREFERENCES_TYPE			// Preferences structure
 } PREFERENCES;
 
 //main.cpp
-void						UpgradeCheck(void);
+void   UpgradeCheck(void);
 
 //services.cpp
-void						HookEvents(void);
-void						UnhookEvents(void);
-void						CreateServiceFunctions(void);
-void						ConnectToServer(void);
-void						DisconnectFromServer(void);
-int							Service_GCEventHook(WPARAM wParam,LPARAM lParam);
+void   HookEvents(void);
+void   UnhookEvents(void);
+void   CreateServiceFunctions(void);
+void   ConnectToServer(void);
+void   DisconnectFromServer(void);
+int    Service_GCEventHook(WPARAM wParam,LPARAM lParam);
 
 //options.cpp
-void						InitPrefs(void);
-void						UnInitOptions(void);
-int							InitOptionsPages(WPARAM wParam,LPARAM lParam);
-void						AddIcons(void);
-HICON						LoadIconEx(int iIndex, char * pszIcoLibName, int iX, int iY);
+void   InitPrefs(void);
+void   UnInitOptions(void);
+int    InitOptionsPages(WPARAM wParam,LPARAM lParam);
+void   AddIcons(void);
+HICON  LoadIconEx(int iIndex);
+HANDLE GetIconHandle(int iconId);
 
 //tools.cpp
-int							WCCmp(char* wild, char *string);
-char *						IrcLoadFile(char * szPath);
-void						AddToJTemp(String sCommand);
-String						GetWord(const char * text, int index);
-String						ReplaceString (String text, char * replaceme, char * newword);
-bool						IsChannel(String sName); 
-char *						GetWordAddress(const char * text, int index);
-String						RemoveLinebreaks(String Message);
-char*						my_strstri(char *s1, char *s2) ;
-char *						DoColorCodes (const char * text, bool bStrip, bool bReplacePercent);
-int							DoEvent(int iEvent, const char* pszWindow, const char * pszNick, const char* pszText, const char* pszStatus, const char* pszUserInfo, DWORD dwItemData, bool bAddToLog, bool bIsMe,time_t timestamp = 1);
-int							CallChatEvent(WPARAM wParam, LPARAM lParam);
-String						ModeToStatus(char sMode) ;
-String						PrefixToStatus(char cPrefix) ;
-void						SetChatTimer(UINT_PTR &nIDEvent,UINT uElapse,TIMERPROC lpTimerFunc);
-void						KillChatTimer(UINT_PTR &nIDEvent);
-int							SetChannelSBText(String sWindow, CHANNELINFO * wi);
-String						MakeWndID(String sWindow);
-bool						FreeWindowItemData(String window, CHANNELINFO* wis);
-bool						AddWindowItemData(String window, const char * pszLimit, const char * pszMode, const char * pszPassword, const char * pszTopic);
-void						FindLocalIP(HANDLE con);
-void						DoUserhostWithReason(int type, String reason, bool bSendCommand, String userhostparams, ...);
-String						GetNextUserhostReason(int type);
-void						ClearUserhostReasons(int type);
-String						PeekAtReasons(int type);
-//clist.cpp
-HANDLE						CList_AddContact(struct CONTACT_TYPE * user, bool InList, bool SetOnline);
-bool						CList_SetAllOffline(BYTE ChatsToo);
-HANDLE						CList_SetOffline(struct CONTACT_TYPE * user);
+int    WCCmp(char* wild, char *string);
+char*  IrcLoadFile(char * szPath);
+void   AddToJTemp(String sCommand);
+String GetWord(const char * text, int index);
+String ReplaceString (String text, char * replaceme, char * newword);
+bool   IsChannel(String sName); 
+char*  GetWordAddress(const char * text, int index);
+String RemoveLinebreaks(String Message);
+char*  my_strstri(char *s1, char *s2) ;
+char*  DoColorCodes (const char * text, bool bStrip, bool bReplacePercent);
+int    DoEvent(int iEvent, const char* pszWindow, const char * pszNick, const char* pszText, const char* pszStatus, const char* pszUserInfo, DWORD dwItemData, bool bAddToLog, bool bIsMe,time_t timestamp = 1);
+int    CallChatEvent(WPARAM wParam, LPARAM lParam);
+String ModeToStatus(char sMode) ;
+String PrefixToStatus(char cPrefix) ;
+void   SetChatTimer(UINT_PTR &nIDEvent,UINT uElapse,TIMERPROC lpTimerFunc);
+void   KillChatTimer(UINT_PTR &nIDEvent);
+int    SetChannelSBText(String sWindow, CHANNELINFO * wi);
+String MakeWndID(String sWindow);
+bool   FreeWindowItemData(String window, CHANNELINFO* wis);
+bool   AddWindowItemData(String window, const char * pszLimit, const char * pszMode, const char * pszPassword, const char * pszTopic);
+void   FindLocalIP(HANDLE con);
+void   DoUserhostWithReason(int type, String reason, bool bSendCommand, String userhostparams, ...);
+String GetNextUserhostReason(int type);
+void   ClearUserhostReasons(int type);
+String PeekAtReasons(int type);
 
-bool						CList_AddEvent(struct CONTACT_TYPE * user, HICON Icon, HANDLE event, const char * tooltip, int type ) ;
-HANDLE						CList_FindContact (struct CONTACT_TYPE * user);
-int							WCCmp(char* wild, char *string);
-BOOL						CList_AddDCCChat(String name, String hostmask, unsigned long adr, int port) ;
+//clist.cpp
+HANDLE CList_AddContact(struct CONTACT_TYPE * user, bool InList, bool SetOnline);
+bool   CList_SetAllOffline(BYTE ChatsToo);
+HANDLE CList_SetOffline(struct CONTACT_TYPE * user);
+
+bool   CList_AddEvent(struct CONTACT_TYPE * user, HICON Icon, HANDLE event, const char * tooltip, int type ) ;
+HANDLE CList_FindContact (struct CONTACT_TYPE * user);
+int    WCCmp(char* wild, char *string);
+BOOL   CList_AddDCCChat(String name, String hostmask, unsigned long adr, int port) ;
 
 //input.cpp
-bool						PostIrcMessageWnd(char * pszWindow, HANDLE hContact,const char * szBuf);
-bool						PostIrcMessage( const char * fmt, ...);
+bool   PostIrcMessageWnd(char * pszWindow, HANDLE hContact,const char * szBuf);
+bool   PostIrcMessage( const char * fmt, ...);
 
 //output
-BOOL						ShowMessage (const CIrcMessage* pmsg);
+BOOL   ShowMessage (const CIrcMessage* pmsg);
 
 //windows.cpp
-BOOL CALLBACK				MessageboxWndProc(HWND hwndDlg,UINT uMsg,WPARAM wParam,LPARAM lParam);
-BOOL CALLBACK				InfoWndProc(HWND hwndDlg,UINT uMsg,WPARAM wParam,LPARAM lParam);
-BOOL CALLBACK				NickWndProc(HWND hwndDlg,UINT uMsg,WPARAM wParam,LPARAM lParam);
-BOOL CALLBACK				JoinWndProc(HWND hwndDlg,UINT uMsg,WPARAM wParam,LPARAM lParam);
-BOOL CALLBACK				InitWndProc(HWND hwndDlg,UINT uMsg,WPARAM wParam,LPARAM lParam);
-BOOL CALLBACK				ListWndProc(HWND hwndDlg,UINT uMsg,WPARAM wParam,LPARAM lParam);
-BOOL CALLBACK				QuickWndProc(HWND hwndDlg,UINT uMsg,WPARAM wParam,LPARAM lParam);
-BOOL CALLBACK				UserDetailsDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam);
-BOOL CALLBACK				ManagerWndProc(HWND hwndDlg,UINT uMsg,WPARAM wParam,LPARAM lParam);
-BOOL CALLBACK				QuestionWndProc(HWND hwndDlg,UINT uMsg,WPARAM wParam,LPARAM lParam);
-int CALLBACK				ListViewSort(LPARAM lParam1, LPARAM lParam2, LPARAM lParamSort);
-LRESULT CALLBACK			MgrEditSubclassProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam) ;
+BOOL    CALLBACK MessageboxWndProc(HWND hwndDlg,UINT uMsg,WPARAM wParam,LPARAM lParam);
+BOOL    CALLBACK InfoWndProc(HWND hwndDlg,UINT uMsg,WPARAM wParam,LPARAM lParam);
+BOOL    CALLBACK NickWndProc(HWND hwndDlg,UINT uMsg,WPARAM wParam,LPARAM lParam);
+BOOL    CALLBACK JoinWndProc(HWND hwndDlg,UINT uMsg,WPARAM wParam,LPARAM lParam);
+BOOL    CALLBACK InitWndProc(HWND hwndDlg,UINT uMsg,WPARAM wParam,LPARAM lParam);
+BOOL    CALLBACK ListWndProc(HWND hwndDlg,UINT uMsg,WPARAM wParam,LPARAM lParam);
+BOOL    CALLBACK QuickWndProc(HWND hwndDlg,UINT uMsg,WPARAM wParam,LPARAM lParam);
+BOOL    CALLBACK UserDetailsDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam);
+BOOL    CALLBACK ManagerWndProc(HWND hwndDlg,UINT uMsg,WPARAM wParam,LPARAM lParam);
+BOOL    CALLBACK QuestionWndProc(HWND hwndDlg,UINT uMsg,WPARAM wParam,LPARAM lParam);
+int     CALLBACK ListViewSort(LPARAM lParam1, LPARAM lParam2, LPARAM lParamSort);
+LRESULT CALLBACK MgrEditSubclassProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam) ;
 
 //commandmonitor.cpp
-VOID CALLBACK				KeepAliveTimerProc(HWND hwnd,UINT uMsg,UINT idEvent,DWORD dwTime);
-VOID CALLBACK				OnlineNotifTimerProc(HWND hwnd,UINT uMsg,UINT idEvent,DWORD dwTime);
-VOID CALLBACK				OnlineNotifTimerProc3(HWND hwnd,UINT uMsg,UINT idEvent,DWORD dwTime);
+VOID    CALLBACK KeepAliveTimerProc(HWND hwnd,UINT uMsg,UINT idEvent,DWORD dwTime); 
+VOID    CALLBACK OnlineNotifTimerProc(HWND hwnd,UINT uMsg,UINT idEvent,DWORD dwTime);
+VOID    CALLBACK OnlineNotifTimerProc3(HWND hwnd,UINT uMsg,UINT idEvent,DWORD dwTime);
 
 //scripting.cpp
-int Scripting_InsertRawIn(WPARAM wParam,LPARAM lParam);
-int Scripting_InsertRawOut(WPARAM wParam,LPARAM lParam);
-int Scripting_InsertGuiIn(WPARAM wParam,LPARAM lParam);
-int Scripting_InsertGuiOut(WPARAM wParam,LPARAM lParam);
-int Scripting_GetIrcData(WPARAM wparam, LPARAM lparam);
+int  Scripting_InsertRawIn(WPARAM wParam,LPARAM lParam);
+int  Scripting_InsertRawOut(WPARAM wParam,LPARAM lParam);
+int  Scripting_InsertGuiIn(WPARAM wParam,LPARAM lParam);
+int  Scripting_InsertGuiOut(WPARAM wParam,LPARAM lParam);
+int  Scripting_GetIrcData(WPARAM wparam, LPARAM lparam);
 BOOL Scripting_TriggerMSPRawIn(char ** pszRaw);
 BOOL Scripting_TriggerMSPRawOut(char ** pszRaw);
 BOOL Scripting_TriggerMSPGuiIn(WPARAM * wparam, GCEVENT * gce);

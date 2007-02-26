@@ -105,7 +105,7 @@ BOOL CALLBACK InfoWndProc(HWND hwndDlg,UINT uMsg,WPARAM wParam,LPARAM lParam)
 			lf.lfWeight=FW_BOLD;
 			hFont=CreateFontIndirect(&lf);
 			SendDlgItemMessage(hwndDlg,IDC_CAPTION,WM_SETFONT,(WPARAM)hFont,0);
-			SendMessage(GetDlgItem(hwndDlg, IDC_LOGO),STM_SETICON,(LPARAM)(HICON)LoadIconEx(IDI_LOGO,"logo",48,48), 0);
+			SendMessage(GetDlgItem(hwndDlg, IDC_LOGO),STM_SETICON,(LPARAM)(HICON)LoadIconEx(IDI_LOGO), 0);
 			SendMessage(GetDlgItem(hwndDlg, IDC_INFO_NAME), EM_SETREADONLY, true, 0);
 			SendMessage(GetDlgItem(hwndDlg, IDC_INFO_ID), EM_SETREADONLY, true, 0);
 			SendMessage(GetDlgItem(hwndDlg, IDC_INFO_ADDRESS), EM_SETREADONLY, true, 0);
@@ -114,7 +114,7 @@ BOOL CALLBACK InfoWndProc(HWND hwndDlg,UINT uMsg,WPARAM wParam,LPARAM lParam)
 			SendMessage(GetDlgItem(hwndDlg, IDC_INFO_SERVER), EM_SETREADONLY, true, 0);
 			SendMessage(GetDlgItem(hwndDlg, IDC_INFO_AWAY2), EM_SETREADONLY, true, 0);
 			SendMessage(GetDlgItem(hwndDlg, IDC_INFO_OTHER), EM_SETREADONLY, true, 0);
-			SendMessage(hwndDlg,WM_SETICON,ICON_BIG,(LPARAM)LoadIconEx(IDI_WHOIS,"whois",GetSystemMetrics(SM_CXSMICON),GetSystemMetrics(SM_CYSMICON))); // Tell the dialog to use it
+			SendMessage(hwndDlg,WM_SETICON,ICON_BIG,(LPARAM)LoadIconEx(IDI_WHOIS)); // Tell the dialog to use it
 					
 		} break;
 
@@ -211,7 +211,7 @@ BOOL CALLBACK NickWndProc(HWND hwndDlg,UINT uMsg,WPARAM wParam,LPARAM lParam)
 			lf.lfWeight=FW_BOLD;
 			hFont=CreateFontIndirect(&lf);
 			SendDlgItemMessage(hwndDlg,IDC_CAPTION,WM_SETFONT,(WPARAM)hFont,0);
-			SendMessage(GetDlgItem(hwndDlg, IDC_LOGO),STM_SETICON,(LPARAM)(HICON)LoadIconEx(IDI_LOGO,"logo",48,48), 0);
+			SendMessage(GetDlgItem(hwndDlg, IDC_LOGO),STM_SETICON,(LPARAM)(HICON)LoadIconEx(IDI_LOGO), 0);
 
 			DBVARIANT dbv;
   			if (!DBGetContactSetting(NULL, IRCPROTONAME, "RecentNicks", &dbv) && dbv.type == DBVT_ASCIIZ) 
@@ -339,7 +339,7 @@ BOOL CALLBACK ListWndProc(HWND hwndDlg,UINT uMsg,WPARAM wParam,LPARAM lParam)
 			SetWindowPos(hwndDlg, HWND_TOP, (screen.right-screen.left)/2- (prefs->ListSize.x)/2,(screen.bottom-screen.top)/2- (prefs->ListSize.y)/2, (prefs->ListSize.x), (prefs->ListSize.y), 0);
 			SendMessage(hwndDlg, WM_SIZE, SIZE_RESTORED, MAKELPARAM(prefs->ListSize.x, prefs->ListSize.y));
 			ListView_SetExtendedListViewStyle(GetDlgItem(hwndDlg, IDC_INFO_LISTVIEW), LVS_EX_FULLROWSELECT);
-			SendMessage(hwndDlg,WM_SETICON,ICON_BIG,(LPARAM)LoadIconEx(IDI_LIST,"list",GetSystemMetrics(SM_CXSMICON),GetSystemMetrics(SM_CYSMICON))); // Tell the dialog to use it
+			SendMessage(hwndDlg,WM_SETICON,ICON_BIG,(LPARAM)LoadIconEx(IDI_LIST)); // Tell the dialog to use it
 		} break;
 
 	case WM_SIZE:
@@ -432,7 +432,7 @@ BOOL CALLBACK JoinWndProc(HWND hwndDlg,UINT uMsg,WPARAM wParam,LPARAM lParam)
 			lf.lfWeight=FW_BOLD;
 			hFont=CreateFontIndirect(&lf);
 			SendDlgItemMessage(hwndDlg,IDC_CAPTION,WM_SETFONT,(WPARAM)hFont,0);
-			SendMessage(GetDlgItem(hwndDlg, IDC_LOGO),STM_SETICON,(LPARAM)(HICON)LoadIconEx(IDI_LOGO,"logo",48,48), 0);
+			SendMessage(GetDlgItem(hwndDlg, IDC_LOGO),STM_SETICON,(LPARAM)(HICON)LoadIconEx(IDI_LOGO), 0);
 			DBVARIANT dbv;
   			if (!DBGetContactSetting(NULL, IRCPROTONAME, "RecentChannels", &dbv) && dbv.type == DBVT_ASCIIZ) 
 			{
@@ -525,7 +525,7 @@ BOOL CALLBACK InitWndProc(HWND hwndDlg,UINT uMsg,WPARAM wParam,LPARAM lParam)
 			lf.lfWeight=FW_BOLD;
 			hFont=CreateFontIndirect(&lf);
 			SendDlgItemMessage(hwndDlg,IDC_CAPTION,WM_SETFONT,(WPARAM)hFont,0);
-			SendMessage(GetDlgItem(hwndDlg, IDC_LOGO),STM_SETICON,(LPARAM)(HICON)LoadIconEx(IDI_LOGO,"logo",48,48), 0);
+			SendMessage(GetDlgItem(hwndDlg, IDC_LOGO),STM_SETICON,(LPARAM)(HICON)LoadIconEx(IDI_LOGO), 0);
 		} break;
 		case WM_CTLCOLOREDIT:
 		case WM_CTLCOLORSTATIC:
@@ -612,7 +612,7 @@ BOOL CALLBACK QuickWndProc(HWND hwndDlg,UINT uMsg,WPARAM wParam,LPARAM lParam)
 			lf.lfWeight=FW_BOLD;
 			hFont=CreateFontIndirect(&lf);
 			SendDlgItemMessage(hwndDlg,IDC_CAPTION,WM_SETFONT,(WPARAM)hFont,0);
-			SendMessage(GetDlgItem(hwndDlg, IDC_LOGO),STM_SETICON,(LPARAM)(HICON)LoadIconEx(IDI_LOGO,"logo",48,48), 0);
+			SendMessage(GetDlgItem(hwndDlg, IDC_LOGO),STM_SETICON,(LPARAM)(HICON)LoadIconEx(IDI_LOGO), 0);
 			
 			char * p1 = pszServerFile;
 			char * p2 = pszServerFile;
@@ -1032,7 +1032,7 @@ BOOL CALLBACK QuestionWndProc(HWND hwndDlg,UINT uMsg,WPARAM wParam,LPARAM lParam
 			lf.lfWeight=FW_BOLD;
 			hFont=CreateFontIndirect(&lf);
 			SendDlgItemMessage(hwndDlg,IDC_CAPTION,WM_SETFONT,(WPARAM)hFont,0);
-			SendMessage(GetDlgItem(hwndDlg, IDC_LOGO),STM_SETICON,(LPARAM)(HICON)LoadIconEx(IDI_LOGO,"logo",48,48), 0);
+			SendMessage(GetDlgItem(hwndDlg, IDC_LOGO),STM_SETICON,(LPARAM)(HICON)LoadIconEx(IDI_LOGO), 0);
 
 		} break;
 		
@@ -1174,17 +1174,17 @@ BOOL CALLBACK ManagerWndProc(HWND hwndDlg,UINT uMsg,WPARAM wParam,LPARAM lParam)
 			
 			OldMgrEditProc = (WNDPROC)SetWindowLong(hwndEdit, GWL_WNDPROC,(LONG)MgrEditSubclassProc); 
 			
-			SendDlgItemMessage(hwndDlg,IDC_ADD,BM_SETIMAGE,IMAGE_ICON,(LPARAM)(HICON)LoadIconEx(IDI_ADD,"add",GetSystemMetrics(SM_CXSMICON),GetSystemMetrics(SM_CYSMICON)));
-			SendDlgItemMessage(hwndDlg,IDC_REMOVE,BM_SETIMAGE,IMAGE_ICON,(LPARAM)LoadIconEx(IDI_DELETE,"delete",GetSystemMetrics(SM_CXSMICON),GetSystemMetrics(SM_CYSMICON)));
-			SendDlgItemMessage(hwndDlg,IDC_EDIT,BM_SETIMAGE,IMAGE_ICON,(LPARAM)LoadIconEx(IDI_RENAME,"rename",GetSystemMetrics(SM_CXSMICON),GetSystemMetrics(SM_CYSMICON)));
+			SendDlgItemMessage(hwndDlg,IDC_ADD,BM_SETIMAGE,IMAGE_ICON,(LPARAM)(HICON)LoadIconEx(IDI_ADD));
+			SendDlgItemMessage(hwndDlg,IDC_REMOVE,BM_SETIMAGE,IMAGE_ICON,(LPARAM)LoadIconEx(IDI_DELETE));
+			SendDlgItemMessage(hwndDlg,IDC_EDIT,BM_SETIMAGE,IMAGE_ICON,(LPARAM)LoadIconEx(IDI_RENAME));
 			SendMessage(GetDlgItem(hwndDlg,IDC_ADD), BUTTONADDTOOLTIP, (WPARAM)Translate("Add ban/invite/exception"), 0);
 			SendMessage(GetDlgItem(hwndDlg,IDC_EDIT), BUTTONADDTOOLTIP, (WPARAM)Translate("Edit selected ban/invite/exception"), 0);
 			SendMessage(GetDlgItem(hwndDlg,IDC_REMOVE), BUTTONADDTOOLTIP, (WPARAM)Translate("Delete selected ban/invite/exception"), 0);
 
-			SendMessage(hwndDlg,WM_SETICON,ICON_BIG,(LPARAM)LoadIconEx(IDI_MANAGER,"manager",GetSystemMetrics(SM_CXSMICON),GetSystemMetrics(SM_CYSMICON)));
-			SendMessage(GetDlgItem(hwndDlg, IDC_LOGO),STM_SETICON,(LPARAM)(HICON)LoadIconEx(IDI_LOGO,"logo",48,48), 0);
-			SendDlgItemMessage(hwndDlg,IDC_APPLYTOPIC,BM_SETIMAGE,IMAGE_ICON,(LPARAM)LoadIconEx(IDI_GO,"go",GetSystemMetrics(SM_CXSMICON),GetSystemMetrics(SM_CYSMICON)));
-			SendDlgItemMessage(hwndDlg,IDC_APPLYMODES,BM_SETIMAGE,IMAGE_ICON,(LPARAM)LoadIconEx(IDI_GO,"go",GetSystemMetrics(SM_CXSMICON),GetSystemMetrics(SM_CYSMICON)));
+			SendMessage(hwndDlg,WM_SETICON,ICON_BIG,(LPARAM)LoadIconEx(IDI_MANAGER));
+			SendMessage(GetDlgItem(hwndDlg, IDC_LOGO),STM_SETICON,(LPARAM)(HICON)LoadIconEx(IDI_LOGO), 0);
+			SendDlgItemMessage(hwndDlg,IDC_APPLYTOPIC,BM_SETIMAGE,IMAGE_ICON,(LPARAM)LoadIconEx( IDI_GO ));
+			SendDlgItemMessage(hwndDlg,IDC_APPLYMODES,BM_SETIMAGE,IMAGE_ICON,(LPARAM)LoadIconEx( IDI_GO ));
 			SendMessage(GetDlgItem(hwndDlg,IDC_APPLYTOPIC), BUTTONADDTOOLTIP, (WPARAM)Translate("Set this topic for the channel"), 0);
 			SendMessage(GetDlgItem(hwndDlg,IDC_APPLYMODES), BUTTONADDTOOLTIP, (WPARAM)Translate("Set these modes for the channel"), 0);
 
