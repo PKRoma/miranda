@@ -1288,8 +1288,133 @@ BOOL ReduceAvatarPosition(struct ClcContact *contact, BOOL subcontact, void *par
 }
 
 
+void Cache_ProceedAvatarInList(struct ClcData *dat, struct ClcContact *contact)
+{
+	struct avatarCacheEntry * ace=contact->avatar_data;
+	int old_pos=contact->avatar_pos;
+
+	if (   ace==NULL 
+		|| ace->dwFlags == AVS_BITMAP_EXPIRED
+		|| ace->hbmPic == NULL)
+	{
+		//Avatar was not ready or removed - need to remove it from cache
+		if (old_pos>=0)
+		{
+			ImageArray_RemoveImage(&dat->avatar_cache, old_pos);
+			// Update all items
+			ExecuteOnAllContacts(dat, ReduceAvatarPosition, (void *)&old_pos);
+			contact->avatar_pos=AVATAR_POS_DONT_HAVE;
+			return;
+		}
+	}
+	else if (contact->avatar_data->hbmPic != NULL) //Lets Add it
+	{
+		HDC hdc; 
+		HBITMAP hDrawBmp,oldBmp;
+		void * pt;
+
+		// Make bounds -> keep aspect radio
+		LONG width_clip;
+		LONG height_clip;
+		RECT rc = {0};
+
+		// Clipping width and height
+		width_clip = dat->avatars_maxwidth_size;
+		height_clip = dat->avatars_maxheight_size;
+
+		if (height_clip * ace->bmWidth / ace->bmHeight <= width_clip)
+		{
+			width_clip = height_clip * ace->bmWidth / ace->bmHeight;
+		}
+		else
+		{
+			height_clip = width_clip * ace->bmHeight / ace->bmWidth;					
+		}
+
+		// Create objs
+		hdc = CreateCompatibleDC(dat->avatar_cache.hdc); 
+		hDrawBmp = SkinEngine_CreateDIB32Point(width_clip, height_clip,&pt);
+		oldBmp=SelectObject(hdc, hDrawBmp);
+		//need to draw avatar bitmap here
+		{
+			RECT real_rc={0,0,width_clip, height_clip};
+
+			if (ServiceExists(MS_AV_BLENDDRAWAVATAR))
+			{
+				AVATARDRAWREQUEST adr;
+
+				adr.cbSize = sizeof(AVATARDRAWREQUEST);
+				adr.hContact = contact->hContact;
+				adr.hTargetDC = hdc;
+				adr.rcDraw = real_rc;
+				adr.dwFlags = 0;				
+				adr.alpha = 255;
+				CallService(MS_AV_BLENDDRAWAVATAR, 0, (LPARAM) &adr);
+			}
+			else
+			{
+				int w=width_clip;
+				int h=height_clip;
+				if (!g_CluiData.fGDIPlusFail) //Use gdi+ engine
+				{
+					DrawAvatarImageWithGDIp(hdc, 0, 0, w, h,ace->hbmPic,0,0,ace->bmWidth,ace->bmHeight,ace->dwFlags,255);
+				}
+				else
+				{
+					if (!(ace->dwFlags&AVS_PREMULTIPLIED))
+					{
+						HDC hdcTmp = CreateCompatibleDC(hdc);
+						RECT r={0,0,w,h};
+						HDC hdcTmp2 = CreateCompatibleDC(hdc);
+						HBITMAP bmo=SelectObject(hdcTmp,ace->hbmPic);
+						HBITMAP b2=SkinEngine_CreateDIB32(w,h);
+						HBITMAP bmo2=SelectObject(hdcTmp2,b2);
+						SetStretchBltMode(hdcTmp,  HALFTONE);
+						SetStretchBltMode(hdcTmp2,  HALFTONE);
+						StretchBlt(hdcTmp2, 0, 0, w, h,
+							hdcTmp, 0, 0, ace->bmWidth, ace->bmHeight,
+							SRCCOPY);
+
+						SkinEngine_SetRectOpaque(hdcTmp2,&r);
+						BitBlt(hdc, rc.left, rc.top, w, h,hdcTmp2,0,0,SRCCOPY);
+						SelectObject(hdcTmp2,bmo2);
+						SelectObject(hdcTmp,bmo);
+						mod_DeleteDC(hdcTmp);
+						mod_DeleteDC(hdcTmp2);
+						DeleteObject(b2);
+					}
+					else {
+						BLENDFUNCTION bf={AC_SRC_OVER, 0,255, AC_SRC_ALPHA };
+						HDC hdcTempAv = CreateCompatibleDC(hdc);
+						HBITMAP hbmTempAvOld;
+						hbmTempAvOld = SelectObject(hdcTempAv,ace->hbmPic);
+						SkinEngine_AlphaBlend(hdc, rc.left, rc.top, w, h, hdcTempAv, 0, 0,ace->bmWidth,ace->bmHeight, bf);
+						SelectObject(hdcTempAv, hbmTempAvOld);
+						mod_DeleteDC(hdcTempAv);
+					}
+				}
+			}
+		}
+		SelectObject(hdc,oldBmp);
+		// Add to list
+		if (old_pos >= 0)
+		{
+			ImageArray_ChangeImage(&dat->avatar_cache, hDrawBmp, old_pos);
+			contact->avatar_pos = old_pos;
+		}
+		else
+		{
+			contact->avatar_pos = ImageArray_AddImage(&dat->avatar_cache, hDrawBmp, -1);
+		}
+
+		DeleteObject(hDrawBmp);
+	}
+
+}
+
 void Cache_GetAvatar(struct ClcData *dat, struct ClcContact *contact)
 {
+	int avatar_old_pos=contact->avatar_pos;
     if (g_CluiData.bSTATE!=STATE_NORMAL
         || (dat->use_avatar_service && !ServiceExists(MS_AV_GETAVATARBITMAP)) ) // workaround for avatar service and other wich destroys service on OK_TOEXIT
     {
@@ -1297,7 +1422,6 @@ void Cache_GetAvatar(struct ClcData *dat, struct ClcContact *contact)
         contact->avatar_data = NULL;
         return;
     }
-
     if (dat->use_avatar_service && ServiceExists(MS_AV_GETAVATARBITMAP))
     {
         if (dat->avatars_show && !DBGetContactSettingByte(contact->hContact, "CList", "HideContactAvatar", 0))
@@ -1310,12 +1434,15 @@ void Cache_GetAvatar(struct ClcData *dat, struct ClcContact *contact)
             }
 
             if (contact->avatar_data != NULL)
-                contact->avatar_data->t_lastAccess = (DWORD)time(NULL);
+			{
+                contact->avatar_data->t_lastAccess = (DWORD)time(NULL);				
+			}
         }
         else
         {
             contact->avatar_data = NULL;
         }
+		Cache_ProceedAvatarInList(dat, contact);
     }
     else
     {

@@ -260,12 +260,8 @@ struct ClcContact {
 	BYTE isSubcontact;
 //	int status;
 	BOOL image_is_special;
-	union
-	{
-		int avatar_pos;
-		struct avatarCacheEntry *avatar_data;
-	};
-
+	int avatar_pos;
+	struct avatarCacheEntry *avatar_data;
 	SortedList *plText;						// List of ClcContactTextPiece
 	//TCHAR *szSecondLineText;//[120-MAXEXTRACOLUMNS];
 	//SortedList *plSecondLineText;				// List of ClcContactTextPiece
@@ -443,6 +439,10 @@ struct ClcData {
     BYTE useMetaIcon;
     BYTE drawOverlayedStatus;
     int nInsertionLevel;
+
+	BYTE dbbMetaHideExtra;
+	BYTE dbbBlendInActiveState;
+	BYTE dbbBlend25;
 };
 
 struct SHORTDATA

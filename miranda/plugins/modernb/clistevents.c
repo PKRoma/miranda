@@ -118,7 +118,10 @@ struct CListEvent* cli_AddEvent(CLISTEVENT *cle)
 			MENUITEMINFO mii = {0};
 			mii.cbSize = sizeof(mii);
 			mii.fMask = MIIM_DATA | MIIM_BITMAP | MIIM_ID;
-			if (p->cle.pszService && !strncmp("SRMsg/ReadMessage", p->cle.pszService, 17)) {
+			if (p->cle.pszService && (    !strncmp("SRMsg/ReadMessage", p->cle.pszService, sizeof("SRMsg/ReadMessage"))
+								   	   || !strncmp("GChat/DblClickEvent", p->cle.pszService, sizeof("GChat/DblClickEvent")) ))
+										
+			{
 				// dup check only for msg events
 				for (j = 0; j < GetMenuItemCount(g_CluiData.hMenuNotify); j++) {
 					if (GetMenuItemInfo(g_CluiData.hMenuNotify, j, TRUE, &mii) != 0) {

@@ -667,10 +667,10 @@ case WM_CREATE:
 			if (!hAvatarChanged)
 				hAvatarChanged=HookEvent(ME_AV_AVATARCHANGED, AvatarChanged);
 		}
-		else
-		{
-			ImageArray_Initialize(&dat->avatar_cache, FALSE, 20);
-		}
+		//else
+		//{
+		ImageArray_Initialize(&dat->avatar_cache, FALSE, 20); //this array will be used to keep small avatars too
+		//}
 
 		RowHeights_Initialize(dat);
 
@@ -783,6 +783,7 @@ case INTM_ICONCHANGED:
 		char *szProto;
         int nHiddenStatus=0;
 		BOOL image_is_special=FALSE;
+		RECT iconRect={0};
 		int contacticon=CallService(MS_CLIST_GETCONTACTICON, wParam, 1);
 
 		szProto = (char *) CallService(MS_PROTO_GETCONTACTBASEPROTO, wParam, 0);
@@ -865,8 +866,19 @@ case INTM_ICONCHANGED:
 		}
 		//        dat->NeedResort = 1; 
 		//        SortClcByTimer(hwnd);
-		if (dat->NeedResort) SortClcByTimer(hwnd);
-		else if (needRepaint) CLUI__cliInvalidateRect(hwnd,NULL,FALSE);
+		if (dat->NeedResort)
+		{
+			TRACE("Sort required\n");
+			SortClcByTimer(hwnd);
+		}
+		else if (needRepaint) 
+		{
+			if (contact && contact->pos_icon.bottom!=0 && contact->pos_icon.right!=0)
+				CLUI__cliInvalidateRect(hwnd,&(contact->pos_icon),FALSE);
+			else
+				CLUI__cliInvalidateRect(hwnd,NULL,FALSE);
+			//try only needed rectangle
+		}
 		else 
 		{
 #ifdef _DEBUG
@@ -883,7 +895,6 @@ case INTM_AVATARCHANGED:
 		if (FindItem(hwnd,dat,(HANDLE)wParam,&contact,NULL,NULL,FALSE)) 
 		{
 			Cache_GetAvatar(dat, contact); 
-
 		}
 		else if (dat->use_avatar_service && !wParam)
 		{
@@ -1935,7 +1946,7 @@ case WM_DESTROY:
 			mod_DeleteDC(dat->avatar_cache.hdc);			
 		}
 		//FreeDisplayNameCache(&dat->lCLCContactsCache);
-		if (!dat->use_avatar_service)
+		//if (!dat->use_avatar_service)
 			ImageArray_Free(&dat->avatar_cache, FALSE);
 
 		RowHeights_Free(dat);

@@ -47,6 +47,7 @@ typedef struct _IMAGE_ARRAY_DATA
 	HBITMAP img;
 	int width;
 	int height;
+	void * lpBits;
 
 	// CS
 	CRITICAL_SECTION cs;
@@ -80,7 +81,7 @@ BOOL ImageArray_ChangeImage(LP_IMAGE_ARRAY_DATA iad, HBITMAP hBmp, int pos);
 BOOL ImageArray_RemoveImage(LP_IMAGE_ARRAY_DATA iad, int pos);
 
 // Draw an image 
-BOOL ImageArray_DrawImage(LP_IMAGE_ARRAY_DATA iad, int pos, HDC hdcDest, int nXDest, int nYDest);
+BOOL ImageArray_DrawImage(LP_IMAGE_ARRAY_DATA iad, int pos, HDC hdcDest, int nXDest, int nYDest, BYTE Alpha);
 
 
 

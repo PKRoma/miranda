@@ -151,6 +151,120 @@ static int SkinEngine_UnlockSkin()
     return 0;
 }
 
+typedef struct _tagDCBuffer
+{
+	HDC hdcOwnedBy;
+	int nUsageID;
+	int width;
+	int height;
+	void* pImage;
+	HDC hDC;
+	HBITMAP oldBitmap;
+	HBITMAP hBitmap;
+	DWORD dwDestroyAfterTime;
+}DCBUFFER;
+CRITICAL_SECTION BufferListCS={0};
+
+SortedList * BufferList=NULL;
+enum
+{
+	BUFFER_DRAWICON=0,
+	BUFFER_DRAWIMAGE
+};
+
+int SortBufferList(void* it1, void * it2)
+{
+	DCBUFFER * buf1=(DCBUFFER *)it1;
+	DCBUFFER * buf2=(DCBUFFER *)it2;
+	if (buf1->hdcOwnedBy!=buf2->hdcOwnedBy) return (int)(buf1->hdcOwnedBy < buf2->hdcOwnedBy);
+	else if (buf1->nUsageID!=buf2->nUsageID) return (int) (buf1->nUsageID < buf2->nUsageID);
+	else return (int) (buf1->hDC < buf2->hDC);
+}
+
+HDC SkinEngine_RequestBufferDC(HDC hdcOwner, int dcID, int width, int height, BOOL fClear)
+{
+	DCBUFFER buf;
+	DCBUFFER * pBuf;
+	if (BufferList==NULL)
+	{
+		BufferList=li.List_Create(0,2);
+		BufferList->sortFunc=SortBufferList;
+		InitializeCriticalSection(&BufferListCS);
+	}
+	EnterCriticalSection(&BufferListCS);
+	//Try to find DC in buffer list	
+	buf.hdcOwnedBy=hdcOwner;
+	buf.nUsageID=dcID;
+	buf.hDC=NULL;
+	pBuf=li.List_Find(BufferList,(void*)&buf);
+	if (!pBuf)
+	{
+		//if not found - allocate it
+		pBuf=(DCBUFFER *)mir_alloc(sizeof(DCBUFFER));
+        *pBuf=buf;
+		pBuf->width=width;
+		pBuf->height=height;
+		pBuf->hBitmap=SkinEngine_CreateDIB32Point(width,height,&(pBuf->pImage));
+		pBuf->hDC=CreateCompatibleDC(hdcOwner);
+		pBuf->oldBitmap=SelectObject(pBuf->hDC,pBuf->hBitmap);
+		pBuf->dwDestroyAfterTime=0;
+		li.List_InsertPtr(BufferList,pBuf);		
+	}
+	else 
+	{
+		if (pBuf->width!=width || pBuf->height!=height)
+		{
+			//resize
+			SelectObject(pBuf->hDC,pBuf->oldBitmap);
+			DeleteObject(pBuf->hBitmap);
+			pBuf->width=width;
+			pBuf->height=height;
+			pBuf->hBitmap=SkinEngine_CreateDIB32Point(width,height,&(pBuf->pImage));
+			pBuf->oldBitmap=SelectObject(pBuf->hDC,pBuf->hBitmap);
+		}  else	if (fClear)
+			memset(pBuf->pImage,0,width*height*sizeof(DWORD));
+	}
+	pBuf->dwDestroyAfterTime=0;
+	LeaveCriticalSection(&BufferListCS);
+	return pBuf->hDC;
+}
+
+int SkinEngine_ReleaseBufferDC(HDC hDC, int keepTime)
+{
+	DWORD dwCurrentTime=GetTickCount();
+	DCBUFFER * pBuf=NULL;
+	//Try to find DC in buffer list - set flag to be release after time;
+	int i=0;
+	EnterCriticalSection(&BufferListCS);
+	for (i=0; i<BufferList->realCount; i++)
+	{
+		pBuf=(DCBUFFER *)BufferList->items[i];
+		if (pBuf)
+		{
+			if (hDC!=NULL && pBuf->hDC==hDC)
+			{
+				pBuf->dwDestroyAfterTime=dwCurrentTime+keepTime;
+				break;
+			}
+			else  
+			{
+				if ((pBuf->dwDestroyAfterTime && pBuf->dwDestroyAfterTime < dwCurrentTime) || keepTime==-1)
+				{
+					SelectObject(pBuf->hDC,pBuf->oldBitmap);
+					DeleteObject(pBuf->hBitmap);
+					DeleteDC(pBuf->hDC);
+					mir_free(pBuf);
+					li.List_Remove(BufferList,i);
+					i--;
+				}
+			}
+		}
+	}
+	LeaveCriticalSection(&BufferListCS);
+	return 0;
+}
+
+
 int SkinEngine_LoadModule()
 {
     InitializeCriticalSection(&cs_SkinChanging);
@@ -2506,6 +2620,7 @@ static int SkinEngine_AlphaTextOut (HDC hDC, LPCTSTR lpstring, int nCount, RECT 
     int dtex=0;
     RECT workRect;
     workRect=*lpRect;
+	//DEBUG Reduce Usage twice
     if (!bGammaWeightFilled)
     {
         int i;
@@ -2617,7 +2732,7 @@ static int SkinEngine_AlphaTextOut (HDC hDC, LPCTSTR lpstring, int nCount, RECT 
         //if (sz.cy>2000) DebugBreak();
         sz.cx+=4;
         sz.cy+=4;
-        if (sz.cx>0 && sz.cy>0)
+        if (sz.cx>0 && sz.cy>0) 
         {
             //Create text bitmap
             {
@@ -2635,13 +2750,13 @@ static int SkinEngine_AlphaTextOut (HDC hDC, LPCTSTR lpstring, int nCount, RECT 
 
                 TextOut(memdc,2,2,lpString,nCount);
             }
-            {
+			{
                 MODERNEFFECT effect={0};
                 if (SkinEngine_GetTextEffect(hDC,&effect)) 
                     SkinEngine_DrawTextEffect(bufbits,bits,sz.cx,sz.cy,&effect);	
             }
             //RenderText
-            //if (1)
+            
             {
                 DWORD x,y;
                 DWORD width=sz.cx;
@@ -2758,7 +2873,7 @@ BOOL SkinEngine_DrawTextA(HDC hdc, char * lpString, int nCount, RECT * lpRect, U
 BOOL SkinEngine_DrawText(HDC hdc, LPCTSTR lpString, int nCount, RECT * lpRect, UINT format)
 {
     DWORD form=0, color=0;
-    RECT r=*lpRect;
+    RECT r=*lpRect;	
     OffsetRect(&r,1,1);
     if (format&DT_RTLREADING) SetTextAlign(hdc,TA_RTLREADING);
     if (format&DT_CALCRECT) return DrawText(hdc,lpString,nCount,lpRect,format);
@@ -3155,6 +3270,8 @@ static BOOL SkinEngine_Service_DrawIconEx(WPARAM wParam,LPARAM lParam)
     if (!p) return 0;
     return SkinEngine_DrawIconEx(p->hdc,p->xLeft,p->yTop,p->hIcon,p->cxWidth,p->cyWidth,p->istepIfAniCur,p->hbrFlickerFreeDraw,p->diFlags);
 }
+
+
 BOOL SkinEngine_DrawIconEx(HDC hdcDst,int xLeft,int yTop,HICON hIcon,int cxWidth,int cyWidth, UINT istepIfAniCur, HBRUSH hbrFlickerFreeDraw, UINT diFlags)
 {
 
@@ -3204,12 +3321,27 @@ BOOL SkinEngine_DrawIconEx(HDC hdcDst,int xLeft,int yTop,HICON hIcon,int cxWidth
             otBmp=SelectObject(tempDC1,tBmp);
             DrawIconEx(tempDC1,0,0,hIcon,imbt.bmWidth,imbt.bmHeight,istepIfAniCur,hbrFlickerFreeDraw,DI_IMAGE);   
             noMirrorMask=TRUE;
+
         }
         SelectObject(tempDC1,otBmp);
         mod_DeleteDC(tempDC1);
     }
-
-    if (imbt.bmBits==NULL)
+   /*
+   if (imbt.bmBitsPixel!=32)
+    {
+        HDC tempDC1;
+        HBITMAP otBmp;
+        no32bit=TRUE;
+        tempDC1=SkinEngine_RequestBufferDC(hdcDst,BUFFER_DRAWICON,imbt.bmWidth,imbt.bmHeight);
+        if (tempDC1) 
+        {
+            DrawIconEx(tempDC1,0,0,hIcon,imbt.bmWidth,imbt.bmHeight,istepIfAniCur,hbrFlickerFreeDraw,DI_IMAGE);   
+            noMirrorMask=TRUE;
+			SkinEngine_ReleaseBufferDC(tempDC1,2000); //keep buffer for 2 seconds
+        }        
+    }
+   */
+   if (imbt.bmBits==NULL)
     {
         NoDIBImage=TRUE;
         imimagbits=(BYTE*)malloc(cy*imbt.bmWidthBytes);
