@@ -905,6 +905,32 @@ BOOL CALLBACK DlgProcParentWindow(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM 
 			SetTimer(hwndDlg, TIMERID_FLASHWND, TIMEOUT_FLASHWND, NULL);
 		}
 		break;
+	case CM_POPUPWINDOW:
+		if (wParam) { /* incoming message */
+			if (dat->childrenCount == 1 && g_dat->flags & SMF_STAYMINIMIZED) {
+				SendMessage(hwndDlg, CM_ACTIVATECHILD, 0, (LPARAM) lParam);
+				SendMessage(hwndDlg, DM_DEACTIVATE, 0, 0);
+				ShowWindow(hwndDlg, SW_SHOWMINNOACTIVE);
+			} else {
+				ShowWindow(hwndDlg, SW_SHOWNA);
+				if (dat->childrenCount == 1 ||
+					((g_dat->flags2 & SMF2_SWITCHTOACTIVE) && (IsIconic(hwndDlg) || GetForegroundWindow() != hwndDlg))) {
+					if (dat->childrenCount == 1) {
+						SetForegroundWindow(hwndDlg);
+					}
+					SetFocus((HWND) lParam);
+				}
+			}
+		} else { /* outgoing message */
+			if (IsIconic(hwndDlg)) {
+				ShowWindow(hwndDlg, SW_SHOWNORMAL);
+			} else {
+				ShowWindow(hwndDlg, SW_SHOW);
+			}
+			SetForegroundWindow(hwndDlg);
+			SetFocus((HWND) lParam);
+		}
+		break;
 	case CM_REMOVECHILD:
 		{
 			RemoveChild(dat, (HWND) lParam);
@@ -935,6 +961,9 @@ BOOL CALLBACK DlgProcParentWindow(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM 
 		return TRUE;
 	case CM_GETCHILDCOUNT:
 		SetWindowLong(hwndDlg, DWL_MSGRESULT, (LONG)GetChildCount(dat));
+		return TRUE;
+	case CM_GETACTIVECHILD:
+		SetWindowLong(hwndDlg, DWL_MSGRESULT, (LONG)dat->hwndActive);
 		return TRUE;
 	case DM_SENDMESSAGE:
 		{

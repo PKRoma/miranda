@@ -1294,36 +1294,10 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
 					while ((hdbEvent = (HANDLE) CallService(MS_DB_EVENT_FINDPREV, (WPARAM) hdbEvent, 0)));
 				}
 			}
-			if (newData->flags & NMWLP_INCOMING) {
-				if (dat->parent->childrenCount == 1 && g_dat->flags & SMF_STAYMINIMIZED) {
-					SendMessage(dat->hwndParent, CM_ACTIVATECHILD, 0, (LPARAM) hwndDlg);
-					SendMessage(dat->hwndParent, DM_DEACTIVATE, 0, 0);
-					ShowWindow(dat->hwndParent, SW_SHOWMINNOACTIVE);
-				} else {
-					ShowWindow(dat->hwndParent, SW_SHOWNA);
-					if (dat->parent->childrenCount == 1 ||
-						((g_dat->flags2 & SMF2_SWITCHTOACTIVE) && (IsIconic(dat->hwndParent) || GetForegroundWindow() != dat->hwndParent))) {
-						SendMessage(dat->hwndParent, CM_ACTIVATECHILD, 0, (LPARAM) hwndDlg);
-						if (dat->parent->childrenCount == 1) {
-							SetForegroundWindow(dat->hwndParent);
-							SetFocus(GetDlgItem(hwndDlg, IDC_MESSAGE));
-						}
-					}
-				}
-			} else {
-				if (IsIconic(dat->hwndParent)) {
-					ShowWindow(dat->hwndParent, SW_SHOWNORMAL);
-				} else {
-					ShowWindow(dat->hwndParent, SW_SHOW);
-				}
-				SendMessage(dat->hwndParent, CM_ACTIVATECHILD, 0, (LPARAM) hwndDlg);
-				SetForegroundWindow(dat->hwndParent);
-				SetFocus(GetDlgItem(hwndDlg, IDC_MESSAGE));
-			}
+			SendMessage(GetParent(hwndDlg), CM_POPUPWINDOW, (WPARAM) (newData->flags & NMWLP_INCOMING), (LPARAM) hwndDlg);
 			NotifyLocalWinEvent(dat->hContact, hwndDlg, MSG_WINDOW_EVT_OPEN);
 			if (notifyUnread) {
 				SendMessage(dat->hwndParent, CM_STARTFLASHING, 0, 0);
-//				if (GetActiveWindow() != dat->hwndParent || GetForegroundWindow() != dat->hwndParent || dat->parent->hwndActive != hwndDlg) {
 				if (GetForegroundWindow() != dat->hwndParent || dat->parent->hwndActive != hwndDlg) {
 					dat->showUnread = 0;
 					SetTimer(hwndDlg, TIMERID_FLASHWND, TIMEOUT_FLASHWND, NULL);

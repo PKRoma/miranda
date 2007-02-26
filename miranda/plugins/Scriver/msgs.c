@@ -189,13 +189,7 @@ static int SendMessageCommandW(WPARAM wParam, LPARAM lParam)
 */
          SendMessage(hEdit, EM_REPLACESEL, FALSE, (LPARAM) (TCHAR *) lParam);
       }
-      if (IsIconic(GetParent(hwnd))) {
-         ShowWindow(GetParent(hwnd), SW_SHOWNORMAL);
-      } else {
-         ShowWindow(GetParent(hwnd), SW_SHOW);
-      }
-      SetForegroundWindow(GetParent(hwnd));
-      SetFocus(hwnd);
+      SendMessage(GetParent(hwnd), CM_POPUPWINDOW, 0, (LPARAM) hwnd);
    } else {
       HWND hParent;
       newData.hContact = (HANDLE) wParam;
@@ -239,13 +233,7 @@ static int SendMessageCommand(WPARAM wParam, LPARAM lParam)
 */
          SendMessageA(hEdit, EM_REPLACESEL, FALSE, (LPARAM) (char *) lParam);
       }
-      if (IsIconic(GetParent(hwnd))) {
-         ShowWindow(GetParent(hwnd), SW_SHOWNORMAL);
-      } else {
-         ShowWindow(GetParent(hwnd), SW_SHOW);
-      }
-      SetForegroundWindow(GetParent(hwnd));
-      SetFocus(hwnd);
+      SendMessage(GetParent(hwnd), CM_POPUPWINDOW, 0, (LPARAM) hwnd);
    } else {
       HWND hParent;
       newData.hContact = (HANDLE) wParam;
@@ -530,7 +518,7 @@ static int SplitmsgModulesLoaded(WPARAM wParam, LPARAM lParam)
 	HookEvent_Ex(ME_AV_AVATARCHANGED, AvatarChanged);
 	HookEvent_Ex(ME_FONT_RELOAD, FontServiceFontsChanged);
 	HookEvent_Ex(ME_MSG_ICONPRESSED, StatusIconPressed);
-   
+
 	RestoreUnreadMessageAlerts();
 	Chat_ModulesLoaded(wParam, lParam);
 	RegisterStatusIcons();
@@ -591,7 +579,7 @@ int LoadSendRecvMessageModule(void) {
 	OleInitialize(NULL);
 	InitREOleCallback();
 	InitStatusIcons();
-	
+
 	HookEvent_Ex(ME_OPT_INITIALISE, OptInitialise);
 	HookEvent_Ex(ME_DB_EVENT_ADDED, MessageEventAdded);
 	HookEvent_Ex(ME_DB_CONTACT_SETTINGCHANGED, MessageSettingChanged);
@@ -599,8 +587,8 @@ int LoadSendRecvMessageModule(void) {
 	HookEvent_Ex(ME_SYSTEM_MODULESLOADED, SplitmsgModulesLoaded);
 	HookEvent_Ex(ME_SKIN_ICONSCHANGED, IconsChanged);
 	HookEvent_Ex(ME_PROTO_CONTACTISTYPING, TypingMessage);
-	HookEvent_Ex(ME_SYSTEM_PRESHUTDOWN, PreshutdownSendRecv);	
-	
+	HookEvent_Ex(ME_SYSTEM_PRESHUTDOWN, PreshutdownSendRecv);
+
 	CreateServiceFunction_Ex(MS_MSG_SENDMESSAGE, SendMessageCommand);
  #if defined(_UNICODE)
 	CreateServiceFunction_Ex(MS_MSG_SENDMESSAGE "W", SendMessageCommandW);
@@ -609,8 +597,8 @@ int LoadSendRecvMessageModule(void) {
 	CreateServiceFunction_Ex(MS_MSG_GETWINDOWCLASS, GetWindowClass);
 	CreateServiceFunction_Ex(MS_MSG_GETWINDOWDATA, GetWindowData);
 	CreateServiceFunction_Ex("SRMsg/ReadMessage", ReadMessageCommand);
-	CreateServiceFunction_Ex("SRMsg/TypingMessage", TypingMessageCommand);	
-	
+	CreateServiceFunction_Ex("SRMsg/TypingMessage", TypingMessageCommand);
+
 	hHookWinEvt = CreateHookableEvent(ME_MSG_WINDOWEVENT);
 	hHookWinPopup = CreateHookableEvent(ME_MSG_WINDOWPOPUP);
 	SkinAddNewSoundEx("RecvMsgActive", Translate("Messages"), Translate("Incoming (Focused Window)"));
