@@ -45,23 +45,6 @@ BEGIN
                     BS_AUTOCHECKBOX | WS_TABSTOP,8,48,140,10
     CONTROL         "Minimize the message window on send",IDC_AUTOMIN,"Button",
                     BS_AUTOCHECKBOX | WS_TABSTOP,8,59,152,10
-	/*
-    CONTROL         "Use tabbed mode",IDC_USETABS,"Button",BS_AUTOCHECKBOX |
-                    WS_TABSTOP,8,52,140,10
-    CONTROL         "Hide tab bar if there is only one tab",IDC_HIDEONETAB,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,148,52,152,10
-    CONTROL         "Tabs at bottom",IDC_TABSATBOTTOM,"Button",
-                    BS_AUTOCHECKBOX | WS_TABSTOP,20,63,126,10
-    CONTROL         "Limit names on tabs to 20 characters",IDC_LIMITNAMES,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,148,63,152,10
-    CONTROL         "Automatically switch to active tab",IDC_SWITCHTOACTIVE,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,20,74,152,10
-    CONTROL         "Cascade new windows",IDC_CASCADE,"Button",
-                    BS_AUTOCHECKBOX | WS_TABSTOP,8,85,140,10
-    CONTROL         "Save size and location for each contact",
-                    IDC_SAVEPERCONTACT,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,
-                    148,85,152,10
-	*/
     CONTROL         "Save the splitter position individually for each contact",
                     IDC_SAVESPLITTERPERCONTACT,"Button",BS_AUTOCHECKBOX |
                     WS_TABSTOP,8,70,292,10
@@ -74,12 +57,6 @@ BEGIN
     CONTROL         "Delete temporary contacts when closing message window",
                     IDC_DELTEMP,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,8,103,
                     292,10
-	/*
-    CONTROL         "Show title bar",IDC_SHOWTITLEBAR,"Button",
-                    BS_AUTOCHECKBOX | WS_TABSTOP,8,140,140,10
-    CONTROL         "Show status bar",IDC_SHOWSTATUSBAR,"Button",
-                    BS_AUTOCHECKBOX | WS_TABSTOP,148,140,138,10
-	*/
     CONTROL         "Send message on 'Enter'",IDC_SENDONENTER,"Button",
                     BS_AUTOCHECKBOX | WS_TABSTOP,8,114,140,10
     CONTROL         "Send message on double 'Enter'",IDC_SENDONDBLENTER,
@@ -108,18 +85,6 @@ BEGIN
     LTEXT           "and max.",IDC_AVATARTEXT1,188,213,35,8
     EDITTEXT        IDC_AVATARHEIGHT,230,212,28,12,ES_AUTOHSCROLL
     LTEXT           "pixels.",IDC_AVATARTEXT2,263,213,35,8
-	/*
-	CONTROL         "Enable transparency",IDC_TRANSPARENCY,"Button",
-                    BS_AUTOCHECKBOX | WS_TABSTOP,8,189,140,10
-    LTEXT           "active",IDC_TRANSPARENCYTEXT1,148,185,40,8
-    CONTROL         "Slider1",IDC_ATRANSPARENCYVALUE,"msctls_trackbar32",
-                    TBS_BOTH | TBS_NOTICKS | WS_TABSTOP,194,185,70,11
-    LTEXT           "100%",IDC_ATRANSPARENCYPERC,264,185,22,8
-    LTEXT           "inactive",IDC_TRANSPARENCYTEXT2,148,196,40,8
-    CONTROL         "Slider1",IDC_ITRANSPARENCYVALUE,"msctls_trackbar32",
-                    TBS_BOTH | TBS_NOTICKS | WS_TABSTOP,194,196,70,11
-    LTEXT           "100%",IDC_ITRANSPARENCYPERC,264,196,22,8
-	*/
 END
 
 IDD_OPT_MSGLOG DIALOGEX 2, 0, 304, 232
@@ -215,7 +180,7 @@ STYLE DS_FIXEDSYS | WS_CHILD | WS_VISIBLE
 EXSTYLE WS_EX_CONTROLPARENT
 FONT 8, "MS Shell Dlg", 0, 0, 0x1
 BEGIN
-    GROUPBOX        "Tabs",IDC_STATIC,0,0,304,138
+    GROUPBOX        "Tabs",IDC_STATIC,0,0,304,149
     CONTROL         "Use tabbed mode",IDC_USETABS,"Button",BS_AUTOCHECKBOX |
                     WS_TABSTOP,8,12,260,10
     CONTROL         "Hide tab bar if there is only one tab",IDC_HIDEONETAB,
@@ -248,21 +213,25 @@ BEGIN
                     IDC_SAVEPERCONTACT,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,
                     8,122,260,10
 
-    GROUPBOX        "Look And Feel",IDC_STATIC,0,138,304,60
+    CONTROL         "Hide containers on close",
+                    IDC_HIDECONTAINERS,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,
+                    8,133,260,10
+
+	GROUPBOX        "Look And Feel",IDC_STATIC,0,149,304,60
 	CONTROL         "Show title bar",IDC_SHOWTITLEBAR,"Button",
-                    BS_AUTOCHECKBOX | WS_TABSTOP,8,150,140,10
+                    BS_AUTOCHECKBOX | WS_TABSTOP,8,161,140,10
     CONTROL         "Show status bar",IDC_SHOWSTATUSBAR,"Button",
-                    BS_AUTOCHECKBOX | WS_TABSTOP,8,161,138,10
+                    BS_AUTOCHECKBOX | WS_TABSTOP,8,172,138,10
     CONTROL         "Enable transparency",IDC_TRANSPARENCY,"Button",
-                    BS_AUTOCHECKBOX | WS_TABSTOP,8,179,140,10
-    LTEXT           "active",IDC_TRANSPARENCYTEXT1,148,175,40,8
+                    BS_AUTOCHECKBOX | WS_TABSTOP,8,190,140,10
+    LTEXT           "active",IDC_TRANSPARENCYTEXT1,148,186,40,8
     CONTROL         "Slider1",IDC_ATRANSPARENCYVALUE,"msctls_trackbar32",
-                    TBS_BOTH | TBS_NOTICKS | WS_TABSTOP,194,175,70,11
-    LTEXT           "100%",IDC_ATRANSPARENCYPERC,264,175,22,8
-    LTEXT           "inactive",IDC_TRANSPARENCYTEXT2,148,186,40,8
-    CONTROL         "Slider1",IDC_ITRANSPARENCYVALUE,"msctls_trackbar32",
                     TBS_BOTH | TBS_NOTICKS | WS_TABSTOP,194,186,70,11
-    LTEXT           "100%",IDC_ITRANSPARENCYPERC,264,186,22,8
+    LTEXT           "100%",IDC_ATRANSPARENCYPERC,264,186,22,8
+    LTEXT           "inactive",IDC_TRANSPARENCYTEXT2,148,197,40,8
+    CONTROL         "Slider1",IDC_ITRANSPARENCYVALUE,"msctls_trackbar32",
+                    TBS_BOTH | TBS_NOTICKS | WS_TABSTOP,194,197,70,11
+    LTEXT           "100%",IDC_ITRANSPARENCYPERC,264,197,22,8
 END
 
 IDD_OPT_MSGTYPE DIALOGEX 0, 0, 283, 252

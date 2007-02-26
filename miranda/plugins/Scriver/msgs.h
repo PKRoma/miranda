@@ -413,4 +413,7 @@ extern int fontOptionsListSize;
 #define SRMSGSET_BUTTONVISIBILITY	"ButtonVisibility"
 #define SRMSGDEFSET_BUTTONVISIBILITY 0xFFFF
 
+#define SRMSGSET_HIDECONTAINERS		"HideContainers"
+#define SRMSGDEFSET_HIDECONTAINERS  0
+
 #endif

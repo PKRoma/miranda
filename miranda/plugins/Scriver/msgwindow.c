@@ -576,7 +576,11 @@ BOOL CALLBACK DlgProcParentWindow(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM 
 		}
 		return TRUE;
 	case WM_CLOSE:
-		DestroyWindow(hwndDlg);
+        if (g_dat->flags2 & SMF2_HIDECONTAINERS) {
+            ShowWindow(hwndDlg, SW_HIDE);
+        } else {
+            DestroyWindow(hwndDlg);
+        }
 		return TRUE;
 	case WM_MEASUREITEM:
 		return CallService(MS_CLIST_MENUMEASUREITEM, wParam, lParam);
