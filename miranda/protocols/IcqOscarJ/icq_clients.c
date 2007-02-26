@@ -23,7 +23,7 @@
 //
 // -----------------------------------------------------------------------------
 //
-// File name      : $Source: /cvsroot/miranda/miranda/protocols/IcqOscarJ/icq_clients.c,v $
+// File name      : $URL$
 // Revision       : $Revision$
 // Last change on : $Date$
 // Last change by : $Author$
@@ -134,6 +134,7 @@ const capstr capJimm      = {'J', 'i', 'm', 'm', ' ', 0, 0, 0, 0, 0, 0, 0, 0, 0,
 const capstr capAnastasia = {0x44, 0xE5, 0xBF, 0xCE, 0xB0, 0x96, 0xE5, 0x47, 0xBD, 0x65, 0xEF, 0xD6, 0xA3, 0x7E, 0x36, 0x02};
 const capstr capPalmJicq  = {'J', 'I', 'C', 'Q', 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
 const capstr capInluxMsgr = {0xA7, 0xE4, 0x0A, 0x96, 0xB3, 0xA0, 0x47, 0x9A, 0xB8, 0x45, 0xC9, 0xE4, 0x67, 0xC5, 0x6B, 0x1F};
+const capstr capMipClient = {0x4d, 0x49, 0x50, 0x20, 0x43, 0x6c, 0x69, 0x65, 0x6e, 0x74, 0x20, 0x76, 0x00, 0x00, 0x00, 0x00};
 const capstr capQip       = {0x56, 0x3F, 0xC8, 0x09, 0x0B, 0x6F, 0x41, 'Q', 'I', 'P', ' ', '2', '0', '0', '5', 'a'};
 const capstr capQipPDA    = {0x56, 0x3F, 0xC8, 0x09, 0x0B, 0x6F, 0x41, 'Q', 'I', 'P', ' ', ' ', ' ', ' ', ' ', '!'};
 const capstr capQipMobile = {0xB0, 0x82, 0x62, 0xF6, 0x7F, 0x7C, 0x45, 0x61, 0xAD, 0xC1, 0x1C, 0x6D, 0x75, 0x70, 0x5E, 0xC5};
@@ -512,6 +513,24 @@ char* detectUserClient(HANDLE hContact, DWORD dwUin, WORD wVersion, DWORD dwFT1,
       { // http://www.inlusoft.com
         szClient = "Inlux Messenger";
       }
+      else if (capId = MatchCap(caps, wLen, &capMipClient, 0xC))
+      { // http://mip.rufon.net
+        unsigned ver1 = (*capId)[0xC];
+        unsigned ver2 = (*capId)[0xD];
+        unsigned ver3 = (*capId)[0xE];
+        unsigned ver4 = (*capId)[0xF];
+
+        if (ver1 < 30)
+        {
+          makeClientVersion(szClientBuf, "MIP ", ver1, ver2, ver3, ver4);
+        }
+        else
+        {
+          strcpy(szClientBuf, "MIP ");
+          strncat(szClientBuf, (*capId) + 11, 5);
+        }
+        szClient = szClientBuf;
+      } 
       else if (szClient == cliLibicq2k)
       { // try to determine which client is behind libicq2000
         if (CheckContactCapabilities(hContact, CAPF_RTF))
