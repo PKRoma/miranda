@@ -410,6 +410,34 @@ LRESULT CALLBACK StatusBarSubclassProc(HWND hWnd, UINT msg, WPARAM wParam, LPARA
             break;
         }
 
+        case WM_USER + 101:
+        {
+            struct MessageWindowData *dat = (struct MessageWindowData *)lParam;
+            RECT rcs;
+            int statwidths[5];
+            struct StatusIconListNode *current = status_icon_list;
+            int    list_icons = 0;
+            char   buff[100];
+            DWORD  flags;
+
+            while(current && dat) {
+                sprintf(buff, "SRMMStatusIconFlags%d", (int)current->sid.dwId);
+                flags = DBGetContactSettingByte(dat->hContact, current->sid.szModule, buff, current->sid.flags);
+                if(!(flags & MBF_HIDDEN))
+                    list_icons++;
+                current = current->next;
+            }
+
+            SendMessage(hWnd, WM_SIZE, 0, 0);
+            GetWindowRect(hWnd, &rcs);
+
+            statwidths[0] = (rcs.right - rcs.left) - (2 * SB_CHAR_WIDTH + 20) - (35 + ((list_icons) * (myGlobals.m_smcxicon + 2)));
+            statwidths[1] = (rcs.right - rcs.left) - (45 + ((list_icons) * (myGlobals.m_smcxicon + 2)));
+            statwidths[2] = -1;
+            SendMessage(hWnd, SB_SETPARTS, 3, (LPARAM) statwidths);
+            return 0;
+        }
+
         case WM_SETCURSOR:
         {
             POINT pt;
@@ -1672,29 +1700,12 @@ buttons_done:
                 //}
 
                 if (pContainer->hwndStatus) {
-                    RECT rcs;
-                    int statwidths[5];
-                    struct StatusIconListNode *current = status_icon_list;
-                    int    list_icons = 0;
-                    char   buff[100];
-					DWORD  flags;
 					struct MessageWindowData *dat = (struct MessageWindowData *)GetWindowLong(pContainer->hwndActive, GWL_USERDATA);
+					RECT   rcs;
 
-                    while(current && dat) {
-                        sprintf(buff, "SRMMStatusIconFlags%d", (int)current->sid.dwId);
-                        flags = DBGetContactSettingByte(dat->hContact, current->sid.szModule, buff, current->sid.flags);
-                        if(!(flags & MBF_HIDDEN))
-                            list_icons++;
-                        current = current->next;
-                    }
+                    SendMessage(pContainer->hwndStatus, WM_USER + 101, 0, (LPARAM)dat);
+		            GetWindowRect(pContainer->hwndStatus, &rcs);
 
-                    SendMessage(pContainer->hwndStatus, WM_SIZE, 0, 0);
-                    GetWindowRect(pContainer->hwndStatus, &rcs);
-
-                    statwidths[0] = (rcs.right - rcs.left) - (2 * SB_CHAR_WIDTH + 20) - (35 + ((list_icons) * (myGlobals.m_smcxicon + 2)));
-                    statwidths[1] = (rcs.right - rcs.left) - (45 + ((list_icons) * (myGlobals.m_smcxicon + 2)));
-                    statwidths[2] = -1;
-                    SendMessage(pContainer->hwndStatus, SB_SETPARTS, 3, (LPARAM) statwidths);
                     pContainer->statusBarHeight = (rcs.bottom - rcs.top) + 1;
                     if(pContainer->hwndSlist)
                         MoveWindow(pContainer->hwndSlist, bSkinned ? 4 : 2, (rcs.bottom - rcs.top) / 2 - 7, 16, 16, FALSE);

@@ -754,6 +754,7 @@ void UpdateStatusBar(HWND hwndDlg, struct MessageWindowData *dat)
             DM_UpdateLastMessage(hwndDlg, dat);
         UpdateReadChars(hwndDlg, dat);
         InvalidateRect(dat->pContainer->hwndStatus, NULL, TRUE);
+        SendMessage(dat->pContainer->hwndStatus, WM_USER + 101, 0, (LPARAM)dat);
     }
 }
 
