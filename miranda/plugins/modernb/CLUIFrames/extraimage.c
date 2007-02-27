@@ -199,21 +199,10 @@ void ExtraImage_ReloadExtraIcons()
 		CallService(MS_PROTO_ENUMPROTOCOLS,(WPARAM)&count,(LPARAM)&protos);
 
 		//loading icons
-		hicon=CLUI_LoadIconFromExternalFile("clisticons.dll",0,TRUE,TRUE,"Email","Contact List",Translate("Email Icon"),IDI_SENDEMAIL,&needFree);
-		if (!hicon) {hicon=LoadSmallIcon(GetModuleHandle(NULL), MAKEINTRESOURCE(IDI_SENDEMAIL)); needFree=TRUE;}
-		ExtraImageIconsIndex[0]=ImageList_AddIcon(hExtraImageList,hicon );
-		if (needFree) DestroyIcon_protect(hicon);
-
-		hicon=CLUI_LoadIconFromExternalFile("clisticons.dll",1,TRUE,TRUE,"Sms","Contact List",Translate("Sms Icon"),IDI_SMS,&needFree);
-		if (!hicon) {hicon=LoadSmallIcon(g_hInst, MAKEINTRESOURCE(IDI_SMS)); needFree=TRUE;} 
-		ExtraImageIconsIndex[1]=ImageList_AddIcon(hExtraImageList,hicon );
-		if (needFree) DestroyIcon_protect(hicon);
-
-		hicon=CLUI_LoadIconFromExternalFile("clisticons.dll",4,TRUE,TRUE,"Web","Contact List",Translate("Web Icon"),IDI_URL,&needFree);
-		if (!hicon) {hicon=LoadSmallIcon(GetModuleHandle(NULL), MAKEINTRESOURCE(IDI_URL)); needFree=TRUE;}
-		ExtraImageIconsIndex[2]=ImageList_AddIcon(hExtraImageList,hicon );
-		if (needFree) DestroyIcon_protect(hicon);
-
+		ExtraImageIconsIndex[0]=ImageList_AddIcon(hExtraImageList,LoadSkinnedIcon( SKINICON_OTHER_SENDEMAIL ) );
+		ExtraImageIconsIndex[1]=ImageList_AddIcon(hExtraImageList,LoadSkinnedIcon( SKINICON_OTHER_SMS) );
+		ExtraImageIconsIndex[2]=ImageList_AddIcon(hExtraImageList,LoadSkinnedIcon( SKINICON_EVENT_URL) );
+		
 		//calc only needed protocols
 		for(i=0;i<count;i++) {
 			if(protos[i]->type!=PROTOTYPE_PROTOCOL || CallProtoService(protos[i]->szName,PS_GETCAPS,PFLAGNUM_2,0)==0) continue;

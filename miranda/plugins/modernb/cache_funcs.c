@@ -1319,7 +1319,7 @@ void Cache_ProceedAvatarInList(struct ClcData *dat, struct ClcContact *contact)
 		RECT rc = {0};
 
 		// Clipping width and height
-		width_clip = dat->avatars_maxwidth_size;
+		width_clip = dat->avatars_maxwidth_size?dat->avatars_maxwidth_size:dat->avatars_maxheight_size;
 		height_clip = dat->avatars_maxheight_size;
 
 		if (height_clip * ace->bmWidth / ace->bmHeight <= width_clip)
@@ -1396,6 +1396,7 @@ void Cache_ProceedAvatarInList(struct ClcData *dat, struct ClcContact *contact)
 			}
 		}
 		SelectObject(hdc,oldBmp);
+		DeleteDC(hdc);
 		// Add to list
 		if (old_pos >= 0)
 		{
@@ -1408,13 +1409,14 @@ void Cache_ProceedAvatarInList(struct ClcData *dat, struct ClcContact *contact)
 		}
 
 		DeleteObject(hDrawBmp);
+
 	}
 
 }
 
 void Cache_GetAvatar(struct ClcData *dat, struct ClcContact *contact)
 {
-	int avatar_old_pos=contact->avatar_pos;
+	int old_pos=contact->avatar_pos;
     if (g_CluiData.bSTATE!=STATE_NORMAL
         || (dat->use_avatar_service && !ServiceExists(MS_AV_GETAVATARBITMAP)) ) // workaround for avatar service and other wich destroys service on OK_TOEXIT
     {
@@ -1446,8 +1448,6 @@ void Cache_GetAvatar(struct ClcData *dat, struct ClcContact *contact)
     }
     else
     {
-        int old_pos = contact->avatar_pos;
-
         contact->avatar_pos = AVATAR_POS_DONT_HAVE;
         if (dat->avatars_show && !DBGetContactSettingByte(contact->hContact, "CList", "HideContactAvatar", 0))
         {
