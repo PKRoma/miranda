@@ -325,10 +325,24 @@ static int AddContactMenuItem(WPARAM wParam,LPARAM lParam)
 		tmi.ownerdata=cmep;
 	}
 	{
+		//may be need to change how UniqueName is formed?
 		int menuHandle = MO_AddNewMenuItem( hContactMenuObject, &tmi );
 		char buf[ 256 ];
-		sprintf( buf,"%s/%s", (mi->pszContactOwner) ? mi->pszContactOwner : "", (mi->pszService) ? mi->pszService : "" );
-		MO_SetOptionsMenuItem( menuHandle, OPT_MENUITEMSETUNIQNAME, ( int )buf );
+		if (mi->pszService)
+			sprintf( buf,"%s/%s", (mi->pszContactOwner) ? mi->pszContactOwner : "", (mi->pszService) ? mi->pszService : "" );
+		else if (mi->ptszName)
+		{		
+			if (tmi.flags&CMIF_UNICODE)
+			{
+				char * temp=t2a(mi->ptszName);
+				sprintf( buf,"%s/NoService/%s", (mi->pszContactOwner) ? mi->pszContactOwner : "", temp );
+				mir_free(temp);
+			}
+			else
+				sprintf( buf,"%s/NoService/%s", (mi->pszContactOwner) ? mi->pszContactOwner : "", mi->ptszName );
+		}
+		else buf[0]='\0';
+		if (buf[0]) MO_SetOptionsMenuItem( menuHandle, OPT_MENUITEMSETUNIQNAME, ( int )buf );
 		return menuHandle;
 	}
 }
