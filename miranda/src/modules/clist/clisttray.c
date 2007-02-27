@@ -284,7 +284,7 @@ int fnTrayIconInit(HWND hwnd)
 	return 0;
 }
 
-void fnTrayIconDestroy(HWND hwnd)
+int fnTrayIconDestroy(HWND hwnd)
 {
 	NOTIFYICONDATA nid = { 0 };
 	int i;
@@ -302,6 +302,7 @@ void fnTrayIconDestroy(HWND hwnd)
 	mir_free(cli.trayIcon);
 	cli.trayIcon = NULL;
 	cli.trayIconCount = 0;
+	return 0;
 }
 
 //called when Explorer crashes and the taskbar is remade

@@ -4,6 +4,7 @@
 // gpl license ect...
 
 #include "commonheaders.h"
+#include "clc.h"
 
 #define OFFSET_PROTOPOS 200
 #define OFFSET_VISIBLE 400
@@ -21,6 +22,12 @@ struct ProtocolOrderData
 	int dragging;
 	HTREEITEM hDragItem;
 };
+
+typedef struct {
+	char* protoName;
+	int   visible;
+}
+	tempProtoItem;
 
 #define PrVer 3
 
@@ -82,31 +89,29 @@ static int __inline isProtoSuitable( const char* szProto )
 
 int CheckProtocolOrder()
 {
-	boolean protochanged=FALSE;
+	BOOL protochanged=FALSE;
 	int StoredProtoCount;
 	PROTOCOLDESCRIPTOR **protos;
-	int i,count;
-	int v;
+	int i,j,count,v;
 	char *curproto;
 	char buf[10];
-	int ver;
+	tempProtoItem *items = NULL, *found;
 
-	protochanged=FALSE;
-	ver = DBGetContactSettingDword( 0, "Protocols", "PrVer", -1 );
+	int ver = DBGetContactSettingDword( 0, "Protocols", "PrVer", -1 );
 	if ( ver != PrVer )
 		protochanged = TRUE;
 
-	StoredProtoCount = -1;
-	if ( !protochanged )
-		StoredProtoCount = DBGetContactSettingDword( 0,"Protocols","ProtoCount",-1 );
-
+	StoredProtoCount = DBGetContactSettingDword( 0,"Protocols","ProtoCount",-1 );
 	if ( StoredProtoCount == -1 )
 		protochanged = TRUE;
+	else
+		items = ( tempProtoItem* )alloca( sizeof( tempProtoItem )*StoredProtoCount );
+
+	CallService(MS_PROTO_ENUMPROTOCOLS,(WPARAM)&count,(LPARAM)&protos);
 
 	if ( !protochanged ) {
-		CallService(MS_PROTO_ENUMPROTOCOLS,(WPARAM)&count,(LPARAM)&protos);
-
 		v=0;
+
 		//calc only needed protocols
 		for ( i=0; i < count; i++ ) {
 			if ( protos[i]->type != PROTOTYPE_PROTOCOL || !isProtoSuitable( protos[i]->szName ))
@@ -116,26 +121,23 @@ int CheckProtocolOrder()
 
 		if ( StoredProtoCount != v )
 			protochanged = TRUE;
-	}
 
-	if ( !protochanged ) {
 		for ( i=0; i < StoredProtoCount; i++ ) {
 			_itoa( i, buf, 10 );
 			curproto = DBGetStringA( NULL, "Protocols", buf );
-			if ( curproto == NULL ) {
+			if ( curproto == NULL )
 				protochanged = TRUE;
-				break;
-			}
-			if ( CallService( MS_PROTO_ISPROTOCOLLOADED, 0, ( LPARAM )curproto ) == 0 ) {
-				protochanged=TRUE;
-				if ( curproto != NULL )
-					mir_free( curproto );
-				break;
-			}
+			else
+				items[i].protoName = NEWSTR_ALLOCA( curproto );
 
-			if ( curproto != NULL)
-				mir_free( curproto );
-	}	}	
+			if ( CallService( MS_PROTO_ISPROTOCOLLOADED, 0, ( LPARAM )curproto ) == 0 )
+				protochanged = TRUE;
+
+			mir_free( curproto );
+
+			_itoa( OFFSET_VISIBLE+i, buf, 10 );
+			items[i].visible = DBGetContactSettingDword( NULL, "Protocols", buf, 1 );
+	}	}
 
 	if ( !protochanged )
 		return 0;
@@ -150,27 +152,30 @@ int CheckProtocolOrder()
 		if ( protos[i]->type != PROTOTYPE_PROTOCOL || !isProtoSuitable( protos[i]->szName ))
 			continue;
 
-		_itoa( v, ( char* )&buf, 10 );
-		DBWriteContactSettingString(0,"Protocols",(char *)&buf,protos[i]->szName);
+		found = NULL;
+		for ( j = 0; j < StoredProtoCount; j++ )
+			if ( !lstrcmpA( items[j].protoName, protos[i]->szName )) {
+				found = items + j;
+				break;
+			}
 
-		_itoa(OFFSET_PROTOPOS+v,(char *)&buf,10);//save pos in protos
-		DBDeleteContactSetting(0,"Protocols",(char *)&buf);
-		DBWriteContactSettingDword(0,"Protocols",(char *)&buf,v);
+		_itoa( v, buf, 10 );
+		DBWriteContactSettingString( 0, "Protocols", buf, protos[i]->szName );
 
-		_itoa(OFFSET_VISIBLE+v,(char *)&buf,10);//save default visible status
-		DBDeleteContactSetting(0,"Protocols",(char *)&buf);
-		DBWriteContactSettingDword(0,"Protocols",(char *)&buf,1);
+		_itoa( OFFSET_PROTOPOS + v, buf, 10 );//save pos in protos
+		DBWriteContactSettingDword( 0, "Protocols", buf, v );
+
+		_itoa( OFFSET_VISIBLE + v, buf, 10 );//save default visible status
+		DBWriteContactSettingDword( 0, "Protocols", buf, ( found ) ? found->visible : 1 );
 
 		v++;
 	}
 
-	DBDeleteContactSetting(0,"Protocols","ProtoCount");
-	DBWriteContactSettingDword(0,"Protocols","ProtoCount",v);
-	DBWriteContactSettingDword(0,"Protocols","PrVer",PrVer);
+	DBDeleteContactSetting( 0, "Protocols", "ProtoCount" );
+	DBWriteContactSettingDword( 0, "Protocols", "ProtoCount", v );
+	DBWriteContactSettingDword( 0, "Protocols", "PrVer", PrVer );
 	return 1;
 }
-//clistmenus.c
-char * GetUniqueProtoName(char * proto);
 
 int FillTree(HWND hwnd)
 {

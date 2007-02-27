@@ -85,3 +85,9 @@ void Window_FreeIcon_IcoLib(HWND hWnd);
 
 #define IconLib_ReleaseIcon(hIcon, szName) CallService(MS_SKIN2_RELEASEICON,(WPARAM)hIcon, (LPARAM)szName)
 #define Safe_DestroyIcon(hIcon) if (hIcon) DestroyIcon(hIcon)
+
+/**** clistmenus.c **********************************************************************/
+
+extern int statusModeList[ MAX_STATUS_COUNT ];
+extern int skinIconStatusList[ MAX_STATUS_COUNT ];
+extern int skinIconStatusFlags[ MAX_STATUS_COUNT ];

@@ -46,10 +46,9 @@ pfnMyGetMonitorInfo    MyGetMonitorInfo = NULL;
 HANDLE hContactDoubleClicked, hContactIconChangedEvent;
 HIMAGELIST hCListImages;
 BOOL(WINAPI * MySetProcessWorkingSetSize) (HANDLE, SIZE_T, SIZE_T);
+
 extern BYTE nameOrder[];
-static int statusModeList[] = { ID_STATUS_OFFLINE, ID_STATUS_ONLINE, ID_STATUS_AWAY, ID_STATUS_NA, ID_STATUS_OCCUPIED, ID_STATUS_DND, ID_STATUS_FREECHAT, ID_STATUS_INVISIBLE, ID_STATUS_ONTHEPHONE, ID_STATUS_OUTTOLUNCH };
-static int skinIconStatusList[] = { SKINICON_STATUS_OFFLINE, SKINICON_STATUS_ONLINE, SKINICON_STATUS_AWAY, SKINICON_STATUS_NA, SKINICON_STATUS_OCCUPIED, SKINICON_STATUS_DND, SKINICON_STATUS_FREE4CHAT, SKINICON_STATUS_INVISIBLE, SKINICON_STATUS_ONTHEPHONE, SKINICON_STATUS_OUTTOLUNCH };
-static int skinIconStatusFlags[] = { 0xFFFFFFFF, PF2_ONLINE, PF2_SHORTAWAY, PF2_LONGAWAY, PF2_LIGHTDND, PF2_HEAVYDND, PF2_FREECHAT, PF2_INVISIBLE, PF2_ONTHEPHONE, PF2_OUTTOLUNCH };
+
 struct ProtoIconIndex
 {
 	char *szProto;
@@ -57,6 +56,7 @@ struct ProtoIconIndex
 }
 static *protoIconIndex;
 static int protoIconIndexCount;
+
 static HANDLE hProtoAckHook;
 static HANDLE hContactSettingChanged;
 
@@ -227,6 +227,14 @@ static int ContactListModulesLoaded(WPARAM wParam, LPARAM lParam)
 	int i, protoCount, j, iImg;
 	PROTOCOLDESCRIPTOR **protoList;
 
+	if ( !ServiceExists( MS_DB_CONTACT_GETSETTING_STR )) {
+		MessageBox( NULL, TranslateT( "This plugin requires db3x plugin version 0.5.1.0 or later" ), _T("CList"), MB_OK );
+		return 1;
+	}
+
+	CheckProtocolOrder();
+	RebuildMenuOrder();
+
 	CallService(MS_PROTO_ENUMPROTOCOLS, (WPARAM) & protoCount, (LPARAM) & protoList);
 	protoIconIndexCount = 0;
 	protoIconIndex = NULL;
@@ -243,11 +251,6 @@ static int ContactListModulesLoaded(WPARAM wParam, LPARAM lParam)
 		protoIconIndexCount++;
 	}
 	cli.pfnLoadContactTree();
-
-	if ( !ServiceExists( MS_DB_CONTACT_GETSETTING_STR )) {
-		MessageBox( NULL, TranslateT( "This plugin requires db3x plugin version 0.5.1.0 or later" ), _T("CList"), MB_OK );
-		return 1;
-	}
 
 	LoadCLUIModule();
 	return 0;

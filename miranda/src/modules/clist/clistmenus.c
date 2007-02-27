@@ -26,6 +26,8 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include "m_clui.h"
 #pragma hdrstop
 
+#include "clc.h"
+
 #define FIRSTCUSTOMMENUITEMID	30000
 #define MENU_CUSTOMITEMMAIN		0x80000000
 //#define MENU_CUSTOMITEMCONTEXT	0x40000000
@@ -42,7 +44,6 @@ typedef struct  {
 static int hMainMenuObject;
 static int hContactMenuObject;
 int hStatusMenuObject=0;
-int MenuModulesLoaded(WPARAM,LPARAM);
 int UnloadMoveToGroup(void);
 
 int statustopos(int status);
@@ -55,17 +56,32 @@ static HANDLE hPreBuildMainMenuEvent,hStatusModeChangeEvent;
 static HANDLE hPreBuildContactMenuEvent,hAckHook;
 
 static HMENU hMainMenu,hStatusMenu = 0;
-static int statusModeList[]={ID_STATUS_OFFLINE,ID_STATUS_ONLINE,ID_STATUS_AWAY,ID_STATUS_NA,ID_STATUS_OCCUPIED,ID_STATUS_DND,ID_STATUS_FREECHAT,ID_STATUS_INVISIBLE,ID_STATUS_ONTHEPHONE,ID_STATUS_OUTTOLUNCH};
-static int skinIconStatusList[]={SKINICON_STATUS_OFFLINE,SKINICON_STATUS_ONLINE,SKINICON_STATUS_AWAY,SKINICON_STATUS_NA,SKINICON_STATUS_OCCUPIED,SKINICON_STATUS_DND,SKINICON_STATUS_FREE4CHAT,SKINICON_STATUS_INVISIBLE,SKINICON_STATUS_ONTHEPHONE,SKINICON_STATUS_OUTTOLUNCH};
-static int statusModePf2List[]={0xFFFFFFFF,PF2_ONLINE,PF2_SHORTAWAY,PF2_LONGAWAY,PF2_LIGHTDND,PF2_HEAVYDND,PF2_FREECHAT,PF2_INVISIBLE,PF2_ONTHEPHONE,PF2_OUTTOLUNCH};
+int statusModeList[ MAX_STATUS_COUNT ] =
+{
+	ID_STATUS_OFFLINE, ID_STATUS_ONLINE, ID_STATUS_AWAY, ID_STATUS_NA, ID_STATUS_OCCUPIED,
+	ID_STATUS_DND, ID_STATUS_FREECHAT, ID_STATUS_INVISIBLE, ID_STATUS_ONTHEPHONE, ID_STATUS_OUTTOLUNCH
+};
+
+int skinIconStatusList[ MAX_STATUS_COUNT ] = 
+{
+	SKINICON_STATUS_OFFLINE, SKINICON_STATUS_ONLINE, SKINICON_STATUS_AWAY, SKINICON_STATUS_NA, SKINICON_STATUS_OCCUPIED,
+	SKINICON_STATUS_DND, SKINICON_STATUS_FREE4CHAT, SKINICON_STATUS_INVISIBLE, SKINICON_STATUS_ONTHEPHONE, SKINICON_STATUS_OUTTOLUNCH
+};
+
+int statusModePf2List[ MAX_STATUS_COUNT ] = 
+{
+	0xFFFFFFFF, PF2_ONLINE, PF2_SHORTAWAY, PF2_LONGAWAY, PF2_LIGHTDND, 
+	PF2_HEAVYDND, PF2_FREECHAT, PF2_INVISIBLE, PF2_ONTHEPHONE, PF2_OUTTOLUNCH
+};
 
 int* hStatusMainMenuHandles;
 int  hStatusMainMenuHandlesCnt;
+
 typedef struct
 {
 	int protoindex;
-	int protostatus[sizeof(statusModeList)];
-	int menuhandle[sizeof(statusModeList)];
+	int protostatus[ MAX_STATUS_COUNT ];
+	int menuhandle[ MAX_STATUS_COUNT ];
 }
 	tStatusMenuHandles,*lpStatusMenuHandles;
 
@@ -790,7 +806,7 @@ static int MenuProcessHotkey(WPARAM vKey,LPARAM lParam)
 static int MenuIconsChanged(WPARAM wParam,LPARAM lParam)
 {
 	//just rebuild menu
-	MenuModulesLoaded(0,0);
+	RebuildMenuOrder();
 	cli.pfnCluiProtocolStatusChanged(0,0);
 	return 0;
 }
@@ -904,7 +920,7 @@ int GetProtoIndexByPos(PROTOCOLDESCRIPTOR ** proto, int protoCnt, int Pos)
 	return -1;
 }
 
-int MenuModulesLoaded(WPARAM wParam,LPARAM lParam)
+void RebuildMenuOrder( void )
 {
 	int i,j,protoCount=0,networkProtoCount,s;
 	int storedProtoCount;
@@ -935,7 +951,6 @@ int MenuModulesLoaded(WPARAM wParam,LPARAM lParam)
 	tmp.cbSize=sizeof(tmp);
 	tmp.ExecService="StatusMenuExecService";
 	tmp.CheckService="StatusMenuCheckService";
-	//tmp.
 	tmp.name="StatusMenu";
 
 	hStatusMenuObject=(int)CallService(MO_CREATENEWMENUOBJECT,(WPARAM)0,(LPARAM)&tmp);
@@ -1141,7 +1156,6 @@ int MenuModulesLoaded(WPARAM wParam,LPARAM lParam)
 	}	}	}
 
 	BuildStatusMenu(0,0);
-	return 0;
 }
 
 int statustopos(int status)
@@ -1434,7 +1448,6 @@ int InitCustomMenus(void)
 	if ( IsWinVer98Plus() )
 		HookEvent(ME_SKIN_ICONSCHANGED, MenuIconsChanged );
 
-	HookEvent( ME_SYSTEM_MODULESLOADED, MenuModulesLoaded );
 	HookEvent( ME_SYSTEM_SHUTDOWN, MenuModulesShutdown );
 	return 0;
 }
