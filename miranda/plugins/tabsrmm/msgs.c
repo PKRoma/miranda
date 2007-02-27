@@ -1993,49 +1993,49 @@ static int GetIconPackVersion(HMODULE hDLL)
 
 static int SetupIconLibConfig()
 {
-    SKINICONDESC sid;
-    char szFilename[MAX_PATH];
-    int i = 0, version = 0, n = 0;
-    
-    strncpy(szFilename, "plugins\\tabsrmm_icons.dll", MAX_PATH);
-    g_hIconDLL = LoadLibraryA(szFilename);
-    if(g_hIconDLL == 0) {
-        strncpy(szFilename, "icons\\tabsrmm_icons.dll", MAX_PATH);
-        g_hIconDLL = LoadLibraryA(szFilename);
-        if(g_hIconDLL == 0) {
-            MessageBoxA(0, "Critical: cannot init IcoLib, no resource DLL found.", "tabSRMM", MB_OK);
-            return 0;
-        }
-    }
-    GetModuleFileNameA(g_hIconDLL, szFilename, MAX_PATH);
-    if(g_chat_integration_enabled)
-        Chat_AddIcons();
-    version = GetIconPackVersion(g_hIconDLL);
-    myGlobals.g_hbmUnknown = LoadImage(g_hIconDLL, MAKEINTRESOURCE(IDB_UNKNOWNAVATAR), IMAGE_BITMAP, 0, 0, 0);
-    if(myGlobals.g_hbmUnknown == 0) {
-        HDC dc = GetDC(0);
-        myGlobals.g_hbmUnknown = CreateCompatibleBitmap(dc, 20, 20);
-        ReleaseDC(0, dc);
-    }
-    FreeLibrary(g_hIconDLL);
-    g_hIconDLL = 0;
-    
-    sid.cbSize = sizeof(SKINICONDESC);
-    sid.pszDefaultFile = szFilename;
+	SKINICONDESC sid = { 0 };
+	char szFilename[MAX_PATH];
+	int i = 0, version = 0, n = 0;
 
-    while(ICONBLOCKS[n].szSection) {
-        i = 0;
-        sid.pszSection = Translate(ICONBLOCKS[n].szSection);
-        while(ICONBLOCKS[n].idesc[i].szDesc) {
-            sid.pszName = ICONBLOCKS[n].idesc[i].szName;
-            sid.pszDescription = Translate(ICONBLOCKS[n].idesc[i].szDesc);
-            sid.iDefaultIndex = ICONBLOCKS[n].idesc[i].uId == -IDI_HISTORY ? 0 : ICONBLOCKS[n].idesc[i].uId;        // workaround problem /w icoLib and a resource id of 1 (actually, a Windows problem)
-            CallService(MS_SKIN2_ADDICON, 0, (LPARAM)&sid);
-            i++;
-        }
-        n++;
-    }
-    return 1;
+	strncpy(szFilename, "plugins\\tabsrmm_icons.dll", MAX_PATH);
+	g_hIconDLL = LoadLibraryA(szFilename);
+	if(g_hIconDLL == 0) {
+		strncpy(szFilename, "icons\\tabsrmm_icons.dll", MAX_PATH);
+		g_hIconDLL = LoadLibraryA(szFilename);
+		if(g_hIconDLL == 0) {
+			MessageBoxA(0, "Critical: cannot init IcoLib, no resource DLL found.", "tabSRMM", MB_OK);
+			return 0;
+		}
+	}
+	GetModuleFileNameA(g_hIconDLL, szFilename, MAX_PATH);
+	if(g_chat_integration_enabled)
+		Chat_AddIcons();
+	version = GetIconPackVersion(g_hIconDLL);
+	myGlobals.g_hbmUnknown = LoadImage(g_hIconDLL, MAKEINTRESOURCE(IDB_UNKNOWNAVATAR), IMAGE_BITMAP, 0, 0, 0);
+	if(myGlobals.g_hbmUnknown == 0) {
+		HDC dc = GetDC(0);
+		myGlobals.g_hbmUnknown = CreateCompatibleBitmap(dc, 20, 20);
+		ReleaseDC(0, dc);
+	}
+	FreeLibrary(g_hIconDLL);
+	g_hIconDLL = 0;
+
+	sid.cbSize = sizeof(SKINICONDESC);
+	sid.pszDefaultFile = szFilename;
+
+	while(ICONBLOCKS[n].szSection) {
+		i = 0;
+		sid.pszSection = ICONBLOCKS[n].szSection;
+		while(ICONBLOCKS[n].idesc[i].szDesc) {
+			sid.pszName = ICONBLOCKS[n].idesc[i].szName;
+			sid.pszDescription = ICONBLOCKS[n].idesc[i].szDesc;
+			sid.iDefaultIndex = ICONBLOCKS[n].idesc[i].uId == -IDI_HISTORY ? 0 : ICONBLOCKS[n].idesc[i].uId;        // workaround problem /w icoLib and a resource id of 1 (actually, a Windows problem)
+			CallService(MS_SKIN2_ADDICON, 0, (LPARAM)&sid);
+			i++;
+		}
+		n++;
+	}
+	return 1;
 }
 
 // load the icon theme from IconLib - check if it exists...
