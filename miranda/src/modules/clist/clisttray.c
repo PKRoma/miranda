@@ -311,6 +311,22 @@ void fnTrayIconTaskbarCreated(HWND hwnd)
 	cli.pfnTrayIconInit(hwnd);
 }
 
+////////////////////////////////////////////////////////////
+
+static VOID CALLBACK RefreshTimerProc(HWND hwnd,UINT message,UINT idEvent,DWORD dwTime)
+{
+	int count,i;
+	PROTOCOLDESCRIPTOR **protos;
+	if(RefreshTimerId) {KillTimer(NULL,RefreshTimerId); RefreshTimerId=0;}
+	CallService(MS_PROTO_ENUMPROTOCOLS,(WPARAM)&count,(LPARAM)&protos);
+	for (i=0; i<count; i++)
+		if(protos[i]->type==PROTOTYPE_PROTOCOL &&
+			(cli.pfnGetProtocolVisibility(protos[i]->szName)!=0))
+			cli.pfnTrayIconUpdateBase(protos[i]->szName);
+
+}
+//////// End by FYR /////////
+
 int fnTrayIconUpdate(HICON hNewIcon, const TCHAR *szNewTip, const char *szPreferredProto, int isBase)
 {
 	NOTIFYICONDATA nid = { 0 };
@@ -342,19 +358,27 @@ int fnTrayIconUpdate(HICON hNewIcon, const TCHAR *szNewTip, const char *szPrefer
 	}
 
 	//if there wasn't a suitable icon, change all the icons
-	for (i = 0; i < cli.trayIconCount; i++) {
-		if (cli.trayIcon[i].id == 0)
-			continue;
-		nid.uID = cli.trayIcon[i].id;
-
-		cli.pfnTrayIconMakeTooltip(szNewTip, cli.trayIcon[i].szProto);
-		mir_free( cli.trayIcon[i].ptszToolTip );
-		cli.trayIcon[i].ptszToolTip = mir_tstrdup( cli.szTip );
-		if(!mToolTipTrayTips)
-			lstrcpyn(nid.szTip, cli.szTip, SIZEOF(nid.szTip));
-		Shell_NotifyIcon(NIM_MODIFY, &nid);
-
-		cli.trayIcon[i].isBase = isBase;
+	{
+		for (i = 0; i < cli.trayIconCount; i++) {
+			if (cli.trayIcon[i].id == 0)
+				continue;
+			nid.uID = cli.trayIcon[i].id;
+	
+			cli.pfnTrayIconMakeTooltip(szNewTip, cli.trayIcon[i].szProto);
+			mir_free( cli.trayIcon[i].ptszToolTip );
+			cli.trayIcon[i].ptszToolTip = mir_tstrdup( cli.szTip );
+			if(!mToolTipTrayTips)
+				lstrcpyn(nid.szTip, cli.szTip, SIZEOF(nid.szTip));
+			Shell_NotifyIcon(NIM_MODIFY, &nid);
+	
+			cli.trayIcon[i].isBase = isBase;
+			if(isBase)
+			{
+				if(RefreshTimerId) {KillTimer(NULL,RefreshTimerId); RefreshTimerId=0;}
+				RefreshTimerId=SetTimer(NULL,0,DBGetContactSettingWord(NULL,"CList","CycleTime",SETTING_CYCLETIME_DEFAULT)*200,RefreshTimerProc);	// if unknown base was changed - than show preffered proto icon for 2 sec and reset it to original one after timeout
+			}
+			return -1;
+		}
 	}
 	return -1;
 }
