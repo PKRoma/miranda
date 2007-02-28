@@ -350,7 +350,13 @@ static BOOL CALLBACK DlgProcMsnConnOpts(HWND hwndDlg, UINT msg, WPARAM wParam, L
 		CheckDlgButton( hwndDlg, IDC_USEIEPROXY,  MSN_GetByte( "UseIeProxy",  0 ));
 		CheckDlgButton( hwndDlg, IDC_SLOWSEND,    MSN_GetByte( "SlowSend",    0 ));
 		CheckDlgButton( hwndDlg, IDC_USEMSNP11,   MSN_GetByte( "UseMSNP11",   1 ));
-		CheckDlgButton( hwndDlg, IDC_USEOPENSSL, MSN_GetByte( "UseOpenSSL", 0 ));
+
+		char fpath[MAX_PATH], *fpathp;
+		if ( SearchPathA(NULL, "LIBSSL32.DLL", NULL, sizeof(fpath), fpath, &fpathp) != 0 &&
+			 SearchPathA(NULL, "LIBEAY32.DLL", NULL, sizeof(fpath), fpath, &fpathp) != 0 )
+			CheckDlgButton( hwndDlg, IDC_USEOPENSSL, MSN_GetByte( "UseOpenSSL", 0 ));
+		else
+			EnableWindow( GetDlgItem( hwndDlg, IDC_USEOPENSSL ), FALSE);
 
 		if ( !DBGetContactSetting( NULL, msnProtocolName, "YourHost", &dbv )) {
 			if ( !MSN_GetByte( "AutoGetHost", 1 ))
