@@ -110,12 +110,12 @@ BEGIN
                     BS_AUTOCHECKBOX | WS_TABSTOP,10,151,288,10
 END
 
-IDD_OPT_MSN_CONN DIALOGEX 0, 0, 304, 175
+IDD_OPT_MSN_CONN DIALOGEX 0, 0, 304, 160
 STYLE DS_SETFONT | DS_FIXEDSYS | WS_CHILD | WS_VISIBLE
 EXSTYLE WS_EX_CONTROLPARENT
 FONT 8, "MS Shell Dlg", 0, 0, 0x1
 BEGIN
-    GROUPBOX        "Connection settings",IDC_STATIC,4,0,298,120
+    GROUPBOX        "Connection settings",IDC_STATIC,4,0,298,106
     LTEXT           "Login server:",IDC_STATIC,16,18,44,8
     EDITTEXT        IDC_LOGINSERVER,68,16,168,12,ES_AUTOHSCROLL
     LTEXT           "Port:",IDC_STATIC,16,32,48,8
@@ -125,23 +125,20 @@ BEGIN
                     46,264,8
     CONTROL         "Use IE proxy settings",IDC_USEIEPROXY,"Button",
                     BS_AUTOCHECKBOX | WS_TABSTOP,12,58,264,8
-    CONTROL         "Keep connection alive (send a ping packet every minute)",
-                    IDC_KEEPALIVE,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,12,
-                    70,264,8
     CONTROL         "Notify me when a message delivery has failed",
-                    IDC_SLOWSEND,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,12,82,
+                    IDC_SLOWSEND,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,12,69,
                     263,8
     CONTROL         "Use MSN Messenger 7 protocol",IDC_USEMSNP11,"Button",
-                    BS_AUTOCHECKBOX | WS_TABSTOP,12,94,262,8
+                    BS_AUTOCHECKBOX | WS_TABSTOP,12,80,262,8
     CONTROL         "Use OpenSSL encryption (requires LIBSSL32.DLL)",
                     IDC_USEOPENSSL,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,12,
-                    106,263,8
-    GROUPBOX        "Incoming file transfers",IDC_STATIC,4,124,298,48
+                    91,263,8
+    GROUPBOX        "Incoming file transfers",IDC_STATIC,4,108,298,48
     CONTROL         "Automatically obtain host/port for incoming file transfers",
                     IDC_AUTOGETHOST,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,12,
-                    136,264,10
-    LTEXT           "Your host (or router):",IDC_STATIC,12,152,72,8
-    EDITTEXT        IDC_YOURHOST,90,151,184,12,ES_AUTOHSCROLL
+                    120,264,10
+    LTEXT           "Your host (or router):",IDC_STATIC,12,136,72,8
+    EDITTEXT        IDC_YOURHOST,90,135,184,12,ES_AUTOHSCROLL
     PUSHBUTTON      "Reset",IDC_RESETSERVER,244,16,34,12
 END
 
@@ -254,33 +251,6 @@ BEGIN
     PUSHBUTTON      "Download",IDC_BTN_DOWNLOAD,113,80,60,16
     PUSHBUTTON      "Cancel",IDC_BTN_CANCEL,181,80,56,16
 END
-
-
-/////////////////////////////////////////////////////////////////////////////
-//
-// DESIGNINFO
-//
-
-#ifdef APSTUDIO_INVOKED
-GUIDELINES DESIGNINFO 
-BEGIN
-    IDD_OPT_MSN_CONN, DIALOG
-    BEGIN
-    END
-
-    IDD_LISTSMGR, DIALOG
-    BEGIN
-    END
-
-    IDD_HOTMAIL_OPT_POPUP, DIALOG
-    BEGIN
-    END
-
-    IDD_SETNICKNAME, DIALOG
-    BEGIN
-    END
-END
-#endif    // APSTUDIO_INVOKED
 
 
 /////////////////////////////////////////////////////////////////////////////

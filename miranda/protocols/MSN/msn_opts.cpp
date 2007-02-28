@@ -187,7 +187,7 @@ static BOOL CALLBACK DlgProcMsnOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARA
             EnableWindow( GetDlgItem( hwndDlg, IDC_DELETEAVATAR ), tIsChosen );
 			}
 
-			case IDC_DISABLE_MAIN_MENU:			case IDC_SENDFONTINFO:
+			case IDC_SENDFONTINFO:
 			case IDC_DISABLE_ANOTHER_CONTACTS:	case IDC_USE_OWN_NICKNAME:
 			case IDC_AWAY_AS_BRB:
 			LBL_Apply:
@@ -346,7 +346,6 @@ static BOOL CALLBACK DlgProcMsnConnOpts(HWND hwndDlg, UINT msg, WPARAM wParam, L
 				SetDlgItemInt( hwndDlg, IDC_MSNPORT, MSN_GetWord( NULL, "MSNMPort", 1863 ), FALSE );
 		}	}
 
-		CheckDlgButton( hwndDlg, IDC_KEEPALIVE,	MSN_GetByte( "KeepAlive",   0 ));
 		CheckDlgButton( hwndDlg, IDC_AUTOGETHOST,	MSN_GetByte( "AutoGetHost", 1 ));
 		CheckDlgButton( hwndDlg, IDC_USEIEPROXY,  MSN_GetByte( "UseIeProxy",  0 ));
 		CheckDlgButton( hwndDlg, IDC_SLOWSEND,    MSN_GetByte( "SlowSend",    0 ));
@@ -409,7 +408,7 @@ static BOOL CALLBACK DlgProcMsnConnOpts(HWND hwndDlg, UINT msg, WPARAM wParam, L
 				EnableWindow( GetDlgItem( hwndDlg, IDC_YOURHOST), tValue );
 			}
 
-			case IDC_KEEPALIVE:			case IDC_USEIEPROXY:		case IDC_SLOWSEND:
+			case IDC_USEIEPROXY:		case IDC_SLOWSEND:
 			case IDC_USEMSNP11:        case IDC_USEOPENSSL:
 			LBL_Apply:
 				SendMessage( GetParent( hwndDlg ), PSM_CHANGED, 0, 0 );
@@ -471,7 +470,6 @@ static BOOL CALLBACK DlgProcMsnConnOpts(HWND hwndDlg, UINT msg, WPARAM wParam, L
 			}
 
 			MSN_SetByte( "UseIeProxy",    ( BYTE )IsDlgButtonChecked( hwndDlg, IDC_USEIEPROXY    ));
-			MSN_SetByte( "KeepAlive",     ( BYTE )IsDlgButtonChecked( hwndDlg, IDC_KEEPALIVE     ));
 			MSN_SetByte( "AutoGetHost",   ( BYTE )IsDlgButtonChecked( hwndDlg, IDC_AUTOGETHOST   ));
 			MSN_SetByte( "SlowSend",      ( BYTE )IsDlgButtonChecked( hwndDlg, IDC_SLOWSEND      ));
 
