@@ -232,8 +232,12 @@ typedef struct {
 	int cbSize;          //size in bytes of this structure
 	HANDLE hContact;	 //handle to the contact to put the icon by
 	HICON hIcon;		 //icon to flash
-	DWORD flags;		 //...of course
-	HANDLE hDbEvent;	 //caller defined but should be unique for hContact
+	DWORD flags;		 //...of course	
+	union
+	{
+		HANDLE hDbEvent;	 //caller defined but should be unique for hContact
+		char * lpszProtocol;
+	};
 	LPARAM lParam;		 //caller defined
 	char *pszService;	 //name of the service to call on activation
 	union {
@@ -241,11 +245,14 @@ typedef struct {
 		TCHAR *ptszTooltip;    //tooltip on the system tray
 	};
 } CLISTEVENT;
-#define CLEF_URGENT    1   //flashes the icon even if the user is occupied,
+#define CLEF_URGENT    1	//flashes the icon even if the user is occupied,
 							//and puts the event at the top of the queue
 #define CLEF_ONLYAFEW  2	//the icon will not flash for ever, only a few
 							//times. This is for eg online alert
-#define CLEF_UNICODE   4   //set pszTooltip as unicode
+#define CLEF_UNICODE   4	//set pszTooltip as unicode
+
+#define CLEF_PROTOCOLGLOBAL   8		//set event globally for protocol, hContact has to be NULL, 
+									//lpszProtocol the protocol ID name to be set
 
 #if defined( _UNICODE )
 	#define CLEF_TCHAR       CLEF_UNICODE      //will use TCHAR* instead of char*

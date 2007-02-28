@@ -68,7 +68,12 @@ static VOID CALLBACK IconFlashTimer(HWND hwnd, UINT message, UINT idEvent, DWORD
 	if (cli.events.count) {
 		char *szProto;
 		if (cli.events.items[0]->cle.hContact == NULL)
-			szProto = NULL;
+		{
+			if (cli.events.items[0]->cle.flags&CLEF_PROTOCOLGLOBAL)
+				szProto = cli.events.items[0]->cle.lpszProtocol;
+			else
+				szProto = NULL;
+		}
 		else
 			szProto = (char *) CallService(MS_PROTO_GETCONTACTBASEPROTO, (WPARAM) cli.events.items[0]->cle.hContact, 0);
 		cli.pfnTrayIconUpdateWithImageList((iconsOn || disableTrayFlash) ? cli.events.items[0]->imlIconIndex : 0, cli.events.items[0]->cle.ptszTooltip, szProto);
@@ -118,12 +123,16 @@ struct CListEvent* fnAddEvent( CLISTEVENT *cle )
 			p->cle.ptszTooltip = a2u((char*)p->cle.pszTooltip); //if no flag defined it handled as unicode
 	#else
 		p->cle.ptszTooltip = mir_tstrdup(p->cle.ptszTooltip); 
-	#endif
-
+	#endif	
 	if (cli.events.count == 1) {
 		char *szProto;
 		if (cle->hContact == NULL)
-			szProto = NULL;
+		{
+			if (cle->flags&CLEF_PROTOCOLGLOBAL)
+				szProto = cle->lpszProtocol;
+			else
+				szProto=NULL;
+		}
 		else
 			szProto = (char *) CallService(MS_PROTO_GETCONTACTBASEPROTO, (WPARAM)cle->hContact, 0);
 		iconsOn = 1;
