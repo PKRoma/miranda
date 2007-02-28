@@ -373,6 +373,7 @@ int fnTrayIconUpdate(HICON hNewIcon, const TCHAR *szNewTip, const char *szPrefer
 			Shell_NotifyIcon(NIM_MODIFY, &nid);
 	
 			cli.trayIcon[i].isBase = isBase;
+			if (DBGetContactSettingByte(NULL,"CList","TrayIcon",SETTING_TRAYICON_DEFAULT) == SETTING_TRAYICON_MULTI)
 			{
 				if(RefreshTimerId) {KillTimer(NULL,RefreshTimerId); RefreshTimerId=0;}
 				RefreshTimerId=SetTimer(NULL,0,DBGetContactSettingWord(NULL,"CList","CycleTime",SETTING_CYCLETIME_DEFAULT)*200,RefreshTimerProc);	// if unknown base was changed - than show preffered proto icon for 2 sec and reset it to original one after timeout
@@ -433,7 +434,7 @@ VOID CALLBACK fnTrayCycleTimerProc(HWND hwnd, UINT message, UINT idEvent, DWORD 
 	for (cycleStep++;; cycleStep++) {
 		if (cycleStep >= count)
 			cycleStep = 0;
-		if (protos[cycleStep]->type == PROTOTYPE_PROTOCOL)
+		if (protos[cycleStep]->type == PROTOTYPE_PROTOCOL && (cli.pfnGetProtocolVisibility(protos[cycleStep]->szName)) )
 			break;
 	}
 	DestroyIcon(cli.trayIcon[0].hBaseIcon);
