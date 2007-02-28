@@ -89,6 +89,22 @@ static int SRMMStatusToPf2(int status)
     return 0;
 }
 
+int IsAutoPopup(HANDLE hContact) {
+	if (g_dat->flags & SMF_AUTOPOPUP) {
+		char *szProto = (char *) CallService(MS_PROTO_GETCONTACTBASEPROTO, (WPARAM) hContact, 0);
+		if (strcmp(szProto, "MetaContacts") == 0 ) {
+			hContact = (HANDLE)CallService(MS_MC_GETMOSTONLINECONTACT,(WPARAM)hContact, 0);
+			if (hContact != NULL) {
+				szProto = (char*)CallService(MS_PROTO_GETCONTACTBASEPROTO,(WPARAM)hContact,0);
+			}
+		}
+		if (szProto && (g_dat->openFlags & SRMMStatusToPf2(CallProtoService(szProto, PS_GETSTATUS, 0, 0)))) {
+			return 1;
+		}
+	}
+	return 0;
+}
+
 static int ReadMessageCommand(WPARAM wParam, LPARAM lParam)
 {
    NewMessageWindowLParam newData = { 0 };
@@ -105,56 +121,54 @@ static int ReadMessageCommand(WPARAM wParam, LPARAM lParam)
 
 static int MessageEventAdded(WPARAM wParam, LPARAM lParam)
 {
-   CLISTEVENT cle;
-   DBEVENTINFO dbei;
-   char *contactName;
-   char toolTip[256];
-   HWND hwnd;
+	CLISTEVENT cle;
+	DBEVENTINFO dbei;
+	char *contactName;
+	char toolTip[256];
+	HWND hwnd;
 
-   ZeroMemory(&dbei, sizeof(dbei));
-   dbei.cbSize = sizeof(dbei);
-   dbei.cbBlob = 0;
-   CallService(MS_DB_EVENT_GET, lParam, (LPARAM) & dbei);
-   hwnd = WindowList_Find(g_dat->hMessageWindowList, (HANDLE) wParam);
-   if (hwnd) {
-      SendMessage(hwnd, HM_DBEVENTADDED, wParam, lParam);
-   }
-   if (dbei.flags & DBEF_SENT || dbei.eventType != EVENTTYPE_MESSAGE)
-      return 0;
+	ZeroMemory(&dbei, sizeof(dbei));
+	dbei.cbSize = sizeof(dbei);
+	dbei.cbBlob = 0;
+	CallService(MS_DB_EVENT_GET, lParam, (LPARAM) & dbei);
+	hwnd = WindowList_Find(g_dat->hMessageWindowList, (HANDLE) wParam);
+	if (hwnd) {
+		SendMessage(hwnd, HM_DBEVENTADDED, wParam, lParam);
+	}
+	if (dbei.flags & DBEF_SENT || dbei.eventType != EVENTTYPE_MESSAGE)
+		return 0;
 
-   if (dbei.eventType == EVENTTYPE_MESSAGE && (dbei.flags & DBEF_READ))
-      return 0;
+	if (dbei.eventType == EVENTTYPE_MESSAGE && (dbei.flags & DBEF_READ))
+		return 0;
 
-   CallServiceSync(MS_CLIST_REMOVEEVENT, wParam, (LPARAM) 1);
-   /* does a window for the contact exist? */
-   if (hwnd) {
-      return 0;
-   }
-   /* new message */
-   SkinPlaySound("AlertMsg");
-   if (g_dat->flags & SMF_AUTOPOPUP) {
-      char *szProto = (char *) CallService(MS_PROTO_GETCONTACTBASEPROTO, (WPARAM) wParam, 0);
-      if (szProto && (g_dat->openFlags & SRMMStatusToPf2(CallProtoService(szProto, PS_GETSTATUS, 0, 0)))) {
-         HWND hParent;
-         NewMessageWindowLParam newData = { 0 };
-         newData.hContact = (HANDLE) wParam;
- 		 hParent = GetParentWindow(newData.hContact, FALSE);
-         newData.flags = NMWLP_INCOMING;
-         CreateDialogParam(g_hInst, MAKEINTRESOURCE(IDD_MSG), hParent, DlgProcMessage, (LPARAM) & newData);
-         return 0;
-      }
-   }
-   ZeroMemory(&cle, sizeof(cle));
-   cle.cbSize = sizeof(cle);
-   cle.hContact = (HANDLE) wParam;
-   cle.hDbEvent = (HANDLE) lParam;
-   cle.hIcon = LoadSkinnedIcon(SKINICON_EVENT_MESSAGE);
-   cle.pszService = "SRMsg/ReadMessage";
-   contactName = (char *) CallService(MS_CLIST_GETCONTACTDISPLAYNAME, wParam, 0);
-   mir_snprintf(toolTip, sizeof(toolTip), Translate("Message from %s"), contactName);
-   cle.pszTooltip = toolTip;
-   CallService(MS_CLIST_ADDEVENT, 0, (LPARAM) & cle);
-   return 0;
+	CallServiceSync(MS_CLIST_REMOVEEVENT, wParam, (LPARAM) 1);
+	/* does a window for the contact exist? */
+	if (hwnd) {
+		return 0;
+	}
+	/* new message */
+	SkinPlaySound("AlertMsg");
+
+	if (IsAutoPopup((HANDLE) wParam)) {
+		HWND hParent;
+		NewMessageWindowLParam newData = { 0 };
+		newData.hContact = (HANDLE) wParam;
+		hParent = GetParentWindow(newData.hContact, FALSE);
+		newData.flags = NMWLP_INCOMING;
+		CreateDialogParam(g_hInst, MAKEINTRESOURCE(IDD_MSG), hParent, DlgProcMessage, (LPARAM) & newData);
+		return 0;
+	}
+	ZeroMemory(&cle, sizeof(cle));
+	cle.cbSize = sizeof(cle);
+	cle.hContact = (HANDLE) wParam;
+	cle.hDbEvent = (HANDLE) lParam;
+	cle.hIcon = LoadSkinnedIcon(SKINICON_EVENT_MESSAGE);
+	cle.pszService = "SRMsg/ReadMessage";
+	contactName = (char *) CallService(MS_CLIST_GETCONTACTDISPLAYNAME, wParam, 0);
+	mir_snprintf(toolTip, sizeof(toolTip), Translate("Message from %s"), contactName);
+	cle.pszTooltip = toolTip;
+	CallService(MS_CLIST_ADDEVENT, 0, (LPARAM) & cle);
+	return 0;
 }
 
 #if defined(_UNICODE)
@@ -327,7 +341,6 @@ static void RestoreUnreadMessageAlerts(void)
    char toolTip[256];
    int windowAlreadyExists;
    HANDLE hDbEvent, hContact;
-   int autoPopup = 0;
 
    dbei.cbSize = sizeof(dbei);
    cle.cbSize = sizeof(cle);
@@ -345,13 +358,7 @@ static void RestoreUnreadMessageAlerts(void)
             if (windowAlreadyExists)
                continue;
 
-            if (g_dat->flags & SMF_AUTOPOPUP) {
-               char *szProto = (char *) CallService(MS_PROTO_GETCONTACTBASEPROTO, (WPARAM) hContact, 0);
-               if (szProto && (g_dat->openFlags & SRMMStatusToPf2(CallProtoService(szProto, PS_GETSTATUS, 0, 0)))) {
-                  autoPopup = 1;
-               }
-            }
-            if (autoPopup && !windowAlreadyExists) {
+			if (IsAutoPopup(hContact) && !windowAlreadyExists) {
                HWND hParent;
                NewMessageWindowLParam newData = { 0 };
                newData.hContact = hContact;
@@ -503,7 +510,7 @@ static int SplitmsgModulesLoaded(WPARAM wParam, LPARAM lParam)
 		mi.flags = 0;
 		mi.hIcon = LoadSkinnedIcon(SKINICON_EVENT_MESSAGE);
 	}
-   mi.pszName = "&Message";
+   mi.pszName = Translate("&Message");
    mi.pszService = MS_MSG_SENDMESSAGE;
    CallService(MS_PROTO_ENUMPROTOCOLS, (WPARAM) & protoCount, (LPARAM) & protocol);
    for (i = 0; i < protoCount; i++) {

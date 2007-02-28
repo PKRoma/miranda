@@ -438,7 +438,6 @@ BOOL CALLBACK DlgProcParentWindow(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM 
 			int savePerContact = DBGetContactSettingByte(NULL, SRMMMOD, SRMSGSET_SAVEPERCONTACT, SRMSGDEFSET_SAVEPERCONTACT);
 			NewMessageWindowLParam *newData = (NewMessageWindowLParam *) lParam;
 			dat = (ParentWindowData *) mir_alloc(sizeof(ParentWindowData));
-			dat->foregroundWindow = GetForegroundWindow();
 			dat->hContact = newData->hContact;
 			dat->nFlash = 0;
 			dat->nFlashMax = DBGetContactSettingByte(NULL, SRMMMOD, SRMSGSET_FLASHCOUNT, SRMSGDEFSET_FLASHCOUNT);
@@ -451,6 +450,7 @@ BOOL CALLBACK DlgProcParentWindow(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM 
 			dat->flags2 = g_dat->flags2;
 			dat->hwndStatus = CreateWindowEx(0, STATUSCLASSNAME, NULL, WS_CHILD | WS_VISIBLE | SBARS_SIZEGRIP, 0, 0, 0, 0, hwndDlg, NULL, g_hInst, NULL);
 			dat->isChat = newData->isChat;
+			dat->foregroundWindow = GetForegroundWindow();
 			SendMessage(dat->hwndStatus, SB_SETMINHEIGHT, GetSystemMetrics(SM_CYSMICON), 0);
 			//SetupStatusBar(dat);
 			dat->hwndTabs = GetDlgItem(hwndDlg, IDC_TABS);
@@ -895,7 +895,10 @@ BOOL CALLBACK DlgProcParentWindow(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM 
 		}
 		break;
 	case DM_DEACTIVATE:
-		SetForegroundWindow(dat->foregroundWindow);
+		if (dat->foregroundWindow != NULL) {
+			SetForegroundWindow(dat->foregroundWindow);
+			dat->foregroundWindow = NULL;
+		}
 		break;
 	case DM_ERRORDECIDED:
 		break;
@@ -907,7 +910,7 @@ BOOL CALLBACK DlgProcParentWindow(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM 
 		break;
 	case CM_POPUPWINDOW:
 		if (wParam) { /* incoming message */
-			if (dat->childrenCount == 1 && g_dat->flags & SMF_STAYMINIMIZED) {
+			if (!IsWindowVisible(hwndDlg)&& g_dat->flags & SMF_STAYMINIMIZED) {
 				SendMessage(hwndDlg, CM_ACTIVATECHILD, 0, (LPARAM) lParam);
 				SendMessage(hwndDlg, DM_DEACTIVATE, 0, 0);
 				ShowWindow(hwndDlg, SW_SHOWMINNOACTIVE);
@@ -918,6 +921,7 @@ BOOL CALLBACK DlgProcParentWindow(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM 
 					if (dat->childrenCount == 1) {
 						SetForegroundWindow(hwndDlg);
 					}
+					SendMessage(hwndDlg, CM_ACTIVATECHILD, 0, (LPARAM) lParam);
 					SetFocus((HWND) lParam);
 				}
 			}

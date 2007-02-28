@@ -226,6 +226,7 @@ void StreamInEvents(HWND hwndDlg, HANDLE hDbEventFirst, int count, int fAppend);
 void LoadMsgLogIcons(void);
 void FreeMsgLogIcons(void);
 TCHAR *GetNickname(HANDLE hContact, const char* szProto);
+int IsAutoPopup(HANDLE hContact);
 
 #define MSGFONTID_MYMSG		  0
 #define MSGFONTID_YOURMSG	  1
