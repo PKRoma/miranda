@@ -373,7 +373,6 @@ int fnTrayIconUpdate(HICON hNewIcon, const TCHAR *szNewTip, const char *szPrefer
 			Shell_NotifyIcon(NIM_MODIFY, &nid);
 	
 			cli.trayIcon[i].isBase = isBase;
-			if(isBase)
 			{
 				if(RefreshTimerId) {KillTimer(NULL,RefreshTimerId); RefreshTimerId=0;}
 				RefreshTimerId=SetTimer(NULL,0,DBGetContactSettingWord(NULL,"CList","CycleTime",SETTING_CYCLETIME_DEFAULT)*200,RefreshTimerProc);	// if unknown base was changed - than show preffered proto icon for 2 sec and reset it to original one after timeout
@@ -472,7 +471,8 @@ void fnTrayIconUpdateBase(const char *szChangedProto)
 		if (averageMode > 0) {
 			if (DBGetContactSettingByte(NULL, "CList", "TrayIcon", SETTING_TRAYICON_DEFAULT) == SETTING_TRAYICON_MULTI) {
 				if (DBGetContactSettingByte(NULL, "CList", "AlwaysMulti", SETTING_ALWAYSMULTI_DEFAULT))
-					changed = cli.pfnTrayIconSetBaseInfo( cli.pfnGetIconFromStatusMode((char*)szChangedProto, NULL, averageMode), (char*)szChangedProto);
+					//changed = cli.pfnTrayIconSetBaseInfo( cli.pfnGetIconFromStatusMode((char*)szChangedProto, NULL, averageMode), (char*)szChangedProto);
+					changed = cli.pfnTrayIconSetBaseInfo( cli.pfnGetIconFromStatusMode( NULL, szChangedProto, CallProtoService(szChangedProto, PS_GETSTATUS, 0, 0)), (char*)szChangedProto );
 				else if (cli.trayIcon && cli.trayIcon[0].szProto != NULL) {
 					cli.pfnTrayIconDestroy(hwnd);
 					cli.pfnTrayIconInit(hwnd);
@@ -845,7 +845,7 @@ void fnInitTray( void )
 		proc = ( DLLGETVERSIONPROC )GetProcAddress( hLib, "DllGetVersion" );
 		if (proc) {
 			proc( &dviShell );
-			cli.shellVersion = cli.shellVersion;
+			cli.shellVersion = dviShell.dwMajorVersion;
 		}
 
 		FreeLibrary(hLib);
