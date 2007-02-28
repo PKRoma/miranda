@@ -275,7 +275,7 @@ void cliTrayIconUpdateBase(const char *szChangedProto)
 					int avg;
 					avg=GetAverageMode();
 					i=pcli->pfnTrayIconSetBaseInfo(cliGetIconFromStatusMode(NULL,szChangedProto,CallProtoService(szChangedProto,PS_GETSTATUS,0,0)),szChangedProto);
-					if (i<0 || (avg!=-1)) {
+					if (i<0 /*|| (avg!=-1)*/) {
 						pcli->pfnTrayIconDestroy(hwnd);
 						pcli->pfnTrayIconInit(hwnd);
 					}
