@@ -936,8 +936,9 @@ static void sttInitFileTransfer(
 	}
 
 	{	size_t len = strlen( szContext );
-		char* p = ( char* )alloca( len + 1 );
-		MSN_Base64Decode( szContext, p, len );
+		size_t reslen = Netlib_GetBase64DecodedBufferSize(len) + 1;
+		char* p = ( char* )alloca( reslen );
+		MSN_Base64Decode( szContext, len, p, reslen );
 		szContext = p;
 	}
 

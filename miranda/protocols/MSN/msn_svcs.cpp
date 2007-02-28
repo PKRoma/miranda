@@ -38,8 +38,6 @@ void msnftp_sendAcceptReject( filetransfer *ft, bool acc );
 
 static HANDLE AddToListByEmail( const char *email, DWORD flags )
 {
-	char urlEmail[ 255 ], *szProto;
-	UrlEncode( email, urlEmail, sizeof( urlEmail ));
 	HANDLE hContact;
 
 	//check not already on list
@@ -47,7 +45,7 @@ static HANDLE AddToListByEmail( const char *email, DWORD flags )
 		   hContact != NULL;
 			hContact = ( HANDLE )MSN_CallService( MS_DB_CONTACT_FINDNEXT, ( WPARAM )hContact, 0 ))
 	{
-		szProto = ( char* )MSN_CallService( MS_PROTO_GETCONTACTBASEPROTO, ( WPARAM )hContact, 0 );
+		char *szProto = ( char* )MSN_CallService( MS_PROTO_GETCONTACTBASEPROTO, ( WPARAM )hContact, 0 );
 		if ( szProto != NULL && !strcmp( szProto, msnProtocolName )) {
 			char tEmail[ MSN_MAX_EMAIL_LEN ];
 			if ( MSN_GetStaticString( "e-mail", hContact, tEmail, sizeof( tEmail )))
@@ -61,9 +59,9 @@ static HANDLE AddToListByEmail( const char *email, DWORD flags )
 				DBDeleteContactSetting( hContact, "CList", "Hidden" );
 LBL_AddContact:
 				if ( msnLoggedIn ) {
-					MSN_AddUser( hContact, urlEmail, LIST_FL );
-					MSN_AddUser( hContact, urlEmail, LIST_BL + LIST_REMOVE );
-					MSN_AddUser( hContact, urlEmail, LIST_AL );
+					MSN_AddUser( hContact, email, LIST_FL );
+					MSN_AddUser( hContact, email, LIST_BL + LIST_REMOVE );
+					MSN_AddUser( hContact, email, LIST_AL );
 				}
 				else hContact = NULL;
 			}
@@ -114,6 +112,26 @@ static int MsnAddToListByEvent(WPARAM wParam, LPARAM lParam)
 	return ( int ) AddToListByEmail( email, 0 );
 }
 
+static int MsnRecvAuth(WPARAM wParam, LPARAM lParam)
+{
+	DBEVENTINFO dbei = { 0 };
+	CCSDATA *ccs = ( CCSDATA* )lParam;
+	PROTORECVEVENT *pre = ( PROTORECVEVENT* )ccs->lParam;
+
+	dbei.cbSize = sizeof(dbei);
+	dbei.szModule = msnProtocolName;
+	dbei.timestamp = pre->timestamp;
+	dbei.flags = pre->flags & ( PREF_CREATEREAD ? DBEF_READ : 0 );
+	dbei.eventType = EVENTTYPE_AUTHREQUEST;
+	
+	/* Just copy the Blob from PSR_AUTH event. */
+	dbei.cbBlob = pre->lParam;
+	dbei.pBlob = (PBYTE)pre->szMessage;
+	CallService( MS_DB_EVENT_ADD, 0,( LPARAM )&dbei );
+
+	return 0;
+}
+
 /////////////////////////////////////////////////////////////////////////////////////////
 // MsnAuthAllow - called after successful authorization
 
@@ -122,8 +140,7 @@ static int MsnAuthAllow(WPARAM wParam,LPARAM lParam)
 	if ( !msnLoggedIn )
 		return 1;
 
-	DBEVENTINFO dbei;
-	memset( &dbei, 0, sizeof( dbei ));
+	DBEVENTINFO dbei = { 0 };
 	dbei.cbSize = sizeof( dbei );
 
 	if (( dbei.cbBlob = MSN_CallService( MS_DB_EVENT_GETBLOBSIZE, wParam, 0 )) == -1 )
@@ -161,8 +178,7 @@ static int MsnAuthDeny(WPARAM wParam,LPARAM lParam)
 	if ( !msnLoggedIn )
 		return 1;
 
-	DBEVENTINFO dbei;
-	memset( &dbei, 0, sizeof( dbei ));
+	DBEVENTINFO dbei = { 0 };
 	dbei.cbSize = sizeof( dbei );
 
 	if (( dbei.cbBlob = MSN_CallService( MS_DB_EVENT_GETBLOBSIZE, wParam, 0 )) == -1 )
@@ -200,9 +216,7 @@ static int MsnBasicSearch(WPARAM wParam,LPARAM lParam)
 	if ( !msnLoggedIn || msnSearchID != -1 )
 		return 0;
 
-	char tEmail[ 256 ];
-	UrlEncode(( char* )lParam, tEmail, sizeof( tEmail ));
-	return msnSearchID = msnNsThread->sendPacket( "ADC", "BL N=%s", tEmail );
+	return msnSearchID = msnNsThread->sendPacket( "ADC", "BL N=%s", ( char* )lParam );
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////
@@ -633,7 +647,7 @@ static int MsnGetCaps(WPARAM wParam,LPARAM lParam)
 	}
 	case PFLAGNUM_2:
 		return PF2_ONLINE | PF2_SHORTAWAY | PF2_LONGAWAY | PF2_LIGHTDND |
-				 PF2_ONTHEPHONE | PF2_OUTTOLUNCH | PF2_INVISIBLE;
+				 PF2_ONTHEPHONE | PF2_OUTTOLUNCH | PF2_INVISIBLE | PF2_IDLE;
 
 	case PFLAGNUM_3:
 		return PF2_ONLINE | PF2_SHORTAWAY | PF2_LONGAWAY | PF2_LIGHTDND |
@@ -1204,6 +1218,7 @@ int LoadMsnServices( void )
 
 	arServices.insert( MSN_CreateProtoServiceFunction( PSR_FILE,            MsnRecvFile ));
 	arServices.insert( MSN_CreateProtoServiceFunction( PSR_MESSAGE,         MsnRecvMessage ));
+	arServices.insert( MSN_CreateProtoServiceFunction( PSR_AUTH,            MsnRecvAuth ));
 
 	arServices.insert( MSN_CreateProtoServiceFunction( PSS_FILE,            MsnSendFile ));
 	arServices.insert( MSN_CreateProtoServiceFunction( PSS_FILEALLOW,       MsnFileAllow ));

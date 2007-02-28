@@ -803,12 +803,23 @@ void MSN_GetOIMs( const char* initxml )
 			else
 				evtm = time( NULL );
 
-			txtParseParam( tResult, "<GetMessageResult>", "\r\n\r\n", "\r\n", tResult, strlen( tResult ));
-			
-			size_t len = strlen( tResult );
-			char* szMsg = ( char* )alloca( len * 4 + 4 );
+			txtParseParam( tResult, "<GetMessageResult>", "\r\n\r\n", "</GetMessageResult>", tResult, strlen( tResult ));
 
-			MSN_Base64Decode( tResult, szMsg, len );
+			char* ch = tResult;
+			size_t len = strlen(tResult) + 1;
+			while (*ch != 0)
+			{
+				if ( *ch == '\n' || *ch == '\r' )
+					memmove( ch, ch+1, len-- - ( ch - tResult ));
+				else
+					++ch;
+			}
+			
+			len = strlen( tResult );
+			size_t reslen = Netlib_GetBase64DecodedBufferSize(len) * 3 + 4;
+			char* szMsg = ( char* )alloca( reslen );
+
+			MSN_Base64Decode( tResult, len, szMsg, reslen );
 
 			mir_free( tResult );
 

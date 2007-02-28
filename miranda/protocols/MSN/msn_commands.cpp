@@ -788,6 +788,20 @@ HANDLE sttProcessAdd( int trid, int listId, char* userEmail, char* userNick )
 	if ( listId == LIST_RL && ( mask & ( LIST_FL+LIST_AL+LIST_BL )) == 0 )
 		MSN_AddAuthRequest( hContact, userEmail, userNick );
 
+	if (( mask & ( LIST_AL | LIST_BL | LIST_FL )) == LIST_BL ) {
+		DBDeleteContactSetting( hContact, "CList", "NotOnList" );
+		DBWriteContactSettingByte( hContact, "CList", "Hidden", 1 );
+	}
+
+	if ( listId & LIST_AL ) {
+		DBDeleteContactSetting( hContact, "CList", "NotOnList" );
+	}
+
+	if ( listId & LIST_FL ) {
+		DBDeleteContactSetting( hContact, "CList", "NotOnList" );
+		DBDeleteContactSetting( hContact, "CList", "Hidden" );
+	}
+
 	return hContact;
 }
 
@@ -1107,7 +1121,7 @@ int MSN_HandleCommands( ThreadData* info, char* cmdString )
 						if ( !DBGetContactSettingStringUtf( hContact, "CList", "Group", &dbv )) {
 							MSN_MoveContactToGroup( hContact, dbv.pszVal );
 							MSN_FreeVariant( &dbv );
-			}	}	}	}
+			}	}	}	}	
 			break;
 		}
 		case ' DDA':    //********* ADD: section 7.8 List Modifications
@@ -1286,6 +1300,18 @@ LBL_InvalidCommand:
 		{
 			int oldMode = msnStatusMode;
 			msnStatusMode = MSNStatusToMiranda( params );
+			if (oldMode == ID_STATUS_OFFLINE || ( oldMode>=ID_STATUS_CONNECTING && oldMode<ID_STATUS_CONNECTING+MAX_CONNECT_RETRIES ))
+			{
+				HANDLE hContact = ( HANDLE )MSN_CallService( MS_DB_CONTACT_FINDFIRST, 0, 0 );
+				while ( hContact != NULL ) {
+					char* szProto = ( char* )MSN_CallService( MS_PROTO_GETCONTACTBASEPROTO, ( WPARAM ) hContact, 0 );
+					if ( szProto != NULL && strcmp( szProto, msnProtocolName ) == 0 ) {	
+						char tEmail[ MSN_MAX_EMAIL_LEN ];
+						if ( MSN_GetStaticString( "e-mail", hContact, tEmail, sizeof( tEmail )) == 0 && strncmp(tEmail, "tel:", 4) == 0 )
+							MSN_SetWord( hContact, "Status", ID_STATUS_ONTHEPHONE );
+					}
+					hContact = ( HANDLE )MSN_CallService( MS_DB_CONTACT_FINDNEXT, ( WPARAM )hContact, 0 );
+			}	}
 
 			if ( msnStatusMode != ID_STATUS_IDLE )
 			{
@@ -1656,7 +1682,7 @@ LBL_InvalidCommand:
 			mir_utf8decode( userNick, NULL );
 			Lists_Add( listId, userEmail, userNick );
 
-			if (( listId & ( LIST_AL +  LIST_BL + LIST_FL )) == LIST_BL ) {
+			if (( listId & ( LIST_AL | LIST_BL | LIST_FL )) == LIST_BL ) {
 				DBDeleteContactSetting( sttListedContact, "CList", "NotOnList" );
 				DBWriteContactSettingByte( sttListedContact, "CList", "Hidden", 1 );
 			}
@@ -1701,6 +1727,10 @@ LBL_InvalidCommand:
 			break;
 
 		case ' TON':   //********* NOT: notification message
+			sttProcessNotificationMessage( HReadBuffer( info, 0 ).surelyRead( trid ), trid );
+			break;
+
+		case ' GPI':   //********* IPG: mobile page
 			sttProcessNotificationMessage( HReadBuffer( info, 0 ).surelyRead( trid ), trid );
 			break;
 

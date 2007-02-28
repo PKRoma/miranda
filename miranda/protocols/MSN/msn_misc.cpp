@@ -145,17 +145,23 @@ int __stdcall MSN_AddUser( HANDLE hContact, const char* email, int flags )
 
 void __stdcall MSN_AddAuthRequest( HANDLE hContact, const char *email, const char *nick )
 {
+	DBWriteContactSettingByte( hContact, "CList", "Hidden", 1 );
+
 	//blob is: UIN=0(DWORD), hContact(DWORD), nick(ASCIIZ), ""(ASCIIZ), ""(ASCIIZ), email(ASCIIZ), ""(ASCIIZ)
 
-	DBEVENTINFO dbei = { 0 };
-	dbei.cbSize    = sizeof( dbei );
-	dbei.szModule  = msnProtocolName;
-	dbei.timestamp = (DWORD)time(NULL);
-	dbei.flags     = 0;
-	dbei.eventType = EVENTTYPE_AUTHREQUEST;
-	dbei.cbBlob    = sizeof(DWORD)*2+strlen(nick)+strlen(email)+5;
+	CCSDATA ccs = { 0 };
+	PROTORECVEVENT pre = { 0 };
 
-	PBYTE pCurBlob = dbei.pBlob = ( PBYTE )mir_alloc( dbei.cbBlob );
+    pre.timestamp = ( DWORD )time( NULL );
+	pre.lParam = sizeof( DWORD ) * 2 + strlen( nick ) + strlen( email ) + 5;
+
+	ccs.szProtoService = PSR_AUTH;
+    ccs.hContact = hContact;
+    ccs.lParam = ( LPARAM )&pre;
+
+	PBYTE pCurBlob = ( PBYTE )alloca( pre.lParam );
+	pre.szMessage = ( char* )pCurBlob;
+
 	*( PDWORD )pCurBlob = 0; pCurBlob+=sizeof( DWORD );
 	*( PDWORD )pCurBlob = ( DWORD )hContact; pCurBlob+=sizeof( DWORD );
 	strcpy(( char* )pCurBlob, nick); pCurBlob += strlen( nick )+1;
@@ -163,7 +169,8 @@ void __stdcall MSN_AddAuthRequest( HANDLE hContact, const char *email, const cha
 	*pCurBlob = '\0'; pCurBlob++;	   //lastName
 	strcpy(( char* )pCurBlob, email ); pCurBlob += strlen( email )+1;
 	*pCurBlob = '\0';         	   //reason
-	MSN_CallService( MS_DB_EVENT_ADD, NULL,( LPARAM )&dbei );
+
+	MSN_CallService( MS_PROTO_CHAINRECV, 0, ( LPARAM )&ccs );
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////
@@ -1203,23 +1210,22 @@ bool txtParseParam (const char* szData, const char* presearch, const char* start
 } 
 
 
-void MSN_Base64Decode( const char* str, char* res, size_t reslen )
+void MSN_Base64Decode( const char* str, size_t len, char* res, size_t reslen )
 {
 	if ( str == NULL ) res[0] = 0;
 
 	char* p = const_cast< char* >( str );
-	int cbLen = strlen( p );
-	if ( cbLen & 3 ) { // fix for stupid Kopete's base64 encoder
-		char* p1 = ( char* )alloca( cbLen+5 );
-		memcpy( p1, p, cbLen );
+	if ( len & 3 ) { // fix for stupid Kopete's base64 encoder
+		char* p1 = ( char* )alloca( len+5 );
+		memcpy( p1, p, len );
 		p = p1;
-		p1 += cbLen; 
-		for ( int i = 4 - (cbLen & 3); i > 0; i--, p1++, cbLen++ )
+		p1 += len; 
+		for ( int i = 4 - (len & 3); i > 0; i--, p1++, len++ )
 			*p1 = '=';
 		*p1 = 0;
 	}
 
-	NETLIBBASE64 nlb = { p, cbLen, ( PBYTE )res, reslen };
+	NETLIBBASE64 nlb = { p, len, ( PBYTE )res, reslen };
 	MSN_CallService( MS_NETLIB_BASE64DECODE, 0, LPARAM( &nlb ));
 	res[nlb.cbDecoded] = 0;
 }
