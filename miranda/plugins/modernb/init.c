@@ -166,8 +166,19 @@ int MakeVer(a,b,c,d)
 
 __declspec(dllexport) PLUGININFO* MirandaPluginInfo(DWORD mirandaVersion)
 {
-	if ( mirandaVersion < PLUGIN_MAKE_VERSION(0,7,0,9) )
+	if ( mirandaVersion < MINIMAL_COREVERSION_NUM )
 	{
+		if (0) {
+			char temp[255];
+			sprintf(temp, "This version of the Modern contact list requires Miranda Core version %d.%d.%d build #%d (%s) or later",MINIMAL_COREVERSION,
+				#ifdef _UNICODE
+					"UNICODE"
+				#else
+					"ANSI"
+				#endif
+				);
+			MessageBoxA( NULL, temp, "Error", MB_OK );
+		}
 		return NULL;
 	}
     pluginInfo.version=MakeVer(PRODUCT_VERSION);
@@ -235,7 +246,7 @@ int __declspec(dllexport) CListInitialise(PLUGINLINK * link)
 	pcli = ( CLIST_INTERFACE* )CallService(MS_CLIST_RETRIEVE_INTERFACE, 0, (LPARAM)g_hInst);
 	if ( (int)pcli == CALLSERVICE_NOTFOUND ) {
 LBL_Error:
-		MessageBoxA( NULL, "This version of plugin requires Miranda IM 0.7.0.16 or later", "Fatal error", MB_OK );
+		MessageBoxA( NULL, "This version of plugin requires Miranda IM 0.7.0.17 or later", "Fatal error", MB_OK );
 		return 1;
 	}
 	if ( pcli->version < 5 )
@@ -252,6 +263,7 @@ LBL_Error:
 
 	pcli->pfnCheckCacheItem	= (void (*)(ClcCacheEntryBase*)) cliCheckCacheItem;
 	pcli->pfnFreeCacheItem = (void(*)(ClcCacheEntryBase*)) cliFreeCacheItem;
+	
 	pcli->pfnTrayIconUpdateBase = cliTrayIconUpdateBase;	
 	
 	pcli->pfnInvalidateDisplayNameCacheEntry	= cliInvalidateDisplayNameCacheEntry;

@@ -411,6 +411,10 @@ typedef struct
 	int    ( *pfnTrayIconSetBaseInfo )( HICON hIcon, const char *szPreferredProto );
 	void   ( *pfnTrayIconTaskbarCreated )( HWND hwnd );
 	int    ( *pfnTrayIconUpdate )( HICON hNewIcon, const TCHAR *szNewTip, const char *szPreferredProto, int isBase );
+	
+	void   ( *pfnUninitTray )( void );
+	void   ( *pfnLockTray )( void );
+	void   ( *pfnUnlockTray )( void );
 
 	VOID ( CALLBACK *pfnTrayCycleTimerProc )( HWND hwnd, UINT message, UINT idEvent, DWORD dwTime );
 }

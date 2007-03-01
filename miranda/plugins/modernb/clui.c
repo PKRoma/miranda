@@ -312,19 +312,36 @@ void CLUI_ChangeWindowMode()
     g_mutex_bChangingMode=FALSE;
     flag_bFirstTimeCall=TRUE;
 }
+struct  _tagTimerAsync
+{
+	HWND hwnd;
+	int ID; 
+	int Timeout; 
+	TIMERPROC proc;
+};
+static int SetTimerSync(WPARAM wParam , LPARAM lParam)
+{
+	struct  _tagTimerAsync * call=(struct  _tagTimerAsync *) wParam;
+	return SetTimer(call->hwnd, call->ID ,call->Timeout, call->proc);
+}
+
+int CLUI_SafeSetTimer(HWND hwnd, int ID, int Timeout, TIMERPROC proc)
+{
+	struct  _tagTimerAsync param={  hwnd, ID, Timeout, proc };
+	return cache_CallProcSync(SetTimerSync, (WPARAM) &param, 0);		
+}
 
 int CLUI_UpdateTimer(BYTE BringIn)
 {  
     if (g_CluiData.nBehindEdgeState==0)
     {
         KillTimer(pcli->hwndContactList,TM_BRINGOUTTIMEOUT);
-        SetTimer(pcli->hwndContactList,TM_BRINGOUTTIMEOUT,wBehindEdgeHideDelay*100,NULL);
+        CLUI_SafeSetTimer(pcli->hwndContactList,TM_BRINGOUTTIMEOUT,wBehindEdgeHideDelay*100,NULL);
     }
     if (bShowEventStarted==0 && g_CluiData.nBehindEdgeState>0 ) 
     {
         KillTimer(pcli->hwndContactList,TM_BRINGINTIMEOUT);
-        SetTimer(pcli->hwndContactList,TM_BRINGINTIMEOUT,wBehindEdgeShowDelay*100,NULL);
-        bShowEventStarted=1;
+        bShowEventStarted=(BOOL)CLUI_SafeSetTimer(pcli->hwndContactList,TM_BRINGINTIMEOUT,wBehindEdgeShowDelay*100,NULL);
     }
     return 0;
 }
@@ -741,7 +758,7 @@ static int CLUI_CreateTimerForConnectingIcon(WPARAM wParam,LPARAM lParam)
                         if (ic) ImageList_AddIcon(pt->himlIconList,ic);
                         DestroyIcon_protect(ic);
                     }
-                    SetTimer(pcli->hwndContactList,TM_STATUSBARUPDATE+pt->nIndex,(int)(nAnimatedIconStep)/1,0);
+                    CLUI_SafeSetTimer(pcli->hwndContactList,TM_STATUSBARUPDATE+pt->nIndex,(int)(nAnimatedIconStep)/1,0);
                     pt->bTimerCreated=1;
                     pt->nCycleStartTick=GetTickCount();
                 }
@@ -775,7 +792,7 @@ int CLUI_ReloadCLUIOptions()
     wBehindEdgeBorderSize=DBGetContactSettingWord(NULL,"ModernData","HideBehindBorderSize",1);
 
 
-    //   if (g_CluiData.bBehindEdgeSettings)  SetTimer(pcli->hwndContactList,TM_UPDATEBRINGTIMER,250,NULL);
+    //   if (g_CluiData.bBehindEdgeSettings)  CLUI_SafeSetTimer(pcli->hwndContactList,TM_UPDATEBRINGTIMER,250,NULL);
     return 0;
 }
 
@@ -1590,7 +1607,7 @@ LRESULT CALLBACK CLUI__cli_ContactListWndProc(HWND hwnd, UINT msg, WPARAM wParam
             {
                 if(g_bTransparentFlag)
                     if(bTransparentFocus)
-                        SetTimer(hwnd, TM_AUTOALPHA,250,NULL);
+                        CLUI_SafeSetTimer(hwnd, TM_AUTOALPHA,250,NULL);
 
             }
             else {
@@ -1626,7 +1643,7 @@ LRESULT CALLBACK CLUI__cli_ContactListWndProc(HWND hwnd, UINT msg, WPARAM wParam
                 {
                     CLUI_SmoothAlphaTransition(hwnd, DBGetContactSettingByte(NULL,"CList","Alpha",SETTING_ALPHA_DEFAULT), 1);
                     bTransparentFocus=1;
-                    SetTimer(hwnd, TM_AUTOALPHA,250,NULL);
+                    CLUI_SafeSetTimer(hwnd, TM_AUTOALPHA,250,NULL);
                 }
             }
             k=CLUI_TestCursorOnBorders();               
@@ -1723,7 +1740,7 @@ LRESULT CALLBACK CLUI__cli_ContactListWndProc(HWND hwnd, UINT msg, WPARAM wParam
             pt=&CycleStartTick[wParam-TM_STATUSBARUPDATE];
             {
                 if(IsWindowVisible(pcli->hwndStatus)) SkinInvalidateFrame(pcli->hwndStatus,NULL,0);//InvalidateRectZ(pcli->hwndStatus,NULL,TRUE);
-                if (DBGetContactSettingByte(NULL,"CList","TrayIcon",SETTING_TRAYICON_DEFAULT)!=SETTING_TRAYICON_CYCLE) 
+                //if (DBGetContactSettingByte(NULL,"CList","TrayIcon",SETTING_TRAYICON_DEFAULT)!=SETTING_TRAYICON_CYCLE) 
                     if (pt->bGlobal) 
                         cliTrayIconUpdateBase(g_szConnectingProto);
                     else
@@ -1792,6 +1809,7 @@ LRESULT CALLBACK CLUI__cli_ContactListWndProc(HWND hwnd, UINT msg, WPARAM wParam
             int mouse_in_window=0;
             KillTimer(hwnd,TM_BRINGINTIMEOUT);
             KillTimer(hwnd,TM_BRINGOUTTIMEOUT);
+			bShowEventStarted=0;
             GetCursorPos(&pt);
             hAux = WindowFromPoint(pt);
             mouse_in_window=CLUI_CheckOwnedByClui(hAux);
@@ -1804,6 +1822,7 @@ LRESULT CALLBACK CLUI__cli_ContactListWndProc(HWND hwnd, UINT msg, WPARAM wParam
             HWND hAux;
             int mouse_in_window=0;
             KillTimer(hwnd,TM_BRINGINTIMEOUT);
+			bShowEventStarted=0;
             KillTimer(hwnd,TM_BRINGOUTTIMEOUT);
             GetCursorPos(&pt);
             hAux = WindowFromPoint(pt);
@@ -2420,7 +2439,7 @@ int CLUI_TestCursorOnBorders()
 				CLUI_SmoothAlphaTransition(hwnd, DBGetContactSettingByte(NULL,"CList","Alpha",SETTING_ALPHA_DEFAULT), 1);
 				//g_proc_SetLayeredWindowAttributes(hwnd, RGB(0,0,0), (BYTE)DBGetContactSettingByte(NULL,"CList","Alpha",SETTING_ALPHA_DEFAULT), LWA_ALPHA);
 				bTransparentFocus=1;
-				SetTimer(hwnd, TM_AUTOALPHA,250,NULL);
+				CLUI_SafeSetTimer(hwnd, TM_AUTOALPHA,250,NULL);
 			}
 		}
 	}

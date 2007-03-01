@@ -389,7 +389,7 @@ static LRESULT CALLBACK ModernButtonWndProc(HWND hwndDlg, UINT msg,  WPARAM wPar
         SetCapture(bct->hwnd);
         bct->hover=1;
         //KillTimer(bct->hwnd,1234);
-        //SetTimer(bct->hwnd,1234,100,NULL);
+        //CLUI_SafeSetTimer(bct->hwnd,1234,100,NULL);
         PaintWorker(bct->hwnd,0);
         return 0;
         }
@@ -409,7 +409,7 @@ static LRESULT CALLBACK ModernButtonWndProc(HWND hwndDlg, UINT msg,  WPARAM wPar
     case WM_LBUTTONDOWN:
     {
         //KillTimer(bct->hwnd,1234);
-        //SetTimer(bct->hwnd,1234,100,NULL);
+        //CLUI_SafeSetTimer(bct->hwnd,1234,100,NULL);
         bct->down=1;
 	    SetForegroundWindow(GetParent(bct->hwnd));
         PaintWorker(bct->hwnd,0);
@@ -433,7 +433,7 @@ static LRESULT CALLBACK ModernButtonWndProc(HWND hwndDlg, UINT msg,  WPARAM wPar
     if (bct->down)
     {
         //KillTimer(bct->hwnd,1234);
-        //SetTimer(bct->hwnd,1234,100,NULL);
+        //CLUI_SafeSetTimer(bct->hwnd,1234,100,NULL);
         ReleaseCapture();
         bct->hover=0;
         bct->down=0;

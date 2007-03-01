@@ -146,6 +146,10 @@ static int srvRetrieveInterface( WPARAM wParam, LPARAM lParam )
 
 		cli.szTip                              = szTip;
 		cli.pfnInitTray                        = fnInitTray;
+		cli.pfnUninitTray                      = fnUninitTray;
+		cli.pfnLockTray                        = fnLockTray;
+		cli.pfnUnlockTray                      = fnUnlockTray;
+
 		cli.pfnTrayCycleTimerProc              = fnTrayCycleTimerProc;
 		cli.pfnTrayIconAdd                     = fnTrayIconAdd;
 		cli.pfnTrayIconDestroy                 = fnTrayIconDestroy;

@@ -155,9 +155,10 @@ void cliTrayIconUpdateBase(const char *szChangedProto)
 	int i,count,netProtoCount,changed=-1;
 	PROTOCOLDESCRIPTOR **protos;
 	int averageMode=0;
-
 	HWND hwnd=pcli->hwndContactList;
+
 	if (!szChangedProto) return;
+	pcli->pfnLockTray();	
 	if ( pcli->cycleTimerId ) {
 		KillTimer( NULL, pcli->cycleTimerId);
 		pcli->cycleTimerId=0;
@@ -217,21 +218,16 @@ void cliTrayIconUpdateBase(const char *szChangedProto)
 						CListTray_GetGlobalStatus(0,0);
 						if (g_bMultiConnectionMode)
 							if (_strcmpi(szChangedProto,g_szConnectingProto))
-								return;
+								{ pcli->pfnUnlockTray(); return; }
 							else
 								hIcon=(HICON)CLUI_GetConnectingIconService((WPARAM)GLOBAL_PROTO_NAME/*(WPARAM)szChangedProto*/,1);
 						else
 							hIcon=(HICON)CLUI_GetConnectingIconService((WPARAM)szChangedProto,0);
 						if (hIcon) {
 							changed=pcli->pfnTrayIconSetBaseInfo(hIcon,NULL);
-							//pcli->pfnTrayIconUpdate(hIcon,NULL,NULL,1);
-
-							//DestroyIcon_protect(hIcon);
 							DBFreeVariant(&dbv);
 							break;
 						}
-						hIcon=hIcon;
-						//return;
 					}
 					else
 						changed=pcli->pfnTrayIconSetBaseInfo(cliGetIconFromStatusMode(NULL,szProto,szProto?CallProtoService(szProto,PS_GETSTATUS,0,0):CallService(MS_CLIST_GETSTATUSMODE,0,0)),NULL);
@@ -241,8 +237,40 @@ void cliTrayIconUpdateBase(const char *szChangedProto)
 				break;
 
 			case SETTING_TRAYICON_CYCLE:
-				pcli->cycleTimerId=SetTimer(NULL,0,DBGetContactSettingWord(NULL,"CList","CycleTime",SETTING_CYCLETIME_DEFAULT)*1000,pcli->pfnTrayCycleTimerProc);
-				changed=pcli->pfnTrayIconSetBaseInfo(cliGetIconFromStatusMode(NULL,szChangedProto,averageMode),NULL);
+				{
+					int status=szChangedProto ? CallProtoService(szChangedProto,PS_GETSTATUS,0,0) : averageMode;
+					if ((g_StatusBarData.connectingIcon==1 && CListTray_GetGlobalStatus(0,0)
+						&& ((status>=ID_STATUS_CONNECTING && status<=ID_STATUS_CONNECTING+MAX_CONNECT_RETRIES)|| g_bMultiConnectionMode )))
+					{
+						//connecting
+						status=status;
+						//stop cycling
+						if (pcli->cycleTimerId)
+							KillTimer(NULL,pcli->cycleTimerId);
+						pcli->cycleTimerId=0;
+						{
+							HICON hIcon;
+							// 1 check if multi connecting icon							
+							if (g_bMultiConnectionMode)
+								if (_strcmpi(szChangedProto,g_szConnectingProto))
+								{ pcli->pfnUnlockTray(); return; }
+								else
+									hIcon=(HICON)CLUI_GetConnectingIconService((WPARAM)GLOBAL_PROTO_NAME/*(WPARAM)szChangedProto*/,1);
+							else
+								hIcon=(HICON)CLUI_GetConnectingIconService((WPARAM)szChangedProto,0);
+							if (hIcon) {
+								changed=pcli->pfnTrayIconSetBaseInfo(hIcon,NULL);
+								break;
+							}
+						}
+					}
+					else
+					{
+						pcli->cycleTimerId=CLUI_SafeSetTimer(NULL,0,DBGetContactSettingWord(NULL,"CList","CycleTime",SETTING_CYCLETIME_DEFAULT)*1000,pcli->pfnTrayCycleTimerProc);
+						changed=pcli->pfnTrayIconSetBaseInfo(cliGetIconFromStatusMode(NULL,szChangedProto,status),NULL);
+					}
+
+				}
 				break;
 
 			case SETTING_TRAYICON_MULTI:
@@ -314,6 +342,7 @@ void cliTrayIconUpdateBase(const char *szChangedProto)
 
 	if(changed!=-1) // && pcli->trayIcon[changed].isBase)
 		pcli->pfnTrayIconUpdate(pcli->trayIcon[changed].hBaseIcon,NULL,szChangedProto,1);  // by FYR (No suitable protocol)
+	{ pcli->pfnUnlockTray(); return; }
 }
 
 static int autoHideTimerId;
@@ -339,7 +368,7 @@ int TrayIconPauseAutoHide(WPARAM wParam,LPARAM lParam)
 			&&GetWindow(GetParent(GetActiveWindow()),GW_OWNER) != pcli->hwndContactList )
 		{
 			KillTimer(NULL,autoHideTimerId);
-			autoHideTimerId=SetTimer(NULL,0,1000*DBGetContactSettingWord(NULL,"CList","HideTime",SETTING_HIDETIME_DEFAULT),TrayIconAutoHideTimer);
+			autoHideTimerId=CLUI_SafeSetTimer(NULL,0,1000*DBGetContactSettingWord(NULL,"CList","HideTime",SETTING_HIDETIME_DEFAULT),TrayIconAutoHideTimer);
 	}	}
 
 	return 0;
@@ -369,7 +398,7 @@ int cli_TrayIconProcessMessage(WPARAM wParam,LPARAM lParam)
 			h4=pcli->hwndContactList;
 			if(DBGetContactSettingByte(NULL,"CList","AutoHide",SETTING_AUTOHIDE_DEFAULT)) {
 				if(LOWORD(msg->wParam)==WA_INACTIVE && h2!=h4)
-					autoHideTimerId=SetTimer(NULL,0,1000*DBGetContactSettingWord(NULL,"CList","HideTime",SETTING_HIDETIME_DEFAULT),TrayIconAutoHideTimer);
+					autoHideTimerId=CLUI_SafeSetTimer(NULL,0,1000*DBGetContactSettingWord(NULL,"CList","HideTime",SETTING_HIDETIME_DEFAULT),TrayIconAutoHideTimer);
 				else KillTimer(NULL,autoHideTimerId);
 			}
 		}

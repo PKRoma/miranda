@@ -324,7 +324,7 @@ static LRESULT CALLBACK SkinButtonProc(HWND hwndDlg, UINT  msg, WPARAM wParam, L
 				InvalidateParentRect(lpSBData->hWnd, NULL, TRUE);
 			}
 			// Call timer, used to start cheesy TrackMouseEvent faker
-			SetTimer(hwndDlg, BUTTON_POLLID, BUTTON_POLLDELAY, NULL);
+			CLUI_SafeSetTimer(hwndDlg, BUTTON_POLLID, BUTTON_POLLDELAY, NULL);
 			break;
 		case WM_NCHITTEST:
 			{

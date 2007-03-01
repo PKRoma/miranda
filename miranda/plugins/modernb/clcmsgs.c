@@ -42,7 +42,7 @@ LRESULT cli_ProcessExternalMessages(HWND hwnd,struct ClcData *dat,UINT msg,WPARA
 		{
 			KillTimer(hwnd,TIMERID_REBUILDAFTER);
 			// Give some time to gather other events too		
-			SetTimer(hwnd,TIMERID_REBUILDAFTER,50,NULL);
+			CLUI_SafeSetTimer(hwnd,TIMERID_REBUILDAFTER,50,NULL);
 			CLM_AUTOREBUILD_WAS_POSTED=FALSE;
 		}
 		return 0;

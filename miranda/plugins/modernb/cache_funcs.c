@@ -75,9 +75,6 @@ const DWORD const_AskPeriod = 3000;
 
 SortedList *CopySmileyString(SortedList *plInput);
 
-
-typedef int (*PSYNCCALLBACKPROC)(WPARAM,LPARAM);
-
 typedef struct tagSYNCCALLITEM
 {
     WPARAM  wParam;
@@ -369,7 +366,7 @@ int Cache_GetTextThreadProc(void * lpParam)
                 }
                 else return 0;
                 KillTimer(dat->hWnd,TIMERID_INVALIDATE_FULL);
-                SetTimer(dat->hWnd,TIMERID_INVALIDATE_FULL,500,NULL);
+                CLUI_SafeSetTimer(dat->hWnd,TIMERID_INVALIDATE_FULL,500,NULL);
             }
         }
         while (!exit);

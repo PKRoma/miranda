@@ -61,30 +61,81 @@ int fnGetImlIconIndex(HICON hIcon)
 	return imlIcon[i].index;
 }
 
-static VOID CALLBACK IconFlashTimer(HWND hwnd, UINT message, UINT idEvent, DWORD dwTime)
+static char * GetEventProtocol(int idx)
 {
-	int i, j;
-
-	if (cli.events.count) {
+	if (cli.events.count && idx>=0 && idx<cli.events.count)
+	{
 		char *szProto;
-		if (cli.events.items[0]->cle.hContact == NULL)
+		if (cli.events.items[idx]->cle.hContact == NULL)
 		{
-			if (cli.events.items[0]->cle.flags&CLEF_PROTOCOLGLOBAL)
-				szProto = cli.events.items[0]->cle.lpszProtocol;
+			if (cli.events.items[idx]->cle.flags&CLEF_PROTOCOLGLOBAL)
+				szProto = cli.events.items[idx]->cle.lpszProtocol;
 			else
 				szProto = NULL;
 		}
 		else
-			szProto = (char *) CallService(MS_PROTO_GETCONTACTBASEPROTO, (WPARAM) cli.events.items[0]->cle.hContact, 0);
-		cli.pfnTrayIconUpdateWithImageList((iconsOn || disableTrayFlash) ? cli.events.items[0]->imlIconIndex : 0, cli.events.items[0]->cle.ptszTooltip, szProto);
+			szProto = (char *) CallService(MS_PROTO_GETCONTACTBASEPROTO, (WPARAM) cli.events.items[idx]->cle.hContact, 0);
+		return szProto;
 	}
+	return NULL;
+}
+
+static void ShowOneEventInTray(int idx)
+{
+	cli.pfnTrayIconUpdateWithImageList((iconsOn || disableTrayFlash) ? cli.events.items[idx]->imlIconIndex : 0, cli.events.items[idx]->cle.ptszTooltip, GetEventProtocol(idx));
+}
+
+static void ShowEventsInTray()
+{
+	int i;
+	char ** pTrayProtos;
+	char nTrayProtoCnt;
+	int nTrayCnt=cli.trayIconCount;
+	if (!cli.events.count || !nTrayCnt)  return; 
+	if (cli.events.count ==1 || nTrayCnt == 1) 
+	{ 
+		ShowOneEventInTray(0); //for only one icon in tray show topmost event
+		return;
+	}
+		
+	// in case if we have several icons in tray and several events with different protocols 
+	// lets use several icon to show events from protocols in different icons
+	cli.pfnLockTray();
+	pTrayProtos=_alloca(sizeof(char*)*cli.trayIconCount);
+	nTrayProtoCnt=0;
+	for (i=0; i<cli.trayIconCount; i++)
+	{
+	   if (cli.trayIcon[i].id == 0 || !cli.trayIcon[i].szProto) continue;
+	   pTrayProtos[nTrayProtoCnt++]=cli.trayIcon[i].szProto;
+	}
+	for (i=0; i<cli.events.count; i++)
+	{
+		char * iEventProto=GetEventProtocol(i);
+		{
+			int j;
+			for (j=0; j<nTrayProtoCnt; j++)
+				if ( iEventProto && pTrayProtos[j] && !lstrcmpA(pTrayProtos[j],iEventProto))
+					break;
+			if ( j>=nTrayProtoCnt )  j=0;	//event was not found so assume first icon
+			if ( pTrayProtos[j] )		//if not already set
+				   ShowOneEventInTray(i);		//show it
+			pTrayProtos[j]=NULL;		//and clear slot
+		}
+	}
+	cli.pfnUnlockTray();	
+}
+
+static VOID CALLBACK IconFlashTimer(HWND hwnd, UINT message, UINT idEvent, DWORD dwTime)
+{
+	int i, j;
+	ShowEventsInTray();
 	for (i = 0; i < cli.events.count; i++) {
 		for (j = 0; j < i; j++)
 			if (cli.events.items[j]->cle.hContact == cli.events.items[i]->cle.hContact)
 				break;
-		if (j < i)
-			continue;
-		cli.pfnChangeContactIcon(cli.events.items[i]->cle.hContact, iconsOn || disableIconFlash ? cli.events.items[i]->imlIconIndex : 0, 0);
+		if (j >= i)
+			cli.pfnChangeContactIcon(cli.events.items[i]->cle.hContact, iconsOn || disableIconFlash ? cli.events.items[i]->imlIconIndex : 0, 0);
+		//decrease eflashes in any case - no need to collect all events
 		if (cli.events.items[i]->cle.flags & CLEF_ONLYAFEW) {
 			if (0 == --cli.events.items[i]->flashesDone)
 				cli.pfnRemoveEvent( cli.events.items[i]->cle.hContact, cli.events.items[i]->cle.hDbEvent);
@@ -101,6 +152,16 @@ struct CListEvent* fnAddEvent( CLISTEVENT *cle )
 	if (cle==NULL || cle->cbSize != sizeof(CLISTEVENT))
 		return NULL;
 
+	if (cle->hContact && !(cle->flags & CLEF_URGENT))
+	{
+		for (i = 0; i < cli.events.count; i++)
+			if ( (cli.events.items[i]->cle.hContact == cle->hContact) &&
+				 !(cli.events.items[i]->cle.flags & CLEF_URGENT) )
+			{
+				fnRemoveEvent( cle->hContact, cle->hDbEvent );
+				break;
+			}
+	}
 	if (cle->flags & CLEF_URGENT) {
 		for (i = 0; i < cli.events.count; i++)
 			if (!(cli.events.items[i]->cle.flags & CLEF_URGENT))
@@ -150,6 +211,7 @@ int fnRemoveEvent( HANDLE hContact, HANDLE dbEvent )
 {
 	int i;
 	char *szProto;
+	int nSameProto=0;
 
 	// Find the event that should be removed
 	for (i = 0; i < cli.events.count; i++)
@@ -170,9 +232,26 @@ int fnRemoveEvent( HANDLE hContact, HANDLE dbEvent )
 	// Free any memory allocated to the event
 	cli.pfnFreeEvent( cli.events.items[i] );
 	List_Remove(( SortedList* )&cli.events, i );
+	{
+		//count same protocoled events
+		char * szEventProto;
+		for (i = 0; i < cli.events.count; i++)
+		{
+			if (cli.events.items[i]->cle.hContact)
+				szEventProto=(char *) CallService(MS_PROTO_GETCONTACTBASEPROTO, (WPARAM)(cli.events.items[i]->cle.hContact), 0);
+			else if (cli.events.items[i]->cle.flags&CLEF_PROTOCOLGLOBAL) 
+				szEventProto=(char *) cli.events.items[i]->cle.lpszProtocol;
+			else 
+				szEventProto = NULL;
+			if (szEventProto && szProto && !lstrcmpA(szEventProto,szProto))
+				nSameProto++;
 
-	if (cli.events.count == 0) {
-		KillTimer(NULL, flashTimerId);
+		}
+
+	}
+	if (cli.events.count == 0 || nSameProto == 0) {
+		if (cli.events.count == 0) 
+			KillTimer(NULL, flashTimerId);
 		cli.pfnTrayIconSetToBase( hContact == NULL ? NULL : szProto);
 	}
 	else {

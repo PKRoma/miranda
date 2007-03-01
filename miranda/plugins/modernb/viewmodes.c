@@ -1449,7 +1449,7 @@ void ApplyViewMode(const char *Name)
         timerexpire = LOWORD(DBGetContactSettingDword(NULL, CLVM_MODULE, szSetting, 0));
         strncpy(g_CluiData.old_viewmode, g_CluiData.current_viewmode, 256);
         g_CluiData.old_viewmode[255] = 0;
-        SetTimer(g_hwndViewModeFrame, TIMERID_VIEWMODEEXPIRE, timerexpire * 1000, NULL);
+        CLUI_SafeSetTimer(g_hwndViewModeFrame, TIMERID_VIEWMODEEXPIRE, timerexpire * 1000, NULL);
     }
     else //store last selected view mode only if it is not autoclear
     {

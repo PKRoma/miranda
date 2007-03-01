@@ -93,6 +93,12 @@ void rowSizeWithReposition(pROWCELL* root, int width);
 #endif //__cplusplus
 
 /************************************************************************/
+/*                              TYPE DEFS                               */
+/************************************************************************/
+
+typedef int (*PSYNCCALLBACKPROC)(WPARAM,LPARAM);
+
+/************************************************************************/
 /*                              PROTOTYPES                              */
 /************************************************************************/
 
@@ -126,6 +132,7 @@ int		CLUI_SmoothAlphaTransition(HWND hwnd, BYTE GoalAlpha, BOOL wParam);
 int		CLUI_TestCursorOnBorders();
 int		CLUI_UpdateTimer(BYTE BringIn);
 void	CLUI_UpdateLayeredMode();
+int		CLUI_SafeSetTimer(HWND hwnd, int ID, int Timeout, TIMERPROC proc);
 
 /* CLUIServices */
 int		CLUIServices_ProtocolStatusChanged(WPARAM wParam,LPARAM lParam);
@@ -209,6 +216,7 @@ int callProxied_SizeFramesByWindowRect(RECT *r, HDWP * PosBatch, int mode);
 /* others TODO: move above */
 BOOL    wildcmp(char * name, char * mask, BYTE option);										//mod_skin_selector.c
 BOOL	wildcmpi(char * name, char * mask);													//mod_skin_selector.c
+int		cache_CallProcSync(PSYNCCALLBACKPROC pfnProc, WPARAM wParam, LPARAM lParam);		//cache_funcs.c
 BOOL	CALLBACK DlgSkinEditorOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam);	//SkinEditor.c
 BOOL	CALLBACK DlgProcHotKeyOpts2(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam);	//Keyboard.c
 BOOL	CALLBACK DlgTmplEditorOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam);	//RowTemplate.c

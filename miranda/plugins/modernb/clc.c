@@ -531,7 +531,7 @@ void ClcOptionsChanged(void)
 void SortClcByTimer (HWND hwnd)
 {
 	KillTimer(hwnd,TIMERID_DELAYEDRESORTCLC);
-	SetTimer(hwnd,TIMERID_DELAYEDRESORTCLC,100 /*DBGetContactSettingByte(NULL,"CLUI","DELAYEDTIMER",10)*/,NULL);
+	CLUI_SafeSetTimer(hwnd,TIMERID_DELAYEDRESORTCLC,100 /*DBGetContactSettingByte(NULL,"CLUI","DELAYEDTIMER",10)*/,NULL);
 }
 
 /*
@@ -692,7 +692,7 @@ case WM_CREATE:
 		//LoadCLCOptions(hwnd,dat);
 		saveContactListControlWndProc(hwnd, msg, wParam, lParam);	
 		LoadCLCOptions(hwnd,dat);
-		SetTimer(hwnd,TIMERID_INVALIDATE,5000,NULL);
+		CLUI_SafeSetTimer(hwnd,TIMERID_INVALIDATE,5000,NULL);
 		//if (dat->force_in_dialog)
 		//	pcli->pfnRebuildEntireList(hwnd,dat);		
 		TRACE("Create New ClistControl TO END\r\n");		
@@ -1386,7 +1386,7 @@ case WM_LBUTTONDOWN:
 						mUpped=1;
 						hitcontact=contact;	
 						KillTimer(hwnd,TIMERID_SUBEXPAND);
-						SetTimer(hwnd,TIMERID_SUBEXPAND,0,NULL);
+						CLUI_SafeSetTimer(hwnd,TIMERID_SUBEXPAND,0,NULL);
 					}
 					//break;
 				}
@@ -1497,7 +1497,7 @@ case WM_MOUSEMOVE:
 				if (mUpped==1)
 				{
 					KillTimer(hwnd,TIMERID_SUBEXPAND);
-					SetTimer(hwnd,TIMERID_SUBEXPAND,0,NULL);
+					CLUI_SafeSetTimer(hwnd,TIMERID_SUBEXPAND,0,NULL);
 					mUpped=0;
 				}
 				else                                                   
@@ -1533,7 +1533,7 @@ case WM_MOUSEMOVE:
 			if(wParam==0 && dat->hInfoTipItem==NULL) {
 				dat->ptInfoTip.x=(short)LOWORD(lParam);
 				dat->ptInfoTip.y=(short)HIWORD(lParam);
-				SetTimer(hwnd,TIMERID_INFOTIP,dat->infoTipTimeout,NULL);
+				CLUI_SafeSetTimer(hwnd,TIMERID_INFOTIP,dat->infoTipTimeout,NULL);
 			}
 			return 0;
 		}
@@ -1635,7 +1635,7 @@ case DROPTARGET_OUTSIDE:
 		if(!dat->dragAutoScrolling) {
 			if(pt.y<0) dat->dragAutoScrolling=-1;
 			else dat->dragAutoScrolling=1;
-			SetTimer(hwnd,TIMERID_DRAGAUTOSCROLL,dat->scrollTime,NULL);
+			CLUI_SafeSetTimer(hwnd,TIMERID_DRAGAUTOSCROLL,dat->scrollTime,NULL);
 		}
 		SendMessage(hwnd,WM_TIMER,TIMERID_DRAGAUTOSCROLL,0);
 	}
@@ -1678,7 +1678,7 @@ case WM_LBUTTONUP:
 		if (hitcontact!=NULL && dat->expandMeta)
 		{ 
 			BYTE doubleClickExpand=DBGetContactSettingByte(NULL,"CLC","MetaDoubleClick",0);
-			SetTimer(hwnd,TIMERID_SUBEXPAND,GetDoubleClickTime()*doubleClickExpand,NULL);
+			CLUI_SafeSetTimer(hwnd,TIMERID_SUBEXPAND,GetDoubleClickTime()*doubleClickExpand,NULL);
 		}
 		else if (dat->iHotTrack==-1 && dat->iDragItem==-1)
 			ReleaseCapture();
@@ -1695,7 +1695,7 @@ case WM_LBUTTONUP:
 			ReleaseCapture();
 		KillTimer(hwnd,TIMERID_DRAGAUTOSCROLL);
 		if(dat->dragStage==(DRAGSTAGE_NOTMOVED|DRAGSTAGEF_MAYBERENAME))
-			SetTimer(hwnd,TIMERID_RENAME,GetDoubleClickTime(),NULL);
+			CLUI_SafeSetTimer(hwnd,TIMERID_RENAME,GetDoubleClickTime(),NULL);
 		else if((dat->dragStage&DRAGSTAGEM_STAGE)==DRAGSTAGE_ACTIVE) 
 		{
 			POINT pt;
