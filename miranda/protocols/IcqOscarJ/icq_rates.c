@@ -23,7 +23,7 @@
 //
 // -----------------------------------------------------------------------------
 //
-// File name      : $Source: /cvsroot/miranda/miranda/protocols/IcqOscarJ/icq_rates.c,v $
+// File name      : $URL: /cvsroot/miranda/miranda/protocols/IcqOscarJ/icq_rates.c,v $
 // Revision       : $Revision$
 // Last change on : $Date$
 // Last change by : $Author$
@@ -348,7 +348,7 @@ static void RatesTimer1()
   EnterCriticalSection(&ratesMutex);
   if (ratesNextRateLevel(gRates, item->wGroup) < ratesGetLimitLevel(gRates, item->wGroup, RML_IDLE_30))
   { // the rate is higher, keep sleeping
-    int nDelay = ratesDelayToLevel(gRates, item->wGroup, ratesGetLimitLevel(gRates, item->wGroup, RML_IDLE_50) + 200);
+    int nDelay = ratesDelayToLevel(gRates, item->wGroup, ratesGetLimitLevel(gRates, item->wGroup, RML_IDLE_50));
 
     LeaveCriticalSection(&ratesMutex);
     LeaveCriticalSection(&ratesListsMutex);
@@ -372,7 +372,7 @@ static void RatesTimer1()
     int nDelay;
     
     EnterCriticalSection(&ratesMutex);
-    nDelay = ratesDelayToLevel(gRates, item->wGroup, ratesGetLimitLevel(gRates, item->wGroup, RML_IDLE_50) + 200);
+    nDelay = ratesDelayToLevel(gRates, item->wGroup, ratesGetLimitLevel(gRates, item->wGroup, RML_IDLE_50));
     LeaveCriticalSection(&ratesMutex);
 
     if (nDelay < 10) nDelay = 10;
@@ -429,7 +429,7 @@ static void putItemToQueue1(rate_record *item, int nLev)
     int nDelay;
     
     EnterCriticalSection(&ratesMutex);
-    nDelay = ratesDelayToLevel(gRates, item->wGroup, ratesGetLimitLevel(gRates, item->wGroup, RML_IDLE_50) + 100);
+    nDelay = ratesDelayToLevel(gRates, item->wGroup, ratesGetLimitLevel(gRates, item->wGroup, RML_IDLE_50));
     LeaveCriticalSection(&ratesMutex);
 
     pendingListSize1++;
@@ -459,7 +459,7 @@ static void RatesTimer2()
   EnterCriticalSection(&ratesMutex);
   if (ratesNextRateLevel(gRates, item->wGroup) < ratesGetLimitLevel(gRates, item->wGroup, RML_IDLE_10))
   { // the rate is higher, keep sleeping
-    int nDelay = ratesDelayToLevel(gRates, item->wGroup, ratesGetLimitLevel(gRates, item->wGroup, RML_IDLE_30) + 100);
+    int nDelay = ratesDelayToLevel(gRates, item->wGroup, ratesGetLimitLevel(gRates, item->wGroup, RML_IDLE_30));
 
     LeaveCriticalSection(&ratesMutex);
     LeaveCriticalSection(&ratesListsMutex);
@@ -482,7 +482,7 @@ static void RatesTimer2()
     int nDelay;
     
     EnterCriticalSection(&ratesMutex);
-    nDelay = ratesDelayToLevel(gRates, item->wGroup, ratesGetLimitLevel(gRates, item->wGroup, RML_IDLE_30) + 100);
+    nDelay = ratesDelayToLevel(gRates, item->wGroup, ratesGetLimitLevel(gRates, item->wGroup, RML_IDLE_30));
     LeaveCriticalSection(&ratesMutex);
 
     if (nDelay < 10) nDelay = 10;
@@ -538,7 +538,7 @@ static void putItemToQueue2(rate_record *item, int nLev)
     int nDelay;
     
     EnterCriticalSection(&ratesMutex);
-    nDelay = ratesDelayToLevel(gRates, item->wGroup, ratesGetLimitLevel(gRates, item->wGroup, RML_IDLE_30) + 200);
+    nDelay = ratesDelayToLevel(gRates, item->wGroup, ratesGetLimitLevel(gRates, item->wGroup, RML_IDLE_30));
     LeaveCriticalSection(&ratesMutex);
 
     if (nDelay < 10) nDelay = 10;
@@ -560,7 +560,7 @@ int handleRateItem(rate_record *item, BOOL bAllowDelay)
     
     EnterCriticalSection(&ratesMutex);
     nLev = ratesNextRateLevel(gRates, item->wGroup);
-    nLimit = ratesGetLimitLevel(gRates, item->wGroup, RML_IDLE_50);
+    nLimit = ratesGetLimitLevel(gRates, item->wGroup, RML_IDLE_50) + 200;
     LeaveCriticalSection(&ratesMutex);
 
     if ((nLev < nLimit || item->nMinDelay) && bAllowDelay)
@@ -576,7 +576,7 @@ int handleRateItem(rate_record *item, BOOL bAllowDelay)
 
     EnterCriticalSection(&ratesMutex);
     nLev = ratesNextRateLevel(gRates, item->wGroup);
-    nLimit = ratesGetLimitLevel(gRates, item->wGroup, RML_IDLE_30);
+    nLimit = ratesGetLimitLevel(gRates, item->wGroup, RML_IDLE_30) + 100;
     LeaveCriticalSection(&ratesMutex);
 
     if (nLev < nLimit)
