@@ -1332,7 +1332,9 @@ static void JabberProcessIqVersion( TCHAR* idStr, XmlNode* node )
 	if ( GetVersionEx( &osvi )) {
 		switch ( osvi.dwPlatformId ) {
 		case VER_PLATFORM_WIN32_NT:
-			if ( osvi.dwMajorVersion == 5 ) {
+			if ( osvi.dwMajorVersion == 6 )
+				 os = TranslateT( "Windows Vista" );
+			else if ( osvi.dwMajorVersion == 5 ) {
 				if ( osvi.dwMinorVersion == 2 ) os = TranslateT( "Windows Server 2003" );
 				else if ( osvi.dwMinorVersion == 1 ) os = TranslateT( "Windows XP" );
 				else if ( osvi.dwMinorVersion == 0 ) os = TranslateT( "Windows 2000" );
