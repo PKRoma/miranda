@@ -106,6 +106,7 @@ BOOL CALLBACK WizardDlgProc(HWND hdlg,UINT message,WPARAM wParam,LPARAM lParam)
 			EnableWindow(GetDlgItem(hdlg,IDCANCEL),TRUE);
 			SetDlgItemText(hdlg,IDCANCEL,TranslateT("Cancel"));
 			hdlgPage=CreateDialog(hInst,MAKEINTRESOURCE(wParam),hdlg,(DLGPROC)lParam);
+			TranslateDialog(hdlgPage);
 			SetWindowPos(hdlgPage,0,0,0,0,0,SWP_NOZORDER|SWP_NOSIZE);
 			ShowWindow(hdlgPage,SW_SHOW);
 			break;
