@@ -152,16 +152,6 @@ struct CListEvent* fnAddEvent( CLISTEVENT *cle )
 	if (cle==NULL || cle->cbSize != sizeof(CLISTEVENT))
 		return NULL;
 
-	if (cle->hContact && !(cle->flags & CLEF_URGENT))
-	{
-		for (i = 0; i < cli.events.count; i++)
-			if ( (cli.events.items[i]->cle.hContact == cle->hContact) &&
-				 !(cli.events.items[i]->cle.flags & CLEF_URGENT) )
-			{
-				fnRemoveEvent( cle->hContact, cle->hDbEvent );
-				break;
-			}
-	}
 	if (cle->flags & CLEF_URGENT) {
 		for (i = 0; i < cli.events.count; i++)
 			if (!(cli.events.items[i]->cle.flags & CLEF_URGENT))
@@ -225,9 +215,8 @@ int fnRemoveEvent( HANDLE hContact, HANDLE dbEvent )
 	// Update contact's icon
 	szProto = (char *) CallService(MS_PROTO_GETCONTACTBASEPROTO, (WPARAM)hContact, 0);
 	cli.pfnChangeContactIcon(cli.events.items[i]->cle.hContact,
-		cli.pfnIconFromStatusMode(szProto,
-		szProto == NULL ? ID_STATUS_OFFLINE : DBGetContactSettingWord(cli.events.items[i]->cle.hContact, szProto, "Status",
-		ID_STATUS_OFFLINE), cli.events.items[i]->cle.hContact), 0);
+		CallService(MS_CLIST_GETCONTACTICON, (WPARAM)cli.events.items[i]->cle.hContact, 1),
+		0);
 
 	// Free any memory allocated to the event
 	cli.pfnFreeEvent( cli.events.items[i] );
