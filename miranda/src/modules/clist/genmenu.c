@@ -846,7 +846,7 @@ HMENU BuildRecursiveMenu(HMENU hMenu,ListParam *param)
 	int pimoidx;
 
 	PMO_IntMenuItem MenuItems=NULL;
-	int rootlevel, initPosition = 0, bHasMissingItems = FALSE;
+	int rootlevel;
 	//	int cntFlag;
 	int MenuItemsCount;
 	char *checkproc=NULL;
@@ -950,20 +950,13 @@ HMENU BuildRecursiveMenu(HMENU hMenu,ListParam *param)
 					DBWriteContactSettingDword( NULL, MenuNameItems, DBString, dbv.lVal );
 			}	}
 
-			if (( pos = DBGetContactSettingDword( NULL, MenuNameItems, DBString, -1 )) <= 0 ) {
-				DBWriteContactSettingDword( NULL,MenuNameItems, DBString, mi->position );
+			if (( pos = DBGetContactSettingDword( NULL, MenuNameItems, DBString, -1 )) == -1 ) {
+				DBWriteContactSettingDword( NULL, MenuNameItems, DBString, mi->position );
 				if ( mi->flags & CMIF_ROOTPOPUP )
 					mi->position = 0;
-				bHasMissingItems = TRUE;
 			}
-			else {
-				mi->position = pos;
-				if ( mi->flags & CMIF_ROOTPOPUP ) {
-					if ( bHasMissingItems )
-						mi->position = 0;
-					else if ( mi->position >= initPosition  )
-						initPosition = mi->position;
-		}	}	}
+			else mi->position = pos;
+		}
 
 		if ( !bIsConversionDone )
 			DBWriteContactSettingByte( NULL, MenuNameItems, "LangpackConversion", 1 );
@@ -1055,20 +1048,6 @@ HMENU BuildRecursiveMenu(HMENU hMenu,ListParam *param)
 
 				InsertMenuItemWithSeparators( hMenu, i, TRUE, &mii, &localparam );
 				continue;
-	}	}	}
-
-	if ( bHasMissingItems && rootlevel == -1 && MenuObjects[pimoidx].bUseUserDefinedItems ) {
-		for ( j=0; j < MenuItemsCount; j++ ) {
-			mi = &MenuItems[j].mi;
-			if ( mi->cbSize != sizeof( TMO_MenuItem ))
-				continue;
-
-			if ( mi->root == -1 && mi->position == 0 && ( mi->flags & CMIF_ROOTPOPUP )) {
-				char DBString[256], menuItemName[256];
-				GetMenuItemName( &MenuItems[j], menuItemName, sizeof( menuItemName ));
-				wsprintfA( DBString, "%s_pos", menuItemName );
-				initPosition += 100;
-				DBWriteContactSettingDword( NULL,MenuNameItems, DBString, mi->position = initPosition );
 	}	}	}
 
 	return hMenu;
