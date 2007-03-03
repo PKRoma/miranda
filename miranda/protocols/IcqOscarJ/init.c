@@ -23,7 +23,7 @@
 //
 // -----------------------------------------------------------------------------
 //
-// File name      : $Source: /cvsroot/miranda/miranda/protocols/IcqOscarJ/init.c,v $
+// File name      : $URL$
 // Revision       : $Revision$
 // Last change on : $Date$
 // Last change by : $Author$
@@ -45,6 +45,7 @@ HANDLE hHookOptionInit = NULL;
 HANDLE hHookUserMenu = NULL;
 HANDLE hHookIdleEvent = NULL;
 HANDLE hHookIconsChanged = NULL;
+static HANDLE hUserMenuAddServ = NULL;
 static HANDLE hUserMenuAuth = NULL;
 static HANDLE hUserMenuGrant = NULL;
 static HANDLE hUserMenuRevoke = NULL;
@@ -295,6 +296,8 @@ int __declspec(dllexport) Load(PLUGINLINK *link)
 
   gnCurrentStatus = ID_STATUS_OFFLINE;
 
+  ICQCreateServiceFunction(MS_ICQ_ADDSERVCONTACT, IcqAddServerContact);
+
   ICQCreateServiceFunction(MS_REQ_AUTH, icq_RequestAuthorization);
   ICQCreateServiceFunction(MS_GRANT_AUTH, IcqGrantAuthorization);
   ICQCreateServiceFunction(MS_REVOKE_AUTH, IcqRevokeAuthorization);
@@ -426,6 +429,7 @@ static int OnSystemModulesLoaded(WPARAM wParam,LPARAM lParam)
     IconLibDefine(ICQTranslateUtfStatic("Request authorization", str), proto, "req_auth", NULL, lib, -IDI_AUTH_ASK);
     IconLibDefine(ICQTranslateUtfStatic("Grant authorization", str), proto, "grant_auth", NULL, lib, -IDI_AUTH_GRANT);
     IconLibDefine(ICQTranslateUtfStatic("Revoke authorization", str), proto, "revoke_auth", NULL, lib, -IDI_AUTH_REVOKE);
+    IconLibDefine(ICQTranslateUtfStatic("Add to server list", str), proto, "add_to_server", NULL, NULL, 0);
   }
 
   // Initialize IconLib icons
@@ -468,6 +472,15 @@ static int OnSystemModulesLoaded(WPARAM wParam,LPARAM lParam)
     mi.pszName = ICQTranslate("Revoke authorization");
     hUserMenuRevoke = (HANDLE)CallService(MS_CLIST_ADDCONTACTMENUITEM, 0, (LPARAM)&mi);
     IconLibReleaseIcon("revoke_auth");
+
+    strcpy(pszServiceName, gpszICQProtoName);
+    strcat(pszServiceName, MS_ICQ_ADDSERVCONTACT);
+
+    mi.position = -2049999999;
+    mi.hIcon = IconLibGetIcon("add_to_server");
+    mi.pszName = ICQTranslate("Add to server list");
+    hUserMenuAddServ = (HANDLE)CallService(MS_CLIST_ADDCONTACTMENUITEM, 0, (LPARAM)&mi);
+    IconLibReleaseIcon("add_to_server");
 
     strcpy(pszServiceName, gpszICQProtoName);
     strcat(pszServiceName, MS_XSTATUS_SHOWDETAILS);
@@ -541,6 +554,10 @@ static int icq_PrebuildContactMenu(WPARAM wParam, LPARAM lParam)
   CListShowMenuItem(hUserMenuAuth, ICQGetContactSettingByte((HANDLE)wParam, "Auth", 0));
   CListShowMenuItem(hUserMenuGrant, ICQGetContactSettingByte((HANDLE)wParam, "Grant", 0));
   CListShowMenuItem(hUserMenuRevoke, (BYTE)(ICQGetContactSettingByte(NULL, "PrivacyItems", 0) && !ICQGetContactSettingByte((HANDLE)wParam, "Grant", 0)));
+  if (gbSsiEnabled && !ICQGetContactSettingWord((HANDLE)wParam, "ServerId", 0) && !ICQGetContactSettingWord((HANDLE)wParam, "SrvIgnoreId", 0))
+    CListShowMenuItem(hUserMenuAddServ, 1);
+  else
+    CListShowMenuItem(hUserMenuAddServ, 0);
 
   bXStatus = ICQGetContactSettingByte((HANDLE)wParam, DBSETTING_XSTATUSID, 0);
   CListShowMenuItem(hUserMenuXStatus, (BYTE)(bHideXStatusUI ? 0 : bXStatus));
@@ -562,6 +579,8 @@ static int IconLibIconsChanged(WPARAM wParam, LPARAM lParam)
   IconLibReleaseIcon("grant_auth");
   CListSetMenuItemIcon(hUserMenuRevoke, IconLibGetIcon("revoke_auth"));
   IconLibReleaseIcon("revoke_auth");
+  CListSetMenuItemIcon(hUserMenuAddServ, IconLibGetIcon("add_to_server"));
+  IconLibReleaseIcon("add_to_server");
 
   ChangedIconsXStatus();
 

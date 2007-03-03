@@ -23,7 +23,7 @@
 //
 // -----------------------------------------------------------------------------
 //
-// File name      : $Source: /cvsroot/miranda/miranda/protocols/IcqOscarJ/icq_servlist.c,v $
+// File name      : $URL$
 // Revision       : $Revision$
 // Last change on : $Date$
 // Last change by : $Author$
@@ -1414,7 +1414,7 @@ void addServContactReady(WORD wGroupID, LPARAM lParam)
 
 
 // Called when contact should be added to server list, if group does not exist, create one
-DWORD addServContact(HANDLE hContact, const char *pszNick, const char *pszGroup)
+DWORD addServContact(HANDLE hContact, const char *pszGroup)
 {
   servlistcookie* ack;
 
@@ -1789,27 +1789,8 @@ static int ServListDbSettingChanged(WPARAM wParam, LPARAM lParam)
       (cws->value.type == DBVT_DELETED || (cws->value.type == DBVT_BYTE && cws->value.bVal == 0)) &&
       ICQGetContactSettingByte(NULL, "ServerAddRemove", DEFAULT_SS_ADDSERVER) &&
       !DBGetContactSettingByte((HANDLE)wParam, "CList", "Hidden", 0))
-    {
-      DWORD dwUin;
-      uid_str szUid;
-
-      // Does this contact have a UID?
-      if (!ICQGetContactSettingUID((HANDLE)wParam, &dwUin, &szUid))
-      {
-        char *pszNick;
-        char *pszGroup;
-
-        // Read nick name from DB
-        pszNick = UniGetContactSettingUtf((HANDLE)wParam, "CList", "MyHandle", NULL);
-
-        // Read group from DB
-        pszGroup = UniGetContactSettingUtf((HANDLE)wParam, "CList", "Group", NULL);
-
-        addServContact((HANDLE)wParam, pszNick, pszGroup);
-
-        SAFE_FREE(&pszNick);
-        SAFE_FREE(&pszGroup);
-      }
+    { // Add to server-list
+      IcqAddServerContact(wParam, 0);
     }
 
     // Has contact been renamed?

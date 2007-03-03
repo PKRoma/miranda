@@ -23,7 +23,7 @@
 //
 // -----------------------------------------------------------------------------
 //
-// File name      : $Source: /cvsroot/miranda/miranda/protocols/IcqOscarJ/icqosc_svcs.c,v $
+// File name      : $URL$
 // Revision       : $Revision$
 // Last change on : $Date$
 // Last change by : $Author$
@@ -45,6 +45,7 @@ extern WORD wListenPort;
 
 extern char* calcMD5Hash(char* szFile);
 extern filetransfer *CreateFileTransfer(HANDLE hContact, DWORD dwUin, int nVersion);
+extern DWORD addServContact(HANDLE hContact, const char *pszGroup);
 
 
 int IcqGetCaps(WPARAM wParam, LPARAM lParam)
@@ -2298,6 +2299,30 @@ int IcqSendUserIsTyping(WPARAM wParam, LPARAM lParam)
   }
 
   return nResult;
+}
+
+
+
+int IcqAddServerContact(WPARAM wParam, LPARAM lParam)
+{
+  DWORD dwUin;
+  uid_str szUid;
+
+  if (!gbSsiEnabled) return 0;
+
+  // Does this contact have a UID?
+  if (!ICQGetContactSettingUID((HANDLE)wParam, &dwUin, &szUid) && !ICQGetContactSettingWord((HANDLE)wParam, "ServerId", 0) && !ICQGetContactSettingWord((HANDLE)wParam, "SrvIgnoreId", 0))
+  {
+    char *pszGroup;
+
+    // Read group from DB
+    pszGroup = UniGetContactSettingUtf((HANDLE)wParam, "CList", "Group", NULL);
+
+    addServContact((HANDLE)wParam, pszGroup);
+
+    SAFE_FREE(&pszGroup);
+  }
+  return 0;
 }
 
 
