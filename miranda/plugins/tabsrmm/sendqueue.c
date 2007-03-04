@@ -647,23 +647,39 @@ void UpdateSaveAndSendButton(HWND hwndDlg, struct MessageWindowData *dat)
 
 void NotifyDeliveryFailure(HWND hwndDlg, struct MessageWindowData *dat)
 {
+#if defined _UNICODE
+    POPUPDATAW ppd;
+    int     ibsize = 1023;
+
+    if(CallService(MS_POPUP_QUERY, PUQS_GETSTATUS, 0) == 1) {
+        ZeroMemory((void *)&ppd, sizeof(ppd));
+        ppd.lchContact = dat->hContact;
+        mir_sntprintf(ppd.lpwzContactName, MAX_CONTACTNAME, _T("%s"), dat->szNickname);
+        mir_sntprintf(ppd.lpwzText, MAX_SECONDLINE, _T("%s"), TranslateT("A message delivery has failed.\nClick to open the message window."));
+        ppd.colorText = RGB(255, 245, 225);
+        ppd.colorBack = RGB(191,0,0);
+        ppd.PluginData = hwndDlg;
+        ppd.PluginWindowProc = (WNDPROC)PopupDlgProc;
+        ppd.lchIcon = myGlobals.g_iconErr;
+        CallService(MS_POPUP_ADDPOPUPW, (WPARAM)&ppd, 0);
+    }
+#else
     POPUPDATA ppd;
     int     ibsize = 1023;
 
     if(CallService(MS_POPUP_QUERY, PUQS_GETSTATUS, 0) == 1) {
         ZeroMemory((void *)&ppd, sizeof(ppd));
         ppd.lchContact = dat->hContact;
-        ppd.lchIcon = LoadSkinnedIcon(SKINICON_EVENT_MESSAGE);
-        ppd.lpzContactName[0] = 0;
-        //strncpy(ppd.lpzContactName, dat->szNickname, MAX_CONTACTNAME);
-        strcpy(ppd.lpzText, Translate("A message delivery has failed.\nClick to open the message window."));
-        ppd.colorText = RGB(0,0,0);
-        ppd.colorBack = RGB(255,0,0);
+        mir_sntprintf(ppd.lpzContactName, MAX_CONTACTNAME, "%s", dat->szNickname);
+        mir_sntprintf(ppd.lpzText, MAX_SECONDLINE, "%s", Translate("A message delivery has failed.\nClick to open the message window."));
+        ppd.colorText = RGB(255, 245, 225);
+        ppd.colorBack = RGB(191,0,0);
         ppd.PluginData = hwndDlg;
         ppd.PluginWindowProc = (WNDPROC)PopupDlgProc;
         ppd.lchIcon = myGlobals.g_iconErr;
         CallService(MS_POPUP_ADDPOPUP, (WPARAM)&ppd, 0);
     }
+#endif
 }
 
 static int CALLBACK PopupDlgProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
