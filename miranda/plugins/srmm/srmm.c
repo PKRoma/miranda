@@ -30,7 +30,7 @@ HINSTANCE   g_hInst;
 
 struct MM_INTERFACE mmi;
 
-PLUGININFO pluginInfo = {
+PLUGININFOEX pluginInfo = {
 	sizeof(PLUGININFOEX),
 #ifdef _UNICODE
 	"Send/Receive Messages (Unicode)",
