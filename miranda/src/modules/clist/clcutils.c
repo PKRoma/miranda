@@ -326,7 +326,8 @@ void fnSetGroupExpand(HWND hwnd, struct ClcData *dat, struct ClcGroup *group, in
 	if (newY > posY)
 		newY = posY;
 	cli.pfnRecalcScrollBar(hwnd, dat);
-	cli.pfnScrollTo(hwnd, dat, newY, 0);
+	if (group->expanded)
+		cli.pfnScrollTo(hwnd, dat, newY, 0);
 	nm.hdr.code = CLN_EXPANDED;
 	nm.hdr.hwndFrom = hwnd;
 	nm.hdr.idFrom = GetDlgCtrlID(hwnd);

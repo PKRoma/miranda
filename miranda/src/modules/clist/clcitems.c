@@ -369,7 +369,7 @@ void fnRebuildEntireList(HWND hwnd, struct ClcData *dat)
 	DBVARIANT dbv;
 
 	dat->list.expanded = 1;
-	dat->list.hideOffline = DBGetContactSettingByte(NULL, "CLC", "HideOfflineRoot", 0);
+	dat->list.hideOffline = DBGetContactSettingByte(NULL, "CLC", "HideOfflineRoot", 0) && style&CLS_USEGROUPS;
 	dat->list.cl.count = dat->list.cl.limit = 0;
 	dat->selection = -1;
 	{
