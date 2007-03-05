@@ -59,8 +59,8 @@ HANDLE hxstatusiconchanged;
 
 extern int bHideXStatusUI;
 
-PLUGININFO pluginInfo = {
-  sizeof(PLUGININFO),
+PLUGININFOEX pluginInfo = {
+  sizeof(PLUGININFOEX),
   NULL,
   PLUGIN_MAKE_VERSION(0,3,10,1),
   "Support for ICQ network, enhanced.",
@@ -69,7 +69,8 @@ PLUGININFO pluginInfo = {
   "(C) 2000-2007 M.Öberg, R.Hughes, J.Keating, Bio, Angeli-Ka, J.Kucera",
   "http://addons.miranda-im.org/details.php?action=viewfile&id=1683",
   0,  //not transient
-  0   //doesn't replace anything built-in
+  0,   //doesn't replace anything built-in
+  {0x847bb03c, 0x408c, 0x4f9b, { 0xaa, 0x5a, 0xf5, 0xc0, 0xb7, 0xb5, 0x60, 0x1e }} //{847BB03C-408C-4f9b-AA5A-F5C0B7B5601E}
 };
 
 static char pluginName[64];
@@ -81,7 +82,7 @@ static int IconLibIconsChanged(WPARAM wParam, LPARAM lParam);
 
 static BOOL bInited = FALSE;
 
-PLUGININFO __declspec(dllexport) *MirandaPluginInfo(DWORD mirandaVersion)
+PLUGININFOEX __declspec(dllexport) *MirandaPluginInfoEx(DWORD mirandaVersion)
 {
   // Only load for 0.7.0.12 or greater
   // We need core MD5 interface

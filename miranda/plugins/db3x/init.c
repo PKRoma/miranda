@@ -150,8 +150,8 @@ static DATABASELINK dblink = {
 	UnloadDatabase,
 };
 
-static PLUGININFO pluginInfo = {
-	sizeof(PLUGININFO),
+static PLUGININFOEX pluginInfo = {
+	sizeof(PLUGININFOEX),
 	"Miranda database driver",
 	PLUGIN_MAKE_VERSION(0,6,0,1),
 	"Provides Miranda database support: global settings, contacts, history, settings per contact.",
@@ -160,7 +160,8 @@ static PLUGININFO pluginInfo = {
 	"Copyright 2000-2006 Miranda IM project",
 	"",
 	0,
-	DEFMOD_DB
+	DEFMOD_DB,
+    {0x1394a3ab, 0x2585, 0x4196, { 0x8f, 0x72, 0xe, 0xae, 0xc2, 0x45, 0xe, 0x11 }} //{1394A3AB-2585-4196-8F72-0EAEC2450E11}
 };
 
 
@@ -175,7 +176,7 @@ __declspec(dllexport) DATABASELINK* DatabasePluginInfo(void * reserved)
 	return &dblink;
 }
 
-__declspec(dllexport) PLUGININFO * MirandaPluginInfo(DWORD mirandaVersion)
+__declspec(dllexport) PLUGININFOEX * MirandaPluginInfoEx(DWORD mirandaVersion)
 {
 	if ( mirandaVersion < PLUGIN_MAKE_VERSION(0,6,0,15)) {
 		MessageBox( NULL, _T("The db3x plugin cannot be loaded. It requires Miranda IM 0.6.0.15 or later."), _T("db3x Plugin"), MB_OK|MB_ICONWARNING|MB_SETFOREGROUND|MB_TOPMOST );

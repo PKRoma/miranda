@@ -22,7 +22,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 extern PREFERENCES *	prefs;
 extern String			StatusMessage;
 extern char *			IRCPROTONAME;
-extern PLUGININFO		pluginInfo;
+extern PLUGININFOEX		pluginInfo;
 extern HWND				list_hWnd;
 extern int				NoOfChannels;
 extern DWORD			mirVersion;

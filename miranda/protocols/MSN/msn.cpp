@@ -84,7 +84,7 @@ char* msnProductID  = NULL;
 char* mailsoundname;
 char* ModuleName;
 
-PLUGININFO pluginInfo =
+PLUGININFOEX pluginInfo =
 {
 	sizeof(PLUGININFO),
 	#if defined( _UNICODE )
@@ -98,7 +98,13 @@ PLUGININFO pluginInfo =
 	"george_hazan@hotmail.com",
 	"© 2001-5 Richard Hughes, George Hazan",
 	"http://miranda-im.org",
-	UNICODE_AWARE,	0
+	UNICODE_AWARE,	
+	0,
+    #if defined( _UNICODE )
+	{0xdc39da8a, 0x8385, 0x4cd9, {0xb2, 0x98, 0x80, 0x67, 0x7b, 0x8f, 0xe6, 0xe4}} //{DC39DA8A-8385-4cd9-B298-80677B8FE6E4}
+    #else
+    {0x29aa3a80, 0x3368, 0x4b78, { 0x82, 0xc1, 0xdf, 0xc7, 0x29, 0x6a, 0x58, 0x99 }} //{29AA3A80-3368-4b78-82C1-DFC7296A5899}
+    #endif
 };
 
 bool			volatile msnLoggedIn = false;
@@ -409,7 +415,7 @@ extern "C" int __declspec( dllexport ) Unload( void )
 /////////////////////////////////////////////////////////////////////////////////////////
 // MirandaPluginInfo - returns an information about a plugin
 
-extern "C" __declspec(dllexport) PLUGININFO* MirandaPluginInfo(DWORD mirandaVersion)
+extern "C" __declspec(dllexport) PLUGININFOEX* MirandaPluginInfo(DWORD mirandaVersion)
 {
 	if ( mirandaVersion < PLUGIN_MAKE_VERSION( 0, 7, 0, 0 )) {
 		MessageBox( NULL, _T("The MSN protocol plugin cannot be loaded. It requires Miranda IM 0.7.0.1 or later."), _T("MSN Protocol Plugin"), MB_OK|MB_ICONWARNING|MB_SETFOREGROUND|MB_TOPMOST );

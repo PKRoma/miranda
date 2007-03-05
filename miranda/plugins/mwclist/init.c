@@ -73,8 +73,8 @@ int TrayIconProcessMessage(WPARAM wParam,LPARAM lParam);
 extern int BGModuleLoad();
 extern int BGModuleUnload();
 
-PLUGININFO pluginInfo = {
-	sizeof(PLUGININFO),
+PLUGININFOEX pluginInfo = {
+	sizeof(PLUGININFOEX),
 	#if defined( _UNICODE )
 		"MultiWindow Contact List Unicode",
 	#else
@@ -87,7 +87,12 @@ PLUGININFO pluginInfo = {
 	"Copyright 2000-2006 Miranda-IM project ["__DATE__" "__TIME__"]",
 	"http://www.miranda-im.org",
 	UNICODE_AWARE,
-	DEFMOD_CLISTALL
+	DEFMOD_CLISTALL,
+	#if defined( _UNICODE )
+		{0x2a417ab9, 0x16f2, 0x472d, { 0x9a, 0xe3, 0x41, 0x51, 0x3, 0xc7, 0x8a, 0x64 }} //{2A417AB9-16F2-472d-9AE3-415103C78A64}
+	#else
+		{0x7ab05d31, 0x9972, 0x4406, { 0x82, 0x3e, 0xe, 0xd7, 0x45, 0xef, 0x7c, 0x56 }} //{7AB05D31-9972-4406-823E-0ED745EF7C56}
+	#endif
 };
 
 BOOL WINAPI DllMain(HINSTANCE hInstDLL, DWORD dwReason, LPVOID reserved)
@@ -97,7 +102,7 @@ BOOL WINAPI DllMain(HINSTANCE hInstDLL, DWORD dwReason, LPVOID reserved)
 	return TRUE;
 }
 
-__declspec(dllexport) PLUGININFO* MirandaPluginInfo(DWORD mirandaVersion)
+__declspec(dllexport) PLUGININFOEX* MirandaPluginInfoEx(DWORD mirandaVersion)
 {
 	if ( mirandaVersion < PLUGIN_MAKE_VERSION(0,3,4,3) ) return NULL;
 	return &pluginInfo;

@@ -23,7 +23,7 @@
 
 // Plugin info
 PLUGININFO pluginInfo = {
-	sizeof(PLUGININFO),
+	sizeof(PLUGININFOEX),
 	"Gadu-Gadu Protocol",
 	PLUGIN_MAKE_VERSION(0, 0, 4, 2),
 	"Provides support for Gadu-Gadu protocol",

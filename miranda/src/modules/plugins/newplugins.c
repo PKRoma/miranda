@@ -31,6 +31,7 @@ typedef int (__cdecl * Miranda_Plugin_Load) ( PLUGINLINK * );
 typedef int (__cdecl * Miranda_Plugin_Unload) ( void );
 // version control
 typedef PLUGININFO * (__cdecl * Miranda_Plugin_Info) ( DWORD mirandaVersion );
+typedef PLUGININFOEX * (__cdecl * Miranda_Plugin_InfoEx) ( DWORD mirandaVersion );
 // prototype for databases
 typedef DATABASELINK * (__cdecl * Database_Plugin_Info) ( void * reserved );
 // prototype for clists
@@ -42,9 +43,10 @@ typedef struct { // can all be NULL
 	Miranda_Plugin_Load Load;
 	Miranda_Plugin_Unload Unload;
 	Miranda_Plugin_Info Info;
+	Miranda_Plugin_InfoEx InfoEx;
 	Database_Plugin_Info DbInfo;
 	CList_Initialise clistlink;
-	PLUGININFO * pluginInfo;	 // must be freed if hInst==NULL then its a copy
+	PLUGININFOEX * pluginInfo;	 // must be freed if hInst==NULL then its a copy
 	DATABASELINK * dblink;		 // only valid during module being in memory
 } BASIC_PLUGIN_INFO;
 
@@ -143,11 +145,16 @@ static int checkAPI(char * plugin, BASIC_PLUGIN_INFO * bpi, DWORD mirandaVersion
 	bpi->Load = (Miranda_Plugin_Load) GetProcAddress(h, "Load");
 	bpi->Unload = (Miranda_Plugin_Unload) GetProcAddress(h, "Unload");
 	bpi->Info = (Miranda_Plugin_Info) GetProcAddress(h, "MirandaPluginInfo");
+	bpi->InfoEx = (Miranda_Plugin_InfoEx) GetProcAddress(h, "MirandaPluginInfoEx");
 	// if they were present
-	if ( bpi->Load && bpi->Unload && bpi->Info )
+	if ( bpi->Load && bpi->Unload && (bpi->Info||bpi->InfoEx) )
 	{
-		PLUGININFO * pi = bpi->Info(mirandaVersion);
-		if ( pi && pi->cbSize==sizeof(PLUGININFO) && pi->shortName && pi->description
+		PLUGININFOEX * pi = 0;
+		if (bpi->InfoEx)
+			pi = bpi->InfoEx(mirandaVersion);
+		else
+			pi = (PLUGININFOEX*)bpi->Info(mirandaVersion);
+		if ( pi && (pi->cbSize==sizeof(PLUGININFO)||pi->cbSize==sizeof(PLUGININFOEX)) && pi->shortName && pi->description
 				&& pi->author && pi->authorEmail && pi->copyright && pi->homepage
 				&& pi->replacesDefaultModule <= DEFMOD_HIGHEST
 				&& pi->replacesDefaultModule != DEFMOD_REMOVED_UIPLUGINOPTS)

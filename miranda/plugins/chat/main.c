@@ -48,8 +48,8 @@ struct GlobalLogSettings_t g_Settings;
 
 static void InitREOleCallback(void);
 
-PLUGININFO pluginInfo = {
-	sizeof(PLUGININFO),
+PLUGININFOEX pluginInfo = {
+	sizeof(PLUGININFOEX),
 	#ifdef _UNICODE
 		"Chat (Unicode)",
 	#else
@@ -62,7 +62,12 @@ PLUGININFO pluginInfo = {
 	"© 2003-2006 Miranda team",
 	"http://miranda-im.org/",
 	UNICODE_AWARE,
-	0
+	0,
+    #ifdef _UNICODE
+    {0x9d6c3213, 0x2b4, 0x4fe1, { 0x92, 0xe6, 0x52, 0x6d, 0xe2, 0x4f, 0x8d, 0x65 }} //{9D6C3213-02B4-4fe1-92E6-526DE24F8D65}
+    #else
+    {0xd3d9f953, 0x85bc, 0x486c, { 0xa7, 0xbe, 0x31, 0x43, 0xa6, 0xfd, 0x29, 0xf }} //{D3D9F953-85BC-486c-A7BE-3143A6FD290F}
+    #endif
 };
 
 BOOL WINAPI DllMain(HINSTANCE hinstDLL,DWORD fdwReason,LPVOID lpvReserved)
@@ -71,7 +76,7 @@ BOOL WINAPI DllMain(HINSTANCE hinstDLL,DWORD fdwReason,LPVOID lpvReserved)
 	return TRUE;
 }
 
-__declspec(dllexport) PLUGININFO* MirandaPluginInfo(DWORD mirandaVersion)
+__declspec(dllexport) PLUGININFOEX* MirandaPluginInfoEx(DWORD mirandaVersion)
 {
 	if (mirandaVersion < PLUGIN_MAKE_VERSION(0,7,0,2)) return NULL;
 	return &pluginInfo;

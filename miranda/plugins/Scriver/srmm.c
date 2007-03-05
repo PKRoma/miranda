@@ -33,8 +33,8 @@ struct MM_INTERFACE memoryManagerInterface;
 PLUGINLINK *pluginLink;
 HINSTANCE g_hInst;
 
-PLUGININFO pluginInfo = {
-	sizeof(PLUGININFO),
+PLUGININFOEX pluginInfo = {
+	sizeof(PLUGININFOEX),
 #ifdef _UNICODE
 	"Scriver (Unicode)",
 #else
@@ -51,7 +51,12 @@ PLUGININFO pluginInfo = {
 	"Copyright © 2000-2007 Miranda IM Project",
 	"http://mgoodies.berlios.de",
 	UNICODE_AWARE,
-	DEFMOD_SRMESSAGE            // replace internal version (if any)
+	DEFMOD_SRMESSAGE,            // replace internal version (if any)
+#ifdef _UNICODE
+	{0x84636f78, 0x2057, 0x4302, { 0x8a, 0x65, 0x23, 0xa1, 0x6d, 0x46, 0x84, 0x4c }} //{84636F78-2057-4302-8A65-23A16D46844C}
+#else
+	{0x1e91b6c9, 0xe040, 0x4a6f, { 0xab, 0x56, 0xdf, 0x76, 0x98, 0xfa, 0xcb, 0xf1 }} //{1E91B6C9-E040-4a6f-AB56-DF7698FACBF1}
+#endif
 };
 
 BOOL WINAPI DllMain(HINSTANCE hinstDLL, DWORD fdwReason, LPVOID lpvReserved)
@@ -61,7 +66,7 @@ BOOL WINAPI DllMain(HINSTANCE hinstDLL, DWORD fdwReason, LPVOID lpvReserved)
 }
 
 __declspec(dllexport)
-	 PLUGININFO *MirandaPluginInfo(DWORD mirandaVersion)
+	 PLUGININFOEX *MirandaPluginInfoEx(DWORD mirandaVersion)
 {
 	if (mirandaVersion < PLUGIN_MAKE_VERSION(0, 6, 0, 0))
 		return NULL;

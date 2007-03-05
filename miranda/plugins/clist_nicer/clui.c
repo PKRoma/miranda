@@ -48,7 +48,7 @@ static byte oldhideoffline;
 static int disableautoupd=1;
 HANDLE hFrameContactTree;
 extern HIMAGELIST hCListImages;
-extern PLUGININFO pluginInfo;
+extern PLUGININFOEX pluginInfo;
 extern WNDPROC OldStatusBarProc;
 extern RECT old_window_rect, new_window_rect;
 extern pfnDrawAlpha pDrawAlpha;

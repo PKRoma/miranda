@@ -269,7 +269,7 @@ char* YAHOO_GetContactName( HANDLE hContact )
 	return ( char* )YAHOO_CallService( MS_CLIST_GETCONTACTDISPLAYNAME, (WPARAM) hContact, 0 );
 }
 
-extern PLUGININFO pluginInfo;
+extern PLUGININFOEX pluginInfo;
 
 /*
  * Thanks Robert for the following function. Copied from AIM plugin.

@@ -56,8 +56,8 @@ BOOL WINAPI DllMain(HINSTANCE hInstDLL, DWORD dwReason, LPVOID reserved)
 /////////////////////////////////////////////////////////////////////////////////////////
 // returns the plugin information
 
-PLUGININFO pluginInfo = {
-	sizeof(PLUGININFO),
+PLUGININFOEX pluginInfo = {
+	sizeof(PLUGININFOEX),
 	#if defined( _UNICODE )
 		"Classic contact list (Unicode)",
 	#else
@@ -71,10 +71,15 @@ PLUGININFO pluginInfo = {
 	"Copyright 2000-2006 Miranda IM project",
 	"http://www.miranda-im.org",
 	UNICODE_AWARE,
-	DEFMOD_CLISTALL
+	DEFMOD_CLISTALL,
+	#if defined( _UNICODE )
+    {0x240a91dc, 0x9464, 0x457a, { 0x97, 0x87, 0xff, 0x1e, 0xa8, 0x8e, 0x77, 0xe3 }} //{240A91DC-9464-457a-9787-FF1EA88E77E3}
+	#else
+    {0x552cf71a, 0x249f, 0x4650, { 0xbb, 0x2b, 0x7c, 0xdb, 0x1f, 0xe7, 0xd1, 0x78 }} //{552CF71A-249F-4650-BB2B-7CDB1FE7D178}
+	#endif
 };
 
-__declspec(dllexport) PLUGININFO *MirandaPluginInfo(DWORD mirandaVersion)
+__declspec(dllexport) PLUGININFOEX *MirandaPluginInfoEx(DWORD mirandaVersion)
 {
 	if (mirandaVersion < PLUGIN_MAKE_VERSION(0, 4, 3, 0))
 		return NULL;

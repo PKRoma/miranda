@@ -47,7 +47,7 @@ BOOL show_relnotes = FALSE;
 
 MYGLOBALS myGlobals;
 NEN_OPTIONS nen_options;
-extern PLUGININFO pluginInfo;
+extern PLUGININFOEX pluginInfo;
 
 static void InitREOleCallback(void);
 static void UnloadIcons();

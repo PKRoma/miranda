@@ -49,8 +49,8 @@ HANDLE   hHookContactDeleted;
 HANDLE   hHookIdle;
 HANDLE   hYahooNudge = NULL;
 
-PLUGININFO pluginInfo={
-		sizeof(PLUGININFO),
+PLUGININFOEX pluginInfo={
+		sizeof(PLUGININFOEX),
 #ifdef YAHOO_CVSBUILD
 		"Yahoo Protocol Beta/Nightly",
 #else
@@ -63,7 +63,8 @@ PLUGININFO pluginInfo={
 		"© 2003-2007 G.Feldman",
 		"http://www.miranda-im.org/download/details.php?action=viewfile&id=1248",
 		0, //not transient
-		0 //DEFMOD_PROTOCOLYAHOO - no core yahoo protocol
+		0, //DEFMOD_PROTOCOLYAHOO - no core yahoo protocol
+        {0xa6648b6c, 0x6fb8, 0x4551, { 0xb4, 0xe7, 0x1, 0x36, 0xf9, 0x16, 0xd4, 0x85 }} //{A6648B6C-6FB8-4551-B4E7-0136F916D485}
 };
 
 int    yahooStatus = ID_STATUS_OFFLINE;
@@ -97,10 +98,10 @@ BOOL WINAPI DllMain(HINSTANCE hinst,DWORD fdwReason,LPVOID lpvReserved)
 }*/
 
 /*
- * MirandaPluginInfo - Sets plugin info
+ * MirandaPluginInfoEx - Sets plugin info
  * Parameters: (DWORD mirandaVersion)
  */
-__declspec(dllexport) PLUGININFO* MirandaPluginInfo(DWORD mirandaVersion)
+__declspec(dllexport) PLUGININFOEX* MirandaPluginInfoEx(DWORD mirandaVersion)
 {
 	//
     // We require Miranda 0.7.0.12

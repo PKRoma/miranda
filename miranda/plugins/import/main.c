@@ -56,8 +56,8 @@ PLUGINLINK *pluginLink;
 static HWND hwndWizard = NULL;
 char str[512];
 
-PLUGININFO pluginInfo = {
-	sizeof(PLUGININFO),
+PLUGININFOEX pluginInfo = {
+	sizeof(PLUGININFOEX),
 		"Import contacts and messages",
 		PLUGIN_MAKE_VERSION(0,9,2,2),
 		"Imports contacts and messages from Mirabilis ICQ and Miranda IM.",
@@ -66,7 +66,8 @@ PLUGININFO pluginInfo = {
 		"© 2000-2005 Martin Öberg, Richard Hughes",
 		"http://www.miranda-im.org",
 		0,
-		0
+		0,
+        {0x2d77a746, 0xa6, 0x4343, { 0xbf, 0xc5, 0xf8, 0x8, 0xcd, 0xd7, 0x72, 0xea }} //{2D77A746-00A6-4343-BFC5-F808CDD772EA}
 };
 
 
@@ -466,7 +467,7 @@ static int ImportCommand(WPARAM wParam,LPARAM lParam)
 }
 
 
-__declspec(dllexport) PLUGININFO* MirandaPluginInfo(DWORD mirandaVersion)
+__declspec(dllexport) PLUGININFOEX* MirandaPluginInfoEx(DWORD mirandaVersion)
 {
 
 	if (mirandaVersion < PLUGIN_MAKE_VERSION(0, 4, 0, 0))

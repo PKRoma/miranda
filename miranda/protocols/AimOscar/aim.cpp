@@ -3,7 +3,7 @@ PLUGINLINK *pluginLink;
 #define AIM_OSCAR_VERSION "\0\0\0\x07"
 char* AIM_CLIENT_ID_STRING="Miranda Oscar Plugin, version 0.0.0.7";
 char AIM_CAP_MIRANDA[]="MirandaA\0\0\0\0\0\0\0";
-PLUGININFO pluginInfo={
+PLUGININFOEX pluginInfo={
 	sizeof(PLUGININFO),
 	"AIM OSCAR Plugin - Version 7(Avatar Test Build)",
 	PLUGIN_MAKE_VERSION(0,0,0,7),
@@ -13,7 +13,8 @@ PLUGININFO pluginInfo={
 	"© 2005-2006 Aaron Myles Landwehr",
 	"http://www.snaphat.com/oscar",
 	0,		//not transient
-	0		//doesn't replace anything built-in
+	0,		//doesn't replace anything built-in
+    {0xb4ef58c4, 0x4458, 0x4e47, { 0xa7, 0x67, 0x5c, 0xae, 0xe5, 0xe7, 0xc, 0x81 }} //{B4EF58C4-4458-4e47-A767-5CAEE5E70C81}
 };
 oscar_data conn;
 file_transfer* fu;
@@ -23,7 +24,7 @@ extern "C" __declspec(dllexport) bool WINAPI DllMain(HINSTANCE hinstDLL,DWORD /*
 	conn.hInstance = hinstDLL;
 	return TRUE;
 }
-extern "C" __declspec(dllexport) PLUGININFO* MirandaPluginInfo(DWORD mirandaVersion)
+extern "C" __declspec(dllexport) PLUGININFOEX* MirandaPluginInfo(DWORD mirandaVersion)
 {
 	unsigned long mv=_htonl(mirandaVersion);
 	memcpy((char*)&AIM_CAP_MIRANDA[8],&mv,sizeof(DWORD));

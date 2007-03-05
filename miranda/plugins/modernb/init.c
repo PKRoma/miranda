@@ -122,8 +122,8 @@ typedef BOOL (WINAPI *fEnableThemeDialogTexture)(HANDLE, DWORD);
 fEnableThemeDialogTexture pfEnableThemeDialogTexture = NULL;
 
 
-PLUGININFO pluginInfo = {
-	sizeof(PLUGININFO),
+PLUGININFOEX pluginInfo = {
+	sizeof(PLUGININFOEX),
 #ifndef _DEBUG
 	#ifdef UNICODE
 		"Modern Contact List (UNICODE)",
@@ -138,7 +138,7 @@ PLUGININFO pluginInfo = {
 			"Debug of Modern Contact List (ANSI)",
 	#endif
 #endif
-	0,                              //will initiate later in MirandaPluginInfo
+	0,                              //will initiate later in MirandaPluginInfoEx
 	"Display contacts, event notifications, protocol status with advantage visual modifications. Supported MW modifications, enchanced metacontact cooperation.",
 	"Artem Shpynov, Ricardo Pescuma Domenecci and Anton Senko based on clist_mw by Bethoven",
 	"ashpynov@gmail.com" ,
@@ -149,7 +149,12 @@ PLUGININFO pluginInfo = {
     "http://miranda-im.org/download/details.php?action=viewfile&id=2996",
 #endif
 	UNICODE_AWARE,
-	DEFMOD_CLISTALL
+	DEFMOD_CLISTALL,
+#ifdef UNICODE
+	{0x43909b6, 0xaad8, 0x4d82, { 0x8e, 0xb5, 0x9f, 0x64, 0xcf, 0xe8, 0x67, 0xcd }} //{043909B6-AAD8-4d82-8EB5-9F64CFE867CD}
+#else
+	{0xf6588c56, 0x15dc, 0x4cd7, { 0x8c, 0xf9, 0x48, 0xab, 0x6c, 0x5f, 0xd2, 0xf }} //{F6588C56-15DC-4cd7-8CF9-48AB6C5FD20F}
+#endif
 };
 
 BOOL WINAPI DllMain(HINSTANCE hInstDLL, DWORD dwReason, LPVOID reserved)
@@ -164,7 +169,7 @@ int MakeVer(a,b,c,d)
     return (((((DWORD)(a))&0xFF)<<24)|((((DWORD)(b))&0xFF)<<16)|((((DWORD)(c))&0xFF)<<8)|(((DWORD)(d))&0xFF));
 }
 
-__declspec(dllexport) PLUGININFO* MirandaPluginInfo(DWORD mirandaVersion)
+__declspec(dllexport) PLUGININFOEX* MirandaPluginInfoEx(DWORD mirandaVersion)
 {
 	if ( mirandaVersion < MINIMAL_COREVERSION_NUM )
 	{

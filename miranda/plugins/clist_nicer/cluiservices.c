@@ -30,7 +30,7 @@ UNICODE done
 extern HIMAGELIST hCListImages, himlExtraImages;;
 extern struct CluiData g_CluiData;
 extern int g_shutDown;
-extern PLUGININFO pluginInfo;
+extern PLUGININFOEX pluginInfo;
 
 extern ButtonItem *g_ButtonItems;
 

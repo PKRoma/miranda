@@ -50,6 +50,42 @@ typedef struct {
 			 //with the implication that this plugin provides back-end-compatible features
 } PLUGININFO;
 
+/* 0.7+ 
+   New plugin loader implementation
+*/
+/* The UUID structure below is used to for plugin UUID's and module type definitions */
+typedef struct _MUUID {
+  unsigned long a;
+  unsigned short b;
+  unsigned short c;
+  unsigned char d[8];
+} MUUID;
+
+/* The following define will generate a <id>_MPID const for plugin uuid's */
+#define DEFINE_MPID(id, a, b, c, d, e, f, g, h, i, j, k) \
+const MUUID id##_MPID = {a, b, c, {e, f, g, h, i, j, k}}
+
+/* The following define will generate a <id>_MPID const for interfaces */
+#define DEFINE_MIID(iface, a, b, c, d, e, f, g, h, i, j, k) \
+const MUUID iface##_MIID = {a, b, c, {e, f, g, h, i, j, k}}
+
+typedef struct {
+	int cbSize;
+	char *shortName;
+	DWORD version;
+	char *description;
+	char *author;
+	char *authorEmail;
+	char *copyright;
+	char *homepage;
+	BYTE isTransient;	   //leave this as 0 for now
+	int replacesDefaultModule;		   //one of the DEFMOD_ constants in m_plugins.h or zero
+	         //if non-zero, this will supress the loading of the specified built-in module
+			 //with the implication that this plugin provides back-end-compatible features
+             /***********  WILL BE DEPRECATED in 0.8 * *************/
+    MUUID uuid; // Not required until 0.8.
+} PLUGININFOEX;
+
 #ifndef MODULES_H_
 typedef int (*MIRANDAHOOK)(WPARAM,LPARAM);
 typedef int (*MIRANDASERVICE)(WPARAM,LPARAM);
