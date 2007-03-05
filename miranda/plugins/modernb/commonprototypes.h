@@ -11,7 +11,7 @@
 
 #define SKIN  "ModernSkin"
 
-extern PLUGININFO pluginInfo;
+extern PLUGININFOEX pluginInfo;
 extern struct LIST_INTERFACE li;
 extern CLIST_INTERFACE * pcli;
 
@@ -60,7 +60,6 @@ extern BOOL g_flag_bPostWasCanceled;
 extern BOOL g_flag_bFullRepaint;
 extern BOOL g_bMultiConnectionMode;
 extern BYTE g_bCalledFromShowHide;
-extern PLUGININFO pluginInfo;
 extern HICON listening_to_icon;
 extern BOOL glOtherSkinWasLoaded;
 extern BYTE glSkinWasModified;
