@@ -1,8 +1,8 @@
-// 0, 7, 17, 2
+// 0, 7, 17, 3
 
 
-#define BUILD_NUM 2
-#define BUILD_NUM_STR  "2"
+#define BUILD_NUM 3
+#define BUILD_NUM_STR  "3"
 
 #define MINIMAL_COREVERSION_NUM PLUGIN_MAKE_VERSION(0, 7, 0, 17)
 #define MINIMAL_COREVERSION 0, 7, 0, 17
