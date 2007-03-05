@@ -77,6 +77,7 @@ DWORD CompareContacts2_getLMTime(HANDLE u)
 }
 
 #define SAFESTRING(a) a?a:""
+#define SAFETSTRING(a) a?a:_T("")
 
 int GetProtoIndex(char * szName)
 {
@@ -144,6 +145,12 @@ int CompareContacts2(const struct ClcContact *contact1,const struct ClcContact *
 	if (by==SORTBY_NAME) 
 	{ //name
 		return mir_tstrcmpi(namea,nameb);
+	} 
+	if (by==SORTBY_NAME_LOCALE) 
+	{ //name
+		static int LocaleId=-1;
+		if (LocaleId==-1) LocaleId=CallService(MS_LANGPACK_GETLOCALE,0,0);
+		return (CompareString(LocaleId,NORM_IGNORECASE,SAFETSTRING(namea),-1,SAFETSTRING(nameb),-1))-2;
 	} 
 	else if (by==SORTBY_LASTMSG) 
 	{ //last message

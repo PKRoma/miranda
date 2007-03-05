@@ -114,7 +114,6 @@ struct ClcGroup *cli_AddGroup(HWND hwnd,struct ClcData *dat,const TCHAR *szName,
 {
 	struct ClcGroup* result;
 	ClearRowByIndexCache();	
-
 	if (!dat->force_in_dialog && !(GetWindowLong(hwnd, GWL_STYLE) & CLS_SHOWHIDDEN))
 		if (!lstrcmp(_T("-@-HIDDEN-GROUP-@-"),szName))        //group is hidden
 		{   	
@@ -338,7 +337,7 @@ void cliRebuildEntireList(HWND hwnd,struct ClcData *dat)
     TRACEVAR("Rebuild Entire List %d times\n",++rebuildCounter);
   
 	dat->list.expanded=1;
-	dat->list.hideOffline=DBGetContactSettingByte(NULL,"CLC","HideOfflineRoot",0);
+	dat->list.hideOffline=DBGetContactSettingByte(NULL,"CLC","HideOfflineRoot",0) && style&CLS_USEGROUPS;
 	dat->list.cl.count = dat->list.cl.limit = 0;
 	dat->list.cl.increment = 50;
 	dat->NeedResort=1;

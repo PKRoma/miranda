@@ -273,6 +273,7 @@ extern __inline char * strdupn(const char * src, int len);
 #define SORTBY_LASTMSG 2
 #define SORTBY_PROTO   3
 #define SORTBY_RATE    4
-
+#define SORTBY_NAME_LOCALE 5
+#define SORTBY_NOTHING	10
 
 #endif // commonheaders_h__

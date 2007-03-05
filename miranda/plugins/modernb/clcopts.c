@@ -1586,8 +1586,10 @@ static BOOL CALLBACK DlgProcClcTextOpts(HWND hwndDlg, UINT msg, WPARAM wParam, L
 	}
 	return FALSE;
 }
-
-static BOOL CALLBACK DlgProcGenOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam)
+TCHAR *sortby[]={_T("Name"), _T("Name (use locale settings)") , _T("Status"), _T("Last message time"), _T("Protocol"),_T("Rate"), _T("-Nothing-")};
+int sortbyValue[]={ SORTBY_NAME, SORTBY_NAME_LOCALE, SORTBY_STATUS, SORTBY_LASTMSG, SORTBY_PROTO ,SORTBY_RATE , SORTBY_NOTHING };
+static BOOL 
+CALLBACK DlgProcGenOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam)
 {
 	switch (msg)
 	{
@@ -1618,7 +1620,7 @@ static BOOL CALLBACK DlgProcGenOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARA
 		CheckDlgButton(hwndDlg, IDC_DISABLEGROUPS, DBGetContactSettingByte(NULL,"CList","UseGroups",SETTING_USEGROUPS_DEFAULT) ? BST_UNCHECKED : BST_CHECKED);
 		{
 			int i, item;
-			TCHAR *sortby[]={_T("Name"), _T("Status"), _T("Last message time"), _T("Protocol"),_T("Rate"), _T("-Nothing-")};
+			int s1, s2, s3;
 			for (i=0; i<sizeof(sortby)/sizeof(char*); i++) 
             {
 				item=SendDlgItemMessage(hwndDlg,IDC_CLSORT1,CB_ADDSTRING,0,(LPARAM)TranslateTS(sortby[i]));
@@ -1627,11 +1629,21 @@ static BOOL CALLBACK DlgProcGenOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARA
 				SendDlgItemMessage(hwndDlg,IDC_CLSORT2,CB_SETITEMDATA,item,(LPARAM)0);
 				item=SendDlgItemMessage(hwndDlg,IDC_CLSORT3,CB_ADDSTRING,0,(LPARAM)TranslateTS(sortby[i]));
 				SendDlgItemMessage(hwndDlg,IDC_CLSORT3,CB_SETITEMDATA,item,(LPARAM)0);
-			}
-			SendDlgItemMessage(hwndDlg,IDC_CLSORT1,CB_SETCURSEL,DBGetContactSettingByte(NULL,"CList","SortBy1",SETTING_SORTBY1_DEFAULT),0);
-			SendDlgItemMessage(hwndDlg,IDC_CLSORT2,CB_SETCURSEL,DBGetContactSettingByte(NULL,"CList","SortBy2",SETTING_SORTBY2_DEFAULT),0);
-			SendDlgItemMessage(hwndDlg,IDC_CLSORT3,CB_SETCURSEL,DBGetContactSettingByte(NULL,"CList","SortBy3",SETTING_SORTBY3_DEFAULT),0);
 
+			}
+			s1=DBGetContactSettingByte(NULL,"CList","SortBy1",SETTING_SORTBY1_DEFAULT);
+			s2=DBGetContactSettingByte(NULL,"CList","SortBy2",SETTING_SORTBY2_DEFAULT);
+			s3=DBGetContactSettingByte(NULL,"CList","SortBy3",SETTING_SORTBY3_DEFAULT);
+
+			for (i=0; i<sizeof(sortby)/sizeof(char*); i++) 
+			{
+				if (s1==sortbyValue[i])
+					SendDlgItemMessage(hwndDlg,IDC_CLSORT1,CB_SETCURSEL,i,0);
+				if (s2==sortbyValue[i])
+					SendDlgItemMessage(hwndDlg,IDC_CLSORT2,CB_SETCURSEL,i,0);
+				if (s3==sortbyValue[i])
+					SendDlgItemMessage(hwndDlg,IDC_CLSORT3,CB_SETCURSEL,i,0);		
+			}
 
 		}
 		CheckDlgButton(hwndDlg, IDC_NOOFFLINEMOVE, DBGetContactSettingByte(NULL,"CList","NoOfflineBottom",SETTING_NOOFFLINEBOTTOM_DEFAULT) ? BST_CHECKED : BST_UNCHECKED);
@@ -1800,9 +1812,17 @@ static BOOL CALLBACK DlgProcGenOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARA
 					DBWriteContactSettingWord(NULL,"CList","HideTime",(WORD)SendDlgItemMessage(hwndDlg,IDC_HIDETIMESPIN,UDM_GETPOS,0,0));
 				}
 				}
-				DBWriteContactSettingByte(NULL,"CList","SortBy1",(BYTE)SendDlgItemMessage(hwndDlg,IDC_CLSORT1,CB_GETCURSEL,0,0));
-				DBWriteContactSettingByte(NULL,"CList","SortBy2",(BYTE)SendDlgItemMessage(hwndDlg,IDC_CLSORT2,CB_GETCURSEL,0,0));
-				DBWriteContactSettingByte(NULL,"CList","SortBy3",(BYTE)SendDlgItemMessage(hwndDlg,IDC_CLSORT3,CB_GETCURSEL,0,0));
+				{
+					int s1=SendDlgItemMessage(hwndDlg,IDC_CLSORT1,CB_GETCURSEL,0,0);
+					int s2=SendDlgItemMessage(hwndDlg,IDC_CLSORT2,CB_GETCURSEL,0,0);
+					int s3=SendDlgItemMessage(hwndDlg,IDC_CLSORT3,CB_GETCURSEL,0,0);
+					if (s1>=0) s1=sortbyValue[s1];
+					if (s2>=0) s2=sortbyValue[s2];
+					if (s3>=0) s3=sortbyValue[s3];
+					DBWriteContactSettingByte(NULL,"CList","SortBy1",(BYTE)s1);
+					DBWriteContactSettingByte(NULL,"CList","SortBy2",(BYTE)s2);
+					DBWriteContactSettingByte(NULL,"CList","SortBy3",(BYTE)s3);
+				}
 				DBWriteContactSettingByte(NULL,"CList","NoOfflineBottom",(BYTE)IsDlgButtonChecked(hwndDlg,IDC_NOOFFLINEMOVE));
 				DBWriteContactSettingByte(NULL,"CList","PlaceOfflineToRoot",(BYTE)IsDlgButtonChecked(hwndDlg,IDC_OFFLINETOROOT));
 

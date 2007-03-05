@@ -236,6 +236,23 @@ typedef struct tagClcContactTextPiece
 	};
 } ClcContactTextPiece;
 
+#define CIT_PAINT_END	0  //next items are invalids
+#define CIT_AVATAR		1
+#define CIT_ICON		2
+#define CIT_TEXT		3  //the contact name or group name
+#define CIT_SUBTEXT1	4  //the second line for contact or group counter for groups
+#define CIT_SUBTEXT2	5
+#define CIT_TIME		6
+#define CIT_CHECKBOX	7
+#define CIT_SELECTION	8
+#define CIT_EXTRA		64 //use bit compare for extra icon, the mask &0x3F will return number of extra icon
+
+
+typedef struct _tagContactItems
+{
+	BYTE itemType;	   //one of above CIT_ definitions
+	RECT itemRect;
+}tContactItems;
 
 struct ClcContact {
 	BYTE type;
@@ -263,15 +280,7 @@ struct ClcContact {
 	int avatar_pos;
 	struct avatarCacheEntry *avatar_data;
 	SortedList *plText;						// List of ClcContactTextPiece
-	//TCHAR *szSecondLineText;//[120-MAXEXTRACOLUMNS];
-	//SortedList *plSecondLineText;				// List of ClcContactTextPiece
-	//TCHAR *szThirdLineText;//[120-MAXEXTRACOLUMNS];
-	//SortedList *plThirdLineText;				// List of ClcContactTextPiece
     int iTextMaxSmileyHeight;
-	//int iThirdLineMaxSmileyHeight;
-    //int iSecondLineMaxSmileyHeight;
-    //DWORD timezone;
-    //DWORD timediff;
 
 	// For hittest
 	int pos_indent;
@@ -284,6 +293,11 @@ struct ClcContact {
 	RECT pos_extra[MAXEXTRACOLUMNS];
     DWORD lastPaintCounter;
     BYTE bContactRate;
+
+	// For extended layout
+	BYTE ext_nItemsNum;
+	BOOL ext_fItemsValid;
+	tContactItems ext_mpItemsDesc[MAXEXTRACOLUMNS+10];  //up to 10 items
 };
 
 
