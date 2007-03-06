@@ -345,6 +345,9 @@
 				RelativePath="..\include\m_history.h">
 			</File>
 			<File
+				RelativePath="..\include\m_icolib.h">
+			</File>
+			<File
 				RelativePath="..\include\m_icq.h">
 			</File>
 			<File

@@ -11,7 +11,9 @@
 	"..\..\include\m_database.h"\
 	"..\..\include\m_file.h"\
 	"..\..\include\m_history.h"\
+	"..\..\include\m_icolib.h"\
 	"..\..\include\m_langpack.h"\
+	"..\..\include\m_message.h"\
 	"..\..\include\m_options.h"\
 	"..\..\include\m_plugins.h"\
 	"..\..\include\m_popup.h"\
@@ -30,7 +32,6 @@
 	".\commonheaders.h"\
 	".\functions.h"\
 	".\generic_msghandlers.h"\
-	".\IcoLib.h"\
 	".\m_avatars.h"\
 	".\m_cln_skinedit.h"\
 	".\m_fingerprint.h"\
@@ -40,7 +41,7 @@
 	".\m_nudge.h"\
 	".\m_smileyadd.h"\
 	".\m_Snapping_windows.h"\
-	".\m_tabsrmm.h"\
+	".\m_spellchecker.h"\
 	".\msgdlgutils.h"\
 	".\msgs.h"\
 	".\nen.h"\
@@ -58,7 +59,9 @@
 	"..\..\include\m_database.h"\
 	"..\..\include\m_file.h"\
 	"..\..\include\m_history.h"\
+	"..\..\include\m_icolib.h"\
 	"..\..\include\m_langpack.h"\
+	"..\..\include\m_message.h"\
 	"..\..\include\m_options.h"\
 	"..\..\include\m_plugins.h"\
 	"..\..\include\m_popup.h"\
@@ -77,7 +80,6 @@
 	".\commonheaders.h"\
 	".\functions.h"\
 	".\generic_msghandlers.h"\
-	".\IcoLib.h"\
 	".\m_avatars.h"\
 	".\m_cln_skinedit.h"\
 	".\m_fingerprint.h"\
@@ -87,7 +89,7 @@
 	".\m_nudge.h"\
 	".\m_smileyadd.h"\
 	".\m_Snapping_windows.h"\
-	".\m_tabsrmm.h"\
+	".\m_spellchecker.h"\
 	".\msgdlgutils.h"\
 	".\msgs.h"\
 	".\nen.h"\
@@ -105,7 +107,9 @@
 	"..\..\include\m_database.h"\
 	"..\..\include\m_file.h"\
 	"..\..\include\m_history.h"\
+	"..\..\include\m_icolib.h"\
 	"..\..\include\m_langpack.h"\
+	"..\..\include\m_message.h"\
 	"..\..\include\m_options.h"\
 	"..\..\include\m_plugins.h"\
 	"..\..\include\m_popup.h"\
@@ -124,17 +128,17 @@
 	".\commonheaders.h"\
 	".\functions.h"\
 	".\generic_msghandlers.h"\
-	".\IcoLib.h"\
 	".\m_avatars.h"\
 	".\m_cln_skinedit.h"\
 	".\m_fingerprint.h"\
 	".\m_flash.h"\
 	".\m_ieview.h"\
+	".\m_MathModule.h"\
 	".\m_metacontacts.h"\
 	".\m_nudge.h"\
 	".\m_smileyadd.h"\
 	".\m_Snapping_windows.h"\
-	".\m_tabsrmm.h"\
+	".\m_spellchecker.h"\
 	".\msgdlgutils.h"\
 	".\msgs.h"\
 	".\nen.h"\
@@ -152,7 +156,9 @@
 	"..\..\include\m_database.h"\
 	"..\..\include\m_file.h"\
 	"..\..\include\m_history.h"\
+	"..\..\include\m_icolib.h"\
 	"..\..\include\m_langpack.h"\
+	"..\..\include\m_message.h"\
 	"..\..\include\m_options.h"\
 	"..\..\include\m_plugins.h"\
 	"..\..\include\m_popup.h"\
@@ -171,7 +177,6 @@
 	".\commonheaders.h"\
 	".\functions.h"\
 	".\generic_msghandlers.h"\
-	".\IcoLib.h"\
 	".\m_avatars.h"\
 	".\m_cln_skinedit.h"\
 	".\m_fingerprint.h"\
@@ -181,7 +186,7 @@
 	".\m_nudge.h"\
 	".\m_smileyadd.h"\
 	".\m_Snapping_windows.h"\
-	".\m_tabsrmm.h"\
+	".\m_spellchecker.h"\
 	".\msgdlgutils.h"\
 	".\msgs.h"\
 	".\nen.h"\
@@ -199,7 +204,9 @@
 	"..\..\include\m_database.h"\
 	"..\..\include\m_file.h"\
 	"..\..\include\m_history.h"\
+	"..\..\include\m_icolib.h"\
 	"..\..\include\m_langpack.h"\
+	"..\..\include\m_message.h"\
 	"..\..\include\m_options.h"\
 	"..\..\include\m_plugins.h"\
 	"..\..\include\m_popup.h"\
@@ -218,7 +225,6 @@
 	".\commonheaders.h"\
 	".\functions.h"\
 	".\generic_msghandlers.h"\
-	".\IcoLib.h"\
 	".\m_avatars.h"\
 	".\m_cln_skinedit.h"\
 	".\m_fingerprint.h"\
@@ -228,7 +234,7 @@
 	".\m_nudge.h"\
 	".\m_smileyadd.h"\
 	".\m_Snapping_windows.h"\
-	".\m_tabsrmm.h"\
+	".\m_spellchecker.h"\
 	".\msgdlgutils.h"\
 	".\msgs.h"\
 	".\nen.h"\
@@ -246,7 +252,9 @@
 	"..\..\include\m_database.h"\
 	"..\..\include\m_file.h"\
 	"..\..\include\m_history.h"\
+	"..\..\include\m_icolib.h"\
 	"..\..\include\m_langpack.h"\
+	"..\..\include\m_message.h"\
 	"..\..\include\m_options.h"\
 	"..\..\include\m_plugins.h"\
 	"..\..\include\m_popup.h"\
@@ -265,7 +273,6 @@
 	".\commonheaders.h"\
 	".\functions.h"\
 	".\generic_msghandlers.h"\
-	".\IcoLib.h"\
 	".\m_avatars.h"\
 	".\m_cln_skinedit.h"\
 	".\m_fingerprint.h"\
@@ -275,7 +282,7 @@
 	".\m_nudge.h"\
 	".\m_smileyadd.h"\
 	".\m_Snapping_windows.h"\
-	".\m_tabsrmm.h"\
+	".\m_spellchecker.h"\
 	".\msgdlgutils.h"\
 	".\msgs.h"\
 	".\nen.h"\
@@ -293,7 +300,9 @@
 	"..\..\include\m_database.h"\
 	"..\..\include\m_file.h"\
 	"..\..\include\m_history.h"\
+	"..\..\include\m_icolib.h"\
 	"..\..\include\m_langpack.h"\
+	"..\..\include\m_message.h"\
 	"..\..\include\m_options.h"\
 	"..\..\include\m_plugins.h"\
 	"..\..\include\m_popup.h"\
@@ -312,17 +321,17 @@
 	".\commonheaders.h"\
 	".\functions.h"\
 	".\generic_msghandlers.h"\
-	".\IcoLib.h"\
 	".\m_avatars.h"\
 	".\m_cln_skinedit.h"\
 	".\m_fingerprint.h"\
 	".\m_flash.h"\
 	".\m_ieview.h"\
+	".\m_MathModule.h"\
 	".\m_metacontacts.h"\
 	".\m_nudge.h"\
 	".\m_smileyadd.h"\
 	".\m_Snapping_windows.h"\
-	".\m_tabsrmm.h"\
+	".\m_spellchecker.h"\
 	".\msgdlgutils.h"\
 	".\msgs.h"\
 	".\nen.h"\
@@ -340,7 +349,9 @@
 	"..\..\include\m_database.h"\
 	"..\..\include\m_file.h"\
 	"..\..\include\m_history.h"\
+	"..\..\include\m_icolib.h"\
 	"..\..\include\m_langpack.h"\
+	"..\..\include\m_message.h"\
 	"..\..\include\m_options.h"\
 	"..\..\include\m_plugins.h"\
 	"..\..\include\m_popup.h"\
@@ -359,17 +370,17 @@
 	".\commonheaders.h"\
 	".\functions.h"\
 	".\generic_msghandlers.h"\
-	".\IcoLib.h"\
 	".\m_avatars.h"\
 	".\m_cln_skinedit.h"\
 	".\m_fingerprint.h"\
 	".\m_flash.h"\
 	".\m_ieview.h"\
+	".\m_MathModule.h"\
 	".\m_metacontacts.h"\
 	".\m_nudge.h"\
 	".\m_smileyadd.h"\
 	".\m_Snapping_windows.h"\
-	".\m_tabsrmm.h"\
+	".\m_spellchecker.h"\
 	".\msgdlgutils.h"\
 	".\msgs.h"\
 	".\nen.h"\
@@ -387,7 +398,9 @@
 	"..\..\include\m_database.h"\
 	"..\..\include\m_file.h"\
 	"..\..\include\m_history.h"\
+	"..\..\include\m_icolib.h"\
 	"..\..\include\m_langpack.h"\
+	"..\..\include\m_message.h"\
 	"..\..\include\m_options.h"\
 	"..\..\include\m_plugins.h"\
 	"..\..\include\m_popup.h"\
@@ -406,7 +419,6 @@
 	".\commonheaders.h"\
 	".\functions.h"\
 	".\generic_msghandlers.h"\
-	".\IcoLib.h"\
 	".\m_avatars.h"\
 	".\m_cln_skinedit.h"\
 	".\m_fingerprint.h"\
@@ -416,7 +428,7 @@
 	".\m_nudge.h"\
 	".\m_smileyadd.h"\
 	".\m_Snapping_windows.h"\
-	".\m_tabsrmm.h"\
+	".\m_spellchecker.h"\
 	".\msgdlgutils.h"\
 	".\msgs.h"\
 	".\nen.h"\
@@ -434,7 +446,9 @@
 	"..\..\include\m_database.h"\
 	"..\..\include\m_file.h"\
 	"..\..\include\m_history.h"\
+	"..\..\include\m_icolib.h"\
 	"..\..\include\m_langpack.h"\
+	"..\..\include\m_message.h"\
 	"..\..\include\m_options.h"\
 	"..\..\include\m_plugins.h"\
 	"..\..\include\m_popup.h"\
@@ -453,17 +467,17 @@
 	".\commonheaders.h"\
 	".\functions.h"\
 	".\generic_msghandlers.h"\
-	".\IcoLib.h"\
 	".\m_avatars.h"\
 	".\m_cln_skinedit.h"\
 	".\m_fingerprint.h"\
 	".\m_flash.h"\
 	".\m_ieview.h"\
+	".\m_MathModule.h"\
 	".\m_metacontacts.h"\
 	".\m_nudge.h"\
 	".\m_smileyadd.h"\
 	".\m_Snapping_windows.h"\
-	".\m_tabsrmm.h"\
+	".\m_spellchecker.h"\
 	".\msgdlgutils.h"\
 	".\msgs.h"\
 	".\nen.h"\
@@ -481,7 +495,9 @@
 	"..\..\include\m_database.h"\
 	"..\..\include\m_file.h"\
 	"..\..\include\m_history.h"\
+	"..\..\include\m_icolib.h"\
 	"..\..\include\m_langpack.h"\
+	"..\..\include\m_message.h"\
 	"..\..\include\m_options.h"\
 	"..\..\include\m_plugins.h"\
 	"..\..\include\m_popup.h"\
@@ -500,7 +516,6 @@
 	".\commonheaders.h"\
 	".\functions.h"\
 	".\generic_msghandlers.h"\
-	".\IcoLib.h"\
 	".\m_avatars.h"\
 	".\m_cln_skinedit.h"\
 	".\m_fingerprint.h"\
@@ -511,7 +526,7 @@
 	".\m_nudge.h"\
 	".\m_smileyadd.h"\
 	".\m_Snapping_windows.h"\
-	".\m_tabsrmm.h"\
+	".\m_spellchecker.h"\
 	".\msgdlgutils.h"\
 	".\msgs.h"\
 	".\nen.h"\
@@ -529,7 +544,9 @@
 	"..\..\include\m_database.h"\
 	"..\..\include\m_file.h"\
 	"..\..\include\m_history.h"\
+	"..\..\include\m_icolib.h"\
 	"..\..\include\m_langpack.h"\
+	"..\..\include\m_message.h"\
 	"..\..\include\m_options.h"\
 	"..\..\include\m_plugins.h"\
 	"..\..\include\m_popup.h"\
@@ -548,7 +565,6 @@
 	".\commonheaders.h"\
 	".\functions.h"\
 	".\generic_msghandlers.h"\
-	".\IcoLib.h"\
 	".\m_avatars.h"\
 	".\m_cln_skinedit.h"\
 	".\m_fingerprint.h"\
@@ -558,7 +574,7 @@
 	".\m_nudge.h"\
 	".\m_smileyadd.h"\
 	".\m_Snapping_windows.h"\
-	".\m_tabsrmm.h"\
+	".\m_spellchecker.h"\
 	".\msgdlgutils.h"\
 	".\msgs.h"\
 	".\nen.h"\
@@ -576,8 +592,10 @@ eventpopups.c : \
 	"..\..\include\m_database.h"\
 	"..\..\include\m_file.h"\
 	"..\..\include\m_history.h"\
+	"..\..\include\m_icolib.h"\
 	"..\..\include\m_icq.h"\
 	"..\..\include\m_langpack.h"\
+	"..\..\include\m_message.h"\
 	"..\..\include\m_options.h"\
 	"..\..\include\m_plugins.h"\
 	"..\..\include\m_popup.h"\
@@ -596,7 +614,6 @@ eventpopups.c : \
 	".\commonheaders.h"\
 	".\functions.h"\
 	".\generic_msghandlers.h"\
-	".\IcoLib.h"\
 	".\m_avatars.h"\
 	".\m_cln_skinedit.h"\
 	".\m_fingerprint.h"\
@@ -606,7 +623,7 @@ eventpopups.c : \
 	".\m_nudge.h"\
 	".\m_smileyadd.h"\
 	".\m_Snapping_windows.h"\
-	".\m_tabsrmm.h"\
+	".\m_spellchecker.h"\
 	".\msgdlgutils.h"\
 	".\msgs.h"\
 	".\nen.h"\
@@ -624,7 +641,9 @@ eventpopups.c : \
 	"..\..\include\m_database.h"\
 	"..\..\include\m_file.h"\
 	"..\..\include\m_history.h"\
+	"..\..\include\m_icolib.h"\
 	"..\..\include\m_langpack.h"\
+	"..\..\include\m_message.h"\
 	"..\..\include\m_options.h"\
 	"..\..\include\m_plugins.h"\
 	"..\..\include\m_popup.h"\
@@ -643,7 +662,6 @@ eventpopups.c : \
 	".\commonheaders.h"\
 	".\functions.h"\
 	".\generic_msghandlers.h"\
-	".\IcoLib.h"\
 	".\m_avatars.h"\
 	".\m_cln_skinedit.h"\
 	".\m_fingerprint.h"\
@@ -654,7 +672,7 @@ eventpopups.c : \
 	".\m_nudge.h"\
 	".\m_smileyadd.h"\
 	".\m_Snapping_windows.h"\
-	".\m_tabsrmm.h"\
+	".\m_spellchecker.h"\
 	".\msgdlgutils.h"\
 	".\msgs.h"\
 	".\nen.h"\
@@ -672,7 +690,9 @@ eventpopups.c : \
 	"..\..\include\m_database.h"\
 	"..\..\include\m_file.h"\
 	"..\..\include\m_history.h"\
+	"..\..\include\m_icolib.h"\
 	"..\..\include\m_langpack.h"\
+	"..\..\include\m_message.h"\
 	"..\..\include\m_options.h"\
 	"..\..\include\m_plugins.h"\
 	"..\..\include\m_popup.h"\
@@ -691,7 +711,6 @@ eventpopups.c : \
 	".\commonheaders.h"\
 	".\functions.h"\
 	".\generic_msghandlers.h"\
-	".\IcoLib.h"\
 	".\m_avatars.h"\
 	".\m_cln_skinedit.h"\
 	".\m_fingerprint.h"\
@@ -701,7 +720,7 @@ eventpopups.c : \
 	".\m_nudge.h"\
 	".\m_smileyadd.h"\
 	".\m_Snapping_windows.h"\
-	".\m_tabsrmm.h"\
+	".\m_spellchecker.h"\
 	".\msgdlgutils.h"\
 	".\msgs.h"\
 	".\nen.h"\
@@ -719,7 +738,9 @@ eventpopups.c : \
 	"..\..\include\m_database.h"\
 	"..\..\include\m_file.h"\
 	"..\..\include\m_history.h"\
+	"..\..\include\m_icolib.h"\
 	"..\..\include\m_langpack.h"\
+	"..\..\include\m_message.h"\
 	"..\..\include\m_options.h"\
 	"..\..\include\m_plugins.h"\
 	"..\..\include\m_popup.h"\
@@ -738,7 +759,6 @@ eventpopups.c : \
 	".\commonheaders.h"\
 	".\functions.h"\
 	".\generic_msghandlers.h"\
-	".\IcoLib.h"\
 	".\m_avatars.h"\
 	".\m_cln_skinedit.h"\
 	".\m_fingerprint.h"\
@@ -748,7 +768,7 @@ eventpopups.c : \
 	".\m_nudge.h"\
 	".\m_smileyadd.h"\
 	".\m_Snapping_windows.h"\
-	".\m_tabsrmm.h"\
+	".\m_spellchecker.h"\
 	".\msgdlgutils.h"\
 	".\msgs.h"\
 	".\nen.h"\
@@ -767,7 +787,9 @@ ImageDataObject.cpp : \
 	"..\..\include\m_database.h"\
 	"..\..\include\m_file.h"\
 	"..\..\include\m_history.h"\
+	"..\..\include\m_icolib.h"\
 	"..\..\include\m_langpack.h"\
+	"..\..\include\m_message.h"\
 	"..\..\include\m_options.h"\
 	"..\..\include\m_plugins.h"\
 	"..\..\include\m_popup.h"\
@@ -786,7 +808,6 @@ ImageDataObject.cpp : \
 	".\commonheaders.h"\
 	".\functions.h"\
 	".\generic_msghandlers.h"\
-	".\IcoLib.h"\
 	".\ImageDataObject.h"\
 	".\m_avatars.h"\
 	".\m_cln_skinedit.h"\
@@ -797,7 +818,7 @@ ImageDataObject.cpp : \
 	".\m_nudge.h"\
 	".\m_smileyadd.h"\
 	".\m_Snapping_windows.h"\
-	".\m_tabsrmm.h"\
+	".\m_spellchecker.h"\
 	".\msgdlgutils.h"\
 	".\msgs.h"\
 	".\nen.h"\
@@ -815,7 +836,9 @@ msgdialog.c : \
 	"..\..\include\m_database.h"\
 	"..\..\include\m_file.h"\
 	"..\..\include\m_history.h"\
+	"..\..\include\m_icolib.h"\
 	"..\..\include\m_langpack.h"\
+	"..\..\include\m_message.h"\
 	"..\..\include\m_options.h"\
 	"..\..\include\m_plugins.h"\
 	"..\..\include\m_popup.h"\
@@ -834,7 +857,6 @@ msgdialog.c : \
 	".\commonheaders.h"\
 	".\functions.h"\
 	".\generic_msghandlers.h"\
-	".\IcoLib.h"\
 	".\m_avatars.h"\
 	".\m_cln_skinedit.h"\
 	".\m_fingerprint.h"\
@@ -845,12 +867,13 @@ msgdialog.c : \
 	".\m_nudge.h"\
 	".\m_smileyadd.h"\
 	".\m_Snapping_windows.h"\
-	".\m_tabsrmm.h"\
+	".\m_spellchecker.h"\
 	".\msgdlgutils.h"\
 	".\msgs.h"\
 	".\nen.h"\
 	".\sendqueue.h"\
 	".\templates.h"\
+	{$(INCLUDE)}"uxtheme.h"\
 	
 
 msgdlgutils.c : \
@@ -864,7 +887,9 @@ msgdlgutils.c : \
 	"..\..\include\m_database.h"\
 	"..\..\include\m_file.h"\
 	"..\..\include\m_history.h"\
+	"..\..\include\m_icolib.h"\
 	"..\..\include\m_langpack.h"\
+	"..\..\include\m_message.h"\
 	"..\..\include\m_options.h"\
 	"..\..\include\m_plugins.h"\
 	"..\..\include\m_popup.h"\
@@ -883,17 +908,17 @@ msgdlgutils.c : \
 	".\commonheaders.h"\
 	".\functions.h"\
 	".\generic_msghandlers.h"\
-	".\IcoLib.h"\
 	".\m_avatars.h"\
 	".\m_cln_skinedit.h"\
 	".\m_fingerprint.h"\
 	".\m_flash.h"\
 	".\m_ieview.h"\
+	".\m_MathModule.h"\
 	".\m_metacontacts.h"\
 	".\m_nudge.h"\
 	".\m_smileyadd.h"\
 	".\m_Snapping_windows.h"\
-	".\m_tabsrmm.h"\
+	".\m_spellchecker.h"\
 	".\msgdlgutils.h"\
 	".\msgs.h"\
 	".\nen.h"\
@@ -911,7 +936,9 @@ msglog.c : \
 	"..\..\include\m_database.h"\
 	"..\..\include\m_file.h"\
 	"..\..\include\m_history.h"\
+	"..\..\include\m_icolib.h"\
 	"..\..\include\m_langpack.h"\
+	"..\..\include\m_message.h"\
 	"..\..\include\m_options.h"\
 	"..\..\include\m_plugins.h"\
 	"..\..\include\m_popup.h"\
@@ -930,7 +957,6 @@ msglog.c : \
 	".\commonheaders.h"\
 	".\functions.h"\
 	".\generic_msghandlers.h"\
-	".\IcoLib.h"\
 	".\m_avatars.h"\
 	".\m_cln_skinedit.h"\
 	".\m_fingerprint.h"\
@@ -941,7 +967,7 @@ msglog.c : \
 	".\m_nudge.h"\
 	".\m_smileyadd.h"\
 	".\m_Snapping_windows.h"\
-	".\m_tabsrmm.h"\
+	".\m_spellchecker.h"\
 	".\msgdlgutils.h"\
 	".\msgs.h"\
 	".\nen.h"\
@@ -959,7 +985,9 @@ msgoptions.c : \
 	"..\..\include\m_database.h"\
 	"..\..\include\m_file.h"\
 	"..\..\include\m_history.h"\
+	"..\..\include\m_icolib.h"\
 	"..\..\include\m_langpack.h"\
+	"..\..\include\m_message.h"\
 	"..\..\include\m_options.h"\
 	"..\..\include\m_plugins.h"\
 	"..\..\include\m_popup.h"\
@@ -978,7 +1006,6 @@ msgoptions.c : \
 	".\commonheaders.h"\
 	".\functions.h"\
 	".\generic_msghandlers.h"\
-	".\IcoLib.h"\
 	".\m_avatars.h"\
 	".\m_cln_skinedit.h"\
 	".\m_fingerprint.h"\
@@ -989,11 +1016,12 @@ msgoptions.c : \
 	".\m_nudge.h"\
 	".\m_smileyadd.h"\
 	".\m_Snapping_windows.h"\
-	".\m_tabsrmm.h"\
+	".\m_spellchecker.h"\
 	".\msgdlgutils.h"\
 	".\msgs.h"\
 	".\nen.h"\
 	".\templates.h"\
+	{$(INCLUDE)}"uxtheme.h"\
 	
 
 msgs.c : \
@@ -1007,7 +1035,9 @@ msgs.c : \
 	"..\..\include\m_database.h"\
 	"..\..\include\m_file.h"\
 	"..\..\include\m_history.h"\
+	"..\..\include\m_icolib.h"\
 	"..\..\include\m_langpack.h"\
+	"..\..\include\m_message.h"\
 	"..\..\include\m_options.h"\
 	"..\..\include\m_plugins.h"\
 	"..\..\include\m_popup.h"\
@@ -1026,7 +1056,6 @@ msgs.c : \
 	".\commonheaders.h"\
 	".\functions.h"\
 	".\generic_msghandlers.h"\
-	".\IcoLib.h"\
 	".\m_avatars.h"\
 	".\m_cln_skinedit.h"\
 	".\m_fingerprint.h"\
@@ -1037,7 +1066,7 @@ msgs.c : \
 	".\m_nudge.h"\
 	".\m_smileyadd.h"\
 	".\m_Snapping_windows.h"\
-	".\m_tabsrmm.h"\
+	".\m_spellchecker.h"\
 	".\m_toptoolbar.h"\
 	".\m_updater.h"\
 	".\msgdlgutils.h"\
@@ -1057,7 +1086,9 @@ msgs.c : \
 	"..\..\include\m_database.h"\
 	"..\..\include\m_file.h"\
 	"..\..\include\m_history.h"\
+	"..\..\include\m_icolib.h"\
 	"..\..\include\m_langpack.h"\
+	"..\..\include\m_message.h"\
 	"..\..\include\m_options.h"\
 	"..\..\include\m_plugins.h"\
 	"..\..\include\m_popup.h"\
@@ -1076,7 +1107,6 @@ msgs.c : \
 	".\commonheaders.h"\
 	".\functions.h"\
 	".\generic_msghandlers.h"\
-	".\IcoLib.h"\
 	".\m_avatars.h"\
 	".\m_cln_skinedit.h"\
 	".\m_fingerprint.h"\
@@ -1086,7 +1116,7 @@ msgs.c : \
 	".\m_nudge.h"\
 	".\m_smileyadd.h"\
 	".\m_Snapping_windows.h"\
-	".\m_tabsrmm.h"\
+	".\m_spellchecker.h"\
 	".\msgdlgutils.h"\
 	".\msgs.h"\
 	".\nen.h"\
@@ -1104,7 +1134,9 @@ sendqueue.c : \
 	"..\..\include\m_database.h"\
 	"..\..\include\m_file.h"\
 	"..\..\include\m_history.h"\
+	"..\..\include\m_icolib.h"\
 	"..\..\include\m_langpack.h"\
+	"..\..\include\m_message.h"\
 	"..\..\include\m_options.h"\
 	"..\..\include\m_plugins.h"\
 	"..\..\include\m_popup.h"\
@@ -1123,7 +1155,6 @@ sendqueue.c : \
 	".\commonheaders.h"\
 	".\functions.h"\
 	".\generic_msghandlers.h"\
-	".\IcoLib.h"\
 	".\m_avatars.h"\
 	".\m_cln_skinedit.h"\
 	".\m_fingerprint.h"\
@@ -1133,7 +1164,7 @@ sendqueue.c : \
 	".\m_nudge.h"\
 	".\m_smileyadd.h"\
 	".\m_Snapping_windows.h"\
-	".\m_tabsrmm.h"\
+	".\m_spellchecker.h"\
 	".\msgdlgutils.h"\
 	".\msgs.h"\
 	".\nen.h"\
@@ -1152,7 +1183,9 @@ srmm.c : \
 	"..\..\include\m_database.h"\
 	"..\..\include\m_file.h"\
 	"..\..\include\m_history.h"\
+	"..\..\include\m_icolib.h"\
 	"..\..\include\m_langpack.h"\
+	"..\..\include\m_message.h"\
 	"..\..\include\m_options.h"\
 	"..\..\include\m_plugins.h"\
 	"..\..\include\m_popup.h"\
@@ -1171,7 +1204,6 @@ srmm.c : \
 	".\commonheaders.h"\
 	".\functions.h"\
 	".\generic_msghandlers.h"\
-	".\IcoLib.h"\
 	".\m_avatars.h"\
 	".\m_cln_skinedit.h"\
 	".\m_fingerprint.h"\
@@ -1181,7 +1213,7 @@ srmm.c : \
 	".\m_nudge.h"\
 	".\m_smileyadd.h"\
 	".\m_Snapping_windows.h"\
-	".\m_tabsrmm.h"\
+	".\m_spellchecker.h"\
 	".\msgdlgutils.h"\
 	".\msgs.h"\
 	".\nen.h"\
@@ -1199,7 +1231,9 @@ srmm.c : \
 	"..\..\include\m_database.h"\
 	"..\..\include\m_file.h"\
 	"..\..\include\m_history.h"\
+	"..\..\include\m_icolib.h"\
 	"..\..\include\m_langpack.h"\
+	"..\..\include\m_message.h"\
 	"..\..\include\m_options.h"\
 	"..\..\include\m_plugins.h"\
 	"..\..\include\m_popup.h"\
@@ -1218,7 +1252,6 @@ srmm.c : \
 	".\commonheaders.h"\
 	".\functions.h"\
 	".\generic_msghandlers.h"\
-	".\IcoLib.h"\
 	".\m_avatars.h"\
 	".\m_cln_skinedit.h"\
 	".\m_fingerprint.h"\
@@ -1228,11 +1261,12 @@ srmm.c : \
 	".\m_nudge.h"\
 	".\m_smileyadd.h"\
 	".\m_Snapping_windows.h"\
-	".\m_tabsrmm.h"\
+	".\m_spellchecker.h"\
 	".\msgdlgutils.h"\
 	".\msgs.h"\
 	".\nen.h"\
 	".\templates.h"\
+	{$(INCLUDE)}"uxtheme.h"\
 	
 
 templates.c : \
@@ -1246,7 +1280,9 @@ templates.c : \
 	"..\..\include\m_database.h"\
 	"..\..\include\m_file.h"\
 	"..\..\include\m_history.h"\
+	"..\..\include\m_icolib.h"\
 	"..\..\include\m_langpack.h"\
+	"..\..\include\m_message.h"\
 	"..\..\include\m_options.h"\
 	"..\..\include\m_plugins.h"\
 	"..\..\include\m_popup.h"\
@@ -1265,7 +1301,6 @@ templates.c : \
 	".\commonheaders.h"\
 	".\functions.h"\
 	".\generic_msghandlers.h"\
-	".\IcoLib.h"\
 	".\m_avatars.h"\
 	".\m_cln_skinedit.h"\
 	".\m_fingerprint.h"\
@@ -1275,7 +1310,7 @@ templates.c : \
 	".\m_nudge.h"\
 	".\m_smileyadd.h"\
 	".\m_Snapping_windows.h"\
-	".\m_tabsrmm.h"\
+	".\m_spellchecker.h"\
 	".\msgdlgutils.h"\
 	".\msgs.h"\
 	".\nen.h"\
@@ -1293,7 +1328,9 @@ templates.c : \
 	"..\..\include\m_database.h"\
 	"..\..\include\m_file.h"\
 	"..\..\include\m_history.h"\
+	"..\..\include\m_icolib.h"\
 	"..\..\include\m_langpack.h"\
+	"..\..\include\m_message.h"\
 	"..\..\include\m_options.h"\
 	"..\..\include\m_plugins.h"\
 	"..\..\include\m_popup.h"\
@@ -1312,7 +1349,6 @@ templates.c : \
 	".\commonheaders.h"\
 	".\functions.h"\
 	".\generic_msghandlers.h"\
-	".\IcoLib.h"\
 	".\m_avatars.h"\
 	".\m_cln_skinedit.h"\
 	".\m_fingerprint.h"\
@@ -1322,7 +1358,7 @@ templates.c : \
 	".\m_nudge.h"\
 	".\m_smileyadd.h"\
 	".\m_Snapping_windows.h"\
-	".\m_tabsrmm.h"\
+	".\m_spellchecker.h"\
 	".\msgdlgutils.h"\
 	".\msgs.h"\
 	".\nen.h"\
@@ -1340,7 +1376,9 @@ trayicon.c : \
 	"..\..\include\m_database.h"\
 	"..\..\include\m_file.h"\
 	"..\..\include\m_history.h"\
+	"..\..\include\m_icolib.h"\
 	"..\..\include\m_langpack.h"\
+	"..\..\include\m_message.h"\
 	"..\..\include\m_options.h"\
 	"..\..\include\m_plugins.h"\
 	"..\..\include\m_popup.h"\
@@ -1359,7 +1397,6 @@ trayicon.c : \
 	".\commonheaders.h"\
 	".\functions.h"\
 	".\generic_msghandlers.h"\
-	".\IcoLib.h"\
 	".\m_avatars.h"\
 	".\m_cln_skinedit.h"\
 	".\m_fingerprint.h"\
@@ -1369,7 +1406,7 @@ trayicon.c : \
 	".\m_nudge.h"\
 	".\m_smileyadd.h"\
 	".\m_Snapping_windows.h"\
-	".\m_tabsrmm.h"\
+	".\m_spellchecker.h"\
 	".\m_toptoolbar.h"\
 	".\msgdlgutils.h"\
 	".\msgs.h"\
@@ -1388,7 +1425,9 @@ TSButton.c : \
 	"..\..\include\m_database.h"\
 	"..\..\include\m_file.h"\
 	"..\..\include\m_history.h"\
+	"..\..\include\m_icolib.h"\
 	"..\..\include\m_langpack.h"\
+	"..\..\include\m_message.h"\
 	"..\..\include\m_options.h"\
 	"..\..\include\m_plugins.h"\
 	"..\..\include\m_popup.h"\
@@ -1407,7 +1446,6 @@ TSButton.c : \
 	".\commonheaders.h"\
 	".\functions.h"\
 	".\generic_msghandlers.h"\
-	".\IcoLib.h"\
 	".\m_avatars.h"\
 	".\m_cln_skinedit.h"\
 	".\m_fingerprint.h"\
@@ -1417,7 +1455,7 @@ TSButton.c : \
 	".\m_nudge.h"\
 	".\m_smileyadd.h"\
 	".\m_Snapping_windows.h"\
-	".\m_tabsrmm.h"\
+	".\m_spellchecker.h"\
 	".\msgdlgutils.h"\
 	".\msgs.h"\
 	".\nen.h"\
@@ -1435,7 +1473,9 @@ userprefs.c : \
 	"..\..\include\m_database.h"\
 	"..\..\include\m_file.h"\
 	"..\..\include\m_history.h"\
+	"..\..\include\m_icolib.h"\
 	"..\..\include\m_langpack.h"\
+	"..\..\include\m_message.h"\
 	"..\..\include\m_options.h"\
 	"..\..\include\m_plugins.h"\
 	"..\..\include\m_popup.h"\
@@ -1454,7 +1494,6 @@ userprefs.c : \
 	".\commonheaders.h"\
 	".\functions.h"\
 	".\generic_msghandlers.h"\
-	".\IcoLib.h"\
 	".\m_avatars.h"\
 	".\m_cln_skinedit.h"\
 	".\m_fingerprint.h"\
@@ -1464,7 +1503,7 @@ userprefs.c : \
 	".\m_nudge.h"\
 	".\m_smileyadd.h"\
 	".\m_Snapping_windows.h"\
-	".\m_tabsrmm.h"\
+	".\m_spellchecker.h"\
 	".\msgdlgutils.h"\
 	".\msgs.h"\
 	".\nen.h"\
@@ -1473,9 +1512,9 @@ userprefs.c : \
 
 .\tabsrmm_private.rc : \
 	"..\..\include\statusmodes.h"\
-	"..\..\src\res\dragcopy.cur"\
-	"..\..\src\res\dropuser.cur"\
-	"..\..\src\res\hyperlin.cur"\
+	"..\..\src\res\cursor_drag_copy.CUR"\
+	"..\..\src\res\cursor_drop_user.cur"\
+	"..\..\src\res\cursor_hyperlink.cur"\
 	".\chat\chat.rc"\
 	".\msgwindow.rc"\
 	".\res\checked.ico"\
