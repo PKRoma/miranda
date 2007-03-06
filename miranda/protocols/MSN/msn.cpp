@@ -413,7 +413,7 @@ extern "C" int __declspec( dllexport ) Unload( void )
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////
-// MirandaPluginInfo - returns an information about a plugin
+// MirandaPluginInfoEx - returns an information about a plugin
 
 extern "C" __declspec(dllexport) PLUGININFOEX* MirandaPluginInfoEx(DWORD mirandaVersion)
 {
