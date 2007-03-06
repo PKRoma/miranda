@@ -391,9 +391,5 @@ SOURCE=.\resource.rc
 SOURCE=.\Icos\services.ico
 # End Source File
 # End Group
-# Begin Source File
-
-SOURCE=.\msn.def
-# End Source File
 # End Target
 # End Project

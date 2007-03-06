@@ -86,7 +86,6 @@
 				AdditionalDependencies="odbc32.lib odbccp32.lib wsock32.lib comctl32.lib Rpcrt4.lib"
 				LinkIncremental="0"
 				SuppressStartupBanner="true"
-				ModuleDefinitionFile=".\msn.def"
 				GenerateDebugInformation="true"
 				GenerateMapFile="true"
 				OptimizeReferences="2"
@@ -183,7 +182,6 @@
 				Name="VCLinkerTool"
 				AdditionalDependencies="odbc32.lib odbccp32.lib wsock32.lib comctl32.lib Rpcrt4.lib"
 				SuppressStartupBanner="true"
-				ModuleDefinitionFile=".\msn.def"
 				GenerateDebugInformation="true"
 				ImportLibrary="$(IntDir)/$(TargetName).lib"
 				TargetMachine="1"
@@ -275,7 +273,6 @@
 				Name="VCLinkerTool"
 				AdditionalDependencies="odbc32.lib odbccp32.lib wsock32.lib comctl32.lib Rpcrt4.lib"
 				SuppressStartupBanner="true"
-				ModuleDefinitionFile=".\msn.def"
 				GenerateDebugInformation="true"
 				ImportLibrary="$(IntDir)/$(TargetName).lib"
 				TargetMachine="1"
@@ -378,7 +375,6 @@
 				LinkIncremental="0"
 				SuppressStartupBanner="true"
 				AdditionalManifestDependencies="type=&apos;Win32&apos; name=&apos;Microsoft.Windows.Common-Controls&apos; version=&apos;6.0.0.0&apos; processorArchitecture=&apos;X86&apos; publicKeyToken=&apos;6595b64144ccf1df&apos; language=&apos;*&apos;"
-				ModuleDefinitionFile=".\msn.def"
 				GenerateDebugInformation="true"
 				GenerateMapFile="true"
 				OptimizeReferences="2"
@@ -1325,10 +1321,6 @@
 				>
 			</File>
 		</Filter>
-		<File
-			RelativePath="msn.def"
-			>
-		</File>
 	</Files>
 	<Globals>
 	</Globals>

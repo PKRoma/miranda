@@ -50,7 +50,6 @@
 				AdditionalOptions="/filealign:512"
 				AdditionalDependencies="odbc32.lib odbccp32.lib wsock32.lib comctl32.lib Rpcrt4.lib"
 				SuppressStartupBanner="TRUE"
-				ModuleDefinitionFile=".\msn.def"
 				GenerateDebugInformation="TRUE"
 				GenerateMapFile="TRUE"
 				OptimizeReferences="2"
@@ -118,7 +117,6 @@
 				AdditionalDependencies="odbc32.lib odbccp32.lib wsock32.lib comctl32.lib Rpcrt4.lib"
 				LinkIncremental="2"
 				SuppressStartupBanner="TRUE"
-				ModuleDefinitionFile=".\msn.def"
 				GenerateDebugInformation="TRUE"
 				ImportLibrary="$(IntDir)/$(TargetName).lib"
 				TargetMachine="1"/>
@@ -183,7 +181,6 @@
 				AdditionalDependencies="odbc32.lib odbccp32.lib wsock32.lib comctl32.lib Rpcrt4.lib"
 				LinkIncremental="2"
 				SuppressStartupBanner="TRUE"
-				ModuleDefinitionFile=".\msn.def"
 				GenerateDebugInformation="TRUE"
 				ImportLibrary="$(IntDir)/$(TargetName).lib"
 				TargetMachine="1"/>
@@ -252,7 +249,6 @@
 				IgnoreImportLibrary="TRUE"
 				AdditionalOptions="/filealign:512"
 				AdditionalDependencies="odbc32.lib odbccp32.lib wsock32.lib comctl32.lib Rpcrt4.lib"
-				ModuleDefinitionFile=".\msn.def"
 				GenerateDebugInformation="TRUE"
 				GenerateMapFile="TRUE"
 				OptimizeReferences="2"
@@ -1088,9 +1084,6 @@
 				RelativePath="version.h">
 			</File>
 		</Filter>
-		<File
-			RelativePath="msn.def">
-		</File>
 	</Files>
 	<Globals>
 	</Globals>
