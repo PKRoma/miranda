@@ -41,7 +41,7 @@ HMODULE				m_ssleay32 = NULL;
 // Information about the plugin
 PLUGININFOEX pluginInfo =
 {						
-	sizeof( PLUGININFO ),
+	sizeof( PLUGININFOEX ),
 	"IRC Protocol",
 	PLUGIN_MAKE_VERSION( 0,6,4,0 ),
 	"IRC protocol for Miranda IM.",

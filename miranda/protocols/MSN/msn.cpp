@@ -86,7 +86,7 @@ char* ModuleName;
 
 PLUGININFOEX pluginInfo =
 {
-	sizeof(PLUGININFO),
+	sizeof(PLUGININFOEX),
 	#if defined( _UNICODE )
 		"MSN Protocol (Unicode)",
 	#else

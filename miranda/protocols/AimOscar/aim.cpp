@@ -4,7 +4,7 @@ PLUGINLINK *pluginLink;
 char* AIM_CLIENT_ID_STRING="Miranda Oscar Plugin, version 0.0.0.7";
 char AIM_CAP_MIRANDA[]="MirandaA\0\0\0\0\0\0\0";
 PLUGININFOEX pluginInfo={
-	sizeof(PLUGININFO),
+	sizeof(PLUGININFOEX),
 	"AIM OSCAR Plugin - Version 7(Avatar Test Build)",
 	PLUGIN_MAKE_VERSION(0,0,0,7),
 	"Provides basic support for AOL® OSCAR Instant Messenger protocol. [Built: "__DATE__" "__TIME__"]",
