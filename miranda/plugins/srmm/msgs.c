@@ -233,11 +233,12 @@ static int TypingMessage(WPARAM wParam, LPARAM lParam)
 			cle.hContact = (HANDLE) wParam;
 			cle.hDbEvent = (HANDLE) 1;
 			cle.flags = CLEF_ONLYAFEW;
-			cle.hIcon = g_dat->hIcons[SMF_ICON_TYPING];
+			cle.hIcon = LoadSkinnedIcon( SKINICON_OTHER_TYPING );
 			cle.pszService = "SRMsg/TypingMessage";
 			cle.pszTooltip = szTip;
 			CallServiceSync(MS_CLIST_REMOVEEVENT, wParam, (LPARAM) 1);
 			CallServiceSync(MS_CLIST_ADDEVENT, wParam, (LPARAM) & cle);
+			CallService(MS_SKIN2_RELEASEICON,(WPARAM)cle.hIcon, 0);
 		}
 	}
 	return 0;

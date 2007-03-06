@@ -3,18 +3,13 @@
 // Used by resource.rc
 //
 #define IDD_MSGSENDERROR                102
-#define IDI_USERDETAILS                 160
-#define IDI_HISTORY                     174
 #define IDR_CONTEXT                     180
 #define IDC_DROP                        183
-#define IDI_ADDCONTACT                  210
 #define IDC_HYPERLINKHAND               214
 #define IDC_DROPUSER                    215
 #define IDD_OPT_MSGDLG                  243
 #define IDD_MSG                         244
 #define IDD_OPT_MSGLOG                  245
-#define IDI_DOWNARROW                   264
-#define IDI_TYPING                      268
 #define IDD_OPT_MSGTYPE                 275
 #define IDI_INCOMING                    276
 #define IDI_OUTGOING                    277
@@ -80,7 +75,7 @@
 #define IDM_COPYLINK                    40016
 
 // Next default values for new objects
-// 
+//
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NEXT_RESOURCE_VALUE        286

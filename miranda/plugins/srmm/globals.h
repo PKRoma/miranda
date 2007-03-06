@@ -36,16 +36,11 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #define SMF_HIDENAMES       0x00000800
 #define SMF_SHOWSECS        0x00001000
 
-#define SMF_ICON_ADD        0
-#define SMF_ICON_USERDETAIL 1
-#define SMF_ICON_HISTORY    2
-#define SMF_ICON_ARROW      3
-#define SMF_ICON_TYPING     4
+#define SMF_ICON_TYPING     0
 
 struct GlobalMessageData
 {
 	unsigned int flags;
-	HICON hIcons[5];
 	HANDLE hMessageWindowList;
 	DWORD openFlags;
 };

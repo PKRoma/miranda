@@ -641,6 +641,20 @@ static void NotifyTyping(struct MessageWindowData *dat, int mode)
 	CallService(MS_PROTO_SELFISTYPING, (WPARAM) dat->hContact, dat->nTypeMode);
 }
 
+void Button_SetIcon_IcoLib(HWND hwndDlg, int itemId, int iconId, const char* tooltip)
+{
+	HWND hWnd = GetDlgItem( hwndDlg, itemId );
+	SendMessage( hWnd, BM_SETIMAGE, IMAGE_ICON, ( LPARAM )LoadSkinnedIcon( iconId ));
+	SendMessage( hWnd, BUTTONSETASFLATBTN, 0, 0 );
+	SendMessage( hWnd, BUTTONADDTOOLTIP, (WPARAM)Translate(tooltip), 0);
+}
+
+void Button_FreeIcon_IcoLib(HWND hwndDlg, int itemId)
+{
+	HICON hIcon = ( HICON )SendDlgItemMessage(hwndDlg, itemId, BM_SETIMAGE, IMAGE_ICON, 0 );
+	CallService(MS_SKIN2_RELEASEICON,(WPARAM)hIcon,0);
+}
+
 BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam)
 {
 	struct MessageWindowData *dat;
@@ -658,14 +672,14 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
 				NotifyLocalWinEvent(dat->hContact, hwndDlg, MSG_WINDOW_EVT_OPENING);
 				if (newData->szInitialText) {
 					int len;
-#if defined(_UNICODE)
-                    if(newData->isWchar)
-    					SetDlgItemText(hwndDlg, IDC_MESSAGE, (TCHAR *)newData->szInitialText);
-    				else
-    					SetDlgItemTextA(hwndDlg, IDC_MESSAGE, newData->szInitialText);
-#else
-					SetDlgItemTextA(hwndDlg, IDC_MESSAGE, newData->szInitialText);
-#endif
+					#if defined(_UNICODE)
+						if(newData->isWchar)
+							SetDlgItemText(hwndDlg, IDC_MESSAGE, (TCHAR *)newData->szInitialText);
+						else
+							SetDlgItemTextA(hwndDlg, IDC_MESSAGE, newData->szInitialText);
+					#else
+						SetDlgItemTextA(hwndDlg, IDC_MESSAGE, newData->szInitialText);
+					#endif
 					len = GetWindowTextLength(GetDlgItem(hwndDlg, IDC_MESSAGE));
 					PostMessage(GetDlgItem(hwndDlg, IDC_MESSAGE), EM_SETSEL, len, len);
 				}
@@ -723,22 +737,10 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
 			GetWindowRect(GetDlgItem(hwndDlg, IDC_MESSAGE), &dat->minEditInit);
 			SendMessage(hwndDlg, DM_UPDATESIZEBAR, 0, 0);
 			dat->hwndStatus = NULL;
-			SendDlgItemMessage(hwndDlg, IDC_ADD, BM_SETIMAGE, IMAGE_ICON, (LPARAM) g_dat->hIcons[SMF_ICON_ADD]);
-			SendDlgItemMessage(hwndDlg, IDC_DETAILS, BM_SETIMAGE, IMAGE_ICON, (LPARAM) g_dat->hIcons[SMF_ICON_USERDETAIL]);
-			SendDlgItemMessage(hwndDlg, IDC_HISTORY, BM_SETIMAGE, IMAGE_ICON, (LPARAM) g_dat->hIcons[SMF_ICON_HISTORY]);
-			SendDlgItemMessage(hwndDlg, IDC_USERMENU, BM_SETIMAGE, IMAGE_ICON, (LPARAM) g_dat->hIcons[SMF_ICON_ARROW]);
-			// Make them flat buttons
-			{
-				int i;
-
-				SendMessage(GetDlgItem(hwndDlg, IDC_NAME), BUTTONSETASFLATBTN, 0, 0);
-				for (i = 0; i < SIZEOF(buttonLineControls); i++)
-					SendMessage(GetDlgItem(hwndDlg, buttonLineControls[i]), BUTTONSETASFLATBTN, 0, 0);
-			}
-			SendMessage(GetDlgItem(hwndDlg, IDC_ADD), BUTTONADDTOOLTIP, (WPARAM) Translate("Add Contact Permanently to List"), 0);
-			SendMessage(GetDlgItem(hwndDlg, IDC_USERMENU), BUTTONADDTOOLTIP, (WPARAM) Translate("User Menu"), 0);
-			SendMessage(GetDlgItem(hwndDlg, IDC_DETAILS), BUTTONADDTOOLTIP, (WPARAM) Translate("View User's Details"), 0);
-			SendMessage(GetDlgItem(hwndDlg, IDC_HISTORY), BUTTONADDTOOLTIP, (WPARAM) Translate("View User's History"), 0);
+			Button_SetIcon_IcoLib(hwndDlg, IDC_ADD, SKINICON_OTHER_ADDCONTACT, "Add Contact Permanently to List" );
+			Button_SetIcon_IcoLib(hwndDlg, IDC_DETAILS, SKINICON_OTHER_USERDETAILS, "View User's Details" );
+			Button_SetIcon_IcoLib(hwndDlg, IDC_HISTORY, SKINICON_OTHER_HISTORY, "View User's History" );
+			Button_SetIcon_IcoLib(hwndDlg, IDC_USERMENU, SKINICON_OTHER_DOWNARROW, "User Menu" );
 
 			EnableWindow(GetDlgItem(hwndDlg, IDC_PROTOCOL), FALSE);
 			EnableWindow(GetDlgItem(hwndDlg, IDC_AVATAR), FALSE);
@@ -1447,15 +1449,18 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
 			else {
 				if (dat->nTypeSecs) {
 					TCHAR szBuf[256];
-					TCHAR *szContactName = ( TCHAR* ) CallService(MS_CLIST_GETCONTACTDISPLAYNAME, (WPARAM) dat->hContact, GCDNF_TCHAR);
+					TCHAR* szContactName = ( TCHAR* ) CallService(MS_CLIST_GETCONTACTDISPLAYNAME, (WPARAM) dat->hContact, GCDNF_TCHAR);
+					HICON hTyping = LoadSkinnedIcon( SKINICON_OTHER_TYPING );
 
 					mir_sntprintf(szBuf, SIZEOF(szBuf), TranslateT("%s is typing a message..."), szContactName);
 					dat->nTypeSecs--;
+
 					SendMessage(dat->hwndStatus, SB_SETTEXT, 0, (LPARAM) szBuf);
-					SendMessage(dat->hwndStatus, SB_SETICON, 0, (LPARAM) g_dat->hIcons[SMF_ICON_TYPING]);
+					SendMessage(dat->hwndStatus, SB_SETICON, 0, (LPARAM) hTyping);
 					if ((g_dat->flags&SMF_SHOWTYPINGWIN) && GetForegroundWindow() != hwndDlg)
-						SendMessage(hwndDlg, WM_SETICON, (WPARAM) ICON_BIG, (LPARAM) g_dat->hIcons[SMF_ICON_TYPING]);
+						SendMessage(hwndDlg, WM_SETICON, ( WPARAM )ICON_BIG, ( LPARAM )hTyping );
 					dat->showTyping = 1;
+					CallService(MS_SKIN2_RELEASEICON, ( WPARAM )hTyping, 0);
 				}
 			}
 		}
@@ -1873,6 +1878,7 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
 	case DM_STATUSICONCHANGE:
 		SendMessage(dat->hwndStatus, SB_SETTEXT, (WPARAM)(SBT_OWNERDRAW | (SendMessage(dat->hwndStatus, SB_GETPARTS, 0, 0) - 1)), (LPARAM)0);
 		return 0;
+
 	case WM_DESTROY:
 		NotifyLocalWinEvent(dat->hContact, hwndDlg, MSG_WINDOW_EVT_CLOSING);
 		if (dat->nTypeMode == PROTOTYPE_SELFTYPING_ON) {
@@ -1916,11 +1922,14 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
 		if (dat->avatarPic)
 			DeleteObject(dat->avatarPic);
 		NotifyLocalWinEvent(dat->hContact, hwndDlg, MSG_WINDOW_EVT_CLOSE);
-		if (dat->hContact&&DBGetContactSettingByte(NULL, SRMMMOD, SRMSGSET_DELTEMP, SRMSGDEFSET_DELTEMP)) {
-			if (DBGetContactSettingByte(dat->hContact, "CList", "NotOnList", 0)) {
+		if (dat->hContact&&DBGetContactSettingByte(NULL, SRMMMOD, SRMSGSET_DELTEMP, SRMSGDEFSET_DELTEMP))
+			if (DBGetContactSettingByte(dat->hContact, "CList", "NotOnList", 0))
 				CallService(MS_DB_CONTACT_DELETE, (WPARAM)dat->hContact, 0);
-			}
-		}
+
+		Button_FreeIcon_IcoLib(hwndDlg, IDC_ADD);
+		Button_FreeIcon_IcoLib(hwndDlg, IDC_DETAILS);
+		Button_FreeIcon_IcoLib(hwndDlg, IDC_HISTORY);
+		Button_FreeIcon_IcoLib(hwndDlg, IDC_USERMENU);
 		free(dat);
 		SetWindowLong(hwndDlg, GWL_USERDATA, 0);
 		break;

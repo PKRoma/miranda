@@ -285,11 +285,6 @@ END
 
 // Icon with lowest ID value placed first to ensure application icon
 // remains consistent on all systems.
-IDI_USERDETAILS         ICON                    "res/details.ico"
-IDI_ADDCONTACT          ICON                    "res/add.ico"
-IDI_HISTORY             ICON                    "res/history.ico"
-IDI_DOWNARROW           ICON                    "res/downarrow.ico"
-IDI_TYPING              ICON                    "res/typing.ico"
 IDI_OUTGOING            ICON                    "res/outgoing.ico"
 IDI_INCOMING            ICON                    "res/incoming.ico"
 IDI_NOTICE              ICON                    "res/notice.ico"
