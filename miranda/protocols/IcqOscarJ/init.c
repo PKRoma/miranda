@@ -100,7 +100,7 @@ PLUGININFOEX __declspec(dllexport) *MirandaPluginInfoEx(DWORD mirandaVersion)
     if (gbUnicodeAPI)
     {
       strcat(pluginName, " (Unicode)");
-      pluginInfo.isTransient = 1; // UNICODE_AWARE
+      pluginInfo.flags = 1; // UNICODE_AWARE
     }
     pluginInfo.shortName = pluginName;
     MIRANDA_VERSION = mirandaVersion;

@@ -174,7 +174,7 @@ BOOL WINAPI DllMain(HINSTANCE hInstDLL, DWORD dwReason, LPVOID reserved)
 __declspec(dllexport) PLUGININFOEX * MirandaPluginInfoEx(DWORD mirandaVersion)
 {
 #if defined(_UNICODE)
-	pluginInfo.isTransient |= UNICODE_AWARE;
+	pluginInfo.flags |= UNICODE_AWARE;
 	if (mirandaVersion < PLUGIN_MAKE_VERSION(0, 4, 2, 0))
 #else
 	if (mirandaVersion < PLUGIN_MAKE_VERSION(0, 4, 0, 1))

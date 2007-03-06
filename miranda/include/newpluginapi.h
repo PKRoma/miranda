@@ -44,7 +44,7 @@ typedef struct {
 	char *authorEmail;
 	char *copyright;
 	char *homepage;
-	BYTE isTransient;	   //leave this as 0 for now
+	BYTE flags;	   // right now the only flag, UNICODE_AWARE, is recognized here
 	int replacesDefaultModule;		   //one of the DEFMOD_ constants in m_plugins.h or zero
 	         //if non-zero, this will supress the loading of the specified built-in module
 			 //with the implication that this plugin provides back-end-compatible features
@@ -78,7 +78,7 @@ typedef struct {
 	char *authorEmail;
 	char *copyright;
 	char *homepage;
-	BYTE isTransient;	   //leave this as 0 for now
+	BYTE flags;	   // right now the only flag, UNICODE_AWARE, is recognized here
 	int replacesDefaultModule;		   //one of the DEFMOD_ constants in m_plugins.h or zero
 	         //if non-zero, this will supress the loading of the specified built-in module
 			 //with the implication that this plugin provides back-end-compatible features

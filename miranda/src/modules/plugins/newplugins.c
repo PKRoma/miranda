@@ -193,7 +193,7 @@ static int checkAPI(char * plugin, BASIC_PLUGIN_INFO * bpi, DWORD mirandaVersion
 			if ( checkTypeAPI == CHECKAPI_CLIST ) {
 				bpi->clistlink = (CList_Initialise) GetProcAddress(h, "CListInitialise");
 				#if defined( _UNICODE )
-					if ( pi->isTransient == UNICODE_AWARE )
+					if ( pi->flags & UNICODE_AWARE )
 				#endif
 				if ( bpi->clistlink ) {
 					// nothing more can be done here, this export is a load function
@@ -465,7 +465,7 @@ static BOOL dialogListPlugins(WIN32_FIND_DATAA * fd, char * path, WPARAM wParam,
 		ListView_SetItemTextA(hwndList, iRow, 1, pi.pluginInfo->shortName);
 		mir_snprintf(buf,SIZEOF(buf),"%d.%d.%d.%d", HIBYTE(HIWORD(pi.pluginInfo->version)), LOBYTE(HIWORD(pi.pluginInfo->version)), HIBYTE(LOWORD(pi.pluginInfo->version)), LOBYTE(LOWORD(pi.pluginInfo->version)));
 		ListView_SetItemTextA(hwndList, iRow, 2, buf);
-		ListView_SetItemText(hwndList, iRow, 3, ( pi.pluginInfo->isTransient & 1 ) != 0 ? _T("U") : _T("A"));
+		ListView_SetItemText(hwndList, iRow, 3, ( pi.pluginInfo->flags & 1 ) != 0 ? _T("U") : _T("A"));
 		ListView_SetItemText(hwndList, iRow, 4, TranslateTS( gModule != NULL ? _T("Yes"):_T("No") ));
 		ListView_SetItemTextA(hwndList, iRow, 5, pi.pluginInfo->author);
 		ListView_SetItemTextA(hwndList, iRow, 6, pi.pluginInfo->authorEmail);
