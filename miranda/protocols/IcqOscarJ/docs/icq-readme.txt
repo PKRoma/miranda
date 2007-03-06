@@ -66,6 +66,7 @@ Bugfixes:
   Applied fix for re-requesting authorization (thx Bio)
   Fixed handling of message acks & status msg replies from ICQ 6
   Fixed handling of malformed messages acks
+  Minor fixes for Popup plugin support
   Minor protocol related tweaks
 
 New Features:

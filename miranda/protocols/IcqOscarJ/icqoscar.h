@@ -23,7 +23,7 @@
 //
 // -----------------------------------------------------------------------------
 //
-// File name      : $Source: /cvsroot/miranda/miranda/protocols/IcqOscarJ/icqoscar.h,v $
+// File name      : $URL$
 // Revision       : $Revision$
 // Last change on : $Date$
 // Last change by : $Author$
@@ -73,6 +73,7 @@
 #include <m_popup.h>
 #include <m_clistint.h>
 #include <m_ignore.h>
+#include <win2k.h>
 
 // Project resources
 #include "resource.h"
