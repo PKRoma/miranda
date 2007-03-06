@@ -61,7 +61,7 @@ PLUGININFOEX pluginInfo = {
     "http://tabsrmm.sourceforge.net",
     UNICODE_AWARE,
     DEFMOD_SRMESSAGE,            // replace internal version (if any)
-    #ifdef __GNUWIN32__
+    #ifdef _UNICODE
     {0x6ca5f042, 0x7a7f, 0x47cc, { 0xa7, 0x15, 0xfc, 0x8c, 0x46, 0xfb, 0xf4, 0x34 }} //{6CA5F042-7A7F-47cc-A715-FC8C46FBF434}
     #else    
     {0x5889a3ef, 0x7c95, 0x4249, { 0x98, 0xbb, 0x34, 0xe9, 0x5, 0x3a, 0x6e, 0xa0 }} //{5889A3EF-7C95-4249-98BB-34E9053A6EA0}
