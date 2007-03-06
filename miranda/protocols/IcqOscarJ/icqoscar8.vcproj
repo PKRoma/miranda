@@ -381,9 +381,6 @@
 				RelativePath="UI\loginpassword.h">
 			</File>
 			<File
-				RelativePath="m_icq.h">
-			</File>
-			<File
 				RelativePath="md5.h">
 			</File>
 			<File
