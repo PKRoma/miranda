@@ -24,7 +24,7 @@ extern "C" __declspec(dllexport) bool WINAPI DllMain(HINSTANCE hinstDLL,DWORD /*
 	conn.hInstance = hinstDLL;
 	return TRUE;
 }
-extern "C" __declspec(dllexport) PLUGININFOEX* MirandaPluginInfo(DWORD mirandaVersion)
+extern "C" __declspec(dllexport) PLUGININFOEX* MirandaPluginInfoEx(DWORD mirandaVersion)
 {
 	unsigned long mv=_htonl(mirandaVersion);
 	memcpy((char*)&AIM_CAP_MIRANDA[8],&mv,sizeof(DWORD));
