@@ -1171,21 +1171,24 @@ BEGIN
     CONTROL         "List1",IDC_PLUGLIST,"SysListView32",LVS_REPORT | 
                     LVS_SINGLESEL | LVS_SHOWSELALWAYS | LVS_SORTASCENDING | 
                     LVS_AUTOARRANGE | LVS_NOSORTHEADER | WS_BORDER | 
-                    WS_TABSTOP,4,0,306,145
-    EDITTEXT        IDC_PLUGINLONGINFO,50,159,253,19,ES_MULTILINE | 
+                    WS_TABSTOP,4,0,306,122
+    GROUPBOX        "",IDC_PLUGININFOFRAME,4,126,307,98,BS_RIGHT
+    EDITTEXT        IDC_PLUGINLONGINFO,50,136,253,19,ES_MULTILINE | 
                     ES_READONLY | ES_WANTRETURN | NOT WS_BORDER | WS_VSCROLL
-    GROUPBOX        "",IDC_PLUGININFOFRAME,4,148,307,80,BS_RIGHT
-    EDITTEXT        IDC_PLUGINAUTHOR,50,178,253,12,ES_READONLY | 
+    EDITTEXT        IDC_PLUGINAUTHOR,50,155,253,12,ES_READONLY | 
                     ES_WANTRETURN | NOT WS_BORDER
-    EDITTEXT        IDC_PLUGINCPYR,50,190,249,12,ES_AUTOHSCROLL | 
+    CONTROL         "",IDC_PLUGINEMAIL,"Hyperlink",WS_TABSTOP,50,168,208,10
+    CONTROL         "",IDC_PLUGINURL,"Hyperlink",WS_TABSTOP,50,181,254,10
+    EDITTEXT        IDC_PLUGINPID,49,194,253,12,ES_READONLY | ES_WANTRETURN | 
+                    NOT WS_BORDER
+    EDITTEXT        IDC_PLUGINCPYR,50,207,249,12,ES_AUTOHSCROLL | 
                     ES_READONLY | ES_WANTRETURN | NOT WS_BORDER
-    CONTROL         "",IDC_PLUGINURL,"Hyperlink",WS_TABSTOP,50,213,254,10
-    CONTROL         "",IDC_PLUGINEMAIL,"Hyperlink",WS_TABSTOP,50,201,208,10
-    RTEXT           "Description:",IDC_STATIC,8,158,38,10
-    RTEXT           "Author(s):",IDC_STATIC,8,177,38,9
-    RTEXT           "Copyright:",IDC_STATIC,8,190,38,9
-    RTEXT           "E-mail:",IDC_STATIC,8,202,38,8
-    RTEXT           "Homepage:",IDC_STATIC,7,213,38,8
+    RTEXT           "Description:",IDC_STATIC,8,136,38,10
+    RTEXT           "Author(s):",IDC_STATIC,8,155,38,10
+    RTEXT           "E-mail:",IDC_STATIC,8,168,38,10
+    RTEXT           "Homepage:",IDC_STATIC,7,181,38,10
+    RTEXT           "Unique ID:",IDC_STATIC,7,194,38,10
+    RTEXT           "Copyright:",IDC_STATIC,8,207,38,10
     CTEXT           "Please restart Miranda IM for your changes to take effect.",
                     IDC_RESTART,5,233,305,11,NOT WS_VISIBLE
 END

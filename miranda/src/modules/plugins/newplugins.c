@@ -118,6 +118,14 @@ HINSTANCE GetInstByAddress( void* codePtr )
 	return result;
 }
 
+static int uuidToString(const MUUID uuid, char *szStr, int cbLen)
+{
+    if (cbLen<1||!szStr) return 0;
+    mir_snprintf(szStr, cbLen, "{%08x-%04x-%04x-%02x%02x-%02x%02x%02x%02x%02x%02x}",
+                        uuid.a, uuid.b, uuid.c, uuid.d[0], uuid.d[1], uuid.d[2], uuid.d[3], uuid.d[4], uuid.d[5], uuid.d[6], uuid.d[7]);
+    return 1;
+}
+
 // returns true if the API exports were good, otherwise, passed in data is returned
 #define CHECKAPI_NONE 	0
 #define CHECKAPI_DB 	1
@@ -467,6 +475,14 @@ static BOOL dialogListPlugins(WIN32_FIND_DATAA * fd, char * path, WPARAM wParam,
 		}
 		ListView_SetItemTextA(hwndList, iRow, 8, pi.pluginInfo->copyright);
 		ListView_SetItemTextA(hwndList, iRow, 9, pi.pluginInfo->homepage);
+        if (pi.pluginInfo->cbSize==sizeof(PLUGININFOEX)) {
+            char szUID[128];
+            uuidToString(pi.pluginInfo->uuid, szUID, sizeof(szUID));
+            ListView_SetItemTextA(hwndList, iRow, 10, szUID);
+        }
+        else {
+            ListView_SetItemTextA(hwndList, iRow, 10, Translate("<unknown>"));
+        }
 	}
 	FreeLibrary(pi.hInst);
 	return TRUE;
@@ -532,6 +548,9 @@ static BOOL CALLBACK DlgPluginOpt(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM 
 
 			col.pszText=TranslateT("Homepage");
 			ListView_InsertColumn(hwndList,9,&col);
+            
+			col.pszText=TranslateT("UID");
+			ListView_InsertColumn(hwndList,10,&col);
 
 			// XXX: Won't work on windows 95 without IE3+ or 4.70
 			ListView_SetExtendedListViewStyleEx(hwndList, 0, LVS_EX_CHECKBOXES | LVS_EX_LABELTIP | LVS_EX_FULLROWSELECT );
@@ -603,6 +622,9 @@ static BOOL CALLBACK DlgPluginOpt(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM 
 				// homepage
 				ListView_GetItemText(hwndList, hdr->iItem, 9, buf, SIZEOF(buf));
 				SetWindowText(GetDlgItem(hwndDlg,IDC_PLUGINURL), sel ? buf : _T(""));
+                
+				ListView_GetItemText(hwndList, hdr->iItem, 10, buf, SIZEOF(buf));
+				SetWindowText(GetDlgItem(hwndDlg,IDC_PLUGINPID), sel ? buf : _T(""));
 			}
 			if ( hdr && hdr->hdr.code == PSN_APPLY ) {
 				HWND hwndList=GetDlgItem(hwndDlg,IDC_PLUGLIST);

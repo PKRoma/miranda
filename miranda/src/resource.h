@@ -1,5 +1,5 @@
 //{{NO_DEPENDENCIES}}
-// Microsoft Visual C++ generated include file.
+// Microsoft Developer Studio generated include file.
 // Used by resource.rc
 //
 #define IDC_AUTHICON                    1
@@ -387,6 +387,7 @@
 #define IDC_PLUGININFOFRAME             1680
 #define IDC_PLUGINCPYR                  1681
 #define IDC_PLUGINURL                   1682
+#define IDC_PLUGINPID                   1683
 #define IDC_PLUGINEMAIL                 1684
 #define IDC_IDLESPIN                    1687
 #define IDC_NODBDRIVERS                 1690
