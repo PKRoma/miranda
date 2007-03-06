@@ -162,7 +162,7 @@ static int checkAPI(char * plugin, BASIC_PLUGIN_INFO * bpi, DWORD mirandaVersion
 			pi = bpi->InfoEx(mirandaVersion);
 		else
 			pi = (PLUGININFOEX*)bpi->Info(mirandaVersion);
-		if ( pi && (pi->cbSize==sizeof(PLUGININFO)||pi->cbSize==sizeof(PLUGININFOEX)) && pi->shortName && pi->description
+		if ( pi && ((bpi->Info&&pi->cbSize==sizeof(PLUGININFO))||(bpi->InfoEx&&pi->cbSize==sizeof(PLUGININFOEX))) && pi->shortName && pi->description
 				&& pi->author && pi->authorEmail && pi->copyright && pi->homepage
 				&& pi->replacesDefaultModule <= DEFMOD_HIGHEST
 				&& pi->replacesDefaultModule != DEFMOD_REMOVED_UIPLUGINOPTS)
