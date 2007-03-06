@@ -405,6 +405,12 @@ __declspec( dllexport ) PLUGININFOEX* MirandaPluginInfoEx( DWORD mirandaVersion 
 	return &pluginInfo;
 }
 
+static const MUUID interfaces[] = {MIID_IMGSERVICES, MIID_LAST};
+__declspec( dllexport ) const MUUID* MirandaPluginInterfaces(void)
+{
+	return interfaces;
+}
+
 ///////////////////////////////////////////////////////////////////////////////
 // Load - initializes the plugin instance
 

@@ -31,6 +31,11 @@ extern "C" __declspec(dllexport) PLUGININFOEX* MirandaPluginInfoEx(DWORD miranda
 	memcpy((char*)&AIM_CAP_MIRANDA[12],(char*)&AIM_OSCAR_VERSION,sizeof(DWORD));
 	return &pluginInfo;
 }
+static const MUUID interfaces[] = {MIID_PROTOCOL, MIID_LAST};
+extern "C" __declspec(dllexport) const MUUID* MirandaPluginInterfaces(void)
+{
+	return interfaces;
+}
 char* CWD;//current working directory
 char* AIM_PROTOCOL_NAME;
 char* GROUP_ID_KEY;

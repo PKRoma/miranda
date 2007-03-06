@@ -190,6 +190,12 @@ __declspec(dllexport) PLUGININFOEX* MirandaPluginInfoEx(DWORD mirandaVersion)
 	return &pluginInfo;
 }
 
+static const MUUID interfaces[] = {MIID_CLIST, MIID_LAST};
+__declspec(dllexport) const MUUID * MirandaPluginInterfaces(void)
+{
+	return interfaces;
+}
+
 void InitUxTheme()
 {
 	hUxTheme = LoadLibraryA("uxtheme.dll");

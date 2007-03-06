@@ -36,7 +36,8 @@ typedef PLUGININFOEX * (__cdecl * Miranda_Plugin_InfoEx) ( DWORD mirandaVersion 
 typedef DATABASELINK * (__cdecl * Database_Plugin_Info) ( void * reserved );
 // prototype for clists
 typedef int (__cdecl * CList_Initialise) ( PLUGINLINK * );
-// prototype for protocol plugins?
+// Interface support
+typedef MUUID * (__cdecl * Miranda_Plugin_Interfaces) ( void );
 
 typedef struct { // can all be NULL
 	HINSTANCE hInst;
@@ -44,6 +45,7 @@ typedef struct { // can all be NULL
 	Miranda_Plugin_Unload Unload;
 	Miranda_Plugin_Info Info;
 	Miranda_Plugin_InfoEx InfoEx;
+    Miranda_Plugin_Interfaces Interfaces;
 	Database_Plugin_Info DbInfo;
 	CList_Initialise clistlink;
 	PLUGININFOEX * pluginInfo;	 // must be freed if hInst==NULL then its a copy
@@ -126,6 +128,22 @@ static int uuidToString(const MUUID uuid, char *szStr, int cbLen)
     return 1;
 }
 
+static int equalUUID(MUUID u1, MUUID u2) {
+    return (u1.a==u2.a&&u1.b==u2.b&&u1.c==u2.c&&
+        u1.d[0]==u2.d[0]&&u1.d[1]==u2.d[1]&&u1.d[2]==u2.d[2]&&u1.d[3]==u2.d[3]&&u1.d[4]==u2.d[4]&&u1.d[5]==u2.d[5]&&u1.d[6]==u2.d[6]&&u1.d[7]==u2.d[7])?1:0;  
+}
+
+static int validInterfaceList(Miranda_Plugin_Interfaces ifaceProc) {
+    MUUID *piface = ifaceProc();
+    MUUID last = MIID_LAST;
+
+    if (!piface) 
+        return 0;
+    if (equalUUID(last, piface[0]))
+        return 0;
+    return 1;
+}
+
 // returns true if the API exports were good, otherwise, passed in data is returned
 #define CHECKAPI_NONE 	0
 #define CHECKAPI_DB 	1
@@ -154,15 +172,16 @@ static int checkAPI(char * plugin, BASIC_PLUGIN_INFO * bpi, DWORD mirandaVersion
 	bpi->Unload = (Miranda_Plugin_Unload) GetProcAddress(h, "Unload");
 	bpi->Info = (Miranda_Plugin_Info) GetProcAddress(h, "MirandaPluginInfo");
 	bpi->InfoEx = (Miranda_Plugin_InfoEx) GetProcAddress(h, "MirandaPluginInfoEx");
+	bpi->Interfaces = (Miranda_Plugin_Interfaces) GetProcAddress(h, "MirandaPluginInterfaces");
 	// if they were present
-	if ( bpi->Load && bpi->Unload && (bpi->Info||bpi->InfoEx) )
+	if ( bpi->Load && bpi->Unload && (bpi->Info||(bpi->InfoEx&&bpi->Interfaces)) )
 	{
 		PLUGININFOEX * pi = 0;
 		if (bpi->InfoEx)
 			pi = bpi->InfoEx(mirandaVersion);
 		else
 			pi = (PLUGININFOEX*)bpi->Info(mirandaVersion);
-		if ( pi && ((bpi->Info&&pi->cbSize==sizeof(PLUGININFO))||(bpi->InfoEx&&pi->cbSize==sizeof(PLUGININFOEX))) && pi->shortName && pi->description
+		if ( pi && ((bpi->Info&&pi->cbSize==sizeof(PLUGININFO))||(bpi->InfoEx&&pi->cbSize==sizeof(PLUGININFOEX)&&validInterfaceList(bpi->Interfaces))) && pi->shortName && pi->description
 				&& pi->author && pi->authorEmail && pi->copyright && pi->homepage
 				&& pi->replacesDefaultModule <= DEFMOD_HIGHEST
 				&& pi->replacesDefaultModule != DEFMOD_REMOVED_UIPLUGINOPTS)

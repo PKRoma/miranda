@@ -110,7 +110,11 @@ PLUGININFOEX __declspec(dllexport) *MirandaPluginInfoEx(DWORD mirandaVersion)
   return &pluginInfo;
 }
 
-
+static const MUUID interfaces[] = {MIID_PROTOCOL, MIID_LAST};
+__declspec(dllexport) const MUUID* MirandaPluginInterfaces(void)
+{
+	return interfaces;
+}
 
 BOOL WINAPI DllMain(HINSTANCE hinstDLL,DWORD fdwReason,LPVOID lpvReserved)
 {

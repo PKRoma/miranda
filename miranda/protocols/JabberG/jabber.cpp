@@ -157,6 +157,12 @@ extern "C" __declspec( dllexport ) PLUGININFOEX *MirandaPluginInfoEx( DWORD mira
 	return &pluginInfo;
 }
 
+static const MUUID interfaces[] = {MIID_PROTOCOL, MIID_LAST};
+extern "C" __declspec(dllexport) const MUUID* MirandaPluginInterfaces(void)
+{
+	return interfaces;
+}
+
 ///////////////////////////////////////////////////////////////////////////////
 // OnPreShutdown - prepares Miranda to be shut down
 

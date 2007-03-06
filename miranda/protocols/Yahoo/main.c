@@ -120,6 +120,16 @@ __declspec(dllexport) PLUGININFOEX* MirandaPluginInfoEx(DWORD mirandaVersion)
 }
 
 /*
+ * MirandaPluginInterfaces - Notifies the core of interfaces implemented
+ * Parameters: none
+ */
+static const MUUID interfaces[] = {MIID_PROTOCOL, MIID_LAST};
+__declspec(dllexport) const MUUID* MirandaPluginInterfaces(void)
+{
+	return interfaces;
+}
+
+/*
  * Unload - Unloads plugin
  * Parameters: void
  */
