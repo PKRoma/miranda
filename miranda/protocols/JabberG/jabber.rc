@@ -133,7 +133,7 @@ BEGIN
                     IDC_DOWNLOAD_OPENSSL,"Hyperlink",WS_TABSTOP,16,97,270,11
 END
 
-IDD_OPT_JABBER2 DIALOGEX 0, 0, 304, 199
+IDD_OPT_JABBER2 DIALOGEX 0, 0, 304, 211
 STYLE DS_SETFONT | DS_FIXEDSYS | WS_CHILD
 EXSTYLE WS_EX_CONTROLPARENT
 FONT 8, "MS Shell Dlg", 0, 0, 0x1
@@ -152,7 +152,7 @@ BEGIN
     CONTROL         "Specify external address",IDC_DIRECT_MANUAL,"Button",
                     BS_AUTOCHECKBOX | WS_TABSTOP,16,30,101,10
     EDITTEXT        IDC_DIRECT_ADDR,124,29,81,12,ES_AUTOHSCROLL
-    GROUPBOX        "Miscellaneous",IDC_STATIC,8,75,290,118
+    GROUPBOX        "Miscellaneous",IDC_STATIC,8,75,290,132
     CONTROL         "Automatically add contact when accept authorization",
                     IDC_AUTO_ADD,"Button",BS_AUTOCHECKBOX | BS_TOP | 
                     WS_TABSTOP,16,90,280,12
@@ -174,6 +174,9 @@ BEGIN
                     16,177,279,10
     CONTROL         "Validate contacts being added",IDC_VALIDATEADD,"Button",
                     BS_AUTOCHECKBOX | WS_TABSTOP,16,152,280,10
+    CONTROL         "Add room to Bookmarks when adding to roster",
+                    IDC_ROSTER2BOOKMARK,"Button",BS_AUTOCHECKBOX | 
+                    WS_TABSTOP,16,189,279,10
 END
 
 IDD_INFO_JABBER DIALOGEX 0, 0, 221, 132
@@ -612,7 +615,7 @@ BEGIN
     PUSHBUTTON      "Delete",IDC_DELETEAVATAR,61,112,41,13
 END
 
-IDD_BOOKMARKS DIALOGEX 0, 0, 400, 209
+IDD_BOOKMARKS DIALOGEX 0, 0, 295, 180
 STYLE DS_SETFONT | DS_MODALFRAME | DS_3DLOOK | DS_FIXEDSYS | DS_CENTER | 
     WS_POPUP | WS_VISIBLE | WS_CAPTION | WS_SYSMENU
 EXSTYLE WS_EX_CONTROLPARENT
@@ -621,12 +624,11 @@ FONT 8, "MS Shell Dlg", 0, 0, 0x1
 BEGIN
     CONTROL         "List1",IDC_BM_LIST,"SysListView32",LVS_REPORT | 
                     LVS_SINGLESEL | LVS_SHOWSELALWAYS | WS_BORDER | 
-                    WS_TABSTOP,5,7,330,197
-    PUSHBUTTON      "Close",IDCLOSE,343,190,50,14
-    DEFPUSHBUTTON   "Refresh",IDC_BROWSE,343,7,50,14
-    PUSHBUTTON      "Add",IDC_ADD,343,35,50,14
-    PUSHBUTTON      "Edit",IDC_EDIT,343,55,50,14
-    PUSHBUTTON      "Remove",IDC_REMOVE,343,74,50,14
+                    WS_TABSTOP,5,7,283,150
+    PUSHBUTTON      "Close",IDCLOSE,238,161,50,14
+    PUSHBUTTON      "Add",IDC_ADD,5,161,50,14
+    PUSHBUTTON      "Edit",IDC_EDIT,58,161,50,14
+    PUSHBUTTON      "Remove",IDC_REMOVE,111,161,50,14
 END
 
 IDD_BOOKMARK_ADD DIALOGEX 0, 0, 208, 96
@@ -671,6 +673,7 @@ BEGIN
         RIGHTMARGIN, 296
         VERTGUIDE, 9
         TOPMARGIN, 3
+        BOTTOMMARGIN, 199
     END
 
     IDD_INFO_JABBER, DIALOG
@@ -861,10 +864,9 @@ BEGIN
     IDD_BOOKMARKS, DIALOG
     BEGIN
         LEFTMARGIN, 5
-        RIGHTMARGIN, 393
-        VERTGUIDE, 335
+        RIGHTMARGIN, 288
         TOPMARGIN, 7
-        BOTTOMMARGIN, 204
+        BOTTOMMARGIN, 175
     END
 
     IDD_BOOKMARK_ADD, DIALOG
@@ -944,4 +946,5 @@ IDI_BOOKMARKS           ICON                    "icos\\bookmarks.ico"
 
 /////////////////////////////////////////////////////////////////////////////
 #endif    // not APSTUDIO_INVOKED
+
 

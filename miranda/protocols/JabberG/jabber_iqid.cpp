@@ -45,6 +45,15 @@ static void JabberOnLoggedIn( ThreadData* info )
 	XmlNode* query = iq.addChild( "query" ); query->addAttr( "xmlns", "jabber:iq:roster" );
 	info->send( iq );
 
+	iqId = JabberSerialNext();
+	JabberIqAdd( iqId, IQ_PROC_DISCOBOOKMARKS, JabberIqResultDiscoBookmarks);
+	XmlNodeIq biq( "get", iqId);
+	XmlNode* bquery = biq.addQuery( "jabber:iq:private" );
+	XmlNode* storage = bquery->addChild("storage");
+	storage->addAttr("xmlns","storage:bookmarks");
+
+	jabberThreadInfo->send( biq );
+	
 	char szServerName[ sizeof(info->server) ];
 	if ( JGetStaticString( "LastLoggedServer", NULL, szServerName, sizeof(szServerName)))
 		JabberSendGetVcard( jabberJID );

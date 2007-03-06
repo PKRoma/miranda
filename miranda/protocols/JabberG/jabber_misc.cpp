@@ -48,6 +48,11 @@ void JabberAddContactToRoster( const TCHAR* jid, const TCHAR* nick, const TCHAR*
 	if ( grpName != NULL )
 		item->addChild( "group", grpName );
 	jabberThreadInfo->send( iq );
+
+	if ( JGetByte( "AddRoster2Bookmarks", TRUE ) == TRUE ) {
+		JabberAddEditBookmark(NULL, (LPARAM) jid);
+	}
+	
 }
 
 ///////////////////////////////////////////////////////////////////////////////

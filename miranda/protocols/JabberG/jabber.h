@@ -426,6 +426,8 @@ void JabberGroupchatProcessInvite( TCHAR* roomJid, TCHAR* from, TCHAR* reason, T
 
 //---- jabber_bookmarks.c -------------------------------------------
 int JabberMenuHandleBookmarks( WPARAM wParam, LPARAM lParam );
+int JabberAddEditBookmark( WPARAM wParam, LPARAM lParam );
+
 
 
 //---- jabber_icolib.c ----------------------------------------------
