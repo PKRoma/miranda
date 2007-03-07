@@ -402,7 +402,7 @@ void __cdecl JabberFileServerThread( filetransfer* ft );
 
 //---- jabber_form.c ------------------------------------------------
 
-void JabberFormCreateUI( HWND hwndStatic, XmlNode *xNode, int *formHeight );
+void JabberFormCreateUI( HWND hwndStatic, XmlNode *xNode, int *formHeight, BOOL bCompact = FALSE );
 void JabberFormCreateDialog( XmlNode *xNode, TCHAR* defTitle, JABBER_FORM_SUBMIT_FUNC pfnSubmit, void *userdata );
 
 XmlNode* JabberFormGetData( HWND hwndStatic, XmlNode *xNode );

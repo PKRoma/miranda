@@ -175,6 +175,9 @@ int JabberMenuRosterAdd( WPARAM wParam, LPARAM lParam )
 				JFreeVariant( &dbv );
 			}
 			JabberAddContactToRoster(roomID, nick, group, SUB_NONE);
+			if ( JGetByte( "AddRoster2Bookmarks", TRUE ) == TRUE ) {
+				JabberAddEditBookmark(NULL, (LPARAM) roomID);
+			}
 			if (nick) mir_free(nick);
 			if (nick) mir_free(group);
 		}
