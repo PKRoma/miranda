@@ -130,18 +130,18 @@ static int uuidToString(const MUUID uuid, char *szStr, int cbLen)
 
 static int equalUUID(MUUID u1, MUUID u2)
 {
-	return (u1.a==u2.a&&u1.b==u2.b&&u1.c==u2.c&&
-		u1.d[0]==u2.d[0]&&u1.d[1]==u2.d[1]&&u1.d[2]==u2.d[2]&&u1.d[3]==u2.d[3]&&u1.d[4]==u2.d[4]&&u1.d[5]==u2.d[5]&&u1.d[6]==u2.d[6]&&u1.d[7]==u2.d[7])?1:0;  
+    return memcmp(&u1, &u2, sizeof(MUUID))?0:1;
 }
+
+static 	MUUID miid_last = MIID_LAST;
 
 static int validInterfaceList(Miranda_Plugin_Interfaces ifaceProc)
 {
 	MUUID *piface = ( ifaceProc ) ? ifaceProc() : NULL;
-	MUUID last = MIID_LAST;
 
 	if (!piface) 
 		return 0;
-	if (equalUUID(last, piface[0]))
+	if (equalUUID(miid_last, piface[0]))
 		return 0;
 	return 1;
 }
