@@ -915,14 +915,17 @@ BOOL CALLBACK DlgProcParentWindow(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM 
 				SendMessage(hwndDlg, DM_DEACTIVATE, 0, 0);
 				ShowWindow(hwndDlg, SW_SHOWMINNOACTIVE);
 			} else {
+				BOOL isVisible = IsWindowVisible(hwndDlg);
 				ShowWindow(hwndDlg, SW_SHOWNA);
 				if (dat->childrenCount == 1 ||
 					((g_dat->flags2 & SMF2_SWITCHTOACTIVE) && (IsIconic(hwndDlg) || GetForegroundWindow() != hwndDlg))) {
-					if (dat->childrenCount == 1) {
+					if (!isVisible) {
 						SetForegroundWindow(hwndDlg);
 					}
 					SendMessage(hwndDlg, CM_ACTIVATECHILD, 0, (LPARAM) lParam);
-					SetFocus((HWND) lParam);
+					if (!isVisible) {
+						SetFocus((HWND) lParam);
+					}
 				}
 			}
 		} else { /* outgoing message */
