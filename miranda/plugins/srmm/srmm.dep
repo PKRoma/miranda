@@ -84,15 +84,10 @@
 
 .\resource.rc : \
 	"..\..\include\statusmodes.h"\
-	".\res\add.ico"\
-	".\res\details.ico"\
-	".\res\downarrow.ico"\
 	".\res\dragcopy.cur"\
 	".\res\dropuser.cur"\
-	".\res\history.ico"\
 	".\res\hyperlin.cur"\
 	".\res\incoming.ico"\
 	".\res\notice.ico"\
 	".\res\outgoing.ico"\
-	".\res\typing.ico"\
 	
