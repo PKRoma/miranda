@@ -1103,7 +1103,7 @@ static int SplitmsgModulesLoaded(WPARAM wParam, LPARAM lParam)
 
 	upd.cbSize = sizeof(upd);
 	upd.szComponentName = pluginInfo.shortName;
-	upd.pbVersion = (BYTE *)CreateVersionStringPlugin(&pluginInfo, szCurrentVersion);
+	upd.pbVersion = (BYTE *)CreateVersionStringPlugin((PLUGININFO *)&pluginInfo, szCurrentVersion);
 	upd.cpbVersion = strlen((char *)upd.pbVersion);
 	upd.szVersionURL = szFLVersionUrl;
 	upd.szUpdateURL = szFLUpdateurl;
@@ -1899,7 +1899,7 @@ static ICONDESC _toolbaricons[] = {
     "tabSRMM_mlog", "Message Log Options", &myGlobals.g_buttonBarIcons[2], -IDI_MSGLOGOPT, 1,
     "tabSRMM_add", "Add contact", &myGlobals.g_buttonBarIcons[0], -IDI_ADDCONTACT, 1,
     "tabSRMM_multi", "Multisend indicator", &myGlobals.g_buttonBarIcons[3], -IDI_MULTISEND, 1,
-    "tabSRMM_typing", "Contact is typing", &myGlobals.g_buttonBarIcons[5], -IDI_TYPING, 1,
+    //"tabSRMM_typing", "Contact is typing", &myGlobals.g_buttonBarIcons[5], -IDI_TYPING, 1,
     "tabSRMM_quote", "Quote text", &myGlobals.g_buttonBarIcons[8], -IDI_QUOTE, 1,
     "tabSRMM_save", "Save and close", &myGlobals.g_buttonBarIcons[7], -IDI_SAVE, 1,
     "tabSRMM_send", "Send message", &myGlobals.g_buttonBarIcons[9], -IDI_SEND, 1,
@@ -1928,7 +1928,7 @@ static ICONDESC _logicons[] = {
 };
 static ICONDESC _deficons[] = {
     "tabSRMM_container", "Static container icon", &myGlobals.g_iconContainer, -IDI_CONTAINER, 1,
-    "tabSRMM_mtn_on", "Sending typing notify is on", &myGlobals.g_buttonBarIcons[12], -IDI_SELFTYPING_ON, 1,
+    //"tabSRMM_mtn_on", "Sending typing notify is on", &myGlobals.g_buttonBarIcons[12], -IDI_SELFTYPING_ON, 1,
     "tabSRMM_mtn_off", "Sending typing notify is off", &myGlobals.g_buttonBarIcons[13], -IDI_SELFTYPING_OFF, 1,
     "tabSRMM_secureim_on", "RESERVED (currently not in use)", &myGlobals.g_buttonBarIcons[14], -IDI_SECUREIM_ENABLED, 1,
     "tabSRMM_secureim_off", "RESERVED (currently not in use)", &myGlobals.g_buttonBarIcons[15], -IDI_SECUREIM_DISABLED, 1,
@@ -2052,6 +2052,8 @@ static int LoadFromIconLib()
         }
         n++;
     }
+    myGlobals.g_buttonBarIcons[5] = myGlobals.g_buttonBarIcons[12] = (HICON)CallService(MS_SKIN2_GETICON, 0, (LPARAM)"core_main_23");
+
     CacheMsgLogIcons();
     WindowList_Broadcast(hMessageWindowList, DM_LOADBUTTONBARICONS, 0, 0);
     return 0;

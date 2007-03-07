@@ -68,6 +68,31 @@ PLUGININFOEX pluginInfo = {
     #endif    
 };
 
+PLUGININFO oldPluginInfo = {
+    sizeof(PLUGININFOEX),
+#ifdef _UNICODE
+    #ifdef __GNUWIN32__
+        "tabSRMsgW (MINGW32 - unicode)",
+    #else    
+        "tabSRMsgW (unicode)",
+    #endif    
+#else
+    #ifdef __GNUWIN32__
+        "tabSRMsg (MINGW32)",
+    #else    
+        "tabSRMsg",
+    #endif    
+#endif
+    PLUGIN_MAKE_VERSION(1, 1, 0, 18),
+    "Chat module for instant messaging and group chat, offering a tabbed interface and many advanced features.",
+    "The Miranda developers team",
+    "silvercircle@gmail.com",
+    "© 2000-2007 Miranda Project",
+    "http://tabsrmm.sourceforge.net",
+    UNICODE_AWARE,
+    DEFMOD_SRMESSAGE,            // replace internal version (if any)
+};
+
 BOOL WINAPI DllMain(HINSTANCE hinstDLL, DWORD fdwReason, LPVOID lpvReserved)
 {
     g_hInst = hinstDLL;
@@ -81,6 +106,15 @@ __declspec(dllexport)
 	if (mirandaVersion < PLUGIN_MAKE_VERSION(0, 4, 0, 0))
         return NULL;
     return &pluginInfo;
+}
+
+__declspec(dllexport)
+     PLUGININFO *MirandaPluginInfo(DWORD mirandaVersion)
+{
+    g_mirandaVersion = mirandaVersion;
+	if (mirandaVersion < PLUGIN_MAKE_VERSION(0, 4, 0, 0))
+        return NULL;
+    return &oldPluginInfo;
 }
 
 static const MUUID interfaces[] = {MIID_SRMM, MIID_CHAT, MIID_LAST};
