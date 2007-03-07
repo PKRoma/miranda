@@ -3951,6 +3951,40 @@ static __inline int rcHeight(RECT *rc)
 	return rc->bottom-rc->top;
 }
 
+
+static void GetIconMode(IN struct ClcData *dat, IN struct ClcContact * Drawing, IN BOOL selected, IN BOOL hottrack, OUT COLORREF * OutColourFg, OUT int * OutMode)
+{
+	COLORREF colourFg;
+	int mode;
+	int BlendedInActiveState = (dat->dbbBlendInActiveState);
+	int BlendValue = dat->dbbBlend25 ? ILD_BLEND25 : ILD_BLEND50;
+	if(selected)
+	{
+		colourFg=dat->selBkColour;
+		mode=BlendedInActiveState?ILD_NORMAL:ILD_SELECTED;
+	}
+	else if(hottrack)
+	{
+		mode=BlendedInActiveState?ILD_NORMAL:ILD_FOCUS;
+		colourFg=dat->hotTextColour;
+	}
+	else if(Drawing->type==CLCIT_CONTACT && Drawing->flags&CONTACTF_NOTONLIST)
+	{
+		colourFg=dat->fontModernInfo[FONTID_NOTONLIST].colour;
+		mode=BlendValue;
+	}
+	else
+	{
+		colourFg=dat->selBkColour;
+		mode=ILD_NORMAL;
+	}
+	if (Drawing->type==CLCIT_CONTACT && dat->showIdle && (Drawing->flags&CONTACTF_IDLE) &&
+		CLCPaint_GetRealStatus(Drawing,ID_STATUS_OFFLINE)!=ID_STATUS_OFFLINE)
+		mode=ILD_SELECTED;
+	if (OutColourFg) *OutColourFg=colourFg;
+	if (OutMode) *OutMode=mode;
+}
+
 static void CLCPaint_DrawContactItems(HWND hwnd, HDC hdcMem, struct ClcData *dat, struct ClcContact *Drawing, RECT *row_rc, RECT *free_row_rc, int left_pos, int right_pos, int selected,int hottrack, RECT *rcPaint)
 {
 	int i;
@@ -4050,25 +4084,7 @@ static void CLCPaint_DrawContactItems(HWND hwnd, HDC hdcMem, struct ClcData *dat
 					{
 						COLORREF colourFg;
 						int mode;
-						if(hottrack)
-						{
-							colourFg=dat->hotTextColour;
-							mode=ILD_NORMAL;
-						}
-						else if(Drawing->type==CLCIT_CONTACT && Drawing->flags&CONTACTF_NOTONLIST)
-						{
-							colourFg=dat->fontModernInfo[FONTID_NOTONLIST].colour;
-							mode=ILD_BLEND50;
-						}
-						else
-						{
-							colourFg=dat->selBkColour;
-							mode=ILD_NORMAL;
-						}
-						if (Drawing->type==CLCIT_CONTACT && dat->showIdle && (Drawing->flags&CONTACTF_IDLE) &&
-							CLCPaint_GetRealStatus(Drawing,ID_STATUS_OFFLINE)!=ID_STATUS_OFFLINE)
-							mode=ILD_SELECTED;
-
+						GetIconMode (dat, Drawing, selected, hottrack, &colourFg, &mode);
 						CLCPaint_DrawStatusIcon(Drawing, dat, iImage, hdcMem,
 							rc->left, rc->top,
 							0,0,CLR_NONE,colourFg,mode);
@@ -4164,6 +4180,15 @@ static void CLCPaint_DrawContactItems(HWND hwnd, HDC hdcMem, struct ClcData *dat
 				if (Drawing->ext_mpItemsDesc[i].itemType&CIT_EXTRA)
 				{
 					//Draw extra icon
+					int iImage = Drawing->ext_mpItemsDesc[i].itemType&0x3F;
+					COLORREF colourFg;
+					int mode;
+					if (iImage!=-1)
+					{
+						GetIconMode (dat, Drawing, selected, hottrack, &colourFg, &mode);
+						SkinEngine_ImageList_DrawEx(dat->himlExtraColumns,Drawing->iExtraImage[iImage],hdcMem,
+							rc->left, rc->top,0,0,CLR_NONE,colourFg,mode);
+					}
 				}
 				break;
 		}
@@ -4183,3 +4208,20 @@ static void CLCPaint_InternalPaintRowItems (HWND hwnd, HDC hdcMem, struct ClcDat
 	}
 	CLCPaint_DrawContactItems(hwnd, hdcMem, dat, Drawing, &row_rc, &free_row_rc, left_pos, right_pos, selected, hottrack, rcPaint);
 }
+
+/* TODO Render items 
+ 
+ V avatar
+ . avatars overlays
+ V icon
+ V text
+ . time
+ V extra icons
+ . selection/hot
+ . groups and divider lines
+
+ - Invalidate row items only when needed
+ - Calc row height appropriate
+ - Use array for hit test
+
+ */

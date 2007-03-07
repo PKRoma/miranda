@@ -724,7 +724,7 @@ LRESULT CALLBACK ModernStatusProc(HWND hwnd,UINT msg,WPARAM wParam,LPARAM lParam
 								if (hSubmenu) hMenu=hSubmenu;
 							}
 				} 
-				else if (hMenu)
+				if (hMenu)
 				{
 					HMENU tm=hMenu;
 					hMenu=GetSubMenu(tm,0);	
