@@ -286,15 +286,15 @@ static int AppendAnsiToBufferL(char **buffer, int *cbBufferEnd, int *cbBufferAll
 	for (; *line && (maxLen < 0 || line < maxLine); line++, textCharsCount++) {
 		wasEOL = 0;
 		if (*line == '\r' && line[1] == '\n') {
-			CopyMemory(d, "\\line ", 5);
+			CopyMemory(d, "\\line ", 6);
 			wasEOL = 1;
-			d += 5;
+			d += 6;
 			line++;
 		}
 		else if (*line == '\n') {
-			CopyMemory(d, "\\line ", 5);
+			CopyMemory(d, "\\line ", 6);
 			wasEOL = 1;
-			d += 5;
+			d += 6;
 		}
 		else if (*line == '\t') {
 			CopyMemory(d, "\\tab ", 5);
@@ -341,15 +341,15 @@ static int AppendUnicodeToBufferL(char **buffer, int *cbBufferEnd, int *cbBuffer
 	for (; *line && (maxLen < 0 || line < maxLine); line++, textCharsCount++) {
 		wasEOL = 0;
 		if (*line == '\r' && line[1] == '\n') {
-			CopyMemory(d, "\\line ", 5);
+			CopyMemory(d, "\\line ", 6);
 			wasEOL = 1;
-			d += 5;
+			d += 6;
 			line++;
 		}
 		else if (*line == '\n') {
-			CopyMemory(d, "\\line ", 5);
+			CopyMemory(d, "\\line ", 6);
 			wasEOL = 1;
-			d += 5;
+			d += 6;
 		}
 		else if (*line == '\t') {
 			CopyMemory(d, "\\tab ", 5);
