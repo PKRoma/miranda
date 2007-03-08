@@ -52,6 +52,7 @@
 #define IDC_MANAGEGROUPS                1034
 #define IDC_NOTIFY_ENDSESSION           1035
 #define IDC_USEOPENSSL                  1036
+#define IDC_NOTIFY_CUSTOMSMILEY         1036
 #define IDC_USEMSNP11                   1037
 #define IDC_SENDFONTINFO                1046
 #define IDC_NOTIFY_USERTYPE             1047

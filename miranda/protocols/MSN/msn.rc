@@ -162,7 +162,7 @@ BEGIN
     LTEXT           "Blocked contact",IDC_STATIC,204,208,82,8
 END
 
-IDD_HOTMAIL_OPT_POPUP DIALOGEX 0, 0, 238, 220
+IDD_HOTMAIL_OPT_POPUP DIALOGEX 0, 0, 238, 233
 STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | WS_CHILD
 EXSTYLE WS_EX_CONTROLPARENT
 FONT 8, "MS Shell Dlg", 0, 0, 0x1
@@ -188,7 +188,7 @@ BEGIN
                     ES_NUMBER
     LTEXT           "sec.",IDC_STATIC,100,102,30,8
     DEFPUSHBUTTON   "Previe&w",IDC_PREVIEW,176,100,52,12
-    GROUPBOX        "Other",IDC_STATIC,3,122,232,81
+    GROUPBOX        "Other",IDC_STATIC,3,122,232,94
     CONTROL         "Display popups when user is typing",IDC_NOTIFY_USERTYPE,
                     "Button",BS_AUTOCHECKBOX | WS_TABSTOP,11,135,216,10
     CONTROL         "Display errors using popups",IDC_ERRORS_USING_POPUPS,
@@ -196,15 +196,17 @@ BEGIN
     CONTROL         "Enable 'First message delivered' popup",
                     IDC_NOTIFY_FIRSTMSG,"Button",BS_AUTOCHECKBOX | 
                     WS_TABSTOP,11,159,216,10
-    LTEXT           "Timeout (*)",IDC_STATIC,10,186,60,8
-    EDITTEXT        IDC_POPUP_TIMEOUT2,70,183,24,12,ES_AUTOHSCROLL | 
+    LTEXT           "Timeout (*)",IDC_STATIC,10,199,60,8
+    EDITTEXT        IDC_POPUP_TIMEOUT2,70,197,24,12,ES_AUTOHSCROLL | 
                     ES_NUMBER
-    LTEXT           "sec.",IDC_STATIC,98,186,30,8
-    DEFPUSHBUTTON   "Previe&w",IDC_PREVIEW2,174,183,52,12
+    LTEXT           "sec.",IDC_STATIC,98,199,30,8
+    DEFPUSHBUTTON   "Previe&w",IDC_PREVIEW2,174,196,52,12
     LTEXT           "(*) Timeouts require Popup v. 1.0.1.9 or later",
-                    IDC_STATIC,4,207,232,8
+                    IDC_STATIC,3,222,232,8
     CONTROL         "Enable 'User left channel' popup",IDC_NOTIFY_ENDSESSION,
                     "Button",BS_AUTOCHECKBOX | WS_TABSTOP,11,172,218,8
+    CONTROL         "Enable 'Custom Smiley' popup",IDC_NOTIFY_CUSTOMSMILEY,
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,11,185,218,8
 END
 
 IDD_SETNICKNAME DIALOGEX 0, 0, 187, 42
