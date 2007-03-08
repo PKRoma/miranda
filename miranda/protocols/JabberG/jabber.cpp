@@ -37,11 +37,7 @@ PLUGINLINK *pluginLink;
 
 PLUGININFOEX pluginInfo = {
 	sizeof( PLUGININFOEX ),
-	#if defined( _UNICODE )
-		"Jabber Protocol (Unicode)",
-	#else
-		"Jabber Protocol",
-	#endif
+	"Jabber Protocol",
 	__VERSION_DWORD,
 	"Jabber protocol plugin for Miranda IM ( "__DATE__" )",
 	"George Hazan",

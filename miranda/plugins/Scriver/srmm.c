@@ -35,17 +35,9 @@ HINSTANCE g_hInst;
 
 PLUGININFOEX pluginInfo = {
 	sizeof(PLUGININFOEX),
-#ifdef _UNICODE
-	"Scriver (Unicode)",
-#else
 	"Scriver",
-#endif
 	PLUGIN_MAKE_VERSION(2, 5, 9, 16),
-#ifdef _UNICODE
-	"Scriver - send and receive instant messages (Unicode)",
-#else
 	"Scriver - send and receive instant messages",
-#endif
 	"Miranda IM Development Team",
 	"the_leech@users.berlios.de",
 	"Copyright © 2000-2007 Miranda IM Project",

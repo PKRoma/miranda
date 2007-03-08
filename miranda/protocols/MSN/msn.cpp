@@ -87,11 +87,7 @@ char* ModuleName;
 PLUGININFOEX pluginInfo =
 {
 	sizeof(PLUGININFOEX),
-	#if defined( _UNICODE )
-		"MSN Protocol (Unicode)",
-	#else
-		"MSN Protocol",
-	#endif
+	"MSN Protocol",
 	__VERSION_DWORD,
 	"Adds support for communicating with users of the MSN Messenger network",
 	"George Hazan",

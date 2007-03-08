@@ -99,7 +99,6 @@ PLUGININFOEX __declspec(dllexport) *MirandaPluginInfoEx(DWORD mirandaVersion)
     strcpy(pluginName, "IcqOscarJ Protocol");
     if (gbUnicodeAPI)
     {
-      strcat(pluginName, " (Unicode)");
       pluginInfo.flags = 1; // UNICODE_AWARE
     }
     pluginInfo.shortName = pluginName;

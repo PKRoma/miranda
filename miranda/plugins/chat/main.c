@@ -50,11 +50,7 @@ static void InitREOleCallback(void);
 
 PLUGININFOEX pluginInfo = {
 	sizeof(PLUGININFOEX),
-	#ifdef _UNICODE
-		"Chat (Unicode)",
-	#else
-		"Chat",
-	#endif
+	"Chat",
 	PLUGIN_MAKE_VERSION(0,7,0,1),
 	"Provides chat rooms for protocols supporting it",
 	"Miranda team",

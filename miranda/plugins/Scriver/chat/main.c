@@ -49,11 +49,7 @@ static void InitREOleCallback(void);
 
 static PLUGININFO pluginInfo = {
 	sizeof(PLUGININFO),
-	#ifdef _UNICODE
-		"Chat (Unicode)",
-	#else
-		"Chat",
-	#endif
+	"Chat",
 	PLUGIN_MAKE_VERSION(0,6,0,1),
 	"Provides chat rooms for protocols supporting it",
 	"MatriX",

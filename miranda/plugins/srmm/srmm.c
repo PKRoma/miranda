@@ -32,11 +32,7 @@ struct MM_INTERFACE mmi;
 
 PLUGININFOEX pluginInfo = {
 	sizeof(PLUGININFOEX),
-#ifdef _UNICODE
-	"Send/Receive Messages (Unicode)",
-#else
 	"Send/Receive Messages",
-#endif
 	PLUGIN_MAKE_VERSION(0, 7, 0, 0),
 	"Send and receive instant messages",
 	"Miranda IM Development Team",
