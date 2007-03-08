@@ -69,7 +69,7 @@ PLUGININFOEX pluginInfo = {
 };
 
 PLUGININFO oldPluginInfo = {
-    sizeof(PLUGININFOEX),
+    sizeof(PLUGININFO),
 #ifdef _UNICODE
     #ifdef __GNUWIN32__
         "tabSRMsgW (MINGW32 - unicode)",
@@ -90,7 +90,7 @@ PLUGININFO oldPluginInfo = {
     "© 2000-2007 Miranda Project",
     "http://tabsrmm.sourceforge.net",
     UNICODE_AWARE,
-    DEFMOD_SRMESSAGE,            // replace internal version (if any)
+    DEFMOD_SRMESSAGE            // replace internal version (if any)
 };
 
 BOOL WINAPI DllMain(HINSTANCE hinstDLL, DWORD fdwReason, LPVOID lpvReserved)
