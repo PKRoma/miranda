@@ -40,8 +40,8 @@ PLUGININFOEX pluginInfo = {
 	"Scriver - send and receive instant messages",
 	"Miranda IM Development Team",
 	"the_leech@users.berlios.de",
-	"Copyright Â© 2000-2007 Miranda IM Project",
-	"http://mgoodies.berlios.de",
+	"Copyright © 2000-2007 Miranda IM Project",
+	"http://www.miranda-im.org",
 	UNICODE_AWARE,
 	DEFMOD_SRMESSAGE,            // replace internal version (if any)
 #ifdef _UNICODE
