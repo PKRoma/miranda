@@ -103,7 +103,11 @@ void ( *saveRecalcScrollBar )(HWND hwnd, struct ClcData *dat);
 void RecalcScrollBar(HWND hwnd, struct ClcData *dat);
 
 PLUGININFOEX pluginInfo = {
-		sizeof(PLUGININFOEX), "CList Nicer+", PLUGIN_MAKE_VERSION(0, 7, 1, 1),
+#if defined(_UNICODE)
+		sizeof(PLUGININFOEX), "CList Nicer+ (Unicode)", PLUGIN_MAKE_VERSION(0, 7, 2, 0),
+#else
+		sizeof(PLUGININFOEX), "CList Nicer+", PLUGIN_MAKE_VERSION(0, 7, 2, 0),
+#endif		
 		"Display contacts, event notifications, protocol status",
 		"Pixel, egoDust, cyreve, Nightwish", "", "Copyright 2000-2006 Miranda-IM project", "http://www.miranda-im.org",
 		UNICODE_AWARE,
@@ -114,6 +118,20 @@ PLUGININFOEX pluginInfo = {
 		{0x5a070cec, 0xb2ab, 0x4bbe, { 0x8e, 0x48, 0x9c, 0x8d, 0xcd, 0xda, 0x14, 0xc3 }} //{5A070CEC-B2AB-4bbe-8E48-9C8DCDDA14C3}
 #endif
 };
+
+/*
+PLUGININFO oldPluginInfo = {
+#if defined(_UNICODE)
+		sizeof(PLUGININFO), "CList Nicer+ (Unicode)", PLUGIN_MAKE_VERSION(0, 7, 2, 0),
+#else
+		sizeof(PLUGININFO), "CList Nicer+", PLUGIN_MAKE_VERSION(0, 7, 2, 0),
+#endif
+		"Display contacts, event notifications, protocol status",
+		"Pixel, egoDust, cyreve, Nightwish", "", "Copyright 2000-2006 Miranda-IM project", "http://www.miranda-im.org",
+		UNICODE_AWARE,
+		DEFMOD_CLISTALL
+};
+*/
 
 #if defined(_UNICODE)
 void __forceinline _DebugTraceW(const wchar_t *fmt, ...)
@@ -178,6 +196,20 @@ __declspec(dllexport) PLUGININFOEX * MirandaPluginInfoEx(DWORD mirandaVersion)
 		return NULL;
 	return &pluginInfo;
 }
+
+/*
+__declspec(dllexport) PLUGININFO * MirandaPluginInfo(DWORD mirandaVersion)
+{
+#if defined(_UNICODE)
+	pluginInfo.flags |= UNICODE_AWARE;
+	if (mirandaVersion < PLUGIN_MAKE_VERSION(0, 4, 2, 0))
+#else
+	if (mirandaVersion < PLUGIN_MAKE_VERSION(0, 4, 0, 1))
+#endif
+		return NULL;
+	return &oldPluginInfo;
+}
+*/
 
 static const MUUID interfaces[] = {MIID_CLIST, MIID_LAST};
 __declspec(dllexport) const MUUID * MirandaPluginInterfaces(void)
