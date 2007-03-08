@@ -402,7 +402,7 @@ int cli_TrayIconProcessMessage(WPARAM wParam,LPARAM lParam)
 				else KillTimer(NULL,autoHideTimerId);
 			}
 		}
-		return TRUE; //to avoid autohideTimer in core
+		return FALSE; //to avoid autohideTimer in core
 
 	case TIM_CALLBACK:
 		if ((GetAsyncKeyState(VK_CONTROL)&0x8000) && msg->lParam == WM_LBUTTONDOWN && !DBGetContactSettingByte(NULL,"CList","Tray1Click",SETTING_TRAY1CLICK_DEFAULT)) {
