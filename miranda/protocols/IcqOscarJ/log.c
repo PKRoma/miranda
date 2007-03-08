@@ -23,7 +23,7 @@
 //
 // -----------------------------------------------------------------------------
 //
-// File name      : $Source: /cvsroot/miranda/miranda/protocols/IcqOscarJ/log.c,v $
+// File name      : $URL$
 // Revision       : $Revision$
 // Last change on : $Date$
 // Last change by : $Author$
@@ -97,7 +97,7 @@ void icq_LogUsingErrorCode(int level, DWORD dwError, const char *szMsg)
   char szBuf[1024];
   char str[1024];
   char str2[64];
-  char szErrorMsg[256];
+  char szErrorMsg[512];
   char* pszErrorMsg;
   char* pszErrorMsgUtf = NULL;
 
@@ -142,10 +142,10 @@ void icq_LogUsingErrorCode(int level, DWORD dwError, const char *szMsg)
   }
   utf8_encode(pszErrorMsg, &pszErrorMsgUtf);
 
-  null_snprintf(szBuf, sizeof(szBuf), "%s%s%s (%s %d)", szMsg?ICQTranslateUtfStatic(szMsg, str):"", szMsg?"\r\n\r\n":"", pszErrorMsgUtf, ICQTranslateUtfStatic("error", str2), dwError);
-  icq_LogMessage(level, szBuf);
-
+  null_snprintf(szBuf, sizeof(szBuf), "%s%s%s (%s %d)", szMsg?ICQTranslateUtfStatic(szMsg, str):"", szMsg?"\r\n\r\n":"", ICQTranslateUtfStatic(pszErrorMsgUtf, szErrorMsg), ICQTranslateUtfStatic("error", str2), dwError);
   SAFE_FREE(&pszErrorMsgUtf);
+  
+  icq_LogMessage(level, szBuf);
 }
 
 
