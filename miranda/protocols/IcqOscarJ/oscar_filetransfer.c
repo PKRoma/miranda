@@ -1659,11 +1659,15 @@ static int oft_handleProxyData(oscar_connection *oc, unsigned char *buf, int len
       ICQBroadcastAck(oc->hContact, ACKTYPE_FILE, ACKRESULT_CONNECTED, oc->ft, 0);
       // signal we are ready
       if (oc->type == OCT_PROXY_RECV)
+      {
         oft_sendFileAccept(oc->dwUin, oc->szUid, ft);
+        if (ft->sending) // accept processed (sending only)
+          ft->initialized = 1;
+      }
 
       NetLog_Server("Proxy Tunnel established");
 
-      if ((ft->initialized && ft->sending) || (ft->wReqNum == 4 && oc->type == OCT_PROXY_RECV))
+      if (ft->initialized && ft->sending)
         oft_sendPeerInit((oscar_connection*)ft->connection);
       break;
 
