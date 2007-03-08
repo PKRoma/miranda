@@ -1847,6 +1847,7 @@ ThreadData::ThreadData( JABBER_SESSION_TYPE parType )
 {
 	memset( this, 0, sizeof( *this ));
 	type = parType;
+	caps = CAPS_BOOKMARK; // assume that the server supports bookmarks
 	InitializeCriticalSection( &iomutex );
 }
 

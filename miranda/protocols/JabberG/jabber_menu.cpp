@@ -44,6 +44,8 @@ static HANDLE hMenuAgent = NULL;
 static HANDLE hMenuChangePassword = NULL;
 static HANDLE hMenuGroupchat = NULL;
 static HANDLE hMenuBookmarks = NULL;
+static HANDLE hMenuAddBookmark = NULL;
+
 
 
 int JabberMenuHandleAgents( WPARAM wParam, LPARAM lParam );
@@ -81,6 +83,7 @@ int JabberMenuPrebuildContactMenu( WPARAM wParam, LPARAM lParam )
 	sttEnableMenuItem( hMenuRosterAdd, FALSE );
 	sttEnableMenuItem( hMenuLogin, FALSE );
 	sttEnableMenuItem( hMenuRefresh, FALSE );
+	sttEnableMenuItem( hMenuAddBookmark, FALSE );
 
 	HANDLE hContact;
 	if (( hContact=( HANDLE )wParam ) == NULL )
@@ -107,9 +110,13 @@ int JabberMenuPrebuildContactMenu( WPARAM wParam, LPARAM lParam )
 	if ( bIsChatRoom ) {
 		DBVARIANT dbv;
 		if ( !JGetStringT( hContact, "ChatRoomID", &dbv )) {
-			if ( JabberListGetItemPtr( LIST_ROSTER, dbv.ptszVal ) == NULL ) {
+			if ( JabberListGetItemPtr( LIST_ROSTER, dbv.ptszVal ) == NULL )
 				sttEnableMenuItem( hMenuRosterAdd, TRUE );
-			}
+
+			if ( JabberListGetItemPtr( LIST_BOOKMARK, dbv.ptszVal ) == NULL )
+				if ( jabberThreadInfo && jabberThreadInfo->caps & CAPS_BOOKMARK )
+					sttEnableMenuItem( hMenuAddBookmark, TRUE );
+
 			JFreeVariant( &dbv );
 	}	}
 
@@ -176,7 +183,22 @@ int JabberMenuRosterAdd( WPARAM wParam, LPARAM lParam )
 			}
 			JabberAddContactToRoster(roomID, nick, group, SUB_NONE);
 			if ( JGetByte( "AddRoster2Bookmarks", TRUE ) == TRUE ) {
-				JabberAddEditBookmark(NULL, (LPARAM) roomID);
+
+				JABBER_LIST_ITEM* item = NULL;
+				
+				item = JabberListGetItemPtr(LIST_BOOKMARK, roomID);
+				if (!item) {
+					item = ( JABBER_LIST_ITEM* )mir_alloc( sizeof( JABBER_LIST_ITEM ));
+					ZeroMemory( item, sizeof( JABBER_LIST_ITEM ));
+					item->jid = mir_tstrdup(roomID);
+					item->name = mir_tstrdup(nick);
+					if ( !JGetStringT( ( HANDLE ) wParam, "MyNick", &dbv ) ) {
+						item->nick = mir_tstrdup(dbv.ptszVal);
+						JFreeVariant( &dbv );
+					}
+					JabberAddEditBookmark(NULL, (LPARAM) item);
+					mir_free(item);
+				}
 			}
 			if (nick) mir_free(nick);
 			if (nick) mir_free(group);
@@ -304,6 +326,42 @@ int JabberMenuTransportResolve( WPARAM wParam, LPARAM lParam )
 	return 0;
 }
 
+int JabberMenuBookmarkAdd( WPARAM wParam, LPARAM lParam )
+{
+	DBVARIANT dbv;
+	if ( !wParam ) return 0; // we do not add ourself to the roster. (buggy situation - should not happen)
+	if ( !JGetStringT( ( HANDLE ) wParam, "ChatRoomID", &dbv )) {
+		TCHAR *roomID = mir_tstrdup(dbv.ptszVal);
+		JFreeVariant( &dbv );
+		if ( JabberListGetItemPtr( LIST_BOOKMARK, roomID ) == NULL ) {
+			TCHAR *nick = 0;
+			if ( !JGetStringT( ( HANDLE ) wParam, "Nick", &dbv ) ) {
+				nick = mir_tstrdup(dbv.ptszVal);
+				JFreeVariant( &dbv );
+			}
+			JABBER_LIST_ITEM* item = NULL;
+
+			item = ( JABBER_LIST_ITEM* )mir_alloc( sizeof( JABBER_LIST_ITEM ));
+			ZeroMemory( item, sizeof( JABBER_LIST_ITEM ));
+			item->jid = mir_tstrdup(roomID);
+			item->name = mir_tstrdup(nick);
+			item->type = _T("conference");
+			if ( !JGetStringT( ( HANDLE ) wParam, "MyNick", &dbv ) ) {
+				item->nick = mir_tstrdup(dbv.ptszVal);
+				JFreeVariant( &dbv );
+			}
+			JabberAddEditBookmark(NULL, (LPARAM) item);
+			mir_free(item);
+			
+			if (nick) mir_free(nick);
+		}
+		mir_free(roomID);
+	}
+	return 0;
+
+}
+
+
 /////////////////////////////////////////////////////////////////////////////////////////
 // contact menu initialization code
 
@@ -370,11 +428,19 @@ void JabberMenuInit()
 	mi.icolibItem = GetIconHandle( IDI_ADDROSTER );
 	hMenuRosterAdd = ( HANDLE ) JCallService( MS_CLIST_ADDCONTACTMENUITEM, 0, ( LPARAM )&mi );
 
+	// "Add to Bookmarks"
+	strcpy( tDest, "/AddToBookmarks" );
+	CreateServiceFunction( text, JabberMenuBookmarkAdd );
+	mi.pszName = "Add to Bookmarks";
+	mi.position = -1999901006;
+	mi.icolibItem = GetIconHandle( IDI_BOOKMARKS);
+	hMenuAddBookmark= ( HANDLE ) JCallService( MS_CLIST_ADDCONTACTMENUITEM, 0, ( LPARAM )&mi );
+
 	// Login/logout
 	strcpy( tDest, "/TransportLogin" );
 	CreateServiceFunction( text, JabberMenuTransportLogin );
 	mi.pszName = "Login/logout";
-	mi.position = -1999901006;
+	mi.position = -1999901007;
 	mi.icolibItem = GetIconHandle( IDI_LOGIN );
 	hMenuLogin = ( HANDLE ) JCallService( MS_CLIST_ADDCONTACTMENUITEM, 0, ( LPARAM )&mi );
 
@@ -382,7 +448,7 @@ void JabberMenuInit()
 	strcpy( tDest, "/TransportGetNicks" );
 	CreateServiceFunction( text, JabberMenuTransportResolve );
 	mi.pszName = "Resolve nicks";
-	mi.position = -1999901007;
+	mi.position = -1999901008;
 	mi.icolibItem = GetIconHandle( IDI_REFRESH );
 	hMenuRefresh = ( HANDLE ) JCallService( MS_CLIST_ADDCONTACTMENUITEM, 0, ( LPARAM )&mi );
 
@@ -449,11 +515,14 @@ void JabberEnableMenuItems( BOOL bEnable )
 	clmi.cbSize = sizeof( CLISTMENUITEM );
 	clmi.flags = CMIM_FLAGS;
 	if ( !bEnable )
-		clmi.flags += CMIF_GRAYED;
+		clmi.flags |= CMIF_GRAYED;
 
 	JCallService( MS_CLIST_MODIFYMENUITEM, ( WPARAM )hMenuAgent, ( LPARAM )&clmi );
 	JCallService( MS_CLIST_MODIFYMENUITEM, ( WPARAM )hMenuChangePassword, ( LPARAM )&clmi );
 	JCallService( MS_CLIST_MODIFYMENUITEM, ( WPARAM )hMenuGroupchat, ( LPARAM )&clmi );
+
+	if ( jabberThreadInfo && !( jabberThreadInfo->caps & CAPS_BOOKMARK ))
+		clmi.flags |= CMIF_GRAYED;
 	JCallService( MS_CLIST_MODIFYMENUITEM, ( WPARAM )hMenuBookmarks, ( LPARAM )&clmi );
 }
 

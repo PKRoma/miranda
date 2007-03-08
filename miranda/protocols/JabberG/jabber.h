@@ -183,6 +183,8 @@ enum JABBER_SESSION_TYPE
 	JABBER_SESSION_REGISTER
 };
 
+#define CAPS_BOOKMARK   0x0001
+
 struct ThreadData {
 	ThreadData( JABBER_SESSION_TYPE parType );
 	~ThreadData();
@@ -211,6 +213,7 @@ struct ThreadData {
 	HWND  reg_hwndDlg;
 	BOOL  reg_done, bIsSessionAvailable;
 	class TJabberAuth* auth;
+	int	caps; // capabilities
 
 	void  close( void );
 	int   recv( char* buf, size_t len );

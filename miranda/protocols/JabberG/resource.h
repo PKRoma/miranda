@@ -227,6 +227,9 @@
 #define IDD_BOOKMARK_ADD                3006
 #define IDC_ROOM_JID                    3007
 #define IDC_ROSTER2BOOKMARK             3008
+#define IDC_ROOM_RADIO                  3009
+#define IDC_URL_RADIO                   3010
+#define IDC_BOOKMARK_TYPE               3011
 
 #define IDM_MESSAGE                     10002
 #define IDM_CLEAR                       10003
@@ -248,7 +251,7 @@
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NEXT_RESOURCE_VALUE        190
 #define _APS_NEXT_COMMAND_VALUE         40017
-#define _APS_NEXT_CONTROL_VALUE         1209
+#define _APS_NEXT_CONTROL_VALUE         1212
 #define _APS_NEXT_SYMED_VALUE           101
 #endif
 #endif
