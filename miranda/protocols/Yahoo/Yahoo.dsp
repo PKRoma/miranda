@@ -174,6 +174,10 @@ SOURCE=.\icolib.c
 # End Source File
 # Begin Source File
 
+SOURCE=.\ignore.c
+# End Source File
+# Begin Source File
+
 SOURCE=.\im.c
 # End Source File
 # Begin Source File
@@ -219,6 +223,54 @@ SOURCE=.\yahoo.c
 # Begin Source File
 
 SOURCE=.\Yahoo.rc
+# End Source File
+# End Group
+# Begin Group "Header Files"
+
+# PROP Default_Filter ""
+# Begin Source File
+
+SOURCE=.\avatar.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\chat.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\file_transfer.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\http_gateway.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\ignore.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\im.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\options.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\search.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\version.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\webcam.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\yahoo.h
 # End Source File
 # End Group
 # End Target

@@ -44,6 +44,7 @@ CLEAN :
 	-@erase "$(INTDIR)\file_transfer.obj"
 	-@erase "$(INTDIR)\http_gateway.obj"
 	-@erase "$(INTDIR)\icolib.obj"
+	-@erase "$(INTDIR)\ignore.obj"
 	-@erase "$(INTDIR)\im.obj"
 	-@erase "$(INTDIR)\libyahoo2.obj"
 	-@erase "$(INTDIR)\main.obj"
@@ -102,7 +103,8 @@ LINK32_OBJS= \
 	"$(INTDIR)\util.obj" \
 	"$(INTDIR)\webcam.obj" \
 	"$(INTDIR)\yahoo.obj" \
-	"$(INTDIR)\Yahoo.res"
+	"$(INTDIR)\Yahoo.res" \
+	"$(INTDIR)\ignore.obj"
 
 "..\..\Bin\Release\Plugins\Yahoo.dll" : "$(OUTDIR)" $(DEF_FILE) $(LINK32_OBJS)
     $(LINK32) @<<
@@ -124,6 +126,7 @@ CLEAN :
 	-@erase "$(INTDIR)\file_transfer.obj"
 	-@erase "$(INTDIR)\http_gateway.obj"
 	-@erase "$(INTDIR)\icolib.obj"
+	-@erase "$(INTDIR)\ignore.obj"
 	-@erase "$(INTDIR)\im.obj"
 	-@erase "$(INTDIR)\libyahoo2.obj"
 	-@erase "$(INTDIR)\main.obj"
@@ -182,7 +185,8 @@ LINK32_OBJS= \
 	"$(INTDIR)\util.obj" \
 	"$(INTDIR)\webcam.obj" \
 	"$(INTDIR)\yahoo.obj" \
-	"$(INTDIR)\Yahoo.res"
+	"$(INTDIR)\Yahoo.res" \
+	"$(INTDIR)\ignore.obj"
 
 "..\..\Bin\Debug\Plugins\Yahoo.dll" : "$(OUTDIR)" $(DEF_FILE) $(LINK32_OBJS)
     $(LINK32) @<<
@@ -297,6 +301,11 @@ SOURCE=.\http_gateway.c
 SOURCE=.\icolib.c
 
 "$(INTDIR)\icolib.obj" : $(SOURCE) "$(INTDIR)"
+
+
+SOURCE=.\ignore.c
+
+"$(INTDIR)\ignore.obj" : $(SOURCE) "$(INTDIR)"
 
 
 SOURCE=.\im.c

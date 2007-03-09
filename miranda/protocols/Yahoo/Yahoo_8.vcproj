@@ -401,6 +401,10 @@
 				>
 			</File>
 			<File
+				RelativePath=".\ignore.c"
+				>
+			</File>
+			<File
 				RelativePath=".\im.c"
 				>
 			</File>
@@ -515,6 +519,10 @@
 			>
 			<File
 				RelativePath=".\http_gateway.h"
+				>
+			</File>
+			<File
+				RelativePath=".\ignore.h"
 				>
 			</File>
 			<File
