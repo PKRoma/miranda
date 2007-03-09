@@ -2082,7 +2082,7 @@ static void CLCPaint_OldInternalPaintRowItems(HWND hwnd, HDC hdcMem, struct ClcD
 								ImageArray_DrawImage(&dat->avatar_cache, Drawing->avatar_pos, hdcMem, real_rc.left, real_rc.top, blendmode);							
 							}
 							// Restore region
-							if (dat->avatars_round_corners || dat->avatars_draw_border)
+							//if (dat->avatars_round_corners || dat->avatars_draw_border)
 							{
 								DeleteObject(rgn);
 							}
@@ -4218,6 +4218,7 @@ static void CLCPaint_InternalPaintRowItems (HWND hwnd, HDC hdcMem, struct ClcDat
  
  V avatar
  . avatars overlays
+ . avatar clipping if ignore avatar height for row height calculation is set
  V icon
  V text
  . time
