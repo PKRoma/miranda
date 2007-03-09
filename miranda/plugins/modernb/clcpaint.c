@@ -2014,20 +2014,22 @@ static void CLCPaint_OldInternalPaintRowItems(HWND hwnd, HDC hdcMem, struct ClcD
 					rc = CLCPaint_GetRectangle(dat, &row_rc, &free_row_rc, &left_pos, &right_pos,
 						left, width, max_width, height, HORIZONTAL_SPACE);
 					real_rc = rc;
-					//real_rc.top++;
+					real_rc.top=max(free_row_rc.top, rc.top);
+					real_rc.bottom=min(free_row_rc.bottom, rc.bottom);
 					//real_rc.bottom++;
+					/*
 					if (real_rc.bottom - real_rc.top < height)
 					{
 						real_rc.top -= (height - real_rc.bottom + real_rc.top) >> 1;
 						real_rc.bottom = real_rc.top + height;
 					}
-
+					*/
 					if (rc.left < rc.right)
 					{
 						HRGN rgn;
 						int round_radius=0;
 						// Store pos
-						Drawing->pos_avatar = rc;
+						Drawing->pos_avatar = real_rc;
 						{
 							RECT irc;
 							IntersectRect(&irc,&(Drawing->pos_avatar),rcPaint);
@@ -2069,8 +2071,11 @@ static void CLCPaint_OldInternalPaintRowItems(HWND hwnd, HDC hdcMem, struct ClcD
 							{
 								int k=dat->avatars_draw_border?1:0;
 								rgn=CreateRoundRectRgn(real_rc.left+k, real_rc.top+k, real_rc.right+1-k, real_rc.bottom+1-k, round_radius * 2, round_radius * 2);
-								ExtSelectClipRgn(hdcMem, rgn, RGN_AND);
 							}
+							else
+								rgn=CreateRectRgn(real_rc.left, real_rc.top, real_rc.right, real_rc.bottom);
+							
+							ExtSelectClipRgn(hdcMem, rgn, RGN_AND);
 
 							// Draw avatar
 							{
