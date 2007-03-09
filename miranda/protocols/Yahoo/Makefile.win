@@ -1,5 +1,5 @@
 SRC = http_gateway.c main.c options.c pthread.c server.c services.c util.c yahoo.c avatar.c \
-	  chat.c webcam.c icolib.c \
+	  chat.c webcam.c icolib.c ignore.c \
 	  libyahoo2/crypt.c libyahoo2/libyahoo2.c libyahoo2/sha.c libyahoo2/yahoo_auth.c \
 	  libyahoo2/yahoo_httplib.c libyahoo2/yahoo_list.c libyahoo2/yahoo_util.c
 OBJ = $(SRC:.c=.o)
