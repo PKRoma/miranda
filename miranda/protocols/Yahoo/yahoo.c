@@ -31,6 +31,7 @@
 #include "file_transfer.h"
 #include "im.h"
 #include "search.h"
+#include "ignore.h"
 
 typedef struct {
 	int id;
@@ -191,23 +192,6 @@ int yahoo_to_miranda_status(int yahooStatus, int away)
     return ret;
 }
 
-
-const YList* YAHOO_GetIgnoreList(void)
-{
-	if (ylad->id < 1)
-		return NULL;
-	
-	return yahoo_get_ignorelist(ylad->id);
-}
-
-void YAHOO_IgnoreBuddy(const char *buddy, int ignore)
-{
-	if (ylad->id < 1)
-		return;
-	
-	yahoo_ignore_buddy(ylad->id, buddy, ignore);
-	//yahoo_get_list(ylad->id);
-}
 
 void YAHOO_remove_buddy(const char *who)
 {
@@ -675,11 +659,6 @@ void ext_yahoo_got_buddies(int id, YList * buds)
 
 }
 
-void ext_yahoo_got_ignore(int id, YList * igns)
-{
-    LOG(("ext_yahoo_got_ignore"));
-}
-
 void ext_yahoo_rejected(int id, const char *who, const char *msg)
 {
    	char buff[1024]={0};
@@ -736,6 +715,11 @@ void ext_yahoo_contact_added(int id, char *myid, char *who, char *fname, char *l
 	/* NOTE: Msg is actually in UTF8 unless stated otherwise!! */
     LOG(("[ext_yahoo_contact_added] %s added you as %s w/ msg '%s'", who, myid, msg));
     
+	if (YAHOO_BuddyIgnored(who)) {
+		LOG(("User '%s' on our Ignore List. Dropping Authorization Request.", who));
+		return;
+	}
+	
 	hContact = add_buddy(who, who, PALF_TEMPORARY);
 	
 	ccs.szProtoService= PSR_AUTH;
@@ -1097,7 +1081,7 @@ void ext_yahoo_login_response(int id, int succ, const char *url)
 {
 	char buff[1024];
 
-	LOG(("ext_yahoo_login_response"));
+	LOG(("[ext_yahoo_login_response] succ: %d, url: %s", succ, url));
 	
 	if(succ == YAHOO_LOGIN_OK) {
 		ylad->status = yahoo_current_status(id);

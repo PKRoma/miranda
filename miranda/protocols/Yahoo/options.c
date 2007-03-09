@@ -22,6 +22,7 @@
 #include <m_popup.h>
 
 #include "options.h"
+#include "ignore.h"
 
 /*
  * YahooOptInit - initialize/register our Options w/ Miranda.

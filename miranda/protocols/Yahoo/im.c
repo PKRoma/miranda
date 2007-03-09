@@ -22,6 +22,7 @@
 
 #include "avatar.h"
 #include "im.h"
+#include "ignore.h"
 
 extern yahoo_local_account *ylad;
 extern HANDLE   hYahooNudge;
@@ -67,23 +68,9 @@ void ext_yahoo_got_im(int id, const char *me, const char *who, const char *msg, 
 		return;
 	}
 
-	{
-		YList *l;
-		
-		/* show our current ignore list */
-		l = (YList *)YAHOO_GetIgnoreList();
-		while (l != NULL) {
-			struct yahoo_buddy *b = (struct yahoo_buddy *) l->data;
-			
-			//MessageBox(NULL, b->id, "ID", MB_OK);
-			//SendMessage(GetDlgItem(hwndDlg,IDC_YIGN_LIST), LB_INSERTSTRING, 0, (LPARAM)b->id);
-			if (lstrcmpi(b->id, who) == 0) {
+	if (YAHOO_BuddyIgnored(who)) {
 				LOG(("User '%s' on our Ignore List. Dropping Message.", who));
 				return;
-			}
-			l = l->next;
-		}
-
 	}
 		
 	umsg = (char *) alloca(lstrlen(msg) * 2 + 1); /* double size to be on the safe side */

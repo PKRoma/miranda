@@ -151,8 +151,6 @@ void yahoo_logoff_buddies();
 void yahoo_set_status(int myyahooStatus, char *msg, int away);
 int miranda_to_yahoo(int myyahooStatus);
 void yahoo_stealth(const char *buddy, int add);
-const YList* YAHOO_GetIgnoreList(void);
-void YAHOO_IgnoreBuddy(const char *buddy, int ignore);
 
 void register_callbacks();
 char* YAHOO_GetContactName(HANDLE hContact);

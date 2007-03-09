@@ -102,6 +102,7 @@ extraResourceOptions=
 19=search.c
 20=icolib.c
 21=libyahoo2\yahoo_auth.c
+22=ignore.c
 [Header]
 1=http_gateway.h
 2=resource.h
@@ -124,6 +125,7 @@ extraResourceOptions=
 19=search.h
 20=options.h
 21=libyahoo2\yahoo_auth.h
+22=ignore.h
 [Resource]
 1=Yahoo.rc
 [Other]
