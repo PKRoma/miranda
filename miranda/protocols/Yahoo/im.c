@@ -69,8 +69,8 @@ void ext_yahoo_got_im(int id, const char *me, const char *who, const char *msg, 
 	}
 
 	if (YAHOO_BuddyIgnored(who)) {
-				LOG(("User '%s' on our Ignore List. Dropping Message.", who));
-				return;
+		LOG(("User '%s' on our Ignore List. Dropping Message.", who));
+		return;
 	}
 		
 	umsg = (char *) alloca(lstrlen(msg) * 2 + 1); /* double size to be on the safe side */

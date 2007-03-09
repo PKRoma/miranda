@@ -144,8 +144,8 @@ int SetStatus(WPARAM wParam,LPARAM lParam)
     if (status == ID_STATUS_OFFLINE) {
 		yahoo_logout();
 		
-        yahoo_util_broadcaststatus(ID_STATUS_OFFLINE);
-        yahoo_logoff_buddies();
+        /*yahoo_util_broadcaststatus(ID_STATUS_OFFLINE);
+        yahoo_logoff_buddies();*/
     }
     else if (!yahooLoggedIn) {
 		DBVARIANT dbv;
@@ -322,8 +322,6 @@ int YahooAddToList(WPARAM wParam,LPARAM lParam)
 		YAHOO_DebugLog("[YahooAddToList] Empty data passed?");
 		return 0;
 	}
-
-	
 	
 	hContact = getbuddyH(psr->nick);
 	if (hContact != NULL) {

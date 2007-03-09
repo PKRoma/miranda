@@ -236,7 +236,7 @@ void yahoo_logout()
 {
 	LOG(("[yahoo_logout]"));
 	
-	yahooLoggedIn = FALSE; 
+	/*yahooLoggedIn = FALSE; 
 	
 	if (ylad->id <= 0) 
 		return;
@@ -248,7 +248,10 @@ void yahoo_logout()
 	ylad->id = 0;
 
 	poll_loop=0;
-	LOG(("[yahoo_logout] Logged out"));	
+	LOG(("[yahoo_logout] Logged out"));	*/
+	if (yahooLoggedIn)
+		yahoo_logoff(ylad->id);
+	
 }
 
 HANDLE getbuddyH(const char *yahoo_id)
@@ -1128,9 +1131,6 @@ void ext_yahoo_login_response(int id, int succ, const char *url)
 	 * Show Error Message
 	 */
 	YAHOO_ShowError(Translate("Yahoo Login Error"), buff);
-	
-	yahooLoggedIn = FALSE; /* don't send logout message */
-	yahoo_logout();
 }
 
 void ext_yahoo_error(int id, const char *err, int fatal, int num)
@@ -1163,7 +1163,8 @@ void ext_yahoo_error(int id, const char *err, int fatal, int num)
 			break;
 		case E_CONNECTION:
 			snprintf(buff, sizeof(buff), Translate("Server Connection Error: %s"), err);
-			break;
+			YAHOO_DebugLog("Error: %s", buff);
+			return;
 	}
 	
 	YAHOO_DebugLog("Error: %s", buff);
@@ -1171,11 +1172,7 @@ void ext_yahoo_error(int id, const char *err, int fatal, int num)
 	/*
 	 * Show Error Message
 	 */
-	if (yahooStatus != ID_STATUS_OFFLINE) {
-		// Show error only if we are not offline. [manual status changed]
-		YAHOO_ShowError(Translate("Yahoo Error"), buff);
-	}
-
+	YAHOO_ShowError(Translate("Yahoo Error"), buff);
 }
 
 int ext_yahoo_connect(const char *h, int p, int type)
