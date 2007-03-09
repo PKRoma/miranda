@@ -1006,9 +1006,9 @@ static int yahoo_send_data(int fd, void *data, int len)
 
 	if (ret == -1)  {
 		LOG(("wrote data: ERR %s", strerror(errno)));
-	} else {
+	} /*else {
 		LOG(("wrote data: OK"));
-	}
+	}*/
 
 	errno=e;
 	return ret;
@@ -2713,12 +2713,18 @@ static void yahoo_process_auth(struct yahoo_input_data *yid, struct yahoo_packet
 
 	while (l) {
 		struct yahoo_pair *pair = l->data;
-		if (pair->key == 94)
+		
+		switch (pair->key){
+		case 94:
 			seed = pair->value;
-		if (pair->key == 1)
+			break;
+		case 1:
 			sn = pair->value;
-		if (pair->key == 13)
+			break;
+		case 13:
 			m = atoi(pair->value);
+			break;
+		}
 		l = l->next;
 	}
 
@@ -3873,8 +3879,7 @@ static struct yahoo_packet * yahoo_getdata(struct yahoo_input_data * yid)
 	pos += 2;
 
 	pktlen = yahoo_get16(yid->rxqueue + pos); pos += 2;
-	DEBUG_MSG(("%d bytes to read, rxlen is %d", 
-			pktlen, yid->rxlen));
+	DEBUG_MSG(("%d bytes to read, rxlen is %d", pktlen, yid->rxlen));
 
 	if (yid->rxlen < (YAHOO_PACKET_HDRLEN + pktlen)) {
 		DEBUG_MSG(("len < YAHOO_PACKET_HDRLEN + pktlen"));
@@ -4640,7 +4645,7 @@ int yahoo_read_ready(int id, int fd, void *data)
 	char buf[1024];
 	int len;
 
-	LOG(("read callback: id=%d fd=%d data=%p", id, fd, data));
+	//LOG(("read callback: id=%d fd=%d data=%p", id, fd, data));
 	if(!yid)
 		return -2;
 
@@ -4648,7 +4653,7 @@ int yahoo_read_ready(int id, int fd, void *data)
 	do {
 		len = read(fd, buf, sizeof(buf));
 			
-		LOG(("read callback: id=%d fd=%d len=%d", id, fd, len));
+		//LOG(("read callback: id=%d fd=%d len=%d", id, fd, len));
 		
 	} while(len == -1 && errno == EINTR);
 
@@ -4762,7 +4767,7 @@ static void yahoo_connected(int fd, int error, void *data)
 	if(fd < 0)
 		return;
 
-	NOTICE(("web messenger: %d", yss->web_messenger));
+	//NOTICE(("web messenger: %d", yss->web_messenger));
 	if (yss->web_messenger) {
 		pkt = yahoo_packet_new(YAHOO_SERVICE_AUTH, YAHOO_STATUS_AVAILABLE, yd->session_id);
 		yahoo_packet_hash(pkt, 1, yd->user);
@@ -4772,7 +4777,7 @@ static void yahoo_connected(int fd, int error, void *data)
 	} else {
 		pkt = yahoo_packet_new(YAHOO_SERVICE_VERIFY, YAHOO_STATUS_AVAILABLE, yd->session_id);
 	}
-	NOTICE(("Sending initial packet"));
+	//NOTICE(("Sending initial packet"));
 
 	yid = y_new0(struct yahoo_input_data, 1);
 	yid->yd = yd;

@@ -112,8 +112,8 @@ enum yahoo_service { /* these are easier to see in hex */
 	YAHOO_SERVICE_Y7_FILETRANSFERACCEPT,	/* YMSG13 */
 	YAHOO_SERVICE_Y7_MINGLE = 0xe1, /* YMSG13 */
 	YAHOO_SERVICE_Y7_CHANGE_GROUP = 0xe7, /* YMSG13 */
-	YAHOO_SERVICE_STATUS_15 = 0xf0,			/* YMSG15 */
-	YAHOO_SERVICE_LIST_15 = 0Xf1,			/* YMSG15 */
+	YAHOO_SERVICE_Y8_STATUS = 0xf0,			/* YMSG15 */
+	YAHOO_SERVICE_Y8_LIST = 0Xf1,			/* YMSG15 */
 	YAHOO_SERVICE_WEBLOGIN = 0x0226,
 	YAHOO_SERVICE_SMS_MSG = 0x02ea
 };
@@ -190,6 +190,34 @@ enum yahoo_log_level {
 //#define YAHOO_WEBMESSENGER_PROTO_VER 0x0065
 #define YAHOO_WEBMESSENGER_PROTO_VER 0x000D
 //#define YAHOO_PROTO_VER 0x000c
+
+/*
+  Yahoo Protocol Versions and Client mappings
+   11		Yahoo 5.0
+   12		Yahoo 6.0
+   13       Yahoo 7.0
+   14		Yahoo 7.5
+   15       Yahoo 8.0
+
+ per some post:
+Messenger
+
+Version 5.6
+YMSG11, 12
+
+6.0
+YMSG12
+
+Version 7.0
+YMSG12 and YMSG13
+
+Version 7.5
+YMSG14 Encrypted
+
+Version 8.0
+YMSG15 Encrypted
+
+ */
 #define YAHOO_PROTO_VER 0x000d
 
 /* Yahoo style/color directives */
