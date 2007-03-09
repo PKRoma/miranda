@@ -3343,8 +3343,8 @@ static void CLCPaint_CalulateContactItemsPositions(HWND hwnd, HDC hdcMem, struct
 								left, max_width, max_width, dat->avatars_maxheight_size, HORIZONTAL_SPACE);
 
 							// Store position
-							StoreItemPos(Drawing,CIT_AVATAR,&rc);
-							Drawing->pos_avatar = rc;								
+							//StoreItemPos(Drawing,CIT_AVATAR,&rc);
+							//Drawing->pos_avatar = rc;								
 						}
 					}
 					break;
@@ -4010,6 +4010,7 @@ static void CLCPaint_DrawContactItems(HWND hwnd, HDC hdcMem, struct ClcData *dat
 			switch(Drawing->ext_mpItemsDesc[i].itemType)
 		{
 			case CIT_AVATAR:
+				if ( Drawing->avatar_pos>AVATAR_POS_DONT_HAVE)
 				{
 					int round_radius=0;
 					HRGN rgn;
