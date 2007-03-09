@@ -1171,7 +1171,7 @@ BEGIN
     CONTROL         "List1",IDC_PLUGLIST,"SysListView32",LVS_REPORT | 
                     LVS_SINGLESEL | LVS_SHOWSELALWAYS | LVS_SORTASCENDING | 
                     LVS_AUTOARRANGE | LVS_NOSORTHEADER | WS_BORDER | 
-                    WS_TABSTOP,4,0,306,122
+                    WS_TABSTOP,4,0,306,120
     GROUPBOX        "",IDC_PLUGININFOFRAME,4,126,307,98,BS_RIGHT
     EDITTEXT        IDC_PLUGINLONGINFO,50,136,253,19,ES_MULTILINE | 
                     ES_READONLY | ES_WANTRETURN | NOT WS_BORDER | WS_VSCROLL
@@ -1860,12 +1860,13 @@ IDI_DOWNARROW           ICON    DISCARDABLE     "res/icon_down_arrow.ico"
 IDI_NOTICK              ICON    DISCARDABLE     "res/check_off.ico"
 IDI_TICK                ICON    DISCARDABLE     "res/check_on.ico"
 
-IDI_BLANK               ICON    DISCARDABLE     "res/_blank.ico"
+IDI_UNICODE             ICON    DISCARDABLE     "res/icon_unicode.ico"
+IDI_ANSI                ICON    DISCARDABLE     "res/icon_ansi.ico"
 
-//IDI_TIMESTAMP           ICON    DISCARDABLE     "res/icon_timestamp.ico"
-//IDI_CHANGEFONT          ICON    DISCARDABLE     "res/icon_changefont.ico"
-//IDI_SENDMSG             ICON    DISCARDABLE     "res/icon_reply.ico"
-//IDI_MULTISEND           ICON    DISCARDABLE     "res/icon_multisend.ico"
+IDI_LOADED              ICON    DISCARDABLE     "res/icon_loaded.ico"
+IDI_NOTLOADED           ICON    DISCARDABLE     "res/icon_notloaded.ico"
+
+IDI_BLANK               ICON    DISCARDABLE     "res/_blank.ico"
 
 /////////////////////////////////////////////////////////////////////////////
 //

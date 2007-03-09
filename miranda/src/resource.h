@@ -75,9 +75,13 @@
 #define IDD_SETAWAYMSG                  216
 #define IDI_DETAILSLOGO                 216
 #define IDD_OPT_AWAYMSG                 217
+#define IDI_UNICODE                     218
+#define IDI_ANSI                        219
 #define IDD_INFO_SUMMARY                220
+#define IDI_LOADED                      220
 #define IDD_INFO_CONTACT                221
 #define IDR_CREDITS                     221
+#define IDI_NOTLOADED                   221
 #define IDD_INFO_BACKGROUND             222
 #define IDD_INFO_NOTES                  223
 #define IDD_ADDEMAIL                    226
@@ -426,7 +430,7 @@
 #define POPUP_DELETEGROUP               40053
 
 // Next default values for new objects
-// 
+//
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NEXT_RESOURCE_VALUE        277

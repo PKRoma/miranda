@@ -61,6 +61,10 @@ struct StandardIconDescription mainIcons[] =
 	{ SKINICON_OTHER_SMALLDOT,    "Small Dot",       -IDI_SMALLDOT       },
 	{ SKINICON_OTHER_FILLEDBLOB,  "Filled Blob",     -IDI_FILLEDBLOB     },
 	{ SKINICON_OTHER_EMPTYBLOB,   "Empty Blob",      -IDI_EMPTYBLOB      },
+	{ SKINICON_OTHER_UNICODE,     "Unicode plugin",  -IDI_UNICODE        },
+	{ SKINICON_OTHER_ANSI,        "ANSI plugin",     -IDI_ANSI           },
+	{ SKINICON_OTHER_LOADED,      "Running plugin",  -IDI_LOADED         },
+	{ SKINICON_OTHER_NOTLOADED,   "Unloaded plugin", -IDI_NOTLOADED      },
 };
 
 struct StandardIconDescription statusIcons[] =
