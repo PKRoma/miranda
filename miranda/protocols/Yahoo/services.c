@@ -885,7 +885,10 @@ static int YahooShowMyProfileCommand( WPARAM wParam, LPARAM lParam )
 //=======================================================
 int YahooGotoMailboxCommand( WPARAM wParam, LPARAM lParam )
 {
-	YahooOpenURL("http://mail.yahoo.com/", 1);
+	if (YAHOO_GetByte( "YahooJapan", 0 ))
+		YahooOpenURL("http://mail.yahoo.co.jp/", 1);
+	else
+		YahooOpenURL("http://mail.yahoo.com/", 1);
 	
 	return 0;
 }
