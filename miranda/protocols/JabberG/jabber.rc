@@ -644,7 +644,7 @@ BEGIN
     LTEXT           "Nick name:",IDC_STATIC,7,63,64,8
     EDITTEXT        IDC_NICK,64,62,148,12,ES_AUTOHSCROLL
     LTEXT           "Password:",IDC_STATIC,7,77,64,8
-    EDITTEXT        IDC_PASSWORD,64,76,148,12,ES_AUTOHSCROLL
+    EDITTEXT        IDC_PASSWORD,64,76,148,12,ES_PASSWORD | ES_AUTOHSCROLL
     DEFPUSHBUTTON   "OK",IDOK,51,95,50,14
     PUSHBUTTON      "Cancel",IDCANCEL,117,95,50,14
     CONTROL         "Conference",IDC_ROOM_RADIO,"Button",BS_AUTORADIOBUTTON | 
@@ -950,5 +950,6 @@ IDI_BOOKMARKS           ICON                    "icos\\bookmarks.ico"
 
 /////////////////////////////////////////////////////////////////////////////
 #endif    // not APSTUDIO_INVOKED
+
 
 
