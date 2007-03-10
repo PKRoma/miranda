@@ -45,7 +45,7 @@ typedef struct { // can all be NULL
 	Miranda_Plugin_Unload Unload;
 	Miranda_Plugin_Info Info;
 	Miranda_Plugin_InfoEx InfoEx;
-    Miranda_Plugin_Interfaces Interfaces;
+	Miranda_Plugin_Interfaces Interfaces;
 	Database_Plugin_Info DbInfo;
 	CList_Initialise clistlink;
 	PLUGININFOEX * pluginInfo;	 // must be freed if hInst==NULL then its a copy
@@ -235,9 +235,10 @@ static int checkAPI(char * plugin, BASIC_PLUGIN_INFO * bpi, DWORD mirandaVersion
 static int valid_library_name(char * name)
 {
 	char * dot = strrchr(name, '.');
-	if ( dot != NULL && lstrcmpiA(dot+1,"dll") == 0) {
-		if ( dot[4] == 0 ) return 1;
-	}
+	if ( dot != NULL && lstrcmpiA(dot+1,"dll") == 0)
+		if ( dot[4] == 0 )
+			return 1;
+
 	return 0;
 }
 
@@ -598,38 +599,42 @@ static BOOL CALLBACK DlgPluginOpt(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM 
 		NMLISTVIEW * hdr = (NMLISTVIEW *) lParam;
 		if ( hdr && hdr->hdr.code == LVN_ITEMCHANGED && hdr->uOldState != 0
 			&& (hdr->uNewState == 0x1000 || hdr->uNewState == 0x2000 ) && IsWindowVisible(hdr->hdr.hwndFrom) ) {
-			HWND hwndList=GetDlgItem(hwndDlg,IDC_PLUGLIST);
-			LVITEM it;
+			HWND hwndList = GetDlgItem(hwndDlg,IDC_PLUGLIST);
+			PluginListItemData* dat;
 			int iRow;
-			ZeroMemory(&it,sizeof(it));
+			LVITEM it;
 			it.mask=LVIF_PARAM | LVIF_STATE;
 			it.iItem = hdr->iItem;
-			if ( ListView_GetItem(hwndList,&it) && (( PluginListItemData* )it.lParam )->flags == DEFMOD_DB ) {
+			if ( !ListView_GetItem( hwndList, &it ))
+				break;
+
+			dat = ( PluginListItemData* )it.lParam;
+			if ( dat->flags == DEFMOD_DB ) {
 				ListView_SetItemState(hwndList, hdr->iItem, 0x3000, LVIS_STATEIMAGEMASK);
 				return FALSE;
 			}
 			// if enabling and replaces, find all other replaces and toggle off
-			if ( hdr->uNewState&0x2000 && it.lParam )  {
-				for ( iRow=0; iRow != (-1); ) {
+			if ( hdr->uNewState & 0x2000 && dat->flags != 0 )  {
+				for ( iRow=0; iRow != -1; ) {
 					if ( iRow != hdr->iItem ) {
 						LVITEM dt;
 						dt.mask = LVIF_PARAM;
 						dt.iItem = iRow;
-						if ( ListView_GetItem(hwndList,&dt) && (( PluginListItemData* )dt.lParam )->flags == (( PluginListItemData* )it.lParam )->flags ) {
-							// the lParam is unset, so when the check is unset the clist block doesnt trigger
-							LPARAM lParam = dt.lParam;
-							dt.lParam = 0;
-							ListView_SetItem(hwndList, &dt);
-							ListView_SetItemState(hwndList, iRow, 0x1000, LVIS_STATEIMAGEMASK);
-							dt.lParam = lParam;
-							ListView_SetItem(hwndList, &dt);
-					}	}
+						if ( ListView_GetItem( hwndList, &dt )) {
+							PluginListItemData* dat2 = ( PluginListItemData* )dt.lParam;
+							if ( dat2->flags == dat->flags ) {
+								// the lParam is unset, so when the check is unset the clist block doesnt trigger
+								int lParam = dat2->flags;
+								dat2->flags = 0;
+								ListView_SetItemState(hwndList, iRow, 0x1000, LVIS_STATEIMAGEMASK );
+								dat2->flags = lParam;
+					}	}	}
 
-					iRow=ListView_GetNextItem(hwndList, iRow, LVNI_ALL);
+					iRow = ListView_GetNextItem( hwndList, iRow, LVNI_ALL );
 			}	}
 
-			ShowWindow(GetDlgItem(hwndDlg, IDC_RESTART), TRUE);
-			SendMessage(GetParent(hwndDlg), PSM_CHANGED, 0, 0);
+			ShowWindow( GetDlgItem(hwndDlg, IDC_RESTART ), TRUE );
+			SendMessage( GetParent( hwndDlg ), PSM_CHANGED, 0, 0 );
 			break;
 		}
 
