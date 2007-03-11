@@ -4573,6 +4573,10 @@ quote_from_last:
                     if(dat->hContact) {
                         int iCurrentTypingMode = DBGetContactSettingByte(dat->hContact, SRMSGMOD, SRMSGSET_TYPING, DBGetContactSettingByte(NULL, SRMSGMOD, SRMSGSET_TYPINGNEW, SRMSGDEFSET_TYPINGNEW));
 
+                        if(dat->nTypeMode == PROTOTYPE_SELFTYPING_ON && iCurrentTypingMode) {
+                            NotifyTyping(dat, PROTOTYPE_SELFTYPING_OFF);
+                            dat->nTypeMode = PROTOTYPE_SELFTYPING_OFF;
+                        }
                         DBWriteContactSettingByte(dat->hContact, SRMSGMOD, SRMSGSET_TYPING, (BYTE)!iCurrentTypingMode);
                         /*if(m_pContainer->hwndStatus) {
                             if(iCurrentTypingMode)
