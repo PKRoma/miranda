@@ -905,6 +905,12 @@ int oftInitTransfer(HANDLE hContact, DWORD dwUin, char* szUid, char** files, cha
       if (strlennull(szMasterDir))
       {
         char* szLast = strrchr(szMasterDir, '\\');
+
+        if (szLast && strlennull(szLast) == 1)
+        { // kill trailing backslash
+          szLast[0] = '\0';
+          szLast = strrchr(szMasterDir, '\\');
+        }
         if (szLast && strlennull(szLast + 1))
           pszFiles = szLast + 1;
         else
