@@ -31,7 +31,7 @@ char* strip_html(char *src)
         *(ptr + 1) = '\n';
         memmove(ptr + 2, ptr + 4, lstrlen(ptr + 4) + 1);
     }
-    rptr = dest;
+    /*rptr = dest;
 	while (ptr = strstr(rptr, "<A HREF=\""))
 	{
 		int addr=ptr-rptr;
@@ -70,7 +70,7 @@ char* strip_html(char *src)
 		}
         else
             rptr++;
-    }
+    }*/
 	rptr = dest;
 	while (ptr = strstr(rptr, "<a href=\""))
 	{
