@@ -19,6 +19,8 @@
         <exec program="msdev.exe" 
             commandline="../../miranda/protocols/IcqOscarJ/icqoscar8.dsp /MAKE &quot;icqoscar8 - Win32 Release&quot;" /> 
         <exec program="msdev.exe" 
+            commandline="../../miranda/protocols/IcqOscarJ/icon_pack/ICONS.dsp /MAKE &quot;ICONS - Win32 Release&quot;" /> 
+        <exec program="msdev.exe" 
             commandline="../../miranda/protocols/IRC/IRC.dsp /MAKE &quot;IRC - Win32 Release&quot;" /> 
         <exec program="msdev.exe" 
             commandline="../../miranda/protocols/Yahoo/Yahoo.dsp /MAKE &quot;Yahoo - Win32 Release&quot;" />
@@ -89,6 +91,17 @@
                 <include name="mirandaboot.ini" /> <!-- fix me -->
                 <include name="readme.txt" />
             </fileset>
+            <fileset basedir="../../miranda/bin/release/Icons" prefix="icons">
+                <include name="xstatus_ICQ.dll" />
+            </fileset>
+            <fileset basedir="icons/bin/hicolor" prefix="icons">
+                <include name="proto_AIM.dll" />
+                <include name="proto_ICQ.dll" />
+                <include name="proto_IRC.dll" />
+                <include name="proto_JABBER.dll" />
+                <include name="proto_MSN.dll" />
+                <include name="proto_YAHOO.dll" />
+            </fileset>
         </zip>
         <zip zipfile="miranda-im-v${BUILD_VERSION}-ansi.zip">
             <fileset basedir="../../miranda/bin/release/plugins" prefix="plugins">
@@ -116,6 +129,17 @@
                 <include name="license.txt" />
                 <include name="mirandaboot.ini" />
                 <include name="readme.txt" />
+            </fileset>
+            <fileset basedir="../../miranda/bin/release/Icons" prefix="icons">
+                <include name="xstatus_ICQ.dll" />
+            </fileset>
+            <fileset basedir="icons/bin/locolor" prefix="icons">
+                <include name="proto_AIM.dll" />
+                <include name="proto_ICQ.dll" />
+                <include name="proto_IRC.dll" />
+                <include name="proto_JABBER.dll" />
+                <include name="proto_MSN.dll" />
+                <include name="proto_YAHOO.dll" />
             </fileset>
         </zip>
         <zip zipfile="miranda-im-v${BUILD_VERSION}-unicode-pdb.zip">
