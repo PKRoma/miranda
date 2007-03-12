@@ -134,7 +134,8 @@ static int SendMsgW(WPARAM /*wParam*/, LPARAM lParam)
 		//if(DBGetContactSettingByte(ccs->hContact, AIM_PROTOCOL_NAME, AIM_KEY_US, 0))
 		//{
 		wchar_t* msg=wcsldup((wchar_t*)((char*)ccs->lParam+lstrlen((char*)ccs->lParam)+1),wcslen((wchar_t*)((char*)ccs->lParam+lstrlen((char*)ccs->lParam)+1)));
-		wchar_t* smsg=plain_to_html(msg);
+		//wchar_t* smsg=plain_to_html(msg);
+        wchar_t* smsg=strip_carrots(msg);
 		delete[] msg;
 		if(DBGetContactSettingByte(NULL, AIM_PROTOCOL_NAME, AIM_KEY_FO, 0))
 		{
