@@ -1,7 +1,7 @@
                    Miranda Instant Messenger Release Notes
                    ---------------------------------------
 
-                            February 2007 (v0.6.7)
+                             March 2007 (v0.6.8)
 
                           http://www.miranda-im.org
 
@@ -22,6 +22,14 @@ Contents
 
 1. New in this version
 ----------------------
+* New in 0.6.8
+Bugfixes:
+ - AIM: Fixed issue with outgoing messages with double quotes
+ - AIM: Fixed issue with converting links in incoming messages
+ - IRC: Fixed crash with "perform" command in IRC options tab
+ - Jabber: Fixed auth error via SSL ("SSL negotiation failed")
+ - Jabber: Fixed OS version detection under Windows Vista
+
 * New in 0.6.7
 Bugfixes
  - Jabber: Fixed crash on exit when using Jabber
