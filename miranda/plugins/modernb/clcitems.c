@@ -2,7 +2,7 @@
 
 Miranda IM: the free IM client for Microsoft* Windows*
 
-Copyright 2000-2006 Miranda ICQ/IM project, 
+Copyright 2000-2007 Miranda ICQ/IM project, 
 all portions of this codebase are copyrighted to the people 
 listed in contributors.txt.
 
@@ -132,13 +132,18 @@ void cli_FreeContact(struct ClcContact *p)
 			int i;
 			for ( i = 0 ; i < p->SubAllocated ; i++ ) {
 				Cache_DestroySmileyList(p->subcontacts[i].plText);
+				if ( p->subcontacts[i].avatar_pos==AVATAR_POS_ANIMATED )
+					AniAva_RemoveAvatar( p->subcontacts[i].hContact );
+					p->subcontacts[i].avatar_pos=AVATAR_POS_DONT_HAVE;
 			}
-
 			mir_free_and_nill(p->subcontacts);
-		}	}
+	}	}
 
 	Cache_DestroySmileyList(p->plText);
 	p->plText=NULL;
+	if ( p->avatar_pos==AVATAR_POS_ANIMATED )
+		AniAva_RemoveAvatar( p->hContact );
+	p->avatar_pos=AVATAR_POS_DONT_HAVE;
 	saveFreeContact( p );
 }
 

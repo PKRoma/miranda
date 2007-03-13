@@ -2,7 +2,7 @@
 
 Miranda IM: the free IM client for Microsoft* Windows*
 
-Copyright 2000-2006 Miranda ICQ/IM project, 
+Copyright 2000-2007 Miranda ICQ/IM project, 
 all portions of this codebase are copyrighted to the people 
 listed in contributors.txt.
 
@@ -30,6 +30,7 @@ Created by Pescuma
 
 #define ROW_SPACE_BEETWEEN_LINES 2
 #define ICON_HEIGHT 16
+#define ICON_WIDTH	16
 
 
 

@@ -2,7 +2,7 @@
 
 Miranda IM: the free IM client for Microsoft* Windows*
 
-Copyright 2000-2006 Miranda ICQ/IM project,
+Copyright 2000-2007 Miranda ICQ/IM project,
 all portions of this codebase are copyrighted to the people
 listed in contributors.txt.
 
@@ -2927,14 +2927,17 @@ static void CLCPaint_InternalPaintClc(HWND hwnd,struct ClcData *dat,HDC hdc,RECT
 	subindex=-1;
 	line_num = -1;
 	//---
-
+	if (rcPaint->top==0 && rcPaint->bottom==clRect.bottom)
+	{
+	   AniAva_InvalidateAvatarPositions(NULL);
+	}
 	if (dat->row_heights )
 	{
 		while(y < rcPaint->bottom)
 		{
 			if (subindex==-1)
 			{
-				if (group->scanIndex==group->cl.count)
+				if (group->scanIndex>=group->cl.count)
 				{
 					group=group->parent;
 					indent--;
@@ -2944,9 +2947,8 @@ static void CLCPaint_InternalPaintClc(HWND hwnd,struct ClcData *dat,HDC hdc,RECT
 				}
 			}
 
-			line_num++;
-
-
+			line_num++;		
+	
 			// Draw line, if needed
 			if (y > rcPaint->top - dat->row_heights[line_num])
 			{
@@ -2962,16 +2964,21 @@ static void CLCPaint_InternalPaintClc(HWND hwnd,struct ClcData *dat,HDC hdc,RECT
 				RECT rc;
 
 				// Get item to draw
-				if (subindex==-1)
+				if ( group->scanIndex < group->cl.count)
 				{
-					Drawing = group->cl.items[group->scanIndex];
-					subident = 0;
+					if (subindex==-1)
+					{
+						Drawing = group->cl.items[group->scanIndex];
+						subident = 0;
+					}
+					else
+					{
+						Drawing = &(group->cl.items[group->scanIndex]->subcontacts[subindex]);
+						subident = dat->subIndent;
+					}
 				}
 				else
-				{
-					Drawing = &(group->cl.items[group->scanIndex]->subcontacts[subindex]);
-					subident = dat->subIndent;
-				}
+					Drawing=NULL;
 				if (mpRequest)
 				{
 					SkinSelector_DeleteMask(mpRequest);
@@ -2984,6 +2991,7 @@ static void CLCPaint_InternalPaintClc(HWND hwnd,struct ClcData *dat,HDC hdc,RECT
 
 					// Calc row height
 					Drawing->lastPaintCounter=currentCounter;
+
 					if (!gl_RowRoot) RowHeights_GetRowHeight(dat, hwnd, Drawing, line_num);
 					else RowHeight_CalcRowHeight(dat, hwnd, Drawing, line_num);
 
@@ -3032,6 +3040,7 @@ static void CLCPaint_InternalPaintClc(HWND hwnd,struct ClcData *dat,HDC hdc,RECT
 							RECT mrc=row_rc;
 							if (group->parent==0
 								&& group->scanIndex!=0
+								&& group->scanIndex<group->cl.count
 								&& group->cl.items[group->scanIndex]->type==CLCIT_GROUP)
 							{
 								mrc.top+=dat->row_before_group_space;
@@ -3143,7 +3152,9 @@ static void CLCPaint_InternalPaintClc(HWND hwnd,struct ClcData *dat,HDC hdc,RECT
 			// if (y > rcPaint->top - dat->row_heights[line_num] && y < rcPaint->bottom)
 			y += dat->row_heights[line_num];
 			//increment by subcontacts
-			if (group->cl.items && group->cl.items[group->scanIndex]->subcontacts!=NULL && group->cl.items[group->scanIndex]->type!=CLCIT_GROUP)
+			if (group->scanIndex>=group->cl.count) 
+				log0("WARNING: Group scan index is equal or more than group items count!!!\n");
+			if (group->cl.items && group->scanIndex<group->cl.count && group->cl.items[group->scanIndex]->subcontacts!=NULL && group->cl.items[group->scanIndex]->type!=CLCIT_GROUP)
 			{
 				if (group->cl.items[group->scanIndex]->SubExpanded && dat->expandMeta)
 				{
@@ -3158,7 +3169,7 @@ static void CLCPaint_InternalPaintClc(HWND hwnd,struct ClcData *dat,HDC hdc,RECT
 				}
 			}
 
-			if(subindex==-1)
+			if(subindex==-1 && group->scanIndex<group->cl.count)
 			{
 				if(group->cl.items[group->scanIndex]->type==CLCIT_GROUP && group->cl.items[group->scanIndex]->group->expanded)
 				{
@@ -3169,6 +3180,10 @@ static void CLCPaint_InternalPaintClc(HWND hwnd,struct ClcData *dat,HDC hdc,RECT
 					continue;
 				}
 				group->scanIndex++;
+			}
+			else if (group->scanIndex>=group->cl.count)
+			{
+				 subindex=-1;
 			}
 		}
 
@@ -3243,6 +3258,7 @@ static void CLCPaint_InternalPaintClc(HWND hwnd,struct ClcData *dat,HDC hdc,RECT
 		DeleteObject(hBmpOsb2);
 		mod_DeleteDC(hdcMem2);
 	}
+	AniAva_RemoveInvalidatedAvatars();
 }
 
 /************************************************************************/
@@ -3281,6 +3297,7 @@ static void CLCPaint_CalulateContactItemsPositions(HWND hwnd, HDC hdcMem, struct
 	RECT free_row_rc=*in_free_row_rc;
 	RECT row_rc=*in_row_rc;
 	Drawing->ext_nItemsNum=0;
+	text_left_pos=0;
 	// Now let's check what we have to draw
 	for ( item_iterator = 0 ; item_iterator < NUM_ITEM_TYPE && free_row_rc.left < free_row_rc.right ; item_iterator++ )
 	{
@@ -3297,11 +3314,11 @@ static void CLCPaint_CalulateContactItemsPositions(HWND hwnd, HDC hdcMem, struct
 				RECT rc;
 				int max_width;
 				int width;
-				int height;
+				int height;	
 
 				if (!dat->avatars_show || Drawing->type != CLCIT_CONTACT)
 					break;
-
+				AniAva_InvalidateAvatarPositions(Drawing->hContact);
 				if (dat->icon_hide_on_avatar && dat->icon_draw_on_avatar_space)
 					max_width = max(dat->iconXSpace, dat->avatars_maxheight_size);
 				else
@@ -3351,10 +3368,13 @@ static void CLCPaint_CalulateContactItemsPositions(HWND hwnd, HDC hdcMem, struct
 				}
 
 				// Has to draw avatar
-				if (dat->avatar_cache.nodes) {
+				if (dat->avatar_cache.nodes && Drawing->avatar_pos>AVATAR_POS_DONT_HAVE) {
 					width = dat->avatar_cache.nodes[Drawing->avatar_pos].width;
 					height = dat->avatar_cache.nodes[Drawing->avatar_pos].height;
-				} else {
+				}else if (Drawing->avatar_pos=AVATAR_POS_ANIMATED) {
+					width=Drawing->avatar_size.cx;
+					height=Drawing->avatar_size.cy;
+				}else {
 					width=0;
 					height=0;
 				}
@@ -4006,11 +4026,36 @@ static void CLCPaint_DrawContactItems(HWND hwnd, HDC hdcMem, struct ClcData *dat
 	{
 		RECT * rc=&(Drawing->ext_mpItemsDesc[i].itemRect);
 		UINT uTextFormat=uSaveTextFormat;
-		if (IsVisible(rcPaint,rc))
+		BOOL isVisible=IsVisible(rcPaint,rc);
+		if (isVisible || (Drawing->ext_mpItemsDesc[i].itemType == CIT_AVATAR && Drawing->avatar_pos == AVATAR_POS_ANIMATED)	)
 			switch(Drawing->ext_mpItemsDesc[i].itemType)
-		{
+			{
 			case CIT_AVATAR:
-				if ( Drawing->avatar_pos>AVATAR_POS_DONT_HAVE)
+				if (Drawing->avatar_pos == AVATAR_POS_ANIMATED)
+				{
+					int overlayIdx=-1;
+					int blendmode=255;
+					if (dat->avatars_draw_overlay && dat->avatars_maxheight_size >= ICON_HEIGHT + (dat->avatars_draw_border ? 2 : 0)
+						&& GetContactCachedStatus(Drawing->hContact) - ID_STATUS_OFFLINE < MAX_REGS(g_pAvatarOverlayIcons))
+					{
+						switch(dat->avatars_overlay_type)
+						{
+							case SETTING_AVATAR_OVERLAY_TYPE_NORMAL:
+								overlayIdx = g_pAvatarOverlayIcons[GetContactCachedStatus(Drawing->hContact) - ID_STATUS_OFFLINE].listID;
+								break;
+							case SETTING_AVATAR_OVERLAY_TYPE_PROTOCOL:
+								overlayIdx = ExtIconFromStatusMode(Drawing->hContact, Drawing->proto,
+									Drawing->proto==NULL ? ID_STATUS_OFFLINE : GetContactCachedStatus(Drawing->hContact));
+								break;
+							case SETTING_AVATAR_OVERLAY_TYPE_CONTACT:
+								overlayIdx = Drawing->iImage;
+								break;
+						}
+					}									
+					GetBlendMode(dat, Drawing, selected, hottrack, GIM_AVATAR_AFFECT, NULL, &blendmode);
+					AniAva_SetAvatarPos(Drawing->hContact, rc, overlayIdx, blendmode);
+				}	
+				else if ( Drawing->avatar_pos>AVATAR_POS_DONT_HAVE)
 				{
 					int round_radius=0;
 					HRGN rgn;
@@ -4060,7 +4105,6 @@ static void CLCPaint_DrawContactItems(HWND hwnd, HDC hdcMem, struct ClcData *dat
 					rgn = CreateRectRgn(row_rc->left, row_rc->top, row_rc->right, row_rc->bottom);
 					SelectClipRgn(hdcMem, rgn);
 					DeleteObject(rgn);
-
 					// Draw overlays
 					if (dat->avatars_draw_overlay && dat->avatars_maxheight_size >= ICON_HEIGHT + (dat->avatars_draw_border ? 2 : 0)
 						&& GetContactCachedStatus(Drawing->hContact) - ID_STATUS_OFFLINE < MAX_REGS(g_pAvatarOverlayIcons))

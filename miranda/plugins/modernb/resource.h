@@ -3,31 +3,25 @@
 // Used by resource.rc
 //
 #define IDC_APPLY                       3
-// ID marked as '//!!!' have to be same as in //miranda/src/resource.h
-
-#define IDI_MIRANDA                     102 //!!!
-#define IDI_SMS                         103 //!!!
-#define IDI_URL                         138 //!!!
-#define IDI_FINDUSER                    161 //!!!
-#define IDI_OPTIONS                     163 //!!!
-#define IDI_RENAME                      173 //!!!
-#define IDI_DELETE                      175 //!!!
-#define IDC_DROP                        183 //!!!
-#define IDI_SENDEMAIL                   193 //!!!
-#define IDI_BLANK                       200 //!!!
-#define IDI_NOTICK                      205 //!!!
-#define IDI_TICK                        206 //!!!
-#define IDC_DROPUSER                    215 //!!!
-
+#define IDI_MIRANDA                     102
 #define IDD_OPT_ITEM_CONTACT_TIME       102
+#define IDI_SMS                         103
 #define IDD_OPT_ROWTMPL                 103
 #define IDD_OPT_CLIST                   126
 #define IDD_OPT_SOUND                   134
 #define IDD_OPT_HOTKEYS                 134
-
+#define IDI_URL                         138
+#define IDI_FINDUSER                    161
+#define IDI_OPTIONS                     163
+#define IDI_RENAME                      173
+#define IDI_DELETE                      175
 #define IDR_CONTEXT                     180
+#define IDC_DROP                        183
+#define IDI_SENDEMAIL                   193
 #define IDR_CLISTMENU                   199
-
+#define IDI_BLANK                       200
+#define IDI_NOTICK                      205
+#define IDI_TICK                        206
 #define IDD_OPT_ICONS                   207
 #define IDI_FILE                        207
 #define IDI_TIMESTAMP                   208
@@ -38,6 +32,7 @@
 #define IDD_READAWAYMSG                 213
 #define IDI_EMPTYBLOB                   213
 #define IDD_OPT_IGNORE                  214
+#define IDC_DROPUSER                    215
 #define IDD_OPT_VISIBILITY              215
 #define IDD_SETAWAYMSG                  216
 #define IDI_DETAILSLOGO                 216
@@ -416,7 +411,6 @@
 #define IDC_DONTCYCLE                   1315
 #define IDC_PRIMARYSTATUS               1316
 #define IDC_CYCLE                       1317
-
 #define IDC_CYCLETIME                   1318
 #define IDC_CYCLETIMESPIN               1319
 #define IDC_HIDETIMESPIN                1320
@@ -891,6 +885,8 @@
 #define IDC_ICONBLINK                   11720
 #define IDC_ICONBLINK2                  11721
 #define IDC_SHOW_AVATARS                11721
+#define IDC_SHOW_AVATARS2               11722
+#define IDC_SHOW_ANIAVATARS             11722
 #define IDC_SHOW_STATUSMSG              11723
 #define IDC_HIDE_ICON_ON_AVATAR         11723
 #define IDC_SHOW_STATUSMSG2             11724

@@ -2,7 +2,7 @@
 
 Miranda IM: the free IM client for Microsoft* Windows*
 
-Copyright 2000-2006 Miranda ICQ/IM project, 
+Copyright 2000-2007 Miranda ICQ/IM project, 
 all portions of this codebase are copyrighted to the people 
 listed in contributors.txt.
 
@@ -367,6 +367,7 @@ static BOOL CALLBACK DlgProcItemAvatarOpts(HWND hwndDlg, UINT msg, WPARAM wParam
 		{
             TranslateDialogDefault(hwndDlg);
 			CheckDlgButton(hwndDlg, IDC_SHOW_AVATARS, DBGetContactSettingByte(NULL,"CList","AvatarsShow",0) == 1 ? BST_CHECKED : BST_UNCHECKED );
+			CheckDlgButton(hwndDlg, IDC_SHOW_ANIAVATARS, DBGetContactSettingByte(NULL,"CList","AvatarsAnimated",(ServiceExists(MS_AV_GETAVATARBITMAP)&&!g_CluiData.fGDIPlusFail)) == 1 ? BST_CHECKED : BST_UNCHECKED );
 			CheckDlgButton(hwndDlg, IDC_AVATAR_DRAW_BORDER, DBGetContactSettingByte(NULL,"CList","AvatarsDrawBorders",0) == 1 ? BST_CHECKED : BST_UNCHECKED );
 			CheckDlgButton(hwndDlg, IDC_AVATAR_ROUND_CORNERS, DBGetContactSettingByte(NULL,"CList","AvatarsRoundCorners",1) == 1 ? BST_CHECKED : BST_UNCHECKED );
 			CheckDlgButton(hwndDlg, IDC_AVATAR_CUSTOM_CORNER_SIZE_CHECK, DBGetContactSettingByte(NULL,"CList","AvatarsUseCustomCornerSize",0) == 1 ? BST_CHECKED : BST_UNCHECKED );
@@ -425,6 +426,7 @@ static BOOL CALLBACK DlgProcItemAvatarOpts(HWND hwndDlg, UINT msg, WPARAM wParam
 				EnableWindow(GetDlgItem(hwndDlg,IDC_AVATAR_WIDTH),FALSE);
 				EnableWindow(GetDlgItem(hwndDlg,IDC_AVATAR_WIDTH_SPIN),FALSE);
 				EnableWindow(GetDlgItem(hwndDlg,IDC_AVATAR_SIZE_PIXELS2),FALSE);
+				EnableWindow(GetDlgItem(hwndDlg,IDC_SHOW_ANIAVATARS),FALSE);
 				EnableWindow(GetDlgItem(hwndDlg,IDC_AVATAR_SIZE_PIXELS3),FALSE);
 			}
 			if(!IsDlgButtonChecked(hwndDlg,IDC_AVATAR_DRAW_BORDER)) 
@@ -449,6 +451,12 @@ static BOOL CALLBACK DlgProcItemAvatarOpts(HWND hwndDlg, UINT msg, WPARAM wParam
 				EnableWindow(GetDlgItem(hwndDlg,IDC_AVATAR_OVERLAY_ICON_PROTOCOL),FALSE);
 				EnableWindow(GetDlgItem(hwndDlg,IDC_AVATAR_OVERLAY_ICON_CONTACT),FALSE);
 			}
+			if (!ServiceExists(MS_AV_GETAVATARBITMAP)||g_CluiData.fGDIPlusFail)
+			{
+			   EnableWindow(GetDlgItem(hwndDlg,IDC_SHOW_ANIAVATARS),FALSE);
+			   SetDlgItemText(hwndDlg, IDC_SHOW_ANIAVATARS, TranslateT("Animate Avatars (GDI+ and loadavatars.dll are required)"));
+			}
+				
 			break;
 		}
 	case WM_COMMAND:
@@ -471,6 +479,8 @@ static BOOL CALLBACK DlgProcItemAvatarOpts(HWND hwndDlg, UINT msg, WPARAM wParam
 				EnableWindow(GetDlgItem(hwndDlg,IDC_AVATAR_SIZE_SPIN),enabled);
 				EnableWindow(GetDlgItem(hwndDlg,IDC_AVATAR_SIZE_PIXELS2),enabled);
 				EnableWindow(GetDlgItem(hwndDlg,IDC_AVATAR_SIZE_PIXELS3),enabled);
+				EnableWindow(GetDlgItem(hwndDlg,IDC_SHOW_ANIAVATARS),enabled && (ServiceExists(MS_AV_GETAVATARBITMAP)&&!g_CluiData.fGDIPlusFail));
+
 				//				if (DBGetContactSettingByte(NULL,"ModernData","UseAdvancedRowLayout",0)==1)
 				//				{
 				EnableWindow(GetDlgItem(hwndDlg,IDC_AVATAR_WIDTH),enabled);
@@ -532,6 +542,7 @@ static BOOL CALLBACK DlgProcItemAvatarOpts(HWND hwndDlg, UINT msg, WPARAM wParam
 					case PSN_APPLY:
 						{
 							DBWriteContactSettingByte(NULL,"CList","AvatarsShow", (BYTE)IsDlgButtonChecked(hwndDlg,IDC_SHOW_AVATARS));
+							DBWriteContactSettingByte(NULL,"CList","AvatarsAnimated", (BYTE)IsDlgButtonChecked(hwndDlg,IDC_SHOW_ANIAVATARS));
 							DBWriteContactSettingByte(NULL,"CList","AvatarsDrawBorders", (BYTE)IsDlgButtonChecked(hwndDlg,IDC_AVATAR_DRAW_BORDER));
 							DBWriteContactSettingDword(NULL,"CList","AvatarsBorderColor", (DWORD)SendDlgItemMessage(hwndDlg, IDC_AVATAR_BORDER_COLOR, CPM_GETCOLOUR, 0, 0));
 							DBWriteContactSettingByte(NULL,"CList","AvatarsRoundCorners", (BYTE)IsDlgButtonChecked(hwndDlg,IDC_AVATAR_ROUND_CORNERS));
@@ -549,6 +560,7 @@ static BOOL CALLBACK DlgProcItemAvatarOpts(HWND hwndDlg, UINT msg, WPARAM wParam
 							else if (IsDlgButtonChecked(hwndDlg,IDC_AVATAR_OVERLAY_ICON_CONTACT))
 								DBWriteContactSettingByte(NULL,"CList","AvatarsOverlayType",SETTING_AVATAR_OVERLAY_TYPE_CONTACT);
 							ClcOptionsChanged();
+							AniAva_UpdateOptions();
 							return TRUE;
 						}
 					}

@@ -32,11 +32,10 @@
 
 extern "C" BYTE saved_alpha;
 extern "C" DWORD g_gdiplusToken;
-
 extern "C" int mir_strlen(const char *a);
+extern "C" HBITMAP SkinEngine_CreateDIB32(int cx, int cy);
 
 DWORD g_gdiplusToken;
-
 
 extern "C" void InitGdiPlus(void)
 {
@@ -230,4 +229,109 @@ extern "C" bool GDIPlus_AlphaBlend(HDC hdcDest,int nXOriginDest,int nYOriginDest
 COLORREF __inline _revcolref(COLORREF colref)
 {
     return RGB(GetBValue(colref), GetGValue(colref), GetRValue(colref));
+}
+
+/////////////////////////////////////////////////////////////////////////////////
+// GDIPlus_IsAnimatedGIF and GDIPlus_ExtractAnimatedGIF
+// based on routine from http://www.codeproject.com/vcpp/gdiplus/imageexgdi.asp
+//
+
+extern "C" BOOL GDIPlus_IsAnimatedGIF(TCHAR * szName)
+{
+	int nFrameCount=0;
+	Image image(szName);
+
+	UINT count = 0;
+
+	count = image.GetFrameDimensionsCount();
+	GUID* pDimensionIDs = new GUID[count];
+
+	// Get the list of frame dimensions from the Image object.
+	image.GetFrameDimensionsList(pDimensionIDs, count);
+
+	// Get the number of frames in the first dimension.
+	nFrameCount = image.GetFrameCount(&pDimensionIDs[0]);
+
+	delete  pDimensionIDs;
+
+	return (BOOL) (nFrameCount > 1);
+}
+
+extern "C" void GDIPlus_ExtractAnimatedGIF(TCHAR * szName, int width, int height, HBITMAP * pBitmap, int ** pframesDelay, int * pframesCount, SIZE * pSizeAvatar)
+{
+	int nFrameCount=0;
+	Bitmap image(szName);
+	PropertyItem * pPropertyItem; 
+
+	UINT count = 0;
+
+	count = image.GetFrameDimensionsCount();
+	GUID* pDimensionIDs = new GUID[count];
+
+	// Get the list of frame dimensions from the Image object.
+	image.GetFrameDimensionsList(pDimensionIDs, count);
+
+	// Get the number of frames in the first dimension.
+	nFrameCount = image.GetFrameCount(&pDimensionIDs[0]);
+
+	// Assume that the image has a property item of type PropertyItemEquipMake.
+	// Get the size of that property item.
+	int nSize = image.GetPropertyItemSize(PropertyTagFrameDelay);
+
+	// Allocate a buffer to receive the property item.
+	pPropertyItem = (PropertyItem*) malloc(nSize);
+
+	image.GetPropertyItem(PropertyTagFrameDelay, nSize, pPropertyItem);
+	
+	int clipWidth;
+	int clipHeight;
+	int imWidth=image.GetWidth();
+	int imHeight=image.GetHeight();
+	float xscale=(float)width/imWidth;
+	float yscale=(float)height/imHeight;
+	xscale=min(xscale,yscale);
+	clipWidth=(int)(xscale*imWidth+.5);
+	clipHeight=(int)(xscale*imHeight+.5);
+
+	HBITMAP hBitmap=SkinEngine_CreateDIB32(clipWidth*nFrameCount, height);
+	HDC hdc=CreateCompatibleDC(NULL);
+	HBITMAP oldBmp=(HBITMAP)SelectObject(hdc,hBitmap);
+	Graphics graphics(hdc);
+	ImageAttributes attr;
+	ColorMatrix ClrMatrix = 
+	{ 
+		1.0f, 0.0f, 0.0f, 0.0f, 0.0f,
+			0.0f, 1.0f, 0.0f, 0.0f, 0.0f,
+			0.0f, 0.0f, 1.0f, 0.0f, 0.0f,
+			0.0f, 0.0f, 0.0f, ((float)255)/255, 0.0f,
+			0.0f, 0.0f, 0.0f, 0.0f, 1.0f
+	};
+	//attr.SetColorMatrix(&ClrMatrix, ColorMatrixFlagsDefault,ColorAdjustTypeBitmap);
+	graphics.SetInterpolationMode(InterpolationModeHighQualityBicubic);
+
+	int * delays=(int*)malloc(nFrameCount*sizeof(int));
+	memset(delays,0,nFrameCount*sizeof(int));
+
+	for (int i=1; i<nFrameCount+1; i++)
+	{
+		GUID   pageGuid = FrameDimensionTime;
+		RectF rect((float)(i-1)*clipWidth,(float)0,(float)clipWidth,(float)clipHeight);
+		graphics.DrawImage(&image, rect, (float)0, (float)0, (float)imWidth, (float)imHeight , UnitPixel, &attr, NULL, NULL);		
+		image.SelectActiveFrame(&pageGuid, i);
+		long lPause = ((long*) pPropertyItem->value)[i-1] * 10;
+		delays[i-1]=(int)lPause;
+	}
+	SelectObject(hdc,oldBmp);
+	DeleteDC(hdc);
+	free(pPropertyItem);
+	delete  pDimensionIDs;
+	if (pBitmap && pframesDelay && pframesCount && pSizeAvatar)
+	{
+	   *pBitmap=hBitmap;
+	   *pframesDelay=delays;
+	   *pframesCount=nFrameCount;
+	   pSizeAvatar->cx=clipWidth;
+	   pSizeAvatar->cy=clipHeight;
+	}
+	GdiFlush();
 }

@@ -4,7 +4,7 @@
 
 Miranda IM: the free IM client for Microsoft* Windows*
 
-Copyright 2000-2006 Miranda ICQ/IM project, 
+Copyright 2000-2007 Miranda ICQ/IM project, 
 all portions of this codebase are copyrighted to the people 
 listed in contributors.txt.
 
@@ -1327,7 +1327,19 @@ void Cache_ProceedAvatarInList(struct ClcData *dat, struct ClcContact *contact)
 		{
 			height_clip = width_clip * ace->bmHeight / ace->bmWidth;					
 		}
-
+		if (wildcmpi(contact->avatar_data->szFilename,"*.gif"))
+		{
+			TCHAR *temp=a2t(contact->avatar_data->szFilename);
+			int res=AniAva_AddAvatar(contact->hContact,temp,width_clip,height_clip);
+			mir_free(temp);
+			if (res)
+			{
+				contact->avatar_pos=AVATAR_POS_ANIMATED;
+				contact->avatar_size.cy=HIWORD(res);
+				contact->avatar_size.cx=LOWORD(res);
+				return;
+			}
+		}
 		// Create objs
 		hdc = CreateCompatibleDC(dat->avatar_cache.hdc); 
 		hDrawBmp = SkinEngine_CreateDIB32Point(width_clip, height_clip,&pt);
@@ -1540,6 +1552,10 @@ void Cache_GetAvatar(struct ClcData *dat, struct ClcContact *contact)
             // Update all items
             ExecuteOnAllContacts(dat, ReduceAvatarPosition, (void *)&old_pos);
         }
+		if (old_pos==AVATAR_POS_ANIMATED && contact->avatar_pos != AVATAR_POS_ANIMATED)
+		{
+			AniAva_RemoveAvatar( contact->hContact );
+		}
     }
 }
 

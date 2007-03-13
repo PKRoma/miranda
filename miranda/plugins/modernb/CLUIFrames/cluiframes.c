@@ -1,7 +1,7 @@
 /*
 Miranda IM: the free IM client for Microsoft* Windows*
 
-Copyright 2000-2006 Miranda ICQ/IM project, 
+Copyright 2000-2007 Miranda ICQ/IM project, 
 all portions of this codebase are copyrighted to the people 
 listed in contributors.txt.
 
@@ -182,6 +182,7 @@ static int CLUIFrames_OnMoving(HWND hwnd,RECT *lParam)
 
 	}
 	g_CluiData.mutexPreventDockMoving=1;
+	AniAva_RedrawAllAvatars();
 	return 0;
 }
 static int SetAlpha(BYTE Alpha)
@@ -222,6 +223,7 @@ static int SetAlpha(BYTE Alpha)
 			}
 		};
 	}
+	AniAva_RedrawAllAvatars();
 	return 0;
 }
 
@@ -311,6 +313,7 @@ static int CLUIFrames_OnShowHide(HWND hwnd, int mode)
 		}
 	}
 	if (mode!=SW_HIDE) SetForegroundWindow(pcli->hwndContactList);
+	AniAva_RedrawAllAvatars();
 	return 0;
 }
 static int RemoveItemFromList(int pos,wndFrame **lpFrames,int *FrameItemCount)

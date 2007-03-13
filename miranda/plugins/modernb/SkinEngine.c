@@ -2,7 +2,7 @@
 
 Miranda IM: the free IM client for Microsoft* Windows*
 
-Copyright 2000-2006 Miranda ICQ/IM project, 
+Copyright 2000-2007 Miranda ICQ/IM project, 
 all portions of this codebase are copyrighted to the people 
 listed in contributors.txt.
 
@@ -276,6 +276,7 @@ int SkinEngine_LoadModule()
     g_SkinObjectList.pObjects=NULL;
     // Initialize GDI+
     InitGdiPlus();
+	AniAva_InitModule();
     //load decoder
     hImageDecoderModule=NULL;
     if (g_CluiData.fGDIPlusFail)
@@ -384,6 +385,7 @@ int SkinEngine_UnloadModule()
     DestroyServiceFunction(MS_SKIN_DRAWGLYPH);
     DestroyHookableEvent(hEventServicesCreated);
     if (hImageDecoderModule) FreeLibrary(hImageDecoderModule);
+	AniAva_UnloadModule();
     ShutdownGdiPlus();
     //free variables
     return 1;
@@ -4014,6 +4016,7 @@ void SkinEngine_ApplyTransluency()
         if (!layered) SetWindowLong(hwnd, GWL_EXSTYLE, GetWindowLong(hwnd, GWL_EXSTYLE) | WS_EX_LAYERED);
         if (g_proc_SetLayeredWindowAttributesNew) g_proc_SetLayeredWindowAttributesNew(hwnd, RGB(0,0,0), (BYTE)g_CluiData.bCurrentAlpha, LWA_ALPHA);
     }
+	AniAva_RedrawAllAvatars();
     return;
 }
 

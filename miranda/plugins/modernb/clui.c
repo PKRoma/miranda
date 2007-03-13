@@ -2,7 +2,7 @@
 
 Miranda IM: the free IM client for Microsoft* Windows*
 
-Copyright 2000-2006 Miranda ICQ/IM project, 
+Copyright 2000-2007 Miranda ICQ/IM project, 
 all portions of this codebase are copyrighted to the people 
 
 listed in contributors.txt.
@@ -2147,6 +2147,7 @@ LRESULT CALLBACK CLUI__cli_ContactListWndProc(HWND hwnd, UINT msg, WPARAM wParam
     case WM_DESTROY:
         {
             int state=DBGetContactSettingByte(NULL,"CList","State",SETTING_STATE_NORMAL);
+			AniAva_UnloadModule();
             TRACE("CLUI.c: WM_DESTROY\n");
             g_CluiData.bSTATE=STATE_EXITING;
             CLUI_DisconnectAll();
@@ -2236,7 +2237,7 @@ static int CLUI_MenuItem_PreBuild(WPARAM wParam, LPARAM lParam)
     }
     CallService(MS_CLIST_MODIFYMENUITEM, (WPARAM)hRenameMenuItem, (LPARAM)&mi);
 
-    if (!hItem || !IsHContactContact(hItem) || !DBGetContactSettingByte(NULL,"CList","ShowAvatars",0)) 
+    if (!hItem || !IsHContactContact(hItem) || !DBGetContactSettingByte(NULL,"CList","AvatarsShow",0)) 
     {
         mi.flags = CMIM_FLAGS | CMIF_HIDDEN;
         CallService(MS_CLIST_MODIFYMENUITEM, (WPARAM)hShowAvatarMenuItem, (LPARAM)&mi);

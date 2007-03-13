@@ -2,7 +2,7 @@
 
 Miranda IM: the free IM client for Microsoft* Windows*
 
-Copyright 2000-2006 Miranda ICQ/IM project,
+Copyright 2000-2007 Miranda ICQ/IM project,
 all portions of this codebase are copyrighted to the people
 listed in contributors.txt.
 
@@ -142,7 +142,7 @@ PLUGININFOEX pluginInfo = {
 	"Display contacts, event notifications, protocol status with advantage visual modifications. Supported MW modifications, enchanced metacontact cooperation.",
 	"Artem Shpynov, Ricardo Pescuma Domenecci and Anton Senko based on clist_mw by Bethoven",
 	"ashpynov@gmail.com" ,
-	"Copyright 2000-2006 Miranda-IM project ["__DATE__" "__TIME__"]",
+	"Copyright 2000-2007 Miranda-IM project ["__DATE__" "__TIME__"]",
 #ifdef UNICODE
 	"http://miranda-im.org/download/details.php?action=viewfile&id=2103",
 #else

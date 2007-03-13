@@ -5,7 +5,7 @@
 
 Miranda IM: the free IM client for Microsoft* Windows*
 
-Copyright 2000-2006 Miranda ICQ/IM project,
+Copyright 2000-2007 Miranda ICQ/IM project,
 all portions of this codebase are copyrighted to the people
 listed in contributors.txt.
 
@@ -217,9 +217,9 @@ extern void Utf8Decode( char* str, wchar_t** ucs2 );
 #define AC_SRC_ALPHA            0x01
 #endif
 
-#ifdef _DEBUG
-#define DeleteObject(a) DebugDeleteObject(a)
-#endif 
+//#ifdef _DEBUG
+//#define DeleteObject(a) DebugDeleteObject(a)
+//#endif 
 
 #define strsetA(a,b) {if (a) mir_free_and_nill(a); a=mir_strdup(b);}
 #define strsetT(a,b) {if (a) mir_free_and_nill(a); a=mir_tstrdup(b);}
@@ -275,5 +275,25 @@ extern __inline char * strdupn(const char * src, int len);
 #define SORTBY_RATE    4
 #define SORTBY_NAME_LOCALE 5
 #define SORTBY_NOTHING	10
+
+#ifdef _UNICODE
+#define t2a(src) u2a(src)
+#define a2t(src) a2u(src)
+#else
+#define t2a(src) mir_strdup(src)
+#define a2t(src) mir_strdup(src)
+#endif
+
+/* modern_animated_avatars.c */
+int AniAva_InitModule();								   // HAVE TO BE AFTER GDI+ INITIALIZED	
+int AniAva_UnloadModule();
+int AniAva_UpdateOptions();								   //reload options, //hot enable/disable engine
+
+int AniAva_AddAvatar(HANDLE hContact, TCHAR * szFilename, int width, int heigth);  // adds avatars to be displayed
+int AniAva_SetAvatarPos(HANDLE hContact, RECT * rc, int overlayIdx, BYTE bAlpha);	   // update avatars pos	
+int AniAva_InvalidateAvatarPositions(HANDLE hContact);	   // reset positions of avatars to be drawn (still be painted at same place)	
+int AniAva_RemoveInvalidatedAvatars();					   // all avatars without validated position will be stop painted and probably removed
+int AniAva_RemoveAvatar(HANDLE hContact);				   // remove avatar	
+int AniAva_RedrawAllAvatars();							   // request to repaint all
 
 #endif // commonheaders_h__

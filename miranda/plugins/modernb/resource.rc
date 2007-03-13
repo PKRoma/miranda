@@ -70,50 +70,43 @@ LANGUAGE LANG_NEUTRAL, SUBLANG_NEUTRAL
 
 // Icon with lowest ID value placed first to ensure application icon
 // remains consistent on all systems.
-
-IDI_HIDE_AVATAR                 ICON  DISCARDABLE       "res\\hide_avatar.ico"
-IDI_SHOW_AVATAR                 ICON  DISCARDABLE       "res\\show_avatar.ico"
-
-IDI_NEWGROUP2                   ICON  DISCARDABLE       "res\\addgoupp.ico"
-IDI_LISTENING_TO                ICON  DISCARDABLE       "res\\listening_to.ico"
-IDI_ALWAYSVIS                   ICON  DISCARDABLE       "res\\AlwaysVis.ico"
-IDI_NEVERVIS                    ICON  DISCARDABLE       "res\\NeverVis.ico"
-IDI_CHAT                        ICON  DISCARDABLE       "res\\Chatchannel.ico"
-
-IDI_FAVORITE_0                  ICON  DISCARDABLE       "res\\rate_none.ico"
-IDI_FAVORITE_1                  ICON  DISCARDABLE       "res\\rate_low.ico"
-IDI_FAVORITE_2                  ICON  DISCARDABLE       "res\\rate_med.ico"
-IDI_FAVORITE_3                  ICON  DISCARDABLE       "res\\rate_high.ico"
-
-IDI_AVATAR_OVERLAY_NA           ICON  DISCARDABLE       "res\\NA.ico"
-IDI_AVATAR_OVERLAY_OCCUPIED     ICON  DISCARDABLE       "res\\occupied.ico"
-IDI_AVATAR_OVERLAY_OFFLINE      ICON  DISCARDABLE       "res\\offline.ico"
-IDI_AVATAR_OVERLAY_PHONE        ICON  DISCARDABLE       "res\\phone.ico"
-IDI_AVATAR_OVERLAY_AWAY         ICON  DISCARDABLE       "res\\Away.ico"
-IDI_AVATAR_OVERLAY_DND          ICON  DISCARDABLE       "res\\DND.ico"
-IDI_AVATAR_OVERLAY_INVISIBLE    ICON  DISCARDABLE       "res\\invisible.ico"
-IDI_AVATAR_OVERLAY_LUNCH        ICON  DISCARDABLE       "res\\lunch.ico"
-IDI_AVATAR_OVERLAY_CHAT         ICON  DISCARDABLE       "res\\chat.ico"
-
-IDI_STATUS_OVERLAY_NA           ICON  DISCARDABLE       "res\\MicroNA.ico"
-IDI_STATUS_OVERLAY_OCCUPIED     ICON  DISCARDABLE       "res\\Microoccupied.ico"
-IDI_STATUS_OVERLAY_OFFLINE      ICON  DISCARDABLE       "res\\Microoffline.ico"
-IDI_STATUS_OVERLAY_PHONE        ICON  DISCARDABLE       "res\\Microphone.ico"
-IDI_STATUS_OVERLAY_AWAY         ICON  DISCARDABLE       "res\\MicroAway.ico"
-IDI_STATUS_OVERLAY_DND          ICON  DISCARDABLE       "res\\MicroDND.ico"
-IDI_STATUS_OVERLAY_INVISIBLE    ICON  DISCARDABLE       "res\\Microinvisible.ico"
-IDI_STATUS_OVERLAY_LUNCH        ICON  DISCARDABLE       "res\\Microlunch.ico"
-IDI_STATUS_OVERLAY_CHAT         ICON  DISCARDABLE       "res\\Microchat.ico"
-
-IDI_ICQC1                       ICON  DISCARDABLE       "res\\1.ico"
-IDI_ICQC2                       ICON  DISCARDABLE       "res\\2.ico"
-IDI_ICQC3                       ICON  DISCARDABLE       "res\\3.ico"
-IDI_ICQC4                       ICON  DISCARDABLE       "res\\4.ico"
-IDI_ICQC5                       ICON  DISCARDABLE       "res\\5.ico"
-IDI_ICQC6                       ICON  DISCARDABLE       "res\\6.ico"
-IDI_ICQC7                       ICON  DISCARDABLE       "res\\7.ico"
-IDI_ICQC8                       ICON  DISCARDABLE       "res\\8.ico"
-
+IDI_HIDE_AVATAR         ICON                    "res\\hide_avatar.ico"
+IDI_SHOW_AVATAR         ICON                    "res\\show_avatar.ico"
+IDI_NEWGROUP2           ICON                    "res\\addgoupp.ico"
+IDI_LISTENING_TO        ICON                    "res\\listening_to.ico"
+IDI_ALWAYSVIS           ICON                    "res\\AlwaysVis.ico"
+IDI_NEVERVIS            ICON                    "res\\NeverVis.ico"
+IDI_CHAT                ICON                    "res\\Chatchannel.ico"
+IDI_FAVORITE_0          ICON                    "res\\rate_none.ico"
+IDI_FAVORITE_1          ICON                    "res\\rate_low.ico"
+IDI_FAVORITE_2          ICON                    "res\\rate_med.ico"
+IDI_FAVORITE_3          ICON                    "res\\rate_high.ico"
+IDI_AVATAR_OVERLAY_NA   ICON                    "res\\NA.ico"
+IDI_AVATAR_OVERLAY_OCCUPIED ICON                    "res\\occupied.ico"
+IDI_AVATAR_OVERLAY_OFFLINE ICON                    "res\\offline.ico"
+IDI_AVATAR_OVERLAY_PHONE ICON                    "res\\phone.ico"
+IDI_AVATAR_OVERLAY_AWAY ICON                    "res\\Away.ico"
+IDI_AVATAR_OVERLAY_DND  ICON                    "res\\DND.ico"
+IDI_AVATAR_OVERLAY_INVISIBLE ICON                    "res\\invisible.ico"
+IDI_AVATAR_OVERLAY_LUNCH ICON                    "res\\lunch.ico"
+IDI_AVATAR_OVERLAY_CHAT ICON                    "res\\chat.ico"
+IDI_STATUS_OVERLAY_NA   ICON                    "res\\MicroNA.ico"
+IDI_STATUS_OVERLAY_OCCUPIED ICON                    "res\\Microoccupied.ico"
+IDI_STATUS_OVERLAY_OFFLINE ICON                    "res\\Microoffline.ico"
+IDI_STATUS_OVERLAY_PHONE ICON                    "res\\Microphone.ico"
+IDI_STATUS_OVERLAY_AWAY ICON                    "res\\MicroAway.ico"
+IDI_STATUS_OVERLAY_DND  ICON                    "res\\MicroDND.ico"
+IDI_STATUS_OVERLAY_INVISIBLE ICON                    "res\\Microinvisible.ico"
+IDI_STATUS_OVERLAY_LUNCH ICON                    "res\\Microlunch.ico"
+IDI_STATUS_OVERLAY_CHAT ICON                    "res\\Microchat.ico"
+IDI_ICQC1               ICON                    "res\\1.ico"
+IDI_ICQC2               ICON                    "res\\2.ico"
+IDI_ICQC3               ICON                    "res\\3.ico"
+IDI_ICQC4               ICON                    "res\\4.ico"
+IDI_ICQC5               ICON                    "res\\5.ico"
+IDI_ICQC6               ICON                    "res\\6.ico"
+IDI_ICQC7               ICON                    "res\\7.ico"
+IDI_ICQC8               ICON                    "res\\8.ico"
 
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -371,14 +364,6 @@ END
 LANGUAGE LANG_RUSSIAN, SUBLANG_DEFAULT
 #pragma code_page(1251)
 #endif //_WIN32
-
-/////////////////////////////////////////////////////////////////////////////
-//
-// Icon
-//
-
-// Icon with lowest ID value placed first to ensure application icon
-
 
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -1326,50 +1311,52 @@ BEGIN
     LTEXT           "Multiline status bar:",IDC_MULTI,13,189,133,8
 END
 
-IDD_OPT_ITEM_AVATAR DIALOGEX 0, 0, 260, 171
+IDD_OPT_ITEM_AVATAR DIALOGEX 0, 0, 260, 191
 STYLE DS_SETFONT | DS_FIXEDSYS | WS_CHILD
 EXSTYLE WS_EX_CONTROLPARENT
 FONT 8, "MS Shell Dlg", 400, 0, 0x1
 BEGIN
     CONTROL         "Draw border on avatar",IDC_AVATAR_DRAW_BORDER,"Button",
-                    BS_AUTOCHECKBOX | WS_TABSTOP,7,25,246,9
+                    BS_AUTOCHECKBOX | WS_TABSTOP,7,38,246,9
     CONTROL         "Show Avatars",IDC_SHOW_AVATARS,"Button",BS_AUTOCHECKBOX | 
                     WS_TABSTOP,7,14,246,8
     CONTROL         "Draw overlay icons",IDC_AVATAR_OVERLAY_ICONS,"Button",
-                    BS_AUTOCHECKBOX | WS_TABSTOP,7,111,246,8
-    LTEXT           "Size:",IDC_AVATAR_SIZE_L,7,95,18,8
-    EDITTEXT        IDC_AVATAR_SIZE,170,94,35,12,ES_NUMBER
+                    BS_AUTOCHECKBOX | WS_TABSTOP,7,124,246,8
+    LTEXT           "Size:",IDC_AVATAR_SIZE_L,7,108,18,8
+    EDITTEXT        IDC_AVATAR_SIZE,170,107,35,12,ES_NUMBER
     CONTROL         "",IDC_AVATAR_SIZE_SPIN,"msctls_updown32",
                     UDS_SETBUDDYINT | UDS_ALIGNRIGHT | UDS_ARROWKEYS | 
-                    UDS_NOTHOUSANDS | UDS_HOTTRACK,194,94,11,12
+                    UDS_NOTHOUSANDS | UDS_HOTTRACK,194,107,11,12
     CONTROL         "Round corners of avatars",IDC_AVATAR_ROUND_CORNERS,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,54,246,8
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,67,246,8
     CONTROL         "Ignore size for row height calcs",
                     IDC_AVATAR_IGNORE_SIZE,"Button",BS_AUTOCHECKBOX | 
-                    WS_TABSTOP,7,82,246,8
-    LTEXT           "Border Color:",IDC_AVATAR_BORDER_COLOR_L,20,38,53,10
+                    WS_TABSTOP,7,95,246,8
+    LTEXT           "Border Color:",IDC_AVATAR_BORDER_COLOR_L,20,51,53,10
     CONTROL         "",IDC_AVATAR_BORDER_COLOR,"ColourPicker",WS_TABSTOP,77,
-                    36,17,13
+                    49,17,13
     CONTROL         "Custom corner size:",
                     IDC_AVATAR_CUSTOM_CORNER_SIZE_CHECK,"Button",
-                    BS_AUTOCHECKBOX | WS_TABSTOP,18,66,78,11
-    EDITTEXT        IDC_AVATAR_CUSTOM_CORNER_SIZE,97,65,35,12,ES_NUMBER
+                    BS_AUTOCHECKBOX | WS_TABSTOP,18,79,78,11
+    EDITTEXT        IDC_AVATAR_CUSTOM_CORNER_SIZE,97,78,35,12,ES_NUMBER
     CONTROL         "",IDC_AVATAR_CUSTOM_CORNER_SIZE_SPIN,"msctls_updown32",
                     UDS_SETBUDDYINT | UDS_ALIGNRIGHT | UDS_ARROWKEYS | 
-                    UDS_NOTHOUSANDS | UDS_HOTTRACK,125,65,11,12
+                    UDS_NOTHOUSANDS | UDS_HOTTRACK,125,78,11,12
     CONTROL         "Normal overlay icon",IDC_AVATAR_OVERLAY_ICON_NORMAL,
-                    "Button",BS_AUTORADIOBUTTON,29,124,224,8
+                    "Button",BS_AUTORADIOBUTTON,29,137,224,8
     CONTROL         "Protocol status icon",IDC_AVATAR_OVERLAY_ICON_PROTOCOL,
-                    "Button",BS_AUTORADIOBUTTON,29,135,224,8
+                    "Button",BS_AUTORADIOBUTTON,29,148,224,8
     CONTROL         "Contact icon",IDC_AVATAR_OVERLAY_ICON_CONTACT,"Button",
-                    BS_AUTORADIOBUTTON,29,146,186,8
-    LTEXT           "pixels",IDC_AVATAR_SIZE_PIXELS2,210,96,18,8
-    RTEXT           "height",IDC_AVATAR_SIZE_PIXELS3,121,95,44,8
-    EDITTEXT        IDC_AVATAR_WIDTH,78,94,35,12,ES_NUMBER
+                    BS_AUTORADIOBUTTON,29,159,186,8
+    LTEXT           "pixels",IDC_AVATAR_SIZE_PIXELS2,210,109,18,8
+    RTEXT           "height",IDC_AVATAR_SIZE_PIXELS3,121,108,44,8
+    EDITTEXT        IDC_AVATAR_WIDTH,78,107,35,12,ES_NUMBER
     CONTROL         "",IDC_AVATAR_WIDTH_SPIN,"msctls_updown32",
                     UDS_SETBUDDYINT | UDS_ALIGNRIGHT | UDS_ARROWKEYS | 
-                    UDS_NOTHOUSANDS | UDS_HOTTRACK,102,94,11,12
-    RTEXT           "Max width",IDC_AVATAR_SIZE_PIXELS,31,96,44,8
+                    UDS_NOTHOUSANDS | UDS_HOTTRACK,102,107,11,12
+    RTEXT           "Max width",IDC_AVATAR_SIZE_PIXELS,31,109,44,8
+    CONTROL         "Animate Avatars",IDC_SHOW_ANIAVATARS,"Button",
+                    BS_AUTOCHECKBOX | WS_TABSTOP,7,26,246,8
 END
 
 IDD_OPT_ITEM_ICON DIALOGEX 0, 0, 260, 108
@@ -1594,7 +1581,7 @@ BEGIN
         LEFTMARGIN, 7
         RIGHTMARGIN, 253
         TOPMARGIN, 7
-        BOTTOMMARGIN, 164
+        BOTTOMMARGIN, 184
     END
 
     IDD_OPT_ITEM_ICON, DIALOG

@@ -2,7 +2,7 @@
 
 Miranda IM: the free IM client for Microsoft* Windows*
 
-Copyright 2000-2006 Miranda ICQ/IM project,
+Copyright 2000-2007 Miranda ICQ/IM project,
 all portions of this codebase are copyrighted to the people
 listed in contributors.txt.
 
@@ -176,6 +176,7 @@ struct ClcGroup;
 //#define CONTACTF_STATUSMSG 64
 
 #define AVATAR_POS_DONT_HAVE -1
+#define AVATAR_POS_ANIMATED -2
 
 #define TEXT_PIECE_TYPE_TEXT   0
 #define TEXT_PIECE_TYPE_SMILEY 1
@@ -279,6 +280,7 @@ struct ClcContact {
 	BOOL image_is_special;
 	int avatar_pos;
 	struct avatarCacheEntry *avatar_data;
+	SIZE avatar_size;
 	SortedList *plText;						// List of ClcContactTextPiece
     int iTextMaxSmileyHeight;
 
@@ -568,11 +570,7 @@ TCHAR * GetContactDisplayNameW( HANDLE hContact, int mode );
 char*   u2a( wchar_t* src );
 wchar_t* a2u( char* src );
 
-#ifdef _UNICODE
-#define t2a(src) u2a(src)
-#else
-#define t2a(src) mir_strdup(src)
-#endif
+
 
 //groups.c
 TCHAR*  GetGroupNameTS( int idx, DWORD* pdwFlags );

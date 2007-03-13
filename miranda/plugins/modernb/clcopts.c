@@ -2,7 +2,7 @@
 
 Miranda IM: the free IM client for Microsoft* Windows*
 
-Copyright 2000-2006 Miranda ICQ/IM project, 
+Copyright 2000-2007 Miranda ICQ/IM project, 
 all portions of this codebase are copyrighted to the people 
 listed in contributors.txt.
 
@@ -1690,40 +1690,9 @@ CALLBACK DlgProcGenOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam)
 		CheckDlgButton(hwndDlg, IDC_MULTITRAY, DBGetContactSettingByte(NULL,"CList","TrayIcon",SETTING_TRAYICON_DEFAULT)==SETTING_TRAYICON_MULTI ? BST_CHECKED : BST_UNCHECKED);
 		CheckDlgButton(hwndDlg, IDC_DISABLEBLINK, DBGetContactSettingByte(NULL,"CList","DisableTrayFlash",0) == 1 ? BST_CHECKED : BST_UNCHECKED);
 		//			CheckDlgButton(hwndDlg, IDC_ICONBLINK, DBGetContactSettingByte(NULL,"CList","NoIconBlink",0) == 1 ? BST_CHECKED : BST_UNCHECKED );
-		CheckDlgButton(hwndDlg, IDC_SHOW_AVATARS, DBGetContactSettingByte(NULL,"CList","ShowAvatars",0) == 1 ? BST_CHECKED : BST_UNCHECKED );
-		/*			CheckDlgButton(hwndDlg, IDC_AVATAR_DRAW_BORDER, DBGetContactSettingByte(NULL,"CList","AvatarsDrawBorders",1) == 1 ? BST_CHECKED : BST_UNCHECKED );
-		CheckDlgButton(hwndDlg, IDC_AVATAR_ROUND_CORNERS, DBGetContactSettingByte(NULL,"CList","AvatarsRoundCorners",1) == 1 ? BST_CHECKED : BST_UNCHECKED );
-		CheckDlgButton(hwndDlg, IDC_AVATAR_ALIGN_LEFT, DBGetContactSettingByte(NULL,"CList","AvatarAlignLeft",1) == 1 ? BST_CHECKED : BST_UNCHECKED );
-		CheckDlgButton(hwndDlg, IDC_SHOW_STATUS_MSG, DBGetContactSettingByte(NULL,"CList","ShowStatusMsg",0) == 1 ? BST_CHECKED : BST_UNCHECKED );
-		CheckDlgButton(hwndDlg, IDC_NOTCHECKFONTSIZE, DBGetContactSettingByte(NULL,"CList","DoNotCheckFontSize",0) == 1 ? BST_CHECKED : BST_UNCHECKED );
-		CheckDlgButton(hwndDlg, IDC_NOTCHECKICONSIZE, DBGetContactSettingByte(NULL,"CList","DoNotCheckIconSize",0) == 1 ? BST_CHECKED : BST_UNCHECKED );
-		CheckDlgButton(hwndDlg, IDC_VARIABLE_ROW_HEIGHT, DBGetContactSettingByte(NULL,"CList","VariableRowHeight",1) == 1 ? BST_CHECKED : BST_UNCHECKED );
-		CheckDlgButton(hwndDlg, IDC_HIDE_ICON_ON_AVATAR, DBGetContactSettingByte(NULL,"CList","HideIconOnAvatar",0) == 1 ? BST_CHECKED : BST_UNCHECKED );
-		CheckDlgButton(hwndDlg, IDC_AVATAR_OVERLAY_ICONS, DBGetContactSettingByte(NULL,"CList","AvatarsDrawOverlay",0) == 1 ? BST_CHECKED : BST_UNCHECKED );
+		CheckDlgButton(hwndDlg, IDC_SHOW_AVATARS, DBGetContactSettingByte(NULL,"CList","AvatarsShow",0) == 1 ? BST_CHECKED : BST_UNCHECKED );
+		CheckDlgButton(hwndDlg, IDC_SHOW_ANIAVATARS, DBGetContactSettingByte(NULL,"CList","AvatarsAnimated",(ServiceExists(MS_AV_GETAVATARBITMAP)&&!g_CluiData.fGDIPlusFail)) == 1 ? BST_CHECKED : BST_UNCHECKED );
 
-		SendDlgItemMessage(hwndDlg,IDC_AVATAR_SIZE_SPIN,UDM_SETBUDDY,(WPARAM)GetDlgItem(hwndDlg,IDC_AVATAR_SIZE),0);		// set buddy			
-		SendDlgItemMessage(hwndDlg,IDC_AVATAR_SIZE_SPIN,UDM_SETRANGE,0,MAKELONG(255,1));
-		SendDlgItemMessage(hwndDlg,IDC_AVATAR_SIZE_SPIN,UDM_SETPOS,0,MAKELONG(DBGetContactSettingWord(NULL,"CList","AvatarSize",30),0));
-
-		SendDlgItemMessage(hwndDlg,IDC_MIN_ROW_HEIGHT_SPIN,UDM_SETBUDDY,(WPARAM)GetDlgItem(hwndDlg,IDC_MIN_ROW_HEIGHT),0);		// set buddy			
-		SendDlgItemMessage(hwndDlg,IDC_MIN_ROW_HEIGHT_SPIN,UDM_SETRANGE,0,MAKELONG(255,0));
-		SendDlgItemMessage(hwndDlg,IDC_MIN_ROW_HEIGHT_SPIN,UDM_SETPOS,0,MAKELONG(DBGetContactSettingWord(NULL,"CList","MinRowHeight",CLCDEFAULT_ROWHEIGHT),0));
-
-		SendDlgItemMessage(hwndDlg,IDC_ROW_BORDER_SPIN,UDM_SETBUDDY,(WPARAM)GetDlgItem(hwndDlg,IDC_ROW_BORDER),0);		// set buddy			
-		SendDlgItemMessage(hwndDlg,IDC_ROW_BORDER_SPIN,UDM_SETRANGE,0,MAKELONG(255,0));
-		SendDlgItemMessage(hwndDlg,IDC_ROW_BORDER_SPIN,UDM_SETPOS,0,MAKELONG(DBGetContactSettingWord(NULL,"CList","RowBorder",2),0));
-
-		if(!IsDlgButtonChecked(hwndDlg,IDC_SHOW_AVATARS)) {
-		EnableWindow(GetDlgItem(hwndDlg,IDC_AVATAR_DRAW_BORDER),FALSE);
-		EnableWindow(GetDlgItem(hwndDlg,IDC_AVATAR_ROUND_CORNERS),FALSE);
-		EnableWindow(GetDlgItem(hwndDlg,IDC_AVATAR_ALIGN_LEFT),FALSE);
-		EnableWindow(GetDlgItem(hwndDlg,IDC_AVATAR_SIZE_L),FALSE);
-		EnableWindow(GetDlgItem(hwndDlg,IDC_AVATAR_SIZE),FALSE);
-		EnableWindow(GetDlgItem(hwndDlg,IDC_AVATAR_SIZE_SPIN),FALSE);
-		EnableWindow(GetDlgItem(hwndDlg,IDC_AVATAR_SIZE_PIXELS),FALSE);
-		EnableWindow(GetDlgItem(hwndDlg,IDC_AVATAR_OVERLAY_ICONS),FALSE);
-		}
-		*/
 		if(IsDlgButtonChecked(hwndDlg,IDC_DONTCYCLE)) {
 			EnableWindow(GetDlgItem(hwndDlg,IDC_CYCLETIMESPIN),FALSE);
 			EnableWindow(GetDlgItem(hwndDlg,IDC_CYCLETIME),FALSE);
