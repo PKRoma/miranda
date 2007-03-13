@@ -29,6 +29,10 @@ Bugfixes:
  - IRC: Fixed crash with "perform" command in IRC options tab
  - Jabber: Fixed auth error via SSL ("SSL negotiation failed")
  - Jabber: Fixed OS version detection under Windows Vista
+ - MSN: Fixed idle mode support
+ - MSN: Fixed typing notifications
+ - MSN: Improved group handling
+ - MSN: Improved file transfers
 
 * New in 0.6.7
 Bugfixes
