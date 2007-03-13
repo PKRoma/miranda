@@ -1,6 +1,6 @@
 <?xml version="1.0"?>
 <project name="Miranda IM" default="compile">
-    <property name="BUILD_VERSION" value="0.6.8pr1"/>
+    <property name="BUILD_VERSION" value="0.6.8"/>
     <property name="LOCAL_UNICODE" value="false"/>
     
     <target name="init">
