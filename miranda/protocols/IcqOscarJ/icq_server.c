@@ -23,7 +23,7 @@
 //
 // -----------------------------------------------------------------------------
 //
-// File name      : $Source: /cvsroot/miranda/miranda/protocols/IcqOscarJ/icq_server.c,v $
+// File name      : $URL: /cvsroot/miranda/miranda/protocols/IcqOscarJ/icq_server.c,v $
 // Revision       : $Revision$
 // Last change on : $Date$
 // Last change by : $Author$
@@ -366,6 +366,33 @@ void sendServPacket(icq_packet* pPacket)
   LeaveCriticalSection(&localSeqMutex);
 
   SAFE_FREE(&pPacket->pData);
+}
+
+
+
+typedef struct icq_packet_async_s
+{
+  icq_packet packet;
+  
+} icq_packet_async;
+
+static DWORD __stdcall sendPacketAsyncThread(icq_packet_async* pArgs)
+{
+  sendServPacket(&pArgs->packet);
+
+  SAFE_FREE(&pArgs);
+  return 0;
+}
+
+
+void sendServPacketAsync(icq_packet *packet)
+{
+  icq_packet_async *pArgs;
+  
+  pArgs = (icq_packet_async*)SAFE_MALLOC(sizeof(icq_packet_async)); // This will be freed in the new thread
+  memcpy(&pArgs->packet, packet, sizeof(icq_packet));
+
+  ICQCreateThread(sendPacketAsyncThread, pArgs);
 }
 
 

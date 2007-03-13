@@ -23,7 +23,7 @@
 //
 // -----------------------------------------------------------------------------
 //
-// File name      : $Source: /cvsroot/miranda/miranda/protocols/IcqOscarJ/icq_server.h,v $
+// File name      : $URL$
 // Revision       : $Revision$
 // Last change on : $Date$
 // Last change by : $Author$
@@ -68,6 +68,7 @@ typedef struct serverthread_info_s {
 
 void icq_serverDisconnect(BOOL bBlock);
 void sendServPacket(icq_packet *);
+void sendServPacketAsync(icq_packet *);
 void icq_login(const char *szPassword);
 
 int IsServerOverRate(WORD wFamily, WORD wCommand, int nLevel);

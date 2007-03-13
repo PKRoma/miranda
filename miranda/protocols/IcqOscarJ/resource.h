@@ -16,6 +16,7 @@
 #define IDI_AUTH_ASK                    150
 #define IDI_AUTH_GRANT                  151
 #define IDI_AUTH_REVOKE                 152
+#define IDI_SERVLIST_ADD                160
 #define IDI_XSTATUS1                    201
 #define IDI_XSTATUS2                    202
 #define IDI_XSTATUS3                    203

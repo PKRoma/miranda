@@ -68,6 +68,7 @@ Bugfixes:
   Fixed handling of malformed messages acks
   Minor fixes for Popup plugin support
   Minor protocol related tweaks
+  Fixed possible lags caused by typing notifications (on slow connections) 
 
 New Features:
   Oscar File Transfers - like icq5 (including: transfer thru server, resume)

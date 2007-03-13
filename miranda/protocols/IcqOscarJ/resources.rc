@@ -31,6 +31,7 @@ IDI_ICQ                 ICON    DISCARDABLE     "icos\\icq.ico"
 IDI_AUTH_ASK            ICON    DISCARDABLE     "icos\\auth_ask.ico"
 IDI_AUTH_GRANT          ICON    DISCARDABLE     "icos\\auth_grant.ico"
 IDI_AUTH_REVOKE         ICON    DISCARDABLE     "icos\\auth_revoke.ico"
+IDI_SERVLIST_ADD        ICON    DISCARDABLE     "icos\\srvlist_add.ico"
 IDI_EXPANDSTRINGEDIT    ICON    DISCARDABLE     "changeinfo\\expandst.ico"
 
 /////////////////////////////////////////////////////////////////////////////

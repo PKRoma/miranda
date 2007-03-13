@@ -23,7 +23,7 @@
 //
 // -----------------------------------------------------------------------------
 //
-// File name      : $Source: /cvsroot/miranda/miranda/protocols/IcqOscarJ/fam_04message.c,v $
+// File name      : $URL$
 // Revision       : $Revision$
 // Last change on : $Date$
 // Last change by : $Author$
@@ -2601,5 +2601,5 @@ void sendTypingNotification(HANDLE hContact, WORD wMTNCode)
   packUID(&p, dwUin, szUID);        // User ID
   packWord(&p, wMTNCode);           // Notification type
 
-  sendServPacket(&p);
+  sendServPacketAsync(&p);
 }

@@ -433,7 +433,7 @@ static int OnSystemModulesLoaded(WPARAM wParam,LPARAM lParam)
     IconLibDefine(ICQTranslateUtfStatic("Request authorization", str), proto, "req_auth", NULL, lib, -IDI_AUTH_ASK);
     IconLibDefine(ICQTranslateUtfStatic("Grant authorization", str), proto, "grant_auth", NULL, lib, -IDI_AUTH_GRANT);
     IconLibDefine(ICQTranslateUtfStatic("Revoke authorization", str), proto, "revoke_auth", NULL, lib, -IDI_AUTH_REVOKE);
-    IconLibDefine(ICQTranslateUtfStatic("Add to server list", str), proto, "add_to_server", NULL, NULL, 0);
+    IconLibDefine(ICQTranslateUtfStatic("Add to server list", str), proto, "add_to_server", NULL, lib, -IDI_SERVLIST_ADD);
   }
 
   // Initialize IconLib icons
