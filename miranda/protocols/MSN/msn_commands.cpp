@@ -957,6 +957,19 @@ static void sttProcessStatusMessage( BYTE* buf, unsigned len, HANDLE hContact )
 		return;
 	}
 
+	// Check if there is any info in the string
+	BOOL foundUsefullInfo = FALSE;
+	for (int i = 4; i < pCount; i++) {
+		if ( parts[i][0] != '\0' )  {
+			foundUsefullInfo = TRUE;
+			break;
+		}
+	}
+	if ( !foundUsefullInfo ) {
+		MSN_DeleteSetting( hContact, "ListeningTo" );
+		return;
+	}
+
 	if (!ServiceExists(MS_LISTENINGTO_GETPARSEDTEXT) ||
 		!ServiceExists(MS_LISTENINGTO_OVERRIDECONTACTOPTION) ||
 		!CallService(MS_LISTENINGTO_OVERRIDECONTACTOPTION, 0, (LPARAM) hContact))
