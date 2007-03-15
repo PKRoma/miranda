@@ -131,7 +131,7 @@ static DBVARIANT* GetCachedValuePtr( HANDLE hContact, char* szSetting, int bAllo
 			if ( bAllocate != 1 )
 				return NULL;
 
-			V = (DBCachedGlobalValue*)HeapAlloc(hCacheHeap,0+HEAP_ZERO_MEMORY,sizeof(DBCachedGlobalValue));
+			V = (DBCachedGlobalValue*)HeapAlloc(hCacheHeap,HEAP_ZERO_MEMORY,sizeof(DBCachedGlobalValue));
 			V->name = szSetting;
 			li.List_Insert(&lGlobalSettings,V,index);
 		}
@@ -147,30 +147,23 @@ static DBVARIANT* GetCachedValuePtr( HANDLE hContact, char* szSetting, int bAllo
 			VL = (DBCachedContactValueList*)lContacts.items[index];
 		}
 		else {
-			struct DBContact *dbc;
-
-			if ( bAllocate == -1 )
+			if ( bAllocate != 1 )
 				return NULL;
 
-			dbc=(struct DBContact*)DBRead((DWORD)hContact,sizeof(struct DBContact),NULL);
-			if (dbc->signature!=DBCONTACT_SIGNATURE)
-				return NULL;
-
-			VL = (DBCachedContactValueList*)HeapAlloc(hCacheHeap,0+HEAP_ZERO_MEMORY,sizeof(DBCachedContactValueList));
+			VL = (DBCachedContactValueList*)HeapAlloc(hCacheHeap,HEAP_ZERO_MEMORY,sizeof(DBCachedContactValueList));
 			VL->hContact = hContact;
 			li.List_Insert(&lContacts,VL,index);
 		}
 
-		for ( V = VL->first; V != NULL; V = V->next) {
-			if (V->name == szSetting)
+		for ( V = VL->first; V != NULL; V = V->next)
+			if (strcmp(V->name,szSetting)==0)
 				break;
-		}
 
-		if ( V == NULL )
-		{	if ( bAllocate != 1 )
+		if ( V == NULL ) {
+			if ( bAllocate != 1 )
 				return NULL;
 
-			V = HeapAlloc(hCacheHeap,0+HEAP_ZERO_MEMORY,sizeof(DBCachedContactValue));
+			V = HeapAlloc(hCacheHeap,HEAP_ZERO_MEMORY,sizeof(DBCachedContactValue));
 			if (VL->last)
 				VL->last->next = V;
 			else

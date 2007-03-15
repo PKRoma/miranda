@@ -189,8 +189,8 @@ static DBVARIANT* GetCachedValuePtr( HANDLE hContact, char* szSetting, int bAllo
 			if (strcmp(V->name,szSetting)==0)
 				break;
 
-		if ( V == NULL )
-		{	if ( bAllocate != 1 )
+		if ( V == NULL ) {
+			if ( bAllocate != 1 )
 				return NULL;
 
 			V = HeapAlloc(hCacheHeap,HEAP_ZERO_MEMORY,sizeof(DBCachedContactValue));
@@ -393,7 +393,7 @@ static int GetContactSettingStr(WPARAM wParam,LPARAM lParam)
 	if ( GetContactSettingWorker(( HANDLE )wParam, dgs, 0 ))
 		return 1;
 
-   if ( iSaveType == 0 || iSaveType == dgs->pValue->type )
+	if ( iSaveType == 0 || iSaveType == dgs->pValue->type )
 		return 0;
 
 	if ( dgs->pValue->type != DBVT_ASCIIZ && dgs->pValue->type != DBVT_UTF8 )
