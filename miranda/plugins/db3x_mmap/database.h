@@ -174,6 +174,7 @@ typedef struct
 	HANDLE hContact;
 	HANDLE hNext;
 	DBCachedContactValue* first;
+	DBCachedContactValue* last;
 }
 	DBCachedContactValueList;
 
@@ -195,11 +196,7 @@ int CreateDbHeaders(HANDLE hFile);
 int LoadDatabaseModule(void);
 void UnloadDatabaseModule(void);
 
-#ifdef _DEBUG
-#define MAXCACHEDREADSIZE     32768
-#else
-#define MAXCACHEDREADSIZE     32768 //2048	 //push it to 1K  //technically 4096 would work, but I'm not going to push it
-#endif
+#define MAXCACHEDREADSIZE     65536
 
 //#define DBLOGGING
 

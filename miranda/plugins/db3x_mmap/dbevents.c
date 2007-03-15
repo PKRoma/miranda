@@ -274,7 +274,7 @@ static int GetEvent(WPARAM wParam,LPARAM lParam)
 	int bytesToCopy,i;
 
 	if(dbei==NULL||dbei->cbSize!=sizeof(DBEVENTINFO)) return 1;
-	if(dbei->cbBlob > 0 && dbei->pBlob == NULL) {
+	if(dbei->cbBlob>0 && dbei->pBlob==NULL) {
 		dbei->cbBlob = 0;
 		return 1;
 	}
@@ -291,12 +291,15 @@ static int GetEvent(WPARAM wParam,LPARAM lParam)
 	if(dbei->cbBlob<dbe->cbBlob) bytesToCopy=dbei->cbBlob;
 	else bytesToCopy=dbe->cbBlob;
 	dbei->cbBlob=dbe->cbBlob;
-	for(i=0;;i+=MAXCACHEDREADSIZE) {
-		if(bytesToCopy-i<=MAXCACHEDREADSIZE) {
-			CopyMemory(dbei->pBlob+i,DBRead(wParam+offsetof(struct DBEvent,blob)+i,bytesToCopy-i,NULL),bytesToCopy-i);
-			break;
+	if (bytesToCopy && dbei->pBlob)
+	{
+		for(i=0;;i+=MAXCACHEDREADSIZE) {
+			if(bytesToCopy-i<=MAXCACHEDREADSIZE) {
+				CopyMemory(dbei->pBlob+i,DBRead(wParam+offsetof(struct DBEvent,blob)+i,bytesToCopy-i,NULL),bytesToCopy-i);
+				break;
+			}
+			CopyMemory(dbei->pBlob+i,DBRead(wParam+offsetof(struct DBEvent,blob)+i,MAXCACHEDREADSIZE,NULL),MAXCACHEDREADSIZE);
 		}
-		CopyMemory(dbei->pBlob+i,DBRead(wParam+offsetof(struct DBEvent,blob)+i,MAXCACHEDREADSIZE,NULL),MAXCACHEDREADSIZE);
 	}
 	LeaveCriticalSection(&csDbAccess);
 	return 0;

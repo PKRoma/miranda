@@ -33,9 +33,6 @@ typedef struct {
 HANDLE hModHeap = NULL;
 static SortedList lMods, lOfs;
 
-static ModuleName *lastmn = NULL;
-static ModuleName *lastmn2 = NULL;
-
 static int ModCompare( ModuleName *mn1, ModuleName *mn2 )
 {
 	return strcmp( mn1->name, mn2->name );
@@ -49,7 +46,7 @@ static int OfsCompare( ModuleName *mn1, ModuleName *mn2 )
 void AddToList(char *name, DWORD len, DWORD ofs)
 {
 	int index;
-	ModuleName *mn = (ModuleName*)HeapAlloc(hModHeap,HEAP_NO_SERIALIZE,sizeof(ModuleName));
+	ModuleName *mn = (ModuleName*)HeapAlloc(hModHeap,0,sizeof(ModuleName));
 	mn->name = name;
 	mn->ofs = ofs;
 
@@ -72,7 +69,7 @@ int InitModuleNames(void)
 	int nameLen;
 	char *mod;
 
-	hModHeap=HeapCreate(HEAP_NO_SERIALIZE,0,0);
+	hModHeap=HeapCreate(0,0,0);
 	lMods.sortFunc=ModCompare;
 	lMods.increment=50;
 	lOfs.sortFunc=OfsCompare;
@@ -85,7 +82,7 @@ int InitModuleNames(void)
 
 		nameLen=dbmn->cbName;
 
-		mod = (char*)HeapAlloc(hModHeap,HEAP_NO_SERIALIZE,nameLen+1);
+		mod = (char*)HeapAlloc(hModHeap,0,nameLen+1);
 		CopyMemory(mod,DBRead(ofsThis+offsetof(struct DBModuleName,name),nameLen,NULL),nameLen);
 		mod[nameLen] = 0;
 
@@ -107,6 +104,7 @@ void UninitModuleNames(void)
 
 static DWORD FindExistingModuleNameOfs(const char *szName,int nameLen)
 {
+	static ModuleName *lastmn = NULL;
 	ModuleName mn, *pmn;
 	int index;
 
@@ -147,7 +145,7 @@ DWORD GetModuleNameOfs(const char *szName)
 	DBFlush(0);
 
 	//add to cache
-	mod = (char*)HeapAlloc(hModHeap,HEAP_NO_SERIALIZE,nameLen+1);
+	mod = (char*)HeapAlloc(hModHeap,0,nameLen+1);
 	strcpy(mod,szName);
 	AddToList(mod, nameLen, ofsNew);
 
@@ -157,18 +155,19 @@ DWORD GetModuleNameOfs(const char *szName)
 
 char *GetModuleNameByOfs(DWORD ofs)
 {
+	static ModuleName *lastmn = NULL;
 	ModuleName mn, *pmn;
 	int index;
 
 	mn.name = NULL;
 	mn.ofs = ofs;
 
-	if (lastmn2 && OfsCompare(&mn,lastmn2) == 0)
-		return lastmn2->name;
+	if (lastmn && OfsCompare(&mn,lastmn) == 0)
+		return lastmn->name;
 
 	if (li.List_GetIndex(&lOfs,&mn,&index)) {
 		pmn = (ModuleName*)lOfs.items[index];
-		lastmn2 = pmn;
+		lastmn = pmn;
 		return pmn->name;
 	}
 

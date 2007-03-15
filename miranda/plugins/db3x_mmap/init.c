@@ -153,8 +153,8 @@ static PLUGININFOEX pluginInfo = {
 	__VERSION_DWORD,
 	"Provides Miranda database support: global settings, contacts, history, settings per contact.",
 	"Miranda-IM project",
-	"bio; ghazan@miranda-im.org",
-	"Copyright 2000-2006 Miranda IM project",
+	"bio@msx.ru; ghazan@miranda-im.org",
+	"Copyright 2000-2007 Miranda IM project",
 	"",
 	0,
 	DEFMOD_DB,
@@ -176,7 +176,7 @@ __declspec(dllexport) DATABASELINK* DatabasePluginInfo(void * reserved)
 __declspec(dllexport) PLUGININFOEX * MirandaPluginInfoEx(DWORD mirandaVersion)
 {
 	if ( mirandaVersion < PLUGIN_MAKE_VERSION(0,6,0,15)) {
-		MessageBox( NULL, _T("The db3x plugin cannot be loaded. It requires Miranda IM 0.6.0.15 or later."), _T("db3x Plugin"), MB_OK|MB_ICONWARNING|MB_SETFOREGROUND|MB_TOPMOST );
+		MessageBox( NULL, _T("The db3x_mmap plugin cannot be loaded. It requires Miranda IM 0.6.0.15 or later."), _T("db3x_mmap Plugin"), MB_OK|MB_ICONWARNING|MB_SETFOREGROUND|MB_TOPMOST );
 		return NULL;
 	}
 	return &pluginInfo;

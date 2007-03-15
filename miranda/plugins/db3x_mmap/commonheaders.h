@@ -31,7 +31,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #	define _ALPHA_FUSE_ 1	// defined for fuse powered core
 #	define _CRTDBG_MAP_ALLOC
 #	include <stdlib.h>
-#	include <crtdbg.h>
+//#	include <crtdbg.h>
 #endif
 
 #include <commctrl.h>
@@ -43,6 +43,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include <io.h>
 #include <string.h>
 #include <direct.h>
+#include <crtdbg.h>
 #include "resource.h"
 #include "version.h"
 #include <newpluginapi.h>
@@ -57,6 +58,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 extern PLUGINLINK *pluginLink;
 
+extern struct MM_INTERFACE memoryManagerInterface;
 extern struct LIST_INTERFACE li;
 
 extern CRITICAL_SECTION csDbAccess;

@@ -26,7 +26,7 @@ BEGIN
         BEGIN
             VALUE "FileDescription", "Miranda IM Mmap DataBase Engine 3x"
             VALUE "FileVersion", __VERSION_STRING
-            VALUE "LegalCopyright", "Copyright (C) 2000-2006"
+            VALUE "LegalCopyright", "Copyright (C) 2000-2007"
             VALUE "OriginalFilename", "dbx_mmap.dll"
             VALUE "ProductName", "Miranda IM Mmap DataBase Engine 3x"
             VALUE "ProductVersion", __VERSION_STRING

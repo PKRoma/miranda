@@ -28,7 +28,6 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 static BOOL safetyMode=TRUE;
 static int flushBuffersTimerId;
 
-static HANDLE hNull = NULL;
 static PBYTE pNull = 0;
 static PBYTE pDbCache = NULL;
 static HANDLE hMap = NULL;
@@ -57,13 +56,13 @@ void ReMap(DWORD needed)
 
 	if (needed > ChunkSize)
 	{
-		if (dbHeader.ofsFileEnd > dwFileSize)
+		if ((needed + dwFileSize) - dbHeader.ofsFileEnd > ChunkSize)
+			DatabaseCorruption("%s (Too large increment)");
+		else
 		{
 			DWORD x = dbHeader.ofsFileEnd/ChunkSize;
-			dwFileSize += (x+1)*ChunkSize;
+			dwFileSize = (x+1)*ChunkSize;
 		}
-		else
-			DatabaseCorruption("%s (Too large increment)");
 	}
 	else
 		dwFileSize += ChunkSize;
@@ -81,8 +80,11 @@ void DBMoveChunk(DWORD ofsDest,DWORD ofsSource,int bytes)
     int x = 0;
 	log3("move %d %08x->%08x",bytes,ofsSource,ofsDest);
 	if (ofsDest+bytes>dwFileSize) ReMap(ofsDest+bytes-dwFileSize);
-	if (ofsSource+bytes>dwFileSize) x = ofsSource+bytes-dwFileSize;
-
+	if (ofsSource+bytes>dwFileSize) {
+		x = ofsSource+bytes-dwFileSize;
+		log0("buggy move!");
+		_ASSERT(0);
+	}
 	if (x > 0)
 		ZeroMemory(pDbCache+ofsDest+bytes-x, x);
 	if (ofsSource < dwFileSize)
@@ -96,7 +98,7 @@ PBYTE DBRead(DWORD ofs,int bytesRequired,int *bytesAvail)
 {
 	// buggy read
 	if (ofs>=dwFileSize) {
-		log2("buggy read %d@%08x",bytesRequired,ofs);
+		log2("read from outside %d@%08x",bytesRequired,ofs);
 		if (bytesAvail!=NULL) *bytesAvail = ChunkSize;
 		return pNull;
 	}
@@ -109,11 +111,8 @@ PBYTE DBRead(DWORD ofs,int bytesRequired,int *bytesAvail)
 void DBWrite(DWORD ofs,PVOID pData,int bytes)
 {
 	log2("write %d@%08x",bytes,ofs);
-	if (ofs+bytes>dwFileSize) {
-		log0("buggy write!");
-		ReMap(ofs+bytes-dwFileSize);
-	}
-	CopyMemory(pDbCache+ofs,pData,bytes);
+	if (ofs+bytes>dwFileSize) ReMap(ofs+bytes-dwFileSize);
+	MoveMemory(pDbCache+ofs,pData,bytes);
 	logg();
 }
 
@@ -177,9 +176,8 @@ int InitCache(void)
 
 	Map();
 
-	// zero region for reads beyond the end of file
-	hNull = HeapCreate(HEAP_NO_SERIALIZE,0,0);
-	pNull = HeapAlloc(hNull,HEAP_NO_SERIALIZE,ChunkSize);
+	// zero region for reads outside the file
+	pNull = calloc(ChunkSize,1);
 
 	CreateServiceFunction(MS_DB_SETSAFETYMODE,CacheSetSafetyMode);
 
@@ -192,5 +190,5 @@ void UninitCache(void)
 	FlushViewOfFile(pDbCache, 0);
 	UnmapViewOfFile(pDbCache);
 	CloseHandle(hMap);
-	HeapDestroy(hNull);
+	if (pNull) free(pNull);
 }

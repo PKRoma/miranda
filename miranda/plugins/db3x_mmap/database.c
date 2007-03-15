@@ -59,7 +59,6 @@ static void UnloadDatabase(void)
 DWORD CreateNewSpace(int bytes)
 {
 	DWORD ofsNew;
-
 	ofsNew=dbHeader.ofsFileEnd;
 	dbHeader.ofsFileEnd+=bytes;
 	DBWrite(0,&dbHeader,sizeof(dbHeader));
@@ -69,13 +68,10 @@ DWORD CreateNewSpace(int bytes)
 
 void DeleteSpace(DWORD ofs,int bytes)
 {
-	if (ofs+bytes == dbHeader.ofsFileEnd)
-	{
+	if (ofs+bytes == dbHeader.ofsFileEnd)	{
 		log2("freespace %d@%08x",bytes,ofs);
 		dbHeader.ofsFileEnd=ofs;
-	}
-	else
-	{
+	} else	{
 		log2("deletespace %d@%08x",bytes,ofs);
 		dbHeader.slackSpace+=bytes;
 	}
@@ -89,20 +85,16 @@ DWORD ReallocSpace(DWORD ofs,int oldSize,int newSize)
 
 	if (oldSize >= newSize) return ofs;
 
-	if (ofs+oldSize == dbHeader.ofsFileEnd)
-	{
+	if (ofs+oldSize == dbHeader.ofsFileEnd) {
 		ofsNew = ofs;
 		dbHeader.ofsFileEnd+=newSize-oldSize;
 		DBWrite(0,&dbHeader,sizeof(dbHeader));
 		log3("adding newspace %d@%08x+%d",newSize,ofsNew,oldSize);
-	}
-	else
-	{
+	} else {
 		ofsNew=CreateNewSpace(newSize);
 		DBMoveChunk(ofsNew,ofs,oldSize);
 		DeleteSpace(ofs,oldSize);
 	}
-
 	return ofsNew;
 }
 
@@ -176,9 +168,9 @@ void __cdecl dbpanic(void *arg)
 {
 	if (msg)
 	{
-	    char err[256];
+		char err[256];
 
-	    if (dwErr==ERROR_DISK_FULL)
+		if (dwErr==ERROR_DISK_FULL)
 			msg = Translate("Disk is full. Miranda will now shutdown.");
 
 		mir_snprintf(err, sizeof(err), msg, Translate("Database failure. Miranda will now shutdown."), dwErr);
@@ -200,7 +192,7 @@ void DatabaseCorruption(char *text)
 	if (DatabaseCorrupted==0) {
 		DatabaseCorrupted++;
 		kill++;
-	    msg = text;
+		msg = text;
 		dwErr = GetLastError();
 	} else {
 		/* db is already corrupted, someone else is dealing with it, wait here
