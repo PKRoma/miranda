@@ -350,7 +350,8 @@ void GroupMenus_Init(void)
 	memset(&mi,0,sizeof(mi));
 	mi.cbSize=sizeof(mi);
 	mi.position=200000;
-	mi.hIcon=LoadSmallIcon(GetModuleHandle(NULL), MAKEINTRESOURCE(IDI_FINDUSER));
+	mi.flags=CMIF_ICONFROMICOLIB;
+	mi.icolibItem=LoadSkinnedIconHandle(SKINICON_OTHER_FINDUSER);
 	mi.pszService="FindAdd/FindAddCommand";
 	mi.pszName=("&Find/Add Contacts...");
 	AddGroupMenuItem((WPARAM)0,(LPARAM)&mi);
@@ -374,7 +375,8 @@ void GroupMenus_Init(void)
 	memset(&mi,0,sizeof(mi));
 	mi.cbSize=sizeof(mi);
 	mi.position=400000;
-	mi.hIcon=LoadSmallIcon(GetModuleHandle(NULL),MAKEINTRESOURCE(IDI_OPTIONS));
+	mi.flags=CMIF_ICONFROMICOLIB;
+	mi.icolibItem=LoadSkinnedIconHandle(SKINICON_OTHER_OPTIONS);
 	mi.pszService="Options/OptionsCommand";
 	mi.pszName=("&Options...");
 	AddGroupMenuItem((WPARAM)0,(LPARAM)&mi);
@@ -383,7 +385,8 @@ void GroupMenus_Init(void)
 	memset(&mi,0,sizeof(mi));
 	mi.cbSize=sizeof(mi);
 	mi.position=500000;
-	mi.hIcon=LoadSmallIcon(GetModuleHandle(NULL),MAKEINTRESOURCE(IDI_MIRANDA));
+	mi.flags=CMIF_ICONFROMICOLIB;
+	mi.icolibItem=LoadSkinnedIconHandle(SKINICON_OTHER_MIRANDA);
 	mi.pszService="Help/AboutCommand";
 	mi.pszName=("&About");
 	AddGroupMenuItem((WPARAM)0,(LPARAM)&mi);
@@ -751,7 +754,7 @@ void InitSubGroupMenus(void)
 	mi.pszService="CLISTMENUSSubGroup/GroupMenuExecProxy";
 	mi.pszName=("&Hide Offline Users in here");	
 	gmp.lParam=0;
-  gmp.wParam=POPUP_GROUPHIDEOFFLINE;
+	gmp.wParam=POPUP_GROUPHIDEOFFLINE;
 	hHideOfflineUsersHereMenuItem=(HANDLE)AddSubGroupMenuItem((WPARAM)&gmp,(LPARAM)&mi);
 
 	memset(&mi,0,sizeof(mi));
@@ -761,13 +764,14 @@ void InitSubGroupMenus(void)
 	mi.pszService="CLISTMENUSSubGroup/GroupMenuExecProxy";
 	mi.pszName=("&Show Offline Users in here");	
 	gmp.lParam=0;
-  gmp.wParam=POPUP_GROUPSHOWOFFLINE;
+	gmp.wParam=POPUP_GROUPSHOWOFFLINE;
 	hShowOfflineUsersHereMenuItem=(HANDLE)AddSubGroupMenuItem((WPARAM)&gmp,(LPARAM)&mi);
 
 	memset(&mi,0,sizeof(mi));
 	mi.cbSize=sizeof(mi);
 	mi.position=900001;
-	mi.hIcon=LoadSmallIcon(GetModuleHandle(NULL),MAKEINTRESOURCE(IDI_RENAME));
+	mi.flags=CMIF_ICONFROMICOLIB;
+	mi.icolibItem=LoadSkinnedIconHandle(SKINICON_OTHER_RENAME);
 	mi.pszService="CLISTMENUSSubGroup/GroupMenuExecProxy";
 	mi.pszName=("&Rename Group");	
 	gmp.lParam=0;gmp.wParam=POPUP_RENAMEGROUP;
@@ -777,7 +781,8 @@ void InitSubGroupMenus(void)
 	memset(&mi,0,sizeof(mi));
 	mi.cbSize=sizeof(mi);
 	mi.position=900002;
-	mi.hIcon=LoadSmallIcon(GetModuleHandle(NULL),MAKEINTRESOURCE(IDI_DELETE));
+	mi.flags=CMIF_ICONFROMICOLIB;
+	mi.icolibItem=LoadSkinnedIconHandle(SKINICON_OTHER_DELETE);
 	mi.pszService="CLISTMENUSSubGroup/GroupMenuExecProxy";
 	mi.pszName=("&Delete Group");	
 	gmp.lParam=0;gmp.wParam=POPUP_DELETEGROUP;

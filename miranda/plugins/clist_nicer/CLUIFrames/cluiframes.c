@@ -698,12 +698,12 @@ HMENU CLUIFramesCreateMenuForFrame(int frameid,int root,int popuppos,char *addse
     ZeroMemory(&mi,sizeof(mi));
 
     mi.cbSize=sizeof(mi);
-    mi.hIcon=LoadIcon(g_hInst,MAKEINTRESOURCE(IDI_MIRANDA));
+    mi.icolibItem=LoadSkinnedIconHandle(SKINICON_OTHER_MIRANDA); //LoadIcon(g_hInst,MAKEINTRESOURCE(IDI_MIRANDA));
     mi.pszPopupName=(char *)root;
     mi.popupPosition=frameid;
     mi.position=popuppos++;
     mi.pszName=Translate("&FrameTitle");
-    mi.flags=CMIF_CHILDPOPUP|CMIF_GRAYED;
+    mi.flags=CMIF_CHILDPOPUP|CMIF_GRAYED|CMIF_ICONFROMICOLIB;
     mi.pszContactOwner=(char *)0;
     menuid=(HANDLE)CallService(addservice,0,(LPARAM)&mi);
     if (frameid==-1) contMITitle=menuid;
@@ -1651,8 +1651,8 @@ static int CLUIFramesLoadMainMenu()
     mi.cbSize=sizeof(mi);
 
     // create root menu
-    mi.hIcon=LoadIcon(g_hInst,MAKEINTRESOURCE(IDI_MIRANDA));
-    mi.flags=CMIF_ROOTPOPUP;
+    mi.icolibItem=LoadSkinnedIconHandle(SKINICON_OTHER_MIRANDA); //LoadIcon(g_hInst,MAKEINTRESOURCE(IDI_MIRANDA));
+    mi.flags=CMIF_ROOTPOPUP|CMIF_ICONFROMICOLIB;
     mi.position=3000090000;
     mi.pszPopupName=(char*)-1;
     mi.pszName=Translate("Frames");

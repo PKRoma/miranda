@@ -651,7 +651,8 @@ void InitTrayMenus(void)
 		memset(&mi,0,sizeof(mi));
 		mi.cbSize=sizeof(mi);
 		mi.position=200000;
-		mi.hIcon=LoadSmallIcon(GetModuleHandle(NULL), MAKEINTRESOURCE(IDI_FINDUSER));
+		mi.flags=CMIF_ICONFROMICOLIB;
+		mi.icolibItem=LoadSkinnedIconHandle(SKINICON_OTHER_FINDUSER);
 		mi.pszService="FindAdd/FindAddCommand";
 		mi.pszName="&Find/Add Contacts...";
 		AddTrayMenuItem((WPARAM)0,(LPARAM)&mi);
@@ -675,7 +676,8 @@ void InitTrayMenus(void)
 		memset(&mi,0,sizeof(mi));
 		mi.cbSize=sizeof(mi);
 		mi.position=400000;
-		mi.hIcon=LoadSmallIcon(GetModuleHandle(NULL),MAKEINTRESOURCE(IDI_OPTIONS));
+		mi.flags=CMIF_ICONFROMICOLIB;
+		mi.icolibItem=LoadSkinnedIconHandle(SKINICON_OTHER_OPTIONS);
 		mi.pszService="Options/OptionsCommand";
 		mi.pszName="&Options...";
 		AddTrayMenuItem((WPARAM)0,(LPARAM)&mi);
@@ -684,7 +686,8 @@ void InitTrayMenus(void)
 		memset(&mi,0,sizeof(mi));
 		mi.cbSize=sizeof(mi);
 		mi.position=500000;
-		mi.hIcon=LoadSmallIcon(GetModuleHandle(NULL),MAKEINTRESOURCE(IDI_MIRANDA));
+		mi.flags=CMIF_ICONFROMICOLIB;
+		mi.icolibItem=LoadSkinnedIconHandle(SKINICON_OTHER_MIRANDA);
 		mi.pszService="Help/AboutCommand";
 		mi.pszName="&About";
 		AddTrayMenuItem((WPARAM)0,(LPARAM)&mi);

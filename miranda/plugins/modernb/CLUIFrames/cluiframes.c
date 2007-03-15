@@ -902,7 +902,9 @@ static HMENU CLUIFramesCreateMenuForFrame(int frameid,int root,int popuppos,char
 	ZeroMemory(&mi,sizeof(mi));
 
 	mi.cbSize=sizeof(mi);
-	mi.hIcon=LoadSmallIcon(GetModuleHandle(NULL),MAKEINTRESOURCE(IDI_MIRANDA));
+	mi.flags=CMIF_ICONFROMICOLIB;
+	mi.icolibItem=LoadSkinnedIconHandle(SKINICON_OTHER_MIRANDA);
+//	mi.hIcon=LoadSmallIcon(GetModuleHandle(NULL),MAKEINTRESOURCE(IDI_MIRANDA));
 	mi.pszPopupName=(char *)root;
 	mi.popupPosition=frameid;
 	mi.position=popuppos++;
@@ -1860,7 +1862,9 @@ static int CLUIFramesLoadMainMenu()
 	ZeroMemory(&mi,sizeof(mi));
 	mi.cbSize=sizeof(mi);
 	// create root menu
-	mi.hIcon=LoadSmallIcon(GetModuleHandle(NULL),MAKEINTRESOURCE(IDI_MIRANDA));
+	mi.flags=CMIF_ICONFROMICOLIB;
+	mi.icolibItem=LoadSkinnedIconHandle(SKINICON_OTHER_MIRANDA);
+//	mi.hIcon=LoadSmallIcon(GetModuleHandle(NULL),MAKEINTRESOURCE(IDI_MIRANDA));
 	mi.flags=CMIF_ROOTPOPUP;
 	mi.position=3000090000;
 	mi.pszPopupName=(char*)-1;
