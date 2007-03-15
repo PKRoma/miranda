@@ -391,7 +391,7 @@ LBL_Def:
 
             shouldShow = (GetWindowLong(hwnd, GWL_STYLE) & CLS_SHOWHIDDEN || !CLVM_GetContactHiddenStatus((HANDLE)wParam, szProto, dat)) && ((g_CluiData.bFilterEffective ? TRUE : !pcli->pfnIsHiddenMode(dat, status)) || CallService(MS_CLIST_GETCONTACTICON, wParam, 0) != lParam);  // XXX CLVM changed - this means an offline msg is flashing, so the contact should be shown
             if (!FindItem(hwnd, dat, (HANDLE) wParam, &contact, &group, NULL)) {
-                if (shouldShow) {
+                if (shouldShow && CallService(MS_DB_CONTACT_IS, wParam, 0)) {
                     pcli->pfnAddContactToTree(hwnd, dat, (HANDLE) wParam, 0, 0);
                     recalcScrollBar = 1;                  
                     FindItem(hwnd, dat, (HANDLE) wParam, &contact, NULL, NULL);
@@ -401,7 +401,7 @@ LBL_Def:
                     }
                 }
             } else {
-    //item in list already
+                //item in list already
                 DWORD style = GetWindowLong(hwnd, GWL_STYLE);              
                 if (contact->iImage == (WORD) lParam)
                     break;
