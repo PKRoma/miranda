@@ -182,7 +182,7 @@ static int CLUIFrames_OnMoving(HWND hwnd,RECT *lParam)
 
 	}
 	g_CluiData.mutexPreventDockMoving=1;
-	AniAva_RedrawAllAvatars();
+	AniAva_RedrawAllAvatars(FALSE);
 	return 0;
 }
 static int SetAlpha(BYTE Alpha)
@@ -223,7 +223,7 @@ static int SetAlpha(BYTE Alpha)
 			}
 		};
 	}
-	AniAva_RedrawAllAvatars();
+	AniAva_RedrawAllAvatars(FALSE);
 	return 0;
 }
 
@@ -313,7 +313,7 @@ static int CLUIFrames_OnShowHide(HWND hwnd, int mode)
 		}
 	}
 	if (mode!=SW_HIDE) SetForegroundWindow(pcli->hwndContactList);
-	AniAva_RedrawAllAvatars();
+	AniAva_RedrawAllAvatars(TRUE);
 	return 0;
 }
 static int RemoveItemFromList(int pos,wndFrame **lpFrames,int *FrameItemCount)

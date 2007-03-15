@@ -294,6 +294,7 @@ int AniAva_SetAvatarPos(HANDLE hContact, RECT * rc, int overlayIdx, BYTE bAlpha)
 int AniAva_InvalidateAvatarPositions(HANDLE hContact);	   // reset positions of avatars to be drawn (still be painted at same place)	
 int AniAva_RemoveInvalidatedAvatars();					   // all avatars without validated position will be stop painted and probably removed
 int AniAva_RemoveAvatar(HANDLE hContact);				   // remove avatar	
-int AniAva_RedrawAllAvatars();							   // request to repaint all
+int AniAva_RedrawAllAvatars(BOOL updateZOrder);			   // request to repaint all
+void AniAva_UpdateParent();
 
 #endif // commonheaders_h__

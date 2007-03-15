@@ -4016,7 +4016,7 @@ void SkinEngine_ApplyTransluency()
         if (!layered) SetWindowLong(hwnd, GWL_EXSTYLE, GetWindowLong(hwnd, GWL_EXSTYLE) | WS_EX_LAYERED);
         if (g_proc_SetLayeredWindowAttributesNew) g_proc_SetLayeredWindowAttributesNew(hwnd, RGB(0,0,0), (BYTE)g_CluiData.bCurrentAlpha, LWA_ALPHA);
     }
-	AniAva_RedrawAllAvatars();
+	AniAva_RedrawAllAvatars(FALSE);
     return;
 }
 

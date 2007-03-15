@@ -24,6 +24,13 @@
 #include "resource.h"
 #include <win2k.h>
 #include "m_avatars.h"
+extern "C"
+{
+	#include "newpluginapi.h"	//this is common header for miranda plugin api
+	#include "m_system.h"
+	wchar_t* a2u( char* src );
+};
+
 
 #undef Translate
 #include "gdiplus.h"
@@ -239,8 +246,13 @@ COLORREF __inline _revcolref(COLORREF colref)
 extern "C" BOOL GDIPlus_IsAnimatedGIF(TCHAR * szName)
 {
 	int nFrameCount=0;
+#ifndef _UNICODE
+	WCHAR * temp=a2u(szName);
+	Image image(temp);
+	mir_free(temp);
+#else
 	Image image(szName);
-
+#endif
 	UINT count = 0;
 
 	count = image.GetFrameDimensionsCount();
@@ -260,7 +272,13 @@ extern "C" BOOL GDIPlus_IsAnimatedGIF(TCHAR * szName)
 extern "C" void GDIPlus_ExtractAnimatedGIF(TCHAR * szName, int width, int height, HBITMAP * pBitmap, int ** pframesDelay, int * pframesCount, SIZE * pSizeAvatar)
 {
 	int nFrameCount=0;
+#ifndef _UNICODE
+	WCHAR * temp=a2u(szName);
+	Bitmap image(temp);
+	mir_free(temp);
+#else
 	Bitmap image(szName);
+#endif
 	PropertyItem * pPropertyItem; 
 
 	UINT count = 0;

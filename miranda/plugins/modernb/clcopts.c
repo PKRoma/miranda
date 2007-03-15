@@ -2419,6 +2419,7 @@ static BOOL CALLBACK DlgProcCluiOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPAR
 				DBWriteContactSettingByte(NULL,"CLC","RoundCorners",(BYTE)IsDlgButtonChecked(hwndDlg,IDC_ROUNDCORNERS));		
 			} //====== End of Non-Layered Mode ======
 			g_mutex_bChangingMode=TRUE;
+			
 			if (IsDlgButtonChecked(hwndDlg,IDC_ONDESKTOP)) 
 			{
 				HWND hProgMan=FindWindow(TEXT("Progman"),NULL);
@@ -2438,8 +2439,9 @@ static BOOL CALLBACK DlgProcCluiOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPAR
 				}
 				g_CluiData.fOnDesktop=0;
 			}
+			AniAva_UpdateParent();
 
-
+			
 			//DBWriteContactSettingByte(NULL,"CLUI","ClientAreaDrag",(BYTE)IsDlgButtonChecked(hwndDlg,IDC_CLIENTDRAG));
 			DBWriteContactSettingByte(NULL,"CLUI","FadeInOut",(BYTE)IsDlgButtonChecked(hwndDlg,IDC_FADEINOUT));
 			g_CluiData.fSmoothAnimation=IsWinVer2000Plus()&&(BYTE)IsDlgButtonChecked(hwndDlg,IDC_FADEINOUT);

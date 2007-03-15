@@ -1330,7 +1330,10 @@ void Cache_ProceedAvatarInList(struct ClcData *dat, struct ClcContact *contact)
 		if (wildcmpi(contact->avatar_data->szFilename,"*.gif"))
 		{
 			TCHAR *temp=a2t(contact->avatar_data->szFilename);
-			int res=AniAva_AddAvatar(contact->hContact,temp,width_clip,height_clip);
+			int res;
+			if (old_pos==AVATAR_POS_ANIMATED)
+				AniAva_RemoveAvatar(contact->hContact);
+			res=AniAva_AddAvatar(contact->hContact,temp,width_clip,height_clip);
 			mir_free(temp);
 			if (res)
 			{
@@ -1415,6 +1418,10 @@ void Cache_ProceedAvatarInList(struct ClcData *dat, struct ClcContact *contact)
 		else
 		{
 			contact->avatar_pos = ImageArray_AddImage(&dat->avatar_cache, hDrawBmp, -1);
+		}
+		if (old_pos==AVATAR_POS_ANIMATED && contact->avatar_pos!=AVATAR_POS_ANIMATED)
+		{
+			AniAva_RemoveAvatar(contact->hContact);
 		}
 
 		DeleteObject(hDrawBmp);

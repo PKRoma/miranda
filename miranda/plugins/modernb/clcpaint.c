@@ -491,7 +491,7 @@ static void CLCPaint_DrawTextSmiley(HDC hdcMem, RECT * free_rc, SIZE * text_size
 		int pos_x = 0;
 		int row_height;
 		RECT tmp_rc = *free_rc;
-
+	    if (len==-1) len=_tcslen(szText);
 		if (uTextFormat & DT_RTLREADING)
 			i = plText->realCount - 1;
 		else
@@ -4194,7 +4194,9 @@ static void CLCPaint_DrawContactItems(HWND hwnd, HDC hdcMem, struct ClcData *dat
 					}
 					else if ( Drawing->type == CLCIT_CONTACT )
 					{
-						SIZE text_size={ rcWidth(rc), rcHeight(rc) };
+						SIZE text_size;
+						text_size.cx=rcWidth(rc);
+						text_size.cy=rcHeight(rc);
 						uTextFormat|=DT_VCENTER;
 						//get font
 						CLCPaint_DrawTextSmiley(hdcMem, rc, &text_size, Drawing->szText, -1, Drawing->plText, uTextFormat, dat->text_resize_smileys);												

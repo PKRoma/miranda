@@ -311,6 +311,7 @@ void CLUI_ChangeWindowMode()
     } 			
     g_mutex_bChangingMode=FALSE;
     flag_bFirstTimeCall=TRUE;
+	AniAva_UpdateParent();
 }
 struct  _tagTimerAsync
 {
