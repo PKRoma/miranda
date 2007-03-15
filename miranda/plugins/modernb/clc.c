@@ -807,7 +807,7 @@ case INTM_ICONCHANGED:
 			|| CallService(MS_CLIST_GETCONTACTICON, wParam, 0) != lParam );  // XXX CLVM changed - this means an offline msg is flashing, so the contact should be shown
 		if (!pcli->pfnFindItem(hwnd, dat, (HANDLE) wParam, &contact, &group, NULL)) 
 		{
-			if (shouldShow) 
+			if (shouldShow && CallService(MS_DB_CONTACT_IS, wParam, 0)) 
 			{
 				pcli->pfnAddContactToTree(hwnd, dat, (HANDLE) wParam, 0, 0);
 				recalcScrollBar = 1;
@@ -819,11 +819,12 @@ case INTM_ICONCHANGED:
 					contact->image_is_special=image_is_special;
 					pcli->pfnNotifyNewContact(hwnd, (HANDLE) wParam);
 					dat->NeedResort = 1;
-				}	
+				}
 			}
 		}
 		else 
-		{              //item in list already
+		{
+			//item in list already
 			DWORD style = GetWindowLong(hwnd, GWL_STYLE);
 			if (contact->iImage == lParam)
 				return 0;

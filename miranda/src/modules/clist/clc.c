@@ -519,7 +519,7 @@ LRESULT CALLBACK fnContactListControlWndProc(HWND hwnd, UINT msg, WPARAM wParam,
 			&& (!cli.pfnIsHiddenMode(dat, status)
 			|| CallService(MS_CLIST_GETCONTACTICON, wParam, 0) != lParam);      //this means an offline msg is flashing, so the contact should be shown
 		if (!cli.pfnFindItem(hwnd, dat, (HANDLE) wParam, &contact, &group, NULL)) {
-			if (shouldShow) {
+			if (shouldShow && CallService(MS_DB_CONTACT_IS, wParam, 0)) {
 				cli.pfnAddContactToTree(hwnd, dat, (HANDLE) wParam, 0, 0);
 				recalcScrollBar = 1;
 				cli.pfnFindItem(hwnd, dat, (HANDLE) wParam, &contact, NULL, NULL);

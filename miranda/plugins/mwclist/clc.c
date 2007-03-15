@@ -162,7 +162,7 @@ LRESULT CALLBACK ContactListControlWndProc(HWND hwnd, UINT msg, WPARAM wParam, L
 		
 		shouldShow=(GetWindowLong(hwnd,GWL_STYLE)&CLS_SHOWHIDDEN || !cacheEntry->Hidden) && (!pcli->pfnIsHiddenMode(dat,status)||cacheEntry->noHiddenOffline || CallService(MS_CLIST_GETCONTACTICON,wParam,0)!=lParam);	//this means an offline msg is flashing, so the contact should be shown
 		if(!FindItem(hwnd,dat,(HANDLE)wParam,&contact,&group,NULL)) {				
-			if(shouldShow) {					
+			if(shouldShow && CallService(MS_DB_CONTACT_IS, wParam, 0)) {
 				AddContactToTree(hwnd,dat,(HANDLE)wParam,0,0);
 				NeedResort=1;
 				recalcScrollBar=1;					
@@ -174,7 +174,8 @@ LRESULT CALLBACK ContactListControlWndProc(HWND hwnd, UINT msg, WPARAM wParam, L
 				}
 			}				
 		}
-		else {	  //item in list already
+		else {
+			//item in list already
 			DWORD style=GetWindowLong(hwnd,GWL_STYLE);				
 			if(contact->iImage==(WORD)lParam) break;				
 			if (sortByStatus) dat->NeedResort=1;
