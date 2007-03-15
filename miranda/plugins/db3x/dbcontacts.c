@@ -122,7 +122,7 @@ static int FindNextContact(WPARAM wParam,LPARAM lParam)
 			break;
 		else {
 			if ( VL == NULL ) {
-				VL = (DBCachedContactValueList*)HeapAlloc(hCacheHeap,0+HEAP_ZERO_MEMORY,sizeof(DBCachedContactValueList));
+				VL = (DBCachedContactValueList*)HeapAlloc(hCacheHeap,HEAP_ZERO_MEMORY,sizeof(DBCachedContactValueList));
 				VL->hContact = VLtemp.hContact;
 				li.List_Insert(&lContacts,VL,index);
 			}
