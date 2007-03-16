@@ -568,7 +568,6 @@
 					>
 					<Tool
 						Name="VCCLCompilerTool"
-						UsePrecompiledHeader="2"
 						PrecompiledHeaderThrough="commonheaders.h"
 					/>
 				</FileConfiguration>
@@ -577,7 +576,6 @@
 					>
 					<Tool
 						Name="VCCLCompilerTool"
-						UsePrecompiledHeader="2"
 						PrecompiledHeaderThrough="commonheaders.h"
 					/>
 				</FileConfiguration>
@@ -590,6 +588,7 @@
 					>
 					<Tool
 						Name="VCCLCompilerTool"
+						UsePrecompiledHeader="2"
 						PrecompiledHeaderThrough="commonheaders.h"
 					/>
 				</FileConfiguration>
@@ -598,6 +597,7 @@
 					>
 					<Tool
 						Name="VCCLCompilerTool"
+						UsePrecompiledHeader="2"
 						PrecompiledHeaderThrough="commonheaders.h"
 					/>
 				</FileConfiguration>
@@ -852,6 +852,10 @@
 			</File>
 			<File
 				RelativePath=".\mod_skin_selector.c"
+				>
+			</File>
+			<File
+				RelativePath=".\modern_animated_avatars.c"
 				>
 			</File>
 			<File
