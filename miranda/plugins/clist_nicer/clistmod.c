@@ -41,8 +41,9 @@ int SetHideOffline(WPARAM wParam, LPARAM lParam);
 
 HIMAGELIST hCListImages;
 
-extern int      g_maxStatus;
-extern HANDLE   hSvc_GetContactStatusMsg;
+extern int       g_maxStatus;
+extern HANDLE    hSvc_GetContactStatusMsg;
+extern ImageItem *g_CLUIImageItem;
 
 extern struct CluiData g_CluiData;
 
@@ -127,9 +128,19 @@ int GetWindowVisibleState(HWND hWnd, int iStepX, int iStepY)
 		return GWVS_HIDDEN;
 	else {
 		HRGN rgn = 0;
-		POINT ptTest;
+		POINT ptTest, ptOrig;
+        RECT  rcClient;
 		int clip = (int)g_CluiData.bClipBorder;
-		GetWindowRect(hWnd, &rc);
+
+        GetClientRect(hWnd, &rcClient);
+        ptOrig.x = ptOrig.y = 0;
+        ClientToScreen(hWnd, &ptOrig);
+        rc.left = ptOrig.x;
+        rc.top = ptOrig.y;
+        rc.right = rc.left + rcClient.right;
+        rc.bottom = rc.top + rcClient.bottom;
+
+		//GetWindowRect(hWnd, &rc);
 		width = rc.right - rc.left;
 		height = rc.bottom - rc.top;
 
@@ -148,18 +159,25 @@ int GetWindowVisibleState(HWND hWnd, int iStepX, int iStepY)
 		 * also, clip at least 2 pixels from the border (same reason)
 		 */
 
-		clip = max(clip, DBGetContactSettingByte(NULL, "CLUI", "ignoreframepixels", 2));
-		rgn = CreateRoundRectRgn(rc.left + clip, rc.top + clip, rc.right - clip, rc.bottom - clip, 10 + clip, 10 + clip);
-		for (i = rc.top + 3 + clip; i < rc.bottom - 3 - clip; i += (height / iStepY)) {
+        if(g_CLUIImageItem)
+            clip = 5;
+        else
+            clip = 0;
+        //clip = max(clip, DBGetContactSettingByte(NULL, "CLUI", "ignoreframepixels", 2));
+		//rgn = CreateRoundRectRgn(rc.left + clip, rc.top + clip, rc.right - clip, rc.bottom - clip, 10 + clip, 10 + clip);
+        //rgn = CreateRectRgn(rc.left, rc.top, rc.right, rc.bottom);
+		//for (i = rc.top + 3 + clip; i < rc.bottom - 3 - clip; i += (height / iStepY)) {
+        for (i = rc.top + clip; i < rc.bottom; i += (height / iStepY)) {
 			pt.y = i;
-			for (j = rc.left + 3 + clip; j < rc.right - 3 - clip; j += (width / iStepX)) {
-				if(rgn) {
+			//for (j = rc.left + 3 + clip; j < rc.right - 3 - clip; j += (width / iStepX)) {
+            for (j = rc.left + clip; j < rc.right; j += (width / iStepX)) {
+				/*if(rgn) {
 					ptTest.x = j;
 					ptTest.y = i;
 					if(!PtInRegion(rgn, ptTest.x, ptTest.y)) {
 						continue;
 					}
-				}
+				}*/
 				pt.x = j;
 				hAux = WindowFromPoint(pt);
 				while (GetParent(hAux) != NULL)
