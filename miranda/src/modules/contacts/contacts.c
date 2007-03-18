@@ -120,10 +120,11 @@ static int GetContactInfo(WPARAM wParam, LPARAM lParam) {
 			break;
 		}
 		case CNF_COUNTRY:
+		case CNF_COCOUNTRY:
 		{
 			int i,countryCount;
 			struct CountryListEntry *countries;
-			if (!DBGetContactSetting(ci->hContact,ci->szProto,"Country",&dbv)) {
+			if ( !DBGetContactSetting( ci->hContact, ci->szProto, (ci->dwFlag & 0x7F)==CNF_COUNTRY ? "Country" : "CompanyCountry", &dbv )) {
 				CallService(MS_UTILS_GETCOUNTRYLIST,(WPARAM)&countryCount,(LPARAM)&countries);
 				for(i=0;i<countryCount;i++) {
 					if(countries[i].id!=dbv.wVal) continue;
