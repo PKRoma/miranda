@@ -512,6 +512,7 @@ static BOOL CALLBACK JabberAdvOptDlgProc( HWND hwndDlg, UINT msg, WPARAM wParam,
 		CheckDlgButton( hwndDlg, IDC_DISABLE_SASL, JGetByte( "Disable3920auth", FALSE ));
 		CheckDlgButton( hwndDlg, IDC_VALIDATEADD, JGetByte( "ValidateAddition", TRUE ));
 		CheckDlgButton( hwndDlg, IDC_ROSTER2BOOKMARK, JGetByte( "AddRoster2Bookmarks", FALSE ));
+		CheckDlgButton( hwndDlg, IDC_AUTOJOIN_BOOKMARKS, JGetByte( "AutoJoinBookmarks", FALSE ));
 		return TRUE;
 	}
 	case WM_COMMAND:
@@ -586,6 +587,7 @@ static BOOL CALLBACK JabberAdvOptDlgProc( HWND hwndDlg, UINT msg, WPARAM wParam,
 			JSetByte( "AutoJoinConferences", ( BYTE )IsDlgButtonChecked( hwndDlg, IDC_AUTOJOIN ));
 			JSetByte( "ValidateAddition",    ( BYTE )IsDlgButtonChecked( hwndDlg, IDC_VALIDATEADD ));
 			JSetByte( "AddRoster2Bookmarks", ( BYTE )IsDlgButtonChecked( hwndDlg, IDC_ROSTER2BOOKMARK));
+			JSetByte( "AutoJoinBookmarks",   ( BYTE )IsDlgButtonChecked( hwndDlg, IDC_AUTOJOIN_BOOKMARKS));
 			return TRUE;
 		}
 		break;

@@ -132,7 +132,7 @@ BEGIN
                     IDC_DOWNLOAD_OPENSSL,"Hyperlink",WS_TABSTOP,16,97,270,11
 END
 
-IDD_OPT_JABBER2 DIALOGEX 0, 0, 304, 211
+IDD_OPT_JABBER2 DIALOGEX 0, 0, 304, 221
 STYLE DS_SETFONT | DS_FIXEDSYS | WS_CHILD
 EXSTYLE WS_EX_CONTROLPARENT
 FONT 8, "MS Shell Dlg", 0, 0, 0x1
@@ -175,7 +175,10 @@ BEGIN
                     BS_AUTOCHECKBOX | WS_TABSTOP,16,152,280,10
     CONTROL         "Add room to Bookmarks when adding to roster",
                     IDC_ROSTER2BOOKMARK,"Button",BS_AUTOCHECKBOX | 
-                    WS_TABSTOP,16,189,279,10
+                    WS_TABSTOP,16,188,279,10
+    CONTROL         "Automatically join Bookmarks on login",
+                    IDC_AUTOJOIN_BOOKMARKS,"Button",BS_AUTOCHECKBOX | 
+                    WS_TABSTOP,16,199,279,10
 END
 
 IDD_INFO_JABBER DIALOGEX 0, 0, 221, 132
@@ -652,6 +655,8 @@ BEGIN
     GROUPBOX        "Bookmark Type",IDC_BOOKMARK_TYPE,7,7,205,24
     CONTROL         "URL",IDC_URL_RADIO,"Button",BS_AUTORADIOBUTTON,85,16,29,
                     10
+    CONTROL         "Auto-join",IDC_CHECK_BM_AUTOJOIN,"Button",
+                    BS_AUTOCHECKBOX | WS_TABSTOP,128,16,45,10
 END
 
 
@@ -677,7 +682,7 @@ BEGIN
         RIGHTMARGIN, 296
         VERTGUIDE, 9
         TOPMARGIN, 3
-        BOTTOMMARGIN, 199
+        BOTTOMMARGIN, 209
     END
 
     IDD_INFO_JABBER, DIALOG
@@ -950,6 +955,5 @@ IDI_BOOKMARKS           ICON                    "icos\\bookmarks.ico"
 
 /////////////////////////////////////////////////////////////////////////////
 #endif    // not APSTUDIO_INVOKED
-
 
 

@@ -50,6 +50,9 @@ static BOOL CALLBACK JabberAddBookmarkDlgProc( HWND hwndDlg, UINT msg, WPARAM wP
 				SendDlgItemMessage(hwndDlg, IDC_URL_RADIO, BM_SETCHECK, BST_CHECKED, 0);
 				EnableWindow( GetDlgItem( hwndDlg, IDC_NICK ), FALSE );
 				EnableWindow( GetDlgItem( hwndDlg, IDC_PASSWORD ), FALSE );
+				SendDlgItemMessage(hwndDlg, IDC_CHECK_BM_AUTOJOIN, BM_SETCHECK, BST_UNCHECKED, 0);
+				EnableWindow( GetDlgItem( hwndDlg, IDC_CHECK_BM_AUTOJOIN), FALSE );
+
 			}
 
 			EnableWindow( GetDlgItem( hwndDlg, IDC_ROOM_RADIO), FALSE );
@@ -61,9 +64,12 @@ static BOOL CALLBACK JabberAddBookmarkDlgProc( HWND hwndDlg, UINT msg, WPARAM wP
 			if (item->name) SetDlgItemText( hwndDlg, IDC_NAME, mir_tstrdup (item->name) );
 			if (item->nick) SetDlgItemText( hwndDlg, IDC_NICK, mir_tstrdup (item->nick) );
 			if (item->password) SetDlgItemText( hwndDlg, IDC_PASSWORD, mir_tstrdup (item->password) );
-			
+			if (item->bAutoJoin) SendDlgItemMessage(hwndDlg, IDC_CHECK_BM_AUTOJOIN, BM_SETCHECK, BST_CHECKED, 0);
 		}
-		else EnableWindow( GetDlgItem( hwndDlg, IDOK ), FALSE );
+		else {
+			EnableWindow( GetDlgItem( hwndDlg, IDOK ), FALSE );
+			SendDlgItemMessage(hwndDlg, IDC_ROOM_RADIO, BM_SETCHECK, BST_CHECKED, 0);
+		}
 		return TRUE;
 	case WM_COMMAND:
 		switch ( HIWORD(wParam) ) {
@@ -72,10 +78,13 @@ static BOOL CALLBACK JabberAddBookmarkDlgProc( HWND hwndDlg, UINT msg, WPARAM wP
 					case IDC_ROOM_RADIO:
 						EnableWindow( GetDlgItem( hwndDlg, IDC_NICK ), TRUE );
 						EnableWindow( GetDlgItem( hwndDlg, IDC_PASSWORD ), TRUE );
+						EnableWindow( GetDlgItem( hwndDlg, IDC_CHECK_BM_AUTOJOIN), TRUE );
 						break;
 					case IDC_URL_RADIO:
 						EnableWindow( GetDlgItem( hwndDlg, IDC_NICK ), FALSE );
 						EnableWindow( GetDlgItem( hwndDlg, IDC_PASSWORD ), FALSE );
+						SendDlgItemMessage(hwndDlg, IDC_CHECK_BM_AUTOJOIN, BM_SETCHECK, BST_UNCHECKED, 0);
+						EnableWindow( GetDlgItem( hwndDlg, IDC_CHECK_BM_AUTOJOIN), FALSE );
 						break;
 				}
 		}
@@ -118,6 +127,9 @@ static BOOL CALLBACK JabberAddBookmarkDlgProc( HWND hwndDlg, UINT msg, WPARAM wP
 
 			GetDlgItemText( hwndDlg, IDC_NAME, text, SIZEOF( text ));
 			item->name = mir_tstrdup(( text[0] == 0 ) ? roomJID : text );
+
+			item->bAutoJoin = (SendDlgItemMessage(hwndDlg, IDC_CHECK_BM_AUTOJOIN, BM_GETSTATE,0, 0) == BST_CHECKED );
+			
 			{
 				int iqId = JabberSerialNext();
 				JabberIqAdd( iqId, IQ_PROC_SETBOOKMARKS, JabberIqResultSetBookmarks);
@@ -505,5 +517,6 @@ int JabberAddEditBookmark( WPARAM wParam, LPARAM lParam )
 		DialogBoxParam( hInst, MAKEINTRESOURCE( IDD_BOOKMARK_ADD ), NULL, JabberAddBookmarkDlgProc, lParam);
 	return 0;
 }
+
 
 

@@ -184,6 +184,7 @@ enum JABBER_SESSION_TYPE
 };
 
 #define CAPS_BOOKMARK   0x0001
+#define CAPS_BOOKMARKS_LOADED 0x8000
 
 struct ThreadData {
 	ThreadData( JABBER_SESSION_TYPE parType );
