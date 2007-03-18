@@ -394,7 +394,7 @@ static struct LISTOPTIONSITEM lvItems[] = {
     0, _T("Place dividers in inactive sessions"), 0, LOI_TYPE_SETTING, (UINT_PTR)"usedividers", 0,
     0, _T("Use popup configuration for placing dividers"), 0, LOI_TYPE_SETTING, (UINT_PTR)"div_popupconfig", 0,
     0, _T("RTL is default text direction"), 0, LOI_TYPE_SETTING, (UINT_PTR)"rtldefault", 0,
-    0, _T("Support Math Module plugin"), 1, LOI_TYPE_SETTING, (UINT_PTR)"wantmathmod", 1,
+    //0, _T("Support Math Module plugin"), 1, LOI_TYPE_SETTING, (UINT_PTR)"wantmathmod", 1,
     0, _T("Log status changes"), 0, LOI_TYPE_SETTING, (UINT_PTR)"logstatus", 2,
     0, _T("Automatically copy selected text"), 0, LOI_TYPE_SETTING, (UINT_PTR)"autocopy", 2,
     0, _T("Use multiple background colors"), IDC_AUTOSELECTCOPY, LOI_TYPE_FLAG, (UINT_PTR)MWF_LOG_INDIVIDUALBKG, 0,
@@ -459,12 +459,13 @@ static BOOL CALLBACK DlgProcLogOptions(HWND hwndDlg, UINT msg, WPARAM wParam, LP
 				tvi.item.pszText = TranslateTS(lvItems[i].szName);
 				tvi.item.mask = TVIF_TEXT | TVIF_STATE | TVIF_PARAM;
 				tvi.item.lParam = i;
+                /*
 				if(lvItems[i].uType == LOI_TYPE_SETTING) {
 					if(!strcmp((char *)lvItems[i].lParam, "wantmathmod") && !ServiceExists(MATH_RTF_REPLACE_FORMULAE)) {
 						i++;
 						continue;
 					}
-				}
+				}*/
 				tvi.item.stateMask=TVIS_STATEIMAGEMASK;
 				if(lvItems[i].uType == LOI_TYPE_FLAG)
 					tvi.item.state = INDEXTOSTATEIMAGEMASK((dwFlags & (UINT)lvItems[i].lParam) ? 3 : 2);
@@ -1694,7 +1695,7 @@ void ReloadGlobals()
      myGlobals.m_RTLDefault = (int)DBGetContactSettingByte(NULL, SRMSGMOD_T, "rtldefault", 0);
      myGlobals.m_SplitterSaveOnClose = (int)DBGetContactSettingByte(NULL, SRMSGMOD_T, "splitsavemode", 1);
 #ifdef __MATHMOD_SUPPORT    		
-	 myGlobals.m_MathModAvail = ServiceExists(MATH_RTF_REPLACE_FORMULAE) && DBGetContactSettingByte(NULL, SRMSGMOD_T, "wantmathmod", 1);
+	 myGlobals.m_MathModAvail = ServiceExists(MATH_RTF_REPLACE_FORMULAE); // && DBGetContactSettingByte(NULL, SRMSGMOD_T, "wantmathmod", 1);
 #else
      myGlobals.m_MathModAvail = 0;
 #endif

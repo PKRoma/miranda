@@ -27,6 +27,7 @@
 #define IDC_CHAT_CLOSE                  1023
 #define IDC_NICKROW                     1024
 #define IDC_LOGLIMIT                    1024
+#define IDC_NICKROW2                    1025
 #define IDC_CHAT_SPIN1                  1028
 #define IDC_CHAT_SPIN2                  1029
 #define IDC_CHAT_SPIN3                  1030
@@ -68,8 +69,10 @@
 #define IDC_7                           1081
 #define IDC_STATIC_MESSAGE              1081
 #define IDC_8                           1082
+#define IDC_STATIC110                   1082
 #define IDC_9                           1083
 #define IDC_10                          1084
+#define IDC_STATIC112                   1085
 #define IDC_11                          1085
 #define IDC_CHAT_HISTORY                1111
 #define IDC_INFOPANELBG                 1124
@@ -100,15 +103,13 @@
 #define ID_SEARCH_WIKIPEDIA             40028
 #define ID_WIKIPEDIA_                   40029
 
-#define IDC_STATIC                      -1
-
 // Next default values for new objects
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NEXT_RESOURCE_VALUE        163
 #define _APS_NEXT_COMMAND_VALUE         40030
-#define _APS_NEXT_CONTROL_VALUE         1082
+#define _APS_NEXT_CONTROL_VALUE         1084
 #define _APS_NEXT_SYMED_VALUE           101
 #endif
 #endif

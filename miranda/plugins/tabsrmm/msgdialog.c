@@ -3262,11 +3262,17 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                         if (GetForegroundWindow() == hwndContainer)
                             SendMessage(hwndDlg, DM_UPDATEWINICON, 0, 0);
                     } else {
+                        struct MessageWindowData *dat_active = NULL;
                         dat->showTyping = 0;
+
                         DM_UpdateLastMessage(hwndDlg, dat);
                         SendMessage(hwndDlg, DM_UPDATEWINICON, 0, 0);
                         HandleIconFeedback(hwndDlg, dat, (HICON)-1);
-                        SendMessage(hwndContainer, DM_UPDATETITLE, 0, 0);
+                        dat_active = (struct MessageWindowData *)GetWindowLong(m_pContainer->hwndActive, GWL_USERDATA);
+                        if(dat_active && dat_active->bType == SESSIONTYPE_IM)
+                            SendMessage(hwndContainer, DM_UPDATETITLE, 0, 0);
+                        else
+                            SendMessage(hwndContainer, DM_UPDATETITLE, (WPARAM)m_pContainer->hwndActive, (LPARAM)1);
                         if(!(m_pContainer->dwFlags & CNT_NOFLASH) && dat->showTypingWin)
                             ReflashContainer(m_pContainer);
                     }

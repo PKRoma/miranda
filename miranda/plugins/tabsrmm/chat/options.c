@@ -489,8 +489,8 @@ static void InitSetting(TCHAR** ppPointer, char* pszSetting, TCHAR* pszDefault)
 
 #define OPT_FIXHEADINGS (WM_USER+1)
 
-static UINT _o1controls[] = {IDC_CHECKBOXES, IDC_GROUP, IDC_NICKROW, IDC_CHAT_SPIN2, IDC_STATIC_ADD, IDC_STATIC_ULIST,
-    IDC_STATIC_OTHER, 0
+static UINT _o1controls[] = {IDC_CHECKBOXES, IDC_GROUP, IDC_STATIC_ADD,
+    IDC_STATIC_OTHER, IDC_LOGGING, IDC_LOGDIRECTORY, IDC_FONTCHOOSE, IDC_CHAT_SPIN3, IDC_LIMIT, IDC_STATIC110, IDC_STATIC112, 0
 };
     
 BOOL CALLBACK DlgProcOptions1(HWND hwndDlg,UINT uMsg,WPARAM wParam,LPARAM lParam)
@@ -505,13 +505,13 @@ BOOL CALLBACK DlgProcOptions1(HWND hwndDlg,UINT uMsg,WPARAM wParam,LPARAM lParam
 	case WM_INITDIALOG:
 		TranslateDialogDefault(hwndDlg);
 		if (g_chat_integration_enabled) {
+            char szTemp[MAX_PATH];
 			HIMAGELIST himlOptions;
+
 			SetWindowLong(GetDlgItem(hwndDlg,IDC_CHECKBOXES),GWL_STYLE,GetWindowLong(GetDlgItem(hwndDlg,IDC_CHECKBOXES),GWL_STYLE)|TVS_NOHSCROLL|TVS_CHECKBOXES);
 			himlOptions = (HIMAGELIST)SendDlgItemMessage(hwndDlg, IDC_CHECKBOXES, TVM_SETIMAGELIST, TVSIL_STATE, (LPARAM)CreateStateImageList());
 			if (himlOptions)
 				ImageList_Destroy(himlOptions);
-			SendDlgItemMessage(hwndDlg,IDC_CHAT_SPIN2,UDM_SETRANGE,0,MAKELONG(255,10));
-			SendDlgItemMessage(hwndDlg,IDC_CHAT_SPIN2,UDM_SETPOS,0,MAKELONG(DBGetContactSettingByte(NULL,"Chat","NicklistRowDist",12),0));
 			hListHeading1 = InsertBranch(GetDlgItem(hwndDlg, IDC_CHECKBOXES), TranslateT("Appearance and functionality of chat room windows"), DBGetContactSettingByte(NULL, "Chat", "Branch1Exp", 0)?TRUE:FALSE);
 			hListHeading2 = InsertBranch(GetDlgItem(hwndDlg, IDC_CHECKBOXES), TranslateT("Appearance of the message log"), DBGetContactSettingByte(NULL, "Chat", "Branch2Exp", 0)?TRUE:FALSE);
 			hListHeading3 = InsertBranch(GetDlgItem(hwndDlg, IDC_CHECKBOXES), TranslateT("Default events to show in new chat rooms if the \'event filter\' is enabled"), DBGetContactSettingByte(NULL, "Chat", "Branch3Exp", 0)?TRUE:FALSE);
@@ -532,7 +532,16 @@ BOOL CALLBACK DlgProcOptions1(HWND hwndDlg,UINT uMsg,WPARAM wParam,LPARAM lParam
 				SetWindowText(GetDlgItem(hwndDlg, IDC_GROUP), pszGroup);
 				mir_free(pszGroup);
 				ShowWindow(GetDlgItem(hwndDlg, IDC_STATIC_MESSAGE), SW_HIDE);
-		}	}
+            }	
+            SendDlgItemMessage(hwndDlg,IDC_CHAT_SPIN3,UDM_SETRANGE,0,MAKELONG(10000,0));
+            SendDlgItemMessage(hwndDlg,IDC_CHAT_SPIN3,UDM_SETPOS,0,MAKELONG(DBGetContactSettingWord(NULL,"Chat","LoggingLimit",100),0));
+            CallService(MS_UTILS_PATHTORELATIVE, (WPARAM)g_Settings.pszLogDir, (LPARAM)szTemp );
+            SetDlgItemTextA(hwndDlg, IDC_LOGDIRECTORY, szTemp);
+            CheckDlgButton(hwndDlg, IDC_LOGGING, g_Settings.LoggingEnabled);
+            EnableWindow(GetDlgItem(hwndDlg, IDC_LOGDIRECTORY), g_Settings.LoggingEnabled?TRUE:FALSE);
+            EnableWindow(GetDlgItem(hwndDlg, IDC_FONTCHOOSE), g_Settings.LoggingEnabled?TRUE:FALSE);
+            EnableWindow(GetDlgItem(hwndDlg, IDC_LIMIT), g_Settings.LoggingEnabled?TRUE:FALSE);
+        }
 		else {
 			int i = 0;
 
@@ -555,9 +564,47 @@ BOOL CALLBACK DlgProcOptions1(HWND hwndDlg,UINT uMsg,WPARAM wParam,LPARAM lParam
             DBWriteContactSettingByte(NULL, "PluginDisable", "chat.dll", (BYTE)(IsDlgButtonChecked(hwndDlg, IDC_CHAT_ENABLE) ? 1 : 0));
             MessageBox(0, TranslateT("You should now immediatly restart Miranda to make this change take effect."), TranslateT("tabSRMM Message"), MB_OK);
         }
-		if (	(LOWORD(wParam) == IDC_NICKROW
-				|| LOWORD(wParam) == IDC_GROUP)
+		if (	(LOWORD(wParam) == IDC_GROUP || LOWORD(wParam) == IDC_LIMIT || LOWORD(wParam) == IDC_LOGDIRECTORY)
 				&& (HIWORD(wParam)!=EN_CHANGE || (HWND)lParam!=GetFocus()))	return 0;
+
+        switch(LOWORD(wParam)) {
+            case IDC_LOGGING:
+                if (g_chat_integration_enabled) {
+                    EnableWindow(GetDlgItem(hwndDlg, IDC_LOGDIRECTORY), IsDlgButtonChecked(hwndDlg, IDC_LOGGING) == BST_CHECKED?TRUE:FALSE);
+                    EnableWindow(GetDlgItem(hwndDlg, IDC_FONTCHOOSE), IsDlgButtonChecked(hwndDlg, IDC_LOGGING) == BST_CHECKED?TRUE:FALSE);
+                    EnableWindow(GetDlgItem(hwndDlg, IDC_LIMIT), IsDlgButtonChecked(hwndDlg, IDC_LOGGING) == BST_CHECKED?TRUE:FALSE);
+                }
+                break;
+            case  IDC_FONTCHOOSE:
+            {
+                char szDirectory[MAX_PATH];
+                LPITEMIDLIST idList;
+                LPMALLOC psMalloc; 
+                BROWSEINFOA bi = {0};
+
+                if (SUCCEEDED(CoGetMalloc(1,&psMalloc))) 
+                {
+                    char szTemp[MAX_PATH];
+                    bi.hwndOwner=hwndDlg;
+                    bi.pszDisplayName=szDirectory;
+                    bi.lpszTitle=Translate("Select Folder");
+                    bi.ulFlags=BIF_NEWDIALOGSTYLE|BIF_EDITBOX|BIF_RETURNONLYFSDIRS;			
+                    bi.lpfn=BrowseCallbackProc;
+                    bi.lParam=(LPARAM)szDirectory;
+
+                    idList=SHBrowseForFolderA(&bi);
+                    if (idList) {
+                        SHGetPathFromIDListA(idList,szDirectory);
+                        lstrcatA(szDirectory,"\\");
+                    CallService(MS_UTILS_PATHTORELATIVE, (WPARAM)szDirectory, (LPARAM)szTemp );
+                    SetWindowTextA(GetDlgItem(hwndDlg, IDC_LOGDIRECTORY), lstrlenA(szTemp) > 1?szTemp:"Logs\\");
+                    }
+                    psMalloc->lpVtbl->Free(psMalloc,idList);
+                    psMalloc->lpVtbl->Release(psMalloc);
+                }
+                break;
+            }
+        }
 
 		if (lParam != (LPARAM)NULL)
 			SendMessage(GetParent(hwndDlg), PSM_CHANGED, 0, 0);
@@ -621,6 +668,25 @@ BOOL CALLBACK DlgProcOptions1(HWND hwndDlg,UINT uMsg,WPARAM wParam,LPARAM lParam
                             TCHAR *pszText = NULL;
                             BYTE b;
 
+                            iLen = GetWindowTextLength(GetDlgItem(hwndDlg, IDC_LOGDIRECTORY));
+                            if ( iLen > 0 ) {
+                                char *pszText1 = malloc(iLen + 2);
+                                GetDlgItemTextA(hwndDlg, IDC_LOGDIRECTORY, pszText1, iLen + 1);
+                                DBWriteContactSettingString(NULL, "Chat", "LogDirectory", pszText1);
+	                            CallService(MS_UTILS_PATHTOABSOLUTE, (WPARAM)pszText, (LPARAM)g_Settings.pszLogDir);
+                            }
+                            else 
+                                DBDeleteContactSetting(NULL, "Chat", "LogDirectory");
+
+                            g_Settings.LoggingEnabled = IsDlgButtonChecked(hwndDlg, IDC_LOGGING) == BST_CHECKED?TRUE:FALSE;
+                            DBWriteContactSettingByte(NULL, "Chat", "LoggingEnabled", (BYTE)g_Settings.LoggingEnabled);
+                            if ( g_Settings.LoggingEnabled )
+                                if ( !PathIsDirectoryA( g_Settings.pszLogDir ))
+                                    CreateDirectoryA( g_Settings.pszLogDir, NULL );
+
+                            iLen = SendDlgItemMessage(hwndDlg,IDC_CHAT_SPIN3,UDM_GETPOS,0,0);
+                            DBWriteContactSettingWord(NULL, "Chat", "LoggingLimit", (WORD)iLen);
+
                             iLen = GetWindowTextLength(GetDlgItem(hwndDlg, IDC_GROUP));
                             if (iLen > 0)
                             {
@@ -634,11 +700,6 @@ BOOL CALLBACK DlgProcOptions1(HWND hwndDlg,UINT uMsg,WPARAM wParam,LPARAM lParam
                             if (pszText)
                                 free(pszText);
 
-                            iLen = SendDlgItemMessage(hwndDlg,IDC_CHAT_SPIN2,UDM_GETPOS,0,0);
-                            if (iLen > 0)
-                                DBWriteContactSettingByte(NULL, "Chat", "NicklistRowDist", (BYTE)iLen);
-                            else
-                                DBDeleteContactSetting(NULL, "Chat", "NicklistRowDist");
                             b = DBGetContactSettingByte(NULL, "Chat", "Tabs", 1);
                             SaveBranch(GetDlgItem(hwndDlg, IDC_CHECKBOXES), branch1, sizeof(branch1) / sizeof(branch1[0]));
                             SaveBranch(GetDlgItem(hwndDlg, IDC_CHECKBOXES), branch2, sizeof(branch2) / sizeof(branch2[0]));
@@ -703,8 +764,9 @@ static void LoadFontsToList(HWND hwndDlg)
     SendDlgItemMessage(hwndDlg, IDC_CHAT_FONTCOLOR, CPM_SETDEFAULTCOLOUR, 0, fontOptionsList[0].defColour);
 }
 
-static UINT _o2chatcontrols[] = { IDC_CHAT_SPIN2, IDC_CHAT_SPIN3, IDC_LOGDIRECTORY, IDC_LOGTIMESTAMP, IDC_TIMESTAMP,
-    IDC_OUTSTAMP, IDC_INSTAMP, IDC_HIGHLIGHT, IDC_HIGHLIGHTWORDS, IDC_LOGGING, IDC_LOGDIRECTORY, IDC_FONTCHOOSE, IDC_LIMIT, 0 };
+static UINT _o2chatcontrols[] = { IDC_CHAT_SPIN2, IDC_LOGTIMESTAMP, IDC_TIMESTAMP,
+    IDC_OUTSTAMP, IDC_INSTAMP, IDC_HIGHLIGHT, IDC_HIGHLIGHTWORDS, IDC_CHAT_SPIN2, IDC_CHAT_SPIN3, IDC_NICKROW2, IDC_LOGLIMIT, 
+    IDC_NICKCOLOR, IDC_NICKCOLORS, 0 };
     
 static BOOL CALLBACK DlgProcOptions2(HWND hwndDlg,UINT uMsg,WPARAM wParam,LPARAM lParam)
 {
@@ -715,7 +777,6 @@ static BOOL CALLBACK DlgProcOptions2(HWND hwndDlg,UINT uMsg,WPARAM wParam,LPARAM
 	switch (uMsg) {
 	case WM_INITDIALOG:
 	{
-		char szTemp[MAX_PATH];
         COLORREF defwndcol;
         
 		TranslateDialogDefault(hwndDlg);
@@ -724,10 +785,8 @@ static BOOL CALLBACK DlgProcOptions2(HWND hwndDlg,UINT uMsg,WPARAM wParam,LPARAM
         if (g_chat_integration_enabled) {
             SendDlgItemMessage(hwndDlg,IDC_CHAT_SPIN2,UDM_SETRANGE,0,MAKELONG(5000,0));
             SendDlgItemMessage(hwndDlg,IDC_CHAT_SPIN2,UDM_SETPOS,0,MAKELONG(DBGetContactSettingWord(NULL,"Chat","LogLimit",100),0));
-            SendDlgItemMessage(hwndDlg,IDC_CHAT_SPIN3,UDM_SETRANGE,0,MAKELONG(10000,0));
-            SendDlgItemMessage(hwndDlg,IDC_CHAT_SPIN3,UDM_SETPOS,0,MAKELONG(DBGetContactSettingWord(NULL,"Chat","LoggingLimit",100),0));
-            CallService(MS_UTILS_PATHTORELATIVE, (WPARAM)g_Settings.pszLogDir, (LPARAM)szTemp );
-            SetDlgItemTextA(hwndDlg, IDC_LOGDIRECTORY, szTemp);
+            SendDlgItemMessage(hwndDlg,IDC_CHAT_SPIN3,UDM_SETRANGE,0,MAKELONG(255,10));
+            SendDlgItemMessage(hwndDlg,IDC_CHAT_SPIN3,UDM_SETPOS,0,MAKELONG(DBGetContactSettingByte(NULL,"Chat","NicklistRowDist",12),0));
             SetDlgItemText(hwndDlg, IDC_HIGHLIGHTWORDS, g_Settings.pszHighlightWords);
             SetDlgItemText(hwndDlg, IDC_LOGTIMESTAMP, g_Settings.pszTimeStampLog);
             SetDlgItemText(hwndDlg, IDC_TIMESTAMP, g_Settings.pszTimeStamp);
@@ -735,10 +794,6 @@ static BOOL CALLBACK DlgProcOptions2(HWND hwndDlg,UINT uMsg,WPARAM wParam,LPARAM
             SetDlgItemText(hwndDlg, IDC_INSTAMP, g_Settings.pszIncomingNick);
             CheckDlgButton(hwndDlg, IDC_HIGHLIGHT, g_Settings.HighlightEnabled);
             EnableWindow(GetDlgItem(hwndDlg, IDC_HIGHLIGHTWORDS), g_Settings.HighlightEnabled?TRUE:FALSE);
-            CheckDlgButton(hwndDlg, IDC_LOGGING, g_Settings.LoggingEnabled);
-            EnableWindow(GetDlgItem(hwndDlg, IDC_LOGDIRECTORY), g_Settings.LoggingEnabled?TRUE:FALSE);
-            EnableWindow(GetDlgItem(hwndDlg, IDC_FONTCHOOSE), g_Settings.LoggingEnabled?TRUE:FALSE);
-            EnableWindow(GetDlgItem(hwndDlg, IDC_LIMIT), g_Settings.LoggingEnabled?TRUE:FALSE);
         } else {
             int i = 0;
 
@@ -904,10 +959,9 @@ static BOOL CALLBACK DlgProcOptions2(HWND hwndDlg,UINT uMsg,WPARAM wParam,LPARAM
 				|| LOWORD(wParam) == IDC_OUTSTAMP
 				|| LOWORD(wParam) == IDC_TIMESTAMP
 				|| LOWORD(wParam) == IDC_LOGLIMIT
+                || LOWORD(wParam) == IDC_NICKROW2
 				|| LOWORD(wParam) == IDC_HIGHLIGHTWORDS
-				|| LOWORD(wParam) == IDC_LOGDIRECTORY
-				|| LOWORD(wParam) == IDC_LOGTIMESTAMP
-				|| LOWORD(wParam) == IDC_LIMIT)
+				|| LOWORD(wParam) == IDC_LOGTIMESTAMP)
 				&& (HIWORD(wParam)!=EN_CHANGE || (HWND)lParam!=GetFocus()))	return 0;
 
 		switch (LOWORD(wParam)) {
@@ -937,13 +991,6 @@ static BOOL CALLBACK DlgProcOptions2(HWND hwndDlg,UINT uMsg,WPARAM wParam,LPARAM
 			DeleteObject(hBkgColourBrush);
 			hBkgColourBrush = CreateSolidBrush(SendDlgItemMessage(hwndDlg, IDC_LOGBKG, CPM_GETCOLOUR, 0, 0));
 			InvalidateRect(GetDlgItem(hwndDlg, IDC_CHAT_FONTLIST), NULL, TRUE);
-			break;
-        case IDC_LOGGING:
-            if (g_chat_integration_enabled) {
-                EnableWindow(GetDlgItem(hwndDlg, IDC_LOGDIRECTORY), IsDlgButtonChecked(hwndDlg, IDC_LOGGING) == BST_CHECKED?TRUE:FALSE);
-                EnableWindow(GetDlgItem(hwndDlg, IDC_FONTCHOOSE), IsDlgButtonChecked(hwndDlg, IDC_LOGGING) == BST_CHECKED?TRUE:FALSE);
-                EnableWindow(GetDlgItem(hwndDlg, IDC_LIMIT), IsDlgButtonChecked(hwndDlg, IDC_LOGGING) == BST_CHECKED?TRUE:FALSE);
-            }
 			break;
 		case IDC_CHAT_FONTLIST:
 			if (HIWORD(wParam) == LBN_SELCHANGE) {
@@ -1003,35 +1050,6 @@ static BOOL CALLBACK DlgProcOptions2(HWND hwndDlg,UINT uMsg,WPARAM wParam,LPARAM
 			}
 			return TRUE;
 		}
-		case  IDC_FONTCHOOSE:
-		{
-			char szDirectory[MAX_PATH];
-			LPITEMIDLIST idList;
-			LPMALLOC psMalloc; 
-			BROWSEINFOA bi = {0};
-
-			if (SUCCEEDED(CoGetMalloc(1,&psMalloc))) 
-			{
-				char szTemp[MAX_PATH];
-				bi.hwndOwner=hwndDlg;
-				bi.pszDisplayName=szDirectory;
-				bi.lpszTitle=Translate("Select Folder");
-				bi.ulFlags=BIF_NEWDIALOGSTYLE|BIF_EDITBOX|BIF_RETURNONLYFSDIRS;			
-				bi.lpfn=BrowseCallbackProc;
-				bi.lParam=(LPARAM)szDirectory;
-
-				idList=SHBrowseForFolderA(&bi);
-				if (idList) {
-					SHGetPathFromIDListA(idList,szDirectory);
-					lstrcatA(szDirectory,"\\");
-				CallService(MS_UTILS_PATHTORELATIVE, (WPARAM)szDirectory, (LPARAM)szTemp );
-				SetWindowTextA(GetDlgItem(hwndDlg, IDC_LOGDIRECTORY), lstrlenA(szTemp) > 1?szTemp:"Logs\\");
-				}
-				psMalloc->lpVtbl->Free(psMalloc,idList);
-				psMalloc->lpVtbl->Release(psMalloc);
-			}
-			break;
-		}
 		case IDC_CHAT_FONTCOLOR:
 		{
 			int selItems[sizeof(IM_fontOptionsList) / sizeof(IM_fontOptionsList[0])];
@@ -1078,15 +1096,11 @@ static BOOL CALLBACK DlgProcOptions2(HWND hwndDlg,UINT uMsg,WPARAM wParam,LPARAM
                 else 
                     DBDeleteContactSetting(NULL, "Chat", "HighlightWords");
 
-                iLen = GetWindowTextLength(GetDlgItem(hwndDlg, IDC_LOGDIRECTORY));
-                if ( iLen > 0 ) {
-                    pszText = realloc(pszText, iLen+1);
-                    GetDlgItemTextA(hwndDlg, IDC_LOGDIRECTORY, pszText,iLen+1);
-                    DBWriteContactSettingString(NULL, "Chat", "LogDirectory", pszText);
-                }
-                else DBDeleteContactSetting(NULL, "Chat", "LogDirectory");
-
-                CallService(MS_UTILS_PATHTOABSOLUTE, (WPARAM)pszText, (LPARAM)g_Settings.pszLogDir);
+                iLen = SendDlgItemMessage(hwndDlg,IDC_CHAT_SPIN3,UDM_GETPOS,0,0);
+                if (iLen > 0)
+                    DBWriteContactSettingByte(NULL, "Chat", "NicklistRowDist", (BYTE)iLen);
+                else
+                    DBDeleteContactSetting(NULL, "Chat", "NicklistRowDist");
 
                 iLen = GetWindowTextLength(GetDlgItem(hwndDlg, IDC_LOGTIMESTAMP));
                 if ( iLen > 0 ) {
@@ -1123,16 +1137,8 @@ static BOOL CALLBACK DlgProcOptions2(HWND hwndDlg,UINT uMsg,WPARAM wParam,LPARAM
                 g_Settings.HighlightEnabled = IsDlgButtonChecked(hwndDlg, IDC_HIGHLIGHT) == BST_CHECKED?TRUE:FALSE;
                 DBWriteContactSettingByte(NULL, "Chat", "HighlightEnabled", (BYTE)g_Settings.HighlightEnabled);
 
-                g_Settings.LoggingEnabled = IsDlgButtonChecked(hwndDlg, IDC_LOGGING) == BST_CHECKED?TRUE:FALSE;
-                DBWriteContactSettingByte(NULL, "Chat", "LoggingEnabled", (BYTE)g_Settings.LoggingEnabled);
-                if ( g_Settings.LoggingEnabled )
-                    if ( !PathIsDirectoryA( g_Settings.pszLogDir ))
-                        CreateDirectoryA( g_Settings.pszLogDir, NULL );
-
                 iLen = SendDlgItemMessage(hwndDlg,IDC_CHAT_SPIN2,UDM_GETPOS,0,0);
                 DBWriteContactSettingWord(NULL, "Chat", "LogLimit", (WORD)iLen);
-                iLen = SendDlgItemMessage(hwndDlg,IDC_CHAT_SPIN3,UDM_GETPOS,0,0);
-                DBWriteContactSettingWord(NULL, "Chat", "LoggingLimit", (WORD)iLen);
             }
             
 
