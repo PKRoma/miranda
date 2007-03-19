@@ -29,7 +29,6 @@ Last change by : $Author: ghazan $
 #include "resource.h"
 #include "jabber_iq.h"
 
-void JabberRegisterAgent( HWND hwndDlg, TCHAR* jid );
 /////////////////////////////////////////////////////////////////////////////////////////
 // Bookmarks editor window
 
@@ -46,30 +45,17 @@ static BOOL CALLBACK JabberAddBookmarkDlgProc( HWND hwndDlg, UINT msg, WPARAM wP
 		hwndJabberAddBookmark= hwndDlg;
 		TranslateDialogDefault( hwndDlg );
 		if ( item=(JABBER_LIST_ITEM* )lParam ){
-			if (!lstrcmp( item->type, _T("conference") )) {
-				_tcstok( item->jid, _T( "@" ));
-				if (!_tcstok( NULL, _T( "@" ))) {	  //no room name - consider it is transport
-					SendDlgItemMessage(hwndDlg, IDC_AGENT_RADIO, BM_SETCHECK, BST_CHECKED, 0);
-					EnableWindow( GetDlgItem( hwndDlg, IDC_NICK ), FALSE );
-					EnableWindow( GetDlgItem( hwndDlg, IDC_PASSWORD ), FALSE );
-				} else {
-					SendDlgItemMessage(hwndDlg, IDC_ROOM_RADIO, BM_SETCHECK, BST_CHECKED, 0);
-				}
-
-			}
+			if (!lstrcmp( item->type, _T("conference") )) SendDlgItemMessage(hwndDlg, IDC_ROOM_RADIO, BM_SETCHECK, BST_CHECKED, 0);
 			else {
 				SendDlgItemMessage(hwndDlg, IDC_URL_RADIO, BM_SETCHECK, BST_CHECKED, 0);
 				EnableWindow( GetDlgItem( hwndDlg, IDC_NICK ), FALSE );
 				EnableWindow( GetDlgItem( hwndDlg, IDC_PASSWORD ), FALSE );
 				SendDlgItemMessage(hwndDlg, IDC_CHECK_BM_AUTOJOIN, BM_SETCHECK, BST_UNCHECKED, 0);
 				EnableWindow( GetDlgItem( hwndDlg, IDC_CHECK_BM_AUTOJOIN), FALSE );
-
 			}
 
 			EnableWindow( GetDlgItem( hwndDlg, IDC_ROOM_RADIO), FALSE );
 			EnableWindow( GetDlgItem( hwndDlg, IDC_URL_RADIO), FALSE );
-			EnableWindow( GetDlgItem( hwndDlg, IDC_AGENT_RADIO), FALSE );
-			EnableWindow( GetDlgItem( hwndDlg, IDC_CHECK_BM_AUTOJOIN), FALSE );
 
 			currJID = mir_tstrdup(item->jid);
 			SetWindowLong( hwndDlg, GWL_USERDATA, ( LONG ) currJID );
@@ -78,8 +64,6 @@ static BOOL CALLBACK JabberAddBookmarkDlgProc( HWND hwndDlg, UINT msg, WPARAM wP
 			if (item->nick) SetDlgItemText( hwndDlg, IDC_NICK, mir_tstrdup (item->nick) );
 			if (item->password) SetDlgItemText( hwndDlg, IDC_PASSWORD, mir_tstrdup (item->password) );
 			if (item->bAutoJoin) SendDlgItemMessage(hwndDlg, IDC_CHECK_BM_AUTOJOIN, BM_SETCHECK, BST_CHECKED, 0);
-			if (SendDlgItemMessage(hwndDlg, IDC_ROOM_JID, BM_GETSTATE,0, 0) == BST_CHECKED )
-				EnableWindow( GetDlgItem( hwndDlg, IDC_CHECK_BM_AUTOJOIN), TRUE );
 		}
 		else {
 			EnableWindow( GetDlgItem( hwndDlg, IDOK ), FALSE );
@@ -95,7 +79,6 @@ static BOOL CALLBACK JabberAddBookmarkDlgProc( HWND hwndDlg, UINT msg, WPARAM wP
 						EnableWindow( GetDlgItem( hwndDlg, IDC_PASSWORD ), TRUE );
 						EnableWindow( GetDlgItem( hwndDlg, IDC_CHECK_BM_AUTOJOIN), TRUE );
 						break;
-					case IDC_AGENT_RADIO:
 					case IDC_URL_RADIO:
 						EnableWindow( GetDlgItem( hwndDlg, IDC_NICK ), FALSE );
 						EnableWindow( GetDlgItem( hwndDlg, IDC_PASSWORD ), FALSE );
@@ -387,17 +370,12 @@ static BOOL CALLBACK JabberBookmarksDlgProc( HWND hwndDlg, UINT msg, WPARAM wPar
 							ItemNick = mir_tstrdup(text);
 
 							ListView_SetItemState( lv, lvItem.iItem, 0, LVIS_SELECTED ); // Unselect the item
-							/* some hack for using bookmark to transport not under XEP-0048 */
-							if (!server) {	//the room name is not provided let consider that it is transport and send request to registration
-								JabberRegisterAgent( NULL, room );
-							}
-							else {
-								TCHAR *pass;
-								if (item->password && item->password[0]!=_T('\0')) {pass = mir_tstrdup(item->password);}
-								else pass = _T("");
-								if (ItemNick && ItemNick[0]!=_T('\0')) {JabberGroupchatJoinRoom( server, p, ItemNick, pass );}
-								else JabberGroupchatJoinRoom( server, p, JabberNickFromJID(jabberJID), pass );
-							}
+
+							TCHAR *pass;
+							if (item->password && item->password[0]!=_T('\0')) {pass = mir_tstrdup(item->password);}
+							else pass = _T("");
+							if (ItemNick && ItemNick[0]!=_T('\0')) {JabberGroupchatJoinRoom( server, p, ItemNick, pass );}
+							else JabberGroupchatJoinRoom( server, p, JabberNickFromJID(jabberJID), pass );
 
 						}
 						else JabberChatDllError();
