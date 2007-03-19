@@ -1313,7 +1313,7 @@ void CreateViewModeFrame()
     wndclass.cbClsExtra = 0;
     wndclass.cbWndExtra = 0;
     wndclass.hInstance = g_hInst;
-    wndclass.hIcon = LoadSkinnedIcon(SKINICON_OTHER_MIRANDA);
+    //wndclass.hIcon = LoadSkinnedIcon(SKINICON_OTHER_MIRANDA);
     wndclass.hCursor = LoadCursor(NULL, IDC_ARROW);
     wndclass.hbrBackground = (HBRUSH) (COLOR_3DFACE);
     wndclass.lpszMenuName = 0;
@@ -1324,9 +1324,9 @@ void CreateViewModeFrame()
     ZeroMemory(&frame, sizeof(frame));
     frame.cbSize = sizeof(frame);
     frame.name = "View modes";
-    frame.hIcon = 0;
+    frame.hIcon = LoadSkinnedIcon(SKINICON_OTHER_MIRANDA);/*0;*/
     frame.height = 18;
-    frame.TBname = "View modes";
+    frame.TBname = Translate("View modes");
     frame.Flags=F_VISIBLE|F_SHOWTBTIP|F_NOBORDER|F_NO_SUBCONTAINER;
     frame.align = alBottom;
     frame.hWnd = CreateWindowEx(0, _T("CLVMFrameWindow"), _T(CLVM_MODULE), WS_VISIBLE | WS_CHILD | WS_TABSTOP | WS_CLIPCHILDREN, 0, 0, 20, 20, pcli->hwndContactList, (HMENU) 0, g_hInst, NULL);
@@ -1516,4 +1516,5 @@ void ApplyViewMode(const char *Name)
     pcli->pfnClcBroadcast(CLM_AUTOREBUILD, 0, 0);
 //    SetButtonStates(pcli->hwndContactList);
 }
+
 

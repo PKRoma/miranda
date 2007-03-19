@@ -343,7 +343,7 @@ int Cache_GetTextThreadProc(void * lpParam)
                 CacheAskChain mpChain={0};
                 struct SHORTDATA dat2={0};
                 if (!GetCacheChain(&mpChain)) break;
-                if (mpChain.dat==NULL || mpChain.dat->hWnd==data.hWnd) dat=&data;
+                if (mpChain.dat==NULL || (!IsBadReadPtr(mpChain.dat,sizeof(mpChain.dat)) && mpChain.dat->hWnd==data.hWnd))	dat=&data;
                 else
                 {        
                     cache_CallProcSync(CLUI_SyncGetShortData,(WPARAM)mpChain.dat->hWnd,(LPARAM)&dat2);       

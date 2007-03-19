@@ -170,22 +170,9 @@ int MakeVer(a,b,c,d)
 }
 
 __declspec(dllexport) PLUGININFOEX* MirandaPluginInfoEx(DWORD mirandaVersion)
-{
+{	
 	if ( mirandaVersion < MINIMAL_COREVERSION_NUM )
-	{
-		if (0) {
-			char temp[255];
-			sprintf(temp, "This version of the Modern contact list requires Miranda Core version %d.%d.%d build #%d (%s) or later",MINIMAL_COREVERSION,
-				#ifdef _UNICODE
-					"UNICODE"
-				#else
-					"ANSI"
-				#endif
-				);
-			MessageBoxA( NULL, temp, "Error", MB_OK );
-		}
 		return NULL;
-	}
     pluginInfo.version=MakeVer(PRODUCT_VERSION);
 	return &pluginInfo;
 }
@@ -230,7 +217,7 @@ int __declspec(dllexport) CListInitialise(PLUGINLINK * link)
 {
 	int rc=0;
 	pluginLink=link;
-	#ifdef _DEBUG
+#ifdef _DEBUG
 		//_CrtSetBreakAlloc(7680);
 	#endif
 	memset(&memoryManagerInterface,0,sizeof(memoryManagerInterface));
