@@ -47,11 +47,11 @@ static BOOL CALLBACK JabberAddBookmarkDlgProc( HWND hwndDlg, UINT msg, WPARAM wP
 		TranslateDialogDefault( hwndDlg );
 		if ( item=(JABBER_LIST_ITEM* )lParam ){
 			if (!lstrcmp( item->type, _T("conference") )) {
-				_tcstok( item->type, _T( "@" ));
+				_tcstok( item->jid, _T( "@" ));
 				if (!_tcstok( NULL, _T( "@" ))) {	  //no room name - consider it is transport
 					SendDlgItemMessage(hwndDlg, IDC_AGENT_RADIO, BM_SETCHECK, BST_CHECKED, 0);
 					EnableWindow( GetDlgItem( hwndDlg, IDC_NICK ), FALSE );
-					EnableWindow( GetDlgItem( hwndDlg, IDC_PASSWORD ), FALSE );				
+					EnableWindow( GetDlgItem( hwndDlg, IDC_PASSWORD ), FALSE );
 				} else {
 					SendDlgItemMessage(hwndDlg, IDC_ROOM_RADIO, BM_SETCHECK, BST_CHECKED, 0);
 				}
@@ -68,7 +68,7 @@ static BOOL CALLBACK JabberAddBookmarkDlgProc( HWND hwndDlg, UINT msg, WPARAM wP
 
 			EnableWindow( GetDlgItem( hwndDlg, IDC_ROOM_RADIO), FALSE );
 			EnableWindow( GetDlgItem( hwndDlg, IDC_URL_RADIO), FALSE );
-			EnableWindow( GetDlgItem( hwndDlg, IDC_AGENT_RADIO), FALSE );			
+			EnableWindow( GetDlgItem( hwndDlg, IDC_AGENT_RADIO), FALSE );
 			EnableWindow( GetDlgItem( hwndDlg, IDC_CHECK_BM_AUTOJOIN), FALSE );
 
 			currJID = mir_tstrdup(item->jid);
@@ -104,7 +104,7 @@ static BOOL CALLBACK JabberAddBookmarkDlgProc( HWND hwndDlg, UINT msg, WPARAM wP
 						break;
 				}
 		}
-//		break;	
+//		break;
 		switch ( LOWORD( wParam )) {
 		case IDC_ROOM_JID:
 			if (( HWND )lParam==GetFocus() && HIWORD( wParam )==EN_CHANGE ) {
@@ -122,7 +122,7 @@ static BOOL CALLBACK JabberAddBookmarkDlgProc( HWND hwndDlg, UINT msg, WPARAM wP
 			roomJID = mir_tstrdup( text );
 
 			currJID = ( TCHAR* )GetWindowLong( hwndDlg, GWL_USERDATA );
-			
+
 			if ( currJID) {
 				JabberListRemove(LIST_BOOKMARK, currJID);
 				mir_free( currJID );
@@ -134,7 +134,7 @@ static BOOL CALLBACK JabberAddBookmarkDlgProc( HWND hwndDlg, UINT msg, WPARAM wP
 				item->type=_T("url");
 			}
 			else item->type=_T("conference");
-			
+
 			GetDlgItemText( hwndDlg, IDC_NICK, text, SIZEOF( text ));
 			item->nick = mir_tstrdup( text );
 
@@ -145,7 +145,7 @@ static BOOL CALLBACK JabberAddBookmarkDlgProc( HWND hwndDlg, UINT msg, WPARAM wP
 			item->name = mir_tstrdup(( text[0] == 0 ) ? roomJID : text );
 
 			item->bAutoJoin = (SendDlgItemMessage(hwndDlg, IDC_CHECK_BM_AUTOJOIN, BM_GETSTATE,0, 0) == BST_CHECKED );
-			
+
 			{
 				int iqId = JabberSerialNext();
 				JabberIqAdd( iqId, IQ_PROC_SETBOOKMARKS, JabberIqResultSetBookmarks);
@@ -538,6 +538,3 @@ int JabberAddEditBookmark( WPARAM wParam, LPARAM lParam )
 		DialogBoxParam( hInst, MAKEINTRESOURCE( IDD_BOOKMARK_ADD ), NULL, JabberAddBookmarkDlgProc, lParam);
 	return 0;
 }
-
-
-
