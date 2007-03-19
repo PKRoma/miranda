@@ -208,8 +208,6 @@
 #define IDC_UNREGISTER                  1183
 #define IDC_VALIDATEADD                 1184
 #define IDC_GO                          1196
-
-
 #define IDC_WHITERECT                   1221
 #define IDC_UPDATING                    1231
 #define IDC_EMAILS                      1306
@@ -220,7 +218,6 @@
 #define IDC_PLAN                        1415
 #define IDC_PERSONALGROUP               1434
 #define IDC_EXTRAGROUP                  1436
-
 #define IDI_BOOKMARKS                   3000
 #define IDD_BOOKMARKS                   3001
 #define IDC_BM_LIST                     3002
@@ -231,10 +228,11 @@
 #define IDC_ROSTER2BOOKMARK             3008
 #define IDC_ROOM_RADIO                  3009
 #define IDC_AUTOJOIN_BOOKMARKS          3010
+#define IDC_AGENT_RADIO                 3010
 #define IDC_URL_RADIO                   3011
 #define IDC_BOOKMARK_TYPE               3012
 #define IDC_CHECK_BM_AUTOJOIN           3013
-
+#define IDC_ROOM_RADIO2                 3014
 #define IDM_MESSAGE                     10002
 #define IDM_CLEAR                       10003
 #define IDM_VOICE                       10005
