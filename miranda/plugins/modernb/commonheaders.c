@@ -261,4 +261,11 @@ BOOL DestroyIcon_protect(HICON icon)
 	return FALSE;
 }
 
+void li_ListDestruct(SortedList *pList, ItemDestuctor pItemDestructor)
+{																			
+	int i=0;																
+	for (i=0; i<pList->realCount; i++)	pItemDestructor(pList->items[i]);	
+	li.List_Destroy(pList);																											
+}
+
 

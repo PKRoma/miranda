@@ -297,4 +297,7 @@ int AniAva_RemoveAvatar(HANDLE hContact);				   // remove avatar
 int AniAva_RedrawAllAvatars(BOOL updateZOrder);			   // request to repaint all
 void AniAva_UpdateParent();
 
+typedef void (*ItemDestuctor)(void*);
+void li_ListDestruct(SortedList *pList, ItemDestuctor pItemDestructor);
+
 #endif // commonheaders_h__

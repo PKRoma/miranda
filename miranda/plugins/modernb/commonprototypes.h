@@ -101,6 +101,12 @@ typedef int (*PSYNCCALLBACKPROC)(WPARAM,LPARAM);
 /*                              PROTOTYPES                              */
 /************************************************************************/
 
+/* modern_ext_frames.c */
+int ExtFrames_Init();
+int ExtFrames_Uninit();
+int ExtFrames_GetMinWindowSize( OUT SIZE * size );
+int ExtFrames_GetMaxCLCHeight( IN int iMaxDueDesk );
+
 /* CLCItems */
 BOOL	CLCItems_IsShowOfflineGroup(struct ClcGroup* group);
 
