@@ -1350,6 +1350,27 @@ static void JabberProcessPresence( XmlNode *node, void *userdata )
 					SendMessage( hwndJabberAgents, WM_JABBER_TRANSPORT_REFRESH, 0, 0 );
 }	}	}	}
 
+
+static int JGetMirandaProductText(WPARAM wParam,LPARAM lParam)
+{
+	char filename[MAX_PATH],*productName;
+	DWORD unused;
+	DWORD verInfoSize;
+	UINT blockSize;
+	PVOID pVerInfo;
+	GetModuleFileNameA(NULL,filename,SIZEOF(filename));
+	verInfoSize=GetFileVersionInfoSizeA(filename,&unused);
+	pVerInfo=mir_alloc(verInfoSize);
+	GetFileVersionInfoA(filename,0,verInfoSize,pVerInfo);
+	VerQueryValueA(pVerInfo,"\\StringFileInfo\\000004b0\\ProductName",(void**)&productName,&blockSize);
+#if defined( _UNICODE )
+	mir_snprintf(( char* )lParam, wParam, "%s", productName );
+#else
+	lstrcpynA((char*)lParam,productName,wParam);
+#endif
+	mir_free(pVerInfo);
+	return 0;
+}
 /////////////////////////////////////////////////////////////////////////////////////////
 // Handles various <iq... requests
 
@@ -1392,9 +1413,12 @@ static void JabberProcessIqVersion( TCHAR* idStr, XmlNode* node )
 	char mversion[100];
 	JCallService( MS_SYSTEM_GETVERSIONTEXT, sizeof( mversion ), ( LPARAM )mversion );
 
+	char mproduct[50];
+	JGetMirandaProductText( sizeof( mproduct ), ( LPARAM )mproduct );
+
 	TCHAR* fullVer = (TCHAR*)alloca(1000 * sizeof( TCHAR ));
-	mir_sntprintf( fullVer, 1000, _T("Miranda IM ") _T(TCHAR_STR_PARAM) _T(" (Jabber v.") _T(TCHAR_STR_PARAM) _T(" [%s])") _T(TCHAR_STR_PARAM),
-		mversion, __VERSION_STRING, jabberThreadInfo->resource, bSecureIM ? " (SecureIM)":"" );
+	mir_sntprintf( fullVer, 1000, _T(TCHAR_STR_PARAM) _T(" ") _T(TCHAR_STR_PARAM) _T(" (Jabber v.") _T(TCHAR_STR_PARAM) _T(" [%s])") _T(TCHAR_STR_PARAM),
+		mproduct, mversion, __VERSION_STRING, jabberThreadInfo->resource, bSecureIM ? " (SecureIM)":"" );
 
 	XmlNodeIq iq( "result", idStr, from );
 	XmlNode* query = iq.addQuery( "jabber:iq:version" );
