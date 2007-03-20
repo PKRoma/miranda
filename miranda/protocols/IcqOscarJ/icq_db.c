@@ -23,7 +23,7 @@
 //
 // -----------------------------------------------------------------------------
 //
-// File name      : $Source: /cvsroot/miranda/miranda/protocols/IcqOscarJ/icq_db.c,v $
+// File name      : $URL$
 // Revision       : $Revision$
 // Last change on : $Date$
 // Last change by : $Author$
@@ -323,7 +323,7 @@ HANDLE __stdcall ICQAddEvent(HANDLE hContact, WORD wType, DWORD dwTime, DWORD fl
 
 HANDLE __fastcall ICQFindFirstContact()
 {
-  HANDLE hContact = (HANDLE)CallService(MS_DB_CONTACT_FINDFIRST, 0, 0);
+  HANDLE hContact = (HANDLE)CallService(MS_DB_CONTACT_FINDFIRST, 0, (LPARAM)gpszICQProtoName);
 
   if (IsICQContact(hContact))
   {
@@ -336,7 +336,7 @@ HANDLE __fastcall ICQFindFirstContact()
 
 HANDLE __fastcall ICQFindNextContact(HANDLE hContact)
 {
-  hContact = (HANDLE)CallService(MS_DB_CONTACT_FINDNEXT,(WPARAM)hContact,0);
+  hContact = (HANDLE)CallService(MS_DB_CONTACT_FINDNEXT,(WPARAM)hContact,(LPARAM)gpszICQProtoName);
 
   while (hContact != NULL)
   {
@@ -344,7 +344,7 @@ HANDLE __fastcall ICQFindNextContact(HANDLE hContact)
     {
       return hContact;
     }
-    hContact = (HANDLE)CallService(MS_DB_CONTACT_FINDNEXT,(WPARAM)hContact,0);
+    hContact = (HANDLE)CallService(MS_DB_CONTACT_FINDNEXT,(WPARAM)hContact,(LPARAM)gpszICQProtoName);
   }
   return hContact;
 }

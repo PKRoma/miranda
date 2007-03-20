@@ -647,7 +647,7 @@ char* detectUserClient(HANDLE hContact, DWORD dwUin, WORD wVersion, DWORD dwFT1,
               szClient = "ICQ 2000";
             }
           }
-          if (CheckContactCapabilities(hContact, CAPF_UTF))
+          else if (CheckContactCapabilities(hContact, CAPF_UTF))
           {
             if (CheckContactCapabilities(hContact, CAPF_TYPING))
               szClient = "Icq2Go! (Java)";
