@@ -146,6 +146,11 @@ TCHAR* Chat_DoRtfToTags( char* pszText, SESSION_INFO* si)
 				iRemoveChars = 4;
 				strcpy(InsertThis, "\n" );
 			}
+            else if ( !memcmp(p1, "\\emdash", 7 ) || !memcmp(p1, "\\endash", 7 )) { // dashes
+                bTextHasStarted = bJustRemovedRTF = TRUE;
+                iRemoveChars = 7;
+                strcpy(InsertThis, "-" );
+            }
 			else if ( !memcmp(p1, "\\line", 5 )) { // newline
 				bTextHasStarted = bJustRemovedRTF = TRUE;
 				iRemoveChars = 5;

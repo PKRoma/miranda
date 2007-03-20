@@ -1291,6 +1291,28 @@ BOOL DoRtfToTags(TCHAR * pszText, struct MessageWindowData *dat)
                     iRemoveChars = 5;
                     _sntprintf(InsertThis, safe_sizeof(InsertThis), _T("\n"));
                 }
+                else if(p1 == _tcsstr(p1, _T("\\emdash"))) //bold
+                {
+                    bTextHasStarted = TRUE;
+                    bJustRemovedRTF = TRUE;
+                    iRemoveChars = 7;
+#if defined(_UNICODE)
+                    _sntprintf(InsertThis, safe_sizeof(InsertThis), _T("%c"), 0x2014);
+#else
+                    _sntprintf(InsertThis, safe_sizeof(InsertThis), _T("-"));
+#endif
+                }
+                else if(p1 == _tcsstr(p1, _T("\\endash"))) //bold
+                {
+                    bTextHasStarted = TRUE;
+                    bJustRemovedRTF = TRUE;
+                    iRemoveChars = 7;
+#if defined(_UNICODE)
+                    _sntprintf(InsertThis, safe_sizeof(InsertThis), _T("%c"), 0x2013);
+#else
+                    _sntprintf(InsertThis, safe_sizeof(InsertThis), _T("-"));
+#endif
+                }
 				else if(p1 == _tcsstr(p1, _T("\\b"))) //bold
 				{
 					bTextHasStarted = TRUE;
