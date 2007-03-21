@@ -104,6 +104,8 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #define WM_JABBER_SMILEY               WM_USER + 113
 #define WM_JABBER_JOIN                 WM_USER + 114
 #define WM_JABBER_ADD_TO_ROSTER        WM_USER + 115
+#define WM_JABBER_ADD_TO_BOOKMARKS     WM_USER + 116
+
 // Error code
 #define JABBER_ERROR_REDIRECT				302
 #define JABBER_ERROR_BAD_REQUEST			400
