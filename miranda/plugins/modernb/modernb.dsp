@@ -544,6 +544,10 @@ SOURCE=.\mod_skin_selector.c
 # End Source File
 # Begin Source File
 
+SOURCE=.\modern_animated_avatars.c
+# End Source File
+# Begin Source File
+
 SOURCE=.\modern_button.c
 # End Source File
 # Begin Source File

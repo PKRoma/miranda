@@ -2,6 +2,10 @@
  * test for gdi+
  */
 
+#if defined( UNICODE ) && !defined( _UNICODE )
+	#define _UNICODE
+#endif
+
 #include <malloc.h>
 
 #ifdef _DEBUG
@@ -11,6 +15,7 @@
 #endif
 
 #define _WIN32_WINNT 0x0501
+#include <tchar.h>
 #include <windows.h>
 #include <commctrl.h>
 #include <stdio.h>

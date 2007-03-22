@@ -1,12 +1,18 @@
 # Microsoft Developer Studio Generated Dependency File, included by modernb.mak
 
 .\CLUIFrames\cluiframes.c : \
+	"..\..\..\..\vc\sdk\include\basetsd.h"\
+	"..\..\..\..\vc\sdk\include\guiddef.h"\
+	"..\..\..\..\vc\sdk\include\propidl.h"\
+	"..\..\..\..\vc\sdk\include\reason.h"\
+	"..\..\..\..\vc\sdk\include\stralign.h"\
+	"..\..\..\..\vc\sdk\include\tvout.h"\
+	"..\..\..\..\vc\sdk\include\winefs.h"\
 	"..\..\include\m_addcontact.h"\
 	"..\..\include\m_button.h"\
 	"..\..\include\m_clc.h"\
 	"..\..\include\m_clist.h"\
 	"..\..\include\m_clistint.h"\
-	"..\..\include\m_clui.h"\
 	"..\..\include\m_contacts.h"\
 	"..\..\include\m_database.h"\
 	"..\..\include\m_file.h"\
@@ -18,7 +24,6 @@
 	"..\..\include\m_protocols.h"\
 	"..\..\include\m_protosvc.h"\
 	"..\..\include\m_skin.h"\
-	"..\..\include\m_skin_eng.h"\
 	"..\..\include\m_system.h"\
 	"..\..\include\m_userinfo.h"\
 	"..\..\include\m_utils.h"\
@@ -45,16 +50,22 @@
 	".\modern_row.h"\
 	".\modern_statusbar.h"\
 	".\rowheight_funcs.h"\
-	".\SkinEngine.h"\
+	".\skinengine.h"\
 	
 
 .\CLUIFrames\extraimage.c : \
+	"..\..\..\..\vc\sdk\include\basetsd.h"\
+	"..\..\..\..\vc\sdk\include\guiddef.h"\
+	"..\..\..\..\vc\sdk\include\propidl.h"\
+	"..\..\..\..\vc\sdk\include\reason.h"\
+	"..\..\..\..\vc\sdk\include\stralign.h"\
+	"..\..\..\..\vc\sdk\include\tvout.h"\
+	"..\..\..\..\vc\sdk\include\winefs.h"\
 	"..\..\include\m_addcontact.h"\
 	"..\..\include\m_button.h"\
 	"..\..\include\m_clc.h"\
 	"..\..\include\m_clist.h"\
 	"..\..\include\m_clistint.h"\
-	"..\..\include\m_clui.h"\
 	"..\..\include\m_contacts.h"\
 	"..\..\include\m_database.h"\
 	"..\..\include\m_file.h"\
@@ -66,7 +77,6 @@
 	"..\..\include\m_protocols.h"\
 	"..\..\include\m_protosvc.h"\
 	"..\..\include\m_skin.h"\
-	"..\..\include\m_skin_eng.h"\
 	"..\..\include\m_system.h"\
 	"..\..\include\m_userinfo.h"\
 	"..\..\include\m_utils.h"\
@@ -93,16 +103,22 @@
 	".\modern_row.h"\
 	".\modern_statusbar.h"\
 	".\rowheight_funcs.h"\
-	".\SkinEngine.h"\
+	".\skinengine.h"\
 	
 
 .\CLUIFrames\framesmenu.c : \
+	"..\..\..\..\vc\sdk\include\basetsd.h"\
+	"..\..\..\..\vc\sdk\include\guiddef.h"\
+	"..\..\..\..\vc\sdk\include\propidl.h"\
+	"..\..\..\..\vc\sdk\include\reason.h"\
+	"..\..\..\..\vc\sdk\include\stralign.h"\
+	"..\..\..\..\vc\sdk\include\tvout.h"\
+	"..\..\..\..\vc\sdk\include\winefs.h"\
 	"..\..\include\m_addcontact.h"\
 	"..\..\include\m_button.h"\
 	"..\..\include\m_clc.h"\
 	"..\..\include\m_clist.h"\
 	"..\..\include\m_clistint.h"\
-	"..\..\include\m_clui.h"\
 	"..\..\include\m_contacts.h"\
 	"..\..\include\m_database.h"\
 	"..\..\include\m_file.h"\
@@ -114,7 +130,6 @@
 	"..\..\include\m_protocols.h"\
 	"..\..\include\m_protosvc.h"\
 	"..\..\include\m_skin.h"\
-	"..\..\include\m_skin_eng.h"\
 	"..\..\include\m_system.h"\
 	"..\..\include\m_userinfo.h"\
 	"..\..\include\m_utils.h"\
@@ -141,10 +156,17 @@
 	".\modern_row.h"\
 	".\modern_statusbar.h"\
 	".\rowheight_funcs.h"\
-	".\SkinEngine.h"\
+	".\skinengine.h"\
 	
 
 .\button.c : \
+	"..\..\..\..\vc\sdk\include\basetsd.h"\
+	"..\..\..\..\vc\sdk\include\guiddef.h"\
+	"..\..\..\..\vc\sdk\include\propidl.h"\
+	"..\..\..\..\vc\sdk\include\reason.h"\
+	"..\..\..\..\vc\sdk\include\stralign.h"\
+	"..\..\..\..\vc\sdk\include\tvout.h"\
+	"..\..\..\..\vc\sdk\include\winefs.h"\
 	"..\..\include\m_addcontact.h"\
 	"..\..\include\m_button.h"\
 	"..\..\include\m_clc.h"\
@@ -188,10 +210,17 @@
 	".\modern_row.h"\
 	".\modern_statusbar.h"\
 	".\rowheight_funcs.h"\
-	".\SkinEngine.h"\
+	".\skinengine.h"\
 	
 
 .\cache_funcs.c : \
+	"..\..\..\..\vc\sdk\include\basetsd.h"\
+	"..\..\..\..\vc\sdk\include\guiddef.h"\
+	"..\..\..\..\vc\sdk\include\propidl.h"\
+	"..\..\..\..\vc\sdk\include\reason.h"\
+	"..\..\..\..\vc\sdk\include\stralign.h"\
+	"..\..\..\..\vc\sdk\include\tvout.h"\
+	"..\..\..\..\vc\sdk\include\winefs.h"\
 	"..\..\include\m_addcontact.h"\
 	"..\..\include\m_button.h"\
 	"..\..\include\m_clc.h"\
@@ -234,10 +263,17 @@
 	".\modern_row.h"\
 	".\modern_statusbar.h"\
 	".\rowheight_funcs.h"\
-	".\SkinEngine.h"\
+	".\skinengine.h"\
 	
 
 .\clc.c : \
+	"..\..\..\..\vc\sdk\include\basetsd.h"\
+	"..\..\..\..\vc\sdk\include\guiddef.h"\
+	"..\..\..\..\vc\sdk\include\propidl.h"\
+	"..\..\..\..\vc\sdk\include\reason.h"\
+	"..\..\..\..\vc\sdk\include\stralign.h"\
+	"..\..\..\..\vc\sdk\include\tvout.h"\
+	"..\..\..\..\vc\sdk\include\winefs.h"\
 	"..\..\include\m_addcontact.h"\
 	"..\..\include\m_button.h"\
 	"..\..\include\m_clc.h"\
@@ -280,10 +316,17 @@
 	".\modern_row.h"\
 	".\modern_statusbar.h"\
 	".\rowheight_funcs.h"\
-	".\SkinEngine.h"\
+	".\skinengine.h"\
 	
 
 .\clcidents.c : \
+	"..\..\..\..\vc\sdk\include\basetsd.h"\
+	"..\..\..\..\vc\sdk\include\guiddef.h"\
+	"..\..\..\..\vc\sdk\include\propidl.h"\
+	"..\..\..\..\vc\sdk\include\reason.h"\
+	"..\..\..\..\vc\sdk\include\stralign.h"\
+	"..\..\..\..\vc\sdk\include\tvout.h"\
+	"..\..\..\..\vc\sdk\include\winefs.h"\
 	"..\..\include\m_addcontact.h"\
 	"..\..\include\m_button.h"\
 	"..\..\include\m_clc.h"\
@@ -326,10 +369,17 @@
 	".\modern_row.h"\
 	".\modern_statusbar.h"\
 	".\rowheight_funcs.h"\
-	".\SkinEngine.h"\
+	".\skinengine.h"\
 	
 
 .\clcitems.c : \
+	"..\..\..\..\vc\sdk\include\basetsd.h"\
+	"..\..\..\..\vc\sdk\include\guiddef.h"\
+	"..\..\..\..\vc\sdk\include\propidl.h"\
+	"..\..\..\..\vc\sdk\include\reason.h"\
+	"..\..\..\..\vc\sdk\include\stralign.h"\
+	"..\..\..\..\vc\sdk\include\tvout.h"\
+	"..\..\..\..\vc\sdk\include\winefs.h"\
 	"..\..\include\m_addcontact.h"\
 	"..\..\include\m_button.h"\
 	"..\..\include\m_clc.h"\
@@ -372,10 +422,17 @@
 	".\modern_row.h"\
 	".\modern_statusbar.h"\
 	".\rowheight_funcs.h"\
-	".\SkinEngine.h"\
+	".\skinengine.h"\
 	
 
 .\clcmsgs.c : \
+	"..\..\..\..\vc\sdk\include\basetsd.h"\
+	"..\..\..\..\vc\sdk\include\guiddef.h"\
+	"..\..\..\..\vc\sdk\include\propidl.h"\
+	"..\..\..\..\vc\sdk\include\reason.h"\
+	"..\..\..\..\vc\sdk\include\stralign.h"\
+	"..\..\..\..\vc\sdk\include\tvout.h"\
+	"..\..\..\..\vc\sdk\include\winefs.h"\
 	"..\..\include\m_addcontact.h"\
 	"..\..\include\m_button.h"\
 	"..\..\include\m_clc.h"\
@@ -418,10 +475,17 @@
 	".\modern_row.h"\
 	".\modern_statusbar.h"\
 	".\rowheight_funcs.h"\
-	".\SkinEngine.h"\
+	".\skinengine.h"\
 	
 
 .\clcopts.c : \
+	"..\..\..\..\vc\sdk\include\basetsd.h"\
+	"..\..\..\..\vc\sdk\include\guiddef.h"\
+	"..\..\..\..\vc\sdk\include\propidl.h"\
+	"..\..\..\..\vc\sdk\include\reason.h"\
+	"..\..\..\..\vc\sdk\include\stralign.h"\
+	"..\..\..\..\vc\sdk\include\tvout.h"\
+	"..\..\..\..\vc\sdk\include\winefs.h"\
 	"..\..\include\m_addcontact.h"\
 	"..\..\include\m_button.h"\
 	"..\..\include\m_clc.h"\
@@ -465,10 +529,17 @@
 	".\modern_row.h"\
 	".\modern_statusbar.h"\
 	".\rowheight_funcs.h"\
-	".\SkinEngine.h"\
+	".\skinengine.h"\
 	
 
 .\clcpaint.c : \
+	"..\..\..\..\vc\sdk\include\basetsd.h"\
+	"..\..\..\..\vc\sdk\include\guiddef.h"\
+	"..\..\..\..\vc\sdk\include\propidl.h"\
+	"..\..\..\..\vc\sdk\include\reason.h"\
+	"..\..\..\..\vc\sdk\include\stralign.h"\
+	"..\..\..\..\vc\sdk\include\tvout.h"\
+	"..\..\..\..\vc\sdk\include\winefs.h"\
 	"..\..\include\m_addcontact.h"\
 	"..\..\include\m_button.h"\
 	"..\..\include\m_clc.h"\
@@ -511,10 +582,17 @@
 	".\modern_row.h"\
 	".\modern_statusbar.h"\
 	".\rowheight_funcs.h"\
-	".\SkinEngine.h"\
+	".\skinengine.h"\
 	
 
 .\clcutils.c : \
+	"..\..\..\..\vc\sdk\include\basetsd.h"\
+	"..\..\..\..\vc\sdk\include\guiddef.h"\
+	"..\..\..\..\vc\sdk\include\propidl.h"\
+	"..\..\..\..\vc\sdk\include\reason.h"\
+	"..\..\..\..\vc\sdk\include\stralign.h"\
+	"..\..\..\..\vc\sdk\include\tvout.h"\
+	"..\..\..\..\vc\sdk\include\winefs.h"\
 	"..\..\include\m_addcontact.h"\
 	"..\..\include\m_button.h"\
 	"..\..\include\m_clc.h"\
@@ -557,10 +635,17 @@
 	".\modern_row.h"\
 	".\modern_statusbar.h"\
 	".\rowheight_funcs.h"\
-	".\SkinEngine.h"\
+	".\skinengine.h"\
 	
 
 .\clistevents.c : \
+	"..\..\..\..\vc\sdk\include\basetsd.h"\
+	"..\..\..\..\vc\sdk\include\guiddef.h"\
+	"..\..\..\..\vc\sdk\include\propidl.h"\
+	"..\..\..\..\vc\sdk\include\reason.h"\
+	"..\..\..\..\vc\sdk\include\stralign.h"\
+	"..\..\..\..\vc\sdk\include\tvout.h"\
+	"..\..\..\..\vc\sdk\include\winefs.h"\
 	"..\..\include\m_addcontact.h"\
 	"..\..\include\m_button.h"\
 	"..\..\include\m_clc.h"\
@@ -603,10 +688,17 @@
 	".\modern_row.h"\
 	".\modern_statusbar.h"\
 	".\rowheight_funcs.h"\
-	".\SkinEngine.h"\
+	".\skinengine.h"\
 	
 
 .\clistmenus.c : \
+	"..\..\..\..\vc\sdk\include\basetsd.h"\
+	"..\..\..\..\vc\sdk\include\guiddef.h"\
+	"..\..\..\..\vc\sdk\include\propidl.h"\
+	"..\..\..\..\vc\sdk\include\reason.h"\
+	"..\..\..\..\vc\sdk\include\stralign.h"\
+	"..\..\..\..\vc\sdk\include\tvout.h"\
+	"..\..\..\..\vc\sdk\include\winefs.h"\
 	"..\..\include\m_addcontact.h"\
 	"..\..\include\m_button.h"\
 	"..\..\include\m_clc.h"\
@@ -649,10 +741,17 @@
 	".\modern_row.h"\
 	".\modern_statusbar.h"\
 	".\rowheight_funcs.h"\
-	".\SkinEngine.h"\
+	".\skinengine.h"\
 	
 
 .\clistmod.c : \
+	"..\..\..\..\vc\sdk\include\basetsd.h"\
+	"..\..\..\..\vc\sdk\include\guiddef.h"\
+	"..\..\..\..\vc\sdk\include\propidl.h"\
+	"..\..\..\..\vc\sdk\include\reason.h"\
+	"..\..\..\..\vc\sdk\include\stralign.h"\
+	"..\..\..\..\vc\sdk\include\tvout.h"\
+	"..\..\..\..\vc\sdk\include\winefs.h"\
 	"..\..\include\m_addcontact.h"\
 	"..\..\include\m_button.h"\
 	"..\..\include\m_clc.h"\
@@ -695,10 +794,17 @@
 	".\modern_row.h"\
 	".\modern_statusbar.h"\
 	".\rowheight_funcs.h"\
-	".\SkinEngine.h"\
+	".\skinengine.h"\
 	
 
 .\clistopts.c : \
+	"..\..\..\..\vc\sdk\include\basetsd.h"\
+	"..\..\..\..\vc\sdk\include\guiddef.h"\
+	"..\..\..\..\vc\sdk\include\propidl.h"\
+	"..\..\..\..\vc\sdk\include\reason.h"\
+	"..\..\..\..\vc\sdk\include\stralign.h"\
+	"..\..\..\..\vc\sdk\include\tvout.h"\
+	"..\..\..\..\vc\sdk\include\winefs.h"\
 	"..\..\include\m_addcontact.h"\
 	"..\..\include\m_button.h"\
 	"..\..\include\m_clc.h"\
@@ -741,10 +847,17 @@
 	".\modern_row.h"\
 	".\modern_statusbar.h"\
 	".\rowheight_funcs.h"\
-	".\SkinEngine.h"\
+	".\skinengine.h"\
 	
 
 .\clistsettings.c : \
+	"..\..\..\..\vc\sdk\include\basetsd.h"\
+	"..\..\..\..\vc\sdk\include\guiddef.h"\
+	"..\..\..\..\vc\sdk\include\propidl.h"\
+	"..\..\..\..\vc\sdk\include\reason.h"\
+	"..\..\..\..\vc\sdk\include\stralign.h"\
+	"..\..\..\..\vc\sdk\include\tvout.h"\
+	"..\..\..\..\vc\sdk\include\winefs.h"\
 	"..\..\include\m_addcontact.h"\
 	"..\..\include\m_button.h"\
 	"..\..\include\m_clc.h"\
@@ -787,10 +900,17 @@
 	".\modern_row.h"\
 	".\modern_statusbar.h"\
 	".\rowheight_funcs.h"\
-	".\SkinEngine.h"\
+	".\skinengine.h"\
 	
 
 .\clisttray.c : \
+	"..\..\..\..\vc\sdk\include\basetsd.h"\
+	"..\..\..\..\vc\sdk\include\guiddef.h"\
+	"..\..\..\..\vc\sdk\include\propidl.h"\
+	"..\..\..\..\vc\sdk\include\reason.h"\
+	"..\..\..\..\vc\sdk\include\stralign.h"\
+	"..\..\..\..\vc\sdk\include\tvout.h"\
+	"..\..\..\..\vc\sdk\include\winefs.h"\
 	"..\..\include\m_addcontact.h"\
 	"..\..\include\m_button.h"\
 	"..\..\include\m_clc.h"\
@@ -833,10 +953,17 @@
 	".\modern_row.h"\
 	".\modern_statusbar.h"\
 	".\rowheight_funcs.h"\
-	".\SkinEngine.h"\
+	".\skinengine.h"\
 	
 
 .\clui.c : \
+	"..\..\..\..\vc\sdk\include\basetsd.h"\
+	"..\..\..\..\vc\sdk\include\guiddef.h"\
+	"..\..\..\..\vc\sdk\include\propidl.h"\
+	"..\..\..\..\vc\sdk\include\reason.h"\
+	"..\..\..\..\vc\sdk\include\stralign.h"\
+	"..\..\..\..\vc\sdk\include\tvout.h"\
+	"..\..\..\..\vc\sdk\include\winefs.h"\
 	"..\..\include\m_addcontact.h"\
 	"..\..\include\m_button.h"\
 	"..\..\include\m_clc.h"\
@@ -880,10 +1007,17 @@
 	".\modern_row.h"\
 	".\modern_statusbar.h"\
 	".\rowheight_funcs.h"\
-	".\SkinEngine.h"\
+	".\skinengine.h"\
 	
 
 .\cluiservices.c : \
+	"..\..\..\..\vc\sdk\include\basetsd.h"\
+	"..\..\..\..\vc\sdk\include\guiddef.h"\
+	"..\..\..\..\vc\sdk\include\propidl.h"\
+	"..\..\..\..\vc\sdk\include\reason.h"\
+	"..\..\..\..\vc\sdk\include\stralign.h"\
+	"..\..\..\..\vc\sdk\include\tvout.h"\
+	"..\..\..\..\vc\sdk\include\winefs.h"\
 	"..\..\include\m_addcontact.h"\
 	"..\..\include\m_button.h"\
 	"..\..\include\m_clc.h"\
@@ -926,10 +1060,17 @@
 	".\modern_row.h"\
 	".\modern_statusbar.h"\
 	".\rowheight_funcs.h"\
-	".\SkinEngine.h"\
+	".\skinengine.h"\
 	
 
 .\commonheaders.c : \
+	"..\..\..\..\vc\sdk\include\basetsd.h"\
+	"..\..\..\..\vc\sdk\include\guiddef.h"\
+	"..\..\..\..\vc\sdk\include\propidl.h"\
+	"..\..\..\..\vc\sdk\include\reason.h"\
+	"..\..\..\..\vc\sdk\include\stralign.h"\
+	"..\..\..\..\vc\sdk\include\tvout.h"\
+	"..\..\..\..\vc\sdk\include\winefs.h"\
 	"..\..\include\m_addcontact.h"\
 	"..\..\include\m_button.h"\
 	"..\..\include\m_clc.h"\
@@ -972,10 +1113,17 @@
 	".\modern_row.h"\
 	".\modern_statusbar.h"\
 	".\rowheight_funcs.h"\
-	".\SkinEngine.h"\
+	".\skinengine.h"\
 	
 
 .\contact.c : \
+	"..\..\..\..\vc\sdk\include\basetsd.h"\
+	"..\..\..\..\vc\sdk\include\guiddef.h"\
+	"..\..\..\..\vc\sdk\include\propidl.h"\
+	"..\..\..\..\vc\sdk\include\reason.h"\
+	"..\..\..\..\vc\sdk\include\stralign.h"\
+	"..\..\..\..\vc\sdk\include\tvout.h"\
+	"..\..\..\..\vc\sdk\include\winefs.h"\
 	"..\..\include\m_addcontact.h"\
 	"..\..\include\m_button.h"\
 	"..\..\include\m_clc.h"\
@@ -1018,10 +1166,17 @@
 	".\modern_row.h"\
 	".\modern_statusbar.h"\
 	".\rowheight_funcs.h"\
-	".\SkinEngine.h"\
+	".\skinengine.h"\
 	
 
 .\Docking.c : \
+	"..\..\..\..\vc\sdk\include\basetsd.h"\
+	"..\..\..\..\vc\sdk\include\guiddef.h"\
+	"..\..\..\..\vc\sdk\include\propidl.h"\
+	"..\..\..\..\vc\sdk\include\reason.h"\
+	"..\..\..\..\vc\sdk\include\stralign.h"\
+	"..\..\..\..\vc\sdk\include\tvout.h"\
+	"..\..\..\..\vc\sdk\include\winefs.h"\
 	"..\..\include\m_addcontact.h"\
 	"..\..\include\m_button.h"\
 	"..\..\include\m_clc.h"\
@@ -1064,16 +1219,63 @@
 	".\modern_row.h"\
 	".\modern_statusbar.h"\
 	".\rowheight_funcs.h"\
-	".\SkinEngine.h"\
+	".\skinengine.h"\
 	
 
 .\gdiplus.cpp : \
+	"..\..\..\..\vc\sdk\include\basetsd.h"\
+	"..\..\..\..\vc\sdk\include\gdiplus.h"\
+	"..\..\..\..\vc\sdk\include\gdiplusbase.h"\
+	"..\..\..\..\vc\sdk\include\gdiplusbitmap.h"\
+	"..\..\..\..\vc\sdk\include\gdiplusbrush.h"\
+	"..\..\..\..\vc\sdk\include\gdipluscachedbitmap.h"\
+	"..\..\..\..\vc\sdk\include\gdipluscolor.h"\
+	"..\..\..\..\vc\sdk\include\gdipluscolormatrix.h"\
+	"..\..\..\..\vc\sdk\include\gdiplusenums.h"\
+	"..\..\..\..\vc\sdk\include\gdiplusflat.h"\
+	"..\..\..\..\vc\sdk\include\gdiplusfont.h"\
+	"..\..\..\..\vc\sdk\include\gdiplusfontcollection.h"\
+	"..\..\..\..\vc\sdk\include\gdiplusfontfamily.h"\
+	"..\..\..\..\vc\sdk\include\gdiplusgpstubs.h"\
+	"..\..\..\..\vc\sdk\include\gdiplusgraphics.h"\
+	"..\..\..\..\vc\sdk\include\gdiplusheaders.h"\
+	"..\..\..\..\vc\sdk\include\gdiplusimageattributes.h"\
+	"..\..\..\..\vc\sdk\include\gdiplusimagecodec.h"\
+	"..\..\..\..\vc\sdk\include\gdiplusimaging.h"\
+	"..\..\..\..\vc\sdk\include\gdiplusinit.h"\
+	"..\..\..\..\vc\sdk\include\gdipluslinecaps.h"\
+	"..\..\..\..\vc\sdk\include\gdiplusmatrix.h"\
+	"..\..\..\..\vc\sdk\include\gdiplusmem.h"\
+	"..\..\..\..\vc\sdk\include\gdiplusmetafile.h"\
+	"..\..\..\..\vc\sdk\include\gdiplusmetaheader.h"\
+	"..\..\..\..\vc\sdk\include\gdipluspath.h"\
+	"..\..\..\..\vc\sdk\include\gdipluspen.h"\
+	"..\..\..\..\vc\sdk\include\gdipluspixelformats.h"\
+	"..\..\..\..\vc\sdk\include\gdiplusregion.h"\
+	"..\..\..\..\vc\sdk\include\gdiplusstringformat.h"\
+	"..\..\..\..\vc\sdk\include\gdiplustypes.h"\
+	"..\..\..\..\vc\sdk\include\guiddef.h"\
+	"..\..\..\..\vc\sdk\include\propidl.h"\
+	"..\..\..\..\vc\sdk\include\reason.h"\
+	"..\..\..\..\vc\sdk\include\stralign.h"\
+	"..\..\..\..\vc\sdk\include\tvout.h"\
+	"..\..\..\..\vc\sdk\include\winefs.h"\
+	"..\..\include\m_plugins.h"\
+	"..\..\include\m_system.h"\
+	"..\..\include\newpluginapi.h"\
 	"..\..\include\win2k.h"\
 	".\m_avatars.h"\
 	".\modern_global_structure.h"\
 	
 
 .\groupmenu.c : \
+	"..\..\..\..\vc\sdk\include\basetsd.h"\
+	"..\..\..\..\vc\sdk\include\guiddef.h"\
+	"..\..\..\..\vc\sdk\include\propidl.h"\
+	"..\..\..\..\vc\sdk\include\reason.h"\
+	"..\..\..\..\vc\sdk\include\stralign.h"\
+	"..\..\..\..\vc\sdk\include\tvout.h"\
+	"..\..\..\..\vc\sdk\include\winefs.h"\
 	"..\..\include\m_addcontact.h"\
 	"..\..\include\m_button.h"\
 	"..\..\include\m_clc.h"\
@@ -1116,10 +1318,17 @@
 	".\modern_row.h"\
 	".\modern_statusbar.h"\
 	".\rowheight_funcs.h"\
-	".\SkinEngine.h"\
+	".\skinengine.h"\
 	
 
 .\image_array.c : \
+	"..\..\..\..\vc\sdk\include\basetsd.h"\
+	"..\..\..\..\vc\sdk\include\guiddef.h"\
+	"..\..\..\..\vc\sdk\include\propidl.h"\
+	"..\..\..\..\vc\sdk\include\reason.h"\
+	"..\..\..\..\vc\sdk\include\stralign.h"\
+	"..\..\..\..\vc\sdk\include\tvout.h"\
+	"..\..\..\..\vc\sdk\include\winefs.h"\
 	"..\..\include\m_addcontact.h"\
 	"..\..\include\m_button.h"\
 	"..\..\include\m_clc.h"\
@@ -1162,10 +1371,17 @@
 	".\modern_row.h"\
 	".\modern_statusbar.h"\
 	".\rowheight_funcs.h"\
-	".\SkinEngine.h"\
+	".\skinengine.h"\
 	
 
 .\init.c : \
+	"..\..\..\..\vc\sdk\include\basetsd.h"\
+	"..\..\..\..\vc\sdk\include\guiddef.h"\
+	"..\..\..\..\vc\sdk\include\propidl.h"\
+	"..\..\..\..\vc\sdk\include\reason.h"\
+	"..\..\..\..\vc\sdk\include\stralign.h"\
+	"..\..\..\..\vc\sdk\include\tvout.h"\
+	"..\..\..\..\vc\sdk\include\winefs.h"\
 	"..\..\include\m_addcontact.h"\
 	"..\..\include\m_button.h"\
 	"..\..\include\m_clc.h"\
@@ -1208,11 +1424,18 @@
 	".\modern_row.h"\
 	".\modern_statusbar.h"\
 	".\rowheight_funcs.h"\
-	".\SkinEngine.h"\
+	".\skinengine.h"\
 	".\version.h"\
 	
 
 .\keyboard.c : \
+	"..\..\..\..\vc\sdk\include\basetsd.h"\
+	"..\..\..\..\vc\sdk\include\guiddef.h"\
+	"..\..\..\..\vc\sdk\include\propidl.h"\
+	"..\..\..\..\vc\sdk\include\reason.h"\
+	"..\..\..\..\vc\sdk\include\stralign.h"\
+	"..\..\..\..\vc\sdk\include\tvout.h"\
+	"..\..\..\..\vc\sdk\include\winefs.h"\
 	"..\..\include\m_addcontact.h"\
 	"..\..\include\m_button.h"\
 	"..\..\include\m_clc.h"\
@@ -1255,10 +1478,17 @@
 	".\modern_row.h"\
 	".\modern_statusbar.h"\
 	".\rowheight_funcs.h"\
-	".\SkinEngine.h"\
+	".\skinengine.h"\
 	
 
 .\mod_skin_selector.c : \
+	"..\..\..\..\vc\sdk\include\basetsd.h"\
+	"..\..\..\..\vc\sdk\include\guiddef.h"\
+	"..\..\..\..\vc\sdk\include\propidl.h"\
+	"..\..\..\..\vc\sdk\include\reason.h"\
+	"..\..\..\..\vc\sdk\include\stralign.h"\
+	"..\..\..\..\vc\sdk\include\tvout.h"\
+	"..\..\..\..\vc\sdk\include\winefs.h"\
 	"..\..\include\m_addcontact.h"\
 	"..\..\include\m_button.h"\
 	"..\..\include\m_clc.h"\
@@ -1301,10 +1531,63 @@
 	".\modern_row.h"\
 	".\modern_statusbar.h"\
 	".\rowheight_funcs.h"\
-	".\SkinEngine.h"\
+	".\skinengine.h"\
+	
+
+.\modern_animated_avatars.c : \
+	"..\..\include\m_addcontact.h"\
+	"..\..\include\m_button.h"\
+	"..\..\include\m_clc.h"\
+	"..\..\include\m_clist.h"\
+	"..\..\include\m_clistint.h"\
+	"..\..\include\m_contacts.h"\
+	"..\..\include\m_database.h"\
+	"..\..\include\m_file.h"\
+	"..\..\include\m_genmenu.h"\
+	"..\..\include\m_icolib.h"\
+	"..\..\include\m_langpack.h"\
+	"..\..\include\m_options.h"\
+	"..\..\include\m_plugins.h"\
+	"..\..\include\m_protocols.h"\
+	"..\..\include\m_protosvc.h"\
+	"..\..\include\m_skin.h"\
+	"..\..\include\m_system.h"\
+	"..\..\include\m_userinfo.h"\
+	"..\..\include\m_utils.h"\
+	"..\..\include\newpluginapi.h"\
+	"..\..\include\statusmodes.h"\
+	"..\..\include\win2k.h"\
+	".\cache_funcs.h"\
+	".\clc.h"\
+	".\clist.h"\
+	".\CLUIFrames\cluiframes.h"\
+	".\CLUIFrames\m_cluiframes.h"\
+	".\commonheaders.h"\
+	".\commonprototypes.h"\
+	".\image_array.h"\
+	".\log.h"\
+	".\m_avatars.h"\
+	".\m_clui.h"\
+	".\m_metacontacts.h"\
+	".\m_skin_eng.h"\
+	".\m_smileyadd.h"\
+	".\m_variables.h"\
+	".\mod_skin_selector.h"\
+	".\modern_global_structure.h"\
+	".\modern_row.h"\
+	".\modern_statusbar.h"\
+	".\rowheight_funcs.h"\
+	".\skinengine.h"\
 	
 
 .\modern_button.c : \
+	"..\..\..\..\vc\sdk\include\basetsd.h"\
+	"..\..\..\..\vc\sdk\include\guiddef.h"\
+	"..\..\..\..\vc\sdk\include\propidl.h"\
+	"..\..\..\..\vc\sdk\include\reason.h"\
+	"..\..\..\..\vc\sdk\include\stralign.h"\
+	"..\..\..\..\vc\sdk\include\tvout.h"\
+	"..\..\..\..\vc\sdk\include\winefs.h"\
 	"..\..\include\m_addcontact.h"\
 	"..\..\include\m_button.h"\
 	"..\..\include\m_clc.h"\
@@ -1347,10 +1630,17 @@
 	".\modern_row.h"\
 	".\modern_statusbar.h"\
 	".\rowheight_funcs.h"\
-	".\SkinEngine.h"\
+	".\skinengine.h"\
 	
 
 .\modern_row.cpp : \
+	"..\..\..\..\vc\sdk\include\basetsd.h"\
+	"..\..\..\..\vc\sdk\include\guiddef.h"\
+	"..\..\..\..\vc\sdk\include\propidl.h"\
+	"..\..\..\..\vc\sdk\include\reason.h"\
+	"..\..\..\..\vc\sdk\include\stralign.h"\
+	"..\..\..\..\vc\sdk\include\tvout.h"\
+	"..\..\..\..\vc\sdk\include\winefs.h"\
 	"..\..\include\m_addcontact.h"\
 	"..\..\include\m_button.h"\
 	"..\..\include\m_clc.h"\
@@ -1393,10 +1683,17 @@
 	".\modern_row.h"\
 	".\modern_statusbar.h"\
 	".\rowheight_funcs.h"\
-	".\SkinEngine.h"\
+	".\skinengine.h"\
 	
 
 .\modern_statusbar.c : \
+	"..\..\..\..\vc\sdk\include\basetsd.h"\
+	"..\..\..\..\vc\sdk\include\guiddef.h"\
+	"..\..\..\..\vc\sdk\include\propidl.h"\
+	"..\..\..\..\vc\sdk\include\reason.h"\
+	"..\..\..\..\vc\sdk\include\stralign.h"\
+	"..\..\..\..\vc\sdk\include\tvout.h"\
+	"..\..\..\..\vc\sdk\include\winefs.h"\
 	"..\..\include\m_addcontact.h"\
 	"..\..\include\m_button.h"\
 	"..\..\include\m_clc.h"\
@@ -1439,10 +1736,17 @@
 	".\modern_row.h"\
 	".\modern_statusbar.h"\
 	".\rowheight_funcs.h"\
-	".\SkinEngine.h"\
+	".\skinengine.h"\
 	
 
 .\rowheight_funcs.c : \
+	"..\..\..\..\vc\sdk\include\basetsd.h"\
+	"..\..\..\..\vc\sdk\include\guiddef.h"\
+	"..\..\..\..\vc\sdk\include\propidl.h"\
+	"..\..\..\..\vc\sdk\include\reason.h"\
+	"..\..\..\..\vc\sdk\include\stralign.h"\
+	"..\..\..\..\vc\sdk\include\tvout.h"\
+	"..\..\..\..\vc\sdk\include\winefs.h"\
 	"..\..\include\m_addcontact.h"\
 	"..\..\include\m_button.h"\
 	"..\..\include\m_clc.h"\
@@ -1485,10 +1789,17 @@
 	".\modern_row.h"\
 	".\modern_statusbar.h"\
 	".\rowheight_funcs.h"\
-	".\SkinEngine.h"\
+	".\skinengine.h"\
 	
 
 .\rowtemplateopt.c : \
+	"..\..\..\..\vc\sdk\include\basetsd.h"\
+	"..\..\..\..\vc\sdk\include\guiddef.h"\
+	"..\..\..\..\vc\sdk\include\propidl.h"\
+	"..\..\..\..\vc\sdk\include\reason.h"\
+	"..\..\..\..\vc\sdk\include\stralign.h"\
+	"..\..\..\..\vc\sdk\include\tvout.h"\
+	"..\..\..\..\vc\sdk\include\winefs.h"\
 	"..\..\include\m_addcontact.h"\
 	"..\..\include\m_button.h"\
 	"..\..\include\m_clc.h"\
@@ -1531,10 +1842,17 @@
 	".\modern_row.h"\
 	".\modern_statusbar.h"\
 	".\rowheight_funcs.h"\
-	".\SkinEngine.h"\
+	".\skinengine.h"\
 	
 
 .\SkinEditor.c : \
+	"..\..\..\..\vc\sdk\include\basetsd.h"\
+	"..\..\..\..\vc\sdk\include\guiddef.h"\
+	"..\..\..\..\vc\sdk\include\propidl.h"\
+	"..\..\..\..\vc\sdk\include\reason.h"\
+	"..\..\..\..\vc\sdk\include\stralign.h"\
+	"..\..\..\..\vc\sdk\include\tvout.h"\
+	"..\..\..\..\vc\sdk\include\winefs.h"\
 	"..\..\include\m_addcontact.h"\
 	"..\..\include\m_button.h"\
 	"..\..\include\m_clc.h"\
@@ -1577,10 +1895,18 @@
 	".\modern_row.h"\
 	".\modern_statusbar.h"\
 	".\rowheight_funcs.h"\
-	".\SkinEngine.h"\
+	".\skinengine.h"\
 	
 
 .\SkinEngine.c : \
+	"..\..\..\..\vc\sdk\include\basetsd.h"\
+	"..\..\..\..\vc\sdk\include\guiddef.h"\
+	"..\..\..\..\vc\sdk\include\propidl.h"\
+	"..\..\..\..\vc\sdk\include\reason.h"\
+	"..\..\..\..\vc\sdk\include\shtypes.h"\
+	"..\..\..\..\vc\sdk\include\stralign.h"\
+	"..\..\..\..\vc\sdk\include\tvout.h"\
+	"..\..\..\..\vc\sdk\include\winefs.h"\
 	"..\..\include\m_addcontact.h"\
 	"..\..\include\m_button.h"\
 	"..\..\include\m_clc.h"\
@@ -1625,10 +1951,17 @@
 	".\modern_row.h"\
 	".\modern_statusbar.h"\
 	".\rowheight_funcs.h"\
-	".\SkinEngine.h"\
+	".\skinengine.h"\
 	
 
 .\SkinOpt.c : \
+	"..\..\..\..\vc\sdk\include\basetsd.h"\
+	"..\..\..\..\vc\sdk\include\guiddef.h"\
+	"..\..\..\..\vc\sdk\include\propidl.h"\
+	"..\..\..\..\vc\sdk\include\reason.h"\
+	"..\..\..\..\vc\sdk\include\stralign.h"\
+	"..\..\..\..\vc\sdk\include\tvout.h"\
+	"..\..\..\..\vc\sdk\include\winefs.h"\
 	"..\..\include\m_addcontact.h"\
 	"..\..\include\m_button.h"\
 	"..\..\include\m_clc.h"\
@@ -1671,10 +2004,17 @@
 	".\modern_row.h"\
 	".\modern_statusbar.h"\
 	".\rowheight_funcs.h"\
-	".\SkinEngine.h"\
+	".\skinengine.h"\
 	
 
 .\utf.c : \
+	"..\..\..\..\vc\sdk\include\basetsd.h"\
+	"..\..\..\..\vc\sdk\include\guiddef.h"\
+	"..\..\..\..\vc\sdk\include\propidl.h"\
+	"..\..\..\..\vc\sdk\include\reason.h"\
+	"..\..\..\..\vc\sdk\include\stralign.h"\
+	"..\..\..\..\vc\sdk\include\tvout.h"\
+	"..\..\..\..\vc\sdk\include\winefs.h"\
 	"..\..\include\m_addcontact.h"\
 	"..\..\include\m_button.h"\
 	"..\..\include\m_clc.h"\
@@ -1717,10 +2057,18 @@
 	".\modern_row.h"\
 	".\modern_statusbar.h"\
 	".\rowheight_funcs.h"\
-	".\SkinEngine.h"\
+	".\skinengine.h"\
 	
 
 .\viewmodes.c : \
+	"..\..\..\..\vc\sdk\include\basetsd.h"\
+	"..\..\..\..\vc\sdk\include\guiddef.h"\
+	"..\..\..\..\vc\sdk\include\propidl.h"\
+	"..\..\..\..\vc\sdk\include\reason.h"\
+	"..\..\..\..\vc\sdk\include\stralign.h"\
+	"..\..\..\..\vc\sdk\include\tvout.h"\
+	"..\..\..\..\vc\sdk\include\uxtheme.h"\
+	"..\..\..\..\vc\sdk\include\winefs.h"\
 	"..\..\include\m_addcontact.h"\
 	"..\..\include\m_button.h"\
 	"..\..\include\m_clc.h"\
@@ -1764,7 +2112,7 @@
 	".\modern_row.h"\
 	".\modern_statusbar.h"\
 	".\rowheight_funcs.h"\
-	".\SkinEngine.h"\
+	".\skinengine.h"\
 	
 
 .\resource.rc : \
@@ -1780,15 +2128,10 @@
 	".\res\AlwaysVis.ico"\
 	".\res\away.ico"\
 	".\res\Back.tga"\
-	".\res\blank.ico"\
 	".\res\chat.ico"\
 	".\res\Chatchannel.ico"\
-	".\res\delete.ico"\
 	".\res\dnd.ico"\
-	".\res\dragcopy.cur"\
-	".\res\globus.ico"\
 	".\res\hide_avatar.ico"\
-	".\res\hyperlin.cur"\
 	".\res\invisible.ico"\
 	".\res\listening_to.ico"\
 	".\res\lunch.ico"\
@@ -1801,25 +2144,19 @@
 	".\res\Microoccupied.ico"\
 	".\res\Microoffline.ico"\
 	".\res\Microphone.ico"\
-	".\res\miranda.ico"\
 	".\res\NA.ico"\
-	".\res\neo_meta_add.cur"\
 	".\res\neo_meta_create.cur"\
 	".\res\neo_meta_default.cur"\
 	".\res\neo_meta_move.cur"\
 	".\res\NeverVis.ico"\
 	".\res\occupied.ico"\
 	".\res\offline.ico"\
-	".\res\online.ico"\
 	".\res\phone.ico"\
 	".\res\rate_high.ico"\
 	".\res\rate_low.ico"\
 	".\res\rate_med.ico"\
 	".\res\rate_none.ico"\
-	".\res\rename.ico"\
-	".\res\sendmail.ico"\
 	".\res\show_avatar.ico"\
 	".\res\skin.msf"\
-	".\res\sms.ico"\
 	".\statusmodes.h"\
 	
