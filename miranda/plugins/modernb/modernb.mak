@@ -172,7 +172,8 @@ LINK32_OBJS= \
 	"$(INTDIR)\SkinOpt.obj" \
 	"$(INTDIR)\utf.obj" \
 	"$(INTDIR)\viewmodes.obj" \
-	"$(INTDIR)\resource.res"
+	"$(INTDIR)\resource.res" \
+	"$(INTDIR)\modern_animated_avatars.obj"
 
 "..\..\bin\release\plugins\clist_modern.dll" : "$(OUTDIR)" $(DEF_FILE) $(LINK32_OBJS)
     $(LINK32) @<<
@@ -324,7 +325,8 @@ LINK32_OBJS= \
 	"$(INTDIR)\SkinOpt.obj" \
 	"$(INTDIR)\utf.obj" \
 	"$(INTDIR)\viewmodes.obj" \
-	"$(INTDIR)\resource.res"
+	"$(INTDIR)\resource.res" \
+	"$(INTDIR)\modern_animated_avatars.obj"
 
 "..\..\bin\debug\plugins\clist_modern.dll" : "$(OUTDIR)" $(DEF_FILE) $(LINK32_OBJS)
     $(LINK32) @<<
@@ -476,7 +478,8 @@ LINK32_OBJS= \
 	"$(INTDIR)\SkinOpt.obj" \
 	"$(INTDIR)\utf.obj" \
 	"$(INTDIR)\viewmodes.obj" \
-	"$(INTDIR)\resource.res"
+	"$(INTDIR)\resource.res" \
+	"$(INTDIR)\modern_animated_avatars.obj"
 
 "..\..\bin\release Unicode\plugins\clist_modern.dll" : "$(OUTDIR)" $(DEF_FILE) $(LINK32_OBJS)
     $(LINK32) @<<
@@ -628,7 +631,8 @@ LINK32_OBJS= \
 	"$(INTDIR)\SkinOpt.obj" \
 	"$(INTDIR)\utf.obj" \
 	"$(INTDIR)\viewmodes.obj" \
-	"$(INTDIR)\resource.res"
+	"$(INTDIR)\resource.res" \
+	"$(INTDIR)\modern_animated_avatars.obj"
 
 "..\..\bin\debug Unicode\plugins\clist_modern.dll" : "$(OUTDIR)" $(DEF_FILE) $(LINK32_OBJS)
     $(LINK32) @<<
