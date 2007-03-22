@@ -43,7 +43,8 @@ int ExtFrames_Init()
 {
 	if (ExtFrames.bModuleActive) return 0;
 	InitializeCriticalSection(&ExtFrames.CS);
-	ExtFrames.List=li.List_Create(0,1);
+	ExtFrames.List=li.List_Create(0,1);	
+	_ExtFrames_InitServices();
 	ExtFrames.bModuleActive = TRUE;
 	return 1;		
 }
@@ -52,7 +53,9 @@ int ExtFrames_Uninit()
 {
 	efcheck 0;
 	eflock;
-	{
+	{	
+		ExtFrames.bModuleActive = FALSE;
+		_ExtFrames_UninitServices();
 		li_ListDestruct(ExtFrames.List, _ExtFrames_Clear_EXTFRAMEWND);
 		ExtFrames.bModuleActive = FALSE;
 	}	

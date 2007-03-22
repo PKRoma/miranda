@@ -502,11 +502,20 @@ void LoadCLCOptions(HWND hwnd, struct ClcData *dat)
 	dat->row_align_right_items_to_right = DBGetContactSettingByte(NULL,"CList","AlignRightItemsToRight",1);
 	//TODO: Add to settings
 	dat->row_align_group_mode=DBGetContactSettingByte(NULL,"CList","AlignGroupCaptions",0);
-	for (i = 0 ; i < NUM_ITEM_TYPE ; i++)
+	if (pcli->hwndContactTree==NULL || dat->hWnd==pcli->hwndContactTree)
 	{
-		char tmp[128];
-		mir_snprintf(tmp, sizeof(tmp), "RowPos%d", i);
-		dat->row_items[i] = DBGetContactSettingWord(NULL, "CList", tmp, i);
+		for (i = 0 ; i < NUM_ITEM_TYPE ; i++)
+		{
+			char tmp[128];
+			mir_snprintf(tmp, sizeof(tmp), "RowPos%d", i);
+			dat->row_items[i] = DBGetContactSettingWord(NULL, "CList", tmp, i);
+		}
+	}
+	else
+	{
+		int defItems[]= {ITEM_ICON, ITEM_TEXT, ITEM_EXTRA_ICONS,};
+		for (i = 0 ; i < NUM_ITEM_TYPE; i++)
+			dat->row_items[i]=(i<SIZEOF(defItems)) ? defItems[i] : -1;
 	}
 
 	// Avatar
@@ -683,7 +692,7 @@ void LoadCLCOptions(HWND hwnd, struct ClcData *dat)
 	SendMessage(hwnd,INTM_SCROLLBARCHANGED,0,0);
 	if(!dat->bkChanged) {
 		DBVARIANT dbv={0};
-		dat->bkColour=DBGetContactSettingDword(NULL,"CLC","BkColour",CLCDEFAULT_BKCOLOUR);
+		dat->bkColour=GetSysColor(COLOR_3DFACE);//DBGetContactSettingDword(NULL,"CLC","BkColour",CLCDEFAULT_BKCOLOUR);
 		if(dat->hBmpBackground) {DeleteObject(dat->hBmpBackground); dat->hBmpBackground=NULL;}
 		/*if(DBGetContactSettingByte(NULL,"CLC","UseBitmap",CLCDEFAULT_USEBITMAP)) {
 		if(!DBGetContactSetting(NULL,"CLC","BkBitmap",&dbv)) {

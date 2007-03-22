@@ -17,11 +17,46 @@ along with this program; if not, write to the Free Software
 Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 */
 
-///#include "commonheaders.h"
-//#pragma hdrstop
+/************************************************************************/
+/*               Extra Image Column Support +0.5.0.0                    */
+/************************************************************************/
+/*
+	HINT: Common usage of Extra icons by modules
+	Usage sequence is next:
+	The Plugin have to be subscribed to ME_CLIST_EXTRA_LIST_REBUILD and
+	ME_CLIST_EXTRA_IMAGE_APPLY notifications.
+	
+	During .._REBUILD Notification handle plugin should register required 
+	icons in CList internal list via MS_CLIST_EXTRA_ADD_ICON servise 
+	and should to keep returned icon indexes.
+	
+	Note: _REBUILD notification means that list was rebuilded and
+	all previously registered icon indexes became invalid and can not be used.
 
-////////////////////////////////////
-//Extra Image Column Support +0.5.0.0
+	Note: After calling _ADD_ICON services the icon handle you provided is not 
+	need for extra images porpouses and have to be released by you in order
+	to reduce GDI resources consumptions. 
+
+	Note: Don't forget that icon handle loaded by LoadIcon GDI function is
+	shared and will be kept in memory till plugin unloading. So it is not 
+	better way to load icon. Please use appropriate Iconlib services.
+
+	Note: The icon can be registered in Clist at any time.
+	
+	During .._ME_CLIST_EXTRA_IMAGE_APPLY the plugin has to call 
+	MS_CLIST_EXTRA_SET_ICON passing appropriate icon index for contact. This 
+	service can be called any time in order to change current extra image.
+
+	ATTENTION: Currently Module support only 254 registered extra icons. The returned
+	value 0xFF internally means 'No extra icon' so thry t register only realy required 
+	icons. The best solution - register not registered/invalidated icon just before 
+	setting of extra image.
+
+	ATTENTION: Due to different module may use same extra icons slot - they will be conflicted. 
+	Please provide ability to end-user to change extra image slot to be used to show
+	your plugin information.
+
+*/
 
 //Extra columns type.
 //column arranged in this way
@@ -43,11 +78,10 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 typedef struct
 {
-int cbSize;			//must be sizeof(IconExtraColumn)
-int ColumnType;
-HANDLE hImage;		//return value from MS_CLIST_EXTRA_ADD_ICON
+	int cbSize;			//must be sizeof(IconExtraColumn)
+	int ColumnType;
+	HANDLE hImage;		//return value from MS_CLIST_EXTRA_ADD_ICON
 }IconExtraColumn,*pIconExtraColumn;
-
 
 //Set icon for contact at needed column
 //wparam=hContact
@@ -65,50 +99,33 @@ HANDLE hImage;		//return value from MS_CLIST_EXTRA_ADD_ICON
 //return hImage on success,-1 on failure
 #define MS_CLIST_EXTRA_ADD_ICON			"CListFrames/AddIconToExtraImageList"
 
-
-
 #define ME_CLIST_EXTRA_LIST_REBUILD			"CListFrames/OnExtraListRebuild"
 
 //called with wparam=hContact
 #define ME_CLIST_EXTRA_IMAGE_APPLY			"CListFrames/OnExtraImageApply"
 
-
-///////////////////////////////////
-
-
+//End of extra images header. TODO move it to separate m_extraimages.h file
+//Cause it has not any relationship to cluiframes engine
 
 
-//
-//want show tooltip for statusbar
-//wparam=(char *)protocolname
-//lparam=0
-#define ME_CLIST_FRAMES_SB_SHOW_TOOLTIP							"CListFrames/StatusBarShowToolTip"
+/************************************************************************/
+/*               CLUI Frames Support				                    */
+/************************************************************************/
 
+// NOTE: Clui frames engine is in to be reconsructed..
 
-//want hide tooltip for statusbar
-//wparam=lparam=0
-
-#define ME_CLIST_FRAMES_SB_HIDE_TOOLTIP							"CListFrames/StatusBarHideToolTip"
-
-//
-
-
-
-//adds a frame window
-//wParam=(CLISTFrame*)
-//lParam=0
-//returns an integer, the frame id.
+// Constants used bellow
 typedef struct tagCLISTFrame {
 	DWORD cbSize;
 	HWND hWnd ;
 	HICON hIcon;
-	int align; //al flags below
+	int align;	//al flags below
 	int height;
-	int Flags; //F_flags below
-	char *name; //frame window name,will be shown in menu
+	int Flags;	//F_flags below
+	char *name; //frame window name,will be shown in menu. DO NOT TRANSLATE IT will be used as Frame indentificator
 	char *TBname; //titlebar caption
-	//COLORREF TBBackColour; //titlebar background colour
 } CLISTFrame;
+
 #define F_VISIBLE			1 //Frame visible
 #define F_SHOWTB			2 //Show TitleBar
 #define F_UNCOLLAPSED		4 //UnCollapse frame
@@ -117,77 +134,19 @@ typedef struct tagCLISTFrame {
 #define F_SHOWTBTIP			32 //Show titlebar tooltip
 #define F_NO_SUBCONTAINER   1024   //Support skining no subcontainer needed
 
-
 // frame alignment
 #define alTop		0x00000001
 #define alBottom	0x00000002
-#define alClient	0x00000004 //only one alClient frame 
-#define MS_CLIST_FRAMES_ADDFRAME			"CListFrames/AddFrame"
+#define alClient	0x00000004				//only one alClient frame
 
-#define MS_CLIST_FRAMES_REMOVEFRAME			"CListFrames/RemoveFrame"
+// since 0.7.0.20 
+#define alLeft		0x00000011			   // frame is vertical
+#define alRight		0x00000012
 
-//shows all frames
-//wParam=lParam=0
-//returns 0 on success, -1 on failure
-#define MS_CLIST_FRAMES_SHOWALLFRAMES		"CListFrames/ShowALLFrames"
-
-//shows the titlebars of all frames
-//wParam=lParam=0
-//returns 0 on success, -1 on failure
-#define MS_CLIST_FRAMES_SHOWALLFRAMESTB		"CListFrames/ShowALLFramesTB"
-
-//hides the titlebars of all frames
-//wParam=lParam=0
-//returns 0 on success, -1 on failure
-#define MS_CLIST_FRAMES_HIDEALLFRAMESTB		"CListFrames/HideALLFramesTB"
-
-//shows the frame if it is hidden,
-//hides the frame if it is shown
-//wParam=FrameId
-//lParam=0
-//returns 0 on success, -1 on failure
-#define MS_CLIST_FRAMES_SHFRAME				"CListFrames/SHFrame"
-
-//shows the frame titlebar if it is hidden,
-//hides the frame titlebar if it is shown
-//wParam=FrameId
-//lParam=0
-//returns 0 on success, -1 on failure
-#define MS_CLIST_FRAMES_SHFRAMETITLEBAR		"CListFrame/SHFrameTitleBar"
-
-//locks the frame if it is unlocked,
-//unlock the frame if it is locked
-//wParam=FrameId
-//lParam=0
-//returns 0 on success, -1 on failure
-#define MS_CLIST_FRAMES_ULFRAME				"CListFrame/ULFrame"
-
-//collapses the frame if it is uncollapsed,
-//uncollapses the frame if it is collapsed
-//wParam=FrameId
-//lParam=0
-//returns 0 on success, -1 on failure
-#define MS_CLIST_FRAMES_UCOLLFRAME			"CListFrame/UCOLLFrame"
-
-//trigger border flags
-//wparam=frameid
-//lparam=0
-#define MS_CLIST_FRAMES_SETUNBORDER			"CListFrame/SetUnBorder"
-
-//redraws the frame
-//wParam=FrameId, -1 for all frames
-//lparam=FU_flags
-//returns a pointer to option, -1 on failure
 #define FU_TBREDRAW			1 //redraw titlebar
 #define FU_FMREDRAW			2 //redraw Frame
 #define FU_FMPOS			4 //update Frame position
-#define MS_CLIST_FRAMES_UPDATEFRAME			"CListFrame/UpdateFrame"
 
-//gets the frame options
-//(HIWORD)wParam=FrameId
-//(LOWORD)wParam=FO_flag
-//lParam=0
-//returns a pointer to option, -1 on failure
 #define FO_FLAGS		0x0001 //return set of F_VISIBLE,F_SHOWTB,F_UNCOLLAPSED,F_LOCKED,F_NOBORDER,F_SHOWTBTIP
 #define FO_NAME			0x0002 //Change name
 #define FO_TBNAME		0x0003 //Change TB caption
@@ -199,6 +158,98 @@ typedef struct tagCLISTFrame {
 #define FO_TBTIPNAME	0x0009 //Change TB tooltip
 #define FO_FLOATING		0x000a //Change floating mode
 
+//////////////////////////////////////////////////////////////////////////
+//want show tooltip for statusbar
+//wparam=(char *)protocolname
+//lparam=0
+#define ME_CLIST_FRAMES_SB_SHOW_TOOLTIP							"CListFrames/StatusBarShowToolTip"
+
+//////////////////////////////////////////////////////////////////////////
+//want hide tooltip for statusbar
+//wparam=lparam=0
+#define ME_CLIST_FRAMES_SB_HIDE_TOOLTIP							"CListFrames/StatusBarHideToolTip"
+
+//////////////////////////////////////////////////////////////////////////
+//adds a frame window
+//wParam=(CLISTFrame*)
+//lParam=0
+//returns an integer, the frame id.
+#define MS_CLIST_FRAMES_ADDFRAME			"CListFrames/AddFrame"
+
+//////////////////////////////////////////////////////////////////////////
+// remove frame. It does not destroy your window
+//
+#define MS_CLIST_FRAMES_REMOVEFRAME			"CListFrames/RemoveFrame"
+
+//////////////////////////////////////////////////////////////////////////
+//shows all frames
+//wParam=lParam=0
+//returns 0 on success, -1 on failure
+#define MS_CLIST_FRAMES_SHOWALLFRAMES		"CListFrames/ShowALLFrames"
+
+//////////////////////////////////////////////////////////////////////////
+//shows the titlebars of all frames
+//wParam=lParam=0
+//returns 0 on success, -1 on failure
+#define MS_CLIST_FRAMES_SHOWALLFRAMESTB		"CListFrames/ShowALLFramesTB"
+
+//////////////////////////////////////////////////////////////////////////
+//hides the titlebars of all frames
+//wParam=lParam=0
+//returns 0 on success, -1 on failure
+#define MS_CLIST_FRAMES_HIDEALLFRAMESTB		"CListFrames/HideALLFramesTB"
+ 
+//////////////////////////////////////////////////////////////////////////
+//shows the frame if it is hidden,
+//hides the frame if it is shown
+//wParam=FrameId
+//lParam=0
+//returns 0 on success, -1 on failure
+#define MS_CLIST_FRAMES_SHFRAME				"CListFrames/SHFrame"
+
+//////////////////////////////////////////////////////////////////////////
+//shows the frame titlebar if it is hidden,
+//hides the frame titlebar if it is shown
+//wParam=FrameId
+//lParam=0
+//returns 0 on success, -1 on failure
+#define MS_CLIST_FRAMES_SHFRAMETITLEBAR		"CListFrame/SHFrameTitleBar"
+
+//////////////////////////////////////////////////////////////////////////
+//locks the frame if it is unlocked,
+//unlock the frame if it is locked
+//wParam=FrameId
+//lParam=0
+//returns 0 on success, -1 on failure
+#define MS_CLIST_FRAMES_ULFRAME				"CListFrame/ULFrame"
+
+//////////////////////////////////////////////////////////////////////////
+//collapses the frame if it is uncollapsed,
+//uncollapses the frame if it is collapsed
+//wParam=FrameId
+//lParam=0
+//returns 0 on success, -1 on failure
+#define MS_CLIST_FRAMES_UCOLLFRAME			"CListFrame/UCOLLFrame"
+
+//////////////////////////////////////////////////////////////////////////
+//trigger border flags
+//wparam=frameid
+//lparam=0
+#define MS_CLIST_FRAMES_SETUNBORDER			"CListFrame/SetUnBorder"
+
+//////////////////////////////////////////////////////////////////////////
+//redraws the frame
+//wParam=FrameId, -1 for all frames
+//lparam=FU_flags
+//returns a pointer to option, -1 on failure
+#define MS_CLIST_FRAMES_UPDATEFRAME			"CListFrame/UpdateFrame"
+
+//////////////////////////////////////////////////////////////////////////
+//gets the frame options
+//(HIWORD)wParam=FrameId
+//(LOWORD)wParam=FO_flag
+//lParam=0
+//returns a pointer to option, -1 on failure
 #define MS_CLIST_FRAMES_GETFRAMEOPTIONS			"CListFrame/GetFrameOptions"
 
 //sets the frame options
@@ -208,9 +259,11 @@ typedef struct tagCLISTFrame {
 //returns 0 on success, -1 on failure
 #define MS_CLIST_FRAMES_SETFRAMEOPTIONS			"CListFrame/SetFrameOptions"
 
+//////////////////////////////////////////////////////////////////////////
+//Frames related menu stuff
+//////////////////////////////////////////////////////////////////////////
 
-//menu stuff
-
+//////////////////////////////////////////////////////////////////////////
 //add a new item to the context frame menu
 //wParam=0
 //lParam=(LPARAM)(CLISTMENUITEM*)&mi
@@ -219,36 +272,38 @@ typedef struct tagCLISTFrame {
 //contactowner=advanced parameter
 #define MS_CLIST_ADDCONTEXTFRAMEMENUITEM			"CList/AddContextFrameMenuItem"
 
+//////////////////////////////////////////////////////////////////////////
 //remove a item from context frame menu
 //wParam=hMenuItem returned by MS_CLIST_ADDCONTACTMENUITEM
 //lParam=0
 //returns 0 on success, nonzero on failure
 #define MS_CLIST_REMOVECONTEXTFRAMEMENUITEM			"CList/RemoveContextFrameMenuItem"
 
+//////////////////////////////////////////////////////////////////////////
 //builds the context menu for a frame
 //wparam=frameid
 //lParam=0
 //returns a HMENU on success, or NULL on failure
 #define MS_CLIST_MENUBUILDFRAMECONTEXT				"CList/BuildContextFrameMenu"
 
-/*
-//the frame menu is about to be built
-wparam=frameid 
-lparam=
--1 for build from titlebar,
-		use
-					MS_CLIST_ADDCONTEXTFRAMEMENUITEM 
-					MS_CLIST_REMOVECONTEXTFRAMEMENUITEM
-
->0 for build in main menu, 
-must be popupname=lparam to place your items in right popup of main menu.
-		use
-					MS_CLIST_ADDMAINMENUITEM
-					MS_CLIST_REMOVEMAINMENUITEM
-
-*/
+//////////////////////////////////////////////////////////////////////////
+//	the frame menu is about to be built
+//		wparam=frameid 
+//		lparam=
+//	-1 for build from titlebar,
+//		use
+//			MS_CLIST_ADDCONTEXTFRAMEMENUITEM 
+//			MS_CLIST_REMOVECONTEXTFRAMEMENUITEM
+//
+//	>0 for build in main menu, 
+//		must be popupname=lparam to place your items in right popup of main menu.
+//		use
+//			MS_CLIST_ADDMAINMENUITEM
+//			MS_CLIST_REMOVEMAINMENUITEM
+//
 #define ME_CLIST_PREBUILDFRAMEMENU					"CList/PreBuildFrameMenu"
 
+//////////////////////////////////////////////////////////////////////////
 //needed by cluiframes module to add frames menu to main menu.
 //it just calls NotifyEventHooks(hPreBuildFrameMenuEvent,wParam,lParam);
 #define MS_CLIST_FRAMEMENUNOTIFY					"CList/ContextFrameMenuNotify"

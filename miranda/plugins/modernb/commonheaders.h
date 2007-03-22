@@ -276,6 +276,8 @@ extern __inline char * strdupn(const char * src, int len);
 #define SORTBY_NAME_LOCALE 5
 #define SORTBY_NOTHING	10
 
+#define DT_FORCENATIVERENDER   0x10000000
+
 #ifdef _UNICODE
 #define t2a(src) u2a(src)
 #define a2t(src) a2u(src)

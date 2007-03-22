@@ -40,28 +40,313 @@ This file have to be excluded from compilation and need to be adde to project vi
 
 #ifdef __modern_ext_frames_c__include_c_file   //protection from adding to compilation
 
-/*
-TODO services and events to be implemented:
+static void _ExtFrames_InitServices()
+{
+	//Create services here
+	CreateServiceFunction( MS_CLIST_FRAMES_ADDFRAME,		_ExtFramesSrv_AddFrame		  );
+	CreateServiceFunction( MS_CLIST_FRAMES_REMOVEFRAME,		_ExtFramesSrv_RemoveFrame	  );
+	CreateServiceFunction( MS_CLIST_FRAMES_SHOWALLFRAMES,	_ExtFramesSrv_ShowAllFrames	  );
+	CreateServiceFunction( MS_CLIST_FRAMES_SHOWALLFRAMESTB,	_ExtFramesSrv_ShowAllFramesTB );
+	CreateServiceFunction( MS_CLIST_FRAMES_HIDEALLFRAMESTB,	_ExtFramesSrv_HideAllFramesTB );
+	CreateServiceFunction( MS_CLIST_FRAMES_SHFRAME,			_ExtFramesSrv_SHFrame		  );
+	CreateServiceFunction( MS_CLIST_FRAMES_SHFRAMETITLEBAR,	_ExtFramesSrv_SHFrameTitleBar );
+	CreateServiceFunction( MS_CLIST_FRAMES_ULFRAME,			_ExtFramesSrv_ULFrame		  );
+	CreateServiceFunction( MS_CLIST_FRAMES_UCOLLFRAME,		_ExtFramesSrv_UCollFrame	  );
+	CreateServiceFunction( MS_CLIST_FRAMES_SETUNBORDER,		_ExtFramesSrv_SetUnBorder	  );
+	CreateServiceFunction( MS_CLIST_FRAMES_UPDATEFRAME,		_ExtFramesSrv_UpdateFrame	  );
+	CreateServiceFunction( MS_CLIST_FRAMES_GETFRAMEOPTIONS,	_ExtFramesSrv_GetFrameOptions );
+	CreateServiceFunction( MS_CLIST_FRAMES_SETFRAMEOPTIONS,	_ExtFramesSrv_SetFrameOptions );
+	
+	//TODO Frame menu stuff services
 
-#define MS_CLIST_FRAMES_ADDFRAME			"CListFrames/AddFrame"
-#define MS_CLIST_FRAMES_REMOVEFRAME			"CListFrames/RemoveFrame"
-#define MS_CLIST_FRAMES_SHOWALLFRAMES		"CListFrames/ShowALLFrames"
-#define MS_CLIST_FRAMES_SHOWALLFRAMESTB		"CListFrames/ShowALLFramesTB"
-#define MS_CLIST_FRAMES_HIDEALLFRAMESTB		"CListFrames/HideALLFramesTB"
-#define MS_CLIST_FRAMES_SHFRAME				"CListFrames/SHFrame"
-#define MS_CLIST_FRAMES_SHFRAMETITLEBAR		"CListFrame/SHFrameTitleBar"
-#define MS_CLIST_FRAMES_ULFRAME				"CListFrame/ULFrame"
-#define MS_CLIST_FRAMES_UCOLLFRAME			"CListFrame/UCOLLFrame"
-#define MS_CLIST_FRAMES_SETUNBORDER			"CListFrame/SetUnBorder"
-#define MS_CLIST_FRAMES_UPDATEFRAME			"CListFrame/UpdateFrame"
-#define MS_CLIST_FRAMES_GETFRAMEOPTIONS		"CListFrame/GetFrameOptions"
-#define MS_CLIST_FRAMES_SETFRAMEOPTIONS		"CListFrame/SetFrameOptions"
-#define MS_CLIST_FRAMES_MENUNOTIFY			"CList/ContextFrameMenuNotify"
+	//register event hook here
+	ExtFrames.hookSBShowTooltip = CreateHookableEvent( ME_CLIST_FRAMES_SB_SHOW_TOOLTIP );
+	ExtFrames.hookSBHideTooltip = CreateHookableEvent( ME_CLIST_FRAMES_SB_HIDE_TOOLTIP );
+	ExtFrames.hookPrebuildFrameMenu = CreateHookableEvent( ME_CLIST_PREBUILDFRAMEMENU );
+}
 
-and Events
+static void _ExtFrames_UninitServices()
+{
+	if (ExtFrames.hookSBShowTooltip) UnhookEvent( ExtFrames.hookSBShowTooltip );
+	if (ExtFrames.hookSBHideTooltip) UnhookEvent( ExtFrames.hookSBHideTooltip );
+	if (ExtFrames.hookPrebuildFrameMenu) UnhookEvent( ExtFrames.hookPrebuildFrameMenu );
 
-#define ME_CLIST_FRAMES_SB_SHOW_TOOLTIP		"CListFrames/StatusBarShowToolTip"
-#define ME_CLIST_FRAMES_SB_HIDE_TOOLTIP		"CListFrames/StatusBarHideToolTip"
+	ExtFrames.hookSBShowTooltip = NULL;
+	ExtFrames.hookSBHideTooltip = NULL;
+	ExtFrames.hookPrebuildFrameMenu = NULL;
+}
 
-*/
+//////////////////////////////////////////////////////////////////////////
+//want show tooltip for statusbar
+//wparam=(char *)protocolname
+//lparam=0
+//#define ME_CLIST_FRAMES_SB_SHOW_TOOLTIP							"CListFrames/StatusBarShowToolTip"
+
+//////////////////////////////////////////////////////////////////////////
+//want hide tooltip for statusbar
+//wparam=lparam=0
+//#define ME_CLIST_FRAMES_SB_HIDE_TOOLTIP							"CListFrames/StatusBarHideToolTip"
+
+//////////////////////////////////////////////////////////////////////////
+//adds a frame window
+//wParam=(CLISTFrame*)
+//lParam=0
+//returns an integer, the frame id.
+//#define MS_CLIST_FRAMES_ADDFRAME			"CListFrames/AddFrame"
+static int _ExtFramesSrv_AddFrame(WPARAM wParam, LPARAM lParam)
+{
+	int frameId = -1;
+	efcheck frameId;
+	eflock;
+	{
+	  // DO HERE
+	}
+	efunlock;
+	return frameId; //frame id
+}
+//////////////////////////////////////////////////////////////////////////
+// remove frame. It does not destroy your window
+//
+//#define MS_CLIST_FRAMES_REMOVEFRAME			"CListFrames/RemoveFrame"
+static int _ExtFramesSrv_RemoveFrame(WPARAM wParam, LPARAM lParam)
+{
+	efcheck 0;
+	eflock;
+	{
+		// DO HERE
+	}
+	efunlock;
+	return 0; 
+}
+//////////////////////////////////////////////////////////////////////////
+//shows all frames
+//wParam=lParam=0
+//returns 0 on success, -1 on failure
+//#define MS_CLIST_FRAMES_SHOWALLFRAMES		"CListFrames/ShowALLFrames"
+static int _ExtFramesSrv_ShowAllFrames(WPARAM wParam, LPARAM lParam)
+{
+	efcheck -1;
+	eflock;
+	{
+		// DO HERE
+	}
+	efunlock;
+	return 0;
+}
+//////////////////////////////////////////////////////////////////////////
+//shows the titlebars of all frames
+//wParam=lParam=0
+//returns 0 on success, -1 on failure
+//#define MS_CLIST_FRAMES_SHOWALLFRAMESTB		"CListFrames/ShowALLFramesTB"
+static int _ExtFramesSrv_ShowAllFramesTB(WPARAM wParam, LPARAM lParam)
+{
+	efcheck -1;
+	eflock;
+	{
+		// DO HERE
+	}
+	efunlock;
+	return 0;
+}
+
+//////////////////////////////////////////////////////////////////////////
+//hides the titlebars of all frames
+//wParam=lParam=0
+//returns 0 on success, -1 on failure
+//#define MS_CLIST_FRAMES_HIDEALLFRAMESTB		"CListFrames/HideALLFramesTB"
+static int _ExtFramesSrv_HideAllFramesTB(WPARAM wParam, LPARAM lParam)
+{
+	efcheck -1;
+	eflock;
+	{
+		// DO HERE
+	}
+	efunlock;
+	return 0;
+}
+//////////////////////////////////////////////////////////////////////////
+//shows the frame if it is hidden,
+//hides the frame if it is shown
+//wParam=FrameId
+//lParam=0
+//returns 0 on success, -1 on failure
+//#define MS_CLIST_FRAMES_SHFRAME				"CListFrames/SHFrame"
+static int _ExtFramesSrv_SHFrame(WPARAM wParam, LPARAM lParam)
+{
+	efcheck -1;
+	eflock;
+	{
+		// DO HERE
+	}
+	efunlock;
+	return 0;
+}
+//////////////////////////////////////////////////////////////////////////
+//shows the frame titlebar if it is hidden,
+//hides the frame titlebar if it is shown
+//wParam=FrameId
+//lParam=0
+//returns 0 on success, -1 on failure
+//#define MS_CLIST_FRAMES_SHFRAMETITLEBAR		"CListFrame/SHFrameTitleBar"
+static int _ExtFramesSrv_SHFrameTitleBar(WPARAM wParam, LPARAM lParam)
+{
+	efcheck -1;
+	eflock;
+	{
+		// DO HERE
+	}
+	efunlock;
+	return 0;
+}
+
+//////////////////////////////////////////////////////////////////////////
+//locks the frame if it is unlocked,
+//unlock the frame if it is locked
+//wParam=FrameId
+//lParam=0
+//returns 0 on success, -1 on failure
+//#define MS_CLIST_FRAMES_ULFRAME				"CListFrame/ULFrame"
+static int _ExtFramesSrv_ULFrame(WPARAM wParam, LPARAM lParam)
+{
+	efcheck -1;
+	eflock;
+	{
+		// DO HERE
+	}
+	efunlock;
+	return 0;
+}
+//////////////////////////////////////////////////////////////////////////
+//collapses the frame if it is uncollapsed,
+//uncollapses the frame if it is collapsed
+//wParam=FrameId
+//lParam=0
+//returns 0 on success, -1 on failure
+//#define MS_CLIST_FRAMES_UCOLLFRAME			"CListFrame/UCOLLFrame"
+static int _ExtFramesSrv_UCollFrame(WPARAM wParam, LPARAM lParam)
+{
+	efcheck -1;
+	eflock;
+	{
+		// DO HERE
+	}
+	efunlock;
+	return 0;
+}
+//////////////////////////////////////////////////////////////////////////
+//trigger border flags
+//wparam=frameid
+//lparam=0
+//#define MS_CLIST_FRAMES_SETUNBORDER			"CListFrame/SetUnBorder"
+static int _ExtFramesSrv_SetUnBorder(WPARAM wParam, LPARAM lParam)
+{
+	efcheck -1;
+	eflock;
+	{
+		// DO HERE
+	}
+	efunlock;
+	return 0;
+}
+
+//////////////////////////////////////////////////////////////////////////
+//redraws the frame
+//wParam=FrameId, -1 for all frames
+//lparam=FU_flags
+//returns a pointer to option, -1 on failure
+//#define MS_CLIST_FRAMES_UPDATEFRAME			"CListFrame/UpdateFrame"
+static int _ExtFramesSrv_UpdateFrame(WPARAM wParam, LPARAM lParam)
+{
+	int ret=-1;
+	efcheck ret;
+	eflock;
+	{
+		// DO HERE
+	}
+	efunlock;
+	return ret;
+}
+//////////////////////////////////////////////////////////////////////////
+//gets the frame options
+//(HIWORD)wParam=FrameId
+//(LOWORD)wParam=FO_flag
+//lParam=0
+//returns a pointer to option, -1 on failure
+//#define MS_CLIST_FRAMES_GETFRAMEOPTIONS			"CListFrame/GetFrameOptions"
+static int _ExtFramesSrv_GetFrameOptions(WPARAM wParam, LPARAM lParam)
+{
+	int ret=-1;
+	efcheck ret;
+	eflock;
+	{
+		// DO HERE
+	}
+	efunlock;
+	return ret;
+}
+//sets the frame options
+//(HIWORLD)wParam=FrameId
+//(LOWORD)wParam=FO_flag
+//lParam=value
+//returns 0 on success, -1 on failure
+//#define MS_CLIST_FRAMES_SETFRAMEOPTIONS			"CListFrame/SetFrameOptions"
+static int _ExtFramesSrv_SetFrameOptions(WPARAM wParam, LPARAM lParam)
+{
+	int ret=-1;
+	efcheck ret;
+	eflock;
+	{
+		// DO HERE
+	}
+	efunlock;
+	return ret;
+}
+//////////////////////////////////////////////////////////////////////////
+//Frames related menu stuff
+//////////////////////////////////////////////////////////////////////////
+
+//////////////////////////////////////////////////////////////////////////
+//add a new item to the context frame menu
+//wParam=0
+//lParam=(LPARAM)(CLISTMENUITEM*)&mi
+//returns a handle to the new item
+//popupposition=frameid
+//contactowner=advanced parameter
+//#define MS_CLIST_ADDCONTEXTFRAMEMENUITEM			"CList/AddContextFrameMenuItem"
+
+//////////////////////////////////////////////////////////////////////////
+//remove a item from context frame menu
+//wParam=hMenuItem returned by MS_CLIST_ADDCONTACTMENUITEM
+//lParam=0
+//returns 0 on success, nonzero on failure
+//#define MS_CLIST_REMOVECONTEXTFRAMEMENUITEM			"CList/RemoveContextFrameMenuItem"
+
+//////////////////////////////////////////////////////////////////////////
+//builds the context menu for a frame
+//wparam=frameid
+//lParam=0
+//returns a HMENU on success, or NULL on failure
+//#define MS_CLIST_MENUBUILDFRAMECONTEXT				"CList/BuildContextFrameMenu"
+
+//////////////////////////////////////////////////////////////////////////
+//	the frame menu is about to be built
+//		wparam=frameid 
+//		lparam=
+//	-1 for build from titlebar,
+//		use
+//			MS_CLIST_ADDCONTEXTFRAMEMENUITEM 
+//			MS_CLIST_REMOVECONTEXTFRAMEMENUITEM
+//
+//	>0 for build in main menu, 
+//		must be popupname=lparam to place your items in right popup of main menu.
+//		use
+//			MS_CLIST_ADDMAINMENUITEM
+//			MS_CLIST_REMOVEMAINMENUITEM
+//
+//#define ME_CLIST_PREBUILDFRAMEMENU					"CList/PreBuildFrameMenu"
+
+//////////////////////////////////////////////////////////////////////////
+//needed by cluiframes module to add frames menu to main menu.
+//it just calls NotifyEventHooks(hPreBuildFrameMenuEvent,wParam,lParam);
+//#define MS_CLIST_FRAMEMENUNOTIFY					"CList/ContextFrameMenuNotify"
 #endif

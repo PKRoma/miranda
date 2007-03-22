@@ -2879,6 +2879,8 @@ BOOL SkinEngine_DrawText(HDC hdc, LPCTSTR lpString, int nCount, RECT * lpRect, U
     OffsetRect(&r,1,1);
     if (format&DT_RTLREADING) SetTextAlign(hdc,TA_RTLREADING);
     if (format&DT_CALCRECT) return DrawText(hdc,lpString,nCount,lpRect,format);
+	if (format&DT_FORCENATIVERENDER) 
+		return DrawText(hdc,lpString,nCount,lpRect,format&~DT_FORCENATIVERENDER);
     form=format;
     color=GetTextColor(hdc);
     if (!g_CluiData.fGDIPlusFail &&0) ///text via gdi+

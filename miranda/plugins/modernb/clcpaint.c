@@ -2863,7 +2863,7 @@ static void CLCPaint_InternalPaintClc(HWND hwnd,struct ClcData *dat,HDC hdc,RECT
 	HBRUSH hBrushAlternateGrey=NULL;
 	BOOL NotInMain=!CLUI_IsInMainWindow(hwnd);
 	// yes I know about GetSysColorBrush()
-	COLORREF tmpbkcolour = style&CLS_CONTACTLIST ? ( /*dat->useWindowsColours ? GetSysColor(COLOR_3DFACE) :*/ dat->bkColour ) : dat->bkColour;
+	COLORREF tmpbkcolour = style&CLS_CONTACTLIST ? ( dat->bkChanged ?  dat->bkColour : GetSysColor(COLOR_3DFACE)) : dat->bkColour;
 	DWORD currentCounter;
 
 	//log0("+++ CLCPaint_InternalPaintClc +++");
@@ -2908,7 +2908,9 @@ static void CLCPaint_InternalPaintClc(HWND hwnd,struct ClcData *dat,HDC hdc,RECT
 	// Draw background
 	if (NotInMain || dat->force_in_dialog)
 	{
-		FillRect(hdcMem,rcPaint,GetSysColorBrush(COLOR_BTNFACE));
+		HBRUSH hBrush=CreateSolidBrush(tmpbkcolour);
+		FillRect(hdcMem,rcPaint,hBrush);
+		DeleteObject(hBrush);
 		SkinEngine_SetRectOpaque(hdcMem,rcPaint);
 		if (!(style&CLS_GREYALTERNATE))
 			SkinDrawGlyph(hdcMem,&clRect,rcPaint,"CL,ID=Background,Type=Control");
@@ -3030,7 +3032,12 @@ static void CLCPaint_InternalPaintClc(HWND hwnd,struct ClcData *dat,HDC hdc,RECT
 					// Alternating grey
 					if (style&CLS_GREYALTERNATE && line_num&1)
 					{
-						SkinDrawGlyph(hdcMem,&row_rc,rcPaint,"CL,ID=GreyAlternate");
+						if (style&CLS_CONTACTLIST || dat->bkChanged || dat->force_in_dialog)
+						{
+							FillRect(hdcMem, &row_rc,hBrushAlternateGrey);
+						}
+						else
+							SkinDrawGlyph(hdcMem,&row_rc,rcPaint,"CL,ID=GreyAlternate");
 					}
 					// Row background
 					if (!dat->force_in_dialog)
@@ -3290,6 +3297,7 @@ static void setstrT(IN OUT TCHAR * lpText, IN TCHAR * Value)
 	if (Value) lpText=mir_tstrdup(Value);
 	else lpText=NULL;
 }
+
 static void CLCPaint_CalulateContactItemsPositions(HWND hwnd, HDC hdcMem, struct ClcData *dat, struct ClcContact *Drawing, RECT *in_row_rc, RECT *in_free_row_rc, int left_pos, int right_pos, int selected,int hottrack)
 {
 	int item_iterator, item, item_text, text_left_pos;
@@ -3807,6 +3815,7 @@ static void CLCPaint_CalulateContactItemsPositions(HWND hwnd, HDC hdcMem, struct
 					rc.bottom = rc.top + 2;
 					rc.right = rc.left + ((rc.right - rc.left - text_size.cx)>>1) - 3;
 					trc.left = rc.right + 3;
+					trc.right = trc.left + text_size.cx + 6;
 					if (text_size.cy < trc.bottom - trc.top)
 					{
 						trc.top += (trc.bottom - trc.top - text_size.cy) >> 1;
@@ -4012,7 +4021,8 @@ static void CLCPaint_DrawContactItems(HWND hwnd, HDC hdcMem, struct ClcData *dat
 		DT_SINGLELINE | 
 		(dat->text_rtl ? DT_RTLREADING : 0) | 
 		(dat->text_align_right ? DT_RIGHT : 0)|
-		(gl_TrimText?DT_END_ELLIPSIS:0) ;
+		(gl_TrimText?DT_END_ELLIPSIS:0)|
+		((dat->force_in_dialog || dat->bkChanged) ? DT_FORCENATIVERENDER:0);
 
 	if (!Drawing->ext_fItemsValid) 
 		CLCPaint_CalulateContactItemsPositions(hwnd, hdcMem, dat, Drawing, row_rc, free_row_rc, left_pos, right_pos, selected, hottrack);
@@ -4345,7 +4355,7 @@ static void CLCPaint_InternalPaintRowItems (HWND hwnd, HDC hdcMem, struct ClcDat
 	return;
 #endif
 */
-	if (gl_RowRoot || (dat->hWnd!=pcli->hwndContactTree))
+	if (gl_RowRoot && (dat->hWnd==pcli->hwndContactTree))
 	{
 		CLCPaint_ModernInternalPaintRowItems(hwnd,hdcMem,dat,Drawing,row_rc,free_row_rc,left_pos,right_pos,selected,hottrack,rcPaint);
 		return;

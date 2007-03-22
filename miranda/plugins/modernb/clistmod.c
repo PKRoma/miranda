@@ -191,13 +191,12 @@ int GetContactIcon(WPARAM wParam,LPARAM lParam)
 {
 	char *szProto;
 	int status;
-	pdisplayNameCacheEntry cacheEntry;
-    int res;
-
-    cacheEntry=(pdisplayNameCacheEntry)pcli->pfnGetCacheEntry((HANDLE)wParam);
-	szProto=cacheEntry->szProto;
-	status=cacheEntry->status;
-
+	int res;
+	szProto = (char *) CallService(MS_PROTO_GETCONTACTBASEPROTO, wParam, 0);
+	if (szProto == NULL)
+		status = ID_STATUS_OFFLINE;
+	else
+		status = DBGetContactSettingWord((HANDLE) wParam, szProto, "Status", ID_STATUS_OFFLINE);
     res=ExtIconFromStatusMode((HANDLE)wParam,szProto,szProto==NULL?ID_STATUS_OFFLINE:status); //by FYR
     if (lParam==0 && res!=-1) res&=0xFFFF;
     return res;

@@ -136,6 +136,7 @@
 #define IDI_ICON5                       455
 #define IDI_CHAT                        455
 #define IDI_LISTENING_TO                456
+#define IDD_OPT_EXTFRAMES               461
 #define IDI_FAVORITE_0                  500
 #define IDI_FAVORITE_1                  501
 #define IDI_FAVORITE_2                  502
@@ -635,6 +636,7 @@
 #define IDC_DOWN                        1634
 #define IDC_C_SPLIT                     1634
 #define IDC_PASTE                       1634
+#define IDC_BUTTON4                     1634
 #define IDC_IDLECHECK                   1636
 #define IDC_IDLEONWINDOWS               1637
 #define IDC_IDLEONMIRANDA               1638
@@ -868,6 +870,7 @@
 #define IDC_CONTDOWN                    1970
 #define IDC_MULTI                       2000
 #define IDC_MULTI_2                     2001
+#define IDC_FRAMESORDER                 2002
 #define IDC_CLSORT1                     6666
 #define IDC_CLSORT2                     6667
 #define IDC_CLSORT3                     6668
@@ -962,9 +965,9 @@
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
-#define _APS_NEXT_RESOURCE_VALUE        461
+#define _APS_NEXT_RESOURCE_VALUE        462
 #define _APS_NEXT_COMMAND_VALUE         40020
-#define _APS_NEXT_CONTROL_VALUE         2002
+#define _APS_NEXT_CONTROL_VALUE         2003
 #define _APS_NEXT_SYMED_VALUE           101
 #endif
 #endif

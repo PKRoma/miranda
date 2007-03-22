@@ -73,13 +73,38 @@ typedef struct _tagExtFrameModule
 	CRITICAL_SECTION CS;
 	BOOL bModuleActive;
 	SortedList * List;
+	HANDLE hookSBShowTooltip;	    // ME_CLIST_FRAMES_SB_SHOW_TOOLTIP
+	HANDLE hookSBHideTooltip;	    // ME_CLIST_FRAMES_SB_HIDE_TOOLTIP
+	HANDLE hookPrebuildFrameMenu;	// ME_CLIST_PREBUILDFRAMEMENU
 }EXTFRAMESMODULE;
 
 //////////////////////////////////////////////////////////////////////////
 // Static Declarations
+
+// modern_ext_frames_intern.c
 static void _ExtFrames_Clear_EXTFRAMEWND(void * extFrame);
 static int	_ExtFrames_CalcFramesRect(IN SortedList* pList, IN int width, IN int height, OUT RECT * pWndRect );
 static int	_ExtFrames_GetMinParentSize(IN SortedList* pList, OUT SIZE * size );
+
+// modern_ext_frames_services.c
+static void _ExtFrames_InitServices();
+static void _ExtFrames_UninitServices();
+//
+static int _ExtFramesSrv_AddFrame(WPARAM wParam, LPARAM lParam);
+static int _ExtFramesSrv_RemoveFrame(WPARAM wParam, LPARAM lParam);
+static int _ExtFramesSrv_ShowAllFrames(WPARAM wParam, LPARAM lParam);
+static int _ExtFramesSrv_ShowAllFramesTB(WPARAM wParam, LPARAM lParam);
+static int _ExtFramesSrv_HideAllFramesTB(WPARAM wParam, LPARAM lParam);
+static int _ExtFramesSrv_SHFrame(WPARAM wParam, LPARAM lParam);
+static int _ExtFramesSrv_SHFrameTitleBar(WPARAM wParam, LPARAM lParam);
+static int _ExtFramesSrv_ULFrame(WPARAM wParam, LPARAM lParam);
+static int _ExtFramesSrv_UCollFrame(WPARAM wParam, LPARAM lParam);
+static int _ExtFramesSrv_SetUnBorder(WPARAM wParam, LPARAM lParam);
+static int _ExtFramesSrv_UpdateFrame(WPARAM wParam, LPARAM lParam);
+static int _ExtFramesSrv_GetFrameOptions(WPARAM wParam, LPARAM lParam);
+static int _ExtFramesSrv_SetFrameOptions(WPARAM wParam, LPARAM lParam);
+
+
 
 //////////////////////////////////////////////////////////////////////////
 // Static Local Global Variable
