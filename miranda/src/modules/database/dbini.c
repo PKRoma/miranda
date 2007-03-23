@@ -22,7 +22,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 */
 
 #include "../../core/commonheaders.h"
-//#include "database.h"
+#include "../srfile/file.h"
 
 static HANDLE hIniChangeNotification;
 extern char mirandabootini[MAX_PATH];
@@ -71,7 +71,8 @@ void GetProfileDirectory(char *szPath,int cbPath)
 		lstrcpynA(szPath,szMirandaDir,cbPath);
 	if(szPath[lstrlenA(szPath)-1]=='\\') szPath[lstrlenA(szPath)-1]='\0';
 	if((dwAttributes=GetFileAttributesA(szPath))!=0xffffffff&&dwAttributes&FILE_ATTRIBUTE_DIRECTORY) return;
-	CreateDirectoryA(szPath,NULL);
+	CreateDirectoryTree(szPath);
+	CreateDirectoryA(szPath, NULL);
 }
 
 int ShouldAutoCreate(void)

@@ -22,7 +22,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 */
 #include "commonheaders.h"
 #include "profilemanager.h"
-
+#include "../srfile/file.h"
 
 // from the plugin loader, hate extern but the db frontend is pretty much tied
 extern PLUGINLINK pluginCoreLink;
@@ -44,14 +44,13 @@ int getProfilePath(char * buf, size_t cch)
 	GetPrivateProfileStringA("Database", "ProfileDir", ".", profiledir, SIZEOF(profiledir), mirandabootini);
 	// get the string containing envars and maybe relative paths
 	// get rid of the vars 
-	ExpandEnvironmentStringsA(profiledir, exprofiledir, SIZEOF(exprofiledir));
-	if ( _fullpath(profiledir, exprofiledir, SIZEOF(profiledir)) != 0 ) {
-		/* XXX: really use CreateDirectory()? it only creates the last dir given a\b\c, SHCreateDirectory() 
-		does what we want however thats 2000+ only  */
-		DWORD dw = INVALID_FILE_ATTRIBUTES;
-		CreateDirectoryA(profiledir, NULL);
-		dw=GetFileAttributesA(profiledir);
-		if ( dw != INVALID_FILE_ATTRIBUTES && dw&FILE_ATTRIBUTE_DIRECTORY )  {
+	ExpandEnvironmentStringsA( profiledir, exprofiledir, SIZEOF( exprofiledir ));
+	if ( _fullpath( profiledir, exprofiledir, SIZEOF( profiledir )) != 0 ) {
+		DWORD dw;
+		CreateDirectoryTree( profiledir );
+		CreateDirectoryA( profiledir, NULL );
+		dw = GetFileAttributesA( profiledir );
+		if ( dw != INVALID_FILE_ATTRIBUTES && dw & FILE_ATTRIBUTE_DIRECTORY ) {
 			strncpy(buf, profiledir, cch);
 			p = strrchr(buf, '\\');
 			// if the char after '\' is null then change '\' to null
