@@ -1,7 +1,7 @@
 /*
 Chat module plugin for Miranda IM
 
-Copyright (C) 2003 Jörgen Persson
+Copyright (C) 2003 JÃ¶rgen Persson
 
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License
@@ -1272,7 +1272,6 @@ BOOL CALLBACK RoomWndProc(HWND hwndDlg,UINT uMsg,WPARAM wParam,LPARAM lParam)
 		si->pszHeader = Log_CreateRtfHeader(MM_FindModule(si->pszModule), si);
         SendMessage(hwndDlg, GC_REDRAWLOG2, 0, 0);
 		break;
-
    case WM_SIZE:
       {
          UTILRESIZEDIALOG urd;
@@ -1869,7 +1868,7 @@ LABEL_SHOWWINDOW:
 				break;
 		}	}
 		break;
-		
+
 	case WM_COMMAND:
 		switch (LOWORD(wParam)) {
 		case IDC_CHAT_LIST:
@@ -2124,10 +2123,12 @@ LABEL_SHOWWINDOW:
       }
       break;
 
-   case WM_LBUTTONDBLCLK:
-      if (LOWORD(lParam) < 30)
-         PostMessage(hwndDlg, GC_SCROLLTOBOTTOM, 0, 0);
-      break;
+	case WM_LBUTTONDBLCLK:
+		if (LOWORD(lParam) < 30)
+			PostMessage(hwndDlg, GC_SCROLLTOBOTTOM, 0, 0);
+		else
+			SendMessage(GetParent(hwndDlg), WM_SYSCOMMAND, SC_MINIMIZE, 0);
+		break;
 
 
    case WM_CLOSE:

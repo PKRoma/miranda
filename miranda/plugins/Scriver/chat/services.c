@@ -1,7 +1,7 @@
 /*
 Chat module plugin for Miranda IM
 
-Copyright (C) 2003 Jörgen Persson
+Copyright (C) 2003 JÃ¶rgen Persson
 
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License
@@ -221,12 +221,12 @@ int Service_GetInfo(WPARAM wParam,LPARAM lParam)
 }
 
 void LoadModuleIcons(MODULEINFO * mi) {
-	mi->OnlineIconIndex = ImageList_AddIcon_ProtoEx(g_dat->hTabIconList, mi->pszModule, ID_STATUS_ONLINE);	
+	mi->OnlineIconIndex = ImageList_AddIcon_ProtoEx(g_dat->hTabIconList, mi->pszModule, ID_STATUS_ONLINE);
 	mi->hOnlineIcon = ImageList_GetIcon(g_dat->hTabIconList, mi->OnlineIconIndex, ILD_TRANSPARENT);
 	mi->hOnlineTalkIcon = ImageList_GetIcon(g_dat->hTabIconList, mi->OnlineIconIndex, ILD_TRANSPARENT|INDEXTOOVERLAYMASK(1));
 	ImageList_AddIcon(g_dat->hTabIconList, mi->hOnlineTalkIcon);
 
-	mi->OfflineIconIndex = ImageList_AddIcon_ProtoEx(g_dat->hTabIconList, mi->pszModule, ID_STATUS_OFFLINE);	
+	mi->OfflineIconIndex = ImageList_AddIcon_ProtoEx(g_dat->hTabIconList, mi->pszModule, ID_STATUS_OFFLINE);
 	mi->hOfflineIcon = ImageList_GetIcon(g_dat->hTabIconList, mi->OfflineIconIndex, ILD_TRANSPARENT);
 
 	mi->hOfflineTalkIcon = ImageList_GetIcon(g_dat->hTabIconList, mi->OfflineIconIndex, ILD_TRANSPARENT|INDEXTOOVERLAYMASK(1));
@@ -528,8 +528,7 @@ void ShowRoom(SESSION_INFO * si, WPARAM wp, BOOL bSetForeground)
 	}
 	SendMessage(si->hWnd, DM_UPDATETABCONTROL, -1, (LPARAM)si);
 	SendMessage(GetParent(si->hWnd), CM_ACTIVATECHILD, 0, (LPARAM) si->hWnd);
-	if ( hParent != NULL )
-		ShowWindow(hParent, SW_NORMAL);
+	SendMessage(GetParent(si->hWnd), CM_POPUPWINDOW, 0, (LPARAM) si->hWnd);
 	SendMessage(si->hWnd, WM_MOUSEACTIVATE, 0, 0);
 	SetFocus(GetDlgItem(si->hWnd, IDC_CHAT_MESSAGE));
 }
