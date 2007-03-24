@@ -1156,7 +1156,6 @@ static int CreateOscarProxyConnection(oscar_connection *oc)
   // inform UI
   ICQBroadcastAck(oc->ft->hContact, ACKTYPE_FILE, ACKRESULT_CONNECTPROXY, oc->ft, 0);
 
-  nloc.cbSize = sizeof(nloc);
   nloc.szHost = OSCAR_PROXY_HOST;
   nloc.wPort = ICQGetContactSettingWord(NULL, "OscarPort", DEFAULT_SERVER_PORT);
   if (nloc.wPort == 0)
@@ -1249,14 +1248,17 @@ static DWORD __stdcall oft_connectionThread(oscarthreadstartinfo *otsi)
     if (oc.type == OCT_NORMAL || oc.type == OCT_REVERSE)
     { // create outgoing connection to peer
       NETLIBOPENCONNECTION nloc = {0};
-      IN_ADDR addr = {0};
-
-      nloc.cbSize = sizeof(nloc);
+      IN_ADDR addr = {0}, addr2 = {0};
 
       if (oc.ft->dwRemoteExternalIP == oc.dwLocalExternalIP && oc.ft->dwRemoteInternalIP)
         addr.S_un.S_addr = htonl(oc.ft->dwRemoteInternalIP);
       else
+      {
         addr.S_un.S_addr = htonl(oc.ft->dwRemoteExternalIP);
+        // for different internal, try it also (for LANs with multiple external IP, VPNs, etc.)
+        if (oc.ft->dwRemoteInternalIP != oc.ft->dwRemoteExternalIP)
+          addr2.S_un.S_addr = htonl(oc.ft->dwRemoteInternalIP);
+      }
 
       // Inform UI that we will attempt to connect
       ICQBroadcastAck(oc.ft->hContact, ACKTYPE_FILE, ACKRESULT_CONNECTING, oc.ft, 0);
@@ -1286,7 +1288,13 @@ static DWORD __stdcall oft_connectionThread(oscarthreadstartinfo *otsi)
       {
         nloc.szHost = inet_ntoa(addr);
         nloc.wPort = oc.ft->wRemotePort;
+        nloc.timeout = 8; // 8 secs to connect
         oc.hConnection = NetLib_OpenConnection(ghDirectNetlibUser, oc.type==OCT_REVERSE?"Reverse ":NULL, &nloc);
+        if (!oc.hConnection && addr2.S_un.S_addr)
+        { // first address failed, try second one if available
+          nloc.szHost = inet_ntoa(addr2);
+          oc.hConnection = NetLib_OpenConnection(ghDirectNetlibUser, oc.type==OCT_REVERSE?"Reverse ":NULL, &nloc);
+        }
         if (!oc.hConnection)
         {
           if (oc.type == OCT_NORMAL)
@@ -1342,7 +1350,6 @@ static DWORD __stdcall oft_connectionThread(oscarthreadstartinfo *otsi)
         // inform UI that we will connect to file proxy
         ICQBroadcastAck(oc.ft->hContact, ACKTYPE_FILE, ACKRESULT_CONNECTPROXY, oc.ft, 0);
 
-        nloc.cbSize = sizeof(nloc);
         addr.S_un.S_addr = htonl(oc.ft->dwProxyIP);
         nloc.szHost = inet_ntoa(addr);
         nloc.wPort = ICQGetContactSettingWord(NULL, "OscarPort", DEFAULT_SERVER_PORT);

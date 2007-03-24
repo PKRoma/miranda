@@ -23,7 +23,7 @@
 //
 // -----------------------------------------------------------------------------
 //
-// File name      : $Source: /cvsroot/miranda/miranda/protocols/IcqOscarJ/icq_direct.c,v $
+// File name      : $URL$
 // Revision       : $Revision$
 // Last change on : $Date$
 // Last change by : $Author$
@@ -454,6 +454,12 @@ static DWORD __stdcall icq_directThread(directthreadstartinfo *dtsi)
       SAFE_FREE(&dtsi);
       return 0; 
     }
+    if (!dc.dwRemotePort)
+    { // we do not have port, do not try to connect
+      RemoveDirectConnFromList(&dc);
+      SAFE_FREE(&dtsi);
+      return 0; 
+    }
 
     if (dc.type == DIRECTCONN_STANDARD)
     {
@@ -489,15 +495,17 @@ static DWORD __stdcall icq_directThread(directthreadstartinfo *dtsi)
   if (!dc.incoming)
   {
     NETLIBOPENCONNECTION nloc = {0};
-    IN_ADDR addr;
+    IN_ADDR addr = {0}, addr2 = {0};
 
-
-    nloc.cbSize = sizeof(nloc);
-    nloc.flags = 0;
-    if (dc.dwRemoteExternalIP == dc.dwLocalExternalIP)
+    if (dc.dwRemoteExternalIP == dc.dwLocalExternalIP && dc.dwRemoteInternalIP)
       addr.S_un.S_addr = htonl(dc.dwRemoteInternalIP);
     else
+    {
       addr.S_un.S_addr = htonl(dc.dwRemoteExternalIP);
+      // for different internal, try it also (for LANs with multiple external IP, VPNs, etc.)
+      if (dc.dwRemoteInternalIP != dc.dwRemoteExternalIP)
+        addr2.S_un.S_addr = htonl(dc.dwRemoteInternalIP);
+    }
 
     if (!addr.S_un.S_addr)
     { // IP to connect to is empty, go away
@@ -506,7 +514,13 @@ static DWORD __stdcall icq_directThread(directthreadstartinfo *dtsi)
     }
     nloc.szHost = inet_ntoa(addr);
     nloc.wPort = (WORD)dc.dwRemotePort;
+    nloc.timeout = 8; // 8 secs to connect
     dc.hConnection = NetLib_OpenConnection(ghDirectNetlibUser, dc.type==DIRECTCONN_REVERSE?"Reverse ":NULL, &nloc);
+    if (!dc.hConnection && addr2.S_un.S_addr)
+    { // first address failed, try second one if available
+      nloc.szHost = inet_ntoa(addr2);
+      dc.hConnection = NetLib_OpenConnection(ghDirectNetlibUser, dc.type==DIRECTCONN_REVERSE?"Reverse ":NULL, &nloc);
+    }
     if (!dc.hConnection)
     {
       if (CheckContactCapabilities(dc.hContact, CAPF_ICQDIRECT))

@@ -426,7 +426,6 @@ void icq_login(const char* szPassword)
 
   dwUin = ICQGetContactSettingUIN(NULL);
   stsi = (serverthread_start_info*)SAFE_MALLOC(sizeof(serverthread_start_info));
-  stsi->nloc.cbSize = sizeof(NETLIBOPENCONNECTION);
 
   // Server host name
   if (ICQGetContactStaticString(NULL, "OscarServer", szServer, MAX_PATH))

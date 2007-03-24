@@ -412,7 +412,7 @@ void handleServiceFam(unsigned char* pBuffer, WORD wBufferLength, snac_header* p
       wPort = info->wServerPort; // get default port
       parseServerAddress(pServer, &wPort);
 
-      nloc.cbSize = sizeof(nloc); // establish connection
+      // establish connection
       nloc.flags = 0;
       nloc.szHost = pServer; 
       nloc.wPort = wPort;

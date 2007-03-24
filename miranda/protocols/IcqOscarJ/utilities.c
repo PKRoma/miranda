@@ -1417,6 +1417,9 @@ HANDLE NetLib_OpenConnection(HANDLE hUser, const char* szIdent, NETLIBOPENCONNEC
 
   Netlib_Logf(hUser, "%sConnecting to %s:%u", szIdent?szIdent:"", nloc->szHost, nloc->wPort);
 
+  nloc->cbSize = sizeof(NETLIBOPENCONNECTION);
+  nloc->flags |= NLOCF_V2;
+
   hConnection = (HANDLE)CallService(MS_NETLIB_OPENCONNECTION, (WPARAM)hUser, (LPARAM)nloc);
   if (!hConnection && (GetLastError() == 87))
   { // this ensures, an old Miranda will be able to connect also

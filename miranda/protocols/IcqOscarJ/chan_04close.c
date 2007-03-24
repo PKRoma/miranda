@@ -23,7 +23,7 @@
 //
 // -----------------------------------------------------------------------------
 //
-// File name      : $Source: /cvsroot/miranda/miranda/protocols/IcqOscarJ/chan_04close.c,v $
+// File name      : $URL$
 // Revision       : $Revision$
 // Last change on : $Date$
 // Last change by : $Author$
@@ -170,7 +170,6 @@ static int connectNewServer(serverthread_info *info)
   servport = info->wServerPort; // prepare default port
   parseServerAddress(info->newServer, &servport);
 
-  nloc.cbSize = sizeof(nloc);
   nloc.flags = 0;
   nloc.szHost = info->newServer;
   nloc.wPort = servport;
