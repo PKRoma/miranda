@@ -27,6 +27,7 @@ extern HANDLE hCacheHeap;
 extern SortedList lContacts;
 
 int GetContactSettingStatic(WPARAM wParam,LPARAM lParam);
+void FreeCachedVariant( DBVARIANT* V );
 
 static int GetContactCount(WPARAM wParam,LPARAM lParam);
 static int FindFirstContact(WPARAM wParam,LPARAM lParam);
@@ -170,8 +171,7 @@ static int DeleteContact(WPARAM wParam,LPARAM lParam)
 			DBCachedContactValue* V = VL->first;
 			while ( V != NULL ) {
 				DBCachedContactValue* V1 = V->next;
-				if ( V->value.type == DBVT_ASCIIZ )
-					HeapFree( hCacheHeap, 0, V->value.pszVal );
+				FreeCachedVariant(&V->value);
 				HeapFree( hCacheHeap, 0, V );
 				V = V1;
 			}

@@ -106,7 +106,7 @@ static void SetCachedVariant( DBVARIANT* s /* new */, DBVARIANT* d /* cached */ 
 		default:				log1( "set cached crap: %d", d->type ); break;
 }	}
 
-static void FreeCachedVariant( DBVARIANT* V )
+void FreeCachedVariant( DBVARIANT* V )
 {
 	if (( V->type == DBVT_ASCIIZ || V->type == DBVT_UTF8 ) && V->pszVal != NULL )
 		HeapFree(hCacheHeap,0,V->pszVal);
@@ -156,7 +156,8 @@ static DBVARIANT* GetCachedValuePtr( HANDLE hContact, char* szSetting, int bAllo
 		}
 
 		for ( V = VL->first; V != NULL; V = V->next)
-			if (strcmp(V->name,szSetting)==0)
+			//if (strcmp(V->name,szSetting)==0)
+			if (V->name == szSetting)
 				break;
 
 		if ( V == NULL ) {
@@ -923,12 +924,12 @@ static int stringCompare( DBCachedSettingName* p1, DBCachedSettingName* p2 )
 	return strcmp( p1->name, p2->name );
 }
 
-static int stringCompare2( DBCachedGlobalValue* p1, DBCachedGlobalValue* p2 )
+static int ptrCompare( DBCachedGlobalValue* p1, DBCachedGlobalValue* p2 )
 {
-	return strcmp( p1->name, p2->name );
+	return (p1->name - p2->name);
 }
 
-static int stringCompare3( char* p1, char* p2 )
+static int stringCompare2( char* p1, char* p2 )
 {
 	return strcmp( p1, p2);
 }
@@ -957,9 +958,9 @@ int InitSettings(void)
 	lSettings.increment=100;
 	lContacts.sortFunc=handleCompare;
 	lContacts.increment=50;
-	lGlobalSettings.sortFunc=stringCompare2;
+	lGlobalSettings.sortFunc=ptrCompare;
 	lGlobalSettings.increment=50;
-	lResidentSettings.sortFunc=stringCompare3;
+	lResidentSettings.sortFunc=stringCompare2;
 	lResidentSettings.increment=50;
 	return 0;
 }
