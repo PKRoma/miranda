@@ -568,6 +568,7 @@
 					>
 					<Tool
 						Name="VCCLCompilerTool"
+						UsePrecompiledHeader="2"
 						PrecompiledHeaderThrough="commonheaders.h"
 					/>
 				</FileConfiguration>
@@ -576,6 +577,7 @@
 					>
 					<Tool
 						Name="VCCLCompilerTool"
+						UsePrecompiledHeader="2"
 						PrecompiledHeaderThrough="commonheaders.h"
 					/>
 				</FileConfiguration>
@@ -588,7 +590,6 @@
 					>
 					<Tool
 						Name="VCCLCompilerTool"
-						UsePrecompiledHeader="2"
 						PrecompiledHeaderThrough="commonheaders.h"
 					/>
 				</FileConfiguration>
@@ -597,7 +598,6 @@
 					>
 					<Tool
 						Name="VCCLCompilerTool"
-						UsePrecompiledHeader="2"
 						PrecompiledHeaderThrough="commonheaders.h"
 					/>
 				</FileConfiguration>
@@ -1146,6 +1146,46 @@
 						<Tool
 							Name="VCCLCompilerTool"
 							UsePrecompiledHeader="0"
+						/>
+					</FileConfiguration>
+				</File>
+			</Filter>
+			<Filter
+				Name="ExtFrames"
+				>
+				<File
+					RelativePath=".\ExtFrames\modern_ext_frames.c"
+					>
+					<FileConfiguration
+						Name="Release|Win32"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+							PrecompiledHeaderThrough="../commonheaders.h"
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="Debug|Win32"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+							PrecompiledHeaderThrough="../commonheaders.h"
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="Debug Unicode|Win32"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+							PrecompiledHeaderThrough="../commonheaders.h"
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="Release Unicode|Win32"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+							PrecompiledHeaderThrough="../commonheaders.h"
 						/>
 					</FileConfiguration>
 				</File>

@@ -180,6 +180,15 @@ SOURCE=.\CLUIFrames\framesmenu.c
 SOURCE=.\CLUIFrames\m_cluiframes.h
 # End Source File
 # End Group
+# Begin Group "ExtFrames"
+
+# PROP Default_Filter ""
+# Begin Source File
+
+SOURCE=.\ExtFrames\modern_ext_frames.c
+# ADD CPP /Yu"..\commonheaders.h"
+# End Source File
+# End Group
 # Begin Source File
 
 SOURCE=.\button.c
