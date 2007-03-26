@@ -42,6 +42,7 @@ This file have to be excluded from compilation and need to be adde to project vi
 
 static void _ExtFrames_InitServices()
 {
+	/*
 	//Create services here
 	CreateServiceFunction( MS_CLIST_FRAMES_ADDFRAME,		_ExtFramesSrv_AddFrame		  );
 	CreateServiceFunction( MS_CLIST_FRAMES_REMOVEFRAME,		_ExtFramesSrv_RemoveFrame	  );
@@ -63,6 +64,9 @@ static void _ExtFrames_InitServices()
 	ExtFrames.hookSBShowTooltip = CreateHookableEvent( ME_CLIST_FRAMES_SB_SHOW_TOOLTIP );
 	ExtFrames.hookSBHideTooltip = CreateHookableEvent( ME_CLIST_FRAMES_SB_HIDE_TOOLTIP );
 	ExtFrames.hookPrebuildFrameMenu = CreateHookableEvent( ME_CLIST_PREBUILDFRAMEMENU );
+	*/
+	//Hook other events
+	HookEvent(ME_OPT_INITIALISE,_ExtFrames_OptionsDlgInit);
 }
 
 static void _ExtFrames_UninitServices()

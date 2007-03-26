@@ -318,16 +318,6 @@ BEGIN
     CONTROL         "",IDC_SKIN_TAB,"SysTabControl32",0x0,0,0,315,243
 END
 
-IDD_OPT_EXTFRAMES DIALOGEX 0, 0, 222, 162
-STYLE DS_SETFONT | DS_FIXEDSYS | WS_CHILD
-EXSTYLE WS_EX_CONTROLPARENT
-FONT 8, "MS Shell Dlg", 400, 0, 0x1
-BEGIN
-    GROUPBOX        "Contact List Extra Icons",IDC_STATIC,7,19,205,131
-    CONTROL         "",IDC_EXTRAORDER,"SysTreeView32",TVS_NOTOOLTIPS | 
-                    WS_BORDER | WS_TABSTOP,18,36,182,107
-END
-
 
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -359,8 +349,47 @@ BEGIN
     BEGIN
         RIGHTMARGIN, 298
     END
+END
+#endif    // APSTUDIO_INVOKED
 
-    IDD_OPT_EXTFRAMES, DIALOG
+#endif    // Neutral resources
+/////////////////////////////////////////////////////////////////////////////
+
+
+/////////////////////////////////////////////////////////////////////////////
+// Neutral (Default) resources
+
+#if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_NEUD)
+#ifdef _WIN32
+LANGUAGE LANG_NEUTRAL, SUBLANG_DEFAULT
+#pragma code_page(1251)
+#endif //_WIN32
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Dialog
+//
+
+IDD_OPT_ITEM_EXTRAICONS DIALOGEX 0, 0, 222, 162
+STYLE DS_SETFONT | DS_FIXEDSYS | WS_CHILD
+EXSTYLE WS_EX_CONTROLPARENT
+FONT 8, "MS Shell Dlg", 400, 0, 0x1
+BEGIN
+    GROUPBOX        "Contact List Extra Icons",IDC_STATIC,7,19,205,131
+    CONTROL         "",IDC_EXTRAORDER,"SysTreeView32",TVS_NOTOOLTIPS | 
+                    WS_BORDER | WS_TABSTOP,18,36,182,107
+END
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// DESIGNINFO
+//
+
+#ifdef APSTUDIO_INVOKED
+GUIDELINES DESIGNINFO 
+BEGIN
+    IDD_OPT_ITEM_EXTRAICONS, DIALOG
     BEGIN
         LEFTMARGIN, 7
         RIGHTMARGIN, 212
@@ -372,7 +401,7 @@ BEGIN
 END
 #endif    // APSTUDIO_INVOKED
 
-#endif    // Neutral resources
+#endif    // Neutral (Default) resources
 /////////////////////////////////////////////////////////////////////////////
 
 
@@ -1517,18 +1546,55 @@ BEGIN
                     108,8
 END
 
-IDD_OPT_ITEM_EXTRAICONS DIALOGEX 0, 0, 238, 214
+IDD_OPT_EXTFRAMES DIALOGEX 0, 0, 304, 220
 STYLE DS_SETFONT | DS_FIXEDSYS | WS_CHILD
 EXSTYLE WS_EX_CONTROLPARENT
 FONT 8, "MS Shell Dlg", 400, 0, 0x1
 BEGIN
-    GROUPBOX        "Extended Frames Configuration",IDC_STATIC,7,0,221,207
     CONTROL         "",IDC_FRAMESORDER,"SysTreeView32",TVS_NOTOOLTIPS | 
-                    WS_BORDER | WS_TABSTOP,18,21,89,131
-    PUSHBUTTON      "Up",IDC_BUTTON1,18,155,44,12
-    PUSHBUTTON      "Down",IDC_BUTTON4,65,155,42,12
-    LTEXT           "Frames order",IDC_STATIC,18,11,89,9
-    GROUPBOX        "Preview",IDC_STATIC,116,11,108,156
+                    WS_BORDER | WS_TABSTOP,7,40,81,144
+    PUSHBUTTON      "Up",IDC_BUTTON1,7,189,36,12
+    PUSHBUTTON      "Down",IDC_BUTTON4,52,189,36,12
+    GROUPBOX        "Preview",IDC_STATIC,187,28,115,179,WS_TABSTOP
+    CONTROL         "Top/Left",IDC_RADIO1,"Button",BS_AUTORADIOBUTTON | 
+                    WS_GROUP | WS_TABSTOP,106,38,43,10
+    CONTROL         "Bottom/Right",IDC_RADIO2,"Button",BS_AUTORADIOBUTTON | 
+                    WS_TABSTOP,106,49,68,10
+    GROUPBOX        "Position (vertical)",IDC_STATIC,101,28,81,33,WS_TABSTOP
+    GROUPBOX        "Align",IDC_STATIC,100,68,82,55,WS_TABSTOP
+    CONTROL         "",IDC_RADIO3,"Button",BS_AUTORADIOBUTTON | WS_GROUP | 
+                    WS_TABSTOP,120,83,10,9
+    CONTROL         "",IDC_RADIO6,"Button",BS_AUTORADIOBUTTON | WS_TABSTOP,
+                    136,83,10,9
+    CONTROL         "",IDC_RADIO7,"Button",BS_AUTORADIOBUTTON | WS_TABSTOP,
+                    152,83,10,9
+    CONTROL         "",IDC_RADIO8,"Button",BS_AUTORADIOBUTTON | WS_TABSTOP,
+                    120,94,10,9
+    CONTROL         "",IDC_RADIO9,"Button",BS_AUTORADIOBUTTON | WS_TABSTOP,
+                    136,94,10,9
+    CONTROL         "",IDC_RADIO10,"Button",BS_AUTORADIOBUTTON | WS_TABSTOP,
+                    152,94,10,9
+    CONTROL         "",IDC_RADIO11,"Button",BS_AUTORADIOBUTTON | WS_TABSTOP,
+                    120,105,10,9
+    CONTROL         "",IDC_RADIO12,"Button",BS_AUTORADIOBUTTON | WS_TABSTOP,
+                    136,105,10,9
+    CONTROL         "",IDC_RADIO13,"Button",BS_AUTORADIOBUTTON | WS_TABSTOP,
+                    152,105,10,9
+    GROUPBOX        "Options",IDC_STATIC,101,127,81,80,WS_TABSTOP
+    CONTROL         "Visible",IDC_CHECK1,"Button",BS_AUTOCHECKBOX | 
+                    WS_TABSTOP,106,142,68,10
+    CONTROL         "Show Title",IDC_CHECK6,"Button",BS_AUTOCHECKBOX | 
+                    WS_TABSTOP,106,154,68,10
+    CONTROL         "Locked",IDC_CHECK9,"Button",BS_AUTOCHECKBOX | 
+                    WS_TABSTOP,106,166,68,10
+    CONTROL         "Border",IDC_CHECK10,"Button",BS_AUTOCHECKBOX | 
+                    WS_TABSTOP,106,178,68,10
+    CONTROL         "Floating",IDC_CHECK11,"Button",BS_AUTOCHECKBOX | 
+                    WS_TABSTOP,106,190,68,10
+    GROUPBOX        "Frames Order",IDC_STATIC,2,28,93,179,WS_TABSTOP
+    CTEXT           "UNDER CONSTRUCTION!!!           IT DOES NOT WORK",
+                    IDC_STATIC,46,4,201,18,SS_CENTERIMAGE | WS_BORDER,
+                    WS_EX_DLGMODALFRAME | WS_EX_CLIENTEDGE
 END
 
 IDD_OPT_ROWTMPL DIALOGEX 0, 0, 299, 207
@@ -1640,17 +1706,12 @@ BEGIN
         BOTTOMMARGIN, 205
     END
 
-    IDD_OPT_ITEM_EXTRAICONS, DIALOG
+    IDD_OPT_EXTFRAMES, DIALOG
     BEGIN
-        LEFTMARGIN, 7
-        RIGHTMARGIN, 228
-        VERTGUIDE, 18
-        VERTGUIDE, 62
-        VERTGUIDE, 107
-        VERTGUIDE, 228
-        TOPMARGIN, 5
-        BOTTOMMARGIN, 207
-        HORZGUIDE, 182
+        LEFTMARGIN, 2
+        RIGHTMARGIN, 302
+        TOPMARGIN, 4
+        BOTTOMMARGIN, 217
     END
 
     IDD_OPT_ROWTMPL, DIALOG

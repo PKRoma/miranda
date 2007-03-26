@@ -1104,6 +1104,19 @@
 					</File>
 				</Filter>
 			</Filter>
+			<Filter
+				Name="ExtFrames"
+				Filter="">
+				<File
+					RelativePath=".\ExtFrames\modern_ext_frames.c">
+					<FileConfiguration
+						Name="Release Unicode|Win32">
+						<Tool
+							Name="VCCLCompilerTool"
+							UsePrecompiledHeader="0"/>
+					</FileConfiguration>
+				</File>
+			</Filter>
 		</Filter>
 		<Filter
 			Name="Header Files"

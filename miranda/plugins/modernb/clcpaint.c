@@ -4334,12 +4334,20 @@ static void CLCPaint_DrawContactItems(HWND hwnd, HDC hdcMem, struct ClcData *dat
 		rc1.bottom = rc1.top + 2;
 		rc2.top += (rc2.bottom - rc2.top) >> 1;
 		rc2.bottom = rc2.top + 2;
-		if (rc1.right-rc1.left>=6)
+		{	
+			RECT rcTemp=rc1;
+			IntersectRect(&rc1, &rcTemp, rcPaint);
+		}	
+		if (rc1.right-rc1.left>=6 && !IsRectEmpty(&rc1))
 		{
 			DrawEdge(hdcMem,&rc1,BDR_SUNKENOUTER,BF_RECT);
 			SkinEngine_SetRectOpaque(hdcMem,&rc1);
 		}
-		if (rc2.right-rc2.left>=6)
+		{	
+			RECT rcTemp=rc2;
+			IntersectRect(&rc2, &rcTemp, rcPaint);
+		}	
+		if (rc2.right-rc2.left>=6 && !IsRectEmpty(&rc2))
 		{
 			DrawEdge(hdcMem,&rc2,BDR_SUNKENOUTER,BF_RECT);
 			SkinEngine_SetRectOpaque(hdcMem,&rc2);

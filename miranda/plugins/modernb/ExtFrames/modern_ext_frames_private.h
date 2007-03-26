@@ -30,7 +30,7 @@ Author and Copyright:  Artem Shpynov aka FYR:  ashpynov@gmail.com
 
 #define eflock
 #define efunlock
-#define efcheck if (ExtFrames.bModuleActive) return
+#define efcheck if (!ExtFrames.bModuleActive) return
 
 #define EFT_VERTICAL	1
 #define EFT_HORIZONTAL	0
@@ -89,7 +89,12 @@ static int	_ExtFrames_GetMinParentSize(IN SortedList* pList, OUT SIZE * size );
 // modern_ext_frames_services.c
 static void _ExtFrames_InitServices();
 static void _ExtFrames_UninitServices();
-//
+
+// modern_ext_frames_opt.c
+static int _ExtFrames_OptionsDlgInit(WPARAM wParam,LPARAM lParam);
+static BOOL CALLBACK _ExtFrames_DlgProcFrameOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam);
+
+// 
 static int _ExtFramesSrv_AddFrame(WPARAM wParam, LPARAM lParam);
 static int _ExtFramesSrv_RemoveFrame(WPARAM wParam, LPARAM lParam);
 static int _ExtFramesSrv_ShowAllFrames(WPARAM wParam, LPARAM lParam);

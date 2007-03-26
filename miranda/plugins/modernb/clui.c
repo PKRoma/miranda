@@ -2188,6 +2188,7 @@ LRESULT CALLBACK CLUI__cli_ContactListWndProc(HWND hwnd, UINT msg, WPARAM wParam
                 }
             }
             UnLoadCLUIFramesModule();
+			ExtFrames_Uninit();
             TRACE("CLUI.c: WM_DESTROY - UnLoadCLUIFramesModule DONE\n");
             ImageList_Destroy(himlMirandaIcon);
             DBWriteContactSettingByte(NULL,"CList","State",(BYTE)state);
@@ -2382,6 +2383,7 @@ void CLUI_cliOnCreateClc(void)
 	CLUI_PreCreateCLC(pcli->hwndContactList);
 
 	LoadCLUIFramesModule();
+	ExtFrames_Init();
 	ExtraImage_LoadModule();	
 
 	g_hMenuMain=GetMenu(pcli->hwndContactList);

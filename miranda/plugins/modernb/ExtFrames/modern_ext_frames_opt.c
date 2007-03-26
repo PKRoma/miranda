@@ -40,4 +40,44 @@ This file have to be excluded from compilation and need to be adde to project vi
 
 #ifdef __modern_ext_frames_c__include_c_file   //protection from adding to compilation
 
+static int _ExtFrames_OptionsDlgInit(WPARAM wParam,LPARAM lParam)
+{
+	OPTIONSDIALOGPAGE odp;
+	efcheck 0;
+	if (MirandaExiting()) return 0;
+	ZeroMemory(&odp,sizeof(odp));
+	odp.cbSize=sizeof(odp);
+	odp.position=0;
+	odp.hInstance=g_hInst;
+	//odp.ptszGroup=TranslateT("Contact List");
+	odp.pszTemplate=MAKEINTRESOURCEA(IDD_OPT_EXTFRAMES);
+	odp.ptszTitle=TranslateT("Contact List");
+	odp.pfnDlgProc=_ExtFrames_DlgProcFrameOpts;
+	odp.ptszTab=TranslateT("Frames");
+	odp.flags=ODPF_BOLDGROUPS|ODPF_EXPERTONLY|ODPF_TCHAR;
+	CallService(MS_OPT_ADDPAGE,wParam,(LPARAM)&odp);
+	return 0;
+}
+static BOOL CALLBACK _ExtFrames_DlgProcFrameOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam)
+{
+	switch (msg)
+	{
+	case WM_INITDIALOG:
+		{
+			TranslateDialogDefault(hwndDlg);
+			return TRUE;
+		}		
+	case 0:
+		switch (((LPNMHDR)lParam)->code)
+		{
+			case PSN_APPLY:
+				{
+
+				}
+				return TRUE;
+		}
+	}
+	return FALSE;
+}
+
 #endif
