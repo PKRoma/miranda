@@ -117,8 +117,17 @@ static int FAV_OnContactMenuBuild(WPARAM wParam,LPARAM lParam)
                     _sntprintf(name,bufsize/sizeof(TCHAR),_T("%s (%s)"),FAVMENUROOTNAME,rates[bContactRate]);
                     mi.ptszName=name;            
                 }
+				//mi.pszService="ContactRate MenuItem NoService Fake";
                 mi.flags=CMIF_ROOTPOPUP|CMIF_TCHAR;
-                hFavoriteContactMenu=(HANDLE)CallService(MS_CLIST_ADDCONTACTMENUITEM, 0, (LPARAM)&mi);
+                hFavoriteContactMenu=(HANDLE)CallService(MS_CLIST_ADDCONTACTMENUITEM, 0, (LPARAM)&mi);				
+				{
+					OptParam op;
+					op.Handle	= (int) hFavoriteContactMenu;
+					op.Setting	= OPT_MENUITEMSETUNIQNAME;
+					op.Value	= (int)"ModernClistMenu_ContactRate";
+					CallService(MO_SETOPTIONSMENUITEM,(WPARAM)0,(LPARAM)&op);
+				}
+
                 CallService(MS_SKIN2_RELEASEICON,(WPARAM)mi.hIcon,0);
                 if (mi.hIcon && NeedFree) DestroyIcon(mi.hIcon);
 
