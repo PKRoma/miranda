@@ -236,12 +236,6 @@
   RightClientMargin=b4
   BottomClientMargin=b4
 
-;insert here any exported from DB section, font and other
-[CLC]
-  HiLightMode=b1
-  GroupIndent=b0
-
-
 
 ;-----------
 ;-----------
