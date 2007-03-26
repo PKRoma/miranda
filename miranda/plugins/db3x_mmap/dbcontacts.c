@@ -56,6 +56,16 @@ void UninitContacts(void)
 {
 }
 
+DBCachedContactValueList* AddToCachedContactList(HANDLE hContact, int index)
+{
+	DBCachedContactValueList* VL;
+	VL = (DBCachedContactValueList*)HeapAlloc(hCacheHeap,HEAP_ZERO_MEMORY,sizeof(DBCachedContactValueList));
+	VL->hContact = hContact;
+	if (index == -1) li.List_GetIndex(&lContacts,VL,&index);
+	li.List_Insert(&lContacts,VL,index);
+	return VL;
+}
+
 static int GetContactCount(WPARAM wParam,LPARAM lParam)
 {
 	int ret;
@@ -120,11 +130,9 @@ static int FindNextContact(WPARAM wParam,LPARAM lParam)
 		if (dbc->signature!=DBCONTACT_SIGNATURE)
 			break;
 		else {
-			if ( VL == NULL ) {
-				VL = (DBCachedContactValueList*)HeapAlloc(hCacheHeap,0+HEAP_ZERO_MEMORY,sizeof(DBCachedContactValueList));
-				VL->hContact = VLtemp.hContact;
-				li.List_Insert(&lContacts,VL,index);
-			}
+			if ( VL == NULL )
+				VL = AddToCachedContactList(VLtemp.hContact,index);
+
 			VL->hNext = (HANDLE)dbc->ofsNext;
 			if (VL->hNext != NULL && (!lParam || CheckProto(VL->hNext,(const char*)lParam))) {
 				LeaveCriticalSection(&csDbAccess);
@@ -256,14 +264,7 @@ static int AddContact(WPARAM wParam,LPARAM lParam)
 	DBWrite(0,&dbHeader,sizeof(dbHeader));
 	DBFlush(0);
 
-	{	int index;
-
-		DBCachedContactValueList *VL = (DBCachedContactValueList*)HeapAlloc(hCacheHeap,0+HEAP_ZERO_MEMORY,sizeof(DBCachedContactValueList));
-		VL->hContact = (HANDLE)ofsNew;
-
-		li.List_GetIndex(&lContacts,VL,&index);
-		li.List_Insert(&lContacts,VL,index);
-	}
+	AddToCachedContactList((HANDLE)ofsNew, -1);
 
 	LeaveCriticalSection(&csDbAccess);
 	NotifyEventHooks(hContactAddedEvent,(WPARAM)ofsNew,0);
@@ -279,19 +280,16 @@ static int IsDbContact(WPARAM wParam,LPARAM lParam)
 	EnterCriticalSection(&csDbAccess);
 	{
 		int index;
-		DBCachedContactValueList VLtemp,*VL;
+		DBCachedContactValueList VLtemp;
 		VLtemp.hContact = (HANDLE)wParam;
 		if ( li.List_GetIndex(&lContacts,&VLtemp,&index))
 			ret = TRUE;
 		else {
 			dbc=(struct DBContact*)DBRead(ofsContact,sizeof(struct DBContact),NULL);
 			ret=dbc->signature==DBCONTACT_SIGNATURE;
-
-			if (ret) {
-				VL = (DBCachedContactValueList*)HeapAlloc(hCacheHeap,0+HEAP_ZERO_MEMORY,sizeof(DBCachedContactValueList));
-				VL->hContact = (HANDLE)wParam;
-				li.List_Insert(&lContacts,VL,index);
-	}	}	}
+			if (ret)
+				AddToCachedContactList((HANDLE)wParam, index);
+	}	}
 
 	LeaveCriticalSection(&csDbAccess);
 	return ret;
