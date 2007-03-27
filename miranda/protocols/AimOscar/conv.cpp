@@ -446,7 +446,7 @@ wchar_t* html_to_bbcodes(wchar_t *src)
 		rptr=dest;
 		ptr=rptr+addr;
         ptrl = ptr + 6;
-		memcpy(ptrl,L"[COLOR=",7*2);
+		memcpy(ptrl,L"[color=",7*2);
 		memmove(ptr, ptrl, wcslen(ptrl)*2 + 2);
         if ((ptr = wcsstr(ptrl, L">")))
 		{
