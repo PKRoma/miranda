@@ -60,6 +60,9 @@ BYTE gbAvatarsEnabled;
 BYTE gbXStatusEnabled;
 DWORD MIRANDA_VERSION;
 
+int gpiXStatusIconsIdx[33];
+BOOL gpbXStatusIconsValid[33];
+
 // from icqosc_svcs.c
 int gnCurrentStatus;
 DWORD dwLocalUIN;

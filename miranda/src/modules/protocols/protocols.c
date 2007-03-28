@@ -40,6 +40,8 @@ static int Proto_BroadcastAck(WPARAM wParam,LPARAM lParam)
 int Proto_IsProtocolLoaded(WPARAM wParam,LPARAM lParam)
 {
 	int i;
+	if (!lParam) 
+		return (int)(PROTOCOLDESCRIPTOR*)NULL;
 	for(i=0;i<protocolModuleCount;i++)
 		if(!strcmp(protocolModule[i].szName,(char*)lParam)) return (int)&protocolModule[i];
 	return (int)(PROTOCOLDESCRIPTOR*)NULL;

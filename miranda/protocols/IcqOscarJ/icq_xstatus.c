@@ -235,6 +235,8 @@ void InitXStatusEvents()
 
   if (!hHookExtraIconsApply)
     hHookExtraIconsApply = HookEvent(ME_CLIST_EXTRA_IMAGE_APPLY, CListMW_ExtraIconsApply);
+  
+  memset(gpiXStatusIconsIdx,-1,sizeof(gpiXStatusIconsIdx));
 }
 
 
@@ -947,6 +949,7 @@ void ChangedIconsXStatus()
   {
     CListSetMenuItemIcon(hXStatusItems[i], GetXStatusIcon(i, LR_SHARED));
   }
+  memset(gpbXStatusIconsValid,0,sizeof(gpbXStatusIconsValid));
 }
 
 
@@ -1212,4 +1215,34 @@ int IcqRequestXStatusDetails(WPARAM wParam, LPARAM lParam)
     return requestXStatusDetails(hContact, TRUE);
   }
   return 0;
+}
+
+int IcqRequestAdvStatusIconIdx( WPARAM wParam, LPARAM lParam )
+{
+	DWORD dwXStatus;
+	if (!gbXStatusEnabled) return -1;
+	dwXStatus=ICQGetContactSettingByte((HANDLE)wParam, DBSETTING_XSTATUSID, 0);
+	if (dwXStatus>0 && dwXStatus <= 32)
+	{
+		int idx=-1;
+		if (!gpbXStatusIconsValid[dwXStatus-1])
+		{	
+			//adding icon
+			int idx=(gpiXStatusIconsIdx[dwXStatus-1]>0) ? gpiXStatusIconsIdx[dwXStatus-1] : 0; 
+			HIMAGELIST hAdvancedStatusIcon=(HIMAGELIST)CallService(MS_CLIST_GETICONSIMAGELIST,0,0);
+			if (hAdvancedStatusIcon)
+			{
+				if (idx>0)
+					ImageList_ReplaceIcon(hAdvancedStatusIcon, idx, GetXStatusIcon((BYTE)dwXStatus, LR_SHARED));
+				else
+					gpiXStatusIconsIdx[dwXStatus-1]=ImageList_AddIcon(hAdvancedStatusIcon, GetXStatusIcon((BYTE)dwXStatus, LR_SHARED));
+				gpbXStatusIconsValid[dwXStatus-1] = TRUE;
+			}
+				
+		}
+		idx=(gpbXStatusIconsValid[dwXStatus-1])?gpiXStatusIconsIdx[dwXStatus-1]:-1;
+		if (idx>0) 
+			return (idx&0xFFFF)<<16;
+	}
+	return -1;
 }

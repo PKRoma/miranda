@@ -588,6 +588,10 @@ static BOOL CALLBACK DlgProcItemIconOpts(HWND hwndDlg, UINT msg, WPARAM wParam, 
 			CheckDlgButton(hwndDlg, IDC_HIDE_GROUPSICON, DBGetContactSettingByte(NULL,"CList","HideGroupsIcon",0) == 1 ? BST_CHECKED : BST_UNCHECKED );
 			CheckDlgButton(hwndDlg, IDC_NOTCHECKICONSIZE, DBGetContactSettingByte(NULL,"CList","IconIgnoreSizeForRownHeight",0) == 1 ? BST_CHECKED : BST_UNCHECKED );
 
+			CheckDlgButton(hwndDlg, IDC_USEXSTATUS, (DBGetContactSettingByte(NULL,"CLC","DrawOverlayedStatus",3)&1) ? BST_CHECKED : BST_UNCHECKED );
+			CheckDlgButton(hwndDlg, IDC_DRAWSTATUSOVERLAY, (DBGetContactSettingByte(NULL,"CLC","DrawOverlayedStatus",3)&2) ? BST_CHECKED : BST_UNCHECKED );			
+			EnableWindow(GetDlgItem(hwndDlg,IDC_DRAWSTATUSOVERLAY),IsDlgButtonChecked(hwndDlg,IDC_USEXSTATUS));
+
 			if (!IsDlgButtonChecked(hwndDlg,IDC_HIDE_ICON_ON_AVATAR))
 			{
 				EnableWindow(GetDlgItem(hwndDlg,IDC_DRAW_ON_AVATAR_SPACE),FALSE);
@@ -602,6 +606,8 @@ static BOOL CALLBACK DlgProcItemIconOpts(HWND hwndDlg, UINT msg, WPARAM wParam, 
 				BOOL enabled = IsDlgButtonChecked(hwndDlg,IDC_HIDE_ICON_ON_AVATAR);
 				EnableWindow(GetDlgItem(hwndDlg,IDC_DRAW_ON_AVATAR_SPACE),enabled);
 			}
+			else if (LOWORD(wParam)==IDC_USEXSTATUS)
+				EnableWindow(GetDlgItem(hwndDlg,IDC_DRAWSTATUSOVERLAY),IsDlgButtonChecked(hwndDlg,IDC_USEXSTATUS));
 
 			SendMessage((GetParent(hwndDlg)), PSM_CHANGED, 0, 0);
 			break;
@@ -621,6 +627,12 @@ static BOOL CALLBACK DlgProcItemIconOpts(HWND hwndDlg, UINT msg, WPARAM wParam, 
 							DBWriteContactSettingByte(NULL,"CList","HideGroupsIcon", (BYTE)IsDlgButtonChecked(hwndDlg,IDC_HIDE_GROUPSICON));						
 							DBWriteContactSettingByte(NULL,"CList","NoIconBlink", (BYTE)IsDlgButtonChecked(hwndDlg,IDC_ICONBLINK));
 							DBWriteContactSettingByte(NULL,"CList","IconIgnoreSizeForRownHeight", (BYTE)IsDlgButtonChecked(hwndDlg,IDC_NOTCHECKICONSIZE));
+							
+							{
+								BYTE ovr=IsDlgButtonChecked(hwndDlg,IDC_USEXSTATUS)?1:0;
+								if (ovr) ovr+=IsDlgButtonChecked(hwndDlg,IDC_DRAWSTATUSOVERLAY)?2:0;
+								DBWriteContactSettingByte(NULL,"CLC","DrawOverlayedStatus", ovr );
+							}
 							ClcOptionsChanged();
 							return TRUE;
 						}

@@ -999,6 +999,8 @@ case INTM_STATUSCHANGED:
 				{
 					if (contact && contact->type==CLCIT_CONTACT)
 					{
+						if (!contact->image_is_special) 
+							contact->iImage=CallService(MS_CLIST_GETCONTACTICON, wParam, 1);
 						if (contact->isSubcontact 
 							&& contact->subcontacts 
 							&& contact->subcontacts->type==CLCIT_CONTACT)

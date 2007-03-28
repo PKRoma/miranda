@@ -831,6 +831,9 @@
 #define IDC_CONTWIDTH                   1843
 #define IDC_HIDE_GROUPSICON             1844
 #define IDC_STATIC_INFO                 1845
+#define IDC_USEXSTATUS                  1845
+#define IDC_HIDE_GROUPSICON3            1846
+#define IDC_DRAWSTATUSOVERLAY           1846
 #define IDC_DESIGNTREE                  1848
 #define IDC_TYPE                        1849
 #define IDC_R_SPLIT                     1850

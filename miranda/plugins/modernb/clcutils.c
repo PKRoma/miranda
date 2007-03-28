@@ -731,7 +731,9 @@ void LoadCLCOptions(HWND hwnd, struct ClcData *dat)
 	dat->MetaIgnoreEmptyExtra=DBGetContactSettingByte(NULL,"CLC","MetaIgnoreEmptyExtra",1);
 	dat->expandMeta=DBGetContactSettingByte(NULL,"CLC","MetaExpanding",1);
 	dat->useMetaIcon=DBGetContactSettingByte(NULL,"CLC","Meta",0);
+	
 	dat->drawOverlayedStatus=DBGetContactSettingByte(NULL,"CLC","DrawOverlayedStatus",3);
+
 	dat->dbbMetaHideExtra=DBGetContactSettingByte(NULL,"CLC","MetaHideExtra",0);
 	dat->dbbBlendInActiveState=DBGetContactSettingByte(NULL,"CLC","BlendInActiveState",0);
 	dat->dbbBlend25=DBGetContactSettingByte(NULL,"CLC","Blend25%",1);

@@ -277,6 +277,7 @@ int __declspec(dllexport) Load(PLUGINLINK *link)
   ICQCreateServiceFunction(PS_ICQ_GETCUSTOMSTATUSEX, IcqGetXStatusEx);
   ICQCreateServiceFunction(PS_ICQ_GETCUSTOMSTATUSICON, IcqGetXStatusIcon);
   ICQCreateServiceFunction(PS_ICQ_REQUESTCUSTOMSTATUS, IcqRequestXStatusDetails);
+  ICQCreateServiceFunction(PS_ICQ_GETADVANCEDSTATUSICON, IcqRequestAdvStatusIconIdx);
 
   {
     char pszServiceName[MAX_PATH + 32];

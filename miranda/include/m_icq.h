@@ -299,4 +299,10 @@ typedef struct {
 //lParam = hIcon       // HANDLE to clist extra icon set as custom status
 #define ME_ICQ_CUSTOMSTATUS_EXTRAICON_CHANGED "/XStatusExtraIconChanged"
 
+// Called from contact list in order to get index of custom status icon in list
+// wParam = hContact
+// lParam = 0
+// rerurn = (int) index of extra contact icon shifted <<16 (the low word will be normal status icon, the high will be xStatus Icon
+#define PS_ICQ_GETADVANCEDSTATUSICON "/GetAdvancedStatusIcon"
+
 #endif // M_ICQ_H__
