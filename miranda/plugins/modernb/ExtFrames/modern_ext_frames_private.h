@@ -28,47 +28,52 @@ Author and Copyright:  Artem Shpynov aka FYR:  ashpynov@gmail.com
 
 \**************************************************************************/
 
-#define eflock
-#define efunlock
+#define eflock	  EnterCriticalSection(&ExtFrames.CS)
+#define efunlock  LeaveCriticalSection(&ExtFrames.CS)
 #define efcheck if (!ExtFrames.bModuleActive) return
 
 #define EFT_VERTICAL	1
 #define EFT_HORIZONTAL	0
 
-#define EFP_LEFT	1
-#define EFP_TOP		2
-#define EFP_RIGHT	4
-#define EFP_BOTTOM	8
+#define EFP_LEFT	alLeft
+#define EFP_TOP		alTop
+#define EFP_RIGHT	alRight
+#define EFP_BOTTOM	alBottom
 
-typedef struct _tagExtFrameRectDef
+#define EXTFRAMEMODULE "ExtFrames"
+#define EXTFRAMEORDERDBPREFIX "FrameOrder/"
+
+typedef struct tagExtFrameRectDef
 {
+	DWORD dwOrder;
 	/* Used in both for frames and for options */
 	int minCX;
 	int minCY;
 	BYTE nType;
 	BYTE nEdge;
 	BOOL bInPrevious;
-	RECT rcFrameRect;	
+	RECT rcFrameRect;
+	char *szFrameNameID;   //to be dealloced in destructor
 
 	/* Used for real frames and faked in options */
-	BOOL bVisible;
-	BOOL bDocked;
-
+	DWORD dwFlags;
+	BOOL bFloat;
+	BOOL bNotRegistered;   // for options means frame is Not Registered
 } EXTFRAME;
 
-typedef struct _tagExtFrameWndDef
+typedef struct tagExtFrameWndDef
 {
 	EXTFRAME efrm;				//have to be first element
 	//EXTFRAMEWND* can be directly type casted to EXTFRAME*
 
 	/* Used Only for real frames */
-	BOOL bHasTitle;
 	HWND hwndFrame;
 	HWND hwndTitle;
+	DWORD dwFrameID;
 
 } EXTFRAMEWND;
 
-typedef struct _tagExtFrameModule
+typedef struct tagExtFrameModule
 {
 	CRITICAL_SECTION CS;
 	BOOL bModuleActive;
@@ -76,15 +81,26 @@ typedef struct _tagExtFrameModule
 	HANDLE hookSBShowTooltip;	    // ME_CLIST_FRAMES_SB_SHOW_TOOLTIP
 	HANDLE hookSBHideTooltip;	    // ME_CLIST_FRAMES_SB_HIDE_TOOLTIP
 	HANDLE hookPrebuildFrameMenu;	// ME_CLIST_PREBUILDFRAMEMENU
+	DWORD  dwNextFrameID;			// unique number of registered frames
 }EXTFRAMESMODULE;
+
+typedef struct tagExtFramesOptDBEnumeration
+{
+	HWND hwndDlg;
+	SortedList * pFrameList;
+}EXTFRAMEOPTDBENUMERATION;
 
 //////////////////////////////////////////////////////////////////////////
 // Static Declarations
 
 // modern_ext_frames_intern.c
-static void _ExtFrames_Clear_EXTFRAMEWND(void * extFrame);
-static int	_ExtFrames_CalcFramesRect(IN SortedList* pList, IN int width, IN int height, OUT RECT * pWndRect );
-static int	_ExtFrames_GetMinParentSize(IN SortedList* pList, OUT SIZE * size );
+static void _ExtFrames_DestructorOf_EXTFRAMEWND(void * extFrame);
+static int	_ExtFrames_CalcFramesRect( IN SortedList* pList, IN int width, IN int height, OUT RECT * pWndRect );
+static int	_ExtFrames_GetMinParentSize( IN SortedList* pList, OUT SIZE * size );
+static void _ExtFrames_GetFrameDBOption( IN OUT EXTFRAMEWND * pExtFrm );
+static void _ExtFramesUtils_CheckAlighment( IN OUT EXTFRAMEWND * extFrame );
+static int  _ExtFramesUtils_CopmareFrames(void * first, void * last);
+
 
 // modern_ext_frames_services.c
 static void _ExtFrames_InitServices();
@@ -95,7 +111,7 @@ static int _ExtFrames_OptionsDlgInit(WPARAM wParam,LPARAM lParam);
 static BOOL CALLBACK _ExtFrames_DlgProcFrameOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam);
 
 // 
-static int _ExtFramesSrv_AddFrame(WPARAM wParam, LPARAM lParam);
+/**static*/ int _ExtFramesSrv_AddFrame(WPARAM wParam, LPARAM lParam);
 static int _ExtFramesSrv_RemoveFrame(WPARAM wParam, LPARAM lParam);
 static int _ExtFramesSrv_ShowAllFrames(WPARAM wParam, LPARAM lParam);
 static int _ExtFramesSrv_ShowAllFramesTB(WPARAM wParam, LPARAM lParam);

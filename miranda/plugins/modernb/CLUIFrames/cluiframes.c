@@ -1951,7 +1951,8 @@ static int UpdateTBToolTip(int framepos)
 	}	
 
 };
-
+/** Remove	*/
+#include "../ExtFrames/modern_ext_frames_private.h"
 //wparam=(CLISTFrame*)clfrm
 static int CLUIFramesAddFrame(WPARAM wParam,LPARAM lParam)
 {
@@ -2131,6 +2132,8 @@ static int CLUIFramesAddFrame(WPARAM wParam,LPARAM lParam)
 	else
 		CLUIFrameSetFloat(retval,2);
 
+	/** Remove	*/
+	_ExtFramesSrv_AddFrame( wParam,  lParam);
 
 	return retval;
 }

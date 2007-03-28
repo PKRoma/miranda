@@ -633,10 +633,12 @@
 #define IDC_BUTTON1                     1633
 #define IDC_BUTTON_BROWSE               1633
 #define IDC_UP                          1633
+#define IDC_BUTTON_UP                   1633
 #define IDC_DOWN                        1634
 #define IDC_C_SPLIT                     1634
 #define IDC_PASTE                       1634
 #define IDC_BUTTON4                     1634
+#define IDC_BUTTON_DOWN                 1634
 #define IDC_IDLECHECK                   1636
 #define IDC_IDLEONWINDOWS               1637
 #define IDC_IDLEONMIRANDA               1638
@@ -979,7 +981,7 @@
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NEXT_RESOURCE_VALUE        462
 #define _APS_NEXT_COMMAND_VALUE         40020
-#define _APS_NEXT_CONTROL_VALUE         2003
+#define _APS_NEXT_CONTROL_VALUE         2004
 #define _APS_NEXT_SYMED_VALUE           101
 #endif
 #endif

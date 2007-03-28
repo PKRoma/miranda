@@ -268,4 +268,36 @@ void li_ListDestruct(SortedList *pList, ItemDestuctor pItemDestructor)
 	li.List_Destroy(pList);																											
 }
 
+void li_RemoveDestruct(SortedList *pList, int index, ItemDestuctor pItemDestructor)
+{																																
+	if (index>=0 && index<pList->realCount)	
+	{
+		pItemDestructor(pList->items[index]);
+		li.List_Remove(pList, index);
+	}
+}
+
+void li_RemovePtrDestruct(SortedList *pList, void * ptr, ItemDestuctor pItemDestructor)
+{																																
+	if (li.List_RemovePtr(pList, ptr))
+        pItemDestructor(ptr);
+}
+
+void li_SortList(SortedList *pList, FSortFunc pSortFunct)
+{
+	FSortFunc pOldSort=pList->sortFunc;
+	int i;
+	if (!pSortFunct) pSortFunct=pOldSort;
+	pList->sortFunc=NULL;
+	for (i=0; i<pList->realCount-1; i++)
+		if (pOldSort(pList->items[i],pList->items[i+1])<0)
+		{
+		    void * temp=pList->items[i];
+			pList->items[i]=pList->items[i+1];
+			pList->items[i+1]=temp;
+			i--;
+			if (i>0) i--;
+		}
+	pList->sortFunc=pOldSort;
+}
 

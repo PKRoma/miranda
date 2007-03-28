@@ -44,6 +44,7 @@ int ExtFrames_Init()
 	if (ExtFrames.bModuleActive) return 0;
 	InitializeCriticalSection(&ExtFrames.CS);
 	ExtFrames.List=li.List_Create(0,1);	
+	ExtFrames.List->sortFunc=_ExtFramesUtils_CopmareFrames;
 	_ExtFrames_InitServices();
 	ExtFrames.bModuleActive = TRUE;
 	return 1;		
@@ -56,7 +57,7 @@ int ExtFrames_Uninit()
 	{	
 		ExtFrames.bModuleActive = FALSE;
 		_ExtFrames_UninitServices();
-		li_ListDestruct(ExtFrames.List, _ExtFrames_Clear_EXTFRAMEWND);
+		li_ListDestruct(ExtFrames.List, _ExtFrames_DestructorOf_EXTFRAMEWND);
 		ExtFrames.bModuleActive = FALSE;
 	}	
 	efunlock;
@@ -86,7 +87,7 @@ int ExtFrames_GetMaxCLCHeight( IN int iMaxDueDesk )
 		for (; i>0; --i)
 		{
 			EXTFRAMEWND * extFrame=(EXTFRAMEWND *)ExtFrames.List->items[i];
-			if (extFrame && extFrame->efrm.bVisible && extFrame->efrm.bDocked)
+			if (extFrame && (extFrame->efrm.dwFlags&F_VISIBLE) && !extFrame->efrm.bFloat && !extFrame->efrm.bNotRegistered)
 				if (extFrame->efrm.nType==EFT_HORIZONTAL)
 					maxHeight-=extFrame->efrm.minCY;
 		}

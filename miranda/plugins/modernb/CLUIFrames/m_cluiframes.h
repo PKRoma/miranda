@@ -120,7 +120,10 @@ typedef struct tagCLISTFrame {
 	HWND hWnd ;
 	HICON hIcon;
 	int align;	//al flags below
-	int height;
+	union _tagMinSize{
+		int height;
+		int minSize;   //the actual meaning depends from type of frame
+	};
 	int Flags;	//F_flags below
 	char *name; //frame window name,will be shown in menu. DO NOT TRANSLATE IT will be used as Frame indentificator
 	char *TBname; //titlebar caption
@@ -132,6 +135,8 @@ typedef struct tagCLISTFrame {
 #define F_LOCKED			8 //Lock Frame
 #define F_NOBORDER			16 //Dont apply WS_BORDER style for window
 #define F_SHOWTBTIP			32 //Show titlebar tooltip
+#define F_CANBEVERTICAL		64 //frames can be vertical
+#define F_CANNOTBEHORIZONTAL 128 //frames can NOT be horizontal	F_CANBEVERTICAL have to be set 
 #define F_NO_SUBCONTAINER   1024   //Support skining no subcontainer needed
 
 // frame alignment
@@ -142,6 +147,8 @@ typedef struct tagCLISTFrame {
 // since 0.7.0.20 
 #define alLeft		0x00000011			   // frame is vertical
 #define alRight		0x00000012
+
+#define alVertFrameMask 0x00000010			
 
 #define FU_TBREDRAW			1 //redraw titlebar
 #define FU_FMREDRAW			2 //redraw Frame

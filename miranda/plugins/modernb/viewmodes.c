@@ -1326,7 +1326,7 @@ void CreateViewModeFrame()
     frame.name = "View modes";
     frame.hIcon = LoadSkinnedIcon(SKINICON_OTHER_MIRANDA);/*0;*/
     frame.height = 18;
-    frame.TBname = Translate("View modes");
+    frame.TBname = "View modes";
     frame.Flags=F_VISIBLE|F_SHOWTBTIP|F_NOBORDER|F_NO_SUBCONTAINER;
     frame.align = alBottom;
     frame.hWnd = CreateWindowEx(0, _T("CLVMFrameWindow"), _T(CLVM_MODULE), WS_VISIBLE | WS_CHILD | WS_TABSTOP | WS_CLIPCHILDREN, 0, 0, 20, 20, pcli->hwndContactList, (HMENU) 0, g_hInst, NULL);

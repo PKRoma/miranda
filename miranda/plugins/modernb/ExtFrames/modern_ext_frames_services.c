@@ -42,8 +42,8 @@ This file have to be excluded from compilation and need to be adde to project vi
 
 static void _ExtFrames_InitServices()
 {
-	/*
 	//Create services here
+	/*
 	CreateServiceFunction( MS_CLIST_FRAMES_ADDFRAME,		_ExtFramesSrv_AddFrame		  );
 	CreateServiceFunction( MS_CLIST_FRAMES_REMOVEFRAME,		_ExtFramesSrv_RemoveFrame	  );
 	CreateServiceFunction( MS_CLIST_FRAMES_SHOWALLFRAMES,	_ExtFramesSrv_ShowAllFrames	  );
@@ -65,6 +65,7 @@ static void _ExtFrames_InitServices()
 	ExtFrames.hookSBHideTooltip = CreateHookableEvent( ME_CLIST_FRAMES_SB_HIDE_TOOLTIP );
 	ExtFrames.hookPrebuildFrameMenu = CreateHookableEvent( ME_CLIST_PREBUILDFRAMEMENU );
 	*/
+
 	//Hook other events
 	HookEvent(ME_OPT_INITIALISE,_ExtFrames_OptionsDlgInit);
 }
@@ -97,13 +98,42 @@ static void _ExtFrames_UninitServices()
 //lParam=0
 //returns an integer, the frame id.
 //#define MS_CLIST_FRAMES_ADDFRAME			"CListFrames/AddFrame"
-static int _ExtFramesSrv_AddFrame(WPARAM wParam, LPARAM lParam)
+/**static*/  int _ExtFramesSrv_AddFrame(WPARAM wParam, LPARAM lParam)
 {
+	CLISTFrame *clfrm=(CLISTFrame *)wParam;
 	int frameId = -1;
+	
+	// the clfrm->name is used as id in DB and frames without it will not be supported
+	if ( !clfrm || pcli->hwndContactList == NULL || clfrm->cbSize!=sizeof(CLISTFrame) || clfrm->name==NULL) 
+		return frameId;
+
 	efcheck frameId;
 	eflock;
 	{
-	  // DO HERE
+	  	EXTFRAMEWND * pExtFrm=(EXTFRAMEWND *)mir_alloc(sizeof(EXTFRAMEWND));
+		memset(pExtFrm,0,sizeof(EXTFRAMEWND));
+		pExtFrm->dwFrameID = ExtFrames.dwNextFrameID++;
+		pExtFrm->hwndFrame = clfrm->hWnd;
+		pExtFrm->efrm.szFrameNameID = mir_strdup(clfrm->name);
+
+		//fill frame info by caller provided values
+		pExtFrm->efrm.dwFlags = clfrm->Flags;
+		// frame alignment
+		pExtFrm->efrm.nEdge = clfrm->align;
+		pExtFrm->efrm.nType = (clfrm->align&alVertFrameMask) ? EFT_VERTICAL : EFT_HORIZONTAL;
+
+		if (pExtFrm->efrm.nType == EFT_VERTICAL) 
+			pExtFrm->efrm.minCX = clfrm->minSize;
+		else
+			pExtFrm->efrm.minCY = clfrm->minSize;		
+
+		_ExtFrames_GetFrameDBOption(pExtFrm);
+		_ExtFramesUtils_CheckAlighment(pExtFrm);
+		li.List_Insert(ExtFrames.List, pExtFrm, 0);
+		//clfrm->hIcon
+		//clfrm->TBname
+
+		frameId=pExtFrm->dwFrameID;		
 	}
 	efunlock;
 	return frameId; //frame id

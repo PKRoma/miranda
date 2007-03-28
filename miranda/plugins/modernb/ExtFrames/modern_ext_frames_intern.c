@@ -49,7 +49,7 @@ static int _ExtFrames_GetMinParentSize(IN SortedList* pList, OUT SIZE * size )
 	for (; i>0; --i)
 	{
 		EXTFRAME * extFrame=(EXTFRAME *)pList->items[i];
-		if (extFrame && extFrame->bVisible && extFrame->bDocked)
+		if (extFrame && (extFrame->dwFlags&F_VISIBLE) && !extFrame->bFloat  && !extFrame->bNotRegistered)
 		{
 			if (extFrame->nType==EFT_VERTICAL)
 			{
@@ -90,7 +90,7 @@ static int _ExtFrames_CalcFramesRect(IN SortedList* pList, IN int width, IN int 
 	for (i=0; i<frmCount; i++)
 	{
 		EXTFRAME * extFrame=(EXTFRAME *)pList->items[i];
-		if (extFrame && extFrame->bVisible && extFrame->bDocked)
+		if (extFrame && (extFrame->dwFlags&F_VISIBLE) && !extFrame->bFloat && !extFrame->bNotRegistered)
 		{	
 			extFrame->rcFrameRect=outRect;
 			switch(extFrame->nEdge)
@@ -126,11 +126,70 @@ static int _ExtFrames_CalcFramesRect(IN SortedList* pList, IN int width, IN int 
 	return height;
 }
 
-static void _ExtFrames_Clear_EXTFRAMEWND(void * extFrame)
+static void _ExtFrames_DestructorOf_EXTFRAMEWND(void * extFrame)
 {
-	mir_free(extFrame);
+	EXTFRAMEWND * pExtFrameWnd = (EXTFRAMEWND *) extFrame;
+	if (!pExtFrameWnd) return; //early exit
+	if ( pExtFrameWnd->efrm.szFrameNameID ) mir_free( pExtFrameWnd->efrm.szFrameNameID );
+	mir_free( pExtFrameWnd );
 	return;
 }
 
+static void _ExtFrames_GetFrameDBOption(EXTFRAMEWND * pExtFrm)
+{
+	//   Each known frame order per 1 000 000
+    //	 Each Unknown frame but absent during saving per 10 000
+	//   Each new unknown per 100 
+	static DWORD NextUnknownOrder=100;		
+	char szKey[100]={0};
+	DWORD dwOrderInDB;
+	if (!mir_strcmpi(pExtFrm->efrm.szFrameNameID,"My Contacts"))
+		dwOrderInDB=0xFFFFFFFF;
+	else
+	{
+		_snprintf(szKey,sizeof(szKey), EXTFRAMEORDERDBPREFIX "%s",pExtFrm->efrm.szFrameNameID);
+		dwOrderInDB=DBGetContactSettingDword(NULL,EXTFRAMEMODULE,szKey,0);
+		if (!dwOrderInDB)
+		{
+			dwOrderInDB=NextUnknownOrder;
+			NextUnknownOrder+=100;
+		}
+		else
+		    NextUnknownOrder = dwOrderInDB + 100;
+	}
+	pExtFrm->efrm.dwOrder=dwOrderInDB;
+	
+}
+static int  _ExtFramesUtils_CopmareFrames(void * first, void * last)
+{
+   EXTFRAMEWND * pExtFrmWnd1=(EXTFRAMEWND *)first;
+   EXTFRAMEWND * pExtFrmWnd2=(EXTFRAMEWND *)last;
+   if (!pExtFrmWnd1 || ! pExtFrmWnd2) return 0;
+   return pExtFrmWnd1->efrm.dwOrder-pExtFrmWnd2->efrm.dwOrder;
+}
+static void _ExtFramesUtils_CheckAlighment(EXTFRAMEWND * pExtFrm)
+{	
+	if (!(pExtFrm->efrm.dwFlags&F_CANBEVERTICAL) && pExtFrm->efrm.nType == EFT_VERTICAL)
+	{
+		//issue have not be ever Vertical
+		int minsize = pExtFrm->efrm.minCX;
+		pExtFrm->efrm.minCX = pExtFrm->efrm.minCY;
+		pExtFrm->efrm.minCY = minsize;
+		
+		pExtFrm->efrm.nType = EFT_HORIZONTAL;
+		pExtFrm->efrm.nEdge&=(~alVertFrameMask);
+		
+	}
+	else if (pExtFrm->efrm.dwFlags&F_CANBEVERTICAL && !(pExtFrm->efrm.dwFlags&F_CANNOTBEHORIZONTAL) && (pExtFrm->efrm.nType == EFT_HORIZONTAL))
+	{
+		//issue have not be Horizontal
+		int minsize = pExtFrm->efrm.minCX;
+		pExtFrm->efrm.minCX = pExtFrm->efrm.minCY;
+		pExtFrm->efrm.minCY = minsize;
+
+		pExtFrm->efrm.nType=EFT_VERTICAL;
+		pExtFrm->efrm.nEdge|=alVertFrameMask;
+	}
+}
 
 #endif

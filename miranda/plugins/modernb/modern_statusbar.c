@@ -798,7 +798,7 @@ int StatusBar_Create(HWND parent)
     Frame.hIcon=LoadSkinnedIcon (SKINICON_OTHER_MIRANDA);
     Frame.Flags=(DBGetContactSettingByte(NULL,"CLUI","ShowSBar",1)?F_VISIBLE:0)|F_LOCKED|F_NOBORDER|F_NO_SUBCONTAINER;
     Frame.height=h;
-    Frame.name=(Translate("Status Bar"));
+    Frame.name=("Status Bar");
     hFramehModernStatusBar=(HANDLE)CallService(MS_CLIST_FRAMES_ADDFRAME,(WPARAM)&Frame,(LPARAM)0);
     CallService(MS_SKINENG_REGISTERPAINTSUB,(WPARAM)Frame.hWnd,(LPARAM)NewStatusPaintCallbackProc); //$$$$$ register sub for frame
   }
