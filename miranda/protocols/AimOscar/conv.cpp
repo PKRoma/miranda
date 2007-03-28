@@ -578,7 +578,7 @@ char* html_to_bbcodes(char *src)
 		rptr=dest;
 		ptr=rptr+addr;
         ptrl = ptr + 6;
-		memcpy(ptrl,"[COLOR=",7);
+		memcpy(ptrl,"[color=",7);
 		memmove(ptr, ptrl, lstrlen(ptrl) + 1);
         if ((ptr = strstr(ptrl, ">")))
 		{
@@ -831,7 +831,7 @@ wchar_t* html_to_bbcodes(wchar_t *src)
 		rptr=dest;
 		ptr=rptr+addr;
         ptrl = ptr + 6;
-		memcpy(ptrl,L"[COLOR=",7);
+		memcpy(ptrl,L"[color=",7);
 		memmove(ptr, ptrl, wcslen(ptrl)*2 + 2);
         if ((ptr = wcsstr(ptrl, L">")))
 		{
