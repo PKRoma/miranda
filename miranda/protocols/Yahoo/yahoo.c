@@ -509,6 +509,7 @@ void ext_yahoo_got_picture_upload(int id, const char *me, const char *url,unsign
 		return;
 	}
 	
+	
 	cksum = YAHOO_GetDword("TMPAvatarHash", 0);
 	if (cksum != 0) {
 		LOG(("[ext_yahoo_got_picture_upload] Updating Checksum to: %d", cksum));
@@ -519,9 +520,11 @@ void ext_yahoo_got_picture_upload(int id, const char *me, const char *url,unsign
 		YAHOO_bcast_picture_checksum(cksum);
 		// need to tell the stupid Yahoo that our icon updated
 		YAHOO_bcast_picture_update(2);
-	}	
+	}else
+		cksum = YAHOO_GetDword("AvatarHash", 0);
 		
 	YAHOO_SetString(NULL, "AvatarURL", url);
+	YAHOO_SetDword("AvatarExpires", ts);
 
 	if  (!DBGetContactSetting(NULL, yahooProtocolName, "AvatarInv", &dbv) ){
 		LOG(("[ext_yahoo_got_picture_upload] Buddy: %s told us this is bad??", dbv.pszVal));
@@ -924,7 +927,7 @@ void ext_yahoo_mail_notify(int id, const char *from, const char *subj, int cnt)
 			LOG(("ext_yahoo_mail_notify"));
 		
 			if (from == NULL) {
-				lstrcpyn(title, Translate("New Mail"), sizeof(title));
+				snprintf(title, sizeof(title), "%s %s", yahooProtocolName, Translate("New Mail"));
 				snprintf(z, sizeof(z), Translate("You Have %i unread msgs"), cnt);
 			} else {
 				snprintf(title, sizeof(title), Translate("New Mail (%i msgs)"), cnt);

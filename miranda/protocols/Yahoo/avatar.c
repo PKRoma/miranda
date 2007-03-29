@@ -427,6 +427,7 @@ void upload_avt(int id, int fd, int error, void *data)
 			
 			if (rw < 1) {
 				LOG(("Upload Failed. Send error?"));
+				YAHOO_ShowError(Translate("Yahoo Error"), Translate("Avatar upload failed!?!"));
 				break;
 			}
 			
@@ -639,15 +640,38 @@ void ext_yahoo_got_picture(int id, const char *me, const char *who, const char *
 			cksum = YAHOO_GetDword("AvatarHash", 0);
 			if (cksum) {
 				if (!DBGetContactSetting(NULL, yahooProtocolName, "AvatarURL", &dbv)) {
-					LOG(("[ext_yahoo_got_picture] Sending url: %s checksum: %d to '%s'!", dbv.pszVal, cksum, who));
-					//void yahoo_send_picture_info(int id, const char *me, const char *who, const char *pic_url, int cksum)
-					yahoo_send_picture_info(id, who, 2, dbv.pszVal, cksum);
-					DBFreeVariant(&dbv);
-				} else if (YAHOO_GetByte("AvatarUL", 0) != 1){
+					time_t ts;
+					
+					time(&ts);
+					/* check expiration time */
+					if (YAHOO_GetDword("AvatarExpires", ts) <= ts) {
+						/* expired! */
+						LOG(("[ext_yahoo_got_picture] Expired?? url: %s checksum: %d Expiration: %lu ", dbv.pszVal, cksum, YAHOO_GetDword("AvatarExpires", 0)));
+					} else {
+						LOG(("[ext_yahoo_got_picture] Sending url: %s checksum: %d to '%s'!", dbv.pszVal, cksum, who));
+						//void yahoo_send_picture_info(int id, const char *me, const char *who, const char *pic_url, int cksum)
+						yahoo_send_picture_info(id, who, 2, dbv.pszVal, cksum);
+						DBFreeVariant(&dbv);
+						break;
+					}
+					
+				} 
+				
+				/*
+				 * Try to re-upload the avatar
+				 */
+				if (YAHOO_GetByte("AvatarUL", 0) != 1){
 					// NO avatar URL??
 					if (!DBGetContactSetting(NULL, yahooProtocolName, "AvatarFile", &dbv)) {
-						DBWriteContactSettingString(NULL, yahooProtocolName, "AvatarInv", who);
-						YAHOO_SendAvatar(dbv.pszVal);
+						struct _stat statbuf;
+						
+						if (_stat( dbv.pszVal, &statbuf ) != 0 ) {
+							LOG(("[ext_yahoo_got_picture] Avatar File Missing? Can't find file: %s", dbv.pszVal));
+						} else {
+							DBWriteContactSettingString(NULL, yahooProtocolName, "AvatarInv", who);
+							YAHOO_SendAvatar(dbv.pszVal);
+						}
+						
 						DBFreeVariant(&dbv);
 					} else {
 						LOG(("[ext_yahoo_got_picture] No Local Avatar File??? "));
@@ -728,13 +752,26 @@ void ext_yahoo_got_picture(int id, const char *me, const char *who, const char *
 			if (!DBGetContactSetting(NULL, yahooProtocolName, "AvatarURL", &dbv)){
 					if (lstrcmpi(pic_url, dbv.pszVal) == 0) {
 						DBVARIANT dbv2;
+						time_t  ts;
+						DWORD	ae;
 						
 						if (mcksum != cksum)
 							LOG(("[ext_yahoo_got_picture] WARNING: Checksums don't match!"));	
 						
+						time(&ts);
+						ae = YAHOO_GetDword("AvatarExpires", 0);
+						
+						if (ae != 0 && ae > (ts - 300)) {
+							LOG(("[ext_yahoo_got_picture] We just reuploaded! Stop screwing with Yahoo FT. "));
+							
+							// don't leak stuff
+							DBFreeVariant(&dbv);
+
+							break;
+						}
+						
 						LOG(("[ext_yahoo_got_picture] Buddy: %s told us this is bad??Expired??. Re-uploading", who));
 						DBDeleteContactSetting(NULL, yahooProtocolName, "AvatarURL");
-						
 						
 						if (!DBGetContactSetting(NULL, yahooProtocolName, "AvatarFile", &dbv2)) {
 							DBWriteContactSettingString(NULL, yahooProtocolName, "AvatarInv", who);
@@ -780,17 +817,17 @@ void ext_yahoo_got_picture_checksum(int id, const char *me, const char *who, int
         yahoo_reset_avatar(hContact);
 	} else {
 		if (DBGetContactSettingDword(hContact, yahooProtocolName,"PictCK", 0) != cksum) {
-			char szFile[MAX_PATH];
+			//char szFile[MAX_PATH];
 
 			// Now save the new checksum. No rush requesting new avatar yet.
 			DBWriteContactSettingDword(hContact, yahooProtocolName, "PictCK", cksum);
 			
 			// Need to delete the Avatar File!!
-			GetAvatarFileName(hContact, szFile, sizeof szFile, 0);
+			/*GetAvatarFileName(hContact, szFile, sizeof szFile, 0);
 			DeleteFile(szFile);
 			
 			// Reset the avatar and cleanup.
-			yahoo_reset_avatar(hContact);
+			yahoo_reset_avatar(hContact);*/
 		}
 	}
 	
