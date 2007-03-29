@@ -927,7 +927,7 @@ void ext_yahoo_mail_notify(int id, const char *from, const char *subj, int cnt)
 			LOG(("ext_yahoo_mail_notify"));
 		
 			if (from == NULL) {
-				snprintf(title, sizeof(title), "%s %s", yahooProtocolName, Translate("New Mail"));
+				snprintf(title, sizeof(title), "%s: %s", yahooProtocolName, Translate("New Mail"));
 				snprintf(z, sizeof(z), Translate("You Have %i unread msgs"), cnt);
 			} else {
 				snprintf(title, sizeof(title), Translate("New Mail (%i msgs)"), cnt);
