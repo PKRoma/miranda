@@ -24,7 +24,7 @@ void awaymsg_request_limit_thread()
 	while(conn.hServerConn)
 	{
 		Sleep(500);
-		LOG("Setting Awaymsg Request Event...");
+		//LOG("Setting Awaymsg Request Event...");
 		SetEvent(conn.hAwayMsgEvent);
 	}
 	LOG("Awaymsg Request Limit Thread has ended");
