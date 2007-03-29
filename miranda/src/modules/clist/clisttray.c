@@ -706,7 +706,7 @@ int fnTrayIconProcessMessage(WPARAM wParam, LPARAM lParam)
 		else if (msg->lParam == (DBGetContactSettingByte(NULL, "CList", "Tray1Click", SETTING_TRAY1CLICK_DEFAULT) ? WM_LBUTTONUP : WM_LBUTTONDBLCLK)) {
 			if ((GetAsyncKeyState(VK_CONTROL) & 0x8000))
 				cli.pfnShowHide(0, 0);
-			else if (cli.pfnEventsProcessTrayDoubleClick())
+			else if (cli.pfnEventsProcessTrayDoubleClick(msg->wParam))
 				cli.pfnShowHide(0, 0);
 		}
 		else if (msg->lParam == WM_RBUTTONUP) {

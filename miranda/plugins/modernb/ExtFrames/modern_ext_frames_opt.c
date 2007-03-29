@@ -154,6 +154,7 @@ static void _ExtFramesOptUtils_RenderPreview(HWND hwndDlg, SortedList * pList, H
 	HFONT hNewFont;
 	void * pCurrSelected=NULL;
 	int idx=SendDlgItemMessage(hwndDlg, IDC_EXTRAORDER, LB_GETCURSEL, 0,0);	
+	int Num=0;
 	if (idx>=0) 
 		pCurrSelected=(void*)SendDlgItemMessage(hwndDlg, IDC_EXTRAORDER, LB_GETITEMDATA, idx,0);	
 	GetObject(hFont, sizeof(lf), &lf);
@@ -200,8 +201,12 @@ static void _ExtFramesOptUtils_RenderPreview(HWND hwndDlg, SortedList * pList, H
 			outRect.right=(int)(scaleX*outRect.right);
 			outRect.bottom=(int)(scaleY*outRect.bottom);
 			Rectangle(hDC,outRect.left,outRect.top,outRect.right,outRect.bottom);
-			DrawTextA(hDC,Translate(pExtFrm->efrm.szFrameNameID),-1,&outRect,DT_VCENTER|DT_CENTER|DT_NOPREFIX|DT_SINGLELINE);
-
+			{
+				char szText[100];
+				Num++;
+				_snprintf(szText,SIZEOF(szText),"%d. <%s>",Num, Translate(pExtFrm->efrm.szFrameNameID));			
+				DrawTextA(hDC,szText,-1,&outRect,DT_VCENTER|DT_CENTER|DT_NOPREFIX|DT_SINGLELINE);
+			}
 			SelectObject(hDC,GetStockObject(SYSTEM_FONT));
 			DeleteObject(hNewFont);
 		}

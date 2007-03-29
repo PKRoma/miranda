@@ -108,7 +108,7 @@ int fnHotKeysProcess(HWND hwnd, WPARAM wParam, LPARAM lParam)
 		}
 	}
 	else if (wParam == aRead) {
-		cli.pfnEventsProcessTrayDoubleClick();
+		cli.pfnEventsProcessTrayDoubleClick(0);
 	}
 	else if (wParam == aOpts) {
 		CallService("Options/OptionsCommand", 0, 0);

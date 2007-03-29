@@ -195,7 +195,7 @@ struct CListEvent* fnCreateEvent( void );
 void fnFreeEvent( struct CListEvent* p );
 
 int   fnEventsProcessContactDoubleClick( HANDLE hContact );
-int   fnEventsProcessTrayDoubleClick( void );
+int   fnEventsProcessTrayDoubleClick( int );
 int   fnGetImlIconIndex(HICON hIcon);
 int   fnRemoveEvent( HANDLE hContact, HANDLE dbEvent );
 

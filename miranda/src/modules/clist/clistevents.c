@@ -287,13 +287,49 @@ int fnEventsProcessContactDoubleClick(HANDLE hContact)
 	return 1;
 }
 
-int fnEventsProcessTrayDoubleClick(void)
+int fnEventsProcessTrayDoubleClick(int index)
 {
 	if (cli.events.count) {
 		HANDLE hContact, hDbEvent;
-		hContact = cli.events.items[0]->cle.hContact;
-		hDbEvent = cli.events.items[0]->cle.hDbEvent;
-		CallService(cli.events.items[0]->cle.pszService, (WPARAM) NULL, (LPARAM) & cli.events.items[0]->cle);
+		int eventIndex=0;
+		cli.pfnLockTray();
+		if (cli.trayIconCount>1 && index>0)	{
+			int i;
+			char * szProto=NULL;
+			for (i=0; i<cli.trayIconCount; i++)
+				if (cli.trayIcon[i].id==index)	{
+					szProto=cli.trayIcon[i].szProto;
+					break;
+				}
+			if (szProto)
+			{
+				for(i=0; i<cli.events.count; i++)
+				{
+					char * eventProto=NULL;				
+					if (cli.events.items[i]->cle.hContact) 
+						eventProto=(char *)CallService(MS_PROTO_GETCONTACTBASEPROTO, (WPARAM)cli.events.items[i]->cle.hContact, 0);
+					if (!eventProto)
+						eventProto=cli.events.items[i]->cle.lpszProtocol;
+		
+					if (!eventProto || !_strcmpi(eventProto, szProto))	{
+						eventIndex=i;
+						break;
+					}
+				}
+				if (i==cli.events.count) { //EventNotFound
+					cli.pfnUnlockTray();
+					return 1;	//continue processing to show contact list
+				}
+					
+			}
+			
+		}
+		cli.pfnUnlockTray();		
+		hContact = cli.events.items[eventIndex]->cle.hContact;
+		hDbEvent = cli.events.items[eventIndex]->cle.hDbEvent;
+		if (!ServiceExists(cli.events.items[eventIndex]->cle.pszService))
+			;//may be better to show send msg?
+		CallService(cli.events.items[eventIndex]->cle.pszService, (WPARAM) NULL, (LPARAM) & cli.events.items[eventIndex]->cle);
 		cli.pfnRemoveEvent(hContact, hDbEvent);
 		return 0;
 	}

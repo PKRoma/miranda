@@ -72,7 +72,7 @@ int hkSearch(WPARAM wParam,LPARAM lParam)
 
 int hkRead(WPARAM wParam,LPARAM lParam)
 {
-	if(pcli->pfnEventsProcessTrayDoubleClick()==0) return TRUE;
+	if(pcli->pfnEventsProcessTrayDoubleClick(0)==0) return TRUE;
 	SetForegroundWindow(pcli->hwndContactList);
 	SetFocus(pcli->hwndContactList);
 	return 0;

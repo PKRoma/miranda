@@ -296,7 +296,7 @@ typedef struct
 
 	/* clistevents.c */
 	int   ( *pfnEventsProcessContactDoubleClick )( HANDLE hContact );
-	int   ( *pfnEventsProcessTrayDoubleClick )( void );
+	int   ( *pfnEventsProcessTrayDoubleClick )( int );
 
 	/* clistmod.c */
 	int    ( *pfnIconFromStatusMode )( const char *szProto, int status, HANDLE hContact );
