@@ -487,7 +487,10 @@ int FillAvailableSkinList(HWND hwndDlg)
 	int res=-1;
 	char path[MAX_PATH];//,mask[MAX_PATH];
 	int attrib;
-	CallService(MS_UTILS_PATHTOABSOLUTE, (WPARAM)"Skins", (LPARAM)path);
+	char *SkinsFolder=DBGetStringA(NULL,"ModernData","SkinsFolder");
+	if (!SkinsFolder) SkinsFolder=mir_strdup("Skins");
+	CallService(MS_UTILS_PATHTOABSOLUTE, (WPARAM)SkinsFolder, (LPARAM)path);
+	mir_free_and_nill(SkinsFolder);
 	AddSkinToList(hwndDlg,Translate("Default Skin"),"%Default Skin%");
 	attrib = GetFileAttributesA(path);
 	if (attrib != INVALID_FILE_ATTRIBUTES && (attrib & FILE_ATTRIBUTE_DIRECTORY))
