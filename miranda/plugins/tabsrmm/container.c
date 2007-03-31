@@ -1171,6 +1171,7 @@ static BOOL CALLBACK DlgProcContainer(HWND hwndDlg, UINT msg, WPARAM wParam, LPA
                             pContainer->sb_NrBottomButtons++;
                             pContainer->sb_BottomHeight += pbItem->height + 2;
                         }
+                        ShowWindow(hwndButton, pContainer->dwFlags & CNT_SIDEBAR ? SW_SHOW : SW_HIDE);
                     }
 
                     SendMessage(hwndButton, BUTTONSETASFLATBTN + 12, 0, (LPARAM)pContainer);

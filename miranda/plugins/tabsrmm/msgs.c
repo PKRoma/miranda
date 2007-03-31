@@ -36,10 +36,11 @@ $Id$
 
 static char *relnotes[] = {
     "{\\rtf1\\ansi\\deff0\\pard\\li%u\\fi-%u\\ri%u\\tx%u}",
-    "\\par\t\\b\\ul1 Release notes for version 1.1.0.18\\b0\\ul0\\par ",
-    "*\tCorrected slightly wrong Shift-Enter behaviour (group chats).\\par",
-    "*\tTab tooltips no longer remain sticky when closing the tab.\\par",
-    "*\tIt is now possible to send files to offline users via drag and drop (note, not all protocols support this feature).\\par",
+    "\\par\t\\b\\ul1 Release notes for version 1.1.0.19\\b0\\ul0\\par ",
+    "*\tNew plugin API is now supported.\\par",
+    "*\tSome minor bugfixes.\\par",
+    "*\tAdded statusbar indicators for caps, num and insert.\\par",
+    "*\tMoved some group chat related options.\\par",
     NULL
 };
 
@@ -1103,7 +1104,7 @@ static int SplitmsgModulesLoaded(WPARAM wParam, LPARAM lParam)
 
 	upd.cbSize = sizeof(upd);
 	upd.szComponentName = pluginInfo.shortName;
-	upd.pbVersion = (BYTE *)CreateVersionStringPlugin((PLUGININFO *)&pluginInfo, szCurrentVersion);
+	upd.pbVersion = (BYTE *)CreateVersionStringPlugin((PLUGININFOEX *)&pluginInfo, szCurrentVersion);
 	upd.cpbVersion = strlen((char *)upd.pbVersion);
 	upd.szVersionURL = szFLVersionUrl;
 	upd.szUpdateURL = szFLUpdateurl;
