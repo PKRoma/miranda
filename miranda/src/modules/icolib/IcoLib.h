@@ -47,6 +47,7 @@ typedef struct
 			 
 	TCHAR*       temp_file;
 	HICON        temp_icon;
+	BOOL         temp_reset;
 }
 	IconItem;
 

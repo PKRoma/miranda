@@ -76,43 +76,43 @@ static void __fastcall MySetCursor(TCHAR* nCursor)
 static void __fastcall SAFE_FREE(void** p)
 {
 	if ( *p ) {
-		mir_free(*p);
+		mir_free( *p );
 		*p = NULL;
 }	}
 
-static void __fastcall SafeDestroyIcon(HICON* icon)
+static void __fastcall SafeDestroyIcon( HICON* icon )
 {
-	if (*icon) {
-		DestroyIcon(*icon);
+	if ( *icon ) {
+		DestroyIcon( *icon );
 		*icon = NULL;
 }	}
 
 /////////////////////////////////////////////////////////////////////////////////////////
 // Service functions
 
-static HICON ExtractIconFromPath(const TCHAR *path, int cxIcon, int cyIcon)
+static HICON ExtractIconFromPath( const TCHAR *path, int cxIcon, int cyIcon )
 {
 	TCHAR *comma;
-	TCHAR file[MAX_PATH],fileFull[MAX_PATH];
+	TCHAR file[ MAX_PATH ], fileFull[ MAX_PATH ];
 	int n;
 	HICON hIcon;
 
-	if (!path) return (HICON)NULL;
+	if ( !path )
+		return (HICON)NULL;
 
-	lstrcpyn(file, path, SIZEOF(file));
-	comma = _tcsrchr(file,',');
-	if (!comma)
-		n=0;
+	lstrcpyn( file, path, SIZEOF( file ));
+	comma = _tcsrchr( file, ',' );
+	if ( !comma )
+		n = 0;
 	else {  
-		n=_ttoi(comma+1);
-		*comma=0;
+		n = _ttoi( comma+1 );
+		*comma = 0;
 	}
-	CallService(MS_UTILS_PATHTOABSOLUTET, (WPARAM)file, (LPARAM)fileFull);
+	CallService( MS_UTILS_PATHTOABSOLUTET, ( WPARAM )file, ( LPARAM )fileFull );
 	hIcon = NULL;
 
 	//SHOULD BE REPLACED WITH GOOD ENOUGH FUNCTION
-	_ExtractIconEx(fileFull, n, cxIcon, cyIcon, &hIcon, LR_COLOR);
-
+	_ExtractIconEx( fileFull, n, cxIcon, cyIcon, &hIcon, LR_COLOR );
 	return hIcon;
 }
 
@@ -121,14 +121,15 @@ static SectionItem* IcoLib_AddSection(TCHAR *sectionName, BOOL create_new)
 	SectionItem key = { sectionName, 0 };    
 	int indx;
 
-    if ( !sectionName ) return NULL;
+	if ( !sectionName )
+		return NULL;
 
 	if ( List_GetIndex(( SortedList* )&sectionList, &key, &indx ))
-		return sectionList.items[indx];
+		return sectionList.items[ indx ];
 
 	if ( create_new ) {
 		SectionItem* newItem = ( SectionItem* )mir_alloc( sizeof( SectionItem ));
-		newItem->name = mir_tstrdup(sectionName);
+		newItem->name = mir_tstrdup( sectionName );
 		newItem->flags = 0;
 		List_Insert(( SortedList* )&sectionList, newItem, indx );
 		return newItem;
@@ -143,19 +144,19 @@ static IconItem* IcoLib_FindIcon(const char* pszIconName)
 
 	int indx;
 	if ( List_GetIndex(( SortedList* )&iconList, &key, &indx ))
-		return iconList.items[indx];
+		return iconList.items[ indx ];
 
 	return NULL;
 }
 
 static IconItem* IcoLib_FindHIcon(HICON hIcon)
 {
-	IconItem *item = NULL;
+	IconItem* item = NULL;
 	int indx;
 
-	for (indx = 0; indx < iconList.count; indx++) {
-		if (iconList.items[indx]->icon == hIcon) {
-			item = iconList.items[indx];
+	for ( indx = 0; indx < iconList.count; indx++ ) {
+		if (iconList.items[ indx ]->icon == hIcon) {
+			item = iconList.items[ indx ];
 			break;
 	}	}
 
@@ -164,14 +165,14 @@ static IconItem* IcoLib_FindHIcon(HICON hIcon)
 
 static void IcoLib_FreeIcon(IconItem* icon)
 {
-	SAFE_FREE(&icon->name);
-	SAFE_FREE(&icon->description);
-	SAFE_FREE(&icon->default_file);
-	SAFE_FREE(&icon->temp_file);
-	if (icon->icon != icon->default_icon)
-		SafeDestroyIcon(&icon->icon);
-	SafeDestroyIcon(&icon->default_icon);
-	SafeDestroyIcon(&icon->temp_icon);
+	SAFE_FREE( &icon->name );
+	SAFE_FREE( &icon->description );
+	SAFE_FREE( &icon->default_file );
+	SAFE_FREE( &icon->temp_file );
+	if ( icon->icon != icon->default_icon )
+		SafeDestroyIcon( &icon->icon );
+	SafeDestroyIcon( &icon->default_icon );
+	SafeDestroyIcon( &icon->temp_icon );
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////
@@ -180,134 +181,133 @@ static void IcoLib_FreeIcon(IconItem* icon)
 HANDLE IcoLib_AddNewIcon( SKINICONDESC* sid )
 {
 	int utf = 0, utf_path = 0;
-	IconItem *item;
+	IconItem* item;
 
 	if ( !sid->cbSize )
 		return NULL;
 
-	if (sid->cbSize < SKINICONDESC_SIZE_V1)
+	if ( sid->cbSize < SKINICONDESC_SIZE_V1 )
 		return NULL;
 
-	if (sid->cbSize >= SKINICONDESC_SIZE) {
+	if ( sid->cbSize >= SKINICONDESC_SIZE ) {
 		utf = sid->flags & SIDF_UNICODE ? 1 : 0;
 		utf_path = sid->flags & SIDF_PATH_UNICODE ? 1 : 0;
 	}
 
-	EnterCriticalSection(&csIconList);
+	EnterCriticalSection( &csIconList );
 
-	item = IcoLib_FindIcon(sid->pszName);
+	item = IcoLib_FindIcon( sid->pszName );
 	if ( !item ) {
 		item = ( IconItem* )mir_alloc( sizeof( IconItem ));
 		item->name = sid->pszName;
 		List_InsertPtr(( SortedList* )&iconList, item );
 	}
-	else IcoLib_FreeIcon(item);
+	else IcoLib_FreeIcon( item );
 
-	ZeroMemory(item, sizeof(*item));
-	item->name = mir_strdup(sid->pszName);
-	if (utf) {
+	ZeroMemory( item, sizeof( *item ));
+	item->name = mir_strdup( sid->pszName );
+	if ( utf ) {
 		#ifdef _UNICODE
-			item->description = mir_tstrdup(sid->ptszDescription);
-			item->section = IcoLib_AddSection(sid->pwszSection, TRUE);
+			item->description = mir_tstrdup( sid->ptszDescription );
+			item->section = IcoLib_AddSection( sid->pwszSection, TRUE );
 		#else
-			char *pszSection = sid->pwszSection ? u2a(sid->pwszSection) : NULL;
-
-			item->description = u2a(sid->pwszDescription);
-			item->section = IcoLib_AddSection(pszSection, TRUE);
-			SAFE_FREE(&pszSection);
+			char* pszSection = sid->pwszSection ? u2a( sid->pwszSection ) : NULL;
+			item->description = u2a( sid->pwszDescription );
+			item->section = IcoLib_AddSection( pszSection, TRUE );
+			SAFE_FREE( &pszSection );
 		#endif
 	}
 	else {
 		#ifdef _UNICODE
-			WCHAR *pwszSection = sid->pszSection ? a2u(sid->pszSection) : NULL;
+			WCHAR* pwszSection = sid->pszSection ? a2u( sid->pszSection ) : NULL;
 
-			item->description = a2u(sid->pszDescription);
-			item->section = IcoLib_AddSection(pwszSection, TRUE);
-			SAFE_FREE(&pwszSection);
+			item->description = a2u( sid->pszDescription );
+			item->section = IcoLib_AddSection( pwszSection, TRUE );
+			SAFE_FREE( &pwszSection );
 		#else
-			item->description = mir_strdup(sid->pszDescription);
-			item->section = IcoLib_AddSection(sid->pszSection, TRUE);
+			item->description = mir_strdup( sid->pszDescription );
+			item->section = IcoLib_AddSection( sid->pszSection, TRUE );
 		#endif
 	}
-	if (item->section)
+	if ( item->section )
 		item->orderID = ++item->section->maxOrder;
 	else
 		item->orderID = 0;
 
-	if (sid->pszDefaultFile) {
-		if (utf_path) {
+	if ( sid->pszDefaultFile ) {
+		if ( utf_path ) {
 			#ifdef _UNICODE
-				WCHAR fileFull[MAX_PATH];
+				WCHAR fileFull[ MAX_PATH ];
 
-				CallService(MS_UTILS_PATHTOABSOLUTEW, (WPARAM)sid->pwszDefaultFile, (LPARAM)fileFull);
-				item->default_file = mir_wstrdup(fileFull);
+				CallService( MS_UTILS_PATHTOABSOLUTEW, ( WPARAM )sid->pwszDefaultFile, ( LPARAM )fileFull );
+				item->default_file = mir_wstrdup( fileFull );
 			#else
-				char *file = u2a(sid->pwszDefaultFile);
-				char fileFull[MAX_PATH];
+				char* file = u2a( sid->pwszDefaultFile );
+				char fileFull[ MAX_PATH ];
 
-				CallService(MS_UTILS_PATHTOABSOLUTE, (WPARAM)file, (LPARAM)fileFull);
-				SAFE_FREE(&file);
-				item->default_file = mir_strdup(fileFull);
+				CallService( MS_UTILS_PATHTOABSOLUTE, ( WPARAM )file, ( LPARAM )fileFull );
+				SAFE_FREE( &file );
+				item->default_file = mir_strdup( fileFull );
 			#endif
 		}
 		else {
 			#ifdef _UNICODE
-				WCHAR *file = a2u(sid->pszDefaultFile);
-				WCHAR fileFull[MAX_PATH];
+				WCHAR *file = a2u( sid->pszDefaultFile );
+				WCHAR fileFull[ MAX_PATH ];
 
-				CallService(MS_UTILS_PATHTOABSOLUTEW, (WPARAM)file, (LPARAM)fileFull);
-				SAFE_FREE(&file);
-				item->default_file = mir_wstrdup(fileFull);
+				CallService( MS_UTILS_PATHTOABSOLUTEW, ( WPARAM )file, ( LPARAM )fileFull );
+				SAFE_FREE( &file );
+				item->default_file = mir_wstrdup( fileFull );
 			#else
-				char fileFull[MAX_PATH];
+				char fileFull[ MAX_PATH ];
 
-				CallService(MS_UTILS_PATHTOABSOLUTE, (WPARAM)sid->pszDefaultFile, (LPARAM)fileFull);
-				item->default_file = mir_strdup(fileFull);
+				CallService( MS_UTILS_PATHTOABSOLUTE, ( WPARAM )sid->pszDefaultFile, ( LPARAM )fileFull );
+				item->default_file = mir_strdup( fileFull );
 			#endif
 	}	}
 	item->default_indx = sid->iDefaultIndex;
-	if (sid->cbSize >= SKINICONDESC_SIZE_V2 && sid->hDefaultIcon)
-		item->default_icon = DuplicateIcon(NULL, sid->hDefaultIcon);
+	if ( sid->cbSize >= SKINICONDESC_SIZE_V2 && sid->hDefaultIcon )
+		item->default_icon = DuplicateIcon( NULL, sid->hDefaultIcon );
 
-	if (sid->cbSize >= SKINICONDESC_SIZE_V3) {
+	if ( sid->cbSize >= SKINICONDESC_SIZE_V3 ) {
 		item->cx = sid->cx;
 		item->cy = sid->cy;
 	}
 	else {
-		item->cx = GetSystemMetrics(SM_CXSMICON);
-		item->cy = GetSystemMetrics(SM_CYSMICON);
+		item->cx = GetSystemMetrics( SM_CXSMICON );
+		item->cy = GetSystemMetrics( SM_CYSMICON );
 	}
 
-	if (item->cx == GetSystemMetrics(SM_CXSMICON) && item->cy == GetSystemMetrics(SM_CYSMICON) && item->default_icon) {
-		item->default_icon_index = ImageList_AddIcon(hDefaultIconList, item->default_icon);
-		if (item->default_icon_index != -1)
-			SafeDestroyIcon(&item->default_icon);
+	if ( item->cx == GetSystemMetrics( SM_CXSMICON ) && item->cy == GetSystemMetrics( SM_CYSMICON ) && item->default_icon ) {
+		item->default_icon_index = ImageList_AddIcon( hDefaultIconList, item->default_icon );
+		if ( item->default_icon_index != -1 )
+			SafeDestroyIcon( &item->default_icon );
 	}
 	else item->default_icon_index = -1;
 
-	if (sid->cbSize >= SKINICONDESC_SIZE && item->section)
+	if ( sid->cbSize >= SKINICONDESC_SIZE && item->section )
 		item->section->flags = sid->flags & SIDF_SORTED;
 
-	LeaveCriticalSection(&csIconList);
+	LeaveCriticalSection( &csIconList );
 	return item;
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////
 // IcoLib_RemoveIcon
 
-static int IcoLib_RemoveIcon(WPARAM wParam, LPARAM lParam)
+static int IcoLib_RemoveIcon( WPARAM wParam, LPARAM lParam )
 {
 	if ( lParam ) {
 		int indx;
-		EnterCriticalSection(&csIconList);
+		EnterCriticalSection( &csIconList );
 
 		if ( List_GetIndex(( SortedList* )&iconList, ( void* )lParam, &indx )) {
-			IcoLib_FreeIcon( iconList.items[indx] );
+			IcoLib_FreeIcon( iconList.items[ indx ] );
 			List_Remove(( SortedList* )&iconList, indx );
 		}
 		else indx = -1;
 
-		LeaveCriticalSection(&csIconList);
+		LeaveCriticalSection( &csIconList );
 		return ( indx == -1 ) ? 1 : 0;
 	}
 	return 1; // Failed
@@ -316,29 +316,30 @@ static int IcoLib_RemoveIcon(WPARAM wParam, LPARAM lParam)
 /////////////////////////////////////////////////////////////////////////////////////////
 // IcoLib_GetIcon
 
-HICON IconItem_GetIcon(IconItem *item)
+HICON IconItem_GetIcon( IconItem* item )
 {
 	DBVARIANT dbv = {0};
 	HICON hIcon = NULL;
 
-	if (item->icon)
+	if ( item->icon )
 		return item->icon;
 
-	if (!DBGetContactSettingTString(NULL, "SkinIcons", item->name, &dbv)) {
-		hIcon = ExtractIconFromPath(dbv.ptszVal, item->cx, item->cy);
-		DBFreeVariant(&dbv);
-	}
+	if ( !item->temp_reset )
+		if ( !DBGetContactSettingTString( NULL, "SkinIcons", item->name, &dbv )) {
+			hIcon = ExtractIconFromPath( dbv.ptszVal, item->cx, item->cy );
+			DBFreeVariant( &dbv );
+		}
 
-	if (!hIcon) {
+	if ( !hIcon ) {
 		hIcon = item->default_icon;
 
-		if (!hIcon && item->default_icon_index != -1)
-			hIcon = ImageList_GetIcon(hDefaultIconList, item->default_icon_index, ILD_NORMAL);
+		if ( !hIcon && item->default_icon_index != -1 )
+			hIcon = ImageList_GetIcon( hDefaultIconList, item->default_icon_index, ILD_NORMAL );
 
-		if (!hIcon && item->default_file)
-			_ExtractIconEx(item->default_file,item->default_indx,item->cx,item->cy,&hIcon,LR_COLOR);
+		if ( !hIcon && item->default_file )
+			_ExtractIconEx( item->default_file, item->default_indx, item->cx, item->cy, &hIcon, LR_COLOR );
 
-		if (!hIcon)
+		if ( !hIcon )
 			return hIconBlank;
 	}
 	item->icon = hIcon;
@@ -356,20 +357,20 @@ HICON IconItem_GetIcon(IconItem *item)
 
 HICON IcoLib_GetIcon( const char* pszIconName )
 {
-	IconItem *item;
+	IconItem* item;
 	HICON result = NULL;
 
 	if ( !pszIconName )
 		return hIconBlank;
 
-	EnterCriticalSection(&csIconList);
+	EnterCriticalSection( &csIconList );
 
-	item = IcoLib_FindIcon(pszIconName);
-	if (item) {
+	item = IcoLib_FindIcon( pszIconName );
+	if ( item ) {
 		result = IconItem_GetIcon( item );
 		item->ref_count++;
 	}
-	LeaveCriticalSection(&csIconList);
+	LeaveCriticalSection( &csIconList );
 	return result;
 }
 
@@ -383,7 +384,7 @@ HICON IcoLib_GetIconByHandle( HANDLE hItem )
 	HICON result;
 	IconItem* pi = ( IconItem* )hItem;
 
-	EnterCriticalSection(&csIconList);
+	EnterCriticalSection( &csIconList );
 
 	if ( List_IndexOf(( SortedList* )&iconList, pi ) != -1 ) {
 		result = IconItem_GetIcon( pi );
@@ -391,7 +392,7 @@ HICON IcoLib_GetIconByHandle( HANDLE hItem )
 	}
 	else result = hIconBlank;
 
-	LeaveCriticalSection(&csIconList);
+	LeaveCriticalSection( &csIconList );
 	return result;			
 }
 
@@ -404,15 +405,15 @@ HANDLE IcoLib_IsManaged( HICON hIcon )
 {
 	IconItem* item;
 
-	EnterCriticalSection(&csIconList);
+	EnterCriticalSection( &csIconList );
 
 	item = IcoLib_FindHIcon( hIcon );
-	if (item && item->ref_count) {
-		LeaveCriticalSection(&csIconList);
+	if ( item && item->ref_count ) {
+		LeaveCriticalSection( &csIconList );
 		return item;
 	}
 
-	LeaveCriticalSection(&csIconList);
+	LeaveCriticalSection( &csIconList );
 	return NULL;
 }
 
@@ -421,24 +422,23 @@ HANDLE IcoLib_IsManaged( HICON hIcon )
 // lParam: NULL
 // wParam: HICON
 
-static int IcoLib_AddRef(WPARAM wParam, LPARAM lParam)
+static int IcoLib_AddRef( WPARAM wParam, LPARAM lParam )
 {
 	IconItem *item = NULL;
 
-	EnterCriticalSection(&csIconList);
+	EnterCriticalSection( &csIconList );
 
-	item = IcoLib_FindHIcon((HICON)wParam);
+	item = IcoLib_FindHIcon(( HICON )wParam);
 
-	if (item && item->ref_count) {
+	if ( item && item->ref_count ) {
 		item->ref_count++;
-		LeaveCriticalSection(&csIconList);
+		LeaveCriticalSection( &csIconList );
 		return 0;
 	}
 
-	LeaveCriticalSection(&csIconList);
+	LeaveCriticalSection( &csIconList );
 	return 1;
 }
-
 
 /////////////////////////////////////////////////////////////////////////////////////////
 // IcoLib_ReleaseIcon
@@ -459,13 +459,13 @@ int IcoLib_ReleaseIcon( HICON hIcon, char* szIconName )
 
 	if ( item && item->ref_count ) {
 		item->ref_count--;
-		if (!iconEventActive && !item->ref_count && item->icon != item->default_icon)
-			SafeDestroyIcon(&item->icon);
-		LeaveCriticalSection(&csIconList);
+		if ( !iconEventActive && !item->ref_count && item->icon != item->default_icon )
+			SafeDestroyIcon( &item->icon );
+		LeaveCriticalSection( &csIconList );
 		return 0;
 	}
 
-	LeaveCriticalSection(&csIconList);
+	LeaveCriticalSection( &csIconList );
 	return 1;
 }
 
@@ -474,31 +474,31 @@ int IcoLib_ReleaseIcon( HICON hIcon, char* szIconName )
 
 static void LoadSectionIcons(TCHAR *filename, SectionItem* sectionActive)
 {
-	TCHAR path[MAX_PATH];
+	TCHAR path[ MAX_PATH ];
 	int suffIndx;
 	HICON hIcon;
 	int indx;
 
-	mir_sntprintf(path, SIZEOF(path), _T("%s,"), filename);
-	suffIndx = lstrlen(path);
+	mir_sntprintf( path, SIZEOF(path), _T("%s,"), filename );
+	suffIndx = lstrlen( path );
 
-	EnterCriticalSection(&csIconList);
+	EnterCriticalSection( &csIconList );
 
-	for (indx = 0; indx < iconList.count; indx++) {
-		IconItem *item = iconList.items[indx];
+	for ( indx = 0; indx < iconList.count; indx++ ) {
+		IconItem *item = iconList.items[ indx ];
 
-		if (item->default_file && item->section == sectionActive) {
-			_itot(item->default_indx, path + suffIndx, 10);
-			hIcon = ExtractIconFromPath(path, item->cx, item->cy);
-			if (hIcon) {
-				SAFE_FREE(&item->temp_file);
-				SafeDestroyIcon(&item->temp_icon);
+		if ( item->default_file && item->section == sectionActive ) {
+			_itot( item->default_indx, path + suffIndx, 10 );
+			hIcon = ExtractIconFromPath( path, item->cx, item->cy );
+			if ( hIcon ) {
+				SAFE_FREE( &item->temp_file );
+				SafeDestroyIcon( &item->temp_icon );
 
-				item->temp_file = mir_tstrdup(path);
+				item->temp_file = mir_tstrdup( path );
 				item->temp_icon = hIcon;
 	}	}	}
 
-	LeaveCriticalSection(&csIconList);
+	LeaveCriticalSection( &csIconList );
 }
 
 void LoadSubIcons(HWND htv, TCHAR *filename, HTREEITEM hItem)
@@ -506,65 +506,61 @@ void LoadSubIcons(HWND htv, TCHAR *filename, HTREEITEM hItem)
 	TVITEM tvi;
 	SectionItem* sectionActive;
 
-	tvi.mask = TVIF_HANDLE|TVIF_PARAM;
+	tvi.mask = TVIF_HANDLE | TVIF_PARAM;
 	tvi.hItem = hItem;
 
-	TreeView_GetItem(htv, &tvi);
+	TreeView_GetItem( htv, &tvi );
 	sectionActive = sectionList.items[ SECTIONPARAM_INDEX(tvi.lParam) ];
 
-	tvi.hItem = TreeView_GetChild(htv, tvi.hItem);
-	while (tvi.hItem) {
-		LoadSubIcons(htv, filename, tvi.hItem);
-		tvi.hItem = TreeView_GetNextSibling(htv, tvi.hItem);
+	tvi.hItem = TreeView_GetChild( htv, tvi.hItem );
+	while ( tvi.hItem ) {
+		LoadSubIcons( htv, filename, tvi.hItem );
+		tvi.hItem = TreeView_GetNextSibling( htv, tvi.hItem );
 	}
 
-	if( SECTIONPARAM_FLAGS(tvi.lParam) & SECTIONPARAM_HAVEPAGE )
-		LoadSectionIcons(filename, sectionActive);
+	if ( SECTIONPARAM_FLAGS(tvi.lParam) & SECTIONPARAM_HAVEPAGE )
+		LoadSectionIcons( filename, sectionActive );
 }
 
-static void UndoChanges(int iconIndx, int cmd)
+static void UndoChanges( int iconIndx, int cmd )
 {
-	IconItem *item = iconList.items[iconIndx];
+	IconItem *item = iconList.items[ iconIndx ];
 
-	SAFE_FREE(&item->temp_file);
-	SafeDestroyIcon(&item->temp_icon);
+	SAFE_FREE( &item->temp_file );
+	SafeDestroyIcon( &item->temp_icon );
 
-	if (cmd == ID_RESET) {
-		DBDeleteContactSetting(NULL, "SkinIcons", item->name);
-		if (item->icon != item->default_icon)
-			SafeDestroyIcon(&item->icon);
-		else
-			item->icon = NULL;
-}	}
+	if ( cmd == ID_RESET )
+		item->temp_reset = TRUE;
+}
 
-void UndoSubItemChanges(HWND htv, HTREEITEM hItem, int cmd)
+void UndoSubItemChanges( HWND htv, HTREEITEM hItem, int cmd )
 {
 	TVITEM tvi = {0};
 	int indx;
 
-	tvi.mask = TVIF_HANDLE|TVIF_PARAM;
+	tvi.mask = TVIF_HANDLE | TVIF_PARAM;
 	tvi.hItem = hItem;
-	TreeView_GetItem(htv, &tvi);
+	TreeView_GetItem( htv, &tvi );
 
-	if ( SECTIONPARAM_FLAGS(tvi.lParam) & SECTIONPARAM_HAVEPAGE ) {
-		EnterCriticalSection(&csIconList);
+	if ( SECTIONPARAM_FLAGS( tvi.lParam ) & SECTIONPARAM_HAVEPAGE ) {
+		EnterCriticalSection( &csIconList );
 
-		for (indx = 0; indx < iconList.count; indx++)
-			if (iconList.items[indx]->section == sectionList.items[ SECTIONPARAM_INDEX(tvi.lParam) ])
-				UndoChanges(indx, cmd);
+		for ( indx = 0; indx < iconList.count; indx++ )
+			if ( iconList.items[ indx ]->section == sectionList.items[ SECTIONPARAM_INDEX(tvi.lParam) ])
+				UndoChanges( indx, cmd );
 
-		LeaveCriticalSection(&csIconList);
+		LeaveCriticalSection( &csIconList );
 	}
 
-	tvi.hItem = TreeView_GetChild(htv, tvi.hItem);
-	while (tvi.hItem) {
-		UndoSubItemChanges(htv, tvi.hItem, cmd);
-		tvi.hItem = TreeView_GetNextSibling(htv, tvi.hItem);
+	tvi.hItem = TreeView_GetChild( htv, tvi.hItem );
+	while ( tvi.hItem ) {
+		UndoSubItemChanges( htv, tvi.hItem, cmd );
+		tvi.hItem = TreeView_GetNextSibling( htv, tvi.hItem );
 }	}
 
 static void OpenIconsPage()
 {
-	CallService(MS_UTILS_OPENURL, 1, (LPARAM)"http://addons.miranda-im.org/index.php?action=display&id=35");
+	CallService( MS_UTILS_OPENURL, 1, (LPARAM)"http://addons.miranda-im.org/index.php?action=display&id=35" );
 }
 
 static int OpenPopupMenu(HWND hwndDlg)
@@ -574,15 +570,15 @@ static int OpenPopupMenu(HWND hwndDlg)
 	int cmd;
 
 	GetCursorPos(&pt);
-	hMenu = LoadMenu(GetModuleHandle(NULL), MAKEINTRESOURCE(IDR_ICOLIB_CONTEXT));
-	hPopup = GetSubMenu(hMenu, 0);
-	CallService(MS_LANGPACK_TRANSLATEMENU, (WPARAM)hPopup, 0);
-	cmd = TrackPopupMenu(hPopup, TPM_RIGHTBUTTON|TPM_RETURNCMD, pt.x,  pt.y, 0, hwndDlg, NULL);
-	DestroyMenu(hMenu);
+	hMenu = LoadMenu( GetModuleHandle(NULL), MAKEINTRESOURCE( IDR_ICOLIB_CONTEXT ));
+	hPopup = GetSubMenu( hMenu, 0 );
+	CallService( MS_LANGPACK_TRANSLATEMENU, ( WPARAM )hPopup, 0 );
+	cmd = TrackPopupMenu( hPopup, TPM_RIGHTBUTTON|TPM_RETURNCMD, pt.x,  pt.y, 0, hwndDlg, NULL );
+	DestroyMenu( hMenu );
 	return cmd;
 }
 
-static TCHAR* OpenFileDlg(HWND hParent, const TCHAR* szFile, BOOL bAll)
+static TCHAR* OpenFileDlg( HWND hParent, const TCHAR* szFile, BOOL bAll )
 {
 	OPENFILENAME ofn = {0};
 	TCHAR filter[512],*pfilter,file[MAX_PATH*2];
@@ -1033,6 +1029,7 @@ BOOL CALLBACK DlgProcIcoLibOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lP
 			for (indx = 0; indx < iconList.count; indx++) {
 				iconList.items[indx]->temp_file = NULL;
 				iconList.items[indx]->temp_icon = NULL;
+				iconList.items[indx]->temp_reset = FALSE;
 			}
 		}
 		LeaveCriticalSection(&csIconList);
@@ -1141,9 +1138,9 @@ BOOL CALLBACK DlgProcIcoLibOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lP
 				if (item->section == sectionActive) {
 					lvi.pszText = TranslateTS(item->description);
 					hIcon = item->temp_icon;
-					if (!hIcon) {
-						if (!item->icon) item->temp = 1;
-						hIcon = IconItem_GetIcon(item);
+					if ( !hIcon ) {
+						if ( !item->icon ) item->temp = 1;
+						hIcon = IconItem_GetIcon( item );
 					}
 					lvi.iImage = ImageList_AddIcon(hIml, hIcon);
 					lvi.lParam = indx;
@@ -1152,7 +1149,7 @@ BOOL CALLBACK DlgProcIcoLibOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lP
 
 			LeaveCriticalSection(&csIconList);
 
-			if ( sectionActive->flags & SIDF_SORTED)
+			if ( sectionActive->flags & SIDF_SORTED )
 				ListView_SortItems(hPreview, DoSortIconsFunc, 0);
 			else
 				ListView_SortItems(hPreview, DoSortIconsFuncByOrder, 0);
@@ -1195,96 +1192,85 @@ BOOL CALLBACK DlgProcIcoLibOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lP
 
 			lvi.mask = LVIF_PARAM;
 			lvi.iItem = wParam;
-			ListView_GetItem(hPreview, &lvi);
+			ListView_GetItem( hPreview, &lvi );
 
-			EnterCriticalSection(&csIconList);
-			item = iconList.items[lvi.lParam];
+			EnterCriticalSection( &csIconList );
+			item = iconList.items[ lvi.lParam ];
 
-			SAFE_FREE(&item->temp_file);
-			SafeDestroyIcon(&item->temp_icon);
-			item->temp_file = mir_tstrdup(path);
-			item->temp_icon = (HICON)ExtractIconFromPath(path, item->cx, item->cy);
+			SAFE_FREE( &item->temp_file );
+			SafeDestroyIcon( &item->temp_icon );
+			item->temp_file = mir_tstrdup( path );
+			item->temp_icon = ( HICON )ExtractIconFromPath( path, item->cx, item->cy );
+			item->temp_reset = FALSE;
 
-			LeaveCriticalSection(&csIconList);
-
-			DoOptionsChanged(hwndDlg);
+			LeaveCriticalSection( &csIconList );
+			DoOptionsChanged( hwndDlg );
 		}
 		break;
 
 	case WM_COMMAND:
-		if (LOWORD(wParam) == IDC_IMPORT) {
+		if ( LOWORD(wParam) == IDC_IMPORT ) {
 			dat->hwndIndex = CreateDialogParam(GetModuleHandle(NULL), MAKEINTRESOURCE(IDD_ICOLIB_IMPORT), GetParent(hwndDlg), DlgProcIconImport, (LPARAM)hwndDlg);
 			EnableWindow((HWND)lParam, FALSE);
 		}
-		else if (LOWORD(wParam) == IDC_GETMORE) {
+		else if ( LOWORD(wParam) == IDC_GETMORE ) {
 			OpenIconsPage();
 			break;
 		}
-		else if (LOWORD(wParam) == IDC_LOADICONS) {
+		else if (LOWORD(wParam) == IDC_LOADICONS ) {
 			TCHAR filetmp[1] = {0};
 			TCHAR *file;
 
-			if (file = OpenFileDlg(hwndDlg, filetmp, FALSE)) {
-				HWND htv = GetDlgItem(hwndDlg, IDC_CATEGORYLIST);
-				TCHAR filename[MAX_PATH];
+			if ( file = OpenFileDlg( hwndDlg, filetmp, FALSE )) {
+				HWND htv = GetDlgItem( hwndDlg, IDC_CATEGORYLIST );
+				TCHAR filename[ MAX_PATH ];
 
-				CallService(MS_UTILS_PATHTORELATIVET, (WPARAM)file, (LPARAM)filename);
-				SAFE_FREE(&file);
+				CallService( MS_UTILS_PATHTORELATIVET, ( WPARAM )file, ( LPARAM )filename );
+				SAFE_FREE( &file );
 
-				MySetCursor(IDC_WAIT);
+				MySetCursor( IDC_WAIT );
+				LoadSubIcons( htv, filename, TreeView_GetSelection( htv ));
+				MySetCursor( IDC_ARROW );
 
-				LoadSubIcons(htv, filename, TreeView_GetSelection(htv));
-
-				MySetCursor(IDC_ARROW);
-
-				DoOptionsChanged(hwndDlg);
+				DoOptionsChanged( hwndDlg );
 		}	}
 		break;
 
 	case WM_CONTEXTMENU:
-		if ((HWND)wParam == hPreview) {
-			UINT count = ListView_GetSelectedCount(hPreview);
+		if (( HWND )wParam == hPreview ) {
+			UINT count = ListView_GetSelectedCount( hPreview );
 
-			if (count > 0) {
-				int cmd = OpenPopupMenu(hwndDlg);
-				switch(cmd) {
+			if ( count > 0 ) {
+				int cmd = OpenPopupMenu( hwndDlg );
+				switch( cmd ) {
 				case ID_CANCELCHANGE:
 				case ID_RESET:
 					{
 						LVITEM lvi = {0};
 						int itemIndx = -1;
 
-						while ((itemIndx = ListView_GetNextItem(hPreview, itemIndx, LVNI_SELECTED)) != -1) {
+						while (( itemIndx = ListView_GetNextItem( hPreview, itemIndx, LVNI_SELECTED )) != -1 ) {
 							lvi.mask = LVIF_PARAM;
 							lvi.iItem = itemIndx; //lvhti.iItem;
-							ListView_GetItem(hPreview, &lvi);
+							ListView_GetItem( hPreview, &lvi );
 
-							UndoChanges(lvi.lParam, cmd);
+							UndoChanges( lvi.lParam, cmd );
 						}
 
-						if (cmd == ID_RESET)
-							DoIconsChanged(hwndDlg);
-						else
-							DoOptionsChanged(hwndDlg);
-
+						DoOptionsChanged( hwndDlg );
 						break;
 			}	}	}
 		}
 		else {
-         HWND htv = GetDlgItem(hwndDlg, IDC_CATEGORYLIST);
-			if ((HWND)wParam == htv) {
-				int cmd = OpenPopupMenu(hwndDlg);
+         HWND htv = GetDlgItem( hwndDlg, IDC_CATEGORYLIST );
+			if (( HWND )wParam == htv ) {
+				int cmd = OpenPopupMenu( hwndDlg );
 
-				switch(cmd) {
+				switch( cmd ) {
 				case ID_CANCELCHANGE:
 				case ID_RESET:
-					UndoSubItemChanges(htv, TreeView_GetSelection(htv), cmd);
-
-					if (cmd == ID_RESET)
-						DoIconsChanged(hwndDlg);
-					else
-						DoOptionsChanged(hwndDlg);
-
+					UndoSubItemChanges( htv, TreeView_GetSelection( htv ), cmd );
+					DoOptionsChanged( hwndDlg );
 					break;
 		}	}	}
 		break;
@@ -1301,7 +1287,14 @@ BOOL CALLBACK DlgProcIcoLibOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lP
 
 					for (indx = 0; indx < iconList.count; indx++) {
 						IconItem *item = iconList.items[indx];
-						if (item->temp_file) {
+						if (item->temp_reset) {
+							DBDeleteContactSetting(NULL, "SkinIcons", item->name);
+							if (item->icon != item->default_icon)
+								SafeDestroyIcon(&item->icon);
+							else
+								item->icon = NULL;
+						}
+						else if (item->temp_file) {
 							DBWriteContactSettingTString(NULL, "SkinIcons", item->name, item->temp_file);
 							if (item->temp_icon) {
 								if (item->icon != item->default_icon)

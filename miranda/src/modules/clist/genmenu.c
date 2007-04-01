@@ -604,6 +604,7 @@ int MO_AddNewMenuItem( int menuobjecthandle, PMO_MenuItem pmi )
 		p->mi = *pmi;
 		p->iconId = -1;
 		p->OverrideShow = TRUE;
+		p->originalPosition = pmi->position;
 		#if defined( _UNICODE )
 			if ( pmi->flags & CMIF_UNICODE )
 				p->mi.ptszName = mir_tstrdup( TranslateTS( pmi->ptszName ));
