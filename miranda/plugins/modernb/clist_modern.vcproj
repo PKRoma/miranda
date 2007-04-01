@@ -1110,10 +1110,29 @@
 				<File
 					RelativePath=".\ExtFrames\modern_ext_frames.c">
 					<FileConfiguration
+						Name="Release|Win32">
+						<Tool
+							Name="VCCLCompilerTool"
+							PrecompiledHeaderThrough="../commonheaders.h"/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="Debug|Win32">
+						<Tool
+							Name="VCCLCompilerTool"
+							PrecompiledHeaderThrough="../commonheaders.h"/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="Debug Unicode|Win32">
+						<Tool
+							Name="VCCLCompilerTool"
+							PrecompiledHeaderThrough="../commonheaders.h"/>
+					</FileConfiguration>
+					<FileConfiguration
 						Name="Release Unicode|Win32">
 						<Tool
 							Name="VCCLCompilerTool"
-							UsePrecompiledHeader="0"/>
+							UsePrecompiledHeader="0"
+							PrecompiledHeaderThrough="../commonheaders.h"/>
 					</FileConfiguration>
 				</File>
 			</Filter>

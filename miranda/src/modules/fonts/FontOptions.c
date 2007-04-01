@@ -281,7 +281,8 @@ static BOOL sttGetTreeNodeText( HWND hwndTree, HTREEITEM hItem, char* szBuf, siz
 #ifdef _UNICODE
 		bufPtr += WideCharToMultiByte( codepage, 0, tvi.pszText, lstrlen(tvi.pszText), bufPtr, cbLen-(bufPtr-szBuf), NULL, NULL );
 #else
-		bufPtr += strncpy( bufPtr, tvi.pszText, (p - section->name) );
+		strncpy( bufPtr, tvi.pszText, cbLen-(bufPtr-szBuf) );
+		bufPtr += lstrlen(tvi.pszText);
 #endif
 		if ((bufPtr - szBuf) >= cbLen) break;
 		*bufPtr++ = '@';
