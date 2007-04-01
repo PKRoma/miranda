@@ -629,41 +629,50 @@ void handleServiceFam(unsigned char* pBuffer, WORD wBufferLength, snac_header* p
 }
 
 
+#define MD5_BLOCK_SIZE 1024*1024 /* use 1MB blocks */
 
 char* calcMD5Hash(char* szFile)
 {
-  mir_md5_state_t state;
-  mir_md5_byte_t digest[16];
+  char* res = NULL;
 
   if (szFile)
   {
     HANDLE hFile = NULL, hMap = NULL;
     BYTE* ppMap = NULL;
-    long cbFileSize = 0;
-    char* res;
 
     if ((hFile = CreateFile(szFile, GENERIC_READ, FILE_SHARE_READ, NULL, OPEN_EXISTING, 0, NULL )) != INVALID_HANDLE_VALUE)
       if ((hMap = CreateFileMapping(hFile, NULL, PAGE_READONLY, 0, 0, NULL)) != NULL)
-        if ((ppMap = (BYTE*)MapViewOfFile(hMap, FILE_MAP_READ, 0, 0, 0)) != NULL)
-          cbFileSize = GetFileSize( hFile, NULL );
+      {
+        long cbFileSize = GetFileSize( hFile, NULL );
 
-    res = (char*)SAFE_MALLOC(16*sizeof(char));
-    if (cbFileSize != 0 && res)
-    {
-      mir_md5_init(&state);
-      mir_md5_append(&state, (const mir_md5_byte_t *)ppMap, cbFileSize);
-      mir_md5_finish(&state, digest);
-      memcpy(res, digest, 16);
-    }
+        res = (char*)SAFE_MALLOC(16*sizeof(char));
+        if (cbFileSize != 0 && res)
+        {
+          mir_md5_state_t state;
+          mir_md5_byte_t digest[16];
+          int dwOffset = 0;
 
-    if (ppMap != NULL) UnmapViewOfFile(ppMap);
+          mir_md5_init(&state);
+          while (dwOffset < cbFileSize)
+          {
+            int dwBlockSize = min(MD5_BLOCK_SIZE, cbFileSize-dwOffset);
+
+            if (!(ppMap = (BYTE*)MapViewOfFile(hMap, FILE_MAP_READ, 0, dwOffset, dwBlockSize)))
+              break;
+            mir_md5_append(&state, (const mir_md5_byte_t *)ppMap, dwBlockSize);
+            UnmapViewOfFile(ppMap);
+            dwOffset += dwBlockSize;
+          }
+          mir_md5_finish(&state, digest);
+          memcpy(res, digest, 16);
+        }
+      }
+
     if (hMap  != NULL) CloseHandle(hMap);
     if (hFile != NULL) CloseHandle(hFile);
-
-    if (res) return res;
   }
   
-  return NULL;
+  return res;
 }
 
 

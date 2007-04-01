@@ -1401,13 +1401,13 @@ int IcqSendMessage(WPARAM wParam, LPARAM lParam)
           && CheckContactCapabilities(ccs->hContact, CAPF_UTF) && ICQGetContactSettingByte(ccs->hContact, "UnicodeSend", 1))
         { // text contains national chars and we should send all this as Unicode, so do it
           char* pszUtf = NULL;
-          int nStrSize = MultiByteToWideChar(CP_ACP, 0, pszText, strlennull(pszText), (wchar_t*)pszUtf, 0);
+          int nStrSize = MultiByteToWideChar(CP_ACP, 0, pszText, strlennull(pszText), (WCHAR*)pszUtf, 0);
           int nRes;
 
-          pszUtf = (char*)SAFE_MALLOC((nStrSize + 2)*sizeof(wchar_t));
+          pszUtf = (char*)SAFE_MALLOC((nStrSize + 2)*sizeof(WCHAR));
           // we omit ansi string - not used...
-          MultiByteToWideChar(CP_ACP, 0, pszText, strlennull(pszText), (wchar_t*)(pszUtf+1), nStrSize);
-          *(WORD*)(pszUtf + 1 + nStrSize*sizeof(wchar_t)) = '\0'; // trailing zeros
+          MultiByteToWideChar(CP_ACP, 0, pszText, strlennull(pszText), (WCHAR*)(pszUtf+1), nStrSize);
+          *(WORD*)(pszUtf + 1 + nStrSize*sizeof(WCHAR)) = '\0'; // trailing zeros
 
           ccs->lParam = (LPARAM)pszUtf; // yeah, this is quite a hack, BE AWARE OF THAT !!!
           ccs->wParam |= PREF_UNICODE;
@@ -1531,7 +1531,7 @@ static char* convertMsgToUserSpecificAnsi(HANDLE hContact, const char* szMsg)
 { // this needs valid "Unicode" buffer from SRMM !!!
   WORD wCP = ICQGetContactSettingWord(hContact, "CodePage", gwAnsiCodepage);
   int nMsgLen = strlennull(szMsg);
-  wchar_t* usMsg = (wchar_t*)(szMsg + nMsgLen + 1);
+  WCHAR* usMsg = (WCHAR*)(szMsg + nMsgLen + 1);
   char* szAnsi = NULL;
 
   if (wCP != CP_ACP)
@@ -1559,7 +1559,7 @@ int IcqSendMessageW(WPARAM wParam, LPARAM lParam)
       DWORD dwCookie;
       DWORD dwUin;
       uid_str szUID;
-      wchar_t* pszText;
+      WCHAR* pszText;
       // TODO: this was not working, removed check
       if (!gbUtfEnabled || /*(ccs->wParam & PREF_UNICODE == PREF_UNICODE) ||*/ 
         (!CheckContactCapabilities(ccs->hContact, CAPF_UTF)) || (!ICQGetContactSettingByte(ccs->hContact, "UnicodeSend", 1)))
@@ -1584,7 +1584,7 @@ int IcqSendMessageW(WPARAM wParam, LPARAM lParam)
       if (gbTempVisListEnabled && gnCurrentStatus == ID_STATUS_INVISIBLE)
         makeContactTemporaryVisible(ccs->hContact); // make us temporarily visible to contact
 
-      pszText = (wchar_t*)((char*)ccs->lParam+strlennull((char*)ccs->lParam)+1); // get the UTF-16 part
+      pszText = (WCHAR*)((char*)ccs->lParam+strlennull((char*)ccs->lParam)+1); // get the UTF-16 part
 
       wRecipientStatus = ICQGetContactStatus(ccs->hContact);
 
@@ -1655,7 +1655,7 @@ int IcqSendMessageW(WPARAM wParam, LPARAM lParam)
             SAFE_FREE(&tmp);
           }
 
-          if (wcslen(pszText)*sizeof(wchar_t) > MAX_MESSAGESNACSIZE)
+          if (wcslen(pszText)*sizeof(WCHAR) > MAX_MESSAGESNACSIZE)
           { // max length check // TLV(2) is currently limited to 0xA00 bytes in online mode
             // only limit to not get disconnected, all other will be handled by error 0x0A
             SAFE_FREE(&pCookieData);
@@ -2377,8 +2377,8 @@ int IcqRecvMessage(WPARAM wParam, LPARAM lParam)
   DWORD cbBlob;
 
   cbBlob = strlennull(pre->szMessage) + 1;
-  if ( pre->flags & PREF_UNICODE )
-    cbBlob *= ( sizeof( wchar_t )+1 );
+  if ((pre->flags & PREF_UNICODE) && !IsUnicodeAscii((WCHAR*)(pre->szMessage+cbBlob), wcslen((WCHAR*)(pre->szMessage+cbBlob))))
+    cbBlob *= (sizeof(WCHAR)+1);
 
   ICQAddRecvEvent(ccs->hContact, EVENTTYPE_MESSAGE, pre, cbBlob, (PBYTE)pre->szMessage);
 

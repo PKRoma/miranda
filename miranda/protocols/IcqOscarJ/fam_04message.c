@@ -230,18 +230,33 @@ static void handleRecvServMsg(unsigned char *buf, WORD wLen, WORD wFlags, DWORD 
 static char* convertMsgToUserSpecificUtf(HANDLE hContact, const char* szMsg)
 {
   WORD wCP = ICQGetContactSettingWord(hContact, "CodePage", gwAnsiCodepage);
-  wchar_t* usMsg = NULL;
+  WCHAR* usMsg = NULL;
 
   if (wCP != CP_ACP)
   {
     int nMsgLen = strlennull(szMsg);
 
-    usMsg = (wchar_t*)SAFE_MALLOC((nMsgLen + 2)*(sizeof(wchar_t) + 1));
+    usMsg = (WCHAR*)SAFE_MALLOC((nMsgLen + 2)*(sizeof(WCHAR) + 1));
     memcpy((char*)usMsg, szMsg, nMsgLen + 1);
-    MultiByteToWideChar(wCP, 0, szMsg, nMsgLen, (wchar_t*)((char*)usMsg + nMsgLen + 1), nMsgLen);
-    *(wchar_t*)((char*)usMsg + 1 + nMsgLen*(1 + sizeof(wchar_t))) = '\0'; // trailing zeros
+    MultiByteToWideChar(wCP, 0, szMsg, nMsgLen, (WCHAR*)((char*)usMsg + nMsgLen + 1), nMsgLen);
+    *(WCHAR*)((char*)usMsg + 1 + nMsgLen*(1 + sizeof(WCHAR))) = '\0'; // trailing zeros
   }
   return (char*)usMsg;
+}
+
+
+
+static char* createMsgFromUnicode(const WCHAR* usMsg, int usMsgLen)
+{
+  char *szMsg = NULL;
+  int nStrSize = WideCharToMultiByte(CP_ACP, 0, usMsg, usMsgLen, szMsg, 0, NULL, NULL);
+
+  szMsg = (char*)SAFE_MALLOC((nStrSize+1)*(sizeof(WCHAR)+1));
+  WideCharToMultiByte(CP_ACP, 0, usMsg, usMsgLen, szMsg, nStrSize, NULL, NULL);
+  nStrSize = strlennull(szMsg); // this is necessary, sometimes it was bad
+  memcpy(szMsg+nStrSize+1, usMsg, usMsgLen*sizeof(WCHAR));
+  
+  return szMsg;
 }
 
 
@@ -336,11 +351,10 @@ static void handleRecvServMsgType1(unsigned char *buf, WORD wLen, DWORD dwUin, c
           case 2: // UCS-2
             {
               WCHAR* usMsg;
-              int nStrSize;
 
               usMsg = (WCHAR*)SAFE_MALLOC(wMsgLen + 2);
               unpackWideString(&pMsgBuf, usMsg, wMsgLen);
-              usMsg[wMsgLen/2] = 0;
+              usMsg[wMsgLen/sizeof(WCHAR)] = 0;
 
               if (!dwUin)
               {
@@ -355,13 +369,10 @@ static void handleRecvServMsgType1(unsigned char *buf, WORD wLen, DWORD dwUin, c
                 SetContactCapabilities(hContact, CAPF_UTF);
               }
 
-              nStrSize = WideCharToMultiByte(CP_ACP, 0, usMsg, wMsgLen / sizeof(WCHAR), szMsg, 0, NULL, NULL);
-              szMsg = (char*)SAFE_MALLOC((nStrSize+1)*(sizeof(wchar_t)+1));
-              WideCharToMultiByte(CP_ACP, 0, usMsg, wMsgLen / sizeof(WCHAR), szMsg, nStrSize, NULL, NULL);
-              nStrSize = strlennull(szMsg); // this is necessary, sometimes it was bad
-              memcpy(szMsg+nStrSize+1, usMsg, wMsgLen);
+              szMsg = createMsgFromUnicode(usMsg, wcslen(usMsg));
 
-              pre.flags = PREF_UNICODE;
+              if (!IsUnicodeAscii(usMsg, wcslen(usMsg)))
+                pre.flags = PREF_UNICODE; // only mark real non-ascii messages as unicode
 
               SAFE_FREE(&usMsg);
 
@@ -1381,7 +1392,7 @@ void handleMessageTypes(DWORD dwUin, DWORD dwTimestamp, DWORD dwMsgID, DWORD dwM
       {
         *pszMsg = '\0';
         pszMsgField[nMsgFields++] = pszMsg + 1;
-        if (nMsgFields >= sizeof(pszMsgField)/sizeof(pszMsgField[0]))
+        if (nMsgFields >= SIZEOF(pszMsgField))
           break;
       }
     }
@@ -1401,8 +1412,8 @@ void handleMessageTypes(DWORD dwUin, DWORD dwTimestamp, DWORD dwMsgID, DWORD dwM
       {
         DWORD dwGuidLen;
 
-        wchar_t* usMsg;
-        wchar_t* usMsgW;
+        WCHAR* usMsg;
+        WCHAR* usMsgW;
 
         if (bThruDC)
         {
@@ -1410,17 +1421,12 @@ void handleMessageTypes(DWORD dwUin, DWORD dwTimestamp, DWORD dwMsgID, DWORD dwM
 
           if (dwExtraLen < dwDataLen && !strncmp(szMsg, "{\\rtf", 5))
           { // it is icq5 sending us crap, get real message from it
-            int nStrSize;
-
-            usMsg = (wchar_t*)(pMsg + 4);
-            nStrSize = WideCharToMultiByte(CP_ACP, 0, usMsg, dwExtraLen, szMsg, 0, NULL, NULL);
+            usMsg = (WCHAR*)(pMsg + 4);
             SAFE_FREE(&szMsg);
-            szMsg = (char*)SAFE_MALLOC((nStrSize+1)*(sizeof(wchar_t)+1));
-            WideCharToMultiByte(CP_ACP, 0, usMsg, dwExtraLen, szMsg, nStrSize, NULL, NULL);
-            nStrSize = strlennull(szMsg); // this is necessary, sometimes it was bad
-            memcpy(szMsg+nStrSize+1, usMsg, dwExtraLen*sizeof(wchar_t));
+            szMsg = createMsgFromUnicode(usMsg, dwExtraLen);
 
-            pre.flags = PREF_UNICODE;
+            if (!IsUnicodeAscii(usMsg, dwExtraLen))
+              pre.flags = PREF_UNICODE; // only mark real non-ascii messages as unicode
           
             dwGuidLen = 0;
           }
@@ -1451,11 +1457,11 @@ void handleMessageTypes(DWORD dwUin, DWORD dwTimestamp, DWORD dwMsgID, DWORD dwM
                 int nMsgLen = strlennull(szAnsiMessage) + 1;
                 int nMsgWLen;
 
-                usMsg = SAFE_MALLOC((nMsgLen)*(sizeof(wchar_t) + 1));
+                usMsg = SAFE_MALLOC((nMsgLen)*(sizeof(WCHAR) + 1));
                 memcpy((char*)usMsg, szAnsiMessage, nMsgLen);
                 usMsgW = make_unicode_string(szMsg);
                 nMsgWLen = wcslen(usMsgW);
-                memcpy((char*)usMsg + nMsgLen, (char*)usMsgW, ((nMsgWLen>nMsgLen)?nMsgLen:nMsgWLen)*sizeof(wchar_t));
+                memcpy((char*)usMsg + nMsgLen, (char*)usMsgW, ((nMsgWLen>nMsgLen)?nMsgLen:nMsgWLen)*sizeof(WCHAR));
                 SAFE_FREE(&usMsgW);
                 SAFE_FREE(&szAnsiMessage);
                 SAFE_FREE(&szMsg);
