@@ -180,6 +180,7 @@ BOOL CALLBACK DlgProcUserPrefs(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPa
             else
                 SendDlgItemMessage(hwndDlg, IDC_TIMEZONE, CB_SETCURSEL, 0, 0);
             ShowWindow(hwndDlg, SW_SHOW);
+            CheckDlgButton(hwndDlg, IDC_NOAUTOCLOSE, DBGetContactSettingByte(hContact, SRMSGMOD_T, "NoAutoClose", 0));
             return TRUE;
         }
         case WM_COMMAND:
@@ -331,6 +332,12 @@ BOOL CALLBACK DlgProcUserPrefs(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPa
 					}
 					if(hWnd && dat)
                         SendMessage(hWnd, DM_CONFIGURETOOLBAR, 0, 1);
+
+                    if(IsDlgButtonChecked(hwndDlg, IDC_NOAUTOCLOSE))
+                        DBWriteContactSettingByte(hContact, SRMSGMOD_T, "NoAutoClose", 1);
+                    else
+                        DBDeleteContactSetting(hContact, SRMSGMOD_T, "NoAutoClose");
+
                     DestroyWindow(hwndDlg);
                     break;
                 }

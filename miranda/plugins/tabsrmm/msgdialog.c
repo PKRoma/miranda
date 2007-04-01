@@ -5413,6 +5413,8 @@ verify:
         {
             if(GetWindowTextLengthA(GetDlgItem(hwndDlg, IDC_MESSAGE)) > 0)
                 break;              // don't autoclose if message input area contains text
+            if(DBGetContactSettingByte(dat->hContact, SRMSGMOD_T, "NoAutoClose", 0))
+                break;
             if(dat->dwTickLastEvent >= dat->dwLastActivity)
                 break;              // don't autoclose if possibly unread message is waiting
             if(((GetTickCount() - dat->dwLastActivity) / 1000) >= wParam) {

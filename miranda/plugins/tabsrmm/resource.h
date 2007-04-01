@@ -1,5 +1,5 @@
 //{{NO_DEPENDENCIES}}
-// Microsoft Visual C++ generated include file.
+// Microsoft Developer Studio generated include file.
 // Used by resource.rc
 //
 #define IDD_TEMPLATEEDIT                1
@@ -380,6 +380,7 @@
 #define IDC_SKIN_LOADTEMPLATES          1290
 #define IDC_NOSKINNING                  1291
 #define IDC_SKIN_LOADTEMPLATES2         1291
+#define IDC_NOAUTOCLOSE                 1291
 #define IDC_AVADYNAMIC                  1292
 #define IDC_FLATTABS2                   1292
 #define IDC_USESNAPPING                 1293
