@@ -124,6 +124,7 @@ typedef struct
 	TCHAR*       CustomName;
 	HANDLE       hIcolibItem;     // handle of iconlib item
 	HMENU        hSubMenu;
+	int          originalPosition;
 }
 	TMO_IntMenuItem,*PMO_IntMenuItem;
 
