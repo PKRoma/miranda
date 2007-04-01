@@ -331,7 +331,7 @@ BOOL CALLBACK DlgProcFileTransfer(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM 
 					return 0;
 				case FILERESUME_RESUMEALL:
 				case FILERESUME_OVERWRITEALL:
-					dat->resumeBehaviour=wParam;
+					dat->resumeBehaviour=pfr->action;
 					pfr->action&=~FILERESUMEF_ALL;
 					break;
 				case FILERESUME_RENAMEALL:
