@@ -249,6 +249,8 @@
 #define IDM_MEMBER                      10015
 #define IDM_INVITE                      10016
 #define IDM_BOOKMARKS                   10017
+#define IDM_VCARD                       10018
+
 
 
 // Next default values for new objects

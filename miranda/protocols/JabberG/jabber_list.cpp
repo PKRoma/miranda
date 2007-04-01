@@ -35,10 +35,15 @@ static int compareListItems( const JABBER_LIST_ITEM* p1, const JABBER_LIST_ITEM*
 	if ( p1->list != p2->list )
 		return p1->list - p2->list;
 
+	if ( p1->list != LIST_BOOKMARK ) { // don't strip text after "/" for Bookmarks because JID contains URL
 	TCHAR szp1[ JABBER_MAX_JID_LEN ], szp2[ JABBER_MAX_JID_LEN ];
+	
 	JabberStripJid( p1->jid, szp1, sizeof( szp1 ));
 	JabberStripJid( p2->jid, szp2, sizeof( szp2 ));
+
 	return lstrcmpi( szp1, szp2 );
+}
+	else return lstrcmpi( p1->jid, p2->jid );
 }
 
 static LIST<JABBER_LIST_ITEM> roster( 50, compareListItems );

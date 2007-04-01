@@ -300,6 +300,7 @@ int JabberGcMenuHook( WPARAM wParam, LPARAM lParam )
 	}
 	else if ( gcmi->Type == MENU_ON_NICKLIST ) {
 		static struct gc_item sttListItems[] = {
+			{ TranslateT( "&User Details" ),          IDM_VCARD,     MENU_ITEM, FALSE },
 			{ TranslateT( "&Leave chat session" ),    IDM_LEAVE,     MENU_ITEM, FALSE },
 			{ NULL, 0, MENU_SEPARATOR, FALSE },
 			{ TranslateT( "Kick" ),                   IDM_KICK,      MENU_ITEM, TRUE },
@@ -316,15 +317,15 @@ int JabberGcMenuHook( WPARAM wParam, LPARAM lParam )
 		if ( me != NULL && him != NULL ) {
 			if ( me->role == ROLE_MODERATOR )
 				if ( him->affiliation != AFFILIATION_ADMIN && him->affiliation != AFFILIATION_OWNER )
-					sttListItems[2].bDisabled = sttListItems[3].bDisabled = FALSE;
+					sttListItems[3].bDisabled = sttListItems[4].bDisabled = FALSE;
 
 			if ( me->affiliation == AFFILIATION_ADMIN ) {
 				if ( him->affiliation != AFFILIATION_ADMIN && him->affiliation != AFFILIATION_OWNER )
-					sttListItems[5].bDisabled = sttListItems[6].bDisabled = FALSE;
+					sttListItems[6].bDisabled = sttListItems[7].bDisabled = FALSE;
 			}
 			else if ( me->affiliation == AFFILIATION_OWNER )
-				sttListItems[5].bDisabled = sttListItems[6].bDisabled =
-				sttListItems[7].bDisabled = sttListItems[8].bDisabled = FALSE;
+				sttListItems[6].bDisabled = sttListItems[7].bDisabled =
+				sttListItems[8].bDisabled = sttListItems[9].bDisabled = FALSE;
 	}	}
 
 	return 0;
@@ -559,7 +560,18 @@ static void sttNickListHook( JABBER_LIST_ITEM* item, GCHOOK* gch )
 	case IDM_LEAVE:
 		JabberGcQuit( item, 0, 0 );
 		break;
-
+	case IDM_VCARD:
+	{
+		HANDLE hContact;
+		JABBER_SEARCH_RESULT jsr;
+//		_tcsncpy(jsr.jid, him->jid, SIZEOF(jsr.jid));
+		mir_sntprintf(jsr.jid, SIZEOF(jsr.jid), _T("%s/%s"), item->jid, him->resourceName );
+		jsr.hdr.cbSize = sizeof(JABBER_SEARCH_RESULT);
+		
+		hContact=(HANDLE)CallProtoService(jabberProtoName, PS_ADDTOLIST, PALF_TEMPORARY,(LPARAM)&jsr);
+		CallService(MS_USERINFO_SHOWDIALOG,(WPARAM)hContact,0);
+		break;
+	}
 	case IDM_KICK:
 	{
 		mir_sntprintf( szBuffer, SIZEOF(szBuffer), _T("%s %s"), TranslateT( "Reason to kick" ), him->resourceName );
