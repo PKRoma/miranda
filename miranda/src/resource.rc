@@ -1193,32 +1193,29 @@ BEGIN
                     IDC_RESTART,5,233,305,11,NOT WS_VISIBLE
 END
 
-IDD_OPT_FONTS DIALOGEX 0, 0, 293, 224
+IDD_OPT_FONTS DIALOGEX  0, 0, 316, 251
 STYLE DS_SETFONT | DS_FIXEDSYS | WS_CHILD
 FONT 8, "MS Shell Dlg", 0, 0, 0x1
 BEGIN
-    GROUPBOX        "Fonts",IDC_STATIC,108,55,184,162
-    CONTROL         "",IDC_BKGCOLOUR,"ColourPicker",WS_TABSTOP,236,23,43,12
-    LISTBOX         IDC_FONTLIST,119,67,163,81,LBS_OWNERDRAWVARIABLE | 
+    GROUPBOX        "Fonts and Colors",IDC_STATIC,0,0,315,250
+    CONTROL         "Tree1",IDC_FONTGROUP,"SysTreeView32",TVS_HASBUTTONS | 
+                    TVS_HASLINES | TVS_LINESATROOT | TVS_SHOWSELALWAYS | 
+                    TVS_FULLROWSELECT | WS_BORDER | WS_TABSTOP,4,10,102,235
+    LISTBOX         IDC_FONTLIST,109,10,201,186,LBS_OWNERDRAWVARIABLE | 
                     LBS_NOINTEGRALHEIGHT | LBS_EXTENDEDSEL | WS_VSCROLL | 
                     WS_TABSTOP
-    CONTROL         "",IDC_FONTCOLOUR,"ColourPicker",WS_TABSTOP,132,154,57,
+    CONTROL         "",IDC_BKGCOLOUR,"ColourPicker",WS_TABSTOP,196,199,30,14
+    CONTROL         "",IDC_FONTCOLOUR,"ColourPicker",WS_TABSTOP,196,215,30,
                     14
-    PUSHBUTTON      "Choose font...",IDC_CHOOSEFONT,208,154,57,14
-    CTEXT           "Select multiple fonts by dragging or by using the control key",
-                    IDC_STATIC,135,174,131,16
-    COMBOBOX        IDC_COLOURLIST,122,23,102,107,CBS_DROPDOWNLIST | 
-                    WS_VSCROLL | WS_TABSTOP
-    GROUPBOX        "Colours",IDC_STATIC,108,7,184,45
-    LTEXT           "* you may need to restart for the changes to take effect",
-                    IDC_STAT_RESTART,113,39,176,8,NOT WS_VISIBLE
-    PUSHBUTTON      "Reset to Default",IDC_BTN_RESET,142,195,117,14,
-                    WS_DISABLED | NOT WS_TABSTOP
-    PUSHBUTTON      "Undo",IDC_BTN_UNDO,22,188,59,11,WS_DISABLED
-    LISTBOX         IDC_FONTGROUP,4,17,94,169,LBS_SORT | 
-                    LBS_NOINTEGRALHEIGHT | WS_VSCROLL | WS_TABSTOP
-    GROUPBOX        "Font Group",IDC_STATIC,0,7,103,194
-    PUSHBUTTON      "Export...",IDC_BTN_EXPORT,0,204,104,14
+    CONTROL         "...",IDC_CHOOSEFONT,"MButtonClass",WS_TABSTOP,196,231,
+                    30,14
+    PUSHBUTTON      "Undo",IDC_BTN_UNDO,109,199,73,14
+    PUSHBUTTON      "Reset",IDC_BTN_RESET,109,215,73,14
+    PUSHBUTTON      "Export...",IDC_BTN_EXPORT,109,231,73,14
+    LTEXT           "Color/Background",IDC_STATIC,231,199,79,14,
+                    SS_CENTERIMAGE
+    LTEXT           "Text Color",IDC_STATIC,231,215,79,14,SS_CENTERIMAGE
+    LTEXT           "Choose Font",IDC_STATIC,231,231,79,14,SS_CENTERIMAGE
 END
 
 IDD_CUSTOM_FONT DIALOG  13, 54, 287, 196
@@ -2003,5 +2000,6 @@ IDB_SORTCOLDOWN         BITMAP                  "res/arrow_sort_column_down.bmp"
 
 /////////////////////////////////////////////////////////////////////////////
 #endif    // not APSTUDIO_INVOKED
+
 
 
