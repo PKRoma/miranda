@@ -87,6 +87,8 @@ static oscar_filetransfer* CreateOscarTransfer()
   oscar_filetransfer* ft = (oscar_filetransfer*)SAFE_MALLOC(sizeof(oscar_filetransfer));
 
   ft->ft_magic = FT_MAGIC_OSCAR; // Setup signature
+  // Init members
+  ft->fileId = -1;
 
   EnterCriticalSection(&oftMutex);
 
@@ -281,6 +283,13 @@ void SafeReleaseFileTransfer(void **ft)
         for (i = 0; i < oft->wFilesCount; i++)
           SAFE_FREE(&oft->files_ansi[i]);
         SAFE_FREE((char**)&oft->files_ansi);
+      }
+      if (oft->fileId != -1)
+      {
+#ifdef _DEBUG
+        NetLog_Direct("OFT: _close(%u)", oft->fileId);
+#endif
+        _close(oft->fileId);
       }
       // Invalidate transfer
       ReleaseFileTransfer(oft);
@@ -951,6 +960,10 @@ DWORD oftFileAllow(HANDLE hContact, WPARAM wParam, LPARAM lParam)
 
   ft->szPath = ansi_to_utf8((char *)lParam);
 
+#ifdef _DEBUG
+  NetLog_Direct("OFT: Request accepted, saving to '%s'.", ft->szPath);
+#endif
+
   // Create cookie
   ft->dwCookie = AllocateCookie(CKT_FILE, ICQ_MSG_SRV_SEND, hContact, ft);
 
@@ -971,6 +984,10 @@ DWORD oftFileDeny(HANDLE hContact, WPARAM wParam, LPARAM lParam)
   {
     if (ICQGetContactSettingUID(hContact, &dwUin, &szUid))
       return 1; // Invalid contact
+
+#ifdef _DEBUG
+    NetLog_Direct("OFT: Request denied.");
+#endif
 
     oft_sendFileDeny(dwUin, szUid, ft);
 
@@ -998,6 +1015,10 @@ DWORD oftFileCancel(HANDLE hContact, WPARAM wParam, LPARAM lParam)
     if (ICQGetContactSettingUID(hContact, &dwUin, &szUid))
       return 1; // Invalid contact
 
+#ifdef _DEBUG
+    NetLog_Direct("OFT: Transfer cancelled.");
+#endif
+
     oft_sendFileDeny(dwUin, szUid, ft);
 
     ICQBroadcastAck(hContact, ACKTYPE_FILE, ACKRESULT_FAILED, ft, 0);
@@ -1022,6 +1043,10 @@ void oftFileResume(oscar_filetransfer *ft, int action, const char *szFilename)
 
   oc = (oscar_connection*)ft->connection;
 
+#ifdef _DEBUG
+  NetLog_Direct("OFT: Resume Transfer, Action: %d, FileName: '%s'", action, szFilename);
+#endif
+
   switch (action)
   {
     case FILERESUME_RESUME:
@@ -1044,11 +1069,27 @@ void oftFileResume(oscar_filetransfer *ft, int action, const char *szFilename)
       ft->szThisFile = ansi_to_utf8(szFilename);
       ft->qwFileBytesDone = 0;
       break;
+
+    default: // workaround for bug in Miranda Core
+      if (ft->resumeAction == FILERESUME_RESUME)
+        openFlags = _O_BINARY | _O_RDWR;
+      else
+      { // default to overwrite
+        openFlags = _O_BINARY | _O_CREAT | _O_TRUNC | _O_WRONLY;
+        ft->qwFileBytesDone = 0;
+      }
   }
+  ft->resumeAction = action;
 
   ft->fileId = OpenFileUtf(ft->szThisFile, openFlags, _S_IREAD | _S_IWRITE);
+#ifdef _DEBUG
+  NetLog_Direct("OFT: OpenFileUtf(%s, %u) returned %u", ft->szThisFile, openFlags, ft->fileId);
+#endif
   if (ft->fileId == -1)
   {
+#ifdef _DEBUG
+    NetLog_Direct("OFT: errno=%d", errno);
+#endif
     icq_LogMessage(LOG_ERROR, "Your file receive has been aborted because Miranda could not open the destination file in order to write to it. You may be trying to save to a read-only folder.");
 
     ICQBroadcastAck(oc->ft->hContact, ACKTYPE_FILE, ACKRESULT_FAILED, oc->ft, 0);
@@ -1069,6 +1110,10 @@ void oftFileResume(oscar_filetransfer *ft, int action, const char *szFilename)
     oc->status = OCS_RESUME;
     ft->dwRecvFileCheck = oft_calc_file_checksum(ft->fileId, ft->qwFileBytesDone);
     _lseek(ft->fileId, 0, SEEK_END);
+
+#ifdef _DEBUG
+    NetLog_Direct("OFT: Starting Smart-Resume");
+#endif
 
     sendOFT2FramePacket(oc, OFT_TYPE_RESUMEREQUEST);
 
@@ -1710,6 +1755,9 @@ static int oft_handleFileData(oscar_connection *oc, unsigned char *buf, int len)
 
   if (ft->fileId == -1)
   { // something went terribly bad
+#ifdef _DEBUG
+    NetLog_Direct("Error: handleFileData(%u bytes) without fileId!", len);
+#endif
     CloseOscarConnection(oc);
     return 0;
   }
@@ -1733,10 +1781,13 @@ static int oft_handleFileData(oscar_connection *oc, unsigned char *buf, int len)
   if (ft->qwFileBytesDone == ft->qwThisFileSize)
   {
     /* EOF */
+#ifdef _DEBUG
+    NetLog_Direct("OFT: _close(%u)", ft->fileId);
+#endif
     _close(ft->fileId);
     ft->fileId = -1;
 
-    if (ft->dwRecvFileCheck != ft->dwThisFileCheck)
+    if (ft->resumeAction != FILERESUME_SKIP && ft->dwRecvFileCheck != ft->dwThisFileCheck)
     {
       NetLog_Direct("Error: File checksums does not match!");
       { // Notify UI
@@ -1745,7 +1796,7 @@ static int oft_handleFileData(oscar_connection *oc, unsigned char *buf, int len)
         char *pszFileName = strrchr(ft->szThisFile, '\\');
 
         if (!pszFileName) pszFileName = strrchr(ft->szThisFile, '/');
-        if (!pszFileName) pszFileName = ft->szThisFile;
+        if (!pszFileName) pszFileName = ft->szThisFile; else pszFileName++;
 
         null_snprintf(szBuf, MAX_PATH, pszMsg, pszFileName);
         icq_LogMessage(LOG_ERROR, szBuf);
@@ -1753,6 +1804,10 @@ static int oft_handleFileData(oscar_connection *oc, unsigned char *buf, int len)
         SAFE_FREE(&pszMsg);
       }
     } // keep transfer going (icq6 ignores checksums completely)
+    else if (ft->resumeAction == FILERESUME_SKIP)
+      NetLog_Direct("OFT: File receive skipped.");
+    else
+      NetLog_Direct("OFT: File received successfully.");
 
     if ((DWORD)(ft->iCurrentFile + 1) == ft->wFilesCount)
     {
@@ -1978,8 +2033,14 @@ static void handleOFT2FramePacket(oscar_connection *oc, WORD datatype, BYTE *pBu
         SAFE_FREE(&pfts.workingDir);
 
         ft->fileId = OpenFileUtf(ft->szThisFile, _O_BINARY | _O_CREAT | _O_TRUNC | _O_WRONLY, _S_IREAD | _S_IWRITE);
+#ifdef _DEBUG
+        NetLog_Direct("OFT: OpenFileUtf(%s, %u) returned %u", ft->szThisFile, _O_BINARY | _O_CREAT | _O_TRUNC | _O_WRONLY, ft->fileId);
+#endif
         if (ft->fileId == -1)
         {
+#ifdef _DEBUG
+          NetLog_Direct("OFT: errno=%d", errno);
+#endif
           icq_LogMessage(LOG_ERROR, "Your file receive has been aborted because Miranda could not open the destination file in order to write to it. You may be trying to save to a read-only folder.");
 
           ICQBroadcastAck(ft->hContact, ACKTYPE_FILE, ACKRESULT_FAILED, ft, 0);
@@ -2073,6 +2134,9 @@ static void handleOFT2FramePacket(oscar_connection *oc, WORD datatype, BYTE *pBu
       }
       lseek(ft->fileId, dwResumeOffset, SEEK_SET);
 
+      if (ft->qwThisFileSize != ft->qwFileBytesDone)
+        NetLog_Direct("OFT: Resuming from offset %u.", dwResumeOffset);
+
       // Prepare to receive data
       oc->status = OCS_DATA;
 
@@ -2099,6 +2163,9 @@ static void handleOFT2FramePacket(oscar_connection *oc, WORD datatype, BYTE *pBu
 
       NetLog_Direct("OFT: File sent successfully.");
 
+#ifdef _DEBUG
+      NetLog_Direct("OFT: _close(%u)", ft->fileId);
+#endif
       _close(ft->fileId); // FIXME: this needs fix for "skip file" feature
       ft->fileId = -1;
       ft->iCurrentFile++;
@@ -2256,8 +2323,14 @@ static void oft_sendPeerInit(oscar_connection *oc)
   ICQBroadcastAck(ft->hContact, ACKTYPE_FILE, ACKRESULT_NEXTFILE, ft, 0);
 
   ft->fileId = OpenFileUtf(ft->szThisFile, _O_BINARY | _O_RDONLY, 0);
+#ifdef _DEBUG
+  NetLog_Direct("OFT: OpenFileUtf(%s, %u) returned %u", ft->szThisFile, _O_BINARY | _O_RDONLY, ft->fileId);
+#endif
   if (ft->fileId == -1)
   {
+#ifdef _DEBUG
+    NetLog_Direct("OFT: errno=%d", errno);
+#endif
     SAFE_FREE(&pszThisFileName);
     icq_LogMessage(LOG_ERROR, "Your file transfer has been aborted because one of the files that you selected to send is no longer readable from the disk. You may have deleted or moved it.");
     //

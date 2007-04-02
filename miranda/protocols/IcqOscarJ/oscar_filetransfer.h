@@ -23,7 +23,7 @@
 //
 // -----------------------------------------------------------------------------
 //
-// File name      : $Source: /cvsroot/miranda/miranda/protocols/IcqOscarJ/oscar_filetransfer.h,v $
+// File name      : $URL$
 // Revision       : $Revision$
 // Last change on : $Date$
 // Last change by : $Author$
@@ -100,6 +100,7 @@ typedef struct {
   void* connection;
   void* listener;
   DWORD dwLastNotify;
+  int resumeAction;
 } oscar_filetransfer;
 
 #define OFT_TYPE_REQUEST        0x0101 // I am going to send you this file, is that ok?
