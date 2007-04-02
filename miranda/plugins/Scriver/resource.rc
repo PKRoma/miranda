@@ -92,29 +92,29 @@ STYLE DS_FIXEDSYS | WS_CHILD | WS_VISIBLE
 EXSTYLE WS_EX_CONTROLPARENT
 FONT 8, "MS Shell Dlg"
 BEGIN
-    GROUPBOX        "Message Window Event Log",IDC_STMSGLOGGROUP,0,0,155,178
+    GROUPBOX        "Message Window Event Log",IDC_STMSGLOGGROUP,0,0,304,178
     CONTROL         "Enable IEView",IDC_USEIEVIEW,"Button",BS_AUTOCHECKBOX | BS_FLAT |
-                    WS_TABSTOP,7,12,146,10
+                    WS_TABSTOP,7,12,230,10
     CONTROL         "Show icons",IDC_SHOWLOGICONS,"Button",BS_AUTOCHECKBOX |
-                    WS_TABSTOP,7,23,146,10
+                    WS_TABSTOP,7,23,230,10
     CONTROL         "Show names",IDC_SHOWNAMES,"Button",BS_AUTOCHECKBOX |
-                    WS_TABSTOP,7,34,146,10
+                    WS_TABSTOP,7,34,230,10
     CONTROL         "Show times",IDC_SHOWTIMES,"Button",BS_AUTOCHECKBOX |
-                    WS_TABSTOP,7,45,146,10
+                    WS_TABSTOP,7,45,230,10
     CONTROL         "Show seconds",IDC_SHOWSECONDS,"Button",BS_AUTOCHECKBOX |
-                    WS_TABSTOP,16,56,129,10
+                    WS_TABSTOP,16,56,230,10
     CONTROL         "Show dates",IDC_SHOWDATES,"Button",BS_AUTOCHECKBOX |
-                    WS_TABSTOP,16,67,137,10
+                    WS_TABSTOP,16,67,230,10
     CONTROL         "Use long date format",IDC_USELONGDATE,"Button",
-                    BS_AUTOCHECKBOX | WS_TABSTOP,25,78,128,10
+                    BS_AUTOCHECKBOX | WS_TABSTOP,25,78,230,10
     CONTROL         "Use relative timestamp",IDC_USERELATIVEDATE,"Button",
-                    BS_AUTOCHECKBOX | WS_TABSTOP,25,89,128,10
+                    BS_AUTOCHECKBOX | WS_TABSTOP,25,89,230,10
     CONTROL         "Use message grouping",IDC_GROUPMESSAGES,"Button",
-                    BS_AUTOCHECKBOX | WS_TABSTOP,7,100,146,10
+                    BS_AUTOCHECKBOX | WS_TABSTOP,7,100,230,10
     CONTROL         "Mark follow-up msgs with timestamp",IDC_MARKFOLLOWUPS,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,16,111,137,10
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,16,111,230,10
     CONTROL         "Start message text on a new line",IDC_MESSAGEONNEWLINE,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,122,146,10
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,122,230,10
 
 
     CONTROL         "Draw lines between messages",IDC_DRAWLINES,"Button",
@@ -134,25 +134,6 @@ BEGIN
     CONTROL         "Show status changes",IDC_SHOWSTATUSCHANGES,"Button",
                     BS_AUTOCHECKBOX | WS_TABSTOP,7,156,130,10
 
-    GROUPBOX        "Fonts",IDC_STATIC,158,0,146,178
-    LTEXT           "Background colour:",IDC_STATIC,167,12,91,8
-    CONTROL         "",IDC_BKGCOLOUR,"ColourPicker",WS_TABSTOP,263,10,35,12
-    LTEXT           "Input area background:",IDC_STATIC,167,25,91,8
-    CONTROL         "",IDC_BKGINPUT,"ColourPicker",WS_TABSTOP,263,23,35,12
-    LTEXT           "Incoming background:",IDC_STATIC,167,38,91,8
-    CONTROL         "",IDC_BKGINCOMING,"ColourPicker",WS_TABSTOP,263,36,35,
-                    12
-    LTEXT           "Outgoing background:",IDC_STATIC,167,51,91,8
-    CONTROL         "",IDC_BKGOUTGOING,"ColourPicker",WS_TABSTOP,263,49,35,
-                    12
-    LISTBOX         IDC_FONTLIST,167,65,131,73,LBS_OWNERDRAWVARIABLE |
-                    LBS_NOINTEGRALHEIGHT | LBS_EXTENDEDSEL | WS_VSCROLL |
-                    WS_TABSTOP
-    CONTROL         "",IDC_FONTCOLOUR,"ColourPicker",WS_TABSTOP,167,141,57,
-                    14
-    PUSHBUTTON      "Choose font...",IDC_CHOOSEFONT,241,141,57,14
-    CTEXT           "Select multiple fonts by dragging or by using the control key",
-                    IDC_STATIC,167,156,131,16
     GROUPBOX        "Load History Events",IDC_STATIC,0,178,304,51
     CONTROL         "Load unread events only",IDC_LOADUNREAD,"Button",
                     BS_AUTORADIOBUTTON | WS_TABSTOP,7,190,138,10

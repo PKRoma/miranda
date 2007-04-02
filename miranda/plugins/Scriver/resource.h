@@ -66,8 +66,6 @@
 #define IDC_LOADTIMEN                   1045
 #define IDC_LOADTIMESPIN                1046
 #define IDC_LOADTIME                    1047
-#define IDC_FONTLIST                    1048
-#define IDC_CHOOSEFONT                  1049
 #define IDC_SHOWTITLEBAR                1050
 #define IDC_STMINSOLD                   1051
 #define IDC_SHOWPROGRESS                1052
@@ -78,11 +76,6 @@
 #define IDC_HISTORY                     1080
 #define IDC_SMILEYS                     1081
 #define IDC_REMEMBER					1082
-#define IDC_BKGCOLOUR                   1269
-#define IDC_BKGINPUT					1270
-#define IDC_BKGINCOMING					1271
-#define IDC_BKGOUTGOING					1272
-#define IDC_FONTCOLOUR                  1282
 #define IDC_STMSGLOGGROUP               1442
 #define IDC_ERRORTEXT                   1596
 #define IDC_MSGTEXT                     1597
@@ -200,7 +193,6 @@
 #define IDC_CHAT_COLOR                       5017
 #define IDC_CHAT_BKGCOLOR                    5019
 #define IDC_CHAT_CHECKBOXES                  5021
-#define IDC_CHAT_NICKLISTBKG                 5021
 #define IDC_CHAT_HISTORY                     5022
 #define IDC_CHAT_CLOSE                       5023
 #define IDC_CHAT_NICKROW                     5024
@@ -208,11 +200,6 @@
 #define IDC_CHAT_SPIN1                       5028
 #define IDC_CHAT_SPIN2                       5029
 #define IDC_CHAT_SPIN3                       5030
-#define IDC_CHAT_FONTLIST                    5032
-#define IDC_CHAT_CHOOSEFONT                  5034
-#define IDC_CHAT_FONTCOLOR                   5035
-#define IDC_CHAT_MESSAGEBKG                  5036
-#define IDC_CHAT_LOGBKG                      5037
 #define IDC_CHAT_HIGHLIGHTWORDS              5040
 #define IDC_CHAT_INSTAMP                     5041
 #define IDC_CHAT_OUTSTAMP                    5043
