@@ -304,7 +304,7 @@ static BOOL CALLBACK JabberGroupchatDlgProc( HWND hwndDlg, UINT msg, WPARAM wPar
 				lvItem.iSubItem = 0;
 				lvItem.mask = LVIF_PARAM;
 				ListView_GetItem( lv, &lvItem );
-				
+
 				JABBER_LIST_ITEM* item = JabberListGetItemPtr( LIST_BOOKMARK, ( TCHAR* )lvItem.lParam );
 				if ( item == NULL ) {
 					item = JabberListGetItemPtr( LIST_ROOM, ( TCHAR* )lvItem.lParam );
@@ -314,7 +314,7 @@ static BOOL CALLBACK JabberGroupchatDlgProc( HWND hwndDlg, UINT msg, WPARAM wPar
 					}
 				}
 			}
-		break;	
+		break;
 
 		case IDC_SERVER:
 		{	TCHAR text[ 128 ];
@@ -571,7 +571,7 @@ void JabberGroupchatProcessPresence( XmlNode *node, void *userdata )
 		TCHAR* str;
 		if (( statusNode=JabberXmlGetChild( node, "status" ))!=NULL && statusNode->text!=NULL )
 			str = statusNode->text;
-		else 
+		else
 			str = NULL;
 		newRes = ( JabberListAddResource( LIST_CHATROOM, from, status, str ) == 0 ) ? 0 : GC_EVENT_JOIN;
 
@@ -663,6 +663,7 @@ void JabberGroupchatProcessPresence( XmlNode *node, void *userdata )
 					sttRenameParticipantNick( item, nick, itemNode );
 					return;
 
+				case 301:
 				case 307:
 					JabberListRemoveResource( LIST_CHATROOM, from );
 					JabberGcLogUpdateMemberStatus( item, nick, NULL, GC_EVENT_KICK, reasonNode );
@@ -793,7 +794,7 @@ typedef struct {
 	TCHAR* from;
 	TCHAR* reason;
 	TCHAR* password;
-} 
+}
 	JABBER_GROUPCHAT_INVITE_INFO;
 
 static void JabberAcceptGroupchatInvite( TCHAR* roomJid, TCHAR* reason, TCHAR* password )
