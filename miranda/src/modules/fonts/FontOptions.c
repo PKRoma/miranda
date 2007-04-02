@@ -759,6 +759,10 @@ static BOOL CALLBACK DlgProcLogOptions(HWND hwndDlg, UINT msg, WPARAM wParam, LP
 						if (itemData->font_id < 0)
 						{
 							mir_free(selItems);
+							if (itemData->colour_id >= 0) 
+							{
+								SendDlgItemMessage(hwndDlg, IDC_BKGCOLOUR, WM_LBUTTONUP, 0, 0);
+							}
 							return TRUE;
 						}
 
