@@ -53,7 +53,7 @@ static void JabberOnLoggedIn( ThreadData* info )
 	storage->addAttr("xmlns","storage:bookmarks");
 
 	jabberThreadInfo->send( biq );
-	
+
 	char szServerName[ sizeof(info->server) ];
 	if ( JGetStaticString( "LastLoggedServer", NULL, szServerName, sizeof(szServerName)))
 		JabberSendGetVcard( jabberJID );
@@ -608,7 +608,10 @@ LBL_Ret:
 		JabberLog( "My picture saved to %s", szTempFileName );
 	}
 	else if ( !JGetStringT( hContact, "jid", &dbv )) {
-		if (( item = JabberListGetItemPtr( LIST_ROSTER, jid )) != NULL ) {
+		item = JabberListGetItemPtr( LIST_ROSTER, jid );
+		if ( item == NULL )
+			item = JabberListAdd( LIST_VCARD_TEMP, jid ); // adding to the temp list to store information about photo
+		if (item != NULL ) {
 			hasPhoto = TRUE;
 			if ( item->photoFileName )
 				DeleteFileA( item->photoFileName );
@@ -1521,7 +1524,7 @@ void JabberIqResultDiscoBookmarks( XmlNode *iqNode, void *userdata )
 								replaceStr( item->nick, nickNode->text );
 							if (( passNode = JabberXmlGetChild( itemNode, "password" )) != NULL && passNode->text != NULL )
 								replaceStr( item->password, passNode->text );
-							
+
 						}
 					}
 					if (!strcmp( itemNode->name, "url" )) {
@@ -1559,7 +1562,7 @@ void JabberIqResultDiscoBookmarks( XmlNode *iqNode, void *userdata )
 							}
 						}
 					}
-					
+
 				}
 			}
 		if ( hwndJabberBookmarks != NULL )
@@ -1611,7 +1614,7 @@ void JabberSetBookmarkRequest (XmlNodeIq& iq)
 			if ( item->name )
 				itemNode->addAttr( "name", item->name );
 		}
-	}	
+	}
 }
 
 void JabberIqResultSetBookmarks( XmlNode *iqNode, void *userdata )
