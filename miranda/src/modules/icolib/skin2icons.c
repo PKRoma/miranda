@@ -321,14 +321,14 @@ HICON IconItem_GetIcon( IconItem* item )
 	DBVARIANT dbv = {0};
 	HICON hIcon = NULL;
 
-	if ( item->icon )
-		return item->icon;
+	if ( !item->temp_reset ) {
+		if ( item->icon )
+			return item->icon;
 
-	if ( !item->temp_reset )
 		if ( !DBGetContactSettingTString( NULL, "SkinIcons", item->name, &dbv )) {
 			hIcon = ExtractIconFromPath( dbv.ptszVal, item->cx, item->cy );
 			DBFreeVariant( &dbv );
-		}
+	}	}
 
 	if ( !hIcon ) {
 		hIcon = item->default_icon;
