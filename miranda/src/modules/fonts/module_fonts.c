@@ -76,8 +76,8 @@ void RegisterCListFonts() {
 
 	for (i = 0; i <= CLIST_FONTID_MAX; i++) {
 		strncpy(fontid.dbSettingsGroup, "CLC", sizeof(fontid.dbSettingsGroup));
-		_tcsncpy(fontid.group, TranslateT("Contact List"), SIZEOF(fontid.group));
-		_tcsncpy(fontid.name, TranslateTS(szClistFontIdDescr[fontListOrder[i]]), SIZEOF(fontid.name));
+		_tcsncpy(fontid.group, _T("Contact List"), SIZEOF(fontid.group));
+		_tcsncpy(fontid.name, szClistFontIdDescr[fontListOrder[i]], SIZEOF(fontid.name));
 		sprintf(idstr, "Font%d", fontListOrder[i]);
 		strncpy(fontid.prefix, idstr, SIZEOF(fontid.prefix));
 		fontid.order = fontListOrder[i];
@@ -91,25 +91,25 @@ void RegisterCListFonts() {
 	strncpy(colourid.dbSettingsGroup, "CLC", sizeof(colourid.dbSettingsGroup));
 
 	strncpy(colourid.setting, "BkColour", sizeof(colourid.setting));
-	_tcsncpy(colourid.name, TranslateT("Background"), SIZEOF(colourid.name));
-	_tcsncpy(colourid.group, TranslateT("Contact List"), SIZEOF(colourid.group));
+	_tcsncpy(colourid.name, _T("Background"), SIZEOF(colourid.name));
+	_tcsncpy(colourid.group, _T("Contact List"), SIZEOF(colourid.group));
 	colourid.defcolour = CLCDEFAULT_BKCOLOUR;	
 	CallService(MS_COLOUR_REGISTER, (WPARAM)&colourid, 0);
 
 	strncpy(colourid.setting, "SelTextColour", sizeof(colourid.setting));
-	_tcsncpy(colourid.name, TranslateT("Selected Text"), SIZEOF(colourid.name));
+	_tcsncpy(colourid.name, _T("Selected Text"), SIZEOF(colourid.name));
 	colourid.order = 1;
 	colourid.defcolour = CLCDEFAULT_SELTEXTCOLOUR;
 	CallService(MS_COLOUR_REGISTERT, (WPARAM)&colourid, 0);
 
 	strncpy(colourid.setting, "HotTextColour", sizeof(colourid.setting));
-	_tcsncpy(colourid.name, TranslateT("Hottrack Text"), SIZEOF(colourid.name));
+	_tcsncpy(colourid.name, _T("Hottrack Text"), SIZEOF(colourid.name));
 	colourid.order = 1;
 	colourid.defcolour = CLCDEFAULT_HOTTEXTCOLOUR;
 	CallService(MS_COLOUR_REGISTERT, (WPARAM)&colourid, 0);
 
 	strncpy(colourid.setting, "QuickSearchColour", sizeof(colourid.setting));
-	_tcsncpy(colourid.name, TranslateT("Quicksearch Text"), SIZEOF(colourid.name));
+	_tcsncpy(colourid.name, _T("Quicksearch Text"), SIZEOF(colourid.name));
 	colourid.order = 1;
 	colourid.defcolour = CLCDEFAULT_QUICKSEARCHCOLOUR;
 	CallService(MS_COLOUR_REGISTERT, (WPARAM)&colourid, 0);

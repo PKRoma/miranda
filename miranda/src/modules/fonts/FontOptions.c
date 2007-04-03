@@ -265,7 +265,7 @@ static HTREEITEM sttFindNamedTreeItemAt(HWND hwndTree, HTREEITEM hItem, const TC
 	return NULL;
 }
 
-static BOOL sttGetTreeNodeText( HWND hwndTree, HTREEITEM hItem, char* szBuf, size_t cbLen )
+static BOOL sttGetTreeNodeText( HWND hwndTree, HTREEITEM hItem, char* szBuf, int cbLen )
 {
 	int codepage = CallService( MS_LANGPACK_GETCODEPAGE, 0, 0 );
 	char *bufPtr = szBuf;
@@ -480,7 +480,7 @@ static BOOL CALLBACK DlgProcLogOptions(HWND hwndDlg, UINT msg, WPARAM wParam, LP
 						//itemId = SendDlgItemMessage(hwndDlg, IDC_COLOURLIST, CB_ADDSTRING, (WPARAM)-1, (LPARAM)TranslateTS( C->name ));
 						//SendDlgItemMessage(hwndDlg, IDC_COLOURLIST, CB_SETITEMDATA, itemId, colourId);
 
-						if ( _tcscmp( C->name, TranslateT( "Background" )) == 0 )
+						if ( _tcscmp( C->name, _T("Background") ) == 0 )
 							hBkgColourBrush = CreateSolidBrush( C->value );
 				}	}
 
@@ -509,7 +509,7 @@ static BOOL CALLBACK DlgProcLogOptions(HWND hwndDlg, UINT msg, WPARAM wParam, LP
 			SIZE fontSize;
 			BOOL bIsFont = FALSE;
 			FSUIListItemData *itemData = (FSUIListItemData *)mis->itemData;
-			TCHAR *itemName;
+			TCHAR *itemName = NULL;
 			HDC hdc;
 
 			if ((mis->CtlID != IDC_FONTLIST) || (mis->itemID == -1))
@@ -540,7 +540,7 @@ static BOOL CALLBACK DlgProcLogOptions(HWND hwndDlg, UINT msg, WPARAM wParam, LP
 			{
 				hoFont = (HFONT) SelectObject(hdc, (HFONT)SendDlgItemMessage(hwndDlg, mis->CtlID, WM_GETFONT, 0, 0));
 			}
-			GetTextExtentPoint32(hdc, itemName, _tcslen(itemName), &fontSize);
+			GetTextExtentPoint32(hdc, itemName, lstrlen(itemName), &fontSize);
 			if (hoFont) SelectObject(hdc, hoFont);
 			if (hFont) DeleteObject(hFont);
 			ReleaseDC(GetDlgItem(hwndDlg, mis->CtlID), hdc);
