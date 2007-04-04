@@ -1838,7 +1838,7 @@ static BOOL CALLBACK DlgProcSBarOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPAR
 		CheckDlgButton(hwndDlg, IDC_SHOWXSTATUS, ((DBGetContactSettingByte(NULL,"CLUI","ShowXStatus",6)&3)>0) ? BST_CHECKED : BST_UNCHECKED);
 		CheckDlgButton(hwndDlg, IDC_SHOWNORMAL, ((DBGetContactSettingByte(NULL,"CLUI","ShowXStatus",6)&3)==2) ? BST_CHECKED : BST_UNCHECKED);
 		CheckDlgButton(hwndDlg, IDC_SHOWBOTH, ((DBGetContactSettingByte(NULL,"CLUI","ShowXStatus",6)&3)==3) ? BST_CHECKED : BST_UNCHECKED);
-		CheckDlgButton(hwndDlg, IDC_SHOWUNREADEMAIL, (DBGetContactSettingByte(NULL,"Protocols","ShowUnreadEmails",0)==1) ? BST_CHECKED : BST_UNCHECKED);
+		CheckDlgButton(hwndDlg, IDC_SHOWUNREADEMAIL, (DBGetContactSettingByte(NULL,"CLUI","ShowUnreadEmails",0)==1) ? BST_CHECKED : BST_UNCHECKED);
 		CheckDlgButton(hwndDlg, IDC_TRANSPARENTOVERLAY, ((DBGetContactSettingByte(NULL,"CLUI","ShowXStatus",6)&4)) ? BST_CHECKED : BST_UNCHECKED);
 		{
 			BYTE showOpts=DBGetContactSettingByte(NULL,"CLUI","SBarShow",7);
@@ -1996,7 +1996,7 @@ static BOOL CALLBACK DlgProcSBarOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPAR
 				DBWriteContactSettingDword(NULL,"CLUI","RightOffset",(DWORD)SendDlgItemMessage(hwndDlg,IDC_OFFSETSPIN2,UDM_GETPOS,0,0));
 				DBWriteContactSettingDword(NULL,"CLUI","SpaceBetween",(DWORD)SendDlgItemMessage(hwndDlg,IDC_OFFSETSPIN3,UDM_GETPOS,0,0));
 				DBWriteContactSettingByte(NULL,"CLUI","Align",(BYTE)SendDlgItemMessage(hwndDlg,IDC_COMBO2,CB_GETCURSEL,0,0));
-				DBWriteContactSettingByte(NULL,"Protocols","ShowUnreadEmails",(BYTE)IsDlgButtonChecked(hwndDlg,IDC_SHOWUNREADEMAIL));
+				DBWriteContactSettingByte(NULL,"CLUI","ShowUnreadEmails",(BYTE)IsDlgButtonChecked(hwndDlg,IDC_SHOWUNREADEMAIL));
                 DBWriteContactSettingByte(NULL,"Protocols","ProtosPerLine",(BYTE)SendDlgItemMessage(hwndDlg,IDC_MULTI_SPIN,UDM_GETPOS,0,0));
 				{
 					BYTE val=0;

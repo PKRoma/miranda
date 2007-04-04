@@ -62,7 +62,7 @@ int LoadStatusBarData()
   g_StatusBarData.sameWidth=DBGetContactSettingByte(NULL,"CLUI","EqualSections",0);
   g_StatusBarData.connectingIcon=DBGetContactSettingByte(NULL,"CLUI","UseConnectingIcon",1);
   g_StatusBarData.nProtosPerLine=DBGetContactSettingByte(NULL,"Protocols","ProtosPerLine",0);
-  g_StatusBarData.showProtoEmails=DBGetContactSettingByte(NULL,"Protocols","ShowUnreadEmails",0);
+  g_StatusBarData.showProtoEmails=DBGetContactSettingByte(NULL,"CLUI","ShowUnreadEmails",0);
   if (g_StatusBarData.BarFont) DeleteObject(g_StatusBarData.BarFont);
   g_StatusBarData.BarFont=NULL;//LoadFontFromDB("ModernData","StatusBar",&g_StatusBarData.fontColor);
   {
