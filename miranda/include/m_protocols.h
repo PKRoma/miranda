@@ -87,22 +87,26 @@ typedef struct {
 #define ACKTYPE_NEWUSER    11
 #define ACKTYPE_STATUS     12
 #define ACKTYPE_CONTACTS   13	//send/recv of contacts
-#define ACKTYPE_AVATAR	   14   //send/recv of avatars from a protocol
+#define ACKTYPE_AVATAR	   14 //send/recv of avatars from a protocol
+#define ACKTYPE_EMAIL      15	//notify if the unread emails changed
+
 #define ACKRESULT_SUCCESS      0
 #define ACKRESULT_FAILED       1
+
 //'in progress' result codes:
-#define ACKRESULT_CONNECTING  100
-#define ACKRESULT_CONNECTED   101
+#define ACKRESULT_CONNECTING   100
+#define ACKRESULT_CONNECTED    101
 #define ACKRESULT_INITIALISING 102
-#define ACKRESULT_SENTREQUEST 103  //waiting for reply...
-#define ACKRESULT_DATA        104  //blob of file data sent/recved, or search result
-#define ACKRESULT_NEXTFILE    105  //file transfer went to next file
-#define ACKRESULT_FILERESUME  106  //a file is about to be received, see PS_FILERESUME
-#define ACKRESULT_DENIED      107  //a file send has been denied
-#define ACKRESULT_STATUS	  108  //an ack or a series of acks to do with a task have a status change
-#define ACKRESULT_LISTENING   109  //waiting for connection
+#define ACKRESULT_SENTREQUEST  103  //waiting for reply...
+#define ACKRESULT_DATA         104  //blob of file data sent/recved, or search result
+#define ACKRESULT_NEXTFILE     105  //file transfer went to next file
+#define ACKRESULT_FILERESUME   106  //a file is about to be received, see PS_FILERESUME
+#define ACKRESULT_DENIED       107  //a file send has been denied
+#define ACKRESULT_STATUS	    108  //an ack or a series of acks to do with a task have a status change
+#define ACKRESULT_LISTENING    109  //waiting for connection
 #define ACKRESULT_CONNECTPROXY 110 //connecting to file proxy
 #define ACKRESULT_SEARCHRESULT 111 //result of extended search
+
 #define ME_PROTO_ACK       "Proto/Ack"
 
 // v0.3.2+: When result is ACKRESULT_FAILED or ACKRESULT_DENIED, lParam can point to
