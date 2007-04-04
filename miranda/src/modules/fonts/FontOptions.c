@@ -528,18 +528,16 @@ static BOOL CALLBACK DlgProcLogOptions(HWND hwndDlg, UINT msg, WPARAM wParam, LP
 			if (itemData->colour_id >= 0)
 			{
 				int iItem = itemData->colour_id;
-				if (itemName)
-					itemName = TranslateTS(colour_id_list_w2.items[iItem]->name);
+				if ( !itemName )
+					itemName = TranslateTS( colour_id_list_w2.items[iItem]->name );
 			}
 			
 			hdc = GetDC(GetDlgItem(hwndDlg, mis->CtlID));
-			if (hFont)
-			{
+			if ( hFont )
 				hoFont = (HFONT) SelectObject(hdc, hFont);
-			} else
-			{
+			else
 				hoFont = (HFONT) SelectObject(hdc, (HFONT)SendDlgItemMessage(hwndDlg, mis->CtlID, WM_GETFONT, 0, 0));
-			}
+
 			GetTextExtentPoint32(hdc, itemName, lstrlen(itemName), &fontSize);
 			if (hoFont) SelectObject(hdc, hoFont);
 			if (hFont) DeleteObject(hFont);
