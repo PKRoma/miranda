@@ -1346,6 +1346,8 @@ BEGIN
                     BS_AUTOCHECKBOX | WS_TABSTOP,156,77,120,10
     CONTROL         "Status overlay opacity is 75% ",IDC_TRANSPARENTOVERLAY,
                     "Button",BS_AUTOCHECKBOX | WS_TABSTOP,156,89,120,10
+	CONTROL			"Show unread emails (if supported)",IDC_SHOWUNREADEMAIL,
+					"Button",BS_AUTOCHECKBOX | WS_TABSTOP,156,101,120,11
     CONTROL         "Show both icons",IDC_SHOWBOTH,"Button",BS_AUTOCHECKBOX | 
                     WS_TABSTOP,156,65,120,10
     CONTROL         "Show status bar",IDC_SHOWSBAR,"Button",BS_AUTOCHECKBOX | 
@@ -1746,5 +1748,6 @@ END
 
 #endif    // English (Canada) resources
 /////////////////////////////////////////////////////////////////////////////
+
 
 

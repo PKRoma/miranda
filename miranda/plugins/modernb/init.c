@@ -38,6 +38,7 @@ void  UninitSkinHotKeys();
 void  GetDefaultFontSetting(int i,LOGFONT *lf,COLORREF *colour);
 int   CLUI_OnSkinLoad(WPARAM wParam, LPARAM lParam);
 int   LoadContactListModule(void);
+int	  PreLoadContactListModule();
 int   LoadCLCModule(void);
 
 void	cliCheckCacheItem(pdisplayNameCacheEntry pdnce);
@@ -239,6 +240,8 @@ int __declspec(dllexport) CListInitialise(PLUGINLINK * link)
 	CallService(MS_SYSTEM_GET_LI, 0, (LPARAM)&li);
 
 	CreateServiceFunction(MS_CLIST_GETCONTACTICON,GetContactIcon);
+
+	PreLoadContactListModule(); // create most first hook
 
 	// get the contact list interface
 	pcli = ( CLIST_INTERFACE* )CallService(MS_CLIST_RETRIEVE_INTERFACE, 0, (LPARAM)g_hInst);

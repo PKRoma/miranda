@@ -459,6 +459,9 @@ int ClcProtoAck(WPARAM wParam,LPARAM lParam)
 			}
 		}
 	}
+	else if (ack->type == ACKTYPE_EMAIL) {
+		CLUIUnreadEmailCountChanged(0,0);
+	}
 	return 0;
 }
 
@@ -533,6 +536,7 @@ void SortClcByTimer (HWND hwnd)
 	KillTimer(hwnd,TIMERID_DELAYEDRESORTCLC);
 	CLUI_SafeSetTimer(hwnd,TIMERID_DELAYEDRESORTCLC,100 /*DBGetContactSettingByte(NULL,"CLUI","DELAYEDTIMER",10)*/,NULL);
 }
+
 
 /*
 *	Loading CLC module (hooking event)
@@ -790,7 +794,8 @@ case INTM_ICONCHANGED:
 		if (szProto == NULL)
 			status = ID_STATUS_OFFLINE;
 		else
-			status = DBGetContactSettingWord((HANDLE) wParam, szProto, "Status", ID_STATUS_OFFLINE);
+			//status = DBGetContactSettingWord((HANDLE) wParam, szProto, "Status", ID_STATUS_OFFLINE);
+			status=GetContactCachedStatus((HANDLE) wParam);
 		image_is_special=((contacticon&0xFFFF) != (lParam&0xFFFF)); //check only base icons
 
 		/*

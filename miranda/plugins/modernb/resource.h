@@ -713,6 +713,7 @@
 #define IDC_SC_STATIC                   1768
 #define IDC_COMBO_SAME                  1768
 #define IDC_TRANSPARENTOVERLAY          1768
+#define IDC_SHOWUNREADEMAIL             1769
 #define IDC_IDC_MULTI_COUNT             1771
 #define IDC_MULTI_COUNT                 1771
 #define IDC_MULTI_SPIN                  1772

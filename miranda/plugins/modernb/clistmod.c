@@ -255,6 +255,13 @@ int CLUIGetCapsService(WPARAM wParam,LPARAM lParam)
 	}
 	return 0;
 }
+int PreLoadContactListModule()
+{
+	//initialize firstly hooks
+	//clist interface is empty yet so handles should check
+	hSettingChanged = HookEvent(ME_DB_CONTACT_SETTINGCHANGED,ContactSettingChanged);
+	return 0;
+}
 
 int LoadContactListModule(void)
 {
@@ -264,8 +271,7 @@ int LoadContactListModule(void)
 	hookSystemShutdown_CListMod  = HookEvent(ME_SYSTEM_SHUTDOWN,CListMod_ContactListShutdownProc);
 	hookOptInitialise_CList      = HookEvent(ME_OPT_INITIALISE,CListOptInit);
 	hookOptInitialise_Skin       = HookEvent(ME_OPT_INITIALISE,SkinOptInit);
-
-	hSettingChanged              = HookEvent(ME_DB_CONTACT_SETTINGCHANGED,ContactSettingChanged);
+	
 	hookContactAdded_CListSettings = HookEvent(ME_DB_CONTACT_ADDED,ContactAdded);
 	hContactIconChangedEvent     = CreateHookableEvent(ME_CLIST_CONTACTICONCHANGED);
 	CreateServiceFunction(MS_CLIST_TRAYICONPROCESSMESSAGE,cli_TrayIconProcessMessage);

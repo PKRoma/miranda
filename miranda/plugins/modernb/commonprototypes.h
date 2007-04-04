@@ -142,6 +142,8 @@ int		CLUI_SafeSetTimer(HWND hwnd, int ID, int Timeout, TIMERPROC proc);
 /* CLUIServices */
 int		CLUIServices_ProtocolStatusChanged(WPARAM wParam,LPARAM lParam);
 
+int		CLUIUnreadEmailCountChanged(WPARAM wParam,LPARAM lParam);
+
 /* GDIPlus */
 BOOL    GDIPlus_AlphaBlend(HDC hdcDest,int nXOriginDest,int nYOriginDest,int nWidthDest,int nHeightDest,HDC hdcSrc,int nXOriginSrc,int nYOriginSrc,int nWidthSrc,int nHeightSrc, BLENDFUNCTION * blendFunction);
 HBITMAP GDIPlus_LoadGlyphImage(char *szFileName);

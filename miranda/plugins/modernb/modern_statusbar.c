@@ -62,6 +62,7 @@ int LoadStatusBarData()
   g_StatusBarData.sameWidth=DBGetContactSettingByte(NULL,"CLUI","EqualSections",0);
   g_StatusBarData.connectingIcon=DBGetContactSettingByte(NULL,"CLUI","UseConnectingIcon",1);
   g_StatusBarData.nProtosPerLine=DBGetContactSettingByte(NULL,"Protocols","ProtosPerLine",0);
+  g_StatusBarData.showProtoEmails=DBGetContactSettingByte(NULL,"Protocols","ShowUnreadEmails",0);
   if (g_StatusBarData.BarFont) DeleteObject(g_StatusBarData.BarFont);
   g_StatusBarData.BarFont=NULL;//LoadFontFromDB("ModernData","StatusBar",&g_StatusBarData.fontColor);
   {
@@ -117,6 +118,9 @@ int ModernDrawStatusBarWorker(HWND hWnd, HDC hDC)
     int * ProtoWidth=NULL;
     int i,j,po=0;
     int protcnt=0;
+
+	char servName[40];
+	char protoNameExt[40];
     // Count visible protos
     PROTOCOLDESCRIPTOR **proto;
   RECT rc;
@@ -160,7 +164,6 @@ int ModernDrawStatusBarWorker(HWND hWnd, HDC hDC)
     ProtosData=mir_alloc(sizeof(ProtoItemData)*protoCount);
     memset(ProtosData,0,sizeof(ProtoItemData)*protoCount);
     protcnt=(int)DBGetContactSettingDword(0,"Protocols","ProtoCount",-1);
-
 	for (j=0; j<protcnt; j++)
 	{
         char buf[40];
@@ -171,12 +174,31 @@ int ModernDrawStatusBarWorker(HWND hWnd, HDC hDC)
 		else
 			vis=pcli->pfnGetProtocolVisibility(proto[i]->szName);
 		if (!vis) continue;
+		
+		// create service name
+		mir_snprintf(servName, SIZEOF(servName), "%s/GetUnreadEmailCount", proto[i]->szName);	
 	    if(!CallProtoService(proto[i]->szName,PS_GETNAME,(WPARAM)SIZEOF(buf),(LPARAM)buf))
-            ProtosData[visProtoCount].ProtoHumanName=mir_strdup(buf);
+		{
+			if((g_StatusBarData.showProtoEmails == 1) && ServiceExists(servName))
+			{
+				mir_snprintf(protoNameExt, SIZEOF(protoNameExt),"%s [%d]",proto[i]->szName, (int) CallService(servName, 0, 0));
+				ProtosData[visProtoCount].ProtoHumanName=mir_strdup(protoNameExt);
+			}
+			else
+				ProtosData[visProtoCount].ProtoHumanName=mir_strdup(buf);
+		}
         else
-            ProtosData[visProtoCount].ProtoHumanName=mir_strdup(proto[i]->szName);
-        ProtosData[visProtoCount].ProtoName=mir_strdup(proto[i]->szName);
-        ProtosData[visProtoCount].ProtoStatus=CallProtoService(proto[i]->szName,PS_GETSTATUS,0,0);
+		{
+			if((g_StatusBarData.showProtoEmails == 1) && ServiceExists(servName))
+			{
+				mir_snprintf(protoNameExt, SIZEOF(protoNameExt),"%s [%d]",proto[i]->szName, (int) CallService(servName, 0, 0));
+				ProtosData[visProtoCount].ProtoHumanName=mir_strdup(protoNameExt);
+			}
+			else
+				ProtosData[visProtoCount].ProtoHumanName=mir_strdup(proto[i]->szName);
+		}
+		ProtosData[visProtoCount].ProtoName=mir_strdup(proto[i]->szName);
+		ProtosData[visProtoCount].ProtoStatus=CallProtoService(proto[i]->szName,PS_GETSTATUS,0,0);
 		ProtosData[visProtoCount].ProtoStatusText=mir_strdup((char*)CallService(MS_CLIST_GETSTATUSMODEDESCRIPTION,(WPARAM)ProtosData[visProtoCount].ProtoStatus,0));
 	    ProtosData[visProtoCount].ProtoPos=visProtoCount;
 	    visProtoCount++;

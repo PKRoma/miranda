@@ -57,7 +57,9 @@ static int _ExtFrames_OptionsDlgInit(WPARAM wParam,LPARAM lParam)
 	odp.pfnDlgProc=_ExtFrames_DlgProcFrameOpts;
 	odp.ptszTab=TranslateT("Frames");
 	odp.flags=ODPF_BOLDGROUPS|ODPF_EXPERTONLY|ODPF_TCHAR;
+#ifdef _DEBUG
 	CallService(MS_OPT_ADDPAGE,wParam,(LPARAM)&odp);
+#endif
 	return 0;
 }
 

@@ -1,5 +1,5 @@
-#define BUILD_NUM 16
-#define BUILD_NUM_STR  "16"
+#define BUILD_NUM 17
+#define BUILD_NUM_STR  "17"
 
 #define COREVERSION_NUM 0, 7, 17,
 #define COREVERSION_NUM_STR  "0, 7, 17 "

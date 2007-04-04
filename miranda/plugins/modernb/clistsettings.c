@@ -299,7 +299,7 @@ void cliCheckCacheItem(pdisplayNameCacheEntry pdnce)
 			}
 		}
 
-		if (pdnce->status==0)
+		if (pdnce->status==0) //very strange look status sort is broken let always reread status
 		{
 			pdnce->status=GetStatusForContact(pdnce->hContact,pdnce->szProto);
 		}
@@ -530,11 +530,8 @@ int ContactSettingChanged(WPARAM wParam,LPARAM lParam)
 	DBCONTACTWRITESETTING *cws = (DBCONTACTWRITESETTING*)lParam;
 	DBVARIANT dbv={0};
 	pdisplayNameCacheEntry pdnce;
-    if (MirandaExiting()) return 0;
-	// Early exit
-	if ((HANDLE)wParam == NULL)
-		return 0;
-	
+    if (MirandaExiting() || !pcli || !clistCache || (HANDLE)wParam == NULL) return 0;
+
 	dbv.pszVal = NULL;
 	pdnce=(pdisplayNameCacheEntry)pcli->pfnGetCacheEntry((HANDLE)wParam);
 

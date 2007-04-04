@@ -22,6 +22,7 @@ typedef struct tagSTATUSBARDATA
   DWORD TextEffectColor2;
   BYTE xStatusMode;     // 0-only main, 1-xStatus, 2-main as overlay
   BYTE nProtosPerLine;
+  BYTE showProtoEmails;
 } STATUSBARDATA;
 
 #endif // modern_statusbar_h__

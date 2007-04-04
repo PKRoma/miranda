@@ -25,6 +25,11 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include "m_clui.h"
 #include "commonprototypes.h"
 
+int CLUIUnreadEmailCountChanged(WPARAM wParam,LPARAM lParam)
+{
+	CallService(MS_SKINENG_INVALIDATEFRAMEIMAGE, 0 ,0);
+	return 0;
+}
 
 int CLUIServices_ProtocolStatusChanged(WPARAM wParam,LPARAM lParam)
 {
