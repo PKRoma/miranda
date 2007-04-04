@@ -798,9 +798,10 @@ void fnRecalculateGroupCheckboxes(HWND hwnd, struct ClcData *dat)
 	for (;;) {
 		if ((group->scanIndex & GSIF_INDEXMASK) == group->cl.count) {
 			check = (group->scanIndex & (GSIF_HASMEMBERS | GSIF_ALLCHECKED)) == (GSIF_HASMEMBERS | GSIF_ALLCHECKED);
-			group = group->parent;
-			if (group == NULL)
+			if (group->parent == NULL)
 				break;
+			group->parent->scanIndex |= group->scanIndex & GSIF_HASMEMBERS;
+			group = group->parent;
 			if (check)
 				group->cl.items[(group->scanIndex & GSIF_INDEXMASK)]->flags |= CONTACTF_CHECKED;
 			else {
