@@ -131,6 +131,13 @@ static LRESULT CALLBACK RichUtil_Proc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM
 		ru = (TRichUtil*)sListInt.items[idx];
 	LeaveCriticalSection(&csRich);
 	switch(msg) {
+		case WM_CHAR:
+		{
+			HWND hwndMsg = GetDlgItem(GetParent(hwnd), IDC_MESSAGE);
+			SetFocus(hwndMsg);
+			SendMessage(hwndMsg, WM_CHAR, wParam, lParam);
+			break;
+		}
 		case WM_THEMECHANGED:
 		case WM_STYLECHANGED:
 		{
