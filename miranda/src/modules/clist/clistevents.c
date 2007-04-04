@@ -289,6 +289,7 @@ int fnEventsProcessContactDoubleClick(HANDLE hContact)
 
 int fnEventsProcessTrayDoubleClick(int index)
 {
+	BOOL click_in_first_icon=FALSE;
 	if (cli.events.count) {
 		HANDLE hContact, hDbEvent;
 		int eventIndex=0;
@@ -299,12 +300,11 @@ int fnEventsProcessTrayDoubleClick(int index)
 			for (i=0; i<cli.trayIconCount; i++)
 				if (cli.trayIcon[i].id==index)	{
 					szProto=cli.trayIcon[i].szProto;
+					if (i==0) click_in_first_icon=TRUE;
 					break;
 				}
-			if (szProto)
-			{
-				for(i=0; i<cli.events.count; i++)
-				{
+			if (szProto) {
+				for(i=0; i<cli.events.count; i++) {
 					char * eventProto=NULL;				
 					if (cli.events.items[i]->cle.hContact) 
 						eventProto=(char *)CallService(MS_PROTO_GETCONTACTBASEPROTO, (WPARAM)cli.events.items[i]->cle.hContact, 0);
@@ -314,16 +314,32 @@ int fnEventsProcessTrayDoubleClick(int index)
 					if (!eventProto || !_strcmpi(eventProto, szProto))	{
 						eventIndex=i;
 						break;
-					}
-				}
+				}	}
+				
 				if (i==cli.events.count) { //EventNotFound
-					cli.pfnUnlockTray();
-					return 1;	//continue processing to show contact list
-				}
-					
-			}
-			
-		}
+					//lets  process backward try to find first event without desired proto in tray
+					int j;
+					if (click_in_first_icon)
+						for(i=0; i<cli.events.count; i++) {
+							char * eventProto=NULL;				
+							if (cli.events.items[i]->cle.hContact) 
+								eventProto=(char *)CallService(MS_PROTO_GETCONTACTBASEPROTO, (WPARAM)cli.events.items[i]->cle.hContact, 0);
+							if (!eventProto)
+								eventProto=cli.events.items[i]->cle.lpszProtocol;
+							if (eventProto) {
+								for (j=0; j<cli.trayIconCount; j++)
+									if (cli.trayIcon[j].szProto && !_strcmpi(eventProto, cli.trayIcon[j].szProto))
+										break;
+								
+								if (j==cli.trayIconCount) {
+									eventIndex=i;
+									break;
+						}	}	}
+					if (i==cli.events.count) { //not found 
+						cli.pfnUnlockTray();
+						return 1;	//continue processing to show contact list
+		}	}	}	}
+
 		cli.pfnUnlockTray();		
 		hContact = cli.events.items[eventIndex]->cle.hContact;
 		hDbEvent = cli.events.items[eventIndex]->cle.hDbEvent;
