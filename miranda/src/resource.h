@@ -29,7 +29,6 @@
 #define IDI_LOAD                        132
 #define IDD_OPT_SOUND                   134
 #define IDI_RECVMSG                     136
-#define IDI_SENDMSG                     137
 #define IDI_URL                         138
 #define IDI_DND                         158
 #define IDI_OCCUPIED                    159
@@ -61,8 +60,6 @@
 #define IDI_TICK                        206
 #define IDD_OPT_ICONS                   207
 #define IDI_FILE                        207
-#define IDI_TIMESTAMP                   208
-#define IDI_CHANGEFONT                  209
 #define IDI_ADDCONTACT                  210
 #define IDI_SMALLDOT                    211
 #define IDI_FILLEDBLOB                  212
@@ -103,7 +100,6 @@
 #define IDD_DENYREASON                  256
 #define IDD_ADDCONTACT                  257
 #define IDD_OPT_CONTACT                 261
-#define IDI_MULTISEND                   263
 #define IDI_DOWNARROW                   264
 #define IDD_OPT_IDLE                    268
 #define IDD_PROFILE_SELECTION           269
@@ -183,7 +179,6 @@
 #define IDC_GENMENU_SET                 1087
 #define IDC_GENMENU_SET2                1088
 #define IDC_GENMENU_DEFAULT             1089
-#define IDC_ICONBLINK                   1090
 #define IDC_BUILDTIME                   1108
 #define IDC_CREDITSFILE                 1109
 #define IDC_NUMBER                      1113
