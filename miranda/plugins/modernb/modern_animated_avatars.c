@@ -153,6 +153,8 @@ typedef struct _tagAniAva
 } ANIAVA;
 
 //module static declarations
+static void		__AniAva_DebugRenderStrip();
+
 static void		_AniAva_DestroyAvatarWindow( HWND hwnd);
 static void		_AniAva_Clear_ANIAVA_WINDOWINFO(ANIAVA_WINDOWINFO * pavwi );
 static void		_AniAva_RenderAvatar(ANIAVA_WINDOWINFO * dat);
@@ -167,6 +169,7 @@ static int		_AniAva_LoadAvatarFromImage(TCHAR * szFileName, int width, int heigh
 static int		_AniAva_SortAvatarInfo(void * first, void * last);
 static BOOL		_AniAva_GetAvatarImageInfo(DWORD dwAvatarUniqId, ANIAVATARIMAGEINFO * avii);
 static HWND		_AniAva_CreateAvatarWindowSync(TCHAR *szFileName);
+
 static LRESULT CALLBACK _AniAva_WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam);
 
 //module variables
@@ -537,7 +540,7 @@ static HWND _AniAva_CreateAvatarWindowSync(TCHAR *szFileName)
 
 static void _AniAva_RealRemoveAvatar(DWORD UniqueID)
 {
-	int j;
+	int j,k;
 	for (j=0; j<AniAva.AniAvatarList->realCount; j++)
 	{
 		ANIAVA_INFO * aai=(ANIAVA_INFO *) AniAva.AniAvatarList->items[j];
@@ -546,9 +549,19 @@ static void _AniAva_RealRemoveAvatar(DWORD UniqueID)
 			aai->nRefCount--;
 			if (aai->nRefCount==0) 
 			{
+				_AniAva_PausePainting();
+				#ifdef _DEBUG
+					__AniAva_DebugRenderStrip();
+				#endif
 				if (aai->tcsFilename) mir_free(aai->tcsFilename);
-				if (aai->pFrameDelays) free(aai->pFrameDelays);				
+				if (aai->pFrameDelays) free(aai->pFrameDelays);					
 				_AniAva_ReduceAvatarImages(aai->nStripTop,aai->FrameSize.cx*aai->nFrameCount, FALSE);
+				for (k=0; k<AniAva.AniAvatarList->realCount; k++)	
+					if (k!=j)	{
+						ANIAVA_INFO * taai=(ANIAVA_INFO *) AniAva.AniAvatarList->items[k];
+						if (taai->nStripTop>aai->nStripTop)
+							taai->nStripTop-=aai->FrameSize.cx*aai->nFrameCount;
+					}
 				if (AniAva.AniAvatarList->realCount>0)
 				{
 					//lets create hNewDC
@@ -560,7 +573,9 @@ static void _AniAva_RealRemoveAvatar(DWORD UniqueID)
 					int i;
 					for (i=0; i<AniAva.AniAvatarList->realCount; i++)
 						if (i!=j) 
-							newHeight=max(newHeight,((ANIAVA_INFO *) AniAva.AniAvatarList->items[i])->FrameSize.cy);
+						{
+							newHeight=max(newHeight,((ANIAVA_INFO *) AniAva.AniAvatarList->items[i])->FrameSize.cy);				
+						}
 
 					hNewDC=CreateCompatibleDC(NULL);
 					hNewBmp=SkinEngine_CreateDIB32(newWidth,newHeight);
@@ -569,24 +584,26 @@ static void _AniAva_RealRemoveAvatar(DWORD UniqueID)
 					if (aai->nStripTop>0)
 						BitBlt(hNewDC,0,0,aai->nStripTop,newHeight,AniAva.hAniAvaDC,0,0, SRCCOPY);
 					if (aai->nStripTop+aai->FrameSize.cx*aai->nFrameCount<AniAva.width)
-						BitBlt(hNewDC,0,aai->nStripTop,AniAva.width-(aai->nStripTop+aai->FrameSize.cx*aai->nFrameCount),newHeight,AniAva.hAniAvaDC,aai->nStripTop+aai->FrameSize.cx*aai->nFrameCount,0, SRCCOPY);
-					_AniAva_PausePainting();
+						BitBlt(hNewDC,aai->nStripTop,0,AniAva.width-(aai->nStripTop+aai->FrameSize.cx*aai->nFrameCount),newHeight,AniAva.hAniAvaDC,aai->nStripTop+aai->FrameSize.cx*aai->nFrameCount,0, SRCCOPY);
+					
 					_AniAva_RemoveAniAvaDC(&AniAva);
 					AniAva.hAniAvaDC		=hNewDC;
 					AniAva.hAniAvaBitmap	=hNewBmp;
 					AniAva.hAniAvaOldBitmap	=hNewOldBmp;
 					AniAva.width			=newWidth;
 					AniAva.height			=newHeight;
-					_AniAva_ResumePainting();
+					
 				}
 				else
 				{
-					_AniAva_PausePainting();
 					_AniAva_RemoveAniAvaDC(&AniAva);
-					_AniAva_ResumePainting();
-				}
+				}				
+				#ifdef _DEBUG
+					__AniAva_DebugRenderStrip();
+				#endif
 				li.List_Remove(AniAva.AniAvatarList, j);
 				mir_free(aai);
+				_AniAva_ResumePainting();
 				break;
 			}
 		}
@@ -614,6 +631,7 @@ static int	_AniAva_LoadAvatarFromImage(TCHAR * szFileName, int width, int height
 {
 	ANIAVA_INFO aai={0};
 	ANIAVA_INFO * paai=NULL;
+	BOOL fNeedInsertToList=FALSE;
 	int idx=0;
 	aai.tcsFilename=szFileName;
 	aai.FrameSize.cx=width;
@@ -635,9 +653,7 @@ static int	_AniAva_LoadAvatarFromImage(TCHAR * szFileName, int width, int height
 		memset(paai,0,sizeof(ANIAVA_INFO));
 		paai->tcsFilename=mir_tstrdup(szFileName);
 		paai->dwAvatarUniqId=rand();
-		//add to list
-		li.List_Insert(AniAva.AniAvatarList, (void*)paai, AniAva.AniAvatarList->realCount);
-
+		fNeedInsertToList=TRUE;
 		//get image strip
 		GDIPlus_ExtractAnimatedGIF(szFileName, width, height, &hBitmap, &(paai->pFrameDelays), &(paai->nFrameCount), &(paai->FrameSize));
 
@@ -694,6 +710,13 @@ static int	_AniAva_LoadAvatarFromImage(TCHAR * szFileName, int width, int height
 		pRetAII->ptImagePos.x=paai->nStripTop;
 		pRetAII->ptImagePos.y=0;
 		pRetAII->szSize=paai->FrameSize;
+		if (fNeedInsertToList)
+		{
+			//add to list
+			int idx=AniAva.AniAvatarList->realCount;
+			li.List_GetIndex(AniAva.AniAvatarList, paai,&idx);
+			li.List_Insert(AniAva.AniAvatarList, (void*)paai, idx);
+		}
 		return paai->dwAvatarUniqId;
 	}
 	return 0;
@@ -726,17 +749,24 @@ static void _AniAva_Clear_ANIAVA_WINDOWINFO(ANIAVA_WINDOWINFO * pavwi )
 	pavwi->bPlaying =FALSE;
 	pavwi->TimerId=0;	
 }
-static void _AniAva_RenderAvatar(ANIAVA_WINDOWINFO * dat)
+static void __AniAva_DebugRenderStrip()
 {
-	if (dat->bPaused>0)	{	dat->bPended=TRUE;	return; 	}
-	else dat->bPended=FALSE;
-/*#ifdef _DEBUG
+	#ifdef _DEBUG
 	{
 		HDC hDC_debug=GetDC(NULL);
 		BitBlt(hDC_debug,0,150,AniAva.width, AniAva.height,AniAva.hAniAvaDC,0,0,SRCCOPY);
 		DeleteDC(hDC_debug);
 	}
-#endif*/
+	#endif
+}
+
+static void _AniAva_RenderAvatar(ANIAVA_WINDOWINFO * dat)
+{
+	if (dat->bPaused>0)	{	dat->bPended=TRUE;	return; 	}
+	else dat->bPended=FALSE;
+#ifdef _DEBUG
+	__AniAva_DebugRenderStrip();
+#endif
 	if (dat->bPlaying && IsWindowVisible(dat->hWindow))
 	{
 		POINT ptWnd={0};
