@@ -789,6 +789,8 @@ case INTM_ICONCHANGED:
 		BOOL image_is_special=FALSE;
 		RECT iconRect={0};
 		int contacticon=CallService(MS_CLIST_GETCONTACTICON, wParam, 1);
+		HANDLE hSelItem = NULL;
+		struct ClcContact *selcontact = NULL;
 
 		szProto = (char *) CallService(MS_PROTO_GETCONTACTBASEPROTO, wParam, 0);
 		if (szProto == NULL)
@@ -814,6 +816,8 @@ case INTM_ICONCHANGED:
 		{
 			if (shouldShow && CallService(MS_DB_CONTACT_IS, wParam, 0)) 
 			{
+				if (dat->selection >= 0 && pcli->pfnGetRowByIndex(dat, dat->selection, &selcontact, NULL) != -1)
+					hSelItem = pcli->pfnContactToHItem(selcontact);
 				pcli->pfnAddContactToTree(hwnd, dat, (HANDLE) wParam, 0, 0);
 				recalcScrollBar = 1;
 				needRepaint=TRUE;
@@ -835,17 +839,9 @@ case INTM_ICONCHANGED:
 				return 0;
 			if (!shouldShow && !(style & CLS_NOHIDEOFFLINE) && (style & CLS_HIDEOFFLINE || group->hideOffline || g_CluiData.bFilterEffective)) // CLVM changed
 			{
-				HANDLE hSelItem;
-				struct ClcContact *selcontact;
-				struct ClcGroup *selgroup;
-				if (pcli->pfnGetRowByIndex(dat, dat->selection, &selcontact, NULL) == -1)
-					hSelItem = NULL;
-				else
+				if (dat->selection >= 0 && pcli->pfnGetRowByIndex(dat, dat->selection, &selcontact, NULL) != -1)
 					hSelItem = pcli->pfnContactToHItem(selcontact);
 				pcli->pfnRemoveItemFromGroup(hwnd, group, contact, 0);
-				if (hSelItem)
-					if (pcli->pfnFindItem(hwnd, dat, hSelItem, &selcontact, &selgroup, NULL))
-						dat->selection = pcli->pfnGetRowsPriorTo(&dat->list, selgroup, li.List_IndexOf(( SortedList* )&selgroup->cl, selcontact));
 				needRepaint=TRUE;
 				recalcScrollBar = 1;
 				dat->NeedResort = 1;
@@ -869,6 +865,13 @@ case INTM_ICONCHANGED:
 				}
 			}
 
+		}
+		if (hSelItem) {
+			struct ClcGroup *selgroup;
+			if (pcli->pfnFindItem(hwnd, dat, hSelItem, &selcontact, &selgroup, NULL))
+				dat->selection = pcli->pfnGetRowsPriorTo(&dat->list, selgroup, li.List_IndexOf(( SortedList* )&selgroup->cl, selcontact));
+			else
+				dat->selection = -1;
 		}
 		//        dat->NeedResort = 1; 
 		//        SortClcByTimer(hwnd);
