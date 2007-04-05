@@ -1,7 +1,6 @@
 # Microsoft Developer Studio Generated Dependency File, included by Yahoo.mak
 
 .\libyahoo2\crypt.c : \
-	"..\..\..\..\vc\vc98\include\basetsd.h"\
 	"..\..\include\m_netlib.h"\
 	"..\..\include\m_plugins.h"\
 	"..\..\include\m_utils.h"\
@@ -11,7 +10,6 @@
 	
 
 .\libyahoo2\libyahoo2.c : \
-	"..\..\..\..\vc\vc98\include\basetsd.h"\
 	"..\..\include\m_netlib.h"\
 	"..\..\include\m_plugins.h"\
 	"..\..\include\m_utils.h"\
@@ -37,7 +35,6 @@
 	
 
 .\libyahoo2\yahoo_httplib.c : \
-	"..\..\..\..\vc\vc98\include\basetsd.h"\
 	"..\..\include\m_netlib.h"\
 	"..\..\include\m_plugins.h"\
 	"..\..\include\m_utils.h"\
@@ -57,7 +54,6 @@
 	
 
 .\libyahoo2\yahoo_util.c : \
-	"..\..\..\..\vc\vc98\include\basetsd.h"\
 	"..\..\include\m_netlib.h"\
 	"..\..\include\m_plugins.h"\
 	"..\..\include\m_utils.h"\
@@ -67,7 +63,6 @@
 	
 
 .\avatar.c : \
-	"..\..\..\..\vc\vc98\include\basetsd.h"\
 	"..\..\include\m_clist.h"\
 	"..\..\include\m_database.h"\
 	"..\..\include\m_langpack.h"\
@@ -96,7 +91,6 @@
 	
 
 .\chat.c : \
-	"..\..\..\..\vc\vc98\include\basetsd.h"\
 	"..\..\include\m_clist.h"\
 	"..\..\include\m_database.h"\
 	"..\..\include\m_langpack.h"\
@@ -120,7 +114,6 @@
 	
 
 .\file_transfer.c : \
-	"..\..\..\..\vc\vc98\include\basetsd.h"\
 	"..\..\include\m_clist.h"\
 	"..\..\include\m_database.h"\
 	"..\..\include\m_netlib.h"\
@@ -144,7 +137,6 @@
 	
 
 .\icolib.c : \
-	"..\..\..\..\vc\vc98\include\basetsd.h"\
 	"..\..\include\m_clist.h"\
 	"..\..\include\m_database.h"\
 	"..\..\include\m_icolib.h"\
@@ -172,7 +164,6 @@
 	
 
 .\ignore.c : \
-	"..\..\..\..\vc\vc98\include\basetsd.h"\
 	"..\..\include\m_clist.h"\
 	"..\..\include\m_database.h"\
 	"..\..\include\m_langpack.h"\
@@ -197,7 +188,6 @@
 	
 
 .\im.c : \
-	"..\..\..\..\vc\vc98\include\basetsd.h"\
 	"..\..\include\m_clist.h"\
 	"..\..\include\m_database.h"\
 	"..\..\include\m_langpack.h"\
@@ -224,7 +214,6 @@
 	
 
 .\main.c : \
-	"..\..\..\..\vc\vc98\include\basetsd.h"\
 	"..\..\include\m_clist.h"\
 	"..\..\include\m_database.h"\
 	"..\..\include\m_idle.h"\
@@ -256,7 +245,6 @@
 	
 
 .\options.c : \
-	"..\..\..\..\vc\vc98\include\basetsd.h"\
 	"..\..\include\m_clist.h"\
 	"..\..\include\m_database.h"\
 	"..\..\include\m_langpack.h"\
@@ -283,7 +271,6 @@
 	
 
 .\search.c : \
-	"..\..\..\..\vc\vc98\include\basetsd.h"\
 	"..\..\include\m_clist.h"\
 	"..\..\include\m_database.h"\
 	"..\..\include\m_langpack.h"\
@@ -308,7 +295,6 @@
 	
 
 .\server.c : \
-	"..\..\..\..\vc\vc98\include\basetsd.h"\
 	"..\..\include\m_clist.h"\
 	"..\..\include\m_database.h"\
 	"..\..\include\m_netlib.h"\
@@ -330,7 +316,6 @@
 	
 
 .\services.c : \
-	"..\..\..\..\vc\vc98\include\basetsd.h"\
 	"..\..\include\m_clist.h"\
 	"..\..\include\m_database.h"\
 	"..\..\include\m_idle.h"\
@@ -363,7 +348,6 @@
 	
 
 .\util.c : \
-	"..\..\..\..\vc\vc98\include\basetsd.h"\
 	"..\..\include\m_clist.h"\
 	"..\..\include\m_database.h"\
 	"..\..\include\m_langpack.h"\
@@ -391,7 +375,6 @@
 	
 
 .\webcam.c : \
-	"..\..\..\..\vc\vc98\include\basetsd.h"\
 	"..\..\include\m_clist.h"\
 	"..\..\include\m_database.h"\
 	"..\..\include\m_langpack.h"\
@@ -415,7 +398,6 @@
 	
 
 .\yahoo.c : \
-	"..\..\..\..\vc\vc98\include\basetsd.h"\
 	"..\..\include\m_clist.h"\
 	"..\..\include\m_database.h"\
 	"..\..\include\m_langpack.h"\
