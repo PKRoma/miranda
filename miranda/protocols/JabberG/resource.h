@@ -232,8 +232,9 @@
 #define IDC_ROOM_RADIO                  3009
 #define IDC_AUTOJOIN_BOOKMARKS          3010
 #define IDC_URL_RADIO                   3011
-#define IDC_BOOKMARK_TYPE               3012
-#define IDC_CHECK_BM_AUTOJOIN           3013
+#define IDC_AGENT_RADIO                 3012
+#define IDC_BOOKMARK_TYPE               3013
+#define IDC_CHECK_BM_AUTOJOIN           3014
 
 #define IDM_MESSAGE                     10002
 #define IDM_CLEAR                       10003
