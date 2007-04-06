@@ -1004,7 +1004,7 @@ bgskipped:
 	}
 	else if(type == CLCIT_CONTACT && !dat->bisEmbedded && !g_selectiveIcon && (dwFlags & CLUI_FRAME_ALWAYSALIGNNICK) && av_local_wanted && (av_left || av_right)) {
 		if(av_right)
-			rcContent.right -= (g_CluiData.avatarSize);
+			rcContent.right -= (g_CluiData.avatarSize + 2);
 		if(av_left)
 			rcContent.left += (g_CluiData.avatarSize + 2);
 	}
@@ -1024,6 +1024,14 @@ bgskipped:
 		pi_selectiveIcon = g_selectiveIcon && (type == CLCIT_CONTACT);
 
 		if((dwFlags & CLUI_FRAME_STATUSICONS && !pi_selectiveIcon) || type != CLCIT_CONTACT || (pi_selectiveIcon && !avatar_done)) {
+            HIMAGELIST hImgList = 0;
+            if(cEntry && (dwFlags & CLUI_FRAME_USEXSTATUSASSTATUS) && cEntry->iExtraImage[EIMG_EXTRA] != 0xff) {
+                hImgList = dat->himlExtraColumns;
+                iImage = cEntry->iExtraImage[EIMG_EXTRA];
+            }
+            else
+                hImgList = hCListImages;
+
 			if (g_hottrack) {
 				colourFg = dat->hotTextColour;
 			} else if (type == CLCIT_CONTACT && flags & CONTACTF_NOTONLIST) {
@@ -1034,7 +1042,7 @@ bgskipped:
 				mode = ILD_SELECTED;
 
 			if(pi_selectiveIcon && av_right) {
-				ImageList_DrawEx(hCListImages, iImage, hdcMem, rcContent.right - 18, (twoRows && type == CLCIT_CONTACT && !g_CluiData.bCenterStatusIcons) ? y + 2 : y + ((rowHeight - 16) >> 1), 0, 0, CLR_NONE, colourFg, mode);
+				ImageList_DrawEx(hImgList, iImage, hdcMem, rcContent.right - 18, (twoRows && type == CLCIT_CONTACT && !g_CluiData.bCenterStatusIcons) ? y + 2 : y + ((rowHeight - 16) >> 1), 0, 0, CLR_NONE, colourFg, mode);
 				rcContent.right -= 18;
 			}
 			else {
@@ -1042,7 +1050,7 @@ bgskipped:
 				BOOL centered = FALSE;
 				offset +=  (type != CLCIT_CONTACT || avatar_done || !(av_local_wanted) ? 20 : dwFlags & CLUI_FRAME_ALWAYSALIGNNICK && av_left && g_selectiveIcon ? g_CluiData.avatarSize + 2 : 20);
 				centered = (g_CluiData.bCenterStatusIcons && offset == g_CluiData.avatarSize + 2);
-				ImageList_DrawEx(hCListImages, iImage, hdcMem,  centered ? rcContent.left + offset / 2 - 10 : rcContent.left, (twoRows && type == CLCIT_CONTACT && !g_CluiData.bCenterStatusIcons) ? y + 2 : y + ((rowHeight - 16) >> 1), 0, 0, CLR_NONE, colourFg, mode);
+				ImageList_DrawEx(hImgList, iImage, hdcMem,  centered ? rcContent.left + offset / 2 - 10 : rcContent.left, (twoRows && type == CLCIT_CONTACT && !g_CluiData.bCenterStatusIcons) ? y + 2 : y + ((rowHeight - 16) >> 1), 0, 0, CLR_NONE, colourFg, mode);
 				rcContent.left += offset;
 			}
 		}
@@ -1050,15 +1058,13 @@ bgskipped:
 			iconXSpace = 0;
 		if (type == CLCIT_CONTACT && !dat->bisEmbedded) {
 			BYTE bApparentModeDontCare = !((flags & CONTACTF_VISTO) ^ (flags & CONTACTF_INVISTO));
-			/*
-			if (clientId >= 0 && clientId < NR_CLIENTS && dwFlags & CLUI_SHOWCLIENTICONS) {
-				DrawIconEx(hdcMem, rcContent.right - g_CluiData.exIconScale, twoRows ? rcContent.bottom - g_exIconSpacing : y + ((rowHeight - g_CluiData.exIconScale) >> 1), im_clienthIcons[clientId], g_CluiData.exIconScale, g_CluiData.exIconScale, 0, 0, DI_NORMAL | DI_COMPAT);
-				rcContent.right -= g_exIconSpacing;
-				rightIcons++;
-			}*/
 			contact->extraIconRightBegin = 0;
             if(cEntry && (contact->extraCacheEntry >= 0 && contact->extraCacheEntry < g_nextExtraCacheEntry && cEntry->iExtraValid)) {
 				int i;
+                DWORD dwOldMask = cEntry->dwXMask;
+                if(dwFlags & CLUI_FRAME_USEXSTATUSASSTATUS)
+                    cEntry->dwXMask &= ~EIMG_SHOW_EXTRA;
+
 				for(i = 9; i >= 0; i--) {
 					if(cEntry->iExtraImage[i] != 0xff && ((1 << i) & cEntry->dwXMask)) {
 						if(contact->extraIconRightBegin == 0 && i != 9)
@@ -1069,6 +1075,7 @@ bgskipped:
 						rightIcons++;
 					}
 				}
+                cEntry->dwXMask = dwOldMask;
 			}
 			if (!bApparentModeDontCare && (dwFlags & CLUI_SHOWVISI) && contact->proto) {
                 BOOL fVisi;

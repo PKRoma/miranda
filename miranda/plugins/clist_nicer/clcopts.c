@@ -336,7 +336,7 @@ void DSP_Apply(DISPLAYPROFILE *p)
     /*
      * icons page
      */
-    g_CluiData.dwFlags &= ~(CLUI_FRAME_STATUSICONS | CLUI_SHOWVISI | CLUI_USEMETAICONS | CLUI_FRAME_OVERLAYICONS | CLUI_FRAME_SELECTIVEICONS);
+    g_CluiData.dwFlags &= ~(CLUI_FRAME_STATUSICONS | CLUI_SHOWVISI | CLUI_USEMETAICONS | CLUI_FRAME_USEXSTATUSASSTATUS | CLUI_FRAME_OVERLAYICONS | CLUI_FRAME_SELECTIVEICONS);
     g_CluiData.dwExtraImageMask = p->dwExtraImageMask;
     g_CluiData.exIconScale = p->exIconScale;
     g_CluiData.bCenterStatusIcons = p->bCenterStatusIcons;
@@ -844,6 +844,7 @@ static BOOL CALLBACK DlgProcXIcons(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM
                 CheckDlgButton(hwndDlg, IDC_EXTRARESERVED3, p->dwExtraImageMask & EIMG_SHOW_RESERVED3);
                 CheckDlgButton(hwndDlg, IDC_EXTRARESERVED4, p->dwExtraImageMask & EIMG_SHOW_RESERVED4);
                 CheckDlgButton(hwndDlg, IDC_EXTRARESERVED5, p->dwExtraImageMask & EIMG_SHOW_RESERVED5);
+                CheckDlgButton(hwndDlg, IDC_XSTATUSASSTATUS, p->dwFlags & CLUI_FRAME_USEXSTATUSASSTATUS ? 1 : 0);
 
                 CheckDlgButton(hwndDlg, IDC_SHOWSTATUSICONS, (p->dwFlags & CLUI_FRAME_STATUSICONS) ? BST_CHECKED : BST_UNCHECKED);
                 CheckDlgButton(hwndDlg, IDC_SHOWVISIBILITY, (p->dwFlags & CLUI_SHOWVISI) ? BST_CHECKED : BST_UNCHECKED);
@@ -882,6 +883,7 @@ static BOOL CALLBACK DlgProcXIcons(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM
                                    (IsDlgButtonChecked(hwndDlg, IDC_SHOWVISIBILITY) ? CLUI_SHOWVISI : 0) |
                                    (IsDlgButtonChecked(hwndDlg, IDC_SHOWMETA) ? CLUI_USEMETAICONS : 0) |
                                    (IsDlgButtonChecked(hwndDlg, IDC_OVERLAYICONS) ? CLUI_FRAME_OVERLAYICONS : 0) |
+                                   (IsDlgButtonChecked(hwndDlg, IDC_XSTATUSASSTATUS) ? CLUI_FRAME_USEXSTATUSASSTATUS : 0) |
                                    (IsDlgButtonChecked(hwndDlg, IDC_SELECTIVEICONS) ? CLUI_FRAME_SELECTIVEICONS : 0));
                                     
                     p->bDimIdle = IsDlgButtonChecked(hwndDlg, IDC_IDLE) ? 1 : 0;

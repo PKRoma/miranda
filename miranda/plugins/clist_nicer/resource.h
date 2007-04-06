@@ -80,6 +80,8 @@
 #define IDI_ADDCONTACT                  210
 #define IDI_SMALLDOT                    211
 #define IDI_FILLEDBLOB                  212
+#define IDC_HYPERLINKHAND               214
+#define IDC_DROPUSER                    215
 #define IDD_OPT_AWAYMSG                 217
 #define IDD_OPT_CLUI                    218
 #define IDD_OPT_XICONS                  219
@@ -178,7 +180,6 @@
 #define IDC_MYNOTES                     1033
 #define IDC_DONTREPLY                   1034
 #define IDC_DROPSHADOW                  1035
-#define IDC_DROPUSER                    215
 #define IDC_URLS                        1037
 #define IDC_DUMPRECV                    1038
 #define IDC_REPLY                       1039
@@ -254,7 +255,6 @@
 #define IDC_HKSEARCH                    1084
 #define IDC_USESOUND                    1085
 #define IDC_HKSHOWOPTIONS               1086
-#define IDC_HYPERLINKHAND               214
 #define IDC_LANGUAGE1                   1088
 #define IDC_LANGUAGE2                   1089
 #define IDC_LANGUAGE3                   1090
@@ -616,6 +616,8 @@
 #define IDC_IDLE                        1610
 #define IDC_SBPANELBEVEL                1611
 #define IDC_DBLCLKAVATARS               1611
+#define IDC_IDLE2                       1611
+#define IDC_XSTATUSASSTATUS             1611
 #define IDC_NOSCROLLBAR                 1613
 #define IDC_BUTTON1                     1633
 #define IDC_ADDVIEWMODE                 1633
