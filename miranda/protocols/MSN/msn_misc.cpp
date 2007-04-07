@@ -245,7 +245,7 @@ void __stdcall MSN_GetAvatarFileName( HANDLE hContact, char* pszDest, int cbLen 
 		tPathLen += mir_snprintf( pszDest + tPathLen, MAX_PATH - tPathLen, "%08lX%08lX%08lX%08lX",
 			digest[0], digest[1], digest[2], digest[3] );
 
-		strcat( pszDest + tPathLen, ".bmp" );
+		strcat( pszDest + tPathLen, ".png" );
 	}
 	else mir_snprintf( pszDest + tPathLen, MAX_PATH - tPathLen, "%s avatar.png", msnProtocolName );
 }

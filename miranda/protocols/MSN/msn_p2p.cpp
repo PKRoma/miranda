@@ -27,7 +27,6 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include <io.h>
 #include <fcntl.h>
 #include <sys/stat.h>
-#include <m_imgsrvc.h>
 
 static char sttP2Pheader[] =
 	"Content-Type: application/x-msnmsgrp2p\r\n"
@@ -217,36 +216,17 @@ static void sttSavePicture2disk( filetransfer* ft )
 		}	}
 	#endif
 
-	//---- Converting memory buffer to bitmap and saving it to disk
-	if ( !MSN_LoadPngModule() )
-		return;
-
-
-	IMGSRVC_MEMIO imio;
-	imio.fif = FIF_JNG;
-	imio.iLen = ft->std.currentFileSize;
-	imio.pBuf = (void *)ft->fileBuffer;
-
-	FIBITMAP *dib = NULL;
-
-	if ((dib = (FIBITMAP *)CallService( MS_IMG_LOADFROMMEM, (WPARAM)&imio, IMGL_RETURNDIB)) == NULL)
-		return;
-
 	PROTO_AVATAR_INFORMATION AI;
 	AI.cbSize = sizeof( AI );
-	AI.format = PA_FORMAT_BMP;
+	AI.format = PA_FORMAT_PNG;
 	AI.hContact = ft->std.hContact;
 	MSN_GetAvatarFileName( AI.hContact, AI.filename, sizeof( AI.filename ));
 
-	IMGSRVC_INFO isi;
-	isi.cbSize = sizeof(IMGSRVC_INFO);
-	isi.szName = AI.filename;
-	isi.dwMask = IMGI_FBITMAP;
-	isi.dib = dib;
-	isi.fif = FIF_BMP;
-	isi.hbm = 0;
+	FILE* out = fopen( AI.filename, "wb" );
+	if ( out ) {
+		fwrite( ft->fileBuffer, ft->std.currentFileSize, 1, out );
+		fclose( out );
 
-	if (CallService(MS_IMG_SAVE, (WPARAM)&isi, 0)) {
 		MSN_SetString( ft->std.hContact, "PictSavedContext", tContext );
 		MSN_SendBroadcast( AI.hContact, ACKTYPE_AVATAR, ACKRESULT_SUCCESS, HANDLE( &AI ), NULL );
 
@@ -259,10 +239,7 @@ static void sttSavePicture2disk( filetransfer* ft )
 	else {
 		MSN_DeleteSetting( ft->std.hContact, "AvatarHash" );
 		MSN_SendBroadcast( AI.hContact, ACKTYPE_AVATAR, ACKRESULT_FAILED, HANDLE( &AI ), NULL );
-	}
-
-    CallService(MS_IMG_UNLOAD, (WPARAM)dib, 0);
-}
+}	}
 
 /////////////////////////////////////////////////////////////////////////////////////////
 // p2p_sendAck - sends MSN P2P acknowledgement to the received message
