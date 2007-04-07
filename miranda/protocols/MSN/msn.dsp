@@ -168,10 +168,6 @@ SOURCE=.\msn.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=.\msn_bitmap.cpp
-# End Source File
-# Begin Source File
-
 SOURCE=.\msn_chat.cpp
 # End Source File
 # Begin Source File

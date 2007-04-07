@@ -12,7 +12,6 @@
 #define IDI_INVITE                      113
 #define IDI_NETMEETING                  114
 #define IDI_PROFILE                     115
-#define IDD_GET_PNG2DIB                 118
 #define IDD_LISTSMGR                    119
 #define IDI_LIST_FL                     120
 #define IDI_LIST_AL                     121

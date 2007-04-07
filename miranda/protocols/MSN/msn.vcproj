@@ -372,9 +372,6 @@
 				</FileConfiguration>
 			</File>
 			<File
-				RelativePath=".\msn_bitmap.cpp">
-			</File>
-			<File
 				RelativePath=".\msn_chat.cpp">
 			</File>
 			<File

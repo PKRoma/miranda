@@ -32,51 +32,10 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 #include "resource.h"
 
-/////////////////////////////////////////////////////////////////////////////////////////
-// Loads PNG2DIB library to handle PNG images. If DLL isn't found or can't be loaded,
-// a special error dialog appears.
-
-static BOOL CALLBACK LoadPng2dibProc( HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam )
-{
-	switch( uMsg ) {
-	case WM_INITDIALOG:
-		TranslateDialogDefault( hwndDlg );
-		{
-			RECT tRect;
-			GetWindowRect( hwndDlg, &tRect );
-			HDC tHDC  = GetDC( hwndDlg );
-			int tXXXX = GetDeviceCaps( tHDC, HORZRES );
-			int tYYYY = GetDeviceCaps( tHDC, VERTRES );
-			ReleaseDC( hwndDlg, tHDC );
-			SetWindowPos( hwndDlg, HWND_TOP, tXXXX/2 - ( tRect.right-tRect.left )/2 - 1, tYYYY/2 - ( tRect.bottom-tRect.top )/2 - 1, 0, 0, SWP_NOSIZE );
-		}
-		return TRUE;
-
-	case WM_COMMAND:
-		if ( HIWORD( wParam ) == BN_CLICKED ) {
-			switch( LOWORD( wParam )) {
-			case IDC_BTN_INSTALL:
-				MSN_CallService( MS_UTILS_OPENURL, TRUE, ( LPARAM )"http://www.postman.ru/~ghazan/files/png2dib.mir" );
-				EndDialog( hwndDlg, 1 );
-				break;
-
-			case IDC_BTN_DOWNLOAD:
-				MSN_CallService( MS_UTILS_OPENURL, TRUE, ( LPARAM )"http://www.postman.ru/~ghazan/files/png2dib.zip" );
-				EndDialog( hwndDlg, 2 );
-				break;
-
-			case IDC_BTN_CANCEL:
-				EndDialog( hwndDlg, 3 );
-				break;
-	}	}	}
-
-	return FALSE;
-}
-
 BOOL __stdcall MSN_LoadPngModule()
 {
-	if ( !ServiceExists(MS_DIB2PNG) || !ServiceExists(MS_PNG2DIB)) {
-		DialogBox( hInst, MAKEINTRESOURCE( IDD_GET_PNG2DIB ), NULL, LoadPng2dibProc );
+	if ( !ServiceExists( MS_AV_SETMYAVATAR )) {
+		MessageBox( NULL, TranslateT( "MSN protocol requires the loadavatars plugin to handle avatars"), _T("MSN"), MB_OK );
 		return FALSE;
 	}
 
@@ -165,30 +124,18 @@ LBL_Reread:		p2p_invite( pData->hContact, MSN_APPID_AVATAR );
 /////////////////////////////////////////////////////////////////////////////////////////
 // AvatarDlgProc - MSN avatar option page dialog procedure.
 
-static HBITMAP hAvatar = NULL;
+static HWND hAvatarDlg = NULL;
 
-static bool sttSetAvatar( HWND hwndDlg )
+int OnSaveMyAvatar( WPARAM wParam, LPARAM lParam )
 {
-	char szFileName[ MAX_PATH ];
-	if ( MSN_EnterBitmapFileName( szFileName ) != ERROR_SUCCESS )
-		return false;
-
-	HBITMAP hBitmap = ( HBITMAP )MSN_CallService( MS_UTILS_LOADBITMAP, 0, ( LPARAM )szFileName );
-	if ( hBitmap == NULL )
-		return false;
-
-	if (( hBitmap = MSN_StretchBitmap( hBitmap )) == NULL )
-		return false;
-
-	if ( hAvatar != NULL ) {
-		DeleteObject( hAvatar );
-		hAvatar = NULL;
+	if ( !lstrcmpA(( char* )wParam, msnProtocolName ) && hAvatarDlg ) {
+		AVATARCACHEENTRY* ace = ( AVATARCACHEENTRY* )lParam;
+		HBITMAP hAvatar = ( HBITMAP )SendDlgItemMessage( hAvatarDlg, IDC_AVATAR, STM_SETIMAGE, IMAGE_BITMAP, (WPARAM)ace->hbmPic );
+		if ( hAvatar != NULL )
+			DeleteObject( hAvatar );
 	}
 
-	MSN_SaveBitmapAsAvatar( hAvatar = hBitmap, szFileName );
-	MSN_SetServerStatus( msnStatusMode );
-
-	return true;
+	return 0;
 }
 
 BOOL CALLBACK AvatarDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam)
@@ -199,12 +146,12 @@ BOOL CALLBACK AvatarDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam
 	case WM_INITDIALOG:
 		TranslateDialogDefault( hwndDlg );
 
-		hAvatar = NULL;
 		if ( MyOptions.EnableAvatars ) {
+			hAvatarDlg = hwndDlg;
 			if ( MSN_LoadPngModule() ) {
 				char tBuffer[ MAX_PATH ];
 				MSN_GetAvatarFileName( NULL, tBuffer, sizeof tBuffer );
-				hAvatar = ( HBITMAP )MSN_CallService( MS_UTILS_LOADBITMAP, 0, ( LPARAM )tBuffer );
+				HBITMAP hAvatar = ( HBITMAP )MSN_CallService( MS_UTILS_LOADBITMAP, 0, ( LPARAM )tBuffer );
 				if ( hAvatar != NULL )
 		         SendDlgItemMessage(hwndDlg, IDC_AVATAR, STM_SETIMAGE, IMAGE_BITMAP, (WPARAM)hAvatar );
 			}
@@ -218,28 +165,32 @@ BOOL CALLBACK AvatarDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam
 		if ( HIWORD( wParam ) == BN_CLICKED ) {
 			switch( LOWORD( wParam )) {
 			case IDC_SETAVATAR:
-				if ( sttSetAvatar( hwndDlg ))
-		         SendDlgItemMessage(hwndDlg, IDC_AVATAR, STM_SETIMAGE, IMAGE_BITMAP, (WPARAM)hAvatar );
+				MSN_CallService( MS_AV_SETMYAVATAR, ( WPARAM )msnProtocolName, 0 );
 				break;
 
 			case IDC_DELETEAVATAR:
-				if ( hAvatar != NULL ) {
-					DeleteObject( hAvatar );
-					hAvatar = NULL;
-				}
+				{
+					HBITMAP hAvatar = ( HBITMAP )SendDlgItemMessage(hwndDlg, IDC_AVATAR, STM_SETIMAGE, IMAGE_BITMAP, 0 );
+					if ( hAvatar != NULL )
+						DeleteObject( hAvatar );
 
-				char tFileName[ MAX_PATH ];
-				MSN_GetAvatarFileName( NULL, tFileName, sizeof tFileName );
-				DeleteFileA( tFileName );
-				MSN_DeleteSetting( NULL, "PictObject" );
-				InvalidateRect( hwndDlg, NULL, TRUE );
-				break;
-		}	}
+					char tFileName[ MAX_PATH ];
+					MSN_GetAvatarFileName( NULL, tFileName, sizeof tFileName );
+					DeleteFileA( tFileName );
+					MSN_DeleteSetting( NULL, "PictObject" );
+					InvalidateRect( hwndDlg, NULL, TRUE );
+					break;
+		}	}	}
 		break;
 
 	case WM_DESTROY:
-		if ( hAvatar != NULL )
-			DeleteObject( hAvatar );
+		{
+			HBITMAP hAvatar = ( HBITMAP )SendDlgItemMessage(hwndDlg, IDC_AVATAR, STM_SETIMAGE, IMAGE_BITMAP, 0 );
+			if ( hAvatar != NULL )
+				DeleteObject( hAvatar );
+
+			hAvatarDlg = NULL;
+		}
 		break;
 	}
 

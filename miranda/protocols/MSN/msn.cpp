@@ -122,6 +122,7 @@ int MsnDbSettingChanged(WPARAM wParam,LPARAM lParam);
 int MsnOnDetailsInit( WPARAM wParam, LPARAM lParam );
 int MsnRebuildContactMenu( WPARAM wParam, LPARAM lParam );
 int MsnIdleChanged( WPARAM wParam, LPARAM lParam );
+int OnSaveMyAvatar( WPARAM wParam, LPARAM lParam );
 
 int MSN_GCEventHook( WPARAM wParam, LPARAM lParam );
 int MSN_GCMenuHook( WPARAM wParam, LPARAM lParam );
@@ -250,6 +251,7 @@ static int OnModulesLoaded( WPARAM wParam, LPARAM lParam )
 	MsnInitMenus();
 
 	msnUseExtendedPopups = ServiceExists( MS_POPUP_ADDPOPUPEX ) != 0;
+	arHooks.insert( HookEvent( ME_AV_MYAVATARCHANGED, OnSaveMyAvatar ));
 	arHooks.insert( HookEvent( ME_USERINFO_INITIALISE, MsnOnDetailsInit ));
 	arHooks.insert( HookEvent( ME_MSG_WINDOWEVENT, MsnWindowEvent ));
 	arHooks.insert( HookEvent( ME_IDLE_CHANGED, MsnIdleChanged ));

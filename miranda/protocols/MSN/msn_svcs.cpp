@@ -986,15 +986,79 @@ static int MsnSetApparentMode( WPARAM wParam, LPARAM lParam )
 
 int MsnSetAvatar( WPARAM wParam, LPARAM lParam )
 {
-	HBITMAP hBitmap = ( HBITMAP )MSN_CallService( MS_UTILS_LOADBITMAP, 0, lParam );
-	if ( hBitmap == NULL )
+	char* szFileName = ( char* )lParam;
+	int fileIn = open( szFileName, O_RDWR | O_BINARY, S_IREAD | S_IWRITE );
+	if ( fileIn == -1 )
 		return 1;
 
-	if (( hBitmap = MSN_StretchBitmap( hBitmap )) == NULL )
+	long  dwPngSize = filelength( fileIn );
+	BYTE* pResult = new BYTE[ dwPngSize ];
+	if ( pResult == NULL )
 		return 2;
+	
+	read( fileIn, pResult, dwPngSize );
+	close( fileIn );
 
-	MSN_SaveBitmapAsAvatar( hBitmap, (char *) lParam );
-	DeleteObject( hBitmap );
+	mir_sha1_ctx sha1ctx;
+	BYTE sha1c[ MIR_SHA1_HASH_SIZE ], sha1d[ MIR_SHA1_HASH_SIZE ];
+	char szSha1c[ 40 ], szSha1d[ 40 ];
+	mir_sha1_init( &sha1ctx );
+	mir_sha1_append( &sha1ctx, pResult, dwPngSize );
+	mir_sha1_finish( &sha1ctx, sha1d );
+	{	NETLIBBASE64 nlb = { szSha1d, sizeof( szSha1d ), ( PBYTE )sha1d, sizeof( sha1d ) };
+		MSN_CallService( MS_NETLIB_BASE64ENCODE, 0, LPARAM( &nlb ));
+	}
+	char drive[_MAX_DRIVE];
+	char dir[_MAX_DIR];
+	char fname[_MAX_FNAME];
+	char ext[_MAX_EXT];
+	_splitpath( szFileName, drive, dir, fname, ext );
+	mir_sha1_init( &sha1ctx );
+
+	mir_sha1_append( &sha1ctx, ( PBYTE )"Creator", 7 );
+	mir_sha1_append( &sha1ctx, ( PBYTE )MyOptions.szEmail, strlen( MyOptions.szEmail ));
+
+	char szFileSize[ 20 ];
+	ltoa( dwPngSize, szFileSize, 10 );
+	mir_sha1_append( &sha1ctx, ( PBYTE )"Size", 4 );
+	mir_sha1_append( &sha1ctx, ( PBYTE )szFileSize, strlen( szFileSize ));
+
+	mir_sha1_append( &sha1ctx, ( PBYTE )"Type", 4 );
+	mir_sha1_append( &sha1ctx, ( PBYTE )"3", 1 );
+
+	mir_sha1_append( &sha1ctx, ( PBYTE )"Location", 8 );
+	mir_sha1_append( &sha1ctx, ( PBYTE )fname, sizeof( fname ));
+
+	mir_sha1_append( &sha1ctx, ( PBYTE )"Friendly", 8 );
+	mir_sha1_append( &sha1ctx, ( PBYTE )"AAA=", 4 );
+
+	mir_sha1_append( &sha1ctx, ( PBYTE )"SHA1D", 5 );
+	mir_sha1_append( &sha1ctx, ( PBYTE )szSha1d, strlen( szSha1d ));
+	mir_sha1_finish( &sha1ctx, sha1c );
+	{	NETLIBBASE64 nlb = { szSha1c, sizeof( szSha1c ), ( PBYTE )sha1c, sizeof( sha1c ) };
+		MSN_CallService( MS_NETLIB_BASE64ENCODE, 0, LPARAM( &nlb ));
+	}
+	{
+		char* szBuffer = ( char* )alloca( 1000 );
+		mir_snprintf( szBuffer, 1000,
+			"<msnobj Creator=\"%s\" Size=\"%ld\" Type=\"3\" Location=\"%s\" Friendly=\"AAA=\" SHA1D=\"%s\" SHA1C=\"%s\"/>",
+			MyOptions.szEmail, dwPngSize,fname, szSha1d, szSha1c );
+
+		char* szEncodedBuffer = ( char* )alloca( 1000 );
+		UrlEncode( szBuffer, szEncodedBuffer, 1000 );
+
+		MSN_SetString( NULL, "PictObject", szEncodedBuffer );
+	}
+	{	char tFileName[ MAX_PATH ];
+		MSN_GetAvatarFileName( NULL, tFileName, sizeof( tFileName ));
+		FILE* out = fopen( tFileName, "wb" );
+		if ( out != NULL ) {
+			fwrite( pResult, dwPngSize, 1, out );
+			fclose( out );
+	}	}
+
+	delete pResult;
+
 	MSN_SetServerStatus( msnStatusMode );
 	return 0;
 }

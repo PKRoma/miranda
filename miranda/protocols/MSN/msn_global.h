@@ -70,6 +70,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include <m_netlib.h>
 #include <m_popup.h>
 #include <m_chat.h>
+#include "m_avatars.h"
 
 /////////////////////////////////////////////////////////////////////////////////////////
 //	MSN error codes
@@ -168,34 +169,34 @@ WCHAR*   __stdcall   HtmlEncodeW( const WCHAR* str );
 bool txtParseParam (const char* szData, const char* presearch, const char* start, const char* finish, char* param, const int size);
 void MSN_Base64Decode( const char* str, size_t len, char* res, size_t reslen );
 
-void		__stdcall	UrlDecode( char*str );
-void		__stdcall	UrlEncode( const char* src, char* dest, int cbDest );
+void     __stdcall	UrlDecode( char*str );
+void     __stdcall	UrlEncode( const char* src, char* dest, int cbDest );
 
-HANDLE		__stdcall   MSN_HContactFromEmail( const char* msnEmail, const char* msnNick, int addIfNeeded, int temporary );
-HANDLE		__stdcall   MSN_HContactFromEmailT( const TCHAR* msnEmail );
-HANDLE		__stdcall   MSN_HContactById( const char* szGuid );
+HANDLE   __stdcall   MSN_HContactFromEmail( const char* msnEmail, const char* msnNick, int addIfNeeded, int temporary );
+HANDLE   __stdcall   MSN_HContactFromEmailT( const TCHAR* msnEmail );
+HANDLE   __stdcall   MSN_HContactById( const char* szGuid );
 
-int			__stdcall	MSN_AddContact( char* uhandle,char* nick ); //returns clist ID
-int			__stdcall	MSN_AddUser( HANDLE hContact, const char* email, int flags );
-void		__stdcall	MSN_AddAuthRequest( HANDLE hContact, const char *email, const char *nick );
-int			__stdcall	MSN_ContactFromHandle( char* uhandle ); //get cclist id from Uhandle
-void		__stdcall	MSN_DebugLog( const char* fmt, ... );
-void		__stdcall	MSN_DumpMemory( const char* buffer, int bufSize );
-void		__stdcall	MSN_HandleFromContact( unsigned long uin, char* uhandle );
-int			__stdcall	MSN_GetMyHostAsString( char* parBuf, int parBufSize );
+int      __stdcall   MSN_AddContact( char* uhandle,char* nick ); //returns clist ID
+int      __stdcall   MSN_AddUser( HANDLE hContact, const char* email, int flags );
+void     __stdcall   MSN_AddAuthRequest( HANDLE hContact, const char *email, const char *nick );
+int      __stdcall   MSN_ContactFromHandle( char* uhandle ); //get cclist id from Uhandle
+void     __stdcall   MSN_DebugLog( const char* fmt, ... );
+void     __stdcall   MSN_DumpMemory( const char* buffer, int bufSize );
+void     __stdcall   MSN_HandleFromContact( unsigned long uin, char* uhandle );
+int      __stdcall   MSN_GetMyHostAsString( char* parBuf, int parBufSize );
 
-void		__cdecl     MSN_ConnectionProc( HANDLE hNewConnection, DWORD dwRemoteIP, void* );
-void		__stdcall	MSN_GoOffline( void );
-void		__stdcall	MSN_GetAvatarFileName( HANDLE hContact, char* pszDest, int cbLen );
-void		__stdcall	MSN_GetCustomSmileyFileName( HANDLE hContact, char* pszDest, int cbLen, char* SmileyName, int Type);
-LPTSTR		__stdcall   MSN_GetErrorText( DWORD parErrorCode );
-void		__stdcall   MSN_SendStatusMessage( const char* msg );
-void		__stdcall	MSN_SetServerStatus( int newStatus );
-void		__stdcall	LoadOptions( void );
+void     __cdecl     MSN_ConnectionProc( HANDLE hNewConnection, DWORD dwRemoteIP, void* );
+void     __stdcall   MSN_GoOffline( void );
+void     __stdcall   MSN_GetAvatarFileName( HANDLE hContact, char* pszDest, int cbLen );
+void     __stdcall   MSN_GetCustomSmileyFileName( HANDLE hContact, char* pszDest, int cbLen, char* SmileyName, int Type);
+LPTSTR   __stdcall   MSN_GetErrorText( DWORD parErrorCode );
+void     __stdcall   MSN_SendStatusMessage( const char* msg );
+void     __stdcall   MSN_SetServerStatus( int newStatus );
+void     __stdcall   LoadOptions( void );
 
-int		__stdcall	MSN_SendNickname(char *nickname);
+int      __stdcall   MSN_SendNickname(char *nickname);
 #if defined( _UNICODE )
-	int	__stdcall	MSN_SendNicknameW( WCHAR* nickname);
+	int   __stdcall   MSN_SendNicknameW( WCHAR* nickname);
 	#define  MSN_SendNicknameT MSN_SendNicknameW
 #else
 	#define  MSN_SendNicknameT MSN_SendNickname
@@ -204,7 +205,7 @@ int		__stdcall	MSN_SendNickname(char *nickname);
 #if defined( _DEBUG )
 #define MSN_CallService CallService
 #else
-int		__stdcall	MSN_CallService( const char* szSvcName, WPARAM wParam, LPARAM lParam );
+int      __stdcall   MSN_CallService( const char* szSvcName, WPARAM wParam, LPARAM lParam );
 #endif
 
 HANDLE   __stdcall   MSN_CreateProtoServiceFunction( const char*, MIRANDASERVICE );
@@ -227,10 +228,6 @@ DWORD    __stdcall   MSN_SetStringT( HANDLE hContact, const char* valueName, con
 DWORD    __stdcall   MSN_SetStringUtf( HANDLE hContact, const char* valueName, char* parValue );
 void     __cdecl     MSN_ShowError( const char* msgtext, ... );
 char*    __stdcall   MSN_Translate( const char* str );
-
-int      __stdcall   MSN_EnterBitmapFileName( char* szDest );
-int      __stdcall   MSN_SaveBitmapAsAvatar( HBITMAP hBitmap, const char* szFileName );
-HBITMAP  __stdcall   MSN_StretchBitmap( HBITMAP hBitmap );
 
 VOID		CALLBACK    MSNMainTimerProc( HWND hwnd, UINT uMsg, UINT idEvent, DWORD dwTime );
 LRESULT	CALLBACK    NullWindowProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam);
@@ -257,7 +254,6 @@ void   strdel( char* parBuffer, int len );
 // PNG library interface
 
 BOOL __stdcall MSN_LoadPngModule( void );
-
 
 typedef struct
 {

@@ -186,11 +186,7 @@ static int MsnSendNetMeeting( WPARAM wParam, LPARAM lParam )
 
 static int MsnSetAvatarUI( WPARAM wParam, LPARAM lParam )
 {
-	char szFileName[ MAX_PATH ];
-	if ( MSN_EnterBitmapFileName( szFileName ) != ERROR_SUCCESS )
-		return 1;
-
-	return MsnSetAvatar( 0, ( LPARAM )szFileName );
+	return MSN_CallService( MS_AV_SETMYAVATAR, ( WPARAM )msnProtocolName, 0 );
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////

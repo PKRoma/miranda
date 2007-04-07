@@ -27,6 +27,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include <io.h>
 #include <fcntl.h>
 #include <sys/stat.h>
+#include <m_imgsrvc.h>
 
 static char sttP2Pheader[] =
 	"Content-Type: application/x-msnmsgrp2p\r\n"
@@ -220,12 +221,15 @@ static void sttSavePicture2disk( filetransfer* ft )
 	if ( !MSN_LoadPngModule() )
 		return;
 
-	BITMAPINFOHEADER* pDib;
-	PNG2DIB convert;
-	convert.pSource = (BYTE*)ft->fileBuffer;
-	convert.cbSourceSize = ft->std.currentFileSize;
-	convert.pResult = &pDib;
-	if ( !CallService( MS_PNG2DIB, 0, (LPARAM)&convert ))
+
+	IMGSRVC_MEMIO imio;
+	imio.fif = FIF_JNG;
+	imio.iLen = ft->std.currentFileSize;
+	imio.pBuf = (void *)ft->fileBuffer;
+
+	FIBITMAP *dib = NULL;
+
+	if ((dib = (FIBITMAP *)CallService( MS_IMG_LOADFROMMEM, (WPARAM)&imio, IMGL_RETURNDIB)) == NULL)
 		return;
 
 	PROTO_AVATAR_INFORMATION AI;
@@ -233,17 +237,16 @@ static void sttSavePicture2disk( filetransfer* ft )
 	AI.format = PA_FORMAT_BMP;
 	AI.hContact = ft->std.hContact;
 	MSN_GetAvatarFileName( AI.hContact, AI.filename, sizeof( AI.filename ));
-	FILE* out = fopen( AI.filename, "wb" );
-	if ( out != NULL ) {
-		BITMAPFILEHEADER tHeader = { 0 };
-		tHeader.bfType = 0x4d42;
-		tHeader.bfOffBits = sizeof( tHeader ) + sizeof( BITMAPINFOHEADER );
-		tHeader.bfSize = tHeader.bfOffBits + pDib->biSizeImage;
-		fwrite( &tHeader, sizeof( tHeader ), 1, out );
-		fwrite( pDib, sizeof( BITMAPINFOHEADER ), 1, out );
-		fwrite( pDib+1, pDib->biSizeImage, 1, out );
-		fclose( out );
 
+	IMGSRVC_INFO isi;
+	isi.cbSize = sizeof(IMGSRVC_INFO);
+	isi.szName = AI.filename;
+	isi.dwMask = IMGI_FBITMAP;
+	isi.dib = dib;
+	isi.fif = FIF_BMP;
+	isi.hbm = 0;
+
+	if (CallService(MS_IMG_SAVE, (WPARAM)&isi, 0)) {
 		MSN_SetString( ft->std.hContact, "PictSavedContext", tContext );
 		MSN_SendBroadcast( AI.hContact, ACKTYPE_AVATAR, ACKRESULT_SUCCESS, HANDLE( &AI ), NULL );
 
@@ -258,7 +261,7 @@ static void sttSavePicture2disk( filetransfer* ft )
 		MSN_SendBroadcast( AI.hContact, ACKTYPE_AVATAR, ACKRESULT_FAILED, HANDLE( &AI ), NULL );
 	}
 
-   GlobalFree( pDib );
+    CallService(MS_IMG_UNLOAD, (WPARAM)dib, 0);
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////
