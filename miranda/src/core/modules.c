@@ -2,8 +2,8 @@
 
 Miranda IM: the free IM client for Microsoft* Windows*
 
-Copyright 2000-2007 Miranda ICQ/IM project, 
-all portions of this codebase are copyrighted to the people 
+Copyright 2000-2007 Miranda ICQ/IM project,
+all portions of this codebase are copyrighted to the people
 listed in contributors.txt.
 
 This program is free software; you can redistribute it and/or
@@ -112,15 +112,15 @@ static int LoadDefaultModules(void)
 	int *disableDefaultModule = 0;
 
     //load order is very important for these
-	if (LoadSystemModule()) return 1;	
+	if (LoadSystemModule()) return 1;
 	if (LoadLangPackModule()) return 1; // langpack will be a system module in the new order so this is moved 'ere
-	if (LoadUtilsModule()) return 1;		//order not important for this, but no dependencies and no point in pluginising	
-	if (LoadNewPluginsModuleInfos()) return 1; 
+	if (LoadUtilsModule()) return 1;		//order not important for this, but no dependencies and no point in pluginising
+	if (LoadNewPluginsModuleInfos()) return 1;
 	if (LoadProtocolsModule()) return 1;
 	if (LoadIcoLibModule()) return 1;
 	if (LoadSkinModule()) return 1;
 	if (LoadButtonModule()) return 1;
-	if (LoadOptionsModule()) return 1;	
+	if (LoadOptionsModule()) return 1;
 	if (LoadContactsModule()) return 1;
 	if (LoadContactListModule()) return 1;
 	if (LoadAddContactModule()) return 1;
@@ -128,12 +128,12 @@ static int LoadDefaultModules(void)
 
 	//this info will be available at LoadNewPluginsModule()
 	disableDefaultModule=(int*)CallService(MS_PLUGINS_GETDISABLEDEFAULTARRAY,0,0);
-	if (!disableDefaultModule[DEFMOD_PROTOCOLNETLIB]) if (LoadNetlibModule()) return 1;		
+	if (!disableDefaultModule[DEFMOD_PROTOCOLNETLIB]) if (LoadNetlibModule()) return 1;
 
-	//order becomes less important below here	
-	if (!disableDefaultModule[DEFMOD_FONTSERVICE]) if (LoadFontserviceModule()) return 1;	
+	//order becomes less important below here
+	if (!disableDefaultModule[DEFMOD_FONTSERVICE]) if (LoadFontserviceModule()) return 1;
 	if (!disableDefaultModule[DEFMOD_UIFINDADD]) if (LoadFindAddModule()) return 1;
-	if (!disableDefaultModule[DEFMOD_UIUSERINFO]) if (LoadUserInfoModule()) return 1;	
+	if (!disableDefaultModule[DEFMOD_UIUSERINFO]) if (LoadUserInfoModule()) return 1;
 	if (!disableDefaultModule[DEFMOD_SRURL]) if (LoadSendRecvUrlModule()) return 1;
 	if (!disableDefaultModule[DEFMOD_SREMAIL]) if (LoadSendRecvEMailModule()) return 1;
 	if (!disableDefaultModule[DEFMOD_SRAUTH]) if (LoadSendRecvAuthModule()) return 1;
@@ -145,8 +145,8 @@ static int LoadDefaultModules(void)
 	if (!disableDefaultModule[DEFMOD_RNDUSERONLINE]) if (LoadUserOnlineModule()) return 1;
 	if (!disableDefaultModule[DEFMOD_SRAWAY]) if (LoadAwayMsgModule()) return 1;
 	if (!disableDefaultModule[DEFMOD_RNDIGNORE]) if (LoadIgnoreModule()) return 1;
-	if (!disableDefaultModule[DEFMOD_UIVISIBILITY]) if (LoadVisibilityModule()) return 1;	
-	if (!disableDefaultModule[DEFMOD_UPDATENOTIFY]) if (LoadUpdateNotifyModule()) return 1;	
+	if (!disableDefaultModule[DEFMOD_UIVISIBILITY]) if (LoadVisibilityModule()) return 1;
+	if (!disableDefaultModule[DEFMOD_UPDATENOTIFY]) if (LoadUpdateNotifyModule()) return 1;
 	return 0;
 }
 
@@ -180,7 +180,7 @@ void DestroyModularEngine(void)
 	hookCount = 0;
 	LeaveCriticalSection(&csHooks);
 	DeleteCriticalSection(&csHooks);
-	
+
 	EnterCriticalSection(&csServices);
  	if(serviceCount) mir_free(service);
 	serviceCount = 0;
@@ -244,7 +244,7 @@ static int FindHookByHashAndName(DWORD Hash, const char *name)
 {
 	int i;
 	for (i=0; i<hookCount; i++)
-		if (hook[i].hookHash==Hash) 
+		if (hook[i].hookHash==Hash)
 		{
 			if (!strcmp(hook[i].name, name)) return i;
 		}
@@ -258,7 +258,7 @@ HANDLE CreateHookableEvent(const char *name)
 
 	EnterCriticalSection(&csHooks);
 	//if (FindHookByName(name)!=-1) {LeaveCriticalSection(&csHooks); return NULL;}
-	if (FindHookByHashAndName(Hash, name) != -1) 
+	if (FindHookByHashAndName(Hash, name) != -1)
 	{
 		LeaveCriticalSection(&csHooks);
 		return NULL;
@@ -307,7 +307,7 @@ static int CallHookSubscribers(int hookId,WPARAM wParam,LPARAM lParam)
 
 	EnterCriticalSection(&csHooks);
 	if (hookId>=hookCount || hookId<0 || hook[hookId].name[0]==0) returnVal=-1;
-	else {		
+	else {
 		//NOTE: We've got the critical section while all this lot are called. That's mostly safe, though.
 		for(i=0;i<hook[hookId].subscriberCount;i++) {
 			if (hook[hookId].subscriber[i].pfnHook!=NULL) {
@@ -423,7 +423,7 @@ int UnhookEvent(HANDLE hHook)
 	while(hook[hookId].subscriberCount && hook[hookId].subscriber[hook[hookId].subscriberCount-1].pfnHook==NULL && hook[hookId].subscriber[hook[hookId].subscriberCount-1].hwnd==NULL)
 		hook[hookId].subscriberCount--;
 	if (hook[hookId].subscriberCount==0) {
-		if (hook[hookId].subscriber) mir_free(hook[hookId].subscriber);	
+		if (hook[hookId].subscriber) mir_free(hook[hookId].subscriber);
 		hook[hookId].subscriber=NULL;
 	}
 	LeaveCriticalSection(&csHooks);
@@ -487,7 +487,7 @@ static __inline TServiceList *FindServiceByName(const char *name)
 
 /* assume critical section csServices is owned */
 static int FindHashForService(DWORD hash, int * shift)
-{	
+{
 	int i=0;
 	unsigned int mid = 0;
 	unsigned int min = 0;
@@ -524,7 +524,7 @@ HANDLE CreateServiceFunction(const char *name,MIRANDASERVICE serviceProc)
 	int i;
 	int shift = 1;
 #ifdef _DEBUG
-	if (name==NULL) { 
+	if (name==NULL) {
 		MessageBoxA(0,"Someone tried to create a NULL'd service, see call stack for more info","",0);
 		DebugBreak();
 		return NULL;
@@ -532,7 +532,7 @@ HANDLE CreateServiceFunction(const char *name,MIRANDASERVICE serviceProc)
 #else
 	if (name==NULL) return NULL;
 #endif
-	hash=NameHashFunction(name);	
+	hash=NameHashFunction(name);
 	EnterCriticalSection(&csServices);
 	i=FindHashForService(hash,&shift);
 	if (i==-1) {
@@ -567,6 +567,8 @@ int DestroyServiceFunction(HANDLE hService)
 int ServiceExists(const char *name)
 {
 	int ret;
+	if (name == NULL)
+		return FALSE;
 	EnterCriticalSection(&csServices);
 	ret=FindServiceByName(name)!=NULL;
 	LeaveCriticalSection(&csServices);
