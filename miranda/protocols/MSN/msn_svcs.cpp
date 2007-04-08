@@ -557,7 +557,7 @@ int MsnGetAvatar(WPARAM wParam, LPARAM lParam)
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////
-// MsnGetAvatarFormatSupported - Msn supports avatars of virtually all formats
+// MsnGetAvatarFormatSupported - Msn supports only PNG avatars
 
 int MsnGetAvatarFormatSupported(WPARAM wParam, LPARAM lParam)
 {
