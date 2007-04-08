@@ -435,9 +435,9 @@ struct ThreadData
 	char*          mReadAheadBuffer;
 	int            mEhoughData;
 
-	TQueueItem*		mFirstQueueItem;
+	TQueueItem*	   mFirstQueueItem;
 	unsigned       numQueueItems;
-	HANDLE			hQueueMutex;
+	HANDLE         hQueueMutex;
 
 	//----| for switchboard servers only |------------------------------------------------
 	int            mCaller;
@@ -447,6 +447,7 @@ struct ThreadData
 	int            mJoinedCount;     // another contacts count
 	LONG           mTrid;            // current message ID
 	UINT           mTimerId;         // typing notifications timer id
+	bool           firstMsgRecv;
 
 	//----| for file transfers only |-----------------------------------------------------
 	filetransfer*  mMsnFtp;          // file transfer block
@@ -457,19 +458,19 @@ struct ThreadData
 
 	//----| methods |---------------------------------------------------------------------
 	void           applyGatewayData( HANDLE hConn, bool isPoll );
-	void				getGatewayUrl( char* dest, int destlen, bool isPoll );
-	void				processSessionData( const char* );
+	void           getGatewayUrl( char* dest, int destlen, bool isPoll );
+	void           processSessionData( const char* );
 	void           startThread( pThreadFunc );
 
-	int				send( char* data, int datalen );
-	int				recv( char* data, long datalen );
-	int				recv_dg( char* data, long datalen );
-	bool				isTimeout( void );
+	int            send( char* data, int datalen );
+	int            recv( char* data, long datalen );
+	int            recv_dg( char* data, long datalen );
+	bool           isTimeout( void );
 
-	void				sendCaps( void );
-	LONG				sendMessage( int msgType, const char* msg, int parFlags );
-	LONG				sendRawMessage( int msgType, const char* data, int datLen );
-	LONG				sendPacket( const char* cmd, const char* fmt, ... );
+	void           sendCaps( void );
+	LONG           sendMessage( int msgType, const char* msg, int parFlags );
+	LONG           sendRawMessage( int msgType, const char* data, int datLen );
+	LONG           sendPacket( const char* cmd, const char* fmt, ... );
 };
 
 void		__stdcall MSN_CloseConnections( void );

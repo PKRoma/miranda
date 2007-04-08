@@ -153,6 +153,31 @@ void MSN_ConnectionProc( HANDLE hNewConnection, DWORD dwRemoteIP, void* )
 	Netlib_CloseHandle( hNewConnection );
 }
 
+
+void sttSetMirVer( HANDLE hContact, DWORD dwValue )
+{
+	if ( dwValue & 0x200 )
+		MSN_SetString( hContact, "MirVer", "Webmessenger" );
+	else if ( dwValue == 1342177280 )
+		MSN_SetString( hContact, "MirVer", "Miranda IM 0.5.x (MSN v.0.5.x)" );
+	else if ( dwValue == 805306404 )
+		MSN_SetString( hContact, "MirVer", "Miranda IM 0.4.x (MSN v.0.4.x)" );
+	else if (( dwValue & 0x60000000 ) == 0x60000000 )
+		MSN_SetString( hContact, "MirVer", "MSN 8.x" );
+	else if (( dwValue & 0x50000000 ) == 0x50000000 )
+		MSN_SetString( hContact, "MirVer", "MSN 7.5" );
+	else if ( dwValue & 0x40000000 )
+		MSN_SetString( hContact, "MirVer", "MSN 7.0" );
+	else if (( dwValue & 0x30000000 ) == 0x30000000 )
+		MSN_SetString( hContact, "MirVer", "MSN 6.2" );
+	else if ( dwValue & 0x20000000 )
+		MSN_SetString( hContact, "MirVer", "MSN 6.1" );
+	else if ( dwValue & 0x10000000 )
+		MSN_SetString( hContact, "MirVer", "MSN 6.0" );
+	else
+		MSN_SetString( hContact, "MirVer", "MSN 4.x-5.x" );
+}
+
 /////////////////////////////////////////////////////////////////////////////////////////
 // Processes e-mail notification
 
@@ -557,6 +582,24 @@ void MSN_ReceiveMessage( ThreadData* info, char* cmdString, char* params )
 	if ( tContentType == NULL )
 		return;
 
+	if ( !strnicmp( tContentType, "text/x-clientcaps", 17 )) {
+		MimeHeaders tFileInfo;
+		tFileInfo.readFromBuffer( msgBody );
+		info->firstMsgRecv = true;
+
+		HANDLE hContact = MSN_HContactFromEmail( data.fromEmail, data.fromNick, 0, 0 );
+		const char* mirver = tFileInfo[ "Client-Name" ];
+		if ( hContact != NULL && mirver != NULL )
+			MSN_SetString( hContact, "MirVer", mirver );
+	}
+	else {
+		if ( !info->firstMsgRecv ) {
+			info->firstMsgRecv = true;
+			HANDLE hContact = MSN_HContactFromEmail( data.fromEmail, data.fromNick, 0, 0 );
+			if ( hContact != NULL )
+				sttSetMirVer( hContact, MSN_GetDword( hContact, "FlagBits", 0 ));
+	}	}
+
 	if ( !strnicmp( tContentType, "text/plain", 10 )) {
 		CCSDATA ccs;
 		HANDLE tContact = MSN_HContactFromEmail( data.fromEmail, data.fromNick, 1, 1 );
@@ -755,16 +798,6 @@ void MSN_ReceiveMessage( ThreadData* info, char* cmdString, char* params )
 		if( !strnicmp(tMsgBuf,"ID: 1",5))
 			NotifyEventHooks(hMSNNudge,(WPARAM) tContact,0);
 		return;
-	}
-
-	if ( !strnicmp( tContentType, "text/x-clientcaps", 17 )) {
-		MimeHeaders tFileInfo;
-		tFileInfo.readFromBuffer( msgBody );
-
-		HANDLE hContact = MSN_HContactFromEmail( data.fromEmail, data.fromNick, 0, 0 );
-		const char* mirver = tFileInfo[ "Client-Name" ];
-		if ( hContact != NULL && mirver != NULL )
-			MSN_SetString( hContact, "MirVer", mirver );
 	}
 
 	if ( !strnicmp( tContentType,"text/x-msmsgsemailnotification", 30 ))
@@ -1355,7 +1388,10 @@ LBL_InvalidCommand:
 					if ( szProto != NULL && strcmp( szProto, msnProtocolName ) == 0 ) {	
 						char tEmail[ MSN_MAX_EMAIL_LEN ];
 						if ( MSN_GetStaticString( "e-mail", hContact, tEmail, sizeof( tEmail )) == 0 && strncmp(tEmail, "tel:", 4) == 0 )
+						{
 							MSN_SetWord( hContact, "Status", ID_STATUS_ONTHEPHONE );
+							MSN_SetString( hContact, "MirVer", "SMS" );
+						}
 					}
 					hContact = ( HANDLE )MSN_CallService( MS_DB_CONTACT_FINDNEXT, ( WPARAM )hContact, 0 );
 			}	}
@@ -1485,34 +1521,17 @@ LBL_InvalidCommand:
 				MSN_SetDword( hContact, "IdleTS", strcmp( data.userStatus, "IDL" ) ? 0 : time( NULL ));
 			}
 
-			if ( lastStatus == ID_STATUS_OFFLINE )
-				MSN_SetString( hContact, "MirVer", "" );
-
 			if ( tArgs > 3 && tArgs <= 5 ) {
 				UrlDecode( data.cmdstring );
 				DWORD dwValue = strtoul( data.objid, NULL, 10 );
 				MSN_SetDword( hContact, "FlagBits", dwValue );
+
 				if ( lastStatus == ID_STATUS_OFFLINE ) {
-					if ( dwValue & 0x200 )
-						MSN_SetString( hContact, "MirVer", "Webmessenger" );
-					else if ( dwValue == 1342177280 )
-						MSN_SetString( hContact, "MirVer", "Miranda IM 0.5.x (MSN v.0.5.x)" );
-					else if ( dwValue == 805306404 )
-						MSN_SetString( hContact, "MirVer", "Miranda IM 0.4.x (MSN v.0.4.x)" );
-					else if (( dwValue & 0x60000000 ) == 0x60000000 )
-						MSN_SetString( hContact, "MirVer", "MSN 8.x" );
-					else if (( dwValue & 0x50000000 ) == 0x50000000 )
-						MSN_SetString( hContact, "MirVer", "MSN 7.5" );
-					else if ( dwValue & 0x40000000 )
-						MSN_SetString( hContact, "MirVer", "MSN 7.0" );
-					else if (( dwValue & 0x30000000 ) == 0x30000000 )
-						MSN_SetString( hContact, "MirVer", "MSN 6.2" );
-					else if ( dwValue & 0x20000000 )
-						MSN_SetString( hContact, "MirVer", "MSN 6.1" );
-					else if ( dwValue & 0x10000000 )
-						MSN_SetString( hContact, "MirVer", "MSN 6.0" );
+					DBVARIANT dbv;
+					if ( MSN_GetStringT( "MirVer", hContact, &dbv ))
+						sttSetMirVer( hContact, dwValue );
 					else
-						MSN_SetString( hContact, "MirVer", "MSN 4.x-5.x" );
+						MSN_FreeVariant( &dbv );
 				}
 
 				if (( dwValue & 0x70000000 ) && data.cmdstring[0] && strcmp( data.cmdstring, "0" )) {
@@ -1522,7 +1541,7 @@ LBL_InvalidCommand:
 
 					MSN_SetString( hContact, "PictContext", data.cmdstring );
 
-               char* p = strstr( data.cmdstring, "SHA1D=\"" );
+					char* p = strstr( data.cmdstring, "SHA1D=\"" );
 					if ( p ) {
 						p += 7;
 						char* p1 = strchr( p+1, '\"' );
@@ -1547,6 +1566,10 @@ LBL_InvalidCommand:
 					MSN_DeleteSetting( hContact, "PictSavedContext" );
 					MSN_SendBroadcast( hContact, ACKTYPE_AVATAR, ACKRESULT_STATUS, NULL, NULL );
 			}	}
+			else {
+				if ( lastStatus == ID_STATUS_OFFLINE )
+					MSN_DeleteSetting( hContact, "MirVer" );
+			}
 
 			break;
 		}
