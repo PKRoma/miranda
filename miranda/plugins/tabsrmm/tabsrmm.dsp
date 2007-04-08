@@ -1,26 +1,26 @@
 # Microsoft Developer Studio Project File - Name="tabSRMM" - Package Owner=<4>
 # Microsoft Developer Studio Generated Build File, Format Version 6.00
-# ** NICHT BEARBEITEN **
+# ** DO NOT EDIT **
 
 # TARGTYPE "Win32 (x86) Dynamic-Link Library" 0x0102
 
 CFG=tabSRMM - Win32 Debug
-!MESSAGE Dies ist kein gültiges Makefile. Zum Erstellen dieses Projekts mit NMAKE
-!MESSAGE verwenden Sie den Befehl "Makefile exportieren" und führen Sie den Befehl
+!MESSAGE This is not a valid makefile. To build this project using NMAKE,
+!MESSAGE use the Export Makefile command and run
 !MESSAGE 
 !MESSAGE NMAKE /f "tabsrmm.mak".
 !MESSAGE 
-!MESSAGE Sie können beim Ausführen von NMAKE eine Konfiguration angeben
-!MESSAGE durch Definieren des Makros CFG in der Befehlszeile. Zum Beispiel:
+!MESSAGE You can specify a configuration when running NMAKE
+!MESSAGE by defining the macro CFG on the command line. For example:
 !MESSAGE 
 !MESSAGE NMAKE /f "tabsrmm.mak" CFG="tabSRMM - Win32 Debug"
 !MESSAGE 
-!MESSAGE Für die Konfiguration stehen zur Auswahl:
+!MESSAGE Possible choices for configuration are:
 !MESSAGE 
-!MESSAGE "tabSRMM - Win32 Debug" (basierend auf  "Win32 (x86) Dynamic-Link Library")
-!MESSAGE "tabSRMM - Win32 Release Unicode" (basierend auf  "Win32 (x86) Dynamic-Link Library")
-!MESSAGE "tabSRMM - Win32 Release" (basierend auf  "Win32 (x86) Dynamic-Link Library")
-!MESSAGE "tabSRMM - Win32 Debug Unicode" (basierend auf  "Win32 (x86) Dynamic-Link Library")
+!MESSAGE "tabSRMM - Win32 Debug" (based on "Win32 (x86) Dynamic-Link Library")
+!MESSAGE "tabSRMM - Win32 Release Unicode" (based on "Win32 (x86) Dynamic-Link Library")
+!MESSAGE "tabSRMM - Win32 Release" (based on "Win32 (x86) Dynamic-Link Library")
+!MESSAGE "tabSRMM - Win32 Debug Unicode" (based on "Win32 (x86) Dynamic-Link Library")
 !MESSAGE 
 
 # Begin Project
@@ -84,7 +84,8 @@ BSC32=bscmake.exe
 # ADD BSC32 /nologo
 LINK32=link.exe
 # ADD BASE LINK32 kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib comctl32.lib /nologo /base:"0x6a540000" /subsystem:windows /dll /machine:IX86 /out:"..\..\Bin\Release\Plugins\tabsrmm_unicode.dll" /implib:".\Release_Unicode/srmm.lib" /pdbtype:sept
-# ADD LINK32 kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib comctl32.lib msimg32.lib shlwapi.lib /nologo /base:"0x6a540000" /subsystem:windows /dll /pdb:none /map /machine:IX86 /out:"..\..\Bin\Release Unicode\Plugins\tabsrmm.dll" /implib:".\Release_Unicode/srmm.lib" /opt:NOWIN98
+# ADD LINK32 kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib comctl32.lib msimg32.lib shlwapi.lib /nologo /base:"0x6a540000" /subsystem:windows /dll /map /debug /machine:IX86 /out:"..\..\Bin\Release Unicode\Plugins\tabsrmm.dll" /implib:".\Release_Unicode/srmm.lib" /opt:NOWIN98
+# SUBTRACT LINK32 /pdb:none
 
 !ELSEIF  "$(CFG)" == "tabSRMM - Win32 Release"
 
@@ -110,8 +111,8 @@ BSC32=bscmake.exe
 # ADD BSC32 /nologo
 LINK32=link.exe
 # ADD BASE LINK32 kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib comctl32.lib /nologo /base:"0x6a540000" /subsystem:windows /dll /machine:IX86 /out:"..\..\Bin\Release\Plugins\tabsrmm.dll" /implib:".\Release/srmm.lib" /pdbtype:sept
-# ADD LINK32 kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib comctl32.lib msimg32.lib shlwapi.lib /nologo /base:"0x6a540000" /subsystem:windows /dll /map /machine:IX86 /out:"..\..\Bin\Release\Plugins\tabsrmm.dll" /implib:".\Release/srmm.lib" /pdbtype:sept /opt:NOWIN98
-# SUBTRACT LINK32 /pdb:none /debug
+# ADD LINK32 kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib comctl32.lib msimg32.lib shlwapi.lib /nologo /base:"0x6a540000" /subsystem:windows /dll /map /debug /machine:IX86 /out:"..\..\Bin\Release\Plugins\tabsrmm.dll" /implib:".\Release/srmm.lib" /pdbtype:sept /opt:NOWIN98
+# SUBTRACT LINK32 /pdb:none
 
 !ELSEIF  "$(CFG)" == "tabSRMM - Win32 Debug Unicode"
 
@@ -181,6 +182,7 @@ DEP_CPP_CLIST=\
 	"..\..\include\m_database.h"\
 	"..\..\include\m_file.h"\
 	"..\..\include\m_history.h"\
+	"..\..\include\m_icolib.h"\
 	"..\..\include\m_langpack.h"\
 	"..\..\include\m_message.h"\
 	"..\..\include\m_options.h"\
@@ -201,7 +203,6 @@ DEP_CPP_CLIST=\
 	".\commonheaders.h"\
 	".\functions.h"\
 	".\generic_msghandlers.h"\
-	".\IcoLib.h"\
 	".\m_avatars.h"\
 	".\m_cln_skinedit.h"\
 	".\m_fingerprint.h"\
@@ -233,6 +234,7 @@ DEP_CPP_COLOR=\
 	"..\..\include\m_database.h"\
 	"..\..\include\m_file.h"\
 	"..\..\include\m_history.h"\
+	"..\..\include\m_icolib.h"\
 	"..\..\include\m_langpack.h"\
 	"..\..\include\m_message.h"\
 	"..\..\include\m_options.h"\
@@ -253,7 +255,6 @@ DEP_CPP_COLOR=\
 	".\commonheaders.h"\
 	".\functions.h"\
 	".\generic_msghandlers.h"\
-	".\IcoLib.h"\
 	".\m_avatars.h"\
 	".\m_cln_skinedit.h"\
 	".\m_fingerprint.h"\
@@ -285,6 +286,7 @@ DEP_CPP_LOG_C=\
 	"..\..\include\m_database.h"\
 	"..\..\include\m_file.h"\
 	"..\..\include\m_history.h"\
+	"..\..\include\m_icolib.h"\
 	"..\..\include\m_langpack.h"\
 	"..\..\include\m_message.h"\
 	"..\..\include\m_options.h"\
@@ -305,12 +307,12 @@ DEP_CPP_LOG_C=\
 	".\commonheaders.h"\
 	".\functions.h"\
 	".\generic_msghandlers.h"\
-	".\IcoLib.h"\
 	".\m_avatars.h"\
 	".\m_cln_skinedit.h"\
 	".\m_fingerprint.h"\
 	".\m_flash.h"\
 	".\m_ieview.h"\
+	".\m_MathModule.h"\
 	".\m_metacontacts.h"\
 	".\m_nudge.h"\
 	".\m_smileyadd.h"\
@@ -341,6 +343,7 @@ DEP_CPP_MAIN_=\
 	"..\..\include\m_database.h"\
 	"..\..\include\m_file.h"\
 	"..\..\include\m_history.h"\
+	"..\..\include\m_icolib.h"\
 	"..\..\include\m_langpack.h"\
 	"..\..\include\m_message.h"\
 	"..\..\include\m_options.h"\
@@ -361,7 +364,6 @@ DEP_CPP_MAIN_=\
 	".\commonheaders.h"\
 	".\functions.h"\
 	".\generic_msghandlers.h"\
-	".\IcoLib.h"\
 	".\m_avatars.h"\
 	".\m_cln_skinedit.h"\
 	".\m_fingerprint.h"\
@@ -393,6 +395,7 @@ DEP_CPP_MANAG=\
 	"..\..\include\m_database.h"\
 	"..\..\include\m_file.h"\
 	"..\..\include\m_history.h"\
+	"..\..\include\m_icolib.h"\
 	"..\..\include\m_langpack.h"\
 	"..\..\include\m_message.h"\
 	"..\..\include\m_options.h"\
@@ -413,7 +416,6 @@ DEP_CPP_MANAG=\
 	".\commonheaders.h"\
 	".\functions.h"\
 	".\generic_msghandlers.h"\
-	".\IcoLib.h"\
 	".\m_avatars.h"\
 	".\m_cln_skinedit.h"\
 	".\m_fingerprint.h"\
@@ -445,6 +447,7 @@ DEP_CPP_MESSA=\
 	"..\..\include\m_database.h"\
 	"..\..\include\m_file.h"\
 	"..\..\include\m_history.h"\
+	"..\..\include\m_icolib.h"\
 	"..\..\include\m_langpack.h"\
 	"..\..\include\m_message.h"\
 	"..\..\include\m_options.h"\
@@ -465,7 +468,6 @@ DEP_CPP_MESSA=\
 	".\commonheaders.h"\
 	".\functions.h"\
 	".\generic_msghandlers.h"\
-	".\IcoLib.h"\
 	".\m_avatars.h"\
 	".\m_cln_skinedit.h"\
 	".\m_fingerprint.h"\
@@ -497,6 +499,7 @@ DEP_CPP_OPTIO=\
 	"..\..\include\m_database.h"\
 	"..\..\include\m_file.h"\
 	"..\..\include\m_history.h"\
+	"..\..\include\m_icolib.h"\
 	"..\..\include\m_langpack.h"\
 	"..\..\include\m_message.h"\
 	"..\..\include\m_options.h"\
@@ -517,12 +520,12 @@ DEP_CPP_OPTIO=\
 	".\commonheaders.h"\
 	".\functions.h"\
 	".\generic_msghandlers.h"\
-	".\IcoLib.h"\
 	".\m_avatars.h"\
 	".\m_cln_skinedit.h"\
 	".\m_fingerprint.h"\
 	".\m_flash.h"\
 	".\m_ieview.h"\
+	".\m_MathModule.h"\
 	".\m_metacontacts.h"\
 	".\m_nudge.h"\
 	".\m_smileyadd.h"\
@@ -549,6 +552,7 @@ DEP_CPP_SERVI=\
 	"..\..\include\m_database.h"\
 	"..\..\include\m_file.h"\
 	"..\..\include\m_history.h"\
+	"..\..\include\m_icolib.h"\
 	"..\..\include\m_langpack.h"\
 	"..\..\include\m_message.h"\
 	"..\..\include\m_options.h"\
@@ -569,12 +573,12 @@ DEP_CPP_SERVI=\
 	".\commonheaders.h"\
 	".\functions.h"\
 	".\generic_msghandlers.h"\
-	".\IcoLib.h"\
 	".\m_avatars.h"\
 	".\m_cln_skinedit.h"\
 	".\m_fingerprint.h"\
 	".\m_flash.h"\
 	".\m_ieview.h"\
+	".\m_MathModule.h"\
 	".\m_metacontacts.h"\
 	".\m_nudge.h"\
 	".\m_smileyadd.h"\
@@ -601,6 +605,7 @@ DEP_CPP_TOOLS=\
 	"..\..\include\m_database.h"\
 	"..\..\include\m_file.h"\
 	"..\..\include\m_history.h"\
+	"..\..\include\m_icolib.h"\
 	"..\..\include\m_langpack.h"\
 	"..\..\include\m_message.h"\
 	"..\..\include\m_options.h"\
@@ -621,7 +626,6 @@ DEP_CPP_TOOLS=\
 	".\commonheaders.h"\
 	".\functions.h"\
 	".\generic_msghandlers.h"\
-	".\IcoLib.h"\
 	".\m_avatars.h"\
 	".\m_cln_skinedit.h"\
 	".\m_fingerprint.h"\
@@ -653,6 +657,7 @@ DEP_CPP_WINDO=\
 	"..\..\include\m_database.h"\
 	"..\..\include\m_file.h"\
 	"..\..\include\m_history.h"\
+	"..\..\include\m_icolib.h"\
 	"..\..\include\m_langpack.h"\
 	"..\..\include\m_message.h"\
 	"..\..\include\m_options.h"\
@@ -673,12 +678,12 @@ DEP_CPP_WINDO=\
 	".\commonheaders.h"\
 	".\functions.h"\
 	".\generic_msghandlers.h"\
-	".\IcoLib.h"\
 	".\m_avatars.h"\
 	".\m_cln_skinedit.h"\
 	".\m_fingerprint.h"\
 	".\m_flash.h"\
 	".\m_ieview.h"\
+	".\m_MathModule.h"\
 	".\m_metacontacts.h"\
 	".\m_nudge.h"\
 	".\m_smileyadd.h"\
@@ -706,6 +711,7 @@ DEP_CPP_CONTA=\
 	"..\..\include\m_database.h"\
 	"..\..\include\m_file.h"\
 	"..\..\include\m_history.h"\
+	"..\..\include\m_icolib.h"\
 	"..\..\include\m_langpack.h"\
 	"..\..\include\m_message.h"\
 	"..\..\include\m_options.h"\
@@ -726,7 +732,6 @@ DEP_CPP_CONTA=\
 	".\commonheaders.h"\
 	".\functions.h"\
 	".\generic_msghandlers.h"\
-	".\IcoLib.h"\
 	".\m_avatars.h"\
 	".\m_cln_skinedit.h"\
 	".\m_fingerprint.h"\
@@ -771,6 +776,7 @@ DEP_CPP_CONTAI=\
 	"..\..\include\m_database.h"\
 	"..\..\include\m_file.h"\
 	"..\..\include\m_history.h"\
+	"..\..\include\m_icolib.h"\
 	"..\..\include\m_langpack.h"\
 	"..\..\include\m_message.h"\
 	"..\..\include\m_options.h"\
@@ -791,7 +797,6 @@ DEP_CPP_CONTAI=\
 	".\commonheaders.h"\
 	".\functions.h"\
 	".\generic_msghandlers.h"\
-	".\IcoLib.h"\
 	".\m_avatars.h"\
 	".\m_cln_skinedit.h"\
 	".\m_fingerprint.h"\
@@ -835,6 +840,7 @@ DEP_CPP_EVENT=\
 	"..\..\include\m_database.h"\
 	"..\..\include\m_file.h"\
 	"..\..\include\m_history.h"\
+	"..\..\include\m_icolib.h"\
 	"..\..\include\m_icq.h"\
 	"..\..\include\m_langpack.h"\
 	"..\..\include\m_message.h"\
@@ -856,7 +862,6 @@ DEP_CPP_EVENT=\
 	".\commonheaders.h"\
 	".\functions.h"\
 	".\generic_msghandlers.h"\
-	".\IcoLib.h"\
 	".\m_avatars.h"\
 	".\m_cln_skinedit.h"\
 	".\m_fingerprint.h"\
@@ -900,6 +905,7 @@ DEP_CPP_FORMA=\
 	"..\..\include\m_database.h"\
 	"..\..\include\m_file.h"\
 	"..\..\include\m_history.h"\
+	"..\..\include\m_icolib.h"\
 	"..\..\include\m_langpack.h"\
 	"..\..\include\m_message.h"\
 	"..\..\include\m_options.h"\
@@ -920,7 +926,6 @@ DEP_CPP_FORMA=\
 	".\commonheaders.h"\
 	".\functions.h"\
 	".\generic_msghandlers.h"\
-	".\IcoLib.h"\
 	".\m_avatars.h"\
 	".\m_cln_skinedit.h"\
 	".\m_fingerprint.h"\
@@ -973,6 +978,7 @@ DEP_CPP_GENER=\
 	"..\..\include\m_database.h"\
 	"..\..\include\m_file.h"\
 	"..\..\include\m_history.h"\
+	"..\..\include\m_icolib.h"\
 	"..\..\include\m_langpack.h"\
 	"..\..\include\m_message.h"\
 	"..\..\include\m_options.h"\
@@ -993,7 +999,6 @@ DEP_CPP_GENER=\
 	".\commonheaders.h"\
 	".\functions.h"\
 	".\generic_msghandlers.h"\
-	".\IcoLib.h"\
 	".\m_avatars.h"\
 	".\m_cln_skinedit.h"\
 	".\m_fingerprint.h"\
@@ -1037,6 +1042,7 @@ DEP_CPP_HOTKE=\
 	"..\..\include\m_database.h"\
 	"..\..\include\m_file.h"\
 	"..\..\include\m_history.h"\
+	"..\..\include\m_icolib.h"\
 	"..\..\include\m_langpack.h"\
 	"..\..\include\m_message.h"\
 	"..\..\include\m_options.h"\
@@ -1057,7 +1063,6 @@ DEP_CPP_HOTKE=\
 	".\commonheaders.h"\
 	".\functions.h"\
 	".\generic_msghandlers.h"\
-	".\IcoLib.h"\
 	".\m_avatars.h"\
 	".\m_cln_skinedit.h"\
 	".\m_fingerprint.h"\
@@ -1102,6 +1107,7 @@ DEP_CPP_IMAGE=\
 	"..\..\include\m_database.h"\
 	"..\..\include\m_file.h"\
 	"..\..\include\m_history.h"\
+	"..\..\include\m_icolib.h"\
 	"..\..\include\m_langpack.h"\
 	"..\..\include\m_message.h"\
 	"..\..\include\m_options.h"\
@@ -1122,7 +1128,6 @@ DEP_CPP_IMAGE=\
 	".\commonheaders.h"\
 	".\functions.h"\
 	".\generic_msghandlers.h"\
-	".\IcoLib.h"\
 	".\ImageDataObject.h"\
 	".\m_avatars.h"\
 	".\m_cln_skinedit.h"\
@@ -1174,6 +1179,7 @@ DEP_CPP_MSGDI=\
 	"..\..\include\m_database.h"\
 	"..\..\include\m_file.h"\
 	"..\..\include\m_history.h"\
+	"..\..\include\m_icolib.h"\
 	"..\..\include\m_langpack.h"\
 	"..\..\include\m_message.h"\
 	"..\..\include\m_options.h"\
@@ -1194,7 +1200,6 @@ DEP_CPP_MSGDI=\
 	".\commonheaders.h"\
 	".\functions.h"\
 	".\generic_msghandlers.h"\
-	".\IcoLib.h"\
 	".\m_avatars.h"\
 	".\m_cln_skinedit.h"\
 	".\m_fingerprint.h"\
@@ -1211,9 +1216,7 @@ DEP_CPP_MSGDI=\
 	".\nen.h"\
 	".\sendqueue.h"\
 	".\templates.h"\
-	
-NODEP_CPP_MSGDI=\
-	".\xtheme.h"\
+	{$(INCLUDE)}"uxtheme.h"\
 	
 
 !IF  "$(CFG)" == "tabSRMM - Win32 Debug"
@@ -1249,6 +1252,7 @@ DEP_CPP_MSGDL=\
 	"..\..\include\m_database.h"\
 	"..\..\include\m_file.h"\
 	"..\..\include\m_history.h"\
+	"..\..\include\m_icolib.h"\
 	"..\..\include\m_langpack.h"\
 	"..\..\include\m_message.h"\
 	"..\..\include\m_options.h"\
@@ -1269,12 +1273,12 @@ DEP_CPP_MSGDL=\
 	".\commonheaders.h"\
 	".\functions.h"\
 	".\generic_msghandlers.h"\
-	".\IcoLib.h"\
 	".\m_avatars.h"\
 	".\m_cln_skinedit.h"\
 	".\m_fingerprint.h"\
 	".\m_flash.h"\
 	".\m_ieview.h"\
+	".\m_MathModule.h"\
 	".\m_metacontacts.h"\
 	".\m_nudge.h"\
 	".\m_smileyadd.h"\
@@ -1313,6 +1317,7 @@ DEP_CPP_MSGLO=\
 	"..\..\include\m_database.h"\
 	"..\..\include\m_file.h"\
 	"..\..\include\m_history.h"\
+	"..\..\include\m_icolib.h"\
 	"..\..\include\m_langpack.h"\
 	"..\..\include\m_message.h"\
 	"..\..\include\m_options.h"\
@@ -1333,7 +1338,6 @@ DEP_CPP_MSGLO=\
 	".\commonheaders.h"\
 	".\functions.h"\
 	".\generic_msghandlers.h"\
-	".\IcoLib.h"\
 	".\m_avatars.h"\
 	".\m_cln_skinedit.h"\
 	".\m_fingerprint.h"\
@@ -1384,6 +1388,7 @@ DEP_CPP_MSGOP=\
 	"..\..\include\m_database.h"\
 	"..\..\include\m_file.h"\
 	"..\..\include\m_history.h"\
+	"..\..\include\m_icolib.h"\
 	"..\..\include\m_langpack.h"\
 	"..\..\include\m_message.h"\
 	"..\..\include\m_options.h"\
@@ -1404,7 +1409,6 @@ DEP_CPP_MSGOP=\
 	".\commonheaders.h"\
 	".\functions.h"\
 	".\generic_msghandlers.h"\
-	".\IcoLib.h"\
 	".\m_avatars.h"\
 	".\m_cln_skinedit.h"\
 	".\m_fingerprint.h"\
@@ -1420,9 +1424,7 @@ DEP_CPP_MSGOP=\
 	".\msgs.h"\
 	".\nen.h"\
 	".\templates.h"\
-	
-NODEP_CPP_MSGOP=\
-	".\xtheme.h"\
+	{$(INCLUDE)}"uxtheme.h"\
 	
 
 !IF  "$(CFG)" == "tabSRMM - Win32 Debug"
@@ -1458,6 +1460,7 @@ DEP_CPP_MSGS_=\
 	"..\..\include\m_database.h"\
 	"..\..\include\m_file.h"\
 	"..\..\include\m_history.h"\
+	"..\..\include\m_icolib.h"\
 	"..\..\include\m_langpack.h"\
 	"..\..\include\m_message.h"\
 	"..\..\include\m_options.h"\
@@ -1478,7 +1481,6 @@ DEP_CPP_MSGS_=\
 	".\commonheaders.h"\
 	".\functions.h"\
 	".\generic_msghandlers.h"\
-	".\IcoLib.h"\
 	".\m_avatars.h"\
 	".\m_cln_skinedit.h"\
 	".\m_fingerprint.h"\
@@ -1531,6 +1533,7 @@ DEP_CPP_SELEC=\
 	"..\..\include\m_database.h"\
 	"..\..\include\m_file.h"\
 	"..\..\include\m_history.h"\
+	"..\..\include\m_icolib.h"\
 	"..\..\include\m_langpack.h"\
 	"..\..\include\m_message.h"\
 	"..\..\include\m_options.h"\
@@ -1551,7 +1554,6 @@ DEP_CPP_SELEC=\
 	".\commonheaders.h"\
 	".\functions.h"\
 	".\generic_msghandlers.h"\
-	".\IcoLib.h"\
 	".\m_avatars.h"\
 	".\m_cln_skinedit.h"\
 	".\m_fingerprint.h"\
@@ -1595,6 +1597,7 @@ DEP_CPP_SENDQ=\
 	"..\..\include\m_database.h"\
 	"..\..\include\m_file.h"\
 	"..\..\include\m_history.h"\
+	"..\..\include\m_icolib.h"\
 	"..\..\include\m_langpack.h"\
 	"..\..\include\m_message.h"\
 	"..\..\include\m_options.h"\
@@ -1615,7 +1618,6 @@ DEP_CPP_SENDQ=\
 	".\commonheaders.h"\
 	".\functions.h"\
 	".\generic_msghandlers.h"\
-	".\IcoLib.h"\
 	".\m_avatars.h"\
 	".\m_cln_skinedit.h"\
 	".\m_fingerprint.h"\
@@ -1660,6 +1662,7 @@ DEP_CPP_SRMM_=\
 	"..\..\include\m_database.h"\
 	"..\..\include\m_file.h"\
 	"..\..\include\m_history.h"\
+	"..\..\include\m_icolib.h"\
 	"..\..\include\m_langpack.h"\
 	"..\..\include\m_message.h"\
 	"..\..\include\m_options.h"\
@@ -1680,7 +1683,6 @@ DEP_CPP_SRMM_=\
 	".\commonheaders.h"\
 	".\functions.h"\
 	".\generic_msghandlers.h"\
-	".\IcoLib.h"\
 	".\m_avatars.h"\
 	".\m_cln_skinedit.h"\
 	".\m_fingerprint.h"\
@@ -1730,6 +1732,7 @@ DEP_CPP_TABCT=\
 	"..\..\include\m_database.h"\
 	"..\..\include\m_file.h"\
 	"..\..\include\m_history.h"\
+	"..\..\include\m_icolib.h"\
 	"..\..\include\m_langpack.h"\
 	"..\..\include\m_message.h"\
 	"..\..\include\m_options.h"\
@@ -1750,7 +1753,6 @@ DEP_CPP_TABCT=\
 	".\commonheaders.h"\
 	".\functions.h"\
 	".\generic_msghandlers.h"\
-	".\IcoLib.h"\
 	".\m_avatars.h"\
 	".\m_cln_skinedit.h"\
 	".\m_fingerprint.h"\
@@ -1765,9 +1767,7 @@ DEP_CPP_TABCT=\
 	".\msgs.h"\
 	".\nen.h"\
 	".\templates.h"\
-	
-NODEP_CPP_TABCT=\
-	".\xtheme.h"\
+	{$(INCLUDE)}"uxtheme.h"\
 	
 
 !IF  "$(CFG)" == "tabSRMM - Win32 Debug"
@@ -1797,6 +1797,7 @@ DEP_CPP_TEMPL=\
 	"..\..\include\m_database.h"\
 	"..\..\include\m_file.h"\
 	"..\..\include\m_history.h"\
+	"..\..\include\m_icolib.h"\
 	"..\..\include\m_langpack.h"\
 	"..\..\include\m_message.h"\
 	"..\..\include\m_options.h"\
@@ -1817,7 +1818,6 @@ DEP_CPP_TEMPL=\
 	".\commonheaders.h"\
 	".\functions.h"\
 	".\generic_msghandlers.h"\
-	".\IcoLib.h"\
 	".\m_avatars.h"\
 	".\m_cln_skinedit.h"\
 	".\m_fingerprint.h"\
@@ -1861,6 +1861,7 @@ DEP_CPP_THEME=\
 	"..\..\include\m_database.h"\
 	"..\..\include\m_file.h"\
 	"..\..\include\m_history.h"\
+	"..\..\include\m_icolib.h"\
 	"..\..\include\m_langpack.h"\
 	"..\..\include\m_message.h"\
 	"..\..\include\m_options.h"\
@@ -1881,7 +1882,6 @@ DEP_CPP_THEME=\
 	".\commonheaders.h"\
 	".\functions.h"\
 	".\generic_msghandlers.h"\
-	".\IcoLib.h"\
 	".\m_avatars.h"\
 	".\m_cln_skinedit.h"\
 	".\m_fingerprint.h"\
@@ -1925,6 +1925,7 @@ DEP_CPP_TRAYI=\
 	"..\..\include\m_database.h"\
 	"..\..\include\m_file.h"\
 	"..\..\include\m_history.h"\
+	"..\..\include\m_icolib.h"\
 	"..\..\include\m_langpack.h"\
 	"..\..\include\m_message.h"\
 	"..\..\include\m_options.h"\
@@ -1945,7 +1946,6 @@ DEP_CPP_TRAYI=\
 	".\commonheaders.h"\
 	".\functions.h"\
 	".\generic_msghandlers.h"\
-	".\IcoLib.h"\
 	".\m_avatars.h"\
 	".\m_cln_skinedit.h"\
 	".\m_fingerprint.h"\
@@ -1990,6 +1990,7 @@ DEP_CPP_TSBUT=\
 	"..\..\include\m_database.h"\
 	"..\..\include\m_file.h"\
 	"..\..\include\m_history.h"\
+	"..\..\include\m_icolib.h"\
 	"..\..\include\m_langpack.h"\
 	"..\..\include\m_message.h"\
 	"..\..\include\m_options.h"\
@@ -2010,7 +2011,6 @@ DEP_CPP_TSBUT=\
 	".\commonheaders.h"\
 	".\functions.h"\
 	".\generic_msghandlers.h"\
-	".\IcoLib.h"\
 	".\m_avatars.h"\
 	".\m_cln_skinedit.h"\
 	".\m_fingerprint.h"\
@@ -2054,6 +2054,7 @@ DEP_CPP_USERP=\
 	"..\..\include\m_database.h"\
 	"..\..\include\m_file.h"\
 	"..\..\include\m_history.h"\
+	"..\..\include\m_icolib.h"\
 	"..\..\include\m_langpack.h"\
 	"..\..\include\m_message.h"\
 	"..\..\include\m_options.h"\
@@ -2074,7 +2075,6 @@ DEP_CPP_USERP=\
 	".\commonheaders.h"\
 	".\functions.h"\
 	".\generic_msghandlers.h"\
-	".\IcoLib.h"\
 	".\m_avatars.h"\
 	".\m_cln_skinedit.h"\
 	".\m_fingerprint.h"\
