@@ -22,7 +22,11 @@ rem ---------------------------------------------------------------------------
 rem Protocols
 rem ---------------------------------------------------------------------------
 
-cd ..\..\miranda\protocols\IcqOscarJ
+cd ..\..\miranda\protocols\Gadu-Gadu
+nmake /f Gadu-Gadu.mak CFG="GG - Win32 Release"
+if errorlevel 1 goto :Error
+
+cd ..\IcqOscarJ
 nmake /f IcqOscar8.mak CFG="icqoscar8 - Win32 Release"
 if errorlevel 1 goto :Error
 
