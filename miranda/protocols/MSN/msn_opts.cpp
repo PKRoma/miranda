@@ -27,9 +27,6 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include <direct.h>
 
 #include "resource.h"
-#include "uxtheme.h"
-
-#include "m_icolib.h"
 
 #define STYLE_DEFAULTBGCOLOUR     RGB(173,206,247)
 

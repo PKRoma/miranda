@@ -89,7 +89,7 @@
 		</Configuration>
 		<Configuration
 			Name="Debug|Win32"
-			OutputDirectory="$(SolutionDir)$(ConfigurationName)/Plugins"
+			OutputDirectory="C:\Program Files\Miranda IM\Plugins"
 			IntermediateDirectory="$(SolutionDir)$(ConfigurationName)/Obj/$(ProjectName)"
 			ConfigurationType="2"
 			UseOfMFC="0"
@@ -129,7 +129,8 @@
 				TypeLibraryName=".\Debug/msn.tlb"
 				HeaderFileName=""/>
 			<Tool
-				Name="VCPostBuildEventTool"/>
+				Name="VCPostBuildEventTool"
+				CommandLine="xcopy &quot;$(OutDir)\$(ProjectName).dll&quot; &quot;$(OutDir)\$(ProjectName)-hot.dll&quot; /Y "/>
 			<Tool
 				Name="VCPreBuildEventTool"/>
 			<Tool
@@ -151,7 +152,7 @@
 		</Configuration>
 		<Configuration
 			Name="Debug Unicode|Win32"
-			OutputDirectory="$(SolutionDir)$(ConfigurationName)/Plugins"
+			OutputDirectory="C:\Program Files\Miranda IM\plugins"
 			IntermediateDirectory="$(SolutionDir)$(ConfigurationName)/Obj/$(ProjectName)"
 			ConfigurationType="2"
 			UseOfMFC="0"
@@ -166,7 +167,7 @@
 				BasicRuntimeChecks="3"
 				RuntimeLibrary="3"
 				BufferSecurityCheck="TRUE"
-				UsePrecompiledHeader="3"
+				UsePrecompiledHeader="0"
 				PrecompiledHeaderThrough="msn_global.h"
 				BrowseInformation="1"
 				WarningLevel="3"
@@ -193,7 +194,8 @@
 				TypeLibraryName=".\Debug/msn.tlb"
 				HeaderFileName=""/>
 			<Tool
-				Name="VCPostBuildEventTool"/>
+				Name="VCPostBuildEventTool"
+				CommandLine="xcopy &quot;$(OutDir)\$(ProjectName).dll&quot; &quot;$(OutDir)\$(ProjectName)-hot.dll&quot; /Y"/>
 			<Tool
 				Name="VCPreBuildEventTool"/>
 			<Tool
@@ -293,6 +295,9 @@
 		<Filter
 			Name="Source Files"
 			Filter="cpp;c;cxx;rc;def;r;odl;idl;hpj;bat">
+			<File
+				RelativePath=".\ezxml.c">
+			</File>
 			<File
 				RelativePath="mmdecsjis.cpp">
 				<FileConfiguration

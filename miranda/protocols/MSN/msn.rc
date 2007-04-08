@@ -150,15 +150,15 @@ BEGIN
     GROUPBOX        "Server List Manager",IDC_STATIC,4,0,298,224
     CONTROL         "",IDC_LIST,"CListControl",WS_TABSTOP | 0x190,9,12,287,
                     180,WS_EX_CLIENTEDGE
-    ICON            IDI_LIST_FL,IDC_ICON_FL,10,196,21,20,SS_REALSIZEIMAGE
+    ICON            "",IDC_ICON_FL,10,196,21,20,SS_REALSIZEIMAGE
     LTEXT           "Contact is included into your server list",IDC_STATIC,
                     28,196,144,8
-    ICON            IDI_LIST_AL,IDC_ICON_AL,187,196,21,20,SS_REALSIZEIMAGE
+    ICON            "",IDC_ICON_AL,187,196,20,20,SS_REALSIZEIMAGE
     LTEXT           "Somebody included you in his/her server list",
                     IDC_STATIC,28,208,144,8
-    ICON            IDI_LIST_BL,IDC_ICON_BL,187,208,21,20,SS_REALSIZEIMAGE
+    ICON            "",IDC_ICON_BL,187,208,20,20,SS_REALSIZEIMAGE
     LTEXT           "Allowed (active) contact",IDC_STATIC,204,196,82,8
-    ICON            IDI_LIST_RL,IDC_ICON_RL,10,208,21,20,SS_REALSIZEIMAGE
+    ICON            "",IDC_ICON_RL,10,208,21,20,SS_REALSIZEIMAGE
     LTEXT           "Blocked contact",IDC_STATIC,204,208,82,8
 END
 
