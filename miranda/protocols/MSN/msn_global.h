@@ -143,6 +143,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #define MSN_SETMYAVATAR             "/SetMyAvatar"
 #define MSN_SET_NICKNAME            "/SetNickname"
 
+#define MSN_GETUNREAD_EMAILCOUNT		"/GetUnreadEmailCount"
 /////////////////////////////////////////////////////////////////////////////////////////
 //	MSN plugin functions
 

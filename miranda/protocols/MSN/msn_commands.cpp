@@ -56,6 +56,9 @@ extern HANDLE	 hMSNNudge;
 extern int msnPingTimeout;
 extern HANDLE hKeepAliveThreadEvt;
 
+// Global Email counters
+int  mUnreadMessages = 0, mUnreadJunkEmails = 0;
+
 unsigned long sl;
 
 /////////////////////////////////////////////////////////////////////////////////////////
@@ -157,8 +160,11 @@ static void sttNotificationMessage( const char* msgBody, bool isInitial )
 {
 	char tBuffer[512];
 	char tBuffer2[512];
+	const char* SrcFolder;
+	const char* MsgDelta;
+	const char* DestFolder;
 	bool tIsPopup = ServiceExists( MS_POPUP_ADDPOPUP ) != 0;
-	int  UnreadMessages = 0, UnreadJunkEmails = 0;
+	int  UnreadMessages = 0, UnreadJunkEmails = 0, iDelta=0;
 
 	MimeHeaders tFileInfo;
 	tFileInfo.readFromBuffer( msgBody );
@@ -174,9 +180,27 @@ static void sttNotificationMessage( const char* msgBody, bool isInitial )
 			UnreadJunkEmails = atoi( p );
 	}
 
+	if (!isInitial) 
+	{
+		// for the "text/x-msmsgsactivemailnotification"
+		SrcFolder = tFileInfo[ "Src-Folder" ];
+		MsgDelta = tFileInfo[ "Message-Delta" ];
+		DestFolder = tFileInfo[ "Dest-Folder" ];
+		if (MsgDelta != NULL)
+		{
+			if (strcmp(SrcFolder,"ACTIVE") == 0)
+				iDelta = atoi(tFileInfo[ "Message-Delta" ]);
+			else if (strcmp(DestFolder,"ACTIVE") == 0)
+				iDelta = atoi(tFileInfo[ "Message-Delta" ]) * -1;
+		}
+		mUnreadMessages -= iDelta;
+
+		MSN_SendBroadcast( NULL, ACKTYPE_EMAIL, ACKRESULT_STATUS, NULL, 0 );
+	}
+
 	if ( From != NULL && Subject != NULL && Fromaddr != NULL ) {
-		const char* SrcFolder = tFileInfo[ "Src-Folder" ];
-		const char* DestFolder = tFileInfo[ "Dest-Folder" ];
+		SrcFolder = tFileInfo[ "Src-Folder" ];
+		DestFolder = tFileInfo[ "Dest-Folder" ];
 		if ( DestFolder != NULL && SrcFolder == NULL ) {
 			UnreadMessages = strcmp( DestFolder, "ACTIVE" ) == 0;
 			UnreadJunkEmails = strcmp( DestFolder, "HM_BuLkMail_" ) == 0;
@@ -185,6 +209,7 @@ static void sttNotificationMessage( const char* msgBody, bool isInitial )
 		// nothing to do, a fake notification
 		if ( UnreadMessages == 0 && UnreadJunkEmails == 0 )
 			return;
+		mUnreadMessages += 1;
 
 		char mimeFrom[ 1024 ], mimeSubject[ 1024 ];
 		mmdecode( mimeFrom,    ( char* )From );
@@ -228,6 +253,12 @@ static void sttNotificationMessage( const char* msgBody, bool isInitial )
 		else dest = tBuffer;
 		mir_snprintf( dest, sizeof( tBuffer ), MSN_Translate( "Unread mail is available: %d messages (%d junk e-mails)." ),
 			UnreadMessages, UnreadJunkEmails );
+	}
+
+	if (isInitial)
+	{
+		mUnreadMessages = UnreadMessages;
+		MSN_SendBroadcast( NULL, ACKTYPE_EMAIL, ACKRESULT_STATUS, NULL, 0 );
 	}
 
 	// Disable to notify receiving hotmail
@@ -740,6 +771,8 @@ void MSN_ReceiveMessage( ThreadData* info, char* cmdString, char* params )
 		sttNotificationMessage( msgBody, false );
 	else if ( !strnicmp( tContentType, "text/x-msmsgsinitialemailnotification", 37 ))
 		sttNotificationMessage( msgBody, true );
+	else if ( !strnicmp( tContentType, "text/x-msmsgsactivemailnotification", 35 ))
+		sttNotificationMessage( msgBody, false );
 	else if ( !strnicmp( tContentType, "text/x-msmsgsinitialmdatanotification", 37 ))
 		sttNotificationMessage( msgBody, true );
 	else if ( !strnicmp( tContentType, "text/x-msmsgsoimnotification", 28 )) {

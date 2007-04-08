@@ -1261,6 +1261,17 @@ static int MsnUserIsTyping(WPARAM wParam, LPARAM lParam)
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////
+// MsnGetUnread - returns the actual number of unread emails in the INBOX
+extern int mUnreadMessages;
+
+static int MsnGetUnreadEmailCount(WPARAM wParam, LPARAM lParam)
+{
+	if ( !msnLoggedIn )
+		return 0;
+	return mUnreadMessages;
+}
+
+/////////////////////////////////////////////////////////////////////////////////////////
 // Services initialization and destruction
 
 int CompareHandles( const void* p1, const void* p2 );
@@ -1309,6 +1320,8 @@ int LoadMsnServices( void )
 
 	arServices.insert( MSN_CreateProtoServiceFunction( MSN_SET_NICKNAME,     MsnSetNickName ));
 	arServices.insert( MSN_CreateProtoServiceFunction( MSN_SEND_NUDGE,       MsnSendNudge ));
+
+	arServices.insert( MSN_CreateProtoServiceFunction( MSN_GETUNREAD_EMAILCOUNT, MsnGetUnreadEmailCount ));
 	return 0;
 }
 
