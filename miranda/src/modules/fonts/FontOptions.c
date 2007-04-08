@@ -113,7 +113,7 @@ BOOL ExportSettings(HWND hwndDlg, TCHAR *filename, FontIdList* flist, ColourIdLi
 			strcat( buff, F->value.szFace );
 		#endif
 		WriteLine(fhand, buff);
-		
+
 		wsprintfA(buff, "%sSize=b", F->prefix);
 		if ( F->flags & FIDF_SAVEACTUALHEIGHT ) {
 			HDC hdc;
@@ -531,7 +531,7 @@ static BOOL CALLBACK DlgProcLogOptions(HWND hwndDlg, UINT msg, WPARAM wParam, LP
 				if ( !itemName )
 					itemName = TranslateTS( colour_id_list_w2.items[iItem]->name );
 			}
-			
+
 			hdc = GetDC(GetDlgItem(hwndDlg, mis->CtlID));
 			if ( hFont )
 				hoFont = (HFONT) SelectObject(hdc, hFont);
@@ -611,7 +611,7 @@ static BOOL CALLBACK DlgProcLogOptions(HWND hwndDlg, UINT msg, WPARAM wParam, LP
 					FillRect(dis->hDC, &dis->rcItem, bIsFont ? hBkgColourBrush : GetSysColorBrush(COLOR_WINDOW));
 				}
 			}
-			
+
 			if (bIsFont)
 			{
 				HBRUSH hbrBack;
@@ -632,7 +632,7 @@ static BOOL CALLBACK DlgProcLogOptions(HWND hwndDlg, UINT msg, WPARAM wParam, LP
 					dis->rcItem.top+FSUI_FONTFRAMEVERT,
 					dis->rcItem.left+FSUI_COLORBOXLEFT+FSUI_COLORBOXWIDTH,
 					dis->rcItem.bottom-FSUI_FONTFRAMEVERT);
-				
+
 				FillRect(dis->hDC, &rc, hbrBack);
 
 				FrameRect(dis->hDC, &rc, GetSysColorBrush(COLOR_HIGHLIGHT));
@@ -659,7 +659,7 @@ static BOOL CALLBACK DlgProcLogOptions(HWND hwndDlg, UINT msg, WPARAM wParam, LP
 					dis->rcItem.top+FSUI_FONTFRAMEVERT,
 					dis->rcItem.left+FSUI_COLORBOXLEFT+FSUI_COLORBOXWIDTH,
 					dis->rcItem.bottom-FSUI_FONTFRAMEVERT);
-				
+
 				hbrTmp = CreateSolidBrush(clText);
 				FillRect(dis->hDC, &rc, hbrTmp);
 				DeleteObject(hbrTmp);
@@ -757,7 +757,7 @@ static BOOL CALLBACK DlgProcLogOptions(HWND hwndDlg, UINT msg, WPARAM wParam, LP
 						if (itemData->font_id < 0)
 						{
 							mir_free(selItems);
-							if (itemData->colour_id >= 0) 
+							if (itemData->colour_id >= 0)
 							{
 								SendDlgItemMessage(hwndDlg, IDC_BKGCOLOUR, WM_LBUTTONUP, 0, 0);
 							}
@@ -891,7 +891,7 @@ static BOOL CALLBACK DlgProcLogOptions(HWND hwndDlg, UINT msg, WPARAM wParam, LP
 					sttCopyList(( SortedList* )&font_id_list_w3,   ( SortedList* )&font_id_list_w2,   sizeof( TFontID ));
 					sttCopyList(( SortedList* )&colour_id_list_w3, ( SortedList* )&colour_id_list_w2, sizeof( TColourID ));
 					EnableWindow(GetDlgItem(hwndDlg, IDC_BTN_UNDO), FALSE);
-			
+
 					SendMessage(hwndDlg, UM_SETFONTGROUP, 0, 0);
 					break;
 				}
@@ -948,7 +948,7 @@ static BOOL CALLBACK DlgProcLogOptions(HWND hwndDlg, UINT msg, WPARAM wParam, LP
 							DBWriteContactSettingString(NULL, F->dbSettingsGroup, str, buff);
 						#endif
 					}
-					
+
 					wsprintfA(str, "%sSize", F->prefix);
 					if ( F->flags & FIDF_SAVEACTUALHEIGHT ) {
 						HDC hdc;
@@ -992,7 +992,7 @@ static BOOL CALLBACK DlgProcLogOptions(HWND hwndDlg, UINT msg, WPARAM wParam, LP
 					wsprintfA(str, "%s", C->setting);
 					DBWriteContactSettingDword(NULL, C->dbSettingsGroup, str, C->value);
 				}
-			
+
 				OptionsChanged();
 				return TRUE;
 			} else
@@ -1012,7 +1012,7 @@ static BOOL CALLBACK DlgProcLogOptions(HWND hwndDlg, UINT msg, WPARAM wParam, LP
 						if (name) mir_free(name);
 						break;
 					}
-				}				
+				}
 			}
 			break;
 
@@ -1043,6 +1043,6 @@ int OptInit(WPARAM wParam, LPARAM lParam)
 	odp.flags						= ODPF_BOLDGROUPS;
 	odp.nIDBottomSimpleControl	= 0;
 	odp.pfnDlgProc					= DlgProcLogOptions;
-	CallService( MS_OPT_ADDPAGE, wParam,( LPARAM )&odp );	
+	CallService( MS_OPT_ADDPAGE, wParam,( LPARAM )&odp );
 	return 0;
 }
