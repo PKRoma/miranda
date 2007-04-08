@@ -1,6 +1,14 @@
 # Microsoft Developer Studio Generated Dependency File, included by jabber.mak
 
 .\jabber.cpp : \
+	"..\..\..\..\vc\psdk\include\basetsd.h"\
+	"..\..\..\..\vc\psdk\include\guiddef.h"\
+	"..\..\..\..\vc\psdk\include\propidl.h"\
+	"..\..\..\..\vc\psdk\include\reason.h"\
+	"..\..\..\..\vc\psdk\include\specstrings.h"\
+	"..\..\..\..\vc\psdk\include\stralign.h"\
+	"..\..\..\..\vc\psdk\include\tvout.h"\
+	"..\..\..\..\vc\psdk\include\winefs.h"\
 	"..\..\include\m_button.h"\
 	"..\..\include\m_chat.h"\
 	"..\..\include\m_clc.h"\
@@ -42,37 +50,7 @@
 	".\jabber_xml.h"\
 	
 
-.\jabber_bitmap.cpp : \
-	".\jabber.h"\
-	".\jabber_byte.h"\
-	".\jabber_list.h"\
-	".\jabber_xml.h"\
-	
-
 .\jabber_bookmarks.cpp : \
-	"..\..\include\m_button.h"\
-	"..\..\include\m_chat.h"\
-	"..\..\include\m_clc.h"\
-	"..\..\include\m_clist.h"\
-	"..\..\include\m_clui.h"\
-	"..\..\include\m_database.h"\
-	"..\..\include\m_langpack.h"\
-	"..\..\include\m_message.h"\
-	"..\..\include\m_netlib.h"\
-	"..\..\include\m_options.h"\
-	"..\..\include\m_plugins.h"\
-	"..\..\include\m_png.h"\
-	"..\..\include\m_protocols.h"\
-	"..\..\include\m_protomod.h"\
-	"..\..\include\m_protosvc.h"\
-	"..\..\include\m_skin.h"\
-	"..\..\include\m_system.h"\
-	"..\..\include\m_system_cpp.h"\
-	"..\..\include\m_userinfo.h"\
-	"..\..\include\m_utils.h"\
-	"..\..\include\newpluginapi.h"\
-	"..\..\include\statusmodes.h"\
-	"..\..\include\win2k.h"\
 	".\jabber.h"\
 	".\jabber_byte.h"\
 	".\jabber_iq.h"\
@@ -174,6 +152,7 @@
 	
 
 .\jabber_menu.cpp : \
+	"..\..\include\m_contacts.h"\
 	".\jabber.h"\
 	".\jabber_byte.h"\
 	".\jabber_list.h"\
@@ -188,6 +167,7 @@
 	
 
 .\jabber_opt.cpp : \
+	"..\..\..\..\vc\psdk\include\uxtheme.h"\
 	".\jabber.h"\
 	".\jabber_byte.h"\
 	".\jabber_list.h"\
@@ -251,6 +231,7 @@
 	
 
 .\jabber_thread.cpp : \
+	"..\..\..\..\vc\psdk\include\windns.h"\
 	".\jabber.h"\
 	".\jabber_byte.h"\
 	".\jabber_iq.h"\

@@ -26,9 +26,12 @@ Last change by : $Author$
 */
 
 #include "jabber.h"
+
+#include <fcntl.h>
 #include <io.h>
 #include <sys/types.h>
 #include <sys/stat.h>
+
 #include "resource.h"
 #include "jabber_list.h"
 #include "jabber_iq.h"
@@ -71,7 +74,7 @@ static HANDLE AddToListByJID( const TCHAR* newJid, DWORD flags )
 	else {
 		// already exist
 		// Set up a dummy "NotOnList" when adding permanently only
-		if ( !( flags&PALF_TEMPORARY ))
+		if ( !( flags & PALF_TEMPORARY ))
 			DBWriteContactSettingByte( hContact, "CList", "NotOnList", 1 );
 	}
 
@@ -1194,18 +1197,46 @@ int JabberSetApparentMode( WPARAM wParam, LPARAM lParam )
 
 static int JabberSetAvatar( WPARAM wParam, LPARAM lParam )
 {
-	HBITMAP hBitmap = ( HBITMAP )JCallService( MS_UTILS_LOADBITMAP, 0, lParam );
-	if ( hBitmap == NULL )
+	char* szFileName = ( char* )lParam;
+	int fileIn = open( szFileName, O_RDWR | O_BINARY, S_IREAD | S_IWRITE );
+	if ( fileIn == -1 )
 		return 1;
 
-	if (( hBitmap = JabberStretchBitmap( hBitmap )) == NULL )
+	long  dwPngSize = filelength( fileIn );
+	BYTE* pResult = new BYTE[ dwPngSize ];
+	if ( pResult == NULL )
 		return 2;
+	
+	read( fileIn, pResult, dwPngSize );
+	close( fileIn );
 
-	JabberBitmapToAvatar( hBitmap );
-	DeleteObject( hBitmap );
+	mir_sha1_byte_t digest[MIR_SHA1_HASH_SIZE];
+	mir_sha1_ctx sha1ctx;
+	mir_sha1_init( &sha1ctx );
+	mir_sha1_append( &sha1ctx, (mir_sha1_byte_t*)pResult, dwPngSize );
+	mir_sha1_finish( &sha1ctx, digest );
+
+	char tFileName[ MAX_PATH ];
+	JabberGetAvatarFileName( NULL, tFileName, MAX_PATH );
+	DeleteFileA( tFileName );
+
+	char buf[MIR_SHA1_HASH_SIZE*2+1];
+	for ( int i=0; i<MIR_SHA1_HASH_SIZE; i++ )
+		sprintf( buf+( i<<1 ), "%02x", digest[i] );
+   JSetString( NULL, "AvatarHash", buf );
+	JSetByte( "AvatarType", PA_FORMAT_PNG );
+
+	JabberGetAvatarFileName( NULL, tFileName, MAX_PATH );
+	FILE* out = fopen( tFileName, "wb" );
+	if ( out != NULL ) {
+		fwrite( pResult, dwPngSize, 1, out );
+		fclose( out );
+	}
+	delete pResult;
 
 	if ( jabberConnected )
 		JabberSendPresence( jabberDesiredStatus, true );
+
 	return 0;
 }
 

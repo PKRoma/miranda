@@ -56,7 +56,6 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include <m_system.h>
 #include <m_system_cpp.h>
 #include <m_netlib.h>
-#include <m_png.h>
 #include <m_protomod.h>
 #include <m_protosvc.h>
 #include <m_clist.h>
@@ -71,6 +70,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include <m_chat.h>
 #include <m_clc.h>
 #include <m_button.h>
+#include <m_avatars.h>
 #include <win2k.h>
 
 #include "jabber_xml.h"
@@ -388,12 +388,6 @@ extern LIST<TCHAR> jabberTransports;
 /*******************************************************************
  * Function declarations
  *******************************************************************/
-
-//---- jabber_bitmap.cpp ----------------------------------------------
-
-int     __stdcall JabberBitmapToAvatar( HBITMAP hBitmap );
-int     __stdcall JabberEnterBitmapName( char* szDest );
-HBITMAP __stdcall JabberStretchBitmap( HBITMAP hBitmap );
 
 //---- jabber_chat.cpp ----------------------------------------------
 

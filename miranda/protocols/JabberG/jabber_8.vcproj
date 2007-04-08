@@ -514,10 +514,6 @@
 				</FileConfiguration>
 			</File>
 			<File
-				RelativePath=".\jabber_bitmap.cpp"
-				>
-			</File>
-			<File
 				RelativePath=".\jabber_bookmarks.cpp"
 				>
 			</File>
