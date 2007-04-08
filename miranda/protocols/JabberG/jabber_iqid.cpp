@@ -1506,46 +1506,39 @@ void JabberIqResultDiscoBookmarks( XmlNode *iqNode, void *userdata )
 	if (( type=JabberXmlGetAttrValue( iqNode, "type" )) == NULL ) return;
 
 	if ( !lstrcmp( type, _T("result"))) {
-		if (( queryNode = JabberXmlGetChild( iqNode, "query" )) != NULL )
-			if ((storageNode = JabberXmlGetChild( queryNode, "storage" )) != NULL){
-			JabberListRemoveList( LIST_BOOKMARK );
-			for ( int i=0; i<storageNode->numChild; i++ ) {
-				if (( itemNode = storageNode->child[i] ) != NULL && itemNode->name != NULL) {
-					if (!strcmp( itemNode->name, "conference" )) {
-						if (( jid = JabberXmlGetAttrValue( itemNode, "jid" )) != NULL ) {
-							JABBER_LIST_ITEM* item = JabberListAdd( LIST_BOOKMARK, jid );
-							item->name = mir_tstrdup( JabberXmlGetAttrValue( itemNode, "name" ));
-							item->type = _T("conference");
-							if ( JabberXmlGetAttrValue( itemNode, "autojoin" ) != NULL ) {
-								TCHAR* autoJ = JabberXmlGetAttrValue( itemNode, "autojoin" );
-								item->bAutoJoin = ( !lstrcmp( autoJ, _T("true")) || !lstrcmp( autoJ, _T("1"))) ? true : false;
-							}
-							if (( nickNode = JabberXmlGetChild( itemNode, "nick" )) != NULL && nickNode->text != NULL )
-								replaceStr( item->nick, nickNode->text );
-							if (( passNode = JabberXmlGetChild( itemNode, "password" )) != NULL && passNode->text != NULL )
-								replaceStr( item->password, passNode->text );
+		if (( queryNode = JabberXmlGetChild( iqNode, "query" )) != NULL ) {
+			if ((storageNode = JabberXmlGetChild( queryNode, "storage" )) != NULL) {
+				JabberListRemoveList( LIST_BOOKMARK );
+				for ( int i=0; i<storageNode->numChild; i++ ) {
+					if (( itemNode = storageNode->child[i] ) != NULL && itemNode->name != NULL) {
+						if ( !strcmp( itemNode->name, "conference" )) {
+							if (( jid = JabberXmlGetAttrValue( itemNode, "jid" )) != NULL ) {
+								JABBER_LIST_ITEM* item = JabberListAdd( LIST_BOOKMARK, jid );
+								item->name = mir_tstrdup( JabberXmlGetAttrValue( itemNode, "name" ));
+								item->type = mir_tstrdup( _T( "conference" ));
+								if ( JabberXmlGetAttrValue( itemNode, "autojoin" ) != NULL ) {
+									TCHAR* autoJ = JabberXmlGetAttrValue( itemNode, "autojoin" );
+									item->bAutoJoin = ( !lstrcmp( autoJ, _T("true")) || !lstrcmp( autoJ, _T("1"))) ? true : false;
+								}
+								if (( nickNode = JabberXmlGetChild( itemNode, "nick" )) != NULL && nickNode->text != NULL )
+									replaceStr( item->nick, nickNode->text );
+								if (( passNode = JabberXmlGetChild( itemNode, "password" )) != NULL && passNode->text != NULL )
+									replaceStr( item->password, passNode->text );
+						}	}
 
-						}
-					}
-					if (!strcmp( itemNode->name, "url" )) {
-						if (( jid = JabberXmlGetAttrValue( itemNode, "url" )) != NULL ) {
-							JABBER_LIST_ITEM* item = JabberListAdd( LIST_BOOKMARK, jid );
-							item->name = mir_tstrdup( JabberXmlGetAttrValue( itemNode, "name" ));
-							item->type = _T("url");
-						}
-					}
-				}
-			}
-			}
+						if ( !strcmp( itemNode->name, "url" )) {
+							if (( jid = JabberXmlGetAttrValue( itemNode, "url" )) != NULL ) {
+								JABBER_LIST_ITEM* item = JabberListAdd( LIST_BOOKMARK, jid );
+								item->name = mir_tstrdup( JabberXmlGetAttrValue( itemNode, "name" ));
+								item->type = _T("url");
+			}	}	}	}	}
 
-
-			if ( (JGetByte( "AutoJoinBookmarks", FALSE ) == TRUE) && !(info->caps & CAPS_BOOKMARKS_LOADED) ) {
-
-				if (LIST_BOOKMARK != NULL) {
+			if ( JGetByte( "AutoJoinBookmarks", FALSE ) == TRUE && !( info->caps & CAPS_BOOKMARKS_LOADED )) {
+				if ( LIST_BOOKMARK != NULL ) {
 					JABBER_LIST_ITEM* item;
 					for ( int i=0; ( i = JabberListFindNext( LIST_BOOKMARK, i )) >= 0; i++ ) {
-						if (((item = JabberListGetItemPtrFromIndex( i )) != NULL) && (!lstrcmp( item->type, _T("conference") ))) {
-							if(item->bAutoJoin && (JabberListGetItemPtr(LIST_ROOM, item->jid) == NULL)) {
+						if ((( item = JabberListGetItemPtrFromIndex( i )) != NULL ) && !lstrcmp( item->type, _T("conference") )) {
+							if ( item->bAutoJoin && JabberListGetItemPtr( LIST_ROOM, item->jid ) == NULL ) {
 								if ( jabberChatDllPresent ) {
 									TCHAR room[256], *server, *p;
 									TCHAR text[128];
@@ -1554,20 +1547,19 @@ void JabberIqResultDiscoBookmarks( XmlNode *iqNode, void *userdata )
 									_tcsncpy( room, text, SIZEOF( room ));
 									p = _tcstok( room, _T( "@" ));
 									server = _tcstok( NULL, _T( "@" ));
-									if (item->password && item->password[0]!=_T('\0')) {pass = mir_tstrdup(item->password);}
-									else pass = _T("");
-									if (item->nick && item->nick[0]!=_T('\0')) {JabberGroupchatJoinRoom( server, p, mir_tstrdup(item->nick), pass );}
-									else JabberGroupchatJoinRoom( server, p, JabberNickFromJID(jabberJID), pass );
-								}
-							}
-						}
-					}
+									pass = mir_tstrdup(( item->password && item->password[0] != 0 ) ? item->password : _T(""));
+									if ( item->nick && item->nick[0] != 0 )
+										JabberGroupchatJoinRoom( server, p, item->nick, pass );
+									else {
+										TCHAR* nick = JabberNickFromJID( jabberJID );
+										JabberGroupchatJoinRoom( server, p, nick, pass );
+										mir_free( nick );
+			}	}	}	}	}	}	}
 
-				}
-			}
-		if ( hwndJabberBookmarks != NULL )
-			SendMessage( hwndJabberBookmarks, WM_JABBER_REFRESH, 0, 0);
-		info->caps |= CAPS_BOOKMARKS_LOADED;
+			if ( hwndJabberBookmarks != NULL )
+				SendMessage( hwndJabberBookmarks, WM_JABBER_REFRESH, 0, 0);
+			info->caps |= CAPS_BOOKMARKS_LOADED;
+		}
 	}
 	else if ( !lstrcmp( type, _T("error"))) {
 		if ( info->caps & CAPS_BOOKMARK ) {

@@ -38,23 +38,20 @@ static BOOL CALLBACK JabberAddBookmarkDlgProc( HWND hwndDlg, UINT msg, WPARAM wP
 	TCHAR text[128];
 	JABBER_LIST_ITEM *item;
 	TCHAR* roomJID=0;
-	TCHAR* currJID=0;
 
 	switch ( msg ) {
 	case WM_INITDIALOG:
 		// lParam is the JABBER_BOOKMARK_ITEM*
-		hwndJabberAddBookmark= hwndDlg;
+		hwndJabberAddBookmark = hwndDlg;
 		TranslateDialogDefault( hwndDlg );
-		if ( item=(JABBER_LIST_ITEM* )lParam ){
-			if (!lstrcmp( item->type, _T("conference") )) {
+		if ( item = ( JABBER_LIST_ITEM* )lParam ) {
+			if ( !lstrcmp( item->type, _T("conference") )) {
 				if (!_tcschr( item->jid, _T( '@' ))) {	  //no room name - consider it is transport
 					SendDlgItemMessage(hwndDlg, IDC_AGENT_RADIO, BM_SETCHECK, BST_CHECKED, 0);
 					EnableWindow( GetDlgItem( hwndDlg, IDC_NICK ), FALSE );
 					EnableWindow( GetDlgItem( hwndDlg, IDC_PASSWORD ), FALSE );
-				} else {
-					SendDlgItemMessage(hwndDlg, IDC_ROOM_RADIO, BM_SETCHECK, BST_CHECKED, 0);
 				}
-
+				else SendDlgItemMessage(hwndDlg, IDC_ROOM_RADIO, BM_SETCHECK, BST_CHECKED, 0);
 			}
 			else {
 				SendDlgItemMessage(hwndDlg, IDC_URL_RADIO, BM_SETCHECK, BST_CHECKED, 0);
@@ -62,7 +59,6 @@ static BOOL CALLBACK JabberAddBookmarkDlgProc( HWND hwndDlg, UINT msg, WPARAM wP
 				EnableWindow( GetDlgItem( hwndDlg, IDC_PASSWORD ), FALSE );
 				SendDlgItemMessage(hwndDlg, IDC_CHECK_BM_AUTOJOIN, BM_SETCHECK, BST_UNCHECKED, 0);
 				EnableWindow( GetDlgItem( hwndDlg, IDC_CHECK_BM_AUTOJOIN), FALSE );
-
 			}
 
 			EnableWindow( GetDlgItem( hwndDlg, IDC_ROOM_RADIO), FALSE );
@@ -70,13 +66,12 @@ static BOOL CALLBACK JabberAddBookmarkDlgProc( HWND hwndDlg, UINT msg, WPARAM wP
 			EnableWindow( GetDlgItem( hwndDlg, IDC_AGENT_RADIO), FALSE );
 			EnableWindow( GetDlgItem( hwndDlg, IDC_CHECK_BM_AUTOJOIN), FALSE );
 
-			currJID = mir_tstrdup(item->jid);
-			SetWindowLong( hwndDlg, GWL_USERDATA, ( LONG ) currJID );
-			if (item->jid) SetDlgItemText( hwndDlg, IDC_ROOM_JID, mir_tstrdup(item->jid));
-			if (item->name) SetDlgItemText( hwndDlg, IDC_NAME, mir_tstrdup (item->name) );
-			if (item->nick) SetDlgItemText( hwndDlg, IDC_NICK, mir_tstrdup (item->nick) );
-			if (item->password) SetDlgItemText( hwndDlg, IDC_PASSWORD, mir_tstrdup (item->password) );
-			if (item->bAutoJoin) SendDlgItemMessage(hwndDlg, IDC_CHECK_BM_AUTOJOIN, BM_SETCHECK, BST_CHECKED, 0);
+			SetWindowLong( hwndDlg, GWL_USERDATA, ( LONG )item );
+			if ( item->jid ) SetDlgItemText( hwndDlg, IDC_ROOM_JID, item->jid );
+			if ( item->name ) SetDlgItemText( hwndDlg, IDC_NAME, item->name );
+			if ( item->nick ) SetDlgItemText( hwndDlg, IDC_NICK, item->nick );
+			if ( item->password ) SetDlgItemText( hwndDlg, IDC_PASSWORD, item->password );
+			if ( item->bAutoJoin ) SendDlgItemMessage( hwndDlg, IDC_CHECK_BM_AUTOJOIN, BM_SETCHECK, BST_CHECKED, 0 );
 			if ( SendDlgItemMessage(hwndDlg, IDC_ROOM_RADIO, BM_GETCHECK,0, 0) == BST_CHECKED )
 				EnableWindow( GetDlgItem( hwndDlg, IDC_CHECK_BM_AUTOJOIN), TRUE );
 		}
@@ -85,6 +80,7 @@ static BOOL CALLBACK JabberAddBookmarkDlgProc( HWND hwndDlg, UINT msg, WPARAM wP
 			SendDlgItemMessage(hwndDlg, IDC_ROOM_RADIO, BM_SETCHECK, BST_CHECKED, 0);
 		}
 		return TRUE;
+
 	case WM_COMMAND:
 		switch ( HIWORD(wParam) ) {
 			case BN_CLICKED:
@@ -118,30 +114,27 @@ static BOOL CALLBACK JabberAddBookmarkDlgProc( HWND hwndDlg, UINT msg, WPARAM wP
 
 		case IDOK:
 			GetDlgItemText( hwndDlg, IDC_ROOM_JID, text, SIZEOF( text ));
-			roomJID = mir_tstrdup( text );
+			roomJID = NEWTSTR_ALLOCA( text );
 
-			currJID = ( TCHAR* )GetWindowLong( hwndDlg, GWL_USERDATA );
-
-			if ( currJID) {
-				JabberListRemove(LIST_BOOKMARK, currJID);
-				mir_free( currJID );
+			item = ( JABBER_LIST_ITEM* )GetWindowLong( hwndDlg, GWL_USERDATA );
+			if ( item )
 				SetWindowLong( hwndDlg, GWL_USERDATA, ( LONG ) NULL );
-			}
-			item=JabberListAdd(LIST_BOOKMARK, roomJID);
+			else
+            item = JabberListAdd( LIST_BOOKMARK, roomJID );
 
-			if (SendDlgItemMessage(hwndDlg, IDC_URL_RADIO, BM_GETCHECK,0, 0) == BST_CHECKED ) {
-				item->type=_T("url");
-			}
-			else item->type=_T("conference");
+			if ( SendDlgItemMessage(hwndDlg, IDC_URL_RADIO, BM_GETCHECK,0, 0) == BST_CHECKED )
+				replaceStr( item->type, _T( "url" ));
+			else 
+				replaceStr( item->type, _T( "conference" ));
 
 			GetDlgItemText( hwndDlg, IDC_NICK, text, SIZEOF( text ));
-			item->nick = mir_tstrdup( text );
+			replaceStr( item->nick, text );
 
 			GetDlgItemText( hwndDlg, IDC_PASSWORD, text, SIZEOF( text ));
-			item->password = mir_tstrdup( text );
+			replaceStr( item->password, text );
 
 			GetDlgItemText( hwndDlg, IDC_NAME, text, SIZEOF( text ));
-			item->name = mir_tstrdup(( text[0] == 0 ) ? roomJID : text );
+			replaceStr( item->name, ( text[0] == 0 ) ? roomJID : text );
 
 			item->bAutoJoin = (SendDlgItemMessage(hwndDlg, IDC_CHECK_BM_AUTOJOIN, BM_GETCHECK,0, 0) == BST_CHECKED );
 
