@@ -696,8 +696,7 @@ static void JabberProcessFeatures( XmlNode *node, void *userdata )
 	}
 
 	//mechanisms not available and we are not logged in
-	if ( isAuthAvailable )
-		JabberPerformIqAuth( info );
+	JabberPerformIqAuth( info );
 }
 
 static void __cdecl JabberWaitAndReconnectThread( int unused )
@@ -1579,7 +1578,7 @@ static void JabberProcessIq( XmlNode *node, void *userdata )
 								if ( !JGetStringT( hContact, "Nick", &dbnick )) {
 									if ( _tcscmp( nick, dbnick.ptszVal ) != 0 )
 										DBWriteContactSettingTString( hContact, "CList", "MyHandle", nick );
-									else 
+									else
 										DBDeleteContactSetting( hContact, "CList", "MyHandle" );
 
 									JFreeVariant( &dbnick );
@@ -1847,7 +1846,7 @@ int ThreadData::recv( char* buf, size_t len )
 
 	if ( ssl )
 		return pfn_SSL_read( ssl, buf, len );
-	
+
 	return JabberWsRecv( s, buf, len );
 }
 
