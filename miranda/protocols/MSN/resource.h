@@ -18,7 +18,6 @@
 #define IDI_LIST_BL                     122
 #define IDI_LIST_RL                     123
 #define IDI_AVATAR                      125
-#define IDI_NUDGE                       126
 #define IDD_SETAVATAR                   132
 #define IDD_OPT_MSN                     185
 #define IDD_SETNICKNAME                 226
