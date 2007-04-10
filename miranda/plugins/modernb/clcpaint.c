@@ -95,6 +95,11 @@ static enum tagenumHASHINDEX
 	hi_Mid,
 	hi_Single,
 	hi_Last,
+	hi_Rate,
+	hi_None,
+	hi_Low,
+	hi_Medium,
+	hi_High,
 	//ADD new item above here
 	hi_LastItem
 } enumHASHINDEX;
@@ -145,6 +150,11 @@ static char *szQuickHashText[hi_LastItem]=
 		"Mid",
 		"Single",
 		"Last",
+		"Rate",
+		"None",
+		"Low",
+		"Medium",
+		"High",
 		//ADD item here
 };
 
@@ -694,6 +704,7 @@ static __inline MODERNMASK * CLCPaint_GetCLCContactRowBackModernMask(struct ClcG
 			default:	                CLCPaint_AddParamShort(mpModernMask,hi_Status,hi_OFFLINE);
 			}
 			CLCPaint_AddParamShort(mpModernMask,hi_HasAvatar,(dat->avatars_show  && Drawing->avatar_data != NULL)?hi_True:hi_False);
+			CLCPaint_AddParamShort(mpModernMask,hi_Rate, hi_None + Drawing->bContactRate);
 			break;
 		}
 	case CLCIT_DIVIDER:
