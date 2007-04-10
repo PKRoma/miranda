@@ -45,7 +45,6 @@
 	
 
 .\srmm.c : \
-	"..\..\..\..\vc\vc98\include\basetsd.h"\
 	"..\..\include\m_addcontact.h"\
 	"..\..\include\m_button.h"\
 	"..\..\include\m_clc.h"\

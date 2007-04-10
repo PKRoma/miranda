@@ -9,13 +9,6 @@
 	
 
 .\msn.cpp : \
-	"..\..\..\..\vc\sdk\include\basetsd.h"\
-	"..\..\..\..\vc\sdk\include\guiddef.h"\
-	"..\..\..\..\vc\sdk\include\propidl.h"\
-	"..\..\..\..\vc\sdk\include\reason.h"\
-	"..\..\..\..\vc\sdk\include\stralign.h"\
-	"..\..\..\..\vc\sdk\include\tvout.h"\
-	"..\..\..\..\vc\sdk\include\winefs.h"\
 	"..\..\include\m_avatars.h"\
 	"..\..\include\m_chat.h"\
 	"..\..\include\m_clc.h"\

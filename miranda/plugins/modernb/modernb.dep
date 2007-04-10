@@ -73,13 +73,6 @@
 	
 
 .\ExtFrames\modern_ext_frames.c : \
-	"..\..\..\..\vc\sdk\include\basetsd.h"\
-	"..\..\..\..\vc\sdk\include\guiddef.h"\
-	"..\..\..\..\vc\sdk\include\propidl.h"\
-	"..\..\..\..\vc\sdk\include\reason.h"\
-	"..\..\..\..\vc\sdk\include\stralign.h"\
-	"..\..\..\..\vc\sdk\include\tvout.h"\
-	"..\..\..\..\vc\sdk\include\winefs.h"\
 	"..\..\include\m_addcontact.h"\
 	"..\..\include\m_button.h"\
 	"..\..\include\m_clc.h"\
@@ -542,13 +535,6 @@
 	
 
 .\commonheaders.c : \
-	"..\..\..\..\vc\sdk\include\basetsd.h"\
-	"..\..\..\..\vc\sdk\include\guiddef.h"\
-	"..\..\..\..\vc\sdk\include\propidl.h"\
-	"..\..\..\..\vc\sdk\include\reason.h"\
-	"..\..\..\..\vc\sdk\include\stralign.h"\
-	"..\..\..\..\vc\sdk\include\tvout.h"\
-	"..\..\..\..\vc\sdk\include\winefs.h"\
 	"..\..\include\m_addcontact.h"\
 	"..\..\include\m_button.h"\
 	"..\..\include\m_clc.h"\
@@ -643,43 +629,6 @@
 	
 
 .\gdiplus.cpp : \
-	"..\..\..\..\vc\sdk\include\basetsd.h"\
-	"..\..\..\..\vc\sdk\include\gdiplus.h"\
-	"..\..\..\..\vc\sdk\include\gdiplusbase.h"\
-	"..\..\..\..\vc\sdk\include\gdiplusbitmap.h"\
-	"..\..\..\..\vc\sdk\include\gdiplusbrush.h"\
-	"..\..\..\..\vc\sdk\include\gdipluscachedbitmap.h"\
-	"..\..\..\..\vc\sdk\include\gdipluscolor.h"\
-	"..\..\..\..\vc\sdk\include\gdipluscolormatrix.h"\
-	"..\..\..\..\vc\sdk\include\gdiplusenums.h"\
-	"..\..\..\..\vc\sdk\include\gdiplusflat.h"\
-	"..\..\..\..\vc\sdk\include\gdiplusfont.h"\
-	"..\..\..\..\vc\sdk\include\gdiplusfontcollection.h"\
-	"..\..\..\..\vc\sdk\include\gdiplusfontfamily.h"\
-	"..\..\..\..\vc\sdk\include\gdiplusgpstubs.h"\
-	"..\..\..\..\vc\sdk\include\gdiplusgraphics.h"\
-	"..\..\..\..\vc\sdk\include\gdiplusheaders.h"\
-	"..\..\..\..\vc\sdk\include\gdiplusimageattributes.h"\
-	"..\..\..\..\vc\sdk\include\gdiplusimagecodec.h"\
-	"..\..\..\..\vc\sdk\include\gdiplusimaging.h"\
-	"..\..\..\..\vc\sdk\include\gdiplusinit.h"\
-	"..\..\..\..\vc\sdk\include\gdipluslinecaps.h"\
-	"..\..\..\..\vc\sdk\include\gdiplusmatrix.h"\
-	"..\..\..\..\vc\sdk\include\gdiplusmem.h"\
-	"..\..\..\..\vc\sdk\include\gdiplusmetafile.h"\
-	"..\..\..\..\vc\sdk\include\gdiplusmetaheader.h"\
-	"..\..\..\..\vc\sdk\include\gdipluspath.h"\
-	"..\..\..\..\vc\sdk\include\gdipluspen.h"\
-	"..\..\..\..\vc\sdk\include\gdipluspixelformats.h"\
-	"..\..\..\..\vc\sdk\include\gdiplusregion.h"\
-	"..\..\..\..\vc\sdk\include\gdiplusstringformat.h"\
-	"..\..\..\..\vc\sdk\include\gdiplustypes.h"\
-	"..\..\..\..\vc\sdk\include\guiddef.h"\
-	"..\..\..\..\vc\sdk\include\propidl.h"\
-	"..\..\..\..\vc\sdk\include\reason.h"\
-	"..\..\..\..\vc\sdk\include\stralign.h"\
-	"..\..\..\..\vc\sdk\include\tvout.h"\
-	"..\..\..\..\vc\sdk\include\winefs.h"\
 	"..\..\include\m_plugins.h"\
 	"..\..\include\m_system.h"\
 	"..\..\include\newpluginapi.h"\
@@ -858,13 +807,6 @@
 	
 
 .\modern_row.cpp : \
-	"..\..\..\..\vc\sdk\include\basetsd.h"\
-	"..\..\..\..\vc\sdk\include\guiddef.h"\
-	"..\..\..\..\vc\sdk\include\propidl.h"\
-	"..\..\..\..\vc\sdk\include\reason.h"\
-	"..\..\..\..\vc\sdk\include\stralign.h"\
-	"..\..\..\..\vc\sdk\include\tvout.h"\
-	"..\..\..\..\vc\sdk\include\winefs.h"\
 	"..\..\include\m_addcontact.h"\
 	"..\..\include\m_button.h"\
 	"..\..\include\m_clc.h"\
@@ -1007,7 +949,6 @@
 	
 
 .\SkinEngine.c : \
-	"..\..\..\..\vc\sdk\include\shtypes.h"\
 	"..\..\include\m_addcontact.h"\
 	"..\..\include\m_button.h"\
 	"..\..\include\m_clc.h"\
@@ -1082,7 +1023,6 @@
 	
 
 .\viewmodes.c : \
-	"..\..\..\..\vc\sdk\include\uxtheme.h"\
 	"..\..\include\m_addcontact.h"\
 	"..\..\include\m_button.h"\
 	"..\..\include\m_clc.h"\

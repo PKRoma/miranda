@@ -1,14 +1,6 @@
 # Microsoft Developer Studio Generated Dependency File, included by jabber.mak
 
 .\jabber.cpp : \
-	"..\..\..\..\vc\psdk\include\basetsd.h"\
-	"..\..\..\..\vc\psdk\include\guiddef.h"\
-	"..\..\..\..\vc\psdk\include\propidl.h"\
-	"..\..\..\..\vc\psdk\include\reason.h"\
-	"..\..\..\..\vc\psdk\include\specstrings.h"\
-	"..\..\..\..\vc\psdk\include\stralign.h"\
-	"..\..\..\..\vc\psdk\include\tvout.h"\
-	"..\..\..\..\vc\psdk\include\winefs.h"\
 	"..\..\include\m_button.h"\
 	"..\..\include\m_chat.h"\
 	"..\..\include\m_clc.h"\
@@ -167,7 +159,6 @@
 	
 
 .\jabber_opt.cpp : \
-	"..\..\..\..\vc\psdk\include\uxtheme.h"\
 	".\jabber.h"\
 	".\jabber_byte.h"\
 	".\jabber_list.h"\
@@ -231,7 +222,6 @@
 	
 
 .\jabber_thread.cpp : \
-	"..\..\..\..\vc\psdk\include\windns.h"\
 	".\jabber.h"\
 	".\jabber_byte.h"\
 	".\jabber_iq.h"\
