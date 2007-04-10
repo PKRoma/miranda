@@ -51,8 +51,7 @@ static void JabberOnLoggedIn( ThreadData* info )
 	XmlNode* bquery = biq.addQuery( "jabber:iq:private" );
 	XmlNode* storage = bquery->addChild("storage");
 	storage->addAttr("xmlns","storage:bookmarks");
-
-	jabberThreadInfo->send( biq );
+	info->send( biq );
 
 	char szServerName[ sizeof(info->server) ];
 	if ( JGetStaticString( "LastLoggedServer", NULL, szServerName, sizeof(szServerName)))
@@ -133,15 +132,7 @@ void JabberIqResultSetAuth( XmlNode *iqNode, void *userdata )
 		else
 			JFreeVariant( &dbv );
 
-		jabberOnline = TRUE;
-		jabberLoggedInTime = time(0);
-
-		iqId = JabberSerialNext();
-		JabberIqAdd( iqId, IQ_PROC_NONE, JabberIqResultGetRoster );
-		{	XmlNodeIq iq( "get", iqId );
-			XmlNode* query = iq.addQuery( "jabber:iq:roster" );
-			info->send( iq );
-		}
+		JabberOnLoggedIn( info );
 
 		if ( hwndJabberAgents ) {
 			// Retrieve agent information
