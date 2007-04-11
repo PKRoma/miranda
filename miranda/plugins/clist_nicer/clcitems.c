@@ -292,6 +292,8 @@ BYTE GetCachedStatusMsg(int iExtraCacheEntry, char *szProto)
 	}	}
 
 	if(cEntry->bStatusMsgValid == STATUSMSG_NOTFOUND) {      // no status msg, consider xstatus name (if available)
+		if ( !result )
+			DBFreeVariant( &dbv );
 		result = DBGetContactSettingTString(hContact, szProto, "XStatusName", &dbv);
 		if ( !result && lstrlen(dbv.ptszVal) > 1) {
 			int iLen = lstrlen(dbv.ptszVal);
