@@ -23,7 +23,7 @@
 //
 // -----------------------------------------------------------------------------
 //
-// File name      : $Source: /cvsroot/miranda/miranda/protocols/IcqOscarJ/icq_infoupdate.c,v $
+// File name      : $URL$
 // Revision       : $Revision$
 // Last change on : $Date$
 // Last change by : $Author$
@@ -287,6 +287,12 @@ unsigned __stdcall icq_InfoUpdateThread(void* arg)
                 NetLog_Server("Rates: InfoUpdate delayed %dms", nDelay);
 #endif
                 SleepEx(nDelay, TRUE); // do not keep things locked during sleep
+                if (!bRunning)
+                { // need to end as fast as possible
+                  NetLog_Server("%s thread ended.", "Info-Update");
+
+                  return 0;
+                }
                 EnterCriticalSection(&listmutex);
                 EnterCriticalSection(&ratesMutex);
                 if (!gRates) // we lost connection when we slept, go away
