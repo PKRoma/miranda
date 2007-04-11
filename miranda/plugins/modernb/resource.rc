@@ -1346,8 +1346,8 @@ BEGIN
                     BS_AUTOCHECKBOX | WS_TABSTOP,156,77,120,10
     CONTROL         "Status overlay opacity is 75% ",IDC_TRANSPARENTOVERLAY,
                     "Button",BS_AUTOCHECKBOX | WS_TABSTOP,156,89,120,10
-	CONTROL			"Show unread emails (if supported)",IDC_SHOWUNREADEMAIL,
-					"Button",BS_AUTOCHECKBOX | WS_TABSTOP,156,101,120,11
+    CONTROL         "Show unread emails (if supported)",IDC_SHOWUNREADEMAIL,
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,156,101,120,11
     CONTROL         "Show both icons",IDC_SHOWBOTH,"Button",BS_AUTOCHECKBOX | 
                     WS_TABSTOP,156,65,120,10
     CONTROL         "Show status bar",IDC_SHOWSBAR,"Button",BS_AUTOCHECKBOX | 
@@ -1425,10 +1425,13 @@ BEGIN
                     BS_AUTOCHECKBOX | WS_TABSTOP,7,47,246,10
     CONTROL         "Hide groups icon",IDC_HIDE_GROUPSICON,"Button",
                     BS_AUTOCHECKBOX | WS_TABSTOP,7,75,127,8
+    CONTROL         "Always show ""Always visibile"" icon",
+                    IDC_ALWAYS_VISIBLEICON,"Button",BS_AUTOCHECKBOX | 
+                    WS_TABSTOP,7,88,127,8
     CONTROL         "Use extra status icon instead protocol",IDC_USEXSTATUS,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,93,236,8
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,101,236,8
     CONTROL         "Draw normal status as overlay",IDC_DRAWSTATUSOVERLAY,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,21,106,222,8
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,21,114,222,8
 END
 
 IDD_OPT_ITEM_TEXT DIALOGEX 0, 0, 260, 160

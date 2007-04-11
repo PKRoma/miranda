@@ -403,9 +403,8 @@ void ExtraImage_SetAllExtraIcons(HWND hwndList,HANDLE hContact)
 							locApparentModeProto=szProto;
 							locApparentMode=CallProtoService(locApparentModeProto,PS_GETSTATUS,0,0);
 						}
-						if (locApparentMode==ID_STATUS_INVISIBLE) 
-							iconIndex=ExtraImageIconsIndex[3];				
-					}
+						if(locApparentMode == ID_STATUS_INVISIBLE || DBGetContactSettingByte(NULL,"CList","AlwaysShowAlwaysVisIcon",0) == 1)
+ 							iconIndex=ExtraImageIconsIndex[3];						}
 				}
 				else 
 				{
@@ -439,4 +438,5 @@ void ExtraImage_LoadModule()
 
 
 };
+
 
