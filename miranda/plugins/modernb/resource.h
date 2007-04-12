@@ -142,6 +142,8 @@
 #define IDI_FAVORITE_1                  501
 #define IDI_FAVORITE_2                  502
 #define IDI_FAVORITE_3                  503
+#define IDI_SETVIEW						504
+#define IDI_RESETVIEW					505
 #define IDC_RESETPROTOCOLDATA           1000
 #define IDC_SAVE                        1001
 #define IDC_DEFBKCOLOR                  1001
@@ -981,7 +983,7 @@
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
-#define _APS_NEXT_RESOURCE_VALUE        462
+#define _APS_NEXT_RESOURCE_VALUE        506
 #define _APS_NEXT_COMMAND_VALUE         40020
 #define _APS_NEXT_CONTROL_VALUE         2004
 #define _APS_NEXT_SYMED_VALUE           101

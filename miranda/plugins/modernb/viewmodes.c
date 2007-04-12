@@ -1085,11 +1085,11 @@ LRESULT CALLBACK ViewModeFrameWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM
 			{
 				BOOL needFree;
 				HICON hicon;
-				hicon=CLUI_LoadIconFromExternalFile("clisticons.dll",0,TRUE,TRUE,"CLN_CLVM_reset","Contact List",Translate("Reset view mode"),IDI_DELETE, &needFree);								
+				hicon=CLUI_LoadIconFromExternalFile("clisticons.dll",9,TRUE,TRUE,"CLN_CLVM_reset","Contact List",Translate("Reset view mode"), -IDI_RESETVIEW, &needFree);								
 				SendMessage(GetDlgItem(hwnd, IDC_RESETMODES), BM_SETIMAGE, IMAGE_ICON, (LPARAM)(needFree?DuplicateIcon(g_hInst,hicon):hicon));
 				if (needFree) DestroyIcon_protect(hicon);
 				
-				hicon=CLUI_LoadIconFromExternalFile("clisticons.dll",0,TRUE,TRUE,"CLN_CLVM_options","Contact List",Translate("Setup view modes"),IDI_RENAME, &needFree);								
+				hicon=CLUI_LoadIconFromExternalFile("clisticons.dll",10,TRUE,TRUE,"CLN_CLVM_options","Contact List",Translate("Setup view modes"),-IDI_SETVIEW, &needFree);								
                 SendMessage(GetDlgItem(hwnd, IDC_CONFIGUREMODES), BM_SETIMAGE, IMAGE_ICON, (LPARAM)(needFree?DuplicateIcon(g_hInst,hicon):hicon));
 				if (needFree) DestroyIcon_protect(hicon);
                 //SendMessage(GetDlgItem(hwnd, IDC_SELECTMODE), BM_SETIMAGE, IMAGE_ICON, (LPARAM)CallService(MS_SKIN2_GETICON, 0, (LPARAM)"CLN_CLVM_select"));
