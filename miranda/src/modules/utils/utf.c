@@ -28,9 +28,9 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 char* Utf8DecodeCP( char* str, int codepage, wchar_t** ucs2 )
 {
-	int len;
+	int len, needs_free = 0;
 	wchar_t* tempBuf;
-
+	
 	if ( str == NULL )
 		return NULL;
 
@@ -44,7 +44,15 @@ char* Utf8DecodeCP( char* str, int codepage, wchar_t** ucs2 )
 		return str;
 	}
 
-	tempBuf = ( wchar_t* )alloca(( len+1 )*sizeof( wchar_t ));
+	__try
+	{
+		tempBuf = ( wchar_t* )alloca(( len+1 )*sizeof( wchar_t ));
+	}
+	__except( EXCEPTION_EXECUTE_HANDLER )
+	{
+		tempBuf = ( wchar_t* )mir_alloc(( len+1 )*sizeof( wchar_t ));
+		needs_free = 1;
+	}
 	{
 		wchar_t* d = tempBuf;
 		BYTE* s = ( BYTE* )str;
@@ -81,6 +89,10 @@ char* Utf8DecodeCP( char* str, int codepage, wchar_t** ucs2 )
 	}
 
    WideCharToMultiByte( CP_ACP, 0, tempBuf, -1, str, len, NULL, NULL );
+
+   if ( needs_free )
+		mir_free( tempBuf );
+
 	return str;
 }
 
