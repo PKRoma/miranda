@@ -660,7 +660,11 @@ set_bg_l:
 
 		if (cstatus >= ID_STATUS_OFFLINE && cstatus <= ID_STATUS_OUTTOLUNCH) {
 			BYTE perstatus_ignored;
-			sitem = &StatusItems[cstatus - ID_STATUS_OFFLINE];
+
+            if((flags & CONTACTF_IDLE) && !StatusItems[ID_EXTBKIDLE - ID_STATUS_OFFLINE].IGNORED)
+                sitem = &StatusItems[ID_EXTBKIDLE - ID_STATUS_OFFLINE];
+            else
+                sitem = &StatusItems[cstatus - ID_STATUS_OFFLINE];
 
             if(!dat->bisEmbedded) {
                 pp_item = cEntry->status_item ? cEntry->status_item : cEntry->proto_status_item;
@@ -1025,9 +1029,12 @@ bgskipped:
 
 		if((dwFlags & CLUI_FRAME_STATUSICONS && !pi_selectiveIcon) || type != CLCIT_CONTACT || (pi_selectiveIcon && !avatar_done)) {
             HIMAGELIST hImgList = 0;
-            if(cEntry && (dwFlags & CLUI_FRAME_USEXSTATUSASSTATUS) && cEntry->iExtraImage[EIMG_EXTRA] != 0xff) {
-                hImgList = dat->himlExtraColumns;
-                iImage = cEntry->iExtraImage[EIMG_EXTRA];
+            if(type == CLCIT_CONTACT && cEntry && (dwFlags & CLUI_FRAME_USEXSTATUSASSTATUS) && cEntry->iExtraImage[EIMG_EXTRA] != 0xff) {
+                if(pcli->pfnIconFromStatusMode(contact->proto, contact->wStatus, contact->hContact) == iImage) {
+                    hImgList = dat->himlExtraColumns;
+                    iImage = cEntry->iExtraImage[EIMG_EXTRA];
+                }
+                else hImgList = hCListImages;
             }
             else
                 hImgList = hCListImages;
@@ -1383,7 +1390,7 @@ nodisplay:
 						LONG old_bottom = rcContent.bottom;
 						DWORD i_dtFlags = DT_WORDBREAK | DT_NOPREFIX | dt_2ndrowflags;
 						dtp.cbSize = sizeof(dtp);
-						rcContent.right = clRect->right - dat->rightMargin;
+						rcContent.right = clRect->right - dat->rightMargin - rightOffset;
 						do {
 							if(rcContent.top + (statusFontHeight - 1) > rightIconsTop + 1)
 								rcContent.right = old_right;
