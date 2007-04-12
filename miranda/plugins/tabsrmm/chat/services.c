@@ -474,7 +474,7 @@ static void AddUser(GCEVENT * gce)
 HWND CreateNewRoom(struct ContainerWindowData *pContainer, SESSION_INFO *si, BOOL bActivateTab, BOOL bPopupContainer, BOOL bWantPopup)
 {
 	TCHAR *contactName = NULL, newcontactname[128];
-    char *szProto, *szStatus, tabtitle[128];
+    char *szProto, *szStatus;
 	WORD wStatus;
     int	newItem;
     HWND hwndNew = 0;
@@ -529,21 +529,7 @@ HWND CreateNewRoom(struct ContainerWindowData *pContainer, SESSION_INFO *si, BOO
 	wStatus = szProto == NULL ? ID_STATUS_OFFLINE : DBGetContactSettingWord((HANDLE) newData.hContact, szProto, "Status", ID_STATUS_OFFLINE);
 	szStatus = (char *) CallService(MS_CLIST_GETSTATUSMODEDESCRIPTION, szProto == NULL ? ID_STATUS_OFFLINE : DBGetContactSettingWord((HANDLE)newData.hContact, szProto, "Status", ID_STATUS_OFFLINE), 0);
 
-	if(DBGetContactSettingByte(NULL, SRMSGMOD_T, "tabstatus", 0))
-		_snprintf(tabtitle, sizeof(tabtitle), "%s (%s)", newcontactname, szStatus);
-	else
-		_snprintf(tabtitle, sizeof(tabtitle), "%s", newcontactname);
-
-#ifdef _UNICODE
-	{
-    wchar_t w_tabtitle[256];
-    if(MultiByteToWideChar(CP_ACP, 0, tabtitle, -1, w_tabtitle, safe_sizeof(w_tabtitle)) != 0)
-        newData.item.pszText = w_tabtitle;
-	}
-#else
-	newData.item.pszText = tabtitle;
-#endif
-    //newData.item.iImage = GetProtoIconFromList(szProto, wStatus);
+    newData.item.pszText = newcontactname;
 
 	newData.item.mask = TCIF_TEXT | TCIF_IMAGE | TCIF_PARAM;
     newData.item.iImage = 0;

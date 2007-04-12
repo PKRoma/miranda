@@ -36,11 +36,8 @@ $Id$
 
 static char *relnotes[] = {
     "{\\rtf1\\ansi\\deff0\\pard\\li%u\\fi-%u\\ri%u\\tx%u}",
-    "\\par\t\\b\\ul1 Release notes for version 1.1.0.19\\b0\\ul0\\par ",
-    "*\tNew plugin API is now supported.\\par",
-    "*\tSome minor bugfixes.\\par",
-    "*\tAdded statusbar indicators for caps, num and insert.\\par",
-    "*\tMoved some group chat related options.\\par",
+    "\\par\t\\b\\ul1 Release notes for version 1.1.0.20\\b0\\ul0\\par ",
+    "*\tTab character limit now working for group chats.\\par",
     NULL
 };
 
@@ -1237,7 +1234,7 @@ int SplitmsgShutdown(void)
 	if(sendJobs) {
 		for(i = 0; i < NR_SENDJOBS; i++) {
 			if(sendJobs[i].sendBuffer != NULL)
-				free(sendJobs[i].sendBuffer);
+				mir_free(sendJobs[i].sendBuffer);
 		}
 		free(sendJobs);
 	}

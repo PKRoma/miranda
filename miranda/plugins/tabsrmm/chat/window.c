@@ -1583,26 +1583,33 @@ BOOL CALLBACK RoomWndProc(HWND hwndDlg,UINT uMsg,WPARAM wParam,LPARAM lParam)
 			dat->szNickname[129] = 0;
 
 			dat->wStatus = si->wStatus;
-			lstrcpyn(dat->newtitle, dat->szNickname, 130);
-			dat->newtitle[129] = 0;
+
+            if(lstrlen(dat->szNickname) > 0) {
+                if(DBGetContactSettingByte(NULL, SRMSGMOD_T, "cuttitle", 0))
+                    CutContactName(dat->szNickname, dat->newtitle, safe_sizeof(dat->newtitle));
+                else {
+                    lstrcpyn(dat->newtitle, dat->szNickname, safe_sizeof(dat->newtitle));
+                    dat->newtitle[129] = 0;
+                }
+            }
 
 			switch (si->iType) {
-			case GCW_CHATROOM:
-				hIcon = dat->wStatus <= ID_STATUS_OFFLINE ? LoadSkinnedProtoIcon(si->pszModule, ID_STATUS_OFFLINE) : LoadSkinnedProtoIcon(si->pszModule, dat->wStatus);
-				fNoCopy = FALSE;
-				mir_sntprintf(szTemp, SIZEOF(szTemp),
-					(si->nUsersInNicklist ==1) ? TranslateT("%s: Chat Room (%u user%s)") : TranslateT("%s: Chat Room (%u users%s)"),
-					si->ptszName, si->nUsersInNicklist, si->bFilterEnabled ? TranslateT(", event filter active") : _T(""));
-				break;
-			case GCW_PRIVMESS:
-				mir_sntprintf(szTemp, SIZEOF(szTemp),
-					(si->nUsersInNicklist ==1) ? TranslateT("%s: Message Session") : TranslateT("%s: Message Session (%u users)"),
-					si->ptszName, si->nUsersInNicklist);
-				break;
-			case GCW_SERVER:
-				mir_sntprintf(szTemp, SIZEOF(szTemp), _T("%s: Server"), si->ptszName);
-				hIcon = LoadIconEx(IDI_CHANMGR, "window", 16, 16);
-				break;
+    			case GCW_CHATROOM:
+    				hIcon = dat->wStatus <= ID_STATUS_OFFLINE ? LoadSkinnedProtoIcon(si->pszModule, ID_STATUS_OFFLINE) : LoadSkinnedProtoIcon(si->pszModule, dat->wStatus);
+    				fNoCopy = FALSE;
+    				mir_sntprintf(szTemp, SIZEOF(szTemp),
+    					(si->nUsersInNicklist ==1) ? TranslateT("%s: Chat Room (%u user%s)") : TranslateT("%s: Chat Room (%u users%s)"),
+    					si->ptszName, si->nUsersInNicklist, si->bFilterEnabled ? TranslateT(", event filter active") : _T(""));
+    				break;
+    			case GCW_PRIVMESS:
+    				mir_sntprintf(szTemp, SIZEOF(szTemp),
+    					(si->nUsersInNicklist ==1) ? TranslateT("%s: Message Session") : TranslateT("%s: Message Session (%u users)"),
+    					si->ptszName, si->nUsersInNicklist);
+    				break;
+    			case GCW_SERVER:
+    				mir_sntprintf(szTemp, SIZEOF(szTemp), _T("%s: Server"), si->ptszName);
+    				hIcon = LoadIconEx(IDI_CHANMGR, "window", 16, 16);
+    				break;
 			}
 
 			dat->hTabStatusIcon = hIcon;
@@ -2448,7 +2455,7 @@ LABEL_SHOWWINDOW:
 				DoEventHookAsync(hwndDlg, si->ptszID, si->pszModule, GC_USER_MESSAGE, NULL, ptszText, (LPARAM)NULL);
 				mir_free(pszRtf);
 				#if defined( _UNICODE )
-					/*mir_*/free(ptszText);
+					mir_free(ptszText);
 				#endif
 				SetFocus(GetDlgItem(hwndDlg, IDC_CHAT_MESSAGE));
 			}

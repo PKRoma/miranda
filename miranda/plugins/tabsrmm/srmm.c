@@ -53,7 +53,7 @@ PLUGININFOEX pluginInfo = {
         "tabSRMsg",
     #endif    
 #endif
-    PLUGIN_MAKE_VERSION(1, 1, 0, 19),
+    PLUGIN_MAKE_VERSION(1, 1, 0, 20),
     "Chat module for instant messaging and group chat, offering a tabbed interface and many advanced features.",
     "The Miranda developers team",
     "silvercircle@gmail.com",
@@ -83,7 +83,7 @@ PLUGININFO oldPluginInfo = {
         "tabSRMsg",
     #endif    
 #endif
-    PLUGIN_MAKE_VERSION(1, 1, 0, 19),
+    PLUGIN_MAKE_VERSION(1, 1, 0, 20),
     "Chat module for instant messaging and group chat, offering a tabbed interface and many advanced features.",
     "The Miranda developers team",
     "silvercircle@gmail.com",

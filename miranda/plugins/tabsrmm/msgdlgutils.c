@@ -1089,16 +1089,14 @@ static DWORD CALLBACK Message_StreamCallback(DWORD dwCookie, LPBYTE pbBuff, LONG
 	static DWORD dwRead;
     char ** ppText = (char **) dwCookie;
 
-	if (*ppText == NULL)
-	{
+	if (*ppText == NULL) {
 		*ppText = malloc(cb + 2);
 		CopyMemory(*ppText, pbBuff, cb);
 		*pcb = cb;
 		dwRead = cb;
         *(*ppText + cb) = '\0';
 	}
-	else
-	{
+	else {
 		char  *p = realloc(*ppText, dwRead + cb + 2);
 		//memcpy(p, *ppText, dwRead);
 		CopyMemory(p+dwRead, pbBuff, cb);
@@ -1902,6 +1900,7 @@ void GetLocaleID(struct MessageWindowData *dat, char *szKLName)
     WORD   wCtype2[3];
     PARAFORMAT2 pf2 = {0};
     BOOL fLocaleNotSet;
+    char szTest[4] = { (char)0xe4, (char)0xf6, (char)0xfc, 0 };
 
     langID = (USHORT)strtol(szKLName, &stopped, 16);
     dat->lcid = MAKELCID(langID, 0);
@@ -1910,7 +1909,7 @@ void GetLocaleID(struct MessageWindowData *dat, char *szKLName)
     dat->lcID[0] = toupper(szLI[0]);
     dat->lcID[1] = toupper(szLI[1]);
     dat->lcID[2] = 0;
-    GetStringTypeA(dat->lcid, CT_CTYPE2, "הצü", 3, wCtype2);
+    GetStringTypeA(dat->lcid, CT_CTYPE2, szTest, 3, wCtype2);
     pf2.cbSize = sizeof(pf2);
     pf2.dwMask = PFM_RTLPARA;
     SendDlgItemMessage(dat->hwnd, IDC_MESSAGE, EM_GETPARAFORMAT, 0, (LPARAM)&pf2);
@@ -2505,24 +2504,30 @@ int MsgWindowDrawHandler(WPARAM wParam, LPARAM lParam, HWND hwndDlg, struct Mess
                 SetTextColor(dis->hDC, myGlobals.ipConfig.clrs[IPFONTID_NICK]);
             }
 			if(szStatusMsg && szStatusMsg[0]) {
-				SIZE szNick;
-                DWORD dtFlags;
+				SIZE szNick, sStatusMsg, sMask;
+                DWORD dtFlags, dtFlagsNick;
 
-                DrawText(dis->hDC, dat->szNickname, -1, &dis->rcItem, DT_SINGLELINE | DT_WORD_ELLIPSIS | DT_NOPREFIX);
 				GetTextExtentPoint32(dis->hDC, dat->szNickname, lstrlen(dat->szNickname), &szNick);
+                GetTextExtentPoint32(dis->hDC, _T("A"), 1, &sMask);
+                GetTextExtentPoint32(dis->hDC, szStatusMsg, lstrlen(szStatusMsg), &sStatusMsg);
+                dtFlagsNick = DT_SINGLELINE | DT_WORD_ELLIPSIS | DT_NOPREFIX;
+                if((szNick.cx + sStatusMsg.cx + 6) < (dis->rcItem.right - dis->rcItem.left) || (dis->rcItem.bottom - dis->rcItem.top) < (2 * sMask.cy))
+                    dtFlagsNick |= DT_VCENTER;
+                DrawText(dis->hDC, dat->szNickname, -1, &dis->rcItem, dtFlagsNick);
 				if(myGlobals.ipConfig.isValid) {
 					SelectObject(dis->hDC, myGlobals.ipConfig.hFonts[IPFONTID_STATUS]);
 					SetTextColor(dis->hDC, myGlobals.ipConfig.clrs[IPFONTID_STATUS]);
 				}
                 dis->rcItem.left += (szNick.cx + 10);
-                GetTextExtentPoint32(dis->hDC, _T("A"), 1, &szNick);
-                if(dis->rcItem.bottom - dis->rcItem.top >= 2 * szNick.cy) {
-                    dtFlags = DT_WORDBREAK | DT_END_ELLIPSIS | DT_NOPREFIX;
-                    dis->rcItem.right -= 3;
-                }
-                else
-                    dtFlags = DT_SINGLELINE | DT_END_ELLIPSIS | DT_NOPREFIX;
 
+                if(!(dtFlagsNick & DT_VCENTER))
+                //if(dis->rcItem.bottom - dis->rcItem.top >= 2 * sStatusMsg.cy)
+                    dtFlags = DT_WORDBREAK | DT_END_ELLIPSIS | DT_NOPREFIX;
+                else
+                    dtFlags = DT_SINGLELINE | DT_END_ELLIPSIS | DT_NOPREFIX | DT_VCENTER;
+
+                
+                dis->rcItem.right -= 3;
 				if(dis->rcItem.left + 30 < dis->rcItem.right) {
 					//RECT rc = dis->rcItem;
 					//dis->rcItem.left += (rc.right - rc.left);

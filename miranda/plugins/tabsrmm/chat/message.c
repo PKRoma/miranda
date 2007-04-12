@@ -76,6 +76,40 @@ static int ReadInteger( const char* p, int* result )
 	return i;
 }
 
+#if defined(_UNICODE)
+
+static WCHAR *__Utf8_Decode(const char *str)
+{
+	int i, len;
+	char *p;
+	WCHAR *wszTemp = NULL;
+
+	if (str == NULL) return NULL;
+
+	len = strlen(str);
+
+    if ((wszTemp = (WCHAR *) mir_alloc(sizeof(TCHAR) * (len + 2))) == NULL)
+		return NULL;
+	p = (char *) str;
+	i = 0;
+	while (*p) {
+		if ((*p & 0x80) == 0)
+			wszTemp[i++] = *(p++);
+		else if ((*p & 0xe0) == 0xe0) {
+			wszTemp[i] = (*(p++) & 0x1f) << 12;
+			wszTemp[i] |= (*(p++) & 0x3f) << 6;
+			wszTemp[i++] |= (*(p++) & 0x3f);
+		}
+		else {
+			wszTemp[i] = (*(p++) & 0x3f) << 6;
+			wszTemp[i++] |= (*(p++) & 0x3f);
+		}
+	}
+	wszTemp[i] = (TCHAR)'\0';
+	return wszTemp;
+}
+#endif
+
 TCHAR* Chat_DoRtfToTags( char* pszText, SESSION_INFO* si)
 {
 	char *p1;
@@ -263,35 +297,34 @@ TCHAR* Chat_DoRtfToTags( char* pszText, SESSION_INFO* si)
 	#if !defined( _UNICODE )
 		return pszText;
 	#else
-		ptszResult = Utf8_Decode(pszText);
+		ptszResult = __Utf8_Decode(pszText);
 		return ptszResult;
 	#endif
 }
 
-static DWORD CALLBACK Message_StreamCallback(DWORD dwCookie, LPBYTE pbBuff, LONG cb, LONG * pcb)
+static DWORD CALLBACK Chat_Message_StreamCallback(DWORD dwCookie, LPBYTE pbBuff, LONG cb, LONG * pcb)
 {
 	static DWORD dwRead;
-	char ** ppText = (char **) dwCookie;
+    char ** ppText = (char **) dwCookie;
 
 	if (*ppText == NULL) {
-		*ppText = mir_alloc(cb + 1);
-		memcpy(*ppText, pbBuff, cb);
-		(*ppText)[cb] = 0;
+		*ppText = mir_alloc(cb + 2);
+		CopyMemory(*ppText, pbBuff, cb);
 		*pcb = cb;
 		dwRead = cb;
+        *(*ppText + cb) = '\0';
 	}
 	else {
-		char  *p = mir_alloc(dwRead + cb + 1);
-		memcpy(p, *ppText, dwRead);
-		memcpy(p+dwRead, pbBuff, cb);
-		p[dwRead + cb] = 0;
-		mir_free(*ppText);
+		char  *p = mir_realloc(*ppText, dwRead + cb + 2);
+		//memcpy(p, *ppText, dwRead);
+		CopyMemory(p+dwRead, pbBuff, cb);
+		//free(*ppText);
 		*ppText = p;
 		*pcb = cb;
 		dwRead += cb;
+        *(*ppText + dwRead) = '\0';
 	}
-
-	return 0;
+    return 0;
 }
 
 char* Chat_Message_GetFromStream(HWND hwndDlg, SESSION_INFO* si)
@@ -304,7 +337,7 @@ char* Chat_Message_GetFromStream(HWND hwndDlg, SESSION_INFO* si)
 		return NULL;
 
 	ZeroMemory(&stream, sizeof(stream));
-	stream.pfnCallback = Message_StreamCallback;
+	stream.pfnCallback = Chat_Message_StreamCallback;
 	stream.dwCookie = (DWORD) &pszText; // pass pointer to pointer
 
 #if defined(_UNICODE)

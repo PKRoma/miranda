@@ -128,12 +128,12 @@ int AddToSendQueue(HWND hwndDlg, struct MessageWindowData *dat, int iLen, int dw
         if(sendJobs[iFound].sendBuffer == NULL) {
             if(iLength < HISTORY_INITIAL_ALLOCSIZE)
                 iLength = HISTORY_INITIAL_ALLOCSIZE;
-            sendJobs[iFound].sendBuffer = (char *)malloc(iLength);
+            sendJobs[iFound].sendBuffer = (char *)mir_alloc(iLength);
             sendJobs[iFound].dwLen = iLength;
         }
         else {
             if(iLength > sendJobs[iFound].dwLen) {
-                sendJobs[iFound].sendBuffer = (char *)realloc(sendJobs[iFound].sendBuffer, iLength);
+                sendJobs[iFound].sendBuffer = (char *)mir_realloc(sendJobs[iFound].sendBuffer, iLength);
                 sendJobs[iFound].dwLen = iLength;
             }
         }
@@ -163,11 +163,11 @@ static int SendChunkW(WCHAR *chunk, HANDLE hContact, char *szSvc, DWORD dwFlags)
     int mbcsSize = WideCharToMultiByte(codePage, 0, chunk, -1, pBuf, 0, 0, 0);
 
     memRequired += mbcsSize;
-    pBuf = (BYTE *)malloc(memRequired);
+    pBuf = (BYTE *)mir_alloc(memRequired);
     WideCharToMultiByte(codePage, 0, chunk, -1, pBuf, mbcsSize, 0, 0);
     CopyMemory(&pBuf[mbcsSize], chunk, (wLen + 1) * sizeof(WCHAR));
     id = CallContactService(hContact, szSvc, dwFlags, (LPARAM)pBuf);
-    free(pBuf);
+    mir_free(pBuf);
     return id;
 }
 
@@ -283,7 +283,7 @@ static DWORD WINAPI DoSplitSendA(LPVOID param)
     svcName = pss_msg;
 
     iLen = lstrlenA(job->sendBuffer);
-    szTemp = (char *)malloc(iLen + 1);
+    szTemp = (char *)mir_alloc(iLen + 1);
     CopyMemory(szTemp, job->sendBuffer, iLen + 1);
     szBegin = szTemp;
 
@@ -333,7 +333,7 @@ static DWORD WINAPI DoSplitSendA(LPVOID param)
         }
         Sleep(500L);
     } while(fSplitting);
-    free(szBegin);
+    mir_free(szBegin);
     return 0;
 }
 

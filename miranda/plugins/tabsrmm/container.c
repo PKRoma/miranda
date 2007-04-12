@@ -3168,13 +3168,18 @@ int GetTabItemFromMouse(HWND hwndTab, POINT *pt)
  * some people were requesting this, because really long contact list names
  * are causing extraordinary wide tabs and these are looking ugly and wasting
  * screen space.
+ *
+ * size = max length of target string
  */
 
 int CutContactName(TCHAR *oldname, TCHAR *newname, unsigned int size)
 {
     int cutMax = myGlobals.m_CutContactNameTo;
-    if ((int)lstrlen(oldname) <= cutMax)
+
+    if ((int)lstrlen(oldname) <= cutMax) {
         lstrcpyn(newname, oldname, size);
+        newname[size - 1] = 0;
+    }
     else {
 		TCHAR fmt[20];
 		_sntprintf(fmt, 18, _T("%%%d.%ds..."), cutMax, cutMax);
