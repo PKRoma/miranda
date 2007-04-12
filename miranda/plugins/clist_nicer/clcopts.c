@@ -320,6 +320,7 @@ static void DSP_LoadFromDefaults(DISPLAYPROFILE *p)
     p->bGroupIndent = DBGetContactSettingByte(NULL, "CLC", "GroupIndent", CLCDEFAULT_GROUPINDENT);
     p->bRowHeight = DBGetContactSettingByte(NULL, "CLC", "RowHeight", CLCDEFAULT_ROWHEIGHT);
     p->bGroupRowHeight = DBGetContactSettingByte(NULL, "CLC", "GRowHeight", CLCDEFAULT_ROWHEIGHT);
+    CopyMemory(p->exIconOrder, g_CluiData.exIconOrder, EXICON_COUNT);
 }
 
 /*
@@ -332,7 +333,7 @@ void DSP_Apply(DISPLAYPROFILE *p)
     DWORD oldMask = g_CluiData.dwExtraImageMask;
     int   i;
     DWORD exStyle;
-
+    char  temp[EXICON_COUNT + 1];
     /*
      * icons page
      */
@@ -345,6 +346,11 @@ void DSP_Apply(DISPLAYPROFILE *p)
     DBWriteContactSettingByte(NULL, "CLC", "ExIconScale", (BYTE)g_CluiData.exIconScale);
     DBWriteContactSettingByte(NULL, "CLC", "si_centered", (BYTE)g_CluiData.bCenterStatusIcons);
     DBWriteContactSettingByte(NULL, "CLC", "ShowIdle", (BYTE)p->bDimIdle);
+
+    CopyMemory(g_CluiData.exIconOrder, p->exIconOrder, EXICON_COUNT);
+    CopyMemory(temp, p->exIconOrder, EXICON_COUNT);
+    temp[EXICON_COUNT] = 0;
+    DBWriteContactSettingString(NULL, "CLUI", "exIconOrder", temp);
 
     /*
      * advanced (avatars & 2nd row)
@@ -816,12 +822,93 @@ static CALLBACK DlgProcDspAdvanced(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM
 	return FALSE;
 }
 
+ORDERTREEDATA OrderTreeData[]=
+{
+	{EIMG_MAIL, _T("EMail"), EIMG_MAIL, TRUE, 0},
+	{EIMG_URL, _T("Homepage"), EIMG_URL, TRUE, 0},
+	{EIMG_SMS, _T("Telephone"), EIMG_SMS, TRUE, 0},
+	{EIMG_RESERVED, _T("Reserved, unused"), EIMG_RESERVED, TRUE, 0},
+	{EIMG_EXTRA, _T("Advanced #1 (ICQ X-Status)"), EIMG_EXTRA, TRUE, 0},
+	{EIMG_RESERVED2, _T("Advanced #2"), EIMG_RESERVED2, TRUE, 0},
+	{EIMG_CLIENT, _T("Client (fingerprint required)"), EIMG_CLIENT, TRUE, 0},
+	{7, _T("Reserved #1"), 7, TRUE, 0},
+    {8, _T("Reserved #2"), 8, TRUE, 0},
+    {9, _T("Reserved #3"), 9, TRUE, 0},
+    {10, _T("Reserved #4"), 10, TRUE, 0},
+};
+ 
+static int dragging=0;
+static HANDLE hDragItem=NULL;
+
+static int FillOrderTree(HWND hwndDlg, HWND hwndTree, DISPLAYPROFILE *p)
+{
+	int i = 0;
+	TVINSERTSTRUCT tvis = {0};
+	TreeView_DeleteAllItems(hwndTree);
+	tvis.hParent = NULL;
+	tvis.hInsertAfter = TVI_LAST;
+	tvis.item.mask = TVIF_PARAM | TVIF_TEXT | TVIF_IMAGE | TVIF_SELECTEDIMAGE;	
+
+	for (i = 0; i < EXICON_COUNT; i++) {
+        int iIndex = (int)(p->exIconOrder[i] - 1);
+		tvis.hInsertAfter = TVI_LAST;
+		tvis.item.lParam=(LPARAM)(&(OrderTreeData[iIndex]));
+		tvis.item.pszText = TranslateTS(OrderTreeData[iIndex].Name);
+        OrderTreeData[iIndex].Visible = (p->dwExtraImageMask & (1 << OrderTreeData[iIndex].ID)) ? TRUE : FALSE;
+		tvis.item.iImage = tvis.item.iSelectedImage = OrderTreeData[iIndex].Visible;
+		TreeView_InsertItem(hwndTree, &tvis);
+	}
+    /*
+	{
+		TVSORTCB sort={0};
+		sort.hParent=NULL;
+		sort.lParam=0;
+		sort.lpfnCompare=CompareFunc;
+		TreeView_SortChildrenCB(Tree,&sort,0);
+	}
+    */
+	return 0;
+}
+
+static int SaveOrderTree(HWND hwndDlg, HWND hwndTree, DISPLAYPROFILE *p)
+{
+	HTREEITEM ht;
+	TVITEM tvi = {0};
+    int  iIndex = 0;
+
+	tvi.mask = TVIF_HANDLE | TVIF_IMAGE | TVIF_SELECTEDIMAGE | TVIF_PARAM;
+	ht = TreeView_GetRoot(hwndTree);
+
+    p->dwExtraImageMask = 0;
+
+	do	{
+		ORDERTREEDATA *it = NULL;
+		tvi.hItem = ht;
+		TreeView_GetItem(hwndTree, &tvi);
+		it = (ORDERTREEDATA *)(tvi.lParam);
+
+        p->exIconOrder[iIndex] = it->ID + 1;
+        p->dwExtraImageMask |= (it->Visible ? (1 << it->ID) : 0);
+		ht = TreeView_GetNextSibling(hwndTree, ht);
+        iIndex++;
+	} while (ht);
+	return 0;
+}
+
 static BOOL CALLBACK DlgProcXIcons(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam)
 {
 	switch (msg) {
 	case WM_INITDIALOG:
 		{
 			TranslateDialogDefault(hwndDlg);
+			SetWindowLong(GetDlgItem(hwndDlg, IDC_EXTRAORDER), GWL_STYLE, GetWindowLong(GetDlgItem(hwndDlg,IDC_EXTRAORDER),GWL_STYLE)|TVS_NOHSCROLL);
+			{	
+				HIMAGELIST himlCheckBoxes;
+				himlCheckBoxes=ImageList_Create(GetSystemMetrics(SM_CXSMICON),GetSystemMetrics(SM_CYSMICON),ILC_COLOR32|ILC_MASK,2,2);
+				ImageList_AddIcon(himlCheckBoxes, LoadImage(g_hInst, MAKEINTRESOURCE(IDI_NOTICK), IMAGE_ICON, 16, 16, LR_SHARED));
+                ImageList_AddIcon(himlCheckBoxes, LoadImage(g_hInst, MAKEINTRESOURCE(IDI_TICK), IMAGE_ICON, 16, 16, LR_SHARED));
+				TreeView_SetImageList(GetDlgItem(hwndDlg,IDC_EXTRAORDER), himlCheckBoxes, TVSIL_NORMAL);
+			}
 			return TRUE;
 		}
 	case WM_COMMAND:
@@ -834,6 +921,7 @@ static BOOL CALLBACK DlgProcXIcons(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM
         {
             DISPLAYPROFILE *p = (DISPLAYPROFILE *)lParam;
             if(p) {
+                /*
                 CheckDlgButton(hwndDlg, IDC_SHOWCLIENTICONS, p->dwExtraImageMask & EIMG_SHOW_CLIENT);
                 CheckDlgButton(hwndDlg, IDC_SHOWEXTENDEDSTATUS, p->dwExtraImageMask & EIMG_SHOW_EXTRA);
                 CheckDlgButton(hwndDlg, IDC_EXTRAMAIL, p->dwExtraImageMask & EIMG_SHOW_MAIL);
@@ -844,6 +932,7 @@ static BOOL CALLBACK DlgProcXIcons(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM
                 CheckDlgButton(hwndDlg, IDC_EXTRARESERVED3, p->dwExtraImageMask & EIMG_SHOW_RESERVED3);
                 CheckDlgButton(hwndDlg, IDC_EXTRARESERVED4, p->dwExtraImageMask & EIMG_SHOW_RESERVED4);
                 CheckDlgButton(hwndDlg, IDC_EXTRARESERVED5, p->dwExtraImageMask & EIMG_SHOW_RESERVED5);
+                */
                 CheckDlgButton(hwndDlg, IDC_XSTATUSASSTATUS, p->dwFlags & CLUI_FRAME_USEXSTATUSASSTATUS ? 1 : 0);
 
                 CheckDlgButton(hwndDlg, IDC_SHOWSTATUSICONS, (p->dwFlags & CLUI_FRAME_STATUSICONS) ? BST_CHECKED : BST_UNCHECKED);
@@ -858,6 +947,7 @@ static BOOL CALLBACK DlgProcXIcons(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM
 
                 SendDlgItemMessage(hwndDlg, IDC_EXICONSCALESPIN, UDM_SETRANGE, 0, MAKELONG(20, 8));
                 SendDlgItemMessage(hwndDlg, IDC_EXICONSCALESPIN, UDM_SETPOS, 0, (LPARAM)p->exIconScale);
+                FillOrderTree(hwndDlg, GetDlgItem(hwndDlg, IDC_EXTRAORDER), p);
             }
             return 0;
         }
@@ -865,7 +955,7 @@ static BOOL CALLBACK DlgProcXIcons(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM
         {
             DISPLAYPROFILE *p = (DISPLAYPROFILE *)lParam;
             if(p) {
-                p->dwExtraImageMask = (IsDlgButtonChecked(hwndDlg, IDC_EXTRAMAIL) ? EIMG_SHOW_MAIL : 0) |
+                /*p->dwExtraImageMask = (IsDlgButtonChecked(hwndDlg, IDC_EXTRAMAIL) ? EIMG_SHOW_MAIL : 0) |
                     (IsDlgButtonChecked(hwndDlg, IDC_EXTRAWEB) ? EIMG_SHOW_URL : 0) |
                     (IsDlgButtonChecked(hwndDlg, IDC_SHOWEXTENDEDSTATUS) ? EIMG_SHOW_EXTRA : 0) |
                     (IsDlgButtonChecked(hwndDlg, IDC_EXTRAPHONE) ? EIMG_SHOW_SMS : 0) |
@@ -875,7 +965,9 @@ static BOOL CALLBACK DlgProcXIcons(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM
                     (IsDlgButtonChecked(hwndDlg, IDC_EXTRARESERVED3) ? EIMG_SHOW_RESERVED3 : 0) |
                     (IsDlgButtonChecked(hwndDlg, IDC_EXTRARESERVED4) ? EIMG_SHOW_RESERVED4 : 0) |
                     (IsDlgButtonChecked(hwndDlg, IDC_EXTRARESERVED5) ? EIMG_SHOW_RESERVED5 : 0);
-
+                    */
+                SaveOrderTree(hwndDlg, GetDlgItem(hwndDlg, IDC_EXTRAORDER), p);
+                   
                     p->exIconScale = SendDlgItemMessage(hwndDlg, IDC_EXICONSCALESPIN, UDM_GETPOS, 0, 0);
                     p->exIconScale = (p->exIconScale < 8 || p->exIconScale > 20) ? 16 : p->exIconScale;
 
@@ -893,6 +985,38 @@ static BOOL CALLBACK DlgProcXIcons(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM
             return 0;
         }
     case WM_NOTIFY:
+        if(((LPNMHDR) lParam)->idFrom == IDC_EXTRAORDER) {
+            switch (((LPNMHDR)lParam)->code) {
+            case TVN_BEGINDRAGA:
+            case TVN_BEGINDRAGW:
+                SetCapture(hwndDlg);
+                dragging=1;
+                hDragItem=((LPNMTREEVIEWA)lParam)->itemNew.hItem;
+                TreeView_SelectItem(GetDlgItem(hwndDlg,IDC_EXTRAORDER),hDragItem);
+                break;
+            case NM_CLICK:
+                {						
+                    TVHITTESTINFO hti;
+                    hti.pt.x=(short)LOWORD(GetMessagePos());
+                    hti.pt.y=(short)HIWORD(GetMessagePos());
+                    ScreenToClient(((LPNMHDR)lParam)->hwndFrom,&hti.pt);
+                    if(TreeView_HitTest(((LPNMHDR)lParam)->hwndFrom,&hti))
+                        if(hti.flags&TVHT_ONITEMICON) 
+                        {
+                            TVITEMA tvi;
+                            tvi.mask=TVIF_HANDLE|TVIF_IMAGE|TVIF_SELECTEDIMAGE;
+                            tvi.hItem=hti.hItem;
+                            TreeView_GetItem(((LPNMHDR)lParam)->hwndFrom,&tvi);
+                            tvi.iImage=tvi.iSelectedImage=!tvi.iImage;
+                            ((ORDERTREEDATA *)tvi.lParam)->Visible=tvi.iImage;
+                            TreeView_SetItem(((LPNMHDR)lParam)->hwndFrom,&tvi);
+                            SendMessage((GetParent(hwndDlg)), PSM_CHANGED, (WPARAM)hwndDlg, 0);
+                        }
+    
+                }
+            }
+            break;
+        }
 		switch (((LPNMHDR) lParam)->code) {
 		case PSN_APPLY:
 			{
@@ -900,6 +1024,76 @@ static BOOL CALLBACK DlgProcXIcons(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM
 			}
 		}
 		break;
+
+	case WM_MOUSEMOVE:
+		{
+			if(!dragging) 
+                break;
+			{	
+				TVHITTESTINFO hti;
+				hti.pt.x = (short)LOWORD(lParam);
+				hti.pt.y = (short)HIWORD(lParam);
+				ClientToScreen(hwndDlg, &hti.pt);
+				ScreenToClient(GetDlgItem(hwndDlg, IDC_EXTRAORDER), &hti.pt);
+				TreeView_HitTest(GetDlgItem(hwndDlg,IDC_EXTRAORDER), &hti);
+				if(hti.flags&(TVHT_ONITEM|TVHT_ONITEMRIGHT)) {
+					HTREEITEM it = hti.hItem;
+					hti.pt.y -= TreeView_GetItemHeight(GetDlgItem(hwndDlg, IDC_EXTRAORDER)) / 2;
+					TreeView_HitTest(GetDlgItem(hwndDlg, IDC_EXTRAORDER), &hti);
+					//TreeView_SetInsertMark(GetDlgItem(hwndDlg,IDC_EXTRAORDER),hti.hItem,1);
+					if (!(hti.flags & TVHT_ABOVE))
+						TreeView_SetInsertMark(GetDlgItem(hwndDlg, IDC_EXTRAORDER), hti.hItem, 1);
+					else 
+						TreeView_SetInsertMark(GetDlgItem(hwndDlg, IDC_EXTRAORDER), it, 0);
+				}
+				else {
+					if(hti.flags & TVHT_ABOVE) SendDlgItemMessage(hwndDlg,IDC_EXTRAORDER, WM_VSCROLL, MAKEWPARAM(SB_LINEUP, 0), 0);
+					if(hti.flags & TVHT_BELOW) SendDlgItemMessage(hwndDlg, IDC_EXTRAORDER, WM_VSCROLL, MAKEWPARAM(SB_LINEDOWN, 0), 0);
+					TreeView_SetInsertMark(GetDlgItem(hwndDlg, IDC_EXTRAORDER), NULL, 0);
+				}
+			}	
+		}
+		break;
+	case WM_LBUTTONUP:
+		{
+			if(!dragging) break;
+			TreeView_SetInsertMark(GetDlgItem(hwndDlg,IDC_EXTRAORDER),NULL,0);
+			dragging=0;
+			ReleaseCapture();
+			{	
+				TVHITTESTINFO hti;
+				TVITEM tvi;
+				hti.pt.x=(short)LOWORD(lParam);
+				hti.pt.y=(short)HIWORD(lParam);
+				ClientToScreen(hwndDlg,&hti.pt);
+				ScreenToClient(GetDlgItem(hwndDlg,IDC_EXTRAORDER),&hti.pt);
+				hti.pt.y-=TreeView_GetItemHeight(GetDlgItem(hwndDlg,IDC_EXTRAORDER))/2;
+				TreeView_HitTest(GetDlgItem(hwndDlg,IDC_EXTRAORDER),&hti);
+				if(hDragItem==hti.hItem) break;
+				if (hti.flags&TVHT_ABOVE) hti.hItem=TVI_FIRST;
+				tvi.mask=TVIF_HANDLE|TVIF_PARAM;
+				tvi.hItem=hDragItem;
+				TreeView_GetItem(GetDlgItem(hwndDlg,IDC_EXTRAORDER),&tvi);
+				if(hti.flags&(TVHT_ONITEM|TVHT_ONITEMRIGHT)||(hti.hItem==TVI_FIRST)) 
+				{
+					TVINSERTSTRUCT tvis;
+					TCHAR name[128];
+					tvis.item.mask=TVIF_HANDLE|TVIF_PARAM|TVIF_TEXT|TVIF_IMAGE|TVIF_SELECTEDIMAGE;
+					tvis.item.stateMask=0xFFFFFFFF;
+					tvis.item.pszText=name;
+					tvis.item.cchTextMax=sizeof(name);
+					tvis.item.hItem=hDragItem;
+					tvis.item.iImage=tvis.item.iSelectedImage=((ORDERTREEDATA *)tvi.lParam)->Visible;				
+					TreeView_GetItem(GetDlgItem(hwndDlg,IDC_EXTRAORDER),&tvis.item);				
+					TreeView_DeleteItem(GetDlgItem(hwndDlg,IDC_EXTRAORDER),hDragItem);
+					tvis.hParent=NULL;
+					tvis.hInsertAfter=hti.hItem;
+					TreeView_SelectItem(GetDlgItem(hwndDlg,IDC_EXTRAORDER),TreeView_InsertItem(GetDlgItem(hwndDlg,IDC_EXTRAORDER),&tvis));
+					SendMessage((GetParent(hwndDlg)), PSM_CHANGED, (WPARAM)hwndDlg, 0);
+				}
+			}
+		}
+		break; 
 	}
 	return FALSE;
 }

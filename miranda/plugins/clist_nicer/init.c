@@ -255,6 +255,8 @@ int __declspec(dllexport) CListInitialise(PLUGINLINK * link)
 {
 	int rc = 0;
 	HMODULE hUserDll;
+    DBVARIANT dbv;
+	int       i;
 
 	pluginLink = link;
 #ifdef _DEBUG
@@ -348,6 +350,22 @@ int __declspec(dllexport) CListInitialise(PLUGINLINK * link)
 		g_CluiData.local_gmt_diff = (int)difftime(now, gmt_time);
 
 	}
+    if(!DBGetContactSetting(NULL, "CLUI", "exIconOrder", &dbv)) {
+
+        if(lstrlenA(dbv.pszVal) < EXICON_COUNT) {
+            for(i = 1; i <= EXICON_COUNT; i++)
+                g_CluiData.exIconOrder[i - 1] = i;
+        }
+        else {
+            for(i = 0; i < EXICON_COUNT; i++)
+                g_CluiData.exIconOrder[i] = dbv.pszVal[i];
+        }
+        DBFreeVariant(&dbv);
+    }
+    else {
+        for(i = 1; i <= EXICON_COUNT; i++)
+            g_CluiData.exIconOrder[i - 1] = i;
+    }
 	ReloadThemedOptions();
 	FLT_ReadOptions();
 	Reload3dBevelColors();

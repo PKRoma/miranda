@@ -34,6 +34,7 @@ extern int g_nextExtraCacheEntry;
 extern ImageItem *g_glyphItem;
 
 extern int hClcProtoCount;
+extern ORDERTREEDATA OrderTreeData[];
 
 extern ClcProtoStatus *clcProto;
 extern HIMAGELIST hCListImages;
@@ -1067,20 +1068,24 @@ bgskipped:
 			BYTE bApparentModeDontCare = !((flags & CONTACTF_VISTO) ^ (flags & CONTACTF_INVISTO));
 			contact->extraIconRightBegin = 0;
             if(cEntry && (contact->extraCacheEntry >= 0 && contact->extraCacheEntry < g_nextExtraCacheEntry && cEntry->iExtraValid)) {
-				int i;
+				int i, iIndex, id;
                 DWORD dwOldMask = cEntry->dwXMask;
                 if(dwFlags & CLUI_FRAME_USEXSTATUSASSTATUS)
                     cEntry->dwXMask &= ~EIMG_SHOW_EXTRA;
 
-				for(i = 9; i >= 0; i--) {
-					if(cEntry->iExtraImage[i] != 0xff && ((1 << i) & cEntry->dwXMask)) {
-						if(contact->extraIconRightBegin == 0 && i != 9)
-							contact->extraIconRightBegin = rcContent.right;
-						ImageList_DrawEx(dat->himlExtraColumns, cEntry->iExtraImage[i], hdcMem, rcContent.right - g_CluiData.exIconScale, twoRows ? rcContent.bottom - g_exIconSpacing : y + ((rowHeight - g_CluiData.exIconScale) >> 1), 
-							0, 0, CLR_NONE, CLR_NONE, ILD_NORMAL);
-						rcContent.right -= g_exIconSpacing;
-						rightIcons++;
-					}
+				for(i = EXICON_COUNT - 1; i >= 0; i--) {
+                    iIndex = g_CluiData.exIconOrder[i] - 1;
+                    if(iIndex >= 0 && iIndex < EXICON_COUNT) {
+                        id = OrderTreeData[iIndex].ID;
+                        if(cEntry->iExtraImage[id] != 0xff && ((1 << id) & cEntry->dwXMask)) {
+                            if(contact->extraIconRightBegin == 0 && i != (EXICON_COUNT - 1))
+                                contact->extraIconRightBegin = rcContent.right;
+                            ImageList_DrawEx(dat->himlExtraColumns, cEntry->iExtraImage[id], hdcMem, rcContent.right - g_CluiData.exIconScale, twoRows ? rcContent.bottom - g_exIconSpacing : y + ((rowHeight - g_CluiData.exIconScale) >> 1), 
+                                0, 0, CLR_NONE, CLR_NONE, ILD_NORMAL);
+                            rcContent.right -= g_exIconSpacing;
+                            rightIcons++;
+                        }
+                    }
 				}
                 cEntry->dwXMask = dwOldMask;
 			}

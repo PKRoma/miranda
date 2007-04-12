@@ -128,7 +128,7 @@ int GetWindowVisibleState(HWND hWnd, int iStepX, int iStepY)
 		return GWVS_HIDDEN;
 	else {
 		HRGN rgn = 0;
-		POINT ptTest, ptOrig;
+		POINT ptOrig;
         RECT  rcClient;
 		int clip = (int)g_CluiData.bClipBorder;
 

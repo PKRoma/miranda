@@ -70,6 +70,11 @@ LRESULT ProcessExternalMessages(HWND hwnd, struct ClcData *dat, UINT msg, WPARAM
 			if(contact->bIsMeta && LOWORD(lParam) != EIMG_EXTRA && LOWORD(lParam) != EIMG_CLIENT)
 				return 0;
 
+            /*
+            if(contact->hContact == 5846286) {
+                _DebugTraceA("set extra image %d", LOWORD(lParam));
+            }
+            */
 			if(index >= 0 && index < g_nextExtraCacheEntry) {
 				g_ExtraCache[index].iExtraImage[LOWORD(lParam)] = (BYTE)HIWORD(lParam);
 				g_ExtraCache[index].iExtraValid = g_ExtraCache[index].iExtraImage[LOWORD(lParam)] != (BYTE)0xff ? (g_ExtraCache[index].iExtraValid | (1 << LOWORD(lParam))) : (g_ExtraCache[index].iExtraValid & ~(1 << LOWORD(lParam)));

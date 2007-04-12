@@ -108,6 +108,18 @@ typedef struct ContactFloater CONTACTFLOATER;
 #define DSPF_DONTSEPARATEOFFLINE 32
 #define DSPF_CENTERGROUPNAMES 64
 
+#define EXICON_COUNT 11
+
+/* Extra icons settings */
+typedef struct _OrderTreeData 
+{ 
+	BYTE	ID;
+	TCHAR *	Name;
+	BYTE	Position;
+	BOOL	Visible;
+    BOOL    fReserved;
+} *PORDERTREEDATA, ORDERTREEDATA;
+
 struct DisplayProfile {
     UINT    uID;
     TCHAR   tszName[60];
@@ -125,6 +137,7 @@ struct DisplayProfile {
     BYTE     sortOrder[3], bUseDCMirroring, bGroupAlign;
     BYTE     avatarPadding;
     BYTE     bLeftMargin, bRightMargin, bRowSpacing, bGroupIndent, bRowHeight, bGroupRowHeight;
+    BYTE     exIconOrder[EXICON_COUNT];
 };
 
 #define DSP_PROFILES_MODULE "CLN_DspProfiles"           // db module for display profiles
@@ -402,6 +415,7 @@ struct CluiData {
     BOOL fOnDesktop;
     int  group_padding;
     DWORD t_now;
+    BYTE exIconOrder[EXICON_COUNT];
 };
 
 #define SORTBY_NAME 1
