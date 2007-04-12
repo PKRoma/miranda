@@ -583,7 +583,7 @@ static int MsnGetAvatarInfo(WPARAM wParam,LPARAM lParam)
 		return GAIR_NOAVATAR;
 
 	MSN_GetAvatarFileName( AI->hContact, AI->filename, sizeof AI->filename );
-	AI->format = ( AI->hContact == NULL ) ? PA_FORMAT_PNG : PA_FORMAT_BMP;
+	AI->format = PA_FORMAT_PNG;
 
 	if ( ::access( AI->filename, 0 ) == 0 ) {
 		char szSavedContext[ 256 ];
@@ -995,7 +995,7 @@ int MsnSetAvatar( WPARAM wParam, LPARAM lParam )
 	BYTE* pResult = new BYTE[ dwPngSize ];
 	if ( pResult == NULL )
 		return 2;
-	
+
 	read( fileIn, pResult, dwPngSize );
 	close( fileIn );
 

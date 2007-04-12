@@ -180,7 +180,6 @@ static BOOL CALLBACK DlgProcMsnOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARA
 					break;
 				}
 
-            EnableWindow( GetDlgItem( hwndDlg, IDC_SETAVATAR ), tIsChosen );
             EnableWindow( GetDlgItem( hwndDlg, IDC_DELETEAVATAR ), tIsChosen );
 			}
 
@@ -389,7 +388,7 @@ static BOOL CALLBACK DlgProcMsnConnOpts(HWND hwndDlg, UINT msg, WPARAM wParam, L
 			if ( IsDlgButtonChecked( hwndDlg, IDC_USEGATEWAY )) {
 				SetDlgItemTextA( hwndDlg, IDC_LOGINSERVER, MSN_DEFAULT_GATEWAY );
 				SetDlgItemInt( hwndDlg, IDC_MSNPORT, 80, FALSE );
-			} 
+			}
 			else {
 				SetDlgItemTextA( hwndDlg, IDC_LOGINSERVER, MSN_DEFAULT_LOGIN_SERVER );
 				SetDlgItemInt(  hwndDlg, IDC_MSNPORT,  1863, FALSE );
@@ -639,7 +638,7 @@ static BOOL CALLBACK DlgProcHotmailPopUpOpts( HWND hwndDlg, UINT msg, WPARAM wPa
 int MsnOptInit(WPARAM wParam,LPARAM lParam)
 {
 	OPTIONSDIALOGPAGE odp = { 0 };
-	
+
 	odp.cbSize      = sizeof(odp);
 	odp.position    = -790000000;
 	odp.hInstance   = hInst;
@@ -737,12 +736,12 @@ DWORD WINAPI MsnShowMailThread( LPVOID )
 		char rruenc[256];
 		UrlEncode(rru, rruenc, sizeof(rruenc));
 
-		mir_snprintf(hippy, sizeof(hippy), 
+		mir_snprintf(hippy, sizeof(hippy),
 			"%s&auth=%s&creds=%08x%08x%08x%08x&sl=%d&username=%s&mode=ttl"
 			"&sid=%s&id=%s&rru=%s&svc=mail&js=yes",
 			passport, MSPAuth, htonl(*(PDWORD)(digest+0)),htonl(*(PDWORD)(digest+4)),
 			htonl(*(PDWORD)(digest+8)),htonl(*(PDWORD)(digest+12)),
-			tm, email, sid, urlId, rruenc); 
+			tm, email, sid, urlId, rruenc);
 	}
 	else
 		strcpy( hippy, "http://go.msn.com/0/1" );
