@@ -205,9 +205,9 @@ int FillTree(HWND hwnd)
 		CallProtoService( szSTName, PS_GETNAME, sizeof( szName ), ( LPARAM )szName );
 
 		PD = ( ProtocolData* )mir_alloc( sizeof( ProtocolData ));
-		PD->RealName = GetUniqueProtoName(szSTName); //it return static pointer to protocol name-> not net to be freed
-        mir_free(szSTName);
-        szSTName=PD->RealName;
+		PD->RealName = GetUniqueProtoName(szName); //it return static pointer to protocol name-> not net to be freed
+		mir_free(szSTName);
+		szSTName=PD->RealName;
 
 		_itoa( OFFSET_VISIBLE+i, buf, 10 );
 		PD->show=(boolean)DBGetContactSettingDword(0,"Protocols", buf, 1 );
