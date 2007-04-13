@@ -183,19 +183,8 @@ static BOOL CALLBACK DlgSkinOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM l
 							res=MessageBoxA(hwndDlg,Translate("Current skin was not saved to file.\n\nAll changes will be lost.\n\n Continue to load new skin?"),Translate("Warning!"),MB_OKCANCEL|MB_ICONWARNING|MB_DEFBUTTON2|MB_TOPMOST);
 						if (res!=IDOK) return 0;
 					}
-					// TODO need to write filename to db
-					//SkinEngine_LoadSkinFromIniFile(sd->File);
-					{
-						char file[MAX_PATH];
-						char skinFolder[MAX_PATH];
-						char skinFolderRel[MAX_PATH];
-						CallService(MS_UTILS_PATHTORELATIVE,(WPARAM)sd->File,(LPARAM)file);					
-						SkinEngine_GetSkinFolder(file,skinFolder);
-						CallService(MS_UTILS_PATHTORELATIVE,(WPARAM)skinFolder,(LPARAM)skinFolderRel);
-						DBWriteContactSettingString(NULL,SKIN,"SkinFolder",skinFolderRel);
-						DBWriteContactSettingString(NULL,SKIN,"SkinFile",file);
-					}
-					SkinEngine_LoadSkin();	
+					SkinEngine_LoadSkinFromIniFile(sd->File);
+					SkinEngine_LoadSkinFromDB();	
 					glOtherSkinWasLoaded=TRUE;
 					pcli->pfnClcBroadcast( INTM_RELOADOPTIONS,0,0);
 					callProxied_CLUIFrames_OnClistResize_mod(0,0);
@@ -209,10 +198,10 @@ static BOOL CALLBACK DlgSkinOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM l
 					}
 					if (g_hCLUIOptionsWnd)
 					{
-						SendDlgItemMessage(g_hCLUIOptionsWnd,IDC_LEFTMARGINSPIN,UDM_SETPOS,0,g_CluiData.LeftClientMargin);
-						SendDlgItemMessage(g_hCLUIOptionsWnd,IDC_RIGHTMARGINSPIN,UDM_SETPOS,0,g_CluiData.RightClientMargin);
-						SendDlgItemMessage(g_hCLUIOptionsWnd,IDC_TOPMARGINSPIN,UDM_SETPOS,0,g_CluiData.TopClientMargin);
-						SendDlgItemMessage(g_hCLUIOptionsWnd,IDC_BOTTOMMARGINSPIN,UDM_SETPOS,0,g_CluiData.BottomClientMargin);
+						SendDlgItemMessage(g_hCLUIOptionsWnd,IDC_LEFTMARGINSPIN,UDM_SETPOS,0,DBGetContactSettingByte(NULL,"CLUI","LeftClientMargin",0));
+						SendDlgItemMessage(g_hCLUIOptionsWnd,IDC_RIGHTMARGINSPIN,UDM_SETPOS,0,DBGetContactSettingByte(NULL,"CLUI","RightClientMargin",0));
+						SendDlgItemMessage(g_hCLUIOptionsWnd,IDC_TOPMARGINSPIN,UDM_SETPOS,0,DBGetContactSettingByte(NULL,"CLUI","TopClientMargin",0));
+						SendDlgItemMessage(g_hCLUIOptionsWnd,IDC_BOTTOMMARGINSPIN,UDM_SETPOS,0,DBGetContactSettingByte(NULL,"CLUI","BottomClientMargin",0));
 					}
 				}
 				break;
@@ -498,7 +487,10 @@ int FillAvailableSkinList(HWND hwndDlg)
 	int res=-1;
 	char path[MAX_PATH];//,mask[MAX_PATH];
 	int attrib;
-	CallService(MS_UTILS_PATHTOABSOLUTE, (WPARAM)"Skins", (LPARAM)path);
+	char *SkinsFolder=DBGetStringA(NULL,"ModernData","SkinsFolder");
+	if (!SkinsFolder) SkinsFolder=mir_strdup("Skins");
+	CallService(MS_UTILS_PATHTOABSOLUTE, (WPARAM)SkinsFolder, (LPARAM)path);
+	mir_free_and_nill(SkinsFolder);
 	AddSkinToList(hwndDlg,Translate("Default Skin"),"%Default Skin%");
 	attrib = GetFileAttributesA(path);
 	if (attrib != INVALID_FILE_ATTRIBUTES && (attrib & FILE_ATTRIBUTE_DIRECTORY))

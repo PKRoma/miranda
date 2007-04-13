@@ -184,7 +184,7 @@ HICON	SkinEngine_ImageList_GetIcon(HIMAGELIST himl, int i, UINT fStyle);
 int     SkinEngine_JustUpdateWindowImageRect(RECT * rty);
 HBITMAP SkinEngine_LoadGlyphImage(char * szFileName);
 int     SkinEngine_LoadModule();
-void	SkinEngine_LoadSkin(void);
+void	SkinEngine_LoadSkinFromDB(void);
 int		SkinEngine_LoadSkinFromIniFile(char*);
 TCHAR*	SkinEngine_ParseText(TCHAR *stzText);
 int		SkinEngine_PrepeareImageButDontUpdateIt(RECT * r);

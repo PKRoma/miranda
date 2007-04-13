@@ -2318,9 +2318,8 @@ int CLUIFrames_GetTotalHeight()
 	//allbord=(winrect.bottom-winrect.top)-(clirect.bottom-clirect.top);
 
 	//TODO minsize
-	sumheight+=g_CluiData.TopClientMargin;
-	sumheight+=g_CluiData.BottomClientMargin;
-	//TODO load skin: MinHeight
+	sumheight+=DBGetContactSettingByte(NULL,"CLUI","TopClientMargin",0);
+	sumheight+=DBGetContactSettingByte(NULL,"CLUI","BottomClientMargin",0); //$$ BOTTOM border
 	return  max(DBGetContactSettingWord(NULL,"CLUI","MinHeight",0),
 		(sumheight+border.top+border.bottom+3)       );
 }
@@ -2358,9 +2357,9 @@ int CLUIFramesGetMinHeight()
 	//	clirect.bottom+=border.top+border.bottom;
 	//allbord=(winrect.bottom-winrect.top)-(clirect.bottom-clirect.top);
 
-	sumheight+=g_CluiData.TopClientMargin;
-	sumheight+=g_CluiData.BottomClientMargin;
 	//TODO minsize
+	sumheight+=DBGetContactSettingByte(NULL,"CLUI","TopClientMargin",0);
+	sumheight+=DBGetContactSettingByte(NULL,"CLUI","BottomClientMargin",0); //$$ BOTTOM border
 	return  max(DBGetContactSettingWord(NULL,"CLUI","MinHeight",0),
 		(sumheight+border.top+border.bottom+allbord+tbh+3)       );
 }
@@ -2583,11 +2582,10 @@ static int CLUIFrames_OnClistResize_mod(WPARAM wParam,LPARAM mode)
 
 	GetClientRect(pcli->hwndContactList,&nRect);
 
-	nRect.left+=g_CluiData.LeftClientMargin; //$$ Left BORDER SIZE
-	nRect.right-=g_CluiData.RightClientMargin; //$$ Left BORDER SIZE
-	nRect.top+=g_CluiData.TopClientMargin;		//$$ TOP border
-	nRect.bottom-=g_CluiData.BottomClientMargin; //$$ BOTTOM border   
-	ContactListHeight=nRect.bottom-nRect.top; //$$
+	nRect.left+=DBGetContactSettingByte(NULL,"CLUI","LeftClientMargin",0); //$$ Left BORDER SIZE
+	nRect.right-=DBGetContactSettingByte(NULL,"CLUI","RightClientMargin",0); //$$ Left BORDER SIZE
+	nRect.top+=DBGetContactSettingByte(NULL,"CLUI","TopClientMargin",0); //$$ TOP border
+	nRect.bottom-=DBGetContactSettingByte(NULL,"CLUI","BottomClientMargin",0); //$$ BOTTOM border     ContactListHeight=nRect.bottom-nRect.top; //$$
 	//	g_CluiData.mutexPreventDockMoving=0;
 	tick=GetTickCount();
 	CLUIFramesResize(nRect);
@@ -2614,10 +2612,10 @@ int SizeFramesByWindowRect(RECT *r, HDWP * PosBatch, int mode)
 	nRect.top=0;
 	nRect.right=r->right-r->left;
 	nRect.bottom=r->bottom-r->top;
-	nRect.left+=g_CluiData.LeftClientMargin; //$$ Left BORDER SIZE
-	nRect.right-=g_CluiData.RightClientMargin; //$$ Left BORDER SIZE
-	nRect.top+=g_CluiData.TopClientMargin;		//$$ TOP border
-	nRect.bottom-=g_CluiData.BottomClientMargin; //$$ BOTTOM border 
+	nRect.left+=DBGetContactSettingByte(NULL,"CLUI","LeftClientMargin",0); //$$ Left BORDER SIZE
+	nRect.right-=DBGetContactSettingByte(NULL,"CLUI","RightClientMargin",0); //$$ Left BORDER SIZE
+	nRect.top+=DBGetContactSettingByte(NULL,"CLUI","TopClientMargin",0); //$$ TOP border
+	nRect.bottom-=DBGetContactSettingByte(NULL,"CLUI","BottomClientMargin",0); //$$ BOTTOM border     ContactListHeight=nRect.bottom-nRect.top; //$$
 	CLUIFramesResizeFrames(nRect);
 	{
 		int i;
@@ -2798,10 +2796,10 @@ static int CLUIFramesOnClistResize(WPARAM wParam,LPARAM lParam)
 	nRect.top=0;
 	ContactListHeight=nRect.bottom; $$$*/
 
-	nRect.left+=g_CluiData.LeftClientMargin; //$$ Left BORDER SIZE
-	nRect.right-=g_CluiData.RightClientMargin; //$$ Left BORDER SIZE
-	nRect.top+=g_CluiData.TopClientMargin;		//$$ TOP border
-	nRect.bottom-=g_CluiData.BottomClientMargin; //$$ BOTTOM border   
+	nRect.left+=DBGetContactSettingByte(NULL,"CLUI","LeftClientMargin",0); //$$ Left BORDER SIZE
+	nRect.right-=DBGetContactSettingByte(NULL,"CLUI","RightClientMargin",0); //$$ Left BORDER SIZE
+	nRect.top+=DBGetContactSettingByte(NULL,"CLUI","TopClientMargin",0); //$$ TOP border
+	nRect.bottom-=DBGetContactSettingByte(NULL,"CLUI","BottomClientMargin",0); //$$ BOTTOM border
 
 	if (nRect.bottom<nRect.top)
 		nRect.bottom=nRect.top;

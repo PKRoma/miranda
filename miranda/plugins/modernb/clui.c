@@ -484,7 +484,7 @@ int CLUI_IsInMainWindow(HWND hwnd)
 
 int CLUI_OnSkinLoad(WPARAM wParam, LPARAM lParam)
 {
-    SkinEngine_LoadSkin();
+    SkinEngine_LoadSkinFromDB();
     //    CreateGlyphedObject("Main Window/ScrollBar Up Button");
     //    CreateGlyphedObject("Main Window/ScrollBar Down Button");
     //    CreateGlyphedObject("Main Window/ScrollBar Thumb");       
@@ -2453,7 +2453,6 @@ int CLUI_TestCursorOnBorders()
 	/*
 	*  Size borders offset (contract)
 	*/
-	///TODO
 	r.top+=DBGetContactSettingDword(NULL,"ModernSkin","SizeMarginOffset_Top",0);
 	r.bottom-=DBGetContactSettingDword(NULL,"ModernSkin","SizeMarginOffset_Bottom",0);
 	r.left+=DBGetContactSettingDword(NULL,"ModernSkin","SizeMarginOffset_Left",0);
@@ -2517,7 +2516,6 @@ int CLUI_SizingOnBorder(POINT pt, int PerformSize)
 		/*
 		*  Size borders offset (contract)
 		*/
-		///TODO
 		r.top+=DBGetContactSettingDword(NULL,"ModernSkin","SizeMarginOffset_Top",0);
 		r.bottom-=DBGetContactSettingDword(NULL,"ModernSkin","SizeMarginOffset_Bottom",0);
 		r.left+=DBGetContactSettingDword(NULL,"ModernSkin","SizeMarginOffset_Left",0);
