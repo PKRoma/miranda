@@ -94,7 +94,7 @@ void SkinEngine_ApplyTransluency();
 HBITMAP SkinEngine_CreateDIB32(int cx, int cy);
 HBITMAP SkinEngine_CreateDIB32Point(int cx, int cy, void ** bits);
 int SkinEngine_JustUpdateWindowImage();
-void SkinEngine_LoadSkinFromDB(void);
+void SkinEngine_LoadSkin(void);
 int SkinEngine_RedrawCompleteWindow();
 BOOL SkinEngine_SetRectOpaque(HDC memdc,RECT *fr);
 int SkinEngine_UpdateWindowImage();

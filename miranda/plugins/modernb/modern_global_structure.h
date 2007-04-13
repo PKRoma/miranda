@@ -56,6 +56,11 @@ typedef struct tagCLUIDATA
 
 	HWND	hwndEventFrame;
 
+	int	    TopClientMargin;
+	int		LeftClientMargin;
+	int		RightClientMargin;
+	int		BottomClientMargin;
+
 } CluiData;
 
 EXTERN_C CluiData g_CluiData;

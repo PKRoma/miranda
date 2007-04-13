@@ -62,6 +62,10 @@ BOOL    g_mutex_bLockUpdating   =FALSE;
 SortedList * gl_plGlyphTexts=NULL,
 * gl_plSkinFonts =NULL;
 
+#define GetSkinnedDBSettingByte(file,section,key,defValue) GetByteFromIniFile(file,section,key,DBGetContactSettingByte(NULL,section,key,defValue),NULL)
+#define GetSkinnedDBSettingWord(file,section,key,defValue) GetWordFromIniFile(file,section,key,DBGetContactSettingWord(NULL,section,key,defValue),NULL)
+#define GetSkinnedDBSettingDword(file,section,key,defValue) GetDwordFromIniFile(file,section,key,DBGetContactSettingDword(NULL,section,key,defValue),NULL)
+
 /* Private module variables */
 
 static GLYPHIMAGE * pLoadedImages=NULL;
@@ -75,10 +79,9 @@ flag_bJustDrawNonFramedObjects=FALSE;
 static BOOL mutex_bLockUpdate=FALSE;
 
 static SortedList       * pEffectStack=NULL;
-static SKINOBJECTSLIST  * pCurrentSkin=NULL;
+//static SKINOBJECTSLIST  * pCurrentSkin=NULL;
 static char            ** pszSettingName=NULL;
 static int                nArrayLen=0;
-static char             * iniCurrentSection=NULL;
 static char             * szFileName=NULL;
 
 static BYTE             pbGammaWeight[256]={0};
@@ -88,7 +91,11 @@ static BOOL             bGammaWeightFilled=FALSE;
 static CRITICAL_SECTION cs_SkinChanging={0};
 
 
+typedef int (*IniLoadCallback)(char * szSection, char * szKey, char *szValue, void * lpParams);
+
+
 /* Private module procedures */
+static int SkinEngine_EnumIniKeys(char * szFileName,IniLoadCallback, void *);
 static BOOL SkinEngine_GetMaskBit(BYTE *line, int x);
 static int  SkinEngine_Service_AlphaTextOut(WPARAM wParam,LPARAM lParam);
 static BOOL SkinEngine_Service_DrawIconEx(WPARAM wParam,LPARAM lParam);
@@ -100,7 +107,7 @@ static int  SkinEngine_DeleteAllSettingInSection(char * SectionName);
 static int  SkinEngine_GetSkinFromDB(char * szSection, SKINOBJECTSLIST * Skin);
 static LPSKINOBJECTDESCRIPTOR SkinEngine_FindObject(const char * szName, BYTE objType,SKINOBJECTSLIST* Skin);
 static HBITMAP SkinEngine_LoadGlyphImageByDecoders(char * szFileName);
-static int  SkinEngine_LoadSkinFromResource();
+static int  SkinEngine_LoadSkinFromResource(IniLoadCallback pCallback, void*);
 static void SkinEngine_PreMultiplyChanells(HBITMAP hbmp,BYTE Mult);
 static int  SkinEngine_ValidateSingleFrameImage(wndFrame * Frame, BOOL SkipBkgBlitting);
 static int SkinEngine_Service_UpdateFrameImage(WPARAM wParam, LPARAM lParam);
@@ -1772,6 +1779,7 @@ int SkinEngine_UnloadGlyphImage(HBITMAP hbmp)
     return 0;
 }
 
+
 int SkinEngine_UnloadSkin(SKINOBJECTSLIST * Skin)
 {   
 
@@ -1845,7 +1853,7 @@ int SkinEngine_UnloadSkin(SKINOBJECTSLIST * Skin)
     SkinEngine_UnlockSkin();
     return 0;
 }
-
+/*
 static int SkinEngine_enumdb_SkinObjectsProc (const char *szSetting,LPARAM lParam)
 {   
     if (wildcmp((char *)szSetting,"$*",0))
@@ -1906,7 +1914,8 @@ static int SkinEngine_enumdb_SkinMasksProc(const char *szSetting,LPARAM lParam)
     }
     return 0;
 }
-
+*/
+/*
 // Getting skin objects and masks from DB
 static int SkinEngine_GetSkinFromDB(char * szSection, SKINOBJECTSLIST * Skin)
 {
@@ -1918,7 +1927,7 @@ static int SkinEngine_GetSkinFromDB(char * szSection, SKINOBJECTSLIST * Skin)
     if (!Skin->szSkinPlace ) 
     {
         Skin->szSkinPlace=mir_strdup("%Default%");
-        SkinEngine_LoadSkinFromResource();
+        SkinEngine_LoadSkinFromResource(IniLoadCallback pCallback);
     }
     //Load objects
     {
@@ -1938,21 +1947,28 @@ static int SkinEngine_GetSkinFromDB(char * szSection, SKINOBJECTSLIST * Skin)
     //Load Masks
     return 0;
 }
-
+*/
 //surrogate to be called from outside
+/*
 void SkinEngine_LoadSkinFromDB(void) 
 { 
     SkinEngine_GetSkinFromDB(SKIN,&g_SkinObjectList); 
     g_CluiData.fUseKeyColor=(BOOL)DBGetContactSettingByte(NULL,"ModernSettings","UseKeyColor",1);
     g_CluiData.dwKeyColor=DBGetContactSettingDword(NULL,"ModernSettings","KeyColor",(DWORD)RGB(255,0,255));
 }
-
+*/
 
 int SkinEngine_GetSkinFolder(char * szFileName, char * t2)
 {
     char *buf;   
     char *b2;
 
+	if (strchr(szFileName,'%'))
+	{
+		t2[0]='%';
+		t2[1]='\0';
+		return 0;
+	}
     b2=mir_strdup(szFileName);
     buf=b2+mir_strlen(b2);
     while (buf>b2 && *buf!='.') {buf--;}
@@ -1980,6 +1996,7 @@ int SkinEngine_GetSkinFolder(char * szFileName, char * t2)
 
 static void SkinEngine_WriteParamToDatabase(char *cKey, char* cName, char* cVal, BOOL SecCheck)
 {
+	DebugBreak();
     if (SecCheck)
     {
         //TODO check security here
@@ -2031,7 +2048,9 @@ static void SkinEngine_WriteParamToDatabase(char *cKey, char* cName, char* cVal,
     }
 }
 
-static BOOL SkinEngine_ParseLineOfIniFile(char * Line)
+
+//will return True if need stop file parsing
+static BOOL SkinEngine_ParseLineOfIniFile(char ** iniCurrentSection, char * Line, IniLoadCallback pCallback, void * lpParams )
 {
     DWORD i=0;
     DWORD len=strlen(Line);
@@ -2044,7 +2063,7 @@ static BOOL SkinEngine_ParseLineOfIniFile(char * Line)
         return FALSE; // start of comment is found
     case '[':
         //New section start here
-        if (iniCurrentSection) mir_free_and_nill(iniCurrentSection);
+        if (*iniCurrentSection) mir_free_and_nill(*iniCurrentSection);
         {
             char *tbuf=Line+i+1;		
             DWORD len2=strlen(tbuf);
@@ -2052,11 +2071,11 @@ static BOOL SkinEngine_ParseLineOfIniFile(char * Line)
             while (k>0 && tbuf[k]!=']') k--; //searching close bracket
             tbuf[k]='\0';   //closing string
             if (k==0) return FALSE;
-            iniCurrentSection=mir_strdup(tbuf);
+            *iniCurrentSection=mir_strdup(tbuf);
         }
-        return TRUE;
+        return FALSE;
     default:
-        if (!iniCurrentSection) return FALSE;  //param found out of section
+        if (!*iniCurrentSection) return FALSE;  //param found out of section
         {
             char *keyName=Line+i;
             char *keyValue=Line+i;
@@ -2088,17 +2107,20 @@ static BOOL SkinEngine_ParseLineOfIniFile(char * Line)
                 while (j>0 && (keyValue[j]==' ' || keyValue[j]=='\t')) j--;
                 if (j>=0) keyValue[j+1]='\0';
             }
-            SkinEngine_WriteParamToDatabase(iniCurrentSection,keyName,keyValue,TRUE);
+			if (pCallback)
+				if (pCallback(*iniCurrentSection,keyName,keyValue,lpParams))
+					return TRUE;
         }
     }
     return FALSE;
 }
 
-static int SkinEngine_LoadSkinFromResource()
+static int SkinEngine_LoadSkinFromResource(IniLoadCallback pCallback, void *lpParams)
 {
     DWORD size=0;
     char * mem;
     char * pos;
+	char * inisection=NULL;
     HGLOBAL hRes;
     HRSRC hRSrc=FindResourceA(g_hInst,MAKEINTRESOURCEA(IDR_MSF_DEFAULT_SKIN),"MSF");
     if (!hRSrc) return 0;
@@ -2122,23 +2144,204 @@ static int SkinEngine_LoadSkinFromResource()
                 line[i]='\0';
             }
             TRACE(line); TRACE("\n");
-            SkinEngine_ParseLineOfIniFile(line);
+            if(SkinEngine_ParseLineOfIniFile(&inisection,line,pCallback, lpParams)) 
+				break;
             pos++;
         }
     }
+    if (inisection) mir_free_and_nill(inisection);
     FreeResource(hRes);	
     return 0;
 }
 
+struct LoadingSkinParams
+{
+	SKINOBJECTSLIST * skinObjectList;
+};
+int CallbackLoadSkinObject(char * szSection, char * szKey, char *szValue, void *lpParams)
+{
+	//check if keys is object 
+	if (!mir_bool_strcmpi(szSection,SKIN))  return 0; //next item
+	if (szValue[0]!='s' && szValue[0]!='S' ) return 0;	 // have to be string
+
+	if (wildcmp((char *)szKey,"$*",0))
+		RegisterObjectByParce((char *)szKey,szValue+1);
+	else if (wildcmp((char *)szKey,"#*",0))
+		RegisterButtonByParce((char *)szKey,szValue+1);
+	return 0;  //next item
+}
+int CallbackLoadSkinRules(char * szSection, char * szKey, char *szValue, void *lpParams)
+{
+	SKINOBJECTSLIST * pCurrentSk=((struct LoadingSkinParams*)lpParams)->skinObjectList;
+	char * value=szValue+1;
+	//check if keys is Mask 
+	if (!mir_bool_strcmpi(szSection,SKIN))  return 0; //next item
+	if (szValue[0]!='s' && szValue[0]!='S' ) return 0; // have to be string
+	
+	if (wildcmp((char *)szKey,"@*",0) && pCurrentSk)
+	{
+		DWORD ID=atoi(szKey+1);
+		int i=0;
+		if (value)
+		{
+			for (i=0; i<mir_strlen(value); i++)  if (value[i]==':') break;
+			if (i<mir_strlen(value))
+			{
+				char * Obj, *Mask;
+				int res;
+				Mask=value+i+1;
+				Obj=mir_alloc(i+1);
+				strncpy(Obj,value,i);
+				Obj[i]='\0';
+				res=AddStrModernMaskToList(ID,Mask,Obj,pCurrentSk->pMaskList,pCurrentSk);
+				mir_free_and_nill(Obj);
+			}
+		}
+	}
+	else if (wildcmp((char *)szKey,"t*",0) && pCurrentSk)
+	{
+		SkinEngine_AddParseTextGlyphObject((char*)szKey,value,pCurrentSk);
+	}
+	else if (wildcmp((char *)szKey,"f*",0) && pCurrentSk)
+	{
+		SkinEngine_AddParseSkinFont((char*)szKey,value,pCurrentSk);
+	}
+	return 0;  //next item
+}
+struct GetKeyEnum
+{
+	char * szKey;
+	char * szSection;
+	char * szBuf;
+	DWORD dwBuffSize;
+	BOOL fValid;
+};
+int CallbackGetKey(char * szSection, char * szKey, char *szValue, void *lpParams)
+{
+	struct GetKeyEnum * EnumParam=(struct GetKeyEnum *)lpParams;
+	if (mir_bool_strcmpi(szSection,EnumParam->szSection) && mir_bool_strcmpi(szKey,EnumParam->szKey))
+	{
+		strncpy(EnumParam->szBuf,szValue,EnumParam->dwBuffSize);
+		EnumParam->fValid=TRUE;
+		return 1; //stop here
+	}
+	return 0; //next item
+}
+
+char * SkinEngine_GetCurrentSkinFile()
+{
+	static char skinFile[MAX_PATH];
+	char * skinFl;
+	skinFl=DBGetStringA(NULL,SKIN,"SkinFile");
+	if (!skinFl || !strlen(skinFl) || strchr(skinFl,'%'))
+		return NULL;
+	//else
+	CallService(MS_UTILS_PATHTOABSOLUTE, (WPARAM)skinFl, (LPARAM)skinFile);
+	SkinEngine_LoadSkinFromIniFile((char*)skinFile);
+	return skinFile;
+}
+
+BOOL GetValueFromIniFile(char * szFileName, char* szSection, char* szKey, char * buff, DWORD bufsize)
+{	
+	char * fn=NULL;
+	if (szFileName)
+	{
+		fn=szFileName;
+	}
+	else
+	{
+		fn=SkinEngine_GetCurrentSkinFile();	
+	}
+	if (!fn || strchr(fn,'%'))
+	{
+		struct GetKeyEnum EnumParam={0};
+		EnumParam.dwBuffSize=bufsize;
+		EnumParam.szBuf=buff;
+		EnumParam.szSection=szSection;
+		EnumParam.szKey=szKey;
+		SkinEngine_EnumIniKeys(fn, CallbackGetKey, (void*)&(EnumParam));
+		if (EnumParam.fValid) return TRUE;
+		//selecting from one by one
+	}
+	else
+		if (GetPrivateProfileStringA(szSection,szKey,NULL,buff,bufsize,fn)>0) return TRUE;
+
+	return FALSE;
+}
+//loading
 //Load data from ini file
+
+DWORD GetDwordFromIniFile(char * szFileName, char* szSection, char* szKey, DWORD defaultValue, int *result)
+{
+	char BUFF[255];
+	if (GetValueFromIniFile(szFileName,szSection,szKey,BUFF,SIZEOF(BUFF)))
+	{
+		DWORD ret=defaultValue;
+		if (BUFF[0]=='d' || BUFF[0]=='D')
+		{
+			ret=(DWORD)atoi(BUFF+1);
+			if (result) *result=1;
+			return ret;
+		}
+	}
+	if (result) *result=0;
+	return defaultValue;
+}
+
+WORD GetWordFromIniFile(char * szFileName, char* szSection, char* szKey, WORD defaultValue, int *result)
+{
+	char BUFF[255];
+	if (GetValueFromIniFile(szFileName,szSection,szKey,BUFF,SIZEOF(BUFF)))
+	{
+		WORD ret=defaultValue;
+		if (BUFF[0]=='w' || BUFF[0]=='W')
+		{
+			ret=(WORD)atoi(BUFF+1);
+			if (result) *result=1;
+			return ret;
+		}
+	}
+	if (result) *result=0;
+	return defaultValue;
+}
+
+BYTE GetByteFromIniFile(char * szFileName, char* szSection, char* szKey, BYTE defaultValue, int *result)
+{
+	char BUFF[255];
+	if (GetValueFromIniFile(szFileName,szSection,szKey,BUFF,SIZEOF(BUFF)))
+	{
+		BYTE ret=defaultValue;
+		if (BUFF[0]=='b' || BUFF[0]=='B')
+		{
+			ret=(BYTE)atoi(BUFF+1);
+			if (result) *result=1;
+			return ret;
+		}
+	}
+	if (result) *result=0;
+	return defaultValue;
+}
+
+
 int SkinEngine_LoadSkinFromIniFile(char * szFileName)
+{
+	struct LoadingSkinParams LoadingParams={0};
+	LoadingParams.skinObjectList=&g_SkinObjectList;
+	SkinEngine_EnumIniKeys(szFileName, CallbackLoadSkinObject, (void*)&(LoadingParams));
+	SkinEngine_EnumIniKeys(szFileName, CallbackLoadSkinRules, (void*)&(LoadingParams));
+	//next load different ini info
+	return 0;
+}
+// enumerators callback have return TRUE ti stop processing
+static int SkinEngine_EnumIniKeys(char * szFileName,IniLoadCallback pCallback, void *lpParams)
 {
     FILE *stream=NULL;
     char line[512]={0};
     char skinFolder[MAX_PATH]={0};
     char skinFile[MAX_PATH]={0};
-    if (strchr(szFileName,'%')) 
-        return SkinEngine_LoadSkinFromResource();
+	char * inisection=NULL;
+    if (!szFileName || strchr(szFileName,'%')) 
+        return SkinEngine_LoadSkinFromResource(pCallback, lpParams);
 
     SkinEngine_DeleteAllSettingInSection("ModernSkin");
     SkinEngine_GetSkinFolder(szFileName,skinFolder);
@@ -2148,19 +2351,56 @@ int SkinEngine_LoadSkinFromIniFile(char * szFileName)
 
     if( (stream = fopen( szFileName, "r" )) != NULL )
     {
-        szFileName=szFileName;
         while (fgets( line, SIZEOF(line),stream ) != NULL)
         {
-            SkinEngine_ParseLineOfIniFile(line);
+            if (SkinEngine_ParseLineOfIniFile(&inisection,line, pCallback, lpParams))
+				break;
         }
         fclose( stream );
-        szFileName=NULL;
     }
+	if (inisection) mir_free_and_nill(inisection);
     return 0;
 }
 
-//Load data from ini file
 
+void SkinEngine_LoadSkin(void) 
+{ 
+	char skinFile[MAX_PATH];
+	char * skinFl;
+	SKINOBJECTSLIST * Skin=&g_SkinObjectList;
+	if (Skin==NULL) return ;
+	SetCursor(LoadCursor(NULL,IDC_APPSTARTING));
+	SkinEngine_UnloadSkin(Skin);
+	Skin->pMaskList=mir_alloc(sizeof(LISTMODERNMASK));
+	memset(Skin->pMaskList,0,sizeof(LISTMODERNMASK));
+	skinFl=DBGetStringA(NULL,SKIN,"SkinFile");
+	Skin->szSkinPlace=DBGetStringA(NULL,SKIN,"SkinFolder");
+	
+	if (!skinFl || !strlen(skinFl) || strchr(skinFl,'%')) 
+	{
+		Skin->szSkinPlace=mir_strdup("%Default%");
+		SkinEngine_LoadSkinFromIniFile(NULL);
+	}
+	else
+	{
+		CallService(MS_UTILS_PATHTOABSOLUTE, (WPARAM)skinFl, (LPARAM)skinFile);
+		SkinEngine_LoadSkinFromIniFile((char*)skinFile);
+	}	
+	if (skinFl) mir_free(skinFl);
+
+	g_CluiData.fUseKeyColor=(BOOL)GetSkinnedDBSettingByte(NULL,"ModernSettings","UseKeyColor",1);
+	g_CluiData.dwKeyColor=GetSkinnedDBSettingDword(NULL,"ModernSettings","KeyColor",(DWORD)RGB(255,0,255));
+
+	//window borders
+	g_CluiData.LeftClientMargin=(int)GetSkinnedDBSettingByte(NULL,"CLUI","LeftClientMargin",0);
+	g_CluiData.RightClientMargin=(int)GetSkinnedDBSettingByte(NULL,"CLUI","RightClientMargin",0); 
+	g_CluiData.TopClientMargin=(int)GetSkinnedDBSettingByte(NULL,"CLUI","TopClientMargin",0);
+	g_CluiData.BottomClientMargin=(int)GetSkinnedDBSettingByte(NULL,"CLUI","BottomClientMargin",0);
+	SetCursor(LoadCursor(NULL,IDC_ARROW));
+}
+
+//Load data from ini file
+/*
 int SkinEngine_OldLoadSkinFromIniFile(char * szFileName)
 {
     char bsn[MAXSN_BUFF_SIZE];
@@ -2282,7 +2522,7 @@ int SkinEngine_OldLoadSkinFromIniFile(char * szFileName)
     }while (((DWORD)Buff-(DWORD)bsn)<retu);
     return 0;
 }
-
+*/
 
 static int SkinEngine_enumdb_SkinSectionDeletionProc (const char *szSetting,LPARAM lParam)
 {

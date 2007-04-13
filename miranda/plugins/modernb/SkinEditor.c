@@ -808,7 +808,7 @@ BOOL CALLBACK DlgSkinEditorOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lP
 				{
 					StoreTreeToDB(GetDlgItem(hwndDlg,IDC_OBJECT_TREE),SKIN);
 					//ReloadSkin
-					SkinEngine_LoadSkinFromDB();	
+					SkinEngine_LoadSkin();	
 					pcli->pfnClcBroadcast( INTM_RELOADOPTIONS,0,0);
 					callProxied_CLUIFrames_OnClistResize_mod(0,0);
 					SkinEngine_RedrawCompleteWindow();        
