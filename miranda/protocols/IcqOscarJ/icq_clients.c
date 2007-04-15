@@ -162,6 +162,8 @@ const capstr capHtmlMsgs  = {0x01, 0x38, 0xca, 0x7b, 0x76, 0x9a, 0x49, 0x15, 0x8
 const capstr capSimpLite  = {0x53, 0x49, 0x4D, 0x50, 0x53, 0x49, 0x4D, 0x50, 0x53, 0x49, 0x4D, 0x50, 0x53, 0x49, 0x4D, 0x50};
 const capstr capSimpPro   = {0x53, 0x49, 0x4D, 0x50, 0x5F, 0x50, 0x52, 0x4F, 0x53, 0x49, 0x4D, 0x50, 0x5F, 0x50, 0x52, 0x4F};
 const capstr capIMsecure  = {'I', 'M', 's', 'e', 'c', 'u', 'r', 'e', 'C', 'p', 'h', 'r', 0x00, 0x00, 0x06, 0x01}; // ZoneLabs
+const capstr capIMSecKey1 = {1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}; // ZoneLabs
+const capstr capIMSecKey2 = {2, 2, 2, 2, 2, 2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}; // ZoneLabs
 
 
 char* cliLibicq2k  = "libicq2000";
@@ -567,6 +569,10 @@ char* detectUserClient(HANDLE hContact, DWORD dwUin, WORD wVersion, DWORD dwFT1,
       }
       else if (szClient == NULL) // HERE ENDS THE SIGNATURE DETECTION, after this only feature default will be detected
       {
+        if (wVersion == 8 && CheckContactCapabilities(hContact, CAPF_XTRAZ) && (MatchCap(caps, wLen, &capIMSecKey1, 6) || MatchCap(caps, wLen, &capIMSecKey2, 6)))
+        { // ZA mangled the version, OMG!
+          wVersion = 9;
+        }
         if (wVersion == 8 && (MatchCap(caps, wLen, &capComm20012, 0x10) || CheckContactCapabilities(hContact, CAPF_SRV_RELAY)))
         { // try to determine 2001-2003 versions
           if (MatchCap(caps, wLen, &capIs2001, 0x10))
@@ -813,7 +819,7 @@ char* detectUserClient(HANDLE hContact, DWORD dwUin, WORD wVersion, DWORD dwFT1,
       szExtra = " + SimpLite";
     else if (MatchCap(caps, wLen, &capSimpPro, 0x10))
       szExtra = " + SimpPro";
-    else if (MatchCap(caps, wLen, &capIMsecure, 0x10))
+    else if (MatchCap(caps, wLen, &capIMsecure, 0x10) || MatchCap(caps, wLen, &capIMSecKey1, 6) || MatchCap(caps, wLen, &capIMSecKey2, 6))
       szExtra = " + IMsecure";
 
     if (szExtra)
