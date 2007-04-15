@@ -23,7 +23,7 @@
 //
 // -----------------------------------------------------------------------------
 //
-// File name      : $Source: /cvsroot/miranda/miranda/protocols/IcqOscarJ/icq_directmsg.c,v $
+// File name      : $URL$
 // Revision       : $Revision$
 // Last change on : $Date$
 // Last change by : $Author$
@@ -155,18 +155,17 @@ void handleDirectMessage(directconnect* dc, PBYTE buf, WORD wLen)
 
       default: 
         {
+          message_ack_params pMsgAck = {0};
+
           buf -= wTextLen;
           wLen += wTextLen;
 
-          handleMessageTypes(dc->dwRemoteUin, time(NULL), 0, 0, wCookie, dc->wVersion, (int)bMsgType, (int)bMsgFlags, 0, (DWORD)wLen, wTextLen, buf, TRUE);
-    
-          // Send acknowledgement
-          if ((bMsgType == MTYPE_PLAIN && !CallService(MS_IGNORE_ISIGNORED, (WPARAM)dc->hContact, IGNOREEVENT_MESSAGE))
-            || (bMsgType == MTYPE_URL && !CallService(MS_IGNORE_ISIGNORED, (WPARAM)dc->hContact, IGNOREEVENT_URL))
-            || bMsgType == MTYPE_CONTACTS)
-          {
-            icq_sendDirectMsgAck(dc, wCookie, bMsgType, bMsgFlags, CAP_RTFMSGS);
-          }
+          pMsgAck.bType = MAT_DIRECT;
+          pMsgAck.pDC = dc;
+          pMsgAck.wCookie = wCookie;
+          pMsgAck.msgType = bMsgType;
+          pMsgAck.bFlags = bMsgFlags;
+          handleMessageTypes(dc->dwRemoteUin, time(NULL), 0, 0, wCookie, dc->wVersion, (int)bMsgType, (int)bMsgFlags, 0, (DWORD)wLen, wTextLen, buf, TRUE, &pMsgAck);
           break;
         }
     }
@@ -177,7 +176,7 @@ void handleDirectMessage(directconnect* dc, PBYTE buf, WORD wLen)
       buf -= wTextLen;
       wLen += wTextLen;
 
-      handleMessageTypes(dc->dwRemoteUin, time(NULL), 0, 0, wCookie, dc->wVersion, (int)bMsgType, (int)bMsgFlags, 2, (DWORD)wLen, wTextLen, buf, TRUE);
+      handleMessageTypes(dc->dwRemoteUin, time(NULL), 0, 0, wCookie, dc->wVersion, (int)bMsgType, (int)bMsgFlags, 2, (DWORD)wLen, wTextLen, buf, TRUE, NULL);
     }
     else
     {
@@ -299,12 +298,13 @@ void handleDirectGreetingMessage(directconnect* dc, PBYTE buf, WORD wLen, WORD w
   }
   else if (typeId && wCommand == DIRECT_MESSAGE)
   {
-    if ((typeId == MTYPE_URL && !CallService(MS_IGNORE_ISIGNORED, (WPARAM)dc->hContact, IGNOREEVENT_URL))
-      || typeId == MTYPE_CONTACTS)
-    { 
-      icq_sendDirectMsgAck(dc, wCookie, (BYTE)typeId, 0, CAP_RTFMSGS);
-    }
-    handleMessageTypes(dc->dwRemoteUin, time(NULL), 0, 0, wCookie, dc->wVersion, typeId, 0, 0, dwLengthToEnd, (WORD)dwDataLength, buf, TRUE);
+    message_ack_params pMsgAck = {0};
+
+    pMsgAck.bType = MAT_DIRECT;
+    pMsgAck.pDC = dc;
+    pMsgAck.wCookie = wCookie;
+    pMsgAck.msgType = typeId;
+    handleMessageTypes(dc->dwRemoteUin, time(NULL), 0, 0, wCookie, dc->wVersion, typeId, 0, 0, dwLengthToEnd, (WORD)dwDataLength, buf, TRUE, &pMsgAck);
   }
   else if (typeId == MTYPE_STATUSMSGEXT && wCommand == DIRECT_ACK)
   { // especially for icq2003b
@@ -315,7 +315,7 @@ void handleDirectGreetingMessage(directconnect* dc, PBYTE buf, WORD wLen, WORD w
     unpackString(&buf, szMsg, (WORD)dwDataLength);
     szMsg[dwDataLength] = '\0';
 
-    handleMessageTypes(dc->dwRemoteUin, time(NULL), 0, 0, wCookie, dc->wVersion, (int)(qt + 0xE7), 3, 2, (DWORD)wLen, (WORD)dwDataLength, szMsg, TRUE);
+    handleMessageTypes(dc->dwRemoteUin, time(NULL), 0, 0, wCookie, dc->wVersion, (int)(qt + 0xE7), 3, 2, (DWORD)wLen, (WORD)dwDataLength, szMsg, TRUE, NULL);
   }
   else if (typeId && wCommand == DIRECT_ACK)
   {

@@ -963,7 +963,7 @@ void handleServUINSettings(int nPort, serverthread_info *info)
     packDWord(&packet, dwDirectCookie);         // DC Cookie
     packDWord(&packet, WEBFRONTPORT);           // Web front port
     packDWord(&packet, CLIENTFEATURES);         // Client features
-    packDWord(&packet, 0xffffffff);             // Abused timestamp
+    packDWord(&packet, gbUnicodeCore ? 0x7fffffff : 0xffffffff); // Abused timestamp
     packDWord(&packet, ICQ_PLUG_VERSION);       // Abused timestamp
     if (ServiceExists("SecureIM/IsContactSecured"))
       packDWord(&packet, 0x5AFEC0DE);           // SecureIM Abuse

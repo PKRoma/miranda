@@ -79,7 +79,7 @@ static void verToStr(char* szStr, int v)
 
 
 
-static char* MirandaVersionToStringEx(char* szStr, char* szPlug, int v, int m)
+static char* MirandaVersionToStringEx(char* szStr, int bUnicode, char* szPlug, int v, int m)
 {
   if (!v) // this is not Miranda
     return NULL;
@@ -98,6 +98,9 @@ static char* MirandaVersionToStringEx(char* szStr, char* szPlug, int v, int m)
         verToStr(szStr, m);
         strcat(szStr, " ");
       }
+      if (bUnicode)
+        strcat(szStr, "Unicode ");
+
       strcat(szStr, "(");
       strcat(szStr, szPlug);
       strcat(szStr, " v");
@@ -111,14 +114,15 @@ static char* MirandaVersionToStringEx(char* szStr, char* szPlug, int v, int m)
 
 
 
-char* MirandaVersionToString(char* szStr, int v, int m)
+char* MirandaVersionToString(char* szStr, int bUnicode, int v, int m)
 {
-  return MirandaVersionToStringEx(szStr, "ICQ", v, m);
+  return MirandaVersionToStringEx(szStr, bUnicode, "ICQ", v, m);
 }
 
 
 const capstr capMirandaIm = {'M', 'i', 'r', 'a', 'n', 'd', 'a', 'M', 0, 0, 0, 0, 0, 0, 0, 0};
 const capstr capIcqJs7    = {'i', 'c', 'q', 'j', ' ', 'S', 'e', 'c', 'u', 'r', 'e', ' ', 'I', 'M', 0, 0};
+const capstr capIcqJSin   = {'s', 'i', 'n', 'j', 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}; // Miranda ICQJ S!N
 const capstr capAimOscar  = {'M', 'i', 'r', 'a', 'n', 'd', 'a', 'A', 0, 0, 0, 0, 0, 0, 0, 0};
 const capstr capTrillian  = {0x97, 0xb1, 0x27, 0x51, 0x24, 0x3c, 0x43, 0x34, 0xad, 0x22, 0xd6, 0xab, 0xf7, 0x3f, 0x14, 0x09};
 const capstr capTrilCrypt = {0xf2, 0xe7, 0xc7, 0xf4, 0xfe, 0xad, 0x4d, 0xfb, 0xb2, 0x35, 0x36, 0x79, 0x8b, 0xdf, 0x00, 0x00};
@@ -193,9 +197,14 @@ char* detectUserClient(HANDLE hContact, DWORD dwUin, WORD wVersion, DWORD dwFT1,
     }
     else 
     { // Yes this is most probably Miranda, get the version info
-      szClient = MirandaVersionToString(szClientBuf, dwFT2, 0);
+      szClient = MirandaVersionToString(szClientBuf, 0, dwFT2, 0);
       *bClientId = 2;
     }
+  }
+  else if (dwFT1 == 0x7fffffff)
+  { // This is Miranda with unicode core
+    szClient = MirandaVersionToString(szClientBuf, 1, dwFT2, 0);
+    *bClientId = 2;
   }
   else if ((dwFT1 & 0xFF7F0000) == 0x7D000000)
   { // This is probably an Licq client
@@ -302,7 +311,7 @@ char* detectUserClient(HANDLE hContact, DWORD dwUin, WORD wVersion, DWORD dwFT1,
         DWORD iver = (*capId)[0xC] << 0x18 | (*capId)[0xD] << 0x10 | (*capId)[0xE] << 8 | (*capId)[0xF];
         DWORD mver = (*capId)[0x8] << 0x18 | (*capId)[0x9] << 0x10 | (*capId)[0xA] << 8 | (*capId)[0xB];
 
-        szClient = MirandaVersionToString(szClientBuf, iver, mver);
+        szClient = MirandaVersionToString(szClientBuf, dwFT1 == 0x7fffffff, iver, mver);
 
         if (MatchCap(caps, wLen, &capIcqJs7, 0x4))
         { // detect mod
@@ -312,7 +321,7 @@ char* detectUserClient(HANDLE hContact, DWORD dwUin, WORD wVersion, DWORD dwFT1,
             strcat(szClient, " + SecureIM");
           }
         }
-        else if (dwFT1 == 0xFFFFFFFF && dwFT3 == 0x5AFEC0DE)
+        else if ((dwFT1 & 0x7FFFFFFF) == 0x7FFFFFFF && dwFT3 == 0x5AFEC0DE)
         {
           strcat(szClient, " + SecureIM");
         }
@@ -325,8 +334,19 @@ char* detectUserClient(HANDLE hContact, DWORD dwUin, WORD wVersion, DWORD dwFT1,
         DWORD iver = (*capId)[0x8] << 0x18 | (*capId)[0x9] << 0x10 | (*capId)[0xA] << 8 | (*capId)[0xB];
         DWORD scode = (*capId)[0xC] << 0x18 | (*capId)[0xD] << 0x10 | (*capId)[0xE] << 8 | (*capId)[0xF];
 
-        szClient = MirandaVersionToString(szClientBuf, iver, mver);
-        strcat(szClient, " (s7 & sss)");
+        szClient = MirandaVersionToStringEx(szClientBuf, dwFT3 == 0x80000000, "ICQ S7 & SSS", iver, mver);
+        if (scode == 0x5AFEC0DE)
+        {
+          strcat(szClient, " + SecureIM");
+        }
+      }
+      else if (capId = MatchCap(caps, wLen, &capIcqJSin, 4))
+      { // detect newer icqj mod
+        DWORD mver = (*capId)[0x4] << 0x18 | (*capId)[0x5] << 0x10 | (*capId)[0x6] << 8 | (*capId)[0x7];
+        DWORD iver = (*capId)[0x8] << 0x18 | (*capId)[0x9] << 0x10 | (*capId)[0xA] << 8 | (*capId)[0xB];
+        DWORD scode = (*capId)[0xC] << 0x18 | (*capId)[0xD] << 0x10 | (*capId)[0xE] << 8 | (*capId)[0xF];
+
+        szClient = MirandaVersionToStringEx(szClientBuf, dwFT3 == 0x80000000, "ICQ S!N", iver, mver);
         if (scode == 0x5AFEC0DE)
         {
           strcat(szClient, " + SecureIM");
@@ -530,7 +550,13 @@ char* detectUserClient(HANDLE hContact, DWORD dwUin, WORD wVersion, DWORD dwFT1,
           strncat(szClientBuf, (*capId) + 11, 5);
         }
         szClient = szClientBuf;
-      } 
+      }
+      else if (capId = MatchCap(caps, wLen, &capMipClient, 0x04))
+      { //http://mip.rufon.net - new signature
+        strcpy(szClientBuf, "MIP ");
+        strncat(szClientBuf, (*capId) + 4, 12);
+        szClient = szClientBuf;
+      }
       else if (szClient == cliLibicq2k)
       { // try to determine which client is behind libicq2000
         if (CheckContactCapabilities(hContact, CAPF_RTF))
@@ -711,7 +737,7 @@ char* detectUserClient(HANDLE hContact, DWORD dwUin, WORD wVersion, DWORD dwFT1,
           DWORD aver = (*capId)[0xC] << 0x18 | (*capId)[0xD] << 0x10 | (*capId)[0xE] << 8 | (*capId)[0xF];
           DWORD mver = (*capId)[0x8] << 0x18 | (*capId)[0x9] << 0x10 | (*capId)[0xA] << 8 | (*capId)[0xB];
 
-          szClient = MirandaVersionToStringEx(szClientBuf, "AimOscar", aver, mver);
+          szClient = MirandaVersionToStringEx(szClientBuf, 0, "AimOscar", aver, mver);
         }
         else if (capId = MatchCap(caps, wLen, &capSim, 0xC))
         { // Sim is universal

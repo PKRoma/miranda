@@ -581,6 +581,9 @@ static DWORD icq_sendServerItem(DWORD dwCookie, WORD wAction, WORD wGroupId, WOR
   // Send the packet and return the cookie
   sendServPacket(&packet);
 
+  // Force reload of server-list after change
+  ICQWriteContactSettingWord(NULL, "SrvRecordCount", 0);
+
   return dwCookie;
 }
 
@@ -1862,6 +1865,11 @@ static int ServListDbSettingChanged(WPARAM wParam, LPARAM lParam)
 static int ServListDbContactDeleted(WPARAM wParam, LPARAM lParam)
 {
   DeleteFromCache((HANDLE)wParam);
+
+  if (!icqOnline && gbSsiEnabled)
+  { // contact was deleted only locally - retrieve full list on next connect
+    ICQWriteContactSettingWord((HANDLE)wParam, "SrvRecordCount", 0);
+  }
 
   if (!icqOnline || !gbSsiEnabled)
     return 0;

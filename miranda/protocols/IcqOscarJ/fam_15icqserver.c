@@ -23,7 +23,7 @@
 //
 // -----------------------------------------------------------------------------
 //
-// File name      : $Source: /cvsroot/miranda/miranda/protocols/IcqOscarJ/fam_15icqserver.c,v $
+// File name      : $URL$
 // Revision       : $Revision$
 // Last change on : $Date$
 // Last change by : $Author$
@@ -333,7 +333,7 @@ static void parseOfflineMessage(unsigned char *databuf, WORD wPacketLen)
       if (bType == MTYPE_PLUGIN)
         parseOfflineGreeting(databuf, wPacketLen, wMsgLen, dwUin, dwTimestamp, bFlags);
       else
-        handleMessageTypes(dwUin, dwTimestamp, 0, 0, 0, 0, bType, bFlags, 0, wPacketLen, wMsgLen, databuf, FALSE);
+        handleMessageTypes(dwUin, dwTimestamp, 0, 0, 0, 0, bType, bFlags, 0, wPacketLen, wMsgLen, databuf, FALSE, NULL);
 
       // Success
       return; 
@@ -372,7 +372,7 @@ static void parseOfflineGreeting(BYTE* pDataBuf, WORD wLen, WORD wMsgLen, DWORD 
       dwDataLen = wLen;
 
     if (typeId)
-      handleMessageTypes(dwUin, dwTimestamp, 0, 0, 0, 0, typeId, bFlags, 0, dwLengthToEnd, (WORD)dwDataLen, pDataBuf, FALSE);
+      handleMessageTypes(dwUin, dwTimestamp, 0, 0, 0, 0, typeId, bFlags, 0, dwLengthToEnd, (WORD)dwDataLen, pDataBuf, FALSE, NULL);
     else
       NetLog_Server("Unsupported plugin message type %d", typeId);
   }

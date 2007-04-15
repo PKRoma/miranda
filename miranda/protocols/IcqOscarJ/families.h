@@ -5,7 +5,7 @@
 // Copyright © 2000,2001 Richard Hughes, Roland Rabien, Tristan Van de Vreede
 // Copyright © 2001,2002 Jon Keating, Richard Hughes
 // Copyright © 2002,2003,2004 Martin Öberg, Sam Kothari, Robert Rainwater
-// Copyright © 2004,2005,2006 Joe Kucera
+// Copyright © 2004,2005,2006,2007 Joe Kucera
 //
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License
@@ -23,7 +23,7 @@
 //
 // -----------------------------------------------------------------------------
 //
-// File name      : $Source: /cvsroot/miranda/miranda/protocols/IcqOscarJ/families.h,v $
+// File name      : $URL$
 // Revision       : $Revision$
 // Last change on : $Date$
 // Last change by : $Author$
@@ -49,6 +49,21 @@ typedef struct snac_header_s
 } snac_header;
 
 
+typedef struct message_ack_params_s
+{
+  BYTE bType;
+  DWORD dwUin;
+  DWORD dwMsgID1;
+  DWORD dwMsgID2;
+  directconnect *pDC;
+  WORD wCookie;
+  int msgType;
+  BYTE bFlags;
+} message_ack_params;
+
+#define MAT_SERVER_ADVANCED 0
+#define MAT_DIRECT          1
+
 /*---------* Functions *---------------*/
 
 void handleServiceFam(unsigned char *pBuffer, WORD wBufferLength, snac_header* pSnacHeader, serverthread_info *info);
@@ -70,7 +85,7 @@ int getPluginTypeIdLen(int nTypeID);
 void packPluginTypeId(icq_packet *packet, int nTypeID);
 int unpackPluginTypeId(BYTE** pBuffer, WORD* pwLen, int *pTypeId, WORD *pFunctionId, BOOL bThruDC);
 
-void handleMessageTypes(DWORD dwUin, DWORD dwTimestamp, DWORD dwMsgID, DWORD dwMsgID2, WORD wCookie, WORD wVersion, int type, int flags, WORD wAckType, DWORD dwDataLen, WORD wMsgLen, char *pMsg, BOOL bThruDC);
+void handleMessageTypes(DWORD dwUin, DWORD dwTimestamp, DWORD dwMsgID, DWORD dwMsgID2, WORD wCookie, WORD wVersion, int type, int flags, WORD wAckType, DWORD dwDataLen, WORD wMsgLen, char *pMsg, BOOL bThruDC, message_ack_params *pAckParams);
 
 #define BUL_ALLCONTACTS   0
 #define BUL_VISIBLE       1

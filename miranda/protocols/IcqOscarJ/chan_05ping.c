@@ -23,7 +23,7 @@
 //
 // -----------------------------------------------------------------------------
 //
-// File name      : $Source: /cvsroot/miranda/miranda/protocols/IcqOscarJ/chan_05ping.c,v $
+// File name      : $URL$
 // Revision       : $Revision$
 // Last change on : $Date$
 // Last change by : $Author$
@@ -108,7 +108,7 @@ void StopKeepAlive(serverthread_info* info)
     SetEvent(info->hKeepAliveEvent);
 
     // wait for the thread to finish
-    WaitForSingleObjectEx(info->hKeepAliveThread, INFINITE, TRUE);
+    WaitForSingleObjectEx(info->hKeepAliveThread, INFINITE, FALSE);
     CloseHandle(info->hKeepAliveThread);
     info->hKeepAliveThread = NULL;
   }

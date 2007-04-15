@@ -250,6 +250,7 @@ static void handleSignonError(WORD wError)
   case 0x02: // Service temporarily unavailable
   case 0x0D: // Bad database status
   case 0x10: // Service temporarily offline
+  case 0x12: // Database send error
   case 0x14: // Reservation map error
   case 0x15: // Reservation link error
   case 0x1A: // Reservation timeout
@@ -292,7 +293,6 @@ static void handleSignonError(WORD wError)
   case 0x0E: // Bad resolver status
   case 0x0F: // Internal error
   case 0x11: // Suspended account
-  case 0x12: // Database send error
   case 0x13: // Database link error
   case 0x19: // User too heavily warned
   case 0x1F: // Token server timeout

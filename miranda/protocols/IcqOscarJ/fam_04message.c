@@ -797,13 +797,16 @@ static void parseTLV2711(DWORD dwUin, HANDLE hContact, DWORD dwID1, DWORD dwID2,
         // Everything else
       default:
         {
-          HANDLE hIgnoreContact = (hContact == INVALID_HANDLE_VALUE) ? NULL : hContact;
-          // Only ack message packets
-          if ((bMsgType == MTYPE_PLAIN && !CallService(MS_IGNORE_ISIGNORED, (WPARAM)hIgnoreContact, IGNOREEVENT_MESSAGE)) 
-            || (bMsgType == MTYPE_URL && !CallService(MS_IGNORE_ISIGNORED, (WPARAM)hIgnoreContact, IGNOREEVENT_URL)) 
-            || bMsgType == MTYPE_CONTACTS)
-            icq_sendAdvancedMsgAck(dwUin, dwID1, dwID2, wCookie, bMsgType, bFlags);
-          handleMessageTypes(dwUin, time(NULL), dwID1, dwID2, wCookie, wVersion, bMsgType, bFlags, wAckType, tlv->wLen - 53, wMsgLen, pDataBuf, FALSE);
+          message_ack_params pMsgAck = {0};
+
+          pMsgAck.bType = MAT_SERVER_ADVANCED;
+          pMsgAck.dwUin = dwUin;
+          pMsgAck.dwMsgID1 = dwID1;
+          pMsgAck.dwMsgID2 = dwID2;
+          pMsgAck.wCookie = wCookie;
+          pMsgAck.msgType = bMsgType;
+          pMsgAck.bFlags = bFlags;
+          handleMessageTypes(dwUin, time(NULL), dwID1, dwID2, wCookie, wVersion, bMsgType, bFlags, wAckType, tlv->wLen - 53, wMsgLen, pDataBuf, FALSE, &pMsgAck);
           break;
         }
       }
@@ -946,15 +949,16 @@ void parseServerGreeting(BYTE* pDataBuf, WORD wLen, WORD wMsgLen, DWORD dwUin, B
     }
     else if (typeId)
     {
-      HANDLE hIgnoreContact = HContactFromUIN(dwUin, NULL);
+      message_ack_params pMsgAck = {0};
 
-      if (hIgnoreContact == INVALID_HANDLE_VALUE) hIgnoreContact = NULL;
-
-      if ((typeId == MTYPE_URL && !CallService(MS_IGNORE_ISIGNORED, (WPARAM)hIgnoreContact, IGNOREEVENT_URL))
-        || typeId == MTYPE_CONTACTS)
-        icq_sendAdvancedMsgAck(dwUin, dwID1, dwID2, wCookie, (BYTE)typeId, bFlags);
-
-      handleMessageTypes(dwUin, time(NULL), dwID1, dwID2, wCookie, wVersion, typeId, bFlags, wAckType, dwLengthToEnd, (WORD)dwDataLen, pDataBuf, FALSE);
+      pMsgAck.bType = MAT_SERVER_ADVANCED;
+      pMsgAck.dwUin = dwUin;
+      pMsgAck.dwMsgID1 = dwID1;
+      pMsgAck.dwMsgID2 = dwID2;
+      pMsgAck.wCookie = wCookie;
+      pMsgAck.msgType = typeId;
+      pMsgAck.bFlags = bFlags;
+      handleMessageTypes(dwUin, time(NULL), dwID1, dwID2, wCookie, wVersion, typeId, bFlags, wAckType, dwLengthToEnd, (WORD)dwDataLen, pDataBuf, FALSE, &pMsgAck);
     }
     else
     {
@@ -1031,7 +1035,7 @@ static void handleRecvServMsgType4(unsigned char *buf, WORD wLen, DWORD dwUin, c
               dwDataLen = wLen;
 
             if (typeId)
-              handleMessageTypes(dwUin, time(NULL), dwTS1, dwTS2, 0, 0, typeId, bFlags, 0, dwLengthToEnd, (WORD)dwDataLen, pmsg, FALSE);
+              handleMessageTypes(dwUin, time(NULL), dwTS1, dwTS2, 0, 0, typeId, bFlags, 0, dwLengthToEnd, (WORD)dwDataLen, pmsg, FALSE, NULL);
             else
             {
               NetLog_Server("Unsupported plugin message type %d", typeId);
@@ -1039,7 +1043,7 @@ static void handleRecvServMsgType4(unsigned char *buf, WORD wLen, DWORD dwUin, c
           }
         }
         else
-          handleMessageTypes(dwUin, time(NULL), dwTS1, dwTS2, 0, 0, bMsgType, bFlags, 0, wTLVLen - 8, wMsgLen, pmsg, FALSE);
+          handleMessageTypes(dwUin, time(NULL), dwTS1, dwTS2, 0, 0, bMsgType, bFlags, 0, wTLVLen - 8, wMsgLen, pmsg, FALSE, NULL);
       }
     }
     else
@@ -1348,9 +1352,32 @@ static HANDLE handleMessageAck(DWORD dwUin, WORD wCookie, WORD wVersion, int typ
 
 
 
+/* this function send all acks from handleMessageTypes */
+static void sendMessageTypesAck(HANDLE hContact, int bUnicode, message_ack_params *pArgs)
+{
+  if (pArgs)
+  {
+    if ((pArgs->msgType == MTYPE_PLAIN && !CallService(MS_IGNORE_ISIGNORED, (WPARAM)hContact, IGNOREEVENT_MESSAGE))
+     || (pArgs->msgType == MTYPE_URL && !CallService(MS_IGNORE_ISIGNORED, (WPARAM)hContact, IGNOREEVENT_URL))
+      || pArgs->msgType == MTYPE_CONTACTS)
+    {
+      if (pArgs->bType == MAT_SERVER_ADVANCED)
+      { // Only ack message packets
+        icq_sendAdvancedMsgAck(pArgs->dwUin, pArgs->dwMsgID1, pArgs->dwMsgID2, pArgs->wCookie, (BYTE)pArgs->msgType, pArgs->bFlags);
+      }
+      else if (pArgs->bType == MAT_DIRECT)
+      { // Send acknowledgement
+        icq_sendDirectMsgAck(pArgs->pDC, pArgs->wCookie, (BYTE)pArgs->msgType, pArgs->bFlags, bUnicode ? CAP_UTF8MSGS : NULL);
+      }
+    }
+  }
+}
+
+
+
 /* this function also processes direct packets, so it should be bulletproof */
 /* pMsg points to the beginning of the message */
-void handleMessageTypes(DWORD dwUin, DWORD dwTimestamp, DWORD dwMsgID, DWORD dwMsgID2, WORD wCookie, WORD wVersion, int type, int flags, WORD wAckType, DWORD dwDataLen, WORD wMsgLen, char *pMsg, BOOL bThruDC)
+void handleMessageTypes(DWORD dwUin, DWORD dwTimestamp, DWORD dwMsgID, DWORD dwMsgID2, WORD wCookie, WORD wVersion, int type, int flags, WORD wAckType, DWORD dwDataLen, WORD wMsgLen, char *pMsg, BOOL bThruDC, message_ack_params *pAckParams)
 {
   char* szMsg;
   char* pszMsgField[2*MAX_CONTACTSSEND+1];
@@ -1488,6 +1515,7 @@ void handleMessageTypes(DWORD dwUin, DWORD dwTimestamp, DWORD dwMsgID, DWORD dwM
       }
 
       hContact = HContactFromUIN(dwUin, &bAdded);
+      sendMessageTypesAck(hContact, pre.flags & PREF_UNICODE, pAckParams);
 
       if (!pre.flags && !IsUSASCII(szMsg, strlennull(szMsg)))
       { // message is Ansi and contains national characters, create Unicode part by codepage
@@ -1525,12 +1553,15 @@ void handleMessageTypes(DWORD dwUin, DWORD dwTimestamp, DWORD dwMsgID, DWORD dwM
         break;
       }
 
+      hContact = HContactFromUIN(dwUin, &bAdded);
+      sendMessageTypesAck(hContact, 0, pAckParams);
+
       szBlob = (char *)_alloca(strlennull(pszMsgField[0]) + strlennull(pszMsgField[1]) + 2);
       strcpy(szBlob, pszMsgField[1]);
       strcpy(szBlob + strlennull(szBlob) + 1, pszMsgField[0]);
 
       ccs.szProtoService = PSR_URL;
-      ccs.hContact = hContact = HContactFromUIN(dwUin, &bAdded);
+      ccs.hContact = hContact;
       ccs.wParam = 0;
       ccs.lParam = (LPARAM)&pre;
       pre.timestamp = dwTimestamp;
@@ -1652,8 +1683,11 @@ void handleMessageTypes(DWORD dwUin, DWORD dwTimestamp, DWORD dwMsgID, DWORD dwM
       }
       else
       {
+        hContact = HContactFromUIN(dwUin, &bAdded);
+        sendMessageTypesAck(hContact, 0, pAckParams);
+
         ccs.szProtoService = PSR_CONTACTS;
-        ccs.hContact = hContact = HContactFromUIN(dwUin, &bAdded);
+        ccs.hContact = hContact;
         ccs.wParam = 0;
         ccs.lParam = (LPARAM)&pre;
         pre.timestamp = dwTimestamp;

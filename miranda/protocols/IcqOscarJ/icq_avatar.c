@@ -172,7 +172,7 @@ void InitAvatars()
 
   null_snprintf(szPath, MAX_PATH, "%s\\%s\\", PROFILE_PATH, gpszICQProtoName);
 
-  hAvatarsFolder = FoldersRegisterCustomPath(ICQTranslate(gpszICQProtoName), ICQTranslate("Avatars Cache"), szPath);
+  hAvatarsFolder = FoldersRegisterCustomPath(gpszICQProtoName, "Avatars Cache", szPath);
 }
 
 
