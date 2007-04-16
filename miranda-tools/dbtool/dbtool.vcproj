@@ -4,10 +4,10 @@
 	Version="7.10"
 	Name="dbtool"
 	ProjectGUID="{EEDDE5B0-C023-40C2-96A5-1D1F4B11B791}"
-	SccProjectName="&quot;$/Miranda/miranda-tools/dbtool&quot;, DIIAAAAA"
-	SccAuxPath=""
-	SccLocalPath="."
-	SccProvider="MSSCCI:Microsoft Visual SourceSafe">
+	SccProjectName="SAK"
+	SccAuxPath="SAK"
+	SccLocalPath="SAK"
+	SccProvider="SAK">
 	<Platforms>
 		<Platform
 			Name="Win32"/>
