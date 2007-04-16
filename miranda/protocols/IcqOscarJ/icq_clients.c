@@ -124,6 +124,7 @@ const capstr capMirandaIm = {'M', 'i', 'r', 'a', 'n', 'd', 'a', 'M', 0, 0, 0, 0,
 const capstr capIcqJs7    = {'i', 'c', 'q', 'j', ' ', 'S', 'e', 'c', 'u', 'r', 'e', ' ', 'I', 'M', 0, 0};
 const capstr capIcqJSin   = {'s', 'i', 'n', 'j', 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}; // Miranda ICQJ S!N
 const capstr capAimOscar  = {'M', 'i', 'r', 'a', 'n', 'd', 'a', 'A', 0, 0, 0, 0, 0, 0, 0, 0};
+const capstr capMimMobile = {'M', 'i', 'r', 'a', 'n', 'd', 'a', 'M', 'o', 'b', 'i', 'l', 'e', 0, 0, 0};
 const capstr capTrillian  = {0x97, 0xb1, 0x27, 0x51, 0x24, 0x3c, 0x43, 0x34, 0xad, 0x22, 0xd6, 0xab, 0xf7, 0x3f, 0x14, 0x09};
 const capstr capTrilCrypt = {0xf2, 0xe7, 0xc7, 0xf4, 0xfe, 0xad, 0x4d, 0xfb, 0xb2, 0x35, 0x36, 0x79, 0x8b, 0xdf, 0x00, 0x00};
 const capstr capSim       = {'S', 'I', 'M', ' ', 'c', 'l', 'i', 'e', 'n', 't', ' ', ' ', 0, 0, 0, 0};
@@ -133,6 +134,7 @@ const capstr capKopete    = {'K', 'o', 'p', 'e', 't', 'e', ' ', 'I', 'C', 'Q', '
 const capstr capmIcq      = {'m', 'I', 'C', 'Q', ' ', 0xA9, ' ', 'R', '.', 'K', '.', ' ', 0, 0, 0, 0};
 const capstr capAndRQ     = {'&', 'R', 'Q', 'i', 'n', 's', 'i', 'd', 'e', 0, 0, 0, 0, 0, 0, 0};
 const capstr capRAndQ     = {'R', '&', 'Q', 'i', 'n', 's', 'i', 'd', 'e', 0, 0, 0, 0, 0, 0, 0};
+const capstr capIMadering = {'I', 'M', 'a', 'd', 'e', 'r', 'i', 'n', 'g', ' ', 'C', 'l', 'i', 'e', 'n', 't'};
 const capstr capmChat     = {'m', 'C', 'h', 'a', 't', ' ', 'i', 'c', 'q', ' ', 0, 0, 0, 0, 0, 0};
 const capstr capJimm      = {'J', 'i', 'm', 'm', ' ', 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
 const capstr capAnastasia = {0x44, 0xE5, 0xBF, 0xCE, 0xB0, 0x96, 0xE5, 0x47, 0xBD, 0x65, 0xEF, 0xD6, 0xA3, 0x7E, 0x36, 0x02};
@@ -354,6 +356,10 @@ char* detectUserClient(HANDLE hContact, DWORD dwUin, WORD wVersion, DWORD dwFT1,
           strcat(szClient, " + SecureIM");
         }
       }
+      else if (MatchCap(caps, wLen, &capMimMobile, 0x10))
+      {
+        szClient = "Miranda IM (Windows Mobile)";
+      }
       else if (MatchCap(caps, wLen, &capTrillian, 0x10) || MatchCap(caps, wLen, &capTrilCrypt, 0x10))
       { // this is Trillian, check for new versions
         if (CheckContactCapabilities(hContact, CAPF_RTF))
@@ -452,6 +458,10 @@ char* detectUserClient(HANDLE hContact, DWORD dwUin, WORD wVersion, DWORD dwFT1,
         makeClientVersion(szClientBuf, "R&Q ", ver1, ver2, ver3, ver4);
 
         szClient = szClientBuf;
+      }
+      else if (MatchCap(caps, wLen, &capIMadering, 0x10))
+      { // http://imadering.com
+        szClient = "IMadering";
       }
       else if (MatchCap(caps, wLen, &capQipPDA, 0x10))
       {
