@@ -38,7 +38,7 @@ BEGIN
 	CONTROL         "Tree1",IDC_POPLIST,"SysTreeView32",TVS_DISABLEDRAGDROP |
                     TVS_NOTOOLTIPS | TVS_NONEVENHEIGHT | WS_BORDER |
                     WS_TABSTOP,163,12,98,33
-    CONTROL         "Stay minimized",IDC_STAYMINIMIZED,"Button",
+    CONTROL         "But be polite",IDC_STAYMINIMIZED,"Button",
                     BS_AUTOCHECKBOX | WS_TABSTOP,20,23,141,10
 
     CONTROL         "Close the message window on send",IDC_AUTOCLOSE,"Button",

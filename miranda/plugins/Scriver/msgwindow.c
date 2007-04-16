@@ -910,22 +910,33 @@ BOOL CALLBACK DlgProcParentWindow(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM 
 		break;
 	case CM_POPUPWINDOW:
 		if (wParam) { /* incoming message */
-			if (!IsWindowVisible(hwndDlg)&& g_dat->flags & SMF_STAYMINIMIZED) {
-				SendMessage(hwndDlg, CM_ACTIVATECHILD, 0, (LPARAM) lParam);
-				SendMessage(hwndDlg, DM_DEACTIVATE, 0, 0);
-				ShowWindow(hwndDlg, SW_SHOWMINNOACTIVE);
-			} else {
-				BOOL isVisible = IsWindowVisible(hwndDlg);
-				ShowWindow(hwndDlg, SW_SHOWNA);
+			BOOL isVisible = IsWindowVisible(hwndDlg);
+			if (g_dat->flags & SMF_STAYMINIMIZED) {
+				if (!isVisible) {
+					if (dat->foregroundWindow == NULL) {
+						dat->foregroundWindow = GetForegroundWindow();
+					}
+					ShowWindow(hwndDlg, SW_SHOWMINNOACTIVE);
+				} else {
+					ShowWindow(hwndDlg, SW_SHOWNA);
+				}
 				if (dat->childrenCount == 1 ||
 					((g_dat->flags2 & SMF2_SWITCHTOACTIVE) && (IsIconic(hwndDlg) || GetForegroundWindow() != hwndDlg))) {
-					if (!isVisible) {
-						SetForegroundWindow(hwndDlg);
-					}
 					SendMessage(hwndDlg, CM_ACTIVATECHILD, 0, (LPARAM) lParam);
-					if (!isVisible) {
-						SetFocus((HWND) lParam);
-					}
+				}
+				if (!isVisible) {
+					SendMessage(hwndDlg, DM_DEACTIVATE, 0, 0);
+				}
+			} else {
+				if (IsIconic(hwndDlg)) {
+					ShowWindow(hwndDlg, SW_SHOWNORMAL);
+				} else {
+					ShowWindow(hwndDlg, SW_SHOW);
+				}
+				SetForegroundWindow(hwndDlg);
+				if (dat->childrenCount == 1 ||
+					((g_dat->flags2 & SMF2_SWITCHTOACTIVE) && (IsIconic(hwndDlg) || GetForegroundWindow() != hwndDlg))) {
+					SetFocus((HWND) lParam);
 				}
 			}
 		} else { /* outgoing message */
