@@ -45,7 +45,7 @@
 extern WORD wListenPort;
 
 extern char* calcMD5Hash(char* szFile);
-extern char* MirandaVersionToString(char* szStr, int v, int m);
+extern char* MirandaVersionToString(char* szStr, int bUnicode, int v, int m);
 
 extern char* nameXStatus[29];
 

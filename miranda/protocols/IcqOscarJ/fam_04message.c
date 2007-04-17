@@ -887,6 +887,7 @@ void parseServerGreeting(BYTE* pDataBuf, WORD wLen, WORD wMsgLen, DWORD dwUin, B
   DWORD dwLengthToEnd;
   DWORD dwDataLen;
   int typeId;
+  WORD wFunction;
 
   NetLog_Server("Parsing Greeting message through server");
 
@@ -894,7 +895,7 @@ void parseServerGreeting(BYTE* pDataBuf, WORD wLen, WORD wMsgLen, DWORD dwUin, B
   wLen -= wMsgLen;
 
   // Message plugin identification
-  if (!unpackPluginTypeId(&pDataBuf, &wLen, &typeId, NULL, FALSE)) return;
+  if (!unpackPluginTypeId(&pDataBuf, &wLen, &typeId, &wFunction, FALSE)) return;
 
   if (wLen > 8)
   {
@@ -946,6 +947,10 @@ void parseServerGreeting(BYTE* pDataBuf, WORD wLen, WORD wMsgLen, DWORD dwUin, B
       wLen -= (WORD)dwDataLen;
 
   //    handleChatRequest(pDataBuf, wLen, dwUin, wCookie, dwID1, dwID2, szMsg, 8);
+    }
+    else if (typeId == MTYPE_STATUSMSGEXT && wFunction >= 1 && wFunction <= 5)
+    { // handle ICQ6 status message request
+      handleMessageTypes(dwUin, time(NULL), dwID1, dwID2, wCookie, wVersion, 0xE7 + wFunction, bFlags, wAckType, dwLengthToEnd, 0, pDataBuf, FALSE, NULL);
     }
     else if (typeId)
     {
@@ -1182,22 +1187,15 @@ int unpackPluginTypeId(BYTE** pBuffer, WORD* pwLen, int *pTypeId, WORD *pFunctio
   if (!typeId)
     NetLog_Uni(bThruDC, "Error: Unknown type {%08x-%08x-%08x-%08x:%04x}: %s", q1,q2,q3,q4,qt, szPluginName);
 
-  if (wLen)
-  {
-    if (typeId == MTYPE_SMS_MESSAGE) // FIXME: wInfoLen should be used here, is it really safe ??
+  if (wInfoLen >= 22 + dwPluginNameLen)
+  { // sanity checking
+    wInfoLen -= (WORD)(22 + dwPluginNameLen);
+
+    // check if enough data is available - skip remaining bytes of info block
+    if (wLen >= wInfoLen)
     {
-      *pBuffer += 3;
-      wLen -= 3;
-    }
-    else if (typeId == MTYPE_PLAIN) // FIXME:
-    {
-      *pBuffer += 17;
-      wLen -= 17;
-    }
-    else
-    {
-      *pBuffer += 15;
-      wLen -= 15;
+      *pBuffer += wInfoLen;
+      wLen -= wInfoLen;
     }
   }
 

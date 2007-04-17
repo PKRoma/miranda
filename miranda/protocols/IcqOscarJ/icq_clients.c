@@ -325,11 +325,14 @@ char* detectUserClient(HANDLE hContact, DWORD dwUin, WORD wVersion, DWORD dwFT1,
             strcat(szClient, " + SecureIM");
           }
         }
-        else if ((dwFT1 & 0x7FFFFFFF) == 0x7FFFFFFF && dwFT3 == 0x5AFEC0DE)
+        else if ((dwFT1 & 0x7FFFFFFF) == 0x7FFFFFFF)
         {
-          strcat(szClient, " + SecureIM");
-        }
+          if (MatchCap(caps, wLen, &capMimMobile, 0x10))
+            szClient = " (Mobile)";
 
+          if (dwFT3 == 0x5AFEC0DE)
+            strcat(szClient, " + SecureIM");
+        }
         *bClientId = 2;
       }
       else if (capId = MatchCap(caps, wLen, &capIcqJs7, 4))
@@ -355,10 +358,6 @@ char* detectUserClient(HANDLE hContact, DWORD dwUin, WORD wVersion, DWORD dwFT1,
         {
           strcat(szClient, " + SecureIM");
         }
-      }
-      else if (MatchCap(caps, wLen, &capMimMobile, 0x10))
-      {
-        szClient = "Miranda IM (Windows Mobile)";
       }
       else if (MatchCap(caps, wLen, &capTrillian, 0x10) || MatchCap(caps, wLen, &capTrilCrypt, 0x10))
       { // this is Trillian, check for new versions
