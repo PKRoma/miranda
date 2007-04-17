@@ -88,6 +88,7 @@ void JabberIqResultSetPassword( XmlNode *iqNode, void *userdata );
 void JabberIqResultSetRegister( XmlNode *iqNode, void *userdata );
 void JabberIqResultSetSearch( XmlNode *iqNode, void *userdata );
 void JabberIqResultSetVcard( XmlNode *iqNode, void *userdata );
+void JabberIqResultEntityTime( XmlNode *iqNode, void *userdata );
 
 void JabberSetBookmarkRequest (XmlNodeIq& iqId);
 
