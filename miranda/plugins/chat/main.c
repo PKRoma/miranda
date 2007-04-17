@@ -112,11 +112,10 @@ int __declspec(dllexport) Load(PLUGINLINK *link)
 			DWORD size = GetFileVersionInfoSizeA(modulePath, &dummy);
 			BYTE* buffer = (BYTE*) mir_alloc(size);
 
-			GetFileVersionInfoA(modulePath, 0, size, buffer);
-			VerQueryValueA(buffer, "\\", (LPVOID*) &vsInfo, &vsInfoSize);
-			if (LOWORD(vsInfo->dwFileVersionMS) != 0)
-				bFlag= TRUE;
-
+			if (GetFileVersionInfoA(modulePath, 0, size, buffer))
+                if (VerQueryValueA(buffer, "\\", (LPVOID*) &vsInfo, &vsInfoSize))
+                    if (LOWORD(vsInfo->dwFileVersionMS) != 0)
+                        bFlag= TRUE;
 			mir_free(buffer);
 	}	}
 
