@@ -233,7 +233,6 @@ static int LoadLangPack(const TCHAR *szLangPack)
 			}
 			pszLine = line+1;
 			line[lstrlenA(line)-1]='\0';
-			TrimStringSimple(line);
 			if(++langPack.entryCount>entriesAlloced) {
 				entriesAlloced+=128;
 				langPack.entry=(struct LangPackEntry*)mir_realloc(langPack.entry,sizeof(struct LangPackEntry)*entriesAlloced);
