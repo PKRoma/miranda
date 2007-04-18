@@ -328,7 +328,7 @@ char* detectUserClient(HANDLE hContact, DWORD dwUin, WORD wVersion, DWORD dwFT1,
         else if ((dwFT1 & 0x7FFFFFFF) == 0x7FFFFFFF)
         {
           if (MatchCap(caps, wLen, &capMimMobile, 0x10))
-            szClient = " (Mobile)";
+            strcat(szClient, " (Mobile)");
 
           if (dwFT3 == 0x5AFEC0DE)
             strcat(szClient, " + SecureIM");
