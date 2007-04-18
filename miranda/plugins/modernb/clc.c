@@ -1003,6 +1003,7 @@ case INTM_STATUSCHANGED:
 					|| (dat->third_line_show)// && dat->third_line_type==TEXT_STATUS)
 					))
 					Cache_RenewText(pdnce->hContact);
+				SendMessage(hwnd,INTM_ICONCHANGED, wParam, (LPARAM) CallService(MS_CLIST_GETCONTACTICON, wParam, 1));
 				if(FindItem(hwnd,dat,(HANDLE)wParam,&contact,NULL,NULL,TRUE))
 				{
 					if (contact && contact->type==CLCIT_CONTACT)
