@@ -481,7 +481,7 @@ static BOOL CALLBACK JabberAdHoc_CommandDlgProc( HWND hwndDlg, UINT msg, WPARAM 
 					XmlNode * noteNode=JabberXmlGetChild(commandNode, "note");
 					if (noteNode)
 						noteText=noteNode->text;
-					SetDlgItemText(hwndDlg, IDC_INSTRUCTION, noteText?noteText:_T("Strange response: No note no error"));
+					SetDlgItemText(hwndDlg, IDC_INSTRUCTION, noteText?noteText:_T(""));
 
 				}
 				//check actions
