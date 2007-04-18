@@ -28,6 +28,8 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #define UN_LASTCHECK        "UpdateNotifyLastCheck"
 #define UN_SERVERPERIOD     "UpdateNotifyPingDelayPeriod"
 #define UN_CURRENTVERSION   "UpdateNotifyCurrentVersion"
+#define UN_NOTIFYALPHA      "UpdateNotifyNotifyAlpha"
+#define UN_NOTIFYALPHA_DEF  0
 #define UN_CUSTOMURL        "UpdateNotifyCustomURL"
 #define UN_URL              "http://update.miranda-im.org/update.php"
 #define UN_MINCHECKTIME     60*60 /* Check no more than once an hour */
@@ -144,23 +146,24 @@ static void UpdateNotifyPerform(void *manual) {
     DWORD timeNow = time(NULL);    
     DWORD dwVersion;
     char szVersion[32], szUrl[256], szVersionText[128];
-    int isUnicode, isAlpha;
+    int isUnicode, isAlpha, isAlphaBuild;
     DBVARIANT dbv;
     
     DBWriteContactSettingDword(NULL, UN_MOD, UN_LASTCHECK, timeNow);
     CallService(MS_SYSTEM_GETVERSIONTEXT, sizeof(szVersionText), (LPARAM)szVersionText);
     isUnicode = strstr(szVersionText, "Unicode") != NULL ? 1 : 0;
-    isAlpha = strstr(szVersionText, "alpha") != NULL ? 1 : 0;
+    isAlpha = DBGetContactSettingByte(NULL, UN_MOD, UN_NOTIFYALPHA, UN_NOTIFYALPHA_DEF);
+    isAlphaBuild = strstr(szVersionText, "alpha") != NULL ? 1 : 0;
     dwVersion = CallService(MS_SYSTEM_GETVERSION, 0, 0);
     mir_snprintf(szVersion, sizeof(szVersion), "%d.%d.%d.%d", 
             HIBYTE(HIWORD(dwVersion)), LOBYTE(HIWORD(dwVersion)), 
             HIBYTE(LOWORD(dwVersion)), LOBYTE(LOWORD(dwVersion)));
 	if (!DBGetContactSetting(NULL, UN_MOD, UN_CUSTOMURL, &dbv)) {
-        mir_snprintf(szUrl, sizeof(szUrl), "%s?version=%s&unicode=%d&alpha=%d", dbv.pszVal?dbv.pszVal:UN_URL, szVersion, isUnicode, isAlpha);
+        mir_snprintf(szUrl, sizeof(szUrl), "%s?version=%s&unicode=%d&alpha=%d&alphaBuild=%d", dbv.pszVal?dbv.pszVal:UN_URL, szVersion, isUnicode, isAlpha, isAlphaBuild);
 		DBFreeVariant(&dbv);
 	}
     else {
-        mir_snprintf(szUrl, sizeof(szUrl), "%s?version=%s&unicode=%d&alpha=%d", UN_URL, szVersion, isUnicode, isAlpha);
+        mir_snprintf(szUrl, sizeof(szUrl), "%s?version=%s&unicode=%d&alpha=%d&alphaBuild=%d", UN_URL, szVersion, isUnicode, isAlpha, isAlphaBuild);
     }
     ZeroMemory(&req, sizeof(req));
 	req.cbSize = sizeof(req);
@@ -168,7 +171,7 @@ static void UpdateNotifyPerform(void *manual) {
 	req.szUrl = szUrl;
 	req.flags = 0;
     headers[0].szName = "User-Agent";
-    headers[0].szValue = "MirandaUpdate/0.1";
+    headers[0].szValue = "MirandaUpdate/0.2";
     req.headersCount = 1;
     req.headers = headers;
     resp = (NETLIBHTTPREQUEST *)CallService(MS_NETLIB_HTTPTRANSACTION, (WPARAM)hNetlibUser, (LPARAM)&req);
@@ -302,11 +305,16 @@ static BOOL CALLBACK UpdateNotifyOptsProc(HWND hwndDlg, UINT msg, WPARAM wParam,
 	case WM_INITDIALOG:
 		TranslateDialogDefault(hwndDlg);
 		CheckDlgButton(hwndDlg, IDC_ENABLEUPDATES, DBGetContactSettingByte(NULL, UN_MOD, UN_ENABLE, UN_ENABLE_DEF) ? BST_CHECKED : BST_UNCHECKED);
+		CheckDlgButton(hwndDlg, IDC_ENABLEALPHA, DBGetContactSettingByte(NULL, UN_MOD, UN_NOTIFYALPHA, UN_NOTIFYALPHA_DEF) ? BST_CHECKED : BST_UNCHECKED);
+        EnableWindow(GetDlgItem(hwndDlg, IDC_ENABLEALPHA), IsDlgButtonChecked(hwndDlg, IDC_ENABLEUPDATES)?TRUE:FALSE);
 		return TRUE;
 
 	case WM_COMMAND:
 		switch (LOWORD(wParam)) {
 		case IDC_ENABLEUPDATES:
+            EnableWindow(GetDlgItem(hwndDlg, IDC_ENABLEALPHA), IsDlgButtonChecked(hwndDlg, IDC_ENABLEUPDATES)?TRUE:FALSE);
+            //fall-through
+        case IDC_ENABLEALPHA:
 			SendMessage(GetParent(hwndDlg), PSM_CHANGED, 0, 0);
 			break;
 		}
@@ -317,6 +325,7 @@ static BOOL CALLBACK UpdateNotifyOptsProc(HWND hwndDlg, UINT msg, WPARAM wParam,
 			NMHDR *hdr = (NMHDR *)lParam;
 			if (hdr&&hdr->code==PSN_APPLY) {
 				DBWriteContactSettingByte(NULL, UN_MOD, UN_ENABLE, (BYTE)(IsDlgButtonChecked(hwndDlg, IDC_ENABLEUPDATES)));
+				DBWriteContactSettingByte(NULL, UN_MOD, UN_NOTIFYALPHA, (BYTE)(IsDlgButtonChecked(hwndDlg, IDC_ENABLEALPHA)));
 			}
 			break;
 		}

@@ -1346,15 +1346,18 @@ BEGIN
     CONTROL         "",IDC_STATIC,"Static",SS_ETCHEDHORZ,7,80,245,1
 END
 
-IDD_OPT_UPDATENOTIFY DIALOGEX 0, 0, 238, 49
+IDD_OPT_UPDATENOTIFY DIALOGEX 0, 0, 258, 62
 STYLE DS_SETFONT | DS_FIXEDSYS | WS_CHILD
 EXSTYLE WS_EX_CONTROLPARENT
 FONT 8, "MS Shell Dlg", 0, 0, 0x1
 BEGIN
-    GROUPBOX        "Update Notification Options",IDC_STATIC,2,4,233,40
-    CONTROL         "Check for new versions of Miranda IM periodically.",
+    GROUPBOX        "Update Notification Options",IDC_STATIC,2,4,253,53
+    CONTROL         "Automatically check for new versions of Miranda IM.",
                     IDC_ENABLEUPDATES,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,
-                    11,22,212,10
+                    11,22,237,10
+    CONTROL         "Also check for pre-release (alpha) versions.",
+                    IDC_ENABLEALPHA,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,
+                    21,35,227,10
 END
 
 
