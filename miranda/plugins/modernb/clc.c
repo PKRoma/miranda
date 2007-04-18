@@ -797,7 +797,7 @@ case INTM_ICONCHANGED:
 			status = ID_STATUS_OFFLINE;
 		else
 			status=GetContactCachedStatus((HANDLE) wParam);
-		image_is_special=(LOWORD(contacticon) != (LOWORD(lParam)); //check only base icons
+		image_is_special=(LOWORD(contacticon) != (LOWORD(lParam))); //check only base icons
 
         nHiddenStatus=CLVM_GetContactHiddenStatus((HANDLE)wParam, szProto, dat);
 		shouldShow = ( ((GetWindowLong(hwnd, GWL_STYLE) & CLS_SHOWHIDDEN) && nHiddenStatus!=-1) || !nHiddenStatus)

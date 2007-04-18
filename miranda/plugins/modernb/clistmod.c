@@ -162,7 +162,7 @@ int cli_IconFromStatusMode(const char *szProto,int nStatus, HANDLE hContact)
        if (ServiceExists(AdvancedService))
           result=CallService(AdvancedService,(WPARAM)hActContact, (LPARAM)0);
 
-       if (result==-1 || !(result&0xFFFF))
+       if (result==-1 || !(LOWORD(result)))
        {
            //Get normal Icon
            int  basicIcon=saveIconFromStatusMode(szActProto,nActStatus,NULL);

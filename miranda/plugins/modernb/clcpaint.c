@@ -1822,24 +1822,22 @@ static void CLCPaint_ModernInternalPaintRowItems(HWND hwnd, HDC hdcMem, struct C
 static void CLCPaint_DrawStatusIcon(struct ClcContact * Drawing, struct ClcData *dat,
 									int iImage, HDC hdcMem, int x, int y, int cx, int cy, DWORD colorbg,DWORD colorfg, int mode)
 {
-	//int i=(dat->iconXSpace-ICON_HEIGHT)>>1;
-	//x+=i;
 	if (Drawing->type!=CLCIT_CONTACT)
 	{
-		SkinEngine_ImageList_DrawEx(himlCListClc, iImage&0xFFFF, hdcMem,
+		SkinEngine_ImageList_DrawEx(himlCListClc, LOWORD(iImage), hdcMem,
 			x, y,cx,cy,colorbg,colorfg,mode);
 	}
 	else if (Drawing->image_is_special)
 	{
-		SkinEngine_ImageList_DrawEx(himlCListClc, iImage&0xFFFF, hdcMem,
+		SkinEngine_ImageList_DrawEx(himlCListClc, LOWORD(iImage), hdcMem,
 			x, y,cx,cy,colorbg,colorfg,mode);
 	}
-	else if (iImage!=-1 && iImage&0xFFFF0000 && dat->drawOverlayedStatus)
+	else if (iImage!=-1 && HIWORD(iImage) && dat->drawOverlayedStatus)
 	{
 		int status=GetContactCachedStatus(Drawing->hContact);
 		if (status<ID_STATUS_OFFLINE) status=ID_STATUS_OFFLINE;
 		else if (status>ID_STATUS_OUTTOLUNCH) status=ID_STATUS_ONLINE;
-		SkinEngine_ImageList_DrawEx(himlCListClc, (iImage&0xFFFF0000)>>16, hdcMem,
+		SkinEngine_ImageList_DrawEx(himlCListClc, HIWORD(iImage), hdcMem,
 			x, y,cx,cy,colorbg,colorfg,mode);
 		if (dat->drawOverlayedStatus&2) //draw overlay
 			SkinEngine_ImageList_DrawEx(hAvatarOverlays, g_pStatusOverlayIcons[status-ID_STATUS_OFFLINE].listID, hdcMem,
@@ -1847,7 +1845,7 @@ static void CLCPaint_DrawStatusIcon(struct ClcContact * Drawing, struct ClcData 
 	}
 	else
 	{
-		SkinEngine_ImageList_DrawEx(himlCListClc, iImage&0xFFFF, hdcMem,
+		SkinEngine_ImageList_DrawEx(himlCListClc, LOWORD(iImage), hdcMem,
 			x, y,cx,cy,colorbg,colorfg,mode);
 	}
 }
@@ -3619,7 +3617,7 @@ static void CLCPaint_CalulateContactItemsPositions(HWND hwnd, HDC hdcMem, struct
 			szCounts = pcli->pfnGetGroupCountsText(dat, Drawing);
 
 			// Has to draw the count?
-			if(szCounts)
+			if(szCounts && szCounts[0])
 			{
 				RECT space_rc = free_row_rc;
 				RECT counts_rc = free_row_rc;
@@ -3675,10 +3673,10 @@ static void CLCPaint_CalulateContactItemsPositions(HWND hwnd, HDC hdcMem, struct
 			if (dat->row_align_group_mode==1) //center
 			{
 				int x;
-				//x=free_row_rc.left+((free_row_rc.right-free_row_rc.left-full_text_width)>>1);
-				int l=dat->leftMargin;
-				int r=dat->rightMargin;
-				x=l+row_rc.left+((row_rc.right-row_rc.left-full_text_width-l-r)>>1);
+				x=free_row_rc.left+((free_row_rc.right-free_row_rc.left-full_text_width)>>1);
+				//int l=dat->leftMargin;
+				//int r=dat->rightMargin;
+				//x=l+row_rc.left+((row_rc.right-row_rc.left-full_text_width-l-r)>>1);
 				text_rc.left=x;
 				text_rc.right=x+full_text_width;
 			}
