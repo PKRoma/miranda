@@ -93,7 +93,8 @@ static iconList[] =
 	{	"Add to roster",         "addroster",  IDI_ADDROSTER  },
 	{	"Login/logout",          "trlogonoff", IDI_LOGIN      },
 	{	"Resolve nicks",         "trresolve",  IDI_REFRESH    },
-	{	"Bookmarks",             "bookmarks",  IDI_BOOKMARKS  }   
+	{	"Bookmarks",             "bookmarks",  IDI_BOOKMARKS  }, 
+	{	"AdHoc Command",         "adhoc",	   IDI_COMMAND    }
 };
 
 void JabberIconsInit( void )

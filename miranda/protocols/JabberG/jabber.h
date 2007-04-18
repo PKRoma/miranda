@@ -464,6 +464,9 @@ TCHAR* EscapeChatTags(TCHAR* pszText);
 char*  UnEscapeChatTags(char* str_in);
 void   JabberUpdateMirVer(JABBER_LIST_ITEM *item);
 
+//---- jabber_adhoc.cpp	---------------------------------------------
+int JabberContactMenuRunCommands(WPARAM wParam, LPARAM lParam);
+
 //---- jabber_svc.c -------------------------------------------------
 
 void JabberEnableMenuItems( BOOL bEnable );

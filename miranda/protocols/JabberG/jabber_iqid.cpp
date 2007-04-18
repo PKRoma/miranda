@@ -1331,6 +1331,8 @@ void JabberIqResultDiscoAgentInfo( XmlNode *iqNode, void *userdata )
 										item->cap |= AGENT_CAP_REGISTER;
 									else if ( !lstrcmp( var, _T("http://jabber.org/protocol/muc")))
 										item->cap |= AGENT_CAP_GROUPCHAT;
+									else if ( !lstrcmp( var, _T("http://jabber.org/protocol/commands")))
+										item->cap |= AGENT_CAP_ADHOC;
 		}	}	}	}	}	}	}
 
 		if ( hwndJabberAgents != NULL )
