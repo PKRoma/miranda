@@ -796,22 +796,13 @@ case INTM_ICONCHANGED:
 		if (szProto == NULL)
 			status = ID_STATUS_OFFLINE;
 		else
-			//status = DBGetContactSettingWord((HANDLE) wParam, szProto, "Status", ID_STATUS_OFFLINE);
 			status=GetContactCachedStatus((HANDLE) wParam);
-		image_is_special=((contacticon&0xFFFF) != (lParam&0xFFFF)); //check only base icons
+		image_is_special=(LOWORD(contacticon) != (LOWORD(lParam)); //check only base icons
 
-		/*
-		if (image_is_special) //check if going to set status icon
-		{
-		int index=ExtIconFromStatusMode((HANDLE) wParam, szProto, szProto==NULL ? ID_STATUS_OFFLINE : GetContactCachedStatus((HANDLE) wParam));
-		if (lParam==index) image_is_special=3;
-
-		}
-		*/
         nHiddenStatus=CLVM_GetContactHiddenStatus((HANDLE)wParam, szProto, dat);
 		shouldShow = ( ((GetWindowLong(hwnd, GWL_STYLE) & CLS_SHOWHIDDEN) && nHiddenStatus!=-1) || !nHiddenStatus)
 			&& ( (g_CluiData.bFilterEffective ? TRUE : !pcli->pfnIsHiddenMode(dat, status)) 
-			|| CallService(MS_CLIST_GETCONTACTICON, wParam, 0) != (lParam&0xFFFF) );  // XXX CLVM changed - this means an offline msg is flashing, so the contact should be shown
+			|| CallService(MS_CLIST_GETCONTACTICON, wParam, 0) != LOWORD(lParam) );  // XXX CLVM changed - this means an offline msg is flashing, so the contact should be shown
 		if (!pcli->pfnFindItem(hwnd, dat, (HANDLE) wParam, &contact, &group, NULL)) 
 		{
 			if (shouldShow && CallService(MS_DB_CONTACT_IS, wParam, 0)) 
