@@ -44,33 +44,63 @@ FILE *gg_debug_file = NULL;
 #ifndef GG_DEBUG_DISABLE
 
 /*
- * gg_debug() // funkcja wewnêtrzna
+ * gg_debug_common() // funkcja wewnêtrzna
  *
- * wy¶wietla komunikat o danym poziomie, o ile u¿ytkownik sobie tego ¿yczy.
+ * wywo³uje odpowiedni handler dla komunikatu lub wy¶wietla go,
+ * o ile u¿ytkownik sobie tego ¿yczy.
  *
  *  - level - poziom wiadomo¶ci
  *  - format... - tre¶æ wiadomo¶ci (kompatybilna z printf())
+ */
+void gg_debug_common(struct gg_session *sess, int level, const char *format, va_list ap)
+{
+	if (gg_debug_handler_session)
+		(*gg_debug_handler_session)(sess, level, format, ap);
+	else if (gg_debug_handler)
+		(*gg_debug_handler)(level, format, ap);
+	else if (gg_debug_level & level)
+		vfprintf(gg_debug_file ? gg_debug_file : stderr, format, ap);
+}
+
+
+/*
+ * gg_debug() // funkcja wewnêtrzna
+ *
+ * przyjmuje komunikat o danym poziomie
+ *
+ *  - level - poziom wiadomo¶ci
+ *  - format... - tre¶æ wiadomo¶ci (kompatybilna z printf())
+ *
+ * patrz gg_debug_common()
  */
 void gg_debug(int level, const char *format, ...)
 {
 	va_list ap;
 	int old_errno = errno;
-	
-	if (gg_debug_handler) {
-		va_start(ap, format);
-		(*gg_debug_handler)(level, format, ap);
-		va_end(ap);
+	va_start(ap, format);
+	gg_debug_common(NULL, level, format, ap);
+	va_end(ap);
+	errno = old_errno;
+}
 
-		goto cleanup;
-	}
-	
-	if ((gg_debug_level & level)) {
-		va_start(ap, format);
-		vfprintf((gg_debug_file) ? gg_debug_file : stderr, format, ap);
-		va_end(ap);
-	}
-
-cleanup:
+/*
+ * gg_debug_session() // funkcja wewnêtrzna
+ *
+ * przyjmuje komunikat o danym poziomie
+ *
+ *  - sess - sesja, której dotyczy wiadomoœæ
+ *  - level - poziom wiadomo¶ci
+ *  - format... - tre¶æ wiadomo¶ci (kompatybilna z printf())
+ *
+ * patrz gg_debug_common()
+ */
+void gg_debug_session(struct gg_session *sess, int level, const char *format, ...)
+{
+	va_list ap;
+	int old_errno = errno;
+	va_start(ap, format);
+	gg_debug_common(sess, level, format, ap);
+	va_end(ap);
 	errno = old_errno;
 }
 
@@ -95,12 +125,12 @@ char *gg_vsaprintf(const char *format, va_list ap)
 	const char *start;
 	char *buf = NULL;
 	
-#ifdef __GG_LIBGADU_HAVE_VA_COPY
+#ifdef GG_CONFIG_HAVE_VA_COPY
 	va_list aq;
 
 	va_copy(aq, ap);
 #else
-#  ifdef __GG_LIBGADU_HAVE___VA_COPY
+#  ifdef GG_CONFIG_HAVE___VA_COPY
 	va_list aq;
 
 	__va_copy(aq, ap);
@@ -109,7 +139,7 @@ char *gg_vsaprintf(const char *format, va_list ap)
 
 	start = format; 
 
-#ifndef __GG_LIBGADU_HAVE_C99_VSNPRINTF
+#ifndef GG_CONFIG_HAVE_C99_VSNPRINTF
 	{
 		int res;
 		char *tmp;
@@ -139,11 +169,11 @@ char *gg_vsaprintf(const char *format, va_list ap)
 
 	format = start;
 	
-#ifdef __GG_LIBGADU_HAVE_VA_COPY
+#ifdef GG_CONFIG_HAVE_VA_COPY
 	vsnprintf(buf, size + 1, format, aq);
 	va_end(aq);
 #else
-#  ifdef __GG_LIBGADU_HAVE___VA_COPY
+#  ifdef GG_CONFIG_HAVE___VA_COPY
 	vsnprintf(buf, size + 1, format, aq);
 	va_end(aq);
 #  else
@@ -247,6 +277,9 @@ int gg_connect(void *addr, int port, int async)
 
 	if (bind(sock, (struct sockaddr *) &myaddr, sizeof(myaddr)) == -1) {
 		gg_debug(GG_DEBUG_MISC, "// gg_connect() bind() failed (errno=%d, %s)\n", errno, strerror(errno));
+		errno2 = errno;
+		close(sock);
+		errno = errno2;
 		return -1;
 	}
 

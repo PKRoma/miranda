@@ -135,6 +135,10 @@ SOURCE=.\libgadu\pubdir.c
 
 SOURCE=.\libgadu\pubdir50.c
 # End Source File
+# Begin Source File
+
+SOURCE=.\libgadu\sha1.c
+# End Source File
 # End Group
 # Begin Source File
 

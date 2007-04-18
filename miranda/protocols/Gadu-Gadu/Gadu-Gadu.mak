@@ -54,6 +54,7 @@ CLEAN :
 	-@erase "$(INTDIR)\pubdir50.obj"
 	-@erase "$(INTDIR)\resource.res"
 	-@erase "$(INTDIR)\services.obj"
+	-@erase "$(INTDIR)\sha1.obj"
 	-@erase "$(INTDIR)\ssl.obj"
 	-@erase "$(INTDIR)\token.obj"
 	-@erase "$(INTDIR)\userutils.obj"
@@ -117,6 +118,7 @@ LINK32_OBJS= \
 	"$(INTDIR)\libgadu.obj" \
 	"$(INTDIR)\pubdir.obj" \
 	"$(INTDIR)\pubdir50.obj" \
+	"$(INTDIR)\sha1.obj" \
 	"$(INTDIR)\core.obj" \
 	"$(INTDIR)\dialogs.obj" \
 	"$(INTDIR)\dynstuff.obj" \
@@ -168,6 +170,7 @@ CLEAN :
 	-@erase "$(INTDIR)\pubdir50.obj"
 	-@erase "$(INTDIR)\resource.res"
 	-@erase "$(INTDIR)\services.obj"
+	-@erase "$(INTDIR)\sha1.obj"
 	-@erase "$(INTDIR)\ssl.obj"
 	-@erase "$(INTDIR)\token.obj"
 	-@erase "$(INTDIR)\userutils.obj"
@@ -234,6 +237,7 @@ LINK32_OBJS= \
 	"$(INTDIR)\libgadu.obj" \
 	"$(INTDIR)\pubdir.obj" \
 	"$(INTDIR)\pubdir50.obj" \
+	"$(INTDIR)\sha1.obj" \
 	"$(INTDIR)\core.obj" \
 	"$(INTDIR)\dialogs.obj" \
 	"$(INTDIR)\dynstuff.obj" \
@@ -308,6 +312,12 @@ SOURCE=.\libgadu\pubdir.c
 SOURCE=.\libgadu\pubdir50.c
 
 "$(INTDIR)\pubdir50.obj" : $(SOURCE) "$(INTDIR)"
+	$(CPP) $(CPP_PROJ) $(SOURCE)
+
+
+SOURCE=.\libgadu\sha1.c
+
+"$(INTDIR)\sha1.obj" : $(SOURCE) "$(INTDIR)"
 	$(CPP) $(CPP_PROJ) $(SOURCE)
 
 

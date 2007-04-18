@@ -268,7 +268,7 @@ void *__stdcall gg_mainthread(void *empty)
 		{ 0,						"Unknown" }
 	};
 	GGTHREAD *thread = empty;
-#if 1 // __GG_LIBGADU_MIRANDA
+#if 1 // GG_CONFIG_MIRANDA
 	NETLIBUSERSETTINGS nlus;
 #endif
 	char *szMsg;
@@ -300,7 +300,7 @@ start:
 	// Send Era Omnix info if set
 	p.era_omnix = DBGetContactSettingByte(NULL, GG_PROTO, "EraOmnix", 0);
 
-#if 1 // __GG_LIBGADU_MIRANDA
+#if 1 // GG_CONFIG_MIRANDA
 	// Setup proxy
 	nlus.cbSize = sizeof(nlus);
 	if(CallService(MS_NETLIB_GETUSERSETTINGS, (WPARAM)hNetlib, (LPARAM)&nlus))
@@ -331,7 +331,7 @@ start:
 #endif
 #else
 		gg_proxy_enabled = 0;
-#endif // __GG_LIBGADU_MIRANDA
+#endif // GG_CONFIG_MIRANDA
 
 	// Check out manual host setting
 	if(DBGetContactSettingByte(NULL, GG_PROTO, GG_KEY_MANUALHOST, GG_KEYDEF_MANUALHOST))

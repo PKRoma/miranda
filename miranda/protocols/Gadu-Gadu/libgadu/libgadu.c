@@ -35,7 +35,7 @@
 
 #include <errno.h>
 #include <netdb.h>
-#ifdef __GG_LIBGADU_HAVE_PTHREAD
+#ifdef GG_CONFIG_HAVE_PTHREAD
 #  include <pthread.h>
 #endif
 #include <stdarg.h>
@@ -44,8 +44,8 @@
 #include <string.h>
 #include <signal.h>
 #include <unistd.h>
-#ifndef __GG_LIBGADU_MIRANDA
-#ifdef __GG_LIBGADU_HAVE_OPENSSL
+#ifndef GG_CONFIG_MIRANDA
+#ifdef GG_CONFIG_HAVE_OPENSSL
 #  include <openssl/err.h>
 #  include <openssl/rand.h>
 #endif
@@ -58,6 +58,7 @@
 
 int gg_debug_level = 0;
 void (*gg_debug_handler)(int level, const char *format, va_list ap) = NULL;
+void (*gg_debug_handler_session)(struct gg_session *sess, int level, const char *format, va_list ap) = NULL;
 
 int gg_dcc_port = 0;
 unsigned long gg_dcc_ip = 0;
@@ -73,7 +74,7 @@ int gg_proxy_http_only = 0;
 char *gg_proxy_username = NULL;
 char *gg_proxy_password = NULL;
 
-#ifdef __GG_LIBGADU_MIRANDA
+#ifdef GG_CONFIG_MIRANDA
 int gg_failno = 0;
 #endif
 
@@ -112,7 +113,7 @@ const char *gg_libgadu_version()
  */
 uint32_t gg_fix32(uint32_t x)
 {
-#ifndef __GG_LIBGADU_BIGENDIAN
+#ifndef GG_CONFIG_BIGENDIAN
 	return x;
 #else
 	return (uint32_t)
@@ -136,7 +137,7 @@ uint32_t gg_fix32(uint32_t x)
  */
 uint16_t gg_fix16(uint16_t x)
 {
-#ifndef __GG_LIBGADU_BIGENDIAN
+#ifndef GG_CONFIG_BIGENDIAN
 	return x;
 #else
 	return (uint16_t)
@@ -244,7 +245,7 @@ int gg_resolve(int *fd, int *pid, const char *hostname)
 	return 0;
 }
 
-#ifdef __GG_LIBGADU_HAVE_PTHREAD
+#ifdef GG_CONFIG_HAVE_PTHREAD
 
 struct gg_resolve_pthread_data {
 	char *hostname;
@@ -385,7 +386,7 @@ int gg_read(struct gg_session *sess, char *buf, int length)
 {
 	int res;
 
-#ifdef __GG_LIBGADU_HAVE_OPENSSL
+#ifdef GG_CONFIG_HAVE_OPENSSL
 	if (sess->ssl) {
 		int err;
 
@@ -422,7 +423,7 @@ int gg_write(struct gg_session *sess, const char *buf, int length)
 {
 	int res = 0;
 
-#ifdef __GG_LIBGADU_HAVE_OPENSSL
+#ifdef GG_CONFIG_HAVE_OPENSSL
 	if (sess->ssl) {
 		int err;
 
@@ -478,7 +479,7 @@ void *gg_recv_packet(struct gg_session *sess)
 	int ret = 0;
 	unsigned int offset, size = 0;
 
-	gg_debug(GG_DEBUG_FUNCTION, "** gg_recv_packet(%p);\n", sess);
+	gg_debug_session(sess, GG_DEBUG_FUNCTION, "** gg_recv_packet(%p);\n", sess);
 	
 	if (!sess) {
 		errno = EFAULT;
@@ -488,7 +489,7 @@ void *gg_recv_packet(struct gg_session *sess)
 	if (sess->recv_left < 1) {
 		if (sess->header_buf) {
 			memcpy(&h, sess->header_buf, sess->header_done);
-			gg_debug(GG_DEBUG_MISC, "// gg_recv_packet() header recv: resuming last read (%d bytes left)\n", sizeof(h) - sess->header_done);
+			gg_debug_session(sess, GG_DEBUG_MISC, "// gg_recv_packet() header recv: resuming last read (%d bytes left)\n", sizeof(h) - sess->header_done);
 			free(sess->header_buf);
 			sess->header_buf = NULL;
 		} else
@@ -497,25 +498,25 @@ void *gg_recv_packet(struct gg_session *sess)
 		while (sess->header_done < sizeof(h)) {
 			ret = gg_read(sess, (char*) &h + sess->header_done, sizeof(h) - sess->header_done);
 
-			gg_debug(GG_DEBUG_MISC, "// gg_recv_packet() header recv(%d,%p,%d) = %d\n", sess->fd, &h + sess->header_done, sizeof(h) - sess->header_done, ret);
+			gg_debug_session(sess, GG_DEBUG_MISC, "// gg_recv_packet() header recv(%d,%p,%d) = %d\n", sess->fd, &h + sess->header_done, sizeof(h) - sess->header_done, ret);
 
 			if (!ret) {
 				errno = ECONNRESET;
-				gg_debug(GG_DEBUG_MISC, "// gg_recv_packet() header recv() failed: connection broken\n");
+				gg_debug_session(sess, GG_DEBUG_MISC, "// gg_recv_packet() header recv() failed: connection broken\n");
 				return NULL;
 			}
 
 			if (ret == -1) {
 				if (errno == EINTR) {
-					gg_debug(GG_DEBUG_MISC, "// gg_recv_packet() header recv() interrupted system call, resuming\n");
+					gg_debug_session(sess, GG_DEBUG_MISC, "// gg_recv_packet() header recv() interrupted system call, resuming\n");
 					continue;
 				}
 
 				if (errno == EAGAIN) {
-					gg_debug(GG_DEBUG_MISC, "// gg_recv_packet() header recv() incomplete header received\n");
+					gg_debug_session(sess, GG_DEBUG_MISC, "// gg_recv_packet() header recv() incomplete header received\n");
 
 					if (!(sess->header_buf = malloc(sess->header_done))) {
-						gg_debug(GG_DEBUG_MISC, "// gg_recv_packet() header recv() not enough memory\n");
+						gg_debug_session(sess, GG_DEBUG_MISC, "// gg_recv_packet() header recv() not enough memory\n");
 						return NULL;
 					}
 
@@ -524,7 +525,7 @@ void *gg_recv_packet(struct gg_session *sess)
 					return NULL;
 				}
 
-				gg_debug(GG_DEBUG_MISC, "// gg_recv_packet() header recv() failed: errno=%d, %s\n", errno, strerror(errno));
+				gg_debug_session(sess, GG_DEBUG_MISC, "// gg_recv_packet() header recv() failed: errno=%d, %s\n", errno, strerror(errno));
 
 				return NULL;
 			}
@@ -540,19 +541,19 @@ void *gg_recv_packet(struct gg_session *sess)
 	
 	/* jakie¶ sensowne limity na rozmiar pakietu */
 	if (h.length > 65535) {
-		gg_debug(GG_DEBUG_MISC, "// gg_recv_packet() invalid packet length (%d)\n", h.length);
+		gg_debug_session(sess, GG_DEBUG_MISC, "// gg_recv_packet() invalid packet length (%d)\n", h.length);
 		errno = ERANGE;
 		return NULL;
 	}
 
 	if (sess->recv_left > 0) {
-		gg_debug(GG_DEBUG_MISC, "// gg_recv_packet() resuming last gg_recv_packet()\n");
+		gg_debug_session(sess, GG_DEBUG_MISC, "// gg_recv_packet() resuming last gg_recv_packet()\n");
 		size = sess->recv_left;
 		offset = sess->recv_done;
 		buf = sess->recv_buf;
 	} else {
 		if (!(buf = malloc(sizeof(h) + h.length + 1))) {
-			gg_debug(GG_DEBUG_MISC, "// gg_recv_packet() not enough memory for packet data\n");
+			gg_debug_session(sess, GG_DEBUG_MISC, "// gg_recv_packet() not enough memory for packet data\n");
 			return NULL;
 		}
 
@@ -564,9 +565,9 @@ void *gg_recv_packet(struct gg_session *sess)
 
 	while (size > 0) {
 		ret = gg_read(sess, buf + sizeof(h) + offset, size);
-		gg_debug(GG_DEBUG_MISC, "// gg_recv_packet() body recv(%d,%p,%d) = %d\n", sess->fd, buf + sizeof(h) + offset, size, ret);
+		gg_debug_session(sess, GG_DEBUG_MISC, "// gg_recv_packet() body recv(%d,%p,%d) = %d\n", sess->fd, buf + sizeof(h) + offset, size, ret);
 		if (!ret) {
-			gg_debug(GG_DEBUG_MISC, "// gg_recv_packet() body recv() failed: connection broken\n");
+			gg_debug_session(sess, GG_DEBUG_MISC, "// gg_recv_packet() body recv() failed: connection broken\n");
 			errno = ECONNRESET;
 			return NULL;
 		}
@@ -576,11 +577,11 @@ void *gg_recv_packet(struct gg_session *sess)
 		} else if (ret == -1) {	
 			int errno2 = errno;
 
-			gg_debug(GG_DEBUG_MISC, "// gg_recv_packet() body recv() failed (errno=%d, %s)\n", errno, strerror(errno));
+			gg_debug_session(sess, GG_DEBUG_MISC, "// gg_recv_packet() body recv() failed (errno=%d, %s)\n", errno, strerror(errno));
 			errno = errno2;
 
 			if (errno == EAGAIN) {
-				gg_debug(GG_DEBUG_MISC, "// gg_recv_packet() %d bytes received, %d left\n", offset, size);
+				gg_debug_session(sess, GG_DEBUG_MISC, "// gg_recv_packet() %d bytes received, %d left\n", offset, size);
 				sess->recv_buf = buf;
 				sess->recv_left = size;
 				sess->recv_done = offset;
@@ -598,10 +599,10 @@ void *gg_recv_packet(struct gg_session *sess)
 	if ((gg_debug_level & GG_DEBUG_DUMP)) {
 		unsigned int i;
 
-		gg_debug(GG_DEBUG_DUMP, "// gg_recv_packet(%.2x)", h.type);
+		gg_debug_session(sess, GG_DEBUG_DUMP, "// gg_recv_packet(%.2x)", h.type);
 		for (i = 0; i < sizeof(h) + h.length; i++) 
-			gg_debug(GG_DEBUG_DUMP, " %.2x", (unsigned char) buf[i]);
-		gg_debug(GG_DEBUG_DUMP, "\n");
+			gg_debug_session(sess, GG_DEBUG_DUMP, " %.2x", (unsigned char) buf[i]);
+		gg_debug_session(sess, GG_DEBUG_DUMP, "\n");
 	}
 
 	return buf;
@@ -635,12 +636,12 @@ int gg_send_packet(struct gg_session *sess, int type, ...)
 	va_list ap;
 	int res;
 
-	gg_debug(GG_DEBUG_FUNCTION, "** gg_send_packet(%p, 0x%.2x, ...)\n", sess, type);
+	gg_debug_session(sess, GG_DEBUG_FUNCTION, "** gg_send_packet(%p, 0x%.2x, ...);\n", sess, type);
 
 	tmp_length = sizeof(struct gg_header);
 
 	if (!(tmp = malloc(tmp_length))) {
-		gg_debug(GG_DEBUG_MISC, "// gg_send_packet() not enough memory for packet header\n");
+		gg_debug_session(sess, GG_DEBUG_MISC, "// gg_send_packet() not enough memory for packet header\n");
 		return -1;
 	}
 
@@ -654,7 +655,7 @@ int gg_send_packet(struct gg_session *sess, int type, ...)
 		payload_length = va_arg(ap, unsigned int);
 
 		if (!(tmp2 = realloc(tmp, tmp_length + payload_length))) {
-			gg_debug(GG_DEBUG_MISC, "// gg_send_packet() not enough memory for payload\n");
+			gg_debug_session(sess, GG_DEBUG_MISC, "// gg_send_packet() not enough memory for payload\n");
 			free(tmp);
 			va_end(ap);
 			return -1;
@@ -677,14 +678,14 @@ int gg_send_packet(struct gg_session *sess, int type, ...)
 	if ((gg_debug_level & GG_DEBUG_DUMP)) {
 		unsigned int i;
 
-		gg_debug(GG_DEBUG_DUMP, "// gg_send_packet(0x%.2x)", gg_fix32(h->type));
+		gg_debug_session(sess, GG_DEBUG_DUMP, "// gg_send_packet(0x%.2x)", gg_fix32(h->type));
 		for (i = 0; i < tmp_length; ++i)
-			gg_debug(GG_DEBUG_DUMP, " %.2x", (unsigned char) tmp[i]);
-		gg_debug(GG_DEBUG_DUMP, "\n");
+			gg_debug_session(sess, GG_DEBUG_DUMP, " %.2x", (unsigned char) tmp[i]);
+		gg_debug_session(sess, GG_DEBUG_DUMP, "\n");
 	}
 	
 	if ((res = gg_write(sess, tmp, tmp_length)) < tmp_length) {
-		gg_debug(GG_DEBUG_MISC, "// gg_send_packet() write() failed. res = %d, errno = %d (%s)\n", res, errno, strerror(errno));
+		gg_debug_session(sess, GG_DEBUG_MISC, "// gg_send_packet() write() failed. res = %d, errno = %d (%s)\n", res, errno, strerror(errno));
 		free(tmp);
 		return -1;
 	}
@@ -761,6 +762,12 @@ struct gg_session *gg_login(const struct gg_login_params *p)
 		goto fail;
 	}
 
+	if (p->hash_type < 0 || p->hash_type > GG_LOGIN_HASH_SHA1) {
+		gg_debug(GG_DEBUG_MISC, "// gg_login() invalid arguments. unknown hash type (%d)\n", p->hash_type);
+		errno = EFAULT;
+		goto fail;
+	}
+
 	sess->uin = p->uin;
 	sess->state = GG_STATE_RESOLVING;
 	sess->check = GG_CHECK_READ;
@@ -785,7 +792,7 @@ struct gg_session *gg_login(const struct gg_login_params *p)
 	sess->pid = -1;
 
 	if (p->tls == 1) {
-#ifdef __GG_LIBGADU_HAVE_OPENSSL
+#ifdef GG_CONFIG_HAVE_OPENSSL
 		char buf[1024];
 
 		OpenSSL_add_ssl_algorithms();
@@ -833,6 +840,11 @@ struct gg_session *gg_login(const struct gg_login_params *p)
 		hostname = GG_APPMSG_HOST;
 		port = GG_APPMSG_PORT;
 	}
+
+	if (p->hash_type)
+		sess->hash_type = p->hash_type;
+	else
+		sess->hash_type = GG_LOGIN_HASH_SHA1;
 
 	if (!p->async) {
 		struct in_addr a;
@@ -893,7 +905,7 @@ struct gg_session *gg_login(const struct gg_login_params *p)
 	}
 	
 	if (!sess->server_addr || gg_proxy_enabled) {
-#ifndef __GG_LIBGADU_HAVE_PTHREAD
+#ifndef GG_CONFIG_HAVE_PTHREAD
 		if (gg_resolve(&sess->fd, &sess->pid, hostname)) {
 #else
 		if (gg_resolve_pthread(&sess->fd, &sess->resolver, hostname)) {
@@ -950,7 +962,7 @@ void gg_free_session(struct gg_session *sess)
 	if (sess->header_buf)
 		free(sess->header_buf);
 
-#ifdef __GG_LIBGADU_HAVE_OPENSSL
+#ifdef GG_CONFIG_HAVE_OPENSSL
 	if (sess->ssl)
 		SSL_free(sess->ssl);
 
@@ -958,7 +970,7 @@ void gg_free_session(struct gg_session *sess)
 		SSL_CTX_free(sess->ssl_ctx);
 #endif
 
-#ifdef __GG_LIBGADU_HAVE_PTHREAD
+#ifdef GG_CONFIG_HAVE_PTHREAD
 	if (sess->resolver) {
 		pthread_cancel(*((pthread_t*) sess->resolver));
 		free(sess->resolver);
@@ -994,7 +1006,7 @@ int gg_change_status(struct gg_session *sess, int status)
 {
 	struct gg_new_status p;
 
-	gg_debug(GG_DEBUG_FUNCTION, "** gg_change_status(%p, %d);\n", sess, status);
+	gg_debug_session(sess, GG_DEBUG_FUNCTION, "** gg_change_status(%p, %d);\n", sess, status);
 
 	if (!sess) {
 		errno = EFAULT;
@@ -1028,7 +1040,7 @@ int gg_change_status_descr(struct gg_session *sess, int status, const char *desc
 {
 	struct gg_new_status p;
 
-	gg_debug(GG_DEBUG_FUNCTION, "** gg_change_status_descr(%p, %d, \"%s\");\n", sess, status, descr);
+	gg_debug_session(sess, GG_DEBUG_FUNCTION, "** gg_change_status_descr(%p, %d, \"%s\");\n", sess, status, descr);
 
 	if (!sess || !descr) {
 		errno = EFAULT;
@@ -1064,7 +1076,7 @@ int gg_change_status_descr_time(struct gg_session *sess, int status, const char 
 	struct gg_new_status p;
 	uint32_t newtime;
 
-	gg_debug(GG_DEBUG_FUNCTION, "** gg_change_status_descr_time(%p, %d, \"%s\", %d);\n", sess, status, descr, time);
+	gg_debug_session(sess, GG_DEBUG_FUNCTION, "** gg_change_status_descr_time(%p, %d, \"%s\", %d);\n", sess, status, descr, time);
 
 	if (!sess || !descr || !time) {
 		errno = EFAULT;
@@ -1097,17 +1109,17 @@ void gg_logoff(struct gg_session *sess)
 	if (!sess)
 		return;
 
-	gg_debug(GG_DEBUG_FUNCTION, "** gg_logoff(%p);\n", sess);
+	gg_debug_session(sess, GG_DEBUG_FUNCTION, "** gg_logoff(%p);\n", sess);
 
 	if (GG_S_NA(sess->status & ~GG_STATUS_FRIENDS_MASK))
 		gg_change_status(sess, GG_STATUS_NOT_AVAIL);
 
-#ifdef __GG_LIBGADU_HAVE_OPENSSL
+#ifdef GG_CONFIG_HAVE_OPENSSL
 	if (sess->ssl)
 		SSL_shutdown(sess->ssl);
 #endif
 
-#ifdef __GG_LIBGADU_HAVE_PTHREAD
+#ifdef GG_CONFIG_HAVE_PTHREAD
 	if (sess->resolver) {
 		pthread_cancel(*((pthread_t*) sess->resolver));
 		free(sess->resolver);
@@ -1147,7 +1159,7 @@ int gg_image_request(struct gg_session *sess, uin_t recipient, int size, uint32_
 	char dummy = 0;
 	int res;
 
-	gg_debug(GG_DEBUG_FUNCTION, "** gg_image_request(%p, %d, %u, 0x%.4x);\n", sess, recipient, size, crc32);
+	gg_debug_session(sess, GG_DEBUG_FUNCTION, "** gg_image_request(%p, %d, %u, 0x%.4x);\n", sess, recipient, size, crc32);
 
 	if (!sess) {
 		errno = EFAULT;
@@ -1179,14 +1191,14 @@ int gg_image_request(struct gg_session *sess, uin_t recipient, int size, uint32_
 		char *buf;
 
 		if (!q) {
-			gg_debug(GG_DEBUG_MISC, "// gg_image_request() not enough memory for image queue\n");
+			gg_debug_session(sess, GG_DEBUG_MISC, "// gg_image_request() not enough memory for image queue\n");
 			return -1;
 		}
 
 		buf = malloc(size);
 		if (size && !buf)
 		{
-			gg_debug(GG_DEBUG_MISC, "// gg_image_request() not enough memory for image\n");
+			gg_debug_session(sess, GG_DEBUG_MISC, "// gg_image_request() not enough memory for image\n");
 			free(q);
 			return -1;
 		}
@@ -1234,7 +1246,7 @@ int gg_image_reply(struct gg_session *sess, uin_t recipient, const char *filenam
 	char buf[1910];
 	int res = -1;
 
-	gg_debug(GG_DEBUG_FUNCTION, "** gg_image_reply(%p, %d, \"%s\", %p, %d);\n", sess, recipient, filename, image, size);
+	gg_debug_session(sess, GG_DEBUG_FUNCTION, "** gg_image_reply(%p, %d, \"%s\", %p, %d);\n", sess, recipient, filename, image, size);
 
 	if (!sess || !filename || !image) {
 		errno = EFAULT;
@@ -1269,7 +1281,7 @@ int gg_image_reply(struct gg_session *sess, uin_t recipient, const char *filenam
 
 	r->flag = 0x05;
 	r->size = gg_fix32(size);
-	r->crc32 = gg_fix32(gg_crc32(0, image, size));
+	r->crc32 = gg_fix32(gg_crc32(0, (unsigned char*) image, size));
 
 	while (size > 0) {
 		int buflen, chunklen;
@@ -1318,7 +1330,7 @@ int gg_send_message_ctcp(struct gg_session *sess, int msgclass, uin_t recipient,
 {
 	struct gg_send_msg s;
 
-	gg_debug(GG_DEBUG_FUNCTION, "** gg_send_message_ctcp(%p, %d, %u, ...);\n", sess, msgclass, recipient);
+	gg_debug_session(sess, GG_DEBUG_FUNCTION, "** gg_send_message_ctcp(%p, %d, %u, ...);\n", sess, msgclass, recipient);
 
 	if (!sess) {
 		errno = EFAULT;
@@ -1352,7 +1364,7 @@ int gg_send_message_ctcp(struct gg_session *sess, int msgclass, uin_t recipient,
  */
 int gg_send_message(struct gg_session *sess, int msgclass, uin_t recipient, const unsigned char *message)
 {
-	gg_debug(GG_DEBUG_FUNCTION, "** gg_send_message(%p, %d, %u, %p)\n", sess, msgclass, recipient, message);
+	gg_debug_session(sess, GG_DEBUG_FUNCTION, "** gg_send_message(%p, %d, %u, %p)\n", sess, msgclass, recipient, message);
 
 	return gg_send_message_richtext(sess, msgclass, recipient, message, NULL, 0);
 }
@@ -1376,7 +1388,7 @@ int gg_send_message_richtext(struct gg_session *sess, int msgclass, uin_t recipi
 {
 	struct gg_send_msg s;
 
-	gg_debug(GG_DEBUG_FUNCTION, "** gg_send_message_richtext(%p, %d, %u, %p, %p, %d);\n", sess, msgclass, recipient, message, format, formatlen);
+	gg_debug_session(sess, GG_DEBUG_FUNCTION, "** gg_send_message_richtext(%p, %d, %u, %p, %p, %d);\n", sess, msgclass, recipient, message, format, formatlen);
 
 	if (!sess) {
 		errno = EFAULT;
@@ -1400,7 +1412,7 @@ int gg_send_message_richtext(struct gg_session *sess, int msgclass, uin_t recipi
 	s.msgclass = gg_fix32(msgclass);
 	sess->seq += (rand() % 0x300) + 0x300;
 	
-	if (gg_send_packet(sess, GG_SEND_MSG, &s, sizeof(s), message, strlen(message) + 1, format, formatlen, NULL) == -1)
+	if (gg_send_packet(sess, GG_SEND_MSG, &s, sizeof(s), message, strlen((char*) message) + 1, format, formatlen, NULL) == -1)
 		return -1;
 
 	return gg_fix32(s.seq);
@@ -1422,7 +1434,7 @@ int gg_send_message_richtext(struct gg_session *sess, int msgclass, uin_t recipi
  */
 int gg_send_message_confer(struct gg_session *sess, int msgclass, int recipients_count, uin_t *recipients, const unsigned char *message)
 {
-	gg_debug(GG_DEBUG_FUNCTION, "** gg_send_message_confer(%p, %d, %d, %p, %p);\n", sess, msgclass, recipients_count, recipients, message);
+	gg_debug_session(sess, GG_DEBUG_FUNCTION, "** gg_send_message_confer(%p, %d, %d, %p, %p);\n", sess, msgclass, recipients_count, recipients, message);
 
 	return gg_send_message_confer_richtext(sess, msgclass, recipients_count, recipients, message, NULL, 0);
 }
@@ -1451,7 +1463,7 @@ int gg_send_message_confer_richtext(struct gg_session *sess, int msgclass, int r
 	int i, j, k;
 	uin_t *recps;
 		
-	gg_debug(GG_DEBUG_FUNCTION, "** gg_send_message_confer_richtext(%p, %d, %d, %p, %p, %p, %d);\n", sess, msgclass, recipients_count, recipients, message, format, formatlen);
+	gg_debug_session(sess, GG_DEBUG_FUNCTION, "** gg_send_message_confer_richtext(%p, %d, %d, %p, %p, %p, %d);\n", sess, msgclass, recipients_count, recipients, message, format, formatlen);
 
 	if (!sess) {
 		errno = EFAULT;
@@ -1493,7 +1505,7 @@ int gg_send_message_confer_richtext(struct gg_session *sess, int msgclass, int r
 		if (!i)
 			sess->seq += (rand() % 0x300) + 0x300;
 		
-		if (gg_send_packet(sess, GG_SEND_MSG, &s, sizeof(s), message, strlen(message) + 1, &r, sizeof(r), recps, (recipients_count - 1) * sizeof(uin_t), format, formatlen, NULL) == -1) {
+		if (gg_send_packet(sess, GG_SEND_MSG, &s, sizeof(s), message, strlen((char*) message) + 1, &r, sizeof(r), recps, (recipients_count - 1) * sizeof(uin_t), format, formatlen, NULL) == -1) {
 			free(recps);
 			return -1;
 		}
@@ -1515,7 +1527,7 @@ int gg_send_message_confer_richtext(struct gg_session *sess, int msgclass, int r
  */
 int gg_ping(struct gg_session *sess)
 {
-	gg_debug(GG_DEBUG_FUNCTION, "** gg_ping(%p);\n", sess);
+	gg_debug_session(sess, GG_DEBUG_FUNCTION, "** gg_ping(%p);\n", sess);
 
 	if (!sess) {
 		errno = EFAULT;
@@ -1550,7 +1562,7 @@ int gg_notify_ex(struct gg_session *sess, uin_t *userlist, char *types, int coun
 	char *t;
 	int i, res = 0;
 
-	gg_debug(GG_DEBUG_FUNCTION, "** gg_notify_ex(%p, %p, %p, %d);\n", sess, userlist, types, count);
+	gg_debug_session(sess, GG_DEBUG_FUNCTION, "** gg_notify_ex(%p, %p, %p, %d);\n", sess, userlist, types, count);
 	
 	if (!sess) {
 		errno = EFAULT;
@@ -1618,7 +1630,7 @@ int gg_notify(struct gg_session *sess, uin_t *userlist, int count)
 	uin_t *u;
 	int i, res = 0;
 
-	gg_debug(GG_DEBUG_FUNCTION, "** gg_notify(%p, %p, %d);\n", sess, userlist, count);
+	gg_debug_session(sess, GG_DEBUG_FUNCTION, "** gg_notify(%p, %p, %d);\n", sess, userlist, count);
 	
 	if (!sess) {
 		errno = EFAULT;
@@ -1683,7 +1695,7 @@ int gg_add_notify_ex(struct gg_session *sess, uin_t uin, char type)
 {
 	struct gg_add_remove a;
 
-	gg_debug(GG_DEBUG_FUNCTION, "** gg_add_notify_ex(%p, %u, %d);\n", sess, uin, type);
+	gg_debug_session(sess, GG_DEBUG_FUNCTION, "** gg_add_notify_ex(%p, %u, %d);\n", sess, uin, type);
 	
 	if (!sess) {
 		errno = EFAULT;
@@ -1732,7 +1744,7 @@ int gg_remove_notify_ex(struct gg_session *sess, uin_t uin, char type)
 {
 	struct gg_add_remove a;
 
-	gg_debug(GG_DEBUG_FUNCTION, "** gg_remove_notify_ex(%p, %u, %d);\n", sess, uin, type);
+	gg_debug_session(sess, GG_DEBUG_FUNCTION, "** gg_remove_notify_ex(%p, %u, %d);\n", sess, uin, type);
 	
 	if (!sess) {
 		errno = EFAULT;

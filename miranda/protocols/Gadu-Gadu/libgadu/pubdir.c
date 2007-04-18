@@ -31,7 +31,7 @@
 #include <unistd.h>
 
 #include "libgadu.h"
-#ifdef __GG_LIBGADU_MIRANDA
+#ifdef GG_CONFIG_MIRANDA
 #define random() rand()
 #endif
 
@@ -632,6 +632,8 @@ int gg_token_watch_fd(struct gg_http *h)
 		free(headers);
 		free(path);
 		free(url);
+
+		gg_http_free_fields(h);
 
 		memcpy(h, h2, sizeof(struct gg_http));
 		free(h2);

@@ -23,12 +23,12 @@
  *  USA.
  */
 
-#ifndef __GG_LIBGADU_H
-#define __GG_LIBGADU_H
+#ifndef GG_CONFIG_H
+#define GG_CONFIG_H
 
 #include "libgadu-config.h"
 
-#if defined(__cplusplus) || defined(__GG_LIBGADU_MIRANDA)
+#if defined(__cplusplus) || defined(GG_CONFIG_MIRANDA)
 #ifdef _WIN32
 #pragma pack(push, 1)
 #endif
@@ -42,12 +42,24 @@ extern "C" {
 #include <stdio.h>
 #include <stdarg.h>
 
-#ifdef __GG_LIBGADU_HAVE_OPENSSL
-#ifdef __GG_LIBGADU_MIRANDA
+#ifdef GG_CONFIG_HAVE_OPENSSL
+#ifdef GG_CONFIG_MIRANDA
 #include "../ssl.h"
 #else
 #include <openssl/ssl.h>
 #endif
+#endif
+#if defined(GG_CONFIG_MIRANDA) || !defined(GG_CONFIG_HAVE_OPENSSL)
+typedef struct {
+    unsigned long state[5];
+    unsigned long count[2];
+    unsigned char buffer[64];
+} SHA_CTX;
+
+void SHA1_Transform(unsigned long state[5], const unsigned char buffer[64]);
+void SHA1_Init(SHA_CTX* context);
+void SHA1_Update(SHA_CTX* context, const unsigned char* data, unsigned int len);
+void SHA1_Final(unsigned char digest[20], SHA_CTX* context);
 #endif
 
 /*
@@ -128,7 +140,7 @@ struct gg_session {
 	char *header_buf;	/* bufor na pocz±tek nag³ówka */
 	unsigned int header_done;/* ile ju¿ mamy */
 
-#ifdef __GG_LIBGADU_HAVE_OPENSSL
+#ifdef GG_CONFIG_HAVE_OPENSSL
 	SSL *ssl;		/* sesja TLS */
 	SSL_CTX *ssl_ctx;	/* kontekst sesji? */
 #else
@@ -143,6 +155,8 @@ struct gg_session {
 	int userlist_blocks;	/* na ile kawa³ków podzielono listê kontaktów */
 
 	struct gg_image_queue *images;	/* aktualnie wczytywane obrazki */
+
+	int hash_type;		/* rodzaj hasha has³a u¿ywanego przy logowaniu */
 };
 
 /*
@@ -215,7 +229,7 @@ struct gg_dcc {
 	int port;		/* port, na którym siedzi */
 	uin_t uin;		/* uin klienta */
 	uin_t peer_uin;		/* uin drugiej strony */
-#ifdef __GG_LIBGADU_MIRANDA
+#ifdef GG_CONFIG_MIRANDA
 	FILE *file_fd;		/* deskryptor pliku */
 #else
 	int file_fd;		/* deskryptor pliku */
@@ -232,7 +246,7 @@ struct gg_dcc {
 	uint32_t remote_addr;	/* adres drugiej strony */
 	uint16_t remote_port;	/* port drugiej strony */
 
-#ifdef __GG_LIBGADU_MIRANDA
+#ifdef GG_CONFIG_MIRANDA
 	void *contact;
 	char *folder;
 	uint32_t tick;
@@ -325,7 +339,10 @@ enum gg_state_t {
 	GG_STATE_READING_TYPE,		/* czeka na typ po³±czenia */
 
 	/* nowe. bez sensu jest to API. */
-	GG_STATE_TLS_NEGOTIATION	/* negocjuje po³±czenie TLS */
+	GG_STATE_TLS_NEGOTIATION,	/* negocjuje po³±czenie TLS */
+
+	GG_STATE_READING_ACK7,		/* wyslanie kodu w 7.x */
+	GG_STATE_SENDING_ACK7		/* odebranie kodu w 7.x */
 };
 
 /*
@@ -365,8 +382,9 @@ struct gg_login_params {
 	int tls;			/* czy ³±czymy po TLS? */
 	int image_size;			/* maksymalny rozmiar obrazka w KiB */
 	int era_omnix;			/* czy udawaæ klienta era omnix? */
+	int hash_type;			/* rodzaj hasha */
 
-	char dummy[6 * sizeof(int)];	/* miejsce na kolejnych 6 zmiennych,
+	char dummy[5 * sizeof(int)];	/* miejsce na kolejnych 5 zmiennych,
 					 * ¿eby z dodaniem parametru nie 
 					 * zmienia³ siê rozmiar struktury */
 };
@@ -436,7 +454,13 @@ enum gg_event_t {
 	GG_EVENT_USERLIST,		/* odpowied¼ listy kontaktów w GG 6.0 */
 	GG_EVENT_IMAGE_REQUEST,		/* pro¶ba o wys³anie obrazka GG 6.0 */
 	GG_EVENT_IMAGE_REPLY,		/* podes³any obrazek GG 6.0 */
-	GG_EVENT_DCC_ACK		/* potwierdzenie transmisji */
+	GG_EVENT_DCC_ACK,		/* potwierdzenie transmisji */
+
+	GG_EVENT_DCC7_GOTID,		/* przesylanie unikatowego numerku do polaczen dcc 7.6.0 */
+	GG_EVENT_DCC7_NEW,		/* nowe polaczenie miedzy klientami 7.6.0 */
+	GG_EVENT_DCC7_ACCEPT,		/* zaakceptowano nasz plik 7.6.0 */
+	GG_EVENT_DCC7_REJECT,		/* odrzucono przesylanie pliku 7.6.0 */
+	GG_EVENT_DCC7_INFO		/* informacje o polaczeniu dcc, ip+port, XXX stan polaczenia itd, pozniej. */
 };
 
 #define GG_EVENT_SEARCH50_REPLY GG_EVENT_PUBDIR50_SEARCH_REPLY
@@ -579,6 +603,36 @@ struct gg_event {
 			int status;		/* stan dorêczenia wiadomo¶ci */
 			int seq;		/* numer sekwencyjny wiadomo¶ci */
 		} ack;
+
+		struct {			/* @dcc7_new informacja o checi wyslania pliku -- GG_EVENT_DCC7_NEW */
+			uin_t uin;		/* numerek od kogo */
+			unsigned char unique[8];/* unikalny numerek polaczenia dcc, zarejestrowany na serwerze... XXX uint64_t ? */
+			unsigned char *filename;/* nazwa pliku [cp1250] */
+			uint32_t filesize;	/* rozmiar pliku */
+			unsigned char hash[20];	/* hash w SHA1 */
+		} dcc7_new;
+
+		struct {			/* @dcc7_id informacja o unikatowym numerku id -- GG_EVENT_DCC7_GOTID */
+			unsigned char unique[8];/* unikalny numerek polaczenia dcc, zarejestrowany na serwerze */
+		} dcc7_id;
+
+		struct {			/* @dcc7_accept informacja o przyjeciu polaczenia dcc -- GG_EVENT7_DCC_ACCEPT */
+			uin_t uin;		/* od kogo */
+			unsigned char unique[8];/* kod, j/w */
+			uint32_t offset;	/* od ktorego miejsca mamy wysylac */
+		} dcc7_accept;
+
+		struct {			/* @dcc7_reject informacja o odrzuceniu polaczenia dcc -- GG_EVENT_DCC7_REJECT */
+			uin_t uin;		/* od kogo */
+			unsigned char unique[8];/* kod, j/w */
+			uint32_t reason;	/* powod, patrz: GG_DCC7_REJECT_* */
+		} dcc7_reject;
+
+		struct {
+			uin_t uin;
+			unsigned char unique[8];
+			char ipport[200];
+		} dcc7_info;
 
 		struct {			/* @dcc_voice_data otrzymano dane d¼wiêkowe -- GG_EVENT_DCC_VOICE_DATA */
 			uint8_t *data;		/* dane d¼wiêkowe */
@@ -832,10 +886,27 @@ struct gg_dcc *gg_dcc_voice_chat(uint32_t ip, uint16_t port, uin_t my_uin, uin_t
 void gg_dcc_set_type(struct gg_dcc *d, int type);
 int gg_dcc_fill_file_info(struct gg_dcc *d, const char *filename);
 int gg_dcc_fill_file_info2(struct gg_dcc *d, const char *filename, const char *local_filename);
+int gg_dcc_fill_file_info3(struct gg_dcc *d, const char *filename, const char *local_filename, unsigned char *hash);
 int gg_dcc_voice_send(struct gg_dcc *d, char *buf, int length);
 
 #define GG_DCC_VOICE_FRAME_LENGTH 195
 #define GG_DCC_VOICE_FRAME_LENGTH_505 326
+
+int gg_dcc7_request_id(struct gg_session *sess);
+struct gg_dcc *gg_dcc7_send_file(struct gg_session *sess, uin_t peer_uin, const char *id, const char *filename);
+struct gg_dcc *gg_dcc7_get_file(struct gg_session *sess, uin_t peer_uin, const char *id, uint32_t filesize, uint32_t offset);
+int gg_dcc7_send_info(struct gg_session *sess, uin_t peer_uin, const char *id, const char *ipport);
+int gg_dcc7_reject_file(struct gg_session *sess, uin_t peer_uin, const char *id, uint32_t reason);
+
+#define GG_DCC7_REJECT_TRY_LATER	0x01		/* 7.6.0 nie umie wysyla kilku dcc na raz, wysyla ten pakiet kiedy kod/protokol nie potrafi obsluzyc.
+								'Komunikat: xyz wlasnie przesyla inny plik' */
+#define GG_DCC7_REJECT_REJECTED 	0x02		/* 7.6.0 wysyla wtedy gdy klikniemy rejected... czym sie to rozni od pozostalych, nie stwierdzono 
+								'Komunikat: xyz odrzucil twoj plik' */
+#define GG_DCC7_REJECT_INVALID_VERSION	0x06		/* 7.6.0 wysyla wtedy gdy dla niego nasz protokol jest mniej trendy do przesylania plikow 
+								'Komunikat: xyz odrzucil twoj plik' */
+
+int gg_dcc7_connect(struct gg_dcc *dcc, const char *where);
+struct gg_dcc *gg_dcc7_fix(struct gg_dcc *event_dcc, struct gg_dcc *dest_dcc);
 
 struct gg_dcc *gg_dcc_socket_create(uin_t uin, uint16_t port);
 #define gg_dcc_socket_free gg_free_dcc
@@ -859,6 +930,7 @@ extern int gg_debug_level;	/* poziom debugowania. mapa bitowa sta³ych GG_DEBUG_*
  * zainteresowany, niech da znaæ na ekg-devel.
  */
 extern void (*gg_debug_handler)(int level, const char *format, va_list ap);
+extern void (*gg_debug_handler_session)(struct gg_session *sess, int level, const char *format, va_list ap);
 
 /*
  * mo¿na podaæ plik, do którego bêd± zapisywane teksty z gg_debug().
@@ -873,8 +945,10 @@ extern FILE *gg_debug_file;
 
 #ifdef GG_DEBUG_DISABLE
 #define gg_debug(x, y...) do { } while(0)
+#define gg_debug_session(z, x, y...) do { } while(0)
 #else
 void gg_debug(int level, const char *format, ...);
+void gg_debug_session(struct gg_session *sess, int level, const char *format, ...);
 #endif
 
 const char *gg_libgadu_version(void);
@@ -904,7 +978,7 @@ extern unsigned long gg_local_ip;
  * -------------------------------------------------------------------------
  */
 
-#ifdef __GG_LIBGADU_HAVE_PTHREAD
+#ifdef GG_CONFIG_HAVE_PTHREAD
 int gg_resolve_pthread(int *fd, void **resolver, const char *hostname);
 #endif
 
@@ -937,6 +1011,7 @@ int gg_write(struct gg_session *sess, const char *buf, int length);
 void *gg_recv_packet(struct gg_session *sess);
 int gg_send_packet(struct gg_session *sess, int type, ...);
 unsigned int gg_login_hash(const unsigned char *password, unsigned int seed);
+void gg_login_hash_sha1(const char *password, uint32_t seed, uint8_t *result);
 uint32_t gg_fix32(uint32_t x);
 uint16_t gg_fix16(uint16_t x);
 #define fix16 gg_fix16
@@ -964,7 +1039,7 @@ int gg_image_queue_remove(struct gg_session *s, struct gg_image_queue *q, int fr
 #define GG_DEFAULT_TIMEOUT 30
 #define GG_HAS_AUDIO_MASK 0x40000000
 #define GG_ERA_OMNIX_MASK 0x04000000
-#define GG_LIBGADU_VERSION "20060621"
+#define GG_LIBGADU_VERSION "CVS"
 
 #define GG_DEFAULT_DCC_PORT 1550
 
@@ -1016,6 +1091,26 @@ struct gg_login60 {
 	uint16_t local_port;		/* port, na którym s³ucham */
 	uint32_t external_ip;		/* zewnêtrzny adres ip */
 	uint16_t external_port;		/* zewnêtrzny port */
+	uint8_t image_size;		/* maksymalny rozmiar grafiki w KiB */
+	uint8_t dunno2;			/* 0xbe */
+} GG_PACKED;
+
+#define GG_LOGIN70 0x19
+
+#define GG_LOGIN_HASH_GG32 0x01
+#define GG_LOGIN_HASH_SHA1 0x02
+
+struct gg_login70 {
+	uint32_t uin;			/* mój numerek */
+	uint8_t hash_type;		/* rodzaj hashowania has³a */
+	uint8_t hash[64];		/* hash has³a dope³niony zerami */
+	uint32_t status;		/* status na dzieñ dobry */
+	uint32_t version;		/* moja wersja klienta */
+	uint8_t dunno1;			/* 0x00 */
+	uint32_t local_ip;		/* mój adres ip */
+	uint16_t local_port;		/* port, na którym s³ucham */
+	uint32_t external_ip;		/* zewnêtrzny adres ip (???) */
+	uint16_t external_port;		/* zewnêtrzny port (???) */
 	uint8_t image_size;		/* maksymalny rozmiar grafiki w KiB */
 	uint8_t dunno2;			/* 0xbe */
 } GG_PACKED;
@@ -1277,6 +1372,75 @@ struct gg_userlist_reply {
  * pakiety, sta³e, struktury dla DCC
  */
 
+#define GG_DCC7_MAGIC1	0x00000004
+
+#define GG_DCC7_REQUEST_ID 0x23
+
+struct gg_dcc7_request_id {
+	uint32_t type;		/* 04 00 00 00 */	/* GG_DCC7_MAGIC1 */
+} GG_PACKED;
+
+#define GG_DCC7_RECEIVED_ID 0x23
+
+struct gg_dcc7_received_id {
+	uint32_t type;		/* 04 00 00 00 */	/* GG_DCC7_MAGIC1 */
+	unsigned char code1[8];
+} GG_PACKED;
+
+#define GG_DCC7_NEW 0x20
+
+struct gg_dcc7_new {
+	unsigned char code1[8];
+	uint32_t uinfrom;	/* LE, from */
+	uint32_t uinto;		/* LE, to */
+	uint32_t dunno1;	/* 04 00 00 00 */
+	unsigned char filename[226];
+	uint16_t emp1;		/* 00 00 */
+	uint16_t dunno2;	/* 10 00 */
+	uint16_t emp2;		/* 00 00 */
+
+	uint16_t dunno31;
+	uint8_t	 dunno32;
+	uint8_t  dunno33;	/* 02 */
+
+	uint32_t emp3;		/* 00 00 00 00 */
+	uint32_t dunno4;	/* b4 e5 32 00 */
+	uint32_t dunno5;	/* 8e d0 4c 00 */
+	uint32_t dunno6;	/* 10 00 00 00 */
+	uint16_t dunno7;	/* unknown */
+	uint8_t dunno8;		/* unknown */
+	uint32_t size;		/* rozmiar, LE */
+	uint32_t emp4;		/* 00 00 00 00 */
+	unsigned char hash[20];	/* hash w sha1 */
+} GG_PACKED;
+
+#define GG_DCC7_ACCEPT 0x21
+
+struct gg_dcc7_accept {
+	uint32_t uin;		/* uin */
+	unsigned char code1[8];	/* kod polaczenia */
+	uint32_t offset;	/* od ktorego miejsca chcemy/mamy wysylac. */
+	uint32_t empty;		/* 00 00 00 00 */
+} GG_PACKED;
+
+#define GG_DCC7_INFO 0x1f
+
+struct gg_dcc7_info {
+	uint32_t uin;			/* uin */
+	uint32_t dunno1;		/* XXX */		/* 000003e8 -> transfer wstrzymano? */
+	unsigned char code1[8];		/* kod */
+	unsigned char ipport[15+1+5];	/* ip <SPACE> port */	/* XXX, what about NUL char? */	/* XXX, not always (ip+port) */
+	unsigned char unk[43];		/* large amount of unknown data */
+} GG_PACKED;
+
+#define GG_DCC7_REJECT 0x22
+
+struct gg_dcc7_reject {
+	uint32_t uin;		/* numerek */
+	unsigned char code1[8];	/* unikalny kod */
+	uint32_t reason;	/* look at GG_DCC7_REJECT_* */
+} GG_PACKED;
+
 struct gg_dcc_tiny_packet {
 	uint8_t type;		/* rodzaj pakietu */
 } GG_PACKED;
@@ -1315,7 +1479,7 @@ struct gg_dcc_big_packet {
 #endif
 #endif
 
-#endif /* __GG_LIBGADU_H */
+#endif /* GG_CONFIG_H */
 
 /*
  * Local variables:

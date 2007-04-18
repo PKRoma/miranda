@@ -286,7 +286,7 @@ extern int ggDesiredStatus;
 extern GGTHREAD *ggThread;
 extern list_t ggThreadList;
 extern HANDLE hNetlib;
-#ifdef __GG_LIBGADU_HAVE_OPENSSL
+#ifdef GG_CONFIG_HAVE_OPENSSL
 extern HANDLE hLibSSL;
 extern HANDLE hLibEAY;
 #else
@@ -402,7 +402,7 @@ const char *ggdebug_eventtype(struct gg_event *e);
 #endif
 
 /* SSL functions */
-#ifdef __GG_LIBGADU_HAVE_OPENSSL
+#ifdef GG_CONFIG_HAVE_OPENSSL
 BOOL gg_ssl_init();
 void gg_ssl_uninit();
 #else

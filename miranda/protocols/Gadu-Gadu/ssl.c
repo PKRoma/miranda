@@ -25,7 +25,7 @@
 
 #include "gg.h"
 
-#ifdef __GG_LIBGADU_HAVE_OPENSSL
+#ifdef GG_CONFIG_HAVE_OPENSSL
 HANDLE hLibSSL;								// SSL main library handle
 HANDLE hLibEAY;								// SSL/EAY misc library handle
 

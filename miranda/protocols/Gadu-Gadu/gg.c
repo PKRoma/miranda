@@ -22,18 +22,21 @@
 #include <errno.h>
 
 // Plugin info
-PLUGININFO pluginInfo = {
-	sizeof(PLUGININFO),
+PLUGININFOEX pluginInfo = {
+	sizeof(PLUGININFOEX),
 	"Gadu-Gadu Protocol",
-	PLUGIN_MAKE_VERSION(0, 0, 4, 2),
+	PLUGIN_MAKE_VERSION(0, 0, 4, 3),
 	"Provides support for Gadu-Gadu protocol",
 	"Adam Strzelecki",
 	"ono+miranda@java.pl",
 	"Copyright © 2003-2007 Adam Strzelecki",
 	"http://www.miranda-im.pl/",
 	0,
-	0
+	0,
+	// {F3FF65F3-250E-416A-BEE9-58C93F85AB33}
+	{ 0xf3ff65f3, 0x250e, 0x416a, { 0xbe, 0xe9, 0x58, 0xc9, 0x3f, 0x85, 0xab, 0x33 } }
 };
+static const MUUID interfaces[] = {MIID_PROTOCOL, MIID_LAST};
 
 // Other variables
 PLUGINLINK *pluginLink;
@@ -153,12 +156,23 @@ const char *http_error_string(int h)
 //////////////////////////////////////////////////////////
 // Gets plugin info
 DWORD gMirandaVersion = 0;
+// For compatibility with old versions
 __declspec(dllexport) PLUGININFO *MirandaPluginInfo(DWORD mirandaVersion)
 {
+	pluginInfo.cbSize = sizeof(PLUGININFO);
+	gMirandaVersion = mirandaVersion;
+	return (PLUGININFO *)&pluginInfo;
+}
+__declspec(dllexport) PLUGININFOEX *MirandaPluginInfoEx(DWORD mirandaVersion)
+{
+	pluginInfo.cbSize = sizeof(PLUGININFOEX);
 	gMirandaVersion = mirandaVersion;
 	return &pluginInfo;
 }
-
+__declspec(dllexport) const MUUID* MirandaPluginInterfaces(void)
+{
+	return interfaces;
+}
 //////////////////////////////////////////////////////////
 // Cleanups from last plugin
 void gg_cleanuplastplugin(DWORD version)
