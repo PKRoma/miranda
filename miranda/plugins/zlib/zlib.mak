@@ -62,7 +62,7 @@ CLEAN :
 "$(OUTDIR)" :
     if not exist "$(OUTDIR)/$(NULL)" mkdir "$(OUTDIR)"
 
-CPP_PROJ=/nologo /MD /W3 /GX /Zi /O1 /I "../../include" /D "NDEBUG" /D "WIN32" /D "_WINDOWS" /D "_MBCS" /D "_USRDLL" /D "NO_GZIP" /D "PNG_NO_STDIO" /D "PNG_NO_CONSOLE_IO" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /FD /c 
+CPP_PROJ=/nologo /MD /W3 /GX /Zi /O1 /I "../../include" /D "NDEBUG" /D "WIN32" /D "_WINDOWS" /D "_MBCS" /D "_USRDLL" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /FD /c 
 MTL_PROJ=/nologo /D "NDEBUG" /mktyplib203 /win32 
 RSC_PROJ=/l 0x419 /fo"$(INTDIR)\zlib.res" /d "NDEBUG" 
 BSC32=bscmake.exe
@@ -78,14 +78,14 @@ LINK32_OBJS= \
 	"$(INTDIR)\compress.obj" \
 	"$(INTDIR)\crc32.obj" \
 	"$(INTDIR)\deflate.obj" \
+	"$(INTDIR)\gzio.obj" \
+	"$(INTDIR)\infback.obj" \
 	"$(INTDIR)\inffast.obj" \
 	"$(INTDIR)\inflate.obj" \
 	"$(INTDIR)\inftrees.obj" \
 	"$(INTDIR)\trees.obj" \
 	"$(INTDIR)\uncompr.obj" \
 	"$(INTDIR)\zutil.obj" \
-	"$(INTDIR)\infback.obj" \
-	"$(INTDIR)\gzio.obj" \
 	"$(INTDIR)\zlib.res"
 
 "..\..\bin\Release\zlib.dll" : "$(OUTDIR)" $(DEF_FILE) $(LINK32_OBJS)
@@ -142,7 +142,7 @@ CLEAN :
 "$(OUTDIR)" :
     if not exist "$(OUTDIR)/$(NULL)" mkdir "$(OUTDIR)"
 
-CPP_PROJ=/nologo /MDd /W3 /Gm /GX /ZI /Od /I "../../include" /D "_DEBUG" /D "WIN32" /D "_WINDOWS" /D "_MBCS" /D "_USRDLL" /D "NO_GZIP" /D "PNG_NO_STDIO" /D "PNG_NO_CONSOLE_IO" /FR"$(INTDIR)\\" /Fp"$(INTDIR)\zlib.pch" /YX /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /FD /GZ /c 
+CPP_PROJ=/nologo /MDd /W3 /Gm /GX /ZI /Od /I "../../include" /D "_DEBUG" /D "WIN32" /D "_WINDOWS" /D "_MBCS" /D "_USRDLL" /FR"$(INTDIR)\\" /Fp"$(INTDIR)\zlib.pch" /YX /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /FD /GZ /c 
 MTL_PROJ=/nologo /D "_DEBUG" /mktyplib203 /win32 
 RSC_PROJ=/l 0x419 /fo"$(INTDIR)\zlib.res" /d "_DEBUG" 
 BSC32=bscmake.exe
@@ -152,14 +152,14 @@ BSC32_SBRS= \
 	"$(INTDIR)\compress.sbr" \
 	"$(INTDIR)\crc32.sbr" \
 	"$(INTDIR)\deflate.sbr" \
+	"$(INTDIR)\gzio.sbr" \
+	"$(INTDIR)\infback.sbr" \
 	"$(INTDIR)\inffast.sbr" \
 	"$(INTDIR)\inflate.sbr" \
 	"$(INTDIR)\inftrees.sbr" \
 	"$(INTDIR)\trees.sbr" \
 	"$(INTDIR)\uncompr.sbr" \
-	"$(INTDIR)\zutil.sbr" \
-	"$(INTDIR)\infback.sbr" \
-	"$(INTDIR)\gzio.sbr"
+	"$(INTDIR)\zutil.sbr"
 
 "$(OUTDIR)\zlib.bsc" : "$(OUTDIR)" $(BSC32_SBRS)
     $(BSC32) @<<
@@ -175,14 +175,14 @@ LINK32_OBJS= \
 	"$(INTDIR)\compress.obj" \
 	"$(INTDIR)\crc32.obj" \
 	"$(INTDIR)\deflate.obj" \
+	"$(INTDIR)\gzio.obj" \
+	"$(INTDIR)\infback.obj" \
 	"$(INTDIR)\inffast.obj" \
 	"$(INTDIR)\inflate.obj" \
 	"$(INTDIR)\inftrees.obj" \
 	"$(INTDIR)\trees.obj" \
 	"$(INTDIR)\uncompr.obj" \
 	"$(INTDIR)\zutil.obj" \
-	"$(INTDIR)\infback.obj" \
-	"$(INTDIR)\gzio.obj" \
 	"$(INTDIR)\zlib.res"
 
 "..\..\bin\Debug\zlib.dll" : "$(OUTDIR)" $(DEF_FILE) $(LINK32_OBJS)
