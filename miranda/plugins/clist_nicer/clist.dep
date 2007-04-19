@@ -1,20 +1,14 @@
 # Microsoft Developer Studio Generated Dependency File, included by clist.mak
 
 .\CLUIFrames\cluiframes.c : \
-	".\CLUIFrames\cluiframes.h"\
-	".\m_clui.h"\
-	
-
-.\CLUIFrames\framesmenu.c : \
-	".\CLUIFrames\cluiframes.h"\
-	".\m_clui.h"\
-	
-
-.\CLUIFrames\groupmenu.c : \
-	".\m_clui.h"\
-	
-
-.\alphablend.c : \
+	"..\..\..\..\..\..\..\..\program files\microsoft platform sdk\include\basetsd.h"\
+	"..\..\..\..\..\..\..\..\program files\microsoft platform sdk\include\guiddef.h"\
+	"..\..\..\..\..\..\..\..\program files\microsoft platform sdk\include\propidl.h"\
+	"..\..\..\..\..\..\..\..\program files\microsoft platform sdk\include\reason.h"\
+	"..\..\..\..\..\..\..\..\program files\microsoft platform sdk\include\specstrings.h"\
+	"..\..\..\..\..\..\..\..\program files\microsoft platform sdk\include\stralign.h"\
+	"..\..\..\..\..\..\..\..\program files\microsoft platform sdk\include\tvout.h"\
+	"..\..\..\..\..\..\..\..\program files\microsoft platform sdk\include\winefs.h"\
 	"..\..\include\m_addcontact.h"\
 	"..\..\include\m_button.h"\
 	"..\..\include\m_clc.h"\
@@ -26,7 +20,6 @@
 	"..\..\include\m_file.h"\
 	"..\..\include\m_genmenu.h"\
 	"..\..\include\m_langpack.h"\
-	"..\..\include\m_message.h"\
 	"..\..\include\m_options.h"\
 	"..\..\include\m_plugins.h"\
 	"..\..\include\m_popup.h"\
@@ -41,20 +34,24 @@
 	".\alphablend.h"\
 	".\clc.h"\
 	".\clist.h"\
-	".\commonheaders.h"\
+	".\CLUIFrames\cluiframes.h"\
 	".\extbackg.h"\
 	".\forkthread.h"\
-	".\icolib.h"\
 	".\m_avatars.h"\
 	".\m_cln_skinedit.h"\
 	".\m_clui.h"\
-	".\m_cluiframes.h"\
-	".\m_fontservice.h"\
-	".\m_metacontacts.h"\
 	".\rowheight_funcs.h"\
 	
 
-.\clc.c : \
+.\CLUIFrames\framesmenu.c : \
+	"..\..\..\..\..\..\..\..\program files\microsoft platform sdk\include\basetsd.h"\
+	"..\..\..\..\..\..\..\..\program files\microsoft platform sdk\include\guiddef.h"\
+	"..\..\..\..\..\..\..\..\program files\microsoft platform sdk\include\propidl.h"\
+	"..\..\..\..\..\..\..\..\program files\microsoft platform sdk\include\reason.h"\
+	"..\..\..\..\..\..\..\..\program files\microsoft platform sdk\include\specstrings.h"\
+	"..\..\..\..\..\..\..\..\program files\microsoft platform sdk\include\stralign.h"\
+	"..\..\..\..\..\..\..\..\program files\microsoft platform sdk\include\tvout.h"\
+	"..\..\..\..\..\..\..\..\program files\microsoft platform sdk\include\winefs.h"\
 	"..\..\include\m_addcontact.h"\
 	"..\..\include\m_button.h"\
 	"..\..\include\m_clc.h"\
@@ -66,7 +63,133 @@
 	"..\..\include\m_file.h"\
 	"..\..\include\m_genmenu.h"\
 	"..\..\include\m_langpack.h"\
-	"..\..\include\m_message.h"\
+	"..\..\include\m_options.h"\
+	"..\..\include\m_plugins.h"\
+	"..\..\include\m_popup.h"\
+	"..\..\include\m_protocols.h"\
+	"..\..\include\m_protosvc.h"\
+	"..\..\include\m_skin.h"\
+	"..\..\include\m_system.h"\
+	"..\..\include\m_utils.h"\
+	"..\..\include\newpluginapi.h"\
+	"..\..\include\statusmodes.h"\
+	"..\..\include\win2k.h"\
+	".\alphablend.h"\
+	".\clc.h"\
+	".\clist.h"\
+	".\CLUIFrames\cluiframes.h"\
+	".\extbackg.h"\
+	".\forkthread.h"\
+	".\m_avatars.h"\
+	".\m_cln_skinedit.h"\
+	".\m_clui.h"\
+	".\rowheight_funcs.h"\
+	
+
+.\CLUIFrames\groupmenu.c : \
+	"..\..\..\..\..\..\..\..\program files\microsoft platform sdk\include\basetsd.h"\
+	"..\..\..\..\..\..\..\..\program files\microsoft platform sdk\include\guiddef.h"\
+	"..\..\..\..\..\..\..\..\program files\microsoft platform sdk\include\propidl.h"\
+	"..\..\..\..\..\..\..\..\program files\microsoft platform sdk\include\reason.h"\
+	"..\..\..\..\..\..\..\..\program files\microsoft platform sdk\include\specstrings.h"\
+	"..\..\..\..\..\..\..\..\program files\microsoft platform sdk\include\stralign.h"\
+	"..\..\..\..\..\..\..\..\program files\microsoft platform sdk\include\tvout.h"\
+	"..\..\..\..\..\..\..\..\program files\microsoft platform sdk\include\winefs.h"\
+	"..\..\include\m_addcontact.h"\
+	"..\..\include\m_button.h"\
+	"..\..\include\m_clc.h"\
+	"..\..\include\m_clist.h"\
+	"..\..\include\m_clistint.h"\
+	"..\..\include\m_clui.h"\
+	"..\..\include\m_contacts.h"\
+	"..\..\include\m_database.h"\
+	"..\..\include\m_file.h"\
+	"..\..\include\m_genmenu.h"\
+	"..\..\include\m_langpack.h"\
+	"..\..\include\m_options.h"\
+	"..\..\include\m_plugins.h"\
+	"..\..\include\m_popup.h"\
+	"..\..\include\m_protocols.h"\
+	"..\..\include\m_protosvc.h"\
+	"..\..\include\m_skin.h"\
+	"..\..\include\m_system.h"\
+	"..\..\include\m_utils.h"\
+	"..\..\include\newpluginapi.h"\
+	"..\..\include\statusmodes.h"\
+	"..\..\include\win2k.h"\
+	".\alphablend.h"\
+	".\clc.h"\
+	".\clist.h"\
+	".\extbackg.h"\
+	".\forkthread.h"\
+	".\m_avatars.h"\
+	".\m_cln_skinedit.h"\
+	".\m_clui.h"\
+	".\rowheight_funcs.h"\
+	
+
+.\alphablend.c : \
+	"..\..\..\..\..\..\..\..\program files\microsoft platform sdk\include\basetsd.h"\
+	"..\..\..\..\..\..\..\..\program files\microsoft platform sdk\include\guiddef.h"\
+	"..\..\..\..\..\..\..\..\program files\microsoft platform sdk\include\propidl.h"\
+	"..\..\..\..\..\..\..\..\program files\microsoft platform sdk\include\reason.h"\
+	"..\..\..\..\..\..\..\..\program files\microsoft platform sdk\include\specstrings.h"\
+	"..\..\..\..\..\..\..\..\program files\microsoft platform sdk\include\stralign.h"\
+	"..\..\..\..\..\..\..\..\program files\microsoft platform sdk\include\tvout.h"\
+	"..\..\..\..\..\..\..\..\program files\microsoft platform sdk\include\winefs.h"\
+	"..\..\include\m_addcontact.h"\
+	"..\..\include\m_button.h"\
+	"..\..\include\m_clc.h"\
+	"..\..\include\m_clist.h"\
+	"..\..\include\m_clistint.h"\
+	"..\..\include\m_clui.h"\
+	"..\..\include\m_contacts.h"\
+	"..\..\include\m_database.h"\
+	"..\..\include\m_file.h"\
+	"..\..\include\m_genmenu.h"\
+	"..\..\include\m_langpack.h"\
+	"..\..\include\m_options.h"\
+	"..\..\include\m_plugins.h"\
+	"..\..\include\m_popup.h"\
+	"..\..\include\m_protocols.h"\
+	"..\..\include\m_protosvc.h"\
+	"..\..\include\m_skin.h"\
+	"..\..\include\m_system.h"\
+	"..\..\include\m_utils.h"\
+	"..\..\include\newpluginapi.h"\
+	"..\..\include\statusmodes.h"\
+	"..\..\include\win2k.h"\
+	".\alphablend.h"\
+	".\clc.h"\
+	".\clist.h"\
+	".\extbackg.h"\
+	".\forkthread.h"\
+	".\m_avatars.h"\
+	".\m_cln_skinedit.h"\
+	".\m_clui.h"\
+	".\rowheight_funcs.h"\
+	
+
+.\clc.c : \
+	"..\..\..\..\..\..\..\..\program files\microsoft platform sdk\include\basetsd.h"\
+	"..\..\..\..\..\..\..\..\program files\microsoft platform sdk\include\guiddef.h"\
+	"..\..\..\..\..\..\..\..\program files\microsoft platform sdk\include\propidl.h"\
+	"..\..\..\..\..\..\..\..\program files\microsoft platform sdk\include\reason.h"\
+	"..\..\..\..\..\..\..\..\program files\microsoft platform sdk\include\specstrings.h"\
+	"..\..\..\..\..\..\..\..\program files\microsoft platform sdk\include\stralign.h"\
+	"..\..\..\..\..\..\..\..\program files\microsoft platform sdk\include\tvout.h"\
+	"..\..\..\..\..\..\..\..\program files\microsoft platform sdk\include\winefs.h"\
+	"..\..\include\m_addcontact.h"\
+	"..\..\include\m_button.h"\
+	"..\..\include\m_clc.h"\
+	"..\..\include\m_clist.h"\
+	"..\..\include\m_clistint.h"\
+	"..\..\include\m_clui.h"\
+	"..\..\include\m_contacts.h"\
+	"..\..\include\m_database.h"\
+	"..\..\include\m_file.h"\
+	"..\..\include\m_genmenu.h"\
+	"..\..\include\m_langpack.h"\
 	"..\..\include\m_options.h"\
 	"..\..\include\m_plugins.h"\
 	"..\..\include\m_popup.h"\
@@ -83,21 +206,24 @@
 	".\clc.h"\
 	".\clist.h"\
 	".\CLUIFrames\cluiframes.h"\
-	".\commonheaders.h"\
 	".\coolsb\coolscroll.h"\
 	".\extbackg.h"\
 	".\forkthread.h"\
-	".\icolib.h"\
 	".\m_avatars.h"\
 	".\m_cln_skinedit.h"\
 	".\m_clui.h"\
-	".\m_cluiframes.h"\
-	".\m_fontservice.h"\
-	".\m_metacontacts.h"\
 	".\rowheight_funcs.h"\
 	
 
 .\CLCButton.c : \
+	"..\..\..\..\..\..\..\..\program files\microsoft platform sdk\include\basetsd.h"\
+	"..\..\..\..\..\..\..\..\program files\microsoft platform sdk\include\guiddef.h"\
+	"..\..\..\..\..\..\..\..\program files\microsoft platform sdk\include\propidl.h"\
+	"..\..\..\..\..\..\..\..\program files\microsoft platform sdk\include\reason.h"\
+	"..\..\..\..\..\..\..\..\program files\microsoft platform sdk\include\specstrings.h"\
+	"..\..\..\..\..\..\..\..\program files\microsoft platform sdk\include\stralign.h"\
+	"..\..\..\..\..\..\..\..\program files\microsoft platform sdk\include\tvout.h"\
+	"..\..\..\..\..\..\..\..\program files\microsoft platform sdk\include\winefs.h"\
 	"..\..\include\m_addcontact.h"\
 	"..\..\include\m_button.h"\
 	"..\..\include\m_clc.h"\
@@ -109,7 +235,6 @@
 	"..\..\include\m_file.h"\
 	"..\..\include\m_genmenu.h"\
 	"..\..\include\m_langpack.h"\
-	"..\..\include\m_message.h"\
 	"..\..\include\m_options.h"\
 	"..\..\include\m_plugins.h"\
 	"..\..\include\m_popup.h"\
@@ -124,20 +249,23 @@
 	".\alphablend.h"\
 	".\clc.h"\
 	".\clist.h"\
-	".\commonheaders.h"\
 	".\extbackg.h"\
 	".\forkthread.h"\
-	".\icolib.h"\
 	".\m_avatars.h"\
 	".\m_cln_skinedit.h"\
 	".\m_clui.h"\
-	".\m_cluiframes.h"\
-	".\m_fontservice.h"\
-	".\m_metacontacts.h"\
 	".\rowheight_funcs.h"\
 	
 
 .\clcidents.c : \
+	"..\..\..\..\..\..\..\..\program files\microsoft platform sdk\include\basetsd.h"\
+	"..\..\..\..\..\..\..\..\program files\microsoft platform sdk\include\guiddef.h"\
+	"..\..\..\..\..\..\..\..\program files\microsoft platform sdk\include\propidl.h"\
+	"..\..\..\..\..\..\..\..\program files\microsoft platform sdk\include\reason.h"\
+	"..\..\..\..\..\..\..\..\program files\microsoft platform sdk\include\specstrings.h"\
+	"..\..\..\..\..\..\..\..\program files\microsoft platform sdk\include\stralign.h"\
+	"..\..\..\..\..\..\..\..\program files\microsoft platform sdk\include\tvout.h"\
+	"..\..\..\..\..\..\..\..\program files\microsoft platform sdk\include\winefs.h"\
 	"..\..\include\m_addcontact.h"\
 	"..\..\include\m_button.h"\
 	"..\..\include\m_clc.h"\
@@ -149,7 +277,6 @@
 	"..\..\include\m_file.h"\
 	"..\..\include\m_genmenu.h"\
 	"..\..\include\m_langpack.h"\
-	"..\..\include\m_message.h"\
 	"..\..\include\m_options.h"\
 	"..\..\include\m_plugins.h"\
 	"..\..\include\m_popup.h"\
@@ -164,20 +291,23 @@
 	".\alphablend.h"\
 	".\clc.h"\
 	".\clist.h"\
-	".\commonheaders.h"\
 	".\extbackg.h"\
 	".\forkthread.h"\
-	".\icolib.h"\
 	".\m_avatars.h"\
 	".\m_cln_skinedit.h"\
 	".\m_clui.h"\
-	".\m_cluiframes.h"\
-	".\m_fontservice.h"\
-	".\m_metacontacts.h"\
 	".\rowheight_funcs.h"\
 	
 
 .\clcitems.c : \
+	"..\..\..\..\..\..\..\..\program files\microsoft platform sdk\include\basetsd.h"\
+	"..\..\..\..\..\..\..\..\program files\microsoft platform sdk\include\guiddef.h"\
+	"..\..\..\..\..\..\..\..\program files\microsoft platform sdk\include\propidl.h"\
+	"..\..\..\..\..\..\..\..\program files\microsoft platform sdk\include\reason.h"\
+	"..\..\..\..\..\..\..\..\program files\microsoft platform sdk\include\specstrings.h"\
+	"..\..\..\..\..\..\..\..\program files\microsoft platform sdk\include\stralign.h"\
+	"..\..\..\..\..\..\..\..\program files\microsoft platform sdk\include\tvout.h"\
+	"..\..\..\..\..\..\..\..\program files\microsoft platform sdk\include\winefs.h"\
 	"..\..\include\m_addcontact.h"\
 	"..\..\include\m_button.h"\
 	"..\..\include\m_clc.h"\
@@ -188,8 +318,8 @@
 	"..\..\include\m_database.h"\
 	"..\..\include\m_file.h"\
 	"..\..\include\m_genmenu.h"\
+	"..\..\include\m_icq.h"\
 	"..\..\include\m_langpack.h"\
-	"..\..\include\m_message.h"\
 	"..\..\include\m_options.h"\
 	"..\..\include\m_plugins.h"\
 	"..\..\include\m_popup.h"\
@@ -204,20 +334,23 @@
 	".\alphablend.h"\
 	".\clc.h"\
 	".\clist.h"\
-	".\commonheaders.h"\
 	".\extbackg.h"\
 	".\forkthread.h"\
-	".\icolib.h"\
 	".\m_avatars.h"\
 	".\m_cln_skinedit.h"\
 	".\m_clui.h"\
-	".\m_cluiframes.h"\
-	".\m_fontservice.h"\
-	".\m_metacontacts.h"\
 	".\rowheight_funcs.h"\
 	
 
 .\clcmsgs.c : \
+	"..\..\..\..\..\..\..\..\program files\microsoft platform sdk\include\basetsd.h"\
+	"..\..\..\..\..\..\..\..\program files\microsoft platform sdk\include\guiddef.h"\
+	"..\..\..\..\..\..\..\..\program files\microsoft platform sdk\include\propidl.h"\
+	"..\..\..\..\..\..\..\..\program files\microsoft platform sdk\include\reason.h"\
+	"..\..\..\..\..\..\..\..\program files\microsoft platform sdk\include\specstrings.h"\
+	"..\..\..\..\..\..\..\..\program files\microsoft platform sdk\include\stralign.h"\
+	"..\..\..\..\..\..\..\..\program files\microsoft platform sdk\include\tvout.h"\
+	"..\..\..\..\..\..\..\..\program files\microsoft platform sdk\include\winefs.h"\
 	"..\..\include\m_addcontact.h"\
 	"..\..\include\m_button.h"\
 	"..\..\include\m_clc.h"\
@@ -229,7 +362,6 @@
 	"..\..\include\m_file.h"\
 	"..\..\include\m_genmenu.h"\
 	"..\..\include\m_langpack.h"\
-	"..\..\include\m_message.h"\
 	"..\..\include\m_options.h"\
 	"..\..\include\m_plugins.h"\
 	"..\..\include\m_popup.h"\
@@ -244,20 +376,24 @@
 	".\alphablend.h"\
 	".\clc.h"\
 	".\clist.h"\
-	".\commonheaders.h"\
 	".\extbackg.h"\
 	".\forkthread.h"\
-	".\icolib.h"\
 	".\m_avatars.h"\
 	".\m_cln_skinedit.h"\
 	".\m_clui.h"\
-	".\m_cluiframes.h"\
-	".\m_fontservice.h"\
-	".\m_metacontacts.h"\
 	".\rowheight_funcs.h"\
 	
 
 .\clcopts.c : \
+	"..\..\..\..\..\..\..\..\program files\microsoft platform sdk\include\basetsd.h"\
+	"..\..\..\..\..\..\..\..\program files\microsoft platform sdk\include\guiddef.h"\
+	"..\..\..\..\..\..\..\..\program files\microsoft platform sdk\include\propidl.h"\
+	"..\..\..\..\..\..\..\..\program files\microsoft platform sdk\include\reason.h"\
+	"..\..\..\..\..\..\..\..\program files\microsoft platform sdk\include\specstrings.h"\
+	"..\..\..\..\..\..\..\..\program files\microsoft platform sdk\include\stralign.h"\
+	"..\..\..\..\..\..\..\..\program files\microsoft platform sdk\include\tvout.h"\
+	"..\..\..\..\..\..\..\..\program files\microsoft platform sdk\include\uxtheme.h"\
+	"..\..\..\..\..\..\..\..\program files\microsoft platform sdk\include\winefs.h"\
 	"..\..\include\m_addcontact.h"\
 	"..\..\include\m_button.h"\
 	"..\..\include\m_clc.h"\
@@ -269,7 +405,6 @@
 	"..\..\include\m_file.h"\
 	"..\..\include\m_genmenu.h"\
 	"..\..\include\m_langpack.h"\
-	"..\..\include\m_message.h"\
 	"..\..\include\m_options.h"\
 	"..\..\include\m_plugins.h"\
 	"..\..\include\m_popup.h"\
@@ -284,21 +419,24 @@
 	".\alphablend.h"\
 	".\clc.h"\
 	".\clist.h"\
-	".\commonheaders.h"\
 	".\coolsb\coolscroll.h"\
 	".\extbackg.h"\
 	".\forkthread.h"\
-	".\icolib.h"\
 	".\m_avatars.h"\
 	".\m_cln_skinedit.h"\
 	".\m_clui.h"\
-	".\m_cluiframes.h"\
-	".\m_fontservice.h"\
-	".\m_metacontacts.h"\
 	".\rowheight_funcs.h"\
 	
 
 .\clcpaint.c : \
+	"..\..\..\..\..\..\..\..\program files\microsoft platform sdk\include\basetsd.h"\
+	"..\..\..\..\..\..\..\..\program files\microsoft platform sdk\include\guiddef.h"\
+	"..\..\..\..\..\..\..\..\program files\microsoft platform sdk\include\propidl.h"\
+	"..\..\..\..\..\..\..\..\program files\microsoft platform sdk\include\reason.h"\
+	"..\..\..\..\..\..\..\..\program files\microsoft platform sdk\include\specstrings.h"\
+	"..\..\..\..\..\..\..\..\program files\microsoft platform sdk\include\stralign.h"\
+	"..\..\..\..\..\..\..\..\program files\microsoft platform sdk\include\tvout.h"\
+	"..\..\..\..\..\..\..\..\program files\microsoft platform sdk\include\winefs.h"\
 	"..\..\include\m_addcontact.h"\
 	"..\..\include\m_button.h"\
 	"..\..\include\m_clc.h"\
@@ -310,7 +448,6 @@
 	"..\..\include\m_file.h"\
 	"..\..\include\m_genmenu.h"\
 	"..\..\include\m_langpack.h"\
-	"..\..\include\m_message.h"\
 	"..\..\include\m_options.h"\
 	"..\..\include\m_plugins.h"\
 	"..\..\include\m_popup.h"\
@@ -325,20 +462,23 @@
 	".\alphablend.h"\
 	".\clc.h"\
 	".\clist.h"\
-	".\commonheaders.h"\
 	".\extbackg.h"\
 	".\forkthread.h"\
-	".\icolib.h"\
 	".\m_avatars.h"\
 	".\m_cln_skinedit.h"\
 	".\m_clui.h"\
-	".\m_cluiframes.h"\
-	".\m_fontservice.h"\
-	".\m_metacontacts.h"\
 	".\rowheight_funcs.h"\
 	
 
 .\clcutils.c : \
+	"..\..\..\..\..\..\..\..\program files\microsoft platform sdk\include\basetsd.h"\
+	"..\..\..\..\..\..\..\..\program files\microsoft platform sdk\include\guiddef.h"\
+	"..\..\..\..\..\..\..\..\program files\microsoft platform sdk\include\propidl.h"\
+	"..\..\..\..\..\..\..\..\program files\microsoft platform sdk\include\reason.h"\
+	"..\..\..\..\..\..\..\..\program files\microsoft platform sdk\include\specstrings.h"\
+	"..\..\..\..\..\..\..\..\program files\microsoft platform sdk\include\stralign.h"\
+	"..\..\..\..\..\..\..\..\program files\microsoft platform sdk\include\tvout.h"\
+	"..\..\..\..\..\..\..\..\program files\microsoft platform sdk\include\winefs.h"\
 	"..\..\include\m_addcontact.h"\
 	"..\..\include\m_button.h"\
 	"..\..\include\m_clc.h"\
@@ -350,7 +490,6 @@
 	"..\..\include\m_file.h"\
 	"..\..\include\m_genmenu.h"\
 	"..\..\include\m_langpack.h"\
-	"..\..\include\m_message.h"\
 	"..\..\include\m_options.h"\
 	"..\..\include\m_plugins.h"\
 	"..\..\include\m_popup.h"\
@@ -365,21 +504,24 @@
 	".\alphablend.h"\
 	".\clc.h"\
 	".\clist.h"\
-	".\commonheaders.h"\
 	".\coolsb\coolscroll.h"\
 	".\extbackg.h"\
 	".\forkthread.h"\
-	".\icolib.h"\
 	".\m_avatars.h"\
 	".\m_cln_skinedit.h"\
 	".\m_clui.h"\
-	".\m_cluiframes.h"\
-	".\m_fontservice.h"\
-	".\m_metacontacts.h"\
 	".\rowheight_funcs.h"\
 	
 
 .\clistevents.c : \
+	"..\..\..\..\..\..\..\..\program files\microsoft platform sdk\include\basetsd.h"\
+	"..\..\..\..\..\..\..\..\program files\microsoft platform sdk\include\guiddef.h"\
+	"..\..\..\..\..\..\..\..\program files\microsoft platform sdk\include\propidl.h"\
+	"..\..\..\..\..\..\..\..\program files\microsoft platform sdk\include\reason.h"\
+	"..\..\..\..\..\..\..\..\program files\microsoft platform sdk\include\specstrings.h"\
+	"..\..\..\..\..\..\..\..\program files\microsoft platform sdk\include\stralign.h"\
+	"..\..\..\..\..\..\..\..\program files\microsoft platform sdk\include\tvout.h"\
+	"..\..\..\..\..\..\..\..\program files\microsoft platform sdk\include\winefs.h"\
 	"..\..\include\m_addcontact.h"\
 	"..\..\include\m_button.h"\
 	"..\..\include\m_clc.h"\
@@ -391,7 +533,6 @@
 	"..\..\include\m_file.h"\
 	"..\..\include\m_genmenu.h"\
 	"..\..\include\m_langpack.h"\
-	"..\..\include\m_message.h"\
 	"..\..\include\m_options.h"\
 	"..\..\include\m_plugins.h"\
 	"..\..\include\m_popup.h"\
@@ -407,20 +548,23 @@
 	".\clc.h"\
 	".\clist.h"\
 	".\CLUIFrames\cluiframes.h"\
-	".\commonheaders.h"\
 	".\extbackg.h"\
 	".\forkthread.h"\
-	".\icolib.h"\
 	".\m_avatars.h"\
 	".\m_cln_skinedit.h"\
 	".\m_clui.h"\
-	".\m_cluiframes.h"\
-	".\m_fontservice.h"\
-	".\m_metacontacts.h"\
 	".\rowheight_funcs.h"\
 	
 
 .\clistmenus.c : \
+	"..\..\..\..\..\..\..\..\program files\microsoft platform sdk\include\basetsd.h"\
+	"..\..\..\..\..\..\..\..\program files\microsoft platform sdk\include\guiddef.h"\
+	"..\..\..\..\..\..\..\..\program files\microsoft platform sdk\include\propidl.h"\
+	"..\..\..\..\..\..\..\..\program files\microsoft platform sdk\include\reason.h"\
+	"..\..\..\..\..\..\..\..\program files\microsoft platform sdk\include\specstrings.h"\
+	"..\..\..\..\..\..\..\..\program files\microsoft platform sdk\include\stralign.h"\
+	"..\..\..\..\..\..\..\..\program files\microsoft platform sdk\include\tvout.h"\
+	"..\..\..\..\..\..\..\..\program files\microsoft platform sdk\include\winefs.h"\
 	"..\..\include\m_addcontact.h"\
 	"..\..\include\m_button.h"\
 	"..\..\include\m_clc.h"\
@@ -433,7 +577,6 @@
 	"..\..\include\m_genmenu.h"\
 	"..\..\include\m_ignore.h"\
 	"..\..\include\m_langpack.h"\
-	"..\..\include\m_message.h"\
 	"..\..\include\m_options.h"\
 	"..\..\include\m_plugins.h"\
 	"..\..\include\m_popup.h"\
@@ -449,20 +592,23 @@
 	".\clc.h"\
 	".\clist.h"\
 	".\CLUIFrames\cluiframes.h"\
-	".\commonheaders.h"\
 	".\extbackg.h"\
 	".\forkthread.h"\
-	".\icolib.h"\
 	".\m_avatars.h"\
 	".\m_cln_skinedit.h"\
 	".\m_clui.h"\
-	".\m_cluiframes.h"\
-	".\m_fontservice.h"\
-	".\m_metacontacts.h"\
 	".\rowheight_funcs.h"\
 	
 
 .\clistmod.c : \
+	"..\..\..\..\..\..\..\..\program files\microsoft platform sdk\include\basetsd.h"\
+	"..\..\..\..\..\..\..\..\program files\microsoft platform sdk\include\guiddef.h"\
+	"..\..\..\..\..\..\..\..\program files\microsoft platform sdk\include\propidl.h"\
+	"..\..\..\..\..\..\..\..\program files\microsoft platform sdk\include\reason.h"\
+	"..\..\..\..\..\..\..\..\program files\microsoft platform sdk\include\specstrings.h"\
+	"..\..\..\..\..\..\..\..\program files\microsoft platform sdk\include\stralign.h"\
+	"..\..\..\..\..\..\..\..\program files\microsoft platform sdk\include\tvout.h"\
+	"..\..\..\..\..\..\..\..\program files\microsoft platform sdk\include\winefs.h"\
 	"..\..\include\m_addcontact.h"\
 	"..\..\include\m_button.h"\
 	"..\..\include\m_clc.h"\
@@ -474,7 +620,6 @@
 	"..\..\include\m_file.h"\
 	"..\..\include\m_genmenu.h"\
 	"..\..\include\m_langpack.h"\
-	"..\..\include\m_message.h"\
 	"..\..\include\m_options.h"\
 	"..\..\include\m_plugins.h"\
 	"..\..\include\m_popup.h"\
@@ -489,20 +634,23 @@
 	".\alphablend.h"\
 	".\clc.h"\
 	".\clist.h"\
-	".\commonheaders.h"\
 	".\extbackg.h"\
 	".\forkthread.h"\
-	".\icolib.h"\
 	".\m_avatars.h"\
 	".\m_cln_skinedit.h"\
 	".\m_clui.h"\
-	".\m_cluiframes.h"\
-	".\m_fontservice.h"\
-	".\m_metacontacts.h"\
 	".\rowheight_funcs.h"\
 	
 
 .\clistopts.c : \
+	"..\..\..\..\..\..\..\..\program files\microsoft platform sdk\include\basetsd.h"\
+	"..\..\..\..\..\..\..\..\program files\microsoft platform sdk\include\guiddef.h"\
+	"..\..\..\..\..\..\..\..\program files\microsoft platform sdk\include\propidl.h"\
+	"..\..\..\..\..\..\..\..\program files\microsoft platform sdk\include\reason.h"\
+	"..\..\..\..\..\..\..\..\program files\microsoft platform sdk\include\specstrings.h"\
+	"..\..\..\..\..\..\..\..\program files\microsoft platform sdk\include\stralign.h"\
+	"..\..\..\..\..\..\..\..\program files\microsoft platform sdk\include\tvout.h"\
+	"..\..\..\..\..\..\..\..\program files\microsoft platform sdk\include\winefs.h"\
 	"..\..\include\m_addcontact.h"\
 	"..\..\include\m_button.h"\
 	"..\..\include\m_clc.h"\
@@ -514,7 +662,6 @@
 	"..\..\include\m_file.h"\
 	"..\..\include\m_genmenu.h"\
 	"..\..\include\m_langpack.h"\
-	"..\..\include\m_message.h"\
 	"..\..\include\m_options.h"\
 	"..\..\include\m_plugins.h"\
 	"..\..\include\m_popup.h"\
@@ -529,20 +676,23 @@
 	".\alphablend.h"\
 	".\clc.h"\
 	".\clist.h"\
-	".\commonheaders.h"\
 	".\extbackg.h"\
 	".\forkthread.h"\
-	".\icolib.h"\
 	".\m_avatars.h"\
 	".\m_cln_skinedit.h"\
 	".\m_clui.h"\
-	".\m_cluiframes.h"\
-	".\m_fontservice.h"\
-	".\m_metacontacts.h"\
 	".\rowheight_funcs.h"\
 	
 
 .\clistsettings.c : \
+	"..\..\..\..\..\..\..\..\program files\microsoft platform sdk\include\basetsd.h"\
+	"..\..\..\..\..\..\..\..\program files\microsoft platform sdk\include\guiddef.h"\
+	"..\..\..\..\..\..\..\..\program files\microsoft platform sdk\include\propidl.h"\
+	"..\..\..\..\..\..\..\..\program files\microsoft platform sdk\include\reason.h"\
+	"..\..\..\..\..\..\..\..\program files\microsoft platform sdk\include\specstrings.h"\
+	"..\..\..\..\..\..\..\..\program files\microsoft platform sdk\include\stralign.h"\
+	"..\..\..\..\..\..\..\..\program files\microsoft platform sdk\include\tvout.h"\
+	"..\..\..\..\..\..\..\..\program files\microsoft platform sdk\include\winefs.h"\
 	"..\..\include\m_addcontact.h"\
 	"..\..\include\m_button.h"\
 	"..\..\include\m_clc.h"\
@@ -554,7 +704,6 @@
 	"..\..\include\m_file.h"\
 	"..\..\include\m_genmenu.h"\
 	"..\..\include\m_langpack.h"\
-	"..\..\include\m_message.h"\
 	"..\..\include\m_options.h"\
 	"..\..\include\m_plugins.h"\
 	"..\..\include\m_popup.h"\
@@ -569,20 +718,23 @@
 	".\alphablend.h"\
 	".\clc.h"\
 	".\clist.h"\
-	".\commonheaders.h"\
 	".\extbackg.h"\
 	".\forkthread.h"\
-	".\icolib.h"\
 	".\m_avatars.h"\
 	".\m_cln_skinedit.h"\
 	".\m_clui.h"\
-	".\m_cluiframes.h"\
-	".\m_fontservice.h"\
-	".\m_metacontacts.h"\
 	".\rowheight_funcs.h"\
 	
 
 .\clisttray.c : \
+	"..\..\..\..\..\..\..\..\program files\microsoft platform sdk\include\basetsd.h"\
+	"..\..\..\..\..\..\..\..\program files\microsoft platform sdk\include\guiddef.h"\
+	"..\..\..\..\..\..\..\..\program files\microsoft platform sdk\include\propidl.h"\
+	"..\..\..\..\..\..\..\..\program files\microsoft platform sdk\include\reason.h"\
+	"..\..\..\..\..\..\..\..\program files\microsoft platform sdk\include\specstrings.h"\
+	"..\..\..\..\..\..\..\..\program files\microsoft platform sdk\include\stralign.h"\
+	"..\..\..\..\..\..\..\..\program files\microsoft platform sdk\include\tvout.h"\
+	"..\..\..\..\..\..\..\..\program files\microsoft platform sdk\include\winefs.h"\
 	"..\..\include\m_addcontact.h"\
 	"..\..\include\m_button.h"\
 	"..\..\include\m_clc.h"\
@@ -594,7 +746,6 @@
 	"..\..\include\m_file.h"\
 	"..\..\include\m_genmenu.h"\
 	"..\..\include\m_langpack.h"\
-	"..\..\include\m_message.h"\
 	"..\..\include\m_options.h"\
 	"..\..\include\m_plugins.h"\
 	"..\..\include\m_popup.h"\
@@ -609,20 +760,23 @@
 	".\alphablend.h"\
 	".\clc.h"\
 	".\clist.h"\
-	".\commonheaders.h"\
 	".\extbackg.h"\
 	".\forkthread.h"\
-	".\icolib.h"\
 	".\m_avatars.h"\
 	".\m_cln_skinedit.h"\
 	".\m_clui.h"\
-	".\m_cluiframes.h"\
-	".\m_fontservice.h"\
-	".\m_metacontacts.h"\
 	".\rowheight_funcs.h"\
 	
 
 .\clui.c : \
+	"..\..\..\..\..\..\..\..\program files\microsoft platform sdk\include\basetsd.h"\
+	"..\..\..\..\..\..\..\..\program files\microsoft platform sdk\include\guiddef.h"\
+	"..\..\..\..\..\..\..\..\program files\microsoft platform sdk\include\propidl.h"\
+	"..\..\..\..\..\..\..\..\program files\microsoft platform sdk\include\reason.h"\
+	"..\..\..\..\..\..\..\..\program files\microsoft platform sdk\include\specstrings.h"\
+	"..\..\..\..\..\..\..\..\program files\microsoft platform sdk\include\stralign.h"\
+	"..\..\..\..\..\..\..\..\program files\microsoft platform sdk\include\tvout.h"\
+	"..\..\..\..\..\..\..\..\program files\microsoft platform sdk\include\winefs.h"\
 	"..\..\include\m_addcontact.h"\
 	"..\..\include\m_button.h"\
 	"..\..\include\m_clc.h"\
@@ -634,8 +788,8 @@
 	"..\..\include\m_file.h"\
 	"..\..\include\m_findadd.h"\
 	"..\..\include\m_genmenu.h"\
+	"..\..\include\m_icq.h"\
 	"..\..\include\m_langpack.h"\
-	"..\..\include\m_message.h"\
 	"..\..\include\m_options.h"\
 	"..\..\include\m_plugins.h"\
 	"..\..\include\m_popup.h"\
@@ -651,22 +805,25 @@
 	".\clc.h"\
 	".\clist.h"\
 	".\CLUIFrames\cluiframes.h"\
-	".\commonheaders.h"\
 	".\coolsb\coolscroll.h"\
 	".\extbackg.h"\
 	".\forkthread.h"\
-	".\icolib.h"\
 	".\m_avatars.h"\
 	".\m_cln_skinedit.h"\
 	".\m_clui.h"\
-	".\m_cluiframes.h"\
-	".\m_fontservice.h"\
-	".\m_metacontacts.h"\
 	".\m_updater.h"\
 	".\rowheight_funcs.h"\
 	
 
 .\cluiopts.c : \
+	"..\..\..\..\..\..\..\..\program files\microsoft platform sdk\include\basetsd.h"\
+	"..\..\..\..\..\..\..\..\program files\microsoft platform sdk\include\guiddef.h"\
+	"..\..\..\..\..\..\..\..\program files\microsoft platform sdk\include\propidl.h"\
+	"..\..\..\..\..\..\..\..\program files\microsoft platform sdk\include\reason.h"\
+	"..\..\..\..\..\..\..\..\program files\microsoft platform sdk\include\specstrings.h"\
+	"..\..\..\..\..\..\..\..\program files\microsoft platform sdk\include\stralign.h"\
+	"..\..\..\..\..\..\..\..\program files\microsoft platform sdk\include\tvout.h"\
+	"..\..\..\..\..\..\..\..\program files\microsoft platform sdk\include\winefs.h"\
 	"..\..\include\m_addcontact.h"\
 	"..\..\include\m_button.h"\
 	"..\..\include\m_clc.h"\
@@ -678,7 +835,6 @@
 	"..\..\include\m_file.h"\
 	"..\..\include\m_genmenu.h"\
 	"..\..\include\m_langpack.h"\
-	"..\..\include\m_message.h"\
 	"..\..\include\m_options.h"\
 	"..\..\include\m_plugins.h"\
 	"..\..\include\m_popup.h"\
@@ -693,20 +849,23 @@
 	".\alphablend.h"\
 	".\clc.h"\
 	".\clist.h"\
-	".\commonheaders.h"\
 	".\extbackg.h"\
 	".\forkthread.h"\
-	".\icolib.h"\
 	".\m_avatars.h"\
 	".\m_cln_skinedit.h"\
 	".\m_clui.h"\
-	".\m_cluiframes.h"\
-	".\m_fontservice.h"\
-	".\m_metacontacts.h"\
 	".\rowheight_funcs.h"\
 	
 
 .\cluiservices.c : \
+	"..\..\..\..\..\..\..\..\program files\microsoft platform sdk\include\basetsd.h"\
+	"..\..\..\..\..\..\..\..\program files\microsoft platform sdk\include\guiddef.h"\
+	"..\..\..\..\..\..\..\..\program files\microsoft platform sdk\include\propidl.h"\
+	"..\..\..\..\..\..\..\..\program files\microsoft platform sdk\include\reason.h"\
+	"..\..\..\..\..\..\..\..\program files\microsoft platform sdk\include\specstrings.h"\
+	"..\..\..\..\..\..\..\..\program files\microsoft platform sdk\include\stralign.h"\
+	"..\..\..\..\..\..\..\..\program files\microsoft platform sdk\include\tvout.h"\
+	"..\..\..\..\..\..\..\..\program files\microsoft platform sdk\include\winefs.h"\
 	"..\..\include\m_addcontact.h"\
 	"..\..\include\m_button.h"\
 	"..\..\include\m_clc.h"\
@@ -717,8 +876,8 @@
 	"..\..\include\m_database.h"\
 	"..\..\include\m_file.h"\
 	"..\..\include\m_genmenu.h"\
+	"..\..\include\m_icq.h"\
 	"..\..\include\m_langpack.h"\
-	"..\..\include\m_message.h"\
 	"..\..\include\m_options.h"\
 	"..\..\include\m_plugins.h"\
 	"..\..\include\m_popup.h"\
@@ -734,20 +893,23 @@
 	".\clc.h"\
 	".\clist.h"\
 	".\CLUIFrames\cluiframes.h"\
-	".\commonheaders.h"\
 	".\extbackg.h"\
 	".\forkthread.h"\
-	".\icolib.h"\
 	".\m_avatars.h"\
 	".\m_cln_skinedit.h"\
 	".\m_clui.h"\
-	".\m_cluiframes.h"\
-	".\m_fontservice.h"\
-	".\m_metacontacts.h"\
 	".\rowheight_funcs.h"\
 	
 
 .\commonheaders.c : \
+	"..\..\..\..\..\..\..\..\program files\microsoft platform sdk\include\basetsd.h"\
+	"..\..\..\..\..\..\..\..\program files\microsoft platform sdk\include\guiddef.h"\
+	"..\..\..\..\..\..\..\..\program files\microsoft platform sdk\include\propidl.h"\
+	"..\..\..\..\..\..\..\..\program files\microsoft platform sdk\include\reason.h"\
+	"..\..\..\..\..\..\..\..\program files\microsoft platform sdk\include\specstrings.h"\
+	"..\..\..\..\..\..\..\..\program files\microsoft platform sdk\include\stralign.h"\
+	"..\..\..\..\..\..\..\..\program files\microsoft platform sdk\include\tvout.h"\
+	"..\..\..\..\..\..\..\..\program files\microsoft platform sdk\include\winefs.h"\
 	"..\..\include\m_addcontact.h"\
 	"..\..\include\m_button.h"\
 	"..\..\include\m_clc.h"\
@@ -788,6 +950,14 @@
 	
 
 .\contact.c : \
+	"..\..\..\..\..\..\..\..\program files\microsoft platform sdk\include\basetsd.h"\
+	"..\..\..\..\..\..\..\..\program files\microsoft platform sdk\include\guiddef.h"\
+	"..\..\..\..\..\..\..\..\program files\microsoft platform sdk\include\propidl.h"\
+	"..\..\..\..\..\..\..\..\program files\microsoft platform sdk\include\reason.h"\
+	"..\..\..\..\..\..\..\..\program files\microsoft platform sdk\include\specstrings.h"\
+	"..\..\..\..\..\..\..\..\program files\microsoft platform sdk\include\stralign.h"\
+	"..\..\..\..\..\..\..\..\program files\microsoft platform sdk\include\tvout.h"\
+	"..\..\..\..\..\..\..\..\program files\microsoft platform sdk\include\winefs.h"\
 	"..\..\include\m_addcontact.h"\
 	"..\..\include\m_button.h"\
 	"..\..\include\m_clc.h"\
@@ -799,7 +969,6 @@
 	"..\..\include\m_file.h"\
 	"..\..\include\m_genmenu.h"\
 	"..\..\include\m_langpack.h"\
-	"..\..\include\m_message.h"\
 	"..\..\include\m_options.h"\
 	"..\..\include\m_plugins.h"\
 	"..\..\include\m_popup.h"\
@@ -814,32 +983,49 @@
 	".\alphablend.h"\
 	".\clc.h"\
 	".\clist.h"\
-	".\commonheaders.h"\
 	".\extbackg.h"\
 	".\forkthread.h"\
-	".\icolib.h"\
 	".\m_avatars.h"\
 	".\m_cln_skinedit.h"\
 	".\m_clui.h"\
-	".\m_cluiframes.h"\
-	".\m_fontservice.h"\
-	".\m_metacontacts.h"\
 	".\rowheight_funcs.h"\
 	
 
 .\coolsb\coolsblib.c : \
+	"..\..\..\..\..\..\..\..\program files\microsoft platform sdk\include\basetsd.h"\
+	"..\..\..\..\..\..\..\..\program files\microsoft platform sdk\include\guiddef.h"\
+	"..\..\..\..\..\..\..\..\program files\microsoft platform sdk\include\propidl.h"\
+	"..\..\..\..\..\..\..\..\program files\microsoft platform sdk\include\reason.h"\
+	"..\..\..\..\..\..\..\..\program files\microsoft platform sdk\include\specstrings.h"\
+	"..\..\..\..\..\..\..\..\program files\microsoft platform sdk\include\stralign.h"\
+	"..\..\..\..\..\..\..\..\program files\microsoft platform sdk\include\tvout.h"\
+	"..\..\..\..\..\..\..\..\program files\microsoft platform sdk\include\winefs.h"\
 	".\coolsb\coolsb_internal.h"\
 	".\coolsb\coolscroll.h"\
 	".\coolsb\userdefs.h"\
 	
 
 .\coolsb\coolscroll.c : \
+	"..\..\..\..\..\..\..\..\program files\microsoft platform sdk\include\basetsd.h"\
+	"..\..\..\..\..\..\..\..\program files\microsoft platform sdk\include\guiddef.h"\
+	"..\..\..\..\..\..\..\..\program files\microsoft platform sdk\include\reason.h"\
+	"..\..\..\..\..\..\..\..\program files\microsoft platform sdk\include\specstrings.h"\
+	"..\..\..\..\..\..\..\..\program files\microsoft platform sdk\include\stralign.h"\
+	"..\..\..\..\..\..\..\..\program files\microsoft platform sdk\include\tvout.h"\
 	".\coolsb\coolsb_internal.h"\
 	".\coolsb\coolscroll.h"\
 	".\coolsb\userdefs.h"\
 	
 
 .\Docking.c : \
+	"..\..\..\..\..\..\..\..\program files\microsoft platform sdk\include\basetsd.h"\
+	"..\..\..\..\..\..\..\..\program files\microsoft platform sdk\include\guiddef.h"\
+	"..\..\..\..\..\..\..\..\program files\microsoft platform sdk\include\propidl.h"\
+	"..\..\..\..\..\..\..\..\program files\microsoft platform sdk\include\reason.h"\
+	"..\..\..\..\..\..\..\..\program files\microsoft platform sdk\include\specstrings.h"\
+	"..\..\..\..\..\..\..\..\program files\microsoft platform sdk\include\stralign.h"\
+	"..\..\..\..\..\..\..\..\program files\microsoft platform sdk\include\tvout.h"\
+	"..\..\..\..\..\..\..\..\program files\microsoft platform sdk\include\winefs.h"\
 	"..\..\include\m_addcontact.h"\
 	"..\..\include\m_button.h"\
 	"..\..\include\m_clc.h"\
@@ -851,7 +1037,6 @@
 	"..\..\include\m_file.h"\
 	"..\..\include\m_genmenu.h"\
 	"..\..\include\m_langpack.h"\
-	"..\..\include\m_message.h"\
 	"..\..\include\m_options.h"\
 	"..\..\include\m_plugins.h"\
 	"..\..\include\m_popup.h"\
@@ -866,20 +1051,24 @@
 	".\alphablend.h"\
 	".\clc.h"\
 	".\clist.h"\
-	".\commonheaders.h"\
 	".\extbackg.h"\
 	".\forkthread.h"\
-	".\icolib.h"\
 	".\m_avatars.h"\
 	".\m_cln_skinedit.h"\
 	".\m_clui.h"\
-	".\m_cluiframes.h"\
-	".\m_fontservice.h"\
-	".\m_metacontacts.h"\
 	".\rowheight_funcs.h"\
 	
 
 .\extBackg.c : \
+	"..\..\..\..\..\..\..\..\program files\microsoft platform sdk\include\basetsd.h"\
+	"..\..\..\..\..\..\..\..\program files\microsoft platform sdk\include\guiddef.h"\
+	"..\..\..\..\..\..\..\..\program files\microsoft platform sdk\include\propidl.h"\
+	"..\..\..\..\..\..\..\..\program files\microsoft platform sdk\include\reason.h"\
+	"..\..\..\..\..\..\..\..\program files\microsoft platform sdk\include\specstrings.h"\
+	"..\..\..\..\..\..\..\..\program files\microsoft platform sdk\include\stralign.h"\
+	"..\..\..\..\..\..\..\..\program files\microsoft platform sdk\include\tvout.h"\
+	"..\..\..\..\..\..\..\..\program files\microsoft platform sdk\include\uxtheme.h"\
+	"..\..\..\..\..\..\..\..\program files\microsoft platform sdk\include\winefs.h"\
 	"..\..\include\m_addcontact.h"\
 	"..\..\include\m_button.h"\
 	"..\..\include\m_clc.h"\
@@ -891,7 +1080,6 @@
 	"..\..\include\m_file.h"\
 	"..\..\include\m_genmenu.h"\
 	"..\..\include\m_langpack.h"\
-	"..\..\include\m_message.h"\
 	"..\..\include\m_options.h"\
 	"..\..\include\m_plugins.h"\
 	"..\..\include\m_popup.h"\
@@ -906,21 +1094,24 @@
 	".\alphablend.h"\
 	".\clc.h"\
 	".\clist.h"\
-	".\commonheaders.h"\
 	".\coolsb\coolscroll.h"\
 	".\extbackg.h"\
 	".\forkthread.h"\
-	".\icolib.h"\
 	".\m_avatars.h"\
 	".\m_cln_skinedit.h"\
 	".\m_clui.h"\
-	".\m_cluiframes.h"\
-	".\m_fontservice.h"\
-	".\m_metacontacts.h"\
 	".\rowheight_funcs.h"\
 	
 
 .\forkthread.c : \
+	"..\..\..\..\..\..\..\..\program files\microsoft platform sdk\include\basetsd.h"\
+	"..\..\..\..\..\..\..\..\program files\microsoft platform sdk\include\guiddef.h"\
+	"..\..\..\..\..\..\..\..\program files\microsoft platform sdk\include\propidl.h"\
+	"..\..\..\..\..\..\..\..\program files\microsoft platform sdk\include\reason.h"\
+	"..\..\..\..\..\..\..\..\program files\microsoft platform sdk\include\specstrings.h"\
+	"..\..\..\..\..\..\..\..\program files\microsoft platform sdk\include\stralign.h"\
+	"..\..\..\..\..\..\..\..\program files\microsoft platform sdk\include\tvout.h"\
+	"..\..\..\..\..\..\..\..\program files\microsoft platform sdk\include\winefs.h"\
 	"..\..\include\m_addcontact.h"\
 	"..\..\include\m_button.h"\
 	"..\..\include\m_clc.h"\
@@ -932,7 +1123,6 @@
 	"..\..\include\m_file.h"\
 	"..\..\include\m_genmenu.h"\
 	"..\..\include\m_langpack.h"\
-	"..\..\include\m_message.h"\
 	"..\..\include\m_options.h"\
 	"..\..\include\m_plugins.h"\
 	"..\..\include\m_popup.h"\
@@ -947,20 +1137,55 @@
 	".\alphablend.h"\
 	".\clc.h"\
 	".\clist.h"\
-	".\commonheaders.h"\
 	".\extbackg.h"\
 	".\forkthread.h"\
-	".\icolib.h"\
 	".\m_avatars.h"\
 	".\m_cln_skinedit.h"\
 	".\m_clui.h"\
-	".\m_cluiframes.h"\
-	".\m_fontservice.h"\
-	".\m_metacontacts.h"\
 	".\rowheight_funcs.h"\
 	
 
 .\gdiplus.cpp : \
+	"..\..\..\..\..\..\..\..\program files\microsoft platform sdk\include\basetsd.h"\
+	"..\..\..\..\..\..\..\..\program files\microsoft platform sdk\include\gdiplus.h"\
+	"..\..\..\..\..\..\..\..\program files\microsoft platform sdk\include\gdiplusbase.h"\
+	"..\..\..\..\..\..\..\..\program files\microsoft platform sdk\include\gdiplusbitmap.h"\
+	"..\..\..\..\..\..\..\..\program files\microsoft platform sdk\include\gdiplusbrush.h"\
+	"..\..\..\..\..\..\..\..\program files\microsoft platform sdk\include\gdipluscachedbitmap.h"\
+	"..\..\..\..\..\..\..\..\program files\microsoft platform sdk\include\gdipluscolor.h"\
+	"..\..\..\..\..\..\..\..\program files\microsoft platform sdk\include\gdipluscolormatrix.h"\
+	"..\..\..\..\..\..\..\..\program files\microsoft platform sdk\include\gdiplusenums.h"\
+	"..\..\..\..\..\..\..\..\program files\microsoft platform sdk\include\gdiplusflat.h"\
+	"..\..\..\..\..\..\..\..\program files\microsoft platform sdk\include\gdiplusfont.h"\
+	"..\..\..\..\..\..\..\..\program files\microsoft platform sdk\include\gdiplusfontcollection.h"\
+	"..\..\..\..\..\..\..\..\program files\microsoft platform sdk\include\gdiplusfontfamily.h"\
+	"..\..\..\..\..\..\..\..\program files\microsoft platform sdk\include\gdiplusgpstubs.h"\
+	"..\..\..\..\..\..\..\..\program files\microsoft platform sdk\include\gdiplusgraphics.h"\
+	"..\..\..\..\..\..\..\..\program files\microsoft platform sdk\include\gdiplusheaders.h"\
+	"..\..\..\..\..\..\..\..\program files\microsoft platform sdk\include\gdiplusimageattributes.h"\
+	"..\..\..\..\..\..\..\..\program files\microsoft platform sdk\include\gdiplusimagecodec.h"\
+	"..\..\..\..\..\..\..\..\program files\microsoft platform sdk\include\gdiplusimaging.h"\
+	"..\..\..\..\..\..\..\..\program files\microsoft platform sdk\include\gdiplusinit.h"\
+	"..\..\..\..\..\..\..\..\program files\microsoft platform sdk\include\gdipluslinecaps.h"\
+	"..\..\..\..\..\..\..\..\program files\microsoft platform sdk\include\gdiplusmatrix.h"\
+	"..\..\..\..\..\..\..\..\program files\microsoft platform sdk\include\gdiplusmem.h"\
+	"..\..\..\..\..\..\..\..\program files\microsoft platform sdk\include\gdiplusmetafile.h"\
+	"..\..\..\..\..\..\..\..\program files\microsoft platform sdk\include\gdiplusmetaheader.h"\
+	"..\..\..\..\..\..\..\..\program files\microsoft platform sdk\include\gdipluspath.h"\
+	"..\..\..\..\..\..\..\..\program files\microsoft platform sdk\include\gdipluspen.h"\
+	"..\..\..\..\..\..\..\..\program files\microsoft platform sdk\include\gdipluspixelformats.h"\
+	"..\..\..\..\..\..\..\..\program files\microsoft platform sdk\include\gdiplusregion.h"\
+	"..\..\..\..\..\..\..\..\program files\microsoft platform sdk\include\gdiplusstringformat.h"\
+	"..\..\..\..\..\..\..\..\program files\microsoft platform sdk\include\gdiplustypes.h"\
+	"..\..\..\..\..\..\..\..\program files\microsoft platform sdk\include\guiddef.h"\
+	"..\..\..\..\..\..\..\..\program files\microsoft platform sdk\include\propidl.h"\
+	"..\..\..\..\..\..\..\..\program files\microsoft platform sdk\include\reason.h"\
+	"..\..\..\..\..\..\..\..\program files\microsoft platform sdk\include\shobjidl.h"\
+	"..\..\..\..\..\..\..\..\program files\microsoft platform sdk\include\shtypes.h"\
+	"..\..\..\..\..\..\..\..\program files\microsoft platform sdk\include\specstrings.h"\
+	"..\..\..\..\..\..\..\..\program files\microsoft platform sdk\include\stralign.h"\
+	"..\..\..\..\..\..\..\..\program files\microsoft platform sdk\include\tvout.h"\
+	"..\..\..\..\..\..\..\..\program files\microsoft platform sdk\include\winefs.h"\
 	"..\..\include\m_addcontact.h"\
 	"..\..\include\m_button.h"\
 	"..\..\include\m_clc.h"\
@@ -993,6 +1218,14 @@
 	
 
 .\init.c : \
+	"..\..\..\..\..\..\..\..\program files\microsoft platform sdk\include\basetsd.h"\
+	"..\..\..\..\..\..\..\..\program files\microsoft platform sdk\include\guiddef.h"\
+	"..\..\..\..\..\..\..\..\program files\microsoft platform sdk\include\propidl.h"\
+	"..\..\..\..\..\..\..\..\program files\microsoft platform sdk\include\reason.h"\
+	"..\..\..\..\..\..\..\..\program files\microsoft platform sdk\include\specstrings.h"\
+	"..\..\..\..\..\..\..\..\program files\microsoft platform sdk\include\stralign.h"\
+	"..\..\..\..\..\..\..\..\program files\microsoft platform sdk\include\tvout.h"\
+	"..\..\..\..\..\..\..\..\program files\microsoft platform sdk\include\winefs.h"\
 	"..\..\include\m_addcontact.h"\
 	"..\..\include\m_button.h"\
 	"..\..\include\m_clc.h"\
@@ -1004,7 +1237,6 @@
 	"..\..\include\m_file.h"\
 	"..\..\include\m_genmenu.h"\
 	"..\..\include\m_langpack.h"\
-	"..\..\include\m_message.h"\
 	"..\..\include\m_options.h"\
 	"..\..\include\m_plugins.h"\
 	"..\..\include\m_popup.h"\
@@ -1020,20 +1252,23 @@
 	".\clc.h"\
 	".\clist.h"\
 	".\CLUIFrames\cluiframes.h"\
-	".\commonheaders.h"\
 	".\extbackg.h"\
 	".\forkthread.h"\
-	".\icolib.h"\
 	".\m_avatars.h"\
 	".\m_cln_skinedit.h"\
 	".\m_clui.h"\
-	".\m_cluiframes.h"\
-	".\m_fontservice.h"\
-	".\m_metacontacts.h"\
 	".\rowheight_funcs.h"\
 	
 
 .\CLUIFrames\movetogroup.c : \
+	"..\..\..\..\..\..\..\..\program files\microsoft platform sdk\include\basetsd.h"\
+	"..\..\..\..\..\..\..\..\program files\microsoft platform sdk\include\guiddef.h"\
+	"..\..\..\..\..\..\..\..\program files\microsoft platform sdk\include\propidl.h"\
+	"..\..\..\..\..\..\..\..\program files\microsoft platform sdk\include\reason.h"\
+	"..\..\..\..\..\..\..\..\program files\microsoft platform sdk\include\specstrings.h"\
+	"..\..\..\..\..\..\..\..\program files\microsoft platform sdk\include\stralign.h"\
+	"..\..\..\..\..\..\..\..\program files\microsoft platform sdk\include\tvout.h"\
+	"..\..\..\..\..\..\..\..\program files\microsoft platform sdk\include\winefs.h"\
 	"..\..\include\m_addcontact.h"\
 	"..\..\include\m_button.h"\
 	"..\..\include\m_clc.h"\
@@ -1045,7 +1280,6 @@
 	"..\..\include\m_file.h"\
 	"..\..\include\m_genmenu.h"\
 	"..\..\include\m_langpack.h"\
-	"..\..\include\m_message.h"\
 	"..\..\include\m_options.h"\
 	"..\..\include\m_plugins.h"\
 	"..\..\include\m_popup.h"\
@@ -1060,20 +1294,23 @@
 	".\alphablend.h"\
 	".\clc.h"\
 	".\clist.h"\
-	".\commonheaders.h"\
 	".\extbackg.h"\
 	".\forkthread.h"\
-	".\icolib.h"\
 	".\m_avatars.h"\
 	".\m_cln_skinedit.h"\
 	".\m_clui.h"\
-	".\m_cluiframes.h"\
-	".\m_fontservice.h"\
-	".\m_metacontacts.h"\
 	".\rowheight_funcs.h"\
 	
 
 .\rowheight_funcs.c : \
+	"..\..\..\..\..\..\..\..\program files\microsoft platform sdk\include\basetsd.h"\
+	"..\..\..\..\..\..\..\..\program files\microsoft platform sdk\include\guiddef.h"\
+	"..\..\..\..\..\..\..\..\program files\microsoft platform sdk\include\propidl.h"\
+	"..\..\..\..\..\..\..\..\program files\microsoft platform sdk\include\reason.h"\
+	"..\..\..\..\..\..\..\..\program files\microsoft platform sdk\include\specstrings.h"\
+	"..\..\..\..\..\..\..\..\program files\microsoft platform sdk\include\stralign.h"\
+	"..\..\..\..\..\..\..\..\program files\microsoft platform sdk\include\tvout.h"\
+	"..\..\..\..\..\..\..\..\program files\microsoft platform sdk\include\winefs.h"\
 	"..\..\include\m_addcontact.h"\
 	"..\..\include\m_button.h"\
 	"..\..\include\m_clc.h"\
@@ -1085,7 +1322,6 @@
 	"..\..\include\m_file.h"\
 	"..\..\include\m_genmenu.h"\
 	"..\..\include\m_langpack.h"\
-	"..\..\include\m_message.h"\
 	"..\..\include\m_options.h"\
 	"..\..\include\m_plugins.h"\
 	"..\..\include\m_popup.h"\
@@ -1100,20 +1336,24 @@
 	".\alphablend.h"\
 	".\clc.h"\
 	".\clist.h"\
-	".\commonheaders.h"\
 	".\extbackg.h"\
 	".\forkthread.h"\
-	".\icolib.h"\
 	".\m_avatars.h"\
 	".\m_cln_skinedit.h"\
 	".\m_clui.h"\
-	".\m_cluiframes.h"\
-	".\m_fontservice.h"\
-	".\m_metacontacts.h"\
 	".\rowheight_funcs.h"\
 	
 
 .\statusbar.c : \
+	"..\..\..\..\..\..\..\..\program files\microsoft platform sdk\include\basetsd.h"\
+	"..\..\..\..\..\..\..\..\program files\microsoft platform sdk\include\guiddef.h"\
+	"..\..\..\..\..\..\..\..\program files\microsoft platform sdk\include\propidl.h"\
+	"..\..\..\..\..\..\..\..\program files\microsoft platform sdk\include\reason.h"\
+	"..\..\..\..\..\..\..\..\program files\microsoft platform sdk\include\specstrings.h"\
+	"..\..\..\..\..\..\..\..\program files\microsoft platform sdk\include\stralign.h"\
+	"..\..\..\..\..\..\..\..\program files\microsoft platform sdk\include\tvout.h"\
+	"..\..\..\..\..\..\..\..\program files\microsoft platform sdk\include\uxtheme.h"\
+	"..\..\..\..\..\..\..\..\program files\microsoft platform sdk\include\winefs.h"\
 	"..\..\include\m_addcontact.h"\
 	"..\..\include\m_button.h"\
 	"..\..\include\m_clc.h"\
@@ -1125,7 +1365,6 @@
 	"..\..\include\m_file.h"\
 	"..\..\include\m_genmenu.h"\
 	"..\..\include\m_langpack.h"\
-	"..\..\include\m_message.h"\
 	"..\..\include\m_options.h"\
 	"..\..\include\m_plugins.h"\
 	"..\..\include\m_popup.h"\
@@ -1141,20 +1380,23 @@
 	".\clc.h"\
 	".\clist.h"\
 	".\CLUIFrames\cluiframes.h"\
-	".\commonheaders.h"\
 	".\extbackg.h"\
 	".\forkthread.h"\
-	".\icolib.h"\
 	".\m_avatars.h"\
 	".\m_cln_skinedit.h"\
 	".\m_clui.h"\
-	".\m_cluiframes.h"\
-	".\m_fontservice.h"\
-	".\m_metacontacts.h"\
 	".\rowheight_funcs.h"\
 	
 
 .\statusfloater.c : \
+	"..\..\..\..\..\..\..\..\program files\microsoft platform sdk\include\basetsd.h"\
+	"..\..\..\..\..\..\..\..\program files\microsoft platform sdk\include\guiddef.h"\
+	"..\..\..\..\..\..\..\..\program files\microsoft platform sdk\include\propidl.h"\
+	"..\..\..\..\..\..\..\..\program files\microsoft platform sdk\include\reason.h"\
+	"..\..\..\..\..\..\..\..\program files\microsoft platform sdk\include\specstrings.h"\
+	"..\..\..\..\..\..\..\..\program files\microsoft platform sdk\include\stralign.h"\
+	"..\..\..\..\..\..\..\..\program files\microsoft platform sdk\include\tvout.h"\
+	"..\..\..\..\..\..\..\..\program files\microsoft platform sdk\include\winefs.h"\
 	"..\..\include\m_addcontact.h"\
 	"..\..\include\m_button.h"\
 	"..\..\include\m_clc.h"\
@@ -1166,7 +1408,6 @@
 	"..\..\include\m_file.h"\
 	"..\..\include\m_genmenu.h"\
 	"..\..\include\m_langpack.h"\
-	"..\..\include\m_message.h"\
 	"..\..\include\m_options.h"\
 	"..\..\include\m_plugins.h"\
 	"..\..\include\m_popup.h"\
@@ -1181,20 +1422,24 @@
 	".\alphablend.h"\
 	".\clc.h"\
 	".\clist.h"\
-	".\commonheaders.h"\
 	".\extbackg.h"\
 	".\forkthread.h"\
-	".\icolib.h"\
 	".\m_avatars.h"\
 	".\m_cln_skinedit.h"\
 	".\m_clui.h"\
-	".\m_cluiframes.h"\
-	".\m_fontservice.h"\
-	".\m_metacontacts.h"\
 	".\rowheight_funcs.h"\
 	
 
 .\viewmodes.c : \
+	"..\..\..\..\..\..\..\..\program files\microsoft platform sdk\include\basetsd.h"\
+	"..\..\..\..\..\..\..\..\program files\microsoft platform sdk\include\guiddef.h"\
+	"..\..\..\..\..\..\..\..\program files\microsoft platform sdk\include\propidl.h"\
+	"..\..\..\..\..\..\..\..\program files\microsoft platform sdk\include\reason.h"\
+	"..\..\..\..\..\..\..\..\program files\microsoft platform sdk\include\specstrings.h"\
+	"..\..\..\..\..\..\..\..\program files\microsoft platform sdk\include\stralign.h"\
+	"..\..\..\..\..\..\..\..\program files\microsoft platform sdk\include\tvout.h"\
+	"..\..\..\..\..\..\..\..\program files\microsoft platform sdk\include\uxtheme.h"\
+	"..\..\..\..\..\..\..\..\program files\microsoft platform sdk\include\winefs.h"\
 	"..\..\include\m_addcontact.h"\
 	"..\..\include\m_button.h"\
 	"..\..\include\m_clc.h"\
@@ -1206,7 +1451,6 @@
 	"..\..\include\m_file.h"\
 	"..\..\include\m_genmenu.h"\
 	"..\..\include\m_langpack.h"\
-	"..\..\include\m_message.h"\
 	"..\..\include\m_options.h"\
 	"..\..\include\m_plugins.h"\
 	"..\..\include\m_popup.h"\
@@ -1222,21 +1466,24 @@
 	".\clc.h"\
 	".\clist.h"\
 	".\CLUIFrames\cluiframes.h"\
-	".\commonheaders.h"\
 	".\extbackg.h"\
 	".\forkthread.h"\
-	".\icolib.h"\
 	".\m_avatars.h"\
 	".\m_cln_skinedit.h"\
 	".\m_clui.h"\
-	".\m_cluiframes.h"\
-	".\m_fontservice.h"\
-	".\m_metacontacts.h"\
 	".\m_variables.h"\
 	".\rowheight_funcs.h"\
 	
 
 .\wallpaper.c : \
+	"..\..\..\..\..\..\..\..\program files\microsoft platform sdk\include\basetsd.h"\
+	"..\..\..\..\..\..\..\..\program files\microsoft platform sdk\include\guiddef.h"\
+	"..\..\..\..\..\..\..\..\program files\microsoft platform sdk\include\propidl.h"\
+	"..\..\..\..\..\..\..\..\program files\microsoft platform sdk\include\reason.h"\
+	"..\..\..\..\..\..\..\..\program files\microsoft platform sdk\include\specstrings.h"\
+	"..\..\..\..\..\..\..\..\program files\microsoft platform sdk\include\stralign.h"\
+	"..\..\..\..\..\..\..\..\program files\microsoft platform sdk\include\tvout.h"\
+	"..\..\..\..\..\..\..\..\program files\microsoft platform sdk\include\winefs.h"\
 	"..\..\include\m_addcontact.h"\
 	"..\..\include\m_button.h"\
 	"..\..\include\m_clc.h"\
@@ -1248,7 +1495,6 @@
 	"..\..\include\m_file.h"\
 	"..\..\include\m_genmenu.h"\
 	"..\..\include\m_langpack.h"\
-	"..\..\include\m_message.h"\
 	"..\..\include\m_options.h"\
 	"..\..\include\m_plugins.h"\
 	"..\..\include\m_popup.h"\
@@ -1263,22 +1509,16 @@
 	".\alphablend.h"\
 	".\clc.h"\
 	".\clist.h"\
-	".\commonheaders.h"\
 	".\extbackg.h"\
 	".\forkthread.h"\
-	".\icolib.h"\
 	".\m_avatars.h"\
 	".\m_cln_skinedit.h"\
 	".\m_clui.h"\
-	".\m_cluiframes.h"\
-	".\m_fontservice.h"\
-	".\m_metacontacts.h"\
 	".\rowheight_funcs.h"\
 	
 
 .\resource.rc : \
 	"..\..\include\statusmodes.h"\
-	".\res\addgoupp.ico"\
 	".\res\arrow-down.ico"\
 	".\res\blank.ico"\
 	".\res\connecting.ico"\
@@ -1301,15 +1541,13 @@
 	".\res\overlay\dnd.ico"\
 	".\res\overlay\invisible.ico"\
 	".\res\overlay\lunch.ico"\
-	".\res\overlay\na.ico"\
+	".\res\overlay\NA.ico"\
 	".\res\overlay\occupied.ico"\
 	".\res\overlay\offline.ico"\
 	".\res\overlay\online.ico"\
 	".\res\overlay\phone.ico"\
 	".\res\rename.ico"\
-	".\res\sendmail.ico"\
 	".\res\slist.ico"\
-	".\res\sms.ico"\
 	".\res\sounds_off.ico"\
 	".\res\sounds_on.ico"\
 	".\res\tabsrmm_menu.ico"\
