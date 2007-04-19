@@ -1,14 +1,6 @@
 # Microsoft Developer Studio Generated Dependency File, included by clist.mak
 
 .\CLUIFrames\cluiframes.c : \
-	"..\..\..\..\..\..\..\..\program files\microsoft platform sdk\include\basetsd.h"\
-	"..\..\..\..\..\..\..\..\program files\microsoft platform sdk\include\guiddef.h"\
-	"..\..\..\..\..\..\..\..\program files\microsoft platform sdk\include\propidl.h"\
-	"..\..\..\..\..\..\..\..\program files\microsoft platform sdk\include\reason.h"\
-	"..\..\..\..\..\..\..\..\program files\microsoft platform sdk\include\specstrings.h"\
-	"..\..\..\..\..\..\..\..\program files\microsoft platform sdk\include\stralign.h"\
-	"..\..\..\..\..\..\..\..\program files\microsoft platform sdk\include\tvout.h"\
-	"..\..\..\..\..\..\..\..\program files\microsoft platform sdk\include\winefs.h"\
 	"..\..\include\m_addcontact.h"\
 	"..\..\include\m_button.h"\
 	"..\..\include\m_clc.h"\
@@ -44,14 +36,6 @@
 	
 
 .\CLUIFrames\framesmenu.c : \
-	"..\..\..\..\..\..\..\..\program files\microsoft platform sdk\include\basetsd.h"\
-	"..\..\..\..\..\..\..\..\program files\microsoft platform sdk\include\guiddef.h"\
-	"..\..\..\..\..\..\..\..\program files\microsoft platform sdk\include\propidl.h"\
-	"..\..\..\..\..\..\..\..\program files\microsoft platform sdk\include\reason.h"\
-	"..\..\..\..\..\..\..\..\program files\microsoft platform sdk\include\specstrings.h"\
-	"..\..\..\..\..\..\..\..\program files\microsoft platform sdk\include\stralign.h"\
-	"..\..\..\..\..\..\..\..\program files\microsoft platform sdk\include\tvout.h"\
-	"..\..\..\..\..\..\..\..\program files\microsoft platform sdk\include\winefs.h"\
 	"..\..\include\m_addcontact.h"\
 	"..\..\include\m_button.h"\
 	"..\..\include\m_clc.h"\
@@ -87,14 +71,6 @@
 	
 
 .\CLUIFrames\groupmenu.c : \
-	"..\..\..\..\..\..\..\..\program files\microsoft platform sdk\include\basetsd.h"\
-	"..\..\..\..\..\..\..\..\program files\microsoft platform sdk\include\guiddef.h"\
-	"..\..\..\..\..\..\..\..\program files\microsoft platform sdk\include\propidl.h"\
-	"..\..\..\..\..\..\..\..\program files\microsoft platform sdk\include\reason.h"\
-	"..\..\..\..\..\..\..\..\program files\microsoft platform sdk\include\specstrings.h"\
-	"..\..\..\..\..\..\..\..\program files\microsoft platform sdk\include\stralign.h"\
-	"..\..\..\..\..\..\..\..\program files\microsoft platform sdk\include\tvout.h"\
-	"..\..\..\..\..\..\..\..\program files\microsoft platform sdk\include\winefs.h"\
 	"..\..\include\m_addcontact.h"\
 	"..\..\include\m_button.h"\
 	"..\..\include\m_clc.h"\
@@ -129,14 +105,6 @@
 	
 
 .\alphablend.c : \
-	"..\..\..\..\..\..\..\..\program files\microsoft platform sdk\include\basetsd.h"\
-	"..\..\..\..\..\..\..\..\program files\microsoft platform sdk\include\guiddef.h"\
-	"..\..\..\..\..\..\..\..\program files\microsoft platform sdk\include\propidl.h"\
-	"..\..\..\..\..\..\..\..\program files\microsoft platform sdk\include\reason.h"\
-	"..\..\..\..\..\..\..\..\program files\microsoft platform sdk\include\specstrings.h"\
-	"..\..\..\..\..\..\..\..\program files\microsoft platform sdk\include\stralign.h"\
-	"..\..\..\..\..\..\..\..\program files\microsoft platform sdk\include\tvout.h"\
-	"..\..\..\..\..\..\..\..\program files\microsoft platform sdk\include\winefs.h"\
 	"..\..\include\m_addcontact.h"\
 	"..\..\include\m_button.h"\
 	"..\..\include\m_clc.h"\
@@ -171,14 +139,6 @@
 	
 
 .\clc.c : \
-	"..\..\..\..\..\..\..\..\program files\microsoft platform sdk\include\basetsd.h"\
-	"..\..\..\..\..\..\..\..\program files\microsoft platform sdk\include\guiddef.h"\
-	"..\..\..\..\..\..\..\..\program files\microsoft platform sdk\include\propidl.h"\
-	"..\..\..\..\..\..\..\..\program files\microsoft platform sdk\include\reason.h"\
-	"..\..\..\..\..\..\..\..\program files\microsoft platform sdk\include\specstrings.h"\
-	"..\..\..\..\..\..\..\..\program files\microsoft platform sdk\include\stralign.h"\
-	"..\..\..\..\..\..\..\..\program files\microsoft platform sdk\include\tvout.h"\
-	"..\..\..\..\..\..\..\..\program files\microsoft platform sdk\include\winefs.h"\
 	"..\..\include\m_addcontact.h"\
 	"..\..\include\m_button.h"\
 	"..\..\include\m_clc.h"\
@@ -216,14 +176,6 @@
 	
 
 .\CLCButton.c : \
-	"..\..\..\..\..\..\..\..\program files\microsoft platform sdk\include\basetsd.h"\
-	"..\..\..\..\..\..\..\..\program files\microsoft platform sdk\include\guiddef.h"\
-	"..\..\..\..\..\..\..\..\program files\microsoft platform sdk\include\propidl.h"\
-	"..\..\..\..\..\..\..\..\program files\microsoft platform sdk\include\reason.h"\
-	"..\..\..\..\..\..\..\..\program files\microsoft platform sdk\include\specstrings.h"\
-	"..\..\..\..\..\..\..\..\program files\microsoft platform sdk\include\stralign.h"\
-	"..\..\..\..\..\..\..\..\program files\microsoft platform sdk\include\tvout.h"\
-	"..\..\..\..\..\..\..\..\program files\microsoft platform sdk\include\winefs.h"\
 	"..\..\include\m_addcontact.h"\
 	"..\..\include\m_button.h"\
 	"..\..\include\m_clc.h"\
@@ -258,14 +210,6 @@
 	
 
 .\clcidents.c : \
-	"..\..\..\..\..\..\..\..\program files\microsoft platform sdk\include\basetsd.h"\
-	"..\..\..\..\..\..\..\..\program files\microsoft platform sdk\include\guiddef.h"\
-	"..\..\..\..\..\..\..\..\program files\microsoft platform sdk\include\propidl.h"\
-	"..\..\..\..\..\..\..\..\program files\microsoft platform sdk\include\reason.h"\
-	"..\..\..\..\..\..\..\..\program files\microsoft platform sdk\include\specstrings.h"\
-	"..\..\..\..\..\..\..\..\program files\microsoft platform sdk\include\stralign.h"\
-	"..\..\..\..\..\..\..\..\program files\microsoft platform sdk\include\tvout.h"\
-	"..\..\..\..\..\..\..\..\program files\microsoft platform sdk\include\winefs.h"\
 	"..\..\include\m_addcontact.h"\
 	"..\..\include\m_button.h"\
 	"..\..\include\m_clc.h"\
@@ -300,14 +244,6 @@
 	
 
 .\clcitems.c : \
-	"..\..\..\..\..\..\..\..\program files\microsoft platform sdk\include\basetsd.h"\
-	"..\..\..\..\..\..\..\..\program files\microsoft platform sdk\include\guiddef.h"\
-	"..\..\..\..\..\..\..\..\program files\microsoft platform sdk\include\propidl.h"\
-	"..\..\..\..\..\..\..\..\program files\microsoft platform sdk\include\reason.h"\
-	"..\..\..\..\..\..\..\..\program files\microsoft platform sdk\include\specstrings.h"\
-	"..\..\..\..\..\..\..\..\program files\microsoft platform sdk\include\stralign.h"\
-	"..\..\..\..\..\..\..\..\program files\microsoft platform sdk\include\tvout.h"\
-	"..\..\..\..\..\..\..\..\program files\microsoft platform sdk\include\winefs.h"\
 	"..\..\include\m_addcontact.h"\
 	"..\..\include\m_button.h"\
 	"..\..\include\m_clc.h"\
@@ -343,14 +279,6 @@
 	
 
 .\clcmsgs.c : \
-	"..\..\..\..\..\..\..\..\program files\microsoft platform sdk\include\basetsd.h"\
-	"..\..\..\..\..\..\..\..\program files\microsoft platform sdk\include\guiddef.h"\
-	"..\..\..\..\..\..\..\..\program files\microsoft platform sdk\include\propidl.h"\
-	"..\..\..\..\..\..\..\..\program files\microsoft platform sdk\include\reason.h"\
-	"..\..\..\..\..\..\..\..\program files\microsoft platform sdk\include\specstrings.h"\
-	"..\..\..\..\..\..\..\..\program files\microsoft platform sdk\include\stralign.h"\
-	"..\..\..\..\..\..\..\..\program files\microsoft platform sdk\include\tvout.h"\
-	"..\..\..\..\..\..\..\..\program files\microsoft platform sdk\include\winefs.h"\
 	"..\..\include\m_addcontact.h"\
 	"..\..\include\m_button.h"\
 	"..\..\include\m_clc.h"\
@@ -385,15 +313,6 @@
 	
 
 .\clcopts.c : \
-	"..\..\..\..\..\..\..\..\program files\microsoft platform sdk\include\basetsd.h"\
-	"..\..\..\..\..\..\..\..\program files\microsoft platform sdk\include\guiddef.h"\
-	"..\..\..\..\..\..\..\..\program files\microsoft platform sdk\include\propidl.h"\
-	"..\..\..\..\..\..\..\..\program files\microsoft platform sdk\include\reason.h"\
-	"..\..\..\..\..\..\..\..\program files\microsoft platform sdk\include\specstrings.h"\
-	"..\..\..\..\..\..\..\..\program files\microsoft platform sdk\include\stralign.h"\
-	"..\..\..\..\..\..\..\..\program files\microsoft platform sdk\include\tvout.h"\
-	"..\..\..\..\..\..\..\..\program files\microsoft platform sdk\include\uxtheme.h"\
-	"..\..\..\..\..\..\..\..\program files\microsoft platform sdk\include\winefs.h"\
 	"..\..\include\m_addcontact.h"\
 	"..\..\include\m_button.h"\
 	"..\..\include\m_clc.h"\
@@ -429,14 +348,6 @@
 	
 
 .\clcpaint.c : \
-	"..\..\..\..\..\..\..\..\program files\microsoft platform sdk\include\basetsd.h"\
-	"..\..\..\..\..\..\..\..\program files\microsoft platform sdk\include\guiddef.h"\
-	"..\..\..\..\..\..\..\..\program files\microsoft platform sdk\include\propidl.h"\
-	"..\..\..\..\..\..\..\..\program files\microsoft platform sdk\include\reason.h"\
-	"..\..\..\..\..\..\..\..\program files\microsoft platform sdk\include\specstrings.h"\
-	"..\..\..\..\..\..\..\..\program files\microsoft platform sdk\include\stralign.h"\
-	"..\..\..\..\..\..\..\..\program files\microsoft platform sdk\include\tvout.h"\
-	"..\..\..\..\..\..\..\..\program files\microsoft platform sdk\include\winefs.h"\
 	"..\..\include\m_addcontact.h"\
 	"..\..\include\m_button.h"\
 	"..\..\include\m_clc.h"\
@@ -471,14 +382,6 @@
 	
 
 .\clcutils.c : \
-	"..\..\..\..\..\..\..\..\program files\microsoft platform sdk\include\basetsd.h"\
-	"..\..\..\..\..\..\..\..\program files\microsoft platform sdk\include\guiddef.h"\
-	"..\..\..\..\..\..\..\..\program files\microsoft platform sdk\include\propidl.h"\
-	"..\..\..\..\..\..\..\..\program files\microsoft platform sdk\include\reason.h"\
-	"..\..\..\..\..\..\..\..\program files\microsoft platform sdk\include\specstrings.h"\
-	"..\..\..\..\..\..\..\..\program files\microsoft platform sdk\include\stralign.h"\
-	"..\..\..\..\..\..\..\..\program files\microsoft platform sdk\include\tvout.h"\
-	"..\..\..\..\..\..\..\..\program files\microsoft platform sdk\include\winefs.h"\
 	"..\..\include\m_addcontact.h"\
 	"..\..\include\m_button.h"\
 	"..\..\include\m_clc.h"\
@@ -514,14 +417,6 @@
 	
 
 .\clistevents.c : \
-	"..\..\..\..\..\..\..\..\program files\microsoft platform sdk\include\basetsd.h"\
-	"..\..\..\..\..\..\..\..\program files\microsoft platform sdk\include\guiddef.h"\
-	"..\..\..\..\..\..\..\..\program files\microsoft platform sdk\include\propidl.h"\
-	"..\..\..\..\..\..\..\..\program files\microsoft platform sdk\include\reason.h"\
-	"..\..\..\..\..\..\..\..\program files\microsoft platform sdk\include\specstrings.h"\
-	"..\..\..\..\..\..\..\..\program files\microsoft platform sdk\include\stralign.h"\
-	"..\..\..\..\..\..\..\..\program files\microsoft platform sdk\include\tvout.h"\
-	"..\..\..\..\..\..\..\..\program files\microsoft platform sdk\include\winefs.h"\
 	"..\..\include\m_addcontact.h"\
 	"..\..\include\m_button.h"\
 	"..\..\include\m_clc.h"\
@@ -557,14 +452,6 @@
 	
 
 .\clistmenus.c : \
-	"..\..\..\..\..\..\..\..\program files\microsoft platform sdk\include\basetsd.h"\
-	"..\..\..\..\..\..\..\..\program files\microsoft platform sdk\include\guiddef.h"\
-	"..\..\..\..\..\..\..\..\program files\microsoft platform sdk\include\propidl.h"\
-	"..\..\..\..\..\..\..\..\program files\microsoft platform sdk\include\reason.h"\
-	"..\..\..\..\..\..\..\..\program files\microsoft platform sdk\include\specstrings.h"\
-	"..\..\..\..\..\..\..\..\program files\microsoft platform sdk\include\stralign.h"\
-	"..\..\..\..\..\..\..\..\program files\microsoft platform sdk\include\tvout.h"\
-	"..\..\..\..\..\..\..\..\program files\microsoft platform sdk\include\winefs.h"\
 	"..\..\include\m_addcontact.h"\
 	"..\..\include\m_button.h"\
 	"..\..\include\m_clc.h"\
@@ -601,14 +488,6 @@
 	
 
 .\clistmod.c : \
-	"..\..\..\..\..\..\..\..\program files\microsoft platform sdk\include\basetsd.h"\
-	"..\..\..\..\..\..\..\..\program files\microsoft platform sdk\include\guiddef.h"\
-	"..\..\..\..\..\..\..\..\program files\microsoft platform sdk\include\propidl.h"\
-	"..\..\..\..\..\..\..\..\program files\microsoft platform sdk\include\reason.h"\
-	"..\..\..\..\..\..\..\..\program files\microsoft platform sdk\include\specstrings.h"\
-	"..\..\..\..\..\..\..\..\program files\microsoft platform sdk\include\stralign.h"\
-	"..\..\..\..\..\..\..\..\program files\microsoft platform sdk\include\tvout.h"\
-	"..\..\..\..\..\..\..\..\program files\microsoft platform sdk\include\winefs.h"\
 	"..\..\include\m_addcontact.h"\
 	"..\..\include\m_button.h"\
 	"..\..\include\m_clc.h"\
@@ -643,14 +522,6 @@
 	
 
 .\clistopts.c : \
-	"..\..\..\..\..\..\..\..\program files\microsoft platform sdk\include\basetsd.h"\
-	"..\..\..\..\..\..\..\..\program files\microsoft platform sdk\include\guiddef.h"\
-	"..\..\..\..\..\..\..\..\program files\microsoft platform sdk\include\propidl.h"\
-	"..\..\..\..\..\..\..\..\program files\microsoft platform sdk\include\reason.h"\
-	"..\..\..\..\..\..\..\..\program files\microsoft platform sdk\include\specstrings.h"\
-	"..\..\..\..\..\..\..\..\program files\microsoft platform sdk\include\stralign.h"\
-	"..\..\..\..\..\..\..\..\program files\microsoft platform sdk\include\tvout.h"\
-	"..\..\..\..\..\..\..\..\program files\microsoft platform sdk\include\winefs.h"\
 	"..\..\include\m_addcontact.h"\
 	"..\..\include\m_button.h"\
 	"..\..\include\m_clc.h"\
@@ -685,14 +556,6 @@
 	
 
 .\clistsettings.c : \
-	"..\..\..\..\..\..\..\..\program files\microsoft platform sdk\include\basetsd.h"\
-	"..\..\..\..\..\..\..\..\program files\microsoft platform sdk\include\guiddef.h"\
-	"..\..\..\..\..\..\..\..\program files\microsoft platform sdk\include\propidl.h"\
-	"..\..\..\..\..\..\..\..\program files\microsoft platform sdk\include\reason.h"\
-	"..\..\..\..\..\..\..\..\program files\microsoft platform sdk\include\specstrings.h"\
-	"..\..\..\..\..\..\..\..\program files\microsoft platform sdk\include\stralign.h"\
-	"..\..\..\..\..\..\..\..\program files\microsoft platform sdk\include\tvout.h"\
-	"..\..\..\..\..\..\..\..\program files\microsoft platform sdk\include\winefs.h"\
 	"..\..\include\m_addcontact.h"\
 	"..\..\include\m_button.h"\
 	"..\..\include\m_clc.h"\
@@ -727,14 +590,6 @@
 	
 
 .\clisttray.c : \
-	"..\..\..\..\..\..\..\..\program files\microsoft platform sdk\include\basetsd.h"\
-	"..\..\..\..\..\..\..\..\program files\microsoft platform sdk\include\guiddef.h"\
-	"..\..\..\..\..\..\..\..\program files\microsoft platform sdk\include\propidl.h"\
-	"..\..\..\..\..\..\..\..\program files\microsoft platform sdk\include\reason.h"\
-	"..\..\..\..\..\..\..\..\program files\microsoft platform sdk\include\specstrings.h"\
-	"..\..\..\..\..\..\..\..\program files\microsoft platform sdk\include\stralign.h"\
-	"..\..\..\..\..\..\..\..\program files\microsoft platform sdk\include\tvout.h"\
-	"..\..\..\..\..\..\..\..\program files\microsoft platform sdk\include\winefs.h"\
 	"..\..\include\m_addcontact.h"\
 	"..\..\include\m_button.h"\
 	"..\..\include\m_clc.h"\
@@ -769,14 +624,6 @@
 	
 
 .\clui.c : \
-	"..\..\..\..\..\..\..\..\program files\microsoft platform sdk\include\basetsd.h"\
-	"..\..\..\..\..\..\..\..\program files\microsoft platform sdk\include\guiddef.h"\
-	"..\..\..\..\..\..\..\..\program files\microsoft platform sdk\include\propidl.h"\
-	"..\..\..\..\..\..\..\..\program files\microsoft platform sdk\include\reason.h"\
-	"..\..\..\..\..\..\..\..\program files\microsoft platform sdk\include\specstrings.h"\
-	"..\..\..\..\..\..\..\..\program files\microsoft platform sdk\include\stralign.h"\
-	"..\..\..\..\..\..\..\..\program files\microsoft platform sdk\include\tvout.h"\
-	"..\..\..\..\..\..\..\..\program files\microsoft platform sdk\include\winefs.h"\
 	"..\..\include\m_addcontact.h"\
 	"..\..\include\m_button.h"\
 	"..\..\include\m_clc.h"\
@@ -816,14 +663,6 @@
 	
 
 .\cluiopts.c : \
-	"..\..\..\..\..\..\..\..\program files\microsoft platform sdk\include\basetsd.h"\
-	"..\..\..\..\..\..\..\..\program files\microsoft platform sdk\include\guiddef.h"\
-	"..\..\..\..\..\..\..\..\program files\microsoft platform sdk\include\propidl.h"\
-	"..\..\..\..\..\..\..\..\program files\microsoft platform sdk\include\reason.h"\
-	"..\..\..\..\..\..\..\..\program files\microsoft platform sdk\include\specstrings.h"\
-	"..\..\..\..\..\..\..\..\program files\microsoft platform sdk\include\stralign.h"\
-	"..\..\..\..\..\..\..\..\program files\microsoft platform sdk\include\tvout.h"\
-	"..\..\..\..\..\..\..\..\program files\microsoft platform sdk\include\winefs.h"\
 	"..\..\include\m_addcontact.h"\
 	"..\..\include\m_button.h"\
 	"..\..\include\m_clc.h"\
@@ -858,14 +697,6 @@
 	
 
 .\cluiservices.c : \
-	"..\..\..\..\..\..\..\..\program files\microsoft platform sdk\include\basetsd.h"\
-	"..\..\..\..\..\..\..\..\program files\microsoft platform sdk\include\guiddef.h"\
-	"..\..\..\..\..\..\..\..\program files\microsoft platform sdk\include\propidl.h"\
-	"..\..\..\..\..\..\..\..\program files\microsoft platform sdk\include\reason.h"\
-	"..\..\..\..\..\..\..\..\program files\microsoft platform sdk\include\specstrings.h"\
-	"..\..\..\..\..\..\..\..\program files\microsoft platform sdk\include\stralign.h"\
-	"..\..\..\..\..\..\..\..\program files\microsoft platform sdk\include\tvout.h"\
-	"..\..\..\..\..\..\..\..\program files\microsoft platform sdk\include\winefs.h"\
 	"..\..\include\m_addcontact.h"\
 	"..\..\include\m_button.h"\
 	"..\..\include\m_clc.h"\
@@ -902,14 +733,6 @@
 	
 
 .\commonheaders.c : \
-	"..\..\..\..\..\..\..\..\program files\microsoft platform sdk\include\basetsd.h"\
-	"..\..\..\..\..\..\..\..\program files\microsoft platform sdk\include\guiddef.h"\
-	"..\..\..\..\..\..\..\..\program files\microsoft platform sdk\include\propidl.h"\
-	"..\..\..\..\..\..\..\..\program files\microsoft platform sdk\include\reason.h"\
-	"..\..\..\..\..\..\..\..\program files\microsoft platform sdk\include\specstrings.h"\
-	"..\..\..\..\..\..\..\..\program files\microsoft platform sdk\include\stralign.h"\
-	"..\..\..\..\..\..\..\..\program files\microsoft platform sdk\include\tvout.h"\
-	"..\..\..\..\..\..\..\..\program files\microsoft platform sdk\include\winefs.h"\
 	"..\..\include\m_addcontact.h"\
 	"..\..\include\m_button.h"\
 	"..\..\include\m_clc.h"\
@@ -950,14 +773,6 @@
 	
 
 .\contact.c : \
-	"..\..\..\..\..\..\..\..\program files\microsoft platform sdk\include\basetsd.h"\
-	"..\..\..\..\..\..\..\..\program files\microsoft platform sdk\include\guiddef.h"\
-	"..\..\..\..\..\..\..\..\program files\microsoft platform sdk\include\propidl.h"\
-	"..\..\..\..\..\..\..\..\program files\microsoft platform sdk\include\reason.h"\
-	"..\..\..\..\..\..\..\..\program files\microsoft platform sdk\include\specstrings.h"\
-	"..\..\..\..\..\..\..\..\program files\microsoft platform sdk\include\stralign.h"\
-	"..\..\..\..\..\..\..\..\program files\microsoft platform sdk\include\tvout.h"\
-	"..\..\..\..\..\..\..\..\program files\microsoft platform sdk\include\winefs.h"\
 	"..\..\include\m_addcontact.h"\
 	"..\..\include\m_button.h"\
 	"..\..\include\m_clc.h"\
@@ -992,40 +807,18 @@
 	
 
 .\coolsb\coolsblib.c : \
-	"..\..\..\..\..\..\..\..\program files\microsoft platform sdk\include\basetsd.h"\
-	"..\..\..\..\..\..\..\..\program files\microsoft platform sdk\include\guiddef.h"\
-	"..\..\..\..\..\..\..\..\program files\microsoft platform sdk\include\propidl.h"\
-	"..\..\..\..\..\..\..\..\program files\microsoft platform sdk\include\reason.h"\
-	"..\..\..\..\..\..\..\..\program files\microsoft platform sdk\include\specstrings.h"\
-	"..\..\..\..\..\..\..\..\program files\microsoft platform sdk\include\stralign.h"\
-	"..\..\..\..\..\..\..\..\program files\microsoft platform sdk\include\tvout.h"\
-	"..\..\..\..\..\..\..\..\program files\microsoft platform sdk\include\winefs.h"\
 	".\coolsb\coolsb_internal.h"\
 	".\coolsb\coolscroll.h"\
 	".\coolsb\userdefs.h"\
 	
 
 .\coolsb\coolscroll.c : \
-	"..\..\..\..\..\..\..\..\program files\microsoft platform sdk\include\basetsd.h"\
-	"..\..\..\..\..\..\..\..\program files\microsoft platform sdk\include\guiddef.h"\
-	"..\..\..\..\..\..\..\..\program files\microsoft platform sdk\include\reason.h"\
-	"..\..\..\..\..\..\..\..\program files\microsoft platform sdk\include\specstrings.h"\
-	"..\..\..\..\..\..\..\..\program files\microsoft platform sdk\include\stralign.h"\
-	"..\..\..\..\..\..\..\..\program files\microsoft platform sdk\include\tvout.h"\
 	".\coolsb\coolsb_internal.h"\
 	".\coolsb\coolscroll.h"\
 	".\coolsb\userdefs.h"\
 	
 
 .\Docking.c : \
-	"..\..\..\..\..\..\..\..\program files\microsoft platform sdk\include\basetsd.h"\
-	"..\..\..\..\..\..\..\..\program files\microsoft platform sdk\include\guiddef.h"\
-	"..\..\..\..\..\..\..\..\program files\microsoft platform sdk\include\propidl.h"\
-	"..\..\..\..\..\..\..\..\program files\microsoft platform sdk\include\reason.h"\
-	"..\..\..\..\..\..\..\..\program files\microsoft platform sdk\include\specstrings.h"\
-	"..\..\..\..\..\..\..\..\program files\microsoft platform sdk\include\stralign.h"\
-	"..\..\..\..\..\..\..\..\program files\microsoft platform sdk\include\tvout.h"\
-	"..\..\..\..\..\..\..\..\program files\microsoft platform sdk\include\winefs.h"\
 	"..\..\include\m_addcontact.h"\
 	"..\..\include\m_button.h"\
 	"..\..\include\m_clc.h"\
@@ -1060,15 +853,6 @@
 	
 
 .\extBackg.c : \
-	"..\..\..\..\..\..\..\..\program files\microsoft platform sdk\include\basetsd.h"\
-	"..\..\..\..\..\..\..\..\program files\microsoft platform sdk\include\guiddef.h"\
-	"..\..\..\..\..\..\..\..\program files\microsoft platform sdk\include\propidl.h"\
-	"..\..\..\..\..\..\..\..\program files\microsoft platform sdk\include\reason.h"\
-	"..\..\..\..\..\..\..\..\program files\microsoft platform sdk\include\specstrings.h"\
-	"..\..\..\..\..\..\..\..\program files\microsoft platform sdk\include\stralign.h"\
-	"..\..\..\..\..\..\..\..\program files\microsoft platform sdk\include\tvout.h"\
-	"..\..\..\..\..\..\..\..\program files\microsoft platform sdk\include\uxtheme.h"\
-	"..\..\..\..\..\..\..\..\program files\microsoft platform sdk\include\winefs.h"\
 	"..\..\include\m_addcontact.h"\
 	"..\..\include\m_button.h"\
 	"..\..\include\m_clc.h"\
@@ -1104,14 +888,6 @@
 	
 
 .\forkthread.c : \
-	"..\..\..\..\..\..\..\..\program files\microsoft platform sdk\include\basetsd.h"\
-	"..\..\..\..\..\..\..\..\program files\microsoft platform sdk\include\guiddef.h"\
-	"..\..\..\..\..\..\..\..\program files\microsoft platform sdk\include\propidl.h"\
-	"..\..\..\..\..\..\..\..\program files\microsoft platform sdk\include\reason.h"\
-	"..\..\..\..\..\..\..\..\program files\microsoft platform sdk\include\specstrings.h"\
-	"..\..\..\..\..\..\..\..\program files\microsoft platform sdk\include\stralign.h"\
-	"..\..\..\..\..\..\..\..\program files\microsoft platform sdk\include\tvout.h"\
-	"..\..\..\..\..\..\..\..\program files\microsoft platform sdk\include\winefs.h"\
 	"..\..\include\m_addcontact.h"\
 	"..\..\include\m_button.h"\
 	"..\..\include\m_clc.h"\
@@ -1146,46 +922,6 @@
 	
 
 .\gdiplus.cpp : \
-	"..\..\..\..\..\..\..\..\program files\microsoft platform sdk\include\basetsd.h"\
-	"..\..\..\..\..\..\..\..\program files\microsoft platform sdk\include\gdiplus.h"\
-	"..\..\..\..\..\..\..\..\program files\microsoft platform sdk\include\gdiplusbase.h"\
-	"..\..\..\..\..\..\..\..\program files\microsoft platform sdk\include\gdiplusbitmap.h"\
-	"..\..\..\..\..\..\..\..\program files\microsoft platform sdk\include\gdiplusbrush.h"\
-	"..\..\..\..\..\..\..\..\program files\microsoft platform sdk\include\gdipluscachedbitmap.h"\
-	"..\..\..\..\..\..\..\..\program files\microsoft platform sdk\include\gdipluscolor.h"\
-	"..\..\..\..\..\..\..\..\program files\microsoft platform sdk\include\gdipluscolormatrix.h"\
-	"..\..\..\..\..\..\..\..\program files\microsoft platform sdk\include\gdiplusenums.h"\
-	"..\..\..\..\..\..\..\..\program files\microsoft platform sdk\include\gdiplusflat.h"\
-	"..\..\..\..\..\..\..\..\program files\microsoft platform sdk\include\gdiplusfont.h"\
-	"..\..\..\..\..\..\..\..\program files\microsoft platform sdk\include\gdiplusfontcollection.h"\
-	"..\..\..\..\..\..\..\..\program files\microsoft platform sdk\include\gdiplusfontfamily.h"\
-	"..\..\..\..\..\..\..\..\program files\microsoft platform sdk\include\gdiplusgpstubs.h"\
-	"..\..\..\..\..\..\..\..\program files\microsoft platform sdk\include\gdiplusgraphics.h"\
-	"..\..\..\..\..\..\..\..\program files\microsoft platform sdk\include\gdiplusheaders.h"\
-	"..\..\..\..\..\..\..\..\program files\microsoft platform sdk\include\gdiplusimageattributes.h"\
-	"..\..\..\..\..\..\..\..\program files\microsoft platform sdk\include\gdiplusimagecodec.h"\
-	"..\..\..\..\..\..\..\..\program files\microsoft platform sdk\include\gdiplusimaging.h"\
-	"..\..\..\..\..\..\..\..\program files\microsoft platform sdk\include\gdiplusinit.h"\
-	"..\..\..\..\..\..\..\..\program files\microsoft platform sdk\include\gdipluslinecaps.h"\
-	"..\..\..\..\..\..\..\..\program files\microsoft platform sdk\include\gdiplusmatrix.h"\
-	"..\..\..\..\..\..\..\..\program files\microsoft platform sdk\include\gdiplusmem.h"\
-	"..\..\..\..\..\..\..\..\program files\microsoft platform sdk\include\gdiplusmetafile.h"\
-	"..\..\..\..\..\..\..\..\program files\microsoft platform sdk\include\gdiplusmetaheader.h"\
-	"..\..\..\..\..\..\..\..\program files\microsoft platform sdk\include\gdipluspath.h"\
-	"..\..\..\..\..\..\..\..\program files\microsoft platform sdk\include\gdipluspen.h"\
-	"..\..\..\..\..\..\..\..\program files\microsoft platform sdk\include\gdipluspixelformats.h"\
-	"..\..\..\..\..\..\..\..\program files\microsoft platform sdk\include\gdiplusregion.h"\
-	"..\..\..\..\..\..\..\..\program files\microsoft platform sdk\include\gdiplusstringformat.h"\
-	"..\..\..\..\..\..\..\..\program files\microsoft platform sdk\include\gdiplustypes.h"\
-	"..\..\..\..\..\..\..\..\program files\microsoft platform sdk\include\guiddef.h"\
-	"..\..\..\..\..\..\..\..\program files\microsoft platform sdk\include\propidl.h"\
-	"..\..\..\..\..\..\..\..\program files\microsoft platform sdk\include\reason.h"\
-	"..\..\..\..\..\..\..\..\program files\microsoft platform sdk\include\shobjidl.h"\
-	"..\..\..\..\..\..\..\..\program files\microsoft platform sdk\include\shtypes.h"\
-	"..\..\..\..\..\..\..\..\program files\microsoft platform sdk\include\specstrings.h"\
-	"..\..\..\..\..\..\..\..\program files\microsoft platform sdk\include\stralign.h"\
-	"..\..\..\..\..\..\..\..\program files\microsoft platform sdk\include\tvout.h"\
-	"..\..\..\..\..\..\..\..\program files\microsoft platform sdk\include\winefs.h"\
 	"..\..\include\m_addcontact.h"\
 	"..\..\include\m_button.h"\
 	"..\..\include\m_clc.h"\
@@ -1218,14 +954,6 @@
 	
 
 .\init.c : \
-	"..\..\..\..\..\..\..\..\program files\microsoft platform sdk\include\basetsd.h"\
-	"..\..\..\..\..\..\..\..\program files\microsoft platform sdk\include\guiddef.h"\
-	"..\..\..\..\..\..\..\..\program files\microsoft platform sdk\include\propidl.h"\
-	"..\..\..\..\..\..\..\..\program files\microsoft platform sdk\include\reason.h"\
-	"..\..\..\..\..\..\..\..\program files\microsoft platform sdk\include\specstrings.h"\
-	"..\..\..\..\..\..\..\..\program files\microsoft platform sdk\include\stralign.h"\
-	"..\..\..\..\..\..\..\..\program files\microsoft platform sdk\include\tvout.h"\
-	"..\..\..\..\..\..\..\..\program files\microsoft platform sdk\include\winefs.h"\
 	"..\..\include\m_addcontact.h"\
 	"..\..\include\m_button.h"\
 	"..\..\include\m_clc.h"\
@@ -1261,14 +989,6 @@
 	
 
 .\CLUIFrames\movetogroup.c : \
-	"..\..\..\..\..\..\..\..\program files\microsoft platform sdk\include\basetsd.h"\
-	"..\..\..\..\..\..\..\..\program files\microsoft platform sdk\include\guiddef.h"\
-	"..\..\..\..\..\..\..\..\program files\microsoft platform sdk\include\propidl.h"\
-	"..\..\..\..\..\..\..\..\program files\microsoft platform sdk\include\reason.h"\
-	"..\..\..\..\..\..\..\..\program files\microsoft platform sdk\include\specstrings.h"\
-	"..\..\..\..\..\..\..\..\program files\microsoft platform sdk\include\stralign.h"\
-	"..\..\..\..\..\..\..\..\program files\microsoft platform sdk\include\tvout.h"\
-	"..\..\..\..\..\..\..\..\program files\microsoft platform sdk\include\winefs.h"\
 	"..\..\include\m_addcontact.h"\
 	"..\..\include\m_button.h"\
 	"..\..\include\m_clc.h"\
@@ -1303,14 +1023,6 @@
 	
 
 .\rowheight_funcs.c : \
-	"..\..\..\..\..\..\..\..\program files\microsoft platform sdk\include\basetsd.h"\
-	"..\..\..\..\..\..\..\..\program files\microsoft platform sdk\include\guiddef.h"\
-	"..\..\..\..\..\..\..\..\program files\microsoft platform sdk\include\propidl.h"\
-	"..\..\..\..\..\..\..\..\program files\microsoft platform sdk\include\reason.h"\
-	"..\..\..\..\..\..\..\..\program files\microsoft platform sdk\include\specstrings.h"\
-	"..\..\..\..\..\..\..\..\program files\microsoft platform sdk\include\stralign.h"\
-	"..\..\..\..\..\..\..\..\program files\microsoft platform sdk\include\tvout.h"\
-	"..\..\..\..\..\..\..\..\program files\microsoft platform sdk\include\winefs.h"\
 	"..\..\include\m_addcontact.h"\
 	"..\..\include\m_button.h"\
 	"..\..\include\m_clc.h"\
@@ -1345,15 +1057,6 @@
 	
 
 .\statusbar.c : \
-	"..\..\..\..\..\..\..\..\program files\microsoft platform sdk\include\basetsd.h"\
-	"..\..\..\..\..\..\..\..\program files\microsoft platform sdk\include\guiddef.h"\
-	"..\..\..\..\..\..\..\..\program files\microsoft platform sdk\include\propidl.h"\
-	"..\..\..\..\..\..\..\..\program files\microsoft platform sdk\include\reason.h"\
-	"..\..\..\..\..\..\..\..\program files\microsoft platform sdk\include\specstrings.h"\
-	"..\..\..\..\..\..\..\..\program files\microsoft platform sdk\include\stralign.h"\
-	"..\..\..\..\..\..\..\..\program files\microsoft platform sdk\include\tvout.h"\
-	"..\..\..\..\..\..\..\..\program files\microsoft platform sdk\include\uxtheme.h"\
-	"..\..\..\..\..\..\..\..\program files\microsoft platform sdk\include\winefs.h"\
 	"..\..\include\m_addcontact.h"\
 	"..\..\include\m_button.h"\
 	"..\..\include\m_clc.h"\
@@ -1389,14 +1092,6 @@
 	
 
 .\statusfloater.c : \
-	"..\..\..\..\..\..\..\..\program files\microsoft platform sdk\include\basetsd.h"\
-	"..\..\..\..\..\..\..\..\program files\microsoft platform sdk\include\guiddef.h"\
-	"..\..\..\..\..\..\..\..\program files\microsoft platform sdk\include\propidl.h"\
-	"..\..\..\..\..\..\..\..\program files\microsoft platform sdk\include\reason.h"\
-	"..\..\..\..\..\..\..\..\program files\microsoft platform sdk\include\specstrings.h"\
-	"..\..\..\..\..\..\..\..\program files\microsoft platform sdk\include\stralign.h"\
-	"..\..\..\..\..\..\..\..\program files\microsoft platform sdk\include\tvout.h"\
-	"..\..\..\..\..\..\..\..\program files\microsoft platform sdk\include\winefs.h"\
 	"..\..\include\m_addcontact.h"\
 	"..\..\include\m_button.h"\
 	"..\..\include\m_clc.h"\
@@ -1431,15 +1126,6 @@
 	
 
 .\viewmodes.c : \
-	"..\..\..\..\..\..\..\..\program files\microsoft platform sdk\include\basetsd.h"\
-	"..\..\..\..\..\..\..\..\program files\microsoft platform sdk\include\guiddef.h"\
-	"..\..\..\..\..\..\..\..\program files\microsoft platform sdk\include\propidl.h"\
-	"..\..\..\..\..\..\..\..\program files\microsoft platform sdk\include\reason.h"\
-	"..\..\..\..\..\..\..\..\program files\microsoft platform sdk\include\specstrings.h"\
-	"..\..\..\..\..\..\..\..\program files\microsoft platform sdk\include\stralign.h"\
-	"..\..\..\..\..\..\..\..\program files\microsoft platform sdk\include\tvout.h"\
-	"..\..\..\..\..\..\..\..\program files\microsoft platform sdk\include\uxtheme.h"\
-	"..\..\..\..\..\..\..\..\program files\microsoft platform sdk\include\winefs.h"\
 	"..\..\include\m_addcontact.h"\
 	"..\..\include\m_button.h"\
 	"..\..\include\m_clc.h"\
@@ -1476,14 +1162,6 @@
 	
 
 .\wallpaper.c : \
-	"..\..\..\..\..\..\..\..\program files\microsoft platform sdk\include\basetsd.h"\
-	"..\..\..\..\..\..\..\..\program files\microsoft platform sdk\include\guiddef.h"\
-	"..\..\..\..\..\..\..\..\program files\microsoft platform sdk\include\propidl.h"\
-	"..\..\..\..\..\..\..\..\program files\microsoft platform sdk\include\reason.h"\
-	"..\..\..\..\..\..\..\..\program files\microsoft platform sdk\include\specstrings.h"\
-	"..\..\..\..\..\..\..\..\program files\microsoft platform sdk\include\stralign.h"\
-	"..\..\..\..\..\..\..\..\program files\microsoft platform sdk\include\tvout.h"\
-	"..\..\..\..\..\..\..\..\program files\microsoft platform sdk\include\winefs.h"\
 	"..\..\include\m_addcontact.h"\
 	"..\..\include\m_button.h"\
 	"..\..\include\m_clc.h"\
