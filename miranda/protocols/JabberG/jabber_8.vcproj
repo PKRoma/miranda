@@ -472,6 +472,10 @@
 				</FileConfiguration>
 			</File>
 			<File
+				RelativePath=".\jabber_adhoc.cpp"
+				>
+			</File>
+			<File
 				RelativePath="jabber_agent.cpp"
 				>
 				<FileConfiguration
