@@ -1,33 +1,29 @@
 # Microsoft Developer Studio Generated NMAKE File, Based on png2dib.dsp
 !IF "$(CFG)" == ""
-CFG=png2dib - Win32 Release
-!MESSAGE No configuration specified. Defaulting to png2dib - Win32 Release.
-!ENDIF
+CFG=png2dib - Win32 Debug
+!MESSAGE No configuration specified. Defaulting to png2dib - Win32 Debug.
+!ENDIF 
 
 !IF "$(CFG)" != "png2dib - Win32 Release" && "$(CFG)" != "png2dib - Win32 Debug"
 !MESSAGE Invalid configuration "$(CFG)" specified.
 !MESSAGE You can specify a configuration when running NMAKE
 !MESSAGE by defining the macro CFG on the command line. For example:
-!MESSAGE
+!MESSAGE 
 !MESSAGE NMAKE /f "png2dib.mak" CFG="png2dib - Win32 Debug"
-!MESSAGE
+!MESSAGE 
 !MESSAGE Possible choices for configuration are:
-!MESSAGE
+!MESSAGE 
 !MESSAGE "png2dib - Win32 Release" (based on "Win32 (x86) Dynamic-Link Library")
 !MESSAGE "png2dib - Win32 Debug" (based on "Win32 (x86) Dynamic-Link Library")
-!MESSAGE
+!MESSAGE 
 !ERROR An invalid configuration is specified.
-!ENDIF
+!ENDIF 
 
 !IF "$(OS)" == "Windows_NT"
 NULL=
-!ELSE
+!ELSE 
 NULL=nul
-!ENDIF
-
-CPP=cl.exe
-MTL=midl.exe
-RSC=rc.exe
+!ENDIF 
 
 !IF  "$(CFG)" == "png2dib - Win32 Release"
 
@@ -77,15 +73,49 @@ CLEAN :
 "$(OUTDIR)" :
     if not exist "$(OUTDIR)/$(NULL)" mkdir "$(OUTDIR)"
 
-CPP_PROJ=/nologo /MD /W3 /GX /Zi /O1 /I "../../include" /D "NDEBUG" /D "WIN32" /D "_WINDOWS" /D "_MBCS" /D "_USRDLL" /D "NO_GZIP" /D "PNG_NO_STDIO" /D "PNG_NO_CONSOLE_IO" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /FD /c
-MTL_PROJ=/nologo /D "NDEBUG" /mktyplib203 /win32
-RSC_PROJ=/l 0x419 /fo"$(INTDIR)\version.res" /d "NDEBUG"
-BSC32=bscmake.exe
-BSC32_FLAGS=/nologo /o"$(OUTDIR)\png2dib.bsc"
-BSC32_SBRS= \
+CPP=cl.exe
+CPP_PROJ=/nologo /MD /W3 /GX /Zi /O1 /I "../../include" /D "NDEBUG" /D "WIN32" /D "_WINDOWS" /D "_MBCS" /D "_USRDLL" /D "NO_GZIP" /D "PNG_NO_STDIO" /D "PNG_NO_CONSOLE_IO" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /FD /c 
 
+.c{$(INTDIR)}.obj::
+   $(CPP) @<<
+   $(CPP_PROJ) $< 
+<<
+
+.cpp{$(INTDIR)}.obj::
+   $(CPP) @<<
+   $(CPP_PROJ) $< 
+<<
+
+.cxx{$(INTDIR)}.obj::
+   $(CPP) @<<
+   $(CPP_PROJ) $< 
+<<
+
+.c{$(INTDIR)}.sbr::
+   $(CPP) @<<
+   $(CPP_PROJ) $< 
+<<
+
+.cpp{$(INTDIR)}.sbr::
+   $(CPP) @<<
+   $(CPP_PROJ) $< 
+<<
+
+.cxx{$(INTDIR)}.sbr::
+   $(CPP) @<<
+   $(CPP_PROJ) $< 
+<<
+
+MTL=midl.exe
+MTL_PROJ=/nologo /D "NDEBUG" /mktyplib203 /win32 
+RSC=rc.exe
+RSC_PROJ=/l 0x419 /fo"$(INTDIR)\version.res" /d "NDEBUG" 
+BSC32=bscmake.exe
+BSC32_FLAGS=/nologo /o"$(OUTDIR)\png2dib.bsc" 
+BSC32_SBRS= \
+	
 LINK32=link.exe
-LINK32_FLAGS=kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /nologo /dll /incremental:no /pdb:"$(OUTDIR)\png2dib.pdb" /map:"$(INTDIR)\png2dib.map" /debug /machine:I386 /def:".\png2dib.def" /out:"../../bin/Release/Plugins/png2dib.dll" /implib:"$(OUTDIR)\png2dib.lib" /filealign:512
+LINK32_FLAGS=kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /nologo /dll /incremental:no /pdb:"$(OUTDIR)\png2dib.pdb" /map:"$(INTDIR)\png2dib.map" /debug /machine:I386 /def:".\png2dib.def" /out:"../../bin/Release/Plugins/png2dib.dll" /implib:"$(OUTDIR)\png2dib.lib" /filealign:512 
 DEF_FILE= \
 	".\png2dib.def"
 LINK32_OBJS= \
@@ -202,11 +232,45 @@ CLEAN :
 "$(OUTDIR)" :
     if not exist "$(OUTDIR)/$(NULL)" mkdir "$(OUTDIR)"
 
-CPP_PROJ=/nologo /MDd /W3 /Gm /GX /ZI /Od /I "../../include" /D "_DEBUG" /D "WIN32" /D "_WINDOWS" /D "_MBCS" /D "_USRDLL" /D "NO_GZIP" /D "PNG_NO_STDIO" /D "PNG_NO_CONSOLE_IO" /FR"$(INTDIR)\\" /Fp"$(INTDIR)\png2dib.pch" /YX /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /FD /GZ /c
-MTL_PROJ=/nologo /D "_DEBUG" /mktyplib203 /win32
-RSC_PROJ=/l 0x419 /fo"$(INTDIR)\version.res" /d "_DEBUG"
+CPP=cl.exe
+CPP_PROJ=/nologo /MDd /W3 /Gm /GX /ZI /Od /I "../../include" /D "_DEBUG" /D "WIN32" /D "_WINDOWS" /D "_MBCS" /D "_USRDLL" /D "NO_GZIP" /D "PNG_NO_STDIO" /D "PNG_NO_CONSOLE_IO" /FR"$(INTDIR)\\" /Fp"$(INTDIR)\png2dib.pch" /YX /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /FD /GZ /c 
+
+.c{$(INTDIR)}.obj::
+   $(CPP) @<<
+   $(CPP_PROJ) $< 
+<<
+
+.cpp{$(INTDIR)}.obj::
+   $(CPP) @<<
+   $(CPP_PROJ) $< 
+<<
+
+.cxx{$(INTDIR)}.obj::
+   $(CPP) @<<
+   $(CPP_PROJ) $< 
+<<
+
+.c{$(INTDIR)}.sbr::
+   $(CPP) @<<
+   $(CPP_PROJ) $< 
+<<
+
+.cpp{$(INTDIR)}.sbr::
+   $(CPP) @<<
+   $(CPP_PROJ) $< 
+<<
+
+.cxx{$(INTDIR)}.sbr::
+   $(CPP) @<<
+   $(CPP_PROJ) $< 
+<<
+
+MTL=midl.exe
+MTL_PROJ=/nologo /D "_DEBUG" /mktyplib203 /win32 
+RSC=rc.exe
+RSC_PROJ=/l 0x419 /fo"$(INTDIR)\version.res" /d "_DEBUG" 
 BSC32=bscmake.exe
-BSC32_FLAGS=/nologo /o"$(OUTDIR)\png2dib.bsc"
+BSC32_FLAGS=/nologo /o"$(OUTDIR)\png2dib.bsc" 
 BSC32_SBRS= \
 	"$(INTDIR)\adler32.sbr" \
 	"$(INTDIR)\compress.sbr" \
@@ -242,7 +306,7 @@ BSC32_SBRS= \
 <<
 
 LINK32=link.exe
-LINK32_FLAGS=kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /nologo /dll /incremental:yes /pdb:"$(OUTDIR)\png2dib.pdb" /debug /machine:I386 /def:".\png2dib.def" /out:"../../bin/Debug/plugins/png2dib.dll" /implib:"$(OUTDIR)\png2dib.lib" /pdbtype:sept
+LINK32_FLAGS=kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /nologo /dll /incremental:yes /pdb:"$(OUTDIR)\png2dib.pdb" /debug /machine:I386 /def:".\png2dib.def" /out:"../../bin/Debug/plugins/png2dib.dll" /implib:"$(OUTDIR)\png2dib.lib" /pdbtype:sept 
 DEF_FILE= \
 	".\png2dib.def"
 LINK32_OBJS= \
@@ -280,46 +344,16 @@ LINK32_OBJS= \
   $(LINK32_FLAGS) $(LINK32_OBJS)
 <<
 
-!ENDIF
-
-.c{$(INTDIR)}.obj::
-   $(CPP) @<<
-   $(CPP_PROJ) $<
-<<
-
-.cpp{$(INTDIR)}.obj::
-   $(CPP) @<<
-   $(CPP_PROJ) $<
-<<
-
-.cxx{$(INTDIR)}.obj::
-   $(CPP) @<<
-   $(CPP_PROJ) $<
-<<
-
-.c{$(INTDIR)}.sbr::
-   $(CPP) @<<
-   $(CPP_PROJ) $<
-<<
-
-.cpp{$(INTDIR)}.sbr::
-   $(CPP) @<<
-   $(CPP_PROJ) $<
-<<
-
-.cxx{$(INTDIR)}.sbr::
-   $(CPP) @<<
-   $(CPP_PROJ) $<
-<<
+!ENDIF 
 
 
 !IF "$(NO_EXTERNAL_DEPS)" != "1"
 !IF EXISTS("png2dib.dep")
 !INCLUDE "png2dib.dep"
-!ELSE
+!ELSE 
 !MESSAGE Warning: cannot find "png2dib.dep"
-!ENDIF
-!ENDIF
+!ENDIF 
+!ENDIF 
 
 
 !IF "$(CFG)" == "png2dib - Win32 Release" || "$(CFG)" == "png2dib - Win32 Debug"
@@ -339,7 +373,7 @@ SOURCE=.\zlib\adler32.c
 	$(CPP) $(CPP_PROJ) $(SOURCE)
 
 
-!ENDIF
+!ENDIF 
 
 SOURCE=.\zlib\compress.c
 
@@ -357,7 +391,7 @@ SOURCE=.\zlib\compress.c
 	$(CPP) $(CPP_PROJ) $(SOURCE)
 
 
-!ENDIF
+!ENDIF 
 
 SOURCE=.\zlib\crc32.c
 
@@ -375,7 +409,7 @@ SOURCE=.\zlib\crc32.c
 	$(CPP) $(CPP_PROJ) $(SOURCE)
 
 
-!ENDIF
+!ENDIF 
 
 SOURCE=.\zlib\deflate.c
 
@@ -393,7 +427,7 @@ SOURCE=.\zlib\deflate.c
 	$(CPP) $(CPP_PROJ) $(SOURCE)
 
 
-!ENDIF
+!ENDIF 
 
 SOURCE=.\zlib\inffast.c
 
@@ -411,7 +445,7 @@ SOURCE=.\zlib\inffast.c
 	$(CPP) $(CPP_PROJ) $(SOURCE)
 
 
-!ENDIF
+!ENDIF 
 
 SOURCE=.\zlib\inflate.c
 
@@ -429,7 +463,7 @@ SOURCE=.\zlib\inflate.c
 	$(CPP) $(CPP_PROJ) $(SOURCE)
 
 
-!ENDIF
+!ENDIF 
 
 SOURCE=.\zlib\inftrees.c
 
@@ -447,7 +481,7 @@ SOURCE=.\zlib\inftrees.c
 	$(CPP) $(CPP_PROJ) $(SOURCE)
 
 
-!ENDIF
+!ENDIF 
 
 SOURCE=.\zlib\trees.c
 
@@ -465,7 +499,7 @@ SOURCE=.\zlib\trees.c
 	$(CPP) $(CPP_PROJ) $(SOURCE)
 
 
-!ENDIF
+!ENDIF 
 
 SOURCE=.\zlib\uncompr.c
 
@@ -483,7 +517,7 @@ SOURCE=.\zlib\uncompr.c
 	$(CPP) $(CPP_PROJ) $(SOURCE)
 
 
-!ENDIF
+!ENDIF 
 
 SOURCE=.\zlib\zutil.c
 
@@ -501,7 +535,7 @@ SOURCE=.\zlib\zutil.c
 	$(CPP) $(CPP_PROJ) $(SOURCE)
 
 
-!ENDIF
+!ENDIF 
 
 SOURCE=.\libpng\png.c
 
@@ -519,7 +553,7 @@ SOURCE=.\libpng\png.c
 	$(CPP) $(CPP_PROJ) $(SOURCE)
 
 
-!ENDIF
+!ENDIF 
 
 SOURCE=.\libpng\pnggccrd.c
 
@@ -537,7 +571,7 @@ SOURCE=.\libpng\pnggccrd.c
 	$(CPP) $(CPP_PROJ) $(SOURCE)
 
 
-!ENDIF
+!ENDIF 
 
 SOURCE=.\libpng\pngget.c
 
@@ -555,7 +589,7 @@ SOURCE=.\libpng\pngget.c
 	$(CPP) $(CPP_PROJ) $(SOURCE)
 
 
-!ENDIF
+!ENDIF 
 
 SOURCE=.\libpng\pngmem.c
 
@@ -573,7 +607,7 @@ SOURCE=.\libpng\pngmem.c
 	$(CPP) $(CPP_PROJ) $(SOURCE)
 
 
-!ENDIF
+!ENDIF 
 
 SOURCE=.\libpng\pngpread.c
 
@@ -591,7 +625,7 @@ SOURCE=.\libpng\pngpread.c
 	$(CPP) $(CPP_PROJ) $(SOURCE)
 
 
-!ENDIF
+!ENDIF 
 
 SOURCE=.\libpng\pngread.c
 
@@ -609,7 +643,7 @@ SOURCE=.\libpng\pngread.c
 	$(CPP) $(CPP_PROJ) $(SOURCE)
 
 
-!ENDIF
+!ENDIF 
 
 SOURCE=.\libpng\pngrio.c
 
@@ -627,7 +661,7 @@ SOURCE=.\libpng\pngrio.c
 	$(CPP) $(CPP_PROJ) $(SOURCE)
 
 
-!ENDIF
+!ENDIF 
 
 SOURCE=.\libpng\pngrtran.c
 
@@ -645,7 +679,7 @@ SOURCE=.\libpng\pngrtran.c
 	$(CPP) $(CPP_PROJ) $(SOURCE)
 
 
-!ENDIF
+!ENDIF 
 
 SOURCE=.\libpng\pngrutil.c
 
@@ -663,7 +697,7 @@ SOURCE=.\libpng\pngrutil.c
 	$(CPP) $(CPP_PROJ) $(SOURCE)
 
 
-!ENDIF
+!ENDIF 
 
 SOURCE=.\libpng\pngset.c
 
@@ -681,7 +715,7 @@ SOURCE=.\libpng\pngset.c
 	$(CPP) $(CPP_PROJ) $(SOURCE)
 
 
-!ENDIF
+!ENDIF 
 
 SOURCE=.\libpng\pngtrans.c
 
@@ -699,7 +733,7 @@ SOURCE=.\libpng\pngtrans.c
 	$(CPP) $(CPP_PROJ) $(SOURCE)
 
 
-!ENDIF
+!ENDIF 
 
 SOURCE=.\libpng\pngvcrd.c
 
@@ -717,7 +751,7 @@ SOURCE=.\libpng\pngvcrd.c
 	$(CPP) $(CPP_PROJ) $(SOURCE)
 
 
-!ENDIF
+!ENDIF 
 
 SOURCE=.\libpng\pngwio.c
 
@@ -735,7 +769,7 @@ SOURCE=.\libpng\pngwio.c
 	$(CPP) $(CPP_PROJ) $(SOURCE)
 
 
-!ENDIF
+!ENDIF 
 
 SOURCE=.\libpng\pngwrite.c
 
@@ -753,7 +787,7 @@ SOURCE=.\libpng\pngwrite.c
 	$(CPP) $(CPP_PROJ) $(SOURCE)
 
 
-!ENDIF
+!ENDIF 
 
 SOURCE=.\libpng\pngwtran.c
 
@@ -771,7 +805,7 @@ SOURCE=.\libpng\pngwtran.c
 	$(CPP) $(CPP_PROJ) $(SOURCE)
 
 
-!ENDIF
+!ENDIF 
 
 SOURCE=.\libpng\pngwutil.c
 
@@ -789,7 +823,7 @@ SOURCE=.\libpng\pngwutil.c
 	$(CPP) $(CPP_PROJ) $(SOURCE)
 
 
-!ENDIF
+!ENDIF 
 
 SOURCE=.\png2dib.c
 
@@ -805,7 +839,7 @@ SOURCE=.\png2dib.c
 "$(INTDIR)\png2dib.obj"	"$(INTDIR)\png2dib.sbr" : $(SOURCE) "$(INTDIR)"
 
 
-!ENDIF
+!ENDIF 
 
 SOURCE=.\version.rc
 
@@ -814,4 +848,5 @@ SOURCE=.\version.rc
 
 
 
-!ENDIF
+!ENDIF 
+
