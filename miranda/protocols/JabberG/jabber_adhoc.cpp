@@ -422,6 +422,11 @@ static BOOL CALLBACK JabberAdHoc_CommandDlgProc( HWND hwndDlg, UINT msg, WPARAM 
 					command->addChild(dataNode);
 					JabberIqAdd( iqId, IQ_PROC_EXECCOMMANDS, JabberIqResult_CommandExecution );
 					jabberThreadInfo->send( iq );
+					SetWindowText(GetDlgItem(hwndDlg,IDC_INSTRUCTION),TranslateT("In progress. Please Wait..."));
+					EnableWindow(GetDlgItem(hwndDlg,IDC_SUBMIT),FALSE);
+					EnableWindow(GetDlgItem(hwndDlg,IDC_PREV), FALSE);
+					EnableWindow(GetDlgItem(hwndDlg,IDC_NEXT), FALSE);
+					EnableWindow(GetDlgItem(hwndDlg,IDC_COMPLETE), FALSE);
 					return TRUE;
 				}
 			case IDCLOSE:
