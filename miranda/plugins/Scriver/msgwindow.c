@@ -918,7 +918,7 @@ BOOL CALLBACK DlgProcParentWindow(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM 
 					}
 					ShowWindow(hwndDlg, SW_SHOWMINNOACTIVE);
 				} else {
-					ShowWindow(hwndDlg, SW_SHOWNA);
+					//ShowWindow(hwndDlg, SW_SHOWNA);
 				}
 				if (dat->childrenCount == 1 ||
 					((g_dat->flags2 & SMF2_SWITCHTOACTIVE) && (IsIconic(hwndDlg) || GetForegroundWindow() != hwndDlg))) {
