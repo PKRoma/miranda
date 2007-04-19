@@ -1345,8 +1345,8 @@ nodisplay:
 
 			rcContent.top += (fontHeight - 1);
 			hPreviousFont = ChangeToFont(hdcMem, dat, FONTID_STATUS, &statusFontHeight);
-			if(selected)
-				SetTextColor(hdcMem, dat->selTextColour);
+			//if(selected)
+			//	SetTextColor(hdcMem, dat->selTextColour);
 			rcContent.bottom = y + rowHeight;
 
 			if(cstatus >= ID_STATUS_OFFLINE && cstatus <= ID_STATUS_OUTTOLUNCH) {
@@ -1641,13 +1641,15 @@ void PaintClc(HWND hwnd, struct ClcData *dat, HDC hdc, RECT *rcPaint)
 bgdone:
 	group = &dat->list;
 	group->scanIndex = 0;
-	indent = 0;
 
 	if(g_gdiPlus)
 		CreateG(hdcMem);
 
 	if ( dat->row_heights == NULL )
 		RowHeights_CalcRowHeights(dat, hwnd);
+
+    group = &dat->list;
+    group->scanIndex = 0;
 
     g_list_avatars = 0;
     while(TRUE)
@@ -1663,7 +1665,7 @@ bgdone:
         if(group->cl.items[group->scanIndex]->cFlags & ECF_AVATAR)
             g_list_avatars++;
 
-        if(group->cl.items[group->scanIndex]->type==CLCIT_GROUP && /*!IsBadCodePtr((FARPROC)group->cl.items[group->scanIndex]->group) && */ (group->cl.items[group->scanIndex]->group->expanded & 0x0000ffff)) {
+        if (group->cl.items[group->scanIndex]->type == CLCIT_GROUP && (group->cl.items[group->scanIndex]->group->expanded)) {
             group=group->cl.items[group->scanIndex]->group;
             group->scanIndex=0;
             continue;
@@ -1674,6 +1676,7 @@ bgdone:
 
     group = &dat->list;
     group->scanIndex = 0;
+    indent = 0;
 
     for (index = 0; y< rcPaint->bottom;) {
 		if (group->scanIndex == group->cl.count) {

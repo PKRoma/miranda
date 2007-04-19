@@ -3440,12 +3440,14 @@ int CLUIFrameSetFloat(WPARAM wParam,LPARAM lParam)
     return 0;
 }
 
+TCHAR g_ptszEventName[100];
 
 static int CLUIFrameOnModulesLoad(WPARAM wParam,LPARAM lParam)
 {
     DWORD dwThreadID;
 
-    g_hEventThread = CreateEvent(NULL, TRUE, FALSE, _T("mf_update_evt"));
+    mir_sntprintf(g_ptszEventName, SIZEOF(g_ptszEventName), _T("mf_update_evt_%d"), GetCurrentThreadId());
+    g_hEventThread = CreateEvent(NULL, TRUE, FALSE, g_ptszEventName);
     hThreadMFUpdate = CreateThread(NULL, 16000, MF_UpdateThread, 0, 0, &dwThreadID);
     SetThreadPriority(hThreadMFUpdate, THREAD_PRIORITY_IDLE);
     CLUIFramesLoadMainMenu(0,0);

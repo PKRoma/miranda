@@ -144,13 +144,12 @@ END
 IDD_OPT_DSPPROFILES DIALOGEX 0, 0, 312, 247
 STYLE DS_FIXEDSYS | WS_CHILD | WS_VISIBLE
 EXSTYLE WS_EX_CONTROLPARENT
-FONT 8, "MS Shell Dlg", 400, 0, 0x1
+FONT 8, "MS Shell Dlg"
 BEGIN
     GROUPBOX        "Profiles",IDC_STATIC,0,0,79,246
     LISTBOX         IDC_PROFILELIST,5,11,68,144,LBS_SORT | 
-                    LBS_NOINTEGRALHEIGHT | WS_DISABLED | WS_VSCROLL | 
-                    WS_TABSTOP
-    CONTROL         "",IDC_DSP_ADD,"CLCButtonClass",WS_DISABLED | WS_TABSTOP,
+                    LBS_NOINTEGRALHEIGHT | WS_VSCROLL | WS_TABSTOP
+    CONTROL         "",IDC_DSP_ADD,"CLCButtonClass",WS_TABSTOP,
                     6,161,68,15,0x18000000L
     CONTROL         "",IDC_DSP_DELETE,"CLCButtonClass",WS_DISABLED | 
                     WS_TABSTOP,6,180,68,15,0x18000000L
@@ -158,7 +157,7 @@ BEGIN
                     WS_TABSTOP,6,200,68,15,0x18000000L
     CONTROL         "",IDC_OPTIONSTAB,"SysTabControl32",WS_TABSTOP,81,1,230,
                     222
-    CONTROL         "",IDC_DSP_APPLY,"CLCButtonClass",WS_DISABLED | 
+    CONTROL         "",IDC_DSP_APPLY,"CLCButtonClass",
                     WS_TABSTOP,218,229,89,15,0x18000000L
 END
 
@@ -1007,61 +1006,6 @@ BEGIN
     END
 END
 
-
-#ifndef APSTUDIO_INVOKED
-VS_VERSION_INFO VERSIONINFO
- FILEVERSION 0,7,2,0
- PRODUCTVERSION 0,7,2,0
- FILEFLAGSMASK 0x3fL
-#ifdef _DEBUG
- FILEFLAGS 0x21L
-#else
- FILEFLAGS 0x20L
-#endif
- FILEOS 0x40004L
- FILETYPE 0x1L
- FILESUBTYPE 0x0L
-BEGIN
-    BLOCK "StringFileInfo"
-#if defined(UNICODE)    
-    BEGIN
-        BLOCK "000004b0"
-        BEGIN
-            VALUE "Comments", "Licensed under the terms of the GNU General Public License"
-            VALUE "CompanyName", "Copyright © 2000-2004 Richard Hughes, Roland Rabien, Tristan Van de Vreede, Martin Öberg, Robert Rainwater, Sam Kothari and Lyon Lim and others."
-            VALUE "FileDescription", "Clist Nicer+ (UNICODE)"
-            VALUE "FileVersion", "0.7.2.0"
-            VALUE "InternalName", "clist_nicer+ (UNICODE)"
-            VALUE "LegalCopyright", "Copyright © 2000-2006 The Miranda IM project members."
-            VALUE "OriginalFilename", "clist_nicer.dll"
-            VALUE "ProductName", "Miranda IM Contact List"
-            VALUE "ProductVersion", "0.7.2.0"
-            VALUE "SpecialBuild", "11"
-        END
-    END
-#else
-    BEGIN
-        BLOCK "000004b0"
-        BEGIN
-            VALUE "Comments", "Licensed under the terms of the GNU General Public License"
-            VALUE "CompanyName", "Copyright © 2000-2004 Richard Hughes, Roland Rabien, Tristan Van de Vreede, Martin Öberg, Robert Rainwater, Sam Kothari and Lyon Lim and others."
-            VALUE "FileDescription", "Clist Nicer+ (ANSI)"
-            VALUE "FileVersion", "0.7.2.0"
-            VALUE "InternalName", "clist_nicer+ (ANSI)"
-            VALUE "LegalCopyright", "Copyright © 2000-2006 The Miranda IM project members."
-            VALUE "OriginalFilename", "clist_nicer.dll"
-            VALUE "ProductName", "Miranda IM Contact List"
-            VALUE "ProductVersion", "0.7.2.0"
-            VALUE "SpecialBuild", "11"
-        END
-    END
-#endif    
-    BLOCK "VarFileInfo"
-    BEGIN
-        VALUE "Translation", 0x0, 1200
-    END
-END
-#endif
 
 /////////////////////////////////////////////////////////////////////////////
 //

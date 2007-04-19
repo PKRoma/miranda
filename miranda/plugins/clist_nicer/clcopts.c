@@ -124,7 +124,7 @@ static DWORD MakeCheckBoxTreeFlags(HWND hwndTree)
  */
 
 /*
-int CLVM_EnumProc(const char *szSetting, LPARAM lParam)
+int DSP_EnumProc(const char *szSetting, LPARAM lParam)
 {
 	pfnEnumCallback EnumCallback = (pfnEnumCallback)lParam;
 	if (szSetting != NULL)
@@ -132,7 +132,7 @@ int CLVM_EnumProc(const char *szSetting, LPARAM lParam)
 	return(0);
 }
 
-void CLVM_EnumModes(pfnEnumCallback EnumCallback)
+void DSP_EnumModes(pfnEnumCallback EnumCallback)
 {
     static UINT uID_max;
 
@@ -140,14 +140,14 @@ void CLVM_EnumModes(pfnEnumCallback EnumCallback)
 
     uID_max = 0;
 
-    dbces.pfnEnumProc = CLVM_EnumProc;
-    dbces.szModule = CLVM_MODULE;
-    dbces.ofsSettings=0;
+    dbces.pfnEnumProc = DSP_EnumProc;
+    dbces.szModule = DSP_PROFILES_MODULE;
+    dbces.ofsSettings = 0;
     dbces.lParam = (LPARAM)EnumCallback;
     CallService(MS_DB_CONTACT_ENUMSETTINGS,0,(LPARAM)&dbces);
 }
-*/
 
+  */
 /*
  * write a display profile to the db
  * p->uID must contain the (valid) identifier
@@ -921,18 +921,6 @@ static BOOL CALLBACK DlgProcXIcons(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM
         {
             DISPLAYPROFILE *p = (DISPLAYPROFILE *)lParam;
             if(p) {
-                /*
-                CheckDlgButton(hwndDlg, IDC_SHOWCLIENTICONS, p->dwExtraImageMask & EIMG_SHOW_CLIENT);
-                CheckDlgButton(hwndDlg, IDC_SHOWEXTENDEDSTATUS, p->dwExtraImageMask & EIMG_SHOW_EXTRA);
-                CheckDlgButton(hwndDlg, IDC_EXTRAMAIL, p->dwExtraImageMask & EIMG_SHOW_MAIL);
-                CheckDlgButton(hwndDlg, IDC_EXTRAWEB, p->dwExtraImageMask & EIMG_SHOW_URL);
-                CheckDlgButton(hwndDlg, IDC_EXTRAPHONE, p->dwExtraImageMask & EIMG_SHOW_SMS);
-                CheckDlgButton(hwndDlg, IDC_EXTRARESERVED, p->dwExtraImageMask & EIMG_SHOW_RESERVED);
-                CheckDlgButton(hwndDlg, IDC_EXTRARESERVED2, p->dwExtraImageMask & EIMG_SHOW_RESERVED2);
-                CheckDlgButton(hwndDlg, IDC_EXTRARESERVED3, p->dwExtraImageMask & EIMG_SHOW_RESERVED3);
-                CheckDlgButton(hwndDlg, IDC_EXTRARESERVED4, p->dwExtraImageMask & EIMG_SHOW_RESERVED4);
-                CheckDlgButton(hwndDlg, IDC_EXTRARESERVED5, p->dwExtraImageMask & EIMG_SHOW_RESERVED5);
-                */
                 CheckDlgButton(hwndDlg, IDC_XSTATUSASSTATUS, p->dwFlags & CLUI_FRAME_USEXSTATUSASSTATUS ? 1 : 0);
 
                 CheckDlgButton(hwndDlg, IDC_SHOWSTATUSICONS, (p->dwFlags & CLUI_FRAME_STATUSICONS) ? BST_CHECKED : BST_UNCHECKED);
@@ -955,32 +943,20 @@ static BOOL CALLBACK DlgProcXIcons(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM
         {
             DISPLAYPROFILE *p = (DISPLAYPROFILE *)lParam;
             if(p) {
-                /*p->dwExtraImageMask = (IsDlgButtonChecked(hwndDlg, IDC_EXTRAMAIL) ? EIMG_SHOW_MAIL : 0) |
-                    (IsDlgButtonChecked(hwndDlg, IDC_EXTRAWEB) ? EIMG_SHOW_URL : 0) |
-                    (IsDlgButtonChecked(hwndDlg, IDC_SHOWEXTENDEDSTATUS) ? EIMG_SHOW_EXTRA : 0) |
-                    (IsDlgButtonChecked(hwndDlg, IDC_EXTRAPHONE) ? EIMG_SHOW_SMS : 0) |
-                    (IsDlgButtonChecked(hwndDlg, IDC_EXTRARESERVED) ? EIMG_SHOW_RESERVED : 0) |
-                    (IsDlgButtonChecked(hwndDlg, IDC_SHOWCLIENTICONS) ? EIMG_SHOW_CLIENT : 0) |
-                    (IsDlgButtonChecked(hwndDlg, IDC_EXTRARESERVED2) ? EIMG_SHOW_RESERVED2 : 0) |
-                    (IsDlgButtonChecked(hwndDlg, IDC_EXTRARESERVED3) ? EIMG_SHOW_RESERVED3 : 0) |
-                    (IsDlgButtonChecked(hwndDlg, IDC_EXTRARESERVED4) ? EIMG_SHOW_RESERVED4 : 0) |
-                    (IsDlgButtonChecked(hwndDlg, IDC_EXTRARESERVED5) ? EIMG_SHOW_RESERVED5 : 0);
-                    */
                 SaveOrderTree(hwndDlg, GetDlgItem(hwndDlg, IDC_EXTRAORDER), p);
                    
-                    p->exIconScale = SendDlgItemMessage(hwndDlg, IDC_EXICONSCALESPIN, UDM_GETPOS, 0, 0);
-                    p->exIconScale = (p->exIconScale < 8 || p->exIconScale > 20) ? 16 : p->exIconScale;
+                p->exIconScale = SendDlgItemMessage(hwndDlg, IDC_EXICONSCALESPIN, UDM_GETPOS, 0, 0);
+                p->exIconScale = (p->exIconScale < 8 || p->exIconScale > 20) ? 16 : p->exIconScale;
 
-                    p->dwFlags |= ((IsDlgButtonChecked(hwndDlg, IDC_SHOWSTATUSICONS) ? CLUI_FRAME_STATUSICONS : 0) |
-                                   (IsDlgButtonChecked(hwndDlg, IDC_SHOWVISIBILITY) ? CLUI_SHOWVISI : 0) |
-                                   (IsDlgButtonChecked(hwndDlg, IDC_SHOWMETA) ? CLUI_USEMETAICONS : 0) |
-                                   (IsDlgButtonChecked(hwndDlg, IDC_OVERLAYICONS) ? CLUI_FRAME_OVERLAYICONS : 0) |
-                                   (IsDlgButtonChecked(hwndDlg, IDC_XSTATUSASSTATUS) ? CLUI_FRAME_USEXSTATUSASSTATUS : 0) |
-                                   (IsDlgButtonChecked(hwndDlg, IDC_SELECTIVEICONS) ? CLUI_FRAME_SELECTIVEICONS : 0));
-                                    
-                    p->bDimIdle = IsDlgButtonChecked(hwndDlg, IDC_IDLE) ? 1 : 0;
-                    p->bCenterStatusIcons = IsDlgButtonChecked(hwndDlg, IDC_STATUSICONSCENTERED) ? 1 : 0;
-
+                p->dwFlags |= ((IsDlgButtonChecked(hwndDlg, IDC_SHOWSTATUSICONS) ? CLUI_FRAME_STATUSICONS : 0) |
+                               (IsDlgButtonChecked(hwndDlg, IDC_SHOWVISIBILITY) ? CLUI_SHOWVISI : 0) |
+                               (IsDlgButtonChecked(hwndDlg, IDC_SHOWMETA) ? CLUI_USEMETAICONS : 0) |
+                               (IsDlgButtonChecked(hwndDlg, IDC_OVERLAYICONS) ? CLUI_FRAME_OVERLAYICONS : 0) |
+                               (IsDlgButtonChecked(hwndDlg, IDC_XSTATUSASSTATUS) ? CLUI_FRAME_USEXSTATUSASSTATUS : 0) |
+                               (IsDlgButtonChecked(hwndDlg, IDC_SELECTIVEICONS) ? CLUI_FRAME_SELECTIVEICONS : 0));
+                                
+                p->bDimIdle = IsDlgButtonChecked(hwndDlg, IDC_IDLE) ? 1 : 0;
+                p->bCenterStatusIcons = IsDlgButtonChecked(hwndDlg, IDC_STATUSICONSCENTERED) ? 1 : 0;
             }
             return 0;
         }
@@ -1098,6 +1074,9 @@ static BOOL CALLBACK DlgProcXIcons(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM
 	return FALSE;
 }
 
+static HANDLE hwndList;
+static DISPLAYPROFILE dsp_current;
+
 static BOOL CALLBACK DlgProcDspProfiles(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 {
    static int iInit = TRUE;
@@ -1113,6 +1092,8 @@ static BOOL CALLBACK DlgProcDspProfiles(HWND hwnd, UINT msg, WPARAM wParam, LPAR
          int oPage = DBGetContactSettingByte(NULL, "CLUI", "opage_d", 0);
          HWND hwndAdd;
          DISPLAYPROFILE dsp_default;
+
+         hwndList = GetDlgItem(hwnd, IDC_PROFILELIST);
 
          hwndAdd = GetDlgItem(hwnd, IDC_DSP_ADD);
          SendMessage(hwndAdd, BUTTONSETASFLATBTN, 0, 1);
@@ -1178,10 +1159,12 @@ static BOOL CALLBACK DlgProcDspProfiles(HWND hwnd, UINT msg, WPARAM wParam, LPAR
          TabCtrl_SetCurSel(GetDlgItem(hwnd, IDC_OPTIONSTAB), oPage);
 
          DSP_LoadFromDefaults(&dsp_default);
+         CopyMemory(&dsp_current, &dsp_default, sizeof(DISPLAYPROFILE));
 
          iTabCount =  TabCtrl_GetItemCount(hwndTab);
 
          SendMessage(hwnd, WM_USER + 100, 0, (LPARAM)&dsp_default);
+         SendMessage(hwndList, LB_INSERTSTRING, 0, (LPARAM)_T("<current>"));
          iInit = FALSE;
          return FALSE;
       }
