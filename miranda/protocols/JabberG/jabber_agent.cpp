@@ -160,7 +160,7 @@ static BOOL CALLBACK JabberAgentsDlgProc( HWND hwndDlg, UINT msg, WPARAM wParam,
 									EnableWindow( GetDlgItem( hwndDlg, IDC_AGENT_LOGOFF ), TRUE );
 								EnableWindow( GetDlgItem( hwndDlg, IDC_AGENT_UNREGISTER ), TRUE );
 							}
-							if (( item=JabberListGetItemPtr( LIST_AGENT, lvItem.pszText )) != NULL )
+							if (( item=JabberListGetItemPtr( LIST_ROSTER, lvItem.pszText )) != NULL )
 								EnableWindow( GetDlgItem( hwndDlg, IDC_COMMANDS2 ), (item->cap & AGENT_CAP_ADHOC)?TRUE:FALSE );
 							else
 								EnableWindow( GetDlgItem( hwndDlg, IDC_COMMANDS2 ), FALSE );

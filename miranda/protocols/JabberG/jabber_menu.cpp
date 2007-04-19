@@ -137,20 +137,21 @@ int JabberMenuPrebuildContactMenu( WPARAM wParam, LPARAM lParam )
 	if ( bIsTransport ) {
 		sttEnableMenuItem( hMenuLogin, TRUE );
 		sttEnableMenuItem( hMenuRefresh, TRUE );
-		/* Commented out to support command sending according to xep-0146
-		DBVARIANT dbv;
-		if ( !JGetStringT( hContact, "jid", &dbv )) {
-			JABBER_LIST_ITEM * item;
-			if (( (item=JabberListGetItemPtr( LIST_AGENT, dbv.ptszVal )) == NULL )
-				 || (item->cap & AGENT_CAP_ADHOC) ) {
-					sttEnableMenuItem( hMenuCommands, TRUE );				
-				}
-			JFreeVariant( &dbv );
-		}
-		*/
 	}
-	
+
 	DBVARIANT dbv;
+	if ( !JGetStringT( hContact, "jid", &dbv )) {
+		JABBER_LIST_ITEM * item;
+		item=JabberListGetItemPtr( LIST_ROSTER, dbv.ptszVal );
+		if ( !bIsTransport ||
+			 (( item != NULL ) && (item->cap & AGENT_CAP_ADHOC) ) ) {
+				sttEnableMenuItem( hMenuCommands, TRUE );				
+		}
+		else 
+			sttEnableMenuItem( hMenuCommands, FALSE );
+		JFreeVariant( &dbv );
+	}
+
 	if ( !JGetStringT( hContact, "jid", &dbv )) {
 		JABBER_LIST_ITEM* item = JabberListGetItemPtr( LIST_ROSTER, dbv.ptszVal );
 		JFreeVariant( &dbv );
@@ -159,7 +160,7 @@ int JabberMenuPrebuildContactMenu( WPARAM wParam, LPARAM lParam )
 			sttEnableMenuItem( hMenuRequestAuth, item->subscription == SUB_FROM || item->subscription == SUB_NONE || bCtrlPressed );
 			sttEnableMenuItem( hMenuGrantAuth, item->subscription == SUB_TO || item->subscription == SUB_NONE || bCtrlPressed );
 			sttEnableMenuItem( hMenuRevokeAuth, item->subscription == SUB_FROM || item->subscription == SUB_BOTH || bCtrlPressed );
-			sttEnableMenuItem( hMenuCommands, TRUE );
+			sttEnableMenuItem( hMenuCommands, (!bIsChatRoom && (!bIsTransport || (item->cap & AGENT_CAP_ADHOC))) );
 			return 0;
 	}	}
 
