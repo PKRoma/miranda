@@ -1427,6 +1427,19 @@ static void JabberProcessIqVersion( TCHAR* idStr, XmlNode* node )
 	if ( version ) mir_free( version );
 }
 
+// last activity (XEP-0012) support
+static void JabberProcessIqLast( TCHAR* idStr, XmlNode* node )
+{
+	TCHAR* from;
+	if (( from=JabberXmlGetAttrValue( node, "from" )) == NULL )
+		return;
+
+	XmlNodeIq iq( "result", idStr, from );
+	XmlNode* query = iq.addQuery( "jabber:iq:last" );
+	query->addAttr("seconds", jabberIdleStartTime ? time( 0 ) - jabberIdleStartTime : 0 );
+	jabberThreadInfo->send( iq );
+}
+
 // Returns the current GMT offset in seconds
 int GetGMTOffset(void)
 {
@@ -1610,6 +1623,9 @@ static void JabberProcessIqResultVersion( TCHAR* type, XmlNode* node, XmlNode* q
 		r->system = mir_tstrdup( n->text );
 	else
 		r->system = NULL;
+
+	if ( hwndJabberInfo != NULL )
+		PostMessage( hwndJabberInfo, WM_JABBER_REFRESH, 0, 0);
 }
 
 static void JabberProcessIq( XmlNode *node, void *userdata )
@@ -1832,6 +1848,8 @@ static void JabberProcessIq( XmlNode *node, void *userdata )
 				JabberProcessIqAvatar( idStr, node );
 			else if ( !_tcscmp( xmlns, _T("jabber:iq:time")))
 				JabberProcessIqTime( idStr, node );	
+			else if ( !_tcscmp( xmlns, _T("jabber:iq:last")))
+				JabberProcessIqLast( idStr, node );
 		}
 		else {
 			// entity time (XEP-0202) support

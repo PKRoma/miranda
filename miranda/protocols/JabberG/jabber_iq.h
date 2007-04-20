@@ -91,6 +91,7 @@ void JabberIqResultSetRegister( XmlNode *iqNode, void *userdata );
 void JabberIqResultSetSearch( XmlNode *iqNode, void *userdata );
 void JabberIqResultSetVcard( XmlNode *iqNode, void *userdata );
 void JabberIqResultEntityTime( XmlNode *iqNode, void *userdata );
+void JabberIqResultLastActivity( XmlNode *iqNode, void *userdata );
 
 void JabberSetBookmarkRequest (XmlNodeIq& iqId);
 

@@ -68,6 +68,7 @@ HANDLE hNetlibUser;
 ThreadData* jabberThreadInfo = NULL;
 BOOL   jabberConnected = FALSE;
 time_t jabberLoggedInTime = 0;
+time_t jabberIdleStartTime = 0;
 BOOL   jabberOnline = FALSE;
 BOOL   jabberChatDllPresent = FALSE;
 int    jabberStatus = ID_STATUS_OFFLINE;
@@ -109,6 +110,7 @@ HWND hwndMucOwnerList = NULL;
 HWND hwndJabberChangePassword = NULL;
 HWND hwndJabberBookmarks = NULL;
 HWND hwndJabberAddBookmark = NULL;
+HWND hwndJabberInfo = NULL;
 
 // Service and event handles
 HANDLE heventRawXMLIn;
@@ -210,6 +212,7 @@ int JabberGcMenuHook( WPARAM, LPARAM );
 int JabberGcInit( WPARAM, LPARAM );
 
 int JabberContactDeleted( WPARAM wParam, LPARAM lParam );
+int JabberIdleChanged( WPARAM wParam, LPARAM lParam );
 int JabberDbSettingChanged( WPARAM wParam, LPARAM lParam );
 int JabberMenuPrebuildContactMenu( WPARAM wParam, LPARAM lParam );
 void JabberMenuHideSrmmIcon(HANDLE hContact);
@@ -253,6 +256,7 @@ static int OnModulesLoaded( WPARAM wParam, LPARAM lParam )
 	arHooks.insert( HookEvent( ME_DB_CONTACT_DELETED, JabberContactDeleted ));
 	arHooks.insert( HookEvent( ME_CLIST_PREBUILDCONTACTMENU, JabberMenuPrebuildContactMenu ));
 	arHooks.insert( HookEvent( ME_AV_MYAVATARCHANGED, OnSaveMyAvatar ));
+	arHooks.insert( HookEvent( ME_IDLE_CHANGED, JabberIdleChanged ));
 
 	if ( ServiceExists( MS_MSG_ADDICON )) {
 		StatusIconData sid = {0};
