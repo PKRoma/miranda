@@ -10,119 +10,153 @@ rem ---------------------------------------------------------------------------
 rem Main modules
 rem ---------------------------------------------------------------------------
 
-cd ..\src
-nmake /f miranda32.mak CFG="miranda32 - Win32 Release"
+pushd ..\src
+call :Nmake miranda32.mak "miranda32 - Win32 Release"
+popd
 if errorlevel 1 goto :Error
 
-cd ..\..\miranda-tools\dbtool
-nmake /f dbtool.mak CFG="dbtool - Win32 Release"
+pushd ..\..\miranda-tools\dbtool
+call :Nmake dbtool.mak "dbtool - Win32 Release"
+popd
 if errorlevel 1 goto :Error
 
 rem ---------------------------------------------------------------------------
 rem Protocols
 rem ---------------------------------------------------------------------------
 
-cd ..\..\miranda\protocols\Gadu-Gadu
-nmake /f Gadu-Gadu.mak CFG="GG - Win32 Release"
+pushd ..\..\miranda\protocols\IcqOscarJ
+call :Nmake IcqOscar8.mak "icqoscar8 - Win32 Release"
+popd
 if errorlevel 1 goto :Error
 
-cd ..\IcqOscarJ
-nmake /f IcqOscar8.mak CFG="icqoscar8 - Win32 Release"
+pushd ..\..\miranda\protocols\IcqOscarJ\icons_pack
+call :Nmake ICONS.mak "ICONS - Win32 Release"
+popd
 if errorlevel 1 goto :Error
 
-cd icons_pack
-nmake /f ICONS.mak CFG="ICONS - Win32 Release"
+pushd ..\..\miranda\protocols\MSN
+call :Nmake MSN.mak "msn - Win32 Release"
+popd
 if errorlevel 1 goto :Error
 
-cd ..\..\MSN
-nmake /f MSN.mak CFG="msn - Win32 Release"
+pushd ..\..\miranda\protocols\JabberG
+call :Nmake jabber.mak "jabberg - Win32 Release"
+popd
 if errorlevel 1 goto :Error
 
-cd ..\JabberG
-nmake /f jabber.mak CFG="jabberg - Win32 Release"
+pushd ..\..\miranda\protocols\AimOscar
+call :Nmake aimoscar.mak "aim - Win32 Release"
+popd
 if errorlevel 1 goto :Error
 
-cd ..\AimOscar
-nmake /f aimoscar.mak CFG="aim - Win32 Release"
+pushd ..\..\miranda\protocols\YAHOO
+call :Nmake Yahoo.mak "Yahoo - Win32 Release"
+popd
 if errorlevel 1 goto :Error
 
-cd ..\YAHOO
-nmake /f Yahoo.mak CFG="Yahoo - Win32 Release"
+pushd ..\..\miranda\protocols\IRC
+call :Nmake IRC.mak "IRC - Win32 Release"
+popd
 if errorlevel 1 goto :Error
 
-cd ..\IRC
-nmake /f IRC.mak CFG="IRC - Win32 Release"
+pushd ..\..\miranda\protocols\Gadu-Gadu
+call :Nmake Gadu-Gadu.mak "GG - Win32 Release"
+popd
 if errorlevel 1 goto :Error
 
 rem ---------------------------------------------------------------------------
 rem Plugins
 rem ---------------------------------------------------------------------------
 
-cd ..\..\plugins\zlib
-nmake /f zlib.mak CFG="zlib - Win32 Release"
+pushd ..\..\miranda\plugins\zlib
+call :Nmake zlib.mak "zlib - Win32 Release"
+popd
 if errorlevel 1 goto :Error
 
-cd ..\..\plugins\chat
-nmake /f chat.mak CFG="chat - Win32 Release"
+pushd ..\..\miranda\plugins\chat
+call :Nmake chat.mak "chat - Win32 Release"
+popd
 if errorlevel 1 goto :Error
 
-cd ..\clist
-nmake /f clist.mak CFG="clist - Win32 Release"
+pushd ..\..\miranda\plugins\clist
+call :Nmake clist.mak "clist - Win32 Release"
+popd
 if errorlevel 1 goto :Error
 
-cd ..\clist_nicer
-nmake /f clist.mak CFG="clist_nicer - Win32 Release"
+pushd ..\..\miranda\plugins\clist_nicer
+call :Nmake clist.mak "clist_nicer - Win32 Release"
+popd
 if errorlevel 1 goto :Error
 
-cd ..\db3x
-nmake /f db3x.mak CFG="db3x - Win32 Release"
+pushd ..\..\miranda\plugins\db3x
+call :Nmake db3x.mak "db3x - Win32 Release"
+popd
 if errorlevel 1 goto :Error
 
-cd ..\db3x_mmap
-nmake /f db3x_mmap.mak CFG="db3x_mmap - Win32 Release"
+pushd ..\..\miranda\plugins\db3x_mmap
+call :Nmake db3x_mmap.mak "db3x_mmap - Win32 Release"
+popd
 if errorlevel 1 goto :Error
 
-cd ..\import
-nmake /f import.mak CFG="import - Win32 Release"
+pushd ..\..\miranda\plugins\import
+call :Nmake import.mak "import - Win32 Release"
+popd
 if errorlevel 1 goto :Error
 
-cd ..\loadavatars
-nmake /f avatars.mak CFG="loadavatars - Win32 Release"
+pushd ..\..\miranda\plugins\loadavatars
+call :Nmake avatars.mak "loadavatars - Win32 Release"
+popd
 if errorlevel 1 goto :Error
 
-cd ..\modernb
-nmake /f modernb.mak CFG="modernb - Win32 Release"
+pushd ..\..\miranda\plugins\modernb
+call :Nmake modernb.mak "modernb - Win32 Release"
+popd
 if errorlevel 1 goto :Error
 
-cd ..\mwclist
-nmake /f mwclist.mak CFG="mwclist - Win32 Release"
+pushd ..\..\miranda\plugins\mwclist
+call :Nmake mwclist.mak "mwclist - Win32 Release"
+popd
 if errorlevel 1 goto :Error
 
-cd ..\png2dib
-nmake /f png2dib.mak CFG="png2dib - Win32 Release"
+pushd ..\..\miranda\plugins\png2dib
+call :Nmake png2dib.mak "png2dib - Win32 Release"
+popd
 if errorlevel 1 goto :Error
 
-cd ..\scriver
-nmake /f scriver.mak CFG="scriver - Win32 Release"
+pushd ..\..\miranda\plugins\scriver
+call :Nmake scriver.mak "scriver - Win32 Release"
+popd
 if errorlevel 1 goto :Error
 
-cd ..\srmm
-nmake /f srmm.mak CFG="srmm - Win32 Release"
+pushd ..\..\miranda\plugins\srmm
+call :Nmake srmm.mak "srmm - Win32 Release"
+popd
 if errorlevel 1 goto :Error
 
-cd ..\tabSRMM
-nmake /f tabSRMM.mak CFG="tabSRMM - Win32 Release"
+pushd ..\..\miranda\plugins\tabSRMM
+call :Nmake tabSRMM.mak "tabSRMM - Win32 Release"
+popd
 if errorlevel 1 goto :Error
 
 rem ---------------------------------------------------------------------------
 rem Zip it
 rem ---------------------------------------------------------------------------
 
-cd ..\..\bin\Release
+pushd Release
 
 dir /B /S *.dll | rebaser /NOCRC
 
 for /F "tokens=1,2,3 delims= " %%i in (..\build.no) do call :Pack %%i %%j %%k
+
+popd
+goto :eof
+
+:Nmake
+echo.
+echo ===========================================================================
+echo Building %1
+echo ===========================================================================
+nmake /NOLOGO /f %1 CFG=%2
 goto :eof
 
 :WriteVer
@@ -222,7 +256,7 @@ if %2 == 00 (
    set FileVer=v%1%2a%3.zip
 )
 
-del "%Temp%\miranda-%FileVer%"
+del "%Temp%\miranda-%FileVer%" >nul
 7z.exe a -tzip -r -mx=9 "%Temp%\miranda-%FileVer%" ./* ..\ChangeLog.txt
 
 rd /Q /S %Temp%\pdba >nul
@@ -238,6 +272,7 @@ copy ..\..\protocols\IRC\Release\IRC.pdb               %Temp%\pdba\plugins
 copy ..\..\protocols\JabberG\Release\jabber.pdb        %Temp%\pdba\plugins
 copy ..\..\protocols\MSN\Release\MSN.pdb               %Temp%\pdba\plugins
 copy ..\..\protocols\Yahoo\Release\Yahoo.pdb           %Temp%\pdba\plugins
+copy ..\..\protocols\Gadu-Gadu\Release\GG.pdb          %Temp%\pdba\plugins
 rem  Plugins
 copy ..\..\plugins\chat\Release\chat.pdb               %Temp%\pdba\plugins
 copy ..\..\plugins\clist\Release\clist_classic.pdb     %Temp%\pdba\plugins

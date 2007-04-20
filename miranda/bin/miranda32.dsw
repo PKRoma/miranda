@@ -342,6 +342,10 @@ Project: "zlib"=..\plugins\zlib\zlib.dsp - Package Owner=<4>
 
 Package=<5>
 {{{
+    begin source code control
+    "$/Miranda/miranda/plugins/zlib", QWMAAAAA
+    ..\plugins\zlib
+    end source code control
 }}}
 
 Package=<4>
@@ -355,7 +359,7 @@ Global:
 Package=<5>
 {{{
     begin source code control
-    "$/Miranda/miranda/Bin", LCLAAAAA
+    "$/Miranda/miranda/bin", OWMAAAAA
     .
     end source code control
 }}}
