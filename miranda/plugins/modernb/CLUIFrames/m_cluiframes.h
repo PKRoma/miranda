@@ -184,7 +184,7 @@ typedef struct tagCLISTFrame {
 #define MS_CLIST_FRAMES_ADDFRAME			"CListFrames/AddFrame"
 
 //////////////////////////////////////////////////////////////////////////
-// remove frame. It does not destroy your window
+// remove frame. It destroy your window
 //
 #define MS_CLIST_FRAMES_REMOVEFRAME			"CListFrames/RemoveFrame"
 

@@ -2150,22 +2150,6 @@ static int CLUIFramesRemoveFrame(WPARAM wParam,LPARAM lParam)
 	if (Frames[pos].name!=NULL) free(Frames[pos].name);
 	if (Frames[pos].TitleBar.tbname!=NULL) free(Frames[pos].TitleBar.tbname);
 	if (Frames[pos].TitleBar.tooltip!=NULL) free(Frames[pos].TitleBar.tooltip);
-	/*
-	{
-	CallService(MS_CLIST_REMOVECONTEXTFRAMEMENUITEM,(WPARAM)Frames[pos].MenuHandles.MainMenuItem,0);
-	CallService(MS_CLIST_REMOVECONTEXTFRAMEMENUITEM,(WPARAM)Frames[pos].MenuHandles.MIAlignBottom,0);
-	CallService(MS_CLIST_REMOVECONTEXTFRAMEMENUITEM,(WPARAM)Frames[pos].MenuHandles.MIAlignClient,0);
-	CallService(MS_CLIST_REMOVECONTEXTFRAMEMENUITEM,(WPARAM)Frames[pos].MenuHandles.MIAlignRoot,0);
-	CallService(MS_CLIST_REMOVECONTEXTFRAMEMENUITEM,(WPARAM)Frames[pos].MenuHandles.MIAlignTop,0);
-	CallService(MS_CLIST_REMOVECONTEXTFRAMEMENUITEM,(WPARAM)Frames[pos].MenuHandles.MIBorder,0);
-	CallService(MS_CLIST_REMOVECONTEXTFRAMEMENUITEM,(WPARAM)Frames[pos].MenuHandles.MIColl,0);
-	CallService(MS_CLIST_REMOVECONTEXTFRAMEMENUITEM,(WPARAM)Frames[pos].MenuHandles.MIFloating,0);
-	CallService(MS_CLIST_REMOVECONTEXTFRAMEMENUITEM,(WPARAM)Frames[pos].MenuHandles.MILock,0);
-	CallService(MS_CLIST_REMOVECONTEXTFRAMEMENUITEM,(WPARAM)Frames[pos].MenuHandles.MITBVisible,0);
-	CallService(MS_CLIST_REMOVECONTEXTFRAMEMENUITEM,(WPARAM)Frames[pos].MenuHandles.MITitle,0);
-	CallService(MS_CLIST_REMOVECONTEXTFRAMEMENUITEM,(WPARAM)Frames[pos].MenuHandles.MIVisible,0);
-	}
-	*/	
 	DestroyWindow(Frames[pos].hWnd);
 	Frames[pos].hWnd=(HWND)-1;
 	DestroyWindow(Frames[pos].TitleBar.hwnd);
@@ -2173,10 +2157,16 @@ static int CLUIFramesRemoveFrame(WPARAM wParam,LPARAM lParam)
 	if(Frames[pos].ContainerWnd && Frames[pos].ContainerWnd!=(HWND)-1) DestroyWindow(Frames[pos].ContainerWnd);
 	Frames[pos].ContainerWnd=(HWND)-1;
 	if (Frames[pos].TitleBar.hmenu) DestroyMenu(Frames[pos].TitleBar.hmenu);
-
+	Frames[pos].PaintCallbackProc = NULL;   
+	
+	if (Frames[pos].OwnerWindow!=(HWND)-1
+		&& Frames[pos].OwnerWindow!=(HWND)-2
+		&& Frames[pos].OwnerWindow!=(HWND)0)
+		DestroyWindow(Frames[pos].OwnerWindow);
+	
+	Frames[pos].OwnerWindow=NULL;
 	RemoveItemFromList(pos,&Frames,&nFramescount);
-
-
+    
 	CLUI__cliInvalidateRect(pcli->hwndContactList,NULL,TRUE);
 	CLUIFramesOnClistResize((WPARAM)pcli->hwndContactList,0);
 	CLUI__cliInvalidateRect(pcli->hwndContactList,NULL,TRUE);
