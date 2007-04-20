@@ -47,15 +47,18 @@ static int compareListItems( const JABBER_LIST_ITEM* p1, const JABBER_LIST_ITEM*
 
 static LIST<JABBER_LIST_ITEM> roster( 50, compareListItems );
 static CRITICAL_SECTION csLists;
+static BOOL LIST_INITIALISED = FALSE;
 
 void JabberListInit( void )
 {
 	InitializeCriticalSection( &csLists );
+	LIST_INITIALISED = TRUE;
 }
 
 void JabberListUninit( void )
 {
 	JabberListWipe();
+	LIST_INITIALISED = FALSE;
 	DeleteCriticalSection( &csLists );
 }
 
@@ -413,4 +416,18 @@ JABBER_LIST_ITEM *JabberListGetItemPtrFromIndex( int index )
 	}
 	LeaveCriticalSection( &csLists );
 	return NULL;
+}
+
+BOOL JabberListLock()
+{
+	if ( !LIST_INITIALISED ) return FALSE;
+	EnterCriticalSection( &csLists );
+	return TRUE;
+}
+
+BOOL JabberListUnlock()
+{
+	if ( !LIST_INITIALISED ) return FALSE;
+	LeaveCriticalSection( &csLists );
+	return TRUE;
 }

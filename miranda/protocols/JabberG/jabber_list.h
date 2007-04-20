@@ -171,6 +171,10 @@ void JabberListInit( void );
 void JabberListUninit( void );
 void JabberListWipe( void );
 int JabberListExist( JABBER_LIST list, const TCHAR* jid );
+
+BOOL JabberListLock();
+BOOL JabberListUnlock();
+
 JABBER_LIST_ITEM *JabberListAdd( JABBER_LIST list, const TCHAR* jid );
 void JabberListRemove( JABBER_LIST list, const TCHAR* jid );
 void JabberListRemoveList( JABBER_LIST list );
