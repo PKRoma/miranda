@@ -52,7 +52,7 @@ void ext_yahoo_got_im(int id, const char *me, const char *who, const char *msg, 
 	HANDLE 			hContact;
 
 	
-    LOG(("YAHOO_GOT_IM id:%s %s: %s tm:%lu stat:%i utf8:%i buddy_icon: %i", me, who, msg, tm, stat, utf8, buddy_icon));
+    LOG(("YAHOO_GOT_IM id:%s %s: %s (len: %d) tm:%lu stat:%i utf8:%i buddy_icon: %i", me, who, msg, lstrlen(msg), tm, stat, utf8, buddy_icon));
    	
 	if(stat == 2) {
 		char z[1024];
@@ -104,7 +104,8 @@ void ext_yahoo_got_im(int id, const char *me, const char *who, const char *msg, 
 		
 	/* Need to strip off formatting stuff first. Then do all decoding/converting */
 	if (utf8){	
-		Utf8Decode( umsg, 0, &tRealBody );
+		//Utf8Decode( umsg, 0, &tRealBody );
+		mir_utf8decode( umsg, &tRealBody );
 		tRealBodyLen = wcslen( tRealBody );
 	} 
 
@@ -128,7 +129,7 @@ void ext_yahoo_got_im(int id, const char *me, const char *who, const char *msg, 
 
 	if ( tRealBodyLen != 0 ) {
 		memcpy( p, tRealBody, sizeof( wchar_t )*( tRealBodyLen+1 ));
-		free( tRealBody );
+		mir_free( tRealBody );
 	} 
 
 	ccs.szProtoService = PSR_MESSAGE;
@@ -222,11 +223,11 @@ int YahooSendMessage(WPARAM wParam, LPARAM lParam)
 			mir_forkthread(yahoo_im_sendacksuccess, ccs->hContact);
 		} else {
 		
-			msg = Utf8EncodeANSI((char *) ccs->lParam );
+			msg = mir_utf8encode((char *) ccs->lParam );
 			
 			if (msg) {
 				yahoo_send_msg(dbv.pszVal, msg, 1);
-				free(msg);
+				mir_free(msg);
 				mir_forkthread(yahoo_im_sendacksuccess, ccs->hContact);
 			} else
 				mir_forkthread(yahoo_im_sendackfail, ccs->hContact);
@@ -262,9 +263,11 @@ int YahooSendMessageW(WPARAM wParam, LPARAM lParam)
 			msg = ( char* )ccs->lParam; /* grab the ANSI portion */
 		} else {
 			char* p = ( char* )ccs->lParam;
-			msg = Utf8EncodeUcs2(( wchar_t* )&p[ strlen(p)+1 ] );
+			msg = mir_utf8encodeW(( wchar_t* )&p[ strlen(p)+1 ] );
 		}
 
+		YAHOO_DebugLog("[YahooSendMessageW] String: %s length: %d", msg, lstrlen(msg));
+		
 		if (lstrlen(msg) > 800) {/* we don't support very long messages */
 			mir_forkthread(yahoo_im_sendackfail_longmsg, ccs->hContact);
 		} else {
@@ -275,7 +278,7 @@ int YahooSendMessageW(WPARAM wParam, LPARAM lParam)
         DBFreeVariant(&dbv);
 		
 		if (!bANSI)
-			free(msg);
+			mir_free(msg);
 		
         return 1;
     }

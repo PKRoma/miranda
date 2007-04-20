@@ -36,6 +36,8 @@ HINSTANCE   hinstance;
 PLUGINLINK* pluginLink;
 char			yahooProtocolName[MAX_PATH];
 
+struct MM_INTERFACE   mmi;
+struct UTF8_INTERFACE utfi;
 struct MD5_INTERFACE md5i;
 
 HANDLE		    hNetlibUser = NULL;
@@ -240,7 +242,10 @@ int __declspec(dllexport)Load(PLUGINLINK *link)
 	char* protocolname;
 	
  	pluginLink=link;
+	mir_getMMI( &mmi );
+	mir_getUTFI( &utfi );
 	mir_getMD5I( &md5i );
+	
 	//
 	// Need to disable threading since we got our own routines.
 	//

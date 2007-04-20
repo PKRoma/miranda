@@ -190,9 +190,6 @@ int LoadYahooServices(void);
 void yahoo_logout();
 void yahoo_callback(struct _conn *c, yahoo_input_condition cond);
 void ext_yahoo_login(int login_mode);
-void __stdcall Utf8Decode( char* str, int maxSize, wchar_t** ucs2 );
-char* __stdcall Utf8EncodeUcs2( const wchar_t* src );
-char* __stdcall Utf8EncodeANSI(const char *msg);
 int YahooGotoMailboxCommand( WPARAM wParam, LPARAM lParam );
 
 void YahooMenuInit( void );
