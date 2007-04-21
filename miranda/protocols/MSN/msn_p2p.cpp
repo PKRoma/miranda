@@ -246,7 +246,7 @@ static void sttSavePicture2disk( filetransfer* ft )
 
 static const char sttVoidSession[] = "ACHTUNG!!! an attempt made to send a message via the empty session";
 
-void __stdcall p2p_sendAck( filetransfer* ft, ThreadData* info, P2P_Header* hdrdata )
+void  p2p_sendAck( filetransfer* ft, ThreadData* info, P2P_Header* hdrdata )
 {
 	char* buf = ( char* )alloca( 1000 + MSN_MAX_EMAIL_LEN );
 
@@ -290,7 +290,7 @@ void __stdcall p2p_sendAck( filetransfer* ft, ThreadData* info, P2P_Header* hdrd
 /////////////////////////////////////////////////////////////////////////////////////////
 // p2p_sendEndSession - sends MSN P2P file transfer end packet
 
-static void __stdcall p2p_sendEndSession( ThreadData* info, filetransfer* ft )
+static void  p2p_sendEndSession( ThreadData* info, filetransfer* ft )
 {
 	if ( ft == NULL ) {
 		MSN_DebugLog( sttVoidSession );
@@ -332,7 +332,7 @@ static void __stdcall p2p_sendEndSession( ThreadData* info, filetransfer* ft )
 	ft->ts = time( NULL );
 }
 
-void __stdcall p2p_sendRedirect( ThreadData* info, filetransfer* ft )
+void  p2p_sendRedirect( ThreadData* info, filetransfer* ft )
 {
 	if ( ft == NULL ) {
 		MSN_DebugLog( sttVoidSession );
@@ -369,7 +369,7 @@ void __stdcall p2p_sendRedirect( ThreadData* info, filetransfer* ft )
 /////////////////////////////////////////////////////////////////////////////////////////
 // p2p_sendSlp - send MSN P2P SLP packet
 
-void __stdcall p2p_sendSlp(
+void  p2p_sendSlp(
 	ThreadData*		info,
 	filetransfer*	ft,
 	MimeHeaders&	pHeaders,
@@ -448,7 +448,7 @@ void __stdcall p2p_sendSlp(
 /////////////////////////////////////////////////////////////////////////////////////////
 // p2p_sendBye - closes P2P session
 
-void __stdcall p2p_sendBye( ThreadData* info, filetransfer* ft )
+void  p2p_sendBye( ThreadData* info, filetransfer* ft )
 {
 	if ( ft == NULL ) {
 		MSN_DebugLog( sttVoidSession );
@@ -467,13 +467,13 @@ void __stdcall p2p_sendBye( ThreadData* info, filetransfer* ft )
 		ft->p2p_sessionid, 0 ));
 }
 
-void __stdcall p2p_sendCancel( ThreadData* info, filetransfer* ft )
+void  p2p_sendCancel( ThreadData* info, filetransfer* ft )
 {
 	p2p_sendBye(info, ft);
 	p2p_sendEndSession(info, ft);
 }
 
-void __stdcall p2p_sendNoCall( ThreadData* info, filetransfer* ft )
+void  p2p_sendNoCall( ThreadData* info, filetransfer* ft )
 {
 	if ( ft == NULL ) {
 		MSN_DebugLog( sttVoidSession );
@@ -495,7 +495,7 @@ void __stdcall p2p_sendNoCall( ThreadData* info, filetransfer* ft )
 /////////////////////////////////////////////////////////////////////////////////////////
 // p2p_sendStatus - send MSN P2P status and its description
 
-void __stdcall p2p_sendStatus( filetransfer* ft, ThreadData* info, long lStatus )
+void  p2p_sendStatus( filetransfer* ft, ThreadData* info, long lStatus )
 {
 	if ( ft == NULL ) {
 		MSN_DebugLog( sttVoidSession );
@@ -617,7 +617,7 @@ bool p2p_connectTo( ThreadData* info )
 
 bool p2p_listen( ThreadData* info )
 {
-	switch( WaitForSingleObject( info->hWaitEvent, 5000 )) {
+	switch( WaitForSingleObject( info->hWaitEvent, 8000 )) {
 	case WAIT_TIMEOUT:
 	case WAIT_FAILED:
 		MSN_DebugLog( "Incoming connection timed out, closing file transfer" );
@@ -672,7 +672,7 @@ LBL_Error:
 	return true;
 }
 
-LONG __stdcall p2p_sendPortion( filetransfer* ft, ThreadData* T )
+LONG  p2p_sendPortion( filetransfer* ft, ThreadData* T )
 {
 	LONG trid;
 	char databuf[ 1500 ], *p = databuf;
@@ -739,7 +739,7 @@ void __cdecl p2p_sendFeedThread( ThreadData* info )
 {
 	MSN_DebugLog( "File send thread started" );
 
-	switch( WaitForSingleObject( info->hWaitEvent, 5000 )) {
+	switch( WaitForSingleObject( info->hWaitEvent, 8000 )) {
 		case WAIT_FAILED:
 			MSN_DebugLog( "File send wait failed" );
 			return;
@@ -795,7 +795,7 @@ void __cdecl p2p_sendFeedThread( ThreadData* info )
 }
 
 
-void __stdcall p2p_sendFeedStart( filetransfer* ft )
+void  p2p_sendFeedStart( filetransfer* ft )
 {
 	if ( ft->std.sending )
 	{
@@ -1389,7 +1389,7 @@ static void sttCloseTransfer( P2P_Header* hdrdata, ThreadData* info, MimeHeaders
 	p2p_unregisterSession( ft );
 }
 
-void __stdcall p2p_processMsg( ThreadData* info, const char* msgbody )
+void  p2p_processMsg( ThreadData* info, const char* msgbody )
 {
 	P2P_Header* hdrdata = ( P2P_Header* )msgbody; msgbody += sizeof( P2P_Header );
 	sttLogHeader( hdrdata );
@@ -1467,8 +1467,12 @@ void __stdcall p2p_processMsg( ThreadData* info, const char* msgbody )
 
 	filetransfer* ft = p2p_getSessionByID( hdrdata->mSessionID );
 	if ( ft == NULL )
-		if ((ft = p2p_getSessionByMsgID( hdrdata->mAckSessionID )) == NULL )
-			return;
+	{
+		ft = p2p_getSessionByMsgID( hdrdata->mAckSessionID );
+		if ( ft == NULL )
+			ft = p2p_getSessionByUniqueID( hdrdata->mAckUniqueID );
+	}
+	if ( ft == NULL ) return;
 
 	ft->ts = time( NULL );
 
@@ -1605,7 +1609,7 @@ struct HFileContext
 	WCHAR wszFileName[ MAX_PATH ];
 };
 
-void __stdcall p2p_invite( HANDLE hContact, int iAppID, filetransfer* ft )
+void  p2p_invite( HANDLE hContact, int iAppID, filetransfer* ft )
 {
 	const char* szAppID;
 	switch( iAppID ) {
@@ -1673,6 +1677,7 @@ void __stdcall p2p_invite( HANDLE hContact, int iAppID, filetransfer* ft )
 			return;
 		}
 
+		if ( MyOptions.UseMSNP11 ) iAppID = MSN_APPID_AVATAR2;
 		pContext = ( BYTE* )tBuffer;
 		cbContext = strlen( tBuffer )+1;
 		break;
@@ -1744,7 +1749,7 @@ void __stdcall p2p_invite( HANDLE hContact, int iAppID, filetransfer* ft )
 }
 
 
-void __stdcall p2p_sessionComplete( filetransfer* ft )
+void  p2p_sessionComplete( filetransfer* ft )
 {
 	if ( ft->std.sending ) {
 		if ( ft->openNext() == -1 ) {

@@ -567,11 +567,17 @@ int MsnGetAvatarFormatSupported(WPARAM wParam, LPARAM lParam)
 /////////////////////////////////////////////////////////////////////////////////////////
 // MsnGetAvatarInfo - retrieve the avatar info
 
+static void sttFakeAvatarAck( LPVOID param )
+{
+	Sleep( 100 );
+	MSN_SendBroadcast((( PROTO_AVATAR_INFORMATION* )param )->hContact, ACKTYPE_AVATAR, ACKRESULT_FAILED, param, 0 );
+}
+
 static int MsnGetAvatarInfo(WPARAM wParam,LPARAM lParam)
 {
 	PROTO_AVATAR_INFORMATION* AI = ( PROTO_AVATAR_INFORMATION* )lParam;
 
-	if ( !MyOptions.EnableAvatars || ( MSN_GetDword( AI->hContact, "FlagBits", 0 ) & 0x70000000 ) == 0 )
+	if ( !MyOptions.EnableAvatars || ( MSN_GetDword( AI->hContact, "FlagBits", 0 ) & 0xf0000000 ) == 0 )
 		return GAIR_NOAVATAR;
 
 	char tEmail[ MSN_MAX_EMAIL_LEN ];
@@ -582,7 +588,7 @@ static int MsnGetAvatarInfo(WPARAM wParam,LPARAM lParam)
 	if ( MSN_GetStaticString(( AI->hContact == NULL ) ? "PictObject" : "PictContext", AI->hContact, szContext, sizeof szContext ))
 		return GAIR_NOAVATAR;
 
-	MSN_GetAvatarFileName( AI->hContact, AI->filename, sizeof AI->filename );
+	MSN_GetAvatarFileName( AI->hContact, AI->filename, sizeof( AI->filename ));
 	AI->format = PA_FORMAT_PNG;
 
 	if ( ::access( AI->filename, 0 ) == 0 ) {
@@ -590,6 +596,15 @@ static int MsnGetAvatarInfo(WPARAM wParam,LPARAM lParam)
 		if ( !MSN_GetStaticString( "PictSavedContext", AI->hContact, szSavedContext, sizeof( szSavedContext )))
 			if ( !strcmp( szSavedContext, szContext ))
 				return GAIR_SUCCESS;
+	}
+
+	WORD wStatus = MSN_GetWord( AI->hContact, "Status", ID_STATUS_OFFLINE );
+	if ( wStatus == ID_STATUS_OFFLINE || msnStatusMode == ID_STATUS_INVISIBLE ) {
+		MSN_DeleteSetting( AI->hContact, "AvatarHash" );
+		PROTO_AVATAR_INFORMATION* fakeAI = new PROTO_AVATAR_INFORMATION;
+		*fakeAI = *AI;
+		mir_forkthread( sttFakeAvatarAck, fakeAI );
+		return GAIR_WAITFOR;
 	}
 
 	if (( wParam & GAIF_FORCE ) != 0 && AI->hContact != NULL ) {
@@ -811,7 +826,7 @@ static int MsnSendFile( WPARAM wParam, LPARAM lParam )
 	}
 
 	DWORD dwFlags = MSN_GetDword( ccs->hContact, "FlagBits", 0 );
-	if ( dwFlags & 0x70000000 )
+	if ( dwFlags & 0xf0000000 )
 		p2p_invite( ccs->hContact, MSN_APPID_FILE, sft );
 	else {
 		ThreadData* thread = MSN_GetThreadByContact( ccs->hContact );

@@ -111,11 +111,16 @@ void __cdecl MSNServerThread( ThreadData* info )
 		MSN_DebugLog( "Connection Failed (%d)", WSAGetLastError() );
 
 		switch ( info->mType ) {
-		case SERVER_NOTIFICATION:
-		case SERVER_DISPATCH:
-			MSN_SendBroadcast( NULL, ACKTYPE_LOGIN, ACKRESULT_FAILED, NULL, LOGINERR_NOSERVER );
-			MSN_GoOffline();
-			break;
+			case SERVER_NOTIFICATION:
+			case SERVER_DISPATCH:
+				MSN_SendBroadcast( NULL, ACKTYPE_LOGIN, ACKRESULT_FAILED, NULL, LOGINERR_NOSERVER );
+				MSN_GoOffline();
+				msnNsThread = NULL;
+				if ( hKeepAliveThreadEvt ) {
+					msnPingTimeout *= -1;
+					SetEvent( hKeepAliveThreadEvt );
+				}
+				break;
 		}
 
 		return;
@@ -220,6 +225,7 @@ LBL_Exit:
 	if ( info->mIsMainThread ) {
 		MSN_GoOffline();
 		msnNsThread = NULL;
+
 		if ( hKeepAliveThreadEvt ) {
 			msnPingTimeout *= -1;
 			SetEvent( hKeepAliveThreadEvt );
@@ -241,12 +247,12 @@ static int CompareThreads( const ThreadData* p1, const ThreadData* p2 )
 static LIST<ThreadData> sttThreads( 10, CompareThreads );
 static CRITICAL_SECTION	sttLock;
 
-void __stdcall MSN_InitThreads()
+void  MSN_InitThreads()
 {
 	InitializeCriticalSection( &sttLock );
 }
 
-void __stdcall MSN_CloseConnections()
+void  MSN_CloseConnections()
 {
 	int i;
 
@@ -275,7 +281,7 @@ void __stdcall MSN_CloseConnections()
 	LeaveCriticalSection( &sttLock );
 }
 
-void __stdcall MSN_CloseThreads()
+void  MSN_CloseThreads()
 {
 	EnterCriticalSection( &sttLock );
 
@@ -298,7 +304,7 @@ void Threads_Uninit( void )
 	sttThreads.destroy();
 }
 
-ThreadData* __stdcall MSN_GetThreadByContact( HANDLE hContact, TInfoType type )
+ThreadData*  MSN_GetThreadByContact( HANDLE hContact, TInfoType type )
 {
 	ThreadData* result = NULL;
 	EnterCriticalSection( &sttLock );
@@ -316,7 +322,7 @@ ThreadData* __stdcall MSN_GetThreadByContact( HANDLE hContact, TInfoType type )
 	return result;
 }
 
-ThreadData* __stdcall MSN_GetThreadByTimer( UINT timerId )
+ThreadData*  MSN_GetThreadByTimer( UINT timerId )
 {
 	ThreadData* result = NULL;
 	EnterCriticalSection( &sttLock );
@@ -332,7 +338,7 @@ ThreadData* __stdcall MSN_GetThreadByTimer( UINT timerId )
 	return result;
 }
 
-ThreadData* __stdcall MSN_GetP2PThreadByContact( HANDLE hContact )
+ThreadData*  MSN_GetP2PThreadByContact( HANDLE hContact )
 {
 	ThreadData *p2pT = NULL, *sbT = NULL;
 	EnterCriticalSection( &sttLock );
@@ -359,7 +365,7 @@ ThreadData* __stdcall MSN_GetP2PThreadByContact( HANDLE hContact )
 }
 
 
-void __stdcall MSN_StartP2PTransferByContact( HANDLE hContact )
+void  MSN_StartP2PTransferByContact( HANDLE hContact )
 {
 	EnterCriticalSection( &sttLock );
 
@@ -377,7 +383,7 @@ void __stdcall MSN_StartP2PTransferByContact( HANDLE hContact )
 }
 
 
-ThreadData* __stdcall MSN_GetOtherContactThread( ThreadData* thread )
+ThreadData*  MSN_GetOtherContactThread( ThreadData* thread )
 {
 	ThreadData* result = NULL;
 	EnterCriticalSection( &sttLock );
@@ -396,7 +402,7 @@ ThreadData* __stdcall MSN_GetOtherContactThread( ThreadData* thread )
 	return result;
 }
 
-ThreadData* __stdcall MSN_GetUnconnectedThread( HANDLE hContact )
+ThreadData*  MSN_GetUnconnectedThread( HANDLE hContact )
 {
 	ThreadData* result = NULL;
 	EnterCriticalSection( &sttLock );
@@ -412,7 +418,7 @@ ThreadData* __stdcall MSN_GetUnconnectedThread( HANDLE hContact )
 	return result;
 }
 
-int __stdcall MSN_GetActiveThreads( ThreadData** parResult )
+int  MSN_GetActiveThreads( ThreadData** parResult )
 {
 	int tCount = 0;
 	EnterCriticalSection( &sttLock );
@@ -427,7 +433,7 @@ int __stdcall MSN_GetActiveThreads( ThreadData** parResult )
 	return tCount;
 }
 
-ThreadData* __stdcall MSN_GetThreadByConnection( HANDLE s )
+ThreadData*  MSN_GetThreadByConnection( HANDLE s )
 {
 	ThreadData* tResult = NULL;
 	EnterCriticalSection( &sttLock );
@@ -443,7 +449,7 @@ ThreadData* __stdcall MSN_GetThreadByConnection( HANDLE s )
 	return tResult;
 }
 
-ThreadData* __stdcall MSN_GetThreadByPort( WORD wPort )
+ThreadData*  MSN_GetThreadByPort( WORD wPort )
 {
 	ThreadData* result = NULL;
 	EnterCriticalSection( &sttLock );

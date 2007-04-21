@@ -76,14 +76,14 @@ void MsnInitIcons( void )
 		iconList[i].hIconLibItem = ( HANDLE )CallService(MS_SKIN2_ADDICON, 0, (LPARAM)&sid);
 }	}
 
-HICON __stdcall LoadIconEx( const char* name )
+HICON  LoadIconEx( const char* name )
 {
 	char szSettingName[100];
 	mir_snprintf( szSettingName, sizeof( szSettingName ), "%s_%s", msnProtocolName, name );
 	return ( HICON )MSN_CallService( MS_SKIN2_GETICON, 0, (LPARAM)szSettingName );
 }
 
-HANDLE __stdcall GetIconHandle( int iconId )
+HANDLE  GetIconHandle( int iconId )
 {
 	for ( int i=0; i < SIZEOF(iconList); i++ )
 		if ( iconList[i].defIconID == iconId )
@@ -92,7 +92,7 @@ HANDLE __stdcall GetIconHandle( int iconId )
 	return NULL;
 }
 
-void __stdcall ReleaseIconEx( const char* name )
+void  ReleaseIconEx( const char* name )
 {
 	char szSettingName[100];
 	mir_snprintf( szSettingName, sizeof( szSettingName ), "%s_%s", msnProtocolName, name );
@@ -679,7 +679,7 @@ int MsnOptInit(WPARAM wParam,LPARAM lParam)
 /////////////////////////////////////////////////////////////////////////////////////////
 // Load resident option values into memory
 
-void __stdcall LoadOptions()
+void  LoadOptions()
 {
 	memset( &MyOptions, 0, sizeof( MyOptions ));
 

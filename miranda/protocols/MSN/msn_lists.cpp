@@ -57,7 +57,7 @@ void Lists_Uninit(void)
 	DeleteCriticalSection( &csLists );
 }
 
-int __stdcall Lists_NameToCode( const char *name )
+int  Lists_NameToCode( const char *name )
 {
 	if ( name[2] )
 		return 0;
@@ -73,7 +73,7 @@ int __stdcall Lists_NameToCode( const char *name )
 	return 0;
 }
 
-void __stdcall Lists_Wipe( void )
+void  Lists_Wipe( void )
 {
 	EnterCriticalSection( &csLists );
 	for ( int i=0; i < count; i++ ) {
@@ -90,7 +90,7 @@ void __stdcall Lists_Wipe( void )
 	LeaveCriticalSection( &csLists );
 }
 
-int __stdcall Lists_IsInList( int list, const char* email )
+int  Lists_IsInList( int list, const char* email )
 {
 	int i;
 	EnterCriticalSection( &csLists );
@@ -106,7 +106,7 @@ int __stdcall Lists_IsInList( int list, const char* email )
 	return ( i == count ) ? 0 : i+1;
 }
 
-int __stdcall Lists_GetMask( const char* email )
+int  Lists_GetMask( const char* email )
 {
 	int i;
 	EnterCriticalSection( &csLists );
@@ -120,7 +120,7 @@ int __stdcall Lists_GetMask( const char* email )
 	return 0;
 }
 
-int __stdcall Lists_Add( int list, const char* email, const char* nick )
+int  Lists_Add( int list, const char* email, const char* nick )
 {
 	EnterCriticalSection( &csLists );
 
@@ -141,7 +141,7 @@ int __stdcall Lists_Add( int list, const char* email, const char* nick )
 	return result;
 }
 
-void __stdcall Lists_Remove( int list, const char* email )
+void  Lists_Remove( int list, const char* email )
 {
 	EnterCriticalSection( &csLists );
 	int i = Lists_IsInList( -1, email );

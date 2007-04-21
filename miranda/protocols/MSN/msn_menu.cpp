@@ -357,7 +357,7 @@ void MsnInitMenus( void )
 	MSN_EnableMenuItems( FALSE );
 }
 
-void __stdcall MSN_EnableMenuItems( BOOL parEnable )
+void  MSN_EnableMenuItems( BOOL parEnable )
 {
 	CLISTMENUITEM clmi = { 0 };
 	clmi.cbSize = sizeof( clmi );

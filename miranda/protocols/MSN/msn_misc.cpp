@@ -50,7 +50,7 @@ extern char* msnPreviousUUX;
 /////////////////////////////////////////////////////////////////////////////////////////
 // MirandaStatusToMSN - status helper functions
 
-char* __stdcall MirandaStatusToMSN( int status )
+char*  MirandaStatusToMSN( int status )
 {
 	switch(status)
 	{
@@ -66,7 +66,7 @@ char* __stdcall MirandaStatusToMSN( int status )
 		default:							return "NLN";
 }	}
 
-int __stdcall MSNStatusToMiranda(const char *status)
+int  MSNStatusToMiranda(const char *status)
 {
 	switch((*(PDWORD)status&0x00FFFFFF)|0x20000000) {
 		case ' LDI': //return ID_STATUS_IDLE;
@@ -83,7 +83,7 @@ int __stdcall MSNStatusToMiranda(const char *status)
 /////////////////////////////////////////////////////////////////////////////////////////
 // MSN_AddUser - adds a e-mail address to one of the MSN server lists
 
-int __stdcall MSN_AddUser( HANDLE hContact, const char* email, int flags )
+int  MSN_AddUser( HANDLE hContact, const char* email, int flags )
 {
 	if ( flags & LIST_REMOVE )
 	{
@@ -143,7 +143,7 @@ int __stdcall MSN_AddUser( HANDLE hContact, const char* email, int flags )
 /////////////////////////////////////////////////////////////////////////////////////////
 // MSN_AddAuthRequest - adds the authorization event to the database
 
-void __stdcall MSN_AddAuthRequest( HANDLE hContact, const char *email, const char *nick )
+void  MSN_AddAuthRequest( HANDLE hContact, const char *email, const char *nick )
 {
 	DBWriteContactSettingByte( hContact, "CList", "Hidden", 1 );
 
@@ -176,7 +176,7 @@ void __stdcall MSN_AddAuthRequest( HANDLE hContact, const char *email, const cha
 /////////////////////////////////////////////////////////////////////////////////////////
 // MSN_DebugLog - writes a line of comments to the network log
 
-void __stdcall	MSN_DebugLog( const char *fmt, ... )
+void 	MSN_DebugLog( const char *fmt, ... )
 {
 	char		str[ 4096 ];
 	va_list	vararg;
@@ -198,7 +198,7 @@ void __stdcall	MSN_DebugLog( const char *fmt, ... )
 /////////////////////////////////////////////////////////////////////////////////////////
 // MSN_DumpMemory - dumps a memory block to the network log
 
-void __stdcall MSN_DumpMemory( const char* buffer, int bufSize )
+void  MSN_DumpMemory( const char* buffer, int bufSize )
 {
    char TmpBuffer[ 256 ];
    long Ptr = 0;
@@ -226,7 +226,7 @@ void __stdcall MSN_DumpMemory( const char* buffer, int bufSize )
 /////////////////////////////////////////////////////////////////////////////////////////
 // MSN_GetAvatarFileName - gets a file name for an contact's avatar
 
-void __stdcall MSN_GetAvatarFileName( HANDLE hContact, char* pszDest, int cbLen )
+void  MSN_GetAvatarFileName( HANDLE hContact, char* pszDest, int cbLen )
 {
 	MSN_CallService( MS_DB_GETPROFILEPATH, cbLen, LPARAM( pszDest ));
 
@@ -253,7 +253,7 @@ void __stdcall MSN_GetAvatarFileName( HANDLE hContact, char* pszDest, int cbLen 
 /////////////////////////////////////////////////////////////////////////////////////////
 // MSN_GetCustomSmileyFileName - gets a file name for an contact's custom smiley
 
-void __stdcall MSN_GetCustomSmileyFileName( HANDLE hContact, char* pszDest, int cbLen, char* SmileyName, int type )
+void  MSN_GetCustomSmileyFileName( HANDLE hContact, char* pszDest, int cbLen, char* SmileyName, int type )
 {
 	MSN_CallService( MS_DB_GETPROFILEPATH, cbLen, LPARAM( pszDest ));
 
@@ -281,7 +281,7 @@ void __stdcall MSN_GetCustomSmileyFileName( HANDLE hContact, char* pszDest, int 
 /////////////////////////////////////////////////////////////////////////////////////////
 // MSN_GoOffline - performs several actions when a server goes offline
 
-void __stdcall	MSN_GoOffline()
+void 	MSN_GoOffline()
 {
 	int msnOldStatus = msnStatusMode; msnStatusMode = ID_STATUS_OFFLINE;
 	MSN_SendBroadcast( NULL, ACKTYPE_STATUS, ACKRESULT_SUCCESS, (HANDLE)msnOldStatus, ID_STATUS_OFFLINE );
@@ -414,7 +414,7 @@ void MSN_RenameServerGroup( int iNumber, LPCSTR szId, const char* newName )
 /////////////////////////////////////////////////////////////////////////////////////////
 // Msn_SendNickname - update our own nickname on the server
 
-int __stdcall MSN_SendNickname(char *nickname)
+int  MSN_SendNickname(char *nickname)
 {
 	char urlNick[ 387 ];
 	UrlEncode( UTF8(nickname), urlNick,  sizeof( urlNick ));
@@ -422,7 +422,7 @@ int __stdcall MSN_SendNickname(char *nickname)
 	return 0;
 }
 
-int __stdcall MSN_SendNicknameW( WCHAR* nickname)
+int  MSN_SendNicknameW( WCHAR* nickname)
 {
 	char* nickutf = mir_utf8encodeW( nickname );
 
@@ -457,7 +457,7 @@ static VOID CALLBACK TypingTimerProc(HWND hwnd, UINT uMsg, UINT_PTR idEvent, DWO
 }	
 
 
-void __stdcall MSN_StartStopTyping( ThreadData* info, bool start )
+void  MSN_StartStopTyping( ThreadData* info, bool start )
 {
 	if ( start && info->mTimerId == 0 ) {
 		info->mTimerId = SetTimer(NULL, NULL, 5000, TypingTimerProc);
@@ -490,7 +490,7 @@ static char * HtmlEncodeUTF8T( const TCHAR *src )
 	return ret;
 }
 
-void __stdcall MSN_SendStatusMessage( const char* msg )
+void  MSN_SendStatusMessage( const char* msg )
 {
 	if ( !msnLoggedIn || !MyOptions.UseMSNP11 )
 		return;
@@ -593,7 +593,7 @@ LONG ThreadData::sendPacket( const char* cmd, const char* fmt,...)
 /////////////////////////////////////////////////////////////////////////////////////////
 // MSN_SetServerStatus - changes plugins status at the server
 
-void __stdcall MSN_SetServerStatus( int newStatus )
+void  MSN_SetServerStatus( int newStatus )
 {
 	MSN_DebugLog( "Setting MSN server status %d, logged in = %d", newStatus, msnLoggedIn );
 
@@ -654,7 +654,7 @@ void CALLBACK sttMainThreadCallback( ULONG dwParam )
 	mir_free( ppd );
 }
 
-void __stdcall	MSN_ShowPopup( const char* nickname, const char* msg, int flags )
+void 	MSN_ShowPopup( const char* nickname, const char* msg, int flags )
 {
 	if ( !ServiceExists( MS_POPUP_ADDPOPUP )) {
 		if ( flags & MSN_ALLOW_MSGBOX ) {
@@ -706,7 +706,7 @@ static int SingleHexToDecimal(char c)
 	return -1;
 }
 
-void __stdcall UrlDecode( char* str )
+void  UrlDecode( char* str )
 {
 	char* s = str, *d = str;
 
@@ -730,7 +730,7 @@ void __stdcall UrlDecode( char* str )
 	*d = 0;
 }
 
-void __stdcall HtmlDecode( char* str )
+void  HtmlDecode( char* str )
 {
 	char* p, *q;
 
@@ -756,7 +756,7 @@ void __stdcall HtmlDecode( char* str )
 /////////////////////////////////////////////////////////////////////////////////////////
 // HtmlEncode - replaces special HTML chars
 
-WCHAR* __stdcall HtmlEncodeW( const WCHAR* str )
+WCHAR*  HtmlEncodeW( const WCHAR* str )
 {
 	WCHAR* s, *p, *q;
 	int c;
@@ -791,7 +791,7 @@ WCHAR* __stdcall HtmlEncodeW( const WCHAR* str )
 	return s;
 }
 
-char* __stdcall HtmlEncode( const char* str )
+char*  HtmlEncode( const char* str )
 {
 	char* s, *p, *q;
 	int c;
@@ -829,7 +829,7 @@ char* __stdcall HtmlEncode( const char* str )
 /////////////////////////////////////////////////////////////////////////////////////////
 // UrlEncode - converts printable characters into URL chars like %20
 
-void __stdcall UrlEncode( const char* src,char* dest, int cbDest )
+void  UrlEncode( const char* src,char* dest, int cbDest )
 {
 	BYTE* d = ( BYTE* )dest;
 	int   i = 0;

@@ -32,7 +32,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 #include "resource.h"
 
-BOOL __stdcall MSN_LoadPngModule()
+BOOL  MSN_LoadPngModule()
 {
 	if ( !ServiceExists( MS_AV_SETMYAVATAR )) {
 		MessageBox( NULL, TranslateT( "MSN protocol requires the loadavatars plugin to handle avatars"), _T("MSN"), MB_OK );

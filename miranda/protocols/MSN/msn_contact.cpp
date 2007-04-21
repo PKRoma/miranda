@@ -23,7 +23,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 #include "msn_global.h"
 
-HANDLE __stdcall MSN_HContactFromEmail( const char* msnEmail, const char* msnNick, int addIfNeeded, int temporary )
+HANDLE  MSN_HContactFromEmail( const char* msnEmail, const char* msnNick, int addIfNeeded, int temporary )
 {
 	HANDLE hContact = ( HANDLE )MSN_CallService( MS_DB_CONTACT_FINDFIRST, 0, 0 );
 	while ( hContact != NULL )
@@ -54,7 +54,7 @@ HANDLE __stdcall MSN_HContactFromEmail( const char* msnEmail, const char* msnNic
 	return NULL;
 }
 
-HANDLE __stdcall MSN_HContactFromEmailT( const TCHAR* msnEmail )
+HANDLE  MSN_HContactFromEmailT( const TCHAR* msnEmail )
 {
 	HANDLE hContact = ( HANDLE )MSN_CallService( MS_DB_CONTACT_FINDFIRST, 0, 0 );
 	while ( hContact != NULL )
@@ -73,7 +73,7 @@ HANDLE __stdcall MSN_HContactFromEmailT( const TCHAR* msnEmail )
 	return NULL;
 }
 
-HANDLE __stdcall MSN_HContactById( const char* szGuid )
+HANDLE  MSN_HContactById( const char* szGuid )
 {
 	HANDLE hContact = ( HANDLE )MSN_CallService( MS_DB_CONTACT_FINDFIRST, 0, 0 );
 	while ( hContact != NULL )

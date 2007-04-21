@@ -44,7 +44,7 @@ static LIST<directconnection> dcList( 10, CompareDC );
 /////////////////////////////////////////////////////////////////////////////////////////
 // add file session to a list
 
-void __stdcall p2p_registerSession( filetransfer* ft )
+void  p2p_registerSession( filetransfer* ft )
 {
 	EnterCriticalSection( &sessionLock );
 	sessionList.insert( ft );
@@ -54,7 +54,7 @@ void __stdcall p2p_registerSession( filetransfer* ft )
 /////////////////////////////////////////////////////////////////////////////////////////
 // remove file session from a list
 
-void __stdcall p2p_unregisterSession( filetransfer* ft )
+void  p2p_unregisterSession( filetransfer* ft )
 {
 	EnterCriticalSection( &sessionLock );
 	sessionList.remove( ft );
@@ -65,7 +65,7 @@ void __stdcall p2p_unregisterSession( filetransfer* ft )
 /////////////////////////////////////////////////////////////////////////////////////////
 // get session by some parameter
 
-filetransfer* __stdcall p2p_getSessionByID( unsigned id )
+filetransfer*  p2p_getSessionByID( unsigned id )
 {
 	if ( id == 0 )
 		return NULL;
@@ -87,7 +87,7 @@ filetransfer* __stdcall p2p_getSessionByID( unsigned id )
 	return ft;
 }
 
-filetransfer* __stdcall p2p_getSessionByMsgID( unsigned id )
+filetransfer*  p2p_getSessionByMsgID( unsigned id )
 {
 	if ( id == 0 )
 		return NULL;
@@ -109,7 +109,31 @@ filetransfer* __stdcall p2p_getSessionByMsgID( unsigned id )
 	return ft;
 }
 
-BOOL __stdcall p2p_sessionRegistered( filetransfer* ft )
+
+filetransfer*  p2p_getSessionByUniqueID( unsigned id )
+{
+	if ( id == 0 )
+		return NULL;
+
+	filetransfer* ft = NULL;
+	EnterCriticalSection( &sessionLock );
+
+	for ( int i=0; i < sessionList.getCount(); i++ ) {
+		filetransfer* FT = sessionList[i];
+		if ( FT->p2p_acksessid == id ) {
+			ft = FT;
+			break;
+	}	}
+
+	LeaveCriticalSection( &sessionLock );
+	if ( ft == NULL )
+		MSN_DebugLog( "Ignoring unknown message id %lu", id );
+
+	return ft;
+}
+
+
+ BOOL  p2p_sessionRegistered( filetransfer* ft )
 {
     BOOL result = FALSE;
 	EnterCriticalSection( &sessionLock );
@@ -125,7 +149,7 @@ BOOL __stdcall p2p_sessionRegistered( filetransfer* ft )
 	return result;
 }
 
-filetransfer* __stdcall p2p_getThreadSession( HANDLE hContact, TInfoType mType )
+filetransfer*  p2p_getThreadSession( HANDLE hContact, TInfoType mType )
 {
 	EnterCriticalSection( &sessionLock );
 
@@ -141,7 +165,7 @@ filetransfer* __stdcall p2p_getThreadSession( HANDLE hContact, TInfoType mType )
 	return result;
 }
 
-void __stdcall p2p_clearDormantSessions( void )
+void  p2p_clearDormantSessions( void )
 {
 	EnterCriticalSection( &sessionLock );
 
@@ -168,7 +192,7 @@ void __stdcall p2p_clearDormantSessions( void )
 	LeaveCriticalSection( &sessionLock );
 }
 
-void __stdcall p2p_redirectSessions( HANDLE hContact )
+void  p2p_redirectSessions( HANDLE hContact )
 {
 	EnterCriticalSection( &sessionLock );
 
@@ -183,7 +207,7 @@ void __stdcall p2p_redirectSessions( HANDLE hContact )
 	LeaveCriticalSection( &sessionLock );
 }
 
-void __stdcall p2p_cancelAllSessions( void )
+void  p2p_cancelAllSessions( void )
 {
 	EnterCriticalSection( &sessionLock );
 
@@ -200,7 +224,7 @@ void __stdcall p2p_cancelAllSessions( void )
 	LeaveCriticalSection( &sessionLock );
 }
 
-filetransfer* __stdcall p2p_getSessionByCallID( const char* CallID )
+filetransfer*  p2p_getSessionByCallID( const char* CallID )
 {
 	if ( CallID == NULL )
 		return NULL;
@@ -223,14 +247,14 @@ filetransfer* __stdcall p2p_getSessionByCallID( const char* CallID )
 }
 
 
-void __stdcall p2p_registerDC( directconnection* dc )
+void  p2p_registerDC( directconnection* dc )
 {
 	EnterCriticalSection( &sessionLock );
 	dcList.insert( dc );
 	LeaveCriticalSection( &sessionLock );
 }
 
-void __stdcall p2p_unregisterDC( directconnection* dc )
+void  p2p_unregisterDC( directconnection* dc )
 {
 	EnterCriticalSection( &sessionLock );
 	delete dc; 
@@ -238,7 +262,7 @@ void __stdcall p2p_unregisterDC( directconnection* dc )
 	LeaveCriticalSection( &sessionLock );
 }
 
-directconnection* __stdcall p2p_getDCByCallID( const char* CallID )
+directconnection*  p2p_getDCByCallID( const char* CallID )
 {
 	if ( CallID == NULL )
 		return NULL;

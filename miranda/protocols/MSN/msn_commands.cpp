@@ -88,7 +88,7 @@ static int sttDivideWords( char* parBuffer, int parMinItems, char** parDest )
 /////////////////////////////////////////////////////////////////////////////////////////
 // MSN_GetMyHostAsString - retrieves a host address as a string
 
-int __stdcall MSN_GetMyHostAsString( char* parBuf, int parBufSize )
+int  MSN_GetMyHostAsString( char* parBuf, int parBufSize )
 {
 	IN_ADDR  in;
 	hostent* myhost;
@@ -162,8 +162,10 @@ void sttSetMirVer( HANDLE hContact, DWORD dwValue )
 		MSN_SetString( hContact, "MirVer", "Miranda IM 0.5.x (MSN v.0.5.x)" );
 	else if ( dwValue == 805306404 )
 		MSN_SetString( hContact, "MirVer", "Miranda IM 0.4.x (MSN v.0.4.x)" );
+	else if (( dwValue & 0x70000000 ) == 0x70000000 )
+		MSN_SetString( hContact, "MirVer", "WLM 8.1" );
 	else if (( dwValue & 0x60000000 ) == 0x60000000 )
-		MSN_SetString( hContact, "MirVer", "MSN 8.x" );
+		MSN_SetString( hContact, "MirVer", "WLM 8.0" );
 	else if (( dwValue & 0x50000000 ) == 0x50000000 )
 		MSN_SetString( hContact, "MirVer", "MSN 7.5" );
 	else if ( dwValue & 0x40000000 )
@@ -1534,7 +1536,7 @@ LBL_InvalidCommand:
 						MSN_FreeVariant( &dbv );
 				}
 
-				if (( dwValue & 0x70000000 ) && data.cmdstring[0] && strcmp( data.cmdstring, "0" )) {
+				if (( dwValue & 0xf0000000 ) && data.cmdstring[0] && strcmp( data.cmdstring, "0" )) {
 					int temp_status = MSN_GetWord(hContact, "Status", ID_STATUS_OFFLINE);
 					if (temp_status == (WORD)ID_STATUS_OFFLINE)
 						MSN_SetWord( hContact, "Status", (WORD)ID_STATUS_INVISIBLE);

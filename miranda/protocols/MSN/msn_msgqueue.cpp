@@ -45,7 +45,7 @@ void MsgQueue_Uninit( void )
 	DeleteCriticalSection( &csMsgQueue );
 }
 
-int __stdcall MsgQueue_Add( HANDLE hContact, int msgType, const char* msg, int msgSize, filetransfer* ft, int flags )
+int  MsgQueue_Add( HANDLE hContact, int msgType, const char* msg, int msgSize, filetransfer* ft, int flags )
 {
 	EnterCriticalSection( &csMsgQueue );
 	msgQueue = ( MsgQueueEntry* )mir_realloc( msgQueue, sizeof( MsgQueueEntry )*( msgQueueCount+1 ));
@@ -71,7 +71,7 @@ int __stdcall MsgQueue_Add( HANDLE hContact, int msgType, const char* msg, int m
 }
 
 // shall we create another session?
-HANDLE __stdcall MsgQueue_CheckContact( HANDLE hContact )
+HANDLE  MsgQueue_CheckContact( HANDLE hContact )
 {
 	EnterCriticalSection( &csMsgQueue );
 
@@ -88,7 +88,7 @@ HANDLE __stdcall MsgQueue_CheckContact( HANDLE hContact )
 }
 
 //for threads to determine who they should connect to
-HANDLE __stdcall MsgQueue_GetNextRecipient(void)
+HANDLE  MsgQueue_GetNextRecipient(void)
 {
 	EnterCriticalSection( &csMsgQueue );
 
@@ -113,7 +113,7 @@ HANDLE __stdcall MsgQueue_GetNextRecipient(void)
 }
 
 //deletes from list. Must mir_free() return value
-int __stdcall MsgQueue_GetNext( HANDLE hContact, MsgQueueEntry& retVal )
+int  MsgQueue_GetNext( HANDLE hContact, MsgQueueEntry& retVal )
 {
 	int i;
 
@@ -136,7 +136,7 @@ int __stdcall MsgQueue_GetNext( HANDLE hContact, MsgQueueEntry& retVal )
 	return i+1;
 }
 
-void __stdcall MsgQueue_Clear( HANDLE hContact )
+void  MsgQueue_Clear( HANDLE hContact )
 {
 	int i;
 
