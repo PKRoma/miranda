@@ -61,7 +61,9 @@ char*    msnPreviousUUX = NULL;
 HANDLE   msnMainThread;
 int      msnOtherContactsBlocked = 0;
 HANDLE   hMSNNudge = NULL;
-bool		msnHaveChatDll = false;
+HANDLE	 hMSNAvatarsFolder = NULL;
+HANDLE	 hCustomSmileyFolder = NULL;
+bool	 msnHaveChatDll = false;
 
 MYOPTIONS MyOptions;
 
@@ -257,6 +259,16 @@ static int OnModulesLoaded( WPARAM wParam, LPARAM lParam )
 	arHooks.insert( HookEvent( ME_DB_CONTACT_DELETED, MsnContactDeleted ));
 	arHooks.insert( HookEvent( ME_DB_CONTACT_SETTINGCHANGED, MsnDbSettingChanged ));
 	arHooks.insert( HookEvent( ME_CLIST_PREBUILDCONTACTMENU, MsnRebuildContactMenu ));
+
+	char AvatarsFolder[MAX_PATH];
+	CallService(MS_DB_GETPROFILEPATH, (WPARAM) MAX_PATH, (LPARAM)AvatarsFolder);
+	strcat(AvatarsFolder,"\\");
+	strcat(AvatarsFolder,msnProtocolName);
+	hMSNAvatarsFolder = FoldersRegisterCustomPath(msnProtocolName,"Avatars",AvatarsFolder);
+	strcat(AvatarsFolder,"\\");
+	strcat(AvatarsFolder,"CustomSmiley");
+	hCustomSmileyFolder = FoldersRegisterCustomPath(msnProtocolName,"Custom Smiley",AvatarsFolder);
+
 	return 0;
 }
 
@@ -305,10 +317,6 @@ extern "C" int __declspec(dllexport) Load( PLUGINLINK* link )
 
 	mir_snprintf( path, sizeof( path ), "%s/IdleTS", protocolname );
 	MSN_CallService( MS_DB_SETSETTINGRESIDENT, TRUE, ( LPARAM )path );
-
-	//	Uninstalling purposes
-//	if (ServiceExists("PluginSweeper/Add"))
-//		MSN_CallService("PluginSweeper/Add",(WPARAM)MSN_Translate(ModuleName),(LPARAM)ModuleName);
 
 	arHooks.insert( HookEvent( ME_SYSTEM_MODULESLOADED, OnModulesLoaded ));
 
@@ -429,4 +437,5 @@ extern "C" __declspec(dllexport) const MUUID* MirandaPluginInterfaces(void)
 {
 	return interfaces;
 }
+
 

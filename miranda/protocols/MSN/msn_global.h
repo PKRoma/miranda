@@ -64,6 +64,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include <win2k.h>
 
 #include "sdk/m_proto_listeningto.h"
+#include "sdk/m_folders.h"
 
 #include <m_database.h>
 #include <m_langpack.h>
@@ -678,6 +679,8 @@ extern	char*       MSPAuth;
 extern  char*       profileURL;
 extern  char*       rru;
 
+extern  HANDLE		hMSNAvatarsFolder;
+extern  HANDLE		hCustomSmileyFolder;
 extern	HANDLE		hNetlibUser;
 extern	HINSTANCE	hInst;
 extern	int			msnOtherContactsBlocked;

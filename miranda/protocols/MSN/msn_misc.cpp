@@ -229,25 +229,29 @@ void  MSN_DumpMemory( const char* buffer, int bufSize )
 void  MSN_GetAvatarFileName( HANDLE hContact, char* pszDest, int cbLen )
 {
 	MSN_CallService( MS_DB_GETPROFILEPATH, cbLen, LPARAM( pszDest ));
-
+	
 	int tPathLen = strlen( pszDest );
-	tPathLen += mir_snprintf( pszDest + tPathLen, MAX_PATH - tPathLen, "\\MSN\\"  );
-	CreateDirectoryA( pszDest, NULL );
 
-	if ( hContact != NULL ) {
-		char szEmail[ MSN_MAX_EMAIL_LEN ];
-		if ( MSN_GetStaticString( "e-mail", hContact, szEmail, sizeof( szEmail )))
-			ltoa(( long )hContact, szEmail, 10 );
+	tPathLen += mir_snprintf(pszDest + tPathLen, MAX_PATH - tPathLen,"\\%s\\",msnProtocolName);
 
-		long digest[ 4 ];
-		mir_md5_hash(( BYTE* )szEmail, strlen( szEmail ), ( BYTE* )digest );
+	if(!FoldersGetCustomPath(hMSNAvatarsFolder,  pszDest, MAX_PATH, pszDest))
+	{
+		tPathLen = strlen( pszDest );
 
-		tPathLen += mir_snprintf( pszDest + tPathLen, MAX_PATH - tPathLen, "%08lX%08lX%08lX%08lX",
-			digest[0], digest[1], digest[2], digest[3] );
+		CreateDirectoryA(pszDest,NULL);
 
-		strcat( pszDest + tPathLen, ".png" );
+		if ( hContact != NULL ) {
+			char szEmail[ MSN_MAX_EMAIL_LEN ];
+			if ( MSN_GetStaticString( "e-mail", hContact, szEmail, sizeof( szEmail )))
+				ltoa(( long )hContact, szEmail, 10 );
+
+			long digest[ 4 ];
+			mir_md5_hash(( BYTE* )szEmail, strlen( szEmail ), ( BYTE* )digest );
+
+			tPathLen += mir_snprintf(pszDest + tPathLen, MAX_PATH - tPathLen,"\\%08lX%08lX%08lX%08lX.png",digest[0], digest[1], digest[2], digest[3]);
+		}
+		else tPathLen += mir_snprintf(pszDest + tPathLen, MAX_PATH - tPathLen,"\\%s avatar.png",msnProtocolName );
 	}
-	else mir_snprintf( pszDest + tPathLen, MAX_PATH - tPathLen, "%s avatar.png", msnProtocolName );
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////
@@ -255,20 +259,25 @@ void  MSN_GetAvatarFileName( HANDLE hContact, char* pszDest, int cbLen )
 
 void  MSN_GetCustomSmileyFileName( HANDLE hContact, char* pszDest, int cbLen, char* SmileyName, int type )
 {
-	MSN_CallService( MS_DB_GETPROFILEPATH, cbLen, LPARAM( pszDest ));
-
+	CallService(MS_DB_GETPROFILEPATH, (WPARAM) MAX_PATH, (LPARAM)pszDest);
+	
 	int tPathLen = strlen( pszDest );
+
+	tPathLen += mir_snprintf(pszDest + tPathLen, MAX_PATH - tPathLen,"\\%s\\",msnProtocolName);
+	
+	FoldersGetCustomPath(hCustomSmileyFolder,  pszDest, MAX_PATH, pszDest);
+	CreateDirectoryA(pszDest,NULL);
+
+	tPathLen = strlen( pszDest );
 
 	if ( hContact != NULL ) {
 		char szEmail[ MSN_MAX_EMAIL_LEN ];
 		if ( MSN_GetStaticString( "e-mail", hContact, szEmail, sizeof( szEmail )))
 			ltoa(( long )hContact, szEmail, 10 );
 		
-		tPathLen += mir_snprintf( pszDest + tPathLen, MAX_PATH - tPathLen, "\\MSN\\CustomSmiley\\");
-		CreateDirectoryA( pszDest, NULL );
-		tPathLen += mir_snprintf( pszDest + tPathLen, MAX_PATH - tPathLen, "%s\\",szEmail );
+		tPathLen += mir_snprintf( pszDest + tPathLen, MAX_PATH - tPathLen, "\\%s\\",szEmail );
 	}
-	else tPathLen += mir_snprintf( pszDest + tPathLen, MAX_PATH - tPathLen, "\\MSN\\CustomSmiley\\%s\\",msnProtocolName );
+	else tPathLen += mir_snprintf( pszDest + tPathLen, MAX_PATH - tPathLen, "\\%s\\",msnProtocolName );
 		
 	CreateDirectoryA( pszDest, NULL );
 
