@@ -1013,6 +1013,7 @@ static BOOL CALLBACK ConfirmSendAllDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam
 		switch (LOWORD(wParam)) {
 		case IDYES:
 		case IDNO:
+		case IDCANCEL:
 			{
 				int result = LOWORD(wParam);
 				if (IsDlgButtonChecked(hwndDlg, IDC_REMEMBER)) {
@@ -2269,7 +2270,7 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
 				} else {
 					result = dat->sendAllConfirm;
 				}
-				if (LOWORD(result) == IDNO) {
+				if (LOWORD(result) != IDYES) {
 					break;
 				}
 

@@ -303,14 +303,14 @@ STYLE DS_SETFONT | DS_3DLOOK | DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP | WS_CAPTI
 CAPTION "Send To All Tabs"
 FONT 8, "MS Shell Dlg", 0, 0, 0x1
 BEGIN
-	ICON			IDI_QUESTION, IDC_STATIC, 10, 10, 21, 21
+    ICON		IDI_QUESTION, IDC_STATIC, 10, 10, 21, 21
     LTEXT           "You are about to send a message to all open tabs.\nAre you sure ?",
-                    IDC_STATIC,40,10,175,20
+			IDC_STATIC,40,10,175,20
     CONTROL         "Remember my choice for this container",
-                    IDC_REMEMBER,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,40,39,
+			IDC_REMEMBER,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,40,39,
                     175,10
     DEFPUSHBUTTON   "Yes",IDYES,20,58,60,14
-    PUSHBUTTON      "No",IDNO,141,58,60,14
+    PUSHBUTTON      "No",IDCANCEL,141,58,60,14
 END
 
 
