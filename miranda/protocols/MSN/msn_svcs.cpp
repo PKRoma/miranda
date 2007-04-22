@@ -281,9 +281,9 @@ int MsnDbSettingChanged(WPARAM wParam,LPARAM lParam)
 		}
 
 		switch ( cws->value.type ) {
-			case DBVT_DELETED:	msnNsThread->sendPacket( "RMG", szId );										break;
-			case DBVT_UTF8:		MSN_RenameServerGroup( iNumber, szId, cws->value.pszVal+1 );			break;
-			case DBVT_ASCIIZ:		MSN_RenameServerGroup( iNumber, szId, UTF8( cws->value.pszVal+1 ));	break;
+			case DBVT_DELETED:	msnNsThread->sendPacket( "RMG", szId );								break;
+			case DBVT_UTF8:		MSN_RenameServerGroup( iNumber, szId, cws->value.pszVal+1 );		break;
+			case DBVT_ASCIIZ:	MSN_RenameServerGroup( iNumber, szId, UTF8( cws->value.pszVal+1 ));	break;
 		}
 		return 0;
 	}
@@ -368,6 +368,9 @@ int MsnWindowEvent(WPARAM wParam, LPARAM lParam)
 		char* szProto = ( char* )MSN_CallService( MS_PROTO_GETCONTACTBASEPROTO, ( WPARAM )msgEvData->hContact, 0 );
 		if ( lstrcmpA( msnProtocolName, szProto )) return 0;
 
+		WORD wStatus = MSN_GetWord( msgEvData->hContact, "Status", ID_STATUS_OFFLINE );
+		if ( wStatus == ID_STATUS_OFFLINE || msnStatusMode == ID_STATUS_INVISIBLE ) return 0;
+
 		char tEmail[ MSN_MAX_EMAIL_LEN ];
 		if ( !MSN_GetStaticString( "e-mail", msgEvData->hContact, tEmail, sizeof( tEmail )) &&
 			!strcmp( tEmail, MyOptions.szEmail )) return 0;
@@ -390,7 +393,7 @@ static void __cdecl MsnFileAckThread( void* arg )
 	filetransfer* ft = (filetransfer*)arg;
 	if ( !ft->inmemTransfer ) {
 		char filefull[ MAX_PATH ];
-		mir_snprintf( filefull, sizeof filefull, "%s\\%s", ft->std.workingDir, ft->std.currentFile );
+		mir_snprintf( filefull, sizeof( filefull ), "%s\\%s", ft->std.workingDir, ft->std.currentFile );
 		replaceStr( ft->std.currentFile, filefull );
 
 		if ( MSN_SendBroadcast( ft->std.hContact, ACKTYPE_FILE, ACKRESULT_FILERESUME, ft, ( LPARAM )&ft->std ))
@@ -598,17 +601,18 @@ static int MsnGetAvatarInfo(WPARAM wParam,LPARAM lParam)
 				return GAIR_SUCCESS;
 	}
 
-	WORD wStatus = MSN_GetWord( AI->hContact, "Status", ID_STATUS_OFFLINE );
-	if ( wStatus == ID_STATUS_OFFLINE || msnStatusMode == ID_STATUS_INVISIBLE ) {
-		MSN_DeleteSetting( AI->hContact, "AvatarHash" );
-		PROTO_AVATAR_INFORMATION* fakeAI = new PROTO_AVATAR_INFORMATION;
-		*fakeAI = *AI;
-		mir_forkthread( sttFakeAvatarAck, fakeAI );
-		return GAIR_WAITFOR;
-	}
+	if (( wParam & GAIF_FORCE ) != 0 && AI->hContact != NULL ) 
+	{
+		WORD wStatus = MSN_GetWord( AI->hContact, "Status", ID_STATUS_OFFLINE );
+		if ( wStatus == ID_STATUS_OFFLINE || msnStatusMode == ID_STATUS_INVISIBLE ) {
+			MSN_DeleteSetting( AI->hContact, "AvatarHash" );
+			PROTO_AVATAR_INFORMATION* fakeAI = new PROTO_AVATAR_INFORMATION;
+			*fakeAI = *AI;
+			mir_forkthread( sttFakeAvatarAck, fakeAI );
+		}
+		else
+			p2p_invite( AI->hContact, MSN_APPID_AVATAR );
 
-	if (( wParam & GAIF_FORCE ) != 0 && AI->hContact != NULL ) {
-		p2p_invite( AI->hContact, MSN_APPID_AVATAR );
 		return GAIR_WAITFOR;
 	}
 
@@ -852,7 +856,7 @@ static int MsnSendFile( WPARAM wParam, LPARAM lParam )
 			"Invitation-Cookie: %i\r\n"
 			"Application-File: %s\r\n"
 			"Application-FileSize: %i\r\n\r\n",
-			( WORD )(((double)rand()/(double)RAND_MAX)*4294967295), UTF8(pszFiles), sft->std.currentFileSize );
+			rand() * ( 0x7fffffff / RAND_MAX ), UTF8(pszFiles), sft->std.currentFileSize );
 
 		if ( thread == NULL )
 			MsgQueue_Add( ccs->hContact, 'S', msg, -1, sft );
