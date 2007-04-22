@@ -1193,7 +1193,7 @@ BEGIN
                     IDC_RESTART,5,233,305,11,NOT WS_VISIBLE
 END
 
-IDD_OPT_FONTS DIALOGEX  0, 0, 316, 251
+IDD_OPT_FONTS DIALOGEX 0, 0, 316, 251
 STYLE DS_SETFONT | DS_FIXEDSYS | WS_CHILD
 FONT 8, "MS Shell Dlg", 0, 0, 0x1
 BEGIN
@@ -1302,7 +1302,7 @@ BEGIN
     LTEXT           "Warning!\r\nThis MenuObject not support user defined options.",
                     IDC_NOTSUPPORTWARNING,10,110,130,31,NOT WS_VISIBLE
     GROUPBOX        "MenuObjects",IDC_STATIC,5,5,133,95
-    GROUPBOX        "MenuItems",IDC_STATIC,151,5,149,219
+    GROUPBOX        "MenuItems",IDC_STATIC,151,5,149,236
     PUSHBUTTON      "Insert separator",IDC_INSERTSEPARATOR,39,145,97,14,
                     WS_DISABLED
     LTEXT           "Service:",IDC_STATIC,0,166,27,8
@@ -1313,6 +1313,7 @@ BEGIN
                     WS_DISABLED
     PUSHBUTTON      "Set",IDC_GENMENU_SET,90,199,55,15,WS_DISABLED
     PUSHBUTTON      "Default",IDC_GENMENU_DEFAULT,30,199,55,15,WS_DISABLED
+    PUSHBUTTON      "Reset",IDC_RESETMENU,243,222,50,14
 END
 
 IDD_OPT_PROTOCOLORDER DIALOGEX 0, 0, 300, 211
@@ -1807,75 +1808,58 @@ END
 
 // Icon with lowest ID value placed first to ensure application icon
 // remains consistent on all systems.
-
-IDI_MIRANDA             ICON    DISCARDABLE     "res/miranda_logo.ico"
-IDI_MIRANDAWEBSITE      ICON    DISCARDABLE     "res/miranda_home.ico"
-IDI_DETAILSLOGO         ICON    DISCARDABLE     "res/miranda_manager.ico"
-
-IDI_USERDETAILS         ICON    DISCARDABLE     "res/contact_view_details.ico"
-
-IDI_ADDCONTACT          ICON    DISCARDABLE     "res/contact_add.ico"
-IDI_RENAME              ICON    DISCARDABLE     "res/contact_rename.ico"
-IDI_DELETE              ICON    DISCARDABLE     "res/contact_delete.ico"
-
-IDI_GROUPSHUT           ICON    DISCARDABLE     "res/group_closed.ico"
-IDI_GROUPOPEN           ICON    DISCARDABLE     "res/group_opened.ico"
-
-IDI_USERONLINE          ICON    DISCARDABLE     "res/status_user_online.ico"
-
-IDI_ONLINE              ICON    DISCARDABLE     "res/status_online.ico"
-IDI_AWAY                ICON    DISCARDABLE     "res/status_away.ico"
-IDI_NA                  ICON    DISCARDABLE     "res/status_NA.ico"
-IDI_OCCUPIED            ICON    DISCARDABLE     "res/status_occupied.ico"
-IDI_DND                 ICON    DISCARDABLE     "res/status_DND.ico"
-IDI_FREE4CHAT           ICON    DISCARDABLE     "res/status_free4chat.ico"
-IDI_INVISIBLE           ICON    DISCARDABLE     "res/status_invisible.ico"
-IDI_ONTHEPHONE          ICON    DISCARDABLE     "res/status_on_the_phone.ico"
-IDI_OUTTOLUNCH          ICON    DISCARDABLE     "res/status_out2lunch.ico"
-IDI_OFFLINE             ICON    DISCARDABLE     "res/status_offline.ico"
-
-IDI_LOAD                ICON    DISCARDABLE     "res/icon_connecting.ico"
-IDI_TYPING              ICON    DISCARDABLE     "res/icon_typing.ico"
-
-IDI_FINDUSER            ICON    DISCARDABLE     "res/icon_find_user.ico"
-IDI_SEARCHALL           ICON    DISCARDABLE     "res/icon_search_all.ico"
-
-IDI_OPTIONS             ICON    DISCARDABLE     "res/icon_options.ico"
-IDI_HELP                ICON    DISCARDABLE     "res/icon_help.ico"
-
-IDI_RECVMSG             ICON    DISCARDABLE     "res/icon_message.ico"
-IDI_FILE                ICON    DISCARDABLE     "res/icon_file.ico"
-IDI_HISTORY             ICON    DISCARDABLE     "res/icon_history.ico"
-
-IDI_URL                 ICON    DISCARDABLE     "res/icon_url.ico"
-IDI_SMS                 ICON    DISCARDABLE     "res/icon_sms.ico"
-IDI_SENDEMAIL           ICON    DISCARDABLE     "res/icon_mail.ico"
-
-IDI_SMALLDOT            ICON    DISCARDABLE     "res/icon_small_dot.ico"
-IDI_FILLEDBLOB          ICON    DISCARDABLE     "res/icon_auth_request.ico"
-IDI_EMPTYBLOB           ICON    DISCARDABLE     "res/icon_all.ico"
-
-IDI_DOWNARROW           ICON    DISCARDABLE     "res/icon_down_arrow.ico"
-
-IDI_NOTICK              ICON    DISCARDABLE     "res/check_off.ico"
-IDI_TICK                ICON    DISCARDABLE     "res/check_on.ico"
-
-IDI_UNICODE             ICON    DISCARDABLE     "res/icon_unicode.ico"
-IDI_ANSI                ICON    DISCARDABLE     "res/icon_ansi.ico"
-
-IDI_LOADED              ICON    DISCARDABLE     "res/icon_loaded.ico"
-IDI_NOTLOADED           ICON    DISCARDABLE     "res/icon_notloaded.ico"
-
-IDI_BLANK               ICON    DISCARDABLE     "res/_blank.ico"
+IDI_MIRANDA             ICON                    "res/miranda_logo.ico"
+IDI_MIRANDAWEBSITE      ICON                    "res/miranda_home.ico"
+IDI_DETAILSLOGO         ICON                    "res/miranda_manager.ico"
+IDI_USERDETAILS         ICON                    "res/contact_view_details.ico"
+IDI_ADDCONTACT          ICON                    "res/contact_add.ico"
+IDI_RENAME              ICON                    "res/contact_rename.ico"
+IDI_DELETE              ICON                    "res/contact_delete.ico"
+IDI_GROUPSHUT           ICON                    "res/group_closed.ico"
+IDI_GROUPOPEN           ICON                    "res/group_opened.ico"
+IDI_USERONLINE          ICON                    "res/status_user_online.ico"
+IDI_ONLINE              ICON                    "res/status_online.ico"
+IDI_AWAY                ICON                    "res/status_away.ico"
+IDI_NA                  ICON                    "res/status_NA.ico"
+IDI_OCCUPIED            ICON                    "res/status_occupied.ico"
+IDI_DND                 ICON                    "res/status_DND.ico"
+IDI_FREE4CHAT           ICON                    "res/status_free4chat.ico"
+IDI_INVISIBLE           ICON                    "res/status_invisible.ico"
+IDI_ONTHEPHONE          ICON                    "res/status_on_the_phone.ico"
+IDI_OUTTOLUNCH          ICON                    "res/status_out2lunch.ico"
+IDI_OFFLINE             ICON                    "res/status_offline.ico"
+IDI_LOAD                ICON                    "res/icon_connecting.ico"
+IDI_TYPING              ICON                    "res/icon_typing.ico"
+IDI_FINDUSER            ICON                    "res/icon_find_user.ico"
+IDI_SEARCHALL           ICON                    "res/icon_search_all.ico"
+IDI_OPTIONS             ICON                    "res/icon_options.ico"
+IDI_HELP                ICON                    "res/icon_help.ico"
+IDI_RECVMSG             ICON                    "res/icon_message.ico"
+IDI_FILE                ICON                    "res/icon_file.ico"
+IDI_HISTORY             ICON                    "res/icon_history.ico"
+IDI_URL                 ICON                    "res/icon_url.ico"
+IDI_SMS                 ICON                    "res/icon_sms.ico"
+IDI_SENDEMAIL           ICON                    "res/icon_mail.ico"
+IDI_SMALLDOT            ICON                    "res/icon_small_dot.ico"
+IDI_FILLEDBLOB          ICON                    "res/icon_auth_request.ico"
+IDI_EMPTYBLOB           ICON                    "res/icon_all.ico"
+IDI_DOWNARROW           ICON                    "res/icon_down_arrow.ico"
+IDI_NOTICK              ICON                    "res/check_off.ico"
+IDI_TICK                ICON                    "res/check_on.ico"
+IDI_UNICODE             ICON                    "res/icon_unicode.ico"
+IDI_ANSI                ICON                    "res/icon_ansi.ico"
+IDI_LOADED              ICON                    "res/icon_loaded.ico"
+IDI_NOTLOADED           ICON                    "res/icon_notloaded.ico"
+IDI_BLANK               ICON                    "res/_blank.ico"
 
 /////////////////////////////////////////////////////////////////////////////
 //
 // Cursor
 //
 
-IDC_HYPERLINKHAND       CURSOR  DISCARDABLE     "res/cursor_hyperlink.cur"
-IDC_DROP                CURSOR  DISCARDABLE     "res/cursor_drag_copy.cur"
-IDC_DROPUSER            CURSOR  DISCARDABLE     "res/cursor_drop_user.cur"
+IDC_HYPERLINKHAND       CURSOR                  "res/cursor_hyperlink.cur"
+IDC_DROP                CURSOR                  "res/cursor_drag_copy.cur"
+IDC_DROPUSER            CURSOR                  "res/cursor_drop_user.cur"
 
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -2003,6 +1987,4 @@ IDB_SORTCOLDOWN         BITMAP                  "res/arrow_sort_column_down.bmp"
 
 /////////////////////////////////////////////////////////////////////////////
 #endif    // not APSTUDIO_INVOKED
-
-
 
