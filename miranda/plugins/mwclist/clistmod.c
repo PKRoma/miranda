@@ -39,13 +39,49 @@ extern BYTE nameOrder[];
 
 static HANDLE hSettingChanged, hProtoAckHook;
 
+/////////// End by FYR ////////
+int cli_IconFromStatusMode(const char *szProto,int nStatus, HANDLE hContact)
+{
+	int result=-1;
+	if (hContact && szProto) {
+		char * szActProto=(char*)szProto;
+		char AdvancedService[255]={0};
+		int  nActStatus=nStatus;
+		HANDLE hActContact=hContact;
+		if (!DBGetContactSettingByte(NULL,"CLC","Meta",0) && !strcmp(szActProto,"MetaContacts")) {
+			// substitute params by mostonline contact datas
+			HANDLE hMostOnlineContact=(HANDLE)CallService(MS_MC_GETMOSTONLINECONTACT,(UINT)hActContact,0);
+			if (hMostOnlineContact) {
+				pdisplayNameCacheEntry cacheEntry;
+				cacheEntry=(pdisplayNameCacheEntry)pcli->pfnGetCacheEntry(hMostOnlineContact);
+				if (cacheEntry && cacheEntry->szProto) {
+					szActProto=cacheEntry->szProto;
+					nActStatus=cacheEntry->status;
+					hActContact=hMostOnlineContact;
+				}
+			}
+		}
+		_snprintf(AdvancedService,sizeof(AdvancedService),"%s%s",szActProto,"/GetAdvancedStatusIcon");
+
+		if (ServiceExists(AdvancedService))
+			result = CallService(AdvancedService,(WPARAM)hActContact, (LPARAM)0);
+
+		if (result==-1 || !(LOWORD(result))) 
+			// result == -1 means no Advanced icon. LOWORD(result) == 0 happens when Advanced icon returned by ICQ (i.e. no transpot)
+			result = saveIconFromStatusMode(szActProto,nActStatus,NULL);
+	}
+	else result=saveIconFromStatusMode(szProto,nStatus,NULL);
+	return result;
+}
+
+
 ////////// By FYR/////////////
 int ExtIconFromStatusMode(HANDLE hContact, const char *szProto,int status)
 {
-	if ( DBGetContactSettingByte( NULL, "CLC", "Meta", 0 ) == 1 )
+/*	if ( DBGetContactSettingByte( NULL, "CLC", "Meta", 0 ) == 1 )
 		return pcli->pfnIconFromStatusMode(szProto,status,hContact);
 
-	if ( szProto != NULL )
+	if ( szProto != NULL ) {
 		if (strcmp(szProto,"MetaContacts") == 0 ) {
 			hContact=(HANDLE)CallService(MS_MC_GETMOSTONLINECONTACT,(UINT)hContact,0);
 			if ( hContact != 0 ) {
@@ -53,6 +89,7 @@ int ExtIconFromStatusMode(HANDLE hContact, const char *szProto,int status)
 				status=DBGetContactSettingWord(hContact,szProto,"Status",ID_STATUS_OFFLINE);
 			}
 		}
+	}*/
 
 	return pcli->pfnIconFromStatusMode(szProto,status,hContact);
 }

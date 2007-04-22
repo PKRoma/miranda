@@ -26,6 +26,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include "clist.h"
 #include "m_metacontacts.h"
 
+
 extern int ( *saveAddItemToGroup )( struct ClcGroup *group, int iAboveItem );
 extern int ( *saveAddInfoItemToGroup )(struct ClcGroup *group,int flags,const TCHAR *pszText);
 extern struct ClcGroup* ( *saveAddGroup )(HWND hwnd,struct ClcData *dat,const TCHAR *szName,DWORD flags,int groupId,int calcTotalMembers);
@@ -127,6 +128,9 @@ static struct ClcContact * AddContactToGroup(struct ClcData *dat,struct ClcGroup
 	HANDLE hContact;
 	DBVARIANT dbv;
 	int i;
+	char AdvancedService[255]={0};
+	int img =-1; 
+	int basicIcon = 0;
 	
 	if (cacheEntry==NULL) return NULL;
 	if (group==NULL) return NULL;
@@ -143,7 +147,16 @@ static struct ClcContact * AddContactToGroup(struct ClcData *dat,struct ClcGroup
 	group->cl.items[i]->SubAllocated = 0;
 	group->cl.items[i]->isSubcontact = 0;
 	group->cl.items[i]->subcontacts = NULL;
-	group->cl.items[i]->iImage = CallService(MS_CLIST_GETCONTACTICON,(WPARAM)hContact,0);
+
+	_snprintf(AdvancedService,sizeof(AdvancedService),"%s%s",cacheEntry->szProto,"/GetAdvancedStatusIcon");
+
+    if (ServiceExists(AdvancedService))
+          img = CallService(AdvancedService,(WPARAM)hContact, (LPARAM)0);
+
+	if (img==-1 || !(LOWORD(img))) img = CallService(MS_CLIST_GETCONTACTICON,(WPARAM)hContact,0);
+
+	group->cl.items[i]->iImage = img;
+	
 	cacheEntry=GetContactFullCacheEntry(hContact);
 	group->cl.items[i]->hContact=hContact;
 	
@@ -163,6 +176,7 @@ static struct ClcContact * AddContactToGroup(struct ClcData *dat,struct ClcGroup
 
 	lstrcpyn(group->cl.items[i]->szText,cacheEntry->name, SIZEOF(group->cl.items[i]->szText));
 	group->cl.items[i]->proto = szProto;
+
 
 	if (dat->style&CLS_SHOWSTATUSMESSAGES)
 	{

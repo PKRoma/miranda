@@ -114,6 +114,8 @@ extern char *DBGetStringA(HANDLE hContact,const char *szModule,const char *szSet
 extern wchar_t *DBGetStringW(HANDLE hContact,const char *szModule,const char *szSetting);
 extern DWORD exceptFunction(LPEXCEPTION_POINTERS EP);
 
+extern int     ( *saveIconFromStatusMode )( const char *szProto,int nStatus, HANDLE hContact);
+
 //from bkg options
 
 //  Register of plugin's user

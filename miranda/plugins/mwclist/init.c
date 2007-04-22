@@ -69,6 +69,10 @@ void SortCLC(HWND hwnd,struct ClcData *dat,int useInsertionSort);
 int ( *saveTrayIconProcessMessage )(WPARAM wParam,LPARAM lParam);
 int TrayIconProcessMessage(WPARAM wParam,LPARAM lParam);
 
+int  (*saveIconFromStatusMode)(const char *szProto,int nStatus, HANDLE hContact);
+int  cli_IconFromStatusMode(const char *szProto,int nStatus, HANDLE hContact);
+
+
 //from bgrcfg
 extern int BGModuleLoad();
 extern int BGModuleUnload();
@@ -210,6 +214,9 @@ LBL_Error:
 		pcli->pfnRebuildEntireList = RebuildEntireList;
 		pcli->pfnRecalcScrollBar = RecalcScrollBar;
 		pcli->pfnScrollTo = ScrollTo;
+
+		saveIconFromStatusMode      = pcli->pfnIconFromStatusMode;
+		pcli->pfnIconFromStatusMode = cli_IconFromStatusMode;
 
 		saveAddGroup = pcli->pfnAddGroup; pcli->pfnAddGroup = AddGroup;
 		saveAddInfoItemToGroup = pcli->pfnAddInfoItemToGroup; pcli->pfnAddInfoItemToGroup = AddInfoItemToGroup;
