@@ -322,7 +322,7 @@ void ft_startFileSend( ThreadData* info, const char* Invcommand, const char* Inv
 		"Launch-Application: FALSE\r\n"
 		"Request-Data: IP-Address:\r\n\r\n",
 		( bHasError ) ? "CANCEL" : "ACCEPT",
-		Invcookie, ipaddr, nlb.wExPort, WORD((( double )rand() / ( double )RAND_MAX ) * 4294967295 ));
+		Invcookie, ipaddr, nlb.wExPort, rand() * ( 0xffffffff / RAND_MAX ));
 	info->sendPacket( "MSG", "N %d\r\n%s", nBytes, command );
 
 	if ( bHasError ) {
