@@ -209,16 +209,14 @@ static BOOL CALLBACK LocationDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPAR
 					SetDlgItemText(hwndDlg,IDC_LOCALTIME,TranslateT("<not specified>"));
 				}
 				else {
-                    TIME_ZONE_INFORMATION tzi;
+					TIME_ZONE_INFORMATION tzi;
 
 					EnableWindow(GetDlgItem(hwndDlg,IDC_LOCALTIME),TRUE);
 					timezone=(char)timezone;
 					GetSystemTimeAsFileTime(&ft);
-                    switch (GetTimeZoneInformation(&tzi)) {
-                        case TIME_ZONE_ID_DAYLIGHT:
-                            timezone+=tzi.DaylightBias/30;
-                            break;
-                    }
+					if (GetTimeZoneInformation(&tzi) == TIME_ZONE_ID_DAYLIGHT)
+						timezone+=tzi.DaylightBias/30;
+
 					lift.QuadPart=*(__int64*)&ft;
 					lift.QuadPart-=(__int64)timezone*BIGI(30)*BIGI(60)*BIGI(10000000);
 					*(__int64*)&ft=lift.QuadPart;

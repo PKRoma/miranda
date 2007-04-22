@@ -328,7 +328,7 @@ BOOL CALLBACK DlgProcSendFile(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPar
 				EnableWindow(GetDlgItem(hwndDlg,IDC_FILENAME),FALSE);
 				EnableWindow(GetDlgItem(hwndDlg,IDC_MSG),FALSE);
 				EnableWindow(GetDlgItem(hwndDlg,IDC_CHOOSE),FALSE);
-				dat->hwndTransfer=CreateDialog(GetModuleHandle(NULL),MAKEINTRESOURCE(IDD_FILETRANSFERINFO),hwndDlg,DlgProcFileTransfer);
+				dat->hwndTransfer=CreateDialogParam(GetModuleHandle(NULL),MAKEINTRESOURCE(IDD_FILETRANSFERINFO),hwndDlg,DlgProcFileTransfer,(LPARAM)dat);
 				return TRUE;
 			case IDCANCEL:
 				if(dat->hwndTransfer) return SendMessage(dat->hwndTransfer,msg,wParam,lParam);

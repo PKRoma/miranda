@@ -341,7 +341,7 @@ BOOL CALLBACK DlgProcRecvFile(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPar
 				return TRUE;
 			}
 		case IDOK:
-			if(dat->hwndTransfer) return SendMessage(dat->hwndTransfer,msg,wParam,lParam);
+			if ( dat->hwndTransfer ) return SendMessage(dat->hwndTransfer,msg,wParam,lParam);
 			{	//most recently used directories
 				char szRecvDir[MAX_PATH],szDefaultRecvDir[MAX_PATH];
 				GetDlgItemTextA(hwndDlg,IDC_FILEDIR,szRecvDir,SIZEOF(szRecvDir));
@@ -364,10 +364,12 @@ BOOL CALLBACK DlgProcRecvFile(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPar
 			EnableWindow(GetDlgItem(hwndDlg,IDC_MSG),FALSE);
 			EnableWindow(GetDlgItem(hwndDlg,IDC_FILEDIR),FALSE);
 			EnableWindow(GetDlgItem(hwndDlg,IDC_FILEDIRBROWSE),FALSE);
-			dat->hwndTransfer=CreateDialog(GetModuleHandle(NULL),MAKEINTRESOURCE(IDD_FILETRANSFERINFO),hwndDlg,DlgProcFileTransfer);
+			dat->hwndTransfer=CreateDialogParam(GetModuleHandle(NULL),MAKEINTRESOURCE(IDD_FILETRANSFERINFO),hwndDlg,DlgProcFileTransfer,(LPARAM)dat);
 			//check for auto-minimize here to fix BUG#647620
-			if(DBGetContactSettingByte(NULL,"SRFile","AutoAccept",0) && DBGetContactSettingByte(NULL,"SRFile","AutoMin",0))
-				ShowWindow(hwndDlg,SW_SHOWMINIMIZED);
+			if(DBGetContactSettingByte(NULL,"SRFile","AutoAccept",0) && DBGetContactSettingByte(NULL,"SRFile","AutoMin",0)) {
+				ShowWindow(hwndDlg,SW_HIDE);
+				ShowWindow(hwndDlg,SW_SHOWMINNOACTIVE);
+			}
 			return TRUE;
 		case IDCANCEL:					
 			if (dat->fs) CallContactService(dat->hContact,PSS_FILEDENY,(WPARAM)dat->fs,(LPARAM)Translate("Cancelled"));
@@ -378,21 +380,21 @@ BOOL CALLBACK DlgProcRecvFile(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPar
 		case IDC_ADD:
 			{	ADDCONTACTSTRUCT acs={0};
 
-			acs.handle=dat->hContact;
-			acs.handleType=HANDLE_CONTACT;
-			acs.szProto="";
-			CallService(MS_ADDCONTACT_SHOW,(WPARAM)hwndDlg,(LPARAM)&acs);
-			if(!DBGetContactSettingByte(dat->hContact,"CList","NotOnList",0))
-				ShowWindow(GetDlgItem(hwndDlg,IDC_ADD), SW_HIDE);
-			return TRUE;
+				acs.handle=dat->hContact;
+				acs.handleType=HANDLE_CONTACT;
+				acs.szProto="";
+				CallService(MS_ADDCONTACT_SHOW,(WPARAM)hwndDlg,(LPARAM)&acs);
+				if(!DBGetContactSettingByte(dat->hContact,"CList","NotOnList",0))
+					ShowWindow(GetDlgItem(hwndDlg,IDC_ADD), SW_HIDE);
+				return TRUE;
 			}
 		case IDC_USERMENU:
 			{	RECT rc;
-			HMENU hMenu=(HMENU)CallService(MS_CLIST_MENUBUILDCONTACT,(WPARAM)dat->hContact,0);
-			GetWindowRect((HWND)lParam,&rc);
-			TrackPopupMenu(hMenu,0,rc.left,rc.bottom,0,hwndDlg,NULL);
-			DestroyMenu(hMenu);
-			break;
+				HMENU hMenu=(HMENU)CallService(MS_CLIST_MENUBUILDCONTACT,(WPARAM)dat->hContact,0);
+				GetWindowRect((HWND)lParam,&rc);
+				TrackPopupMenu(hMenu,0,rc.left,rc.bottom,0,hwndDlg,NULL);
+				DestroyMenu(hMenu);
+				break;
 			}
 		case IDC_DETAILS:
 			CallService(MS_USERINFO_SHOWDIALOG,(WPARAM)dat->hContact,0);

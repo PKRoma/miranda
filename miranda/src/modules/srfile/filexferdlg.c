@@ -142,13 +142,15 @@ BOOL CALLBACK DlgProcFileTransfer(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM 
 {
 	struct FileDlgData *dat=NULL;
 
-	dat=(struct FileDlgData*)GetWindowLong(GetParent(hwndDlg),GWL_USERDATA);
+	dat=(struct FileDlgData*)GetWindowLong(hwndDlg,GWL_USERDATA);
 	switch (msg)
 	{
 		case WM_INITDIALOG:
 			TranslateDialogDefault(hwndDlg);
+			dat = (struct FileDlgData*)lParam;
+			SetWindowLong(hwndDlg, GWL_USERDATA, (LPARAM)dat);
 			dat->hNotifyEvent=HookEventMessage(ME_PROTO_ACK,hwndDlg,HM_RECVEVENT);
-			dat->transferStatus.currentFileNumber=-1;
+			dat->transferStatus.currentFileNumber = -1;
 			if(dat->send) {
 				char szMsg[450];
 				GetDlgItemTextA(GetParent(hwndDlg),IDC_MSG,szMsg,SIZEOF(szMsg));
