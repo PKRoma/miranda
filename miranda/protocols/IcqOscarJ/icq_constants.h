@@ -23,7 +23,7 @@
 //
 // -----------------------------------------------------------------------------
 //
-// File name      : $Source: /cvsroot/miranda/miranda/protocols/IcqOscarJ/icq_constants.h,v $
+// File name      : $URL$
 // Revision       : $Revision$
 // Last change on : $Date$
 // Last change by : $Author$
@@ -159,6 +159,7 @@
 #define CAPF_TYPING                 0x00000020
 #define CAPF_XTRAZ                  0x00000100
 #define CAPF_OSCAR_FILE             0x00000400
+#define CAPF_STATUSMSGEXT           0x01000000
 
 
 // Message Capability IDs
@@ -537,8 +538,8 @@
 
 
 // Internal Constants
-#define ICQ_PLUG_VERSION            0x80030A02
-#define ICQ_VERSION                 8
+#define ICQ_PLUG_VERSION            0x80030A03
+#define ICQ_VERSION                 8       // Protocol version
 #define DC_TYPE                     DC_NORMAL // Used for DC settings
 #define MAX_NICK_SIZE               32
 #define MAX_CONTACTSSEND            15
@@ -552,11 +553,20 @@
 #define URL_FORGOT_PASSWORD         "https://www.icq.com/password/"
 #define URL_REGISTER                "http://lite.icq.com/register"
 #define FLAP_MARKER                 0x2a
-#define CLIENT_ID_STRING            "ICQBasic"
 #define CLIENT_MD5_STRING           "AOL Instant Messenger (SM)"
 #define UNIQUEIDSETTING             "UIN"
 #define UINMAXLEN                   11 // DWORD string max len + 1
 #define OSCAR_PROXY_HOST            "ars.oscar.aol.com"
 #define OSCAR_PROXY_VERSION         0x044A
+
+#define CLIENT_ID_STRING            "ICQ Client"  // Client identification, mimic ICQ 6
+#define CLIENT_ID_CODE              0x010a
+#define CLIENT_VERSION_MAJOR        0x0006
+#define CLIENT_VERSION_MINOR        0x0000
+#define CLIENT_VERSION_LESSER       0x0000
+#define CLIENT_VERSION_BUILD        0x14e8
+#define CLIENT_DISTRIBUTION         0x00007532
+#define CLIENT_LANGUAGE             "en"
+#define CLIENT_COUNTRY              "us"
 
 #endif /* __ICQ_CONSTANTS_H */

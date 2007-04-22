@@ -1273,10 +1273,10 @@ void handleAvatarServiceFam(unsigned char* pBuffer, WORD wBufferLength, snac_hea
     // send cli_ready
     serverPacketInit(&packet, 26);
     packFNACHeader(&packet, ICQ_SERVICE_FAMILY, ICQ_CLIENT_READY);
-    packDWord(&packet, 0x00010004);
-    packDWord(&packet, 0x001008E4);
+    packDWord(&packet, 0x00010004); // mimic ICQ 6
+    packDWord(&packet, 0x0010157f);
     packDWord(&packet, 0x00100001);
-    packDWord(&packet, 0x001008E4);
+    packDWord(&packet, 0x0010157f);
     sendAvatarPacket(&packet, atsi);
     
     AvatarsReady = TRUE; // we are ready to process requests

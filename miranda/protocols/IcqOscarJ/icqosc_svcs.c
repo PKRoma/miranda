@@ -1317,8 +1317,12 @@ int IcqGetAwayMsg(WPARAM wParam,LPARAM lParam)
           int iRes = icq_sendGetAwayMsgDirect(ccs->hContact, wMessageType);
           if (iRes) return iRes; // we succeded, return
         }
-        return icq_sendGetAwayMsgServ(ccs->hContact, dwUin, wMessageType, 
-          (WORD)(ICQGetContactSettingWord(ccs->hContact, "Version", 0)==9?9:ICQ_VERSION)); // Success
+        if (CheckContactCapabilities(ccs->hContact, CAPF_STATUSMSGEXT))
+          return icq_sendGetAwayMsgServExt(ccs->hContact, dwUin, wMessageType,
+            (WORD)(ICQGetContactSettingWord(ccs->hContact, "Version", 0)==9?9:ICQ_VERSION)); // Success
+        else
+          return icq_sendGetAwayMsgServ(ccs->hContact, dwUin, wMessageType, 
+            (WORD)(ICQGetContactSettingWord(ccs->hContact, "Version", 0)==9?9:ICQ_VERSION)); // Success
       }
     }
     else

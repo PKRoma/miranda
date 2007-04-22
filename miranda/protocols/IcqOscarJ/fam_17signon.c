@@ -5,7 +5,7 @@
 // Copyright © 2000,2001 Richard Hughes, Roland Rabien, Tristan Van de Vreede
 // Copyright © 2001,2002 Jon Keating, Richard Hughes
 // Copyright © 2002,2003,2004 Martin Öberg, Sam Kothari, Robert Rainwater
-// Copyright © 2004,2005,2006 Joe Kucera
+// Copyright © 2004,2005,2006,2007 Joe Kucera
 // 
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License
@@ -23,7 +23,7 @@
 //
 // -----------------------------------------------------------------------------
 //
-// File name      : $Source: /cvsroot/miranda/miranda/protocols/IcqOscarJ/fam_17signon.c,v $
+// File name      : $URL$
 // Revision       : $Revision$
 // Last change on : $Date$
 // Last change by : $Author$
@@ -129,16 +129,16 @@ void sendClientAuth(const char* szKey, WORD wKeyLen, BOOL bSecure)
     packTLV(&packet, 0x0002, wKeyLen, hash);
   }
 
-  // Pack client identification details. We identify ourselves as icq5.1 english
-  packTLV(&packet, 0x0003, (WORD)sizeof(CLIENT_ID_STRING)-1, CLIENT_ID_STRING); // Client ID string
-  packTLVWord(&packet, 0x0016, 0x010a);               // Client ID
-  packTLVWord(&packet, 0x0017, 0x0014);               // Client major version
-  packTLVWord(&packet, 0x0018, 0x0034);               // Client minor version
-  packTLVWord(&packet, 0x0019, 0x0000);               // Client lesser version
-  packTLVWord(&packet, 0x001a, 0x0bb8);               // Client build number
-  packTLVDWord(&packet, 0x0014, 0x0000043d);          // Client distribution number
-  packTLV(&packet, 0x000f, 0x0002, "en");             // Client language
-  packTLV(&packet, 0x000e, 0x0002, "us");             // Client country
+  // Pack client identification details.
+  packTLV(&packet, 0x0003, (WORD)sizeof(CLIENT_ID_STRING)-1, CLIENT_ID_STRING);
+  packTLVWord(&packet, 0x0016, CLIENT_ID_CODE);
+  packTLVWord(&packet, 0x0017, CLIENT_VERSION_MAJOR);
+  packTLVWord(&packet, 0x0018, CLIENT_VERSION_MINOR);
+  packTLVWord(&packet, 0x0019, CLIENT_VERSION_LESSER);
+  packTLVWord(&packet, 0x001a, CLIENT_VERSION_BUILD);
+  packTLVDWord(&packet, 0x0014, CLIENT_DISTRIBUTION);
+  packTLV(&packet, 0x000f, 0x0002, CLIENT_LANGUAGE);
+  packTLV(&packet, 0x000e, 0x0002, CLIENT_LANGUAGE);
 
   sendServPacket(&packet);
 }

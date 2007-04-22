@@ -23,7 +23,7 @@
 //
 // -----------------------------------------------------------------------------
 //
-// File name      : $Source: /cvsroot/miranda/miranda/protocols/IcqOscarJ/icq_packet.c,v $
+// File name      : $URL$
 // Revision       : $Revision$
 // Last change on : $Date$
 // Last change by : $Author$
@@ -95,11 +95,24 @@ void __fastcall directPacketInit(icq_packet* pPacket, DWORD dwSize)
 
 void __fastcall serverCookieInit(icq_packet* pPacket, BYTE* pCookie, WORD wCookieSize)
 {
-  pPacket->wLen = (WORD)(wCookieSize + 8);
+  pPacket->wLen = (WORD)(wCookieSize + 8 + sizeof(CLIENT_ID_STRING) + 61);
 
   write_flap(pPacket, ICQ_LOGIN_CHAN);
   packDWord(pPacket, 0x00000001);
   packTLV(pPacket, 0x06, wCookieSize, pCookie);
+
+  // Pack client identification details.
+  packTLV(pPacket, 0x0003, (WORD)sizeof(CLIENT_ID_STRING)-1, CLIENT_ID_STRING);
+  packTLVWord(pPacket, 0x0016, CLIENT_ID_CODE);
+  packTLVWord(pPacket, 0x0017, CLIENT_VERSION_MAJOR);
+  packTLVWord(pPacket, 0x0018, CLIENT_VERSION_MINOR);
+  packTLVWord(pPacket, 0x0019, CLIENT_VERSION_LESSER);
+  packTLVWord(pPacket, 0x001a, CLIENT_VERSION_BUILD);
+  packTLVDWord(pPacket, 0x0014, CLIENT_DISTRIBUTION);
+  packTLV(pPacket, 0x000f, 0x0002, CLIENT_LANGUAGE);
+  packTLV(pPacket, 0x000e, 0x0002, CLIENT_LANGUAGE);
+
+  packTLVDWord(pPacket, 0x8003, 0x00100000); // Unknown
 }
 
 

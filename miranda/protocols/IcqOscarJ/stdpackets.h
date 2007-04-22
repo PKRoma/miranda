@@ -23,7 +23,7 @@
 //
 // -----------------------------------------------------------------------------
 //
-// File name      : $Source: /cvsroot/miranda/miranda/protocols/IcqOscarJ/stdpackets.h,v $
+// File name      : $URL$
 // Revision       : $Revision$
 // Last change on : $Date$
 // Last change by : $Author$
@@ -56,6 +56,7 @@ void icq_setstatus(WORD wStatus);
 DWORD icq_sendGetInfoServ(HANDLE, DWORD, int, int);
 DWORD icq_sendGetAimProfileServ(HANDLE hContact, char *szUid);
 DWORD icq_sendGetAwayMsgServ(HANDLE, DWORD, int, WORD);
+DWORD icq_sendGetAwayMsgServExt(HANDLE hContact, DWORD dwUin, int type, WORD wVersion);
 DWORD icq_sendGetAimAwayMsgServ(HANDLE hContact, char *szUID, int type);
 void icq_sendSetAimAwayMsgServ(char *szMsg);
 void icq_sendFileSendServv7(filetransfer* ft, const char *szFiles);

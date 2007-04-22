@@ -67,9 +67,10 @@ void handleServiceFam(unsigned char* pBuffer, WORD wBufferLength, snac_header* p
     // This tells the server which SNAC families and their corresponding
     // versions which the client understands. This also seems to identify
     // the client as an ICQ vice AIM client to the server.
-    // Miranda mimics the behaviour of icq5 (haven't changed since at least 2002a)
-    serverPacketInit(&packet, 50);
+    // Miranda mimics the behaviour of ICQ 6
+    serverPacketInit(&packet, 54);
     packFNACHeader(&packet, ICQ_SERVICE_FAMILY, ICQ_CLIENT_FAMILIES);
+    packDWord(&packet, 0x00220001);
     packDWord(&packet, 0x00010004);
     packDWord(&packet, 0x00130004);
     packDWord(&packet, 0x00020001);
@@ -987,28 +988,30 @@ void handleServUINSettings(int nPort, serverthread_info *info)
   SetCurrentStatus(icqGoingOnlineStatus);
 
   // Finish Login sequence
-  serverPacketInit(&packet, 90);
+  serverPacketInit(&packet, 98);
   packFNACHeader(&packet, ICQ_SERVICE_FAMILY, ICQ_CLIENT_READY);
-  packDWord(&packet, 0x00010004); // imitate icq5 behaviour
-  packDWord(&packet, 0x011008E4);
+  packDWord(&packet, 0x00220001); // imitate ICQ 6 behaviour
+  packDWord(&packet, 0x0110157f);
+  packDWord(&packet, 0x00010004);
+  packDWord(&packet, 0x0110157f);
   packDWord(&packet, 0x00130004);
-  packDWord(&packet, 0x011008E4);
+  packDWord(&packet, 0x0110157f);
   packDWord(&packet, 0x00020001);
-  packDWord(&packet, 0x011008E4);
+  packDWord(&packet, 0x0110157f);
   packDWord(&packet, 0x00030001);
-  packDWord(&packet, 0x011008E4);
+  packDWord(&packet, 0x0110157f);
   packDWord(&packet, 0x00150001);
-  packDWord(&packet, 0x011008E4);
+  packDWord(&packet, 0x0110157f);
   packDWord(&packet, 0x00040001);
-  packDWord(&packet, 0x011008E4);
+  packDWord(&packet, 0x0110157f);
   packDWord(&packet, 0x00060001);
-  packDWord(&packet, 0x011008E4);
+  packDWord(&packet, 0x0110157f);
   packDWord(&packet, 0x00090001);
-  packDWord(&packet, 0x011008E4);
+  packDWord(&packet, 0x0110157f);
   packDWord(&packet, 0x000A0001);
-  packDWord(&packet, 0x011008E4);
+  packDWord(&packet, 0x0110157f);
   packDWord(&packet, 0x000B0001);
-  packDWord(&packet, 0x011008E4);
+  packDWord(&packet, 0x0110157f);
 
   sendServPacket(&packet);
 

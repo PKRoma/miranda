@@ -125,6 +125,7 @@ const capstr capIcqJs7    = {'i', 'c', 'q', 'j', ' ', 'S', 'e', 'c', 'u', 'r', '
 const capstr capIcqJSin   = {'s', 'i', 'n', 'j', 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}; // Miranda ICQJ S!N
 const capstr capAimOscar  = {'M', 'i', 'r', 'a', 'n', 'd', 'a', 'A', 0, 0, 0, 0, 0, 0, 0, 0};
 const capstr capMimMobile = {'M', 'i', 'r', 'a', 'n', 'd', 'a', 'M', 'o', 'b', 'i', 'l', 'e', 0, 0, 0};
+const capstr capMimPack   = {'M', 'I', 'M', '/', 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}; // Custom Miranda Pack
 const capstr capTrillian  = {0x97, 0xb1, 0x27, 0x51, 0x24, 0x3c, 0x43, 0x34, 0xad, 0x22, 0xd6, 0xab, 0xf7, 0x3f, 0x14, 0x09};
 const capstr capTrilCrypt = {0xf2, 0xe7, 0xc7, 0xf4, 0xfe, 0xad, 0x4d, 0xfb, 0xb2, 0x35, 0x36, 0x79, 0x8b, 0xdf, 0x00, 0x00};
 const capstr capSim       = {'S', 'I', 'M', ' ', 'c', 'l', 'i', 'e', 'n', 't', ' ', ' ', 0, 0, 0, 0};
@@ -181,6 +182,7 @@ char* cliSpamBot   = "Spam Bot";
 char* detectUserClient(HANDLE hContact, DWORD dwUin, WORD wVersion, DWORD dwFT1, DWORD dwFT2, DWORD dwFT3, DWORD dwOnlineSince, BYTE bDirectFlag, DWORD dwDirectCookie, DWORD dwWebPort, BYTE* caps, WORD wLen, BYTE* bClientId, char* szClientBuf)
 {
   LPSTR szClient = NULL;
+  int bMirandaIM = FALSE;
 
   *bClientId = 1; // Most clients does not tick as MsgIDs
 
@@ -203,12 +205,14 @@ char* detectUserClient(HANDLE hContact, DWORD dwUin, WORD wVersion, DWORD dwFT1,
     { // Yes this is most probably Miranda, get the version info
       szClient = MirandaVersionToString(szClientBuf, 0, dwFT2, 0);
       *bClientId = 2;
+      bMirandaIM = TRUE;
     }
   }
   else if (dwFT1 == 0x7fffffff)
   { // This is Miranda with unicode core
     szClient = MirandaVersionToString(szClientBuf, 1, dwFT2, 0);
     *bClientId = 2;
+    bMirandaIM = TRUE;
   }
   else if ((dwFT1 & 0xFF7F0000) == 0x7D000000)
   { // This is probably an Licq client
@@ -334,6 +338,7 @@ char* detectUserClient(HANDLE hContact, DWORD dwUin, WORD wVersion, DWORD dwFT1,
             strcat(szClient, " + SecureIM");
         }
         *bClientId = 2;
+        bMirandaIM = TRUE;
       }
       else if (capId = MatchCap(caps, wLen, &capIcqJs7, 4))
       { // detect newer icqj mod
@@ -346,6 +351,7 @@ char* detectUserClient(HANDLE hContact, DWORD dwUin, WORD wVersion, DWORD dwFT1,
         {
           strcat(szClient, " + SecureIM");
         }
+        bMirandaIM = TRUE;
       }
       else if (capId = MatchCap(caps, wLen, &capIcqJSin, 4))
       { // detect newer icqj mod
@@ -358,6 +364,7 @@ char* detectUserClient(HANDLE hContact, DWORD dwUin, WORD wVersion, DWORD dwFT1,
         {
           strcat(szClient, " + SecureIM");
         }
+        bMirandaIM = TRUE;
       }
       else if (MatchCap(caps, wLen, &capTrillian, 0x10) || MatchCap(caps, wLen, &capTrilCrypt, 0x10))
       { // this is Trillian, check for new versions
@@ -642,6 +649,7 @@ char* detectUserClient(HANDLE hContact, DWORD dwUin, WORD wVersion, DWORD dwFT1,
                 {
                   strcpy(szClientBuf, "icq5.1");
                 }
+                SetContactCapabilities(hContact, CAPF_STATUSMSGEXT);
               }
               else
               {
@@ -753,6 +761,7 @@ char* detectUserClient(HANDLE hContact, DWORD dwUin, WORD wVersion, DWORD dwFT1,
           DWORD mver = (*capId)[0x8] << 0x18 | (*capId)[0x9] << 0x10 | (*capId)[0xA] << 8 | (*capId)[0xB];
 
           szClient = MirandaVersionToStringEx(szClientBuf, 0, "AimOscar", aver, mver);
+          bMirandaIM = TRUE;
         }
         else if (capId = MatchCap(caps, wLen, &capSim, 0xC))
         { // Sim is universal
@@ -788,6 +797,18 @@ char* detectUserClient(HANDLE hContact, DWORD dwUin, WORD wVersion, DWORD dwFT1,
       }
       else
         szClient = "AIM";
+    }
+  }
+  if (caps && bMirandaIM)
+  { // custom miranda packs
+    capstr* capId;
+
+    if (capId = MatchCap(caps, wLen, &capMimPack, 4))
+    {
+      char szPack[16];
+
+      null_snprintf(szPack, 16, " [%.12s]", (*capId)+4);
+      strcat(szClient, szPack);
     }
   }
 

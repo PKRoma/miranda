@@ -1217,6 +1217,13 @@ int getPluginTypeIdLen(int nTypeID)
   case MTYPE_FILEREQ:
     return 0x2B;
 
+  case MTYPE_AUTOAWAY:
+  case MTYPE_AUTOBUSY:
+  case MTYPE_AUTONA:
+  case MTYPE_AUTODND:
+  case MTYPE_AUTOFFC:
+    return 0x3C;
+
   default:
     return 0;
   }
@@ -1257,6 +1264,26 @@ void packPluginTypeId(icq_packet *packet, int nTypeID)
     packDWord(packet, 0x00000000);
     packWord(packet, 0x0000);
     packByte(packet, 0x00);
+
+    break;
+
+  case MTYPE_AUTOAWAY:
+  case MTYPE_AUTOBUSY:
+  case MTYPE_AUTONA:
+  case MTYPE_AUTODND:
+  case MTYPE_AUTOFFC:
+    packLEWord(packet, 0x03A);                // Length
+
+    packGUID(packet, MGTYPE_STATUSMSGEXT);    // Message Type GUID
+    packLEWord(packet, (WORD)(nTypeID - 0xE7)); // Function ID
+    packLEDWord(packet, 0x13);                // Request type string
+    packBuffer(packet, "Away Status Message", 0x13);
+
+    packDWord(packet, 0x01000000);            // Unknown binary stuff
+    packDWord(packet, 0x00000000);
+    packDWord(packet, 0x00000000);
+    packDWord(packet, 0x00000000);
+    packByte(packet, 0x00);       
 
     break;
 
@@ -1959,7 +1986,7 @@ static void handleRecvMsgResponse(unsigned char *buf, WORD wLen, WORD wFlags, DW
 
       bMsgType = pCookieData->bMessageType;
     }
-    else if (pCookieData->bMessageType == MTYPE_AUTOAWAY)
+    else if (pCookieData->bMessageType == MTYPE_AUTOAWAY && bMsgType != MTYPE_PLUGIN)
     {
       if (bMsgType != pCookieData->nAckType)
         NetLog_Server("Warning: Invalid message type in %s from (%u)", "message response", dwUin);
@@ -2027,6 +2054,8 @@ static void handleRecvMsgResponse(unsigned char *buf, WORD wLen, WORD wFlags, DW
         DWORD dwLengthToEnd;
         DWORD dwDataLen;
         int typeId;
+        WORD wFunctionId;
+
 
         if (wLength != 0x1B)
         {
@@ -2047,7 +2076,7 @@ static void handleRecvMsgResponse(unsigned char *buf, WORD wLen, WORD wFlags, DW
         // This packet is malformed. Possibly a file accept from Miranda IM 0.1.2.1
         if (wLen < 20) return;
 
-        if (!unpackPluginTypeId(&buf, &wLen, &typeId, NULL, FALSE)) return;
+        if (!unpackPluginTypeId(&buf, &wLen, &typeId, &wFunctionId, FALSE)) return;
 
         if (wLen < 4)
         {
@@ -2071,7 +2100,7 @@ static void handleRecvMsgResponse(unsigned char *buf, WORD wLen, WORD wFlags, DW
         {
         case MTYPE_PLAIN:
           if (pCookieData && pCookieData->bMessageType == MTYPE_AUTOAWAY && dwLengthToEnd >= 4)
-          { // icq6 invented this
+          { // ICQ 6 invented this
             char *szMsg;
 
             szMsg = (char*)_alloca(dwDataLen + 1);
@@ -2126,6 +2155,22 @@ static void handleRecvMsgResponse(unsigned char *buf, WORD wLen, WORD wFlags, DW
             ReleaseCookie(dwCookie);
           }
           return;
+
+        case MTYPE_STATUSMSGEXT:
+          { // handle Away Message response (ICQ 6)
+            char *szMsg;
+
+            szMsg = (char*)SAFE_MALLOC(dwDataLen + 1);
+            if (dwDataLen > 0)
+              memcpy(szMsg, buf, dwDataLen);
+            szMsg[dwDataLen] = '\0';
+            szMsg = EliminateHtml(szMsg, dwDataLen);
+
+            handleStatusMsgReply("SNAC(4.B) ", hContact, dwUin, wVersion, pCookieData->nAckType, (WORD)dwCookie, szMsg);
+
+            SAFE_FREE(&szMsg);
+          }
+          break;
 
         default:
           NetLog_Server("Error: Unknown plugin message response, type %d.", typeId);
