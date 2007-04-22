@@ -70,9 +70,9 @@ static char* GetCachedSetting(const char *szModuleName,const char *szSettingName
 	int index;
 	char szFullName[512];
 
-	strcpy(szFullName+1,szSettingName);
-	szFullName[settingNameLen+1]='/';
-	strcpy(szFullName+settingNameLen+2,szModuleName);
+	strcpy(szFullName+1,szModuleName);
+	szFullName[moduleNameLen+1]='/';
+	strcpy(szFullName+moduleNameLen+2,szSettingName);
 
 	if (lastsetting && strcmp(szFullName+1,lastsetting) == 0)
 		return lastsetting;
