@@ -333,17 +333,13 @@ int ThreadData::recv( char* data, long datalen )
 LBL_RecvAgain:
 	if ( !mIsMainThread && !MyOptions.UseGateway && !MyOptions.UseProxy ) {
 		mWaitPeriod = mJoinedCount ? 60 : 15;
-		for ( ;; ) {
-			NETLIBSELECT nls = { 0 };
-			nls.cbSize = sizeof( nls );
-			nls.dwTimeout = 1000;
-			nls.hReadConns[0] = s;
-			if ( MSN_CallService( MS_NETLIB_SELECT, 0, ( LPARAM )&nls ) != 0 )
-				break;
-
-			if ( isTimeout() ) 
-				return 0;
-	}	}
+		NETLIBSELECT nls = { 0 };
+		nls.cbSize = sizeof( nls );
+		nls.dwTimeout = 1000;
+		nls.hReadConns[0] = s;
+		while ( MSN_CallService( MS_NETLIB_SELECT, 0, ( LPARAM )&nls ) == 0 )
+			if ( isTimeout() ) return 0;
+	}
 
 	int ret = MSN_CallService( MS_NETLIB_RECV, ( WPARAM )s, ( LPARAM )&nlb );
 	if ( ret == 0 ) {

@@ -175,7 +175,7 @@ BOOL CALLBACK AvatarDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam
 						DeleteObject( hAvatar );
 
 					char tFileName[ MAX_PATH ];
-					MSN_GetAvatarFileName( NULL, tFileName, sizeof tFileName );
+					MSN_GetAvatarFileName( NULL, tFileName, sizeof( tFileName ));
 					DeleteFileA( tFileName );
 					MSN_DeleteSetting( NULL, "PictObject" );
 					InvalidateRect( hwndDlg, NULL, TRUE );

@@ -271,7 +271,7 @@ void  MSN_GetCustomSmileyFileName( HANDLE hContact, char* pszDest, size_t cbLen,
 	{
 		CallService(MS_DB_GETPROFILEPATH, (WPARAM) cbLen, (LPARAM)pszDest);
 		tPathLen = strlen( pszDest );
-		tPathLen += mir_snprintf(pszDest + tPathLen, cbLen - tPathLen, "\\%s\\",msnProtocolName);
+		tPathLen += mir_snprintf(pszDest + tPathLen, cbLen - tPathLen, "\\%s\\", msnProtocolName);
 	}
 	else {
 		strcpy( pszDest, path );

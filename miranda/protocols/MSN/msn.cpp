@@ -306,7 +306,7 @@ extern "C" int __declspec(dllexport) Load( PLUGINLINK* link )
 	protocolname++;
 	fend = strrchr(path,'.');
 	*fend = '\0';
-	CharUpperA( protocolname );
+	_strupr( protocolname );
 	msnProtocolName = mir_strdup( protocolname );
 
 	mir_snprintf( path, sizeof( path ), "%s:HotmailNotify", protocolname );
@@ -316,6 +316,9 @@ extern "C" int __declspec(dllexport) Load( PLUGINLINK* link )
 	MSN_CallService( MS_DB_SETSETTINGRESIDENT, TRUE, ( LPARAM )path );
 
 	mir_snprintf( path, sizeof( path ), "%s/IdleTS", protocolname );
+	MSN_CallService( MS_DB_SETSETTINGRESIDENT, TRUE, ( LPARAM )path );
+
+	mir_snprintf( path, sizeof( path ), "%s/p2pMsgId", protocolname );
 	MSN_CallService( MS_DB_SETSETTINGRESIDENT, TRUE, ( LPARAM )path );
 
 	arHooks.insert( HookEvent( ME_SYSTEM_MODULESLOADED, OnModulesLoaded ));
@@ -332,8 +335,7 @@ extern "C" int __declspec(dllexport) Load( PLUGINLINK* link )
 
 	MSN_InitThreads();
 
-	PROTOCOLDESCRIPTOR pd;
-	memset( &pd, 0, sizeof( pd ));
+	PROTOCOLDESCRIPTOR pd = {0};
 	pd.cbSize = sizeof( pd );
 	pd.szName = msnProtocolName;
 	pd.type = PROTOTYPE_PROTOCOL;

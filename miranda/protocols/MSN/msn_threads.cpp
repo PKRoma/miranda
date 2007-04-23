@@ -516,6 +516,7 @@ ThreadData::~ThreadData()
 		ReleaseMutex( hQueueMutex );
 		CloseHandle( hQueueMutex );
 	}
+	mir_free( mSplitMsgBuf );
 }
 
 void ThreadData::applyGatewayData( HANDLE hConn, bool isPoll )

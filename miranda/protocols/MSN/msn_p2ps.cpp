@@ -87,29 +87,6 @@ filetransfer*  p2p_getSessionByID( unsigned id )
 	return ft;
 }
 
-filetransfer*  p2p_getSessionByMsgID( unsigned id )
-{
-	if ( id == 0 )
-		return NULL;
-
-	filetransfer* ft = NULL;
-	EnterCriticalSection( &sessionLock );
-
-	for ( int i=0; i < sessionList.getCount(); i++ ) {
-		filetransfer* FT = sessionList[i];
-		if ( FT->p2p_msgid == id || FT->p2p_msgid == (id + 1) ) {
-			ft = FT;
-			break;
-	}	}
-
-	LeaveCriticalSection( &sessionLock );
-	if ( ft == NULL )
-		MSN_DebugLog( "Ignoring unknown message id %lu", id );
-
-	return ft;
-}
-
-
 filetransfer*  p2p_getSessionByUniqueID( unsigned id )
 {
 	if ( id == 0 )

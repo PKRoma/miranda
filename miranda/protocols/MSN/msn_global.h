@@ -189,8 +189,8 @@ int         MSN_GetMyHostAsString( char* parBuf, int parBufSize );
 
 void     __cdecl     MSN_ConnectionProc( HANDLE hNewConnection, DWORD dwRemoteIP, void* );
 void        MSN_GoOffline( void );
-void        MSN_GetAvatarFileName( HANDLE hContact, char* pszDest, int cbLen );
-void        MSN_GetCustomSmileyFileName( HANDLE hContact, char* pszDest, int cbLen, char* SmileyName, int Type);
+void        MSN_GetAvatarFileName( HANDLE hContact, char* pszDest, size_t cbLen );
+void        MSN_GetCustomSmileyFileName( HANDLE hContact, char* pszDest, size_t cbLen, char* SmileyName, int Type);
 LPTSTR      MSN_GetErrorText( DWORD parErrorCode );
 void        MSN_SendStatusMessage( const char* msg );
 void        MSN_SetServerStatus( int newStatus );
@@ -359,7 +359,7 @@ struct filetransfer
 	time_t		ts;
 
 	unsigned    p2p_sessionid;	// session id
-	unsigned    p2p_msgid;		// message id
+//	unsigned    p2p_msgid;		// message id
 	unsigned    p2p_acksessid;	// acknowledged session id
 	unsigned    p2p_sendmsgid; // send message id
 	unsigned    p2p_byemsgid;  // bye message id
@@ -428,6 +428,7 @@ struct ThreadData
 	TCHAR          mChatID[10];
 	bool           mIsMainThread;
 	int            mWaitPeriod;
+	char*          mSplitMsgBuf;
 
 	//----| for gateways |----------------------------------------------------------------
 	char           mSessionID[ 50 ]; // Gateway session ID
@@ -520,11 +521,12 @@ void  p2p_sessionComplete( filetransfer* ft );
 
 filetransfer*  p2p_getThreadSession( HANDLE hContact, TInfoType mType );
 filetransfer*  p2p_getSessionByID( unsigned id );
-filetransfer*  p2p_getSessionByMsgID( unsigned id );
 filetransfer*  p2p_getSessionByUniqueID( unsigned id );
 filetransfer*  p2p_getSessionByCallID( const char* CallID );
 
 BOOL  p2p_sessionRegistered( filetransfer* ft );
+unsigned p2p_getMsgId( HANDLE hContact, int inc );
+
 
 void  p2p_registerDC( directconnection* ft );
 void  p2p_unregisterDC( directconnection* dc );
