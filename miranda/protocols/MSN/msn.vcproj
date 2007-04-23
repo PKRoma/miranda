@@ -35,7 +35,7 @@
 				ExceptionHandling="FALSE"
 				RuntimeLibrary="2"
 				EnableFunctionLevelLinking="TRUE"
-				UsePrecompiledHeader="0"
+				UsePrecompiledHeader="3"
 				PrecompiledHeaderThrough="msn_global.h"
 				AssemblerOutput="3"
 				WarningLevel="3"
@@ -103,7 +103,7 @@
 				ExceptionHandling="FALSE"
 				BasicRuntimeChecks="3"
 				RuntimeLibrary="3"
-				UsePrecompiledHeader="0"
+				UsePrecompiledHeader="3"
 				PrecompiledHeaderThrough="msn_global.h"
 				BrowseInformation="1"
 				WarningLevel="3"
@@ -166,7 +166,7 @@
 				BasicRuntimeChecks="3"
 				RuntimeLibrary="3"
 				BufferSecurityCheck="TRUE"
-				UsePrecompiledHeader="0"
+				UsePrecompiledHeader="3"
 				PrecompiledHeaderThrough="msn_global.h"
 				BrowseInformation="1"
 				WarningLevel="3"
@@ -235,7 +235,7 @@
 				ExceptionHandling="FALSE"
 				RuntimeLibrary="2"
 				BufferSecurityCheck="TRUE"
-				UsePrecompiledHeader="0"
+				UsePrecompiledHeader="3"
 				PrecompiledHeaderThrough="msn_global.h"
 				AssemblerOutput="3"
 				WarningLevel="3"
@@ -295,6 +295,30 @@
 			Filter="cpp;c;cxx;rc;def;r;odl;idl;hpj;bat">
 			<File
 				RelativePath=".\ezxml.c">
+				<FileConfiguration
+					Name="Release|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						UsePrecompiledHeader="0"/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Debug|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						UsePrecompiledHeader="0"/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Debug Unicode|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						UsePrecompiledHeader="0"/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release Unicode|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						UsePrecompiledHeader="0"/>
+				</FileConfiguration>
 			</File>
 			<File
 				RelativePath="mmdecsjis.cpp">
