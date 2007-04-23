@@ -304,7 +304,7 @@ static BOOL CALLBACK JabberAgentsDlgProc( HWND hwndDlg, UINT msg, WPARAM wParam,
 				TCHAR * start=text;
 				while (*start==_T(' ')) start++;
 				TCHAR * end=start;
-				while (*end!=_T(' ')) end++;
+				while (*end!=_T(' ') && *end!=_T('\0')) end++;
 				*end=_T('\0');
 				JabberIqAdd( iqId, IQ_PROC_DISCOAGENTS, JabberIqResultDiscoAgentItems );
 				{
