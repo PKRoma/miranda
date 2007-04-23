@@ -445,14 +445,14 @@ void ext_yahoo_status_logon(int id, const char *who, int stat, const char *msg, 
 			// no avatar
 			DBWriteContactSettingDword(hContact, yahooProtocolName, "PictCK", 0);
 		} else if (DBGetContactSettingDword(hContact, yahooProtocolName,"PictCK", 0) != cksum) {
-			char szFile[MAX_PATH];
+			//char szFile[MAX_PATH];
 			
 			// Save new Checksum
 			DBWriteContactSettingDword(hContact, yahooProtocolName, "PictCK", cksum);
 			
 			// Need to delete the Avatar File!!
-			GetAvatarFileName(hContact, szFile, sizeof szFile, 0);
-			DeleteFile(szFile);
+			//GetAvatarFileName(hContact, szFile, sizeof szFile, 0);
+			//DeleteFile(szFile);
 		}
 	
 		// Cleanup the type? and reset things...
@@ -524,7 +524,7 @@ void ext_yahoo_got_picture_upload(int id, const char *me, const char *url,unsign
 		cksum = YAHOO_GetDword("AvatarHash", 0);
 		
 	YAHOO_SetString(NULL, "AvatarURL", url);
-	YAHOO_SetDword("AvatarExpires", ts);
+	//YAHOO_SetDword("AvatarExpires", ts);
 
 	if  (!DBGetContactSetting(NULL, yahooProtocolName, "AvatarInv", &dbv) ){
 		LOG(("[ext_yahoo_got_picture_upload] Buddy: %s told us this is bad??", dbv.pszVal));

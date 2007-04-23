@@ -758,17 +758,18 @@ void ext_yahoo_got_picture(int id, const char *me, const char *who, const char *
 						if (mcksum != cksum)
 							LOG(("[ext_yahoo_got_picture] WARNING: Checksums don't match!"));	
 						
-						time(&ts);
+						/*time(&ts);
 						ae = YAHOO_GetDword("AvatarExpires", 0);
 						
 						if (ae != 0 && ae > (ts - 300)) {
+							LOG(("[ext_yahoo_got_picture] Current Time: %lu Expires: %lu ", ts, ae));
 							LOG(("[ext_yahoo_got_picture] We just reuploaded! Stop screwing with Yahoo FT. "));
 							
 							// don't leak stuff
 							DBFreeVariant(&dbv);
 
 							break;
-						}
+						}*/
 						
 						LOG(("[ext_yahoo_got_picture] Buddy: %s told us this is bad??Expired??. Re-uploading", who));
 						DBDeleteContactSetting(NULL, yahooProtocolName, "AvatarURL");
@@ -880,7 +881,7 @@ void YAHOO_request_avatar(const char* who)
 {
 	time_t  last_chk, cur_time;
 	HANDLE 	hContact = 0;
-	char    szFile[MAX_PATH];
+	//char    szFile[MAX_PATH];
 	
 	if (!YAHOO_GetByte( "ShowAvatars", 0 )) {
 		LOG(("Avatars disabled, but available for: %s", who));
@@ -892,9 +893,8 @@ void YAHOO_request_avatar(const char* who)
 	if (!hContact)
 		return;
 	
-	
-	GetAvatarFileName(hContact, szFile, sizeof szFile, DBGetContactSettingByte(hContact, yahooProtocolName,"AvatarType", 0));
-	DeleteFile(szFile);
+	/*GetAvatarFileName(hContact, szFile, sizeof szFile, DBGetContactSettingByte(hContact, yahooProtocolName,"AvatarType", 0));
+	DeleteFile(szFile);*/
 	
 	time(&cur_time);
 	last_chk = DBGetContactSettingDword(hContact, yahooProtocolName, "PictLastCheck", 0);
@@ -978,20 +978,27 @@ void YAHOO_bcast_picture_checksum(int cksum)
 void GetAvatarFileName(HANDLE hContact, char* pszDest, int cbLen, int type)
 {
   int tPathLen;
-  DBVARIANT dbv;
+//  DBVARIANT dbv;
   
   CallService(MS_DB_GETPROFILEPATH, cbLen, (LPARAM)pszDest);
 
   tPathLen = lstrlen(pszDest);
-  _snprintf(pszDest + tPathLen, MAX_PATH-tPathLen, "\\%s\\", yahooProtocolName);
+  _snprintf(pszDest + tPathLen, MAX_PATH-tPathLen, "\\%s", yahooProtocolName);
   CreateDirectory(pszDest, NULL);
 
-  if (hContact != NULL && !DBGetContactSetting(hContact, yahooProtocolName, YAHOO_LOGINID, &dbv)) {
+  if (hContact != NULL) {
+	int ck_sum;
+	  
+	ck_sum = DBGetContactSettingDword(hContact, yahooProtocolName,"PictCK", 0);
+	_snprintf(pszDest + tPathLen, MAX_PATH-tPathLen, "\\%s\\%lX", yahooProtocolName, ck_sum);
+  }else {
+	lstrcat(pszDest, "avatar");
+  }
+
+  /*if (hContact != NULL && !DBGetContactSetting(hContact, yahooProtocolName, YAHOO_LOGINID, &dbv)) {
 		lstrcat(pszDest, dbv.pszVal);
 		DBFreeVariant(&dbv);
-  }else {
-		lstrcat(pszDest, "avatar");
-  }
+  */
   
   if (type == 1) {
 	lstrcat(pszDest, ".swf" );
@@ -1089,10 +1096,7 @@ int YahooAvatarFormatSupported(WPARAM wParam, LPARAM lParam)
 {
   YAHOO_DebugLog("[YahooAvatarFormatSupported]");
 
-  if (lParam == PA_FORMAT_PNG)
-    return 1;
-  else
-    return 0;
+	return (lParam == PA_FORMAT_PNG) ? 1 : 0;
 }
 
 /*
