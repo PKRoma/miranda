@@ -752,8 +752,8 @@ void ext_yahoo_got_picture(int id, const char *me, const char *who, const char *
 			if (!DBGetContactSetting(NULL, yahooProtocolName, "AvatarURL", &dbv)){
 					if (lstrcmpi(pic_url, dbv.pszVal) == 0) {
 						DBVARIANT dbv2;
-						time_t  ts;
-						DWORD	ae;
+						/*time_t  ts;
+						DWORD	ae;*/
 						
 						if (mcksum != cksum)
 							LOG(("[ext_yahoo_got_picture] WARNING: Checksums don't match!"));	
@@ -978,8 +978,7 @@ void YAHOO_bcast_picture_checksum(int cksum)
 void GetAvatarFileName(HANDLE hContact, char* pszDest, int cbLen, int type)
 {
   int tPathLen;
-//  DBVARIANT dbv;
-  
+ 
   CallService(MS_DB_GETPROFILEPATH, cbLen, (LPARAM)pszDest);
 
   tPathLen = lstrlen(pszDest);
@@ -987,19 +986,13 @@ void GetAvatarFileName(HANDLE hContact, char* pszDest, int cbLen, int type)
   CreateDirectory(pszDest, NULL);
 
   if (hContact != NULL) {
-	int ck_sum;
-	  
-	ck_sum = DBGetContactSettingDword(hContact, yahooProtocolName,"PictCK", 0);
+	int ck_sum = DBGetContactSettingDword(hContact, yahooProtocolName,"PictCK", 0);
+	
 	_snprintf(pszDest + tPathLen, MAX_PATH-tPathLen, "\\%s\\%lX", yahooProtocolName, ck_sum);
   }else {
 	lstrcat(pszDest, "avatar");
   }
 
-  /*if (hContact != NULL && !DBGetContactSetting(hContact, yahooProtocolName, YAHOO_LOGINID, &dbv)) {
-		lstrcat(pszDest, dbv.pszVal);
-		DBFreeVariant(&dbv);
-  */
-  
   if (type == 1) {
 	lstrcat(pszDest, ".swf" );
   } else
@@ -1010,7 +1003,6 @@ void GetAvatarFileName(HANDLE hContact, char* pszDest, int cbLen, int type)
 int YahooGetAvatarInfo(WPARAM wParam,LPARAM lParam)
 {
 	PROTO_AVATAR_INFORMATION* AI = ( PROTO_AVATAR_INFORMATION* )lParam;
-
 	DBVARIANT dbv;
 	int avtType;
 	
@@ -1024,16 +1016,6 @@ int YahooGetAvatarInfo(WPARAM wParam,LPARAM lParam)
 	if (!YAHOO_GetByte( "ShowAvatars", 0 ) || !yahooLoggedIn) {
 		YAHOO_DebugLog("[YAHOO_GETAVATARINFO] %s", yahooLoggedIn ? "We are not using/showing avatars!" : "We are not logged in. Can't load avatars now!");
 		
-		/*if (DBGetContactSettingDword(AI->hContact, yahooProtocolName,"PictCK", 0) != 0) {
-			YAHOO_DebugLog("[YAHOO_GETAVATARINFO] Removing avatar information!");
-			
-			DBWriteContactSettingDword(AI->hContact, yahooProtocolName, "PictCK", 0);
-			DBWriteContactSettingDword(AI->hContact, yahooProtocolName, "PictLastCheck", 0);
-			DBWriteContactSettingDword(AI->hContact, yahooProtocolName, "PictLoading", 0);
-			//GetAvatarFileName(AI->hContact, AI->filename, sizeof AI->filename);
-			//DeleteFile(AI->filename);
-		}*/
-
 		return GAIR_NOAVATAR;
 	}
 	
@@ -1047,36 +1029,37 @@ int YahooGetAvatarInfo(WPARAM wParam,LPARAM lParam)
 		return GAIR_NOAVATAR;
 	}
 	
-	if (DBGetContactSettingDword(AI->hContact, yahooProtocolName,"PictCK", 0) != 0) {
-		
-		GetAvatarFileName(AI->hContact, AI->filename, sizeof AI->filename,DBGetContactSettingByte(AI->hContact, yahooProtocolName,"AvatarType", 0));
-		//if ( access( AI->filename, 0 ) == 0 ) {
-		AI->format = PA_FORMAT_PNG;
-		YAHOO_DebugLog("[YAHOO_GETAVATARINFO] filename: %s", AI->filename);
-		
-		if (_access( AI->filename, 0 ) == 0 ) {
-			return GAIR_SUCCESS;
-		} else {
-			/* need to request it again? */
-			if (YAHOO_GetWord(AI->hContact, "PictLoading", 0) != 0 &&
-				(time(NULL) - YAHOO_GetWord(AI->hContact, "PictLastCK", 0) < 500)) {
-				YAHOO_DebugLog("[YAHOO_GETAVATARINFO] Waiting for avatar to load!");
+	if (DBGetContactSettingDword(AI->hContact, yahooProtocolName,"PictCK", 0) == 0) 
+		return GAIR_NOAVATAR;
+	
+	GetAvatarFileName(AI->hContact, AI->filename, sizeof AI->filename,DBGetContactSettingByte(AI->hContact, yahooProtocolName,"AvatarType", 0));
+	AI->format = PA_FORMAT_PNG;
+	YAHOO_DebugLog("[YAHOO_GETAVATARINFO] filename: %s", AI->filename);
+	
+	if (_access( AI->filename, 0 ) == 0 ) 
+		return GAIR_SUCCESS;
+	
+	if (( wParam & GAIF_FORCE ) != 0 && AI->hContact != NULL ) {		
+		/* need to request it again? */
+		if (YAHOO_GetWord(AI->hContact, "PictLoading", 0) != 0 &&
+			(time(NULL) - YAHOO_GetWord(AI->hContact, "PictLastCK", 0) < 500)) {
+			YAHOO_DebugLog("[YAHOO_GETAVATARINFO] Waiting for avatar to load!");
+			return GAIR_WAITFOR;
+		} else if ( yahooLoggedIn ) {
+			DBVARIANT dbv;
+  
+			if (!DBGetContactSetting(AI->hContact, yahooProtocolName, YAHOO_LOGINID, &dbv)) {
+				YAHOO_DebugLog("[YAHOO_GETAVATARINFO] Requesting avatar!");
+				
+				YAHOO_request_avatar(dbv.pszVal);
+				DBFreeVariant(&dbv);
+				
 				return GAIR_WAITFOR;
-			} else if ( yahooLoggedIn ) {
-				DBVARIANT dbv;
-	  
-				if (!DBGetContactSetting(AI->hContact, yahooProtocolName, YAHOO_LOGINID, &dbv)) {
-					YAHOO_DebugLog("[YAHOO_GETAVATARINFO] Requesting avatar!");
-					
-					YAHOO_request_avatar(dbv.pszVal/*who */);
-					DBFreeVariant(&dbv);
-					return GAIR_WAITFOR;
-				} else {
-					YAHOO_DebugLog("[YAHOO_GETAVATARINFO] Can't retrieve user id?!");
-				}
+			} else {
+				YAHOO_DebugLog("[YAHOO_GETAVATARINFO] Can't retrieve user id?!");
 			}
 		}
-	} 
+	}
 	
 	YAHOO_DebugLog("[YAHOO_GETAVATARINFO] NO AVATAR???");
 	return GAIR_NOAVATAR;
