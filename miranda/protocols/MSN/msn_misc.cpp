@@ -226,65 +226,74 @@ void  MSN_DumpMemory( const char* buffer, int bufSize )
 /////////////////////////////////////////////////////////////////////////////////////////
 // MSN_GetAvatarFileName - gets a file name for an contact's avatar
 
-void  MSN_GetAvatarFileName( HANDLE hContact, char* pszDest, int cbLen )
+void  MSN_GetAvatarFileName( HANDLE hContact, char* pszDest, size_t cbLen )
 {
-	MSN_CallService( MS_DB_GETPROFILEPATH, cbLen, LPARAM( pszDest ));
-	
-	int tPathLen = strlen( pszDest );
+	size_t tPathLen;
 
-	tPathLen += mir_snprintf(pszDest + tPathLen, MAX_PATH - tPathLen,"\\%s\\",msnProtocolName);
-
-	if(!FoldersGetCustomPath(hMSNAvatarsFolder,  pszDest, MAX_PATH, pszDest))
+	char* path = ( char* )alloca( cbLen );
+	if ( FoldersGetCustomPath( hMSNAvatarsFolder, path, cbLen, "" ))
 	{
+		MSN_CallService( MS_DB_GETPROFILEPATH, cbLen, LPARAM( pszDest ));
+		
 		tPathLen = strlen( pszDest );
-
-		CreateDirectoryA(pszDest,NULL);
-
-		if ( hContact != NULL ) {
-			char szEmail[ MSN_MAX_EMAIL_LEN ];
-			if ( MSN_GetStaticString( "e-mail", hContact, szEmail, sizeof( szEmail )))
-				ltoa(( long )hContact, szEmail, 10 );
-
-			long digest[ 4 ];
-			mir_md5_hash(( BYTE* )szEmail, strlen( szEmail ), ( BYTE* )digest );
-
-			tPathLen += mir_snprintf(pszDest + tPathLen, MAX_PATH - tPathLen,"\\%08lX%08lX%08lX%08lX.png",digest[0], digest[1], digest[2], digest[3]);
-		}
-		else tPathLen += mir_snprintf(pszDest + tPathLen, MAX_PATH - tPathLen,"\\%s avatar.png",msnProtocolName );
+		tPathLen += mir_snprintf(pszDest + tPathLen, cbLen - tPathLen,"\\%s\\",msnProtocolName);
 	}
+	else {
+		strcpy( pszDest, path );
+		tPathLen = strlen( pszDest );
+	}
+
+	_mkdir(pszDest);
+
+	if ( hContact != NULL ) {
+		char szEmail[ MSN_MAX_EMAIL_LEN ];
+		if ( MSN_GetStaticString( "e-mail", hContact, szEmail, sizeof( szEmail )))
+			ltoa(( long )hContact, szEmail, 10 );
+
+		long digest[ 4 ];
+		mir_md5_hash(( BYTE* )szEmail, strlen( szEmail ), ( BYTE* )digest );
+
+		tPathLen += mir_snprintf(pszDest + tPathLen, cbLen - tPathLen,"\\%08lX%08lX%08lX%08lX.png",digest[0], digest[1], digest[2], digest[3]);
+	}
+	else 
+		tPathLen += mir_snprintf(pszDest + tPathLen, cbLen - tPathLen,"\\%s avatar.png",msnProtocolName );
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////
 // MSN_GetCustomSmileyFileName - gets a file name for an contact's custom smiley
 
-void  MSN_GetCustomSmileyFileName( HANDLE hContact, char* pszDest, int cbLen, char* SmileyName, int type )
+void  MSN_GetCustomSmileyFileName( HANDLE hContact, char* pszDest, size_t cbLen, char* SmileyName, int type )
 {
-	CallService(MS_DB_GETPROFILEPATH, (WPARAM) MAX_PATH, (LPARAM)pszDest);
-	
-	int tPathLen = strlen( pszDest );
+	size_t tPathLen;
 
-	tPathLen += mir_snprintf(pszDest + tPathLen, MAX_PATH - tPathLen,"\\%s\\",msnProtocolName);
-	
-	FoldersGetCustomPath(hCustomSmileyFolder,  pszDest, MAX_PATH, pszDest);
-	CreateDirectoryA(pszDest,NULL);
-
-	tPathLen = strlen( pszDest );
+	char* path = ( char* )alloca( cbLen );
+	if ( FoldersGetCustomPath(hCustomSmileyFolder, path, cbLen, "" )) 
+	{
+		CallService(MS_DB_GETPROFILEPATH, (WPARAM) cbLen, (LPARAM)pszDest);
+		tPathLen = strlen( pszDest );
+		tPathLen += mir_snprintf(pszDest + tPathLen, cbLen - tPathLen, "\\%s\\",msnProtocolName);
+	}
+	else {
+		strcpy( pszDest, path );
+		tPathLen = strlen( pszDest );
+	}
 
 	if ( hContact != NULL ) {
 		char szEmail[ MSN_MAX_EMAIL_LEN ];
 		if ( MSN_GetStaticString( "e-mail", hContact, szEmail, sizeof( szEmail )))
 			ltoa(( long )hContact, szEmail, 10 );
 		
-		tPathLen += mir_snprintf( pszDest + tPathLen, MAX_PATH - tPathLen, "\\%s\\",szEmail );
+		tPathLen += mir_snprintf( pszDest + tPathLen, cbLen - tPathLen, "\\%s\\", szEmail );
 	}
-	else tPathLen += mir_snprintf( pszDest + tPathLen, MAX_PATH - tPathLen, "\\%s\\",msnProtocolName );
+	else 
+		tPathLen += mir_snprintf( pszDest + tPathLen, cbLen - tPathLen, "\\%s\\", msnProtocolName );
 		
-	CreateDirectoryA( pszDest, NULL );
+	_mkdir( pszDest );
 
 	if ( type == MSN_APPID_CUSTOMSMILEY )
-		mir_snprintf( pszDest + tPathLen, MAX_PATH - tPathLen, "%s.png", SmileyName );
+		mir_snprintf( pszDest + tPathLen, cbLen - tPathLen, "%s.png", SmileyName );
 	else
-		mir_snprintf( pszDest + tPathLen, MAX_PATH - tPathLen, "%s.gif", SmileyName );
+		mir_snprintf( pszDest + tPathLen, cbLen - tPathLen, "%s.gif", SmileyName );
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////
@@ -880,7 +889,7 @@ filetransfer::filetransfer()
 
 filetransfer::~filetransfer( void )
 {
-	MSN_DebugLog( "Destroying file transfer session %lu", p2p_sessionid );
+	MSN_DebugLog( "Destroying file transfer session %08X", p2p_sessionid );
 
 	WaitForSingleObject( hLockHandle, 2000 );
 	CloseHandle( hLockHandle );
