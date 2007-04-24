@@ -113,10 +113,11 @@ TCHAR* fnTrayIconMakeTooltip( const TCHAR *szPrefix, const char *szProto )
 			i = cli.pfnGetProtoIndexByPos(protos, count,t);
 			if ( i == -1 )
 			{ ulock; return _T("???"); }
-
+			
 			if ( protos[i]->type == PROTOTYPE_PROTOCOL && cli.pfnGetProtocolVisibility( protos[i]->szName ))
 				ProtoXStatus = sttGetXStatus( protos[i]->szName );
-
+			else 
+				ProtoXStatus=NULL;
 			CallProtoService( protos[i]->szName, PS_GETNAME, sizeof(szProtoName), (LPARAM) szProtoName );
 			szStatus = cli.pfnGetStatusModeDescription( CallProtoService( protos[i]->szName, PS_GETSTATUS, 0, 0), 0);
 			if ( szStatus ) {
