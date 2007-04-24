@@ -977,20 +977,18 @@ void YAHOO_bcast_picture_checksum(int cksum)
 
 void GetAvatarFileName(HANDLE hContact, char* pszDest, int cbLen, int type)
 {
-  int tPathLen;
- 
   CallService(MS_DB_GETPROFILEPATH, cbLen, (LPARAM)pszDest);
 
-  tPathLen = lstrlen(pszDest);
-  _snprintf(pszDest + tPathLen, MAX_PATH-tPathLen, "\\%s", yahooProtocolName);
+  lstrcat(pszDest, "\\");
+  lstrcat(pszDest, yahooProtocolName);
   CreateDirectory(pszDest, NULL);
 
   if (hContact != NULL) {
 	int ck_sum = DBGetContactSettingDword(hContact, yahooProtocolName,"PictCK", 0);
 	
-	_snprintf(pszDest + tPathLen, MAX_PATH-tPathLen, "\\%s\\%lX", yahooProtocolName, ck_sum);
+	_snprintf(pszDest, cbLen, "%s\\%lX", pszDest, ck_sum);
   }else {
-	lstrcat(pszDest, "avatar");
+	lstrcat(pszDest, "\\avatar");
   }
 
   if (type == 1) {
