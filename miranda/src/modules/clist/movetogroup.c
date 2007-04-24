@@ -32,7 +32,7 @@ static HANDLE AddGroupItem(HANDLE hRoot, TCHAR* name,int pos,int param,int check
 	mi.popupPosition = param; // param to pszService - only with CMIF_CHILDPOPUP !!!!!!
 	mi.position      = pos;
 	mi.ptszName      = name;
-	mi.flags         = CMIF_CHILDPOPUP | CMIF_TCHAR;
+	mi.flags         = CMIF_CHILDPOPUP | CMIF_TCHAR | CMIF_KEEPUNTRANSLATED;
 	if ( checked )
 		mi.flags |= CMIF_CHECKED;
 	mi.pszService = MTG_MOVE;
@@ -147,7 +147,7 @@ static int MTG_DOMOVE(WPARAM wParam,LPARAM lParam)
 
 void MTG_OnmodulesLoad()
 {
-	hOnCntMenuBuild=HookEvent(ME_CLIST_PREBUILDCONTACTMENU,OnContactMenuBuild); 
+	hOnCntMenuBuild=HookEvent(ME_CLIST_PREBUILDCONTACTMENU,OnContactMenuBuild);
 	CreateServiceFunction(MTG_MOVE,MTG_DOMOVE);
 }
 
