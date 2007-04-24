@@ -72,7 +72,7 @@ static char* getNewUuid()
 unsigned p2p_getMsgId( HANDLE hContact, int inc )
 {
 	unsigned cid = MSN_GetDword( hContact, "p2pMsgId", 0 );
-	unsigned res = cid ? cid + inc : ( rand() * ( 0x7fffffff / RAND_MAX )); 
+	unsigned res = cid ? cid + inc : ( rand() << 16 | rand()); 
 	if ( res != cid ) MSN_SetDword( hContact, "p2pMsgId", res );
 	
 	return res;
@@ -936,7 +936,7 @@ static void sttInitFileTransfer(
 
 	filetransfer* ft = new filetransfer();
 	ft->p2p_appID = dwAppID;
-	ft->p2p_acksessid = ( rand() * rand());
+	ft->p2p_acksessid = rand() << 16 | rand();
 	ft->p2p_sessionid = strtoul( szSessionID, NULL, 10 );
 	ft->p2p_ackID = ft->p2p_appID * 1000;
 	replaceStr( ft->p2p_callID, szCallID );
@@ -1077,7 +1077,7 @@ static void sttInitDirectTransfer(
 
 	replaceStr( ft->p2p_callID, szCallID );
 	replaceStr( ft->p2p_branch, szBranch );
-	ft->p2p_acksessid = ( rand() * ( 0x7fffffff / RAND_MAX ));
+	ft->p2p_acksessid = rand() << 16 | rand();
 
 	const char	*szConnType = tFileInfo2[ "Conn-Type" ],
 					*szUPnPNat = tFileInfo2[ "UPnPNat" ],
@@ -1270,13 +1270,16 @@ LBL_Close:
 		char ipaddr[256] = "";
 		MSN_GetMyHostAsString( ipaddr, sizeof( ipaddr ));
 
-		SOCKET s = MSN_CallService( MS_NETLIB_GETSOCKET, ( WPARAM )info->s, 0 );
-		if ( s != INVALID_SOCKET) {
-			SOCKADDR_IN saddr;
-			int len = sizeof( saddr );
-			if ( getsockname( s, ( SOCKADDR* )&saddr, &len ) != SOCKET_ERROR )
-				if ( strcmp( ipaddr, inet_ntoa( saddr.sin_addr )) && bAllowIncoming )
-					conn = "Unknown-NAT";
+		if ( bAllowIncoming && MSN_GetByte( "NLSpecifyIncomingPorts", 0 ) == 0 )
+		{
+			SOCKET s = MSN_CallService( MS_NETLIB_GETSOCKET, ( WPARAM )info->s, 0 );
+			if ( s != INVALID_SOCKET) {
+				SOCKADDR_IN saddr;
+				int len = sizeof( saddr );
+				if ( getsockname( s, ( SOCKADDR* )&saddr, &len ) != SOCKET_ERROR )
+					if ( strcmp( ipaddr, inet_ntoa( saddr.sin_addr )))
+						conn = "Unknown-NAT";
+			}
 		}
 
 		directconnection* dc = new directconnection( ft );
@@ -1648,7 +1651,7 @@ void  p2p_invite( HANDLE hContact, int iAppID, filetransfer* ft )
 	ThreadData *thread = MSN_GetThreadByContact( hContact );
 
 	srand( (unsigned)time( NULL ) );
-	long sessionID = ( rand() * ( 0x7fffffff / RAND_MAX ));
+	long sessionID = rand() << 16 | rand();
 
 	if ( ft == NULL ) {
 		ft = new filetransfer();
@@ -1660,7 +1663,7 @@ void  p2p_invite( HANDLE hContact, int iAppID, filetransfer* ft )
 	if ( iAppID == MSN_APPID_CUSTOMSMILEY || iAppID == MSN_APPID_CUSTOMANIMATEDSMILEY )
 		ft->p2p_appID = MSN_APPID_AVATAR;
 
-	ft->p2p_acksessid = ( rand() * rand());
+	ft->p2p_acksessid = rand() << 16 | rand();
 	ft->p2p_sessionid = sessionID;
 	ft->p2p_branch = getNewUuid();
 	ft->p2p_callID = getNewUuid();

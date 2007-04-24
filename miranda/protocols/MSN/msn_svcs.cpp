@@ -856,7 +856,7 @@ static int MsnSendFile( WPARAM wParam, LPARAM lParam )
 			"Invitation-Cookie: %i\r\n"
 			"Application-File: %s\r\n"
 			"Application-FileSize: %i\r\n\r\n",
-			rand() * ( 0x7fffffff / RAND_MAX ), UTF8(pszFiles), sft->std.currentFileSize );
+			rand() << 16 | rand(), UTF8(pszFiles), sft->std.currentFileSize );
 
 		if ( thread == NULL )
 			MsgQueue_Add( ccs->hContact, 'S', msg, -1, sft );

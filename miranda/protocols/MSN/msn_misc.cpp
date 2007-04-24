@@ -236,7 +236,7 @@ void  MSN_GetAvatarFileName( HANDLE hContact, char* pszDest, size_t cbLen )
 		MSN_CallService( MS_DB_GETPROFILEPATH, cbLen, LPARAM( pszDest ));
 		
 		tPathLen = strlen( pszDest );
-		tPathLen += mir_snprintf(pszDest + tPathLen, cbLen - tPathLen,"\\%s\\",msnProtocolName);
+		tPathLen += mir_snprintf(pszDest + tPathLen, cbLen - tPathLen,"\\%s", msnProtocolName);
 	}
 	else {
 		strcpy( pszDest, path );
@@ -253,10 +253,11 @@ void  MSN_GetAvatarFileName( HANDLE hContact, char* pszDest, size_t cbLen )
 		long digest[ 4 ];
 		mir_md5_hash(( BYTE* )szEmail, strlen( szEmail ), ( BYTE* )digest );
 
-		tPathLen += mir_snprintf(pszDest + tPathLen, cbLen - tPathLen,"\\%08lX%08lX%08lX%08lX.png",digest[0], digest[1], digest[2], digest[3]);
+		tPathLen += mir_snprintf(pszDest + tPathLen, cbLen - tPathLen, "\\%08lX%08lX%08lX%08lX.png", 
+			digest[0], digest[1], digest[2], digest[3]);
 	}
 	else 
-		tPathLen += mir_snprintf(pszDest + tPathLen, cbLen - tPathLen,"\\%s avatar.png",msnProtocolName );
+		tPathLen += mir_snprintf(pszDest + tPathLen, cbLen - tPathLen, "\\%s avatar.png", msnProtocolName );
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////
