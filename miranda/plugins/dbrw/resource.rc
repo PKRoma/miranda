@@ -16,12 +16,20 @@ BEGIN
         BEGIN
             VALUE "Comments", "Licensed under the terms of the GNU General Public License"
             VALUE "FileDescription", "dbRW Database Driver for Miranda IM"
+            #ifdef DBRW_VER_ALPHA
+            VALUE "FileVersion", DBRW_VER_STRING " alpha " DBRW_VER_ALPHA
+            #else
             VALUE "FileVersion", DBRW_VER_STRING
+            #endif
             VALUE "InternalName", "dbRW"                               
             VALUE "LegalCopyright", "Copyright © 2006-2007 Robert Rainwater."
             VALUE "OriginalFilename", "dbx_rw.dll"
             VALUE "ProductName", "dbRW"
+            #ifdef DBRW_VER_ALPHA
+            VALUE "ProductVersion", DBRW_VER_STRING " alpha " DBRW_VER_ALPHA
+            #else
             VALUE "ProductVersion", DBRW_VER_STRING
+            #endif
         END
     END
     BLOCK "VarFileInfo"

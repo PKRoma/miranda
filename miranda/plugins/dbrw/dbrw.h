@@ -59,7 +59,7 @@ extern struct MM_INTERFACE memoryManagerInterface;
 #define DBRW_VER_MAJOR           1
 #define DBRW_VER_MINOR           0
 #define DBRW_VER_STRING          "1.0"
-#define DBRW_VER_ALPHA           "4"
+#define DBRW_VER_ALPHA           "5"
 #define DBRW_SCHEMA_VERSION      "2"
 #define DBRW_HEADER_STR          "SQLite format 3"
 #define DBRW_ROT                 5

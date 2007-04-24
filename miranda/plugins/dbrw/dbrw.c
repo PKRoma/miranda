@@ -199,8 +199,9 @@ static int dbrw_Load(char *profile, void *link) {
 	#endif
 	log2("Loading dbRW v%s (SQLite v%s)", DBRW_VER_STRING, SQLITE_VERSION);
 	{
+		sql_exec(g_sqlite, "PRAGMA synchronous = NORMAL;");
+		sql_exec(g_sqlite, "PRAGMA locking_mode = EXCLUSIVE;");
 		sql_exec(g_sqlite, "PRAGMA cache_size = 12000;");
-		sql_exec(g_sqlite, "PRAGMA synchronous = OFF;");
 		sql_exec(g_sqlite, "PRAGMA temp_store = MEMORY;");
 	}
 	li.cbSize = sizeof(li);

@@ -21,10 +21,15 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 #ifdef DBRW_LOGGING
 static FILE *fp = NULL;
+static int disableLogging = 0;
 
 void utils_log_init() {
 	char szPath[MAX_PATH], szFullPath[MAX_PATH];
 	char *str2;
+    
+    disableLogging = utils_private_setting_get_int("DisableLogging", 0);
+    if (disableLogging) 
+        return;
     GetModuleFileName(GetModuleHandle(NULL), szPath, sizeof(szPath)-1);
     str2 = strrchr(szPath,'\\');
     if(str2!=NULL) 
@@ -53,6 +58,11 @@ void utils_log_fmt(const char *file,int line,const char *fmt,...) {
 
 int utils_setSafetyMode(WPARAM wParam, LPARAM lParam) {
 	log0("db_setSafetyMode");
+    int safeMode = (int)wParam;
+    if (safeMode) 
+        sql_exec(g_sqlite, "PRAGMA synchronous = NORMAL;");
+    else
+        sql_exec(g_sqlite, "PRAGMA synchronous = OFF;");
 	return 0;
 }
 
