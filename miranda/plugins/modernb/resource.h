@@ -138,12 +138,13 @@
 #define IDI_CHAT                        455
 #define IDI_LISTENING_TO                456
 #define IDD_OPT_ITEM_EXTRAICONS         461
+#define IDD_OPT_CLCBKG                  462
 #define IDI_FAVORITE_0                  500
 #define IDI_FAVORITE_1                  501
 #define IDI_FAVORITE_2                  502
 #define IDI_FAVORITE_3                  503
-#define IDI_SETVIEW						504
-#define IDI_RESETVIEW					505
+#define IDI_SETVIEW                     504
+#define IDI_RESETVIEW                   505
 #define IDC_RESETPROTOCOLDATA           1000
 #define IDC_SAVE                        1001
 #define IDC_DEFBKCOLOR                  1001
@@ -452,6 +453,7 @@
 #define IDC_NEWNAME                     1341
 #define IDC_MOVE                        1342
 #define IDC_LEAVE                       1343
+#define IDC_DISABLEENGINE               1343
 #define IDC_EXPERT                      1346
 #define IDC_SORTBYNAME                  1347
 #define IDC_STAUTOHIDESECS              1349
@@ -778,6 +780,7 @@
 #define IDC_LAYERENGINE                 1807
 #define IDC_CHECK3                      1808
 #define IDC_SNAPTOEDGES                 1808
+#define IDC_LAYERENGINE2                1808
 #define IDC_CHECK4                      1809
 #define IDC_CHECK5                      1810
 #define IDC_RADIO1                      1811
@@ -892,6 +895,7 @@
 #define IDC_CLSORT1                     6666
 #define IDC_CLSORT2                     6667
 #define IDC_CLSORT3                     6668
+#define IDC_WINCOLOUR                   6669
 #define IDD_OPT_CLCBKG3                 11268
 #define IDD_OPT_EXTFRAMES               11269
 #define IDC_MENUITEMS                   11710
@@ -983,7 +987,7 @@
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
-#define _APS_NEXT_RESOURCE_VALUE        506
+#define _APS_NEXT_RESOURCE_VALUE        507
 #define _APS_NEXT_COMMAND_VALUE         40020
 #define _APS_NEXT_CONTROL_VALUE         2004
 #define _APS_NEXT_SYMED_VALUE           101

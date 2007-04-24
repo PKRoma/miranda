@@ -134,10 +134,12 @@ static BOOL CLUI_WaitThreadsCompletion(HWND hwnd)
 
 void CLUI_UpdateLayeredMode()
 {	
+	g_CluiData.fDisableSkinEngine=DBGetContactSettingByte(NULL,"ModernData","DisableEngine", 0);
 	if (IsWinVer2000Plus())
 	{
 		BOOL tLayeredFlag=TRUE;
-		tLayeredFlag&=DBGetContactSettingByte(NULL, "ModernData", "EnableLayering", tLayeredFlag);	
+		tLayeredFlag&=(DBGetContactSettingByte(NULL, "ModernData", "EnableLayering", tLayeredFlag) && !g_CluiData.fDisableSkinEngine);
+
 		if (g_CluiData.fLayered != tLayeredFlag)
 		{
 			LONG exStyle;
@@ -149,6 +151,7 @@ void CLUI_UpdateLayeredMode()
 				exStyle|=WS_EX_LAYERED;
 			else
 				exStyle&=~WS_EX_LAYERED;
+			SetWindowLong(pcli->hwndContactList,GWL_EXSTYLE,exStyle&~WS_EX_LAYERED);
 			SetWindowLong(pcli->hwndContactList,GWL_EXSTYLE,exStyle);
 			g_CluiData.fLayered = tLayeredFlag;
 			callProxied_CLUIFrames_SetLayeredMode(tLayeredFlag,pcli->hwndContactList);			
@@ -525,6 +528,7 @@ static int CLUI_ModulesLoaded(WPARAM wParam,LPARAM lParam)
     /*
     *  Metacontact groups support
     */
+
 	g_CluiData.bMetaAvail = ServiceExists(MS_MC_GETDEFAULTCONTACT) ? TRUE : FALSE;
 	setlocale(LC_CTYPE,"");  //fix for case insensitive comparing
     CLCPaint_FillQuickHash();
@@ -544,6 +548,7 @@ static int CLUI_ModulesLoaded(WPARAM wParam,LPARAM lParam)
     g_flag_bOnModulesLoadedCalled=TRUE;	
     ///pcli->pfnInvalidateDisplayNameCacheEntry(INVALID_HANDLE_VALUE);   
     PostMessage(pcli->hwndContactList,M_CREATECLC,0,0); //$$$
+
     return 0;
 }
 
@@ -792,6 +797,19 @@ int CLUI_ReloadCLUIOptions()
     wBehindEdgeHideDelay=DBGetContactSettingWord(NULL,"ModernData","HideDelay",3);
     wBehindEdgeBorderSize=DBGetContactSettingWord(NULL,"ModernData","HideBehindBorderSize",1);
 
+		//window borders
+	if (g_CluiData.fDisableSkinEngine) {
+		g_CluiData.LeftClientMargin=0;
+		g_CluiData.RightClientMargin=0; 
+		g_CluiData.TopClientMargin=0;
+		g_CluiData.BottomClientMargin=0;
+	} else {
+		//window borders
+		g_CluiData.LeftClientMargin=(int)DBGetContactSettingByte(NULL,"CLUI","LeftClientMargin",0);
+		g_CluiData.RightClientMargin=(int)DBGetContactSettingByte(NULL,"CLUI","RightClientMargin",0); 
+		g_CluiData.TopClientMargin=(int)DBGetContactSettingByte(NULL,"CLUI","TopClientMargin",0);
+		g_CluiData.BottomClientMargin=(int)DBGetContactSettingByte(NULL,"CLUI","BottomClientMargin",0);
+	}
 
     //   if (g_CluiData.bBehindEdgeSettings)  CLUI_SafeSetTimer(pcli->hwndContactList,TM_UPDATEBRINGTIMER,250,NULL);
     return 0;
@@ -969,90 +987,93 @@ static int CLUI_DrawMenuBackGround(HWND hwnd, HDC hdc, int item)
         SkinEngine_SetRectOpaque(hdc,&r1);
         //SkinEngine_BltBackImage(hwnd,hdc,&r1);
     }
-    SkinDrawGlyph(hdc,&r1,&r1,"Main,ID=MenuBar");
-    /*   New Skin Engine
-    if (dat->hMenuBackground)
-    {
-    BITMAP bmp;
-    HBITMAP oldbm;
-    HDC hdcBmp;
-    int x,y;
-    int maxx,maxy;
-    int destw,desth;
-    RECT clRect=r1;
+	if (!g_CluiData.fDisableSkinEngine)
+		SkinDrawGlyph(hdc,&r1,&r1,"Main,ID=MenuBar");
+	else
+	{
+		HBRUSH hbr=NULL;
+		if (dat->hMenuBackground)
+		{
+			BITMAP bmp;
+			HBITMAP oldbm;
+			HDC hdcBmp;
+			int x,y;
+			int maxx,maxy;
+			int destw,desth;
+			RECT clRect=r1;
 
 
-    // XXX: Halftone isnt supported on 9x, however the scretch problems dont happen on 98.
-    SetStretchBltMode(hdc, HALFTONE);
+			// XXX: Halftone isnt supported on 9x, however the scretch problems dont happen on 98.
+			SetStretchBltMode(hdc, HALFTONE);
 
-    GetObject(dat->hMenuBackground,sizeof(bmp),&bmp);
-    hdcBmp=CreateCompatibleDC(hdc);
-    oldbm=SelectObject(hdcBmp,dat->hMenuBackground);
-    y=clRect.top;
-    x=clRect.left;
-    maxx=dat->MenuBmpUse&CLBF_TILEH?maxx=r1.right:x+1;
-    maxy=dat->MenuBmpUse&CLBF_TILEV?maxy=r1.bottom:y+1;
-    switch(dat->MenuBmpUse&CLBM_TYPE) {
-    case CLB_STRETCH:
-    if(dat->MenuBmpUse&CLBF_PROPORTIONAL) {
-    if(clRect.right-clRect.left*bmp.bmHeight<clRect.bottom-clRect.top*bmp.bmWidth) 
-    {
-    desth=clRect.bottom-clRect.top;
-    destw=desth*bmp.bmWidth/bmp.bmHeight;
-    }
-    else 
-    {
-    destw=clRect.right-clRect.left;
-    desth=destw*bmp.bmHeight/bmp.bmWidth;
-    }
-    }
-    else {
-    destw=clRect.right-clRect.left;
-    desth=clRect.bottom-clRect.top;
-    }
-    break;
-    case CLB_STRETCHH:
-    if(dat->MenuBmpUse&CLBF_PROPORTIONAL) {
-    destw=clRect.right-clRect.left;
-    desth=destw*bmp.bmHeight/bmp.bmWidth;
-    }
-    else {
-    destw=clRect.right-clRect.left;
-    desth=bmp.bmHeight;
-    }
-    break;
-    case CLB_STRETCHV:
-    if(dat->MenuBmpUse&CLBF_PROPORTIONAL) {
-    desth=clRect.bottom-clRect.top;
-    destw=desth*bmp.bmWidth/bmp.bmHeight;
-    }
-    else {
-    destw=bmp.bmWidth;
-    desth=clRect.bottom-clRect.top;
-    }
-    break;
-    default:    //clb_topleft
-    destw=bmp.bmWidth;
-    desth=bmp.bmHeight;					
-    break;
-    }
-    if (desth && destw)
-    for(y=clRect.top;y<maxy;y+=desth) {
-    for(x=clRect.left;x<maxx;x+=destw)
-    StretchBlt(hdc,x,y,destw,desth,hdcBmp,0,0,bmp.bmWidth,bmp.bmHeight,SRCCOPY);
-    }
-    SelectObject(hdcBmp,oldbm);
-    ModernDeleteDC(hdcBmp);
+			GetObject(dat->hMenuBackground,sizeof(bmp),&bmp);
+			hdcBmp=CreateCompatibleDC(hdc);
+			oldbm=SelectObject(hdcBmp,dat->hMenuBackground);
+			y=clRect.top;
+			x=clRect.left;
+			maxx=dat->MenuBmpUse&CLBF_TILEH?maxx=r1.right:x+1;
+			maxy=dat->MenuBmpUse&CLBF_TILEV?maxy=r1.bottom:y+1;
+			switch(dat->MenuBmpUse&CLBM_TYPE) {
+	case CLB_STRETCH:
+		if(dat->MenuBmpUse&CLBF_PROPORTIONAL) {
+			if(clRect.right-clRect.left*bmp.bmHeight<clRect.bottom-clRect.top*bmp.bmWidth) 
+			{
+				desth=clRect.bottom-clRect.top;
+				destw=desth*bmp.bmWidth/bmp.bmHeight;
+			}
+			else 
+			{
+				destw=clRect.right-clRect.left;
+				desth=destw*bmp.bmHeight/bmp.bmWidth;
+			}
+		}
+		else {
+			destw=clRect.right-clRect.left;
+			desth=clRect.bottom-clRect.top;
+		}
+		break;
+	case CLB_STRETCHH:
+		if(dat->MenuBmpUse&CLBF_PROPORTIONAL) {
+			destw=clRect.right-clRect.left;
+			desth=destw*bmp.bmHeight/bmp.bmWidth;
+		}
+		else {
+			destw=clRect.right-clRect.left;
+			desth=bmp.bmHeight;
+		}
+		break;
+	case CLB_STRETCHV:
+		if(dat->MenuBmpUse&CLBF_PROPORTIONAL) {
+			desth=clRect.bottom-clRect.top;
+			destw=desth*bmp.bmWidth/bmp.bmHeight;
+		}
+		else {
+			destw=bmp.bmWidth;
+			desth=clRect.bottom-clRect.top;
+		}
+		break;
+	default:    //clb_topleft
+		destw=bmp.bmWidth;
+		desth=bmp.bmHeight;					
+		break;
+			}
+			if (desth && destw)
+				for(y=clRect.top;y<maxy;y+=desth) {
+					for(x=clRect.left;x<maxx;x+=destw)
+						StretchBlt(hdc,x,y,destw,desth,hdcBmp,0,0,bmp.bmWidth,bmp.bmHeight,SRCCOPY);
+				}
+				SelectObject(hdcBmp,oldbm);
+				DeleteDC(hdcBmp);
 
-    }                  
+		}                  
 
-    else
-    {
-    hbr=CreateSolidBrush(dat->MenuBkColor);
-    FillRect(hdc,&r1,hbr);
-    DeleteObject(hbr);    
-    }
-    */
+		else
+		{
+			hbr=CreateSolidBrush(dat->MenuBkColor);
+			FillRect(hdc,&r1,hbr);
+			DeleteObject(hbr);    
+		}
+	}
     SelectClipRgn(hdc,NULL);
     return 0;
 }
@@ -1269,7 +1290,7 @@ int CLUI_OnSizingMoving(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 				if ( pcli->hwndContactList == NULL )
 					return 0;
 
-				if (!g_CluiData.fLayered)
+				if (!g_CluiData.fLayered && !g_CluiData.fDisableSkinEngine)
 					SkinEngine_ReCreateBackImage(TRUE,NULL);
 
 				GetWindowRect(hwnd, &rc);
@@ -1310,11 +1331,11 @@ int CLUI_OnSizingMoving(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 					h=(h<v)?h:v;
 					hRgn1=CreateRoundRectRgn(0,0,(r.right-r.left+1),(r.bottom-r.top+1),h,h);
 					if ((DBGetContactSettingByte(NULL,"CLC","RoundCorners",0)) && (!CallService(MS_CLIST_DOCKINGISDOCKED,0,0)))
-						SetWindowRgn(hwnd,hRgn1,1); 
+						SetWindowRgn(hwnd,hRgn1,FALSE); 
 					else
 					{
 						DeleteObject(hRgn1);
-						SetWindowRgn(hwnd,NULL,1);
+						SetWindowRgn(hwnd,NULL,FALSE);
 					}
 					RedrawWindow(hwnd,NULL,NULL,RDW_INVALIDATE|RDW_ERASE|RDW_FRAME|RDW_UPDATENOW|RDW_ALLCHILDREN);   
 				} 			
@@ -1433,7 +1454,9 @@ LRESULT CALLBACK CLUI__cli_ContactListWndProc(HWND hwnd, UINT msg, WPARAM wParam
             return r;
         }
     case WM_ERASEBKGND:
-        return 0;
+		{
+			return 1;
+		}
 
     case WM_NCCREATE:
         {	LPCREATESTRUCT p = (LPCREATESTRUCT)lParam;
@@ -1453,20 +1476,31 @@ LRESULT CALLBACK CLUI__cli_ContactListWndProc(HWND hwnd, UINT msg, WPARAM wParam
 
             GetClientRect(hwnd,&w);
             if (!(w.right>0 && w.bottom>0)) return DefWindowProc(hwnd, msg, wParam, lParam); 
-            paintDC = GetDC(hwnd);
-            w2=w;
-            hdc=CreateCompatibleDC(paintDC);
-            hbmp=SkinEngine_CreateDIB32(w.right,w.bottom);
-            oldbmp=SelectObject(hdc,hbmp);
-            SkinEngine_ReCreateBackImage(FALSE,NULL);
-            BitBlt(paintDC,w2.left,w2.top,w2.right-w2.left,w2.bottom-w2.top,g_pCachedWindow->hBackDC,w2.left,w2.top,SRCCOPY);
-            SelectObject(hdc,oldbmp);
-            DeleteObject(hbmp);
-            mod_DeleteDC(hdc);
-            ReleaseDC(hwnd,paintDC);
-            ValidateRect(hwnd,NULL);
-            ps.fErase=FALSE;
-            EndPaint(hwnd,&ps); 
+            
+			if (!g_CluiData.fDisableSkinEngine)
+			{ 
+				paintDC = GetDC(hwnd);
+				w2=w;
+				hdc=CreateCompatibleDC(paintDC);
+				hbmp=SkinEngine_CreateDIB32(w.right,w.bottom);
+				oldbmp=SelectObject(hdc,hbmp);
+				SkinEngine_ReCreateBackImage(FALSE,NULL);
+				BitBlt(paintDC,w2.left,w2.top,w2.right-w2.left,w2.bottom-w2.top,g_pCachedWindow->hBackDC,w2.left,w2.top,SRCCOPY);
+				SelectObject(hdc,oldbmp);
+				DeleteObject(hbmp);
+				mod_DeleteDC(hdc);
+				ReleaseDC(hwnd,paintDC);
+			}
+			else
+			{
+				HDC hdc=BeginPaint(hwnd,&ps);
+				SkinEngine_BltBackImage(hwnd,hdc,&ps.rcPaint);
+				ps.fErase=FALSE;
+				EndPaint(hwnd,&ps); 
+			}
+			
+			ValidateRect(hwnd,NULL);
+            
         }
         if (0&&(DBGetContactSettingDword(NULL,"CLUIFrames","GapBetweenFrames",1) || DBGetContactSettingDword(NULL,"CLUIFrames","GapBetweenTitleBar",1)))
         {
@@ -1577,7 +1611,7 @@ LRESULT CALLBACK CLUI__cli_ContactListWndProc(HWND hwnd, UINT msg, WPARAM wParam
             if ( !isfloating )
                 SetFocus(pcli->hwndContactTree);
         }
-        UpdateWindow(hwnd);
+        //UpdateWindow(hwnd);
         return 0;
 
     case WM_ACTIVATE:
@@ -2353,9 +2387,9 @@ void CLUI_cliOnCreateClc(void)
 	if (hUserDll)
 	{
 		g_proc_UpdateLayeredWindow = (BOOL (WINAPI *)(HWND,HDC,POINT*,SIZE*,HDC,POINT*,COLORREF,BLENDFUNCTION*,DWORD))GetProcAddress(hUserDll, "UpdateLayeredWindow");
-		g_CluiData.fLayered=(g_proc_UpdateLayeredWindow!=NULL);
+		g_CluiData.fLayered=(g_proc_UpdateLayeredWindow!=NULL) && !DBGetContactSettingByte(NULL,"ModernData","DisableEngine", 0);
 		g_CluiData.fSmoothAnimation=IsWinVer2000Plus()&&DBGetContactSettingByte(NULL, "CLUI", "FadeInOut", 1);
-		g_CluiData.fLayered=g_CluiData.fLayered*DBGetContactSettingByte(NULL, "ModernData", "EnableLayering", g_CluiData.fLayered);
+		g_CluiData.fLayered=(g_CluiData.fLayered*DBGetContactSettingByte(NULL, "ModernData", "EnableLayering", g_CluiData.fLayered))&&!DBGetContactSettingByte(NULL,"ModernData","DisableEngine", 0);
 		g_proc_SetLayeredWindowAttributesNew = (BOOL (WINAPI *)(HWND,COLORREF,BYTE,DWORD))GetProcAddress(hUserDll, "SetLayeredWindowAttributes");
 		g_proc_AnimateWindow=(BOOL (WINAPI*)(HWND,DWORD,DWORD))GetProcAddress(hUserDll,"AnimateWindow");
 	}

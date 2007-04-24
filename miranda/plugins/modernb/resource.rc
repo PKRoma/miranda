@@ -38,7 +38,7 @@ BEGIN
             VALUE "FileDescription", "Miranda IM Contact List. Display contacts, event notifications, protocol status with advantage visual modifications. Supported MW modifications, enchanced metacontact cooperation."
             VALUE "FileVersion", FILE_VERSION_STR
             VALUE "InternalName", "Modern Contact List"
-            VALUE "LegalCopyright", "Copyright © 2000-2007 Artem Shpynov, Richard Hughes, Roland Rabien, Tristan Van de Vreede, Martin Oberg, Robert Rainwater, Sam Kothari and Lyon Lim"
+            VALUE "LegalCopyright", "Copyright © 2000-2005 Artem Shpynov, Richard Hughes, Roland Rabien, Tristan Van de Vreede, Martin Oberg, Robert Rainwater, Sam Kothari and Lyon Lim"
             VALUE "OriginalFilename", "clist_modern.dll"
             VALUE "ProductName", "Miranda IM Contact List. Display contacts, event notifications, protocol status with advantage visual modifications. Supported MW modifications, enchanced metacontact cooperation."
             VALUE "ProductVersion", PRODUCT_VERSION_STR
@@ -123,6 +123,39 @@ IDC_REGROUP             CURSOR                  "res\\neo_meta_move.cur"
 //
 // Dialog
 //
+
+IDD_OPT_CLCBKG DIALOGEX 0, 0, 234, 164
+STYLE DS_SETFONT | DS_FIXEDSYS | WS_CHILD | WS_VISIBLE
+EXSTYLE WS_EX_CONTROLPARENT
+FONT 8, "MS Shell Dlg", 0, 0, 0x1
+BEGIN
+    GROUPBOX        "Settings",IDC_STATIC,4,19,226,141
+    LTEXT           "Background colour:",IDC_BC_STATIC,12,35,72,8,NOT 
+                    WS_GROUP
+    CONTROL         "",IDC_BKGCOLOUR,"ColourPicker",WS_TABSTOP,84,34,32,10
+    LTEXT           "Selection colour:",IDC_SC_STATIC,12,51,72,8
+    CONTROL         "",IDC_SELCOLOUR,"ColourPicker",WS_TABSTOP,84,50,32,10
+    CONTROL         "Use background bitmap",IDC_BITMAP,"Button",
+                    BS_AUTOCHECKBOX | WS_TABSTOP,12,68,161,10
+    EDITTEXT        IDC_FILENAME,22,82,184,12,ES_AUTOHSCROLL
+    PUSHBUTTON      "...",IDC_BROWSE,208,82,15,11
+    CONTROL         "Stretch to width",IDC_STRETCHH,"Button",BS_AUTOCHECKBOX | 
+                    WS_TABSTOP,22,99,98,10
+    CONTROL         "Stretch to height",IDC_STRETCHV,"Button",
+                    BS_AUTOCHECKBOX | WS_TABSTOP,121,99,101,10
+    CONTROL         "Tile horizontally",IDC_TILEH,"Button",BS_AUTOCHECKBOX | 
+                    WS_TABSTOP,22,112,98,10
+    CONTROL         "Tile vertically",IDC_TILEV,"Button",BS_AUTOCHECKBOX | 
+                    WS_TABSTOP,22,125,98,10
+    CONTROL         "Scroll with text",IDC_SCROLL,"Button",BS_AUTOCHECKBOX | 
+                    WS_TABSTOP,121,125,100,10
+    CONTROL         "Stretch proportionally",IDC_PROPORTIONAL,"Button",
+                    BS_AUTOCHECKBOX | WS_TABSTOP,121,112,101,10
+    CONTROL         "Tile vertically according to Row Height",IDC_TILEVROWH,
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,22,140,205,10
+    COMBOBOX        IDC_BKGRLIST,4,5,226,155,CBS_DROPDOWNLIST |  
+                    WS_VSCROLL | WS_TABSTOP
+END
 
 IDD_OPT_SKIN DIALOGEX 0, 0, 303, 220
 STYLE DS_SETFONT | DS_FIXEDSYS | WS_CHILD
@@ -329,6 +362,11 @@ END
 #ifdef APSTUDIO_INVOKED
 GUIDELINES DESIGNINFO 
 BEGIN
+    IDD_OPT_CLCBKG, DIALOG
+    BEGIN
+        BOTTOMMARGIN, 154
+    END
+
     IDD_OPT_SKINEDITOR, DIALOG
     BEGIN
         TOPMARGIN, 1
@@ -1130,7 +1168,7 @@ LANGUAGE LANG_ENGLISH, SUBLANG_ENGLISH_UK
 // Dialog
 //
 
-IDD_OPT_CLUI DIALOGEX 0, 0, 307, 202
+IDD_OPT_CLUI DIALOGEX 0, 0, 307, 211
 STYLE DS_SETFONT | DS_FIXEDSYS | DS_CENTER | WS_CHILD
 EXSTYLE WS_EX_CONTROLPARENT
 FONT 8, "MS Shell Dlg", 0, 0, 0x1
@@ -1159,22 +1197,22 @@ BEGIN
                     UDS_ARROWKEYS | UDS_NOTHOUSANDS | UDS_HOTTRACK,226,106,
                     10,12
     CONTROL         "Thin border main window",IDC_BORDER,"Button",
-                    BS_AUTOCHECKBOX | WS_DISABLED | WS_TABSTOP,13,169,102,8
+                    BS_AUTOCHECKBOX | WS_DISABLED | WS_TABSTOP,13,177,102,8
     CONTROL         "Borderless main window",IDC_NOBORDERWND,"Button",
-                    BS_AUTOCHECKBOX | WS_DISABLED | WS_TABSTOP,13,157,102,8
+                    BS_AUTOCHECKBOX | WS_DISABLED | WS_TABSTOP,13,165,102,8
     CONTROL         "Show menu bar",IDC_SHOWMAINMENU,"Button",
-                    BS_AUTOCHECKBOX | WS_DISABLED | WS_TABSTOP,13,145,102,8
+                    BS_AUTOCHECKBOX | WS_DISABLED | WS_TABSTOP,13,153,102,8
     CONTROL         "Show title bar",IDC_SHOWCAPTION,"Button",
-                    BS_AUTOCHECKBOX | WS_DISABLED | WS_TABSTOP,13,133,102,8
-    LTEXT           "Title bar text:",IDC_TITLEBAR_STATIC,13,79,102,8,
+                    BS_AUTOCHECKBOX | WS_DISABLED | WS_TABSTOP,13,141,102,8
+    LTEXT           "Title bar text:",IDC_TITLEBAR_STATIC,13,87,102,8,
                     WS_DISABLED
-    EDITTEXT        IDC_TITLETEXT,23,89,92,12,ES_AUTOHSCROLL | WS_DISABLED
+    EDITTEXT        IDC_TITLETEXT,23,97,92,12,ES_AUTOHSCROLL | WS_DISABLED
     CONTROL         "Tool style main window",IDC_TOOLWND,"Button",
-                    BS_AUTOCHECKBOX | WS_DISABLED | WS_TABSTOP,13,121,102,8
+                    BS_AUTOCHECKBOX | WS_DISABLED | WS_TABSTOP,13,129,102,8
     CONTROL         "Minimize to tray",IDC_MIN2TRAY,"Button",BS_AUTOCHECKBOX | 
-                    WS_DISABLED | WS_TABSTOP,13,109,102,8
-    GROUPBOX        "Translucency options (Windows 2000/XP only)",-1,124,127,
-                    179,71
+                    WS_DISABLED | WS_TABSTOP,13,117,102,8
+    GROUPBOX        "Translucency options (Windows 2000/XP only)",-1,119,124,
+                    184,74
     CONTROL         "Fade contact list in/out",IDC_FADEINOUT,"Button",
                     BS_AUTOCHECKBOX | WS_TABSTOP,129,136,133,10
     CONTROL         "Transparent contact list",IDC_TRANSPARENT,"Button",
@@ -1208,10 +1246,12 @@ BEGIN
     CONTROL         "Key color for owned frames",IDC_CHECKKEYCOLOR,"Button",
                     BS_AUTOCHECKBOX | BS_MULTILINE | WS_TABSTOP,172,21,72,20
     CONTROL         "Use Non-Layered mode",IDC_LAYERENGINE,"Button",
-                    BS_AUTOCHECKBOX | BS_MULTILINE | WS_TABSTOP,13,64,102,11
+                    BS_AUTOCHECKBOX | BS_MULTILINE | WS_TABSTOP,13,74,102,11
     CONTROL         "Round corners",IDC_ROUNDCORNERS,"Button",
-                    BS_AUTOCHECKBOX | WS_DISABLED | WS_TABSTOP,13,181,102,8
-    GROUPBOX        "Non-layered mode",IDC_STWINDOWGROUP3,4,51,115,147
+                    BS_AUTOCHECKBOX | WS_DISABLED | WS_TABSTOP,13,189,102,8
+    GROUPBOX        "Non-layered mode",IDC_STWINDOWGROUP3,4,51,115,155
+    CONTROL         "Disable Skin Engine",IDC_DISABLEENGINE,"Button",
+                    BS_AUTOCHECKBOX | BS_MULTILINE | WS_TABSTOP,13,60,102,11
 END
 
 
@@ -1239,7 +1279,7 @@ BEGIN
         VERTGUIDE, 234
         VERTGUIDE, 303
         TOPMARGIN, 4
-        BOTTOMMARGIN, 192
+        BOTTOMMARGIN, 207
         HORZGUIDE, 14
         HORZGUIDE, 36
     END
@@ -1753,6 +1793,5 @@ END
 
 #endif    // English (Canada) resources
 /////////////////////////////////////////////////////////////////////////////
-
 
 

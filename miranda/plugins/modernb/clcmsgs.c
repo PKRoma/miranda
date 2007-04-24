@@ -76,7 +76,7 @@ LRESULT cli_ProcessExternalMessages(HWND hwnd,struct ClcData *dat,UINT msg,WPARA
 				SendMessage(hwnd,CLM_AUTOREBUILD,0,0);
 		}
 		return 0;
-
+	
 	case CLM_SETTEXTCOLOR:
 		if(wParam<0 || wParam>FONTID_MODERN_MAX) break;
 

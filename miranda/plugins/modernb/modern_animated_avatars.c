@@ -814,7 +814,7 @@ static void _AniAva_RenderAvatar(ANIAVA_WINDOWINFO * dat)
 				hRgn=CreateRoundRectRgn( 1, 1, szWnd.cx, szWnd.cy, cornerRadius<<1, cornerRadius<<1);
 				CombineRgn( rgnOutside,rgnOutside,hRgn,RGN_DIFF);
 				FillRgn( tempDC, rgnOutside, hBrush);
-				SkinEngine_SetRgnOpaque( tempDC, rgnOutside);
+				SkinEngine_SetRgnOpaqueOpt( tempDC, rgnOutside, TRUE);
 				SelectObject(tempDC, hOldBrush);
 				DeleteObject(hBrush);
 				DeleteObject(rgnOutside);
@@ -832,7 +832,7 @@ static void _AniAva_RenderAvatar(ANIAVA_WINDOWINFO * dat)
 				HBRUSH hBrush = CreateSolidBrush( AniAva.bkgColor );
 				HBRUSH hOldBrush = SelectObject( tempDC, hBrush );				
 				FillRgn( tempDC, hRgn, hBrush );
-				SkinEngine_SetRgnOpaque( tempDC, hRgn );
+				SkinEngine_SetRgnOpaqueOpt( tempDC, hRgn, TRUE );
 			}
 			// draw avatar
 			if ( !(AniAva.bFlags & AAO_OPAQUE) )

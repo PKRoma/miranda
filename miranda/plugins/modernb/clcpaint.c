@@ -501,7 +501,7 @@ static void CLCPaint_DrawTextSmiley(HDC hdcMem, RECT * free_rc, SIZE * text_size
 		int pos_x = 0;
 		int row_height;
 		RECT tmp_rc = *free_rc;
-	    if (len==-1) len=_tcslen(szText);
+		if (len==-1) len=_tcslen(szText);
 		if (uTextFormat & DT_RTLREADING)
 			i = plText->realCount - 1;
 		else
@@ -2845,10 +2845,88 @@ static void CLCPaint_DrawStatusIcon(struct ClcContact * Drawing, struct ClcData 
 //	}
 //}
 //
+BOOL DrawNonEnginedBackground(HWND hwnd, HDC hdcMem, RECT * rcPaint, RECT clRect, struct ClcData * dat)
+{	
+	if(dat->hBmpBackground) {
+			BITMAP bmp;
+			HBITMAP oldbm;
+			HDC hdcBmp;
+			int x,y;
+			int maxx,maxy;
+			int destw,desth;
 
-/************************************************************************/
-/*                                                                      */
-/************************************************************************/
+			// XXX: Halftone isnt supported on 9x, however the scretch problems dont happen on 98.
+			SetStretchBltMode(hdcMem, HALFTONE);
+
+
+			GetObject(dat->hBmpBackground,sizeof(bmp),&bmp);
+			hdcBmp=CreateCompatibleDC(hdcMem);
+			oldbm=SelectObject(hdcBmp,dat->hBmpBackground);
+			y=dat->backgroundBmpUse&CLBF_SCROLL?-dat->yScroll:0;
+			maxx=dat->backgroundBmpUse&CLBF_TILEH?clRect.right:1;
+			maxy=dat->backgroundBmpUse&CLBF_TILEV?maxy=rcPaint->bottom:y+1;
+			switch(dat->backgroundBmpUse&CLBM_TYPE) {
+				case CLB_STRETCH:
+					if(dat->backgroundBmpUse&CLBF_PROPORTIONAL) {
+						if(clRect.right*bmp.bmHeight<clRect.bottom*bmp.bmWidth) {
+							desth=clRect.bottom;
+							destw=desth*bmp.bmWidth/bmp.bmHeight;
+						}
+						else {
+							destw=clRect.right;
+							desth=destw*bmp.bmHeight/bmp.bmWidth;
+						}
+					}
+					else {
+						destw=clRect.right;
+						desth=clRect.bottom;
+					}
+					break;
+				case CLB_STRETCHH:
+					if(dat->backgroundBmpUse&CLBF_PROPORTIONAL) {
+						destw=clRect.right;
+						desth=destw*bmp.bmHeight/bmp.bmWidth;
+					}
+					else {
+						destw=clRect.right;
+						desth=bmp.bmHeight;
+							if (dat->backgroundBmpUse&CLBF_TILEVTOROWHEIGHT)
+							{
+								desth=dat->row_min_heigh;
+							}	
+
+					}
+					break;
+				case CLB_STRETCHV:
+					if(dat->backgroundBmpUse&CLBF_PROPORTIONAL) {
+						desth=clRect.bottom;
+						destw=desth*bmp.bmWidth/bmp.bmHeight;
+					}
+					else {
+						destw=bmp.bmWidth;
+						desth=clRect.bottom;
+					}
+					break;
+				default:    //clb_topleft
+					destw=bmp.bmWidth;
+					desth=bmp.bmHeight;
+					if (dat->backgroundBmpUse&CLBF_TILEVTOROWHEIGHT)
+					{
+						desth=dat->row_min_heigh;
+					}							
+					break;
+			}
+			for(;y<maxy;y+=desth) {
+				if(y<rcPaint->top-desth) continue;
+				for(x=0;x<maxx;x+=destw)
+					StretchBlt(hdcMem,x,y,destw,desth,hdcBmp,0,0,bmp.bmWidth,bmp.bmHeight,SRCCOPY);
+			}
+			SelectObject(hdcBmp,oldbm);
+			DeleteDC(hdcBmp);
+			return TRUE;
+		}
+	return FALSE;
+}
 static void CLCPaint_InternalPaintClc(HWND hwnd,struct ClcData *dat,HDC hdc,RECT *rcPaint)
 {
 	HDC     hdcMem=NULL,
@@ -2872,7 +2950,7 @@ static void CLCPaint_InternalPaintClc(HWND hwnd,struct ClcData *dat,HDC hdc,RECT
 	HBRUSH hBrushAlternateGrey=NULL;
 	BOOL NotInMain=!CLUI_IsInMainWindow(hwnd);
 	// yes I know about GetSysColorBrush()
-	COLORREF tmpbkcolour = style&CLS_CONTACTLIST ? ( dat->bkChanged ?  dat->bkColour : GetSysColor(COLOR_3DFACE)) : dat->bkColour;
+	COLORREF tmpbkcolour = style&CLS_CONTACTLIST ? ( !dat->useWindowsColours ?  dat->bkColour : GetSysColor(COLOR_3DFACE)) : dat->bkColour;
 	DWORD currentCounter;
 
 	//log0("+++ CLCPaint_InternalPaintClc +++");
@@ -2890,7 +2968,10 @@ static void CLCPaint_InternalPaintClc(HWND hwnd,struct ClcData *dat,HDC hdc,RECT
 	if (grey && (!g_CluiData.fLayered))
 	{
 		hdcMem2=CreateCompatibleDC(hdc);
-		hBmpOsb2=SkinEngine_CreateDIB32(clRect.right,clRect.bottom);//,1,GetDeviceCaps(hdc,BITSPIXEL),NULL);
+		if (g_CluiData.fDisableSkinEngine)
+			hBmpOsb2=CreateBitmap(clRect.right,clRect.bottom,1,GetDeviceCaps(hdc,BITSPIXEL),NULL);
+		else
+			hBmpOsb2=SkinEngine_CreateDIB32(clRect.right,clRect.bottom);//,1,GetDeviceCaps(hdc,BITSPIXEL),NULL);		
 		oldbmp2=(HBITMAP)  SelectObject(hdcMem2,hBmpOsb2);
 	}
 	if (!(NotInMain || dat->force_in_dialog || !g_CluiData.fLayered ||grey))
@@ -2924,6 +3005,15 @@ static void CLCPaint_InternalPaintClc(HWND hwnd,struct ClcData *dat,HDC hdc,RECT
 		if (!(style&CLS_GREYALTERNATE))
 			SkinDrawGlyph(hdcMem,&clRect,rcPaint,"CL,ID=Background,Type=Control");
 	}
+	else if (g_CluiData.fDisableSkinEngine)
+	{
+		if (!DrawNonEnginedBackground(hwnd, hdcMem, rcPaint, clRect, dat))
+		{
+			HBRUSH hBrush=CreateSolidBrush(tmpbkcolour);
+			FillRect(hdcMem,rcPaint,hBrush);
+			DeleteObject(hBrush);
+		}		
+	}
 	else
 	{
 		if (!g_CluiData.fLayered)
@@ -2940,7 +3030,7 @@ static void CLCPaint_InternalPaintClc(HWND hwnd,struct ClcData *dat,HDC hdc,RECT
 	//---
 	if (rcPaint->top==0 && rcPaint->bottom==clRect.bottom)
 	{
-	   AniAva_InvalidateAvatarPositions(NULL);
+		AniAva_InvalidateAvatarPositions(NULL);
 	}
 	if (dat->row_heights )
 	{
@@ -2959,7 +3049,7 @@ static void CLCPaint_InternalPaintClc(HWND hwnd,struct ClcData *dat,HDC hdc,RECT
 			}
 
 			line_num++;		
-	
+
 			// Draw line, if needed
 			if (y > rcPaint->top - dat->row_heights[line_num])
 			{
@@ -3048,48 +3138,95 @@ static void CLCPaint_InternalPaintClc(HWND hwnd,struct ClcData *dat,HDC hdc,RECT
 						else
 							SkinDrawGlyph(hdcMem,&row_rc,rcPaint,"CL,ID=GreyAlternate");
 					}
-					// Row background
-					if (!dat->force_in_dialog)
-					{   //Build mpRequest string
-						mpRequest=CLCPaint_GetCLCContactRowBackModernMask(group,Drawing,indent,line_num,selected,hottrack,dat);
+					if (!g_CluiData.fDisableSkinEngine)
+					{
+						// Row background
+						if (!dat->force_in_dialog)
+						{   //Build mpRequest string
+							mpRequest=CLCPaint_GetCLCContactRowBackModernMask(group,Drawing,indent,line_num,selected,hottrack,dat);
+							{
+								RECT mrc=row_rc;
+								if (group->parent==0
+									&& group->scanIndex!=0
+									&& group->scanIndex<group->cl.count
+									&& group->cl.items[group->scanIndex]->type==CLCIT_GROUP)
+								{
+									mrc.top+=dat->row_before_group_space;
+								}
+								SkinDrawGlyphMask(hdcMem,&mrc,rcPaint,mpRequest);
+							}
+						}
+						if (selected || hottrack)
 						{
 							RECT mrc=row_rc;
-							if (group->parent==0
-								&& group->scanIndex!=0
-								&& group->scanIndex<group->cl.count
-								&& group->cl.items[group->scanIndex]->type==CLCIT_GROUP)
+							if(Drawing->type == CLCIT_GROUP &&
+								Drawing->group->parent->groupId==0 &&
+								Drawing->group->parent->cl.items[0]!=Drawing)
 							{
 								mrc.top+=dat->row_before_group_space;
 							}
-							SkinDrawGlyphMask(hdcMem,&mrc,rcPaint,mpRequest);
+							// Selection background (only if hole line - full/less)
+							if (dat->HiLightMode == 1) // Full  or default
+							{
+								if (selected)
+									SkinDrawGlyph(hdcMem,&mrc,rcPaint,"CL,ID=Selection");
+								if(hottrack)
+									SkinDrawGlyph(hdcMem,&mrc,rcPaint,"CL,ID=HotTracking");
+							}
+							else if (dat->HiLightMode == 2) // Less
+							{
+								if (selected)
+									SkinDrawGlyph(hdcMem,&mrc,rcPaint,"CL,ID=Selection");      //instead of free_row_rc
+								if(hottrack)
+									SkinDrawGlyph(hdcMem,&mrc,rcPaint,"CL,ID=HotTracking");
+							}
 						}
-					}
-					if (selected || hottrack)
-					{
-						RECT mrc=row_rc;
-						if(Drawing->type == CLCIT_GROUP &&
-							Drawing->group->parent->groupId==0 &&
-							Drawing->group->parent->cl.items[0]!=Drawing)
-						{
-							mrc.top+=dat->row_before_group_space;
-						}
-						// Selection background (only if hole line - full/less)
-						if (dat->HiLightMode == 1) // Full  or default
-						{
-							if (selected)
-								SkinDrawGlyph(hdcMem,&mrc,rcPaint,"CL,ID=Selection");
-							if(hottrack)
-								SkinDrawGlyph(hdcMem,&mrc,rcPaint,"CL,ID=HotTracking");
-						}
-						else if (dat->HiLightMode == 2) // Less
-						{
-							if (selected)
-								SkinDrawGlyph(hdcMem,&mrc,rcPaint,"CL,ID=Selection");      //instead of free_row_rc
-							if(hottrack)
-								SkinDrawGlyph(hdcMem,&mrc,rcPaint,"CL,ID=HotTracking");
-						}
-					}
 
+					}
+					else
+					{	
+						int checkboxWidth;
+						if((style&CLS_CHECKBOXES && Drawing->type==CLCIT_CONTACT) ||
+							(style&CLS_GROUPCHECKBOXES && Drawing->type==CLCIT_GROUP) ||
+							(Drawing->type==CLCIT_INFO && Drawing->flags&CLCIIF_CHECKBOX))
+							checkboxWidth=dat->checkboxSize+2;
+						else checkboxWidth=0;
+						//background
+						if(selected) {
+							switch (dat->HiLightMode)
+							{
+							case 0:
+							case 1:							
+								{
+									int i=y;
+									int row_height=row_rc.bottom-row_rc.top;
+									for (i=y; i<y+row_height; i+=dat->row_min_heigh)
+									{
+										ImageList_DrawEx(dat->himlHighlight,0,hdcMem,0,i,clRect.right,
+											min(y+row_height-i,dat->row_min_heigh), CLR_NONE,CLR_NONE,
+											dat->exStyle&CLS_EX_NOTRANSLUCENTSEL?ILD_NORMAL:ILD_BLEND25);
+									}
+									SetTextColor(hdcMem,dat->selTextColour);
+									break;
+								}
+
+							case 2:
+								{
+									int i;
+									int row_height=row_rc.bottom-row_rc.top-1;
+									for (i=y+1; i<y+row_height; i+=dat->row_min_heigh)
+									{
+										ImageList_DrawEx(dat->himlHighlight,0,hdcMem,1,i,clRect.right-2,
+											min(y+row_height-i,dat->row_min_heigh),CLR_NONE,CLR_NONE,
+											dat->exStyle&CLS_EX_NOTRANSLUCENTSEL?ILD_NORMAL:ILD_BLEND25);
+									}
+									SetTextColor(hdcMem,dat->selTextColour);
+									break;
+								}
+							}
+						}
+
+					}
 					// **** Checkboxes
 					if((style&CLS_CHECKBOXES && Drawing->type==CLCIT_CONTACT) ||
 						(style&CLS_GROUPCHECKBOXES && Drawing->type==CLCIT_GROUP) ||
@@ -3199,7 +3336,7 @@ static void CLCPaint_InternalPaintClc(HWND hwnd,struct ClcData *dat,HDC hdc,RECT
 			}
 			else if (group->scanIndex>=group->cl.count)
 			{
-				 subindex=-1;
+				subindex=-1;
 			}
 		}
 
@@ -4016,8 +4153,8 @@ static void GetBlendMode(IN struct ClcData *dat, IN struct ClcContact * Drawing,
 		if (OutColourFg)	*OutMode=mode;  //return ILD_MODE if color requested
 		else *OutMode=
 			(mode==ILD_BLEND50)?128 : 
-			(mode==ILD_BLEND25)?64 :
-			 255;	//return alpha otherwise
+		(mode==ILD_BLEND25)?64 :
+		255;	//return alpha otherwise
 	}
 }
 
@@ -4048,7 +4185,7 @@ static void CLCPaint_DrawContactItems(HWND hwnd, HDC hdcMem, struct ClcData *dat
 		BOOL isVisible=IsVisible(rcPaint,rc);
 		if (isVisible || (Drawing->ext_mpItemsDesc[i].itemType == CIT_AVATAR && Drawing->avatar_pos == AVATAR_POS_ANIMATED)	)
 			switch(Drawing->ext_mpItemsDesc[i].itemType)
-			{
+		{
 			case CIT_AVATAR:
 				if (Drawing->avatar_pos == AVATAR_POS_ANIMATED)
 				{
@@ -4059,16 +4196,16 @@ static void CLCPaint_DrawContactItems(HWND hwnd, HDC hdcMem, struct ClcData *dat
 					{
 						switch(dat->avatars_overlay_type)
 						{
-							case SETTING_AVATAR_OVERLAY_TYPE_NORMAL:
-								overlayIdx = g_pAvatarOverlayIcons[GetContactCachedStatus(Drawing->hContact) - ID_STATUS_OFFLINE].listID;
-								break;
-							case SETTING_AVATAR_OVERLAY_TYPE_PROTOCOL:
-								overlayIdx = ExtIconFromStatusMode(Drawing->hContact, Drawing->proto,
-									Drawing->proto==NULL ? ID_STATUS_OFFLINE : GetContactCachedStatus(Drawing->hContact));
-								break;
-							case SETTING_AVATAR_OVERLAY_TYPE_CONTACT:
-								overlayIdx = Drawing->iImage;
-								break;
+						case SETTING_AVATAR_OVERLAY_TYPE_NORMAL:
+							overlayIdx = g_pAvatarOverlayIcons[GetContactCachedStatus(Drawing->hContact) - ID_STATUS_OFFLINE].listID;
+							break;
+						case SETTING_AVATAR_OVERLAY_TYPE_PROTOCOL:
+							overlayIdx = ExtIconFromStatusMode(Drawing->hContact, Drawing->proto,
+								Drawing->proto==NULL ? ID_STATUS_OFFLINE : GetContactCachedStatus(Drawing->hContact));
+							break;
+						case SETTING_AVATAR_OVERLAY_TYPE_CONTACT:
+							overlayIdx = Drawing->iImage;
+							break;
 						}
 					}									
 					GetBlendMode(dat, Drawing, selected, hottrack, GIM_AVATAR_AFFECT, NULL, &blendmode);
@@ -4366,12 +4503,12 @@ static void CLCPaint_DrawContactItems(HWND hwnd, HDC hdcMem, struct ClcData *dat
 }
 static void CLCPaint_InternalPaintRowItems (HWND hwnd, HDC hdcMem, struct ClcData *dat, struct ClcContact *Drawing, RECT row_rc, RECT free_row_rc, int left_pos, int right_pos, int selected,int hottrack, RECT *rcPaint)
 {
-/*
-#ifndef EXTLAYOUT 
+	/*
+	#ifndef EXTLAYOUT 
 	CLCPaint_OldInternalPaintRowItems(hwnd, hdcMem, dat, Drawing, row_rc, free_row_rc, left_pos, right_pos, selected, hottrack, rcPaint);
 	return;
-#endif
-*/
+	#endif
+	*/
 	if (gl_RowRoot && (dat->hWnd==pcli->hwndContactTree))
 	{
 		CLCPaint_ModernInternalPaintRowItems(hwnd,hdcMem,dat,Drawing,row_rc,free_row_rc,left_pos,right_pos,selected,hottrack,rcPaint);
@@ -4395,14 +4532,14 @@ V groups and divider lines
 Milestones to implement Extended row layout
 
 -	1. Implement separate Row item position calculation and drawing
- V		a. Separation of painting and positions calculation 
- .		b. Use Items rect array for hit test
- .		c. Calculate row height via appropriate function
- .		d. Invalidate row items only when needed
+V		a. Separation of painting and positions calculation 
+.		b. Use Items rect array for hit test
+.		c. Calculate row height via appropriate function
+.		d. Invalidate row items only when needed
 
 .	2. Implement extended row item layout
- .		a. layout template parsing
- .		b. calculate positions according to template
- .		c. GUI to modify template
- . 		d. skin defined template
+.		a. layout template parsing
+.		b. calculate positions according to template
+.		c. GUI to modify template
+. 		d. skin defined template
 */

@@ -278,6 +278,7 @@ static int EventArea_DrawWorker(HWND hWnd, HDC hDC)
     GetClientRect(hWnd,&rc);   
     SkinDrawGlyph(hDC,&rc,&rc,"Main,ID=EventArea");
     hOldFont=CLCPaint_ChangeToFont(hDC,NULL,FONTID_EVENTAREA,NULL);
+	SetBkMode(hDC,TRANSPARENT);
     //SkinEngine_DrawText(hDC,_T("DEBUG"),lstrlen(_T("DEBUG")),&rc,0);
     {
 	    int iCount = GetMenuItemCount(g_CluiData.hMenuNotify);
@@ -361,7 +362,7 @@ int EventArea_Create(HWND hCluiWnd)
     wndclass.hInstance     = g_hInst;
     wndclass.hIcon         = NULL;
     wndclass.hCursor       = LoadCursor (NULL, IDC_ARROW);
-    wndclass.hbrBackground = (HBRUSH)(COLOR_3DFACE+1);
+    wndclass.hbrBackground = GetSysColorBrush(COLOR_3DFACE);
     wndclass.lpszMenuName  = NULL;
     wndclass.lpszClassName = pluginname;
     RegisterClass(&wndclass);
@@ -488,7 +489,7 @@ static LRESULT CALLBACK EventArea_WndProc(HWND hwnd, UINT msg, WPARAM wParam, LP
 	  if (!g_CluiData.fLayered)InvalidateRect(hwnd,NULL,FALSE);
 	  return DefWindowProc(hwnd, msg, wParam, lParam);
     case WM_ERASEBKGND:
-	  return FALSE;
+	  return 1;
     case WM_PAINT:
         {
             if (GetParent(hwnd)==pcli->hwndContactList && g_CluiData.fLayered)

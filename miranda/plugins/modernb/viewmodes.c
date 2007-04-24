@@ -1138,6 +1138,7 @@ LRESULT CALLBACK ViewModeFrameWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM
                 SetWindowText(GetDlgItem(hwnd, IDC_SELECTMODE), TranslateT("No view mode"));
             break;
 		case WM_ERASEBKGND:
+			return DefWindowProc(hwnd, msg, wParam, lParam);
 			return 0;
         case WM_PAINT:
 			if (GetParent(hwnd)==pcli->hwndContactList && g_CluiData.fLayered)				

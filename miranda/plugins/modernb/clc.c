@@ -274,14 +274,22 @@ static int ClcEventAdded(WPARAM wParam,LPARAM lParam)
 	return 0;
 }
 
+int BgClcChange(WPARAM wParam,LPARAM lParam)
+{
+	pcli->pfnClcOptionsChanged();
+	return 0;
+}
 
 /*
 *	clc modules loaded hook
 */
 static int ClcModulesLoaded(WPARAM wParam,LPARAM lParam) {
+
 	PROTOCOLDESCRIPTOR **proto;
 	int protoCount,i;
 	if (MirandaExiting()) return 0;
+	BGModuleLoad();
+
 	if (ServiceExists(MS_MC_DISABLEHIDDENGROUP));
 	CallService(MS_MC_DISABLEHIDDENGROUP, (WPARAM)TRUE, (LPARAM)0);
 
@@ -362,9 +370,16 @@ static int ClcModulesLoaded(WPARAM wParam,LPARAM lParam) {
 
 		hSmileyAddOptionsChangedHook=HookEvent(ME_SMILEYADD_OPTIONSCHANGED,SmileyAddOptionsChanged);
 	}
-	HookEvent(ME_BACKGROUNDCONFIG_CHANGED,BgStatusBarChange);
-	HookEvent(ME_BACKGROUNDCONFIG_CHANGED,callProxied_OnFrameTitleBarBackgroundChange);
 
+	CallService(MS_BACKGROUNDCONFIG_REGISTER,(WPARAM)"List Background/CLC",0);
+	CallService(MS_BACKGROUNDCONFIG_REGISTER,(WPARAM)"Menu Background/Menu",0);
+	CallService(MS_BACKGROUNDCONFIG_REGISTER,(WPARAM)"StatusBar Background/StatusBar",0);
+	CallService(MS_BACKGROUNDCONFIG_REGISTER,(WPARAM)"Frames TitleBar BackGround/FrameTitleBar",0);
+	
+	
+	HookEvent(ME_BACKGROUNDCONFIG_CHANGED,BgClcChange);
+	HookEvent(ME_BACKGROUNDCONFIG_CHANGED,BgStatusBarChange);
+	HookEvent(ME_BACKGROUNDCONFIG_CHANGED,OnFrameTitleBarBackgroundChange);
 
 	return 0;
 }
@@ -776,6 +791,52 @@ case WM_SIZE:
 	KillTimer(hwnd,TIMERID_INFOTIP);
 	KillTimer(hwnd,TIMERID_RENAME);
 	cliRecalcScrollBar(hwnd,dat);
+	if (g_CluiData.fDisableSkinEngine)
+	{
+			HBITMAP hBmp, hBmpMask, hoBmp, hoMaskBmp;
+			HDC hdc,hdcMem;
+			RECT rc={0};
+			int depth;
+			HBRUSH hBrush;
+
+			GetClientRect(hwnd, &rc);
+			if (rc.right == 0)
+				break;
+			rc.bottom = dat->row_min_heigh;
+
+			//rc.bottom=8;
+			//rc.right=8;
+			hdc = GetDC(hwnd);
+			depth = GetDeviceCaps(hdc, BITSPIXEL);
+			if (depth < 16)
+				depth = 16;
+			hBmp = CreateBitmap(rc.right, rc.bottom, 1, depth, NULL);
+			hBmpMask = CreateBitmap(rc.right, rc.bottom, 1, 1, NULL);
+			hdcMem = CreateCompatibleDC(hdc);
+			hoBmp = (HBITMAP) SelectObject(hdcMem, hBmp);
+			hBrush = CreateSolidBrush(dat->useWindowsColours ? GetSysColor(COLOR_HIGHLIGHT) : dat->selBkColour);
+			FillRect(hdcMem, &rc, hBrush);
+			DeleteObject(hBrush);
+
+			hoMaskBmp = SelectObject(hdcMem, hBmpMask);
+			FillRect(hdcMem, &rc, GetStockObject(BLACK_BRUSH));
+				SelectObject(hdcMem, hoMaskBmp);
+			SelectObject(hdcMem, hoBmp);
+			DeleteDC(hdcMem);
+			ReleaseDC(hwnd, hdc);
+			if (dat->himlHighlight)
+				ImageList_Destroy(dat->himlHighlight);
+			dat->himlHighlight = ImageList_Create(rc.right, rc.bottom, (IsWinVerXPPlus()? ILC_COLOR32 : ILC_COLOR16) | ILC_MASK, 1, 1);
+			ImageList_Add(dat->himlHighlight, hBmp, hBmpMask);
+			DeleteObject(hBmpMask);
+			DeleteObject(hBmp);
+	}
+	else if (dat->himlHighlight)
+	{
+			ImageList_Destroy(dat->himlHighlight);
+			dat->himlHighlight = NULL;
+	}
+
 	return 0;
 case INTM_ICONCHANGED:
 	{
@@ -1043,21 +1104,23 @@ case WM_CHAR:
 case WM_PAINT:
 	{	
 		HDC hdc;
-		PAINTSTRUCT ps;          
+		PAINTSTRUCT ps;
 		if (IsWindowVisible(hwnd)) 
 		{
-			HWND h;
-			h=GetParent(hwnd);  
-			if (h!=pcli->hwndContactList || !g_CluiData.fLayered)
+			if (!g_CluiData.fLayered || GetParent(hwnd)!=pcli->hwndContactList)
 			{       
 				hdc=BeginPaint(hwnd,&ps);
-				CLCPaint_cliPaintClc(hwnd,dat,ps.hdc,&ps.rcPaint);
+				CLCPaint_cliPaintClc(hwnd,dat,hdc,&ps.rcPaint);
 				EndPaint(hwnd,&ps);
 			}
 			else CallService(MS_SKINENG_INVALIDATEFRAMEIMAGE,(WPARAM)hwnd,0);
 		}
 		return DefWindowProc(hwnd, msg, wParam, lParam);           
 	}
+case WM_ERASEBKGND:
+		{
+			return 1;
+		}
 case WM_KEYDOWN:
 	{	
 		int selMoved=0;
@@ -1943,6 +2006,12 @@ case WM_DESTROY:
 			DeleteObject(dat->hMenuBackground);
 			dat->hMenuBackground=NULL;
 		}
+		if (!dat->bkChanged && dat->hBmpBackground)
+		{
+			DeleteObject(dat->hBmpBackground);
+			dat->hBmpBackground=NULL;
+		}
+
 		{
 			ImageArray_Clear(&dat->avatar_cache);
 			mod_DeleteDC(dat->avatar_cache.hdc);			
@@ -1950,6 +2019,8 @@ case WM_DESTROY:
 		//FreeDisplayNameCache(&dat->lCLCContactsCache);
 		//if (!dat->use_avatar_service)
 			ImageArray_Free(&dat->avatar_cache, FALSE);
+	
+		
 
 		RowHeights_Free(dat);
 		saveContactListControlWndProc(hwnd, msg, wParam, lParam);			

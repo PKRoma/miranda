@@ -184,17 +184,20 @@ extern int UnhookAll();
 //               "Status bar background/StatusBar"
 //  lParam = (LPARAM)dwFlags
 //
-//#define MS_BACKGROUNDCONFIG_REGISTER "BkgrCfg/Register"
+#define MS_BACKGROUNDCONFIG_REGISTER "ModernBkgrCfg/Register"
 
 //
 //  Notification about changed background
 //  wParam = ModuleName
 //  lParam = 0
-#define ME_BACKGROUNDCONFIG_CHANGED "BkgrCfg/Changed"
+#define ME_BACKGROUNDCONFIG_CHANGED "ModernBkgrCfg/Changed"
 
 
 
 HBITMAP SkinEngine_CreateDIB32(int cx, int cy);
+BOOL SkinEngine_SetRectOpaqueOpt(HDC memdc,RECT *fr, BOOL force);
+BOOL SkinEngine_SetRgnOpaqueOpt(HDC memdc,HRGN hrgn, BOOL force);
+
 extern void InitDisplayNameCache(void);
 extern void FreeDisplayNameCache();
 extern int CLUI_ShowWindowMod(HWND hwnd, int cmd);

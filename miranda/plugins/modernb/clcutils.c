@@ -456,8 +456,9 @@ int GetDropTargetInformation(HWND hwnd,struct ClcData *dat,POINT pt)
 void LoadCLCOptions(HWND hwnd, struct ClcData *dat)
 { 
 	int i;
-
+	g_CluiData.fDisableSkinEngine=DBGetContactSettingByte(NULL,"ModernData","DisableEngine", 0);
 	{	
+
 		LOGFONTA lf;
 		HFONT holdfont;
 		SIZE fontSize;
@@ -690,26 +691,36 @@ void LoadCLCOptions(HWND hwnd, struct ClcData *dat)
 	dat->showIdle=DBGetContactSettingByte(NULL,"CLC","ShowIdle",CLCDEFAULT_SHOWIDLE);
 	dat->noVScrollbar=DBGetContactSettingByte(NULL,"CLC","NoVScrollBar",0);
 	SendMessage(hwnd,INTM_SCROLLBARCHANGED,0,0);
-	if(!dat->bkChanged) {
-		DBVARIANT dbv={0};
-		dat->bkColour=GetSysColor(COLOR_3DFACE);//DBGetContactSettingDword(NULL,"CLC","BkColour",CLCDEFAULT_BKCOLOUR);
-		if(dat->hBmpBackground) {DeleteObject(dat->hBmpBackground); dat->hBmpBackground=NULL;}
-		/*if(DBGetContactSettingByte(NULL,"CLC","UseBitmap",CLCDEFAULT_USEBITMAP)) {
-		if(!DBGetContactSetting(NULL,"CLC","BkBitmap",&dbv)) {
-		dat->hBmpBackground=(HBITMAP)CallService(MS_UTILS_LOADBITMAP,0,(LPARAM)dbv.pszVal);
-		mir_free_and_nill(dbv.pszVal);
-		DBFreeVariant(&dbv);
-		}
-		}*/
-		dat->backgroundBmpUse=DBGetContactSettingWord(NULL,"CLC","BkBmpUse",CLCDEFAULT_BKBMPUSE);
+	
+	if (dat->hBmpBackground) {DeleteObject(dat->hBmpBackground); dat->hBmpBackground=NULL;}
+	if (dat->hMenuBackground) {DeleteObject(dat->hMenuBackground); dat->hMenuBackground=NULL;}
+	
+	dat->useWindowsColours = DBGetContactSettingByte(NULL, "CLC", "UseWinColours", CLCDEFAULT_USEWINDOWSCOLOURS);
 
+	if (g_CluiData.fDisableSkinEngine)
+	{
+		DBVARIANT dbv;
+		if(!dat->bkChanged) 
+		{
+			dat->bkColour=DBGetContactSettingDword(NULL,"CLC","BkColour",GetSysColor(COLOR_3DFACE));
+			{	
+				if(DBGetContactSettingByte(NULL,"CLC","UseBitmap",CLCDEFAULT_USEBITMAP)) 
+				{
+					if(!DBGetContactSetting(NULL,"CLC","BkBitmap",&dbv)) 
+					{
+						dat->hBmpBackground=(HBITMAP)CallService(MS_UTILS_LOADBITMAP,0,(LPARAM)dbv.pszVal);				
+						DBFreeVariant(&dbv);						
+					}
+				}
+			}
+			dat->backgroundBmpUse=DBGetContactSettingWord(NULL,"CLC","BkBmpUse",CLCDEFAULT_BKBMPUSE);
+		}		
 		dat->MenuBkColor=DBGetContactSettingDword(NULL,"Menu","BkColour",CLCDEFAULT_BKCOLOUR);
 		dat->MenuBkHiColor=DBGetContactSettingDword(NULL,"Menu","SelBkColour",CLCDEFAULT_SELBKCOLOUR);
 
 		dat->MenuTextColor=DBGetContactSettingDword(NULL,"Menu","TextColour",CLCDEFAULT_TEXTCOLOUR);
 		dat->MenuTextHiColor=DBGetContactSettingDword(NULL,"Menu","SelTextColour",CLCDEFAULT_SELTEXTCOLOUR);
-
-		if (dat->hMenuBackground) {DeleteObject(dat->hMenuBackground); dat->hMenuBackground=NULL;}
+		
 		if(DBGetContactSettingByte(NULL,"Menu","UseBitmap",CLCDEFAULT_USEBITMAP)) {
 			if(!DBGetContactSetting(NULL,"Menu","BkBitmap",&dbv)) {
 				dat->hMenuBackground=(HBITMAP)CallService(MS_UTILS_LOADBITMAP,0,(LPARAM)dbv.pszVal);

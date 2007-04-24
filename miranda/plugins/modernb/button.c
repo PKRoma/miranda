@@ -14,6 +14,7 @@ struct tagSKINBUTTONDATA
 	BOOL	fFocused;		// button is focused flag
 	BOOL	fSendOnDown;	// send event on button pushed
 	BOOL	fHotMark;		// button is hot marked (e.g. current state)
+	BOOL	defbutton;
 	int		nFontID;		// internal font ID
 	HFONT	hFont;			// font
 	HICON   hIconPrivate;	// icon need to be destroyed
@@ -22,14 +23,89 @@ struct tagSKINBUTTONDATA
 	TCHAR	szText[128];	// text on the button
 	RECT	rcMargins;		// margins of inner content
 	BOOL	pushBtn;		// is it push button
-	int		pbState;		// state of push button	
+	int		pbState;		// state of push button
+
+	HANDLE	hThemeButton;
+    HANDLE	hThemeToolbar;
+    BOOL	bThemed;
 };
 typedef struct tagSKINBUTTONDATA SKINBUTTONDATA;
+
 
 static CRITICAL_SECTION csTips;
 static HWND hwndToolTips = NULL;
 static LRESULT CALLBACK SkinButtonProc(HWND hwndDlg, UINT  msg, WPARAM wParam, LPARAM lParam);
 static void PaintWorker(SKINBUTTONDATA *lpSBData, HDC hdcPaint , POINT * pOffset);
+static BOOL	bThemed=FALSE;
+static HANDLE hThemeButton=FALSE;
+static HANDLE hThemeToolbar=FALSE;
+
+// External theme methods and properties
+static HMODULE themeAPIHandle = NULL; // handle to uxtheme.dll
+static HANDLE   (WINAPI *MyOpenThemeData)(HWND, LPCWSTR);
+static HRESULT  (WINAPI *MyCloseThemeData)(HANDLE);
+static BOOL     (WINAPI *MyIsThemeBackgroundPartiallyTransparent)(HANDLE, int,
+                                                                  int);
+static HRESULT  (WINAPI *MyDrawThemeParentBackground)(HWND, HDC, RECT *);
+static HRESULT  (WINAPI *MyDrawThemeBackground)(HANDLE, HDC, int, int,
+                                                const RECT *, const RECT *);
+static HRESULT  (WINAPI *MyDrawThemeText)(HANDLE, HDC, int, int, LPCWSTR, int,
+                                          DWORD, DWORD, const RECT *);
+
+BOOL (WINAPI *MyEnableThemeDialogTexture)(HANDLE, DWORD) = 0;
+
+#define MGPROC(x) GetProcAddress(themeAPIHandle,x)
+static int ThemeSupport()
+{
+    if (IsWinVerXPPlus()) {
+        if (!themeAPIHandle) {
+            themeAPIHandle = GetModuleHandleA("uxtheme");
+            if (themeAPIHandle) {
+                MyOpenThemeData = (HANDLE(WINAPI *)(HWND, LPCWSTR))MGPROC("OpenThemeData");
+                MyCloseThemeData = (HRESULT(WINAPI *)(HANDLE))MGPROC("CloseThemeData");
+                MyIsThemeBackgroundPartiallyTransparent = (BOOL(WINAPI *)(HANDLE, int, int))MGPROC("IsThemeBackgroundPartiallyTransparent");
+                MyDrawThemeParentBackground = (HRESULT(WINAPI *)(HWND, HDC, RECT *))MGPROC("DrawThemeParentBackground");
+                MyDrawThemeBackground = (HRESULT(WINAPI *)(HANDLE, HDC, int, int, const RECT *, const RECT *))MGPROC("DrawThemeBackground");
+                MyDrawThemeText = (HRESULT(WINAPI *)(HANDLE, HDC, int, int, LPCWSTR, int, DWORD, DWORD, const RECT *))MGPROC("DrawThemeText");
+				MyEnableThemeDialogTexture = (BOOL (WINAPI *)(HANDLE, DWORD))MGPROC("EnableThemeDialogTexture");
+			}
+        }
+    // Make sure all of these methods are valid (i would hope either all or none work)
+        if (MyOpenThemeData && MyCloseThemeData && MyIsThemeBackgroundPartiallyTransparent && MyDrawThemeParentBackground && MyDrawThemeBackground && MyDrawThemeText) {
+            return 1;
+        }
+    }
+    return 0;
+}
+
+static void DestroyTheme(SKINBUTTONDATA *ctl)
+{
+    if (ThemeSupport()) {
+        if (ctl->hThemeButton) {
+            MyCloseThemeData(ctl->hThemeButton);
+            ctl->hThemeButton = NULL;
+        }
+        if (ctl->hThemeToolbar) {
+            MyCloseThemeData(ctl->hThemeToolbar);
+            ctl->hThemeToolbar = NULL;
+        }
+		
+    }
+	ctl->bThemed = FALSE;
+}
+
+static void LoadTheme(SKINBUTTONDATA *ctl)
+{
+    if (ThemeSupport()) {
+        DestroyTheme(ctl);
+		if (g_CluiData.fDisableSkinEngine)
+		{
+			ctl->hThemeButton = MyOpenThemeData(ctl->hWnd, L"BUTTON");
+			ctl->hThemeToolbar = MyOpenThemeData(ctl->hWnd, L"TOOLBAR");
+			ctl->bThemed = TRUE;
+		}
+    }
+}
 
 int LoadSkinButtonModule()
 {
@@ -95,6 +171,7 @@ static LRESULT CALLBACK SkinButtonProc(HWND hwndDlg, UINT  msg, WPARAM wParam, L
 				SetWindowLong(hwndDlg, 0, (LONG) lpSBData);
 				if (((CREATESTRUCTA *) lParam)->lpszName)
 					SetWindowText(hwndDlg, ((CREATESTRUCT *) lParam)->lpszName);
+				LoadTheme(lpSBData);
 				return TRUE;
 			}
 		case WM_DESTROY:
@@ -122,7 +199,7 @@ static LRESULT CALLBACK SkinButtonProc(HWND hwndDlg, UINT  msg, WPARAM wParam, L
 					}
 					if (lpSBData->hIconPrivate)
 						DestroyIcon(lpSBData->hIconPrivate);
-					//DestroyTheme(lpSBData);
+					DestroyTheme(lpSBData);
 					free(lpSBData);  // lpSBData was malloced by native malloc
 				}
 				SetWindowLong(hwndDlg, 0, (LONG) NULL);
@@ -165,16 +242,15 @@ static LRESULT CALLBACK SkinButtonProc(HWND hwndDlg, UINT  msg, WPARAM wParam, L
 				return 0;
 			}
 			break;
-		/*
+		
 		case WM_THEMECHANGED:
 			{
 				// themed changed, reload theme object
-				if (lpSBData->bThemed)
-					LoadTheme(lpSBData);
+				LoadTheme(lpSBData);
 				InvalidateParentRect(lpSBData->hWnd, NULL, TRUE); // repaint it
 				break;
 			}
-		*/
+		
 		case WM_SETFONT:			
 			{	
 				// remember the font so we can use it later
@@ -206,7 +282,7 @@ static LRESULT CALLBACK SkinButtonProc(HWND hwndDlg, UINT  msg, WPARAM wParam, L
 		case WM_NCPAINT:
 		case WM_PAINT:
 			{
-				/*
+				
 				PAINTSTRUCT ps;
 				HDC hdcPaint;
 				hdcPaint = BeginPaint(hwndDlg, &ps);
@@ -215,7 +291,6 @@ static LRESULT CALLBACK SkinButtonProc(HWND hwndDlg, UINT  msg, WPARAM wParam, L
 					PaintWorker(lpSBData, hdcPaint, NULL);
 					EndPaint(hwndDlg, &ps);
 				}
-				*/
 				ValidateRect(hwndDlg,NULL);
 				return 0;
 			}
@@ -353,7 +428,7 @@ static LRESULT CALLBACK SkinButtonProc(HWND hwndDlg, UINT  msg, WPARAM wParam, L
 			}
 		case WM_ERASEBKGND:
 			{
-				return 0;
+				return 1;
 			}
 		case BM_GETIMAGE:
 			{
@@ -412,6 +487,23 @@ static LRESULT CALLBACK SkinButtonProc(HWND hwndDlg, UINT  msg, WPARAM wParam, L
 	return DefWindowProc(hwndDlg, msg, wParam, lParam);
 }
 
+static TBStateConvert2Flat(int state)
+{
+    switch (state) {
+        case PBS_NORMAL:
+            return TS_NORMAL;
+        case PBS_HOT:
+            return TS_HOT;
+        case PBS_PRESSED:
+            return TS_PRESSED;
+        case PBS_DISABLED:
+            return TS_DISABLED;
+        case PBS_DEFAULTED:
+            return TS_NORMAL;
+    }
+    return TS_NORMAL;
+}
+
 static void PaintWorker(SKINBUTTONDATA *lpSBData, HDC hdcPaint , POINT * pOffset)
 {
 	HDC hdcMem;
@@ -442,19 +534,48 @@ static void PaintWorker(SKINBUTTONDATA *lpSBData, HDC hdcPaint , POINT * pOffset
 	{
 		OffsetRect(&rcClient,offset.x,offset.y);
 	}
-	
+	{
+	if (!g_CluiData.fDisableSkinEngine)
+		{
+			char szRequest[128];
+			/* painting */
+			_snprintf(szRequest,sizeof(szRequest),"Button,ID=%s,Hovered=%s,Pressed=%s,Focused=%s",
+				lpSBData->szButtonID,				// ID		
+				b2str(lpSBData->nStateId==PBS_HOT),	// Hovered
+				b2str(lpSBData->nStateId==PBS_PRESSED || lpSBData->pbState == TRUE),	// Pressed
+				b2str(lpSBData->fFocused) );		// Focused
+			
+			SkinDrawGlyph(hdcMem,&rcClient,&rcClient,szRequest);
+		}
+		else 
+		{
+			if (lpSBData->bThemed)
+			{
+				RECT *rc = &rcClient;
+				int state = IsWindowEnabled(lpSBData->hWnd) ? (lpSBData->nStateId == PBS_NORMAL && lpSBData->defbutton ? PBS_DEFAULTED : lpSBData->nStateId) : PBS_DISABLED;
+				if (MyIsThemeBackgroundPartiallyTransparent(lpSBData->hThemeToolbar, TP_BUTTON, TBStateConvert2Flat(state)))
+				{	
+					//Draw parent?
+					MyDrawThemeParentBackground(lpSBData->hWnd, hdcMem, rc);
+				}
+				MyDrawThemeBackground(lpSBData->hThemeToolbar, hdcMem, TP_BUTTON, TBStateConvert2Flat(state), rc, rc);
+			}
+		}
+
+	}
 	{
 		
-		/* formatter */
-		RECT rcIcon;
-		RECT rcText;
-		char szRequest[128];
-
 		RECT rcTemp	= rcClient;  //content rect
 		BYTE bPressed = (lpSBData->nStateId==PBS_PRESSED || lpSBData->pbState == TRUE)?1:0;
 		HICON hHasIcon = lpSBData->hIcon?lpSBData->hIcon:lpSBData->hIconPrivate?lpSBData->hIconPrivate:NULL;
 		BOOL fHasText  = (lpSBData->szText[0]!='\0');
 		
+		/* formatter */
+		RECT rcIcon;
+		RECT rcText;
+
+	
+		if (!g_CluiData.fDisableSkinEngine)
 		{
 			/* correct rect according to rcMargins */
 			
@@ -462,10 +583,11 @@ static void PaintWorker(SKINBUTTONDATA *lpSBData, HDC hdcPaint , POINT * pOffset
 			rcTemp.top += lpSBData->rcMargins.top;
 			rcTemp.bottom -= lpSBData->rcMargins.bottom;
 			rcTemp.right -= lpSBData->rcMargins.right;
+		}
 			
-			rcIcon = rcTemp;
-			rcText = rcTemp;
-		}		
+		rcIcon = rcTemp;
+		rcText = rcTemp;
+		
 
 		/* reposition button items */
 		if (hHasIcon && fHasText )
@@ -493,15 +615,7 @@ static void PaintWorker(SKINBUTTONDATA *lpSBData, HDC hdcPaint , POINT * pOffset
 				 rcText.left<rcTemp.left ||
 				 rcText.top<rcTemp.top)) 		 fHasText=FALSE;			
 		}
-		
-		/* painting */
-		_snprintf(szRequest,sizeof(szRequest),"Button,ID=%s,Hovered=%s,Pressed=%s,Focused=%s",
-			lpSBData->szButtonID,				// ID		
-			b2str(lpSBData->nStateId==PBS_HOT),	// Hovered
-			b2str(lpSBData->nStateId==PBS_PRESSED || lpSBData->pbState == TRUE),	// Pressed
-			b2str(lpSBData->fFocused) );		// Focused
-		
-		SkinDrawGlyph(hdcMem,&rcClient,&rcClient,szRequest);
+
 		if (hHasIcon)
 		{
 			/* center icon vertically */
@@ -513,6 +627,7 @@ static void PaintWorker(SKINBUTTONDATA *lpSBData, HDC hdcPaint , POINT * pOffset
 		}
 		if (fHasText)
 		{
+			SetBkMode(hdcMem,TRANSPARENT);
 			if (lpSBData->nFontID>=0)
 				CLCPaint_ChangeToFont(hdcMem,NULL,lpSBData->nFontID,NULL);
 

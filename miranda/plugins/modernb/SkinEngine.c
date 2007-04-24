@@ -129,7 +129,15 @@ static MODERNEFFECT meCurrentEffect={-1,{0},0,0};
 
 BOOL SkinEngine_AlphaBlend(HDC hdcDest,int nXOriginDest,int nYOriginDest,int nWidthDest,int nHeightDest,HDC hdcSrc,int nXOriginSrc,int nYOriginSrc,int nWidthSrc,int nHeightSrc,BLENDFUNCTION blendFunction)
 {
-    if (!g_CluiData.fGDIPlusFail && blendFunction.BlendFlags&128 ) //Use gdi+ engine
+    if (g_CluiData.fDisableSkinEngine)
+	{
+		if (nWidthDest!=nWidthSrc || nHeightDest!=nHeightSrc) 
+			return StretchBlt(hdcDest,nXOriginDest,nYOriginDest,nWidthDest,nHeightDest,hdcSrc,nXOriginSrc,nYOriginSrc,nWidthSrc,nHeightSrc, SRCCOPY);
+		else
+			return BitBlt(hdcDest,nXOriginDest,nYOriginDest,nWidthDest,nHeightDest,hdcSrc,nXOriginSrc,nYOriginSrc, SRCCOPY);
+	}
+
+	if (!g_CluiData.fGDIPlusFail && blendFunction.BlendFlags&128 ) //Use gdi+ engine
     {
         return GDIPlus_AlphaBlend( hdcDest,nXOriginDest,nYOriginDest,nWidthDest,nHeightDest,
             hdcSrc,nXOriginSrc,nYOriginSrc,nWidthSrc,nHeightSrc,
@@ -392,32 +400,36 @@ int SkinEngine_UnloadModule()
 }
 
 
-BOOL SkinEngine_SetRgnOpaque(HDC memdc,HRGN hrgn)
+BOOL SkinEngine_SetRgnOpaqueOpt(HDC memdc,HRGN hrgn, BOOL force)
 {
     RGNDATA * rdata;
     DWORD rgnsz;
     DWORD d;
     RECT * rect;
+	if (g_CluiData.fDisableSkinEngine && !force) return TRUE;
     rgnsz=GetRegionData(hrgn,0,NULL);
     rdata=(RGNDATA *) mir_alloc(rgnsz);
     GetRegionData(hrgn,rgnsz,rdata);
     rect=(RECT *)rdata->Buffer;
     for (d=0; d<rdata->rdh.nCount; d++)
     {
-        SkinEngine_SetRectOpaque(memdc,&rect[d]);
+        SkinEngine_SetRectOpaqueOpt(memdc,&rect[d], force);
     }
     mir_free_and_nill(rdata);
     return TRUE;
 }
 
-BOOL SkinEngine_SetRectOpaque(HDC memdc,RECT *fr)
+
+BOOL SkinEngine_SetRectOpaqueOpt(HDC memdc,RECT *fr, BOOL force)
 {
     int x,y;
     int sx,sy,ex,ey;
     int f=0;
     BYTE * bits;
     BITMAP bmp;
-    HBITMAP hbmp=GetCurrentObject(memdc,OBJ_BITMAP);  
+    HBITMAP hbmp;
+	if (g_CluiData.fDisableSkinEngine && !force) return TRUE;
+	hbmp=GetCurrentObject(memdc,OBJ_BITMAP);  
     GetObject(hbmp, sizeof(bmp),&bmp);
     if (bmp.bmPlanes!=1) return FALSE;
     sx=(fr->left>0)?fr->left:0;
@@ -442,6 +454,16 @@ BOOL SkinEngine_SetRectOpaque(HDC memdc,RECT *fr)
     }
     // DeleteObject(hbmp);
     return 1;
+}
+
+BOOL SkinEngine_SetRgnOpaque(HDC memdc,HRGN hrgn)
+{
+	return SkinEngine_SetRgnOpaqueOpt(memdc, hrgn, FALSE);
+}
+
+BOOL SkinEngine_SetRectOpaque(HDC memdc,RECT *fr)
+{
+	return SkinEngine_SetRectOpaqueOpt(memdc, fr, FALSE);
 }
 
 static BOOL SkinEngine_SkinFillRectByGlyph(HDC hDest, HDC hSource, RECT * rFill, RECT * rGlyph, RECT * rClip, BYTE mode, BYTE drawMode, int depth)
@@ -1272,6 +1294,7 @@ static LPSKINOBJECTDESCRIPTOR SkinEngine_FindObjectByMask(MODERNMASK * pModernMa
     // DWORD i;
     SKINOBJECTSLIST* sk;
     sk=(Skin==NULL)?(&g_SkinObjectList):Skin;
+	if (!sk->pMaskList) return NULL;
     return skin_FindObjectByMask(pModernMask,sk->pMaskList);
 }
 
@@ -1912,6 +1935,23 @@ static int SkinEngine_GetSkinFromDB(char * szSection, SKINOBJECTSLIST * Skin)
 {
     if (Skin==NULL) return 0;
     SkinEngine_UnloadSkin(Skin);
+	g_CluiData.fDisableSkinEngine=DBGetContactSettingByte(NULL,"ModernData","DisableEngine", 0);
+	//window borders
+	if (g_CluiData.fDisableSkinEngine) {
+		g_CluiData.LeftClientMargin=0;
+		g_CluiData.RightClientMargin=0; 
+		g_CluiData.TopClientMargin=0;
+		g_CluiData.BottomClientMargin=0;
+	} else {
+		//window borders
+		g_CluiData.LeftClientMargin=(int)DBGetContactSettingByte(NULL,"CLUI","LeftClientMargin",0);
+		g_CluiData.RightClientMargin=(int)DBGetContactSettingByte(NULL,"CLUI","RightClientMargin",0); 
+		g_CluiData.TopClientMargin=(int)DBGetContactSettingByte(NULL,"CLUI","TopClientMargin",0);
+		g_CluiData.BottomClientMargin=(int)DBGetContactSettingByte(NULL,"CLUI","BottomClientMargin",0);
+	}
+
+	if (g_CluiData.fDisableSkinEngine) return 0;
+	
     Skin->pMaskList=mir_alloc(sizeof(LISTMODERNMASK));
     memset(Skin->pMaskList,0,sizeof(LISTMODERNMASK));
     Skin->szSkinPlace=DBGetStringA(NULL,SKIN,"SkinFolder");
@@ -2879,7 +2919,7 @@ BOOL SkinEngine_DrawText(HDC hdc, LPCTSTR lpString, int nCount, RECT * lpRect, U
     OffsetRect(&r,1,1);
     if (format&DT_RTLREADING) SetTextAlign(hdc,TA_RTLREADING);
     if (format&DT_CALCRECT) return DrawText(hdc,lpString,nCount,lpRect,format);
-	if (format&DT_FORCENATIVERENDER) 
+	if (format&DT_FORCENATIVERENDER || g_CluiData.fDisableSkinEngine) 
 		return DrawText(hdc,lpString,nCount,lpRect,format&~DT_FORCENATIVERENDER);
     form=format;
     color=GetTextColor(hdc);
@@ -3235,6 +3275,8 @@ BOOL SkinEngine_ImageList_DrawEx( HIMAGELIST himl,int i,HDC hdcDst,int x,int y,i
     BLENDFUNCTION bf={AC_SRC_OVER, 0, 255, AC_SRC_ALPHA };
     
     if (i<0) return FALSE;
+	if (g_CluiData.fDisableSkinEngine)
+		return ImageList_DrawEx( himl, i, hdcDst, x, y, dx, dy, rgbBk, rgbFg, fStyle);
 
     hBitmap=SkinEngine_ExtractDIBFromImagelistIcon(himl, i, &iWidth, &iHeight);
     
@@ -3299,7 +3341,10 @@ BOOL SkinEngine_DrawIconEx(HDC hdcDst,int xLeft,int yTop,HICON hIcon,int cxWidth
     BYTE noMirrorMask=FALSE;
     BYTE hasalpha=FALSE;
     alpha=alpha?alpha:255;
-    //return DrawIconEx(hdc,xLeft,yTop,hIcon,cxWidth,cyWidth,istepIfAniCur,hbrFlickerFreeDraw,DI_NORMAL);
+
+    if (g_CluiData.fDisableSkinEngine)
+		return DrawIconEx(hdcDst,xLeft,yTop,hIcon,cxWidth,cyWidth,istepIfAniCur,hbrFlickerFreeDraw,diFlags&0xFFFFFF);
+
     if (!GetIconInfo(hIcon,&ici))  return 0;
 
     GetObject(ici.hbmColor,sizeof(BITMAP),&imbt);
@@ -3777,6 +3822,11 @@ int SkinEngine_BltBackImage (HWND destHWND, HDC destDC, RECT * BltClientRect)
     POINT ptChildWnd={0};
     RECT from={0};
     RECT w={0};
+	if (g_CluiData.fDisableSkinEngine)
+	{
+		FillRect(destDC,BltClientRect,GetSysColorBrush(COLOR_3DFACE));
+		return 0;
+	}
     SkinEngine_ReCreateBackImage(FALSE,NULL);
     if (BltClientRect) w=*BltClientRect;
     else GetClientRect(destHWND,&w);
@@ -3793,6 +3843,7 @@ int SkinEngine_ReCreateBackImage(BOOL Erase,RECT *w)
     HBITMAP hb2;
     RECT wnd={0};
     BOOL IsNewCache=0;
+	if (g_CluiData.fDisableSkinEngine) return 0;
     GetClientRect(pcli->hwndContactList,&wnd);
     if (w) wnd=*w;
     //-- Check cached.
@@ -3992,6 +4043,7 @@ int SkinEngine_UpdateWindowImageRect(RECT * r)                                  
     //if not validity -> ValidateImageProc
     //else Update using current alpha
     RECT wnd=*r;
+
     if (!g_CluiData.fLayered) return SkinEngine_ReCreateBackImage(FALSE,0);
     if (g_pCachedWindow==NULL) return SkinEngine_ValidateFrameImageProc(&wnd); 
     if (g_pCachedWindow->Width!=wnd.right-wnd.left || g_pCachedWindow->Height!=wnd.bottom-wnd.top) return SkinEngine_ValidateFrameImageProc(&wnd);

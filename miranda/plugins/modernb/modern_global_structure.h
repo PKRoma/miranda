@@ -33,6 +33,7 @@ typedef struct tagCLUIDATA
 	DWORD	t_now;
 
 	// Modern Global Variables
+	BOOL	fDisableSkinEngine;
 	BOOL	fOnDesktop;
 	BOOL	fSmoothAnimation;
 	BOOL	fUseKeyColor;
@@ -55,6 +56,11 @@ typedef struct tagCLUIDATA
 	DWORD	dwKeyColor;
 
 	HWND	hwndEventFrame;
+
+	int		LeftClientMargin;
+	int		RightClientMargin; 
+	int		TopClientMargin;
+	int		BottomClientMargin;
 
 } CluiData;
 

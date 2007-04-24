@@ -684,7 +684,7 @@ BOOL ImageArray_DrawImage(LP_IMAGE_ARRAY_DATA iad, int pos, HDC hdcDest, int nXD
 		}
 		{
 			BLENDFUNCTION bf={AC_SRC_OVER, 0, Alpha, AC_SRC_ALPHA };
-			SkinEngine_AlphaBlend(hdcDest, nXDest, nYDest, iad->nodes[pos].width, iad->nodes[pos].height, iad->hdc, w, h, iad->nodes[pos].width, iad->nodes[pos].height,bf);
+			/*SkinEngine_*/AlphaBlend(hdcDest, nXDest, nYDest, iad->nodes[pos].width, iad->nodes[pos].height, iad->hdc, w, h, iad->nodes[pos].width, iad->nodes[pos].height,bf);
 		}
 	}
 

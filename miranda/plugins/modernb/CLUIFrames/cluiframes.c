@@ -2308,8 +2308,8 @@ int CLUIFrames_GetTotalHeight()
 	//allbord=(winrect.bottom-winrect.top)-(clirect.bottom-clirect.top);
 
 	//TODO minsize
-	sumheight+=DBGetContactSettingByte(NULL,"CLUI","TopClientMargin",0);
-	sumheight+=DBGetContactSettingByte(NULL,"CLUI","BottomClientMargin",0); //$$ BOTTOM border
+  sumheight+=g_CluiData.TopClientMargin;
+  sumheight+=g_CluiData.BottomClientMargin; 
 	return  max(DBGetContactSettingWord(NULL,"CLUI","MinHeight",0),
 		(sumheight+border.top+border.bottom+3)       );
 }
@@ -2348,8 +2348,8 @@ int CLUIFramesGetMinHeight()
 	//allbord=(winrect.bottom-winrect.top)-(clirect.bottom-clirect.top);
 
 	//TODO minsize
-	sumheight+=DBGetContactSettingByte(NULL,"CLUI","TopClientMargin",0);
-	sumheight+=DBGetContactSettingByte(NULL,"CLUI","BottomClientMargin",0); //$$ BOTTOM border
+  sumheight+=g_CluiData.TopClientMargin;
+  sumheight+=g_CluiData.BottomClientMargin; 
 	return  max(DBGetContactSettingWord(NULL,"CLUI","MinHeight",0),
 		(sumheight+border.top+border.bottom+allbord+tbh+3)       );
 }
@@ -2531,8 +2531,6 @@ int CLUIFrames_ApplyNewSizes(int mode)
 			{
 				CLUIFrameMoveResize(&Frames[i]);
 			};
-			//&& CLUIFramesForceUpdateFrame(&Frames[i]);
-			//&& CLUIFramesForceUpdateTB(&Frames[i]);
 	}
 	if (IsWindowVisible(pcli->hwndContactList))
 	{
@@ -2553,9 +2551,6 @@ static int CLUIFrames_UpdateFrame(WPARAM wParam,LPARAM lParam)
 	if(wParam<0||(int)wParam>=nFramescount) {  return -1;}
 	if(lParam&FU_TBREDRAW)	CLUIFramesForceUpdateTB(&Frames[wParam]);
 	if(lParam&FU_FMREDRAW)	CLUIFramesForceUpdateFrame(&Frames[wParam]);
-	//if (){};
-
-
 	return 0;
 }
 
@@ -2572,10 +2567,10 @@ static int CLUIFrames_OnClistResize_mod(WPARAM wParam,LPARAM mode)
 
 	GetClientRect(pcli->hwndContactList,&nRect);
 
-	nRect.left+=DBGetContactSettingByte(NULL,"CLUI","LeftClientMargin",0); //$$ Left BORDER SIZE
-	nRect.right-=DBGetContactSettingByte(NULL,"CLUI","RightClientMargin",0); //$$ Left BORDER SIZE
-	nRect.top+=DBGetContactSettingByte(NULL,"CLUI","TopClientMargin",0); //$$ TOP border
-	nRect.bottom-=DBGetContactSettingByte(NULL,"CLUI","BottomClientMargin",0); //$$ BOTTOM border     ContactListHeight=nRect.bottom-nRect.top; //$$
+  nRect.left+=g_CluiData.LeftClientMargin;
+  nRect.right-=g_CluiData.RightClientMargin; 
+  nRect.top+=g_CluiData.TopClientMargin;
+  nRect.bottom-=g_CluiData.BottomClientMargin;
 	//	g_CluiData.mutexPreventDockMoving=0;
 	tick=GetTickCount();
 	CLUIFramesResize(nRect);
@@ -2602,10 +2597,10 @@ int SizeFramesByWindowRect(RECT *r, HDWP * PosBatch, int mode)
 	nRect.top=0;
 	nRect.right=r->right-r->left;
 	nRect.bottom=r->bottom-r->top;
-	nRect.left+=DBGetContactSettingByte(NULL,"CLUI","LeftClientMargin",0); //$$ Left BORDER SIZE
-	nRect.right-=DBGetContactSettingByte(NULL,"CLUI","RightClientMargin",0); //$$ Left BORDER SIZE
-	nRect.top+=DBGetContactSettingByte(NULL,"CLUI","TopClientMargin",0); //$$ TOP border
-	nRect.bottom-=DBGetContactSettingByte(NULL,"CLUI","BottomClientMargin",0); //$$ BOTTOM border     ContactListHeight=nRect.bottom-nRect.top; //$$
+   nRect.left+=g_CluiData.LeftClientMargin;
+   nRect.right-=g_CluiData.RightClientMargin; 
+   nRect.top+=g_CluiData.TopClientMargin;
+   nRect.bottom-=g_CluiData.BottomClientMargin;
 	CLUIFramesResizeFrames(nRect);
 	{
 		int i;
@@ -2786,10 +2781,10 @@ static int CLUIFramesOnClistResize(WPARAM wParam,LPARAM lParam)
 	nRect.top=0;
 	ContactListHeight=nRect.bottom; $$$*/
 
-	nRect.left+=DBGetContactSettingByte(NULL,"CLUI","LeftClientMargin",0); //$$ Left BORDER SIZE
-	nRect.right-=DBGetContactSettingByte(NULL,"CLUI","RightClientMargin",0); //$$ Left BORDER SIZE
-	nRect.top+=DBGetContactSettingByte(NULL,"CLUI","TopClientMargin",0); //$$ TOP border
-	nRect.bottom-=DBGetContactSettingByte(NULL,"CLUI","BottomClientMargin",0); //$$ BOTTOM border
+  nRect.left+=g_CluiData.LeftClientMargin;
+  nRect.right-=g_CluiData.RightClientMargin; 
+  nRect.top+=g_CluiData.TopClientMargin;
+  nRect.bottom-=g_CluiData.BottomClientMargin;
 
 	if (nRect.bottom<nRect.top)
 		nRect.bottom=nRect.top;
@@ -2821,13 +2816,13 @@ static int CLUIFramesOnClistResize(WPARAM wParam,LPARAM lParam)
 	return 0;
 }
 
-static	HBITMAP hBmpBackground;
+static HBITMAP hBmpBackground;
 static int backgroundBmpUse;
 static COLORREF bkColour;
 static COLORREF SelBkColour;
 boolean AlignCOLLIconToLeft; //will hide frame icon
 
-static int OnFrameTitleBarBackgroundChange(WPARAM wParam,LPARAM lParam)
+int OnFrameTitleBarBackgroundChange(WPARAM wParam,LPARAM lParam)
 {
 	if (MirandaExiting()) return 0;
 	{	
@@ -2838,67 +2833,153 @@ static int OnFrameTitleBarBackgroundChange(WPARAM wParam,LPARAM lParam)
 		bkColour=DBGetContactSettingDword(NULL,"FrameTitleBar","BkColour",CLCDEFAULT_BKCOLOUR);
 		SelBkColour=DBGetContactSettingDword(NULL,"FrameTitleBar","TextColour",CLCDEFAULT_TEXTCOLOUR);
 		if(hBmpBackground) {DeleteObject(hBmpBackground); hBmpBackground=NULL;}
-		if(DBGetContactSettingByte(NULL,"FrameTitleBar","UseBitmap",CLCDEFAULT_USEBITMAP)) {
-			if(!DBGetContactSetting(NULL,"FrameTitleBar","BkBitmap",&dbv)) {
-				hBmpBackground=(HBITMAP)CallService(MS_UTILS_LOADBITMAP,0,(LPARAM)dbv.pszVal);
-				//mir_free_and_nill(dbv.pszVal);
-				DBFreeVariant(&dbv);
+		if (g_CluiData.fDisableSkinEngine)
+		{
+			if(DBGetContactSettingByte(NULL,"FrameTitleBar","UseBitmap",CLCDEFAULT_USEBITMAP)) {
+				if(!DBGetContactSetting(NULL,"FrameTitleBar","BkBitmap",&dbv)) {
+					hBmpBackground=(HBITMAP)CallService(MS_UTILS_LOADBITMAP,0,(LPARAM)dbv.pszVal);
+					//mir_free_and_nill(dbv.pszVal);
+					DBFreeVariant(&dbv);
+				}
 			}
+			backgroundBmpUse=DBGetContactSettingWord(NULL,"FrameTitleBar","BkBmpUse",CLCDEFAULT_BKBMPUSE);
 		}
-		backgroundBmpUse=DBGetContactSettingWord(NULL,"FrameTitleBar","BkBmpUse",CLCDEFAULT_BKBMPUSE);
 	};
 
-	CLUIFramesOnClistResize(0,0);
+	RedrawWindow(pcli->hwndContactList,NULL,NULL,RDW_UPDATENOW|RDW_ALLCHILDREN|RDW_ERASE|RDW_INVALIDATE);
 	return 0;
 }
 
-/*void DrawBackGroundTTB(HWND hwnd,HDC mhdc)
+void DrawBackGround(HWND hwnd,HDC mhdc, HBITMAP hBmpBackground, COLORREF bkColour, DWORD backgroundBmpUse )
 {
-HDC hdcMem,hdc;
-RECT clRect,*rcPaint;
+	HDC hdcMem,hdc;
+	RECT clRect,*rcPaint;
 
-int yScroll=0;
-int y;
-PAINTSTRUCT paintst={0};	
-HBITMAP hBmpOsb,hOldBmp;
-DWORD style=GetWindowLong(hwnd,GWL_STYLE);
-int grey=0;
-HFONT oFont;
-HBRUSH hBrushAlternateGrey=NULL;
+	int yScroll=0;
+	int y;
+	PAINTSTRUCT paintst={0};
+	HBITMAP hBmpOsb,hOldBmp;
+	DWORD style=GetWindowLong(hwnd,GWL_STYLE);
+	int grey=0;
+	HFONT oFont;
+	HBRUSH hBrushAlternateGrey=NULL;
 
-HFONT hFont;
+	HFONT hFont;
 
-//CLUI__cliInvalidateRect(hwnd,0,FALSE);
+	//InvalidateRect(hwnd,0,FALSE);
 
-hFont=(HFONT)SendMessage(hwnd,WM_GETFONT,0,0);
+	hFont=(HFONT)SendMessage(hwnd,WM_GETFONT,0,0);
 
-if (mhdc)
-{
-hdc=mhdc;
-rcPaint=NULL;
-}else
-{
-hdc=BeginPaint(hwnd,&paintst);
-rcPaint=&(paintst.rcPaint);
+	if (mhdc)
+	{
+	hdc=mhdc;
+	rcPaint=NULL;
+	}else
+	{
+	hdc=BeginPaint(hwnd,&paintst);
+	rcPaint=&(paintst.rcPaint);
+	}
+
+	GetClientRect(hwnd,&clRect);
+	if(rcPaint==NULL) rcPaint=&clRect;
+	if (rcPaint->right-rcPaint->left==0||rcPaint->top-rcPaint->bottom==0) rcPaint=&clRect;
+	y=-yScroll;
+	hdcMem=CreateCompatibleDC(hdc);
+	hBmpOsb=CreateBitmap(clRect.right,clRect.bottom,1,GetDeviceCaps(hdc,BITSPIXEL),NULL);
+	hOldBmp=SelectObject(hdcMem,hBmpOsb);
+	oFont=SelectObject(hdcMem,hFont);
+	SetBkMode(hdcMem,TRANSPARENT);
+	SetStretchBltMode(hdcMem,HALFTONE);
+	{	HBRUSH hBrush,hoBrush;
+
+		hBrush=CreateSolidBrush(bkColour);
+		hoBrush=(HBRUSH)SelectObject(hdcMem,hBrush);
+		FillRect(hdcMem,rcPaint,hBrush);
+		SelectObject(hdcMem,hoBrush);
+		DeleteObject(hBrush);
+		if(hBmpBackground) {
+			BITMAP bmp;
+			HDC hdcBmp;
+			int x,y;
+			int maxx,maxy;
+			int destw,desth;
+
+			GetObject(hBmpBackground,sizeof(bmp),&bmp);
+			hdcBmp=CreateCompatibleDC(hdcMem);
+			SelectObject(hdcBmp,hBmpBackground);
+			y=backgroundBmpUse&CLBF_SCROLL?-yScroll:0;
+			maxx=backgroundBmpUse&CLBF_TILEH?clRect.right:1;
+			maxy=backgroundBmpUse&CLBF_TILEV?maxy=rcPaint->bottom:y+1;
+			switch(backgroundBmpUse&CLBM_TYPE) {
+				case CLB_STRETCH:
+					if(backgroundBmpUse&CLBF_PROPORTIONAL) {
+						if(clRect.right*bmp.bmHeight<clRect.bottom*bmp.bmWidth) {
+							desth=clRect.bottom;
+							destw=desth*bmp.bmWidth/bmp.bmHeight;
+						}
+						else {
+							destw=clRect.right;
+							desth=destw*bmp.bmHeight/bmp.bmWidth;
+						}
+					}
+					else {
+						destw=clRect.right;
+						desth=clRect.bottom;
+					}
+					break;
+				case CLB_STRETCHH:
+					if(backgroundBmpUse&CLBF_PROPORTIONAL) {
+						destw=clRect.right;
+						desth=destw*bmp.bmHeight/bmp.bmWidth;
+					}
+					else {
+						destw=clRect.right;
+						desth=bmp.bmHeight;
+					}
+					break;
+				case CLB_STRETCHV:
+					if(backgroundBmpUse&CLBF_PROPORTIONAL) {
+						desth=clRect.bottom;
+						destw=desth*bmp.bmWidth/bmp.bmHeight;
+					}
+					else {
+						destw=bmp.bmWidth;
+						desth=clRect.bottom;
+					}
+					break;
+				default:    //clb_topleft
+					destw=bmp.bmWidth;
+					desth=bmp.bmHeight;
+					break;
+			}
+			desth=clRect.bottom -clRect.top;
+			for(;y<maxy;y+=desth) {
+				if(y<rcPaint->top-desth) continue;
+				for(x=0;x<maxx;x+=destw)
+					StretchBlt(hdcMem,x,y,destw,desth,hdcBmp,0,0,bmp.bmWidth,bmp.bmHeight,SRCCOPY);
+			}
+			DeleteDC(hdcBmp);
+		}
+	}
+
+	{
+
+		BitBlt(hdc,rcPaint->left,rcPaint->top,rcPaint->right-rcPaint->left,rcPaint->bottom-rcPaint->top,hdcMem,rcPaint->left,rcPaint->top,SRCCOPY);
+
+		SelectObject(hdcMem,hOldBmp);
+		SelectObject(hdcMem,oFont);
+		DeleteObject(hBmpOsb);
+		DeleteDC(hdcMem);
+		paintst.fErase=FALSE;
+		//DeleteObject(hFont);
+		if (!mhdc)
+		{
+		EndPaint(hwnd,&paintst);
+		}
+	}
 }
 
-GetClientRect(hwnd,&clRect);
-if(rcPaint==NULL) rcPaint=&clRect;
-if (rcPaint->right-rcPaint->left==0||rcPaint->top-rcPaint->bottom==0) rcPaint=&clRect;
-y=-yScroll;
 
-//oFont=SelectObject(hdc,hFont);
-SetBkMode(hdc,TRANSPARENT);
-paintst.fErase=FALSE;
-//DeleteObject(hFont);
-if (!mhdc)
-{		
-EndPaint(hwnd,&paintst);	
-}
-}
-}
-
-*/
 static int DrawTitleBar(HDC hdcMem2,RECT * rect,int Frameid)
 {
 	int pos;
@@ -2909,7 +2990,7 @@ static int DrawTitleBar(HDC hdcMem2,RECT * rect,int Frameid)
 	HBITMAP b1=NULL,b2=NULL;
 	hdcMem=CreateCompatibleDC(hdcMem2);
 
-
+	SetBkMode(hdcMem,TRANSPARENT);
 	hoTTBFont=SelectObject(hdcMem,TitleBarFont);
 	SkinEngine_ResetTextEffect(hdcMem);
 	SkinEngine_ResetTextEffect(hdcMem2);
@@ -2941,7 +3022,11 @@ static int DrawTitleBar(HDC hdcMem2,RECT * rect,int Frameid)
 		}
 		else
 		{
-			if (!g_CluiData.fLayered)
+			if (g_CluiData.fDisableSkinEngine)
+			{
+				DrawBackGround(Frames[pos].TitleBar.hwnd,hdcMem, hBmpBackground, bkColour, backgroundBmpUse);
+			}
+			else if (!g_CluiData.fLayered)
 			{
 				SkinEngine_BltBackImage(Frames[pos].TitleBar.hwnd,hdcMem,&rc);
 			}
@@ -3029,7 +3114,10 @@ static LRESULT CALLBACK CLUIFrameTitleBarProc(HWND hwnd, UINT msg, WPARAM wParam
 	case WM_ENABLE:
 		if (hwnd!=0) CLUI__cliInvalidateRect(hwnd,NULL,FALSE);
 		return 0;
-
+	case WM_ERASEBKGND:
+	  {
+		  return 1;
+	  }
 	case WM_COMMAND:
 
 
@@ -3451,7 +3539,7 @@ static LRESULT CALLBACK CLUIFrameTitleBarProc(HWND hwnd, UINT msg, WPARAM wParam
 			if (Frames[id2pos(Frameid)].floating || (!g_CluiData.fLayered))
 			{	   
 				GetClientRect(hwnd,&rect);	
-				paintDC = GetDC(hwnd);
+				paintDC = GetDC(hwnd);				
 				DrawTitleBar(paintDC,&rect,Frameid);
 				ReleaseDC(hwnd,paintDC);
 				ValidateRect(hwnd,NULL);
@@ -3968,7 +4056,7 @@ int LoadCLUIFramesModule(void)
 	wndclass.hInstance     = g_hInst;
 	wndclass.hIcon         = NULL;
 	wndclass.hCursor       = LoadCursor(NULL, IDC_ARROW);
-	wndclass.hbrBackground = NULL;
+	wndclass.hbrBackground = GetSysColorBrush(COLOR_3DFACE);
 	wndclass.lpszMenuName  = NULL;
 	wndclass.lpszClassName = TEXT(CLUIFrameTitleBarClassName);
 	RegisterClass(&wndclass);

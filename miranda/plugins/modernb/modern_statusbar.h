@@ -23,6 +23,11 @@ typedef struct tagSTATUSBARDATA
   BYTE xStatusMode;     // 0-only main, 1-xStatus, 2-main as overlay
   BYTE nProtosPerLine;
   BYTE showProtoEmails;
+
+  HBITMAP hBmpBackground;
+  COLORREF bkColour;
+  DWORD backgroundBmpUse;
+
 } STATUSBARDATA;
 
 #endif // modern_statusbar_h__
