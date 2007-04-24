@@ -285,11 +285,14 @@ static LRESULT CALLBACK SkinButtonProc(HWND hwndDlg, UINT  msg, WPARAM wParam, L
 				
 				PAINTSTRUCT ps;
 				HDC hdcPaint;
-				hdcPaint = BeginPaint(hwndDlg, &ps);
-				if (hdcPaint) 
+				if (g_CluiData.fDisableSkinEngine)
 				{
-					PaintWorker(lpSBData, hdcPaint, NULL);
-					EndPaint(hwndDlg, &ps);
+					hdcPaint = BeginPaint(hwndDlg, &ps);
+					if (hdcPaint) 
+					{
+						PaintWorker(lpSBData, hdcPaint, NULL);
+						EndPaint(hwndDlg, &ps);
+					}
 				}
 				ValidateRect(hwndDlg,NULL);
 				return 0;
@@ -556,6 +559,7 @@ static void PaintWorker(SKINBUTTONDATA *lpSBData, HDC hdcPaint , POINT * pOffset
 				if (MyIsThemeBackgroundPartiallyTransparent(lpSBData->hThemeToolbar, TP_BUTTON, TBStateConvert2Flat(state)))
 				{	
 					//Draw parent?
+					//InvalidateParentRect(lpSBData->hWnd, NULL, TRUE);
 					MyDrawThemeParentBackground(lpSBData->hWnd, hdcMem, rc);
 				}
 				MyDrawThemeBackground(lpSBData->hThemeToolbar, hdcMem, TP_BUTTON, TBStateConvert2Flat(state), rc, rc);

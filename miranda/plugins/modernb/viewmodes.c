@@ -1064,9 +1064,7 @@ LRESULT CALLBACK ViewModeFrameWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM
         }
         case WM_NCCALCSIZE:
             return 18;// FrameNCCalcSize(hwnd, DefWindowProc, wParam, lParam, hasTitleBar);
-        case WM_NCPAINT:
-            return 0;//FrameNCPaint(hwnd, DefWindowProc, wParam, lParam, hasTitleBar);
-        case WM_SIZE:
+         case WM_SIZE:
         {
             RECT rcCLVMFrame;
             HDWP PosBatch = BeginDeferWindowPos(3);
@@ -1137,10 +1135,29 @@ LRESULT CALLBACK ViewModeFrameWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM
             else
                 SetWindowText(GetDlgItem(hwnd, IDC_SELECTMODE), TranslateT("No view mode"));
             break;
-		case WM_ERASEBKGND:
-			return DefWindowProc(hwnd, msg, wParam, lParam);
-			return 0;
+		case WM_ERASEBKGND:	
+			if (g_CluiData.fDisableSkinEngine)
+			{
+				DefWindowProc(hwnd,msg,wParam,lParam);
+			}
+			return 1;
+		case WM_NCPAINT:
+			//if (!g_CluiData.fDisableSkinEngine)
+				return 0;
         case WM_PAINT:
+			/*if ( g_CluiData.fDisableSkinEngine )
+			{
+				PAINTSTRUCT ps;
+				HDC	hdc=BeginPaint(hwnd,&ps);
+				if (hdc)
+				{
+					HBRUSH br=GetSysColorBrush(COLOR_3DFACE);
+					FillRect(hdc,&ps.rcPaint,br);
+				}				
+				EndPaint(hwnd,&ps);
+			}
+			else
+			*/
 			if (GetParent(hwnd)==pcli->hwndContactList && g_CluiData.fLayered)				
 			{
 				ValidateRect(hwnd,NULL);
@@ -1316,7 +1333,7 @@ void CreateViewModeFrame()
     wndclass.hInstance = g_hInst;
     //wndclass.hIcon = LoadSkinnedIcon(SKINICON_OTHER_MIRANDA);
     wndclass.hCursor = LoadCursor(NULL, IDC_ARROW);
-    wndclass.hbrBackground = (HBRUSH) (COLOR_3DFACE);
+    wndclass.hbrBackground = (HBRUSH) GetSysColorBrush(COLOR_3DFACE);
     wndclass.lpszMenuName = 0;
     wndclass.lpszClassName = _T("CLVMFrameWindow");
 

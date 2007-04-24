@@ -789,6 +789,27 @@ static void CLUI_RestoreMode(HWND hwnd)
 
 }
 
+static BOOL CALLBACK BroadcastEnumChildProc(HWND hwndChild, LPARAM lParam) 
+{
+   MSG * pMsg=(MSG*)lParam;
+   SendNotifyMessage( hwndChild, pMsg->message, pMsg->wParam, pMsg->lParam );
+   EnumChildWindows( hwndChild, BroadcastEnumChildProc, lParam );
+   return TRUE;
+}
+
+static LRESULT BroadCastMessageToChild(HWND hwnd, int message, WPARAM wParam, LPARAM lParam )
+{
+	MSG msg={0};
+	msg.hwnd=hwnd;
+	msg.lParam=lParam;
+	msg.wParam=wParam;
+	msg.message=message;
+    EnumChildWindows(hwnd, BroadcastEnumChildProc, (LPARAM) &msg);
+	return 1;
+}
+
+extern HANDLE hEventBkgrChanged;
+
 int CLUI_ReloadCLUIOptions()
 {
     KillTimer(pcli->hwndContactList,TM_UPDATEBRINGTIMER);
@@ -809,9 +830,9 @@ int CLUI_ReloadCLUIOptions()
 		g_CluiData.RightClientMargin=(int)DBGetContactSettingByte(NULL,"CLUI","RightClientMargin",0); 
 		g_CluiData.TopClientMargin=(int)DBGetContactSettingByte(NULL,"CLUI","TopClientMargin",0);
 		g_CluiData.BottomClientMargin=(int)DBGetContactSettingByte(NULL,"CLUI","BottomClientMargin",0);
-	}
-
-    //   if (g_CluiData.bBehindEdgeSettings)  CLUI_SafeSetTimer(pcli->hwndContactList,TM_UPDATEBRINGTIMER,250,NULL);
+	}			
+	BroadCastMessageToChild(pcli->hwndContactList, WM_THEMECHANGED, 0, 0);
+	NotifyEventHooks(hEventBkgrChanged, 0, 0);
     return 0;
 }
 

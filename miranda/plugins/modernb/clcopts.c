@@ -2539,7 +2539,7 @@ extern struct MM_INTERFACE mmi;
 
 char **bkgrList = NULL;
 int bkgrCount = 0;
-HANDLE hEventBkgrChanged;
+HANDLE hEventBkgrChanged=NULL;
 /*
 #define mir_alloc(n) mmi.mmi_malloc(n)
 #define mir_free(ptr) mmi.mmi_free(ptr)
