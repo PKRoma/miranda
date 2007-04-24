@@ -2533,6 +2533,7 @@ static BOOL CALLBACK DlgProcCluiOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPAR
 #define DEFAULT_SELBKCOLOUR   GetSysColor(COLOR_HIGHLIGHT)
 
 
+
 extern HINSTANCE g_hInst;
 extern PLUGINLINK *pluginLink;
 extern struct MM_INTERFACE mmi;
@@ -2568,6 +2569,7 @@ struct BkgrItem
 	COLORREF bkColor, selColor;
 	char filename[MAX_PATH];
 	WORD flags;
+	BYTE useWinColours;
 };
 struct BkgrData
 {
@@ -2600,6 +2602,7 @@ static BOOL CALLBACK DlgProcClcBkgOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LP
 				dat->item[indx].useBitmap = DBGetContactSettingByte(NULL,module, "UseBitmap", DEFAULT_USEBITMAP);
 				dat->item[indx].bkColor = DBGetContactSettingDword(NULL,module, "BkColour", DEFAULT_BKCOLOUR);
 				dat->item[indx].selColor = DBGetContactSettingDword(NULL,module, "SelBkColour", DEFAULT_SELBKCOLOUR);
+				dat->item[indx].useWinColours = DBGetContactSettingByte(NULL,module, "UseWinColours", CLCDEFAULT_USEWINDOWSCOLOURS);	
 				{	
 					DBVARIANT dbv;
 					if(!DBGetContactSetting(NULL,module,"BkBitmap",&dbv))
@@ -2641,8 +2644,10 @@ static BOOL CALLBACK DlgProcClcBkgOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LP
 			indx = SendDlgItemMessage(hwndDlg, IDC_BKGRLIST, CB_GETITEMDATA, indx, 0);
 
 			dat->item[indx].useBitmap = IsDlgButtonChecked(hwndDlg,IDC_BITMAP);
+			dat->item[indx].useWinColours = IsDlgButtonChecked(hwndDlg,IDC_USEWINCOL);
 			dat->item[indx].bkColor = SendDlgItemMessage(hwndDlg, IDC_BKGCOLOUR, CPM_GETCOLOUR,0,0);
 			dat->item[indx].selColor = SendDlgItemMessage(hwndDlg, IDC_SELCOLOUR, CPM_GETCOLOUR,0,0);
+			
 			GetDlgItemTextA(hwndDlg, IDC_FILENAME, dat->item[indx].filename, sizeof(dat->item[indx].filename));
 			{
 				WORD flags = 0;
@@ -2667,6 +2672,10 @@ static BOOL CALLBACK DlgProcClcBkgOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LP
 			indx = SendDlgItemMessage(hwndDlg, IDC_BKGRLIST, CB_GETITEMDATA, indx, 0);
 
 			CheckDlgButton(hwndDlg, IDC_BITMAP, dat->item[indx].useBitmap?BST_CHECKED:BST_UNCHECKED);
+			CheckDlgButton(hwndDlg, IDC_USEWINCOL, dat->item[indx].useWinColours?BST_CHECKED:BST_UNCHECKED);
+
+			EnableWindow(GetDlgItem(hwndDlg,IDC_BKGCOLOUR), !dat->item[indx].useWinColours);
+			EnableWindow(GetDlgItem(hwndDlg,IDC_SELCOLOUR), !dat->item[indx].useWinColours);
 
 			SendDlgItemMessage(hwndDlg, IDC_BKGCOLOUR, CPM_SETDEFAULTCOLOUR, 0, DEFAULT_BKCOLOUR);
 			SendDlgItemMessage(hwndDlg, IDC_BKGCOLOUR, CPM_SETCOLOUR, 0, dat->item[indx].bkColor);
@@ -2777,7 +2786,12 @@ static BOOL CALLBACK DlgProcClcBkgOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LP
 					indx = SendDlgItemMessage(hwndDlg, IDC_BKGRLIST, CB_GETITEMDATA, indx, 0);					
 					dat->item[indx].changed = TRUE;
 				
-				}							
+				}	
+				{
+					BOOL EnableColours=!IsDlgButtonChecked(hwndDlg,IDC_USEWINCOL);
+					EnableWindow(GetDlgItem(hwndDlg,IDC_BKGCOLOUR), EnableColours);
+					EnableWindow(GetDlgItem(hwndDlg,IDC_SELCOLOUR), EnableColours);
+				}
 				SendMessage(GetParent(hwndDlg), PSM_CHANGED, 0,0);
 			}
 			break;
@@ -2799,7 +2813,7 @@ static BOOL CALLBACK DlgProcClcBkgOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LP
 								{	
 									COLORREF col;
 
-									if((col = dat->item[indx].bkColor) == DEFAULT_BKCOLOUR)
+									if((col = dat->item[indx].bkColor) == DEFAULT_BKCOLOUR)																		
 										DBDeleteContactSetting(NULL, module, "BkColour");
 									else
 										DBWriteContactSettingDword(NULL, module, "BkColour", col);
@@ -2809,6 +2823,8 @@ static BOOL CALLBACK DlgProcClcBkgOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LP
 									else
 										DBWriteContactSettingDword(NULL, module, "SelBkColour", col);
 								}
+								DBWriteContactSettingByte(NULL, module, "UseWinColours", (BYTE)dat->item[indx].useWinColours);
+								
 								{
 									char str[MAX_PATH];
 									int retval = CallService(MS_UTILS_PATHTOABSOLUTE,

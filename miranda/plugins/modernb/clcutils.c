@@ -453,6 +453,12 @@ int GetDropTargetInformation(HWND hwnd,struct ClcData *dat,POINT pt)
 	if (contact->isSubcontact && (ServiceExists(MS_MC_ADDTOMETA))) return DROPTARGET_ONSUBCONTACT;
 	return DROPTARGET_ONCONTACT;
 }
+COLORREF sttGetColor(char * module, char * color, COLORREF defColor)
+{
+	BOOL useWinColor=DBGetContactSettingByte(NULL, module, "UseWinColours",CLCDEFAULT_USEWINDOWSCOLOURS);
+	if (useWinColor) return defColor;
+	else return DBGetContactSettingDword(NULL, module, color, defColor);
+}
 void LoadCLCOptions(HWND hwnd, struct ClcData *dat)
 { 
 	int i;
@@ -702,7 +708,7 @@ void LoadCLCOptions(HWND hwnd, struct ClcData *dat)
 		DBVARIANT dbv;
 		if(!dat->bkChanged) 
 		{
-			dat->bkColour=DBGetContactSettingDword(NULL,"CLC","BkColour",GetSysColor(COLOR_3DFACE));
+			dat->bkColour=sttGetColor("CLC","BkColour",GetSysColor(COLOR_3DFACE));
 			{	
 				if(DBGetContactSettingByte(NULL,"CLC","UseBitmap",CLCDEFAULT_USEBITMAP)) 
 				{
@@ -715,11 +721,11 @@ void LoadCLCOptions(HWND hwnd, struct ClcData *dat)
 			}
 			dat->backgroundBmpUse=DBGetContactSettingWord(NULL,"CLC","BkBmpUse",CLCDEFAULT_BKBMPUSE);
 		}		
-		dat->MenuBkColor=DBGetContactSettingDword(NULL,"Menu","BkColour",CLCDEFAULT_BKCOLOUR);
-		dat->MenuBkHiColor=DBGetContactSettingDword(NULL,"Menu","SelBkColour",CLCDEFAULT_SELBKCOLOUR);
+		dat->MenuBkColor=sttGetColor("Menu","BkColour",CLCDEFAULT_BKCOLOUR);
+		dat->MenuBkHiColor=sttGetColor("Menu","SelBkColour",CLCDEFAULT_SELBKCOLOUR);
 
-		dat->MenuTextColor=DBGetContactSettingDword(NULL,"Menu","TextColour",CLCDEFAULT_TEXTCOLOUR);
-		dat->MenuTextHiColor=DBGetContactSettingDword(NULL,"Menu","SelTextColour",CLCDEFAULT_SELTEXTCOLOUR);
+		dat->MenuTextColor=sttGetColor("Menu","TextColour",CLCDEFAULT_TEXTCOLOUR);
+		dat->MenuTextHiColor=sttGetColor("Menu","SelTextColour",CLCDEFAULT_SELTEXTCOLOUR);
 		
 		if(DBGetContactSettingByte(NULL,"Menu","UseBitmap",CLCDEFAULT_USEBITMAP)) {
 			if(!DBGetContactSetting(NULL,"Menu","BkBitmap",&dbv)) {
@@ -733,7 +739,7 @@ void LoadCLCOptions(HWND hwnd, struct ClcData *dat)
 
 	dat->greyoutFlags=DBGetContactSettingDword(NULL,"CLC","GreyoutFlags",CLCDEFAULT_GREYOUTFLAGS);
 	dat->offlineModes=DBGetContactSettingDword(NULL,"CLC","OfflineModes",CLCDEFAULT_OFFLINEMODES);
-	dat->selBkColour=DBGetContactSettingDword(NULL,"CLC","SelBkColour",CLCDEFAULT_SELBKCOLOUR);
+	dat->selBkColour=sttGetColor("CLC","SelBkColour",CLCDEFAULT_SELBKCOLOUR);
 	dat->selTextColour=DBGetContactSettingDword(NULL,"CLC","SelTextColour",CLCDEFAULT_SELTEXTCOLOUR);
 	dat->hotTextColour=DBGetContactSettingDword(NULL,"CLC","HotTextColour",CLCDEFAULT_HOTTEXTCOLOUR);
 	dat->quickSearchColour=DBGetContactSettingDword(NULL,"CLC","QuickSearchColour",CLCDEFAULT_QUICKSEARCHCOLOUR);

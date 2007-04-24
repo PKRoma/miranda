@@ -2821,6 +2821,7 @@ static int backgroundBmpUse;
 static COLORREF bkColour;
 static COLORREF SelBkColour;
 boolean AlignCOLLIconToLeft; //will hide frame icon
+COLORREF sttGetColor(char * module, char * color, COLORREF defColor);
 
 int OnFrameTitleBarBackgroundChange(WPARAM wParam,LPARAM lParam)
 {
@@ -2830,8 +2831,8 @@ int OnFrameTitleBarBackgroundChange(WPARAM wParam,LPARAM lParam)
 
 		AlignCOLLIconToLeft=DBGetContactSettingByte(NULL,"FrameTitleBar","AlignCOLLIconToLeft",0);
 
-		bkColour=DBGetContactSettingDword(NULL,"FrameTitleBar","BkColour",CLCDEFAULT_BKCOLOUR);
-		SelBkColour=DBGetContactSettingDword(NULL,"FrameTitleBar","TextColour",CLCDEFAULT_TEXTCOLOUR);
+		bkColour=sttGetColor("FrameTitleBar","BkColour",CLCDEFAULT_BKCOLOUR);
+		SelBkColour=sttGetColor("FrameTitleBar","TextColour",CLCDEFAULT_TEXTCOLOUR);
 		if(hBmpBackground) {DeleteObject(hBmpBackground); hBmpBackground=NULL;}
 		if (g_CluiData.fDisableSkinEngine)
 		{

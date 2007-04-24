@@ -952,7 +952,7 @@ static int CLUI_CreateCLC(HWND parent)
     return(0);
 };
 
-static int CLUI_DrawMenuBackGround(HWND hwnd, HDC hdc, int item)
+static int CLUI_DrawMenuBackGround(HWND hwnd, HDC hdc, int item, int state)
 {
     RECT ra,r1;
     //    HBRUSH hbr;
@@ -1093,6 +1093,12 @@ static int CLUI_DrawMenuBackGround(HWND hwnd, HDC hdc, int item)
 			hbr=CreateSolidBrush(dat->MenuBkColor);
 			FillRect(hdc,&r1,hbr);
 			DeleteObject(hbr);    
+		}
+		if (item!=0 && state&(ODS_SELECTED)) 
+		{
+			hbr=CreateSolidBrush(dat->MenuBkHiColor);
+			FillRect(hdc,&r1,hbr);
+			DeleteObject(hbr);
 		}
 	}
     SelectClipRgn(hdc,NULL);
@@ -1469,7 +1475,7 @@ LRESULT CALLBACK CLUI__cli_ContactListWndProc(HWND hwnd, UINT msg, WPARAM wParam
                 if (msg==WM_PRINT)
                     hdc=(HDC)wParam;
                 if (!hdc) hdc=GetWindowDC(hwnd);
-                CLUI_DrawMenuBackGround(hwnd,hdc,0);
+                CLUI_DrawMenuBackGround(hwnd,hdc,0,0);
                 if (msg!=WM_PRINT) ReleaseDC(hwnd,hdc);
             }
             return r;
@@ -1567,6 +1573,11 @@ LRESULT CALLBACK CLUI__cli_ContactListWndProc(HWND hwnd, UINT msg, WPARAM wParam
         mii.fType=MFT_OWNERDRAW;
         mii.dwItemData=MENU_STATUSMENU;
         SetMenuItemInfo(GetMenu(hwnd),1,TRUE,&mii);
+
+		// mii.fMask=MIIM_TYPE;
+		mii.fType=MFT_OWNERDRAW;
+		mii.dwItemData=MENU_MINIMIZE;
+		SetMenuItemInfo(GetMenu(hwnd),2,TRUE,&mii);		
         }
         //PostMessage(hwnd, M_CREATECLC, 0, 0);
         //pcli->hwndContactList=hwnd;
@@ -1731,6 +1742,19 @@ LRESULT CALLBACK CLUI__cli_ContactListWndProc(HWND hwnd, UINT msg, WPARAM wParam
 
             break;
         }
+	case WM_NCLBUTTONDBLCLK:
+		if (wParam==HTMENU || wParam==HTCAPTION)
+		{
+			POINT pt;
+			int k=0;
+			RECT rc;
+			GetWindowRect(hwnd, &rc);
+			pt.x = LOWORD(lParam); 
+			pt.y = HIWORD(lParam); 
+			if (/*wParam!=HTMENU ||*/ (pt.x>rc.right-16 && pt.x<rc.right))
+				return CallService(MS_CLIST_SHOWHIDE, 0, 0);
+		}
+		break;
     case WM_NCHITTEST:
         {
             LRESULT result;
@@ -1745,6 +1769,7 @@ LRESULT CALLBACK CLUI__cli_ContactListWndProc(HWND hwnd, UINT msg, WPARAM wParam
                 pt.x=LOWORD(lParam);
                 pt.y=HIWORD(lParam);
                 t=MenuItemFromPoint(hwnd,g_hMenuMain,pt);
+
                 if (t==-1 && (DBGetContactSettingByte(NULL,"CLUI","ClientAreaDrag",SETTING_CLIENTDRAG_DEFAULT)))
                     return HTCAPTION;
             }
@@ -2155,7 +2180,7 @@ LRESULT CALLBACK CLUI__cli_ContactListWndProc(HWND hwnd, UINT msg, WPARAM wParam
                         char buf[255]={0};	
                         short dx=1+(dis->itemState&ODS_SELECTED?1:0)-(dis->itemState&ODS_HOTLIGHT?1:0);
                         HICON hIcon=SkinEngine_ImageList_GetIcon(himlMirandaIcon,0,ILD_NORMAL);
-                        CLUI_DrawMenuBackGround(hwnd, dis->hDC, 1);
+                        CLUI_DrawMenuBackGround(hwnd, dis->hDC, 1, dis->itemState);
                         _snprintf(buf,sizeof(buf),"Main,ID=MainMenu,Selected=%s,Hot=%s",(dis->itemState&ODS_SELECTED)?"True":"False",(dis->itemState&ODS_HOTLIGHT)?"True":"False");
                         SkinDrawGlyph(dis->hDC,&dis->rcItem,&dis->rcItem,buf);
                         DrawState(dis->hDC,NULL,NULL,(LPARAM)hIcon,0,(dis->rcItem.right+dis->rcItem.left-GetSystemMetrics(SM_CXSMICON))/2+dx,(dis->rcItem.bottom+dis->rcItem.top-GetSystemMetrics(SM_CYSMICON))/2+dx,0,0,DST_ICON|(dis->itemState&ODS_INACTIVE&&FALSE?DSS_DISABLED:DSS_NORMAL));
@@ -2180,11 +2205,11 @@ LRESULT CALLBACK CLUI__cli_ContactListWndProc(HWND hwnd, UINT msg, WPARAM wParam
                             rc.right-=1;
                             rc.bottom-=1;
                         }
-                        CLUI_DrawMenuBackGround(hwnd, dis->hDC, 2);
+                        CLUI_DrawMenuBackGround(hwnd, dis->hDC, 2, dis->itemState);
                         SetBkMode(dis->hDC,TRANSPARENT);
                         _snprintf(buf,sizeof(buf),"Main,ID=StatusMenu,Selected=%s,Hot=%s",(dis->itemState&ODS_SELECTED)?"True":"False",(dis->itemState&ODS_HOTLIGHT)?"True":"False");
                         SkinDrawGlyph(dis->hDC,&dis->rcItem,&dis->rcItem,buf);
-                        SetTextColor(dis->hDC, (dis->itemState&ODS_SELECTED|dis->itemState&ODS_HOTLIGHT)?dat->MenuTextHiColor:dat->MenuTextColor);
+                        SetTextColor(dis->hDC, (dis->itemState&ODS_SELECTED/*|dis->itemState&ODS_HOTLIGHT*/)?dat->MenuTextHiColor:dat->MenuTextColor);
                         DrawText(dis->hDC,TranslateT("Status"), lstrlen(TranslateT("Status")),&rc, DT_CENTER|DT_VCENTER|DT_SINGLELINE);
                         nStatusMenuState=dis->itemState;
                     } else {
@@ -2192,7 +2217,19 @@ LRESULT CALLBACK CLUI__cli_ContactListWndProc(HWND hwnd, UINT msg, WPARAM wParam
                         SkinInvalidateFrame(hwnd,NULL,0);
                     }
                     return TRUE;
-                }
+                } else if(dis->itemData==MENU_MINIMIZE && !g_CluiData.fLayered)
+				{
+					//TODO check if caption is visible
+					char buf[255]={0};	
+					short dx=1+(dis->itemState&ODS_SELECTED?1:0)-(dis->itemState&ODS_HOTLIGHT?1:0);
+					HICON hIcon=SkinEngine_ImageList_GetIcon(himlMirandaIcon,0,ILD_NORMAL);
+					CLUI_DrawMenuBackGround(hwnd, dis->hDC, 3, dis->itemState);
+					_snprintf(buf,sizeof(buf),"Main,ID=MainMenu,Selected=%s,Hot=%s",(dis->itemState&ODS_SELECTED)?"True":"False",(dis->itemState&ODS_HOTLIGHT)?"True":"False");
+					SkinDrawGlyph(dis->hDC,&dis->rcItem,&dis->rcItem,buf);
+					DrawState(dis->hDC,NULL,NULL,(LPARAM)hIcon,0,(dis->rcItem.right+dis->rcItem.left-GetSystemMetrics(SM_CXSMICON))/2+dx,(dis->rcItem.bottom+dis->rcItem.top-GetSystemMetrics(SM_CYSMICON))/2+dx,0,0,DST_ICON|(dis->itemState&ODS_INACTIVE&&FALSE?DSS_DISABLED:DSS_NORMAL));
+					DestroyIcon_protect(hIcon);         
+					nMirMenuState=dis->itemState;
+				}
 
                 return CallService(MS_CLIST_MENUDRAWITEM,wParam,lParam);
             }

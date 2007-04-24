@@ -124,37 +124,39 @@ IDC_REGROUP             CURSOR                  "res\\neo_meta_move.cur"
 // Dialog
 //
 
-IDD_OPT_CLCBKG DIALOGEX 0, 0, 234, 164
+IDD_OPT_CLCBKG DIALOGEX 0, 0, 234, 184
 STYLE DS_SETFONT | DS_FIXEDSYS | WS_CHILD | WS_VISIBLE
 EXSTYLE WS_EX_CONTROLPARENT
 FONT 8, "MS Shell Dlg", 0, 0, 0x1
 BEGIN
-    GROUPBOX        "Settings",IDC_STATIC,4,19,226,141
-    LTEXT           "Background colour:",IDC_BC_STATIC,12,35,72,8,NOT 
+    GROUPBOX        "Settings",IDC_STATIC,4,21,226,152
+    LTEXT           "Background colour:",IDC_BC_STATIC,12,48,72,8,NOT 
                     WS_GROUP
-    CONTROL         "",IDC_BKGCOLOUR,"ColourPicker",WS_TABSTOP,84,34,32,10
-    LTEXT           "Selection colour:",IDC_SC_STATIC,12,51,72,8
-    CONTROL         "",IDC_SELCOLOUR,"ColourPicker",WS_TABSTOP,84,50,32,10
+    CONTROL         "",IDC_BKGCOLOUR,"ColourPicker",WS_TABSTOP,84,47,32,10
+    LTEXT           "Selection colour:",IDC_SC_STATIC,12,64,72,8
+    CONTROL         "",IDC_SELCOLOUR,"ColourPicker",WS_TABSTOP,84,63,32,10
     CONTROL         "Use background bitmap",IDC_BITMAP,"Button",
-                    BS_AUTOCHECKBOX | WS_TABSTOP,12,68,161,10
-    EDITTEXT        IDC_FILENAME,22,82,184,12,ES_AUTOHSCROLL
-    PUSHBUTTON      "...",IDC_BROWSE,208,82,15,11
+                    BS_AUTOCHECKBOX | WS_TABSTOP,12,81,161,10
+    EDITTEXT        IDC_FILENAME,22,95,184,12,ES_AUTOHSCROLL
+    PUSHBUTTON      "...",IDC_BROWSE,208,95,15,11
     CONTROL         "Stretch to width",IDC_STRETCHH,"Button",BS_AUTOCHECKBOX | 
-                    WS_TABSTOP,22,99,98,10
-    CONTROL         "Stretch to height",IDC_STRETCHV,"Button",
-                    BS_AUTOCHECKBOX | WS_TABSTOP,121,99,101,10
-    CONTROL         "Tile horizontally",IDC_TILEH,"Button",BS_AUTOCHECKBOX | 
                     WS_TABSTOP,22,112,98,10
-    CONTROL         "Tile vertically",IDC_TILEV,"Button",BS_AUTOCHECKBOX | 
-                    WS_TABSTOP,22,125,98,10
-    CONTROL         "Scroll with text",IDC_SCROLL,"Button",BS_AUTOCHECKBOX | 
-                    WS_TABSTOP,121,125,100,10
-    CONTROL         "Stretch proportionally",IDC_PROPORTIONAL,"Button",
+    CONTROL         "Stretch to height",IDC_STRETCHV,"Button",
                     BS_AUTOCHECKBOX | WS_TABSTOP,121,112,101,10
+    CONTROL         "Tile horizontally",IDC_TILEH,"Button",BS_AUTOCHECKBOX | 
+                    WS_TABSTOP,22,125,98,10
+    CONTROL         "Tile vertically",IDC_TILEV,"Button",BS_AUTOCHECKBOX | 
+                    WS_TABSTOP,22,138,98,10
+    CONTROL         "Scroll with text",IDC_SCROLL,"Button",BS_AUTOCHECKBOX | 
+                    WS_TABSTOP,121,138,100,10
+    CONTROL         "Stretch proportionally",IDC_PROPORTIONAL,"Button",
+                    BS_AUTOCHECKBOX | WS_TABSTOP,121,125,101,10
     CONTROL         "Tile vertically according to Row Height",IDC_TILEVROWH,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,22,140,205,10
-    COMBOBOX        IDC_BKGRLIST,4,5,226,155,CBS_DROPDOWNLIST |  
-                    WS_VSCROLL | WS_TABSTOP
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,22,153,205,10
+    COMBOBOX        IDC_BKGRLIST,4,4,226,155,CBS_DROPDOWNLIST | WS_VSCROLL | 
+                    WS_TABSTOP
+    CONTROL         "Use Windows Colors",IDC_USEWINCOL,"Button",
+                    BS_AUTOCHECKBOX | WS_TABSTOP,11,33,213,10
 END
 
 IDD_OPT_SKIN DIALOGEX 0, 0, 303, 220
@@ -364,7 +366,7 @@ GUIDELINES DESIGNINFO
 BEGIN
     IDD_OPT_CLCBKG, DIALOG
     BEGIN
-        BOTTOMMARGIN, 154
+        BOTTOMMARGIN, 174
     END
 
     IDD_OPT_SKINEDITOR, DIALOG

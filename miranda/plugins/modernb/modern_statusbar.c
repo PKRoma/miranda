@@ -49,6 +49,7 @@ char * ApendSubSetting(char * buf, int size, char *first, char *second)
 	_snprintf(buf,size,"%sFont%s",first,second);
 	return buf;
 }
+COLORREF sttGetColor(char * module, char * color, COLORREF defColor);
 
 int LoadStatusBarData()
 {
@@ -91,7 +92,7 @@ int LoadStatusBarData()
 	if (g_CluiData.fDisableSkinEngine)
 	{
 		DBVARIANT dbv;
-		g_StatusBarData.bkColour=DBGetContactSettingDword(NULL,"StatusBar","BkColour",CLCDEFAULT_BKCOLOUR);
+		g_StatusBarData.bkColour=sttGetColor("StatusBar","BkColour",CLCDEFAULT_BKCOLOUR);
 		if(DBGetContactSettingByte(NULL,"StatusBar","UseBitmap",CLCDEFAULT_USEBITMAP)) {
 			if(!DBGetContactSetting(NULL,"StatusBar","BkBitmap",&dbv)) {
 				g_StatusBarData.hBmpBackground=(HBITMAP)CallService(MS_UTILS_LOADBITMAP,0,(LPARAM)dbv.pszVal);
