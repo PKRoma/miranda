@@ -34,7 +34,6 @@ Last change by : $Author$
 #include "jabber_list.h"
 #include "jabber_iq.h"
 #include "jabber_secur.h"
-#include "jabber_ssl.h"
 #include "resource.h"
 #include "version.h"
 
@@ -50,6 +49,7 @@ static void JabberProcessMessage( XmlNode *node, void *userdata );
 static void JabberProcessPresence( XmlNode *node, void *userdata );
 static void JabberProcessIq( XmlNode *node, void *userdata );
 static void JabberProcessProceed( XmlNode *node, void *userdata );
+static void JabberProcessCompressed( XmlNode *node, void *userdata );
 static void JabberProcessRegIq( XmlNode *node, void *userdata );
 
 void JabberMenuHideSrmmIcon(HANDLE hContact);
@@ -478,7 +478,8 @@ LBL_FatalError:
 				datalen -= bytesParsed;
 			}
 			else if ( datalen == jabberNetworkBufferSize ) {
-				jabberNetworkBufferSize += 65536;
+				//jabberNetworkBufferSize += 65536;
+				jabberNetworkBufferSize *= 2;
 				JabberLog( "Increasing network buffer size to %d", jabberNetworkBufferSize );
 				if (( buffer=( char* )mir_realloc( buffer, jabberNetworkBufferSize+1 )) == NULL ) {
 					JabberLog( "Cannot reallocate more network buffer, go offline now" );
@@ -494,6 +495,7 @@ LBL_FatalError:
 		if ( info->type == JABBER_SESSION_NORMAL ) {
 			jabberOnline = FALSE;
 			jabberConnected = FALSE;
+			info->zlibUninit();
 			JabberEnableMenuItems( FALSE );
 			if ( hwndJabberChangePassword ) {
 				//DestroyWindow( hwndJabberChangePassword );
@@ -647,7 +649,22 @@ static void JabberProcessFeatures( XmlNode *node, void *userdata )
 				info->send( stls );
 				return;
 		}	}
-		else if ( !strcmp( n->name, "mechanisms" )) {
+		if ( !strcmp( n->name, "compression" ) && ( JGetByte( "EnableZlib", FALSE ) == TRUE)) {
+			JabberLog("Server compression available");
+			for ( int k=0; k < n->numChild; k++ ) {
+				XmlNode* c = n->child[k];
+				if ( !strcmp( c->name, "method" )) {
+					if ( !_tcscmp( c->text, _T("zlib")) && info->zlibInit() == TRUE ) {
+						JabberLog("Requesting Zlib compression");
+						XmlNode szlib( "compress" ); szlib.addAttr( "xmlns", "http://jabber.org/protocol/compress" );
+						szlib.addChild( "method", "zlib" );
+						info->send( szlib );
+						return;
+					}
+				}
+			}
+		}
+		if ( !strcmp( n->name, "mechanisms" )) {
 			areMechanismsDefined = true;
 			//JabberLog("%d mechanisms\n",n->numChild);
 			for ( int k=0; k < n->numChild; k++ ) {
@@ -825,6 +842,11 @@ static void JabberProcessProtocol( XmlNode *node, void *userdata )
 		return;
 	}
 
+	if ( !strcmp( node->name, "compressed" )) {
+		JabberProcessCompressed( node, userdata );
+		return;
+	}
+
 	if ( !strcmp( node->name, "stream:features" ))
 		JabberProcessFeatures( node, userdata );
 	else if ( !strcmp( node->name, "success"))
@@ -889,6 +911,27 @@ static void JabberProcessProceed( XmlNode *node, void *userdata )
 				JabberLog( "SSL set fd failed" );
 				pfn_SSL_free( ssl );
 }	}	}	}
+
+static void JabberProcessCompressed( XmlNode *node, void *userdata )
+{
+	ThreadData* info;
+	TCHAR* type;
+	
+	JabberLog( "Compression confirmed" );
+	
+	if (( info=( ThreadData* ) userdata ) == NULL ) return;
+	if (( type = JabberXmlGetAttrValue( node, "xmlns" )) != NULL && !lstrcmp( type, _T( "error" )))
+		return;
+	if ( lstrcmp( type, _T( "http://jabber.org/protocol/compress" )))
+		return;
+	
+	JabberLog( "Starting Zlib stream compression..." );
+
+	info->useZlib = TRUE;
+	info->zRecvData = ( char* )mir_alloc( ZLIB_CHUNK_SIZE );
+
+	xmlStreamInitialize( "after successful Zlib init" );
+}
 
 static void JabberProcessMessage( XmlNode *node, void *userdata )
 {
@@ -1973,15 +2016,59 @@ void ThreadData::close()
 		s = NULL;
 }	}
 
-int ThreadData::recv( char* buf, size_t len )
+int ThreadData::recvws( char* buf, size_t len, int flags )
 {
 	if ( this == NULL )
 		return 0;
 
-	if ( ssl )
-		return pfn_SSL_read( ssl, buf, len );
-	
-	return JabberWsRecv( s, buf, len );
+	int result;
+
+	if ( ssl != NULL )
+		result = pfn_SSL_read( ssl, buf, len );
+	else
+		result = JabberWsRecv( s, buf, len, flags );
+
+	return result;
+}
+
+int ThreadData::recv( char* buf, size_t len )
+{
+	if ( useZlib )
+		return zlibRecv( buf, len );
+
+	return recvws( buf, len, MSG_DUMPASTEXT );
+}
+
+int ThreadData::sendws( char* buffer, size_t bufsize, int flags )
+{
+	if ( !ssl )
+		return JabberWsSend( s, buffer, bufsize, flags );
+
+	if ( flags != MSG_NODUMP && DBGetContactSettingByte( NULL, "Netlib", "DumpSent", TRUE ) == TRUE ) {
+		char* szLogBuffer = ( char* )alloca( bufsize+32 );
+		strcpy( szLogBuffer, "( SSL ) Data sent\n" );
+		memcpy( szLogBuffer+strlen( szLogBuffer ), buffer, bufsize+1  ); // also copy \0
+		Netlib_Logf( hNetlibUser, "%s", szLogBuffer );	// %s to protect against when fmt tokens are in szLogBuffer causing crash
+	}
+	return pfn_SSL_write( ssl, buffer, bufsize );
+}
+
+int ThreadData::send( char* buffer, int bufsize )
+{
+	if ( this == NULL )
+		return 0;
+
+	int result;
+
+	EnterCriticalSection( &iomutex );
+
+	if ( useZlib )
+		result = zlibSend( buffer, bufsize );
+	else
+		result = sendws( buffer, bufsize, MSG_DUMPASTEXT );
+
+	LeaveCriticalSection( &iomutex );
+	return result;
 }
 
 // Caution: DO NOT use ->send() to send binary ( non-string ) data
@@ -1991,22 +2078,7 @@ int ThreadData::send( XmlNode& node )
 		return 0;
 
 	char* str = node.getText();
-	int size = strlen( str ), result;
-
-	EnterCriticalSection( &iomutex );
-
-	if ( ssl != NULL ) {
-		if ( DBGetContactSettingByte( NULL, "Netlib", "DumpSent", TRUE ) == TRUE ) {
-			char* szLogBuffer = ( char* )alloca( size+32 );
-			strcpy( szLogBuffer, "( SSL ) Data sent\n" );
-			memcpy( szLogBuffer+strlen( szLogBuffer ), str, size+1  ); // also copy \0
-			Netlib_Logf( hNetlibUser, "%s", szLogBuffer );	// %s to protect against when fmt tokens are in szLogBuffer causing crash
-		}
-
-		result = pfn_SSL_write( ssl, str, size );
-	}
-	else result = JabberWsSend( s, str, size );
-	LeaveCriticalSection( &iomutex );
+	int result = send( str, strlen( str ));
 
 	mir_free( str );
 	return result;
@@ -2014,14 +2086,11 @@ int ThreadData::send( XmlNode& node )
 
 int ThreadData::send( const char* fmt, ... )
 {
-	int result;
 	if ( this == NULL )
 		return 0;
 
-	EnterCriticalSection( &iomutex );
-
 	va_list vararg;
-	va_start( vararg,fmt );
+	va_start( vararg, fmt );
 	int size = 512;
 	char* str = ( char* )mir_alloc( size );
 	while ( _vsnprintf( str, size, fmt, vararg ) == -1 ) {
@@ -2030,19 +2099,7 @@ int ThreadData::send( const char* fmt, ... )
 	}
 	va_end( vararg );
 
-	size = strlen( str );
-	if ( ssl != NULL ) {
-		if ( DBGetContactSettingByte( NULL, "Netlib", "DumpSent", TRUE ) == TRUE ) {
-			char* szLogBuffer = ( char* )alloca( size+32 );
-			strcpy( szLogBuffer, "( SSL ) Data sent\n" );
-			memcpy( szLogBuffer+strlen( szLogBuffer ), str, size+1 ); // also copy \0
-			Netlib_Logf( hNetlibUser, "%s", szLogBuffer );	// %s to protect against when fmt tokens are in szLogBuffer causing crash
-		}
-
-		result = pfn_SSL_write( ssl, str, size );
-	}
-	else result = JabberWsSend( s, str, size );
-	LeaveCriticalSection( &iomutex );
+	int result = send( str, strlen( str ));
 
 	mir_free( str );
 	return result;

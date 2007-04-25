@@ -1153,6 +1153,9 @@
 						AdditionalIncludeDirectories=""/>
 				</FileConfiguration>
 			</File>
+			<File
+				RelativePath=".\jabber_zstream.cpp">
+			</File>
 		</Filter>
 		<Filter
 			Name="Header Files"
@@ -1188,6 +1191,9 @@
 				RelativePath="jabber_xmlns.h">
 			</File>
 			<File
+				RelativePath=".\jabber_zstream.h">
+			</File>
+			<File
 				RelativePath=".\resource.h">
 			</File>
 			<File
@@ -1211,6 +1217,9 @@
 			</File>
 			<File
 				RelativePath=".\icos\bookmarks.ico">
+			</File>
+			<File
+				RelativePath=".\icos\command.ico">
 			</File>
 			<File
 				RelativePath="icos\delete.ico">

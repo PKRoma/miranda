@@ -1511,6 +1511,10 @@
 					/>
 				</FileConfiguration>
 			</File>
+			<File
+				RelativePath=".\jabber_zstream.cpp"
+				>
+			</File>
 		</Filter>
 		<Filter
 			Name="Header Files"

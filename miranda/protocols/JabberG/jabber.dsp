@@ -311,6 +311,10 @@ SOURCE=.\jabber_xml.cpp
 SOURCE=.\jabber_xmlns.cpp
 # ADD CPP /Yu
 # End Source File
+# Begin Source File
+
+SOURCE=.\jabber_zstream.cpp
+# End Source File
 # End Group
 # Begin Group "Header Files"
 
@@ -355,17 +359,37 @@ SOURCE=.\jabber_xml.h
 
 SOURCE=.\jabber_xmlns.h
 # End Source File
+# Begin Source File
+
+SOURCE=.\jabber_zstream.h
+# End Source File
 # End Group
 # Begin Group "Resource Files"
 
 # PROP Default_Filter "ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe"
 # Begin Source File
 
+SOURCE=.\icos\add2roster.ico
+# End Source File
+# Begin Source File
+
 SOURCE=.\icos\addcontact.ico
 # End Source File
 # Begin Source File
 
+SOURCE=.\icos\auth_revoke.ico
+# End Source File
+# Begin Source File
+
 SOURCE=.\icos\block.ico
+# End Source File
+# Begin Source File
+
+SOURCE=.\icos\bookmarks.ico
+# End Source File
+# Begin Source File
+
+SOURCE=.\icos\command.ico
 # End Source File
 # Begin Source File
 
@@ -389,6 +413,10 @@ SOURCE=.\icos\key.ico
 # End Source File
 # Begin Source File
 
+SOURCE=.\icos\login.ico
+# End Source File
+# Begin Source File
+
 SOURCE=.\msvc6.rc
 # End Source File
 # Begin Source File
@@ -401,6 +429,10 @@ SOURCE=.\icos\pages.ico
 # End Source File
 # Begin Source File
 
+SOURCE=.\icos\refresh.ico
+# End Source File
+# Begin Source File
+
 SOURCE=.\icos\rename.ico
 # End Source File
 # Begin Source File
@@ -409,7 +441,15 @@ SOURCE=.\icos\request.ico
 # End Source File
 # Begin Source File
 
+SOURCE=.\icos\roster.ico
+# End Source File
+# Begin Source File
+
 SOURCE=.\icos\save.ico
+# End Source File
+# Begin Source File
+
+SOURCE=.\icos\user2room.ico
 # End Source File
 # Begin Source File
 

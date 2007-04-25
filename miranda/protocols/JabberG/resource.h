@@ -1,6 +1,6 @@
 //{{NO_DEPENDENCIES}}
-// Microsoft Visual C++ generated include file.
-// Used by jabber.rc
+// Microsoft Developer Studio generated include file.
+// Used by msvc6.rc
 //
 #define IDCANCEL2                       3
 #define IDD_OPT_JABBER                  101
@@ -244,6 +244,7 @@
 #define IDC_AGENT_RADIO                 3012
 #define IDC_BOOKMARK_TYPE               3013
 #define IDC_CHECK_BM_AUTOJOIN           3014
+#define IDC_ZLIB                        3015
 #define IDM_MESSAGE                     10002
 #define IDM_CLEAR                       10003
 #define IDM_VOICE                       10005

@@ -74,6 +74,8 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include <m_idle.h>
 #include <win2k.h>
 
+#include "../../plugins/zlib/zlib.h"
+
 #include "jabber_xml.h"
 #include "jabber_byte.h"
 
@@ -186,16 +188,48 @@ enum JABBER_SESSION_TYPE
 	JABBER_SESSION_REGISTER
 };
 
-#define CAPS_BOOKMARK   0x0001
+#define CAPS_BOOKMARK         0x0001
 #define CAPS_BOOKMARKS_LOADED 0x8000
 
-struct ThreadData {
+#define ZLIB_CHUNK_SIZE 2048
+
+struct ThreadData
+{
 	ThreadData( JABBER_SESSION_TYPE parType );
 	~ThreadData();
 
 	HANDLE hThread;
 	JABBER_SESSION_TYPE type;
 
+	// network support
+	JABBER_SOCKET s;
+	BOOL  useSSL;
+	PVOID ssl;
+	CRITICAL_SECTION iomutex; // protects i/o operations
+
+	// XEP-0138 (Compression support)
+	BOOL     useZlib;
+	z_stream zStreamIn,zStreamOut;
+	bool     zRecvReady;
+	int      zRecvDatalen;
+	char*    zRecvData;
+	
+	BOOL     zlibInit( void );
+	void     zlibUninit();
+   int      zlibSend( char* data, int datalen );
+   int      zlibRecv( char* data, long datalen );
+
+	// for nick names resolving
+	int    resolveID;
+	HANDLE resolveContact;
+
+	// features & registration
+	HWND  reg_hwndDlg;
+	BOOL  reg_done, bIsSessionAvailable;
+	class TJabberAuth* auth;
+	int	caps; // capabilities
+
+	// connection & login data
 	TCHAR username[128];
 	char  password[128];
 	char  server[128];
@@ -203,26 +237,16 @@ struct ThreadData {
 	TCHAR resource[128];
 	TCHAR fullJID[256];
 	WORD  port;
-
-	JABBER_SOCKET s;
-	BOOL  useSSL;
-	PVOID ssl;
-	CRITICAL_SECTION iomutex; // protects i/o operations
-
-	int    resolveID;
-	HANDLE resolveContact;
-
 	char  newPassword[128];
-
-	HWND  reg_hwndDlg;
-	BOOL  reg_done, bIsSessionAvailable;
-	class TJabberAuth* auth;
-	int	caps; // capabilities
 
 	void  close( void );
 	int   recv( char* buf, size_t len );
+	int   send( char* buffer, int bufsize );
 	int   send( const char* fmt, ... );
 	int   send( struct XmlNode& node );
+
+	int   recvws( char* buffer, size_t bufsize, int flags );
+	int   sendws( char* buffer, size_t bufsize, int flags );
 };
 
 struct JABBER_MODEMSGS
@@ -581,8 +605,8 @@ int JabberSendGetVcard( const TCHAR* jid );
 BOOL          JabberWsInit( void );
 void          JabberWsUninit( void );
 JABBER_SOCKET JabberWsConnect( char* host, WORD port );
-int           JabberWsSend( JABBER_SOCKET s, char* data, int datalen );
-int           JabberWsRecv( JABBER_SOCKET s, char* data, long datalen );
+int           JabberWsSend( JABBER_SOCKET s, char* data, int datalen, int flags );
+int           JabberWsRecv( JABBER_SOCKET s, char* data, long datalen, int flags );
 
 ///////////////////////////////////////////////////////////////////////////////
 // UTF encode helper

@@ -454,7 +454,7 @@ static int JabberFileSendParse( JABBER_SOCKET s, filetransfer* ft, char* buffer,
 
 				char fileBuffer[ 2048 ];
 				int bytes = mir_snprintf( fileBuffer, sizeof(fileBuffer), "HTTP/1.1 200 OK\r\nContent-Length: %d\r\n\r\n", statbuf.st_size );
-				JabberWsSend( s, fileBuffer, bytes );
+				JabberWsSend( s, fileBuffer, bytes, MSG_DUMPASTEXT );
 
 				ft->std.sending = TRUE;
 				ft->std.currentFileProgress = 0;

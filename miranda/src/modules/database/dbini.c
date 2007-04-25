@@ -121,9 +121,7 @@ int GetDefaultProfilePath(char *szPath,int cbPath,int *specified)
 				hFile=CreateFileA(szPath,GENERIC_WRITE,FILE_SHARE_READ,NULL,OPEN_ALWAYS,0,NULL);
 				CloseHandle(hFile);
 				return 0;
-			}
-		}
-	}
+	}	}	}
 
 	if(szSingleExistingPath[0]) {
 		if(specified && szExpandedDefaultName[0]=='\0') *specified=1;
@@ -142,11 +140,10 @@ int ShouldShowProfileManager(void)
 	if(GetAsyncKeyState(VK_CONTROL)&0x8000) return 1;
 	GetPrivateProfileStringA("Database","ShowProfileMgr","smart",szShowValue,sizeof(szShowValue),mirandabootini);
 	if(!lstrcmpiA(szShowValue,"always")) return 1;
-	if(!lstrcmpiA(szShowValue,"never")) {
+	if(!lstrcmpiA(szShowValue,"never"))
 		return GetDefaultProfilePath(szDefaultProfile,sizeof(szDefaultProfile),NULL);
-	}
-	return GetDefaultProfilePath(szDefaultProfile,sizeof(szDefaultProfile),&defaultProfileSpecified)
-	       || !defaultProfileSpecified;
+
+	return GetDefaultProfilePath(szDefaultProfile,sizeof(szDefaultProfile),&defaultProfileSpecified) || !defaultProfileSpecified;
 }
 
 static BOOL CALLBACK InstallIniDlgProc(HWND hwndDlg,UINT message,WPARAM wParam,LPARAM lParam)

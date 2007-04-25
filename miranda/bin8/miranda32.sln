@@ -22,6 +22,9 @@ EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "tabsrmm", "..\plugins\tabsrmm\tabsrmm_8.vcproj", "{99D26CA1-BFD4-4E77-9A1E-919E54CF33F7}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "jabber", "..\protocols\JabberG\jabber_8.vcproj", "{33276462-8313-4192-8306-13717ECCA60A}"
+	ProjectSection(ProjectDependencies) = postProject
+		{E2A369CD-EDA3-414F-8AD0-E732CD7EE68C} = {E2A369CD-EDA3-414F-8AD0-E732CD7EE68C}
+	EndProjectSection
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "chat", "..\plugins\chat\chat_8.vcproj", "{268BD296-8DD3-4715-A386-CF120398EC98}"
 EndProject
