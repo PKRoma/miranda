@@ -57,8 +57,9 @@ void utils_log_fmt(const char *file,int line,const char *fmt,...) {
 #endif
 
 int utils_setSafetyMode(WPARAM wParam, LPARAM lParam) {
-	log0("db_setSafetyMode");
     int safeMode = (int)wParam;
+
+	log0("db_setSafetyMode");
     if (safeMode) 
         sql_exec(g_sqlite, "PRAGMA synchronous = NORMAL;");
     else

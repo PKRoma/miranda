@@ -197,7 +197,11 @@ static int dbrw_Load(char *profile, void *link) {
 	#ifdef DBRW_LOGGING
 	utils_log_init();
 	#endif
+    #ifdef DBRW_VER_ALPHA
+    log3("Loading dbRW v%s alpha #%s (SQLite v%s)", DBRW_VER_STRING, DBRW_VER_ALPHA, SQLITE_VERSION);
+    #else
 	log2("Loading dbRW v%s (SQLite v%s)", DBRW_VER_STRING, SQLITE_VERSION);
+    #endif
 	{
 		sql_exec(g_sqlite, "PRAGMA synchronous = NORMAL;");
 		sql_exec(g_sqlite, "PRAGMA locking_mode = EXCLUSIVE;");
@@ -272,10 +276,10 @@ static int dbrw_Unload(int wasLoaded) {
 	contacts_destroy();
     sql_close(g_sqlite);
 	sql_destroy();
-    log0("dbRW successfully unloaded");
 	DeleteCriticalSection(&csContactsDb);
 	DeleteCriticalSection(&csEventsDb);
 	DeleteCriticalSection(&csSettingsDb);
+    log0("dbRW successfully unloaded");
 	#ifdef DBRW_LOGGING
 	utils_log_destroy();
 	#endif

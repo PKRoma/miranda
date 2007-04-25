@@ -19,7 +19,6 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 */
 #ifndef DBRW_H
 #define DBRW_H
-#define DBRW_LOGGING
 
 #include <windows.h>
 #include <stdio.h>
