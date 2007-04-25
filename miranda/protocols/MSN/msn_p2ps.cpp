@@ -57,8 +57,11 @@ void  p2p_registerSession( filetransfer* ft )
 void  p2p_unregisterSession( filetransfer* ft )
 {
 	EnterCriticalSection( &sessionLock );
-	sessionList.remove( ft );
-	delete ft; 
+	int idx = sessionList.getIndex( ft );
+	if ( idx > -1 ) {
+		sessionList.remove( idx );
+		delete ft; 
+	}
 	LeaveCriticalSection( &sessionLock );
 }
 
@@ -112,18 +115,10 @@ filetransfer*  p2p_getSessionByUniqueID( unsigned id )
 
  BOOL  p2p_sessionRegistered( filetransfer* ft )
 {
-    BOOL result = FALSE;
 	EnterCriticalSection( &sessionLock );
-
-	for ( int i=0; i < sessionList.getCount(); i++ ) {
-		filetransfer* FT = sessionList[i];
-		if ( sessionList[i] == ft ) {
-			result = TRUE;
-			break;
-	}	}
-
+	int idx = sessionList.getIndex( ft );
 	LeaveCriticalSection( &sessionLock );
-	return result;
+	return idx > -1;
 }
 
 filetransfer*  p2p_getThreadSession( HANDLE hContact, TInfoType mType )
@@ -177,6 +172,7 @@ void  p2p_redirectSessions( HANDLE hContact )
 	for ( int i=0; i < sessionList.getCount(); i++ ) {
 		filetransfer* FT = sessionList[i];
 		if ( FT->std.hContact == hContact && !FT->std.sending && 
+			FT->std.currentFileProgress < FT->std.currentFileSize &&
 			( T == NULL || ( FT->tType != T->mType && FT->tType != 0 ))) 
 			p2p_sendRedirect( T, FT );
 	}
@@ -234,8 +230,11 @@ void  p2p_registerDC( directconnection* dc )
 void  p2p_unregisterDC( directconnection* dc )
 {
 	EnterCriticalSection( &sessionLock );
-	delete dc; 
-	dcList.remove( dc );
+	int idx = dcList.getIndex( dc );
+	if ( idx > -1 ) {
+		dcList.remove( idx );
+		delete dc; 
+	}
 	LeaveCriticalSection( &sessionLock );
 }
 

@@ -1403,7 +1403,7 @@ void  p2p_processMsg( ThreadData* info,  const char* msgbody )
 	sttLogHeader( hdrdata );
 
 	//---- if we got a message
-	if ( hdrdata->mFlags == 0 )
+	if ( hdrdata->mFlags == 0 && hdrdata->mSessionID == 0 )
 	{
 		if ( hdrdata->mPacketLen < hdrdata->mTotalSize )
 		{
@@ -1525,9 +1525,6 @@ void  p2p_processMsg( ThreadData* info,  const char* msgbody )
 
 		if ( hdrdata->mAckSessionID == ft->p2p_byemsgid )
 		{
-			if ( ft->p2p_appID == 1 )
-				sttSavePicture2disk( ft );
-
 			p2p_sessionComplete( ft );
 			return;
 		}
@@ -1616,12 +1613,15 @@ void  p2p_processMsg( ThreadData* info,  const char* msgbody )
 				p2p_sendAck( ft, info, hdrdata );
 				if ( ft->p2p_appID == 2 )
 					ft->bCompleted = true;
-				else
+				else {
+					sttSavePicture2disk( ft );
 					p2p_sendBye( info, ft );
+				}
 	}	}	}
 
-	if ( hdrdata->mFlags == 0x40 || hdrdata->mFlags == 0x80 )
+	if ( hdrdata->mFlags == 0x40 || hdrdata->mFlags == 0x80 ) {
 		p2p_unregisterSession( ft );
+	}
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////
