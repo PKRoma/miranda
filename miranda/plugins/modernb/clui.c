@@ -85,12 +85,21 @@ int CLUI_ShowWindowMod(HWND hWnd, int nCmd)
         && nCmd==SW_RESTORE
         && !g_CluiData.fLayered 
         && IsWinVerXPPlus()		
-        && DBGetContactSettingByte(NULL,"CList","WindowShadow",0)
         && g_CluiData.fSmoothAnimation
         && !g_bTransparentFlag 
-        )
-    {
-        CLUI_SmoothAlphaTransition(hWnd, 255, 1);
+        )	
+    {	
+		if(DBGetContactSettingByte(NULL,"CList","WindowShadow",0))
+		{
+			CLUI_SmoothAlphaTransition(hWnd, 255, 1);
+		}
+		else
+		{
+
+			int ret=ShowWindow(hWnd,nCmd);
+			CLUI_SmoothAlphaTransition(hWnd, 255, 1);
+			return ret;
+		}
     }
     return ShowWindow(hWnd,nCmd);
 }
