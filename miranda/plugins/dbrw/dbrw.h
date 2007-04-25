@@ -20,6 +20,12 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #ifndef DBRW_H
 #define DBRW_H
 
+/* Always enable logging for now
+   Disable by setting DisableLogging/1 in dbrw_core table */
+#ifndef DBRW_LOGGING
+#define DBRW_LOGGING
+#endif
+
 #include <windows.h>
 #include <stdio.h>
 #include <time.h>

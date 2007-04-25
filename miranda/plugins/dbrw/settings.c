@@ -318,7 +318,7 @@ static void settings_writeToDB(HANDLE hContact, const char *szModule, const char
 		case DBVT_BLOB:
             if (value->pbVal) {
 				sqlite3_bind_blob(settings_stmts_prep[SQL_SET_STMT_REPLACE], 5, value->pbVal, value->cpbVal, SQLITE_STATIC);
-                log2("BLOB setting alert(%s, %s)", szModule, szSetting);
+                log2("DB blob write: %s/%s", szModule, szSetting);
             }
             break;
 		default:
@@ -332,7 +332,7 @@ static void settings_writeToDB(HANDLE hContact, const char *szModule, const char
 }
 
 static void settings_writeUpdatedSettings() {
-	int idx;
+	int idx, dbWrite = 0;
 	DBCachedGlobalValue *V;
 	DBCachedContactValueList *VL;
 	DBCachedContactValue *VI;
@@ -340,7 +340,6 @@ static void settings_writeUpdatedSettings() {
 
 	EnterCriticalSection(&csSettingsDb);
 	// TODO: Add some checks so we don't create a transaction every time
-	sql_exec(g_sqlite, "BEGIN TRANSACTION;");
 	for (idx=0; idx<sGlobalSettings.realCount; idx++) {
 		V = (DBCachedGlobalValue*)sGlobalSettings.items[idx];
 		if (V->update) {
@@ -351,6 +350,10 @@ static void settings_writeUpdatedSettings() {
 			if (szTokTmp1) {
 				szTokTmp2 = szTok+strlen(szTokTmp1)+1;
 				if (szTokTmp2) {
+                    if (!dbWrite) {
+                        sql_exec(g_sqlite, "BEGIN TRANSACTION;");
+                        dbWrite = 1;
+                    }
 					settings_writeToDB(0, szTokTmp1, szTokTmp2, &V->value);
 				}
 			}
@@ -369,6 +372,10 @@ static void settings_writeUpdatedSettings() {
 				if (szTokTmp1) {
 					szTokTmp2 = szTok+strlen(szTokTmp1)+1;
 					if (szTokTmp2) {
+                        if (!dbWrite) {
+                            sql_exec(g_sqlite, "BEGIN TRANSACTION;");
+                            dbWrite = 1;
+                        }
 						settings_writeToDB(VL->hContact, szTokTmp1, szTokTmp2, &VI->value);
 					}
 				}
@@ -377,7 +384,8 @@ static void settings_writeUpdatedSettings() {
 			}
 		}
 	}
-	sql_exec(g_sqlite, "COMMIT;");
+    if (dbWrite)
+        sql_exec(g_sqlite, "COMMIT;");
 	LeaveCriticalSection(&csSettingsDb);
 }
 
