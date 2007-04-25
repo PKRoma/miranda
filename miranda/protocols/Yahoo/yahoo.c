@@ -1230,41 +1230,41 @@ void ext_yahoo_send_http_request(int id, const char *method, const char *url, co
 
 	fd = ext_yahoo_connect(host, port, YAHOO_CONNECTION_FT);
 	
-	if (fd < 1) {
+	if (fd < 0) {
 		LOG(("[ext_yahoo_send_http_request] Can't connect?? Exiting..."));
-		return;
+		//return;
+	} else {
+		nlhr.cbSize=sizeof(nlhr);
+		nlhr.requestType=(lstrcmpi(method, "GET") == 0) ? REQUEST_GET : REQUEST_POST;
+		nlhr.flags=NLHRF_DUMPASTEXT|NLHRF_GENERATEHOST|NLHRF_SMARTREMOVEHOST|NLHRF_SMARTAUTHHEADER|NLHRF_HTTP11;
+		nlhr.szUrl=(char *)url;
+		nlhr.headers = httpHeaders;
+		nlhr.headersCount = 3;
+		
+		httpHeaders[0].szName="Accept";
+		httpHeaders[0].szValue="*/*";
+		httpHeaders[1].szName="User-Agent";
+		httpHeaders[1].szValue="Mozilla/4.0 (compatible; MSIE 5.5)";
+		httpHeaders[2].szName="Pragma";
+		httpHeaders[2].szValue="no-cache";
+		
+		if (cookies != NULL && cookies[0] != '\0') {
+			httpHeaders[3].szName="Cookie";
+			httpHeaders[3].szValue=(char *)cookies;
+			nlhr.headersCount = 4;
+		}
+		
+		if (nlhr.requestType == REQUEST_POST) {
+			httpHeaders[nlhr.headersCount].szName="Content-Length";
+			mir_snprintf(z, 1024, "%d", content_length);
+			httpHeaders[nlhr.headersCount].szValue=z;
+	
+			nlhr.headersCount++;
+		}
+		
+		error = CallService(MS_NETLIB_SENDHTTPREQUEST,(WPARAM)fd,(LPARAM)&nlhr);
 	}
 	
-	nlhr.cbSize=sizeof(nlhr);
-	nlhr.requestType=(lstrcmpi(method, "GET") == 0) ? REQUEST_GET : REQUEST_POST;
-	nlhr.flags=NLHRF_DUMPASTEXT|NLHRF_GENERATEHOST|NLHRF_SMARTREMOVEHOST|NLHRF_SMARTAUTHHEADER|NLHRF_HTTP11;
-	nlhr.szUrl=(char *)url;
-	nlhr.headers = httpHeaders;
-	nlhr.headersCount = 3;
-	
-	httpHeaders[0].szName="Accept";
-	httpHeaders[0].szValue="*/*";
-	httpHeaders[1].szName="User-Agent";
-	httpHeaders[1].szValue="Mozilla/4.0 (compatible; MSIE 5.5)";
-	httpHeaders[2].szName="Pragma";
-	httpHeaders[2].szValue="no-cache";
-	
-	if (cookies != NULL && cookies[0] != '\0') {
-		httpHeaders[3].szName="Cookie";
-		httpHeaders[3].szValue=(char *)cookies;
-		nlhr.headersCount = 4;
-	}
-	
-	if (nlhr.requestType == REQUEST_POST) {
-		httpHeaders[nlhr.headersCount].szName="Content-Length";
-		mir_snprintf(z, 1024, "%d", content_length);
-		httpHeaders[nlhr.headersCount].szValue=z;
-
-		nlhr.headersCount++;
-	}
-	
-	error = CallService(MS_NETLIB_SENDHTTPREQUEST,(WPARAM)fd,(LPARAM)&nlhr);
-    
 	callback(id, fd, error == SOCKET_ERROR, callback_data);
 }
 

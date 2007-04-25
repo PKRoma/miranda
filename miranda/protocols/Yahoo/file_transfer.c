@@ -602,7 +602,9 @@ static void __cdecl yahoo_send_filethread(void *psf)
 	y_filetransfer *sf = psf;
 	
 //    ProtoBroadcastAck(yahooProtocolName, hContact, ACKTYPE_GETINFO, ACKRESULT_SUCCESS, (HANDLE) 1, 0);
-	YAHOO_DebugLog("who %s, msg: %s, filename: %s filesize: %ld", sf->who, sf->msg, sf->filename, sf->fsize);
+	ProtoBroadcastAck(yahooProtocolName, sf->hContact, ACKTYPE_FILE, ACKRESULT_CONNECTING, sf, 0);
+	
+	LOG(("who %s, msg: %s, filename: %s filesize: %ld", sf->who, sf->msg, sf->filename, sf->fsize));
 	
 	yahoo_send_file(ylad->id, sf->who, sf->msg, sf->filename, sf->fsize, &upload_file, sf);
 	
@@ -634,7 +636,7 @@ int YahooSendFile(WPARAM wParam,LPARAM lParam)
 	CCSDATA *ccs;
 	char** files;
 	
-	YAHOO_DebugLog("YahooSendFile");
+	LOG(("[YahooSendFile]"));
 	
 	if ( !yahooLoggedIn )
 		return 0;
@@ -674,15 +676,15 @@ int YahooSendFile(WPARAM wParam,LPARAM lParam)
 			return 0;
 		}
 
-		YAHOO_DebugLog("who: %s, msg: %s, filename: %s", sf->who, sf->msg, sf->filename);
+		LOG(("who: %s, msg: %s, filename: %s", sf->who, sf->msg, sf->filename));
 		mir_forkthread(yahoo_send_filethread, sf);
 		
 		DBFreeVariant(&dbv);
-		YAHOO_DebugLog("Exiting SendRequest...");
+		LOG(("Exiting SendRequest..."));
 		return (int)(HANDLE)sf;
 	}
 	
-	YAHOO_DebugLog("Exiting SendFile");
+	LOG(("Exiting SendFile"));
 	return 0;
 }
 
