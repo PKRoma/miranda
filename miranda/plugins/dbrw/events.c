@@ -94,7 +94,7 @@ int events_getCount(WPARAM wParam, LPARAM lParam) {
 	int rc = 0;
 	
 	EnterCriticalSection(&csEventsDb);
-    if (contacts_isContact(wParam, 0)) {
+    if (!contacts_isContact(wParam, 0)) {
         LeaveCriticalSection(&csEventsDb);
         return -1;
     }  
