@@ -190,6 +190,10 @@ int utils_private_setting_set_int(const char *setting, int val) {
     return rc;
 }
 
+/* The follow memory functions are needed so a single function
+   can be used even if the memory manager hasn't been initialized
+   from the core.  This happens when the db is being created (core
+   isn't completely loaded yet). */
 void* utils_mem_alloc(size_t size) {
     if (memoryManagerInterface.mmi_malloc) /* check for mmi initialization */
         return memoryManagerInterface.mmi_malloc(size);
@@ -199,7 +203,7 @@ void* utils_mem_alloc(size_t size) {
 void* utils_mem_realloc(void* ptr, size_t size) {
     if (memoryManagerInterface.mmi_realloc) /* check for mmi initialization */
         return memoryManagerInterface.mmi_realloc(ptr, size);
-    return realloc(ptr, size);
+    return realloc(ptr, size);  /* fall back if no mmi */
 }
 
 void utils_mem_free(void* ptr) {
