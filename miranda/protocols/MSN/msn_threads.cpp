@@ -57,7 +57,7 @@ void __cdecl msn_keepAliveThread( void* )
 				if ( MyOptions.UseGateway )
 					msnPingTimeout = 45;
 				else {
-					msnPingTimeout = 3;
+					msnPingTimeout = 6;
 					keepFlag = keepFlag && msnNsThread->send( "PNG\r\n", 5 );
 				}
 				p2p_clearDormantSessions();
