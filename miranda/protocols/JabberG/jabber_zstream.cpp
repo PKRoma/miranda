@@ -58,6 +58,7 @@ void ThreadData::zlibUninit( void )
 int ThreadData::zlibSend( char* data, int datalen )
 {
 	char send_data[ ZLIB_CHUNK_SIZE ];
+	int bytesOut = 0;
 
 	zStreamOut.avail_in = datalen;
 	zStreamOut.next_in = ( unsigned char* )data;
@@ -79,11 +80,13 @@ int ThreadData::zlibSend( char* data, int datalen )
 			JabberLog( "Netlib_Send() failed, error=%d", WSAGetLastError());
 			return FALSE;
 		}
+
+		bytesOut += len;
 	}
 		while ( zStreamOut.avail_out == 0 );
 
 	if ( DBGetContactSettingByte( NULL, "Netlib", "DumpSent", TRUE ) == TRUE )
-		JabberLog( "(ZLIB) Data sent\n%s\n===OUT: %d bytes", data, datalen );
+		JabberLog( "(ZLIB) Data sent\n%s\n===OUT: %d(%d) bytes", data, datalen, bytesOut );
 
 	return TRUE;
 }

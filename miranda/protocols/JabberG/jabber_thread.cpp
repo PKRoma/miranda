@@ -2006,6 +2006,7 @@ ThreadData::ThreadData( JABBER_SESSION_TYPE parType )
 ThreadData::~ThreadData()
 {
 	delete auth;
+	mir_free( zRecvData );
 	DeleteCriticalSection( &iomutex );
 }
 

@@ -70,9 +70,9 @@ int JabberWsSend( JABBER_SOCKET hConn, char* data, int datalen, int flags )
 
 	if (( len = Netlib_Send( hConn, data, datalen, flags )) == SOCKET_ERROR || len != datalen ) {
 		JabberLog( "Netlib_Send() failed, error=%d", WSAGetLastError());
-		return FALSE;
+		return SOCKET_ERROR;
 	}
-	return TRUE;
+	return len;
 }
 
 int JabberWsRecv( JABBER_SOCKET hConn, char* data, long datalen, int flags )
