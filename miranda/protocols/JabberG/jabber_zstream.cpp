@@ -20,7 +20,7 @@ You should have received a copy of the GNU General Public License
 along with this program; if not, write to the Free Software
 Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
-File name      : $Source: /cvsroot/miranda/miranda/protocols/JabberG/jabber_xmlns.cpp,v $
+File name      : $Source: /cvsroot/miranda/miranda/protocols/JabberG/jabber_zstream.cpp,v $
 Revision       : $Revision: 5282 $
 Last change on : $Date: 2007-04-20 15:18:58 +0400 (ѕт, 20 апр 2007) $
 Last change by : $Author: ghazan $
@@ -66,7 +66,7 @@ int ThreadData::zlibSend( char* data, int datalen )
 	do {
 		zStreamOut.avail_out = ZLIB_CHUNK_SIZE;
 		zStreamOut.next_out = ( unsigned char* )send_data;
-	
+
 		switch ( deflate( &zStreamOut, Z_SYNC_FLUSH )) {
 			case Z_OK:         JabberLog( "Deflate: Z_OK" );         break;
 			case Z_BUF_ERROR:  JabberLog( "Deflate: Z_BUF_ERROR" );  break;
@@ -105,7 +105,7 @@ int ThreadData::zlibRecv( char* data, long datalen )
 		zStreamIn.avail_in = zRecvDatalen;
 		zStreamIn.next_in = ( Bytef* )zRecvData;
 	}
-	
+
 	zStreamIn.avail_out = datalen;
 	zStreamIn.next_out = ( BYTE* )data;
 
