@@ -24,11 +24,13 @@ enum {
 	SQL_EVT_STMT_ADD,
 	SQL_EVT_STMT_DELETE,
 	SQL_EVT_STMT_BLOBSIZE,
+	SQL_EVT_STMT_BLOBSIZE_CACHE,
 	SQL_EVT_STMT_GET,
 	SQL_EVT_STMT_GET_CACHE,
 	SQL_EVT_STMT_GETFLAGS,
 	SQL_EVT_STMT_SETFLAGS,
 	SQL_EVT_STMT_GETCONTACT,
+	SQL_EVT_STMT_GETCONTACT_CACHE,
 	SQL_EVT_STMT_FINDFIRST,
 	SQL_EVT_STMT_FINDFIRSTUNREAD,
 	SQL_EVT_STMT_FINDLAST,
@@ -41,11 +43,13 @@ static char *evt_stmts[SQL_EVT_STMT_NUM] = {
 	"INSERT INTO dbrw_events VALUES(NULL,?,?,?,?,?,?,?,?);",
 	"DELETE FROM dbrw_events where id = ? AND contactid = ?;",
 	"SELECT blobsize FROM dbrw_events where id = ? LIMIT 1;",
+	"SELECT blobsize FROM temp_dbrw_events where id = ? LIMIT 1;",
 	"SELECT * FROM dbrw_events where id = ? LIMIT 1;",
     "SELECT * FROM temp_dbrw_events where id = ? LIMIT 1;",
 	"SELECT flags FROM dbrw_events where id = ? LIMIT 1;",
 	"UPDATE dbrw_events SET flags = ? WHERE id = ?;",
 	"SELECT contactid FROM dbrw_events where id = ? LIMIT 1;",
+	"SELECT contactid FROM temp_dbrw_events where id = ? LIMIT 1;",
 	"SELECT id FROM dbrw_events where contactid = ? ORDER by id;",
 	"SELECT flags,id FROM dbrw_events where contactid = ? ORDER by id;",
 	"SELECT id FROM dbrw_events where contactid = ? ORDER by id DESC;",
@@ -172,17 +176,32 @@ int events_delete(WPARAM wParam, LPARAM lParam) {
 	return rc;
 }
 
+static int events_getBlobSizeConditional(HANDLE hDbEvent, int cache) {
+	int rc = -1;
+    sqlite3_stmt* stmt;
+    
+    EnterCriticalSection(&csEventsDb);
+    stmt = cache?evt_stmts_prep[SQL_EVT_STMT_BLOBSIZE_CACHE]:evt_stmts_prep[SQL_EVT_STMT_BLOBSIZE];
+	sqlite3_bind_int(stmt, 1, (int)hDbEvent);
+    if (sql_step(stmt)==SQLITE_ROW) {
+		rc = sqlite3_column_int(stmt, 0);
+        if (cache)
+            log2("Got blob size from cache for event %d (%d)", (int)hDbEvent, rc);
+        else
+            log2("Got blob size event %d (%d)", (int)hDbEvent, rc);
+    }
+	sql_reset(stmt);
+    LeaveCriticalSection(&csEventsDb);
+    return rc;
+}
+
 int events_getBlobSize(WPARAM wParam, LPARAM lParam) {
 	HANDLE hDbEvent = (HANDLE)wParam;
-	int rc = -1;
+	int rc = events_getBlobSizeConditional(hDbEvent, 1);
 
-	EnterCriticalSection(&csEventsDb);
-	sqlite3_bind_int(evt_stmts_prep[SQL_EVT_STMT_BLOBSIZE], 1, (int)hDbEvent);
-	if (sql_step(evt_stmts_prep[SQL_EVT_STMT_BLOBSIZE])==SQLITE_ROW)
-		rc = sqlite3_column_int(evt_stmts_prep[SQL_EVT_STMT_BLOBSIZE], 0);
-	sql_reset(evt_stmts_prep[SQL_EVT_STMT_BLOBSIZE]);
-	LeaveCriticalSection(&csEventsDb);
-	return rc;
+	if (rc!=-1)
+        return rc;
+	return events_getBlobSizeConditional(hDbEvent, 0);;
 }
 
 static int events_getConditional(HANDLE hDbEvent, DBEVENTINFO *dbei, int cache) {
@@ -251,18 +270,32 @@ int events_markRead(WPARAM wParam, LPARAM lParam) {
 	return rc;
 }
 
+static int events_getContactConditional(HANDLE hDbEvent, int cache) {
+    int rc = -1;
+    sqlite3_stmt* stmt;
+    
+    EnterCriticalSection(&csEventsDb);
+    stmt = cache?evt_stmts_prep[SQL_EVT_STMT_GETCONTACT_CACHE]:evt_stmts_prep[SQL_EVT_STMT_GETCONTACT];
+    sqlite3_bind_int(stmt, 1, (int)hDbEvent);
+	if (sql_step(stmt)==SQLITE_ROW) {
+		rc = sqlite3_column_int(stmt, 0);
+        if (cache)
+            log2("Got contact from event cache id %d (%d)", (int)hDbEvent, rc);
+        else
+            log2("Got contact from event id %d (%d)", (int)hDbEvent, rc);
+	}
+    sql_reset(stmt);
+    LeaveCriticalSection(&csEventsDb);
+    return rc;
+}
+
 int events_getContact(WPARAM wParam, LPARAM lParam) {
 	HANDLE hDbEvent = (HANDLE)wParam;
-	int rc = -1;
-	
-	EnterCriticalSection(&csEventsDb);
-	sqlite3_bind_int(evt_stmts_prep[SQL_EVT_STMT_GETCONTACT], 1, (int)hDbEvent);
-	if (sql_step(evt_stmts_prep[SQL_EVT_STMT_GETCONTACT])==SQLITE_ROW) {
-		rc = sqlite3_column_int(evt_stmts_prep[SQL_EVT_STMT_GETCONTACT], 0);
-	}
-	sql_reset(evt_stmts_prep[SQL_EVT_STMT_GETCONTACT]);
-	LeaveCriticalSection(&csEventsDb);
-	return rc;
+	int rc = events_getContactConditional(hDbEvent, 1);
+    
+    if (rc!=-1)
+        return rc;
+	return events_getContactConditional(hDbEvent, 0);
 }
 
 int events_findFirst(WPARAM wParam, LPARAM lParam) {
