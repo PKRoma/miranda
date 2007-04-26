@@ -312,22 +312,6 @@ extern "C" int __declspec(dllexport) Load( PLUGINLINK* link )
 	mir_snprintf( path, sizeof( path ), "%s:HotmailNotify", protocolname );
 	ModuleName = mir_strdup( path );
 
-	// Cleanup database
-	{
-		HANDLE hContact = ( HANDLE )MSN_CallService( MS_DB_CONTACT_FINDFIRST, 0, 0 );
-		while ( hContact != NULL ) {
-			if ( !lstrcmpA( msnProtocolName, 
-				( char* )MSN_CallService( MS_PROTO_GETCONTACTBASEPROTO, ( WPARAM )hContact,0 )))
-			{
-				MSN_DeleteSetting( hContact, "Status" );
-				MSN_DeleteSetting( hContact, "IdleTS" );
-				MSN_DeleteSetting( hContact, "p2pMsgId" );
-			}
-			hContact = ( HANDLE )MSN_CallService( MS_DB_CONTACT_FINDNEXT,( WPARAM )hContact, 0 );
-		}
-	}
-
-
 	mir_snprintf( path, sizeof( path ), "%s/Status", protocolname );
 	MSN_CallService( MS_DB_SETSETTINGRESIDENT, TRUE, ( LPARAM )path );
 
@@ -359,8 +343,14 @@ extern "C" int __declspec(dllexport) Load( PLUGINLINK* link )
 
 	HANDLE hContact = ( HANDLE )MSN_CallService( MS_DB_CONTACT_FINDFIRST, 0, 0 );
 	while ( hContact != NULL ) {
-		if ( !lstrcmpA( msnProtocolName, ( char* )MSN_CallService( MS_PROTO_GETCONTACTBASEPROTO, ( WPARAM )hContact,0 )))
-			MSN_SetWord( hContact, "Status", ID_STATUS_OFFLINE );
+		if ( !lstrcmpA( msnProtocolName, 
+			( char* )MSN_CallService( MS_PROTO_GETCONTACTBASEPROTO, ( WPARAM )hContact,0 )))
+		{
+			MSN_DeleteSetting( hContact, "Status" );
+			MSN_DeleteSetting( hContact, "IdleTS" );
+			MSN_DeleteSetting( hContact, "p2pMsgId" );
+//			MSN_SetWord( hContact, "Status", ID_STATUS_OFFLINE );
+		}
 		hContact = ( HANDLE )MSN_CallService( MS_DB_CONTACT_FINDNEXT,( WPARAM )hContact, 0 );
 	}
 
