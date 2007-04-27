@@ -136,6 +136,10 @@ SOURCE=.\events.h
 # End Source File
 # Begin Source File
 
+SOURCE=.\resource.h
+# End Source File
+# Begin Source File
+
 SOURCE=.\settings.h
 # End Source File
 # Begin Source File
