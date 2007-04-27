@@ -1457,10 +1457,10 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
 
 					SendMessage(dat->hwndStatus, SB_SETTEXT, 0, (LPARAM) szBuf);
 					SendMessage(dat->hwndStatus, SB_SETICON, 0, (LPARAM) hTyping);
-					if ((g_dat->flags&SMF_SHOWTYPINGWIN) && GetForegroundWindow() != hwndDlg)
+					if (( g_dat->flags & SMF_SHOWTYPINGWIN ) && GetForegroundWindow() != hwndDlg)
 						SendMessage(hwndDlg, WM_SETICON, ( WPARAM )ICON_BIG, ( LPARAM )hTyping );
 					dat->showTyping = 1;
-					CallService(MS_SKIN2_RELEASEICON, ( WPARAM )hTyping, 0);
+					// CallService(MS_SKIN2_RELEASEICON, ( WPARAM )hTyping, 0);
 				}
 			}
 		}
