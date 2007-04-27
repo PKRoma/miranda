@@ -515,14 +515,14 @@ static int settings_getContactSettingWorker(HANDLE hContact, DBCONTACTGETSETTING
 		}
 		case DBVT_BLOB:
 		{
-			const void *p = sqlite3_column_blob(settings_stmts_prep[SQL_SET_STMT_READ], 1);
-
-			if ( p != NULL ) {
-				size_t len = sqlite3_column_bytes(settings_stmts_prep[SQL_SET_STMT_READ], 1);		
+			size_t len = sqlite3_column_bytes(settings_stmts_prep[SQL_SET_STMT_READ], 1);
+            
+			if (len) {		
 				size_t copylen = isStatic ? ( len < dbcgs->pValue->cpbVal ? len : dbcgs->pValue->cpbVal ) : len;
 				if (!isStatic) 
-					dbcgs->pValue->pbVal=dbrw_alloc(len);
-				memmove(dbcgs->pValue->pbVal, p, copylen);
+					dbcgs->pValue->pbVal=dbrw_alloc(copylen);
+				CopyMemory(dbcgs->pValue->pbVal, sqlite3_column_blob(settings_stmts_prep[SQL_SET_STMT_READ], 1), copylen);
+                dbcgs->pValue->cpbVal = copylen;
 			}
 			else {
 				dbcgs->pValue = 0;
