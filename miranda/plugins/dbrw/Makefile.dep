@@ -1,29 +1,29 @@
 contacts.o: contacts.c dbrw.h ../../include/newpluginapi.h \
   ../../include/m_plugins.h ../../include/m_system.h \
   ../../include/m_database.h ../../include/m_utils.h sqlite3/sqlite3.h \
-  contacts.h events.h settings.h sql.h utf8.h utils.h
+  contacts.h events.h resource.h settings.h sql.h utf8.h utils.h
 dbrw.o: dbrw.c dbrw.h ../../include/newpluginapi.h \
   ../../include/m_plugins.h ../../include/m_system.h \
   ../../include/m_database.h ../../include/m_utils.h sqlite3/sqlite3.h \
-  contacts.h events.h settings.h sql.h utf8.h utils.h
+  contacts.h events.h resource.h settings.h sql.h utf8.h utils.h
 events.o: events.c dbrw.h ../../include/newpluginapi.h \
   ../../include/m_plugins.h ../../include/m_system.h \
   ../../include/m_database.h ../../include/m_utils.h sqlite3/sqlite3.h \
-  contacts.h events.h settings.h sql.h utf8.h utils.h
+  contacts.h events.h resource.h settings.h sql.h utf8.h utils.h
 settings.o: settings.c dbrw.h ../../include/newpluginapi.h \
   ../../include/m_plugins.h ../../include/m_system.h \
   ../../include/m_database.h ../../include/m_utils.h sqlite3/sqlite3.h \
-  contacts.h events.h settings.h sql.h utf8.h utils.h
+  contacts.h events.h resource.h settings.h sql.h utf8.h utils.h
 sql.o: sql.c dbrw.h ../../include/newpluginapi.h \
   ../../include/m_plugins.h ../../include/m_system.h \
   ../../include/m_database.h ../../include/m_utils.h sqlite3/sqlite3.h \
-  contacts.h events.h settings.h sql.h utf8.h utils.h
+  contacts.h events.h resource.h settings.h sql.h utf8.h utils.h
 utf8.o: utf8.c dbrw.h ../../include/newpluginapi.h \
   ../../include/m_plugins.h ../../include/m_system.h \
   ../../include/m_database.h ../../include/m_utils.h sqlite3/sqlite3.h \
-  contacts.h events.h settings.h sql.h utf8.h utils.h
+  contacts.h events.h resource.h settings.h sql.h utf8.h utils.h
 utils.o: utils.c dbrw.h ../../include/newpluginapi.h \
   ../../include/m_plugins.h ../../include/m_system.h \
   ../../include/m_database.h ../../include/m_utils.h sqlite3/sqlite3.h \
-  contacts.h events.h settings.h sql.h utf8.h utils.h
+  contacts.h events.h resource.h settings.h sql.h utf8.h utils.h
 sqlite3.o: sqlite3/sqlite3.c

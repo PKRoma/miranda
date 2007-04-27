@@ -45,6 +45,7 @@ PLUGININFOEX pluginInfo = {
     {0xf3ca0e5e, 0x249a, 0x40f0, {0x8d, 0x74, 0x80, 0xa8, 0xe, 0xf0, 0xc8, 0x3d}} // {F3CA0E5E-249A-40f0-8D74-80A80EF0C83D}
 };
 
+HINSTANCE g_hInst;
 struct MM_INTERFACE memoryManagerInterface = {0, 0, 0, 0};
 struct LIST_INTERFACE li;
 sqlite3 *g_sqlite;
@@ -207,6 +208,7 @@ static int dbrw_Load(char *profile, void *link) {
 		sql_exec(g_sqlite, "PRAGMA cache_size = 12000;");
 		sql_exec(g_sqlite, "PRAGMA temp_store = MEMORY;");
 	}
+    utils_vacuum_check();
 	li.cbSize = sizeof(li);
 	CallService(MS_SYSTEM_GET_LI,0,(LPARAM)&li);
 	InitializeCriticalSection(&csContactsDb);
@@ -286,6 +288,7 @@ static int dbrw_Unload(int wasLoaded) {
 }
 
 BOOL WINAPI DllMain(HINSTANCE hInstDLL, DWORD dwReason, LPVOID reserved) {
+    g_hInst = hInstDLL;
     return TRUE;
 }
 

@@ -34,6 +34,7 @@ DWORD utils_hashString(const char *szStr);
 unsigned long utils_thread_create(void (*threadcode) (void *), void *arg);
 int utils_private_setting_get_int(const char *setting, int defval);
 int utils_private_setting_set_int(const char *setting, int val);
+void utils_vacuum_check();
 void* utils_mem_alloc(size_t size);
 void* utils_mem_realloc(void* ptr, size_t size);
 void utils_mem_free(void* ptr);

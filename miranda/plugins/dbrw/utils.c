@@ -190,6 +190,74 @@ int utils_private_setting_set_int(const char *setting, int val) {
     return rc;
 }
 
+time_t utils_private_setting_get_time(const char *setting, time_t defval) {
+    sqlite3_stmt *stmt;
+    time_t rc = defval;
+    
+    if (setting==NULL) 
+        return rc;
+    sql_prepare(g_sqlite, "SELECT val FROM dbrw_core where setting = ?;", &stmt);
+    sqlite3_bind_text(stmt, 1, setting, (int)strlen(setting), SQLITE_STATIC);
+    if (sql_step(stmt)==SQLITE_ROW) {
+        rc = (time_t)sqlite3_column_int64(stmt, 0);
+    }
+    sql_finalize(stmt);
+    return rc;
+}
+
+int utils_private_setting_set_time(const char *setting, time_t val) {
+    sqlite3_stmt *stmt;
+    int rc = 0;
+    
+    if (setting==NULL)
+        return rc;
+    sql_prepare(g_sqlite, "REPLACE INTO dbrw_core VALUES(?,?);", &stmt);
+    sqlite3_bind_text(stmt, 1, setting, (int)strlen(setting), SQLITE_STATIC);
+    sqlite3_bind_int64(stmt, 2, val);
+    if (sql_step(stmt)==SQLITE_DONE) {
+        rc = 1;
+    }
+    sql_finalize(stmt);
+    return rc;
+}
+
+#define DM_VACUUM (WM_USER+1)
+static BOOL CALLBACK utils_vacuum_proc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam) {
+	switch (msg) {
+	case WM_INITDIALOG:
+        SetDlgItemTextA(hwndDlg, IDC_TEXT, Translate("Your Miranda IM profile is being compacted.  Please wait..."));
+        PostMessage(hwndDlg, DM_VACUUM, 0, 0);
+        break;
+    case DM_VACUUM:
+        sql_exec(g_sqlite, "VACUUM;");
+        DestroyWindow(hwndDlg);
+        break;
+    }
+    return FALSE;
+}
+
+void utils_vacuum_check() {
+    time_t lastC = utils_private_setting_get_time("LastCompact", 0);
+    time_t now = time(NULL);
+    
+    if (lastC) {
+        if (lastC>now) {
+            log0("System time changed.  Fixing compact key.");
+            utils_private_setting_set_time("LastCompact", now);
+        }
+        else if ((now-lastC)>(60*60*24*DBRW_COMPACT_DAYS)) {
+            log0("Compacting database");
+            DialogBoxParam(g_hInst, MAKEINTRESOURCE(IDD_INFODLG), 0, utils_vacuum_proc,(LPARAM)0);
+            utils_private_setting_set_time("LastCompact", now);
+        }
+    }
+    else {
+        log0("Compact never run before.  Setting up key.");
+        utils_private_setting_set_time("LastCompact", now);
+    }
+    
+}
+
 /* The follow memory functions are needed so a single function
    can be used even if the memory manager hasn't been initialized
    from the core.  This happens when the db is being created (core
