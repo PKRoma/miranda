@@ -190,7 +190,7 @@ int utils_private_setting_set_int(const char *setting, int val) {
     return rc;
 }
 
-time_t utils_private_setting_get_time(const char *setting, time_t defval) {
+static time_t utils_private_setting_get_time(const char *setting, time_t defval) {
     sqlite3_stmt *stmt;
     time_t rc = defval;
     
@@ -205,7 +205,7 @@ time_t utils_private_setting_get_time(const char *setting, time_t defval) {
     return rc;
 }
 
-int utils_private_setting_set_time(const char *setting, time_t val) {
+static int utils_private_setting_set_time(const char *setting, time_t val) {
     sqlite3_stmt *stmt;
     int rc = 0;
     

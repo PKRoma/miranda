@@ -92,7 +92,9 @@ void sql_destroy() {
 }
 
 static DWORD WINAPI sql_threadProc(void *arg) {
+    CallService(MS_SYSTEM_THREAD_PUSH, 0, 0);
     while (WaitForSingleObjectEx(hDummyEvent, INFINITE, TRUE)!=WAIT_OBJECT_0);
+    CallService(MS_SYSTEM_THREAD_POP, 0, 0);
     return 0;
 }
 
