@@ -243,10 +243,10 @@ HANDLE HContactFromID(char* pszProtoName, char* pszSetting, char* pszID)
 			{
 				if (dbv.type==DBVT_ASCIIZ && strcmp(pszID, dbv.pszVal) == 0)
 				{
-					free(dbv.pszVal);
+					DBFreeVariant(&dbv);
 					return hContact;
 				}
-				free(dbv.pszVal);
+				DBFreeVariant(&dbv);
 			}
 		}
 		hContact = (HANDLE)CallService(MS_DB_CONTACT_FINDNEXT, (WPARAM)hContact, 0);
