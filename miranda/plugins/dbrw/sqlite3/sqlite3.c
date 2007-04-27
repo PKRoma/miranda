@@ -38045,7 +38045,9 @@ static int nameResolverStep(void *pArg, Expr *pExpr){
       int wrong_num_args = 0;     /* True if wrong number of arguments */
       int is_agg = 0;             /* True if is an aggregate function */
       int i;
+      #ifndef SQLITE_OMIT_AUTHORIZATION
       int auth;                   /* Authorization to use the function */
+      #endif
       int nId;                    /* Number of characters in function name */
       const char *zId;            /* The function name. */
       FuncDef *pDef;              /* Information about the function */

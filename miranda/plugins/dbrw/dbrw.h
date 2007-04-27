@@ -31,12 +31,6 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #define DBRW_EVENTS_FLUSHCACHE   1000*30
 #define DBRW_COMPACT_DAYS        7
 
-/* Always enable logging for alhpa builds
-   Disable by setting DisableLogging/1 in dbrw_core table */
-#if defined(DBRW_VER_ALPHA) && !defined(DBRW_LOGGING)
-#define DBRW_LOGGING
-#endif
-
 #include <windows.h>
 #include <stdio.h>
 #include <time.h>

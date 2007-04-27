@@ -204,9 +204,11 @@ static int dbrw_Load(char *profile, void *link) {
 	log2("Loading dbRW v%s (SQLite v%s)", DBRW_VER_STRING, SQLITE_VERSION);
     #endif
 	{
+        sql_exec(g_sqlite, "BEGIN TRANSACTION;");
 		sql_exec(g_sqlite, "PRAGMA synchronous = NORMAL;");
 		sql_exec(g_sqlite, "PRAGMA cache_size = 12000;");
 		sql_exec(g_sqlite, "PRAGMA temp_store = MEMORY;");
+        sql_exec(g_sqlite, "END TRANSACTION;");
 	}
     utils_vacuum_check();
 	li.cbSize = sizeof(li);

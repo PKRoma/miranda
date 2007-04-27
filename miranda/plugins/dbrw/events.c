@@ -65,10 +65,12 @@ static int eventsTimerId = 0;
 void events_init() {
 	log0("Loading module: events");
 	sql_prepare_add(evt_stmts, evt_stmts_prep, SQL_EVT_STMT_NUM);
+    sql_exec(g_sqlite, "BEGIN TRANSACTION;");
     sql_exec(g_sqlite, "create temp table temp_dbrw_events (id integer primary key,eventtime timestamp,flags integer,eventtype integer, blob any, blobsize integer, contactid integer,modulename varchar(255),inserttime timestamp);");
     sql_exec(g_sqlite, "create temp trigger insert_new_temp_event1 after insert on dbrw_events begin replace into temp_dbrw_events values(new.id,new.eventtime,new.flags,new.eventtype,new.blob,new.blobsize,new.contactid,new.modulename,new.inserttime); end;");
     sql_exec(g_sqlite, "create temp trigger insert_new_temp_event2 after update on dbrw_events begin replace into temp_dbrw_events values(new.id,new.eventtime,new.flags,new.eventtype,new.blob,new.blobsize,new.contactid,new.modulename,new.inserttime); end;");
     sql_exec(g_sqlite, "create temp trigger delete_temp_event after delete on dbrw_events begin delete from temp_dbrw_events where id=old.id and contactid=old.id; end;");
+    sql_exec(g_sqlite, "END TRANSACTION;");
     eventsTimerId = SetTimer(NULL, 0, DBRW_EVENTS_FLUSHCACHE, events_timerProc);
 }
 
@@ -81,6 +83,7 @@ void events_destroy() {
 static void __cdecl events_timerProcThread(void *arg) {
 	EnterCriticalSection(&csEventsDb);
     log0("Flushing events cache table");
+    sql_exec(g_sqlite, "BEGIN TRANSACTION;");
     sql_exec(g_sqlite, "drop trigger insert_new_temp_event1;");      
     sql_exec(g_sqlite, "drop trigger insert_new_temp_event2;");  
     sql_exec(g_sqlite, "drop trigger delete_temp_event;");
@@ -90,6 +93,7 @@ static void __cdecl events_timerProcThread(void *arg) {
     sql_exec(g_sqlite, "create temp trigger insert_new_temp_event1 after insert on dbrw_events begin replace into temp_dbrw_events values(new.id,new.eventtime,new.flags,new.eventtype,new.blob,new.blobsize,new.contactid,new.modulename,new.inserttime); end;");
     sql_exec(g_sqlite, "create temp trigger insert_new_temp_event2 after update on dbrw_events begin replace into temp_dbrw_events values(new.id,new.eventtime,new.flags,new.eventtype,new.blob,new.blobsize,new.contactid,new.modulename,new.inserttime); end;");
     sql_exec(g_sqlite, "create temp trigger delete_temp_event after delete on dbrw_events begin delete from temp_dbrw_events where id=old.id and contactid=old.id; end;");
+    sql_exec(g_sqlite, "END TRANSACTION;");
     LeaveCriticalSection(&csEventsDb);
 }
 
@@ -249,6 +253,7 @@ int events_markRead(WPARAM wParam, LPARAM lParam) {
 	
 	log1("Marking event read(%d)", (int)hDbEvent);
 	EnterCriticalSection(&csEventsDb);
+    sql_exec(g_sqlite, "BEGIN TRANSACTION;");
 	sqlite3_bind_int(evt_stmts_prep[SQL_EVT_STMT_GETFLAGS], 1, (int)hDbEvent);
 	if (sql_step(evt_stmts_prep[SQL_EVT_STMT_GETFLAGS])==SQLITE_ROW) {
 		DWORD flags = (DWORD)sqlite3_column_int(evt_stmts_prep[SQL_EVT_STMT_GETFLAGS], 0);
@@ -266,6 +271,7 @@ int events_markRead(WPARAM wParam, LPARAM lParam) {
         }
 	}
 	else sql_reset(evt_stmts_prep[SQL_EVT_STMT_GETFLAGS]);
+    sql_exec(g_sqlite, "END TRANSACTION;");
 	LeaveCriticalSection(&csEventsDb);
 	return rc;
 }
