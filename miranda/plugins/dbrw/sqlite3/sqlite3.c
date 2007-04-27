@@ -27934,7 +27934,9 @@ void sqlite3VdbeFifoClear(Fifo *pFifo){
 ** between formats.
 */
 int sqlite3VdbeChangeEncoding(Mem *pMem, int desiredEnc){
+#ifndef SQLITE_OMIT_UTF16
   int rc;
+#endif
   if( !(pMem->flags&MEM_Str) || pMem->enc==desiredEnc ){
     return SQLITE_OK;
   }

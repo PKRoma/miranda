@@ -17,7 +17,7 @@ RES = $(RS:.rc=.res)
 LIB     = 
 LFLAGS  = -shared -s
 RCFLAGS = --input-format rc --output-format coff -I../../include
-DEFINES = -DNO_TCL -D__SEH_NOOP
+DEFINES = -DNO_TCL -D__SEH_NOOP -DSQLITE_OMIT_UTF16 -DDBRW_OLD_PLUGINAPI_SUPPORT
 ifdef DEBUG
 BIN = ../../bin/debug/plugins/dbx_rw.dll
 DEFINES += -DDBRW_LOGGING -DDBRW_DEBUG

@@ -811,18 +811,6 @@ int setting_enumSettings(WPARAM wParam, LPARAM lParam) {
 		}
 	}
 	sql_reset(settings_stmts_prep[SQL_SET_STMT_ENUM]);
-    {
-        DWORD mHash = utils_hashString(dbces->szModule);
-        int idx;
-        DBCachedResidentSettingValue *V;
-        
-        for (idx=0; idx<sResidentSettings.realCount; idx++) {
-            V = (DBCachedResidentSettingValue*)sResidentSettings.items[idx];
-            if (V&&V->moduleHash==mHash&&!strcmp(V->module,dbces->szModule)) {
-                rc = (dbces->pfnEnumProc)(V->name, dbces->lParam);
-            }
-        }
-    }
 	LeaveCriticalSection(&csSettingsDb);
 	return rc;
 }
