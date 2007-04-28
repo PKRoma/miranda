@@ -44,6 +44,16 @@ typedef struct {
 	int ( *pfnRecv )( HANDLE hConn, void *userdata, char* buffer, int datalen );
 	void ( *pfnFinal )( BOOL success, void *userdata );
 	void *userdata;
+
+	// XEP-0065 proxy support
+	BOOL bProxyDiscovered;
+	HANDLE hProxyEvent;
+	TCHAR* szProxyHost;
+	TCHAR* szProxyPort;
+	TCHAR* szProxyJid;
+	TCHAR* szStreamhostUsed;
+	BOOL bStreamActivated;
+
 } JABBER_BYTE_TRANSFER;
 
 void __cdecl JabberByteSendThread( JABBER_BYTE_TRANSFER *jbt );

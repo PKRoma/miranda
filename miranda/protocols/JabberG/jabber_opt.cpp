@@ -558,7 +558,7 @@ static BOOL CALLBACK JabberAdvOptDlgProc( HWND hwndDlg, UINT msg, WPARAM wParam,
 			JSetByte( "BsProxy", ( BYTE ) IsDlgButtonChecked( hwndDlg, IDC_PROXY ));
 			JSetByte( "BsProxyManual", ( BYTE ) IsDlgButtonChecked( hwndDlg, IDC_PROXY_MANUAL ));
 			GetDlgItemTextA( hwndDlg, IDC_PROXY_ADDR, text, sizeof( text ));
-			JSetString( NULL, "BsProxyAddr", text );
+			JSetString( NULL, "BsProxyServer", text );
 
 			// Miscellaneous options
 			bChecked = IsDlgButtonChecked( hwndDlg, IDC_SHOW_TRANSPORT );

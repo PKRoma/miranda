@@ -142,11 +142,11 @@ BEGIN
                     IDC_DIRECT,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,16,18,
                     202,10
     CONTROL         "Specify proxy server",IDC_PROXY_MANUAL,"Button",
-                    BS_AUTOCHECKBOX | WS_DISABLED | WS_TABSTOP,16,54,102,10
+                    BS_AUTOCHECKBOX | WS_TABSTOP,16,54,102,10
     CONTROL         "Allow file sending through bytestream proxy server",
-                    IDC_PROXY,"Button",BS_AUTOCHECKBOX | WS_DISABLED | 
+                    IDC_PROXY,"Button",BS_AUTOCHECKBOX | 
                     WS_TABSTOP,16,42,202,10
-    EDITTEXT        IDC_PROXY_ADDR,124,53,81,12,ES_AUTOHSCROLL | WS_DISABLED | 
+    EDITTEXT        IDC_PROXY_ADDR,124,53,81,12,ES_AUTOHSCROLL | 
                     WS_GROUP
     CONTROL         "Specify external address",IDC_DIRECT_MANUAL,"Button",
                     BS_AUTOCHECKBOX | WS_TABSTOP,16,30,101,10
@@ -977,5 +977,6 @@ IDI_BOOKMARKS           ICON                    "icos\\bookmarks.ico"
 
 /////////////////////////////////////////////////////////////////////////////
 #endif    // not APSTUDIO_INVOKED
+
 
 

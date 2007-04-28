@@ -330,7 +330,7 @@ static BOOL CALLBACK JabberMucJidListDlgProc( HWND hwndDlg, UINT msg, WPARAM wPa
 						//delete
 						TCHAR msgText[128];
 
-						mir_sntprintf( msgText, sizeof( msgText ), _T("%s %s?"), TranslateT( "Removing" ), text );
+						mir_sntprintf( msgText, SIZEOF( msgText ), _T("%s %s?"), TranslateT( "Removing" ), text );
 						if ( MessageBox( hwndDlg, msgText, jidListInfo->type2str(), MB_YESNO|MB_SETFOREGROUND ) == IDYES ) {
 							JabberDeleteMucListItem( jidListInfo, ( TCHAR* )lvi.lParam );
 							ListView_DeleteItem( nm->hdr.hwndFrom, hti.iItem );

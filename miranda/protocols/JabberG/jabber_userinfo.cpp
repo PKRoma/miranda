@@ -87,6 +87,9 @@ static BOOL CALLBACK JabberUserInfoDlgProc( HWND hwndDlg, UINT msg, WPARAM wPara
 								SendMessage( hwndList, LB_SETITEMDATA, index, ( LPARAM )r[i].resourceName );
 						}	}
 
+						if ( selectedResource == LB_ERR && item->resourceCount == 1 )
+							selectedResource = 0;
+
 						if ( selectedResource != LB_ERR ) {
 							SendMessage( hwndList, LB_SETCURSEL, selectedResource, 0 );
 							PostMessage( hwndDlg, WM_COMMAND, MAKEWPARAM(IDC_INFO_RESOURCE, LBN_SELCHANGE), 0);
