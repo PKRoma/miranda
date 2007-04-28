@@ -649,6 +649,7 @@ static void JabberProcessFeatures( XmlNode *node, void *userdata )
 				info->send( stls );
 				return;
 		}	}
+
 		if ( !strcmp( n->name, "compression" ) && ( JGetByte( "EnableZlib", FALSE ) == TRUE)) {
 			JabberLog("Server compression available");
 			for ( int k=0; k < n->numChild; k++ ) {
@@ -660,10 +661,8 @@ static void JabberProcessFeatures( XmlNode *node, void *userdata )
 						szlib.addChild( "method", "zlib" );
 						info->send( szlib );
 						return;
-					}
-				}
-			}
-		}
+		}	}	}	}
+
 		if ( !strcmp( n->name, "mechanisms" )) {
 			areMechanismsDefined = true;
 			//JabberLog("%d mechanisms\n",n->numChild);
