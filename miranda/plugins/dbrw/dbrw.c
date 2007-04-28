@@ -70,8 +70,8 @@ enum {
 };
 char *dbrw_tables[DBRW_TABLE_COUNT] = {
 "create table dbrw_settings (id integer, module varchar(255), setting varchar(255), type integer, val any, primary key(id,module,setting));",
-"create table dbrw_contacts (id integer primary key,createtime timestamp);",
-"create table dbrw_events (id integer primary key,eventtime timestamp,flags integer,eventtype integer, blob any, blobsize integer, contactid integer,modulename varchar(255),inserttime timestamp);",
+"create table dbrw_contacts (id integer primary key,createtime integer);",
+"create table dbrw_events (id integer primary key,eventtime integer,flags integer,eventtype integer, blob any, blobsize integer, contactid integer,modulename varchar(255),inserttime integer);",
 "create table dbrw_core (setting varchar(255) primary key not null, val any);"
 };
 
