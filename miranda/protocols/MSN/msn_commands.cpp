@@ -1589,13 +1589,6 @@ LBL_InvalidCommand:
 			if ( thisContact != 1 ) {
 				char* tContactName = MSN_GetContactName( hContact );
 				mir_utf8decode( data.userNick, NULL );
-
-				char multichatmsg[256];
-				mir_snprintf( multichatmsg, sizeof( multichatmsg ),
-					MSN_Translate( "%s (%s) has joined the chat with %s" ),
-					data.userNick, data.userEmail, tContactName );
-
-				MSN_ShowPopup( tContactName, multichatmsg, MSN_ALLOW_MSGBOX );
 			}
 
 			// only start the chat session after all the IRO messages has been recieved
@@ -1663,14 +1656,6 @@ LBL_InvalidCommand:
 				char* tContactName = MSN_GetContactName( info->mJoinedContacts[chatCreated] );
 
 				info->sendCaps();
-
-				char multichatmsg[ 256 ];
-				mir_snprintf(
-					multichatmsg, sizeof( multichatmsg ),
-					MSN_Translate( "%s (%s) has joined the chat with %s" ),
-					data.userNick, data.userEmail, tContactName );
-
-				MSN_ShowPopup( tContactName, multichatmsg, MSN_ALLOW_MSGBOX );
 
 				if ( msnHaveChatDll ) {
 					if ( chatCreated ) {
