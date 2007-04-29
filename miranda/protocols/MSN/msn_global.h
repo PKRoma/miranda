@@ -1,5 +1,6 @@
 /*
 Plugin of Miranda IM for communicating with users of the MSN Messenger protocol.
+Copyright (c) 2006-7 Boris Krasnovskiy.
 Copyright (c) 2003-5 George Hazan.
 Copyright (c) 2002-3 Richard Hughes (original version).
 
@@ -44,6 +45,11 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include <stdio.h>
 #include <time.h>
 
+#include <direct.h>
+#include <io.h>
+#include <fcntl.h>
+#include <sys/stat.h>
+
 #include <newpluginapi.h>
 
 #include <m_clc.h>
@@ -62,16 +68,17 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include <m_userinfo.h>
 #include <m_utils.h>
 #include <win2k.h>
-
-#include "sdk/m_proto_listeningto.h"
-#include "sdk/m_folders.h"
-
 #include <m_database.h>
 #include <m_langpack.h>
 #include <m_netlib.h>
 #include <m_popup.h>
 #include <m_chat.h>
-#include "m_avatars.h"
+#include <m_avatars.h>
+
+#include "sdk/m_proto_listeningto.h"
+#include "sdk/m_folders.h"
+
+#include "resource.h"
 
 /////////////////////////////////////////////////////////////////////////////////////////
 //	MSN error codes
@@ -254,8 +261,6 @@ void   strdel( char* parBuffer, int len );
 
 /////////////////////////////////////////////////////////////////////////////////////////
 // PNG library interface
-
-BOOL  MSN_LoadPngModule( void );
 
 typedef struct
 {
@@ -620,7 +625,6 @@ typedef struct
 	BOOL		AwayAsBrb;
 	BOOL		SlowSend;
 	BOOL		ManageServer;
-	BOOL     EnableAvatars;
 
 	BOOL		UseMSNP11;
 	char		szEmail[MSN_MAX_EMAIL_LEN];

@@ -91,9 +91,9 @@ PLUGININFOEX pluginInfo =
 	"MSN Protocol",
 	__VERSION_DWORD,
 	"Adds support for communicating with users of the MSN Messenger network",
-	"George Hazan",
-	"george_hazan@hotmail.com",
-	"© 2001-5 Richard Hughes, George Hazan",
+	"Boris Krasnovskiy",
+	"borkra@miranda-im.org",
+	"© 2001-2007 Richard Hughes, George Hazan, Boris Krasnovskiy",
 	"http://miranda-im.org",
 	UNICODE_AWARE,	
 	0,
@@ -111,7 +111,7 @@ int				msnStatusMode,
 				msnDesiredStatus;
 HANDLE			hNetlibUser = NULL;
 HANDLE			hInitChat = NULL;
-bool				msnUseExtendedPopups;
+bool			msnUseExtendedPopups;
 
 int CompareHandles( const void* p1, const void* p2 )
 {	return (long)p1 - (long)p2;
@@ -123,7 +123,6 @@ int MsnDbSettingChanged(WPARAM wParam,LPARAM lParam);
 int MsnOnDetailsInit( WPARAM wParam, LPARAM lParam );
 int MsnRebuildContactMenu( WPARAM wParam, LPARAM lParam );
 int MsnIdleChanged( WPARAM wParam, LPARAM lParam );
-int OnSaveMyAvatar( WPARAM wParam, LPARAM lParam );
 
 int MSN_GCEventHook( WPARAM wParam, LPARAM lParam );
 int MSN_GCMenuHook( WPARAM wParam, LPARAM lParam );
@@ -252,7 +251,6 @@ static int OnModulesLoaded( WPARAM wParam, LPARAM lParam )
 	MsnInitMenus();
 
 	msnUseExtendedPopups = ServiceExists( MS_POPUP_ADDPOPUPEX ) != 0;
-	arHooks.insert( HookEvent( ME_AV_MYAVATARCHANGED, OnSaveMyAvatar ));
 	arHooks.insert( HookEvent( ME_USERINFO_INITIALISE, MsnOnDetailsInit ));
 	arHooks.insert( HookEvent( ME_MSG_WINDOWEVENT, MsnWindowEvent ));
 	arHooks.insert( HookEvent( ME_IDLE_CHANGED, MsnIdleChanged ));

@@ -1,5 +1,6 @@
 /*
 Plugin of Miranda IM for communicating with users of the MSN Messenger protocol.
+Copyright (c) 2006-7 Boris Krasnovskiy.
 Copyright (c) 2003-5 George Hazan.
 Copyright (c) 2002-3 Richard Hughes (original version).
 
@@ -22,8 +23,6 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 */
 
 #include "msn_global.h"
-
-#include "resource.h"
 
 extern LIST<void> arServices;
 
@@ -314,12 +313,15 @@ void MsnInitMenus( void )
 	mi.pszName = "View MSN Services &Status";
 	menuItemsAll[ 1 ] = ( HANDLE )MSN_CallService( MS_CLIST_ADDMAINMENUITEM, 0, (LPARAM)&mi );
 
-	strcpy( tDest, MS_SET_AVATAR_UI );
-	arServices.insert( CreateServiceFunction( servicefunction, MsnSetAvatarUI ));
-	mi.position = 2000060004;
-	mi.icolibItem = GetIconHandle( IDI_AVATAR );
-	mi.pszName = "Set &Avatar";
-	menuItemsAll[ 2 ] = ( HANDLE )MSN_CallService( MS_CLIST_ADDMAINMENUITEM, 0, (LPARAM)&mi );
+	if ( ServiceExists( MS_AV_SETMYAVATAR )) 
+	{
+		strcpy( tDest, MS_SET_AVATAR_UI );
+		arServices.insert( CreateServiceFunction( servicefunction, MsnSetAvatarUI ));
+		mi.position = 2000060004;
+		mi.icolibItem = GetIconHandle( IDI_AVATAR );
+		mi.pszName = "Set &Avatar";
+		menuItemsAll[ 2 ] = ( HANDLE )MSN_CallService( MS_CLIST_ADDMAINMENUITEM, 0, (LPARAM)&mi );
+	}
 
 	//////////////////////////////////////////////////////////////////////////////////////
 	// Contact menu initialization

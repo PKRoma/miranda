@@ -1,5 +1,6 @@
 /*
 Plugin of Miranda IM for communicating with users of the MSN Messenger protocol.
+Copyright (c) 2006-7 Boris Krasnovskiy.
 Copyright (c) 2003-5 George Hazan.
 Copyright (c) 2002-3 Richard Hughes (original version).
 
@@ -22,12 +23,6 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 */
 
 #include "msn_global.h"
-
-#include <fcntl.h>
-#include <io.h>
-#include <sys/stat.h>
-
-#include "resource.h"
 
 void __cdecl MSNServerThread( ThreadData* info );
 
@@ -552,9 +547,6 @@ int MsnGetAvatar(WPARAM wParam, LPARAM lParam)
 	if ( buf == NULL || size <= 0 )
 		return -1;
 
-	if ( !MyOptions.EnableAvatars )
-		return -2;
-
 	MSN_GetAvatarFileName( NULL, buf, size );
 	return 0;
 }
@@ -564,7 +556,7 @@ int MsnGetAvatar(WPARAM wParam, LPARAM lParam)
 
 int MsnGetAvatarFormatSupported(WPARAM wParam, LPARAM lParam)
 {
-	return (lParam == PA_FORMAT_PNG) ? 1 : 0;
+	return lParam == PA_FORMAT_PNG;
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////
@@ -580,7 +572,7 @@ static int MsnGetAvatarInfo(WPARAM wParam,LPARAM lParam)
 {
 	PROTO_AVATAR_INFORMATION* AI = ( PROTO_AVATAR_INFORMATION* )lParam;
 
-	if ( !MyOptions.EnableAvatars || ( MSN_GetDword( AI->hContact, "FlagBits", 0 ) & 0xf0000000 ) == 0 )
+	if (( MSN_GetDword( AI->hContact, "FlagBits", 0 ) & 0xf0000000 ) == 0 )
 		return GAIR_NOAVATAR;
 
 	char tEmail[ MSN_MAX_EMAIL_LEN ];
@@ -592,9 +584,25 @@ static int MsnGetAvatarInfo(WPARAM wParam,LPARAM lParam)
 		return GAIR_NOAVATAR;
 
 	MSN_GetAvatarFileName( AI->hContact, AI->filename, sizeof( AI->filename ));
-	AI->format = PA_FORMAT_PNG;
+	AI->format = PA_FORMAT_UNKNOWN;
 
-	if ( ::access( AI->filename, 0 ) == 0 ) {
+	if ( AI->hContact ) {
+		size_t len = strlen( AI->filename );
+		strcpy( AI->filename + len, "png" );
+		if ( _access( AI->filename, 0 ) == 0 ) 
+			AI->format = PA_FORMAT_PNG;
+		else {
+			strcpy( AI->filename + len, "jpg" );
+			if ( _access( AI->filename, 0 ) == 0 ) 
+				AI->format = PA_FORMAT_JPEG;
+		}
+	}
+	else {
+		if ( _access( AI->filename, 0 ) == 0 ) 
+			AI->format = PA_FORMAT_PNG;
+	}
+
+	if ( AI->format != PA_FORMAT_UNKNOWN ) {
 		char szSavedContext[ 256 ];
 		if ( !MSN_GetStaticString( "PictSavedContext", AI->hContact, szSavedContext, sizeof( szSavedContext )))
 			if ( !strcmp( szSavedContext, szContext ))
@@ -1006,17 +1014,17 @@ static int MsnSetApparentMode( WPARAM wParam, LPARAM lParam )
 int MsnSetAvatar( WPARAM wParam, LPARAM lParam )
 {
 	char* szFileName = ( char* )lParam;
-	int fileIn = open( szFileName, O_RDWR | O_BINARY, S_IREAD | S_IWRITE );
-	if ( fileIn == -1 )
+	int fileId = _open( szFileName, _O_RDONLY | _O_BINARY, _S_IREAD );
+	if ( fileId == -1 )
 		return 1;
 
-	long  dwPngSize = filelength( fileIn );
+	long  dwPngSize = filelength( fileId );
 	BYTE* pResult = new BYTE[ dwPngSize ];
 	if ( pResult == NULL )
 		return 2;
 
-	read( fileIn, pResult, dwPngSize );
-	close( fileIn );
+	_read( fileId, pResult, dwPngSize );
+	_close( fileId );
 
 	mir_sha1_ctx sha1ctx;
 	BYTE sha1c[ MIR_SHA1_HASH_SIZE ], sha1d[ MIR_SHA1_HASH_SIZE ];
@@ -1070,10 +1078,10 @@ int MsnSetAvatar( WPARAM wParam, LPARAM lParam )
 	}
 	{	char tFileName[ MAX_PATH ];
 		MSN_GetAvatarFileName( NULL, tFileName, sizeof( tFileName ));
-		FILE* out = fopen( tFileName, "wb" );
-		if ( out != NULL ) {
-			fwrite( pResult, dwPngSize, 1, out );
-			fclose( out );
+		int fileId = _open( tFileName, _O_CREAT | _O_TRUNC | _O_WRONLY | O_BINARY,  _S_IREAD | _S_IWRITE );
+		if ( fileId > -1 ) {
+			_write( fileId, pResult, dwPngSize );
+			_close( fileId );
 	}	}
 
 	delete pResult;

@@ -1,5 +1,6 @@
 /*
 Plugin of Miranda IM for communicating with users of the MSN Messenger protocol.
+Copyright (c) 2006-7 Boris Krasnovskiy.
 Copyright (c) 2003-5 George Hazan.
 Copyright (c) 2002-3 Richard Hughes (original version).
 
@@ -24,9 +25,6 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include "msn_global.h"
 
 #include <commdlg.h>
-#include <direct.h>
-
-#include "resource.h"
 
 #define STYLE_DEFAULTBGCOLOUR     RGB(173,206,247)
 
@@ -136,7 +134,6 @@ static BOOL CALLBACK DlgProcMsnOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARA
 		if ( !msnLoggedIn )
 			EnableWindow( wnd, FALSE );
 
-		CheckDlgButton( hwndDlg, IDC_ENABLE_AVATARS,    MSN_GetByte( "EnableAvatars", TRUE ));
 		CheckDlgButton( hwndDlg, IDC_SENDFONTINFO,      MSN_GetByte( "SendFontInfo", 1 ));
 		CheckDlgButton( hwndDlg, IDC_USE_OWN_NICKNAME,  MSN_GetByte( "NeverUpdateNickname", 0 ));
 		CheckDlgButton( hwndDlg, IDC_AWAY_AS_BRB,       MSN_GetByte( "AwayAsBrb", 0 ));
@@ -173,16 +170,6 @@ static BOOL CALLBACK DlgProcMsnOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARA
 
 		if ( HIWORD( wParam ) == BN_CLICKED )
 			switch( LOWORD( wParam )) {
-			case IDC_ENABLE_AVATARS: {
-				BYTE tIsChosen = IsDlgButtonChecked( hwndDlg, IDC_ENABLE_AVATARS );
-				if ( tIsChosen && MSN_LoadPngModule() == NULL ) {
-					CheckDlgButton( hwndDlg, IDC_ENABLE_AVATARS, 0 );
-					break;
-				}
-
-            EnableWindow( GetDlgItem( hwndDlg, IDC_DELETEAVATAR ), tIsChosen );
-			}
-
 			case IDC_SENDFONTINFO:
 			case IDC_DISABLE_ANOTHER_CONTACTS:	case IDC_USE_OWN_NICKNAME:
 			case IDC_AWAY_AS_BRB:
@@ -293,7 +280,6 @@ LBL_Continue:
 				break;
 			}
 
-			MSN_SetByte( "EnableAvatars", ( BYTE )IsDlgButtonChecked( hwndDlg, IDC_ENABLE_AVATARS ));
 			MSN_SetByte( "SendFontInfo", ( BYTE )IsDlgButtonChecked( hwndDlg, IDC_SENDFONTINFO ));
 			MSN_SetByte( "RunMailerOnHotmail", ( BYTE )IsDlgButtonChecked( hwndDlg, IDC_RUN_APP_ON_HOTMAIL ));
 			MSN_SetByte( "NeverUpdateNickname", ( BYTE )IsDlgButtonChecked( hwndDlg, IDC_USE_OWN_NICKNAME ));
@@ -690,7 +676,6 @@ void  LoadOptions()
 		DBGetContactSettingDword( NULL, ModuleName, "TextColour", GetSysColor( COLOR_WINDOWTEXT ));
 
 	MyOptions.AwayAsBrb = MSN_GetByte( "AwayAsBrb", FALSE );
-	MyOptions.EnableAvatars = MSN_GetByte( "EnableAvatars", TRUE );
 	MyOptions.KeepConnectionAlive = MSN_GetByte( "KeepAlive", FALSE );
 	MyOptions.ManageServer = MSN_GetByte( "ManageServer", TRUE );
 	MyOptions.PopupTimeoutHotmail = MSN_GetDword( NULL, "PopupTimeout", 3 );

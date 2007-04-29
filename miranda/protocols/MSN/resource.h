@@ -25,11 +25,7 @@
 #define IDC_USEIEPROXY                  1005
 #define IDC_ENABLE_AVATARS              1006
 #define IDC_USEWINCOLORS                1007
-#define IDC_MSN_PICT                    1008
 #define IDC_USE_OWN_NICKNAME            1010
-#define IDC_BTN_INSTALL                 1011
-#define IDC_BTN_DOWNLOAD                1012
-#define IDC_BTN_CANCEL                  1013
 #define IDC_LIST                        1015
 #define IDC_ICON_FL                     1016
 #define IDC_ICON_RL                     1017

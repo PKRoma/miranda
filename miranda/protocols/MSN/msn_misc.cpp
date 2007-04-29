@@ -1,5 +1,6 @@
 /*
 Plugin of Miranda IM for communicating with users of the MSN Messenger protocol.
+Copyright (c) 2006-7 Boris Krasnovskiy.
 Copyright (c) 2003-5 George Hazan.
 Copyright (c) 2002-3 Richard Hughes (original version).
 
@@ -21,17 +22,7 @@ along with this program; if not, write to the Free Software
 Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 */
 
-#include <stdio.h>
-#include <stdarg.h>
-
 #include "msn_global.h"
-
-#include <direct.h>
-#include <io.h>
-#include <fcntl.h>
-#include <sys/stat.h>
-
-#include "resource.h"
 
 #include "version.h"
 
@@ -56,14 +47,14 @@ char*  MirandaStatusToMSN( int status )
 	{
 		case ID_STATUS_OFFLINE:		return "FLN";
 		case ID_STATUS_NA:			return ( MyOptions.AwayAsBrb ) ? (char *)"AWY" : (char *)"BRB";
-		case ID_STATUS_AWAY:			return ( MyOptions.AwayAsBrb ) ? (char *)"BRB" : (char *)"AWY";
+		case ID_STATUS_AWAY:		return ( MyOptions.AwayAsBrb ) ? (char *)"BRB" : (char *)"AWY";
 		case ID_STATUS_DND:
 		case ID_STATUS_OCCUPIED:	return "BSY";
-		case ID_STATUS_ONTHEPHONE: return "PHN";
-		case ID_STATUS_OUTTOLUNCH: return "LUN";
+		case ID_STATUS_ONTHEPHONE:  return "PHN";
+		case ID_STATUS_OUTTOLUNCH:  return "LUN";
 		case ID_STATUS_INVISIBLE:	return "HDN";
-		case ID_STATUS_IDLE:			return "IDL";
-		default:							return "NLN";
+		case ID_STATUS_IDLE:		return "IDL";
+		default:					return "NLN";
 }	}
 
 int  MSNStatusToMiranda(const char *status)
@@ -253,7 +244,7 @@ void  MSN_GetAvatarFileName( HANDLE hContact, char* pszDest, size_t cbLen )
 		long digest[ 4 ];
 		mir_md5_hash(( BYTE* )szEmail, strlen( szEmail ), ( BYTE* )digest );
 
-		tPathLen += mir_snprintf(pszDest + tPathLen, cbLen - tPathLen, "\\%08lX%08lX%08lX%08lX.png", 
+		tPathLen += mir_snprintf(pszDest + tPathLen, cbLen - tPathLen, "\\%08lX%08lX%08lX%08lX.", 
 			digest[0], digest[1], digest[2], digest[3]);
 	}
 	else 
@@ -623,7 +614,8 @@ void  MSN_SetServerStatus( int newStatus )
 
 	if ( newStatus != ID_STATUS_OFFLINE ) {
 		char szMsnObject[ 1000 ];
-		if ( MSN_GetStaticString( "PictObject", NULL, szMsnObject, sizeof( szMsnObject )))
+		if ( !ServiceExists( MS_AV_SETMYAVATAR ) || 
+			 MSN_GetStaticString( "PictObject", NULL, szMsnObject, sizeof( szMsnObject )))
 			szMsnObject[ 0 ] = 0;
 
 		//here we say what functions can be used with this plugins : http://siebe.bot2k3.net/docs/?url=clientid.html
