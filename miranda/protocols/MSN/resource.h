@@ -23,7 +23,6 @@
 #define IDD_SETNICKNAME                 226
 #define IDC_STMSNGROUP                  1002
 #define IDC_USEIEPROXY                  1005
-#define IDC_ENABLE_AVATARS              1006
 #define IDC_USEWINCOLORS                1007
 #define IDC_USE_OWN_NICKNAME            1010
 #define IDC_LIST                        1015

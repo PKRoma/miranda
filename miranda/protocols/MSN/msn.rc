@@ -41,7 +41,7 @@ STYLE DS_SETFONT | DS_FIXEDSYS | WS_CHILD | WS_VISIBLE
 EXSTYLE WS_EX_CONTROLPARENT
 FONT 8, "MS Shell Dlg", 0, 0, 0x1
 BEGIN
-    GROUPBOX        "MSN",IDC_STMSNGROUP,4,0,298,84,WS_GROUP
+    GROUPBOX        "MSN",IDC_STMSNGROUP,5,0,298,84,WS_GROUP
     RTEXT           "Full e-mail:",IDC_STATIC,16,20,52,8
     EDITTEXT        IDC_HANDLE,72,18,100,12,ES_AUTOHSCROLL
     RTEXT           "Password:",IDC_STATIC,16,36,52,8
@@ -63,14 +63,12 @@ BEGIN
     CONTROL         "Treat Away status as 'Be Right Back'",IDC_AWAY_AS_BRB,
                     "Button",BS_AUTOCHECKBOX | WS_TABSTOP,9,129,288,10
     CONTROL         "Manage server groups",IDC_MANAGEGROUPS,"Button",
-                    BS_AUTOCHECKBOX | WS_TABSTOP,9,140,288,10
+                    BS_AUTOCHECKBOX | WS_TABSTOP,9,139,288,10
     CONTROL         "Run the following application when new Hotmail arrives",
                     IDC_RUN_APP_ON_HOTMAIL,"Button",BS_AUTOCHECKBOX | 
-                    WS_TABSTOP,9,162,288,10
-    EDITTEXT        IDC_MAILER_APP,21,173,161,12,ES_AUTOHSCROLL
-    PUSHBUTTON      "...",IDC_ENTER_MAILER_APP,187,173,15,12
-    CONTROL         "Enable avatars",IDC_ENABLE_AVATARS,"Button",
-                    BS_AUTOCHECKBOX | WS_TABSTOP,10,151,288,10
+                    WS_TABSTOP,9,149,288,10
+    EDITTEXT        IDC_MAILER_APP,21,160,161,12,ES_AUTOHSCROLL
+    PUSHBUTTON      "...",IDC_ENTER_MAILER_APP,187,160,15,12
 END
 
 IDD_OPT_MSN_CONN DIALOGEX 0, 0, 304, 160
