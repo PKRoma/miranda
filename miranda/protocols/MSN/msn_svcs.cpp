@@ -669,9 +669,7 @@ static int MsnGetCaps(WPARAM wParam,LPARAM lParam)
 	case PFLAGNUM_1:
 	{	int result = PF1_IM | PF1_SERVERCLIST | PF1_AUTHREQ | PF1_BASICSEARCH |
 				 PF1_ADDSEARCHRES | PF1_SEARCHBYEMAIL | PF1_USERIDISEMAIL |
-				 PF1_FILESEND | PF1_FILERECV | PF1_URLRECV | PF1_VISLIST;
-		if ( MyOptions.UseMSNP11 )
-			result |= PF1_MODEMSG;
+				 PF1_FILESEND | PF1_FILERECV | PF1_URLRECV | PF1_VISLIST | PF1_MODEMSG;
 		return result;
 	}
 	case PFLAGNUM_2:
@@ -1333,20 +1331,18 @@ int LoadMsnServices( void )
 	arServices.insert( MSN_CreateProtoServiceFunction( PSS_SETAPPARENTMODE, MsnSetApparentMode ));
 	arServices.insert( MSN_CreateProtoServiceFunction( PSS_USERISTYPING,    MsnUserIsTyping ));
 
-	if ( MyOptions.UseMSNP11 ) {
-		arServices.insert( MSN_CreateProtoServiceFunction( PSS_GETAWAYMSG,   MsnGetAwayMsg ));
-		arServices.insert( MSN_CreateProtoServiceFunction( PS_SETAWAYMSG,    MsnSetAwayMsg ));
-	}
+	arServices.insert( MSN_CreateProtoServiceFunction( PSS_GETAWAYMSG,		MsnGetAwayMsg ));
+	arServices.insert( MSN_CreateProtoServiceFunction( PS_SETAWAYMSG,		MsnSetAwayMsg ));
 
 	arServices.insert( MSN_CreateProtoServiceFunction( MSN_ISAVATARFORMATSUPPORTED, MsnGetAvatarFormatSupported ));
 	arServices.insert( MSN_CreateProtoServiceFunction( MSN_GETMYAVATARMAXSIZE, MsnGetAvatarMaxSize ));
-	arServices.insert( MSN_CreateProtoServiceFunction( PS_SET_LISTENINGTO,   MsnSetCurrentMedia ));
-	arServices.insert( MSN_CreateProtoServiceFunction( PS_GET_LISTENINGTO,   MsnGetCurrentMedia ));
-	arServices.insert( MSN_CreateProtoServiceFunction( MSN_GETMYAVATAR,      MsnGetAvatar ));
-	arServices.insert( MSN_CreateProtoServiceFunction( MSN_SETMYAVATAR,      MsnSetAvatar ));
+	arServices.insert( MSN_CreateProtoServiceFunction( PS_SET_LISTENINGTO,  MsnSetCurrentMedia ));
+	arServices.insert( MSN_CreateProtoServiceFunction( PS_GET_LISTENINGTO,  MsnGetCurrentMedia ));
+	arServices.insert( MSN_CreateProtoServiceFunction( MSN_GETMYAVATAR,     MsnGetAvatar ));
+	arServices.insert( MSN_CreateProtoServiceFunction( MSN_SETMYAVATAR,     MsnSetAvatar ));
 
-	arServices.insert( MSN_CreateProtoServiceFunction( MSN_SET_NICKNAME,     MsnSetNickName ));
-	arServices.insert( MSN_CreateProtoServiceFunction( MSN_SEND_NUDGE,       MsnSendNudge ));
+	arServices.insert( MSN_CreateProtoServiceFunction( MSN_SET_NICKNAME,    MsnSetNickName ));
+	arServices.insert( MSN_CreateProtoServiceFunction( MSN_SEND_NUDGE,      MsnSendNudge ));
 
 	arServices.insert( MSN_CreateProtoServiceFunction( MSN_GETUNREAD_EMAILCOUNT, MsnGetUnreadEmailCount ));
 	return 0;

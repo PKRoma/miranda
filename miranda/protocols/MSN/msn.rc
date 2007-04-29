@@ -90,7 +90,8 @@ BEGIN
                     IDC_SLOWSEND,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,12,69,
                     263,8
     CONTROL         "Use MSN Messenger 7 protocol",IDC_USEMSNP11,"Button",
-                    BS_AUTOCHECKBOX | WS_TABSTOP,12,80,262,8
+                    BS_AUTOCHECKBOX | NOT WS_VISIBLE | WS_TABSTOP,12,80,262,
+                    8
     CONTROL         "Use OpenSSL encryption (requires LIBSSL32.DLL)",
                     IDC_USEOPENSSL,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,12,
                     91,263,8

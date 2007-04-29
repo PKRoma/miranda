@@ -1414,45 +1414,41 @@ LBL_InvalidCommand:
 			mir_md5_append( &context, ( BYTE* )msnProtChallenge,  strlen( msnProtChallenge  ));
 			mir_md5_finish( &context, ( BYTE* )md5hash );
 
-			if ( MyOptions.UseMSNP11 ) {
-		      LONGLONG hash1 = *( LONGLONG* )&md5hash[0], hash2 = *( LONGLONG* )&md5hash[2];
-				size_t i;
-				for ( i=0; i < 4; i++ )
-					md5hash[i] &= 0x7FFFFFFF;
+		    LONGLONG hash1 = *( LONGLONG* )&md5hash[0], hash2 = *( LONGLONG* )&md5hash[2];
+			size_t i;
+			for ( i=0; i < 4; i++ )
+				md5hash[i] &= 0x7FFFFFFF;
 
-				char chlString[128];
-				_snprintf( chlString, sizeof( chlString ), "%s%s00000000", authChallengeInfo, msnProductID );
-				chlString[ (strlen(authChallengeInfo)+strlen(msnProductID)+7) & 0xF8 ] = 0;
+			char chlString[128];
+			_snprintf( chlString, sizeof( chlString ), "%s%s00000000", authChallengeInfo, msnProductID );
+			chlString[ (strlen(authChallengeInfo)+strlen(msnProductID)+7) & 0xF8 ] = 0;
 
-				LONGLONG high=0, low=0, bskey=0;
-				int* chlStringArray = ( int* )chlString;
-				for ( i=0; i < strlen( chlString )/4; i += 2) {
-					LONGLONG temp = chlStringArray[i];
+			LONGLONG high=0, low=0, bskey=0;
+			int* chlStringArray = ( int* )chlString;
+			for ( i=0; i < strlen( chlString )/4; i += 2) {
+				LONGLONG temp = chlStringArray[i];
 
-					temp = (0x0E79A9C1 * temp) % 0x7FFFFFFF;
-					temp += high;
-					temp = md5hash[0] * temp + md5hash[1];
-					temp = temp % 0x7FFFFFFF;
+				temp = (0x0E79A9C1 * temp) % 0x7FFFFFFF;
+				temp += high;
+				temp = md5hash[0] * temp + md5hash[1];
+				temp = temp % 0x7FFFFFFF;
 
-					high = chlStringArray[i + 1];
-					high = (high + temp) % 0x7FFFFFFF;
-					high = md5hash[2] * high + md5hash[3];
-					high = high % 0x7FFFFFFF;
+				high = chlStringArray[i + 1];
+				high = (high + temp) % 0x7FFFFFFF;
+				high = md5hash[2] * high + md5hash[3];
+				high = high % 0x7FFFFFFF;
 
-					low = low + high + temp;
-				}
-				high = (high + md5hash[1]) % 0x7FFFFFFF;
-				low = (low + md5hash[3]) % 0x7FFFFFFF;
-
-				LONGLONG key = (low << 32) + high;
-				sttSwapInt64( &key );
-				sttSwapInt64( &hash1 );
-				sttSwapInt64( &hash2 );
-
-				info->sendPacket( "QRY", "%s 32\r\n%016I64x%016I64x", msnProductID, hash1 ^ key, hash2 ^ key );
+				low = low + high + temp;
 			}
-			else info->sendPacket( "QRY", "%s 32\r\n%08x%08x%08x%08x", msnProductID,
-				htonl( md5hash[0] ), htonl( md5hash[1] ), htonl( md5hash[2] ), htonl( md5hash[3] ));
+			high = (high + md5hash[1]) % 0x7FFFFFFF;
+			low = (low + md5hash[3]) % 0x7FFFFFFF;
+
+			LONGLONG key = (low << 32) + high;
+			sttSwapInt64( &key );
+			sttSwapInt64( &hash1 );
+			sttSwapInt64( &hash2 );
+
+			info->sendPacket( "QRY", "%s 32\r\n%016I64x%016I64x", msnProductID, hash1 ^ key, hash2 ^ key );
 			break;
 		}
 		case ' RVC':    //********* CVR: MSNP8
@@ -1724,7 +1720,7 @@ LBL_InvalidCommand:
 					userId = p+2;
 				else {
 					listId = atol( p );
-					int grOff = i + 1 + MyOptions.UseMSNP11;
+					int grOff = i + 2;
 					if ( grOff < tNumTokens )
 						groupId = tWords[grOff];
 					break;

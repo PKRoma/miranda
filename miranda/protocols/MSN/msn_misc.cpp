@@ -502,7 +502,7 @@ static char * HtmlEncodeUTF8T( const TCHAR *src )
 
 void  MSN_SendStatusMessage( const char* msg )
 {
-	if ( !msnLoggedIn || !MyOptions.UseMSNP11 )
+	if ( !msnLoggedIn )
 		return;
 
 	char* msgEnc = HtmlEncode(( msg == NULL ) ? "" : msg );
@@ -621,13 +621,12 @@ void  MSN_SetServerStatus( int newStatus )
 		//here we say what functions can be used with this plugins : http://siebe.bot2k3.net/docs/?url=clientid.html
 		msnNsThread->sendPacket( "CHG", "%s 1342177280 %s", szStatusName, szMsnObject );
 
-		if ( MyOptions.UseMSNP11 ) {
-			int status = newStatus == ID_STATUS_IDLE ? ID_STATUS_ONLINE : newStatus;
-			for ( int i=0; i < MSN_NUM_MODES; i++ ) { 
-				if ( msnModeMsgs[ i ].m_mode == status ) {
-					MSN_SendStatusMessage( msnModeMsgs[ i ].m_msg );
-					break;
-		}	}	}
+		int status = newStatus == ID_STATUS_IDLE ? ID_STATUS_ONLINE : newStatus;
+		for ( int i=0; i < MSN_NUM_MODES; i++ ) { 
+			if ( msnModeMsgs[ i ].m_mode == status ) {
+				MSN_SendStatusMessage( msnModeMsgs[ i ].m_msg );
+				break;
+		}	}
 	}
 	else msnNsThread->sendPacket( "CHG", szStatusName );
 }

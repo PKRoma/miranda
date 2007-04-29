@@ -1093,7 +1093,7 @@ static void sttInitDirectTransfer(
 	}
 
 	directconnection *dc = new directconnection( ft );
-	dc->useHashedNonce = MyOptions.UseMSNP11 && szHashedNonce != NULL;
+	dc->useHashedNonce = szHashedNonce != NULL;
 	if ( dc->useHashedNonce )
 		dc->xNonce = mir_strdup( szHashedNonce );
 	p2p_registerDC( dc );
@@ -1275,10 +1275,7 @@ LBL_Close:
 
 		char* hn = dc->mNonceToHash();
 		char* szNonce = ( char* )alloca( 256 );
-		if ( MyOptions.UseMSNP11 )
-			mir_snprintf( szNonce, 256, "Hashed-Nonce: %s\r\n", hn );
-		else
-			szNonce[0] = 0;
+		mir_snprintf( szNonce, 256, "Hashed-Nonce: %s\r\n", hn );
 
 		mir_free( hn );
 
@@ -1671,7 +1668,7 @@ void  p2p_invite( HANDLE hContact, int iAppID, filetransfer* ft )
 		ft->inmemTransfer = true;
 		ft->fileBuffer = NULL;
 		ft->std.sending = false;
-		ft->p2p_appID = MyOptions.UseMSNP11 ? MSN_APPID_AVATAR2 : MSN_APPID_AVATAR;
+		ft->p2p_appID = MSN_APPID_AVATAR2;
 
 		if ( iAppID == MSN_APPID_AVATAR )
 			MSN_GetStaticString( "PictContext", hContact, tBuffer, sizeof( tBuffer ));
