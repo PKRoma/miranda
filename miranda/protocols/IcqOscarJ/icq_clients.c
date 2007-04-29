@@ -142,8 +142,10 @@ const capstr capAnastasia = {0x44, 0xE5, 0xBF, 0xCE, 0xB0, 0x96, 0xE5, 0x47, 0xB
 const capstr capPalmJicq  = {'J', 'I', 'C', 'Q', 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
 const capstr capInluxMsgr = {0xA7, 0xE4, 0x0A, 0x96, 0xB3, 0xA0, 0x47, 0x9A, 0xB8, 0x45, 0xC9, 0xE4, 0x67, 0xC5, 0x6B, 0x1F};
 const capstr capMipClient = {0x4d, 0x49, 0x50, 0x20, 0x43, 0x6c, 0x69, 0x65, 0x6e, 0x74, 0x20, 0x76, 0x00, 0x00, 0x00, 0x00};
+const capstr capNaim      = {0xFF, 0xFF, 0xFF, 0xFF, 'n', 'a', 'i', 'm', 0, 0, 0, 0, 0, 0, 0, 0};
 const capstr capQip       = {0x56, 0x3F, 0xC8, 0x09, 0x0B, 0x6F, 0x41, 'Q', 'I', 'P', ' ', '2', '0', '0', '5', 'a'};
 const capstr capQipPDA    = {0x56, 0x3F, 0xC8, 0x09, 0x0B, 0x6F, 0x41, 'Q', 'I', 'P', ' ', ' ', ' ', ' ', ' ', '!'};
+const capstr capQipSymbian= {0x51, 0xAD, 0xD1, 0x90, 0x72, 0x04, 0x47, 0x3D, 0xA1, 0xA1, 0x49, 0xF4, 0xA3, 0x97, 0xA4, 0x1F};
 const capstr capQipMobile = {0xB0, 0x82, 0x62, 0xF6, 0x7F, 0x7C, 0x45, 0x61, 0xAD, 0xC1, 0x1C, 0x6D, 0x75, 0x70, 0x5E, 0xC5};
 const capstr capQipInfium = {0x7C, 0x73, 0x75, 0x02, 0xC3, 0xBE, 0x4F, 0x3E, 0xA6, 0x9F, 0x01, 0x53, 0x13, 0x43, 0x1E, 0x1A};
 const capstr capIm2       = {0x74, 0xED, 0xC3, 0x36, 0x44, 0xDF, 0x48, 0x5B, 0x8B, 0x1C, 0x67, 0x1A, 0x1F, 0x86, 0x09, 0x9F}; // IM2 Ext Msg
@@ -473,6 +475,10 @@ char* detectUserClient(HANDLE hContact, DWORD dwUin, WORD wVersion, DWORD dwFT1,
       {
         szClient = "QIP PDA (Windows)";
       }
+      else if (MatchCap(caps, wLen, &capQipSymbian, 0x10))
+      {
+        szClient = "QIP PDA (Symbian)";
+      }
       else if (MatchCap(caps, wLen, &capQipMobile, 0x10))
       {
         szClient = "QIP Mobile (Java)";
@@ -681,6 +687,11 @@ char* detectUserClient(HANDLE hContact, DWORD dwUin, WORD wVersion, DWORD dwFT1,
             else
               szClient = "ICQ Lite v4";
           }
+          else if (!CheckContactCapabilities(hContact, CAPF_ICQDIRECT))
+          {
+            if (CheckContactCapabilities(hContact, CAPF_UTF) && !CheckContactCapabilities(hContact, CAPF_RTF))
+              szClient = "pyICQ";
+          }
         }
         else if (wVersion == 7)
         {
@@ -791,6 +802,10 @@ char* detectUserClient(HANDLE hContact, DWORD dwUin, WORD wVersion, DWORD dwFT1,
         else if (MatchCap(caps, wLen, &capIm2, 0x10))
         { // IM2 extensions
           szClient = cliIM2;
+        }
+        else if (MatchCap(caps, wLen, &capNaim, 0x8))
+        {
+          szClient = "naim";
         }
         else
           szClient = "AIM";
