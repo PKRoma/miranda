@@ -1552,7 +1552,7 @@ void  p2p_processMsg( ThreadData* info,  const char* msgbody )
 
 	if ( hdrdata->mFlags == 0 ) {
 		//---- accept the data preparation message ------
-		long* pLongs = ( long* )msgbody;
+		const unsigned* pLongs = ( unsigned* )msgbody;
 		if ( pLongs[0] == 0 && pLongs[1] == htonl(ft->p2p_appID) && hdrdata->mPacketLen == 4 ) {
 			p2p_sendAck( ft, info, hdrdata );
 			return;
