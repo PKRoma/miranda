@@ -807,6 +807,8 @@ char* detectUserClient(HANDLE hContact, DWORD dwUin, WORD wVersion, DWORD dwFT1,
         {
           szClient = "naim";
         }
+        else if (MatchCap(caps, wLen, &capAimIcon, 0x10) && MatchCap(caps, wLen, &capAimChat, 0x10) && CheckContactCapabilities(hContact, CAPF_UTF) && wLen == 0x30)
+          szClient = "Meebo";
         else
           szClient = "AIM";
       }
