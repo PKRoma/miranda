@@ -640,22 +640,13 @@ void ext_yahoo_got_picture(int id, const char *me, const char *who, const char *
 			cksum = YAHOO_GetDword("AvatarHash", 0);
 			if (cksum) {
 				if (!DBGetContactSetting(NULL, yahooProtocolName, "AvatarURL", &dbv)) {
-					time_t ts;
-					
-					time(&ts);
-					/* check expiration time */
-					if (YAHOO_GetDword("AvatarExpires", ts) <= ts) {
-						/* expired! */
-						LOG(("[ext_yahoo_got_picture] Expired?? url: %s checksum: %d Expiration: %lu ", dbv.pszVal, cksum, YAHOO_GetDword("AvatarExpires", 0)));
-					} else {
-						LOG(("[ext_yahoo_got_picture] Sending url: %s checksum: %d to '%s'!", dbv.pszVal, cksum, who));
-						//void yahoo_send_picture_info(int id, const char *me, const char *who, const char *pic_url, int cksum)
-						yahoo_send_picture_info(id, who, 2, dbv.pszVal, cksum);
-						DBFreeVariant(&dbv);
-						break;
-					}
-					
-				} 
+					LOG(("[ext_yahoo_got_picture] Sending url: %s checksum: %d to '%s'!", dbv.pszVal, cksum, who));
+					//void yahoo_send_picture_info(int id, const char *me, const char *who, const char *pic_url, int cksum)
+					yahoo_send_picture_info(id, who, 2, dbv.pszVal, cksum);
+					DBFreeVariant(&dbv);
+					break;
+				} else
+					LOG(("No AvatarURL???"));
 				
 				/*
 				 * Try to re-upload the avatar
