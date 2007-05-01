@@ -914,6 +914,8 @@ void ext_yahoo_game_notify(int id, const char *me, const char *who, int stat, co
 	}
 }
 
+int mUnreadMessages;
+
 void ext_yahoo_mail_notify(int id, const char *from, const char *subj, int cnt)
 {
 	LOG(("[ext_yahoo_mail_notify] from: %s subject: %s count: %d", from, subj, cnt));
@@ -938,6 +940,9 @@ void ext_yahoo_mail_notify(int id, const char *from, const char *subj, int cnt)
 				YAHOO_shownotification(title, z, NIIF_INFO);
 		}
 	}
+	
+	mUnreadMessages = cnt;
+	YAHOO_SendBroadcast( NULL, ACKTYPE_EMAIL, ACKRESULT_STATUS, NULL, 0 );
 }    
     
 void ext_yahoo_system_message(int id, const char *me, const char *who, const char *msg)

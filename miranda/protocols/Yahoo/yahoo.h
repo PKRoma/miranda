@@ -61,14 +61,15 @@ extern int do_yahoo_debug;
 	YAHOO_DEBUGLOG x; \
 	YAHOO_DEBUGLOG(" ");}
 
-#define YAHOO_SET_CUST_STAT  "/SetCustomStatCommand" 
-#define YAHOO_SHOW_PROFILE   "/YahooShowProfileCommand"
-#define YAHOO_SHOW_MY_PROFILE "/YahooShowMyProfileCommand"
-#define YAHOO_YAHOO_MAIL     "/YahooGotoMailboxCommand"
-#define YAHOO_REFRESH     "/YahooRefreshCommand"
-#define YAHOO_AB     "/YahooAddressBook"
-#define YAHOO_CALENDAR     "/YahooCalendar"
-#define YAHOO_SEND_NUDGE     "/SendNudge"
+#define YAHOO_SET_CUST_STAT			"/SetCustomStatCommand" 
+#define YAHOO_SHOW_PROFILE			"/YahooShowProfileCommand"
+#define YAHOO_SHOW_MY_PROFILE		"/YahooShowMyProfileCommand"
+#define YAHOO_YAHOO_MAIL			"/YahooGotoMailboxCommand"
+#define YAHOO_REFRESH				"/YahooRefreshCommand"
+#define YAHOO_AB					"/YahooAddressBook"
+#define YAHOO_CALENDAR				"/YahooCalendar"
+#define YAHOO_SEND_NUDGE			"/SendNudge"
+#define YAHOO_GETUNREAD_EMAILCOUNT	"/GetUnreadEmailCount"
 
 #define STYLE_DEFAULTBGCOLOUR     RGB(173,206,247)
 
@@ -92,7 +93,7 @@ struct _conn {
 //=======================================================
 extern HANDLE			hNetlibUser;
 extern HINSTANCE		hinstance;
-extern int				yahooStatus;
+extern int				yahooStatus, mUnreadMessages;
 extern char				yahooProtocolName[MAX_PATH];
 extern BOOL             yahooLoggedIn;
 extern HANDLE           YahooMenuItems[ MENU_ITEMS_COUNT ];

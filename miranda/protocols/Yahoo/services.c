@@ -979,6 +979,13 @@ int YahooSetApparentMode(WPARAM wParam, LPARAM lParam)
     return 1;
 }
 
+int YahooGetUnreadEmailCount(WPARAM wParam, LPARAM lParam)
+{
+    if ( !yahooLoggedIn )
+        return 0;
+	
+    return mUnreadMessages;
+}
 extern HANDLE   hHookContactDeleted;
 extern HANDLE   hHookIdle;
 
@@ -1073,6 +1080,8 @@ int LoadYahooServices( void )
 
 	// Send Nudge
 	YAHOO_CreateProtoServiceFunction( YAHOO_SEND_NUDGE, 	YahooSendNudge );
+	
+	YAHOO_CreateProtoServiceFunction( YAHOO_GETUNREAD_EMAILCOUNT, YahooGetUnreadEmailCount);
 		
 	YAHOO_CreateProtoServiceFunction( PS_GETCAPS,	GetCaps );
 	YAHOO_CreateProtoServiceFunction( PS_GETNAME,	GetName );
@@ -1126,6 +1135,7 @@ int LoadYahooServices( void )
 	YAHOO_CreateProtoServiceFunction( PS_GETMYAVATAR, YahooGetMyAvatar);
 	YAHOO_CreateProtoServiceFunction( PS_SETMYAVATAR, YahooSetMyAvatar);
 	YAHOO_CreateProtoServiceFunction( PS_ISAVATARFORMATSUPPORTED, YahooAvatarFormatSupported);
+	
 	return 0;
 }
 
