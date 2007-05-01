@@ -93,6 +93,7 @@ void sql_destroy() {
 
 static unsigned __stdcall sql_threadProc(void *arg) {
     while (WaitForSingleObjectEx(hDummyEvent, INFINITE, TRUE)!=WAIT_OBJECT_0);
+    CloseHandle(hDummyEvent);
     return 0;
 }
 

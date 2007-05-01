@@ -145,10 +145,10 @@ static int dbrw_grokHeader(char *profile, int *error) {
         ZeroMemory(buf, sizeof(buf));
         r = ReadFile(hFile, buf, sizeof(buf), &dwRead, NULL);
         CloseHandle(hFile);
-        if (r && memcmp(buf, DBRW_HEADER_STR, 16)==0) {
+        if (r && memcmp(buf, DBRW_HEADER_STR, strlen(DBRW_HEADER_STR))==0) {
             sqlite3 *sqlcheck = NULL;
             char *szPath = utf8_encode(profile);
-                    
+
             rc = sqlite3_open(szPath, &sqlcheck);
             dbrw_free(szPath);
             if (rc==SQLITE_OK) {
@@ -168,10 +168,8 @@ static int dbrw_grokHeader(char *profile, int *error) {
                         if (sVersion==atoi(DBRW_SCHEMA_VERSION))
                             rc = 0;
                     }
-                    sqlite3_finalize(stmt);
                 }
-                else
-                    sqlite3_finalize(stmt);
+                sqlite3_finalize(stmt);
                 sqlite3_close(sqlcheck);
             }
         }

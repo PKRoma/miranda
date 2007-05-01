@@ -11,6 +11,12 @@ the same database API as the standard Miranda database plugin.  Therefore, it
 should be compatible with all current plugins.
 
 
+Changes
+-------
+1.0:
+ - Initial release
+ 
+
 Author
 ------
 Robert rainwater <rainwater@miranda-im.org>
