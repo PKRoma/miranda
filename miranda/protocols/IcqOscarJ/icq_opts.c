@@ -5,7 +5,7 @@
 // Copyright © 2000,2001 Richard Hughes, Roland Rabien, Tristan Van de Vreede
 // Copyright © 2001,2002 Jon Keating, Richard Hughes
 // Copyright © 2002,2003,2004 Martin Öberg, Sam Kothari, Robert Rainwater
-// Copyright © 2004,2005,2006 Joe Kucera
+// Copyright © 2004,2005,2006,2007 Joe Kucera
 // 
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License
@@ -23,7 +23,7 @@
 //
 // -----------------------------------------------------------------------------
 //
-// File name      : $Source: /cvsroot/miranda/miranda/protocols/IcqOscarJ/icq_opts.c,v $
+// File name      : $URL$
 // Revision       : $Revision$
 // Last change on : $Date$
 // Last change by : $Author$
@@ -375,12 +375,17 @@ static BOOL CALLBACK DlgProcIcqOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARA
   {
   case WM_INITDIALOG:
     {
+      DWORD dwUin;
       char pszPwd[16];
       char szServer[MAX_PATH];
 
       ICQTranslateDialog(hwndDlg);
 
-      SetDlgItemInt(hwndDlg, IDC_ICQNUM, ICQGetContactSettingUIN(NULL), FALSE);
+      dwUin = ICQGetContactSettingUIN(NULL);
+      if (dwUin)
+        SetDlgItemInt(hwndDlg, IDC_ICQNUM, dwUin, FALSE);
+      else // keep it empty when no UIN entered
+        SetDlgItemText(hwndDlg, IDC_ICQNUM, "");
 
       if (!ICQGetContactStaticString(NULL, "Password", pszPwd, sizeof(pszPwd)))
       {
