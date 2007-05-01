@@ -31,7 +31,6 @@ int utils_getProfilePath(WPARAM wParam, LPARAM lParam);
 int utils_encodeString(WPARAM wParam,LPARAM lParam);
 int utils_decodeString(WPARAM wParam,LPARAM lParam);
 DWORD utils_hashString(const char *szStr);
-unsigned long utils_thread_create(void (*threadcode) (void *), void *arg);
 int utils_private_setting_get_int(const char *setting, int defval);
 int utils_private_setting_set_int(const char *setting, int val);
 void utils_vacuum_check();

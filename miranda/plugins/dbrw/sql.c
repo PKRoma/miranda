@@ -22,12 +22,12 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 static char **sql_prepare_text;
 static sqlite3_stmt ***sql_prepare_stmt;
 static int sql_prepare_len = 0;
-static DWORD sqlThreadId;
+static unsigned sqlThreadId;
 static HANDLE hSqlThread;
 static HWND hAPCWindow = NULL;
 static HANDLE hDummyEvent = NULL;
 
-static DWORD WINAPI sql_threadProc(void *arg);
+static unsigned __stdcall sql_threadProc(void *arg);
 static DWORD CALLBACK sql_apcproc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam);
 
 typedef struct {
@@ -73,7 +73,7 @@ typedef struct {
 void sql_init() {
 	log0("Loading module: sql");
     hDummyEvent = CreateEvent(NULL, FALSE, FALSE, NULL);
-    hSqlThread = CreateThread(0, 0, sql_threadProc, NULL, 0, &sqlThreadId);
+    hSqlThread = (HANDLE)mir_forkthreadex(sql_threadProc, 0, 0, &sqlThreadId);
     hAPCWindow = CreateWindowEx(0, _T("STATIC"), NULL, 0, 0, 0, 0, 0, NULL, NULL, NULL, NULL);
     SetWindowLong(hAPCWindow, GWL_WNDPROC, (LONG)sql_apcproc);
 }
@@ -91,10 +91,8 @@ void sql_destroy() {
     DestroyWindow(hAPCWindow);
 }
 
-static DWORD WINAPI sql_threadProc(void *arg) {
-    CallService(MS_SYSTEM_THREAD_PUSH, 0, 0);
+static unsigned __stdcall sql_threadProc(void *arg) {
     while (WaitForSingleObjectEx(hDummyEvent, INFINITE, TRUE)!=WAIT_OBJECT_0);
-    CallService(MS_SYSTEM_THREAD_POP, 0, 0);
     return 0;
 }
 

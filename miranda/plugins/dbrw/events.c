@@ -98,7 +98,7 @@ static void __cdecl events_timerProcThread(void *arg) {
 }
 
 static void CALLBACK events_timerProc(HWND hwnd, UINT umsg, UINT idEvent, DWORD dwTime) {
-	utils_thread_create(events_timerProcThread, 0);
+	mir_forkthread(events_timerProcThread, 0);
 }
 
 int events_getCount(WPARAM wParam, LPARAM lParam) {

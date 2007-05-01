@@ -19,10 +19,8 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 */
 #include "dbrw.h"
 
-static HANDLE hHeap = NULL;
-static SortedList sSettingNames, sContactSettings, sGlobalSettings;
-static SortedList sResidentSettings;
-static unsigned int settingsTimerId = 0;
+static HANDLE hHeap = 0, hSettingsThread = 0, hSettingsEvent = 0;
+static SortedList sSettingNames, sContactSettings, sGlobalSettings, sResidentSettings;
 
 static int settings_cmpSettingNames(void *p1, void *p2);
 static int settings_cmpGlobalSettings(void* p1, void* p2);
@@ -35,8 +33,7 @@ static DBVARIANT *settings_getCachedValue(HANDLE hContact, char *szSetting, int 
 static int settings_getContactSettingWorker(HANDLE hContact, DBCONTACTGETSETTING *dbcgs, int isStatic);
 static void settings_writeToDB(HANDLE hContact, const char *szModule, const char *szSetting, DBVARIANT *value);
 static void settings_writeUpdatedSettings();
-static void __cdecl settingsTimerProcThread(void *arg);
-static void CALLBACK settingsTimerProc(HWND hwnd, UINT umsg, UINT idEvent, DWORD dwTime);
+static unsigned __stdcall settings_threadProc(void *arg);
 static int settings_isResident(char *szSetting);
 
 typedef struct {
@@ -102,13 +99,17 @@ void settings_init() {
     sResidentSettings.increment = 100;
     sResidentSettings.sortFunc = settings_cmpResidentSettings;
 	sql_prepare_add(settings_stmts, settings_stmts_prep, SQL_SET_STMT_NUM);
-	settingsTimerId = SetTimer(NULL, 0, DBRW_SETTINGS_FLUSHCACHE, settingsTimerProc);
+    hSettingsEvent = CreateEvent(NULL, FALSE, FALSE, NULL);
+    hSettingsThread = (HANDLE)mir_forkthreadex(settings_threadProc, 0, 0, 0);
 }
 
 void settings_destroy() {
 	log0("Unloading module: settings");
-	if (settingsTimerId)
-		KillTimer(NULL, settingsTimerId);
+    if (hSettingsEvent) {
+        SetEvent(hSettingsEvent);
+        WaitForSingleObjectEx(hSettingsThread, INFINITE, FALSE);
+        CloseHandle(hSettingsThread);
+    }
 	settings_writeUpdatedSettings();
 	HeapDestroy(hHeap);
 	li.List_Destroy(&sSettingNames);
@@ -339,7 +340,6 @@ static void settings_writeUpdatedSettings() {
 	char *szTok, *szTokTmp1, *szTokTmp2;
 
 	EnterCriticalSection(&csSettingsDb);
-	// TODO: Add some checks so we don't create a transaction every time
 	for (idx=0; idx<sGlobalSettings.realCount; idx++) {
 		V = (DBCachedGlobalValue*)sGlobalSettings.items[idx];
 		if (V->update) {
@@ -389,12 +389,26 @@ static void settings_writeUpdatedSettings() {
 	LeaveCriticalSection(&csSettingsDb);
 }
 
-static void __cdecl settingsTimerProcThread(void *arg) {
-	settings_writeUpdatedSettings();
-}
+static unsigned __stdcall settings_threadProc(void *arg) {
+    DWORD dwWait;
+    log0("Settings cache thread starting");
+    
+    for(;;) {
+        dwWait = WaitForSingleObjectEx(hSettingsEvent, DBRW_SETTINGS_FLUSHCACHE, TRUE);
 
-static void CALLBACK settingsTimerProc(HWND hwnd, UINT umsg, UINT idEvent, DWORD dwTime) {
-	utils_thread_create(settingsTimerProcThread, 0);
+        if (dwWait==WAIT_OBJECT_0) 
+            break;
+        else if(dwWait == WAIT_TIMEOUT) {
+            settings_writeUpdatedSettings();
+        }
+        else if (dwWait == WAIT_IO_COMPLETION)
+            if (Miranda_Terminated()) 
+                break;
+    }
+    log0("Settings cache thread ending");
+    CloseHandle(hSettingsEvent);
+    hSettingsEvent = NULL;
+    return 0;
 }
 
 static int settings_getContactSettingWorker(HANDLE hContact, DBCONTACTGETSETTING *dbcgs, int isStatic) {

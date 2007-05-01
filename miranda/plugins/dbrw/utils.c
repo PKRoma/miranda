@@ -124,41 +124,6 @@ DWORD utils_hashString(const char *szStr) {
 	return hash;
 }
 
-struct utils_thread_arg {
-    HANDLE hEvent;
-    void (*threadcode) (void *);
-    void *arg;
-};
-
-static void utils_thread_r(struct utils_thread_arg *fa) {
-    void (*callercode) (void *) = fa->threadcode;
-    void *arg = fa->arg;
-
-    CallService(MS_SYSTEM_THREAD_PUSH, 0, 0);
-    SetEvent(fa->hEvent);
-    __try {
-        callercode(arg);
-    }
-    __finally {
-        CallService(MS_SYSTEM_THREAD_POP, 0, 0);
-    }
-}
-
-unsigned long utils_thread_create(void (*threadcode) (void *), void *arg) {
-    unsigned long rc;
-    struct utils_thread_arg fa;
-
-    fa.hEvent = CreateEvent(NULL, FALSE, FALSE, NULL);
-    fa.threadcode = threadcode;
-    fa.arg = arg;
-    rc = _beginthread((void *) (void *) utils_thread_r, 0, &fa);
-    if ((unsigned long) -1L != rc) {
-        WaitForSingleObject(fa.hEvent, INFINITE);
-    }
-    CloseHandle(fa.hEvent);
-    return rc;
-}
-
 int utils_private_setting_get_int(const char *setting, int defval) {
     sqlite3_stmt *stmt;
     int rc = defval;
