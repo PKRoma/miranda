@@ -225,9 +225,10 @@ static const value_string ymsg_service_vals[] = {
 	{YAHOO_SERVICE_Y7_FILETRANSFER,"Y7 File Transfer"},
 	{YAHOO_SERVICE_Y7_FILETRANSFERINFO,"Y7 File Transfer Information"},
 	{YAHOO_SERVICE_Y7_FILETRANSFERACCEPT,"Y7 File Transfer Accept"},
+	{YAHOO_SERVICE_Y7_MINGLE, "Y7 360 Mingle"},
 	{YAHOO_SERVICE_Y7_CHANGE_GROUP, "Y7 Change Group"},
-	{YAHOO_SERVICE_WEBLOGIN,"WebLogin"},
-	{YAHOO_SERVICE_SMS_MSG,"SMS Message"},
+	{YAHOO_SERVICE_WEBLOGIN, "Web Login"},
+	{YAHOO_SERVICE_SMS_MSG, "SMS Message"},
 	{0, NULL}
 };
 
@@ -4006,7 +4007,7 @@ static struct yab * yahoo_getyab(struct yahoo_input_data *yid)
 	if(!yd)
 		return NULL;
 
-	DEBUG_MSG(("rxlen is %d", yid->rxlen));
+	//DEBUG_MSG(("rxlen is %d", yid->rxlen));
 
 	if(yid->rxlen <= strlen("<record"))
 		return NULL;
