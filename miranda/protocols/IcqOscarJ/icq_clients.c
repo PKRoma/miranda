@@ -120,9 +120,28 @@ char* MirandaVersionToString(char* szStr, int bUnicode, int v, int m)
 }
 
 
+
+char* MirandaModToString(char* szStr, capstr* capId, int bUnicode, char* szModName)
+{ // decode icqj mod version
+  char* szClient;
+  DWORD mver = (*capId)[0x4] << 0x18 | (*capId)[0x5] << 0x10 | (*capId)[0x6] << 8 | (*capId)[0x7];
+  DWORD iver = (*capId)[0x8] << 0x18 | (*capId)[0x9] << 0x10 | (*capId)[0xA] << 8 | (*capId)[0xB];
+  DWORD scode = (*capId)[0xC] << 0x18 | (*capId)[0xD] << 0x10 | (*capId)[0xE] << 8 | (*capId)[0xF];
+
+  szClient = MirandaVersionToStringEx(szStr, bUnicode, szModName, iver, mver);
+  if (scode == 0x5AFEC0DE)
+  {
+    strcat(szClient, " + SecureIM");
+  }
+  return szClient;
+}
+
+
+
 const capstr capMirandaIm = {'M', 'i', 'r', 'a', 'n', 'd', 'a', 'M', 0, 0, 0, 0, 0, 0, 0, 0};
 const capstr capIcqJs7    = {'i', 'c', 'q', 'j', ' ', 'S', 'e', 'c', 'u', 'r', 'e', ' ', 'I', 'M', 0, 0};
 const capstr capIcqJSin   = {'s', 'i', 'n', 'j', 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}; // Miranda ICQJ S!N
+const capstr capIcqJp     = {'i', 'c', 'q', 'p', 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
 const capstr capAimOscar  = {'M', 'i', 'r', 'a', 'n', 'd', 'a', 'A', 0, 0, 0, 0, 0, 0, 0, 0};
 const capstr capMimMobile = {'M', 'i', 'r', 'a', 'n', 'd', 'a', 'M', 'o', 'b', 'i', 'l', 'e', 0, 0, 0};
 const capstr capMimPack   = {'M', 'I', 'M', '/', 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}; // Custom Miranda Pack
@@ -344,28 +363,17 @@ char* detectUserClient(HANDLE hContact, DWORD dwUin, WORD wVersion, DWORD dwFT1,
       }
       else if (capId = MatchCap(caps, wLen, &capIcqJs7, 4))
       { // detect newer icqj mod
-        DWORD mver = (*capId)[0x4] << 0x18 | (*capId)[0x5] << 0x10 | (*capId)[0x6] << 8 | (*capId)[0x7];
-        DWORD iver = (*capId)[0x8] << 0x18 | (*capId)[0x9] << 0x10 | (*capId)[0xA] << 8 | (*capId)[0xB];
-        DWORD scode = (*capId)[0xC] << 0x18 | (*capId)[0xD] << 0x10 | (*capId)[0xE] << 8 | (*capId)[0xF];
-
-        szClient = MirandaVersionToStringEx(szClientBuf, dwFT3 == 0x80000000, "ICQ S7 & SSS", iver, mver);
-        if (scode == 0x5AFEC0DE)
-        {
-          strcat(szClient, " + SecureIM");
-        }
+        szClient = MirandaModToString(szClientBuf, capId, dwFT3 == 0x80000000, "ICQ S7 & SSS");
         bMirandaIM = TRUE;
       }
       else if (capId = MatchCap(caps, wLen, &capIcqJSin, 4))
       { // detect newer icqj mod
-        DWORD mver = (*capId)[0x4] << 0x18 | (*capId)[0x5] << 0x10 | (*capId)[0x6] << 8 | (*capId)[0x7];
-        DWORD iver = (*capId)[0x8] << 0x18 | (*capId)[0x9] << 0x10 | (*capId)[0xA] << 8 | (*capId)[0xB];
-        DWORD scode = (*capId)[0xC] << 0x18 | (*capId)[0xD] << 0x10 | (*capId)[0xE] << 8 | (*capId)[0xF];
-
-        szClient = MirandaVersionToStringEx(szClientBuf, dwFT3 == 0x80000000, "ICQ S!N", iver, mver);
-        if (scode == 0x5AFEC0DE)
-        {
-          strcat(szClient, " + SecureIM");
-        }
+        szClient = MirandaModToString(szClientBuf, capId, dwFT3 == 0x80000000, "ICQ S!N");
+        bMirandaIM = TRUE;
+      }
+      else if (capId = MatchCap(caps, wLen, &capIcqJp, 4))
+      { // detect icqj plus mod
+        szClient = MirandaModToString(szClientBuf, capId, dwFT3 == 0x80000000, "ICQ Plus");
         bMirandaIM = TRUE;
       }
       else if (MatchCap(caps, wLen, &capTrillian, 0x10) || MatchCap(caps, wLen, &capTrilCrypt, 0x10))
