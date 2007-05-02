@@ -24,12 +24,12 @@ void sql_init();
 void sql_destroy();
 void sql_prepare_add(char **text, sqlite3_stmt **stmts, int len);
 void sql_prepare_stmts();
-int sql_open(const char *path, sqlite3 **sql);
-int sql_prepare(sqlite3 *sql, const char *query, sqlite3_stmt **stmt);
 int sql_step(sqlite3_stmt *stmt);
 int sql_reset(sqlite3_stmt *stmt);
-int sql_finalize(sqlite3_stmt *stmt);
-int sql_close(sqlite3 *sql);
 int sql_exec(sqlite3 *sql, const char *query);
+int sql_open(const char *path, sqlite3 **sql);
+int sql_close(sqlite3 *sql);
+int sql_prepare(sqlite3 *sql, const char *query, sqlite3_stmt **stmt);
+int sql_finalize(sqlite3_stmt *stmt);
 
 #endif
