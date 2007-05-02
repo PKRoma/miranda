@@ -164,8 +164,8 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #define  MSN_SHOW_ERROR       8
 void  MSN_ShowPopup( const char* nickname, const char* msg, int flags );
 
-LONG			MSN_SendPacket( HANDLE, const char* cmd, const char* params, ... );
-char*			MirandaStatusToMSN( int status );
+LONG		MSN_SendPacket( HANDLE, const char* cmd, const char* params, ... );
+char*		MirandaStatusToMSN( int status );
 int			MSNStatusToMiranda( const char* status );
 void        HtmlDecode( char* str );
 char*       HtmlEncode( const char* str );
@@ -175,8 +175,8 @@ WCHAR*      HtmlEncodeW( const WCHAR* str );
 #else
 	#define  HtmlEncodeT HtmlEncode
 #endif
-bool txtParseParam (const char* szData, const char* presearch, const char* start, const char* finish, char* param, const int size);
-void MSN_Base64Decode( const char* str, size_t len, char* res, size_t reslen );
+bool		txtParseParam (const char* szData, const char* presearch, const char* start, const char* finish, char* param, const int size);
+char*		MSN_Base64Decode( const char* str );
 
 void     	UrlDecode( char*str );
 void     	UrlEncode( const char* src, char* dest, int cbDest );
@@ -303,15 +303,15 @@ struct ThreadData;
 
 struct P2P_Header
 {
-	DWORD		mSessionID;
-	DWORD		mID;
-	__int64  mOffset;
-	__int64  mTotalSize;
-	DWORD		mPacketLen;
-	DWORD		mFlags;
-	DWORD		mAckSessionID;
-	DWORD		mAckUniqueID;
-	__int64	mAckDataSize;
+	unsigned          mSessionID;
+	unsigned          mID;
+	unsigned __int64  mOffset;
+	unsigned __int64  mTotalSize;
+	unsigned          mPacketLen;
+	unsigned          mFlags;
+	unsigned          mAckSessionID;
+	unsigned          mAckUniqueID;
+	unsigned __int64  mAckDataSize;
 };
 
 struct HReadBuffer
@@ -503,8 +503,19 @@ void		 MSN_StartStopTyping( ThreadData* info, bool start );
 #define MSN_APPID_AVATAR		1
 #define MSN_APPID_AVATAR2   	12
 #define MSN_APPID_FILE			2
+
 #define MSN_APPID_CUSTOMSMILEY  3
 #define MSN_APPID_CUSTOMANIMATEDSMILEY  4
+
+#define MSN_TYPEID_FTPREVIEW		0
+#define MSN_TYPEID_FTNOPREVIEW		1
+#define MSN_TYPEID_CUSTOMSMILEY		2
+#define MSN_TYPEID_DISPLAYPICT		3
+#define MSN_TYPEID_BKGNDSHARING		4
+#define MSN_TYPEID_BKGNDIMG			5
+#define MSN_TYPEID_WINK				8
+
+
 
 void  p2p_clearDormantSessions( void );
 void  p2p_cancelAllSessions( void );

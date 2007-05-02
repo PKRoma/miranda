@@ -104,7 +104,6 @@ const char* MimeHeaders::readFromBuffer( const char* parString )
 {
 	int        headerCount = 0;
 	MimeHeader headers[ 100 ];
-	char		  line[ 4096 ];
 
 	while ( *parString ) {
 		if ( parString[0] == '\r' && parString[1] == '\n' ) {
@@ -116,37 +115,41 @@ const char* MimeHeaders::readFromBuffer( const char* parString )
 		if ( peol == NULL )
 			peol = parString + strlen(parString);
 
-		int cbLen = int( peol - parString );
-		if ( cbLen > sizeof( line ))
-			break;
-
-      memcpy( line, parString, cbLen );
-		line[ cbLen ] = 0;
-
+		size_t cbLen = peol - parString;
 		if ( *++peol == '\n' )
 			peol++;
 
-		parString = peol;
-
-		char* delim = strchr( line, ':' );
+		char* delim = ( char* )memchr( parString, ':', cbLen );
 		if ( delim == NULL ) {
-			MSN_DebugLog( "MSG: Invalid MIME header: '%s'", line );
+			MSN_DebugLog( "MSG: Invalid MIME header: '%s'", parString );
+			parString = peol;
 			continue;
 		}
-
-		*delim++ = '\0';
+		size_t nmLen = delim++ - parString;
+		
 		while ( *delim == ' ' || *delim == '\t' )
 			delim++;
+		
+		size_t vlLen = cbLen - ( delim - parString );
 
 		MimeHeader& H = headers[ headerCount ];
-		H.name = mir_strdup( line );
-		H.value = mir_strdup( delim );
+		
+		H.name = ( char* )mir_alloc( nmLen + 1 ); 
+		memcpy( H.name, parString, nmLen ); 
+		H.name[nmLen] = 0;
+
+		
+		H.value = ( char* )mir_alloc( vlLen + 1 ); 
+		memcpy( H.value, delim, vlLen ); 
+		H.value[vlLen] = 0;
+
 		headerCount++;
+		parString = peol;
 	}
 
 	if (( mCount = headerCount ) != 0 ) {
 		mVals = ( MimeHeader* )mir_alloc( sizeof( MimeHeader )*headerCount );
-		memcpy( mVals, headers, sizeof( MimeHeader )*headerCount );
+		memcpy( mVals, headers, sizeof( MimeHeader ) * headerCount );
 	}
 	return parString;
 }

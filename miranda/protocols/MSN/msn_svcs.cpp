@@ -1049,7 +1049,7 @@ int MsnSetAvatar( WPARAM wParam, LPARAM lParam )
 	mir_sha1_append( &sha1ctx, ( PBYTE )szFileSize, strlen( szFileSize ));
 
 	mir_sha1_append( &sha1ctx, ( PBYTE )"Type", 4 );
-	mir_sha1_append( &sha1ctx, ( PBYTE )"3", 1 );
+	mir_sha1_append( &sha1ctx, ( PBYTE )"3", 1 );  // MSN_TYPEID_DISPLAYPICT
 
 	mir_sha1_append( &sha1ctx, ( PBYTE )"Location", 8 );
 	mir_sha1_append( &sha1ctx, ( PBYTE )fname, sizeof( fname ));

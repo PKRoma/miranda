@@ -24,6 +24,18 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 #include "msn_global.h"
 
+typedef struct
+{
+	unsigned len; 
+	unsigned ver;
+	unsigned __int64 dwSize;
+	unsigned type;
+	wchar_t wszFileName[ MAX_PATH ];
+	char unknown[30];
+	unsigned id;
+	char unknown2[64];
+} HFileContext;
+
 static char sttP2Pheader[] =
 	"Content-Type: application/x-msnmsgrp2p\r\n"
 	"P2P-Dest: %s\r\n\r\n";
@@ -610,7 +622,7 @@ bool p2p_connectTo( ThreadData* info )
 
 bool p2p_listen( ThreadData* info )
 {
-	switch( WaitForSingleObject( info->hWaitEvent, 8000 )) {
+	switch( WaitForSingleObject( info->hWaitEvent, 6000 )) {
 	case WAIT_TIMEOUT:
 	case WAIT_FAILED:
 		MSN_DebugLog( "Incoming connection timed out, closing file transfer" );
@@ -735,7 +747,7 @@ void __cdecl p2p_sendFeedThread( ThreadData* info )
 {
 	MSN_DebugLog( "File send thread started" );
 
-	switch( WaitForSingleObject( info->hWaitEvent, 8000 )) {
+	switch( WaitForSingleObject( info->hWaitEvent, 6000 )) {
 		case WAIT_FAILED:
 			MSN_DebugLog( "File send wait failed" );
 			return;
@@ -881,7 +893,7 @@ static void sttInitFileTransfer(
 		return;
 
 	const char	*szCallID = tFileInfo[ "Call-ID" ],
-					*szBranch = tFileInfo[ "Via" ];
+				*szBranch = tFileInfo[ "Via" ];
 
 	if ( szBranch != NULL ) {
 		szBranch = strstr( szBranch, "branch=" );
@@ -893,15 +905,12 @@ static void sttInitFileTransfer(
 		return;
 	}
 
-	long dwAppID = -1;
-
 	const char	*szSessionID = tFileInfo2[ "SessionID" ],
 				*szEufGuid   = tFileInfo2[ "EUF-GUID" ],
-				*szContext   = tFileInfo2[ "Context" ];
-	{	const char* p = tFileInfo2[ "AppID" ];
-		if ( p )
-			dwAppID = atol( p );
-	}
+				*szContext   = tFileInfo2[ "Context" ],
+				*szAppId     = tFileInfo2[ "AppID" ];
+
+	int dwAppID = szAppId ? atol( szAppId ) : -1;
 
 	if ( szSessionID == NULL || dwAppID == -1 || szEufGuid == NULL || szContext == NULL ) {
 		MSN_DebugLog( "Ignoring invalid invitation: SessionID='%s', AppID=%ld, Branch='%s',Context='%s'",
@@ -909,21 +918,16 @@ static void sttInitFileTransfer(
 		return;
 	}
 
-	{	size_t len = strlen( szContext );
-		size_t reslen = Netlib_GetBase64DecodedBufferSize(len) + 4;
-		char* p = ( char* )alloca( reslen );
-		MSN_Base64Decode( szContext, len, p, reslen );
-		szContext = p;
-	}
+	szContext = MSN_Base64Decode( szContext );
 
 	srand( time( NULL ));
 
 	filetransfer* ft = new filetransfer();
 	ft->p2p_acksessid = rand() << 16 | rand();
 	ft->p2p_sessionid = strtoul( szSessionID, NULL, 10 );
-	ft->p2p_appID = dwAppID;
-	ft->p2p_type = dwAppID == MSN_APPID_AVATAR2 ? MSN_APPID_AVATAR : dwAppID;
-	ft->p2p_ackID = ft->p2p_type * 1000;
+	ft->p2p_appID = dwAppID == MSN_APPID_AVATAR ? MSN_APPID_AVATAR2 : dwAppID;
+	ft->p2p_type = dwAppID;
+	ft->p2p_ackID = dwAppID == MSN_APPID_FILE ? 2000 : 1000;
 	replaceStr( ft->p2p_callID, szCallID );
 	replaceStr( ft->p2p_branch, szBranch );
 	ft->p2p_dest = mir_strdup( szContactEmail );
@@ -931,110 +935,125 @@ static void sttInitFileTransfer(
 
 	p2p_sendAck( ft, info, hdrdata );
 
-	if ( dwAppID == MSN_APPID_AVATAR2 )
-		dwAppID = MSN_APPID_AVATAR;
+	switch ( dwAppID )
+	{
+		case MSN_APPID_AVATAR:
+		case MSN_APPID_AVATAR2:
+			if ( !strcmp( szEufGuid, "{A4268EEC-FEC5-49E5-95C3-F126696BDBF6}" )) {
+				DBVARIANT dbv;
+				bool pictmatch = !DBGetContactSetting( NULL, msnProtocolName, "PictObject", &dbv );
+				if ( pictmatch ) 
+				{
+					char szCtBuf[32], szPtBuf[32];
+					UrlDecode(dbv.pszVal);
+					pictmatch &= txtParseParam( szContext,  "SHA1C=", "\"", "\"", szCtBuf, sizeof( szCtBuf ));
+					pictmatch &= txtParseParam( dbv.pszVal, "SHA1C=", "\"", "\"", szPtBuf, sizeof( szPtBuf ));
+					pictmatch = pictmatch && strcmp( szCtBuf, szPtBuf ) == 0;
+					MSN_FreeVariant( &dbv );
+				}
+				if ( pictmatch ) 
+				{
+					char szFileName[ MAX_PATH ];
+					MSN_GetAvatarFileName( NULL, szFileName, sizeof( szFileName ));
+					ft->fileId = _open( szFileName, O_RDONLY | _O_BINARY, _S_IREAD );
+					if ( ft->fileId == -1 ) 
+					{
+						p2p_sendStatus( ft, info, 603 );
+						MSN_DebugLog( "Unable to open avatar file '%s', error %d", szFileName, errno );
+						delete ft;
+					}
+					else
+					{
+						replaceStr(ft->std.currentFile, szFileName);
+						MSN_DebugLog( "My avatar file opened for %s as %08p::%d", szContactEmail, ft, ft->fileId );
+						ft->std.totalBytes = ft->std.currentFileSize = filelength( ft->fileId );
+						ft->std.sending = true;
 
-	if ( dwAppID == MSN_APPID_AVATAR && !strcmp( szEufGuid, "{A4268EEC-FEC5-49E5-95C3-F126696BDBF6}" )) {
-		DBVARIANT dbv;
-		bool pictmatch = !DBGetContactSetting( NULL, msnProtocolName, "PictObject", &dbv );
-		if ( pictmatch ) {
-			char szCtBuf[32], szPtBuf[32];
-			UrlDecode(dbv.pszVal);
-			pictmatch &= txtParseParam( szContext,  "SHA1C=", "\"", "\"", szCtBuf, sizeof( szCtBuf ));
-			pictmatch &= txtParseParam( dbv.pszVal, "SHA1C=", "\"", "\"", szPtBuf, sizeof( szPtBuf ));
-			pictmatch = pictmatch && strcmp( szCtBuf, szPtBuf ) == 0;
-			MSN_FreeVariant( &dbv );
-		}
-		if ( !pictmatch ) {
+						//---- send 200 OK Message
+						p2p_sendStatus( ft, info, 200 );
+						p2p_registerSession( ft );
+						p2p_sendFeedStart( ft );
+					}
+				}
+				else
+				{
+					p2p_sendStatus( ft, info, 603 );
+					MSN_DebugLog( "Requested avatar does not match current avatar" );
+					delete ft;
+				}
+			}
+			break;
+
+		case MSN_APPID_FILE:
+			if ( !strcmp( szEufGuid, "{5D3E02AB-6190-11D3-BBBB-00C04F795683}" )) 
+			{
+				wchar_t* wszFileName = (( HFileContext* )szContext)->wszFileName;
+				{	for ( wchar_t* p = wszFileName; *p != 0; p++ )
+					{	switch( *p ) {
+						case ':': case '?': case '/': case '\\': case '*':
+							*p = '_';
+				}	}	}
+
+				#if defined( _UNICODE )
+					ft->wszFileName = mir_wstrdup( wszFileName );
+				#endif
+
+				char szFileName[ MAX_PATH ];
+				char cDefaultChar = '_';
+				WideCharToMultiByte( CP_ACP, WC_COMPOSITECHECK | WC_DEFAULTCHAR,
+					wszFileName, -1, szFileName, MAX_PATH, &cDefaultChar, 0 );
+				MSN_DebugLog( "File name: '%s'", szFileName );
+
+				replaceStr( ft->std.currentFile, szFileName );
+				ft->std.totalBytes =	ft->std.currentFileSize = *( long* )&szContext[ 8 ];
+				ft->std.totalFiles = 1;
+
+				p2p_registerSession( ft );
+
+				int tFileNameLen = strlen( ft->std.currentFile );
+				char tComment[ 40 ];
+				int tCommentLen = mir_snprintf( tComment, sizeof( tComment ), "%lu bytes", ft->std.currentFileSize );
+				char* szBlob = ( char* )alloca( sizeof( DWORD ) + tFileNameLen + tCommentLen + 2 );
+				*( PDWORD )szBlob = ( DWORD )ft;
+				strcpy( szBlob + sizeof( DWORD ), ft->std.currentFile );
+				strcpy( szBlob + sizeof( DWORD ) + tFileNameLen + 1, tComment );
+
+				PROTORECVEVENT pre;
+				pre.flags = 0;
+				pre.timestamp = ( DWORD )time( NULL );
+				pre.szMessage = ( char* )szBlob;
+				pre.lParam = ( LPARAM )( char* )"";
+
+				CCSDATA ccs;
+				ccs.hContact = ft->std.hContact;
+				ccs.szProtoService = PSR_FILE;
+				ccs.wParam = 0;
+				ccs.lParam = ( LPARAM )&pre;
+				MSN_CallService( MS_PROTO_CHAINRECV, 0, ( LPARAM )&ccs );
+			}
+			break;
+
+		case 4:
+			if ( !strcmp( szEufGuid, "{4BD96FC0-AB17-4425-A14A-439185962DC8}" )) {
+				MSN_ShowPopup( MSN_GetContactName( ft->std.hContact ),
+					MSN_Translate( "Contact tried to send its webcam data (currently not supported)" ), 
+					MSN_ALLOW_MSGBOX );
+			}
+			if ( !strcmp( szEufGuid, "{1C9AA97E-9C05-4583-A3BD-908A196F1E92}" )) {
+				MSN_ShowPopup( MSN_GetContactName( ft->std.hContact ),
+					MSN_Translate( "Contact tried to view our webcam data (currently not supported)" ), 
+					MSN_ALLOW_MSGBOX );
+			}
+			break;
+
+		default:
 			p2p_sendStatus( ft, info, 603 );
-			MSN_DebugLog( "Requested avatar does not match current avatar" );
 			delete ft;
-			return;
-		}
-
-		char szFileName[ MAX_PATH ];
-		MSN_GetAvatarFileName( NULL, szFileName, sizeof( szFileName ));
-		ft->fileId = _open( szFileName, O_RDONLY | _O_BINARY, _S_IREAD );
-		if ( ft->fileId == -1 ) {
-			p2p_sendStatus( ft, info, 603 );
-			MSN_DebugLog( "Unable to open avatar file '%s', error %d", szFileName, errno );
-			delete ft;
-			return;
-		}
-		replaceStr(ft->std.currentFile, szFileName);
-		MSN_DebugLog( "My avatar file opened for %s as %08p::%d", szContactEmail, ft, ft->fileId );
-		ft->std.totalBytes = ft->std.currentFileSize = filelength( ft->fileId );
-		ft->std.sending = true;
-
-		//---- send 200 OK Message
-		p2p_sendStatus( ft, info, 200 );
-		p2p_registerSession( ft );
-		p2p_sendFeedStart( ft );
-		return;
+			MSN_DebugLog( "Invalid or unknown AppID/EUF-GUID combination: %ld/%s", dwAppID, szEufGuid );
+			break;
 	}
 
-	if ( dwAppID == MSN_APPID_FILE && !strcmp( szEufGuid, "{5D3E02AB-6190-11D3-BBBB-00C04F795683}" )) {
-		WCHAR* wszFileName = ( WCHAR* )&szContext[ 20 ];
-		{	for ( WCHAR* p = wszFileName; *p != 0; p++ )
-			{	switch( *p ) {
-				case ':': case '?': case '/': case '\\': case '*':
-					*p = '_';
-		}	}	}
-
-		#if defined( _UNICODE )
-			ft->wszFileName = mir_wstrdup( wszFileName );
-		#endif
-
-		char szFileName[ MAX_PATH ];
-		char cDefaultChar = '_';
-		WideCharToMultiByte( CP_ACP, WC_COMPOSITECHECK | WC_DEFAULTCHAR,
-			wszFileName, -1, szFileName, MAX_PATH, &cDefaultChar, 0 );
-		MSN_DebugLog( "File name: '%s'", szFileName );
-
-		replaceStr( ft->std.currentFile, szFileName );
-		ft->std.totalBytes =	ft->std.currentFileSize = *( long* )&szContext[ 8 ];
-		ft->std.totalFiles = 1;
-
-		p2p_registerSession( ft );
-
-		int tFileNameLen = strlen( ft->std.currentFile );
-		char tComment[ 40 ];
-		int tCommentLen = mir_snprintf( tComment, sizeof( tComment ), "%lu bytes", ft->std.currentFileSize );
-		char* szBlob = ( char* )alloca( sizeof( DWORD ) + tFileNameLen + tCommentLen + 2 );
-		*( PDWORD )szBlob = ( DWORD )ft;
-		strcpy( szBlob + sizeof( DWORD ), ft->std.currentFile );
-		strcpy( szBlob + sizeof( DWORD ) + tFileNameLen + 1, tComment );
-
-		PROTORECVEVENT pre;
-		pre.flags = 0;
-		pre.timestamp = ( DWORD )time( NULL );
-		pre.szMessage = ( char* )szBlob;
-		pre.lParam = ( LPARAM )( char* )"";
-
-		CCSDATA ccs;
-		ccs.hContact = ft->std.hContact;
-		ccs.szProtoService = PSR_FILE;
-		ccs.wParam = 0;
-		ccs.lParam = ( LPARAM )&pre;
-		MSN_CallService( MS_PROTO_CHAINRECV, 0, ( LPARAM )&ccs );
-		return;
-	}
-
-	if ( dwAppID == 4 ) {
-		if ( !strcmp( szEufGuid, "{4BD96FC0-AB17-4425-A14A-439185962DC8}" )) {
-			MSN_ShowPopup( MSN_GetContactName( ft->std.hContact ),
-				MSN_Translate( "Contact tried to send its webcam data (currently not supported)" ), MSN_ALLOW_MSGBOX );
-			return;
-		}
-		if ( !strcmp( szEufGuid, "{1C9AA97E-9C05-4583-A3BD-908A196F1E92}" )) {
-			MSN_ShowPopup( MSN_GetContactName( ft->std.hContact ),
-				MSN_Translate( "Contact tried to view our webcam data (currently not supported)" ), MSN_ALLOW_MSGBOX );
-			return;
-	}	}
-
-	p2p_sendStatus( ft, info, 603 );
-	delete ft;
-	MSN_DebugLog( "Invalid or unknown AppID/EUF-GUID combination: %ld/%s", dwAppID, szEufGuid );
+	mir_free(( void* )szContext );
 }
 
 static void sttInitDirectTransfer(
@@ -1052,7 +1071,7 @@ static void sttInitDirectTransfer(
 			szBranch += 7;
 	}
 	if ( szCallID == NULL || szBranch == NULL ) {
-		MSN_DebugLog( "Ignoring invalid invitation: CallID='%s', Branch='%s', SessionID=%s", szCallID, szBranch );
+		MSN_DebugLog( "Ignoring invalid invitation: CallID='%s', Branch='%s'", szCallID, szBranch );
 		return;
 	}
 
@@ -1397,8 +1416,10 @@ void  p2p_processMsg( ThreadData* info,  const char* msgbody )
 			
 			memcpy( info->mSplitMsgBuf + hdrdata->mOffset, msgbody, hdrdata->mPacketLen );
 			
-			if ( hdrdata->mOffset + hdrdata->mPacketLen >= hdrdata->mTotalSize )
+			if ( hdrdata->mOffset + hdrdata->mPacketLen >= hdrdata->mTotalSize ) {
+				info->mSplitMsgBuf[hdrdata->mTotalSize] = 0;
 				msgbody = info->mSplitMsgBuf;
+			}
 			else
 				return;
 		}
@@ -1614,12 +1635,6 @@ void  p2p_processMsg( ThreadData* info,  const char* msgbody )
 /////////////////////////////////////////////////////////////////////////////////////////
 // p2p_invite - invite another side to transfer an avatar
 
-struct HFileContext
-{
-	DWORD len, dw1, dwSize, dw2, dw3;
-	WCHAR wszFileName[ MAX_PATH ];
-};
-
 void  p2p_invite( HANDLE hContact, int iAppID, filetransfer* ft )
 {
 	const char* szAppID;
@@ -1661,58 +1676,62 @@ void  p2p_invite( HANDLE hContact, int iAppID, filetransfer* ft )
 	char* p;
 	char tBuffer[ 1024 ];
 
-	switch ( iAppID ) {
-	case MSN_APPID_AVATAR:
-	case MSN_APPID_CUSTOMSMILEY:
-	case MSN_APPID_CUSTOMANIMATEDSMILEY:
-		ft->inmemTransfer = true;
-		ft->fileBuffer = NULL;
-		ft->std.sending = false;
-		ft->p2p_appID = MSN_APPID_AVATAR2;
+	switch ( iAppID ) 
+	{
+		case MSN_APPID_FILE:
+			{
+				HFileContext ctx = {0};
+				ctx.len = sizeof( ctx );
+				ctx.ver = 3; 
+				ctx.type = MSN_TYPEID_FTNOPREVIEW;
+				ctx.dwSize = ft->std.currentFileSize;
+				ctx.id = 0xffffffff;
+				if ( ft->wszFileName != NULL )
+					wcsncpy( ctx.wszFileName, ft->wszFileName, sizeof( ctx.wszFileName ));
+				else {
+					char* pszFiles = strrchr( ft->std.currentFile, '\\' );
+					if ( pszFiles )
+						pszFiles++;
+					else
+						pszFiles = ft->std.currentFile;
 
-		if ( iAppID == MSN_APPID_AVATAR )
-			MSN_GetStaticString( "PictContext", hContact, tBuffer, sizeof( tBuffer ));
-		else {
-			strncpy( tBuffer, ft->p2p_object, sizeof( tBuffer ));
-			tBuffer[ sizeof( tBuffer )-1 ] = 0;
-		}
+					MultiByteToWideChar( CP_ACP, 0, pszFiles, -1, ctx.wszFileName, sizeof( ctx.wszFileName ));
+				}
+				pContext = ( BYTE* )&ctx;
+				cbContext = sizeof( ctx );
+				ft->p2p_appID = MSN_APPID_FILE;
+			}
+			break;
 
-		p = strstr( tBuffer, "Size=\"" );
-		if ( p != NULL )
-			ft->std.totalBytes = ft->std.currentFileSize = atol( p + 6 );
+		default:
+			ft->inmemTransfer = true;
+			ft->fileBuffer = NULL;
+			ft->std.sending = false;
+			ft->p2p_appID = MSN_APPID_AVATAR2;
 
-		p = strstr( tBuffer, "SHA1C=\"" );
-		if ( p != NULL ) p = strchr( p+7, '\"' );
-		if ( p != NULL ) strcpy(p+1, "/>");
+			if ( iAppID == MSN_APPID_AVATAR )
+				MSN_GetStaticString( "PictContext", hContact, tBuffer, sizeof( tBuffer ));
+			else {
+				strncpy( tBuffer, ft->p2p_object, sizeof( tBuffer ));
+				tBuffer[ sizeof( tBuffer )-1 ] = 0;
+			}
 
-		if ( ft->create() == -1 ) {
-			MSN_DebugLog( "Avatar creation failed for MSNCTX=\'%s\'", tBuffer );
-			return;
-		}
+			p = strstr( tBuffer, "Size=\"" );
+			if ( p != NULL )
+				ft->std.totalBytes = ft->std.currentFileSize = atol( p + 6 );
 
-		pContext = ( BYTE* )tBuffer;
-		cbContext = strlen( tBuffer )+1;
-		break;
+			p = strstr( tBuffer, "SHA1C=\"" );
+			if ( p != NULL ) p = strchr( p+7, '\"' );
+			if ( p != NULL ) strcpy(p+1, "/>");
 
-	default:
-		HFileContext ctx;
-		memset( &ctx, 0, sizeof( ctx ));
-		ctx.len = sizeof( ctx );
-		ctx.dwSize = ft->std.currentFileSize;
-		if ( ft->wszFileName != NULL )
-			wcsncpy( ctx.wszFileName, ft->wszFileName, sizeof( ctx.wszFileName ));
-		else {
-			char* pszFiles = strrchr( ft->std.currentFile, '\\' );
-			if ( pszFiles )
-				pszFiles++;
-			else
-				pszFiles = ft->std.currentFile;
+			if ( ft->create() == -1 ) {
+				MSN_DebugLog( "Avatar creation failed for MSNCTX=\'%s\'", tBuffer );
+				return;
+			}
 
-			MultiByteToWideChar( CP_ACP, 0, pszFiles, -1, ctx.wszFileName, sizeof( ctx.wszFileName ));
-		}
-		pContext = ( BYTE* )&ctx;
-		cbContext = sizeof( ctx );
-		break;
+			pContext = ( BYTE* )tBuffer;
+			cbContext = strlen( tBuffer )+1;
+			break;
 	}
 
 	char* body = ( char* )alloca( 2000 );

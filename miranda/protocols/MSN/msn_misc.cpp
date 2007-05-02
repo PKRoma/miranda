@@ -1220,9 +1220,13 @@ bool txtParseParam (const char* szData, const char* presearch, const char* start
 } 
 
 
-void MSN_Base64Decode( const char* str, size_t len, char* res, size_t reslen )
+char* MSN_Base64Decode( const char* str )
 {
-	if ( str == NULL ) res[0] = 0;
+	if ( str == NULL ) return NULL; 
+
+	size_t len = strlen( str );
+	size_t reslen = Netlib_GetBase64DecodedBufferSize(len) + 4;
+	char* res = ( char* )mir_alloc( reslen );
 
 	char* p = const_cast< char* >( str );
 	if ( len & 3 ) { // fix for stupid Kopete's base64 encoder
@@ -1238,4 +1242,6 @@ void MSN_Base64Decode( const char* str, size_t len, char* res, size_t reslen )
 	NETLIBBASE64 nlb = { p, len, ( PBYTE )res, reslen };
 	MSN_CallService( MS_NETLIB_BASE64DECODE, 0, LPARAM( &nlb ));
 	res[nlb.cbDecoded] = 0;
+
+	return res;
 }

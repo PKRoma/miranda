@@ -816,13 +816,10 @@ void MSN_GetOIMs( const char* initxml )
 					++ch;
 			}
 			
-			len = strlen( tResult );
-			size_t reslen = Netlib_GetBase64DecodedBufferSize(len) * 3 + 4;
-			char* szMsg = ( char* )alloca( reslen );
-
-			MSN_Base64Decode( tResult, len, szMsg, reslen );
+			char* szMsg = MSN_Base64Decode( tResult );
 
 			mir_free( tResult );
+			szMsg = ( char* )mir_realloc( szMsg, strlen( szMsg ) * 3 + 4 ); 
 
 			wchar_t* szMsgU = NULL;
 			mir_utf8decode( szMsg, &szMsgU );
@@ -849,6 +846,8 @@ void MSN_GetOIMs( const char* initxml )
 			lenDelAct += mir_snprintf( szData1, sizeof( szData1 ), oimDeleteActionAtom, szId);
 			szDelAct = ( char* )mir_realloc( szDelAct, lenDelAct );
 			strcat( szDelAct, szData1 );
+
+			mir_free( szMsg );
 		}
 
 		xmlst += 3;
