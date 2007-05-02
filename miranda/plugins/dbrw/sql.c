@@ -192,6 +192,7 @@ static void __cdecl sql_server(void *args){
 
 static void sql_server_start(){
     svrServerHalt = 0;
+    pSvrQueueHead = pSvrQueueTail = 0;
     svrServerWakeup = CreateEvent(NULL, FALSE, FALSE, NULL);
     InitializeCriticalSection(&svrServerMutex);
     InitializeCriticalSection(&svrQueueMutex);
