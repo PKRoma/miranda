@@ -120,19 +120,29 @@ filetransfer *CreateIcqFileTransfer()
 
 
 
-static void ReleaseFileTransfer(void *ft)
+static int getFileTransferIndex(void *ft)
 {
   int i;
 
   for (i = 0; i < fileTransferCount; i++)
   {
     if (fileTransferList[i] == ft)
-    {
-      fileTransferCount--;
-      fileTransferList[i] = fileTransferList[fileTransferCount];
-      fileTransferList = (basic_filetransfer**)realloc(fileTransferList, sizeof(basic_filetransfer*)*fileTransferCount);
-      break;
-    }
+      return i;
+  }
+  return -1;
+}
+
+
+
+static void ReleaseFileTransfer(void *ft)
+{
+  int i = getFileTransferIndex(ft);
+
+  if (i != -1)
+  {
+    fileTransferCount--;
+    fileTransferList[i] = fileTransferList[fileTransferCount];
+    fileTransferList = (basic_filetransfer**)realloc(fileTransferList, sizeof(basic_filetransfer*)*fileTransferCount);
   }
 }
 
@@ -140,46 +150,31 @@ static void ReleaseFileTransfer(void *ft)
 
 int IsValidFileTransfer(void *ft)
 {
-  int i;
-
+  int res = 0;
+  
   EnterCriticalSection(&oftMutex);
 
-  for (i = 0; i < fileTransferCount; i++)
-  {
-    if (fileTransferList[i] == ft)
-    {
-      LeaveCriticalSection(&oftMutex);
-
-      return 1;
-    }
-  }
-
+  if (getFileTransferIndex(ft) != -1) res = 1;
+    
   LeaveCriticalSection(&oftMutex);
 
-  return 0;
+  return res;
 }
 
 
 
 int IsValidOscarTransfer(void *ft)
 {
-  int i;
+  int res = 0;
 
   EnterCriticalSection(&oftMutex);
 
-  for (i = 0; i < fileTransferCount; i++)
-  {
-    if (fileTransferList[i] == ft && ((basic_filetransfer*)ft)->ft_magic == FT_MAGIC_OSCAR)
-    {
-      LeaveCriticalSection(&oftMutex);
-
-      return 1;
-    }
-  }
+  if (getFileTransferIndex(ft) != -1 && ((basic_filetransfer*)ft)->ft_magic == FT_MAGIC_OSCAR)
+    res = 1;
 
   LeaveCriticalSection(&oftMutex);
 
-  return 0;
+  return res;
 }
 
 
@@ -217,11 +212,15 @@ void SafeReleaseFileTransfer(void **ft)
 {
   basic_filetransfer **bft = (basic_filetransfer**)ft;
 
-  // Check if filetransfer validity
-  if (!IsValidFileTransfer(*ft)) return;
-
   EnterCriticalSection(&oftMutex);
 
+  // Check for filetransfer validity
+  if (getFileTransferIndex(*ft) == -1)
+  {
+    LeaveCriticalSection(&oftMutex);
+    return;
+  }
+  
   if (*bft)
   {
     if ((*bft)->ft_magic == FT_MAGIC_ICQ)
@@ -249,12 +248,6 @@ void SafeReleaseFileTransfer(void **ft)
     else if ((*bft)->ft_magic == FT_MAGIC_OSCAR)
     { // release oscar filetransfer structure and its contents
       oscar_filetransfer *oft = (oscar_filetransfer*)(*bft);
-      // Release only valid transfers
-      if (!IsValidOscarTransfer(oft))
-      {
-        LeaveCriticalSection(&oftMutex);
-        return;
-      }
       // If connected, close connection
       if (oft->connection)
         CloseOscarConnection(oft->connection);
