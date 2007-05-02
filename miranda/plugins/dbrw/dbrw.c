@@ -206,7 +206,7 @@ static int dbrw_Load(char *profile, void *link) {
 		sql_exec(g_sqlite, "PRAGMA synchronous = NORMAL;");
 		sql_exec(g_sqlite, "PRAGMA cache_size = 12000;");
 		sql_exec(g_sqlite, "PRAGMA temp_store = MEMORY;");
-        sql_exec(g_sqlite, "END TRANSACTION;");
+        sql_exec(g_sqlite, "COMMIT;");
 	}
     utils_vacuum_check();
 	li.cbSize = sizeof(li);

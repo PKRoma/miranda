@@ -15,7 +15,10 @@ Changes
 -------
 1.0:
  - Initial release
- 
+
+1.1
+ - Safer event deletion notification
+ - Minor performance improvements
 
 Author
 ------

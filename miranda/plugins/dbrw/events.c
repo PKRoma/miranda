@@ -70,7 +70,7 @@ void events_init() {
     sql_exec(g_sqlite, "create temp trigger insert_new_temp_event1 after insert on dbrw_events begin replace into temp_dbrw_events values(new.id,new.eventtime,new.flags,new.eventtype,new.blob,new.blobsize,new.contactid,new.modulename,new.inserttime); end;");
     sql_exec(g_sqlite, "create temp trigger insert_new_temp_event2 after update on dbrw_events begin replace into temp_dbrw_events values(new.id,new.eventtime,new.flags,new.eventtype,new.blob,new.blobsize,new.contactid,new.modulename,new.inserttime); end;");
     sql_exec(g_sqlite, "create temp trigger delete_temp_event after delete on dbrw_events begin delete from temp_dbrw_events where id=old.id and contactid=old.id; end;");
-    sql_exec(g_sqlite, "END TRANSACTION;");
+    sql_exec(g_sqlite, "COMMIT;");
     hEventsEvent = CreateEvent(NULL, FALSE, FALSE, NULL);
     hEventsThread = (HANDLE)mir_forkthreadex(events_timerProcThread, 0, 0, 0);
 }
@@ -106,7 +106,7 @@ static unsigned __stdcall events_timerProcThread(void *arg) {
             sql_exec(g_sqlite, "create temp trigger insert_new_temp_event1 after insert on dbrw_events begin replace into temp_dbrw_events values(new.id,new.eventtime,new.flags,new.eventtype,new.blob,new.blobsize,new.contactid,new.modulename,new.inserttime); end;");
             sql_exec(g_sqlite, "create temp trigger insert_new_temp_event2 after update on dbrw_events begin replace into temp_dbrw_events values(new.id,new.eventtime,new.flags,new.eventtype,new.blob,new.blobsize,new.contactid,new.modulename,new.inserttime); end;");
             sql_exec(g_sqlite, "create temp trigger delete_temp_event after delete on dbrw_events begin delete from temp_dbrw_events where id=old.id and contactid=old.id; end;");
-            sql_exec(g_sqlite, "END TRANSACTION;");
+            sql_exec(g_sqlite, "COMMIT;");
             LeaveCriticalSection(&csEventsDb);
         }
         else if (dwWait == WAIT_IO_COMPLETION)
@@ -179,11 +179,13 @@ int events_add(WPARAM wParam, LPARAM lParam) {
 }
 
 int events_delete(WPARAM wParam, LPARAM lParam) {
-	HANDLE hContact = (HANDLE)wParam;
+	HANDLE hContact = (HANDLE)wParam, hContactFind;
 	HANDLE hDbEvent = (HANDLE)lParam;
 	int rc = 1;
 	
-	// TODO: Verify the event id before sending event notification
+    hContactFind = (HANDLE)events_getContact((WPARAM)hDbEvent, 0);
+    if ((int)hContactFind==-1||hContact!=hContactFind)
+        return rc;
 	log1("Notify event(%d) to be deleted [verify me]", (int)hDbEvent);
 	NotifyEventHooks(hEventDeletedEvent, wParam, lParam);
 	EnterCriticalSection(&csEventsDb);
@@ -289,7 +291,7 @@ int events_markRead(WPARAM wParam, LPARAM lParam) {
         }
 	}
 	else sql_reset(evt_stmts_prep[SQL_EVT_STMT_GETFLAGS]);
-    sql_exec(g_sqlite, "END TRANSACTION;");
+    sql_exec(g_sqlite, "COMMIT;");
 	LeaveCriticalSection(&csEventsDb);
 	return rc;
 }
