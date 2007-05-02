@@ -186,7 +186,7 @@ int events_delete(WPARAM wParam, LPARAM lParam) {
     hContactFind = (HANDLE)events_getContact((WPARAM)hDbEvent, 0);
     if ((int)hContactFind==-1||hContact!=hContactFind)
         return rc;
-	log1("Notify event(%d) to be deleted [verify me]", (int)hDbEvent);
+	log1("Notify event(%d) to be deleted", (int)hDbEvent);
 	NotifyEventHooks(hEventDeletedEvent, wParam, lParam);
 	EnterCriticalSection(&csEventsDb);
 	sqlite3_bind_int(evt_stmts_prep[SQL_EVT_STMT_DELETE], 1, (int)hDbEvent);

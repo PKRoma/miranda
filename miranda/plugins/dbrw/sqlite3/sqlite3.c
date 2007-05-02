@@ -17,7 +17,7 @@
 ** is also in a separate file.  This file contains only code for the core
 ** SQLite library.
 **
-** This amalgamation was generated on 2007-04-28 01:33:41 UTC.
+** This amalgamation was generated on 2007-05-02 16:42:32 UTC.
 */
 #define SQLITE_AMALGAMATION 1
 /************** Begin file sqlite3.h *****************************************/
@@ -6632,7 +6632,7 @@ static int vxprintf(
   char buf[etBUFSIZE];       /* Conversion buffer */
   char prefix;               /* Prefix character.  "+" or "-" or " " or '\0'. */
   etByte errorflag = 0;      /* True if an error is encountered */
-  etByte xtype = 0;              /* Conversion paradigm */
+  etByte xtype;              /* Conversion paradigm */
   char *zExtra;              /* Extra memory used for etTCLESCAPE conversions */
   static const char spaces[] =
    "                                                                         ";
@@ -18387,7 +18387,7 @@ int sqlite3PagerOpen(
 ){
   Pager *pPager = 0;
   char *zFullPathname = 0;
-  int nameLen = 0;  /* Compiler is wrong. This is always initialized before use */
+  int nameLen;  /* Compiler is wrong. This is always initialized before use */
   OsFile *fd = 0;
   int rc = SQLITE_OK;
   int i;
@@ -22891,10 +22891,10 @@ int sqlite3BtreeGetReserve(Btree *p){
 ** determined by the SQLITE_DEFAULT_AUTOVACUUM macro.
 */
 int sqlite3BtreeSetAutoVacuum(Btree *p, int autoVacuum){
+  BtShared *pBt = p->pBt;;
 #ifdef SQLITE_OMIT_AUTOVACUUM
   return SQLITE_READONLY;
 #else
-  BtShared *pBt = p->pBt;
   if( pBt->pageSizeFixed ){
     return SQLITE_READONLY;
   }
@@ -27922,9 +27922,7 @@ void sqlite3VdbeFifoClear(Fifo *pFifo){
 ** between formats.
 */
 int sqlite3VdbeChangeEncoding(Mem *pMem, int desiredEnc){
-#ifndef SQLITE_OMIT_UTF16
   int rc;
-#endif
   if( !(pMem->flags&MEM_Str) || pMem->enc==desiredEnc ){
     return SQLITE_OK;
   }
@@ -38033,9 +38031,7 @@ static int nameResolverStep(void *pArg, Expr *pExpr){
       int wrong_num_args = 0;     /* True if wrong number of arguments */
       int is_agg = 0;             /* True if is an aggregate function */
       int i;
-      #ifndef SQLITE_OMIT_AUTHORIZATION
       int auth;                   /* Authorization to use the function */
-      #endif
       int nId;                    /* Number of characters in function name */
       const char *zId;            /* The function name. */
       FuncDef *pDef;              /* Information about the function */
@@ -53797,8 +53793,8 @@ int sqlite3Select(
   WhereInfo *pWInfo;     /* Return from sqlite3WhereBegin() */
   Vdbe *v;               /* The virtual machine under construction */
   int isAgg;             /* True for select lists like "count(*)" */
-  ExprList *pEList = 0;  /* List of columns to extract. */
-  SrcList *pTabList = 0; /* List of tables to select from */
+  ExprList *pEList;      /* List of columns to extract. */
+  SrcList *pTabList;     /* List of tables to select from */
   Expr *pWhere;          /* The WHERE clause.  May be NULL */
   ExprList *pOrderBy;    /* The ORDER BY clause.  May be NULL */
   ExprList *pGroupBy;    /* The GROUP BY clause.  May be NULL */

@@ -20,7 +20,6 @@ RCFLAGS = --input-format rc --output-format coff -I../../include
 SQLITEDEF = -DNO_TCL \
             -DSQLITE_OMIT_UTF16 \
             -DSQLITE_OMIT_LOAD_EXTENSION \
-            -DSQLITE_OMIT_SHARED_CACHE \
             -DSQLITE_OMIT_PROGRESS_CALLBACK \
             -DSQLITE_OMIT_AUTHORIZATION \
             -DSQLITE_OMIT_ALTERTABLE \
