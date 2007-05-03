@@ -84,7 +84,6 @@ char *settings_stmts[SQL_SET_STMT_NUM] = {
 static sqlite3_stmt *settings_stmts_prep[SQL_SET_STMT_NUM] = {0};
 
 void settings_init() {
-	log0("Loading module: settings");
 	hHeap = HeapCreate(0, 0, 0);
 	ZeroMemory(&sSettingNames, sizeof(sSettingNames));
 	ZeroMemory(&sContactSettings, sizeof(sContactSettings));
@@ -104,7 +103,6 @@ void settings_init() {
 }
 
 void settings_destroy() {
-	log0("Unloading module: settings");
     if (hSettingsEvent) {
         SetEvent(hSettingsEvent);
         WaitForSingleObjectEx(hSettingsThread, INFINITE, FALSE);
@@ -319,15 +317,14 @@ static void settings_writeToDB(HANDLE hContact, const char *szModule, const char
 		case DBVT_BLOB:
             if (value->pbVal) {
 				sqlite3_bind_blob(settings_stmts_prep[SQL_SET_STMT_REPLACE], 5, value->pbVal, value->cpbVal, SQLITE_STATIC);
-                log2("DB blob write: %s/%s", szModule, szSetting);
             }
             break;
 		default:
 			sql_reset(settings_stmts_prep[SQL_SET_STMT_REPLACE]);
             return;
 	}
-	if (sql_step(settings_stmts_prep[SQL_SET_STMT_REPLACE])==SQLITE_DONE) {
-		log2("DB write: %s/%s", szModule, szSetting);
+	if (sql_step(settings_stmts_prep[SQL_SET_STMT_REPLACE])!=SQLITE_DONE) {
+		log2("Error writing: %s/%s", szModule, szSetting);
 	}
     sql_reset(settings_stmts_prep[SQL_SET_STMT_REPLACE]);
 }
@@ -343,7 +340,6 @@ static void settings_writeUpdatedSettings() {
 	for (idx=0; idx<sGlobalSettings.realCount; idx++) {
 		V = (DBCachedGlobalValue*)sGlobalSettings.items[idx];
 		if (V->update) {
-            log1("Found queued setting: %s [check for DB Write below]", V->name);
 			szTok = dbrw_alloc(strlen(V->name)+1);
 			strcpy(szTok, V->name);
 			szTokTmp1 = strtok(szTok, "/");
@@ -365,7 +361,6 @@ static void settings_writeUpdatedSettings() {
 		VL = (DBCachedContactValueList*)sContactSettings.items[idx];
 		for (VI=VL->first; VI!=NULL; VI=VI->next) {
 			if (VI->update) {
-                log1("Found queued setting: %s [check for DB Write below]", VI->name);
 				szTok = dbrw_alloc(strlen(VI->name)+1);
 				strcpy(szTok, VI->name);
 				szTokTmp1 = strtok(szTok, "/");
@@ -391,7 +386,6 @@ static void settings_writeUpdatedSettings() {
 
 static unsigned __stdcall settings_threadProc(void *arg) {
     DWORD dwWait;
-    log0("Settings cache thread starting");
     
     for(;;) {
         dwWait = WaitForSingleObjectEx(hSettingsEvent, DBRW_SETTINGS_FLUSHCACHE, TRUE);
@@ -405,7 +399,6 @@ static unsigned __stdcall settings_threadProc(void *arg) {
             if (Miranda_Terminated()) 
                 break;
     }
-    log0("Settings cache thread ending");
     CloseHandle(hSettingsEvent);
     hSettingsEvent = NULL;
     return 0;
@@ -418,7 +411,6 @@ static int settings_getContactSettingWorker(HANDLE hContact, DBCONTACTGETSETTING
 		return 1;
 	
 	szCachedSettingName = settings_getCachedSettingName(dbcgs->szModule, dbcgs->szSetting);
-	log2("Get [%d] %s", hContact, szCachedSettingName);
 	{
 		DBVARIANT *pCachedValue = settings_getCachedValue(hContact, szCachedSettingName, 0);
 
@@ -449,33 +441,10 @@ static int settings_getContactSettingWorker(HANDLE hContact, DBCONTACTGETSETTING
             else {
                 memcpy(dbcgs->pValue, pCachedValue, sizeof(DBVARIANT));
             }
-			#ifdef DBRW_LOGGING
-			switch( dbcgs->pValue->type) {
-				case DBVT_BYTE:	
-					log3("Got cached BYTE: %s/%s/%d", dbcgs->szModule, dbcgs->szSetting, dbcgs->pValue->bVal);
-					break;
-				case DBVT_WORD:	
-					log3("Got cached WORD: %s/%s/%d", dbcgs->szModule, dbcgs->szSetting, dbcgs->pValue->wVal);
-					break;
-				case DBVT_DWORD:	
-					log3("Got cached DWORD: %s/%s/%d", dbcgs->szModule, dbcgs->szSetting, dbcgs->pValue->dVal);
-					break;
-				case DBVT_UTF8:
-					log3("Got cached string(UTF8): %s/%s/%s", dbcgs->szModule, dbcgs->szSetting, dbcgs->pValue->pszVal);
-					break;
-				case DBVT_ASCIIZ:
-					log3("Got cached string(ASCIIZ): %s/%s/%s", dbcgs->szModule, dbcgs->szSetting, dbcgs->pValue->pszVal);
-					break;
-				default:
-					/*log3("Got unknown cached type: %s/%s/%d", dbcgs->szModule, dbcgs->szSetting, dbcgs->pValue->type);*/
-					break;
-			}
-			#endif
 			return (pCachedValue->type==DBVT_DELETED) ? 1 : 0;
 		}
 	}
     if (settings_isResident(szCachedSettingName)) {
-        log1("Resident setting fetch not in cache, ignoring read from db request (%s)", szCachedSettingName);
         return 1;
     }
 	// Read from db
@@ -488,10 +457,7 @@ static int settings_getContactSettingWorker(HANDLE hContact, DBCONTACTGETSETTING
 
 			if (pCachedValue!=NULL)
 				pCachedValue->type = DBVT_DELETED;
-			log2("Cached empty setting: %s/%s", dbcgs->szModule, dbcgs->szSetting);
 		}
-		else
-			log2("Unable to read: %s/%s", dbcgs->szModule, dbcgs->szSetting);
 		sql_reset(settings_stmts_prep[SQL_SET_STMT_READ]);
 		return 1;
 	}
@@ -499,15 +465,12 @@ static int settings_getContactSettingWorker(HANDLE hContact, DBCONTACTGETSETTING
 	switch(dbcgs->pValue->type) {
 		case DBVT_BYTE:
 			dbcgs->pValue->bVal = (BYTE)sqlite3_column_int(settings_stmts_prep[SQL_SET_STMT_READ], 1);
-			log3("Got BYTE: %s/%s/%d", dbcgs->szModule, dbcgs->szSetting, dbcgs->pValue->bVal);
 			break;
 		case DBVT_WORD:
 			dbcgs->pValue->wVal = (WORD)sqlite3_column_int(settings_stmts_prep[SQL_SET_STMT_READ], 1);
-			log3("Got WORD: %s/%s/%d", dbcgs->szModule, dbcgs->szSetting, dbcgs->pValue->wVal);
 			break;
 		case DBVT_DWORD:
 			dbcgs->pValue->dVal = (DWORD)sqlite3_column_int(settings_stmts_prep[SQL_SET_STMT_READ], 1);
-			log3("Got DWORD: %s/%s/%d", dbcgs->szModule, dbcgs->szSetting, dbcgs->pValue->dVal);
 			break;
 		case DBVT_UTF8:
 		case DBVT_ASCIIZ:
@@ -520,7 +483,6 @@ static int settings_getContactSettingWorker(HANDLE hContact, DBCONTACTGETSETTING
 				if (!isStatic) 
 					dbcgs->pValue->pszVal = dbrw_alloc(len);
 				memmove(dbcgs->pValue->pszVal, p, copylen);
-				log3("Got string: %s/%s/%s", dbcgs->szModule, dbcgs->szSetting, dbcgs->pValue->pszVal);
 			}
 			else {
 				dbcgs->pValue->pszVal = 0;
@@ -541,7 +503,6 @@ static int settings_getContactSettingWorker(HANDLE hContact, DBCONTACTGETSETTING
 			else {
 				dbcgs->pValue = 0;
 			}
-			log2("Got BLOB: %s/%s", dbcgs->szModule, dbcgs->szSetting);
 		}
 	}
 	sql_reset(settings_stmts_prep[SQL_SET_STMT_READ]);
@@ -728,15 +689,8 @@ int setting_writeSetting(WPARAM wParam, LPARAM lParam) {
 					}
 				}
 				settings_setCachedVariant(&dbcws->value, pCachedValue);
-                log2("Setting cached type = %d [%s]", pCachedValue->type, szCachedSettingName);
 				// set key to write on timer update
 				settings_setCachedValueUpdateStatus(hContact, szCachedSettingName, 1);
-                if (settings_isResident(szCachedSettingName)) {
-                    log1("Updating resident setting for writing: %s", szCachedSettingName);
-                }
-				else {
-                    log1("Queued setting for writing: %s", szCachedSettingName);
-                }
 			}
 		}
 		else settings_getCachedValue(hContact, szCachedSettingName, -1);
@@ -789,7 +743,6 @@ int setting_deleteSetting(WPARAM wParam, LPARAM lParam) {
 		}
 		sql_reset(settings_stmts_prep[SQL_SET_STMT_DELETE]);
 	}
-	log2("Deleted setting %s/%s", dbcgs->szModule, dbcgs->szSetting);
 	LeaveCriticalSection(&csSettingsDb);
 	{
 		DBCONTACTWRITESETTING dbcws;
@@ -808,7 +761,6 @@ int setting_enumSettings(WPARAM wParam, LPARAM lParam) {
 
 	if (!dbces->szModule)
 		return -1;
-	log1("Enumerating %s", dbces->szModule);
     settings_writeUpdatedSettings();
 	EnterCriticalSection(&csSettingsDb);
 	sqlite3_bind_int(settings_stmts_prep[SQL_SET_STMT_ENUM], 1, (int)hContact);
@@ -819,7 +771,6 @@ int setting_enumSettings(WPARAM wParam, LPARAM lParam) {
             char * szCachedSetting = settings_getCachedSettingName(dbces->szModule, sczSetting);
             // Ignore resident settings here (see next loop)
             if (szCachedSetting&&!settings_isResident(szCachedSetting)) {
-                log1("Enumerated %s", szCachedSetting);
                 rc = (dbces->pfnEnumProc)(sczSetting,dbces->lParam);
             }
 		}
@@ -890,7 +841,6 @@ int settings_setResident(WPARAM wParam, LPARAM lParam) {
                 HeapFree(hHeap, 0, V->name);
                 HeapFree(hHeap, 0, V->module);
 				HeapFree(hHeap, 0, V);
-                log1("Removed setting as resident: %s", szSetting);
             }
             LeaveCriticalSection(&csSettingsDb);
             return 0;
@@ -907,7 +857,6 @@ int settings_setResident(WPARAM wParam, LPARAM lParam) {
             V->module = strtok(V->module, "/");
             V->moduleHash = utils_hashString(V->module);
 			li.List_Insert(&sResidentSettings, V, idx);
-            log1("Created resident setting: %s", szSetting);
         }
         LeaveCriticalSection(&csSettingsDb);
     }

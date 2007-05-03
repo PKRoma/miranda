@@ -30,48 +30,28 @@ static HANDLE hDummyEvent = NULL;
 static unsigned __stdcall sql_threadProc(void *arg);
 static DWORD CALLBACK sql_apcproc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam);
 
-typedef struct {
-	HANDLE hDoneEvent;
-	sqlite3_stmt *stmt;
-	int result;
-} TStatementToMainThreadItem;
+typedef struct TSqlMessage {
+  int op;
+  sqlite3 *pDb;
+  sqlite3_stmt *pStmt;
+  int retCode;
+  const char *zIn;
+  int nByte;
+  const char *zOut;
+  HANDLE hDoneEvent;
+} TSqlMessage;
 
-typedef struct {
-	HANDLE hDoneEvent;
-	sqlite3 *sql;
-    const char *query;
-	int result;
-} TExecToMainThreadItem;
-
-typedef struct {
-	HANDLE hDoneEvent;
-	sqlite3 **sql;
-    const char *path;
-	int result;
-} TSQLOpenToMainThreadItem;
-
-typedef struct {
-	HANDLE hDoneEvent;
-	sqlite3 *sql;
-	int result;
-} TSQLCloseToMainThreadItem;
-
-typedef struct {
-	HANDLE hDoneEvent;
-	sqlite3 *sql;
-    const char *query;
-    sqlite3_stmt **stmt;
-	int result;
-} TPrepareToMainThreadItem;
-
-typedef struct {
-	HANDLE hDoneEvent;
-	sqlite3_stmt *stmt;
-	int result;
-} TFinalizeToMainThreadItem;
+enum {
+    SQL_STEP=1,
+    SQL_RESET,
+    SQL_EXEC,
+    SQL_OPEN,
+    SQL_CLOSE,
+    SQL_PREPARE,
+    SQL_FINALIZE
+};
 
 void sql_init() {
-	log0("Loading module: sql");
     hDummyEvent = CreateEvent(NULL, FALSE, FALSE, NULL);
     hSqlThread = (HANDLE)mir_forkthreadex(sql_threadProc, 0, 0, &sqlThreadId);
     hAPCWindow = CreateWindowEx(0, _T("STATIC"), NULL, 0, 0, 0, 0, 0, NULL, NULL, NULL, NULL);
@@ -81,7 +61,6 @@ void sql_init() {
 void sql_destroy() {
 	int i;
 	
-	log0("Unloading module: sql");
 	for(i = 0; i < sql_prepare_len; i++)
 		sql_finalize(*sql_prepare_stmt[i]);
 	dbrw_free(sql_prepare_text);
@@ -95,6 +74,7 @@ static unsigned __stdcall sql_threadProc(void *arg) {
     sqlite3_enable_shared_cache(1);
     while (WaitForSingleObjectEx(hDummyEvent, INFINITE, TRUE)!=WAIT_OBJECT_0);
     CloseHandle(hDummyEvent);
+    sqlite3_thread_cleanup();
     return 0;
 }
 
@@ -119,167 +99,110 @@ void sql_prepare_add(char **text, sqlite3_stmt **stmts, int len) {
 void sql_prepare_stmts() {
 	int i;
 	
-	log1("Preparing %d statements", sql_prepare_len);
 	for(i = 0; i < sql_prepare_len; i++)
 		sql_prepare(g_sqlite, sql_prepare_text[i], sql_prepare_stmt[i]);
-	log1("Prepared %d statements", sql_prepare_len);
 }
 
-static void CALLBACK sql_step_sync(DWORD dwParam) {
-	TStatementToMainThreadItem *item = (TStatementToMainThreadItem*)dwParam;
-	item->result = sqlite3_step(item->stmt);
-	SetEvent(item->hDoneEvent);
+static void CALLBACK sql_server_sync_apc(DWORD dwParam) {
+	TSqlMessage *msg = (TSqlMessage*)dwParam;
+    
+    if (!msg) {
+        log0("Fatal call to sql_sync_apc");
+        return;
+    }
+    switch(msg->op) {
+        case SQL_STEP:
+        	msg->retCode = sqlite3_step(msg->pStmt);
+            break;
+        case SQL_RESET:
+        	msg->retCode = sqlite3_reset(msg->pStmt);
+            break;
+        case SQL_EXEC:
+        	msg->retCode = sqlite3_exec(msg->pDb, msg->zIn, NULL, NULL, NULL);
+            break;
+        case SQL_OPEN:
+        	msg->retCode = sqlite3_open(msg->zIn, &msg->pDb);
+            break;
+        case SQL_CLOSE:
+        	msg->retCode = sqlite3_close(msg->pDb);
+            break;
+        case SQL_PREPARE:
+            msg->retCode = sqlite3_prepare_v2(msg->pDb, msg->zIn, -1, &msg->pStmt, NULL);
+            break;
+        case SQL_FINALIZE:
+        	msg->retCode = sqlite3_finalize(msg->pStmt);
+            break;
+        default:
+            return;
+    }
+    SetEvent(msg->hDoneEvent);
+}
+
+static void sql_server_sync(TSqlMessage *msg) {
+    msg->hDoneEvent = CreateEvent(NULL, FALSE, FALSE, NULL);
+    QueueUserAPC(sql_server_sync_apc, hSqlThread, (DWORD)msg);
+    PostMessage(hAPCWindow, WM_NULL, 0, 0);
+    WaitForSingleObject(msg->hDoneEvent, INFINITE);
+    CloseHandle(msg->hDoneEvent);
 }
 
 int sql_step(sqlite3_stmt *stmt) {
-    if (GetCurrentThreadId()!=sqlThreadId) {
-        TStatementToMainThreadItem item;
-		item.stmt = stmt;
-		item.hDoneEvent = CreateEvent(NULL, FALSE, FALSE, NULL);
-		QueueUserAPC(sql_step_sync, hSqlThread, (DWORD)&item);
-		PostMessage(hAPCWindow, WM_NULL, 0, 0);
-		WaitForSingleObject(item.hDoneEvent, INFINITE);
-		CloseHandle(item.hDoneEvent);
-		return item.result;
-    }
-    else {
-        return sqlite3_step(stmt);
-    }
-}
-
-static void CALLBACK sql_reset_sync(DWORD dwParam) {
-	TStatementToMainThreadItem *item = (TStatementToMainThreadItem*)dwParam;
-	item->result = sqlite3_reset(item->stmt);
-	SetEvent(item->hDoneEvent);
+    TSqlMessage msg;
+    msg.op = SQL_STEP;
+    msg.pStmt = stmt;
+    sql_server_sync(&msg);
+    return msg.retCode;
 }
 
 int sql_reset(sqlite3_stmt *stmt) {
-    if (GetCurrentThreadId()!=sqlThreadId) {
-        TStatementToMainThreadItem item;
-		item.stmt = stmt;
-		item.hDoneEvent = CreateEvent(NULL, FALSE, FALSE, NULL);
-		QueueUserAPC(sql_reset_sync, hSqlThread, (DWORD)&item);
-		PostMessage(hAPCWindow, WM_NULL, 0, 0);
-		WaitForSingleObject(item.hDoneEvent, INFINITE);
-		CloseHandle(item.hDoneEvent);
-		return item.result;
-    }
-    else {
-        return sqlite3_reset(stmt);   
-    }
-}
-
-static void CALLBACK sql_exec_sync(DWORD dwParam) {
-	TExecToMainThreadItem *item = (TExecToMainThreadItem*)dwParam;
-	item->result = sqlite3_exec(item->sql, item->query, NULL, NULL, NULL);
-	SetEvent(item->hDoneEvent);
+    TSqlMessage msg;
+    msg.op = SQL_RESET;
+    msg.pStmt = stmt;
+    sql_server_sync(&msg);
+    return msg.retCode;
 }
 
 int sql_exec(sqlite3 *sql, const char *query) {
-    if (GetCurrentThreadId()!=sqlThreadId) {
-        TExecToMainThreadItem item;
-		item.sql = sql;
-        item.query = query;
-		item.hDoneEvent = CreateEvent(NULL, FALSE, FALSE, NULL);
-		QueueUserAPC(sql_exec_sync, hSqlThread, (DWORD)&item);
-		PostMessage(hAPCWindow, WM_NULL, 0, 0);
-		WaitForSingleObject(item.hDoneEvent, INFINITE);
-		CloseHandle(item.hDoneEvent);
-		return item.result;
-    }
-    else {
-        return sqlite3_exec(sql, query, NULL, NULL, NULL);   
-    }
-}
-
-static void CALLBACK sql_open_sync(DWORD dwParam) {
-	TSQLOpenToMainThreadItem *item = (TSQLOpenToMainThreadItem*)dwParam;
-	item->result = sqlite3_open(item->path, item->sql);
-	SetEvent(item->hDoneEvent);
+    TSqlMessage msg;
+    msg.op = SQL_EXEC;
+    msg.pDb = sql;
+    msg.zIn = query;
+    sql_server_sync(&msg);
+    return msg.retCode;
 }
 
 int sql_open(const char *path, sqlite3 **sql) {
-    if (GetCurrentThreadId()!=sqlThreadId) {
-        TSQLOpenToMainThreadItem item;
-		item.sql = sql;
-        item.path = path;
-		item.hDoneEvent = CreateEvent(NULL, FALSE, FALSE, NULL);
-		QueueUserAPC(sql_open_sync, hSqlThread, (DWORD)&item);
-		PostMessage(hAPCWindow, WM_NULL, 0, 0);
-		WaitForSingleObject(item.hDoneEvent, INFINITE);
-		CloseHandle(item.hDoneEvent);
-		return item.result;
-    }
-    else {
-        return sqlite3_open(path, sql);   
-    } 
-}
-
-static void CALLBACK sql_close_sync(DWORD dwParam) {
-	TSQLCloseToMainThreadItem *item = (TSQLCloseToMainThreadItem*)dwParam;
-	item->result = sqlite3_close(item->sql);
-	SetEvent(item->hDoneEvent);
+    TSqlMessage msg;
+    msg.op = SQL_OPEN;
+    msg.zIn = path;
+    sql_server_sync(&msg);
+    *sql = msg.pDb;
+    return msg.retCode;
 }
 
 int sql_close(sqlite3 *sql) {
-    if (GetCurrentThreadId()!=sqlThreadId) {
-        TSQLCloseToMainThreadItem item;
-		item.sql = sql;
-		item.hDoneEvent = CreateEvent(NULL, FALSE, FALSE, NULL);
-		QueueUserAPC(sql_close_sync, hSqlThread, (DWORD)&item);
-		PostMessage(hAPCWindow, WM_NULL, 0, 0);
-		WaitForSingleObject(item.hDoneEvent, INFINITE);
-		CloseHandle(item.hDoneEvent);
-		return item.result;
-    }
-    else {
-        return sqlite3_close(sql);   
-    }
-}
-
-static void CALLBACK sql_prepare_sync(DWORD dwParam) {
-	TPrepareToMainThreadItem *item = (TPrepareToMainThreadItem*)dwParam;
-	item->result = sqlite3_prepare_v2(item->sql, item->query, -1, item->stmt, NULL);   
-	SetEvent(item->hDoneEvent);
+    TSqlMessage msg;
+    msg.op = SQL_CLOSE;
+    msg.pDb = sql;
+    sql_server_sync(&msg);
+    return msg.retCode;
 }
 
 int sql_prepare(sqlite3 *sql, const char *query, sqlite3_stmt **stmt) {
-    if (GetCurrentThreadId()!=sqlThreadId) {
-        TPrepareToMainThreadItem item;
-		item.sql = sql;
-        item.query = query;
-        item.stmt = stmt;
-		item.hDoneEvent = CreateEvent(NULL, FALSE, FALSE, NULL);
-		QueueUserAPC(sql_prepare_sync, hSqlThread, (DWORD)&item);
-		PostMessage(hAPCWindow, WM_NULL, 0, 0);
-		WaitForSingleObject(item.hDoneEvent, INFINITE);
-		CloseHandle(item.hDoneEvent);
-		return item.result;
-    }
-    else {
-        return sqlite3_prepare_v2(sql, query, -1, stmt, NULL);
-    }
-}
-
-static void CALLBACK sql_finalize_sync(DWORD dwParam) {
-	TFinalizeToMainThreadItem *item = (TFinalizeToMainThreadItem*)dwParam;
-	item->result = sqlite3_finalize(item->stmt);   
-	SetEvent(item->hDoneEvent);
+    TSqlMessage msg;
+    msg.op = SQL_PREPARE;
+    msg.pDb = sql;
+    msg.zIn = query;
+    sql_server_sync(&msg);
+    *stmt = msg.pStmt;
+    return msg.retCode;
 }
 
 int sql_finalize(sqlite3_stmt *stmt) {
-    if (GetCurrentThreadId()!=sqlThreadId) {
-        TFinalizeToMainThreadItem item;
-		item.stmt = stmt;
-		item.hDoneEvent = CreateEvent(NULL, FALSE, FALSE, NULL);
-		QueueUserAPC(sql_finalize_sync, hSqlThread, (DWORD)&item);
-		PostMessage(hAPCWindow, WM_NULL, 0, 0);
-		WaitForSingleObject(item.hDoneEvent, INFINITE);
-		CloseHandle(item.hDoneEvent);
-		return item.result;
-    }
-    else {
-        return sqlite3_finalize(stmt);
-    } 
+    TSqlMessage msg;
+    msg.op = SQL_FINALIZE;
+    msg.pStmt = stmt;
+    sql_server_sync(&msg);
+    return msg.retCode;
 }
 

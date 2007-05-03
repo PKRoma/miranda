@@ -20,6 +20,9 @@ Changes
  - Safer event deletion notification
  - Minor performance improvements
 
+1.2
+ - Automatic compaction dialog is now threaded
+
 Author
 ------
 Robert rainwater <rainwater@miranda-im.org>

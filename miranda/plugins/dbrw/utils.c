@@ -59,7 +59,7 @@ void utils_log_fmt(const char *file,int line,const char *fmt,...) {
 int utils_setSafetyMode(WPARAM wParam, LPARAM lParam) {
     int safeMode = (int)wParam;
 
-	log0("db_setSafetyMode");
+	log1("db_setSafetyMode: %s", safeMode?"On":"Off");
     if (safeMode) 
         sql_exec(g_sqlite, "PRAGMA synchronous = NORMAL;");
     else
@@ -186,15 +186,23 @@ static int utils_private_setting_set_time(const char *setting, time_t val) {
     return rc;
 }
 
+static HWND hwndVacuum;
 #define DM_VACUUM (WM_USER+1)
+
+static void __cdecl utils_vacuum_thread(void *args) {
+    sql_exec(g_sqlite, "VACUUM;");
+    if (IsWindow(hwndVacuum))
+        SendMessage(hwndVacuum, DM_VACUUM, 0, 0);
+}
+
 static BOOL CALLBACK utils_vacuum_proc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam) {
 	switch (msg) {
 	case WM_INITDIALOG:
+        hwndVacuum = hwndDlg;
         SetDlgItemTextA(hwndDlg, IDC_TEXT, Translate("Your Miranda IM profile is being compacted.  Please wait..."));
-        PostMessage(hwndDlg, DM_VACUUM, 0, 0);
+        mir_forkthread(utils_vacuum_thread, 0);
         break;
     case DM_VACUUM:
-        sql_exec(g_sqlite, "VACUUM;");
         DestroyWindow(hwndDlg);
         break;
     }
@@ -213,11 +221,11 @@ void utils_vacuum_check() {
         else if ((now-lastC)>(60*60*24*DBRW_COMPACT_DAYS)) {
             log0("Compacting database");
             DialogBoxParam(g_hInst, MAKEINTRESOURCE(IDD_INFODLG), 0, utils_vacuum_proc,(LPARAM)0);
+            hwndVacuum = NULL;
             utils_private_setting_set_time("LastCompact", now);
         }
     }
     else {
-        log0("Compact never run before.  Setting up key.");
         utils_private_setting_set_time("LastCompact", now);
     }
     

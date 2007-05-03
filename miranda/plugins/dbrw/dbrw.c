@@ -201,6 +201,7 @@ static int dbrw_Load(char *profile, void *link) {
     #else
 	log2("Loading dbRW v%s (SQLite v%s)", DBRW_VER_STRING, SQLITE_VERSION);
     #endif
+    utils_vacuum_check();
 	{
         sql_exec(g_sqlite, "BEGIN TRANSACTION;");
 		sql_exec(g_sqlite, "PRAGMA synchronous = NORMAL;");
@@ -208,7 +209,6 @@ static int dbrw_Load(char *profile, void *link) {
 		sql_exec(g_sqlite, "PRAGMA temp_store = MEMORY;");
         sql_exec(g_sqlite, "COMMIT;");
 	}
-    utils_vacuum_check();
 	li.cbSize = sizeof(li);
 	CallService(MS_SYSTEM_GET_LI,0,(LPARAM)&li);
 	InitializeCriticalSection(&csContactsDb);
@@ -271,7 +271,6 @@ static int dbrw_Load(char *profile, void *link) {
 static int dbrw_Unload(int wasLoaded) {
     if (!wasLoaded) 
         return 0;
-	log0("Unloading dbRW");
 	events_destroy();
 	settings_destroy();
 	contacts_destroy();
@@ -280,7 +279,7 @@ static int dbrw_Unload(int wasLoaded) {
 	DeleteCriticalSection(&csContactsDb);
 	DeleteCriticalSection(&csEventsDb);
 	DeleteCriticalSection(&csSettingsDb);
-    log0("dbRW successfully unloaded");
+    log0("dbRW unloaded");
 	#ifdef DBRW_LOGGING
 	utils_log_destroy();
 	#endif

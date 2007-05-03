@@ -63,7 +63,6 @@ static unsigned __stdcall events_timerProcThread(void *arg);
 static HANDLE hEventsThread = 0, hEventsEvent = 0;
 
 void events_init() {
-	log0("Loading module: events");
 	sql_prepare_add(evt_stmts, evt_stmts_prep, SQL_EVT_STMT_NUM);
     sql_exec(g_sqlite, "BEGIN TRANSACTION;");
     sql_exec(g_sqlite, "create temp table temp_dbrw_events (id integer primary key,eventtime integer,flags integer,eventtype integer, blob any, blobsize integer, contactid integer,modulename varchar(255),inserttime integer);");
@@ -76,7 +75,6 @@ void events_init() {
 }
 
 void events_destroy() {
-	log0("Unloading module: events");
     if (hEventsEvent) {
         SetEvent(hEventsEvent);
         WaitForSingleObjectEx(hEventsThread, INFINITE, FALSE);
@@ -86,7 +84,6 @@ void events_destroy() {
 
 static unsigned __stdcall events_timerProcThread(void *arg) {
     DWORD dwWait;
-    log0("Events thread starting");
     
     for(;;) {
         dwWait = WaitForSingleObjectEx(hEventsEvent, DBRW_EVENTS_FLUSHCACHE, TRUE);
@@ -95,13 +92,11 @@ static unsigned __stdcall events_timerProcThread(void *arg) {
             break;
         else if(dwWait == WAIT_TIMEOUT) {
             EnterCriticalSection(&csEventsDb);
-            log0("Flushing events cache table");
             sql_exec(g_sqlite, "BEGIN TRANSACTION;");
             sql_exec(g_sqlite, "drop trigger insert_new_temp_event1;");      
             sql_exec(g_sqlite, "drop trigger insert_new_temp_event2;");  
             sql_exec(g_sqlite, "drop trigger delete_temp_event;");
             sql_exec(g_sqlite, "drop table temp_dbrw_events;");
-            log0("Creating events cache table");
             sql_exec(g_sqlite, "create temp table temp_dbrw_events (id integer primary key,eventtime integer,flags integer,eventtype integer, blob any, blobsize integer, contactid integer,modulename varchar(255),inserttime integer);");
             sql_exec(g_sqlite, "create temp trigger insert_new_temp_event1 after insert on dbrw_events begin replace into temp_dbrw_events values(new.id,new.eventtime,new.flags,new.eventtype,new.blob,new.blobsize,new.contactid,new.modulename,new.inserttime); end;");
             sql_exec(g_sqlite, "create temp trigger insert_new_temp_event2 after update on dbrw_events begin replace into temp_dbrw_events values(new.id,new.eventtime,new.flags,new.eventtype,new.blob,new.blobsize,new.contactid,new.modulename,new.inserttime); end;");
@@ -113,7 +108,6 @@ static unsigned __stdcall events_timerProcThread(void *arg) {
             if (Miranda_Terminated()) 
                 break;
     }
-    log0("Events thread ending");
     CloseHandle(hEventsEvent);
     hEventsEvent = NULL;
     return 0;
@@ -132,7 +126,6 @@ int events_getCount(WPARAM wParam, LPARAM lParam) {
 		rc = sqlite3_column_int(evt_stmts_prep[SQL_EVT_STMT_COUNT], 0);
 	sql_reset(evt_stmts_prep[SQL_EVT_STMT_COUNT]);
 	LeaveCriticalSection(&csEventsDb);
-	log2("Got event count(%d) for #%d", rc, (int)wParam);
 	return rc;
 }
 
@@ -159,20 +152,13 @@ int events_add(WPARAM wParam, LPARAM lParam) {
 	sqlite3_bind_int64(evt_stmts_prep[SQL_EVT_STMT_ADD], 8, (__int64)time(NULL));
 	if (sql_step(evt_stmts_prep[SQL_EVT_STMT_ADD])==SQLITE_DONE) {
 		rc = (int)sqlite3_last_insert_rowid(g_sqlite);
-		log1("Added event(%d)", rc);
 	}
 	else {
-		log2("Error adding event(%d,%s)", rc, sqlite3_errmsg(g_sqlite));
-		log1("timestamp(%d)", dbei->timestamp);
-		log1("flags(%d)", dbei->flags);
-		log1("type(%d)", dbei->eventType);
-		log1("hcontact(%d)", hContact);
-		log1("module(%s)", dbei->szModule);
+		log2("Error adding event(#%d,%s)", sqlite3_errcode(g_sqlite), sqlite3_errmsg(g_sqlite));
 	}
 	sql_reset(evt_stmts_prep[SQL_EVT_STMT_ADD]);
 	LeaveCriticalSection(&csEventsDb);
 	if (rc) {
-		log1("Firing event(%d)", rc);
 		NotifyEventHooks(hEventAddedEvent,wParam,(LPARAM)rc);
 	}
 	return rc;
@@ -186,7 +172,6 @@ int events_delete(WPARAM wParam, LPARAM lParam) {
     hContactFind = (HANDLE)events_getContact((WPARAM)hDbEvent, 0);
     if ((int)hContactFind==-1||hContact!=hContactFind)
         return rc;
-	log1("Notify event(%d) to be deleted", (int)hDbEvent);
 	NotifyEventHooks(hEventDeletedEvent, wParam, lParam);
 	EnterCriticalSection(&csEventsDb);
 	sqlite3_bind_int(evt_stmts_prep[SQL_EVT_STMT_DELETE], 1, (int)hDbEvent);
@@ -207,13 +192,8 @@ static int events_getBlobSizeConditional(HANDLE hDbEvent, int cache) {
     EnterCriticalSection(&csEventsDb);
     stmt = cache?evt_stmts_prep[SQL_EVT_STMT_BLOBSIZE_CACHE]:evt_stmts_prep[SQL_EVT_STMT_BLOBSIZE];
 	sqlite3_bind_int(stmt, 1, (int)hDbEvent);
-    if (sql_step(stmt)==SQLITE_ROW) {
+    if (sql_step(stmt)==SQLITE_ROW)
 		rc = sqlite3_column_int(stmt, 0);
-        if (cache)
-            log2("Got blob size from cache for event %d (%d)", (int)hDbEvent, rc);
-        else
-            log2("Got blob size event %d (%d)", (int)hDbEvent, rc);
-    }
 	sql_reset(stmt);
     LeaveCriticalSection(&csEventsDb);
     return rc;
@@ -250,7 +230,6 @@ static int events_getConditional(HANDLE hDbEvent, DBEVENTINFO *dbei, int cache) 
 		CopyMemory(dbei->pBlob, blob, copySize);
 		dbei->cbBlob = copySize;
 		rc = 0;
-		log2("Get event(%d)%s", (int)hDbEvent, cache?" from cache":"");
 	}
 	sql_reset(stmt);
 	LeaveCriticalSection(&csEventsDb);
@@ -271,7 +250,6 @@ int events_markRead(WPARAM wParam, LPARAM lParam) {
 	HANDLE hDbEvent = (HANDLE)lParam;
 	int rc = -1;
 	
-	log1("Marking event read(%d)", (int)hDbEvent);
 	EnterCriticalSection(&csEventsDb);
     sql_exec(g_sqlite, "BEGIN TRANSACTION;");
 	sqlite3_bind_int(evt_stmts_prep[SQL_EVT_STMT_GETFLAGS], 1, (int)hDbEvent);
@@ -303,13 +281,8 @@ static int events_getContactConditional(HANDLE hDbEvent, int cache) {
     EnterCriticalSection(&csEventsDb);
     stmt = cache?evt_stmts_prep[SQL_EVT_STMT_GETCONTACT_CACHE]:evt_stmts_prep[SQL_EVT_STMT_GETCONTACT];
     sqlite3_bind_int(stmt, 1, (int)hDbEvent);
-	if (sql_step(stmt)==SQLITE_ROW) {
+	if (sql_step(stmt)==SQLITE_ROW)
 		rc = sqlite3_column_int(stmt, 0);
-        if (cache)
-            log2("Got contact from event cache id %d (%d)", (int)hDbEvent, rc);
-        else
-            log2("Got contact from event id %d (%d)", (int)hDbEvent, rc);
-	}
     sql_reset(stmt);
     LeaveCriticalSection(&csEventsDb);
     return rc;
@@ -332,10 +305,6 @@ int events_findFirst(WPARAM wParam, LPARAM lParam) {
 	sqlite3_bind_int(evt_stmts_prep[SQL_EVT_STMT_FINDFIRST], 1, (int)hContact);
 	if (sql_step(evt_stmts_prep[SQL_EVT_STMT_FINDFIRST])==SQLITE_ROW) {
 		rc = sqlite3_column_int(evt_stmts_prep[SQL_EVT_STMT_FINDFIRST], 0);
-		log1("Found first event(%d)", rc);
-	}
-	else {
-		log1("Could not find first event(%d)", rc);
 	}
 	sql_reset(evt_stmts_prep[SQL_EVT_STMT_FINDFIRST]);
 	LeaveCriticalSection(&csEventsDb);
@@ -353,13 +322,11 @@ int events_findFirstUnread(WPARAM wParam, LPARAM lParam) {
 		flags = sqlite3_column_int(evt_stmts_prep[SQL_EVT_STMT_FINDFIRSTUNREAD], 0);
 		if(!(flags&(DBEF_READ|DBEF_SENT))) {
 			rc = sqlite3_column_int(evt_stmts_prep[SQL_EVT_STMT_FINDFIRSTUNREAD], 1);
-			log2("Found first unread event(%d,%d)", (int)hContact, rc);
 			sql_reset(evt_stmts_prep[SQL_EVT_STMT_FINDFIRSTUNREAD]);
 			LeaveCriticalSection(&csEventsDb);
 			return rc;
 		}
 	}
-	log2("Could not find an unread event(%d,%d)", (int)hContact, rc);
 	sql_reset(evt_stmts_prep[SQL_EVT_STMT_FINDFIRSTUNREAD]);
 	LeaveCriticalSection(&csEventsDb);
 	return rc;
@@ -371,13 +338,8 @@ int events_findLast(WPARAM wParam, LPARAM lParam) {
 
 	EnterCriticalSection(&csEventsDb);
 	sqlite3_bind_int(evt_stmts_prep[SQL_EVT_STMT_FINDLAST], 1, (int)hContact);
-	if (sql_step(evt_stmts_prep[SQL_EVT_STMT_FINDLAST])==SQLITE_ROW) {
+	if (sql_step(evt_stmts_prep[SQL_EVT_STMT_FINDLAST])==SQLITE_ROW) 
 		rc = sqlite3_column_int(evt_stmts_prep[SQL_EVT_STMT_FINDLAST], 0);
-		log1("Found last event(%d)", rc);
-	}
-	else {
-		log1("Could not find last event(%d)", rc);
-	}
 	sql_reset(evt_stmts_prep[SQL_EVT_STMT_FINDLAST]);
 	LeaveCriticalSection(&csEventsDb);
 	return rc;
@@ -391,19 +353,13 @@ int events_findNext(WPARAM wParam, LPARAM lParam) {
 		return 0;
 	}
     hContact = events_getContact(wParam, 0);
-    if (hContact==-1) {
+    if (hContact==-1)
         return 0;
-    }
 	EnterCriticalSection(&csEventsDb);
 	sqlite3_bind_int(evt_stmts_prep[SQL_EVT_STMT_FINDNEXT], 1, hContact);
 	sqlite3_bind_int(evt_stmts_prep[SQL_EVT_STMT_FINDNEXT], 2, (int)hDbEvent);
-	if (sql_step(evt_stmts_prep[SQL_EVT_STMT_FINDNEXT])==SQLITE_ROW) {
+	if (sql_step(evt_stmts_prep[SQL_EVT_STMT_FINDNEXT])==SQLITE_ROW)
 		rc = sqlite3_column_int(evt_stmts_prep[SQL_EVT_STMT_FINDNEXT], 0);
-		log2("Found next event(%d,%d)", (int)hDbEvent, rc);
-	}
-	else {
-		log2("Could not find next event(%d,%d)", (int)hDbEvent, rc);
-	}
 	sql_reset(evt_stmts_prep[SQL_EVT_STMT_FINDNEXT]);
 	LeaveCriticalSection(&csEventsDb);
 	return rc;
@@ -426,10 +382,8 @@ int events_findPrev(WPARAM wParam, LPARAM lParam) {
     rc = sql_step(evt_stmts_prep[SQL_EVT_STMT_FINDPREV]);
 	if (rc==SQLITE_ROW) {
 		rc = sqlite3_column_int(evt_stmts_prep[SQL_EVT_STMT_FINDPREV], 0);
-		log1("Found previous event(%d)", rc);
 	}
 	else {
-		log1("Could not find previous event(%d)", rc);
         rc = 0;
 	}
 	sql_reset(evt_stmts_prep[SQL_EVT_STMT_FINDPREV]);

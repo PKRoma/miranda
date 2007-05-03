@@ -38,7 +38,6 @@ static char *ctc_stmts[SQL_CTC_STMT_NUM] = {
 static sqlite3_stmt *ctc_stmts_prep[SQL_CTC_STMT_NUM] = {0};
 
 void contacts_init() {
-	log0("Loading module: contacts");
 	ZeroMemory(&sContactList, sizeof(sContactList));
 	sContactList.increment = 50;
 	sContactList.sortFunc = contacts_compare;
@@ -53,7 +52,6 @@ void contacts_init() {
 		while (sql_step(st)==SQLITE_ROW) {
 			id = (int)sqlite3_column_int(st, 0);
 			if(!li.List_GetIndex(&sContactList, (void*)id, &idx)) {
-				log1("Adding contact id=%d to contacts cache", id);
 				li.List_Insert(&sContactList, (void*)id, idx);
 			}
 		}
@@ -62,7 +60,6 @@ void contacts_init() {
 }
 
 void contacts_destroy() {
-	log0("Unloading module: contacts");
 	li.List_Destroy(&sContactList);
 }
 
@@ -77,7 +74,7 @@ static int contacts_isRealContact(int id) {
 
 	if(li.List_GetIndex(&sContactList, (void*)id, &idx))
 		return 1;
-	log1("Invalid contact(%d)", id);
+	log1("Invalid contact id requested (%d)", id);
 	return 0;
 }
 
@@ -86,7 +83,6 @@ int contacts_getCount(WPARAM wParam, LPARAM lParam) {
 
 	EnterCriticalSection(&csContactsDb);
 	rc = sContactList.realCount;
-    log1("Found contact count [%d]", rc);
 	LeaveCriticalSection(&csContactsDb);
 	return rc;
 }
@@ -137,7 +133,6 @@ int contacts_delete(WPARAM wParam, LPARAM lParam) {
 	else {
 		int idx;
 		
-		log1("Deleting contact(%d)", id);
         LeaveCriticalSection(&csContactsDb);
 		NotifyEventHooks(hContactDeletedEvent, wParam, 0);
         EnterCriticalSection(&csContactsDb);
@@ -165,6 +160,7 @@ int contacts_delete(WPARAM wParam, LPARAM lParam) {
         
         // Commit transaction
         sql_exec(g_sqlite, "COMMIT;");
+        log1("Deleted contact data (%d)", id);
 	}
 	LeaveCriticalSection(&csContactsDb);
 	return rc;
@@ -178,15 +174,15 @@ int contacts_add(WPARAM wParam, LPARAM lParam) {
 	sqlite3_bind_int64(ctc_stmts_prep[SQL_CTC_STMT_ADD], 1, (__int64)time(NULL));
 	if (sql_step(ctc_stmts_prep[SQL_CTC_STMT_ADD])==SQLITE_DONE) {
 		id = (int)sqlite3_last_insert_rowid(g_sqlite);
-		log1("Added contact(%d)", id);
 		if (!li.List_GetIndex(&sContactList, (void*)id, &idx))
 			li.List_Insert(&sContactList, (void*)id, idx);
 	}
 	sql_reset(ctc_stmts_prep[SQL_CTC_STMT_ADD]);
 	LeaveCriticalSection(&csContactsDb);
-	if (id) {
+	if (id)
 		NotifyEventHooks(hContactAddedEvent, (WPARAM)id, 0);
-	}
+    else 
+        log0("Error creating contact");
 	return id;
 }
 
