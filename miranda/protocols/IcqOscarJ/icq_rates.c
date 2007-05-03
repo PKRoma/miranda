@@ -338,6 +338,7 @@ void InitDelay(int nDelay, void (*delaycode)())
 static void RatesTimer1()
 {
   rate_record *item;
+  int bSetupTimer = 0;
 
   if (!pendingList1) return;
 
@@ -367,17 +368,6 @@ static void RatesTimer1()
     SAFE_FREE((void**)&pendingList1);
   pendingListSize1--;
 
-  if (pendingListSize1 && icqOnline)
-  { // in queue remains some items, setup timer
-    int nDelay;
-    
-    EnterCriticalSection(&ratesMutex);
-    nDelay = ratesDelayToLevel(gRates, item->wGroup, ratesGetLimitLevel(gRates, item->wGroup, RML_IDLE_50));
-    LeaveCriticalSection(&ratesMutex);
-
-    if (nDelay < 10) nDelay = 10;
-    InitDelay(nDelay, RatesTimer1);
-  }
   if (!icqOnline)
   {
     int i;
@@ -386,6 +376,9 @@ static void RatesTimer1()
     SAFE_FREE((void**)&pendingList1);
     pendingListSize1 = 0;
   }
+  else if (pendingListSize1)
+    bSetupTimer = 1;
+
   LeaveCriticalSection(&ratesListsMutex);
 
   if (icqOnline)
@@ -396,6 +389,18 @@ static void RatesTimer1()
   }
   else
     NetLog_Server("Rates: Discarding request.");
+
+  if (bSetupTimer)
+  { // in queue remained some items, setup timer
+    int nDelay;
+
+    EnterCriticalSection(&ratesMutex);
+    nDelay = ratesDelayToLevel(gRates, item->wGroup, ratesGetLimitLevel(gRates, item->wGroup, RML_IDLE_50));
+    LeaveCriticalSection(&ratesMutex);
+
+    if (nDelay < 10) nDelay = 10;
+    InitDelay(nDelay, RatesTimer1);
+  }
   SAFE_FREE(&item);
 }
 
@@ -449,6 +454,7 @@ static void putItemToQueue1(rate_record *item, int nLev)
 static void RatesTimer2()
 {
   rate_record *item;
+  int bSetupTimer = 0;
 
   if (!pendingList2) return;
 
@@ -477,17 +483,7 @@ static void RatesTimer2()
   else
     SAFE_FREE((void**)&pendingList2);
   pendingListSize2--;
-  if (pendingListSize2 && icqOnline)
-  { // in queue remains some items, setup timer
-    int nDelay;
-    
-    EnterCriticalSection(&ratesMutex);
-    nDelay = ratesDelayToLevel(gRates, item->wGroup, ratesGetLimitLevel(gRates, item->wGroup, RML_IDLE_30));
-    LeaveCriticalSection(&ratesMutex);
 
-    if (nDelay < 10) nDelay = 10;
-    InitDelay(nDelay, RatesTimer2);
-  }
   if (!icqOnline)
   {
     int i;
@@ -496,6 +492,9 @@ static void RatesTimer2()
     SAFE_FREE((void**)&pendingList2);
     pendingListSize2 = 0;
   }
+  else if (pendingListSize2)
+    bSetupTimer = 1;
+
   LeaveCriticalSection(&ratesListsMutex);
 
   if (icqOnline)
@@ -513,6 +512,18 @@ static void RatesTimer2()
   else
     NetLog_Server("Rates: Discarding response.");
   SAFE_FREE(&item->szData);
+
+  if (bSetupTimer)
+  { // in queue remained some items, setup timer
+    int nDelay;
+    
+    EnterCriticalSection(&ratesMutex);
+    nDelay = ratesDelayToLevel(gRates, item->wGroup, ratesGetLimitLevel(gRates, item->wGroup, RML_IDLE_30));
+    LeaveCriticalSection(&ratesMutex);
+
+    if (nDelay < 10) nDelay = 10;
+    InitDelay(nDelay, RatesTimer2);
+  }
   SAFE_FREE(&item);
 }
 
