@@ -707,26 +707,41 @@ void ext_yahoo_buddy_added(int id, char *myid, char *who, char *group, int statu
 
 void ext_yahoo_buddy_group_changed(int id, char *myid, char *who, char *old_group, char *new_group)
 {
-LOG(("[ext_yahoo_buddy_group_changed] %s has been moved from group: %s to: %s", who, old_group, new_group));
+	LOG(("[ext_yahoo_buddy_group_changed] %s has been moved from group: %s to: %s", who, old_group, new_group));
 }
 
 void ext_yahoo_contact_added(int id, char *myid, char *who, char *fname, char *lname, char *msg)
 {
 	char *szBlob,*pCurBlob;
-	char m[1024];
+	char m[1024], nick[128];
 	HANDLE hContact=NULL;
 	CCSDATA ccs;
 	PROTORECVEVENT pre;
 
 	/* NOTE: Msg is actually in UTF8 unless stated otherwise!! */
-    LOG(("[ext_yahoo_contact_added] %s added you as %s w/ msg '%s'", who, myid, msg));
+    LOG(("[ext_yahoo_contact_added] %s %s (%s) added you as %s w/ msg '%s'", fname, lname, who, myid, msg));
     
 	if (YAHOO_BuddyIgnored(who)) {
 		LOG(("User '%s' on our Ignore List. Dropping Authorization Request.", who));
 		return;
 	}
 	
-	hContact = add_buddy(who, who, PALF_TEMPORARY);
+	nick[0] = '\0';
+	
+	if (fname != NULL)
+		lstrcpy(nick, fname);
+
+	if (lname != NULL) {
+		if (nick[0] != '\0')
+			lstrcat(nick, " ");
+		
+		lstrcat(nick,lname); 
+	} 
+
+	if (nick[0] == '\0')
+		lstrcpy(nick,who); 
+	
+	hContact = add_buddy(who, nick, PALF_TEMPORARY);
 	
 	ccs.szProtoService= PSR_AUTH;
 	ccs.hContact=hContact;
@@ -736,6 +751,7 @@ void ext_yahoo_contact_added(int id, char *myid, char *who, char *fname, char *l
 	pre.timestamp=time(NULL);
 	
 	pre.lParam=sizeof(DWORD)*2+lstrlen(who)+lstrlen(who)+5;
+	
 	
 	if (fname != NULL)
 		pre.lParam += lstrlen(fname);
@@ -764,8 +780,10 @@ void ext_yahoo_contact_added(int id, char *myid, char *who, char *fname, char *l
     pCurBlob+=sizeof(DWORD);
     
     // NICK
-    lstrcpy((char *)pCurBlob,who); 
-    pCurBlob+=lstrlen((char *)pCurBlob)+1;
+	//lstrcpy((char *)pCurBlob,who); 
+	lstrcpy((char *)pCurBlob, nick); 
+
+	pCurBlob+=lstrlen((char *)pCurBlob)+1;
     
     // FIRST
 	if (fname != NULL)

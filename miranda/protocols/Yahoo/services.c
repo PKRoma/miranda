@@ -343,7 +343,7 @@ int YahooAddToList(WPARAM wParam,LPARAM lParam)
 int YahooAddToListByEvent(WPARAM wParam,LPARAM lParam)
 {
     DBEVENTINFO dbei;
-    char* nick;
+    //char* nick, *firstName, *lastName, *email, *reason;
 	HANDLE hContact;
     
     YAHOO_DebugLog("[YahooAddToListByEvent]");
@@ -367,7 +367,7 @@ int YahooAddToListByEvent(WPARAM wParam,LPARAM lParam)
 	}
 
 	if ( dbei.eventType != EVENTTYPE_AUTHREQUEST ) {
-		YAHOO_DebugLog("[YahooAddToListByEvent] ERROR: Not authorization.");
+		YAHOO_DebugLog("[YahooAddToListByEvent] ERROR: Not an authorization request.");
 		return 0;
 	}
 
@@ -394,34 +394,34 @@ int YahooAddToListByEvent(WPARAM wParam,LPARAM lParam)
 		blob is: uin(DWORD), hcontact(HANDLE), nick(ASCIIZ), first(ASCIIZ), 
 		last(ASCIIZ), email(ASCIIZ), reason(ASCIIZ)
 	*/
-	//hContact = (HANDLE) ( dbei.pBlob + sizeof( DWORD ));
+	hContact = (HANDLE) ( dbei.pBlob + sizeof( DWORD ));
 	
-	nick = ( char* )( dbei.pBlob + sizeof( DWORD )*2 );
-	{
-		char* firstName = nick + lstrlen(nick) + 1;
-		char* lastName = firstName + lstrlen(firstName) + 1;
-		char* email = lastName + lstrlen(lastName) + 1;
-		char* reason = email + lstrlen(email) + 1;
-			
-		 YAHOO_DebugLog("buddy:%s first:%s last:%s e-mail:%s", nick,
-						firstName, lastName, email);
-		YAHOO_DebugLog("reason:%s ", reason);
-	}
-	
+	/*nick = ( char* )( dbei.pBlob + sizeof( DWORD )*2 );
+	firstName = nick + lstrlen(nick) + 1;
+	lastName = firstName + lstrlen(firstName) + 1;
+	email = lastName + lstrlen(lastName) + 1;
+	reason = email + lstrlen(email) + 1;
+		
+	YAHOO_DebugLog("buddy:%s first:%s last:%s e-mail:%s reason:%s", nick, firstName, lastName, email, reason);
+	*/
+		
 	/* we need to send out a packet to request an add */
 	//YAHOO_add_buddy(nick, "miranda", reason);
 	//return 0;
-	hContact = getbuddyH(nick);
+	//hContact = getbuddyH(email);
 	if (hContact != NULL) {
 		YAHOO_DebugLog("Temp Buddy found at: %p ", hContact);
-	}
+	} else
+		YAHOO_DebugLog("hContact NULL???");
+	
 	return (int)hContact;
 }
 
 int YahooAuthAllow(WPARAM wParam,LPARAM lParam)
 {
     DBEVENTINFO dbei;
-    char* nick;
+	HANDLE hContact;
+	DBVARIANT dbv;
     
     YAHOO_DebugLog("[YahooAuthAllow]");
 	if ( !yahooLoggedIn ) {
@@ -429,7 +429,6 @@ int YahooAuthAllow(WPARAM wParam,LPARAM lParam)
 		return 1;
 	}
 
-	
 	memset( &dbei, 0, sizeof( dbei ));
 	dbei.cbSize = sizeof( dbei );
 
@@ -446,22 +445,24 @@ int YahooAuthAllow(WPARAM wParam,LPARAM lParam)
 	if ( strcmp( dbei.szModule, yahooProtocolName ))
 		return 1;
 
-	nick = ( char* )( dbei.pBlob + sizeof( DWORD )*2 );
+	memcpy(&hContact,( char* )( dbei.pBlob + sizeof( DWORD ) ), sizeof(HANDLE)); 
+    
+    /* Need to remove the buddy from our Miranda Lists */
+    if (hContact != NULL && !DBGetContactSetting( hContact, yahooProtocolName, YAHOO_LOGINID, &dbv )){
+		YAHOO_DebugLog("Accepting buddy:%s", dbv.pszVal);    
+	    YAHOO_accept(dbv.pszVal);
+		DBFreeVariant(&dbv);
+	}
 
-    YAHOO_DebugLog("Accepting buddy:%s ", nick);
-	//YAHOO_add_buddy(nick, "miranda", NULL);
-	YAHOO_accept(nick);
-	
 	return 0;
 }
 
 int YahooAuthDeny(WPARAM wParam,LPARAM lParam)
 {
     DBEVENTINFO dbei;
-    char* nick;
-	char *handle;
-	char* reason;
+	DBVARIANT dbv;
 	HANDLE hContact;
+	char* reason= (char*)lParam;
 	
     YAHOO_DebugLog("[YahooAuthDeny]");
 	if ( !yahooLoggedIn )
@@ -491,17 +492,15 @@ int YahooAuthDeny(WPARAM wParam,LPARAM lParam)
 		return 1;
 	}
 
-	nick = ( char* )( dbei.pBlob + sizeof( DWORD )*2 );
-	handle = ( char* )( dbei.pBlob + sizeof( DWORD ) );
-	reason = (char*)lParam;
-		
-    memcpy(&hContact,handle, sizeof(HANDLE)); 
+    memcpy(&hContact,( char* )( dbei.pBlob + sizeof( DWORD ) ), sizeof(HANDLE)); 
     
     /* Need to remove the buddy from our Miranda Lists */
-    YAHOO_DebugLog("Rejecting buddy:%s msg: %s", nick, reason);    
-    YAHOO_reject(nick,reason);
-    
-    YAHOO_CallService( MS_DB_CONTACT_DELETE, (WPARAM) hContact, 0);
+    if (hContact != NULL && !DBGetContactSetting( hContact, yahooProtocolName, YAHOO_LOGINID, &dbv )){
+		YAHOO_DebugLog("Rejecting buddy:%s msg: %s", dbv.pszVal, reason);    
+	    YAHOO_reject(dbv.pszVal,reason);
+		DBFreeVariant(&dbv);
+		YAHOO_CallService( MS_DB_CONTACT_DELETE, (WPARAM) hContact, 0);
+	}
 	return 0;
 }
 
