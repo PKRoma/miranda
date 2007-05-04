@@ -343,6 +343,17 @@ static void RatesTimer1()
   if (!pendingList1) return;
 
   EnterCriticalSection(&ratesListsMutex);
+  if (!icqOnline)
+  {
+    int i;
+
+    for (i=0; i<pendingListSize1; i++) SAFE_FREE(&pendingList1[i]);
+    SAFE_FREE((void**)&pendingList1);
+    pendingListSize1 = 0;
+    LeaveCriticalSection(&ratesListsMutex);
+    
+    return;
+  }
   // take from queue, execute
   item = pendingList1[0];
 
@@ -368,15 +379,7 @@ static void RatesTimer1()
     SAFE_FREE((void**)&pendingList1);
   pendingListSize1--;
 
-  if (!icqOnline)
-  {
-    int i;
-
-    for (i=0; i<pendingListSize1; i++) SAFE_FREE(&pendingList1[i]);
-    SAFE_FREE((void**)&pendingList1);
-    pendingListSize1 = 0;
-  }
-  else if (pendingListSize1)
+  if (pendingListSize1)
     bSetupTimer = 1;
 
   LeaveCriticalSection(&ratesListsMutex);
@@ -459,6 +462,17 @@ static void RatesTimer2()
   if (!pendingList2) return;
 
   EnterCriticalSection(&ratesListsMutex);
+  if (!icqOnline)
+  {
+    int i;
+
+    for (i=0; i<pendingListSize2; i++) SAFE_FREE(&pendingList2[i]);
+    SAFE_FREE((void**)&pendingList2);
+    pendingListSize2 = 0;
+    LeaveCriticalSection(&ratesListsMutex);
+    
+    return;
+  }
   // take from queue, execute
   item = pendingList2[0];
 
@@ -484,15 +498,7 @@ static void RatesTimer2()
     SAFE_FREE((void**)&pendingList2);
   pendingListSize2--;
 
-  if (!icqOnline)
-  {
-    int i;
-
-    for (i=0; i<pendingListSize2; i++) SAFE_FREE(&pendingList2[i]);
-    SAFE_FREE((void**)&pendingList2);
-    pendingListSize2 = 0;
-  }
-  else if (pendingListSize2)
+  if (pendingListSize2)
     bSetupTimer = 1;
 
   LeaveCriticalSection(&ratesListsMutex);
