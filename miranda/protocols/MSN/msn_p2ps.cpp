@@ -23,7 +23,6 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 */
 
 #include "msn_global.h"
-#include <m_system_cpp.h>
 
 static CRITICAL_SECTION sessionLock;
 
@@ -130,6 +129,23 @@ filetransfer*  p2p_getThreadSession( HANDLE hContact, TInfoType mType )
 	for ( int i=0; i < sessionList.getCount(); i++ ) {
 		filetransfer* FT = sessionList[i];
 		if ( FT->std.hContact == hContact && FT->tType == mType ) {
+			result = FT;
+			break;
+	}	}
+
+	LeaveCriticalSection( &sessionLock );
+	return result;
+}
+
+filetransfer*  p2p_getAvatarSession( HANDLE hContact )
+{
+	EnterCriticalSection( &sessionLock );
+
+	filetransfer* result = NULL;
+	for ( int i=0; i < sessionList.getCount(); i++ ) {
+		filetransfer* FT = sessionList[i];
+		if ( FT->std.hContact == hContact && !FT->std.sending && 
+			FT->p2p_type == MSN_APPID_AVATAR ) {
 			result = FT;
 			break;
 	}	}

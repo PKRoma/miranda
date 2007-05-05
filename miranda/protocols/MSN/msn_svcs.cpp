@@ -618,8 +618,10 @@ static int MsnGetAvatarInfo(WPARAM wParam,LPARAM lParam)
 			*fakeAI = *AI;
 			mir_forkthread( sttFakeAvatarAck, fakeAI );
 		}
-		else
-			p2p_invite( AI->hContact, MSN_APPID_AVATAR );
+		else {
+			if ( p2p_getAvatarSession( AI->hContact ) == NULL ) 
+				p2p_invite( AI->hContact, MSN_APPID_AVATAR );
+		}
 
 		return GAIR_WAITFOR;
 	}

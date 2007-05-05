@@ -364,7 +364,6 @@ struct filetransfer
 	time_t		ts;
 
 	unsigned    p2p_sessionid;	// session id
-//	unsigned    p2p_msgid;		// message id
 	unsigned    p2p_acksessid;	// acknowledged session id
 	unsigned    p2p_sendmsgid; // send message id
 	unsigned    p2p_byemsgid;  // bye message id
@@ -535,6 +534,7 @@ void  p2p_registerSession( filetransfer* ft );
 void  p2p_unregisterSession( filetransfer* ft );
 void  p2p_sessionComplete( filetransfer* ft );
 
+filetransfer*  p2p_getAvatarSession( HANDLE hContact );
 filetransfer*  p2p_getThreadSession( HANDLE hContact, TInfoType mType );
 filetransfer*  p2p_getSessionByID( unsigned id );
 filetransfer*  p2p_getSessionByUniqueID( unsigned id );
@@ -584,7 +584,7 @@ void     MsgQueue_Clear( HANDLE hContact = NULL );
 #define	LIST_AL		0x0002
 #define	LIST_BL		0x0004
 #define	LIST_RL		0x0008
-#define  LIST_PL		0x0010
+#define LIST_PL		0x0010
 
 #define	LIST_REMOVE	0x0100
 
@@ -637,7 +637,6 @@ typedef struct
 	BOOL		SlowSend;
 	BOOL		ManageServer;
 
-	BOOL		UseMSNP11;
 	char		szEmail[MSN_MAX_EMAIL_LEN];
 }
 	MYOPTIONS;
@@ -669,24 +668,24 @@ struct MSN_StatusMessage
 	char* m_msg;
 };
 
-extern   MSN_StatusMessage    msnModeMsgs[ MSN_NUM_MODES ];
+extern  MSN_StatusMessage    msnModeMsgs[ MSN_NUM_MODES ];
 
-extern   LISTENINGTOINFO      msnCurrentMedia;
+extern  LISTENINGTOINFO      msnCurrentMedia;
 
 extern	ThreadData*	volatile msnNsThread;
-extern	bool			volatile msnLoggedIn;
+extern	bool		volatile msnLoggedIn;
 
-extern	char*	      msnProtocolName;
+extern	char*	    msnProtocolName;
 extern	int         msnSearchID;
 extern	char*       msnExternalIP;
 extern	int			msnStatusMode,
-							msnDesiredStatus;
+					msnDesiredStatus;
 
 extern	char*       msnProtChallenge;
 extern	char*       msnProductID;
 
-extern	char*			ModuleName;
-extern	char*	      mailsoundname;
+extern	char*		ModuleName;
+extern	char*	    mailsoundname;
 
 extern	char*       sid;
 extern	char*       kv;
@@ -702,7 +701,7 @@ extern	HANDLE		hNetlibUser;
 extern	HINSTANCE	hInst;
 extern	int			msnOtherContactsBlocked;
 
-extern	bool			msnHaveChatDll;
+extern	bool		msnHaveChatDll;
 
 ///////////////////////////////////////////////////////////////////////////////
 // UTF8 encode helper

@@ -331,7 +331,6 @@ static BOOL CALLBACK DlgProcMsnConnOpts(HWND hwndDlg, UINT msg, WPARAM wParam, L
 		CheckDlgButton( hwndDlg, IDC_AUTOGETHOST,	MSN_GetByte( "AutoGetHost", 1 ));
 		CheckDlgButton( hwndDlg, IDC_USEIEPROXY,  MSN_GetByte( "UseIeProxy",  0 ));
 		CheckDlgButton( hwndDlg, IDC_SLOWSEND,    MSN_GetByte( "SlowSend",    0 ));
-		CheckDlgButton( hwndDlg, IDC_USEMSNP11,   MSN_GetByte( "UseMSNP11",   1 ));
 
 		char fpath[MAX_PATH], *fpathp;
 		if ( SearchPathA(NULL, "LIBSSL32.DLL", NULL, sizeof(fpath), fpath, &fpathp) != 0 &&
@@ -397,7 +396,7 @@ static BOOL CALLBACK DlgProcMsnConnOpts(HWND hwndDlg, UINT msg, WPARAM wParam, L
 			}
 
 			case IDC_USEIEPROXY:		case IDC_SLOWSEND:
-			case IDC_USEMSNP11:        case IDC_USEOPENSSL:
+			case IDC_USEOPENSSL:
 			LBL_Apply:
 				SendMessage( GetParent( hwndDlg ), PSM_CHANGED, 0, 0 );
 				break;
@@ -441,13 +440,6 @@ static BOOL CALLBACK DlgProcMsnConnOpts(HWND hwndDlg, UINT msg, WPARAM wParam, L
 				MSN_SetString( NULL, "LoginServer", str );
 
 				MSN_SetWord( NULL, "MSNMPort", GetDlgItemInt( hwndDlg, IDC_MSNPORT, NULL, FALSE ));
-			}
-
-			tValue = ( BYTE )IsDlgButtonChecked( hwndDlg, IDC_USEMSNP11 );
-			if ( MyOptions.UseMSNP11 != tValue ) {
-				MSN_SetByte( "UseMSNP11", tValue );
-				if ( msnLoggedIn )
-					reconnectRequired = true;
 			}
 
 			tValue = ( BYTE )IsDlgButtonChecked( hwndDlg, IDC_USEOPENSSL );
@@ -682,7 +674,6 @@ void  LoadOptions()
 	MyOptions.PopupTimeoutOther = MSN_GetDword( NULL, "PopupTimeoutOther", MyOptions.PopupTimeoutHotmail );
 	MyOptions.ShowErrorsAsPopups = MSN_GetByte( "ShowErrorsAsPopups", FALSE );
 	MyOptions.SlowSend = MSN_GetByte( "SlowSend", FALSE );
-	MyOptions.UseMSNP11 = MSN_GetByte( "UseMSNP11", TRUE );
 	MyOptions.UseProxy = MSN_GetByte( "NLUseProxy", FALSE );
 	MyOptions.UseGateway = MSN_GetByte( "UseGateway", FALSE );
 	MyOptions.UseWinColors = MSN_GetByte( "UseWinColors", FALSE );
