@@ -42,7 +42,7 @@ void JabberXmlnsBrowse( XmlNode *iqNode, void *userdata )
 	if (( xmlns=JabberXmlGetAttrValue( queryNode, "xmlns" )) == NULL ) return;
 
 	if ( !_tcscmp( iqType, _T("get"))) {
-		XmlNodeIq iq( "result", JabberGetPacketID( iqNode ), iqFrom );
+		XmlNodeIq iq( "result", iqNode, iqFrom );
 		XmlNode* user = iq.addChild( "user" ); user->addAttr( "jid", jabberJID ); user->addAttr( "type", "client" ); user->addAttr( "xmlns", xmlns );
 		user->addChild( "ns", "http://jabber.org/protocol/disco#info" );
 		user->addChild( "ns", "http://jabber.org/protocol/muc" );
@@ -68,13 +68,15 @@ void JabberXmlnsDisco( XmlNode *iqNode, void *userdata )
 {
 	XmlNode *queryNode;
 	TCHAR *xmlns, *p, *discoType;
-	TCHAR *iqFrom, *iqType;
+	TCHAR *iqFrom, *iqType, *discoNode;
 
 	if ( iqNode == NULL ) return;
 	if (( iqFrom = JabberXmlGetAttrValue( iqNode, "from" )) == NULL ) return;
 	if (( iqType = JabberXmlGetAttrValue( iqNode, "type" )) == NULL ) return;
 	if (( queryNode = JabberXmlGetChild( iqNode, "query" )) == NULL ) return;
 	if (( xmlns = JabberXmlGetAttrValue( queryNode, "xmlns" )) == NULL ) return;
+
+	discoNode = JabberXmlGetAttrValue( queryNode, "node" );
 
 	p = _tcsrchr( xmlns, '/' );
 	discoType = _tcsrchr( xmlns, '#' );
@@ -83,18 +85,24 @@ void JabberXmlnsDisco( XmlNode *iqNode, void *userdata )
 		return;
 
 	if ( !_tcscmp( iqType, _T("get"))) {
-		XmlNodeIq iq( "result", JabberGetPacketID( iqNode ), iqFrom );
+		XmlNodeIq iq( "result", iqNode, iqFrom );
 
 		if ( !_tcscmp( discoType, _T("#info"))) {
 			XmlNode* query = iq.addChild( "query" ); query->addAttr( "xmlns", xmlns );
-			XmlNode* ident = query->addChild( "identity" ); ident->addAttr( "category", "user" );
-			ident->addAttr( "type", "client" ); ident->addAttr( "name", "Miranda" );
+			XmlNode* ident = query->addChild( "identity" ); ident->addAttr( "category", "client" );
+			ident->addAttr( "type", "pc" ); ident->addAttr( "name", "Miranda" );
+			if ( discoNode )
+				query->addAttr( "node", discoNode );
 			sttAddFeature( query, "http://jabber.org/protocol/disco#info" );
 			sttAddFeature( query, "http://jabber.org/protocol/muc" );
 			sttAddFeature( query, "http://jabber.org/protocol/si" );
 			sttAddFeature( query, "http://jabber.org/protocol/si/profile/file-transfer" );
 			sttAddFeature( query, "http://jabber.org/protocol/bytestreams" );
+			sttAddFeature( query, "http://jabber.org/protocol/ibb" );
 			sttAddFeature( query, "http://jabber.org/protocol/chatstates" );
+			sttAddFeature( query, "http://jabber.org/protocol/caps" );
+//			sttAddFeature( query, "http://jabber.org/protocol/mood+notify" );
+//			sttAddFeature( query, "http://jabber.org/protocol/tune+notify" );
 			sttAddFeature( query, "jabber:iq:agents" );
 			sttAddFeature( query, "jabber:iq:browse" );
 			sttAddFeature( query, "jabber:iq:oob" );
@@ -104,6 +112,7 @@ void JabberXmlnsDisco( XmlNode *iqNode, void *userdata )
 			sttAddFeature( query, "jabber:x:event" );
 			sttAddFeature( query, "vcard-temp" );
 			sttAddFeature( query, "urn:xmpp:time" );
+			sttAddFeature( query, "urn:xmpp:ping" );
 		}
 		jabberThreadInfo->send( iq );
 }	}

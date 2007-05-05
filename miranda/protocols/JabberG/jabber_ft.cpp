@@ -32,11 +32,13 @@ Last change by : $Author$
 #include <sys/stat.h>
 #include "jabber_iq.h"
 #include "jabber_byte.h"
+#include "jabber_ibb.h"
 
 void JabberFtCancel( filetransfer* ft )
 {
 	JABBER_LIST_ITEM *item;
 	JABBER_BYTE_TRANSFER *jbt;
+	JABBER_IBB_TRANSFER *jibb;
 	int i;
 
 	JabberLog( "Invoking JabberFtCancel()" );
@@ -73,6 +75,13 @@ void JabberFtCancel( filetransfer* ft )
 			jbt->hConn = NULL;
 		}
 		if ( jbt->hEvent ) SetEvent( jbt->hEvent );
+		if ( jbt->hProxyEvent ) SetEvent( jbt->hProxyEvent );
+	}
+	// For file transfer through IBB
+	if (( jibb=ft->jibb ) != NULL ) {
+		JabberLog( "Canceling IBB session" );
+		jibb->state = JIBB_ERROR;
+		if ( jibb->hEvent ) SetEvent( jibb->hEvent );
 	}
 }
 
@@ -80,6 +89,7 @@ void JabberFtCancel( filetransfer* ft )
 
 static void JabberFtSiResult( XmlNode *iqNode, void *userdata );
 static BOOL JabberFtSend( HANDLE hConn, void *userdata );
+static BOOL JabberFtIbbSend( int blocksize, void *userdata );
 static void JabberFtSendFinal( BOOL success, void *userdata );
 
 void JabberFtInitiate( TCHAR* jid, filetransfer* ft )
@@ -91,6 +101,7 @@ void JabberFtInitiate( TCHAR* jid, filetransfer* ft )
 	JABBER_LIST_ITEM *item;
 	int i;
 	TCHAR sid[9];
+	XmlNode* option = NULL;
 
 	if ( jid==NULL || ft==NULL || !jabberOnline || ( rs=JabberListGetBestClientResourceNamePtr( jid ))==NULL ) {
 		JSendBroadcast( ft->std.hContact, ACKTYPE_FILE, ACKRESULT_FAILED, ft, 0 );
@@ -129,7 +140,15 @@ void JabberFtInitiate( TCHAR* jid, filetransfer* ft )
 	XmlNode* feature = si->addChild( "feature" ); feature->addAttr( "xmlns", "http://jabber.org/protocol/feature-neg" );
 	XmlNode* x = feature->addChild( "x" ); x->addAttr( "xmlns", "jabber:x:data" ); x->addAttr( "type", "form" );
 	XmlNode* field = x->addChild( "field" ); field->addAttr( "var", "stream-method" ); field->addAttr( "type", "list-single" );
-	XmlNode* option = field->addChild( "option" ); option->addChild( "value", "http://jabber.org/protocol/bytestreams" );
+
+	BOOL bDirect = JGetByte( "BsDirect", TRUE );
+	BOOL bProxy = JGetByte( "BsProxy", TRUE );
+	
+	// bytestreams support?
+	if ( bDirect || bProxy ) {
+		option = field->addChild( "option" ); option->addChild( "value", "http://jabber.org/protocol/bytestreams" );
+	}
+	option = field->addChild( "option" ); option->addChild( "value", "http://jabber.org/protocol/ibb" );
 	jabberThreadInfo->send( iq );
 }
 
@@ -140,6 +159,7 @@ static void JabberFtSiResult( XmlNode *iqNode, void *userdata )
 	JABBER_LIST_ITEM *item;
 	int offset, length;
 	JABBER_BYTE_TRANSFER *jbt;
+	JABBER_IBB_TRANSFER *jibb;
 
 	if (( type=JabberXmlGetAttrValue( iqNode, "type" )) == NULL ) return;
 	if (( from=JabberXmlGetAttrValue( iqNode, "from" )) == NULL ) return;
@@ -176,6 +196,18 @@ static void JabberFtSiResult( XmlNode *iqNode, void *userdata )
 								item->ft->type = FT_BYTESTREAM;
 								item->ft->jbt = jbt;
 								mir_forkthread(( pThreadFunc )JabberByteSendThread, jbt );
+							} else if ( !_tcscmp( valueNode->text, _T("http://jabber.org/protocol/ibb"))) {
+								jibb = (JABBER_IBB_TRANSFER *) mir_alloc( sizeof ( JABBER_IBB_TRANSFER ));
+								ZeroMemory( jibb, sizeof( JABBER_IBB_TRANSFER ));
+								jibb->srcJID = mir_tstrdup( to );
+								jibb->dstJID = mir_tstrdup( from );
+								jibb->sid = mir_tstrdup( item->ft->sid );
+								jibb->pfnSend = JabberFtIbbSend;
+								jibb->pfnFinal = JabberFtSendFinal;
+								jibb->userdata = item->ft;
+								item->ft->type = FT_IBB;
+								item->ft->jibb = jibb;
+								mir_forkthread(( pThreadFunc )JabberIbbSendThread, jibb );
 		}	}	}	}	}	}
 	}
 	else if ( !_tcscmp( type, _T("error"))) {
@@ -215,6 +247,74 @@ static BOOL JabberFtSend( HANDLE hConn, void *userdata )
 				_close( fd );
 				return FALSE;
 			}
+			ft->std.currentFileProgress += numRead;
+			ft->std.totalProgress += numRead;
+			JSendBroadcast( ft->std.hContact, ACKTYPE_FILE, ACKRESULT_DATA, ft, ( LPARAM )&ft->std );
+		}
+		mir_free( buffer );
+	}
+	_close( fd );
+	return TRUE;
+}
+
+static BOOL JabberFtIbbSend( int blocksize, void *userdata )
+{
+	filetransfer* ft = ( filetransfer* ) userdata;
+
+	struct _stat statbuf;
+	int fd;
+	char* buffer;
+	int numRead;
+
+	JabberLog( "Sending [%s]", ft->std.files[ ft->std.currentFileNumber ] );
+	_stat( ft->std.files[ ft->std.currentFileNumber ], &statbuf );	// file size in statbuf.st_size
+	if (( fd=_open( ft->std.files[ ft->std.currentFileNumber ], _O_BINARY|_O_RDONLY )) < 0 ) {
+		JabberLog( "File cannot be opened" );
+		return FALSE;
+	}
+
+	ft->std.sending = TRUE;
+	ft->std.currentFileSize = statbuf.st_size;
+	ft->std.currentFileProgress = 0;
+
+	if (( buffer=( char* )mir_alloc( blocksize )) != NULL ) {
+		while (( numRead=_read( fd, buffer, blocksize )) > 0 ) {
+			int iqId = JabberSerialNext();
+			XmlNode msg( "message" );
+			msg.addAttr( "to", ft->jibb->dstJID );
+			msg.addAttrID( iqId );
+
+			// let others send data too
+			Sleep(2);
+
+			char *encoded = JabberBase64Encode(buffer, numRead);
+
+			XmlNode *dataNode = msg.addChild( "data", encoded );
+			dataNode->addAttr( "xmlns", "http://jabber.org/protocol/ibb" );
+			dataNode->addAttr( "sid", ft->jibb->sid );
+			dataNode->addAttr( "seq", ft->jibb->wPacketId );
+			XmlNode *ampNode = msg.addChild( "amp" );
+			ampNode->addAttr( "xmlns", "http://jabber.org/protocol/amp" );
+			XmlNode *rule = ampNode->addChild( "rule" );
+			rule->addAttr( "condition", "deliver-at" );
+			rule->addAttr( "value", "stored" );
+			rule->addAttr( "action", "error" );
+			rule = ampNode->addChild( "rule" );
+			rule->addAttr( "condition", "match-resource" );
+			rule->addAttr( "value", "exact" );
+			rule->addAttr( "action", "error" );
+			ft->jibb->wPacketId++;
+
+			mir_free( encoded );
+
+			if ( ft->jibb->state == JIBB_ERROR || ft->jibb->bStreamClosed || jabberThreadInfo->send( msg ) == SOCKET_ERROR ) {
+				mir_free( buffer );
+				_close( fd );
+				return FALSE;
+			}
+
+			ft->jibb->dwTransferredSize += (DWORD)numRead;
+
 			ft->std.currentFileProgress += numRead;
 			ft->std.totalProgress += numRead;
 			JSendBroadcast( ft->std.hContact, ACKTYPE_FILE, ACKRESULT_DATA, ft, ( LPARAM )&ft->std );
@@ -286,6 +386,17 @@ void JabberFtHandleSiRequest( XmlNode *iqNode )
 							break;
 			}	}	}	}
 
+			// try IBB only if bytestreams support not found
+			if ( i >= fieldNode->numChild ) {
+				for ( i=0; i<fieldNode->numChild; i++ ) {
+					optionNode = fieldNode->child[i];
+					if ( optionNode->name && !strcmp( optionNode->name, "option" )) {
+						if (( n=JabberXmlGetChild( optionNode, "value" ))!=NULL && n->text ) {
+							if ( !_tcscmp( n->text, _T("http://jabber.org/protocol/ibb"))) {
+								ftType = FT_IBB;
+								break;
+			}	}	}	}	}
+
 			if ( i < fieldNode->numChild ) {
 				// Found known stream mechanism
 				CCSDATA ccs;
@@ -295,6 +406,7 @@ void JabberFtHandleSiRequest( XmlNode *iqNode )
 				char *desc = (( n=JabberXmlGetChild( fileNode, "desc" ))!=NULL && n->text!=NULL ) ? t2a( n->text ) : mir_strdup( "" );
 
 				filetransfer* ft = new filetransfer;
+				ft->dwExpectedRecvFileSize = (DWORD)filesize;
 				ft->jid = mir_tstrdup( from );
 				ft->std.hContact = JabberHContactFromJID( from );
 				ft->sid = mir_tstrdup( sid );
@@ -354,6 +466,23 @@ void JabberFtAcceptSiRequest( filetransfer* ft )
 		jabberThreadInfo->send( iq );
 }	}
 
+void JabberFtAcceptIbbRequest( filetransfer* ft )
+{
+	if ( !jabberOnline || ft==NULL || ft->jid==NULL || ft->sid==NULL ) return;
+
+	JABBER_LIST_ITEM *item;
+	if (( item=JabberListAdd( LIST_FTRECV, ft->sid )) != NULL ) {
+		item->ft = ft;
+
+		XmlNodeIq iq( "result", ft->iqId, ft->jid );
+		XmlNode* si = iq.addChild( "si" ); si->addAttr( "xmlns", "http://jabber.org/protocol/si" );
+		XmlNode* f = si->addChild( "feature" ); f->addAttr( "xmlns", "http://jabber.org/protocol/feature-neg" );
+		XmlNode* x = f->addChild( "x" ); x->addAttr( "xmlns", "jabber:x:data" ); x->addAttr( "type", "submit" );
+		XmlNode* fl = x->addChild( "field" ); fl->addAttr( "var", "stream-method" );
+		fl->addChild( "value", "http://jabber.org/protocol/ibb" );
+		jabberThreadInfo->send( iq );
+}	}
+
 BOOL JabberFtHandleBytestreamRequest( XmlNode *iqNode )
 {
 	XmlNode *queryNode;
@@ -379,6 +508,72 @@ BOOL JabberFtHandleBytestreamRequest( XmlNode *iqNode )
 	}
 
 	JabberLog( "File transfer invalid bytestream initiation request received" );
+	return FALSE;
+}
+
+BOOL JabberFtHandleIbbRequest( XmlNode *iqNode, BOOL bOpen )
+{
+	if ( !iqNode ) return FALSE;
+
+	TCHAR *id = JabberXmlGetAttrValue( iqNode, "id" );
+	TCHAR *from = JabberXmlGetAttrValue( iqNode, "from" );
+	TCHAR *to = JabberXmlGetAttrValue( iqNode, "to" );
+	if ( !id || !from || !to ) return FALSE;
+
+	XmlNode *ibbNode = JabberXmlGetChildWithGivenAttrValue( iqNode, bOpen ? "open" : "close", "xmlns", _T("http://jabber.org/protocol/ibb"));
+	if ( !ibbNode ) return FALSE;
+
+	TCHAR *sid = JabberXmlGetAttrValue( ibbNode, "sid" );
+	if ( !sid ) return FALSE;
+
+	// already closed?
+	JABBER_LIST_ITEM *item = JabberListGetItemPtr( LIST_FTRECV, sid );
+	if ( !item ) {
+		XmlNodeIq iq( "error", id, from );
+		XmlNode* e = iq.addChild( "error" ); e->addAttr( "code", 404 ); e->addAttr( "type", _T("cancel"));
+		XmlNode* na = e->addChild( "item-not-found" ); na->addAttr( "xmlns", "urn:ietf:params:xml:ns:xmpp-stanzas" );
+		jabberThreadInfo->send( iq );
+		return FALSE;
+	}
+
+	// open event
+	if ( bOpen ) {
+		if ( !item->jibb ) {
+			JABBER_IBB_TRANSFER *jibb = ( JABBER_IBB_TRANSFER * ) mir_alloc( sizeof( JABBER_IBB_TRANSFER ));
+			ZeroMemory( jibb, sizeof( JABBER_IBB_TRANSFER ));
+			jibb->srcJID = mir_tstrdup( from );
+			jibb->dstJID = mir_tstrdup( to );
+			jibb->sid = mir_tstrdup( sid );
+			jibb->pfnRecv = JabberFtReceive;
+			jibb->pfnFinal = JabberFtReceiveFinal;
+			jibb->userdata = item->ft;
+			item->ft->jibb = jibb;
+			item->jibb = jibb;
+			mir_forkthread(( pThreadFunc )JabberIbbReceiveThread, jibb );
+			XmlNodeIq iq( "result", id, from );
+			jabberThreadInfo->send( iq );
+			return TRUE;
+		}
+		// stream already open
+		XmlNodeIq iq( "error", id, from );
+		XmlNode* e = iq.addChild( "error" ); e->addAttr( "code", 404 ); e->addAttr( "type", _T("cancel"));
+		XmlNode* na = e->addChild( "item-not-found" ); na->addAttr( "xmlns", "urn:ietf:params:xml:ns:xmpp-stanzas" );
+		jabberThreadInfo->send( iq );
+		return FALSE;
+	}
+	
+	// close event && stream already open
+	if ( item->jibb && item->jibb->hEvent ) {
+		item->jibb->bStreamClosed = TRUE;
+		SetEvent( item->jibb->hEvent );
+
+		XmlNodeIq iq( "result", id, from );
+		jabberThreadInfo->send( iq );
+		return TRUE;
+	}
+
+	JabberListRemove( LIST_FTRECV, sid );
+
 	return FALSE;
 }
 

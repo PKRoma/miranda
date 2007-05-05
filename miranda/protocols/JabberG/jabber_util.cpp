@@ -829,6 +829,15 @@ void __stdcall JabberSendPresenceTo( int status, TCHAR* to, XmlNode* extra )
 	if ( extra )
 		p.addChild( extra );
 
+	// XEP-0115:Entity Capabilities
+	char* version = JabberGetVersionText();
+
+	XmlNode *c = p.addChild( "c" );
+	c->addAttr( "xmlns", "http://jabber.org/protocol/caps" );
+	c->addAttr( "node", "http://miranda-im.org/caps" );
+	c->addAttr( "ver", version );
+	mir_free( version );
+
 	if ( JGetByte( "EnableAvatars", TRUE )) {
 		char hashValue[ 50 ];
 		if ( !JGetStaticString( "AvatarHash", NULL, hashValue, sizeof hashValue )) {

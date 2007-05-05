@@ -203,6 +203,10 @@ SOURCE=.\jabber_groupchat.cpp
 # End Source File
 # Begin Source File
 
+SOURCE=.\jabber_ibb.cpp
+# End Source File
+# Begin Source File
+
 SOURCE=.\jabber_icolib.cpp
 # End Source File
 # Begin Source File
@@ -326,6 +330,10 @@ SOURCE=.\jabber.h
 # Begin Source File
 
 SOURCE=.\jabber_byte.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\jabber_ibb.h
 # End Source File
 # Begin Source File
 

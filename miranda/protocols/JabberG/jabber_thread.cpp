@@ -932,6 +932,46 @@ static void JabberProcessCompressed( XmlNode *node, void *userdata )
 	xmlStreamInitialize( "after successful Zlib init" );
 }
 
+static void JabberProcessPubsubEvent( XmlNode *node )
+{
+// 	XmlNode *eventNode = JabberXmlGetChildWithGivenAttrValue( node, "event", "xmlns", _T("http://jabber.org/protocol/pubsub#event"));
+// 	XmlNode *itemsNode = JabberXmlGetChildWithGivenAttrValue( eventNode, "items", "node", _T("http://jabber.org/protocol/mood"));
+// 	if ( itemsNode ) {
+// 		XmlNode *itemNode = JabberXmlGetChild( itemsNode, "item" );
+// 		if ( itemNode ) {
+// 			XmlNode *moodNode = JabberXmlGetChildWithGivenAttrValue( itemNode, "mood", "xmlns", _T("http://jabber.org/protocol/mood"));
+// 			if ( moodNode ) {
+// 				char *moodType = NULL;
+// 				TCHAR *moodText = NULL;
+// 				for ( int i=0; i<moodNode->numChild; i++ ) {
+// 					if ( !strcmp( moodNode->child[i]->name, "text" ))
+// 						moodText = moodNode->child[i]->text;
+// 					else
+// 						moodType = moodNode->child[i]->name;
+// 				}
+// 				if ( moodType || moodText )
+// 				{
+// 					TCHAR* from = JabberXmlGetAttrValue( node, "from" );
+// 					if ( from == NULL ) return;
+// 
+// 					HANDLE hContact = JabberHContactFromJID( from );
+// 					if ( hContact == NULL )
+// 						return;
+// 
+// 					if ( moodType )
+// 					{
+// 						TCHAR *mt2 = a2t( moodType );
+// 						JSetStringT( hContact, "XStatusName", mt2 );
+// 						mir_free( mt2 );
+// 					}
+// 					if ( moodText )
+// 						JSetStringT( hContact, "XStatusMsg", moodText );
+// 				}
+// 			}
+// 		}
+// 	}
+}
+
 static void JabberProcessMessage( XmlNode *node, void *userdata )
 {
 	ThreadData* info;
@@ -956,6 +996,23 @@ static void JabberProcessMessage( XmlNode *node, void *userdata )
 			JSendBroadcast( JabberHContactFromJID( from ), ACKTYPE_MESSAGE, ACKRESULT_FAILED, ( HANDLE ) 1, (LPARAM)errText );
 			mir_free(errText);
 		}
+		return;
+	}
+
+	n = JabberXmlGetChildWithGivenAttrValue( node, "data", "xmlns", _T("http://jabber.org/protocol/ibb") );
+	if ( n ) {
+		BOOL bOk = FALSE;
+		TCHAR *sid = JabberXmlGetAttrValue( n, "sid" );
+		TCHAR *seq = JabberXmlGetAttrValue( n, "seq" );
+		if ( sid && seq && n->text ) {
+			bOk = JabberIbbProcessRecvdData( n->text, sid, seq );
+		}
+		return;
+	}
+
+	n = JabberXmlGetChildWithGivenAttrValue( node, "event", "xmlns", _T("http://jabber.org/protocol/pubsub#event"));
+	if ( n ) {
+		JabberProcessPubsubEvent( node );
 		return;
 	}
 
@@ -1248,17 +1305,17 @@ static void JabberProcessPresence( XmlNode *node, void *userdata )
 		}	}
 
 		// Send version query if this is the new resource
-		if (( p = _tcschr( from, '@' )) != NULL ) {
-			if (( p = _tcschr( p, '/' ))!=NULL && p[1]!='\0' ) {
-				p++;
-				if (( item = JabberListGetItemPtr( LIST_ROSTER, from )) != NULL ) {
-					JABBER_RESOURCE_STATUS *r = item->resource;
-					for ( i=0; i < item->resourceCount && lstrcmp( r->resourceName, p ); i++, r++ );
-					if ( i >= item->resourceCount || ( r->version == NULL && r->system == NULL && r->software == NULL )) {
-						XmlNodeIq iq( "get", NOID, from );
-						XmlNode* query = iq.addQuery( "jabber:iq:version" );
-						info->send( iq );
-		}	}	}	}
+//		if (( p = _tcschr( from, '@' )) != NULL ) {
+//			if (( p = _tcschr( p, '/' ))!=NULL && p[1]!='\0' ) {
+//				p++;
+//				if (( item = JabberListGetItemPtr( LIST_ROSTER, from )) != NULL ) {
+//					JABBER_RESOURCE_STATUS *r = item->resource;
+//					for ( i=0; i < item->resourceCount && lstrcmp( r->resourceName, p ); i++, r++ );
+//					if ( i >= item->resourceCount || ( r->version == NULL && r->system == NULL && r->software == NULL )) {
+//						XmlNodeIq iq( "get", JabberSerialNext(), from );
+//						XmlNode* query = iq.addQuery( "jabber:iq:version" );
+//						info->send( iq );
+//		}	}	}	}
 
 		if (( statusNode = JabberXmlGetChild( node, "status" )) != NULL && statusNode->text != NULL )
 			p = mir_tstrdup( statusNode->text );
@@ -1482,6 +1539,17 @@ static void JabberProcessIqLast( TCHAR* idStr, XmlNode* node )
 	jabberThreadInfo->send( iq );
 }
 
+// XEP-0199: XMPP Ping support
+static void JabberProcessIqPing( TCHAR* idStr, XmlNode* node )
+{
+	TCHAR* from;
+	if (( from=JabberXmlGetAttrValue( node, "from" )) == NULL )
+		return;
+
+	XmlNodeIq iq( "result", idStr, from );
+	jabberThreadInfo->send( iq );
+}
+
 // Returns the current GMT offset in seconds
 int GetGMTOffset(void)
 {
@@ -1685,6 +1753,7 @@ static void JabberProcessIq( XmlNode *node, void *userdata )
 	if ( !node->name || strcmp( node->name, "iq" )) return;
 	if (( info=( ThreadData* ) userdata ) == NULL ) return;
 	if (( type=JabberXmlGetAttrValue( node, "type" )) == NULL ) return;
+	from = JabberXmlGetAttrValue( node, "from" );
 
 	int id = JabberGetPacketID( node );
 	TCHAR* idStr = JabberXmlGetAttrValue( node, "id" );
@@ -1798,9 +1867,9 @@ static void JabberProcessIq( XmlNode *node, void *userdata )
 		}
 
 		// RECVED: file transfer request
-		// ACTION: notify Miranda throuch CHAINRECV
+		// ACTION: notify Miranda through CHAINRECV
 		else if ( !_tcscmp( xmlns, _T("jabber:iq:oob"))) {
-			if (( jid=JabberXmlGetAttrValue( node, "from" ))!=NULL && ( n=JabberXmlGetChild( queryNode, "url" ))!=NULL && n->text!=NULL ) {
+			if (( jid=from)!=NULL && ( n=JabberXmlGetChild( queryNode, "url" ))!=NULL && n->text!=NULL ) {
 				str = n->text;	// URL of the file to get
 				filetransfer* ft = new filetransfer;
 				ft->std.totalFiles = 1;
@@ -1895,9 +1964,13 @@ static void JabberProcessIq( XmlNode *node, void *userdata )
 		}
 		else {
 			// entity time (XEP-0202) support
-			XmlNode* timeNode = JabberXmlGetChildWithGivenAttrValue( node, "time", "xmlns", _T( "urn:xmpp:time" ));
-			if ( timeNode )
+			n = JabberXmlGetChildWithGivenAttrValue( node, "time", "xmlns", _T( "urn:xmpp:time" ));
+			if ( n )
 				JabberProcessIqTime202( idStr, node );
+			// // XEP-0199: XMPP Ping support
+			n = JabberXmlGetChildWithGivenAttrValue( node, "ping", "xmlns", _T( "urn:xmpp:ping" ));
+			if ( n )
+				JabberProcessIqPing( idStr, node );
 		}
 	}
 	// RECVED: <iq type='result'><query ...
@@ -1908,6 +1981,33 @@ static void JabberProcessIq( XmlNode *node, void *userdata )
 		if ( !_tcscmp( xmlns, _T("jabber:iq:version")))
 			JabberProcessIqResultVersion( type, node, queryNode );
 	}
+	// RECVED: <iq type='set'><open xmlns='http://jabber.org/protocol/ibb'
+	else if ( !_tcscmp( type, _T("set")) && ( n=JabberXmlGetChildWithGivenAttrValue( node, "open", "xmlns", _T("http://jabber.org/protocol/ibb")))!=NULL ) {
+		JabberFtHandleIbbRequest( node, TRUE );
+	}
+	// RECVED: <iq type='set'><close xmlns='http://jabber.org/protocol/ibb'
+	else if ( !_tcscmp( type, _T("set")) && ( n=JabberXmlGetChildWithGivenAttrValue( node, "close", "xmlns", _T("http://jabber.org/protocol/ibb")))!=NULL ) {
+		JabberFtHandleIbbRequest( node, FALSE );
+	}
+	// RECVED: <iq type='set'><data xmlns='http://jabber.org/protocol/ibb'
+	else if (!_tcscmp( type, _T("set")) && ( n=JabberXmlGetChildWithGivenAttrValue( node, "data", "xmlns", _T("http://jabber.org/protocol/ibb")))!=NULL ) {
+		BOOL bOk = FALSE;
+		TCHAR *sid = JabberXmlGetAttrValue( n, "sid" );
+		TCHAR *seq = JabberXmlGetAttrValue( n, "seq" );
+		if ( sid && seq && n->text ) {
+			bOk = JabberIbbProcessRecvdData( n->text, sid, seq );
+		}
+		if ( from != NULL ) {
+			if ( bOk ) {
+				XmlNodeIq iq( "result", idStr, from );
+				jabberThreadInfo->send( iq );
+			}
+			else {
+				XmlNodeIq iq( "error", idStr, from );
+				XmlNode* e = iq.addChild( "error" ); e->addAttr( "code", 404 ); e->addAttr( "type", _T("cancel"));
+				XmlNode* na = e->addChild( "item-not-found" ); na->addAttr( "xmlns", "urn:ietf:params:xml:ns:xmpp-stanzas" );
+				jabberThreadInfo->send( iq );
+	}	}	}
 	// RECVED: <iq type='set'><si xmlns='http://jabber.org/protocol/si' ...
 	else if ( !_tcscmp( type, _T("set")) && ( siNode=JabberXmlGetChildWithGivenAttrValue( node, "si", "xmlns", _T("http://jabber.org/protocol/si")))!=NULL && ( profile=JabberXmlGetAttrValue( siNode, "profile" ))!=NULL ) {
 
@@ -1919,7 +2019,7 @@ static void JabberProcessIq( XmlNode *node, void *userdata )
 		// RECVED: unknown profile
 		// ACTION: reply with bad-profile
 		else {
-			if (( from=JabberXmlGetAttrValue( node, "from" )) != NULL ) {
+			if ( from != NULL ) {
 				XmlNodeIq iq( "error", idStr, from );
 				XmlNode* error = iq.addChild( "error" ); error->addAttr( "code", "400" ); error->addAttr( "type", "cancel" );
 				XmlNode* brq = error->addChild( "bad-request" ); brq->addAttr( "xmlns", "urn:ietf:params:xml:ns:xmpp-stanzas" );

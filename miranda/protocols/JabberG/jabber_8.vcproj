@@ -736,6 +736,10 @@
 				</FileConfiguration>
 			</File>
 			<File
+				RelativePath=".\jabber_ibb.cpp"
+				>
+			</File>
+			<File
 				RelativePath=".\jabber_icolib.cpp"
 				>
 			</File>
@@ -1526,6 +1530,10 @@
 			</File>
 			<File
 				RelativePath="jabber_byte.h"
+				>
+			</File>
+			<File
+				RelativePath=".\jabber_ibb.h"
 				>
 			</File>
 			<File

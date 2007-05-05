@@ -545,6 +545,9 @@ int JabberFileAllow( WPARAM wParam, LPARAM lParam )
 	case FT_BYTESTREAM:
 		JabberFtAcceptSiRequest( ft );
 		break;
+	case FT_IBB:
+		JabberFtAcceptIbbRequest( ft );
+		break;
 	}
 	return ccs->wParam;
 }
@@ -598,6 +601,7 @@ int JabberFileDeny( WPARAM wParam, LPARAM lParam )
 		}
 		break;
 	case FT_BYTESTREAM:
+	case FT_IBB:
 		{	XmlNode* e = iq.addChild( "error", _T("File transfer refused"));
 			e->addAttr( "code", 403 ); e->addAttr( "type", "cancel" );
 			XmlNode* f = e->addChild( "forbidden" ); f->addAttr( "xmlns", "urn:ietf:params:xml:ns:xmpp-stanzas" );
@@ -865,12 +869,19 @@ int JabberGetInfo( WPARAM wParam, LPARAM lParam )
 
 			if ( item && item->resource ) {
 				for (int i = 0; i < item->resourceCount; i++) {
+					
 					mir_sntprintf( jid, 256, _T("%s/%s"), dbv.ptszVal, item->resource[i].resourceName );
+					
 					iqId = JabberSerialNext();
 					JabberIqAdd( iqId, IQ_PROC_NONE, JabberIqResultLastActivity );
 					XmlNodeIq iq3( "get", iqId, jid );
 					iq3.addQuery( "jabber:iq:last" );
 					jabberThreadInfo->send( iq3 );
+		
+					iqId = JabberSerialNext();
+					XmlNodeIq iq4( "get", iqId, jid );
+					XmlNode* query = iq4.addQuery( "jabber:iq:version" );
+					jabberThreadInfo->send( iq4 );
 		}	}	}
 
 		JabberSendGetVcard( dbv.ptszVal );

@@ -546,6 +546,17 @@ XmlNodeIq::XmlNodeIq( const char* type, const TCHAR* idStr, const TCHAR* to ) :
 	if ( idStr != NULL ) addAttr( "id",   idStr );
 }
 
+XmlNodeIq::XmlNodeIq( const char* type, XmlNode *node, const TCHAR* to ) :
+	XmlNode( "iq" )
+{
+	if ( type  != NULL ) addAttr( "type", type  );
+	if ( to    != NULL ) addAttr( "to",   to    );
+	if ( node  != NULL ) {
+		TCHAR *iqId = JabberXmlGetAttrValue( node, "id" );
+		if ( iqId != NULL) addAttr( "id", iqId );
+	}
+}
+
 #if defined( _UNICODE )
 XmlNodeIq::XmlNodeIq( const char* type, int id, const char* to ) :
 	XmlNode( "iq" )

@@ -122,7 +122,7 @@ static BOOL CALLBACK JabberUserInfoDlgProc( HWND hwndDlg, UINT msg, WPARAM wPara
 							EnableWindow( GetDlgItem( hwndDlg, IDC_LOGOFF_TIME ), FALSE );
 						}
 						else {
-							SetDlgItemText( hwndDlg, IDC_LOGOFF_TIME, TranslateT( "user online now" ));
+							SetDlgItemText( hwndDlg, IDC_LOGOFF_TIME, TranslateT( "<not specified>" ));
 							EnableWindow( GetDlgItem( hwndDlg, IDC_LOGOFF_TIME ), FALSE );
 						}
 

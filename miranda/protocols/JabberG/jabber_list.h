@@ -153,6 +153,8 @@ struct JABBER_LIST_ITEM
 	// jid = string representation of port number
 	JABBER_BYTE_TRANSFER *jbt;
 
+	JABBER_IBB_TRANSFER *jibb;
+
 	// LIST_FTSEND
 	// jid = string representation of iq id
 	// ft = file transfer data

@@ -4,6 +4,57 @@ Legend:
 [-] deleted
 [!] bug fixed
 
+Version 0.7.0.6
+===============
+[+] XEP-0096 support (File Transfer, IBB)
+[+] XEP-0115 support (Entity Capabilities)
+[+] XEP-0199 support (XMPP Ping)
+
+Version 0.7.0.5
+===============
+[+] XEP-0065 support (SOCKS5 Bytestreams)
+[+] XEP-0138 support (Traffic Compression)
+[+] XEP-0202 support (Entity time)
+[!] bugfix for transport info discovery
+
+Version 0.7.0.4
+===============
+[+] XEP-0050 support (Ad-Hoc Commands)
+[+] XEP-0055 support (Jabber Search, full support of x-forms)
+[+] added support for vcards in chat rooms
+[!] bug #0003130 fixed: Bookmarks are not retreived automatically, MUC auto-join doesn't work
+[*] all bitmap processing removed from the Jabber plugin and switched to the loadavatars plugin
+
+Version 0.7.0.3
+===============
+[+] XEP-0048 support (Bookmark Storage)
+[+] Added MirandaPluginInterfaces
+[+] Implement UUID plugin info
+[+] added Windows Vista OS version detection
+[+] added ability of sending messages to the specific resource
+[*] menu icons are implemented via icolib, duplicated icons were removed
+[-] "Disable main menu" option removed
+[!] bug #002970 fixed: Ending spaces not stripped in Host input
+
+Version 0.7.0.2
+===============
+[+] various enhancements of adding roster contacts
+[!] fix for NTLM auth
+
+Version 0.7.0.1
+===============
+[+] Unicode plugins got the UNICODE_AWARE flag in PLUGININFO structure
+[+] patch for placing SecureIM plugin presence into the Jabber MirVer
+[+] sha1 & md5 support is now provided by the core
+[-] ugly hack with the ContactPhoto/File setting removed
+[!] fix for the exception handling in Jabber
+
+Version 0.7.0.0
+===============
+
+Initial version for 0.7
+[*] Jabber uses now new features of 0.7 core.
+
 Version 0.6.0.2
 ===============
 [+] wish #0002532 fixed: Add command "Resolve Nicknames" in context menu for transports

@@ -78,6 +78,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 #include "jabber_xml.h"
 #include "jabber_byte.h"
+#include "jabber_ibb.h"
 
 #if !defined(OPENFILENAME_SIZE_VERSION_400)
 	#define OPENFILENAME_SIZE_VERSION_400 sizeof(OPENFILENAME)
@@ -268,7 +269,7 @@ struct JABBER_REG_ACCOUNT
 	BOOL useSSL;
 };
 
-typedef enum { FT_SI, FT_OOB, FT_BYTESTREAM } JABBER_FT_TYPE;
+typedef enum { FT_SI, FT_OOB, FT_BYTESTREAM, FT_IBB } JABBER_FT_TYPE;
 typedef enum { FT_CONNECTING, FT_INITIALIZING, FT_RECEIVING, FT_DONE, FT_ERROR, FT_DENIED } JABBER_FILE_STATE;
 
 struct filetransfer
@@ -297,10 +298,13 @@ struct filetransfer
 	// For type == FT_BYTESTREAM
 	JABBER_BYTE_TRANSFER *jbt;
 
+	JABBER_IBB_TRANSFER *jibb;
+
 	// Used by file receiving only
 	char* httpHostName;
 	WORD httpPort;
 	char* httpPath;
+	DWORD dwExpectedRecvFileSize;
 
 	// Used by file sending only
 	HANDLE hFileEvent;
@@ -440,7 +444,9 @@ void JabberFtCancel( filetransfer* ft );
 void JabberFtInitiate( TCHAR* jid, filetransfer* ft );
 void JabberFtHandleSiRequest( XmlNode *iqNode );
 void JabberFtAcceptSiRequest( filetransfer* ft );
+void JabberFtAcceptIbbRequest( filetransfer* ft );
 BOOL JabberFtHandleBytestreamRequest( XmlNode *iqNode );
+BOOL JabberFtHandleIbbRequest( XmlNode *iqNode, BOOL bOpen );
 
 //---- jabber_groupchat.c -------------------------------------------
 

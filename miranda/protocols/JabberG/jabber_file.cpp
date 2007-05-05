@@ -96,13 +96,8 @@ void __cdecl JabberFileReceiveThread( filetransfer* ft )
 
 	ft->s = NULL;
 
-	if ( ft->state==FT_RECEIVING || ft->state==FT_DONE )
-		_close( ft->fileId );
-
 	if ( ft->state==FT_DONE || ( ft->state==FT_RECEIVING && ft->std.currentFileSize < 0 ))
-		JSendBroadcast( ft->std.hContact, ACKTYPE_FILE, ACKRESULT_SUCCESS, ft, 0 );
-	else
-		JSendBroadcast( ft->std.hContact, ACKTYPE_FILE, ACKRESULT_FAILED, ft, 0 );
+		ft->complete();
 
 	JabberLog( "Thread ended: type=file_receive server='%s'", ft->httpHostName );
 
