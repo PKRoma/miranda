@@ -29,7 +29,6 @@ int MSN_HandleErrors(ThreadData *info,char *cmdString);
 int MSN_HandleMSNFTP( ThreadData *info, char *cmdString );
 
 extern LONG (WINAPI *MyInterlockedIncrement)(PLONG pVal);
-extern unsigned long sl;
 
 HANDLE hKeepAliveThreadEvt = NULL;
 

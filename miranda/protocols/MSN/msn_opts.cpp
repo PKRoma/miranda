@@ -100,8 +100,6 @@ void  ReleaseIconEx( const char* name )
 /////////////////////////////////////////////////////////////////////////////////////////
 // External data declarations
 
-extern unsigned long sl;
-
 static BOOL (WINAPI *pfnEnableThemeDialogTexture)(HANDLE, DWORD) = 0;
 
 BOOL CALLBACK DlgProcMsnServLists(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam);
@@ -679,83 +677,4 @@ void  LoadOptions()
 	MyOptions.UseWinColors = MSN_GetByte( "UseWinColors", FALSE );
 	if ( MSN_GetStaticString( "e-mail", NULL, MyOptions.szEmail, sizeof( MyOptions.szEmail )))
 		MyOptions.szEmail[0] = 0;
-}
-
-/////////////////////////////////////////////////////////////////////////////////////////
-// Display Hotmail Inbox thread
-
-DWORD WINAPI MsnShowMailThread( LPVOID )
-{
-	DBVARIANT dbv;
-
-	char* email = ( char* )alloca( strlen( MyOptions.szEmail )*3 );
-	UrlEncode( MyOptions.szEmail, email, strlen( MyOptions.szEmail )*3 );
-
-	if ( DBGetContactSetting( NULL, msnProtocolName, "Password", &dbv ))
-		return 0;
-
-	MSN_CallService( MS_DB_CRYPT_DECODESTRING, strlen( dbv.pszVal )+1, ( LPARAM )dbv.pszVal );
-
-	// for hotmail access
-	int tm = time(NULL) - sl;
-
-	char hippy[ 2048 ];
-	long challen = mir_snprintf( hippy, sizeof( hippy ), "%s%lu%s", MSPAuth, tm, dbv.pszVal );
-	MSN_FreeVariant( &dbv );
-
-	//Digest it
-	unsigned char digest[16];
-	mir_md5_hash(( BYTE* )hippy, challen, digest );
-
-	if ( rru && passport )
-	{
-		char rruenc[256];
-		UrlEncode(rru, rruenc, sizeof(rruenc));
-
-		mir_snprintf(hippy, sizeof(hippy),
-			"%s&auth=%s&creds=%08x%08x%08x%08x&sl=%d&username=%s&mode=ttl"
-			"&sid=%s&id=%s&rru=%s&svc=mail&js=yes",
-			passport, MSPAuth, htonl(*(PDWORD)(digest+0)),htonl(*(PDWORD)(digest+4)),
-			htonl(*(PDWORD)(digest+8)),htonl(*(PDWORD)(digest+12)),
-			tm, email, sid, urlId, rruenc);
-	}
-	else
-		strcpy( hippy, "http://go.msn.com/0/1" );
-
-	MSN_DebugLog( "Starting URL: '%s'", hippy );
-	MSN_CallService( MS_UTILS_OPENURL, 1, ( LPARAM )hippy );
-	return 0;
-}
-
-/////////////////////////////////////////////////////////////////////////////////////////
-// Popup plugin window proc
-
-LRESULT CALLBACK NullWindowProc( HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam )
-{
-	switch( message ) {
-		case WM_COMMAND: {
-			PopupData* tData = ( PopupData* )PUGetPluginData( hWnd );
-			if ( tData != NULL && ( tData->flags & MSN_ALLOW_ENTER )) {
-				MsnShowMailThread( NULL );
-				PUDeletePopUp( hWnd );
-			}
-			break;
-		}
-
-		case WM_CONTEXTMENU:
-			PUDeletePopUp( hWnd );
-			break;
-
-		case UM_FREEPLUGINDATA:	{
-			PopupData* tData = ( PopupData* )PUGetPluginData( hWnd );
-			if ( tData != NULL && tData != (void*)CALLSERVICE_NOTFOUND)
-			{
-				CallService( MS_SKIN2_RELEASEICON, (WPARAM)tData->hIcon, 0 );
-				mir_free( tData );
-			}
-			break;
-		}
-	}
-
-	return DefWindowProc(hWnd, message, wParam, lParam);
 }

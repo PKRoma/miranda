@@ -43,8 +43,9 @@ char* kv = NULL;
 char* MSPAuth = NULL;
 char* passport = NULL;
 char* urlId = NULL;
-char* profileURL = NULL;
 char* rru = NULL;
+char* profileURL = NULL;
+char* profileURLId = NULL;
 extern HANDLE	 hMSNNudge;
 
 extern int msnPingTimeout;
@@ -1955,6 +1956,7 @@ LBL_InvalidCommand:
 			}
 			else if ( trid == tridUrlEdit ) {
 				replaceStr( profileURL, data.rru );
+				replaceStr( profileURLId, data.urlID );
 				tridUrlEdit = -1;
 			}
 			break;

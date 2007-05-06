@@ -619,7 +619,7 @@ void  MSN_SetServerStatus( int newStatus )
 			szMsnObject[ 0 ] = 0;
 
 		//here we say what functions can be used with this plugins : http://siebe.bot2k3.net/docs/?url=clientid.html
-		msnNsThread->sendPacket( "CHG", "%s 1342177280 %s", szStatusName, szMsnObject );
+		msnNsThread->sendPacket( "CHG", "%s 1342177312 %s", szStatusName, szMsnObject );
 
 		int status = newStatus == ID_STATUS_IDLE ? ID_STATUS_ONLINE : newStatus;
 		for ( int i=0; i < MSN_NUM_MODES; i++ ) { 
@@ -647,6 +647,39 @@ void __cdecl MSN_ShowError( const char* msgtext, ... )
 		MSN_ShowPopup( msnProtocolName, tBuffer, MSN_ALLOW_MSGBOX | MSN_SHOW_ERROR );
 	else
 		MessageBoxA( NULL, tBuffer, msnProtocolName, MB_OK );
+}
+
+/////////////////////////////////////////////////////////////////////////////////////////
+// Popup plugin window proc
+
+LRESULT CALLBACK NullWindowProc( HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam )
+{
+	switch( message ) {
+		case WM_COMMAND: {
+			PopupData* tData = ( PopupData* )PUGetPluginData( hWnd );
+			if ( tData != NULL && ( tData->flags & MSN_ALLOW_ENTER )) {
+				MsnInvokeMyURL( true );
+				PUDeletePopUp( hWnd );
+			}
+			break;
+		}
+
+		case WM_CONTEXTMENU:
+			PUDeletePopUp( hWnd );
+			break;
+
+		case UM_FREEPLUGINDATA:	{
+			PopupData* tData = ( PopupData* )PUGetPluginData( hWnd );
+			if ( tData != NULL && tData != (void*)CALLSERVICE_NOTFOUND)
+			{
+				CallService( MS_SKIN2_RELEASEICON, (WPARAM)tData->hIcon, 0 );
+				mir_free( tData );
+			}
+			break;
+		}
+	}
+
+	return DefWindowProc(hWnd, message, wParam, lParam);
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////

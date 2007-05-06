@@ -26,6 +26,9 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 extern LIST<void> arServices;
 
+extern unsigned long sl;
+
+
 HANDLE msnBlockMenuItem = NULL;
 HANDLE msnMenuItems[ 2 ];
 HANDLE menuItemsAll[ 6 ] = { 0 };
@@ -46,14 +49,51 @@ static int MsnBlockCommand( WPARAM wParam, LPARAM lParam )
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////
-// MsnEditProfile - goes to the Profile section at the Hotmail.com
+// Display Hotmail Inbox thread
 
-static int MsnEditProfile( WPARAM, LPARAM )
+void MsnInvokeMyURL( bool ismail )
 {
-	char tUrl[ 4096 ];
-	mir_snprintf( tUrl, sizeof( tUrl ), "%s&did=1&t=%s&js=yes", profileURL, MSPAuth );
-	MSN_CallService( MS_UTILS_OPENURL, TRUE, ( LPARAM )tUrl );
-	return 0;
+	DBVARIANT dbv;
+
+	char* email = ( char* )alloca( strlen( MyOptions.szEmail )*3 );
+	UrlEncode( MyOptions.szEmail, email, strlen( MyOptions.szEmail )*3 );
+
+	if ( DBGetContactSetting( NULL, msnProtocolName, "Password", &dbv ))
+		return;
+
+	MSN_CallService( MS_DB_CRYPT_DECODESTRING, strlen( dbv.pszVal )+1, ( LPARAM )dbv.pszVal );
+
+	// for hotmail access
+	int tm = time(NULL) - sl;
+
+	char hippy[ 2048 ];
+	long challen = mir_snprintf( hippy, sizeof( hippy ), "%s%lu%s", MSPAuth, tm, dbv.pszVal );
+	MSN_FreeVariant( &dbv );
+
+	//Digest it
+	unsigned char digest[16];
+	mir_md5_hash(( BYTE* )hippy, challen, digest );
+
+	if ( rru && passport )
+	{
+		char rruenc[256];
+		UrlEncode(ismail ? rru : profileURL, rruenc, sizeof(rruenc));
+
+		mir_snprintf(hippy, sizeof(hippy),
+			"%s&auth=%s&creds=%08x%08x%08x%08x&sl=%d&username=%s&mode=ttl"
+			"&sid=%s&id=%s&rru=%s%s&js=yes",
+			passport, MSPAuth, htonl(*(PDWORD)(digest+0)),htonl(*(PDWORD)(digest+4)),
+			htonl(*(PDWORD)(digest+8)),htonl(*(PDWORD)(digest+12)),
+			tm, email, sid, 
+			ismail ? urlId : profileURLId, rruenc, ismail ? "&svc=mail" : "" );
+	}
+	else
+		strcpy( hippy, ismail ? "http://login.live.com" : "http://spaces.live.com/PersonalSpaceSignup.aspx" );
+
+	MSN_DebugLog( "Starting URL: '%s'", hippy );
+	MSN_CallService( MS_UTILS_OPENURL, 1, ( LPARAM )hippy );
+	
+	return;
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////
@@ -61,7 +101,16 @@ static int MsnEditProfile( WPARAM, LPARAM )
 
 static int MsnGotoInbox( WPARAM, LPARAM )
 {
-	MsnShowMailThread( NULL );
+	MsnInvokeMyURL( true );
+	return 0;
+}
+
+/////////////////////////////////////////////////////////////////////////////////////////
+// MsnEditProfile - goes to the Profile section at the Hotmail.com
+
+static int MsnEditProfile( WPARAM, LPARAM )
+{
+	MsnInvokeMyURL( false );
 	return 0;
 }
 
@@ -303,7 +352,7 @@ void MsnInitMenus( void )
 	arServices.insert( CreateServiceFunction( servicefunction, MsnEditProfile ));
 	mi.position = 2000060002;
 	mi.icolibItem = GetIconHandle( IDI_PROFILE );
-	mi.pszName = "Edit MSN &Profile";
+	mi.pszName = "My MSN &Space";
 	msnMenuItems[ 1 ] = ( HANDLE )MSN_CallService( MS_CLIST_ADDMAINMENUITEM, 0, (LPARAM)&mi );
 
 	strcpy( tDest, MS_VIEW_STATUS );

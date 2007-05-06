@@ -308,7 +308,7 @@ void  p2p_sendMsg( filetransfer* ft, ThreadData* info, P2P_Header& hdrdata, char
 		// add message footer
 		if ( msgType != 1 ) 
 		{ 
-			*(unsigned*)p = msgsz && ( ph->mSessionID || ph->mFlags ) && ft ? ft->p2p_appID : 0;
+			*(unsigned*)p = msgsz && ph->mSessionID && ft ? ft->p2p_appID : 0;
 			p += 4;
 		}
 

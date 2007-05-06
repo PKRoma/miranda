@@ -417,6 +417,7 @@ extern "C" int __declspec( dllexport ) Unload( void )
 	if ( MSPAuth ) mir_free( MSPAuth );
 	if ( rru ) mir_free( rru );
 	if ( profileURL ) mir_free( profileURL );
+	if ( profileURLId ) mir_free( profileURLId );
 	if ( urlId ) mir_free( urlId );
 
 	if ( msnPreviousUUX ) mir_free( msnPreviousUUX );
