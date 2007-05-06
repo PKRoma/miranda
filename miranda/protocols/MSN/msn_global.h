@@ -238,8 +238,6 @@ DWORD       MSN_SetStringUtf( HANDLE hContact, const char* valueName, char* parV
 void     __cdecl     MSN_ShowError( const char* msgtext, ... );
 char*       MSN_Translate( const char* str );
 
-void MsnInvokeMyURL( bool ismail );
-
 HANDLE      GetIconHandle( int iconId );
 HICON       LoadIconEx( const char* );
 void        ReleaseIconEx( const char* );

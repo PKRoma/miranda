@@ -51,7 +51,7 @@ static int MsnBlockCommand( WPARAM wParam, LPARAM lParam )
 /////////////////////////////////////////////////////////////////////////////////////////
 // Display Hotmail Inbox thread
 
-void MsnInvokeMyURL( bool ismail )
+static void MsnInvokeMyURL( bool ismail )
 {
 	DBVARIANT dbv;
 
