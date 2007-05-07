@@ -72,21 +72,11 @@ void __cdecl yahoo_server_main(void *empty)
     NETLIBSELECTEX nls = {0};
 	int recvResult, ridx = 0, widx = 0, i;
 	
-	if (hNetlibUser  == 0) {
-		/* wait for the stupid netlib to load!!!! */
-		int i;
-		
-		for (i = 0; (i < 3) && (hNetlibUser == 0); i++)
-			SleepEx(30, TRUE);
-		
-	}
-
     YAHOO_DebugLog("Server Thread Starting status: %d", status);
 	
 	do_yahoo_debug=YAHOO_LOG_DEBUG;
 	yahoo_set_log_level(do_yahoo_debug);
 
-	//YAHOO_DebugLog("Before Yahoo Login Need Status: %d", status);
 	poll_loop = 1; /* set this so we start looping */
 	
 	ext_yahoo_login(status);
@@ -197,9 +187,6 @@ void __cdecl yahoo_server_main(void *empty)
 	}
 	YAHOO_DebugLog("Exited loop");
 
-	/* need to logout first */
-    //yahoo_logout();
-	
 	/* cleanup the data stuff and close our connection handles */
 	while(connections) {
 		YList *tmp = connections;
