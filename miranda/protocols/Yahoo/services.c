@@ -166,8 +166,10 @@ int SetStatus(WPARAM wParam,LPARAM lParam)
 			} else
 				err++;
 			DBFreeVariant(&dbv);
-		} else 
+		} else {
+			ProtoBroadcastAck(yahooProtocolName, NULL, ACKTYPE_LOGIN, ACKRESULT_FAILED, NULL, LOGINERR_BADUSERID);
 			err++;
+		}
 		
 		if (err) {
 			lstrcpyn(errmsg, Translate("Please enter your yahoo id in Options/Network/Yahoo"), 80);
@@ -180,8 +182,10 @@ int SetStatus(WPARAM wParam,LPARAM lParam)
 					err++;
 				
 				DBFreeVariant(&dbv);
-			}  else 
+			}  else  {
+				ProtoBroadcastAck(yahooProtocolName, NULL, ACKTYPE_LOGIN, ACKRESULT_FAILED, NULL, LOGINERR_WRONGPASSWORD);
 				err++;
+			}
 			
 			if (err) {
 				lstrcpyn(errmsg, Translate("Please enter your yahoo password in Options/Network/Yahoo"), 80);

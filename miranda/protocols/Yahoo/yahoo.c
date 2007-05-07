@@ -1126,10 +1126,11 @@ void ext_yahoo_login_response(int id, int succ, const char *url)
 	} else if(succ == YAHOO_LOGIN_UNAME) {
 
 		snprintf(buff, sizeof(buff), Translate("Could not log into Yahoo service - username not recognised.  Please verify that your username is correctly typed."));
+		ProtoBroadcastAck(yahooProtocolName, NULL, ACKTYPE_LOGIN, ACKRESULT_FAILED, NULL, LOGINERR_BADUSERID);
 	} else if(succ == YAHOO_LOGIN_PASSWD) {
 
 		snprintf(buff, sizeof(buff), Translate("Could not log into Yahoo service - password incorrect.  Please verify that your username and password are correctly typed."));
-
+		ProtoBroadcastAck(yahooProtocolName, NULL, ACKTYPE_LOGIN, ACKRESULT_FAILED, NULL, LOGINERR_WRONGPASSWORD);
 	} else if(succ == YAHOO_LOGIN_LOCK) {
 		
 		snprintf(buff, sizeof(buff), Translate("Could not log into Yahoo service.  Your account has been locked.\nVisit %s to reactivate it."), url);
