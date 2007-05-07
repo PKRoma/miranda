@@ -1936,7 +1936,7 @@ static void handleOFT2FramePacket(oscar_connection *oc, WORD datatype, BYTE *pBu
       ft->cbRawFileName = wLen - 176;
       SAFE_FREE(&ft->rawFileName); // release previous buffers
       SAFE_FREE(&ft->szThisFile);
-      ft->rawFileName = (char*)SAFE_MALLOC(ft->cbRawFileName);
+      ft->rawFileName = (char*)SAFE_MALLOC(ft->cbRawFileName + 2);
       unpackString(&pBuffer, ft->rawFileName, ft->cbRawFileName);
       // Prepare file
       if (ft->wEncoding == 2)
@@ -2344,7 +2344,7 @@ static void oft_sendPeerInit(oscar_connection *oc)
   if (IsUSASCII(pszThisFileName, strlennull(pszThisFileName)))
   {
     ft->wEncoding = 0; // ascii
-    ft->cbRawFileName = strlennull(pszThisFileName);
+    ft->cbRawFileName = strlennull(pszThisFileName) + 1;
     if (ft->cbRawFileName < 64) ft->cbRawFileName = 64;
     ft->rawFileName = (char*)SAFE_MALLOC(ft->cbRawFileName);
     strcpy(ft->rawFileName, pszThisFileName);
