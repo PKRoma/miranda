@@ -196,6 +196,7 @@ static const value_string ymsg_service_vals[] = {
 	{YAHOO_SERVICE_IGNORECONTACT, "Ignore Contact"},
 	{YAHOO_SERVICE_REJECTCONTACT, "Reject Contact"},
 	{YAHOO_SERVICE_GROUPRENAME, "Group Rename"},
+	{YAHOO_SERVICE_Y7_PING, "Y7 Ping"},
 	{YAHOO_SERVICE_CHATONLINE, "Chat Online"},
 	{YAHOO_SERVICE_CHATGOTO, "Chat Goto"},
 	{YAHOO_SERVICE_CHATJOIN, "Chat Join"},
@@ -5264,7 +5265,8 @@ void yahoo_keepalive(int id)
 		return;
 	yd = yid->yd;
 
-	pkt = yahoo_packet_new(YAHOO_SERVICE_PING, YAHOO_STATUS_AVAILABLE, yd->session_id);
+	pkt = yahoo_packet_new(YAHOO_SERVICE_Y7_PING, YAHOO_STATUS_AVAILABLE, yd->session_id);
+	yahoo_packet_hash(pkt, 0, yd->user);
 	yahoo_send_packet(yid, pkt, 0);
 	yahoo_packet_free(pkt);
 }

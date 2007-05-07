@@ -137,7 +137,7 @@ void __cdecl yahoo_server_main(void *empty)
 			//YAHOO_DebugLog("HTTPGateway: %d", iHTTPGateway);
 			if	(!iHTTPGateway) {
 #endif					
-				if (yahooLoggedIn && time(NULL) - lLastPing > 60) {
+				if (yahooLoggedIn && time(NULL) - lLastPing >= 180) {
 					LOG(("[TIMER] Sending a keep alive message"));
 					yahoo_keepalive(ylad->id);
 					
