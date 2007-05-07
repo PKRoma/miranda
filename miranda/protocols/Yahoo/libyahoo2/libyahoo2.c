@@ -2765,7 +2765,7 @@ static void yahoo_process_auth_resp(struct yahoo_input_data *yid, struct yahoo_p
 	char *login_id;
 	char *handle;
 	char *url=NULL;
-	int  login_status=0;
+	int  login_status=-1;
 
 	YList *l;
 
