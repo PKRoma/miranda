@@ -60,10 +60,10 @@ PLUGININFOEX pluginInfo={
 #endif
 		__VERSION_DWORD,
 		"Yahoo Protocol support via libyahoo2 library. [Built: "__DATE__" "__TIME__"]",
-		"Gennady Feldman, Laurent Marechal",
+		"Gennady Feldman",
 		"gena01@miranda-im.org",
-		"© 2003-2007 G.Feldman",
-		"http://www.miranda-im.org/download/details.php?action=viewfile&id=1248",
+		"© 2003-2007 Gennady Feldman, Laurent Marechal",
+		"http://www.miranda-im.org",
 		0, //not transient
 		0, //DEFMOD_PROTOCOLYAHOO - no core yahoo protocol
         {0xa6648b6c, 0x6fb8, 0x4551, { 0xb4, 0xe7, 0x1, 0x36, 0xf9, 0x16, 0xd4, 0x85 }} //{A6648B6C-6FB8-4551-B4E7-0136F916D485}
@@ -88,81 +88,6 @@ BOOL WINAPI DllMain(HINSTANCE hinst,DWORD fdwReason,LPVOID lpvReserved)
 	return TRUE;
 }
 
-
-/*
- * MainInit - Called at very beginning of plugin
- * Parameters: wparam , lparam
- * Returns : int
- */
-/*int MainInit(WPARAM wparam,LPARAM lparam)
-{
-	return 0;
-}*/
-
-/*
- * MirandaPluginInfoEx - Sets plugin info
- * Parameters: (DWORD mirandaVersion)
- */
-__declspec(dllexport) PLUGININFOEX* MirandaPluginInfoEx(DWORD mirandaVersion)
-{
-	//
-    // We require Miranda 0.7.0.12
-	// This requires the latest trunk... [md5, sha, etc..]
-	//
-    if (mirandaVersion < PLUGIN_MAKE_VERSION(0, 7, 0, 12)) {
-		MessageBox( NULL, 
-				"Yahoo plugin cannot be loaded. It requires Miranda IM 0.7.0.12 or later.", 
-				"Yahoo", 
-				MB_OK|MB_ICONWARNING|MB_SETFOREGROUND|MB_TOPMOST );
-
-        return NULL;
-	}
-
-    return &pluginInfo;
-}
-
-/*
- * MirandaPluginInterfaces - Notifies the core of interfaces implemented
- * Parameters: none
- */
-static const MUUID interfaces[] = {MIID_PROTOCOL, MIID_LAST};
-__declspec(dllexport) const MUUID* MirandaPluginInterfaces(void)
-{
-	return interfaces;
-}
-
-/*
- * Unload - Unloads plugin
- * Parameters: void
- */
-
-int __declspec(dllexport) Unload(void)
-{
-	YAHOO_DebugLog("Unload");
-	
-	//stop_timer();
-	
-	if (yahooLoggedIn)
-		yahoo_logout();
-
-	YAHOO_DebugLog("Logged out");
-
-	LocalEventUnhook(hHookContactDeleted);
-	LocalEventUnhook(hHookIdle);
-	LocalEventUnhook(hHookModulesLoaded);
-	LocalEventUnhook(hHookOptsInit);
-	LocalEventUnhook(hHookSettingChanged);
-	LocalEventUnhook(hHookUserTyping);
-	
-	FREE(szStartMsg);
-	FREE(ylad);
-	
-	YAHOO_DebugLog("Before Netlib_CloseHandle");
-    Netlib_CloseHandle( hNetlibUser );
-
-	return 0;
-}
-
 int YahooIdleEvent(WPARAM wParam, LPARAM lParam);
 int OnDetailsInit(WPARAM wParam, LPARAM lParam);
 
@@ -183,9 +108,6 @@ static int OnModulesLoaded( WPARAM wParam, LPARAM lParam )
 				MB_OK );
 		return 1;
 	}
-	
-	YahooIconsInit();
-	YahooMenuInit();
 	
 	CharUpper( yahooProtocolName );
 	wsprintf(tModuleDescr, "%s plugin connections", yahooProtocolName);
@@ -212,6 +134,8 @@ static int OnModulesLoaded( WPARAM wParam, LPARAM lParam )
 #endif	
 	
 	hNetlibUser = ( HANDLE )YAHOO_CallService( MS_NETLIB_REGISTERUSER, 0, ( LPARAM )&nlu );
+
+	YahooMenuInit();
 	
 	hHookOptsInit = HookEvent( ME_OPT_INITIALISE, YahooOptInit );
     hHookSettingChanged = HookEvent(ME_DB_CONTACT_SETTINGCHANGED, YAHOO_util_dbsettingchanged);
@@ -269,8 +193,6 @@ int __declspec(dllexport)Load(PLUGINLINK *link)
 	} else 
 		lstrcpy(yahooProtocolName, "YAHOO");
 	
-	LoadYahooServices();
-
 	mir_snprintf( path, sizeof( path ), "%s/Status", yahooProtocolName );
 	CallService( MS_DB_SETSETTINGRESIDENT, TRUE, ( LPARAM )path );
 
@@ -297,6 +219,7 @@ int __declspec(dllexport)Load(PLUGINLINK *link)
 
 	// 1.
 	hHookModulesLoaded = HookEvent( ME_SYSTEM_MODULESLOADED, OnModulesLoaded );
+	
 	// Create nudge event
 	lstrcpyn(tNudge, yahooProtocolName , sizeof( tNudge ) - 7);
 	lstrcat(tNudge, "/Nudge");
@@ -316,6 +239,73 @@ int __declspec(dllexport)Load(PLUGINLINK *link)
 	yahoo_logoff_buddies();
 
 	SkinAddNewSoundEx(Translate( "mail" ), yahooProtocolName, "New E-mail available in Inbox" );
+	
+	LoadYahooServices();
+
+	YahooIconsInit();
 	return 0;
 }
 
+/*
+ * Unload - Unloads plugin
+ * Parameters: void
+ */
+
+int __declspec(dllexport) Unload(void)
+{
+	YAHOO_DebugLog("Unload");
+	
+	//stop_timer();
+	
+	if (yahooLoggedIn)
+		yahoo_logout();
+
+	YAHOO_DebugLog("Logged out");
+
+	LocalEventUnhook(hHookContactDeleted);
+	LocalEventUnhook(hHookIdle);
+	LocalEventUnhook(hHookModulesLoaded);
+	LocalEventUnhook(hHookOptsInit);
+	LocalEventUnhook(hHookSettingChanged);
+	LocalEventUnhook(hHookUserTyping);
+	
+	FREE(szStartMsg);
+	FREE(ylad);
+	
+	YAHOO_DebugLog("Before Netlib_CloseHandle");
+    Netlib_CloseHandle( hNetlibUser );
+
+	return 0;
+}
+
+/*
+ * MirandaPluginInfoEx - Sets plugin info
+ * Parameters: (DWORD mirandaVersion)
+ */
+__declspec(dllexport) PLUGININFOEX* MirandaPluginInfoEx(DWORD mirandaVersion)
+{
+	//
+    // We require Miranda 0.7.0.12
+	// This requires the latest trunk... [md5, sha, etc..]
+	//
+    if (mirandaVersion < PLUGIN_MAKE_VERSION(0, 7, 0, 12)) {
+		MessageBox( NULL, 
+				"Yahoo plugin cannot be loaded. It requires Miranda IM 0.7.0.12 or later.", 
+				"Yahoo", 
+				MB_OK|MB_ICONWARNING|MB_SETFOREGROUND|MB_TOPMOST );
+
+        return NULL;
+	}
+
+    return &pluginInfo;
+}
+
+/*
+ * MirandaPluginInterfaces - Notifies the core of interfaces implemented
+ * Parameters: none
+ */
+static const MUUID interfaces[] = {MIID_PROTOCOL, MIID_LAST};
+__declspec(dllexport) const MUUID* MirandaPluginInterfaces(void)
+{
+	return interfaces;
+}
