@@ -351,14 +351,14 @@ void ext_yahoo_status_changed(int id, const char *who, int stat, const char *msg
 	HANDLE 	hContact = 0;
 	time_t  idlets = 0;
 	
-	YAHOO_DebugLog("ext_yahoo_status_changed for %s with msg %s (stat: %d, away: %d, idle: %d seconds)", who, msg, stat, away, idle);
+	LOG(("[ext_yahoo_status_changed] %s with msg %s (stat: %d, away: %d, idle: %d seconds)", who, msg, stat, away, idle));
 	
 	hContact = getbuddyH(who);
 	if (hContact == NULL) {
 		YAHOO_DebugLog("Buddy Not Found. Adding...");
 		hContact = add_buddy(who, who, 0);
-	} else {
-		YAHOO_DebugLog("Buddy Found On My List! Buddy %p", hContact);
+/*	} else {
+		YAHOO_DebugLog("Buddy Found On My List! Buddy %p", hContact);*/
 	}
 	
 	if (!mobile)

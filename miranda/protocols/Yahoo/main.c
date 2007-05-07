@@ -226,10 +226,10 @@ int __declspec(dllexport)Load(PLUGINLINK *link)
 	hYahooNudge = CreateHookableEvent(tNudge);
 	
 	// 2.
-	pd.cbSize=sizeof(pd);
-	pd.szName=yahooProtocolName;
-	pd.type=PROTOTYPE_PROTOCOL;
-	CallService(MS_PROTO_REGISTERMODULE,0,(LPARAM)&pd);
+	pd.cbSize = sizeof(pd);
+	pd.szName = yahooProtocolName;
+	pd.type   = PROTOTYPE_PROTOCOL;
+	CallService( MS_PROTO_REGISTERMODULE, 0, ( LPARAM )&pd );
 
 	// Initialize our important variable
 	ylad = y_new0(yahoo_local_account, 1);

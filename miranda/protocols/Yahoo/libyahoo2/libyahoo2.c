@@ -326,7 +326,7 @@ static const value_string packet_keys[]={
 	{230, "the audible, in foo.bar.baz format"},
 	{231, "audible text"},
 	{232, "weird number (md5 hash?) [audible]"},
-	{244, "YIM6/YIM7 detection.(278527 - YIM6, 524223 - YIM7)"},
+	{244, "client version"},
 	{254, "last name"},
 	{265, "FT7 Token"},
 	{1002, "YIM6+"},
@@ -1805,7 +1805,7 @@ static void yahoo_process_logon(struct yahoo_input_data *yid, struct yahoo_packe
 
 		switch (pair->key) {
 		case 0: /* we won't actually do anything with this */
-			NOTICE(("key %d:%s", pair->key, pair->value));
+			//NOTICE(("key %d:%s", pair->key, pair->value));
 			break;
 		case 1: /* we don't get the full buddy list here. */
 			if (!yd->logged_in) {
@@ -1825,13 +1825,13 @@ static void yahoo_process_logon(struct yahoo_input_data *yid, struct yahoo_packe
 			name = pair->value;
 			break;
 		case 8: /* how many online buddies we have */
-			NOTICE(("key %d:%s", pair->key, pair->value));
+			//NOTICE(("key %d:%s", pair->key, pair->value));
 			break;
 		case 10: /* state */
 			state = strtol(pair->value, NULL, 10);
 			break;
 		case 11: /* this is the buddy's session id */
-			NOTICE(("key %d:%s", pair->key, pair->value));
+			//NOTICE(("key %d:%s", pair->key, pair->value));
 			break;
 		case 13: /* bitmask, bit 0 = pager, bit 1 = chat, bit 2 = game */
 			if (strtol(pair->value, NULL, 10) == 0) {
@@ -1856,7 +1856,7 @@ static void yahoo_process_logon(struct yahoo_input_data *yid, struct yahoo_packe
 			break;
 		case 60: /* SMS -> 1 MOBILE USER */
 			/* sometimes going offline makes this 2, but invisible never sends it */
-			NOTICE(("key %d:%s", pair->key, pair->value));
+			//NOTICE(("key %d:%s", pair->key, pair->value));
 			if (atoi(pair->value) > 0 )
 				mobile = 1;
 			break;
@@ -1885,9 +1885,9 @@ static void yahoo_process_logon(struct yahoo_input_data *yid, struct yahoo_packe
 			client_version = strtol(pair->value, NULL, 10);
 			break;
 			
-		default:
+/*		default:
 			WARNING(("unknown status key %d:%s", pair->key, pair->value));
-			break;
+			break;*/
 		}
 	}
 	
@@ -5362,6 +5362,7 @@ void yahoo_accept_buddy(int id, const char *who)
 	yahoo_packet_hash(pkt, 5, who);
 	yahoo_packet_hash(pkt, 13, "1"); // Reject Authorization
 	
+	// Y8 also send 334: 0 - I guess that's the protocol stuff
 	yahoo_send_packet(yid, pkt, 0);
 	yahoo_packet_free(pkt);
 }
