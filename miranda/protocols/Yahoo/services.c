@@ -347,13 +347,11 @@ int YahooAddToList(WPARAM wParam,LPARAM lParam)
 int YahooAddToListByEvent(WPARAM wParam,LPARAM lParam)
 {
     DBEVENTINFO dbei;
-    //char* nick, *firstName, *lastName, *email, *reason;
 	HANDLE hContact;
     
     YAHOO_DebugLog("[YahooAddToListByEvent]");
 	if ( !yahooLoggedIn )
 		return 0;
-
 	
 	memset( &dbei, 0, sizeof( dbei ));
 	dbei.cbSize = sizeof( dbei );
@@ -398,21 +396,8 @@ int YahooAddToListByEvent(WPARAM wParam,LPARAM lParam)
 		blob is: uin(DWORD), hcontact(HANDLE), nick(ASCIIZ), first(ASCIIZ), 
 		last(ASCIIZ), email(ASCIIZ), reason(ASCIIZ)
 	*/
-	hContact = (HANDLE) ( dbei.pBlob + sizeof( DWORD ));
+	memcpy(&hContact,( char* )( dbei.pBlob + sizeof( DWORD ) ), sizeof(HANDLE)); 
 	
-	/*nick = ( char* )( dbei.pBlob + sizeof( DWORD )*2 );
-	firstName = nick + lstrlen(nick) + 1;
-	lastName = firstName + lstrlen(firstName) + 1;
-	email = lastName + lstrlen(lastName) + 1;
-	reason = email + lstrlen(email) + 1;
-		
-	YAHOO_DebugLog("buddy:%s first:%s last:%s e-mail:%s reason:%s", nick, firstName, lastName, email, reason);
-	*/
-		
-	/* we need to send out a packet to request an add */
-	//YAHOO_add_buddy(nick, "miranda", reason);
-	//return 0;
-	//hContact = getbuddyH(email);
 	if (hContact != NULL) {
 		YAHOO_DebugLog("Temp Buddy found at: %p ", hContact);
 	} else

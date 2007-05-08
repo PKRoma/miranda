@@ -767,7 +767,7 @@ void ext_yahoo_contact_added(int id, char *myid, char *who, char *fname, char *l
        Auth blob is: uin(DWORD),hcontact(HANDLE),nick(ASCIIZ),first(ASCIIZ),
                   last(ASCIIZ),email(ASCIIZ),reason(ASCIIZ)
 
-	  blob is: 0(DWORD), nick(ASCIIZ), fname (ASCIIZ), lname (ASCIIZ), email(ASCIIZ), msg(ASCIIZ)
+	  blob is: 0(DWORD), hContact(HANDLE), nick(ASCIIZ), fname (ASCIIZ), lname (ASCIIZ), email(ASCIIZ), msg(ASCIIZ)
 
     */
 
