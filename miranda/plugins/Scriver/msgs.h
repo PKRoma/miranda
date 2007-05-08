@@ -89,6 +89,7 @@ typedef struct MessageWindowTabDataStruct
 	HANDLE	hContact;
 	char *szProto;
 	ParentWindowData *parent;
+	HICON	hIcon;
 }MessageWindowTabData;
 
 #define NMWLP_INCOMING 1
