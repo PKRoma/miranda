@@ -25,7 +25,7 @@ static int sql_prepare_len = 0;
 static unsigned sqlThreadId;
 static HANDLE hSqlThread;
 static HWND hAPCWindow = NULL;
-static HANDLE hDummyEvent = NULL;
+static HANDLE hSqlThreadEvent = NULL;
 
 static unsigned __stdcall sql_threadProc(void *arg);
 static DWORD CALLBACK sql_apcproc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam);
@@ -36,13 +36,11 @@ typedef struct TSqlMessage {
   sqlite3_stmt *pStmt;
   int retCode;
   const char *zIn;
-  int nByte;
-  const char *zOut;
   HANDLE hDoneEvent;
 } TSqlMessage;
 
 enum {
-    SQL_STEP=1,
+    SQL_STEP,
     SQL_RESET,
     SQL_EXEC,
     SQL_OPEN,
@@ -52,7 +50,7 @@ enum {
 };
 
 void sql_init() {
-    hDummyEvent = CreateEvent(NULL, FALSE, FALSE, NULL);
+    hSqlThreadEvent = CreateEvent(NULL, FALSE, FALSE, NULL);
     hSqlThread = (HANDLE)mir_forkthreadex(sql_threadProc, 0, 0, &sqlThreadId);
     hAPCWindow = CreateWindowEx(0, _T("STATIC"), NULL, 0, 0, 0, 0, 0, NULL, NULL, NULL, NULL);
     SetWindowLong(hAPCWindow, GWL_WNDPROC, (LONG)sql_apcproc);
@@ -65,16 +63,14 @@ void sql_destroy() {
 		sql_finalize(*sql_prepare_stmt[i]);
 	dbrw_free(sql_prepare_text);
 	dbrw_free(sql_prepare_stmt);
-    SetEvent(hDummyEvent); // kill off the sql thread
+    SetEvent(hSqlThreadEvent); // kill off the sql thread
     CloseHandle(hSqlThread);
     DestroyWindow(hAPCWindow);
 }
 
 static unsigned __stdcall sql_threadProc(void *arg) {
-    sqlite3_enable_shared_cache(1);
-    while (WaitForSingleObjectEx(hDummyEvent, INFINITE, TRUE)!=WAIT_OBJECT_0);
-    CloseHandle(hDummyEvent);
-    sqlite3_thread_cleanup();
+    while (WaitForSingleObjectEx(hSqlThreadEvent, INFINITE, TRUE)!=WAIT_OBJECT_0);
+    CloseHandle(hSqlThreadEvent);
     return 0;
 }
 

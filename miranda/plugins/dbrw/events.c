@@ -19,6 +19,11 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 */
 #include "dbrw.h"
 
+static CRITICAL_SECTION csEventsDb;
+static HANDLE hEventsThread = 0, hEventsEvent = 0;
+
+static unsigned __stdcall events_timerProcThread(void *arg);
+
 enum {
 	SQL_EVT_STMT_COUNT=0,
 	SQL_EVT_STMT_ADD,
@@ -58,11 +63,8 @@ static char *evt_stmts[SQL_EVT_STMT_NUM] = {
 };
 static sqlite3_stmt *evt_stmts_prep[SQL_EVT_STMT_NUM] = {0};
 
-static unsigned __stdcall events_timerProcThread(void *arg);
-
-static HANDLE hEventsThread = 0, hEventsEvent = 0;
-
 void events_init() {
+	InitializeCriticalSection(&csEventsDb);
 	sql_prepare_add(evt_stmts, evt_stmts_prep, SQL_EVT_STMT_NUM);
     sql_exec(g_sqlite, "BEGIN TRANSACTION;");
     sql_exec(g_sqlite, "create temp table temp_dbrw_events (id integer primary key,eventtime integer,flags integer,eventtype integer, blob any, blobsize integer, contactid integer,modulename varchar(255),inserttime integer);");
@@ -80,6 +82,7 @@ void events_destroy() {
         WaitForSingleObjectEx(hEventsThread, INFINITE, FALSE);
         CloseHandle(hEventsThread);
     }
+	DeleteCriticalSection(&csEventsDb);
 }
 
 static unsigned __stdcall events_timerProcThread(void *arg) {

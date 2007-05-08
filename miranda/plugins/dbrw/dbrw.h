@@ -27,7 +27,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #define DBRW_SCHEMA_VERSION      "2"
 #define DBRW_HEADER_STR          "SQLite format 3"
 #define DBRW_ROT                 5
-#define DBRW_SETTINGS_FLUSHCACHE 1000*10
+#define DBRW_SETTINGS_FLUSHCACHE 1000*3
 #define DBRW_EVENTS_FLUSHCACHE   1000*60
 #define DBRW_COMPACT_DAYS        7
 
@@ -52,22 +52,19 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 extern HINSTANCE g_hInst;
 extern sqlite3 *g_sqlite;
+extern struct MM_INTERFACE memoryManagerInterface;
 extern struct LIST_INTERFACE li;
 extern char g_szDbPath[MAX_PATH];
-extern CRITICAL_SECTION csContactsDb;
-extern CRITICAL_SECTION csEventsDb;
-extern CRITICAL_SECTION csSettingsDb;
 extern HANDLE hSettingChangeEvent;
 extern HANDLE hContactDeletedEvent;
 extern HANDLE hContactAddedEvent;
 extern HANDLE hEventFilterAddedEvent;
 extern HANDLE hEventAddedEvent;
 extern HANDLE hEventDeletedEvent;
-extern struct MM_INTERFACE memoryManagerInterface;
 
-#define dbrw_alloc(n)            utils_mem_alloc(n) /*memoryManagerInterface.mmi_malloc(n)*/
-#define dbrw_free(ptr)           utils_mem_free(ptr) /*memoryManagerInterface.mmi_free(ptr)*/
-#define dbrw_realloc(ptr,size)   utils_mem_realloc(ptr, size) /*memoryManagerInterface.mmi_realloc(ptr,size)*/
+#define dbrw_alloc(n)     utils_mem_alloc(n)
+#define dbrw_free(p)      utils_mem_free(p)
+#define dbrw_realloc(p,s) utils_mem_realloc(p, s)
 
 #ifdef DBRW_LOGGING
 #define log0(s)         utils_log_fmt(__FILE__,__LINE__,s)

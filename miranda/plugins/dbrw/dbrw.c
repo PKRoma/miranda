@@ -50,9 +50,6 @@ struct MM_INTERFACE memoryManagerInterface = {0, 0, 0, 0};
 struct LIST_INTERFACE li;
 sqlite3 *g_sqlite;
 char g_szDbPath[MAX_PATH];
-CRITICAL_SECTION csContactsDb;
-CRITICAL_SECTION csEventsDb;
-CRITICAL_SECTION csSettingsDb;
 HANDLE hSettingChangeEvent;
 HANDLE hContactDeletedEvent;
 HANDLE hContactAddedEvent;
@@ -204,6 +201,7 @@ static int dbrw_Load(char *profile, void *link) {
     utils_vacuum_check();
 	{
         sql_exec(g_sqlite, "BEGIN TRANSACTION;");
+		sql_exec(g_sqlite, "PRAGMA locking_mode = EXCLUSIVE;");
 		sql_exec(g_sqlite, "PRAGMA synchronous = NORMAL;");
 		sql_exec(g_sqlite, "PRAGMA cache_size = 12000;");
 		sql_exec(g_sqlite, "PRAGMA temp_store = MEMORY;");
@@ -211,9 +209,6 @@ static int dbrw_Load(char *profile, void *link) {
 	}
 	li.cbSize = sizeof(li);
 	CallService(MS_SYSTEM_GET_LI,0,(LPARAM)&li);
-	InitializeCriticalSection(&csContactsDb);
-	InitializeCriticalSection(&csEventsDb);
-	InitializeCriticalSection(&csSettingsDb);
     
 	// Create Services
 	CreateServiceFunction(MS_DB_SETSAFETYMODE, utils_setSafetyMode);
@@ -276,10 +271,7 @@ static int dbrw_Unload(int wasLoaded) {
 	contacts_destroy();
     sql_close(g_sqlite);
 	sql_destroy();
-	DeleteCriticalSection(&csContactsDb);
-	DeleteCriticalSection(&csEventsDb);
-	DeleteCriticalSection(&csSettingsDb);
-    log0("dbRW unloaded");
+    log0("dbRW unloaded sucessfully");
 	#ifdef DBRW_LOGGING
 	utils_log_destroy();
 	#endif

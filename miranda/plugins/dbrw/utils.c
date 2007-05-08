@@ -215,7 +215,7 @@ void utils_vacuum_check() {
     
     if (lastC) {
         if (lastC>now) {
-            log0("System time changed.  Fixing compact key.");
+            log0("System time changed.  Resetting LastCompact key.");
             utils_private_setting_set_time("LastCompact", now);
         }
         else if ((now-lastC)>(60*60*24*DBRW_COMPACT_DAYS)) {

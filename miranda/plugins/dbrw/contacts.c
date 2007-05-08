@@ -18,6 +18,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 */
 #include "dbrw.h"
 
+static CRITICAL_SECTION csContactsDb;
 static SortedList sContactList;
 
 static int contacts_compare(void* p1, void* p2);
@@ -38,6 +39,7 @@ static char *ctc_stmts[SQL_CTC_STMT_NUM] = {
 static sqlite3_stmt *ctc_stmts_prep[SQL_CTC_STMT_NUM] = {0};
 
 void contacts_init() {
+	InitializeCriticalSection(&csContactsDb);
 	ZeroMemory(&sContactList, sizeof(sContactList));
 	sContactList.increment = 50;
 	sContactList.sortFunc = contacts_compare;
@@ -61,11 +63,10 @@ void contacts_init() {
 
 void contacts_destroy() {
 	li.List_Destroy(&sContactList);
+	DeleteCriticalSection(&csContactsDb);
 }
 
 static int contacts_compare(void* p1, void* p2) {
-	if ((int)p1==(int)p2)
-		return 0;
 	return (int)p1-(int)p2;
 }
 

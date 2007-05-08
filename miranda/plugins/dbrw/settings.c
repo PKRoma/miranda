@@ -19,6 +19,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 */
 #include "dbrw.h"
 
+CRITICAL_SECTION csSettingsDb;
 static HANDLE hHeap = 0, hSettingsThread = 0, hSettingsEvent = 0;
 static SortedList sSettingNames, sContactSettings, sGlobalSettings, sResidentSettings;
 
@@ -84,6 +85,7 @@ char *settings_stmts[SQL_SET_STMT_NUM] = {
 static sqlite3_stmt *settings_stmts_prep[SQL_SET_STMT_NUM] = {0};
 
 void settings_init() {
+	InitializeCriticalSection(&csSettingsDb);
 	hHeap = HeapCreate(0, 0, 0);
 	ZeroMemory(&sSettingNames, sizeof(sSettingNames));
 	ZeroMemory(&sContactSettings, sizeof(sContactSettings));
@@ -114,6 +116,7 @@ void settings_destroy() {
 	li.List_Destroy(&sContactSettings);
 	li.List_Destroy(&sGlobalSettings);
 	li.List_Destroy(&sResidentSettings);
+	DeleteCriticalSection(&csSettingsDb);
 }
 
 static int settings_cmpSettingNames(void *p1, void *p2) {

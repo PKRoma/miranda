@@ -22,6 +22,7 @@ Changes
 
 1.2
  - Automatic compaction dialog is now threaded
+ - Database file is now locked while in use
 
 Author
 ------
