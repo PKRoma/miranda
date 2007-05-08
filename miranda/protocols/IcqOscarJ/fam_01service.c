@@ -440,6 +440,20 @@ void handleServiceFam(unsigned char* pBuffer, WORD wBufferLength, snac_header* p
   {
     NetLog_Server("Received our avatar hash & status.");
 
+    if (wBufferLength > 4 && pBuffer[1] == AVATAR_HASH_PHOTO)
+    { // skip photo item
+      if (wBufferLength >= pBuffer[3] + 4)
+      {
+        wBufferLength -= pBuffer[3] + 4;
+        pBuffer += pBuffer[3] + 4;
+      }
+      else
+      {
+        pBuffer += wBufferLength;
+        wBufferLength = 0;
+      }
+    }
+
     if ((wBufferLength >= 0x14) && gbAvatarsEnabled)
     {
       if (!info->bMyAvatarInited) // signal the server after login

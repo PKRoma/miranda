@@ -952,6 +952,7 @@ void ResetSettingsOnListReload()
   // Reset a bunch of session specific settings
   ICQWriteContactSettingWord(NULL, "SrvVisibilityID", 0);
   ICQWriteContactSettingWord(NULL, "SrvAvatarID", 0);
+  ICQWriteContactSettingWord(NULL, "SrvPhotoID", 0);
   ICQWriteContactSettingWord(NULL, "SrvRecordCount", 0);
 
   hContact = ICQFindFirstContact();

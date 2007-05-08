@@ -243,8 +243,8 @@ int IcqGetMaxAvatarSize(WPARAM wParam, LPARAM lParam)
 
 int IcqAvatarFormatSupported(WPARAM wParam, LPARAM lParam)
 {
-  if (lParam == PA_FORMAT_JPEG || lParam == PA_FORMAT_GIF)
-    return -2;
+  if (lParam == PA_FORMAT_JPEG || lParam == PA_FORMAT_GIF || lParam == PA_FORMAT_XML)
+    return 1;
   else
     return 0;
 }

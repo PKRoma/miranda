@@ -464,6 +464,8 @@ void LoadServerIDs()
   EnterCriticalSection(&servlistMutex);
   if (wSrvID = ICQGetContactSettingWord(NULL, "SrvAvatarID", 0))
     ReserveServerID(wSrvID, SSIT_ITEM);
+  if (wSrvID = ICQGetContactSettingWord(NULL, "SrvPhotoID", 0))
+    ReserveServerID(wSrvID, SSIT_ITEM);
   if (wSrvID = ICQGetContactSettingWord(NULL, "SrvVisibilityID", 0))
     ReserveServerID(wSrvID, SSIT_ITEM);
 

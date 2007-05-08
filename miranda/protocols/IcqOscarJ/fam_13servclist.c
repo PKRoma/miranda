@@ -23,7 +23,7 @@
 //
 // -----------------------------------------------------------------------------
 //
-// File name      : $Source: /cvsroot/miranda/miranda/protocols/IcqOscarJ/fam_13servclist.c,v $
+// File name      : $URL$
 // Revision       : $Revision$
 // Last change on : $Date$
 // Last change by : $Author$
@@ -1338,7 +1338,7 @@ static void handleServerCList(unsigned char *buf, WORD wLen, WORD wFlags, server
         /* data is TLV(13) {TLV(D4) {time_t importTime}} */
         ICQWriteContactSettingDword(NULL, "ImportTS", getDWordFromChain(pChain, SSI_TLV_TIMESTAMP, 1));
         ICQWriteContactSettingWord(NULL, "SrvImportID", wItemId);
-        NetLog_Server("SSI first import recognized");
+        NetLog_Server("SSI %s item recognized", "first import");
       }
       break;
 
@@ -1350,9 +1350,17 @@ static void handleServerCList(unsigned char *buf, WORD wLen, WORD wFlags, server
         /* data is TLV(D5) hash */
         /* we ignore this, just save the id */
         /* cause we get the hash again after login */
+        if (!strcmpnull(szRecordName, "12"))
+        { // need to handle Photo Item separately
+          ICQWriteContactSettingWord(NULL, "SrvPhotoID", wItemId);
+          NetLog_Server("SSI %s item recognized", "Photo");
+        }
+        else
+        {
+          ICQWriteContactSettingWord(NULL, "SrvAvatarID", wItemId);
+          NetLog_Server("SSI %s item recognized", "Avatar");
+        }
         ReserveServerID(wItemId, SSIT_ITEM);
-        ICQWriteContactSettingWord(NULL, "SrvAvatarID", wItemId);
-        NetLog_Server("SSI Avatar item recognized");
       }
       break;
 

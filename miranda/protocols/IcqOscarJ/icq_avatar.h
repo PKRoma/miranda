@@ -23,7 +23,7 @@
 //
 // -----------------------------------------------------------------------------
 //
-// File name      : $Source: /cvsroot/miranda/miranda/protocols/IcqOscarJ/icq_avatar.h,v $
+// File name      : $URL$
 // Revision       : $Revision$
 // Last change on : $Date$
 // Last change by : $Author$
@@ -43,7 +43,7 @@ extern BYTE hashEmptyAvatar[9];
 
 #define AVATAR_HASH_STATIC  0x01
 #define AVATAR_HASH_FLASH   0x08
-#define AVATAR_HASH_BIGGER  0x0C
+#define AVATAR_HASH_PHOTO   0x0C
 
 void handleAvatarContactHash(DWORD dwUIN, char* szUID, HANDLE hContact, unsigned char* pHash, int nHashLen, WORD wOldStatus);
 

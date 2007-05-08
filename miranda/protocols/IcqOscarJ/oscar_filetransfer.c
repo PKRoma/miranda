@@ -95,6 +95,9 @@ static oscar_filetransfer* CreateOscarTransfer()
   fileTransferList = (basic_filetransfer**)realloc(fileTransferList, sizeof(basic_filetransfer*)*(fileTransferCount + 1));
   fileTransferList[fileTransferCount++] = (basic_filetransfer*)ft;
 
+#ifdef _DEBUG
+  NetLog_Direct("OFT: FT struct 0x%x created", ft);
+#endif
   LeaveCriticalSection(&oftMutex);
 
   return ft;
@@ -113,6 +116,9 @@ filetransfer *CreateIcqFileTransfer()
   fileTransferList = (basic_filetransfer**)realloc(fileTransferList, sizeof(basic_filetransfer*)*(fileTransferCount + 1));
   fileTransferList[fileTransferCount++] = (basic_filetransfer*)ft;
 
+#ifdef _DEBUG
+  NetLog_Direct("FT struct 0x%x created", ft);
+#endif
   LeaveCriticalSection(&oftMutex);
 
   return ft;
@@ -242,6 +248,9 @@ void SafeReleaseFileTransfer(void **ft)
       }
       // Invalidate transfer
       ReleaseFileTransfer(ift);
+#ifdef _DEBUG
+      NetLog_Direct("FT struct 0x%x released", ft);
+#endif
       // Release memory
       SAFE_FREE(ft);
     }
@@ -286,6 +295,9 @@ void SafeReleaseFileTransfer(void **ft)
       }
       // Invalidate transfer
       ReleaseFileTransfer(oft);
+#ifdef _DEBUG
+      NetLog_Direct("OFT: FT struct 0x%x released", ft);
+#endif
       // Release memory
       SAFE_FREE(ft);
     }
@@ -691,6 +703,8 @@ void handleRecvServMsgOFT(unsigned char *buf, WORD wLen, DWORD dwUin, char *szUI
       NetLog_Server("OFT: File transfer cancelled by %s", strUID(dwUin, szUID));
 
       ICQBroadcastAck(ft->hContact, ACKTYPE_FILE, ACKRESULT_FAILED, (HANDLE)ft, 0);
+      // Notify user, that the FT was cancelled // TODO: new ACKRESULT_?
+      icq_LogMessage(LOG_ERROR, "The file transfer was aborted by the other user.");
       // Release transfer
       SafeReleaseFileTransfer(&ft);
     }
@@ -1012,7 +1026,7 @@ DWORD oftFileCancel(HANDLE hContact, WPARAM wParam, LPARAM lParam)
     NetLog_Direct("OFT: Transfer cancelled.");
 #endif
 
-    oft_sendFileDeny(dwUin, szUid, ft);
+    oft_sendFileCancel(dwUin, szUid, ft);
 
     ICQBroadcastAck(hContact, ACKTYPE_FILE, ACKRESULT_FAILED, ft, 0);
 
@@ -1514,7 +1528,16 @@ static DWORD __stdcall oft_connectionThread(oscarthreadstartinfo *otsi)
 
   CloseOscarConnection(&oc);
 
-  // Clean up, error handling
+  // Clean up
+  EnterCriticalSection(&oftMutex);
+  if (getFileTransferIndex(oc.ft) != -1)
+  {
+    oc.ft->connection = NULL; // release link
+  }
+  LeaveCriticalSection(&oftMutex);
+  // Give server some time for abort/cancel to arrive
+  SleepEx(1000, TRUE);
+  // Error handling
   if (IsValidOscarTransfer(oc.ft))
   {
     if (oc.status == OCS_DATA)
@@ -1522,14 +1545,17 @@ static DWORD __stdcall oft_connectionThread(oscarthreadstartinfo *otsi)
       ICQBroadcastAck(oc.hContact, ACKTYPE_FILE, ACKRESULT_FAILED, oc.ft, 0);
 
       icq_LogMessage(LOG_ERROR, "Connection lost during file transfer.");
+      // Release structure
+      SafeReleaseFileTransfer(&oc.ft);
     }
     else if (oc.status == OCS_NEGOTIATION)
     {
       ICQBroadcastAck(oc.hContact, ACKTYPE_FILE, ACKRESULT_FAILED, oc.ft, 0);
 
       icq_LogMessage(LOG_ERROR, "File transfer negotiation failed for unknown reason.");
+      // Release structure
+      SafeReleaseFileTransfer(&oc.ft);
     }
-    oc.ft->connection = NULL; // release link
   }
 
   return 0;

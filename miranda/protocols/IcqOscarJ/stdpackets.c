@@ -1718,6 +1718,13 @@ void oft_sendFileDeny(DWORD dwUin, char *szUid, oscar_filetransfer* ft)
 
 
 
+void oft_sendFileCancel(DWORD dwUin, char *szUid, oscar_filetransfer* ft)
+{
+  oft_sendFileReply(dwUin, szUid, ft, 0x01);
+}
+
+
+
 void oft_sendFileRedirect(DWORD dwUin, char *szUid, oscar_filetransfer* ft, DWORD dwIP, WORD wPort, int bProxy)
 {
   icq_packet packet;
