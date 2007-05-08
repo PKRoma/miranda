@@ -54,7 +54,16 @@ BOOL CALLBACK AddContactDlgProc(HWND hdlg,UINT msg,WPARAM wparam,LPARAM lparam)
                     int isSet = 0;
                     
                     if (acs->handleType == HANDLE_EVENT) {
-                        HANDLE hcontact = (HANDLE)CallService(MS_DB_EVENT_GETCONTACT, (WPARAM)acs->handle, 0);
+                        DBEVENTINFO dbei;
+                        HANDLE hcontact;
+                        
+                        ZeroMemory(&dbei,sizeof(dbei));
+                        dbei.cbSize=sizeof(dbei);
+                        dbei.cbBlob=CallService(MS_DB_EVENT_GETBLOBSIZE,(WPARAM)acs->handle,0);
+                        dbei.pBlob=mir_alloc(dbei.cbBlob);
+                        CallService(MS_DB_EVENT_GET,(WPARAM)acs->handle,(LPARAM)&dbei);
+                        hcontact=*((PHANDLE)(dbei.pBlob+sizeof(DWORD)));
+                        mir_free(dbei.pBlob);
                         if (hcontact!=INVALID_HANDLE_VALUE) {
                             szName = (TCHAR*)CallService( MS_CLIST_GETCONTACTDISPLAYNAME,(WPARAM)hcontact, GCDNF_TCHAR );
                             isSet = 1;
