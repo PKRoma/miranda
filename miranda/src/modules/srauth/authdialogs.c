@@ -121,14 +121,7 @@ BOOL CALLBACK DlgProcAdded(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam)
 				acs.szProto="";
 				CallService(MS_ADDCONTACT_SHOW,(WPARAM)hwndDlg,(LPARAM)&acs);
                 {
-                    DBEVENTINFO dbei;
-                    HANDLE hcontact;
-                    
-                    ZeroMemory(&dbei,sizeof(dbei));
-                    dbei.cbBlob=CallService(MS_DB_EVENT_GETBLOBSIZE,(WPARAM)hDbEvent,0);
-                    dbei.pBlob=mir_alloc(dbei.cbBlob);
-                    CallService(MS_DB_EVENT_GET,(WPARAM)hDbEvent,(LPARAM)&dbei);
-                    hcontact=*((PHANDLE)(dbei.pBlob+sizeof(DWORD)));
+                    HANDLE hcontact = (HANDLE)CallService(MS_DB_EVENT_GETCONTACT, (WPARAM)hDbEvent, 0);
                     if ((hcontact == INVALID_HANDLE_VALUE) || !DBGetContactSettingByte(hcontact, "CList", "NotOnList", 0))
                         ShowWindow(GetDlgItem(hwndDlg,IDC_ADD),FALSE);
                 }
