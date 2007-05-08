@@ -486,57 +486,49 @@ static int ToolBarLayeredPaintProc(HWND hWnd, HDC hDC, RECT * rcPaint, HRGN rgn,
 	return SendMessage(hWnd, MTBM_LAYEREDPAINT,(WPARAM)hDC,0);
 }
 
-static void mtbDefButtonRegistration()
+static void _sttRegisterButton(char * pszButtonID, char * pszButtonName, char * pszServiceName,
+					   char * pszTooltipUp, char * pszTooltipDn, int icoDefIdx, int defResource, int defResource2)
 {
 	TBButton tbb;
-
 	memset(&tbb,0, sizeof(TBButton));
 	tbb.cbSize=sizeof(TBButton);
-	tbb.pszButtonID="ShowHideOffline";
-	tbb.pszButtonName="Show/Hide offline contacts";
-	tbb.pszServiceName=MS_CLIST_TOGGLEHIDEOFFLINE;
-	tbb.pszTooltipUp="Show offline contacts";
-	tbb.pszTooltipDn="Hide offline contacts";
-	RegisterIcolibIconHandle(TOOLBARBUTTON_ICONIDPREFIX"ShowHideOffline"TOOLBARBUTTON_ICONIDPRIMARYSUFFIX, "ToolBar", "Show/Hide offline contacts" , _T("toolbar.dll"),1, g_hInst, IDI_RESETVIEW );
-	RegisterIcolibIconHandle(TOOLBARBUTTON_ICONIDPREFIX"ShowHideOffline"TOOLBARBUTTON_ICONIDSECONDARYSUFFIX, "ToolBar", "Show/Hide offline contacts "TOOLBARBUTTON_ICONNAMEPRESSEDSUFFIX , _T("toolbar.dll"),2, g_hInst, IDI_RESETVIEW );
+	tbb.pszButtonID=pszButtonID;
+	tbb.pszButtonName=pszButtonName;
+	tbb.pszServiceName=pszServiceName;
+	tbb.pszTooltipUp=pszTooltipUp;
+	tbb.pszTooltipDn=pszTooltipDn;
+	{
+		char buf[255];
+		_snprintf(buf,sizeof(buf),"%s%s%s",TOOLBARBUTTON_ICONIDPREFIX, pszButtonID, TOOLBARBUTTON_ICONIDPRIMARYSUFFIX);
+		RegisterIcolibIconHandle( buf, "ToolBar", pszButtonName , _T("toolbar.dll"),icoDefIdx, g_hInst, defResource );
+	}
+	if (pszTooltipDn)
+	{
+		char buf[255];
+		char buf2[255];
+		_snprintf(buf,sizeof(buf),"%s%s%s",TOOLBARBUTTON_ICONIDPREFIX, pszButtonID, TOOLBARBUTTON_ICONIDPRIMARYSUFFIX);
+		_snprintf(buf2,sizeof(buf2),"%s%s", pszButtonName, TOOLBARBUTTON_ICONNAMEPRESSEDSUFFIX);
+   		RegisterIcolibIconHandle( buf, "ToolBar", buf2 , _T("toolbar.dll"),icoDefIdx+1, g_hInst, defResource2 );
+	}	
 	CallService(MS_TB_ADDBUTTON,0, (LPARAM)&tbb);
+}
 
-	memset(&tbb,0, sizeof(TBButton));
-	tbb.cbSize=sizeof(TBButton);
-	tbb.pszButtonID="MainMenu";
-	tbb.pszButtonName="Main Menu";
-	tbb.pszServiceName=MS_CLUI_SHOWMAINMENU;
-	tbb.pszTooltipUp="Main menu";
-	RegisterIcolibIconHandle(TOOLBARBUTTON_ICONIDPREFIX"MainMenu"TOOLBARBUTTON_ICONIDPRIMARYSUFFIX, "ToolBar", "Main menu" , _T("toolbar.dll"),2, g_hInst, IDI_RESETVIEW );	
-	CallService(MS_TB_ADDBUTTON,0, (LPARAM)&tbb);
-
-	memset(&tbb,0, sizeof(TBButton));
-	tbb.cbSize=sizeof(TBButton);
-	tbb.pszButtonID="JabberBookmarks";
-	tbb.pszButtonName="Jabber Bookmarks";
-	tbb.pszServiceName=MS_JABBER_SHOWBOOKMARK;
-	tbb.pszTooltipUp="Jabber Bookmarks";
-	RegisterIcolibIconHandle(TOOLBARBUTTON_ICONIDPREFIX"JabberBookmarks"TOOLBARBUTTON_ICONIDPRIMARYSUFFIX, "ToolBar", "Jabber Bookmarks" , _T("toolbar.dll"),3, g_hInst, IDI_RESETVIEW );	
-	CallService(MS_TB_ADDBUTTON,0, (LPARAM)&tbb);
+static void mtbDefButtonRegistration()
+{
 	
-	
+	_sttRegisterButton( "MainMenu", "Main Menu", MS_CLUI_SHOWMAINMENU,
+		"Main menu", NULL,  2 , IDI_RESETVIEW, IDI_RESETVIEW  );
 
-	memset(&tbb,0, sizeof(TBButton));
-	tbb.cbSize=sizeof(TBButton);
-	tbb.pszButtonID="FindUser";
-	tbb.pszButtonName="Find User";
-	tbb.pszServiceName="FindAdd/FindAddCommand";
-	tbb.pszTooltipUp="Find User";
-	RegisterIcolibIconHandle(TOOLBARBUTTON_ICONIDPREFIX"FindUser"TOOLBARBUTTON_ICONIDPRIMARYSUFFIX, "ToolBar", "Find User" , _T("toolbar.dll"),4, g_hInst, IDI_RESETVIEW );	
-	CallService(MS_TB_ADDBUTTON,0, (LPARAM)&tbb);
+	_sttRegisterButton( "ShowHideOffline","Show/Hide offline contacts", MS_CLIST_TOGGLEHIDEOFFLINE,
+					    "Show offline contacts", "Hide offline contacts", 1 , IDI_RESETVIEW, IDI_RESETVIEW  );
 
-	memset(&tbb,0, sizeof(TBButton));
-	tbb.cbSize=sizeof(TBButton);
-	tbb.pszButtonID="Options";
-	tbb.pszButtonName="Options";
-	tbb.pszServiceName="Options/OptionsCommand";
-	tbb.pszTooltipUp="Options";
-	RegisterIcolibIconHandle(TOOLBARBUTTON_ICONIDPREFIX"Options"TOOLBARBUTTON_ICONIDPRIMARYSUFFIX, "ToolBar", "Options" , _T("toolbar.dll"),5, g_hInst, IDI_RESETVIEW );	
-	CallService(MS_TB_ADDBUTTON,0, (LPARAM)&tbb);
+    _sttRegisterButton( "JabberBookmarks","Jabber Bookmarks", MS_JABBER_SHOWBOOKMARK,
+		"Jabber Bookmark", NULL,  3 , IDI_RESETVIEW, IDI_RESETVIEW  );
+
+	_sttRegisterButton( "FindUser","Find User", "FindAdd/FindAddCommand",
+		"Find User", NULL,  4 , IDI_RESETVIEW, IDI_RESETVIEW  );
+
+	_sttRegisterButton( "Options","Options", "Options",
+		"Options", NULL,  5 , IDI_RESETVIEW, IDI_RESETVIEW  );
 
 }
