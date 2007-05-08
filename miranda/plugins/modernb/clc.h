@@ -23,6 +23,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #ifndef _CLC_H_
 #define _CLC_H_
 #include "image_array.h"
+#include "m_xpTheme.h"
 
 
 #define SETTING_TOOLWINDOW_DEFAULT   1
@@ -459,6 +460,8 @@ struct ClcData {
 	BYTE dbbMetaHideExtra;
 	BYTE dbbBlendInActiveState;
 	BYTE dbbBlend25;
+
+	XPTHANDLE hCheckBoxTheme;
 };
 
 struct SHORTDATA

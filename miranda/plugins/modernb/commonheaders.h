@@ -118,6 +118,8 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include "m_avatars.h"
 #include "m_smileyadd.h"
 
+#include "m_xpTheme.h"
+
 //macros to free data and set it pointer to NULL
 #define mir_free_and_nill(x) {mir_free(x); x=NULL;}
 // shared vars

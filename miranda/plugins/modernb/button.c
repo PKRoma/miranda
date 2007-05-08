@@ -2,6 +2,7 @@
 #include "commonprototypes.h"
 #include "m_skinbutton.h"
 
+
 #define BUTTON_POLLID       100
 #define BUTTON_POLLDELAY    50
 #define b2str(a) ((a) ? "True" : "False")
@@ -25,8 +26,10 @@ struct tagSKINBUTTONDATA
 	BOOL	pushBtn;		// is it push button
 	int		pbState;		// state of push button
 
-	HANDLE	hThemeButton;
-    HANDLE	hThemeToolbar;
+	HANDLE  hIcolibHandle;	// handle of icon in iconlib
+    
+	XPTHANDLE	hThemeButton;
+    XPTHANDLE	hThemeToolbar;
     BOOL	bThemed;
 };
 typedef struct tagSKINBUTTONDATA SKINBUTTONDATA;
@@ -37,74 +40,14 @@ static HWND hwndToolTips = NULL;
 static LRESULT CALLBACK SkinButtonProc(HWND hwndDlg, UINT  msg, WPARAM wParam, LPARAM lParam);
 static void PaintWorker(SKINBUTTONDATA *lpSBData, HDC hdcPaint , POINT * pOffset);
 static BOOL	bThemed=FALSE;
-static HANDLE hThemeButton=FALSE;
-static HANDLE hThemeToolbar=FALSE;
 
-// External theme methods and properties
-static HMODULE themeAPIHandle = NULL; // handle to uxtheme.dll
-static HANDLE   (WINAPI *MyOpenThemeData)(HWND, LPCWSTR);
-static HRESULT  (WINAPI *MyCloseThemeData)(HANDLE);
-static BOOL     (WINAPI *MyIsThemeBackgroundPartiallyTransparent)(HANDLE, int,
-                                                                  int);
-static HRESULT  (WINAPI *MyDrawThemeParentBackground)(HWND, HDC, RECT *);
-static HRESULT  (WINAPI *MyDrawThemeBackground)(HANDLE, HDC, int, int,
-                                                const RECT *, const RECT *);
-static HRESULT  (WINAPI *MyDrawThemeText)(HANDLE, HDC, int, int, LPCWSTR, int,
-                                          DWORD, DWORD, const RECT *);
+static HANDLE hButtonWindowList=NULL;
+static HANDLE hIconChangedHook=NULL;
 
-BOOL (WINAPI *MyEnableThemeDialogTexture)(HANDLE, DWORD) = 0;
-
-#define MGPROC(x) GetProcAddress(themeAPIHandle,x)
-static int ThemeSupport()
+static int OnIconLibIconChanged(WPARAM wParam, LPARAM lParam)
 {
-    if (IsWinVerXPPlus()) {
-        if (!themeAPIHandle) {
-            themeAPIHandle = GetModuleHandleA("uxtheme");
-            if (themeAPIHandle) {
-                MyOpenThemeData = (HANDLE(WINAPI *)(HWND, LPCWSTR))MGPROC("OpenThemeData");
-                MyCloseThemeData = (HRESULT(WINAPI *)(HANDLE))MGPROC("CloseThemeData");
-                MyIsThemeBackgroundPartiallyTransparent = (BOOL(WINAPI *)(HANDLE, int, int))MGPROC("IsThemeBackgroundPartiallyTransparent");
-                MyDrawThemeParentBackground = (HRESULT(WINAPI *)(HWND, HDC, RECT *))MGPROC("DrawThemeParentBackground");
-                MyDrawThemeBackground = (HRESULT(WINAPI *)(HANDLE, HDC, int, int, const RECT *, const RECT *))MGPROC("DrawThemeBackground");
-                MyDrawThemeText = (HRESULT(WINAPI *)(HANDLE, HDC, int, int, LPCWSTR, int, DWORD, DWORD, const RECT *))MGPROC("DrawThemeText");
-				MyEnableThemeDialogTexture = (BOOL (WINAPI *)(HANDLE, DWORD))MGPROC("EnableThemeDialogTexture");
-			}
-        }
-    // Make sure all of these methods are valid (i would hope either all or none work)
-        if (MyOpenThemeData && MyCloseThemeData && MyIsThemeBackgroundPartiallyTransparent && MyDrawThemeParentBackground && MyDrawThemeBackground && MyDrawThemeText) {
-            return 1;
-        }
-    }
-    return 0;
-}
-
-static void DestroyTheme(SKINBUTTONDATA *ctl)
-{
-    if (ThemeSupport()) {
-        if (ctl->hThemeButton) {
-            MyCloseThemeData(ctl->hThemeButton);
-            ctl->hThemeButton = NULL;
-        }
-        if (ctl->hThemeToolbar) {
-            MyCloseThemeData(ctl->hThemeToolbar);
-            ctl->hThemeToolbar = NULL;
-        }
-		
-    }
-	ctl->bThemed = FALSE;
-}
-
-static void LoadTheme(SKINBUTTONDATA *ctl)
-{
-    if (ThemeSupport()) {
-        DestroyTheme(ctl);
-		if (g_CluiData.fDisableSkinEngine)
-		{
-			ctl->hThemeButton = MyOpenThemeData(ctl->hWnd, L"BUTTON");
-			ctl->hThemeToolbar = MyOpenThemeData(ctl->hWnd, L"TOOLBAR");
-			ctl->bThemed = TRUE;
-		}
-    }
+	WindowList_BroadcastAsync(hButtonWindowList, MBM_REFRESHICOLIBICON,0,0);
+	return 0;
 }
 
 int LoadSkinButtonModule()
@@ -119,10 +62,15 @@ int LoadSkinButtonModule()
 	wc.hbrBackground = 0;
 	wc.style = CS_GLOBALCLASS;
 	RegisterClassEx(&wc);
+	hButtonWindowList=(HANDLE) CallService(MS_UTILS_ALLOCWINDOWLIST, 0, 0);
+	hIconChangedHook=HookEvent(ME_SKIN2_ICONSCHANGED,OnIconLibIconChanged);
+
 	return 0;
 }
 int UnloadSkinButtonModule(WPARAM wParam, LPARAM lParam)
 {
+	//TODO dealloc window list?
+	UnhookEvent(hIconChangedHook);
 	return 0;
 }
 
@@ -154,7 +102,6 @@ static LRESULT CALLBACK SkinButtonProc(HWND hwndDlg, UINT  msg, WPARAM wParam, L
 				if (lpSBData == NULL)
 					return FALSE;
 				memset(lpSBData,0,sizeof(SKINBUTTONDATA)); //I prefer memset to guarantee zeros
-				
 				lpSBData->hWnd = hwndDlg;
 				lpSBData->nStateId = PBS_NORMAL;
 				lpSBData->fFocused = FALSE;
@@ -171,11 +118,20 @@ static LRESULT CALLBACK SkinButtonProc(HWND hwndDlg, UINT  msg, WPARAM wParam, L
 				SetWindowLong(hwndDlg, 0, (LONG) lpSBData);
 				if (((CREATESTRUCTA *) lParam)->lpszName)
 					SetWindowText(hwndDlg, ((CREATESTRUCT *) lParam)->lpszName);
-				LoadTheme(lpSBData);
+				lpSBData->hThemeButton = xpt_AddThemeHandle(lpSBData->hWnd, L"BUTTON");
+				lpSBData->hThemeToolbar = xpt_AddThemeHandle(lpSBData->hWnd, L"TOOLBAR");
+				WindowList_Add(hButtonWindowList, hwndDlg, NULL);				
 				return TRUE;
 			}
 		case WM_DESTROY:
 			{
+/* #ifdef _DEBUG
+				if (GetWindowLong(hwndButton, GWL_USERDATA))
+					DebugBreak();
+#endif */
+
+				xpt_FreeThemeForWindow(hwndDlg);
+				WindowList_Remove(hButtonWindowList, hwndDlg);
 				if (lpSBData) 
 				{
 					if (hwndToolTips) 
@@ -199,7 +155,6 @@ static LRESULT CALLBACK SkinButtonProc(HWND hwndDlg, UINT  msg, WPARAM wParam, L
 					}
 					if (lpSBData->hIconPrivate)
 						DestroyIcon(lpSBData->hIconPrivate);
-					DestroyTheme(lpSBData);
 					free(lpSBData);  // lpSBData was malloced by native malloc
 				}
 				SetWindowLong(hwndDlg, 0, (LONG) NULL);
@@ -242,14 +197,6 @@ static LRESULT CALLBACK SkinButtonProc(HWND hwndDlg, UINT  msg, WPARAM wParam, L
 				return 0;
 			}
 			break;
-		
-		case WM_THEMECHANGED:
-			{
-				// themed changed, reload theme object
-				LoadTheme(lpSBData);
-				InvalidateParentRect(lpSBData->hWnd, NULL, TRUE); // repaint it
-				break;
-			}
 		
 		case WM_SETFONT:			
 			{	
@@ -321,6 +268,18 @@ static LRESULT CALLBACK SkinButtonProc(HWND hwndDlg, UINT  msg, WPARAM wParam, L
 				ti.lpszText = (TCHAR *) wParam;
 				SendMessage(hwndToolTips, TTM_ADDTOOL, 0, (LPARAM) &ti);
 				break;
+			}
+		case BUTTONSETASPUSHBTN:
+			{
+
+				if (lParam==0)
+					lpSBData->pushBtn=1;
+				else
+				{
+					lpSBData->pushBtn=wParam;
+					lpSBData->pbState = (lParam&2) ? TRUE : FALSE;
+				}
+				return 0;
 			}
 		case WM_SETFOCUS:
 			{
@@ -432,6 +391,51 @@ static LRESULT CALLBACK SkinButtonProc(HWND hwndDlg, UINT  msg, WPARAM wParam, L
 		case WM_ERASEBKGND:
 			{
 				return 1;
+			}
+		case MBM_SETICOLIBHANDLE:
+			{
+				if (lpSBData->hIconPrivate) 
+				{
+					DestroyIcon(lpSBData->hIconPrivate);
+					lpSBData->hIconPrivate = 0;
+				}
+				
+				lpSBData->hIcolibHandle=(HANDLE)lParam;
+				if (lpSBData->hIcolibHandle)
+					lpSBData->hIcon=(HICON)CallService(MS_SKIN2_GETICONBYHANDLE, 0 , (LPARAM) lpSBData->hIcolibHandle);
+				else
+					lpSBData->hIcon=NULL;
+				return 1;
+			}
+		case MBM_REFRESHICOLIBICON:
+			{
+				if (lpSBData->hIconPrivate) 
+				{
+					DestroyIcon(lpSBData->hIconPrivate);
+					lpSBData->hIconPrivate = 0;
+				}
+				if (lpSBData->hIcolibHandle)
+					lpSBData->hIcon=(HICON)CallService(MS_SKIN2_GETICONBYHANDLE, 0 , (LPARAM) lpSBData->hIcolibHandle);
+				else		
+					lpSBData->hIcon=NULL;
+				InvalidateRect(hwndDlg,NULL,TRUE);
+				pcli->pfnInvalidateRect(GetParent(GetParent(hwndDlg)),NULL,TRUE);
+				return 1;
+			}
+		case MBM_UPDATETRANSPARENTFLAG:
+			{
+				LONG flag=GetWindowLong(hwndDlg,GWL_EXSTYLE);
+				LONG oldFlag=flag;
+				if (lParam==2) 
+					lParam=(g_CluiData.fDisableSkinEngine)?0:1;
+				flag&=~WS_EX_TRANSPARENT;
+				if (lParam) flag|=WS_EX_TRANSPARENT;
+				if (flag!=oldFlag)
+				{
+					SetWindowLong(hwndDlg,GWL_EXSTYLE,flag);
+					RedrawWindow(hwndDlg,NULL,NULL,RDW_INVALIDATE|RDW_UPDATENOW);
+				}
+				return 0;
 			}
 		case BM_GETIMAGE:
 			{
@@ -552,17 +556,58 @@ static void PaintWorker(SKINBUTTONDATA *lpSBData, HDC hdcPaint , POINT * pOffset
 		}
 		else 
 		{
-			if (lpSBData->bThemed)
+			if (xpt_IsThemed(lpSBData->hThemeToolbar))
 			{
 				RECT *rc = &rcClient;
-				int state = IsWindowEnabled(lpSBData->hWnd) ? (lpSBData->nStateId == PBS_NORMAL && lpSBData->defbutton ? PBS_DEFAULTED : lpSBData->nStateId) : PBS_DISABLED;
-				if (MyIsThemeBackgroundPartiallyTransparent(lpSBData->hThemeToolbar, TP_BUTTON, TBStateConvert2Flat(state)))
-				{	
-					//Draw parent?
-					//InvalidateParentRect(lpSBData->hWnd, NULL, TRUE);
-					MyDrawThemeParentBackground(lpSBData->hWnd, hdcMem, rc);
+				int state = IsWindowEnabled(lpSBData->hWnd) ? /*(lpSBData->nStateId==PBS_PRESSED || lpSBData->pbState == TRUE) ? PBS_PRESSED :*/ (lpSBData->nStateId == PBS_NORMAL && lpSBData->defbutton ? PBS_DEFAULTED : lpSBData->nStateId) : PBS_DISABLED;
+				xpt_DrawTheme(lpSBData->hThemeToolbar,lpSBData->hWnd,hdcMem,TP_BUTTON, TBStateConvert2Flat(state), rc, rc);
+			}
+			else 
+			{
+				HBRUSH hbr=NULL;
+
+				if (lpSBData->nStateId==PBS_PRESSED||lpSBData->nStateId==PBS_HOT)
+					hbr = GetSysColorBrush(COLOR_3DLIGHT);
+				else {
+					RECT btnRect;			
+					POINT pt={0};
+					int ret;
+					HWND hwndParent = GetParent(lpSBData->hWnd);
+					HDC dc = CreateCompatibleDC(NULL);
+					HBITMAP memBM, oldBM;
+					GetWindowRect(hwndParent,&btnRect);
+					memBM = SkinEngine_CreateDIB32( btnRect.right-btnRect.left, btnRect.bottom-btnRect.top );
+					oldBM = SelectObject ( dc, memBM );
+					ret = SendMessage(hwndParent,WM_ERASEBKGND,(WPARAM)dc,0);
+					GetWindowRect(lpSBData->hWnd,&btnRect);
+					ClientToScreen(hwndParent,&pt);
+					OffsetRect(&btnRect,-pt.x,-pt.y);
+					if (ret)
+						BitBlt(hdcMem,0,0,btnRect.right-btnRect.left,btnRect.bottom-btnRect.top,dc,btnRect.left,btnRect.top,SRCCOPY);					
+					oldBM = SelectObject ( dc, oldBM );
+					DeleteObject(memBM);
+					DeleteDC(dc);
+					if (!ret)	//WM_ERASEBKG return false need to paint
+					{
+						HDC pdc = GetDC(hwndParent);
+						HBRUSH oldBrush = GetCurrentObject( pdc, OBJ_BRUSH );
+						hbr = (HBRUSH)SendMessage(hwndParent, WM_CTLCOLORDLG, (WPARAM)pdc, (LPARAM)hwndParent);
+						SelectObject(pdc,oldBrush);
+						ReleaseDC(hwndParent,pdc);
+					}
+					
 				}
-				MyDrawThemeBackground(lpSBData->hThemeToolbar, hdcMem, TP_BUTTON, TBStateConvert2Flat(state), rc, rc);
+				if (hbr) {
+					FillRect(hdcMem, &rcClient, hbr);
+					DeleteObject(hbr);
+				}
+				if (lpSBData->nStateId==PBS_HOT||lpSBData->fFocused) {
+					if (lpSBData->pbState)
+						DrawEdge(hdcMem,&rcClient, EDGE_ETCHED,BF_RECT|BF_SOFT);
+					else DrawEdge(hdcMem,&rcClient, BDR_RAISEDOUTER,BF_RECT|BF_SOFT|BF_FLAT);
+				}
+				else if (lpSBData->nStateId==PBS_PRESSED)
+					DrawEdge(hdcMem, &rcClient, BDR_SUNKENOUTER,BF_RECT|BF_SOFT);
 			}
 		}
 
@@ -631,11 +676,18 @@ static void PaintWorker(SKINBUTTONDATA *lpSBData, HDC hdcPaint , POINT * pOffset
 		}
 		if (fHasText)
 		{
+			BOOL bCentered=TRUE;
 			SetBkMode(hdcMem,TRANSPARENT);
 			if (lpSBData->nFontID>=0)
 				CLCPaint_ChangeToFont(hdcMem,NULL,lpSBData->nFontID,NULL);
+			{
+				RECT TextRequiredRect=rcText;
+				SkinEngine_DrawText(hdcMem, lpSBData->szText, -1, &TextRequiredRect, DT_CENTER | DT_VCENTER | DT_CALCRECT);
+				if (TextRequiredRect.right-TextRequiredRect.left>rcText.right-rcText.left)
+					bCentered=FALSE;
 
-			SkinEngine_DrawText(hdcMem, lpSBData->szText, -1, &rcText, DT_CENTER | DT_VCENTER);
+			}
+			SkinEngine_DrawText(hdcMem, lpSBData->szText, -1, &rcText, (bCentered ? DT_CENTER: 0) | DT_VCENTER);
 		}
 		if (!pOffset)
 			BitBlt(hdcPaint,0,0,width,height,hdcMem,0,0,SRCCOPY);

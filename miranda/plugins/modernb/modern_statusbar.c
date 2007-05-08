@@ -99,6 +99,7 @@ int LoadStatusBarData()
 				DBFreeVariant(&dbv);
 			}
 		}
+		g_StatusBarData.bkUseWinColors=DBGetContactSettingByte(NULL,"StatusBar", "UseWinColours", CLCDEFAULT_USEWINDOWSCOLOURS);
 		g_StatusBarData.backgroundBmpUse=DBGetContactSettingWord(NULL,"StatusBar","BkBmpUse",CLCDEFAULT_BKBMPUSE);
 	}
 	SendMessage(pcli->hwndContactList,WM_SIZE,0,0);
@@ -155,7 +156,12 @@ int ModernDrawStatusBarWorker(HWND hWnd, HDC hDC)
 	GetClientRect(hWnd,&rc);
 	if (g_CluiData.fDisableSkinEngine)
 	{
-		DrawBackGround(hWnd, hDC,  g_StatusBarData.hBmpBackground, g_StatusBarData.bkColour, g_StatusBarData.backgroundBmpUse );
+		if (g_StatusBarData.bkUseWinColors && xpt_IsThemed(g_StatusBarData.hTheme))
+		{
+			xpt_DrawTheme(g_StatusBarData.hTheme, hWnd, hDC, 0, 0, &rc, &rc);			
+		}
+		else
+			DrawBackGround(hWnd, hDC,  g_StatusBarData.hBmpBackground, g_StatusBarData.bkColour, g_StatusBarData.backgroundBmpUse );
 	}
 	else
 	{
@@ -542,279 +548,284 @@ int ModernDrawStatusBarWorker(HWND hWnd, HDC hDC)
 LRESULT CALLBACK ModernStatusProc(HWND hwnd,UINT msg,WPARAM wParam,LPARAM lParam)
 {
 	static POINT ptToolTipShow={0};
-	switch (msg) {
-  case WM_DESTROY:
-	  if (allocedItemData && ProtosData)
-	  {
-		  int k;
+	switch (msg) 
+	{
+	case WM_CREATE:
+		g_StatusBarData.hTheme=xpt_AddThemeHandle(hwnd,L"STATUS");
+		break;
+	case WM_DESTROY:
+		xpt_FreeThemeForWindow(hwnd);
+		if (allocedItemData && ProtosData)
+		{
+			int k;
 
-		  for (k=0; k<allocedItemData; k++)
-		  {
-			  if(ProtosData[k].ProtoName) mir_free_and_nill (ProtosData[k].ProtoName);
-			  if(ProtosData[k].ProtoHumanName) mir_free_and_nill (ProtosData[k].ProtoHumanName);
-			  if(ProtosData[k].ProtoStatusText) mir_free_and_nill (ProtosData[k].ProtoStatusText);
-			  if(ProtosData[k].ProtoXStatus) mir_free_and_nill (ProtosData[k].ProtoXStatus);
-		  }
-		  mir_free_and_nill(ProtosData);
-		  ProtosData=NULL;
-		  allocedItemData=0;
-	  }
-	  break;
-  case WM_SIZE:
-	  if (!g_CluiData.fLayered)
-		  InvalidateRect(hwnd,NULL,FALSE);
-	  return DefWindowProc(hwnd, msg, wParam, lParam);
-  case WM_ERASEBKGND:
-	  return 1;
-  case WM_PAINT:
-	  if (GetParent(hwnd)==pcli->hwndContactList && g_CluiData.fLayered)
-		  CallService(MS_SKINENG_INVALIDATEFRAMEIMAGE,(WPARAM)hwnd,0);
-	  else if (GetParent(hwnd)==pcli->hwndContactList && !g_CluiData.fLayered)
-	  {
-		  HDC hdc, hdc2;
-		  HBITMAP hbmp,hbmpo;
-		  RECT rc={0};
-		  GetClientRect(hwnd,&rc);
-		  rc.right++;
-		  rc.bottom++;
-		  hdc = GetDC(hwnd);
-		  hdc2=CreateCompatibleDC(hdc);
-		  hbmp=SkinEngine_CreateDIB32(rc.right,rc.bottom);
-		  hbmpo=SelectObject(hdc2,hbmp);	
-		  SetBkMode(hdc2,TRANSPARENT);
-		  SkinEngine_BltBackImage(hwnd,hdc2,&rc);
-		  ModernDrawStatusBarWorker(hwnd,hdc2);
-		  BitBlt(hdc,rc.left,rc.top,rc.right-rc.left,rc.bottom-rc.top,
-			  hdc2,rc.left,rc.top,SRCCOPY);
-		  SelectObject(hdc2,hbmpo);
-		  DeleteObject(hbmp);
-		  mod_DeleteDC(hdc2);
-		  {
-			  HFONT hf=GetStockObject(DEFAULT_GUI_FONT);
-			  SelectObject(hdc,hf);
-		  }
-		  ReleaseDC(hwnd,hdc);
-		  ValidateRect(hwnd,NULL);
-	  }
-	  else
-	  {
-		  HDC hdc, hdc2;
-		  HBITMAP hbmp, hbmpo;
-		  RECT rc;
-		  PAINTSTRUCT ps;
-		  HBRUSH br=GetSysColorBrush(COLOR_3DFACE);
-		  GetClientRect(hwnd,&rc);
-		  hdc=BeginPaint(hwnd,&ps);
-		  hdc2=CreateCompatibleDC(hdc);
-		  hbmp=SkinEngine_CreateDIB32(rc.right,rc.bottom);
-		  hbmpo=SelectObject(hdc2,hbmp);
-		  FillRect(hdc2,&ps.rcPaint,br);
-		  ModernDrawStatusBarWorker(hwnd,hdc2);
-		  //BitBlt(hdc,ps.rcPaint.left,ps.rcPaint.top,ps.rcPaint.right-ps.rcPaint.left,ps.rcPaint.bottom-ps.rcPaint.top,
-		  //  hdc2,ps.rcPaint.left,ps.rcPaint.top,SRCCOPY);
-		  BitBlt(hdc,ps.rcPaint.left,ps.rcPaint.top,ps.rcPaint.right-ps.rcPaint.left,ps.rcPaint.bottom-ps.rcPaint.top,
-			  hdc2,ps.rcPaint.left,ps.rcPaint.top,SRCCOPY);
-		  SelectObject(hdc2,hbmpo);
-		  DeleteObject(hbmp);
-		  mod_DeleteDC(hdc2);
-		  ps.fErase=FALSE;
-		  EndPaint(hwnd,&ps);
-	  }
-	  return DefWindowProc(hwnd, msg, wParam, lParam);
+			for (k=0; k<allocedItemData; k++)
+			{
+				if(ProtosData[k].ProtoName) mir_free_and_nill (ProtosData[k].ProtoName);
+				if(ProtosData[k].ProtoHumanName) mir_free_and_nill (ProtosData[k].ProtoHumanName);
+				if(ProtosData[k].ProtoStatusText) mir_free_and_nill (ProtosData[k].ProtoStatusText);
+				if(ProtosData[k].ProtoXStatus) mir_free_and_nill (ProtosData[k].ProtoXStatus);
+			}
+			mir_free_and_nill(ProtosData);
+			ProtosData=NULL;
+			allocedItemData=0;
+		}
+		break;
+	case WM_SIZE:
+		if (!g_CluiData.fLayered)
+			InvalidateRect(hwnd,NULL,FALSE);
+		return DefWindowProc(hwnd, msg, wParam, lParam);
+	case WM_ERASEBKGND:
+		return 1;
+	case WM_PAINT:
+		if (GetParent(hwnd)==pcli->hwndContactList && g_CluiData.fLayered)
+			CallService(MS_SKINENG_INVALIDATEFRAMEIMAGE,(WPARAM)hwnd,0);
+		else if (GetParent(hwnd)==pcli->hwndContactList && !g_CluiData.fLayered)
+		{
+			HDC hdc, hdc2;
+			HBITMAP hbmp,hbmpo;
+			RECT rc={0};
+			GetClientRect(hwnd,&rc);
+			rc.right++;
+			rc.bottom++;
+			hdc = GetDC(hwnd);
+			hdc2=CreateCompatibleDC(hdc);
+			hbmp=SkinEngine_CreateDIB32(rc.right,rc.bottom);
+			hbmpo=SelectObject(hdc2,hbmp);	
+			SetBkMode(hdc2,TRANSPARENT);
+			SkinEngine_BltBackImage(hwnd,hdc2,&rc);
+			ModernDrawStatusBarWorker(hwnd,hdc2);
+			BitBlt(hdc,rc.left,rc.top,rc.right-rc.left,rc.bottom-rc.top,
+				hdc2,rc.left,rc.top,SRCCOPY);
+			SelectObject(hdc2,hbmpo);
+			DeleteObject(hbmp);
+			mod_DeleteDC(hdc2);
+			{
+				HFONT hf=GetStockObject(DEFAULT_GUI_FONT);
+				SelectObject(hdc,hf);
+			}
+			ReleaseDC(hwnd,hdc);
+			ValidateRect(hwnd,NULL);
+		}
+		else
+		{
+			HDC hdc, hdc2;
+			HBITMAP hbmp, hbmpo;
+			RECT rc;
+			PAINTSTRUCT ps;
+			HBRUSH br=GetSysColorBrush(COLOR_3DFACE);
+			GetClientRect(hwnd,&rc);
+			hdc=BeginPaint(hwnd,&ps);
+			hdc2=CreateCompatibleDC(hdc);
+			hbmp=SkinEngine_CreateDIB32(rc.right,rc.bottom);
+			hbmpo=SelectObject(hdc2,hbmp);
+			FillRect(hdc2,&ps.rcPaint,br);
+			ModernDrawStatusBarWorker(hwnd,hdc2);
+			//BitBlt(hdc,ps.rcPaint.left,ps.rcPaint.top,ps.rcPaint.right-ps.rcPaint.left,ps.rcPaint.bottom-ps.rcPaint.top,
+			//  hdc2,ps.rcPaint.left,ps.rcPaint.top,SRCCOPY);
+			BitBlt(hdc,ps.rcPaint.left,ps.rcPaint.top,ps.rcPaint.right-ps.rcPaint.left,ps.rcPaint.bottom-ps.rcPaint.top,
+				hdc2,ps.rcPaint.left,ps.rcPaint.top,SRCCOPY);
+			SelectObject(hdc2,hbmpo);
+			DeleteObject(hbmp);
+			mod_DeleteDC(hdc2);
+			ps.fErase=FALSE;
+			EndPaint(hwnd,&ps);
+		}
+		return DefWindowProc(hwnd, msg, wParam, lParam);
 
-  case WM_GETMINMAXINFO:{
-	  RECT rct;
-	  GetWindowRect(hwnd,&rct);
-	  memset((LPMINMAXINFO)lParam,0,sizeof(MINMAXINFO));
-	  ((LPMINMAXINFO)lParam)->ptMinTrackSize.x=16;
-	  ((LPMINMAXINFO)lParam)->ptMinTrackSize.y=rct.bottom-rct.top;
-	  ((LPMINMAXINFO)lParam)->ptMaxTrackSize.x=1600;
-	  ((LPMINMAXINFO)lParam)->ptMaxTrackSize.y=rct.bottom-rct.top;
-	  return(0);
+	case WM_GETMINMAXINFO:{
+		RECT rct;
+		GetWindowRect(hwnd,&rct);
+		memset((LPMINMAXINFO)lParam,0,sizeof(MINMAXINFO));
+		((LPMINMAXINFO)lParam)->ptMinTrackSize.x=16;
+		((LPMINMAXINFO)lParam)->ptMinTrackSize.y=rct.bottom-rct.top;
+		((LPMINMAXINFO)lParam)->ptMaxTrackSize.x=1600;
+		((LPMINMAXINFO)lParam)->ptMaxTrackSize.y=rct.bottom-rct.top;
+		return(0);
+						  }
+
+	case WM_SHOWWINDOW:
+		{
+			int res;
+			int ID;
+			if (tooltipshoing){
+				NotifyEventHooks(hStatusBarHideToolTipEvent,0,0);
+				tooltipshoing=FALSE;
+			};
+			ID=callProxied_FindFrameID(hwnd);
+			if (ID)
+			{
+				res=CallService(MS_CLIST_FRAMES_GETFRAMEOPTIONS, MAKEWPARAM(FO_FLAGS,ID),0);
+				if (res>=0)	DBWriteContactSettingByte(0,"CLUI","ShowSBar",(BYTE)(wParam/*(res&F_VISIBLE)*/?1:0));
+			}
+		}
+		break;
+	case WM_TIMER:
+		{
+			if (wParam==TM_STATUSBARHIDE)
+			{
+				KillTimer(hwnd,TM_STATUSBARHIDE);
+				if (tooltipshoing)
+				{
+					NotifyEventHooks(hStatusBarHideToolTipEvent,0,0);
+					tooltipshoing=FALSE;
+					ReleaseCapture();
+				};
+			}
+			else if (wParam==TM_STATUSBAR)
+			{
+				POINT pt;
+				KillTimer(hwnd,TM_STATUSBAR);
+				GetCursorPos(&pt);
+				if (pt.x==lastpnt.x&&pt.y==lastpnt.y)
+				{
+					int i;
+					RECT rc;
+					ScreenToClient(hwnd,&pt);
+					for (i=0; i<allocedItemData; i++)
+					{
+						rc=ProtosData[i].protoRect;
+						if(PtInRect(&rc,pt))
+						{
+							NotifyEventHooks(hStatusBarShowToolTipEvent,(WPARAM)ProtosData[i].ProtoName,0);
+							CLUI_SafeSetTimer(hwnd,TM_STATUSBARHIDE,DBGetContactSettingWord(NULL,"CLUIFrames","HideToolTipTime",5000),0);
+							tooltipshoing=TRUE;
+							ClientToScreen(hwnd,&pt);
+							ptToolTipShow=pt;
+							SetCapture(hwnd);
+							return 0;
 						}
+					}
+					return 0;
+				}
+			}
+			return 0;
+		}
+	case WM_MOUSEMOVE:
+		if (tooltipshoing)
+		{
+			POINT pt;
+			GetCursorPos(&pt);
+			if (abs(pt.x-ptToolTipShow.x)>TOOLTIP_TOLERANCE || abs(pt.y-ptToolTipShow.y)>TOOLTIP_TOLERANCE)
+			{
+				KillTimer(hwnd,TM_STATUSBARHIDE);
+				NotifyEventHooks(hStatusBarHideToolTipEvent,0,0);
+				tooltipshoing=FALSE;
+				ReleaseCapture();
+			}
+		}
+		break;
+	case WM_SETCURSOR:
+		{
+			if (g_CluiData.bBehindEdgeSettings) CLUI_UpdateTimer(0);
+			{
+				POINT pt;
+				GetCursorPos(&pt);
+				SendMessage(GetParent(hwnd),msg,wParam,lParam);
+				if (pt.x==lastpnt.x&&pt.y==lastpnt.y)
+				{
+					return(CLUI_TestCursorOnBorders());
+				};
+				lastpnt=pt;
+				if (tooltipshoing)
+					if	(abs(pt.x-ptToolTipShow.x)>TOOLTIP_TOLERANCE || abs(pt.y-ptToolTipShow.y)>TOOLTIP_TOLERANCE)
+					{
+						KillTimer(hwnd,TM_STATUSBARHIDE);
+						NotifyEventHooks(hStatusBarHideToolTipEvent,0,0);
+						tooltipshoing=FALSE;
+						ReleaseCapture();
+					};
+				KillTimer(hwnd,TM_STATUSBAR);
+				CLUI_SafeSetTimer(hwnd,TM_STATUSBAR,DBGetContactSettingWord(NULL,"CLC","InfoTipHoverTime",750),0);
 
-  case WM_SHOWWINDOW:
-	  {
-		  int res;
-		  int ID;
-		  if (tooltipshoing){
-			  NotifyEventHooks(hStatusBarHideToolTipEvent,0,0);
-			  tooltipshoing=FALSE;
-		  };
-		  ID=callProxied_FindFrameID(hwnd);
-		  if (ID)
-		  {
-			  res=CallService(MS_CLIST_FRAMES_GETFRAMEOPTIONS, MAKEWPARAM(FO_FLAGS,ID),0);
-			  if (res>=0)	DBWriteContactSettingByte(0,"CLUI","ShowSBar",(BYTE)(wParam/*(res&F_VISIBLE)*/?1:0));
-		  }
-	  }
-	  break;
-  case WM_TIMER:
-	  {
-		  if (wParam==TM_STATUSBARHIDE)
-		  {
-			  KillTimer(hwnd,TM_STATUSBARHIDE);
-			  if (tooltipshoing)
-			  {
-				  NotifyEventHooks(hStatusBarHideToolTipEvent,0,0);
-				  tooltipshoing=FALSE;
-				  ReleaseCapture();
-			  };
-		  }
-		  else if (wParam==TM_STATUSBAR)
-		  {
-			  POINT pt;
-			  KillTimer(hwnd,TM_STATUSBAR);
-			  GetCursorPos(&pt);
-			  if (pt.x==lastpnt.x&&pt.y==lastpnt.y)
-			  {
-				  int i;
-				  RECT rc;
-				  ScreenToClient(hwnd,&pt);
-				  for (i=0; i<allocedItemData; i++)
-				  {
-					  rc=ProtosData[i].protoRect;
-					  if(PtInRect(&rc,pt))
-					  {
-						  NotifyEventHooks(hStatusBarShowToolTipEvent,(WPARAM)ProtosData[i].ProtoName,0);
-						  CLUI_SafeSetTimer(hwnd,TM_STATUSBARHIDE,DBGetContactSettingWord(NULL,"CLUIFrames","HideToolTipTime",5000),0);
-						  tooltipshoing=TRUE;
-						  ClientToScreen(hwnd,&pt);
-						  ptToolTipShow=pt;
-						  SetCapture(hwnd);
-						  return 0;
-					  }
-				  }
-				  return 0;
-			  }
-		  }
-		  return 0;
-	  }
-  case WM_MOUSEMOVE:
-	  if (tooltipshoing)
-	  {
-		  POINT pt;
-		  GetCursorPos(&pt);
-		  if (abs(pt.x-ptToolTipShow.x)>TOOLTIP_TOLERANCE || abs(pt.y-ptToolTipShow.y)>TOOLTIP_TOLERANCE)
-		  {
-			  KillTimer(hwnd,TM_STATUSBARHIDE);
-			  NotifyEventHooks(hStatusBarHideToolTipEvent,0,0);
-			  tooltipshoing=FALSE;
-			  ReleaseCapture();
-		  }
-	  }
-	  break;
-  case WM_SETCURSOR:
-	  {
-		  if (g_CluiData.bBehindEdgeSettings) CLUI_UpdateTimer(0);
-		  {
-			  POINT pt;
-			  GetCursorPos(&pt);
-			  SendMessage(GetParent(hwnd),msg,wParam,lParam);
-			  if (pt.x==lastpnt.x&&pt.y==lastpnt.y)
-			  {
-				  return(CLUI_TestCursorOnBorders());
-			  };
-			  lastpnt=pt;
-			  if (tooltipshoing)
-				  if	(abs(pt.x-ptToolTipShow.x)>TOOLTIP_TOLERANCE || abs(pt.y-ptToolTipShow.y)>TOOLTIP_TOLERANCE)
-				  {
-					  KillTimer(hwnd,TM_STATUSBARHIDE);
-					  NotifyEventHooks(hStatusBarHideToolTipEvent,0,0);
-					  tooltipshoing=FALSE;
-					  ReleaseCapture();
-				  };
-			  KillTimer(hwnd,TM_STATUSBAR);
-			  CLUI_SafeSetTimer(hwnd,TM_STATUSBAR,DBGetContactSettingWord(NULL,"CLC","InfoTipHoverTime",750),0);
+				return(CLUI_TestCursorOnBorders());
+			}
+		}
+	case WM_LBUTTONDOWN:
+	case WM_MBUTTONDOWN:
+	case WM_RBUTTONDOWN:
+		{
+			RECT rc;
+			POINT pt;
+			int i;
+			BOOL showXStatusMenu=FALSE;
+			pt.x=(short)LOWORD(lParam);
+			pt.y=(short)HIWORD(lParam);
+			KillTimer(hwnd,TM_STATUSBARHIDE);
+			KillTimer(hwnd,TM_STATUSBAR);
 
-			  return(CLUI_TestCursorOnBorders());
-		  }
-	  }
-  case WM_LBUTTONDOWN:
-  case WM_MBUTTONDOWN:
-  case WM_RBUTTONDOWN:
-	  {
-		  RECT rc;
-		  POINT pt;
-		  int i;
-		  BOOL showXStatusMenu=FALSE;
-		  pt.x=(short)LOWORD(lParam);
-		  pt.y=(short)HIWORD(lParam);
-		  KillTimer(hwnd,TM_STATUSBARHIDE);
-		  KillTimer(hwnd,TM_STATUSBAR);
-
-		  if (tooltipshoing){
-			  NotifyEventHooks(hStatusBarHideToolTipEvent,0,0);
-		  };
-		  tooltipshoing=FALSE;
-		  for (i=0; i<allocedItemData; i++)
-		  {
-			  RECT rc1;
-			  BOOL isOnExtra=FALSE;
-			  rc=ProtosData[i].protoRect;
-			  rc1=rc;
-			  rc1.left=rc.left+16;
-			  rc1.right=rc1.left+16;
-			  if (PtInRect(&rc,pt) && PtInRect(&rc1,pt)&&ProtosData[i].DoubleIcons)
-				  isOnExtra=TRUE;
-			  if(PtInRect(&rc,pt))
-			  {
-				  HMENU hMenu=NULL;
-				  SHORT a=GetKeyState(VK_CONTROL);
-				  if (msg==WM_MBUTTONDOWN || (a&0x8000) || isOnExtra)	
-				  {
-					  showXStatusMenu=TRUE;
-					  hMenu=(HMENU)CallService(MS_CLIST_MENUGETSTATUS,0,0);
-					  if(allocedItemData>1 && pcli->menuProtos && i<pcli->menuProtoCount)// && GetSubMenu(hMenu,i)) hMenu=GetSubMenu(hMenu,i);
-					  {			
-						  TMO_IntMenuItem * it=pcli->pfnMOGetMenuItemByGlobalID((int)pcli->menuProtos[i].menuID);
-						  if (it)
-							  hMenu=it->hSubMenu;
-						  else
-						  {
-							  HMENU hSubmenu= GetSubMenu(hMenu,i);
-							  if (hSubmenu) hMenu=hSubmenu;
-						  }
-					  } 
-					  if (hMenu)
-					  {
-						  HMENU tm=hMenu;
-						  hMenu=GetSubMenu(tm,0);	
-						  if (!hMenu) hMenu=GetSubMenu(tm,1);	
-					  }
-				  }        
-				  if (!hMenu)
-				  {
-					  if (msg==WM_RBUTTONDOWN)
-					  {
-						  if( DBGetContactSettingByte(NULL,"CLUI","SBarRightClk",0))
-							  hMenu=(HMENU)CallService(MS_CLIST_MENUGETMAIN,0,0);
-						  else
-							  hMenu=(HMENU)CallService(MS_CLIST_MENUGETSTATUS,0,0);
-					  }
-					  else
-					  {
-						  hMenu=(HMENU)CallService(MS_CLIST_MENUGETSTATUS,0,0);		
-						  if(allocedItemData>1 && pcli->menuProtos && i<pcli->menuProtoCount)// && GetSubMenu(hMenu,i)) hMenu=GetSubMenu(hMenu,i);
-						  {			
-							  TMO_IntMenuItem * it=pcli->pfnMOGetMenuItemByGlobalID((int)pcli->menuProtos[i].menuID);
-							  if (it && it->hSubMenu)
-								  hMenu=it->hSubMenu;
-							  else
-								  hMenu=GetSubMenu(hMenu,i);
-						  }
-					  }
-				  }
-				  ClientToScreen(hwnd,&pt);
-				  {
-					  HWND parent=GetParent(hwnd);
-					  if (parent!=pcli->hwndContactList) parent=GetParent(parent);
-					  TrackPopupMenu(hMenu,TPM_TOPALIGN|TPM_LEFTALIGN|TPM_LEFTBUTTON,pt.x,pt.y,0,parent,NULL);
-				  }
-				  return 0;
-			  }
-		  }
-	  }
+			if (tooltipshoing){
+				NotifyEventHooks(hStatusBarHideToolTipEvent,0,0);
+			};
+			tooltipshoing=FALSE;
+			for (i=0; i<allocedItemData; i++)
+			{
+				RECT rc1;
+				BOOL isOnExtra=FALSE;
+				rc=ProtosData[i].protoRect;
+				rc1=rc;
+				rc1.left=rc.left+16;
+				rc1.right=rc1.left+16;
+				if (PtInRect(&rc,pt) && PtInRect(&rc1,pt)&&ProtosData[i].DoubleIcons)
+					isOnExtra=TRUE;
+				if(PtInRect(&rc,pt))
+				{
+					HMENU hMenu=NULL;
+					SHORT a=GetKeyState(VK_CONTROL);
+					if (msg==WM_MBUTTONDOWN || (a&0x8000) || isOnExtra)	
+					{
+						showXStatusMenu=TRUE;
+						hMenu=(HMENU)CallService(MS_CLIST_MENUGETSTATUS,0,0);
+						if(allocedItemData>1 && pcli->menuProtos && i<pcli->menuProtoCount)// && GetSubMenu(hMenu,i)) hMenu=GetSubMenu(hMenu,i);
+						{			
+							TMO_IntMenuItem * it=pcli->pfnMOGetMenuItemByGlobalID((int)pcli->menuProtos[i].menuID);
+							if (it)
+								hMenu=it->hSubMenu;
+							else
+							{
+								HMENU hSubmenu= GetSubMenu(hMenu,i);
+								if (hSubmenu) hMenu=hSubmenu;
+							}
+						} 
+						if (hMenu)
+						{
+							HMENU tm=hMenu;
+							hMenu=GetSubMenu(tm,0);	
+							if (!hMenu) hMenu=GetSubMenu(tm,1);	
+						}
+					}        
+					if (!hMenu)
+					{
+						if (msg==WM_RBUTTONDOWN)
+						{
+							if( DBGetContactSettingByte(NULL,"CLUI","SBarRightClk",0))
+								hMenu=(HMENU)CallService(MS_CLIST_MENUGETMAIN,0,0);
+							else
+								hMenu=(HMENU)CallService(MS_CLIST_MENUGETSTATUS,0,0);
+						}
+						else
+						{
+							hMenu=(HMENU)CallService(MS_CLIST_MENUGETSTATUS,0,0);		
+							if(allocedItemData>1 && pcli->menuProtos && i<pcli->menuProtoCount)// && GetSubMenu(hMenu,i)) hMenu=GetSubMenu(hMenu,i);
+							{			
+								TMO_IntMenuItem * it=pcli->pfnMOGetMenuItemByGlobalID((int)pcli->menuProtos[i].menuID);
+								if (it && it->hSubMenu)
+									hMenu=it->hSubMenu;
+								else
+									hMenu=GetSubMenu(hMenu,i);
+							}
+						}
+					}
+					ClientToScreen(hwnd,&pt);
+					{
+						HWND parent=GetParent(hwnd);
+						if (parent!=pcli->hwndContactList) parent=GetParent(parent);
+						TrackPopupMenu(hMenu,TPM_TOPALIGN|TPM_LEFTALIGN|TPM_LEFTBUTTON,pt.x,pt.y,0,parent,NULL);
+					}
+					return 0;
+				}
+			}
+		}
 	}
 	return DefWindowProc(hwnd, msg, wParam, lParam);
 }

@@ -35,16 +35,8 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #define MIN_TEXT_WIDTH 20
 #define BUF2SIZE 7
 
-#define MGPROC(x) GetProcAddress(themeAPIHandle,x)
-
-
 extern OVERLAYICONINFO g_pAvatarOverlayIcons[ID_STATUS_OUTTOLUNCH - ID_STATUS_OFFLINE + 1];
 extern OVERLAYICONINFO g_pStatusOverlayIcons[];
-
-static HMODULE  themeAPIHandle = NULL; // handle to uxtheme.dll
-static HANDLE   (WINAPI *MyOpenThemeData)(HWND,LPCWSTR);
-static HRESULT  (WINAPI *MyCloseThemeData)(HANDLE);
-static HRESULT  (WINAPI *MyDrawThemeBackground)(HANDLE,HDC,int,int,const RECT *,const RECT *);
 
 static void CLCPaint_InternalPaintRowItems (HWND hwnd, HDC hdcMem, struct ClcData *dat, struct ClcContact *Drawing, RECT row_rc, RECT free_row_rc, int left_pos, int right_pos, int selected,int hottrack, RECT *rcPaint);
 static void CLCPaint_DrawStatusIcon(struct ClcContact * Drawing, struct ClcData *dat, int iImage, HDC hDC, int x, int y, int cx, int cy, DWORD colorbg,DWORD colorfg, int mode);
@@ -3233,28 +3225,6 @@ static void CLCPaint_InternalPaintClc(HWND hwnd,struct ClcData *dat,HDC hdc,RECT
 						(Drawing->type==CLCIT_INFO && Drawing->flags&CLCIIF_CHECKBOX))
 					{
 						//RECT rc;
-						HANDLE hTheme = NULL;
-
-						// THEME
-						if (IsWinVerXPPlus())
-						{
-							if (!themeAPIHandle)
-							{
-								themeAPIHandle = GetModuleHandle(TEXT("uxtheme"));
-								if (themeAPIHandle) {
-									MyOpenThemeData = (HANDLE (WINAPI *)(HWND,LPCWSTR))MGPROC("OpenThemeData");
-									MyCloseThemeData = (HRESULT (WINAPI *)(HANDLE))MGPROC("CloseThemeData");
-									MyDrawThemeBackground = (HRESULT (WINAPI *)(HANDLE,HDC,int,int,const RECT *,const RECT *))MGPROC("DrawThemeBackground");
-								}
-							}
-							// Make sure all of these methods are valid (i would hope either all or none work)
-							if (MyOpenThemeData
-								&&MyCloseThemeData
-								&&MyDrawThemeBackground) {
-									hTheme = MyOpenThemeData(hwnd,L"BUTTON");
-								}
-						}
-
 						rc = free_row_rc;
 						rc.right = rc.left + dat->checkboxSize;
 						rc.top += (rc.bottom - rc.top - dat->checkboxSize) >> 1;
@@ -3262,14 +3232,10 @@ static void CLCPaint_InternalPaintClc(HWND hwnd,struct ClcData *dat,HDC hdc,RECT
 
 						if (dat->text_rtl!=0) CLCPaint_RTLRect(&rc, free_row_rc.right, 0);
 
-						if (hTheme) {
-							MyDrawThemeBackground(hTheme, hdcMem, BP_CHECKBOX, Drawing->flags&CONTACTF_CHECKED?(hottrack?CBS_CHECKEDHOT:CBS_CHECKEDNORMAL):(hottrack?CBS_UNCHECKEDHOT:CBS_UNCHECKEDNORMAL), &rc, &rc);
+						if (xpt_IsThemed(dat->hCheckBoxTheme)) {
+							xpt_DrawThemeBackground(dat->hCheckBoxTheme, hdcMem, BP_CHECKBOX, Drawing->flags&CONTACTF_CHECKED?(hottrack?CBS_CHECKEDHOT:CBS_CHECKEDNORMAL):(hottrack?CBS_UNCHECKEDHOT:CBS_UNCHECKEDNORMAL), &rc, &rc);
 						}
 						else DrawFrameControl(hdcMem,&rc,DFC_BUTTON,DFCS_BUTTONCHECK|DFCS_FLAT|(Drawing->flags&CONTACTF_CHECKED?DFCS_CHECKED:0)|(hottrack?DFCS_HOT:0));
-						if (hTheme&&MyCloseThemeData) {
-							MyCloseThemeData(hTheme);
-							//hTheme = NULL;
-						}
 
 						left_pos += dat->checkboxSize + EXTRA_CHECKBOX_SPACE + HORIZONTAL_SPACE;
 						free_row_rc.left = row_rc.left + left_pos;

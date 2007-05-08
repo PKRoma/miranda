@@ -249,7 +249,7 @@ static int ReloadAvatarOverlayIcons(WPARAM wParam, LPARAM lParam)
 	listening_to_icon = (HICON)CallService(MS_SKIN2_GETICON, 0, (LPARAM)"LISTENING_TO_ICON");
 
 	pcli->pfnClcBroadcast( INTM_INVALIDATE,0,0);
-
+	AniAva_UpdateOptions();
 	return 0;
 }
 
@@ -381,6 +381,7 @@ static int ClcModulesLoaded(WPARAM wParam,LPARAM lParam) {
 	HookEvent(ME_BACKGROUNDCONFIG_CHANGED,BgStatusBarChange);
 	HookEvent(ME_BACKGROUNDCONFIG_CHANGED,OnFrameTitleBarBackgroundChange);
 
+	AniAva_UpdateOptions();
 	return 0;
 }
 
@@ -678,6 +679,7 @@ case WM_CREATE:
 	{
 		dat=(struct ClcData*)mir_calloc(sizeof(struct ClcData));
 		SetWindowLong(hwnd,0,(long)dat);
+		dat->hCheckBoxTheme=xpt_AddThemeHandle(hwnd, L"BUTTON");
 		dat->m_paintCouter=0;
 		dat->hWnd=hwnd;
 		dat->use_avatar_service = ServiceExists(MS_AV_GETAVATARBITMAP);
@@ -1995,7 +1997,7 @@ case WM_LBUTTONDBLCLK:
 case WM_DESTROY:
 	{
 		int i=0;
-
+		
 		for(i=0;i<=FONTID_MODERN_MAX;i++) 
 		{
 			if(dat->fontModernInfo[i].hFont) DeleteObject(dat->fontModernInfo[i].hFont);
@@ -2012,18 +2014,13 @@ case WM_DESTROY:
 			dat->hBmpBackground=NULL;
 		}
 
-		{
-			ImageArray_Clear(&dat->avatar_cache);
-			mod_DeleteDC(dat->avatar_cache.hdc);			
-		}
-		//FreeDisplayNameCache(&dat->lCLCContactsCache);
-		//if (!dat->use_avatar_service)
-			ImageArray_Free(&dat->avatar_cache, FALSE);
-	
-		
+		ImageArray_Clear(&dat->avatar_cache);
+		mod_DeleteDC(dat->avatar_cache.hdc);			
+		ImageArray_Free(&dat->avatar_cache, FALSE);		
 
 		RowHeights_Free(dat);
 		saveContactListControlWndProc(hwnd, msg, wParam, lParam);			
+		xpt_FreeThemeForWindow(hwnd);
 		return 0;
 	}
 	}

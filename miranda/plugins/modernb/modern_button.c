@@ -486,7 +486,7 @@ int SetToolTip(HWND hwnd, TCHAR * tip)
   SendMessage(hwndToolTips,TTM_ADDTOOL,0,(LPARAM)&ti);
 
   LeaveCriticalSection(&csTips);
-  return 0;
+  return (int)hwndToolTips;
 }
 
 

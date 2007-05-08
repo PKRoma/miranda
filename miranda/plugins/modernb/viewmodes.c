@@ -1025,11 +1025,6 @@ void BuildViewModeMenu()
 
 }
 
-
-
-
-
-
 //#define MODERNBUTTONCLASS "MirandaModernButtonClass"
 LRESULT CALLBACK ViewModeFrameWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 {
@@ -1046,20 +1041,22 @@ LRESULT CALLBACK ViewModeFrameWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM
             SendMessage(hwndSelector, BUTTONADDTOOLTIP, (WPARAM)TranslateT("Select a view mode"), 0);
 			SendMessage(hwndSelector, BUTTONSETMARGINS,0 ,(LPARAM) &rcMargins);			
 			SendMessage(hwndSelector, BUTTONSETID,0 ,(LPARAM) "ViewMode.Select" );			
-			SendMessage(hwndSelector, WM_SETFONT,0 ,(LPARAM) FONTID_VIEMODES+1 );	
+			SendMessage(hwndSelector, WM_SETFONT,0 ,(LPARAM) FONTID_VIEMODES+1 );
+			SendMessage(hwndSelector, MBM_UPDATETRANSPARENTFLAG, 0, 2);
 			
 			//SendMessage(hwndSelector, BM_SETASMENUACTION, 1, 0);
             hwndButton = CreateWindowEx(WS_EX_TRANSPARENT, SKINBUTTONCLASS, _T(""), BS_PUSHBUTTON | WS_VISIBLE | WS_CHILD | WS_TABSTOP, 0, 0, 20, 20, 
                             hwnd, (HMENU) IDC_CONFIGUREMODES, g_hInst, NULL);
             SendMessage(hwndButton, BUTTONADDTOOLTIP, (WPARAM)TranslateT("Setup view modes"), 0);
 			SendMessage(hwndButton, BUTTONSETID,0 ,(LPARAM) "ViewMode.Setup" );	
+			SendMessage(hwndButton, MBM_UPDATETRANSPARENTFLAG, 0, 2);
 
             hwndButton = CreateWindowEx(WS_EX_TRANSPARENT, SKINBUTTONCLASS, _T(""), BS_PUSHBUTTON | WS_VISIBLE | WS_CHILD | WS_TABSTOP, 0, 0, 20, 20, 
                             hwnd, (HMENU) IDC_RESETMODES, g_hInst, NULL);
             SendMessage(hwndButton, BUTTONADDTOOLTIP, (WPARAM)TranslateT("Clear view mode and return to default display"), 0);
 			SendMessage(hwndButton, BUTTONSETID,0 ,(LPARAM) "ViewMode.Clear" );	
-			SendMessage(hwnd, WM_USER + 100, 0, 0);
-            
+			SendMessage(hwnd, WM_USER + 100, 0, 0);            
+			SendMessage(hwndButton, MBM_UPDATETRANSPARENTFLAG, 0, 2);
             return FALSE;
         }
         case WM_NCCALCSIZE:
@@ -1081,16 +1078,11 @@ LRESULT CALLBACK ViewModeFrameWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM
         case WM_USER + 100:
             if(ServiceExists(MS_SKIN2_ADDICON)) 
 			{
-				BOOL needFree;
-				HICON hicon;
-				hicon=CLUI_LoadIconFromExternalFile("clisticons.dll",9,TRUE,TRUE,"CLN_CLVM_reset","Contact List",Translate("Reset view mode"), -IDI_RESETVIEW, &needFree);								
-				SendMessage(GetDlgItem(hwnd, IDC_RESETMODES), BM_SETIMAGE, IMAGE_ICON, (LPARAM)(needFree?DuplicateIcon(g_hInst,hicon):hicon));
-				if (needFree) DestroyIcon_protect(hicon);
+				SendMessage(GetDlgItem(hwnd, IDC_RESETMODES), MBM_SETICOLIBHANDLE, 0,
+					(LPARAM) RegisterIcolibIconHandle("CLN_CLVM_reset", "Contact List",Translate("Reset view mode"), _T("clisticons.dll"),9, g_hInst, IDI_RESETVIEW ));
 				
-				hicon=CLUI_LoadIconFromExternalFile("clisticons.dll",10,TRUE,TRUE,"CLN_CLVM_options","Contact List",Translate("Setup view modes"),-IDI_SETVIEW, &needFree);								
-                SendMessage(GetDlgItem(hwnd, IDC_CONFIGUREMODES), BM_SETIMAGE, IMAGE_ICON, (LPARAM)(needFree?DuplicateIcon(g_hInst,hicon):hicon));
-				if (needFree) DestroyIcon_protect(hicon);
-                //SendMessage(GetDlgItem(hwnd, IDC_SELECTMODE), BM_SETIMAGE, IMAGE_ICON, (LPARAM)CallService(MS_SKIN2_GETICON, 0, (LPARAM)"CLN_CLVM_select"));
+				SendMessage(GetDlgItem(hwnd, IDC_CONFIGUREMODES), MBM_SETICOLIBHANDLE, 0,
+					(LPARAM) RegisterIcolibIconHandle("CLN_CLVM_set", "Contact List",Translate("Setup view modes"), _T("clisticons.dll"), 10, g_hInst, IDI_SETVIEW ));			
             }
             else 
 			{
@@ -1352,6 +1344,7 @@ void CreateViewModeFrame()
     hCLVMFrame = (HWND)CallService(MS_CLIST_FRAMES_ADDFRAME,(WPARAM)&frame,(LPARAM)0);	
     CallService(MS_CLIST_FRAMES_UPDATEFRAME, (WPARAM)hCLVMFrame, FU_FMPOS);
 	CallService(MS_SKINENG_REGISTERPAINTSUB,(WPARAM)frame.hWnd,(LPARAM)ViewModePaintCallbackProc); //$$$$$ register sub for frame
+	
     ApplyViewMode(NULL); //Apply last selected view mode
 }
 

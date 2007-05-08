@@ -2,6 +2,7 @@
 #define modern_statusbar_h__
 
 #include "commonprototypes.h"
+#include "m_xpTheme.h"
 
 int ModernDrawStatusBar(HWND hwnd, HDC hDC);
 int ModernDrawStatusBarWorker(HWND hWnd, HDC hDC);
@@ -27,6 +28,9 @@ typedef struct tagSTATUSBARDATA
   HBITMAP hBmpBackground;
   COLORREF bkColour;
   DWORD backgroundBmpUse;
+  BOOL  bkUseWinColors;
+
+  XPTHANDLE hTheme;
 
 } STATUSBARDATA;
 

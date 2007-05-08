@@ -426,6 +426,28 @@ void ExtraImage_SetAllExtraIcons(HWND hwndList,HANDLE hContact)
 	Sleep(0);
 }
 
+int SetToolTip(HWND hwnd, TCHAR * tip);
+
+HWND tipHWND=NULL;
+
+static int ehhShowExtraInfoTip(WPARAM wParam, LPARAM lParam)
+{
+	CLCEXTRAINFOTIP * eit=(CLCEXTRAINFOTIP *)lParam;
+	//tipHWND=(HWND)SetToolTip(eit->hwnd,_T("TEST"));
+	//SendMessage(tipHWND,TTM_ACTIVATE,1,0);
+	//SendMessage(tipHWND,TTM_POPUP,0,0);
+	return 1;
+	
+}
+
+int ehhHideExtraInfoTip(WPARAM wParam, LPARAM lParam)
+{
+	
+	//SendMessage(tipHWND,TTM_ACTIVATE,0,0);
+	return 0;
+	
+}
+
 
 void ExtraImage_LoadModule()
 {
@@ -435,6 +457,9 @@ void ExtraImage_LoadModule()
 	hExtraImageListRebuilding=CreateHookableEvent(ME_CLIST_EXTRA_LIST_REBUILD);
 	hExtraImageApplying=CreateHookableEvent(ME_CLIST_EXTRA_IMAGE_APPLY);
 	HookEvent(ME_SKIN2_ICONSCHANGED,OnIconLibIconChanged);
+
+	HookEvent(ME_CLC_SHOWEXTRAINFOTIP, ehhShowExtraInfoTip );
+	HookEvent(ME_CLC_HIDEINFOTIP, ehhHideExtraInfoTip );
 
 
 };

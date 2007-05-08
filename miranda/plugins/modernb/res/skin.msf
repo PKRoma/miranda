@@ -199,6 +199,16 @@
 ; Overs are "True" or "False"
 ; Selector buttons draw text centered with button margins - left - 18, right 2
 
+
+; Buttons Common buttons
+  $$BarButton     =sGlyph,Fragment,back%.tga,89,0,15,15,StretchBoth,4,4,4,4,50
+  $$BarButton/Hot =sGlyph,Fragment,back%.tga,89,0,15,15,StretchBoth,4,4,4,4,200
+  $$BarButton/Pressed =sGlyph,Fragment,back%.tga,89,0,15,15,StretchBoth,4,4,4,4,250
+  
+  @1610=s$$BarButton/Pressed:Button,Pressed=True
+  @1620=s$$BarButton/Hot:Button,Hovered=True
+  @1630=s$$BarButton:Button
+
 ;ViewMode
   $$ViewMode=sGlyph,Fragment,back%.tga,83,48,3,18,StretchBoth,1,2,1,1,250
 

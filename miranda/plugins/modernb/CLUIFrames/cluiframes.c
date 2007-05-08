@@ -32,7 +32,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 //HANDLE hPreBuildFrameMenuEvent;//external event from clistmenus
 
 
-int		CLUIFrames_GetTotalHeight();
+int				CLUIFrames_GetTotalHeight();
 static int		CLUIFrames_OnShowHide(HWND hwnd, int mode);
 static int		QueueAllFramesUpdating(BYTE queue);
 
@@ -87,6 +87,7 @@ static BOOL CLUIFramesModuleCSInitialized=FALSE;
 
 int g_nGapBetweenTitlebar;
 
+static XPTHANDLE hFrameTitleTheme=NULL;
 boolean FramesSysNotStarted=TRUE;
 
 //typedef struct 
@@ -904,7 +905,7 @@ static HMENU CLUIFramesCreateMenuForFrame(int frameid,int root,int popuppos,char
 	mi.cbSize=sizeof(mi);
 	mi.flags=CMIF_ICONFROMICOLIB;
 	mi.icolibItem=LoadSkinnedIconHandle(SKINICON_OTHER_MIRANDA);
-//	mi.hIcon=LoadSmallIcon(GetModuleHandle(NULL),MAKEINTRESOURCE(IDI_MIRANDA));
+	//	mi.hIcon=LoadSmallIcon(GetModuleHandle(NULL),MAKEINTRESOURCE(IDI_MIRANDA));
 	mi.pszPopupName=(char *)root;
 	mi.popupPosition=frameid;
 	mi.position=popuppos++;
@@ -1864,7 +1865,7 @@ static int CLUIFramesLoadMainMenu()
 	// create root menu
 	mi.flags=CMIF_ICONFROMICOLIB;
 	mi.icolibItem=LoadSkinnedIconHandle(SKINICON_OTHER_MIRANDA);
-//	mi.hIcon=LoadSmallIcon(GetModuleHandle(NULL),MAKEINTRESOURCE(IDI_MIRANDA));
+	//	mi.hIcon=LoadSmallIcon(GetModuleHandle(NULL),MAKEINTRESOURCE(IDI_MIRANDA));
 	mi.flags=CMIF_ROOTPOPUP;
 	mi.position=3000090000;
 	mi.pszPopupName=(char*)-1;
@@ -2158,15 +2159,15 @@ static int CLUIFramesRemoveFrame(WPARAM wParam,LPARAM lParam)
 	Frames[pos].ContainerWnd=(HWND)-1;
 	if (Frames[pos].TitleBar.hmenu) DestroyMenu(Frames[pos].TitleBar.hmenu);
 	Frames[pos].PaintCallbackProc = NULL;   
-	
+
 	if (Frames[pos].OwnerWindow!=(HWND)-1
 		&& Frames[pos].OwnerWindow!=(HWND)-2
 		&& Frames[pos].OwnerWindow!=(HWND)0)
 		DestroyWindow(Frames[pos].OwnerWindow);
-	
+
 	Frames[pos].OwnerWindow=NULL;
 	RemoveItemFromList(pos,&Frames,&nFramescount);
-    
+
 	CLUI__cliInvalidateRect(pcli->hwndContactList,NULL,TRUE);
 	CLUIFramesOnClistResize((WPARAM)pcli->hwndContactList,0);
 	CLUI__cliInvalidateRect(pcli->hwndContactList,NULL,TRUE);
@@ -2308,8 +2309,8 @@ int CLUIFrames_GetTotalHeight()
 	//allbord=(winrect.bottom-winrect.top)-(clirect.bottom-clirect.top);
 
 	//TODO minsize
-  sumheight+=g_CluiData.TopClientMargin;
-  sumheight+=g_CluiData.BottomClientMargin; 
+	sumheight+=g_CluiData.TopClientMargin;
+	sumheight+=g_CluiData.BottomClientMargin; 
 	return  max(DBGetContactSettingWord(NULL,"CLUI","MinHeight",0),
 		(sumheight+border.top+border.bottom+3)       );
 }
@@ -2348,8 +2349,8 @@ int CLUIFramesGetMinHeight()
 	//allbord=(winrect.bottom-winrect.top)-(clirect.bottom-clirect.top);
 
 	//TODO minsize
-  sumheight+=g_CluiData.TopClientMargin;
-  sumheight+=g_CluiData.BottomClientMargin; 
+	sumheight+=g_CluiData.TopClientMargin;
+	sumheight+=g_CluiData.BottomClientMargin; 
 	return  max(DBGetContactSettingWord(NULL,"CLUI","MinHeight",0),
 		(sumheight+border.top+border.bottom+allbord+tbh+3)       );
 }
@@ -2567,10 +2568,10 @@ static int CLUIFrames_OnClistResize_mod(WPARAM wParam,LPARAM mode)
 
 	GetClientRect(pcli->hwndContactList,&nRect);
 
-  nRect.left+=g_CluiData.LeftClientMargin;
-  nRect.right-=g_CluiData.RightClientMargin; 
-  nRect.top+=g_CluiData.TopClientMargin;
-  nRect.bottom-=g_CluiData.BottomClientMargin;
+	nRect.left+=g_CluiData.LeftClientMargin;
+	nRect.right-=g_CluiData.RightClientMargin; 
+	nRect.top+=g_CluiData.TopClientMargin;
+	nRect.bottom-=g_CluiData.BottomClientMargin;
 	//	g_CluiData.mutexPreventDockMoving=0;
 	tick=GetTickCount();
 	CLUIFramesResize(nRect);
@@ -2597,10 +2598,10 @@ int SizeFramesByWindowRect(RECT *r, HDWP * PosBatch, int mode)
 	nRect.top=0;
 	nRect.right=r->right-r->left;
 	nRect.bottom=r->bottom-r->top;
-   nRect.left+=g_CluiData.LeftClientMargin;
-   nRect.right-=g_CluiData.RightClientMargin; 
-   nRect.top+=g_CluiData.TopClientMargin;
-   nRect.bottom-=g_CluiData.BottomClientMargin;
+	nRect.left+=g_CluiData.LeftClientMargin;
+	nRect.right-=g_CluiData.RightClientMargin; 
+	nRect.top+=g_CluiData.TopClientMargin;
+	nRect.bottom-=g_CluiData.BottomClientMargin;
 	CLUIFramesResizeFrames(nRect);
 	{
 		int i;
@@ -2781,10 +2782,10 @@ static int CLUIFramesOnClistResize(WPARAM wParam,LPARAM lParam)
 	nRect.top=0;
 	ContactListHeight=nRect.bottom; $$$*/
 
-  nRect.left+=g_CluiData.LeftClientMargin;
-  nRect.right-=g_CluiData.RightClientMargin; 
-  nRect.top+=g_CluiData.TopClientMargin;
-  nRect.bottom-=g_CluiData.BottomClientMargin;
+	nRect.left+=g_CluiData.LeftClientMargin;
+	nRect.right-=g_CluiData.RightClientMargin; 
+	nRect.top+=g_CluiData.TopClientMargin;
+	nRect.bottom-=g_CluiData.BottomClientMargin;
 
 	if (nRect.bottom<nRect.top)
 		nRect.bottom=nRect.top;
@@ -2820,6 +2821,7 @@ static HBITMAP hBmpBackground;
 static int backgroundBmpUse;
 static COLORREF bkColour;
 static COLORREF SelBkColour;
+static BOOL bkUseWinColours;
 boolean AlignCOLLIconToLeft; //will hide frame icon
 COLORREF sttGetColor(char * module, char * color, COLORREF defColor);
 
@@ -2832,6 +2834,7 @@ int OnFrameTitleBarBackgroundChange(WPARAM wParam,LPARAM lParam)
 		AlignCOLLIconToLeft=DBGetContactSettingByte(NULL,"FrameTitleBar","AlignCOLLIconToLeft",0);
 
 		bkColour=sttGetColor("FrameTitleBar","BkColour",CLCDEFAULT_BKCOLOUR);
+		bkUseWinColours=DBGetContactSettingByte(NULL,"FrameTitleBar","UseWinColours",CLCDEFAULT_USEWINDOWSCOLOURS);
 		SelBkColour=sttGetColor("FrameTitleBar","TextColour",CLCDEFAULT_TEXTCOLOUR);
 		if(hBmpBackground) {DeleteObject(hBmpBackground); hBmpBackground=NULL;}
 		if (g_CluiData.fDisableSkinEngine)
@@ -2873,12 +2876,13 @@ void DrawBackGround(HWND hwnd,HDC mhdc, HBITMAP hBmpBackground, COLORREF bkColou
 
 	if (mhdc)
 	{
-	hdc=mhdc;
-	rcPaint=NULL;
-	}else
+		hdc=mhdc;
+		rcPaint=NULL;
+	}
+	else
 	{
-	hdc=BeginPaint(hwnd,&paintst);
-	rcPaint=&(paintst.rcPaint);
+		hdc=BeginPaint(hwnd,&paintst);
+		rcPaint=&(paintst.rcPaint);
 	}
 
 	GetClientRect(hwnd,&clRect);
@@ -2893,25 +2897,25 @@ void DrawBackGround(HWND hwnd,HDC mhdc, HBITMAP hBmpBackground, COLORREF bkColou
 	SetStretchBltMode(hdcMem,HALFTONE);
 	{	HBRUSH hBrush,hoBrush;
 
-		hBrush=CreateSolidBrush(bkColour);
-		hoBrush=(HBRUSH)SelectObject(hdcMem,hBrush);
-		FillRect(hdcMem,rcPaint,hBrush);
-		SelectObject(hdcMem,hoBrush);
-		DeleteObject(hBrush);
-		if(hBmpBackground) {
-			BITMAP bmp;
-			HDC hdcBmp;
-			int x,y;
-			int maxx,maxy;
-			int destw,desth;
+	hBrush=CreateSolidBrush(bkColour);
+	hoBrush=(HBRUSH)SelectObject(hdcMem,hBrush);
+	FillRect(hdcMem,rcPaint,hBrush);
+	SelectObject(hdcMem,hoBrush);
+	DeleteObject(hBrush);
+	if(hBmpBackground) {
+		BITMAP bmp;
+		HDC hdcBmp;
+		int x,y;
+		int maxx,maxy;
+		int destw,desth;
 
-			GetObject(hBmpBackground,sizeof(bmp),&bmp);
-			hdcBmp=CreateCompatibleDC(hdcMem);
-			SelectObject(hdcBmp,hBmpBackground);
-			y=backgroundBmpUse&CLBF_SCROLL?-yScroll:0;
-			maxx=backgroundBmpUse&CLBF_TILEH?clRect.right:1;
-			maxy=backgroundBmpUse&CLBF_TILEV?maxy=rcPaint->bottom:y+1;
-			switch(backgroundBmpUse&CLBM_TYPE) {
+		GetObject(hBmpBackground,sizeof(bmp),&bmp);
+		hdcBmp=CreateCompatibleDC(hdcMem);
+		SelectObject(hdcBmp,hBmpBackground);
+		y=backgroundBmpUse&CLBF_SCROLL?-yScroll:0;
+		maxx=backgroundBmpUse&CLBF_TILEH?clRect.right:1;
+		maxy=backgroundBmpUse&CLBF_TILEV?maxy=rcPaint->bottom:y+1;
+		switch(backgroundBmpUse&CLBM_TYPE) {
 				case CLB_STRETCH:
 					if(backgroundBmpUse&CLBF_PROPORTIONAL) {
 						if(clRect.right*bmp.bmHeight<clRect.bottom*bmp.bmWidth) {
@@ -2952,15 +2956,15 @@ void DrawBackGround(HWND hwnd,HDC mhdc, HBITMAP hBmpBackground, COLORREF bkColou
 					destw=bmp.bmWidth;
 					desth=bmp.bmHeight;
 					break;
-			}
-			desth=clRect.bottom -clRect.top;
-			for(;y<maxy;y+=desth) {
-				if(y<rcPaint->top-desth) continue;
-				for(x=0;x<maxx;x+=destw)
-					StretchBlt(hdcMem,x,y,destw,desth,hdcBmp,0,0,bmp.bmWidth,bmp.bmHeight,SRCCOPY);
-			}
-			DeleteDC(hdcBmp);
 		}
+		desth=clRect.bottom -clRect.top;
+		for(;y<maxy;y+=desth) {
+			if(y<rcPaint->top-desth) continue;
+			for(x=0;x<maxx;x+=destw)
+				StretchBlt(hdcMem,x,y,destw,desth,hdcBmp,0,0,bmp.bmWidth,bmp.bmHeight,SRCCOPY);
+		}
+		DeleteDC(hdcBmp);
+	}
 	}
 
 	{
@@ -2975,7 +2979,7 @@ void DrawBackGround(HWND hwnd,HDC mhdc, HBITMAP hBmpBackground, COLORREF bkColou
 		//DeleteObject(hFont);
 		if (!mhdc)
 		{
-		EndPaint(hwnd,&paintst);
+			EndPaint(hwnd,&paintst);
 		}
 	}
 }
@@ -2984,6 +2988,7 @@ void DrawBackGround(HWND hwnd,HDC mhdc, HBITMAP hBmpBackground, COLORREF bkColou
 static int DrawTitleBar(HDC hdcMem2,RECT * rect,int Frameid)
 {
 	int pos;
+	BOOL bThemed=FALSE;
 	HDC hdcMem;
 	HFONT hoTTBFont;
 	RECT rc=*rect;
@@ -3015,7 +3020,7 @@ static int DrawTitleBar(HDC hdcMem2,RECT * rect,int Frameid)
 		}
 		b1=SkinEngine_CreateDIB32(rc.right-rc.left,rc.bottom-rc.top);
 		b2=SelectObject(hdcMem,b1);
-		if (Frames[pos].floating)
+		if ( Frames[pos].floating && !g_CluiData.fDisableSkinEngine)
 		{
 			FillRect(hdcMem,&rc,hBack);
 			//SelectObject(hdcMem,hoBrush);       
@@ -3025,7 +3030,15 @@ static int DrawTitleBar(HDC hdcMem2,RECT * rect,int Frameid)
 		{
 			if (g_CluiData.fDisableSkinEngine)
 			{
-				DrawBackGround(Frames[pos].TitleBar.hwnd,hdcMem, hBmpBackground, bkColour, backgroundBmpUse);
+				if (!hBmpBackground && bkUseWinColours && xpt_IsThemed(hFrameTitleTheme))
+				{
+				   int state=CS_ACTIVE;
+				  // if (GetForegroundWindow()!=pcli->hwndContactList) state=CS_INACTIVE;
+				   xpt_DrawThemeBackground(hFrameTitleTheme,hdcMem, WP_SMALLCAPTION, state, &rc,&rc);
+				   bThemed=TRUE;
+				}	
+				else
+                   DrawBackGround(Frames[pos].TitleBar.hwnd,hdcMem, hBmpBackground, bkColour, backgroundBmpUse);
 			}
 			else if (!g_CluiData.fLayered)
 			{
@@ -3034,25 +3047,48 @@ static int DrawTitleBar(HDC hdcMem2,RECT * rect,int Frameid)
 			else  BitBlt(hdcMem,0,0,rc.right-rc.left,rc.bottom-rc.top,hdcMem2,rect->left,rect->top,SRCCOPY);
 			SkinDrawGlyph(hdcMem,&rc,&rc,"Main,ID=FrameCaption");
 		}
-		if (SelBkColour) 
+		if (bThemed)
+			SetTextColor(hdcMem,GetSysColor(COLOR_CAPTIONTEXT ));		
+		else
 			SetTextColor(hdcMem,SelBkColour);
-		if (!AlignCOLLIconToLeft)
 		{
+			RECT textrc=rc;
+			if (!AlignCOLLIconToLeft)
+			{
 
-			if(Frames[pos].TitleBar.hicon!=NULL)	{
-				mod_DrawIconEx_helper(hdcMem,rc.left +2,rc.top+((g_nTitleBarHeight>>1)-(GetSystemMetrics(SM_CYSMICON)>>1)),Frames[pos].TitleBar.hicon,GetSystemMetrics(SM_CXSMICON),GetSystemMetrics(SM_CYSMICON),0,NULL,DI_NORMAL);
-				SkinEngine_TextOutA(hdcMem,rc.left+GetSystemMetrics(SM_CXSMICON)+4,rc.top+2,Frames[pos].TitleBar.tbname,mir_strlen(Frames[pos].TitleBar.tbname));
+				if(Frames[pos].TitleBar.hicon!=NULL)	
+				{
+					mod_DrawIconEx_helper(hdcMem,rc.left +2,rc.top+((g_nTitleBarHeight>>1)-(GetSystemMetrics(SM_CYSMICON)>>1)),Frames[pos].TitleBar.hicon,GetSystemMetrics(SM_CXSMICON),GetSystemMetrics(SM_CYSMICON),0,NULL,DI_NORMAL);
+					textrc.left+=GetSystemMetrics(SM_CXSMICON)+4;
+					textrc.top+=2;
+				}
+				else
+				{
+					textrc.left+=2;
+					textrc.top+=2;
+				}
+
 			}
 			else
-				SkinEngine_TextOutA(hdcMem,rc.left+2,rc.top+2,Frames[pos].TitleBar.tbname,mir_strlen(Frames[pos].TitleBar.tbname));
+			{
+				textrc.left+=GetSystemMetrics(SM_CXSMICON)+2;
+				textrc.top+=2;
+			}
+			/*if (bThemed &&0) //disable since DrawTheme text always draw black text
+			{
+				int widelen = MultiByteToWideChar(CP_ACP, 0,  Frames[pos].TitleBar.tbname, strlen( Frames[pos].TitleBar.tbname )+1, NULL, 0);
+				TCHAR *pszWideText = malloc (sizeof(TCHAR)*(widelen+1));
+				textrc.top-=2;
+				MultiByteToWideChar(CP_ACP, 0, Frames[pos].TitleBar.tbname, widelen, pszWideText, widelen);
+				SetBkMode(hdcMem, TRANSPARENT);
+				xpt_DrawThemeText(hFrameTitleTheme,hdcMem, WP_SMALLCAPTION, CS_ACTIVE, pszWideText, -1, DT_SINGLELINE|DT_LEFT|DT_VCENTER, 0,&textrc);
+				free(pszWideText);
+			}
+			else
+			*/
+			SkinEngine_TextOutA(hdcMem,textrc.left,textrc.top,Frames[pos].TitleBar.tbname,mir_strlen(Frames[pos].TitleBar.tbname));
 
-		}else
-			//if (!Frames[pos].floating){
-			SkinEngine_TextOutA(hdcMem,rc.left+GetSystemMetrics(SM_CXSMICON)+2,rc.top+2,Frames[pos].TitleBar.tbname,mir_strlen(Frames[pos].TitleBar.tbname));
-		//}
-		//else TextOut(hdcMem,rc.left+GetSystemMetrics(SM_CXSMICON)+2,rc.top+2,Frames[pos].TitleBar.tbname,MyStrLen(Frames[pos].TitleBar.tbname));
-
-
+		}
 		if (!AlignCOLLIconToLeft)
 		{						
 			mod_DrawIconEx_helper(hdcMem,Frames[pos].TitleBar.wndSize.right-GetSystemMetrics(SM_CXSMICON)-2,rc.top+((g_nTitleBarHeight>>1)-(GetSystemMetrics(SM_CXSMICON)>>1)),Frames[pos].collapsed?LoadSkinnedIcon(SKINICON_OTHER_GROUPOPEN):LoadSkinnedIcon(SKINICON_OTHER_GROUPSHUT),GetSystemMetrics(SM_CXSMICON),GetSystemMetrics(SM_CYSMICON),0,NULL,DI_NORMAL);
@@ -3104,6 +3140,8 @@ static LRESULT CALLBACK CLUIFrameTitleBarProc(HWND hwnd, UINT msg, WPARAM wParam
 	switch(msg)
 	{
 	case WM_CREATE:
+		if (!hFrameTitleTheme)
+		   hFrameTitleTheme=xpt_AddThemeHandle(hwnd,L"WINDOW");
 		SendMessage(hwnd,WM_SETFONT,(WPARAM)TitleBarFont,0);
 		return FALSE;
 	case WM_MEASUREITEM:
@@ -3116,9 +3154,9 @@ static LRESULT CALLBACK CLUIFrameTitleBarProc(HWND hwnd, UINT msg, WPARAM wParam
 		if (hwnd!=0) CLUI__cliInvalidateRect(hwnd,NULL,FALSE);
 		return 0;
 	case WM_ERASEBKGND:
-	  {
-		  return 1;
-	  }
+		{
+			return 1;
+		}
 	case WM_COMMAND:
 
 

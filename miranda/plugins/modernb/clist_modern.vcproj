@@ -657,6 +657,9 @@
 				</FileConfiguration>
 			</File>
 			<File
+				RelativePath=".\modern_toolbar.c">
+			</File>
+			<File
 				RelativePath=".\rowheight_funcs.c">
 			</File>
 			<File
@@ -667,6 +670,9 @@
 			</File>
 			<File
 				RelativePath=".\viewmodes.c">
+			</File>
+			<File
+				RelativePath=".\xpTheme.c">
 			</File>
 			<Filter
 				Name="CLUIFrames"
@@ -1181,6 +1187,12 @@
 			</File>
 			<File
 				RelativePath=".\m_skinbutton.h">
+			</File>
+			<File
+				RelativePath=".\m_toolbar.h">
+			</File>
+			<File
+				RelativePath=".\m_xpTheme.h">
 			</File>
 			<File
 				RelativePath=".\menuSubsystem.h">

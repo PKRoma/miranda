@@ -214,6 +214,7 @@ int SetDrawer(WPARAM wParam,LPARAM lParam)
 	return 0;
 }
 
+void InitTBModule();
 int __declspec(dllexport) CListInitialise(PLUGINLINK * link)
 {
 	int rc=0;
@@ -234,6 +235,7 @@ int __declspec(dllexport) CListInitialise(PLUGINLINK * link)
 	}
 
 	InitUxTheme();
+
 
 	// get the lists manager interface
 	li.cbSize = sizeof(li);
@@ -357,6 +359,9 @@ LBL_Error:
 	saveRemoveEvent			= pcli->pfnRemoveEvent; 
 	pcli->pfnRemoveEvent	= cli_RemoveEvent;
 
+
+	xpt_InitModule();
+
 	memset(&SED,0,sizeof(SED));
 	CreateServiceFunction(CLUI_SetDrawerService,SetDrawer);
 
@@ -366,6 +371,8 @@ LBL_Error:
 	SkinEngine_LoadModule();
 	rc=LoadContactListModule();
 	if (rc==0) rc=LoadCLCModule();
+
+	InitTBModule();
 	TRACE("CListInitialise ClistMW...Done\r\n");
 	return rc;
 }
@@ -392,6 +399,7 @@ int __declspec(dllexport) Unload(void)
 	FreeRowCell();
 	pcli->hwndContactList=0;
 	UnhookAll();
+	xpt_UnloadModule();
 	FreeUxTheme();
 	TRACE("Unloading ClistMW COMPLETE\r\n");
 	return 0;

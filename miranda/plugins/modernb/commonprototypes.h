@@ -120,6 +120,7 @@ void	CLCPaint_GetTextSize(SIZE *text_size, HDC hdcMem, RECT free_row_rc, TCHAR *
 int		CListMod_HideWindow(HWND hwndContactList, int mode);
 
 /* CLUI */
+HANDLE  RegisterIcolibIconHandle(char * szIcoID, char *szSectionName,  char * szDescription, TCHAR * tszDefaultFile, int iDefaultIndex, HINSTANCE hDefaultModule, int iDefaultResource );
 void	CLUI_ChangeWindowMode();
 BOOL	CLUI_CheckOwnedByClui(HWND hwnd);
 void	CLUI_DisconnectAll();
