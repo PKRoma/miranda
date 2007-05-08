@@ -50,13 +50,25 @@ BOOL CALLBACK AddContactDlgProc(HWND hdlg,UINT msg,WPARAM wparam,LPARAM lparam)
 				if ( acs->handleType == HANDLE_CONTACT )
 					szName = (TCHAR*)CallService( MS_CLIST_GETCONTACTDISPLAYNAME,(WPARAM)acs->handle, GCDNF_TCHAR );
 				else {
-					char* p = (acs->handleType == HANDLE_EVENT) ? szUin : acs->psr->nick;
-					#if defined( _UNICODE )
-						szName =( TCHAR* )alloca( 128*sizeof( TCHAR ));
-						MultiByteToWideChar( CP_ACP, 0, p, -1, szName, 128 );
-					#else
-						szName = p;
-					#endif
+                    char *p;
+                    int isSet = 0;
+                    
+                    if (acs->handleType == HANDLE_EVENT) {
+                        HANDLE hcontact = (HANDLE)CallService(MS_DB_EVENT_GETCONTACT, (WPARAM)acs->handle, 0);
+                        if (hcontact!=INVALID_HANDLE_VALUE) {
+                            szName = (TCHAR*)CallService( MS_CLIST_GETCONTACTDISPLAYNAME,(WPARAM)hcontact, GCDNF_TCHAR );
+                            isSet = 1;
+                        }
+                    }
+					if (!isSet) {
+                        p = (acs->handleType == HANDLE_EVENT) ? szUin : acs->psr->nick;
+                        #if defined( _UNICODE )
+                            szName =( TCHAR* )alloca( 128*sizeof( TCHAR ));
+                            MultiByteToWideChar( CP_ACP, 0, p, -1, szName, 128 );
+                        #else
+                            szName = p;
+                        #endif
+                    }
 				}
 
 				if ( lstrlen( szName )) {

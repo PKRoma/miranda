@@ -54,8 +54,32 @@ BOOL CALLBACK DlgProcAdded(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam)
 			email=last+strlen(last)+1;
 			if (*uin) 
 				SetDlgItemInt(hwndDlg,IDC_NAME,*uin,FALSE);
-			else
-				SetDlgItemText(hwndDlg,IDC_NAME,TranslateT("(Unknown)"));
+			else {
+                if (hcontact == INVALID_HANDLE_VALUE)
+                    SetDlgItemText(hwndDlg,IDC_NAME,TranslateT("(Unknown)"));
+                else {
+                    CONTACTINFO ci;
+                    TCHAR buf[128];
+                    buf[0] = 0;
+                    ZeroMemory(&ci, sizeof(ci));
+                    ci.cbSize = sizeof(ci);
+                    ci.hContact = hcontact;
+                    ci.szProto = (char *)CallService(MS_PROTO_GETCONTACTBASEPROTO, (WPARAM)hcontact, 0);
+                    ci.dwFlag = CNF_UNIQUEID;
+                    if (!CallService(MS_CONTACT_GETCONTACTINFO, 0, (LPARAM) & ci)) {
+                        switch (ci.type) {
+                            case CNFT_ASCIIZ:
+                                mir_sntprintf(buf, SIZEOF(buf), _T("%s"), ci.pszVal);
+                                mir_free(ci.pszVal);
+                                break;
+                            case CNFT_DWORD:
+                                mir_sntprintf(buf, SIZEOF(buf), _T("%u"), ci.dVal);
+                                break;
+                        }
+                    }
+                    SetDlgItemText(hwndDlg,IDC_NAME,buf[0]?buf:TranslateT("(Unknown)"));
+                }
+            }
 			SetWindowLong(hwndDlg,GWL_USERDATA,lParam);
 			SetWindowLong(GetDlgItem(hwndDlg,IDC_DETAILS),GWL_USERDATA,(LONG)hcontact);
 			mir_free(dbei.pBlob);
@@ -96,6 +120,18 @@ BOOL CALLBACK DlgProcAdded(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam)
 				acs.handleType=HANDLE_EVENT;
 				acs.szProto="";
 				CallService(MS_ADDCONTACT_SHOW,(WPARAM)hwndDlg,(LPARAM)&acs);
+                {
+                    DBEVENTINFO dbei;
+                    HANDLE hcontact;
+                    
+                    ZeroMemory(&dbei,sizeof(dbei));
+                    dbei.cbBlob=CallService(MS_DB_EVENT_GETBLOBSIZE,(WPARAM)hDbEvent,0);
+                    dbei.pBlob=mir_alloc(dbei.cbBlob);
+                    CallService(MS_DB_EVENT_GET,(WPARAM)hDbEvent,(LPARAM)&dbei);
+                    hcontact=*((PHANDLE)(dbei.pBlob+sizeof(DWORD)));
+                    if ((hcontact == INVALID_HANDLE_VALUE) || !DBGetContactSettingByte(hcontact, "CList", "NotOnList", 0))
+                        ShowWindow(GetDlgItem(hwndDlg,IDC_ADD),FALSE);
+                }
 				ShowWindow(GetDlgItem(hwndDlg,IDC_ADD),FALSE);
 				return TRUE;
 			}
