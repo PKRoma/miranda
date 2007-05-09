@@ -1528,7 +1528,7 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
 		if (dat->szProto) {
 			TitleBarData tbd;
 			TabControlData tcd;
-			HICON hIcon = NULL, hIcon2 = NULL;
+			HICON hIcon, hStatusIcon = NULL;
 			char *szProto = dat->szProto;
 			HANDLE hContact = dat->hContact;
 			if (strcmp(dat->szProto, "MetaContacts") == 0 && DBGetContactSettingByte(NULL,"CLC","Meta",0) == 0) {
@@ -1540,34 +1540,48 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
 				}
 			}
 			dat->wStatus = DBGetContactSettingWord(hContact, szProto, "Status", ID_STATUS_OFFLINE);
-			CallService(MS_SKIN2_RELEASEICON,(WPARAM)dat->userMenuIcon, 0);
-			dat->userMenuIcon = LoadSkinnedProtoIcon(szProto, dat->wStatus);
-			SendDlgItemMessage(hwndDlg, IDC_USERMENU, BM_SETIMAGE, IMAGE_ICON, (LPARAM)dat->userMenuIcon);
-			if (g_dat->flags & SMF_STATUSICON) {
-				if (dat->showTyping && (g_dat->flags2&SMF2_SHOWTYPINGWIN)) {
-					hIcon = g_dat->hIcons[SMF_ICON_TYPING];
-				} else if (dat->showUnread && (GetActiveWindow() != dat->hwndParent || GetForegroundWindow() != dat->hwndParent)) {
-					hIcon = LoadSkinnedIcon(SKINICON_EVENT_MESSAGE);
-				} else {
-					hIcon = LoadSkinnedProtoIcon(szProto, dat->wStatus);
-				}
-			} else {
-				hIcon = LoadSkinnedIcon(SKINICON_EVENT_MESSAGE);
+
+			if (ServiceExists(MS_CLIST_GETCONTACTICON) && ServiceExists(MS_CLIST_GETICONSIMAGELIST)) {
+				HIMAGELIST iml = (HIMAGELIST)CallService(MS_CLIST_GETICONSIMAGELIST,0,0);
+				int index = CallService(MS_CLIST_GETCONTACTICON,(WPARAM)dat->hContact,0);
+				if (iml && index>=0)
+					hStatusIcon = ImageList_GetIcon(iml,index,ILD_NORMAL);
 			}
-            if (dat->showTyping) {
-                hIcon2 = g_dat->hIcons[SMF_ICON_TYPING];
-            } else if (dat->showUnread) {
-                hIcon2 = LoadSkinnedIcon(SKINICON_EVENT_MESSAGE);
-            } else {
-                hIcon2 = LoadSkinnedProtoIcon(szProto, dat->wStatus);
-            }
-			tcd.iFlags = TCDF_ICON;
-			tcd.hIcon = hIcon2;
-			SendMessage(dat->hwndParent, CM_UPDATETABCONTROL, (WPARAM)&tcd, (LPARAM)hwndDlg);
-            ReleaseIconSafe(hIcon2);
+			if (hStatusIcon == NULL) {
+				hIcon = LoadSkinnedProtoIcon(szProto, dat->wStatus);
+				hStatusIcon = CopyIcon(hIcon);
+				CallService(MS_SKIN2_RELEASEICON,(WPARAM)hIcon , 0);
+			}
+			
+			if (dat->userMenuIcon != NULL) DestroyIcon(dat->userMenuIcon);
+			dat->userMenuIcon = hStatusIcon;
+			
+			//CallService(MS_SKIN2_RELEASEICON,(WPARAM)dat->userMenuIcon, 0);
+			//dat->userMenuIcon = LoadSkinnedProtoIcon(szProto, dat->wStatus);
+			//hStatusIcon = dat->userMenuIcon;
+			SendDlgItemMessage(hwndDlg, IDC_USERMENU, BM_SETIMAGE, IMAGE_ICON, (LPARAM)dat->userMenuIcon);
 			tbd.iFlags = TBDF_ICON;
-			tbd.hIcon = hIcon;
+			hIcon = NULL;
+			if (dat->showTyping && (g_dat->flags2&SMF2_SHOWTYPINGWIN)) {
+				tbd.hIcon = g_dat->hIcons[SMF_ICON_TYPING];
+			} else if ((g_dat->flags & SMF_STATUSICON) && ! (dat->showUnread && (GetActiveWindow() != dat->hwndParent || GetForegroundWindow() != dat->hwndParent))) {
+				tbd.hIcon = hStatusIcon;//LoadSkinnedProtoIcon(szProto, dat->wStatus);
+			} else {
+				hIcon = tbd.hIcon = LoadSkinnedIcon(SKINICON_EVENT_MESSAGE);
+			}
 			SendMessage(dat->hwndParent, CM_UPDATETITLEBAR, (WPARAM)&tbd, (LPARAM)hwndDlg);
+			CallService(MS_SKIN2_RELEASEICON,(WPARAM)hIcon, 0);
+			tcd.iFlags = TCDF_ICON;
+			hIcon = NULL;
+			if (dat->showTyping) {
+				tcd.hIcon = g_dat->hIcons[SMF_ICON_TYPING];
+			} else if (dat->showUnread) {
+				hIcon = tcd.hIcon = LoadSkinnedIcon(SKINICON_EVENT_MESSAGE);
+			} else {
+				tcd.hIcon = hStatusIcon;//LoadSkinnedProtoIcon(szProto, dat->wStatus);
+			}
+			SendMessage(dat->hwndParent, CM_UPDATETABCONTROL, (WPARAM)&tcd, (LPARAM)hwndDlg);
+			CallService(MS_SKIN2_RELEASEICON,(WPARAM)hIcon, 0);
 		}
 		break;
     case DM_USERNAMETOCLIP:
@@ -2716,7 +2730,8 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
 		if (dat->nTypeMode == PROTOTYPE_SELFTYPING_ON) {
 			NotifyTyping(dat, PROTOTYPE_SELFTYPING_OFF);
 		}
-		CallService(MS_SKIN2_RELEASEICON,(WPARAM)dat->userMenuIcon, 0);
+		if (dat->userMenuIcon != NULL) DestroyIcon(dat->userMenuIcon);
+		//CallService(MS_SKIN2_RELEASEICON,(WPARAM)dat->userMenuIcon, 0);
 		dat->userMenuIcon = NULL;
 		if (dat->sendInfo) {
 			int i;
