@@ -84,6 +84,11 @@ typedef struct avatarCacheEntry AVATARCACHEENTRY;
 struct CacheNode {
 	struct CacheNode *pNextNode;
 	struct avatarCacheEntry ace;
+	//CRITICAL_SECTION cs;
+	BOOL loaded;
+    int   mustLoad;
+    DWORD dwFlags;
+    int   pa_format;
 };
 
 #define AVDRQ_FALLBACKPROTO 1              // use the protocol picture as fallback (currently not used)
@@ -93,6 +98,8 @@ struct CacheNode {
 #define AVDRQ_PROTOPICT  16                // draw a protocol picture (if available).
 #define AVDRQ_HIDEBORDERONTRANSPARENCY 32  // hide border if bitmap has transparency
 #define AVDRQ_OWNPIC	64				   // draw own avatar (szProto is valid)
+#define AVDRQ_RESPECTHIDDEN 128			   // don't draw images marked as hidden
+#define AVDRQ_DONTRESIZEIFSMALLER 256	   // don't resize images that are smaller then the draw area
 
 // request to draw a contacts picture. See MS_AV_DRAWAVATAR service description
 
@@ -158,7 +165,7 @@ typedef struct _avatarDrawRequest {
 // 
 // wParam = (char *) protocol name
 // lParam = either a full picture filename or NULL. If lParam == NULL, the service
-// will open a file selection dialog.
+// will open a file selection dialog. If lParam == "" the avatar will be removed
 
 #define MS_AV_SETMYAVATAR "SV_Avatars/SetMyAvatar"
 
@@ -186,10 +193,12 @@ typedef struct _avatarDrawRequest {
 // return value: 0 -> failure, avatar probably not available, or not ready. The drawing
 // service DOES schedule an avatar update so your plugin will be notified by the ME_AV_AVATARCHANGED
 // event when the requested avatar is ready for use.
+//				 1 -> success. avatar was found and drawing should be ok.
 
 #define MS_AV_DRAWAVATAR "SV_Avatars/Draw"
 
-// fired when the contacts avatar changes
+// fired when a contacts avatar cached by avs changes
+// it includes changes made by the user
 // wParam = hContact
 // lParam = struct avatarCacheEntry *cacheEntry
 // the event CAN pass a NULL pointer in lParam which means that the avatar has changed,
@@ -201,10 +210,140 @@ typedef struct _avatarDrawRequest {
  
 #define ME_AV_AVATARCHANGED "SV_Avatars/AvatarChanged"
 
+
+typedef struct _contactAvatarChangedNotification {
+	int cbSize;					// sizeof()
+	HANDLE hContact;			// this might have to be set by the caller too
+	int format;					// PA_FORMAT_*
+	char filename[MAX_PATH];	// full path to filename which contains the avatar
+	char hash[128];				// avatar hash
+} CONTACTAVATARCHANGEDNOTIFICATION;
+
+// fired when the contacts avatar is changed by the contact
+// wParam = hContact
+// lParam = struct CONTACTAVATARCHANGENOTIFICATION *cacn
+// the event CAN pass a NULL pointer in lParam which means that the contact deleted its avatar
+ 
+#define ME_AV_CONTACTAVATARCHANGED "SV_Avatars/ContactAvatarChanged"
+
 // fired when one of our own avatars was changed
 // wParam = (char *)szProto (protocol for which a new avatar was set)
 // lParam = AVATARCACHEENTRY *ace (new cache entry, NULL if the new avatar is not valid)
  
 #define ME_AV_MYAVATARCHANGED "SV_Avatars/MyAvatarChanged"
+
+// Service to be called by protocols to report an avatar has changed. Some avatar changes
+// can be detected automatically, but some not (by now only Skype ones)
+// wParam = (char *)szProto (protocol for which a new avatar was set)
+// lParam = 0
+
+#define MS_AV_REPORTMYAVATARCHANGED "SV_Avatars/ReportMyAvatarChanged"
+
+
+
+// Bitmap services //////////////////////////////////////////////////////////////////////
+
+// Load an image
+// wParam = NULL
+// lParam = filename
+#define MS_AV_LOADBITMAP32 "SV_Avatars/LoadBitmap32"
+
+// Save an HBITMAP to an image
+// wParam = HBITMAP
+// lParam = full path of filename
+#define MS_AV_SAVEBITMAP "SV_Avatars/SaveBitmap"
+
+// Returns != 0 if can save that type of image, = 0 if cant
+// wParam = 0
+// lParam = PA_FORMAT_*   // image format
+#define MS_AV_CANSAVEBITMAP "SV_Avatars/CanSaveBitmap"
+
+
+#define RESIZEBITMAP_STRETCH 0				// Distort bitmap to size in (max_width, max_height)
+#define RESIZEBITMAP_KEEP_PROPORTIONS 1		// Keep bitmap proportions (probabily only one of the 
+											// max_width/max_height will be respected, and the other will be
+											// smaller)
+#define RESIZEBITMAP_CROP 2					// Keep bitmap proportions but crop it to fix exactly in (max_width, max_height)
+											// Some image info outside will be lost
+#define RESIZEBITMAP_MAKE_SQUARE 3			// Image will be allways square. Image will be croped and the size
+											// returned will be min(max_width, max_height)
+
+#define RESIZEBITMAP_FLAG_DONT_GROW	0x1000	// If set, the image will not grow. Else, it will grow to fit the max width/height
+
+typedef struct {
+	size_t size; // sizeof(ResizeBitmap);
+
+	HBITMAP hBmp;
+
+	int max_width;
+	int max_height;
+
+	int fit; // One of: RESIZEBITMAP_*
+} ResizeBitmap;
+
+// Returns a copy of the bitmap with the size especified or the original bitmap if nothing has to be changed
+// wParam = ResizeBitmap *
+// lParam = NULL
+#define MS_AV_RESIZEBITMAP "SV_Avatars/ResizeBitmap"
+
+/*
+ * flags for internal use ONLY
+ */
+
+#define MC_ISMASTERCONTACT 0x01
+#define MC_ISSUBCONTACT    0x02
+#define AVH_MUSTNOTIFY     0x04             // node->dwFlags (loader thread must notify avatar history about change/delete event)
+#define AVS_DELETENODEFOREVER 0x08
+
+
+
+// Protocol services //////////////////////////////////////////////////////////////////////
+
+/*
+wParam=0
+lParam=(const char *)Avatar file name or NULL to remove the avatar
+return=0 for sucess
+*/
+#define PS_SETMYAVATAR "/SetMyAvatar"
+
+/*
+wParam=(char *)Buffer to file name
+lParam=(int)Buffer size
+return=0 for sucess
+*/
+#define PS_GETMYAVATAR "/GetMyAvatar"
+
+
+#define PIP_NONE				0
+#define PIP_SQUARE				1
+
+// Avatar image max size
+// lParam = (POINT*) maxSize (use -1 for no max)
+// return 0 for success
+#define AF_MAXSIZE 1
+
+// Avatar image proportion
+// lParam = 0
+// return or of PIP_*
+#define AF_PROPORTION 2
+
+// Avatar format
+// lParam = PA_FORMAT_*
+// return = 1 (supported) or 0 (not supported)
+#define AF_FORMATSUPPORTED 3
+
+// Avatars are enabled for protocol?
+// lParam = 0
+// return = 1 (avatars ready) or 0 (disabled)
+#define AF_ENABLED 4
+
+/*
+Query avatar caps for a protocol
+wParam = One of AF_*
+lParam = See descr of each AF_*
+*/
+#define PS_GETAVATARCAPS "/GetAvatarCaps"
+
+
 
 #endif
