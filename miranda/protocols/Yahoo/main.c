@@ -58,10 +58,10 @@ PLUGININFO pluginInfo={
 #endif
 		__VERSION_DWORD,
 		"Yahoo Protocol support via libyahoo2 library. [Built: "__DATE__" "__TIME__"]",
-		"Gennady Feldman, Laurent Marechal",
+		"Gennady Feldman",
 		"gena01@miranda-im.org",
-		"© 2003-2006 G.Feldman",
-		"http://www.miranda-im.org/download/details.php?action=viewfile&id=1248",
+		"© 2003-2007 Gennady Feldman, Laurent Marechal",
+		"http://www.miranda-im.org",
 		0, //not transient
 		0 //DEFMOD_PROTOCOLYAHOO - no core yahoo protocol
 };
@@ -215,7 +215,7 @@ static int OnModulesLoaded( WPARAM wParam, LPARAM lParam )
 
 int __declspec(dllexport)Load(PLUGINLINK *link)
 {
-	PROTOCOLDESCRIPTOR pd;
+	PROTOCOLDESCRIPTOR pd = { 0 };
 	char path[MAX_PATH], tNudge[250];
 	char* protocolname;
 	
