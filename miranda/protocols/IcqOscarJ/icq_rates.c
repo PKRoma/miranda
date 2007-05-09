@@ -466,7 +466,11 @@ static void RatesTimer2()
   {
     int i;
 
-    for (i=0; i<pendingListSize2; i++) SAFE_FREE(&pendingList2[i]);
+    for (i=0; i<pendingListSize2; i++)
+    {
+      SAFE_FREE(&pendingList2[i]->szData);
+      SAFE_FREE(&pendingList2[i]);
+    }
     SAFE_FREE((void**)&pendingList2);
     pendingListSize2 = 0;
     LeaveCriticalSection(&ratesListsMutex);
@@ -538,13 +542,32 @@ static void RatesTimer2()
 static void putItemToQueue2(rate_record *item, int nLev)
 {
   rate_record *tmp;
+  int bFound = FALSE;
 
   if (!icqOnline) return;
 
   NetLog_Server("Rates: Delaying operation.");
 
-  pendingListSize2++;
-  pendingList2 = (rate_record**)realloc(pendingList2, pendingListSize2*sizeof(rate_record*));
+  if (pendingListSize2)
+  {
+    int i;
+
+    for (i = 0; i < pendingListSize2; i++)
+    {
+      if (pendingList2[i]->hContact == item->hContact && pendingList2[i]->bType == item->bType)
+      { // there is older response in the queue, discard it (server won't accept it anyway)
+        SAFE_FREE(&pendingList2[i]->szData);
+        SAFE_FREE(&pendingList2[i]);
+        memcpy(&pendingList2[i], &pendingList2[i + 1], (pendingListSize2 - i - 1)*sizeof(rate_record*));
+        bFound = TRUE;
+      }
+    }
+  }
+  if (!bFound)
+  { // not found, enlarge the queue
+    pendingListSize2++;
+    pendingList2 = (rate_record**)realloc(pendingList2, pendingListSize2*sizeof(rate_record*));
+  }
   tmp = (rate_record*)SAFE_MALLOC(sizeof(rate_record));
   memcpy(tmp, item, sizeof(rate_record));
   tmp->szData = null_strdup(item->szData);
