@@ -23,7 +23,6 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include "../msgwindow.h"
 
 extern HANDLE		g_hInst;
-extern int eventMessageIcon;
 extern BOOL			SmileyAddInstalled;
 extern BOOL			PopUpInstalled;
 extern BOOL			IEviewInstalled;
@@ -221,16 +220,17 @@ int Service_GetInfo(WPARAM wParam,LPARAM lParam)
 }
 
 void LoadModuleIcons(MODULEINFO * mi) {
-	mi->OnlineIconIndex = ImageList_AddIcon_ProtoEx(g_dat->hTabIconList, mi->pszModule, ID_STATUS_ONLINE);
-	mi->hOnlineIcon = ImageList_GetIcon(g_dat->hTabIconList, mi->OnlineIconIndex, ILD_TRANSPARENT);
-	mi->hOnlineTalkIcon = ImageList_GetIcon(g_dat->hTabIconList, mi->OnlineIconIndex, ILD_TRANSPARENT|INDEXTOOVERLAYMASK(1));
-	ImageList_AddIcon(g_dat->hTabIconList, mi->hOnlineTalkIcon);
-
-	mi->OfflineIconIndex = ImageList_AddIcon_ProtoEx(g_dat->hTabIconList, mi->pszModule, ID_STATUS_OFFLINE);
-	mi->hOfflineIcon = ImageList_GetIcon(g_dat->hTabIconList, mi->OfflineIconIndex, ILD_TRANSPARENT);
-
-	mi->hOfflineTalkIcon = ImageList_GetIcon(g_dat->hTabIconList, mi->OfflineIconIndex, ILD_TRANSPARENT|INDEXTOOVERLAYMASK(1));
-	ImageList_AddIcon(g_dat->hTabIconList, mi->hOfflineTalkIcon);
+    int index;
+    HIMAGELIST hList = ImageList_Create(16, 16, IsWinVerXPPlus() ? ILC_COLOR32 | ILC_MASK : ILC_COLOR8 | ILC_MASK, 0, 0);
+	int overlayIcon = ImageList_AddIcon_Ex(hList, LoadIconEx(IDI_OVERLAY, "overlay", 0, 0));
+	ImageList_SetOverlayImage(hList, overlayIcon, 1);
+	index = ImageList_AddIcon_ProtoEx(hList, mi->pszModule, ID_STATUS_ONLINE);
+	mi->hOnlineIcon = ImageList_GetIcon(hList, index, ILD_TRANSPARENT);
+	mi->hOnlineTalkIcon = ImageList_GetIcon(hList, index, ILD_TRANSPARENT|INDEXTOOVERLAYMASK(1));
+	index = ImageList_AddIcon_ProtoEx(hList, mi->pszModule, ID_STATUS_OFFLINE);
+	mi->hOfflineIcon = ImageList_GetIcon(hList, index, ILD_TRANSPARENT);
+	mi->hOfflineTalkIcon = ImageList_GetIcon(hList, index, ILD_TRANSPARENT|INDEXTOOVERLAYMASK(1));
+    ImageList_Destroy(hList);
 }
 
 int Service_Register(WPARAM wParam, LPARAM lParam)
@@ -268,10 +268,8 @@ int Service_Register(WPARAM wParam, LPARAM lParam)
 			memcpy(mi->crColors, gcr->pColors, sizeof(COLORREF) * gcr->nColors);
 		}
 
-		mi->OnlineIconIndex = -1;
 		mi->hOnlineIcon = NULL;
 		mi->hOnlineTalkIcon = NULL;
-		mi->OfflineIconIndex = -1;
 		mi->hOfflineIcon = NULL;
 		mi->hOfflineTalkIcon = NULL;
 
@@ -302,7 +300,7 @@ int Service_NewChat(WPARAM wParam, LPARAM lParam)
 		TCHAR* ptszID = a2tf( gcw->ptszID, gcw->dwFlags );
 		SESSION_INFO* si = SM_AddSession( ptszID, gcw->pszModule);
 
-		if (mi->OnlineIconIndex == -1) {
+		if (mi->hOfflineIcon == NULL) {
 			LoadModuleIcons(mi);
 		}
 		// create a new session and set the defaults

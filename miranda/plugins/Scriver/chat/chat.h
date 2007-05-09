@@ -129,8 +129,6 @@ typedef struct  MODULE_INFO_TYPE
 	HICON		hOfflineIcon;
 	HICON		hOnlineTalkIcon;
 	HICON		hOfflineTalkIcon;
-	int			OnlineIconIndex;
-	int			OfflineIconIndex;
 	int			iMaxText;
 	struct MODULE_INFO_TYPE *next;
 }

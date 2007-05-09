@@ -98,63 +98,9 @@ int ImageList_ReplaceIcon_ProtoEx(HIMAGELIST hIml, int nIndex, const char* szPro
 
 void LoadProtocolIcons() {
 	PROTOCOLDESCRIPTOR **pProtos;
-	int i, j, allProtoNum, k;
+	int allProtoNum;
 
 	CallService(MS_PROTO_ENUMPROTOCOLS, (WPARAM) &allProtoNum, (LPARAM) &pProtos);
-	g_dat->protoNum  = 0;
-	for(i = 0; i < allProtoNum; i++) {
-        if (pProtos[i]->type == PROTOTYPE_PROTOCOL) g_dat->protoNum++;
-	}
-
-	if (g_dat->protoNames != NULL) {
-		for(i = 0; i < g_dat->protoNum; i++) {
-			if (g_dat->protoNames[i] != NULL) {
-				mir_free(g_dat->protoNames[i]);
-			}
-		}
-		mir_free(g_dat->protoNames);
-	}
-	g_dat->protoNames = (char **) mir_alloc(sizeof(char*) * g_dat->protoNum);
-	if (g_dat->hTabIconList == NULL) {
-		g_dat->hTabIconList = ImageList_Create(16, 16, IsWinVerXPPlus() ? ILC_COLOR32 | ILC_MASK : ILC_COLOR8 | ILC_MASK, (g_dat->protoNum + 1) * 12 + 8, 0);
-		ImageList_AddIcon_Ex(g_dat->hTabIconList, SKINICON_EVENT_MESSAGE);
-		ImageList_AddIcon(g_dat->hTabIconList, g_dat->hIcons[SMF_ICON_TYPING]);
-		for (i = ID_STATUS_OFFLINE; i <= ID_STATUS_OUTTOLUNCH; i++) {
-			ImageList_AddIcon_ProtoEx(g_dat->hTabIconList, NULL, i);
-		}
-
-		for(i = j = 0; i < allProtoNum; i++) {
-			if (pProtos[i]->type != PROTOTYPE_PROTOCOL) continue;
-			g_dat->protoNames[j] = mir_strdup(pProtos[i]->szName);
-			for (k = ID_STATUS_OFFLINE; k <= ID_STATUS_OUTTOLUNCH; k++) {
-				int id = ImageList_AddIcon_ProtoEx(g_dat->hTabIconList, pProtos[i]->szName, k);
-				if (id == -1 ) {
-					ImageList_AddIcon_ProtoEx(g_dat->hTabIconList, NULL, ID_STATUS_OFFLINE);
-				}
-			}
-			j++;
-		}
-	} else {
-		int index = 0;
-		ImageList_ReplaceIcon_Ex(g_dat->hTabIconList, index++, SKINICON_EVENT_MESSAGE);
-		ImageList_ReplaceIcon(g_dat->hTabIconList, index++, g_dat->hIcons[SMF_ICON_TYPING]);
-		for (i = ID_STATUS_OFFLINE; i <= ID_STATUS_OUTTOLUNCH; i++) {
-			ImageList_ReplaceIcon_ProtoEx(g_dat->hTabIconList, index++, NULL, i);
-		}
-
-		for(i = j = 0; i < allProtoNum; i++) {
-			if (pProtos[i]->type != PROTOTYPE_PROTOCOL) continue;
-			g_dat->protoNames[j] = mir_strdup(pProtos[i]->szName);
-			for (k = ID_STATUS_OFFLINE; k <= ID_STATUS_OUTTOLUNCH; k++) {
-				int id = ImageList_ReplaceIcon_ProtoEx(g_dat->hTabIconList, index++, pProtos[i]->szName, k);
-				if (id == -1) {
-					ImageList_ReplaceIcon_ProtoEx(g_dat->hTabIconList, index++, NULL, ID_STATUS_OFFLINE);
- 				}
-			}
-			j++;
-		}
-	}
-
 }
 
 int IconsChanged(WPARAM wParam, LPARAM lParam)
@@ -391,10 +337,11 @@ void InitGlobals() {
 	ReloadGlobals();
 	g_dat->lastParent = NULL;
 	g_dat->lastChatParent = NULL;
-	g_dat->protoNum = 0;
-	g_dat->protoNames = NULL;
 	g_dat->hTabIconList = NULL;
-	g_dat->hButtonIconList = ImageList_Create(16, 16, IsWinVerXPPlus() ? ILC_COLOR32 | ILC_MASK : ILC_COLOR8 | ILC_MASK, (g_dat->protoNum + 1) * 12 + 8, 0);
+	g_dat->tabIconListUsage = NULL;
+	g_dat->tabIconListUsageSize = 0;
+	g_dat->hButtonIconList = ImageList_Create(16, 16, IsWinVerXPPlus() ? ILC_COLOR32 | ILC_MASK : ILC_COLOR8 | ILC_MASK, 0, 0);
+	g_dat->hTabIconList = ImageList_Create(16, 16, IsWinVerXPPlus() ? ILC_COLOR32 | ILC_MASK : ILC_COLOR8 | ILC_MASK, 0, 0);
 	g_dat->draftList = NULL;
 }
 
@@ -407,12 +354,6 @@ void FreeGlobals() {
 		if (g_dat->hButtonIconList)
 			ImageList_Destroy(g_dat->hButtonIconList);
 
-		if (g_dat->protoNum && g_dat->protoNames) {
-			int i;
-			for (i=0; i < g_dat->protoNum; i++ )
-				mir_free( g_dat->protoNames[i] );
-			mir_free( g_dat->protoNames );
-		}
 		mir_free(g_dat);
 	}
 }

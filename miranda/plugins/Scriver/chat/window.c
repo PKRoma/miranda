@@ -39,7 +39,6 @@ extern struct      CREOleCallback reOleCallback;
 extern HMENU      g_hMenu;
 extern BOOL         SmileyAddInstalled;
 extern TABLIST *   g_TabList;
-extern int eventMessageIcon;
 extern HANDLE hHookWinPopup;
 
 static WNDPROC OldSplitterProc;
@@ -1350,22 +1349,27 @@ BOOL CALLBACK RoomWndProc(HWND hwndDlg,UINT uMsg,WPARAM wParam,LPARAM lParam)
          SendMessage(GetParent(hwndDlg), CM_UPDATETABCONTROL, (WPARAM) &tcd, (LPARAM) hwndDlg);
 
       }
-   case GC_FIXTABICONS:
-      {
-         TabControlData tcd;
-
-         int image = eventMessageIcon;
-         if (!(si->wState&GC_EVENT_HIGHLIGHT))
-         {
-            image = si->wStatus==ID_STATUS_ONLINE?MM_FindModule(si->pszModule)->OnlineIconIndex:MM_FindModule(si->pszModule)->OfflineIconIndex;
+    case GC_FIXTABICONS:
+    {
+        TabControlData tcd;
+        HICON hIcon = LoadSkinnedIcon(SKINICON_EVENT_MESSAGE);
+        if (!(si->wState&GC_EVENT_HIGHLIGHT))
+        {
             if (si->wState&STATE_TALK)
-               image++;
+                hIcon = (si->wStatus==ID_STATUS_ONLINE) ? MM_FindModule(si->pszModule)->hOnlineTalkIcon : MM_FindModule(si->pszModule)->hOfflineTalkIcon;
+            else
+                hIcon = (si->wStatus==ID_STATUS_ONLINE) ? MM_FindModule(si->pszModule)->hOnlineIcon : MM_FindModule(si->pszModule)->hOfflineIcon;
+//            image = si->wStatus==ID_STATUS_ONLINE?MM_FindModule(si->pszModule)->OnlineIconIndex:MM_FindModule(si->pszModule)->OfflineIconIndex;
+  //          if (si->wState&STATE_TALK)
+    //           image++;
          }
          tcd.iFlags = TCDF_ICON;
-         tcd.iconIdx = image;
+         tcd.hIcon = hIcon;
+         CallService(MS_SKIN2_RELEASEICON, (WPARAM)hIcon, 0);
+         //tcd.iconIdx = image;
          SendMessage(GetParent(hwndDlg), CM_UPDATETABCONTROL, (WPARAM) &tcd, (LPARAM) hwndDlg);
-      }
-      break;
+    }
+    break;
 
       case GC_SETMESSAGEHIGHLIGHT:
       {

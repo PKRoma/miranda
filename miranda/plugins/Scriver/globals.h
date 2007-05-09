@@ -102,6 +102,13 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 #define SMF_ICON_COUNT		15
 
+typedef struct ImageListUsageEntry_tag
+{
+	int		index;
+	int		used;
+} ImageListUsageEntry;
+
+
 struct GlobalMessageData
 {
 	unsigned int flags;
@@ -112,8 +119,6 @@ struct GlobalMessageData
 	HANDLE hParentWindowList;
 	ParentWindowData *lastParent;
 	ParentWindowData *lastChatParent;
-	int		protoNum;
-	char **	protoNames;
 	int		limitNamesLength;
 	int		limitAvatarMaxH;
 	int		limitAvatarMinH;
@@ -121,6 +126,8 @@ struct GlobalMessageData
 	int		inactiveAlpha;
 	HMENU	hMenuANSIEncoding;
 	HIMAGELIST hTabIconList;
+	int     tabIconListUsageSize;
+	ImageListUsageEntry     *tabIconListUsage;
 	HIMAGELIST hButtonIconList;
 	TCmdList *draftList;
 	int		avatarServiceExists;

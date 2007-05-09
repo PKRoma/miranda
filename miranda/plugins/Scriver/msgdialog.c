@@ -1528,7 +1528,6 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
 			TitleBarData tbd;
 			TabControlData tcd;
 			HICON hIcon = NULL;
-			int i, icoIdx = 0;
 			char *szProto = dat->szProto;
 			HANDLE hContact = dat->hContact;
 			if (strcmp(dat->szProto, "MetaContacts") == 0 && DBGetContactSettingByte(NULL,"CLC","Meta",0) == 0) {
@@ -1554,26 +1553,13 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
 			} else {
 				hIcon = LoadSkinnedIcon(SKINICON_EVENT_MESSAGE);
 			}
-			icoIdx = 0;
-			for (i = 0; i < g_dat->protoNum; i++) {
-				if (!strcmp(g_dat->protoNames[i], szProto)) {
-					icoIdx = dat->wStatus - ID_STATUS_OFFLINE + (ID_STATUS_OUTTOLUNCH - ID_STATUS_OFFLINE + 1) * (i +1) + 2;
-					break;
-				}
-			}
-			if (hwndDlg != dat->parent->hwndActive) {
-				if (dat->showTyping) {
-					icoIdx = 1;
-				} else if (dat->showUnread & 1) {
-					icoIdx = 0;
-				}
-			}
+			tcd.iFlags = TCDF_ICON;
+			tcd.hIcon = hIcon;
+			//tcd.iconIdx = icoIdx;
+			SendMessage(dat->hwndParent, CM_UPDATETABCONTROL, (WPARAM)&tcd, (LPARAM)hwndDlg);
 			tbd.iFlags = TBDF_ICON;
 			tbd.hIcon = hIcon;
 			SendMessage(dat->hwndParent, CM_UPDATETITLEBAR, (WPARAM)&tbd, (LPARAM)hwndDlg);
-			tcd.iFlags = TCDF_ICON;
-			tcd.iconIdx = icoIdx;
-			SendMessage(dat->hwndParent, CM_UPDATETABCONTROL, (WPARAM)&tcd, (LPARAM)hwndDlg);
 		}
 		break;
     case DM_USERNAMETOCLIP:

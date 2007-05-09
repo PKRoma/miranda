@@ -75,7 +75,8 @@ typedef struct TabControlDataStruct
 {
 	int iFlags;
 	TCHAR *pszText;
-	int iconIdx;
+//	int iconIdx;
+	HICON hIcon;
 } TabControlData;
 
 extern TCHAR* GetWindowTitle(HANDLE *hContact, const char *szProto);
