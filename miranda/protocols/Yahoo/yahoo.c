@@ -113,7 +113,6 @@ int miranda_to_yahoo(int myyahooStatus)
 
 void yahoo_set_status(int myyahooStatus, char *msg, int away)
 {
-	//LOG(("yahoo_set_status myyahooStatus: %s (%d), msg: %s, away: %d", (char *) CallService(MS_CLIST_GETSTATUSMODEDESCRIPTION, myyahooStatus, 0), myyahooStatus, msg, away));
 	LOG(("yahoo_set_status myyahooStatus: %d, msg: %s, away: %d", myyahooStatus, msg, away));
 
 	/* Safety check, don't dereference Invalid pointers */
@@ -364,14 +363,14 @@ void ext_yahoo_status_changed(int id, const char *who, int stat, const char *msg
 	HANDLE 	hContact = 0;
 	time_t  idlets = 0;
 	
-	YAHOO_DebugLog("ext_yahoo_status_changed for %s with msg %s (stat: %d, away: %d, idle: %d seconds)", who, msg, stat, away, idle);
+	LOG(("[ext_yahoo_status_changed] %s with msg %s (stat: %d, away: %d, idle: %d seconds)", who, msg, stat, away, idle));
 	
 	hContact = getbuddyH(who);
 	if (hContact == NULL) {
 		YAHOO_DebugLog("Buddy Not Found. Adding...");
 		hContact = add_buddy(who, who, 0);
-	} else {
-		YAHOO_DebugLog("Buddy Found On My List! Buddy %p", hContact);
+/*	} else {
+		YAHOO_DebugLog("Buddy Found On My List! Buddy %p", hContact);*/
 	}
 	
 	if (!mobile)
@@ -424,11 +423,23 @@ void ext_yahoo_status_logon(int id, const char *who, int stat, const char *msg, 
 	} 
 	
 	switch (client_version) {
-		case 262651: s = "libyahoo2"; break;
-		case 262655: s = "< Yahoo 6.x (Yahoo 5.x?)"; break;
-		case 278527: s = "Yahoo 6.x"; break;
-		case 524223: s = "Yahoo 7.x"; break;
-		case 1572799: s = "Yahoo 8.x"; break;
+		case 262651: 
+				s = "libyahoo2"; 
+				break;
+		case 262655: 
+				s = "< Yahoo 6.x (Yahoo 5.x?)"; 
+				break;
+		case 278527: 
+				s = "Yahoo 6.x"; 
+				break;
+		case 524223: 
+				s = "Yahoo 7.x"; 
+				break;
+		case 822543:  /* ? "Yahoo Version 3.0 beta 1 (build 18274) OSX" */
+		case 1572799: /* 8.0.x ??  */ 
+		case 2097087: /* 8.1.0.195 */ 
+				s = "Yahoo 8.x"; 
+				break;
 	}
 	
 	if (s != NULL) 
@@ -1021,6 +1032,10 @@ void ext_yahoo_login_response(int id, int succ, const char *url)
 	} else if(succ == YAHOO_LOGIN_DUPL) {
 		snprintf(buff, sizeof(buff), Translate("You have been logged out of the yahoo service, possibly due to a duplicate login."));
 		ProtoBroadcastAck(yahooProtocolName, NULL, ACKTYPE_LOGIN, ACKRESULT_FAILED, NULL, LOGINERR_OTHERLOCATION);
+	}else if(succ == YAHOO_LOGIN_LOGOFF) {
+		//snprintf(buff, sizeof(buff), Translate("You have been logged out of the yahoo service."));
+		//ProtoBroadcastAck(yahooProtocolName, NULL, ACKTYPE_LOGIN, ACKRESULT_FAILED, NULL, LOGINERR_OTHERLOCATION);
+		return; // we logged out.. so just sign-off..
 	}else if(succ == -1) {
 		/// Can't Connect or got disconnected.
 		if (yahooStatus == ID_STATUS_CONNECTING)
@@ -1256,7 +1271,7 @@ void yahoo_callback(struct _conn *c, yahoo_input_condition cond)
 {
 	int ret=1;
 
-	LOG(("[yahoo_callback] id: %d, fd: %d tag: %d", c->id, c->fd, c->tag));
+	//LOG(("[yahoo_callback] id: %d, fd: %d tag: %d", c->id, c->fd, c->tag));
 	if(c->id < 0) {
 		connect_complete(c->data, c->fd, cond);
 	} else if (c->fd > 0) {
@@ -1271,6 +1286,8 @@ void yahoo_callback(struct _conn *c, yahoo_input_condition cond)
 		} else if(ret == 0)
 			LOG(("Yahoo read error: Server closed socket"));
 	}
+	
+	//LOG(("[yahoo_callback] id: %d exiting...", c->id));
 }
 
 int ext_yahoo_connect_async(int id, const char *host, int port, int type, 
