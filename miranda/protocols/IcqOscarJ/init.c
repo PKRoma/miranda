@@ -62,7 +62,7 @@ extern int bHideXStatusUI;
 PLUGININFOEX pluginInfo = {
   sizeof(PLUGININFOEX),
   NULL,
-  PLUGIN_MAKE_VERSION(0,3,10,2),
+  PLUGIN_MAKE_VERSION(0,3,10,3),
   "Support for ICQ network, enhanced.",
   "Joe Kucera, Bio, Martin Öberg, Richard Hughes, Jon Keating, etc",
   "jokusoftware@miranda-im.org",
@@ -260,16 +260,15 @@ int __declspec(dllexport) Load(PLUGINLINK *link)
   ICQCreateServiceFunction(PSS_AUTHREQUEST, IcqSendAuthRequest);
   ICQCreateServiceFunction(PSS_ADDED, IcqSendYouWereAdded);
   ICQCreateServiceFunction(PSS_USERISTYPING, IcqSendUserIsTyping);
-  ICQCreateServiceFunction(PS_GETAVATARINFO, IcqGetAvatarInfo);
   // Session password API
   ICQCreateServiceFunction(PS_ICQ_SETPASSWORD, IcqSetPassword);
   // ChangeInfo API
   ICQCreateServiceFunction(PS_CHANGEINFOEX, IcqChangeInfoEx);
-  // My Avatar API
-  ICQCreateServiceFunction(PS_ICQ_GETMYAVATARMAXSIZE, IcqGetMaxAvatarSize);
-  ICQCreateServiceFunction(PS_ICQ_ISAVATARFORMATSUPPORTED, IcqAvatarFormatSupported);
-  ICQCreateServiceFunction(PS_ICQ_GETMYAVATAR, IcqGetMyAvatar);
-  ICQCreateServiceFunction(PS_ICQ_SETMYAVATAR, IcqSetMyAvatar);
+  // Avatar API
+  ICQCreateServiceFunction(PS_GETAVATARINFO, IcqGetAvatarInfo);
+  ICQCreateServiceFunction(PS_GETAVATARCAPS, IcqGetAvatarCaps);
+  ICQCreateServiceFunction(PS_GETMYAVATAR, IcqGetMyAvatar);
+  ICQCreateServiceFunction(PS_SETMYAVATAR, IcqSetMyAvatar);
   // Custom Status API
   ICQCreateServiceFunction(PS_ICQ_SETCUSTOMSTATUS, IcqSetXStatus); // obsolete (remove in next version)
   ICQCreateServiceFunction(PS_ICQ_GETCUSTOMSTATUS, IcqGetXStatus); // obsolete

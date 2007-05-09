@@ -231,22 +231,39 @@ int IcqGetAvatarInfo(WPARAM wParam, LPARAM lParam)
 
 
 
-int IcqGetMaxAvatarSize(WPARAM wParam, LPARAM lParam)
+int IcqGetAvatarCaps(WPARAM wParam, LPARAM lParam)
 {
-  if (wParam) *((int*)wParam) = 64;
-  if (lParam) *((int*)lParam) = 64;
+  if (wParam == AF_MAXSIZE)
+  {
+    POINT *size = (POINT*)lParam;
 
-  return 0;
-}
+    if (size)
+    {
+      size->x = 64;
+      size->y = 64;
 
-
-
-int IcqAvatarFormatSupported(WPARAM wParam, LPARAM lParam)
-{
-  if (lParam == PA_FORMAT_JPEG || lParam == PA_FORMAT_GIF || lParam == PA_FORMAT_XML)
-    return 1;
-  else
-    return 0;
+      return 0;
+    }
+  }
+  else if (wParam == AF_PROPORTION)
+  {
+    return PIP_NONE;
+  }
+  else if (wParam == AF_FORMATSUPPORTED)
+  {
+    if (lParam == PA_FORMAT_JPEG || lParam == PA_FORMAT_GIF || lParam == PA_FORMAT_XML)
+      return 1;
+    else
+      return 0;
+  }
+  else if (wParam == AF_ENABLED)
+  {
+    if (gbSsiEnabled && gbAvatarsEnabled)
+      return 1;
+    else
+      return 0;
+  }
+  return -1;
 }
 
 

@@ -77,7 +77,7 @@ int OnDetailsInit(WPARAM wParam, LPARAM lParam)
   odp.pszTemplate = MAKEINTRESOURCE(IDD_INFO_ICQ);
   AddUserInfoPageUtf(&odp, wParam, gpszICQProtoName);
 
-  if (((lParam != 0) && gbAvatarsEnabled) || (gbSsiEnabled && gbAvatarsEnabled))
+  if (((lParam != 0) && gbAvatarsEnabled) || (gbSsiEnabled && gbAvatarsEnabled && !ServiceExists(MS_AV_GETMYAVATAR)))
   {
     DWORD dwUin;
     uid_str dwUid;
