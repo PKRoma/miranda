@@ -129,107 +129,18 @@ int yahoo_set_log_level(enum yahoo_log_level level)
 }
 
 /* default values for servers */
-static char pager_host[] = "scs.msg.yahoo.com";
-static int pager_port = 5050;
-static int fallback_ports[]={23, 25, 80, 20, 119, 8001, 8002, 5050, 0};
-static char filetransfer_host[]="filetransfer.msg.yahoo.com";
-static int filetransfer_port=80;
-static char webcam_host[]="webcam.yahoo.com";
-static int webcam_port=5100;
-static char webcam_description[]="";
+static const char pager_host[] = "scs.msg.yahoo.com";
+static const int pager_port = 5050;
+static const int fallback_ports[]={23, 25, 80, 20, 119, 8001, 8002, 5050, 0};
+static const char filetransfer_host[]="filetransfer.msg.yahoo.com";
+static const int filetransfer_port=80;
+static const char webcam_host[]="webcam.yahoo.com";
+static const int webcam_port=5100;
+static const char webcam_description[]="";
 static char local_host[]="";
 static int conn_type=Y_WCM_DSL;
 
 static char profile_url[] = "http://profiles.yahoo.com/";
-
-enum yahoo_service { /* these are easier to see in hex */
-	YAHOO_SERVICE_LOGON = 1,
-	YAHOO_SERVICE_LOGOFF,
-	YAHOO_SERVICE_ISAWAY,
-	YAHOO_SERVICE_ISBACK,
-	YAHOO_SERVICE_IDLE, /* 5 (placemarker) */
-	YAHOO_SERVICE_MESSAGE,
-	YAHOO_SERVICE_IDACT,
-	YAHOO_SERVICE_IDDEACT,
-	YAHOO_SERVICE_MAILSTAT,
-	YAHOO_SERVICE_USERSTAT, /* 0xa */
-	YAHOO_SERVICE_NEWMAIL,
-	YAHOO_SERVICE_CHATINVITE,
-	YAHOO_SERVICE_CALENDAR,
-	YAHOO_SERVICE_NEWPERSONALMAIL,
-	YAHOO_SERVICE_NEWCONTACT,
-	YAHOO_SERVICE_ADDIDENT, /* 0x10 */
-	YAHOO_SERVICE_ADDIGNORE,
-	YAHOO_SERVICE_PING,
-	YAHOO_SERVICE_GOTGROUPRENAME, /* < 1, 36(old), 37(new) */
-	YAHOO_SERVICE_SYSMESSAGE = 0x14,
-	YAHOO_SERVICE_SKINNAME = 0x15,
-	YAHOO_SERVICE_PASSTHROUGH2 = 0x16,
-	YAHOO_SERVICE_CONFINVITE = 0x18,
-	YAHOO_SERVICE_CONFLOGON,
-	YAHOO_SERVICE_CONFDECLINE,
-	YAHOO_SERVICE_CONFLOGOFF,
-	YAHOO_SERVICE_CONFADDINVITE,
-	YAHOO_SERVICE_CONFMSG,
-	YAHOO_SERVICE_CHATLOGON,
-	YAHOO_SERVICE_CHATLOGOFF,
-	YAHOO_SERVICE_CHATMSG = 0x20,
-	YAHOO_SERVICE_GAMELOGON = 0x28,
-	YAHOO_SERVICE_GAMELOGOFF,
-	YAHOO_SERVICE_GAMEMSG = 0x2a,
-	YAHOO_SERVICE_FILETRANSFER = 0x46,
-	YAHOO_SERVICE_VOICECHAT = 0x4A,
-	YAHOO_SERVICE_NOTIFY,
-	YAHOO_SERVICE_VERIFY,
-	YAHOO_SERVICE_P2PFILEXFER,
-	YAHOO_SERVICE_PEERTOPEER = 0x4F,	/* Checks if P2P possible */
-	YAHOO_SERVICE_WEBCAM,
-	YAHOO_SERVICE_AUTHRESP = 0x54,
-	YAHOO_SERVICE_LIST,
-	YAHOO_SERVICE_AUTH = 0x57,
-	YAHOO_SERVICE_ADDBUDDY = 0x83,
-	YAHOO_SERVICE_REMBUDDY,
-	YAHOO_SERVICE_IGNORECONTACT,	/* > 1, 7, 13 < 1, 66, 13, 0*/
-	YAHOO_SERVICE_REJECTCONTACT,
-	YAHOO_SERVICE_GROUPRENAME = 0x89, /* > 1, 65(new), 66(0), 67(old) */
-	/* YAHOO_SERVICE_??? = 0x8A, ?? 0 - id and that's it?? */
-	YAHOO_SERVICE_CHATONLINE = 0x96, /* > 109(id), 1, 6(abcde) < 0,1*/
-	YAHOO_SERVICE_CHATGOTO,
-	YAHOO_SERVICE_CHATJOIN,	/* > 1 104-room 129-1600326591 62-2 */
-	YAHOO_SERVICE_CHATLEAVE,
-	YAHOO_SERVICE_CHATEXIT = 0x9b,
-	YAHOO_SERVICE_CHATADDINVITE = 0x9d,
-	YAHOO_SERVICE_CHATLOGOUT = 0xa0,
-	YAHOO_SERVICE_CHATPING,
-	YAHOO_SERVICE_COMMENT = 0xa8,
-	YAHOO_SERVICE_GAME_INVITE = 0xb7,
-	YAHOO_SERVICE_STEALTH_PERM = 0xb9,
-	YAHOO_SERVICE_STEALTH_SESSION = 0xba,
-	YAHOO_SERVICE_AVATAR = 0xbc,
-	YAHOO_SERVICE_PICTURE_CHECKSUM = 0xbd,
-	YAHOO_SERVICE_PICTURE = 0xbe,
-	YAHOO_SERVICE_PICTURE_UPDATE = 0xc1,
-	YAHOO_SERVICE_PICTURE_UPLOAD = 0xc2,
-	YAHOO_SERVICE_YAB_UPDATE = 0xc4,
-	YAHOO_SERVICE_Y6_VISIBLE_TOGGLE = 0xc5, /* YMSG13, key 13: 2 = invisible, 1 = visible */
-	YAHOO_SERVICE_Y6_STATUS_UPDATE = 0xc6,  /* YMSG13 */
-	YAHOO_SERVICE_PICTURE_STATUS = 0xc7,	/* YMSG13, key 213: 0 = none, 1 = avatar, 2 = picture */
-	YAHOO_SERVICE_VERIFY_ID_EXISTS = 0xc8,
-	YAHOO_SERVICE_AUDIBLE = 0xd0,
-	YAHOO_SERVICE_Y7_PHOTO_SHARING = 0xd2,
-	YAHOO_SERVICE_Y7_CONTACT_DETAILS = 0xd3,	/* YMSG13 */
-	YAHOO_SERVICE_Y7_CHAT_SESSION = 0xd4,	
-	YAHOO_SERVICE_Y7_AUTHORIZATION = 0xd6,	/* YMSG13 */
-	YAHOO_SERVICE_Y7_FILETRANSFER = 0xdc,	/* YMSG13 */
-	YAHOO_SERVICE_Y7_FILETRANSFERINFO,	/* YMSG13 */
-	YAHOO_SERVICE_Y7_FILETRANSFERACCEPT,	/* YMSG13 */
-	YAHOO_SERVICE_Y7_MINGLE = 0xe1, /* YMSG13 */
-	YAHOO_SERVICE_Y7_CHANGE_GROUP = 0xe7, /* YMSG13 */
-	YAHOO_SERVICE_STATUS_15 = 0xf0,			/* YMSG15 */
-	YAHOO_SERVICE_LIST_15 = 0Xf1,			/* YMSG15 */
-	YAHOO_SERVICE_WEBLOGIN = 0x0226,
-	YAHOO_SERVICE_SMS_MSG = 0x02ea
-};
 
 typedef struct {
 	int key;
@@ -286,6 +197,7 @@ static const value_string ymsg_service_vals[] = {
 	{YAHOO_SERVICE_IGNORECONTACT, "Ignore Contact"},
 	{YAHOO_SERVICE_REJECTCONTACT, "Reject Contact"},
 	{YAHOO_SERVICE_GROUPRENAME, "Group Rename"},
+	{YAHOO_SERVICE_Y7_PING, "Y7 Ping"},
 	{YAHOO_SERVICE_CHATONLINE, "Chat Online"},
 	{YAHOO_SERVICE_CHATGOTO, "Chat Goto"},
 	{YAHOO_SERVICE_CHATJOIN, "Chat Join"},
@@ -315,9 +227,10 @@ static const value_string ymsg_service_vals[] = {
 	{YAHOO_SERVICE_Y7_FILETRANSFER,"Y7 File Transfer"},
 	{YAHOO_SERVICE_Y7_FILETRANSFERINFO,"Y7 File Transfer Information"},
 	{YAHOO_SERVICE_Y7_FILETRANSFERACCEPT,"Y7 File Transfer Accept"},
+	{YAHOO_SERVICE_Y7_MINGLE, "Y7 360 Mingle"},
 	{YAHOO_SERVICE_Y7_CHANGE_GROUP, "Y7 Change Group"},
-	{YAHOO_SERVICE_WEBLOGIN,"WebLogin"},
-	{YAHOO_SERVICE_SMS_MSG,"SMS Message"},
+	{YAHOO_SERVICE_WEBLOGIN, "Web Login"},
+	{YAHOO_SERVICE_SMS_MSG, "SMS Message"},
 	{0, NULL}
 };
 
@@ -415,7 +328,7 @@ static const value_string packet_keys[]={
 	{230, "the audible, in foo.bar.baz format"},
 	{231, "audible text"},
 	{232, "weird number (md5 hash?) [audible]"},
-	{244, "YIM6/YIM7 detection.(278527 - YIM6, 524223 - YIM7)"},
+	{244, "client version"},
 	{254, "last name"},
 	{265, "FT7 Token"},
 	{1002, "YIM6+"},
@@ -873,6 +786,12 @@ static void yahoo_packet_read(struct yahoo_packet *pkt, unsigned char *data, int
 		free(key);
 
 		accept = x; 
+
+		if (pos + 1 > len) {
+			/* Malformed packet! (Truncated--garbage or something) */
+			accept = 0;
+		}
+		
 		/* if x is 0 there was no key, so don't accept it */
 		if (accept)
 			value = malloc(len - pos + 1);
@@ -977,9 +896,10 @@ static void yahoo_packet_dump(unsigned char *data, int len)
 	}
 }
 
-static char base64digits[] = 	"ABCDEFGHIJKLMNOPQRSTUVWXYZ"
+static const char base64digits[] = 	"ABCDEFGHIJKLMNOPQRSTUVWXYZ"
 				"abcdefghijklmnopqrstuvwxyz"
 				"0123456789._";
+				
 static void to_y64(unsigned char *out, const unsigned char *in, int inlen)
 /* raw bytes in quasi-big-endian order to base 64 string (NUL-terminated) */
 {
@@ -1088,9 +1008,9 @@ static int yahoo_send_data(int fd, void *data, int len)
 
 	if (ret == -1)  {
 		LOG(("wrote data: ERR %s", strerror(errno)));
-	} else {
+	} /*else {
 		LOG(("wrote data: OK"));
-	}
+	}*/
 
 	errno=e;
 	return ret;
@@ -1181,7 +1101,7 @@ static YList * bud_str2list(char *rawlist)
 
 			l = y_list_append(l, newbud);
 
-			NOTICE(("Added buddy %s to group %s", newbud->id, newbud->group));
+			//NOTICE(("Added buddy %s to group %s", newbud->id, newbud->group));
 		}
 
 		y_strfreev(buddies);
@@ -1678,7 +1598,7 @@ static void yahoo_process_logon(struct yahoo_input_data *yid, struct yahoo_packe
 
 		switch (pair->key) {
 		case 0: /* we won't actually do anything with this */
-			NOTICE(("key %d:%s", pair->key, pair->value));
+			//NOTICE(("key %d:%s", pair->key, pair->value));
 			break;
 		case 1: /* we don't get the full buddy list here. */
 			if (!yd->logged_in) {
@@ -1698,13 +1618,13 @@ static void yahoo_process_logon(struct yahoo_input_data *yid, struct yahoo_packe
 			name = pair->value;
 			break;
 		case 8: /* how many online buddies we have */
-			NOTICE(("key %d:%s", pair->key, pair->value));
+			//NOTICE(("key %d:%s", pair->key, pair->value));
 			break;
 		case 10: /* state */
 			state = strtol(pair->value, NULL, 10);
 			break;
 		case 11: /* this is the buddy's session id */
-			NOTICE(("key %d:%s", pair->key, pair->value));
+			//NOTICE(("key %d:%s", pair->key, pair->value));
 			break;
 		case 13: /* bitmask, bit 0 = pager, bit 1 = chat, bit 2 = game */
 			if (strtol(pair->value, NULL, 10) == 0) {
@@ -1726,7 +1646,7 @@ static void yahoo_process_logon(struct yahoo_input_data *yid, struct yahoo_packe
 			break;
 		case 60: /* SMS -> 1 MOBILE USER */
 			/* sometimes going offline makes this 2, but invisible never sends it */
-			NOTICE(("key %d:%s", pair->key, pair->value));
+			//NOTICE(("key %d:%s", pair->key, pair->value));
 			if (atoi(pair->value) > 0 )
 				mobile = 1;
 			break;
@@ -1755,9 +1675,9 @@ static void yahoo_process_logon(struct yahoo_input_data *yid, struct yahoo_packe
 			client_version = strtol(pair->value, NULL, 10);
 			break;
 			
-		default:
+/*		default:
 			WARNING(("unknown status key %d:%s", pair->key, pair->value));
-			break;
+			break;*/
 		}
 	}
 	
@@ -2592,7 +2512,7 @@ static void yahoo_process_auth_resp(struct yahoo_input_data *yid, struct yahoo_p
 	char *login_id;
 	char *handle;
 	char *url=NULL;
-	int  login_status=0;
+	int  login_status=-1;
 
 	YList *l;
 
@@ -2608,7 +2528,7 @@ static void yahoo_process_auth_resp(struct yahoo_input_data *yid, struct yahoo_p
 			login_status = atoi(pair->value);
 	}
 
-	if(pkt->status == 0xffffffff) {
+	if(pkt->status == YPACKET_STATUS_DISCONNECTED) {
 		YAHOO_CALLBACK(ext_yahoo_login_response)(yd->client_id, login_status, url);
 	/*	yahoo_logoff(yd->client_id);*/
 	}
