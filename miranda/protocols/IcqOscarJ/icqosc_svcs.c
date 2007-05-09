@@ -239,8 +239,8 @@ int IcqGetAvatarCaps(WPARAM wParam, LPARAM lParam)
 
     if (size)
     {
-      size->x = 64;
-      size->y = 64;
+      size->x = 128;
+      size->y = 128;
 
       return 0;
     }
