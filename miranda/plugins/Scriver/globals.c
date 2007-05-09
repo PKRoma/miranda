@@ -96,13 +96,6 @@ int ImageList_ReplaceIcon_ProtoEx(HIMAGELIST hIml, int nIndex, const char* szPro
  	return res;
 }
 
-void LoadProtocolIcons() {
-	PROTOCOLDESCRIPTOR **pProtos;
-	int allProtoNum;
-
-	CallService(MS_PROTO_ENUMPROTOCOLS, (WPARAM) &allProtoNum, (LPARAM) &pProtos);
-}
-
 int IconsChanged(WPARAM wParam, LPARAM lParam)
 {
 	if (hMsgMenuItem) {
@@ -118,7 +111,6 @@ int IconsChanged(WPARAM wParam, LPARAM lParam)
 	}
 	FreeMsgLogIcons();
 	LoadMsgLogIcons();
-	LoadProtocolIcons();
 	ChangeStatusIcons();
 	WindowList_Broadcast(g_dat->hMessageWindowList, DM_REMAKELOG, 0, 0);
 	// change all the icons

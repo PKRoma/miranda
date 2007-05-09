@@ -46,6 +46,7 @@ extern HANDLE hHookWinEvt;
 extern HANDLE hHookWinPopup;
 extern struct CREOleCallback reOleCallback, reOleCallback2;
 extern HINSTANCE g_hInst;
+extern void ReleaseIconSafe(HICON hIcon);
 
 
 static void UpdateReadChars(HWND hwndDlg, struct MessageWindowData * dat);
@@ -1527,7 +1528,7 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
 		if (dat->szProto) {
 			TitleBarData tbd;
 			TabControlData tcd;
-			HICON hIcon = NULL;
+			HICON hIcon = NULL, hIcon2 = NULL;
 			char *szProto = dat->szProto;
 			HANDLE hContact = dat->hContact;
 			if (strcmp(dat->szProto, "MetaContacts") == 0 && DBGetContactSettingByte(NULL,"CLC","Meta",0) == 0) {
@@ -1553,10 +1554,17 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
 			} else {
 				hIcon = LoadSkinnedIcon(SKINICON_EVENT_MESSAGE);
 			}
+            if (dat->showTyping) {
+                hIcon2 = g_dat->hIcons[SMF_ICON_TYPING];
+            } else if (dat->showUnread) {
+                hIcon2 = LoadSkinnedIcon(SKINICON_EVENT_MESSAGE);
+            } else {
+                hIcon2 = LoadSkinnedProtoIcon(szProto, dat->wStatus);
+            }
 			tcd.iFlags = TCDF_ICON;
-			tcd.hIcon = hIcon;
-			//tcd.iconIdx = icoIdx;
+			tcd.hIcon = hIcon2;
 			SendMessage(dat->hwndParent, CM_UPDATETABCONTROL, (WPARAM)&tcd, (LPARAM)hwndDlg);
+            ReleaseIconSafe(hIcon2);
 			tbd.iFlags = TBDF_ICON;
 			tbd.hIcon = hIcon;
 			SendMessage(dat->hwndParent, CM_UPDATETITLEBAR, (WPARAM)&tbd, (LPARAM)hwndDlg);

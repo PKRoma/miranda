@@ -498,7 +498,6 @@ static int SplitmsgModulesLoaded(WPARAM wParam, LPARAM lParam)
    RegisterFontServiceFonts();
    LoadGlobalIcons();
    LoadMsgLogIcons();
-   LoadProtocolIcons();
    ZeroMemory(&mi, sizeof(mi));
    mi.cbSize = sizeof(mi);
    mi.position = -2000090000;

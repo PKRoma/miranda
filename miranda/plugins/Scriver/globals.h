@@ -145,7 +145,6 @@ void FreeGlobals();
 void ReloadGlobals();
 void RegisterIcoLibIcons();
 void RegisterFontServiceFonts();
-void LoadProtocolIcons();
 void LoadGlobalIcons();
 void ReleaseGlobalIcons();
 int IcoLibIconsChanged(WPARAM wParam, LPARAM lParam) ;
