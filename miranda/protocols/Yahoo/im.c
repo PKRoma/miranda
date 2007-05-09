@@ -114,9 +114,8 @@ void ext_yahoo_got_im(int id, const char *me, const char *who, const char *msg, 
 		
 	umsg = (char *) alloca(lstrlen(msg) * 2 + 1); /* double size to be on the safe side */
 	while ( *c != '\0') {
-		        // Strip the font and font size tag
-        if (!strnicmp(c,"<font face=",11) || !strnicmp(c,"<font size=",11) || 
-			!strnicmp(c, "<font color=",12) || !strnicmp(c,"</font>",6) ||
+			// Strip the font tag
+        if (!strnicmp(c,"<font ",6) || !strnicmp(c,"</font>",6) ||
 			// strip the fade tag
 			!strnicmp(c, "<FADE ",6) || !strnicmp(c,"</FADE>",7) ||
 			// strip the alternate colors tag
