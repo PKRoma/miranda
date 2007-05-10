@@ -568,7 +568,6 @@
 					>
 					<Tool
 						Name="VCCLCompilerTool"
-						UsePrecompiledHeader="2"
 						PrecompiledHeaderThrough="commonheaders.h"
 					/>
 				</FileConfiguration>
@@ -577,7 +576,6 @@
 					>
 					<Tool
 						Name="VCCLCompilerTool"
-						UsePrecompiledHeader="2"
 						PrecompiledHeaderThrough="commonheaders.h"
 					/>
 				</FileConfiguration>
@@ -590,6 +588,7 @@
 					>
 					<Tool
 						Name="VCCLCompilerTool"
+						UsePrecompiledHeader="2"
 						PrecompiledHeaderThrough="commonheaders.h"
 					/>
 				</FileConfiguration>
@@ -598,6 +597,7 @@
 					>
 					<Tool
 						Name="VCCLCompilerTool"
+						UsePrecompiledHeader="2"
 						PrecompiledHeaderThrough="commonheaders.h"
 					/>
 				</FileConfiguration>
@@ -863,6 +863,10 @@
 				>
 			</File>
 			<File
+				RelativePath=".\modern_toolbar.c"
+				>
+			</File>
+			<File
 				RelativePath=".\popup.c"
 				>
 			</File>
@@ -880,6 +884,10 @@
 			</File>
 			<File
 				RelativePath=".\viewmodes.c"
+				>
+			</File>
+			<File
+				RelativePath=".\xpTheme.c"
 				>
 			</File>
 			<Filter

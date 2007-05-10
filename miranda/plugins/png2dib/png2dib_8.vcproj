@@ -402,6 +402,10 @@
 		</Configuration>
 	</Configurations>
 	<References>
+		<ProjectReference
+			ReferencedProjectIdentifier="{E2A369CD-EDA3-414F-8AD0-E732CD7EE68C}"
+			RelativePathToProject="..\plugins\zlib\zlib_8.vcproj"
+		/>
 	</References>
 	<Files>
 		<Filter
