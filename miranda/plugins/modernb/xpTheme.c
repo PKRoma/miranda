@@ -156,7 +156,7 @@ void xpt_FreeThemeHandle(XPTHANDLE xptHandle)
 	   XPTObject* xptObject=(XPTObject*)xptHandle;
 	   _sttXptCloseThemeData(xptObject);
 	   _sttXptObjectDestructor((void *) xptHandle);
-	   li.List_RemovePtr(xptObjectList,(void *) xptHandle);
+	   li.List_Remove(xptObjectList, li.List_IndexOf(xptObjectList,(void *) xptHandle));
    }
    xptunlock();
 }
@@ -170,7 +170,11 @@ void xpt_FreeThemeForWindow(HWND hwnd)
 		{
 		   XPTObject* xptObject=(XPTObject*)xptObjectList->items[i];
 		   if (xptObject->hOwnerWindow==hwnd)
-			   xpt_FreeThemeHandle((XPTHANDLE)xptObject);
+		   {
+		   	   _sttXptCloseThemeData(xptObject);
+			   _sttXptObjectDestructor((void *) xptObject);
+			   li.List_Remove(xptObjectList, i);		   
+		   }
 		   else 
 			   i++;
 		}

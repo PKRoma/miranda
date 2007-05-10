@@ -338,7 +338,7 @@ static BOOL _MTB_DrawBackground(HWND hwnd, HDC hdc, RECT * rect, MTBINFO * pMTBI
 				FillRect(hdc, &rc, hbr);
 			}
 		}
-		else if (!mtb_useWinColors)
+		else if (!mtb_hBmpBackground && !mtb_useWinColors)
 		{			
 			hbr=CreateSolidBrush(mtb_bkColour);
 			FillRect(hdc, &rc, hbr);
@@ -506,7 +506,7 @@ static void _sttRegisterButton(char * pszButtonID, char * pszButtonName, char * 
 	{
 		char buf[255];
 		char buf2[255];
-		_snprintf(buf,sizeof(buf),"%s%s%s",TOOLBARBUTTON_ICONIDPREFIX, pszButtonID, TOOLBARBUTTON_ICONIDPRIMARYSUFFIX);
+		_snprintf(buf,sizeof(buf),"%s%s%s",TOOLBARBUTTON_ICONIDPREFIX, pszButtonID, TOOLBARBUTTON_ICONIDSECONDARYSUFFIX);
 		_snprintf(buf2,sizeof(buf2),"%s%s", pszButtonName, TOOLBARBUTTON_ICONNAMEPRESSEDSUFFIX);
    		RegisterIcolibIconHandle( buf, "ToolBar", buf2 , _T("toolbar.dll"),icoDefIdx+1, g_hInst, defResource2 );
 	}	
@@ -528,7 +528,7 @@ static void mtbDefButtonRegistration()
 	_sttRegisterButton( "FindUser","Find User", "FindAdd/FindAddCommand",
 		"Find User", NULL,  4 , IDI_RESETVIEW, IDI_RESETVIEW  );
 
-	_sttRegisterButton( "Options","Options", "Options",
+	_sttRegisterButton( "Options","Options", "Options/OptionsCommand",
 		"Options", NULL,  5 , IDI_RESETVIEW, IDI_RESETVIEW  );
 
 }
