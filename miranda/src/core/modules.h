@@ -32,6 +32,7 @@ restructuring modules.c for performance.
 
 typedef int (*MIRANDAHOOK)(WPARAM,LPARAM);
 typedef int (*MIRANDASERVICE)(WPARAM,LPARAM);
+typedef int (*MIRANDASERVICEPARAM)(WPARAM,LPARAM,LPARAM);
 
 /**************************hook functions****************************/
 /* CreateHookableEvent
