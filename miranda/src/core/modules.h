@@ -137,6 +137,17 @@ callers of CallService().
 */
 HANDLE CreateServiceFunction(const char *name,MIRANDASERVICE serviceProc);
 
+/* CreateServiceFunctionParam
+Same as CreateServiceFunction - adds new parameter, to pass to service handler function.
+serviceProc is defined by the caller as
+  int ServiceProc(WPARAM wParam,LPARAM lParam,LPARAM fnParam)
+where fnParam does not need to be publicly known. Gives the ability to handle multiple services
+with the same function.
+
+added during 0.7+ (2007/04/24) 
+*/
+HANDLE CreateServiceFunctionParam(const char *name,MIRANDASERVICEPARAM serviceProc,LPARAM lParam);
+
 /* DestroyServiceFunction
 Removes the function associated with hService from the global service function
 list. Modules calling CallService() will fail if they try to call this

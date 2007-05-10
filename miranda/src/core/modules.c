@@ -43,6 +43,8 @@ typedef struct {
 	DWORD nameHash;
 	HINSTANCE hOwner;
 	MIRANDASERVICE pfnService;
+	int isParam;
+	LPARAM lParam;
 } TServiceList;
 
 typedef struct {
@@ -545,6 +547,41 @@ HANDLE CreateServiceFunction(const char *name,MIRANDASERVICE serviceProc)
 	service[i].nameHash   = hash;
 	service[i].pfnService = serviceProc;
 	service[i].hOwner     = GetInstByAddress( serviceProc );
+	service[i].isParam    = 0;
+	serviceCount++;
+	LeaveCriticalSection(&csServices);
+	return (HANDLE)hash;
+}
+
+HANDLE CreateServiceFunctionParam(const char *name,MIRANDASERVICEPARAM serviceProc,LPARAM lParam)
+{
+	DWORD hash;
+	int i;
+	int shift = 1;
+#ifdef _DEBUG
+	if (name==NULL) {
+		MessageBoxA(0,"Someone tried to create a NULL'd service, see call stack for more info","",0);
+		DebugBreak();
+		return NULL;
+	}
+#else
+	if (name==NULL) return NULL;
+#endif
+	hash=NameHashFunction(name);
+	EnterCriticalSection(&csServices);
+	i=FindHashForService(hash,&shift);
+	if (i==-1) {
+		LeaveCriticalSection(&csServices);
+		return NULL;
+	}
+	service=(TServiceList*)mir_realloc(service,sizeof(TServiceList)*(serviceCount+1));
+	if ( serviceCount > 0 && shift) MoveMemory(service+i+1,service+i,sizeof(TServiceList)*(serviceCount-i));
+	strncpy(service[i].name,name,sizeof(service[i].name));
+	service[i].nameHash   = hash;
+	service[i].pfnService = (MIRANDASERVICE)serviceProc;
+	service[i].hOwner     = GetInstByAddress( serviceProc );
+	service[i].isParam    = 1;
+	service[i].lParam     = lParam;
 	serviceCount++;
 	LeaveCriticalSection(&csServices);
 	return (HANDLE)hash;
@@ -579,6 +616,8 @@ int CallService(const char *name,WPARAM wParam,LPARAM lParam)
 {
 	TServiceList *pService;
 	MIRANDASERVICE pfnService;
+	int isParam;
+	LPARAM fnParam;
 
 #ifdef _DEBUG
 	if (name==NULL) {
@@ -608,8 +647,13 @@ int CallService(const char *name,WPARAM wParam,LPARAM lParam)
 		return CALLSERVICE_NOTFOUND;
 	}
 	pfnService=pService->pfnService;
+	isParam=pService->isParam;
+	fnParam=pService->lParam;
 	LeaveCriticalSection(&csServices);
-	return ((int (*)(WPARAM,LPARAM))pfnService)(wParam,lParam);
+	if (isParam)
+		return ((int (*)(WPARAM,LPARAM,LPARAM))pfnService)(wParam,lParam,fnParam);
+	else
+		return ((int (*)(WPARAM,LPARAM))pfnService)(wParam,lParam);
 }
 
 static void CALLBACK CallServiceToMainAPCFunc(DWORD dwParam)

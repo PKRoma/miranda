@@ -130,6 +130,7 @@ typedef struct {
 #ifndef MODULES_H_
 typedef int (*MIRANDAHOOK)(WPARAM,LPARAM);
 typedef int (*MIRANDASERVICE)(WPARAM,LPARAM);
+typedef int (*MIRANDASERVICEPARAM)(WPARAM,LPARAM,LPARAM);
 #define CALLSERVICE_NOTFOUND      ((int)0x80000000)
 #endif
 
@@ -149,6 +150,7 @@ typedef struct {
 	int (*CallServiceSync)(const char *,WPARAM,LPARAM);		//v0.3.3+
 	int (*CallFunctionAsync) (void (__stdcall *)(void *), void *);	//v0.3.4+
 	int (*SetHookDefaultForHookableEvent) (HANDLE, MIRANDAHOOK); // v0.3.4 (2004/09/15)
+	HANDLE (*CreateServiceFunctionParam)(const char *,MIRANDASERVICEPARAM,LPARAM); // v0.7+ (2007/04/24)
 } PLUGINLINK;
 
 #ifndef MODULES_H_
@@ -169,6 +171,7 @@ extern PLUGINLINK *pluginLink;
 #define CallServiceSync(a,b,c)               pluginLink->CallServiceSync(a,b,c)
 #define CallFunctionAsync(a,b)				 pluginLink->CallFunctionAsync(a,b)
 #define SetHookDefaultForHookableEvent(a,b)  pluginLink->SetHookDefaultForHookableEvent(a,b)
+#define CreateServiceFunctionParam(a,b,c)    pluginLink->CreateServiceFunctionParam(a,b,c)
 #endif
 #endif
 
@@ -243,5 +246,6 @@ typedef struct {
 } DATABASELINK;
 
 #endif // M_NEWPLUGINAPI_H__
+
 
 

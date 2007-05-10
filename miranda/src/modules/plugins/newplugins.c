@@ -842,6 +842,7 @@ int LoadNewPluginsModuleInfos(void)
 	pluginCoreLink.ServiceExists=ServiceExists;
 	pluginCoreLink.CreateServiceFunction=CreateServiceFunction;
 	pluginCoreLink.CreateTransientServiceFunction=CreateServiceFunction;
+	pluginCoreLink.CreateServiceFunctionParam=CreateServiceFunctionParam;
 	pluginCoreLink.DestroyServiceFunction=DestroyServiceFunction;
 	pluginCoreLink.CreateHookableEvent=CreateHookableEvent;
 	pluginCoreLink.DestroyHookableEvent=DestroyHookableEvent;
