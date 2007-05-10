@@ -254,7 +254,6 @@ int __declspec(dllexport) Load(PLUGINLINK *link)
   ICQCreateServiceFunction(PSR_AWAYMSG, IcqRecvAwayMsg);
   ICQCreateServiceFunction(PSR_FILE, IcqRecvFile);
   ICQCreateServiceFunction(PSR_MESSAGE, IcqRecvMessage);
-  ICQCreateServiceFunction(PSR_URL, IcqRecvUrl);
   ICQCreateServiceFunction(PSR_CONTACTS, IcqRecvContacts);
   ICQCreateServiceFunction(PSR_AUTH, IcqRecvAuth);
   ICQCreateServiceFunction(PSS_AUTHREQUEST, IcqSendAuthRequest);

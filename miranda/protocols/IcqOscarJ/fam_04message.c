@@ -261,6 +261,48 @@ static char* createMsgFromUnicode(const WCHAR* usMsg, int usMsgLen)
 
 
 
+int createMsgFromUtf8(char** pszMsg, DWORD* preFlags, BOOL bThruDC)
+{
+  char *szAnsiMessage = NULL;
+  char *szMsg = *pszMsg;
+
+  if (utf8_decode(szMsg, &szAnsiMessage))
+  {
+    if (!strcmpnull(szMsg, szAnsiMessage))
+    {
+      SAFE_FREE(&szMsg);
+      szMsg = szAnsiMessage;
+    }
+    else
+    {
+      int nMsgLen = strlennull(szAnsiMessage) + 1;
+      int nMsgWLen;
+      WCHAR *usMsg, *usMsgW;
+
+      usMsg = SAFE_MALLOC(nMsgLen*(sizeof(WCHAR) + 1));
+      memcpy((char*)usMsg, szAnsiMessage, nMsgLen);
+      usMsgW = make_unicode_string(szMsg);
+      nMsgWLen = wcslen(usMsgW);
+      memcpy((char*)usMsg + nMsgLen, (char*)usMsgW, ((nMsgWLen>nMsgLen)?nMsgLen:nMsgWLen)*sizeof(WCHAR));
+      SAFE_FREE(&usMsgW);
+      SAFE_FREE(&szAnsiMessage);
+      SAFE_FREE(&szMsg);
+      szMsg = (char*)usMsg;
+      *preFlags = PREF_UNICODE;
+    }
+    *pszMsg = szMsg;
+
+    return 1; // Success
+  }
+  else
+  {
+    NetLog_Uni(bThruDC, "Failed to translate UTF-8 message.");
+  }
+  return 0; // Failure
+}
+
+
+
 static void handleRecvServMsgType1(unsigned char *buf, WORD wLen, DWORD dwUin, char *szUID, DWORD dwTS1, DWORD dwTS2)
 {
   WORD wTLVType;
@@ -1465,7 +1507,6 @@ void handleMessageTypes(DWORD dwUin, DWORD dwTimestamp, DWORD dwMsgID, DWORD dwM
         DWORD dwGuidLen;
 
         WCHAR* usMsg;
-        WCHAR* usMsgW;
 
         if (bThruDC)
         {
@@ -1495,36 +1536,7 @@ void handleMessageTypes(DWORD dwUin, DWORD dwTimestamp, DWORD dwMsgID, DWORD dwM
         {
           if (!strncmp(pMsg, CAP_UTF8MSGS, 38))
           { // Found UTF8 cap, convert message to ansi
-            char *szAnsiMessage = NULL;
-
-            if (utf8_decode(szMsg, &szAnsiMessage))
-            {
-              if (!strcmpnull(szMsg, szAnsiMessage))
-              {
-                SAFE_FREE(&szMsg);
-                szMsg = szAnsiMessage;
-              }
-              else
-              {
-                int nMsgLen = strlennull(szAnsiMessage) + 1;
-                int nMsgWLen;
-
-                usMsg = SAFE_MALLOC((nMsgLen)*(sizeof(WCHAR) + 1));
-                memcpy((char*)usMsg, szAnsiMessage, nMsgLen);
-                usMsgW = make_unicode_string(szMsg);
-                nMsgWLen = wcslen(usMsgW);
-                memcpy((char*)usMsg + nMsgLen, (char*)usMsgW, ((nMsgWLen>nMsgLen)?nMsgLen:nMsgWLen)*sizeof(WCHAR));
-                SAFE_FREE(&usMsgW);
-                SAFE_FREE(&szAnsiMessage);
-                SAFE_FREE(&szMsg);
-                szMsg = (char*)usMsg;
-                pre.flags = PREF_UNICODE;
-              }
-            }
-            else
-            {
-              NetLog_Uni(bThruDC, "Failed to translate UTF-8 message.");
-            }
+            createMsgFromUtf8(&szMsg, &pre.flags, bThruDC);
             break;
           }
           else if (!strncmp(pMsg, CAP_RTFMSGS, 38))
@@ -1569,7 +1581,7 @@ void handleMessageTypes(DWORD dwUin, DWORD dwTimestamp, DWORD dwMsgID, DWORD dwM
     {
       CCSDATA ccs;
       PROTORECVEVENT pre = {0};
-      char* szBlob;
+      char *szBlob, *szTitle;
 
 
       if (nMsgFields < 2)
@@ -1581,11 +1593,16 @@ void handleMessageTypes(DWORD dwUin, DWORD dwTimestamp, DWORD dwMsgID, DWORD dwM
       hContact = HContactFromUIN(dwUin, &bAdded);
       sendMessageTypesAck(hContact, 0, pAckParams);
 
-      szBlob = (char *)_alloca(strlennull(pszMsgField[0]) + strlennull(pszMsgField[1]) + 2);
-      strcpy(szBlob, pszMsgField[1]);
-      strcpy(szBlob + strlennull(szBlob) + 1, pszMsgField[0]);
+      szTitle = ICQTranslateUtf("Incoming URL:");
+      szBlob = (char *)SAFE_MALLOC(strlennull(szTitle) + strlennull(pszMsgField[0]) + strlennull(pszMsgField[1]) + 4);
+      strcpy(szBlob, szTitle);
+      strcat(szBlob, pszMsgField[0]); // Description
+      strcat(szBlob, "\r\n");
+      strcat(szBlob, pszMsgField[1]); // URL
+      SAFE_FREE(&szTitle);
+      createMsgFromUtf8(&szBlob, &pre.flags, bThruDC);
 
-      ccs.szProtoService = PSR_URL;
+      ccs.szProtoService = PSR_MESSAGE;
       ccs.hContact = hContact;
       ccs.wParam = 0;
       ccs.lParam = (LPARAM)&pre;
@@ -1593,6 +1610,8 @@ void handleMessageTypes(DWORD dwUin, DWORD dwTimestamp, DWORD dwMsgID, DWORD dwM
       pre.szMessage = (char *)szBlob;
 
       CallService(MS_PROTO_CHAINRECV, 0, (LPARAM)&ccs);
+
+      SAFE_FREE(&szBlob);
     }
     break;
 
@@ -2538,19 +2557,19 @@ static void handleMissedMsg(unsigned char *buf, WORD wLen, WORD wFlags, DWORD dw
   {
 
   case 0:
-    pszErrorMsg = ICQTranslate("** This message was blocked by the ICQ server ** The message was invalid.");
+    pszErrorMsg = ICQTranslateUtf("** This message was blocked by the ICQ server ** The message was invalid.");
     break;
 
   case 1:
-    pszErrorMsg = ICQTranslate("** This message was blocked by the ICQ server ** The message was too long.");
+    pszErrorMsg = ICQTranslateUtf("** This message was blocked by the ICQ server ** The message was too long.");
     break;
 
   case 2:
-    pszErrorMsg = ICQTranslate("** This message was blocked by the ICQ server ** The sender has flooded the server.");
+    pszErrorMsg = ICQTranslateUtf("** This message was blocked by the ICQ server ** The sender has flooded the server.");
     break;
 
   case 4:
-    pszErrorMsg = ICQTranslate("** This message was blocked by the ICQ server ** You are too evil.");
+    pszErrorMsg = ICQTranslateUtf("** This message was blocked by the ICQ server ** You are too evil.");
     break;
 
   default:
@@ -2559,24 +2578,24 @@ static void handleMissedMsg(unsigned char *buf, WORD wLen, WORD wFlags, DWORD dw
     break;
   }
 
-
   // Create message to notify user
   {
     CCSDATA ccs;
-    PROTORECVEVENT pre;
+    PROTORECVEVENT pre = {0};
     int bAdded;
+
+    createMsgFromUtf8(&pszErrorMsg, &pre.flags, FALSE);
 
     ccs.szProtoService = PSR_MESSAGE;
     ccs.hContact = HContactFromUIN(dwUin, &bAdded);
     ccs.wParam = 0;
     ccs.lParam = (LPARAM)&pre;
-    pre.flags = 0;
     pre.timestamp = time(NULL);
     pre.szMessage = pszErrorMsg;
-    pre.lParam = 0;
 
     CallService(MS_PROTO_CHAINRECV, 0, (LPARAM)&ccs);
   }
+  SAFE_FREE(&pszErrorMsg);
 }
 
 

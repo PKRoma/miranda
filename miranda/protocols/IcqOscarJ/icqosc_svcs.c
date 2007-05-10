@@ -2412,24 +2412,6 @@ int IcqRecvMessage(WPARAM wParam, LPARAM lParam)
 
 
 
-int IcqRecvUrl(WPARAM wParam, LPARAM lParam)
-{
-  CCSDATA* ccs = (CCSDATA*)lParam;
-  PROTORECVEVENT* pre = (PROTORECVEVENT*)ccs->lParam;
-  char* szDesc;
-  DWORD cbBlob;
-
-  szDesc = pre->szMessage + strlennull(pre->szMessage) + 1;
-
-  cbBlob = strlennull(pre->szMessage) + strlennull(szDesc) + 2;
-
-  ICQAddRecvEvent(ccs->hContact, EVENTTYPE_URL, pre, cbBlob, (PBYTE)pre->szMessage);
-
-  return 0;
-}
-
-
-
 int IcqRecvContacts(WPARAM wParam, LPARAM lParam)
 {
   CCSDATA* ccs = (CCSDATA*)lParam;

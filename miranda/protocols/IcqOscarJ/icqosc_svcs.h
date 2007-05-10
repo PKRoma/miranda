@@ -79,7 +79,6 @@ int IcqAddServerContact(WPARAM wParam, LPARAM lParam);
 
 
 int IcqRecvMessage(WPARAM wParam, LPARAM lParam);
-int IcqRecvUrl(WPARAM wParam, LPARAM lParam);
 int IcqRecvContacts(WPARAM wParam, LPARAM lParam);
 int IcqRecvFile(WPARAM wParam, LPARAM lParam);
 int IcqRecvAuth(WPARAM wParam, LPARAM lParam);

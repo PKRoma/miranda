@@ -23,7 +23,7 @@
 //
 // -----------------------------------------------------------------------------
 //
-// File name      : $Source: /cvsroot/miranda/miranda/protocols/IcqOscarJ/icq_xtraz.c,v $
+// File name      : $URL$
 // Revision       : $Revision$
 // Last change on : $Date$
 // Last change by : $Author$
@@ -367,7 +367,7 @@ void handleXtrazData(DWORD dwUin, DWORD dwMID, DWORD dwMID2, WORD wCookie, char*
         { // unescape &amp; code
           strcpy(szWork+1, szWork+5);
         }
-        szWork = (char*)_alloca(nDataLen + MAX_PATH);
+        szWork = (char*)SAFE_MALLOC(nDataLen + MAX_PATH);
         ICQTranslateUtfStatic("Greeting card:", szWork);
         strcat(szWork, "\r\nhttp://www.icq.com/friendship/pages/view_page_");
         strcat(szWork, szNum);
@@ -375,20 +375,21 @@ void handleXtrazData(DWORD dwUin, DWORD dwMID, DWORD dwMID2, WORD wCookie, char*
         // Create message to notify user
         {
           CCSDATA ccs;
-          PROTORECVEVENT pre;
+          PROTORECVEVENT pre = {0};
           int bAdded;
+
+          createMsgFromUtf8(&szWork, &pre.flags, bThruDC);
 
           ccs.szProtoService = PSR_MESSAGE;
           ccs.hContact = HContactFromUIN(dwUin, &bAdded);
           ccs.wParam = 0;
           ccs.lParam = (LPARAM)&pre;
-          pre.flags = 0;
           pre.timestamp = time(NULL);
           pre.szMessage = szWork;
-          pre.lParam = 0;
 
           CallService(MS_PROTO_CHAINRECV, 0, (LPARAM)&ccs);
         }
+        SAFE_FREE(&szWork);
       }
       else
         NetLog_Uni(bThruDC, "Error: Non-standard greeting card message");
