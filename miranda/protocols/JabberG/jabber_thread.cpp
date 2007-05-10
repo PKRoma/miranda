@@ -164,11 +164,15 @@ static int xmpp_client_query( char* domain )
 
 static XmlState xmlState;
 static char *xmlStreamToBeInitialized = 0;
-static void xmlStreamInitialize(char *which) {
+
+static void xmlStreamInitialize(char *which)
+{
 	JabberLog("Stream will be initialized %s",which);
 	xmlStreamToBeInitialized = strdup(which);
 }
-static void xmlStreamInitializeNow(ThreadData* info) {
+
+static void xmlStreamInitializeNow(ThreadData* info)
+{
 	JabberLog("Stream is initializing %s",xmlStreamToBeInitialized?xmlStreamToBeInitialized:"after connect");
 	if (xmlStreamToBeInitialized) {
 		free(xmlStreamToBeInitialized);
@@ -935,43 +939,43 @@ static void JabberProcessCompressed( XmlNode *node, void *userdata )
 
 static void JabberProcessPubsubEvent( XmlNode *node )
 {
-// 	XmlNode *eventNode = JabberXmlGetChildWithGivenAttrValue( node, "event", "xmlns", _T("http://jabber.org/protocol/pubsub#event"));
-// 	XmlNode *itemsNode = JabberXmlGetChildWithGivenAttrValue( eventNode, "items", "node", _T("http://jabber.org/protocol/mood"));
-// 	if ( itemsNode ) {
-// 		XmlNode *itemNode = JabberXmlGetChild( itemsNode, "item" );
-// 		if ( itemNode ) {
-// 			XmlNode *moodNode = JabberXmlGetChildWithGivenAttrValue( itemNode, "mood", "xmlns", _T("http://jabber.org/protocol/mood"));
-// 			if ( moodNode ) {
-// 				char *moodType = NULL;
-// 				TCHAR *moodText = NULL;
-// 				for ( int i=0; i<moodNode->numChild; i++ ) {
-// 					if ( !strcmp( moodNode->child[i]->name, "text" ))
-// 						moodText = moodNode->child[i]->text;
-// 					else
-// 						moodType = moodNode->child[i]->name;
-// 				}
-// 				if ( moodType || moodText )
-// 				{
-// 					TCHAR* from = JabberXmlGetAttrValue( node, "from" );
-// 					if ( from == NULL ) return;
-// 
-// 					HANDLE hContact = JabberHContactFromJID( from );
-// 					if ( hContact == NULL )
-// 						return;
-// 
-// 					if ( moodType )
-// 					{
-// 						TCHAR *mt2 = a2t( moodType );
-// 						JSetStringT( hContact, "XStatusName", mt2 );
-// 						mir_free( mt2 );
-// 					}
-// 					if ( moodText )
-// 						JSetStringT( hContact, "XStatusMsg", moodText );
-// 				}
-// 			}
-// 		}
-// 	}
-}
+ 	XmlNode *eventNode = JabberXmlGetChildWithGivenAttrValue( node, "event", "xmlns", _T(JABBER_FEAT_PUBSUB_EVENT));
+ 	XmlNode *itemsNode = JabberXmlGetChildWithGivenAttrValue( eventNode, "items", "node", _T(JABBER_FEAT_USER_MOOD));
+ 	if ( !itemsNode )
+		return;
+
+ 	XmlNode *itemNode = JabberXmlGetChild( itemsNode, "item" );
+ 	if ( !itemNode )
+		return;
+
+   XmlNode *moodNode = JabberXmlGetChildWithGivenAttrValue( itemNode, "mood", "xmlns", _T(JABBER_FEAT_USER_MOOD));
+ 	if ( !moodNode )
+		return;
+
+	char*  moodType = NULL;
+ 	TCHAR* moodText = NULL;
+ 	for ( int i=0; i<moodNode->numChild; i++ ) {
+ 		if ( !strcmp( moodNode->child[i]->name, "text" ))
+ 			moodText = moodNode->child[i]->text;
+ 		else
+ 			moodType = moodNode->child[i]->name;
+ 	}
+
+	if ( moodType || moodText ) {
+ 		TCHAR* from = JabberXmlGetAttrValue( node, "from" );
+ 		if ( from == NULL ) 
+			return;
+
+ 		HANDLE hContact = JabberHContactFromJID( from );
+ 		if ( hContact == NULL )
+ 			return;
+
+ 		if ( moodType )
+ 			JSetString( hContact, "XStatusName", moodType );
+
+		if ( moodText )
+ 			JSetStringT( hContact, "XStatusMsg", moodText );
+}	}
 
 static void JabberProcessMessage( XmlNode *node, void *userdata )
 {
@@ -1444,8 +1448,8 @@ static void JabberProcessPresence( XmlNode *node, void *userdata )
 					DBDeleteContactSetting(hContact, "CList", "StatusMsg");
 		}	}
 
+		// Determine status to show for the contact based on the remaining resources
 		if (( item=JabberListGetItemPtr( LIST_ROSTER, from )) != NULL ) {
-			// Determine status to show for the contact based on the remaining resources
 			status = ID_STATUS_OFFLINE;
 			for ( i=0; i < item->resourceCount; i++ )
 				status = JabberCombineStatus( status, item->resource[i].status );
@@ -1504,14 +1508,15 @@ static int JGetMirandaProductText(WPARAM wParam,LPARAM lParam)
 	pVerInfo=mir_alloc(verInfoSize);
 	GetFileVersionInfoA(filename,0,verInfoSize,pVerInfo);
 	VerQueryValueA(pVerInfo,"\\StringFileInfo\\000004b0\\ProductName",(void**)&productName,&blockSize);
-#if defined( _UNICODE )
-	mir_snprintf(( char* )lParam, wParam, "%s", productName );
-#else
-	lstrcpynA((char*)lParam,productName,wParam);
-#endif
+	#if defined( _UNICODE )
+		mir_snprintf(( char* )lParam, wParam, "%s", productName );
+	#else
+		lstrcpynA((char*)lParam,productName,wParam);
+	#endif
 	mir_free(pVerInfo);
 	return 0;
 }
+
 /////////////////////////////////////////////////////////////////////////////////////////
 // Handles various <iq... requests
 
