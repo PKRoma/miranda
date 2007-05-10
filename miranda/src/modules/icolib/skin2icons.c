@@ -313,6 +313,24 @@ static int IcoLib_RemoveIcon( WPARAM wParam, LPARAM lParam )
 	return 1; // Failed
 }
 
+HICON IconItem_GetDefaultIcon( IconItem* item )
+{
+	HICON hIcon = NULL;
+
+	if (item->default_icon) {
+		hIcon = item->default_icon;
+	}
+
+	if ( !hIcon && item->default_icon_index != -1 )
+		hIcon = ImageList_GetIcon( hDefaultIconList, item->default_icon_index, ILD_NORMAL );
+
+	if ( !hIcon && item->default_file )
+		_ExtractIconEx( item->default_file, item->default_indx, item->cx, item->cy, &hIcon, LR_COLOR );
+
+	return hIcon;
+}
+
+
 /////////////////////////////////////////////////////////////////////////////////////////
 // IcoLib_GetIcon
 
@@ -321,23 +339,16 @@ HICON IconItem_GetIcon( IconItem* item )
 	DBVARIANT dbv = {0};
 	HICON hIcon = NULL;
 
-	if ( !item->temp_reset ) {
-		if ( item->icon )
-			return item->icon;
+	if ( item->icon )
+		return item->icon;
 
-		if ( !DBGetContactSettingTString( NULL, "SkinIcons", item->name, &dbv )) {
-			hIcon = ExtractIconFromPath( dbv.ptszVal, item->cx, item->cy );
-			DBFreeVariant( &dbv );
-	}	}
+	if ( !DBGetContactSettingTString( NULL, "SkinIcons", item->name, &dbv )) {
+		hIcon = ExtractIconFromPath( dbv.ptszVal, item->cx, item->cy );
+		DBFreeVariant( &dbv );
+	}
 
 	if ( !hIcon ) {
-		hIcon = item->default_icon;
-
-		if ( !hIcon && item->default_icon_index != -1 )
-			hIcon = ImageList_GetIcon( hDefaultIconList, item->default_icon_index, ILD_NORMAL );
-
-		if ( !hIcon && item->default_file )
-			_ExtractIconEx( item->default_file, item->default_indx, item->cx, item->cy, &hIcon, LR_COLOR );
+		hIcon = IconItem_GetDefaultIcon(item);
 
 		if ( !hIcon )
 			return hIconBlank;
@@ -345,6 +356,31 @@ HICON IconItem_GetIcon( IconItem* item )
 	item->icon = hIcon;
 	return hIcon;
 }
+
+/////////////////////////////////////////////////////////////////////////////////////////
+// IcoLib_GetIcon
+
+HICON IconItem_GetIcon_Preview( IconItem* item )
+{
+	DBVARIANT dbv = {0};
+	HICON hIcon = NULL;
+
+	if ( !item->temp_reset ) {
+		hIcon = CopyIcon(IconItem_GetIcon(item));
+	}
+	else {
+		hIcon = IconItem_GetDefaultIcon(item);
+
+		if (hIcon == item->default_icon) {
+			hIcon = CopyIcon(hIcon);
+		}
+
+		if ( !hIcon )
+			return CopyIcon(hIconBlank);
+	}
+	return hIcon;
+}
+
 
 /////////////////////////////////////////////////////////////////////////////////////////
 // IcoLib_GetIcon
@@ -496,6 +532,7 @@ static void LoadSectionIcons(TCHAR *filename, SectionItem* sectionActive)
 
 				item->temp_file = mir_tstrdup( path );
 				item->temp_icon = hIcon;
+				item->temp_reset = FALSE;
 	}	}	}
 
 	LeaveCriticalSection( &csIconList );
@@ -1140,11 +1177,12 @@ BOOL CALLBACK DlgProcIcoLibOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lP
 					hIcon = item->temp_icon;
 					if ( !hIcon ) {
 						if ( !item->icon ) item->temp = 1;
-						hIcon = IconItem_GetIcon( item );
+						hIcon = IconItem_GetIcon_Preview( item );
 					}
 					lvi.iImage = ImageList_AddIcon(hIml, hIcon);
 					lvi.lParam = indx;
 					ListView_InsertItem(hPreview, &lvi);
+					if (hIcon != item->temp_icon) DestroyIcon(hIcon);
 			}	}
 
 			LeaveCriticalSection(&csIconList);
@@ -1173,11 +1211,12 @@ BOOL CALLBACK DlgProcIcoLibOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lP
 				EnterCriticalSection(&csIconList);
 				hIcon = iconList.items[lvi.lParam]->temp_icon;
 				if (!hIcon)
-					hIcon = IconItem_GetIcon( iconList.items[lvi.lParam] );
+					hIcon = IconItem_GetIcon_Preview( iconList.items[lvi.lParam] );
 				LeaveCriticalSection(&csIconList);
 
 				if (hIcon)
 					ImageList_ReplaceIcon(hIml, lvi.iImage, hIcon);
+				if (hIcon != iconList.items[lvi.lParam]->temp_icon) DestroyIcon(hIcon);
 			}
 			ListView_RedrawItems(hPreview, 0, count);
 		}
