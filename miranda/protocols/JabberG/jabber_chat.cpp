@@ -28,6 +28,7 @@ Last change by : $Author$
 #include "jabber.h"
 #include "jabber_iq.h"
 #include "resource.h"
+#include "jabber_caps.h"
 
 extern HANDLE hInitChat;
 
@@ -575,7 +576,7 @@ static void sttNickListHook( JABBER_LIST_ITEM* item, GCHOOK* gch )
 
 		int iqId = JabberSerialNext(); // Requesto for version
 		XmlNodeIq iq( "get", iqId, jsr.jid );
-		XmlNode* query = iq.addQuery( "jabber:iq:version" );
+		XmlNode* query = iq.addQuery( JABBER_FEAT_VERSION );
 		jabberThreadInfo->send( iq );
 		
 		CallService(MS_USERINFO_SHOWDIALOG,(WPARAM)hContact,0);

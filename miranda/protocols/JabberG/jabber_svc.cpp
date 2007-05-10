@@ -35,6 +35,7 @@ Last change by : $Author$
 #include "resource.h"
 #include "jabber_list.h"
 #include "jabber_iq.h"
+#include "jabber_caps.h"
 
 ////////////////////////////////////////////////////////////////////////////////////////
 // JabberAddToList - adds a contact to the contact list
@@ -703,15 +704,15 @@ static int JabberGetAvatarInfo(WPARAM wParam,LPARAM lParam)
 				}else
 					lstrcpyn( szJid, dbv.ptszVal, SIZEOF( szJid ));
 
-				JabberLog( "Rereading %s for " TCHAR_STR_PARAM, isXVcard?"vcard-temp":"jabber:iq:avatar", szJid );
+				JabberLog( "Rereading %s for " TCHAR_STR_PARAM, isXVcard?JABBER_FEAT_VCARD_TEMP:JABBER_FEAT_AVATAR, szJid );
 
 				int iqId = JabberSerialNext();
 				JabberIqAdd( iqId, IQ_PROC_NONE, JabberIqResultGetAvatar );
 
 				XmlNodeIq iq( "get", iqId, szJid );
 				if (isXVcard) {
-					XmlNode* vs = iq.addChild( "vCard" ); vs->addAttr( "xmlns", "vcard-temp" );
-				} else XmlNode* query = iq.addQuery( isXVcard?"":"jabber:iq:avatar" );
+					XmlNode* vs = iq.addChild( "vCard" ); vs->addAttr( "xmlns", JABBER_FEAT_VCARD_TEMP );
+				} else XmlNode* query = iq.addQuery( isXVcard?"":JABBER_FEAT_AVATAR );
 				jabberThreadInfo->send( iq );
 
 				JFreeVariant( &dbv );
@@ -852,14 +853,14 @@ int JabberGetInfo( WPARAM wParam, LPARAM lParam )
 			JabberIqAdd( iqId, IQ_PROC_NONE, JabberIqResultEntityTime );
 			XmlNodeIq iq( "get", iqId, jid );
 			XmlNode* pReq = iq.addChild( "time" );
-			pReq->addAttr( "xmlns", "urn:xmpp:time" );
+			pReq->addAttr( "xmlns", JABBER_FEAT_ENTITY_TIME );
 			jabberThreadInfo->send( iq );
 
 			// XEP-0012, last logoff time
 			iqId = JabberSerialNext();
 			JabberIqAdd( iqId, IQ_PROC_NONE, JabberIqResultLastActivity );
 			XmlNodeIq iq2( "get", iqId, dbv.ptszVal );
-			iq2.addQuery( "jabber:iq:last" );
+			iq2.addQuery( JABBER_FEAT_LAST_ACTIVITY );
 			jabberThreadInfo->send( iq2 );
 
 			JABBER_LIST_ITEM *item = NULL;
@@ -875,13 +876,15 @@ int JabberGetInfo( WPARAM wParam, LPARAM lParam )
 					iqId = JabberSerialNext();
 					JabberIqAdd( iqId, IQ_PROC_NONE, JabberIqResultLastActivity );
 					XmlNodeIq iq3( "get", iqId, jid );
-					iq3.addQuery( "jabber:iq:last" );
+					iq3.addQuery( JABBER_FEAT_LAST_ACTIVITY );
 					jabberThreadInfo->send( iq3 );
 		
-					iqId = JabberSerialNext();
-					XmlNodeIq iq4( "get", iqId, jid );
-					XmlNode* query = iq4.addQuery( "jabber:iq:version" );
-					jabberThreadInfo->send( iq4 );
+					if ( !item->resource[i].dwVersionRequestTime ) {
+						iqId = JabberSerialNext();
+						XmlNodeIq iq4( "get", iqId, jid );
+						XmlNode* query = iq4.addQuery( JABBER_FEAT_VERSION );
+						jabberThreadInfo->send( iq4 );
+					}
 		}	}	}
 
 		JabberSendGetVcard( dbv.ptszVal );
@@ -1013,7 +1016,7 @@ int JabberSearchByName( WPARAM wParam, LPARAM lParam )
 		JabberIqAdd( iqId, IQ_PROC_GETSEARCH, JabberIqResultExtSearch );
 
 		iq.addAttr( "xml:lang", "en" );
-		x = query->addChild( "x" ); x->addAttr( "xmlns", "jabber:x:data" ); x->addAttr( "type", "submit" );
+		x = query->addChild( "x" ); x->addAttr( "xmlns", JABBER_FEAT_DATA_FORMS ); x->addAttr( "type", "submit" );
 	}
 	else JabberIqAdd( iqId, IQ_PROC_GETSEARCH, JabberIqResultSetSearch );
 
@@ -1064,11 +1067,22 @@ int JabberSendFile( WPARAM wParam, LPARAM lParam )
 	int i, j;
 	struct _stat statbuf;
 	JABBER_LIST_ITEM* item = JabberListGetItemPtr( LIST_ROSTER, dbv.ptszVal );
-	if ( item == NULL )
+	if ( item == NULL ) {
+		JFreeVariant( &dbv );
 		return 0;
+	}
 
 	// Check if another file transfer session request is pending ( waiting for disco result )
-	if ( item->ft != NULL ) return 0;
+	if ( item->ft != NULL ) {
+		JFreeVariant( &dbv );
+		return 0;
+	}
+
+	JabberCapsBits jcb = JabberGetResourceCapabilites( item->jid );
+	if ( ( jcb & JABBER_RESOURCE_CAPS_ERROR ) || ( jcb == JABBER_RESOURCE_CAPS_NONE ) || !(jcb & ( JABBER_CAPS_SI_FT | JABBER_CAPS_OOB ) ) ) {
+		JFreeVariant( &dbv );
+		return 0;
+	}
 
 	filetransfer* ft = new filetransfer;
 	ft->std.hContact = ccs->hContact;
@@ -1092,6 +1106,14 @@ int JabberSendFile( WPARAM wParam, LPARAM lParam )
 	ft->jid = mir_tstrdup( dbv.ptszVal );
 	JFreeVariant( &dbv );
 
+	if ( jcb & JABBER_CAPS_SI_FT ) {
+		JabberFtInitiate( item->jid, ft );
+	}
+	else if ( jcb & JABBER_CAPS_OOB ) {
+		mir_forkthread(( pThreadFunc )JabberFileServerThread, ft );
+	}
+
+	/*
 	if (( item->cap & CLIENT_CAP_READY ) == 0 ) {
 		int iqId;
 		TCHAR* rs;
@@ -1105,7 +1127,7 @@ int JabberSendFile( WPARAM wParam, LPARAM lParam )
 			TCHAR jid[ 200 ];
 			mir_sntprintf( jid, SIZEOF(jid), _T("%s/%s"), item->jid, rs );
 			XmlNodeIq iq( "get", iqId, jid );
-			XmlNode* query = iq.addQuery( "http://jabber.org/protocol/disco#info" );
+			XmlNode* query = iq.addQuery( JABBER_FEAT_DISCO_INFO );
 			jabberThreadInfo->send( iq );
 		}
 	}
@@ -1114,6 +1136,7 @@ int JabberSendFile( WPARAM wParam, LPARAM lParam )
 		JabberFtInitiate( item->jid, ft );
 	else // Use the jabber:iq:oob file transfer
 		mir_forkthread(( pThreadFunc )JabberFileServerThread, ft );
+	*/
 
 	return ( int )( HANDLE ) ft;
 }
@@ -1183,18 +1206,28 @@ int JabberSendMessage( WPARAM wParam, LPARAM lParam )
 			x->sendText = msg;
 		}
 
-		XmlNode* active = m.addChild( "active" ); active->addAttr( "xmlns", _T("http://jabber.org/protocol/chatstates"));
+		TCHAR szClientJid[ 256 ];
+		JabberGetClientJID( dbv.ptszVal, szClientJid, SIZEOF( szClientJid ));
 
-		if ( !strcmp( msgType, "groupchat" ) || !JGetByte( "MsgAck", FALSE ) || !JGetByte( ccs->hContact, "MsgAck", TRUE )) {
+		JabberCapsBits jcb = JabberGetResourceCapabilites( szClientJid );
+
+		if ( jcb & JABBER_RESOURCE_CAPS_ERROR )
+			jcb = JABBER_RESOURCE_CAPS_NONE;
+
+		if ( jcb & JABBER_CAPS_CHATSTATES ) {
+			XmlNode* active = m.addChild( "active" ); active->addAttr( "xmlns", _T(JABBER_FEAT_CHATSTATES));
+		}
+
+		if ( ( jcb & JABBER_CAPS_MESSAGE_EVENTS_NO_DELIVERY ) || !( jcb & JABBER_CAPS_MESSAGE_EVENTS ) || !strcmp( msgType, "groupchat" ) || !JGetByte( "MsgAck", FALSE ) || !JGetByte( ccs->hContact, "MsgAck", TRUE )) {
 			if ( !strcmp( msgType, "groupchat" ))
 				m.addAttr( "to", dbv.ptszVal );
 			else {
 				id = JabberSerialNext();
-				TCHAR szClientJid[ 256 ];
-				JabberGetClientJID( dbv.ptszVal, szClientJid, SIZEOF( szClientJid ));
 
 				m.addAttr( "to", szClientJid ); m.addAttrID( id );
-				XmlNode* x = m.addChild( "x" ); x->addAttr( "xmlns", "jabber:x:event" ); x->addChild( "composing" );
+				if ( jcb & JABBER_CAPS_MESSAGE_EVENTS ) {
+					XmlNode* x = m.addChild( "x" ); x->addAttr( "xmlns", JABBER_FEAT_MESSAGE_EVENTS ); x->addChild( "composing" );
+				}
 			}
 
 			jabberThreadInfo->send( m );
@@ -1205,11 +1238,9 @@ int JabberSendMessage( WPARAM wParam, LPARAM lParam )
 			if (( item=JabberListGetItemPtr( LIST_ROSTER, dbv.ptszVal )) != NULL )
 				item->idMsgAckPending = id;
 
-			TCHAR szClientJid[ 256 ];
-			JabberGetClientJID( dbv.ptszVal, szClientJid, SIZEOF( szClientJid ));
 			m.addAttr( "to", szClientJid ); m.addAttrID( id );
 
-			XmlNode* x = m.addChild( "x" ); x->addAttr( "xmlns", "jabber:x:event" );
+			XmlNode* x = m.addChild( "x" ); x->addAttr( "xmlns", JABBER_FEAT_MESSAGE_EVENTS );
 			x->addChild( "composing" ); x->addChild( "delivered" ); x->addChild( "offline" );
 			jabberThreadInfo->send( m );
 	}	}
@@ -1418,24 +1449,30 @@ int JabberUserIsTyping( WPARAM wParam, LPARAM lParam )
 	if (( item = JabberListGetItemPtr( LIST_ROSTER, dbv.ptszVal )) != NULL ) {
 		TCHAR szClientJid[ 256 ];
 		JabberGetClientJID( dbv.ptszVal, szClientJid, SIZEOF( szClientJid ));
+
+		JabberCapsBits jcb = JabberGetResourceCapabilites( szClientJid );
+
+		if ( jcb & JABBER_RESOURCE_CAPS_ERROR )
+			jcb = JABBER_RESOURCE_CAPS_NONE;
+
 		XmlNode m( "message" ); m.addAttr( "to", szClientJid );
 
-		if ( item->cap & CLIENT_CAP_CHATSTAT ) {
+		if ( jcb & JABBER_CAPS_CHATSTATES ) {
 			m.addAttr( "type", "chat" );
 			m.addAttrID( JabberSerialNext());
 			switch ( lParam ){
 			case PROTOTYPE_SELFTYPING_OFF:
-				m.addChild( "paused" )->addAttr( "xmlns", _T("http://jabber.org/protocol/chatstates"));
+				m.addChild( "paused" )->addAttr( "xmlns", _T(JABBER_FEAT_CHATSTATES));
 				jabberThreadInfo->send( m );
 				break;
 			case PROTOTYPE_SELFTYPING_ON:
-				m.addChild( "composing" )->addAttr( "xmlns", _T("http://jabber.org/protocol/chatstates"));
+				m.addChild( "composing" )->addAttr( "xmlns", _T(JABBER_FEAT_CHATSTATES));
 				jabberThreadInfo->send( m );
 				break;
 			}
 		}
-		else if ( item->wantComposingEvent == TRUE ) {
-			XmlNode* x = m.addChild( "x" ); x->addAttr( "xmlns", "jabber:x:event" );
+		else if ( item->wantComposingEvent == TRUE && ( jcb & JABBER_CAPS_MESSAGE_EVENTS )) {
+			XmlNode* x = m.addChild( "x" ); x->addAttr( "xmlns", JABBER_FEAT_MESSAGE_EVENTS );
 			if ( item->messageEventIdStr != NULL )
 				x->addChild( "id", item->messageEventIdStr );
 

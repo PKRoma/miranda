@@ -80,6 +80,9 @@ static void JabberListFreeItemInternal( JABBER_LIST_ITEM *item )
 		if ( r->software ) mir_free( r->software );
 		if ( r->version ) mir_free( r->version );
 		if ( r->system ) mir_free( r->system );
+		if ( r->szCapsNode ) mir_free( r->szCapsNode );
+		if ( r->szCapsVer ) mir_free( r->szCapsVer );
+		if ( r->szCapsExt ) mir_free( r->szCapsExt );
 	}
 	if ( item->resource ) mir_free( item->resource );
 	if ( item->statusMessage ) mir_free( item->statusMessage );
@@ -293,6 +296,10 @@ void JabberListRemoveResource( JABBER_LIST list, const TCHAR* jid )
 					if ( r->software ) mir_free( r->software );
 					if ( r->version ) mir_free( r->version );
 					if ( r->system ) mir_free( r->system );
+					if ( r->szCapsNode ) mir_free( r->szCapsNode );
+					if ( r->szCapsVer ) mir_free( r->szCapsVer );
+					if ( r->szCapsExt ) mir_free( r->szCapsExt );
+
 					if ( LI->resourceCount-- == 1 ) {
 						mir_free( r );
 						LI->resource = NULL;

@@ -28,6 +28,7 @@ Last change by : $Author$
 #include "jabber.h"
 #include "jabber_ssl.h"
 #include "jabber_iq.h"
+#include "jabber_caps.h"
 #include "resource.h"
 #include "version.h"
 #include "sdk/m_icolib.h"
@@ -365,6 +366,7 @@ extern "C" int __declspec( dllexport ) Load( PLUGINLINK *link )
 	JabberListInit();
 	JabberIconsInit();
 	JabberSvcInit();
+	g_JabberClientCapsManager.AddDefaultCaps();
 	return 0;
 }
 

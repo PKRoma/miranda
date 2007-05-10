@@ -29,6 +29,7 @@ Last change by : $Author$
 #include "resource.h"
 #include "jabber_list.h"
 #include "jabber_iq.h"
+#include "jabber_caps.h"
 
 extern char* jabberVcardPhotoFileName;
 extern char* jabberVcardPhotoType;
@@ -140,7 +141,7 @@ void JabberIqResultSetAuth( XmlNode *iqNode, void *userdata )
 			JabberIqAdd( iqId, IQ_PROC_GETAGENTS, JabberIqResultGetAgents );
 
 			XmlNodeIq iq( "get", iqId );
-			XmlNode* query = iq.addQuery( "jabber:iq:agents" );
+			XmlNode* query = iq.addQuery( JABBER_FEAT_AGENTS );
 			info->send( iq );
 		}
 	}
@@ -321,7 +322,7 @@ void JabberIqResultGetRoster( XmlNode* iqNode, void* )
 			JabberIqAdd( iqId, IQ_PROC_NONE, JabberIqResultDiscoAgentInfo );
 
 			XmlNodeIq iq( "get", iqId, jid );
-			XmlNode* query = iq.addQuery( "http://jabber.org/protocol/disco#info" );
+			XmlNode* query = iq.addQuery( JABBER_FEAT_DISCO_INFO );
 			jabberThreadInfo->send( iq );
 			bIsTransport=TRUE;
 			TCHAR * stripJid=_tcsdup( jid );
@@ -462,7 +463,7 @@ void JabberIqResultGetAgents( XmlNode *iqNode, void *userdata )
 
 	if ( !lstrcmp( type, _T("result"))) {
 		str = JabberXmlGetAttrValue( queryNode, "xmlns" );
-		if ( str!=NULL && !lstrcmp( str, _T("jabber:iq:agents"))) {
+		if ( str!=NULL && !lstrcmp( str, _T(JABBER_FEAT_AGENTS))) {
 			XmlNode *agentNode, *n;
 			JABBER_LIST_ITEM *item;
 			int i;
@@ -1289,7 +1290,7 @@ void JabberIqResultDiscoAgentItems( XmlNode *iqNode, void *userdata )
 	if ( !lstrcmp( type, _T("result"))) {
 		if (( queryNode=JabberXmlGetChild( iqNode, "query" )) != NULL ) {
 			TCHAR* str = JabberXmlGetAttrValue( queryNode, "xmlns" );
-			if  ( !lstrcmp( str, _T("http://jabber.org/protocol/disco#items"))) {
+			if  ( !lstrcmp( str, _T(JABBER_FEAT_DISCO_ITEMS))) {
 				JabberListRemoveList( LIST_AGENT );
 				for ( int i=0; i<queryNode->numChild; i++ ) {
 					if (( itemNode=queryNode->child[i] )!=NULL && itemNode->name!=NULL && !lstrcmpA( itemNode->name, "item" )) {
@@ -1301,7 +1302,7 @@ void JabberIqResultDiscoAgentItems( XmlNode *iqNode, void *userdata )
 							JabberIqAdd( iqId, IQ_PROC_NONE, JabberIqResultDiscoAgentInfo );
 
 							XmlNodeIq iq( "get", iqId, jid );
-							XmlNode* query = iq.addQuery( "http://jabber.org/protocol/disco#info" );
+							XmlNode* query = iq.addQuery( JABBER_FEAT_DISCO_INFO );
 							jabberThreadInfo->send( iq );
 		}	}	}	}	}
 
@@ -1318,7 +1319,7 @@ void JabberIqResultDiscoAgentItems( XmlNode *iqNode, void *userdata )
 		JabberIqAdd( iqId, IQ_PROC_GETAGENTS, JabberIqResultGetAgents );
 
 		XmlNodeIq iq( "get", iqId, from );
-		XmlNode* query = iq.addQuery( "jabber:iq:agents" );
+		XmlNode* query = iq.addQuery( JABBER_FEAT_AGENTS );
 		jabberThreadInfo->send( iq );
 }	}
 
@@ -1339,7 +1340,7 @@ void JabberIqResultDiscoAgentInfo( XmlNode *iqNode, void *userdata )
 	if ( !lstrcmp( type, _T("result"))) {
 		if (( queryNode=JabberXmlGetChild( iqNode, "query" )) != NULL ) {
 			TCHAR* str = JabberXmlGetAttrValue( queryNode, "xmlns" );
-			if ( !lstrcmp( str, _T("http://jabber.org/protocol/disco#info"))) {
+			if ( !lstrcmp( str, _T(JABBER_FEAT_DISCO_INFO))) {
 				rosterItem=JabberListGetItemPtr( LIST_ROSTER, from );
 				item=JabberListGetItemPtr( LIST_AGENT, from );
 				// Use the first <identity/> to set name
@@ -1355,11 +1356,11 @@ void JabberIqResultDiscoAgentInfo( XmlNode *iqNode, void *userdata )
 						if (( itemNode=queryNode->child[i] )!=NULL && itemNode->name!=NULL ) {
 							if ( !strcmp( itemNode->name, "feature" )) {
 								if (( var=JabberXmlGetAttrValue( itemNode, "var" )) != NULL ) {
-									if ( !lstrcmp( var, _T("jabber:iq:register")))
+									if ( !lstrcmp( var, _T(JABBER_FEAT_REGISTER)))
 										cap |= AGENT_CAP_REGISTER;
-									else if ( !lstrcmp( var, _T("http://jabber.org/protocol/muc")))
+									else if ( !lstrcmp( var, _T(JABBER_FEAT_MUC)))
 										cap |= AGENT_CAP_GROUPCHAT;
-									else if ( !lstrcmp( var, _T("http://jabber.org/protocol/commands")))
+									else if ( !lstrcmp( var, _T(JABBER_FEAT_COMMANDS)))
 										cap |= AGENT_CAP_ADHOC;
 								}	
 							}	
@@ -1373,6 +1374,7 @@ void JabberIqResultDiscoAgentInfo( XmlNode *iqNode, void *userdata )
 			SendMessage( hwndJabberAgents, WM_JABBER_AGENT_REFRESH, 0, ( LPARAM )NULL );
 }	}
 
+/*
 void JabberIqResultDiscoClientInfo( XmlNode *iqNode, void *userdata )
 {
 	ThreadData* info = ( ThreadData* ) userdata;
@@ -1394,17 +1396,17 @@ void JabberIqResultDiscoClientInfo( XmlNode *iqNode, void *userdata )
 
 	if (( queryNode=JabberXmlGetChild( iqNode, "query" )) != NULL ) {
 		TCHAR* str = JabberXmlGetAttrValue( queryNode, "xmlns" );
-		if ( !lstrcmp( str, _T("http://jabber.org/protocol/disco#info"))) {
+		if ( !lstrcmp( str, _T(JABBER_FEAT_DISCO_INFO))) {
 			item->cap = CLIENT_CAP_READY;
 			for ( int i=0; i<queryNode->numChild; i++ ) {
 				if (( itemNode=queryNode->child[i] )!=NULL && itemNode->name!=NULL ) {
 					if ( !strcmp( itemNode->name, "feature" )) {
 						if (( var=JabberXmlGetAttrValue( itemNode, "var" )) != NULL ) {
-							if ( !lstrcmp( var, _T("http://jabber.org/protocol/si")))
+							if ( !lstrcmp( var, _T(JABBER_FEAT_SI)))
 								item->cap |= CLIENT_CAP_SI;
-							else if ( !lstrcmp( var, _T("http://jabber.org/protocol/si/profile/file-transfer")))
+							else if ( !lstrcmp( var, _T(JABBER_FEAT_SI_FT)))
 								item->cap |= CLIENT_CAP_SIFILE;
-							else if ( !lstrcmp( var, _T("http://jabber.org/protocol/bytestreams")))
+							else if ( !lstrcmp( var, _T(JABBER_FEAT_BYTESTREAMS)))
 								item->cap |= CLIENT_CAP_BYTESTREAM;
 	}	}	}	}	}	}
 
@@ -1417,6 +1419,7 @@ void JabberIqResultDiscoClientInfo( XmlNode *iqNode, void *userdata )
 		else
 			mir_forkthread(( pThreadFunc )JabberFileServerThread, ft );
 }	}
+*/
 
 void JabberIqResultGetAvatar( XmlNode *iqNode, void *userdata )
 {
@@ -1454,7 +1457,7 @@ void JabberIqResultGetAvatar( XmlNode *iqNode, void *userdata )
 			return;
 
 		TCHAR* xmlns = JabberXmlGetAttrValue( queryNode, "xmlns" );
-		if ( lstrcmp( xmlns, _T("jabber:iq:avatar")))
+		if ( lstrcmp( xmlns, _T(JABBER_FEAT_AVATAR)))
 			return;
 
 		mimeType = JabberXmlGetAttrValue( n, "mimetype" );
@@ -1725,7 +1728,7 @@ void JabberIqResultEntityTime( XmlNode* pIqNode, void* pUserdata )
 		return;
 
 	if ( !_tcscmp( szType, _T( "result" ))) {
-		XmlNode* pTimeNode = JabberXmlGetChildWithGivenAttrValue(pIqNode, "time", "xmlns", _T( "urn:xmpp:time" ));
+		XmlNode* pTimeNode = JabberXmlGetChildWithGivenAttrValue(pIqNode, "time", "xmlns", _T( JABBER_FEAT_ENTITY_TIME ));
 		if ( pTimeNode ) {
 			XmlNode* pTzo = JabberXmlGetChild(pTimeNode, "tzo");
 			if ( pTzo ) {

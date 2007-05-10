@@ -53,6 +53,7 @@ typedef struct {
 	TCHAR* szProxyJid;
 	TCHAR* szStreamhostUsed;
 	BOOL bStreamActivated;
+	HANDLE hSendEvent;
 
 } JABBER_BYTE_TRANSFER;
 

@@ -28,6 +28,7 @@ Last change by : $Author$
 #include "jabber.h"
 #include "jabber_ssl.h"
 #include "jabber_list.h"
+#include "jabber_caps.h"
 
 extern CRITICAL_SECTION mutex;
 extern UINT jabberCodePage;
@@ -833,8 +834,8 @@ void __stdcall JabberSendPresenceTo( int status, TCHAR* to, XmlNode* extra )
 	char* version = JabberGetVersionText();
 
 	XmlNode *c = p.addChild( "c" );
-	c->addAttr( "xmlns", "http://jabber.org/protocol/caps" );
-	c->addAttr( "node", "http://miranda-im.org/caps" );
+	c->addAttr( "xmlns", JABBER_FEAT_ENTITY_CAPS );
+	c->addAttr( "node", JABBER_CAPS_MIRANDA_NODE );
 	c->addAttr( "ver", version );
 	mir_free( version );
 

@@ -35,6 +35,8 @@ Last change by : $Author$
 #include "jabber_iq.h"
 #include "resource.h"
 #include "m_clui.h"
+#include "jabber_caps.h"
+
 
 #define ShowDlgItem( a, b, c )	 ShowWindow( GetDlgItem( a, b ), c )
 #define EnableDlgItem( a, b, c ) EnableWindow( GetDlgItem( a, b ), c )
@@ -121,8 +123,8 @@ static int JabberAdHoc_RequestListOfCommands( TCHAR * szResponder, HWND hwndDlg 
 	int iqId = (int)hwndDlg;
 	XmlNodeIq iq( "get", iqId, szResponder );
 	XmlNode* query = iq.addChild( "query" );
-	query->addAttr( "xmlns", "http://jabber.org/protocol/disco#items" );
-	query->addAttr("node", "http://jabber.org/protocol/commands" );
+	query->addAttr( "xmlns", JABBER_FEAT_DISCO_ITEMS );
+	query->addAttr( "node", JABBER_FEAT_COMMANDS );
 	JabberIqAdd( iqId, IQ_PROC_DISCOCOMMANDS, JabberIqResult_ListOfCommands );
 	jabberThreadInfo->send( iq );
 	return iqId;
@@ -144,7 +146,7 @@ static int JabberAdHoc_ExecuteCommand( HWND hwndDlg, TCHAR * jid, JabberAdHocDat
 					int iqId = (int)hwndDlg;
 					XmlNodeIq iq( "set", iqId, jid );
 					XmlNode* query = iq.addChild( "command" );
-					query->addAttr( "xmlns", "http://jabber.org/protocol/commands" );
+					query->addAttr( "xmlns", JABBER_FEAT_COMMANDS );
 					query->addAttr( "node", node );
 					query->addAttr( "action", action );
 					JabberIqAdd( iqId, IQ_PROC_EXECCOMMANDS, JabberIqResult_CommandExecution );
@@ -188,8 +190,8 @@ static int JabberAdHoc_OnJAHMCommandListResult( HWND hwndDlg, XmlNode * iqNode, 
 			TCHAR * xmlns = JabberXmlGetAttrValue( queryNode, "xmlns" );
 			TCHAR * node  = JabberXmlGetAttrValue( queryNode, "node" );
 			if ( xmlns && node
-					&& !_tcscmp( xmlns, _T( "http://jabber.org/protocol/disco#items" ) )
-					&& !_tcscmp( node,  _T( "http://jabber.org/protocol/commands" ) ) )
+					&& !_tcscmp( xmlns, _T( JABBER_FEAT_DISCO_ITEMS ) )
+					&& !_tcscmp( node,  _T( JABBER_FEAT_COMMANDS ) ) )
 				validResponse = TRUE;
 		}
 		if ( queryNode && queryNode->numChild > 0 && validResponse ) {
@@ -326,7 +328,7 @@ static int JabberAdHoc_SubmitCommandForm(HWND hwndDlg, JabberAdHocData * dat, ch
 	int iqId = (int)hwndDlg;
 	XmlNodeIq iq( "set", iqId, JabberXmlGetAttrValue(dat->AdHocNode, "from"));
 	XmlNode* command = iq.addChild( "command" );			
-	command->addAttr( "xmlns", "http://jabber.org/protocol/commands" );
+	command->addAttr( "xmlns", JABBER_FEAT_COMMANDS );
 	
 	TCHAR * sessionId = JabberXmlGetAttrValue(commandNode, "sessionid");
 	if ( sessionId ) 

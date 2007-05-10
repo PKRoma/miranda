@@ -564,6 +564,10 @@
 				</FileConfiguration>
 			</File>
 			<File
+				RelativePath=".\jabber_caps.cpp"
+				>
+			</File>
+			<File
 				RelativePath=".\jabber_chat.cpp"
 				>
 			</File>
@@ -1530,6 +1534,10 @@
 			</File>
 			<File
 				RelativePath="jabber_byte.h"
+				>
+			</File>
+			<File
+				RelativePath=".\jabber_caps.h"
 				>
 			</File>
 			<File

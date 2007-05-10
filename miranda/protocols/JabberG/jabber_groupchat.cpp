@@ -29,6 +29,7 @@ Last change by : $Author$
 #include <commctrl.h>
 #include "resource.h"
 #include "jabber_iq.h"
+#include "jabber_caps.h"
 
 #define GC_SERVER_LIST_SIZE 5
 
@@ -48,7 +49,7 @@ int JabberMenuHandleGroupchat( WPARAM wParam, LPARAM lParam )
 			JabberIqAdd( iqId, IQ_PROC_DISCOROOMSERVER, JabberIqResultDiscoRoomItems );
 
 			XmlNodeIq iq( "get", iqId, ( TCHAR* )lParam );
-			XmlNode* query = iq.addQuery( "http://jabber.org/protocol/disco#items" );
+			XmlNode* query = iq.addQuery( JABBER_FEAT_DISCO_ITEMS );
 			jabberThreadInfo->send( iq );
 			// <iq/> result will send WM_JABBER_REFRESH to update the list with real data
 		}
@@ -118,7 +119,7 @@ static BOOL CALLBACK JabberGroupchatDlgProc( HWND hwndDlg, UINT msg, WPARAM wPar
 				JabberIqAdd( iqId, IQ_PROC_DISCOROOMSERVER, JabberIqResultDiscoRoomItems );
 
 				XmlNodeIq iq( "get", iqId, ( TCHAR* )lParam );
-				XmlNode* query = iq.addQuery( "http://jabber.org/protocol/disco#items" );
+				XmlNode* query = iq.addQuery( JABBER_FEAT_DISCO_ITEMS );
 				jabberThreadInfo->send( iq );
 			}
 			else {
@@ -335,7 +336,7 @@ static BOOL CALLBACK JabberGroupchatDlgProc( HWND hwndDlg, UINT msg, WPARAM wPar
 				JabberIqAdd( iqId, IQ_PROC_DISCOROOMSERVER, JabberIqResultDiscoRoomItems );
 
 				XmlNodeIq iq( "get", iqId, text );
-				XmlNode* query = iq.addQuery( "http://jabber.org/protocol/disco#items" );
+				XmlNode* query = iq.addQuery( JABBER_FEAT_DISCO_ITEMS );
 				jabberThreadInfo->send( iq );
 			}
 			return TRUE;
@@ -375,7 +376,7 @@ void JabberGroupchatJoinRoom( const TCHAR* server, const TCHAR* room, const TCHA
 	replaceStr( item->nick, nick );
 
 	int status = ( jabberStatus == ID_STATUS_INVISIBLE ) ? ID_STATUS_ONLINE : jabberStatus;
-	XmlNode* x = new XmlNode( "x" ); x->addAttr( "xmlns", "http://jabber.org/protocol/muc" );
+	XmlNode* x = new XmlNode( "x" ); x->addAttr( "xmlns", JABBER_FEAT_MUC );
 	if ( password && password[0]!='\0' )
 		x->addChild( "password", password );
 	JabberSendPresenceTo( status, text, x );

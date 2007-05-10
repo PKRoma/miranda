@@ -29,6 +29,7 @@ Last change by : $Author$
 #include <commctrl.h>
 #include "resource.h"
 #include "jabber_iq.h"
+#include "jabber_caps.h"
 
 
 
@@ -98,7 +99,7 @@ static BOOL CALLBACK JabberAgentsDlgProc( HWND hwndDlg, UINT msg, WPARAM wParam,
 			JabberIqAdd( iqId, IQ_PROC_DISCOAGENTS, JabberIqResultDiscoAgentItems );
 
 			XmlNodeIq iq( "get", iqId, jabberThreadInfo->server );
-			XmlNode* query = iq.addQuery( "http://jabber.org/protocol/disco#items" );
+			XmlNode* query = iq.addQuery( JABBER_FEAT_DISCO_ITEMS );
 			jabberThreadInfo->send( iq );
 
 			SendMessage( hwndDlg, WM_JABBER_TRANSPORT_REFRESH, 0, 0 );
@@ -309,7 +310,7 @@ static BOOL CALLBACK JabberAgentsDlgProc( HWND hwndDlg, UINT msg, WPARAM wParam,
 				JabberIqAdd( iqId, IQ_PROC_DISCOAGENTS, JabberIqResultDiscoAgentItems );
 				{
 					XmlNodeIq iq( "get", iqId, start );
-					XmlNode* query = iq.addQuery( "http://jabber.org/protocol/disco#items" );
+					XmlNode* query = iq.addQuery( JABBER_FEAT_DISCO_ITEMS );
 					jabberThreadInfo->send( iq );
 			}	}
 			return TRUE;
@@ -346,7 +347,7 @@ static BOOL CALLBACK JabberAgentsDlgProc( HWND hwndDlg, UINT msg, WPARAM wParam,
 				ListView_GetItem( lv, &lvItem );
 				if (( item=JabberListGetItemPtr( LIST_ROSTER, lvItem.pszText )) != NULL ) {
 					{	XmlNodeIq iq( "set", NOID, item->jid );
-						XmlNode* query = iq.addQuery( "jabber:iq:register" );
+						XmlNode* query = iq.addQuery( JABBER_FEAT_REGISTER );
 						query->addChild( "remove" );
 						jabberThreadInfo->send( iq );
 					}
@@ -395,7 +396,7 @@ static BOOL CALLBACK JabberAgentRegInputDlgProc( HWND hwndDlg, UINT msg, WPARAM 
 			int iqId = JabberSerialNext();
 			JabberIqAdd( iqId, IQ_PROC_GETREGISTER, JabberIqResultGetRegister );
 			XmlNodeIq iq( "get", iqId, jid );
-			XmlNode* query = iq.addQuery( "jabber:iq:register" );
+			XmlNode* query = iq.addQuery( JABBER_FEAT_REGISTER );
 			jabberThreadInfo->send( iq );
 		}
 
@@ -424,7 +425,7 @@ static BOOL CALLBACK JabberAgentRegInputDlgProc( HWND hwndDlg, UINT msg, WPARAM 
 			JabberIqAdd( iqId, IQ_PROC_SETREGISTER, JabberIqResultSetRegister );
 
 			XmlNodeIq iq( "set", iqId, from );
-			XmlNode* query = iq.addQuery( "jabber:iq:register" );
+			XmlNode* query = iq.addQuery( JABBER_FEAT_REGISTER );
 
 			if (( xNode=JabberXmlGetChild( queryNode, "x" )) != NULL ) {
 				// use new jabber:x:data form

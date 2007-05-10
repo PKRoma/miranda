@@ -27,6 +27,8 @@ Last change by : $Author$
 
 #include "jabber.h"
 #include "resource.h"
+#include "jabber_caps.h"
+
 
 static BOOL CALLBACK JabberFormMultiLineWndProc( HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam )
 {
@@ -311,7 +313,7 @@ XmlNode* JabberFormGetData( HWND hwndStatic, XmlNode* xNode )
 
 	hFrame = hwndStatic;
 	id = 0;
-	x = new XmlNode( "x" ); x->addAttr( "xmlns", "jabber:x:data" ); x->addAttr( "type", "submit" );
+	x = new XmlNode( "x" ); x->addAttr( "xmlns", JABBER_FEAT_DATA_FORMS ); x->addAttr( "type", "submit" );
 	for ( int i=0; i<xNode->numChild; i++ ) {
 		n = xNode->child[i];
 		fieldStr = NULL;

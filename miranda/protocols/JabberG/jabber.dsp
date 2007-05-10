@@ -179,6 +179,10 @@ SOURCE=.\jabber_byte.cpp
 # End Source File
 # Begin Source File
 
+SOURCE=.\jabber_caps.cpp
+# End Source File
+# Begin Source File
+
 SOURCE=.\jabber_chat.cpp
 # End Source File
 # Begin Source File
@@ -330,6 +334,10 @@ SOURCE=.\jabber.h
 # Begin Source File
 
 SOURCE=.\jabber_byte.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\jabber_caps.h
 # End Source File
 # Begin Source File
 

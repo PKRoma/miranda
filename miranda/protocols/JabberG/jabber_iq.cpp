@@ -28,10 +28,11 @@ Last change by : $Author$
 #include "jabber.h"
 #include "jabber_iq.h"
 #include "jabber_xmlns.h"
+#include "jabber_caps.h"
 
 static JABBER_IQ_XMLNS_FUNC jabberXmlns[] = {
 	{ _T("http://jabber.org/protocol/disco"), JabberXmlnsDisco, TRUE },
-	{ _T("jabber:iq:browse"), JabberXmlnsBrowse, FALSE }
+	{ _T(JABBER_FEAT_BROWSE), JabberXmlnsBrowse, FALSE }
 };
 
 typedef struct {

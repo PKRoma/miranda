@@ -66,7 +66,7 @@ void JabberIqResultBind( XmlNode *iqNode, void *userdata );
 void JabberIqResultBrowseRooms( XmlNode *iqNode, void *userdata );
 void JabberIqResultDiscoAgentInfo( XmlNode *iqNode, void *userdata );
 void JabberIqResultDiscoAgentItems( XmlNode *iqNode, void *userdata );
-void JabberIqResultDiscoClientInfo( XmlNode *iqNode, void *userdata );
+//void JabberIqResultDiscoClientInfo( XmlNode *iqNode, void *userdata );
 void JabberIqResultDiscoRoomItems( XmlNode *iqNode, void *userdata );
 void JabberIqResultDiscoBookmarks( XmlNode *iqNode, void *userdata );
 void JabberIqResultSetBookmarks( XmlNode *iqNode, void *userdata );

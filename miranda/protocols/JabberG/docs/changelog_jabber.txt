@@ -4,10 +4,14 @@ Legend:
 [-] deleted
 [!] bug fixed
 
+Version 0.7.0.7
+===============
+[+] XEP-0115 support (Entity Capabilities)
+[!] bug #003127 fixed: random errors in file transfers
+
 Version 0.7.0.6
 ===============
 [+] XEP-0096 support (File Transfer, IBB)
-[+] XEP-0115 support (Entity Capabilities)
 [+] XEP-0199 support (XMPP Ping)
 
 Version 0.7.0.5

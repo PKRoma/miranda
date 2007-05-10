@@ -26,6 +26,7 @@ Last change by : $Author$
 */
 
 #include "jabber.h"
+#include "jabber_caps.h"
 
 /////////////////////////////////////////////////////////////////////////////////////////
 // JabberXmlnsBrowse
@@ -59,7 +60,7 @@ void JabberXmlnsBrowse( XmlNode *iqNode, void *userdata )
 /////////////////////////////////////////////////////////////////////////////////////////
 // JabberXmlnsDisco
 
-static void sttAddFeature( XmlNode* n, char* text )
+void sttAddFeature( XmlNode* n, TCHAR* text )
 {
 	XmlNode* f = n->addChild( "feature" ); f->addAttr( "var", text );
 }
@@ -93,26 +94,12 @@ void JabberXmlnsDisco( XmlNode *iqNode, void *userdata )
 			ident->addAttr( "type", "pc" ); ident->addAttr( "name", "Miranda" );
 			if ( discoNode )
 				query->addAttr( "node", discoNode );
-			sttAddFeature( query, "http://jabber.org/protocol/disco#info" );
-			sttAddFeature( query, "http://jabber.org/protocol/muc" );
-			sttAddFeature( query, "http://jabber.org/protocol/si" );
-			sttAddFeature( query, "http://jabber.org/protocol/si/profile/file-transfer" );
-			sttAddFeature( query, "http://jabber.org/protocol/bytestreams" );
-			sttAddFeature( query, "http://jabber.org/protocol/ibb" );
-			sttAddFeature( query, "http://jabber.org/protocol/chatstates" );
-			sttAddFeature( query, "http://jabber.org/protocol/caps" );
-//			sttAddFeature( query, "http://jabber.org/protocol/mood+notify" );
-//			sttAddFeature( query, "http://jabber.org/protocol/tune+notify" );
-			sttAddFeature( query, "jabber:iq:agents" );
-			sttAddFeature( query, "jabber:iq:browse" );
-			sttAddFeature( query, "jabber:iq:oob" );
-			sttAddFeature( query, "jabber:iq:version" );
-			sttAddFeature( query, "jabber:iq:last" );
-			sttAddFeature( query, "jabber:x:data" );
-			sttAddFeature( query, "jabber:x:event" );
-			sttAddFeature( query, "vcard-temp" );
-			sttAddFeature( query, "urn:xmpp:time" );
-			sttAddFeature( query, "urn:xmpp:ping" );
+
+			JabberCapsBits jcbAll = JABBER_CAPS_MIRANDA_ALL;
+
+			for ( int i = 0; g_JabberFeatCapPairs[i].szFeature; i++ )
+				if ( jcbAll & g_JabberFeatCapPairs[i].jcbCap )
+					sttAddFeature( query, g_JabberFeatCapPairs[i].szFeature );
 		}
 		jabberThreadInfo->send( iq );
 }	}

@@ -29,6 +29,7 @@
 	"..\..\plugins\zlib\zlib.h"\
 	".\jabber.h"\
 	".\jabber_byte.h"\
+	".\jabber_caps.h"\
 	".\jabber_ibb.h"\
 	".\jabber_iq.h"\
 	".\jabber_list.h"\
@@ -67,6 +68,7 @@
 	"..\..\plugins\zlib\zlib.h"\
 	".\jabber.h"\
 	".\jabber_byte.h"\
+	".\jabber_caps.h"\
 	".\jabber_ibb.h"\
 	".\jabber_iq.h"\
 	".\jabber_list.h"\
@@ -102,6 +104,7 @@
 	"..\..\plugins\zlib\zlib.h"\
 	".\jabber.h"\
 	".\jabber_byte.h"\
+	".\jabber_caps.h"\
 	".\jabber_ibb.h"\
 	".\jabber_iq.h"\
 	".\jabber_list.h"\
@@ -172,6 +175,43 @@
 	"..\..\plugins\zlib\zlib.h"\
 	".\jabber.h"\
 	".\jabber_byte.h"\
+	".\jabber_caps.h"\
+	".\jabber_ibb.h"\
+	".\jabber_iq.h"\
+	".\jabber_list.h"\
+	".\jabber_xml.h"\
+	
+
+.\jabber_caps.cpp : \
+	"..\..\include\m_avatars.h"\
+	"..\..\include\m_button.h"\
+	"..\..\include\m_chat.h"\
+	"..\..\include\m_clc.h"\
+	"..\..\include\m_clist.h"\
+	"..\..\include\m_clui.h"\
+	"..\..\include\m_database.h"\
+	"..\..\include\m_idle.h"\
+	"..\..\include\m_langpack.h"\
+	"..\..\include\m_message.h"\
+	"..\..\include\m_netlib.h"\
+	"..\..\include\m_options.h"\
+	"..\..\include\m_plugins.h"\
+	"..\..\include\m_protocols.h"\
+	"..\..\include\m_protomod.h"\
+	"..\..\include\m_protosvc.h"\
+	"..\..\include\m_skin.h"\
+	"..\..\include\m_system.h"\
+	"..\..\include\m_system_cpp.h"\
+	"..\..\include\m_userinfo.h"\
+	"..\..\include\m_utils.h"\
+	"..\..\include\newpluginapi.h"\
+	"..\..\include\statusmodes.h"\
+	"..\..\include\win2k.h"\
+	"..\..\plugins\zlib\zconf.h"\
+	"..\..\plugins\zlib\zlib.h"\
+	".\jabber.h"\
+	".\jabber_byte.h"\
+	".\jabber_caps.h"\
 	".\jabber_ibb.h"\
 	".\jabber_iq.h"\
 	".\jabber_list.h"\
@@ -207,6 +247,7 @@
 	"..\..\plugins\zlib\zlib.h"\
 	".\jabber.h"\
 	".\jabber_byte.h"\
+	".\jabber_caps.h"\
 	".\jabber_ibb.h"\
 	".\jabber_iq.h"\
 	".\jabber_list.h"\
@@ -242,6 +283,7 @@
 	"..\..\plugins\zlib\zlib.h"\
 	".\jabber.h"\
 	".\jabber_byte.h"\
+	".\jabber_caps.h"\
 	".\jabber_ibb.h"\
 	".\jabber_list.h"\
 	".\jabber_xml.h"\
@@ -276,6 +318,7 @@
 	"..\..\plugins\zlib\zlib.h"\
 	".\jabber.h"\
 	".\jabber_byte.h"\
+	".\jabber_caps.h"\
 	".\jabber_ibb.h"\
 	".\jabber_list.h"\
 	".\jabber_xml.h"\
@@ -310,6 +353,7 @@
 	"..\..\plugins\zlib\zlib.h"\
 	".\jabber.h"\
 	".\jabber_byte.h"\
+	".\jabber_caps.h"\
 	".\jabber_ibb.h"\
 	".\jabber_iq.h"\
 	".\jabber_list.h"\
@@ -345,6 +389,7 @@
 	"..\..\plugins\zlib\zlib.h"\
 	".\jabber.h"\
 	".\jabber_byte.h"\
+	".\jabber_caps.h"\
 	".\jabber_ibb.h"\
 	".\jabber_iq.h"\
 	".\jabber_list.h"\
@@ -380,6 +425,7 @@
 	"..\..\plugins\zlib\zlib.h"\
 	".\jabber.h"\
 	".\jabber_byte.h"\
+	".\jabber_caps.h"\
 	".\jabber_ibb.h"\
 	".\jabber_iq.h"\
 	".\jabber_list.h"\
@@ -450,6 +496,7 @@
 	"..\..\plugins\zlib\zlib.h"\
 	".\jabber.h"\
 	".\jabber_byte.h"\
+	".\jabber_caps.h"\
 	".\jabber_ibb.h"\
 	".\jabber_iq.h"\
 	".\jabber_list.h"\
@@ -486,6 +533,7 @@
 	"..\..\plugins\zlib\zlib.h"\
 	".\jabber.h"\
 	".\jabber_byte.h"\
+	".\jabber_caps.h"\
 	".\jabber_ibb.h"\
 	".\jabber_iq.h"\
 	".\jabber_list.h"\
@@ -521,6 +569,7 @@
 	"..\..\plugins\zlib\zlib.h"\
 	".\jabber.h"\
 	".\jabber_byte.h"\
+	".\jabber_caps.h"\
 	".\jabber_ibb.h"\
 	".\jabber_iq.h"\
 	".\jabber_list.h"\
@@ -693,11 +742,11 @@
 	"..\..\plugins\zlib\zlib.h"\
 	".\jabber.h"\
 	".\jabber_byte.h"\
+	".\jabber_caps.h"\
 	".\jabber_ibb.h"\
 	".\jabber_list.h"\
 	".\jabber_ssl.h"\
 	".\jabber_xml.h"\
-	{$(INCLUDE)}"uxtheme.h"\
 	
 
 .\jabber_password.cpp : \
@@ -729,6 +778,7 @@
 	"..\..\plugins\zlib\zlib.h"\
 	".\jabber.h"\
 	".\jabber_byte.h"\
+	".\jabber_caps.h"\
 	".\jabber_ibb.h"\
 	".\jabber_iq.h"\
 	".\jabber_list.h"\
@@ -798,6 +848,7 @@
 	"..\..\plugins\zlib\zlib.h"\
 	".\jabber.h"\
 	".\jabber_byte.h"\
+	".\jabber_caps.h"\
 	".\jabber_ibb.h"\
 	".\jabber_iq.h"\
 	".\jabber_list.h"\
@@ -938,6 +989,7 @@
 	"..\..\plugins\zlib\zlib.h"\
 	".\jabber.h"\
 	".\jabber_byte.h"\
+	".\jabber_caps.h"\
 	".\jabber_ibb.h"\
 	".\jabber_iq.h"\
 	".\jabber_list.h"\
@@ -973,6 +1025,7 @@
 	"..\..\plugins\zlib\zlib.h"\
 	".\jabber.h"\
 	".\jabber_byte.h"\
+	".\jabber_caps.h"\
 	".\jabber_ibb.h"\
 	".\jabber_iq.h"\
 	".\jabber_list.h"\
@@ -980,7 +1033,6 @@
 	".\jabber_ssl.h"\
 	".\jabber_xml.h"\
 	".\version.h"\
-	{$(INCLUDE)}"windns.h"\
 	
 
 .\jabber_userinfo.cpp : \
@@ -1046,6 +1098,7 @@
 	"..\..\plugins\zlib\zlib.h"\
 	".\jabber.h"\
 	".\jabber_byte.h"\
+	".\jabber_caps.h"\
 	".\jabber_ibb.h"\
 	".\jabber_list.h"\
 	".\jabber_ssl.h"\
@@ -1081,6 +1134,7 @@
 	"..\..\plugins\zlib\zlib.h"\
 	".\jabber.h"\
 	".\jabber_byte.h"\
+	".\jabber_caps.h"\
 	".\jabber_ibb.h"\
 	".\jabber_iq.h"\
 	".\jabber_list.h"\
@@ -1184,6 +1238,7 @@
 	"..\..\plugins\zlib\zlib.h"\
 	".\jabber.h"\
 	".\jabber_byte.h"\
+	".\jabber_caps.h"\
 	".\jabber_ibb.h"\
 	".\jabber_list.h"\
 	".\jabber_xml.h"\

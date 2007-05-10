@@ -28,6 +28,7 @@ Last change by : $Author$
 #include "jabber.h"
 #include "jabber_iq.h"
 #include "resource.h"
+#include "jabber_caps.h"
 
 static BOOL CALLBACK JabberChangePasswordDlgProc( HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam );
 
@@ -76,7 +77,7 @@ static BOOL CALLBACK JabberChangePasswordDlgProc( HWND hwndDlg, UINT msg, WPARAM
 				JabberIqAdd( iqId, IQ_PROC_NONE, JabberIqResultSetPassword );
 
 				XmlNodeIq iq( "set", iqId, jabberThreadInfo->server );
-				XmlNode* q = iq.addQuery( "jabber:iq:register" );
+				XmlNode* q = iq.addQuery( JABBER_FEAT_REGISTER );
 				q->addChild( "username", jabberThreadInfo->username );
 				q->addChild( "password", newPasswd );
 				jabberThreadInfo->send( iq );

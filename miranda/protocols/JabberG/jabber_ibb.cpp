@@ -28,6 +28,7 @@ Last change by : $Author: ghazan $
 #include "jabber.h"
 #include "jabber_iq.h"
 #include "jabber_ibb.h"
+#include "jabber_caps.h"
 
 #define JABBER_IBB_BLOCK_SIZE 4096
 
@@ -98,7 +99,7 @@ void __cdecl JabberIbbSendThread( JABBER_IBB_TRANSFER *jibb )
 	XmlNode* openNode = iq.addChild( "open" );
 	openNode->addAttr( "sid", jibb->sid );
 	openNode->addAttr( "block-size", JABBER_IBB_BLOCK_SIZE );
-	openNode->addAttr( "xmlns", "http://jabber.org/protocol/ibb" );
+	openNode->addAttr( "xmlns", JABBER_FEAT_IBB );
 
 	jibb->hEvent = CreateEvent( NULL, FALSE, FALSE, NULL );
 	jibb->bStreamInitialized = FALSE;
@@ -132,7 +133,7 @@ void __cdecl JabberIbbSendThread( JABBER_IBB_TRANSFER *jibb )
 			XmlNodeIq iq2( "set", iqId, jibb->dstJID );
 			XmlNode* closeNode = iq2.addChild( "close" );
 			closeNode->addAttr( "sid", jibb->sid );
-			closeNode->addAttr( "xmlns", "http://jabber.org/protocol/ibb" );
+			closeNode->addAttr( "xmlns", JABBER_FEAT_IBB );
 
 			jibb->hEvent = CreateEvent( NULL, FALSE, FALSE, NULL );
 
@@ -185,7 +186,7 @@ void __cdecl JabberIbbReceiveThread( JABBER_IBB_TRANSFER *jibb )
 		XmlNodeIq iq2( "set", iqId, jibb->dstJID );
 		XmlNode* closeNode = iq2.addChild( "close" );
 		closeNode->addAttr( "sid", jibb->sid );
-		closeNode->addAttr( "xmlns", "http://jabber.org/protocol/ibb" );
+		closeNode->addAttr( "xmlns", JABBER_FEAT_IBB );
 
 		jabberThreadInfo->send( iq2 );
 	}

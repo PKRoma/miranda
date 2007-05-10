@@ -28,6 +28,7 @@ Last change by : $Author$
 #include "jabber.h"
 #include "jabber_iq.h"
 #include "jabber_byte.h"
+#include "jabber_caps.h"
 
 #define JABBER_NETWORK_BUFFER_SIZE 4096
 
@@ -75,7 +76,7 @@ static void JabberIqResultProxyDiscovery( XmlNode* iqNode, void* userdata )
 			XmlNode *queryNode = JabberXmlGetChild( iqNode, "query" );
 			if ( queryNode ) {
 				TCHAR *queryXmlns = JabberXmlGetAttrValue( queryNode, "xmlns" );
-				if (queryXmlns && !_tcscmp( queryXmlns, _T("http://jabber.org/protocol/bytestreams"))) {
+				if (queryXmlns && !_tcscmp( queryXmlns, _T(JABBER_FEAT_BYTESTREAMS))) {
 					XmlNode *streamHostNode = JabberXmlGetChild( queryNode, "streamhost" );
 					if ( streamHostNode ) {
 						TCHAR *streamJid = JabberXmlGetAttrValue( streamHostNode, "jid" );
@@ -135,7 +136,7 @@ void __cdecl JabberByteSendThread( JABBER_BYTE_TRANSFER *jbt )
 
 			JabberIqAdd( iqId, IQ_PROC_NONE, JabberIqResultProxyDiscovery );
 			XmlNodeIq iq( "get", iqId, proxyJid );
-			XmlNode* query = iq.addQuery( "http://jabber.org/protocol/bytestreams" );
+			XmlNode* query = iq.addQuery( JABBER_FEAT_BYTESTREAMS );
 			jabberThreadInfo->send( iq );
 
 			WaitForSingleObject( jbt->hProxyEvent, INFINITE );
@@ -150,7 +151,7 @@ void __cdecl JabberByteSendThread( JABBER_BYTE_TRANSFER *jbt )
 	iqId = JabberSerialNext();
 	JabberIqAdd( iqId, IQ_PROC_NONE, JabberByteInitiateResult );
 	XmlNodeIq iq( "set", iqId, jbt->dstJID );
-	XmlNode* query = iq.addQuery( "http://jabber.org/protocol/bytestreams" );
+	XmlNode* query = iq.addQuery( JABBER_FEAT_BYTESTREAMS );
 	query->addAttr( "sid", jbt->sid );
 
 	if ( bDirect ) {
@@ -180,6 +181,7 @@ void __cdecl JabberByteSendThread( JABBER_BYTE_TRANSFER *jbt )
 		item->jbt = jbt;
 		hEvent = CreateEvent( NULL, FALSE, FALSE, NULL );
 		jbt->hEvent = hEvent;
+		jbt->hSendEvent = CreateEvent( NULL, FALSE, FALSE, NULL );
 		XmlNode* h = query->addChild( "streamhost" );
 		h->addAttr( "jid", jabberThreadInfo->fullJID ); h->addAttr( "host", localAddr ); h->addAttr( "port", nlb.wPort );
 		mir_free( localAddr );
@@ -211,6 +213,8 @@ void __cdecl JabberByteSendThread( JABBER_BYTE_TRANSFER *jbt )
 
 	if ( !jbt->szStreamhostUsed ) {
 		if (bDirect) {
+			SetEvent( jbt->hSendEvent );
+			CloseHandle( jbt->hSendEvent );
 			CloseHandle( hEvent );
 			jbt->hEvent = NULL;
 			jbt->pfnFinal(( jbt->state==JBT_DONE )?TRUE:FALSE, jbt->userdata );
@@ -225,6 +229,8 @@ void __cdecl JabberByteSendThread( JABBER_BYTE_TRANSFER *jbt )
 	if ( jbt->bProxyDiscovered && !_tcscmp( jbt->szProxyJid, jbt->szStreamhostUsed )) {
 		// jabber proxy used
 		if ( bDirect ) {
+			SetEvent( jbt->hSendEvent );
+			CloseHandle( jbt->hSendEvent );
 			CloseHandle( hEvent );
 			jbt->hEvent = NULL;
 			if ( jbt->hConn != NULL )
@@ -234,8 +240,10 @@ void __cdecl JabberByteSendThread( JABBER_BYTE_TRANSFER *jbt )
 		JabberByteSendViaProxy( jbt );
 	}
 	else {
+		SetEvent( jbt->hSendEvent );
 		WaitForSingleObject( hEvent, INFINITE );
 		CloseHandle( hEvent );
+		CloseHandle( jbt->hSendEvent );
 		jbt->hEvent = NULL;
 		jbt->pfnFinal(( jbt->state == JBT_DONE ) ? TRUE : FALSE, jbt->userdata );
 		if ( jbt->hConn != NULL )
@@ -264,7 +272,7 @@ static void JabberByteInitiateResult( XmlNode *iqNode, void *userdata )
 			XmlNode* queryNode = JabberXmlGetChild( iqNode, "query" );
 			if ( queryNode ) {
 				TCHAR* queryXmlns = JabberXmlGetAttrValue( queryNode, "xmlns" );
-				if ( queryXmlns && !_tcscmp( queryXmlns, _T( "http://jabber.org/protocol/bytestreams" ))) {
+				if ( queryXmlns && !_tcscmp( queryXmlns, _T( JABBER_FEAT_BYTESTREAMS ))) {
 					XmlNode* streamHostNode = JabberXmlGetChild( queryNode, "streamhost-used" );
 					if ( streamHostNode ) {
 						TCHAR* streamJid = JabberXmlGetAttrValue( streamHostNode, "jid" );
@@ -410,6 +418,10 @@ static int JabberByteSendParse( HANDLE hConn, JABBER_BYTE_TRANSFER *jbt, char* b
 				data[0] = 5;
 				data[3] = 1;
 				Netlib_Send( hConn, ( char* )data, 10, 0 );
+
+				// wait stream activation
+				WaitForSingleObject( jbt->hSendEvent, INFINITE );
+
 				if ( i>=20 && jbt->pfnSend( hConn, jbt->userdata )==TRUE )
 					jbt->state = JBT_DONE;
 				else
@@ -591,7 +603,7 @@ static int JabberByteSendProxyParse( HANDLE hConn, JABBER_BYTE_TRANSFER *jbt, ch
 
 			JabberIqAdd( iqId, IQ_PROC_NONE, JabberIqResultStreamActivate );
 			XmlNodeIq iq( "set", iqId, jbt->streamhostJID );
-			XmlNode* query = iq.addQuery( "http://jabber.org/protocol/bytestreams" );
+			XmlNode* query = iq.addQuery( JABBER_FEAT_BYTESTREAMS );
 			query->addAttr( "sid", jbt->sid );
 			XmlNode* stream = query->addChild( "activate", jbt->dstJID );
 
@@ -783,7 +795,7 @@ static int JabberByteReceiveParse( HANDLE hConn, JABBER_BYTE_TRANSFER *jbt, char
 			jbt->state = JBT_RECVING;
 
 			XmlNodeIq iq( "result", jbt->iqId, jbt->srcJID );
-			XmlNode* query = iq.addQuery( "http://jabber.org/protocol/bytestreams" );
+			XmlNode* query = iq.addQuery( JABBER_FEAT_BYTESTREAMS );
 			XmlNode* stream = query->addChild( "streamhost-used" ); stream->addAttr( "jid", jbt->streamhostJID );
 			jabberThreadInfo->send( iq );
 		}

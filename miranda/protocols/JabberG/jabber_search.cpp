@@ -34,6 +34,7 @@ Last change by : $Author: ghazan $
 #include "jabber_iq.h"
 #include "resource.h"
 #include "jabber_search.h"
+#include "jabber_caps.h"
 
 ///////////////////////////////////////////////////////////////////////////////
 // Subclassing of IDC_FRAME to implement more user-friendly fields scrolling
@@ -145,7 +146,7 @@ static void JabberIqResultGetSearchFields( XmlNode *iqNode, void *userdata )
 
 	if ( !lstrcmp( type, _T("result"))) {
 		XmlNode* queryNode=JabberXmlGetNthChild(iqNode,"query",1);
-		XmlNode* xNode = JabberXmlGetChildWithGivenAttrValue( queryNode, "x", "xmlns", _T("jabber:x:data"));
+		XmlNode* xNode = JabberXmlGetChildWithGivenAttrValue( queryNode, "x", "xmlns", _T(JABBER_FEAT_DATA_FORMS));
 		int formHeight=0;
 		ShowWindow(searchHandleDlg,SW_HIDE);
 		if ( xNode ) {
@@ -308,7 +309,7 @@ static void JabberIqResultAdvancedSearch( XmlNode *iqNode, void *userdata )
 
 	if ( !lstrcmp( type, _T("result"))) {
 		XmlNode* queryNode=JabberXmlGetNthChild(iqNode,"query",1);
-		XmlNode* xNode = JabberXmlGetChildWithGivenAttrValue( queryNode, "x", "xmlns", _T("jabber:x:data"));
+		XmlNode* xNode = JabberXmlGetChildWithGivenAttrValue( queryNode, "x", "xmlns", _T(JABBER_FEAT_DATA_FORMS));
 		if (xNode) {
 			//1. Form search results info
 			XmlNode* reportNode=JabberXmlGetNthChild(xNode,"reported",1);

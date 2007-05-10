@@ -30,6 +30,7 @@ Last change by : $Author$
 #include <fcntl.h>
 #include <sys/types.h>
 #include <sys/stat.h>
+#include "jabber_caps.h"
 
 static char* fileBaseName;
 static char* filePathName;
@@ -271,7 +272,7 @@ void __cdecl JabberFileServerThread( filetransfer* ft )
 				TCHAR* fulljid = ( TCHAR* )alloca( sizeof( TCHAR )*len );
 				wsprintf( fulljid, _T("%s/%s"), ft->jid, ptszResource );
 				XmlNodeIq iq( "set", id, fulljid );
-				XmlNode* query = iq.addQuery( "jabber:iq:oob" );
+				XmlNode* query = iq.addQuery( JABBER_FEAT_OOB );
 				query->addChild( "url", szAddr );
 				query->addChild( "desc", ft->szDescription );
 				jabberThreadInfo->send( iq );

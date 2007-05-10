@@ -30,6 +30,7 @@ Last change by : $Author$
 #include "jabber_list.h"
 #include "jabber_iq.h"
 #include <commctrl.h>
+#include "jabber_caps.h"
 
 void JabberAddMucListItem( JABBER_MUC_JIDLIST_INFO* jidListInfo, TCHAR* str );
 void JabberDeleteMucListItem( JABBER_MUC_JIDLIST_INFO* jidListInfo, TCHAR* str );
@@ -111,7 +112,7 @@ void JabberIqResultGetMuc( XmlNode *iqNode, void *userdata )
 			if ( !lstrcmp( str, _T("http://jabber.org/protocol/muc#owner" ))) {
 				if (( xNode=JabberXmlGetChild( queryNode, "x" )) != NULL ) {
 					str = JabberXmlGetAttrValue( xNode, "xmlns" );
-					if ( !lstrcmp( str, _T("jabber:x:data" )))
+					if ( !lstrcmp( str, _T(JABBER_FEAT_DATA_FORMS)))
 						JabberFormCreateDialog( xNode, _T("Jabber Conference Room Configuration"), JabberSetMucConfig, mir_tstrdup( from ));
 }	}	}	}	}
 
@@ -153,7 +154,7 @@ void JabberIqResultDiscoRoomItems( XmlNode *iqNode, void *userdata )
 		JabberIqAdd( iqId, IQ_PROC_BROWSEROOMS, JabberIqResultBrowseRooms );
 
 		XmlNodeIq iq( "get", iqId, from );
-		XmlNode* query = iq.addQuery( "jabber:iq:browse" );
+		XmlNode* query = iq.addQuery( JABBER_FEAT_BROWSE );
 		jabberThreadInfo->send( iq );
 }	}
 

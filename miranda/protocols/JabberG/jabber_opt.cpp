@@ -31,6 +31,7 @@ Last change by : $Author$
 #include <commctrl.h>
 #include "resource.h"
 #include <uxtheme.h>
+#include "jabber_caps.h"
 
 extern BOOL jabberSendKeepAlive;
 extern UINT jabberCodePage;
@@ -299,7 +300,7 @@ static BOOL CALLBACK JabberOptDlgProc( HWND hwndDlg, UINT msg, WPARAM wParam, LP
 			break;
 		}
 		case IDC_LINK_PUBLIC_SERVER:
-			ShellExecuteA( hwndDlg, "open", "http://www.jabber.org/network", "", "", SW_SHOW );
+			ShellExecuteA( hwndDlg, "open", "http://www.jabber.org/user/publicservers.shtml", "", "", SW_SHOW );
 			return TRUE;
 		case IDC_DOWNLOAD_OPENSSL:
 			ShellExecuteA( hwndDlg, "open", "http://www.slproweb.com/products/Win32OpenSSL.html", "", "", SW_SHOW );
@@ -330,7 +331,7 @@ static BOOL CALLBACK JabberOptDlgProc( HWND hwndDlg, UINT msg, WPARAM wParam, LP
 						TranslateT( "Account removal warning" ), MB_YESNOCANCEL ) == IDYES )
 			{
 				XmlNodeIq iq( "set", NOID, jabberJID );
-				iq.addQuery( "jabber:iq:register" )->addChild( "remove" );
+				iq.addQuery( JABBER_FEAT_REGISTER )->addChild( "remove" );
 				jabberThreadInfo->send( iq );
 			}
 			break;

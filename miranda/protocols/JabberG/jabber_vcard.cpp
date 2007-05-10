@@ -32,6 +32,7 @@ Last change by : $Author$
 #include <commctrl.h>
 #include "jabber_iq.h"
 #include "resource.h"
+#include "jabber_caps.h"
 
 extern char* jabberVcardPhotoFileName;
 extern char* jabberVcardPhotoType;
@@ -59,7 +60,7 @@ int JabberSendGetVcard( const TCHAR* jid )
 	JabberIqAdd( iqId, ( jid == jabberJID ) ? IQ_PROC_GETVCARD : IQ_PROC_NONE, JabberIqResultGetVcard );
 
 	XmlNodeIq iq( "get", iqId, jid );
-	XmlNode* vs = iq.addChild( "vCard" ); vs->addAttr( "xmlns", "vcard-temp" ); 
+	XmlNode* vs = iq.addChild( "vCard" ); vs->addAttr( "xmlns", JABBER_FEAT_VCARD_TEMP ); 
 	vs->addAttr( "prodid", "-//HandGen//NONSGML vGen v1.0//EN" ); vs->addAttr( "version", "2.0" );
 	jabberThreadInfo->send( iq );
 	return iqId;
@@ -807,7 +808,7 @@ static void SetServerVcard()
 	JabberIqAdd( iqId, IQ_PROC_SETVCARD, JabberIqResultSetVcard );
 
 	XmlNodeIq iq( "set", iqId );
-	XmlNode* v = iq.addChild( "vCard" ); v->addAttr( "xmlns", "vcard-temp" );
+	XmlNode* v = iq.addChild( "vCard" ); v->addAttr( "xmlns", JABBER_FEAT_VCARD_TEMP );
 
 	AppendVcardFromDB( v, "FN", "FullName" );
 
