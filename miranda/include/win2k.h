@@ -92,6 +92,9 @@ File created by Christian Kästner, and tweaked a bit by Richard Hughes*/
 		#define CBS_UNCHECKEDHOT    2
 		#define CBS_CHECKEDNORMAL   5
 		#define CBS_CHECKEDHOT      6
+		#define SP_PANE				1	// STATUS
+		#define	SP_GRIPPERPANE		2
+		#define SP_GRIPPER			3
 	#endif
 #endif
 
