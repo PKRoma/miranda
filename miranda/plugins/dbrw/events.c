@@ -40,7 +40,9 @@ enum {
 	SQL_EVT_STMT_FINDFIRSTUNREAD,
 	SQL_EVT_STMT_FINDLAST,
 	SQL_EVT_STMT_FINDNEXT,
-	SQL_EVT_STMT_FINDPREV,
+	SQL_EVT_STMT_FINDPREV,   
+	SQL_EVT_STMT_CREATETEMPTABLE,
+	SQL_EVT_STMT_DROPTEMPTABLE,
 	SQL_EVT_STMT_NUM
 };
 static char *evt_stmts[SQL_EVT_STMT_NUM] = {
@@ -59,19 +61,29 @@ static char *evt_stmts[SQL_EVT_STMT_NUM] = {
 	"SELECT flags,id FROM dbrw_events where contactid = ? ORDER by id;",
 	"SELECT id FROM dbrw_events where contactid = ? ORDER by id DESC;",
 	"SELECT id FROM dbrw_events where contactid = ? AND id > ? ORDER by id LIMIT 1;",
-	"SELECT id FROM dbrw_events where contactid = ? AND id < ? ORDER by id DESC LIMIT 1;"
+	"SELECT id FROM dbrw_events where contactid = ? AND id < ? ORDER by id DESC LIMIT 1;",
+    "create temp table temp_dbrw_events (id integer primary key,eventtime integer,flags integer,eventtype integer, blob any, blobsize integer, contactid integer,modulename varchar(255),inserttime integer);"
+        "create temp trigger insert_new_temp_event1 after insert on dbrw_events begin replace into temp_dbrw_events values(new.id,new.eventtime,new.flags,new.eventtype,new.blob,new.blobsize,new.contactid,new.modulename,new.inserttime); end;"
+        "create temp trigger insert_new_temp_event2 after update on dbrw_events begin replace into temp_dbrw_events values(new.id,new.eventtime,new.flags,new.eventtype,new.blob,new.blobsize,new.contactid,new.modulename,new.inserttime); end;"
+        "create temp trigger delete_temp_event after delete on dbrw_events begin delete from temp_dbrw_events where id=old.id and contactid=old.id; end;",
+    "drop trigger insert_new_temp_event1;"
+        "drop trigger insert_new_temp_event2;"
+        "drop trigger delete_temp_event;"
+        "drop table temp_dbrw_events;"
 };
 static sqlite3_stmt *evt_stmts_prep[SQL_EVT_STMT_NUM] = {0};
 
 void events_init() {
 	InitializeCriticalSection(&csEventsDb);
 	sql_prepare_add(evt_stmts, evt_stmts_prep, SQL_EVT_STMT_NUM);
+    
+    sql_step(evt_stmts_prep[SQL_EVT_STMT_CREATETEMPTABLE]);
+	sql_reset(evt_stmts_prep[SQL_EVT_STMT_CREATETEMPTABLE]);
+    
     sql_exec(g_sqlite, "BEGIN TRANSACTION;");
-    sql_exec(g_sqlite, "create temp table temp_dbrw_events (id integer primary key,eventtime integer,flags integer,eventtype integer, blob any, blobsize integer, contactid integer,modulename varchar(255),inserttime integer);");
-    sql_exec(g_sqlite, "create temp trigger insert_new_temp_event1 after insert on dbrw_events begin replace into temp_dbrw_events values(new.id,new.eventtime,new.flags,new.eventtype,new.blob,new.blobsize,new.contactid,new.modulename,new.inserttime); end;");
-    sql_exec(g_sqlite, "create temp trigger insert_new_temp_event2 after update on dbrw_events begin replace into temp_dbrw_events values(new.id,new.eventtime,new.flags,new.eventtype,new.blob,new.blobsize,new.contactid,new.modulename,new.inserttime); end;");
-    sql_exec(g_sqlite, "create temp trigger delete_temp_event after delete on dbrw_events begin delete from temp_dbrw_events where id=old.id and contactid=old.id; end;");
+    sql_step(evt_stmts_prep[SQL_EVT_STMT_CREATETEMPTABLE]);
     sql_exec(g_sqlite, "COMMIT;");
+	sql_reset(evt_stmts_prep[SQL_EVT_STMT_CREATETEMPTABLE]);
     hEventsEvent = CreateEvent(NULL, FALSE, FALSE, NULL);
     hEventsThread = (HANDLE)mir_forkthreadex(events_timerProcThread, 0, 0, 0);
 }
@@ -96,15 +108,11 @@ static unsigned __stdcall events_timerProcThread(void *arg) {
         else if(dwWait == WAIT_TIMEOUT) {
             EnterCriticalSection(&csEventsDb);
             sql_exec(g_sqlite, "BEGIN TRANSACTION;");
-            sql_exec(g_sqlite, "drop trigger insert_new_temp_event1;");      
-            sql_exec(g_sqlite, "drop trigger insert_new_temp_event2;");  
-            sql_exec(g_sqlite, "drop trigger delete_temp_event;");
-            sql_exec(g_sqlite, "drop table temp_dbrw_events;");
-            sql_exec(g_sqlite, "create temp table temp_dbrw_events (id integer primary key,eventtime integer,flags integer,eventtype integer, blob any, blobsize integer, contactid integer,modulename varchar(255),inserttime integer);");
-            sql_exec(g_sqlite, "create temp trigger insert_new_temp_event1 after insert on dbrw_events begin replace into temp_dbrw_events values(new.id,new.eventtime,new.flags,new.eventtype,new.blob,new.blobsize,new.contactid,new.modulename,new.inserttime); end;");
-            sql_exec(g_sqlite, "create temp trigger insert_new_temp_event2 after update on dbrw_events begin replace into temp_dbrw_events values(new.id,new.eventtime,new.flags,new.eventtype,new.blob,new.blobsize,new.contactid,new.modulename,new.inserttime); end;");
-            sql_exec(g_sqlite, "create temp trigger delete_temp_event after delete on dbrw_events begin delete from temp_dbrw_events where id=old.id and contactid=old.id; end;");
+            sql_step(evt_stmts_prep[SQL_EVT_STMT_DROPTEMPTABLE]);
+            sql_step(evt_stmts_prep[SQL_EVT_STMT_CREATETEMPTABLE]);
             sql_exec(g_sqlite, "COMMIT;");
+            sql_reset(evt_stmts_prep[SQL_EVT_STMT_DROPTEMPTABLE]);
+            sql_reset(evt_stmts_prep[SQL_EVT_STMT_CREATETEMPTABLE]);
             LeaveCriticalSection(&csEventsDb);
         }
         else if (dwWait == WAIT_IO_COMPLETION)
