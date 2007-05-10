@@ -340,9 +340,13 @@ static void RatesTimer1()
   rate_record *item;
   int bSetupTimer = 0;
 
-  if (!pendingList1) return;
-
   EnterCriticalSection(&ratesListsMutex);
+  if (!pendingList1)
+  {
+    LeaveCriticalSection(&ratesListsMutex);
+    return;
+  }
+  
   if (!icqOnline)
   {
     int i;
@@ -459,9 +463,13 @@ static void RatesTimer2()
   rate_record *item;
   int bSetupTimer = 0;
 
-  if (!pendingList2) return;
-
   EnterCriticalSection(&ratesListsMutex);
+  if (!pendingList2)
+  {
+    LeaveCriticalSection(&ratesListsMutex);
+    return;
+  }
+  
   if (!icqOnline)
   {
     int i;
