@@ -36,7 +36,7 @@ HINSTANCE g_hInst;
 PLUGININFOEX pluginInfo = {
 	sizeof(PLUGININFOEX),
 	"Scriver",
-	PLUGIN_MAKE_VERSION(2, 5, 9, 16),
+	PLUGIN_MAKE_VERSION(2, 5, 9, 17),
 	"Scriver - send and receive instant messages",
 	"Miranda IM Development Team",
 	"the_leech@users.berlios.de",
