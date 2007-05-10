@@ -40,12 +40,14 @@ static int ServiceSkinAddNewSound(WPARAM wParam,LPARAM lParam)
 
 	if (ssd->cbSize!=sizeof(SKINSOUNDDESC) && ssd->cbSize!=sizeof(SKINSOUNDDESCEX))
 		return 0;
-
+    if (ssd->pszName==NULL || ssd->pszDescription==NULL)
+        return 0;
+    
 	soundList=(struct SoundItem*)mir_realloc(soundList,sizeof(struct SoundItem)*(soundCount+1));
 	item = &soundList[soundCount++];
 	item->name = mir_strdup( ssd->pszName );
 	item->description = LangPackPcharToTchar( ssd->pszDescription );
-	item->section = LangPackPcharToTchar( ssd->cbSize==sizeof(SKINSOUNDDESCEX) ? ssd->pszSection : "Other" );
+	item->section = LangPackPcharToTchar( ssd->cbSize==sizeof(SKINSOUNDDESCEX)&&ssd->pszSection!=NULL ? ssd->pszSection : "Other" );
 	item->tempFile = NULL;
 	if ( ssd->pszDefaultFile ) {
 		DBVARIANT dbv;
