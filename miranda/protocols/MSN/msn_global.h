@@ -142,26 +142,21 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #define MS_GOTO_INBOX		"/GotoInbox"
 #define MS_EDIT_PROFILE		"/EditProfile"
 #define MS_VIEW_STATUS		"/ViewMsnStatus"
-#define MS_SET_NICKNAME_UI "/SetNicknameUI"
-#define MS_SET_AVATAR_UI	"/SetAvatarUI"
+#define MS_SET_NICKNAME_UI  "/SetNicknameUI"
 
-#define MSN_ISAVATARFORMATSUPPORTED "/IsAvatarFormatSupported"
-#define MSN_GETMYAVATARMAXSIZE      "/GetMyAvatarMaxSize"
-#define MSN_GETMYAVATAR             "/GetMyAvatar"
-#define MSN_SETMYAVATAR             "/SetMyAvatar"
 #define MSN_SET_NICKNAME            "/SetNickname"
 
-#define MSN_GETUNREAD_EMAILCOUNT		"/GetUnreadEmailCount"
+#define MSN_GETUNREAD_EMAILCOUNT	"/GetUnreadEmailCount"
 /////////////////////////////////////////////////////////////////////////////////////////
 //	MSN plugin functions
 
 #define NEWSTR_ALLOCA(A) (A==NULL)?NULL:strcpy((char*)alloca(strlen(A)+1),A)
 #define NEWTSTR_ALLOCA(A) (A==NULL)?NULL:_tcscpy((TCHAR*)alloca(sizeof(TCHAR)*(_tcslen(A)+1)),A)
 
-#define	MSN_ALLOW_MSGBOX		1
+#define	MSN_ALLOW_MSGBOX	1
 #define	MSN_ALLOW_ENTER		2
-#define	MSN_HOTMAIL_POPUP		4
-#define  MSN_SHOW_ERROR       8
+#define	MSN_HOTMAIL_POPUP	4
+#define MSN_SHOW_ERROR      8
 void  MSN_ShowPopup( const char* nickname, const char* msg, int flags );
 
 LONG		MSN_SendPacket( HANDLE, const char* cmd, const char* params, ... );
@@ -242,6 +237,13 @@ HANDLE      GetIconHandle( int iconId );
 HICON       LoadIconEx( const char* );
 void        ReleaseIconEx( const char* );
 
+int addCachedMsg( const char* id, const char* msg, const size_t offset, const size_t portion, 
+				 const size_t totsz, const bool bychunk );
+bool getCachedMsg( const int idx, char*& msg, size_t& size );
+bool getCachedMsg( const char* id, char*& msg, size_t& size );
+void clearCachedMsg( int idx = -1 );
+void CachedMsg_Uninit( void );
+
 void     MsnInitIcons( void );
 void     MsnInitMenus( void );
 
@@ -276,7 +278,7 @@ struct MimeHeader
 struct MimeHeaders
 {
 	MimeHeaders();
-	MimeHeaders( int );
+	MimeHeaders( unsigned );
 	~MimeHeaders();
 
 	const char*	readFromBuffer( const char* pSrc );
@@ -285,10 +287,11 @@ struct MimeHeaders
 	void  addString( const char* name, const char* szValue );
 	void	addLong( const char* name, long lValue );
 
-	int   getLength( void );
+	size_t  getLength( void );
 	char* writeToBuffer( char* pDest );
 
-	int			mCount;
+	unsigned	mCount;
+	unsigned	mAllocCount;
 	MimeHeader* mVals;
 };
 
@@ -370,7 +373,7 @@ struct filetransfer
 	char*       p2p_branch;		// header Branch: field
 	char*       p2p_callID;		// header Call-ID: field
 	char*       p2p_dest;		// destination e-mail address
-	char*       p2p_object;    // MSN object for a transfer
+	char*       p2p_object;     // MSN object for a transfer
 
 	//---- receiving a file
 	wchar_t*    wszFileName;	// file name in Unicode, for receiving
@@ -428,7 +431,6 @@ struct ThreadData
 	TCHAR          mChatID[10];
 	bool           mIsMainThread;
 	int            mWaitPeriod;
-	char*          mSplitMsgBuf;
 
 	//----| for gateways |----------------------------------------------------------------
 	char           mSessionID[ 50 ]; // Gateway session ID
@@ -518,11 +520,10 @@ void  p2p_redirectSessions( HANDLE hContact );
 
 void  p2p_invite( HANDLE hContact, int iAppID, filetransfer* ft = NULL );
 void  p2p_processMsg( ThreadData* info, const char* msgbody );
-void  p2p_sendAck( filetransfer* ft, ThreadData* info, P2P_Header* hdrdata );
-void  p2p_sendStatus( filetransfer* ft, ThreadData* info, long lStatus );
-void  p2p_sendBye( ThreadData* info, filetransfer* ft );
-void  p2p_sendCancel( ThreadData* info, filetransfer* ft );
-void  p2p_sendRedirect( ThreadData* info, filetransfer* ft );
+void  p2p_sendStatus( filetransfer* ft, long lStatus );
+void  p2p_sendBye( filetransfer* ft );
+void  p2p_sendCancel( filetransfer* ft );
+void  p2p_sendRedirect( filetransfer* ft );
 
 void  p2p_sendFeedStart( filetransfer* ft );
 
@@ -536,7 +537,8 @@ filetransfer*  p2p_getSessionByID( unsigned id );
 filetransfer*  p2p_getSessionByUniqueID( unsigned id );
 filetransfer*  p2p_getSessionByCallID( const char* CallID );
 
-BOOL  p2p_sessionRegistered( filetransfer* ft );
+bool  p2p_sessionRegistered( filetransfer* ft );
+bool  p2p_isAvatarOnly( HANDLE hContact );
 unsigned p2p_getMsgId( HANDLE hContact, int inc );
 
 
@@ -557,8 +559,8 @@ void MSN_KillChatSession(TCHAR* id);
 struct MsgQueueEntry
 {
 	HANDLE			hContact;
-	char*				message;
-	int            msgType;
+	char*			message;
+	int             msgType;
 	int				msgSize;
 	filetransfer*	ft;
 	int				seq;
@@ -627,7 +629,6 @@ typedef struct
 
 	BOOL		UseGateway;
 	BOOL		UseProxy;
-	BOOL		KeepConnectionAlive;
 	BOOL		ShowErrorsAsPopups;
 	BOOL		AwayAsBrb;
 	BOOL		SlowSend;

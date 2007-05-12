@@ -44,7 +44,6 @@ static iconList[] =
 	{	"Hotmail Inbox",          "inbox",       IDI_INBOX      },
 	{	"Profile",                "profile",     IDI_PROFILE    },
 	{	"MSN Services",           "services",    IDI_SERVICES   },
-	{	"Set Avatar",             "avatar",      IDI_AVATAR     },
 	{	"Block user",             "block",       IDI_MSNBLOCK   },
 	{	"Invite to chat",         "invite",      IDI_INVITE     },
 	{	"Start Netmeeting",       "netmeeting",  IDI_NETMEETING },
@@ -494,7 +493,6 @@ static BOOL CALLBACK DlgProcHotmailPopUpOpts( HWND hwndDlg, UINT msg, WPARAM wPa
 
 		CheckDlgButton( hwndDlg, IDC_DISABLEHOTMAIL,      MSN_GetByte( "DisableHotmail", 0 ));
 		CheckDlgButton( hwndDlg, IDC_DISABLEHOTJUNK,	     MSN_GetByte( "DisableHotmailJunk", 0 ));
-		CheckDlgButton( hwndDlg, IDC_NOTIFY_USERTYPE,     MSN_GetByte( "DisplayTyping", 0 ));
 		CheckDlgButton( hwndDlg, IDC_NOTIFY_ENDSESSION,   MSN_GetByte( "EnableSessionPopup", 0 ));
 		CheckDlgButton( hwndDlg, IDC_NOTIFY_FIRSTMSG,     MSN_GetByte( "EnableDeliveryPopup", 1 ));
 		CheckDlgButton( hwndDlg, IDC_NOTIFY_CUSTOMSMILEY, MSN_GetByte( "EnableCustomSmileyPopup", 1 ));
@@ -528,7 +526,6 @@ static BOOL CALLBACK DlgProcHotmailPopUpOpts( HWND hwndDlg, UINT msg, WPARAM wPa
 
 		case IDC_NOTIFY_CUSTOMSMILEY:
 		case IDC_DISABLEHOTJUNK:
-		case IDC_NOTIFY_USERTYPE:
 		case IDC_NOTIFY_ENDSESSION:
 		case IDC_POPUP_TIMEOUT:
 		case IDC_POPUP_TIMEOUT2:
@@ -593,7 +590,6 @@ static BOOL CALLBACK DlgProcHotmailPopUpOpts( HWND hwndDlg, UINT msg, WPARAM wPa
 
 				MSN_SetByte( "UseWinColors",	( BYTE )IsDlgButtonChecked( hwndDlg, IDC_USEWINCOLORS ));
 				MSN_SetByte( "EnableCustomSmileyPopup", ( BYTE )IsDlgButtonChecked( hwndDlg, IDC_NOTIFY_CUSTOMSMILEY ));
-				MSN_SetByte( "DisplayTyping",	( BYTE )IsDlgButtonChecked( hwndDlg, IDC_NOTIFY_USERTYPE ));
 				MSN_SetByte( "DisableHotmail", ( BYTE )IsDlgButtonChecked( hwndDlg, IDC_DISABLEHOTMAIL ));
 				MSN_SetByte( "DisableHotmailJunk",( BYTE )IsDlgButtonChecked( hwndDlg, IDC_DISABLEHOTJUNK ));
 				MSN_SetByte( "EnableDeliveryPopup", ( BYTE )IsDlgButtonChecked( hwndDlg, IDC_NOTIFY_FIRSTMSG ));
@@ -666,7 +662,6 @@ void  LoadOptions()
 		DBGetContactSettingDword( NULL, ModuleName, "TextColour", GetSysColor( COLOR_WINDOWTEXT ));
 
 	MyOptions.AwayAsBrb = MSN_GetByte( "AwayAsBrb", FALSE );
-	MyOptions.KeepConnectionAlive = MSN_GetByte( "KeepAlive", FALSE );
 	MyOptions.ManageServer = MSN_GetByte( "ManageServer", TRUE );
 	MyOptions.PopupTimeoutHotmail = MSN_GetDword( NULL, "PopupTimeout", 3 );
 	MyOptions.PopupTimeoutOther = MSN_GetDword( NULL, "PopupTimeoutOther", MyOptions.PopupTimeoutHotmail );

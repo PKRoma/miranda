@@ -26,16 +26,6 @@ LANGUAGE LANG_NEUTRAL, SUBLANG_NEUTRAL
 // Dialog
 //
 
-IDD_SETAVATAR DIALOGEX 0, 0, 222, 131
-STYLE DS_SETFONT | DS_FIXEDSYS | WS_CHILD
-EXSTYLE WS_EX_CONTROLPARENT
-FONT 8, "MS Shell Dlg", 400, 0, 0x1
-BEGIN
-    CONTROL         "",IDC_AVATAR,"MAvatarControlClass",0x0,10,5,100,95
-    PUSHBUTTON      "Set",IDC_SETAVATAR,9,112,45,13
-    PUSHBUTTON      "Delete",IDC_DELETEAVATAR,61,112,41,13
-END
-
 IDD_OPT_MSN DIALOGEX 0, 0, 304, 194
 STYLE DS_SETFONT | DS_FIXEDSYS | WS_CHILD | WS_VISIBLE
 EXSTYLE WS_EX_CONTROLPARENT
@@ -121,7 +111,7 @@ BEGIN
     LTEXT           "Blocked contact",IDC_STATIC,204,208,82,8
 END
 
-IDD_HOTMAIL_OPT_POPUP DIALOGEX 0, 0, 238, 233
+IDD_HOTMAIL_OPT_POPUP DIALOGEX 0, 0, 238, 204
 STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | WS_CHILD
 EXSTYLE WS_EX_CONTROLPARENT
 FONT 8, "MS Shell Dlg", 0, 0, 0x1
@@ -147,25 +137,21 @@ BEGIN
                     ES_NUMBER
     LTEXT           "sec.",IDC_STATIC,100,102,30,8
     DEFPUSHBUTTON   "Previe&w",IDC_PREVIEW,176,100,52,12
-    GROUPBOX        "Other",IDC_STATIC,3,122,232,94
-    CONTROL         "Display popups when user is typing",IDC_NOTIFY_USERTYPE,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,11,135,216,10
+    GROUPBOX        "Other",IDC_STATIC,3,121,232,80
     CONTROL         "Display errors using popups",IDC_ERRORS_USING_POPUPS,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,11,147,216,10
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,11,133,216,10
     CONTROL         "Enable 'First message delivered' popup",
                     IDC_NOTIFY_FIRSTMSG,"Button",BS_AUTOCHECKBOX | 
-                    WS_TABSTOP,11,159,216,10
-    LTEXT           "Timeout (*)",IDC_STATIC,10,199,60,8
-    EDITTEXT        IDC_POPUP_TIMEOUT2,70,197,24,12,ES_AUTOHSCROLL | 
+                    WS_TABSTOP,11,145,216,10
+    LTEXT           "Timeout (*)",IDC_STATIC,10,185,60,8
+    EDITTEXT        IDC_POPUP_TIMEOUT2,70,183,24,12,ES_AUTOHSCROLL | 
                     ES_NUMBER
-    LTEXT           "sec.",IDC_STATIC,98,199,30,8
-    DEFPUSHBUTTON   "Previe&w",IDC_PREVIEW2,174,196,52,12
-    LTEXT           "(*) Timeouts require Popup v. 1.0.1.9 or later",
-                    IDC_STATIC,3,222,232,8
+    LTEXT           "sec.",IDC_STATIC,98,185,30,8
+    DEFPUSHBUTTON   "Previe&w",IDC_PREVIEW2,174,182,52,12
     CONTROL         "Enable 'User left channel' popup",IDC_NOTIFY_ENDSESSION,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,11,172,218,8
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,11,158,218,8
     CONTROL         "Enable 'Custom Smiley' popup",IDC_NOTIFY_CUSTOMSMILEY,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,11,185,218,8
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,11,171,218,8
 END
 
 IDD_SETNICKNAME DIALOGEX 0, 0, 187, 42
@@ -200,11 +186,9 @@ END
 #ifdef APSTUDIO_INVOKED
 GUIDELINES DESIGNINFO 
 BEGIN
-    IDD_SETAVATAR, DIALOG
+    IDD_HOTMAIL_OPT_POPUP, DIALOG
     BEGIN
-        LEFTMARGIN, 7
-        TOPMARGIN, 7
-        BOTTOMMARGIN, 107
+        BOTTOMMARGIN, 201
     END
 END
 #endif    // APSTUDIO_INVOKED

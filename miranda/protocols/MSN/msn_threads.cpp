@@ -248,19 +248,31 @@ void  MSN_InitThreads()
 
 void  MSN_CloseConnections()
 {
-	int i;
-
 	EnterCriticalSection( &sttLock );
 
-	for ( i=0; i < sttThreads.getCount(); i++ ) {
+	NETLIBSELECT nls = {0};
+	nls.cbSize = sizeof(nls);
+
+	unsigned data;
+	NETLIBBUFFER nlb = { (char*)&data, 1, MSG_PEEK };
+
+	for ( int i=0; i < sttThreads.getCount(); i++ ) {
 		ThreadData* T = sttThreads[ i ];
 
-		switch (T->mType) {
+		switch (T->mType) 
+		{
 		case SERVER_DISPATCH :
 		case SERVER_NOTIFICATION :
 		case SERVER_SWITCHBOARD :
 			if (T->s != NULL)
-				T->sendPacket( "OUT", NULL );
+			{
+				nls.hReadConns[0] = T->s;
+				int res = MSN_CallService( MS_NETLIB_SELECT, 0, ( LPARAM )&nls );
+				if (res > 0)
+					res = MSN_CallService( MS_NETLIB_RECV, ( WPARAM )T->s, ( LPARAM )&nlb ) <= 0;
+				if ( res == 0)
+					T->sendPacket( "OUT", NULL );
+			}
 			break;
 
 		case SERVER_P2P_DIRECT :
@@ -279,17 +291,31 @@ void  MSN_CloseThreads()
 {
 	EnterCriticalSection( &sttLock );
 
-	for ( int i=0; i < sttThreads.getCount(); i++ ) {
-		ThreadData* T = sttThreads[ i ];
-		if ( T->s == NULL )
-			continue;
-
-		SOCKET s = MSN_CallService( MS_NETLIB_GETSOCKET, LPARAM( T->s ), 0 );
-		if ( s != INVALID_SOCKET )
-			shutdown( s, 2 );
-	}
+	bool opcon = false;
+	for ( int i=0; i < sttThreads.getCount(); i++ )
+		opcon |= sttThreads[ i ]->s != NULL;
 
 	LeaveCriticalSection( &sttLock );
+
+	if ( opcon )
+	{
+		Sleep( 1500 );
+
+		EnterCriticalSection( &sttLock );
+
+		for ( int i=0; i < sttThreads.getCount(); i++ ) 
+		{
+			HANDLE Ts = sttThreads[ i ]->s;
+			if ( Ts != NULL )
+			{
+				SOCKET s = MSN_CallService( MS_NETLIB_GETSOCKET, LPARAM( Ts ), 0 );
+				if ( s != INVALID_SOCKET )
+					shutdown( s, 2 );
+			}
+		}
+
+		LeaveCriticalSection( &sttLock );
+	}
 }
 
 void Threads_Uninit( void )
@@ -510,7 +536,6 @@ ThreadData::~ThreadData()
 		ReleaseMutex( hQueueMutex );
 		CloseHandle( hQueueMutex );
 	}
-	mir_free( mSplitMsgBuf );
 }
 
 void ThreadData::applyGatewayData( HANDLE hConn, bool isPoll )

@@ -113,7 +113,7 @@ filetransfer*  p2p_getSessionByUniqueID( unsigned id )
 }
 
 
- BOOL  p2p_sessionRegistered( filetransfer* ft )
+bool  p2p_sessionRegistered( filetransfer* ft )
 {
 	EnterCriticalSection( &sessionLock );
 	int idx = sessionList.getIndex( ft );
@@ -149,6 +149,20 @@ filetransfer*  p2p_getAvatarSession( HANDLE hContact )
 			result = FT;
 			break;
 	}	}
+
+	LeaveCriticalSection( &sessionLock );
+	return result;
+}
+
+bool  p2p_isAvatarOnly( HANDLE hContact )
+{
+	EnterCriticalSection( &sessionLock );
+
+	bool result = true;
+	for ( int i=0; i < sessionList.getCount(); i++ ) {
+		filetransfer* FT = sessionList[i];
+		result &= FT->std.hContact != hContact || FT->p2p_type != MSN_APPID_FILE;
+	}
 
 	LeaveCriticalSection( &sessionLock );
 	return result;
@@ -191,7 +205,7 @@ void  p2p_redirectSessions( HANDLE hContact )
 		if ( FT->std.hContact == hContact && !FT->std.sending && 
 			FT->std.currentFileProgress < FT->std.currentFileSize &&
 			( T == NULL || ( FT->tType != T->mType && FT->tType != 0 ))) 
-			p2p_sendRedirect( T, FT );
+			p2p_sendRedirect( FT );
 	}
 
 	LeaveCriticalSection( &sessionLock );
@@ -203,7 +217,7 @@ void  p2p_cancelAllSessions( void )
 
 	for ( int i=0; i < sessionList.getCount(); i++ ) {
 		filetransfer* FT = sessionList[i];
-		p2p_sendCancel( MSN_GetP2PThreadByContact( FT->std.hContact ), FT );
+		p2p_sendCancel( FT );
 	}
 
 	for ( int j=0; j < dcList.getCount(); j++ ) 

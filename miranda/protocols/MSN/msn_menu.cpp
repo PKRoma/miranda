@@ -30,10 +30,8 @@ extern unsigned long sl;
 
 
 HANDLE msnBlockMenuItem = NULL;
-HANDLE msnMenuItems[ 2 ];
+HANDLE msnMenuItems[ 1 ];
 HANDLE menuItemsAll[ 6 ] = { 0 };
-
-int MsnSetAvatar( WPARAM wParam, LPARAM lParam );
 
 /////////////////////////////////////////////////////////////////////////////////////////
 // Block command callback function
@@ -230,14 +228,6 @@ static int MsnSendNetMeeting( WPARAM wParam, LPARAM lParam )
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////
-//	MsnSetAvatar - sets an avatar without UI
-
-static int MsnSetAvatarUI( WPARAM wParam, LPARAM lParam )
-{
-	return MSN_CallService( MS_AV_SETMYAVATAR, ( WPARAM )msnProtocolName, 0 );
-}
-
-/////////////////////////////////////////////////////////////////////////////////////////
 //	SetNicknameCommand - sets nick name
 
 static BOOL CALLBACK DlgProcSetNickname(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam)
@@ -353,24 +343,15 @@ void MsnInitMenus( void )
 	mi.position = 2000060002;
 	mi.icolibItem = GetIconHandle( IDI_PROFILE );
 	mi.pszName = "My MSN &Space";
-	msnMenuItems[ 1 ] = ( HANDLE )MSN_CallService( MS_CLIST_ADDMAINMENUITEM, 0, (LPARAM)&mi );
+	menuItemsAll[ 1 ] = ( HANDLE )MSN_CallService( MS_CLIST_ADDMAINMENUITEM, 0, (LPARAM)&mi );
 
 	strcpy( tDest, MS_VIEW_STATUS );
 	arServices.insert( CreateServiceFunction( servicefunction, MsnViewServiceStatus ));
 	mi.position = 2000060003;
 	mi.icolibItem = GetIconHandle( IDI_SERVICES );
 	mi.pszName = "View MSN Services &Status";
-	menuItemsAll[ 1 ] = ( HANDLE )MSN_CallService( MS_CLIST_ADDMAINMENUITEM, 0, (LPARAM)&mi );
+	menuItemsAll[ 2 ] = ( HANDLE )MSN_CallService( MS_CLIST_ADDMAINMENUITEM, 0, (LPARAM)&mi );
 
-	if ( ServiceExists( MS_AV_SETMYAVATAR )) 
-	{
-		strcpy( tDest, MS_SET_AVATAR_UI );
-		arServices.insert( CreateServiceFunction( servicefunction, MsnSetAvatarUI ));
-		mi.position = 2000060004;
-		mi.icolibItem = GetIconHandle( IDI_AVATAR );
-		mi.pszName = "Set &Avatar";
-		menuItemsAll[ 2 ] = ( HANDLE )MSN_CallService( MS_CLIST_ADDMAINMENUITEM, 0, (LPARAM)&mi );
-	}
 
 	//////////////////////////////////////////////////////////////////////////////////////
 	// Contact menu initialization

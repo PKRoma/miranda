@@ -18,7 +18,6 @@
 #define IDI_LIST_BL                     122
 #define IDI_LIST_RL                     123
 #define IDI_AVATAR                      125
-#define IDD_SETAVATAR                   132
 #define IDD_OPT_MSN                     185
 #define IDD_SETNICKNAME                 226
 #define IDC_STMSNGROUP                  1002
@@ -31,11 +30,8 @@
 #define IDC_ICON_AL                     1018
 #define IDC_ICON_BL                     1019
 #define IDC_PASSWORD                    1020
-#define IDC_AVATAR                      1021
 #define IDC_HANDLE                      1022
 #define IDC_HANDLE2                     1023
-#define IDC_SETAVATAR                   1024
-#define IDC_DELETEAVATAR                1025
 #define IDC_BGCOLOUR                    1026
 #define IDC_TEXTCOLOUR                  1028
 #define IDC_AWAY_AS_BRB                 1029
@@ -47,7 +43,6 @@
 #define IDC_USEOPENSSL                  1036
 #define IDC_NOTIFY_CUSTOMSMILEY         1036
 #define IDC_SENDFONTINFO                1046
-#define IDC_NOTIFY_USERTYPE             1047
 #define IDC_NICKNAME                    1048
 #define IDC_DISABLEHOTJUNK              1049
 #define IDC_POPUP_TIMEOUT               1051

@@ -262,7 +262,7 @@ LBL_RecvAgain:
 		if ( *rest == '\r' )
 			rest += 2;
 
-		for ( int i=0; i < tHeaders.mCount; i++ )
+		for ( unsigned i=0; i < tHeaders.mCount; i++ )
 		{
 			MimeHeader& H = tHeaders.mVals[i];
 

@@ -29,13 +29,15 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 MimeHeaders::MimeHeaders() :
 	mCount( 0 ),
+	mAllocCount(0),
 	mVals( NULL )
 {
 }
 
-MimeHeaders::MimeHeaders( int iInitCount ) :
+MimeHeaders::MimeHeaders( unsigned iInitCount ) :
 	mCount( 0 )
 {
+	mAllocCount = iInitCount;
 	mVals = ( MimeHeader* )mir_alloc( iInitCount * sizeof( MimeHeader ));
 }
 
@@ -44,7 +46,7 @@ MimeHeaders::~MimeHeaders()
 	if ( mCount == NULL )
 		return;
 
-	for ( int i=0; i < mCount; i++ ) {
+	for ( unsigned i=0; i < mCount; i++ ) {
 		MimeHeader& H = mVals[ i ];
 		mir_free( H.name );
 		mir_free( H.value );
@@ -76,10 +78,10 @@ void MimeHeaders::addLong( const char* name, long lValue )
 /////////////////////////////////////////////////////////////////////////////////////////
 // write all values to a buffer
 
-int MimeHeaders::getLength()
+size_t MimeHeaders::getLength()
 {
-	int iResult = 0;
-	for ( int i=0; i < mCount; i++ ) {
+	size_t iResult = 0;
+	for ( unsigned i=0; i < mCount; i++ ) {
 		MimeHeader& H = mVals[ i ];
 		iResult += strlen( H.name ) + strlen( H.value ) + 4;
 	}
@@ -89,7 +91,7 @@ int MimeHeaders::getLength()
 
 char* MimeHeaders::writeToBuffer( char* pDest )
 {
-	for ( int i=0; i < mCount; i++ ) {
+	for ( unsigned i=0; i < mCount; i++ ) {
 		MimeHeader& H = mVals[ i ];
 		pDest += sprintf( pDest, "%s: %s\r\n", H.name, H.value );
 	}
@@ -102,8 +104,7 @@ char* MimeHeaders::writeToBuffer( char* pDest )
 
 const char* MimeHeaders::readFromBuffer( const char* parString )
 {
-	int        headerCount = 0;
-	MimeHeader headers[ 100 ];
+	mCount = 0;
 
 	while ( *parString ) {
 		if ( parString[0] == '\r' && parString[1] == '\n' ) {
@@ -132,7 +133,14 @@ const char* MimeHeaders::readFromBuffer( const char* parString )
 		
 		size_t vlLen = cbLen - ( delim - parString );
 
-		MimeHeader& H = headers[ headerCount ];
+		if ( mCount >= mAllocCount ) 
+		{
+			mAllocCount += 10;
+			mVals = ( MimeHeader* )mir_realloc( mVals, sizeof( MimeHeader ) * mAllocCount );
+		}
+
+		MimeHeader& H = mVals[ mCount ];
+
 		
 		H.name = ( char* )mir_alloc( nmLen + 1 ); 
 		memcpy( H.name, parString, nmLen ); 
@@ -143,20 +151,16 @@ const char* MimeHeaders::readFromBuffer( const char* parString )
 		memcpy( H.value, delim, vlLen ); 
 		H.value[vlLen] = 0;
 
-		headerCount++;
+		mCount++;
 		parString = peol;
 	}
 
-	if (( mCount = headerCount ) != 0 ) {
-		mVals = ( MimeHeader* )mir_alloc( sizeof( MimeHeader )*headerCount );
-		memcpy( mVals, headers, sizeof( MimeHeader ) * headerCount );
-	}
 	return parString;
 }
 
 const char* MimeHeaders::operator[]( const char* szFieldName )
 {
-	for ( int i=0; i < mCount; i++ ) {
+	for ( unsigned i=0; i < mCount; i++ ) {
 		MimeHeader& MH = mVals[i];
 		if ( !strcmp( MH.name, szFieldName ))
 			return MH.value;

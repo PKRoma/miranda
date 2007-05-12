@@ -303,13 +303,13 @@ int MsnDbSettingChanged(WPARAM wParam,LPARAM lParam)
 
 	if ( !strcmp( cws->szModule, "CList" )) {
 		char* szProto = ( char* )MSN_CallService( MS_PROTO_GETCONTACTBASEPROTO, ( WPARAM ) hContact, 0 );
-		if ( lstrcmpA( szProto, msnProtocolName ))
+		if ( szProto == NULL || strcmp( szProto, msnProtocolName ))
 			return 0;
 
 		if ( !strcmp( cws->szSetting, "Group" )) {
 			switch( cws->value.type ) {
-				case DBVT_DELETED:	MSN_MoveContactToGroup( hContact, NULL );								break;
-				case DBVT_ASCIIZ:    MSN_MoveContactToGroup( hContact, UTF8(cws->value.pszVal));		break;
+				case DBVT_DELETED:	MSN_MoveContactToGroup( hContact, NULL );						break;
+				case DBVT_ASCIIZ:   MSN_MoveContactToGroup( hContact, UTF8(cws->value.pszVal));		break;
 				case DBVT_UTF8:		MSN_MoveContactToGroup( hContact, cws->value.pszVal );			break;
 			}
 			return 0;
@@ -361,7 +361,7 @@ int MsnWindowEvent(WPARAM wParam, LPARAM lParam)
 
 	if ( msgEvData->uType == MSG_WINDOW_EVT_OPENING ) {
 		char* szProto = ( char* )MSN_CallService( MS_PROTO_GETCONTACTBASEPROTO, ( WPARAM )msgEvData->hContact, 0 );
-		if ( lstrcmpA( msnProtocolName, szProto )) return 0;
+		if ( szProto == NULL || strcmp( msnProtocolName, szProto )) return 0;
 
 		WORD wStatus = MSN_GetWord( msgEvData->hContact, "Status", ID_STATUS_OFFLINE );
 		if ( wStatus == ID_STATUS_OFFLINE || msnStatusMode == ID_STATUS_INVISIBLE ) return 0;
@@ -402,7 +402,7 @@ static void __cdecl MsnFileAckThread( void* arg )
 	bool fcrt = ft->create() != -1;
 
 	if ( ft->p2p_appID != 0) {
-		p2p_sendStatus( ft, MSN_GetP2PThreadByContact( ft->std.hContact ), fcrt ? 200 : 603 );
+		p2p_sendStatus( ft, fcrt ? 200 : 603 );
 		if ( fcrt )
 			p2p_sendFeedStart( ft );
 	}
@@ -447,17 +447,16 @@ int MsnFileCancel(WPARAM wParam, LPARAM lParam)
 	if ( !msnLoggedIn || !p2p_sessionRegistered( ft ))
 		return 0;
 
-	ThreadData* thread = MSN_GetP2PThreadByContact( ft->std.hContact );
 	if  ( !ft->std.sending && ft->fileId == -1 ) {
 		if ( ft->p2p_appID != 0 )
-			p2p_sendStatus(ft, thread, 603);
+			p2p_sendStatus(ft, 603);
 		else
 			msnftp_sendAcceptReject (ft, false);
 	}
 	else {
 		ft->bCanceled = true;
 		if ( ft->p2p_appID != 0 )
-			p2p_sendCancel( thread, ft );
+			p2p_sendCancel( ft );
 	}
 
 	ft->std.files = NULL;
@@ -476,16 +475,15 @@ int MsnFileDeny( WPARAM wParam, LPARAM lParam )
 	if ( !msnLoggedIn || !p2p_sessionRegistered( ft ))
 		return 1;
 
-	ThreadData* thread = MSN_GetP2PThreadByContact( ft->std.hContact );
 	if ( !ft->std.sending && ft->fileId == -1 ) {
 		if ( ft->p2p_appID != 0 )
-			p2p_sendStatus(ft, thread, 603);
+			p2p_sendStatus(ft, 603);
 		else
 			msnftp_sendAcceptReject (ft, false);
 	}
 	else {
 		if ( ft->p2p_appID != 0 )
-			p2p_sendCancel( thread, ft );
+			p2p_sendCancel( ft );
 		else
 			ft->bCanceled = true;
 	}
@@ -507,7 +505,7 @@ int MsnFileResume( WPARAM wParam, LPARAM lParam )
 	switch (pfr->action) {
 	case FILERESUME_SKIP:
 		if ( ft->p2p_appID != 0 )
-			p2p_sendStatus( ft, MSN_GetP2PThreadByContact( ft->std.hContact ), 603 );
+			p2p_sendStatus( ft, 603 );
 		else
 			msnftp_sendAcceptReject (ft, false);
 		break;
@@ -522,7 +520,7 @@ int MsnFileResume( WPARAM wParam, LPARAM lParam )
 	default:
 		bool fcrt = ft->create() != -1;
 		if ( ft->p2p_appID != 0 ) {
-			p2p_sendStatus( ft, MSN_GetP2PThreadByContact( ft->std.hContact ), fcrt ? 200 : 603 );
+			p2p_sendStatus( ft, fcrt ? 200 : 603 );
 			if ( fcrt )
 				p2p_sendFeedStart( ft );
 		}
@@ -549,14 +547,6 @@ int MsnGetAvatar(WPARAM wParam, LPARAM lParam)
 
 	MSN_GetAvatarFileName( NULL, buf, size );
 	return 0;
-}
-
-/////////////////////////////////////////////////////////////////////////////////////////
-// MsnGetAvatarFormatSupported - Msn supports only PNG avatars
-
-int MsnGetAvatarFormatSupported(WPARAM wParam, LPARAM lParam)
-{
-	return lParam == PA_FORMAT_PNG;
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////
@@ -630,13 +620,33 @@ static int MsnGetAvatarInfo(WPARAM wParam,LPARAM lParam)
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////
-// MsnGetAvatarMaxSize - retrieves the optimal avatar size
+// MsnGetAvatarCaps - retrieves avatar capabilities
 
-int MsnGetAvatarMaxSize(WPARAM wParam, LPARAM lParam)
+static int MsnGetAvatarCaps(WPARAM wParam, LPARAM lParam)
 {
-	if (wParam != 0) *((int*) wParam) = 96;
-	if (lParam != 0) *((int*) lParam) = 96;
-	return 0;
+	int res = 0;
+
+	switch (wParam)
+	{
+	case AF_MAXSIZE:
+		((POINT*)lParam)->x = 96;
+		((POINT*)lParam)->y = 96;
+		break;
+
+	case AF_PROPORTION:
+		res = PIP_NONE;
+		break;
+		
+	case AF_FORMATSUPPORTED:
+		res = lParam == PA_FORMAT_PNG;
+		break;
+
+	case AF_ENABLED:
+		res = 1;
+		break;
+	}
+
+	return res;
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////
@@ -1011,7 +1021,7 @@ static int MsnSetApparentMode( WPARAM wParam, LPARAM lParam )
 /////////////////////////////////////////////////////////////////////////////////////////
 //	MsnSetAvatar - sets an avatar without UI
 
-int MsnSetAvatar( WPARAM wParam, LPARAM lParam )
+static int MsnSetAvatar( WPARAM wParam, LPARAM lParam )
 {
 	char* szFileName = ( char* )lParam;
 	int fileId = _open( szFileName, _O_RDONLY | _O_BINARY, _S_IREAD );
@@ -1151,16 +1161,16 @@ static int MsnGetCurrentMedia(WPARAM wParam, LPARAM lParam)
 static int MsnSetCurrentMedia(WPARAM wParam, LPARAM lParam)
 {
 	// Clear old info
-	if ( msnCurrentMedia.ptszArtist ) mir_free( msnCurrentMedia.ptszArtist );
-	if ( msnCurrentMedia.ptszAlbum ) mir_free( msnCurrentMedia.ptszAlbum );
-	if ( msnCurrentMedia.ptszTitle ) mir_free( msnCurrentMedia.ptszTitle );
-	if ( msnCurrentMedia.ptszTrack ) mir_free( msnCurrentMedia.ptszTrack );
-	if ( msnCurrentMedia.ptszYear ) mir_free( msnCurrentMedia.ptszYear );
-	if ( msnCurrentMedia.ptszGenre ) mir_free( msnCurrentMedia.ptszGenre );
-	if ( msnCurrentMedia.ptszLength ) mir_free( msnCurrentMedia.ptszLength );
-	if ( msnCurrentMedia.ptszPlayer ) mir_free( msnCurrentMedia.ptszPlayer );
-	if ( msnCurrentMedia.ptszType ) mir_free( msnCurrentMedia.ptszType );
-	ZeroMemory(&msnCurrentMedia, sizeof(msnCurrentMedia));
+	mir_free( msnCurrentMedia.ptszArtist );
+	mir_free( msnCurrentMedia.ptszAlbum );
+	mir_free( msnCurrentMedia.ptszTitle );
+	mir_free( msnCurrentMedia.ptszTrack );
+	mir_free( msnCurrentMedia.ptszYear );
+	mir_free( msnCurrentMedia.ptszGenre );
+	mir_free( msnCurrentMedia.ptszLength );
+	mir_free( msnCurrentMedia.ptszPlayer );
+	mir_free( msnCurrentMedia.ptszType );
+	memset(&msnCurrentMedia, 0, sizeof(msnCurrentMedia));
 
 	// Copy new info
 	LISTENINGTOINFO *cm = (LISTENINGTOINFO *)lParam;
@@ -1336,12 +1346,12 @@ int LoadMsnServices( void )
 	arServices.insert( MSN_CreateProtoServiceFunction( PSS_GETAWAYMSG,		MsnGetAwayMsg ));
 	arServices.insert( MSN_CreateProtoServiceFunction( PS_SETAWAYMSG,		MsnSetAwayMsg ));
 
-	arServices.insert( MSN_CreateProtoServiceFunction( MSN_ISAVATARFORMATSUPPORTED, MsnGetAvatarFormatSupported ));
-	arServices.insert( MSN_CreateProtoServiceFunction( MSN_GETMYAVATARMAXSIZE, MsnGetAvatarMaxSize ));
+	arServices.insert( MSN_CreateProtoServiceFunction( PS_GETMYAVATAR,      MsnGetAvatar ));
+	arServices.insert( MSN_CreateProtoServiceFunction( PS_SETMYAVATAR,      MsnSetAvatar ));
+	arServices.insert( MSN_CreateProtoServiceFunction( PS_GETAVATARCAPS,    MsnGetAvatarCaps ));
+	
 	arServices.insert( MSN_CreateProtoServiceFunction( PS_SET_LISTENINGTO,  MsnSetCurrentMedia ));
 	arServices.insert( MSN_CreateProtoServiceFunction( PS_GET_LISTENINGTO,  MsnGetCurrentMedia ));
-	arServices.insert( MSN_CreateProtoServiceFunction( MSN_GETMYAVATAR,     MsnGetAvatar ));
-	arServices.insert( MSN_CreateProtoServiceFunction( MSN_SETMYAVATAR,     MsnSetAvatar ));
 
 	arServices.insert( MSN_CreateProtoServiceFunction( MSN_SET_NICKNAME,    MsnSetNickName ));
 	arServices.insert( MSN_CreateProtoServiceFunction( MSN_SEND_NUDGE,      MsnSendNudge ));

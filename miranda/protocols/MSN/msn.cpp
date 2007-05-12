@@ -252,7 +252,7 @@ static int OnModulesLoaded( WPARAM wParam, LPARAM lParam )
 	MsnInitMenus();
 
 	msnUseExtendedPopups = ServiceExists( MS_POPUP_ADDPOPUPEX ) != 0;
-	arHooks.insert( HookEvent( ME_USERINFO_INITIALISE, MsnOnDetailsInit ));
+//	arHooks.insert( HookEvent( ME_USERINFO_INITIALISE, MsnOnDetailsInit ));
 	arHooks.insert( HookEvent( ME_MSG_WINDOWEVENT, MsnWindowEvent ));
 	arHooks.insert( HookEvent( ME_IDLE_CHANGED, MsnIdleChanged ));
 	arHooks.insert( HookEvent( ME_DB_CONTACT_DELETED, MsnContactDeleted ));
@@ -314,6 +314,8 @@ extern "C" int __declspec(dllexport) Load( PLUGINLINK* link )
 	mir_snprintf( path, sizeof( path ), "%s/Status", protocolname );
 	MSN_CallService( MS_DB_SETSETTINGRESIDENT, TRUE, ( LPARAM )path );
 
+	MSN_CallService( MS_DB_SETSETTINGRESIDENT, TRUE, ( LPARAM )"CList/StatusMsg" );
+
 	mir_snprintf( path, sizeof( path ), "%s/IdleTS", protocolname );
 	MSN_CallService( MS_DB_SETSETTINGRESIDENT, TRUE, ( LPARAM )path );
 
@@ -342,12 +344,13 @@ extern "C" int __declspec(dllexport) Load( PLUGINLINK* link )
 
 	HANDLE hContact = ( HANDLE )MSN_CallService( MS_DB_CONTACT_FINDFIRST, 0, 0 );
 	while ( hContact != NULL ) {
-		if ( !lstrcmpA( msnProtocolName, 
-			( char* )MSN_CallService( MS_PROTO_GETCONTACTBASEPROTO, ( WPARAM )hContact,0 )))
+		char* szProto = ( char* )MSN_CallService( MS_PROTO_GETCONTACTBASEPROTO, ( WPARAM )hContact,0 );
+		if ( szProto != NULL && !strcmp( msnProtocolName, szProto ))
 		{
 			MSN_DeleteSetting( hContact, "Status" );
 			MSN_DeleteSetting( hContact, "IdleTS" );
 			MSN_DeleteSetting( hContact, "p2pMsgId" );
+			DBDeleteContactSetting( hContact, "CList", "StatusMsg" );
 //			MSN_SetWord( hContact, "Status", ID_STATUS_OFFLINE );
 		}
 		hContact = ( HANDLE )MSN_CallService( MS_DB_CONTACT_FINDNEXT,( WPARAM )hContact, 0 );
@@ -361,7 +364,7 @@ extern "C" int __declspec(dllexport) Load( PLUGINLINK* link )
 	SkinAddNewSound( mailsoundtemp, mailsoundtemp, "hotmail.wav" );
 
 	msnStatusMode = msnDesiredStatus = ID_STATUS_OFFLINE;
-	ZeroMemory(&msnCurrentMedia, sizeof(msnCurrentMedia));
+	memset(&msnCurrentMedia, 0, sizeof(msnCurrentMedia));
 	msnLoggedIn = false;
 	LoadMsnServices();
 	MsnInitIcons();
@@ -399,6 +402,7 @@ extern "C" int __declspec( dllexport ) Unload( void )
 	MsgQueue_Uninit();
 	Lists_Uninit();
 	P2pSessions_Uninit();
+	CachedMsg_Uninit();
 	Netlib_CloseHandle( hNetlibUser );
 
 	mir_free( mailsoundname );
@@ -411,17 +415,17 @@ extern "C" int __declspec( dllexport ) Unload( void )
 		if ( msnModeMsgs[ i ].m_msg )
 			mir_free( msnModeMsgs[ i ].m_msg );
 
-	if ( kv ) mir_free( kv );
-	if ( sid ) mir_free( sid );
-	if ( passport ) mir_free( passport );
-	if ( MSPAuth ) mir_free( MSPAuth );
-	if ( rru ) mir_free( rru );
-	if ( profileURL ) mir_free( profileURL );
-	if ( profileURLId ) mir_free( profileURLId );
-	if ( urlId ) mir_free( urlId );
+	mir_free( kv );
+	mir_free( sid );
+	mir_free( passport );
+	mir_free( MSPAuth );
+	mir_free( rru );
+	mir_free( profileURL );
+	mir_free( profileURLId );
+	mir_free( urlId );
 
-	if ( msnPreviousUUX ) mir_free( msnPreviousUUX );
-	if ( msnExternalIP ) mir_free( msnExternalIP );
+	mir_free( msnPreviousUUX );
+	mir_free( msnExternalIP );
 	return 0;
 }
 

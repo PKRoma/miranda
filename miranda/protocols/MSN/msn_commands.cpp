@@ -490,53 +490,68 @@ static void sttInviteMessage( ThreadData* info, const char* msgBody, char* email
 static void sttCustomSmiley( const char* msgBody, char* email, char* nick, int iSmileyType )
 {
 	HANDLE hContact = MSN_HContactFromEmail( email, nick, 1, 1 );
-	char smileyList[500], popupMessage[500];
-	char *tCode = NULL, *tObject = NULL, *szBody = NEWSTR_ALLOCA( msgBody );
-	char *szContactName = ( char* )CallService( MS_CLIST_GETCONTACTDISPLAYNAME, (WPARAM)hContact, 0 );
-	int reset = 0, iCount = 0;
 
-	smileyList[ 0 ] = 0;
-	for ( char* pStart = szBody; *szBody; szBody++ ) {
-		if ( *szBody == '\t' ) {
-			reset++;
-			*szBody = 0;
-			if ( reset == 1 ) { // this is the custom smiley code
-				tCode = pStart;
-				strcat( smileyList, tCode );
-				strcat( smileyList, "\n");
-			}
-			else { // this is the custom smiley msn object
-				reset = 0;
-				iCount++; // this is the custom smiley count
-				tObject = pStart;
+	char smileyList[500] = "";
 
-				filetransfer* ft = new filetransfer();
-				ft->std.hContact = hContact;
-				ft->p2p_dest = mir_strdup( email );
-				ft->p2p_object = mir_strdup( tObject );
-				ft->std.currentFile = mir_strdup( tCode );
+	const char *tok1 = msgBody, *tok2;
+	char *smlp = smileyList;
+	char lastsml[10];
 
-				for ( char* p = ft->std.currentFile; *p; p++ ) {
-					switch( *p ) {
-					case '|':	case '<':	case '>':	case ':':	case '/':
-					case '\\':	case '*':	case '?':	case '\"':
-						*p = ' ';
-				}	}
+	unsigned iCount = 0;
+	bool parseSmiley = true;
 
-				MSN_DebugLog( "Custom Smiley p2p invite for object : %s", tObject );
-				p2p_invite( hContact, iSmileyType, ft );
-			}
-			pStart = szBody+1;
-	}	}
+	for(;;)
+	{
+		tok2 = strchr(tok1, '\t');
+		if (tok2 == NULL) break;
 
-	if ( MSN_GetByte( "EnableCustomSmileyPopup", 1 )) {
-		if ( iSmileyType == MSN_APPID_CUSTOMSMILEY )
-			mir_snprintf( popupMessage, sizeof( popupMessage ), MSN_Translate( "%s sent you %d custom smiley(s):\n%s" ), szContactName, iCount, smileyList );
+		int sz = tok2 - tok1;
+		if (parseSmiley)
+		{
+			memcpy(lastsml, tok1, sz);
+			lastsml[sz] = 0;
+			
+			memcpy(smlp, tok1, sz); smlp += sz;
+			*(smlp++) = '\n'; *smlp = 0;
+			++iCount;
+		}
 		else
-			mir_snprintf( popupMessage, sizeof( popupMessage ), MSN_Translate( "%s sent you %d custom animated smiley(s):\n%s" ), szContactName, iCount, smileyList );
+		{
+			filetransfer* ft = new filetransfer();
+			ft->std.hContact = hContact;
+			
+			ft->p2p_object = (char*)mir_alloc(sz + 1);
+			memcpy(ft->p2p_object, tok1, sz); 
+			*(ft->p2p_object + sz) = 0;
 
+			ft->std.currentFile = mir_strdup( lastsml );
+
+			for ( char* p = ft->std.currentFile; *p; p++ ) {
+				switch( *p ) {
+				case '|':	case '<':	case '>':	case ':':	case '/':
+				case '\\':	case '*':	case '?':	case '\"':
+					*p = ' ';
+			}	}
+
+			MSN_DebugLog( "Custom Smiley p2p invite for object : %s", ft->p2p_object );
+			p2p_invite( hContact, iSmileyType, ft );
+		}
+		parseSmiley = !parseSmiley;
+		tok1 = tok2 + 1;
+	}
+
+	if ( MSN_GetByte( "EnableCustomSmileyPopup", 1 )) 
+	{
+		char popupMessage[500];
+		
+		char *szContactName = ( char* )CallService( MS_CLIST_GETCONTACTDISPLAYNAME, (WPARAM)hContact, 0 );
+		char* fmt = MSN_Translate( iSmileyType == MSN_APPID_CUSTOMSMILEY ? 
+				"%s sent you %d custom smiley(s):\n%s" : "%s sent you %d custom animated smiley(s):\n%s" );
+
+		mir_snprintf( popupMessage, sizeof( popupMessage ), fmt, szContactName, iCount, smileyList );
 		MSN_ShowPopup( szContactName, popupMessage, 0 );
-}	}
+	}	
+}
 
 /////////////////////////////////////////////////////////////////////////////////////////
 // Processes any received MSG
@@ -570,6 +585,25 @@ void MSN_ReceiveMessage( ThreadData* info, char* cmdString, char* params )
 
 	MimeHeaders tHeader;
 	const char* msgBody = tHeader.readFromBuffer( msg );
+
+	const char* tMsgId = tHeader[ "Message-ID" ];
+	
+	// Chunked message
+	char* newbody = NULL;
+	if ( tMsgId )
+	{
+		int idx;
+		const char* tChunks = tHeader[ "Chunks" ];
+		if ( tChunks )
+			idx = addCachedMsg(tMsgId, msg, 0, msgBytes, atol(tChunks), true);
+		else
+			idx = addCachedMsg(tMsgId, msgBody, 0, strlen(msgBody), 0, true);
+
+		size_t newsize;
+		if ( !getCachedMsg( idx, newbody, newsize )) return;
+		msgBody = tHeader.readFromBuffer( newbody );
+	}
+	
 
 	// message from the server (probably)
 	if (( strchr( data.fromEmail, '@' ) == NULL ) && strcmpi( data.fromEmail, "Hotmail" ))
@@ -695,10 +729,8 @@ void MSN_ReceiveMessage( ThreadData* info, char* cmdString, char* params )
 			ccs.lParam = ( LPARAM )&pre;
 			MSN_CallService( MS_PROTO_CHAINRECV, 0, ( LPARAM )&ccs );
 		}
-		return;
 	}
-
-	if ( !strnicmp( tContentType, "text/x-msmsgsprofile", 20 )) {
+	else if ( !strnicmp( tContentType, "text/x-msmsgsprofile", 20 )) {
 		MimeHeaders tFileInfo;
 		tFileInfo.readFromBuffer( msg );
 		replaceStr( sid,           tFileInfo[ "sid" ]      );
@@ -708,17 +740,14 @@ void MSN_ReceiveMessage( ThreadData* info, char* cmdString, char* params )
 
 		if ( msnExternalIP != NULL && MSN_GetByte( "AutoGetHost", 1 ))
 			MSN_SetString( NULL, "YourHost", msnExternalIP );
-
-		return;
 	}
-
-	if ( !strnicmp( tContentType, "text/x-msmsgscontrol", 20 )) {
+	else if ( !strnicmp( tContentType, "text/x-msmsgscontrol", 20 )) {
 		MimeHeaders tFileInfo;
 		tFileInfo.readFromBuffer( msg );
 
 		char* tTypingUser = NULL;
 
-		for ( int j=0; j < tFileInfo.mCount; j++ )
+		for ( unsigned j=0; j < tFileInfo.mCount; j++ )
 			if ( !strcmpi( tFileInfo.mVals[ j ].name, "TypingUser" ))
 				tTypingUser = tFileInfo.mVals[ j ].value;
 
@@ -731,15 +760,9 @@ void MSN_ReceiveMessage( ThreadData* info, char* cmdString, char* params )
 				strcpy( userNick, MSN_GetContactName( hContact ));
 
 			MSN_CallService( MS_PROTO_CONTACTISTYPING, WPARAM( hContact ), 6 );
-
-			if ( MSN_GetByte( "DisplayTyping", 0 ))
-				MSN_ShowPopup( userNick, MSN_Translate( "typing..." ), 0 );
 		}
-		return;
 	}
-
-	//WIZZ
-	if ( !strnicmp( tContentType, "text/x-msnmsgr-datacast", 23 )) {
+	else if ( !strnicmp( tContentType, "text/x-msnmsgr-datacast", 23 )) {
 		CCSDATA ccs;
 		HANDLE tContact = MSN_HContactFromEmail( data.fromEmail, data.fromNick, 1, 1 );
 
@@ -794,10 +817,8 @@ void MSN_ReceiveMessage( ThreadData* info, char* cmdString, char* params )
 
 		if( !strnicmp(tMsgBuf,"ID: 1",5))
 			NotifyEventHooks(hMSNNudge,(WPARAM) tContact,0);
-		return;
 	}
-
-	if ( !strnicmp( tContentType,"text/x-msmsgsemailnotification", 30 ))
+	else if ( !strnicmp( tContentType,"text/x-msmsgsemailnotification", 30 ))
 		sttNotificationMessage( msgBody, false );
 	else if ( !strnicmp( tContentType, "text/x-msmsgsinitialemailnotification", 37 ))
 		sttNotificationMessage( msgBody, true );
@@ -819,6 +840,8 @@ void MSN_ReceiveMessage( ThreadData* info, char* cmdString, char* params )
 		sttCustomSmiley( msgBody, data.fromEmail, data.fromNick, MSN_APPID_CUSTOMSMILEY );
 	else if ( !strnicmp( tContentType, "text/x-mms-animemoticon", 23 ))
 		sttCustomSmiley( msgBody, data.fromEmail, data.fromNick, MSN_APPID_CUSTOMANIMATEDSMILEY );
+
+	mir_free( newbody );
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////
@@ -969,7 +992,7 @@ static void sttProcessStatusMessage( BYTE* buf, unsigned len, HANDLE hContact )
 				HtmlDecode( p );
 				DBWriteContactSettingStringUtf( hContact, "CList", "StatusMsg", p );
 			}
-			else DBDeleteContactSetting( hContact, "CList", "StatusMsg" );
+			else DBWriteContactSettingString( hContact, "CList", "StatusMsg", "" );
 		}	
 	}
 	else DBDeleteContactSetting( hContact, "CList", "StatusMsg" );
@@ -1101,15 +1124,15 @@ static void sttProcessStatusMessage( BYTE* buf, unsigned len, HANDLE hContact )
 
 		mir_free( cm );
 		#if defined( _UNICODE )
-			if ( lti.ptszArtist ) mir_free( lti.ptszArtist );
-			if ( lti.ptszAlbum ) mir_free( lti.ptszAlbum );
-			if ( lti.ptszTitle ) mir_free( lti.ptszTitle );
-			if ( lti.ptszTrack ) mir_free( lti.ptszTrack );
-			if ( lti.ptszYear ) mir_free( lti.ptszYear );
-			if ( lti.ptszGenre ) mir_free( lti.ptszGenre );
-			if ( lti.ptszLength ) mir_free( lti.ptszLength );
-			if ( lti.ptszPlayer ) mir_free( lti.ptszPlayer );
-			if ( lti.ptszType ) mir_free( lti.ptszType );
+			mir_free( lti.ptszArtist );
+			mir_free( lti.ptszAlbum );
+			mir_free( lti.ptszTitle );
+			mir_free( lti.ptszTrack );
+			mir_free( lti.ptszYear );
+			mir_free( lti.ptszGenre );
+			mir_free( lti.ptszLength );
+			mir_free( lti.ptszPlayer );
+			mir_free( lti.ptszType );
 		#endif
 	}
 }
@@ -1123,6 +1146,9 @@ static void sttProcessNotificationMessage( BYTE* buf, unsigned len )
 		dataBuf[ len ] = 0;
 	}
 	else dataBuf[0] = 0;
+
+	if (txtParseParam(dataBuf, NULL, "<TEXT>", "</TEXT>", dataBuf, len))
+		MSN_ShowPopup(MSN_Translate("MSN Alert"), dataBuf, 0);
 
 	MSN_DebugLog( "Notification message: %s", dataBuf );
 }
@@ -2065,12 +2091,7 @@ LBL_InvalidCommand:
 				return 1;
 			}
 
-			if ( !strcmp( protocol1, "MSNP10" )) {
-				info->sendPacket( "CVR","0x0409 winnt 5.1 i386 MSNMSGR 6.2.0205 MSMSGS %s", MyOptions.szEmail );
-				msnProtChallenge = "Q1P7W2E4J9R8U3S5";
-				msnProductID = "msmsgs@msnmsgr.com";
-			}
-         else if ( !strcmp( protocol1, "MSNP12" )) {
+            if ( !strcmp( protocol1, "MSNP12" )) {
 				info->sendPacket( "CVR","0x0409 winnt 5.1 i386 MSNMSGR 7.5.0324 msmsgs %s", MyOptions.szEmail );
 				msnProtChallenge = "YMM8C_H7KCQ2S_KL";
 				msnProductID = "PROD0090YUAUV{2B";

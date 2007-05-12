@@ -306,6 +306,7 @@ void 	MSN_GoOffline()
 	MSN_CloseConnections();
 	MSN_FreeGroups();
 	MsgQueue_Clear();
+	clearCachedMsg();
 
 	HANDLE hContact = ( HANDLE )MSN_CallService( MS_DB_CONTACT_FINDFIRST, 0, 0 );
 	while ( hContact != NULL )
@@ -619,7 +620,7 @@ void  MSN_SetServerStatus( int newStatus )
 			szMsnObject[ 0 ] = 0;
 
 		//here we say what functions can be used with this plugins : http://siebe.bot2k3.net/docs/?url=clientid.html
-		msnNsThread->sendPacket( "CHG", "%s 1342177280 %s", szStatusName, szMsnObject );
+		msnNsThread->sendPacket( "CHG", "%s 1342177312 %s", szStatusName, szMsnObject );
 
 		int status = newStatus == ID_STATUS_IDLE ? ID_STATUS_ONLINE : newStatus;
 		for ( int i=0; i < MSN_NUM_MODES; i++ ) { 
@@ -701,7 +702,7 @@ void 	MSN_ShowPopup( const char* nickname, const char* msg, int flags )
 {
 	if ( !ServiceExists( MS_POPUP_ADDPOPUP )) {
 		if ( flags & MSN_ALLOW_MSGBOX ) {
-			char szMsg[ 1024 ];
+			char szMsg[ MAX_SECONDLINE + MAX_CONTACTNAME ];
 			mir_snprintf( szMsg, SIZEOF( szMsg ), "%s:\n%s", nickname, msg );
 			MessageBoxA( NULL, szMsg, "MSN Protocol", MB_OK + ( flags & MSN_SHOW_ERROR ) ? MB_ICONERROR : MB_ICONINFORMATION );
 		}
@@ -711,8 +712,10 @@ void 	MSN_ShowPopup( const char* nickname, const char* msg, int flags )
 	POPUPDATAEX* ppd = ( POPUPDATAEX* )mir_calloc( sizeof( POPUPDATAEX ));
 
 	ppd->lchContact = NULL;
-	strcpy( ppd->lpzContactName, nickname );
-	strcpy( ppd->lpzText, msg );
+	strncpy( ppd->lpzContactName, nickname, MAX_CONTACTNAME );
+	ppd->lpzText[MAX_CONTACTNAME-1] = 0;
+	strncpy( ppd->lpzText, msg, MAX_SECONDLINE );
+	ppd->lpzText[MAX_SECONDLINE-1] = 0;
 
 	if ( flags & MSN_SHOW_ERROR ) {
 		ppd->lchIcon = ( HICON )LoadImage( NULL, IDI_WARNING, IMAGE_ICON, 0, 0, LR_SHARED );
@@ -932,20 +935,21 @@ filetransfer::~filetransfer( void )
 	else if ( fileId != -1 )
 		_close( fileId );
 
-	if ( p2p_branch != NULL ) mir_free( p2p_branch );
-	if ( p2p_callID != NULL ) mir_free( p2p_callID );
-	if ( p2p_dest   != NULL ) mir_free( p2p_dest );
+	mir_free( p2p_branch );
+	mir_free( p2p_callID );
+	mir_free( p2p_dest );
+	mir_free( p2p_object );
 
-	if ( std.currentFile != NULL ) mir_free( std.currentFile );
-	if ( std.workingDir != NULL ) mir_free( std.workingDir );
+	mir_free( std.currentFile );
+	mir_free( std.workingDir );
 	if ( std.files != NULL ) {
 		for ( int i=0; i < std.totalFiles; i++ )
 			mir_free( std.files[ i ] );
 		mir_free( std.files );
 	}
 
-	if ( wszFileName != NULL ) mir_free(  wszFileName );
-	if ( szInvcookie != NULL ) mir_free( szInvcookie );
+	mir_free(  wszFileName );
+	mir_free( szInvcookie );
 }
 
 void filetransfer::close( void )
