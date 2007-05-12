@@ -707,6 +707,9 @@
 				</FileConfiguration>
 			</File>
 			<File
+				RelativePath=".\msn_msgsplit.cpp">
+			</File>
+			<File
 				RelativePath="msn_opts.cpp">
 				<FileConfiguration
 					Name="Release|Win32">
@@ -1049,9 +1052,6 @@
 		<Filter
 			Name="Resource Files"
 			Filter="ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe">
-			<File
-				RelativePath="Icos\avatar.ico">
-			</File>
 			<File
 				RelativePath="Icos\inbox.ico">
 			</File>
