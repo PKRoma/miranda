@@ -1091,7 +1091,7 @@ static int MsnSetAvatar( WPARAM wParam, LPARAM lParam )
 				"<msnobj Creator=\"%s\" Size=\"%ld\" Type=\"3\" Location=\"%s\" Friendly=\"AAA=\" SHA1D=\"%s\" SHA1C=\"%s\"/>",
 				MyOptions.szEmail, dwPngSize, fname, szSha1d, szSha1c );
 
-			char szEncodedBuffer = [ 2000 ];
+			char szEncodedBuffer[ 2000 ];
 			UrlEncode( szBuffer, szEncodedBuffer, sizeof( szEncodedBuffer ));
 
 			MSN_SetString( NULL, "PictObject", szEncodedBuffer );
