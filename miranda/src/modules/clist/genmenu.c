@@ -340,8 +340,9 @@ int MO_ModifyMenuItem( int menuHandle, PMO_MenuItem pmiparam )
 	}
 	if ( pmiparam->flags & CMIM_ICON ) {
 		if ( pimi->mi.flags & CMIF_ICONFROMICOLIB ) {
-			HICON hIcon = IcoLib_GetIconByHandle( pimi->hIcolibItem );
+			HICON hIcon = IcoLib_GetIconByHandle( pmiparam->hIcolibItem );
 			if ( hIcon != NULL ) {
+				pimi->hIcolibItem = pmiparam->hIcolibItem;
 				pimi->iconId = ImageList_ReplaceIcon( MenuObjects[objidx].hMenuIcons, pimi->iconId, hIcon );
 				IconLib_ReleaseIcon( hIcon, 0 );
 			}
