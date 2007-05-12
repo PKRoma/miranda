@@ -998,12 +998,14 @@ BOOL getTreeNodeText( HWND hwndTree, LPARAM lParam, char* szBuf, size_t cbLen )
 	p = _tcschr( p, '/' );
 	if( p == NULL )
 		p = section->name + _tcslen( section->name );
-#ifdef _UNICODE
-	indx = WideCharToMultiByte( codepage, 0, section->name, (p - section->name), szBuf, cbLen, NULL, NULL );
-#else
-	indx = strncpy( szBuf, section->name, (p - section->name) );
-#endif
-	szBuf[min(indx, cbLen-1)] = 0;
+
+	#ifdef _UNICODE
+		indx = WideCharToMultiByte( codepage, 0, section->name, (p - section->name), szBuf, cbLen, NULL, NULL );
+		szBuf[ min(indx, cbLen-1) ] = 0;
+	#else
+		strncpy( szBuf, section->name, cbLen );
+		szBuf[ cbLen-1 ] = 0;
+	#endif
 	return TRUE;
 }
 
