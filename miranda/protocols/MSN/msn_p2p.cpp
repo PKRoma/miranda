@@ -272,7 +272,12 @@ static void  p2p_sendMsg( HANDLE hContact, unsigned appId, P2P_Header& hdrdata, 
 	unsigned msgType;
 
 	ThreadData* info = MSN_GetP2PThreadByContact( hContact );
-	if ( info == NULL ) msgType = 0;
+	if ( info == NULL )
+	{
+		msgType = 0;
+		if ( MSN_GetUnconnectedThread( hContact ) == NULL )
+			msnNsThread->sendPacket( "XFR", "SB" );
+	}
 	else if ( info->mType == SERVER_P2P_DIRECT ) msgType = 1;
 	else msgType = 2;
 
@@ -324,8 +329,6 @@ static void  p2p_sendMsg( HANDLE hContact, unsigned appId, P2P_Header& hdrdata, 
 		switch ( msgType ) 
 		{
 			case 0:
-				if ( MSN_GetUnconnectedThread( hContact ) == NULL )
-					msnNsThread->sendPacket( "XFR", "SB" );
 				MsgQueue_Add( hContact, 'D', buf, p - buf, NULL );
 				break;
 
