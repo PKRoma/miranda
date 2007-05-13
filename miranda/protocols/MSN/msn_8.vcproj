@@ -898,6 +898,10 @@
 				</FileConfiguration>
 			</File>
 			<File
+				RelativePath=".\msn_msgsplit.cpp"
+				>
+			</File>
+			<File
 				RelativePath="msn_opts.cpp"
 				>
 				<FileConfiguration
