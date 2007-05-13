@@ -300,19 +300,6 @@ struct MimeHeaders
 
 struct ThreadData;
 
-struct P2P_Header
-{
-	unsigned          mSessionID;
-	unsigned          mID;
-	unsigned __int64  mOffset;
-	unsigned __int64  mTotalSize;
-	unsigned          mPacketLen;
-	unsigned          mFlags;
-	unsigned          mAckSessionID;
-	unsigned          mAckUniqueID;
-	unsigned __int64  mAckDataSize;
-};
-
 struct HReadBuffer
 {
 	HReadBuffer( ThreadData* info, int iStart = 0 );

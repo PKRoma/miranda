@@ -85,7 +85,7 @@ filetransfer*  p2p_getSessionByID( unsigned id )
 
 	LeaveCriticalSection( &sessionLock );
 	if ( ft == NULL )
-		MSN_DebugLog( "Ignoring unknown session id %lu", id );
+		MSN_DebugLog( "Ignoring unknown session id %08x", id );
 
 	return ft;
 }
@@ -107,7 +107,7 @@ filetransfer*  p2p_getSessionByUniqueID( unsigned id )
 
 	LeaveCriticalSection( &sessionLock );
 	if ( ft == NULL )
-		MSN_DebugLog( "Ignoring unknown message id %lu", id );
+		MSN_DebugLog( "Ignoring unknown unique id %08x", id );
 
 	return ft;
 }

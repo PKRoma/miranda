@@ -25,6 +25,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include "msn_global.h"
 
 #pragma pack(1)
+
 typedef struct
 {
 	unsigned len; 
@@ -36,6 +37,20 @@ typedef struct
 	unsigned id;
 	char unknown2[64];
 } HFileContext;
+
+typedef struct
+{
+	unsigned          mSessionID;
+	unsigned          mID;
+	unsigned __int64  mOffset;
+	unsigned __int64  mTotalSize;
+	unsigned          mPacketLen;
+	unsigned          mFlags;
+	unsigned          mAckSessionID;
+	unsigned          mAckUniqueID;
+	unsigned __int64  mAckDataSize;
+} P2P_Header;
+
 #pragma pack()
 
 static char sttP2Pheader[] =
@@ -1436,15 +1451,13 @@ void  p2p_processMsg( ThreadData* info,  const char* msgbody )
 				(size_t)hdrdata->mTotalSize, false );
 
 			size_t newsize;
-			if ( hdrdata->mOffset + hdrdata->mPacketLen >= hdrdata->mTotalSize)
+			if (!getCachedMsg( idx, newbody, newsize ))
 			{
-				if (!getCachedMsg( idx, newbody, newsize ))
-				{
+				if ( hdrdata->mOffset + hdrdata->mPacketLen >= hdrdata->mTotalSize)
 					clearCachedMsg(idx);
-					return;
-				}
-				msgbody = newbody;
+				return;
 			}
+			msgbody = newbody;
 		}
 
 		int iMsgType = 0;
