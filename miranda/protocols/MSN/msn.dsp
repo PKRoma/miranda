@@ -237,7 +237,7 @@ SOURCE=.\msn_p2ps.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=.\msn_splitmsg.cpp
+SOURCE=.\msn_msgsplit.cpp
 # End Source File
 # Begin Source File
 
