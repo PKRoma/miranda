@@ -84,11 +84,11 @@ static BOOL bInited = FALSE;
 
 PLUGININFOEX __declspec(dllexport) *MirandaPluginInfoEx(DWORD mirandaVersion)
 {
-  // Only load for 0.7.0.12 or greater
-  // We need core MD5 interface
-  if (mirandaVersion < PLUGIN_MAKE_VERSION(0, 7, 0, 12)) 
+  // Only load for 0.7.0.27 or greater
+  // We need extended PLUGINLINK with CreateServiceFunctionParam
+  if (mirandaVersion < PLUGIN_MAKE_VERSION(0, 7, 0, 27)) 
   {
-    MessageBox( NULL, "ICQ plugin cannot be loaded. It requires Miranda IM 0.7.0.12 or later.", "ICQ Plugin", 
+    MessageBox( NULL, "ICQ plugin cannot be loaded. It requires Miranda IM 0.7.0.27 or later.", "ICQ Plugin", 
       MB_OK|MB_ICONWARNING|MB_SETFOREGROUND|MB_TOPMOST );
     return NULL;
   }
