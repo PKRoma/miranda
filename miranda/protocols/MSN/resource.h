@@ -17,7 +17,6 @@
 #define IDI_LIST_AL                     121
 #define IDI_LIST_BL                     122
 #define IDI_LIST_RL                     123
-#define IDI_AVATAR                      125
 #define IDD_OPT_MSN                     185
 #define IDD_SETNICKNAME                 226
 #define IDC_STMSNGROUP                  1002

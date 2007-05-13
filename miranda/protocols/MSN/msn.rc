@@ -212,7 +212,6 @@ IDI_LIST_FL             ICON                    "Icos\\list_fl.ico"
 IDI_LIST_AL             ICON                    "Icos\\list_al.ico"
 IDI_LIST_BL             ICON                    "Icos\\list_bl.ico"
 IDI_LIST_RL             ICON                    "Icos\\list_rl.ico"
-IDI_AVATAR              ICON                    "Icos\\avatar.ico"
 
 #ifdef APSTUDIO_INVOKED
 /////////////////////////////////////////////////////////////////////////////
