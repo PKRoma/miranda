@@ -75,7 +75,7 @@ char   mirandabootini[MAX_PATH];
 static DWORD mirandaVersion;
 static pluginEntry * pluginListDb;
 static pluginEntry * pluginListUI;
-static pluginEntry * pluginList_png2dib = NULL;
+static pluginEntry * pluginList_freeimg = NULL;
 static HANDLE hPluginListHeap = NULL;
 static pluginEntry * pluginDefModList[DEFMOD_HIGHEST+1]; // do not free this memory
 static int askAboutIgnoredPlugins;
@@ -383,8 +383,8 @@ static BOOL scanPluginsDir (WIN32_FIND_DATAA * fd, char * path, WPARAM wParam, L
 		pluginListUI=p;
 		p->pclass |= PCLASS_CLIST;
 	}
-	else if ( lstrcmpiA(fd->cFileName, "png2dib.dll") == 0)
-		pluginList_png2dib = p;
+	else if ( lstrcmpiA(fd->cFileName, "freeimage.dll") == 0)
+		pluginList_freeimg = p;
 
 	// add it to the list
 	List_InsertPtr( &pluginList, p );
@@ -740,17 +740,17 @@ int LoadNewPluginsModule(void)
 	// remember some useful options
 	askAboutIgnoredPlugins=(UINT) GetPrivateProfileIntA( "PluginLoader", "AskAboutIgnoredPlugins", 0, mirandabootini);
 
-	// if png2dib is present, load it to provide the basic core functions
-	if ( pluginList_png2dib != NULL ) {
+	// if freeimage is present, load it to provide the basic core functions
+	if ( pluginList_freeimg != NULL ) {
 		BASIC_PLUGIN_INFO bpi;
-		mir_snprintf(slice,&exe[SIZEOF(exe)] - slice, "\\Plugins\\%s", pluginList_png2dib->pluginname);
+		mir_snprintf(slice,&exe[SIZEOF(exe)] - slice, "\\Plugins\\%s", pluginList_freeimg->pluginname);
 		if ( checkAPI(exe, &bpi, mirandaVersion, CHECKAPI_NONE, NULL) ) {
-			pluginList_png2dib->bpi = bpi;
-			pluginList_png2dib->pclass |= PCLASS_OK | PCLASS_BASICAPI;
+			pluginList_freeimg->bpi = bpi;
+			pluginList_freeimg->pclass |= PCLASS_OK | PCLASS_BASICAPI;
 			if ( bpi.Load(&pluginCoreLink) == 0 )
-				pluginList_png2dib->pclass |= PCLASS_LOADED;
+				pluginList_freeimg->pclass |= PCLASS_LOADED;
 			else
-				Plugin_Uninit( pluginList_png2dib );
+				Plugin_Uninit( pluginList_freeimg );
 	}	}
 
 	// first load the clist cos alot of plugins need that to be present at Load()
