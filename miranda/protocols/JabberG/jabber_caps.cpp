@@ -57,6 +57,13 @@ JabberFeatCapPair g_JabberFeatCapPairs[] = {
 	{	_T(JABBER_FEAT_AMP),              JABBER_CAPS_AMP              },
 	{	_T(JABBER_FEAT_USER_MOOD),        JABBER_CAPS_USER_MOOD        },
 	{	_T(JABBER_FEAT_USER_MOOD_NOTIFY), JABBER_CAPS_USER_MOOD_NOTIFY },
+	{	_T(JABBER_FEAT_PUBSUB),			  JABBER_CAPS_PUBSUB,          },
+	{	_T(JABBER_FEAT_SECUREIM),         JABBER_CAPS_SECUREIM,        },
+	{	NULL,                             0                            }
+};
+
+JabberFeatCapPair g_JabberFeatCapPairsExt[] = {
+	{	_T(JABBER_EXT_SECUREIM),          JABBER_CAPS_SECUREIM         },
 	{	NULL,                             0                            }
 };
 
@@ -190,7 +197,7 @@ JabberCapsBits JabberGetResourceCapabilites( TCHAR *jid, BOOL appendBestResource
 
 		if ( bRequestSent )
 			return JABBER_RESOURCE_CAPS_IN_PROGRESS;
-		
+
 		return jcbCaps;
 	}
 
@@ -225,7 +232,7 @@ JabberCapsBits JabberGetResourceCapabilites( TCHAR *jid, BOOL appendBestResource
 		JabberCapsBits jcbMainCaps = g_JabberClientCapsManager.GetClientCaps( r->software, r->version );
 		if ( jcbMainCaps == JABBER_RESOURCE_CAPS_ERROR ) {
 			// Bombus hack:
-			if ( !_tcscmp( r->software, _T( "Bombus" ))) {
+			if ( !_tcscmp( r->software, _T( "Bombus" )) || !_tcscmp( r->software, _T( "BombusMod" )) ) {
 				jcbMainCaps = JABBER_CAPS_SI|JABBER_CAPS_SI_FT|JABBER_CAPS_IBB|JABBER_CAPS_MESSAGE_EVENTS|JABBER_CAPS_MESSAGE_EVENTS_NO_DELIVERY|JABBER_CAPS_DATA_FORMS|JABBER_CAPS_LAST_ACTIVITY|JABBER_CAPS_VERSION|JABBER_CAPS_COMMANDS|JABBER_CAPS_VCARD_TEMP;
 				g_JabberClientCapsManager.SetClientCaps( r->software, r->version, jcbMainCaps );
 			}
@@ -283,7 +290,7 @@ CJabberClientPartialCaps* CJabberClientPartialCaps::SetNext( CJabberClientPartia
 	return pRetVal;
 }
 
-void CJabberClientPartialCaps::SetCaps( JabberCapsBits jcbCaps, int nIqId /*= -1*/ ) 
+void CJabberClientPartialCaps::SetCaps( JabberCapsBits jcbCaps, int nIqId /*= -1*/ )
 {
 	if ( jcbCaps == JABBER_RESOURCE_CAPS_IN_PROGRESS )
 		m_dwRequestTime = GetTickCount();
@@ -302,7 +309,7 @@ JabberCapsBits CJabberClientPartialCaps::GetCaps()
 	return m_jcbCaps;
 }
 
-CJabberClientPartialCaps* CJabberClientCaps::FindByVersion( TCHAR *szVer ) 
+CJabberClientPartialCaps* CJabberClientCaps::FindByVersion( TCHAR *szVer )
 {
 	if ( !m_pCaps || !szVer )
 		return NULL;
@@ -345,7 +352,7 @@ CJabberClientCaps::~CJabberClientCaps() {
 		delete m_pNext;
 }
 
-CJabberClientCaps* CJabberClientCaps::SetNext( CJabberClientCaps *pClient ) 
+CJabberClientCaps* CJabberClientCaps::SetNext( CJabberClientCaps *pClient )
 {
 	CJabberClientCaps *pRetVal = m_pNext;
 	m_pNext = pClient;
@@ -393,7 +400,7 @@ CJabberClientCapsManager::~CJabberClientCapsManager()
 	DeleteCriticalSection( &m_cs );
 }
 
-CJabberClientCaps * CJabberClientCapsManager::FindClient( TCHAR *szNode ) 
+CJabberClientCaps * CJabberClientCapsManager::FindClient( TCHAR *szNode )
 {
 	if ( !m_pClients || !szNode )
 		return NULL;
@@ -413,6 +420,9 @@ void CJabberClientCapsManager::AddDefaultCaps() {
 	mir_free( version );
 	SetClientCaps( _T(JABBER_CAPS_MIRANDA_NODE), tversion, JABBER_CAPS_MIRANDA_ALL );
 	mir_free( tversion );
+
+	for ( int i = 0; g_JabberFeatCapPairsExt[i].szFeature; i++ )
+		SetClientCaps( _T(JABBER_CAPS_MIRANDA_NODE), g_JabberFeatCapPairsExt[i].szFeature, g_JabberFeatCapPairsExt[i].jcbCap );
 }
 
 JabberCapsBits CJabberClientCapsManager::GetClientCaps( TCHAR *szNode, TCHAR *szVer )

@@ -30,7 +30,7 @@ Last change by : $Author: ghazan $
 #include "jabber_ibb.h"
 #include "jabber_caps.h"
 
-#define JABBER_IBB_BLOCK_SIZE 4096
+#define JABBER_IBB_BLOCK_SIZE 2048
 
 void JabberIbbFreeJibb( JABBER_IBB_TRANSFER *jibb )
 {
@@ -225,6 +225,6 @@ BOOL JabberIbbProcessRecvdData( TCHAR *data, TCHAR *sid, TCHAR *seq )
 	item->jibb->dwTransferredSize += (DWORD)length;
 
 	mir_free( decodedData );
-	
+
 	return TRUE;
 }
