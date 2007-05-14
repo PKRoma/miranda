@@ -255,10 +255,10 @@ static int PreCreateCLC(HWND parent)
 
 static int CreateCLC(HWND parent)
 {
+    ReloadExtraIcons();
 	CallService(MS_CLIST_SETHIDEOFFLINE,(WPARAM)oldhideoffline,0);
 	disableautoupd=0;
 
-	ReloadExtraIcons();
 	{
 		CLISTFrame frame = {0};
 		frame.cbSize = sizeof(frame);
@@ -1253,7 +1253,7 @@ LRESULT CALLBACK ContactListWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM l
 			{
 				BYTE windowStyle = DBGetContactSettingByte(NULL, "CLUI", "WindowStyle", 0);
 				ShowWindow(pcli->hwndContactList, SW_HIDE);
-				SetWindowLong(pcli->hwndContactList, GWL_EXSTYLE, windowStyle != SETTING_WINDOWSTYLE_DEFAULT ? GetWindowLong(pcli->hwndContactList, GWL_EXSTYLE) | WS_EX_TOOLWINDOW : GetWindowLong(pcli->hwndContactList, GWL_EXSTYLE) & ~WS_EX_TOOLWINDOW);
+				SetWindowLong(pcli->hwndContactList, GWL_EXSTYLE, windowStyle != SETTING_WINDOWSTYLE_DEFAULT ? GetWindowLong(pcli->hwndContactList, GWL_EXSTYLE) | (WS_EX_TOOLWINDOW | WS_EX_WINDOWEDGE) : GetWindowLong(pcli->hwndContactList, GWL_EXSTYLE) & ~WS_EX_TOOLWINDOW);
 				ApplyCLUIBorderStyle(pcli->hwndContactList);
 
 				SetWindowPos(pcli->hwndContactList, 0, 0, 0, 0, 0, SWP_NOZORDER | SWP_NOMOVE | SWP_NOSIZE | SWP_FRAMECHANGED | SWP_NOACTIVATE);
@@ -1741,10 +1741,10 @@ LRESULT CALLBACK ContactListWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM l
         if (wParam == SC_MAXIMIZE)
             return 0;
 		else if(wParam == SC_MINIMIZE) {
-			if(DBGetContactSettingByte(NULL, "CLUI", "WindowStyle", SETTING_WINDOWSTYLE_DEFAULT) == SETTING_WINDOWSTYLE_DEFAULT) {
+			//if(DBGetContactSettingByte(NULL, "CLUI", "WindowStyle", SETTING_WINDOWSTYLE_DEFAULT) == SETTING_WINDOWSTYLE_DEFAULT) {
 				pcli->pfnShowHide(0, 0);
 				return 0;
-			}
+			//}
 		}
         return DefWindowProc(hwnd, msg, wParam, lParam);
 	case WM_COMMAND:

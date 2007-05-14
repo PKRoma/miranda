@@ -208,11 +208,11 @@ BOOL CALLBACK DlgProcCluiOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPar
 					p.length = sizeof(p);
 					GetWindowPlacement(pcli->hwndContactList, &p);
 					ShowWindow(pcli->hwndContactList, SW_HIDE);
-					SetWindowLong(pcli->hwndContactList, GWL_EXSTYLE, GetWindowLong(pcli->hwndContactList, GWL_EXSTYLE) | WS_EX_TOOLWINDOW);
+					SetWindowLong(pcli->hwndContactList, GWL_EXSTYLE, GetWindowLong(pcli->hwndContactList, GWL_EXSTYLE) | (WS_EX_TOOLWINDOW | WS_EX_WINDOWEDGE));
 					SetWindowPlacement(pcli->hwndContactList, &p);
 					ShowWindow(pcli->hwndContactList, SW_SHOW);
 				} else
-					SetWindowLong(pcli->hwndContactList, GWL_EXSTYLE, GetWindowLong(pcli->hwndContactList, GWL_EXSTYLE) & ~WS_EX_TOOLWINDOW);
+					SetWindowLong(pcli->hwndContactList, GWL_EXSTYLE, GetWindowLong(pcli->hwndContactList, GWL_EXSTYLE) & ~(WS_EX_TOOLWINDOW | WS_EX_WINDOWEDGE));
 
                 if (IsDlgButtonChecked(hwndDlg, IDC_ONDESKTOP)) {
                     HWND hProgMan = FindWindowA("Progman", NULL);
@@ -456,7 +456,6 @@ void ApplyCLUIBorderStyle(HWND hwnd)
         SetWindowLong(pcli->hwndContactList, GWL_STYLE, GetWindowLong(pcli->hwndContactList, GWL_STYLE) & ~(WS_CAPTION | WS_SYSMENU | WS_MINIMIZEBOX | WS_POPUPWINDOW | WS_THICKFRAME));
         SetWindowLong(pcli->hwndContactList, GWL_STYLE, GetWindowLong(pcli->hwndContactList, GWL_STYLE) | WS_CLIPCHILDREN);
     }
-
 	p.showCmd = SW_HIDE;
 	SetWindowPlacement(pcli->hwndContactList, &p);
 }
