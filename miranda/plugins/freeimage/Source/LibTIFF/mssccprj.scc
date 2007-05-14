@@ -1,0 +1,9 @@
+SCC = This is a Source Code Control file
+
+[LibTIFF.dsp]
+SCC_Aux_Path = "D:\vc\vss"
+SCC_Project_Name = "$/Miranda/miranda/plugins/freeimage/Source/LibTIFF", SFHAAAAA
+
+[LibTIFF.vcproj]
+SCC_Aux_Path = "D:\vc\vss"
+SCC_Project_Name = "$/Miranda/miranda/plugins/freeimage/Source/LibTIFF", SFHAAAAA

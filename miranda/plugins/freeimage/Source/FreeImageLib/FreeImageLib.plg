@@ -1,0 +1,106 @@
+<html>
+<body>
+<pre>
+<h1>Erstellungsprotokoll</h1>
+<h3>
+--------------------Konfiguration: FreeImageLib - Win32 Release--------------------
+</h3>
+<h3>Befehlszeilen</h3>
+Erstellen der temporären Datei  "c:\temp\RSP1BA0.tmp" mit Inhalten
+[
+/nologo /out:"Release\FreeImage.lib" 
+.\Release\NNQuantizer.obj
+.\Release\WuQuantizer.obj
+.\Release\Conversion.obj
+.\Release\Conversion16_555.obj
+.\Release\Conversion16_565.obj
+.\Release\Conversion24.obj
+.\Release\Conversion32.obj
+.\Release\Conversion4.obj
+.\Release\Conversion8.obj
+.\Release\ConversionRGBF.obj
+.\Release\ConversionType.obj
+.\Release\Halftoning.obj
+.\Release\tmoColorConvert.obj
+.\Release\tmoDrago03.obj
+.\Release\tmoReinhard05.obj
+.\Release\ToneMapping.obj
+.\Release\Plugin.obj
+.\Release\PluginBMP.obj
+.\Release\PluginCUT.obj
+.\Release\PluginDDS.obj
+.\Release\PluginG3.obj
+.\Release\PluginGIF.obj
+.\Release\PluginHDR.obj
+.\Release\PluginICO.obj
+.\Release\PluginIFF.obj
+.\Release\PluginJPEG.obj
+.\Release\PluginKOALA.obj
+.\Release\PluginMNG.obj
+.\Release\PluginPCD.obj
+.\Release\PluginPCX.obj
+.\Release\PluginPNG.obj
+.\Release\PluginPNM.obj
+.\Release\PluginPSD.obj
+.\Release\PluginRAS.obj
+.\Release\PluginSGI.obj
+.\Release\PluginTARGA.obj
+.\Release\PluginTIFF.obj
+.\Release\PluginWBMP.obj
+.\Release\PluginXBM.obj
+.\Release\PluginXPM.obj
+.\Release\DeprecationMgr.obj
+.\Release\CacheFile.obj
+.\Release\MultiPage.obj
+.\Release\ZLibInterface.obj
+.\Release\Exif.obj
+.\Release\FIRational.obj
+.\Release\FreeImageTag.obj
+.\Release\IPTC.obj
+.\Release\TagConversion.obj
+.\Release\TagLib.obj
+.\Release\XTIFF.obj
+.\Release\BitmapAccess.obj
+.\Release\ColorLookup.obj
+.\Release\FreeImage.obj
+.\Release\FreeImageIO.obj
+.\Release\GetType.obj
+.\Release\MemoryIO.obj
+.\Release\PixelAccess.obj
+.\Release\BSplineRotate.obj
+.\Release\Channels.obj
+.\Release\ClassicRotate.obj
+.\Release\Colors.obj
+.\Release\CopyPaste.obj
+.\Release\Display.obj
+.\Release\Flip.obj
+.\Release\JPEGTransform.obj
+.\Release\Rescale.obj
+.\Release\Resize.obj
+\tabsrmm\miranda\plugins\freeimage\Source\LibJPEG\Release\LibJPEG.lib
+\tabsrmm\miranda\plugins\freeimage\Source\LibMNG\Release\LibMNG.lib
+\tabsrmm\miranda\plugins\freeimage\Source\LibPNG\Release\LibPNG.lib
+\tabsrmm\miranda\plugins\freeimage\Source\LibTIFF\Release\LibTIFF.lib
+\tabsrmm\miranda\plugins\freeimage\Source\ZLib\Release\ZLib.lib
+]
+Erstellen der Befehlzeile "link.exe -lib @c:\temp\RSP1BA0.tmp"
+<h3>Ausgabefenster</h3>
+Bibliothek wird erstellt...
+Erstellen der temporären Datei  "c:\temp\RSP1BA1.bat" mit Inhalten
+[
+@echo off
+copy Release\FreeImage.lib ..\..\Dist
+copy ..\FreeImage.h ..\..\Dist
+]
+Erstellen der Befehlzeile "c:\temp\RSP1BA1.bat"
+
+        1 file(s) copied.
+        1 file(s) copied.
+
+
+
+<h3>Ergebnisse</h3>
+FreeImage.lib - 0 Fehler, 0 Warnung(en)
+</pre>
+</body>
+</html>
