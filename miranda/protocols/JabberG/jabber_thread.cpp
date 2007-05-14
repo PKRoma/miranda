@@ -971,10 +971,14 @@ static void JabberProcessPubsubEvent( XmlNode *node )
  			return;
 
  		if ( moodType )
- 			JSetString( hContact, "XStatusName", moodType );
+ 			JSetString( hContact, DBSETTING_XSTATUSNAME, moodType );
+		else
+			JDeleteSetting( hContact, DBSETTING_XSTATUSNAME );
 
 		if ( moodText )
- 			JSetStringT( hContact, "XStatusMsg", moodText );
+ 			JSetStringT( hContact, DBSETTING_XSTATUSMSG, moodText );
+		else
+			JDeleteSetting( hContact, DBSETTING_XSTATUSMSG );
 }	}
 
 static void JabberProcessMessage( XmlNode *node, void *userdata )
@@ -1292,6 +1296,21 @@ void JabberProcessPresenceCapabilites( XmlNode *node )
 		TCHAR *szVer = JabberXmlGetAttrValue( n, "ver" );
 		TCHAR *szExt = JabberXmlGetAttrValue( n, "ext" );
 		if ( szNode && szVer ) {
+			if ( !r->dwVersionRequestTime ) {
+				HANDLE hContact = JabberHContactFromJID( from );
+				if ( hContact ) {
+					TCHAR szMirVer[ 512 ];
+					if ( !szExt )
+						mir_sntprintf( szMirVer, SIZEOF(szMirVer ), _T("%s#%s"), szNode, szVer );
+					else if ( _tcsstr( szExt, _T(JABBER_EXT_SECUREIM) ))
+						mir_sntprintf( szMirVer, SIZEOF(szMirVer), _T("%s#%s#%s (SecureIM)"), szNode, szVer, szExt );
+					else if ( _tcsstr( szNode, _T("www.google.com") ))
+						mir_sntprintf( szMirVer, SIZEOF(szMirVer), _T("%s#%s#%s gtalk"), szNode, szVer, szExt );
+					else
+						mir_sntprintf( szMirVer, SIZEOF(szMirVer), _T("%s#%s#%s"), szNode, szVer, szExt );
+					JSetStringT( hContact, "MirVer", szMirVer );
+			}	}
+
 			replaceStr( r->szCapsNode, szNode );
 			replaceStr( r->szCapsVer, szVer );
 			replaceStr( r->szCapsExt, szExt );
@@ -1753,8 +1772,10 @@ static void JabberProcessIqResultVersion( TCHAR* type, XmlNode* node, XmlNode* q
 	if ( hContact == NULL )
 		return;
 
+	r->dwVersionRequestTime = -1;
+
 	if ( !lstrcmp( type, _T("error"))) {
-		if ( r->resourceName != NULL )
+		if ( r->resourceName != NULL && !r->szCapsNode && !r->szCapsVer )
 			JSetStringT( hContact, "MirVer", r->resourceName );
 		return;
 	}
@@ -1781,8 +1802,6 @@ static void JabberProcessIqResultVersion( TCHAR* type, XmlNode* node, XmlNode* q
 		r->system = mir_tstrdup( n->text );
 	else
 		r->system = NULL;
-
-	r->dwVersionRequestTime = -1;
 
 	JabberCapsBits jcb = JabberGetResourceCapabilites(from);
 

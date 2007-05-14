@@ -370,6 +370,7 @@ extern "C" int __declspec( dllexport ) Load( PLUGINLINK *link )
 	JabberListInit();
 	JabberIconsInit();
 	JabberSvcInit();
+	//JabberXStatusInit();
 	g_JabberClientCapsManager.AddDefaultCaps();
 	return 0;
 }
@@ -387,6 +388,7 @@ extern "C" int __declspec( dllexport ) Unload( void )
 	if ( hInitChat )
 		DestroyHookableEvent( hInitChat );
 
+	//JabberXStatusUninit();
 	JabberSvcUninit();
 	JabberSslUninit();
 	JabberListUninit();

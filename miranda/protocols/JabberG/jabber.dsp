@@ -321,6 +321,10 @@ SOURCE=.\jabber_xmlns.cpp
 # End Source File
 # Begin Source File
 
+SOURCE=.\jabber_xstatus.cpp
+# End Source File
+# Begin Source File
+
 SOURCE=.\jabber_zstream.cpp
 # End Source File
 # End Group

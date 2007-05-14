@@ -92,13 +92,23 @@ void JabberXmlnsDisco( XmlNode *iqNode, void *userdata )
 			XmlNode* query = iq.addChild( "query" ); query->addAttr( "xmlns", xmlns );
 			XmlNode* ident = query->addChild( "identity" ); ident->addAttr( "category", "client" );
 			ident->addAttr( "type", "pc" ); ident->addAttr( "name", "Miranda" );
-			if ( discoNode )
-				query->addAttr( "node", discoNode );
+			
+			JabberCapsBits jcb = JABBER_CAPS_MIRANDA_PARTIAL;
 
-			JabberCapsBits jcbAll = JABBER_CAPS_MIRANDA_ALL;
+			if ( discoNode ) {
+				query->addAttr( "node", discoNode );
+				TCHAR *szExtCap = _tcschr( discoNode, '#' );
+				if ( szExtCap && *++szExtCap != '\0' ) {
+					for ( int i = 0; g_JabberFeatCapPairsExt[i].szFeature; i++ ) {
+						if ( !_tcscmp( g_JabberFeatCapPairsExt[i].szFeature, szExtCap )) {
+							jcb = g_JabberFeatCapPairsExt[i].jcbCap;
+							break;
+			}	}	}	}
+			else
+				jcb = JABBER_CAPS_MIRANDA_ALL;
 
 			for ( int i = 0; g_JabberFeatCapPairs[i].szFeature; i++ )
-				if ( jcbAll & g_JabberFeatCapPairs[i].jcbCap )
+				if ( jcb & g_JabberFeatCapPairs[i].jcbCap )
 					sttAddFeature( query, g_JabberFeatCapPairs[i].szFeature );
 		}
 		jabberThreadInfo->send( iq );

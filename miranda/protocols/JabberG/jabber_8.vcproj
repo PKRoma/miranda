@@ -1520,6 +1520,10 @@
 				</FileConfiguration>
 			</File>
 			<File
+				RelativePath=".\jabber_xstatus.cpp"
+				>
+			</File>
+			<File
 				RelativePath=".\jabber_zstream.cpp"
 				>
 			</File>

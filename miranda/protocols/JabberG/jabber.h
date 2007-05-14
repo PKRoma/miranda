@@ -111,53 +111,60 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #define WM_JABBER_ADD_TO_BOOKMARKS     WM_USER + 116
 
 // Error code
-#define JABBER_ERROR_REDIRECT				302
-#define JABBER_ERROR_BAD_REQUEST			400
-#define JABBER_ERROR_UNAUTHORIZED			401
-#define JABBER_ERROR_PAYMENT_REQUIRED		402
-#define JABBER_ERROR_FORBIDDEN				403
-#define JABBER_ERROR_NOT_FOUND				404
-#define JABBER_ERROR_NOT_ALLOWED			405
-#define JABBER_ERROR_NOT_ACCEPTABLE			406
-#define JABBER_ERROR_REGISTRATION_REQUIRED	407
-#define JABBER_ERROR_REQUEST_TIMEOUT		408
-#define JABBER_ERROR_CONFLICT				409
-#define JABBER_ERROR_INTERNAL_SERVER_ERROR	500
-#define JABBER_ERROR_NOT_IMPLEMENTED		501
-#define JABBER_ERROR_REMOTE_SERVER_ERROR	502
-#define JABBER_ERROR_SERVICE_UNAVAILABLE	503
-#define JABBER_ERROR_REMOTE_SERVER_TIMEOUT	504
-// Vcard flag
-#define JABBER_VCEMAIL_HOME			1
-#define JABBER_VCEMAIL_WORK			2
-#define JABBER_VCEMAIL_INTERNET		4
-#define JABBER_VCEMAIL_X400			8
-#define JABBER_VCTEL_HOME			1
-#define JABBER_VCTEL_WORK			2
-#define JABBER_VCTEL_VOICE			4
-#define JABBER_VCTEL_FAX			8
-#define JABBER_VCTEL_PAGER			16
-#define JABBER_VCTEL_MSG			32
-#define JABBER_VCTEL_CELL			64
-#define JABBER_VCTEL_VIDEO			128
-#define JABBER_VCTEL_BBS			256
-#define JABBER_VCTEL_MODEM			512
-#define JABBER_VCTEL_ISDN			1024
-#define JABBER_VCTEL_PCS			2048
+#define JABBER_ERROR_REDIRECT                    302
+#define JABBER_ERROR_BAD_REQUEST                 400
+#define JABBER_ERROR_UNAUTHORIZED                401
+#define JABBER_ERROR_PAYMENT_REQUIRED            402
+#define JABBER_ERROR_FORBIDDEN                   403
+#define JABBER_ERROR_NOT_FOUND                   404
+#define JABBER_ERROR_NOT_ALLOWED                 405
+#define JABBER_ERROR_NOT_ACCEPTABLE              406
+#define JABBER_ERROR_REGISTRATION_REQUIRED       407
+#define JABBER_ERROR_REQUEST_TIMEOUT             408
+#define JABBER_ERROR_CONFLICT                    409
+#define JABBER_ERROR_INTERNAL_SERVER_ERROR       500
+#define JABBER_ERROR_NOT_IMPLEMENTED             501
+#define JABBER_ERROR_REMOTE_SERVER_ERROR         502
+#define JABBER_ERROR_SERVICE_UNAVAILABLE         503
+#define JABBER_ERROR_REMOTE_SERVER_TIMEOUT       504
+
+// Vcard flags
+#define JABBER_VCEMAIL_HOME                        1
+#define JABBER_VCEMAIL_WORK                        2
+#define JABBER_VCEMAIL_INTERNET                    4
+#define JABBER_VCEMAIL_X400                        8
+
+#define JABBER_VCTEL_HOME                     0x0001
+#define JABBER_VCTEL_WORK                     0x0002
+#define JABBER_VCTEL_VOICE                    0x0004
+#define JABBER_VCTEL_FAX                      0x0008
+#define JABBER_VCTEL_PAGER                    0x0010
+#define JABBER_VCTEL_MSG                      0x0020
+#define JABBER_VCTEL_CELL                     0x0040
+#define JABBER_VCTEL_VIDEO                    0x0080
+#define JABBER_VCTEL_BBS                      0x0100
+#define JABBER_VCTEL_MODEM                    0x0200
+#define JABBER_VCTEL_ISDN                     0x0400
+#define JABBER_VCTEL_PCS                      0x0800
+
 // File transfer setting
-#define JABBER_OPTION_FT_DIRECT		0	// Direct connection
-#define JABBER_OPTION_FT_PASS		1	// Use PASS server
-#define JABBER_OPTION_FT_PROXY		2	// Use proxy with local port forwarding
+#define JABBER_OPTION_FT_DIRECT    0	// Direct connection
+#define JABBER_OPTION_FT_PASS      1	// Use PASS server
+#define JABBER_OPTION_FT_PROXY     2	// Use proxy with local port forwarding
+
 // Font style saved in DB
-#define JABBER_FONT_BOLD			1
-#define JABBER_FONT_ITALIC			2
+#define JABBER_FONT_BOLD           1
+#define JABBER_FONT_ITALIC         2
+
 // Font for groupchat log dialog
-#define JABBER_GCLOG_NUM_FONT		6	// 6 fonts ( 0:send, 1:msg, 2:time, 3:nick, 4:sys, 5:/me )
+#define JABBER_GCLOG_NUM_FONT      6	// 6 fonts ( 0:send, 1:msg, 2:time, 3:nick, 4:sys, 5:/me )
+
 // Old SDK don't have this
 #ifndef SPI_GETSCREENSAVERRUNNING
 #define SPI_GETSCREENSAVERRUNNING 114
 #endif
 #define IDC_STATIC ( -1 )
+
 // Icon list
 enum {
 	JABBER_IDI_GCOWNER = 0,
@@ -177,6 +184,12 @@ enum {
 #define JS_SETMYAVATAR             "/SetMyAvatar"
 #define JS_GETMYAVATAR             "/GetMyAvatar"
 #define JS_GETADVANCEDSTATUSICON   "/GetAdvancedStatusIcon"
+#define JS_GETXSTATUSEX            "/GetXStatusEx"
+#define JS_SETXSTATUSEX            "/SetXStatusEx"
+
+#define DBSETTING_XSTATUSID        "XStatusID"
+#define DBSETTING_XSTATUSNAME      "XStatusName"
+#define DBSETTING_XSTATUSMSG       "XStatusMsg"
 
 /*******************************************************************
  * Global data structures and data type definitions
@@ -613,6 +626,12 @@ void          JabberWsUninit( void );
 JABBER_SOCKET JabberWsConnect( char* host, WORD port );
 int           JabberWsSend( JABBER_SOCKET s, char* data, int datalen, int flags );
 int           JabberWsRecv( JABBER_SOCKET s, char* data, long datalen, int flags );
+
+//---- jabber_xstatus.c --------------------------------------------
+
+void JabberXStatusInit( void );
+void JabberXStatusUninit( void );
+
 
 ///////////////////////////////////////////////////////////////////////////////
 // UTF encode helper

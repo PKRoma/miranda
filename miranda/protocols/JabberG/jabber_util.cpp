@@ -35,6 +35,7 @@ extern UINT jabberCodePage;
 
 static CRITICAL_SECTION serialMutex;
 static unsigned int serial;
+extern int bSecureIM;
 
 void __stdcall JabberSerialInit( void )
 {
@@ -837,6 +838,8 @@ void __stdcall JabberSendPresenceTo( int status, TCHAR* to, XmlNode* extra )
 	c->addAttr( "xmlns", JABBER_FEAT_ENTITY_CAPS );
 	c->addAttr( "node", JABBER_CAPS_MIRANDA_NODE );
 	c->addAttr( "ver", version );
+	if ( bSecureIM )
+		c->addAttr( "ext", JABBER_EXT_SECUREIM );
 	mir_free( version );
 
 	if ( JGetByte( "EnableAvatars", TRUE )) {
