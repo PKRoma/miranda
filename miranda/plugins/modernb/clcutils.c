@@ -754,6 +754,7 @@ void LoadCLCOptions(HWND hwnd, struct ClcData *dat)
 	dat->dbbMetaHideExtra=DBGetContactSettingByte(NULL,"CLC","MetaHideExtra",0);
 	dat->dbbBlendInActiveState=DBGetContactSettingByte(NULL,"CLC","BlendInActiveState",0);
 	dat->dbbBlend25=DBGetContactSettingByte(NULL,"CLC","Blend25%",1);
+	dat->bCompactMode=DBGetContactSettingByte(NULL,"CLC","CompactMode",0);
 	if ((pcli->hwndContactTree == hwnd || pcli->hwndContactTree==NULL))
 	{
 		IvalidateDisplayNameCache(16);

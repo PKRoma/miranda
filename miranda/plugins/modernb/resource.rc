@@ -1306,7 +1306,7 @@ LANGUAGE LANG_ENGLISH, SUBLANG_ENGLISH_CAN
 // Dialog
 //
 
-IDD_OPT_ITEM_ROW DIALOGEX 0, 0, 178, 189
+IDD_OPT_ITEM_ROW DIALOGEX 0, 0, 178, 222
 STYLE DS_SETFONT | DS_FIXEDSYS | DS_CENTER | WS_CHILD
 EXSTYLE WS_EX_CONTROLPARENT
 FONT 8, "MS Shell Dlg", 400, 0, 0x1
@@ -1331,7 +1331,7 @@ BEGIN
     CONTROL         "Align left items to left",IDC_ALIGN_TO_LEFT,"Button",
                     BS_AUTOCHECKBOX | WS_TABSTOP,8,160,126,10
     CONTROL         "Align right items to right",IDC_ALIGN_TO_RIGHT,"Button",
-                    BS_AUTOCHECKBOX | WS_TABSTOP,8,172,126,10
+                    BS_AUTOCHECKBOX | WS_TABSTOP,8,171,126,10
     PUSHBUTTON      "Up",IDC_UP,140,26,31,12
     PUSHBUTTON      "Down",IDC_DOWN,140,39,31,12
     LTEXT           "Left margin:",IDC_STATIC,7,118,52,8
@@ -1346,6 +1346,9 @@ BEGIN
                     UDS_ALIGNRIGHT | UDS_ARROWKEYS | UDS_NOTHOUSANDS | 
                     UDS_HOTTRACK,100,127,11,14
     LTEXT           "pixels",IDC_STATIC,111,131,54,8
+    CONTROL         "Compact mode\n(Show avatars and additional text\non selected contacts only)",
+                    IDC_MINIMODE,"Button",BS_AUTOCHECKBOX | BS_TOP | 
+                    BS_MULTILINE | WS_TABSTOP,8,183,164,28
 END
 
 IDD_OPT_SBAR DIALOGEX 0, 0, 287, 222
@@ -1703,7 +1706,7 @@ BEGIN
         LEFTMARGIN, 7
         RIGHTMARGIN, 171
         TOPMARGIN, 7
-        BOTTOMMARGIN, 182
+        BOTTOMMARGIN, 215
     END
 
     IDD_OPT_SBAR, DIALOG

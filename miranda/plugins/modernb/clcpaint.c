@@ -156,7 +156,7 @@ static DWORD dwQuickHash[hi_LastItem]={0};
 /************************************************************************/
 /* CLCPaint_IsForegroundWindow                                          */
 /************************************************************************/
-static BOOL CLCPaint_IsForegroundWindow(HWND hWnd)
+BOOL CLCPaint_IsForegroundWindow(HWND hWnd)
 {
 	HWND hWindow;
 	hWindow=hWnd;
@@ -3089,7 +3089,7 @@ static void CLCPaint_InternalPaintClc(HWND hwnd,struct ClcData *dat,HDC hdc,RECT
 					else RowHeight_CalcRowHeight(dat, hwnd, Drawing, line_num);
 
 					// Init settings
-					selected = ((line_num==dat->selection) && (dat->showSelAlways || dat->exStyle&CLS_EX_SHOWSELALWAYS || CLCPaint_IsForegroundWindow(hwnd)) && Drawing->type!=CLCIT_DIVIDER);
+					selected = ((line_num==dat->selection) && (dat->hwndRenameEdit!=NULL || dat->showSelAlways || dat->exStyle&CLS_EX_SHOWSELALWAYS || CLCPaint_IsForegroundWindow(hwnd)) && Drawing->type!=CLCIT_DIVIDER);
 					hottrack = dat->exStyle&CLS_EX_TRACKSELECT && Drawing->type!=CLCIT_DIVIDER && dat->iHotTrack==line_num;
 					left_pos = clRect.left + dat->leftMargin + indent * dat->groupIndent + subident;
 					right_pos = dat->rightMargin;	// Border
@@ -3410,6 +3410,13 @@ static void setstrT(IN OUT TCHAR * lpText, IN TCHAR * Value)
 	else lpText=NULL;
 }
 
+BOOL CLCPaint_CheckMiniMode(struct ClcData *dat, BOOL selected, BOOL hot)
+{
+	if ( (!dat->bCompactMode /* not mini*/) 
+		   ||((dat->bCompactMode&0x01) && selected /*mini on selected*/) 
+		 /*||(TRUE && hot)*/ ) return FALSE;
+	return TRUE;
+}
 static void CLCPaint_CalulateContactItemsPositions(HWND hwnd, HDC hdcMem, struct ClcData *dat, struct ClcContact *Drawing, RECT *in_row_rc, RECT *in_free_row_rc, int left_pos, int right_pos, int selected,int hottrack)
 {
 	int item_iterator, item, item_text, text_left_pos;
@@ -3435,9 +3442,10 @@ static void CLCPaint_CalulateContactItemsPositions(HWND hwnd, HDC hdcMem, struct
 				int max_width;
 				int width;
 				int height;	
-
+				BOOL miniMode;
 				if (!dat->avatars_show || Drawing->type != CLCIT_CONTACT)
 					break;
+				miniMode=CLCPaint_CheckMiniMode(dat,selected,hottrack);
 				AniAva_InvalidateAvatarPositions(Drawing->hContact);
 				if (dat->icon_hide_on_avatar && dat->icon_draw_on_avatar_space)
 					max_width = max(dat->iconXSpace, dat->avatars_maxheight_size);
@@ -3446,7 +3454,8 @@ static void CLCPaint_CalulateContactItemsPositions(HWND hwnd, HDC hdcMem, struct
 
 				// Has to draw?
 				if ((dat->use_avatar_service && Drawing->avatar_data == NULL)
-					|| (!dat->use_avatar_service && Drawing->avatar_pos == AVATAR_POS_DONT_HAVE))
+					|| (!dat->use_avatar_service && Drawing->avatar_pos == AVATAR_POS_DONT_HAVE)
+					|| miniMode )
 				{
 					// Don't have to draw avatar
 
@@ -3519,7 +3528,8 @@ static void CLCPaint_CalulateContactItemsPositions(HWND hwnd, HDC hdcMem, struct
 				RECT rc;
 				int iImage = -1;
 				BOOL has_avatar = ( (dat->use_avatar_service && Drawing->avatar_data != NULL) ||
-					(!dat->use_avatar_service && Drawing->avatar_pos != AVATAR_POS_DONT_HAVE) );
+					(!dat->use_avatar_service && Drawing->avatar_pos != AVATAR_POS_DONT_HAVE) )
+					&& !(CLCPaint_CheckMiniMode(dat,selected,hottrack));
 
 				if (Drawing->type == CLCIT_CONTACT
 					&& dat->icon_hide_on_avatar
@@ -3795,7 +3805,7 @@ static void CLCPaint_CalulateContactItemsPositions(HWND hwnd, HDC hdcMem, struct
 			}
 
 		}
-		else if (Drawing->type == CLCIT_CONTACT)
+		else if (Drawing->type == CLCIT_CONTACT && !CLCPaint_CheckMiniMode(dat,selected,hottrack))
 		{
 			int tmp;
 			PDNCE pdnce=(PDNCE)((Drawing->type == CLCIT_CONTACT)?pcli->pfnGetCacheEntry(Drawing->hContact):NULL);
@@ -3819,7 +3829,7 @@ static void CLCPaint_CalulateContactItemsPositions(HWND hwnd, HDC hdcMem, struct
 			}
 
 			if (dat->second_line_show && pdnce->szSecondLineText && pdnce->szSecondLineText[0]
-			&& free_height > dat->second_line_top_space)
+			&& free_height > dat->second_line_top_space )
 			{
 				//RECT rc_tmp = free_row_rc;
 

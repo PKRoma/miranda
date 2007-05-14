@@ -462,6 +462,7 @@ struct ClcData {
 	BYTE dbbBlend25;
 
 	XPTHANDLE hCheckBoxTheme;
+	BYTE bCompactMode;
 };
 
 struct SHORTDATA

@@ -624,6 +624,8 @@ int RowHeights_GetRowHeight(struct ClcData *dat, HWND hwnd, struct ClcContact *c
     return res;
 }
 
+BOOL CLCPaint_IsForegroundWindow(HWND hWnd);
+BOOL CLCPaint_CheckMiniMode(struct ClcData *dat, BOOL selected, BOOL hot);
 int RowHeights_GetRowHeight_worker(struct ClcData *dat, HWND hwnd, struct ClcContact *contact, int item)
 {
   int height = 0;
@@ -636,6 +638,9 @@ int RowHeights_GetRowHeight_worker(struct ClcData *dat, HWND hwnd, struct ClcCon
     DWORD style=GetWindowLong(hwnd,GWL_STYLE);
     //TODO replace futher code with new rowheight definition
     int tmp;
+	BOOL selected=((item==dat->selection) && (dat->hwndRenameEdit!=NULL || dat->showSelAlways || dat->exStyle&CLS_EX_SHOWSELALWAYS || CLCPaint_IsForegroundWindow(hwnd)) && contact->type!=CLCIT_DIVIDER);
+	BOOL hottrack=((item==dat->iHotTrack) && (dat->hwndRenameEdit!=NULL || dat->showSelAlways || dat->exStyle&CLS_EX_SHOWSELALWAYS || CLCPaint_IsForegroundWindow(hwnd)) && contact->type!=CLCIT_DIVIDER);
+	BOOL minimalistic=(CLCPaint_CheckMiniMode(dat,selected,hottrack));
     if (!RowHeights_Alloc(dat, item + 1))
       return -1;
 
@@ -650,7 +655,8 @@ int RowHeights_GetRowHeight_worker(struct ClcData *dat, HWND hwnd, struct ClcCon
           tmp = max(tmp, contact->iTextMaxSmileyHeight);
         }
         height += tmp;
-        if (dat->second_line_show && pdnce->szSecondLineText && pdnce->szSecondLineText[0])
+
+        if (!minimalistic && dat->second_line_show && pdnce->szSecondLineText && pdnce->szSecondLineText[0])
         {
           tmp = dat->fontModernInfo[FONTID_SECONDLINE].fontHeight;
           if (dat->text_replace_smileys && dat->second_line_draw_smileys && !dat->text_resize_smileys)
@@ -660,7 +666,7 @@ int RowHeights_GetRowHeight_worker(struct ClcData *dat, HWND hwnd, struct ClcCon
           height += dat->second_line_top_space + tmp;
         }
 
-        if (dat->third_line_show && pdnce->szThirdLineText && pdnce->szThirdLineText[0])
+        if (!minimalistic && dat->third_line_show && pdnce->szThirdLineText && pdnce->szThirdLineText[0])
         {
           tmp = dat->fontModernInfo[FONTID_THIRDLINE].fontHeight;
           if (dat->text_replace_smileys && dat->third_line_draw_smileys && !dat->text_resize_smileys)
@@ -677,8 +683,7 @@ int RowHeights_GetRowHeight_worker(struct ClcData *dat, HWND hwnd, struct ClcCon
         (
         (dat->use_avatar_service && contact->avatar_data != NULL) ||
         (!dat->use_avatar_service && contact->avatar_pos != AVATAR_POS_DONT_HAVE)
-        )
-        )
+        ) && !minimalistic )
       {
         height = max(height, dat->avatars_maxheight_size);
       }

@@ -1380,6 +1380,14 @@ case WM_TIMER:
 		}
 		break;
 	}
+case WM_ACTIVATE:
+	{
+		if (dat->bCompactMode)
+		{
+			SendMessage(hwnd,WM_SIZE,0,0);
+		}
+	}
+	break;
 case WM_SETCURSOR: 
 	{ 
 		int k; 
@@ -1469,8 +1477,15 @@ case WM_LBUTTONDOWN:
 						dat->selection=cliGetRowsPriorTo(&dat->list,selgroup,GetContactIndex(selgroup,selcontact));
 						if(dat->selection==-1) dat->selection=cliGetRowsPriorTo(&dat->list,contact->group,-1);
 					}
-					CLUI__cliInvalidateRect(hwnd,NULL,FALSE);
-					UpdateWindow(hwnd);
+					if (dat->bCompactMode)
+					{
+						SendMessage(hwnd,WM_SIZE,0,0);
+					}
+					else
+					{
+						CLUI__cliInvalidateRect(hwnd,NULL,FALSE);
+						UpdateWindow(hwnd);
+					}										
 					return TRUE;
 				}
 				if(hit!=-1 && !(hitFlags&CLCHT_NOWHERE) && hitFlags&CLCHT_ONITEMCHECK) {
@@ -1502,7 +1517,7 @@ case WM_LBUTTONDOWN:
 				if(hitFlags&(CLCHT_ONITEMCHECK|CLCHT_ONITEMEXTRA)) return 0;
 				dat->selection=(hitFlags&CLCHT_NOWHERE)?-1:hit;
 				CLUI__cliInvalidateRect(hwnd,NULL,FALSE);
-				if(dat->selection!=-1) pcli->pfnEnsureVisible(hwnd,dat,hit,0);
+				
 				UpdateWindow(hwnd);
 				if(dat->selection!=-1 && (contact->type==CLCIT_CONTACT || contact->type==CLCIT_GROUP) && !(hitFlags&(CLCHT_ONITEMEXTRA|CLCHT_ONITEMCHECK|CLCHT_NOWHERE))) {
 					SetCapture(hwnd);
@@ -1510,6 +1525,11 @@ case WM_LBUTTONDOWN:
 					dat->dragStage=DRAGSTAGE_NOTMOVED;
 					dat->dragAutoScrolling=0;
 				}
+				if (dat->bCompactMode)
+				{						
+					SendMessage(hwnd,WM_SIZE,0,0);					
+				}
+				if(dat->selection!=-1)	pcli->pfnEnsureVisible(hwnd,dat,hit,0);
 				return TRUE;
 		}
 	}		

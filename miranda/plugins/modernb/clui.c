@@ -1670,6 +1670,7 @@ LRESULT CALLBACK CLUI__cli_ContactListWndProc(HWND hwnd, UINT msg, WPARAM wParam
 		{
 			BOOL IsOption=FALSE;
 			SetCursor(LoadCursor(NULL, IDC_ARROW));
+			SendMessage(pcli->hwndContactTree, WM_ACTIVATE, wParam, lParam);
 			if (DBGetContactSettingByte(NULL, "ModernData", "HideBehind", 0))
 			{
 				if(wParam==WA_INACTIVE && ((HWND)lParam!=hwnd) && GetParent((HWND)lParam)!=hwnd && !IsOption) 

@@ -893,6 +893,7 @@
 #define IDC_MULTI_2                     2001
 #define IDC_FRAMESORDER                 2002
 #define IDC_USEWINCOL                   2004
+#define IDC_MINIMODE                    2005
 #define IDC_CLSORT1                     6666
 #define IDC_CLSORT2                     6667
 #define IDC_CLSORT3                     6668
@@ -991,7 +992,7 @@
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NEXT_RESOURCE_VALUE        507
 #define _APS_NEXT_COMMAND_VALUE         40022
-#define _APS_NEXT_CONTROL_VALUE         2005
+#define _APS_NEXT_CONTROL_VALUE         2006
 #define _APS_NEXT_SYMED_VALUE           101
 #endif
 #endif
