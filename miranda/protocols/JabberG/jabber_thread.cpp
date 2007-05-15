@@ -920,15 +920,15 @@ static void JabberProcessCompressed( XmlNode *node, void *userdata )
 {
 	ThreadData* info;
 	TCHAR* type;
-	
+
 	JabberLog( "Compression confirmed" );
-	
+
 	if (( info=( ThreadData* ) userdata ) == NULL ) return;
 	if (( type = JabberXmlGetAttrValue( node, "xmlns" )) != NULL && !lstrcmp( type, _T( "error" )))
 		return;
 	if ( lstrcmp( type, _T( "http://jabber.org/protocol/compress" )))
 		return;
-	
+
 	JabberLog( "Starting Zlib stream compression..." );
 
 	info->useZlib = TRUE;
@@ -961,11 +961,8 @@ static void JabberProcessPubsubEvent( XmlNode *node )
  			moodType = moodNode->child[i]->name;
  	}
 
-	if ( moodType || moodText ) {
- 		TCHAR* from = JabberXmlGetAttrValue( node, "from" );
- 		if ( from == NULL ) 
-			return;
-
+	TCHAR* from = JabberXmlGetAttrValue( node, "from" );
+	if ( from ) {
  		HANDLE hContact = JabberHContactFromJID( from );
  		if ( hContact )
 			JabberSetContactMood( hContact, moodType, moodText );
@@ -1892,7 +1889,7 @@ static void JabberProcessIq( XmlNode *node, void *userdata )
 								if ( !JGetStringT( hContact, "Nick", &dbnick )) {
 									if ( _tcscmp( nick, dbnick.ptszVal ) != 0 )
 										DBWriteContactSettingTString( hContact, "CList", "MyHandle", nick );
-									else 
+									else
 										DBDeleteContactSetting( hContact, "CList", "MyHandle" );
 
 									JFreeVariant( &dbnick );
@@ -2025,7 +2022,7 @@ static void JabberProcessIq( XmlNode *node, void *userdata )
 			else if ( !_tcscmp( xmlns, _T(JABBER_FEAT_AVATAR)))
 				JabberProcessIqAvatar( idStr, node );
 			else if ( !_tcscmp( xmlns, _T("jabber:iq:time")))
-				JabberProcessIqTime( idStr, node );	
+				JabberProcessIqTime( idStr, node );
 			else if ( !_tcscmp( xmlns, _T(JABBER_FEAT_LAST_ACTIVITY)))
 				JabberProcessIqLast( idStr, node );
 		}
