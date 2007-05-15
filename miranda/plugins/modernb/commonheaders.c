@@ -267,6 +267,7 @@ void li_ListDestruct(SortedList *pList, ItemDestuctor pItemDestructor)
 	if (!pList) return;
 	for (i=0; i<pList->realCount; i++)	pItemDestructor(pList->items[i]);	
 	li.List_Destroy(pList);																											
+   mir_free(pList);
 }
 
 void li_RemoveDestruct(SortedList *pList, int index, ItemDestuctor pItemDestructor)
