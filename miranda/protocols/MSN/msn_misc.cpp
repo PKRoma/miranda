@@ -169,20 +169,15 @@ void  MSN_AddAuthRequest( HANDLE hContact, const char *email, const char *nick )
 
 void 	MSN_DebugLog( const char *fmt, ... )
 {
-	char		str[ 4096 ];
+	char	str[ 4096 ];
 	va_list	vararg;
 
 	va_start( vararg, fmt );
-	int tBytes = _vsnprintf( str, sizeof(str)-1, fmt, vararg );
-	if ( tBytes == 0 )
-		return;
-
-	if ( tBytes > 0 )
-		str[ tBytes ] = 0;
-	else
+	if ( _vsnprintf( str, sizeof(str), fmt, vararg ) != 0 )
+	{
 		str[ sizeof(str)-1 ] = 0;
-
-	MSN_CallService( MS_NETLIB_LOG, ( WPARAM )hNetlibUser, ( LPARAM )str );
+		MSN_CallService( MS_NETLIB_LOG, ( WPARAM )hNetlibUser, ( LPARAM )str );
+	}
 	va_end( vararg );
 }
 
@@ -403,6 +398,7 @@ LONG ThreadData::sendRawMessage( int msgType, const char* data, int datLen )
 	int nBytes = mir_snprintf( buf, 100, "MSG %d %c %d\r\n%s",
 		thisTrid, msgType, datLen + sizeof(sttHeaderStart)-1, sttHeaderStart );
 	memcpy( buf + nBytes, data, datLen );
+
 	send( buf, nBytes + datLen );
 
 	return thisTrid;
@@ -948,7 +944,7 @@ filetransfer::~filetransfer( void )
 		mir_free( std.files );
 	}
 
-	mir_free(  wszFileName );
+	mir_free( wszFileName );
 	mir_free( szInvcookie );
 }
 

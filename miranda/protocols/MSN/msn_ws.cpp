@@ -193,9 +193,6 @@ LBL_RecvAgain:
 					--numQueueItems;
 				}
 
-				if ( numQueueItems < 5 )
-					SetEvent( hWaitEvent );
-
 				ReleaseMutex( hQueueMutex );
 
 				ret = 1;

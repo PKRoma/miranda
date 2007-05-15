@@ -53,11 +53,14 @@ typedef struct
 
 #pragma pack()
 
-static char sttP2Pheader[] =
+static const char sttP2Pheader[] =
 	"Content-Type: application/x-msnmsgrp2p\r\n"
 	"P2P-Dest: %s\r\n\r\n";
 
-static char sttVoidNonce[] = "{00000000-0000-0000-0000-000000000000}";
+static const char sttVoidNonce[] = "{00000000-0000-0000-0000-000000000000}";
+
+static bool upnpDetected = false;
+
 
 void __cdecl p2p_filePassiveThread( ThreadData* info );
 
@@ -102,6 +105,39 @@ unsigned p2p_getMsgId( HANDLE hContact, int inc )
 	
 	return res;
 }
+
+
+void p2p_detectUPnP( ThreadData* info )
+{
+	char ipaddr[256];
+	if ( MSN_GetMyHostAsString( ipaddr, sizeof( ipaddr ))) {
+		MSN_DebugLog( "Cannot detect my host address" );
+		return;
+	}
+
+	NETLIBBIND nlb = {0};
+	nlb.cbSize = sizeof( nlb );
+	nlb.pfnNewConnectionV2 = MSN_ConnectionProc;
+	nlb.wPort = 0;	// Use user-specified incoming port ranges, if available
+	HANDLE sb = (HANDLE) MSN_CallService(MS_NETLIB_BINDPORT, (WPARAM) hNetlibUser, ( LPARAM )&nlb);
+	if ( sb == NULL ) {
+		MSN_DebugLog( "Unable to bind the port for incoming transfers" );
+		return;
+	}
+
+	SOCKET s = MSN_CallService( MS_NETLIB_GETSOCKET, ( WPARAM )info->s, 0 );
+	if ( s != INVALID_SOCKET) {
+		SOCKADDR_IN saddr;
+		int len = sizeof( saddr );
+		if ( getsockname( s, ( SOCKADDR* )&saddr, &len ) != SOCKET_ERROR )
+			upnpDetected = nlb.dwExternalIP != nlb.dwInternalIP;
+			MSN_DebugLog( "NAT Detect %s %s, %x, %x", ipaddr, inet_ntoa( saddr.sin_addr ),
+				nlb.dwExternalIP, nlb.dwInternalIP );
+	}
+
+	Netlib_CloseHandle( sb );
+}
+
 
 static int sttCreateListener(
 	ThreadData* info,
@@ -434,12 +470,13 @@ void  p2p_sendSlp(
 	char* p = buf;
 
 	switch ( iKind ) {
-		case -2:  p += sprintf( p, "INVITE MSNMSGR:%s MSNSLP/1.0", ft->p2p_dest ); break;
-		case -1:  p += sprintf( p, "BYE MSNMSGR:%s MSNSLP/1.0", ft->p2p_dest ); break;
-		case 200: p += sprintf( p, "MSNSLP/1.0 200 OK" );	break;
-		case 481: p += sprintf( p, "MSNSLP/1.0 481 No Such Call" ); break;
-		case 500: p += sprintf( p, "MSNSLP/1.0 500 Internal Error" ); break;
-		case 603: p += sprintf( p, "MSNSLP/1.0 603 DECLINE" ); break;
+		case -2:   p += sprintf( p, "INVITE MSNMSGR:%s MSNSLP/1.0", ft->p2p_dest ); break;
+		case -1:   p += sprintf( p, "BYE MSNMSGR:%s MSNSLP/1.0", ft->p2p_dest ); break;
+		case 200:  p += sprintf( p, "MSNSLP/1.0 200 OK" );	break;
+		case 481:  p += sprintf( p, "MSNSLP/1.0 481 No Such Call" ); break;
+		case 500:  p += sprintf( p, "MSNSLP/1.0 500 Internal Error" ); break;
+		case 603:  p += sprintf( p, "MSNSLP/1.0 603 DECLINE" ); break;
+		case 1603: p += sprintf( p, "MSNSLP/1.0 603 Decline" ); break;
 		default: return;
 	}
 	
@@ -534,12 +571,20 @@ void  p2p_sendStatus( filetransfer* ft, long lStatus )
 	tHeaders.addString( "CSeq", "1 " );
 	tHeaders.addString( "Call-ID", ft->p2p_callID );
 	tHeaders.addLong( "Max-Forwards", 0 );
-	tHeaders.addString( "Content-Type", "application/x-msnmsgr-sessionreqbody" );
+	if (lStatus != 1603)
+	{
+		tHeaders.addString( "Content-Type", "application/x-msnmsgr-sessionreqbody" );
 
-	char szContents[ 50 ];
-	p2p_sendSlp( ft, tHeaders, lStatus, szContents,
-		mir_snprintf( szContents, sizeof( szContents ), "SessionID: %lu\r\nSChannelState: 0\r\n\r\n%c",
-		ft->p2p_sessionid, 0 ));
+		char szContents[ 50 ];
+		p2p_sendSlp( ft, tHeaders, lStatus, szContents,
+			mir_snprintf( szContents, sizeof( szContents ), "SessionID: %lu\r\nSChannelState: 0\r\n\r\n%c",
+			ft->p2p_sessionid, 0 ));
+	}
+	else
+	{
+		tHeaders.addString( "Content-Type", "null" );
+		p2p_sendSlp( ft, tHeaders, lStatus, NULL, 0 );
+	}
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////
@@ -732,7 +777,6 @@ LONG  p2p_sendPortion( filetransfer* ft, ThreadData* T )
 	H->mPacketLen = portion;
 	H->mAckSessionID = ft->p2p_acksessid;
 
-	sttLogHeader( H);
 	// Fill data (payload) for transfer
 	_read( ft->fileId, p, portion );
 	p += portion;
@@ -796,7 +840,6 @@ void __cdecl p2p_sendFeedThread( ThreadData* info )
 	else
 		return;
 
-	unsigned i = 0;
 	bool fault = false;
 	while ( WaitForSingleObject( hLockHandle, 2000 ) == WAIT_OBJECT_0 &&
 			ft->std.currentFileProgress < ft->std.currentFileSize )
@@ -816,9 +859,7 @@ void __cdecl p2p_sendFeedThread( ThreadData* info )
 
 		ReleaseMutex( hLockHandle );
 
-		i = (i + 1) % 5;
-
-		if ( MyOptions.UseGateway && !MyOptions.UseProxy && i == 0)
+		if ( T->mType != SERVER_P2P_DIRECT )
 			WaitForSingleObject( T->hWaitEvent, 5000 );
 	}
 	ReleaseMutex( hLockHandle );
@@ -1121,9 +1162,12 @@ static void sttInitDirectTransfer(
 		return;
 	}
 
-//	p2p_sendStatus(ft, info, 603);
-
 	MSN_SendBroadcast( ft->std.hContact, ACKTYPE_FILE, ACKRESULT_INITIALISING, ft, 0);
+
+	if ( p2p_isAvatarOnly( ft->std.hContact )) {
+		p2p_sendStatus(ft, 1603);
+		return;
+	}
 
 	bool bUseDirect = false, bActAsServer = false;
 	if ( atol( szNetID ) == 0 ) {
@@ -1153,7 +1197,7 @@ static void sttInitDirectTransfer(
 		cbBodyLen = sttCreateListener( info, ft, dc, szBody, sizeof( szBody ));
 
 	if ( !cbBodyLen ) {
-		char* szUuid = dc->useHashedNonce ? dc->mNonceToHash() : sttVoidNonce;
+		const char* szUuid = dc->useHashedNonce ? dc->mNonceToHash() : sttVoidNonce;
 
 		cbBodyLen = mir_snprintf( szBody, sizeof( szBody ),
 			"Bridge: TCPv1\r\n"
@@ -1163,7 +1207,7 @@ static void sttInitDirectTransfer(
 			"SChannelState: 0\r\n\r\n%c",
 			dc->useHashedNonce ? "Hashed-Nonce" : "Nonce", szUuid, ft->p2p_sessionid, 0 );
 
-		if ( dc->useHashedNonce ) mir_free( szUuid );
+		if ( dc->useHashedNonce ) mir_free(( void* )szUuid );
 	}
 
 	if ( !bUseDirect || bActAsServer )
@@ -1325,8 +1369,8 @@ LBL_Close:
 
 		tResult.addString( "Content-Type", "application/x-msnmsgr-transreqbody" );
 		cbBody = mir_snprintf( szBody, 1024,
-			"Bridges: TCPv1\r\nNetID: %i\r\nConn-Type: %s\r\nUPnPNat: false\r\nICF: false\r\n%s\r\n%c",
-			inet_addr(ipaddr), conn, szNonce, 0 );
+			"Bridges: TCPv1\r\nNetID: %i\r\nConn-Type: %s\r\nUPnPNat: %s\r\nICF: false\r\n%s\r\n%c",
+			inet_addr(ipaddr), conn, upnpDetected ? "true" : "false", szNonce, 0 );
 
 	}
 	else if ( !strcmp( szOldContentType, "application/x-msnmsgr-transrespbody" )) {

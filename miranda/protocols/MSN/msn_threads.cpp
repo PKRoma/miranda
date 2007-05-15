@@ -54,7 +54,7 @@ void __cdecl msn_keepAliveThread( void* )
 				if ( MyOptions.UseGateway )
 					msnPingTimeout = 45;
 				else {
-					msnPingTimeout = 6;
+					msnPingTimeout = 45;
 					keepFlag = keepFlag && msnNsThread->send( "PNG\r\n", 5 );
 				}
 				p2p_clearDormantSessions();
@@ -396,7 +396,7 @@ void  MSN_StartP2PTransferByContact( HANDLE hContact )
 
 		if ( T->mJoinedContacts[0] == hContact && T->mType == SERVER_FILETRANS
 			  && T->hWaitEvent != INVALID_HANDLE_VALUE )
-			SetEvent( T->hWaitEvent );
+			ReleaseSemaphore( T->hWaitEvent, 1, NULL );
 	}
 
 	LeaveCriticalSection( &sttLock );
@@ -495,8 +495,7 @@ ThreadData::ThreadData()
 	memset( this, 0, sizeof( ThreadData ));
 	mGatewayTimeout = 2;
 	mWaitPeriod = 15;
-	mIsMainThread = false;
-	hWaitEvent = CreateEvent( NULL, FALSE, FALSE, NULL );
+	hWaitEvent = CreateSemaphore( NULL, 0, 5, NULL );
 }
 
 ThreadData::~ThreadData()

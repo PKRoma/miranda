@@ -341,7 +341,7 @@ struct filetransfer
 
 	union {
 		int      fileId;			// handle of file being transferring (r/w)
-		char*	   fileBuffer;		// buffer of memory to handle the file
+		char*	 fileBuffer;		// buffer of memory to handle the file
 	};
 
 	HANDLE		hLockHandle;
@@ -527,6 +527,7 @@ filetransfer*  p2p_getSessionByCallID( const char* CallID );
 bool  p2p_sessionRegistered( filetransfer* ft );
 bool  p2p_isAvatarOnly( HANDLE hContact );
 unsigned p2p_getMsgId( HANDLE hContact, int inc );
+void p2p_detectUPnP( ThreadData* info );
 
 
 void  p2p_registerDC( directconnection* ft );

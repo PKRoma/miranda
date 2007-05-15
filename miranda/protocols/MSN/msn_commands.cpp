@@ -111,7 +111,7 @@ int  MSN_GetMyHostAsString( char* parBuf, int parBufSize )
 
 			return 1;
 		}
-		memcpy( &in, myhost->h_addr, 4 );
+		in = *( PIN_ADDR )myhost->h_addr;
 	}
 
 	strncpy( parBuf, inet_ntoa( in ), parBufSize );
@@ -138,7 +138,7 @@ void MSN_ConnectionProc( HANDLE hNewConnection, DWORD dwRemoteIP, void* )
 		ThreadData* T = MSN_GetThreadByPort( localPort );
 		if ( T != NULL && T->s == NULL ) {
 			T->s = hNewConnection;
-			SetEvent( T->hWaitEvent );
+			ReleaseSemaphore( T->hWaitEvent, 1, NULL );
 			return;
 		}
 		MSN_DebugLog( "There's no registered file transfers for incoming port #%d, connection closed", localPort );
@@ -1177,6 +1177,8 @@ int MSN_HandleCommands( ThreadData* info, char* cmdString )
 	switch(( *( PDWORD )cmdString & 0x00FFFFFF ) | 0x20000000 )
 	{
 		case ' KCA':    //********* ACK: section 8.7 Instant Messages
+			ReleaseSemaphore( info->hWaitEvent, 1, NULL );
+
 			if ( info->mJoinedCount > 0 && MyOptions.SlowSend )
 				MSN_SendBroadcast( info->mJoinedContacts[0], ACKTYPE_MESSAGE, ACKRESULT_SUCCESS, ( HANDLE )trid, 0 );
 			break;
@@ -1920,6 +1922,8 @@ LBL_InvalidCommand:
 			newThread->mInitialContact = MSN_HContactFromEmail( data.callerEmail, data.callerNick, false, true );
 			mir_snprintf( newThread->mCookie, sizeof( newThread->mCookie ), "%s %d", data.authChallengeInfo, trid );
 
+			ReleaseSemaphore( newThread->hWaitEvent, 5, NULL );
+
 			MSN_DebugLog( "Opening caller's switchboard server '%s'...", data.newServer );
 			newThread->startThread(( pThreadFunc )MSNServerThread );
 			break;
@@ -1941,6 +1945,7 @@ LBL_InvalidCommand:
 			sttListedContact = NULL;
 			tridUrlInbox = msnNsThread->sendPacket( "URL", "INBOX" );
 			tridUrlEdit  = msnNsThread->sendPacket( "URL", "PROFILE 0x%04x", GetUserDefaultLCID() );
+			p2p_detectUPnP( info );
 			break;
 		}
 		case ' XBU':   // UBX : MSNP11+ User Status Message
