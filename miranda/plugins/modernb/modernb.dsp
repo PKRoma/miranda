@@ -570,6 +570,10 @@ SOURCE=.\modern_statusbar.c
 # End Source File
 # Begin Source File
 
+SOURCE=.\modern_toolbar.c
+# End Source File
+# Begin Source File
+
 SOURCE=.\rowheight_funcs.c
 # End Source File
 # Begin Source File
@@ -595,6 +599,10 @@ SOURCE=.\utf.c
 # Begin Source File
 
 SOURCE=.\viewmodes.c
+# End Source File
+# Begin Source File
+
+SOURCE=.\xpTheme.c
 # End Source File
 # End Group
 # Begin Group "Header Files"

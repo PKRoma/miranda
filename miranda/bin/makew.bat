@@ -66,6 +66,11 @@ rem ---------------------------------------------------------------------------
 rem Plugins
 rem ---------------------------------------------------------------------------
 
+pushd ..\..\miranda\plugins\avs
+call :Nmake avs.mak "avs - Win32 Release Unicode"
+popd
+if errorlevel 1 goto :Error
+
 pushd ..\..\miranda\plugins\chat
 call :Nmake chat.mak "chat - Win32 Release Unicode"
 popd
@@ -78,11 +83,6 @@ if errorlevel 1 goto :Error
 
 pushd ..\..\miranda\plugins\clist_nicer
 call :Nmake clist.mak "clist_nicer - Win32 Release Unicode"
-popd
-if errorlevel 1 goto :Error
-
-pushd ..\..\miranda\plugins\loadavatars
-call :Nmake avatars.mak "loadavatars - Win32 Release Unicode"
 popd
 if errorlevel 1 goto :Error
 
@@ -124,11 +124,11 @@ copy ..\release\Icons\xstatus_ICQ.dll    Icons
 copy ..\release\Plugins\aim.dll          Plugins
 copy ..\release\Plugins\dbx_3x.dll       Plugins
 copy ..\release\Plugins\dbx_mmap.dll     Plugins
+copy ..\release\Plugins\freeimage.dll    Plugins
 copy ..\release\Plugins\GG.dll           Plugins
 copy ..\release\Plugins\ICQ.dll          Plugins
 copy ..\release\Plugins\import.dll       Plugins
 copy ..\release\Plugins\IRC.dll          Plugins
-copy ..\release\Plugins\png2dib.dll      Plugins
 copy ..\release\Plugins\Yahoo.dll        Plugins
 
 dir /B /S *.dll | rebaser /NOCRC
@@ -261,12 +261,12 @@ copy ..\..\protocols\MSN\Release_Unicode\MSN.pdb               %Temp%\pdbw\plugi
 copy ..\..\protocols\Yahoo\Release\Yahoo.pdb                   %Temp%\pdbw\plugins
 copy ..\..\protocols\Gadu-Gadu\Release\GG.pdb                  %Temp%\pdbw\plugins
 rem  Unicode plugins
+copy ..\..\plugins\avs\Release_Unicode\avs.pdb                 %Temp%\pdbw\plugins
 copy ..\..\plugins\chat\Release_Unicode\chat.pdb               %Temp%\pdbw\plugins
 copy ..\..\plugins\clist\Release_Unicode\clist_classic.pdb     %Temp%\pdbw\plugins
 copy ..\..\plugins\clist_nicer\Release_Unicode\clist_nicer.pdb %Temp%\pdbw\plugins
 copy ..\..\plugins\modernb\Release_Unicode\clist_modern.pdb    %Temp%\pdbw\plugins
 copy ..\..\plugins\mwclist\Release_Unicode\clist_mw.pdb        %Temp%\pdbw\plugins
-copy ..\..\plugins\loadavatars\Release_Unicode\loadavatars.pdb %Temp%\pdbw\plugins
 copy ..\..\plugins\scriver\Release_Unicode\scriver.pdb         %Temp%\pdbw\plugins
 copy ..\..\plugins\srmm\Release_Unicode\srmm.pdb               %Temp%\pdbw\plugins
 copy ..\..\plugins\tabSRMM\Release_Unicode\tabSRMM.pdb         %Temp%\pdbw\plugins
@@ -274,7 +274,7 @@ rem  Non-Unicode plugins
 copy ..\..\plugins\db3x\Release\dbx_3x.pdb                     %Temp%\pdbw\plugins
 copy ..\..\plugins\db3x_mmap\Release\dbx_mmap.pdb              %Temp%\pdbw\plugins
 copy ..\..\plugins\import\Release\import.pdb                   %Temp%\pdbw\plugins
-copy ..\..\plugins\png2dib\Release\png2dib.pdb                 %Temp%\pdbw\plugins
+copy ..\..\plugins\freeimage\Release\freeimage.pdb             %Temp%\pdbw\plugins
 
 del "%Temp%\miranda-pdb-%FileVer%"
 7z.exe a -tzip -r -mx=9 "%Temp%\miranda-pdb-%FileVer%" %Temp%\pdbw/*

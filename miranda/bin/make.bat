@@ -73,6 +73,11 @@ call :Nmake zlib.mak "zlib - Win32 Release"
 popd
 if errorlevel 1 goto :Error
 
+pushd ..\..\miranda\plugins\avs
+call :Nmake avs.mak "avs - Win32 Release"
+popd
+if errorlevel 1 goto :Error
+
 pushd ..\..\miranda\plugins\chat
 call :Nmake chat.mak "chat - Win32 Release"
 popd
@@ -98,13 +103,13 @@ call :Nmake db3x_mmap.mak "db3x_mmap - Win32 Release"
 popd
 if errorlevel 1 goto :Error
 
-pushd ..\..\miranda\plugins\import
-call :Nmake import.mak "import - Win32 Release"
+pushd ..\..\miranda\plugins\freeimage
+call :Nmake FreeImage.mak "FreeImage - Win32 Release"
 popd
 if errorlevel 1 goto :Error
 
-pushd ..\..\miranda\plugins\loadavatars
-call :Nmake avatars.mak "loadavatars - Win32 Release"
+pushd ..\..\miranda\plugins\import
+call :Nmake import.mak "import - Win32 Release"
 popd
 if errorlevel 1 goto :Error
 
@@ -115,11 +120,6 @@ if errorlevel 1 goto :Error
 
 pushd ..\..\miranda\plugins\mwclist
 call :Nmake mwclist.mak "mwclist - Win32 Release"
-popd
-if errorlevel 1 goto :Error
-
-pushd ..\..\miranda\plugins\png2dib
-call :Nmake png2dib.mak "png2dib - Win32 Release"
 popd
 if errorlevel 1 goto :Error
 
@@ -274,16 +274,16 @@ copy ..\..\protocols\MSN\Release\MSN.pdb               %Temp%\pdba\plugins
 copy ..\..\protocols\Yahoo\Release\Yahoo.pdb           %Temp%\pdba\plugins
 copy ..\..\protocols\Gadu-Gadu\Release\GG.pdb          %Temp%\pdba\plugins
 rem  Plugins
+copy ..\..\plugins\avs\Release\avs.pdb                 %Temp%\pdba\plugins
 copy ..\..\plugins\chat\Release\chat.pdb               %Temp%\pdba\plugins
 copy ..\..\plugins\clist\Release\clist_classic.pdb     %Temp%\pdba\plugins
 copy ..\..\plugins\clist_nicer\Release\clist_nicer.pdb %Temp%\pdba\plugins
 copy ..\..\plugins\db3x\Release\dbx_3x.pdb             %Temp%\pdba\plugins
 copy ..\..\plugins\db3x_mmap\Release\dbx_mmap.pdb      %Temp%\pdba\plugins
+copy ..\..\plugins\freeimage\Release\freeimage.pdb     %Temp%\pdba\plugins
 copy ..\..\plugins\import\Release\import.pdb           %Temp%\pdba\plugins
-copy ..\..\plugins\loadavatars\Release\loadavatars.pdb %Temp%\pdbw\plugins
 copy ..\..\plugins\modernb\Release\clist_modern.pdb    %Temp%\pdba\plugins
 copy ..\..\plugins\mwclist\Release\clist_mw.pdb        %Temp%\pdba\plugins
-copy ..\..\plugins\png2dib\Release\png2dib.pdb         %Temp%\pdba\plugins
 copy ..\..\plugins\scriver\Release\scriver.pdb         %Temp%\pdba\plugins
 copy ..\..\plugins\srmm\Release\srmm.pdb               %Temp%\pdba\plugins
 copy ..\..\plugins\tabSRMM\Release\tabSRMM.pdb         %Temp%\pdba\plugins

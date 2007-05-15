@@ -106,7 +106,6 @@ CLEAN :
 	-@erase "$(INTDIR)\vc60.idb"
 	-@erase "$(INTDIR)\vc60.pdb"
 	-@erase "$(OUTDIR)\clist_classic.exp"
-	-@erase "$(OUTDIR)\clist_classic.lib"
 	-@erase "$(OUTDIR)\clist_classic.pdb"
 	-@erase "..\..\bin\debug\plugins\clist_classic.dll"
 	-@erase "..\..\bin\debug\plugins\clist_classic.ilk"

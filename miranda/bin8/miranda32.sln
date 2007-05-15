@@ -44,6 +44,8 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "scriver", "..\plugins\Scriv
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "zlib", "..\plugins\zlib\zlib_8.vcproj", "{E2A369CD-EDA3-414F-8AD0-E732CD7EE68C}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "avs", "..\plugins\avs\avs_8.vcproj", "{7711F563-6473-4ABD-B5E3-477CE8384AD6}"
+EndProject
 Global
 	GlobalSection(DPCodeReviewSolutionGUID) = preSolution
 		DPCodeReviewSolutionGUID = {00000000-0000-0000-0000-000000000000}
@@ -207,6 +209,14 @@ Global
 		{E2A369CD-EDA3-414F-8AD0-E732CD7EE68C}.Release Unicode|Win32.Build.0 = Release Unicode|Win32
 		{E2A369CD-EDA3-414F-8AD0-E732CD7EE68C}.Release|Win32.ActiveCfg = Release|Win32
 		{E2A369CD-EDA3-414F-8AD0-E732CD7EE68C}.Release|Win32.Build.0 = Release|Win32
+		{7711F563-6473-4ABD-B5E3-477CE8384AD6}.Debug Unicode|Win32.ActiveCfg = Debug Unicode|Win32
+		{7711F563-6473-4ABD-B5E3-477CE8384AD6}.Debug Unicode|Win32.Build.0 = Debug Unicode|Win32
+		{7711F563-6473-4ABD-B5E3-477CE8384AD6}.Debug|Win32.ActiveCfg = Debug|Win32
+		{7711F563-6473-4ABD-B5E3-477CE8384AD6}.Debug|Win32.Build.0 = Debug|Win32
+		{7711F563-6473-4ABD-B5E3-477CE8384AD6}.Release Unicode|Win32.ActiveCfg = Release Unicode|Win32
+		{7711F563-6473-4ABD-B5E3-477CE8384AD6}.Release Unicode|Win32.Build.0 = Release Unicode|Win32
+		{7711F563-6473-4ABD-B5E3-477CE8384AD6}.Release|Win32.ActiveCfg = Release|Win32
+		{7711F563-6473-4ABD-B5E3-477CE8384AD6}.Release|Win32.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
