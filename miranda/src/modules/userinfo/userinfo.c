@@ -239,13 +239,11 @@ static BOOL CALLBACK DlgProcDetails(HWND hwndDlg, UINT msg, WPARAM wParam, LPARA
 			dat->updateAnimFrame=0;
 			GetDlgItemText(hwndDlg,IDC_UPDATING,dat->szUpdating,SIZEOF(dat->szUpdating));
 			SendMessage(hwndDlg,M_CHECKONLINE,0,0);
-			if(!IsWindowEnabled(GetDlgItem(hwndDlg,IDC_UPDATE)))
-				ShowWindow(GetDlgItem(hwndDlg,IDC_UPDATING),SW_HIDE);
-			else {
+			if (!CallContactService(dat->hContact,PSS_GETINFO,SGIF_ONOPEN,0)) {
 				EnableWindow(GetDlgItem(hwndDlg,IDC_UPDATE),FALSE);
 				SetTimer(hwndDlg,1,100,NULL);
-			}
-			CallContactService(dat->hContact,PSS_GETINFO,SGIF_ONOPEN,0);
+			} else
+				ShowWindow(GetDlgItem(hwndDlg,IDC_UPDATING),SW_HIDE);
 			return TRUE;
 		}
 	case WM_TIMER:
@@ -435,10 +433,11 @@ static BOOL CALLBACK DlgProcDetails(HWND hwndDlg, UINT msg, WPARAM wParam, LPARA
 		case IDC_UPDATE:
 			if(dat->infosUpdated!=NULL) {mir_free(dat->infosUpdated); dat->infosUpdated=NULL;}
 			if(dat->hContact != NULL) {
-				CallContactService(dat->hContact,PSS_GETINFO,0,0);
-				EnableWindow(GetDlgItem(hwndDlg,IDC_UPDATE),FALSE);
-				ShowWindow(GetDlgItem(hwndDlg,IDC_UPDATING),SW_SHOW);
-				SetTimer(hwndDlg,1,100,NULL);
+				if (!CallContactService(dat->hContact,PSS_GETINFO,0,0)) {
+					EnableWindow(GetDlgItem(hwndDlg,IDC_UPDATE),FALSE);
+					ShowWindow(GetDlgItem(hwndDlg,IDC_UPDATING),SW_SHOW);
+					SetTimer(hwndDlg,1,100,NULL);
+				}
 			}
 			break;
 		}
