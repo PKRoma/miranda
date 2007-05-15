@@ -1,9 +1,0 @@
-SCC = This is a Source Code Control file
-
-[LibMNG.dsp]
-SCC_Aux_Path = "D:\vc\vss"
-SCC_Project_Name = "$/Miranda/miranda/plugins/freeimage/Source/LibMNG", QFHAAAAA
-
-[LibMNG.vcproj]
-SCC_Aux_Path = "D:\vc\vss"
-SCC_Project_Name = "$/Miranda/miranda/plugins/freeimage/Source/LibMNG", QFHAAAAA
