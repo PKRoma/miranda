@@ -64,20 +64,23 @@ static HANDLE arXStatusIcons[ NUM_XMODES ];
 
 void JabberSetContactMood( HANDLE hContact, const char* moodType, const TCHAR* moodText )
 {
-	int i;
-	for ( i=0; i < NUM_XMODES; i++ ) {
-		if ( !strcmpi( moodType, arXStatusNames[i] )) {
-			JSetByte( hContact, DBSETTING_XSTATUSID, i );
-			break;
-	}	}
+	if ( moodType ) {
+		int i;
+		for ( i=0; i < NUM_XMODES; i++ ) {
+			if ( !strcmpi( moodType, arXStatusNames[i] )) {
+				JSetByte( hContact, DBSETTING_XSTATUSID, i );
+				break;
+		}	}
 
-	if ( i == NUM_XMODES )
-		JDeleteSetting( hContact, DBSETTING_XSTATUSID );
+		if ( i == NUM_XMODES )
+			JDeleteSetting( hContact, DBSETTING_XSTATUSID );
 
- 	if ( moodType )
  		JSetString( hContact, DBSETTING_XSTATUSNAME, moodType );
-	else
+	}
+	else {
+		JDeleteSetting( hContact, DBSETTING_XSTATUSID );
 		JDeleteSetting( hContact, DBSETTING_XSTATUSNAME );
+	}
 
 	if ( moodText )
  		JSetStringT( hContact, DBSETTING_XSTATUSMSG, moodText );
