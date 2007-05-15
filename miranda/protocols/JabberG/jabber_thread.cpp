@@ -1300,7 +1300,11 @@ void JabberProcessPresenceCapabilites( XmlNode *node )
 				HANDLE hContact = JabberHContactFromJID( from );
 				if ( hContact ) {
 					TCHAR szMirVer[ 512 ];
-					if ( !szExt )
+					if ( _tcsstr( szNode, _T("miranda-im.org"))) {
+						mir_sntprintf( szMirVer, SIZEOF(szMirVer ), _T("Miranda IM %s (Jabber %s) %s"), 
+							szVer, szVer, ( szExt != NULL ) ? szExt : _T(""));
+					}
+					else if ( !szExt )
 						mir_sntprintf( szMirVer, SIZEOF(szMirVer ), _T("%s#%s"), szNode, szVer );
 					else if ( _tcsstr( szExt, _T(JABBER_EXT_SECUREIM) ))
 						mir_sntprintf( szMirVer, SIZEOF(szMirVer), _T("%s#%s#%s (SecureIM)"), szNode, szVer, szExt );
