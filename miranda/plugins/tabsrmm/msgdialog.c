@@ -3731,8 +3731,12 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
             if(!dat)
                 break;
 
-            if (CallService(MS_CLIST_MENUPROCESSCOMMAND, MAKEWPARAM(LOWORD(wParam), MPCF_CONTACTMENU), (LPARAM) dat->hContact))
-                break;
+            if(lParam == 0) {
+                //_DebugTraceA("menu command: %d", LOWORD(wParam));
+
+                if (CallService(MS_CLIST_MENUPROCESSCOMMAND, MAKEWPARAM(LOWORD(wParam), MPCF_CONTACTMENU), (LPARAM) dat->hContact))
+                    break;
+            }
             switch (LOWORD(wParam)) {
                 case IDOK:
                     {

@@ -308,21 +308,21 @@ static DWORD CALLBACK Chat_Message_StreamCallback(DWORD dwCookie, LPBYTE pbBuff,
     char ** ppText = (char **) dwCookie;
 
 	if (*ppText == NULL) {
-		*ppText = mir_alloc(cb + 2);
-		CopyMemory(*ppText, pbBuff, cb);
+		*ppText = mir_alloc(cb + 1);
+		memcpy(*ppText, pbBuff, cb);
+		(*ppText)[cb] = 0;
 		*pcb = cb;
 		dwRead = cb;
-        *(*ppText + cb) = '\0';
 	}
 	else {
-		char  *p = mir_realloc(*ppText, dwRead + cb + 2);
-		//memcpy(p, *ppText, dwRead);
-		CopyMemory(p+dwRead, pbBuff, cb);
-		//free(*ppText);
+		char  *p = mir_alloc(dwRead + cb + 1);
+		memcpy(p, *ppText, dwRead);
+		memcpy(p+dwRead, pbBuff, cb);
+		p[dwRead + cb] = 0;
+		mir_free(*ppText);
 		*ppText = p;
 		*pcb = cb;
 		dwRead += cb;
-        *(*ppText + dwRead) = '\0';
 	}
     return 0;
 }

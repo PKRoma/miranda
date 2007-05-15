@@ -783,7 +783,6 @@ void SM_AddCommand(const TCHAR* pszID, const char* pszModule, const char* lpNewC
 			COMMAND_INFO *node = mir_alloc(sizeof(COMMAND_INFO));
 			node->lpCommand = mir_strdup( lpNewCommand );
 			node->last = NULL; // always added at beginning!
-
 			// new commands are added at start
 			if (pTemp->lpCommands == NULL) {
 				node->next = NULL;
