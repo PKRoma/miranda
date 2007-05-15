@@ -127,7 +127,6 @@ int JabberSetXStatus( WPARAM wParam, LPARAM lParam )
 				moodNode->addChild( mood );
 				moodNode->addChild( "text", "Miranda can User Moods!" );
 			}
-			else moodNode->addChild( "" );
 
 			XmlNode* cofigureNode = pubsubNode->addChild( "configure" );
 			XmlNode* xNode = cofigureNode->addChild( "x" );
