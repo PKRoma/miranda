@@ -5,14 +5,6 @@
 #include <ocidl.h>
 #include <olectl.h>
 
-// This is needed to use mEncoderQuality
-#undef DEFINE_GUID
-#define DEFINE_GUID(name, l, w1, w2, b1, b2, b3, b4, b5, b6, b7, b8) \
-        EXTERN_C const GUID DECLSPEC_SELECTANY name \
-                = { l, w1, w2, { b1, b2,  b3,  b4,  b5,  b6,  b7,  b8 } }
-DEFINE_GUID(mEncoderQuality, 0x1d5be4b5,0xfa4a,0x452d,0x9c,0xdd,0x5d,0xb3,0x51,0x05,0xe7,0xeb);
-//
-
 /*
 Theese are the ones needed
 #include <win2k.h>
@@ -29,8 +21,6 @@ extern int _DebugTrace(HANDLE hContact, const char *fmt, ...);
 
 #define GET_PIXEL(__P__, __X__, __Y__) ( __P__ + width * 4 * (__Y__) + 4 * (__X__) )
 
-
-// GDI+ ///////////////////////////////////////////////////////////////////////////////////////////
 
 extern int AVS_pathToRelative(const char *sPrc, char *pOut);
 extern int AVS_pathToAbsolute(const char *pSrc, char *pOut);

@@ -116,7 +116,7 @@ extern BOOL CALLBACK DlgProcOptions(HWND hwndDlg, UINT msg, WPARAM wParam, LPARA
 extern BOOL CALLBACK DlgProcAvatarOptions(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam);
 extern BOOL CALLBACK DlgProcAvatarUserInfo(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam);
 extern BOOL CALLBACK DlgProcAvatarProtoInfo(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam);
-extern int BmpFilterResizeBitmap(WPARAM wParam,LPARAM lParam);
+
 
 static int SetProtoMyAvatar(char *protocol, HBITMAP hBmp, char *originalFilename, int format);
 
@@ -611,6 +611,8 @@ done:
         strncpy(ace->szFilename, szFilename, MAX_PATH);
         ace->szFilename[MAX_PATH - 1] = 0;
 
+		BOOL noTransparency = DBGetContactSettingByte(0, AVS_MODULE, "RemoveAllTransparency", 0);
+
 		// Calc image hash
 		if (hContact != 0 && hContact != (HANDLE)-1)
 		{
@@ -624,25 +626,29 @@ done:
 			}
 
 			// Make transparent?
-			if (DBGetContactSettingByte(hContact, "ContactPhoto", "MakeTransparentBkg", 
+			if (!noTransparency && !isTransparentImage 
+				&& DBGetContactSettingByte(hContact, "ContactPhoto", "MakeTransparentBkg", 
 					DBGetContactSettingByte(0, AVS_MODULE, "MakeTransparentBkg", 0)))
 			{
 				if (MakeTransparentBkg(hContact, &ace->hbmPic))
 				{
 					ace->dwFlags |= AVS_CUSTOMTRANSPBKG | AVS_HASTRANSPARENCY;
 					GetObject(ace->hbmPic, sizeof(bminfo), &bminfo);
+					isTransparentImage = TRUE;
 				}
 			}
 		}
 		else if (hContact == (HANDLE)-1) // My avatars
 		{
-			if (DBGetContactSettingByte(0, AVS_MODULE, "MakeTransparentBkg", 0)
+			if (!noTransparency && !isTransparentImage 
+				&& DBGetContactSettingByte(0, AVS_MODULE, "MakeTransparentBkg", 0)
 				&& DBGetContactSettingByte(0, AVS_MODULE, "MakeMyAvatarsTransparent", 0))
 			{
 				if (MakeTransparentBkg(0, &ace->hbmPic))
 				{
 					ace->dwFlags |= AVS_CUSTOMTRANSPBKG | AVS_HASTRANSPARENCY;
 					GetObject(ace->hbmPic, sizeof(bminfo), &bminfo);
+					isTransparentImage = TRUE;
 				}
 			}
 		}
@@ -652,10 +658,12 @@ done:
 			ace->hbmPic = MakeGrayscale(hContact, ace->hbmPic);
 		}
 
-		if (DBGetContactSettingByte(0, AVS_MODULE, "RemoveAllTransparency", 0))
+		if (noTransparency)
 		{
 			fei->FI_CorrectBitmap32Alpha(ace->hbmPic, TRUE);
+			isTransparentImage = FALSE;
 		}
+
         if (bminfo.bmBitsPixel == 32 && isTransparentImage)
 		{
 			if (fei->FI_Premultiply(ace->hbmPic))
@@ -664,7 +672,9 @@ done:
 			}
 			ace->dwFlags |= AVS_PREMULTIPLIED;
 		}
-        if(szProto) {
+
+        if(szProto) 
+		{
             struct protoPicCacheEntry *pAce = (struct protoPicCacheEntry *)ace;
 			if(hContact == 0)
 				pAce->dwFlags |= AVS_PROTOPIC;
@@ -1879,7 +1889,7 @@ static void ReloadMyAvatar(LPVOID lpParam)
 {
 	char *szProto = (char *)lpParam;
 	
-    Sleep(5000);
+    Sleep(1000);
     for(int i = 0; i < g_protocount; i++) {
 		if(!strcmp(g_MyAvatars[i].szProtoname, szProto)) {
 			if(g_MyAvatars[i].hbmPic)

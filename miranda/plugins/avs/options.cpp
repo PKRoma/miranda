@@ -222,7 +222,8 @@ BOOL CALLBACK DlgProcOptions(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                         break;
                     }
                 default:
-					if ((LOWORD(wParam) == IDC_BKG_NUM_POINTS || LOWORD(wParam) == IDC_BKG_COLOR_DIFFERENCE || LOWORD(wParam) == IDC_SIZELIMIT)						&& (HIWORD(wParam) != EN_CHANGE || (HWND) lParam != GetFocus()))
+					if ((LOWORD(wParam) == IDC_BKG_NUM_POINTS || LOWORD(wParam) == IDC_BKG_COLOR_DIFFERENCE || LOWORD(wParam) == IDC_SIZELIMIT)
+						&& (HIWORD(wParam) != EN_CHANGE || (HWND) lParam != GetFocus()))
 						return 0;
                     SendMessage(GetParent(hwndDlg), PSM_CHANGED, 0, 0);
             }

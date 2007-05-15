@@ -25,6 +25,7 @@ int BmpFilterCanSaveBitmap(WPARAM wParam,LPARAM lParam);
 // Returns a copy of the bitmap with the size especified or the original bitmap if nothing has to be changed
 // wParam = ResizeBitmap *
 // lParam = NULL
+int BmpFilterResizeBitmap(WPARAM wParam,LPARAM lParam);
 
 
 
