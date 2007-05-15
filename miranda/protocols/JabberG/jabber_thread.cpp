@@ -967,18 +967,8 @@ static void JabberProcessPubsubEvent( XmlNode *node )
 			return;
 
  		HANDLE hContact = JabberHContactFromJID( from );
- 		if ( hContact == NULL )
- 			return;
-
- 		if ( moodType )
- 			JSetString( hContact, DBSETTING_XSTATUSNAME, moodType );
-		else
-			JDeleteSetting( hContact, DBSETTING_XSTATUSNAME );
-
-		if ( moodText )
- 			JSetStringT( hContact, DBSETTING_XSTATUSMSG, moodText );
-		else
-			JDeleteSetting( hContact, DBSETTING_XSTATUSMSG );
+ 		if ( hContact )
+			JabberSetContactMood( hContact, moodType, moodText );
 }	}
 
 static void JabberProcessMessage( XmlNode *node, void *userdata )
@@ -1301,8 +1291,10 @@ void JabberProcessPresenceCapabilites( XmlNode *node )
 				if ( hContact ) {
 					TCHAR szMirVer[ 512 ];
 					if ( _tcsstr( szNode, _T("miranda-im.org"))) {
-						mir_sntprintf( szMirVer, SIZEOF(szMirVer ), _T("Miranda IM %s (Jabber %s) %s"), 
-							szVer, szVer, ( szExt != NULL ) ? szExt : _T(""));
+						if ( szExt )
+							mir_sntprintf( szMirVer, SIZEOF(szMirVer ), _T("Miranda IM %s (Jabber %s) (%s)"), szVer, szVer, szExt );
+						else
+							mir_sntprintf( szMirVer, SIZEOF(szMirVer ), _T("Miranda IM %s (Jabber %s)"), szVer, szVer );
 					}
 					else if ( !szExt )
 						mir_sntprintf( szMirVer, SIZEOF(szMirVer ), _T("%s#%s"), szNode, szVer );

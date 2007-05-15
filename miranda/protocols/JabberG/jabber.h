@@ -184,8 +184,8 @@ enum {
 #define JS_SETMYAVATAR             "/SetMyAvatar"
 #define JS_GETMYAVATAR             "/GetMyAvatar"
 #define JS_GETADVANCEDSTATUSICON   "/GetAdvancedStatusIcon"
-#define JS_GETXSTATUSEX            "/GetXStatusEx"
-#define JS_SETXSTATUSEX            "/SetXStatusEx"
+#define JS_GETXSTATUS              "/GetXStatus"
+#define JS_SETXSTATUS              "/SetXStatus"
 
 #define DBSETTING_XSTATUSID        "XStatusID"
 #define DBSETTING_XSTATUSNAME      "XStatusName"
@@ -632,6 +632,7 @@ int           JabberWsRecv( JABBER_SOCKET s, char* data, long datalen, int flags
 void JabberXStatusInit( void );
 void JabberXStatusUninit( void );
 
+void JabberSetContactMood( HANDLE hContact, const char* moodName, const TCHAR* moodText );
 
 ///////////////////////////////////////////////////////////////////////////////
 // UTF encode helper

@@ -912,14 +912,6 @@ int JabberGetStatus( WPARAM wParam, LPARAM lParam )
 	return jabberStatus;
 }
 
-/////////////////////////////////////////////////////////////////////////////////////////
-// JabberGetXStatus - sets the extended status info (mood)
-
-int JabberGetXStatus( WPARAM wParam, LPARAM lParam )
-{
-	return 0;
-}
-
 ////////////////////////////////////////////////////////////////////////////////////////
 // JabberLoadIcon - loads an icon for the contact list
 
@@ -1443,14 +1435,6 @@ int JabberSetStatus( WPARAM wParam, LPARAM lParam )
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////
-// JabberSetXStatus - sets the extended status info (mood)
-
-int JabberSetXStatus( WPARAM wParam, LPARAM lParam )
-{
-	return 0;
-}
-
-/////////////////////////////////////////////////////////////////////////////////////////
 // JabberUserIsTyping - sends a UTN notification
 
 int JabberUserIsTyping( WPARAM wParam, LPARAM lParam )
@@ -1559,8 +1543,6 @@ int JabberSvcInit( void )
 	JCreateServiceFunction( JS_GETMYAVATARMAXSIZE, JabberGetAvatarMaxSize );
 	JCreateServiceFunction( JS_GETMYAVATAR, JabberGetAvatar );
 	JCreateServiceFunction( JS_SETMYAVATAR, JabberSetAvatar );
-//	JCreateServiceFunction( JS_GETXSTATUSEX, JabberGetXStatus );
-//	JCreateServiceFunction( JS_SETXSTATUSEX, JabberSetXStatus );
 	return 0;
 }
 

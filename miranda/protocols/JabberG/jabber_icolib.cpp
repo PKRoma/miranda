@@ -102,7 +102,6 @@ static iconList[] =
 
 void JabberIconsInit( void )
 {
-	int i;
 	SKINICONDESC sid = {0};
 	char szFile[MAX_PATH];
 	GetModuleFileNameA(hInst, szFile, MAX_PATH);
@@ -112,7 +111,7 @@ void JabberIconsInit( void )
 	sid.cx = sid.cy = 16;
 	sid.pszSection = Translate( jabberProtoName );
 
-	for ( i = 0; i < SIZEOF(iconList); i++ ) {
+	for ( int i = 0; i < SIZEOF(iconList); i++ ) {
 		char szSettingName[100];
 		mir_snprintf( szSettingName, sizeof( szSettingName ), "%s_%s", jabberProtoName, iconList[i].szName );
 		sid.pszName = szSettingName;

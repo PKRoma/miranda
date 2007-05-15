@@ -26,9 +26,11 @@ Last change by : $Author: ghazan $
 */
 
 #include "jabber.h"
+#include "jabber_caps.h"
 
 #include "m_genmenu.h"
 #include "m_cluiframes.h"
+#include "m_icolib.h"
 
 #define NUM_XMODES 61
 
@@ -36,10 +38,12 @@ static HANDLE hHookExtraIconsRebuild = NULL;
 static HANDLE hHookStatusBuild = NULL;
 static HANDLE hHookExtraIconsApply = NULL;
 
+static int jabberXStatus = 0;
+
 static BOOL   bXStatusMenuBuilt = FALSE;
 static HANDLE hXStatusItems[ NUM_XMODES+1 ];
 
-const char* szXStatusNames[ NUM_XMODES ] = {
+const char* arXStatusNames[ NUM_XMODES ] = {
 	"Afraid",      "Amazed",      "Angry",     "Annoyed",     "Anxious",      "Aroused",
 	"Ashamed",     "Bored",       "Brave",     "Calm",        "Cold",         "Confused",
 	"Contented",   "Cranky",      "Curious",   "Depressed",   "Disappointed", "Disgusted",
@@ -48,57 +52,127 @@ const char* szXStatusNames[ NUM_XMODES ] = {
 	"Hurt",        "Impressed",   "In awe",    "In love",     "Indignant",    "Interested",
 	"Intoxicated", "Invincible",  "Jealous",   "Lonely",      "Mean",         "Moody",
 	"Nervous",     "Neutral",     "Offended",  "Playful",     "Proud",        "Relieved",
-	"Remorseful",  "Restless",    "Sad",       "Sarcastic",   "Serious",      "Shocked",
+	"Remorseful",  "Restless",    "Sad",       "Sarcastic",   "Serious",      "Shocked ",
 	"Shy",         "Sick",        "Sleepy",    "Stressed",    "Surprised",    "Thirsty",
-	"Worried" };
+	"Worried"
+};	   
+
+static HANDLE arXStatusIcons[ NUM_XMODES ];
 
 /////////////////////////////////////////////////////////////////////////////////////////
-// XStatus support events
+// JabberSetContactMood - sets the contact's mood
+
+void JabberSetContactMood( HANDLE hContact, const char* moodType, const TCHAR* moodText )
+{
+	int i;
+	for ( i=0; i < NUM_XMODES; i++ ) {
+		if ( !strcmpi( moodType, arXStatusNames[i] )) {
+			JSetByte( hContact, DBSETTING_XSTATUSID, i );
+			break;
+	}	}
+
+	if ( i == NUM_XMODES )
+		JDeleteSetting( hContact, DBSETTING_XSTATUSID );
+
+ 	if ( moodType )
+ 		JSetString( hContact, DBSETTING_XSTATUSNAME, moodType );
+	else
+		JDeleteSetting( hContact, DBSETTING_XSTATUSNAME );
+
+	if ( moodText )
+ 		JSetStringT( hContact, DBSETTING_XSTATUSMSG, moodText );
+	else
+		JDeleteSetting( hContact, DBSETTING_XSTATUSMSG );
+}
+
+/////////////////////////////////////////////////////////////////////////////////////////
+// JabberGetXStatus - sets the extended status info (mood)
+
+int JabberGetXStatus( WPARAM wParam, LPARAM lParam )
+{
+	if ( !jabberOnline )
+		return 0;
+
+	if ( jabberXStatus < 1 || jabberXStatus > NUM_XMODES )
+		jabberXStatus = 0;
+
+	if ( wParam ) *(( char** )wParam ) = DBSETTING_XSTATUSNAME;
+	if ( lParam ) *(( char** )lParam ) = DBSETTING_XSTATUSMSG;
+	return jabberXStatus;
+}
+
+/////////////////////////////////////////////////////////////////////////////////////////
+// JabberSetXStatus - sets the extended status info (mood)
+
+int JabberSetXStatus( WPARAM wParam, LPARAM lParam )
+{
+	if ( wParam >= 0 && wParam <= NUM_XMODES ) {
+		jabberXStatus = wParam;
+		JSetByte( NULL, DBSETTING_XSTATUSID, wParam );
+
+		if ( jabberOnline ) {
+			XmlNodeIq iq( "set", JabberSerialNext() );
+			XmlNode* pubsubNode = iq.addChild( "pubsub" );
+			pubsubNode->addAttr( "xmlns", JABBER_FEAT_PUBSUB );
+			XmlNode* publishNode = pubsubNode->addChild( "publish" );
+			publishNode->addAttr( "node", JABBER_FEAT_USER_MOOD );
+			XmlNode* itemNode = publishNode->addChild( "item" );
+			itemNode->addAttr( "id", "current" );
+			XmlNode* moodNode = itemNode->addChild( "mood" );
+			moodNode->addAttr( "xmlns", JABBER_FEAT_USER_MOOD );
+
+			if ( wParam ) {
+				char* mood = NEWSTR_ALLOCA( arXStatusNames[ wParam-1 ] );
+				strlwr( mood );
+				moodNode->addChild( mood );
+			}
+			else moodNode->addChild( "" );
+			moodNode->addChild( "text", "Miranda can User Moods!" );
+
+			XmlNode* cofigureNode = pubsubNode->addChild( "configure" );
+			XmlNode* xNode = cofigureNode->addChild( "x" );
+			XmlNode* fieldNode = xNode->addChild( "field" );
+			fieldNode->addAttr( "type", "hidden" );
+			fieldNode->addAttr( "var", "FORM_TYPE" );
+			XmlNode* valueNode = fieldNode->addChild( "value", JABBER_FEAT_PUBSUB_NODE_CONFIG );
+			fieldNode = xNode->addChild( "field" );
+			fieldNode->addAttr( "var", "pubsub#access_model" );
+			valueNode = fieldNode->addChild( "value", "presence" );
+
+			jabberThreadInfo->send( iq );
+		}
+		return wParam;
+	}
+
+	return 0;
+}
+
+/////////////////////////////////////////////////////////////////////////////////////////
+// menuSetXStatus - a stub for status menus
 
 static int menuSetXStatus(WPARAM wParam,LPARAM lParam,LPARAM param)
 {
-	/*
-	XmlNodeIq iq( "set", JabberSerialNext() );
-	XmlNode* pubsubNode = iq.addChild( "pubsub" );
-	pubsubNode->addAttr( "xmlns", JABBER_FEAT_PUBSUB );
-	XmlNode* publishNode = pubsubNode->addChild( "publish" );
-	publishNode->addAttr( "node", JABBER_FEAT_USER_MOOD );
-	XmlNode* itemNode = publishNode->addChild( "item" );
-	itemNode->addAttr( "id", "current" );
-	XmlNode* moodNode = itemNode->addChild( "mood" );
-	moodNode->addAttr( "xmlns", JABBER_FEAT_USER_MOOD );
-
-	moodNode->addChild( "happy" );
-	moodNode->addChild( "text", "Miranda can User Moods!" );
-
-	XmlNode* cofigureNode = pubsubNode->addChild( "configure" );
-	XmlNode* xNode = cofigureNode->addChild( "x" );
-	XmlNode* fieldNode = xNode->addChild( "field" );
-	fieldNode->addAttr( "type", "hidden" );
-	fieldNode->addAttr( "var", "FORM_TYPE" );
-	XmlNode* valueNode = fieldNode->addChild( "value", JABBER_FEAT_PUBSUB_NODE_CONFIG );
-	fieldNode = xNode->addChild( "field" );
-	fieldNode->addAttr( "var", "pubsub#access_model" );
-	valueNode = fieldNode->addChild( "value", "presence" );
-
-	jabberThreadInfo->send( iq ); */
+	JabberSetXStatus( param, 0 );
 	return 0;
 }
+
+/////////////////////////////////////////////////////////////////////////////////////////
+// builds xstatus menu
 
 int CListMW_BuildStatusItems( WPARAM wParam, LPARAM lParam )
 {
 	CLISTMENUITEM mi = { 0 };
-	int i = 0;
+	int i;
 	char srvFce[MAX_PATH + 64];
 	char szItem[MAX_PATH + 64];
 	HANDLE hXStatusRoot;
-	int bXStatus = JGetByte( NULL, DBSETTING_XSTATUSID, 0 );
+	HANDLE hRoot = ( HANDLE )szItem;
 
 	mir_snprintf( szItem, sizeof(szItem), "%s Custom Status", jabberProtoName );
 	mi.cbSize = sizeof(mi);
-	mi.pszPopupName = szItem;
 	mi.popupPosition= 500084000;
 	mi.position = 2000040000;
+	mi.pszContactOwner = jabberProtoName;
 
 	for( i = 0; i <= NUM_XMODES; i++ ) {
 		mir_snprintf( srvFce, sizeof(srvFce), "%s/menuXStatus%d", jabberProtoName, i );
@@ -109,36 +183,54 @@ int CListMW_BuildStatusItems( WPARAM wParam, LPARAM lParam )
 		if ( i ) {
 			char szIcon[ MAX_PATH ];
 			mir_snprintf( szIcon, sizeof( szIcon ), "xicon%d", i );
-			mi.hIcon = LoadIconEx( szIcon );
+			mi.icolibItem = arXStatusIcons[ i-1 ];
+			mi.pszName = ( char* )arXStatusNames[ i-1 ];
 		}
-		mi.position++;
-		mi.flags = bXStatus == i?CMIF_CHECKED:0;
-		mi.pszName = ( i ) ? ( char* )szXStatusNames[ i-1 ] : "None";
-		mi.pszService = srvFce;
-		mi.pszContactOwner = jabberProtoName;
+		else mi.pszName = "None";
 
-		hXStatusItems[i] = (HANDLE)CallService(MS_CLIST_ADDSTATUSMENUITEM, (WPARAM)&hXStatusRoot, (LPARAM)&mi);
+		mi.position++;
+		mi.pszPopupName = ( char* )hRoot;
+		mi.flags = CMIF_ICONFROMICOLIB + ( jabberXStatus == i ) ? CMIF_CHECKED : 0;
+		mi.pszService = srvFce;
+		hXStatusItems[ i ] = ( HANDLE )CallService( MS_CLIST_ADDSTATUSMENUITEM, ( WPARAM )&hXStatusRoot, ( LPARAM )&mi );
 	}
 
 	bXStatusMenuBuilt = 1;
 	return 0;
 }
 
-int CListMW_ExtraIconsRebuild( WPARAM wParam, LPARAM lParam )
-{
-	return 0;
-}
-
-int CListMW_ExtraIconsApply( WPARAM wParam, LPARAM lParam )
-{
-	return 0;
-}
-
 void JabberXStatusInit()
 {
+	char szFile[MAX_PATH];
+	GetModuleFileNameA( hInst, szFile, MAX_PATH );
+	char* p = strrchr( szFile, '\\' );
+	if ( p != NULL )
+		strcpy( p+1, "..\\Icons\\jabber_xstatus.dll" );
+
+	char szSection[ 100 ];
+	mir_snprintf( szSection, sizeof( szSection ), "%s/Custom Status", JTranslate( jabberProtoName ));
+
+	SKINICONDESC sid = {0};
+	sid.cbSize = sizeof(SKINICONDESC);
+	sid.pszDefaultFile = szFile;
+	sid.cx = sid.cy = 16;
+	sid.pszSection = szSection;
+
+	for ( int i = 0; i < SIZEOF(arXStatusNames); i++ ) {
+		char szSettingName[100];
+		mir_snprintf( szSettingName, sizeof( szSettingName ), "%s_%s", jabberProtoName, arXStatusNames[i] );
+		sid.pszName = szSettingName;
+		sid.pszDescription = Translate( arXStatusNames[i] );
+		sid.iDefaultIndex = -( i+200 );
+		arXStatusIcons[ i ] = ( HANDLE )CallService( MS_SKIN2_ADDICON, 0, ( LPARAM )&sid );
+	}
+
+	jabberXStatus = JGetByte( NULL, DBSETTING_XSTATUSID, 0 );
+
 	hHookStatusBuild = HookEvent(ME_CLIST_PREBUILDSTATUSMENU, CListMW_BuildStatusItems);
-	hHookExtraIconsRebuild = HookEvent(ME_CLIST_EXTRA_LIST_REBUILD, CListMW_ExtraIconsRebuild);
-	hHookExtraIconsApply = HookEvent(ME_CLIST_EXTRA_IMAGE_APPLY, CListMW_ExtraIconsApply);
+
+	JCreateServiceFunction( JS_GETXSTATUS, JabberGetXStatus );
+	JCreateServiceFunction( JS_SETXSTATUS, JabberSetXStatus );
 }
 
 void JabberXStatusUninit()
