@@ -131,16 +131,6 @@ int JabberSetXStatus( WPARAM wParam, LPARAM lParam )
 				moodNode->addChild( "text", "Miranda can User Moods!" );
 			}
 
-			XmlNode* cofigureNode = pubsubNode->addChild( "configure" );
-			XmlNode* xNode = cofigureNode->addChild( "x" );
-			XmlNode* fieldNode = xNode->addChild( "field" );
-			fieldNode->addAttr( "type", "hidden" );
-			fieldNode->addAttr( "var", "FORM_TYPE" );
-			XmlNode* valueNode = fieldNode->addChild( "value", JABBER_FEAT_PUBSUB_NODE_CONFIG );
-			fieldNode = xNode->addChild( "field" );
-			fieldNode->addAttr( "var", "pubsub#access_model" );
-			valueNode = fieldNode->addChild( "value", "presence" );
-
 			jabberThreadInfo->send( iq );
 		}
 		return wParam;
