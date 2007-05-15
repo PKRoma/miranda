@@ -248,6 +248,7 @@ static LRESULT CALLBACK RenameEditSubclassProc(HWND hwnd, UINT msg, WPARAM wPara
 		return DLGC_WANTMESSAGE;
 	case WM_KILLFOCUS:
 		pcli->pfnEndRename(GetParent(hwnd),(struct ClcData*)GetWindowLong(hwnd,GWL_USERDATA),1);
+		SendMessage(pcli->hwndContactTree,WM_SIZE,0,0);
 		return 0;
 	}
 	return CallWindowProc(OldRenameEditWndProc,hwnd,msg,wParam,lParam);

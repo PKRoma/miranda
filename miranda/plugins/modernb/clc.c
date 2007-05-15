@@ -1384,7 +1384,8 @@ case WM_ACTIVATE:
 	{
 		if (dat->bCompactMode)
 		{
-			SendMessage(hwnd,WM_SIZE,0,0);
+			cliRecalcScrollBar(hwnd,dat);
+			//SendMessage(hwnd,WM_SIZE,0,0);
 		}
 	}
 	break;
