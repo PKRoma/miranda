@@ -101,7 +101,7 @@ extern int g_titleButtonTopOff, g_captionOffset, g_captionPadding, g_sidebarTopO
 
 static BOOL CALLBACK ContainerWndProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam);
 
-static TCHAR *menuBarNames[] = {_T("File"), _T("View"), _T("User"), _T("Message Log"), _T("Container"), _T("Help") };
+static TCHAR *menuBarNames[] = {_T("File"), _T("View"), _T(""), _T("Message Log"), _T("Container"), _T("Help") };
 static TCHAR *menuBarNames_translated[6];
 static BOOL  menuBarNames_done = FALSE;
 
@@ -1325,12 +1325,13 @@ static BOOL CALLBACK DlgProcContainer(HWND hwndDlg, UINT msg, WPARAM wParam, LPA
                 }
             }
             SendMessage(pContainer->hwndActive, DM_QUERYHCONTACT, 0, (LPARAM)&hContact);
+            /*
             if(hContact && lParam == 0) {
                 //_DebugTraceA("menu command (container): %d", LOWORD(wParam));
                 if(CallService(MS_CLIST_MENUPROCESSCOMMAND, MAKEWPARAM(LOWORD(wParam), MPCF_CONTACTMENU), (LPARAM) hContact))
                     break;
             }
-
+            */
             if(LOWORD(wParam) == IDC_TBFIRSTUID - 1)
                 break;
             else if(LOWORD(wParam) >= IDC_TBFIRSTUID) {                     // skinnable buttons handling
@@ -2002,14 +2003,17 @@ panel_found:
                             }
                             else if(((LPNMHDR)lParam)->code == NM_RCLICK) {
                                 POINT pt;
-                                HANDLE hContact;
+                                HANDLE hContact = 0;
                                 HMENU hMenu;
 
                                 GetCursorPos(&pt);
                                 SendMessage(pContainer->hwndActive, DM_QUERYHCONTACT, 0, (LPARAM)&hContact);
                                 if(hContact) {
+                                    int iSel = 0;
                                     hMenu = (HMENU) CallService(MS_CLIST_MENUBUILDCONTACT, (WPARAM) hContact, 0);
-                                    TrackPopupMenu(hMenu, 0, pt.x, pt.y, 0, hwndDlg, NULL);
+                                    iSel = TrackPopupMenu(hMenu, TPM_RETURNCMD, pt.x, pt.y, 0, hwndDlg, NULL);
+                                    if(iSel)
+                                        CallService(MS_CLIST_MENUPROCESSCOMMAND, MAKEWPARAM(LOWORD(iSel), MPCF_CONTACTMENU), (LPARAM) hContact);
                                     DestroyMenu(hMenu);
                                 }
                             }
@@ -2293,12 +2297,15 @@ panel_found:
 
             GetCursorPos(&pt);
             pos = MenuItemFromPoint(hwndDlg, pContainer->hMenu, pt);
+
+            /* temporary disabled because of genmenu issues with menu ids
             if(pos == 2) {
                 HANDLE hContact;
 
                 SendMessage(pContainer->hwndActive, DM_QUERYHCONTACT, 0, (LPARAM)&hContact);
                 if(hContact) {
                     MENUITEMINFO mii = {0};
+					int iSel = 0;
 
                     hMenu = (HMENU) CallService(MS_CLIST_MENUBUILDCONTACT, (WPARAM) hContact, 0);
                     mii.cbSize = sizeof(mii);
@@ -2309,10 +2316,11 @@ panel_found:
                     //ModifyMenuA(pContainer->hMenu, 2, MF_BYPOSITION | MF_POPUP | MF_OWNERDRAW, (UINT_PTR) hMenu, Translate("&User"));
                     DrawMenuBar(hwndDlg);
                     GetCursorPos(&pt);
-                    TrackPopupMenu(hMenu, 0, pt.x, pt.y, 0, hwndDlg, NULL);
+                    TrackPopupMenu(hMenu, TPM_RETURNCMD, pt.x, pt.y, 0, hwndDlg, NULL);
                     DestroyMenu(hMenu);
                 }
-            }
+            }*/
+
             hMenu = pContainer->hMenu;
             CheckMenuItem(hMenu, ID_VIEW_SHOWMENUBAR, MF_BYCOMMAND | pContainer->dwFlags & CNT_NOMENUBAR ? MF_UNCHECKED : MF_CHECKED);
             CheckMenuItem(hMenu, ID_VIEW_SHOWSTATUSBAR, MF_BYCOMMAND | pContainer->dwFlags & CNT_NOSTATUSBAR ? MF_UNCHECKED : MF_CHECKED);
@@ -2737,20 +2745,6 @@ panel_found:
             break;
         case WM_CONTEXTMENU:
             {
-                /*if (pContainer->hwndStatus && pContainer->hwndStatus == (HWND) wParam) {
-                    POINT pt;
-                    HANDLE hContact;
-                    HMENU hMenu;
-
-                    GetCursorPos(&pt);
-                    SendMessage(pContainer->hwndActive, DM_QUERYHCONTACT, 0, (LPARAM)&hContact);
-                    if(hContact) {
-                        hMenu = (HMENU) CallService(MS_CLIST_MENUBUILDCONTACT, (WPARAM) hContact, 0);
-                        TrackPopupMenu(hMenu, 0, pt.x, pt.y, 0, hwndDlg, NULL);
-                        DestroyMenu(hMenu);
-                    }
-                    return TRUE;
-                }*/
                 break;
             }
         case DM_SETICON:

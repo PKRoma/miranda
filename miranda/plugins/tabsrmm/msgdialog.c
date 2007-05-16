@@ -3731,12 +3731,15 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
             if(!dat)
                 break;
 
+            /* no longer needed, user menu is handled with TPM_RETURNCMD
+
             if(lParam == 0) {
                 //_DebugTraceA("menu command: %d", LOWORD(wParam));
 
                 if (CallService(MS_CLIST_MENUPROCESSCOMMAND, MAKEWPARAM(LOWORD(wParam), MPCF_CONTACTMENU), (LPARAM) dat->hContact))
                     break;
             }
+            */
             switch (LOWORD(wParam)) {
                 case IDOK:
                     {
@@ -4130,12 +4133,18 @@ quote_from_last:
                             SendMessage(hwndDlg, DM_UINTOCLIPBOARD, 0, 0);
                         else {
                             RECT rc;
+                            int  iSel = 0;
+
                             HMENU hMenu = (HMENU) CallService(MS_CLIST_MENUBUILDCONTACT, (WPARAM) dat->hContact, 0);
                             if(lParam == 0)
                                 GetWindowRect(GetDlgItem(hwndDlg, IDC_NAME), &rc);
                             else
                                 GetWindowRect((HWND)lParam, &rc);
-                            TrackPopupMenu(hMenu, 0, rc.left, rc.bottom, 0, hwndDlg, NULL);
+                            iSel = TrackPopupMenu(hMenu, TPM_RETURNCMD, rc.left, rc.bottom, 0, hwndDlg, NULL);
+
+                            if(iSel)
+                                CallService(MS_CLIST_MENUPROCESSCOMMAND, MAKEWPARAM(LOWORD(iSel), MPCF_CONTACTMENU), (LPARAM) dat->hContact);
+
                             DestroyMenu(hMenu);
                         }
                     }
