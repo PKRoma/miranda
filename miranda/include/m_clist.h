@@ -335,6 +335,9 @@ typedef struct {
 //returns a HMENU. This need not be freed since it's owned by clist
 #define MS_CLIST_MENUGETSTATUS  "CList/MenuGetStatus"
 
+
+
+
 //processes a menu selection from a menu                    v0.1.1.0+
 //wParam=MAKEWPARAM(LOWORD(wParam from WM_COMMAND),flags)
 //lParam=(LPARAM)(HANDLE)hContact
@@ -342,6 +345,24 @@ typedef struct {
 //hContact is the currently selected contact. It it not used if this is a main
 //menu command. If this is NULL and the command is a contact menu one, the
 //command is ignored
+
+#define CLISTMENUIDMIN	0x4000	  // reserved range for clist menu ids
+#define CLISTMENUIDMAX	0x7fff
+//////////////////////////////////////////////////////////////////////////
+// NOTE:														v0.7.0.26+
+// Due to it is generic practice to handle menu command via WM_COMMAND
+// window message handle and practice to process it via calling service
+// in form: CallService(MS_CLIST_MENUPROCESSCOMMAND, MAKEWPARAM(LOWORD(wParam), MPCF_CONTACTMENU), (LPARAM) hContact))
+// to ensure that WM_COMMAND was realy from clist menu not from other menu
+// it is reserved range of menu ids from CLISTMENUIDMIN to CLISTMENUIDMAX
+// the menu items with ids outside from such range will not be processed by service.
+// Moreover if you process WM_COMMAND youself and your window contains self menu 
+// please be sure that you will not call service for non-clist menu items.
+// The simplest way is to ensure that your menus are not use item ids from such range.
+// Otherwise, you HAVE TO distinguish WM_COMMAND from clist menus and from youê internal menu and
+// DO NOT call MS_CLIST_MENUPROCESSCOMMAND for non clist menus. 
+
+
 #define MPCF_CONTACTMENU   1	//test commands from a contact menu
 #define MPCF_MAINMENU      2	//test commands from the main menu
 #define MS_CLIST_MENUPROCESSCOMMAND "CList/MenuProcessCommand"
