@@ -56,12 +56,6 @@
 #define IDC_IGN_ADD						204
 #define IDC_IGN_REMOVE					205
 
-#define IDD_INFO_AVATAR					300
-#define IDC_AVATAR						301
-#define IDC_SETAVATAR					302
-#define IDC_DELETEAVATAR				303
-#define IDC_SHARE_AVATAR				304
-
 /*
  *
  */

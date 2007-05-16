@@ -48,7 +48,6 @@
 #define IDD_GROUPCHAT_INVITE            183
 #define IDD_GROUPCHAT_INVITE_ACCEPT     184
 #define IDD_OPT_JABBER3                 185
-#define IDD_OPT_SETAVATAR               185
 #define IDI_LOGIN                       186
 #define IDI_AUTHREVOKE                  187
 #define IDI_COMMAND                     188
@@ -116,10 +115,7 @@
 #define IDC_BIRTH                       1065
 #define IDC_OCCUPATION                  1066
 #define IDC_HOMEPAGE                    1067
-#define IDC_AVATAR                      1068
 #define IDC_ENABLE_AVATARS              1069
-#define IDC_SETAVATAR                   1070
-#define IDC_DELETEAVATAR                1071
 #define IDC_MIDDLE                      1072
 #define IDC_EMAIL                       1073
 #define IDC_HOME                        1074
@@ -262,7 +258,7 @@
 #define IDM_VCARD                       10018
 
 // Next default values for new objects
-// 
+//
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NEXT_RESOURCE_VALUE        190

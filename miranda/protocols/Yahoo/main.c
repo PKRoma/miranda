@@ -89,8 +89,6 @@ BOOL WINAPI DllMain(HINSTANCE hinst,DWORD fdwReason,LPVOID lpvReserved)
 }
 
 int YahooIdleEvent(WPARAM wParam, LPARAM lParam);
-int OnDetailsInit(WPARAM wParam, LPARAM lParam);
-
 
 /*
  *	Load - loads plugin into memory
@@ -138,9 +136,8 @@ static int OnModulesLoaded( WPARAM wParam, LPARAM lParam )
 	YahooMenuInit();
 	
 	hHookOptsInit = HookEvent( ME_OPT_INITIALISE, YahooOptInit );
-    hHookSettingChanged = HookEvent(ME_DB_CONTACT_SETTINGCHANGED, YAHOO_util_dbsettingchanged);
+	hHookSettingChanged = HookEvent(ME_DB_CONTACT_SETTINGCHANGED, YAHOO_util_dbsettingchanged);
 	hHookIdle = HookEvent(ME_IDLE_CHANGED, YahooIdleEvent);
-	hHookUserInfoInit = HookEvent(ME_USERINFO_INITIALISE, OnDetailsInit);
 	
 	// Add support for Plugin Uninstaller
 	//DBWriteContactSettingString(NULL, "Uninstall", "Yahoo", yahooProtocolName);

@@ -132,7 +132,6 @@ LIST<void> arHooks( 20, sttCompareHandles );
 int JabberOptInit( WPARAM wParam, LPARAM lParam );
 int JabberUserInfoInit( WPARAM wParam, LPARAM lParam );
 int JabberMsgUserTyping( WPARAM wParam, LPARAM lParam );
-int OnSaveMyAvatar( WPARAM wParam, LPARAM lParam );
 void JabberMenuInit( void );
 int JabberSvcInit( void );
 int JabberSvcUninit( void );
@@ -256,7 +255,6 @@ static int OnModulesLoaded( WPARAM wParam, LPARAM lParam )
 	arHooks.insert( HookEvent( ME_DB_CONTACT_SETTINGCHANGED, JabberDbSettingChanged ));
 	arHooks.insert( HookEvent( ME_DB_CONTACT_DELETED, JabberContactDeleted ));
 	arHooks.insert( HookEvent( ME_CLIST_PREBUILDCONTACTMENU, JabberMenuPrebuildContactMenu ));
-	arHooks.insert( HookEvent( ME_AV_MYAVATARCHANGED, OnSaveMyAvatar ));
 	arHooks.insert( HookEvent( ME_IDLE_CHANGED, JabberIdleChanged ));
 
 	if ( ServiceExists( MS_MSG_ADDICON )) {
