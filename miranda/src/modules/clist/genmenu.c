@@ -725,7 +725,7 @@ static int WhereToPlace(HMENU hMenu,PMO_MenuItem mi,MENUITEMINFO *mii,ListParam 
 {
 	int i=0;
 
-	mii->fMask = MIIM_TYPE | MIIM_SUBMENU | MIIM_DATA;
+	mii->fMask = MIIM_SUBMENU | MIIM_DATA;
 	for ( i=GetMenuItemCount( hMenu )-1; i >= 0; i-- ) {
 		GetMenuItemInfo( hMenu, i, TRUE, mii );
 		if ( mii->fType != MFT_SEPARATOR ) {
