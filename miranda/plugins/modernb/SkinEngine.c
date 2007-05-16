@@ -1605,7 +1605,7 @@ HBITMAP SkinEngine_LoadGlyphImage_Png2Dib(char * szFilename)
         BYTE* pDibBits;
 
         if ( !ServiceExists( MS_PNG2DIB )) {
-            MessageBox( NULL, TranslateT( "You need the png2dib plugin v. 0.1.3.x or later to process PNG images" ), TranslateT( "Error" ), MB_OK );
+            MessageBox( NULL, TranslateT( "You need an image services plugin to process PNG images." ), TranslateT( "Error" ), MB_OK );
             return (HBITMAP)NULL;
         }
 
