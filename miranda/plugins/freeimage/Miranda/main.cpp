@@ -50,27 +50,27 @@ Last change by : $Author: rainwater $
 PLUGINLINK *pluginLink = NULL;
 
 PLUGININFO pluginInfo = {
-	sizeof(PLUGININFO), 
+	sizeof(PLUGININFO),
 	"Miranda Image services",
-	PLUGIN_MAKE_VERSION(0, 0, 1, 0), 
-	"Generic image services for Miranda IM", 
-	"Nightwish, The FreeImage project (http://freeimage.sourceforge.net/)", 
-	"", 
-	"Copyright 2000-2007 Miranda-IM project, uses the FreeImage distribution", 
-	"http://www.miranda-im.org", 
+	PLUGIN_MAKE_VERSION(0, 0, 1, 0),
+	"Generic image services for Miranda IM",
+	"Nightwish, The FreeImage project (http://freeimage.sourceforge.net/)",
+	"",
+	"Copyright 2000-2007 Miranda-IM project, uses the FreeImage distribution",
+	"http://www.miranda-im.org",
 	UNICODE_AWARE,
 	0
 };
 
 PLUGININFOEX pluginInfoEx = {
-	sizeof(PLUGININFOEX), 
+	sizeof(PLUGININFOEX),
 	"Miranda Image services",
-	PLUGIN_MAKE_VERSION(0, 0, 1, 0), 
-	"Generic image services for Miranda IM", 
-	"Nightwish, The FreeImage project (http://freeimage.sourceforge.net/)", 
-	"", 
-	"Copyright 2000-2007 Miranda-IM project, uses the FreeImage distribution", 
-	"http://www.miranda-im.org", 
+	PLUGIN_MAKE_VERSION(0, 0, 1, 0),
+	"Generic image services for Miranda IM",
+	"Nightwish, The FreeImage project (http://freeimage.sourceforge.net/)",
+	"",
+	"Copyright 2000-2007 Miranda-IM project, uses the FreeImage distribution",
+	"http://www.miranda-im.org",
 	UNICODE_AWARE,
 	0,
 	#if defined(_UNICODE)
@@ -79,7 +79,7 @@ PLUGININFOEX pluginInfoEx = {
 	#else
 		// {287F31D5-147C-48bb-B428-D7C260272535}
 		{ 0x287f31d5, 0x147c, 0x48bb, { 0xb4, 0x28, 0xd7, 0xc2, 0x60, 0x27, 0x25, 0x35 } }
-	#endif	
+	#endif
 };
 
 /*
@@ -116,9 +116,9 @@ static void FI_CorrectBitmap32Alpha(HBITMAP hBitmap, BOOL force)
 	for (y = 0; fixIt && y < bmp.bmHeight; ++y) {
 		BYTE *px = p + bmp.bmWidth * 4 * y;
 
-		for (x = 0; fixIt && x < bmp.bmWidth; ++x) 
+		for (x = 0; fixIt && x < bmp.bmWidth; ++x)
 		{
-			if (px[3] != 0 && !force) 
+			if (px[3] != 0 && !force)
 			{
 				fixIt = FALSE;
 			}
@@ -157,19 +157,19 @@ static BOOL FreeImage_PreMultiply(HBITMAP hBitmap)
 	height = bmp.bmHeight;
 	dwLen = width * height * 4;
 	p = (BYTE *)malloc(dwLen);
-	if (p != NULL) 
+	if (p != NULL)
 	{
 		GetBitmapBits(hBitmap, dwLen, p);
 
-		for (y = 0; y < height; ++y) 
+		for (y = 0; y < height; ++y)
 		{
 			BYTE *px = p + width * 4 * y;
 
-			for (x = 0; x < width; ++x) 
+			for (x = 0; x < width; ++x)
 			{
 				alpha = px[3];
 
-				if (alpha < 255) 
+				if (alpha < 255)
 				{
 					transp  = TRUE;
 
@@ -242,9 +242,9 @@ static int serviceBmpFilterResizeBitmap(WPARAM wParam,LPARAM lParam)
 	ResizeBitmap *info = (ResizeBitmap *) wParam;
 
 	if (info == NULL || info->size != sizeof(ResizeBitmap)
-		|| info->hBmp == NULL || info->max_width <= 0 
-		|| info->max_height <= 0 
-		|| (info->fit & ~RESIZEBITMAP_FLAG_DONT_GROW) < RESIZEBITMAP_STRETCH 
+		|| info->hBmp == NULL || info->max_width <= 0
+		|| info->max_height <= 0
+		|| (info->fit & ~RESIZEBITMAP_FLAG_DONT_GROW) < RESIZEBITMAP_STRETCH
 		|| (info->fit & ~RESIZEBITMAP_FLAG_DONT_GROW) > RESIZEBITMAP_MAKE_SQUARE)
 		return 0;
 
@@ -308,8 +308,8 @@ static int serviceBmpFilterResizeBitmap(WPARAM wParam,LPARAM lParam)
 		}
 	}
 
-	if ((width == bminfo.bmWidth && height == bminfo.bmHeight) 
-		|| ((info->fit & RESIZEBITMAP_FLAG_DONT_GROW) 
+	if ((width == bminfo.bmWidth && height == bminfo.bmHeight)
+		|| ((info->fit & RESIZEBITMAP_FLAG_DONT_GROW)
 		&& width > bminfo.bmWidth && height > bminfo.bmHeight))
 	{
 		// Do nothing
@@ -467,7 +467,7 @@ long __stdcall fiio_mem_TellProc(fi_handle handle) {
 	return FIIOMEM(curpos);
 }
 
-DWORD __declspec(dllexport) getver( void )
+extern "C" DWORD __declspec(dllexport) getver( void )
 {
 	return __VERSION_DWORD;
 }
@@ -511,7 +511,7 @@ static void png_flush( png_structp png_ptr )
 *		Converting a *in memory* png image into a bitmap
 */
 
-BOOL __declspec(dllexport) mempng2dib(BYTE* pSource, DWORD cbSourceSize, BITMAPINFOHEADER** ppDibData )
+extern "C" BOOL __declspec(dllexport) mempng2dib(BYTE* pSource, DWORD cbSourceSize, BITMAPINFOHEADER** ppDibData )
 {
 	fiio_mem_handle fiio_mh;
 
@@ -572,7 +572,7 @@ static BOOL sttCheckAlphaIsValid( BITMAPINFO* pbmi, png_byte* pDiData )
 	return FALSE;
 }
 
-BOOL __declspec(dllexport) dib2mempng( BITMAPINFO* pbmi, png_byte* pDiData, BYTE* pResult, long* pResultLen )
+extern "C" BOOL __declspec(dllexport) dib2mempng( BITMAPINFO* pbmi, png_byte* pDiData, BYTE* pResult, long* pResultLen )
 {
 	int ciBitDepth = 8;
 	int ciChannels = pbmi->bmiHeader.biBitCount / 8;
@@ -602,7 +602,7 @@ BOOL __declspec(dllexport) dib2mempng( BITMAPINFO* pbmi, png_byte* pDiData, BYTE
 	png_set_write_fn(png_ptr, (png_voidp)&sBuffer, png_write_data, png_flush);
 
 	png_set_IHDR(png_ptr, info_ptr, pbmi->bmiHeader.biWidth, pbmi->bmiHeader.biHeight, ciBitDepth,
-		( bIsAlphaValid ) ? PNG_COLOR_TYPE_RGB_ALPHA : PNG_COLOR_TYPE_RGB, 
+		( bIsAlphaValid ) ? PNG_COLOR_TYPE_RGB_ALPHA : PNG_COLOR_TYPE_RGB,
 		PNG_INTERLACE_NONE, PNG_COMPRESSION_TYPE_BASE, PNG_FILTER_TYPE_BASE);
 
 	// write the file header information
@@ -803,7 +803,7 @@ static int serviceSave(WPARAM wParam, LPARAM lParam)
 				else
 					fif = FreeImage_GetFIFFromFilename(isi->szName);
 			}
-			else 
+			else
 				fif = isi->fif;
 
 			if(fif == FIF_UNKNOWN)
