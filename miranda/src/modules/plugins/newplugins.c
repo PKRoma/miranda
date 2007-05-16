@@ -68,6 +68,15 @@ typedef struct pluginEntry {
 	struct pluginEntry * nextclass;
 } pluginEntry;
 
+struct PluginUUIDList {
+    MUUID uuid;
+} pluginBannedList[] = {
+    {0x7f65393b, 0x7771, 0x4f3f, { 0xa9, 0xeb, 0x5d, 0xba, 0xf2, 0xb3, 0x61, 0xf1 }}, // png2dib
+    {0xe00f1643, 0x263c, 0x4599, { 0xb8, 0x4b, 0x5, 0x3e, 0x5c, 0x51, 0x1d, 0x28 }}, // loadavatars (unicode)
+    {0xc9e01eb0, 0xa119, 0x42d2, { 0xb3, 0x40, 0xe8, 0x67, 0x8f, 0x5f, 0xea, 0xd9 }} // loadavatars (ansi)
+};
+const int pluginBannedListCount = SIZEOF(pluginBannedList);
+
 SortedList pluginList = { 0 }, pluginListAddr = { 0 };
 
 PLUGINLINK pluginCoreLink;
@@ -146,6 +155,16 @@ static int validInterfaceList(Miranda_Plugin_Interfaces ifaceProc)
 	return 1;
 }
 
+static int isPluginBanned(MUUID u1) {
+    int i;
+    
+    for (i=0; i<pluginBannedListCount; i++) {
+        if (equalUUID(pluginBannedList[i].uuid, u1))
+            return 1;
+    }
+    return 0;
+}
+
 // returns true if the API exports were good, otherwise, passed in data is returned
 #define CHECKAPI_NONE 	0
 #define CHECKAPI_DB 	1
@@ -183,7 +202,7 @@ static int checkAPI(char * plugin, BASIC_PLUGIN_INFO * bpi, DWORD mirandaVersion
 			pi = bpi->InfoEx(mirandaVersion);
 		else
 			pi = (PLUGININFOEX*)bpi->Info(mirandaVersion);
-		if ( pi && ((bpi->Info&&pi->cbSize==sizeof(PLUGININFO))||(bpi->InfoEx&&pi->cbSize==sizeof(PLUGININFOEX)&&validInterfaceList(bpi->Interfaces))) && pi->shortName && pi->description
+		if ( pi && ((bpi->Info&&pi->cbSize==sizeof(PLUGININFO))||(bpi->InfoEx&&pi->cbSize==sizeof(PLUGININFOEX)&&validInterfaceList(bpi->Interfaces)&&!isPluginBanned(pi->uuid))) && pi->shortName && pi->description
 				&& pi->author && pi->authorEmail && pi->copyright && pi->homepage
 				&& pi->replacesDefaultModule <= DEFMOD_HIGHEST
 				&& pi->replacesDefaultModule != DEFMOD_REMOVED_UIPLUGINOPTS)
