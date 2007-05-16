@@ -276,7 +276,7 @@ static int NetlibLog(WPARAM wParam,LPARAM lParam)
 			szTime[0]='\0';
 			break;
 	}
-	cbBufLen = lstrlenA(pszMsg)+lstrlenA(nlu->user.szSettingsModule)+5+lstrlenA(szTime);
+	cbBufLen = lstrlenA(pszMsg)+lstrlenA(nlu->user.szSettingsModule)+6+lstrlenA(szTime);
 	EnterCriticalSection(&logOptions.cs);
 	if(logOptions.showUser) lstrcatA(szTime," ");
 	__try
