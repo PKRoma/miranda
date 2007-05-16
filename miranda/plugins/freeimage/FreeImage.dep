@@ -1,13 +1,6 @@
 # Microsoft Developer Studio Generated Dependency File, included by FreeImage.mak
 
 .\Source\FreeImage\Plugin.cpp : \
-	"..\..\..\..\vc\sdk\include\basetsd.h"\
-	"..\..\..\..\vc\sdk\include\guiddef.h"\
-	"..\..\..\..\vc\sdk\include\propidl.h"\
-	"..\..\..\..\vc\sdk\include\reason.h"\
-	"..\..\..\..\vc\sdk\include\stralign.h"\
-	"..\..\..\..\vc\sdk\include\tvout.h"\
-	"..\..\..\..\vc\sdk\include\winefs.h"\
 	".\SOURCE\FreeImage.h"\
 	".\Source\FreeImageIO.h"\
 	".\Source\Plugin.h"\
@@ -41,6 +34,7 @@
 	".\Source\LibJPEG\jerror.h"\
 	".\Source\LibJPEG\jinclude.h"\
 	".\Source\LibJPEG\jmorecfg.h"\
+	".\Source\LibJPEG\jpegint.h"\
 	".\Source\LibJPEG\jpeglib.h"\
 	".\Source\Metadata\FreeImageTag.h"\
 	".\Source\Utilities.h"\
@@ -52,8 +46,8 @@
 	".\Source\LibPNG\pngconf.h"\
 	".\Source\Metadata\FreeImageTag.h"\
 	".\Source\Utilities.h"\
-	".\Source\ZLib\zconf.h"\
-	".\Source\ZLib\zlib.h"\
+	".\source\zlib\zconf.h"\
+	".\source\zlib\zlib.h"\
 	
 
 .\Source\FreeImage\Conversion.cpp : \
@@ -143,13 +137,6 @@
 	
 
 .\Source\DeprecationManager\DeprecationMgr.cpp : \
-	"..\..\..\..\vc\sdk\include\basetsd.h"\
-	"..\..\..\..\vc\sdk\include\guiddef.h"\
-	"..\..\..\..\vc\sdk\include\propidl.h"\
-	"..\..\..\..\vc\sdk\include\reason.h"\
-	"..\..\..\..\vc\sdk\include\stralign.h"\
-	"..\..\..\..\vc\sdk\include\tvout.h"\
-	"..\..\..\..\vc\sdk\include\winefs.h"\
 	".\Source\DeprecationManager\DeprecationMgr.h"\
 	".\SOURCE\FreeImage.h"\
 	".\Source\Utilities.h"\
@@ -172,9 +159,9 @@
 .\Source\FreeImage\ZLibInterface.cpp : \
 	".\SOURCE\FreeImage.h"\
 	".\Source\Utilities.h"\
-	".\Source\ZLib\zconf.h"\
-	".\Source\ZLib\zlib.h"\
-	".\Source\ZLib\zutil.h"\
+	".\source\zlib\zconf.h"\
+	".\source\zlib\zlib.h"\
+	".\source\zlib\zutil.h"\
 	
 
 .\Source\Metadata\Exif.cpp : \
@@ -215,13 +202,6 @@
 	
 
 .\Miranda\main.cpp : \
-	"..\..\..\..\vc\sdk\include\basetsd.h"\
-	"..\..\..\..\vc\sdk\include\guiddef.h"\
-	"..\..\..\..\vc\sdk\include\propidl.h"\
-	"..\..\..\..\vc\sdk\include\reason.h"\
-	"..\..\..\..\vc\sdk\include\stralign.h"\
-	"..\..\..\..\vc\sdk\include\tvout.h"\
-	"..\..\..\..\vc\sdk\include\winefs.h"\
 	"..\..\include\m_clui.h"\
 	"..\..\include\m_plugins.h"\
 	"..\..\include\m_png.h"\
@@ -230,8 +210,8 @@
 	".\Miranda\include\m_imgsrvc.h"\
 	".\Source\LibPNG\png.h"\
 	".\Source\LibPNG\pngconf.h"\
-	".\Source\ZLib\zconf.h"\
-	".\Source\ZLib\zlib.h"\
+	".\source\zlib\zconf.h"\
+	".\source\zlib\zlib.h"\
 	
 
 .\Source\LibJPEG\jcapimin.c : \
@@ -404,6 +384,7 @@
 	".\Source\LibJPEG\jerror.h"\
 	".\Source\LibJPEG\jinclude.h"\
 	".\Source\LibJPEG\jmorecfg.h"\
+	".\Source\LibJPEG\jpegint.h"\
 	".\Source\LibJPEG\jpeglib.h"\
 	
 
@@ -412,6 +393,7 @@
 	".\Source\LibJPEG\jerror.h"\
 	".\Source\LibJPEG\jinclude.h"\
 	".\Source\LibJPEG\jmorecfg.h"\
+	".\Source\LibJPEG\jpegint.h"\
 	".\Source\LibJPEG\jpeglib.h"\
 	
 
@@ -540,6 +522,7 @@
 	".\Source\LibJPEG\jerror.h"\
 	".\Source\LibJPEG\jinclude.h"\
 	".\Source\LibJPEG\jmorecfg.h"\
+	".\Source\LibJPEG\jpegint.h"\
 	".\Source\LibJPEG\jpeglib.h"\
 	".\Source\LibJPEG\jversion.h"\
 	
@@ -674,120 +657,120 @@
 .\Source\LibPNG\png.c : \
 	".\Source\LibPNG\png.h"\
 	".\Source\LibPNG\pngconf.h"\
-	".\Source\ZLib\zconf.h"\
-	".\Source\ZLib\zlib.h"\
+	".\source\zlib\zconf.h"\
+	".\source\zlib\zlib.h"\
 	
 
 .\Source\LibPNG\pngerror.c : \
 	".\Source\LibPNG\png.h"\
 	".\Source\LibPNG\pngconf.h"\
-	".\Source\ZLib\zconf.h"\
-	".\Source\ZLib\zlib.h"\
+	".\source\zlib\zconf.h"\
+	".\source\zlib\zlib.h"\
 	
 
 .\Source\LibPNG\pnggccrd.c : \
 	".\Source\LibPNG\png.h"\
 	".\Source\LibPNG\pngconf.h"\
-	".\Source\ZLib\zconf.h"\
-	".\Source\ZLib\zlib.h"\
+	".\source\zlib\zconf.h"\
+	".\source\zlib\zlib.h"\
 	
 
 .\Source\LibPNG\pngget.c : \
 	".\Source\LibPNG\png.h"\
 	".\Source\LibPNG\pngconf.h"\
-	".\Source\ZLib\zconf.h"\
-	".\Source\ZLib\zlib.h"\
+	".\source\zlib\zconf.h"\
+	".\source\zlib\zlib.h"\
 	
 
 .\Source\LibPNG\pngmem.c : \
 	".\Source\LibPNG\png.h"\
 	".\Source\LibPNG\pngconf.h"\
-	".\Source\ZLib\zconf.h"\
-	".\Source\ZLib\zlib.h"\
+	".\source\zlib\zconf.h"\
+	".\source\zlib\zlib.h"\
 	
 
 .\Source\LibPNG\pngpread.c : \
 	".\Source\LibPNG\png.h"\
 	".\Source\LibPNG\pngconf.h"\
-	".\Source\ZLib\zconf.h"\
-	".\Source\ZLib\zlib.h"\
+	".\source\zlib\zconf.h"\
+	".\source\zlib\zlib.h"\
 	
 
 .\Source\LibPNG\pngread.c : \
 	".\Source\LibPNG\png.h"\
 	".\Source\LibPNG\pngconf.h"\
-	".\Source\ZLib\zconf.h"\
-	".\Source\ZLib\zlib.h"\
+	".\source\zlib\zconf.h"\
+	".\source\zlib\zlib.h"\
 	
 
 .\Source\LibPNG\pngrio.c : \
 	".\Source\LibPNG\png.h"\
 	".\Source\LibPNG\pngconf.h"\
-	".\Source\ZLib\zconf.h"\
-	".\Source\ZLib\zlib.h"\
+	".\source\zlib\zconf.h"\
+	".\source\zlib\zlib.h"\
 	
 
 .\Source\LibPNG\pngrtran.c : \
 	".\Source\LibPNG\png.h"\
 	".\Source\LibPNG\pngconf.h"\
-	".\Source\ZLib\zconf.h"\
-	".\Source\ZLib\zlib.h"\
+	".\source\zlib\zconf.h"\
+	".\source\zlib\zlib.h"\
 	
 
 .\Source\LibPNG\pngrutil.c : \
 	".\Source\LibPNG\png.h"\
 	".\Source\LibPNG\pngconf.h"\
-	".\Source\ZLib\zconf.h"\
-	".\Source\ZLib\zlib.h"\
+	".\source\zlib\zconf.h"\
+	".\source\zlib\zlib.h"\
 	
 
 .\Source\LibPNG\pngset.c : \
 	".\Source\LibPNG\png.h"\
 	".\Source\LibPNG\pngconf.h"\
-	".\Source\ZLib\zconf.h"\
-	".\Source\ZLib\zlib.h"\
+	".\source\zlib\zconf.h"\
+	".\source\zlib\zlib.h"\
 	
 
 .\Source\LibPNG\pngtrans.c : \
 	".\Source\LibPNG\png.h"\
 	".\Source\LibPNG\pngconf.h"\
-	".\Source\ZLib\zconf.h"\
-	".\Source\ZLib\zlib.h"\
+	".\source\zlib\zconf.h"\
+	".\source\zlib\zlib.h"\
 	
 
 .\Source\LibPNG\pngvcrd.c : \
 	".\Source\LibPNG\png.h"\
 	".\Source\LibPNG\pngconf.h"\
-	".\Source\ZLib\zconf.h"\
-	".\Source\ZLib\zlib.h"\
+	".\source\zlib\zconf.h"\
+	".\source\zlib\zlib.h"\
 	
 
 .\Source\LibPNG\pngwio.c : \
 	".\Source\LibPNG\png.h"\
 	".\Source\LibPNG\pngconf.h"\
-	".\Source\ZLib\zconf.h"\
-	".\Source\ZLib\zlib.h"\
+	".\source\zlib\zconf.h"\
+	".\source\zlib\zlib.h"\
 	
 
 .\Source\LibPNG\pngwrite.c : \
 	".\Source\LibPNG\png.h"\
 	".\Source\LibPNG\pngconf.h"\
-	".\Source\ZLib\zconf.h"\
-	".\Source\ZLib\zlib.h"\
+	".\source\zlib\zconf.h"\
+	".\source\zlib\zlib.h"\
 	
 
 .\Source\LibPNG\pngwtran.c : \
 	".\Source\LibPNG\png.h"\
 	".\Source\LibPNG\pngconf.h"\
-	".\Source\ZLib\zconf.h"\
-	".\Source\ZLib\zlib.h"\
+	".\source\zlib\zconf.h"\
+	".\source\zlib\zlib.h"\
 	
 
 .\Source\LibPNG\pngwutil.c : \
 	".\Source\LibPNG\png.h"\
 	".\Source\LibPNG\pngconf.h"\
-	".\Source\ZLib\zconf.h"\
-	".\Source\ZLib\zlib.h"\
+	".\source\zlib\zconf.h"\
+	".\source\zlib\zlib.h"\
 	
 
 .\Source\FreeImage\BitmapAccess.cpp : \
@@ -803,13 +786,6 @@
 	
 
 .\Source\FreeImage\FreeImage.cpp : \
-	"..\..\..\..\vc\sdk\include\basetsd.h"\
-	"..\..\..\..\vc\sdk\include\guiddef.h"\
-	"..\..\..\..\vc\sdk\include\propidl.h"\
-	"..\..\..\..\vc\sdk\include\reason.h"\
-	"..\..\..\..\vc\sdk\include\stralign.h"\
-	"..\..\..\..\vc\sdk\include\tvout.h"\
-	"..\..\..\..\vc\sdk\include\winefs.h"\
 	".\SOURCE\FreeImage.h"\
 	".\Source\Utilities.h"\
 	
@@ -884,6 +860,7 @@
 	".\Source\LibJPEG\jerror.h"\
 	".\Source\LibJPEG\jinclude.h"\
 	".\Source\LibJPEG\jmorecfg.h"\
+	".\Source\LibJPEG\jpegint.h"\
 	".\Source\LibJPEG\jpeglib.h"\
 	".\Source\LibJPEG\transupp.h"\
 	".\Source\Utilities.h"\
@@ -891,14 +868,14 @@
 
 .\Source\FreeImageToolkit\Rescale.cpp : \
 	".\SOURCE\FreeImage.h"\
-	".\Source\FreeImageToolkit\Filters.h"\
+	".\source\freeimagetoolkit\filters.h"\
 	".\Source\FreeImageToolkit\Resize.h"\
 	".\Source\Utilities.h"\
 	
 
 .\Source\FreeImageToolkit\Resize.cpp : \
 	".\SOURCE\FreeImage.h"\
-	".\Source\FreeImageToolkit\Filters.h"\
+	".\source\freeimagetoolkit\filters.h"\
 	".\Source\FreeImageToolkit\Resize.h"\
 	".\Source\Utilities.h"\
 	

@@ -1,31 +1,30 @@
 # Microsoft Developer Studio Project File - Name="FreeImage" - Package Owner=<4>
 # Microsoft Developer Studio Generated Build File, Format Version 6.00
-# ** NICHT BEARBEITEN **
+# ** DO NOT EDIT **
 
 # TARGTYPE "Win32 (x86) Dynamic-Link Library" 0x0102
 
 CFG=FreeImage - Win32 Debug
-!MESSAGE Dies ist kein gültiges Makefile. Zum Erstellen dieses Projekts mit NMAKE
-!MESSAGE verwenden Sie den Befehl "Makefile exportieren" und führen Sie den Befehl
+!MESSAGE This is not a valid makefile. To build this project using NMAKE,
+!MESSAGE use the Export Makefile command and run
 !MESSAGE 
 !MESSAGE NMAKE /f "FreeImage.mak".
 !MESSAGE 
-!MESSAGE Sie können beim Ausführen von NMAKE eine Konfiguration angeben
-!MESSAGE durch Definieren des Makros CFG in der Befehlszeile. Zum Beispiel:
+!MESSAGE You can specify a configuration when running NMAKE
+!MESSAGE by defining the macro CFG on the command line. For example:
 !MESSAGE 
 !MESSAGE NMAKE /f "FreeImage.mak" CFG="FreeImage - Win32 Debug"
 !MESSAGE 
-!MESSAGE Für die Konfiguration stehen zur Auswahl:
+!MESSAGE Possible choices for configuration are:
 !MESSAGE 
-!MESSAGE "FreeImage - Win32 Release" (basierend auf  "Win32 (x86) Dynamic-Link Library")
-!MESSAGE "FreeImage - Win32 Debug" (basierend auf  "Win32 (x86) Dynamic-Link Library")
-!MESSAGE "FreeImage - Win32 Release Unicode" (basierend auf  "Win32 (x86) Dynamic-Link Library")
+!MESSAGE "FreeImage - Win32 Release" (based on "Win32 (x86) Dynamic-Link Library")
+!MESSAGE "FreeImage - Win32 Debug" (based on "Win32 (x86) Dynamic-Link Library")
 !MESSAGE 
 
 # Begin Project
 # PROP AllowPerConfigDependencies 0
-# PROP Scc_ProjName ""
-# PROP Scc_LocalPath ""
+# PROP Scc_ProjName ""$/Miranda/miranda/plugins/FreeImage", YWBAAAAA"
+# PROP Scc_LocalPath "."
 CPP=cl.exe
 MTL=midl.exe
 RSC=rc.exe
@@ -44,7 +43,7 @@ RSC=rc.exe
 # PROP Ignore_Export_Lib 0
 # PROP Target_Dir ""
 # ADD BASE CPP /nologo /MT /W3 /GX /O2 /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "_MBCS" /D "_USRDLL" /D "FREEIMAGE_EXPORTS" /YX /FD /c
-# ADD CPP /nologo /MD /W3 /GX /O1 /I "Source" /I "Source\ZLib" /I "Source\DeprecationManager" /I "..\..\include" /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "_MBCS" /D "_USRDLL" /D "FREEIMAGE_EXPORTS" /FD /c
+# ADD CPP /nologo /MD /W3 /GX /O1 /I "Source" /I "Source\ZLib" /I "Source\DeprecationManager" /I "..\..\include" /I "..\zlib" /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "_MBCS" /D "_USRDLL" /D "FREEIMAGE_EXPORTS" /FD /c
 # SUBTRACT CPP /YX
 # ADD BASE MTL /nologo /D "NDEBUG" /mktyplib203 /win32
 # ADD MTL /nologo /D "NDEBUG" /mktyplib203 /win32
@@ -55,12 +54,8 @@ BSC32=bscmake.exe
 # ADD BSC32 /nologo
 LINK32=link.exe
 # ADD BASE LINK32 kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /nologo /dll /machine:I386
-# ADD LINK32 ..\zlib\Release\zlib.lib msimg32.lib kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /nologo /base:"0x5130000" /dll /machine:I386 /out:"..\..\bin\Release\Plugins\advaimg.dll" /opt:NOWIN98
+# ADD LINK32 ..\zlib\Release\zlib.lib msimg32.lib kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /nologo /base:"0x5130000" /dll /machine:I386 /out:"../../bin/release/plugins/advaimg.dll" /opt:NOWIN98
 # SUBTRACT LINK32 /pdb:none
-# Begin Special Build Tool
-SOURCE="$(InputPath)"
-PostBuild_Cmds=copy Release\FreeImage.dll Dist	copy Release\FreeImage.lib Dist	copy Source\FreeImage.h Dist
-# End Special Build Tool
 
 !ELSEIF  "$(CFG)" == "FreeImage - Win32 Debug"
 
@@ -76,7 +71,7 @@ PostBuild_Cmds=copy Release\FreeImage.dll Dist	copy Release\FreeImage.lib Dist	c
 # PROP Ignore_Export_Lib 0
 # PROP Target_Dir ""
 # ADD BASE CPP /nologo /MTd /W3 /Gm /GX /ZI /Od /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /D "_MBCS" /D "_USRDLL" /D "FREEIMAGE_EXPORTS" /YX /FD /GZ /c
-# ADD CPP /nologo /MTd /W3 /Gm /GX /ZI /Od /I "Source" /I "Source\ZLib" /I "Source\DeprecationManager" /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /D "_MBCS" /D "_USRDLL" /D "FREEIMAGE_EXPORTS" /FR /FD /GZ /c
+# ADD CPP /nologo /MTd /W3 /Gm /GX /ZI /Od /I "Source" /I "Source\ZLib" /I "Source\DeprecationManager" /I "..\..\include" /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /D "_MBCS" /D "_USRDLL" /D "FREEIMAGE_EXPORTS" /FR /FD /GZ /c
 # SUBTRACT CPP /YX
 # ADD BASE MTL /nologo /D "_DEBUG" /mktyplib203 /win32
 # ADD MTL /nologo /D "_DEBUG" /mktyplib203 /win32
@@ -87,43 +82,8 @@ BSC32=bscmake.exe
 # ADD BSC32 /nologo
 LINK32=link.exe
 # ADD BASE LINK32 kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /nologo /dll /debug /machine:I386 /pdbtype:sept
-# ADD LINK32 kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /nologo /dll /debug /machine:I386 /out:"Debug/FreeImaged.dll" /pdbtype:sept
+# ADD LINK32 kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /nologo /dll /debug /machine:I386 /out:"../../bin/debug/plugins/advaimg.dll" /pdbtype:sept
 # SUBTRACT LINK32 /incremental:no
-# Begin Special Build Tool
-SOURCE="$(InputPath)"
-PostBuild_Cmds=copy Debug\FreeImaged.dll Dist	copy Debug\FreeImaged.lib Dist	copy Source\FreeImage.h Dist
-# End Special Build Tool
-
-!ELSEIF  "$(CFG)" == "FreeImage - Win32 Release Unicode"
-
-# PROP BASE Use_MFC 0
-# PROP BASE Use_Debug_Libraries 0
-# PROP BASE Output_Dir "FreeImage___Win32_Release_Unicode"
-# PROP BASE Intermediate_Dir "FreeImage___Win32_Release_Unicode"
-# PROP BASE Ignore_Export_Lib 0
-# PROP BASE Target_Dir ""
-# PROP Use_MFC 0
-# PROP Use_Debug_Libraries 0
-# PROP Output_Dir "FreeImage___Win32_Release_Unicode"
-# PROP Intermediate_Dir "FreeImage___Win32_Release_Unicode"
-# PROP Ignore_Export_Lib 0
-# PROP Target_Dir ""
-# ADD BASE CPP /nologo /MT /W3 /GX /O1 /I "Source" /I "Source\ZLib" /I "Source\DeprecationManager" /I "..\..\include" /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "_MBCS" /D "_USRDLL" /D "FREEIMAGE_EXPORTS" /FD /c
-# SUBTRACT BASE CPP /YX
-# ADD CPP /nologo /MD /W3 /GX /O1 /I "Source" /I "Source\ZLib" /I "Source\DeprecationManager" /I "..\..\include" /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "_MBCS" /D "_UNICODE" /D "_USRDLL" /D "FREEIMAGE_EXPORTS" /FD /c
-# SUBTRACT CPP /YX
-# ADD BASE MTL /nologo /D "NDEBUG" /mktyplib203 /win32
-# ADD MTL /nologo /D "NDEBUG" /mktyplib203 /win32
-# ADD BASE RSC /l 0x409 /d "NDEBUG"
-# ADD RSC /l 0x409 /d "NDEBUG" /d "UNICODE"
-BSC32=bscmake.exe
-# ADD BASE BSC32 /nologo
-# ADD BSC32 /nologo
-LINK32=link.exe
-# ADD BASE LINK32 msimg32.lib kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /nologo /base:"0x5130000" /dll /machine:I386 /opt:NOWIN98
-# SUBTRACT BASE LINK32 /pdb:none
-# ADD LINK32 ..\zlib\Release\zlib.lib msimg32.lib kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /nologo /base:"0x5130000" /dll /machine:I386 /out:"..\..\bin\Release Unicode\Plugins\advaimg.dll" /opt:NOWIN98
-# SUBTRACT LINK32 /pdb:none
 
 !ENDIF 
 
@@ -131,7 +91,6 @@ LINK32=link.exe
 
 # Name "FreeImage - Win32 Release"
 # Name "FreeImage - Win32 Debug"
-# Name "FreeImage - Win32 Release Unicode"
 # Begin Group "Source Files"
 
 # PROP Default_Filter "cpp;c;cxx;rc;def;r;odl;idl;hpj;bat"
@@ -297,6 +256,326 @@ SOURCE=.\Source\Metadata\TagLib.cpp
 # Begin Source File
 
 SOURCE=.\Miranda\main.cpp
+# End Source File
+# End Group
+# Begin Group "LibJPEG"
+
+# PROP Default_Filter ""
+# Begin Source File
+
+SOURCE=.\Source\LibJPEG\jcapimin.c
+# End Source File
+# Begin Source File
+
+SOURCE=.\Source\LibJPEG\jcapistd.c
+# End Source File
+# Begin Source File
+
+SOURCE=.\Source\LibJPEG\jccoefct.c
+# End Source File
+# Begin Source File
+
+SOURCE=.\Source\LibJPEG\jccolor.c
+# End Source File
+# Begin Source File
+
+SOURCE=.\Source\LibJPEG\jcdctmgr.c
+# End Source File
+# Begin Source File
+
+SOURCE=.\Source\LibJPEG\jchuff.c
+# End Source File
+# Begin Source File
+
+SOURCE=.\Source\LibJPEG\jchuff.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\Source\LibJPEG\jcinit.c
+# End Source File
+# Begin Source File
+
+SOURCE=.\Source\LibJPEG\jcmainct.c
+# End Source File
+# Begin Source File
+
+SOURCE=.\Source\LibJPEG\jcmarker.c
+# End Source File
+# Begin Source File
+
+SOURCE=.\Source\LibJPEG\jcmaster.c
+# End Source File
+# Begin Source File
+
+SOURCE=.\Source\LibJPEG\jcomapi.c
+# End Source File
+# Begin Source File
+
+SOURCE=.\Source\LibJPEG\jconfig.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\Source\LibJPEG\jcparam.c
+# End Source File
+# Begin Source File
+
+SOURCE=.\Source\LibJPEG\jcphuff.c
+# End Source File
+# Begin Source File
+
+SOURCE=.\Source\LibJPEG\jcprepct.c
+# End Source File
+# Begin Source File
+
+SOURCE=.\Source\LibJPEG\jcsample.c
+# End Source File
+# Begin Source File
+
+SOURCE=.\Source\LibJPEG\jctrans.c
+# End Source File
+# Begin Source File
+
+SOURCE=.\Source\LibJPEG\jdapimin.c
+# End Source File
+# Begin Source File
+
+SOURCE=.\Source\LibJPEG\jdapistd.c
+# End Source File
+# Begin Source File
+
+SOURCE=.\Source\LibJPEG\jdatadst.c
+# End Source File
+# Begin Source File
+
+SOURCE=.\Source\LibJPEG\jdatasrc.c
+# End Source File
+# Begin Source File
+
+SOURCE=.\Source\LibJPEG\jdcoefct.c
+# End Source File
+# Begin Source File
+
+SOURCE=.\Source\LibJPEG\jdcolor.c
+# End Source File
+# Begin Source File
+
+SOURCE=.\Source\LibJPEG\jdct.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\Source\LibJPEG\jddctmgr.c
+# End Source File
+# Begin Source File
+
+SOURCE=.\Source\LibJPEG\jdhuff.c
+# End Source File
+# Begin Source File
+
+SOURCE=.\Source\LibJPEG\jdhuff.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\Source\LibJPEG\jdinput.c
+# End Source File
+# Begin Source File
+
+SOURCE=.\Source\LibJPEG\jdmainct.c
+# End Source File
+# Begin Source File
+
+SOURCE=.\Source\LibJPEG\jdmarker.c
+# End Source File
+# Begin Source File
+
+SOURCE=.\Source\LibJPEG\jdmaster.c
+# End Source File
+# Begin Source File
+
+SOURCE=.\Source\LibJPEG\jdmerge.c
+# End Source File
+# Begin Source File
+
+SOURCE=.\Source\LibJPEG\jdphuff.c
+# End Source File
+# Begin Source File
+
+SOURCE=.\Source\LibJPEG\jdpostct.c
+# End Source File
+# Begin Source File
+
+SOURCE=.\Source\LibJPEG\jdsample.c
+# End Source File
+# Begin Source File
+
+SOURCE=.\Source\LibJPEG\jdtrans.c
+# End Source File
+# Begin Source File
+
+SOURCE=.\Source\LibJPEG\jerror.c
+# End Source File
+# Begin Source File
+
+SOURCE=.\Source\LibJPEG\jerror.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\Source\LibJPEG\jfdctflt.c
+# End Source File
+# Begin Source File
+
+SOURCE=.\Source\LibJPEG\jfdctfst.c
+# End Source File
+# Begin Source File
+
+SOURCE=.\Source\LibJPEG\jfdctint.c
+# End Source File
+# Begin Source File
+
+SOURCE=.\Source\LibJPEG\jidctflt.c
+# End Source File
+# Begin Source File
+
+SOURCE=.\Source\LibJPEG\jidctfst.c
+# End Source File
+# Begin Source File
+
+SOURCE=.\Source\LibJPEG\jidctint.c
+# End Source File
+# Begin Source File
+
+SOURCE=.\Source\LibJPEG\jidctred.c
+# End Source File
+# Begin Source File
+
+SOURCE=.\Source\LibJPEG\jinclude.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\Source\LibJPEG\jmemmgr.c
+# End Source File
+# Begin Source File
+
+SOURCE=.\Source\LibJPEG\jmemnobs.c
+# End Source File
+# Begin Source File
+
+SOURCE=.\Source\LibJPEG\jmemsys.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\Source\LibJPEG\jmorecfg.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\Source\LibJPEG\jpegint.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\Source\LibJPEG\jpeglib.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\Source\LibJPEG\jquant1.c
+# End Source File
+# Begin Source File
+
+SOURCE=.\Source\LibJPEG\jquant2.c
+# End Source File
+# Begin Source File
+
+SOURCE=.\Source\LibJPEG\jutils.c
+# End Source File
+# Begin Source File
+
+SOURCE=.\Source\LibJPEG\jversion.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\Source\LibJPEG\transupp.c
+# End Source File
+# Begin Source File
+
+SOURCE=.\Source\LibJPEG\transupp.h
+# End Source File
+# End Group
+# Begin Group "LibPNG"
+
+# PROP Default_Filter ""
+# Begin Source File
+
+SOURCE=.\Source\LibPNG\png.c
+# End Source File
+# Begin Source File
+
+SOURCE=.\Source\LibPNG\png.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\Source\LibPNG\pngconf.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\Source\LibPNG\pngerror.c
+# End Source File
+# Begin Source File
+
+SOURCE=.\Source\LibPNG\pnggccrd.c
+# End Source File
+# Begin Source File
+
+SOURCE=.\Source\LibPNG\pngget.c
+# End Source File
+# Begin Source File
+
+SOURCE=.\Source\LibPNG\pngmem.c
+# End Source File
+# Begin Source File
+
+SOURCE=.\Source\LibPNG\pngpread.c
+# End Source File
+# Begin Source File
+
+SOURCE=.\Source\LibPNG\pngread.c
+# End Source File
+# Begin Source File
+
+SOURCE=.\Source\LibPNG\pngrio.c
+# End Source File
+# Begin Source File
+
+SOURCE=.\Source\LibPNG\pngrtran.c
+# End Source File
+# Begin Source File
+
+SOURCE=.\Source\LibPNG\pngrutil.c
+# End Source File
+# Begin Source File
+
+SOURCE=.\Source\LibPNG\pngset.c
+# End Source File
+# Begin Source File
+
+SOURCE=.\Source\LibPNG\pngtrans.c
+# End Source File
+# Begin Source File
+
+SOURCE=.\Source\LibPNG\pngvcrd.c
+# End Source File
+# Begin Source File
+
+SOURCE=.\Source\LibPNG\pngwio.c
+# End Source File
+# Begin Source File
+
+SOURCE=.\Source\LibPNG\pngwrite.c
+# End Source File
+# Begin Source File
+
+SOURCE=.\Source\LibPNG\pngwtran.c
+# End Source File
+# Begin Source File
+
+SOURCE=.\Source\LibPNG\pngwutil.c
 # End Source File
 # End Group
 # Begin Source File

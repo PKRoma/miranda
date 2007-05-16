@@ -1,7 +1,7 @@
 # Microsoft Developer Studio Generated NMAKE File, Based on FreeImage.dsp
 !IF "$(CFG)" == ""
 CFG=FreeImage - Win32 Release
-!MESSAGE No configuration specified. Defaulting to FreeImage - Win32 Debug.
+!MESSAGE No configuration specified. Defaulting to FreeImage - Win32 Release.
 !ENDIF
 
 !IF "$(CFG)" != "FreeImage - Win32 Release" && "$(CFG)" != "FreeImage - Win32 Debug"
@@ -36,11 +36,11 @@ INTDIR=.\Release
 
 !IF "$(RECURSE)" == "0"
 
-ALL : "..\..\bin\release\plugins\freeimage.dll"
+ALL : "..\..\bin\release\plugins\advaimg.dll"
 
 !ELSE
 
-ALL : "zlib - Win32 Release" "..\..\bin\release\plugins\freeimage.dll"
+ALL : "zlib - Win32 Release" "..\..\bin\release\plugins\advaimg.dll"
 
 !ENDIF
 
@@ -167,14 +167,14 @@ CLEAN :
 	-@erase "$(INTDIR)\vc60.idb"
 	-@erase "$(INTDIR)\WuQuantizer.obj"
 	-@erase "$(INTDIR)\ZLibInterface.obj"
-	-@erase "$(OUTDIR)\freeimage.exp"
-	-@erase "$(OUTDIR)\freeimage.lib"
-	-@erase "..\..\bin\release\plugins\freeimage.dll"
+	-@erase "$(OUTDIR)\advaimg.exp"
+	-@erase "$(OUTDIR)\advaimg.lib"
+	-@erase "..\..\bin\release\plugins\advaimg.dll"
 
 "$(OUTDIR)" :
     if not exist "$(OUTDIR)/$(NULL)" mkdir "$(OUTDIR)"
 
-CPP_PROJ=/nologo /MD /W3 /GX /O1 /I "Source" /I "Source\ZLib" /I "Source\DeprecationManager" /I "..\..\include" /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "_MBCS" /D "_USRDLL" /D "FREEIMAGE_EXPORTS" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /FD /c
+CPP_PROJ=/nologo /MD /W3 /GX /O1 /I "Source" /I "Source\ZLib" /I "Source\DeprecationManager" /I "..\..\include" /I "..\zlib" /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "_MBCS" /D "_USRDLL" /D "FREEIMAGE_EXPORTS" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /FD /c
 MTL_PROJ=/nologo /D "NDEBUG" /mktyplib203 /win32
 RSC_PROJ=/l 0x409 /fo"$(INTDIR)\FreeImage.res" /d "NDEBUG"
 BSC32=bscmake.exe
@@ -182,7 +182,7 @@ BSC32_FLAGS=/nologo /o"$(OUTDIR)\FreeImage.bsc"
 BSC32_SBRS= \
 
 LINK32=link.exe
-LINK32_FLAGS=..\zlib\Release\zlib.lib msimg32.lib kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /nologo /base:"0x5130000" /dll /incremental:no /pdb:"$(OUTDIR)\freeimage.pdb" /machine:I386 /out:"../../bin/release/plugins/freeimage.dll" /implib:"$(OUTDIR)\freeimage.lib" /opt:NOWIN98
+LINK32_FLAGS=..\zlib\Release\zlib.lib msimg32.lib kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /nologo /base:"0x5130000" /dll /incremental:no /pdb:"$(OUTDIR)\advaimg.pdb" /machine:I386 /out:"../../bin/release/plugins/advaimg.dll" /implib:"$(OUTDIR)\advaimg.lib" /opt:NOWIN98
 LINK32_OBJS= \
 	"$(INTDIR)\Plugin.obj" \
 	"$(INTDIR)\PluginBMP.obj" \
@@ -218,25 +218,6 @@ LINK32_OBJS= \
 	"$(INTDIR)\TagConversion.obj" \
 	"$(INTDIR)\TagLib.obj" \
 	"$(INTDIR)\main.obj" \
-	"$(INTDIR)\BitmapAccess.obj" \
-	"$(INTDIR)\ColorLookup.obj" \
-	"$(INTDIR)\FreeImage.obj" \
-	"$(INTDIR)\FreeImageC.obj" \
-	"$(INTDIR)\FreeImageIO.obj" \
-	"$(INTDIR)\GetType.obj" \
-	"$(INTDIR)\MemoryIO.obj" \
-	"$(INTDIR)\PixelAccess.obj" \
-	"$(INTDIR)\BSplineRotate.obj" \
-	"$(INTDIR)\Channels.obj" \
-	"$(INTDIR)\ClassicRotate.obj" \
-	"$(INTDIR)\Colors.obj" \
-	"$(INTDIR)\CopyPaste.obj" \
-	"$(INTDIR)\Display.obj" \
-	"$(INTDIR)\Flip.obj" \
-	"$(INTDIR)\JPEGTransform.obj" \
-	"$(INTDIR)\Rescale.obj" \
-	"$(INTDIR)\Resize.obj" \
-	"$(INTDIR)\FreeImage.res" \
 	"$(INTDIR)\jcapimin.obj" \
 	"$(INTDIR)\jcapistd.obj" \
 	"$(INTDIR)\jccoefct.obj" \
@@ -301,9 +282,28 @@ LINK32_OBJS= \
 	"$(INTDIR)\pngwrite.obj" \
 	"$(INTDIR)\pngwtran.obj" \
 	"$(INTDIR)\pngwutil.obj" \
+	"$(INTDIR)\BitmapAccess.obj" \
+	"$(INTDIR)\ColorLookup.obj" \
+	"$(INTDIR)\FreeImage.obj" \
+	"$(INTDIR)\FreeImageC.obj" \
+	"$(INTDIR)\FreeImageIO.obj" \
+	"$(INTDIR)\GetType.obj" \
+	"$(INTDIR)\MemoryIO.obj" \
+	"$(INTDIR)\PixelAccess.obj" \
+	"$(INTDIR)\BSplineRotate.obj" \
+	"$(INTDIR)\Channels.obj" \
+	"$(INTDIR)\ClassicRotate.obj" \
+	"$(INTDIR)\Colors.obj" \
+	"$(INTDIR)\CopyPaste.obj" \
+	"$(INTDIR)\Display.obj" \
+	"$(INTDIR)\Flip.obj" \
+	"$(INTDIR)\JPEGTransform.obj" \
+	"$(INTDIR)\Rescale.obj" \
+	"$(INTDIR)\Resize.obj" \
+	"$(INTDIR)\FreeImage.res" \
 	"..\zlib\Release\zlib.lib"
 
-"..\..\bin\release\plugins\freeimage.dll" : "$(OUTDIR)" $(DEF_FILE) $(LINK32_OBJS)
+"..\..\bin\release\plugins\advaimg.dll" : "$(OUTDIR)" $(DEF_FILE) $(LINK32_OBJS)
     $(LINK32) @<<
   $(LINK32_FLAGS) $(LINK32_OBJS)
 <<
@@ -318,11 +318,11 @@ OutDir=.\Debug
 
 !IF "$(RECURSE)" == "0"
 
-ALL : "..\..\bin\debug\plugins\FreeImage.dll" "$(OUTDIR)\FreeImage.bsc"
+ALL : "..\..\bin\debug\plugins\advaimg.dll" "$(OUTDIR)\FreeImage.bsc"
 
 !ELSE
 
-ALL : "zlib - Win32 Debug" "..\..\bin\debug\plugins\FreeImage.dll" "$(OUTDIR)\FreeImage.bsc"
+ALL : "zlib - Win32 Debug" "..\..\bin\debug\plugins\advaimg.dll" "$(OUTDIR)\FreeImage.bsc"
 
 !ENDIF
 
@@ -566,12 +566,12 @@ CLEAN :
 	-@erase "$(INTDIR)\WuQuantizer.sbr"
 	-@erase "$(INTDIR)\ZLibInterface.obj"
 	-@erase "$(INTDIR)\ZLibInterface.sbr"
+	-@erase "$(OUTDIR)\advaimg.exp"
+	-@erase "$(OUTDIR)\advaimg.lib"
+	-@erase "$(OUTDIR)\advaimg.pdb"
 	-@erase "$(OUTDIR)\FreeImage.bsc"
-	-@erase "$(OUTDIR)\FreeImage.exp"
-	-@erase "$(OUTDIR)\FreeImage.lib"
-	-@erase "$(OUTDIR)\FreeImage.pdb"
-	-@erase "..\..\bin\debug\plugins\FreeImage.dll"
-	-@erase "..\..\bin\debug\plugins\FreeImage.ilk"
+	-@erase "..\..\bin\debug\plugins\advaimg.dll"
+	-@erase "..\..\bin\debug\plugins\advaimg.ilk"
 
 "$(OUTDIR)" :
     if not exist "$(OUTDIR)/$(NULL)" mkdir "$(OUTDIR)"
@@ -616,24 +616,6 @@ BSC32_SBRS= \
 	"$(INTDIR)\TagConversion.sbr" \
 	"$(INTDIR)\TagLib.sbr" \
 	"$(INTDIR)\main.sbr" \
-	"$(INTDIR)\BitmapAccess.sbr" \
-	"$(INTDIR)\ColorLookup.sbr" \
-	"$(INTDIR)\FreeImage.sbr" \
-	"$(INTDIR)\FreeImageC.sbr" \
-	"$(INTDIR)\FreeImageIO.sbr" \
-	"$(INTDIR)\GetType.sbr" \
-	"$(INTDIR)\MemoryIO.sbr" \
-	"$(INTDIR)\PixelAccess.sbr" \
-	"$(INTDIR)\BSplineRotate.sbr" \
-	"$(INTDIR)\Channels.sbr" \
-	"$(INTDIR)\ClassicRotate.sbr" \
-	"$(INTDIR)\Colors.sbr" \
-	"$(INTDIR)\CopyPaste.sbr" \
-	"$(INTDIR)\Display.sbr" \
-	"$(INTDIR)\Flip.sbr" \
-	"$(INTDIR)\JPEGTransform.sbr" \
-	"$(INTDIR)\Rescale.sbr" \
-	"$(INTDIR)\Resize.sbr" \
 	"$(INTDIR)\jcapimin.sbr" \
 	"$(INTDIR)\jcapistd.sbr" \
 	"$(INTDIR)\jccoefct.sbr" \
@@ -697,7 +679,25 @@ BSC32_SBRS= \
 	"$(INTDIR)\pngwio.sbr" \
 	"$(INTDIR)\pngwrite.sbr" \
 	"$(INTDIR)\pngwtran.sbr" \
-	"$(INTDIR)\pngwutil.sbr"
+	"$(INTDIR)\pngwutil.sbr" \
+	"$(INTDIR)\BitmapAccess.sbr" \
+	"$(INTDIR)\ColorLookup.sbr" \
+	"$(INTDIR)\FreeImage.sbr" \
+	"$(INTDIR)\FreeImageC.sbr" \
+	"$(INTDIR)\FreeImageIO.sbr" \
+	"$(INTDIR)\GetType.sbr" \
+	"$(INTDIR)\MemoryIO.sbr" \
+	"$(INTDIR)\PixelAccess.sbr" \
+	"$(INTDIR)\BSplineRotate.sbr" \
+	"$(INTDIR)\Channels.sbr" \
+	"$(INTDIR)\ClassicRotate.sbr" \
+	"$(INTDIR)\Colors.sbr" \
+	"$(INTDIR)\CopyPaste.sbr" \
+	"$(INTDIR)\Display.sbr" \
+	"$(INTDIR)\Flip.sbr" \
+	"$(INTDIR)\JPEGTransform.sbr" \
+	"$(INTDIR)\Rescale.sbr" \
+	"$(INTDIR)\Resize.sbr"
 
 "$(OUTDIR)\FreeImage.bsc" : "$(OUTDIR)" $(BSC32_SBRS)
     $(BSC32) @<<
@@ -705,7 +705,7 @@ BSC32_SBRS= \
 <<
 
 LINK32=link.exe
-LINK32_FLAGS=kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /nologo /dll /incremental:yes /pdb:"$(OUTDIR)\FreeImage.pdb" /debug /machine:I386 /out:"../../bin/debug/plugins/FreeImage.dll" /implib:"$(OUTDIR)\FreeImage.lib" /pdbtype:sept
+LINK32_FLAGS=kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /nologo /dll /incremental:yes /pdb:"$(OUTDIR)\advaimg.pdb" /debug /machine:I386 /out:"../../bin/debug/plugins/advaimg.dll" /implib:"$(OUTDIR)\advaimg.lib" /pdbtype:sept
 LINK32_OBJS= \
 	"$(INTDIR)\Plugin.obj" \
 	"$(INTDIR)\PluginBMP.obj" \
@@ -741,25 +741,6 @@ LINK32_OBJS= \
 	"$(INTDIR)\TagConversion.obj" \
 	"$(INTDIR)\TagLib.obj" \
 	"$(INTDIR)\main.obj" \
-	"$(INTDIR)\BitmapAccess.obj" \
-	"$(INTDIR)\ColorLookup.obj" \
-	"$(INTDIR)\FreeImage.obj" \
-	"$(INTDIR)\FreeImageC.obj" \
-	"$(INTDIR)\FreeImageIO.obj" \
-	"$(INTDIR)\GetType.obj" \
-	"$(INTDIR)\MemoryIO.obj" \
-	"$(INTDIR)\PixelAccess.obj" \
-	"$(INTDIR)\BSplineRotate.obj" \
-	"$(INTDIR)\Channels.obj" \
-	"$(INTDIR)\ClassicRotate.obj" \
-	"$(INTDIR)\Colors.obj" \
-	"$(INTDIR)\CopyPaste.obj" \
-	"$(INTDIR)\Display.obj" \
-	"$(INTDIR)\Flip.obj" \
-	"$(INTDIR)\JPEGTransform.obj" \
-	"$(INTDIR)\Rescale.obj" \
-	"$(INTDIR)\Resize.obj" \
-	"$(INTDIR)\FreeImage.res" \
 	"$(INTDIR)\jcapimin.obj" \
 	"$(INTDIR)\jcapistd.obj" \
 	"$(INTDIR)\jccoefct.obj" \
@@ -824,9 +805,28 @@ LINK32_OBJS= \
 	"$(INTDIR)\pngwrite.obj" \
 	"$(INTDIR)\pngwtran.obj" \
 	"$(INTDIR)\pngwutil.obj" \
+	"$(INTDIR)\BitmapAccess.obj" \
+	"$(INTDIR)\ColorLookup.obj" \
+	"$(INTDIR)\FreeImage.obj" \
+	"$(INTDIR)\FreeImageC.obj" \
+	"$(INTDIR)\FreeImageIO.obj" \
+	"$(INTDIR)\GetType.obj" \
+	"$(INTDIR)\MemoryIO.obj" \
+	"$(INTDIR)\PixelAccess.obj" \
+	"$(INTDIR)\BSplineRotate.obj" \
+	"$(INTDIR)\Channels.obj" \
+	"$(INTDIR)\ClassicRotate.obj" \
+	"$(INTDIR)\Colors.obj" \
+	"$(INTDIR)\CopyPaste.obj" \
+	"$(INTDIR)\Display.obj" \
+	"$(INTDIR)\Flip.obj" \
+	"$(INTDIR)\JPEGTransform.obj" \
+	"$(INTDIR)\Rescale.obj" \
+	"$(INTDIR)\Resize.obj" \
+	"$(INTDIR)\FreeImage.res" \
 	"..\zlib\Debug\zlib.lib"
 
-"..\..\bin\debug\plugins\FreeImage.dll" : "$(OUTDIR)" $(DEF_FILE) $(LINK32_OBJS)
+"..\..\bin\debug\plugins\advaimg.dll" : "$(OUTDIR)" $(DEF_FILE) $(LINK32_OBJS)
     $(LINK32) @<<
   $(LINK32_FLAGS) $(LINK32_OBJS)
 <<
