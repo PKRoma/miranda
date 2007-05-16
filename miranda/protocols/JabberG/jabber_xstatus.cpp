@@ -20,7 +20,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 File name      : $Source: /cvsroot/miranda/miranda/protocols/JabberG/jabber_xstatus.cpp,v $
 Revision       : $Revision: 5370 $
-Last change on : $Date: 2007-05-06 02:13:31 +0400 (Вс, 06 май 2007) $
+Last change on : $Date: 2007-05-06 02:13:31 +0400 (В�?, 06 май 2007) $
 Last change by : $Author: ghazan $
 
 */
@@ -29,7 +29,6 @@ Last change by : $Author: ghazan $
 #include "jabber_caps.h"
 
 #include "m_genmenu.h"
-#include "m_cluiframes.h"
 #include "m_icolib.h"
 
 #define NUM_XMODES 61
