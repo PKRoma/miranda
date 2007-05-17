@@ -817,10 +817,6 @@ static void InsertMenuItemWithSeparators(HMENU hMenu,int uItem,BOOL fByPosition,
 	}
 	InsertMenuItem( hMenu, uItem, TRUE, lpmii );
 
-	if ((( GetMenuItemCount( hMenu )-2) % 35 ) == 34) {
-		ModifyMenu(hMenu, uItem, MF_MENUBARBREAK|MF_BYPOSITION,  uItem, (LPCTSTR) lpmii->dwTypeData);
-	}
-
 	if (( GetMenuItemCount( hMenu ) % 35 ) == 34 )
 		ModifyMenu( hMenu, uItem, MF_MENUBARBREAK | MF_BYPOSITION, uItem, ( LPCTSTR )lpmii->dwTypeData );
 }
