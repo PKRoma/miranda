@@ -741,8 +741,10 @@ static int ModifyCustomMenuItem(WPARAM wParam,LPARAM lParam)
 
 int MenuProcessCommand(WPARAM wParam,LPARAM lParam)
 {
+	/*
 	if ( LOWORD(wParam) < CLISTMENUIDMIN || LOWORD(wParam) > CLISTMENUIDMAX )
 		return 0; // DO NOT process ids outside from clist menu id range		v0.7.0.26+
+	*/
 
 	//process old menu sys
 	if ( HIWORD(wParam) & MPCF_CONTACTMENU ) {
