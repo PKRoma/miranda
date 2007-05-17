@@ -385,7 +385,7 @@ static int AwayMsgOptInitialise(WPARAM wParam,LPARAM lParam)
 	odp.position = 870000000;
 	odp.hInstance = GetModuleHandle(NULL);
 	odp.pszTemplate = MAKEINTRESOURCEA(IDD_OPT_AWAYMSG);
-	odp.pszTitle = "Status Messages";
+	odp.pszTitle = "Messages";
 	odp.pszGroup = "Status";
 	odp.pfnDlgProc = DlgProcAwayMsgOpts;
 	odp.flags = ODPF_BOLDGROUPS;
