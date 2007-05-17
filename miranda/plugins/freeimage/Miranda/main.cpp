@@ -513,36 +513,157 @@ static void png_flush( png_structp png_ptr )
 
 extern "C" BOOL __declspec(dllexport) mempng2dib(BYTE* pSource, DWORD cbSourceSize, BITMAPINFOHEADER** ppDibData )
 {
-	fiio_mem_handle fiio_mh;
+	png_structp png_ptr	= NULL;
+	png_infop info_ptr	= NULL;
+	HMemBufInfo				sBuffer = { (char*)pSource, cbSourceSize, 8 };
 
-	fiio_mh.datalen = fiio_mh.filelen = cbSourceSize;
-	fiio_mh.data = (void *)pSource;
+	BOOL						bResult = FALSE;
+	png_uint_32				iWidth;
+	png_uint_32				iHeight;
+	png_color				pBkgColor;
+	int						iBitDepth;
+	int						iColorType;
+	double					dGamma;
+	png_color_16*			pBackground;
+	png_uint_32				ulChannels;
+	png_uint_32				ulRowBytes;
+	png_byte*				pbImageData;
+	png_byte**				ppbRowPointers = NULL;
+	unsigned             i, j;
+	int						wDIRowBytes;
+	BYTE*                pImageData;
 
-	FIBITMAP *dib = FreeImage_LoadFromMem(FIF_JNG, &fiio_mh, 0);
+	*ppDibData = NULL;
 
-	if(dib == NULL) {
-		fiio_mh.datalen = fiio_mh.filelen = cbSourceSize;
-		fiio_mh.data = (void *)pSource;
-		dib = FreeImage_LoadFromMem(FIF_PNG, &fiio_mh, 0);
+	if ( pSource == NULL || cbSourceSize == 0 )
+		return FALSE;
+
+	if ( !png_check_sig( pSource, 8 ))
+		return FALSE;
+
+	// create the two png(-info) structures
+	png_ptr = png_create_read_struct( PNG_LIBPNG_VER_STRING, NULL, NULL, NULL );
+	if (!png_ptr)
+		return FALSE;
+
+	info_ptr = png_create_info_struct(png_ptr);
+	if ( !info_ptr ) {
+		png_destroy_read_struct(&png_ptr, NULL, NULL);
+		return FALSE;
 	}
-	if(dib) {
-		BYTE *bih = (BYTE *)GlobalAlloc(LPTR, FreeImage_GetDIBSize(dib));
-		CopyMemory(bih, FreeImage_GetInfoHeader(dib), sizeof(BITMAPINFOHEADER));
-		*ppDibData = (BITMAPINFOHEADER *)bih;
-		bih += sizeof(BITMAPINFOHEADER);
-		CopyMemory(bih, FreeImage_GetBits(dib), FreeImage_GetDIBSize(dib) - sizeof(BITMAPINFOHEADER));
-		(*ppDibData)->biClrImportant = (*ppDibData)->biClrUsed = FreeImage_GetColorsUsed(dib);
-		(*ppDibData)->biSizeImage = FreeImage_GetDIBSize(dib) - sizeof(BITMAPINFOHEADER);
-		/*{
-		char debug[100];
-		sprintf(debug, "src: %d, length: %d, dib = %d, destlen = %d", pSource, cbSourceSize, dib, (*ppDibData)->biSizeImage);
-		MessageBoxA(0, debug, "foo", MB_OK);
-		}*/
 
-		FreeImage_Unload(dib);
-		return TRUE;
+	// initialize the png structure
+	png_set_read_fn(png_ptr, (png_voidp)&sBuffer, png_read_data);
+	png_set_sig_bytes(png_ptr, 8);
+
+	// read all PNG info up to image data
+	png_read_info(png_ptr, info_ptr);
+
+	// get width, height, bit-depth and color-type
+
+	png_get_IHDR(png_ptr, info_ptr, &iWidth, &iHeight, &iBitDepth, &iColorType, NULL, NULL, NULL);
+
+	// expand images of all color-type and bit-depth to 3x8 bit RGB images
+	// let the library process things like alpha, transparency, background
+
+	if ( iBitDepth == 16 )
+		png_set_strip_16( png_ptr );
+	if ( iColorType == PNG_COLOR_TYPE_PALETTE )
+		png_set_expand( png_ptr );
+	if ( iBitDepth < 8 )
+		png_set_expand( png_ptr );
+	if (png_get_valid( png_ptr, info_ptr, PNG_INFO_tRNS ))
+		png_set_expand( png_ptr );
+	if ( iColorType == PNG_COLOR_TYPE_GRAY || iColorType == PNG_COLOR_TYPE_GRAY_ALPHA )
+		png_set_gray_to_rgb( png_ptr );
+
+	// set the background color to draw transparent and alpha images over.
+	if (png_get_bKGD( png_ptr, info_ptr, &pBackground )) {
+		png_set_background(png_ptr, pBackground, PNG_BACKGROUND_GAMMA_FILE, 1, 1.0);
+		pBkgColor.red   = (byte) pBackground->red;
+		pBkgColor.green = (byte) pBackground->green;
+		pBkgColor.blue  = (byte) pBackground->blue;
 	}
-	return FALSE;
+
+	// if required set gamma conversion
+	if ( png_get_gAMA( png_ptr, info_ptr, &dGamma ))
+		png_set_gamma( png_ptr, (double) 2.2, dGamma );
+
+	// after the transformations have been registered update info_ptr data
+	png_read_update_info(png_ptr, info_ptr);
+
+	// get again width, height and the new bit-depth and color-type
+	png_get_IHDR(png_ptr, info_ptr, &iWidth, &iHeight, &iBitDepth, &iColorType, NULL, NULL, NULL);
+
+	// row_bytes is the width x number of channels
+	ulRowBytes = png_get_rowbytes(png_ptr, info_ptr);
+	ulChannels = png_get_channels(png_ptr, info_ptr);
+	wDIRowBytes = (WORD) (( ulChannels * iWidth + 3L) >> 2) << 2;
+
+	// now we can allocate memory to store the image
+	{	DWORD cbMemSize = sizeof( BITMAPINFOHEADER );
+		cbMemSize += wDIRowBytes * iHeight;
+		if (( pbImageData = ( png_byte* )GlobalAlloc( LPTR, cbMemSize )) == NULL ) {
+			png_destroy_read_struct( &png_ptr, &info_ptr, NULL );
+			return FALSE;
+	}	}
+
+	// initialize the dib-structure
+	{	BITMAPINFOHEADER* pbmih = ( BITMAPINFOHEADER* )pbImageData;
+		*ppDibData = pbmih;
+
+		pbmih->biSize = sizeof( BITMAPINFOHEADER );
+		pbmih->biWidth = iWidth;
+		pbmih->biHeight = iHeight;
+		pbmih->biPlanes = 1;
+		pbmih->biBitCount = ( WORD )( ulChannels * 8 );
+		pbmih->biCompression = 0;
+		pbmih->biSizeImage = iWidth * iHeight * ulChannels;
+
+		pbImageData += sizeof( BITMAPINFOHEADER );
+	}
+
+	pImageData = (BYTE*)malloc( ulRowBytes * iHeight );
+	if ( pImageData == NULL ) {
+		png_destroy_read_struct(&png_ptr, NULL, NULL);
+		return FALSE;
+	}
+
+	// and allocate memory for an array of row-pointers
+	ppbRowPointers = ( png_bytepp )alloca( iHeight * sizeof( png_bytep ));
+
+	// set the individual row-pointers to point at the correct offsets
+	for ( i = 0; i < iHeight; i++ )
+		ppbRowPointers[i] = ( png_bytep )&pImageData[ i*ulRowBytes ];
+
+	// now we can go ahead and just read the whole image
+	png_read_image( png_ptr, ppbRowPointers );
+	png_read_end(png_ptr, NULL);
+
+	// repack bytes to fill the bitmap
+	for ( i = iHeight-1; i >= 0; i-- )
+	{
+		png_byte a;
+		png_bytep s = ppbRowPointers[i];
+		BYTE* dest = pbImageData; pbImageData += wDIRowBytes;
+
+		for ( j = 0; j < iWidth; j++ ) {
+			png_byte r = *s++;
+			png_byte g = *s++;
+			png_byte b = *s++;
+			if ( ulChannels == 4 )
+				a = *s++;
+
+			*dest++ = b;
+			*dest++ = g;
+			*dest++ = r;
+			if ( ulChannels == 4 )
+				*dest++ = a;
+	}	}
+
+	free( pImageData );
+	png_destroy_read_struct( &png_ptr, &info_ptr, NULL );
+	return 0;
 }
 
 /*
