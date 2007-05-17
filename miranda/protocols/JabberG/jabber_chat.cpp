@@ -565,21 +565,14 @@ static void sttNickListHook( JABBER_LIST_ITEM* item, GCHOOK* gch )
 	{
 		HANDLE hContact;
 		JABBER_SEARCH_RESULT jsr;
-//		_tcsncpy(jsr.jid, him->jid, SIZEOF(jsr.jid));
 		mir_sntprintf(jsr.jid, SIZEOF(jsr.jid), _T("%s/%s"), item->jid, him->resourceName );
-		jsr.hdr.cbSize = sizeof(JABBER_SEARCH_RESULT);
+		jsr.hdr.cbSize = sizeof( JABBER_SEARCH_RESULT );
 		
 		JABBER_LIST_ITEM* item = JabberListAdd( LIST_VCARD_TEMP, jsr.jid );
-		JabberListAddResource( LIST_VCARD_TEMP, jsr.jid, him->status, him->statusMessage);
+		JabberListAddResource( LIST_VCARD_TEMP, jsr.jid, him->status, him->statusMessage );
 
-		hContact=(HANDLE)CallProtoService(jabberProtoName, PS_ADDTOLIST, PALF_TEMPORARY,(LPARAM)&jsr);
-
-		int iqId = JabberSerialNext(); // Requesto for version
-		XmlNodeIq iq( "get", iqId, jsr.jid );
-		XmlNode* query = iq.addQuery( JABBER_FEAT_VERSION );
-		jabberThreadInfo->send( iq );
-		
-		CallService(MS_USERINFO_SHOWDIALOG,(WPARAM)hContact,0);
+		hContact = ( HANDLE )CallProtoService( jabberProtoName, PS_ADDTOLIST, PALF_TEMPORARY, ( LPARAM )&jsr );
+		CallService( MS_USERINFO_SHOWDIALOG, ( WPARAM )hContact, 0 );
 		break;
 	}
 	case IDM_KICK:
