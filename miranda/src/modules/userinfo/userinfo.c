@@ -58,9 +58,9 @@ struct DetailsData {
 
 static int PageSortProc(OPTIONSDIALOGPAGE *item1,OPTIONSDIALOGPAGE *item2)
 {
-	if(item2->position>item1->position) return -1;
-	if(item2->position<item1->position) return 1;
-	return 0;
+    if (!lstrcmp(item1->ptszTitle, TranslateT("Summary"))) return -1;
+    if (!lstrcmp(item2->ptszTitle, TranslateT("Summary"))) return 1;
+    return lstrcmp(item1->ptszTitle, item2->ptszTitle);
 }
 
 static int ShowDetailsDialogCommand(WPARAM wParam,LPARAM lParam)
