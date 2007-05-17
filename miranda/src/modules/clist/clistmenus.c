@@ -742,15 +742,6 @@ static int ModifyCustomMenuItem(WPARAM wParam,LPARAM lParam)
 int MenuProcessCommand(WPARAM wParam,LPARAM lParam)
 {
 	WORD cmd = LOWORD(wParam);
-	if ( !(( cmd >= CLISTMENUIDMIN && cmd <= CLISTMENUIDMAX ) ||
-		    ( cmd >= ID_STATUS_OFFLINE && cmd <= ID_STATUS_OFFLINE + MAX_STATUS_COUNT )))
-		return 0; // DO NOT process ids outside from clist menu id range		v0.7.0.26+
-
-	//process old menu sys
-	if ( HIWORD(wParam) & MPCF_CONTACTMENU ) {
-		//make faked globalid
-		return CallService( MO_PROCESSCOMMAND, getGlobalId( hContactMenuObject, LOWORD(wParam)), lParam );
-	}
 
 	if ( HIWORD(wParam) & MPCF_MAINMENU ) {
 		int hst = LOWORD( wParam );
@@ -759,6 +750,15 @@ int MenuProcessCommand(WPARAM wParam,LPARAM lParam)
 			if ( pos != -1 && hStatusMainMenuHandles != NULL )
 				return CallService( MO_PROCESSCOMMAND, ( WPARAM )hStatusMainMenuHandles[ pos ], lParam );
 		}	}
+
+	if ( !( cmd >= CLISTMENUIDMIN && cmd <= CLISTMENUIDMAX   ))
+		return 0; // DO NOT process ids outside from clist menu id range		v0.7.0.27+
+
+	//process old menu sys
+	if ( HIWORD(wParam) & MPCF_CONTACTMENU ) {
+		//make faked globalid
+		return CallService( MO_PROCESSCOMMAND, getGlobalId( hContactMenuObject, LOWORD(wParam)), lParam );
+	}
 
 	//unknown old menu
 	return CallService(MO_PROCESSCOMMANDBYMENUIDENT,LOWORD(wParam),lParam);
