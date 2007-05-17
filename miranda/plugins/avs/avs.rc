@@ -80,7 +80,7 @@ BEGIN
     CONTROL         "When setting avatars, always make it square",
                     IDC_SET_MAKE_SQUARE,"Button",BS_AUTOCHECKBOX | 
                     WS_TABSTOP,35,220,241,11
-    LTEXT           "The pictures you can set here are used as default avatars for contacts  which don't have their own. These pictures are NOT your own avatars.",
+    LTEXT           "The pictures you can set here are used as default avatars for contacts which don't have their own. These pictures are NOT your own avatars.",
                     IDC_STATIC,24,10,267,16
 END
 

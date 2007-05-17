@@ -249,17 +249,30 @@ BOOL CALLBACK DlgProcOptions(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
             switch (((LPNMHDR) lParam)->idFrom) {
                 case IDC_PROTOCOLS:
                     switch (((LPNMHDR) lParam)->code) {
-                        case LVN_ITEMCHANGED:
-                            SendMessage(GetParent(hwndDlg), PSM_CHANGED, 0, 0);
-                            //break;
-                            //LVN_
+                        case LVN_KEYDOWN:
+                        {
+                            NMLVKEYDOWN* ptkd = (NMLVKEYDOWN*)lParam;
+                            if (ptkd&&ptkd->wVKey==VK_SPACE&&ListView_GetSelectedCount(ptkd->hdr.hwndFrom)==1)
+                                SendMessage(GetParent(hwndDlg), PSM_CHANGED, 0, 0);
+                        }
+                        break;
                         case NM_CLICK:
                         {
                             int iItem = ListView_GetSelectionMark(hwndList);
                             LVITEMA item = {0};
                             DBVARIANT dbv = {0};
                             g_selectedProto[0] = 0;
-
+                            
+                            {
+                                LVHITTESTINFO hti;
+                                hti.pt.x=(short)LOWORD(GetMessagePos());
+                                hti.pt.y=(short)HIWORD(GetMessagePos());
+                                ScreenToClient(((LPNMHDR)lParam)->hwndFrom,&hti.pt);
+                                if(ListView_HitTest(((LPNMHDR)lParam)->hwndFrom,&hti))
+                                    if (hti.flags&LVHT_ONITEM)
+                                        if(hti.flags&LVHT_ONITEMSTATEICON)
+                                            SendMessage(GetParent(hwndDlg), PSM_CHANGED, 0, 0);
+                            }
                             item.mask = LVIF_TEXT;
                             item.pszText = g_selectedProto;
                             item.cchTextMax = 100;
