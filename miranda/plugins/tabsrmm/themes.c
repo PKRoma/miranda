@@ -828,9 +828,9 @@ static void __forceinline gradientHorizontal(UCHAR *ubRedFinal, UCHAR *ubGreenFi
             fSolidMulti = 1 - fInvSolidMulti;
         }
 
-        *ubRedFinal = (UCHAR) (((float) ubRed * (float) fInvSolidMulti)) + (((float) ubRed2 * (float) fSolidMulti));
-        *ubGreenFinal = (UCHAR) (UCHAR) (((float) ubGreen * (float) fInvSolidMulti)) + (((float) ubGreen2 * (float) fSolidMulti));
-        *ubBlueFinal = (UCHAR) (((float) ubBlue * (float) fInvSolidMulti)) + (UCHAR) (((float) ubBlue2 * (float) fSolidMulti));
+        *ubRedFinal = (UCHAR) ((((float) ubRed * (float) fInvSolidMulti)) + (((float) ubRed2 * (float) fSolidMulti)));
+        *ubGreenFinal = (UCHAR) ((UCHAR) (((float) ubGreen * (float) fInvSolidMulti)) + (((float) ubGreen2 * (float) fSolidMulti)));
+        *ubBlueFinal = (UCHAR) ((((float) ubBlue * (float) fInvSolidMulti)) + (UCHAR) (((float) ubBlue2 * (float) fSolidMulti)));
 
         *ubAlpha = 0xFF;
     }
@@ -854,8 +854,8 @@ static void __forceinline gradientVertical(UCHAR *ubRedFinal, UCHAR *ubGreenFina
             fSolidMulti = 1 - fInvSolidMulti;
         }                           
 
-        *ubRedFinal = (UCHAR) (((float) ubRed * (float) fInvSolidMulti)) + (((float) ubRed2 * (float) fSolidMulti));
-        *ubGreenFinal = (UCHAR) (UCHAR) (((float) ubGreen * (float) fInvSolidMulti)) + (((float) ubGreen2 * (float) fSolidMulti));
+        *ubRedFinal = (UCHAR) ((((float) ubRed * (float) fInvSolidMulti)) + (((float) ubRed2 * (float) fSolidMulti)));
+        *ubGreenFinal = (UCHAR) ((((float) ubGreen * (float) fInvSolidMulti)) + (((float) ubGreen2 * (float) fSolidMulti)));
         *ubBlueFinal = (UCHAR) (((float) ubBlue * (float) fInvSolidMulti)) + (UCHAR) (((float) ubBlue2 * (float) fSolidMulti));
 
         *ubAlpha = 0xFF;
