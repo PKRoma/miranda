@@ -442,7 +442,7 @@ static BOOL CALLBACK JabberAdHoc_CommandDlgProc( HWND hwndDlg, UINT msg, WPARAM 
 			dat->ResponderJID=mir_tstrdup(jid);
 
 			TCHAR Caption[200];
-			_sntprintf(Caption,SIZEOF(Caption),_T("%s %s"), TranslateT("Jabber Add-Hoc commands at"), dat->ResponderJID );
+			_sntprintf(Caption,SIZEOF(Caption),_T("%s %s"), TranslateT("Jabber Ad-Hoc commands at"), dat->ResponderJID );
 			SetWindowText(hwndDlg, Caption);
 
 			return TRUE;

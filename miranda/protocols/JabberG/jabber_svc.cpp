@@ -1498,6 +1498,86 @@ int ServiceSendXML(WPARAM wParam, LPARAM lParam)
 	return jabberThreadInfo->send( (char*)lParam);
 }
 
+int JabberGCGetToolTipText(WPARAM wParam, LPARAM lParam)
+{
+	if (!wParam) 
+		return 0;
+
+	if (!lParam) 
+		return 0; //room global tooltip not supported yet
+
+	JABBER_LIST_ITEM* item = JabberListGetItemPtr( LIST_CHATROOM, (TCHAR*)wParam);
+	if ( item == NULL )	return 0;  //no room found
+
+	JABBER_RESOURCE_STATUS * info = NULL;
+	for ( int i=0; i < item->resourceCount; i++ ) {
+		JABBER_RESOURCE_STATUS& p = item->resource[i];
+		if ( !lstrcmp( p.resourceName, (TCHAR*)lParam )) {
+			info = &p;
+			break;
+		}	}
+	if ( info==NULL ) 
+		return 0; //no info found
+
+	// ok process info output will be:
+	// JID:			real@jid/resource or
+	// Nick:		Nickname 	
+	// Status:		StatusText
+	// Role:		Moderaror
+	// Affiliation:  Affiliation
+
+	TCHAR outBuf[2048];
+	outBuf[0]=_T('\0');
+
+	TCHAR * szSeparator= (IsWinVerMEPlus()) ? _T("\r\n") : _T(" | ");
+
+	static const TCHAR * JabberEnum2AffilationStr[]={ _T("None"), _T("Outcast"), _T("Member"), _T("Admin"), _T("Owner") };
+
+	static const TCHAR * JabberEnum2RoleStr[]={ _T("None"), _T("Visitor"), _T("Participant"), _T("Moderator") };
+
+	//FIXME Table conversion fast but is not safe
+	static const TCHAR * JabberEnum2StatusStr[]= {	_T("Offline"), _T("Online"), _T("Away"), _T("DND"), 
+		_T("NA"), _T("Occupied"), _T("Free for chat"), 
+		_T("Invisible"), _T("On the phone"), _T("Out to lunch"),
+		_T("Idle")  };
+
+
+	//JID:
+	if ( _tcschr(info->resourceName,_T('@') != NULL ) ) {
+		_tcsncat( outBuf, TranslateT("JID:\t\t"), sizeof(outBuf) );
+		_tcsncat( outBuf, info->resourceName, sizeof(outBuf) );
+	} else if (lParam) { //or simple nick
+		_tcsncat( outBuf, TranslateT("Nick:\t\t"), sizeof(outBuf) );
+		_tcsncat( outBuf, (TCHAR*) lParam, sizeof(outBuf) );
+	}
+
+	// status
+	if ( info->status >= ID_STATUS_OFFLINE && info->status <= ID_STATUS_IDLE  ) {
+		_tcsncat( outBuf, szSeparator, sizeof(outBuf) );
+		_tcsncat( outBuf, TranslateT("Status:\t\t"), sizeof(outBuf) );
+		_tcsncat( outBuf, TranslateTS( JabberEnum2StatusStr [ info->status-ID_STATUS_OFFLINE ]), sizeof(outBuf) );
+	}
+
+	// Role
+	if ( TRUE || info->role ) {
+		_tcsncat( outBuf, szSeparator, sizeof(outBuf) );
+		_tcsncat( outBuf, TranslateT("Role:\t\t"), sizeof(outBuf) );
+		_tcsncat( outBuf, TranslateTS( JabberEnum2RoleStr[info->role] ), sizeof(outBuf) );
+	}
+
+	// Affiliation
+	if ( TRUE || info->affiliation ) {
+		_tcsncat( outBuf, szSeparator, sizeof(outBuf) );
+		_tcsncat( outBuf, TranslateT("Affiliation:\t"), sizeof(outBuf) );
+		_tcsncat( outBuf, TranslateTS( JabberEnum2AffilationStr[info->affiliation] ), sizeof(outBuf) );
+	}
+
+	if ( lstrlen( outBuf ) == 0)
+		return 0;
+
+	return (int) mir_tstrdup( outBuf );
+}
+
 /////////////////////////////////////////////////////////////////////////////////////////
 // Service initialization code
 
@@ -1543,6 +1623,10 @@ int JabberSvcInit( void )
 	JCreateServiceFunction( JS_GETMYAVATARMAXSIZE, JabberGetAvatarMaxSize );
 	JCreateServiceFunction( JS_GETMYAVATAR, JabberGetAvatar );
 	JCreateServiceFunction( JS_SETMYAVATAR, JabberSetAvatar );
+
+	// service to get from protocol chat buddy info
+	JCreateServiceFunction( MS_GC_PROTO_GETTOOLTIPTEXT, JabberGCGetToolTipText );
+
 	return 0;
 }
 
