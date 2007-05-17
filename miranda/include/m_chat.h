@@ -659,3 +659,11 @@ typedef struct {
 		return 0;
 	}
 */
+
+//////////////////////////////////////////////////////////////////////////
+// Get Chat ToolTip Text for buddy
+// wParam = (WPARAM)(TCHAR*) roomID parentdat->ptszID
+// lParam = (WPARAM)(TCHAR*) userID ui1->pszUID
+// result (int)(TCHAR*)mir_tstrdup("tooltip text")
+// returns pointer to text of tooltip and starts owns it
+#define MS_GC_PROTO_GETTOOLTIPTEXT "/GetChatToolTipText"
