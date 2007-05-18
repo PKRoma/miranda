@@ -529,7 +529,7 @@ extern "C" BOOL __declspec(dllexport) mempng2dib(BYTE* pSource, DWORD cbSourceSi
 	png_uint_32				ulRowBytes;
 	png_byte*				pbImageData;
 	png_byte**				ppbRowPointers = NULL;
-	unsigned             i, j;
+	int                  i, j;
 	int						wDIRowBytes;
 	BYTE*                pImageData;
 
