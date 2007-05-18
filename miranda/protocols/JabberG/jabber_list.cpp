@@ -196,7 +196,7 @@ void JabberListRemoveByIndex( int index )
 	LeaveCriticalSection( &csLists );
 }
 
-int JabberListAddResource( JABBER_LIST list, const TCHAR* jid, int status, const TCHAR* statusMessage )
+int JabberListAddResource( JABBER_LIST list, const TCHAR* jid, int status, const TCHAR* statusMessage, char priority )
 {
 	int j;
 	const TCHAR* p, *q;
@@ -221,6 +221,7 @@ int JabberListAddResource( JABBER_LIST list, const TCHAR* jid, int status, const
 						// Already exist, update status and statusMessage
 						r->status = status;
 						replaceStr( r->statusMessage, statusMessage );
+						r->priority = priority;
 						break;
 				}	}
 
@@ -236,6 +237,7 @@ int JabberListAddResource( JABBER_LIST list, const TCHAR* jid, int status, const
 					r->resourceName = mir_tstrdup( resource );
 					if ( statusMessage )
 						r->statusMessage = mir_tstrdup( statusMessage );
+					r->priority = priority;
 			}	}
 		}
 		// No resource, update the main statusMessage

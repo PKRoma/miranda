@@ -1318,7 +1318,7 @@ static void JabberProcessPresence( XmlNode *node, void *userdata )
 {
 	ThreadData* info;
 	HANDLE hContact;
-	XmlNode *showNode, *statusNode;
+	XmlNode *showNode, *statusNode, *priorityNode;
 	JABBER_LIST_ITEM *item;
 	TCHAR* from, *nick, *show;
 	int i;
@@ -1360,24 +1360,15 @@ static void JabberProcessPresence( XmlNode *node, void *userdata )
 				else if ( !_tcscmp( show, _T("chat"))) status = ID_STATUS_FREECHAT;
 		}	}
 
-		// Send version query if this is the new resource
-//		if (( p = _tcschr( from, '@' )) != NULL ) {
-//			if (( p = _tcschr( p, '/' ))!=NULL && p[1]!='\0' ) {
-//				p++;
-//				if (( item = JabberListGetItemPtr( LIST_ROSTER, from )) != NULL ) {
-//					JABBER_RESOURCE_STATUS *r = item->resource;
-//					for ( i=0; i < item->resourceCount && lstrcmp( r->resourceName, p ); i++, r++ );
-//					if ( i >= item->resourceCount || ( r->version == NULL && r->system == NULL && r->software == NULL )) {
-//						XmlNodeIq iq( "get", JabberSerialNext(), from );
-//						XmlNode* query = iq.addQuery( JABBER_FEAT_VERSION );
-//						info->send( iq );
-//		}	}	}	}
+		char priority = 0;
+		if (( priorityNode = JabberXmlGetChild( node, "priority" )) != NULL && priorityNode->text != NULL )
+			priority = (char)_ttoi( priorityNode->text );
 
 		if (( statusNode = JabberXmlGetChild( node, "status" )) != NULL && statusNode->text != NULL )
 			p = mir_tstrdup( statusNode->text );
 		else
 			p = NULL;
-		JabberListAddResource( LIST_ROSTER, from, status, p );
+		JabberListAddResource( LIST_ROSTER, from, status, p, priority );
 		if ( p ) {
 			DBWriteContactSettingTString( hContact, "CList", "StatusMsg", p );
 			mir_free( p );

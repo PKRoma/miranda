@@ -92,6 +92,7 @@ struct JABBER_RESOURCE_STATUS
 	TCHAR* software;
 	TCHAR* version;
 	TCHAR* system;
+	signed char priority; // resource priority, -128..+127
 	time_t idleStartTime;// XEP-0012 support
 	unsigned int cap;					// 0 = haven't done disco#info yet, see CLIENT_CAP_*
 	JABBER_GC_AFFILIATION affiliation;
@@ -195,7 +196,7 @@ int JabberListFindNext( JABBER_LIST list, int fromOffset );
 JABBER_LIST_ITEM *JabberListGetItemPtr( JABBER_LIST list, const TCHAR* jid );
 JABBER_LIST_ITEM *JabberListGetItemPtrFromIndex( int index );
 
-int    JabberListAddResource( JABBER_LIST list, const TCHAR* jid, int status, const TCHAR* statusMessage );
+int    JabberListAddResource( JABBER_LIST list, const TCHAR* jid, int status, const TCHAR* statusMessage, char priority = 0 );
 void   JabberListRemoveResource( JABBER_LIST list, const TCHAR* jid );
 TCHAR* JabberListGetBestResourceNamePtr( const TCHAR* jid );
 TCHAR* JabberListGetBestClientResourceNamePtr( const TCHAR* jid );

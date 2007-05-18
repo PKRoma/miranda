@@ -83,7 +83,9 @@ static BOOL CALLBACK JabberUserInfoDlgProc( HWND hwndDlg, UINT msg, WPARAM wPara
 						if (( r=item->resource ) != NULL ) {
 							int count = item->resourceCount;
 							for ( int i=0; i<count; i++ ) {
-								int index = SendMessage( hwndList, LB_ADDSTRING, 0, ( LPARAM )r[i].resourceName );
+								TCHAR displayResource[256];
+								mir_sntprintf( displayResource, SIZEOF(displayResource), _T("%s [%d]"), r[i].resourceName, (int)r[i].priority );
+								int index = SendMessage( hwndList, LB_ADDSTRING, 0, ( LPARAM )displayResource );
 								SendMessage( hwndList, LB_SETITEMDATA, index, ( LPARAM )r[i].resourceName );
 						}	}
 

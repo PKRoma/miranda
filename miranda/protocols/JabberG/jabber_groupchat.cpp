@@ -533,7 +533,7 @@ void sttRenameParticipantNick( JABBER_LIST_ITEM* item, TCHAR* oldNick, XmlNode *
 void JabberGroupchatProcessPresence( XmlNode *node, void *userdata )
 {
 	ThreadData* info;
-	XmlNode *showNode, *statusNode, *errorNode, *itemNode, *n;
+	XmlNode *showNode, *statusNode, *errorNode, *itemNode, *n, *priorityNode;
 	TCHAR* from;
 	int status, newRes;
 	int i;
@@ -577,7 +577,12 @@ void JabberGroupchatProcessPresence( XmlNode *node, void *userdata )
 			str = statusNode->text;
 		else
 			str = NULL;
-		newRes = ( JabberListAddResource( LIST_CHATROOM, from, status, str ) == 0 ) ? 0 : GC_EVENT_JOIN;
+
+		char priority = 0;
+		if (( priorityNode = JabberXmlGetChild( node, "priority" )) != NULL && priorityNode->text != NULL )
+			priority = (char)_ttoi( priorityNode->text );
+
+		newRes = ( JabberListAddResource( LIST_CHATROOM, from, status, str, priority ) == 0 ) ? 0 : GC_EVENT_JOIN;
 
 		roomCreated = FALSE;
 
