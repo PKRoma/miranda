@@ -101,8 +101,8 @@ void events_destroy() {
         WaitForSingleObjectEx(hEventsThread, INFINITE, FALSE);
         CloseHandle(hEventsThread);
     }
-    li.List_Destroy(&sModuleNames);
     HeapDestroy(hHeap);
+    li.List_Destroy(&sModuleNames);
 	DeleteCriticalSection(&csEventsDb);
 }
 
