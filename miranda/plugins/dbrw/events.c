@@ -20,9 +20,16 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include "dbrw.h"
 
 static CRITICAL_SECTION csEventsDb;
-static HANDLE hEventsThread = 0, hEventsEvent = 0;
+static HANDLE hEventsThread = 0, hEventsEvent = 0, hHeap;
+static SortedList sModuleNames;
 
+static int events_cmpModuleNames(void *p1, void *p2);
 static unsigned __stdcall events_timerProcThread(void *arg);
+
+typedef struct {
+	char *name;
+	DWORD nameHash;
+} DBCachedModuleName;
 
 enum {
 	SQL_EVT_STMT_COUNT=0,
@@ -75,11 +82,11 @@ static sqlite3_stmt *evt_stmts_prep[SQL_EVT_STMT_NUM] = {0};
 
 void events_init() {
 	InitializeCriticalSection(&csEventsDb);
+    hHeap = HeapCreate(0, 0, 0);
+    ZeroMemory(&sModuleNames, sizeof(sModuleNames));
+    sModuleNames.increment = 100;
+	sModuleNames.sortFunc = events_cmpModuleNames;
 	sql_prepare_add(evt_stmts, evt_stmts_prep, SQL_EVT_STMT_NUM);
-    
-    sql_step(evt_stmts_prep[SQL_EVT_STMT_CREATETEMPTABLE]);
-	sql_reset(evt_stmts_prep[SQL_EVT_STMT_CREATETEMPTABLE]);
-    
     sql_exec(g_sqlite, "BEGIN TRANSACTION;");
     sql_step(evt_stmts_prep[SQL_EVT_STMT_CREATETEMPTABLE]);
     sql_exec(g_sqlite, "COMMIT;");
@@ -94,7 +101,41 @@ void events_destroy() {
         WaitForSingleObjectEx(hEventsThread, INFINITE, FALSE);
         CloseHandle(hEventsThread);
     }
+    li.List_Destroy(&sModuleNames);
+    HeapDestroy(hHeap);
 	DeleteCriticalSection(&csEventsDb);
+}
+
+static int events_cmpModuleNames(void *p1, void *p2) {
+	DBCachedModuleName *v1 = (DBCachedModuleName*)p1;
+	DBCachedModuleName *v2 = (DBCachedModuleName*)p2;
+	
+	if (v1->nameHash!=v2->nameHash)
+		return v1->nameHash-v2->nameHash;
+	return strcmp(v1->name, v2->name);
+}
+
+static char *events_moduleCacheAdd(char *szModule) {
+    if (!szModule)
+        return 0;
+    {
+        int idx = 0, nameLen;
+		DBCachedModuleName Vtemp, *V;
+
+		Vtemp.name = szModule;
+		Vtemp.nameHash = utils_hashString(szModule);
+		if (li.List_GetIndex(&sModuleNames, &Vtemp, &idx)) {
+			V = (DBCachedModuleName*)sModuleNames.items[idx];
+            return V->name;
+        }
+        V = (DBCachedModuleName*)HeapAlloc(hHeap, HEAP_ZERO_MEMORY, sizeof(DBCachedModuleName));
+        nameLen = strlen(szModule)+1;
+        V->name = (char*)HeapAlloc(hHeap, 0, nameLen);
+        mir_snprintf(V->name, nameLen, "%s", szModule);
+        V->nameHash = utils_hashString(szModule);
+        li.List_Insert(&sModuleNames, V, idx);
+        return V->name;
+    }
 }
 
 static unsigned __stdcall events_timerProcThread(void *arg) {
@@ -225,6 +266,10 @@ static int events_getConditional(HANDLE hDbEvent, DBEVENTINFO *dbei, int cache) 
     
 	if(dbei==NULL||dbei->cbSize!=sizeof(DBEVENTINFO)) 
 		return 1;
+	if(dbei->cbBlob>0&&dbei->pBlob==NULL) {
+		dbei->cbBlob = 0;
+		return 1;
+	}
 	EnterCriticalSection(&csEventsDb);
     stmt = cache?evt_stmts_prep[SQL_EVT_STMT_GET_CACHE]:evt_stmts_prep[SQL_EVT_STMT_GET];
 	sqlite3_bind_int(stmt, 1, (int)hDbEvent);
@@ -236,7 +281,7 @@ static int events_getConditional(HANDLE hDbEvent, DBEVENTINFO *dbei, int cache) 
 		dbei->timestamp = (DWORD)sqlite3_column_int64(stmt, 1);
 		dbei->flags = (DWORD)sqlite3_column_int(stmt, 2);
 		dbei->eventType = (WORD)sqlite3_column_int(stmt, 3);
-		dbei->szModule = (char*)sqlite3_column_text(stmt, 6);
+		dbei->szModule = events_moduleCacheAdd((char*)sqlite3_column_text(stmt, 6));
 		copySize = size<dbei->cbBlob ? size : dbei->cbBlob;
 		CopyMemory(dbei->pBlob, blob, copySize);
 		dbei->cbBlob = copySize;
