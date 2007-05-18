@@ -34,6 +34,29 @@ Last change by : $Author$
 extern char* jabberVcardPhotoFileName;
 extern char* jabberVcardPhotoType;
 
+void JabberIqResultServerDiscoInfo( XmlNode* iqNode, void* userdata )
+{
+	if ( !iqNode )
+		return;
+
+	TCHAR *type = JabberXmlGetAttrValue( iqNode, "type" );
+
+	if ( !_tcscmp( type, _T("result"))) {
+		XmlNode *query = JabberXmlGetChildWithGivenAttrValue( iqNode, "query", "xmlns", _T(JABBER_FEAT_DISCO_INFO) );
+		if ( !query )
+			return;
+		XmlNode *identity;
+		for ( int i = 1; ( identity = JabberXmlGetNthChild( query, "identity", i )) != NULL; i++ ) {
+			TCHAR *identityCategory = JabberXmlGetAttrValue( identity, "category" );
+			TCHAR *identityType = JabberXmlGetAttrValue( identity, "type" );
+			if ( identityCategory && identityType && !_tcscmp( identityCategory, _T("pubsub") ) && !_tcscmp( identityType, _T("pep")) ) {
+				jabberPepSupported = TRUE;
+				break;
+			}
+		}
+	}
+}
+
 static void JabberOnLoggedIn( ThreadData* info )
 {
 	jabberOnline = TRUE;
@@ -53,6 +76,14 @@ static void JabberOnLoggedIn( ThreadData* info )
 	XmlNode* storage = bquery->addChild("storage");
 	storage->addAttr("xmlns","storage:bookmarks");
 	info->send( biq );
+
+	jabberPepSupported = FALSE;
+	iqId = JabberSerialNext();
+	JabberIqAdd( iqId, IQ_PROC_NONE, JabberIqResultServerDiscoInfo );
+	XmlNodeIq diq( "get", iqId, jabberThreadInfo->server );
+	diq.addQuery( JABBER_FEAT_DISCO_INFO );
+	jabberThreadInfo->send( diq );
+
 
 	char szServerName[ sizeof(info->server) ];
 	if ( JGetStaticString( "LastLoggedServer", NULL, szServerName, sizeof(szServerName)))

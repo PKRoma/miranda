@@ -92,7 +92,7 @@ void JabberSetContactMood( HANDLE hContact, const char* moodType, const TCHAR* m
 
 int JabberGetXStatus( WPARAM wParam, LPARAM lParam )
 {
-	if ( !jabberOnline )
+	if ( !jabberOnline || !jabberPepSupported )
 		return 0;
 
 	if ( jabberXStatus < 1 || jabberXStatus > NUM_XMODES )
@@ -108,7 +108,7 @@ int JabberGetXStatus( WPARAM wParam, LPARAM lParam )
 
 int JabberSetXStatus( WPARAM wParam, LPARAM lParam )
 {
-	if ( wParam >= 0 && wParam <= NUM_XMODES ) {
+	if ( jabberPepSupported && wParam >= 0 && wParam <= NUM_XMODES ) {
 		jabberXStatus = wParam;
 		JSetByte( NULL, DBSETTING_XSTATUSID, wParam );
 
@@ -152,6 +152,34 @@ static int menuSetXStatus(WPARAM wParam,LPARAM lParam,LPARAM param)
 
 int CListMW_BuildStatusItems( WPARAM wParam, LPARAM lParam )
 {
+	if ( !jabberPepSupported )
+		return 0;
+
+	if ( !bXStatusMenuBuilt ) {
+		char szFile[MAX_PATH];
+		GetModuleFileNameA( hInst, szFile, MAX_PATH );
+		char* p = strrchr( szFile, '\\' );
+		if ( p != NULL )
+			strcpy( p+1, "..\\Icons\\jabber_xstatus.dll" );
+
+		char szSection[ 100 ];
+		mir_snprintf( szSection, sizeof( szSection ), "%s/Custom Status", JTranslate( jabberProtoName ));
+
+		SKINICONDESC sid = {0};
+		sid.cbSize = sizeof(SKINICONDESC);
+		sid.pszDefaultFile = szFile;
+		sid.cx = sid.cy = 16;
+		sid.pszSection = szSection;
+
+		for ( int i = 0; i < SIZEOF(arXStatusNames); i++ ) {
+			char szSettingName[100];
+			mir_snprintf( szSettingName, sizeof( szSettingName ), "%s_%s", jabberProtoName, arXStatusNames[i] );
+			sid.pszName = szSettingName;
+			sid.pszDescription = Translate( arXStatusNames[i] );
+			sid.iDefaultIndex = -( i+200 );
+			arXStatusIcons[ i ] = ( HANDLE )CallService( MS_SKIN2_ADDICON, 0, ( LPARAM )&sid );
+	}	}
+
 	CLISTMENUITEM mi = { 0 };
 	int i;
 	char srvFce[MAX_PATH + 64];
@@ -192,30 +220,6 @@ int CListMW_BuildStatusItems( WPARAM wParam, LPARAM lParam )
 
 void JabberXStatusInit()
 {
-	char szFile[MAX_PATH];
-	GetModuleFileNameA( hInst, szFile, MAX_PATH );
-	char* p = strrchr( szFile, '\\' );
-	if ( p != NULL )
-		strcpy( p+1, "..\\Icons\\jabber_xstatus.dll" );
-
-	char szSection[ 100 ];
-	mir_snprintf( szSection, sizeof( szSection ), "%s/Custom Status", JTranslate( jabberProtoName ));
-
-	SKINICONDESC sid = {0};
-	sid.cbSize = sizeof(SKINICONDESC);
-	sid.pszDefaultFile = szFile;
-	sid.cx = sid.cy = 16;
-	sid.pszSection = szSection;
-
-	for ( int i = 0; i < SIZEOF(arXStatusNames); i++ ) {
-		char szSettingName[100];
-		mir_snprintf( szSettingName, sizeof( szSettingName ), "%s_%s", jabberProtoName, arXStatusNames[i] );
-		sid.pszName = szSettingName;
-		sid.pszDescription = Translate( arXStatusNames[i] );
-		sid.iDefaultIndex = -( i+200 );
-		arXStatusIcons[ i ] = ( HANDLE )CallService( MS_SKIN2_ADDICON, 0, ( LPARAM )&sid );
-	}
-
 	jabberXStatus = JGetByte( NULL, DBSETTING_XSTATUSID, 0 );
 
 	hHookStatusBuild = HookEvent(ME_CLIST_PREBUILDSTATUSMENU, CListMW_BuildStatusItems);

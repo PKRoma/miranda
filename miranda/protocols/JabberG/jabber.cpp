@@ -87,6 +87,8 @@ char* jabberVcardPhotoFileName = NULL;
 char* jabberVcardPhotoType = NULL;
 BOOL  jabberSendKeepAlive;
 
+BOOL jabberPepSupported = FALSE;
+
 // SSL-related global variable
 HMODULE hLibSSL = NULL;
 PVOID jabberSslCtx;
@@ -127,7 +129,7 @@ LIST<TCHAR> jabberTransports( 50, compareTransports );
 static int sttCompareHandles( const void* p1, const void* p2 )
 {	return (long)p1 - (long)p2;
 }
-LIST<void> arHooks( 20, sttCompareHandles ); 
+LIST<void> arHooks( 20, sttCompareHandles );
 
 int JabberOptInit( WPARAM wParam, LPARAM lParam );
 int JabberUserInfoInit( WPARAM wParam, LPARAM lParam );
@@ -368,7 +370,7 @@ extern "C" int __declspec( dllexport ) Load( PLUGINLINK *link )
 	JabberListInit();
 	JabberIconsInit();
 	JabberSvcInit();
-	//JabberXStatusInit();
+	JabberXStatusInit();
 	g_JabberClientCapsManager.AddDefaultCaps();
 	return 0;
 }
@@ -386,7 +388,7 @@ extern "C" int __declspec( dllexport ) Unload( void )
 	if ( hInitChat )
 		DestroyHookableEvent( hInitChat );
 
-	//JabberXStatusUninit();
+	JabberXStatusUninit();
 	JabberSvcUninit();
 	JabberSslUninit();
 	JabberListUninit();

@@ -399,6 +399,7 @@ extern BOOL modeMsgStatusChangePending;
 
 extern BOOL   jabberChangeStatusMessageOnly;
 extern BOOL   jabberSendKeepAlive;
+extern BOOL   jabberPepSupported;
 extern BOOL   jabberChatDllPresent;
 
 extern HWND hwndJabberAgents;
