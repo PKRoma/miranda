@@ -663,7 +663,7 @@ extern "C" BOOL __declspec(dllexport) mempng2dib(BYTE* pSource, DWORD cbSourceSi
 
 	free( pImageData );
 	png_destroy_read_struct( &png_ptr, &info_ptr, NULL );
-	return 0;
+	return TRUE;
 }
 
 /*
