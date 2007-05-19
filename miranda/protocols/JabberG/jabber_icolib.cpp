@@ -55,18 +55,21 @@ struct
 }
 static TransportProtoTable[] =
 {
-	{ "|icq*|jit*", "ICQ",  -1},
-	{ "msn*",       "MSN",  -1},
-	{ "yahoo*",     "YAHOO",-1},
-	{ "mrim*",      "MRA",  -1},
-	{ "aim*",       "AIM",  -1},
+	{ "|icq*|jit*",  "ICQ",  -1},
+	{ "msn*",        "MSN",  -1},
+	{ "yahoo*",      "YAHOO",-1},
+	{ "mrim*",       "MRA",  -1},
+	{ "aim*",        "AIM",  -1},
 	//request #3094
-	{ "gg*",		"GaduGadu",	-1},
-	{ "sms*",       "SMS",  -1},
-	{ "smtp*",      "SMTP", -1},
+	{ "gg*",	 	"GaduGadu",  -1},
+	{ "tv*",          "TV",  -1},
+	{ "dict*",      "Dict",  -1},
+	{ "weather*","Weather",  -1},
+	{ "sms*",        "SMS",  -1},
+	{ "smtp*",       "SMTP", -1},
 	//j2j 
-	{ "gtalk*",		"GTalk", -1},
-	{ "xmpp*",		"Jabber2Jabber", -1}
+	{ "gtalk*",     "GTalk", -1},
+	{ "xmpp*", "Jabber2Jabber", -1}
 };
 
 static int skinIconStatusToResourceId[] = {IDI_OFFLINE,IDI_ONLINE,IDI_AWAY,IDI_DND,IDI_NA,IDI_NA,/*IDI_OCCUPIED,*/IDI_FREE4CHAT,IDI_INVISIBLE,IDI_ONTHEPHONE,IDI_OUTTOLUNCH};
@@ -284,22 +287,22 @@ static int LoadAdvancedIcons(int iID)
 		char * descr=(char*)CallService(MS_CLIST_GETSTATUSMODEDESCRIPTION,n+ID_STATUS_OFFLINE,0);
 		_snprintf((char *)Uname, sizeof(Uname),"%s_Transport_%s_%d",jabberProtoName,proto,n);
 		hicon=(HICON)LoadTransportIcon((char*)defFile,-skinIconStatusToResourceId[i],(char*)Uname,(char*)Group,(char*)descr,-(n+ID_STATUS_OFFLINE),&needFree);
-		int index=(TransportProtoTable[iID].startIndex==-1)?-1:TransportProtoTable[iID].startIndex+n;
+		int index=(TransportProtoTable[iID].startIndex == -1)?-1:TransportProtoTable[iID].startIndex+n;
 		int added=ImageList_ReplaceIcon(hAdvancedStatusIcon,index,hicon?hicon:empty);
-		if (first==-1) first=added;
+		if (first == -1) first=added;
 		if (hicon && needFree) DestroyIcon(hicon);
 	}
 
-	if (TransportProtoTable[iID].startIndex == -1)
-		TransportProtoTable[iID].startIndex = first;
+	if ( TransportProtoTable[ iID ].startIndex == -1 )
+		TransportProtoTable[ iID ].startIndex = first;
 	LeaveCriticalSection( &modeMsgMutex );
 	return 0;
 }
 
 static int GetTransportProtoID(char * TransportDomain)
 {
-	for ( int i=0; i<SIZEOF(TransportProtoTable); i++)
-		if (MatchMask(TransportDomain,TransportProtoTable[i].mask))
+	for ( int i=0; i<SIZEOF(TransportProtoTable); i++ )
+		if ( MatchMask( TransportDomain, TransportProtoTable[i].mask ))
 			return i;
 
 	return -1;
@@ -311,11 +314,11 @@ static int GetTransportStatusIconIndex(int iID, int Status)
 		return -1;
 
 	//icons not loaded - loading icons
-	if (TransportProtoTable[iID].startIndex==-1)
-		LoadAdvancedIcons(iID);
+	if ( TransportProtoTable[iID].startIndex == -1 )
+		LoadAdvancedIcons( iID );
 
 	//some fault on loading icons
-	if (TransportProtoTable[iID].startIndex==-1)
+	if ( TransportProtoTable[ iID ].startIndex == -1 )
 		return -1;
 
 	if ( Status < ID_STATUS_OFFLINE )
