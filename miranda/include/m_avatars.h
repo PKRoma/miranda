@@ -270,17 +270,6 @@ typedef struct _contactAvatarChangedNotification {
 
 #define RESIZEBITMAP_FLAG_DONT_GROW	0x1000	// If set, the image will not grow. Else, it will grow to fit the max width/height
 
-typedef struct {
-	size_t size; // sizeof(ResizeBitmap);
-
-	HBITMAP hBmp;
-
-	int max_width;
-	int max_height;
-
-	int fit; // One of: RESIZEBITMAP_*
-} ResizeBitmap;
-
 // Returns a copy of the bitmap with the size especified or the original bitmap if nothing has to be changed
 // wParam = ResizeBitmap *
 // lParam = NULL
@@ -327,7 +316,7 @@ return=0 for sucess
 // return or of PIP_*
 #define AF_PROPORTION 2
 
-// Avatar format
+// Avatar format supported when setting avatars
 // lParam = PA_FORMAT_*
 // return = 1 (supported) or 0 (not supported)
 #define AF_FORMATSUPPORTED 3
@@ -336,6 +325,11 @@ return=0 for sucess
 // lParam = 0
 // return = 1 (avatars ready) or 0 (disabled)
 #define AF_ENABLED 4
+
+// This protocol don't need delays for fetching contact avatars
+// lParam = 0
+// return = 1 (don't need) or 0 (need)
+#define AF_DONTNEEDDELAYS 5
 
 /*
 Query avatar caps for a protocol
