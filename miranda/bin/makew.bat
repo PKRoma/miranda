@@ -124,7 +124,7 @@ copy ..\release\Icons\xstatus_ICQ.dll    Icons
 copy ..\release\Plugins\aim.dll          Plugins
 copy ..\release\Plugins\dbx_3x.dll       Plugins
 copy ..\release\Plugins\dbx_mmap.dll     Plugins
-copy ..\release\Plugins\freeimage.dll    Plugins
+copy ..\release\Plugins\advaimg.dll      Plugins
 copy ..\release\Plugins\GG.dll           Plugins
 copy ..\release\Plugins\ICQ.dll          Plugins
 copy ..\release\Plugins\import.dll       Plugins
